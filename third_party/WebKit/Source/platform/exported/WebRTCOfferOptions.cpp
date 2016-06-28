@@ -4,7 +4,7 @@
 
 #include "public/platform/WebRTCOfferOptions.h"
 
-#include "platform/mediastream/RTCOfferOptionsPlatform.h"
+#include "platform/peerconnection/RTCOfferOptionsPlatform.h"
 
 namespace blink {
 

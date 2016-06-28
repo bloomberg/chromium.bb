@@ -22,49 +22,40 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef RTCStatsRequestImpl_h
-#define RTCStatsRequestImpl_h
+#ifndef RTCStatsResponse_h
+#define RTCStatsResponse_h
 
-#include "core/dom/ActiveDOMObject.h"
-#include "modules/mediastream/RTCStatsResponse.h"
+#include "bindings/core/v8/ScriptWrappable.h"
+#include "modules/peerconnection/RTCStatsReport.h"
 #include "platform/heap/Handle.h"
-#include "platform/mediastream/RTCStatsRequest.h"
-#include "wtf/Forward.h"
+#include "platform/peerconnection/RTCStatsResponseBase.h"
+#include "wtf/HashMap.h"
+#include "wtf/Vector.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {
 
-class MediaStreamTrack;
-class RTCPeerConnection;
-class RTCStatsCallback;
-
-class RTCStatsRequestImpl final : public RTCStatsRequest, public ActiveDOMObject {
-    USING_GARBAGE_COLLECTED_MIXIN(RTCStatsRequestImpl);
+class RTCStatsResponse final : public RTCStatsResponseBase, public ScriptWrappable {
+    DEFINE_WRAPPERTYPEINFO();
 public:
-    static RTCStatsRequestImpl* create(ExecutionContext*, RTCPeerConnection*, RTCStatsCallback*, MediaStreamTrack*);
-    ~RTCStatsRequestImpl() override;
+    static RTCStatsResponse* create();
 
-    RTCStatsResponseBase* createResponse() override;
-    bool hasSelector() override;
-    MediaStreamComponent* component() override;
+    const HeapVector<Member<RTCStatsReport>>& result() const { return m_result; }
 
-    void requestSucceeded(RTCStatsResponseBase*) override;
+    RTCStatsReport* namedItem(const AtomicString& name);
 
-    // ActiveDOMObject
-    void stop() override;
+    size_t addReport(const String& id, const String& type, double timestamp) override;
+    void addStatistic(size_t report, const String& name, const String& value) override;
 
     DECLARE_VIRTUAL_TRACE();
 
 private:
-    RTCStatsRequestImpl(ExecutionContext*, RTCPeerConnection*, RTCStatsCallback*, MediaStreamTrack*);
+    RTCStatsResponse();
 
-    void clear();
-
-    Member<RTCStatsCallback> m_successCallback;
-    Member<MediaStreamComponent> m_component;
-    Member<RTCPeerConnection> m_requester;
+    HeapVector<Member<RTCStatsReport>> m_result;
+    HashMap<String, int> m_idmap;
 };
 
 } // namespace blink
 
-#endif // RTCStatsRequestImpl_h
+#endif // RTCStatsResponse_h

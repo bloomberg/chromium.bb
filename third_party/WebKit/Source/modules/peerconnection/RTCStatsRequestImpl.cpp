@@ -22,11 +22,11 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "modules/mediastream/RTCStatsRequestImpl.h"
+#include "modules/peerconnection/RTCStatsRequestImpl.h"
 
 #include "modules/mediastream/MediaStreamTrack.h"
-#include "modules/mediastream/RTCPeerConnection.h"
-#include "modules/mediastream/RTCStatsCallback.h"
+#include "modules/peerconnection/RTCPeerConnection.h"
+#include "modules/peerconnection/RTCStatsCallback.h"
 
 namespace blink {
 

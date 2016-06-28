@@ -28,7 +28,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "modules/mediastream/RTCPeerConnection.h"
+#include "modules/peerconnection/RTCPeerConnection.h"
 
 #include "bindings/core/v8/ArrayValue.h"
 #include "bindings/core/v8/ExceptionMessages.h"
@@ -54,25 +54,25 @@
 #include "modules/crypto/CryptoResultImpl.h"
 #include "modules/mediastream/MediaConstraintsImpl.h"
 #include "modules/mediastream/MediaStreamEvent.h"
-#include "modules/mediastream/RTCAnswerOptions.h"
-#include "modules/mediastream/RTCDTMFSender.h"
-#include "modules/mediastream/RTCDataChannel.h"
-#include "modules/mediastream/RTCDataChannelEvent.h"
-#include "modules/mediastream/RTCIceCandidateEvent.h"
-#include "modules/mediastream/RTCOfferOptions.h"
-#include "modules/mediastream/RTCPeerConnectionErrorCallback.h"
-#include "modules/mediastream/RTCSessionDescription.h"
-#include "modules/mediastream/RTCSessionDescriptionCallback.h"
-#include "modules/mediastream/RTCSessionDescriptionInit.h"
-#include "modules/mediastream/RTCSessionDescriptionRequestImpl.h"
-#include "modules/mediastream/RTCSessionDescriptionRequestPromiseImpl.h"
-#include "modules/mediastream/RTCStatsCallback.h"
-#include "modules/mediastream/RTCStatsRequestImpl.h"
-#include "modules/mediastream/RTCVoidRequestImpl.h"
-#include "modules/mediastream/RTCVoidRequestPromiseImpl.h"
-#include "platform/mediastream/RTCAnswerOptionsPlatform.h"
-#include "platform/mediastream/RTCConfiguration.h"
-#include "platform/mediastream/RTCOfferOptionsPlatform.h"
+#include "modules/peerconnection/RTCAnswerOptions.h"
+#include "modules/peerconnection/RTCDTMFSender.h"
+#include "modules/peerconnection/RTCDataChannel.h"
+#include "modules/peerconnection/RTCDataChannelEvent.h"
+#include "modules/peerconnection/RTCIceCandidateEvent.h"
+#include "modules/peerconnection/RTCOfferOptions.h"
+#include "modules/peerconnection/RTCPeerConnectionErrorCallback.h"
+#include "modules/peerconnection/RTCSessionDescription.h"
+#include "modules/peerconnection/RTCSessionDescriptionCallback.h"
+#include "modules/peerconnection/RTCSessionDescriptionInit.h"
+#include "modules/peerconnection/RTCSessionDescriptionRequestImpl.h"
+#include "modules/peerconnection/RTCSessionDescriptionRequestPromiseImpl.h"
+#include "modules/peerconnection/RTCStatsCallback.h"
+#include "modules/peerconnection/RTCStatsRequestImpl.h"
+#include "modules/peerconnection/RTCVoidRequestImpl.h"
+#include "modules/peerconnection/RTCVoidRequestPromiseImpl.h"
+#include "platform/peerconnection/RTCAnswerOptionsPlatform.h"
+#include "platform/peerconnection/RTCConfiguration.h"
+#include "platform/peerconnection/RTCOfferOptionsPlatform.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebCryptoAlgorithmParams.h"
 #include "public/platform/WebMediaStream.h"
@@ -1032,9 +1032,9 @@ void RTCPeerConnection::didGenerateICECandidate(const WebRTCICECandidate& webCan
 {
     DCHECK(!m_closed);
     DCHECK(getExecutionContext()->isContextThread());
-    if (webCandidate.isNull())
+    if (webCandidate.isNull()) {
         scheduleDispatchEvent(RTCIceCandidateEvent::create(false, false, nullptr));
-    else {
+    } else {
         RTCIceCandidate* iceCandidate = RTCIceCandidate::create(webCandidate);
         scheduleDispatchEvent(RTCIceCandidateEvent::create(false, false, iceCandidate));
     }

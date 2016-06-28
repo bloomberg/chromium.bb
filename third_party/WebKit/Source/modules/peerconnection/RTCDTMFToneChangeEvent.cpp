@@ -23,7 +23,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "modules/mediastream/RTCDTMFToneChangeEvent.h"
+#include "modules/peerconnection/RTCDTMFToneChangeEvent.h"
 
 namespace blink {
 

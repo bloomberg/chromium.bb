@@ -28,13 +28,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "modules/mediastream/RTCVoidRequestImpl.h"
+#include "modules/peerconnection/RTCVoidRequestImpl.h"
 
 #include "core/dom/DOMException.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/html/VoidCallback.h"
-#include "modules/mediastream/RTCPeerConnection.h"
-#include "modules/mediastream/RTCPeerConnectionErrorCallback.h"
+#include "modules/peerconnection/RTCPeerConnection.h"
+#include "modules/peerconnection/RTCPeerConnectionErrorCallback.h"
 
 namespace blink {
 

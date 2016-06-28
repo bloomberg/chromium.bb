@@ -1,3 +1,4 @@
+
 /*
  * Copyright (C) 2012 Google Inc. All rights reserved.
  *
@@ -22,51 +23,34 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "modules/mediastream/RTCIceCandidateEvent.h"
-
-#include "modules/mediastream/RTCIceCandidate.h"
+#include "modules/peerconnection/RTCStatsReport.h"
 
 namespace blink {
 
-RTCIceCandidateEvent* RTCIceCandidateEvent::create()
+RTCStatsReport* RTCStatsReport::create(const String& id, const String& type, double timestamp)
 {
-    return new RTCIceCandidateEvent;
+    return new RTCStatsReport(id, type, timestamp);
 }
 
-RTCIceCandidateEvent* RTCIceCandidateEvent::create(bool canBubble, bool cancelable, RTCIceCandidate* candidate)
-{
-    return new RTCIceCandidateEvent(canBubble, cancelable, candidate);
-}
-
-RTCIceCandidateEvent::RTCIceCandidateEvent()
-{
-}
-
-RTCIceCandidateEvent::RTCIceCandidateEvent(bool canBubble, bool cancelable, RTCIceCandidate* candidate)
-    : Event(EventTypeNames::icecandidate, canBubble, cancelable)
-    , m_candidate(candidate)
+RTCStatsReport::RTCStatsReport(const String& id, const String& type, double timestamp)
+    : m_id(id)
+    , m_type(type)
+    , m_timestamp(timestamp)
 {
 }
 
-RTCIceCandidateEvent::~RTCIceCandidateEvent()
+Vector<String> RTCStatsReport::names() const
 {
+    Vector<String> result;
+    for (HashMap<String, String>::const_iterator it = m_stats.begin(); it != m_stats.end(); ++it) {
+        result.append(it->key);
+    }
+    return result;
 }
 
-RTCIceCandidate* RTCIceCandidateEvent::candidate() const
+void RTCStatsReport::addStatistic(const String& name, const String& value)
 {
-    return m_candidate.get();
-}
-
-const AtomicString& RTCIceCandidateEvent::interfaceName() const
-{
-    return EventNames::RTCIceCandidateEvent;
-}
-
-DEFINE_TRACE(RTCIceCandidateEvent)
-{
-    visitor->trace(m_candidate);
-    Event::trace(visitor);
+    m_stats.add(name, value);
 }
 
 } // namespace blink
-

@@ -28,11 +28,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "modules/mediastream/RTCSessionDescription.h"
+#include "modules/peerconnection/RTCSessionDescription.h"
 
 #include "bindings/core/v8/ScriptValue.h"
 #include "bindings/core/v8/V8ObjectBuilder.h"
-#include "modules/mediastream/RTCSessionDescriptionInit.h"
+#include "modules/peerconnection/RTCSessionDescriptionInit.h"
 
 namespace blink {
 

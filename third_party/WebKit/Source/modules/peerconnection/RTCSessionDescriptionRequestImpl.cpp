@@ -28,14 +28,14 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "modules/mediastream/RTCSessionDescriptionRequestImpl.h"
+#include "modules/peerconnection/RTCSessionDescriptionRequestImpl.h"
 
 #include "core/dom/DOMException.h"
 #include "core/dom/ExceptionCode.h"
-#include "modules/mediastream/RTCPeerConnection.h"
-#include "modules/mediastream/RTCPeerConnectionErrorCallback.h"
-#include "modules/mediastream/RTCSessionDescription.h"
-#include "modules/mediastream/RTCSessionDescriptionCallback.h"
+#include "modules/peerconnection/RTCPeerConnection.h"
+#include "modules/peerconnection/RTCPeerConnectionErrorCallback.h"
+#include "modules/peerconnection/RTCSessionDescription.h"
+#include "modules/peerconnection/RTCSessionDescriptionCallback.h"
 #include "public/platform/WebRTCSessionDescription.h"
 #include "wtf/RefPtr.h"
 

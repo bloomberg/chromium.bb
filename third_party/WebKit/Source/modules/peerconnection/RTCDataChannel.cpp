@@ -22,7 +22,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "modules/mediastream/RTCDataChannel.h"
+#include "modules/peerconnection/RTCDataChannel.h"
 
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/dom/DOMArrayBuffer.h"
@@ -31,7 +31,7 @@
 #include "core/dom/ExecutionContext.h"
 #include "core/events/MessageEvent.h"
 #include "core/fileapi/Blob.h"
-#include "modules/mediastream/RTCPeerConnection.h"
+#include "modules/peerconnection/RTCPeerConnection.h"
 #include "public/platform/WebRTCPeerConnectionHandler.h"
 #include "wtf/PtrUtil.h"
 #include <memory>

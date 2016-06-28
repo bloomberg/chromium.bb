@@ -22,40 +22,43 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef RTCStatsResponse_h
-#define RTCStatsResponse_h
-
-#include "bindings/core/v8/ScriptWrappable.h"
-#include "modules/mediastream/RTCStatsReport.h"
-#include "platform/heap/Handle.h"
-#include "platform/mediastream/RTCStatsResponseBase.h"
-#include "wtf/HashMap.h"
-#include "wtf/Vector.h"
-#include "wtf/text/WTFString.h"
+#include "modules/peerconnection/RTCStatsResponse.h"
 
 namespace blink {
 
-class RTCStatsResponse final : public RTCStatsResponseBase, public ScriptWrappable {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    static RTCStatsResponse* create();
+RTCStatsResponse* RTCStatsResponse::create()
+{
+    return new RTCStatsResponse();
+}
 
-    const HeapVector<Member<RTCStatsReport>>& result() const { return m_result; }
+RTCStatsResponse::RTCStatsResponse()
+{
+}
 
-    RTCStatsReport* namedItem(const AtomicString& name);
+RTCStatsReport* RTCStatsResponse::namedItem(const AtomicString& name)
+{
+    if (m_idmap.find(name) != m_idmap.end())
+        return m_result[m_idmap.get(name)];
+    return nullptr;
+}
 
-    size_t addReport(const String& id, const String& type, double timestamp) override;
-    void addStatistic(size_t report, const String& name, const String& value) override;
+size_t RTCStatsResponse::addReport(const String& id, const String& type, double timestamp)
+{
+    m_result.append(RTCStatsReport::create(id, type, timestamp));
+    m_idmap.add(id, m_result.size() - 1);
+    return m_result.size() - 1;
+}
 
-    DECLARE_VIRTUAL_TRACE();
+void RTCStatsResponse::addStatistic(size_t report, const String& name, const String& value)
+{
+    SECURITY_DCHECK(report >= 0 && report < m_result.size());
+    m_result[report]->addStatistic(name, value);
+}
 
-private:
-    RTCStatsResponse();
-
-    HeapVector<Member<RTCStatsReport>> m_result;
-    HashMap<String, int> m_idmap;
-};
+DEFINE_TRACE(RTCStatsResponse)
+{
+    visitor->trace(m_result);
+    RTCStatsResponseBase::trace(visitor);
+}
 
 } // namespace blink
-
-#endif // RTCStatsResponse_h

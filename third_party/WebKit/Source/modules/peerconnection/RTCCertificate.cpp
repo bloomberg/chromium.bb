@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012 Google Inc. All rights reserved.
+ * Copyright (C) 2015 Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -28,45 +28,25 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef RTCVoidRequestImpl_h
-#define RTCVoidRequestImpl_h
+#include "modules/peerconnection/RTCCertificate.h"
 
-#include "core/dom/ActiveDOMObject.h"
-#include "core/dom/ExceptionCode.h"
-#include "platform/heap/Handle.h"
-#include "platform/mediastream/RTCVoidRequest.h"
+#include "wtf/PtrUtil.h"
 
 namespace blink {
 
-class RTCPeerConnection;
-class RTCPeerConnectionErrorCallback;
-class VoidCallback;
+RTCCertificate::RTCCertificate(std::unique_ptr<WebRTCCertificate> certificate)
+    : m_certificate(wrapUnique(certificate.release()))
+{
+}
 
-class RTCVoidRequestImpl final : public RTCVoidRequest, public ActiveDOMObject {
-    USING_GARBAGE_COLLECTED_MIXIN(RTCVoidRequestImpl);
-public:
-    static RTCVoidRequestImpl* create(ExecutionContext*, RTCPeerConnection*, VoidCallback*, RTCPeerConnectionErrorCallback*);
-    ~RTCVoidRequestImpl() override;
+std::unique_ptr<WebRTCCertificate> RTCCertificate::certificateShallowCopy() const
+{
+    return m_certificate->shallowCopy();
+}
 
-    // RTCVoidRequest
-    void requestSucceeded() override;
-    void requestFailed(const String& error) override;
-
-    // ActiveDOMObject
-    void stop() override;
-
-    DECLARE_VIRTUAL_TRACE();
-
-private:
-    RTCVoidRequestImpl(ExecutionContext*, RTCPeerConnection*, VoidCallback*, RTCPeerConnectionErrorCallback*);
-
-    void clear();
-
-    Member<VoidCallback> m_successCallback;
-    Member<RTCPeerConnectionErrorCallback> m_errorCallback;
-    Member<RTCPeerConnection> m_requester;
-};
+DOMTimeStamp RTCCertificate::expires() const
+{
+    return static_cast<DOMTimeStamp>(m_certificate->expires());
+}
 
 } // namespace blink
-
-#endif // RTCVoidRequestImpl_h

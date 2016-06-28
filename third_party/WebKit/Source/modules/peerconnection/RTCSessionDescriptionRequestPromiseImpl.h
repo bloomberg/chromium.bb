@@ -5,7 +5,7 @@
 #ifndef RTCSessionDescriptionRequestPromiseImpl_h
 #define RTCSessionDescriptionRequestPromiseImpl_h
 
-#include "platform/mediastream/RTCSessionDescriptionRequest.h"
+#include "platform/peerconnection/RTCSessionDescriptionRequest.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {

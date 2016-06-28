@@ -4,7 +4,7 @@
 
 #include "public/platform/WebRTCAnswerOptions.h"
 
-#include "platform/mediastream/RTCAnswerOptionsPlatform.h"
+#include "platform/peerconnection/RTCAnswerOptionsPlatform.h"
 
 namespace blink {
 

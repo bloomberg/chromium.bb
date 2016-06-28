@@ -22,36 +22,49 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef RTCDataChannelEvent_h
-#define RTCDataChannelEvent_h
-
-#include "modules/EventModules.h"
-#include "modules/mediastream/RTCDataChannel.h"
-#include "wtf/text/AtomicString.h"
+#include "modules/peerconnection/RTCDataChannelEvent.h"
 
 namespace blink {
 
-class RTCDataChannelEvent final : public Event {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    ~RTCDataChannelEvent() override;
+RTCDataChannelEvent* RTCDataChannelEvent::create()
+{
+    return new RTCDataChannelEvent;
+}
 
-    static RTCDataChannelEvent* create();
-    static RTCDataChannelEvent* create(const AtomicString& type, bool canBubble, bool cancelable, RTCDataChannel*);
+RTCDataChannelEvent* RTCDataChannelEvent::create(const AtomicString& type, bool canBubble, bool cancelable, RTCDataChannel* channel)
+{
+    return new RTCDataChannelEvent(type, canBubble, cancelable, channel);
+}
 
-    RTCDataChannel* channel() const;
 
-    const AtomicString& interfaceName() const override;
+RTCDataChannelEvent::RTCDataChannelEvent()
+{
+}
 
-    DECLARE_VIRTUAL_TRACE();
+RTCDataChannelEvent::RTCDataChannelEvent(const AtomicString& type, bool canBubble, bool cancelable, RTCDataChannel* channel)
+    : Event(type, canBubble, cancelable)
+    , m_channel(channel)
+{
+}
 
-private:
-    RTCDataChannelEvent();
-    RTCDataChannelEvent(const AtomicString& type, bool canBubble, bool cancelable, RTCDataChannel*);
+RTCDataChannelEvent::~RTCDataChannelEvent()
+{
+}
 
-    Member<RTCDataChannel> m_channel;
-};
+RTCDataChannel* RTCDataChannelEvent::channel() const
+{
+    return m_channel.get();
+}
+
+const AtomicString& RTCDataChannelEvent::interfaceName() const
+{
+    return EventNames::RTCDataChannelEvent;
+}
+
+DEFINE_TRACE(RTCDataChannelEvent)
+{
+    visitor->trace(m_channel);
+    Event::trace(visitor);
+}
 
 } // namespace blink
-
-#endif // RTCDataChannelEvent_h

@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/mediastream/RTCSessionDescriptionRequestPromiseImpl.h"
+#include "modules/peerconnection/RTCSessionDescriptionRequestPromiseImpl.h"
 
 #include "bindings/core/v8/ScriptPromiseResolver.h"
 #include "core/dom/DOMException.h"
 #include "core/dom/ExceptionCode.h"
-#include "modules/mediastream/RTCPeerConnection.h"
-#include "modules/mediastream/RTCSessionDescription.h"
+#include "modules/peerconnection/RTCPeerConnection.h"
+#include "modules/peerconnection/RTCSessionDescription.h"
 #include "public/platform/WebRTCSessionDescription.h"
 
 namespace blink {

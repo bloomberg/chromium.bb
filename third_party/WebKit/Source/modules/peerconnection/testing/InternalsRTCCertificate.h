@@ -5,7 +5,7 @@
 #ifndef InternalsRTCCertificate_h
 #define InternalsRTCCertificate_h
 
-#include "modules/mediastream/RTCCertificate.h"
+#include "modules/peerconnection/RTCCertificate.h"
 #include "wtf/Allocator.h"
 
 namespace blink {

@@ -27,7 +27,7 @@
 #define RTCDTMFToneChangeEvent_h
 
 #include "modules/EventModules.h"
-#include "modules/mediastream/RTCDTMFToneChangeEventInit.h"
+#include "modules/peerconnection/RTCDTMFToneChangeEventInit.h"
 #include "wtf/text/AtomicString.h"
 
 namespace blink {

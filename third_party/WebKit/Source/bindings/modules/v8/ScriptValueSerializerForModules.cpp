@@ -10,7 +10,7 @@
 #include "bindings/modules/v8/V8DOMFileSystem.h"
 #include "bindings/modules/v8/V8RTCCertificate.h"
 #include "modules/filesystem/DOMFileSystem.h"
-#include "modules/mediastream/RTCCertificate.h"
+#include "modules/peerconnection/RTCCertificate.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebRTCCertificate.h"
 #include "public/platform/WebRTCCertificateGenerator.h"

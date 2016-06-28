@@ -22,43 +22,49 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "modules/mediastream/RTCStatsResponse.h"
+#ifndef RTCStatsRequestImpl_h
+#define RTCStatsRequestImpl_h
+
+#include "core/dom/ActiveDOMObject.h"
+#include "modules/peerconnection/RTCStatsResponse.h"
+#include "platform/heap/Handle.h"
+#include "platform/peerconnection/RTCStatsRequest.h"
+#include "wtf/Forward.h"
+#include "wtf/text/WTFString.h"
 
 namespace blink {
 
-RTCStatsResponse* RTCStatsResponse::create()
-{
-    return new RTCStatsResponse();
-}
+class MediaStreamTrack;
+class RTCPeerConnection;
+class RTCStatsCallback;
 
-RTCStatsResponse::RTCStatsResponse()
-{
-}
+class RTCStatsRequestImpl final : public RTCStatsRequest, public ActiveDOMObject {
+    USING_GARBAGE_COLLECTED_MIXIN(RTCStatsRequestImpl);
+public:
+    static RTCStatsRequestImpl* create(ExecutionContext*, RTCPeerConnection*, RTCStatsCallback*, MediaStreamTrack*);
+    ~RTCStatsRequestImpl() override;
 
-RTCStatsReport* RTCStatsResponse::namedItem(const AtomicString& name)
-{
-    if (m_idmap.find(name) != m_idmap.end())
-        return m_result[m_idmap.get(name)];
-    return nullptr;
-}
+    RTCStatsResponseBase* createResponse() override;
+    bool hasSelector() override;
+    MediaStreamComponent* component() override;
 
-size_t RTCStatsResponse::addReport(const String& id, const String& type, double timestamp)
-{
-    m_result.append(RTCStatsReport::create(id, type, timestamp));
-    m_idmap.add(id, m_result.size() - 1);
-    return m_result.size() - 1;
-}
+    void requestSucceeded(RTCStatsResponseBase*) override;
 
-void RTCStatsResponse::addStatistic(size_t report, const String& name, const String& value)
-{
-    SECURITY_DCHECK(report >= 0 && report < m_result.size());
-    m_result[report]->addStatistic(name, value);
-}
+    // ActiveDOMObject
+    void stop() override;
 
-DEFINE_TRACE(RTCStatsResponse)
-{
-    visitor->trace(m_result);
-    RTCStatsResponseBase::trace(visitor);
-}
+    DECLARE_VIRTUAL_TRACE();
+
+private:
+    RTCStatsRequestImpl(ExecutionContext*, RTCPeerConnection*, RTCStatsCallback*, MediaStreamTrack*);
+
+    void clear();
+
+    Member<RTCStatsCallback> m_successCallback;
+    Member<MediaStreamComponent> m_component;
+    Member<RTCPeerConnection> m_requester;
+};
 
 } // namespace blink
+
+#endif // RTCStatsRequestImpl_h

@@ -22,49 +22,51 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "modules/mediastream/RTCDataChannelEvent.h"
+#include "modules/peerconnection/RTCIceCandidateEvent.h"
+
+#include "modules/peerconnection/RTCIceCandidate.h"
 
 namespace blink {
 
-RTCDataChannelEvent* RTCDataChannelEvent::create()
+RTCIceCandidateEvent* RTCIceCandidateEvent::create()
 {
-    return new RTCDataChannelEvent;
+    return new RTCIceCandidateEvent;
 }
 
-RTCDataChannelEvent* RTCDataChannelEvent::create(const AtomicString& type, bool canBubble, bool cancelable, RTCDataChannel* channel)
+RTCIceCandidateEvent* RTCIceCandidateEvent::create(bool canBubble, bool cancelable, RTCIceCandidate* candidate)
 {
-    return new RTCDataChannelEvent(type, canBubble, cancelable, channel);
+    return new RTCIceCandidateEvent(canBubble, cancelable, candidate);
 }
 
-
-RTCDataChannelEvent::RTCDataChannelEvent()
-{
-}
-
-RTCDataChannelEvent::RTCDataChannelEvent(const AtomicString& type, bool canBubble, bool cancelable, RTCDataChannel* channel)
-    : Event(type, canBubble, cancelable)
-    , m_channel(channel)
+RTCIceCandidateEvent::RTCIceCandidateEvent()
 {
 }
 
-RTCDataChannelEvent::~RTCDataChannelEvent()
+RTCIceCandidateEvent::RTCIceCandidateEvent(bool canBubble, bool cancelable, RTCIceCandidate* candidate)
+    : Event(EventTypeNames::icecandidate, canBubble, cancelable)
+    , m_candidate(candidate)
 {
 }
 
-RTCDataChannel* RTCDataChannelEvent::channel() const
+RTCIceCandidateEvent::~RTCIceCandidateEvent()
 {
-    return m_channel.get();
 }
 
-const AtomicString& RTCDataChannelEvent::interfaceName() const
+RTCIceCandidate* RTCIceCandidateEvent::candidate() const
 {
-    return EventNames::RTCDataChannelEvent;
+    return m_candidate.get();
 }
 
-DEFINE_TRACE(RTCDataChannelEvent)
+const AtomicString& RTCIceCandidateEvent::interfaceName() const
 {
-    visitor->trace(m_channel);
+    return EventNames::RTCIceCandidateEvent;
+}
+
+DEFINE_TRACE(RTCIceCandidateEvent)
+{
+    visitor->trace(m_candidate);
     Event::trace(visitor);
 }
 
 } // namespace blink
+

@@ -6,7 +6,7 @@
 #define ScriptValueSerializerForModules_h
 
 #include "bindings/core/v8/ScriptValueSerializer.h"
-#include "modules/mediastream/RTCCertificate.h"
+#include "modules/peerconnection/RTCCertificate.h"
 #include "public/platform/WebCrypto.h"
 #include "public/platform/WebCryptoKey.h"
 #include "public/platform/WebCryptoKeyAlgorithm.h"

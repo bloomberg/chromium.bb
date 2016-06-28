@@ -33,7 +33,7 @@
 
 #include "core/dom/ActiveDOMObject.h"
 #include "platform/heap/Handle.h"
-#include "platform/mediastream/RTCSessionDescriptionRequest.h"
+#include "platform/peerconnection/RTCSessionDescriptionRequest.h"
 #include "wtf/PassRefPtr.h"
 
 namespace blink {

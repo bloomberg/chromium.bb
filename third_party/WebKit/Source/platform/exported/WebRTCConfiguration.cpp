@@ -30,7 +30,7 @@
 
 #include "public/platform/WebRTCConfiguration.h"
 
-#include "platform/mediastream/RTCConfiguration.h"
+#include "platform/peerconnection/RTCConfiguration.h"
 #include "public/platform/WebString.h"
 #include "public/platform/WebURL.h"
 

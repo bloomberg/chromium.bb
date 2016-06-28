@@ -1,4 +1,3 @@
-
 /*
  * Copyright (C) 2012 Google Inc. All rights reserved.
  *
@@ -23,34 +22,36 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "modules/mediastream/RTCStatsReport.h"
+#ifndef RTCDataChannelEvent_h
+#define RTCDataChannelEvent_h
+
+#include "modules/EventModules.h"
+#include "modules/peerconnection/RTCDataChannel.h"
+#include "wtf/text/AtomicString.h"
 
 namespace blink {
 
-RTCStatsReport* RTCStatsReport::create(const String& id, const String& type, double timestamp)
-{
-    return new RTCStatsReport(id, type, timestamp);
-}
+class RTCDataChannelEvent final : public Event {
+    DEFINE_WRAPPERTYPEINFO();
+public:
+    ~RTCDataChannelEvent() override;
 
-RTCStatsReport::RTCStatsReport(const String& id, const String& type, double timestamp)
-    : m_id(id)
-    , m_type(type)
-    , m_timestamp(timestamp)
-{
-}
+    static RTCDataChannelEvent* create();
+    static RTCDataChannelEvent* create(const AtomicString& type, bool canBubble, bool cancelable, RTCDataChannel*);
 
-Vector<String> RTCStatsReport::names() const
-{
-    Vector<String> result;
-    for (HashMap<String, String>::const_iterator it = m_stats.begin(); it != m_stats.end(); ++it) {
-        result.append(it->key);
-    }
-    return result;
-}
+    RTCDataChannel* channel() const;
 
-void RTCStatsReport::addStatistic(const String& name, const String& value)
-{
-    m_stats.add(name, value);
-}
+    const AtomicString& interfaceName() const override;
+
+    DECLARE_VIRTUAL_TRACE();
+
+private:
+    RTCDataChannelEvent();
+    RTCDataChannelEvent(const AtomicString& type, bool canBubble, bool cancelable, RTCDataChannel*);
+
+    Member<RTCDataChannel> m_channel;
+};
 
 } // namespace blink
+
+#endif // RTCDataChannelEvent_h
