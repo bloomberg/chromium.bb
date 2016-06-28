@@ -3,12 +3,12 @@ layer at (0,0) size 800x600 scrollWidth 983
 layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x584
-      LayoutTable {TABLE} at (0,0) size 975x153 [border: (2px solid #0000FF)]
-        LayoutTableSection {TBODY} at (2,2) size 971x149
-          LayoutTableRow {TR} at (0,2) size 971x145
-            LayoutTableCell {TD} at (2,2) size 233x145 [border: (1px solid #C0C0C0)] [r=0 c=0 rs=1 cs=1]
-              LayoutTable {TABLE} at (2,2) size 229x141 [border: (2px solid #008000)]
-                LayoutTableSection {TBODY} at (2,2) size 225x137
+      LayoutTable {TABLE} at (0,0) size 975x148 [border: (2px solid #0000FF)]
+        LayoutTableSection {TBODY} at (2,2) size 971x144
+          LayoutTableRow {TR} at (0,2) size 971x140
+            LayoutTableCell {TD} at (2,2) size 233x140 [border: (1px solid #C0C0C0)] [r=0 c=0 rs=1 cs=1]
+              LayoutTable {TABLE} at (2,2) size 229x136 [border: (2px solid #008000)]
+                LayoutTableSection {TBODY} at (2,2) size 225x132
                   LayoutTableRow {TR} at (0,2) size 225x90
                     LayoutTableCell {TD} at (2,2) size 221x90 [border: (1px solid #C0C0C0)] [r=0 c=0 rs=1 cs=1]
                       LayoutTable {TABLE} at (2,2) size 166x34 [border: (2px solid #FF0000)]
@@ -24,14 +24,14 @@ layer at (0,0) size 800x600
                               LayoutText {#text} at (2,2) size 187x39
                                 text run at (2,2) width 187: "THIS TABLE NEEDS TO BE"
                                 text run at (2,22) width 39: "HERE"
-                  LayoutTableRow {TR} at (0,94) size 225x41
-                    LayoutTableCell {TD} at (2,94) size 221x41 [border: (1px solid #C0C0C0)] [r=1 c=0 rs=1 cs=1]
-                      LayoutTable {TABLE} at (2,2) size 217x37 [border: (2px solid #FF0000)]
-                        LayoutTableSection {TBODY} at (2,2) size 213x33
-                          LayoutTableRow {TR} at (0,2) size 213x29
-                            LayoutTableCell {TD} at (2,2) size 209x29 [border: (1px solid #C0C0C0)] [r=0 c=0 rs=1 cs=1]
-                              LayoutMenuList {SELECT} at (2,2) size 205x25.33 [bgcolor=#C0C0C0] [border: (1px solid #A9A9A9)]
-                                LayoutBlockFlow (anonymous) at (1,3.66) size 203x18
+                  LayoutTableRow {TR} at (0,94) size 225x36
+                    LayoutTableCell {TD} at (2,94) size 221x36 [border: (1px solid #C0C0C0)] [r=1 c=0 rs=1 cs=1]
+                      LayoutTable {TABLE} at (2,2) size 217x32 [border: (2px solid #FF0000)]
+                        LayoutTableSection {TBODY} at (2,2) size 213x28
+                          LayoutTableRow {TR} at (0,2) size 213x24
+                            LayoutTableCell {TD} at (2,2) size 209x24 [border: (1px solid #C0C0C0)] [r=0 c=0 rs=1 cs=1]
+                              LayoutMenuList {SELECT} at (2,2) size 205x20 [bgcolor=#C0C0C0] [border: (1px solid #A9A9A9)]
+                                LayoutBlockFlow (anonymous) at (1,1) size 203x18
                                   LayoutText (anonymous) at (4,1) size 181x16
                                     text run at (4,1) width 181: "USE THIS JAVASCRIPT HERE"
                               LayoutText {#text} at (0,0) size 0x0

@@ -7,9 +7,9 @@ layer at (0,0) size 800x600
         LayoutText {#text} at (0,0) size 362x26
           text run at (0,0) width 362: "SeaMonkey XPInstall Trigger Page"
       LayoutBlockFlow {HR} at (0,46.91) size 784x2 [border: (1px inset #EEEEEE)]
-      LayoutBlockFlow {FORM} at (0,56.91) size 784x60
-        LayoutTable {TABLE} at (0,0) size 629x60
-          LayoutTableSection {TBODY} at (0,0) size 629x60
+      LayoutBlockFlow {FORM} at (0,56.91) size 784x54
+        LayoutTable {TABLE} at (0,0) size 629x54
+          LayoutTableSection {TBODY} at (0,0) size 629x54
             LayoutTableRow {TR} at (0,2) size 629x24
               LayoutTableCell {TD} at (2,3) size 106x22 [r=0 c=0 rs=1 cs=1]
                 LayoutInline {B} at (0,0) size 91x19
@@ -22,18 +22,18 @@ layer at (0,0) size 800x600
                   LayoutBlockFlow (anonymous) at (8,3) size 38.52x16
                     LayoutText {#text} at (0,0) size 39x16
                       text run at (0,0) width 39: "Trigger"
-            LayoutTableRow {TR} at (0,28) size 629x30
-              LayoutTableCell {TD} at (2,32) size 106x22 [r=1 c=0 rs=1 cs=1]
+            LayoutTableRow {TR} at (0,28) size 629x24
+              LayoutTableCell {TD} at (2,29) size 106x22 [r=1 c=0 rs=1 cs=1]
                 LayoutInline {B} at (0,0) size 104x19
                   LayoutText {#text} at (1,1) size 104x19
                     text run at (1,1) width 104: "Run Test Case:"
-              LayoutTableCell {TD} at (110,28) size 426x30 [r=1 c=1 rs=1 cs=1]
-                LayoutMenuList {SELECT} at (1,1) size 269x28.33 [bgcolor=#C0C0C0] [border: (1px solid #A9A9A9)]
-                  LayoutBlockFlow (anonymous) at (1,5.16) size 267x18
+              LayoutTableCell {TD} at (110,29) size 426x22 [r=1 c=1 rs=1 cs=1]
+                LayoutMenuList {SELECT} at (1,1) size 269x20 [bgcolor=#C0C0C0] [border: (1px solid #A9A9A9)]
+                  LayoutBlockFlow (anonymous) at (1,1) size 267x18
                     LayoutText (anonymous) at (4,1) size 77x16
                       text run at (4,1) width 77: "a_abortinstall"
                 LayoutText {#text} at (0,0) size 0x0
-              LayoutTableCell {TD} at (538,31) size 89x24 [r=1 c=2 rs=1 cs=1]
+              LayoutTableCell {TD} at (538,28) size 89x24 [r=1 c=2 rs=1 cs=1]
                 LayoutButton {INPUT} at (1,1) size 86.52x22 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
                   LayoutBlockFlow (anonymous) at (8,3) size 70.52x16
                     LayoutText {#text} at (0,0) size 71x16

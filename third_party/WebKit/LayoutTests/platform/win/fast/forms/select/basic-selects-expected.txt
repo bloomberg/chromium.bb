@@ -1,174 +1,174 @@
 layer at (0,0) size 800x600
   LayoutView at (0,0) size 800x600
-layer at (0,0) size 800x598
-  LayoutBlockFlow {HTML} at (0,0) size 800x598
-    LayoutBlockFlow {BODY} at (8,8) size 784x582
-      LayoutBlockFlow {DIV} at (0,0) size 784x582 [border: (1px solid #FF0000)]
-        LayoutText {#text} at (1,4) size 169x17
-          text run at (1,4) width 169: "Whitespace in option text:"
-        LayoutMenuList {SELECT} at (169.39,1) size 49x25.33 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
-          LayoutBlockFlow (anonymous) at (1,3.66) size 47x18
+layer at (0,0) size 800x536
+  LayoutBlockFlow {HTML} at (0,0) size 800x536
+    LayoutBlockFlow {BODY} at (8,8) size 784x520
+      LayoutBlockFlow {DIV} at (0,0) size 784x520 [border: (1px solid #FF0000)]
+        LayoutText {#text} at (1,2) size 169x17
+          text run at (1,2) width 169: "Whitespace in option text:"
+        LayoutMenuList {SELECT} at (169.39,1) size 49x20 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
+          LayoutBlockFlow (anonymous) at (1,1) size 47x18
             LayoutText (anonymous) at (4,1) size 25x16
               text run at (4,1) width 25: "f o o"
-        LayoutText {#text} at (218,4) size 8x17
-          text run at (218,4) width 8: "a"
-        LayoutMenuList {SELECT} at (225.48,1) size 49x25.33 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
-          LayoutBlockFlow (anonymous) at (1,3.66) size 47x18
+        LayoutText {#text} at (218,2) size 8x17
+          text run at (218,2) width 8: "a"
+        LayoutMenuList {SELECT} at (225.48,1) size 49x20 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
+          LayoutBlockFlow (anonymous) at (1,1) size 47x18
             LayoutText (anonymous) at (4,1) size 4x16
               text run at (4,1) width 4: " "
-        LayoutText {#text} at (274,4) size 9x17
-          text run at (274,4) width 9: "b"
-        LayoutBR {BR} at (282,4) size 1x17
-        LayoutBR {BR} at (1,25) size 0x17
-        LayoutText {#text} at (1,45) size 140x17
-          text run at (1,45) width 140: "Simple select control:"
-        LayoutMenuList {SELECT} at (140.52,42) size 42x25.33 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
-          LayoutBlockFlow (anonymous) at (1,3.66) size 40x18
-            LayoutText (anonymous) at (4,1) size 17x16
-              text run at (4,1) width 17: "foo"
-        LayoutText {#text} at (182,45) size 8x17
-          text run at (182,45) width 8: "a"
-        LayoutMenuList {SELECT} at (189.61,42) size 42x25.33 [color=#808080] [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
-          LayoutBlockFlow (anonymous) at (1,3.66) size 40x18
-            LayoutText (anonymous) at (4,1) size 17x16
-              text run at (4,1) width 17: "foo"
-        LayoutText {#text} at (231,45) size 9x17
-          text run at (231,45) width 9: "b"
-        LayoutBR {BR} at (239,45) size 1x17
-        LayoutBR {BR} at (1,66) size 0x17
-        LayoutText {#text} at (1,86) size 198x17
-          text run at (1,86) width 198: "Line-height should be ignored:"
-        LayoutMenuList {SELECT} at (198.73,83) size 41x25.33 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
-          LayoutBlockFlow (anonymous) at (1,3.66) size 39x18
-            LayoutText (anonymous) at (4,1) size 17x16
-              text run at (4,1) width 17: "foo"
-        LayoutText {#text} at (239,86) size 8x17
-          text run at (239,86) width 8: "a"
-        LayoutMenuList {SELECT} at (246.83,83) size 42x25.33 [color=#808080] [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
-          LayoutBlockFlow (anonymous) at (1,3.66) size 40x18
-            LayoutText (anonymous) at (4,1) size 18x16
-              text run at (4,1) width 18: "bar"
-        LayoutText {#text} at (288,86) size 9x17
-          text run at (288,86) width 9: "b"
-        LayoutBR {BR} at (296,86) size 1x17
-        LayoutBR {BR} at (1,107) size 0x17
-        LayoutText {#text} at (1,131) size 441x17
-          text run at (1,131) width 441: "Padding should be respected, the arrow button shouldn't change size:"
-        LayoutMenuList {SELECT} at (442,124) size 49x33.33 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
-          LayoutBlockFlow (anonymous) at (5,7.66) size 39x18
-            LayoutText (anonymous) at (4,1) size 17x16
-              text run at (4,1) width 17: "foo"
-        LayoutText {#text} at (491,131) size 8x17
-          text run at (491,131) width 8: "a"
-        LayoutMenuList {SELECT} at (498.09,124) size 49x33.33 [color=#808080] [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
-          LayoutBlockFlow (anonymous) at (5,7.66) size 39x18
-            LayoutText (anonymous) at (4,1) size 17x16
-              text run at (4,1) width 17: "foo"
-        LayoutText {#text} at (547,131) size 9x17
-          text run at (547,131) width 9: "b"
-        LayoutBR {BR} at (555,131) size 1x17
-        LayoutBR {BR} at (1,156) size 0x17
-        LayoutText {#text} at (1,183) size 180x17
-          text run at (1,183) width 180: "Border should be respected:"
-        LayoutMenuList {SELECT} at (180.05,173) size 55x39.33 [bgcolor=#FFFFFF] [border: (8px solid #33CCFF)]
-          LayoutBlockFlow (anonymous) at (8,10.66) size 39x18
-            LayoutText (anonymous) at (4,1) size 17x16
-              text run at (4,1) width 17: "foo"
-        LayoutText {#text} at (235,183) size 8x17
-          text run at (235,183) width 8: "a"
-        LayoutMenuList {SELECT} at (242.14,173) size 55x39.33 [color=#808080] [bgcolor=#FFFFFF] [border: (8px solid #33CCFF)]
-          LayoutBlockFlow (anonymous) at (8,10.66) size 39x18
-            LayoutText (anonymous) at (4,1) size 17x16
-              text run at (4,1) width 17: "foo"
-        LayoutText {#text} at (297,183) size 9x17
-          text run at (297,183) width 9: "b"
-        LayoutBR {BR} at (305,183) size 1x17
-        LayoutBR {BR} at (1,211) size 0x17
-        LayoutText {#text} at (1,239) size 118x17
-          text run at (1,239) width 118: "Border + padding:"
-        LayoutMenuList {SELECT} at (118.44,228) size 57x41.33 [bgcolor=#FFFFFF] [border: (4px solid #33CCFF)]
-          LayoutBlockFlow (anonymous) at (9,11.66) size 39x18
-            LayoutText (anonymous) at (4,1) size 17x16
-              text run at (4,1) width 17: "foo"
-        LayoutText {#text} at (175,239) size 8x17
-          text run at (175,239) width 8: "a"
-        LayoutMenuList {SELECT} at (182.53,228) size 57x41.33 [color=#808080] [bgcolor=#FFFFFF] [border: (4px solid #33CCFF)]
-          LayoutBlockFlow (anonymous) at (9,11.66) size 39x18
-            LayoutText (anonymous) at (4,1) size 17x16
-              text run at (4,1) width 17: "foo"
-        LayoutText {#text} at (239,239) size 9x17
-          text run at (239,239) width 9: "b"
-        LayoutBR {BR} at (247,239) size 1x17
-        LayoutBR {BR} at (1,268) size 0x17
-        LayoutText {#text} at (1,291) size 491x17
-          text run at (1,291) width 491: "Height larger than font-size, button should grow, text baseline should center:"
-        LayoutMenuList {SELECT} at (491.09,285) size 41x30 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
-          LayoutBlockFlow (anonymous) at (1,6) size 39x18
-            LayoutText (anonymous) at (4,1) size 17x16
-              text run at (4,1) width 17: "foo"
-        LayoutText {#text} at (532,291) size 8x17
-          text run at (532,291) width 8: "a"
-        LayoutMenuList {SELECT} at (539.19,285) size 41x30 [color=#808080] [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
-          LayoutBlockFlow (anonymous) at (1,6) size 39x18
-            LayoutText (anonymous) at (4,1) size 4x16
-              text run at (4,1) width 4: " "
-        LayoutText {#text} at (580,291) size 9x17
-          text run at (580,291) width 9: "b"
-        LayoutBR {BR} at (588,291) size 1x17
-        LayoutBR {BR} at (1,314) size 0x17
-        LayoutText {#text} at (1,332) size 498x17
-          text run at (1,332) width 498: "Height smaller than font-size, whole select shrinks but baseline is unchanged:"
-        LayoutMenuList {SELECT} at (498.20,331) size 42x3 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
+        LayoutText {#text} at (274,2) size 9x17
+          text run at (274,2) width 9: "b"
+        LayoutBR {BR} at (282,2) size 1x17
+        LayoutBR {BR} at (1,20) size 0x17
+        LayoutText {#text} at (1,38) size 140x17
+          text run at (1,38) width 140: "Simple select control:"
+        LayoutMenuList {SELECT} at (140.52,37) size 42x20 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
           LayoutBlockFlow (anonymous) at (1,1) size 40x18
             LayoutText (anonymous) at (4,1) size 17x16
               text run at (4,1) width 17: "foo"
-        LayoutText {#text} at (540,332) size 8x17
-          text run at (540,332) width 8: "a"
-        LayoutMenuList {SELECT} at (547.30,331) size 42x3 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
+        LayoutText {#text} at (182,38) size 8x17
+          text run at (182,38) width 8: "a"
+        LayoutMenuList {SELECT} at (189.61,37) size 42x20 [color=#808080] [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
+          LayoutBlockFlow (anonymous) at (1,1) size 40x18
+            LayoutText (anonymous) at (4,1) size 17x16
+              text run at (4,1) width 17: "foo"
+        LayoutText {#text} at (231,38) size 9x17
+          text run at (231,38) width 9: "b"
+        LayoutBR {BR} at (239,38) size 1x17
+        LayoutBR {BR} at (1,56) size 0x17
+        LayoutText {#text} at (1,74) size 198x17
+          text run at (1,74) width 198: "Line-height should be ignored:"
+        LayoutMenuList {SELECT} at (198.73,73) size 41x20 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
+          LayoutBlockFlow (anonymous) at (1,1) size 39x18
+            LayoutText (anonymous) at (4,1) size 17x16
+              text run at (4,1) width 17: "foo"
+        LayoutText {#text} at (239,74) size 8x17
+          text run at (239,74) width 8: "a"
+        LayoutMenuList {SELECT} at (246.83,73) size 42x20 [color=#808080] [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
           LayoutBlockFlow (anonymous) at (1,1) size 40x18
             LayoutText (anonymous) at (4,1) size 18x16
               text run at (4,1) width 18: "bar"
-        LayoutText {#text} at (589,332) size 9x17
-          text run at (589,332) width 9: "b"
-        LayoutBR {BR} at (597,332) size 1x17
-        LayoutBR {BR} at (1,348) size 0x17
-        LayoutText {#text} at (1,364) size 173x17
-          text run at (1,364) width 173: "select control with size=0: "
-        LayoutBR {BR} at (173,364) size 1x17
-        LayoutMenuList {SELECT} at (1,381) size 203x28.33 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
-          LayoutBlockFlow (anonymous) at (1,5.16) size 201x18
+        LayoutText {#text} at (288,74) size 9x17
+          text run at (288,74) width 9: "b"
+        LayoutBR {BR} at (296,74) size 1x17
+        LayoutBR {BR} at (1,92) size 0x17
+        LayoutText {#text} at (1,114) size 441x17
+          text run at (1,114) width 441: "Padding should be respected, the arrow button shouldn't change size:"
+        LayoutMenuList {SELECT} at (442,109) size 49x28 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
+          LayoutBlockFlow (anonymous) at (5,5) size 39x18
+            LayoutText (anonymous) at (4,1) size 17x16
+              text run at (4,1) width 17: "foo"
+        LayoutText {#text} at (491,114) size 8x17
+          text run at (491,114) width 8: "a"
+        LayoutMenuList {SELECT} at (498.09,109) size 49x28 [color=#808080] [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
+          LayoutBlockFlow (anonymous) at (5,5) size 39x18
+            LayoutText (anonymous) at (4,1) size 17x16
+              text run at (4,1) width 17: "foo"
+        LayoutText {#text} at (547,114) size 9x17
+          text run at (547,114) width 9: "b"
+        LayoutBR {BR} at (555,114) size 1x17
+        LayoutBR {BR} at (1,136) size 0x17
+        LayoutText {#text} at (1,161) size 180x17
+          text run at (1,161) width 180: "Border should be respected:"
+        LayoutMenuList {SELECT} at (180.05,153) size 55x34 [bgcolor=#FFFFFF] [border: (8px solid #33CCFF)]
+          LayoutBlockFlow (anonymous) at (8,8) size 39x18
+            LayoutText (anonymous) at (4,1) size 17x16
+              text run at (4,1) width 17: "foo"
+        LayoutText {#text} at (235,161) size 8x17
+          text run at (235,161) width 8: "a"
+        LayoutMenuList {SELECT} at (242.14,153) size 55x34 [color=#808080] [bgcolor=#FFFFFF] [border: (8px solid #33CCFF)]
+          LayoutBlockFlow (anonymous) at (8,8) size 39x18
+            LayoutText (anonymous) at (4,1) size 17x16
+              text run at (4,1) width 17: "foo"
+        LayoutText {#text} at (297,161) size 9x17
+          text run at (297,161) width 9: "b"
+        LayoutBR {BR} at (305,161) size 1x17
+        LayoutBR {BR} at (1,186) size 0x17
+        LayoutText {#text} at (1,212) size 118x17
+          text run at (1,212) width 118: "Border + padding:"
+        LayoutMenuList {SELECT} at (118.44,203) size 57x36 [bgcolor=#FFFFFF] [border: (4px solid #33CCFF)]
+          LayoutBlockFlow (anonymous) at (9,9) size 39x18
+            LayoutText (anonymous) at (4,1) size 17x16
+              text run at (4,1) width 17: "foo"
+        LayoutText {#text} at (175,212) size 8x17
+          text run at (175,212) width 8: "a"
+        LayoutMenuList {SELECT} at (182.53,203) size 57x36 [color=#808080] [bgcolor=#FFFFFF] [border: (4px solid #33CCFF)]
+          LayoutBlockFlow (anonymous) at (9,9) size 39x18
+            LayoutText (anonymous) at (4,1) size 17x16
+              text run at (4,1) width 17: "foo"
+        LayoutText {#text} at (239,212) size 9x17
+          text run at (239,212) width 9: "b"
+        LayoutBR {BR} at (247,212) size 1x17
+        LayoutBR {BR} at (1,238) size 0x17
+        LayoutText {#text} at (1,261) size 491x17
+          text run at (1,261) width 491: "Height larger than font-size, button should grow, text baseline should center:"
+        LayoutMenuList {SELECT} at (491.09,255) size 41x30 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
+          LayoutBlockFlow (anonymous) at (1,6) size 39x18
+            LayoutText (anonymous) at (4,1) size 17x16
+              text run at (4,1) width 17: "foo"
+        LayoutText {#text} at (532,261) size 8x17
+          text run at (532,261) width 8: "a"
+        LayoutMenuList {SELECT} at (539.19,255) size 41x30 [color=#808080] [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
+          LayoutBlockFlow (anonymous) at (1,6) size 39x18
+            LayoutText (anonymous) at (4,1) size 4x16
+              text run at (4,1) width 4: " "
+        LayoutText {#text} at (580,261) size 9x17
+          text run at (580,261) width 9: "b"
+        LayoutBR {BR} at (588,261) size 1x17
+        LayoutBR {BR} at (1,284) size 0x17
+        LayoutText {#text} at (1,302) size 498x17
+          text run at (1,302) width 498: "Height smaller than font-size, whole select shrinks but baseline is unchanged:"
+        LayoutMenuList {SELECT} at (498.20,301) size 42x3 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
+          LayoutBlockFlow (anonymous) at (1,1) size 40x18
+            LayoutText (anonymous) at (4,1) size 17x16
+              text run at (4,1) width 17: "foo"
+        LayoutText {#text} at (540,302) size 8x17
+          text run at (540,302) width 8: "a"
+        LayoutMenuList {SELECT} at (547.30,301) size 42x3 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
+          LayoutBlockFlow (anonymous) at (1,1) size 40x18
+            LayoutText (anonymous) at (4,1) size 18x16
+              text run at (4,1) width 18: "bar"
+        LayoutText {#text} at (589,302) size 9x17
+          text run at (589,302) width 9: "b"
+        LayoutBR {BR} at (597,302) size 1x17
+        LayoutBR {BR} at (1,318) size 0x17
+        LayoutText {#text} at (1,334) size 173x17
+          text run at (1,334) width 173: "select control with size=0: "
+        LayoutBR {BR} at (173,334) size 1x17
+        LayoutMenuList {SELECT} at (1,351) size 203x20 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
+          LayoutBlockFlow (anonymous) at (1,1) size 201x18
             LayoutText (anonymous) at (4,1) size 78x16
               text run at (4,1) width 78: "Future Series"
-        LayoutText {#text} at (204,386) size 4x17
-          text run at (204,386) width 4: " "
+        LayoutText {#text} at (204,352) size 4x17
+          text run at (204,352) width 4: " "
         LayoutBR {BR} at (0,0) size 0x0
-        LayoutText {#text} at (1,408) size 173x17
-          text run at (1,408) width 173: "select control with size=1: "
-        LayoutBR {BR} at (173,408) size 1x17
-        LayoutMenuList {SELECT} at (1,425) size 203x28.33 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
-          LayoutBlockFlow (anonymous) at (1,5.16) size 201x18
+        LayoutText {#text} at (1,370) size 173x17
+          text run at (1,370) width 173: "select control with size=1: "
+        LayoutBR {BR} at (173,370) size 1x17
+        LayoutMenuList {SELECT} at (1,387) size 203x20 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
+          LayoutBlockFlow (anonymous) at (1,1) size 201x18
             LayoutText (anonymous) at (4,1) size 78x16
               text run at (4,1) width 78: "Future Series"
-        LayoutText {#text} at (204,430) size 4x17
-          text run at (204,430) width 4: " "
+        LayoutText {#text} at (204,388) size 4x17
+          text run at (204,388) width 4: " "
         LayoutBR {BR} at (0,0) size 0x0
-        LayoutText {#text} at (1,452) size 170x17
-          text run at (1,452) width 170: "Non-styled select control: "
-        LayoutBR {BR} at (170,452) size 1x17
-        LayoutMenuList {SELECT} at (1,469) size 223x48.33 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
-          LayoutBlockFlow (anonymous) at (11,15.16) size 201x18
+        LayoutText {#text} at (1,406) size 170x17
+          text run at (1,406) width 170: "Non-styled select control: "
+        LayoutBR {BR} at (170,406) size 1x17
+        LayoutMenuList {SELECT} at (1,423) size 223x40 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
+          LayoutBlockFlow (anonymous) at (11,11) size 201x18
             LayoutText (anonymous) at (4,1) size 78x16
               text run at (4,1) width 78: "Future Series"
-        LayoutText {#text} at (224,484) size 4x17
-          text run at (224,484) width 4: " "
+        LayoutText {#text} at (224,434) size 4x17
+          text run at (224,434) width 4: " "
         LayoutBR {BR} at (0,0) size 0x0
-        LayoutText {#text} at (1,516) size 298x17
-          text run at (1,516) width 298: "Styled select control with large border-radius: "
-        LayoutBR {BR} at (298,516) size 1x17
-        LayoutMenuList {SELECT} at (1,533) size 223x48.33 [bgcolor=#33CCFF] [border: (1px solid #A9A9A9)]
-          LayoutBlockFlow (anonymous) at (11,15.16) size 201x18
+        LayoutText {#text} at (1,462) size 298x17
+          text run at (1,462) width 298: "Styled select control with large border-radius: "
+        LayoutBR {BR} at (298,462) size 1x17
+        LayoutMenuList {SELECT} at (1,479) size 223x40 [bgcolor=#33CCFF] [border: (1px solid #A9A9A9)]
+          LayoutBlockFlow (anonymous) at (11,11) size 201x18
             LayoutText (anonymous) at (4,1) size 78x16
               text run at (4,1) width 78: "Future Series"
-        LayoutText {#text} at (224,548) size 4x17
-          text run at (224,548) width 4: " "
+        LayoutText {#text} at (224,490) size 4x17
+          text run at (224,490) width 4: " "
         LayoutBR {BR} at (0,0) size 0x0

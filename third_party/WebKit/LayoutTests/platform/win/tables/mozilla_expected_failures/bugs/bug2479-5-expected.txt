@@ -1,10 +1,10 @@
-layer at (0,0) size 800x600 clip at (0,0) size 785x600 scrollHeight 1400
+layer at (0,0) size 800x600 clip at (0,0) size 785x600 scrollHeight 1392
   LayoutView at (0,0) size 800x600
-layer at (8,8) size 769x1384 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600
-  LayoutBlockFlow {HTML} at (8,8) size 769x1384 [border: (16px solid #00FF00)]
-    LayoutTable (anonymous) at (16,16) size 737x1352
-      LayoutTableSection (anonymous) at (0,0) size 737x1352
-        LayoutTableRow (anonymous) at (0,0) size 737x1352
+layer at (8,8) size 769x1376 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600
+  LayoutBlockFlow {HTML} at (8,8) size 769x1376 [border: (16px solid #00FF00)]
+    LayoutTable (anonymous) at (16,16) size 737x1344
+      LayoutTableSection (anonymous) at (0,0) size 737x1344
+        LayoutTableRow (anonymous) at (0,0) size 737x1344
           LayoutTableCell {HEAD} at (0,0) size 206x544 [color=#FFFFFF] [bgcolor=#FF0000] [border: (5px solid #FFFFFF)] [r=0 c=0 rs=1 cs=1]
             LayoutBlockFlow {META} at (21,37) size 164x2 [border: (1px dotted #FFFFFF)]
             LayoutBlockFlow {META} at (21,55) size 164x2 [border: (1px dotted #FFFFFF)]
@@ -39,7 +39,7 @@ layer at (8,8) size 769x1384 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                 text run at (1,271) width 121: "background: red; }"
                 text run at (1,289) width 151: "BODY { color: yellow;"
                 text run at (1,307) width 124: "background: teal; }"
-          LayoutTableCell {BODY} at (206,41) size 531x1311 [color=#FFFF00] [bgcolor=#008080] [border: (5px solid #FFFF00)] [r=0 c=1 rs=1 cs=1]
+          LayoutTableCell {BODY} at (206,41) size 531x1303 [color=#FFFF00] [bgcolor=#008080] [border: (5px solid #FFFF00)] [r=0 c=1 rs=1 cs=1]
             LayoutBlockFlow {H1} at (21,53) size 489x76 [border: (1px dotted #FFFF00)]
               LayoutText {#text} at (1,1) size 152x36
                 text run at (1,1) width 152: "Rendering "
@@ -132,34 +132,34 @@ layer at (8,8) size 769x1384 backgroundClip at (0,0) size 785x600 clip at (0,0) 
             LayoutBlockFlow {H2} at (21,993) size 489x29 [border: (1px dotted #FFFF00)]
               LayoutText {#text} at (1,1) size 156x26
                 text run at (1,1) width 156: "Submit Results"
-            LayoutBlockFlow {FORM} at (21,1046) size 489x102 [border: (1px dotted #FFFF00)]
-              LayoutBlockFlow {P} at (1,17) size 487x68
+            LayoutBlockFlow {FORM} at (21,1046) size 489x94 [border: (1px dotted #FFFF00)]
+              LayoutBlockFlow {P} at (1,17) size 487x60
                 LayoutText {#text} at (0,0) size 263x17
                   text run at (0,0) width 263: "How does your browser fare on this test?"
-                LayoutMenuList {SELECT} at (0,18) size 487x28.33 [color=#000000] [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
-                  LayoutBlockFlow (anonymous) at (1,5.16) size 485x18
+                LayoutMenuList {SELECT} at (0,18) size 487x20 [color=#000000] [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
+                  LayoutBlockFlow (anonymous) at (1,1) size 485x18
                     LayoutText (anonymous) at (4,1) size 234x16
                       text run at (4,1) width 234: "Document renders exactly as described."
                 LayoutText {#text} at (0,0) size 0x0
                 LayoutInline {LABEL} at (0,0) size 245x17
-                  LayoutText {#text} at (0,48) size 72x17
-                    text run at (0,48) width 72: "Comment: "
-                  LayoutTextControl {INPUT} at (71.55,46) size 173x22 [color=#000000] [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
-                LayoutText {#text} at (244,48) size 5x17
-                  text run at (244,48) width 5: " "
-                LayoutButton {INPUT} at (248.55,46) size 57x22 [color=#000000] [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
+                  LayoutText {#text} at (0,40) size 72x17
+                    text run at (0,40) width 72: "Comment: "
+                  LayoutTextControl {INPUT} at (71.55,38) size 173x22 [color=#000000] [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+                LayoutText {#text} at (244,40) size 5x17
+                  text run at (244,40) width 5: " "
+                LayoutButton {INPUT} at (248.55,38) size 57x22 [color=#000000] [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
                   LayoutBlockFlow (anonymous) at (8,3) size 41x16
                     LayoutText {#text} at (0,0) size 41x16
                       text run at (0,0) width 41: "Submit"
                 LayoutText {#text} at (0,0) size 0x0
-            LayoutBlockFlow {HR} at (21,1164) size 489x2 [border: (1px dotted #FFFF00)]
-            LayoutBlockFlow {P} at (21,1182) size 489x20 [border: (1px dotted #FFFF00)]
+            LayoutBlockFlow {HR} at (21,1156) size 489x2 [border: (1px dotted #FFFF00)]
+            LayoutBlockFlow {P} at (21,1174) size 489x20 [border: (1px dotted #FFFF00)]
               LayoutInline {A} at (0,0) size 162x17 [color=#0000EE]
                 LayoutText {#text} at (1,1) size 162x17
                   text run at (1,1) width 162: "Up to the Evil Tests Page"
               LayoutText {#text} at (162,1) size 5x17
                 text run at (162,1) width 5: "."
-            LayoutBlockFlow {P} at (21,1218) size 489x20 [border: (1px dotted #FFFF00)]
+            LayoutBlockFlow {P} at (21,1210) size 489x20 [border: (1px dotted #FFFF00)]
               LayoutText {#text} at (1,1) size 177x17
                 text run at (1,1) width 177: "This page is maintained by "
               LayoutInline {A} at (0,0) size 79x17 [color=#0000EE]
@@ -172,8 +172,8 @@ layer at (8,8) size 769x1384 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                   text run at (264,1) width 125: "py8ieh@bath.ac.uk"
               LayoutText {#text} at (388,1) size 10x17
                 text run at (388,1) width 10: ")."
-            LayoutBlockFlow {P} at (21,1254) size 489x20 [border: (1px dotted #FFFF00)]
+            LayoutBlockFlow {P} at (21,1246) size 489x20 [border: (1px dotted #FFFF00)]
               LayoutText {#text} at (1,1) size 172x17
                 text run at (1,1) width 172: "Last updated in June 1999."
-layer at (326,1177) size 169x16 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0
+layer at (326,1169) size 169x16 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0
   LayoutBlockFlow {DIV} at (2,3) size 169x16
