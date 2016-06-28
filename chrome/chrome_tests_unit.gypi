@@ -1455,6 +1455,7 @@
       'browser/media/router/mojo/media_router_mojo_metrics_unittest.cc',
       'browser/media/router/mojo/media_router_type_converters_unittest.cc',
       'browser/ui/toolbar/media_router_action_unittest.cc',
+      'browser/ui/toolbar/media_router_contextual_menu_unittest.cc',
       'browser/ui/webui/media_router/media_cast_mode_unittest.cc',
       'browser/ui/webui/media_router/media_router_dialog_controller_impl_unittest.cc',
       'browser/ui/webui/media_router/media_router_test.cc',
