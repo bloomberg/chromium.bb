@@ -47,7 +47,9 @@ SynchronousCompositorProxy::SynchronousCompositorProxy(
 }
 
 SynchronousCompositorProxy::~SynchronousCompositorProxy() {
-  SetOutputSurface(nullptr);
+  // The OutputSurface is destroyed/removed by the compositor before shutting
+  // down everything.
+  DCHECK_EQ(output_surface_, nullptr);
   input_handler_proxy_->SetOnlySynchronouslyAnimateRootFlings(nullptr);
 }
 

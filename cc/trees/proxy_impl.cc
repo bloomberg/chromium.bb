@@ -115,6 +115,10 @@ ProxyImpl::~ProxyImpl() {
   DCHECK(IsImplThread());
   DCHECK(IsMainThreadBlocked());
 
+  // Take away the OutputSurface before destroying things so it doesn't try
+  // to call into its client mid-shutdown.
+  layer_tree_host_impl_->ReleaseOutputSurface();
+
   scheduler_ = nullptr;
   external_begin_frame_source_ = nullptr;
   unthrottled_begin_frame_source_ = nullptr;

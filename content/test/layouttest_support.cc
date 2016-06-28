@@ -12,6 +12,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/strings/string_util.h"
 #include "build/build_config.h"
+#include "cc/test/pixel_test_delegating_output_surface.h"
 #include "components/scheduler/test/renderer_scheduler_test_support.h"
 #include "components/test_runner/test_common.h"
 #include "components/test_runner/web_frame_test_proxy.h"
@@ -19,10 +20,12 @@
 #include "content/browser/bluetooth/bluetooth_adapter_factory_wrapper.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
+#include "content/common/gpu/client/context_provider_command_buffer.h"
 #include "content/common/site_isolation_policy.h"
 #include "content/public/common/page_state.h"
 #include "content/public/renderer/renderer_gamepad_provider.h"
 #include "content/renderer/fetchers/manifest_fetcher.h"
+#include "content/renderer/gpu/render_widget_compositor.h"
 #include "content/renderer/history_entry.h"
 #include "content/renderer/history_serialization.h"
 #include "content/renderer/layout_test_dependencies.h"
@@ -178,12 +181,43 @@ void SetMockDeviceOrientationData(const WebDeviceOrientationData& data) {
 class LayoutTestDependenciesImpl : public LayoutTestDependencies {
  public:
   std::unique_ptr<cc::OutputSurface> CreateOutputSurface(
-      uint32_t output_surface_id,
-      scoped_refptr<cc::ContextProvider> context_provider,
-      scoped_refptr<cc::ContextProvider> worker_context_provider) override {
-    return base::MakeUnique<MailboxOutputSurface>(
-        output_surface_id, std::move(context_provider),
-        std::move(worker_context_provider));
+      scoped_refptr<gpu::GpuChannelHost> gpu_channel,
+      scoped_refptr<cc::ContextProvider> compositor_context_provider,
+      scoped_refptr<cc::ContextProvider> worker_context_provider,
+      CompositorDependencies* deps) override {
+    // This is for an offscreen context for the compositor. So the default
+    // framebuffer doesn't need alpha, depth, stencil, antialiasing.
+    gpu::gles2::ContextCreationAttribHelper attributes;
+    attributes.alpha_size = -1;
+    attributes.depth_size = 0;
+    attributes.stencil_size = 0;
+    attributes.samples = 0;
+    attributes.sample_buffers = 0;
+    attributes.bind_generates_resource = false;
+    attributes.lose_context_when_out_of_memory = true;
+    const bool automatic_flushes = false;
+    const bool support_locking = false;
+
+    scoped_refptr<cc::ContextProvider> display_context_provider(
+        new ContextProviderCommandBuffer(
+            std::move(gpu_channel), gpu::GPU_STREAM_DEFAULT,
+            gpu::GpuStreamPriority::NORMAL, gpu::kNullSurfaceHandle,
+            GURL(
+                "chrome://gpu/LayoutTestDependenciesImpl::CreateOutputSurface"),
+            gl::PreferIntegratedGpu, automatic_flushes, support_locking,
+            gpu::SharedMemoryLimits(), attributes, nullptr,
+            command_buffer_metrics::OFFSCREEN_CONTEXT_FOR_TESTING));
+
+    cc::LayerTreeSettings settings =
+        RenderWidgetCompositor::GenerateLayerTreeSettings(
+            *base::CommandLine::ForCurrentProcess(), deps, 1.f);
+
+    return base::MakeUnique<cc::PixelTestDelegatingOutputSurface>(
+        std::move(compositor_context_provider),
+        std::move(worker_context_provider), std::move(display_context_provider),
+        settings.renderer_settings, deps->GetSharedBitmapManager(),
+        deps->GetGpuMemoryBufferManager(), gfx::Size(), false,
+        !deps->GetCompositorImplThreadTaskRunner());
   }
 };
 

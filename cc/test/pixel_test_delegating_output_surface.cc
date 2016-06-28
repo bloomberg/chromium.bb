@@ -28,8 +28,11 @@ namespace cc {
 PixelTestDelegatingOutputSurface::PixelTestDelegatingOutputSurface(
     scoped_refptr<ContextProvider> compositor_context_provider,
     scoped_refptr<ContextProvider> worker_context_provider,
+    scoped_refptr<ContextProvider> display_context_provider,
+    const RendererSettings& renderer_settings,
     SharedBitmapManager* shared_bitmap_manager,
     gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
+    const gfx::Size& surface_expansion_size,
     bool allow_force_reclaim_resources,
     bool synchronous_composite)
     : OutputSurface(std::move(compositor_context_provider),
@@ -37,8 +40,11 @@ PixelTestDelegatingOutputSurface::PixelTestDelegatingOutputSurface(
                     nullptr),
       shared_bitmap_manager_(shared_bitmap_manager),
       gpu_memory_buffer_manager_(gpu_memory_buffer_manager),
+      surface_expansion_size_(surface_expansion_size),
       allow_force_reclaim_resources_(allow_force_reclaim_resources),
       synchronous_composite_(synchronous_composite),
+      renderer_settings_(renderer_settings),
+      display_context_provider_(std::move(display_context_provider)),
       surface_manager_(new SurfaceManager),
       surface_id_allocator_(
           new SurfaceIdAllocator(kCompositorSurfaceNamespace)),
@@ -60,26 +66,21 @@ bool PixelTestDelegatingOutputSurface::BindToClient(
   surface_manager_->RegisterSurfaceFactoryClient(
       surface_id_allocator_->id_namespace(), this);
 
-  // Always test Webview shenanigans.
-  gfx::Size surface_expansion_size(40, 60);
-
   // The PixelTestOutputSurface is owned by the Display.
   std::unique_ptr<PixelTestOutputSurface> output_surface;
 
   if (!context_provider()) {
     std::unique_ptr<PixelTestSoftwareOutputDevice> software_output_device(
         new PixelTestSoftwareOutputDevice);
-    software_output_device->set_surface_expansion_size(surface_expansion_size);
+    software_output_device->set_surface_expansion_size(surface_expansion_size_);
     output_surface = base::MakeUnique<PixelTestOutputSurface>(
         std::move(software_output_device));
   } else {
-    scoped_refptr<TestInProcessContextProvider> context(
-        new TestInProcessContextProvider(nullptr));
     bool flipped_output_surface = false;
     output_surface = base::MakeUnique<PixelTestOutputSurface>(
-        std::move(context), nullptr, flipped_output_surface);
+        std::move(display_context_provider_), nullptr, flipped_output_surface);
   }
-  output_surface->set_surface_expansion_size(surface_expansion_size);
+  output_surface->set_surface_expansion_size(surface_expansion_size_);
 
   auto* task_runner = base::ThreadTaskRunnerHandle::Get().get();
   CHECK(task_runner);
@@ -87,7 +88,7 @@ bool PixelTestDelegatingOutputSurface::BindToClient(
   std::unique_ptr<SyntheticBeginFrameSource> begin_frame_source;
   std::unique_ptr<DisplayScheduler> scheduler;
   if (!synchronous_composite_) {
-    begin_frame_source.reset(new BackToBackBeginFrameSource(
+    begin_frame_source.reset(new DelayBasedBeginFrameSource(
         base::MakeUnique<DelayBasedTimeSource>(task_runner)));
     scheduler.reset(new DisplayScheduler(
         begin_frame_source.get(), task_runner,
@@ -96,7 +97,7 @@ bool PixelTestDelegatingOutputSurface::BindToClient(
 
   display_.reset(new Display(
       surface_manager_.get(), shared_bitmap_manager_,
-      gpu_memory_buffer_manager_, RendererSettings(),
+      gpu_memory_buffer_manager_, renderer_settings_,
       surface_id_allocator_->id_namespace(), std::move(begin_frame_source),
       std::move(output_surface), std::move(scheduler),
       base::MakeUnique<TextureMailboxDeleter>(task_runner)));

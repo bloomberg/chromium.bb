@@ -111,6 +111,12 @@ fast/canvas/canvas-lost-gpu-context.html [ WontFix ]
 virtual/threaded/printing/setPrinting.html [ WontFix ]
 virtual/threaded/printing/width-overflow.html [ WontFix ]
 
+# These tests are flaky/fail when threaded and add little value (they're just
+# reading back Blink's current animation value).
+virtual/threaded/animations/transition-and-animation-1.html [ WontFix ]
+virtual/threaded/animations/transition-and-animation-2.html [ WontFix ]
+virtual/threaded/transitions/transition-end-event-multiple-04.html [ WontFix ]
+
 # This test only fails with an ASSERT in Debug build.
 [ Release ] editing/input/orphan-set-selection-range.html [ WontFix ]
 

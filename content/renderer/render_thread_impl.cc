@@ -1820,8 +1820,8 @@ RenderThreadImpl::CreateCompositorOutputSurface(
     if (vulkan_context_provider) {
       DCHECK(!layout_test_mode());
       return base::WrapUnique(new CompositorOutputSurface(
-          routing_id, output_surface_id, vulkan_context_provider,
-          frame_swap_message_queue));
+          routing_id, output_surface_id, std::move(vulkan_context_provider),
+          std::move(frame_swap_message_queue)));
     }
   }
 
@@ -1843,9 +1843,9 @@ RenderThreadImpl::CreateCompositorOutputSurface(
 
   if (use_software) {
     DCHECK(!layout_test_mode());
-    return base::WrapUnique(
-        new CompositorOutputSurface(routing_id, output_surface_id, nullptr,
-                                    nullptr, frame_swap_message_queue));
+    return base::WrapUnique(new CompositorOutputSurface(
+        routing_id, output_surface_id, nullptr, nullptr,
+        std::move(frame_swap_message_queue)));
   }
 
   scoped_refptr<ContextProviderCommandBuffer> worker_context_provider =
@@ -1882,33 +1882,30 @@ RenderThreadImpl::CreateCompositorOutputSurface(
 
   scoped_refptr<ContextProviderCommandBuffer> context_provider(
       new ContextProviderCommandBuffer(
-          std::move(gpu_channel_host), gpu::GPU_STREAM_DEFAULT,
+          gpu_channel_host, gpu::GPU_STREAM_DEFAULT,
           gpu::GpuStreamPriority::NORMAL, gpu::kNullSurfaceHandle, url,
           gl::PreferIntegratedGpu, automatic_flushes, support_locking, limits,
           attributes, share_context,
           command_buffer_metrics::RENDER_COMPOSITOR_CONTEXT));
 
-  // Composite-to-mailbox is currently used for layout tests in order to cause
-  // them to draw inside in the renderer to do the readback there. This should
-  // no longer be the case when crbug.com/311404 is fixed.
   if (layout_test_deps_) {
     return layout_test_deps_->CreateOutputSurface(
-        output_surface_id, std::move(context_provider),
-        std::move(worker_context_provider));
+        std::move(gpu_channel_host), std::move(context_provider),
+        std::move(worker_context_provider), this);
   }
 
 #if defined(OS_ANDROID)
   if (sync_compositor_message_filter_) {
     return base::WrapUnique(new SynchronousCompositorOutputSurface(
-        context_provider, worker_context_provider, routing_id,
-        output_surface_id, sync_compositor_message_filter_.get(),
-        frame_swap_message_queue));
+        std::move(context_provider), std::move(worker_context_provider),
+        routing_id, output_surface_id, sync_compositor_message_filter_.get(),
+        std::move(frame_swap_message_queue)));
   }
 #endif
 
   return base::WrapUnique(new CompositorOutputSurface(
       routing_id, output_surface_id, std::move(context_provider),
-      std::move(worker_context_provider), frame_swap_message_queue));
+      std::move(worker_context_provider), std::move(frame_swap_message_queue)));
 }
 
 blink::WebMediaStreamCenter* RenderThreadImpl::CreateMediaStreamCenter(

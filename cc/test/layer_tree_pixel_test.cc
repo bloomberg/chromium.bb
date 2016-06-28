@@ -46,18 +46,23 @@ void LayerTreePixelTest::InitializeSettings(LayerTreeSettings* settings) {
 std::unique_ptr<OutputSurface> LayerTreePixelTest::CreateOutputSurface() {
   scoped_refptr<TestInProcessContextProvider> compositor;
   scoped_refptr<TestInProcessContextProvider> worker;
+  scoped_refptr<TestInProcessContextProvider> display;
   if (test_type_ == PIXEL_TEST_GL) {
     compositor = new TestInProcessContextProvider(nullptr);
     worker = new TestInProcessContextProvider(compositor.get());
+    display = new TestInProcessContextProvider(nullptr);
   }
   const bool allow_force_reclaim_resources = !HasImplThread();
   const bool synchronous_composite =
       !layer_tree_host()->settings().single_thread_proxy_scheduler;
+  // Always test Webview shenanigans.
+  const gfx::Size surface_expansion_size(40, 60);
   std::unique_ptr<PixelTestDelegatingOutputSurface> delegating_output_surface(
       new PixelTestDelegatingOutputSurface(
-          std::move(compositor), std::move(worker), shared_bitmap_manager(),
-          gpu_memory_buffer_manager(), allow_force_reclaim_resources,
-          synchronous_composite));
+          std::move(compositor), std::move(worker), std::move(display),
+          RendererSettings(), shared_bitmap_manager(),
+          gpu_memory_buffer_manager(), surface_expansion_size,
+          allow_force_reclaim_resources, synchronous_composite));
   delegating_output_surface->SetEnlargePassTextureAmount(
       enlarge_texture_amount_);
   return std::move(delegating_output_surface);

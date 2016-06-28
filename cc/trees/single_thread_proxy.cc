@@ -358,6 +358,10 @@ void SingleThreadProxy::Stop() {
     DebugScopedSetMainThreadBlocked main_thread_blocked(task_runner_provider_);
     DebugScopedSetImplThread impl(task_runner_provider_);
 
+    // Take away the OutputSurface before destroying things so it doesn't try
+    // to call into its client mid-shutdown.
+    layer_tree_host_impl_->ReleaseOutputSurface();
+
     BlockingTaskRunner::CapturePostTasks blocked(
         task_runner_provider_->blocking_main_thread_task_runner());
     scheduler_on_impl_thread_ = nullptr;

@@ -221,6 +221,7 @@ RenderWidgetCompositor::RenderWidgetCompositor(
     : num_failed_recreate_attempts_(0),
       delegate_(delegate),
       compositor_deps_(compositor_deps),
+      threaded_(!!compositor_deps_->GetCompositorImplThreadTaskRunner()),
       never_visible_(false),
       layout_and_paint_async_callback_(nullptr),
       remote_proto_channel_receiver_(nullptr),
@@ -228,16 +229,54 @@ RenderWidgetCompositor::RenderWidgetCompositor(
 
 void RenderWidgetCompositor::Initialize(float device_scale_factor) {
   base::CommandLine* cmd = base::CommandLine::ForCurrentProcess();
+  cc::LayerTreeSettings settings =
+      GenerateLayerTreeSettings(*cmd, compositor_deps_, device_scale_factor);
+  cc::LayerTreeHost::InitParams params;
+  params.client = this;
+  params.shared_bitmap_manager = compositor_deps_->GetSharedBitmapManager();
+  params.gpu_memory_buffer_manager =
+      compositor_deps_->GetGpuMemoryBufferManager();
+  params.settings = &settings;
+  params.task_graph_runner = compositor_deps_->GetTaskGraphRunner();
+  params.main_task_runner =
+      compositor_deps_->GetCompositorMainThreadTaskRunner();
+  if (settings.use_external_begin_frame_source) {
+    params.external_begin_frame_source =
+        delegate_->CreateExternalBeginFrameSource();
+  }
+  params.animation_host = cc::AnimationHost::CreateMainInstance();
 
+  if (cmd->HasSwitch(switches::kUseRemoteCompositing)) {
+    DCHECK(!threaded_);
+    params.image_serialization_processor =
+        compositor_deps_->GetImageSerializationProcessor();
+    layer_tree_host_ = cc::LayerTreeHost::CreateRemoteServer(this, &params);
+  } else if (!threaded_) {
+    // Single-threaded layout tests.
+    layer_tree_host_ = cc::LayerTreeHost::CreateSingleThreaded(this, &params);
+  } else {
+    layer_tree_host_ = cc::LayerTreeHost::CreateThreaded(
+        compositor_deps_->GetCompositorImplThreadTaskRunner(), &params);
+  }
+  DCHECK(layer_tree_host_);
+}
+
+RenderWidgetCompositor::~RenderWidgetCompositor() = default;
+
+// static
+cc::LayerTreeSettings RenderWidgetCompositor::GenerateLayerTreeSettings(
+    const base::CommandLine& cmd,
+    CompositorDependencies* compositor_deps,
+    float device_scale_factor) {
   cc::LayerTreeSettings settings;
 
   // For web contents, layer transforms should scale up the contents of layers
   // to keep content always crisp when possible.
   settings.layer_transforms_should_scale_layer_contents = true;
 
-  if (cmd->HasSwitch(switches::kDisableGpuVsync)) {
+  if (cmd.HasSwitch(switches::kDisableGpuVsync)) {
     std::string display_vsync_string =
-        cmd->GetSwitchValueASCII(switches::kDisableGpuVsync);
+        cmd.GetSwitchValueASCII(switches::kDisableGpuVsync);
     if (display_vsync_string == "gpu") {
       settings.renderer_settings.disable_display_vsync = true;
     } else if (display_vsync_string == "beginframe") {
@@ -248,37 +287,33 @@ void RenderWidgetCompositor::Initialize(float device_scale_factor) {
     }
   }
   settings.main_frame_before_activation_enabled =
-      cmd->HasSwitch(cc::switches::kEnableMainFrameBeforeActivation);
+      cmd.HasSwitch(cc::switches::kEnableMainFrameBeforeActivation);
 
+  // TODO(danakj): This should not be a setting O_O; it should change when the
+  // device scale factor on LayerTreeHost changes.
   settings.default_tile_size = CalculateDefaultTileSize(device_scale_factor);
-  if (cmd->HasSwitch(switches::kDefaultTileWidth)) {
+  if (cmd.HasSwitch(switches::kDefaultTileWidth)) {
     int tile_width = 0;
-    GetSwitchValueAsInt(*cmd,
-                        switches::kDefaultTileWidth,
-                        1,
-                        std::numeric_limits<int>::max(),
-                        &tile_width);
+    GetSwitchValueAsInt(cmd, switches::kDefaultTileWidth, 1,
+                        std::numeric_limits<int>::max(), &tile_width);
     settings.default_tile_size.set_width(tile_width);
   }
-  if (cmd->HasSwitch(switches::kDefaultTileHeight)) {
+  if (cmd.HasSwitch(switches::kDefaultTileHeight)) {
     int tile_height = 0;
-    GetSwitchValueAsInt(*cmd,
-                        switches::kDefaultTileHeight,
-                        1,
-                        std::numeric_limits<int>::max(),
-                        &tile_height);
+    GetSwitchValueAsInt(cmd, switches::kDefaultTileHeight, 1,
+                        std::numeric_limits<int>::max(), &tile_height);
     settings.default_tile_size.set_height(tile_height);
   }
 
   int max_untiled_layer_width = settings.max_untiled_layer_size.width();
-  if (cmd->HasSwitch(switches::kMaxUntiledLayerWidth)) {
-    GetSwitchValueAsInt(*cmd, switches::kMaxUntiledLayerWidth, 1,
+  if (cmd.HasSwitch(switches::kMaxUntiledLayerWidth)) {
+    GetSwitchValueAsInt(cmd, switches::kMaxUntiledLayerWidth, 1,
                         std::numeric_limits<int>::max(),
                         &max_untiled_layer_width);
   }
   int max_untiled_layer_height = settings.max_untiled_layer_size.height();
-  if (cmd->HasSwitch(switches::kMaxUntiledLayerHeight)) {
-    GetSwitchValueAsInt(*cmd, switches::kMaxUntiledLayerHeight, 1,
+  if (cmd.HasSwitch(switches::kMaxUntiledLayerHeight)) {
+    GetSwitchValueAsInt(cmd, switches::kMaxUntiledLayerHeight, 1,
                         std::numeric_limits<int>::max(),
                         &max_untiled_layer_height);
   }
@@ -287,50 +322,50 @@ void RenderWidgetCompositor::Initialize(float device_scale_factor) {
                                            max_untiled_layer_height);
 
   settings.gpu_rasterization_msaa_sample_count =
-      compositor_deps_->GetGpuRasterizationMSAASampleCount();
+      compositor_deps->GetGpuRasterizationMSAASampleCount();
   settings.gpu_rasterization_forced =
-      compositor_deps_->IsGpuRasterizationForced();
+      compositor_deps->IsGpuRasterizationForced();
   settings.gpu_rasterization_enabled =
-      compositor_deps_->IsGpuRasterizationEnabled();
+      compositor_deps->IsGpuRasterizationEnabled();
   settings.async_worker_context_enabled =
-      compositor_deps_->IsAsyncWorkerContextEnabled();
+      compositor_deps->IsAsyncWorkerContextEnabled();
 
-  settings.can_use_lcd_text = compositor_deps_->IsLcdTextEnabled();
+  settings.can_use_lcd_text = compositor_deps->IsLcdTextEnabled();
   settings.use_distance_field_text =
-      compositor_deps_->IsDistanceFieldTextEnabled();
-  settings.use_zero_copy = compositor_deps_->IsZeroCopyEnabled();
-  settings.use_partial_raster = compositor_deps_->IsPartialRasterEnabled();
+      compositor_deps->IsDistanceFieldTextEnabled();
+  settings.use_zero_copy = compositor_deps->IsZeroCopyEnabled();
+  settings.use_partial_raster = compositor_deps->IsPartialRasterEnabled();
   settings.enable_elastic_overscroll =
-      compositor_deps_->IsElasticOverscrollEnabled();
+      compositor_deps->IsElasticOverscrollEnabled();
   settings.renderer_settings.use_gpu_memory_buffer_resources =
-      compositor_deps_->IsGpuMemoryBufferCompositorResourcesEnabled();
+      compositor_deps->IsGpuMemoryBufferCompositorResourcesEnabled();
   settings.use_image_texture_targets =
-      compositor_deps_->GetImageTextureTargets();
+      compositor_deps->GetImageTextureTargets();
   settings.image_decode_tasks_enabled =
-      compositor_deps_->AreImageDecodeTasksEnabled();
+      compositor_deps->AreImageDecodeTasksEnabled();
 
-  if (cmd->HasSwitch(cc::switches::kTopControlsShowThreshold)) {
-      std::string top_threshold_str =
-          cmd->GetSwitchValueASCII(cc::switches::kTopControlsShowThreshold);
-      double show_threshold;
-      if (base::StringToDouble(top_threshold_str, &show_threshold) &&
-          show_threshold >= 0.f && show_threshold <= 1.f)
-        settings.top_controls_show_threshold = show_threshold;
+  if (cmd.HasSwitch(cc::switches::kTopControlsShowThreshold)) {
+    std::string top_threshold_str =
+        cmd.GetSwitchValueASCII(cc::switches::kTopControlsShowThreshold);
+    double show_threshold;
+    if (base::StringToDouble(top_threshold_str, &show_threshold) &&
+        show_threshold >= 0.f && show_threshold <= 1.f)
+      settings.top_controls_show_threshold = show_threshold;
   }
 
-  if (cmd->HasSwitch(cc::switches::kTopControlsHideThreshold)) {
-      std::string top_threshold_str =
-          cmd->GetSwitchValueASCII(cc::switches::kTopControlsHideThreshold);
-      double hide_threshold;
-      if (base::StringToDouble(top_threshold_str, &hide_threshold) &&
-          hide_threshold >= 0.f && hide_threshold <= 1.f)
-        settings.top_controls_hide_threshold = hide_threshold;
+  if (cmd.HasSwitch(cc::switches::kTopControlsHideThreshold)) {
+    std::string top_threshold_str =
+        cmd.GetSwitchValueASCII(cc::switches::kTopControlsHideThreshold);
+    double hide_threshold;
+    if (base::StringToDouble(top_threshold_str, &hide_threshold) &&
+        hide_threshold >= 0.f && hide_threshold <= 1.f)
+      settings.top_controls_hide_threshold = hide_threshold;
   }
 
-  settings.use_layer_lists = cmd->HasSwitch(cc::switches::kEnableLayerLists);
+  settings.use_layer_lists = cmd.HasSwitch(cc::switches::kEnableLayerLists);
 
   settings.renderer_settings.allow_antialiasing &=
-      !cmd->HasSwitch(cc::switches::kDisableCompositedAntialiasing);
+      !cmd.HasSwitch(cc::switches::kDisableCompositedAntialiasing);
   // The means the renderer compositor has 2 possible modes:
   // - Threaded compositing with a scheduler.
   // - Single threaded compositing without a scheduler (for layout tests only).
@@ -340,30 +375,28 @@ void RenderWidgetCompositor::Initialize(float device_scale_factor) {
 
   // These flags should be mirrored by UI versions in ui/compositor/.
   settings.initial_debug_state.show_debug_borders =
-      cmd->HasSwitch(cc::switches::kShowCompositedLayerBorders);
+      cmd.HasSwitch(cc::switches::kShowCompositedLayerBorders);
   settings.initial_debug_state.show_layer_animation_bounds_rects =
-      cmd->HasSwitch(cc::switches::kShowLayerAnimationBounds);
+      cmd.HasSwitch(cc::switches::kShowLayerAnimationBounds);
   settings.initial_debug_state.show_paint_rects =
-      cmd->HasSwitch(switches::kShowPaintRects);
+      cmd.HasSwitch(switches::kShowPaintRects);
   settings.initial_debug_state.show_property_changed_rects =
-      cmd->HasSwitch(cc::switches::kShowPropertyChangedRects);
+      cmd.HasSwitch(cc::switches::kShowPropertyChangedRects);
   settings.initial_debug_state.show_surface_damage_rects =
-      cmd->HasSwitch(cc::switches::kShowSurfaceDamageRects);
+      cmd.HasSwitch(cc::switches::kShowSurfaceDamageRects);
   settings.initial_debug_state.show_screen_space_rects =
-      cmd->HasSwitch(cc::switches::kShowScreenSpaceRects);
+      cmd.HasSwitch(cc::switches::kShowScreenSpaceRects);
   settings.initial_debug_state.show_replica_screen_space_rects =
-      cmd->HasSwitch(cc::switches::kShowReplicaScreenSpaceRects);
+      cmd.HasSwitch(cc::switches::kShowReplicaScreenSpaceRects);
 
   settings.initial_debug_state.SetRecordRenderingStats(
-      cmd->HasSwitch(cc::switches::kEnableGpuBenchmarking));
+      cmd.HasSwitch(cc::switches::kEnableGpuBenchmarking));
 
-  if (cmd->HasSwitch(cc::switches::kSlowDownRasterScaleFactor)) {
+  if (cmd.HasSwitch(cc::switches::kSlowDownRasterScaleFactor)) {
     const int kMinSlowDownScaleFactor = 0;
     const int kMaxSlowDownScaleFactor = INT_MAX;
     GetSwitchValueAsInt(
-        *cmd,
-        cc::switches::kSlowDownRasterScaleFactor,
-        kMinSlowDownScaleFactor,
+        cmd, cc::switches::kSlowDownRasterScaleFactor, kMinSlowDownScaleFactor,
         kMaxSlowDownScaleFactor,
         &settings.initial_debug_state.slow_down_raster_scale_factor);
   }
@@ -403,7 +436,7 @@ void RenderWidgetCompositor::Initialize(float device_scale_factor) {
 
     // RGBA_4444 textures are only enabled by default for low end devices
     // and are disabled for Android WebView as it doesn't support the format.
-    if (!cmd->HasSwitch(switches::kDisableRGBA4444Textures))
+    if (!cmd.HasSwitch(switches::kDisableRGBA4444Textures))
       settings.renderer_settings.preferred_tile_format = cc::RGBA_4444;
   } else {
     // On other devices we have increased memory excessively to avoid
@@ -449,19 +482,19 @@ void RenderWidgetCompositor::Initialize(float device_scale_factor) {
 
 #endif  // defined(OS_ANDROID)
 
-  if (cmd->HasSwitch(switches::kEnableLowResTiling))
+  if (cmd.HasSwitch(switches::kEnableLowResTiling))
     settings.create_low_res_tiling = true;
-  if (cmd->HasSwitch(switches::kDisableLowResTiling))
+  if (cmd.HasSwitch(switches::kDisableLowResTiling))
     settings.create_low_res_tiling = false;
-  if (cmd->HasSwitch(cc::switches::kEnableBeginFrameScheduling))
+  if (cmd.HasSwitch(cc::switches::kEnableBeginFrameScheduling))
     settings.use_external_begin_frame_source = true;
 
-  if (cmd->HasSwitch(switches::kEnableRGBA4444Textures) &&
-      !cmd->HasSwitch(switches::kDisableRGBA4444Textures)) {
+  if (cmd.HasSwitch(switches::kEnableRGBA4444Textures) &&
+      !cmd.HasSwitch(switches::kDisableRGBA4444Textures)) {
     settings.renderer_settings.preferred_tile_format = cc::RGBA_4444;
   }
 
-  if (cmd->HasSwitch(cc::switches::kEnableTileCompression)) {
+  if (cmd.HasSwitch(cc::switches::kEnableTileCompression)) {
     settings.renderer_settings.preferred_tile_format = cc::ETC1;
   }
 
@@ -473,55 +506,95 @@ void RenderWidgetCompositor::Initialize(float device_scale_factor) {
   cc::ManagedMemoryPolicy current = settings.memory_policy_;
   settings.memory_policy_ = GetGpuMemoryPolicy(current);
 
-  settings.use_cached_picture_raster = !cmd->HasSwitch(
-      cc::switches::kDisableCachedPictureRaster);
+  settings.use_cached_picture_raster =
+      !cmd.HasSwitch(cc::switches::kDisableCachedPictureRaster);
 
-  scoped_refptr<base::SingleThreadTaskRunner> compositor_thread_task_runner =
-      compositor_deps_->GetCompositorImplThreadTaskRunner();
-  scoped_refptr<base::SingleThreadTaskRunner>
-      main_thread_compositor_task_runner =
-          compositor_deps_->GetCompositorMainThreadTaskRunner();
-  cc::SharedBitmapManager* shared_bitmap_manager =
-      compositor_deps_->GetSharedBitmapManager();
-  gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager =
-      compositor_deps_->GetGpuMemoryBufferManager();
-  cc::TaskGraphRunner* task_graph_runner =
-      compositor_deps_->GetTaskGraphRunner();
-
-  bool use_remote_compositing = cmd->HasSwitch(switches::kUseRemoteCompositing);
-
-  if (use_remote_compositing)
+  if (cmd.HasSwitch(switches::kUseRemoteCompositing))
     settings.use_external_begin_frame_source = false;
 
-  std::unique_ptr<cc::BeginFrameSource> external_begin_frame_source;
-  if (settings.use_external_begin_frame_source) {
-    external_begin_frame_source = delegate_->CreateExternalBeginFrameSource();
-  }
-
-  cc::LayerTreeHost::InitParams params;
-  params.client = this;
-  params.shared_bitmap_manager = shared_bitmap_manager;
-  params.gpu_memory_buffer_manager = gpu_memory_buffer_manager;
-  params.settings = &settings;
-  params.task_graph_runner = task_graph_runner;
-  params.main_task_runner = main_thread_compositor_task_runner;
-  params.external_begin_frame_source = std::move(external_begin_frame_source);
-  params.animation_host = cc::AnimationHost::CreateMainInstance();
-  if (use_remote_compositing) {
-    DCHECK(!compositor_thread_task_runner.get());
-    params.image_serialization_processor =
-        compositor_deps_->GetImageSerializationProcessor();
-    layer_tree_host_ = cc::LayerTreeHost::CreateRemoteServer(this, &params);
-  } else if (compositor_thread_task_runner.get()) {
-    layer_tree_host_ = cc::LayerTreeHost::CreateThreaded(
-        compositor_thread_task_runner, &params);
-  } else {
-    layer_tree_host_ = cc::LayerTreeHost::CreateSingleThreaded(this, &params);
-  }
-  DCHECK(layer_tree_host_);
+  return settings;
 }
 
-RenderWidgetCompositor::~RenderWidgetCompositor() {}
+// static
+cc::ManagedMemoryPolicy RenderWidgetCompositor::GetGpuMemoryPolicy(
+    const cc::ManagedMemoryPolicy& policy) {
+  cc::ManagedMemoryPolicy actual = policy;
+  actual.bytes_limit_when_visible = 0;
+
+  // If the value was overridden on the command line, use the specified value.
+  static bool client_hard_limit_bytes_overridden =
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kForceGpuMemAvailableMb);
+  if (client_hard_limit_bytes_overridden) {
+    if (base::StringToSizeT(
+            base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+                switches::kForceGpuMemAvailableMb),
+            &actual.bytes_limit_when_visible))
+      actual.bytes_limit_when_visible *= 1024 * 1024;
+    return actual;
+  }
+
+#if defined(OS_ANDROID)
+  // We can't query available GPU memory from the system on Android.
+  // Physical memory is also mis-reported sometimes (eg. Nexus 10 reports
+  // 1262MB when it actually has 2GB, while Razr M has 1GB but only reports
+  // 128MB java heap size). First we estimate physical memory using both.
+  size_t dalvik_mb = base::SysInfo::DalvikHeapSizeMB();
+  size_t physical_mb = base::SysInfo::AmountOfPhysicalMemoryMB();
+  size_t physical_memory_mb = 0;
+  if (dalvik_mb >= 256)
+    physical_memory_mb = dalvik_mb * 4;
+  else
+    physical_memory_mb = std::max(dalvik_mb * 4, (physical_mb * 4) / 3);
+
+  // Now we take a default of 1/8th of memory on high-memory devices,
+  // and gradually scale that back for low-memory devices (to be nicer
+  // to other apps so they don't get killed). Examples:
+  // Nexus 4/10(2GB)    256MB (normally 128MB)
+  // Droid Razr M(1GB)  114MB (normally 57MB)
+  // Galaxy Nexus(1GB)  100MB (normally 50MB)
+  // Xoom(1GB)          100MB (normally 50MB)
+  // Nexus S(low-end)   8MB (normally 8MB)
+  // Note that the compositor now uses only some of this memory for
+  // pre-painting and uses the rest only for 'emergencies'.
+  if (actual.bytes_limit_when_visible == 0) {
+    // NOTE: Non-low-end devices use only 50% of these limits,
+    // except during 'emergencies' where 100% can be used.
+    if (!base::SysInfo::IsLowEndDevice()) {
+      if (physical_memory_mb >= 1536)
+        actual.bytes_limit_when_visible = physical_memory_mb / 8;  // >192MB
+      else if (physical_memory_mb >= 1152)
+        actual.bytes_limit_when_visible = physical_memory_mb / 8;  // >144MB
+      else if (physical_memory_mb >= 768)
+        actual.bytes_limit_when_visible = physical_memory_mb / 10;  // >76MB
+      else
+        actual.bytes_limit_when_visible = physical_memory_mb / 12;  // <64MB
+    } else {
+      // Low-end devices have 512MB or less memory by definition
+      // so we hard code the limit rather than relying on the heuristics
+      // above. Low-end devices use 4444 textures so we can use a lower limit.
+      actual.bytes_limit_when_visible = 8;
+    }
+    actual.bytes_limit_when_visible =
+        actual.bytes_limit_when_visible * 1024 * 1024;
+    // Clamp the observed value to a specific range on Android.
+    actual.bytes_limit_when_visible = std::max(
+        actual.bytes_limit_when_visible, static_cast<size_t>(8 * 1024 * 1024));
+    actual.bytes_limit_when_visible =
+        std::min(actual.bytes_limit_when_visible,
+                 static_cast<size_t>(256 * 1024 * 1024));
+  }
+  actual.priority_cutoff_when_visible =
+      gpu::MemoryAllocation::CUTOFF_ALLOW_EVERYTHING;
+#else
+  // Ignore what the system said and give all clients the same maximum
+  // allocation on desktop platforms.
+  actual.bytes_limit_when_visible = 512 * 1024 * 1024;
+  actual.priority_cutoff_when_visible =
+      gpu::MemoryAllocation::CUTOFF_ALLOW_NICE_TO_HAVE;
+#endif
+  return actual;
+}
 
 void RenderWidgetCompositor::SetNeverVisible() {
   DCHECK(!layer_tree_host_->visible());
@@ -813,8 +886,11 @@ void CompositeAndReadbackAsyncCallback(
 }
 
 bool RenderWidgetCompositor::CompositeIsSynchronous() const {
-  return !compositor_deps_->GetCompositorImplThreadTaskRunner().get() &&
-         !layer_tree_host_->settings().single_thread_proxy_scheduler;
+  if (!threaded_) {
+    DCHECK(!layer_tree_host_->settings().single_thread_proxy_scheduler);
+    return true;
+  }
+  return false;
 }
 
 void RenderWidgetCompositor::layoutAndPaintAsync(
@@ -1016,8 +1092,7 @@ void RenderWidgetCompositor::DidCommitAndDrawFrame() {
 
 void RenderWidgetCompositor::DidCompleteSwapBuffers() {
   delegate_->DidCompleteSwapBuffers();
-  bool threaded = !!compositor_deps_->GetCompositorImplThreadTaskRunner().get();
-  if (!threaded)
+  if (!threaded_)
     delegate_->OnSwapBuffersComplete();
 }
 
@@ -1068,86 +1143,6 @@ void RenderWidgetCompositor::OnHandleCompositorProto(
   }
 
   remote_proto_channel_receiver_->OnProtoReceived(std::move(deserialized));
-}
-
-cc::ManagedMemoryPolicy RenderWidgetCompositor::GetGpuMemoryPolicy(
-    const cc::ManagedMemoryPolicy& policy) {
-  cc::ManagedMemoryPolicy actual = policy;
-  actual.bytes_limit_when_visible = 0;
-
-  // If the value was overridden on the command line, use the specified value.
-  static bool client_hard_limit_bytes_overridden =
-      base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kForceGpuMemAvailableMb);
-  if (client_hard_limit_bytes_overridden) {
-    if (base::StringToSizeT(
-            base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-                switches::kForceGpuMemAvailableMb),
-            &actual.bytes_limit_when_visible))
-      actual.bytes_limit_when_visible *= 1024 * 1024;
-    return actual;
-  }
-
-#if defined(OS_ANDROID)
-  // We can't query available GPU memory from the system on Android.
-  // Physical memory is also mis-reported sometimes (eg. Nexus 10 reports
-  // 1262MB when it actually has 2GB, while Razr M has 1GB but only reports
-  // 128MB java heap size). First we estimate physical memory using both.
-  size_t dalvik_mb = base::SysInfo::DalvikHeapSizeMB();
-  size_t physical_mb = base::SysInfo::AmountOfPhysicalMemoryMB();
-  size_t physical_memory_mb = 0;
-  if (dalvik_mb >= 256)
-    physical_memory_mb = dalvik_mb * 4;
-  else
-    physical_memory_mb = std::max(dalvik_mb * 4, (physical_mb * 4) / 3);
-
-  // Now we take a default of 1/8th of memory on high-memory devices,
-  // and gradually scale that back for low-memory devices (to be nicer
-  // to other apps so they don't get killed). Examples:
-  // Nexus 4/10(2GB)    256MB (normally 128MB)
-  // Droid Razr M(1GB)  114MB (normally 57MB)
-  // Galaxy Nexus(1GB)  100MB (normally 50MB)
-  // Xoom(1GB)          100MB (normally 50MB)
-  // Nexus S(low-end)   8MB (normally 8MB)
-  // Note that the compositor now uses only some of this memory for
-  // pre-painting and uses the rest only for 'emergencies'.
-  if (actual.bytes_limit_when_visible == 0) {
-    // NOTE: Non-low-end devices use only 50% of these limits,
-    // except during 'emergencies' where 100% can be used.
-    if (!base::SysInfo::IsLowEndDevice()) {
-      if (physical_memory_mb >= 1536)
-        actual.bytes_limit_when_visible = physical_memory_mb / 8;  // >192MB
-      else if (physical_memory_mb >= 1152)
-        actual.bytes_limit_when_visible = physical_memory_mb / 8;  // >144MB
-      else if (physical_memory_mb >= 768)
-        actual.bytes_limit_when_visible = physical_memory_mb / 10;  // >76MB
-      else
-        actual.bytes_limit_when_visible = physical_memory_mb / 12;  // <64MB
-    } else {
-      // Low-end devices have 512MB or less memory by definition
-      // so we hard code the limit rather than relying on the heuristics
-      // above. Low-end devices use 4444 textures so we can use a lower limit.
-      actual.bytes_limit_when_visible = 8;
-    }
-    actual.bytes_limit_when_visible =
-        actual.bytes_limit_when_visible * 1024 * 1024;
-    // Clamp the observed value to a specific range on Android.
-    actual.bytes_limit_when_visible = std::max(
-        actual.bytes_limit_when_visible, static_cast<size_t>(8 * 1024 * 1024));
-    actual.bytes_limit_when_visible =
-        std::min(actual.bytes_limit_when_visible,
-                 static_cast<size_t>(256 * 1024 * 1024));
-  }
-  actual.priority_cutoff_when_visible =
-      gpu::MemoryAllocation::CUTOFF_ALLOW_EVERYTHING;
-#else
-  // Ignore what the system said and give all clients the same maximum
-  // allocation on desktop platforms.
-  actual.bytes_limit_when_visible = 512 * 1024 * 1024;
-  actual.priority_cutoff_when_visible =
-      gpu::MemoryAllocation::CUTOFF_ALLOW_NICE_TO_HAVE;
-#endif
-  return actual;
 }
 
 void RenderWidgetCompositor::SetPaintedDeviceScaleFactor(

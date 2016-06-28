@@ -7,6 +7,7 @@
 
 #include "base/memory/weak_ptr.h"
 #include "cc/output/output_surface.h"
+#include "cc/output/renderer_settings.h"
 #include "cc/scheduler/begin_frame_source.h"
 #include "cc/surfaces/display.h"
 #include "cc/surfaces/display_client.h"
@@ -23,8 +24,11 @@ class PixelTestDelegatingOutputSurface : public OutputSurface,
   PixelTestDelegatingOutputSurface(
       scoped_refptr<ContextProvider> compositor_context_provider,
       scoped_refptr<ContextProvider> worker_context_provider,
+      scoped_refptr<ContextProvider> display_context_provider,
+      const RendererSettings& renderer_settings,
       SharedBitmapManager* shared_bitmap_manager,
       gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
+      const gfx::Size& surface_expansion_size,
       bool allow_force_reclaim_resources,
       bool synchronous_composite);
   ~PixelTestDelegatingOutputSurface() override;
@@ -56,8 +60,13 @@ class PixelTestDelegatingOutputSurface : public OutputSurface,
 
   SharedBitmapManager* const shared_bitmap_manager_;
   gpu::GpuMemoryBufferManager* const gpu_memory_buffer_manager_;
+  const gfx::Size surface_expansion_size_;
   const bool allow_force_reclaim_resources_;
   const bool synchronous_composite_;
+  const RendererSettings renderer_settings_;
+
+  // Passed to the Display.
+  scoped_refptr<ContextProvider> display_context_provider_;
 
   gfx::Size enlarge_pass_texture_amount_;
 
