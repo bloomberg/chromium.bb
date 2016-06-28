@@ -298,7 +298,13 @@ class V8Adword(perf_benchmark.PerfBenchmark):
 
   @classmethod
   def ShouldDisable(cls, possible_browser):
-    return cls.IsSvelte(possible_browser) # http://crbug.com/596556
+    if cls.IsSvelte(possible_browser): # http://crbug.com/596556
+      return True
+    # http://crbug.com/623576
+    if (possible_browser.platform.GetDeviceTypeName() == 'Nexus 5' or
+        possible_browser.platform.GetDeviceTypeName() == 'Nexus 7'):
+      return True
+    return False
 
   @classmethod
   def ShouldTearDownStateAfterEachStoryRun(cls):
