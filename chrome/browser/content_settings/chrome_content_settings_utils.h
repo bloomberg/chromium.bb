@@ -23,8 +23,6 @@ enum MixedScriptAction {
 };
 
 void RecordMixedScriptAction(MixedScriptAction action);
-void RecordMixedScriptActionWithRAPPOR(MixedScriptAction action,
-                                       const GURL& url);
 
 }  // namespace content_settings
 

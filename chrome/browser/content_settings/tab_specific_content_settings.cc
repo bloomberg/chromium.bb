@@ -343,9 +343,6 @@ void TabSpecificContentSettings::OnContentBlockedWithDetail(
     if (type == CONTENT_SETTINGS_TYPE_MIXEDSCRIPT) {
       content_settings::RecordMixedScriptAction(
           content_settings::MIXED_SCRIPT_ACTION_DISPLAYED_SHIELD);
-      content_settings::RecordMixedScriptActionWithRAPPOR(
-          content_settings::MIXED_SCRIPT_ACTION_DISPLAYED_SHIELD,
-          GURL(base::UTF16ToUTF8(details)));
     }
   }
 }

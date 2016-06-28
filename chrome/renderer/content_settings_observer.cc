@@ -417,7 +417,7 @@ bool ContentSettingsObserver::allowRunningInsecureContent(
   FilteredReportInsecureContentRan(GURL(resource_url));
 
   if (!allow_running_insecure_content_ && !allowed_per_settings) {
-    DidBlockContentType(CONTENT_SETTINGS_TYPE_MIXEDSCRIPT, origin.host());
+    DidBlockContentType(CONTENT_SETTINGS_TYPE_MIXEDSCRIPT);
     return false;
   }
 
