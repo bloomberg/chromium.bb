@@ -88206,6 +88206,22 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="265" label="CPGZ"/>
   <int value="266" label="PAX"/>
   <int value="267" label="XIP"/>
+  <int value="268" label="DOCX"/>
+  <int value="269" label="DOCM"/>
+  <int value="270" label="DOTT"/>
+  <int value="271" label="DOTM"/>
+  <int value="272" label="DOCB"/>
+  <int value="273" label="XLSX"/>
+  <int value="274" label="XLSM"/>
+  <int value="275" label="XLTX"/>
+  <int value="276" label="XLTM"/>
+  <int value="277" label="PPTX"/>
+  <int value="278" label="PPTM"/>
+  <int value="279" label="POTX"/>
+  <int value="280" label="PPAM"/>
+  <int value="281" label="PPSX"/>
+  <int value="282" label="SLDX"/>
+  <int value="283" label="SLDM"/>
 </enum>
 
 <enum name="SBClientDownloadIsSignedBinary" type="int">

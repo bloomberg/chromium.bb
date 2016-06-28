@@ -8,7 +8,7 @@
 ##
 ## Top level settings
 ##
-version_id: 3
+version_id: 4
 sampled_ping_probability: 0.01
 default_file_type {
   uma_value: 18
@@ -1126,6 +1126,90 @@ file_types {
     danger_level: ALLOW_ON_USER_GESTURE
     auto_open_hint: ALLOW_AUTO_OPEN
   }
+}
+
+# OOXML MS Office files.  These can embed executables, but they don't
+# execute automatically when opened.  These are here to produce UMA metrics.
+# crbug.com/566110
+file_types {
+  extension: "docx"
+  uma_value: 268
+  ping_setting: SAMPLED_PING
+}
+file_types {
+  extension: "docm"
+  uma_value: 269
+  ping_setting: SAMPLED_PING
+}
+file_types {
+  extension: "dott"
+  uma_value: 270
+  ping_setting: SAMPLED_PING
+}
+file_types {
+  extension: "dotm"
+  uma_value: 271
+  ping_setting: SAMPLED_PING
+}
+file_types {
+  extension: "docb"
+  uma_value: 272
+  ping_setting: SAMPLED_PING
+}
+file_types {
+  extension: "xlsx"
+  uma_value: 273
+  ping_setting: SAMPLED_PING
+}
+file_types {
+  extension: "xlsm"
+  uma_value: 274
+  ping_setting: SAMPLED_PING
+}
+file_types {
+  extension: "xltx"
+  uma_value: 275
+  ping_setting: SAMPLED_PING
+}
+file_types {
+  extension: "xltm"
+  uma_value: 276
+  ping_setting: SAMPLED_PING
+}
+file_types {
+  extension: "pptx"
+  uma_value: 277
+  ping_setting: SAMPLED_PING
+}
+file_types {
+  extension: "pptm"
+  uma_value: 278
+  ping_setting: SAMPLED_PING
+}
+file_types {
+  extension: "potx"
+  uma_value: 279
+  ping_setting: SAMPLED_PING
+}
+file_types {
+  extension: "ppam"
+  uma_value: 280
+  ping_setting: SAMPLED_PING
+}
+file_types {
+  extension: "ppsx"
+  uma_value: 281
+  ping_setting: SAMPLED_PING
+}
+file_types {
+  extension: "sldx"
+  uma_value: 282
+  ping_setting: SAMPLED_PING
+}
+file_types {
+  extension: "sldm"
+  uma_value: 283
+  ping_setting: SAMPLED_PING
 }
 
 # Extensions that will open in IE even when chrome is set as default browser.
