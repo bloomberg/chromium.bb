@@ -14,6 +14,7 @@
 #include "tools/gn/config_values_generator.h"
 #include "tools/gn/err.h"
 #include "tools/gn/input_file.h"
+#include "tools/gn/parse_node_value_adapter.h"
 #include "tools/gn/parse_tree.h"
 #include "tools/gn/pool.h"
 #include "tools/gn/scheduler.h"
@@ -811,6 +812,90 @@ Value RunPrint(Scope* scope,
   return Value();
 }
 
+// split_list ------------------------------------------------------------------
+
+const char kSplitList[] = "split_list";
+const char kSplitList_HelpShort[] =
+    "split_list: Splits a list into N different sub-lists.";
+const char kSplitList_Help[] =
+    "split_list: Splits a list into N different sub-lists.\n"
+    "\n"
+    "  result = split_list(input, n)\n"
+    "\n"
+    "  Given a list and a number N, splits the list into N sub-lists of\n"
+    "  approximately equal size. The return value is a list of the sub-lists.\n"
+    "  The result will always be a list of size N. If N is greater than the\n"
+    "  number of elements in the input, it will be padded with empty lists.\n"
+    "\n"
+    "  The expected use is to divide source files into smaller uniform\n"
+    "  chunks.\n"
+    "\n"
+    "Example\n"
+    "\n"
+    "  The code:\n"
+    "    mylist = [1, 2, 3, 4, 5, 6]\n"
+    "    print(split_list(mylist, 3))\n"
+    "\n"
+    "  Will print:\n"
+    "    [[1, 2], [3, 4], [5, 6]\n";
+Value RunSplitList(Scope* scope,
+                   const FunctionCallNode* function,
+                   const ListNode* args_list,
+                   Err* err) {
+  const auto& args_vector = args_list->contents();
+  if (args_vector.size() != 2) {
+    *err = Err(function, "Wrong number of arguments to split_list().",
+               "Expecting exactly two.");
+    return Value();
+  }
+
+  ParseNodeValueAdapter list_adapter;
+  if (!list_adapter.InitForType(scope, args_vector[0].get(), Value::LIST, err))
+    return Value();
+  const std::vector<Value>& input = list_adapter.get().list_value();
+
+  ParseNodeValueAdapter count_adapter;
+  if (!count_adapter.InitForType(scope, args_vector[1].get(), Value::INTEGER,
+                                 err))
+    return Value();
+  int64_t count = count_adapter.get().int_value();
+  if (count <= 0) {
+    *err = Err(function, "Requested result size is not positive.");
+    return Value();
+  }
+
+  Value result(function, Value::LIST);
+  result.list_value().resize(count);
+
+  // Every result list gets at least this many items in it.
+  int64_t min_items_per_list = static_cast<int64_t>(input.size()) / count;
+
+  // This many result lists get an extra item which is the remainder from above.
+  int64_t extra_items = static_cast<int64_t>(input.size()) % count;
+
+  // Allocate all lists that have a remainder assigned to them (max items).
+  int64_t max_items_per_list = min_items_per_list + 1;
+  auto last_item_end = input.begin();
+  for (int64_t i = 0; i < extra_items; i++) {
+    result.list_value()[i] = Value(function, Value::LIST);
+
+    auto begin_add = last_item_end;
+    last_item_end += max_items_per_list;
+    result.list_value()[i].list_value().assign(begin_add, last_item_end);
+  }
+
+  // Allocate all smaller items that don't have a remainder.
+  for (int64_t i = extra_items; i < count; i++) {
+    result.list_value()[i] = Value(function, Value::LIST);
+
+    auto begin_add = last_item_end;
+    last_item_end += min_items_per_list;
+    result.list_value()[i].list_value().assign(begin_add, last_item_end);
+  }
+
+  return result;
+}
+
 // -----------------------------------------------------------------------------
 
 FunctionInfo::FunctionInfo()
@@ -923,6 +1008,7 @@ struct FunctionInfoInitializer {
     INSERT_FUNCTION(SetDefaults, false)
     INSERT_FUNCTION(SetDefaultToolchain, false)
     INSERT_FUNCTION(SetSourcesAssignmentFilter, false)
+    INSERT_FUNCTION(SplitList, false)
     INSERT_FUNCTION(Template, false)
     INSERT_FUNCTION(Tool, false)
     INSERT_FUNCTION(Toolchain, false)

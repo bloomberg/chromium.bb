@@ -4,6 +4,7 @@
 
 #include "tools/gn/err.h"
 #include "tools/gn/functions.h"
+#include "tools/gn/parse_node_value_adapter.h"
 #include "tools/gn/parse_tree.h"
 #include "tools/gn/scope.h"
 
@@ -63,27 +64,11 @@ Value RunForEach(Scope* scope,
   }
   base::StringPiece loop_var(identifier->value().value());
 
-  // Extract the list, avoid a copy if it's an identifier (common case).
-  Value value_storage_for_exec;  // Backing for list_value when we need to exec.
-  const Value* list_value = nullptr;
-  const IdentifierNode* list_identifier = args_vector[1]->AsIdentifier();
-  if (list_identifier) {
-    list_value = scope->GetValue(list_identifier->value().value(), true);
-    if (!list_value) {
-      *err = Err(args_vector[1].get(), "Undefined identifier.");
-      return Value();
-    }
-  } else {
-    // Not an identifier, evaluate the node to get the result.
-    Scope list_exec_scope(scope);
-    value_storage_for_exec = args_vector[1]->Execute(scope, err);
-    if (err->has_error())
-      return Value();
-    list_value = &value_storage_for_exec;
-  }
-  if (!list_value->VerifyTypeIs(Value::LIST, err))
+  // Extract the list to iterate over.
+  ParseNodeValueAdapter list_adapter;
+  if (!list_adapter.InitForType(scope, args_vector[1].get(), Value::LIST, err))
     return Value();
-  const std::vector<Value>& list = list_value->list_value();
+  const std::vector<Value>& list = list_adapter.get().list_value();
 
   // Block to execute.
   const BlockNode* block = function->block();

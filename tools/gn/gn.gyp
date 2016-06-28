@@ -138,6 +138,8 @@
         'operators.h',
         'output_file.cc',
         'output_file.h',
+        'parse_node_value_adapter.cc',
+        'parse_node_value_adapter.h',
         'parse_tree.cc',
         'parse_tree.h',
         'parser.cc',

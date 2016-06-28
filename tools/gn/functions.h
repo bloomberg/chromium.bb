@@ -305,6 +305,14 @@ Value RunSourceSet(Scope* scope,
                    BlockNode* block,
                    Err* err);
 
+extern const char kSplitList[];
+extern const char kSplitList_HelpShort[];
+extern const char kSplitList_Help[];
+Value RunSplitList(Scope* scope,
+                   const FunctionCallNode* function,
+                   const ListNode* args_list,
+                   Err* err);
+
 extern const char kStaticLibrary[];
 extern const char kStaticLibrary_HelpShort[];
 extern const char kStaticLibrary_Help[];
