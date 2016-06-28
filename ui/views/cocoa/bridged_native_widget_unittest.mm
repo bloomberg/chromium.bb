@@ -361,8 +361,10 @@ void BridgedNativeWidgetTest::InstallTextField(
 
   [ns_view_ setTextInputClient:textfield];
 
-  // Initialize the dummy text view.
-  dummy_text_view_.reset([[NSTextView alloc] initWithFrame:NSZeroRect]);
+  // Initialize the dummy text view. Initializing this with NSZeroRect causes
+  // weird NSTextView behavior on OSX 10.9.
+  dummy_text_view_.reset(
+      [[NSTextView alloc] initWithFrame:NSMakeRect(0, 0, 100, 100)]);
   [dummy_text_view_ setString:SysUTF16ToNSString(text)];
 }
 
@@ -1001,9 +1003,6 @@ TEST_F(BridgedNativeWidgetTest, TextInput_DeleteToEndOfParagraph) {
 
 // Test move commands against expectations set by |dummy_text_view_|.
 TEST_F(BridgedNativeWidgetTest, TextInput_MoveEditingCommands) {
-  // Broken on 10.9. http://crbug.com/621734.
-  if (base::mac::IsOSMavericks())
-    return;
   TestEditingCommands(kMoveActions);
 }
 
@@ -1017,9 +1016,6 @@ TEST_F(BridgedNativeWidgetTest,
 
 // Test delete commands against expectations set by |dummy_text_view_|.
 TEST_F(BridgedNativeWidgetTest, TextInput_DeleteCommands) {
-  // Broken on 10.9. http://crbug.com/621734.
-  if (base::mac::IsOSMavericks())
-    return;
   TestEditingCommands(kDeleteActions);
 }
 
