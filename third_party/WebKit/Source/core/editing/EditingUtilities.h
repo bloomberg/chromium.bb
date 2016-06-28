@@ -65,6 +65,9 @@ class Range;
 
 // This file contains a set of helper functions used by the editing commands
 
+CORE_EXPORT bool needsLayoutTreeUpdate(const Node&);
+CORE_EXPORT bool needsLayoutTreeUpdate(const Position&);
+
 // -------------------------------------------------------------------------
 // Node
 // -------------------------------------------------------------------------
@@ -225,13 +228,11 @@ int comparePositions(const PositionWithAffinity&, const PositionWithAffinity&);
 
 // boolean functions on Position
 
-enum EUpdateStyle { UpdateStyle, DoNotUpdateStyle };
 // FIXME: Both isEditablePosition and isRichlyEditablePosition rely on up-to-date
 // style to give proper results. They shouldn't update style by default, but
 // should make it clear that that is the contract.
-// FIXME: isRichlyEditablePosition should also take EUpdateStyle.
-CORE_EXPORT bool isEditablePosition(const Position&, EditableType = ContentIsEditable, EUpdateStyle = UpdateStyle);
-bool isEditablePosition(const PositionInFlatTree&, EditableType = ContentIsEditable, EUpdateStyle = UpdateStyle);
+CORE_EXPORT bool isEditablePosition(const Position&, EditableType = ContentIsEditable);
+bool isEditablePosition(const PositionInFlatTree&, EditableType = ContentIsEditable);
 bool isRichlyEditablePosition(const Position&, EditableType = ContentIsEditable);
 bool lineBreakExistsAtPosition(const Position&);
 bool isAtUnsplittableElement(const Position&);
