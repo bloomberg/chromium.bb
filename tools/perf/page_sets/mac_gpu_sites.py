@@ -11,7 +11,7 @@ class _NoGpuSharedPageState(shared_page_state.SharedPageState):
     super(_NoGpuSharedPageState, self).__init__(
       test, finder_options, story_set)
     finder_options.browser_options.AppendExtraBrowserArgs(
-      ['--no-gpu'])
+      ['--disable-gpu'])
 
 
 class _NoOverlaysSharedPageState(shared_page_state.SharedPageState):
@@ -32,13 +32,27 @@ class TrivialScrollingPage(page_module.Page):
         shared_page_state_class=shared_page_state_class)
 
 
-class MacGpuTrivialScrollStorySet(story.StorySet):
+class TrivialBlinkingCursorPage(page_module.Page):
+
+  def __init__(self, page_set, shared_page_state_class):
+    super(TrivialBlinkingCursorPage, self).__init__(
+        url='file://trivial_sites/trivial_blinking_cursor.html',
+        page_set=page_set,
+        name=self.__class__.__name__ + shared_page_state_class.__name__,
+        shared_page_state_class=shared_page_state_class)
+
+
+class MacGpuTrivialPagesStorySet(story.StorySet):
 
   def __init__(self):
-    super(MacGpuTrivialScrollStorySet, self).__init__()
+    super(MacGpuTrivialPagesStorySet, self).__init__()
     self.AddStory(TrivialScrollingPage(self, shared_page_state.SharedPageState))
+    self.AddStory(TrivialBlinkingCursorPage(
+        self, shared_page_state.SharedPageState))
     self.AddStory(TrivialScrollingPage(self, _NoOverlaysSharedPageState))
+    self.AddStory(TrivialBlinkingCursorPage(self, _NoOverlaysSharedPageState))
     self.AddStory(TrivialScrollingPage(self, _NoGpuSharedPageState))
+    self.AddStory(TrivialBlinkingCursorPage(self, _NoGpuSharedPageState))
 
   @property
   def allow_mixed_story_states(self):
