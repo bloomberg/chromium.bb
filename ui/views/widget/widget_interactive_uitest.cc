@@ -1264,11 +1264,11 @@ TEST_F(WidgetTestInteractive, InitialFocus) {
 
 namespace {
 
-// Used to verify OnMouseCaptureLost() has been invoked.
-class CaptureLostTrackingWidget : public Widget {
+// Helper class for CaptureLostTrackingWidget to store whether
+// OnMouseCaptureLost has been invoked for a widget.
+class CaptureLostState {
  public:
-  CaptureLostTrackingWidget() : got_capture_lost_(false) {}
-  ~CaptureLostTrackingWidget() override {}
+  CaptureLostState() : got_capture_lost_(false) {}
 
   bool GetAndClearGotCaptureLost() {
     bool value = got_capture_lost_;
@@ -1276,14 +1276,29 @@ class CaptureLostTrackingWidget : public Widget {
     return value;
   }
 
+  void OnMouseCaptureLost() { got_capture_lost_ = true; }
+
+ private:
+  bool got_capture_lost_;
+
+  DISALLOW_COPY_AND_ASSIGN(CaptureLostState);
+};
+
+// Used to verify OnMouseCaptureLost() has been invoked.
+class CaptureLostTrackingWidget : public Widget {
+ public:
+  explicit CaptureLostTrackingWidget(CaptureLostState* capture_lost_state)
+      : capture_lost_state_(capture_lost_state) {}
+
   // Widget:
   void OnMouseCaptureLost() override {
-    got_capture_lost_ = true;
+    capture_lost_state_->OnMouseCaptureLost();
     Widget::OnMouseCaptureLost();
   }
 
  private:
-  bool got_capture_lost_;
+  // Weak. Stores whether OnMouseCaptureLost has been invoked for this widget.
+  CaptureLostState* capture_lost_state_;
 
   DISALLOW_COPY_AND_ASSIGN(CaptureLostTrackingWidget);
 };
@@ -1313,7 +1328,8 @@ class WidgetCaptureTest : public ViewsTestBase {
   // Verifies Widget::SetCapture() results in updating native capture along with
   // invoking the right Widget function.
   void TestCapture(bool use_desktop_native_widget) {
-    CaptureLostTrackingWidget widget1;
+    CaptureLostState capture_state1;
+    CaptureLostTrackingWidget widget1(&capture_state1);
     Widget::InitParams params1 =
         CreateParams(views::Widget::InitParams::TYPE_WINDOW);
     params1.native_widget =
@@ -1322,7 +1338,8 @@ class WidgetCaptureTest : public ViewsTestBase {
     widget1.Init(params1);
     widget1.Show();
 
-    CaptureLostTrackingWidget widget2;
+    CaptureLostState capture_state2;
+    CaptureLostTrackingWidget widget2(&capture_state2);
     Widget::InitParams params2 =
         CreateParams(views::Widget::InitParams::TYPE_WINDOW);
     params2.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
@@ -1335,22 +1352,22 @@ class WidgetCaptureTest : public ViewsTestBase {
     widget2.SetCapture(widget2.GetRootView());
     EXPECT_FALSE(widget1.HasCapture());
     EXPECT_TRUE(widget2.HasCapture());
-    EXPECT_FALSE(widget1.GetAndClearGotCaptureLost());
-    EXPECT_FALSE(widget2.GetAndClearGotCaptureLost());
+    EXPECT_FALSE(capture_state1.GetAndClearGotCaptureLost());
+    EXPECT_FALSE(capture_state2.GetAndClearGotCaptureLost());
 
     // Set capture to widget1 and verify it gets it.
     widget1.SetCapture(widget1.GetRootView());
     EXPECT_TRUE(widget1.HasCapture());
     EXPECT_FALSE(widget2.HasCapture());
-    EXPECT_FALSE(widget1.GetAndClearGotCaptureLost());
-    EXPECT_TRUE(widget2.GetAndClearGotCaptureLost());
+    EXPECT_FALSE(capture_state1.GetAndClearGotCaptureLost());
+    EXPECT_TRUE(capture_state2.GetAndClearGotCaptureLost());
 
     // Release and verify no one has it.
     widget1.ReleaseCapture();
     EXPECT_FALSE(widget1.HasCapture());
     EXPECT_FALSE(widget2.HasCapture());
-    EXPECT_TRUE(widget1.GetAndClearGotCaptureLost());
-    EXPECT_FALSE(widget2.GetAndClearGotCaptureLost());
+    EXPECT_TRUE(capture_state1.GetAndClearGotCaptureLost());
+    EXPECT_FALSE(capture_state2.GetAndClearGotCaptureLost());
   }
 
   NativeWidget* CreateNativeWidget(const Widget::InitParams& params,
@@ -1368,6 +1385,57 @@ class WidgetCaptureTest : public ViewsTestBase {
 // See description in TestCapture().
 TEST_F(WidgetCaptureTest, Capture) {
   TestCapture(false);
+}
+
+// Tests to ensure capture is correctly released from a Widget with capture when
+// it is destroyed. Test for crbug.com/622201.
+TEST_F(WidgetCaptureTest, DestroyWithCapture_CloseNow) {
+  CaptureLostState capture_state;
+  CaptureLostTrackingWidget* widget =
+      new CaptureLostTrackingWidget(&capture_state);
+  Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_WINDOW);
+  params.native_widget = CreateNativeWidget(params, true, widget);
+  widget->Init(params);
+  widget->Show();
+
+  widget->SetCapture(widget->GetRootView());
+  EXPECT_TRUE(widget->HasCapture());
+  EXPECT_FALSE(capture_state.GetAndClearGotCaptureLost());
+  widget->CloseNow();
+
+  // Fails on mus. http://crbug.com/611764
+  if (IsMus())
+    EXPECT_FALSE(capture_state.GetAndClearGotCaptureLost());
+  else
+    EXPECT_TRUE(capture_state.GetAndClearGotCaptureLost());
+}
+
+TEST_F(WidgetCaptureTest, DestroyWithCapture_Close) {
+  CaptureLostState capture_state;
+  CaptureLostTrackingWidget* widget =
+      new CaptureLostTrackingWidget(&capture_state);
+  Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_WINDOW);
+  params.native_widget = CreateNativeWidget(params, true, widget);
+  widget->Init(params);
+  widget->Show();
+
+  widget->SetCapture(widget->GetRootView());
+  EXPECT_TRUE(widget->HasCapture());
+  EXPECT_FALSE(capture_state.GetAndClearGotCaptureLost());
+  widget->Close();
+  EXPECT_TRUE(capture_state.GetAndClearGotCaptureLost());
+}
+
+TEST_F(WidgetCaptureTest, DestroyWithCapture_WidgetOwnsNativeWidget) {
+  Widget widget;
+  Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_WINDOW);
+  params.native_widget = CreateNativeWidget(params, true, &widget);
+  params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+  widget.Init(params);
+  widget.Show();
+
+  widget.SetCapture(widget.GetRootView());
+  EXPECT_TRUE(widget.HasCapture());
 }
 
 #if !defined(OS_CHROMEOS)

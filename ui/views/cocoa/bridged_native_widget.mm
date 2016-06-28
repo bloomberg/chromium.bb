@@ -674,6 +674,14 @@ void BridgedNativeWidget::SetCursor(NSCursor* cursor) {
 }
 
 void BridgedNativeWidget::OnWindowWillClose() {
+  // Ensure BridgedNativeWidget does not have capture, otherwise
+  // OnMouseCaptureLost() may reference a deleted |native_widget_mac_| when
+  // called via ~CocoaMouseCapture() upon the destruction of |mouse_capture_|.
+  // See crbug.com/622201. Also we do this before setting the delegate to nil,
+  // because this may lead to callbacks to bridge which rely on a valid
+  // delegate.
+  ReleaseCapture();
+
   if (parent_) {
     parent_->RemoveChildWindow(this);
     parent_ = nullptr;
@@ -795,7 +803,7 @@ void BridgedNativeWidget::OnVisibilityChangedTo(bool new_visibility) {
     if (parent_)
       [parent_->GetNSWindow() addChildWindow:window_ ordered:NSWindowAbove];
   } else {
-    mouse_capture_.reset();  // Capture on hidden windows is not permitted.
+    ReleaseCapture();  // Capture on hidden windows is not permitted.
 
     // When becoming invisible, remove the entry in any parent's childWindow
     // list. Cocoa's childWindow management breaks down when child windows are
