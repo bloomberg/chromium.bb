@@ -16,24 +16,8 @@
 
 #include "base/logging.h"
 
-namespace {
-
-typedef proximity_auth::BluetoothLowEnergyWeavePacketGenerator::Packet Packet;
-
-const uint16_t kMinSupportedWeaveVersion = 1;
-const uint16_t kMaxSupportedWeaveVersion = 1;
-const uint16_t kServerWeaveVersion = 1;
-const uint16_t kMinConnectionRequestSize = 7;
-const uint16_t kMinConnectionResponseSize = 5;
-const uint16_t kMinConnectionCloseSize = 3;
-const uint32_t kDefaultMaxPacketSize = 20;
-// Max packet size is 0, which means defer the decision to the server.
-const uint16_t kMaxSupportedPacketSize = 0;
-const uint8_t kMaxPacketCounter = 8;
-
-}  // namespace
-
 namespace proximity_auth {
+namespace weave {
 
 // static.
 BluetoothLowEnergyWeavePacketGenerator::Factory*
@@ -72,9 +56,9 @@ Packet BluetoothLowEnergyWeavePacketGenerator::CreateConnectionRequest() {
   // resets the packet counter.
   next_packet_counter_ = 1;
   SetControlCommand(ControlCommand::CONNECTION_REQUEST, &packet);
-  SetShortField(1, kMinSupportedWeaveVersion, &packet);
-  SetShortField(3, kMaxSupportedWeaveVersion, &packet);
-  SetShortField(5, kMaxSupportedPacketSize, &packet);
+  SetShortField(1, kWeaveVersion, &packet);
+  SetShortField(3, kWeaveVersion, &packet);
+  SetShortField(5, kSelectMaxPacketSize, &packet);
 
   return packet;
 }
@@ -87,7 +71,7 @@ Packet BluetoothLowEnergyWeavePacketGenerator::CreateConnectionResponse() {
   // resets the next packet counter.
   next_packet_counter_ = 1;
   SetControlCommand(ControlCommand::CONNECTION_RESPONSE, &packet);
-  SetShortField(1, kServerWeaveVersion, &packet);
+  SetShortField(1, kWeaveVersion, &packet);
   SetShortField(3, max_packet_size_, &packet);
 
   return packet;
@@ -95,7 +79,7 @@ Packet BluetoothLowEnergyWeavePacketGenerator::CreateConnectionResponse() {
 
 Packet BluetoothLowEnergyWeavePacketGenerator::CreateConnectionClose(
     ReasonForClose reason_for_close) {
-  Packet packet(kMinConnectionCloseSize, 0);
+  Packet packet(kMaxConnectionCloseSize, 0);
 
   SetPacketTypeBit(PacketType::CONTROL, &packet);
   SetPacketCounter(&packet);
@@ -105,7 +89,7 @@ Packet BluetoothLowEnergyWeavePacketGenerator::CreateConnectionClose(
   return packet;
 }
 
-void BluetoothLowEnergyWeavePacketGenerator::SetMaxPacketSize(uint32_t size) {
+void BluetoothLowEnergyWeavePacketGenerator::SetMaxPacketSize(uint16_t size) {
   DCHECK(size >= kDefaultMaxPacketSize);
   max_packet_size_ = size;
 }
@@ -211,5 +195,7 @@ void BluetoothLowEnergyWeavePacketGenerator::SetDataLastBit(Packet* packet) {
   // Last bit is the bit 2 of the packet's first byte and set it to 1.
   packet->at(0) = packet->at(0) | (1 << 2);
 }
+
+}  // namespace weave
 
 }  // namespace proximity_auth

@@ -12,22 +12,8 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using proximity_auth::BluetoothLowEnergyWeavePacketGenerator;
-
-namespace {
-typedef BluetoothLowEnergyWeavePacketGenerator::ReasonForClose ReasonForClose;
-typedef BluetoothLowEnergyWeavePacketGenerator::Packet Packet;
-
-const uint8_t kDefaultPacketSize = 20;
-const uint8_t kWeaveVersion = 1;
-const uint8_t kMaxCounter = 8;
-const uint8_t kEmptyUpperByte = 0;
-const uint8_t kSelectDefaultPacketSize = 0;
-const uint8_t kDataType = 0;
-
-}  // namespace
-
 namespace proximity_auth {
+namespace weave {
 
 class ProximityAuthBluetoothLowEnergyWeavePacketGeneratorTest
     : public testing::Test {
@@ -76,9 +62,13 @@ TEST_F(ProximityAuthBluetoothLowEnergyWeavePacketGeneratorTest,
   // -000 ---- : counter = 0
   // ---- 0000 : command = 0 (request)
   // 1000 0000 = 0x80
-  expected = {
-      0x80,          kEmptyUpperByte, kWeaveVersion,           kEmptyUpperByte,
-      kWeaveVersion, kEmptyUpperByte, kSelectDefaultPacketSize};
+  expected = {0x80,
+              kEmptyUpperByte,
+              kByteWeaveVersion,
+              kEmptyUpperByte,
+              kByteWeaveVersion,
+              kEmptyUpperByte,
+              kByteSelectMaxPacketSize};
 
   EXPECT_EQ(expected, packet);
 }
@@ -97,8 +87,8 @@ TEST_F(ProximityAuthBluetoothLowEnergyWeavePacketGeneratorTest,
   // -000 ---- : counter = 0
   // ---- 0001 : command = 1 (response)
   // 1000 0001 = 0x81
-  expected_default = {0x81, kEmptyUpperByte, kWeaveVersion, kEmptyUpperByte,
-                      kDefaultPacketSize};
+  expected_default = {0x81, kEmptyUpperByte, kByteWeaveVersion, kEmptyUpperByte,
+                      kByteDefaultMaxPacketSize};
 
   EXPECT_EQ(expected_default, packet);
 }
@@ -121,8 +111,8 @@ TEST_F(ProximityAuthBluetoothLowEnergyWeavePacketGeneratorTest,
   // -000 ---- : counter = 0
   // ---- 0001 : command = 1 (response)
   // 1000 0001 = 0x81
-  expected_selected = {0x81, kEmptyUpperByte, kWeaveVersion, kEmptyUpperByte,
-                       kSelectedPacketSize};
+  expected_selected = {0x81, kEmptyUpperByte, kByteWeaveVersion,
+                       kEmptyUpperByte, kSelectedPacketSize};
   EXPECT_EQ(expected_selected, packet);
 }
 
@@ -254,17 +244,21 @@ TEST_F(ProximityAuthBluetoothLowEnergyWeavePacketGeneratorTest,
       BluetoothLowEnergyWeavePacketGenerator::Factory::NewInstance();
 
   const uint8_t kNumPackets = 100;
-  std::string data(kNumPackets * kDefaultPacketSize, 'a');
+  std::string data(kNumPackets * kByteDefaultMaxPacketSize, 'a');
 
   std::vector<Packet> packets = generator->EncodeDataMessage(data);
 
   std::vector<Packet> expected(kNumPackets);
 
+  const uint8_t kDataType = 0;
+
   for (uint8_t i = 0; i < kNumPackets; ++i) {
     uint8_t header = packets[i][0];
-    EXPECT_EQ(i % kMaxCounter, GetCounterFromHeader(header));
+    EXPECT_EQ(i % kMaxPacketCounter, GetCounterFromHeader(header));
     EXPECT_EQ(kDataType, GetPacketType(header));
   }
 }
+
+}  // namespace weave
 
 }  // namespace proximity_auth
