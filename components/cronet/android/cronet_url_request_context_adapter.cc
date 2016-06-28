@@ -413,6 +413,8 @@ CronetURLRequestContextAdapter::~CronetURLRequestContextAdapter() {
     network_quality_estimator_->RemoveRTTObserver(this);
     network_quality_estimator_->RemoveThroughputObserver(this);
   }
+  // Stop |write_to_file_observer_| if there is one.
+  StopNetLogHelper();
 }
 
 void CronetURLRequestContextAdapter::InitRequestContextOnMainThread(
@@ -779,11 +781,7 @@ void CronetURLRequestContextAdapter::StartNetLogToFile(
 void CronetURLRequestContextAdapter::StopNetLog(
     JNIEnv* env,
     const JavaParamRef<jobject>& jcaller) {
-  base::AutoLock lock(write_to_file_observer_lock_);
-  if (write_to_file_observer_) {
-    write_to_file_observer_->StopObserving(/*url_request_context=*/nullptr);
-    write_to_file_observer_.reset();
-  }
+  StopNetLogHelper();
 }
 
 base::Thread* CronetURLRequestContextAdapter::GetFileThread() {
@@ -813,6 +811,14 @@ void CronetURLRequestContextAdapter::OnThroughputObservation(
       base::android::AttachCurrentThread(), jcronet_url_request_context_.obj(),
       throughput_kbps,
       (timestamp - base::TimeTicks::UnixEpoch()).InMilliseconds(), source);
+}
+
+void CronetURLRequestContextAdapter::StopNetLogHelper() {
+  base::AutoLock lock(write_to_file_observer_lock_);
+  if (write_to_file_observer_) {
+    write_to_file_observer_->StopObserving(/*url_request_context=*/nullptr);
+    write_to_file_observer_.reset();
+  }
 }
 
 // Create a URLRequestContextConfig from the given parameters.

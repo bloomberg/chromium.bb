@@ -773,6 +773,34 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
 
     @SmallTest
     @Feature({"Cronet"})
+    @OnlyRunNativeCronet // No netlogs for pure java impl
+    // Tests that if stopNetLog is not explicity called, CronetEngine.shutdown()
+    // will take care of it. crbug.com/623701.
+    public void testNoStopNetLog() throws Exception {
+        Context context = getContext();
+        File directory = new File(PathUtils.getDataDirectory(context));
+        File file = File.createTempFile("cronet", "json", directory);
+        CronetEngine cronetEngine = new CronetUrlRequestContext(
+                new CronetEngine.Builder(context).setLibraryName("cronet_tests"));
+        cronetEngine.startNetLogToFile(file.getPath(), false);
+
+        // Start a request.
+        TestUrlRequestCallback callback = new TestUrlRequestCallback();
+        UrlRequest.Builder urlRequestBuilder =
+                new UrlRequest.Builder(mUrl, callback, callback.getExecutor(), cronetEngine);
+        urlRequestBuilder.build().start();
+        callback.blockForDone();
+        // Shut down the engine without calling stopNetLog.
+        cronetEngine.shutdown();
+        assertTrue(file.exists());
+        assertTrue(file.length() != 0);
+        assertFalse(hasBytesInNetLog(file));
+        assertTrue(file.delete());
+        assertTrue(!file.exists());
+    }
+
+    @SmallTest
+    @Feature({"Cronet"})
     @OnlyRunNativeCronet
     // Tests that NetLog contains events emitted by all live CronetEngines.
     public void testNetLogContainEventsFromAllLiveEngines() throws Exception {

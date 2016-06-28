@@ -161,6 +161,10 @@ class CronetURLRequestContextAdapter
       const base::TimeTicks& timestamp,
       net::NetworkQualityObservationSource source) override;
 
+  // Helper method to stop NetLog logging to file. This can be called on any
+  // thread. This will flush any remaining writes to disk.
+  void StopNetLogHelper();
+
   // Network thread is owned by |this|, but is destroyed from java thread.
   base::Thread* network_thread_;
 
