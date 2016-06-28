@@ -208,11 +208,32 @@ int32_t NaClSysFutexWaitAbs(struct NaClAppThread *natp, uint32_t addr,
   }
   result = -NaClXlateNaClSyncStatus(sync_status);
 
-  /*
-   * In case a timeout or spurious wakeup occurs, remove this thread
-   * from the wait queue.
-   */
-  if (natp->futex_wait_list_node.next != NULL) {
+  if (natp->futex_wait_list_node.next == NULL) {
+    /*
+     * This thread was woken by NaClSysFutexWake(), which removed this
+     * thread from the wait queue.  It might also be the case that
+     * NaClCondVarTimedWaitAbsolute() timed out and returned a timeout
+     * error status value -- the timeout can race with NaClSysFutexWake().
+     * If that happened, we still want to return a success status.
+     *
+     * Here is an example of what could go wrong if we returned ETIMEDOUT
+     * here: Suppose the FutexWake() call came from pthread_mutex_unlock()
+     * and the FutexWait() call came from pthread_mutex_timedlock().
+     * Suppose we have a typical implementation of
+     * pthread_mutex_timedlock() which returns immediately without trying
+     * again to claim the mutex if FutexWait() returns ETIMEDOUT.  If
+     * another thread were waiting on the mutex, it wouldn't get woken --
+     * the wakeup from the FutexWake() call would have got lost.
+     *
+     * See https://bugs.chromium.org/p/nativeclient/issues/detail?id=4373
+     */
+    result = 0;
+  } else {
+    /*
+     * A timeout or spurious wakeup occurred, so NaClSysFutexWake() did not
+     * remove this thread from the wait queue, so we must remove it from
+     * the wait queue ourselves.
+     */
     ListRemoveNode(&natp->futex_wait_list_node);
   }
   /* Clear these fields to prevent their accidental use. */
