@@ -1475,19 +1475,18 @@ been automagically updated.  The previous version is available at %s.old.
     revision_overrides = {}
     if not self._options.revisions:
       for s in self.dependencies:
-        if not s.managed:
+        if not s.managed and not self._options.head:
           self._options.revisions.append('%s@unmanaged' % s.name)
     if not self._options.revisions:
       return revision_overrides
     solutions_names = [s.name for s in self.dependencies]
-    index = 0
-    for revision in self._options.revisions:
+    for i, revision in enumerate(self._options.revisions):
       if not '@' in revision:
         # Support for --revision 123
-        revision = '%s@%s' % (solutions_names[index], revision)
-      name, rev = revision.split('@', 1)
+        name, rev = solutions_names[i], revision
+      else:
+        name, rev = revision.split('@', 1)
       revision_overrides[name] = rev
-      index += 1
     return revision_overrides
 
   def RunOnDeps(self, command, args, ignore_requirements=False, progress=True):
@@ -1999,6 +1998,10 @@ def CMDsync(parser, args):
                           'with the command-line flag), transitively update '
                           'the dependencies to the date of the given revision. '
                           'Only supported for SVN repositories.')
+  parser.add_option('-H', '--head', action='store_true',
+                    help='Begin by automatically syncing the root gclient '
+                         'solutions to HEAD of the remote repository. Similar '
+                         'to making the solution temporarily "managed".')
   parser.add_option('-D', '--delete_unversioned_trees', action='store_true',
                     help='Deletes from the working copy any dependencies that '
                          'have been removed since the last sync, as long as '
