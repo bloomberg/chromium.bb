@@ -24,7 +24,7 @@ import org.chromium.chrome.browser.EmbedContentViewActivity;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 import org.chromium.chrome.browser.metrics.UmaUtils;
 import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
-import org.chromium.chrome.browser.preferences.datareduction.DataReductionPromoScreen;
+import org.chromium.chrome.browser.preferences.datareduction.DataReductionPromoUtils;
 import org.chromium.chrome.browser.preferences.datareduction.DataReductionProxyUma;
 import org.chromium.chrome.browser.profiles.Profile;
 
@@ -298,18 +298,15 @@ public class FirstRunActivity extends AppCompatActivity implements FirstRunPageD
         mFreProperties.putBoolean(RESULT_SHOW_SIGNIN_SETTINGS, mResultShowSignInSettings);
         FirstRunFlowSequencer.markFlowAsCompleted(this, mFreProperties);
 
-        if (DataReductionPromoScreen
-                .getDisplayedDataReductionPromo(getApplicationContext())) {
+        if (DataReductionPromoUtils.getDisplayedFreOrSecondRunPromo()) {
             if (DataReductionProxySettings.getInstance().isDataReductionProxyEnabled()) {
                 DataReductionProxyUma
                         .dataReductionProxyUIAction(DataReductionProxyUma.ACTION_FRE_ENABLED);
-                DataReductionPromoScreen
-                        .saveDataReductionFrePromoOptOut(getApplicationContext(), false);
+                DataReductionPromoUtils.saveFrePromoOptOut(false);
             } else {
                 DataReductionProxyUma
                         .dataReductionProxyUIAction(DataReductionProxyUma.ACTION_FRE_DISABLED);
-                DataReductionPromoScreen
-                        .saveDataReductionFrePromoOptOut(getApplicationContext(), true);
+                DataReductionPromoUtils.saveFrePromoOptOut(true);
             }
         }
 

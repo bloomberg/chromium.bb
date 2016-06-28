@@ -15,6 +15,7 @@ import org.chromium.base.CommandLine;
 import org.chromium.base.FieldTrialList;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.ChromeSwitches;
+import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.preferences.privacy.PrivacyPreferencesManager;
 import org.chromium.chrome.browser.services.AndroidEduAndChildAccountHelper;
@@ -116,7 +117,8 @@ public abstract class FirstRunFlowSequencer  {
     }
 
     protected boolean shouldShowDataReductionPage() {
-        return FieldTrialList.findFullName("DataReductionProxyFREPromo").startsWith("Enabled");
+        return !DataReductionProxySettings.getInstance().isDataReductionProxyManaged()
+                && FieldTrialList.findFullName("DataReductionProxyFREPromo").startsWith("Enabled");
     }
 
     @VisibleForTesting

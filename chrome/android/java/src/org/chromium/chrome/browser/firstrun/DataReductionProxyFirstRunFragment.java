@@ -14,7 +14,7 @@ import android.widget.Button;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
-import org.chromium.chrome.browser.preferences.datareduction.DataReductionPromoScreen;
+import org.chromium.chrome.browser.preferences.datareduction.DataReductionPromoUtils;
 
 /**
  * The First Run Experience fragment that allows the user to opt in to Data Saver.
@@ -63,6 +63,6 @@ public class DataReductionProxyFirstRunFragment extends FirstRunPage {
     @Override
     public void onStart() {
         super.onStart();
-        DataReductionPromoScreen.saveDataReductionPromoDisplayed(getActivity());
+        DataReductionPromoUtils.saveFreOrSecondRunPromoDisplayed();
     }
 }
