@@ -1481,11 +1481,11 @@ been automagically updated.  The previous version is available at %s.old.
       return revision_overrides
     solutions_names = [s.name for s in self.dependencies]
     for i, revision in enumerate(self._options.revisions):
-      if not '@' in revision:
+      if '@' in revision:
+        name, rev = revision.split('@', 1)
+      else:
         # Support for --revision 123
         name, rev = solutions_names[i], revision
-      else:
-        name, rev = revision.split('@', 1)
       revision_overrides[name] = rev
     return revision_overrides
 
