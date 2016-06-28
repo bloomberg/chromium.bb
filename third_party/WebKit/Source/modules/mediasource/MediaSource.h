@@ -35,6 +35,7 @@
 #include "core/dom/ActiveDOMObject.h"
 #include "core/events/EventTarget.h"
 #include "core/html/HTMLMediaSource.h"
+#include "core/html/TimeRanges.h"
 #include "core/html/URLRegistry.h"
 #include "modules/mediasource/SourceBuffer.h"
 #include "modules/mediasource/SourceBufferList.h"
@@ -74,6 +75,9 @@ public:
     const AtomicString& readyState() const { return m_readyState; }
     void endOfStream(const AtomicString& error, ExceptionState&);
     void endOfStream(ExceptionState&);
+    void setLiveSeekableRange(double start, double end, ExceptionState&);
+    void clearLiveSeekableRange(ExceptionState&);
+
     static bool isTypeSupported(const String& type);
 
     // HTMLMediaSource
@@ -133,6 +137,8 @@ private:
 
     Member<SourceBufferList> m_sourceBuffers;
     Member<SourceBufferList> m_activeSourceBuffers;
+
+    Member<TimeRanges> m_liveSeekableRange;
 
     bool m_isAddedToRegistry;
 };

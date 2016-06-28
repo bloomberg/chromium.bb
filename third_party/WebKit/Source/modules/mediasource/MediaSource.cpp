@@ -37,7 +37,6 @@
 #include "core/events/Event.h"
 #include "core/events/GenericEventQueue.h"
 #include "core/html/HTMLMediaElement.h"
-#include "core/html/TimeRanges.h"
 #include "modules/mediasource/MediaSourceRegistry.h"
 #include "platform/ContentType.h"
 #include "platform/Logging.h"
@@ -104,6 +103,7 @@ MediaSource::MediaSource(ExecutionContext* context)
     , m_attachedElement(nullptr)
     , m_sourceBuffers(SourceBufferList::create(getExecutionContext(), m_asyncEventQueue.get()))
     , m_activeSourceBuffers(SourceBufferList::create(getExecutionContext(), m_asyncEventQueue.get()))
+    , m_liveSeekableRange(TimeRanges::create())
     , m_isAddedToRegistry(false)
 {
     MSLOG << __FUNCTION__ << " this=" << this;
@@ -283,6 +283,7 @@ DEFINE_TRACE(MediaSource)
     visitor->trace(m_attachedElement);
     visitor->trace(m_sourceBuffers);
     visitor->trace(m_activeSourceBuffers);
+    visitor->trace(m_liveSeekableRange);
     EventTargetWithInlineData::trace(visitor);
     ActiveDOMObject::trace(visitor);
 }
@@ -363,7 +364,7 @@ TimeRanges* MediaSource::buffered() const
 TimeRanges* MediaSource::seekable() const
 {
     // Implements MediaSource algorithm for HTMLMediaElement.seekable.
-    // https://dvcs.w3.org/hg/html-media/raw-file/default/media-source/media-source.html#htmlmediaelement-extensions
+    // http://w3c.github.io/media-source/#htmlmediaelement-extensions
 
     double sourceDuration = duration();
     // If duration equals NaN: Return an empty TimeRanges object.
@@ -374,13 +375,27 @@ TimeRanges* MediaSource::seekable() const
     if (sourceDuration == std::numeric_limits<double>::infinity()) {
         TimeRanges* buffered = m_attachedElement->buffered();
 
-        // 1. If the HTMLMediaElement.buffered attribute returns an empty TimeRanges object, then
-        // return an empty TimeRanges object and abort these steps.
+        // 1. If live seekable range is not empty:
+        if (m_liveSeekableRange->length() != 0) {
+            // 1.1. Let union ranges be the union of live seekable range and the
+            //      HTMLMediaElement.buffered attribute.
+            // 1.2. Return a single range with a start time equal to the
+            //      earliest start time in union ranges and an end time equal to
+            //      the highest end time in union ranges and abort these steps.
+            if (buffered->length() == 0) {
+                return TimeRanges::create(m_liveSeekableRange->start(0, ASSERT_NO_EXCEPTION), m_liveSeekableRange->end(0, ASSERT_NO_EXCEPTION));
+            }
+
+            return TimeRanges::create(std::min(m_liveSeekableRange->start(0, ASSERT_NO_EXCEPTION), buffered->start(0, ASSERT_NO_EXCEPTION)),
+                std::max(m_liveSeekableRange->end(0, ASSERT_NO_EXCEPTION), buffered->end(buffered->length() - 1, ASSERT_NO_EXCEPTION)));
+        }
+        // 2. If the HTMLMediaElement.buffered attribute returns an empty TimeRanges object, then
+        //    return an empty TimeRanges object and abort these steps.
         if (buffered->length() == 0)
             return TimeRanges::create();
 
-        // 2. Return a single range with a start time of 0 and an end time equal to the highest end
-        // time reported by the HTMLMediaElement.buffered attribute.
+        // 3. Return a single range with a start time of 0 and an end time equal to the highest end
+        //    time reported by the HTMLMediaElement.buffered attribute.
         return TimeRanges::create(0, buffered->end(buffered->length() - 1, ASSERT_NO_EXCEPTION));
     }
 
@@ -480,6 +495,47 @@ void MediaSource::endOfStream(const AtomicString& error, ExceptionState& excepti
 void MediaSource::endOfStream(ExceptionState& exceptionState)
 {
     endOfStreamInternal(WebMediaSource::EndOfStreamStatusNoError, exceptionState);
+}
+
+void MediaSource::setLiveSeekableRange(double start, double end, ExceptionState& exceptionState)
+{
+    // http://w3c.github.io/media-source/#widl-MediaSource-setLiveSeekableRange-void-double-start-double-end
+    // 1. If the readyState attribute is not "open" then throw an
+    //    InvalidStateError exception and abort these steps.
+    // 2. If the updating attribute equals true on any SourceBuffer in
+    //    SourceBuffers, then throw an InvalidStateError exception and abort
+    //    these steps.
+    if (throwExceptionIfClosedOrUpdating(isOpen(), isUpdating(), exceptionState))
+        return;
+
+    // 3. If start is negative or greater than end, then throw a TypeError
+    //    exception and abort these steps.
+    if (start < 0 || start > end) {
+        exceptionState.throwTypeError(ExceptionMessages::indexOutsideRange("start value", start, 0.0, ExceptionMessages::InclusiveBound, end, ExceptionMessages::InclusiveBound));
+        return;
+    }
+
+    // 4. Set live seekable range to be a new normalized TimeRanges object
+    //    containing a single range whose start position is start and end
+    //    position is end.
+    m_liveSeekableRange = TimeRanges::create(start, end);
+}
+
+void MediaSource::clearLiveSeekableRange(ExceptionState& exceptionState)
+{
+    // http://w3c.github.io/media-source/#widl-MediaSource-clearLiveSeekableRange-void
+    // 1. If the readyState attribute is not "open" then throw an
+    //    InvalidStateError exception and abort these steps.
+    // 2. If the updating attribute equals true on any SourceBuffer in
+    //    SourceBuffers, then throw an InvalidStateError exception and abort
+    //    these steps.
+    if (throwExceptionIfClosedOrUpdating(isOpen(), isUpdating(), exceptionState))
+        return;
+
+    // 3. If live seekable range contains a range, then set live seekable range
+    //    to be a new empty TimeRanges object.
+    if (m_liveSeekableRange->length() != 0)
+        m_liveSeekableRange = TimeRanges::create();
 }
 
 void MediaSource::endOfStreamInternal(const WebMediaSource::EndOfStreamStatus eosStatus, ExceptionState& exceptionState)
