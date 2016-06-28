@@ -48,6 +48,9 @@ class MEDIA_EXPORT AudioRendererMixer
 
   OutputDeviceInfo GetOutputDeviceInfo();
 
+  // Returns true if called on rendering thread, otherwise false.
+  bool CurrentThreadIsRenderingThread();
+
  private:
   // Maps input sample rate to the dedicated converter.
   using AudioConvertersMap =

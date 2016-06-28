@@ -118,6 +118,10 @@ OutputDeviceInfo AudioRendererMixer::GetOutputDeviceInfo() {
   return audio_sink_->GetOutputDeviceInfo();
 }
 
+bool AudioRendererMixer::CurrentThreadIsRenderingThread() {
+  return audio_sink_->CurrentThreadIsRenderingThread();
+}
+
 int AudioRendererMixer::Render(AudioBus* audio_bus,
                                uint32_t frames_delayed,
                                uint32_t frames_skipped) {

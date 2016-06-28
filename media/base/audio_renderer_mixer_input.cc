@@ -123,8 +123,7 @@ OutputDeviceInfo AudioRendererMixerInput::GetOutputDeviceInfo() {
 }
 
 bool AudioRendererMixerInput::CurrentThreadIsRenderingThread() {
-  NOTIMPLEMENTED();
-  return false;
+  return mixer_->CurrentThreadIsRenderingThread();
 }
 
 void AudioRendererMixerInput::SwitchOutputDevice(
