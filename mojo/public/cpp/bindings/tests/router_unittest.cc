@@ -28,7 +28,7 @@ class RouterTest : public testing::Test {
 
   void TearDown() override {}
 
-  void PumpMessages() { loop_.RunUntilIdle(); }
+  void PumpMessages() { base::RunLoop().RunUntilIdle(); }
 
  protected:
   ScopedMessagePipeHandle handle0_;
