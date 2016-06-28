@@ -4,17 +4,30 @@
 
 #include "core/html/parser/HTMLParserThread.h"
 
+#include "platform/RuntimeEnabledFeatures.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
 
 TEST(HTMLParserThreadTest, Init)
 {
-    // The harness has already run init() for us, so tear down the parser first.
+    // The harness has not initialized the parser thread, due to
+    // RuntimeEnabledFeatures gating.
+    ASSERT_FALSE(HTMLParserThread::shared());
+    HTMLParserThread::init();
     ASSERT_TRUE(HTMLParserThread::shared());
     HTMLParserThread::shutdown();
+}
 
-    // Make sure starting the parser thread brings it back to life.
+TEST(HTMLParserThreadTest, ShutdownStartup)
+{
+    // The harness has not initialized the parser thread, due to
+    // RuntimeEnabledFeatures gating.
+    ASSERT_FALSE(HTMLParserThread::shared());
+    HTMLParserThread::init();
+    ASSERT_TRUE(HTMLParserThread::shared());
+
+    HTMLParserThread::shutdown();
     ASSERT_FALSE(HTMLParserThread::shared());
     HTMLParserThread::init();
     ASSERT_TRUE(HTMLParserThread::shared());

@@ -410,7 +410,7 @@ void HTMLDocumentParser::discardSpeculationsAndResumeFrom(std::unique_ptr<Parsed
     m_input.current().clear(); // FIXME: This should be passed in instead of cleared.
 
     ASSERT(checkpoint->unparsedInput.isSafeToSendToAnotherThread());
-    HTMLParserThread::shared()->postTask(threadSafeBind(&BackgroundHTMLParser::resumeFrom, m_backgroundParser, passed(std::move(checkpoint))));
+    postTaskToLookaheadParser(threadSafeBind(&BackgroundHTMLParser::resumeFrom, m_backgroundParser, passed(std::move(checkpoint))));
 }
 
 size_t HTMLDocumentParser::processParsedChunkFromBackgroundParser(std::unique_ptr<ParsedChunk> popChunk)
@@ -432,7 +432,7 @@ size_t HTMLDocumentParser::processParsedChunkFromBackgroundParser(std::unique_pt
     std::unique_ptr<CompactHTMLTokenStream> tokens = std::move(chunk->tokens);
     size_t elementTokenCount = 0;
 
-    HTMLParserThread::shared()->postTask(threadSafeBind(&BackgroundHTMLParser::startedChunkWithCheckpoint, m_backgroundParser, chunk->inputCheckpoint));
+    postTaskToLookaheadParser(threadSafeBind(&BackgroundHTMLParser::startedChunkWithCheckpoint, m_backgroundParser, chunk->inputCheckpoint));
 
     for (const auto& xssInfo : chunk->xssInfos) {
         m_textPosition = xssInfo->m_textPosition;
@@ -563,7 +563,7 @@ void HTMLDocumentParser::forcePlaintextForTextDocument()
         if (!m_haveBackgroundParser)
             startBackgroundParser();
 
-        HTMLParserThread::shared()->postTask(threadSafeBind(&BackgroundHTMLParser::forcePlaintextForTextDocument, m_backgroundParser));
+        postTaskToLookaheadParser(threadSafeBind(&BackgroundHTMLParser::forcePlaintextForTextDocument, m_backgroundParser));
     } else
         m_tokenizer->setState(HTMLTokenizer::PLAINTEXTState);
 }
@@ -739,14 +739,14 @@ void HTMLDocumentParser::startBackgroundParser()
     }
 
     ASSERT(config->xssAuditor->isSafeToSendToAnotherThread());
-    HTMLParserThread::shared()->postTask(threadSafeBind(
+    postTaskToLookaheadParser(threadSafeBind(
         &BackgroundHTMLParser::start,
         reference.release(),
         passed(std::move(config)),
         document()->url(),
         passed(CachedDocumentParameters::create(document())),
         MediaValuesCached::MediaValuesCachedData(*document()),
-        passed(wrapUnique(m_loadingTaskRunner->clone()))));
+        passed(wrapUnique(m_loadingTaskRunner->clone()))), Synchronous);
 }
 
 void HTMLDocumentParser::stopBackgroundParser()
@@ -755,7 +755,10 @@ void HTMLDocumentParser::stopBackgroundParser()
     ASSERT(m_haveBackgroundParser);
     m_haveBackgroundParser = false;
 
-    HTMLParserThread::shared()->postTask(threadSafeBind(&BackgroundHTMLParser::stop, m_backgroundParser));
+    // Make this sync, as lsan triggers on some unittests if the task runner is
+    // used. Note that these lifetimes will be much more concrete if
+    // ParseHTMLOnMainThread lands (the lookahead parser will be a member).
+    postTaskToLookaheadParser(threadSafeBind(&BackgroundHTMLParser::stop, m_backgroundParser), Synchronous);
     m_weakFactory.revokeAll();
 }
 
@@ -863,7 +866,7 @@ void HTMLDocumentParser::finish()
     if (m_haveBackgroundParser) {
         if (!m_input.haveSeenEndOfFile())
             m_input.closeWithoutMarkingEndOfFile();
-        HTMLParserThread::shared()->postTask(threadSafeBind(&BackgroundHTMLParser::finish, m_backgroundParser));
+        postTaskToLookaheadParser(threadSafeBind(&BackgroundHTMLParser::finish, m_backgroundParser));
         return;
     }
 
@@ -1028,7 +1031,7 @@ void HTMLDocumentParser::appendBytes(const char* data, size_t length)
         memcpy(buffer->data(), data, length);
         TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("blink.debug"), "HTMLDocumentParser::appendBytes", "size", (unsigned)length);
 
-        HTMLParserThread::shared()->postTask(threadSafeBind(&BackgroundHTMLParser::appendRawBytesFromMainThread, m_backgroundParser, passed(std::move(buffer))));
+        postTaskToLookaheadParser(threadSafeBind(&BackgroundHTMLParser::appendRawBytesFromMainThread, m_backgroundParser, passed(std::move(buffer))));
         return;
     }
 
@@ -1052,7 +1055,7 @@ void HTMLDocumentParser::flush()
             return;
         }
 
-        HTMLParserThread::shared()->postTask(threadSafeBind(&BackgroundHTMLParser::flush, m_backgroundParser));
+        postTaskToLookaheadParser(threadSafeBind(&BackgroundHTMLParser::flush, m_backgroundParser));
     } else {
         DecodedDataDocumentParser::flush();
     }
@@ -1064,7 +1067,7 @@ void HTMLDocumentParser::setDecoder(std::unique_ptr<TextResourceDecoder> decoder
     DecodedDataDocumentParser::setDecoder(std::move(decoder));
 
     if (m_haveBackgroundParser)
-        HTMLParserThread::shared()->postTask(threadSafeBind(&BackgroundHTMLParser::setDecoder, m_backgroundParser, passed(takeDecoder())));
+        postTaskToLookaheadParser(threadSafeBind(&BackgroundHTMLParser::setDecoder, m_backgroundParser, passed(takeDecoder())));
 }
 
 void HTMLDocumentParser::documentElementAvailable()
@@ -1126,7 +1129,26 @@ void HTMLDocumentParser::evaluateAndPreloadScriptForDocumentWrite(const String& 
         DEFINE_STATIC_LOCAL(CustomCountHistogram, failureHistogram, ("PreloadScanner.DocumentWrite.ExecutionTime.Failure", 1, 10000, 50));
         failureHistogram.count(duration);
     }
+}
 
+void HTMLDocumentParser::postTaskToLookaheadParser(std::unique_ptr<CrossThreadClosure> closure, LookaheadParserTaskSynchrony synchronyPolicy)
+{
+    if (!RuntimeEnabledFeatures::parseHTMLOnMainThreadEnabled()) {
+        HTMLParserThread::shared()->postTask(std::move(closure));
+        return;
+    }
+
+    // Some messages to the lookahead parser should be synchronous. Otherwise,
+    // just post to the loading task runner.
+    switch (synchronyPolicy) {
+    case Synchronous:
+        (*closure)();
+        return;
+    case Asynchronous:
+        m_loadingTaskRunner->postTask(BLINK_FROM_HERE, std::move(closure));
+        return;
+    }
+    NOTREACHED();
 }
 
 } // namespace blink

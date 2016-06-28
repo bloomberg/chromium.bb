@@ -90,6 +90,7 @@ public:
     BLINK_EXPORT static void enableOrientationEvent(bool);
     BLINK_EXPORT static void enableOverlayScrollbars(bool);
     BLINK_EXPORT static void enablePagePopup(bool);
+    BLINK_EXPORT static void enableParseHTMLOnMainThread(bool);
     BLINK_EXPORT static void enablePermissionsAPI(bool);
     BLINK_EXPORT static void enablePreciseMemoryInfo(bool);
     BLINK_EXPORT static void enablePresentationAPI(bool);

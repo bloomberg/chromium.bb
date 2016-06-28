@@ -180,6 +180,19 @@ private:
     int preloadInsertion(const SegmentedString& source);
     void evaluateAndPreloadScriptForDocumentWrite(const String& source);
 
+    // Temporary enum for the ParseHTMLOnMainThread experiment. This is used to
+    // annotate whether a given task should post a task or not on the main
+    // thread if the lookahead parser is living on the main thread.
+    enum LookaheadParserTaskSynchrony {
+        Synchronous,
+        Asynchronous,
+    };
+
+    // Setting |sync| to true will just call the closure. Note, this method is
+    // completely temporary as we need to maintain both threading
+    // implementations until the ParseHTMLOnMainThread experiment finishes.
+    void postTaskToLookaheadParser(std::unique_ptr<CrossThreadClosure>, LookaheadParserTaskSynchrony = Asynchronous);
+
     HTMLToken& token() { return *m_token; }
 
     HTMLParserOptions m_options;

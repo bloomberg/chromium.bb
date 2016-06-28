@@ -55,6 +55,7 @@
 #include "platform/EventTracer.h"
 #include "platform/FontFamilyNames.h"
 #include "platform/HTTPNames.h"
+#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/weborigin/KURL.h"
 #include "platform/weborigin/SchemeRegistry.h"
 #include "platform/weborigin/SecurityPolicy.h"
@@ -138,7 +139,8 @@ void CoreInitializer::initialize()
 
     // Creates HTMLParserThread::shared and ScriptStreamerThread::shared, but
     // does not start the threads.
-    HTMLParserThread::init();
+    if (!RuntimeEnabledFeatures::parseHTMLOnMainThreadEnabled())
+        HTMLParserThread::init();
     ScriptStreamerThread::init();
 }
 
@@ -151,7 +153,8 @@ void CoreInitializer::shutdown()
     // Make sure we stop the HTMLParserThread before Platform::current() is
     // cleared.
     ASSERT(Platform::current());
-    HTMLParserThread::shutdown();
+    if (!RuntimeEnabledFeatures::parseHTMLOnMainThreadEnabled())
+        HTMLParserThread::shutdown();
 
     WorkerThread::terminateAndWaitForAllWorkers();
 }

@@ -195,6 +195,11 @@ void WebRuntimeFeatures::enablePagePopup(bool enable)
     RuntimeEnabledFeatures::setPagePopupEnabled(enable);
 }
 
+void WebRuntimeFeatures::enableParseHTMLOnMainThread(bool enable)
+{
+    RuntimeEnabledFeatures::setParseHTMLOnMainThreadEnabled(enable);
+}
+
 void WebRuntimeFeatures::enablePermissionsAPI(bool enable)
 {
     RuntimeEnabledFeatures::setPermissionsEnabled(enable);

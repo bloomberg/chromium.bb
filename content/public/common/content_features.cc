@@ -88,6 +88,10 @@ const base::Feature kOriginTrials{"OriginTrials",
 const base::Feature kPaintOptimizations{"PaintOptimizations",
                                         base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Whether the lookahead parser in Blink runs on the main thread.
+const base::Feature kParseHTMLOnMainThread{"ParseHTMLOnMainThread",
+                                           base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Partial support for pointer event feature.
 const base::Feature kPointerEvents{"PointerEvent",
                                    base::FEATURE_DISABLED_BY_DEFAULT};

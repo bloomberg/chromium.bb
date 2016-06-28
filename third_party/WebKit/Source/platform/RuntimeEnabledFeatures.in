@@ -243,3 +243,4 @@ WebFontsInterventionTrigger
 Worklet status=experimental
 WeakMemoryCache
 DoNotUnlockSharedBuffer
+ParseHTMLOnMainThread status=test

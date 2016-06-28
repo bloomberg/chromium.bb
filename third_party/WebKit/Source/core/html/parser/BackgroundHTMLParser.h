@@ -100,6 +100,8 @@ private:
     void sendTokensToMainThread();
     void updateDocument(const String& decodedData);
 
+    void runOnMainThread(std::unique_ptr<CrossThreadClosure>);
+
     WeakPtrFactory<BackgroundHTMLParser> m_weakFactory;
     BackgroundHTMLInputStream m_input;
     HTMLSourceTracker m_sourceTracker;

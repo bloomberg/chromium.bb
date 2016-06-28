@@ -161,9 +161,7 @@ void BackgroundHTMLParser::updateDocument(const String& decodedData)
         m_lastSeenEncodingData = encodingData;
 
         m_xssAuditor->setEncoding(encodingData.encoding());
-        m_loadingTaskRunner->postTask(
-            BLINK_FROM_HERE,
-            threadSafeBind(&HTMLDocumentParser::didReceiveEncodingDataFromBackgroundParser, m_parser, encodingData));
+        runOnMainThread(threadSafeBind(&HTMLDocumentParser::didReceiveEncodingDataFromBackgroundParser, m_parser, encodingData));
     }
 
     if (decodedData.isEmpty())
@@ -314,12 +312,23 @@ void BackgroundHTMLParser::sendTokensToMainThread()
     chunkEnqueueTime.count(monotonicallyIncreasingTimeMS() - chunkStartTime);
 
     if (isEmpty) {
-        m_loadingTaskRunner->postTask(
-            BLINK_FROM_HERE,
-            threadSafeBind(&HTMLDocumentParser::notifyPendingParsedChunks, m_parser));
+        runOnMainThread(threadSafeBind(&HTMLDocumentParser::notifyPendingParsedChunks, m_parser));
     }
 
     m_pendingTokens = wrapUnique(new CompactHTMLTokenStream);
+}
+
+// If the background parser is already running on the main thread, then it is
+// not necessary to post a task to the main thread to run asynchronously. The
+// main parser deals with chunking up its own work.
+// TODO(csharrison): This is a pretty big hack because we don't actually need a
+// CrossThreadClosure in these cases. This is just experimental.
+void BackgroundHTMLParser::runOnMainThread(std::unique_ptr<CrossThreadClosure> closure)
+{
+    if (isMainThread())
+        (*closure)();
+    else
+        m_loadingTaskRunner->postTask(BLINK_FROM_HERE, std::move(closure));
 }
 
 } // namespace blink

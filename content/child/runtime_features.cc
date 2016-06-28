@@ -239,6 +239,9 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
   if (!base::FeatureList::IsEnabled(features::kPaintOptimizations))
     WebRuntimeFeatures::enableFeatureFromString("PaintOptimizations", false);
 
+  if (base::FeatureList::IsEnabled(features::kParseHTMLOnMainThread))
+    WebRuntimeFeatures::enableFeatureFromString("ParseHTMLOnMainThread", true);
+
   WebRuntimeFeatures::enableRenderingPipelineThrottling(
     base::FeatureList::IsEnabled(features::kRenderingPipelineThrottling));
 
