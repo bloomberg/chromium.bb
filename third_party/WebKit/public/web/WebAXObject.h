@@ -209,6 +209,7 @@ public:
     BLINK_EXPORT bool liveRegionBusy() const;
     BLINK_EXPORT WebString liveRegionRelevant() const;
     BLINK_EXPORT WebString liveRegionStatus() const;
+    BLINK_EXPORT WebAXObject liveRegionRoot() const;
     BLINK_EXPORT bool containerLiveRegionAtomic() const;
     BLINK_EXPORT bool containerLiveRegionBusy() const;
     BLINK_EXPORT WebString containerLiveRegionRelevant() const;

@@ -519,9 +519,7 @@ void AXObject::updateCachedAttributeValuesIfNeeded() const
     m_cachedHasInheritedPresentationalRole = (inheritsPresentationalRoleFrom() != 0);
     m_cachedIsPresentationalChild = (ancestorForWhichThisIsAPresentationalChild() != 0);
     m_cachedIsIgnored = computeAccessibilityIsIgnored();
-    m_cachedLiveRegionRoot = isLiveRegion() ?
-        this :
-        (parentObjectIfExists() ? parentObjectIfExists()->liveRegionRoot() : 0);
+    m_cachedLiveRegionRoot = isLiveRegion() ? const_cast<AXObject*>(this) : (parentObjectIfExists() ? parentObjectIfExists()->liveRegionRoot() : 0);
     m_cachedAncestorExposesActiveDescendant = computeAncestorExposesActiveDescendant();
 }
 
@@ -1099,7 +1097,7 @@ bool AXObject::isLiveRegion() const
     return equalIgnoringCase(liveRegion, "polite") || equalIgnoringCase(liveRegion, "assertive");
 }
 
-const AXObject* AXObject::liveRegionRoot() const
+AXObject* AXObject::liveRegionRoot() const
 {
     updateCachedAttributeValuesIfNeeded();
     return m_cachedLiveRegionRoot;

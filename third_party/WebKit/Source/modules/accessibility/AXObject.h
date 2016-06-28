@@ -809,7 +809,7 @@ public:
 
     // ARIA live-region features.
     bool isLiveRegion() const;
-    const AXObject* liveRegionRoot() const;
+    AXObject* liveRegionRoot() const;
     virtual const AtomicString& liveRegionStatus() const { return nullAtom; }
     virtual const AtomicString& liveRegionRelevant() const { return nullAtom; }
     virtual bool liveRegionAtomic() const { return false; }
@@ -982,7 +982,7 @@ protected:
     mutable bool m_cachedHasInheritedPresentationalRole : 1;
     mutable bool m_cachedIsPresentationalChild : 1;
     mutable bool m_cachedAncestorExposesActiveDescendant : 1;
-    mutable Member<const AXObject> m_cachedLiveRegionRoot;
+    mutable Member<AXObject> m_cachedLiveRegionRoot;
 
     Member<AXObjectCacheImpl> m_axObjectCache;
 

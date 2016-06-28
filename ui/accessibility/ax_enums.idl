@@ -305,6 +305,7 @@
 
     // Relationships between this element and other elements.
     activedescendant_id,
+    member_of_id,
     next_on_line_id,
     previous_on_line_id,
 

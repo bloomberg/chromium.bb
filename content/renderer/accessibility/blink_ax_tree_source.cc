@@ -549,6 +549,12 @@ void BlinkAXTreeSource::SerializeNode(blink::WebAXObject src,
     dst->AddStringAttribute(
         ui::AX_ATTR_LIVE_RELEVANT,
         src.liveRegionRelevant().utf8());
+    // If we are not at the root of an atomic live region.
+    if (src.containerLiveRegionAtomic() && !src.liveRegionRoot().isDetached() &&
+        !src.liveRegionAtomic()) {
+      dst->AddIntAttribute(ui::AX_ATTR_MEMBER_OF_ID,
+                           src.liveRegionRoot().axID());
+    }
     dst->AddBoolAttribute(ui::AX_ATTR_CONTAINER_LIVE_ATOMIC,
                           src.containerLiveRegionAtomic());
     dst->AddBoolAttribute(ui::AX_ATTR_CONTAINER_LIVE_BUSY,

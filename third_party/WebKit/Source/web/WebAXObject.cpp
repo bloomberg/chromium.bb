@@ -600,6 +600,17 @@ WebString WebAXObject::liveRegionStatus() const
     return m_private->liveRegionStatus();
 }
 
+WebAXObject WebAXObject::liveRegionRoot() const
+{
+    if (isDetached())
+        return WebAXObject();
+
+    AXObject* liveRegionRoot = m_private->liveRegionRoot();
+    if (liveRegionRoot)
+        return WebAXObject(liveRegionRoot);
+    return WebAXObject();
+}
+
 bool WebAXObject::containerLiveRegionAtomic() const
 {
     if (isDetached())

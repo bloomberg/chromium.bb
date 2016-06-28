@@ -2340,4 +2340,135 @@ TEST_F(BrowserAccessibilityTest, AccChildOnlyReturnsDescendants) {
       child_unique_id_variant, result.Receive()));
 }
 
+TEST_F(BrowserAccessibilityTest, TestIAccessible2Relations) {
+  std::vector<int32_t> describedby_ids = {2, 3};
+  ui::AXNodeData root;
+  root.id = 1;
+  root.role = ui::AX_ROLE_ROOT_WEB_AREA;
+  root.AddIntListAttribute(ui::AX_ATTR_DESCRIBEDBY_IDS, describedby_ids);
+
+  ui::AXNodeData child1;
+  child1.id = 2;
+  child1.role = ui::AX_ROLE_STATIC_TEXT;
+  root.child_ids.push_back(2);
+
+  ui::AXNodeData child2;
+  child2.id = 3;
+  child2.role = ui::AX_ROLE_STATIC_TEXT;
+  root.child_ids.push_back(3);
+
+  std::unique_ptr<BrowserAccessibilityManager> manager(
+      BrowserAccessibilityManager::Create(
+          MakeAXTreeUpdate(root, child1, child2), nullptr,
+          new CountedBrowserAccessibilityFactory()));
+
+  BrowserAccessibilityWin* ax_root =
+      ToBrowserAccessibilityWin(manager->GetRoot());
+  ASSERT_NE(nullptr, ax_root);
+  BrowserAccessibilityWin* ax_child1 =
+      ToBrowserAccessibilityWin(ax_root->PlatformGetChild(0));
+  ASSERT_NE(nullptr, ax_child1);
+  BrowserAccessibilityWin* ax_child2 =
+      ToBrowserAccessibilityWin(ax_root->PlatformGetChild(1));
+  ASSERT_NE(nullptr, ax_child2);
+
+  LONG n_relations = 0;
+  LONG n_targets = 0;
+  LONG unique_id = 0;
+  base::win::ScopedBstr relation_type;
+  base::win::ScopedComPtr<IAccessibleRelation> describedby_relation;
+  base::win::ScopedComPtr<IAccessibleRelation> description_for_relation;
+  base::win::ScopedComPtr<IUnknown> target;
+  base::win::ScopedComPtr<IAccessible2> ax_target;
+
+  EXPECT_HRESULT_SUCCEEDED(ax_root->get_nRelations(&n_relations));
+  EXPECT_EQ(1, n_relations);
+
+  EXPECT_HRESULT_SUCCEEDED(
+      ax_root->get_relation(0, describedby_relation.Receive()));
+  EXPECT_HRESULT_SUCCEEDED(
+      describedby_relation->get_relationType(relation_type.Receive()));
+  EXPECT_EQ(L"describedBy", base::string16(relation_type));
+  relation_type.Reset();
+
+  EXPECT_HRESULT_SUCCEEDED(describedby_relation->get_nTargets(&n_targets));
+  EXPECT_EQ(2, n_targets);
+
+  EXPECT_HRESULT_SUCCEEDED(
+      describedby_relation->get_target(0, target.Receive()));
+  target.QueryInterface(ax_target.Receive());
+  EXPECT_HRESULT_SUCCEEDED(ax_target->get_uniqueID(&unique_id));
+  EXPECT_EQ(-ax_child1->unique_id(), unique_id);
+  ax_target.Release();
+  target.Release();
+
+  EXPECT_HRESULT_SUCCEEDED(
+      describedby_relation->get_target(1, target.Receive()));
+  target.QueryInterface(ax_target.Receive());
+  EXPECT_HRESULT_SUCCEEDED(ax_target->get_uniqueID(&unique_id));
+  EXPECT_EQ(-ax_child2->unique_id(), unique_id);
+  ax_target.Release();
+  target.Release();
+  describedby_relation.Release();
+
+  // Test the reverse relations.
+  EXPECT_HRESULT_SUCCEEDED(ax_child1->get_nRelations(&n_relations));
+  EXPECT_EQ(1, n_relations);
+
+  EXPECT_HRESULT_SUCCEEDED(
+      ax_child1->get_relation(0, description_for_relation.Receive()));
+  EXPECT_HRESULT_SUCCEEDED(
+      description_for_relation->get_relationType(relation_type.Receive()));
+  EXPECT_EQ(L"descriptionFor", base::string16(relation_type));
+  relation_type.Reset();
+
+  EXPECT_HRESULT_SUCCEEDED(description_for_relation->get_nTargets(&n_targets));
+  EXPECT_EQ(1, n_targets);
+
+  EXPECT_HRESULT_SUCCEEDED(
+      description_for_relation->get_target(0, target.Receive()));
+  target.QueryInterface(ax_target.Receive());
+  EXPECT_HRESULT_SUCCEEDED(ax_target->get_uniqueID(&unique_id));
+  EXPECT_EQ(-ax_root->unique_id(), unique_id);
+  ax_target.Release();
+  target.Release();
+  description_for_relation.Release();
+
+  EXPECT_HRESULT_SUCCEEDED(ax_child2->get_nRelations(&n_relations));
+  EXPECT_EQ(1, n_relations);
+
+  EXPECT_HRESULT_SUCCEEDED(
+      ax_child2->get_relation(0, description_for_relation.Receive()));
+  EXPECT_HRESULT_SUCCEEDED(
+      description_for_relation->get_relationType(relation_type.Receive()));
+  EXPECT_EQ(L"descriptionFor", base::string16(relation_type));
+  relation_type.Reset();
+
+  EXPECT_HRESULT_SUCCEEDED(description_for_relation->get_nTargets(&n_targets));
+  EXPECT_EQ(1, n_targets);
+
+  EXPECT_HRESULT_SUCCEEDED(
+      description_for_relation->get_target(0, target.Receive()));
+  target.QueryInterface(ax_target.Receive());
+  EXPECT_HRESULT_SUCCEEDED(ax_target->get_uniqueID(&unique_id));
+  EXPECT_EQ(-ax_root->unique_id(), unique_id);
+  ax_target.Release();
+  target.Release();
+
+  // Try adding one more relation.
+  std::vector<int32_t> labelledby_ids = {3};
+  child1.AddIntListAttribute(ui::AX_ATTR_LABELLEDBY_IDS, labelledby_ids);
+  AXEventNotificationDetails event;
+  event.event_type = ui::AX_EVENT_ARIA_ATTRIBUTE_CHANGED;
+  event.update.nodes.push_back(child1);
+  event.id = child1.id;
+  std::vector<AXEventNotificationDetails> events = {event};
+  manager->OnAccessibilityEvents(events);
+
+  EXPECT_HRESULT_SUCCEEDED(ax_child1->get_nRelations(&n_relations));
+  EXPECT_EQ(2, n_relations);
+  EXPECT_HRESULT_SUCCEEDED(ax_child2->get_nRelations(&n_relations));
+  EXPECT_EQ(2, n_relations);
+}
+
 }  // namespace content
