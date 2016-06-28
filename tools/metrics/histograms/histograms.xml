@@ -35015,12 +35015,12 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Notifications.Icon.FileSize" units="bytes">
-  <owner>mvanouwerkerk@chromium.org</owner>
+  <owner>peter@chromium.org</owner>
   <summary>The number of bytes loaded for a Web Notification icon.</summary>
 </histogram>
 
 <histogram name="Notifications.Icon.LoadFailTime" units="ms">
-  <owner>mvanouwerkerk@chromium.org</owner>
+  <owner>peter@chromium.org</owner>
   <summary>
     The number of milliseconds it took to fail loading an icon for a Web
     Notification.
@@ -35028,7 +35028,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Notifications.Icon.LoadFinishTime" units="ms">
-  <owner>mvanouwerkerk@chromium.org</owner>
+  <owner>peter@chromium.org</owner>
   <summary>
     The number of milliseconds it took to finish successfully loading an icon
     for a Web Notification.
@@ -35036,7 +35036,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Notifications.Icon.ScaleDownTime" units="ms">
-  <owner>mvanouwerkerk@chromium.org</owner>
+  <owner>peter@chromium.org</owner>
   <summary>
     The number of milliseconds it took to scale down an icon for a Web
     Notification.
@@ -44092,7 +44092,6 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="PushMessaging.DeliveryStatus" enum="PushDeliveryStatus">
   <owner>johnme@google.com</owner>
-  <owner>mvanouwerkerk@google.com</owner>
   <summary>
     When a Service Worker receives a push message, this records whether it was
     successful, or otherwise the type of error encountered.
@@ -44102,7 +44101,6 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <histogram name="PushMessaging.GetRegistrationStatus"
     enum="PushGetRegistrationStatus">
   <owner>johnme@google.com</owner>
-  <owner>mvanouwerkerk@google.com</owner>
   <summary>
     When a webpage asks for details about its current push messaging
     registration, this records whether the request is successful, or otherwise
@@ -44113,7 +44111,6 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <histogram name="PushMessaging.RegistrationStatus"
     enum="PushRegistrationStatus">
   <owner>johnme@google.com</owner>
-  <owner>mvanouwerkerk@google.com</owner>
   <summary>
     When a webpage registers for push messaging, this records whether the
     request is successful, or otherwise the type of error encountered.
@@ -44139,7 +44136,6 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <histogram name="PushMessaging.UnregistrationStatus"
     enum="PushUnregistrationStatus">
   <owner>johnme@google.com</owner>
-  <owner>mvanouwerkerk@google.com</owner>
   <summary>
     When a webpage unregisters from push messaging, this records whether the
     request is successful, or otherwise the type of error encountered.
@@ -44148,7 +44144,6 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="PushMessaging.UserVisibleStatus" enum="PushUserVisibleStatus">
   <owner>johnme@google.com</owner>
-  <owner>mvanouwerkerk@google.com</owner>
   <summary>
     When a Service Worker receives a push message, this records whether it
     showed user-visible UX (like a notification), or whether we showed a forced
