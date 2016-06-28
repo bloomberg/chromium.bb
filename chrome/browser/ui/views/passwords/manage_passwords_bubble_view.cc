@@ -815,7 +815,8 @@ bool ManagePasswordsBubbleView::ShouldShowWindowTitle() const {
 }
 
 bool ManagePasswordsBubbleView::ShouldShowCloseButton() const {
-  return model_.state() == password_manager::ui::PENDING_PASSWORD_STATE;
+  return model_.state() == password_manager::ui::PENDING_PASSWORD_STATE ||
+      model_.state() == password_manager::ui::CHROME_SIGN_IN_PROMO_STATE;
 }
 
 void ManagePasswordsBubbleView::Refresh() {
