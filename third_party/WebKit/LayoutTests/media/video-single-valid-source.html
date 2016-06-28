@@ -1,49 +1,24 @@
-<!doctype html>
-<html>
-    <head>
-        <script src=media-file.js></script>
-        <!-- TODO(foolip): Convert test to testharness.js. crbug.com/588956
-             (Please avoid writing new tests using video-test.js) -->
-        <script src=video-test.js></script>
+<!DOCTYPE html>
+<title>Test that a single valid "source" element loads correctly.</title>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script src="media-file.js"></script>
+<video></video>
+<script>
+async_test(function(t) {
+    var video = document.querySelector("video");
 
-        <script>
+    // The first source should load.
+    var source = document.createElement("source");
+    source.src = findMediaFile("video", "content/test");;
+    video.appendChild(source);
 
-            function errorEvent()
-            {
-                logResult(false, "*** \"" + relativeURL(video.currentSrc) + "\" should not have been processed!" );
-                consoleWrite("");
-                endTest();
-            }
+    // The second source is bogus and won't load, but it should never be processed.
+    source = document.createElement("source");
+    source.src = "content/does-not-exist";
+    source.onerror = t.unreached_func();
+    video.appendChild(source);
 
-            function setup()
-            {
-                video = document.createElement("video");
-                video.setAttribute("controls", "controls");
-
-                // The first source should load.
-                var source = document.createElement("source");
-                source.setAttribute("src", findMediaFile("video", "content/test"));
-                source.setAttribute("type", mimeTypeForFile(source.getAttribute("src")));
-                video.appendChild(source);
-
-                // The second source is bogus and won't load, but it should never be processed.
-                source = document.createElement("source");
-                source.setAttribute("src", findMediaFile("video", "content/does-not-exist"));
-                source.setAttribute("type", mimeTypeForFile(source.getAttribute("src")));
-                video.appendChild(source);
-
-                document.body.appendChild(video);
-
-                waitForEvent('error', errorEvent);
-                waitForEvent('loadedmetadata', endTest);
-                consoleWrite("");
-            }
-
-        </script>
-    </head>
-<body onload="setup()">
-
-    <p>Test that a single valid &lt;source&gt; element loads correctly</p>
-
-</body>
-</html>
+    video.onloadedmetadata = t.step_func_done();
+});
+</script>

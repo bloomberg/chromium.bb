@@ -1,48 +1,30 @@
-<video controls></video>
-<p>Test that seeking attribute is true immediately after a seek,
- goes back to false when seeking completes, and that a 'seeked' event
- is fired for each seek
- </p>
-<script src=media-file.js></script>
-<!-- TODO(foolip): Convert test to testharness.js. crbug.com/588956
-     (Please avoid writing new tests using video-test.js) -->
-<script src=video-test.js></script>
+<!DOCTYPE html>
+<title>Test that seeking attribute is true immediately after a seek, goes back to false when seeking completes, and that a "seeked" event is fired for each seek.</title>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script src="media-file.js"></script>
+<video></video>
 <script>
-
+async_test(function(t) {
     var seekedCount = 0;
-
-    function seeked()
-    {
+    var video = document.querySelector("video");
+    video.onwaiting = t.step_func(function() {});
+    video.onseeked = t.step_func(function() {
         ++seekedCount;
-        consoleWrite("");
 
-        testExpected("video.seeking", false);
-        testExpected("video.currentTime", seekedCount * 0.5);
+        assert_false(video.seeking);
+        assert_equals(video.currentTime, seekedCount * 0.5);
 
         if (seekedCount == 3) {
-            endTest();
+            t.done();
             return;
         }
 
-        run("video.currentTime = " + (seekedCount + 1) * 0.5);
-        testExpected("video.seeking", true);
-
-        consoleWrite("");
-
-     }
-
-    function canplaythrough()
-    {
-        if (seekedCount > 0)
-            return;
-
-        run("video.currentTime = 0.5");
-        consoleWrite("");
-    }
-
-    waitForEvent('waiting' );
-    waitForEvent('seeked', seeked );
-    waitForEventOnce('canplaythrough', canplaythrough);
+        video.currentTime = (seekedCount + 1) * 0.5;
+        assert_true(video.seeking);
+    });
 
     video.src = findMediaFile("video", "content/test");
+    video.currentTime = 0.5;
+});
 </script>

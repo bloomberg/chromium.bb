@@ -1,31 +1,20 @@
 <!DOCTYPE html>
-<html>
-    <head>
-        <script src=media-file.js></script>
-        <!-- TODO(foolip): Convert test to testharness.js. crbug.com/588956
-             (Please avoid writing new tests using video-test.js) -->
-        <script src=video-test.js></script>
-        <script>
-            function init() {
-                findMediaElement();
-                waitForEvent('canplaythrough', receivedCanPlayThrough);
-                video.src = findMediaFile("video", "content/test");
-            }
+<title>Test that setting a non-zero rate causes an async timeupdate event.</title>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script src="media-file.js"></script>
+<video></video>
+<script>
+async_test(function(t) {
+    var video = document.querySelector("video");
 
-            function receivedCanPlayThrough() {
-                waitForEvent('play', receivedPlay);
-                video.playbackRate = 0;
-                video.play();
-            }
+    video.onplay = t.step_func(function() {
+        video.ontimeupdate = t.step_func_done();
+        video.playbackRate = 1;
+    });
 
-            function receivedPlay() {
-                waitForEventAndEnd('timeupdate');
-                video.playbackRate = 1;
-            }
-        </script>
-    </head>
-    <body onload="init()">
-        <video controls></video>
-        <p>Test that setting a non-zero rate causes an async timeupdate event.</p>
-    </body>
-</html>
+    video.src = findMediaFile("video", "content/test");
+    video.playbackRate = 0;
+    video.play();
+});
+</script>
