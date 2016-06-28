@@ -41,6 +41,8 @@ public:
     // PaintController commits new display items or the subsequence owner is invalidated.
     static void endShouldKeepAliveAllClients(const void* owner);
     static void endShouldKeepAliveAllClients();
+#else
+    virtual ~DisplayItemClient() { }
 #endif
 
     virtual String debugName() const = 0;
