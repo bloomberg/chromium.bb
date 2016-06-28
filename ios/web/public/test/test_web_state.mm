@@ -36,6 +36,12 @@ void TestWebState::SetWebUsageEnabled(bool enabled) {
   web_usage_enabled_ = enabled;
 }
 
+bool TestWebState::ShouldSuppressDialogs() const {
+  return false;
+}
+
+void TestWebState::SetShouldSuppressDialogs(bool should_suppress) {}
+
 UIView* TestWebState::GetView() {
   return nullptr;
 }

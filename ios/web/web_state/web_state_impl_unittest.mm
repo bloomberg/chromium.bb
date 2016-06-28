@@ -296,6 +296,19 @@ TEST_F(WebStateTest, WebUsageEnabled) {
   EXPECT_FALSE(web_state_->GetWebController().webUsageEnabled);
 }
 
+TEST_F(WebStateTest, ShouldSuppressDialogs) {
+  // Default is false.
+  ASSERT_FALSE(web_state_->ShouldSuppressDialogs());
+
+  web_state_->SetShouldSuppressDialogs(true);
+  EXPECT_TRUE(web_state_->ShouldSuppressDialogs());
+  EXPECT_TRUE(web_state_->GetWebController().shouldSuppressDialogs);
+
+  web_state_->SetShouldSuppressDialogs(false);
+  EXPECT_FALSE(web_state_->ShouldSuppressDialogs());
+  EXPECT_FALSE(web_state_->GetWebController().shouldSuppressDialogs);
+}
+
 TEST_F(WebStateTest, ResponseHeaders) {
   GURL real_url("http://foo.com/bar");
   GURL frame_url("http://frames-r-us.com/");

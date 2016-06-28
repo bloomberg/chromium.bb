@@ -221,6 +221,8 @@ class WebStateImpl : public WebState, public NavigationManagerDelegate {
   void SetDelegate(WebStateDelegate* delegate) override;
   bool IsWebUsageEnabled() const override;
   void SetWebUsageEnabled(bool enabled) override;
+  bool ShouldSuppressDialogs() const override;
+  void SetShouldSuppressDialogs(bool should_suppress) override;
   UIView* GetView() override;
   BrowserState* GetBrowserState() const override;
   void OpenURL(const WebState::OpenURLParams& params) override;
