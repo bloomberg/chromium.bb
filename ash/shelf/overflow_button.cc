@@ -8,7 +8,6 @@
 #include "ash/common/ash_switches.h"
 #include "ash/common/material_design/material_design_controller.h"
 #include "ash/common/shelf/shelf_constants.h"
-#include "ash/common/system/tray/tray_constants.h"
 #include "ash/shelf/ink_drop_button_listener.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_layout_manager.h"
@@ -81,18 +80,18 @@ void OverflowButton::PaintBackground(gfx::Canvas* canvas,
 
     // TODO(bruthig|tdanderson): The background should be changed using a
     // fade in/out animation.
-    const int kCornerRadius = 2;
-
     SkPaint background_paint;
     background_paint.setFlags(SkPaint::kAntiAlias_Flag);
     background_paint.setColor(background_color);
-    canvas->DrawRoundRect(bounds, kCornerRadius, background_paint);
+    canvas->DrawRoundRect(bounds, kOverflowButtonCornerRadius,
+                          background_paint);
 
     if (shelf_->IsShowingOverflowBubble()) {
       SkPaint highlight_paint;
       highlight_paint.setFlags(SkPaint::kAntiAlias_Flag);
       highlight_paint.setColor(kShelfButtonActivatedHighlightColor);
-      canvas->DrawRoundRect(bounds, kCornerRadius, highlight_paint);
+      canvas->DrawRoundRect(bounds, kOverflowButtonCornerRadius,
+                            highlight_paint);
     }
   } else {
     ResourceBundle& rb = ResourceBundle::GetSharedInstance();
@@ -144,15 +143,14 @@ gfx::Rect OverflowButton::CalculateButtonBounds() {
   gfx::Rect bounds(GetContentsBounds());
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
   if (MaterialDesignController::IsShelfMaterial()) {
+    const int width_offset = (bounds.width() - kOverflowButtonSize) / 2;
+    const int height_offset = (bounds.height() - kOverflowButtonSize) / 2;
     if (shelf_->IsHorizontalAlignment()) {
-      bounds = gfx::Rect((bounds.x() + (bounds.width() - kShelfItemSizeMD) / 2),
-                         bounds.y() + (bounds.height() - kShelfItemSizeMD) / 2,
-                         kShelfItemSizeMD, kShelfItemSizeMD);
+      bounds = gfx::Rect(bounds.x() + width_offset, bounds.y() + height_offset,
+                         kOverflowButtonSize, kOverflowButtonSize);
     } else {
-      bounds =
-          gfx::Rect(bounds.x() + ((bounds.height() - kShelfItemSizeMD) / 2),
-                    bounds.y() + (bounds.width() - kShelfItemSizeMD) / 2,
-                    kShelfItemSizeMD, kShelfItemSizeMD);
+      bounds = gfx::Rect(bounds.x() + height_offset, bounds.y() + width_offset,
+                         kOverflowButtonSize, kOverflowButtonSize);
     }
   } else {
     const gfx::ImageSkia* background =

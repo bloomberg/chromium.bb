@@ -22,8 +22,6 @@ extern const int kBubblePaddingHorizontalSide;
 extern const int kBubblePaddingVerticalBottom;
 extern const int kBubblePaddingVerticalSide;
 
-extern const int kAdjustBackgroundPadding;
-
 extern const int kTrayBubbleAnchorTopInsetBottomAnchor;
 
 extern const int kTrayImageItemHorizontalPaddingBottomAlignment;
@@ -45,13 +43,12 @@ extern const int kTrayPopupPaddingBetweenItems;
 extern const int kTrayPopupTextSpacingVertical;
 extern const int kTrayPopupUserCardVerticalPadding;
 
-const int kTrayPopupItemHeight = 46;
+extern const int kTrayPopupItemHeight;
 extern const int kTrayPopupDetailsIconWidth;
 extern const int kTrayPopupDetailsLabelExtraLeftMargin;
 extern const SkColor kTrayPopupHoverBackgroundColor;
 extern const int kTrayPopupScrollSeparatorHeight;
 extern const int kTrayRoundedBorderRadius;
-extern const int kTrayBarButtonWidth;
 
 extern const SkColor kBackgroundColor;
 extern const SkColor kHoverBackgroundColor;
@@ -74,22 +71,24 @@ extern const int kNotificationIconWidth;
 extern const int kNotificationButtonWidth;
 extern const int kTrayNotificationContentsWidth;
 
-extern const int kTrayAvatarCornerRadius;
-extern const int kTrayAvatarSize;
-
 extern const int kMessageCenterBubblePadding;
-extern const int kShelfItemHeight;
-
-// TODO(tdanderson): Update all button background to 32 by 32 in Chrome OS MD.
-// All tray background are sized 32 by 32 in Chrome OS MD.
-extern const int kShelfItemSizeMD;
 
 enum TrayConstant {
+  // A legacy height value used in non-MD calculations for applying additional
+  // borders on tray items.
+  TRAY_ITEM_HEIGHT_LEGACY,
+
   // Padding between items in the status tray area.
   TRAY_SPACING,
 
   // Padding between the edge of shelf and the item in status tray area.
   TRAY_PADDING_FROM_EDGE_OF_SHELF,
+
+  // The width and height of the virtual keyboard button in the status tray
+  // area. For non-MD, adjustments are made to the button dimensions based on
+  // the shelf orientation, so this constant does not specify the true
+  // user-visible button bounds.
+  VIRTUAL_KEYBOARD_BUTTON_SIZE,
 };
 
 int GetTrayConstant(TrayConstant constant);

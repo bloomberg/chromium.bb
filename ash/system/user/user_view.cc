@@ -10,6 +10,7 @@
 #include "ash/common/session/session_state_delegate.h"
 #include "ash/common/shell_window_ids.h"
 #include "ash/common/system/tray/system_tray_delegate.h"
+#include "ash/common/system/tray/tray_constants.h"
 #include "ash/common/system/tray/tray_popup_label_button.h"
 #include "ash/common/system/tray/tray_popup_label_button_border.h"
 #include "ash/common/system/user/button_from_view.h"
@@ -163,12 +164,12 @@ void AddUserView::AddContent() {
   AddChildViewAt(add_user_, 0);
 
   // Add the [+] icon which is also the anchor for messages.
-  RoundedImageView* icon = new RoundedImageView(kTrayAvatarCornerRadius, true);
+  RoundedImageView* icon = new RoundedImageView(kTrayRoundedBorderRadius, true);
   anchor_ = icon;
   icon->SetImage(*ui::ResourceBundle::GetSharedInstance()
                       .GetImageNamed(IDR_AURA_UBER_TRAY_ADD_MULTIPROFILE_USER)
                       .ToImageSkia(),
-                 gfx::Size(kTrayAvatarSize, kTrayAvatarSize));
+                 gfx::Size(kTrayItemSize, kTrayItemSize));
   add_user_->AddChildView(icon);
 
   // Add the command text.

@@ -183,47 +183,36 @@ void StatusAreaWidgetDelegate::UpdateWidgetSize() {
 
 void StatusAreaWidgetDelegate::SetBorderOnChild(views::View* child,
                                                 bool extend_border_to_edge) {
+  const int shelf_size = GetShelfConstant(SHELF_SIZE);
+  const int item_height = GetTrayConstant(TRAY_ITEM_HEIGHT_LEGACY);
   int top_edge, left_edge, bottom_edge, right_edge;
-  // Tray views are laid out right-to-left or bottom-to-top
+
+  // Tray views are laid out right-to-left or bottom-to-top.
   if (MaterialDesignController::IsShelfMaterial()) {
-    if (extend_border_to_edge) {
-      if (IsHorizontalAlignment(alignment_)) {
-        top_edge = (GetShelfConstant(SHELF_SIZE) - kShelfItemHeight) / 2;
-        left_edge = 0;
-        bottom_edge = (GetShelfConstant(SHELF_SIZE) - kShelfItemHeight) / 2;
-        right_edge = GetTrayConstant(TRAY_PADDING_FROM_EDGE_OF_SHELF);
-      } else {
-        top_edge = 0;
-        left_edge = (GetShelfConstant(SHELF_SIZE) - kShelfItemHeight) / 2;
-        bottom_edge = GetTrayConstant(TRAY_PADDING_FROM_EDGE_OF_SHELF);
-        right_edge = (GetShelfConstant(SHELF_SIZE) - kShelfItemHeight) / 2;
-      }
-    } else {
-      if (IsHorizontalAlignment(alignment_)) {
-        top_edge = (GetShelfConstant(SHELF_SIZE) - kShelfItemHeight) / 2;
-        left_edge = 0;
-        bottom_edge = (GetShelfConstant(SHELF_SIZE) - kShelfItemHeight) / 2;
-        right_edge = 0;
-      } else {
-        top_edge = 0;
-        left_edge = (GetShelfConstant(SHELF_SIZE) - kShelfItemHeight) / 2;
-        bottom_edge = 0;
-        right_edge = (GetShelfConstant(SHELF_SIZE) - kShelfItemHeight) / 2;
-      }
-    }
+    const bool horizontal_alignment = IsHorizontalAlignment(alignment_);
+    const int padding = (shelf_size - item_height) / 2;
+    const int extended_padding =
+        GetTrayConstant(TRAY_PADDING_FROM_EDGE_OF_SHELF);
+
+    top_edge = horizontal_alignment ? padding : 0;
+    left_edge = horizontal_alignment ? 0 : padding;
+    bottom_edge = horizontal_alignment
+                      ? padding
+                      : (extend_border_to_edge ? extended_padding : 0);
+    right_edge = horizontal_alignment
+                     ? (extend_border_to_edge ? extended_padding : 0)
+                     : padding;
   } else {
     bool on_edge = (child == child_at(0));
     if (IsHorizontalAlignment(alignment_)) {
       top_edge = kShelfItemInset;
       left_edge = 0;
-      bottom_edge =
-          GetShelfConstant(SHELF_SIZE) - kShelfItemInset - kShelfItemHeight;
+      bottom_edge = shelf_size - kShelfItemInset - item_height;
       right_edge =
           on_edge ? GetTrayConstant(TRAY_PADDING_FROM_EDGE_OF_SHELF) : 0;
     } else if (alignment_ == SHELF_ALIGNMENT_LEFT) {
       top_edge = 0;
-      left_edge =
-          GetShelfConstant(SHELF_SIZE) - kShelfItemInset - kShelfItemHeight;
+      left_edge = shelf_size - kShelfItemInset - item_height;
       bottom_edge =
           on_edge ? GetTrayConstant(TRAY_PADDING_FROM_EDGE_OF_SHELF) : 0;
       right_edge = kShelfItemInset;
@@ -232,8 +221,7 @@ void StatusAreaWidgetDelegate::SetBorderOnChild(views::View* child,
       left_edge = kShelfItemInset;
       bottom_edge =
           on_edge ? GetTrayConstant(TRAY_PADDING_FROM_EDGE_OF_SHELF) : 0;
-      right_edge =
-          GetShelfConstant(SHELF_SIZE) - kShelfItemInset - kShelfItemHeight;
+      right_edge = shelf_size - kShelfItemInset - item_height;
     }
   }
   child->SetBorder(views::Border::CreateEmptyBorder(top_edge, left_edge,

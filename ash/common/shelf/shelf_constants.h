@@ -21,7 +21,7 @@ enum ShelfConstant {
   // Size of the space between buttons on the shelf.
   SHELF_BUTTON_SPACING,
 
-  // Size allocated for each button on the shelf.
+  // Size allocated for each app button on the shelf.
   SHELF_BUTTON_SIZE,
 
   // Insets allocated for shelf when it is auto hidden.
@@ -66,6 +66,17 @@ extern const float kShelfInkDropVisibleOpacity;
 // The foreground color of the icons used in the shelf (launcher,
 // notifications, etc).
 ASH_EXPORT extern const SkColor kShelfIconColor;
+
+// The width and height of the material design overflow button.
+// TODO(tdanderson): Refactor constants which are common between the shelf
+// and the tray. See crbug.com/623987.
+extern const int kOverflowButtonSize;
+
+// The radius of the rounded corners of the overflow button.
+extern const int kOverflowButtonCornerRadius;
+
+// The radius of the circular material design app list button.
+extern const int kAppListButtonRadius;
 
 // The direction of the focus cycling.
 enum CycleDirection { CYCLE_FORWARD, CYCLE_BACKWARD };

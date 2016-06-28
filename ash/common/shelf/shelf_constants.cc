@@ -21,6 +21,9 @@ const SkColor kShelfButtonActivatedHighlightColor =
     SkColorSetA(SK_ColorWHITE, 100);
 const float kShelfInkDropVisibleOpacity = 0.2f;
 const SkColor kShelfIconColor = SK_ColorWHITE;
+const int kOverflowButtonSize = 32;
+const int kOverflowButtonCornerRadius = 2;
+const int kAppListButtonRadius = kOverflowButtonSize / 2;
 
 int GetShelfConstant(ShelfConstant shelf_constant) {
   const int kShelfBackgroundAlpha[] = {204, 204, 153};

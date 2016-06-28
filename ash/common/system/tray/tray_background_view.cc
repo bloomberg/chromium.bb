@@ -106,19 +106,17 @@ class TrayBackground : public views::Background {
 
     // TODO(bruthig|tdanderson): The background should be changed using a
     // fade in/out animation.
-    const int kCornerRadius = 2;
-
     SkPaint background_paint;
     background_paint.setFlags(SkPaint::kAntiAlias_Flag);
     background_paint.setColor(background_color);
-    canvas->DrawRoundRect(view->GetLocalBounds(), kCornerRadius,
+    canvas->DrawRoundRect(view->GetLocalBounds(), kTrayRoundedBorderRadius,
                           background_paint);
 
     if (tray_background_view_->draw_background_as_active()) {
       SkPaint highlight_paint;
       highlight_paint.setFlags(SkPaint::kAntiAlias_Flag);
       highlight_paint.setColor(kShelfButtonActivatedHighlightColor);
-      canvas->DrawRoundRect(view->GetLocalBounds(), kCornerRadius,
+      canvas->DrawRoundRect(view->GetLocalBounds(), kTrayRoundedBorderRadius,
                             highlight_paint);
     }
   }
@@ -203,17 +201,20 @@ void TrayBackgroundView::TrayContainer::ViewHierarchyChanged(
     PreferredSizeChanged();
 }
 
-// TODO(tdanderson): Adjust TrayContainer borders according to the material
-// design specs. See crbug.com/617295.
 void TrayBackgroundView::TrayContainer::UpdateLayout() {
   // Adjust the size of status tray dark background by adding additional
   // empty border.
   views::BoxLayout::Orientation orientation =
       IsHorizontalAlignment(alignment_) ? views::BoxLayout::kHorizontal
                                         : views::BoxLayout::kVertical;
-  SetBorder(views::Border::CreateEmptyBorder(
-      kAdjustBackgroundPadding, kAdjustBackgroundPadding,
-      kAdjustBackgroundPadding, kAdjustBackgroundPadding));
+
+  if (!ash::MaterialDesignController::IsShelfMaterial()) {
+    // Additional padding used to adjust the user-visible size of status tray
+    // dark background.
+    const int padding = 3;
+    SetBorder(
+        views::Border::CreateEmptyBorder(padding, padding, padding, padding));
+  }
 
   views::BoxLayout* layout = new views::BoxLayout(orientation, 0, 0, 0);
   layout->SetDefaultFlex(1);

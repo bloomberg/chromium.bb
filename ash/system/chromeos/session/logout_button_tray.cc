@@ -89,7 +89,7 @@ LogoutButton::LogoutButton(views::ButtonListener* listener)
   SetBorder(std::move(border));
   set_animate_on_state_change(false);
 
-  SetMinSize(gfx::Size(0, kShelfItemHeight));
+  SetMinSize(gfx::Size(0, GetTrayConstant(TRAY_ITEM_HEIGHT_LEGACY)));
 }
 
 LogoutButton::~LogoutButton() {}

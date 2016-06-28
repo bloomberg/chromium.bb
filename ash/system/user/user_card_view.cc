@@ -433,16 +433,16 @@ void UserCardView::AddUserContent(LoginStatus login_status, int user_index) {
 views::View* UserCardView::CreateIcon(LoginStatus login_status,
                                       int user_index) {
   RoundedImageView* icon =
-      new RoundedImageView(kTrayAvatarCornerRadius, user_index == 0);
+      new RoundedImageView(kTrayRoundedBorderRadius, user_index == 0);
   if (login_status == LoginStatus::GUEST) {
     icon->SetImage(*ui::ResourceBundle::GetSharedInstance()
                         .GetImageNamed(IDR_AURA_UBER_TRAY_GUEST_ICON)
                         .ToImageSkia(),
-                   gfx::Size(kTrayAvatarSize, kTrayAvatarSize));
+                   gfx::Size(kTrayItemSize, kTrayItemSize));
   } else {
     SessionStateDelegate* delegate = WmShell::Get()->GetSessionStateDelegate();
     icon->SetImage(delegate->GetUserInfo(user_index)->GetImage(),
-                   gfx::Size(kTrayAvatarSize, kTrayAvatarSize));
+                   gfx::Size(kTrayItemSize, kTrayItemSize));
   }
   return icon;
 }

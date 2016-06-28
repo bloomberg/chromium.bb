@@ -60,22 +60,19 @@ void VirtualKeyboardTray::SetShelfAlignment(ShelfAlignment alignment) {
   // Pad button size to align with other controls in the system tray.
   const gfx::ImageSkia image =
       button_->GetImage(views::CustomButton::STATE_NORMAL);
-  int top_padding = (kTrayBarButtonWidth - image.height()) / 2;
-  int left_padding = (kTrayBarButtonWidth - image.width()) / 2;
-  int bottom_padding = kTrayBarButtonWidth - image.height() - top_padding;
-  int right_padding = kTrayBarButtonWidth - image.width() - left_padding;
-
-  // Square up the padding if horizontally aligned. Avoid extra padding when
-  // vertically aligned as the button would violate the width constraint on the
-  // shelf.
-  if (IsHorizontalAlignment(alignment)) {
-    int additional_padding = std::max(0, top_padding - left_padding);
-    left_padding += additional_padding;
-    right_padding += additional_padding;
+  const int size = GetTrayConstant(VIRTUAL_KEYBOARD_BUTTON_SIZE);
+  const int vertical_padding = (size - image.height()) / 2;
+  int horizontal_padding = (size - image.width()) / 2;
+  if (!ash::MaterialDesignController::IsShelfMaterial() &&
+      IsHorizontalAlignment(alignment)) {
+    // Square up the padding if horizontally aligned. Avoid extra padding when
+    // vertically aligned as the button would violate the width constraint on
+    // the shelf.
+    horizontal_padding += std::max(0, vertical_padding - horizontal_padding);
   }
 
   button_->SetBorder(views::Border::CreateEmptyBorder(
-      top_padding, left_padding, bottom_padding, right_padding));
+      gfx::Insets(vertical_padding, horizontal_padding)));
 }
 
 base::string16 VirtualKeyboardTray::GetAccessibleNameForTray() {

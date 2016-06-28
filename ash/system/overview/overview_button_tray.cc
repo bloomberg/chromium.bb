@@ -10,6 +10,7 @@
 #include "ash/common/shelf/shelf_types.h"
 #include "ash/common/shelf/wm_shelf_util.h"
 #include "ash/common/system/tray/system_tray_delegate.h"
+#include "ash/common/system/tray/tray_constants.h"
 #include "ash/common/system/tray/tray_utils.h"
 #include "ash/common/wm/overview/window_selector_controller.h"
 #include "ash/common/wm_shell.h"
@@ -114,14 +115,23 @@ void OverviewButtonTray::SetShelfAlignment(ShelfAlignment alignment) {
 }
 
 void OverviewButtonTray::SetIconBorderForShelfAlignment() {
-  if (IsHorizontalAlignment(shelf_alignment())) {
+  if (ash::MaterialDesignController::IsShelfMaterial()) {
+    // Pad button size to align with other controls in the system tray.
+    const gfx::ImageSkia image = icon_->GetImage();
+    const int vertical_padding = (kTrayItemSize - image.height()) / 2;
+    const int horizontal_padding = (kTrayItemSize - image.width()) / 2;
     icon_->SetBorder(views::Border::CreateEmptyBorder(
-        kHorizontalShelfVerticalPadding, kHorizontalShelfHorizontalPadding,
-        kHorizontalShelfVerticalPadding, kHorizontalShelfHorizontalPadding));
+        gfx::Insets(vertical_padding, horizontal_padding)));
   } else {
-    icon_->SetBorder(views::Border::CreateEmptyBorder(
-        kVerticalShelfVerticalPadding, kVerticalShelfHorizontalPadding,
-        kVerticalShelfVerticalPadding, kVerticalShelfHorizontalPadding));
+    if (IsHorizontalAlignment(shelf_alignment())) {
+      icon_->SetBorder(views::Border::CreateEmptyBorder(
+          kHorizontalShelfVerticalPadding, kHorizontalShelfHorizontalPadding,
+          kHorizontalShelfVerticalPadding, kHorizontalShelfHorizontalPadding));
+    } else {
+      icon_->SetBorder(views::Border::CreateEmptyBorder(
+          kVerticalShelfVerticalPadding, kVerticalShelfHorizontalPadding,
+          kVerticalShelfVerticalPadding, kVerticalShelfHorizontalPadding));
+    }
   }
 }
 

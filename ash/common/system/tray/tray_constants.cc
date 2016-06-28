@@ -22,9 +22,6 @@ const int kBubblePaddingHorizontalSide = 10;
 const int kBubblePaddingVerticalBottom = 3;
 const int kBubblePaddingVerticalSide = 15;
 
-// Padding used to adjust the size of status tray dark background.
-const int kAdjustBackgroundPadding = 3;
-
 // Top inset of system tray bubble for bottom anchor alignment.
 const int kTrayBubbleAnchorTopInsetBottomAnchor = 3;
 
@@ -50,12 +47,12 @@ const int kTrayPopupPaddingBetweenItems = 10;
 const int kTrayPopupTextSpacingVertical = 4;
 const int kTrayPopupUserCardVerticalPadding = 10;
 
+const int kTrayPopupItemHeight = 46;
 const int kTrayPopupDetailsIconWidth = 25;
 const int kTrayPopupDetailsLabelExtraLeftMargin = 8;
 const SkColor kTrayPopupHoverBackgroundColor = SkColorSetRGB(0xe4, 0xe4, 0xe4);
 const int kTrayPopupScrollSeparatorHeight = 15;
 const int kTrayRoundedBorderRadius = 2;
-const int kTrayBarButtonWidth = 39;
 
 const SkColor kBackgroundColor = SkColorSetRGB(0xfe, 0xfe, 0xfe);
 const SkColor kHoverBackgroundColor = SkColorSetRGB(0xf3, 0xf3, 0xf3);
@@ -80,28 +77,27 @@ const int kTrayNotificationContentsWidth =
     kTrayPopupMinWidth - (kNotificationIconWidth + kNotificationButtonWidth +
                           (kTrayPopupPaddingHorizontal / 2) * 3);
 
-const int kTrayAvatarCornerRadius = 2;
-const int kTrayAvatarSize = 32;
-
 const int kMessageCenterBubblePadding = 4;
-const int kShelfItemHeight = 38;
-
-// Items are 32 by 32 in the new Chrome OS MD requirements.
-const int kShelfItemSizeMD = 32;
 
 int GetTrayConstant(TrayConstant constant) {
+  const int kTrayItemHeightLegacy[] = {38, 38, kTrayItemSize};
   const int kTraySpacing[] = {4, 4, 8};
   const int kTrayPaddingFromEdgeOfShelf[] = {3, 3, 8};
+  const int kVirtualKeyboardButtonSize[] = {39, 39, kTrayItemSize};
 
   const int mode = MaterialDesignController::GetMode();
   DCHECK(mode >= MaterialDesignController::NON_MATERIAL &&
          mode <= MaterialDesignController::MATERIAL_EXPERIMENTAL);
 
   switch (constant) {
+    case TRAY_ITEM_HEIGHT_LEGACY:
+      return kTrayItemHeightLegacy[mode];
     case TRAY_SPACING:
       return kTraySpacing[mode];
     case TRAY_PADDING_FROM_EDGE_OF_SHELF:
       return kTrayPaddingFromEdgeOfShelf[mode];
+    case VIRTUAL_KEYBOARD_BUTTON_SIZE:
+      return kVirtualKeyboardButtonSize[mode];
   }
   NOTREACHED();
   return 0;

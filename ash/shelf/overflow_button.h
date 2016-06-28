@@ -42,8 +42,6 @@ class OverflowButton : public views::CustomButton {
   int NonMaterialBackgroundImageId();
 
   // Calculates the bounds of the overflow button based on the shelf alignment.
-  // TODO(tdanderson): The button size and bounds need to be adjusted to
-  // conform to the material design spec. See crbug.com/617295.
   gfx::Rect CalculateButtonBounds();
 
   // Used for bottom shelf alignment. |bottom_image_| points to

@@ -30,9 +30,6 @@
 
 namespace ash {
 
-// Radius of the app list button circular background.
-const int kAppListButtonBackgroundRadius = 16;
-
 AppListButton::AppListButton(InkDropButtonListener* listener,
                              ShelfView* shelf_view)
     : views::ImageButton(nullptr),
@@ -146,9 +143,7 @@ void AppListButton::PaintBackgroundMD(gfx::Canvas* canvas) {
   gfx::Point circle_center = GetContentsBounds().CenterPoint();
   if (!IsHorizontalAlignment(shelf_view_->shelf()->alignment()))
     circle_center = gfx::Point(circle_center.y(), circle_center.x());
-
-  canvas->DrawCircle(circle_center, kAppListButtonBackgroundRadius,
-                     background_paint);
+  canvas->DrawCircle(circle_center, kAppListButtonRadius, background_paint);
 
   if (Shell::GetInstance()->GetAppListTargetVisibility() ||
       draw_background_as_active_) {
@@ -156,9 +151,7 @@ void AppListButton::PaintBackgroundMD(gfx::Canvas* canvas) {
     highlight_paint.setColor(kShelfButtonActivatedHighlightColor);
     highlight_paint.setFlags(SkPaint::kAntiAlias_Flag);
     highlight_paint.setStyle(SkPaint::kFill_Style);
-
-    canvas->DrawCircle(circle_center, kAppListButtonBackgroundRadius,
-                       highlight_paint);
+    canvas->DrawCircle(circle_center, kAppListButtonRadius, highlight_paint);
   }
 }
 

@@ -160,7 +160,8 @@ class WebNotificationButton : public views::CustomButton {
  protected:
   // Overridden from views::ImageButton:
   gfx::Size GetPreferredSize() const override {
-    return gfx::Size(kShelfItemHeight, kShelfItemHeight);
+    const int size = GetTrayConstant(TRAY_ITEM_HEIGHT_LEGACY);
+    return gfx::Size(size, size);
   }
 
   int GetHeightForWidth(int width) const override {

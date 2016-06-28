@@ -159,7 +159,7 @@ void TrayUser::UpdateAfterLoginStatusChange(LoginStatus status) {
       label_ = nullptr;
     }
     if (need_avatar) {
-      avatar_ = new tray::RoundedImageView(kTrayAvatarCornerRadius, true);
+      avatar_ = new tray::RoundedImageView(kTrayRoundedBorderRadius, true);
       layout_view_->AddChildView(avatar_);
     } else {
       avatar_ = nullptr;
@@ -174,8 +174,8 @@ void TrayUser::UpdateAfterLoginStatusChange(LoginStatus status) {
   }
 
   if (avatar_) {
-    avatar_->SetCornerRadii(0, kTrayAvatarCornerRadius, kTrayAvatarCornerRadius,
-                            0);
+    avatar_->SetCornerRadii(0, kTrayRoundedBorderRadius,
+                            kTrayRoundedBorderRadius, 0);
     avatar_->SetBorder(views::Border::NullBorder());
   }
   UpdateAvatarImage(status);
@@ -191,8 +191,8 @@ void TrayUser::UpdateAfterShelfAlignmentChange(ShelfAlignment alignment) {
   if (IsHorizontalAlignment(alignment)) {
     if (avatar_) {
       avatar_->SetBorder(views::Border::NullBorder());
-      avatar_->SetCornerRadii(0, kTrayAvatarCornerRadius,
-                              kTrayAvatarCornerRadius, 0);
+      avatar_->SetCornerRadii(0, kTrayRoundedBorderRadius,
+                              kTrayRoundedBorderRadius, 0);
     }
     if (label_) {
       // If label_ hasn't figured out its size yet, do that first.
@@ -211,8 +211,8 @@ void TrayUser::UpdateAfterShelfAlignmentChange(ShelfAlignment alignment) {
   } else {
     if (avatar_) {
       avatar_->SetBorder(views::Border::NullBorder());
-      avatar_->SetCornerRadii(0, 0, kTrayAvatarCornerRadius,
-                              kTrayAvatarCornerRadius);
+      avatar_->SetCornerRadii(0, 0, kTrayRoundedBorderRadius,
+                              kTrayRoundedBorderRadius);
     }
     if (label_) {
       label_->SetBorder(views::Border::CreateEmptyBorder(
@@ -257,11 +257,11 @@ void TrayUser::UpdateAvatarImage(LoginStatus status) {
       session_state_delegate->GetUserInfo(user_index_);
   CHECK(user_info);
   avatar_->SetImage(user_info->GetImage(),
-                    gfx::Size(kTrayAvatarSize, kTrayAvatarSize));
+                    gfx::Size(kTrayItemSize, kTrayItemSize));
 
   // Unit tests might come here with no images for some users.
   if (avatar_->size().IsEmpty())
-    avatar_->SetSize(gfx::Size(kTrayAvatarSize, kTrayAvatarSize));
+    avatar_->SetSize(gfx::Size(kTrayItemSize, kTrayItemSize));
 }
 
 void TrayUser::UpdateLayoutOfItem() {
