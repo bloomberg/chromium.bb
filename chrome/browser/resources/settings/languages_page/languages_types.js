@@ -104,6 +104,14 @@ LanguageHelper.prototype = {
   canDisableLanguage: assertNotReached,
 
   /**
+   * Moves the language in the list of enabled languages by the given offset.
+   * @param {string} languageCode
+   * @param {number} offset Negative offset moves the language toward the front
+   *     of the list. A Positive one moves the language toward the back.
+   */
+  moveLanguage: assertNotReached,
+
+  /**
    * Enables translate for the given language by removing the translate
    * language from the blocked languages preference.
    * @param {string} languageCode

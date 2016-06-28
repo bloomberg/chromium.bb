@@ -546,6 +546,29 @@ SettingsLanguagesSingletonElement = Polymer({
   },
 
   /**
+   * Moves the language in the list of enabled languages by the given offset.
+   * @param {string} languageCode
+   * @param {number} offset Negative offset moves the language toward the front
+   *     of the list. A Positive one moves the language toward the back.
+   */
+  moveLanguage: function(languageCode, offset) {
+    if (!CrSettingsPrefs.isInitialized)
+      return;
+
+    var languageCodes =
+        this.getPref(preferredLanguagesPrefName).value.split(',');
+
+    var originalIndex = languageCodes.indexOf(languageCode);
+    var newIndex = originalIndex + offset;
+    if (originalIndex == -1 || newIndex < 0 || newIndex >= languageCodes.length)
+      return;
+
+    languageCodes.splice(originalIndex, 1);
+    languageCodes.splice(newIndex, 0, languageCode);
+    this.languageSettingsPrivate.setLanguageList(languageCodes);
+  },
+
+  /**
    * Enables translate for the given language by removing the translate
    * language from the blocked languages preference.
    * @param {string} languageCode

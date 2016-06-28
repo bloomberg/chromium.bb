@@ -82,10 +82,11 @@ TEST_F('SettingsLanguagesPageBrowserTest', 'MAYBE_LanguagesPage', function() {
     });
 
     test('language detail', function() {
-      var languageButton = languagesPage.$.languagesCollapse.querySelector(
-          '.list-item paper-icon-button[icon="cr:settings"]');
-      assertTrue(!!languageButton);
-      MockInteractions.tap(languageButton);
+      var languagesCollapse = languagesPage.$.languagesCollapse;
+      var languageDetailMenuItem = languagesCollapse.querySelectorAll(
+          '.dropdown-content .language-detail-item')[0];
+      assertTrue(!!languageDetailMenuItem);
+      MockInteractions.tap(languageDetailMenuItem);
 
       var languageDetailPage =
           languagesPage.$$('settings-language-detail-page');

@@ -29,6 +29,14 @@
     <style include="settings-shared">
       .list-button {
         @apply(--settings-actionable);
+
+      .dropdown-content {
+        background: white;
+        box-shadow: 0 2px 6px grey;
+      }
+
+      paper-item:hover {
+        background-color: var(--settings-hover-color);
       }
     </style>
     <settings-languages languages="{{languages}}"></settings-languages>
@@ -48,6 +56,13 @@
         </div>
         <iron-collapse id="languagesCollapse" opened="[[languagesOpened_]]">
           <div class="list-frame vertical-list">
+            <span class="list-item"
+                hidden="[[isHelpTextHidden_(languages.enabled.*)]]">
+              <span>$i18n{orderLanguagesInstructions}</span>
+              <a href="$i18n{languagesLearnMoreURL}" target="_blank">
+                $i18n{learnMore}
+              </a>
+            </span>
             <template is="dom-repeat" items="[[languages.enabled]]">
               <div class$="list-item [[getLanguageItemClass_(
                   item.language.code, prefs.intl.app_locale.value,
@@ -69,8 +84,29 @@
                   </iron-icon>
                 </div>
 </if>
-                <paper-icon-button icon="cr:settings"
-                    on-tap="onShowLanguageDetailTap_"></paper-icon-button>
+                <paper-icon-button id="more-[[item.language.code]]"
+                    icon="cr:more-vert" toggles
+                    active="{{item.optionsMenuOpened}}">
+                </paper-icon-button>
+                <iron-dropdown opened="{{item.optionsMenuOpened}}"
+                    horizontal-align="right" vertical-align="top">
+                  <div class="dropdown-content">
+                    <paper-item on-tap="onMoveUpTap_"
+                        hidden="[[isFirstLanguage_(index,
+                                                   languages.enabled.*)]]">
+                      $i18n{moveUp}
+                    </paper-item>
+                    <paper-item on-tap="onMoveDownTap_"
+                        hidden="[[isLastLanguage_(index,
+                                                  languages.enabled.*)]]">
+                      $i18n{moveDown}
+                    </paper-item>
+                    <paper-item class="language-detail-item"
+                        on-tap="onShowLanguageDetailTap_">
+                      $i18n{languageDetail}
+                    </paper-item>
+                  </div>
+                </iron-dropdown>
               </div>
             </template>
             <div class="list-item list-button" on-tap="onManageLanguagesTap_">

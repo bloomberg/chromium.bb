@@ -598,6 +598,12 @@ void AddLanguagesStrings(content::WebUIDataSource* html_source) {
   LocalizedString localized_strings[] = {
       {"languagesPageTitle", IDS_SETTINGS_LANGUAGES_PAGE_TITLE},
       {"languagesListTitle", IDS_SETTINGS_LANGUAGES_LANGUAGES_LIST_TITLE},
+      {"orderLanguagesInstructions",
+       IDS_SETTINGS_LANGUAGES_LANGUAGES_LIST_ORDERING_INSTRUCTIONS},
+      {"moveUp", IDS_SETTINGS_LANGUAGES_LANGUAGES_LIST_MOVE_UP},
+      {"moveDown", IDS_SETTINGS_LANGUAGES_LANGUAGES_LIST_MOVE_DOWN},
+      {"languageDetail",
+       IDS_SETTINGS_LANGUAGES_LANGUAGES_LIST_LANGUAGE_DETAIL},
       {"manageLanguages", IDS_SETTINGS_LANGUAGES_LANGUAGES_MANAGE},
 #if defined(OS_CHROMEOS)
       {"inputMethodsListTitle",
@@ -640,6 +646,10 @@ void AddLanguagesStrings(content::WebUIDataSource* html_source) {
   };
   AddLocalizedStringsBulk(html_source, localized_strings,
                           arraysize(localized_strings));
+
+  html_source->AddString(
+      "languagesLearnMoreURL",
+      base::ASCIIToUTF16(chrome::kLanguageSettingsLearnMoreUrl));
 }
 
 #if defined(OS_CHROMEOS)

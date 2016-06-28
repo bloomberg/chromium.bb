@@ -71,10 +71,6 @@ Polymer({
     if (!cr.isChromeOS && !cr.isWindows)
       return;
 
-    // Taps on the paper-icon-button are handled in onShowLanguageDetailTap_.
-    if (e.target.tagName == 'PAPER-ICON-BUTTON')
-      return;
-
     // Set the prospective UI language. This won't take effect until a restart.
     if (e.model.item.language.supportsUI)
       this.languageHelper_.setUILanguage(e.model.item.language.code);
@@ -101,6 +97,54 @@ Polymer({
   onManageLanguagesTap_: function() {
     this.$.pages.setSubpageChain(['manage-languages']);
     this.forceRenderList_('settings-manage-languages-page');
+  },
+
+  /**
+   * @param {number} index Index of the language in the list of languages.
+   * @param {!Object} change Polymer change object for languages.enabled.*.
+   * @return {boolean} True if the given language is the first one in the list
+   *     of languages.
+   * @private
+   */
+  isFirstLanguage_: function(index, change) {
+    return index == 0;
+  },
+
+  /**
+   * @param {number} index Index of the language in the list of languages.
+   * @param {!Object} change Polymer change object for languages.enabled.*.
+   * @return {boolean} True if the given language is the last one in the list of
+   *     languages.
+   * @private
+   */
+  isLastLanguage_: function(index, change) {
+    return index == this.languages.enabled.length - 1;
+  },
+
+  /**
+   * @param {!Object} change Polymer change object for languages.enabled.*.
+   * @return {boolean} True if there are less than 2 languages.
+   */
+  isHelpTextHidden_: function(change) {
+    return this.languages.enabled.length <= 1;
+  },
+
+  /**
+   * Moves the language up in the list.
+   * @param {!{model: !{item: !LanguageState}}} e
+   * @private
+   */
+  onMoveUpTap_: function(e) {
+    this.languageHelper_.moveLanguage(e.model.item.language.code, -1);
+  },
+
+  /**
+   * Moves the language down in the list.
+   * @param {!{model: !{item: !LanguageState}}} e
+   * @private
+   */
+  onMoveDownTap_: function(e) {
+    this.languageHelper_.moveLanguage(e.model.item.language.code, 1);
   },
 
   /**

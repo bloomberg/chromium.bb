@@ -90,6 +90,37 @@ cr.define('settings_languages_page', function() {
       // TODO(michaelpg): Test other modifications.
     });
 
+    test('reorder languages', function() {
+      languageHelper.enableLanguage('sw');
+      assertEquals('en-US', languageHelper.languages.enabled[0].language.code);
+      assertEquals('en-CA', languageHelper.languages.enabled[1].language.code);
+      assertEquals('sw', languageHelper.languages.enabled[2].language.code);
+
+      // Can move a language up.
+      languageHelper.moveLanguage('sw', -1);
+      assertEquals('en-US', languageHelper.languages.enabled[0].language.code);
+      assertEquals('sw', languageHelper.languages.enabled[1].language.code);
+      assertEquals('en-CA', languageHelper.languages.enabled[2].language.code);
+
+      // Can move a language down.
+      languageHelper.moveLanguage('en-US', 1);
+      assertEquals('sw', languageHelper.languages.enabled[0].language.code);
+      assertEquals('en-US', languageHelper.languages.enabled[1].language.code);
+      assertEquals('en-CA', languageHelper.languages.enabled[2].language.code);
+
+      // Moving the first language up has no effect.
+      languageHelper.moveLanguage('sw', -1);
+      assertEquals('sw', languageHelper.languages.enabled[0].language.code);
+      assertEquals('en-US', languageHelper.languages.enabled[1].language.code);
+      assertEquals('en-CA', languageHelper.languages.enabled[2].language.code);
+
+      // Moving the last language down has no effect.
+      languageHelper.moveLanguage('en-CA', 1);
+      assertEquals('sw', languageHelper.languages.enabled[0].language.code);
+      assertEquals('en-US', languageHelper.languages.enabled[1].language.code);
+      assertEquals('en-CA', languageHelper.languages.enabled[2].language.code);
+    });
+
     if (cr.isChromeOS) {
       test('modifying input methods', function() {
         assertEquals(2, languageHelper.languages.inputMethods.enabled.length);
