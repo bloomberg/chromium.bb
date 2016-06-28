@@ -634,7 +634,7 @@ EVENT_TYPE(SIGNED_CERTIFICATE_TIMESTAMPS_RECEIVED)
 //
 // Where each SCT is an object:
 // {
-//    "origin": <one of: "embedded_in_certificate", "tls_extension", "ocsp">,
+//    "origin": <one of: "Embedded in certificate", "tls_extension", "ocsp">,
 //    "version": <numeric version>,
 //    "log_id": <base64-encoded log id>,
 //    "timestamp": <numeric timestamp in milliseconds since the Unix epoch>,

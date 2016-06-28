@@ -17,6 +17,7 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
@@ -43,7 +44,7 @@
 #include "net/base/filename_util.h"
 #include "net/base/net_errors.h"
 #include "net/cert/cert_status_flags.h"
-#include "net/cert/sct_status_flags.h"
+#include "net/cert/ct_sct_to_string.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_util.h"
 #include "net/ssl/ssl_cipher_suite_names.h"
@@ -187,8 +188,28 @@ int GetInfoFromDataURL(const GURL& url,
   return net::OK;
 }
 
+// Convert a net::SignedCertificateTimestampAndStatus object to a
+// blink::WebURLResponse::SignedCertificateTimestamp object.
+blink::WebURLResponse::SignedCertificateTimestamp NetSCTToBlinkSCT(
+    const net::SignedCertificateTimestampAndStatus& sct_and_status) {
+  return blink::WebURLResponse::SignedCertificateTimestamp(
+      WebString::fromUTF8(net::ct::StatusToString(sct_and_status.status)),
+      WebString::fromUTF8(net::ct::OriginToString(sct_and_status.sct->origin)),
+      WebString::fromUTF8(sct_and_status.sct->log_description),
+      WebString::fromUTF8(base::HexEncode(sct_and_status.sct->log_id.c_str(),
+                                          sct_and_status.sct->log_id.length())),
+      sct_and_status.sct->timestamp.ToJavaTime(),
+      WebString::fromUTF8(net::ct::HashAlgorithmToString(
+          sct_and_status.sct->signature.hash_algorithm)),
+      WebString::fromUTF8(net::ct::SignatureAlgorithmToString(
+          sct_and_status.sct->signature.signature_algorithm)),
+      WebString::fromUTF8(
+          base::HexEncode(sct_and_status.sct->signature.signature_data.c_str(),
+          sct_and_status.sct->signature.signature_data.length())));
+}
+
 void SetSecurityStyleAndDetails(const GURL& url,
-                                const std::string& security_info,
+                                const ResourceResponseInfo& info,
                                 WebURLResponse* response,
                                 bool report_security_info) {
   if (!report_security_info) {
@@ -202,6 +223,7 @@ void SetSecurityStyleAndDetails(const GURL& url,
 
   // There are cases where an HTTPS request can come in without security
   // info attached (such as a redirect response).
+  const std::string& security_info = info.security_info;
   if (security_info.empty()) {
     response->setSecurityStyle(WebURLResponse::SecurityStyleUnknown);
     return;
@@ -259,10 +281,16 @@ void SetSecurityStyleAndDetails(const GURL& url,
   size_t num_invalid_scts = ssl_status.num_invalid_scts;
   size_t num_valid_scts = ssl_status.num_valid_scts;
 
+  blink::WebURLResponse::SignedCertificateTimestampList sct_list(
+      info.signed_certificate_timestamps.size());
+
+  for (size_t i = 0; i < sct_list.size(); ++i)
+    sct_list[i] = NetSCTToBlinkSCT(info.signed_certificate_timestamps[i]);
+
   blink::WebURLResponse::WebSecurityDetails webSecurityDetails(
       WebString::fromUTF8(protocol), WebString::fromUTF8(key_exchange),
-      WebString::fromUTF8(cipher), WebString::fromUTF8(mac),
-      ssl_status.cert_id, num_unknown_scts, num_invalid_scts, num_valid_scts);
+      WebString::fromUTF8(cipher), WebString::fromUTF8(mac), ssl_status.cert_id,
+      num_unknown_scts, num_invalid_scts, num_valid_scts, sct_list);
 
   response->setSecurityDetails(webSecurityDetails);
 }
@@ -964,8 +992,7 @@ void WebURLLoaderImpl::PopulateURLResponse(const GURL& url,
       [](const std::string& h) { return blink::WebString::fromLatin1(h); });
   response->setCorsExposedHeaderNames(cors_exposed_header_names);
 
-  SetSecurityStyleAndDetails(url, info.security_info, response,
-                             report_security_info);
+  SetSecurityStyleAndDetails(url, info, response, report_security_info);
 
   WebURLResponseExtraDataImpl* extra_data =
       new WebURLResponseExtraDataImpl(info.npn_negotiated_protocol);

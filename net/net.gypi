@@ -402,6 +402,8 @@
       'cert/ct_log_verifier_util.h',
       'cert/ct_objects_extractor.cc',
       'cert/ct_objects_extractor.h',
+      'cert/ct_sct_to_string.cc',
+      'cert/ct_sct_to_string.h',
       'cert/ct_serialization.cc',
       'cert/ct_serialization.h',
       'cert/ct_signed_certificate_timestamp_log_param.cc',

@@ -408,11 +408,28 @@ static std::unique_ptr<protocol::Network::Response> buildObjectForResourceRespon
             .setNumInvalidScts(numInvalidSCTs)
             .setNumValidScts(numValidSCTs).build();
 
+        std::unique_ptr<protocol::Array<protocol::Network::SignedCertificateTimestamp>> signedCertificateTimestampList = protocol::Array<protocol::Network::SignedCertificateTimestamp>::create();
+        for (auto const& sct : responseSecurityDetails->sctList) {
+            std::unique_ptr<protocol::Network::SignedCertificateTimestamp> signedCertificateTimestamp = protocol::Network::SignedCertificateTimestamp::create()
+                .setStatus(sct.m_status)
+                .setOrigin(sct.m_origin)
+                .setLogDescription(sct.m_logDescription)
+                .setLogId(sct.m_logId)
+                .setTimestamp(sct.m_timestamp)
+                .setHashAlgorithm(sct.m_hashAlgorithm)
+                .setSignatureAlgorithm(sct.m_signatureAlgorithm)
+                .setSignatureData(sct.m_signatureData)
+                .build();
+            signedCertificateTimestampList->addItem(std::move(signedCertificateTimestamp));
+        }
+
         std::unique_ptr<protocol::Network::SecurityDetails> securityDetails = protocol::Network::SecurityDetails::create()
             .setProtocol(responseSecurityDetails->protocol)
             .setKeyExchange(responseSecurityDetails->keyExchange)
             .setCipher(responseSecurityDetails->cipher)
-            .setCertificateId(responseSecurityDetails->certID).build();
+            .setCertificateId(responseSecurityDetails->certID)
+            .setSignedCertificateTimestampList(std::move(signedCertificateTimestampList))
+            .build();
         securityDetails->setCertificateValidationDetails(std::move(certificateValidationDetails));
         if (responseSecurityDetails->mac.length() > 0)
             securityDetails->setMac(responseSecurityDetails->mac);

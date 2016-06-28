@@ -325,6 +325,9 @@ void WebURLResponse::setSecurityStyle(SecurityStyle securityStyle)
 
 void WebURLResponse::setSecurityDetails(const WebSecurityDetails& webSecurityDetails)
 {
+    blink::ResourceResponse::SignedCertificateTimestampList sctList;
+    for (const auto& iter : webSecurityDetails.sctList)
+        sctList.append(static_cast<blink::ResourceResponse::SignedCertificateTimestamp>(iter));
     m_private->m_resourceResponse->setSecurityDetails(
         webSecurityDetails.protocol,
         webSecurityDetails.keyExchange,
@@ -333,7 +336,8 @@ void WebURLResponse::setSecurityDetails(const WebSecurityDetails& webSecurityDet
         webSecurityDetails.certId,
         webSecurityDetails.numUnknownScts,
         webSecurityDetails.numInvalidScts,
-        webSecurityDetails.numValidScts);
+        webSecurityDetails.numValidScts,
+        sctList);
 }
 
 ResourceResponse& WebURLResponse::toMutableResourceResponse()

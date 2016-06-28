@@ -62,8 +62,49 @@ public:
         SecurityStyleAuthenticated
     };
 
+    struct SignedCertificateTimestamp {
+        SignedCertificateTimestamp() {}
+        SignedCertificateTimestamp(
+            WebString status,
+            WebString origin,
+            WebString logDescription,
+            WebString logId,
+            int64_t timestamp,
+            WebString hashAlgorithm,
+            WebString signatureAlgorithm,
+            WebString signatureData)
+            : status(status)
+            , origin(origin)
+            , logDescription(logDescription)
+            , logId(logId)
+            , timestamp(timestamp)
+            , hashAlgorithm(hashAlgorithm)
+            , signatureAlgorithm(signatureAlgorithm)
+            , signatureData(signatureData)
+        {
+        }
+        WebString status;
+        WebString origin;
+        WebString logDescription;
+        WebString logId;
+        int64_t timestamp;
+        WebString hashAlgorithm;
+        WebString signatureAlgorithm;
+        WebString signatureData;
+    };
+
+    using SignedCertificateTimestampList = WebVector<SignedCertificateTimestamp>;
+
     struct WebSecurityDetails {
-        WebSecurityDetails(const WebString& protocol, const WebString& keyExchange, const WebString& cipher, const WebString& mac, int certId, size_t numUnknownScts, size_t numInvalidScts, size_t numValidScts)
+        WebSecurityDetails(const WebString& protocol,
+            const WebString& keyExchange,
+            const WebString& cipher,
+            const WebString& mac,
+            int certId,
+            size_t numUnknownScts,
+            size_t numInvalidScts,
+            size_t numValidScts,
+            const SignedCertificateTimestampList& sctList)
             : protocol(protocol)
             , keyExchange(keyExchange)
             , cipher(cipher)
@@ -72,6 +113,7 @@ public:
             , numUnknownScts(numUnknownScts)
             , numInvalidScts(numInvalidScts)
             , numValidScts(numValidScts)
+            , sctList(sctList)
         {
         }
         // All strings are human-readable values.
@@ -85,6 +127,7 @@ public:
         size_t numUnknownScts;
         size_t numInvalidScts;
         size_t numValidScts;
+        SignedCertificateTimestampList sctList;
     };
 
     class ExtraData {

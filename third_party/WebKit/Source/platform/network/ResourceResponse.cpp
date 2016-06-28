@@ -33,6 +33,19 @@
 
 namespace blink {
 
+ResourceResponse::SignedCertificateTimestamp::SignedCertificateTimestamp(
+    const blink::WebURLResponse::SignedCertificateTimestamp& sct)
+    : m_status(sct.status)
+    , m_origin(sct.origin)
+    , m_logDescription(sct.logDescription)
+    , m_logId(sct.logId)
+    , m_timestamp(sct.timestamp)
+    , m_hashAlgorithm(sct.hashAlgorithm)
+    , m_signatureAlgorithm(sct.signatureAlgorithm)
+    , m_signatureData(sct.signatureData)
+{
+}
+
 ResourceResponse::ResourceResponse()
     : m_expectedContentLength(0)
     , m_httpStatusCode(0)
@@ -127,6 +140,7 @@ ResourceResponse::ResourceResponse(CrossThreadResourceResponseData* data)
     m_securityDetails.numUnknownSCTs = data->m_securityDetails.numUnknownSCTs;
     m_securityDetails.numInvalidSCTs = data->m_securityDetails.numInvalidSCTs;
     m_securityDetails.numValidSCTs = data->m_securityDetails.numValidSCTs;
+    m_securityDetails.sctList = data->m_securityDetails.sctList;
     m_httpVersion = data->m_httpVersion;
     m_appCacheID = data->m_appCacheID;
     m_appCacheManifestURL = data->m_appCacheManifestURL.copy();
@@ -175,6 +189,7 @@ std::unique_ptr<CrossThreadResourceResponseData> ResourceResponse::copyData() co
     data->m_securityDetails.numUnknownSCTs = m_securityDetails.numUnknownSCTs;
     data->m_securityDetails.numInvalidSCTs = m_securityDetails.numInvalidSCTs;
     data->m_securityDetails.numValidSCTs = m_securityDetails.numValidSCTs;
+    data->m_securityDetails.sctList = m_securityDetails.sctList;
     data->m_httpVersion = m_httpVersion;
     data->m_appCacheID = m_appCacheID;
     data->m_appCacheManifestURL = m_appCacheManifestURL.copy();
@@ -326,7 +341,7 @@ void ResourceResponse::updateHeaderParsedState(const AtomicString& name)
         m_haveParsedLastModifiedHeader = false;
 }
 
-void ResourceResponse::setSecurityDetails(const String& protocol, const String& keyExchange, const String& cipher, const String& mac, int certId, size_t numUnknownScts, size_t numInvalidScts, size_t numValidScts)
+void ResourceResponse::setSecurityDetails(const String& protocol, const String& keyExchange, const String& cipher, const String& mac, int certId, size_t numUnknownScts, size_t numInvalidScts, size_t numValidScts, const SignedCertificateTimestampList& sctList)
 {
     m_securityDetails.protocol = protocol;
     m_securityDetails.keyExchange = keyExchange;
@@ -336,6 +351,7 @@ void ResourceResponse::setSecurityDetails(const String& protocol, const String& 
     m_securityDetails.numUnknownSCTs = numUnknownScts;
     m_securityDetails.numInvalidSCTs = numInvalidScts;
     m_securityDetails.numValidSCTs = numValidScts;
+    m_securityDetails.sctList = sctList;
 }
 
 void ResourceResponse::setHTTPHeaderField(const AtomicString& name, const AtomicString& value)

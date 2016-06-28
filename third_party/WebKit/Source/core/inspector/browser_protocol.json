@@ -1000,6 +1000,21 @@
                 ]
             },
             {
+                "id": "SignedCertificateTimestamp",
+                "type" : "object",
+                "description": "Details of a signed certificate timestamp (SCT).",
+                "properties": [
+                    { "name": "status", "type": "string", "description": "Validation status." },
+                    { "name": "origin", "type": "string", "description": "Origin." },
+                    { "name": "logDescription", "type": "string", "description": "Log name / description." },
+                    { "name": "logId", "type": "string", "description": "Log ID." },
+                    { "name": "timestamp", "$ref": "Timestamp", "description": "Issuance date." },
+                    { "name": "hashAlgorithm", "type": "string", "description": "Hash algorithm." },
+                    { "name": "signatureAlgorithm", "type": "string", "description": "Signature algorithm." },
+                    { "name": "signatureData", "type": "string", "description": "Signature data." }
+                ]
+            },
+            {
                 "id": "SecurityDetails",
                 "type": "object",
                 "description": "Security details about a request.",
@@ -1009,7 +1024,8 @@
                     { "name": "cipher", "type": "string", "description": "Cipher name." },
                     { "name": "mac", "type": "string", "optional": true, "description": "TLS MAC. Note that AEAD ciphers do not have separate MACs." },
                     { "name": "certificateId", "$ref": "Security.CertificateId", "description": "Certificate ID value." },
-                    { "name": "certificateValidationDetails", "$ref": "CertificateValidationDetails", "optional": true, "description": "Validation details for the request's certficate." }
+                    { "name": "certificateValidationDetails", "$ref": "CertificateValidationDetails", "optional": true, "description": "Validation details for the request's certficate." },
+                    { "name": "signedCertificateTimestampList", "type": "array", "items": { "$ref": "SignedCertificateTimestamp" }, "description": "List of signed certificate timestamps (SCTs)." }
                 ]
             },
             {

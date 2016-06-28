@@ -98,7 +98,7 @@ class MultiLogCTVerifierTest : public ::testing::Test {
     std::string origin;
     if (!the_sct->GetString("origin", &origin))
       return false;
-    if (origin != "embedded_in_certificate")
+    if (origin != "Embedded in certificate")
       return false;
 
     base::ListValue* other_scts;
