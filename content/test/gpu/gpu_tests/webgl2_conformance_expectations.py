@@ -48,8 +48,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
 
     self.Flaky('conformance2/query/occlusion-query.html', bug=603168)
 
-    self.Fail('conformance2/rendering/draw-buffers.html', bug=617410)
-
     # Avoid a conflict with a Mac expectation by setting
     self.Fail('conformance2/textures/misc/tex-input-validation.html',
         ['d3d9', 'd3d11', 'opengl'], bug=483282)
@@ -386,6 +384,9 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         'draw_range_elements.html',
         ['mac', ('nvidia', 0xfe9)], bug=483282)
 
+    self.Fail('conformance2/rendering/draw-buffers.html',
+        ['mac', ('nvidia', 0xfe9)], bug=617410)
+
     # Mac AMD
     self.Fail('deqp/functional/gles3/clipping.html',
         ['mac', 'amd'], bug=483282)
@@ -485,6 +486,10 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['linux'], bug=483282)
     self.Fail('deqp/functional/gles3/fbodepthbuffer.html',
         ['linux'], bug=483282)
+
+    # Behavior difference between GL compatibility profile and ES3.
+    self.Fail('conformance2/rendering/draw-buffers.html',
+        ['linux'], bug=617410)
 
     self.Skip('deqp/data/gles3/shaders/qualification_order.html',
         ['linux', 'amd', 'intel'], bug=483282)
