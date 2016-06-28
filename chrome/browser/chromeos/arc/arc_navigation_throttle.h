@@ -26,12 +26,16 @@ namespace arc {
 // traffic initiated on Chrome browser, either on Chrome or an ARC's app.
 class ArcNavigationThrottle : public content::NavigationThrottle {
  public:
-  enum class CloseReason {
-    REASON_ALWAYS_PRESSED,
-    REASON_JUST_ONCE_PRESSED,
-    REASON_DIALOG_DEACTIVATED,
-    REASON_PREFERRED_ACTIVITY_FOUND,
-    REASON_ERROR
+  // These enums are used to define the buckets for an enumerated UMA histogram
+  // and need to be synced with histograms.xml. This enum class should also be
+  // treated as append-only.
+  enum class CloseReason : int {
+    ERROR = 0,
+    DIALOG_DEACTIVATED = 1,
+    ALWAYS_PRESSED = 2,
+    JUST_ONCE_PRESSED = 3,
+    PREFERRED_ACTIVITY_FOUND = 4,
+    SIZE,
   };
 
   using NameAndIcon = std::pair<std::string, gfx::Image>;

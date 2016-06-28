@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
+#include "base/metrics/histogram_macros.h"
 #include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_service_manager.h"
 #include "components/arc/intent_helper/arc_intent_helper_bridge.h"
@@ -110,7 +111,7 @@ void ArcNavigationThrottle::OnAppCandidatesReceived(
           << navigation_handle()->GetURL().spec();
     }
     OnDisambigDialogClosed(std::move(handlers), i,
-                           CloseReason::REASON_PREFERRED_ACTIVITY_FOUND);
+                           CloseReason::PREFERRED_ACTIVITY_FOUND);
     return;
   }
 
@@ -163,34 +164,47 @@ void ArcNavigationThrottle::OnDisambigDialogClosed(
   const GURL& url = navigation_handle()->GetURL();
   content::NavigationHandle* handle = navigation_handle();
 
-  // TODO(djacobo): Record UMA
-  // If the user fails to select an option from the list, or the UI returned an
-  // error or if |selected_app_index| is not a valid index, then resume the
-  // navigation in Chrome. Otherwise store the preferred app (if any) and start
-  // the selected app, either Chrome Browser or ARC app.
-  if (close_reason == CloseReason::REASON_DIALOG_DEACTIVATED ||
-      close_reason == CloseReason::REASON_ERROR ||
-      selected_app_index >= handlers.size()) {
-    DVLOG(1) << "User didn't select a valid option, resuming navigation.";
-    handle->Resume();
-    return;
-  }
   mojom::IntentHelperInstance* bridge = GetIntentHelper();
-  if (!bridge) {
-    handle->Resume();
-    return;
+  if (!bridge || selected_app_index >= handlers.size()) {
+    close_reason = CloseReason::ERROR;
   }
-  if (close_reason == CloseReason::REASON_ALWAYS_PRESSED) {
-    bridge->AddPreferredPackage(handlers[selected_app_index]->package_name);
+
+  switch (close_reason) {
+    case CloseReason::ERROR:
+    case CloseReason::DIALOG_DEACTIVATED: {
+      // If the user fails to select an option from the list, or the UI returned
+      // an error or if |selected_app_index| is not a valid index, then resume
+      // the navigation in Chrome.
+      DVLOG(1) << "User didn't select a valid option, resuming navigation.";
+      handle->Resume();
+      break;
+    }
+    case CloseReason::ALWAYS_PRESSED: {
+      bridge->AddPreferredPackage(handlers[selected_app_index]->package_name);
+      // fall through.
+    }
+    case CloseReason::JUST_ONCE_PRESSED:
+    case CloseReason::PREFERRED_ACTIVITY_FOUND: {
+      if (ArcIntentHelperBridge::IsIntentHelperPackage(
+              handlers[selected_app_index]->package_name)) {
+        handle->Resume();
+      } else {
+        bridge->HandleUrl(url.spec(),
+                          handlers[selected_app_index]->package_name);
+        handle->CancelDeferredNavigation(
+            content::NavigationThrottle::CANCEL_AND_IGNORE);
+      }
+      break;
+    }
+    case CloseReason::SIZE: {
+      NOTREACHED();
+      return;
+    }
   }
-  if (ArcIntentHelperBridge::IsIntentHelperPackage(
-          handlers[selected_app_index]->package_name)) {
-    handle->Resume();
-    return;
-  }
-  bridge->HandleUrl(url.spec(), handlers[selected_app_index]->package_name);
-  handle->CancelDeferredNavigation(
-      content::NavigationThrottle::CANCEL_AND_IGNORE);
+
+  UMA_HISTOGRAM_ENUMERATION("Arc.IntentHandlerAction",
+                            static_cast<int>(close_reason),
+                            static_cast<int>(CloseReason::SIZE));
 }
 
 }  // namespace arc

@@ -970,6 +970,12 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Arc.IntentHandlerAction" enum="ArcIntentHandlerAction">
+  <owner>elijahtaylor@google.com</owner>
+  <owner>mitsuji@google.com</owner>
+  <summary>Arc intent handler action taken by user.</summary>
+</histogram>
+
 <histogram name="Arc.LowMemoryKiller.Count">
   <owner>elijahtaylor@google.com</owner>
   <owner>mitsuji@google.com</owner>
@@ -65271,6 +65277,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="2" label="Most visited pane"/>
   <int value="3" label="Bookmarks pane"/>
   <int value="4" label="Outside of NTP (e.g. bookmarks bar)"/>
+</enum>
+
+<enum name="ArcIntentHandlerAction" type="int">
+  <summary>Defines Arc intent handler actions</summary>
+  <int value="0" label="Error"/>
+  <int value="1" label="Dialog deactivated"/>
+  <int value="2" label="Always"/>
+  <int value="3" label="Just once"/>
+  <int value="4" label="Preferred activity found"/>
 </enum>
 
 <enum name="ArcOptInAction" type="int">
