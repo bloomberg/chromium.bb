@@ -98,7 +98,6 @@ class ProguardCmdBuilder(object):
       '-forceprocessing',
     ]
     if self._tested_apk_info_path:
-      assert len(self._configs) == 1
       tested_apk_info = build_utils.ReadJson(self._tested_apk_info_path)
       self._configs += tested_apk_info['configs']
       self._injars = [
