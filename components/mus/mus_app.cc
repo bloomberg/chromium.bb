@@ -21,6 +21,7 @@
 #include "components/mus/ws/display_binding.h"
 #include "components/mus/ws/display_manager.h"
 #include "components/mus/ws/platform_screen.h"
+#include "components/mus/ws/user_activity_monitor.h"
 #include "components/mus/ws/user_display_manager.h"
 #include "components/mus/ws/window_server.h"
 #include "components/mus/ws/window_server_test_impl.h"
@@ -225,6 +226,7 @@ bool MusApp::AcceptConnection(Connection* connection) {
   connection->AddInterface<mojom::Clipboard>(this);
   connection->AddInterface<mojom::DisplayManager>(this);
   connection->AddInterface<mojom::UserAccessManager>(this);
+  connection->AddInterface<mojom::UserActivityMonitor>(this);
   connection->AddInterface<WindowTreeHostFactory>(this);
   connection->AddInterface<mojom::WindowManagerWindowTreeFactory>(this);
   connection->AddInterface<mojom::WindowTreeFactory>(this);
@@ -318,6 +320,14 @@ void MusApp::Create(shell::Connection* connection,
 void MusApp::Create(shell::Connection* connection,
                     mojom::UserAccessManagerRequest request) {
   window_server_->user_id_tracker()->Bind(std::move(request));
+}
+
+void MusApp::Create(shell::Connection* connection,
+                    mojom::UserActivityMonitorRequest request) {
+  AddUserIfNecessary(connection);
+  const ws::UserId& user_id = connection->GetRemoteIdentity().user_id();
+  window_server_->GetUserActivityMonitorForUser(user_id)->Add(
+      std::move(request));
 }
 
 void MusApp::Create(shell::Connection* connection,

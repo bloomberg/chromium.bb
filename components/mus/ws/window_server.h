@@ -24,6 +24,7 @@
 #include "components/mus/ws/server_window_delegate.h"
 #include "components/mus/ws/server_window_observer.h"
 #include "components/mus/ws/user_id_tracker.h"
+#include "components/mus/ws/user_id_tracker_observer.h"
 #include "components/mus/ws/window_manager_window_tree_factory_set.h"
 #include "mojo/public/cpp/bindings/array.h"
 #include "mojo/public/cpp/bindings/binding.h"
@@ -34,6 +35,7 @@ namespace ws {
 class AccessPolicy;
 class DisplayManager;
 class ServerWindow;
+class UserActivityMonitor;
 class WindowManagerState;
 class WindowServerDelegate;
 class WindowTree;
@@ -43,7 +45,8 @@ class WindowTreeBinding;
 // WindowTrees) as well as providing the root of the hierarchy.
 class WindowServer : public ServerWindowDelegate,
                      public ServerWindowObserver,
-                     public DisplayManagerDelegate {
+                     public DisplayManagerDelegate,
+                     public UserIdTrackerObserver {
  public:
   WindowServer(WindowServerDelegate* delegate,
                const scoped_refptr<mus::SurfacesState>& surfaces_state);
@@ -128,6 +131,8 @@ class WindowServer : public ServerWindowDelegate,
 
   void OnFirstWindowManagerWindowTreeFactoryReady();
 
+  UserActivityMonitor* GetUserActivityMonitorForUser(const UserId& user_id);
+
   WindowManagerWindowTreeFactorySet* window_manager_window_tree_factory_set() {
     return &window_manager_window_tree_factory_set_;
   }
@@ -196,6 +201,8 @@ class WindowServer : public ServerWindowDelegate,
 
   using WindowTreeMap =
       std::map<ClientSpecificId, std::unique_ptr<WindowTree>>;
+  using UserActivityMonitorMap =
+      std::map<UserId, std::unique_ptr<UserActivityMonitor>>;
 
   struct InFlightWindowManagerChange {
     // Identifies the client that initiated the change.
@@ -286,6 +293,12 @@ class WindowServer : public ServerWindowDelegate,
   WindowManagerState* GetWindowManagerStateForUser(
       const UserId& user_id) override;
 
+  // UserIdTrackerObserver:
+  void OnActiveUserIdChanged(const UserId& previously_active_id,
+                             const UserId& active_id) override;
+  void OnUserIdAdded(const UserId& id) override;
+  void OnUserIdRemoved(const UserId& id) override;
+
   UserIdTracker user_id_tracker_;
 
   WindowServerDelegate* delegate_;
@@ -315,6 +328,8 @@ class WindowServer : public ServerWindowDelegate,
   uint32_t next_wm_change_id_;
 
   base::Callback<void(ServerWindow*)> window_paint_callback_;
+
+  UserActivityMonitorMap activity_monitor_map_;
 
   WindowManagerWindowTreeFactorySet window_manager_window_tree_factory_set_;
 

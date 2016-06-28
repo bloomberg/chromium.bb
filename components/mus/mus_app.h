@@ -20,6 +20,7 @@
 #include "components/mus/public/interfaces/gpu.mojom.h"
 #include "components/mus/public/interfaces/gpu_service.mojom.h"
 #include "components/mus/public/interfaces/user_access_manager.mojom.h"
+#include "components/mus/public/interfaces/user_activity_monitor.mojom.h"
 #include "components/mus/public/interfaces/window_manager_window_tree_factory.mojom.h"
 #include "components/mus/public/interfaces/window_server_test.mojom.h"
 #include "components/mus/public/interfaces/window_tree.mojom.h"
@@ -64,6 +65,7 @@ class MusApp
       public shell::InterfaceFactory<mojom::Gpu>,
       public shell::InterfaceFactory<mojom::GpuService>,
       public shell::InterfaceFactory<mojom::UserAccessManager>,
+      public shell::InterfaceFactory<mojom::UserActivityMonitor>,
       public shell::InterfaceFactory<mojom::WindowManagerWindowTreeFactory>,
       public shell::InterfaceFactory<mojom::WindowTreeFactory>,
       public shell::InterfaceFactory<mojom::WindowTreeHostFactory>,
@@ -121,6 +123,10 @@ class MusApp
   // shell::InterfaceFactory<mojom::UserAccessManager> implementation.
   void Create(shell::Connection* connection,
               mojom::UserAccessManagerRequest request) override;
+
+  // shell::InterfaceFactory<mojom::UserActivityMonitor> implementation.
+  void Create(shell::Connection* connection,
+              mojom::UserActivityMonitorRequest request) override;
 
   // shell::InterfaceFactory<mojom::WindowManagerWindowTreeFactory>
   // implementation.

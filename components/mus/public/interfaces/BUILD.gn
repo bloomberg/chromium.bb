@@ -19,6 +19,7 @@ mojom("interfaces") {
     "mus_constants.mojom",
     "surface.mojom",
     "user_access_manager.mojom",
+    "user_activity_monitor.mojom",
     "window_manager.mojom",
     "window_manager_constants.mojom",
     "window_manager_window_tree_factory.mojom",

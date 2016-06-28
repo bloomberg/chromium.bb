@@ -15,6 +15,7 @@
 #include "components/mus/ws/display_manager.h"
 #include "components/mus/ws/operation.h"
 #include "components/mus/ws/server_window.h"
+#include "components/mus/ws/user_activity_monitor.h"
 #include "components/mus/ws/window_coordinate_conversions.h"
 #include "components/mus/ws/window_manager_access_policy.h"
 #include "components/mus/ws/window_manager_display_root.h"
@@ -39,7 +40,10 @@ WindowServer::WindowServer(
       current_operation_(nullptr),
       in_destructor_(false),
       next_wm_change_id_(0),
-      window_manager_window_tree_factory_set_(this, &user_id_tracker_) {}
+      window_manager_window_tree_factory_set_(this, &user_id_tracker_) {
+  user_id_tracker_.AddObserver(this);
+  OnUserIdAdded(user_id_tracker_.active_id());
+}
 
 WindowServer::~WindowServer() {
   in_destructor_ = true;
@@ -229,6 +233,12 @@ void WindowServer::OnFirstWindowManagerWindowTreeFactoryReady() {
   // created yet. Treat this as a signal to create a Display.
   // TODO(sky): we need a better way to determine this, most likely a switch.
   delegate_->CreateDefaultDisplays();
+}
+
+UserActivityMonitor* WindowServer::GetUserActivityMonitorForUser(
+    const UserId& user_id) {
+  DCHECK_GT(activity_monitor_map_.count(user_id), 0u);
+  return activity_monitor_map_[user_id].get();
 }
 
 bool WindowServer::SetFocusedWindow(ServerWindow* window) {
@@ -680,6 +690,17 @@ WindowManagerState* WindowServer::GetWindowManagerStateForUser(
     const UserId& user_id) {
   return window_manager_window_tree_factory_set_.GetWindowManagerStateForUser(
       user_id);
+}
+
+void WindowServer::OnActiveUserIdChanged(const UserId& previously_active_id,
+                                         const UserId& active_id) {}
+
+void WindowServer::OnUserIdAdded(const UserId& id) {
+  activity_monitor_map_[id] = base::MakeUnique<UserActivityMonitor>(nullptr);
+}
+
+void WindowServer::OnUserIdRemoved(const UserId& id) {
+  activity_monitor_map_.erase(id);
 }
 
 }  // namespace ws

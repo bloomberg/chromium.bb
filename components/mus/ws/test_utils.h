@@ -17,6 +17,7 @@
 #include "components/mus/ws/platform_display.h"
 #include "components/mus/ws/platform_display_factory.h"
 #include "components/mus/ws/test_change_tracker.h"
+#include "components/mus/ws/user_activity_monitor.h"
 #include "components/mus/ws/user_display_manager.h"
 #include "components/mus/ws/user_id.h"
 #include "components/mus/ws/window_manager_state.h"
@@ -63,6 +64,23 @@ class UserDisplayManagerTestApi {
   UserDisplayManager* udm_;
 
   DISALLOW_COPY_AND_ASSIGN(UserDisplayManagerTestApi);
+};
+
+// -----------------------------------------------------------------------------
+
+class UserActivityMonitorTestApi {
+ public:
+  explicit UserActivityMonitorTestApi(UserActivityMonitor* monitor)
+      : monitor_(monitor) {}
+
+  void SetTimerTaskRunner(
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
+    monitor_->idle_timer_.SetTaskRunner(task_runner);
+  }
+
+ private:
+  UserActivityMonitor* monitor_;
+  DISALLOW_COPY_AND_ASSIGN(UserActivityMonitorTestApi);
 };
 
 // -----------------------------------------------------------------------------

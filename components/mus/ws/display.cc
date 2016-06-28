@@ -15,6 +15,7 @@
 #include "components/mus/ws/focus_controller.h"
 #include "components/mus/ws/platform_display.h"
 #include "components/mus/ws/platform_display_init_params.h"
+#include "components/mus/ws/user_activity_monitor.h"
 #include "components/mus/ws/window_manager_display_root.h"
 #include "components/mus/ws/window_manager_state.h"
 #include "components/mus/ws/window_manager_window_tree_factory.h"
@@ -278,6 +279,10 @@ void Display::OnEvent(const ui::Event& event) {
   WindowManagerDisplayRoot* display_root = GetActiveWindowManagerDisplayRoot();
   if (display_root)
     display_root->window_manager_state()->ProcessEvent(event);
+  window_server_
+      ->GetUserActivityMonitorForUser(
+          window_server_->user_id_tracker()->active_id())
+      ->OnUserActivity();
 }
 
 void Display::OnNativeCaptureLost() {
