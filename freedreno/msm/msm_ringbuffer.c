@@ -92,6 +92,11 @@ struct msm_ringbuffer {
 
 	int is_growable;
 	unsigned cmd_count;
+
+	unsigned seqno;
+
+	/* maps fd_bo to idx: */
+	void *bo_table;
 };
 
 static inline struct msm_ringbuffer * to_msm_ringbuffer(struct fd_ringbuffer *x)
@@ -217,21 +222,24 @@ static uint32_t bo2idx(struct fd_ringbuffer *ring, struct fd_bo *bo, uint32_t fl
 	struct msm_bo *msm_bo = to_msm_bo(bo);
 	uint32_t idx;
 	pthread_mutex_lock(&idx_lock);
-	if (!msm_bo->current_ring) {
-		idx = append_bo(ring, bo);
-		msm_bo->current_ring = ring;
-		msm_bo->idx = idx;
-	} else if (msm_bo->current_ring == ring) {
+	if (msm_bo->current_ring_seqno == msm_ring->seqno) {
 		idx = msm_bo->idx;
 	} else {
-		/* slow-path: */
-		for (idx = 0; idx < msm_ring->nr_bos; idx++)
-			if (msm_ring->bos[idx] == bo)
-				break;
-		if (idx == msm_ring->nr_bos) {
-			/* not found */
+		void *val;
+
+		if (!msm_ring->bo_table)
+			msm_ring->bo_table = drmHashCreate();
+
+		if (!drmHashLookup(msm_ring->bo_table, bo->handle, &val)) {
+			/* found */
+			idx = (uint32_t)val;
+		} else {
 			idx = append_bo(ring, bo);
+			val = (void *)idx;
+			drmHashInsert(msm_ring->bo_table, bo->handle, val);
 		}
+		msm_bo->current_ring_seqno = msm_ring->seqno;
+		msm_bo->idx = idx;
 	}
 	pthread_mutex_unlock(&idx_lock);
 	if (flags & FD_RELOC_READ)
@@ -318,7 +326,7 @@ static void flush_reset(struct fd_ringbuffer *ring)
 
 	for (i = 0; i < msm_ring->nr_bos; i++) {
 		struct msm_bo *msm_bo = to_msm_bo(msm_ring->bos[i]);
-		msm_bo->current_ring = NULL;
+		msm_bo->current_ring_seqno = 0;
 		fd_bo_del(&msm_bo->base);
 	}
 
@@ -332,6 +340,11 @@ static void flush_reset(struct fd_ringbuffer *ring)
 	msm_ring->submit.nr_bos = 0;
 	msm_ring->nr_cmds = 0;
 	msm_ring->nr_bos = 0;
+
+	if (msm_ring->bo_table) {
+		drmHashDestroy(msm_ring->bo_table);
+		msm_ring->bo_table = NULL;
+	}
 
 	if (msm_ring->is_growable) {
 		delete_cmds(msm_ring);
@@ -551,6 +564,7 @@ drm_private struct fd_ringbuffer * msm_ringbuffer_new(struct fd_pipe *pipe,
 	}
 
 	list_inithead(&msm_ring->cmd_list);
+	msm_ring->seqno = ++to_msm_device(pipe->dev)->ring_cnt;
 
 	ring = &msm_ring->base;
 	ring->funcs = &funcs;

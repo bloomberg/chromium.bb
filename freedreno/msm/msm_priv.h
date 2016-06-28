@@ -40,6 +40,7 @@
 struct msm_device {
 	struct fd_device base;
 	struct fd_bo_cache ring_cache;
+	unsigned ring_cnt;
 };
 
 static inline struct msm_device * to_msm_device(struct fd_device *x)
@@ -72,18 +73,11 @@ struct msm_bo {
 	struct fd_bo base;
 	uint64_t offset;
 	uint64_t presumed;
-	/* in the common case, a bo won't be referenced by more than a single
-	 * (parent) ring[*].  So to avoid looping over all the bo's in the
-	 * reloc table to find the idx of a bo that might already be in the
-	 * table, we cache the idx in the bo.  But in order to detect the
-	 * slow-path where bo is ref'd in multiple rb's, we also must track
-	 * the current_ring for which the idx is valid.  See bo2idx().
-	 *
-	 * [*] in case multiple ringbuffers, ie. one toplevel and other rb(s)
-	 *     used for IB target(s), the toplevel rb is the parent which is
-	 *     tracking bo's for the submit
+	/* to avoid excess hashtable lookups, cache the ring this bo was
+	 * last emitted on (since that will probably also be the next ring
+	 * it is emitted on)
 	 */
-	struct fd_ringbuffer *current_ring;
+	unsigned current_ring_seqno;
 	uint32_t idx;
 };
 
