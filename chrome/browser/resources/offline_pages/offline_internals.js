@@ -82,11 +82,26 @@ cr.define('offlineInternals', function() {
   }
 
   /**
+   * Fills the event logs section.
+   * @param {!Array<string>} logs A list of log strings.
+   */
+  function fillEventLog(logs) {
+    var element = $('logs');
+    element.textContent = '';
+    for (let log of logs) {
+      var logItem = document.createElement('li');
+      logItem.textContent = log;
+      element.appendChild(logItem);
+    }
+  }
+
+  /**
    * Refresh all displayed information.
    */
   function refreshAll() {
     browserProxy_.getStoredPages().then(fillStoredPages);
     browserProxy_.getRequestQueue().then(fillRequestQueue);
+    refreshLog();
   }
 
   /**
@@ -121,6 +136,15 @@ cr.define('offlineInternals', function() {
   }
 
   /**
+   * Updates the status strings.
+   * @param {!IsLogging} logStatus Status of logging.
+   */
+  function updateLogStatus(logStatus) {
+    $('model-status').textContent = logStatus.modelIsLogging ? 'On' : 'Off';
+    $('request-status').textContent = logStatus.queueIsLogging ? 'On' : 'Off';
+  }
+
+  /**
    * Delete selected pages from the offline store.
    */
   function deleteSelectedPages() {
@@ -135,11 +159,28 @@ cr.define('offlineInternals', function() {
     browserProxy_.deleteSelectedPages(selectedIds).then(pagesDeleted);
   }
 
+  /**
+   * Refreshes the logs.
+   */
+  function refreshLog() {
+    browserProxy_.getEventLogs().then(fillEventLog);
+    browserProxy_.getLoggingState().then(updateLogStatus);
+  }
+
   function initialize() {
     $('clear-all').onclick = deleteAllPages;
     $('clear-selected').onclick = deleteSelectedPages;
     $('refresh').onclick = refreshAll;
     $('download').onclick = download;
+    $('log-model-on').onclick =
+        browserProxy_.setRecordPageModel.bind(browserProxy_, true);
+    $('log-model-off').onclick =
+        browserProxy_.setRecordPageModel.bind(browserProxy_, false);
+    $('log-request-on').onclick =
+        browserProxy_.setRecordRequestQueue.bind(browserProxy_, true);
+    $('log-request-off').onclick =
+        browserProxy_.setRecordRequestQueue.bind(browserProxy_, false);
+    $('refresh-logs').onclick = refreshLog;
     browserProxy_ =
         offlineInternals.OfflineInternalsBrowserProxyImpl.getInstance();
     refreshAll();

@@ -50,6 +50,18 @@ class OfflineInternalsUIMessageHandler : public content::WebUIMessageHandler {
   // Load Stored pages info.
   void HandleGetStoredPages(const base::ListValue* args);
 
+  // Set whether to record offline page model events.
+  void HandleSetRecordPageModel(const base::ListValue* args);
+
+  // Set whether to record request queue events.
+  void HandleSetRecordRequestQueue(const base::ListValue* args);
+
+  // Load both Page Model and Request Queue event logs.
+  void HandleGetEventLogs(const base::ListValue* args);
+
+  // Load whether logs are being recorded.
+  void HandleGetLoggingState(const base::ListValue* args);
+
   // Callback for async GetAllPages calls.
   void HandleStoredPagesCallback(
       std::string callback_id,
@@ -250,6 +262,51 @@ void OfflineInternalsUIMessageHandler::HandleGetStoredPages(
   }
 }
 
+void OfflineInternalsUIMessageHandler::HandleSetRecordPageModel(
+    const base::ListValue* args) {
+  bool should_record;
+  CHECK(args->GetBoolean(0, &should_record));
+  offline_page_model_->GetLogger()->SetIsLogging(should_record);
+}
+
+void OfflineInternalsUIMessageHandler::HandleSetRecordRequestQueue(
+    const base::ListValue* args) {
+  bool should_record;
+  CHECK(args->GetBoolean(0, &should_record));
+  request_coordinator_->GetLogger()->SetIsLogging(should_record);
+}
+
+void OfflineInternalsUIMessageHandler::HandleGetLoggingState(
+    const base::ListValue* args) {
+  AllowJavascript();
+  const base::Value* callback_id;
+  CHECK(args->Get(0, &callback_id));
+
+  base::DictionaryValue result;
+  result.SetBoolean("modelIsLogging",
+                    offline_page_model_->GetLogger()->GetIsLogging());
+  result.SetBoolean("queueIsLogging",
+                    request_coordinator_->GetLogger()->GetIsLogging());
+  ResolveJavascriptCallback(*callback_id, result);
+}
+
+void OfflineInternalsUIMessageHandler::HandleGetEventLogs(
+    const base::ListValue* args) {
+  AllowJavascript();
+  const base::Value* callback_id;
+  CHECK(args->Get(0, &callback_id));
+
+  std::vector<std::string> logs;
+  offline_page_model_->GetLogger()->GetLogs(&logs);
+  request_coordinator_->GetLogger()->GetLogs(&logs);
+  std::sort(logs.begin(), logs.end());
+
+  base::ListValue result;
+  result.AppendStrings(logs);
+
+  ResolveJavascriptCallback(*callback_id, result);
+}
+
 void OfflineInternalsUIMessageHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
       "deleteAllPages",
@@ -266,6 +323,22 @@ void OfflineInternalsUIMessageHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
       "getStoredPages",
       base::Bind(&OfflineInternalsUIMessageHandler::HandleGetStoredPages,
+                 weak_ptr_factory_.GetWeakPtr()));
+  web_ui()->RegisterMessageCallback(
+      "getEventLogs",
+      base::Bind(&OfflineInternalsUIMessageHandler::HandleGetEventLogs,
+                 weak_ptr_factory_.GetWeakPtr()));
+  web_ui()->RegisterMessageCallback(
+      "setRecordRequestQueue",
+      base::Bind(&OfflineInternalsUIMessageHandler::HandleSetRecordRequestQueue,
+                 weak_ptr_factory_.GetWeakPtr()));
+  web_ui()->RegisterMessageCallback(
+      "setRecordPageModel",
+      base::Bind(&OfflineInternalsUIMessageHandler::HandleSetRecordPageModel,
+                 weak_ptr_factory_.GetWeakPtr()));
+  web_ui()->RegisterMessageCallback(
+      "getLoggingState",
+      base::Bind(&OfflineInternalsUIMessageHandler::HandleGetLoggingState,
                  weak_ptr_factory_.GetWeakPtr()));
 
   // Get the offline page model associated with this web ui.

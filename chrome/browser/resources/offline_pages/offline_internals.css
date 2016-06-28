@@ -20,5 +20,25 @@ th {
   background-color: navy;
   color: white;
   font-weight: bold;
+  padding: 5px;
 }
 
+ul {
+  border: 1px solid;
+  list-style-type: none;
+  margin: 0;
+  max-height: 300px;
+  overflow: auto;
+  padding: 5px;
+  width: 100%;
+}
+
+ul li {
+  list-style-position: outside;
+  margin: 0 0 0 5px;
+  padding: 0;
+}
+
+li:nth-child(2n) {
+  background-color: lavender;
+}

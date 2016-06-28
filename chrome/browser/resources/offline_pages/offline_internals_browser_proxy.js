@@ -28,6 +28,14 @@ var OfflinePage;
  */
 var SavePageRequest;
 
+/**
+ * @typedef {{
+ *   modelIsLogging: boolean,
+ *   queueIsLogging: boolean
+ * }}
+ */
+var IsLogging;
+
 cr.define('offlineInternals', function() {
   /** @interface */
   function OfflineInternalsBrowserProxy() {}
@@ -60,6 +68,32 @@ cr.define('offlineInternals', function() {
      *     pages are deleted.
      */
     deleteSelectedPages: function(ids) {},
+
+    /**
+     * Sets whether to record logs for stored pages.
+     * @param {boolean} shouldLog True if logging should be enabled.
+     */
+    setRecordPageModel: function(shouldLog) {},
+
+    /**
+     * Sets whether to record logs for scheduled requests.
+     * @param {boolean} shouldLog True if logging should be enabled.
+     */
+    setRecordRequestQueue: function(shouldLog) {},
+
+    /**
+     * Gets the currently recorded logs.
+     * @return {!Promise<!Array<string>>} A promise firing when the
+     *     logs are retrieved.
+     */
+    getEventLogs: function() {},
+
+    /**
+     * Gets the state of logging (on/off).
+     * @return {!Promise<!IsLogging>} A promise firing when the state
+     *     is retrieved.
+     */
+    getLoggingState: function() {},
   };
 
   /**
@@ -88,6 +122,26 @@ cr.define('offlineInternals', function() {
     /** @override */
     deleteSelectedPages: function(ids) {
       return cr.sendWithPromise('deleteSelectedPages', ids);
+    },
+
+    /** @override */
+    setRecordPageModel: function(shouldLog) {
+      chrome.send('setRecordPageModel');
+    },
+
+    /** @override */
+    setRecordRequestQueue: function(shouldLog) {
+      chrome.send('setRecordRequestQueue');
+    },
+
+    /** @override */
+    getEventLogs: function() {
+      return cr.sendWithPromise('getEventLogs');
+    },
+
+    /** @override */
+    getLoggingState: function() {
+      return cr.sendWithPromise('getLoggingState');
     }
   };
 
