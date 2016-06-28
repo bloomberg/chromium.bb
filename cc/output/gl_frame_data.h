@@ -20,8 +20,6 @@ class CC_EXPORT GLFrameData {
   GLFrameData();
   ~GLFrameData();
 
-  gpu::Mailbox mailbox;
-  gpu::SyncToken sync_token;
   gfx::Size size;
   gfx::Rect sub_buffer_rect;
 };

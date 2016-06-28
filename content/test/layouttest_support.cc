@@ -34,7 +34,6 @@
 #include "content/renderer/render_view_impl.h"
 #include "content/renderer/renderer_blink_platform_impl.h"
 #include "content/shell/common/shell_switches.h"
-#include "content/test/mailbox_output_surface.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "gpu/ipc/service/image_transport_surface.h"
 #include "third_party/WebKit/public/platform/WebFloatRect.h"
