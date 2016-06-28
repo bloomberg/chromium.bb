@@ -61,17 +61,6 @@ class NotificationPromo {
   // exceeds the maximum allowed.
   bool HandleViewed();
 
-  // TODO(crbug.com/620554): Remove deprecated method. No new uses should be
-  // introduced.
-  // Mark the promo as closed when the user dismisses it.
-  static void HandleClosed(PromoType promo_type, PrefService* local_state);
-
-  // TODO(crbug.com/620554): Remove deprecated method. No new uses should be
-  // introduced.
-  // Mark the promo has having been viewed. This returns true if views
-  // exceeds the maximum allowed.
-  static bool HandleViewed(PromoType promo_type, PrefService* local_state);
-
   const std::string& promo_text() const { return promo_text_; }
   PromoType promo_type() const { return promo_type_; }
   const base::DictionaryValue* promo_payload() const {

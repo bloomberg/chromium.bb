@@ -246,20 +246,6 @@ bool NotificationPromo::HandleViewed() {
   return ExceedsMaxViews() || ExceedsMaxSeconds();
 }
 
-// This method has been deprecated and will be shortly removed.
-// static
-void NotificationPromo::HandleClosed(PromoType promo_type,
-                                     PrefService* local_state) {
-
-}
-
-// This method has been deprecated and will be shortly removed.
-// static
-bool NotificationPromo::HandleViewed(PromoType promo_type,
-                                     PrefService* local_state) {
-  return false;
-}
-
 bool NotificationPromo::ExceedsMaxViews() const {
   return (max_views_ == 0) ? false : views_ >= max_views_;
 }
