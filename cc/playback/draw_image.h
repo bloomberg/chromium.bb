@@ -34,8 +34,12 @@ class CC_EXPORT DrawImage {
   const SkMatrix& matrix() const { return matrix_; }
 
   DrawImage ApplyScale(float scale) const {
+    return ApplyScale(SkSize::Make(scale, scale));
+  }
+
+  DrawImage ApplyScale(const SkSize& scale) const {
     SkMatrix scaled_matrix = matrix_;
-    scaled_matrix.postScale(scale, scale);
+    scaled_matrix.postScale(scale.width(), scale.height());
     return DrawImage(image_, src_rect_, filter_quality_, scaled_matrix);
   }
 

@@ -24,6 +24,8 @@ namespace cc {
 
 class ContextProvider;
 
+// OVERVIEW:
+//
 // GpuImageDecodeController handles the decode and upload of images that will
 // be used by Skia's GPU raster path. It also maintains a cache of these
 // decoded/uploaded images for later re-use.
@@ -49,6 +51,50 @@ class ContextProvider;
 // used in raster. Cache entries for at-raster tasks are marked as such, which
 // prevents future tasks from taking a dependency on them and extending their
 // lifetime longer than is necessary.
+//
+// RASTER-SCALE CACHING:
+//
+// In order to save memory, images which are going to be scaled may be uploaded
+// at lower than original resolution. In these cases, we may later need to
+// re-upload the image at a higher resolution. To handle multiple images of
+// different scales being in use at the same time, we have a two-part caching
+// system.
+//
+// The first cache, |persistent_cache_|, stores one ImageData per image id.
+// These ImageDatas are not necessarily associated with a given DrawImage, and
+// are saved (persisted) even when their ref-count reaches zero (assuming they
+// fit in the current memory budget). This allows for future re-use of image
+// resources.
+//
+// The second cache, |in_use_cache_|, stores one image data per DrawImage -
+// this may be the same ImageData that is in the persistent_cache_.  These
+// cache entries are more transient and are deleted as soon as all refs to the
+// given DrawImage are released (the image is no longer in-use).
+//
+// For examples of raster-scale caching, see https://goo.gl/0zCd9Z
+//
+// REF COUNTING:
+//
+// In dealing with the two caches in GpuImageDecodeController, there are three
+// ref-counting concepts in use:
+//   1) ImageData upload/decode ref-counts.
+//      These ref-counts represent the overall number of references to the
+//      upload or decode portion of an ImageData. These ref-counts control
+//      both whether the upload/decode data can be freed, as well as whether an
+//      ImageData can be removed from the |persistent_cache_|. ImageDatas are
+//      only removed from the |persistent_cache_| if their upload/decode
+//      ref-counts are zero or if they are orphaned and replaced by a new entry.
+//   2) InUseCacheEntry ref-counts.
+//      These ref-counts represent the number of references to an
+//      InUseCacheEntry from a specific DrawImage. When the InUseCacheEntry's
+//      ref-count reaches 0 it will be deleted.
+//   3) scoped_refptr ref-counts.
+//      Because both the persistent_cache_ and the in_use_cache_ point at the
+//      same ImageDatas (and may need to keep these ImageDatas alive independent
+//      of each other), they hold ImageDatas by scoped_refptr. The scoped_refptr
+//      keeps an ImageData alive while it is present in either the
+//      |persistent_cache_| or |in_use_cache_|.
+//
 class CC_EXPORT GpuImageDecodeController
     : public ImageDecodeController,
       public base::trace_event::MemoryDumpProvider {
@@ -93,6 +139,7 @@ class CC_EXPORT GpuImageDecodeController
     cached_bytes_limit_ = limit;
   }
   size_t GetBytesUsedForTesting() const { return bytes_used_; }
+  size_t GetDrawImageSizeForTesting(const DrawImage& image);
   void SetImageDecodingFailedForTesting(const DrawImage& image);
   bool DiscardableIsLockedForTesting(const DrawImage& image);
 
@@ -110,13 +157,13 @@ class CC_EXPORT GpuImageDecodeController
     void SetLockedData(std::unique_ptr<base::DiscardableMemory> data);
     void ResetData();
     base::DiscardableMemory* data() const { return data_.get(); }
-
     void mark_used() { usage_stats_.used = true; }
 
-    // May be null if image not yet decoded.
     uint32_t ref_count = 0;
     // Set to true if the image was corrupt and could not be decoded.
     bool decode_failure = false;
+    // If non-null, this is the pending decode task for this image.
+    scoped_refptr<TileTask> task;
 
    private:
     struct UsageStats {
@@ -149,6 +196,8 @@ class CC_EXPORT GpuImageDecodeController
     // True if the image is counting against our memory limits.
     bool budgeted = false;
     uint32_t ref_count = 0;
+    // If non-null, this is the pending upload task for this image.
+    scoped_refptr<TileTask> task;
 
    private:
     struct UsageStats {
@@ -164,20 +213,46 @@ class CC_EXPORT GpuImageDecodeController
     UsageStats usage_stats_;
   };
 
-  struct ImageData {
-    ImageData(DecodedDataMode mode, size_t size);
-    ~ImageData();
+  struct ImageData : public base::RefCounted<ImageData> {
+    ImageData(DecodedDataMode mode,
+              size_t size,
+              int upload_scale_mip_level,
+              SkFilterQuality upload_scale_filter_quality);
 
     const DecodedDataMode mode;
     const size_t size;
     bool is_at_raster = false;
 
+    // Variables used to identify/track multiple scale levels of a single image.
+    int upload_scale_mip_level = 0;
+    SkFilterQuality upload_scale_filter_quality = kNone_SkFilterQuality;
+    // If true, this image is no longer in our |persistent_cache_| and will be
+    // deleted as soon as its ref count reaches zero.
+    bool is_orphaned = false;
+
     DecodedImageData decode;
     UploadedImageData upload;
+
+   private:
+    friend class base::RefCounted<ImageData>;
+    ~ImageData();
   };
 
-  using ImageDataMRUCache =
-      base::MRUCache<uint32_t, std::unique_ptr<ImageData>>;
+  // A ref-count and ImageData, used to associate the ImageData with a specific
+  // DrawImage in the |in_use_cache_|.
+  struct InUseCacheEntry {
+    explicit InUseCacheEntry(scoped_refptr<ImageData> image_data);
+    InUseCacheEntry(const InUseCacheEntry& other);
+    InUseCacheEntry(InUseCacheEntry&& other);
+    ~InUseCacheEntry();
+
+    uint32_t ref_count = 0;
+    scoped_refptr<ImageData> image_data;
+  };
+
+  // Uniquely identifies (without collisions) a specific DrawImage for use in
+  // the |in_use_cache_|.
+  using InUseCacheKey = uint64_t;
 
   // All private functions should only be called while holding |lock_|. Some
   // functions also require the |context_| lock. These are indicated by
@@ -193,7 +268,10 @@ class CC_EXPORT GpuImageDecodeController
   void UnrefImageDecode(const DrawImage& draw_image);
   void RefImage(const DrawImage& draw_image);
   void UnrefImageInternal(const DrawImage& draw_image);
-  void RefCountChanged(ImageData* image_data);
+
+  // Called any time the ownership of an object changed. This includes changes
+  // to ref-count or to orphaned status.
+  void OwnershipChanged(ImageData* image_data);
 
   // Ensures that the cache can hold an element of |required_size|, freeing
   // unreferenced cache entries if necessary to make room.
@@ -204,9 +282,19 @@ class CC_EXPORT GpuImageDecodeController
   void DecodeImageIfNecessary(const DrawImage& draw_image,
                               ImageData* image_data);
 
-  std::unique_ptr<GpuImageDecodeController::ImageData> CreateImageData(
+  scoped_refptr<GpuImageDecodeController::ImageData> CreateImageData(
       const DrawImage& image);
-  SkImageInfo CreateImageInfoForDrawImage(const DrawImage& draw_image) const;
+  SkImageInfo CreateImageInfoForDrawImage(const DrawImage& draw_image,
+                                          int upload_scale_mip_level) const;
+
+  // Finds the ImageData that should be used for the given DrawImage. Looks
+  // first in the |in_use_cache_|, and then in the |persistent_cache_|.
+  ImageData* GetImageDataForDrawImage(const DrawImage& image);
+
+  // Returns true if the given ImageData can be used to draw the specified
+  // DrawImage.
+  bool IsCompatible(const ImageData* image_data,
+                    const DrawImage& draw_image) const;
 
   // The following two functions also require the |context_| lock to be held.
   void UploadImageIfNecessary(const DrawImage& draw_image,
@@ -220,12 +308,15 @@ class CC_EXPORT GpuImageDecodeController
   // All members below this point must only be accessed while holding |lock_|.
   base::Lock lock_;
 
-  std::unordered_map<uint32_t, scoped_refptr<TileTask>>
-      pending_image_upload_tasks_;
-  std::unordered_map<uint32_t, scoped_refptr<TileTask>>
-      pending_image_decode_tasks_;
+  // |persistent_cache_| represents the long-lived cache, keeping a certain
+  // budget of ImageDatas alive even when their ref count reaches zero.
+  using PersistentCache = base::MRUCache<uint32_t, scoped_refptr<ImageData>>;
+  PersistentCache persistent_cache_;
 
-  ImageDataMRUCache image_data_;
+  // |in_use_cache_| represents the in-use (short-lived) cache. Entries are
+  // cleaned up as soon as their ref count reaches zero.
+  using InUseCache = std::unordered_map<InUseCacheKey, InUseCacheEntry>;
+  InUseCache in_use_cache_;
 
   size_t cached_items_limit_;
   size_t cached_bytes_limit_;
