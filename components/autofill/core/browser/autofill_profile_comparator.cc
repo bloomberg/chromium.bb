@@ -7,18 +7,46 @@
 #include <algorithm>
 #include <vector>
 
+#include "base/i18n/case_conversion.h"
 #include "base/i18n/char_iterator.h"
+#include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversion_utils.h"
 #include "base/strings/utf_string_conversions.h"
+#include "components/autofill/core/browser/autofill_country.h"
 #include "components/autofill/core/browser/autofill_data_util.h"
+#include "components/autofill/core/browser/state_names.h"
 #include "third_party/libphonenumber/phonenumber_api.h"
+
+using i18n::phonenumbers::PhoneNumberUtil;
+using base::UTF16ToUTF8;
+using base::UTF8ToUTF16;
 
 namespace autofill {
 namespace {
 
 const base::char16 kSpace[] = {L' ', L'\0'};
+const base::char16 kUS[] = {L'U', L'S', L'\0'};
+
+bool ContainsNewline(base::StringPiece16 text) {
+  return text.find('\n') != base::StringPiece16::npos;
+}
+
+std::ostream& operator<<(std::ostream& os,
+                         const ::i18n::phonenumbers::PhoneNumber& n) {
+  os << "country_code: " << n.country_code() << " "
+     << "national_number: " << n.national_number();
+  if (n.has_extension())
+    os << " extension: \"" << n.extension() << "\"";
+  if (n.has_italian_leading_zero())
+    os << " italian_leading_zero: " << n.italian_leading_zero();
+  if (n.has_number_of_leading_zeros())
+    os << " number_of_leading_zeros: " << n.number_of_leading_zeros();
+  if (n.has_raw_input())
+    os << " raw_input: \"" << n.raw_input() << "\"";
+  return os;
+}
 
 }  // namespace
 
@@ -113,6 +141,319 @@ bool AutofillProfileComparator::AreMergeable(const AutofillProfile& p1,
          HaveMergeableAddresses(p1, p2);
 }
 
+bool AutofillProfileComparator::MergeNames(const AutofillProfile& p1,
+                                           const AutofillProfile& p2,
+                                           NameInfo* name_info) const {
+  DCHECK(HaveMergeableNames(p1, p2));
+
+  const AutofillType kFullName(NAME_FULL);
+  const base::string16& full_name_1 = p1.GetInfo(kFullName, app_locale_);
+  const base::string16& full_name_2 = p2.GetInfo(kFullName, app_locale_);
+  const base::string16& normalized_full_name_1 =
+      NormalizeForComparison(full_name_1);
+  const base::string16& normalized_full_name_2 =
+      NormalizeForComparison(full_name_2);
+
+  const base::string16* best_name = nullptr;
+  if (normalized_full_name_1.empty()) {
+    // p1 has no name, so use the name from p2.
+    best_name = &full_name_2;
+  } else if (normalized_full_name_2.empty()) {
+    // p2 has no name, so use the name from p1.
+    best_name = &full_name_1;
+  } else if (IsNameVariantOf(normalized_full_name_1, normalized_full_name_2)) {
+    // full_name_2 is a variant of full_name_1.
+    best_name = &full_name_1;
+  } else {
+    // If the assertion that p1 and p2 have mergeable names is true, then
+    // full_name_1 must be a name variant of full_name_2;
+    best_name = &full_name_2;
+  }
+
+  name_info->SetInfo(AutofillType(NAME_FULL), *best_name, app_locale_);
+  return true;
+}
+
+bool AutofillProfileComparator::MergeEmailAddresses(
+    const AutofillProfile& p1,
+    const AutofillProfile& p2,
+    EmailInfo* email_info) const {
+  DCHECK(HaveMergeableEmailAddresses(p1, p2));
+
+  const AutofillType kEmailAddress(EMAIL_ADDRESS);
+  const base::string16& e1 = p1.GetInfo(kEmailAddress, app_locale_);
+  const base::string16& e2 = p2.GetInfo(kEmailAddress, app_locale_);
+  const base::string16* best = nullptr;
+
+  if (e1.empty()) {
+    best = &e2;
+  } else if (e2.empty()) {
+    best = &e1;
+  } else {
+    best = p2.use_date() > p1.use_date() ? &e2 : &e1;
+  }
+
+  email_info->SetInfo(kEmailAddress, *best, app_locale_);
+  return true;
+}
+
+bool AutofillProfileComparator::MergeCompanyNames(
+    const AutofillProfile& p1,
+    const AutofillProfile& p2,
+    CompanyInfo* company_info) const {
+  const AutofillType kCompanyName(COMPANY_NAME);
+  const base::string16& c1 = p1.GetInfo(kCompanyName, app_locale_);
+  const base::string16& c2 = p2.GetInfo(kCompanyName, app_locale_);
+  const base::string16* best = nullptr;
+
+  DCHECK(HaveMergeableCompanyNames(p1, p2))
+      << "Company names are not mergeable: '" << c1 << "' vs '" << c2 << "'";
+
+  CompareTokensResult result =
+      CompareTokens(NormalizeForComparison(c1), NormalizeForComparison(c2));
+  switch (result) {
+    case DIFFERENT_TOKENS:
+    default:
+      NOTREACHED();
+      return false;
+    case S1_CONTAINS_S2:
+      best = &c1;
+      break;
+    case S2_CONTAINS_S1:
+      best = &c2;
+      break;
+    case SAME_TOKENS:
+      best = p2.use_date() > p1.use_date() ? &c2 : &c1;
+      break;
+  }
+
+  company_info->SetInfo(kCompanyName, *best, app_locale_);
+  return true;
+}
+
+bool AutofillProfileComparator::MergePhoneNumbers(
+    const AutofillProfile& p1,
+    const AutofillProfile& p2,
+    PhoneNumber* phone_number) const {
+  const ServerFieldType kWholePhoneNumber = PHONE_HOME_WHOLE_NUMBER;
+  const base::string16& s1 = p1.GetRawInfo(kWholePhoneNumber);
+  const base::string16& s2 = p2.GetRawInfo(kWholePhoneNumber);
+
+  DCHECK(HaveMergeablePhoneNumbers(p1, p2))
+      << "Phone numbers are not mergeable: '" << s1 << "' vs '" << s2 << "'";
+
+  if (s1.empty()) {
+    phone_number->SetRawInfo(kWholePhoneNumber, s2);
+    return true;
+  }
+
+  if (s2.empty() || s1 == s2) {
+    phone_number->SetRawInfo(kWholePhoneNumber, s1);
+    return true;
+  }
+
+  // Figure out a country code hint.
+  const AutofillType kCountryCode(HTML_TYPE_COUNTRY_CODE, HTML_MODE_NONE);
+  std::string region = UTF16ToUTF8(GetNonEmptyOf(p1, p2, kCountryCode));
+  if (region.empty())
+    region = AutofillCountry::CountryCodeForLocale(app_locale_);
+
+  // Parse the phone numbers.
+  PhoneNumberUtil* phone_util = PhoneNumberUtil::GetInstance();
+
+  ::i18n::phonenumbers::PhoneNumber n1;
+  if (phone_util->ParseAndKeepRawInput(UTF16ToUTF8(s1), region, &n1) !=
+      PhoneNumberUtil::NO_PARSING_ERROR) {
+    return false;
+  }
+
+  ::i18n::phonenumbers::PhoneNumber n2;
+  if (phone_util->ParseAndKeepRawInput(UTF16ToUTF8(s2), region, &n2) !=
+      PhoneNumberUtil::NO_PARSING_ERROR) {
+    return false;
+  }
+
+  ::i18n::phonenumbers::PhoneNumber merged_number;
+  DCHECK_EQ(n1.country_code(), n2.country_code());
+  merged_number.set_country_code(n1.country_code());
+  merged_number.set_national_number(
+      std::max(n1.national_number(), n2.national_number()));
+  if (n1.has_extension() && !n1.extension().empty()) {
+    merged_number.set_extension(n1.extension());
+  } else if (n2.has_extension() && !n2.extension().empty()) {
+    merged_number.set_extension(n2.extension());
+  }
+  if (n1.has_italian_leading_zero() || n2.has_italian_leading_zero()) {
+    merged_number.set_italian_leading_zero(n1.italian_leading_zero() ||
+                                           n2.italian_leading_zero());
+  }
+  if (n1.has_number_of_leading_zeros() || n2.has_number_of_leading_zeros()) {
+    merged_number.set_number_of_leading_zeros(
+        std::max(n1.number_of_leading_zeros(), n2.number_of_leading_zeros()));
+  }
+
+  PhoneNumberUtil::PhoneNumberFormat format =
+      region.empty() ? PhoneNumberUtil::NATIONAL
+                     : PhoneNumberUtil::INTERNATIONAL;
+
+  std::string new_number;
+  phone_util->Format(merged_number, format, &new_number);
+
+  VLOG(1) << "n1 = {" << n1 << "}";
+  VLOG(1) << "n2 = {" << n2 << "}";
+  VLOG(1) << "merged_number = {" << merged_number << "}";
+  VLOG(1) << "new_number = \"" << new_number << "\"";
+
+  // Check if it's a North American number that's missing the area code.
+  // Libphonenumber doesn't know how to format short numbers; it will still
+  // include the country code prefix.
+  if (merged_number.country_code() == 1 &&
+      merged_number.national_number() <= 9999999 &&
+      new_number.find("+1") == 0) {
+    size_t offset = 2;  // The char just after "+1".
+    while (offset < new_number.size() &&
+           base::IsAsciiWhitespace(new_number[offset])) {
+      ++offset;
+    }
+    new_number = new_number.substr(offset);
+  }
+
+  phone_number->SetRawInfo(kWholePhoneNumber, UTF8ToUTF16(new_number));
+
+  return true;
+}
+
+bool AutofillProfileComparator::MergeAddresses(const AutofillProfile& p1,
+                                               const AutofillProfile& p2,
+                                               Address* address) const {
+  DCHECK(HaveMergeableAddresses(p1, p2));
+
+  // One of the countries is empty or they are the same modulo case, so we just
+  // have to find the non-empty one, if any.
+  const AutofillType kCountryCode(HTML_TYPE_COUNTRY_CODE, HTML_MODE_NONE);
+  const base::string16& country_code =
+      base::i18n::ToUpper(GetNonEmptyOf(p1, p2, kCountryCode));
+  address->SetInfo(kCountryCode, country_code, app_locale_);
+
+  // One of the zip codes is empty, they are the same, or one is a substring
+  // of the other. We prefer the most recently used zip code.
+  const AutofillType kZipCode(ADDRESS_HOME_ZIP);
+  const base::string16& zip1 = p1.GetInfo(kZipCode, app_locale_);
+  const base::string16& zip2 = p2.GetInfo(kZipCode, app_locale_);
+  if (zip1.empty()) {
+    address->SetInfo(kZipCode, zip2, app_locale_);
+  } else if (zip2.empty()) {
+    address->SetInfo(kZipCode, zip1, app_locale_);
+  } else {
+    address->SetInfo(kZipCode, (p2.use_date() > p1.use_date() ? zip2 : zip1),
+                     app_locale_);
+  }
+
+  // One of the states is empty or one of the states has a subset of tokens from
+  // the other. Pick the non-empty state that is shorter. This is usually the
+  // abbreviated one.
+  const AutofillType kState(ADDRESS_HOME_STATE);
+  const base::string16& state1 = p1.GetInfo(kState, app_locale_);
+  const base::string16& state2 = p2.GetInfo(kState, app_locale_);
+  if (state1.empty()) {
+    address->SetInfo(kState, state2, app_locale_);
+  } else if (state2.empty()) {
+    address->SetInfo(kState, state1, app_locale_);
+  } else {
+    address->SetInfo(kState, (state2.size() < state1.size() ? state2 : state1),
+                     app_locale_);
+  }
+
+  // One of the cities is empty or one of the cities has a subset of tokens from
+  // the other. Pick the city name with more tokens; this is usually the most
+  // explicit one.
+  const AutofillType kCity(ADDRESS_HOME_CITY);
+  const base::string16& city1 = p1.GetInfo(kCity, app_locale_);
+  const base::string16& city2 = p2.GetInfo(kCity, app_locale_);
+  if (city1.empty()) {
+    address->SetInfo(kCity, city2, app_locale_);
+  } else if (city2.empty()) {
+    address->SetInfo(kCity, city1, app_locale_);
+  } else {
+    // Prefer the one with more tokens.
+    CompareTokensResult result = CompareTokens(NormalizeForComparison(city1),
+                                               NormalizeForComparison(city2));
+    switch (result) {
+      case SAME_TOKENS:
+        // They have the same set of unique tokens. Let's pick the more recently
+        // used one.
+        address->SetInfo(kCity, (p2.use_date() > p1.use_date() ? city2 : city1),
+                         app_locale_);
+        break;
+      case S1_CONTAINS_S2:
+        // city1 has more unique tokens than city2.
+        address->SetInfo(kCity, city1, app_locale_);
+        break;
+      case S2_CONTAINS_S1:
+        // city2 has more unique tokens than city1.
+        address->SetInfo(kCity, city2, app_locale_);
+        break;
+      case DIFFERENT_TOKENS:
+      default:
+        // The addresses aren't mergeable and we shouldn't be doing any of
+        // this.
+        NOTREACHED();
+        return false;
+    }
+  }
+
+  // One of the addresses is empty or one of the addresses has a subset of
+  // tokens from the other. Prefer the more verbosely expressed one.
+  const AutofillType kStreetAddress(ADDRESS_HOME_STREET_ADDRESS);
+  const base::string16& address1 = p1.GetInfo(kStreetAddress, app_locale_);
+  const base::string16& address2 = p2.GetInfo(kStreetAddress, app_locale_);
+  // If one of the addresses is empty then use the other.
+  if (address1.empty()) {
+    address->SetInfo(kStreetAddress, address2, app_locale_);
+  } else if (address2.empty()) {
+    address->SetInfo(kStreetAddress, address1, app_locale_);
+  } else {
+    // Prefer the multi-line address if one is multi-line and the other isn't.
+    bool address1_multiline = ContainsNewline(address1);
+    bool address2_multiline = ContainsNewline(address2);
+    if (address1_multiline && !address2_multiline) {
+      address->SetInfo(kStreetAddress, address1, app_locale_);
+    } else if (address2_multiline && !address1_multiline) {
+      address->SetInfo(kStreetAddress, address2, app_locale_);
+    } else {
+      // Prefer the one with more tokens if they're both single-line or both
+      // multi-line addresses.
+      CompareTokensResult result = CompareTokens(
+          NormalizeForComparison(address1), NormalizeForComparison(address2));
+      switch (result) {
+        case SAME_TOKENS:
+          // They have the same set of unique tokens. Let's pick the one that's
+          // longer.
+          address->SetInfo(
+              kStreetAddress,
+              (p2.use_date() > p1.use_date() ? address2 : address1),
+              app_locale_);
+          break;
+        case S1_CONTAINS_S2:
+          // address1 has more unique tokens than address2.
+          address->SetInfo(kStreetAddress, address1, app_locale_);
+          break;
+        case S2_CONTAINS_S1:
+          // address2 has more unique tokens than address1.
+          address->SetInfo(kStreetAddress, address1, app_locale_);
+          break;
+        case DIFFERENT_TOKENS:
+        default:
+          // The addresses aren't mergeable and we shouldn't be doing any of
+          // this.
+          NOTREACHED();
+          return false;
+      }
+    }
+  }
+  return true;
+}
+
 // static
 std::set<base::StringPiece16> AutofillProfileComparator::UniqueTokens(
     base::StringPiece16 s) {
@@ -122,15 +463,35 @@ std::set<base::StringPiece16> AutofillProfileComparator::UniqueTokens(
 }
 
 // static
-bool AutofillProfileComparator::HaveSameTokens(base::StringPiece16 s1,
-                                               base::StringPiece16 s2) {
+AutofillProfileComparator::CompareTokensResult
+AutofillProfileComparator::CompareTokens(base::StringPiece16 s1,
+                                         base::StringPiece16 s2) {
+  // Note: std::include() expects the items in each range to be in sorted order,
+  // hence the use of std::set<> instead of std::unordered_set<>.
   std::set<base::StringPiece16> t1 = UniqueTokens(s1);
   std::set<base::StringPiece16> t2 = UniqueTokens(s2);
 
-  // Note: std::include() expects the items in each range to be in sorted order,
-  // hence the use of std::set<> instead of std::unordered_set<>.
-  return std::includes(t1.begin(), t1.end(), t2.begin(), t2.end()) ||
-         std::includes(t2.begin(), t2.end(), t1.begin(), t1.end());
+  // Does s1 contains all of the tokens in s2? As a special case, return 0 if
+  // the two sets are exactly the same.
+  if (std::includes(t1.begin(), t1.end(), t2.begin(), t2.end()))
+    return t1.size() == t2.size() ? SAME_TOKENS : S1_CONTAINS_S2;
+
+  // Does s2 contain all of the tokens in s1?
+  if (std::includes(t2.begin(), t2.end(), t1.begin(), t1.end()))
+    return S2_CONTAINS_S1;
+
+  // Neither string contains all of the tokens from the other.
+  return DIFFERENT_TOKENS;
+}
+
+base::string16 AutofillProfileComparator::GetNonEmptyOf(
+    const AutofillProfile& p1,
+    const AutofillProfile& p2,
+    AutofillType t) const {
+  const base::string16& s1 = p1.GetInfo(t, app_locale_);
+  if (!s1.empty())
+    return s1;
+  return p2.GetInfo(t, app_locale_);
 }
 
 // static
@@ -152,7 +513,8 @@ std::set<base::string16> AutofillProfileComparator::GetNamePartVariants(
   // appends this sub-name and one that appends the initial of this sub-name.
   // Duplicates will be discarded when they're added to the variants set.
   for (const base::string16& sub_name : sub_names) {
-    if (sub_name.empty()) continue;
+    if (sub_name.empty())
+      continue;
     std::vector<base::string16> new_variants;
     for (const base::string16& variant : variants) {
       new_variants.push_back(base::CollapseWhitespace(
@@ -167,7 +529,8 @@ std::set<base::string16> AutofillProfileComparator::GetNamePartVariants(
   // initials.
   base::string16 initials;
   for (const base::string16& sub_name : sub_names) {
-    if (sub_name.empty()) continue;
+    if (sub_name.empty())
+      continue;
     initials.push_back(sub_name[0]);
   }
   variants.insert(initials);
@@ -253,7 +616,7 @@ bool AutofillProfileComparator::HaveMergeableCompanyNames(
   const base::string16& company_name_2 = NormalizeForComparison(
       p2.GetInfo(AutofillType(COMPANY_NAME), app_locale_));
   return company_name_1.empty() || company_name_2.empty() ||
-         HaveSameTokens(company_name_1, company_name_2);
+         CompareTokens(company_name_1, company_name_2) != DIFFERENT_TOKENS;
 }
 
 bool AutofillProfileComparator::HaveMergeablePhoneNumbers(
@@ -279,7 +642,6 @@ bool AutofillProfileComparator::HaveMergeablePhoneNumbers(
   const std::string phone_2 = base::UTF16ToUTF8(raw_phone_2);
 
   // Parse and compare the phone numbers.
-  using ::i18n::phonenumbers::PhoneNumberUtil;
   PhoneNumberUtil* phone_util = PhoneNumberUtil::GetInstance();
   switch (phone_util->IsNumberMatchWithTwoStrings(phone_1, phone_2)) {
     case PhoneNumberUtil::INVALID_NUMBER:
@@ -300,10 +662,9 @@ bool AutofillProfileComparator::HaveMergeableAddresses(
     const AutofillProfile& p2) const {
   // If the address are not in the same country, then they're not the same. If
   // one of the address countries is unknown/invalid the comparison continues.
-  const base::string16& country1 = p1.GetInfo(
-      AutofillType(HTML_TYPE_COUNTRY_CODE, HTML_MODE_NONE), app_locale_);
-  const base::string16& country2 = p2.GetInfo(
-      AutofillType(HTML_TYPE_COUNTRY_CODE, HTML_MODE_NONE), app_locale_);
+  const AutofillType kCountryCode(HTML_TYPE_COUNTRY_CODE, HTML_MODE_NONE);
+  const base::string16& country1 = p1.GetInfo(kCountryCode, app_locale_);
+  const base::string16& country2 = p2.GetInfo(kCountryCode, app_locale_);
   if (!country1.empty() && !country2.empty() &&
       !case_insensitive_compare_.StringsEqual(country1, country2)) {
     return false;
@@ -317,12 +678,11 @@ bool AutofillProfileComparator::HaveMergeableAddresses(
   // ----
   // If the addresses are definitely not in the same zip/area code then we're
   // done. Otherwise,the comparison continues.
+  const AutofillType kZipCode(ADDRESS_HOME_ZIP);
   const base::string16& zip1 = NormalizeForComparison(
-      p1.GetInfo(AutofillType(ADDRESS_HOME_ZIP), app_locale_),
-      DISCARD_WHITESPACE);
+      p1.GetInfo(kZipCode, app_locale_), DISCARD_WHITESPACE);
   const base::string16& zip2 = NormalizeForComparison(
-      p2.GetInfo(AutofillType(ADDRESS_HOME_ZIP), app_locale_),
-      DISCARD_WHITESPACE);
+      p2.GetInfo(kZipCode, app_locale_), DISCARD_WHITESPACE);
   if (!zip1.empty() && !zip2.empty() &&
       zip1.find(zip2) == base::string16::npos &&
       zip2.find(zip1) == base::string16::npos) {
@@ -331,45 +691,73 @@ bool AutofillProfileComparator::HaveMergeableAddresses(
 
   // State
   // ------
-  // Heuristic: If the match is between non-empty zip codes then we can infer
+  // Heuristic: States are mergeable if one is a (possibly empty) bag of words
+  // subset of the other.
+  //
+  // TODO(rogerm): If the match is between non-empty zip codes then we can infer
   // that the two state strings are intended to have the same meaning. This
   // handles the cases where we have invalid or poorly formed data in one of the
-  // state values (like "Select one", or "CA - California"). Otherwise, we
-  // actually have to check if the states map to the the same set of tokens.
-  const base::string16& state1 = NormalizeForComparison(
-      p1.GetInfo(AutofillType(ADDRESS_HOME_STATE), app_locale_));
-  const base::string16& state2 = NormalizeForComparison(
-      p2.GetInfo(AutofillType(ADDRESS_HOME_STATE), app_locale_));
-  if ((zip1.empty() || zip2.empty()) && !HaveSameTokens(state1, state2)) {
+  // state values (like "Select one", or "CA - California").
+  const AutofillType kState(ADDRESS_HOME_STATE);
+  const base::string16& state1 =
+      NormalizeForComparison(p1.GetInfo(kState, app_locale_));
+  const base::string16& state2 =
+      NormalizeForComparison(p2.GetInfo(kState, app_locale_));
+  if (!IsMatchingState(GetNonEmptyOf(p1, p2, kCountryCode), state1, state2) &&
+      CompareTokens(state1, state2) == DIFFERENT_TOKENS) {
     return false;
   }
 
   // City
   // ------
-  // Heuristic: If the match is between non-empty zip codes then we can infer
+  // Heuristic: Cities are mergeable if one is a (possibly empty) bag of words
+  // subset of the other.
+  //
+  // TODO(rogerm): If the match is between non-empty zip codes then we can infer
   // that the two city strings are intended to have the same meaning. This
-  // handles the cases where we have a city vs one of its suburbs. Otherwise, we
-  // actually have to check if the cities map to the the same set of tokens.
+  // handles the cases where we have a city vs one of its suburbs.
   const base::string16& city1 = NormalizeForComparison(
       p1.GetInfo(AutofillType(ADDRESS_HOME_CITY), app_locale_));
   const base::string16& city2 = NormalizeForComparison(
       p2.GetInfo(AutofillType(ADDRESS_HOME_CITY), app_locale_));
-  if ((zip1.empty() || zip2.empty()) && !HaveSameTokens(city1, city2)) {
+  if (CompareTokens(city1, city2) == DIFFERENT_TOKENS) {
     return false;
   }
 
   // Address
   // --------
-  // Heuristic: Use bag of words comparison on the post-normalized addresses.
+  // Heuristic: Street addresses are mergeable if one is a (possibly empty) bag
+  // of words subset of the other.
   const base::string16& address1 = NormalizeForComparison(
       p1.GetInfo(AutofillType(ADDRESS_HOME_STREET_ADDRESS), app_locale_));
   const base::string16& address2 = NormalizeForComparison(
       p2.GetInfo(AutofillType(ADDRESS_HOME_STREET_ADDRESS), app_locale_));
-  if (!HaveSameTokens(address1, address2)) {
+  if (CompareTokens(address1, address2) == DIFFERENT_TOKENS) {
     return false;
   }
 
   return true;
+}
+
+bool AutofillProfileComparator::IsMatchingState(
+    const base::string16& country_code,
+    const base::string16& state1,
+    const base::string16& state2) const {
+  if (state1 == state2)
+    return true;
+
+  if (country_code != kUS)
+    return false;
+
+  // TODO(rogerm): Generalize this to all locals using string equivalence rules.
+  base::string16 name, abbreviation;
+  autofill::state_names::GetNameAndAbbreviation(state1, &name, &abbreviation);
+  if (abbreviation.empty()) {
+    // state1 wasn't recognized. There's no need to compare it to state2
+    return false;
+  }
+
+  return state2 == name || state2 == abbreviation;
 }
 
 }  // namespace autofill

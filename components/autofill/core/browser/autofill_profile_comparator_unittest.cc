@@ -8,24 +8,47 @@
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
+#include "components/autofill/core/browser/contact_info.h"
+#include "components/autofill/core/browser/country_names.h"
 #include "components/autofill/core/browser/field_types.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+// Field Type Constants
 using autofill::ADDRESS_HOME_CITY;
 using autofill::ADDRESS_HOME_COUNTRY;
 using autofill::ADDRESS_HOME_LINE1;
 using autofill::ADDRESS_HOME_LINE2;
+using autofill::ADDRESS_HOME_LINE3;
 using autofill::ADDRESS_HOME_STATE;
+using autofill::ADDRESS_HOME_STREET_ADDRESS;
 using autofill::ADDRESS_HOME_ZIP;
-using autofill::AutofillProfile;
-using autofill::AutofillType;
+using autofill::COMPANY_NAME;
+using autofill::EMAIL_ADDRESS;
 using autofill::NAME_FIRST;
+using autofill::NAME_FULL;
+using autofill::NAME_LAST;
 using autofill::NAME_MIDDLE;
 using autofill::PHONE_HOME_WHOLE_NUMBER;
+using autofill::PHONE_HOME_EXTENSION;
+using autofill::PHONE_HOME_NUMBER;
+using autofill::PHONE_HOME_CITY_CODE;
+using autofill::PHONE_HOME_COUNTRY_CODE;
+using autofill::PHONE_HOME_CITY_AND_NUMBER;
+
+// Classes, Functions, and other Symbols
+using autofill::Address;
+using autofill::AutofillProfile;
+using autofill::AutofillType;
+using autofill::CompanyInfo;
+using autofill::EmailInfo;
+using autofill::NameInfo;
+using autofill::PhoneNumber;
 using autofill::ServerFieldType;
 using base::UTF8ToUTF16;
 
 namespace {
+
+const char kLocale[] = "en-US";
 
 class AutofillProfileComparatorTest : public ::testing::Test {
  public:
@@ -37,7 +60,7 @@ class AutofillProfileComparatorTest : public ::testing::Test {
     typedef ::autofill::AutofillProfileComparator Super;
     using Super::Super;
     using Super::UniqueTokens;
-    using Super::HaveSameTokens;
+    using Super::CompareTokens;
     using Super::GetNamePartVariants;
     using Super::IsNameVariantOf;
     using Super::HaveMergeableNames;
@@ -45,9 +68,16 @@ class AutofillProfileComparatorTest : public ::testing::Test {
     using Super::HaveMergeableCompanyNames;
     using Super::HaveMergeablePhoneNumbers;
     using Super::HaveMergeableAddresses;
+
+    using Super::DIFFERENT_TOKENS;
+    using Super::SAME_TOKENS;
+    using Super::S1_CONTAINS_S2;
+    using Super::S2_CONTAINS_S1;
   };
 
-  AutofillProfileComparatorTest() : comparator_("en-US") {}
+  AutofillProfileComparatorTest() {
+    autofill::CountryNames::SetLocaleString(kLocale);
+  }
 
   AutofillProfile CreateProfileWithName(const char* first,
                                         const char* middle,
@@ -55,6 +85,15 @@ class AutofillProfileComparatorTest : public ::testing::Test {
     AutofillProfile profile(base::GenerateGUID(), "http://www.example.com/");
     autofill::test::SetProfileInfo(&profile, first, middle, last, "", "", "",
                                    "", "", "", "", "", "");
+    return profile;
+  }
+
+  AutofillProfile CreateProfileWithName(const NameInfo& name) {
+    AutofillProfile profile(base::GenerateGUID(), "http://www.example.com/");
+    profile.SetRawInfo(NAME_FULL, name.GetRawInfo(NAME_FULL));
+    profile.SetRawInfo(NAME_FIRST, name.GetRawInfo(NAME_FIRST));
+    profile.SetRawInfo(NAME_MIDDLE, name.GetRawInfo(NAME_MIDDLE));
+    profile.SetRawInfo(NAME_LAST, name.GetRawInfo(NAME_LAST));
     return profile;
   }
 
@@ -101,7 +140,104 @@ class AutofillProfileComparatorTest : public ::testing::Test {
     return new_profile;
   }
 
-  AutofillProfileComparator comparator_;
+  void MergeNamesAndExpect(const AutofillProfile& a,
+                           const AutofillProfile& b,
+                           const NameInfo& expected) {
+    NameInfo actual;
+    ASSERT_TRUE(comparator_.MergeNames(a, b, &actual));
+
+    // Is the "processed" data correct?
+    EXPECT_EQ(expected.GetInfo(AutofillType(NAME_FULL), kLocale),
+              actual.GetInfo(AutofillType(NAME_FULL), kLocale));
+    EXPECT_EQ(expected.GetInfo(AutofillType(NAME_FIRST), kLocale),
+              actual.GetInfo(AutofillType(NAME_FIRST), kLocale));
+    EXPECT_EQ(expected.GetInfo(AutofillType(NAME_MIDDLE), kLocale),
+              actual.GetInfo(AutofillType(NAME_MIDDLE), kLocale));
+    EXPECT_EQ(expected.GetInfo(AutofillType(NAME_LAST), kLocale),
+              actual.GetInfo(AutofillType(NAME_LAST), kLocale));
+
+    // Is the raw data correct?
+    EXPECT_EQ(expected.GetRawInfo(NAME_FULL), actual.GetRawInfo(NAME_FULL));
+    EXPECT_EQ(expected.GetRawInfo(NAME_FIRST), actual.GetRawInfo(NAME_FIRST));
+    EXPECT_EQ(expected.GetRawInfo(NAME_MIDDLE), actual.GetRawInfo(NAME_MIDDLE));
+    EXPECT_EQ(expected.GetRawInfo(NAME_LAST), actual.GetRawInfo(NAME_LAST));
+  }
+
+  void MergeEmailAddressesAndExpect(const AutofillProfile& a,
+                                    const AutofillProfile& b,
+                                    const EmailInfo& expected) {
+    EmailInfo actual;
+    ASSERT_TRUE(comparator_.MergeEmailAddresses(a, b, &actual));
+    EXPECT_EQ(expected.GetRawInfo(EMAIL_ADDRESS),
+              actual.GetRawInfo(EMAIL_ADDRESS));
+  }
+
+  void MergeCompanyNamesAndExpect(const AutofillProfile& a,
+                                  const AutofillProfile& b,
+                                  const CompanyInfo& expected) {
+    CompanyInfo actual;
+    ASSERT_TRUE(comparator_.MergeCompanyNames(a, b, &actual));
+    EXPECT_EQ(expected.GetRawInfo(COMPANY_NAME),
+              actual.GetRawInfo(COMPANY_NAME));
+  }
+
+  void MergePhoneNumbersAndExpect(const AutofillProfile& a,
+                                  const AutofillProfile& b,
+                                  const std::string& expected_str) {
+    AutofillProfile dummy;
+
+    // Merge the phone numbers.
+    PhoneNumber actual(&dummy);
+    ASSERT_TRUE(comparator_.MergePhoneNumbers(a, b, &actual));
+
+    // Construct the expected value.
+    PhoneNumber expected(&dummy);
+    expected.SetRawInfo(PHONE_HOME_WHOLE_NUMBER, UTF8ToUTF16(expected_str));
+
+    // Validate that we get what we expect.
+    EXPECT_EQ(expected.GetRawInfo(PHONE_HOME_WHOLE_NUMBER),
+              actual.GetRawInfo(PHONE_HOME_WHOLE_NUMBER));
+    EXPECT_EQ(expected.GetInfo(AutofillType(PHONE_HOME_WHOLE_NUMBER), kLocale),
+              actual.GetInfo(AutofillType(PHONE_HOME_WHOLE_NUMBER), kLocale));
+    EXPECT_EQ(expected.GetInfo(AutofillType(PHONE_HOME_COUNTRY_CODE), kLocale),
+              actual.GetInfo(AutofillType(PHONE_HOME_COUNTRY_CODE), kLocale));
+    EXPECT_EQ(
+        expected.GetInfo(AutofillType(PHONE_HOME_CITY_AND_NUMBER), kLocale),
+        actual.GetInfo(AutofillType(PHONE_HOME_CITY_AND_NUMBER), kLocale));
+    EXPECT_EQ(expected.GetInfo(AutofillType(PHONE_HOME_CITY_CODE), kLocale),
+              actual.GetInfo(AutofillType(PHONE_HOME_CITY_CODE), kLocale));
+    EXPECT_EQ(expected.GetInfo(AutofillType(PHONE_HOME_NUMBER), kLocale),
+              actual.GetInfo(AutofillType(PHONE_HOME_NUMBER), kLocale));
+    EXPECT_EQ(expected.GetInfo(AutofillType(PHONE_HOME_EXTENSION), kLocale),
+              actual.GetInfo(AutofillType(PHONE_HOME_EXTENSION), kLocale));
+  }
+
+  void MergeAddressesAndExpect(const AutofillProfile& a,
+                               const AutofillProfile& b,
+                               const Address& expected) {
+    Address actual;
+    ASSERT_TRUE(comparator_.MergeAddresses(a, b, &actual));
+
+    EXPECT_EQ(expected.GetInfo(AutofillType(ADDRESS_HOME_LINE1), kLocale),
+              actual.GetInfo(AutofillType(ADDRESS_HOME_LINE1), kLocale));
+    EXPECT_EQ(expected.GetInfo(AutofillType(ADDRESS_HOME_LINE2), kLocale),
+              actual.GetInfo(AutofillType(ADDRESS_HOME_LINE2), kLocale));
+    EXPECT_EQ(expected.GetInfo(AutofillType(ADDRESS_HOME_LINE3), kLocale),
+              actual.GetInfo(AutofillType(ADDRESS_HOME_LINE3), kLocale));
+    EXPECT_EQ(
+        expected.GetInfo(AutofillType(ADDRESS_HOME_STREET_ADDRESS), kLocale),
+        actual.GetInfo(AutofillType(ADDRESS_HOME_STREET_ADDRESS), kLocale));
+    EXPECT_EQ(expected.GetInfo(AutofillType(ADDRESS_HOME_CITY), kLocale),
+              actual.GetInfo(AutofillType(ADDRESS_HOME_CITY), kLocale));
+    EXPECT_EQ(expected.GetInfo(AutofillType(ADDRESS_HOME_STATE), kLocale),
+              actual.GetInfo(AutofillType(ADDRESS_HOME_STATE), kLocale));
+    EXPECT_EQ(expected.GetInfo(AutofillType(ADDRESS_HOME_ZIP), kLocale),
+              actual.GetInfo(AutofillType(ADDRESS_HOME_ZIP), kLocale));
+    EXPECT_EQ(expected.GetInfo(AutofillType(ADDRESS_HOME_COUNTRY), kLocale),
+              actual.GetInfo(AutofillType(ADDRESS_HOME_COUNTRY), kLocale));
+  }
+
+  AutofillProfileComparator comparator_{kLocale};
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AutofillProfileComparatorTest);
@@ -116,19 +252,27 @@ TEST_F(AutofillProfileComparatorTest, UniqueTokens) {
             comparator_.UniqueTokens(kInput));
 }
 
-TEST_F(AutofillProfileComparatorTest, HaveSameTokens) {
+TEST_F(AutofillProfileComparatorTest, CompareTokens) {
   base::string16 kEmptyStr = UTF8ToUTF16("");
   base::string16 kHello = UTF8ToUTF16("hello");
   base::string16 kHelloThere = UTF8ToUTF16("hello there");
   base::string16 kHelloThereAlice = UTF8ToUTF16("hello there alice");
   base::string16 kHelloThereBob = UTF8ToUTF16("hello there bob");
 
-  EXPECT_TRUE(comparator_.HaveSameTokens(kEmptyStr, kHello));
-  EXPECT_TRUE(comparator_.HaveSameTokens(kHello, kEmptyStr));
-  EXPECT_TRUE(comparator_.HaveSameTokens(kHelloThere, kHello));
-  EXPECT_TRUE(comparator_.HaveSameTokens(kHello, kHelloThere));
-  EXPECT_FALSE(comparator_.HaveSameTokens(kHelloThereAlice, kHelloThereBob));
-  EXPECT_FALSE(comparator_.HaveSameTokens(kHelloThereBob, kHelloThereAlice));
+  EXPECT_EQ(AutofillProfileComparator::SAME_TOKENS,
+            comparator_.CompareTokens(kHelloThereBob, kHelloThereBob));
+  EXPECT_EQ(AutofillProfileComparator::S2_CONTAINS_S1,
+            comparator_.CompareTokens(kEmptyStr, kHello));
+  EXPECT_EQ(AutofillProfileComparator::S1_CONTAINS_S2,
+            comparator_.CompareTokens(kHello, kEmptyStr));
+  EXPECT_EQ(AutofillProfileComparator::S1_CONTAINS_S2,
+            comparator_.CompareTokens(kHelloThere, kHello));
+  EXPECT_EQ(AutofillProfileComparator::S2_CONTAINS_S1,
+            comparator_.CompareTokens(kHello, kHelloThere));
+  EXPECT_EQ(AutofillProfileComparator::DIFFERENT_TOKENS,
+            comparator_.CompareTokens(kHelloThereAlice, kHelloThereBob));
+  EXPECT_EQ(AutofillProfileComparator::DIFFERENT_TOKENS,
+            comparator_.CompareTokens(kHelloThereBob, kHelloThereAlice));
 }
 
 TEST_F(AutofillProfileComparatorTest, NormalizeForComparison) {
@@ -138,9 +282,9 @@ TEST_F(AutofillProfileComparatorTest, NormalizeForComparison) {
             comparator_.NormalizeForComparison(UTF8ToUTF16(" sven-åke ")));
   EXPECT_EQ(UTF8ToUTF16("c 㸐"),
             comparator_.NormalizeForComparison(UTF8ToUTF16("Ç 㸐")));
-  EXPECT_EQ(UTF8ToUTF16("902101234"),
+  EXPECT_EQ(UTF8ToUTF16("902103214"),
             comparator_.NormalizeForComparison(
-                base::UTF8ToUTF16("90210-1234"),
+                base::UTF8ToUTF16("90210-3214"),
                 AutofillProfileComparator::DISCARD_WHITESPACE));
   EXPECT_EQ(UTF8ToUTF16("timothe noel etienne perier"),
             comparator_.NormalizeForComparison(
@@ -288,11 +432,11 @@ TEST_F(AutofillProfileComparatorTest, HaveMergeableCompanyNames) {
 
 TEST_F(AutofillProfileComparatorTest, HaveMergeablePhoneNumbers) {
   AutofillProfile empty = CreateProfileWithPhoneNumber("");
-  AutofillProfile p1 = CreateProfileWithPhoneNumber("+1 (514) 670-8700");
-  AutofillProfile p2 = CreateProfileWithPhoneNumber("514.670.8700x123");
-  AutofillProfile p3 = CreateProfileWithPhoneNumber("670-8700 ext123");
+  AutofillProfile p1 = CreateProfileWithPhoneNumber("+1 (800) 670-8700");
+  AutofillProfile p2 = CreateProfileWithPhoneNumber("800.670.8700x321");
+  AutofillProfile p3 = CreateProfileWithPhoneNumber("670-8700 ext321");
   AutofillProfile p4 = CreateProfileWithPhoneNumber("6708700");
-  AutofillProfile different = CreateProfileWithPhoneNumber("1-800-123-4567");
+  AutofillProfile different = CreateProfileWithPhoneNumber("1-800-321-4567");
 
   EXPECT_TRUE(comparator_.HaveMergeablePhoneNumbers(p1, p1));
   EXPECT_TRUE(comparator_.HaveMergeablePhoneNumbers(p1, p2));
@@ -329,15 +473,15 @@ TEST_F(AutofillProfileComparatorTest, HaveMergeableAddresses) {
   //    - etc...
   AutofillProfile empty = CreateProfileWithAddress("", "", "", "", "", "");
   AutofillProfile p1 = CreateProfileWithAddress(
-      "1 Some Street", "Unit 3", "City", "CA - California", "90210", "US");
+      "1 Some Street", "Unit 3", "Carver", "CA - California", "90210", "US");
   AutofillProfile p2 = CreateProfileWithAddress(
-      "Unit 3", "1 Some Street", "Suburb", "california", "90 210-1234", "");
-  AutofillProfile p3 =
-      CreateProfileWithAddress("1 Some Street #3", "", "City", "ca", "", "us");
+      "Unit 3", "1 Some Street", "Suburb", "california", "90 210-3214", "");
+  AutofillProfile p3 = CreateProfileWithAddress("1 Some Street #3", "",
+                                                "Carver City", "ca", "", "us");
   AutofillProfile differentCountry =
       CopyAndModify(p1, {{ADDRESS_HOME_COUNTRY, "CA"}});
   AutofillProfile differentZip =
-      CopyAndModify(p1, {{ADDRESS_HOME_ZIP, "12345"}});
+      CopyAndModify(p1, {{ADDRESS_HOME_ZIP, "32145"}});
   AutofillProfile differentState = CopyAndModify(
       p1, {{ADDRESS_HOME_ZIP, ""}, {ADDRESS_HOME_STATE, "Florida"}});
   AutofillProfile differentCity = CopyAndModify(
@@ -349,16 +493,17 @@ TEST_F(AutofillProfileComparatorTest, HaveMergeableAddresses) {
   EXPECT_TRUE(comparator_.HaveMergeableAddresses(p1, empty));
   EXPECT_TRUE(comparator_.HaveMergeableAddresses(empty, p2));
 
-  EXPECT_TRUE(comparator_.HaveMergeableAddresses(p1, p2));
-  EXPECT_TRUE(comparator_.HaveMergeableAddresses(p2, p1));
   EXPECT_TRUE(comparator_.HaveMergeableAddresses(p1, p3));
   EXPECT_TRUE(comparator_.HaveMergeableAddresses(p3, p1));
 
-  // |p2| and |p3| don't match because without a "real" zip match, we can't
-  // resolve the mismatched city/suburb names.
+  // |p2| matches neither |p1| nor |p3| because we can't resolve the mismatched
+  // city/suburb names.
+  EXPECT_FALSE(comparator_.HaveMergeableAddresses(p1, p2));
+  EXPECT_FALSE(comparator_.HaveMergeableAddresses(p2, p1));
   EXPECT_FALSE(comparator_.HaveMergeableAddresses(p2, p3));
   EXPECT_FALSE(comparator_.HaveMergeableAddresses(p3, p2));
 
+  // Changing things about |p1| causes its copies to stop being mergeable.
   EXPECT_FALSE(comparator_.HaveMergeableAddresses(p1, differentCountry));
   EXPECT_FALSE(comparator_.HaveMergeableAddresses(p1, differentZip));
   EXPECT_FALSE(comparator_.HaveMergeableAddresses(p1, differentState));
@@ -379,4 +524,276 @@ TEST_F(AutofillProfileComparatorTest, IsMergeable) {
   EXPECT_TRUE(comparator_.AreMergeable(p1, p1_mergeable));
   EXPECT_FALSE(comparator_.AreMergeable(p1, p1_not_mergeable));
   EXPECT_FALSE(comparator_.AreMergeable(p1, p2));
+}
+
+TEST_F(AutofillProfileComparatorTest, MergeNames) {
+  NameInfo name1;
+  name1.SetRawInfo(NAME_FULL, UTF8ToUTF16("John Quincy Public"));
+  name1.SetRawInfo(NAME_FIRST, UTF8ToUTF16("John"));
+  name1.SetRawInfo(NAME_MIDDLE, UTF8ToUTF16("Quincy"));
+  name1.SetRawInfo(NAME_LAST, UTF8ToUTF16("Public"));
+
+  NameInfo name2;
+  name2.SetRawInfo(NAME_FULL, UTF8ToUTF16("John Q. Public"));
+  name2.SetRawInfo(NAME_FIRST, UTF8ToUTF16("John"));
+  name2.SetRawInfo(NAME_MIDDLE, UTF8ToUTF16("Q."));
+  name2.SetRawInfo(NAME_LAST, UTF8ToUTF16("Public"));
+
+  NameInfo name3;
+  name3.SetRawInfo(NAME_FULL, UTF8ToUTF16("J Public"));
+  name3.SetRawInfo(NAME_FIRST, UTF8ToUTF16("J"));
+  name3.SetRawInfo(NAME_MIDDLE, UTF8ToUTF16(""));
+  name3.SetRawInfo(NAME_LAST, UTF8ToUTF16("Public"));
+
+  NameInfo name4;
+  name4.SetRawInfo(NAME_FULL, UTF8ToUTF16("John Quincy Public"));
+
+  NameInfo name5;
+  name5.SetRawInfo(NAME_FIRST, UTF8ToUTF16("John"));
+  name5.SetRawInfo(NAME_LAST, UTF8ToUTF16("Public"));
+
+  NameInfo synthesized;
+  synthesized.SetRawInfo(NAME_FULL, UTF8ToUTF16("John Public"));
+  synthesized.SetRawInfo(NAME_FIRST, UTF8ToUTF16("John"));
+  synthesized.SetRawInfo(NAME_MIDDLE, UTF8ToUTF16(""));
+  synthesized.SetRawInfo(NAME_LAST, UTF8ToUTF16("Public"));
+
+  AutofillProfile p1 = CreateProfileWithName(name1);
+  AutofillProfile p2 = CreateProfileWithName(name2);
+  AutofillProfile p3 = CreateProfileWithName(name3);
+  AutofillProfile p4 = CreateProfileWithName(name4);
+  AutofillProfile p5 = CreateProfileWithName(name5);
+
+  MergeNamesAndExpect(p1, p1, name1);
+  MergeNamesAndExpect(p1, p2, name1);
+  MergeNamesAndExpect(p1, p3, name1);
+  MergeNamesAndExpect(p1, p4, name1);
+  MergeNamesAndExpect(p1, p5, name1);
+
+  MergeNamesAndExpect(p2, p1, name1);
+  MergeNamesAndExpect(p2, p2, name2);
+  MergeNamesAndExpect(p2, p3, name2);
+  MergeNamesAndExpect(p2, p4, name1);
+  MergeNamesAndExpect(p2, p5, name2);
+
+  MergeNamesAndExpect(p3, p1, name1);
+  MergeNamesAndExpect(p3, p2, name2);
+  MergeNamesAndExpect(p3, p3, name3);
+  MergeNamesAndExpect(p3, p4, name1);
+  MergeNamesAndExpect(p3, p5, synthesized);
+
+  // P4 can be teased apart and reconstituted as name1.
+  MergeNamesAndExpect(p4, p1, name1);
+  MergeNamesAndExpect(p4, p2, name1);
+  MergeNamesAndExpect(p4, p3, name1);
+  MergeNamesAndExpect(p4, p4, name1);
+  MergeNamesAndExpect(p4, p5, name1);
+
+  // P5 expands the first name if it's not complete.
+  MergeNamesAndExpect(p5, p1, name1);
+  MergeNamesAndExpect(p5, p2, name2);
+  MergeNamesAndExpect(p5, p3, synthesized);
+  MergeNamesAndExpect(p5, p4, name1);
+  MergeNamesAndExpect(p5, p5, synthesized);  // We flesh out missing data.
+}
+
+TEST_F(AutofillProfileComparatorTest, MergeEmailAddresses) {
+  static const char kEmailA[] = "testaccount@domain.net";
+  static const char kEmailB[] = "TestAccount@Domain.Net";
+
+  EmailInfo email_a;
+  email_a.SetRawInfo(EMAIL_ADDRESS, UTF8ToUTF16(kEmailA));
+  AutofillProfile profile_a = CreateProfileWithEmail(kEmailA);
+  profile_a.set_use_date(base::Time::Now());
+
+  EmailInfo email_b;
+  email_b.SetRawInfo(EMAIL_ADDRESS, UTF8ToUTF16(kEmailB));
+  AutofillProfile profile_b = CreateProfileWithEmail(kEmailB);
+  profile_b.set_use_date(profile_a.use_date() + base::TimeDelta::FromDays(1));
+
+  MergeEmailAddressesAndExpect(profile_a, profile_a, email_a);
+  MergeEmailAddressesAndExpect(profile_b, profile_b, email_b);
+  MergeEmailAddressesAndExpect(profile_a, profile_b, email_b);
+  MergeEmailAddressesAndExpect(profile_b, profile_a, email_b);
+}
+
+TEST_F(AutofillProfileComparatorTest, MergeCompanyNames) {
+  static const char kCompanyA[] = "Some Company";
+  static const char kCompanyB[] = "SÔMÈ ÇÖMPÁÑÝ";
+  static const char kCompanyC[] = "SÔMÈ ÇÖMPÁÑÝ A.G.";
+
+  CompanyInfo company_a;
+  company_a.SetRawInfo(COMPANY_NAME, UTF8ToUTF16(kCompanyA));
+  AutofillProfile profile_a = CreateProfileWithCompanyName(kCompanyA);
+  profile_a.set_use_date(base::Time::Now());
+
+  // Company Name B is post_normalization identical to Company Name A. The use
+  // date will be used to choose between them.
+  CompanyInfo company_b;
+  company_b.SetRawInfo(COMPANY_NAME, UTF8ToUTF16(kCompanyB));
+  AutofillProfile profile_b = CreateProfileWithCompanyName(kCompanyB);
+  profile_b.set_use_date(profile_a.use_date() + base::TimeDelta::FromDays(1));
+
+  // Company Name C is the most complete. Even though it has the earliest use
+  // date, it will be preferred to the other two.
+  CompanyInfo company_c;
+  company_c.SetRawInfo(COMPANY_NAME, UTF8ToUTF16(kCompanyC));
+  AutofillProfile profile_c = CreateProfileWithCompanyName(kCompanyC);
+  profile_c.set_use_date(profile_a.use_date() - base::TimeDelta::FromDays(1));
+
+  MergeCompanyNamesAndExpect(profile_a, profile_a, company_a);
+  MergeCompanyNamesAndExpect(profile_a, profile_b, company_b);
+  MergeCompanyNamesAndExpect(profile_a, profile_c, company_c);
+  MergeCompanyNamesAndExpect(profile_b, profile_a, company_b);
+  MergeCompanyNamesAndExpect(profile_b, profile_b, company_b);
+  MergeCompanyNamesAndExpect(profile_b, profile_c, company_c);
+  MergeCompanyNamesAndExpect(profile_c, profile_a, company_c);
+  MergeCompanyNamesAndExpect(profile_c, profile_b, company_c);
+  MergeCompanyNamesAndExpect(profile_c, profile_c, company_c);
+}
+
+TEST_F(AutofillProfileComparatorTest, MergePhoneNumbers_NA) {
+  static const char kPhoneA[] = "5550199";
+  static const char kPhoneB[] = "555.0199";
+  static const char kPhoneC[] = "555-0199 ext321";
+  static const char kPhoneD[] = "8005550199";
+  static const char kPhoneE[] = "800-555-0199 #321";
+  static const char kPhoneF[] = "1-800-555-0199 #321";
+  static const char kPhoneG[] = "+1 (800) 555.0199;ext=321";
+  static const char kMergedShortNumber[] = "5550199";
+  static const char kMergedShortNumberExt[] = "5550199 ext. 321";
+  static const char kMergedFullNumber[] = "+1 800-555-0199";
+  static const char kMergedFullNumberExt[] = "+1 800-555-0199 ext. 321";
+
+  AutofillProfile profile_a = CreateProfileWithPhoneNumber(kPhoneA);
+  AutofillProfile profile_b = CreateProfileWithPhoneNumber(kPhoneB);
+  AutofillProfile profile_c = CreateProfileWithPhoneNumber(kPhoneC);
+  AutofillProfile profile_d = CreateProfileWithPhoneNumber(kPhoneD);
+  AutofillProfile profile_e = CreateProfileWithPhoneNumber(kPhoneE);
+  AutofillProfile profile_f = CreateProfileWithPhoneNumber(kPhoneF);
+  AutofillProfile profile_g = CreateProfileWithPhoneNumber(kPhoneG);
+
+  // Profile A
+  MergePhoneNumbersAndExpect(profile_a, profile_a, kPhoneA);
+  MergePhoneNumbersAndExpect(profile_a, profile_b, kMergedShortNumber);
+  MergePhoneNumbersAndExpect(profile_a, profile_c, kMergedShortNumberExt);
+  MergePhoneNumbersAndExpect(profile_a, profile_d, kMergedFullNumber);
+  MergePhoneNumbersAndExpect(profile_a, profile_e, kMergedFullNumberExt);
+  MergePhoneNumbersAndExpect(profile_a, profile_f, kMergedFullNumberExt);
+  MergePhoneNumbersAndExpect(profile_a, profile_g, kMergedFullNumberExt);
+
+  // Profile B
+  MergePhoneNumbersAndExpect(profile_b, profile_a, kMergedShortNumber);
+  MergePhoneNumbersAndExpect(profile_b, profile_b, kPhoneB);
+  MergePhoneNumbersAndExpect(profile_b, profile_c, kMergedShortNumberExt);
+  MergePhoneNumbersAndExpect(profile_b, profile_d, kMergedFullNumber);
+  MergePhoneNumbersAndExpect(profile_b, profile_e, kMergedFullNumberExt);
+  MergePhoneNumbersAndExpect(profile_b, profile_f, kMergedFullNumberExt);
+  MergePhoneNumbersAndExpect(profile_b, profile_g, kMergedFullNumberExt);
+
+  // Profile C
+  MergePhoneNumbersAndExpect(profile_c, profile_a, kMergedShortNumberExt);
+  MergePhoneNumbersAndExpect(profile_c, profile_b, kMergedShortNumberExt);
+  MergePhoneNumbersAndExpect(profile_c, profile_c, kPhoneC);
+  MergePhoneNumbersAndExpect(profile_c, profile_d, kMergedFullNumberExt);
+  MergePhoneNumbersAndExpect(profile_c, profile_e, kMergedFullNumberExt);
+  MergePhoneNumbersAndExpect(profile_c, profile_f, kMergedFullNumberExt);
+  MergePhoneNumbersAndExpect(profile_c, profile_g, kMergedFullNumberExt);
+
+  // Profile D
+  MergePhoneNumbersAndExpect(profile_d, profile_a, kMergedFullNumber);
+  MergePhoneNumbersAndExpect(profile_d, profile_b, kMergedFullNumber);
+  MergePhoneNumbersAndExpect(profile_d, profile_c, kMergedFullNumberExt);
+  MergePhoneNumbersAndExpect(profile_d, profile_d, kPhoneD);
+  MergePhoneNumbersAndExpect(profile_d, profile_e, kMergedFullNumberExt);
+  MergePhoneNumbersAndExpect(profile_d, profile_f, kMergedFullNumberExt);
+  MergePhoneNumbersAndExpect(profile_d, profile_g, kMergedFullNumberExt);
+
+  // Profile E
+  MergePhoneNumbersAndExpect(profile_e, profile_a, kMergedFullNumberExt);
+  MergePhoneNumbersAndExpect(profile_e, profile_b, kMergedFullNumberExt);
+  MergePhoneNumbersAndExpect(profile_e, profile_c, kMergedFullNumberExt);
+  MergePhoneNumbersAndExpect(profile_e, profile_d, kMergedFullNumberExt);
+  MergePhoneNumbersAndExpect(profile_e, profile_e, kPhoneE);
+  MergePhoneNumbersAndExpect(profile_e, profile_f, kMergedFullNumberExt);
+  MergePhoneNumbersAndExpect(profile_e, profile_g, kMergedFullNumberExt);
+
+  // Profile F
+  MergePhoneNumbersAndExpect(profile_f, profile_a, kMergedFullNumberExt);
+  MergePhoneNumbersAndExpect(profile_f, profile_b, kMergedFullNumberExt);
+  MergePhoneNumbersAndExpect(profile_f, profile_c, kMergedFullNumberExt);
+  MergePhoneNumbersAndExpect(profile_f, profile_d, kMergedFullNumberExt);
+  MergePhoneNumbersAndExpect(profile_f, profile_e, kMergedFullNumberExt);
+  MergePhoneNumbersAndExpect(profile_f, profile_f, kPhoneF);
+  MergePhoneNumbersAndExpect(profile_f, profile_g, kMergedFullNumberExt);
+
+  // Profile G
+  MergePhoneNumbersAndExpect(profile_g, profile_a, kMergedFullNumberExt);
+  MergePhoneNumbersAndExpect(profile_g, profile_b, kMergedFullNumberExt);
+  MergePhoneNumbersAndExpect(profile_g, profile_c, kMergedFullNumberExt);
+  MergePhoneNumbersAndExpect(profile_g, profile_d, kMergedFullNumberExt);
+  MergePhoneNumbersAndExpect(profile_g, profile_e, kMergedFullNumberExt);
+  MergePhoneNumbersAndExpect(profile_g, profile_f, kMergedFullNumberExt);
+  MergePhoneNumbersAndExpect(profile_g, profile_g, kPhoneG);
+}
+
+TEST_F(AutofillProfileComparatorTest, MergePhoneNumbers_Intl) {
+  const base::string16 kGermany = UTF8ToUTF16("DE");
+  const AutofillType kCountry(ADDRESS_HOME_COUNTRY);
+
+  static const char kPhoneA[] = "+49492180185611";
+  static const char kPhoneB[] = "+49 4921 801 856-11";
+  static const char kPhoneC[] = "+49 4921 8018 5611;ext=22";
+  static const char kPhoneD[] = "04921 80185611";  // National Format.
+  static const char kMergedFullNumber[] = "+49 4921 80185611";
+  static const char kMergedFullNumberExt[] = "+49 4921 80185611 ext. 22";
+
+  AutofillProfile profile_a = CreateProfileWithPhoneNumber(kPhoneA);
+  AutofillProfile profile_b = CreateProfileWithPhoneNumber(kPhoneB);
+  AutofillProfile profile_c = CreateProfileWithPhoneNumber(kPhoneC);
+  AutofillProfile profile_d = CreateProfileWithPhoneNumber(kPhoneD);
+
+  profile_a.SetInfo(kCountry, kGermany, kLocale);
+  profile_b.SetInfo(kCountry, kGermany, kLocale);
+  profile_c.SetInfo(kCountry, kGermany, kLocale);
+  profile_d.SetInfo(kCountry, kGermany, kLocale);
+
+  // Profile A
+  MergePhoneNumbersAndExpect(profile_a, profile_a, kPhoneA);
+  MergePhoneNumbersAndExpect(profile_a, profile_b, kMergedFullNumber);
+  MergePhoneNumbersAndExpect(profile_a, profile_c, kMergedFullNumberExt);
+
+  // Profile B
+  MergePhoneNumbersAndExpect(profile_b, profile_a, kMergedFullNumber);
+  MergePhoneNumbersAndExpect(profile_b, profile_b, kPhoneB);
+  MergePhoneNumbersAndExpect(profile_b, profile_c, kMergedFullNumberExt);
+
+  // Profile C
+  MergePhoneNumbersAndExpect(profile_c, profile_a, kMergedFullNumberExt);
+  MergePhoneNumbersAndExpect(profile_c, profile_b, kMergedFullNumberExt);
+  MergePhoneNumbersAndExpect(profile_c, profile_c, kPhoneC);
+
+  // Profile D
+  MergePhoneNumbersAndExpect(profile_d, profile_a, kMergedFullNumber);
+  MergePhoneNumbersAndExpect(profile_d, profile_b, kMergedFullNumber);
+  MergePhoneNumbersAndExpect(profile_d, profile_c, kMergedFullNumberExt);
+  MergePhoneNumbersAndExpect(profile_d, profile_d, kPhoneD);
+}
+
+TEST_F(AutofillProfileComparatorTest, MergeAddresses) {
+  AutofillProfile empty;
+  AutofillProfile p1 = CreateProfileWithAddress(
+      "1 Some Street", "Unit 3", "Carver", "CA - California", "90210", "US");
+  AutofillProfile p2 = CreateProfileWithAddress(
+      "1 Some Street #3", "", "Carver City", "ca", "90210-1234", "us");
+
+  Address expected;
+  expected.SetRawInfo(ADDRESS_HOME_LINE1, UTF8ToUTF16("1 Some Street"));
+  expected.SetRawInfo(ADDRESS_HOME_LINE2, UTF8ToUTF16("Unit 3"));
+  expected.SetRawInfo(ADDRESS_HOME_CITY, UTF8ToUTF16("Carver City"));
+  expected.SetRawInfo(ADDRESS_HOME_STATE, UTF8ToUTF16("ca"));
+  expected.SetRawInfo(ADDRESS_HOME_ZIP, UTF8ToUTF16("90210-1234"));
+  expected.SetRawInfo(ADDRESS_HOME_COUNTRY, UTF8ToUTF16("US"));
+
+  MergeAddressesAndExpect(p1, p2, expected);
 }

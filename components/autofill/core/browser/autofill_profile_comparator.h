@@ -10,7 +10,9 @@
 
 #include "base/strings/string16.h"
 #include "base/strings/string_piece.h"
+#include "components/autofill/core/browser/address.h"
 #include "components/autofill/core/browser/autofill_profile.h"
+#include "components/autofill/core/browser/contact_info.h"
 #include "components/autofill/core/common/autofill_l10n_util.h"
 #include "third_party/icu/source/i18n/unicode/translit.h"
 
@@ -45,13 +47,82 @@ class AutofillProfileComparator {
   // incorporate data from both profiles.
   bool AreMergeable(const AutofillProfile& p1, const AutofillProfile& p2) const;
 
+  // Populates |name_info| with the result of merging the names in |p1| and
+  // |p2|. Returns true if successful. Expects that |p1| and |p2| have already
+  // been found to be mergeable.
+  //
+  // Heuristic: If one name is empty, select the other; othwerwise, attempt to
+  // parse the names in each profile and determine if one name can be derived
+  // from the other. For example, J Smith can be derived from John Smith, so
+  // prefer the latter.
+  bool MergeNames(const AutofillProfile& p1,
+                  const AutofillProfile& p2,
+                  NameInfo* name_info) const;
+
+  // Populates |email_info| with the result of merging the email addresses in
+  // |p1| and |p2|. Returns true if successful. Expects that |p1| and |p2| have
+  // already been found to be mergeable.
+  //
+  // Heuristic: If one email address is empty, use the other; otherwise, prefer
+  // the most recently used version of the email address.
+  bool MergeEmailAddresses(const AutofillProfile& p1,
+                           const AutofillProfile& p2,
+                           EmailInfo* email_info) const;
+
+  // Populates |company_info| with the result of merging the company names in
+  // |p1| and |p2|. Returns true if successful. Expects that |p1| and |p2| have
+  // already been found to be mergeable.
+  //
+  // Heuristic: If one is empty, use the other; otherwise, if the tokens in one
+  // company name are a superset of those in the other, prefer the former; and,
+  // as a tiebreaker, prefer the most recently used version of the company name.
+  bool MergeCompanyNames(const AutofillProfile& p1,
+                         const AutofillProfile& p2,
+                         CompanyInfo* company_info) const;
+
+  // Populates |phone_number| with the result of merging the phone numbers in
+  // |p1| and |p2|. Returns true if successful. Expects that |p1| and |p2| have
+  // already been found to be mergeable.
+  //
+  // Heuristic: Populate the missing parts of each number from the other.
+  bool MergePhoneNumbers(const AutofillProfile& p1,
+                         const AutofillProfile& p2,
+                         PhoneNumber* phone_number) const;
+
+  // Populates |address| with the result of merging the addresses in |p1| and
+  // |p2|. Returns true if successful. Expects that |p1| and |p2| have already
+  // been found to be mergeable.
+  //
+  // Heuristic: Populate the missing parts of each address from the other.
+  // Prefer the abbreviated state, the shorter zip code and routing code, the
+  // more verbost city, dependent locality, and address.
+  bool MergeAddresses(const AutofillProfile& p1,
+                      const AutofillProfile& p2,
+                      Address* address) const;
+
  protected:
+  // The result type returned by CompareTokens.
+  enum CompareTokensResult {
+    DIFFERENT_TOKENS,
+    SAME_TOKENS,
+    S1_CONTAINS_S2,
+    S2_CONTAINS_S1,
+  };
+
   // Returns the set of unique tokens in |s|. Note that the string data backing
   // |s| is expected to have a lifetime which exceeds the call to UniqueTokens.
   static std::set<base::StringPiece16> UniqueTokens(base::StringPiece16 s);
 
-  // Returns true if all of the tokens in |s1| are in |s2| or vice versa.
-  static bool HaveSameTokens(base::StringPiece16 s1, base::StringPiece16 s2);
+  // Compares the unique tokens in s1 and s2.
+  static CompareTokensResult CompareTokens(base::StringPiece16 s1,
+                                           base::StringPiece16 s2);
+
+  // Returns the value of |t| from |p1| or |p2| depending on which is non-empty.
+  // This method expects that the value is either the same in |p1| and |p2| or
+  // empty in one of them.
+  base::string16 GetNonEmptyOf(const AutofillProfile& p1,
+                               const AutofillProfile& p2,
+                               AutofillType t) const;
 
   // Generate the set of full/initial variants for |name_part|, where
   // |name_part| is the user's first or middle name. For example, given "jean
@@ -128,6 +199,12 @@ class AutofillProfileComparator {
   // the email addresses.
   bool HaveMergeableAddresses(const AutofillProfile& p1,
                               const AutofillProfile& p2) const;
+
+  // Returns true if |state1| and |state2| both represent the same state in
+  // |country_code|.
+  bool IsMatchingState(const base::string16& country_code,
+                       const base::string16& state1,
+                       const base::string16& state2) const;
 
  private:
   l10n::CaseInsensitiveCompare case_insensitive_compare_;
