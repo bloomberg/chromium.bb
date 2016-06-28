@@ -59,7 +59,8 @@ IN_PROC_BROWSER_TEST_F(MediaRedirectTest, CanPlayHiddenWebm) {
 }
 
 #if defined(OS_ANDROID) && defined(USE_PROPRIETARY_CODECS)
-IN_PROC_BROWSER_TEST_F(MediaRedirectTest, CanPlayHiddenHls) {
+// Flaky, see http://crbug.com/624005
+IN_PROC_BROWSER_TEST_F(MediaRedirectTest, DISABLED_CanPlayHiddenHls) {
   RunRedirectTest("bear.m3u8");
 }
 #endif
