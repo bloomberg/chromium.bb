@@ -316,9 +316,13 @@ IN_PROC_BROWSER_TEST_F(IFrameZoomBrowserTest, AllFramesGetDefaultZoom) {
 
     WaitAndCheckFrameZoom(msg_queue, frame_observers);
   }
-  EXPECT_DOUBLE_EQ(
+  // Make this comparison approximate for Nexus5X test;
+  // https://crbug.com/622858.
+  EXPECT_NEAR(
       new_default_zoom_factor,
-      GetMainFrameZoomFactor(web_contents(), main_frame_window_border));
+      GetMainFrameZoomFactor(web_contents(), main_frame_window_border),
+      0.01
+  );
 }
 
 IN_PROC_BROWSER_TEST_F(IFrameZoomBrowserTest, SiblingFramesZoom) {
@@ -415,9 +419,13 @@ IN_PROC_BROWSER_TEST_F(IFrameZoomBrowserTest, SubframeRetainsZoomOnNavigation) {
     WaitAndCheckFrameZoom(msg_queue, frame_observers);
   }
 
-  EXPECT_DOUBLE_EQ(
+  // Make this comparison approximate for Nexus5X test;
+  // https://crbug.com/622858.
+  EXPECT_NEAR(
       new_zoom_factor,
-      GetMainFrameZoomFactor(web_contents(), main_frame_window_border));
+      GetMainFrameZoomFactor(web_contents(), main_frame_window_border),
+      0.01
+  );
 
   // Navigate child frame cross site, and make sure zoom is the same.
   TestNavigationObserver observer(web_contents());
