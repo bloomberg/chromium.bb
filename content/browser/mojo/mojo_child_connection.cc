@@ -35,6 +35,11 @@ MojoChildConnection::MojoChildConnection(const std::string& application_name,
   shell::Connector::ConnectParams params(target);
   params.set_client_process_connection(std::move(client),
                                        std::move(pid_receiver_request));
+
+  // In some unit testing scenarios a null connector is passed.
+  if (!connector)
+    return;
+
   connection_ = connector->Connect(&params);
 #if defined(OS_ANDROID)
   service_registry_android_ = ServiceRegistryAndroid::Create(

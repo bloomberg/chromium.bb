@@ -26,7 +26,7 @@ class Thread;
 namespace content {
 class BrowserChildProcessHostImpl;
 class InProcessChildThreadParams;
-class MojoApplicationHost;
+class MojoChildConnection;
 
 typedef base::Thread* (*UtilityMainThreadFactoryFunction)(
     const InProcessChildThreadParams&);
@@ -121,7 +121,7 @@ class CONTENT_EXPORT UtilityProcessHostImpl
   // Browser-side Mojo endpoint which sets up a Mojo channel with the child
   // process and contains the browser's shell::InterfaceRegistry.
   const std::string child_token_;
-  std::unique_ptr<MojoApplicationHost> mojo_application_host_;
+  std::unique_ptr<MojoChildConnection> mojo_child_connection_;
 
   // Used to vend weak pointers, and should always be declared last.
   base::WeakPtrFactory<UtilityProcessHostImpl> weak_ptr_factory_;

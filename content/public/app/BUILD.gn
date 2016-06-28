@@ -156,14 +156,20 @@ mojo_application_manifest("browser_manifest") {
   ]
 }
 
+mojo_application_manifest("gpu_manifest") {
+  type = "exe"
+  application_name = "content_gpu"
+  source = "mojo/content_gpu_manifest.json"
+}
+
 mojo_application_manifest("renderer_manifest") {
   type = "exe"
   application_name = "content_renderer"
   source = "mojo/content_renderer_manifest.json"
 }
 
-mojo_application_manifest("gpu_manifest") {
+mojo_application_manifest("utility_manifest") {
   type = "exe"
-  application_name = "content_gpu"
-  source = "mojo/content_gpu_manifest.json"
+  application_name = "content_utility"
+  source = "mojo/content_utility_manifest.json"
 }

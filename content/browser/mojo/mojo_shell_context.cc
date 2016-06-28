@@ -252,6 +252,8 @@ MojoShellContext::MojoShellContext() {
                                           IDR_MOJO_CONTENT_GPU_MANIFEST);
   manifest_provider_->AddManifestResource(kRendererMojoApplicationName,
                                           IDR_MOJO_CONTENT_RENDERER_MANIFEST);
+  manifest_provider_->AddManifestResource(kUtilityMojoApplicationName,
+                                          IDR_MOJO_CONTENT_UTILITY_MANIFEST);
   manifest_provider_->AddManifestResource("mojo:catalog",
                                           IDR_MOJO_CATALOG_MANIFEST);
   manifest_provider_->AddManifestResource(user_service::kUserServiceName,

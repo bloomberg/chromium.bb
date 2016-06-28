@@ -40,7 +40,8 @@ void ConvertVector(const SRC& src, DEST* dest) {
 }  // namespace
 
 UtilityThreadImpl::UtilityThreadImpl()
-    : ChildThreadImpl(ChildThreadImpl::Options::Builder().Build()) {
+    : ChildThreadImpl(ChildThreadImpl::Options::Builder().
+          UseMojoShellConnection(true).Build()) {
   Init();
 }
 
@@ -48,6 +49,7 @@ UtilityThreadImpl::UtilityThreadImpl(const InProcessChildThreadParams& params)
     : ChildThreadImpl(ChildThreadImpl::Options::Builder()
                           .InBrowserProcess(params)
                           .UseMojoChannel(true)
+                          .UseMojoShellConnection(true)
                           .Build()) {
   Init();
 }
