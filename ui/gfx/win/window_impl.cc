@@ -12,6 +12,7 @@
 #include "base/memory/singleton.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/synchronization/lock.h"
+#include "base/win/win_util.h"
 #include "base/win/wrapped_window_proc.h"
 #include "ui/gfx/win/hwnd_util.h"
 
@@ -212,6 +213,19 @@ void WindowImpl::Init(HWND parent, const Rect& bounds) {
                              reinterpret_cast<wchar_t*>(atom), NULL,
                              window_style_, x, y, width, height,
                              parent, NULL, NULL, this);
+  if (hwnd && base::win::IsProcessPerMonitorDpiAware()) {
+    static auto enable_child_window_dpi_message_func = []() {
+      // Derived signature; not available in headers.
+      // This call gets Windows to scale the non-client area when WM_DPICHANGED
+      // is fired.
+      using EnableChildWindowDpiMessagePtr = LRESULT (WINAPI*)(HWND, BOOL);
+      return reinterpret_cast<EnableChildWindowDpiMessagePtr>(
+                 GetProcAddress(GetModuleHandle(L"user32.dll"),
+                                "EnableChildWindowDpiMessage"));
+    }();
+    if (enable_child_window_dpi_message_func)
+      enable_child_window_dpi_message_func(hwnd, TRUE);
+  }
 
   // First nccalcszie (during CreateWindow) for captioned windows is
   // deliberately ignored so force a second one here to get the right
