@@ -400,11 +400,24 @@ class RequestTrackTestCase(unittest.TestCase):
           "encodedDataLength": 32768,
           "requestId": "32493.1",
           "timestamp": 5571441.893121}}
+  _SERVED_FROM_CACHE = {
+      "method": "Network.requestServedFromCache",
+      "params": {
+          "requestId": "32493.1"}}
   _LOADING_FINISHED = {'method': 'Network.loadingFinished',
                        'params': {
                            'encodedDataLength': 101829,
                            'requestId': '32493.1',
                            'timestamp': 5571441.891189}}
+  _LOADING_FAILED = {'method': 'Network.loadingFailed',
+                     'params': {
+                         'canceled': False,
+                         'blockedReason': None,
+                         'encodedDataLength': 101829,
+                         'errorText': 'net::ERR_TOO_MANY_REDIRECTS',
+                         'requestId': '32493.1',
+                         'timestamp': 5571441.891189,
+                         'type': 'Document'}}
 
   def setUp(self):
     self.request_track = RequestTrack(None)
@@ -479,6 +492,13 @@ class RequestTrackTestCase(unittest.TestCase):
     with self.assertRaises(AssertionError):
       self.request_track.Handle('Network.requestWillBeSent', msg)
 
+  def testSequenceOfGeneratedResponse(self):
+    self.request_track.Handle('Network.requestServedFromCache',
+                              RequestTrackTestCase._SERVED_FROM_CACHE)
+    self.request_track.Handle('Network.loadingFinished',
+                              RequestTrackTestCase._LOADING_FINISHED)
+    self.assertEquals(0, len(self.request_track.GetEvents()))
+
   def testInvalidSequence(self):
     msg1 = RequestTrackTestCase._REQUEST_WILL_BE_SENT
     msg2 = RequestTrackTestCase._LOADING_FINISHED
@@ -548,6 +568,17 @@ class RequestTrackTestCase(unittest.TestCase):
     self.assertEquals(1, self.request_track.duplicates_count)
     with self.assertRaises(AssertionError):
       self.request_track.Handle('Network.responseReceived', msg2_different)
+
+  def testLoadingFailed(self):
+    self.request_track.Handle('Network.requestWillBeSent',
+                              RequestTrackTestCase._REQUEST_WILL_BE_SENT)
+    self.request_track.Handle('Network.responseReceived',
+                              RequestTrackTestCase._RESPONSE_RECEIVED)
+    self.request_track.Handle('Network.loadingFailed',
+                              RequestTrackTestCase._LOADING_FAILED)
+    r = self.request_track.GetEvents()[0]
+    self.assertTrue(r.failed)
+    self.assertEquals('net::ERR_TOO_MANY_REDIRECTS', r.error_text)
 
   def testCanSerialize(self):
     self._ValidSequence(self.request_track)

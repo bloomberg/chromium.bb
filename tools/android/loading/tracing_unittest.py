@@ -360,6 +360,51 @@ class TracingTrackTestCase(unittest.TestCase):
     self.assertSetEqual(
         set('A'), self.track.Filter(categories=set('A')).Categories())
 
+  def testHasLoadingSucceeded(self):
+    cat = 'navigation'
+    on_navigate = 'RenderFrameImpl::OnNavigate'
+    fail_provisional = 'RenderFrameImpl::didFailProvisionalLoad'
+    fail_load = 'RenderFrameImpl::didFailLoad'
+
+    track = TracingTrack.FromJsonDict({'categories': [cat], 'events': []})
+    with self.assertRaises(AssertionError):
+      track.HasLoadingSucceeded()
+
+    track = TracingTrack.FromJsonDict({'categories': [cat], 'events': [
+        {'cat': cat, 'name': on_navigate, 'args': {'id': 1},
+            'ts': 5, 'ph': 'X', 'dur': 10, 'pid': 1, 'tid': 1}]})
+    self.assertTrue(track.HasLoadingSucceeded())
+
+    track = TracingTrack.FromJsonDict({'categories': [cat], 'events': [
+        {'cat': cat, 'name': on_navigate, 'args': {'id': 1},
+            'ts': 5, 'ph': 'X', 'dur': 10, 'pid': 1, 'tid': 1},
+        {'cat': cat, 'name': on_navigate, 'args': {'id': 2},
+            'ts': 5, 'ph': 'X', 'dur': 10, 'pid': 1, 'tid': 1},
+        {'cat': cat, 'name': fail_provisional, 'args': {'id': 2},
+            'ts': 5, 'ph': 'X', 'dur': 10, 'pid': 1, 'tid': 1}]})
+    self.assertTrue(track.HasLoadingSucceeded())
+
+    track = TracingTrack.FromJsonDict({'categories': [cat], 'events': [
+        {'cat': cat, 'name': on_navigate, 'args': {'id': 1},
+            'ts': 5, 'ph': 'X', 'dur': 10, 'pid': 1, 'tid': 1},
+        {'cat': cat, 'name': fail_provisional, 'args': {'id': 1},
+            'ts': 5, 'ph': 'X', 'dur': 10, 'pid': 1, 'tid': 1}]})
+    self.assertFalse(track.HasLoadingSucceeded())
+
+    track = TracingTrack.FromJsonDict({'categories': [cat], 'events': [
+        {'cat': cat, 'name': on_navigate, 'args': {'id': 1},
+            'ts': 5, 'ph': 'X', 'dur': 10, 'pid': 1, 'tid': 1},
+        {'cat': cat, 'name': fail_load, 'args': {'id': 1},
+            'ts': 5, 'ph': 'X', 'dur': 10, 'pid': 1, 'tid': 1}]})
+    self.assertFalse(track.HasLoadingSucceeded())
+
+    track = TracingTrack.FromJsonDict({'categories': [cat], 'events': [
+        {'cat': cat, 'name': on_navigate, 'args': {'id': 1},
+            'ts': 5, 'ph': 'X', 'dur': 10, 'pid': 1, 'tid': 1},
+        {'cat': cat, 'name': fail_load, 'args': {'id': 1},
+            'ts': 5, 'ph': 'X', 'dur': 10, 'pid': 1, 'tid': 1}]})
+    self.assertFalse(track.HasLoadingSucceeded())
+
   def _HandleEvents(self, events):
     self.track.Handle('Tracing.dataCollected', {'params': {'value': [
         self.EventToMicroseconds(e) for e in events]}})

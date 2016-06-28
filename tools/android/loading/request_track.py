@@ -175,6 +175,7 @@ class Request(object):
                  chunks received, with their offset in ms relative to
                  Timing.requestTime.
     failed: (bool) Whether the request failed.
+    error_text: (str) User friendly error message when request failed.
     start_msec: (float) Request start time, in milliseconds from chrome start.
     end_msec: (float) Request end time, in milliseconds from chrome start.
       start_msec.
@@ -211,6 +212,7 @@ class Request(object):
     self.encoded_data_length = 0
     self.data_chunks = []
     self.failed = False
+    self.error_text = None
 
   @property
   def start_msec(self):
@@ -749,7 +751,8 @@ class RequestTrack(devtools_monitor.Track):
     return initiator
 
   def _RequestServedFromCache(self, request_id, _):
-    assert request_id in self._requests_in_flight
+    if request_id not in self._requests_in_flight:
+      return
     (request, status) = self._requests_in_flight[request_id]
     assert status == RequestTrack._STATUS_SENT
     request.served_from_cache = True
@@ -796,6 +799,8 @@ class RequestTrack(devtools_monitor.Track):
     self._request_id_to_response_received[request_id] = params
 
   def _DataReceived(self, request_id, params):
+    if request_id not in self._requests_in_flight:
+      return
     (r, status) = self._requests_in_flight[request_id]
     assert (status == RequestTrack._STATUS_RESPONSE
             or status == RequestTrack._STATUS_DATA)
@@ -804,7 +809,8 @@ class RequestTrack(devtools_monitor.Track):
     self._requests_in_flight[request_id] = (r, RequestTrack._STATUS_DATA)
 
   def _LoadingFinished(self, request_id, params):
-    assert request_id in self._requests_in_flight
+    if request_id not in self._requests_in_flight:
+      return
     (r, status) = self._requests_in_flight[request_id]
     assert (status == RequestTrack._STATUS_RESPONSE
             or status == RequestTrack._STATUS_DATA)
@@ -814,17 +820,19 @@ class RequestTrack(devtools_monitor.Track):
     self._requests_in_flight[request_id] = (r, RequestTrack._STATUS_FINISHED)
     self._FinalizeRequest(request_id)
 
-  def _LoadingFailed(self, request_id, _):
+  def _LoadingFailed(self, request_id, params):
     if request_id not in self._requests_in_flight:
       logging.warning('An unknown request failed: %s' % request_id)
       return
     (r, _) = self._requests_in_flight[request_id]
     r.failed = True
+    r.error_text = params['errorText']
     self._requests_in_flight[request_id] = (r, RequestTrack._STATUS_FINISHED)
     self._FinalizeRequest(request_id)
 
   def _FinalizeRequest(self, request_id):
-    assert request_id in self._requests_in_flight
+    if request_id not in self._requests_in_flight:
+      return
     (request, status) = self._requests_in_flight[request_id]
     assert status == RequestTrack._STATUS_FINISHED
     del self._requests_in_flight[request_id]

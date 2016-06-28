@@ -86,6 +86,13 @@ class TracingTrack(devtools_monitor.Track):
     return [e for e in matching_events
         if 'frame' in e.args and e.args['frame'] == self.GetMainFrameID()]
 
+  def GetMainFrameRoutingID(self):
+    """Returns the main frame routing ID."""
+    for event in self.GetMatchingEvents(
+        'navigation', 'RenderFrameImpl::OnNavigate'):
+      return event.args['id']
+    assert False
+
   def GetMainFrameID(self):
     """Returns the main frame ID."""
     if not self._main_frame_id:
@@ -224,6 +231,19 @@ class TracingTrack(devtools_monitor.Track):
   def _GetEvents(self):
     self._IndexEvents()
     return self._interval_tree.GetEvents()
+
+  def HasLoadingSucceeded(self):
+    """Returns whether the loading has succeed at recording time."""
+    main_frame_id = self.GetMainFrameRoutingID()
+    for event in self.GetMatchingEvents(
+        'navigation', 'RenderFrameImpl::didFailProvisionalLoad'):
+      if event.args['id'] == main_frame_id:
+        return False
+    for event in self.GetMatchingEvents(
+        'navigation', 'RenderFrameImpl::didFailLoad'):
+      if event.args['id'] == main_frame_id:
+        return False
+    return True
 
   class _SpanningEvents(object):
     def __init__(self):
