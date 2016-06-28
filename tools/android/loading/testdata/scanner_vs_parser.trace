@@ -40,6 +40,15 @@
       },
       {
         "initiator": {
+          "lineNumber": 22,
+          "type": "parser",
+          "url": "http://l/"
+        },
+        "protocol": "http/1.0",
+        "url": "http://l/0.css"
+      },
+      {
+        "initiator": {
           "type": "other"
         },
         "protocol": "http/1.0",
@@ -65,7 +74,8 @@
         "name": "Resource",
         "ph": "S",
         "pid": 3,
-        "ts": 1213697828839
+        "ts": 1213697828839,
+        "id": 0
       },
       {
         "args": {},
@@ -73,7 +83,8 @@
         "name": "Resource",
         "ph": "F",
         "pid": 3,
-        "ts": 1213697889955
+        "ts": 1213697889955,
+        "id": 0
       },
       {
         "args": {
@@ -86,7 +97,8 @@
         "name": "Resource",
         "ph": "S",
         "pid": 3,
-        "ts": 1213697891911
+        "ts": 1213697891911,
+        "id": 1
       },
       {
         "args": {
@@ -96,7 +108,33 @@
         "name": "Resource",
         "ph": "T",
         "pid": 3,
-        "ts": 1213697892658
+        "ts": 1213697892658,
+        "id": 1
+      },
+      {
+        "args": {
+          "data": {
+            "priority": 1,
+            "url": "http://l/0.css"
+          }
+        },
+        "cat": "blink.net",
+        "name": "Resource",
+        "ph": "S",
+        "pid": 3,
+        "ts": 1213697892660,
+        "id": 2
+      },
+      {
+        "args": {
+          "step": "Preload"
+        },
+        "cat": "blink.net",
+        "name": "Resource",
+        "ph": "T",
+        "pid": 3,
+        "ts": 1213697892661,
+        "id": 2
       },
       {
         "args": {
@@ -109,7 +147,20 @@
         "name": "Resource",
         "ph": "S",
         "pid": 3,
-        "ts": 1213697934273
+        "ts": 1213697934273,
+        "id": 3
+      },
+      {
+        "args": {
+          "priority": 3,
+          "step": "ChangePriority"
+        },
+        "cat": "blink.net",
+        "name": "Resource",
+        "ph": "T",
+        "pid": 3,
+        "ts": 1213697984606,
+        "id": 0
       },
       {
         "args": {},
@@ -117,7 +168,8 @@
         "name": "Resource",
         "ph": "F",
         "pid": 3,
-        "ts": 1213697943810
+        "ts": 1213697943810,
+        "id": 1
       },
       {
         "args": {
@@ -128,7 +180,8 @@
         "name": "Resource",
         "ph": "T",
         "pid": 3,
-        "ts": 1213697984606
+        "ts": 1213697984875,
+        "id": 1
       },
       {
         "args": {
@@ -139,7 +192,8 @@
         "name": "Resource",
         "ph": "T",
         "pid": 3,
-        "ts": 1213697984875
+        "ts": 1213697985346,
+        "id": 2
       },
       {
         "args": {
@@ -150,7 +204,8 @@
         "name": "Resource",
         "ph": "T",
         "pid": 3,
-        "ts": 1213697985346
+        "ts": 1213697985346,
+        "id": 3
       },
       {
         "args": {},
@@ -158,7 +213,17 @@
         "name": "Resource",
         "ph": "F",
         "pid": 3,
-        "ts": 1213698035637
+        "ts": 1213698035637,
+        "id": 2
+      },
+      {
+        "args": {},
+        "cat": "blink.net",
+        "name": "Resource",
+        "ph": "F",
+        "pid": 3,
+        "ts": 1213698035637,
+        "id": 3
       }
     ]
   },

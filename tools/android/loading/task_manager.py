@@ -172,22 +172,27 @@ class Builder(object):
       A Task that was created by wrapping the function or an existing registered
       wrapper (that have wrapped a different function).
     """
-    task_name = self._RebaseTaskName(task_name)
+    rebased_task_name = self._RebaseTaskName(task_name)
     dependencies = dependencies or []
     def InnerAddTaskWithNewPath(recipe):
-      if task_name in self._tasks:
+      if rebased_task_name in self._tasks:
         if not merge:
-          raise TaskError('Task {} already exists.'.format(task_name))
-        task = self._tasks[task_name]
+          raise TaskError('Task {} already exists.'.format(rebased_task_name))
+        task = self._tasks[rebased_task_name]
         if task.IsStatic():
           raise TaskError('Should not merge dynamic task {} with the already '
-                          'existing static one.'.format(task_name))
+                          'existing static one.'.format(rebased_task_name))
         return task
-      task_path = os.path.join(self.output_directory, task_name)
-      task = Task(task_name, task_path, dependencies, recipe)
-      self._tasks[task_name] = task
+      task_path = self.RebaseOutputPath(task_name)
+      task = Task(rebased_task_name, task_path, dependencies, recipe)
+      self._tasks[rebased_task_name] = task
       return task
     return InnerAddTaskWithNewPath
+
+  def RebaseOutputPath(self, builder_relative_path):
+    """Rebases buider relative path."""
+    return os.path.join(
+        self.output_directory, self._RebaseTaskName(builder_relative_path))
 
   def _RebaseTaskName(self,  task_name):
     if self.output_subdirectory:

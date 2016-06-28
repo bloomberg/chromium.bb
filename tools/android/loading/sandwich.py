@@ -140,17 +140,17 @@ def _SetupNoStatePrefetchBenchmark(args):
     'network_conditions': ['Regular4G', 'Regular3G', 'Regular2G'],
     'subresource_discoverers': [
         e for e in sandwich_prefetch.SUBRESOURCE_DISCOVERERS
-            if e != sandwich_prefetch.FULL_CACHE_DISCOVERER]
+            if e != sandwich_prefetch.Discoverer.FullCache]
   }
 
 
 def _GenerateNoStatePrefetchBenchmarkTasks(
     common_builder, main_transformer, benchmark_setup):
   builder = sandwich_prefetch.PrefetchBenchmarkBuilder(common_builder)
-  builder.PopulateLoadBenchmark(sandwich_prefetch.EMPTY_CACHE_DISCOVERER,
+  builder.PopulateLoadBenchmark(sandwich_prefetch.Discoverer.EmptyCache,
                                 _MAIN_TRANSFORMER_LIST_NAME,
                                 transformer_list=[main_transformer])
-  builder.PopulateLoadBenchmark(sandwich_prefetch.FULL_CACHE_DISCOVERER,
+  builder.PopulateLoadBenchmark(sandwich_prefetch.Discoverer.FullCache,
                                 _MAIN_TRANSFORMER_LIST_NAME,
                                 transformer_list=[main_transformer])
   for network_condition in benchmark_setup['network_conditions']:
