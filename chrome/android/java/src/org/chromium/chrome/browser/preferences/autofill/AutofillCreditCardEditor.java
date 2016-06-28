@@ -42,6 +42,7 @@ public class AutofillCreditCardEditor extends AutofillEditorBase {
 
     private int mInitialExpirationMonthPos;
     private int mInitialExpirationYearPos;
+    private int mInitialBillingAddressPos;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -81,7 +82,8 @@ public class AutofillCreditCardEditor extends AutofillEditorBase {
     @Override
     public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
         if ((parent == mExpirationYear && position != mInitialExpirationYearPos)
-                || (parent == mExpirationMonth && position != mInitialExpirationMonthPos)) {
+                || (parent == mExpirationMonth && position != mInitialExpirationMonthPos)
+                || (parent == mBillingAddress && position != mInitialBillingAddressPos)) {
             updateSaveButtonEnabled();
         }
     }
@@ -134,6 +136,7 @@ public class AutofillCreditCardEditor extends AutofillEditorBase {
         }
 
         mBillingAddress.setAdapter(profilesAdapter);
+        mInitialBillingAddressPos = 0;
         mBillingAddress.setSelection(0);
 
         // TODO(rouslan): Use an [+ ADD ADDRESS] button instead of disabling the dropdown.
@@ -188,6 +191,7 @@ public class AutofillCreditCardEditor extends AutofillEditorBase {
             for (int i = 0; i < mBillingAddress.getAdapter().getCount(); i++) {
                 AutofillProfile profile = (AutofillProfile) mBillingAddress.getAdapter().getItem(i);
                 if (TextUtils.equals(profile.getGUID(), card.getBillingAddressId())) {
+                    mInitialBillingAddressPos = i;
                     mBillingAddress.setSelection(i);
                     break;
                 }
@@ -228,6 +232,7 @@ public class AutofillCreditCardEditor extends AutofillEditorBase {
         mNumberText.addTextChangedListener(this);
         mExpirationMonth.setOnItemSelectedListener(this);
         mExpirationYear.setOnItemSelectedListener(this);
+        mBillingAddress.setOnItemSelectedListener(this);
     }
 
     private void updateSaveButtonEnabled() {
