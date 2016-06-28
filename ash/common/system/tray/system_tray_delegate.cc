@@ -42,8 +42,6 @@ SystemTrayDelegate::~SystemTrayDelegate() {}
 
 void SystemTrayDelegate::Initialize() {}
 
-void SystemTrayDelegate::Shutdown() {}
-
 bool SystemTrayDelegate::GetTrayVisibilityOnStartup() {
   return false;
 }

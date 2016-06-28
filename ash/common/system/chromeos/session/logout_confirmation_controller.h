@@ -2,13 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_SYSTEM_CHROMEOS_SESSION_LOGOUT_CONFIRMATION_CONTROLLER_H_
-#define ASH_SYSTEM_CHROMEOS_SESSION_LOGOUT_CONFIRMATION_CONTROLLER_H_
+#ifndef ASH_COMMON_SYSTEM_CHROMEOS_SESSION_LOGOUT_CONFIRMATION_CONTROLLER_H_
+#define ASH_COMMON_SYSTEM_CHROMEOS_SESSION_LOGOUT_CONFIRMATION_CONTROLLER_H_
 
 #include <memory>
 
 #include "ash/ash_export.h"
 #include "ash/common/shell_observer.h"
+#include "ash/common/system/chromeos/session/last_window_closed_observer.h"
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/time/time.h"
@@ -25,10 +26,16 @@ class LogoutConfirmationDialog;
 // This class shows a dialog asking the user to confirm or deny logout and
 // terminates the session if the user either confirms or allows the countdown
 // shown in the dialog to expire.
+//
 // It is guaranteed that no more than one confirmation dialog will be visible at
 // any given time. If there are multiple requests to show a confirmation dialog
 // at the same time, the dialog whose countdown expires first is shown.
-class ASH_EXPORT LogoutConfirmationController : public ShellObserver {
+//
+// In public sessions, asks the user to end the session when the last window is
+// closed.
+class ASH_EXPORT LogoutConfirmationController
+    : public ShellObserver,
+      public LastWindowClosedObserver {
  public:
   // The |logout_closure| must be safe to call as long as |this| is alive.
   explicit LogoutConfirmationController(const base::Closure& logout_closure);
@@ -55,6 +62,9 @@ class ASH_EXPORT LogoutConfirmationController : public ShellObserver {
   LogoutConfirmationDialog* dialog_for_testing() const { return dialog_; }
 
  private:
+  // LastWindowClosedObserver:
+  void OnLastWindowClosed() override;
+
   std::unique_ptr<base::TickClock> clock_;
   base::Closure logout_closure_;
 
@@ -67,4 +77,4 @@ class ASH_EXPORT LogoutConfirmationController : public ShellObserver {
 
 }  // namespace ash
 
-#endif  // ASH_SYSTEM_CHROMEOS_SESSION_LOGOUT_CONFIRMATION_CONTROLLER_H_
+#endif  // ASH_COMMON_SYSTEM_CHROMEOS_SESSION_LOGOUT_CONFIRMATION_CONTROLLER_H_

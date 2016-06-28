@@ -81,7 +81,6 @@ class SystemTrayDelegateChromeOS
 
   // Overridden from ash::SystemTrayDelegate:
   void Initialize() override;
-  void Shutdown() override;
   bool GetTrayVisibilityOnStartup() override;
   ash::LoginStatus GetUserLoginStatus() const override;
   void ChangeProfilePicture() override;

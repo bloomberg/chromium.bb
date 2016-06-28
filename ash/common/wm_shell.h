@@ -30,16 +30,21 @@ class MruWindowTracker;
 class SessionStateDelegate;
 class ShellObserver;
 class SystemTrayDelegate;
+class SystemTrayNotifier;
 class WindowResizer;
 class WindowSelectorController;
 class WmActivationObserver;
 class WmDisplayObserver;
-class SystemTrayNotifier;
+class WmRootWindowController;
 class WmWindow;
 
 namespace wm {
 class WindowState;
 }
+
+#if defined(OS_CHROMEOS)
+class LogoutConfirmationController;
+#endif
 
 // Similar to ash::Shell. Eventually the two will be merged.
 class ASH_EXPORT WmShell {
@@ -157,6 +162,10 @@ class ASH_EXPORT WmShell {
   virtual void RemovePointerWatcher(views::PointerWatcher* watcher) = 0;
 
 #if defined(OS_CHROMEOS)
+  LogoutConfirmationController* logout_confirmation_controller() {
+    return logout_confirmation_controller_.get();
+  }
+
   // TODO(jamescook): Remove this when VirtualKeyboardController has been moved.
   virtual void ToggleIgnoreExternalKeyboard() = 0;
 #endif
@@ -165,9 +174,9 @@ class ASH_EXPORT WmShell {
   WmShell();
   virtual ~WmShell();
 
-  // If |delegate| is not null, sets and initializes the delegate. If |delegate|
-  // is null, shuts down and destroys the delegate.
+  // Sets and initializes the |delegate|.
   void SetSystemTrayDelegate(std::unique_ptr<SystemTrayDelegate> delegate);
+  void DeleteSystemTrayDelegate();
 
   void DeleteWindowSelectorController();
 
@@ -182,6 +191,10 @@ class ASH_EXPORT WmShell {
   std::unique_ptr<WindowSelectorController> window_selector_controller_;
 
   bool simulate_modal_window_open_for_testing_ = false;
+
+#if defined(OS_CHROMEOS)
+  std::unique_ptr<LogoutConfirmationController> logout_confirmation_controller_;
+#endif
 };
 
 }  // namespace ash

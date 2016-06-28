@@ -2,18 +2,24 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/system/chromeos/session/logout_confirmation_controller.h"
+#include "ash/common/system/chromeos/session/logout_confirmation_controller.h"
 
 #include <utility>
 
+#include "ash/common/login_status.h"
+#include "ash/common/system/chromeos/session/logout_confirmation_dialog.h"
+#include "ash/common/system/tray/system_tray_delegate.h"
+#include "ash/common/system/tray/system_tray_notifier.h"
 #include "ash/common/wm_shell.h"
-#include "ash/system/chromeos/session/logout_confirmation_dialog.h"
 #include "base/location.h"
 #include "base/time/default_tick_clock.h"
 #include "base/time/tick_clock.h"
 #include "ui/views/widget/widget.h"
 
 namespace ash {
+namespace {
+const int kLogoutConfirmationDelayInSeconds = 20;
+}
 
 LogoutConfirmationController::LogoutConfirmationController(
     const base::Closure& logout_closure)
@@ -21,13 +27,18 @@ LogoutConfirmationController::LogoutConfirmationController(
       logout_closure_(logout_closure),
       dialog_(NULL),
       logout_timer_(false, false) {
-  if (WmShell::HasInstance())
+  if (WmShell::HasInstance()) {
     WmShell::Get()->AddShellObserver(this);
+    WmShell::Get()->system_tray_notifier()->AddLastWindowClosedObserver(this);
+  }
 }
 
 LogoutConfirmationController::~LogoutConfirmationController() {
-  if (WmShell::HasInstance())
+  if (WmShell::HasInstance()) {
     WmShell::Get()->RemoveShellObserver(this);
+    WmShell::Get()->system_tray_notifier()->RemoveLastWindowClosedObserver(
+        this);
+  }
   if (dialog_)
     dialog_->ControllerGone();
 }
@@ -79,6 +90,19 @@ void LogoutConfirmationController::OnDialogClosed() {
   logout_time_ = base::TimeTicks();
   dialog_ = NULL;
   logout_timer_.Stop();
+}
+
+void LogoutConfirmationController::OnLastWindowClosed() {
+  if (WmShell::Get()->system_tray_delegate()->GetUserLoginStatus() !=
+      LoginStatus::PUBLIC) {
+    return;
+  }
+
+  // Ask the user to confirm logout if a public session is in progress and the
+  // screen is not locked.
+  ConfirmLogout(
+      base::TimeTicks::Now() +
+      base::TimeDelta::FromSeconds(kLogoutConfirmationDelayInSeconds));
 }
 
 }  // namespace ash

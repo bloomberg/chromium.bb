@@ -11,6 +11,7 @@
 #include "ui/accessibility/ax_enums.h"
 #include "ui/base/models/dialog_model.h"
 #include "ui/base/ui_base_types.h"
+#include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
 
 namespace views {
@@ -34,18 +35,18 @@ class VIEWS_EXPORT DialogDelegate : public ui::DialogModel,
   DialogDelegate();
   ~DialogDelegate() override;
 
-  // Same as CreateDialogWidgetWithBounds() with an empty |bounds|.
+  // Creates a widget at a default location.
   static Widget* CreateDialogWidget(WidgetDelegate* delegate,
                                     gfx::NativeWindow context,
                                     gfx::NativeView parent);
 
-  // Create a dialog widget with the specified |context| or |parent|.
+  // Returns the dialog widget InitParams for a given |context| or |parent|.
   // If |bounds| is not empty, used to initially place the dialog, otherwise
   // a default location is used.
-  static Widget* CreateDialogWidgetWithBounds(WidgetDelegate* delegate,
-                                              gfx::NativeWindow context,
-                                              gfx::NativeView parent,
-                                              const gfx::Rect& bounds);
+  static Widget::InitParams GetDialogWidgetInitParams(WidgetDelegate* delegate,
+                                                      gfx::NativeWindow context,
+                                                      gfx::NativeView parent,
+                                                      const gfx::Rect& bounds);
 
   // Override this function to display an extra view adjacent to the buttons.
   // Overrides may construct the view; this will only be called once per dialog.

@@ -2,20 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/system/chromeos/session/logout_button_tray.h"
+#include "ash/common/system/chromeos/session/logout_button_tray.h"
 
 #include <memory>
 #include <utility>
 
 #include "ash/common/shelf/shelf_types.h"
+#include "ash/common/system/chromeos/session/logout_confirmation_controller.h"
 #include "ash/common/system/tray/system_tray_delegate.h"
 #include "ash/common/system/tray/system_tray_notifier.h"
 #include "ash/common/system/tray/tray_constants.h"
 #include "ash/common/system/tray/tray_utils.h"
 #include "ash/common/system/user/login_status.h"
 #include "ash/common/wm_shell.h"
-#include "ash/shell.h"
-#include "ash/system/chromeos/session/logout_confirmation_controller.h"
 #include "base/logging.h"
 #include "grit/ash_resources.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -138,8 +137,8 @@ void LogoutButtonTray::ButtonPressed(views::Button* sender,
   if (dialog_duration_ <= base::TimeDelta()) {
     // Sign out immediately if |dialog_duration_| is non-positive.
     WmShell::Get()->system_tray_delegate()->SignOut();
-  } else if (Shell::GetInstance()->logout_confirmation_controller()) {
-    Shell::GetInstance()->logout_confirmation_controller()->ConfirmLogout(
+  } else if (WmShell::Get()->logout_confirmation_controller()) {
+    WmShell::Get()->logout_confirmation_controller()->ConfirmLogout(
         base::TimeTicks::Now() + dialog_duration_);
   }
 }

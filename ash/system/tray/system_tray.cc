@@ -47,6 +47,7 @@
 #if defined(OS_CHROMEOS)
 #include "ash/common/system/chromeos/power/power_status.h"
 #include "ash/common/system/chromeos/power/tray_power.h"
+#include "ash/common/system/chromeos/session/tray_session_length_limit.h"
 #include "ash/common/system/chromeos/settings/tray_settings.h"
 #include "ash/common/system/chromeos/tray_tracing.h"
 #include "ash/common/system/ime/tray_ime_chromeos.h"
@@ -61,7 +62,6 @@
 #include "ash/system/chromeos/rotation/tray_rotation_lock.h"
 #include "ash/system/chromeos/screen_security/screen_capture_tray_item.h"
 #include "ash/system/chromeos/screen_security/screen_share_tray_item.h"
-#include "ash/system/chromeos/session/tray_session_length_limit.h"
 #include "ash/system/chromeos/supervised/tray_supervised_user.h"
 #include "ash/system/chromeos/tray_caps_lock.h"
 #include "ash/system/chromeos/tray_display.h"

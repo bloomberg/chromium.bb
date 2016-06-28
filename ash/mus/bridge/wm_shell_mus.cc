@@ -104,7 +104,7 @@ WmShellMus::WmShellMus(::mus::WindowTreeClient* client)
 }
 
 WmShellMus::~WmShellMus() {
-  SetSystemTrayDelegate(nullptr);
+  DeleteSystemTrayDelegate();
   DeleteWindowSelectorController();
   wm_shell_common_->DeleteMruWindowTracker();
   RemoveClientObserver();

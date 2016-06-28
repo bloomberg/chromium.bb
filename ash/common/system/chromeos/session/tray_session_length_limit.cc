@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/system/chromeos/session/tray_session_length_limit.h"
+#include "ash/common/system/chromeos/session/tray_session_length_limit.h"
 
 #include <algorithm>
 #include <memory>
 #include <utility>
 
 #include "ash/common/system/system_notifier.h"
+#include "ash/common/system/tray/label_tray_view.h"
 #include "ash/common/system/tray/system_tray_delegate.h"
 #include "ash/common/system/tray/system_tray_notifier.h"
 #include "ash/common/wm_shell.h"
-#include "ash/system/chromeos/label_tray_view.h"
 #include "ash/system/tray/system_tray.h"
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"

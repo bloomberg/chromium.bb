@@ -257,9 +257,6 @@ void SystemTrayDelegateChromeOS::Initialize() {
   BrowserList::AddObserver(this);
 }
 
-void SystemTrayDelegateChromeOS::Shutdown() {
-}
-
 void SystemTrayDelegateChromeOS::InitializeOnAdapterReady(
     scoped_refptr<device::BluetoothAdapter> adapter) {
   bluetooth_adapter_ = adapter;

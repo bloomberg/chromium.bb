@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/system/chromeos/session/logout_confirmation_controller.h"
+#include "ash/common/system/chromeos/session/logout_confirmation_controller.h"
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"

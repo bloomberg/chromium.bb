@@ -18,7 +18,7 @@
 #include "base/i18n/time_formatting.h"
 
 #if defined(OS_CHROMEOS)
-#include "ash/system/chromeos/session/logout_button_tray.h"
+#include "ash/common/system/chromeos/session/logout_button_tray.h"
 #include "ash/system/chromeos/virtual_keyboard/virtual_keyboard_tray.h"
 #endif
 

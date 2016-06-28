@@ -6,10 +6,12 @@
 
 #include "ash/common/focus_cycler.h"
 #include "ash/common/shell_window_ids.h"
+#include "ash/common/system/chromeos/session/logout_confirmation_controller.h"
 #include "ash/common/system/tray/system_tray_delegate.h"
 #include "ash/common/system/tray/system_tray_notifier.h"
 #include "ash/common/wm/overview/window_selector_controller.h"
 #include "ash/common/wm_window.h"
+#include "base/bind.h"
 #include "base/logging.h"
 
 namespace ash {
@@ -56,16 +58,24 @@ bool WmShell::IsSystemModalWindowOpen() {
 
 void WmShell::SetSystemTrayDelegate(
     std::unique_ptr<SystemTrayDelegate> delegate) {
-  if (delegate) {
-    DCHECK(!system_tray_delegate_);
-    // TODO(jamescook): Create via ShellDelegate once it moves to //ash/common.
-    system_tray_delegate_ = std::move(delegate);
-    system_tray_delegate_->Initialize();
-  } else {
-    DCHECK(system_tray_delegate_);
-    system_tray_delegate_->Shutdown();
-    system_tray_delegate_.reset();
-  }
+  DCHECK(delegate);
+  DCHECK(!system_tray_delegate_);
+  // TODO(jamescook): Create via ShellDelegate once it moves to //ash/common.
+  system_tray_delegate_ = std::move(delegate);
+  system_tray_delegate_->Initialize();
+#if defined(OS_CHROMEOS)
+  logout_confirmation_controller_.reset(new LogoutConfirmationController(
+      base::Bind(&SystemTrayDelegate::SignOut,
+                 base::Unretained(system_tray_delegate_.get()))));
+#endif
+}
+
+void WmShell::DeleteSystemTrayDelegate() {
+  DCHECK(system_tray_delegate_);
+#if defined(OS_CHROMEOS)
+  logout_confirmation_controller_.reset();
+#endif
+  system_tray_delegate_.reset();
 }
 
 void WmShell::DeleteWindowSelectorController() {

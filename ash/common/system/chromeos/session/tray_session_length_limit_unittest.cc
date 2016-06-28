@@ -2,10 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/system/chromeos/session/tray_session_length_limit.h"
+#include "ash/common/system/chromeos/session/tray_session_length_limit.h"
 
-#include "ash/root_window_controller.h"
-#include "ash/shell.h"
 #include "ash/system/tray/system_tray.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/test_system_tray_delegate.h"
@@ -24,8 +22,7 @@ class TraySessionLengthLimitTest : public AshTestBase {
 
   void SetUp() override {
     AshTestBase::SetUp();
-    SystemTray* system_tray =
-        Shell::GetPrimaryRootWindowController()->GetSystemTray();
+    SystemTray* system_tray = GetPrimarySystemTray();
     tray_session_length_limit_ = new TraySessionLengthLimit(system_tray);
     system_tray->AddTrayItem(tray_session_length_limit_);
   }

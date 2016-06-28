@@ -5,9 +5,11 @@
 #ifndef ASH_COMMON_SYSTEM_CHROMEOS_SESSION_LAST_WINDOW_CLOSED_OBSERVER_H_
 #define ASH_COMMON_SYSTEM_CHROMEOS_SESSION_LAST_WINDOW_CLOSED_OBSERVER_H_
 
+#include "ash/ash_export.h"
+
 namespace ash {
 
-class LastWindowClosedObserver {
+class ASH_EXPORT LastWindowClosedObserver {
  public:
   virtual void OnLastWindowClosed() = 0;
 

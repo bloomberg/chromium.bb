@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/system/chromeos/label_tray_view.h"
+#include "ash/common/system/tray/label_tray_view.h"
 
 #include "ash/common/system/tray/hover_highlight_view.h"
 #include "ash/common/system/tray/tray_constants.h"

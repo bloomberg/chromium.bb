@@ -127,9 +127,6 @@ class ASH_EXPORT SystemTrayDelegate {
   // Called after SystemTray has been instantiated.
   virtual void Initialize();
 
-  // Called before SystemTray is destroyed.
-  virtual void Shutdown();
-
   // Returns true if system tray should be visible on startup.
   virtual bool GetTrayVisibilityOnStartup();
 

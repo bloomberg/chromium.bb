@@ -104,12 +104,10 @@ class GPUSupport;
 class HighContrastController;
 class KeyboardUI;
 class KeyboardUMAEventFilter;
-class LastWindowClosedLogoutReminder;
 class LinkHandlerModelFactory;
 class LocaleNotificationController;
 class LockStateController;
 enum class LoginStatus;
-class LogoutConfirmationController;
 class MagnificationController;
 class MaximizeModeController;
 class MaximizeModeWindowManager;
@@ -495,10 +493,6 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
     return resolution_notification_controller_.get();
   }
 
-  LogoutConfirmationController* logout_confirmation_controller() {
-    return logout_confirmation_controller_.get();
-  }
-
   ScreenOrientationController* screen_orientation_controller() {
     return screen_orientation_controller_.get();
   }
@@ -699,9 +693,6 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
       resolution_notification_controller_;
   std::unique_ptr<BluetoothNotificationController>
       bluetooth_notification_controller_;
-  std::unique_ptr<LogoutConfirmationController> logout_confirmation_controller_;
-  std::unique_ptr<LastWindowClosedLogoutReminder>
-      last_window_closed_logout_reminder_;
   std::unique_ptr<VirtualKeyboardController> virtual_keyboard_controller_;
   std::unique_ptr<chromeos::AudioA11yController> audio_a11y_controller_;
   // Controls video output device state.

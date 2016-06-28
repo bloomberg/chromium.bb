@@ -139,8 +139,6 @@
 #include "ash/system/chromeos/brightness/brightness_controller_chromeos.h"
 #include "ash/system/chromeos/power/power_event_observer.h"
 #include "ash/system/chromeos/power/video_activity_notifier.h"
-#include "ash/system/chromeos/session/last_window_closed_logout_reminder.h"
-#include "ash/system/chromeos/session/logout_confirmation_controller.h"
 #include "ash/touch/touch_transformer_controller.h"
 #include "ash/virtual_keyboard_controller.h"
 #include "base/bind_helpers.h"
@@ -686,15 +684,6 @@ Shell::~Shell() {
   // need to be removed.
   maximize_mode_controller_.reset();
 
-#if defined(OS_CHROMEOS)
-  // Destroy the LastWindowClosedLogoutReminder before the
-  // LogoutConfirmationController.
-  last_window_closed_logout_reminder_.reset();
-
-  // Destroy the LogoutConfirmationController before the SystemTrayDelegate.
-  logout_confirmation_controller_.reset();
-#endif
-
   // Destroy the keyboard before closing the shelf, since it will invoke a shelf
   // layout.
   DeactivateKeyboard();
@@ -705,8 +694,7 @@ Shell::~Shell() {
   // Destroy SystemTrayDelegate before destroying the status area(s). Make sure
   // to deinitialize the shelf first, as it is initialized after the delegate.
   ShutdownShelf();
-  wm_shell_->system_tray_delegate()->Shutdown();
-  wm_shell_->SetSystemTrayDelegate(nullptr);
+  wm_shell_->DeleteSystemTrayDelegate();
 
   locale_notification_controller_.reset();
 
@@ -1056,11 +1044,6 @@ void Shell::Init(const ShellInitParams& init_params) {
   toast_manager_.reset(new ToastManager);
 
 #if defined(OS_CHROMEOS)
-  // Create the LogoutConfirmationController after the SystemTrayDelegate.
-  logout_confirmation_controller_.reset(new LogoutConfirmationController(
-      base::Bind(&SystemTrayDelegate::SignOut,
-                 base::Unretained(system_tray_delegate))));
-
   // Create TouchTransformerController before
   // WindowTreeHostManager::InitDisplays()
   // since TouchTransformerController listens on
@@ -1110,7 +1093,6 @@ void Shell::Init(const ShellInitParams& init_params) {
   video_activity_notifier_.reset(
       new VideoActivityNotifier(video_detector_.get()));
   bluetooth_notification_controller_.reset(new BluetoothNotificationController);
-  last_window_closed_logout_reminder_.reset(new LastWindowClosedLogoutReminder);
   screen_orientation_controller_.reset(new ScreenOrientationController());
 #endif
   // The compositor thread and main message loop have to be running in
