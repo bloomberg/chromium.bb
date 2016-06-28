@@ -1244,11 +1244,6 @@ Node* Range::firstNode() const
     return NodeTraversal::nextSkippingChildren(*m_start.container());
 }
 
-ShadowRoot* Range::shadowRoot() const
-{
-    return startContainer() ? startContainer()->containingShadowRoot() : nullptr;
-}
-
 Node* Range::pastLastNode() const
 {
     if (m_end.container()->offsetInCharacters())
