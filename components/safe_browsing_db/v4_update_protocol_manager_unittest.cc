@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/base64.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -19,6 +20,7 @@
 #include "net/base/net_errors.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "testing/platform_test.h"
 
 using base::Time;
 using base::TimeDelta;
@@ -33,7 +35,13 @@ const char kKeyParam[] = "test_key_param";
 
 namespace safe_browsing {
 
-class V4UpdateProtocolManagerTest : public testing::Test {
+class V4UpdateProtocolManagerTest : public PlatformTest {
+  void SetUp() override {
+    PlatformTest::SetUp();
+
+    SetupStoreStates();
+  }
+
  protected:
   void ValidateGetUpdatesResults(
       const std::vector<ListUpdateResponse>& expected_lurs,
@@ -58,8 +66,6 @@ class V4UpdateProtocolManagerTest : public testing::Test {
   }
 
   std::unique_ptr<V4UpdateProtocolManager> CreateProtocolManager(
-      const base::hash_map<UpdateListIdentifier, std::string>
-          current_list_states,
       const std::vector<ListUpdateResponse>& expected_lurs) {
     V4ProtocolConfig config;
     config.client_name = kClient;
@@ -67,28 +73,23 @@ class V4UpdateProtocolManagerTest : public testing::Test {
     config.key_param = kKeyParam;
     config.disable_auto_update = false;
     return V4UpdateProtocolManager::Create(
-        NULL, config, current_list_states,
+        NULL, config,
         base::Bind(&V4UpdateProtocolManagerTest::ValidateGetUpdatesResults,
                    base::Unretained(this), expected_lurs));
   }
 
-  void SetupCurrentListStates(
-      base::hash_map<UpdateListIdentifier, std::string>* current_list_states) {
-    UpdateListIdentifier list_identifier;
-    list_identifier.platform_type = WINDOWS_PLATFORM;
-    list_identifier.threat_entry_type = URL;
-    list_identifier.threat_type = MALWARE_THREAT;
-    current_list_states->insert({list_identifier, "initial_state_1"});
+  void SetupStoreStates() {
+    store_state_map_ = base::MakeUnique<StoreStateMap>();
 
-    list_identifier.platform_type = WINDOWS_PLATFORM;
-    list_identifier.threat_entry_type = URL;
-    list_identifier.threat_type = UNWANTED_SOFTWARE;
-    current_list_states->insert({list_identifier, "initial_state_2"});
+    UpdateListIdentifier win_url_malware(WINDOWS_PLATFORM, URL, MALWARE_THREAT);
+    store_state_map_->insert({win_url_malware, "initial_state_1"});
 
-    list_identifier.platform_type = WINDOWS_PLATFORM;
-    list_identifier.threat_entry_type = EXECUTABLE;
-    list_identifier.threat_type = MALWARE_THREAT;
-    current_list_states->insert({list_identifier, "initial_state_3"});
+    UpdateListIdentifier win_url_uws(WINDOWS_PLATFORM, URL, UNWANTED_SOFTWARE);
+    store_state_map_->insert({win_url_uws, "initial_state_2"});
+
+    UpdateListIdentifier win_exe_uws(WINDOWS_PLATFORM, EXECUTABLE,
+                                     UNWANTED_SOFTWARE);
+    store_state_map_->insert({win_exe_uws, "initial_state_3"});
   }
 
   void SetupExpectedListUpdateResponse(
@@ -137,6 +138,7 @@ class V4UpdateProtocolManagerTest : public testing::Test {
   }
 
   bool expect_callback_to_be_called_;
+  std::unique_ptr<StoreStateMap> store_state_map_;
 };
 
 // TODO(vakh): Add many more tests.
@@ -145,16 +147,16 @@ TEST_F(V4UpdateProtocolManagerTest, TestGetUpdatesErrorHandlingNetwork) {
       new base::TestSimpleTaskRunner());
   base::ThreadTaskRunnerHandle runner_handler(runner);
   net::TestURLFetcherFactory factory;
-  const base::hash_map<UpdateListIdentifier, std::string> current_list_states;
   const std::vector<ListUpdateResponse> expected_lurs;
   std::unique_ptr<V4UpdateProtocolManager> pm(
-      CreateProtocolManager(current_list_states, expected_lurs));
+      CreateProtocolManager(expected_lurs));
   runner->ClearPendingTasks();
 
   // Initial state. No errors.
   EXPECT_EQ(0ul, pm->update_error_count_);
   EXPECT_EQ(1ul, pm->update_back_off_mult_);
   expect_callback_to_be_called_ = false;
+  pm->store_state_map_ = std::move(store_state_map_);
   pm->IssueUpdateRequest();
 
   EXPECT_FALSE(pm->IsUpdateScheduled());
@@ -180,15 +182,15 @@ TEST_F(V4UpdateProtocolManagerTest, TestGetUpdatesErrorHandlingResponseCode) {
   base::ThreadTaskRunnerHandle runner_handler(runner);
   net::TestURLFetcherFactory factory;
   const std::vector<ListUpdateResponse> expected_lurs;
-  const base::hash_map<UpdateListIdentifier, std::string> current_list_states;
   std::unique_ptr<V4UpdateProtocolManager> pm(
-      CreateProtocolManager(current_list_states, expected_lurs));
+      CreateProtocolManager(expected_lurs));
   runner->ClearPendingTasks();
 
   // Initial state. No errors.
   EXPECT_EQ(0ul, pm->update_error_count_);
   EXPECT_EQ(1ul, pm->update_back_off_mult_);
   expect_callback_to_be_called_ = false;
+  pm->store_state_map_ = std::move(store_state_map_);
   pm->IssueUpdateRequest();
 
   EXPECT_FALSE(pm->IsUpdateScheduled());
@@ -216,16 +218,15 @@ TEST_F(V4UpdateProtocolManagerTest, TestGetUpdatesNoError) {
   net::TestURLFetcherFactory factory;
   std::vector<ListUpdateResponse> expected_lurs;
   SetupExpectedListUpdateResponse(&expected_lurs);
-  base::hash_map<UpdateListIdentifier, std::string> current_list_states;
-  SetupCurrentListStates(&current_list_states);
   std::unique_ptr<V4UpdateProtocolManager> pm(
-      CreateProtocolManager(current_list_states, expected_lurs));
+      CreateProtocolManager(expected_lurs));
   runner->ClearPendingTasks();
 
   // Initial state. No errors.
   EXPECT_EQ(0ul, pm->update_error_count_);
   EXPECT_EQ(1ul, pm->update_back_off_mult_);
   expect_callback_to_be_called_ = true;
+  pm->store_state_map_ = std::move(store_state_map_);
   pm->IssueUpdateRequest();
 
   EXPECT_FALSE(pm->IsUpdateScheduled());
@@ -252,16 +253,15 @@ TEST_F(V4UpdateProtocolManagerTest, TestGetUpdatesWithOneBackoff) {
   net::TestURLFetcherFactory factory;
   std::vector<ListUpdateResponse> expected_lurs;
   SetupExpectedListUpdateResponse(&expected_lurs);
-  base::hash_map<UpdateListIdentifier, std::string> current_list_states;
-  SetupCurrentListStates(&current_list_states);
   std::unique_ptr<V4UpdateProtocolManager> pm(
-      CreateProtocolManager(current_list_states, expected_lurs));
+      CreateProtocolManager(expected_lurs));
   runner->ClearPendingTasks();
 
   // Initial state. No errors.
   EXPECT_EQ(0ul, pm->update_error_count_);
   EXPECT_EQ(1ul, pm->update_back_off_mult_);
   expect_callback_to_be_called_ = false;
+  pm->store_state_map_ = std::move(store_state_map_);
   pm->IssueUpdateRequest();
 
   EXPECT_FALSE(pm->IsUpdateScheduled());

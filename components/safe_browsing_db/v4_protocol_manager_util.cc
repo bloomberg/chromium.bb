@@ -16,6 +16,13 @@ using base::TimeDelta;
 
 namespace safe_browsing {
 
+std::ostream& operator<<(std::ostream& os, const UpdateListIdentifier& id) {
+  os << "{hash: " << id.hash() << "; platform_type: " << id.platform_type
+     << "; threat_entry_type: " << id.threat_entry_type
+     << "; threat_type: " << id.threat_type << "}";
+  return os;
+}
+
 // The Safe Browsing V4 server URL prefix.
 const char kSbV4UrlPrefix[] = "https://safebrowsing.googleapis.com/v4";
 
@@ -37,6 +44,24 @@ size_t UpdateListIdentifier::hash() const {
   std::size_t interim = base::HashInts(first, second);
   return base::HashInts(interim, third);
 }
+
+UpdateListIdentifier::UpdateListIdentifier() {}
+
+UpdateListIdentifier::UpdateListIdentifier(PlatformType platform_type,
+                                           ThreatEntryType threat_entry_type,
+                                           ThreatType threat_type)
+    : platform_type(platform_type),
+      threat_entry_type(threat_entry_type),
+      threat_type(threat_type) {
+  DCHECK(PlatformType_IsValid(platform_type));
+  DCHECK(ThreatEntryType_IsValid(threat_entry_type));
+  DCHECK(ThreatType_IsValid(threat_type));
+}
+
+UpdateListIdentifier::UpdateListIdentifier(const ListUpdateResponse& response)
+    : UpdateListIdentifier(response.platform_type(),
+                           response.threat_entry_type(),
+                           response.threat_type()) {}
 
 V4ProtocolConfig::V4ProtocolConfig() : disable_auto_update(false) {}
 

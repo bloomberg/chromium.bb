@@ -77,11 +77,9 @@ class V4UpdateProtocolManagerFactoryImpl
   std::unique_ptr<V4UpdateProtocolManager> CreateProtocolManager(
       net::URLRequestContextGetter* request_context_getter,
       const V4ProtocolConfig& config,
-      const base::hash_map<UpdateListIdentifier, std::string>&
-          current_list_states,
       V4UpdateCallback callback) override {
-    return std::unique_ptr<V4UpdateProtocolManager>(new V4UpdateProtocolManager(
-        request_context_getter, config, current_list_states, callback));
+    return std::unique_ptr<V4UpdateProtocolManager>(
+        new V4UpdateProtocolManager(request_context_getter, config, callback));
   }
 
  private:
@@ -97,14 +95,12 @@ V4UpdateProtocolManagerFactory* V4UpdateProtocolManager::factory_ = NULL;
 std::unique_ptr<V4UpdateProtocolManager> V4UpdateProtocolManager::Create(
     net::URLRequestContextGetter* request_context_getter,
     const V4ProtocolConfig& config,
-    const base::hash_map<UpdateListIdentifier, std::string>&
-        current_list_states,
     V4UpdateCallback callback) {
   if (!factory_) {
     factory_ = new V4UpdateProtocolManagerFactoryImpl();
   }
   return factory_->CreateProtocolManager(request_context_getter, config,
-                                         current_list_states, callback);
+                                         callback);
 }
 
 void V4UpdateProtocolManager::ResetUpdateErrors() {
@@ -115,11 +111,8 @@ void V4UpdateProtocolManager::ResetUpdateErrors() {
 V4UpdateProtocolManager::V4UpdateProtocolManager(
     net::URLRequestContextGetter* request_context_getter,
     const V4ProtocolConfig& config,
-    const base::hash_map<UpdateListIdentifier, std::string>&
-        current_list_states,
     V4UpdateCallback update_callback)
-    : current_list_states_(current_list_states),
-      update_error_count_(0),
+    : update_error_count_(0),
       update_back_off_mult_(1),
       next_update_interval_(base::TimeDelta::FromSeconds(
           base::RandInt(kV4TimerStartIntervalSecMin,
@@ -130,8 +123,6 @@ V4UpdateProtocolManager::V4UpdateProtocolManager(
       update_callback_(update_callback) {
   // Do not auto-schedule updates. Let the owner (V4LocalDatabaseManager) do it
   // when it is ready to process updates.
-  DVLOG(1) << "V4UpdateProtocolManager::V4UpdateProtocolManager: "
-           << "next_update_interval_: " << next_update_interval_;
 }
 
 V4UpdateProtocolManager::~V4UpdateProtocolManager() {}
@@ -140,7 +131,9 @@ bool V4UpdateProtocolManager::IsUpdateScheduled() const {
   return update_timer_.IsRunning();
 }
 
-void V4UpdateProtocolManager::ScheduleNextUpdate() {
+void V4UpdateProtocolManager::ScheduleNextUpdate(
+    std::unique_ptr<StoreStateMap> store_state_map) {
+  store_state_map_ = std::move(store_state_map);
   ScheduleNextUpdateWithBackoff(false);
 }
 
@@ -198,13 +191,14 @@ void V4UpdateProtocolManager::ScheduleNextUpdateAfterInterval(
                       &V4UpdateProtocolManager::IssueUpdateRequest);
 }
 
+// static
 std::string V4UpdateProtocolManager::GetBase64SerializedUpdateRequestProto(
-    const base::hash_map<UpdateListIdentifier, std::string>&
-        current_list_states) {
+    const StoreStateMap& store_state_map) {
+  DCHECK(!store_state_map.empty());
   // Build the request. Client info and client states are not added to the
   // request protocol buffer. Client info is passed as params in the url.
   FetchThreatListUpdatesRequest request;
-  for (const auto& entry : current_list_states) {
+  for (const auto& entry : store_state_map) {
     const auto& list_to_update = entry.first;
     const auto& state = entry.second;
     ListUpdateRequest* list_update_request = request.add_list_update_requests();
@@ -277,7 +271,7 @@ void V4UpdateProtocolManager::IssueUpdateRequest() {
   }
 
   std::string req_base64 =
-      GetBase64SerializedUpdateRequestProto(current_list_states_);
+      GetBase64SerializedUpdateRequestProto(*store_state_map_.get());
   GURL update_url;
   net::HttpRequestHeaders headers;
   GetUpdateUrlAndHeaders(req_base64, &update_url, &headers);
@@ -319,6 +313,9 @@ void V4UpdateProtocolManager::OnURLFetchComplete(
       RecordUpdateResult(V4OperationResult::PARSE_ERROR);
     }
     request_.reset();
+
+    UMA_HISTOGRAM_COUNTS("SafeBrowsing.V4UpdateResponseSizeKB",
+                         data.size() / 1024);
 
     // Invoke the callback with list_update_responses.
     // The caller should update its state now, based on list_update_responses.

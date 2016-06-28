@@ -65,32 +65,44 @@ class SafeBrowsingV4DatabaseTest : public PlatformTest {
 
     created_but_not_called_back_ = false;
     created_and_called_back_ = false;
+
+    callback_db_updated_ = base::Bind(
+        &SafeBrowsingV4DatabaseTest::DatabaseUpdated, base::Unretained(this));
+
+    callback_db_ready_ =
+        base::Bind(&SafeBrowsingV4DatabaseTest::
+                       NewDatabaseReadyWithExpectedStorePathsAndIds,
+                   base::Unretained(this));
+
+    SetupInfoMapAndExpectedState();
+  }
+
+  void TearDown() override {
+    V4Database::RegisterStoreFactoryForTest(nullptr);
+    PlatformTest::TearDown();
+  }
+
+  void RegisterFactory(bool fails_first_reset) {
+    factory_.reset(new FakeV4StoreFactory(fails_first_reset));
+    V4Database::RegisterStoreFactoryForTest(factory_.get());
   }
 
   void SetupInfoMapAndExpectedState() {
-    UpdateListIdentifier update_list_identifier;
-
-    update_list_identifier.platform_type = WINDOWS_PLATFORM;
-    update_list_identifier.threat_entry_type = URL;
-    update_list_identifier.threat_type = MALWARE_THREAT;
-    store_file_name_map_[update_list_identifier] = "win_url_malware";
-    expected_identifiers_.push_back(update_list_identifier);
+    UpdateListIdentifier win_malware_id(WINDOWS_PLATFORM, URL, MALWARE_THREAT);
+    store_file_name_map_[win_malware_id] = "win_url_malware";
+    expected_identifiers_.push_back(win_malware_id);
     expected_store_paths_.push_back(
         database_dirname_.AppendASCII("win_url_malware.fake"));
 
-    update_list_identifier.platform_type = LINUX_PLATFORM;
-    update_list_identifier.threat_entry_type = URL;
-    update_list_identifier.threat_type = MALWARE_THREAT;
-    store_file_name_map_[update_list_identifier] = "linux_url_malware";
-    expected_identifiers_.push_back(update_list_identifier);
+    UpdateListIdentifier linux_malware_id(LINUX_PLATFORM, URL, MALWARE_THREAT);
+    store_file_name_map_[linux_malware_id] = "linux_url_malware";
+    expected_identifiers_.push_back(linux_malware_id);
     expected_store_paths_.push_back(
         database_dirname_.AppendASCII("linux_url_malware.fake"));
   }
 
+  void DatabaseUpdated() {}
   void NewDatabaseReadyWithExpectedStorePathsAndIds(
-      std::vector<base::FilePath> expected_store_paths,
-      std::vector<UpdateListIdentifier> expected_identifiers,
-      bool expected_resets_successfully,
       std::unique_ptr<V4Database> v4_database) {
     ASSERT_TRUE(v4_database);
     ASSERT_TRUE(v4_database->store_map_);
@@ -98,20 +110,63 @@ class SafeBrowsingV4DatabaseTest : public PlatformTest {
     // The following check ensures that the callback was called asynchronously.
     EXPECT_TRUE(created_but_not_called_back_);
 
-    ASSERT_EQ(expected_store_paths.size(), v4_database->store_map_->size());
-    ASSERT_EQ(expected_identifiers.size(), v4_database->store_map_->size());
-    for (size_t i = 0; i < expected_identifiers.size(); i++) {
-      const auto& expected_identifier = expected_identifiers[i];
+    ASSERT_EQ(expected_store_paths_.size(), v4_database->store_map_->size());
+    ASSERT_EQ(expected_identifiers_.size(), v4_database->store_map_->size());
+    for (size_t i = 0; i < expected_identifiers_.size(); i++) {
+      const auto& expected_identifier = expected_identifiers_[i];
       const auto& store = (*v4_database->store_map_)[expected_identifier];
       ASSERT_TRUE(store);
-      const auto& expected_store_path = expected_store_paths[i];
+      const auto& expected_store_path = expected_store_paths_[i];
       EXPECT_EQ(expected_store_path, store->store_path());
     }
 
-    EXPECT_EQ(expected_resets_successfully, v4_database->ResetDatabase());
+    EXPECT_EQ(expected_resets_successfully_, v4_database->ResetDatabase());
 
     EXPECT_FALSE(created_and_called_back_);
     created_and_called_back_ = true;
+
+    v4_database_ = std::move(v4_database);
+  }
+
+  void PopulateFakeUpdateResponse(StoreStateMap store_state_map,
+                                  std::vector<ListUpdateResponse>* responses) {
+    for (const auto& store_state_iter : store_state_map) {
+      UpdateListIdentifier identifier = store_state_iter.first;
+      ListUpdateResponse list_update_response;
+      list_update_response.set_platform_type(identifier.platform_type);
+      list_update_response.set_threat_entry_type(identifier.threat_entry_type);
+      list_update_response.set_threat_type(identifier.threat_type);
+      list_update_response.set_new_client_state(store_state_iter.second);
+      responses->push_back(list_update_response);
+    }
+  }
+
+  void VerifyExpectedStoresState(bool expect_new_stores) {
+    const StoreMap* new_store_map = v4_database_->store_map_.get();
+    std::unique_ptr<StoreStateMap> new_store_state_map =
+        v4_database_->GetStoreStateMap();
+    EXPECT_EQ(expected_store_state_map_.size(), new_store_map->size());
+    EXPECT_EQ(expected_store_state_map_.size(), new_store_state_map->size());
+    for (const auto& expected_iter : expected_store_state_map_) {
+      const UpdateListIdentifier& identifier = expected_iter.first;
+      const std::string& state = expected_iter.second;
+      ASSERT_EQ(1u, new_store_map->count(identifier));
+      ASSERT_EQ(1u, new_store_state_map->count(identifier));
+
+      // Verify the expected state in the store map and the state map.
+      EXPECT_EQ(state, new_store_map->at(identifier)->state());
+      EXPECT_EQ(state, new_store_state_map->at(identifier));
+
+      if (expect_new_stores) {
+        // Verify that a new store was created.
+        EXPECT_NE(old_stores_map_.at(identifier),
+                  new_store_map->at(identifier).get());
+      } else {
+        // Verify that NO new store was created.
+        EXPECT_EQ(old_stores_map_.at(identifier),
+                  new_store_map->at(identifier).get());
+      }
+    }
   }
 
   scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
@@ -124,37 +179,21 @@ class SafeBrowsingV4DatabaseTest : public PlatformTest {
   StoreFileNameMap store_file_name_map_;
   std::vector<UpdateListIdentifier> expected_identifiers_;
   std::vector<base::FilePath> expected_store_paths_;
+  bool expected_resets_successfully_;
+  std::unique_ptr<FakeV4StoreFactory> factory_;
+  DatabaseUpdatedCallback callback_db_updated_;
+  NewDatabaseReadyCallback callback_db_ready_;
+  StoreStateMap expected_store_state_map_;
+  base::hash_map<UpdateListIdentifier, V4Store*> old_stores_map_;
 };
-
-// Test to set up the database with no stores.
-TEST_F(SafeBrowsingV4DatabaseTest, TestSetupDatabaseWithNoStores) {
-  NewDatabaseReadyCallback callback_db_ready = base::Bind(
-      &SafeBrowsingV4DatabaseTest::NewDatabaseReadyWithExpectedStorePathsAndIds,
-      base::Unretained(this), expected_store_paths_, expected_identifiers_,
-      true);
-  V4Database::Create(task_runner_, database_dirname_, store_file_name_map_,
-                     callback_db_ready);
-  created_but_not_called_back_ = true;
-  task_runner_->RunPendingTasks();
-
-  base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(true, created_and_called_back_);
-}
 
 // Test to set up the database with fake stores.
 TEST_F(SafeBrowsingV4DatabaseTest, TestSetupDatabaseWithFakeStores) {
-  SetupInfoMapAndExpectedState();
+  expected_resets_successfully_ = true;
+  RegisterFactory(!expected_resets_successfully_);
 
-  NewDatabaseReadyCallback callback_db_ready = base::Bind(
-      &SafeBrowsingV4DatabaseTest::NewDatabaseReadyWithExpectedStorePathsAndIds,
-      base::Unretained(this), expected_store_paths_, expected_identifiers_,
-      true);
-
-  FakeV4StoreFactory* factory = new FakeV4StoreFactory(false);
-  ANNOTATE_LEAKING_OBJECT_PTR(factory);
-  V4Database::RegisterStoreFactoryForTest(factory);
   V4Database::Create(task_runner_, database_dirname_, store_file_name_map_,
-                     callback_db_ready);
+                     callback_db_ready_);
   created_but_not_called_back_ = true;
   task_runner_->RunPendingTasks();
 
@@ -164,23 +203,108 @@ TEST_F(SafeBrowsingV4DatabaseTest, TestSetupDatabaseWithFakeStores) {
 
 // Test to set up the database with fake stores that fail to reset.
 TEST_F(SafeBrowsingV4DatabaseTest, TestSetupDatabaseWithFakeStoresFailsReset) {
-  SetupInfoMapAndExpectedState();
+  expected_resets_successfully_ = false;
+  RegisterFactory(!expected_resets_successfully_);
 
-  NewDatabaseReadyCallback callback_db_ready = base::Bind(
-      &SafeBrowsingV4DatabaseTest::NewDatabaseReadyWithExpectedStorePathsAndIds,
-      base::Unretained(this), expected_store_paths_, expected_identifiers_,
-      false);
-
-  FakeV4StoreFactory* factory = new FakeV4StoreFactory(true);
-  ANNOTATE_LEAKING_OBJECT_PTR(factory);
-  V4Database::RegisterStoreFactoryForTest(factory);
   V4Database::Create(task_runner_, database_dirname_, store_file_name_map_,
-                     callback_db_ready);
+                     callback_db_ready_);
   created_but_not_called_back_ = true;
   task_runner_->RunPendingTasks();
 
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(true, created_and_called_back_);
+}
+
+// Test to check database updates as expected.
+TEST_F(SafeBrowsingV4DatabaseTest, TestApplyUpdateWithNewStates) {
+  expected_resets_successfully_ = true;
+  RegisterFactory(!expected_resets_successfully_);
+
+  V4Database::Create(task_runner_, database_dirname_, store_file_name_map_,
+                     callback_db_ready_);
+  created_but_not_called_back_ = true;
+  task_runner_->RunPendingTasks();
+  base::RunLoop().RunUntilIdle();
+
+  // The database has now been created. Time to try to update it.
+  EXPECT_TRUE(v4_database_);
+  const StoreMap* db_stores = v4_database_->store_map_.get();
+  EXPECT_EQ(expected_store_paths_.size(), db_stores->size());
+  for (const auto& store_iter : *db_stores) {
+    V4Store* store = store_iter.second.get();
+    expected_store_state_map_[store_iter.first] = store->state() + "_fake";
+    old_stores_map_[store_iter.first] = store;
+  }
+
+  std::vector<ListUpdateResponse> update_response;
+  PopulateFakeUpdateResponse(expected_store_state_map_, &update_response);
+  v4_database_->ApplyUpdate(update_response, callback_db_updated_);
+
+  task_runner_->RunPendingTasks();
+  base::RunLoop().RunUntilIdle();
+
+  VerifyExpectedStoresState(true);
+}
+
+// Test to ensure no state updates leads to no store updates.
+TEST_F(SafeBrowsingV4DatabaseTest, TestApplyUpdateWithNoNewState) {
+  expected_resets_successfully_ = true;
+  RegisterFactory(!expected_resets_successfully_);
+
+  V4Database::Create(task_runner_, database_dirname_, store_file_name_map_,
+                     callback_db_ready_);
+  created_but_not_called_back_ = true;
+  task_runner_->RunPendingTasks();
+  base::RunLoop().RunUntilIdle();
+
+  // The database has now been created. Time to try to update it.
+  EXPECT_TRUE(v4_database_);
+  const StoreMap* db_stores = v4_database_->store_map_.get();
+  EXPECT_EQ(expected_store_paths_.size(), db_stores->size());
+  for (const auto& store_iter : *db_stores) {
+    V4Store* store = store_iter.second.get();
+    expected_store_state_map_[store_iter.first] = store->state();
+    old_stores_map_[store_iter.first] = store;
+  }
+
+  std::vector<ListUpdateResponse> update_response;
+  PopulateFakeUpdateResponse(expected_store_state_map_, &update_response);
+  v4_database_->ApplyUpdate(update_response, callback_db_updated_);
+
+  task_runner_->RunPendingTasks();
+  base::RunLoop().RunUntilIdle();
+
+  VerifyExpectedStoresState(false);
+}
+
+// Test to ensure no updates leads to no store updates.
+TEST_F(SafeBrowsingV4DatabaseTest, TestApplyUpdateWithEmptyUpdate) {
+  expected_resets_successfully_ = true;
+  RegisterFactory(!expected_resets_successfully_);
+
+  V4Database::Create(task_runner_, database_dirname_, store_file_name_map_,
+                     callback_db_ready_);
+  created_but_not_called_back_ = true;
+  task_runner_->RunPendingTasks();
+  base::RunLoop().RunUntilIdle();
+
+  // The database has now been created. Time to try to update it.
+  EXPECT_TRUE(v4_database_);
+  const StoreMap* db_stores = v4_database_->store_map_.get();
+  EXPECT_EQ(expected_store_paths_.size(), db_stores->size());
+  for (const auto& store_iter : *db_stores) {
+    V4Store* store = store_iter.second.get();
+    expected_store_state_map_[store_iter.first] = store->state();
+    old_stores_map_[store_iter.first] = store;
+  }
+
+  std::vector<ListUpdateResponse> update_response;
+  v4_database_->ApplyUpdate(update_response, callback_db_updated_);
+
+  task_runner_->RunPendingTasks();
+  base::RunLoop().RunUntilIdle();
+
+  VerifyExpectedStoresState(false);
 }
 
 }  // namespace safe_browsing

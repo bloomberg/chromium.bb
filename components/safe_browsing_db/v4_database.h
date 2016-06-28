@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_SAFE_BROWSING_DB_V4_DATABASE_H_
 #define COMPONENTS_SAFE_BROWSING_DB_V4_DATABASE_H_
 
+#include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/sequenced_task_runner.h"
@@ -19,15 +20,10 @@ class V4Database;
 typedef base::Callback<void(std::unique_ptr<V4Database>)>
     NewDatabaseReadyCallback;
 
-// This defines a hash_map that is used to create the backing files for the
-// stores that contain the hash-prefixes. The map key identifies the list that
-// we're interested in and the value represents the ASCII file-name that'll be
-// created on-disk to store the hash-prefixes for that list. This file is
-// created inside the user's profile directory.
-// For instance, the UpdateListIdentifier could be for URL expressions for UwS
-// on Windows platform, and the corresponding file on disk could be named:
-// "uws_win_url.store"
-typedef base::hash_map<UpdateListIdentifier, std::string> StoreFileNameMap;
+// This callback is scheduled once the database has finished processing the
+// update requests for all stores and is ready to process the next set of update
+// requests.
+typedef base::Callback<void()> DatabaseUpdatedCallback;
 
 // This hash_map maps the UpdateListIdentifiers to their corresponding in-memory
 // stores, which contain the hash prefixes for that UpdateListIdentifier as well
@@ -55,8 +51,9 @@ class V4DatabaseFactory {
 class V4Database {
  public:
   // Factory method to create a V4Database. It creates the database on the
-  // provided |db_task_runner|. When the database creation is complete, it calls
-  // the NewDatabaseReadyCallback on the same thread as it was called.
+  // provided |db_task_runner| containing stores in |store_file_name_map|. When
+  // the database creation is complete, it runs the NewDatabaseReadyCallback on
+  // the same thread as it was called.
   static void Create(
       const scoped_refptr<base::SequencedTaskRunner>& db_task_runner,
       const base::FilePath& base_path,
@@ -68,6 +65,14 @@ class V4Database {
   static void Destroy(std::unique_ptr<V4Database> v4_database);
 
   virtual ~V4Database();
+
+  // Updates the stores with the response received from the SafeBrowsing service
+  // and calls the db_updated_callback when done.
+  void ApplyUpdate(const std::vector<ListUpdateResponse>& response,
+                   DatabaseUpdatedCallback db_updated_callback);
+
+  // Returns the current state of each of the stores being managed.
+  std::unique_ptr<StoreStateMap> GetStoreStateMap();
 
   // Deletes the current database and creates a new one.
   virtual bool ResetDatabase();
@@ -82,6 +87,12 @@ class V4Database {
                            TestSetupDatabaseWithFakeStores);
   FRIEND_TEST_ALL_PREFIXES(SafeBrowsingV4DatabaseTest,
                            TestSetupDatabaseWithFakeStoresFailsReset);
+  FRIEND_TEST_ALL_PREFIXES(SafeBrowsingV4DatabaseTest,
+                           TestApplyUpdateWithNewStates);
+  FRIEND_TEST_ALL_PREFIXES(SafeBrowsingV4DatabaseTest,
+                           TestApplyUpdateWithNoNewState);
+  FRIEND_TEST_ALL_PREFIXES(SafeBrowsingV4DatabaseTest,
+                           TestApplyUpdateWithEmptyUpdate);
 
   // Makes the passed |factory| the factory used to instantiate a V4Store. Only
   // for tests.
@@ -98,13 +109,27 @@ class V4Database {
       const scoped_refptr<base::SingleThreadTaskRunner>& callback_task_runner,
       NewDatabaseReadyCallback callback);
 
+  // Callback called when a new store has been created and is ready to be used.
+  // This method updates the store_map_ to point to the new store, which causes
+  // the old store to get deleted.
+  void UpdatedStoreReady(UpdateListIdentifier identifier,
+                         std::unique_ptr<V4Store> store);
+
   const scoped_refptr<base::SequencedTaskRunner> db_task_runner_;
 
   // Map of UpdateListIdentifier to the V4Store.
   const std::unique_ptr<StoreMap> store_map_;
 
+  DatabaseUpdatedCallback db_updated_callback_;
+
   // The factory that controls the creation of V4Store objects.
   static V4StoreFactory* factory_;
+
+  // The number of stores for which the update request is pending. When this
+  // goes down to 0, that indicates that the database has updated all the stores
+  // that needed updating and is ready for the next update. It should only be
+  // accessed on the IO thread.
+  int pending_store_updates_;
 
   DISALLOW_COPY_AND_ASSIGN(V4Database);
 };

@@ -46709,6 +46709,13 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="SafeBrowsing.V4UpdateResponseSizeKB" units="KB">
+  <owner>vakh@chromium.org</owner>
+  <summary>
+    The size of the response sent by the SafeBrowsing PVer4 service, in KB.
+  </summary>
+</histogram>
+
 <histogram name="SafeBrowsing.V4UpdateResult"
     enum="SafeBrowsingV4OperationResult">
   <owner>vakh@chromium.org</owner>

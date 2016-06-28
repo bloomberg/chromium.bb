@@ -8,10 +8,15 @@
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/sequenced_task_runner.h"
+#include "base/single_thread_task_runner.h"
+#include "components/safe_browsing_db/v4_protocol_manager_util.h"
 
 namespace safe_browsing {
 
 class V4Store;
+
+typedef base::Callback<void(std::unique_ptr<V4Store>)>
+    UpdatedStoreReadyCallback;
 
 // Factory for creating V4Store. Tests implement this factory to create fake
 // stores for testing.
@@ -32,19 +37,28 @@ class V4Store {
           const base::FilePath& store_path);
   virtual ~V4Store();
 
+  const std::string& state() const { return state_; }
+
+  const base::FilePath& store_path() const { return store_path_; }
+
+  void ApplyUpdate(const ListUpdateResponse&,
+                   const scoped_refptr<base::SingleThreadTaskRunner>&,
+                   UpdatedStoreReadyCallback);
+
+  std::string DebugString() const;
+
   // Reset internal state and delete the backing file.
   virtual bool Reset();
 
-  const base::FilePath& store_path() const {
-    return store_path_;
-  }
-
- protected:
-  const scoped_refptr<base::SequencedTaskRunner> task_runner_;
+ private:
+  // The state of the store as returned by the PVer4 server in the last applied
+  // update response.
+  std::string state_;
   const base::FilePath store_path_;
-
-  DISALLOW_COPY_AND_ASSIGN(V4Store);
+  const scoped_refptr<base::SequencedTaskRunner> task_runner_;
 };
+
+std::ostream& operator<<(std::ostream& os, const V4Store& store);
 
 }  // namespace safe_browsing
 

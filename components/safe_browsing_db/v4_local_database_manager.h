@@ -72,7 +72,8 @@ class V4LocalDatabaseManager : public SafeBrowsingDatabaseManager {
 
   void DatabaseReady(std::unique_ptr<V4Database> v4_database);
 
-  void OnCloseDatabase();
+  // Called when the database has been updated and schedules the next update.
+  void DatabaseUpdated();
 
   // The base directory under which to create the files that contain hashes.
   const base::FilePath base_path_;
@@ -92,6 +93,10 @@ class V4LocalDatabaseManager : public SafeBrowsingDatabaseManager {
   // The database that manages the stores containing the hash prefix updates.
   // All writes to this variable must happen on the IO thread only.
   std::unique_ptr<V4Database> v4_database_;
+
+  // Called when the V4Database has finished applying the latest update and is
+  // ready to process next update.
+  DatabaseUpdatedCallback db_updated_callback_;
 
   // The sequenced task runner for running safe browsing database operations.
   scoped_refptr<base::SequencedTaskRunner> task_runner_;

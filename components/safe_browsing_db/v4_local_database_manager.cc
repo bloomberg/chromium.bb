@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// This file should not be build on Android but is currently getting built.
+// TODO(vakh): Fix that: http://crbug.com/621647
+
 #include "components/safe_browsing_db/v4_local_database_manager.h"
 
 #include <vector>
@@ -13,6 +16,32 @@
 using content::BrowserThread;
 
 namespace safe_browsing {
+
+namespace {
+#if defined(OS_WIN)
+#define PLATFORM_TYPE WINDOWS_PLATFORM
+#elif defined(OS_LINUX)
+#define PLATFORM_TYPE LINUX_PLATFORM
+#elif defined(OS_MACOSX)
+#define PLATFORM_TYPE OSX_PLATFORM
+#else
+// This should ideally never compile but it is getting compiled on Android.
+// See: https://bugs.chromium.org/p/chromium/issues/detail?id=621647
+// TODO(vakh): Once that bug is fixed, this should be removed. If we leave
+// the platform_type empty, the server won't recognize the request and
+// return an error response which will pollute our UMA metrics.
+#define PLATFORM_TYPE LINUX_PLATFORM
+#endif
+
+// TODO(vakh): Implement this to populate the map appopriately.
+// Filed as http://crbug.com/608075
+StoreFileNameMap store_file_name_map{
+    {UpdateListIdentifier(PLATFORM_TYPE, URL, MALWARE_THREAT),
+     "UrlMalware.store"},
+    {UpdateListIdentifier(PLATFORM_TYPE, URL, SOCIAL_ENGINEERING_PUBLIC),
+     "UrlSoceng.store"}};
+
+}  // namespace
 
 V4LocalDatabaseManager::V4LocalDatabaseManager(const base::FilePath& base_path)
     : base_path_(base_path), enabled_(false) {
@@ -142,6 +171,9 @@ void V4LocalDatabaseManager::StartOnIOThread(
     const V4ProtocolConfig& config) {
   SafeBrowsingDatabaseManager::StartOnIOThread(request_context_getter, config);
 
+  db_updated_callback_ = base::Bind(&V4LocalDatabaseManager::DatabaseUpdated,
+                                    base::Unretained(this));
+
   SetupUpdateProtocolManager(request_context_getter, config);
 
   SetupDatabase();
@@ -152,27 +184,11 @@ void V4LocalDatabaseManager::StartOnIOThread(
 void V4LocalDatabaseManager::SetupUpdateProtocolManager(
     net::URLRequestContextGetter* request_context_getter,
     const V4ProtocolConfig& config) {
-#if defined(OS_WIN) || defined(OS_LINUX) || defined(OS_MACOSX)
-  // TODO(vakh): Remove this if/endif block when the V4Database is implemented.
-  // Filed as http://crbug.com/608075
-  UpdateListIdentifier update_list_identifier;
-#if defined(OS_WIN)
-  update_list_identifier.platform_type = WINDOWS_PLATFORM;
-#elif defined(OS_LINUX)
-  update_list_identifier.platform_type = LINUX_PLATFORM;
-#else
-  update_list_identifier.platform_type = OSX_PLATFORM;
-#endif
-  update_list_identifier.threat_entry_type = URL;
-  update_list_identifier.threat_type = MALWARE_THREAT;
-  current_list_states_[update_list_identifier] = "";
-#endif
-
   V4UpdateCallback callback = base::Bind(
       &V4LocalDatabaseManager::UpdateRequestCompleted, base::Unretained(this));
 
-  v4_update_protocol_manager_ = V4UpdateProtocolManager::Create(
-      request_context_getter, config, current_list_states_, callback);
+  v4_update_protocol_manager_ =
+      V4UpdateProtocolManager::Create(request_context_getter, config, callback);
 }
 
 void V4LocalDatabaseManager::SetupDatabase() {
@@ -187,12 +203,10 @@ void V4LocalDatabaseManager::SetupDatabase() {
         pool->GetSequenceToken(), base::SequencedWorkerPool::SKIP_ON_SHUTDOWN);
   }
 
-  // TODO(vakh): store_file_name_map should probably be a hard-coded map.
-  StoreFileNameMap store_file_name_map;
-
   // Do not create the database on the IO thread since this may be an expensive
   // operation. Instead, do that on the task_runner and when the new database
   // has been created, swap it out on the IO thread.
+  DCHECK(!store_file_name_map.empty());
   NewDatabaseReadyCallback db_ready_callback = base::Bind(
       &V4LocalDatabaseManager::DatabaseReady, base::Unretained(this));
   V4Database::Create(task_runner_, base_path_, store_file_name_map,
@@ -209,7 +223,8 @@ void V4LocalDatabaseManager::DatabaseReady(
     v4_database_ = std::move(v4_database);
 
     // The database is in place. Start fetching updates now.
-    v4_update_protocol_manager_->ScheduleNextUpdate();
+    v4_update_protocol_manager_->ScheduleNextUpdate(
+        v4_database_->GetStoreStateMap());
   } else {
     // Schedule the deletion of v4_database off IO thread.
     V4Database::Destroy(std::move(v4_database));
@@ -230,15 +245,20 @@ void V4LocalDatabaseManager::StopOnIOThread(bool shutdown) {
   // This cancels any in-flight update request.
   v4_update_protocol_manager_.reset();
 
+  db_updated_callback_.Reset();
+
   SafeBrowsingDatabaseManager::StopOnIOThread(shutdown);
 }
 
 void V4LocalDatabaseManager::UpdateRequestCompleted(
     const std::vector<ListUpdateResponse>& responses) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  v4_database_->ApplyUpdate(responses, db_updated_callback_);
+}
 
-  // TODO(vakh): Updates downloaded. Store them on disk and record new state.
-  v4_update_protocol_manager_->ScheduleNextUpdate();
+void V4LocalDatabaseManager::DatabaseUpdated() {
+  v4_update_protocol_manager_->ScheduleNextUpdate(
+      v4_database_->GetStoreStateMap());
 }
 
 }  // namespace safe_browsing

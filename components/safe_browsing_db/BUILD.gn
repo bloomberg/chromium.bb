@@ -17,6 +17,7 @@ proto_library("metadata_proto") {
   ]
 }
 
+# This target is shared between the desktop and mobile versions.
 group("safe_browsing_db_shared") {
   deps = [
     ":database_manager",
@@ -27,6 +28,7 @@ group("safe_browsing_db_shared") {
   ]
 }
 
+# This target is for the desktop version.
 group("safe_browsing_db") {
   deps = [
     ":safe_browsing_db_shared",
@@ -35,6 +37,7 @@ group("safe_browsing_db") {
   ]
 }
 
+# This target is for the mobile version.
 group("safe_browsing_db_mobile") {
   deps = [
     ":remote_database_manager",
@@ -225,7 +228,11 @@ source_set("v4_store") {
     "v4_store.cc",
     "v4_store.h",
   ]
+  public_deps = [
+    ":proto",
+  ]
   deps = [
+    ":v4_protocol_manager_util",
     "//base",
   ]
 }
