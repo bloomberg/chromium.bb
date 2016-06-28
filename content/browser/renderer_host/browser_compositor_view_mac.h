@@ -8,74 +8,147 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "content/browser/renderer_host/delegated_frame_host.h"
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/compositor_observer.h"
 
 namespace ui {
 class AcceleratedWidgetMac;
+class AcceleratedWidgetMacNSView;
 }
 
 namespace content {
 
-// A ui::Compositor and a gfx::AcceleratedWidget (and helper) that it draws
-// into. This structure is used to efficiently recycle these structures across
-// tabs (because creating a new ui::Compositor for each tab would be expensive
-// in terms of time and resources).
-class BrowserCompositorMac : public ui::CompositorObserver {
+class RecyclableCompositorMac;
+
+
+// This class owns a DelegatedFrameHost, and will dynamically attach and
+// detach it from a ui::Compositor as needed. The ui::Compositor will be
+// detached from the DelegatedFrameHost when the following conditions are
+// all met:
+// - There are no outstanding copy requests
+// - The RenderWidgetHostImpl providing frames to the DelegatedFrameHost
+//   is visible.
+// - The RenderWidgetHostViewMac that is used to display these frames is
+//   attached to the NSView hierarchy of an NSWindow.
+class BrowserCompositorMac {
  public:
-  virtual ~BrowserCompositorMac();
+  BrowserCompositorMac(
+      ui::AcceleratedWidgetMacNSView* accelerated_widget_mac_ns_view,
+      DelegatedFrameHostClient* delegated_frame_host_client,
+      bool render_widget_host_is_hidden,
+      bool ns_view_attached_to_window);
+  ~BrowserCompositorMac();
 
-  // Create a compositor, or recycle a preexisting one.
-  static std::unique_ptr<BrowserCompositorMac> Create();
+  // This must be called before the destructor.
+  // TODO(ccameron): This is because the RWHVMac is still the
+  // DelegatedFrameHostClient. When that is cleaned up, this can be rolled
+  // into the destructor.
+  void Destroy();
 
-  // Delete a compositor, or allow it to be recycled.
-  static void Recycle(std::unique_ptr<BrowserCompositorMac> compositor);
+  // These will not return nullptr until Destroy is called.
+  ui::Layer* GetRootLayer();
+  DelegatedFrameHost* GetDelegatedFrameHost();
+
+  // This may return nullptr, if this has detached itself from its
+  // ui::Compositor.
+  ui::AcceleratedWidgetMac* GetAcceleratedWidgetMac();
+
+  void SwapCompositorFrame(uint32_t output_surface_id,
+                           cc::CompositorFrame frame);
+  void SetHasTransparentBackground(bool transparent);
+  void UpdateVSyncParameters(const base::TimeTicks& timebase,
+                             const base::TimeDelta& interval);
+
+  // This is used to ensure that the ui::Compositor be attached to the
+  // DelegatedFrameHost while the RWHImpl is visible.
+  // Note: This should be called before the RWHImpl is made visible and after
+  // it has been hidden, in order to ensure that thumbnailer notifications to
+  // initiate copies occur before the ui::Compositor be detached.
+  void SetRenderWidgetHostIsHidden(bool hidden);
+
+  // This is used to ensure that the ui::Compositor be attached to this
+  // NSView while its contents may be visible on-screen, even if the RWHImpl is
+  // hidden (e.g, because it is occluded by another window).
+  void SetNSViewAttachedToWindow(bool attached);
+
+  // These functions will track the number of outstanding copy requests, and
+  // will not allow the ui::Compositor to be detached until all outstanding
+  // copies have returned.
+  void CopyFromCompositingSurface(const gfx::Rect& src_subrect,
+                                  const gfx::Size& dst_size,
+                                  const ReadbackRequestCallback& callback,
+                                  SkColorType preferred_color_type);
+  void CopyFromCompositingSurfaceToVideoFrame(
+      const gfx::Rect& src_subrect,
+      const scoped_refptr<media::VideoFrame>& target,
+      const base::Callback<void(const gfx::Rect&, bool)>& callback);
 
   // Indicate that the recyclable compositor should be destroyed, and no future
   // compositors should be recycled.
   static void DisableRecyclingForShutdown();
 
-  ui::Compositor* compositor() { return &compositor_; }
-  ui::AcceleratedWidgetMac* accelerated_widget_mac() {
-    return accelerated_widget_mac_.get();
-  }
-
-  // Suspend will prevent the compositor from producing new frames. This should
-  // be called to avoid creating spurious frames while changing state.
-  // Compositors are created as suspended.
-  void Suspend();
-  void Unsuspend();
-
  private:
-  BrowserCompositorMac();
+  // The state of |delegated_frame_host_| and |recyclable_compositor_| to
+  // manage being visible, hidden, or occluded.
+  enum State {
+    // Effects:
+    // - |recyclable_compositor_| exists and is attached to
+    //   |delegated_frame_host_|.
+    // Happens when:
+    // - |render_widet_host_| is in the visible state, or there are
+    //   outstanding copy requests.
+    HasAttachedCompositor,
+    // Effects:
+    // - |recyclable_compositor_| exists, but |delegated_frame_host_| is
+    //   hidden and detached from it.
+    // Happens when:
+    // - The |render_widget_host_| is hidden, but |cocoa_view_| is still in the
+    //   NSWindow hierarchy (e.g, when the window is occluded or offscreen).
+    // - Note: In this state, |recyclable_compositor_| and its CALayers are kept
+    //   around so that we will have content to show when we are un-occluded. If
+    //   we had a way to keep the CALayers attached to the NSView while
+    //   detaching the ui::Compositor, then there would be no need for this
+    HasDetachedCompositor,
+    // Effects:
+    // - |recyclable_compositor_| has been recycled and |delegated_frame_host_|
+    //   is hidden and detached from it.
+    // Happens when:
+    // - The |render_widget_host_| hidden or gone, and |cocoa_view_| is not
+    //   attached to an NSWindow.
+    // - This happens for backgrounded tabs.
+    HasNoCompositor,
+  };
+  State state_ = HasNoCompositor;
+  void UpdateState();
+  void TransitionToState(State new_state);
 
-  // ui::CompositorObserver implementation:
-  void OnCompositingDidCommit(ui::Compositor* compositor) override;
-  void OnCompositingStarted(ui::Compositor* compositor,
-                            base::TimeTicks start_time) override {}
-  void OnCompositingEnded(ui::Compositor* compositor) override {}
-  void OnCompositingAborted(ui::Compositor* compositor) override {}
-  void OnCompositingLockStateChanged(ui::Compositor* compositor) override {}
-  void OnCompositingShuttingDown(ui::Compositor* compositor) override {}
+  static void CopyCompleted(
+      base::WeakPtr<BrowserCompositorMac> browser_compositor,
+      const ReadbackRequestCallback& callback,
+      const SkBitmap& bitmap,
+      ReadbackResponse response);
+  static void CopyToVideoFrameCompleted(
+      base::WeakPtr<BrowserCompositorMac> browser_compositor,
+      const base::Callback<void(const gfx::Rect&, bool)>& callback,
+      const gfx::Rect& rect,
+      bool result);
+  uint64_t outstanding_copy_count_ = 0;
 
-  std::unique_ptr<ui::AcceleratedWidgetMac> accelerated_widget_mac_;
-  ui::Compositor compositor_;
-  scoped_refptr<ui::CompositorLock> compositor_suspended_lock_;
+  bool render_widget_host_is_hidden_ = true;
+  bool ns_view_attached_to_window_ = false;
 
-  DISALLOW_COPY_AND_ASSIGN(BrowserCompositorMac);
-};
+  ui::AcceleratedWidgetMacNSView* accelerated_widget_mac_ns_view_ = nullptr;
+  std::unique_ptr<RecyclableCompositorMac> recyclable_compositor_;
 
-// A class to keep around whenever a BrowserCompositorMac may be created.
-// While at least one instance of this class exists, a spare
-// BrowserCompositorViewCocoa will be kept around to be recycled so that the
-// next BrowserCompositorMac to be created will be be created quickly.
-class BrowserCompositorMacPlaceholder {
- public:
-  BrowserCompositorMacPlaceholder();
-  ~BrowserCompositorMacPlaceholder();
+  std::unique_ptr<DelegatedFrameHost> delegated_frame_host_;
+  std::unique_ptr<ui::Layer> root_layer_;
 
- private:
-  DISALLOW_COPY_AND_ASSIGN(BrowserCompositorMacPlaceholder);
+  bool has_transparent_background_ = false;
+
+  bool has_been_destroyed_ = false;
+
+  base::WeakPtrFactory<BrowserCompositorMac> weak_factory_;
 };
 
 }  // namespace content

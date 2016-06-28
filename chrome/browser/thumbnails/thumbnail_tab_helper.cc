@@ -110,11 +110,7 @@ void ThumbnailTabHelper::NavigationStopped() {
 
 void ThumbnailTabHelper::UpdateThumbnailIfNecessary() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  // Ignore thumbnail update requests if one is already in progress. This can
-  // happen at the end of thumbnail generation when
-  // CleanUpFromThumbnailGeneration() calls DecrementCapturerCount(), triggering
-  // a call to content::WebContentsImpl::WasHidden() which eventually calls
-  // ThumbnailTabHelper::UpdateThumbnailIfNecessary().
+  // Ignore thumbnail update requests if one is already in progress.
   if (thumbnailing_context_) {
     return;
   }
@@ -140,10 +136,6 @@ void ThumbnailTabHelper::UpdateThumbnailIfNecessary() {
       !thumbnail_service->ShouldAcquirePageThumbnail(url)) {
     return;
   }
-
-  // Prevent the web contents from disappearing before the async thumbnail
-  // generation code executes. See https://crbug.com/530707 .
-  web_contents()->IncrementCapturerCount(gfx::Size());
 
   AsyncProcessThumbnail(thumbnail_service);
 }
@@ -216,12 +208,6 @@ void ThumbnailTabHelper::ProcessCapturedBitmap(
 }
 
 void ThumbnailTabHelper::CleanUpFromThumbnailGeneration() {
-  if (web_contents()) {
-    // Balance the call to IncrementCapturerCount() made in
-    // UpdateThumbnailIfNecessary().
-    web_contents()->DecrementCapturerCount();
-  }
-
   // Make a note that thumbnail generation is complete.
   thumbnailing_context_ = nullptr;
 }
