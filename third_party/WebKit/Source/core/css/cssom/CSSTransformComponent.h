@@ -37,7 +37,7 @@ public:
 
     virtual TransformComponentType type() const = 0;
 
-    bool is2DComponent() const { return is2DComponentType(type()); }
+    bool is2D() const { return is2DComponentType(type()); }
 
     String cssText() const
     {

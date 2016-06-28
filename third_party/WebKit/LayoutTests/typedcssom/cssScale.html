@@ -5,19 +5,19 @@
 <script>
 var EPSILON = 1e-6; // float epsilon
 var values = [
-  {input: new CSSScale(0, 0), x: 0, y: 0, z: 1, is2DComponent: true,
+  {input: new CSSScale(0, 0), x: 0, y: 0, z: 1, is2D: true,
     cssText: "scale(0, 0)"},
-  {input: new CSSScale(1, 2), x: 1, y: 2, z: 1, is2DComponent: true,
+  {input: new CSSScale(1, 2), x: 1, y: 2, z: 1, is2D: true,
     cssText: "scale(1, 2)"},
-  {input: new CSSScale(-2, -4), x: -2, y: -4, z: 1, is2DComponent: true,
+  {input: new CSSScale(-2, -4), x: -2, y: -4, z: 1, is2D: true,
     cssText: "scale(-2, -4)"},
-  {input: new CSSScale(3.4, 2.7), x: 3.4, y: 2.7, z: 1, is2DComponent: true,
+  {input: new CSSScale(3.4, 2.7), x: 3.4, y: 2.7, z: 1, is2D: true,
     cssText: "scale(3.4, 2.7)"},
-  {input: new CSSScale(0, 0, 0), x: 0, y: 0, z: 0, is2DComponent: false,
+  {input: new CSSScale(0, 0, 0), x: 0, y: 0, z: 0, is2D: false,
     cssText: "scale3d(0, 0, 0)"},
-  {input: new CSSScale(1, 2, 3), x: 1, y: 2, z: 3, is2DComponent: false,
+  {input: new CSSScale(1, 2, 3), x: 1, y: 2, z: 3, is2D: false,
     cssText: "scale3d(1, 2, 3)"},
-  {input: new CSSScale(3.5, -2.7, -2), x: 3.5, y: -2.7, z: -2, is2DComponent: false,
+  {input: new CSSScale(3.5, -2.7, -2), x: 3.5, y: -2.7, z: -2, is2D: false,
     cssText: "scale3d(3.5, -2.7, -2)"}
 ];
 
@@ -31,9 +31,9 @@ test(function() {
 
 test(function() {
   for (var i = 0; i < values.length; ++i) {
-    assert_equals(values[i].input.is2DComponent(), values[i].is2DComponent);
+    assert_equals(values[i].input.is2D(), values[i].is2D);
   }
-}, "Test that the is2DComponent values for CSSScale is correct.");
+}, "Test that the is2D values for CSSScale is correct.");
 
 test(function() {
   for (var i = 0; i < values.length; ++i) {
@@ -77,9 +77,9 @@ test(function() {
   for (var i = 0; i < values.length; ++i) {
     var input = values[i].input;
     var inputAsMatrix = input.asMatrix();
-    assert_equals(inputAsMatrix.is2DComponent(), input.is2DComponent());
+    assert_equals(inputAsMatrix.is2D(), input.is2D());
 
-    var expectedMatrix = input.is2DComponent() ? new CSSMatrix(input.x, 0, 0, input.y, 0, 0) :
+    var expectedMatrix = input.is2D() ? new CSSMatrix(input.x, 0, 0, input.y, 0, 0) :
         new CSSMatrix(input.x, 0, 0, 0, 0, input.y, 0, 0, 0, 0, input.z, 0, 0, 0, 0, 1);
     for (var attribute in expectedMatrix) {
       if (typeof expectedMatrix[attribute] === "number") {

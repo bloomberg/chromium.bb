@@ -63,7 +63,7 @@ ValueIterable<CSSTransformComponent*>::IterationSource* CSSTransformValue::start
 bool CSSTransformValue::is2D() const
 {
     for (size_t i = 0; i < m_transformComponents.size(); i++) {
-        if (!m_transformComponents[i]->is2DComponent()) {
+        if (!m_transformComponents[i]->is2D()) {
             return false;
         }
     }

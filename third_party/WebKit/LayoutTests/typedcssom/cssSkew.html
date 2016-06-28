@@ -20,9 +20,9 @@ test(function() {
 
 test(function() {
   for (var i = 0; i < values.length; ++i) {
-    assert_true(values[i].input.is2DComponent());
+    assert_true(values[i].input.is2D());
   }
-}, "Test that the is2DComponent values for CSSSkew is correct.");
+}, "Test that the is2D values for CSSSkew is correct.");
 
 test(function() {
   for (var i = 0; i < values.length; ++i) {
@@ -44,7 +44,7 @@ test(function() {
   for (var i = 0; i < values.length; ++i) {
     var input = values[i].input;
     var inputAsMatrix = input.asMatrix();
-    assert_true(inputAsMatrix.is2DComponent());
+    assert_true(inputAsMatrix.is2D());
     var tanAx = tanDegrees(input.ax);
     var tanAy = tanDegrees(input.ay);
     var expectedMatrix = new CSSMatrix(1, tanAy, tanAx, 1, 0, 0);

@@ -618,7 +618,7 @@ interface CSSTransformComponent
     getter cssText
     method asMatrix
     method constructor
-    method is2DComponent
+    method is2D
 interface CSSTransformValue : CSSStyleValue
     attribute @@toStringTag
     method @@iterator

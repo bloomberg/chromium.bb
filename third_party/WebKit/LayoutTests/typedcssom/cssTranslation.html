@@ -16,45 +16,45 @@ var calcPercent = new CSSCalcLength({px: 1, percent: 2.2});
 var values = [
   // 2D CSSTranslation Transform Components
   {input: new CSSTranslation(simpleLength, simpleLength),
-    x: simpleLength, y: simpleLength, is2DComponent: true},
+    x: simpleLength, y: simpleLength, is2D: true},
   {input: new CSSTranslation(decimalLength, negativeLength),
-    x: decimalLength, y: negativeLength, is2DComponent: true},
+    x: decimalLength, y: negativeLength, is2D: true},
   {input: new CSSTranslation(negativeLength, calcLengthPx),
-    x: negativeLength, y: calcLengthPx, is2DComponent: true},
+    x: negativeLength, y: calcLengthPx, is2D: true},
   {input: new CSSTranslation(calcLengthPx, negativeLength),
-    x: calcLengthPx, y: negativeLength, is2DComponent: true},
+    x: calcLengthPx, y: negativeLength, is2D: true},
   {input: new CSSTranslation(calcLengthPx, calcLength),
-    x: calcLengthPx, y: calcLength, is2DComponent: true},
+    x: calcLengthPx, y: calcLength, is2D: true},
   {input: new CSSTranslation(simplePercent, simpleLength),
-    x: simplePercent, y: simpleLength, is2DComponent: true},
+    x: simplePercent, y: simpleLength, is2D: true},
   {input: new CSSTranslation(calcLengthPx, simplePercent),
-    x: calcLengthPx, y: simplePercent, is2DComponent: true},
+    x: calcLengthPx, y: simplePercent, is2D: true},
   {input: new CSSTranslation(calcPercent, calcLength),
-    x: calcPercent, y: calcLength, is2DComponent: true},
+    x: calcPercent, y: calcLength, is2D: true},
   {input: new CSSTranslation(simplePercent, calcPercent),
-    x: simplePercent, y: calcPercent, is2DComponent: true},
+    x: simplePercent, y: calcPercent, is2D: true},
 
   // 3D CSSTranslation Transform Components
   {input: new CSSTranslation(simpleLength, simpleLength, simpleLength),
-    x: simpleLength, y: simpleLength, z: simpleLength, is2DComponent: false},
+    x: simpleLength, y: simpleLength, z: simpleLength, is2D: false},
   {input: new CSSTranslation(simpleLength, decimalLength, negativeLength),
-    x: simpleLength, y: decimalLength, z: negativeLength, is2DComponent: false},
+    x: simpleLength, y: decimalLength, z: negativeLength, is2D: false},
   {input: new CSSTranslation(simpleLength, simpleLength, calcLengthPx),
-    x: simpleLength, y: simpleLength, z: calcLengthPx, is2DComponent: false},
+    x: simpleLength, y: simpleLength, z: calcLengthPx, is2D: false},
   {input: new CSSTranslation(calcLengthPx, calcLength, calcLength),
-    x: calcLengthPx, y: calcLength, z: calcLength, is2DComponent: false},
+    x: calcLengthPx, y: calcLength, z: calcLength, is2D: false},
   {input: new CSSTranslation(simplePercent, decimalLength, simpleLength),
-    x: simplePercent, y: decimalLength, z: simpleLength, is2DComponent: false},
+    x: simplePercent, y: decimalLength, z: simpleLength, is2D: false},
   {input: new CSSTranslation(simpleLength, calcPercent, decimalLength),
-    x: simpleLength, y: calcPercent, z: decimalLength, is2DComponent: false},
+    x: simpleLength, y: calcPercent, z: decimalLength, is2D: false},
   {input: new CSSTranslation(calcPercent, simplePercent, calcLength),
-    x: calcPercent, y: simplePercent, z: calcLength, is2DComponent: false}
+    x: calcPercent, y: simplePercent, z: calcLength, is2D: false}
 ];
 
 function expectedCssString(obj) {
-  var cssText = obj.is2DComponent ? "translate(" : "translate3d(";
+  var cssText = obj.is2D ? "translate(" : "translate3d(";
   cssText += obj.x.cssText + ", " + obj.y.cssText;
-  if (!obj.is2DComponent)
+  if (!obj.is2D)
     cssText += ", " + obj.z.cssText;
   cssText += ")";
   return cssText;
@@ -64,7 +64,7 @@ test(function() {
   for (var i = 0; i < values.length; ++i) {
     assert_equals(values[i].input.x, values[i].x);
     assert_equals(values[i].input.y, values[i].y);
-    if (values[i].is2DComponent)
+    if (values[i].is2D)
       assert_equals(values[i].input.z, null);
     else
       assert_equals(values[i].input.z, values[i].z);
@@ -73,9 +73,9 @@ test(function() {
 
 test(function() {
   for (var i = 0; i < values.length; ++i) {
-    assert_equals(values[i].input.is2DComponent(), values[i].is2DComponent);
+    assert_equals(values[i].input.is2D(), values[i].is2D);
   }
-}, "Test that the is2DComponent values for CSSTranslation is correct.");
+}, "Test that the is2D values for CSSTranslation is correct.");
 
 test(function() {
   for (var i = 0; i < values.length; ++i) {

@@ -7,6 +7,6 @@
     RuntimeEnabled=CSSTypedOM,
 ] interface CSSTransformComponent {
     readonly attribute DOMString cssText;
-    boolean is2DComponent();
+    boolean is2D();
     CSSMatrix asMatrix();
 };

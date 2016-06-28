@@ -96,7 +96,7 @@ CONSOLE MESSAGE: line 137: interface CSSTransformComponent
 CONSOLE MESSAGE: line 137:     getter cssText
 CONSOLE MESSAGE: line 137:     method asMatrix
 CONSOLE MESSAGE: line 137:     method constructor
-CONSOLE MESSAGE: line 137:     method is2DComponent
+CONSOLE MESSAGE: line 137:     method is2D
 CONSOLE MESSAGE: line 137: interface CSSTransformValue : CSSStyleValue
 CONSOLE MESSAGE: line 137:     method constructor
 CONSOLE MESSAGE: line 137:     method entries
