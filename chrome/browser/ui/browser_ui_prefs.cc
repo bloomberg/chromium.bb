@@ -19,6 +19,18 @@
 #include "base/win/windows_version.h"
 #endif
 
+namespace {
+
+uint32_t GetHomeButtonAndHomePageIsNewTabPageFlags() {
+#if defined(OS_IOS) || defined(OS_ANDROID)
+  return PrefRegistry::NO_REGISTRATION_FLAGS;
+#else
+  return user_prefs::PrefRegistrySyncable::SYNCABLE_PREF;
+#endif
+}
+
+}  // namespace
+
 namespace chrome {
 
 void RegisterBrowserPrefs(PrefRegistrySimple* registry) {
@@ -32,11 +44,9 @@ void RegisterBrowserUserPrefs(user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterBooleanPref(
       prefs::kHomePageIsNewTabPage,
       true,
-      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
-  registry->RegisterBooleanPref(
-      prefs::kShowHomeButton,
-      false,
-      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
+      GetHomeButtonAndHomePageIsNewTabPageFlags());
+  registry->RegisterBooleanPref(prefs::kShowHomeButton, false,
+                                GetHomeButtonAndHomePageIsNewTabPageFlags());
   registry->RegisterBooleanPref(
       prefs::kDeleteBrowsingHistory,
       true,
