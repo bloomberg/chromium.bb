@@ -10,6 +10,7 @@
 
 #include <list>
 #include <map>
+#include <queue>
 #include <string>
 #include <utility>
 #include <vector>
@@ -260,8 +261,6 @@ class CONTENT_EXPORT IndexedDBDatabase
   class PendingUpgradeCall;
 
   typedef std::map<int64_t, IndexedDBTransaction*> TransactionMap;
-  typedef std::list<IndexedDBPendingConnection> PendingOpenCallList;
-  typedef std::list<PendingDeleteCall*> PendingDeleteCallList;
   typedef list_set<IndexedDBConnection*> ConnectionSet;
 
   bool IsOpenConnectionBlocked() const;
@@ -304,11 +303,11 @@ class CONTENT_EXPORT IndexedDBDatabase
   IndexedDBTransactionCoordinator transaction_coordinator_;
 
   TransactionMap transactions_;
-  PendingOpenCallList pending_open_calls_;
+  std::queue<IndexedDBPendingConnection> pending_open_calls_;
   std::unique_ptr<PendingUpgradeCall>
       pending_run_version_change_transaction_call_;
   std::unique_ptr<PendingSuccessCall> pending_second_half_open_;
-  PendingDeleteCallList pending_delete_calls_;
+  std::list<PendingDeleteCall*> pending_delete_calls_;
 
   ConnectionSet connections_;
   bool experimental_web_platform_features_enabled_;

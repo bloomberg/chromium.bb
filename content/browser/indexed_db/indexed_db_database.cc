@@ -1622,7 +1622,7 @@ void IndexedDBDatabase::ProcessPendingCalls() {
   }
 
   if (!IsDeleteDatabaseBlocked()) {
-    PendingDeleteCallList pending_delete_calls;
+    std::list<PendingDeleteCall*> pending_delete_calls;
     pending_delete_calls_.swap(pending_delete_calls);
     while (!pending_delete_calls.empty()) {
       // Only the first delete call will delete the database, but each must fire
@@ -1638,11 +1638,11 @@ void IndexedDBDatabase::ProcessPendingCalls() {
   }
 
   if (!IsOpenConnectionBlocked()) {
-    PendingOpenCallList pending_open_calls;
+    std::queue<IndexedDBPendingConnection> pending_open_calls;
     pending_open_calls_.swap(pending_open_calls);
     while (!pending_open_calls.empty()) {
       OpenConnection(pending_open_calls.front());
-      pending_open_calls.pop_front();
+      pending_open_calls.pop();
     }
   }
 }
@@ -1691,7 +1691,7 @@ void IndexedDBDatabase::OpenConnection(
     // presence of existing connections means we didn't even check for data loss
     // so there'd better not be any.
     DCHECK_NE(blink::WebIDBDataLossTotal, connection.callbacks->data_loss());
-    pending_open_calls_.push_back(connection);
+    pending_open_calls_.push(connection);
     return;
   }
 
@@ -1923,7 +1923,7 @@ void IndexedDBDatabase::Close(IndexedDBConnection* connection, bool forced) {
   ProcessPendingCalls();
 
   // TODO(jsbell): Add a test for the pending_open_calls_ cases below.
-  if (!ConnectionCount() && !pending_open_calls_.size() &&
+  if (!ConnectionCount() && pending_open_calls_.empty() &&
       !pending_delete_calls_.size()) {
     DCHECK(transactions_.empty());
     backing_store_ = NULL;
