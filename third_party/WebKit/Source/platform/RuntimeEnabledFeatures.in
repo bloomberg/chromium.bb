@@ -167,7 +167,6 @@ PreciseMemoryInfo
 PrefixedVideoFullscreen status=stable
 Presentation status=stable
 PresentationReceiver status=test
-PromiseRejectionEvent status=stable
 PushMessaging status=stable
 QuotaPromise status=experimental
 ReducedReferrerGranularity

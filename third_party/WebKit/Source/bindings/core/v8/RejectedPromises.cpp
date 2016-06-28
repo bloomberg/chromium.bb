@@ -13,7 +13,6 @@
 #include "core/events/PromiseRejectionEvent.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "core/inspector/ScriptArguments.h"
-#include "platform/RuntimeEnabledFeatures.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebScheduler.h"
 #include "public/platform/WebTaskRunner.h"
@@ -64,7 +63,7 @@ public:
         ASSERT(!hasHandler());
 
         EventTarget* target = executionContext->errorEventTarget();
-        if (RuntimeEnabledFeatures::promiseRejectionEventEnabled() && target && !executionContext->shouldSanitizeScriptError(m_resourceName, m_corsStatus)) {
+        if (target && !executionContext->shouldSanitizeScriptError(m_resourceName, m_corsStatus)) {
             PromiseRejectionEventInit init;
             init.setPromise(ScriptPromise(m_scriptState, value));
             init.setReason(ScriptValue(m_scriptState, reason));
@@ -109,7 +108,7 @@ public:
             return;
 
         EventTarget* target = executionContext->errorEventTarget();
-        if (RuntimeEnabledFeatures::promiseRejectionEventEnabled() && target && !executionContext->shouldSanitizeScriptError(m_resourceName, m_corsStatus)) {
+        if (target && !executionContext->shouldSanitizeScriptError(m_resourceName, m_corsStatus)) {
             PromiseRejectionEventInit init;
             init.setPromise(ScriptPromise(m_scriptState, value));
             init.setReason(ScriptValue(m_scriptState, reason));
