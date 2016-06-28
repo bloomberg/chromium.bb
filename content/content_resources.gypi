@@ -34,6 +34,7 @@
       'dependencies': [
         '<(DEPTH)/services/shell/shell.gyp:catalog_manifest',
         'content_app_browser_manifest',
+        'content_app_gpu_manifest',
         'content_app_renderer_manifest',
       ],
     },

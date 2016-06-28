@@ -86,6 +86,9 @@ class GpuChildThread : public ChildThreadImpl,
   bool Send(IPC::Message* msg) override;
   bool OnControlMessageReceived(const IPC::Message& msg) override;
   bool OnMessageReceived(const IPC::Message& msg) override;
+  bool AcceptConnection(shell::Connection* connection) override;
+  shell::InterfaceRegistry* GetInterfaceRegistryForConnection() override;
+  shell::InterfaceProvider* GetInterfaceProviderForConnection() override;
 
   // gpu::GpuChannelManagerDelegate:
   void SetActiveURL(const GURL& url) override;

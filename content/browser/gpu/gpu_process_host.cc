@@ -31,7 +31,9 @@
 #include "content/browser/gpu/gpu_data_manager_impl.h"
 #include "content/browser/gpu/gpu_process_host_ui_shim.h"
 #include "content/browser/gpu/shader_disk_cache.h"
-#include "content/browser/mojo/mojo_application_host.h"
+#include "content/browser/mojo/constants.h"
+#include "content/browser/mojo/mojo_child_connection.h"
+#include "content/browser/mojo/mojo_shell_context.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/common/child_process_host_impl.h"
 #include "content/common/establish_channel_params.h"
@@ -47,6 +49,7 @@
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/mojo_channel_switches.h"
+#include "content/public/common/mojo_shell_connection.h"
 #include "content/public/common/result_codes.h"
 #include "content/public/common/sandbox_type.h"
 #include "content/public/common/sandboxed_process_launcher_delegate.h"
@@ -57,6 +60,7 @@
 #include "ipc/message_filter.h"
 #include "media/base/media_switches.h"
 #include "mojo/edk/embedder/embedder.h"
+#include "services/shell/public/cpp/connection.h"
 #include "services/shell/public/cpp/interface_provider.h"
 #include "services/shell/public/cpp/interface_registry.h"
 #include "ui/base/ui_base_switches.h"
@@ -552,8 +556,12 @@ bool GpuProcessHost::Init() {
   if (channel_id.empty())
     return false;
 
-  DCHECK(!mojo_application_host_);
-  mojo_application_host_.reset(new MojoApplicationHost(child_token_));
+  DCHECK(!mojo_child_connection_);
+  mojo_child_connection_.reset(new MojoChildConnection(
+      kGpuMojoApplicationName,
+      "",
+      child_token_,
+      MojoShellContext::GetConnectorForIOThread()));
 
   gpu::GpuPreferences gpu_preferences = GetGpuPreferencesFromCommandLine();
   if (in_process_) {
@@ -562,7 +570,7 @@ bool GpuProcessHost::Init() {
     in_process_gpu_thread_.reset(g_gpu_main_thread_factory(
         InProcessChildThreadParams(
             channel_id, base::ThreadTaskRunnerHandle::Get(), std::string(),
-            mojo_application_host_->GetToken()),
+            mojo_child_connection_->shell_client_token()),
         gpu_preferences));
     base::Thread::Options options;
 #if defined(OS_WIN)
@@ -924,11 +932,11 @@ void GpuProcessHost::OnProcessCrashed(int exit_code) {
 }
 
 shell::InterfaceRegistry* GpuProcessHost::GetInterfaceRegistry() {
-  return mojo_application_host_->interface_registry();
+  return mojo_child_connection_->connection()->GetInterfaceRegistry();
 }
 
 shell::InterfaceProvider* GpuProcessHost::GetRemoteInterfaces() {
-  return mojo_application_host_->remote_interfaces();
+  return mojo_child_connection_->connection()->GetRemoteInterfaces();
 }
 
 GpuProcessHost::GpuProcessKind GpuProcessHost::kind() {
@@ -986,7 +994,7 @@ bool GpuProcessHost::LaunchGpuProcess(const std::string& channel_id,
   cmd_line->AppendSwitchASCII(switches::kProcessType, switches::kGpuProcess);
   cmd_line->AppendSwitchASCII(switches::kProcessChannelID, channel_id);
   cmd_line->AppendSwitchASCII(switches::kMojoApplicationChannelToken,
-                              mojo_application_host_->GetToken());
+                              mojo_child_connection_->shell_client_token());
   BrowserChildProcessHostImpl::CopyFeatureAndFieldTrialFlags(cmd_line);
 
 #if defined(OS_WIN)

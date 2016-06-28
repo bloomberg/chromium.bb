@@ -161,3 +161,9 @@ mojo_application_manifest("renderer_manifest") {
   application_name = "content_renderer"
   source = "mojo/content_renderer_manifest.json"
 }
+
+mojo_application_manifest("gpu_manifest") {
+  type = "exe"
+  application_name = "content_gpu"
+  source = "mojo/content_gpu_manifest.json"
+}

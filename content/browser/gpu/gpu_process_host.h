@@ -49,7 +49,7 @@ namespace content {
 class BrowserChildProcessHostImpl;
 class GpuMainThread;
 class InProcessChildThreadParams;
-class MojoApplicationHost;
+class MojoChildConnection;
 class RenderWidgetHostViewFrameSubscriber;
 class ShaderDiskCache;
 
@@ -293,7 +293,7 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
   // Browser-side Mojo endpoint which sets up a Mojo channel with the child
   // process and contains the browser's InterfaceRegistry.
   const std::string child_token_;
-  std::unique_ptr<MojoApplicationHost> mojo_application_host_;
+  std::unique_ptr<MojoChildConnection> mojo_child_connection_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuProcessHost);
 };

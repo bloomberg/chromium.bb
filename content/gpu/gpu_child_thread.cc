@@ -135,6 +135,7 @@ ChildThreadImpl::Options GetOptions(
   if (message_filter)
     builder.AddStartupFilter(message_filter);
 #endif
+  builder.UseMojoShellConnection(true);
 
   return builder.Build();
 }
@@ -174,6 +175,7 @@ GpuChildThread::GpuChildThread(
                           .InBrowserProcess(params)
                           .AddStartupFilter(new GpuMemoryBufferMessageFilter(
                               gpu_memory_buffer_factory))
+                          .UseMojoShellConnection(true)
                           .Build()),
       gpu_preferences_(gpu_preferences),
       dead_on_arrival_(false),
@@ -220,16 +222,8 @@ void GpuChildThread::Init(const base::Time& process_start_time) {
   // Only set once per process instance.
   process_control_.reset(new GpuProcessControlImpl());
 
-  // Use of base::Unretained(this) is safe here because |service_registry()|
-  // will be destroyed before GpuChildThread is destructed.
-  GetInterfaceRegistry()->AddInterface(base::Bind(
-      &GpuChildThread::BindProcessControlRequest, base::Unretained(this)));
-
-  if (GetContentClient()->gpu()) {  // NULL in tests.
+  if (GetContentClient()->gpu())  // NULL in tests.
     GetContentClient()->gpu()->Initialize(this);
-    GetContentClient()->gpu()->ExposeInterfacesToBrowser(
-        GetInterfaceRegistry());
-  }
 }
 
 void GpuChildThread::OnFieldTrialGroupFinalized(const std::string& trial_name,
@@ -295,6 +289,27 @@ bool GpuChildThread::OnMessageReceived(const IPC::Message& msg) {
     return true;
 
   return false;
+}
+
+bool GpuChildThread::AcceptConnection(shell::Connection* connection) {
+  // Use of base::Unretained(this) is safe here because |service_registry()|
+  // will be destroyed before GpuChildThread is destructed.
+  connection->GetInterfaceRegistry()->AddInterface(base::Bind(
+      &GpuChildThread::BindProcessControlRequest, base::Unretained(this)));
+
+  if (GetContentClient()->gpu()) {  // NULL in tests.
+    GetContentClient()->gpu()->ExposeInterfacesToBrowser(
+        connection->GetInterfaceRegistry());
+  }
+  return true;
+}
+
+shell::InterfaceRegistry* GpuChildThread::GetInterfaceRegistryForConnection() {
+  return nullptr;
+}
+
+shell::InterfaceProvider* GpuChildThread::GetInterfaceProviderForConnection() {
+  return nullptr;
 }
 
 void GpuChildThread::SetActiveURL(const GURL& url) {

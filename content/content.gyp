@@ -91,6 +91,20 @@
       ],
       'hard_dependency': 1,
     },
+    {
+      # GN version: //content/public/app:gpu_manifest
+      'target_name': 'content_app_gpu_manifest',
+      'type': 'none',
+      'variables': {
+        'application_type': 'exe',
+        'application_name': 'content_gpu',
+        'source_manifest': '<(DEPTH)/content/public/app/mojo/content_gpu_manifest.json',
+      },
+      'includes': [
+        '../mojo/public/mojo_application_manifest.gypi',
+      ],
+      'hard_dependency': 1,
+    },
   ],
   'includes': [
     '../build/win_precompile.gypi',

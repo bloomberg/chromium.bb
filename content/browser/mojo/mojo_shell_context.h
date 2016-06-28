@@ -45,6 +45,9 @@ class CONTENT_EXPORT MojoShellContext {
       shell::mojom::InterfaceProviderPtr exposed_services,
       const shell::mojom::Connector::ConnectCallback& callback);
 
+  // Returns a shell::Connector that can be used on the IO thread.
+  static shell::Connector* GetConnectorForIOThread();
+
  private:
   class BuiltinManifestProvider;
   class Proxy;

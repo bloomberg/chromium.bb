@@ -35,6 +35,7 @@
 #include "services/catalog/store.h"
 #include "services/shell/connect_params.h"
 #include "services/shell/native_runner.h"
+#include "services/shell/public/cpp/connector.h"
 #include "services/shell/public/cpp/identity.h"
 #include "services/shell/public/cpp/shell_client.h"
 #include "services/shell/public/interfaces/connector.mojom.h"
@@ -47,6 +48,21 @@
 namespace content {
 
 namespace {
+
+using ConnectorPtr = base::ThreadLocalPointer<shell::Connector>;
+
+base::LazyInstance<ConnectorPtr>::Leaky io_connector_tls_ptr =
+    LAZY_INSTANCE_INITIALIZER;
+
+void SetConnectorOnIOThread(std::unique_ptr<shell::Connector> connector) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  io_connector_tls_ptr.Pointer()->Set(connector.release());
+}
+
+void DestroyConnectorOnIOThread() {
+  delete MojoShellContext::GetConnectorForIOThread();
+  io_connector_tls_ptr.Pointer()->Set(nullptr);
+}
 
 void StartUtilityProcessOnIOThread(
     mojo::InterfaceRequest<mojom::ProcessControl> request,
@@ -232,6 +248,8 @@ MojoShellContext::MojoShellContext() {
   manifest_provider_->AddManifests(std::move(manifests));
   manifest_provider_->AddManifestResource(kBrowserMojoApplicationName,
                                           IDR_MOJO_CONTENT_BROWSER_MANIFEST);
+  manifest_provider_->AddManifestResource(kGpuMojoApplicationName,
+                                          IDR_MOJO_CONTENT_GPU_MANIFEST);
   manifest_provider_->AddManifestResource(kRendererMojoApplicationName,
                                           IDR_MOJO_CONTENT_RENDERER_MANIFEST);
   manifest_provider_->AddManifestResource("mojo:catalog",
@@ -253,6 +271,12 @@ MojoShellContext::MojoShellContext() {
   }
   MojoShellConnection::SetForProcess(
       MojoShellConnection::Create(std::move(request)));
+
+  std::unique_ptr<shell::Connector> io_connector =
+      MojoShellConnection::GetForProcess()->GetConnector()->Clone();
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::Bind(&SetConnectorOnIOThread, base::Passed(&io_connector)));
 
   ContentBrowserClient::StaticMojoApplicationMap apps;
   GetContentClient()->browser()->RegisterInProcessMojoApplications(&apps);
@@ -292,6 +316,8 @@ MojoShellContext::MojoShellContext() {
 MojoShellContext::~MojoShellContext() {
   if (MojoShellConnection::GetForProcess())
     MojoShellConnection::DestroyForProcess();
+  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
+                          base::Bind(&DestroyConnectorOnIOThread));
   catalog_.reset();
 }
 
@@ -306,6 +332,12 @@ void MojoShellContext::ConnectToApplication(
   proxy_.Get()->ConnectToApplication(user_id, name, requestor_name,
                                      std::move(request),
                                      std::move(exposed_services), callback);
+}
+
+// static
+shell::Connector* MojoShellContext::GetConnectorForIOThread() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  return io_connector_tls_ptr.Pointer()->Get();
 }
 
 void MojoShellContext::ConnectToApplicationOnOwnThread(

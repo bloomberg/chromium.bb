@@ -16,4 +16,9 @@ const char kBrowserMojoApplicationName[] = "exe:content_browser";
 // src/content/public/app/mojo/content_renderer_manifest.json.
 const char kRendererMojoApplicationName[] = "exe:content_renderer";
 
+// The default application name used to identify the gpu process when
+// connecting it to the shell. This must match the name in
+// src/content/public/app/mojo/content_gpu_manifest.json.
+const char kGpuMojoApplicationName[] = "exe:content_gpu";
+
 }  // namespace content
