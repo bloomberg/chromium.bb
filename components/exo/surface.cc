@@ -485,7 +485,8 @@ void Surface::CommitSurfaceHierarchy() {
     window_->layer()->SetBounds(
         gfx::Rect(window_->layer()->bounds().origin(), content_size_));
     window_->layer()->SetFillsBoundsOpaquely(
-        state_.blend_mode == SkXfermode::kSrc_Mode ||
+        state_.alpha == 1.0f &&
+
         state_.opaque_region.contains(
             gfx::RectToSkIRect(gfx::Rect(content_size_))));
   }
