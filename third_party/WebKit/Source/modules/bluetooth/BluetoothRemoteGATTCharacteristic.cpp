@@ -174,13 +174,6 @@ private:
 
 ScriptPromise BluetoothRemoteGATTCharacteristic::writeValue(ScriptState* scriptState, const DOMArrayPiece& value)
 {
-#if OS(MACOSX)
-    // TODO(jlebel): Remove when writeValue is implemented.
-    return ScriptPromise::rejectWithDOMException(scriptState,
-        DOMException::create(NotSupportedError,
-            "writeValue is not implemented yet. See https://goo.gl/J6ASzs"));
-#endif // OS(MACOSX)
-
     WebBluetooth* webbluetooth = BluetoothSupplement::fromScriptState(scriptState);
     // Partial implementation of writeValue algorithm:
     // https://webbluetoothchrome.github.io/web-bluetooth/#dom-bluetoothgattcharacteristic-writevalue

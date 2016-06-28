@@ -96,6 +96,15 @@ using base::scoped_nsobject;
   _bluetoothTestMac->OnFakeBluetoothCharacteristicReadValue();
 }
 
+- (void)writeValue:(NSData*)data
+    forCharacteristic:(CBCharacteristic*)characteristic
+                 type:(CBCharacteristicWriteType)type {
+  DCHECK(_bluetoothTestMac);
+  const uint8_t* buffer = static_cast<const uint8_t*>(data.bytes);
+  std::vector<uint8_t> value(buffer, buffer + data.length);
+  _bluetoothTestMac->OnFakeBluetoothCharacteristicWriteValue(value);
+}
+
 - (void)removeAllServices {
   [_services.get() removeAllObjects];
 }

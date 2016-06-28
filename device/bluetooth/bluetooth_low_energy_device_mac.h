@@ -94,6 +94,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothLowEnergyDeviceMac
   void DidModifyServices(NSArray* invalidatedServices);
   void DidDiscoverCharacteristics(CBService* cb_service, NSError* error);
   void DidUpdateValue(CBCharacteristic* characteristic, NSError* error);
+  void DidWriteValue(CBCharacteristic* characteristic, NSError* error);
 
   // Updates information about the device.
   virtual void Update(NSDictionary* advertisement_data, int rssi);

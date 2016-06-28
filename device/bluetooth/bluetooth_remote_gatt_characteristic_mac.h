@@ -9,7 +9,12 @@
 
 #include "base/mac/scoped_nsobject.h"
 
+#if defined(__OBJC__)
+#import <CoreBluetooth/CoreBluetooth.h>
+#else
 @class CBCharacteristic;
+typedef NS_ENUM(NSInteger, CBCharacteristicWriteType);
+#endif  // defined(__OBJC__)
 
 namespace device {
 
@@ -55,8 +60,15 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattCharacteristicMac
   // Called by the BluetoothRemoteGattServiceMac instance when the
   // characteristics value has been read.
   void DidUpdateValue(NSError* error);
+  // Called by the BluetoothRemoteGattServiceMac instance when the
+  // characteristics value has been written.
+  void DidWriteValue(NSError* error);
   // Returns true if the characteristic is readable.
   bool IsReadable() const;
+  // Returns true if the characteristic is writable.
+  bool IsWritable() const;
+  // Returns the write type (with or without responses).
+  CBCharacteristicWriteType GetCBWriteType() const;
   // Returns CoreBluetooth characteristic.
   CBCharacteristic* GetCBCharacteristic() const;
 
@@ -74,6 +86,8 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattCharacteristicMac
   bool characteristic_value_read_or_write_in_progress_;
   // ReadRemoteCharacteristic request callbacks.
   std::pair<ValueCallback, ErrorCallback> read_characteristic_value_callbacks_;
+  // WriteRemoteCharacteristic request callbacks.
+  std::pair<base::Closure, ErrorCallback> write_characteristic_value_callbacks_;
 };
 
 }  // namespace device

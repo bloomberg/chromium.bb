@@ -4,8 +4,6 @@
 
 #include "device/bluetooth/bluetooth_remote_gatt_characteristic_mac.h"
 
-#import <CoreBluetooth/CoreBluetooth.h>
-
 #include "base/bind.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "device/bluetooth/bluetooth_adapter_mac.h"
@@ -162,11 +160,41 @@ void BluetoothRemoteGattCharacteristicMac::WriteRemoteCharacteristic(
     const std::vector<uint8_t>& new_value,
     const base::Closure& callback,
     const ErrorCallback& error_callback) {
-  NOTIMPLEMENTED();
+  if (!IsWritable()) {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE,
+        base::Bind(error_callback,
+                   BluetoothRemoteGattService::GATT_ERROR_NOT_PERMITTED));
+    return;
+  }
+  if (characteristic_value_read_or_write_in_progress_) {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE,
+        base::Bind(error_callback,
+                   BluetoothRemoteGattService::GATT_ERROR_IN_PROGRESS));
+    return;
+  }
+  characteristic_value_read_or_write_in_progress_ = true;
+  write_characteristic_value_callbacks_ =
+      std::make_pair(callback, error_callback);
+  base::scoped_nsobject<NSData> nsdata_value(
+      [[NSData alloc] initWithBytes:new_value.data() length:new_value.size()]);
+  CBCharacteristicWriteType write_type = GetCBWriteType();
+  [gatt_service_->GetCBPeripheral() writeValue:nsdata_value
+                             forCharacteristic:cb_characteristic_
+                                          type:write_type];
+  if (write_type == CBCharacteristicWriteWithoutResponse) {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE,
+        base::Bind(&BluetoothRemoteGattCharacteristicMac::DidWriteValue,
+                   base::Unretained(this), nil));
+  }
 }
 
 void BluetoothRemoteGattCharacteristicMac::DidUpdateValue(NSError* error) {
   if (!characteristic_value_read_or_write_in_progress_) {
+    // In case of buggy device, nothing should be done if receiving extra
+    // read confirmation.
     return;
   }
   std::pair<ValueCallback, ErrorCallback> callbacks;
@@ -188,13 +216,50 @@ void BluetoothRemoteGattCharacteristicMac::DidUpdateValue(NSError* error) {
   callbacks.first.Run(value_);
 }
 
+void BluetoothRemoteGattCharacteristicMac::DidWriteValue(NSError* error) {
+  if (!characteristic_value_read_or_write_in_progress_) {
+    // In case of buggy device, nothing should be done if receiving extra
+    // write confirmation.
+    return;
+  }
+  std::pair<base::Closure, ErrorCallback> callbacks;
+  callbacks.swap(write_characteristic_value_callbacks_);
+  characteristic_value_read_or_write_in_progress_ = false;
+  if (error) {
+    VLOG(1) << "Bluetooth error while writing for characteristic, domain: "
+            << error.domain.UTF8String << ", error code: " << error.code;
+    BluetoothGattService::GattErrorCode error_code =
+        BluetoothDeviceMac::GetGattErrorCodeFromNSError(error);
+    callbacks.second.Run(error_code);
+    return;
+  }
+  NSData* nsdata_value = cb_characteristic_.get().value;
+  const uint8_t* buffer = static_cast<const uint8_t*>(nsdata_value.bytes);
+  std::vector<uint8_t> gatt_value(buffer, buffer + nsdata_value.length);
+  gatt_service_->GetMacAdapter()->NotifyGattCharacteristicValueChanged(this,
+                                                                       value_);
+  callbacks.first.Run();
+}
+
 bool BluetoothRemoteGattCharacteristicMac::IsReadable() const {
   return GetProperties() & BluetoothGattCharacteristic::PROPERTY_READ;
+}
+
+bool BluetoothRemoteGattCharacteristicMac::IsWritable() const {
+  BluetoothGattCharacteristic::Properties properties = GetProperties();
+  return (properties & BluetoothGattCharacteristic::PROPERTY_WRITE) ||
+         (properties & PROPERTY_WRITE_WITHOUT_RESPONSE);
+}
+
+CBCharacteristicWriteType BluetoothRemoteGattCharacteristicMac::GetCBWriteType()
+    const {
+  return (GetProperties() & BluetoothGattCharacteristic::PROPERTY_WRITE)
+             ? CBCharacteristicWriteWithResponse
+             : CBCharacteristicWriteWithoutResponse;
 }
 
 CBCharacteristic* BluetoothRemoteGattCharacteristicMac::GetCBCharacteristic()
     const {
   return cb_characteristic_.get();
 }
-
 }  // namespace device.

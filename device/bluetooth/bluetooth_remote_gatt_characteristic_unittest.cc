@@ -317,9 +317,13 @@ TEST_F(BluetoothRemoteGattCharacteristicTest, ReadRemoteCharacteristic_Empty) {
 }
 #endif  // defined(OS_ANDROID) || defined(OS_MACOSX) || defined(OS_WIN)
 
-#if defined(OS_ANDROID) || defined(OS_WIN)
+#if defined(OS_ANDROID) || defined(OS_MACOSX) || defined(OS_WIN)
 // Tests WriteRemoteCharacteristic with empty value buffer.
 TEST_F(BluetoothRemoteGattCharacteristicTest, WriteRemoteCharacteristic_Empty) {
+  if (!PlatformSupportsLowEnergy()) {
+    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
+    return;
+  }
   ASSERT_NO_FATAL_FAILURE(FakeCharacteristicBoilerplate(
       BluetoothRemoteGattCharacteristic::PROPERTY_WRITE));
 
@@ -335,7 +339,7 @@ TEST_F(BluetoothRemoteGattCharacteristicTest, WriteRemoteCharacteristic_Empty) {
 
   EXPECT_EQ(empty_vector, last_write_value_);
 }
-#endif  // defined(OS_ANDROID) || defined(OS_WIN)
+#endif  // defined(OS_ANDROID) || defined(OS_MACOSX) || defined(OS_WIN)
 
 #if defined(OS_ANDROID) || defined(OS_WIN)
 // Tests ReadRemoteCharacteristic completing after Chrome objects are deleted.
@@ -370,6 +374,10 @@ TEST_F(BluetoothRemoteGattCharacteristicTest,
 // delegate is set to nil.
 TEST_F(BluetoothRemoteGattCharacteristicTest,
        WriteRemoteCharacteristic_AfterDeleted) {
+  if (!PlatformSupportsLowEnergy()) {
+    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
+    return;
+  }
   ASSERT_NO_FATAL_FAILURE(FakeCharacteristicBoilerplate(
       BluetoothRemoteGattCharacteristic::PROPERTY_WRITE));
 
@@ -450,9 +458,13 @@ TEST_F(BluetoothRemoteGattCharacteristicTest,
 }
 #endif  // defined(OS_ANDROID) || defined(OS_WIN)
 
-#if defined(OS_ANDROID) || defined(OS_WIN)
+#if defined(OS_ANDROID) || defined(OS_MACOSX) || defined(OS_WIN)
 // Tests WriteRemoteCharacteristic with non-empty value buffer.
 TEST_F(BluetoothRemoteGattCharacteristicTest, WriteRemoteCharacteristic) {
+  if (!PlatformSupportsLowEnergy()) {
+    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
+    return;
+  }
   ASSERT_NO_FATAL_FAILURE(FakeCharacteristicBoilerplate(
       BluetoothRemoteGattCharacteristic::PROPERTY_WRITE));
 
@@ -467,7 +479,7 @@ TEST_F(BluetoothRemoteGattCharacteristicTest, WriteRemoteCharacteristic) {
   EXPECT_EQ(1, gatt_write_characteristic_attempts_);
   EXPECT_EQ(test_vector, last_write_value_);
 }
-#endif  // defined(OS_ANDROID) || defined(OS_WIN)
+#endif  // defined(OS_ANDROID) || defined(OS_MACOSX) || defined(OS_WIN)
 
 #if defined(OS_ANDROID) || defined(OS_MACOSX) || defined(OS_WIN)
 // Tests ReadRemoteCharacteristic and GetValue multiple times.
@@ -507,9 +519,13 @@ TEST_F(BluetoothRemoteGattCharacteristicTest, ReadRemoteCharacteristic_Twice) {
 }
 #endif  // defined(OS_ANDROID) || defined(OS_MACOSX) || defined(OS_WIN)
 
-#if defined(OS_ANDROID) || defined(OS_WIN)
+#if defined(OS_ANDROID) || defined(OS_MACOSX) || defined(OS_WIN)
 // Tests WriteRemoteCharacteristic multiple times.
 TEST_F(BluetoothRemoteGattCharacteristicTest, WriteRemoteCharacteristic_Twice) {
+  if (!PlatformSupportsLowEnergy()) {
+    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
+    return;
+  }
   ASSERT_NO_FATAL_FAILURE(FakeCharacteristicBoilerplate(
       BluetoothRemoteGattCharacteristic::PROPERTY_WRITE));
 
@@ -538,7 +554,7 @@ TEST_F(BluetoothRemoteGattCharacteristicTest, WriteRemoteCharacteristic_Twice) {
   EXPECT_EQ(0, error_callback_count_);
   EXPECT_EQ(empty_vector, last_write_value_);
 }
-#endif  // defined(OS_ANDROID) || defined(OS_WIN)
+#endif  // defined(OS_ANDROID) || defined(OS_MACOSX) || defined(OS_WIN)
 
 #if defined(OS_ANDROID) || defined(OS_MACOSX) || defined(OS_WIN)
 // Tests ReadRemoteCharacteristic on two characteristics.
@@ -578,10 +594,14 @@ TEST_F(BluetoothRemoteGattCharacteristicTest,
 }
 #endif  // defined(OS_ANDROID) || defined(OS_MACOSX) || defined(OS_WIN)
 
-#if defined(OS_ANDROID) || defined(OS_WIN)
+#if defined(OS_ANDROID) || defined(OS_MACOSX) || defined(OS_WIN)
 // Tests WriteRemoteCharacteristic on two characteristics.
 TEST_F(BluetoothRemoteGattCharacteristicTest,
        WriteRemoteCharacteristic_MultipleCharacteristics) {
+  if (!PlatformSupportsLowEnergy()) {
+    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
+    return;
+  }
   ASSERT_NO_FATAL_FAILURE(FakeCharacteristicBoilerplate(
       BluetoothRemoteGattCharacteristic::PROPERTY_WRITE));
 
@@ -590,7 +610,7 @@ TEST_F(BluetoothRemoteGattCharacteristicTest,
   characteristic1_->WriteRemoteCharacteristic(
       test_vector1, GetCallback(Call::EXPECTED),
       GetGattErrorCallback(Call::NOT_EXPECTED));
-#ifdef OS_ANDROID
+#if defined(OS_ANDROID) || defined(OS_MACOSX)
   EXPECT_EQ(test_vector1, last_write_value_);
 #endif
 
@@ -599,7 +619,7 @@ TEST_F(BluetoothRemoteGattCharacteristicTest,
   characteristic2_->WriteRemoteCharacteristic(
       test_vector2, GetCallback(Call::EXPECTED),
       GetGattErrorCallback(Call::NOT_EXPECTED));
-#ifdef OS_ANDROID
+#if defined(OS_ANDROID) || defined(OS_MACOSX)
   EXPECT_EQ(test_vector2, last_write_value_);
 #endif
 
@@ -607,12 +627,12 @@ TEST_F(BluetoothRemoteGattCharacteristicTest,
   EXPECT_EQ(0, error_callback_count_);
 
   SimulateGattCharacteristicWrite(characteristic1_);
-#ifndef OS_ANDROID
+#if !(defined(OS_ANDROID) || defined(OS_MACOSX))
   EXPECT_EQ(test_vector1, last_write_value_);
 #endif
 
   SimulateGattCharacteristicWrite(characteristic2_);
-#ifndef OS_ANDROID
+#if !(defined(OS_ANDROID) || defined(OS_MACOSX))
   EXPECT_EQ(test_vector2, last_write_value_);
 #endif
 
@@ -622,7 +642,7 @@ TEST_F(BluetoothRemoteGattCharacteristicTest,
 
   // TODO(591740): Remove if define for OS_ANDROID in this test.
 }
-#endif  // defined(OS_ANDROID) || defined(OS_WIN)
+#endif  // defined(OS_ANDROID) || defined(OS_MACOSX) || defined(OS_WIN)
 
 #if defined(OS_ANDROID) || defined(OS_MACOSX) || defined(OS_WIN)
 // Tests ReadRemoteCharacteristic asynchronous error.
@@ -649,9 +669,13 @@ TEST_F(BluetoothRemoteGattCharacteristicTest, ReadError) {
 }
 #endif  // defined(OS_ANDROID) || defined(OS_MACOSX) || defined(OS_WIN)
 
-#if defined(OS_ANDROID) || defined(OS_WIN)
+#if defined(OS_ANDROID) || defined(OS_MACOSX) || defined(OS_WIN)
 // Tests WriteRemoteCharacteristic asynchronous error.
 TEST_F(BluetoothRemoteGattCharacteristicTest, WriteError) {
+  if (!PlatformSupportsLowEnergy()) {
+    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
+    return;
+  }
   ASSERT_NO_FATAL_FAILURE(FakeCharacteristicBoilerplate(
       BluetoothRemoteGattCharacteristic::PROPERTY_WRITE));
 
@@ -667,7 +691,7 @@ TEST_F(BluetoothRemoteGattCharacteristicTest, WriteError) {
   EXPECT_EQ(BluetoothRemoteGattService::GATT_ERROR_INVALID_LENGTH,
             last_gatt_error_code_);
 }
-#endif  // defined(OS_ANDROID) || defined(OS_WIN)
+#endif  // defined(OS_ANDROID) || defined(OS_MACOSX) || defined(OS_WIN)
 
 #if defined(OS_ANDROID)
 // Tests ReadRemoteCharacteristic synchronous error.
@@ -702,6 +726,7 @@ TEST_F(BluetoothRemoteGattCharacteristicTest, ReadSynchronousError) {
 
 #if defined(OS_ANDROID)
 // Tests WriteRemoteCharacteristic synchronous error.
+// This test doesn't apply to macOS synchronous API does exist.
 TEST_F(BluetoothRemoteGattCharacteristicTest, WriteSynchronousError) {
   ASSERT_NO_FATAL_FAILURE(FakeCharacteristicBoilerplate());
 
@@ -763,10 +788,14 @@ TEST_F(BluetoothRemoteGattCharacteristicTest,
 }
 #endif  // defined(OS_ANDROID) || defined(OS_MACOSX) || defined(OS_WIN)
 
-#if defined(OS_ANDROID) || defined(OS_WIN)
+#if defined(OS_ANDROID) || defined(OS_MACOSX) || defined(OS_WIN)
 // Tests WriteRemoteCharacteristic error with a pending write operation.
 TEST_F(BluetoothRemoteGattCharacteristicTest,
        WriteRemoteCharacteristic_WritePending) {
+  if (!PlatformSupportsLowEnergy()) {
+    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
+    return;
+  }
   ASSERT_NO_FATAL_FAILURE(FakeCharacteristicBoilerplate(
       BluetoothRemoteGattCharacteristic::PROPERTY_WRITE));
 
@@ -791,12 +820,16 @@ TEST_F(BluetoothRemoteGattCharacteristicTest,
   EXPECT_EQ(1, callback_count_);
   EXPECT_EQ(0, error_callback_count_);
 }
-#endif  // defined(OS_ANDROID) || defined(OS_WIN)
+#endif  // defined(OS_ANDROID) || defined(OS_MACOSX) || defined(OS_WIN)
 
-#if defined(OS_ANDROID) || defined(OS_WIN)
+#if defined(OS_ANDROID) || defined(OS_MACOSX) || defined(OS_WIN)
 // Tests ReadRemoteCharacteristic error with a pending write operation.
 TEST_F(BluetoothRemoteGattCharacteristicTest,
        ReadRemoteCharacteristic_WritePending) {
+  if (!PlatformSupportsLowEnergy()) {
+    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
+    return;
+  }
   ASSERT_NO_FATAL_FAILURE(FakeCharacteristicBoilerplate(
       BluetoothRemoteGattCharacteristic::PROPERTY_READ |
       BluetoothRemoteGattCharacteristic::PROPERTY_WRITE));
@@ -822,12 +855,16 @@ TEST_F(BluetoothRemoteGattCharacteristicTest,
   EXPECT_EQ(1, callback_count_);
   EXPECT_EQ(0, error_callback_count_);
 }
-#endif  // defined(OS_ANDROID) || defined(OS_WIN)
+#endif  // defined(OS_ANDROID) || defined(OS_MACOSX) || defined(OS_WIN)
 
-#if defined(OS_ANDROID) || defined(OS_WIN)
+#if defined(OS_ANDROID) || defined(OS_MACOSX) || defined(OS_WIN)
 // Tests WriteRemoteCharacteristic error with a pending Read operation.
 TEST_F(BluetoothRemoteGattCharacteristicTest,
        WriteRemoteCharacteristic_ReadPending) {
+  if (!PlatformSupportsLowEnergy()) {
+    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
+    return;
+  }
   ASSERT_NO_FATAL_FAILURE(FakeCharacteristicBoilerplate(
       BluetoothRemoteGattCharacteristic::PROPERTY_READ |
       BluetoothRemoteGattCharacteristic::PROPERTY_WRITE));
@@ -852,7 +889,7 @@ TEST_F(BluetoothRemoteGattCharacteristicTest,
   EXPECT_EQ(1, callback_count_);
   EXPECT_EQ(0, error_callback_count_);
 }
-#endif  // defined(OS_ANDROID) || defined(OS_WIN)
+#endif  // defined(OS_ANDROID) || defined(OS_MACOSX) || defined(OS_WIN)
 
 #if defined(OS_ANDROID) || defined(OS_WIN)
 // StartNotifySession fails if characteristic doesn't have Notify or Indicate

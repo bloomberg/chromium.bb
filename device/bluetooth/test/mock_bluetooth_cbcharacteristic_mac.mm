@@ -137,6 +137,13 @@ CBCharacteristicProperties GattCharacteristicPropertyToCBCharacteristicProperty(
                                 error:error];
 }
 
+- (void)simulateWriteWithError:(NSError*)error {
+  CBPeripheral* peripheral = _service.peripheral;
+  [peripheral.delegate peripheral:peripheral
+      didWriteValueForCharacteristic:self.characteristic
+                               error:error];
+}
+
 - (CBUUID*)UUID {
   return _UUID.get();
 }

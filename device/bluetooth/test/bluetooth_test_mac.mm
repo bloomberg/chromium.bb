@@ -309,6 +309,22 @@ void BluetoothTestMac::SimulateGattCharacteristicReadError(
   [characteristic_mock simulateReadWithValue:nil error:error];
 }
 
+void BluetoothTestMac::SimulateGattCharacteristicWrite(
+    BluetoothRemoteGattCharacteristic* characteristic) {
+  MockCBCharacteristic* characteristic_mock =
+      GetCBMockCharacteristic(characteristic);
+  [characteristic_mock simulateWriteWithError:nil];
+}
+
+void BluetoothTestMac::SimulateGattCharacteristicWriteError(
+    BluetoothRemoteGattCharacteristic* characteristic,
+    BluetoothRemoteGattService::GattErrorCode error_code) {
+  MockCBCharacteristic* characteristic_mock =
+      GetCBMockCharacteristic(characteristic);
+  NSError* error = BluetoothDeviceMac::GetNSErrorFromGattErrorCode(error_code);
+  [characteristic_mock simulateWriteWithError:error];
+}
+
 void BluetoothTestMac::SimulateGattCharacteristicRemoved(
     BluetoothRemoteGattService* service,
     BluetoothRemoteGattCharacteristic* characteristic) {
@@ -341,6 +357,12 @@ void BluetoothTestMac::OnFakeBluetoothServiceDiscovery() {
 
 void BluetoothTest::OnFakeBluetoothCharacteristicReadValue() {
   gatt_read_characteristic_attempts_++;
+}
+
+void BluetoothTest::OnFakeBluetoothCharacteristicWriteValue(
+    std::vector<uint8_t> value) {
+  last_write_value_ = value;
+  gatt_write_characteristic_attempts_++;
 }
 
 MockCBPeripheral* BluetoothTestMac::GetMockCBPeripheral(

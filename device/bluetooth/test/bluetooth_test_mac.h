@@ -58,6 +58,11 @@ class BluetoothTestMac : public BluetoothTestBase {
   void SimulateGattCharacteristicReadError(
       BluetoothRemoteGattCharacteristic* characteristic,
       BluetoothRemoteGattService::GattErrorCode) override;
+  void SimulateGattCharacteristicWrite(
+      BluetoothRemoteGattCharacteristic* characteristic) override;
+  void SimulateGattCharacteristicWriteError(
+      BluetoothRemoteGattCharacteristic* characteristic,
+      BluetoothRemoteGattService::GattErrorCode error_code) override;
   void SimulateGattCharacteristicRemoved(
       BluetoothRemoteGattService* service,
       BluetoothRemoteGattCharacteristic* characteristic) override;
@@ -69,6 +74,7 @@ class BluetoothTestMac : public BluetoothTestBase {
   // Callback for the bluetooth peripheral mock.
   void OnFakeBluetoothServiceDiscovery();
   void OnFakeBluetoothCharacteristicReadValue();
+  void OnFakeBluetoothCharacteristicWriteValue(std::vector<uint8_t> value);
 
  protected:
   class ScopedMockCentralManager;
