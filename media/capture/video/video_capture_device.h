@@ -30,6 +30,7 @@
 #include "media/base/video_frame.h"
 #include "media/capture/capture_export.h"
 #include "media/capture/video/scoped_result_callback.h"
+#include "media/mojo/interfaces/image_capture.mojom.h"
 #include "mojo/public/cpp/bindings/array.h"
 #include "ui/gfx/gpu_memory_buffer.h"
 
@@ -310,6 +311,12 @@ class CAPTURE_EXPORT VideoCaptureDevice {
   // would be sequenced through the same task runner, so that deallocation
   // happens first.
   virtual void StopAndDeAllocate() = 0;
+
+  // Retrieve the photo capabilities of the device (e.g. zoom levels etc).
+  using GetPhotoCapabilitiesCallback =
+      base::Callback<void(mojom::PhotoCapabilitiesPtr)>;
+  virtual void GetPhotoCapabilities(
+      ScopedResultCallback<GetPhotoCapabilitiesCallback> callback);
 
   // Asynchronously takes a photo, possibly reconfiguring the capture objects
   // and/or interrupting the capture flow. Runs |callback| on the thread

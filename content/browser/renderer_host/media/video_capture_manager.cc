@@ -840,24 +840,36 @@ void VideoCaptureManager::MaybePostDesktopCaptureWindowId(
   notification_window_ids_.erase(window_id_it);
 }
 
+void VideoCaptureManager::GetPhotoCapabilities(
+    int session_id,
+    media::ScopedResultCallback<
+        VideoCaptureDevice::GetPhotoCapabilitiesCallback> callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  VideoCaptureDevice* device = GetVideoCaptureDeviceFromSessionId(session_id);
+  if (!device)
+    return;
+  // Unretained(device) is safe to use here because |device| would be null if it
+  // was scheduled for shutdown and destruction, and because this task is
+  // guaranteed to run before the task that destroys the |device|.
+  device_task_runner_->PostTask(
+      FROM_HERE, base::Bind(&VideoCaptureDevice::GetPhotoCapabilities,
+                            base::Unretained(device), base::Passed(&callback)));
+}
+
 void VideoCaptureManager::TakePhoto(
     int session_id,
     media::ScopedResultCallback<VideoCaptureDevice::TakePhotoCallback>
         callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  SessionMap::const_iterator session_it = sessions_.find(session_id);
-  if (session_it == sessions_.end())
+  VideoCaptureDevice* device = GetVideoCaptureDeviceFromSessionId(session_id);
+  if (!device)
     return;
-
-  DeviceEntry* const device_info =
-      GetDeviceEntryForMediaStreamDevice(session_it->second);
-  if (!device_info)
-    return;
+  // Unretained(device) is safe to use here because |device| would be null if it
+  // was scheduled for shutdown and destruction, and because this task is
+  // guaranteed to run before the task that destroys the |device|.
   device_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&VideoCaptureDevice::TakePhoto,
-                 base::Unretained(device_info->video_capture_device()),
-                 base::Passed(&callback)));
+      FROM_HERE, base::Bind(&VideoCaptureDevice::TakePhoto,
+                            base::Unretained(device), base::Passed(&callback)));
 }
 
 void VideoCaptureManager::DoStopDeviceOnDeviceThread(
@@ -965,6 +977,20 @@ VideoCaptureManager::GetDeviceEntryForMediaStreamDevice(
       return device;
   }
   return nullptr;
+}
+
+media::VideoCaptureDevice*
+VideoCaptureManager::GetVideoCaptureDeviceFromSessionId(int session_id) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  SessionMap::const_iterator session_it = sessions_.find(session_id);
+  if (session_it == sessions_.end())
+    return nullptr;
+
+  DeviceEntry* const device_info =
+      GetDeviceEntryForMediaStreamDevice(session_it->second);
+  if (!device_info)
+    return nullptr;
+  return device_info->video_capture_device();
 }
 
 VideoCaptureManager::DeviceEntry*

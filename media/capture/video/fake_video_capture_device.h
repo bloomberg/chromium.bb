@@ -37,6 +37,8 @@ class CAPTURE_EXPORT FakeVideoCaptureDevice : public VideoCaptureDevice {
   void AllocateAndStart(const VideoCaptureParams& params,
                         std::unique_ptr<Client> client) override;
   void StopAndDeAllocate() override;
+  void GetPhotoCapabilities(
+      ScopedResultCallback<GetPhotoCapabilitiesCallback> callback) override;
   void TakePhoto(ScopedResultCallback<TakePhotoCallback> callback) override;
 
  private:

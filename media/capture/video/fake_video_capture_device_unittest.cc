@@ -134,9 +134,19 @@ class DeviceEnumerationListener
   virtual ~DeviceEnumerationListener() {}
 };
 
-class PhotoTakenListener : public base::RefCounted<PhotoTakenListener> {
+class ImageCaptureClient : public base::RefCounted<ImageCaptureClient> {
  public:
-  MOCK_METHOD0(OnCorrectPhotoTaken, void(void));
+  // GMock doesn't support move-only arguments, so we use this forward method.
+  void DoOnGetPhotoCapabilities(mojom::PhotoCapabilitiesPtr capabilities) {
+    capabilities_ = std::move(capabilities);
+    OnCorrectGetPhotoCapabilities();
+  }
+  MOCK_METHOD0(OnCorrectGetPhotoCapabilities, void(void));
+  MOCK_METHOD1(OnGetPhotoCapabilitiesFailure,
+               void(const VideoCaptureDevice::GetPhotoCapabilitiesCallback&));
+
+  const mojom::PhotoCapabilities* capabilities() { return capabilities_.get(); }
+
   // GMock doesn't support move-only arguments, so we use this forward method.
   void DoOnPhotoTaken(mojo::String mime_type, mojo::Array<uint8_t> data) {
     // Only PNG images are supported right now.
@@ -149,12 +159,15 @@ class PhotoTakenListener : public base::RefCounted<PhotoTakenListener> {
     EXPECT_EQ('G', data[3]);
     OnCorrectPhotoTaken();
   }
+  MOCK_METHOD0(OnCorrectPhotoTaken, void(void));
   MOCK_METHOD1(OnTakePhotoFailure,
                void(const VideoCaptureDevice::TakePhotoCallback&));
 
  private:
-  friend class base::RefCounted<PhotoTakenListener>;
-  virtual ~PhotoTakenListener() {}
+  friend class base::RefCounted<ImageCaptureClient>;
+  virtual ~ImageCaptureClient() {}
+
+  mojom::PhotoCapabilitiesPtr capabilities_;
 };
 
 }  // namespace
@@ -167,7 +180,7 @@ class FakeVideoCaptureDeviceBase : public ::testing::Test {
             base::Bind(&FakeVideoCaptureDeviceBase::OnFrameCaptured,
                        base::Unretained(this)))),
         device_enumeration_listener_(new DeviceEnumerationListener()),
-        photo_taken_listener_(new PhotoTakenListener()),
+        image_capture_client_(new ImageCaptureClient()),
         video_capture_device_factory_(new FakeVideoCaptureDeviceFactory()) {}
 
   void SetUp() override { EXPECT_CALL(*client_, OnError(_, _)).Times(0); }
@@ -201,7 +214,7 @@ class FakeVideoCaptureDeviceBase : public ::testing::Test {
   std::unique_ptr<base::RunLoop> run_loop_;
   std::unique_ptr<MockClient> client_;
   const scoped_refptr<DeviceEnumerationListener> device_enumeration_listener_;
-  const scoped_refptr<PhotoTakenListener> photo_taken_listener_;
+  const scoped_refptr<ImageCaptureClient> image_capture_client_;
   VideoCaptureFormat last_format_;
   const std::unique_ptr<VideoCaptureDeviceFactory>
       video_capture_device_factory_;
@@ -278,6 +291,41 @@ TEST_F(FakeVideoCaptureDeviceTest, GetDeviceSupportedFormats) {
   }
 }
 
+TEST_F(FakeVideoCaptureDeviceTest, GetCapabilities) {
+  std::unique_ptr<VideoCaptureDevice> device(new FakeVideoCaptureDevice(
+      FakeVideoCaptureDevice::BufferOwnership::OWN_BUFFERS, 30.0));
+  ASSERT_TRUE(device);
+
+  VideoCaptureParams capture_params;
+  capture_params.requested_format.frame_size.SetSize(640, 480);
+  capture_params.requested_format.frame_rate = 30.0;
+  device->AllocateAndStart(capture_params, std::move(client_));
+
+  ScopedResultCallback<VideoCaptureDevice::GetPhotoCapabilitiesCallback>
+      scoped_callback(
+          base::Bind(&ImageCaptureClient::DoOnGetPhotoCapabilities,
+                     image_capture_client_),
+          base::Bind(&ImageCaptureClient::OnGetPhotoCapabilitiesFailure,
+                     image_capture_client_));
+
+  EXPECT_CALL(*image_capture_client_.get(), OnCorrectGetPhotoCapabilities())
+      .Times(1);
+  device->GetPhotoCapabilities(std::move(scoped_callback));
+
+  run_loop_.reset(new base::RunLoop());
+  run_loop_->Run();
+
+  const mojom::PhotoCapabilities* capabilities =
+      image_capture_client_->capabilities();
+  ASSERT_TRUE(capabilities);
+  EXPECT_EQ(1u, capabilities->zoom->min);
+  EXPECT_EQ(2u, capabilities->zoom->max);
+  EXPECT_GE(capabilities->zoom->current, capabilities->zoom->min);
+  EXPECT_GE(capabilities->zoom->max, capabilities->zoom->current);
+
+  device->StopAndDeAllocate();
+}
+
 TEST_F(FakeVideoCaptureDeviceTest, TakePhoto) {
   std::unique_ptr<VideoCaptureDevice> device(new FakeVideoCaptureDevice(
       FakeVideoCaptureDevice::BufferOwnership::OWN_BUFFERS, 30.0));
@@ -289,11 +337,11 @@ TEST_F(FakeVideoCaptureDeviceTest, TakePhoto) {
   device->AllocateAndStart(capture_params, std::move(client_));
 
   ScopedResultCallback<VideoCaptureDevice::TakePhotoCallback> scoped_callback(
-      base::Bind(&PhotoTakenListener::DoOnPhotoTaken, photo_taken_listener_),
-      base::Bind(&PhotoTakenListener::OnTakePhotoFailure,
-                 photo_taken_listener_));
+      base::Bind(&ImageCaptureClient::DoOnPhotoTaken, image_capture_client_),
+      base::Bind(&ImageCaptureClient::OnTakePhotoFailure,
+                 image_capture_client_));
 
-  EXPECT_CALL(*photo_taken_listener_.get(), OnCorrectPhotoTaken()).Times(1);
+  EXPECT_CALL(*image_capture_client_.get(), OnCorrectPhotoTaken()).Times(1);
   device->TakePhoto(std::move(scoped_callback));
 
   run_loop_.reset(new base::RunLoop());

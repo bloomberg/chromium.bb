@@ -160,13 +160,22 @@ void VideoCaptureDeviceAndroid::TakePhoto(
   }
 }
 
-void VideoCaptureDeviceAndroid::GetPhotoCapabilities() {
+void VideoCaptureDeviceAndroid::GetPhotoCapabilities(
+    ScopedResultCallback<GetPhotoCapabilitiesCallback> callback) {
   JNIEnv* env = AttachCurrentThread();
 
   PhotoCapabilities caps(
       Java_VideoCapture_getPhotoCapabilities(env, j_capture_.obj()));
-  DVLOG(1) << "zoom min-current-max " << caps.getMinZoom() << " - "
-           << caps.getCurrentZoom() << " - " << caps.getMaxZoom();
+
+  // TODO(mcasas): Manual member copying sucks, consider adding typemapping from
+  // PhotoCapabilities to mojom::PhotoCapabilitiesPtr, https://crbug.com/622002.
+  mojom::PhotoCapabilitiesPtr photo_capabilities =
+      mojom::PhotoCapabilities::New();
+  photo_capabilities->zoom = mojom::Range::New();
+  photo_capabilities->zoom->current = caps.getCurrentZoom();
+  photo_capabilities->zoom->max = caps.getMaxZoom();
+  photo_capabilities->zoom->min = caps.getMinZoom();
+  callback.Run(std::move(photo_capabilities));
 }
 
 void VideoCaptureDeviceAndroid::OnFrameAvailable(

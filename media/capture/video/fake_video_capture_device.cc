@@ -28,12 +28,15 @@ static const float kPacmanAngularVelocity = 600;
 // Beep every 500 ms.
 static const int kBeepInterval = 500;
 
+static const int kMinZoom = 1;
+static const int kMaxZoom = 2;
+
 void DrawPacman(bool use_argb,
                 uint8_t* const data,
                 base::TimeDelta elapsed_time,
                 float frame_rate,
                 const gfx::Size& frame_size) {
-  // |kN32_SkColorType| stands for the appropriiate RGBA/BGRA format.
+  // |kN32_SkColorType| stands for the appropriate RGBA/BGRA format.
   const SkColorType colorspace =
       use_argb ? kN32_SkColorType : kAlpha_8_SkColorType;
   const SkImageInfo info = SkImageInfo::Make(
@@ -164,6 +167,17 @@ void FakeVideoCaptureDevice::AllocateAndStart(
 void FakeVideoCaptureDevice::StopAndDeAllocate() {
   DCHECK(thread_checker_.CalledOnValidThread());
   client_.reset();
+}
+
+void FakeVideoCaptureDevice::GetPhotoCapabilities(
+    ScopedResultCallback<GetPhotoCapabilitiesCallback> callback) {
+  mojom::PhotoCapabilitiesPtr photo_capabilities =
+      mojom::PhotoCapabilities::New();
+  photo_capabilities->zoom = mojom::Range::New();
+  photo_capabilities->zoom->current = kMinZoom;
+  photo_capabilities->zoom->max = kMaxZoom;
+  photo_capabilities->zoom->min = kMinZoom;
+  callback.Run(std::move(photo_capabilities));
 }
 
 void FakeVideoCaptureDevice::TakePhoto(

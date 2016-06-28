@@ -4,6 +4,8 @@
 
 #include "content/browser/media/capture/image_capture_impl.h"
 
+#include <utility>
+
 #include "base/bind_helpers.h"
 #include "content/browser/browser_main_loop.h"
 #include "content/browser/renderer_host/media/media_stream_manager.h"
@@ -16,6 +18,14 @@
 namespace content {
 
 namespace {
+
+void RunGetCapabilitiesCallbackOnUIThread(
+    const ImageCaptureImpl::GetCapabilitiesCallback& callback,
+    media::mojom::PhotoCapabilitiesPtr capabilities) {
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::Bind(callback, base::Passed(&capabilities)));
+}
 
 void RunFailedGetCapabilitiesCallback(
     const ImageCaptureImpl::GetCapabilitiesCallback& cb) {
@@ -38,6 +48,22 @@ void RunTakePhotoCallbackOnUIThread(
 void RunFailedTakePhotoCallback(const ImageCaptureImpl::TakePhotoCallback& cb) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   cb.Run("", mojo::Array<uint8_t>());
+}
+
+void GetCapabilitiesOnIOThread(
+    const mojo::String& source_id,
+    MediaStreamManager* media_stream_manager,
+    media::ScopedResultCallback<ImageCaptureImpl::GetCapabilitiesCallback>
+        callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  const int session_id =
+      media_stream_manager->VideoDeviceIdToSessionId(source_id);
+
+  if (session_id == StreamDeviceInfo::kNoId)
+    return;
+  media_stream_manager->video_capture_manager()->GetPhotoCapabilities(
+      session_id, std::move(callback));
 }
 
 void TakePhotoOnIOThread(
@@ -72,8 +98,15 @@ void ImageCaptureImpl::GetCapabilities(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   media::ScopedResultCallback<GetCapabilitiesCallback> scoped_callback(
-      callback,
+      base::Bind(&RunGetCapabilitiesCallbackOnUIThread, callback),
       media::BindToCurrentLoop(base::Bind(&RunFailedGetCapabilitiesCallback)));
+
+  // BrowserMainLoop::GetInstance() can only be called on UI thread.
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::Bind(&GetCapabilitiesOnIOThread, source_id,
+                 BrowserMainLoop::GetInstance()->media_stream_manager(),
+                 base::Passed(&scoped_callback)));
 }
 
 void ImageCaptureImpl::SetOptions(const mojo::String& source_id,
@@ -94,7 +127,7 @@ void ImageCaptureImpl::TakePhoto(const mojo::String& source_id,
       base::Bind(&RunTakePhotoCallbackOnUIThread, callback),
       media::BindToCurrentLoop(base::Bind(&RunFailedTakePhotoCallback)));
 
-  // media_stream_manager() can only be called on UI thread.
+  // BrowserMainLoop::GetInstance() can only be called on UI thread.
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::Bind(&TakePhotoOnIOThread, source_id,

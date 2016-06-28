@@ -141,6 +141,9 @@ VideoCaptureDevice::Client::Buffer::~Buffer() {
 VideoCaptureDevice::~VideoCaptureDevice() {
 }
 
+void VideoCaptureDevice::GetPhotoCapabilities(
+    ScopedResultCallback<GetPhotoCapabilitiesCallback> callback) {}
+
 void VideoCaptureDevice::TakePhoto(
     ScopedResultCallback<TakePhotoCallback> callback) {}
 

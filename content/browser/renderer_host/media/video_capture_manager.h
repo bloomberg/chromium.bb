@@ -159,6 +159,10 @@ class CONTENT_EXPORT VideoCaptureManager : public MediaStreamProvider {
     return device_task_runner_;
   }
 
+  void GetPhotoCapabilities(
+      int session_id,
+      media::ScopedResultCallback<
+          VideoCaptureDevice::GetPhotoCapabilitiesCallback> callback);
   void TakePhoto(int session_id,
                  media::ScopedResultCallback<
                      VideoCaptureDevice::TakePhotoCallback> callback);
@@ -192,6 +196,10 @@ class CONTENT_EXPORT VideoCaptureManager : public MediaStreamProvider {
   // Finds a DeviceEntry by its device ID and type, if it is already opened.
   DeviceEntry* GetDeviceEntryForMediaStreamDevice(
       const MediaStreamDevice& device_info);
+
+  // Retrieve the VideoCaptureDevice associated to |session_id|, or nullptr
+  // if not found.
+  VideoCaptureDevice* GetVideoCaptureDeviceFromSessionId(int session_id);
 
   // Finds a DeviceEntry entry for the indicated session, creating a fresh one
   // if necessary. Returns NULL if the session id is invalid.
