@@ -123,7 +123,7 @@ NSMutableArray* PersistentAppPaths(NSArray* persistent_apps) {
   return app_paths;
 }
 
-// Restart the Dock process by sending it a SIGHUP.
+// Restart the Dock process by sending it a SIGTERM.
 void Restart() {
   // Doing this via launchd using the proper job label is the safest way to
   // handle the restart. Unlike "killall Dock", looking this up via launchd
@@ -133,12 +133,12 @@ void Restart() {
     return;
   }
 
-  // Sending a SIGHUP to the Dock seems to be a more reliable way to get the
+  // Sending a SIGTERM to the Dock seems to be a more reliable way to get the
   // replacement Dock process to read the newly written plist than using the
   // equivalent of "launchctl stop" (even if followed by "launchctl start.")
   // Note that this is a potential race in that pid may no longer be valid or
   // may even have been reused.
-  kill(pid, SIGHUP);
+  kill(pid, SIGTERM);
 }
 
 }  // namespace
