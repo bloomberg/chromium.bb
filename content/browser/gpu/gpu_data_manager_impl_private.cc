@@ -527,8 +527,11 @@ void GpuDataManagerImplPrivate::Initialize() {
   }
 
   gpu::GPUInfo gpu_info;
-  if (command_line->GetSwitchValueASCII(switches::kUseGL) ==
-      gl::kGLImplementationOSMesaName) {
+  const bool force_osmesa =
+      (command_line->GetSwitchValueASCII(switches::kUseGL) ==
+       gl::kGLImplementationOSMesaName) ||
+      command_line->HasSwitch(switches::kOverrideUseGLWithOSMesaForTests);
+  if (force_osmesa) {
     // If using the OSMesa GL implementation, use fake vendor and device ids to
     // make sure it never gets blacklisted. This is better than simply
     // cancelling GPUInfo gathering as it allows us to proceed with loading the
@@ -540,6 +543,10 @@ void GpuDataManagerImplPrivate::Initialize() {
     // Also declare the driver_vendor to be osmesa to be able to specify
     // exceptions based on driver_vendor==osmesa for some blacklist rules.
     gpu_info.driver_vendor = gl::kGLImplementationOSMesaName;
+
+    // We are not going to call CollectBasicGraphicsInfo.
+    // So mark it as collected.
+    gpu_info.basic_info_state = gpu::kCollectInfoSuccess;
   } else {
     TRACE_EVENT0("startup",
       "GpuDataManagerImpl::Initialize:CollectBasicGraphicsInfo");

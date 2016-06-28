@@ -184,15 +184,8 @@ class AutofillRiskFingerprintTest : public content::ContentBrowserTest {
   base::MessageLoopForUI message_loop_;
 };
 
-#if defined(OS_WIN)
-// http://crbug.com/503821
-#define MAYBE_GetFingerprint DISABLED_GetFingerprint
-#else
-#define MAYBE_GetFingerprint GetFingerprint
-#endif
-
 // Test that getting a fingerprint works on some basic level.
-IN_PROC_BROWSER_TEST_F(AutofillRiskFingerprintTest, MAYBE_GetFingerprint) {
+IN_PROC_BROWSER_TEST_F(AutofillRiskFingerprintTest, GetFingerprint) {
   content::Geoposition position;
   position.latitude = kLatitude;
   position.longitude = kLongitude;
