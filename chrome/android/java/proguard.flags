@@ -223,3 +223,10 @@
 # Needed for chrome_sync_shell_test_apk. Note - these do no affect chrome_apk's
 # size.
 -keep class org.chromium.sync.protocol.* { *; }
+
+# These resources are referenced in tests, but not in the real application.
+-keepclassmembers class org.chromium.chrome.R$id {
+  int webapp_splash_space;
+  int mr_chooser_list;
+  int find_toolbar;
+}

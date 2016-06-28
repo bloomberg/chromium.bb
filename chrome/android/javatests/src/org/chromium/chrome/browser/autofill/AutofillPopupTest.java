@@ -11,7 +11,6 @@ import android.view.ViewGroup;
 
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.UrlUtils;
-import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
 import org.chromium.chrome.test.ChromeActivityTestCaseBase;
@@ -23,6 +22,7 @@ import org.chromium.content.browser.test.util.DOMUtils;
 import org.chromium.content.browser.test.util.TestInputMethodManagerWrapper;
 import org.chromium.content.browser.test.util.TouchCommon;
 import org.chromium.content_public.browser.WebContents;
+import org.chromium.ui.R;
 import org.chromium.ui.autofill.AutofillPopup;
 
 import java.util.ArrayList;
