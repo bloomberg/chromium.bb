@@ -478,6 +478,8 @@ class DownloadProtectionServiceTest : public testing::Test {
   }
 
  public:
+  enum ArchiveType { ZIP, DMG };
+
   void CheckDoneCallback(
       DownloadProtectionService::DownloadCheckResult result) {
     result_ = result;
@@ -514,9 +516,9 @@ class DownloadProtectionServiceTest : public testing::Test {
 
   // Check scenarios where we should/shouldn't send a report for
   // a corrupted zip.
-  void CheckClientDownloadReportCorruptZip(bool is_extended_reporting,
-                                           bool is_incognito);
-
+  void CheckClientDownloadReportCorruptArchive(ArchiveType type,
+                                               bool is_extended_reporting,
+                                               bool is_incognito);
 
  protected:
   // This will effectivly mask the global Singleton while this is in scope.
@@ -545,8 +547,8 @@ class DownloadProtectionServiceTest : public testing::Test {
   base::ScopedTempDir temp_dir_;
 };
 
-
-void DownloadProtectionServiceTest::CheckClientDownloadReportCorruptZip(
+void DownloadProtectionServiceTest::CheckClientDownloadReportCorruptArchive(
+    ArchiveType type,
     bool is_extended_reporting,
     bool is_incognito) {
   net::FakeURLFetcherFactory factory(NULL);
@@ -557,12 +559,17 @@ void DownloadProtectionServiceTest::CheckClientDownloadReportCorruptZip(
   profile_->GetPrefs()->SetBoolean(prefs::kSafeBrowsingExtendedReportingEnabled,
                                    is_extended_reporting);
   content::MockDownloadItem item;
-  PrepareBasicDownloadItem(
-    &item,
-    {"http://www.evil.com/a.zip"},  // url_chain
-    "http://www.google.com/",       // referrer
-    FILE_PATH_LITERAL("a.tmp"),     // tmp_path
-    FILE_PATH_LITERAL("a.zip"));    // final_path
+  if (type == ZIP) {
+    PrepareBasicDownloadItem(&item, {"http://www.evil.com/a.zip"},  // url_chain
+                             "http://www.google.com/",     // referrer
+                             FILE_PATH_LITERAL("a.tmp"),   // tmp_path
+                             FILE_PATH_LITERAL("a.zip"));  // final_path
+  } else if (type == DMG) {
+    PrepareBasicDownloadItem(&item, {"http://www.evil.com/a.dmg"},  // url_chain
+                             "http://www.google.com/",     // referrer
+                             FILE_PATH_LITERAL("a.tmp"),   // tmp_path
+                             FILE_PATH_LITERAL("a.dmg"));  // final_path
+  }
 
   if (is_incognito) {
     EXPECT_CALL(item, GetBrowserContext())
@@ -572,7 +579,7 @@ void DownloadProtectionServiceTest::CheckClientDownloadReportCorruptZip(
         .WillRepeatedly(Return(profile_.get()));
   }
 
-  std::string file_contents = "corrupt zip file";
+  std::string file_contents = "corrupt archive file";
   ASSERT_EQ(static_cast<int>(file_contents.size()), base::WriteFile(
       tmp_path_, file_contents.data(), file_contents.size()));
 
@@ -582,14 +589,17 @@ void DownloadProtectionServiceTest::CheckClientDownloadReportCorruptZip(
                  base::Unretained(this)));
   base::RunLoop().Run();
 
-  const bool expect_request = is_extended_reporting && !is_incognito;
+  const bool expect_request =
+      type == ZIP ? is_extended_reporting && !is_incognito : true;
 
   if (expect_request) {
     ASSERT_TRUE(HasClientDownloadRequest());
     EXPECT_EQ(0, GetClientDownloadRequest()->archived_binary_size());
     EXPECT_TRUE(GetClientDownloadRequest()->has_download_type());
-    EXPECT_EQ(ClientDownloadRequest_DownloadType_INVALID_ZIP,
-              GetClientDownloadRequest()->download_type());
+    ClientDownloadRequest::DownloadType expected_type =
+        type == ZIP ? ClientDownloadRequest_DownloadType_INVALID_ZIP
+                    : ClientDownloadRequest_DownloadType_INVALID_MAC_ARCHIVE;
+    EXPECT_EQ(expected_type, GetClientDownloadRequest()->download_type());
     ClearClientDownloadRequest();
   } else {
     EXPECT_TRUE(IsResult(DownloadProtectionService::UNKNOWN));
@@ -599,7 +609,6 @@ void DownloadProtectionServiceTest::CheckClientDownloadReportCorruptZip(
   Mock::VerifyAndClearExpectations(sb_service_.get());
   Mock::VerifyAndClearExpectations(binary_feature_extractor_.get());
 }
-
 
 TEST_F(DownloadProtectionServiceTest, CheckClientDownloadInvalidUrl) {
   content::MockDownloadItem item;
@@ -1330,20 +1339,40 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadZip) {
 TEST_F(DownloadProtectionServiceTest,
        CheckClientDownloadReportCorruptZipNormal) {
   // !is_extended_reporting && !is_incognito
-  CheckClientDownloadReportCorruptZip(false, false);
+  CheckClientDownloadReportCorruptArchive(ZIP, false, false);
 }
 
 TEST_F(DownloadProtectionServiceTest,
        CheckClientDownloadReportCorruptZipExtended) {
   // !is_extended_reporting && !is_incognito
-  CheckClientDownloadReportCorruptZip(true, false);
+  CheckClientDownloadReportCorruptArchive(ZIP, true, false);
 }
 
 TEST_F(DownloadProtectionServiceTest,
        CheckClientDownloadReportCorruptZipIncognito) {
   // is_extended_reporting && is_incognito
-  CheckClientDownloadReportCorruptZip(true, true);
+  CheckClientDownloadReportCorruptArchive(ZIP, true, true);
 }
+
+#if defined(OS_MACOSX)
+TEST_F(DownloadProtectionServiceTest,
+       CheckClientDownloadReportCorruptDmgNormal) {
+  // !is_extended_reporting && !is_incognito
+  CheckClientDownloadReportCorruptArchive(DMG, false, false);
+}
+
+TEST_F(DownloadProtectionServiceTest,
+       CheckClientDownloadReportCorruptDmgExtended) {
+  // !is_extended_reporting && !is_incognito
+  CheckClientDownloadReportCorruptArchive(DMG, true, false);
+}
+
+TEST_F(DownloadProtectionServiceTest,
+       CheckClientDownloadReportCorruptDmgIncognito) {
+  // is_extended_reporting && is_incognito
+  CheckClientDownloadReportCorruptArchive(DMG, true, true);
+}
+#endif
 
 TEST_F(DownloadProtectionServiceTest, CheckClientCrxDownloadSuccess) {
   // Even if the server verdict is dangerous we should return SAFE because
