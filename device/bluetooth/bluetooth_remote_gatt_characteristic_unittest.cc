@@ -421,7 +421,7 @@ TEST_F(BluetoothRemoteGattCharacteristicTest, ReadRemoteCharacteristic) {
 }
 #endif  // defined(OS_ANDROID) || defined(OS_MACOSX) || defined(OS_WIN)
 
-#if defined(OS_ANDROID) || defined(OS_WIN)
+#if defined(OS_ANDROID) || defined(OS_MACOSX) || defined(OS_WIN)
 // Callback that make sure GattCharacteristicValueChanged has been called
 // before the callback runs.
 static void test_callback(
@@ -436,6 +436,10 @@ static void test_callback(
 // GattCharacteristicValueChanged call.
 TEST_F(BluetoothRemoteGattCharacteristicTest,
        ReadRemoteCharacteristic_GattCharacteristicValueChanged) {
+  if (!PlatformSupportsLowEnergy()) {
+    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
+    return;
+  }
   ASSERT_NO_FATAL_FAILURE(FakeCharacteristicBoilerplate(
       BluetoothRemoteGattCharacteristic::PROPERTY_READ));
 
@@ -456,7 +460,7 @@ TEST_F(BluetoothRemoteGattCharacteristicTest,
             observer.last_gatt_characteristic_uuid());
   EXPECT_EQ(test_vector, observer.last_changed_characteristic_value());
 }
-#endif  // defined(OS_ANDROID) || defined(OS_WIN)
+#endif  // defined(OS_ANDROID) || defined(OS_MACOSX) || defined(OS_WIN)
 
 #if defined(OS_ANDROID) || defined(OS_MACOSX) || defined(OS_WIN)
 // Tests WriteRemoteCharacteristic with non-empty value buffer.
