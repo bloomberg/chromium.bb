@@ -23,7 +23,7 @@ namespace content {
 AudioDeviceFactory* AudioDeviceFactory::factory_ = NULL;
 
 namespace {
-const int64_t kMaxAuthorizationTimeoutMs = 4000;
+const int64_t kMaxAuthorizationTimeoutMs = 900;
 
 scoped_refptr<media::AudioOutputDevice> NewOutputDevice(
     int render_frame_id,
