@@ -18,7 +18,6 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.omnibox.OmniboxUrlEmphasizer;
 import org.chromium.chrome.browser.profiles.Profile;
-import org.chromium.components.location.LocationUtils;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.text.NoUnderlineClickableSpan;
 import org.chromium.ui.text.SpanApplier;
@@ -162,7 +161,8 @@ public class BluetoothChooserDialog
     }
 
     private void checkLocationPermission() {
-        if (LocationUtils.getInstance().hasAndroidLocationPermission(mActivity)) {
+        if (mWindowAndroid.hasPermission(Manifest.permission.ACCESS_COARSE_LOCATION)
+                || mWindowAndroid.hasPermission(Manifest.permission.ACCESS_FINE_LOCATION)) {
             return;
         }
 
@@ -255,8 +255,8 @@ public class BluetoothChooserDialog
     @CalledByNative
     private static BluetoothChooserDialog create(WindowAndroid windowAndroid, String origin,
             int securityLevel, long nativeBluetoothChooserDialogPtr) {
-        if (!LocationUtils.getInstance().hasAndroidLocationPermission(
-                    windowAndroid.getActivity().get())
+        if (!windowAndroid.hasPermission(Manifest.permission.ACCESS_COARSE_LOCATION)
+                && !windowAndroid.hasPermission(Manifest.permission.ACCESS_FINE_LOCATION)
                 && !windowAndroid.canRequestPermission(
                            Manifest.permission.ACCESS_COARSE_LOCATION)) {
             // If we can't even ask for enough permission to scan for Bluetooth devices, don't open

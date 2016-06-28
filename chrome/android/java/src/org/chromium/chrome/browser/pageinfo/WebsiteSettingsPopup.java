@@ -64,7 +64,6 @@ import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.ssl.SecurityStateModel;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.util.UrlUtilities;
-import org.chromium.components.location.LocationUtils;
 import org.chromium.components.security_state.ConnectionSecurityLevel;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content_public.browser.WebContents;
@@ -593,6 +592,15 @@ public class WebsiteSettingsPopup implements OnClickListener {
                            == PackageManager.PERMISSION_GRANTED);
     }
 
+    private boolean isAndroidLocationDisabled() {
+        try {
+            return Settings.Secure.getInt(mContext.getContentResolver(),
+                    Settings.Secure.LOCATION_MODE) == Settings.Secure.LOCATION_MODE_OFF;
+        } catch (Settings.SettingNotFoundException e) {
+            return false;
+        }
+    }
+
     /**
      * Adds a new row for the given permission.
      *
@@ -632,12 +640,11 @@ public class WebsiteSettingsPopup implements OnClickListener {
 
             // If warningTextResource is non-zero, then the view must be tagged with either
             // permission_intent_override or permission_type.
-            LocationUtils locationUtils = LocationUtils.getInstance();
             if (permission.type == ContentSettingsType.CONTENT_SETTINGS_TYPE_GEOLOCATION
-                    && !locationUtils.isSystemLocationSettingEnabled(mContext)) {
+                    && isAndroidLocationDisabled()) {
                 warningTextResource = R.string.page_info_android_location_blocked;
                 permissionRow.setTag(R.id.permission_intent_override,
-                        locationUtils.getSystemLocationSettingsIntent());
+                        new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS));
             } else if (!hasAndroidPermission(permission.type)) {
                 warningTextResource = R.string.page_info_android_permission_blocked;
                 permissionRow.setTag(R.id.permission_type,

@@ -6,7 +6,6 @@ package org.chromium.chrome.browser;
 
 import android.Manifest;
 import android.app.Dialog;
-import android.content.Context;
 import android.content.pm.PackageManager;
 import android.test.MoreAsserts;
 import android.test.suitebuilder.annotation.SmallTest;
@@ -17,7 +16,6 @@ import android.widget.ListView;
 import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.test.ChromeActivityTestCaseBase;
-import org.chromium.components.location.LocationUtils;
 import org.chromium.components.security_state.ConnectionSecurityLevel;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
@@ -70,7 +68,6 @@ public class BluetoothChooserDialogTest extends ChromeActivityTestCaseBase<Chrom
     }
 
     private ActivityWindowAndroid mWindowAndroid;
-    private FakeLocationUtils mLocationUtils;
     private BluetoothChooserDialogWithFakeNatives mChooserDialog;
 
     public BluetoothChooserDialogTest() {
@@ -82,20 +79,7 @@ public class BluetoothChooserDialogTest extends ChromeActivityTestCaseBase<Chrom
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        mLocationUtils = new FakeLocationUtils();
-        LocationUtils.setFactory(new LocationUtils.Factory() {
-            @Override
-            public LocationUtils create() {
-                return mLocationUtils;
-            }
-        });
         mChooserDialog = createDialog();
-    }
-
-    @Override
-    protected void tearDown() throws Exception {
-        LocationUtils.setFactory(null);
-        super.tearDown();
     }
 
     @Override
@@ -281,7 +265,7 @@ public class BluetoothChooserDialogTest extends ChromeActivityTestCaseBase<Chrom
                 new String[] {Manifest.permission.ACCESS_COARSE_LOCATION});
         assertNotNull(permissionDelegate.mCallback);
         // Grant permission.
-        mLocationUtils.mLocationGranted = true;
+        permissionDelegate.mLocationGranted = true;
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
@@ -300,14 +284,15 @@ public class BluetoothChooserDialogTest extends ChromeActivityTestCaseBase<Chrom
     // TODO(jyasskin): Test when the user denies Chrome the ability to ask for permission.
 
     private static class TestAndroidPermissionDelegate implements AndroidPermissionDelegate {
+        boolean mLocationGranted = false;
         PermissionCallback mCallback = null;
         String[] mPermissionsRequested = null;
 
         @Override
         public boolean hasPermission(String permission) {
-            return false;
+            return permission.equals(Manifest.permission.ACCESS_COARSE_LOCATION)
+                    && mLocationGranted;
         }
-
         @Override
         public boolean canRequestPermission(String permission) {
             return true;
@@ -323,15 +308,6 @@ public class BluetoothChooserDialogTest extends ChromeActivityTestCaseBase<Chrom
                     && permissions[0].equals(Manifest.permission.ACCESS_COARSE_LOCATION)) {
                 mCallback = callback;
             }
-        }
-    }
-
-    private static class FakeLocationUtils extends LocationUtils {
-        public boolean mLocationGranted = false;
-
-        @Override
-        public boolean hasAndroidLocationPermission(Context context) {
-            return mLocationGranted;
         }
     }
 }

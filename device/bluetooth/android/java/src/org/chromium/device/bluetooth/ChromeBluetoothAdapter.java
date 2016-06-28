@@ -4,6 +4,7 @@
 
 package org.chromium.device.bluetooth;
 
+import android.Manifest;
 import android.annotation.TargetApi;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.le.ScanSettings;
@@ -208,8 +209,8 @@ final class ChromeBluetoothAdapter extends BroadcastReceiver {
      */
     private boolean canScan() {
         Wrappers.ContextWrapper context = mAdapter.getContext();
-
-        return context.hasAndroidLocationPermission();
+        return context.checkPermission(Manifest.permission.ACCESS_COARSE_LOCATION)
+                || context.checkPermission(Manifest.permission.ACCESS_FINE_LOCATION);
     }
 
     private void registerBroadcastReceiver() {
