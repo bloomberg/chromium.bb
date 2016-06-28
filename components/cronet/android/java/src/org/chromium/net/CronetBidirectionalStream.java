@@ -403,18 +403,6 @@ class CronetBidirectionalStream extends BidirectionalStream {
     }
 
     @Override
-    public void ping(PingCallback callback, Executor executor) {
-        // TODO(mef): May be last thing to be implemented on Android.
-        throw new UnsupportedOperationException("ping is not supported yet.");
-    }
-
-    @Override
-    public void windowUpdate(int windowSizeIncrement) {
-        // TODO(mef): Understand the needs and semantics of this method.
-        throw new UnsupportedOperationException("windowUpdate is not supported yet.");
-    }
-
-    @Override
     public void cancel() {
         synchronized (mNativeStreamLock) {
             if (isDoneLocked() || mReadState == State.NOT_STARTED) {

@@ -322,28 +322,6 @@ public abstract class BidirectionalStream {
     }
 
     /**
-     * A callback that is invoked when the acknowledgement to a {@link #ping ping()} is received.
-     * Exactly one of the two methods will be invoked per each call to {@link #ping ping()}.
-     */
-    public abstract static class PingCallback {
-        /**
-         * Invoked when a ping is acknowledged. The given argument is the round-trip time of the
-         * ping, in microseconds.
-         *
-         * @param roundTripTimeMicros the round-trip duration between the ping being sent and the
-         *     acknowledgement received
-         */
-        public abstract void pingAcknowledged(long roundTripTimeMicros);
-
-        /**
-         * Invoked when a ping fails. The given argument is the cause of the failure.
-         *
-         * @param cause the cause of the ping failure
-         */
-        public abstract void pingFailed(CronetException cause);
-    }
-
-    /**
      * Starts the stream, all callbacks go to the {@code callback} argument passed to {@link
      * BidirectionalStream.Builder}'s constructor. Should only be called once.
      */
@@ -405,23 +383,6 @@ public abstract class BidirectionalStream {
      * will be invoked when the buffer is sent.
      */
     public abstract void flush();
-
-    /**
-     * Pings remote end-point. {@code callback} methods will be invoked on {@code executor}.
-     *
-     * @param callback the callback that will be invoked when ping succeeds or fails
-     * @param executor the executor on which the callback will be invoked
-     */
-    // TODO(mef): May be last thing to be implemented on Android.
-    public abstract void ping(PingCallback callback, Executor executor);
-
-    /**
-     * Updates stream flow control window.
-     *
-     * @param windowSizeIncrement the value in bytes to increment window by. May be negative.
-     */
-    // TODO(mef): Understand the needs and semantics of this method.
-    public abstract void windowUpdate(int windowSizeIncrement);
 
     /**
      * Cancels the stream. Can be called at any time after {@link #start}.
