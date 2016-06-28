@@ -5,16 +5,14 @@
 #include "google_apis/gaia/oauth2_access_token_fetcher_immediate_error.h"
 
 #include "base/bind.h"
-#include "base/message_loop/message_loop.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 
 
 OAuth2AccessTokenFetcherImmediateError::FailCaller::FailCaller(
     OAuth2AccessTokenFetcherImmediateError* fetcher)
     : fetcher_(fetcher) {
-  base::MessageLoop* looper = base::MessageLoop::current();
-  DCHECK(looper);
-  looper->PostTask(
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::Bind(&OAuth2AccessTokenFetcherImmediateError::FailCaller::run,
                  this));
