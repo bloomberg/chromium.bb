@@ -64,14 +64,14 @@ private:
         FontLoadHistograms() : m_loadStartTime(0), m_blankPaintTime(0), m_isLongLimitExceeded(false) { }
         void loadStarted();
         void fallbackFontPainted(DisplayPeriod);
-        void fontLoaded(bool isInterventionTriggered);
+        void fontLoaded(bool isInterventionTriggered, bool isLoadedFromCache);
         void longLimitExceeded(bool isInterventionTriggered);
         void recordFallbackTime(const FontResource*);
         void recordRemoteFont(const FontResource*);
         bool hadBlankText() { return m_blankPaintTime; }
     private:
         void recordLoadTimeHistogram(const FontResource*, int duration);
-        void recordInterventionResult(bool triggered);
+        void recordInterventionResult(bool isTriggered, bool isLoadedFromCache);
         double m_loadStartTime;
         double m_blankPaintTime;
         bool m_isLongLimitExceeded;
@@ -86,6 +86,7 @@ private:
     DisplayPeriod m_period;
     FontLoadHistograms m_histograms;
     bool m_isInterventionTriggered;
+    bool m_isLoadedFromMemoryCache;
 };
 
 } // namespace blink
