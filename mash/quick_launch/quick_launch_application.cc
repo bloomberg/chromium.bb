@@ -159,7 +159,7 @@ void QuickLaunchApplication::RemoveWindow(views::Widget* window) {
   auto it = std::find(windows_.begin(), windows_.end(), window);
   DCHECK(it != windows_.end());
   windows_.erase(it);
-  if (windows_.empty())
+  if (windows_.empty() && base::MessageLoop::current()->is_running())
     base::MessageLoop::current()->QuitWhenIdle();
 }
 
