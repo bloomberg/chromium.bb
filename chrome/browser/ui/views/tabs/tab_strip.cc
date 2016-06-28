@@ -1017,11 +1017,8 @@ void TabStrip::SetSelection(const ui::ListSelectionModel& old_selection,
           new_selection.selected_indices(),
           old_selection.selected_indices());
 
-  // Fire accessibility events that reflect the changes to selection, and
-  // stop the pinned tab title animation on tabs no longer selected.
+  // Fire accessibility events that reflect the changes to selection.
   for (size_t i = 0; i < no_longer_selected.size(); ++i) {
-    tab_at(no_longer_selected[i])
-        ->SetPinnedTabTitleChangedIndicatorVisible(false);
     tab_at(no_longer_selected[i])->NotifyAccessibilityEvent(
         ui::AX_EVENT_SELECTION_REMOVE, true);
   }

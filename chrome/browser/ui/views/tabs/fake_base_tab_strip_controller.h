@@ -21,6 +21,8 @@ class FakeBaseTabStripController : public TabStripController {
   void AddPinnedTab(int index, bool is_active);
   void RemoveTab(int index);
 
+  ui::ListSelectionModel* selection_model() { return &selection_model_; }
+
   void set_tab_strip(TabStrip* tab_strip) { tab_strip_ = tab_strip; }
 
   // TabStripController overrides:

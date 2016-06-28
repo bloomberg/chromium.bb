@@ -571,6 +571,10 @@ bool Tab::IsActive() const {
 }
 
 void Tab::ActiveStateChanged() {
+  // The pinned tab title changed indicator is only shown for inactive tabs.
+  // When transitioning between active and inactive always reset the state
+  // to enforce that.
+  SetPinnedTabTitleChangedIndicatorVisible(false);
   OnButtonColorMaybeChanged();
   alert_indicator_button_->UpdateEnabledForMuteToggle();
   Layout();
