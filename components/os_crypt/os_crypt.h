@@ -52,7 +52,7 @@ class OSCrypt {
   DISALLOW_IMPLICIT_CONSTRUCTORS(OSCrypt);
 };
 
-#if defined(USE_LIBSECRET) && defined(UNIT_TEST)
+#if (defined(USE_LIBSECRET) || defined(USE_KWALLET)) && defined(UNIT_TEST)
 // For unit testing purposes, inject methods to be used.
 // |get_key_storage_mock| provides the desired |KeyStorage| implementation.
 // If the provider returns |nullptr|, a hardcoded password will be used.
@@ -60,6 +60,7 @@ class OSCrypt {
 // If both parameters are |nullptr|, the real implementation is restored.
 void UseMockKeyStorageForTesting(KeyStorageLinux* (*get_key_storage_mock)(),
                                  std::string* (*get_password_v11_mock)());
-#endif  // defined(USE_LIBSECRET) && defined(UNIT_TEST)
+#endif  // (defined(USE_LIBSECRET) || defined(USE_KWALLET)) &&
+        // defined(UNIT_TEST)
 
 #endif  // COMPONENTS_OS_CRYPT_OS_CRYPT_H_
