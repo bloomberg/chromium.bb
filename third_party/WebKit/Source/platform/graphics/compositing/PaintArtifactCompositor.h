@@ -49,6 +49,16 @@ public:
     // WebLayer.
     WebLayer* getWebLayer() const { return m_webLayer.get(); }
 
+    // Returns extra information recorded during unit tests.
+    // While not part of the normal output of this class, this provides a simple
+    // way of locating the layers of interest, since there are still a slew of
+    // placeholder layers required.
+    struct ExtraDataForTesting {
+        Vector<scoped_refptr<cc::Layer>> contentLayers;
+    };
+    void enableExtraDataForTesting() { m_extraDataForTestingEnabled = true; }
+    ExtraDataForTesting* getExtraDataForTesting() const { return m_extraDataForTesting.get(); }
+
 private:
     class ContentLayerClientImpl;
 
@@ -64,6 +74,9 @@ private:
     scoped_refptr<cc::Layer> m_rootLayer;
     std::unique_ptr<WebLayer> m_webLayer;
     Vector<std::unique_ptr<ContentLayerClientImpl>> m_contentLayerClients;
+
+    bool m_extraDataForTestingEnabled = false;
+    std::unique_ptr<ExtraDataForTesting> m_extraDataForTesting;
 };
 
 } // namespace blink

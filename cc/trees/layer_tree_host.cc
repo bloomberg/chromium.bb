@@ -1024,6 +1024,11 @@ bool LayerTreeHost::DoUpdateLayers(Layer* root_layer) {
                            "LayerTreeHost::UpdateLayers_BuiltPropertyTrees",
                            TRACE_EVENT_SCOPE_THREAD, "property_trees",
                            property_trees_.AsTracedValue());
+    } else {
+      TRACE_EVENT_INSTANT1("cc",
+                           "LayerTreeHost::UpdateLayers_ReceivedPropertyTrees",
+                           TRACE_EVENT_SCOPE_THREAD, "property_trees",
+                           property_trees_.AsTracedValue());
     }
     draw_property_utils::UpdatePropertyTrees(&property_trees_,
                                              can_render_to_separate_surface);
