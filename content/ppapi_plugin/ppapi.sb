@@ -13,6 +13,7 @@
 (allow file-read* (regex #"^/Library/Fonts($|/)"))
 (allow mach-lookup (global-name "com.apple.FontObjectsServer"))
 (allow mach-lookup (global-name "com.apple.FontServer"))
+(allow mach-lookup (global-name "com.apple.fonts"))
 
 ; https://crbug.com/11269
 (allow file-read* (subpath (user-homedir-path "/Library/Fonts")))

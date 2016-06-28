@@ -11,6 +11,7 @@
 (allow file-read* (regex #"^/Library/Fonts($|/)"))
 (allow mach-lookup (global-name "com.apple.FontObjectsServer"))
 (allow mach-lookup (global-name "com.apple.FontServer"))
+(allow mach-lookup (global-name "com.apple.fonts"))
 
 (allow file-read*
   (regex #"^/System/Library/ColorSync($|/)")  ; https://crbug.com/46648
