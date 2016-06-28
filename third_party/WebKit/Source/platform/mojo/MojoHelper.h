@@ -5,27 +5,18 @@
 #ifndef MojoHelper_h
 #define MojoHelper_h
 
-#include "base/bind.h"
+#include "base/callback.h"
 #include "mojo/public/cpp/bindings/wtf_array.h"
 #include "platform/heap/HeapAllocator.h"
+#include "wtf/Functional.h"
 #include <utility>
 
 namespace blink {
 
-namespace internal {
-
-template <typename R, typename... Args>
-R CallWTFFunction(Function<R(Args...)>* functor, Args... args)
-{
-    return (*functor)(std::forward<Args>(args)...);
-}
-
-}
-
 template <typename R, typename... Args>
 base::Callback<R(Args...)> createBaseCallback(std::unique_ptr<Function<R(Args...)>> functor)
 {
-    return base::Bind(&internal::CallWTFFunction<R, Args...>, base::Owned(functor.release()));
+    return static_cast<base::Callback<R(Args...)>>(*functor);
 }
 
 } // namespace blink

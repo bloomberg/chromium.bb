@@ -4,8 +4,6 @@ include_rules = [
     # blink.
     "+base/bind.h",
     "+base/callback.h",
-    "+base/callback_helpers.h",
     "+base/logging.h",
     "+base/macros.h",
-    "+base/memory/ptr_util.h",
 ]

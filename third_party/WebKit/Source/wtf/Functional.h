@@ -231,6 +231,11 @@ public:
         return m_callback.Run(std::forward<Args>(args)...);
     }
 
+    explicit operator base::Callback<R(Args...)>()
+    {
+        return m_callback;
+    }
+
 private:
     using MaybeThreadChecker = typename std::conditional<
         threadAffinity == SameThreadAffinity,
