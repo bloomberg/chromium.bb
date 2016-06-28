@@ -582,9 +582,13 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
         }
     }
 
-    /** @return The editor user interface. */
-    public EditorView getEditorView() {
-        return mEditorView;
+    /**
+     * Displays the editor user interface for the given model.
+     *
+     * @param editorModel The description of the editor user interface to display.
+     */
+    public void showEditor(final EditorModel editorModel) {
+        mEditorView.show(editorModel);
     }
 
     /**
@@ -1009,6 +1013,11 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
     @VisibleForTesting
     public Dialog getDialogForTest() {
         return mDialog;
+    }
+
+    @VisibleForTesting
+    public Dialog getEditorViewForTest() {
+        return mEditorView;
     }
 
     @VisibleForTesting
