@@ -11126,7 +11126,7 @@ I don't think this site should be blocked!
         Personalize Google services
       </message>
       <message name="IDS_SYNC_CONFIRMATION_PERSONALIZE_SERVICES_BODY" desc="Body of the personalize services section of the sync confirmation dialog in the tab modal signin flow" formatter_data="android_java">
-        Google may use your browsing history to personalize Search and other Google services
+        Google may use your browsing history to personalize Search, ads, and other Google services
       </message>
       <message name="IDS_SYNC_CONFIRMATION_SYNC_SETTINGS_LINK_BODY" desc="Label of the section containing the link to go to the sync setting page.">
         Control how this works in <ph name="BEGIN_LINK">&lt;a id="settingsLink" href="#"&gt;Settings&lt;/a&gt;.</ph>
@@ -11769,7 +11769,7 @@ Some features may be unavailable.  Please check that the profile exists and you 
 
         <!-- Personalize Google Services section of the configure sync dialog -->
         <message name="IDS_SYNC_PERSONALIZE_GOOGLE_SERVICES_MESSAGE" desc="Text of the section containing a link to the Google Activity Controls.">
-          Control how Google uses your browsing history to personalize Search and other Google services from <ph name="BEGIN_LINK">&lt;a id="activity-controls" href="$1" target=&quot;_blank&quot;&gt;</ph>Google Activity Controls<ph name="END_LINK">&lt;/a&gt;</ph>.
+          Control how Google uses your browsing history to personalize Search, ads, and other Google services from <ph name="BEGIN_LINK">&lt;a id="activity-controls" href="$1" target=&quot;_blank&quot;&gt;</ph>Google Activity Controls<ph name="END_LINK">&lt;/a&gt;</ph>.
         </message>
 
         <!-- Passphrase dialog strings -->
