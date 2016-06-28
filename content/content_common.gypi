@@ -53,6 +53,11 @@
     'content.gyp:common_features',
     'content_common_mojo_bindings.gyp:content_common_mojo_bindings',
   ],
+  # content/public/common/common_param_traits_macros.h includes a generated
+  # header from blink.gyp:mojo_bindings. We need to be sure any targets that
+  # depend on content_common also depend upon blink.gyp:mojo_bindings so
+  # that the header is generated before compile starts.
+  'hard_dependency': '1',
   'include_dirs': [
     '..',
   ],

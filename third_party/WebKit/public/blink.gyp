@@ -153,6 +153,8 @@
         {
             # GN version: //third_party/WebKit/public:mojo_bindings
             'target_name': 'mojo_bindings',
+            # Needed because of dependency on generated headers.
+            'hard_dependency': '1',
             'type': 'static_library',
             'dependencies': [
                 'mojo_bindings_blink_mojom',
