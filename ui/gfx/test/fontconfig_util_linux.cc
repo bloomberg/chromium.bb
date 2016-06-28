@@ -72,9 +72,11 @@ void SetUpFontconfig() {
   // - FcConfigReference() increments a config's refcount.
   // - FcConfigDestroy() decrements a config's refcount, deallocating the
   //   config when the count reaches 0.
-  // - FcConfigSetCurrent() calls FcConfigDestroy() on the old config, but
-  //   interestingly does not call FcConfigReference() on the new config.
-  CHECK(FcConfigSetCurrent(FcConfigCreate()));
+  // - FcConfigSetCurrent() calls FcConfigDestroy() on the old config, and
+  //   calls FcConfigReference() on the new config.
+  FcConfig* config = FcConfigCreate();
+  FcConfigBuildFonts(config);
+  CHECK(FcConfigSetCurrent(config));
 }
 
 void TearDownFontconfig() {
