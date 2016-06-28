@@ -15,18 +15,17 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/test/test_utils.h"
-#include "content/shell/browser/shell.h"
 #include "ui/accessibility/ax_node.h"
 
 namespace content {
 
-AccessibilityNotificationWaiter::AccessibilityNotificationWaiter(Shell* shell)
+AccessibilityNotificationWaiter::AccessibilityNotificationWaiter(
+    WebContents* web_contents)
     : event_to_wait_for_(ui::AX_EVENT_NONE),
       loop_runner_(new MessageLoopRunner()),
       event_target_id_(0),
       event_render_frame_host_(nullptr),
       weak_factory_(this) {
-  WebContents* web_contents = shell->web_contents();
   frame_host_ = static_cast<RenderFrameHostImpl*>(
       web_contents->GetMainFrame());
   frame_host_->SetAccessibilityCallbackForTesting(
@@ -35,21 +34,21 @@ AccessibilityNotificationWaiter::AccessibilityNotificationWaiter(Shell* shell)
 }
 
 AccessibilityNotificationWaiter::AccessibilityNotificationWaiter(
-    Shell* shell,
+    WebContents* web_contents,
     AccessibilityMode accessibility_mode,
     ui::AXEvent event_type)
     : event_to_wait_for_(event_type),
       loop_runner_(new MessageLoopRunner()),
       event_target_id_(0),
       weak_factory_(this) {
-  WebContentsImpl* web_contents = static_cast<WebContentsImpl*>(
-      shell->web_contents());
+  WebContentsImpl* web_contents_impl = static_cast<WebContentsImpl*>(
+      web_contents);
   frame_host_ = static_cast<RenderFrameHostImpl*>(
-      web_contents->GetMainFrame());
+      web_contents_impl->GetMainFrame());
   frame_host_->SetAccessibilityCallbackForTesting(
       base::Bind(&AccessibilityNotificationWaiter::OnAccessibilityEvent,
                  weak_factory_.GetWeakPtr()));
-  web_contents->AddAccessibilityMode(accessibility_mode);
+  web_contents_impl->AddAccessibilityMode(accessibility_mode);
 }
 
 AccessibilityNotificationWaiter::AccessibilityNotificationWaiter(

@@ -242,7 +242,7 @@ void DumpAccessibilityTestBase::RunTestForPlatform(
   GURL url(embedded_test_server()->GetURL(
       "/" + std::string(file_dir) + "/" + file_path.BaseName().MaybeAsASCII()));
   AccessibilityNotificationWaiter accessibility_waiter(
-      shell(),
+      shell()->web_contents(),
       AccessibilityModeComplete,
       ui::AX_EVENT_LOAD_COMPLETE);
   NavigateToURL(shell(), url);

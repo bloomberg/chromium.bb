@@ -27,6 +27,7 @@
 #include "ipc/message_filter.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 #include "ui/accessibility/ax_node_data.h"
+#include "ui/accessibility/ax_tree_update.h"
 #include "ui/events/keycodes/dom/dom_code.h"
 #include "ui/events/keycodes/dom/dom_key.h"
 #include "ui/events/keycodes/keyboard_codes.h"
@@ -293,6 +294,21 @@ void WaitForAccessibilityFocusChange();
 
 // Retrieve information about the node that's focused in the accessibility tree.
 ui::AXNodeData GetFocusedAccessibilityNodeInfo(WebContents* web_contents);
+
+// This is intended to be a robust way to assert that the accessibility
+// tree eventually gets into the correct state, without worrying about
+// the exact ordering of events received while getting there.
+//
+// Searches the accessibility tree to see if any node's accessible name
+// is equal to the given name. If not, sets up a notification waiter
+// that listens for any accessibility event in any frame, and checks again
+// after each event. Keeps looping until the text is found (or the
+// test times out).
+void WaitForAccessibilityTreeToContainNodeWithName(WebContents* web_contents,
+                                                   const std::string& name);
+
+// Get a snapshot of a web page's accessibility tree.
+ui::AXTreeUpdate GetAccessibilityTreeSnapshot(WebContents* web_contents);
 
 // Watches title changes on a WebContents, blocking until an expected title is
 // set.

@@ -45,6 +45,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_utils.h"
+#include "content/test/accessibility_browser_test_utils.h"
 #include "net/base/filename_util.h"
 #include "net/cookies/cookie_store.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -958,6 +959,48 @@ ui::AXNodeData GetFocusedAccessibilityNodeInfo(WebContents* web_contents) {
     return ui::AXNodeData();
   BrowserAccessibility* focused_node = manager->GetFocus();
   return focused_node->GetData();
+}
+
+bool AccessibilityTreeContainsNodeWithName(BrowserAccessibility* node,
+                                           const std::string& name) {
+  if (node->GetStringAttribute(ui::AX_ATTR_NAME) == name)
+    return true;
+  for (unsigned i = 0; i < node->PlatformChildCount(); i++) {
+    if (AccessibilityTreeContainsNodeWithName(node->PlatformGetChild(i), name))
+      return true;
+  }
+  return false;
+}
+
+void WaitForAccessibilityTreeToContainNodeWithName(WebContents* web_contents,
+                                                   const std::string& name) {
+  WebContentsImpl* web_contents_impl = static_cast<WebContentsImpl*>(
+      web_contents);
+  RenderFrameHostImpl* main_frame = static_cast<RenderFrameHostImpl*>(
+      web_contents_impl->GetMainFrame());
+  BrowserAccessibilityManager* main_frame_manager =
+      main_frame->browser_accessibility_manager();
+  FrameTree* frame_tree = web_contents_impl->GetFrameTree();
+  while (!AccessibilityTreeContainsNodeWithName(
+             main_frame_manager->GetRoot(), name)) {
+    AccessibilityNotificationWaiter accessibility_waiter(main_frame,
+                                                         ui::AX_EVENT_NONE);
+    for (FrameTreeNode* node : frame_tree->Nodes())
+      accessibility_waiter.ListenToAdditionalFrame(
+          node->current_frame_host());
+
+    accessibility_waiter.WaitForNotification();
+  }
+}
+
+ui::AXTreeUpdate GetAccessibilityTreeSnapshot(WebContents* web_contents) {
+  WebContentsImpl* web_contents_impl =
+      static_cast<WebContentsImpl*>(web_contents);
+  BrowserAccessibilityManager* manager =
+      web_contents_impl->GetRootBrowserAccessibilityManager();
+  if (!manager)
+    return ui::AXTreeUpdate();
+  return manager->SnapshotAXTreeForTesting();
 }
 
 TitleWatcher::TitleWatcher(WebContents* web_contents,

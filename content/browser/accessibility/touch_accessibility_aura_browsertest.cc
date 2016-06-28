@@ -4,7 +4,6 @@
 
 #include "base/macros.h"
 #include "base/strings/string_number_conversions.h"
-#include "content/browser/accessibility/accessibility_test_utils.h"
 #include "content/browser/accessibility/browser_accessibility.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/test/browser_test_utils.h"
@@ -36,7 +35,9 @@ class TouchAccessibilityBrowserTest : public ContentBrowserTest {
 
   void NavigateToUrlAndWaitForAccessibilityTree(const GURL& url) {
     AccessibilityNotificationWaiter waiter(
-        shell(), AccessibilityModeComplete, ui::AX_EVENT_LOAD_COMPLETE);
+        shell()->web_contents(),
+        AccessibilityModeComplete,
+        ui::AX_EVENT_LOAD_COMPLETE);
     NavigateToURL(shell(), url);
     waiter.WaitForNotification();
   }
@@ -92,7 +93,7 @@ IN_PROC_BROWSER_TEST_F(TouchAccessibilityBrowserTest,
   // touch exploration event in the center of that cell, and assert that we
   // get an accessibility hover event fired in the correct cell.
   AccessibilityNotificationWaiter waiter(
-      shell(), AccessibilityModeComplete, ui::AX_EVENT_HOVER);
+      shell()->web_contents(), AccessibilityModeComplete, ui::AX_EVENT_HOVER);
   for (int row = 0; row < 5; ++row) {
     for (int col = 0; col < 7; ++col) {
       std::string expected_cell_text = base::IntToString(row * 7 + col);

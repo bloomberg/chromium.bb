@@ -15,7 +15,7 @@ namespace content {
 
 class MessageLoopRunner;
 class RenderFrameHostImpl;
-class Shell;
+class WebContents;
 
 // Create an instance of this class *before* doing any operation that
 // might generate an accessibility event (like a page navigation or
@@ -24,9 +24,9 @@ class Shell;
 // received.
 class AccessibilityNotificationWaiter {
  public:
-  explicit AccessibilityNotificationWaiter(Shell* shell);
+  explicit AccessibilityNotificationWaiter(WebContents* web_contents);
   AccessibilityNotificationWaiter(
-      Shell* shell,
+      WebContents* web_contents,
       AccessibilityMode accessibility_mode,
       ui::AXEvent event);
   AccessibilityNotificationWaiter(

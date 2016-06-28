@@ -33,6 +33,7 @@
 #include "components/zoom/page_zoom.h"
 #include "components/zoom/test/zoom_test_utils.h"
 #include "components/zoom/zoom_controller.h"
+#include "content/public/browser/browser_accessibility_state.h"
 #include "content/public/browser/browser_plugin_guest_manager.h"
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/download_manager.h"
@@ -512,3 +513,75 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTest, PdfZoomWithoutBubble) {
 #endif
 }
 
+IN_PROC_BROWSER_TEST_F(PDFExtensionTest, PdfAccessibility) {
+  content::BrowserAccessibilityState::GetInstance()->EnableAccessibility();
+
+  GURL test_pdf_url(embedded_test_server()->GetURL("/pdf/test-bookmarks.pdf"));
+  content::WebContents* guest_contents = LoadPdfGetGuestContents(test_pdf_url);
+  ASSERT_TRUE(guest_contents);
+
+  WaitForAccessibilityTreeToContainNodeWithName(guest_contents,
+                                                "1 First Section\r\n");
+  ui::AXTreeUpdate ax_tree = GetAccessibilityTreeSnapshot(guest_contents);
+
+  // Create a string representation of the tree starting with the embedded
+  // object.
+  std::string ax_tree_dump;
+  base::hash_map<int32_t, int> id_to_indentation;
+  bool found_embedded_object = false;
+  for (auto& node : ax_tree.nodes) {
+    if (node.role == ui::AX_ROLE_EMBEDDED_OBJECT)
+      found_embedded_object = true;
+    if (!found_embedded_object)
+      continue;
+
+    int indent = id_to_indentation[node.id];
+    ax_tree_dump += std::string(2 * indent, ' ');
+    ax_tree_dump += ui::ToString(node.role);
+
+    std::string name = node.GetStringAttribute(ui::AX_ATTR_NAME);
+    base::ReplaceChars(name, "\r", "\\r", &name);
+    base::ReplaceChars(name, "\n", "\\n", &name);
+    if (!name.empty())
+      ax_tree_dump += " '" + name + "'";
+    ax_tree_dump += "\n";
+    for (size_t j = 0; j < node.child_ids.size(); ++j)
+      id_to_indentation[node.child_ids[j]] = indent + 1;
+  }
+
+  const char* expected_ax_tree =
+      "embeddedObject\n"
+      "  group\n"
+      "    region 'Page 1'\n"
+      "      paragraph\n"
+      "        staticText '1 First Section\\r\\n'\n"
+      "          inlineTextBox '1 '\n"
+      "          inlineTextBox 'First Section\\r\\n'\n"
+      "      paragraph\n"
+      "        staticText 'This is the first section.\\r\\n1'\n"
+      "          inlineTextBox 'This is the first section.\\r\\n'\n"
+      "          inlineTextBox '1'\n"
+      "    region 'Page 2'\n"
+      "      paragraph\n"
+      "        staticText '1.1 First Subsection\\r\\n'\n"
+      "          inlineTextBox '1.1 '\n"
+      "          inlineTextBox 'First Subsection\\r\\n'\n"
+      "      paragraph\n"
+      "        staticText 'This is the first subsection.\\r\\n2'\n"
+      "          inlineTextBox 'This is the first subsection.\\r\\n'\n"
+      "          inlineTextBox '2'\n"
+      "    region 'Page 3'\n"
+      "      paragraph\n"
+      "        staticText '2 Second Section\\r\\n'\n"
+      "          inlineTextBox '2 '\n"
+      "          inlineTextBox 'Second Section\\r\\n'\n"
+      "      paragraph\n"
+      "        staticText '3'\n"
+      "          inlineTextBox '3'\n";
+
+  // Using ASSERT_TRUE deliberately instead of ASSERT_EQ or ASSERT_STREQ
+  // in order to print a more readable message if the strings differ.
+  ASSERT_TRUE(expected_ax_tree == ax_tree_dump)
+      << "Expected:\n" << expected_ax_tree
+      << "\n\nActual:\n" << ax_tree_dump;
+}

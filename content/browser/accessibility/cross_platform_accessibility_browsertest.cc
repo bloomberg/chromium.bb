@@ -47,7 +47,9 @@ class CrossPlatformAccessibilityBrowserTest : public ContentBrowserTest {
   const ui::AXTree& GetAXTree(
       AccessibilityMode accessibility_mode = AccessibilityModeComplete) {
     AccessibilityNotificationWaiter waiter(
-        shell(), accessibility_mode, ui::AX_EVENT_LAYOUT_COMPLETE);
+        shell()->web_contents(),
+        accessibility_mode,
+        ui::AX_EVENT_LAYOUT_COMPLETE);
     waiter.WaitForNotification();
     return waiter.GetAXTree();
   }

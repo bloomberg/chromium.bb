@@ -13,7 +13,6 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "content/browser/accessibility/accessibility_test_utils.h"
 #include "content/browser/accessibility/accessibility_tree_formatter.h"
 #include "content/browser/accessibility/browser_accessibility.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
@@ -22,6 +21,7 @@
 #include "content/public/common/content_paths.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/url_constants.h"
+#include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/shell/browser/shell.h"
@@ -45,7 +45,7 @@ class AccessibilityHitTestingBrowserTest : public ContentBrowserTest {
         web_contents->GetRootBrowserAccessibilityManager();
 
     AccessibilityNotificationWaiter hover_waiter(
-        shell(), AccessibilityModeComplete, ui::AX_EVENT_HOVER);
+        shell()->web_contents(), AccessibilityModeComplete, ui::AX_EVENT_HOVER);
     for (FrameTreeNode* node : frame_tree->Nodes())
       hover_waiter.ListenToAdditionalFrame(node->current_frame_host());
     manager->delegate()->AccessibilityHitTest(point);
@@ -66,7 +66,8 @@ IN_PROC_BROWSER_TEST_F(AccessibilityHitTestingBrowserTest,
   NavigateToURL(shell(), GURL(url::kAboutBlankURL));
 
   // Load the page.
-  AccessibilityNotificationWaiter waiter(shell(), AccessibilityModeComplete,
+  AccessibilityNotificationWaiter waiter(shell()->web_contents(),
+                                         AccessibilityModeComplete,
                                          ui::AX_EVENT_LOAD_COMPLETE);
   const char url_str[] =
       "data:text/html,"
@@ -94,7 +95,8 @@ IN_PROC_BROWSER_TEST_F(AccessibilityHitTestingBrowserTest,
 
   NavigateToURL(shell(), GURL(url::kAboutBlankURL));
 
-  AccessibilityNotificationWaiter waiter(shell(), AccessibilityModeComplete,
+  AccessibilityNotificationWaiter waiter(shell()->web_contents(),
+                                         AccessibilityModeComplete,
                                          ui::AX_EVENT_LOAD_COMPLETE);
   GURL url(embedded_test_server()->GetURL(
       "/accessibility/html/iframe-coordinates.html"));

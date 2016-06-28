@@ -75,7 +75,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityModeTest, AccessibilityModeComplete) {
   ASSERT_EQ(CorrectedAccessibility(AccessibilityModeOff),
             web_contents()->GetAccessibilityMode());
 
-  AccessibilityNotificationWaiter waiter(shell());
+  AccessibilityNotificationWaiter waiter(shell()->web_contents());
   web_contents()->AddAccessibilityMode(AccessibilityModeComplete);
   EXPECT_EQ(AccessibilityModeComplete, web_contents()->GetAccessibilityMode());
   waiter.WaitForNotification();
@@ -88,7 +88,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityModeTest, AccessibilityModeTreeOnly) {
   ASSERT_EQ(CorrectedAccessibility(AccessibilityModeOff),
             web_contents()->GetAccessibilityMode());
 
-  AccessibilityNotificationWaiter waiter(shell());
+  AccessibilityNotificationWaiter waiter(shell()->web_contents());
   web_contents()->AddAccessibilityMode(AccessibilityModeTreeOnly);
   EXPECT_EQ(CorrectedAccessibility(AccessibilityModeTreeOnly),
             web_contents()->GetAccessibilityMode());
@@ -101,7 +101,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityModeTest, AccessibilityModeTreeOnly) {
 IN_PROC_BROWSER_TEST_F(AccessibilityModeTest, AddingModes) {
   NavigateToURL(shell(), GURL(kMinimalPageDataURL));
 
-  AccessibilityNotificationWaiter waiter(shell());
+  AccessibilityNotificationWaiter waiter(shell()->web_contents());
   web_contents()->AddAccessibilityMode(AccessibilityModeTreeOnly);
   EXPECT_EQ(CorrectedAccessibility(AccessibilityModeTreeOnly),
             web_contents()->GetAccessibilityMode());
@@ -111,7 +111,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityModeTest, AddingModes) {
                                     "Should be no BrowserAccessibilityManager "
                                     "for AccessibilityModeTreeOnly");
 
-  AccessibilityNotificationWaiter waiter2(shell());
+  AccessibilityNotificationWaiter waiter2(shell()->web_contents());
   web_contents()->AddAccessibilityMode(AccessibilityModeComplete);
   EXPECT_EQ(AccessibilityModeComplete, web_contents()->GetAccessibilityMode());
   waiter2.WaitForNotification();
