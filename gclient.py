@@ -224,7 +224,7 @@ class DependencySettings(GClientKeywords):
     # 'managed' determines whether or not this dependency is synced/updated by
     # gclient after gclient checks it out initially.  The difference between
     # 'managed' and 'should_process' is that the user specifies 'managed' via
-    # the --unmanaged command-line flag or a .gclient config, where
+    # the --managed command-line flag or a .gclient config, where
     # 'should_process' is dynamically set by gclient if it goes over its
     # recursion limit and controls gclient's behavior so it does not misbehave.
     self._managed = managed
@@ -1252,8 +1252,8 @@ The local checkout in %(checkout_path)s reports:
 
 You should ensure that the URL listed in .gclient is correct and either change
 it or fix the checkout. If you're managing your own git checkout in
-%(checkout_path)s but the URL in .gclient is for an svn repository, you probably
-want to set 'managed': False in .gclient.
+%(checkout_path)s but the URL in .gclient is for an svn repository, you should
+set 'managed': False in .gclient.
 '''  % {'checkout_path': os.path.join(self.root_dir, dep.name),
         'expected_url': dep.url,
         'expected_scm': gclient_scm.GetScmName(dep.url),
@@ -1300,7 +1300,7 @@ want to set 'managed': False in .gclient.
       try:
         deps_to_add.append(Dependency(
             self, s['name'], s['url'],
-            s.get('managed', True),
+            s.get('managed', False),
             s.get('custom_deps', {}),
             s.get('custom_vars', {}),
             s.get('custom_hooks', []),
@@ -1426,7 +1426,7 @@ been automagically updated.  The previous version is available at %s.old.
     return client
 
   def SetDefaultConfig(self, solution_name, deps_file, solution_url,
-                       managed=True, cache_dir=None):
+                       managed=False, cache_dir=None):
     self.SetConfig(self.DEFAULT_CLIENT_FILE_TEXT % {
       'solution_name': solution_name,
       'solution_url': solution_url,
@@ -1475,7 +1475,7 @@ been automagically updated.  The previous version is available at %s.old.
     revision_overrides = {}
     if not self._options.revisions:
       for s in self.dependencies:
-        if not s.managed and not self._options.head:
+        if not s.managed and not self._options.__dict__.get('head', False):
           self._options.revisions.append('%s@unmanaged' % s.name)
     if not self._options.revisions:
       return revision_overrides
@@ -1861,11 +1861,13 @@ def CMDconfig(parser, args):
   parser.add_option('--deps-file', default='DEPS',
                     help='overrides the default name for the DEPS file for the'
                          'main solutions and all sub-dependencies')
-  parser.add_option('--unmanaged', action='store_true', default=False,
+  parser.add_option('--managed', action='store_true', default=False,
                     help='overrides the default behavior to make it possible '
-                         'to have the main solution untouched by gclient '
-                         '(gclient will check out unmanaged dependencies but '
-                         'will never sync them)')
+                         'to have the main solution managed by gclient '
+                         '(gclient will always auto-sync managed solutions '
+                         ' rather than leaving them untouched)')
+  parser.add_option('--unmanaged', action='store_true', default=True,
+                    help='This flag is a no-op; unmanaged is now the default.')
   parser.add_option('--cache-dir',
                     help='(git only) Cache all git repos into this dir and do '
                          'shared clones from the cache, instead of cloning '
@@ -1898,7 +1900,7 @@ def CMDconfig(parser, args):
 
     deps_file = options.deps_file
     client.SetDefaultConfig(name, deps_file, base_url,
-                            managed=not options.unmanaged,
+                            managed=options.managed,
                             cache_dir=options.cache_dir)
   client.SaveConfig()
   return 0
