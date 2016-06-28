@@ -11,7 +11,7 @@
         {
           "object": "LayoutBlockFlow (floating) DIV id='target'",
           "rect": [8, 58, 200, 18],
-          "reason": "invalidate paint rectangle"
+          "reason": "forced by layout"
         },
         {
           "object": "LayoutText #text",
@@ -23,16 +23,12 @@
   ],
   "objectPaintInvalidations": [
     {
-      "object": "InlineTextBox ''",
-      "reason": "full"
+      "object": "LayoutBlockFlow (floating) DIV id='target'",
+      "reason": "forced by layout"
     },
     {
       "object": "RootInlineBox",
-      "reason": "full"
-    },
-    {
-      "object": "LayoutBlockFlow (floating) DIV id='target'",
-      "reason": "invalidate paint rectangle"
+      "reason": "forced by layout"
     },
     {
       "object": "LayoutText #text",

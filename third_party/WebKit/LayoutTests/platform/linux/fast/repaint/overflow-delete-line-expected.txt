@@ -10,8 +10,8 @@
       "paintInvalidations": [
         {
           "object": "LayoutBlockFlow DIV id='dv'",
-          "rect": [8, 74, 80, 19],
-          "reason": "invalidate paint rectangle"
+          "rect": [8, 74, 80, 36],
+          "reason": "forced by layout"
         },
         {
           "object": "LayoutText #text",
@@ -23,20 +23,12 @@
   ],
   "objectPaintInvalidations": [
     {
-      "object": "InlineTextBox ''",
-      "reason": "full"
-    },
-    {
-      "object": "InlineTextBox ''",
-      "reason": "full"
+      "object": "LayoutBlockFlow DIV id='dv'",
+      "reason": "forced by layout"
     },
     {
       "object": "RootInlineBox",
-      "reason": "full"
-    },
-    {
-      "object": "LayoutBlockFlow DIV id='dv'",
-      "reason": "invalidate paint rectangle"
+      "reason": "forced by layout"
     },
     {
       "object": "LayoutText #text",

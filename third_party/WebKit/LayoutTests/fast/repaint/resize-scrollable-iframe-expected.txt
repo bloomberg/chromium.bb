@@ -10,18 +10,13 @@
       "paintInvalidations": [
         {
           "object": "LayoutBlockFlow (anonymous)",
-          "rect": [8, 108, 784, 303],
-          "reason": "invalidate paint rectangle"
-        },
-        {
-          "object": "LayoutBlockFlow (anonymous)",
-          "rect": [8, 212, 784, 200],
-          "reason": "incremental"
+          "rect": [8, 108, 784, 304],
+          "reason": "forced by layout"
         },
         {
           "object": "LayoutIFrame IFRAME id='iframe'",
-          "rect": [8, 208, 300, 200],
-          "reason": "incremental"
+          "rect": [8, 108, 300, 300],
+          "reason": "forced by layout"
         },
         {
           "object": "LayoutView #document",
@@ -32,11 +27,6 @@
           "object": "LayoutView #document",
           "rect": [8, 393, 285, 15],
           "reason": "scroll"
-        },
-        {
-          "object": "LayoutIFrame IFRAME id='iframe'",
-          "rect": [108, 108, 200, 300],
-          "reason": "incremental"
         },
         {
           "object": "LayoutView #document",
@@ -73,28 +63,16 @@
   ],
   "objectPaintInvalidations": [
     {
-      "object": "InlineBox",
-      "reason": "full"
+      "object": "LayoutBlockFlow (anonymous)",
+      "reason": "forced by layout"
     },
     {
       "object": "RootInlineBox",
-      "reason": "full"
-    },
-    {
-      "object": "LayoutBlockFlow (anonymous)",
-      "reason": "incremental"
-    },
-    {
-      "object": "LayoutBlockFlow (anonymous)",
-      "reason": "invalidate paint rectangle"
-    },
-    {
-      "object": "RootInlineBox",
-      "reason": "incremental"
+      "reason": "forced by layout"
     },
     {
       "object": "LayoutIFrame IFRAME id='iframe'",
-      "reason": "incremental"
+      "reason": "forced by layout"
     }
   ]
 }

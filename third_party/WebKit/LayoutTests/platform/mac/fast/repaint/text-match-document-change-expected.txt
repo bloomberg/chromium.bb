@@ -21,7 +21,7 @@
         {
           "object": "LayoutBlockFlow DIV id='to-be-changed'",
           "rect": [18, 128, 269, 36],
-          "reason": "forced by layout"
+          "reason": "full"
         },
         {
           "object": "LayoutText #text",

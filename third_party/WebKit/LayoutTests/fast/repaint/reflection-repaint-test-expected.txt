@@ -10,13 +10,8 @@
       "paintInvalidations": [
         {
           "object": "LayoutBlockFlow DIV id='target'",
-          "rect": [22, 50, 226, 166],
-          "reason": "invalidate paint rectangle"
-        },
-        {
-          "object": "LayoutBlockFlow DIV id='target'",
-          "rect": [22, 50, 226, 166],
-          "reason": "invalidate paint rectangle"
+          "rect": [22, 50, 226, 167],
+          "reason": "forced by layout"
         },
         {
           "object": "LayoutText #text",
@@ -28,20 +23,12 @@
   ],
   "objectPaintInvalidations": [
     {
-      "object": "InlineTextBox ''",
-      "reason": "full"
+      "object": "LayoutBlockFlow DIV id='target'",
+      "reason": "forced by layout"
     },
     {
       "object": "RootInlineBox",
-      "reason": "full"
-    },
-    {
-      "object": "LayoutBlockFlow DIV id='target'",
-      "reason": "invalidate paint rectangle"
-    },
-    {
-      "object": "LayoutBlockFlow DIV id='target'",
-      "reason": "invalidate paint rectangle"
+      "reason": "forced by layout"
     },
     {
       "object": "LayoutText #text",
@@ -50,6 +37,10 @@
     {
       "object": "InlineTextBox 'PASS'",
       "reason": "full"
+    },
+    {
+      "object": "LayoutReplica (anonymous)",
+      "reason": "none"
     }
   ]
 }

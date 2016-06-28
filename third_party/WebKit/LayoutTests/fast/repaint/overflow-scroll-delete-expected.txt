@@ -9,11 +9,6 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow DIV id='t'",
-          "rect": [8, 112, 80, 35],
-          "reason": "invalidate paint rectangle"
-        },
-        {
           "object": "LayoutText #text",
           "rect": [8, 112, 44, 35],
           "reason": "full"
@@ -22,26 +17,6 @@
     }
   ],
   "objectPaintInvalidations": [
-    {
-      "object": "InlineTextBox ''",
-      "reason": "full"
-    },
-    {
-      "object": "RootInlineBox",
-      "reason": "full"
-    },
-    {
-      "object": "InlineTextBox ''",
-      "reason": "full"
-    },
-    {
-      "object": "RootInlineBox",
-      "reason": "full"
-    },
-    {
-      "object": "LayoutBlockFlow DIV id='t'",
-      "reason": "invalidate paint rectangle"
-    },
     {
       "object": "LayoutText #text",
       "reason": "full"

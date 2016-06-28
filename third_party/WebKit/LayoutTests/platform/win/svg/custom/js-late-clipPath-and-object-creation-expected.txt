@@ -21,6 +21,11 @@
         {
           "object": "LayoutSVGInlineText #text",
           "rect": [16, 40, 784, 168],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [16, 40, 784, 168],
           "reason": "layoutObject insertion"
         },
         {
@@ -37,11 +42,6 @@
           "object": "LayoutSVGText text",
           "rect": [16, 40, 784, 168],
           "reason": "layoutObject insertion"
-        },
-        {
-          "object": "LayoutSVGInlineText #text",
-          "rect": [334, 40, 466, 168],
-          "reason": "incremental"
         },
         {
           "object": "LayoutSVGRoot svg id='svg-root'",
@@ -82,14 +82,6 @@
       "reason": "layoutObject insertion"
     },
     {
-      "object": "RootInlineBox",
-      "reason": "full"
-    },
-    {
-      "object": "InlineTextBox 'Clipped. INVISIBLE.'",
-      "reason": "full"
-    },
-    {
       "object": "LayoutSVGRoot svg id='svg-root'",
       "reason": "incremental"
     },
@@ -107,11 +99,11 @@
     },
     {
       "object": "LayoutSVGInlineText #text",
-      "reason": "incremental"
+      "reason": "forced by layout"
     },
     {
       "object": "InlineTextBox 'Clipped. INVISIBLE.'",
-      "reason": "incremental"
+      "reason": "forced by layout"
     },
     {
       "object": "LayoutSVGResourceClipper clipPath id='dynClip'",

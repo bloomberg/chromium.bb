@@ -20,21 +20,13 @@
         },
         {
           "object": "LayoutSVGRoot svg",
-          "rect": [109, 69, 300, 400],
-          "reason": "incremental"
+          "rect": [9, 69, 400, 400],
+          "reason": "forced by layout"
         }
       ]
     }
   ],
   "objectPaintInvalidations": [
-    {
-      "object": "RootInlineBox",
-      "reason": "full"
-    },
-    {
-      "object": "InlineBox",
-      "reason": "full"
-    },
     {
       "object": "LayoutBlockFlow div id='contentBox'",
       "reason": "forced by layout"
@@ -45,7 +37,7 @@
     },
     {
       "object": "LayoutSVGRoot svg",
-      "reason": "incremental"
+      "reason": "forced by layout"
     },
     {
       "object": "LayoutSVGImage image",

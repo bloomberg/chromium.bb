@@ -9,14 +9,14 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow DIV id='inline-block-2' class='item'",
-          "rect": [0, 200, 100, 100],
-          "reason": "bounds change"
+          "object": "LayoutBlockFlow DIV",
+          "rect": [0, 100, 100, 300],
+          "reason": "forced by layout"
         },
         {
-          "object": "LayoutBlockFlow DIV",
-          "rect": [0, 100, 100, 100],
-          "reason": "invalidate paint rectangle"
+          "object": "LayoutBlockFlow DIV id='inline-block-2' class='item'",
+          "rect": [0, 200, 100, 100],
+          "reason": "forced by layout"
         },
         {
           "object": "LayoutBlockFlow DIV id='inline-block-1' class='item'",
@@ -26,63 +26,35 @@
         {
           "object": "LayoutBlockFlow DIV id='inline-block-2' class='item'",
           "rect": [0, 100, 100, 100],
-          "reason": "bounds change"
+          "reason": "forced by layout"
         }
       ]
     }
   ],
   "objectPaintInvalidations": [
     {
-      "object": "InlineTextBox '\n'",
-      "reason": "full"
-    },
-    {
       "object": "LayoutBR BR",
       "reason": "layoutObject removal"
-    },
-    {
-      "object": "RootInlineBox",
-      "reason": "full"
     },
     {
       "object": "LayoutBlockFlow DIV id='inline-block-1' class='item'",
       "reason": "layoutObject removal"
     },
     {
-      "object": "InlineBox",
-      "reason": "full"
-    },
-    {
-      "object": "RootInlineBox",
-      "reason": "full"
-    },
-    {
-      "object": "InlineBox",
-      "reason": "full"
-    },
-    {
-      "object": "RootInlineBox",
-      "reason": "full"
-    },
-    {
-      "object": "InlineBox",
-      "reason": "full"
-    },
-    {
-      "object": "RootInlineBox",
-      "reason": "full"
-    },
-    {
       "object": "LayoutBlockFlow DIV",
-      "reason": "invalidate paint rectangle"
+      "reason": "forced by layout"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "forced by layout"
     },
     {
       "object": "LayoutBlockFlow DIV id='inline-block-2' class='item'",
-      "reason": "bounds change"
+      "reason": "forced by layout"
     },
     {
       "object": "RootInlineBox",
-      "reason": "bounds change"
+      "reason": "forced by layout"
     },
     {
       "object": "LayoutBR BR",

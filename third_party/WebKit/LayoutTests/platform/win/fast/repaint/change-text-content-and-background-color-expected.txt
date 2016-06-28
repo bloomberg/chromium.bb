@@ -15,8 +15,8 @@
         },
         {
           "object": "LayoutBlockFlow DIV id='inner-editor'",
-          "rect": [30, 30, 200, 22],
-          "reason": "invalidate paint rectangle"
+          "rect": [30, 30, 200, 23],
+          "reason": "forced by layout"
         },
         {
           "object": "LayoutText #text",
@@ -28,20 +28,16 @@
   ],
   "objectPaintInvalidations": [
     {
-      "object": "InlineTextBox ''",
-      "reason": "full"
-    },
-    {
-      "object": "RootInlineBox",
-      "reason": "full"
-    },
-    {
       "object": "LayoutTextControl (positioned) INPUT id='input'",
       "reason": "style change"
     },
     {
       "object": "LayoutBlockFlow DIV id='inner-editor'",
-      "reason": "invalidate paint rectangle"
+      "reason": "forced by layout"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "forced by layout"
     },
     {
       "object": "LayoutText #text",

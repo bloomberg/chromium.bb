@@ -11,7 +11,7 @@
         {
           "object": "LayoutBlockFlow DIV",
           "rect": [8, 26, 784, 18],
-          "reason": "invalidate paint rectangle"
+          "reason": "forced by layout"
         },
         {
           "object": "LayoutText #text",
@@ -43,24 +43,12 @@
   ],
   "objectPaintInvalidations": [
     {
-      "object": "InlineTextBox ''",
-      "reason": "full"
-    },
-    {
-      "object": "InlineTextBox ''",
-      "reason": "full"
-    },
-    {
-      "object": "InlineTextBox ''",
-      "reason": "full"
+      "object": "LayoutBlockFlow DIV",
+      "reason": "forced by layout"
     },
     {
       "object": "RootInlineBox",
-      "reason": "full"
-    },
-    {
-      "object": "LayoutBlockFlow DIV",
-      "reason": "invalidate paint rectangle"
+      "reason": "forced by layout"
     },
     {
       "object": "LayoutInline Q id='q2' class='q-changed'",

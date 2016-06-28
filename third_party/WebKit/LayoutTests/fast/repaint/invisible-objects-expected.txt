@@ -11,12 +11,12 @@
   ],
   "objectPaintInvalidations": [
     {
-      "object": "InlineTextBox ''",
-      "reason": "full"
+      "object": "LayoutBlockFlow (relative positioned) DIV",
+      "reason": "forced by layout"
     },
     {
       "object": "RootInlineBox",
-      "reason": "full"
+      "reason": "forced by layout"
     },
     {
       "object": "LayoutText #text",

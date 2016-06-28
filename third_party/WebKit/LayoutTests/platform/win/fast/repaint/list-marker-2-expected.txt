@@ -10,13 +10,8 @@
       "paintInvalidations": [
         {
           "object": "LayoutListItem LI",
-          "rect": [31, 94, 761, 103],
-          "reason": "invalidate paint rectangle"
-        },
-        {
-          "object": "LayoutListItem LI",
-          "rect": [48, 148, 744, 50],
-          "reason": "incremental"
+          "rect": [48, 94, 744, 104],
+          "reason": "forced by layout"
         },
         {
           "object": "LayoutImage IMG id='target'",
@@ -26,44 +21,28 @@
         {
           "object": "LayoutListMarker (anonymous)",
           "rect": [31, 180, 7, 17],
-          "reason": "bounds change"
+          "reason": "forced by layout"
         },
         {
           "object": "LayoutListMarker (anonymous)",
           "rect": [31, 130, 7, 17],
-          "reason": "bounds change"
+          "reason": "forced by layout"
         }
       ]
     }
   ],
   "objectPaintInvalidations": [
     {
-      "object": "InlineBox",
-      "reason": "full"
-    },
-    {
-      "object": "InlineBox",
-      "reason": "full"
+      "object": "LayoutListItem LI",
+      "reason": "forced by layout"
     },
     {
       "object": "RootInlineBox",
-      "reason": "full"
-    },
-    {
-      "object": "LayoutListItem LI",
-      "reason": "incremental"
-    },
-    {
-      "object": "LayoutListItem LI",
-      "reason": "invalidate paint rectangle"
-    },
-    {
-      "object": "RootInlineBox",
-      "reason": "incremental"
+      "reason": "forced by layout"
     },
     {
       "object": "LayoutListMarker (anonymous)",
-      "reason": "bounds change"
+      "reason": "forced by layout"
     },
     {
       "object": "LayoutImage IMG id='target'",

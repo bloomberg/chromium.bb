@@ -15,83 +15,93 @@
         },
         {
           "object": "LayoutBlockFlow P",
-          "rect": [8, 80, 418, 519],
-          "reason": "invalidate paint rectangle"
+          "rect": [8, 74, 418, 526],
+          "reason": "forced by layout"
         },
         {
-          "object": "LayoutBlockFlow P",
-          "rect": [8, 583, 418, 17],
-          "reason": "incremental"
-        },
-        {
-          "object": "LayoutBlockFlow P",
-          "rect": [8, 586, 418, 14],
-          "reason": "incremental"
+          "object": "LayoutText #text",
+          "rect": [14, 240, 407, 139],
+          "reason": "forced by layout"
         },
         {
           "object": "LayoutText #text",
           "rect": [14, 500, 407, 99],
-          "reason": "bounds change"
+          "reason": "forced by layout"
         },
         {
           "object": "LayoutText #text",
           "rect": [14, 480, 407, 99],
-          "reason": "bounds change"
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [14, 180, 406, 79],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [14, 80, 355, 119],
+          "reason": "forced by layout"
         },
         {
           "object": "LayoutText #text",
           "rect": [14, 440, 355, 59],
-          "reason": "bounds change"
+          "reason": "forced by layout"
         },
         {
           "object": "LayoutText #text",
           "rect": [14, 420, 355, 59],
-          "reason": "bounds change"
+          "reason": "forced by layout"
         },
         {
           "object": "LayoutText #text",
           "rect": [14, 380, 354, 59],
-          "reason": "bounds change"
+          "reason": "forced by layout"
         },
         {
           "object": "LayoutText #text",
           "rect": [65, 380, 304, 59],
-          "reason": "bounds change"
+          "reason": "forced by layout"
         },
         {
           "object": "LayoutText #text",
           "rect": [14, 380, 298, 19],
-          "reason": "bounds change"
+          "reason": "forced by layout"
         },
         {
           "object": "LayoutText #text",
           "rect": [65, 380, 287, 19],
-          "reason": "bounds change"
+          "reason": "forced by layout"
         },
         {
           "object": "LayoutText #text",
           "rect": [134, 360, 131, 19],
-          "reason": "bounds change"
+          "reason": "forced by layout"
         },
         {
           "object": "LayoutText #text",
           "rect": [83, 360, 131, 19],
-          "reason": "bounds change"
+          "reason": "forced by layout"
         },
         {
           "object": "LayoutText #text",
           "rect": [303, 420, 67, 19],
-          "reason": "bounds change"
+          "reason": "forced by layout"
         },
         {
           "object": "LayoutText #text",
           "rect": [143, 420, 65, 19],
-          "reason": "bounds change"
+          "reason": "forced by layout"
         },
         {
           "object": "LayoutBlockFlow (floating) SPAN id='blueFloat'",
           "rect": [14, 363, 48, 65],
           "reason": "layoutObject removal"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [151, 180, 40, 19],
+          "reason": "forced by layout"
         },
         {
           "object": "LayoutView #document",

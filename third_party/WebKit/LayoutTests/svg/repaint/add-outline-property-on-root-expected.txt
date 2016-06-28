@@ -10,8 +10,8 @@
       "paintInvalidations": [
         {
           "object": "LayoutBlockFlow BODY",
-          "rect": [-2, -2, 794, 120],
-          "reason": "invalidate paint rectangle"
+          "rect": [8, 8, 784, 104],
+          "reason": "forced by layout"
         },
         {
           "object": "LayoutSVGRoot svg",
@@ -23,16 +23,12 @@
   ],
   "objectPaintInvalidations": [
     {
-      "object": "InlineBox",
-      "reason": "full"
+      "object": "LayoutBlockFlow BODY",
+      "reason": "forced by layout"
     },
     {
       "object": "RootInlineBox",
-      "reason": "full"
-    },
-    {
-      "object": "LayoutBlockFlow BODY",
-      "reason": "invalidate paint rectangle"
+      "reason": "forced by layout"
     },
     {
       "object": "LayoutSVGRoot svg",

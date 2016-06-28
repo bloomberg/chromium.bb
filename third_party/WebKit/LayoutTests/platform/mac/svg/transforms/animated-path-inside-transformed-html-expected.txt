@@ -1,7 +1,9 @@
 {
+  "name": "Content Root Layer",
   "bounds": [800, 600],
   "children": [
     {
+      "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
@@ -20,7 +22,7 @@
         {
           "object": "LayoutSVGInlineText #text",
           "rect": [203, 335, 121, 43],
-          "reason": "bounds change"
+          "reason": "forced by layout"
         },
         {
           "object": "LayoutSVGText text id='text'",
@@ -30,7 +32,7 @@
         {
           "object": "LayoutSVGInlineText #text",
           "rect": [246, 104, 119, 28],
-          "reason": "bounds change"
+          "reason": "forced by layout"
         },
         {
           "object": "LayoutSVGText text id='text'",
@@ -56,24 +58,38 @@
           "object": "LayoutSVGImage image id='image'",
           "rect": [90, 206, 98, 98],
           "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'This is some text'",
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'This is some text'",
-          "reason": "bounds change"
-        },
-        {
-          "object": "RootInlineBox",
-          "reason": "full"
-        },
-        {
-          "object": "RootInlineBox",
-          "reason": "full"
         }
       ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutSVGRoot svg",
+      "reason": "bounds change"
+    },
+    {
+      "object": "LayoutSVGRect rect id='rect'",
+      "reason": "full"
+    },
+    {
+      "object": "LayoutSVGText text id='text'",
+      "reason": "full"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "full"
+    },
+    {
+      "object": "LayoutSVGInlineText #text",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "InlineTextBox 'This is some text'",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "LayoutSVGImage image id='image'",
+      "reason": "full"
     }
   ]
 }

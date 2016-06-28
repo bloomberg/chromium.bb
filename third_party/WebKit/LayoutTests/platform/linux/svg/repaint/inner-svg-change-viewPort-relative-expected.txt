@@ -26,7 +26,7 @@
         {
           "object": "LayoutSVGInlineText #text",
           "rect": [100, 85, 100, 19],
-          "reason": "bounds change"
+          "reason": "forced by layout"
         },
         {
           "object": "LayoutSVGText text",
@@ -36,7 +36,7 @@
         {
           "object": "LayoutSVGInlineText #text",
           "rect": [0, 85, 100, 19],
-          "reason": "bounds change"
+          "reason": "forced by layout"
         },
         {
           "object": "LayoutSVGText text",
@@ -78,14 +78,6 @@
   ],
   "objectPaintInvalidations": [
     {
-      "object": "RootInlineBox",
-      "reason": "full"
-    },
-    {
-      "object": "InlineTextBox 'right-aligned text'",
-      "reason": "full"
-    },
-    {
       "object": "LayoutSVGRoot svg",
       "reason": "incremental"
     },
@@ -119,11 +111,11 @@
     },
     {
       "object": "LayoutSVGInlineText #text",
-      "reason": "bounds change"
+      "reason": "forced by layout"
     },
     {
       "object": "InlineTextBox 'right-aligned text'",
-      "reason": "bounds change"
+      "reason": "forced by layout"
     },
     {
       "object": "LayoutSVGContainer use",

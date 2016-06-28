@@ -36,12 +36,12 @@
         {
           "object": "LayoutSVGInlineText #text",
           "rect": [0, 114, 194, 46],
-          "reason": "bounds change"
+          "reason": "forced by layout"
         },
         {
           "object": "LayoutSVGInlineText #text",
           "rect": [0, 114, 194, 46],
-          "reason": "bounds change"
+          "reason": "forced by layout"
         },
         {
           "object": "LayoutSVGInlineText #text",
@@ -51,7 +51,7 @@
         {
           "object": "LayoutSVGTSpan tspan",
           "rect": [0, 114, 194, 46],
-          "reason": "bounds change"
+          "reason": "forced by layout"
         },
         {
           "object": "LayoutSVGText text",
@@ -61,12 +61,12 @@
         {
           "object": "LayoutSVGInlineText #text",
           "rect": [0, 14, 194, 46],
-          "reason": "bounds change"
+          "reason": "forced by layout"
         },
         {
           "object": "LayoutSVGInlineText #text",
           "rect": [0, 14, 194, 46],
-          "reason": "bounds change"
+          "reason": "forced by layout"
         },
         {
           "object": "LayoutSVGInlineText #text",
@@ -76,7 +76,7 @@
         {
           "object": "LayoutSVGTSpan tspan",
           "rect": [0, 14, 194, 46],
-          "reason": "bounds change"
+          "reason": "forced by layout"
         },
         {
           "object": "LayoutSVGText text",
@@ -106,7 +106,7 @@
         {
           "object": "LayoutSVGInlineText #text",
           "rect": [310, 114, 92, 46],
-          "reason": "bounds change"
+          "reason": "forced by layout"
         },
         {
           "object": "LayoutSVGText text",
@@ -121,7 +121,7 @@
         {
           "object": "LayoutSVGInlineText #text",
           "rect": [310, 14, 92, 46],
-          "reason": "bounds change"
+          "reason": "forced by layout"
         },
         {
           "object": "LayoutSVGText text",
@@ -151,12 +151,12 @@
         {
           "object": "LayoutSVGInlineText #text",
           "rect": [0, 3, 6, 2],
-          "reason": "bounds change"
+          "reason": "forced by layout"
         },
         {
           "object": "LayoutSVGInlineText #text",
           "rect": [0, 3, 6, 2],
-          "reason": "bounds change"
+          "reason": "forced by layout"
         },
         {
           "object": "LayoutSVGInlineText #text",
@@ -166,7 +166,7 @@
         {
           "object": "LayoutSVGTSpan tspan",
           "rect": [0, 3, 6, 2],
-          "reason": "bounds change"
+          "reason": "forced by layout"
         },
         {
           "object": "LayoutSVGText text",
@@ -181,7 +181,7 @@
         {
           "object": "LayoutSVGInlineText #text",
           "rect": [9, 3, 4, 2],
-          "reason": "bounds change"
+          "reason": "forced by layout"
         },
         {
           "object": "LayoutSVGText text",
@@ -221,17 +221,17 @@
         {
           "object": "LayoutSVGInlineText #text",
           "rect": [0, 0, 1, 1],
-          "reason": "bounds change"
+          "reason": "forced by layout"
         },
         {
           "object": "LayoutSVGInlineText #text",
           "rect": [0, 0, 1, 1],
-          "reason": "bounds change"
+          "reason": "forced by layout"
         },
         {
           "object": "LayoutSVGInlineText #text",
           "rect": [0, 0, 1, 1],
-          "reason": "bounds change"
+          "reason": "forced by layout"
         },
         {
           "object": "LayoutSVGInlineText #text",
@@ -241,7 +241,7 @@
         {
           "object": "LayoutSVGTSpan tspan",
           "rect": [0, 0, 1, 1],
-          "reason": "bounds change"
+          "reason": "forced by layout"
         },
         {
           "object": "LayoutSVGText text",
@@ -268,54 +268,6 @@
   ],
   "objectPaintInvalidations": [
     {
-      "object": "RootInlineBox",
-      "reason": "full"
-    },
-    {
-      "object": "InlineTextBox 'PASS '",
-      "reason": "full"
-    },
-    {
-      "object": "InlineFlowBox",
-      "reason": "full"
-    },
-    {
-      "object": "InlineTextBox 'PASS'",
-      "reason": "full"
-    },
-    {
-      "object": "RootInlineBox",
-      "reason": "full"
-    },
-    {
-      "object": "InlineTextBox 'PASS'",
-      "reason": "full"
-    },
-    {
-      "object": "RootInlineBox",
-      "reason": "full"
-    },
-    {
-      "object": "InlineTextBox 'PASS '",
-      "reason": "full"
-    },
-    {
-      "object": "InlineFlowBox",
-      "reason": "full"
-    },
-    {
-      "object": "InlineTextBox 'PASS'",
-      "reason": "full"
-    },
-    {
-      "object": "RootInlineBox",
-      "reason": "full"
-    },
-    {
-      "object": "InlineTextBox 'PASS'",
-      "reason": "full"
-    },
-    {
       "object": "LayoutSVGRoot (positioned) svg",
       "reason": "bounds change"
     },
@@ -333,27 +285,27 @@
     },
     {
       "object": "LayoutSVGInlineText #text",
-      "reason": "bounds change"
+      "reason": "forced by layout"
     },
     {
       "object": "InlineTextBox 'PASS '",
-      "reason": "bounds change"
+      "reason": "forced by layout"
     },
     {
       "object": "LayoutSVGTSpan tspan",
-      "reason": "bounds change"
+      "reason": "forced by layout"
     },
     {
       "object": "InlineFlowBox",
-      "reason": "bounds change"
+      "reason": "forced by layout"
     },
     {
       "object": "LayoutSVGInlineText #text",
-      "reason": "bounds change"
+      "reason": "forced by layout"
     },
     {
       "object": "InlineTextBox 'PASS'",
-      "reason": "bounds change"
+      "reason": "forced by layout"
     },
     {
       "object": "LayoutSVGInlineText #text",
@@ -393,11 +345,11 @@
     },
     {
       "object": "LayoutSVGInlineText #text",
-      "reason": "bounds change"
+      "reason": "forced by layout"
     },
     {
       "object": "InlineTextBox 'PASS'",
-      "reason": "bounds change"
+      "reason": "forced by layout"
     },
     {
       "object": "LayoutSVGContainer g id='text2g'",
@@ -481,27 +433,27 @@
     },
     {
       "object": "LayoutSVGInlineText #text",
-      "reason": "bounds change"
+      "reason": "forced by layout"
     },
     {
       "object": "InlineTextBox 'PASS '",
-      "reason": "bounds change"
+      "reason": "forced by layout"
     },
     {
       "object": "LayoutSVGTSpan tspan",
-      "reason": "bounds change"
+      "reason": "forced by layout"
     },
     {
       "object": "InlineFlowBox",
-      "reason": "bounds change"
+      "reason": "forced by layout"
     },
     {
       "object": "LayoutSVGInlineText #text",
-      "reason": "bounds change"
+      "reason": "forced by layout"
     },
     {
       "object": "InlineTextBox 'PASS'",
-      "reason": "bounds change"
+      "reason": "forced by layout"
     },
     {
       "object": "LayoutSVGInlineText #text",
@@ -541,11 +493,11 @@
     },
     {
       "object": "LayoutSVGInlineText #text",
-      "reason": "bounds change"
+      "reason": "forced by layout"
     },
     {
       "object": "InlineTextBox 'PASS'",
-      "reason": "bounds change"
+      "reason": "forced by layout"
     }
   ]
 }

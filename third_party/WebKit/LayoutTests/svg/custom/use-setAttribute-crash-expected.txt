@@ -10,13 +10,8 @@
       "paintInvalidations": [
         {
           "object": "LayoutBlockFlow body",
-          "rect": [8, 8, 784, 203],
-          "reason": "invalidate paint rectangle"
-        },
-        {
-          "object": "LayoutBlockFlow body",
-          "rect": [8, 112, 784, 100],
-          "reason": "incremental"
+          "rect": [8, 8, 784, 204],
+          "reason": "forced by layout"
         },
         {
           "object": "LayoutSVGContainer svg:use id='use'",
@@ -66,24 +61,12 @@
       "reason": "layoutObject removal"
     },
     {
-      "object": "InlineBox",
-      "reason": "full"
+      "object": "LayoutBlockFlow body",
+      "reason": "forced by layout"
     },
     {
       "object": "RootInlineBox",
-      "reason": "full"
-    },
-    {
-      "object": "LayoutBlockFlow body",
-      "reason": "incremental"
-    },
-    {
-      "object": "LayoutBlockFlow body",
-      "reason": "invalidate paint rectangle"
-    },
-    {
-      "object": "RootInlineBox",
-      "reason": "incremental"
+      "reason": "forced by layout"
     },
     {
       "object": "LayoutSVGRoot svg:svg id='svg'",

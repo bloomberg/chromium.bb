@@ -9,11 +9,6 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow P id='target'",
-          "rect": [8, 124, 784, 39],
-          "reason": "invalidate paint rectangle"
-        },
-        {
           "object": "LayoutText #text",
           "rect": [8, 44, 782, 119],
           "reason": "full"
@@ -22,26 +17,6 @@
     }
   ],
   "objectPaintInvalidations": [
-    {
-      "object": "InlineTextBox 'Quisque enim metus, luctus tincidunt, vestibulum eu, vestibulum eu, libero. Mauris sagittis aliquam nunc. Nullam pharetra molestie'",
-      "reason": "full"
-    },
-    {
-      "object": "RootInlineBox",
-      "reason": "full"
-    },
-    {
-      "object": "InlineTextBox 'eros. Donec tempus purus ut ligula. Phasellus non nisl. Etiam eu mauris. Curabitur a velit'",
-      "reason": "full"
-    },
-    {
-      "object": "RootInlineBox",
-      "reason": "full"
-    },
-    {
-      "object": "LayoutBlockFlow P id='target'",
-      "reason": "invalidate paint rectangle"
-    },
     {
       "object": "LayoutText #text",
       "reason": "full"

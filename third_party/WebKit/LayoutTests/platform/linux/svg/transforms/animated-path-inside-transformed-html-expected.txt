@@ -22,7 +22,7 @@
         {
           "object": "LayoutSVGInlineText #text",
           "rect": [203, 336, 123, 44],
-          "reason": "bounds change"
+          "reason": "forced by layout"
         },
         {
           "object": "LayoutSVGText text id='text'",
@@ -32,7 +32,7 @@
         {
           "object": "LayoutSVGInlineText #text",
           "rect": [246, 106, 121, 28],
-          "reason": "bounds change"
+          "reason": "forced by layout"
         },
         {
           "object": "LayoutSVGText text id='text'",
@@ -64,14 +64,6 @@
   ],
   "objectPaintInvalidations": [
     {
-      "object": "RootInlineBox",
-      "reason": "full"
-    },
-    {
-      "object": "InlineTextBox 'This is some text'",
-      "reason": "full"
-    },
-    {
       "object": "LayoutSVGRoot svg",
       "reason": "bounds change"
     },
@@ -89,11 +81,11 @@
     },
     {
       "object": "LayoutSVGInlineText #text",
-      "reason": "bounds change"
+      "reason": "forced by layout"
     },
     {
       "object": "InlineTextBox 'This is some text'",
-      "reason": "bounds change"
+      "reason": "forced by layout"
     },
     {
       "object": "LayoutSVGImage image id='image'",

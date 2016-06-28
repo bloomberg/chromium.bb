@@ -19,6 +19,11 @@
           "reason": "bounds change"
         },
         {
+          "object": "LayoutText #text",
+          "rect": [10, 138, 289, 159],
+          "reason": "forced by layout"
+        },
+        {
           "object": "LayoutBlockFlow DIV",
           "rect": [10, 138, 242, 180],
           "reason": "forced by layout"
@@ -35,8 +40,8 @@
         },
         {
           "object": "LayoutText #text",
-          "rect": [10, 297, 240, 20],
-          "reason": "incremental"
+          "rect": [10, 138, 240, 179],
+          "reason": "forced by layout"
         },
         {
           "object": "LayoutTableCell TD id='target'",
@@ -47,80 +52,11 @@
           "object": "LayoutTableCell TD id='col1'",
           "rect": [252, 138, 50, 215],
           "reason": "incremental"
-        },
-        {
-          "object": "LayoutText #text",
-          "rect": [250, 138, 49, 159],
-          "reason": "incremental"
         }
       ]
     }
   ],
   "objectPaintInvalidations": [
-    {
-      "object": "RootInlineBox",
-      "reason": "full"
-    },
-    {
-      "object": "RootInlineBox",
-      "reason": "full"
-    },
-    {
-      "object": "RootInlineBox",
-      "reason": "full"
-    },
-    {
-      "object": "RootInlineBox",
-      "reason": "full"
-    },
-    {
-      "object": "RootInlineBox",
-      "reason": "full"
-    },
-    {
-      "object": "RootInlineBox",
-      "reason": "full"
-    },
-    {
-      "object": "RootInlineBox",
-      "reason": "full"
-    },
-    {
-      "object": "RootInlineBox",
-      "reason": "full"
-    },
-    {
-      "object": "InlineTextBox 'Curabitur pretium, quam quis semper'",
-      "reason": "full"
-    },
-    {
-      "object": "InlineTextBox 'malesuada, est libero feugiat libero, vel fringilla'",
-      "reason": "full"
-    },
-    {
-      "object": "InlineTextBox 'orci nibh sed neque. Quisque eu nulla non nisi'",
-      "reason": "full"
-    },
-    {
-      "object": "InlineTextBox 'molestie accumsan. Etiam tellus urna, laoreet ac,'",
-      "reason": "full"
-    },
-    {
-      "object": "InlineTextBox 'laoreet non, suscipit sed, sapien. Phasellus'",
-      "reason": "full"
-    },
-    {
-      "object": "InlineTextBox 'vehicula, sem at posuere vehicula, augue nibh'",
-      "reason": "full"
-    },
-    {
-      "object": "InlineTextBox 'molestie nisl, nec ullamcorper lacus ante'",
-      "reason": "full"
-    },
-    {
-      "object": "InlineTextBox 'vulputate pede.'",
-      "reason": "full"
-    },
     {
       "object": "LayoutTableCell TD id='col1'",
       "reason": "incremental"
@@ -135,43 +71,43 @@
     },
     {
       "object": "LayoutText #text",
-      "reason": "incremental"
+      "reason": "forced by layout"
     },
     {
       "object": "InlineTextBox 'Curabitur pretium, quam quis semper'",
-      "reason": "incremental"
+      "reason": "forced by layout"
     },
     {
       "object": "InlineTextBox 'malesuada, est libero feugiat libero, vel'",
-      "reason": "incremental"
+      "reason": "forced by layout"
     },
     {
       "object": "InlineTextBox 'fringilla orci nibh sed neque. Quisque eu'",
-      "reason": "incremental"
+      "reason": "forced by layout"
     },
     {
       "object": "InlineTextBox 'nulla non nisi molestie accumsan. Etiam'",
-      "reason": "incremental"
+      "reason": "forced by layout"
     },
     {
       "object": "InlineTextBox 'tellus urna, laoreet ac, laoreet non,'",
-      "reason": "incremental"
+      "reason": "forced by layout"
     },
     {
       "object": "InlineTextBox 'suscipit sed, sapien. Phasellus vehicula,'",
-      "reason": "incremental"
+      "reason": "forced by layout"
     },
     {
       "object": "InlineTextBox 'sem at posuere vehicula, augue nibh'",
-      "reason": "incremental"
+      "reason": "forced by layout"
     },
     {
       "object": "InlineTextBox 'molestie nisl, nec ullamcorper lacus ante'",
-      "reason": "incremental"
+      "reason": "forced by layout"
     },
     {
       "object": "InlineTextBox 'vulputate pede.'",
-      "reason": "incremental"
+      "reason": "forced by layout"
     },
     {
       "object": "LayoutBlockFlow DIV",

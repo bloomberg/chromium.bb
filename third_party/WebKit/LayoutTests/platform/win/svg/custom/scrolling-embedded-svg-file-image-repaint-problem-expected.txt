@@ -10,45 +10,66 @@
       "paintInvalidations": [
         {
           "object": "LayoutBlockFlow P",
-          "rect": [24, 1010, 737, 22],
-          "reason": "invalidate paint rectangle"
+          "rect": [24, 1011, 737, 21],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [178, 1011, 203, 21],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [434, 1011, 173, 21],
+          "reason": "forced by layout"
         },
         {
           "object": "LayoutInline A",
           "rect": [384, 1010, 47, 22],
           "reason": "style change"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [385, 1011, 45, 20],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [429, 1011, 6, 20],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [380, 1011, 6, 20],
+          "reason": "forced by layout"
         }
       ]
     }
   ],
   "objectPaintInvalidations": [
     {
-      "object": "InlineTextBox 'pservers-pattern-01-b \u2190'",
-      "reason": "full"
-    },
-    {
-      "object": "InlineTextBox '\n'",
-      "reason": "full"
-    },
-    {
-      "object": "InlineTextBox 'index'",
-      "reason": "full"
-    },
-    {
-      "object": "InlineTextBox '\n'",
-      "reason": "full"
-    },
-    {
-      "object": "InlineTextBox '\u2192 script-handle-01-b'",
-      "reason": "full"
+      "object": "LayoutBlockFlow P",
+      "reason": "forced by layout"
     },
     {
       "object": "RootInlineBox",
-      "reason": "full"
+      "reason": "forced by layout"
     },
     {
-      "object": "LayoutBlockFlow P",
-      "reason": "invalidate paint rectangle"
+      "object": "LayoutText #text",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "InlineTextBox 'pservers-pattern-01-b \u2190'",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "LayoutText #text",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "InlineTextBox '\n'",
+      "reason": "forced by layout"
     },
     {
       "object": "LayoutInline A",
@@ -57,6 +78,30 @@
     {
       "object": "InlineFlowBox",
       "reason": "style change"
+    },
+    {
+      "object": "LayoutText #text",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "InlineTextBox 'index'",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "LayoutText #text",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "InlineTextBox '\n'",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "LayoutText #text",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "InlineTextBox '\u2192 script-handle-01-b'",
+      "reason": "forced by layout"
     }
   ]
 }

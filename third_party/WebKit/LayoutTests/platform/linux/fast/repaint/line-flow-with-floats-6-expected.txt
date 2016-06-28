@@ -9,9 +9,24 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow P",
-          "rect": [8, 320, 418, 79],
-          "reason": "invalidate paint rectangle"
+          "object": "LayoutText #text",
+          "rect": [14, 240, 407, 139],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [65, 380, 304, 59],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [65, 380, 287, 19],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [134, 360, 131, 19],
+          "reason": "forced by layout"
         },
         {
           "object": "LayoutBlockFlow (floating) SPAN id='blueFloat'",

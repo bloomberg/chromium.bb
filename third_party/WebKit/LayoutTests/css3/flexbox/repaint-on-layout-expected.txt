@@ -27,14 +27,6 @@
       "reason": "layoutObject removal"
     },
     {
-      "object": "InlineBox",
-      "reason": "full"
-    },
-    {
-      "object": "RootInlineBox",
-      "reason": "full"
-    },
-    {
       "object": "LayoutBlockFlow (floating) DIV class='state'",
       "reason": "forced by layout"
     },

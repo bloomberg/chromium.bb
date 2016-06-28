@@ -11,7 +11,7 @@
         {
           "object": "LayoutSVGInlineText #text",
           "rect": [208, 14, 170, 18],
-          "reason": "bounds change"
+          "reason": "forced by layout"
         },
         {
           "object": "LayoutSVGRoot svg:svg",
@@ -26,7 +26,7 @@
         {
           "object": "LayoutSVGInlineText #text",
           "rect": [18, 194, 170, 18],
-          "reason": "bounds change"
+          "reason": "forced by layout"
         },
         {
           "object": "LayoutSVGRoot svg:svg",
@@ -43,14 +43,6 @@
   ],
   "objectPaintInvalidations": [
     {
-      "object": "RootInlineBox",
-      "reason": "full"
-    },
-    {
-      "object": "InlineTextBox 'Passes, if text is at 200x20'",
-      "reason": "full"
-    },
-    {
       "object": "LayoutSVGRoot svg:svg",
       "reason": "bounds change"
     },
@@ -64,11 +56,11 @@
     },
     {
       "object": "LayoutSVGInlineText #text",
-      "reason": "bounds change"
+      "reason": "forced by layout"
     },
     {
       "object": "InlineTextBox 'Passes, if text is at 200x20'",
-      "reason": "bounds change"
+      "reason": "forced by layout"
     }
   ]
 }

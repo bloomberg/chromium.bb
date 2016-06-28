@@ -43,16 +43,8 @@
   ],
   "objectPaintInvalidations": [
     {
-      "object": "InlineTextBox '\u00A0'",
-      "reason": "full"
-    },
-    {
       "object": "LayoutText #text",
       "reason": "layoutObject removal"
-    },
-    {
-      "object": "RootInlineBox",
-      "reason": "full"
     },
     {
       "object": "LayoutBlockFlow DIV id='to_remove' class='item'",

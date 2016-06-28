@@ -80,6 +80,26 @@
         },
         {
           "object": "LayoutText #text",
+          "rect": [23, 317, 51, 17],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [23, 145, 51, 17],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [23, 277, 43, 17],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [23, 105, 43, 17],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutText #text",
           "rect": [23, 211, 34, 17],
           "reason": "layoutObject removal"
         },
@@ -98,76 +118,20 @@
   ],
   "objectPaintInvalidations": [
     {
-      "object": "InlineTextBox 'ipsum dolor'",
-      "reason": "full"
-    },
-    {
       "object": "LayoutText #text",
       "reason": "layoutObject removal"
-    },
-    {
-      "object": "RootInlineBox",
-      "reason": "full"
     },
     {
       "object": "LayoutTableCell TD id='d'",
       "reason": "layoutObject removal"
     },
     {
-      "object": "InlineTextBox 'dolor'",
-      "reason": "full"
-    },
-    {
       "object": "LayoutText #text",
       "reason": "layoutObject removal"
     },
     {
-      "object": "RootInlineBox",
-      "reason": "full"
-    },
-    {
       "object": "LayoutTableCell TD id='d2'",
       "reason": "layoutObject removal"
-    },
-    {
-      "object": "RootInlineBox",
-      "reason": "full"
-    },
-    {
-      "object": "InlineTextBox 'Lorem'",
-      "reason": "full"
-    },
-    {
-      "object": "RootInlineBox",
-      "reason": "full"
-    },
-    {
-      "object": "InlineTextBox 'sit amet'",
-      "reason": "full"
-    },
-    {
-      "object": "RootInlineBox",
-      "reason": "full"
-    },
-    {
-      "object": "InlineTextBox 'Lorem'",
-      "reason": "full"
-    },
-    {
-      "object": "RootInlineBox",
-      "reason": "full"
-    },
-    {
-      "object": "InlineTextBox 'sit amet'",
-      "reason": "full"
-    },
-    {
-      "object": "RootInlineBox",
-      "reason": "full"
-    },
-    {
-      "object": "InlineTextBox 'ipsum dolor'",
-      "reason": "full"
     },
     {
       "object": "LayoutTableCell TD",
@@ -214,11 +178,27 @@
       "reason": "forced by layout"
     },
     {
+      "object": "LayoutText #text",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "InlineTextBox 'Lorem'",
+      "reason": "forced by layout"
+    },
+    {
       "object": "LayoutTableCell TD",
       "reason": "forced by layout"
     },
     {
       "object": "RootInlineBox",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "LayoutText #text",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "InlineTextBox 'sit amet'",
       "reason": "forced by layout"
     },
     {
@@ -239,6 +219,14 @@
     },
     {
       "object": "RootInlineBox",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "LayoutText #text",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "InlineTextBox 'Lorem'",
       "reason": "forced by layout"
     },
     {
@@ -263,6 +251,14 @@
     },
     {
       "object": "RootInlineBox",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "LayoutText #text",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "InlineTextBox 'sit amet'",
       "reason": "forced by layout"
     }
   ]

@@ -9,19 +9,39 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow P",
-          "rect": [8, 332, 418, 234],
-          "reason": "invalidate paint rectangle"
+          "object": "LayoutText #text",
+          "rect": [14, 242, 406, 126],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [14, 476, 406, 90],
+          "reason": "forced by layout"
         },
         {
           "object": "LayoutText #text",
           "rect": [65, 368, 355, 54],
-          "reason": "bounds change"
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [14, 422, 355, 53],
+          "reason": "forced by layout"
         },
         {
           "object": "LayoutText #text",
           "rect": [14, 404, 355, 36],
-          "reason": "bounds change"
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [65, 368, 336, 18],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [178, 350, 146, 18],
+          "reason": "forced by layout"
         },
         {
           "object": "LayoutBlockFlow (floating) SPAN id='greenFloat'",
@@ -32,16 +52,6 @@
           "object": "LayoutBlockFlow (floating) SPAN id='greenFloat'",
           "rect": [372, 371, 48, 81],
           "reason": "bounds change"
-        },
-        {
-          "object": "LayoutText #text",
-          "rect": [369, 368, 32, 18],
-          "reason": "incremental"
-        },
-        {
-          "object": "LayoutText #text",
-          "rect": [353, 422, 16, 53],
-          "reason": "incremental"
         }
       ]
     }

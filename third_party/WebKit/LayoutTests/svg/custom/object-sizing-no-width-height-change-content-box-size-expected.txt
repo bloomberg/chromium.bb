@@ -14,6 +14,11 @@
           "reason": "forced by layout"
         },
         {
+          "object": "LayoutEmbeddedObject object",
+          "rect": [9, 9, 400, 400],
+          "reason": "forced by layout"
+        },
+        {
           "object": "LayoutSVGRect rect",
           "rect": [9, 9, 400, 400],
           "reason": "forced by layout"
@@ -22,11 +27,6 @@
           "object": "LayoutSVGRoot svg",
           "rect": [9, 9, 400, 400],
           "reason": "forced by layout"
-        },
-        {
-          "object": "LayoutEmbeddedObject object",
-          "rect": [209, 9, 200, 400],
-          "reason": "incremental"
         },
         {
           "object": "LayoutView #document",
@@ -48,14 +48,6 @@
   ],
   "objectPaintInvalidations": [
     {
-      "object": "RootInlineBox",
-      "reason": "full"
-    },
-    {
-      "object": "InlineBox",
-      "reason": "full"
-    },
-    {
       "object": "LayoutBlockFlow div id='contentBox'",
       "reason": "forced by layout"
     },
@@ -65,7 +57,7 @@
     },
     {
       "object": "LayoutEmbeddedObject object",
-      "reason": "incremental"
+      "reason": "forced by layout"
     }
   ]
 }

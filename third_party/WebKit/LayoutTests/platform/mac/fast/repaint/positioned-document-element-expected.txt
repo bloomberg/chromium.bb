@@ -47,25 +47,17 @@
         {
           "object": "LayoutText #text",
           "rect": [108, 116, 435, 18],
-          "reason": "bounds change"
+          "reason": "forced by layout"
         },
         {
           "object": "LayoutText #text",
           "rect": [8, 16, 435, 18],
-          "reason": "bounds change"
+          "reason": "forced by layout"
         }
       ]
     }
   ],
   "objectPaintInvalidations": [
-    {
-      "object": "RootInlineBox",
-      "reason": "full"
-    },
-    {
-      "object": "InlineTextBox 'Tests that the entire viewport is painted with a floated html element.'",
-      "reason": "full"
-    },
     {
       "object": "LayoutView #document",
       "reason": "style change"
@@ -88,11 +80,11 @@
     },
     {
       "object": "LayoutText #text",
-      "reason": "bounds change"
+      "reason": "forced by layout"
     },
     {
       "object": "InlineTextBox 'Tests that the entire viewport is painted with a floated html element.'",
-      "reason": "bounds change"
+      "reason": "forced by layout"
     }
   ]
 }

@@ -31,7 +31,7 @@
         {
           "object": "LayoutSVGRoot svg",
           "rect": [209, 269, 200, 200],
-          "reason": "bounds change"
+          "reason": "forced by layout"
         },
         {
           "object": "LayoutSVGContainer use id='targetUse'",
@@ -66,7 +66,7 @@
         {
           "object": "LayoutSVGRoot svg",
           "rect": [59, 269, 50, 200],
-          "reason": "bounds change"
+          "reason": "forced by layout"
         },
         {
           "object": "LayoutSVGContainer use id='targetUse'",
@@ -83,14 +83,6 @@
   ],
   "objectPaintInvalidations": [
     {
-      "object": "RootInlineBox",
-      "reason": "full"
-    },
-    {
-      "object": "InlineBox",
-      "reason": "full"
-    },
-    {
       "object": "LayoutBlockFlow div id='contentBox'",
       "reason": "forced by layout"
     },
@@ -100,7 +92,7 @@
     },
     {
       "object": "LayoutSVGRoot svg",
-      "reason": "bounds change"
+      "reason": "forced by layout"
     },
     {
       "object": "LayoutSVGRect rect id='targetRect'",

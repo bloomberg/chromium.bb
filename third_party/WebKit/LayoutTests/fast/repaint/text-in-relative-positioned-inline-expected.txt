@@ -11,7 +11,7 @@
         {
           "object": "LayoutBlockFlow DIV",
           "rect": [108, 8, 684, 100],
-          "reason": "invalidate paint rectangle"
+          "reason": "forced by layout"
         },
         {
           "object": "LayoutInline (relative positioned) SPAN id='target'",
@@ -28,28 +28,16 @@
   ],
   "objectPaintInvalidations": [
     {
-      "object": "InlineTextBox 'ab'",
-      "reason": "full"
-    },
-    {
       "object": "LayoutText #text",
       "reason": "layoutObject removal"
-    },
-    {
-      "object": "InlineFlowBox",
-      "reason": "full"
     },
     {
       "object": "LayoutInline (relative positioned) SPAN id='target'",
       "reason": "layoutObject removal"
     },
     {
-      "object": "RootInlineBox",
-      "reason": "full"
-    },
-    {
       "object": "LayoutBlockFlow DIV",
-      "reason": "invalidate paint rectangle"
+      "reason": "forced by layout"
     }
   ]
 }

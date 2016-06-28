@@ -10,48 +10,68 @@
       "paintInvalidations": [
         {
           "object": "LayoutBlockFlow P",
-          "rect": [8, 80, 418, 396],
-          "reason": "invalidate paint rectangle"
+          "rect": [8, 74, 418, 498],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [14, 242, 406, 126],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [14, 188, 406, 72],
+          "reason": "forced by layout"
         },
         {
           "object": "LayoutText #text",
           "rect": [14, 404, 355, 72],
-          "reason": "bounds change"
+          "reason": "forced by layout"
         },
         {
           "object": "LayoutText #text",
           "rect": [14, 368, 355, 54],
-          "reason": "bounds change"
+          "reason": "forced by layout"
         },
         {
           "object": "LayoutText #text",
           "rect": [14, 404, 355, 36],
-          "reason": "bounds change"
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [14, 80, 354, 108],
+          "reason": "forced by layout"
         },
         {
           "object": "LayoutText #text",
           "rect": [14, 368, 336, 18],
-          "reason": "bounds change"
+          "reason": "forced by layout"
         },
         {
           "object": "LayoutText #text",
           "rect": [65, 368, 304, 18],
-          "reason": "bounds change"
+          "reason": "forced by layout"
         },
         {
           "object": "LayoutText #text",
           "rect": [178, 350, 145, 18],
-          "reason": "bounds change"
+          "reason": "forced by layout"
         },
         {
           "object": "LayoutText #text",
           "rect": [127, 350, 145, 18],
-          "reason": "bounds change"
+          "reason": "forced by layout"
         },
         {
           "object": "LayoutBlockFlow (floating) SPAN id='blueFloat'",
           "rect": [14, 353, 48, 65],
           "reason": "layoutObject removal"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [14, 188, 40, 18],
+          "reason": "forced by layout"
         }
       ]
     }

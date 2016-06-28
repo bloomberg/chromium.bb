@@ -9,9 +9,9 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow P",
-          "rect": [8, 400, 418, 39],
-          "reason": "invalidate paint rectangle"
+          "object": "LayoutText #text",
+          "rect": [65, 380, 304, 59],
+          "reason": "forced by layout"
         },
         {
           "object": "LayoutText #text",

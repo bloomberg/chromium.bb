@@ -31,33 +31,17 @@
         {
           "object": "LayoutText #text",
           "rect": [108, 8, 4, 18],
-          "reason": "bounds change"
+          "reason": "forced by layout"
         },
         {
           "object": "LayoutText #text",
           "rect": [8, 8, 4, 18],
-          "reason": "bounds change"
+          "reason": "forced by layout"
         }
       ]
     }
   ],
   "objectPaintInvalidations": [
-    {
-      "object": "RootInlineBox",
-      "reason": "full"
-    },
-    {
-      "object": "InlineTextBox '\u00A0'",
-      "reason": "full"
-    },
-    {
-      "object": "RootInlineBox",
-      "reason": "full"
-    },
-    {
-      "object": "InlineTextBox '\u00A0'",
-      "reason": "full"
-    },
     {
       "object": "LayoutBlockFlow DIV",
       "reason": "background obscuration change"
@@ -72,11 +56,11 @@
     },
     {
       "object": "LayoutText #text",
-      "reason": "bounds change"
+      "reason": "forced by layout"
     },
     {
       "object": "InlineTextBox '\u00A0'",
-      "reason": "bounds change"
+      "reason": "forced by layout"
     },
     {
       "object": "LayoutBlockFlow (relative positioned) DIV",
@@ -92,11 +76,11 @@
     },
     {
       "object": "LayoutText #text",
-      "reason": "bounds change"
+      "reason": "forced by layout"
     },
     {
       "object": "InlineTextBox '\u00A0'",
-      "reason": "bounds change"
+      "reason": "forced by layout"
     }
   ]
 }

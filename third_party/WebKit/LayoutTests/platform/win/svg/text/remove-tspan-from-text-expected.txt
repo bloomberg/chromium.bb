@@ -11,7 +11,37 @@
         {
           "object": "LayoutSVGInlineText #text",
           "rect": [10, 63, 306, 254],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [10, 63, 306, 254],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [10, 63, 306, 254],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [10, 63, 306, 254],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [10, 63, 306, 254],
           "reason": "layoutObject removal"
+        },
+        {
+          "object": "LayoutSVGTSpan tspan",
+          "rect": [10, 63, 306, 254],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutSVGTSpan tspan",
+          "rect": [10, 63, 306, 254],
+          "reason": "forced by layout"
         },
         {
           "object": "LayoutSVGTSpan tspan id='remove'",
@@ -28,48 +58,12 @@
   ],
   "objectPaintInvalidations": [
     {
-      "object": "InlineTextBox 'FAIL'",
-      "reason": "full"
-    },
-    {
       "object": "LayoutSVGInlineText #text",
       "reason": "layoutObject removal"
     },
     {
-      "object": "InlineFlowBox",
-      "reason": "full"
-    },
-    {
       "object": "LayoutSVGTSpan tspan id='remove'",
       "reason": "layoutObject removal"
-    },
-    {
-      "object": "RootInlineBox",
-      "reason": "full"
-    },
-    {
-      "object": "InlineFlowBox",
-      "reason": "full"
-    },
-    {
-      "object": "InlineTextBox 'PASS'",
-      "reason": "full"
-    },
-    {
-      "object": "InlineTextBox ''",
-      "reason": "full"
-    },
-    {
-      "object": "InlineTextBox ''",
-      "reason": "full"
-    },
-    {
-      "object": "InlineFlowBox",
-      "reason": "full"
-    },
-    {
-      "object": "InlineTextBox 'PASS'",
-      "reason": "full"
     },
     {
       "object": "LayoutSVGText text id='text'",
@@ -78,6 +72,50 @@
     {
       "object": "RootInlineBox",
       "reason": "full"
+    },
+    {
+      "object": "LayoutSVGTSpan tspan",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "InlineFlowBox",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "LayoutSVGInlineText #text",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "InlineTextBox 'PASS'",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "LayoutSVGInlineText #text",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "InlineTextBox ' '",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "LayoutSVGInlineText #text",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "LayoutSVGTSpan tspan",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "InlineFlowBox",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "LayoutSVGInlineText #text",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "InlineTextBox 'PASS'",
+      "reason": "forced by layout"
     }
   ]
 }

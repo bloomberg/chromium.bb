@@ -9,14 +9,19 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow P",
-          "rect": [8, 386, 418, 54],
-          "reason": "invalidate paint rectangle"
+          "object": "LayoutText #text",
+          "rect": [14, 422, 355, 53],
+          "reason": "forced by layout"
         },
         {
           "object": "LayoutText #text",
           "rect": [14, 404, 355, 36],
           "reason": "style change"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [65, 386, 303, 36],
+          "reason": "forced by layout"
         }
       ]
     }

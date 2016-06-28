@@ -11,20 +11,12 @@
         {
           "object": "LayoutBlockFlow DIV id='target'",
           "rect": [8, 8, 100, 100],
-          "reason": "bounds change"
+          "reason": "forced by layout"
         }
       ]
     }
   ],
   "objectPaintInvalidations": [
-    {
-      "object": "RootInlineBox",
-      "reason": "full"
-    },
-    {
-      "object": "InlineBox",
-      "reason": "full"
-    },
     {
       "object": "LayoutBlockFlow (positioned) DIV",
       "reason": "forced by layout"
@@ -35,7 +27,7 @@
     },
     {
       "object": "LayoutBlockFlow DIV id='target'",
-      "reason": "bounds change"
+      "reason": "forced by layout"
     }
   ]
 }

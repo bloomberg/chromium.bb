@@ -26,25 +26,17 @@
         {
           "object": "LayoutText #text",
           "rect": [3, 280, 59, 19],
-          "reason": "bounds change"
+          "reason": "forced by layout"
         },
         {
           "object": "LayoutText #text",
           "rect": [3, 90, 59, 19],
-          "reason": "bounds change"
+          "reason": "forced by layout"
         }
       ]
     }
   ],
   "objectPaintInvalidations": [
-    {
-      "object": "RootInlineBox",
-      "reason": "full"
-    },
-    {
-      "object": "InlineTextBox 'MIDDLE'",
-      "reason": "full"
-    },
     {
       "object": "LayoutTable (positioned) TABLE id='table'",
       "reason": "incremental"
@@ -63,11 +55,11 @@
     },
     {
       "object": "LayoutText #text",
-      "reason": "bounds change"
+      "reason": "forced by layout"
     },
     {
       "object": "InlineTextBox 'MIDDLE'",
-      "reason": "bounds change"
+      "reason": "forced by layout"
     }
   ]
 }

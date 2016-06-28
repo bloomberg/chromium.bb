@@ -16,24 +16,12 @@
         {
           "object": "LayoutImage IMG",
           "rect": [8, 60, 214, 232],
-          "reason": "location change"
+          "reason": "forced by layout"
         }
       ]
     }
   ],
   "objectPaintInvalidations": [
-    {
-      "object": "RootInlineBox",
-      "reason": "full"
-    },
-    {
-      "object": "InlineBox",
-      "reason": "full"
-    },
-    {
-      "object": "InlineBox",
-      "reason": "full"
-    },
     {
       "object": "LayoutListItem (positioned) LI",
       "reason": "forced by layout"
@@ -44,11 +32,11 @@
     },
     {
       "object": "LayoutListMarker (anonymous)",
-      "reason": "none"
+      "reason": "forced by layout"
     },
     {
       "object": "LayoutImage IMG",
-      "reason": "location change"
+      "reason": "forced by layout"
     },
     {
       "object": "LayoutText #text",

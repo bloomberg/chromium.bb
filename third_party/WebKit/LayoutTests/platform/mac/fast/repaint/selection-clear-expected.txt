@@ -11,7 +11,7 @@
         {
           "object": "LayoutBlockFlow DIV id='firstLine'",
           "rect": [8, 8, 100, 200],
-          "reason": "forced by layout"
+          "reason": "full"
         },
         {
           "object": "LayoutBlockFlow (anonymous)",
@@ -38,24 +38,8 @@
   ],
   "objectPaintInvalidations": [
     {
-      "object": "InlineTextBox 'FAIL: Test did'",
-      "reason": "full"
-    },
-    {
-      "object": "InlineTextBox 'not run'",
-      "reason": "full"
-    },
-    {
       "object": "LayoutText #text",
       "reason": "layoutObject removal"
-    },
-    {
-      "object": "RootInlineBox",
-      "reason": "full"
-    },
-    {
-      "object": "RootInlineBox",
-      "reason": "full"
     },
     {
       "object": "LayoutBlockFlow HTML",
@@ -75,11 +59,11 @@
     },
     {
       "object": "LayoutBlockFlow DIV id='firstLine'",
-      "reason": "forced by layout"
+      "reason": "full"
     },
     {
       "object": "RootInlineBox",
-      "reason": "forced by layout"
+      "reason": "full"
     },
     {
       "object": "LayoutText #text",

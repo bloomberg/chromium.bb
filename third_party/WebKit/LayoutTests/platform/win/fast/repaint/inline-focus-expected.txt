@@ -14,46 +14,41 @@
           "reason": "style change"
         },
         {
-          "object": "LayoutBlockFlow (anonymous)",
-          "rect": [-1, -1, 801, 19],
-          "reason": "invalidate paint rectangle"
-        },
-        {
           "object": "LayoutBlockFlow P",
           "rect": [0, 34, 800, 18],
-          "reason": "invalidate paint rectangle"
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutBlockFlow (anonymous)",
+          "rect": [0, 0, 800, 18],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [0, 34, 429, 18],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutInline A",
+          "rect": [0, 0, 40, 17],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [0, 6, 40, 10],
+          "reason": "forced by layout"
         }
       ]
     }
   ],
   "objectPaintInvalidations": [
     {
-      "object": "InlineFlowBox",
-      "reason": "full"
-    },
-    {
-      "object": "InlineTextBox 'Home'",
-      "reason": "full"
-    },
-    {
-      "object": "InlineFlowBox",
-      "reason": "full"
-    },
-    {
-      "object": "RootInlineBox",
-      "reason": "full"
-    },
-    {
-      "object": "InlineTextBox 'crbug.com/424078: ensure inline elements get their outline painted'",
-      "reason": "full"
-    },
-    {
-      "object": "RootInlineBox",
-      "reason": "full"
-    },
-    {
       "object": "LayoutBlockFlow (anonymous)",
-      "reason": "invalidate paint rectangle"
+      "reason": "forced by layout"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "forced by layout"
     },
     {
       "object": "LayoutInline A id='link'",
@@ -64,8 +59,36 @@
       "reason": "style change"
     },
     {
+      "object": "LayoutInline A",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "InlineFlowBox",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "LayoutText #text",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "InlineTextBox 'Home'",
+      "reason": "forced by layout"
+    },
+    {
       "object": "LayoutBlockFlow P",
-      "reason": "invalidate paint rectangle"
+      "reason": "forced by layout"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "LayoutText #text",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "InlineTextBox 'crbug.com/424078: ensure inline elements get their outline painted'",
+      "reason": "forced by layout"
     }
   ]
 }

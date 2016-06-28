@@ -22,7 +22,7 @@
         {
           "object": "LayoutText #text",
           "rect": [10, 7, 894, 215],
-          "reason": "bounds change"
+          "reason": "forced by layout"
         },
         {
           "object": "LayoutView #document",
@@ -52,7 +52,7 @@
         {
           "object": "LayoutText #text",
           "rect": [493, 8, 411, 484],
-          "reason": "bounds change"
+          "reason": "forced by layout"
         },
         {
           "object": "LayoutView #document",
@@ -63,158 +63,6 @@
     }
   ],
   "objectPaintInvalidations": [
-    {
-      "object": "RootInlineBox",
-      "reason": "full"
-    },
-    {
-      "object": "RootInlineBox",
-      "reason": "full"
-    },
-    {
-      "object": "RootInlineBox",
-      "reason": "full"
-    },
-    {
-      "object": "RootInlineBox",
-      "reason": "full"
-    },
-    {
-      "object": "RootInlineBox",
-      "reason": "full"
-    },
-    {
-      "object": "RootInlineBox",
-      "reason": "full"
-    },
-    {
-      "object": "InlineTextBox 'AAAA BBBB'",
-      "reason": "full"
-    },
-    {
-      "object": "InlineTextBox 'CCCC DDDD'",
-      "reason": "full"
-    },
-    {
-      "object": "InlineTextBox 'EEEE FFFF GGGG'",
-      "reason": "full"
-    },
-    {
-      "object": "InlineTextBox 'HHHH IIII JJJJ'",
-      "reason": "full"
-    },
-    {
-      "object": "InlineTextBox 'KKKK LLLL'",
-      "reason": "full"
-    },
-    {
-      "object": "InlineTextBox 'MMMM NNNN'",
-      "reason": "full"
-    },
-    {
-      "object": "RootInlineBox",
-      "reason": "full"
-    },
-    {
-      "object": "RootInlineBox",
-      "reason": "full"
-    },
-    {
-      "object": "RootInlineBox",
-      "reason": "full"
-    },
-    {
-      "object": "RootInlineBox",
-      "reason": "full"
-    },
-    {
-      "object": "RootInlineBox",
-      "reason": "full"
-    },
-    {
-      "object": "RootInlineBox",
-      "reason": "full"
-    },
-    {
-      "object": "RootInlineBox",
-      "reason": "full"
-    },
-    {
-      "object": "RootInlineBox",
-      "reason": "full"
-    },
-    {
-      "object": "RootInlineBox",
-      "reason": "full"
-    },
-    {
-      "object": "RootInlineBox",
-      "reason": "full"
-    },
-    {
-      "object": "RootInlineBox",
-      "reason": "full"
-    },
-    {
-      "object": "RootInlineBox",
-      "reason": "full"
-    },
-    {
-      "object": "RootInlineBox",
-      "reason": "full"
-    },
-    {
-      "object": "InlineTextBox 'AAAA'",
-      "reason": "full"
-    },
-    {
-      "object": "InlineTextBox 'BBBB'",
-      "reason": "full"
-    },
-    {
-      "object": "InlineTextBox 'CCCC'",
-      "reason": "full"
-    },
-    {
-      "object": "InlineTextBox 'DDDD'",
-      "reason": "full"
-    },
-    {
-      "object": "InlineTextBox 'EEEE'",
-      "reason": "full"
-    },
-    {
-      "object": "InlineTextBox 'FFFF'",
-      "reason": "full"
-    },
-    {
-      "object": "InlineTextBox 'GGGG'",
-      "reason": "full"
-    },
-    {
-      "object": "InlineTextBox 'HHHH'",
-      "reason": "full"
-    },
-    {
-      "object": "InlineTextBox 'IIII JJJJ'",
-      "reason": "full"
-    },
-    {
-      "object": "InlineTextBox 'KKKK'",
-      "reason": "full"
-    },
-    {
-      "object": "InlineTextBox 'LLLL'",
-      "reason": "full"
-    },
-    {
-      "object": "InlineTextBox 'MMMM'",
-      "reason": "full"
-    },
-    {
-      "object": "InlineTextBox 'NNNN'",
-      "reason": "full"
-    },
     {
       "object": "LayoutView #document",
       "reason": "incremental"
@@ -233,59 +81,59 @@
     },
     {
       "object": "LayoutText #text",
-      "reason": "bounds change"
+      "reason": "forced by layout"
     },
     {
       "object": "InlineTextBox 'AAAA'",
-      "reason": "bounds change"
+      "reason": "forced by layout"
     },
     {
       "object": "InlineTextBox 'BBBB'",
-      "reason": "bounds change"
+      "reason": "forced by layout"
     },
     {
       "object": "InlineTextBox 'CCCC'",
-      "reason": "bounds change"
+      "reason": "forced by layout"
     },
     {
       "object": "InlineTextBox 'DDDD'",
-      "reason": "bounds change"
+      "reason": "forced by layout"
     },
     {
       "object": "InlineTextBox 'EEEE'",
-      "reason": "bounds change"
+      "reason": "forced by layout"
     },
     {
       "object": "InlineTextBox 'FFFF'",
-      "reason": "bounds change"
+      "reason": "forced by layout"
     },
     {
       "object": "InlineTextBox 'GGGG'",
-      "reason": "bounds change"
+      "reason": "forced by layout"
     },
     {
       "object": "InlineTextBox 'HHHH'",
-      "reason": "bounds change"
+      "reason": "forced by layout"
     },
     {
       "object": "InlineTextBox 'IIII JJJJ'",
-      "reason": "bounds change"
+      "reason": "forced by layout"
     },
     {
       "object": "InlineTextBox 'KKKK'",
-      "reason": "bounds change"
+      "reason": "forced by layout"
     },
     {
       "object": "InlineTextBox 'LLLL'",
-      "reason": "bounds change"
+      "reason": "forced by layout"
     },
     {
       "object": "InlineTextBox 'MMMM'",
-      "reason": "bounds change"
+      "reason": "forced by layout"
     },
     {
       "object": "InlineTextBox 'NNNN'",
-      "reason": "bounds change"
+      "reason": "forced by layout"
     },
     {
       "object": "LayoutView #document",
@@ -455,7 +303,7 @@
         {
           "object": "LayoutText #text",
           "rect": [-503, 7, 894, 215],
-          "reason": "bounds change"
+          "reason": "forced by layout"
         },
         {
           "object": "LayoutView #document",
@@ -485,156 +333,12 @@
         {
           "object": "LayoutText #text",
           "rect": [49, 7, 342, 566],
-          "reason": "bounds change"
+          "reason": "forced by layout"
         }
       ]
     }
   ],
   "objectPaintInvalidations": [
-    {
-      "object": "RootInlineBox",
-      "reason": "full"
-    },
-    {
-      "object": "RootInlineBox",
-      "reason": "full"
-    },
-    {
-      "object": "RootInlineBox",
-      "reason": "full"
-    },
-    {
-      "object": "RootInlineBox",
-      "reason": "full"
-    },
-    {
-      "object": "RootInlineBox",
-      "reason": "full"
-    },
-    {
-      "object": "RootInlineBox",
-      "reason": "full"
-    },
-    {
-      "object": "RootInlineBox",
-      "reason": "full"
-    },
-    {
-      "object": "RootInlineBox",
-      "reason": "full"
-    },
-    {
-      "object": "RootInlineBox",
-      "reason": "full"
-    },
-    {
-      "object": "RootInlineBox",
-      "reason": "full"
-    },
-    {
-      "object": "RootInlineBox",
-      "reason": "full"
-    },
-    {
-      "object": "RootInlineBox",
-      "reason": "full"
-    },
-    {
-      "object": "RootInlineBox",
-      "reason": "full"
-    },
-    {
-      "object": "InlineTextBox 'AAAA'",
-      "reason": "full"
-    },
-    {
-      "object": "InlineTextBox 'BBBB'",
-      "reason": "full"
-    },
-    {
-      "object": "InlineTextBox 'CCCC'",
-      "reason": "full"
-    },
-    {
-      "object": "InlineTextBox 'DDDD'",
-      "reason": "full"
-    },
-    {
-      "object": "InlineTextBox 'EEEE'",
-      "reason": "full"
-    },
-    {
-      "object": "InlineTextBox 'FFFF'",
-      "reason": "full"
-    },
-    {
-      "object": "InlineTextBox 'GGGG'",
-      "reason": "full"
-    },
-    {
-      "object": "InlineTextBox 'HHHH'",
-      "reason": "full"
-    },
-    {
-      "object": "InlineTextBox 'IIII JJJJ'",
-      "reason": "full"
-    },
-    {
-      "object": "InlineTextBox 'KKKK'",
-      "reason": "full"
-    },
-    {
-      "object": "InlineTextBox 'LLLL'",
-      "reason": "full"
-    },
-    {
-      "object": "InlineTextBox 'MMMM'",
-      "reason": "full"
-    },
-    {
-      "object": "InlineTextBox 'NNNN'",
-      "reason": "full"
-    },
-    {
-      "object": "RootInlineBox",
-      "reason": "full"
-    },
-    {
-      "object": "RootInlineBox",
-      "reason": "full"
-    },
-    {
-      "object": "RootInlineBox",
-      "reason": "full"
-    },
-    {
-      "object": "RootInlineBox",
-      "reason": "full"
-    },
-    {
-      "object": "RootInlineBox",
-      "reason": "full"
-    },
-    {
-      "object": "InlineTextBox 'AAAA BBBB CCCC'",
-      "reason": "full"
-    },
-    {
-      "object": "InlineTextBox 'DDDD EEEE FFFF'",
-      "reason": "full"
-    },
-    {
-      "object": "InlineTextBox 'GGGG HHHH IIII JJJJ'",
-      "reason": "full"
-    },
-    {
-      "object": "InlineTextBox 'KKKK LLLL MMMM'",
-      "reason": "full"
-    },
-    {
-      "object": "InlineTextBox 'NNNN'",
-      "reason": "full"
-    },
     {
       "object": "LayoutView #document",
       "reason": "incremental"
@@ -653,27 +357,27 @@
     },
     {
       "object": "LayoutText #text",
-      "reason": "bounds change"
+      "reason": "forced by layout"
     },
     {
       "object": "InlineTextBox 'AAAA BBBB CCCC'",
-      "reason": "bounds change"
+      "reason": "forced by layout"
     },
     {
       "object": "InlineTextBox 'DDDD EEEE FFFF'",
-      "reason": "bounds change"
+      "reason": "forced by layout"
     },
     {
       "object": "InlineTextBox 'GGGG HHHH IIII JJJJ'",
-      "reason": "bounds change"
+      "reason": "forced by layout"
     },
     {
       "object": "InlineTextBox 'KKKK LLLL MMMM'",
-      "reason": "bounds change"
+      "reason": "forced by layout"
     },
     {
       "object": "InlineTextBox 'NNNN'",
-      "reason": "bounds change"
+      "reason": "forced by layout"
     },
     {
       "object": "LayoutView #document",
@@ -719,97 +423,17 @@
         {
           "object": "LayoutText #text",
           "rect": [449, 7, 342, 566],
-          "reason": "bounds change"
+          "reason": "forced by layout"
         },
         {
           "object": "LayoutText #text",
           "rect": [49, 7, 342, 566],
-          "reason": "bounds change"
+          "reason": "forced by layout"
         }
       ]
     }
   ],
   "objectPaintInvalidations": [
-    {
-      "object": "RootInlineBox",
-      "reason": "full"
-    },
-    {
-      "object": "RootInlineBox",
-      "reason": "full"
-    },
-    {
-      "object": "RootInlineBox",
-      "reason": "full"
-    },
-    {
-      "object": "RootInlineBox",
-      "reason": "full"
-    },
-    {
-      "object": "RootInlineBox",
-      "reason": "full"
-    },
-    {
-      "object": "InlineTextBox 'AAAA BBBB CCCC'",
-      "reason": "full"
-    },
-    {
-      "object": "InlineTextBox 'DDDD EEEE FFFF'",
-      "reason": "full"
-    },
-    {
-      "object": "InlineTextBox 'GGGG HHHH IIII JJJJ'",
-      "reason": "full"
-    },
-    {
-      "object": "InlineTextBox 'KKKK LLLL MMMM'",
-      "reason": "full"
-    },
-    {
-      "object": "InlineTextBox 'NNNN'",
-      "reason": "full"
-    },
-    {
-      "object": "RootInlineBox",
-      "reason": "full"
-    },
-    {
-      "object": "RootInlineBox",
-      "reason": "full"
-    },
-    {
-      "object": "RootInlineBox",
-      "reason": "full"
-    },
-    {
-      "object": "RootInlineBox",
-      "reason": "full"
-    },
-    {
-      "object": "RootInlineBox",
-      "reason": "full"
-    },
-    {
-      "object": "InlineTextBox 'AAAA BBBB CCCC'",
-      "reason": "full"
-    },
-    {
-      "object": "InlineTextBox 'DDDD EEEE FFFF'",
-      "reason": "full"
-    },
-    {
-      "object": "InlineTextBox 'GGGG HHHH IIII JJJJ'",
-      "reason": "full"
-    },
-    {
-      "object": "InlineTextBox 'KKKK LLLL MMMM'",
-      "reason": "full"
-    },
-    {
-      "object": "InlineTextBox 'NNNN'",
-      "reason": "full"
-    },
     {
       "object": "LayoutView #document",
       "reason": "incremental"
@@ -828,27 +452,27 @@
     },
     {
       "object": "LayoutText #text",
-      "reason": "bounds change"
+      "reason": "forced by layout"
     },
     {
       "object": "InlineTextBox 'AAAA BBBB CCCC'",
-      "reason": "bounds change"
+      "reason": "forced by layout"
     },
     {
       "object": "InlineTextBox 'DDDD EEEE FFFF'",
-      "reason": "bounds change"
+      "reason": "forced by layout"
     },
     {
       "object": "InlineTextBox 'GGGG HHHH IIII JJJJ'",
-      "reason": "bounds change"
+      "reason": "forced by layout"
     },
     {
       "object": "InlineTextBox 'KKKK LLLL MMMM'",
-      "reason": "bounds change"
+      "reason": "forced by layout"
     },
     {
       "object": "InlineTextBox 'NNNN'",
-      "reason": "bounds change"
+      "reason": "forced by layout"
     }
   ]
 }

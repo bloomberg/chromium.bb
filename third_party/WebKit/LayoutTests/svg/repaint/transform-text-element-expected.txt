@@ -43,14 +43,6 @@
   ],
   "objectPaintInvalidations": [
     {
-      "object": "RootInlineBox",
-      "reason": "full"
-    },
-    {
-      "object": "InlineTextBox 'Test'",
-      "reason": "full"
-    },
-    {
       "object": "LayoutSVGRoot svg",
       "reason": "bounds change"
     },

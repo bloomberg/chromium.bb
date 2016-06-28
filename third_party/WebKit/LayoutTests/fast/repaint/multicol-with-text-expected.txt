@@ -23,35 +23,35 @@
   ],
   "objectPaintInvalidations": [
     {
-      "object": "RootInlineBox",
-      "reason": "full"
-    },
-    {
-      "object": "RootInlineBox",
-      "reason": "full"
-    },
-    {
-      "object": "RootInlineBox",
-      "reason": "full"
-    },
-    {
-      "object": "InlineTextBox '\n'",
-      "reason": "full"
-    },
-    {
-      "object": "InlineTextBox '\n'",
-      "reason": "full"
-    },
-    {
-      "object": "InlineTextBox '\n'",
-      "reason": "full"
-    },
-    {
       "object": "LayoutMultiColumnFlowThread (anonymous)",
       "reason": "forced by layout"
     },
     {
       "object": "RootInlineBox",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "LayoutBR BR",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "InlineTextBox '\n'",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "LayoutBR BR",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "InlineTextBox '\n'",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "LayoutBR BR",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "InlineTextBox '\n'",
       "reason": "forced by layout"
     },
     {

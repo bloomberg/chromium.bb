@@ -49,12 +49,23 @@
           "name": "LayoutListItem (relative positioned) (floating) LI id='menu'",
           "position": [31, 42],
           "bounds": [17, 18],
-          "drawsContent": true
+          "drawsContent": true,
+          "paintInvalidations": [
+            {
+              "object": "LayoutListMarker (anonymous)",
+              "rect": [0, 0, 7, 18],
+              "reason": "forced by layout"
+            }
+          ]
         }
       ]
     }
   ],
   "objectPaintInvalidations": [
+    {
+      "object": "LayoutListMarker (anonymous)",
+      "reason": "forced by layout"
+    },
     {
       "object": "LayoutBlockFlow (positioned) UL id='submenu'",
       "reason": "bounds change"

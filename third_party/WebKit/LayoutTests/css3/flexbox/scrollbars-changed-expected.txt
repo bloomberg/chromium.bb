@@ -10,8 +10,8 @@
       "paintInvalidations": [
         {
           "object": "LayoutBlockFlow DIV id='dynamic' class='content'",
-          "rect": [0, 0, 185, 20],
-          "reason": "invalidate paint rectangle"
+          "rect": [0, 0, 185, 30],
+          "reason": "forced by layout"
         },
         {
           "object": "LayoutBlockFlow DIV id='scroller'",
@@ -28,20 +28,16 @@
   ],
   "objectPaintInvalidations": [
     {
-      "object": "InlineTextBox ''",
-      "reason": "full"
-    },
-    {
-      "object": "RootInlineBox",
-      "reason": "full"
-    },
-    {
       "object": "VerticalScrollbar",
       "reason": "scroll"
     },
     {
       "object": "LayoutBlockFlow DIV id='dynamic' class='content'",
-      "reason": "invalidate paint rectangle"
+      "reason": "forced by layout"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "forced by layout"
     },
     {
       "object": "LayoutText #text",

@@ -9,6 +9,11 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
+          "object": "LayoutBlockFlow DIV id='stacked'",
+          "rect": [19, 159, 200, 41],
+          "reason": "full"
+        },
+        {
           "object": "LayoutText #text",
           "rect": [19, 153, 131, 47],
           "reason": "layoutObject removal"
@@ -18,15 +23,11 @@
   ],
   "objectPaintInvalidations": [
     {
-      "object": "InlineTextBox '\u1EA6\u1EA4\u1EAA\u1EA8\u1EB0'",
-      "reason": "full"
-    },
-    {
       "object": "LayoutText #text",
       "reason": "layoutObject removal"
     },
     {
-      "object": "RootInlineBox",
+      "object": "LayoutBlockFlow DIV id='stacked'",
       "reason": "full"
     }
   ]
