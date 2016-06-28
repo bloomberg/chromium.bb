@@ -190,14 +190,14 @@ bool ImageResource::isSafeToUnlock() const
 
 void ImageResource::destroyDecodedDataForFailedRevalidation()
 {
-    m_image = nullptr;
+    clearImage();
     setDecodedSize(0);
 }
 
 void ImageResource::destroyDecodedDataIfPossible()
 {
     if (!hasClientsOrObservers() && !isLoading() && (!m_image || (m_image->hasOneRef() && m_image->isBitmapImage()))) {
-        m_image = nullptr;
+        clearImage();
         setDecodedSize(0);
     } else if (m_image && !errorOccurred()) {
         m_image->destroyDecodedData();
