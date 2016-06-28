@@ -192,7 +192,7 @@ void LanguageSettingsPrivateDelegate::RefreshDictionaries(
 const LanguageSettingsPrivateDelegate::WeakDictionaries&
 LanguageSettingsPrivateDelegate::GetHunspellDictionaries() {
   // If there are no hunspell dictionaries, or the first is invalid, refresh.
-  if (!hunspell_dictionaries_.size() || !hunspell_dictionaries_.front())
+  if (hunspell_dictionaries_.empty() || !hunspell_dictionaries_.front())
     RefreshDictionaries(listening_spellcheck_, listening_spellcheck_);
   return hunspell_dictionaries_;
 }

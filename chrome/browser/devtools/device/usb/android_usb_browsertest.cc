@@ -333,7 +333,7 @@ class MockUsbDeviceHandle : public UsbDeviceHandle {
   }
 
   void ProcessQueries() {
-    if (!queries_.size())
+    if (queries_.empty())
       return;
     Query query = queries_.front();
     if (broken_) {

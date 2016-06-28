@@ -59,7 +59,7 @@ void Queue::Complete(size_t token) {
 }
 
 void Queue::MaybeRun() {
-  if (executed_.size() == max_in_parallel_ || !pending_.size())
+  if (executed_.size() == max_in_parallel_ || pending_.empty())
     return;
 
   CHECK_GT(max_in_parallel_, executed_.size());

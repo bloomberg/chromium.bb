@@ -442,7 +442,7 @@ void MobileSetupHandler::HandleStartActivation(const base::ListValue* args) {
     return;
 
   std::string path = web_ui()->GetWebContents()->GetURL().path();
-  if (!path.size())
+  if (path.empty())
     return;
 
   LOG(WARNING) << "Starting activation for service " << path;

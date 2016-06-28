@@ -147,7 +147,7 @@ void HistoryMenuBridge::TabRestoreServiceChanged(
       sessions::TabRestoreService::Window* entry_win =
           (sessions::TabRestoreService::Window*)entry;
       std::vector<sessions::TabRestoreService::Tab>& tabs = entry_win->tabs;
-      if (!tabs.size())
+      if (tabs.empty())
         continue;
 
       // Create the item for the parent/window. Do not set the title yet because
@@ -304,7 +304,7 @@ NSMenuItem* HistoryMenuBridge::AddItemToMenu(HistoryItem* item,
   [item->menu_item setTag:tag];
   if (item->icon.get())
     [item->menu_item setImage:item->icon.get()];
-  else if (!item->tabs.size())
+  else if (item->tabs.empty())
     [item->menu_item setImage:default_favicon_.get()];
 
   // Add a tooltip if the history item is for a single tab.

@@ -955,7 +955,7 @@ void ProfileInfoCache::SaveAvatarImageAtPath(
     avatar_images_downloads_in_progress_.erase(downloader_iter);
   }
 
-  if (!data->size()) {
+  if (data->empty()) {
     LOG(ERROR) << "Failed to PNG encode the image.";
   } else {
     base::Closure callback = base::Bind(&ProfileInfoCache::OnAvatarPictureSaved,

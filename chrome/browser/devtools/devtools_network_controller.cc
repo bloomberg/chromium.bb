@@ -20,7 +20,7 @@ DevToolsNetworkController::~DevToolsNetworkController() {
 DevToolsNetworkInterceptor* DevToolsNetworkController::GetInterceptor(
     const std::string& client_id) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  if (!interceptors_.size() || client_id.empty())
+  if (interceptors_.empty() || client_id.empty())
     return nullptr;
 
   DevToolsNetworkInterceptor* interceptor = interceptors_.get(client_id);

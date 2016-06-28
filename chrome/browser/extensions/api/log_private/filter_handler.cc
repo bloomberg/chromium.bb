@@ -17,7 +17,7 @@ namespace {
 
 template <typename T>
 bool IsValidField(const std::vector<T>& filter, const T& field) {
-  return (!filter.size() ||
+  return (filter.empty() ||
           std::find(filter.begin(), filter.end(), field) != filter.end());
 }
 

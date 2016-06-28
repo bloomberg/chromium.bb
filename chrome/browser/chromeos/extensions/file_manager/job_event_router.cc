@@ -74,7 +74,7 @@ void JobEventRouter::OnJobDone(const drive::JobInfo& job_info,
 
   // Forget about the job.
   drive_jobs_.erase(job_info.job_id);
-  if (!drive_jobs_.size()) {
+  if (drive_jobs_.empty()) {
     num_completed_bytes_ = 0L;
     num_total_bytes_ = 0L;
   }

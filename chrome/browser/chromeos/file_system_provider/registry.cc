@@ -116,7 +116,7 @@ void Registry::ForgetFileSystem(const std::string& extension_id,
     return;  // Nothing to forget.
 
   file_systems_per_extension->RemoveWithoutPathExpansion(file_system_id, NULL);
-  if (!file_systems_per_extension->size())
+  if (file_systems_per_extension->empty())
     dict_update->Remove(extension_id, NULL);
 }
 

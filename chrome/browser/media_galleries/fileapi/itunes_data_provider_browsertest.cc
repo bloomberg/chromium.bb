@@ -180,7 +180,7 @@ class ITunesDataProviderTest : public InProcessBrowserTest {
   }
 
   void WriteLibraryInternal(const std::vector<LibraryEntry>& entries) {
-    if (!entries.size())
+    if (entries.empty())
       return;
     std::string xml = "<plist><dict><key>Tracks</key><dict>\n";
     for (size_t i = 0; i < entries.size(); ++i) {

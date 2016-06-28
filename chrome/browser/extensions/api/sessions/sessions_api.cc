@@ -492,7 +492,7 @@ bool SessionsRestoreFunction::RestoreLocalSession(const SessionId& session_id,
   std::vector<sessions::LiveTab*> restored_tabs =
       tab_restore_service->RestoreEntryById(context, session_id.id(), UNKNOWN);
   // If the ID is invalid, restored_tabs will be empty.
-  if (!restored_tabs.size()) {
+  if (restored_tabs.empty()) {
     SetInvalidIdError(session_id.ToString());
     return false;
   }

@@ -146,7 +146,7 @@ bool GetOpenFileNameInUtilityProcess(
                  base::Unretained(ofn), client, blocking_task_runner));
   client->WaitForCompletion();
 
-  if (!client->filenames().size())
+  if (client->filenames().empty())
     return false;
 
   ui::win::OpenFileName::SetResult(

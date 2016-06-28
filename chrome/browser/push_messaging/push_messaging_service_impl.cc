@@ -518,7 +518,7 @@ void PushMessagingServiceImpl::DidSubscribeWithEncryptionInfo(
     const std::string& subscription_id,
     const std::string& p256dh,
     const std::string& auth_secret) {
-  if (!p256dh.size()) {
+  if (p256dh.empty()) {
     SubscribeEndWithError(
         callback, content::PUSH_REGISTRATION_STATUS_PUBLIC_KEY_UNAVAILABLE);
     return;
@@ -578,7 +578,7 @@ void PushMessagingServiceImpl::DidGetEncryptionInfo(
     const std::string& p256dh,
     const std::string& auth_secret) const {
   // I/O errors might prevent the GCM Driver from retrieving a key-pair.
-  const bool success = !!p256dh.size();
+  const bool success = !p256dh.empty();
 
   callback.Run(success, std::vector<uint8_t>(p256dh.begin(), p256dh.end()),
                std::vector<uint8_t>(auth_secret.begin(), auth_secret.end()));

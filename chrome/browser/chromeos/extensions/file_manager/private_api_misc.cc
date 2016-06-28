@@ -115,7 +115,7 @@ bool ConvertURLsToProvidedInfo(
   DCHECK(file_system);
   DCHECK(error);
 
-  if (!urls.size()) {
+  if (urls.empty()) {
     *error = "At least one file must be specified.";
     return false;
   }

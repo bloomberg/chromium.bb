@@ -292,7 +292,7 @@ void MultiUserWindowManagerChromeOSTest::SetUp() {
 }
 
 void MultiUserWindowManagerChromeOSTest::SetUpForThisManyWindows(int windows) {
-  DCHECK(!window_.size());
+  DCHECK(window_.empty());
   for (int i = 0; i < windows; i++) {
     window_.push_back(CreateTestWindowInShellWithId(i));
     window_[i]->Show();

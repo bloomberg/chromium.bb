@@ -761,7 +761,7 @@ void ProvidedFileSystem::OnRemoveWatcherInQueueCompleted(
                     OnWatcherListChanged(file_system_info_, watchers_));
 
   // If there are no more subscribers, then remove the watcher.
-  if (!it->second.subscribers.size())
+  if (it->second.subscribers.empty())
     watchers_.erase(it);
 
   callback.Run(base::File::FILE_OK);

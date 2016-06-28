@@ -97,7 +97,7 @@ class TestDelegate : public PasswordsPrivateDelegate {
 
   void RemoveSavedPassword(
       const std::string& origin_url, const std::string& username) override {
-    if (!current_entries_.size())
+    if (current_entries_.empty())
       return;
 
     // Since this is just mock data, remove the first entry regardless of
@@ -107,7 +107,7 @@ class TestDelegate : public PasswordsPrivateDelegate {
   }
 
   void RemovePasswordException(const std::string& exception_url) override {
-    if (!current_exceptions_.size())
+    if (current_exceptions_.empty())
       return;
 
     // Since this is just mock data, remove the first entry regardless of

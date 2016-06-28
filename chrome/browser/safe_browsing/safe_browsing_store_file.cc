@@ -800,8 +800,8 @@ bool SafeBrowsingStoreFile::BeginUpdate() {
 bool SafeBrowsingStoreFile::FinishChunk() {
   DCHECK(CalledOnValidThread());
 
-  if (!add_prefixes_.size() && !sub_prefixes_.size() &&
-      !add_hashes_.size() && !sub_hashes_.size())
+  if (add_prefixes_.empty() && sub_prefixes_.empty() &&
+      add_hashes_.empty() && sub_hashes_.empty())
     return true;
 
   ChunkHeader header;
