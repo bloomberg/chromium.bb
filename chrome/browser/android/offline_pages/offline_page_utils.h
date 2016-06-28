@@ -60,6 +60,11 @@ class OfflinePageUtils {
   // navigation, so it is unsafe to store a copy of the returned pointer.
   static const OfflinePageItem* GetOfflinePageFromWebContents(
       content::WebContents* web_contents);
+
+  // Gets an Android Tab ID from a tab containing |web_contents|. Returns false,
+  // when tab is not available. Returns true otherwise and sets |tab_id| to the
+  // ID of the tab.
+  static bool GetTabId(content::WebContents* web_contents, int* tab_id);
 };
 
 }  // namespace offline_pages

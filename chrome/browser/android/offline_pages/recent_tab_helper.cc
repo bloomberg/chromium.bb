@@ -17,7 +17,7 @@
 #include "base/time/time.h"
 #include "chrome/browser/android/offline_pages/offline_page_mhtml_archiver.h"
 #include "chrome/browser/android/offline_pages/offline_page_model_factory.h"
-#include "chrome/browser/android/tab_android.h"
+#include "chrome/browser/android/offline_pages/offline_page_utils.h"
 #include "components/offline_pages/client_namespace_constants.h"
 #include "components/offline_pages/offline_page_item.h"
 #include "components/offline_pages/offline_page_model.h"
@@ -43,11 +43,7 @@ class DefaultDelegate: public offline_pages::RecentTabHelper::Delegate {
     return base::ThreadTaskRunnerHandle::Get();
   }
   bool GetTabId(content::WebContents* web_contents, int* tab_id) override {
-    TabAndroid* tab_android = TabAndroid::FromWebContents(web_contents);
-    if (!tab_android)
-      return false;
-    *tab_id = tab_android->GetAndroidId();
-    return true;
+    return offline_pages::OfflinePageUtils::GetTabId(web_contents, tab_id);
   }
 };
 }  // namespace

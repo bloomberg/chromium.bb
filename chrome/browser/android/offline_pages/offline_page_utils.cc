@@ -13,6 +13,7 @@
 #include "chrome/browser/android/offline_pages/offline_page_mhtml_archiver.h"
 #include "chrome/browser/android/offline_pages/offline_page_model_factory.h"
 #include "chrome/browser/android/offline_pages/offline_page_tab_helper.h"
+#include "chrome/browser/android/tab_android.h"
 #include "components/offline_pages/offline_page_feature.h"
 #include "components/offline_pages/offline_page_item.h"
 #include "components/offline_pages/offline_page_model.h"
@@ -174,6 +175,16 @@ const OfflinePageItem* OfflinePageUtils::GetOfflinePageFromWebContents(
   OfflinePageTabHelper* tab_helper =
       OfflinePageTabHelper::FromWebContents(web_contents);
   return tab_helper ? tab_helper->offline_page() : nullptr;
+}
+
+// static
+bool OfflinePageUtils::GetTabId(content::WebContents* web_contents,
+                                int* tab_id) {
+  TabAndroid* tab_android = TabAndroid::FromWebContents(web_contents);
+  if (!tab_android)
+    return false;
+  *tab_id = tab_android->GetAndroidId();
+  return true;
 }
 
 }  // namespace offline_pages
