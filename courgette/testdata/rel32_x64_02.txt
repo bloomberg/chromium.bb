@@ -58,7 +58,15 @@ Program:
             00
   004010C2: 4C 8D 3D 00 00 00  lea         r15,[rip+00000000]
             00
-  004010C9: 5D                 pop        ebp
+  004010C9: 66 8B 05 00 00 00  mov         ax,[rip+00000000]
+            00
+  004010D0: 66 8B 3D 00 00 00  mov         di,[rip+00000000]
+            00
+  004010D7: 66 8D 05 00 00 00  lea         ax,[rip+00000000]
+            00
+  004010DE: 66 8D 3D 00 00 00  lea         di,[rip+00000000]
+            00
+  004010C9: 5D                 pop         ebp
   004010CA: C3                 ret
 
 Abs32:
@@ -88,10 +96,10 @@ Expected:
 1069
 106F
 1075
-# 107B Not yet detected.
-# 1081 Not yet detected.
-# 1087 Not yet detected.
-# 108D Not yet detected.
+107B
+1081
+1087
+108D
 1094
 109B
 10A2
@@ -100,3 +108,7 @@ Expected:
 # 10B7
 10BE
 10C5
+10CC
+10D3
+10DA
+10E1

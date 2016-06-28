@@ -70,5 +70,5 @@ Expected:
 1056
 106E
 1074  # x64 rip ignores .text boundaries (target likely in .data section).
-# 1086 Not yet detected.
-# 108C Not yet detected.
+1086
+108C

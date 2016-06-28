@@ -56,27 +56,60 @@ void Rel32FinderX64::Find(const uint8_t* start_pointer,
       if (p[0] == 0x0F && (p[1] & 0xF0) == 0x80) {  // Jcc long form
         if (p[1] != 0x8A && p[1] != 0x8B)           // JPE/JPO unlikely
           rel32 = p + 2;
-      } else if (p[0] == 0xFF && (p[1] == 0x15 || p[1] == 0x25)) {
-        // rip relative CALL/JMP
+      } else if ((p[0] == 0xFF &&
+                 (p[1] == 0x15 || p[1] == 0x25)) ||
+                ((p[0] == 0x89 || p[0] == 0x8B || p[0] == 0x8D) &&
+                 (p[1] & 0xC7) == 0x05)) {
+        // 6-byte instructions:
+        // [2-byte opcode] [disp32]:
+        //  Opcode
+        //   FF 15: call QWORD PTR [rip+disp32]
+        //   FF 25: jmp  QWORD PTR [rip+disp32]
+        //
+        // [1-byte opcode] [ModR/M] [disp32]:
+        //  Opcode
+        //   89: mov DWORD PTR [rip+disp32],reg
+        //   8B: mov reg,DWORD PTR [rip+disp32]
+        //   8D: lea reg,[rip+disp32]
+        //  ModR/M : MMRRRMMM
+        //   MM = 00 & MMM = 101 => rip+disp32
+        //   RRR: selects reg operand from [eax|ecx|...|edi]
         rel32 = p + 2;
         is_rip_relative = true;
       }
     }
-    // TODO(etiennep): Many rip mov/lea variants are not detected. Experiment,
-    // fix and combine logic.
+    // TODO(huangs): Maybe skip checking prefixes,
+    // and let 6-byte instructions take care of this?
     if (p + 7 <= end_pointer) {
-      if ((p[0] & 0xFB) == 0x48 &&  // Dst reg : 48/4C [rax-rdi]/[r8-r15]
-          p[1] == 0x8D &&           // LEA
-          (p[2] & 0xC7) == 0x05) {  // Dst reg : [05,0D,...3D] =
-                                    //  [rax,rbx,...,rdi]/[r8,r9,...,r15]
-        // LEA dst, QWORD [rip + rel32]
-        rel32 = p + 3;
-        is_rip_relative = true;
-      } else if ((p[0] & 0xFB) == 0x48 &&  // Dst reg : 48/4C [rax-rdi]/[r8-r15]
-                 p[1] == 0x8B &&           // MOV
-                 (p[2] & 0xC7) == 0x05) {  // Dst reg : [05,0D,...3D] =
-                                           //  [rax,rbx,...,rdi]/[r8,r9,...,r15]
-        // MOV dst, QWORD PTR[rip + rel32]
+      if (((p[0] & 0xF2) == 0x40 || p[0] == 0x66) &&
+           (p[1] == 0x89 || p[1] == 0x8B || p[1] == 0x8D) &&
+           (p[2] & 0xC7) == 0x05) {
+        // 7-byte instructions:
+        // [REX.W prefix] [1-byte opcode] [ModR/M] [disp32]
+        //  REX Prefix : 0100WR0B
+        //   W: 0 = Default Operation Size
+        //      1 = 64 Bit Operand Size
+        //   R: 0 = REG selects from [rax|rcx|...|rdi].
+        //      1 = REG selects from [r9|r10|...|r15].
+        //   B: ModR/M r/m field extension (not used).
+        //  Opcode
+        //   89: mov QWORD PTR [rip+disp32],reg
+        //   8B: mov reg,QWORD PTR [rip+disp32]
+        //   8D: lea reg,[rip+disp32]
+        //  ModR/M : MMRRRMMM
+        //   MM = 00 & MMM = 101 => rip+disp32
+        //   RRR: selects reg operand
+        //
+        // 66 [1-byte opcode] [ModR/M] [disp32]
+        //  Prefix
+        //   66: Operand size override
+        //  Opcode
+        //   89: mov WORD PTR [rip+disp32],reg
+        //   8B: mov reg,WORD PTR [rip+disp32]
+        //   8D: lea reg,[rip+disp32]
+        //  ModR/M : MMRRRMMM
+        //   MM = 00 & MMM = 101 = rip+disp32
+        //   RRR selects reg operand from [ax|cx|...|di]
         rel32 = p + 3;
         is_rip_relative = true;
       }

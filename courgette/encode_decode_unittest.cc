@@ -83,7 +83,7 @@ TEST_F(EncodeDecodeTest, PE) {
 
 TEST_F(EncodeDecodeTest, PE64) {
   std::string file = FileContents("chrome64_1.exe");
-  TestAssembleToStreamDisassemble(file, 809635);
+  TestAssembleToStreamDisassemble(file, 810090);
 }
 
 TEST_F(EncodeDecodeTest, Elf_Small) {
