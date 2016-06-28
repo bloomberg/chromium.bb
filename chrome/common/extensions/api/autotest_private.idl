@@ -61,10 +61,7 @@ namespace autotestPrivate {
     long priority;
     long progress;
   };
-  dictionary NotificationArray {
-    Notification[] notifications;
-  };
-  callback NotificationArrayCallback = void (NotificationArray notifications);
+  callback NotificationArrayCallback = void (Notification[] notifications);
 
   interface Functions {
     // Logout of a user session.
