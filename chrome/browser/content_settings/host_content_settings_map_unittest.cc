@@ -301,12 +301,16 @@ TEST_F(HostContentSettingsMapTest, Patterns) {
   GURL host1("http://example.com/");
   GURL host2("http://www.example.com/");
   GURL host3("http://example.org/");
+  ContentSettingsPattern pattern1 =
+      ContentSettingsPattern::FromString("[*.]example.com");
+  ContentSettingsPattern pattern2 =
+      ContentSettingsPattern::FromString("example.org");
   EXPECT_EQ(CONTENT_SETTING_ALLOW,
             host_content_settings_map->GetContentSetting(
                 host1, host1, CONTENT_SETTINGS_TYPE_COOKIES, std::string()));
-  host_content_settings_map->SetContentSettingDefaultScope(
-      host1, GURL(), CONTENT_SETTINGS_TYPE_COOKIES, std::string(),
-      CONTENT_SETTING_BLOCK);
+  host_content_settings_map->SetContentSettingCustomScope(
+      pattern1, ContentSettingsPattern::Wildcard(),
+      CONTENT_SETTINGS_TYPE_COOKIES, std::string(), CONTENT_SETTING_BLOCK);
   EXPECT_EQ(CONTENT_SETTING_BLOCK,
             host_content_settings_map->GetContentSetting(
                 host1, host1, CONTENT_SETTINGS_TYPE_COOKIES, std::string()));
@@ -316,12 +320,44 @@ TEST_F(HostContentSettingsMapTest, Patterns) {
   EXPECT_EQ(CONTENT_SETTING_ALLOW,
             host_content_settings_map->GetContentSetting(
                 host3, host3, CONTENT_SETTINGS_TYPE_COOKIES, std::string()));
-  host_content_settings_map->SetContentSettingDefaultScope(
-      host3, GURL(), CONTENT_SETTINGS_TYPE_COOKIES, std::string(),
-      CONTENT_SETTING_BLOCK);
+  host_content_settings_map->SetContentSettingCustomScope(
+      pattern2, ContentSettingsPattern::Wildcard(),
+      CONTENT_SETTINGS_TYPE_COOKIES, std::string(), CONTENT_SETTING_BLOCK);
   EXPECT_EQ(CONTENT_SETTING_BLOCK,
             host_content_settings_map->GetContentSetting(
                 host3, host3, CONTENT_SETTINGS_TYPE_COOKIES, std::string()));
+}
+
+// Changing a setting for one origin doesn't affect subdomains.
+TEST_F(HostContentSettingsMapTest, Origins) {
+  TestingProfile profile;
+  HostContentSettingsMap* host_content_settings_map =
+      HostContentSettingsMapFactory::GetForProfile(&profile);
+
+  GURL host1("http://example.com/");
+  GURL host2("http://www.example.com/");
+  GURL host3("http://example.org/");
+  GURL host4("http://example.com:8080");
+  ContentSettingsPattern pattern =
+      ContentSettingsPattern::FromURLNoWildcard(host1);
+  EXPECT_EQ(CONTENT_SETTING_ALLOW,
+            host_content_settings_map->GetContentSetting(
+                host1, host1, CONTENT_SETTINGS_TYPE_COOKIES, std::string()));
+  host_content_settings_map->SetContentSettingCustomScope(
+      pattern, ContentSettingsPattern::Wildcard(),
+      CONTENT_SETTINGS_TYPE_COOKIES, std::string(), CONTENT_SETTING_BLOCK);
+  EXPECT_EQ(CONTENT_SETTING_BLOCK,
+            host_content_settings_map->GetContentSetting(
+                host1, host1, CONTENT_SETTINGS_TYPE_COOKIES, std::string()));
+  EXPECT_EQ(CONTENT_SETTING_ALLOW,
+            host_content_settings_map->GetContentSetting(
+                host2, host2, CONTENT_SETTINGS_TYPE_COOKIES, std::string()));
+  EXPECT_EQ(CONTENT_SETTING_ALLOW,
+            host_content_settings_map->GetContentSetting(
+                host3, host3, CONTENT_SETTINGS_TYPE_COOKIES, std::string()));
+  EXPECT_EQ(CONTENT_SETTING_ALLOW,
+            host_content_settings_map->GetContentSetting(
+                host4, host4, CONTENT_SETTINGS_TYPE_COOKIES, std::string()));
 }
 
 TEST_F(HostContentSettingsMapTest, Observer) {
@@ -576,58 +612,95 @@ TEST_F(HostContentSettingsMapTest, NestedSettings) {
   HostContentSettingsMap* host_content_settings_map =
       HostContentSettingsMapFactory::GetForProfile(&profile);
 
-  GURL host("http://a.b.example.com/");
   GURL host1("http://example.com/");
   GURL host2("http://b.example.com/");
+  GURL host3("http://a.b.example.com/");
+  GURL host4("http://a.example.com/");
+  GURL host5("http://b.b.example.com/");
+  ContentSettingsPattern pattern1 =
+      ContentSettingsPattern::FromString("[*.]example.com");
+  ContentSettingsPattern pattern2 =
+      ContentSettingsPattern::FromString("[*.]b.example.com");
+  ContentSettingsPattern pattern3 =
+      ContentSettingsPattern::FromString("a.b.example.com");
+
+  // Test nested patterns for one type.
+  EXPECT_EQ(CONTENT_SETTING_ALLOW,
+            host_content_settings_map->GetDefaultContentSetting(
+                CONTENT_SETTINGS_TYPE_COOKIES, nullptr));
+  host_content_settings_map->SetContentSettingCustomScope(
+      pattern1, ContentSettingsPattern::Wildcard(),
+      CONTENT_SETTINGS_TYPE_COOKIES, std::string(), CONTENT_SETTING_BLOCK);
+  host_content_settings_map->SetContentSettingCustomScope(
+      pattern2, ContentSettingsPattern::Wildcard(),
+      CONTENT_SETTINGS_TYPE_COOKIES, std::string(), CONTENT_SETTING_ALLOW);
+  host_content_settings_map->SetContentSettingCustomScope(
+      pattern3, ContentSettingsPattern::Wildcard(),
+      CONTENT_SETTINGS_TYPE_COOKIES, std::string(), CONTENT_SETTING_BLOCK);
+  EXPECT_EQ(CONTENT_SETTING_BLOCK,
+            host_content_settings_map->GetContentSetting(
+                host1, host1, CONTENT_SETTINGS_TYPE_COOKIES, std::string()));
+  EXPECT_EQ(CONTENT_SETTING_ALLOW,
+            host_content_settings_map->GetContentSetting(
+                host2, host2, CONTENT_SETTINGS_TYPE_COOKIES, std::string()));
+  EXPECT_EQ(CONTENT_SETTING_BLOCK,
+            host_content_settings_map->GetContentSetting(
+                host3, host3, CONTENT_SETTINGS_TYPE_COOKIES, std::string()));
+  EXPECT_EQ(CONTENT_SETTING_BLOCK,
+            host_content_settings_map->GetContentSetting(
+                host4, host4, CONTENT_SETTINGS_TYPE_COOKIES, std::string()));
+  EXPECT_EQ(CONTENT_SETTING_ALLOW,
+            host_content_settings_map->GetContentSetting(
+                host5, host5, CONTENT_SETTINGS_TYPE_COOKIES, std::string()));
+
+  host_content_settings_map->ClearSettingsForOneType(
+      CONTENT_SETTINGS_TYPE_COOKIES);
+  EXPECT_EQ(CONTENT_SETTING_ALLOW,
+            host_content_settings_map->GetDefaultContentSetting(
+                CONTENT_SETTINGS_TYPE_COOKIES, nullptr));
+
+  GURL https_host1("https://b.example.com/");
+  GURL https_host2("https://a.b.example.com/");
+  ContentSettingsPattern pattern4 =
+      ContentSettingsPattern::FromString("b.example.com");
+
+  host_content_settings_map->SetContentSettingCustomScope(
+      pattern4, ContentSettingsPattern::Wildcard(),
+      CONTENT_SETTINGS_TYPE_COOKIES, std::string(), CONTENT_SETTING_BLOCK);
+  // Pattern "b.example.com" will affect (http|https)://b.example.com
+  EXPECT_EQ(CONTENT_SETTING_BLOCK,
+            host_content_settings_map->GetContentSetting(
+                host2, host2, CONTENT_SETTINGS_TYPE_COOKIES, std::string()));
+  EXPECT_EQ(CONTENT_SETTING_BLOCK,
+            host_content_settings_map->GetContentSetting(
+                https_host1, https_host1, CONTENT_SETTINGS_TYPE_COOKIES,
+                std::string()));
+  // Pattern "b.example.com" will not affect (http|https)://a.b.example.com
+  EXPECT_EQ(CONTENT_SETTING_ALLOW,
+            host_content_settings_map->GetContentSetting(
+                host3, host3, CONTENT_SETTINGS_TYPE_COOKIES, std::string()));
+  EXPECT_EQ(CONTENT_SETTING_ALLOW,
+            host_content_settings_map->GetContentSetting(
+                https_host2, https_host2, CONTENT_SETTINGS_TYPE_COOKIES,
+                std::string()));
+}
+
+TEST_F(HostContentSettingsMapTest, TypeIsolatedSettings) {
+  TestingProfile profile;
+  HostContentSettingsMap* host_content_settings_map =
+      HostContentSettingsMapFactory::GetForProfile(&profile);
+
+  GURL host("http://example.com/");
 
   host_content_settings_map->SetContentSettingDefaultScope(
-      host1, GURL(), CONTENT_SETTINGS_TYPE_POPUPS, std::string(),
+      host, GURL(), CONTENT_SETTINGS_TYPE_COOKIES, std::string(),
       CONTENT_SETTING_BLOCK);
-
-  host_content_settings_map->SetContentSettingDefaultScope(
-      host2, GURL(), CONTENT_SETTINGS_TYPE_COOKIES, std::string(),
-      CONTENT_SETTING_BLOCK);
-
-  host_content_settings_map->SetContentSettingDefaultScope(
-      host, GURL(), CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS, std::string(),
-      CONTENT_SETTING_BLOCK);
-  host_content_settings_map->SetDefaultContentSetting(
-      CONTENT_SETTINGS_TYPE_JAVASCRIPT, CONTENT_SETTING_BLOCK);
-
   EXPECT_EQ(CONTENT_SETTING_BLOCK,
             host_content_settings_map->GetContentSetting(
                 host, host, CONTENT_SETTINGS_TYPE_COOKIES, std::string()));
-  EXPECT_EQ(CONTENT_SETTING_BLOCK,
-            host_content_settings_map->GetContentSetting(
-                host, host, CONTENT_SETTINGS_TYPE_POPUPS, std::string()));
-  EXPECT_EQ(CONTENT_SETTING_BLOCK,
-            host_content_settings_map->GetContentSetting(
-                host, host, CONTENT_SETTINGS_TYPE_JAVASCRIPT, std::string()));
-  EXPECT_EQ(CONTENT_SETTING_BLOCK,
-            host_content_settings_map->GetContentSetting(
-                host, host, CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS,
-                std::string()));
   EXPECT_EQ(CONTENT_SETTING_ASK,
             host_content_settings_map->GetContentSetting(
                 host, host, CONTENT_SETTINGS_TYPE_GEOLOCATION, std::string()));
-  EXPECT_EQ(
-      CONTENT_SETTING_ASK,
-      host_content_settings_map->GetContentSetting(
-          host, host, CONTENT_SETTINGS_TYPE_NOTIFICATIONS, std::string()));
-  EXPECT_EQ(CONTENT_SETTING_ASK,
-            host_content_settings_map->GetContentSetting(
-                host, host, CONTENT_SETTINGS_TYPE_FULLSCREEN, std::string()));
-#if !defined(OS_ANDROID)
-  EXPECT_EQ(CONTENT_SETTING_ASK,
-            host_content_settings_map->GetContentSetting(
-                host, host, CONTENT_SETTINGS_TYPE_MOUSELOCK, std::string()));
-#endif
-  EXPECT_EQ(CONTENT_SETTING_BLOCK,
-            host_content_settings_map->GetContentSetting(
-                host, host, CONTENT_SETTINGS_TYPE_KEYGEN, std::string()));
-  EXPECT_EQ(CONTENT_SETTING_ALLOW,
-            host_content_settings_map->GetContentSetting(
-                host, host, CONTENT_SETTINGS_TYPE_AUTOPLAY, std::string()));
 }
 
 TEST_F(HostContentSettingsMapTest, OffTheRecord) {
