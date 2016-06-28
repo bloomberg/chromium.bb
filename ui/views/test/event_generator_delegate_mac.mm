@@ -428,7 +428,9 @@ gfx::Point EventGeneratorDelegateMac::CenterOfTarget(
 gfx::Point EventGeneratorDelegateMac::CenterOfWindow(
     gfx::NativeWindow window) const {
   DCHECK_EQ(window, window_);
-  return gfx::ScreenRectFromNSRect([window frame]).CenterPoint();
+  // Assume the window is at the top-left of the coordinate system (even if
+  // AppKit has moved it into the work area) see ConvertRootPointToTarget().
+  return gfx::Point(NSWidth([window frame]) / 2, NSHeight([window frame]) / 2);
 }
 
 // Return the current owner of the EventGeneratorDelegate. May be null.

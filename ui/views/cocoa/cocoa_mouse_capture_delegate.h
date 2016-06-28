@@ -6,6 +6,7 @@
 #define UI_VIEWS_COCOA_COCOA_MOUSE_CAPTURE_DELEGATE_H_
 
 @class NSEvent;
+@class NSWindow;
 
 namespace views {
 
@@ -20,6 +21,9 @@ class CocoaMouseCaptureDelegate {
   // Called once. When another window acquires capture, or when the
   // CocoaMouseCapture is destroyed.
   virtual void OnMouseCaptureLost() = 0;
+
+  // Returns the associated NSWindow.
+  virtual NSWindow* GetWindow() const = 0;
 };
 
 }  // namespace views

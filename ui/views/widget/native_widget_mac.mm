@@ -20,6 +20,7 @@
 #include "ui/native_theme/native_theme_mac.h"
 #import "ui/views/cocoa/bridged_content_view.h"
 #import "ui/views/cocoa/bridged_native_widget.h"
+#include "ui/views/cocoa/cocoa_mouse_capture.h"
 #import "ui/views/cocoa/drag_drop_client_mac.h"
 #import "ui/views/cocoa/native_widget_mac_nswindow.h"
 #import "ui/views/cocoa/views_nswindow_delegate.h"
@@ -725,8 +726,7 @@ gfx::FontList NativeWidgetPrivate::GetWindowTitleFontList() {
 // static
 gfx::NativeView NativeWidgetPrivate::GetGlobalCapture(
     gfx::NativeView native_view) {
-  NOTIMPLEMENTED();
-  return nullptr;
+  return [CocoaMouseCapture::GetGlobalCaptureWindow() contentView];
 }
 
 }  // namespace internal

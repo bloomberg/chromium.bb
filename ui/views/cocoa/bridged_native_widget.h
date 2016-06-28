@@ -241,6 +241,7 @@ class VIEWS_EXPORT BridgedNativeWidget
   // Overridden from CocoaMouseCaptureDelegate:
   void PostCapturedEvent(NSEvent* event) override;
   void OnMouseCaptureLost() override;
+  NSWindow* GetWindow() const override;
 
   // Returns a properties dictionary associated with the NSWindow.
   // Creates and attaches a new instance if not found.

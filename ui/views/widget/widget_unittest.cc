@@ -1768,14 +1768,7 @@ TEST_F(WidgetTest, MouseEventDispatchWhileTouchIsDown) {
 
 // Tests that when there is no active capture, that a mouse press causes capture
 // to be set.
-// Disabled on Mac (GetGlobalCapture() not yet implemented).
-// http://crbug.com//622979.
-#if defined(OS_MACOSX)
-#define MAYBE_MousePressCausesCapture DISABLED_MousePressCausesCapture
-#else
-#define MAYBE_MousePressCausesCapture MousePressCausesCapture
-#endif
-TEST_F(WidgetTest, MAYBE_MousePressCausesCapture) {
+TEST_F(WidgetTest, MousePressCausesCapture) {
   Widget* widget = CreateTopLevelNativeWidget();
   widget->Show();
   widget->SetSize(gfx::Size(300, 300));
@@ -1838,16 +1831,7 @@ class CaptureEventConsumer : public ui::EventHandler {
 
 // Tests that if explicit capture occurs during a mouse press, that implicit
 // capture is not applied.
-// Disabled on Mac (GetGlobalCapture() not yet implemented).
-// http://crbug.com//622979.
-#if defined(OS_MACOSX)
-#define MAYBE_CaptureDuringMousePressNotOverridden \
-    DISABLED_CaptureDuringMousePressNotOverridden
-#else
-#define MAYBE_CaptureDuringMousePressNotOverridden \
-    CaptureDuringMousePressNotOverridden
-#endif
-TEST_F(WidgetTest, MAYBE_CaptureDuringMousePressNotOverridden) {
+TEST_F(WidgetTest, CaptureDuringMousePressNotOverridden) {
   Widget* widget = CreateTopLevelNativeWidget();
   widget->Show();
   widget->SetSize(gfx::Size(300, 300));

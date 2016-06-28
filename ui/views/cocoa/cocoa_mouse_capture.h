@@ -10,6 +10,8 @@
 #include "base/macros.h"
 #include "ui/views/views_export.h"
 
+@class NSWindow;
+
 namespace views {
 
 class CocoaMouseCaptureDelegate;
@@ -23,6 +25,10 @@ class VIEWS_EXPORT CocoaMouseCapture {
  public:
   explicit CocoaMouseCapture(CocoaMouseCaptureDelegate* delegate);
   ~CocoaMouseCapture();
+
+  // Returns the NSWindow with capture or nil if no window has capture
+  // currently.
+  static NSWindow* GetGlobalCaptureWindow();
 
   // True if the event tap is active (i.e. not stolen by a later instance).
   bool IsActive() const { return !!active_handle_; }

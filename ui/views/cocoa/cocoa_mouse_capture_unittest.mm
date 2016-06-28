@@ -36,7 +36,8 @@ namespace {
 // Simple capture delegate that just counts events forwarded.
 class TestCaptureDelegate : public CocoaMouseCaptureDelegate {
  public:
-  TestCaptureDelegate() : event_count_(0), capture_lost_count_(0) {}
+  explicit TestCaptureDelegate(NSWindow* window)
+      : event_count_(0), capture_lost_count_(0), window_(window) {}
 
   void Acquire() { mouse_capture_.reset(new CocoaMouseCapture(this)); }
   bool IsActive() { return mouse_capture_ && mouse_capture_->IsActive(); }
@@ -48,11 +49,13 @@ class TestCaptureDelegate : public CocoaMouseCaptureDelegate {
   // CocoaMouseCaptureDelegate:
   void PostCapturedEvent(NSEvent* event) override { ++event_count_; }
   void OnMouseCaptureLost() override { ++capture_lost_count_; }
+  NSWindow* GetWindow() const override { return window_; }
 
  private:
   std::unique_ptr<CocoaMouseCapture> mouse_capture_;
   int event_count_;
   int capture_lost_count_;
+  NSWindow* window_;
 
   DISALLOW_COPY_AND_ASSIGN(TestCaptureDelegate);
 };
@@ -63,12 +66,12 @@ typedef ui::CocoaTest CocoaMouseCaptureTest;
 
 // Test that a new capture properly "steals" capture from an existing one.
 TEST_F(CocoaMouseCaptureTest, OnCaptureLost) {
-  TestCaptureDelegate capture;
+  TestCaptureDelegate capture(nil);
 
   capture.Acquire();
   EXPECT_TRUE(capture.IsActive());
   {
-    TestCaptureDelegate capture2;
+    TestCaptureDelegate capture2(nil);
     EXPECT_EQ(0, capture.capture_lost_count());
 
     // A second capture steals from the first.
@@ -110,7 +113,7 @@ TEST_F(CocoaMouseCaptureTest, CaptureEvents) {
   EXPECT_EQ(1, [view mouseDownCount]);
 
   {
-    TestCaptureDelegate capture;
+    TestCaptureDelegate capture(test_window());
     capture.Acquire();
 
     // Now check that the capture captures events.

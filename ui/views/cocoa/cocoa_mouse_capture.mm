@@ -20,9 +20,17 @@ class CocoaMouseCapture::ActiveEventTap {
  public:
   explicit ActiveEventTap(CocoaMouseCapture* owner);
   ~ActiveEventTap();
+
+  // Returns the NSWindow with capture or nil if no window has capture
+  // currently.
+  static NSWindow* GetGlobalCaptureWindow();
+
   void Init();
 
  private:
+  // Returns the associated NSWindow with capture.
+  NSWindow* GetCaptureWindow() const;
+
   // The currently active event tap, or null if there is none.
   static ActiveEventTap* g_active_event_tap;
 
@@ -52,6 +60,11 @@ CocoaMouseCapture::ActiveEventTap::~ActiveEventTap() {
   owner_->delegate_->OnMouseCaptureLost();
 }
 
+// static
+NSWindow* CocoaMouseCapture::ActiveEventTap::GetGlobalCaptureWindow() {
+  return g_active_event_tap ? g_active_event_tap->GetCaptureWindow() : nil;
+}
+
 void CocoaMouseCapture::ActiveEventTap::Init() {
   NSEventMask event_mask =
       NSLeftMouseDownMask | NSLeftMouseUpMask | NSRightMouseDownMask |
@@ -71,12 +84,21 @@ void CocoaMouseCapture::ActiveEventTap::Init() {
       }];
 }
 
+NSWindow* CocoaMouseCapture::ActiveEventTap::GetCaptureWindow() const {
+  return owner_->delegate_->GetWindow();
+}
+
 CocoaMouseCapture::CocoaMouseCapture(CocoaMouseCaptureDelegate* delegate)
     : delegate_(delegate), active_handle_(new ActiveEventTap(this)) {
   active_handle_->Init();
 }
 
 CocoaMouseCapture::~CocoaMouseCapture() {
+}
+
+// static
+NSWindow* CocoaMouseCapture::GetGlobalCaptureWindow() {
+  return ActiveEventTap::GetGlobalCaptureWindow();
 }
 
 void CocoaMouseCapture::OnOtherClientGotCapture() {

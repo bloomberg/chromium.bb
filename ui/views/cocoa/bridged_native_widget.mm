@@ -1028,6 +1028,10 @@ void BridgedNativeWidget::OnMouseCaptureLost() {
   native_widget_mac_->GetWidget()->OnMouseCaptureLost();
 }
 
+NSWindow* BridgedNativeWidget::GetWindow() const {
+  return window_;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // BridgedNativeWidget, FocusChangeListener:
 
