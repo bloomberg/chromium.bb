@@ -215,6 +215,8 @@
       'Linux ARM': 'swarming_gn_release_bot_arm',
       'Linux Kitchen (kitchen_run)': 'swarming_gn_release_bot',
       'Linux Kitchen (annotated_run)': 'swarming_gn_release_bot',
+      'Linux remote_run Builder': 'swarming_gn_release_bot',
+      'Linux remote_run Tester': 'swarming_gn_release_bot',
       'Linux V8 API Stability': 'gn_release_bot',
       'Site Isolation Linux': 'gn_release_trybot',
       'Site Isolation Win': 'gyp_release_trybot_x64',
