@@ -57,6 +57,7 @@
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:cr',
         '<(EXTERNS_GYP):system_display',
         '<(INTERFACES_GYP):system_display_interface',
+        'drag_behavior'
       ],
       'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
     },
@@ -69,6 +70,13 @@
         'display'
       ],
       'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
+    }, 
+    {
+      'target_name': 'drag_behavior',
+      'dependencies': [
+        '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:cr',
+      ],
+      'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
     },
-  ],
+ ],
 }

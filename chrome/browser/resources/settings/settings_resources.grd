@@ -372,6 +372,12 @@
         <structure name="IDR_SETTINGS_DEVICE_TOUCHPAD_JS"
                    file="device_page/touchpad.js"
                    type="chrome_html" />
+        <structure name="IDR_SETTINGS_DEVICE_DRAG_BEHAVIOR_HTML"
+                   file="device_page/drag_behavior.html"
+                   type="chrome_html" />
+        <structure name="IDR_SETTINGS_DEVICE_DRAG_BEHAVIOR_JS"
+                   file="device_page/drag_behavior.js"
+                   type="chrome_html" />
       </if>
       <structure name="IDR_SETTINGS_DIRECTION_DELEGATE_HTML"
                  file="direction_delegate.html"
