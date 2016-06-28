@@ -294,6 +294,7 @@ class CONTENT_EXPORT VideoCaptureManager : public MediaStreamProvider {
 
   std::unique_ptr<base::android::ApplicationStatusListener>
       app_status_listener_;
+  bool application_state_has_running_activities_;
 #endif
 
   // The message loop of media stream device thread, where VCD's live.

@@ -252,6 +252,7 @@ void VideoCaptureManager::Register(
   listener_ = listener;
   device_task_runner_ = device_task_runner;
 #if defined(OS_ANDROID)
+  application_state_has_running_activities_ = true;
   app_status_listener_.reset(new base::android::ApplicationStatusListener(
       base::Bind(&VideoCaptureManager::OnApplicationStateChange,
                  base::Unretained(this))));
@@ -1107,10 +1108,15 @@ void VideoCaptureManager::OnApplicationStateChange(
     base::android::ApplicationState state) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  if (state == base::android::APPLICATION_STATE_HAS_RUNNING_ACTIVITIES) {
+  // Only release/resume devices when the Application state changes from
+  // RUNNING->STOPPED->RUNNING.
+  if (state == base::android::APPLICATION_STATE_HAS_RUNNING_ACTIVITIES &&
+      !application_state_has_running_activities_) {
     ResumeDevices();
+    application_state_has_running_activities_ = true;
   } else if (state == base::android::APPLICATION_STATE_HAS_STOPPED_ACTIVITIES) {
     ReleaseDevices();
+    application_state_has_running_activities_ = false;
   }
 }
 
@@ -1131,11 +1137,7 @@ void VideoCaptureManager::ResumeDevices() {
 
   for (auto& entry : devices_) {
     // Do not resume Content Video Capture devices, e.g. Tab or Screen capture.
-    // Do not try to restart already running devices. A device will be running
-    // if the Application state changes from
-    // APPLICATION_STATE_HAS_RUNNING_ACTIVITIES
-    // ->APPLICATION_STATE_HAS_PAUSED_ACTIVITIES
-    // ->APPLICATION_STATE_HAS_RUNNING_ACTIVITIES
+    // Do not try to restart already running devices.
     if (entry->stream_type != MEDIA_DEVICE_VIDEO_CAPTURE ||
         entry->video_capture_device())
       continue;
