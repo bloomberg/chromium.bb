@@ -61268,6 +61268,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Vibration.Context" enum="NavigatorVibrationType">
+  <owner>binlu@google.com</owner>
+  <summary>
+    Records instances of navigator.vibrate. Includes whether or not it comes
+    with a user gesture, same-origin subframe or cross-origin subframe.
+  </summary>
+</histogram>
+
 <histogram name="VideoPlayer.CastAPIExtensionStatus"
     enum="VideoPlayerCastAPIExtensionStatus">
   <owner>yoshiki@chromium.org</owner>
@@ -82854,6 +82862,15 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="7" label="about"/>
   <int value="8" label="chrome"/>
   <int value="9" label="blob"/>
+</enum>
+
+<enum name="NavigatorVibrationType" type="int">
+  <int value="0" label="Main frame vibrate, no user gesture"/>
+  <int value="1" label="Main frame vibrate, with user gesture"/>
+  <int value="2" label="Same-origin subframe vibrate, no user gesture"/>
+  <int value="3" label="Same-origin subframe vibrate, with user gesture"/>
+  <int value="4" label="Cross-origin subframe vibrate, no user gesture"/>
+  <int value="5" label="Cross-origin subframe vibrate, with user gesture"/>
 </enum>
 
 <enum name="NetCacheState" type="int">

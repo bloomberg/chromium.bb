@@ -24,6 +24,8 @@
 #include "core/frame/UseCounter.h"
 #include "core/page/Page.h"
 #include "modules/vibration/VibrationController.h"
+#include "platform/Histogram.h"
+#include "platform/UserGestureIndicator.h"
 
 namespace blink {
 
@@ -70,10 +72,7 @@ bool NavigatorVibration::vibrate(Navigator& navigator, const VibrationPattern& p
     // reference to |window| or |navigator| was retained in another window.
     if (!frame)
         return false;
-
-    UseCounter::count(frame, UseCounter::NavigatorVibrate);
-    if (!frame->isMainFrame())
-        UseCounter::count(frame, UseCounter::NavigatorVibrateSubFrame);
+    collectHistogramMetrics(*frame);
 
     DCHECK(frame->document());
     DCHECK(frame->page());
@@ -82,6 +81,35 @@ bool NavigatorVibration::vibrate(Navigator& navigator, const VibrationPattern& p
         return false;
 
     return NavigatorVibration::from(navigator).controller()->vibrate(pattern);
+}
+
+// static
+void NavigatorVibration::collectHistogramMetrics(const LocalFrame& frame)
+{
+    NavigatorVibrationType type;
+    bool userGesture = UserGestureIndicator::processingUserGesture();
+    UseCounter::count(&frame, UseCounter::NavigatorVibrate);
+    if (!frame.isMainFrame()) {
+        UseCounter::count(&frame, UseCounter::NavigatorVibrateSubFrame);
+        if (frame.isCrossOrigin()) {
+            if (userGesture)
+                type = NavigatorVibrationType::CrossOriginSubFrameWithUserGesture;
+            else
+                type = NavigatorVibrationType::CrossOriginSubFrameNoUserGesture;
+        } else {
+            if (userGesture)
+                type = NavigatorVibrationType::SameOriginSubFrameWithUserGesture;
+            else
+                type = NavigatorVibrationType::SameOriginSubFrameNoUserGesture;
+        }
+    } else {
+        if (userGesture)
+            type = NavigatorVibrationType::MainFrameWithUserGesture;
+        else
+            type = NavigatorVibrationType::MainFrameNoUserGesture;
+    }
+    DEFINE_STATIC_LOCAL(EnumerationHistogram, NavigatorVibrateHistogram, ("Vibration.Context", NavigatorVibrationType::EnumMax));
+    NavigatorVibrateHistogram.count(type);
 }
 
 VibrationController* NavigatorVibration::controller()

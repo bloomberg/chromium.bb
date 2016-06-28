@@ -33,6 +33,16 @@ namespace blink {
 class Navigator;
 class VibrationController;
 
+enum NavigatorVibrationType {
+    MainFrameNoUserGesture = 0,
+    MainFrameWithUserGesture = 1,
+    SameOriginSubFrameNoUserGesture = 2,
+    SameOriginSubFrameWithUserGesture = 3,
+    CrossOriginSubFrameNoUserGesture = 4,
+    CrossOriginSubFrameWithUserGesture = 5,
+    EnumMax = 6
+};
+
 class MODULES_EXPORT NavigatorVibration final
     : public GarbageCollectedFinalized<NavigatorVibration>
     , public Supplement<Navigator>
@@ -60,6 +70,8 @@ private:
 
     // Inherited from DOMWindowProperty.
     void willDetachGlobalObjectFromFrame() override;
+
+    static void collectHistogramMetrics(const LocalFrame&);
 
     Member<VibrationController> m_controller;
 };
