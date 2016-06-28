@@ -1161,9 +1161,11 @@ bool InitializeAccessibilityTreeSearch(
   } else {
     // Hook back up to RenderWidgetHostViewCocoa.
     BrowserAccessibilityManagerMac* manager =
-        static_cast<BrowserAccessibilityManagerMac*>(
-            browserAccessibility_->manager());
-    return manager->parent_view();
+        browserAccessibility_->manager()->GetRootManager()
+            ->ToBrowserAccessibilityManagerMac();
+    if (manager)
+      return manager->parent_view();
+    return nil;
   }
 }
 
@@ -1869,8 +1871,8 @@ bool InitializeAccessibilityTreeSearch(
     return nil;
 
   BrowserAccessibilityManagerMac* manager =
-      static_cast<BrowserAccessibilityManagerMac*>(
-          browserAccessibility_->manager());
+      browserAccessibility_->manager()->GetRootManager()
+          ->ToBrowserAccessibilityManagerMac();
   if (!manager || !manager->parent_view())
     return nil;
 

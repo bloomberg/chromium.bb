@@ -35,6 +35,8 @@ class BrowserAccessibilityManagerAndroid;
 class BrowserAccessibilityManagerWin;
 #elif defined(OS_LINUX) && !defined(OS_CHROMEOS) && defined(USE_X11)
 class BrowserAccessibilityManagerAuraLinux;
+#elif defined(OS_MACOSX)
+class BrowserAccessibilityManagerMac;
 #endif
 
 class SiteInstance;
@@ -274,6 +276,10 @@ class CONTENT_EXPORT BrowserAccessibilityManager : public ui::AXTreeDelegate {
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS) && defined(USE_X11)
   BrowserAccessibilityManagerAuraLinux*
       ToBrowserAccessibilityManagerAuraLinux();
+#endif
+
+#if defined(OS_MACOSX)
+  BrowserAccessibilityManagerMac* ToBrowserAccessibilityManagerMac();
 #endif
 
   // Return the object that has focus, starting at the top of the frame tree.

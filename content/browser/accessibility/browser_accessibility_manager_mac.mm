@@ -105,6 +105,11 @@ BrowserAccessibilityManager* BrowserAccessibilityManager::Create(
       NULL, initial_tree, delegate, factory);
 }
 
+BrowserAccessibilityManagerMac*
+BrowserAccessibilityManager::ToBrowserAccessibilityManagerMac() {
+  return static_cast<BrowserAccessibilityManagerMac*>(this);
+}
+
 BrowserAccessibilityManagerMac::BrowserAccessibilityManagerMac(
     NSView* parent_view,
     const ui::AXTreeUpdate& initial_tree,
