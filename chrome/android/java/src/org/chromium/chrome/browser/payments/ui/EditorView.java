@@ -334,6 +334,8 @@ public class EditorView extends AlwaysDismissedDialog
         prepareToolbar();
         prepareButtons();
         prepareEditor();
+        getWindow().setLayout(ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.MATCH_PARENT);
         show();
 
         // Immediately focus the first invalid field to make it faster to edit.

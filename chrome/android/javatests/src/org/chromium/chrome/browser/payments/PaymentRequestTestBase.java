@@ -140,7 +140,7 @@ abstract class PaymentRequestTestBase extends ChromeActivityTestCaseBase<ChromeA
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                mUI.getEditorViewForTest().findViewById(resourceId).performClick();
+                mUI.getEditorView().findViewById(resourceId).performClick();
             }
         });
         helper.waitForCallback(callCount);
@@ -176,7 +176,7 @@ abstract class PaymentRequestTestBase extends ChromeActivityTestCaseBase<ChromeA
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                ((EditText) mUI.getEditorViewForTest().findViewById(resourceId)).setText(input);
+                ((EditText) mUI.getEditorView().findViewById(resourceId)).setText(input);
             }
         });
     }
