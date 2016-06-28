@@ -36,5 +36,5 @@
     readonly attribute double clientWidth;
     readonly attribute double clientHeight;
 
-    readonly attribute double pageScale;
+    readonly attribute double scale;
 };

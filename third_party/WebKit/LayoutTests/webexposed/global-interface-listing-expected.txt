@@ -6515,7 +6515,7 @@ interface VisualViewport : EventTarget
     attribute @@toStringTag
     getter clientHeight
     getter clientWidth
-    getter pageScale
+    getter scale
     getter scrollLeft
     getter scrollTop
     method constructor

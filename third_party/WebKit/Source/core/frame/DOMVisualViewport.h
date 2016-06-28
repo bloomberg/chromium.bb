@@ -63,7 +63,7 @@ public:
     void setScrollTop(double y);
     double clientWidth();
     double clientHeight();
-    double pageScale();
+    double scale();
 
 private:
     explicit DOMVisualViewport(LocalDOMWindow*);

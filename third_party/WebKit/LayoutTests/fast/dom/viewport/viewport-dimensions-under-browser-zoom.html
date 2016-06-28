@@ -30,7 +30,7 @@
       assert_equals(window.visualViewport.scrollLeft, 10);
       assert_equals(window.visualViewport.clientWidth, 400);
       assert_equals(window.visualViewport.clientHeight, 300);
-      assert_equals(window.visualViewport.pageScale, 2);
+      assert_equals(window.visualViewport.scale, 2);
 
       // Apply browser zoom.
       window.internals.setZoomFactor(browserZoomFactor);
@@ -40,7 +40,7 @@
       assert_equals(window.visualViewport.scrollLeft, 10 / browserZoomFactor);
       assert_equals(window.visualViewport.clientWidth, 400 / browserZoomFactor);
       assert_equals(window.visualViewport.clientHeight, 300 / browserZoomFactor);
-      assert_equals(window.visualViewport.pageScale, 2);
+      assert_equals(window.visualViewport.scale, 2);
 
       // Verify setting the visual viewport offset under browser zoom.
       window.visualViewport.scrollTop = 12.5;
@@ -49,7 +49,7 @@
       assert_equals(window.visualViewport.scrollLeft, 12.5);
       assert_equals(window.visualViewport.clientWidth, 400 / browserZoomFactor);
       assert_equals(window.visualViewport.clientHeight, 300 / browserZoomFactor);
-      assert_equals(window.visualViewport.pageScale, 2);
+      assert_equals(window.visualViewport.scale, 2);
       t.done();
     });
   }, 'Verify viewport dimensions under bowser zoom.');

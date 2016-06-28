@@ -225,7 +225,7 @@ PASS oldChildWindow.styleMedia.type is newChildWindow.styleMedia.type
 PASS oldChildWindow.toolbar.visible is newChildWindow.toolbar.visible
 PASS oldChildWindow.visualViewport.clientHeight is newChildWindow.visualViewport.clientHeight
 PASS oldChildWindow.visualViewport.clientWidth is newChildWindow.visualViewport.clientWidth
-PASS oldChildWindow.visualViewport.pageScale is newChildWindow.visualViewport.pageScale
+PASS oldChildWindow.visualViewport.scale is newChildWindow.visualViewport.scale
 PASS oldChildWindow.visualViewport.scrollLeft is newChildWindow.visualViewport.scrollLeft
 PASS oldChildWindow.visualViewport.scrollTop is newChildWindow.visualViewport.scrollTop
 PASS oldChildWindow.wasPostTestScriptParsed is newChildWindow.wasPostTestScriptParsed

@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-<script src="../../../resources/js-test.js"></script>
 <style>
     body {
         height: 2000px;
@@ -11,55 +10,51 @@
     }
 </style>
 
+<script src="../../../resources/testharness.js"></script>
+<script src="../../../resources/testharnessreport.js"></script>
+
 <script>
-    window.jsTestIsAsync = true;
+  function viewport() {
+    return window.visualViewport;
+  }
 
-    description("This test verifies the dimensions of the visual viewport \
-        returned by the JS visual viewport API.");
+  async_test(function(t) {
+    window.onload = t.step_func(function() {
+      // Turn off smooth scrolling.
+      internals.settings.setScrollAnimatorEnabled(false);
 
-    function runTest() {
-        if (!window.eventSender || !window.internals) {
-            finishJSTest();
-            return;
-        }
+      // Scroll both viewports.
+      eventSender.mouseMoveTo(100, 100);
+      eventSender.continuousMouseScrollBy(100, 100);
 
-        // Turn off smooth scrolling.
-        internals.settings.setScrollAnimatorEnabled(false);
+      // Initial viewport dimensions.
+      assert_equals(viewport().clientWidth, 800, "initial clientWidth");
+      assert_equals(viewport().clientHeight, 600, "initial clientHeight");
+      assert_equals(viewport().scrollLeft, 0, "initial scrollLeft");
+      assert_equals(viewport().scrollTop, 0, "initial scrollTop");
+      assert_equals(viewport().scale, 1, "initial scale");
 
-        // Scroll both viewports.
-        eventSender.mouseMoveTo(100, 100);
-        eventSender.continuousMouseScrollBy(100, 100);
+      // Scale and scroll visual viewport.
+      internals.setPageScaleFactor(2);
+      internals.setVisualViewportOffset(10, 10);
+      assert_equals(viewport().clientWidth, 400, "scaled width");
+      assert_equals(viewport().clientHeight, 300, "scaled height");
+      assert_equals(viewport().scrollLeft, 10, "scrolled left viewport");
+      assert_equals(viewport().scrollTop, 10, "scrolled top viewport");
+      assert_equals(viewport().scale, 2, "scale");
 
-        debug("    **** Initial visual viewport dimensions *****");
-        shouldBe("window.visualViewport.scrollTop", "0");
-        shouldBe("window.visualViewport.scrollLeft", "0");
-        shouldBe("window.visualViewport.clientWidth", "800");
-        shouldBe("window.visualViewport.clientHeight", "600");
-        shouldBe("window.visualViewport.pageScale", "1");
+      // Set scrollTop/Left.
+      window.visualViewport.scrollTop = 20;
+      window.visualViewport.scrollLeft = 0;
+      assert_equals(viewport().scrollTop, 20, "set scrollTop");
+      assert_equals(viewport().scrollLeft, 0, "set scrollLeft");
+      window.visualViewport.scrollTop = -20;
+      assert_equals(viewport().scrollTop, 0, "negative scrollTop");
+      window.visualViewport.scrollTop = 20.5;
+      assert_equals(viewport().scrollTop, 20.5, "floating point scrollTop");
 
-        // Scale and scroll visual viewport.
-        internals.setPageScaleFactor(2);
-        internals.setVisualViewportOffset(10, 10);
-
-        debug("    **** Viewport dimensions after scale and scroll *****");
-        shouldBe("window.visualViewport.scrollTop", "10");
-        shouldBe("window.visualViewport.scrollLeft", "10");
-        shouldBe("window.visualViewport.clientWidth", "400");
-        shouldBe("window.visualViewport.clientHeight", "300");
-        shouldBe("window.visualViewport.pageScale", "2");
-
-        window.visualViewport.scrollTop = 20;
-        window.visualViewport.scrollLeft = 0;
-        debug("    **** Writable viewport dimensions *****");
-        shouldBe("window.visualViewport.scrollTop", "20");
-        shouldBe("window.visualViewport.scrollLeft", "0");
-        window.visualViewport.scrollTop = -20;
-        shouldBe("window.visualViewport.scrollTop", "0");
-        window.visualViewport.scrollTop = 20.5;
-        shouldBe("window.visualViewport.scrollTop", "20.5");
-
-        finishJSTest();
-    }
+      t.done();
+    });
+  }, 'Verify viewport dimensions');
 </script>
 
-<body onload="runTest()"></body>

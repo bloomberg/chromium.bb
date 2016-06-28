@@ -139,7 +139,7 @@ double DOMVisualViewport::clientHeight()
     return 0;
 }
 
-double DOMVisualViewport::pageScale()
+double DOMVisualViewport::scale()
 {
     LocalFrame* frame = m_window->frame();
     if (!frame)
