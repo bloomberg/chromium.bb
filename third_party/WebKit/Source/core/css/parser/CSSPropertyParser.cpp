@@ -3365,7 +3365,6 @@ static CSSPrimitiveValue* consumeGridBreadth(CSSParserTokenRange& range, CSSPars
     return consumeLengthOrPercent(range, cssParserMode, ValueRangeNonNegative, UnitlessQuirk::Allow);
 }
 
-// TODO(rob.buis): This needs a bool parameter so we can disallow <auto-track-list> for the grid shorthand.
 static CSSValue* consumeGridTrackSize(CSSParserTokenRange& range, CSSParserMode cssParserMode)
 {
     const CSSParserToken& token = range.peek();
@@ -3462,7 +3461,7 @@ static bool consumeGridTrackRepeatFunction(CSSParserTokenRange& range, CSSParser
     return true;
 }
 
-static CSSValue* consumeGridTrackList(CSSParserTokenRange& range, CSSParserMode cssParserMode)
+static CSSValue* consumeGridTrackList(CSSParserTokenRange& range, CSSParserMode cssParserMode, bool allowRepeat = true)
 {
     CSSValueList* values = CSSValueList::createSpaceSeparated();
     CSSGridLineNamesValue* lineNames = consumeGridLineNames(range);
@@ -3474,6 +3473,8 @@ static CSSValue* consumeGridTrackList(CSSParserTokenRange& range, CSSParserMode 
     do {
         bool isAutoRepeat;
         if (range.peek().functionId() == CSSValueRepeat) {
+            if (!allowRepeat)
+                return nullptr;
             if (!consumeGridTrackRepeatFunction(range, cssParserMode, *values, isAutoRepeat, allTracksAreFixedSized))
                 return nullptr;
             if (isAutoRepeat && seenAutoRepeat)
@@ -4861,7 +4862,7 @@ bool CSSPropertyParser::consumeGridTemplateRowsAndAreasAndColumns(CSSPropertyID 
     if (!m_range.atEnd()) {
         if (!consumeSlashIncludingWhitespace(m_range))
             return false;
-        columnsValue = consumeGridTrackList(m_range, m_context.mode());
+        columnsValue = consumeGridTrackList(m_range, m_context.mode(), false);
         if (!columnsValue || !m_range.atEnd())
             return false;
     } else {
