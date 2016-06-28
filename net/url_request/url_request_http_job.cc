@@ -610,17 +610,6 @@ void URLRequestHttpJob::StartTransactionInternal() {
   // If we already have a transaction, then we should restart the transaction
   // with auth provided by auth_credentials_.
 
-  bool invalid_header_values_in_rfc7230 = false;
-  for (HttpRequestHeaders::Iterator it(request_info_.extra_headers);
-       it.GetNext();) {
-    if (!HttpUtil::IsValidHeaderValueRFC7230(it.value())) {
-      invalid_header_values_in_rfc7230 = true;
-      break;
-    }
-  }
-  UMA_HISTOGRAM_BOOLEAN("Net.HttpRequest.ContainsInvalidHeaderValuesInRFC7230",
-                        invalid_header_values_in_rfc7230);
-
   int rv;
 
   // Notify NetworkQualityEstimator.
@@ -1032,22 +1021,6 @@ void URLRequestHttpJob::OnStartCompleted(int result) {
       SetProxyServer(transaction_->GetResponseInfo()->proxy_server);
     }
     scoped_refptr<HttpResponseHeaders> headers = GetResponseHeaders();
-
-    if (headers) {
-      size_t iter = 0;
-      std::string name;
-      std::string value;
-      bool invalid_header_values_in_rfc7230 = false;
-      while (headers->EnumerateHeaderLines(&iter, &name, &value)) {
-        if (!HttpUtil::IsValidHeaderValueRFC7230(value)) {
-          invalid_header_values_in_rfc7230 = true;
-          break;
-        }
-      }
-      UMA_HISTOGRAM_BOOLEAN(
-          "Net.HttpResponse.ContainsInvalidHeaderValuesInRFC7230",
-          invalid_header_values_in_rfc7230);
-    }
 
     if (network_delegate()) {
       // Note that |this| may not be deleted until

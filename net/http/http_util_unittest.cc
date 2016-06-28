@@ -1308,29 +1308,6 @@ TEST(HttpUtilTest, NameValuePairsIteratorStrictQuotesSingleQuotes) {
       CheckNextNameValuePair(&parser, true, true, "ok", "it'"));
 }
 
-TEST(HttpUtilTest, IsValidHeaderValueRFC7230) {
-  EXPECT_TRUE(HttpUtil::IsValidHeaderValueRFC7230(""));
-
-  EXPECT_FALSE(HttpUtil::IsValidHeaderValueRFC7230(" "));
-  EXPECT_FALSE(HttpUtil::IsValidHeaderValueRFC7230(" q"));
-  EXPECT_FALSE(HttpUtil::IsValidHeaderValueRFC7230("q "));
-  EXPECT_FALSE(HttpUtil::IsValidHeaderValueRFC7230("\t"));
-  EXPECT_FALSE(HttpUtil::IsValidHeaderValueRFC7230("\tq"));
-  EXPECT_FALSE(HttpUtil::IsValidHeaderValueRFC7230("q\t"));
-
-  EXPECT_TRUE(HttpUtil::IsValidHeaderValueRFC7230("q q"));
-  EXPECT_TRUE(HttpUtil::IsValidHeaderValueRFC7230("q\tq"));
-
-  EXPECT_FALSE(HttpUtil::IsValidHeaderValueRFC7230(std::string("\0", 1)));
-  EXPECT_FALSE(HttpUtil::IsValidHeaderValueRFC7230(std::string("q\0q", 3)));
-  EXPECT_FALSE(HttpUtil::IsValidHeaderValueRFC7230("q\rq"));
-  EXPECT_FALSE(HttpUtil::IsValidHeaderValueRFC7230("q\nq"));
-  EXPECT_FALSE(HttpUtil::IsValidHeaderValueRFC7230("q\x01q"));
-  EXPECT_FALSE(HttpUtil::IsValidHeaderValueRFC7230("q\x7fq"));
-
-  EXPECT_TRUE(HttpUtil::IsValidHeaderValueRFC7230("q\x80q"));
-}
-
 TEST(HttpUtilTest, HasValidators) {
   const char* const kMissing = "";
   const char* const kEtagEmpty = "\"\"";

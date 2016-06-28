@@ -28012,6 +28012,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Net.HttpRequest.ContainsInvalidHeaderValuesInRFC7230"
     enum="Boolean">
+  <obsolete>
+    Deprecated 06/2016 because this is not continuously tracked.
+  </obsolete>
   <owner>hiroshige@chromium.org</owner>
   <summary>
     Whether a request contains invalid request header values in RFC 7230. This
@@ -28040,6 +28043,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Net.HttpResponse.ContainsInvalidHeaderValuesInRFC7230"
     enum="Boolean">
+  <obsolete>
+    Deprecated 06/2016 because this is not continuously tracked.
+  </obsolete>
   <owner>hiroshige@chromium.org</owner>
   <summary>
     Whether a response contains invalid response header values in RFC 7230. This
