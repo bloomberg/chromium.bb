@@ -87,8 +87,11 @@ class NotificationPromo {
   // For testing.
   friend class NotificationPromoTest;
 
-  // Flush data members to prefs for storage.
+  // Flush data from instance variables to prefs for storage.
   void WritePrefs();
+
+  // Flush given parameters to prefs for storage.
+  void WritePrefs(int promo_id, double first_view_time, int views, bool closed);
 
   // Tests views_ against max_views_.
   // When max_views_ is 0, we don't cap the number of views.
@@ -101,6 +104,12 @@ class NotificationPromo {
   // Returns whether the parameter associated with |param_name| is inside the
   // payload.
   bool IsPayloadParam(const std::string& param_name) const;
+
+  // Transition data saved in old prefs structure to new structure that supports
+  // storing multiple promos.
+  // TODO(crbug.com/623726) Remove this method when migration is no longer
+  // needed as most users have been upgraded to the new pref structure.
+  void MigrateOldPrefs();
 
   PrefService* local_state_;
 
