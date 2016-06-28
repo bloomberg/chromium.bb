@@ -24,6 +24,7 @@ bool ShouldMakeNetworkRequestForURL(const GURL& url) {
   // network stack. Neither should pushState/popState.
   return !url.SchemeIs(url::kDataScheme) && url != GURL(url::kAboutBlankURL) &&
          !url.SchemeIs(url::kJavaScriptScheme) && !url.is_empty() &&
+         !url.SchemeIs(url::kContentIDScheme) &&
          url != GURL(content::kAboutSrcDocURL);
 }
 
