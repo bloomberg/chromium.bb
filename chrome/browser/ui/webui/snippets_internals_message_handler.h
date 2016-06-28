@@ -31,7 +31,8 @@ class SnippetsInternalsMessageHandler
   // ntp_snippets::NTPSnippetsServiceObserver:
   void NTPSnippetsServiceLoaded() override;
   void NTPSnippetsServiceShutdown() override;
-  void NTPSnippetsServiceDisabled() override;
+  void NTPSnippetsServiceDisabledReasonChanged(
+      ntp_snippets::DisabledReason disabled_reason) override;
 
   void HandleLoaded(const base::ListValue* args);
   void HandleClear(const base::ListValue* args);

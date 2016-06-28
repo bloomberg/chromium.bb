@@ -302,9 +302,14 @@ public class NewTabPage
 
         @Override
         public void openSnippet(String url) {
+            openUrl(url);
+            NewTabPageUma.monitorVisit(mTab);
+        }
+
+        @Override
+        public void openUrl(String url) {
             assert !mIsDestroyed;
             mTab.loadUrl(new LoadUrlParams(url, PageTransition.AUTO_BOOKMARK));
-            NewTabPageUma.monitorVisit(mTab);
         }
 
         @Override

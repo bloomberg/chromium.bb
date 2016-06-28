@@ -12,6 +12,7 @@ import static org.mockito.Mockito.mock;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.ntp.NewTabPageView.NewTabPageManager;
+import org.chromium.chrome.browser.ntp.snippets.DisabledReason;
 import org.chromium.chrome.browser.ntp.snippets.SnippetArticle;
 import org.chromium.chrome.browser.ntp.snippets.SnippetsBridge;
 import org.chromium.chrome.browser.ntp.snippets.SnippetsBridge.SnippetsObserver;
@@ -132,7 +133,7 @@ public class NewTabPageAdapterTest {
         assertEquals(3 + snippets.size(), ntpa.getItemCount());
 
         // When we clear the snippets, we should go back to the situation with the status card.
-        mSnippetsObserver.onSnippetsDisabled();
+        mSnippetsObserver.onDisabledReasonChanged(DisabledReason.NONE);
         assertEquals(4, ntpa.getItemCount());
 
         // The adapter should now be waiting for new snippets.

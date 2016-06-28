@@ -146,10 +146,13 @@ public class NewTabPageView extends FrameLayout
         void navigateToRecentTabs();
 
         /**
-         * Opens an url in the current tab.
+         * Opens an url in the current tab and records related metrics.
          * @param url the URL to open
          */
         void openSnippet(String url);
+
+        /** Opens a url in the current tab. */
+        void openUrl(String url);
 
         /** Opens the interests dialog. */
         void navigateToInterests();

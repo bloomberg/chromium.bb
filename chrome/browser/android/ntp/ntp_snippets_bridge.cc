@@ -118,6 +118,11 @@ void NTPSnippetsBridge::SnippetVisited(JNIEnv* env,
       &tracker_);
 }
 
+int NTPSnippetsBridge::GetDisabledReason(JNIEnv* env,
+                                         const JavaParamRef<jobject>& obj) {
+  return static_cast<int>(ntp_snippets_service_->disabled_reason());
+}
+
 NTPSnippetsBridge::~NTPSnippetsBridge() {}
 
 void NTPSnippetsBridge::NTPSnippetsServiceLoaded() {
@@ -170,11 +175,13 @@ void NTPSnippetsBridge::NTPSnippetsServiceShutdown() {
   snippet_service_observer_.Remove(ntp_snippets_service_);
 }
 
-void NTPSnippetsBridge::NTPSnippetsServiceDisabled() {
+void NTPSnippetsBridge::NTPSnippetsServiceDisabledReasonChanged(
+    ntp_snippets::DisabledReason disabled_reason) {
   // The user signed out or disabled sync. Since snippets rely on those, we
   // clear them to be consistent with the initially signed out state.
   JNIEnv* env = base::android::AttachCurrentThread();
-  Java_SnippetsBridge_onSnippetsDisabled(env, observer_.obj());
+  Java_SnippetsBridge_onDisabledReasonChanged(
+      env, observer_.obj(), static_cast<int>(disabled_reason));
 }
 
 void NTPSnippetsBridge::OnImageFetched(ScopedJavaGlobalRef<jobject> callback,

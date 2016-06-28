@@ -27,6 +27,7 @@
 #include "components/ntp_snippets/ntp_snippets_fetcher.h"
 #include "components/ntp_snippets/ntp_snippets_scheduler.h"
 #include "components/ntp_snippets/ntp_snippets_service.h"
+#include "components/ntp_snippets/ntp_snippets_status_service.h"
 #include "components/prefs/pref_service.h"
 #include "components/safe_json/safe_json_parser.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
@@ -111,14 +112,16 @@ KeyedService* NTPSnippetsServiceFactory::BuildServiceInstanceFor(
               base::SequencedWorkerPool::CONTINUE_ON_SHUTDOWN);
 
   return new ntp_snippets::NTPSnippetsService(
-      enabled, profile->GetPrefs(), sync_service, suggestions_service,
+      enabled, profile->GetPrefs(), suggestions_service,
       g_browser_process->GetApplicationLocale(), scheduler,
-      base::WrapUnique(new ntp_snippets::NTPSnippetsFetcher(
+      base::MakeUnique<ntp_snippets::NTPSnippetsFetcher>(
           signin_manager, token_service, request_context,
           base::Bind(&safe_json::SafeJsonParser::Parse),
-          chrome::GetChannel() == version_info::Channel::STABLE)),
-      base::WrapUnique(new ImageFetcherImpl(request_context.get())),
-      base::WrapUnique(new ImageDecoderImpl()),
-      base::WrapUnique(
-          new ntp_snippets::NTPSnippetsDatabase(database_dir, task_runner)));
+          chrome::GetChannel() == version_info::Channel::STABLE),
+      base::MakeUnique<ImageFetcherImpl>(request_context.get()),
+      base::MakeUnique<ImageDecoderImpl>(),
+      base::MakeUnique<ntp_snippets::NTPSnippetsDatabase>(database_dir,
+                                                          task_runner),
+      base::MakeUnique<ntp_snippets::NTPSnippetsStatusService>(signin_manager,
+                                                               sync_service));
 }

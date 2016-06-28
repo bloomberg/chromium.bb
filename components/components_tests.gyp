@@ -435,6 +435,9 @@
       'ntp_snippets/ntp_snippets_database_unittest.cc',
       'ntp_snippets/ntp_snippets_fetcher_unittest.cc',
       'ntp_snippets/ntp_snippets_service_unittest.cc',
+      'ntp_snippets/ntp_snippets_status_service_unittest.cc',
+      'ntp_snippets/ntp_snippets_test_utils.cc',
+      'ntp_snippets/ntp_snippets_test_utils.h',
     ],
     'ntp_tiles_unittest_sources': [
       'ntp_tiles/most_visited_sites_unittest.cc',

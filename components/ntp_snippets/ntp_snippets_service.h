@@ -15,18 +15,19 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
-#include "base/scoped_observer.h"
 #include "base/timer/timer.h"
 #include "components/image_fetcher/image_fetcher_delegate.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/ntp_snippets/ntp_snippet.h"
 #include "components/ntp_snippets/ntp_snippets_fetcher.h"
 #include "components/ntp_snippets/ntp_snippets_scheduler.h"
+#include "components/ntp_snippets/ntp_snippets_status_service.h"
 #include "components/suggestions/suggestions_service.h"
 #include "components/sync_driver/sync_service_observer.h"
 
 class PrefRegistrySimple;
 class PrefService;
+class SigninManagerBase;
 
 namespace base {
 class RefCountedMemory;
@@ -52,23 +53,11 @@ class SyncService;
 
 namespace ntp_snippets {
 
-enum class DisabledReason {
-  // Snippets are enabled
-  NONE,
-  // Snippets have been disabled as part of the service configuration.
-  EXPLICITLY_DISABLED,
-  // History sync is not enabled, and the service requires it to be enabled.
-  HISTORY_SYNC_DISABLED,
-  // The sync service is not completely initialized, and the status is unknown.
-  HISTORY_SYNC_STATE_UNKNOWN
-};
-
 class NTPSnippetsDatabase;
 class NTPSnippetsServiceObserver;
 
 // Stores and vends fresh content data for the NTP.
 class NTPSnippetsService : public KeyedService,
-                           public sync_driver::SyncServiceObserver,
                            public image_fetcher::ImageFetcherDelegate {
  public:
   using ImageFetchedCallback =
@@ -80,14 +69,15 @@ class NTPSnippetsService : public KeyedService,
   // (British English person in the US) are not language codes.
   NTPSnippetsService(bool enabled,
                      PrefService* pref_service,
-                     sync_driver::SyncService* sync_service,
                      suggestions::SuggestionsService* suggestions_service,
                      const std::string& application_language_code,
                      NTPSnippetsScheduler* scheduler,
                      std::unique_ptr<NTPSnippetsFetcher> snippets_fetcher,
                      std::unique_ptr<image_fetcher::ImageFetcher> image_fetcher,
                      std::unique_ptr<image_fetcher::ImageDecoder> image_decoder,
-                     std::unique_ptr<NTPSnippetsDatabase> database);
+                     std::unique_ptr<NTPSnippetsDatabase> database,
+                     std::unique_ptr<NTPSnippetsStatusService> status_service);
+
   ~NTPSnippetsService() override;
 
   static void RegisterProfilePrefs(PrefRegistrySimple* registry);
@@ -125,6 +115,12 @@ class NTPSnippetsService : public KeyedService,
     return snippets_fetcher_.get();
   }
 
+  // Returns a reason why the service is disabled, or DisabledReason::NONE
+  // if it's not.
+  DisabledReason disabled_reason() const {
+    return snippets_status_service_->disabled_reason();
+  }
+
   // (Re)schedules the periodic fetching of snippets. This is necessary because
   // the schedule depends on the time of day.
   void RescheduleFetching();
@@ -152,15 +148,10 @@ class NTPSnippetsService : public KeyedService,
   void AddObserver(NTPSnippetsServiceObserver* observer);
   void RemoveObserver(NTPSnippetsServiceObserver* observer);
 
-  // Returns a reason why the service could be disabled, or DisabledReason::NONE
-  // if it's not.
-  DisabledReason GetDisabledReason() const;
-
   // Returns the maximum number of snippets that will be shown at once.
   static int GetMaxSnippetCountForTesting();
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(NTPSnippetsServiceTest, SyncStateCompatibility);
   FRIEND_TEST_ALL_PREFIXES(NTPSnippetsServiceTest, HistorySyncStateChanges);
 
   // Possible state transitions:
@@ -198,9 +189,6 @@ class NTPSnippetsService : public KeyedService,
     // for early exit in callbacks from observers.
     SHUT_DOWN
   };
-
-  // sync_driver::SyncServiceObserver implementation.
-  void OnStateChanged() override;
 
   // image_fetcher::ImageFetcherDelegate implementation.
   void OnImageDataFetched(const std::string& snippet_id,
@@ -243,9 +231,10 @@ class NTPSnippetsService : public KeyedService,
   void FetchSnippetImageFromNetwork(const std::string& snippet_id,
                                     const ImageFetchedCallback& callback);
 
-  // Returns whether the service should be enabled or disable depending on its
-  // internal state and the state of its dependencies.
-  State GetStateForDependenciesStatus();
+  // Triggers a state transition depending on the provided reason to be
+  // disabled (or lack thereof). This method is called when a change is detected
+  // by |snippets_status_service_|
+  void UpdateStateForStatus(DisabledReason disabled_reason);
 
   // Verifies state transitions (see |State|'s documentation) and applies them.
   // Does nothing if called with the current state.
@@ -266,20 +255,7 @@ class NTPSnippetsService : public KeyedService,
 
   State state_;
 
-  // The service was set up to be disabled and should not be enabled by any
-  // state change. We track this to make sure we clear scheduled tasks, which
-  // persist even when Chrome is stopped.
-  bool explicitly_disabled_;
-
   PrefService* pref_service_;
-
-  sync_driver::SyncService* sync_service_;
-
-  // The observer for the SyncService. When the sync state changes,
-  // SyncService will call |OnStateChanged|, which is propagated to the
-  // snippet observers.
-  ScopedObserver<sync_driver::SyncService, sync_driver::SyncServiceObserver>
-      sync_service_observer_;
 
   suggestions::SuggestionsService* suggestions_service_;
 
@@ -318,6 +294,9 @@ class NTPSnippetsService : public KeyedService,
   // The database for persisting snippets.
   std::unique_ptr<NTPSnippetsDatabase> database_;
 
+  // The service that provides events and data about the signin and sync state.
+  std::unique_ptr<NTPSnippetsStatusService> snippets_status_service_;
+
   // Set to true if FetchSnippets is called before the database has been loaded.
   // The fetch will be executed after the database load finishes.
   bool fetch_after_load_;
@@ -329,11 +308,14 @@ class NTPSnippetsServiceObserver {
  public:
   // Sent every time the service loads a new set of data.
   virtual void NTPSnippetsServiceLoaded() = 0;
+
   // Sent when the service is shutting down.
   virtual void NTPSnippetsServiceShutdown() = 0;
-  // Sent when the service has been disabled. Can be from explicit user action
-  // or because a requirement (e.g. History Sync) is not fulfilled anymore.
-  virtual void NTPSnippetsServiceDisabled() = 0;
+
+  // Sent when the state of the service is changing. Something changed in its
+  // dependencies so it's notifying observers about incoming data changes.
+  // If the service might be enabled, DisabledReason::NONE will be provided.
+  virtual void NTPSnippetsServiceDisabledReasonChanged(DisabledReason) = 0;
 
  protected:
   virtual ~NTPSnippetsServiceObserver() {}

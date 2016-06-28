@@ -74,7 +74,8 @@ void SnippetsInternalsMessageHandler::NTPSnippetsServiceLoaded() {
           ntp_snippets_service_->snippets_fetcher()->last_json()));
 }
 
-void SnippetsInternalsMessageHandler::NTPSnippetsServiceDisabled() {}
+void SnippetsInternalsMessageHandler::NTPSnippetsServiceDisabledReasonChanged(
+    ntp_snippets::DisabledReason disabled_reason) {}
 
 void SnippetsInternalsMessageHandler::RegisterMessages() {
   // additional initialization (web_ui() does not work from the constructor)

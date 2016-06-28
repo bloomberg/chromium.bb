@@ -15,8 +15,7 @@
     android:background="@color/snippets_background_color">
 
     <org.chromium.ui.widget.TextViewWithLeading
-        android:id="@+id/status_headline"
-        android:text="@string/ntp_status_card_title_empty"
+        android:id="@+id/status_title"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:textSize="16sp"
@@ -24,8 +23,7 @@
         chrome:leading="24dp" />
 
     <org.chromium.ui.widget.TextViewWithLeading
-        android:id="@+id/status_snippet"
-        android:text="@string/ntp_status_card_body_empty"
+        android:id="@+id/status_body"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
@@ -37,13 +35,12 @@
          supposed to have 8dp margin while we have a 16dp margin at the parent
          level. -->
     <Button
-      android:id="@+id/reload_button"
+      android:id="@+id/status_action_button"
       style="@style/ButtonCompatBorderless"
       android:layout_marginTop="16dp"
       android:layout_marginEnd="-8dp"
       android:layout_width="wrap_content"
       android:layout_height="wrap_content"
-      android:text="@string/reload"
       android:textAllCaps="true"
       android:textColor="@color/light_active_color"
       android:textSize="15sp" />

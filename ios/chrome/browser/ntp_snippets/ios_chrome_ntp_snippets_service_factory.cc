@@ -18,6 +18,7 @@
 #include "components/ntp_snippets/ntp_snippets_database.h"
 #include "components/ntp_snippets/ntp_snippets_fetcher.h"
 #include "components/ntp_snippets/ntp_snippets_service.h"
+#include "components/ntp_snippets/ntp_snippets_status_service.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/version_info/version_info.h"
 #include "ios/chrome/browser/application_context.h"
@@ -113,7 +114,7 @@ IOSChromeNTPSnippetsServiceFactory::BuildServiceInstanceFor(
   // TODO(treib,markusheintz): Inject an image_fetcher::ImageDecoder once that's
   // implemented on iOS. crbug.com/609127
   return base::WrapUnique(new ntp_snippets::NTPSnippetsService(
-      false /* enabled */, chrome_browser_state->GetPrefs(), sync_service,
+      false /* enabled */, chrome_browser_state->GetPrefs(),
       suggestions_service, GetApplicationContext()->GetApplicationLocale(),
       scheduler, base::WrapUnique(new ntp_snippets::NTPSnippetsFetcher(
                      signin_manager, token_service, request_context,
@@ -123,5 +124,7 @@ IOSChromeNTPSnippetsServiceFactory::BuildServiceInstanceFor(
                                             web::WebThread::GetBlockingPool())),
       nullptr, /* image_decoder */
       base::WrapUnique(
-          new ntp_snippets::NTPSnippetsDatabase(database_dir, task_runner))));
+          new ntp_snippets::NTPSnippetsDatabase(database_dir, task_runner)),
+      base::WrapUnique(new ntp_snippets::NTPSnippetsStatusService(
+          signin_manager, sync_service))));
 }

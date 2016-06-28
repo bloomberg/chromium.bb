@@ -27,13 +27,11 @@
 #include "components/ntp_snippets/ntp_snippets_database.h"
 #include "components/ntp_snippets/ntp_snippets_fetcher.h"
 #include "components/ntp_snippets/ntp_snippets_scheduler.h"
+#include "components/ntp_snippets/ntp_snippets_test_utils.h"
 #include "components/ntp_snippets/switches.h"
 #include "components/prefs/testing_pref_service.h"
-#include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/fake_profile_oauth2_token_service.h"
 #include "components/signin/core/browser/fake_signin_manager.h"
-#include "components/signin/core/browser/test_signin_client.h"
-#include "components/sync_driver/fake_sync_service.h"
 #include "google_apis/google_api_keys.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_request_test_util.h"
@@ -207,9 +205,9 @@ class FailingFakeURLFetcherFactory : public net::URLFetcherFactory {
   std::unique_ptr<net::URLFetcher> CreateURLFetcher(
       int id, const GURL& url, net::URLFetcher::RequestType request_type,
       net::URLFetcherDelegate* d) override {
-    return base::WrapUnique(new net::FakeURLFetcher(
+    return base::MakeUnique<net::FakeURLFetcher>(
         url, d, /*response_data=*/std::string(), net::HTTP_NOT_FOUND,
-        net::URLRequestStatus::FAILED));
+        net::URLRequestStatus::FAILED);
   }
 };
 
@@ -223,21 +221,12 @@ class MockScheduler : public NTPSnippetsScheduler {
   MOCK_METHOD0(Unschedule, bool());
 };
 
-class MockSyncService : public sync_driver::FakeSyncService {
- public:
-  MockSyncService() {}
-  virtual ~MockSyncService() {}
-  MOCK_CONST_METHOD0(CanSyncStart, bool());
-  MOCK_CONST_METHOD0(IsSyncActive, bool());
-  MOCK_CONST_METHOD0(ConfigurationDone, bool());
-  MOCK_CONST_METHOD0(GetActiveDataTypes, syncer::ModelTypeSet());
-};
-
 class MockServiceObserver : public NTPSnippetsServiceObserver {
  public:
   MOCK_METHOD0(NTPSnippetsServiceLoaded, void());
   MOCK_METHOD0(NTPSnippetsServiceShutdown, void());
-  MOCK_METHOD0(NTPSnippetsServiceDisabled, void());
+  MOCK_METHOD1(NTPSnippetsServiceDisabledReasonChanged,
+               void(DisabledReason disabled_reason));
 };
 
 class WaitForDBLoad : public NTPSnippetsServiceObserver {
@@ -259,7 +248,8 @@ class WaitForDBLoad : public NTPSnippetsServiceObserver {
   }
 
   void NTPSnippetsServiceShutdown() override {}
-  void NTPSnippetsServiceDisabled() override {}
+  void NTPSnippetsServiceDisabledReasonChanged(
+      DisabledReason disabled_reason) override {}
 
   NTPSnippetsService* service_;
   base::RunLoop run_loop_;
@@ -269,20 +259,15 @@ class WaitForDBLoad : public NTPSnippetsServiceObserver {
 
 }  // namespace
 
-class NTPSnippetsServiceTest : public testing::Test {
+class NTPSnippetsServiceTest : public test::NTPSnippetsTestBase {
  public:
   NTPSnippetsServiceTest()
       : fake_url_fetcher_factory_(
             /*default_factory=*/&failing_url_fetcher_factory_),
         test_url_(base::StringPrintf(kTestContentSnippetsServerFormat,
-                                     google_apis::GetAPIKey().c_str())),
-        pref_service_(new TestingPrefServiceSimple()),
-        signin_client_(new TestSigninClient(nullptr)),
-        account_tracker_(new AccountTrackerService()),
-        fake_signin_manager_(new FakeSigninManagerBase(signin_client_.get(),
-                                                       account_tracker_.get())),
-        fake_token_service_(new FakeProfileOAuth2TokenService()) {
-    NTPSnippetsService::RegisterProfilePrefs(pref_service_->registry());
+                                     google_apis::GetAPIKey().c_str())) {
+    NTPSnippetsService::RegisterProfilePrefs(pref_service()->registry());
+
     // Since no SuggestionsService is injected in tests, we need to force the
     // service to fetch from all hosts.
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
@@ -302,7 +287,7 @@ class NTPSnippetsServiceTest : public testing::Test {
   }
 
   void SetUp() override {
-    ResetSyncServiceMock();
+    test::NTPSnippetsTestBase::SetUp();
     EXPECT_CALL(mock_scheduler(), Schedule(_, _, _, _)).Times(1);
     CreateSnippetsService(/*enabled=*/true);
   }
@@ -320,16 +305,25 @@ class NTPSnippetsServiceTest : public testing::Test {
     // create the new one, otherwise opening the new database will fail.
     service_.reset();
 
-    service_.reset(new NTPSnippetsService(
-        enabled, pref_service_.get(), mock_sync_service_.get(), nullptr,
-        std::string("fr"), &scheduler_,
-        base::WrapUnique(new NTPSnippetsFetcher(
-            fake_signin_manager_.get(), fake_token_service_.get(),
+    ResetSigninManager();
+    std::unique_ptr<NTPSnippetsFetcher> snippets_fetcher =
+        base::MakeUnique<NTPSnippetsFetcher>(
+            fake_signin_manager(), fake_token_service_.get(),
             std::move(request_context_getter), base::Bind(&ParseJson),
-            /*is_stable_channel=*/true)),
-        /*image_fetcher=*/nullptr, /*image_decoder=*/nullptr,
-        base::WrapUnique(new NTPSnippetsDatabase(database_dir_.path(),
-                                                 task_runner))));
+            /*is_stable_channel=*/true);
+
+    fake_signin_manager()->SignIn("foo@bar.com");
+    snippets_fetcher->SetPersonalizationForTesting(
+        NTPSnippetsFetcher::Personalization::kNonPersonal);
+
+    service_.reset(new NTPSnippetsService(
+        enabled, pref_service(), nullptr, "fr", &scheduler_,
+        std::move(snippets_fetcher), /*image_fetcher=*/nullptr,
+        /*image_fetcher=*/nullptr, base::MakeUnique<NTPSnippetsDatabase>(
+                                       database_dir_.path(), task_runner),
+        base::MakeUnique<NTPSnippetsStatusService>(fake_signin_manager(),
+                                                   mock_sync_service())));
+
     if (enabled)
       WaitForDBLoad(service_.get());
   }
@@ -338,7 +332,6 @@ class NTPSnippetsServiceTest : public testing::Test {
   const GURL& test_url() { return test_url_; }
   NTPSnippetsService* service() { return service_.get(); }
   MockScheduler& mock_scheduler() {  return scheduler_; }
-  MockSyncService* mock_sync_service() { return mock_sync_service_.get(); }
 
   // Provide the json to be returned by the fake fetcher.
   void SetUpFetchResponse(const std::string& json) {
@@ -352,34 +345,12 @@ class NTPSnippetsServiceTest : public testing::Test {
     base::RunLoop().RunUntilIdle();
   }
 
-  // Call before the service is set up to initialize a sync service.
-  // Subsequent calls reset the return values of the mocked methods.
-  void ResetSyncServiceMock() {
-    if (!mock_sync_service_) {
-      // Use a NiceMock to avoid the "uninteresting call" warnings.
-      mock_sync_service_.reset(new testing::NiceMock<MockSyncService>);
-    }
-
-    ON_CALL(*mock_sync_service_, CanSyncStart()).WillByDefault(Return(true));
-    ON_CALL(*mock_sync_service_, IsSyncActive()).WillByDefault(Return(true));
-    ON_CALL(*mock_sync_service_, ConfigurationDone())
-        .WillByDefault(Return(true));
-    ON_CALL(*mock_sync_service_, GetActiveDataTypes())
-        .WillByDefault(
-            Return(syncer::ModelTypeSet(syncer::HISTORY_DELETE_DIRECTIVES)));
-  }
-
  private:
   base::MessageLoop message_loop_;
   FailingFakeURLFetcherFactory failing_url_fetcher_factory_;
   // Instantiation of factory automatically sets itself as URLFetcher's factory.
   net::FakeURLFetcherFactory fake_url_fetcher_factory_;
   const GURL test_url_;
-  std::unique_ptr<TestingPrefServiceSimple> pref_service_;
-  std::unique_ptr<TestSigninClient> signin_client_;
-  std::unique_ptr<AccountTrackerService> account_tracker_;
-  std::unique_ptr<MockSyncService> mock_sync_service_;  // Null by default.
-  std::unique_ptr<SigninManagerBase> fake_signin_manager_;
   std::unique_ptr<OAuth2TokenService> fake_token_service_;
   MockScheduler scheduler_;
   // Last so that the dependencies are deleted after the service.
@@ -393,6 +364,7 @@ class NTPSnippetsServiceTest : public testing::Test {
 class NTPSnippetsServiceDisabledTest : public NTPSnippetsServiceTest {
  public:
   void SetUp() override {
+    test::NTPSnippetsTestBase::SetUp();
     EXPECT_CALL(mock_scheduler(), Unschedule()).Times(1);
     CreateSnippetsService(/*enabled=*/false);
   }
@@ -875,59 +847,25 @@ TEST_F(NTPSnippetsServiceTest, DiscardShouldRespectAllKnownUrls) {
   ASSERT_THAT(service()->snippets(), IsEmpty());
 }
 
-TEST_F(NTPSnippetsServiceTest, SyncStateCompatibility) {
-  // The default test setup has a compatible sync state.
-  EXPECT_EQ(DisabledReason::NONE, service()->GetDisabledReason());
-
-  // History sync disabled.
-  ON_CALL(*mock_sync_service(), GetActiveDataTypes())
-      .WillByDefault(Return(syncer::ModelTypeSet()));
-  EXPECT_EQ(DisabledReason::HISTORY_SYNC_DISABLED,
-            service()->GetDisabledReason());
-  ResetSyncServiceMock();
-
-  // Not done loading.
-  ON_CALL(*mock_sync_service(), ConfigurationDone())
-      .WillByDefault(Return(false));
-  ON_CALL(*mock_sync_service(), GetActiveDataTypes())
-      .WillByDefault(Return(syncer::ModelTypeSet()));
-  EXPECT_EQ(DisabledReason::HISTORY_SYNC_STATE_UNKNOWN,
-            service()->GetDisabledReason());
-  ResetSyncServiceMock();
-
-  // Sync disabled.
-  ON_CALL(*mock_sync_service(), CanSyncStart()).WillByDefault(Return(false));
-  EXPECT_EQ(DisabledReason::HISTORY_SYNC_DISABLED,
-            service()->GetDisabledReason());
-  ResetSyncServiceMock();
-
-  // No service.
-  service()->sync_service_ = nullptr;
-  EXPECT_EQ(DisabledReason::HISTORY_SYNC_DISABLED,
-            service()->GetDisabledReason());
-}
-
 TEST_F(NTPSnippetsServiceTest, HistorySyncStateChanges) {
   MockServiceObserver mock_observer;
   service()->AddObserver(&mock_observer);
 
-  // Simulate user disabled sync.
-  ON_CALL(*mock_sync_service(), CanSyncStart()).WillByDefault(Return(false));
-  // The service should notify observers it's been disabled and clear the
-  // snippets instead of pulling new ones.
-  EXPECT_CALL(mock_observer, NTPSnippetsServiceDisabled());
+  // Simulate user signed out
   SetUpFetchResponse(GetTestJson({GetSnippet()}));
-  service()->OnStateChanged();
+  EXPECT_CALL(mock_observer, NTPSnippetsServiceDisabledReasonChanged(
+                                 DisabledReason::SIGNED_OUT));
+  service()->UpdateStateForStatus(DisabledReason::SIGNED_OUT);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(NTPSnippetsService::State::DISABLED, service()->state_);
   EXPECT_THAT(service()->snippets(), IsEmpty()); // No fetch should be made.
 
-  // Simulate user sign in.
-  ResetSyncServiceMock();
-  // The service should be ready again and load snippets.
-  EXPECT_CALL(mock_scheduler(), Schedule(_, _, _, _)).Times(1);
+  // Simulate user sign in. The service should be ready again and load snippets.
   SetUpFetchResponse(GetTestJson({GetSnippet()}));
-  service()->OnStateChanged();
+  EXPECT_CALL(mock_observer,
+              NTPSnippetsServiceDisabledReasonChanged(DisabledReason::NONE));
+  EXPECT_CALL(mock_scheduler(), Schedule(_, _, _, _)).Times(1);
+  service()->UpdateStateForStatus(DisabledReason::NONE);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(NTPSnippetsService::State::READY, service()->state_);
   EXPECT_FALSE(service()->snippets().empty());

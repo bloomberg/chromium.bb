@@ -2,6 +2,13 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/ui.gni")
+
+if (is_android) {
+  import("//build/config/android/config.gni")
+  import("//build/config/android/rules.gni")
+}
+
 # GYP version: components/ntp_snippets.gypi:ntp_snippets
 source_set("ntp_snippets") {
   sources = [
@@ -20,6 +27,8 @@ source_set("ntp_snippets") {
     "ntp_snippets_scheduler.h",
     "ntp_snippets_service.cc",
     "ntp_snippets_service.h",
+    "ntp_snippets_status_service.cc",
+    "ntp_snippets_status_service.h",
     "pref_names.cc",
     "pref_names.h",
     "switches.cc",
@@ -50,6 +59,14 @@ source_set("ntp_snippets") {
   ]
 }
 
+if (is_android) {
+  java_cpp_enum("ntp_snippets_java_enums_srcjar") {
+    sources = [
+      "ntp_snippets_status_service.h",
+    ]
+  }
+}
+
 source_set("unit_tests") {
   testonly = true
   sources = [
@@ -57,6 +74,9 @@ source_set("unit_tests") {
     "ntp_snippets_database_unittest.cc",
     "ntp_snippets_fetcher_unittest.cc",
     "ntp_snippets_service_unittest.cc",
+    "ntp_snippets_status_service_unittest.cc",
+    "ntp_snippets_test_utils.cc",
+    "ntp_snippets_test_utils.h",
   ]
 
   deps = [
@@ -66,6 +86,7 @@ source_set("unit_tests") {
     "//components/image_fetcher",
     "//components/leveldb_proto:test_support",
     "//components/signin/core/browser:test_support",
+    "//components/signin/core/common",
     "//components/sync_driver:test_support",
     "//components/variations",
     "//net:test_support",

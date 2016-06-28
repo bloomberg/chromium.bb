@@ -132,17 +132,12 @@ public class SignInPreference extends Preference
         setOnPreferenceClickListener(new OnPreferenceClickListener() {
             @Override
             public boolean onPreferenceClick(Preference preference) {
-                if (ChromeSigninController.get(getContext()).isSignedIn()) return false;
-                if (!SigninManager.get(getContext()).isSignInAllowed()) {
-                    if (SigninManager.get(getContext()).isSigninDisabledByPolicy()) {
-                        ManagedPreferencesUtils.showManagedByAdministratorToast(getContext());
-                    }
+                if (!AccountSigninActivity.startIfAllowed(
+                            getContext(), SigninAccessPoint.SETTINGS)) {
                     return false;
                 }
 
                 setEnabled(false);
-                AccountSigninActivity.startAccountSigninActivity(
-                        getContext(), SigninAccessPoint.SETTINGS);
                 return true;
             }
         });

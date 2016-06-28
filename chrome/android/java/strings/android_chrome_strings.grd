@@ -1984,6 +1984,27 @@ You are signing in with a managed account and giving its administrator control o
       <message name="IDS_NTP_STATUS_CARD_BODY_EMPTY" desc="Body of the card explaining the status of the ntp suggested content, when we don't have anything to show.">
         More cards will appear when the time is right.
       </message>
+      <message name="IDS_NTP_STATUS_CARD_BODY_SIGNED_OUT" desc="Body of the card explaining the status of the ntp suggested content, when sync is disabled.">
+        To get personalized content suggested by Google, sign in to Chrome.
+      </message>
+      <message name="IDS_NTP_STATUS_CARD_GENERIC_TITLE" desc="Title of the card explaining what action the user can take to get suggested content on the NTP.">
+        Get suggested content
+      </message>
+      <message name="IDS_NTP_STATUS_CARD_BODY_SYNC" desc="Body of the card explaining the status of the ntp suggested content, when sync is disabled.">
+        To get personalized content suggested by Google, turn on sync.
+      </message>
+      <message name="IDS_NTP_STATUS_CARD_ACTION_SYNC" desc="Label of the action button for the card explaining the status of the ntp suggested content, when sync is disabled.">
+        Turn on sync
+      </message>
+      <message name="IDS_NTP_STATUS_CARD_BODY_HISTORY_SYNC" desc="Body of the card explaining the status of the ntp suggested content, when history sync is disabled.">
+        To get personalized content suggested by Google, turn on history sync.
+      </message>
+      <message name="IDS_NTP_STATUS_CARD_ACTION_HISTORY_SYNC" desc="Label of the action button for the card explaining the status of the ntp suggested content, when history sync is disabled.">
+        Turn on history sync
+      </message>
+      <message name="IDS_NTP_STATUS_CARD_BODY_PASSPHRASE" desc="Body of the card explaining the status of the ntp suggested content, when passphrase encryption is enabled.">
+        Personalized content suggestions are currently disabled, because your synced data is protected with a custom passphrase.
+      </message>
 
       <!-- Toolbar button strings -->
       <message name="IDS_OPEN_TABS" desc="Text for button to enter the tab switcher and show tabs that are open on this device">

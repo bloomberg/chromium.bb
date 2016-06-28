@@ -46,6 +46,11 @@ class NTPSnippetsBridge : public ntp_snippets::NTPSnippetsServiceObserver {
                       const base::android::JavaParamRef<jobject>& callback,
                       const base::android::JavaParamRef<jstring>& jurl);
 
+  // Returns a reason why the snippet service is disabled, or 0 if it isn't.
+  // See NTPSnippetsService::DisabledReason for more info.
+  int GetDisabledReason(JNIEnv* env,
+                        const base::android::JavaParamRef<jobject>& obj);
+
   static bool Register(JNIEnv* env);
 
  private:
@@ -54,7 +59,8 @@ class NTPSnippetsBridge : public ntp_snippets::NTPSnippetsServiceObserver {
   // NTPSnippetsServiceObserver overrides
   void NTPSnippetsServiceLoaded() override;
   void NTPSnippetsServiceShutdown() override;
-  void NTPSnippetsServiceDisabled() override;
+  void NTPSnippetsServiceDisabledReasonChanged(
+      ntp_snippets::DisabledReason disabled_reason) override;
 
   void OnImageFetched(base::android::ScopedJavaGlobalRef<jobject> callback,
                       const std::string& snippet_id,

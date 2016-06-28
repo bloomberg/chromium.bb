@@ -16,6 +16,7 @@ import org.chromium.base.Log;
 import org.chromium.chrome.browser.ntp.NewTabPageLayout;
 import org.chromium.chrome.browser.ntp.NewTabPageUma;
 import org.chromium.chrome.browser.ntp.NewTabPageView.NewTabPageManager;
+import org.chromium.chrome.browser.ntp.snippets.DisabledReason;
 import org.chromium.chrome.browser.ntp.snippets.SnippetArticle;
 import org.chromium.chrome.browser.ntp.snippets.SnippetArticleViewHolder;
 import org.chromium.chrome.browser.ntp.snippets.SnippetHeaderListItem;
@@ -35,10 +36,17 @@ import java.util.List;
 public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder> implements SnippetsObserver {
     private static final String TAG = "Ntp";
 
+    /**
+     * Position of the first card in the adapter. This is always going to be a valid position,
+     * occupied either by a card showing content or by a status card.
+     */
+    private static final int FIRST_CARD_POSITION = 2;
+
     private final NewTabPageManager mNewTabPageManager;
     private final NewTabPageLayout mNewTabPageLayout;
     private final AboveTheFoldListItem mAboveTheFoldListItem;
     private final SnippetHeaderListItem mHeaderListItem;
+    private StatusListItem mStatusListItem;
     private final List<NewTabPageListItem> mNewTabPageListItems;
     private final ItemTouchCallbacks mItemTouchCallbacks;
     private NewTabPageRecyclerView mRecyclerView;
@@ -113,6 +121,7 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder> implements 
         mNewTabPageListItems = new ArrayList<NewTabPageListItem>();
         mWantsSnippets = true;
         mSnippetsBridge = snippetsBridge;
+        mStatusListItem = StatusListItem.create(snippetsBridge.getDisabledReason(), this, manager);
 
         loadSnippets(new ArrayList<SnippetArticle>());
         mSnippetsBridge.setObserver(this);
@@ -141,10 +150,22 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder> implements 
     }
 
     @Override
-    public void onSnippetsDisabled() {
-        // Clear the snippets, wait for new updates in case the service is reenabled later.
-        loadSnippets(new ArrayList<SnippetArticle>());
-        mWantsSnippets = true;
+    public void onDisabledReasonChanged(int disabledReason) {
+        // Observers should not be registered for that state
+        assert disabledReason != DisabledReason.EXPLICITLY_DISABLED;
+
+        mStatusListItem = StatusListItem.create(disabledReason, this, mNewTabPageManager);
+        if (getItemCount() > 4 /* above-the-fold + header + card + spacing */) {
+            // We had many items, implies that the service was previously enabled and just
+            // transitioned. to a disabled state. We now clear it.
+            loadSnippets(new ArrayList<SnippetArticle>());
+        } else {
+            mNewTabPageListItems.set(FIRST_CARD_POSITION, mStatusListItem);
+            notifyItemRangeChanged(FIRST_CARD_POSITION, 2); // Update both the first card and the
+            // spacing item coming after it.
+        }
+
+        if (disabledReason == DisabledReason.NONE) mWantsSnippets = true;
     }
 
     @Override
@@ -174,7 +195,7 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder> implements 
         }
 
         if (viewType == NewTabPageListItem.VIEW_TYPE_STATUS) {
-            return new StatusListItem.ViewHolder(mRecyclerView, this);
+            return new StatusListItem.ViewHolder(mRecyclerView);
         }
 
         return null;
@@ -217,7 +238,7 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder> implements 
         if (hasContentToShow) {
             mNewTabPageListItems.addAll(listSnippets);
         } else {
-            mNewTabPageListItems.add(new StatusListItem());
+            mNewTabPageListItems.add(mStatusListItem);
         }
 
         mNewTabPageListItems.add(new SpacingListItem());
@@ -263,7 +284,7 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder> implements 
         if (mNewTabPageListItems.size() == 3 /* above-the-fold + header + spacing */) {
             // TODO(dgn) hack until we refactor the entire class with sections, etc.
             // (see https://crbug.com/616090)
-            mNewTabPageListItems.add(2, new StatusListItem());
+            mNewTabPageListItems.add(FIRST_CARD_POSITION, mStatusListItem);
 
             // We also want to refresh the header and the bottom padding.
             mHeaderListItem.setVisible(false);

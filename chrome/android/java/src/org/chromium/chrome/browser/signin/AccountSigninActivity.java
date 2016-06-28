@@ -18,6 +18,7 @@ import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.firstrun.ProfileDataCache;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
+import org.chromium.chrome.browser.preferences.ManagedPreferencesUtils;
 import org.chromium.chrome.browser.preferences.PreferencesLauncher;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.signin.SigninManager.SignInCallback;
@@ -39,7 +40,8 @@ public class AccountSigninActivity extends AppCompatActivity
     private ProfileDataCache mProfileDataCache;
 
     @IntDef({SigninAccessPoint.SETTINGS, SigninAccessPoint.BOOKMARK_MANAGER,
-            SigninAccessPoint.RECENT_TABS, SigninAccessPoint.SIGNIN_PROMO})
+            SigninAccessPoint.RECENT_TABS, SigninAccessPoint.SIGNIN_PROMO,
+            SigninAccessPoint.NTP_LINK})
     @Retention(RetentionPolicy.SOURCE)
     public @interface AccessPoint {}
     @AccessPoint private int mAccessPoint;
@@ -53,6 +55,24 @@ public class AccountSigninActivity extends AppCompatActivity
         Intent intent = new Intent(context, AccountSigninActivity.class);
         intent.putExtra(INTENT_SIGNIN_ACCESS_POINT, accessPoint);
         context.startActivity(intent);
+    }
+
+    /**
+     * A convenience method to create a AccountSigninActivity passing the access point as an
+     * intent. Checks if the sign in flow can be started before showing the activity.
+     * @param accessPoint - A SigninAccessPoint designating where the activity is created from.
+     * @return {@code true} if sign in has been allowed.
+     */
+    public static boolean startIfAllowed(Context context, @AccessPoint int accessPoint) {
+        if (!SigninManager.get(context).isSignInAllowed()) {
+            if (SigninManager.get(context).isSigninDisabledByPolicy()) {
+                ManagedPreferencesUtils.showManagedByAdministratorToast(context);
+            }
+            return false;
+        }
+
+        startAccountSigninActivity(context, accessPoint);
+        return true;
     }
 
     @Override
