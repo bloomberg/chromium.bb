@@ -479,15 +479,14 @@ void StreamMixerAlsaInputImpl::SetPaused(bool paused) {
   }
 }
 
-static float VolumeToScaleFactor(float volume_level) {
-  volume_level = std::max(0.0f, std::min(volume_level, 1.0f));
-  return powf(volume_level, 0.5f * log2(10.0f));
-}
-
-void StreamMixerAlsaInputImpl::SetVolumeMultiplier(float volume_level) {
-  RUN_ON_MIXER_THREAD(SetVolumeMultiplier, volume_level);
+void StreamMixerAlsaInputImpl::SetVolumeMultiplier(float multiplier) {
+  RUN_ON_MIXER_THREAD(SetVolumeMultiplier, multiplier);
   DCHECK(!IsDeleting());
-  volume_multiplier_ = VolumeToScaleFactor(volume_level);
+  if (multiplier > 1.0f)
+    multiplier = 1.0f;
+  if (multiplier < 0.0f)
+    multiplier = 0.0f;
+  volume_multiplier_ = multiplier;
 }
 
 }  // namespace media
