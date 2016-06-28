@@ -56,6 +56,28 @@ class HtmlCheckerTest(SuperMoxTestBase):
     for line in lines:
       self.ShouldPassCheck(line, self.checker.ClassesUseDashFormCheck)
 
+  def testSingleQuoteCheckFails(self):
+    lines = [
+      """ <a href='classBar'> """,
+      """<a foo$="bar" href$='classBar'>""",
+      """<a foo="bar" less="more" href='classBar' kittens="cats">""",
+      """<a cats href='classBar' dogs>""",
+      """<a cats\n href='classBat\nclassBaz'\n dogs>""",
+    ]
+    for line in lines:
+      self.ShouldFailCheck(line, self.checker.DoNotUseSingleQuotesCheck)
+
+  def testSingleQuoteCheckPasses(self):
+    lines = [
+      """<b id="super-valid">SO VALID!</b>""",
+      """<a text$="i ain't got invalid quotes">i don't</a>""",
+      """<span>[[i18n('blah')]]</span> """,
+      """<a cats href="classBar" dogs>""",
+      """<a cats\n href="classBar"\n dogs>""",
+    ]
+    for line in lines:
+      self.ShouldPassCheck(line, self.checker.DoNotUseSingleQuotesCheck)
+
   def testDoNotCloseSingleTagsCheckFails(self):
     lines = [
       "<input/>",
