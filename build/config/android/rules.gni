@@ -2327,11 +2327,8 @@ if (enable_java_templates) {
       forward_variables_from(invoker, "*")
       testonly = true
 
-      if (defined(invoker.proguard_enabled) && invoker.proguard_enabled) {
-        assert(invoker.proguard_configs != [])
-        proguard_enabled = true
-        proguard_configs = invoker.proguard_configs
-      }
+      assert(!defined(invoker.proguard_enabled) || !invoker.proguard_enabled
+             || invoker.proguard_configs != [])
 
       if (!defined(apk_name)) {
         apk_name = get_label_info(invoker.shared_library, "name")
