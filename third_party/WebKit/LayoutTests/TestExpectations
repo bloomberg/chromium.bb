@@ -829,6 +829,11 @@ crbug.com/574283 [ Mac ] virtual/threaded/fast/scroll-behavior/smooth-scroll/mou
 crbug.com/587165 [ Win7 Debug ] virtual/threaded/fast/scroll-behavior/smooth-scroll/mousewheel-scroll-interrupted.html [ Pass Failure ]
 crbug.com/587165 [ Linux Debug ] virtual/threaded/fast/scroll-behavior/smooth-scroll/mousewheel-scroll-interrupted.html [ Pass Failure ]
 
+# WebKit test is checking for outdated semantics on TypedArray constructors.
+crbug.com/623120 virtual/gpu/fast/canvas/webgl/webgl-array-invalid-ranges.html [ NeedsManualRebaseline ]
+crbug.com/623120 fast/canvas/webgl/webgl-array-invalid-ranges.html [ NeedsManualRebaseline ]
+crbug.com/623120 virtual/display_list_2d_canvas/fast/canvas/webgl/webgl-array-invalid-ranges.html [ NeedsManualRebaseline ]
+
 # When drawing subpixel smoothed glyphs, CoreGraphics will fake bold the glyphs.
 # In this configuration, the pixel smoothed glyphs will be created from subpixel smoothed glyphs.
 # This means that CoreGraphics may draw outside the reported glyph bounds, and in this case does.
