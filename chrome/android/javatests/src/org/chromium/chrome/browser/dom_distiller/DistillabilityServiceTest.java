@@ -8,6 +8,7 @@ import android.os.Environment;
 import android.test.suitebuilder.annotation.MediumTest;
 
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.ChromeActivity;
@@ -43,6 +44,7 @@ public class DistillabilityServiceTest extends ChromeActivityTestCaseBase<Chrome
     @Feature({"Distillability-Service"})
     @MediumTest
     @Restriction(ChromeRestriction.RESTRICTION_TYPE_PHONE)
+    @DisabledTest
     public void testServiceAliveAfterNativePage()
             throws InterruptedException, TimeoutException {
 
