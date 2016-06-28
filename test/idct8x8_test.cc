@@ -18,19 +18,11 @@
 #include "./aom_dsp_rtcd.h"
 #include "test/acm_random.h"
 #include "aom/aom_integer.h"
+#include "aom_ports/msvc.h"  // for round()
 
 using libaom_test::ACMRandom;
 
 namespace {
-
-#ifdef _MSC_VER
-static int round(double x) {
-  if (x < 0)
-    return static_cast<int>(ceil(x - 0.5));
-  else
-    return static_cast<int>(floor(x + 0.5));
-}
-#endif
 
 void reference_dct_1d(double input[8], double output[8]) {
   const double kPi = 3.141592653589793238462643383279502884;

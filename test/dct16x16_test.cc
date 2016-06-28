@@ -26,19 +26,11 @@
 #include "aom/aom_codec.h"
 #include "aom/aom_integer.h"
 #include "aom_ports/mem.h"
+#include "aom_ports/msvc.h"  // for round()
 
 using libaom_test::ACMRandom;
 
 namespace {
-
-#ifdef _MSC_VER
-static int round(double x) {
-  if (x < 0)
-    return static_cast<int>(ceil(x - 0.5));
-  else
-    return static_cast<int>(floor(x + 0.5));
-}
-#endif
 
 const int kNumCoeffs = 256;
 const double C1 = 0.995184726672197;
