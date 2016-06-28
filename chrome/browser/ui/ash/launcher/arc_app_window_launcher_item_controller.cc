@@ -10,6 +10,7 @@
 #include "chrome/browser/ui/ash/launcher/arc_app_window_launcher_controller.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_app_menu_item_v2app.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
+#include "chrome/browser/ui/ash/launcher/launcher_application_menu_item_model.h"
 
 ArcAppWindowLauncherItemController::ArcAppWindowLauncherItemController(
     const std::string& arc_app_id,
@@ -37,7 +38,7 @@ base::string16 ArcAppWindowLauncherItemController::GetTitle() {
 
 ash::ShelfMenuModel* ArcAppWindowLauncherItemController::CreateApplicationMenu(
     int event_flags) {
-  return nullptr;
+  return new LauncherApplicationMenuItemModel(GetApplicationList(event_flags));
 }
 
 ChromeLauncherAppMenuItems
