@@ -28,6 +28,7 @@
 #include "ui/base/win/mouse_wheel_util.h"
 #include "ui/base/win/shell.h"
 #include "ui/base/win/touch_input.h"
+#include "ui/display/win/dpi.h"
 #include "ui/events/event.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/keycodes/keyboard_code_conversion_win.h"
@@ -1392,6 +1393,18 @@ LRESULT HWNDMessageHandler::OnDwmCompositionChanged(UINT msg,
   }
 
   FrameTypeChanged();
+  return 0;
+}
+
+LRESULT HWNDMessageHandler::OnDpiChanged(UINT msg,
+                                         WPARAM w_param,
+                                         LPARAM l_param) {
+  if (LOWORD(w_param) != HIWORD(w_param))
+    NOTIMPLEMENTED() << "Received non-square scaling factors";
+
+  SetBoundsInternal(gfx::Rect(*reinterpret_cast<RECT*>(l_param)), false);
+  delegate_->HandleWindowScaleFactorChanged(
+      display::win::GetScalingFactorFromDPI(LOWORD(w_param)));
   return 0;
 }
 

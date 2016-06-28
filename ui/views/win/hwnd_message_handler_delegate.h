@@ -242,6 +242,9 @@ class VIEWS_EXPORT HWNDMessageHandlerDelegate {
   // Called when the window size has finished changing.
   virtual void HandleWindowSizeChanged() = 0;
 
+  // Called when the window scale factor has changed.
+  virtual void HandleWindowScaleFactorChanged(float window_scale_factor) = 0;
+
  protected:
   virtual ~HWNDMessageHandlerDelegate() {}
 };

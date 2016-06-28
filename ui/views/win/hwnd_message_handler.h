@@ -330,6 +330,9 @@ class VIEWS_EXPORT HWNDMessageHandler :
     // Vista and newer
     CR_MESSAGE_HANDLER_EX(WM_DWMCOMPOSITIONCHANGED, OnDwmCompositionChanged)
 
+    // Win 8.1 and newer
+    CR_MESSAGE_HANDLER_EX(WM_DPICHANGED, OnDpiChanged)
+
     // Non-atlcrack.h handlers
     CR_MESSAGE_HANDLER_EX(WM_GETOBJECT, OnGetObject)
 
@@ -422,6 +425,7 @@ class VIEWS_EXPORT HWNDMessageHandler :
   LRESULT OnCreate(CREATESTRUCT* create_struct);
   void OnDestroy();
   void OnDisplayChange(UINT bits_per_pixel, const gfx::Size& screen_size);
+  LRESULT OnDpiChanged(UINT msg, WPARAM w_param, LPARAM l_param);
   LRESULT OnDwmCompositionChanged(UINT msg, WPARAM w_param, LPARAM l_param);
   void OnEnterMenuLoop(BOOL from_track_popup_menu);
   void OnEnterSizeMove();
