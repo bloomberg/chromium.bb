@@ -351,6 +351,7 @@ private:
     bool isRequiredFormControl() const final;
     bool recalcWillValidate() const final;
     void requiredAttributeChanged() final;
+    void disabledAttributeChanged() final;
 
     void updateTouchEventHandlerRegistry();
     void initializeTypeInParsing();

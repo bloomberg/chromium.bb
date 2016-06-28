@@ -744,9 +744,6 @@ void HTMLInputElement::parseAttribute(const QualifiedName& name, const AtomicStr
     } else if (name == patternAttr) {
         setNeedsValidityCheck();
         UseCounter::count(document(), UseCounter::PatternAttribute);
-    } else if (name == disabledAttr) {
-        HTMLTextFormControlElement::parseAttribute(name, oldValue, value);
-        m_inputTypeView->disabledAttributeChanged();
     } else if (name == readonlyAttr) {
         HTMLTextFormControlElement::parseAttribute(name, oldValue, value);
         m_inputTypeView->readonlyAttributeChanged();
@@ -1531,6 +1528,12 @@ void HTMLInputElement::requiredAttributeChanged()
     if (RadioButtonGroupScope* scope = radioButtonGroupScope())
         scope->requiredAttributeChanged(this);
     m_inputTypeView->requiredAttributeChanged();
+}
+
+void HTMLInputElement::disabledAttributeChanged()
+{
+    HTMLTextFormControlElement::disabledAttributeChanged();
+    m_inputTypeView->disabledAttributeChanged();
 }
 
 void HTMLInputElement::selectColorInColorChooser(const Color& color)
