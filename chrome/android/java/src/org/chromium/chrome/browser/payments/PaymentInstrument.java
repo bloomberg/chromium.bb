@@ -22,7 +22,7 @@ public abstract class PaymentInstrument extends PaymentOption {
         /**
          * Called after retrieving instrument details.
          *
-         * @param methodName Method name. For example, "visa".
+         * @param methodName         Method name. For example, "visa".
          * @param stringifiedDetails JSON-serialized object. For example, {"card": "123"}.
          */
         void onInstrumentDetailsReady(String methodName, String stringifiedDetails);
@@ -49,11 +49,12 @@ public abstract class PaymentInstrument extends PaymentOption {
      * Asynchronously retrieves the instrument details and invokes the callback with the result.
      *
      * @param merchantName The name of the merchant.
-     * @param origin The origin of this merchant.
-     * @param total The total amount.
-     * @param items The shopping cart items.
-     * @param details The payment-method specific data.
-     * @param callback The object that will receive the instrument details.
+     * @param origin       The origin of this merchant.
+     * @param total        The total amount.
+     * @param items        The shopping cart items.
+     * @param details      The payment-method specific data, e.g., whether the app should be invoked
+     *                     in test or production key, a merchant identifier, or a public key.
+     * @param callback     The object that will receive the instrument details.
      */
     public abstract void getDetails(String merchantName, String origin, PaymentItem total,
             List<PaymentItem> cart, JSONObject details, DetailsCallback callback);

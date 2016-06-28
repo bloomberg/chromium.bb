@@ -4,7 +4,7 @@
 
 package org.chromium.chrome.browser.payments;
 
-import org.chromium.mojom.payments.PaymentItem;
+import org.json.JSONObject;
 
 import java.util.List;
 import java.util.Set;
@@ -21,7 +21,7 @@ public interface PaymentApp {
         /**
          * Called by this app to provide a list of instruments asynchronously.
          *
-         * @param app The calling app.
+         * @param app         The calling app.
          * @param instruments The instruments from this app.
          */
         void onInstrumentsReady(PaymentApp app, List<PaymentInstrument> instruments);
@@ -32,13 +32,11 @@ public interface PaymentApp {
      * cards for the current profile. Can return null or empty list, e.g., if user has no locally
      * stored credit cards.
      *
-     * @param total The total value of the payment request. Can be used to filter out instruments
-     *              that, for example, do not have enough funds.
-     * @param cart The line items in the payment request. Can be used to filter out instruments
-     *             that, for example, require the cart total to match the payment request total.
+     * @param details  The payment-method specific data, e.g., whether the app should be invoked in
+     *                 test or production mode, merchant identifier, or a public key.
      * @param callback The object that will receive the list of instruments.
      */
-    void getInstruments(PaymentItem total, List<PaymentItem> cart, InstrumentsCallback callback);
+    void getInstruments(JSONObject details, InstrumentsCallback callback);
 
     /**
      * Returns a list of all payment method names that this app supports. For example, ["visa",

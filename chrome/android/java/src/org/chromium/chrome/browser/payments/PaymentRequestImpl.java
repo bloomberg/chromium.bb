@@ -286,7 +286,7 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
                 mPendingApps.remove(app);
             } else {
                 isGettingInstruments = true;
-                app.getInstruments(mRawTotal, mRawLineItems, this);
+                app.getInstruments(mMethodData.get(appMethods.iterator().next()), this);
             }
         }
 
