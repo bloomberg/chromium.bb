@@ -6,15 +6,15 @@
 
 namespace features {
 
-// Enables or disables the experimental V8 Ignition interpreter.
+// Enables or disables the V8 Ignition interpreter.
 const base::Feature kV8Ignition {
   "V8Ignition", base::FEATURE_DISABLED_BY_DEFAULT
 };
 
-// Enables or disables the experimental V8 Ignition interpreter on low end
+// Enables or disables the V8 Ignition interpreter on low end
 // Android devices.
 const base::Feature kV8IgnitionLowEnd {
-  "V8IgnitionLowEnd", base::FEATURE_DISABLED_BY_DEFAULT
+  "V8IgnitionLowEnd", base::FEATURE_ENABLED_BY_DEFAULT
 };
 
 // Enables lazy compilation for the V8 Ignition interpreter. Only
