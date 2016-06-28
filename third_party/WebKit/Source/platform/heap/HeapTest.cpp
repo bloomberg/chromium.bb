@@ -6286,7 +6286,10 @@ int DeepEagerly::sTraceLazy = 0;
 
 TEST(HeapTest, TraceDeepEagerly)
 {
-#if !ENABLE(ASSERT)
+    // The allocation & GC overhead is considerable for this test,
+    // straining debug builds and lower-end targets too much to be
+    // worth running.
+#if !ENABLE(ASSERT) && !OS(ANDROID)
     DeepEagerly* obj = nullptr;
     for (int i = 0; i < 10000000; i++)
         obj = new DeepEagerly(obj);
