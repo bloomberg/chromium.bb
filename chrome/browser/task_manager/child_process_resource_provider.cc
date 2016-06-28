@@ -93,7 +93,7 @@ void ChildProcessResource::ConnectResourceReporterOnIOThread(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   content::BrowserChildProcessHost* host =
       content::BrowserChildProcessHost::FromID(id);
-  if (!host)
+  if (!host || !host->GetRemoteInterfaces())
     return;
 
   host->GetRemoteInterfaces()->GetInterface(std::move(req));
