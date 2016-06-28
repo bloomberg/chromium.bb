@@ -1738,6 +1738,56 @@ class ServiceWorkerV8CacheStrategiesTest : public ServiceWorkerBrowserTest {
   ~ServiceWorkerV8CacheStrategiesTest() override {}
 
  protected:
+  void CheckStrategyIsNone() {
+    RegisterAndActivateServiceWorker();
+
+    NavigateToTestPage();
+    EXPECT_EQ(0, GetSideDataSize());
+
+    NavigateToTestPage();
+    EXPECT_EQ(0, GetSideDataSize());
+
+    NavigateToTestPage();
+    EXPECT_EQ(0, GetSideDataSize());
+  }
+
+  void CheckStrategyIsNormal() {
+    RegisterAndActivateServiceWorker();
+
+    NavigateToTestPage();
+    // fetch_event_response_via_cache.js returns |cloned_response| for the first
+    // load. So the V8 code cache should not be stored to the CacheStorage.
+    EXPECT_EQ(0, GetSideDataSize());
+
+    NavigateToTestPage();
+    // V8ScriptRunner::setCacheTimeStamp() stores 12 byte data (tag +
+    // timestamp).
+    EXPECT_EQ(kV8CacheTimeStampDataSize, GetSideDataSize());
+
+    NavigateToTestPage();
+    // The V8 code cache must be stored to the CacheStorage which must be bigger
+    // than 12 byte.
+    EXPECT_GT(GetSideDataSize(), kV8CacheTimeStampDataSize);
+  }
+
+  void CheckStrategyIsAggressive() {
+    RegisterAndActivateServiceWorker();
+
+    NavigateToTestPage();
+    // fetch_event_response_via_cache.js returns |cloned_response| for the first
+    // load. So the V8 code cache should not be stored to the CacheStorage.
+    EXPECT_EQ(0, GetSideDataSize());
+
+    NavigateToTestPage();
+    // The V8 code cache must be stored to the CacheStorage which must be bigger
+    // than 12 byte.
+    EXPECT_GT(GetSideDataSize(), kV8CacheTimeStampDataSize);
+
+    NavigateToTestPage();
+    EXPECT_GT(GetSideDataSize(), kV8CacheTimeStampDataSize);
+  }
+
+ private:
   static const std::string kPageUrl;
   static const std::string kWorkerUrl;
   static const std::string kScriptUrl;
@@ -1772,7 +1822,6 @@ class ServiceWorkerV8CacheStrategiesTest : public ServiceWorkerBrowserTest {
         std::string("cache_name"), embedded_test_server()->GetURL(kScriptUrl));
   }
 
- private:
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerV8CacheStrategiesTest);
 };
 
@@ -1785,6 +1834,12 @@ const std::string ServiceWorkerV8CacheStrategiesTest::kScriptUrl =
 // V8ScriptRunner::setCacheTimeStamp() stores 12 byte data (tag + timestamp).
 const int ServiceWorkerV8CacheStrategiesTest::kV8CacheTimeStampDataSize =
     sizeof(unsigned) + sizeof(double);
+
+IN_PROC_BROWSER_TEST_F(ServiceWorkerV8CacheStrategiesTest,
+                       V8CacheOnCacheStorage) {
+  // The strategy is "aggressive" on default.
+  CheckStrategyIsAggressive();
+}
 
 class ServiceWorkerV8CacheStrategiesNoneTest
     : public ServiceWorkerV8CacheStrategiesTest {
@@ -1802,16 +1857,7 @@ class ServiceWorkerV8CacheStrategiesNoneTest
 
 IN_PROC_BROWSER_TEST_F(ServiceWorkerV8CacheStrategiesNoneTest,
                        V8CacheOnCacheStorage) {
-  RegisterAndActivateServiceWorker();
-
-  NavigateToTestPage();
-  EXPECT_EQ(0, GetSideDataSize());
-
-  NavigateToTestPage();
-  EXPECT_EQ(0, GetSideDataSize());
-
-  NavigateToTestPage();
-  EXPECT_EQ(0, GetSideDataSize());
+  CheckStrategyIsNone();
 }
 
 class ServiceWorkerV8CacheStrategiesNormalTest
@@ -1830,21 +1876,7 @@ class ServiceWorkerV8CacheStrategiesNormalTest
 
 IN_PROC_BROWSER_TEST_F(ServiceWorkerV8CacheStrategiesNormalTest,
                        V8CacheOnCacheStorage) {
-  RegisterAndActivateServiceWorker();
-
-  NavigateToTestPage();
-  // fetch_event_response_via_cache.js returns |cloned_response| for the first
-  // load. So the V8 code cache should not be stored to the CacheStorage.
-  EXPECT_EQ(0, GetSideDataSize());
-
-  NavigateToTestPage();
-  // V8ScriptRunner::setCacheTimeStamp() stores 12 byte data (tag + timestamp).
-  EXPECT_EQ(kV8CacheTimeStampDataSize, GetSideDataSize());
-
-  NavigateToTestPage();
-  // The V8 code cache must be stored to the CacheStorage which must be bigger
-  // than 12 byte.
-  EXPECT_GT(GetSideDataSize(), kV8CacheTimeStampDataSize);
+  CheckStrategyIsNormal();
 }
 
 class ServiceWorkerV8CacheStrategiesAggressiveTest
@@ -1863,20 +1895,7 @@ class ServiceWorkerV8CacheStrategiesAggressiveTest
 
 IN_PROC_BROWSER_TEST_F(ServiceWorkerV8CacheStrategiesAggressiveTest,
                        V8CacheOnCacheStorage) {
-  RegisterAndActivateServiceWorker();
-
-  NavigateToTestPage();
-  // fetch_event_response_via_cache.js returns |cloned_response| for the first
-  // load. So the V8 code cache should not be stored to the CacheStorage.
-  EXPECT_EQ(0, GetSideDataSize());
-
-  NavigateToTestPage();
-  // The V8 code cache must be stored to the CacheStorage which must be bigger
-  // than 12 byte.
-  EXPECT_GT(GetSideDataSize(), kV8CacheTimeStampDataSize);
-
-  NavigateToTestPage();
-  EXPECT_GT(GetSideDataSize(), kV8CacheTimeStampDataSize);
+  CheckStrategyIsAggressive();
 }
 
 }  // namespace content

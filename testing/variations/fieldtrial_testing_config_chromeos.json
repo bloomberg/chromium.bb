@@ -260,6 +260,9 @@
     ],
     "V8CacheStrategiesForCacheStorage": [
         {
+            "group_name": "default"
+        },
+        {
             "group_name": "none"
         },
         {
