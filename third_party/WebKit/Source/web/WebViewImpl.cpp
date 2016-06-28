@@ -119,6 +119,7 @@
 #include "platform/graphics/ImageBuffer.h"
 #include "platform/graphics/gpu/DrawingBuffer.h"
 #include "platform/graphics/paint/DrawingRecorder.h"
+#include "platform/image-decoders/ImageDecoder.h"
 #include "platform/scroll/ScrollbarTheme.h"
 #include "platform/weborigin/SchemeRegistry.h"
 #include "public/platform/Platform.h"
@@ -3277,6 +3278,7 @@ void WebViewImpl::setDeviceColorProfile(const WebVector<char>& colorProfile)
 
     Vector<char> deviceProfile;
     deviceProfile.append(colorProfile.data(), colorProfile.size());
+    ImageDecoder::setTargetColorProfile(deviceProfile);
 
     page()->setDeviceColorProfile(deviceProfile);
 }

@@ -277,15 +277,6 @@ size_t ImagePlanes::rowBytes(int i) const
     return m_rowBytes[i];
 }
 
-bool ImageDecoder::hasColorProfile() const
-{
-#if USE(QCMSLIB)
-    return m_sourceToOutputDeviceColorTransform.get();
-#else
-    return false;
-#endif
-}
-
 #if USE(QCMSLIB)
 namespace {
 
@@ -306,12 +297,41 @@ bool inputDeviceColorProfile(const char* profileData, unsigned profileLength)
 }
 
 // The output device color profile is global and shared across multiple threads.
-SpinLock gOutputDeviceProfileLock;
-qcms_profile* gOutputDeviceProfile = nullptr;
+SpinLock gTargetColorProfileLock;
+qcms_profile* gTargetColorProfile = nullptr;
 
 } // namespace
 
 // static
+void ImageDecoder::setTargetColorProfile(const WebVector<char>& profile)
+{
+    if (profile.isEmpty())
+        return;
+
+    // Take a lock around initializing and accessing the global device color profile.
+    SpinLock::Guard guard(gTargetColorProfileLock);
+
+    // Layout tests expect that only the first call will take effect.
+    if (gTargetColorProfile)
+        return;
+
+    // FIXME: Add optional ICCv4 support and support for multiple monitors.
+    gTargetColorProfile = qcms_profile_from_memory(profile.data(), profile.size());
+
+    if (gTargetColorProfile && qcms_profile_is_bogus(gTargetColorProfile)) {
+        qcms_profile_release(gTargetColorProfile);
+        gTargetColorProfile = nullptr;
+        return;
+    }
+
+    qcms_profile_precache_output_transform(gTargetColorProfile);
+}
+
+bool ImageDecoder::hasColorProfile() const
+{
+    return m_sourceToOutputDeviceColorTransform.get();
+}
+
 void ImageDecoder::setColorProfileAndTransform(const char* iccData, unsigned iccLength, bool hasAlpha, bool useSRGB)
 {
     m_sourceToOutputDeviceColorTransform.reset();
@@ -337,35 +357,32 @@ void ImageDecoder::setColorProfileAndTransform(const char* iccData, unsigned icc
     ASSERT(rgbData == qcms_profile_get_color_space(inputProfile.get()));
 
     // Take a lock around initializing and accessing the global device color profile.
-    SpinLock::Guard guard(gOutputDeviceProfileLock);
+    SpinLock::Guard guard(gTargetColorProfileLock);
 
-    // Initialize the output device profile.
-    if (!gOutputDeviceProfile) {
-        // FIXME: Add optional ICCv4 support and support for multiple monitors.
-        WebVector<char> profile;
-        Platform::current()->screenColorProfile(&profile);
-
-        if (!profile.isEmpty())
-            gOutputDeviceProfile = qcms_profile_from_memory(profile.data(), profile.size());
-
-        if (gOutputDeviceProfile && qcms_profile_is_bogus(gOutputDeviceProfile)) {
-            qcms_profile_release(gOutputDeviceProfile);
-            gOutputDeviceProfile = nullptr;
-        }
-
-        if (!gOutputDeviceProfile)
-            gOutputDeviceProfile = qcms_profile_sRGB();
-
-        qcms_profile_precache_output_transform(gOutputDeviceProfile);
+    // Initialize the output device profile to sRGB if it has not yet been initialized.
+    if (!gTargetColorProfile) {
+        gTargetColorProfile = qcms_profile_sRGB();
+        qcms_profile_precache_output_transform(gTargetColorProfile);
     }
 
-    if (qcms_profile_match(inputProfile.get(), gOutputDeviceProfile))
+    if (qcms_profile_match(inputProfile.get(), gTargetColorProfile))
         return;
 
     qcms_data_type dataFormat = hasAlpha ? QCMS_DATA_RGBA_8 : QCMS_DATA_RGB_8;
 
     // FIXME: Don't force perceptual intent if the image profile contains an intent.
-    m_sourceToOutputDeviceColorTransform.reset(qcms_transform_create(inputProfile.get(), dataFormat, gOutputDeviceProfile, QCMS_DATA_RGBA_8, QCMS_INTENT_PERCEPTUAL));
+    m_sourceToOutputDeviceColorTransform.reset(qcms_transform_create(inputProfile.get(), dataFormat, gTargetColorProfile, QCMS_DATA_RGBA_8, QCMS_INTENT_PERCEPTUAL));
+}
+
+#else // USE(QCMSLIB)
+
+void ImageDecoder::setTargetColorProfile(const WebVector<char>&)
+{
+}
+
+bool ImageDecoder::hasColorProfile() const
+{
+    return false;
 }
 
 #endif // USE(QCMSLIB)

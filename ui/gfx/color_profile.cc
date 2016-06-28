@@ -12,6 +12,12 @@ static const size_t kMinProfileLength = 128;
 static const size_t kMaxProfileLength = 4 * 1024 * 1024;
 }
 
+ColorProfile::ColorProfile(const std::vector<char>& profile)
+    : profile_(profile) {
+  if (!IsValidProfileLength(profile_.size()))
+    profile_.clear();
+}
+
 ColorProfile::ColorProfile() = default;
 ColorProfile::ColorProfile(ColorProfile&& other) = default;
 ColorProfile::ColorProfile(const ColorProfile& other) = default;

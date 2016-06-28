@@ -220,8 +220,6 @@ bool RenderMessageFilter::OnMessageReceived(const IPC::Message& message) {
 #elif defined(OS_WIN)
     IPC_MESSAGE_HANDLER(RenderProcessHostMsg_PreCacheFontCharacters,
                         OnPreCacheFontCharacters)
-    IPC_MESSAGE_HANDLER(RenderProcessHostMsg_GetMonitorColorProfile,
-                        OnGetMonitorColorProfile)
 #endif
     IPC_MESSAGE_HANDLER(ViewHostMsg_MediaLogEvents, OnMediaLogEvents)
     IPC_MESSAGE_UNHANDLED(handled = false)
@@ -243,11 +241,6 @@ void RenderMessageFilter::OverrideThreadForMessage(const IPC::Message& message,
 
 base::TaskRunner* RenderMessageFilter::OverrideTaskRunnerForMessage(
     const IPC::Message& message) {
-#if defined(OS_WIN)
-  // Windows monitor profile must be read from a file.
-  if (message.type() == RenderProcessHostMsg_GetMonitorColorProfile::ID)
-    return BrowserThread::GetBlockingPool();
-#endif
   // Always query audio device parameters on the audio thread.
   if (message.type() == ViewHostMsg_GetAudioHardwareConfig::ID)
     return audio_manager_->GetTaskRunner();
@@ -386,14 +379,6 @@ void RenderMessageFilter::OnPreCacheFontCharacters(
     DeleteEnhMetaFile(metafile);
 }
 
-void RenderMessageFilter::OnGetMonitorColorProfile(std::vector<char>* profile) {
-  // TODO(ccameron): Remove this synchronous IPC and push the color profile
-  // to the renderer. https://crbug.com/622133
-  DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::IO));
-  if (gfx::ColorProfile::CachedProfilesNeedUpdate())
-    gfx::ColorProfile::UpdateCachedProfilesOnBackgroundThread();
-  *profile = gfx::ColorProfile::GetFromBestMonitor().profile();
-}
 
 #endif  // OS_*
 

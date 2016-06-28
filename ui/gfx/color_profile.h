@@ -5,20 +5,17 @@
 #ifndef UI_GFX_COLOR_PROFILE_H_
 #define UI_GFX_COLOR_PROFILE_H_
 
-#include <stddef.h>
-
 #include <vector>
 
 #include "base/macros.h"
 #include "build/build_config.h"
-#include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/gfx_export.h"
-#include "ui/gfx/native_widget_types.h"
 
 namespace gfx {
 
 class GFX_EXPORT ColorProfile {
  public:
+  ColorProfile(const std::vector<char>& profile);
   ColorProfile();
   ColorProfile(ColorProfile&& other);
   ColorProfile(const ColorProfile& other);

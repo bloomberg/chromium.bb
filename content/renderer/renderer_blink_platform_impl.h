@@ -133,7 +133,6 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
   void getPluginList(bool refresh,
                      blink::WebPluginListBuilder* builder) override;
   blink::WebPublicSuffixList* publicSuffixList() override;
-  void screenColorProfile(blink::WebVector<char>* to_profile) override;
   blink::WebScrollbarBehavior* scrollbarBehavior() override;
   blink::WebIDBFactory* idbFactory() override;
   blink::WebServiceWorkerCacheStorage* cacheStorage(

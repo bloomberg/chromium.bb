@@ -369,12 +369,6 @@ public:
     // Returns true on success.
     virtual bool loadAudioResource(WebAudioBus* destinationBus, const char* audioFileData, size_t dataSize) { return false; }
 
-    // Screen -------------------------------------------------------------
-
-    // Supplies the system monitor color profile.
-    virtual void screenColorProfile(WebVector<char>* profile) { }
-
-
     // Scrollbar ----------------------------------------------------------
 
     // Must return non-null.

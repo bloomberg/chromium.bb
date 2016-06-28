@@ -723,6 +723,7 @@ void RenderViewImpl::Initialize(const ViewMsg_New_Params& params,
       command_line.HasSwitch(switches::kRootLayerScrolls));
   webview()->setShowFPSCounter(
       command_line.HasSwitch(cc::switches::kShowFPSCounter));
+  webview()->setDeviceColorProfile(params.image_decode_color_profile);
 
   ApplyWebPreferencesInternal(webkit_preferences_, webview(), compositor_deps_);
 

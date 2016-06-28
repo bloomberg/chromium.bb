@@ -489,6 +489,9 @@ IPC_STRUCT_BEGIN(ViewMsg_New_Params)
 
   // The page zoom level.
   IPC_STRUCT_MEMBER(double, page_zoom_level)
+
+  // The color profile to use for image decode.
+  IPC_STRUCT_MEMBER(std::vector<char>, image_decode_color_profile)
 IPC_STRUCT_END()
 
 #if defined(OS_MACOSX)

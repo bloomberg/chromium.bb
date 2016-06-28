@@ -221,6 +221,7 @@ public:
     void setIgnoreGammaAndColorProfile(bool flag) { m_ignoreGammaAndColorProfile = flag; }
     bool ignoresGammaAndColorProfile() const { return m_ignoreGammaAndColorProfile; }
 
+    static void setTargetColorProfile(const WebVector<char>&);
     bool hasColorProfile() const;
 
 #if USE(QCMSLIB)

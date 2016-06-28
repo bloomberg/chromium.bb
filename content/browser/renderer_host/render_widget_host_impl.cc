@@ -76,6 +76,7 @@
 #include "third_party/WebKit/public/web/WebCompositionUnderline.h"
 #include "ui/events/event.h"
 #include "ui/events/keycodes/keyboard_codes.h"
+#include "ui/gfx/color_profile.h"
 #include "ui/gfx/geometry/size_conversions.h"
 #include "ui/gfx/geometry/vector2d_conversions.h"
 #include "ui/gfx/skbitmap_operations.h"
@@ -216,6 +217,16 @@ RenderWidgetHostImpl::RenderWidgetHostImpl(RenderWidgetHostDelegate* delegate,
       weak_factory_(this) {
   CHECK(delegate_);
   CHECK_NE(MSG_ROUTING_NONE, routing_id_);
+
+#if defined(OS_WIN)
+  // Update the display color profile cache so that it is likely to be up to
+  // date when the renderer process requests the color profile.
+  if (gfx::ColorProfile::CachedProfilesNeedUpdate()) {
+    BrowserThread::PostBlockingPoolTask(
+        FROM_HERE,
+        base::Bind(&gfx::ColorProfile::UpdateCachedProfilesOnBackgroundThread));
+  }
+#endif
 
   std::pair<RoutingIDWidgetMap::iterator, bool> result =
       g_routing_id_widget_map.Get().insert(std::make_pair(

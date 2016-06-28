@@ -40,7 +40,6 @@
 #endif
 
 #if defined(OS_MACOSX)
-#include <IOSurface/IOSurface.h>
 #include "content/common/mac/font_loader.h"
 #endif
 
@@ -149,11 +148,6 @@ class CONTENT_EXPORT RenderMessageFilter : public BrowserMessageFilter {
 
   void OnGetAudioHardwareConfig(media::AudioParameters* input_params,
                                 media::AudioParameters* output_params);
-
-#if defined(OS_WIN)
-  // Used to look up the monitor color profile.
-  void OnGetMonitorColorProfile(std::vector<char>* profile);
-#endif
 
   // Message handlers called on the browser IO thread:
   void OnEstablishGpuChannel(CauseForGpuLaunch, IPC::Message* reply);

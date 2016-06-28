@@ -843,27 +843,6 @@ blink::WebString RendererBlinkPlatformImpl::signedPublicKeyAndChallengeString(
 
 //------------------------------------------------------------------------------
 
-void RendererBlinkPlatformImpl::screenColorProfile(
-    WebVector<char>* to_profile) {
-#if defined(OS_WIN)
-  // On Windows screen color profile is only available in the browser.
-  std::vector<char> profile;
-  // This Send() can be called from any impl-side thread. Use a thread
-  // safe send to avoid crashing trying to access RenderThread::Get(),
-  // which is not accessible from arbitrary threads.
-  thread_safe_sender_->Send(
-      new RenderProcessHostMsg_GetMonitorColorProfile(&profile));
-  *to_profile = profile;
-#else
-  // On other platforms, the primary monitor color profile can be read
-  // directly.
-  gfx::ColorProfile profile = gfx::ColorProfile::GetFromBestMonitor();
-  *to_profile = profile.profile();
-#endif
-}
-
-//------------------------------------------------------------------------------
-
 blink::WebScrollbarBehavior* RendererBlinkPlatformImpl::scrollbarBehavior() {
   return web_scrollbar_behavior_.get();
 }

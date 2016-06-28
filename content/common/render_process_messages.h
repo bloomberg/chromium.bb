@@ -84,8 +84,4 @@ IPC_SYNC_MESSAGE_CONTROL1_3(RenderProcessHostMsg_LoadFont,
 IPC_SYNC_MESSAGE_CONTROL2_0(RenderProcessHostMsg_PreCacheFontCharacters,
                             LOGFONT /* font_data */,
                             base::string16 /* characters */)
-
-// Asks the browser for the user's monitor profile.
-IPC_SYNC_MESSAGE_CONTROL0_1(RenderProcessHostMsg_GetMonitorColorProfile,
-                            std::vector<char> /* profile */)
 #endif
