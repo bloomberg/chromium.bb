@@ -506,7 +506,8 @@ DownloadItemViewMd::CreateInkDropHighlight() const {
 
   gfx::Size size = GetPreferredSize();
   return base::WrapUnique(new views::InkDropHighlight(
-      size, kInkDropSmallCornerRadius, gfx::Rect(size).CenterPoint(),
+      size, kInkDropSmallCornerRadius,
+      gfx::RectF(gfx::SizeF(size)).CenterPoint(),
       color_utils::DeriveDefaultIconColor(GetTextColor())));
 }
 

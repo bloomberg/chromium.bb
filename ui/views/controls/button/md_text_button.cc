@@ -189,7 +189,7 @@ std::unique_ptr<views::InkDropHighlight> MdTextButton::CreateInkDropHighlight()
                                      2 * kSkiaBlurRadius,
                                      SkColorSetA(SK_ColorBLACK, 0x3D)));
   return base::WrapUnique(new InkDropHighlight(
-      GetLocalBounds().CenterPoint(),
+      gfx::RectF(GetLocalBounds()).CenterPoint(),
       base::WrapUnique(new BorderShadowLayerDelegate(
           shadows, GetLocalBounds(), kInkDropSmallCornerRadius))));
 }

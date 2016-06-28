@@ -54,7 +54,7 @@ class TestInkDropHighlight : public InkDropHighlight {
  public:
   TestInkDropHighlight(const gfx::Size& size,
                        int corner_radius,
-                       const gfx::Point& center_point,
+                       const gfx::PointF& center_point,
                        SkColor color)
       : InkDropHighlight(size, corner_radius, center_point, color) {}
 
@@ -102,8 +102,8 @@ std::unique_ptr<InkDropHighlight> TestInkDropHost::CreateInkDropHighlight()
     const {
   std::unique_ptr<InkDropHighlight> highlight;
   if (should_show_highlight_) {
-    highlight.reset(new TestInkDropHighlight(gfx::Size(10, 10), 4, gfx::Point(),
-                                             SK_ColorBLACK));
+    highlight.reset(new TestInkDropHighlight(gfx::Size(10, 10), 4,
+                                             gfx::PointF(), SK_ColorBLACK));
     if (disable_timers_for_test_)
       highlight->GetTestApi()->SetDisableAnimationTimers(true);
   }

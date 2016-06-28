@@ -40,7 +40,7 @@ class InkDropHighlightTest : public testing::Test {
 InkDropHighlightTest::InkDropHighlightTest()
     : ink_drop_highlight_(new InkDropHighlight(gfx::Size(10, 10),
                                                3,
-                                               gfx::Point(),
+                                               gfx::PointF(),
                                                SK_ColorBLACK)),
       test_api_(ink_drop_highlight_.get()) {
   ink_drop_highlight_->set_observer(&observer_);

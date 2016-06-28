@@ -51,7 +51,7 @@ class VIEWS_EXPORT InkDropHostView : public View, public InkDropHost {
 
   // Returns the default InkDropHighlight centered on |center_point|.
   std::unique_ptr<InkDropHighlight> CreateDefaultInkDropHighlight(
-      const gfx::Point& center_point) const;
+      const gfx::PointF& center_point) const;
 
   // Returns the point of the |last_ripple_triggering_event_| if it was a
   // LocatedEvent, otherwise the center point of the local bounds is returned.

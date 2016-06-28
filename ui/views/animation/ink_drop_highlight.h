@@ -42,14 +42,14 @@ class VIEWS_EXPORT InkDropHighlight {
   enum AnimationType { FADE_IN, FADE_OUT };
 
   // Creates a highlight with a specified painter.
-  InkDropHighlight(const gfx::Point& center_point,
+  InkDropHighlight(const gfx::PointF& center_point,
                    std::unique_ptr<BasePaintedLayerDelegate> layer_delegate);
 
   // Creates a highlight that paints a partially transparent roundrect with
   // color |color|.
   InkDropHighlight(const gfx::Size& size,
                    int corner_radius,
-                   const gfx::Point& center_point,
+                   const gfx::PointF& center_point,
                    SkColor color);
   virtual ~InkDropHighlight();
 

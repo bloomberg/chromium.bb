@@ -35,7 +35,7 @@ std::string ToString(InkDropHighlight::AnimationType animation_type) {
 }
 
 InkDropHighlight::InkDropHighlight(
-    const gfx::Point& center_point,
+    const gfx::PointF& center_point,
     std::unique_ptr<BasePaintedLayerDelegate> layer_delegate)
     : center_point_(center_point),
       visible_opacity_(1.f),
@@ -56,7 +56,7 @@ InkDropHighlight::InkDropHighlight(
 
 InkDropHighlight::InkDropHighlight(const gfx::Size& size,
                                    int corner_radius,
-                                   const gfx::Point& center_point,
+                                   const gfx::PointF& center_point,
                                    SkColor color)
     : InkDropHighlight(
           center_point,

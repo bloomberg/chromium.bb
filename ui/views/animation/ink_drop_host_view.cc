@@ -145,7 +145,8 @@ std::unique_ptr<InkDropRipple> InkDropHostView::CreateInkDropRipple() const {
 
 std::unique_ptr<InkDropHighlight> InkDropHostView::CreateInkDropHighlight()
     const {
-  return CreateDefaultInkDropHighlight(GetLocalBounds().CenterPoint());
+  return CreateDefaultInkDropHighlight(
+      gfx::RectF(GetLocalBounds()).CenterPoint());
 }
 
 std::unique_ptr<InkDropRipple> InkDropHostView::CreateDefaultInkDropRipple(
@@ -159,7 +160,7 @@ std::unique_ptr<InkDropRipple> InkDropHostView::CreateDefaultInkDropRipple(
 
 std::unique_ptr<InkDropHighlight>
 InkDropHostView::CreateDefaultInkDropHighlight(
-    const gfx::Point& center_point) const {
+    const gfx::PointF& center_point) const {
   std::unique_ptr<InkDropHighlight> highlight(
       new InkDropHighlight(ink_drop_size_, kInkDropSmallCornerRadius,
                            center_point, GetInkDropBaseColor()));

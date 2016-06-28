@@ -453,10 +453,11 @@ std::unique_ptr<views::InkDropHighlight> LabelButton::CreateInkDropHighlight()
     return nullptr;
   return GetText().empty()
              ? CreateDefaultInkDropHighlight(
-                   image()->GetMirroredBounds().CenterPoint())
+                   gfx::RectF(image()->GetMirroredBounds()).CenterPoint())
              : base::WrapUnique(new views::InkDropHighlight(
                    size(), kInkDropSmallCornerRadius,
-                   GetLocalBounds().CenterPoint(), GetInkDropBaseColor()));
+                   gfx::RectF(GetLocalBounds()).CenterPoint(),
+                   GetInkDropBaseColor()));
 }
 
 void LabelButton::StateChanged() {

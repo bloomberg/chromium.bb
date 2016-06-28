@@ -253,7 +253,8 @@ class BookmarkButtonBase : public views::LabelButton {
 
     const gfx::Rect bounds = CalculateInkDropBounds(size());
     return base::WrapUnique(new views::InkDropHighlight(
-        bounds.size(), 0, bounds.CenterPoint(), GetInkDropBaseColor()));
+        bounds.size(), 0, gfx::RectF(bounds).CenterPoint(),
+        GetInkDropBaseColor()));
   }
 
   SkColor GetInkDropBaseColor() const override {
@@ -352,7 +353,8 @@ class BookmarkMenuButtonBase : public views::MenuButton {
 
     const gfx::Rect bounds = CalculateInkDropBounds(size());
     return base::WrapUnique(new views::InkDropHighlight(
-        bounds.size(), 0, bounds.CenterPoint(), GetInkDropBaseColor()));
+        bounds.size(), 0, gfx::RectF(bounds).CenterPoint(),
+        GetInkDropBaseColor()));
   }
 
   SkColor GetInkDropBaseColor() const override {
