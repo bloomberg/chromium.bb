@@ -51,6 +51,7 @@ CONFIG_TYPE_DUMP_ORDER = (
     'chrome-pfq-informational',
     'chrome-pfq-informational-gn',
     'android-pfq',
+    'config-updater',
     'pre-flight-branch',
     CONFIG_TYPE_FACTORY,
     CONFIG_TYPE_FIRMWARE,

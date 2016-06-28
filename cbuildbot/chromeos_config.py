@@ -1192,6 +1192,16 @@ def GetConfig():
       push_overlays=constants.BOTH_OVERLAYS,
   )
 
+  site_config.Add(
+      'config-updater',
+      no_hwtest_builder,
+      important=True,
+      vm_tests=[],
+      description='Build Config Updater',
+      build_type=constants.CONFIG_UPDATER_TYPE,
+      boards=[],
+  )
+
   # A base config for each board.
   _base_configs = dict()
 

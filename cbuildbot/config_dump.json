@@ -6001,6 +6001,14 @@
             "gn"
         ]
     },
+    "config-updater": {
+        "boards": [],
+        "build_type": "config",
+        "description": "Build Config Updater",
+        "hw_tests_override": [],
+        "important": true,
+        "vm_tests": []
+    },
     "cranky-chrome-pfq": {
         "_template": "chrome-pfq",
         "boards": [
