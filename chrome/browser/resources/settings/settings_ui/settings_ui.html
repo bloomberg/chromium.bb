@@ -46,6 +46,9 @@
 
       :host {
         @apply(--layout-fit);
+        --paper-header-panel-waterfall-container: {
+          overflow-x: auto;  /* Undo paper-header-panel default of 'hidden'. */
+        };
         -webkit-user-select: none;
         background-color: var(--settings-background-color);
         display: flex;
