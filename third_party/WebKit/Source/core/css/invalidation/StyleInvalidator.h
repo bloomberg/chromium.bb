@@ -12,6 +12,7 @@
 
 namespace blink {
 
+class ContainerNode;
 class Document;
 class Element;
 class HTMLSlotElement;
@@ -26,7 +27,8 @@ public:
     ~StyleInvalidator();
     void invalidate(Document&);
     void scheduleInvalidationSetsForElement(const InvalidationLists&, Element&);
-    void clearInvalidation(Element&);
+    void scheduleSiblingInvalidationsAsDescendants(const InvalidationLists&, ContainerNode& schedulingParent);
+    void clearInvalidation(ContainerNode&);
 
     DECLARE_TRACE();
 
@@ -40,7 +42,7 @@ private:
             , m_invalidatesSlotted(false)
         { }
 
-        void pushInvalidationSet(const DescendantInvalidationSet&);
+        void pushInvalidationSet(const InvalidationSet&);
         bool matchesCurrentInvalidationSets(Element&) const;
         bool matchesCurrentInvalidationSetsAsSlotted(Element&) const;
 
@@ -53,7 +55,7 @@ private:
         bool insertionPointCrossing() const { return m_insertionPointCrossing; }
         bool invalidatesSlotted() const { return m_invalidatesSlotted; }
 
-        using DescendantInvalidationSets = Vector<const DescendantInvalidationSet*, 16>;
+        using DescendantInvalidationSets = Vector<const InvalidationSet*, 16>;
         DescendantInvalidationSets m_invalidationSets;
         bool m_invalidateCustomPseudo;
         bool m_wholeSubtreeInvalid;
@@ -96,7 +98,7 @@ private:
     bool invalidateChildren(Element&, RecursionData&);
     void invalidateSlotDistributedElements(HTMLSlotElement&, const RecursionData&) const;
     bool checkInvalidationSetsAgainstElement(Element&, RecursionData&, SiblingData&);
-    void pushInvalidationSetsForElement(Element&, RecursionData&, SiblingData&);
+    void pushInvalidationSetsForContainerNode(ContainerNode&, RecursionData&, SiblingData&);
 
     class RecursionCheckpoint {
     public:
@@ -129,9 +131,9 @@ private:
         RecursionData* m_data;
     };
 
-    using PendingInvalidationMap = HeapHashMap<Member<Element>, std::unique_ptr<PendingInvalidations>>;
+    using PendingInvalidationMap = HeapHashMap<Member<ContainerNode>, std::unique_ptr<PendingInvalidations>>;
 
-    PendingInvalidations& ensurePendingInvalidations(Element&);
+    PendingInvalidations& ensurePendingInvalidations(ContainerNode&);
 
     PendingInvalidationMap m_pendingInvalidationMap;
 };

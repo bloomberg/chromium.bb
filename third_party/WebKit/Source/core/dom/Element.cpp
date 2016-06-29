@@ -2097,7 +2097,7 @@ void Element::childrenChanged(const ChildrenChange& change)
 
     checkForEmptyStyleChange();
     if (!change.byParser && change.isChildElementChange())
-        checkForSiblingStyleChanges(change.type == ElementRemoved ? SiblingElementRemoved : SiblingElementInserted, change.siblingBeforeChange, change.siblingAfterChange);
+        checkForSiblingStyleChanges(change.type == ElementRemoved ? SiblingElementRemoved : SiblingElementInserted, change.siblingChanged, change.siblingBeforeChange, change.siblingAfterChange);
 
     // TODO(hayato): Confirm that we can skip this if a shadow tree is v1.
     if (ElementShadow* shadow = this->shadow())
@@ -2108,7 +2108,7 @@ void Element::finishParsingChildren()
 {
     setIsFinishedParsingChildren(true);
     checkForEmptyStyleChange();
-    checkForSiblingStyleChanges(FinishedParsingChildren, lastChild(), nullptr);
+    checkForSiblingStyleChanges(FinishedParsingChildren, nullptr, lastChild(), nullptr);
 }
 
 #ifndef NDEBUG

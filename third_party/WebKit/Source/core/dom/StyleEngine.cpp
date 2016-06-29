@@ -37,6 +37,7 @@
 #include "core/css/resolver/ScopedStyleResolver.h"
 #include "core/dom/DocumentStyleSheetCollector.h"
 #include "core/dom/Element.h"
+#include "core/dom/ElementTraversal.h"
 #include "core/dom/ProcessingInstruction.h"
 #include "core/dom/ShadowTreeStyleSheetCollection.h"
 #include "core/dom/StyleChangeReason.h"
@@ -690,6 +691,57 @@ void StyleEngine::pseudoStateChangedForElement(CSSSelector::PseudoType pseudoTyp
     InvalidationLists invalidationLists;
     ensureResolver().ensureUpdatedRuleFeatureSet().collectInvalidationSetsForPseudoClass(invalidationLists, element, pseudoType);
     m_styleInvalidator.scheduleInvalidationSetsForElement(invalidationLists, element);
+}
+
+void StyleEngine::scheduleSiblingInvalidationsForElement(Element& element, ContainerNode& schedulingParent)
+{
+    InvalidationLists invalidationLists;
+
+    RuleFeatureSet& ruleFeatureSet = ensureResolver().ensureUpdatedRuleFeatureSet();
+
+    if (element.hasID())
+        ruleFeatureSet.collectSiblingInvalidationSetForId(invalidationLists, element, element.idForStyleResolution());
+
+    if (element.hasClass()) {
+        const SpaceSplitString& classNames = element.classNames();
+        for (size_t i = 0; i < classNames.size(); i++)
+            ruleFeatureSet.collectSiblingInvalidationSetForClass(invalidationLists, element, classNames[i]);
+    }
+
+    for (const Attribute& attribute : element.attributes())
+        ruleFeatureSet.collectSiblingInvalidationSetForAttribute(invalidationLists, element, attribute.name());
+
+    ruleFeatureSet.collectUniversalSiblingInvalidationSet(invalidationLists);
+
+    m_styleInvalidator.scheduleSiblingInvalidationsAsDescendants(invalidationLists, schedulingParent);
+}
+
+void StyleEngine::scheduleInvalidationsForInsertedSibling(Element* beforeElement, Element& insertedElement)
+{
+    unsigned affectedSiblings = insertedElement.parentNode()->childrenAffectedByIndirectAdjacentRules() ? UINT_MAX : m_maxDirectAdjacentSelectors;
+
+    ContainerNode* schedulingParent = insertedElement.parentElementOrShadowRoot();
+    if (!schedulingParent)
+        return;
+
+    scheduleSiblingInvalidationsForElement(insertedElement, *schedulingParent);
+
+    for (unsigned i = 0; beforeElement && i < affectedSiblings; i++, beforeElement = ElementTraversal::previousSibling(*beforeElement))
+        scheduleSiblingInvalidationsForElement(*beforeElement, *schedulingParent);
+}
+
+void StyleEngine::scheduleInvalidationsForRemovedSibling(Element* beforeElement, Element& removedElement, Element& afterElement)
+{
+    unsigned affectedSiblings = afterElement.parentNode()->childrenAffectedByIndirectAdjacentRules() ? UINT_MAX : m_maxDirectAdjacentSelectors;
+
+    ContainerNode* schedulingParent = afterElement.parentElementOrShadowRoot();
+    if (!schedulingParent)
+        return;
+
+    scheduleSiblingInvalidationsForElement(removedElement, *schedulingParent);
+
+    for (unsigned i = 1; beforeElement && i < affectedSiblings; i++, beforeElement = ElementTraversal::previousSibling(*beforeElement))
+        scheduleSiblingInvalidationsForElement(*beforeElement, *schedulingParent);
 }
 
 void StyleEngine::setStatsEnabled(bool enabled)

@@ -241,11 +241,11 @@ const char InspectorStyleInvalidatorInvalidateEvent::InvalidationSetMatchedTagNa
 const char InspectorStyleInvalidatorInvalidateEvent::PreventStyleSharingForParent[] = "Prevent style sharing for parent";
 
 namespace InspectorStyleInvalidatorInvalidateEvent {
-std::unique_ptr<TracedValue> fillCommonPart(Element& element, const char* reason)
+std::unique_ptr<TracedValue> fillCommonPart(ContainerNode& node, const char* reason)
 {
     std::unique_ptr<TracedValue> value = TracedValue::create();
-    value->setString("frame", toHexString(element.document().frame()));
-    setNodeInfo(value.get(), &element, "nodeId", "nodeName");
+    value->setString("frame", toHexString(node.document().frame()));
+    setNodeInfo(value.get(), &node, "nodeId", "nodeName");
     value->setString("reason", reason);
     return value;
 }
@@ -266,9 +266,9 @@ std::unique_ptr<TracedValue> InspectorStyleInvalidatorInvalidateEvent::selectorP
     return value;
 }
 
-std::unique_ptr<TracedValue> InspectorStyleInvalidatorInvalidateEvent::invalidationList(Element& element, const Vector<RefPtr<InvalidationSet>>& invalidationList)
+std::unique_ptr<TracedValue> InspectorStyleInvalidatorInvalidateEvent::invalidationList(ContainerNode& node, const Vector<RefPtr<InvalidationSet>>& invalidationList)
 {
-    std::unique_ptr<TracedValue> value = fillCommonPart(element, ElementHasPendingInvalidationList);
+    std::unique_ptr<TracedValue> value = fillCommonPart(node, ElementHasPendingInvalidationList);
     value->beginArray("invalidationList");
     for (const auto& invalidationSet : invalidationList)
         invalidationSet->toTracedValue(value.get());

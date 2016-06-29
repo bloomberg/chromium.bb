@@ -169,7 +169,9 @@ public:
     void attributeChangedForElement(const QualifiedName& attributeName, Element&);
     void idChangedForElement(const AtomicString& oldId, const AtomicString& newId, Element&);
     void pseudoStateChangedForElement(CSSSelector::PseudoType, Element&);
-
+    void scheduleSiblingInvalidationsForElement(Element&, ContainerNode& schedulingParent);
+    void scheduleInvalidationsForInsertedSibling(Element* beforeElement, Element& insertedElement);
+    void scheduleInvalidationsForRemovedSibling(Element* beforeElement, Element& removedElement, Element& afterElement);
     unsigned styleForElementCount() const { return m_styleForElementCount; }
     void incStyleForElementCount() { m_styleForElementCount++; }
 

@@ -98,6 +98,11 @@ public:
     void collectInvalidationSetsForAttribute(InvalidationLists&, Element&, const QualifiedName& attributeName) const;
     void collectInvalidationSetsForPseudoClass(InvalidationLists&, Element&, CSSSelector::PseudoType) const;
 
+    void collectSiblingInvalidationSetForClass(InvalidationLists&, Element&, const AtomicString& className) const;
+    void collectSiblingInvalidationSetForId(InvalidationLists&, Element&, const AtomicString& id) const;
+    void collectSiblingInvalidationSetForAttribute(InvalidationLists&, Element&, const QualifiedName& attributeName) const;
+    void collectUniversalSiblingInvalidationSet(InvalidationLists&) const;
+
     bool hasIdsInSelectors() const
     {
         return m_idInvalidationSets.size() > 0;
@@ -135,6 +140,7 @@ private:
     InvalidationSet& ensureAttributeInvalidationSet(const AtomicString& attributeName, InvalidationType);
     InvalidationSet& ensureIdInvalidationSet(const AtomicString& id, InvalidationType);
     InvalidationSet& ensurePseudoInvalidationSet(CSSSelector::PseudoType, InvalidationType);
+    SiblingInvalidationSet& ensureUniversalSiblingInvalidationSet();
 
     void updateInvalidationSets(const RuleData&);
     void updateInvalidationSetsForContentAttribute(const RuleData&);
@@ -166,6 +172,7 @@ private:
 
     void addFeaturesToInvalidationSet(InvalidationSet&, const InvalidationSetFeatures&);
     void addFeaturesToInvalidationSets(const CSSSelector*, InvalidationSetFeatures* siblingFeatures, InvalidationSetFeatures& descendantFeatures);
+    void addFeaturesToUniversalSiblingInvalidationSet(const InvalidationSetFeatures& siblingFeatures, const InvalidationSetFeatures& descendantFeatures);
 
     void addClassToInvalidationSet(const AtomicString& className, Element&);
 
@@ -174,6 +181,7 @@ private:
     InvalidationSetMap m_attributeInvalidationSets;
     InvalidationSetMap m_idInvalidationSets;
     PseudoTypeInvalidationSetMap m_pseudoInvalidationSets;
+    RefPtr<SiblingInvalidationSet> m_universalSiblingInvalidationSet;
 
     friend class RuleFeatureSetTest;
 };

@@ -195,7 +195,7 @@ public:
     unsigned maxDirectAdjacentSelectors() const { return m_maxDirectAdjacentSelectors; }
     void updateMaxDirectAdjacentSelectors(unsigned value) { m_maxDirectAdjacentSelectors = std::max(value, m_maxDirectAdjacentSelectors); }
 
-    const DescendantInvalidationSet* siblingDescendants() const { return m_siblingDescendantInvalidationSet.get(); }
+    DescendantInvalidationSet* siblingDescendants() const { return m_siblingDescendantInvalidationSet.get(); }
     DescendantInvalidationSet& ensureSiblingDescendants();
 
     DescendantInvalidationSet* descendants() const { return m_descendantInvalidationSet.get(); }

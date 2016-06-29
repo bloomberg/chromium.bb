@@ -158,7 +158,7 @@ public:
     // FIXME: These methods should all be renamed to something better than "check",
     // since it's not clear that they alter the style bits of siblings and children.
     enum SiblingCheckType { FinishedParsingChildren, SiblingElementInserted, SiblingElementRemoved };
-    void checkForSiblingStyleChanges(SiblingCheckType, Node* nodeBeforeChange, Node* nodeAfterChange);
+    void checkForSiblingStyleChanges(SiblingCheckType, Node* changedNode, Node* nodeBeforeChange, Node* nodeAfterChange);
     void recalcChildStyle(StyleRecalcChange);
 
     bool childrenSupportStyleSharing() const { return !hasRestyleFlags(); }
@@ -175,6 +175,7 @@ public:
         {
             ChildrenChange change = {
                 node.isElementNode() ? ElementInserted : NonElementInserted,
+                &node,
                 node.previousSibling(),
                 node.nextSibling(),
                 byParser
@@ -186,6 +187,7 @@ public:
         {
             ChildrenChange change = {
                 node.isElementNode() ? ElementRemoved : NonElementRemoved,
+                &node,
                 previousSibling,
                 nextSibling,
                 byParser
@@ -198,6 +200,7 @@ public:
         bool isChildElementChange() const { return type == ElementInserted || type == ElementRemoved; }
 
         ChildrenChangeType type;
+        Member<Node> siblingChanged;
         Member<Node> siblingBeforeChange;
         Member<Node> siblingAfterChange;
         ChildrenChangeSource byParser;

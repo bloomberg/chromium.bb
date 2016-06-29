@@ -89,17 +89,36 @@ void StyleInvalidator::scheduleInvalidationSetsForElement(const InvalidationList
     }
 }
 
-void StyleInvalidator::clearInvalidation(Element& element)
+void StyleInvalidator::scheduleSiblingInvalidationsAsDescendants(const InvalidationLists& invalidationLists, ContainerNode& schedulingParent)
 {
-    if (!element.needsStyleInvalidation())
+    if (invalidationLists.siblings.isEmpty())
         return;
-    m_pendingInvalidationMap.remove(&element);
-    element.clearNeedsStyleInvalidation();
+
+    PendingInvalidations& pendingInvalidations = ensurePendingInvalidations(schedulingParent);
+
+    for (auto& invalidationSet : invalidationLists.siblings) {
+        if (invalidationSet->invalidatesSelf() && !pendingInvalidations.descendants().contains(invalidationSet))
+            pendingInvalidations.descendants().append(invalidationSet);
+
+        if (DescendantInvalidationSet* descendants = toSiblingInvalidationSet(*invalidationSet).siblingDescendants()) {
+            if (!pendingInvalidations.descendants().contains(descendants))
+                pendingInvalidations.descendants().append(descendants);
+        }
+    }
+    schedulingParent.setNeedsStyleInvalidation();
 }
 
-PendingInvalidations& StyleInvalidator::ensurePendingInvalidations(Element& element)
+void StyleInvalidator::clearInvalidation(ContainerNode& node)
 {
-    PendingInvalidationMap::AddResult addResult = m_pendingInvalidationMap.add(&element, nullptr);
+    if (!node.needsStyleInvalidation())
+        return;
+    m_pendingInvalidationMap.remove(&node);
+    node.clearNeedsStyleInvalidation();
+}
+
+PendingInvalidations& StyleInvalidator::ensurePendingInvalidations(ContainerNode& node)
+{
+    PendingInvalidationMap::AddResult addResult = m_pendingInvalidationMap.add(&node, nullptr);
     if (addResult.isNewEntry)
         addResult.storedValue->value = wrapUnique(new PendingInvalidations());
     return *addResult.storedValue->value;
@@ -115,7 +134,7 @@ StyleInvalidator::~StyleInvalidator()
 {
 }
 
-void StyleInvalidator::RecursionData::pushInvalidationSet(const DescendantInvalidationSet& invalidationSet)
+void StyleInvalidator::RecursionData::pushInvalidationSet(const InvalidationSet& invalidationSet)
 {
     ASSERT(!m_wholeSubtreeInvalid);
     ASSERT(!invalidationSet.wholeSubtreeInvalid());
@@ -207,25 +226,25 @@ bool StyleInvalidator::SiblingData::matchCurrentInvalidationSets(Element& elemen
     return thisElementNeedsStyleRecalc;
 }
 
-void StyleInvalidator::pushInvalidationSetsForElement(Element& element, RecursionData& recursionData, SiblingData& siblingData)
+void StyleInvalidator::pushInvalidationSetsForContainerNode(ContainerNode& node, RecursionData& recursionData, SiblingData& siblingData)
 {
-    PendingInvalidations* pendingInvalidations = m_pendingInvalidationMap.get(&element);
+    PendingInvalidations* pendingInvalidations = m_pendingInvalidationMap.get(&node);
     ASSERT(pendingInvalidations);
 
     for (const auto& invalidationSet : pendingInvalidations->siblings())
         siblingData.pushInvalidationSet(toSiblingInvalidationSet(*invalidationSet));
 
-    if (element.getStyleChangeType() >= SubtreeStyleChange)
+    if (node.getStyleChangeType() >= SubtreeStyleChange)
         return;
 
     if (!pendingInvalidations->descendants().isEmpty()) {
         for (const auto& invalidationSet : pendingInvalidations->descendants())
-            recursionData.pushInvalidationSet(toDescendantInvalidationSet(*invalidationSet));
+            recursionData.pushInvalidationSet(*invalidationSet);
         if (UNLIKELY(*s_tracingEnabled)) {
             TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline.invalidationTracking"),
                 "StyleInvalidatorInvalidationTracking",
                 TRACE_EVENT_SCOPE_THREAD,
-                "data", InspectorStyleInvalidatorInvalidateEvent::invalidationList(element, pendingInvalidations->descendants()));
+                "data", InspectorStyleInvalidatorInvalidateEvent::invalidationList(node, pendingInvalidations->descendants()));
         }
     }
 }
@@ -245,7 +264,7 @@ ALWAYS_INLINE bool StyleInvalidator::checkInvalidationSetsAgainstElement(Element
     }
 
     if (UNLIKELY(element.needsStyleInvalidation()))
-        pushInvalidationSetsForElement(element, recursionData, siblingData);
+        pushInvalidationSetsForContainerNode(element, recursionData, siblingData);
 
     return thisElementNeedsStyleRecalc;
 }
@@ -256,7 +275,10 @@ bool StyleInvalidator::invalidateShadowRootChildren(Element& element, RecursionD
     for (ShadowRoot* root = element.youngestShadowRoot(); root; root = root->olderShadowRoot()) {
         if (!recursionData.treeBoundaryCrossing() && !root->childNeedsStyleInvalidation() && !root->needsStyleInvalidation())
             continue;
+        RecursionCheckpoint checkpoint(&recursionData);
         SiblingData siblingData;
+        if (UNLIKELY(root->needsStyleInvalidation()))
+            pushInvalidationSetsForContainerNode(*root, recursionData, siblingData);
         for (Element* child = ElementTraversal::firstChild(*root); child; child = ElementTraversal::nextSibling(*child)) {
             bool childRecalced = invalidate(*child, recursionData, siblingData);
             someChildrenNeedStyleRecalc = someChildrenNeedStyleRecalc || childRecalced;

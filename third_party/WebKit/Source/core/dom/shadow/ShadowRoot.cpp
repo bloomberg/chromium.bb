@@ -150,6 +150,13 @@ void ShadowRoot::attach(const AttachContext& context)
     DocumentFragment::attach(context);
 }
 
+void ShadowRoot::detach(const AttachContext& context)
+{
+    if (context.clearInvalidation)
+        document().styleEngine().styleInvalidator().clearInvalidation(*this);
+    DocumentFragment::detach(context);
+}
+
 Node::InsertionNotificationRequest ShadowRoot::insertedInto(ContainerNode* insertionPoint)
 {
     DocumentFragment::insertedInto(insertionPoint);
@@ -183,6 +190,8 @@ void ShadowRoot::removedFrom(ContainerNode* insertionPoint)
                 root->removeChildShadowRoot();
             m_registeredWithParentShadowRoot = false;
         }
+        if (needsStyleInvalidation())
+            document().styleEngine().styleInvalidator().clearInvalidation(*this);
     }
 
     DocumentFragment::removedFrom(insertionPoint);
@@ -193,7 +202,7 @@ void ShadowRoot::childrenChanged(const ChildrenChange& change)
     ContainerNode::childrenChanged(change);
 
     if (change.isChildElementChange())
-        checkForSiblingStyleChanges(change.type == ElementRemoved ? SiblingElementRemoved : SiblingElementInserted, change.siblingBeforeChange, change.siblingAfterChange);
+        checkForSiblingStyleChanges(change.type == ElementRemoved ? SiblingElementRemoved : SiblingElementInserted, change.siblingChanged, change.siblingBeforeChange, change.siblingAfterChange);
 
     if (InsertionPoint* point = shadowInsertionPointOfYoungerShadowRoot()) {
         if (ShadowRoot* root = point->containingShadowRoot())

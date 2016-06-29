@@ -27,7 +27,7 @@ class TextPosition;
 namespace blink {
 class Animation;
 class CSSStyleSheetResource;
-class InvalidationSet;
+class ContainerNode;
 class Document;
 class Element;
 class Event;
@@ -38,13 +38,14 @@ class HitTestLocation;
 class HitTestRequest;
 class HitTestResult;
 class ImageResource;
+class InvalidationSet;
 class KURL;
 class PaintLayer;
 class LayoutRect;
 class LocalFrame;
 class Node;
-class QualifiedName;
 class Page;
+class QualifiedName;
 class LayoutImage;
 class LayoutObject;
 class ResourceRequest;
@@ -98,7 +99,7 @@ extern const char PreventStyleSharingForParent[];
 
 std::unique_ptr<TracedValue> data(Element&, const char* reason);
 std::unique_ptr<TracedValue> selectorPart(Element&, const char* reason, const InvalidationSet&, const String&);
-std::unique_ptr<TracedValue> invalidationList(Element&, const Vector<RefPtr<InvalidationSet>>&);
+std::unique_ptr<TracedValue> invalidationList(ContainerNode&, const Vector<RefPtr<InvalidationSet>>&);
 } // namespace InspectorStyleInvalidatorInvalidateEvent
 
 #define TRACE_STYLE_INVALIDATOR_INVALIDATION(element, reason) \

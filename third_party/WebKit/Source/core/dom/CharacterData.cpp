@@ -187,7 +187,7 @@ void CharacterData::didModifyData(const String& oldData, UpdateSource source)
         mutationRecipients->enqueueMutationRecord(MutationRecord::createCharacterData(this, oldData));
 
     if (parentNode()) {
-        ContainerNode::ChildrenChange change = {ContainerNode::TextChanged, previousSibling(), nextSibling(), ContainerNode::ChildrenChangeSourceAPI};
+        ContainerNode::ChildrenChange change = {ContainerNode::TextChanged, this, previousSibling(), nextSibling(), ContainerNode::ChildrenChangeSourceAPI};
         parentNode()->childrenChanged(change);
     }
 

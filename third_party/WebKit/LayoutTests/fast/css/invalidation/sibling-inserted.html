@@ -40,7 +40,7 @@ test(function() {
     assert_equals(getComputedStyle(r1).backgroundColor, "rgba(0, 0, 0, 0)", "Background color should initially be transparent");
 
     i1.parentNode.insertBefore(document.createElement('div'), i1);
-    assert_equals(internals.updateStyleAndReturnAffectedElementCount(), 4, "Subtree style recalc");
+    assert_equals(internals.updateStyleAndReturnAffectedElementCount(), 2, "Inserted div plus #r1 recalculated");
     assert_equals(getComputedStyle(r1).backgroundColor, "rgb(0, 128, 0)", "Background color is green after class change");
 }, "Insert between siblings");
 
@@ -52,7 +52,7 @@ test(function() {
     var t2 = document.createElement('div');
     t2.id = 't2';
     i2.parentNode.insertBefore(t2, i2);
-    assert_equals(internals.updateStyleAndReturnAffectedElementCount(), 4, "Subtree style recalc");
+    assert_equals(internals.updateStyleAndReturnAffectedElementCount(), 2, "Inserted div plus #r2 recalculated");
     assert_equals(getComputedStyle(r2).backgroundColor, "rgb(0, 128, 0)", "Background color is green after class change");
 }, "Insert before siblings");
 
@@ -61,7 +61,7 @@ test(function() {
     var r3 = document.getElementById('r3');
 
     d3.parentNode.removeChild(d3);
-    assert_equals(internals.updateStyleAndReturnAffectedElementCount(), 3, "Subtree style recalc");
+    assert_equals(internals.updateStyleAndReturnAffectedElementCount(), 1, "#r3 recalculated");
     assert_equals(getComputedStyle(r3).backgroundColor, "rgb(0, 128, 0)", "Background color is green after class change");
 }, "Remove between siblings");
 
