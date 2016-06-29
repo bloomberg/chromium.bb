@@ -172,6 +172,8 @@ template("ios_app_bundle") {
                            ])
 
     output_name = rebase_path("$target_gen_dir/$_output_name", root_out_dir)
+    output_prefix_override = true
+
     if (!defined(libs)) {
       libs = []
     }
@@ -448,8 +450,8 @@ template("ios_framework_bundle") {
 
       args = [
                rebase_path(_header_map_filename),
-               rebase_path(_framework_root, root_out_dir),
-             ] + rebase_path(sources, root_out_dir)
+               rebase_path(_framework_root, root_build_dir),
+             ] + rebase_path(sources, root_build_dir)
     }
 
     _create_module_map_target = _target_name + "_module_map"
@@ -459,7 +461,7 @@ template("ios_framework_bundle") {
       outputs = [
         "$_framework_root/Modules/module.modulemap",
       ]
-      args = [ rebase_path("$_framework_root", root_out_dir) ]
+      args = [ rebase_path("$_framework_root", root_build_dir) ]
     }
 
     _copy_public_headers_target = _target_name + "_copy_public_headers"
@@ -494,7 +496,7 @@ template("ios_framework_bundle") {
   config(_framework_public_config) {
     visibility = [ ":$_framework_public_config" ]
     if (defined(_public_headers)) {
-      common_flags = [ "-F" + rebase_path("$root_out_dir/.", root_out_dir) ]
+      common_flags = [ "-F" + rebase_path("$root_out_dir/.", root_build_dir) ]
       cflags_objc = common_flags
       cflags_objcc = common_flags
     }
