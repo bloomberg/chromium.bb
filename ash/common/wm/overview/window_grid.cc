@@ -111,7 +111,7 @@ const int kWindowSelectionBorderThicknessMD = 1;
 
 // Corner radius of the overview selector border.
 const int kWindowSelectionRadius = 0;
-const int kWindowSelectionRadiusMD = 3;
+const int kWindowSelectionRadiusMD = 6;
 
 // The minimum amount of spacing between the bottom of the text filtering
 // text field and the top of the selection widget on the first row of items.

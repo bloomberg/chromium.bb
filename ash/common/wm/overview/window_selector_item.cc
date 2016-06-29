@@ -68,7 +68,7 @@ static const SkColor kCloseButtonColor = SK_ColorWHITE;
 static const SkColor kLabelBackgroundColor = SkColorSetARGB(25, 255, 255, 255);
 
 // Corner radius for the selection tiles used with Material Design.
-static int kLabelBackgroundRadius = 2;
+static int kLabelBackgroundRadius = 5;
 
 // Label shadow color.
 static const SkColor kLabelShadow = SkColorSetARGB(176, 0, 0, 0);

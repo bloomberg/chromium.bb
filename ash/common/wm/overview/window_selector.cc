@@ -93,7 +93,7 @@ const int kTextFilterIconSize = 20;
 
 // The radius used for the rounded corners on the text filtering textbox.
 const int kTextFilterCornerRadius = 1;
-const int kTextFilterCornerRadiusMD = 2;
+const int kTextFilterCornerRadiusMD = 4;
 
 // A comparator for locating a grid with a given root window.
 struct RootWindowGridComparator {
