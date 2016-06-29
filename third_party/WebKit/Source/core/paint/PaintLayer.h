@@ -306,10 +306,9 @@ public:
     // True if this layer container layoutObjects that paint.
     bool hasNonEmptyChildLayoutObjects() const;
 
-    // Will ensure that hasNonCompositiedChild are up to date.
+    // Will ensure that isAllScrollingContentComposited() is up to date.
     void updateScrollingStateAfterCompositingChange();
-    bool hasVisibleNonLayerContent() const { return m_hasVisibleNonLayerContent; }
-    bool hasNonCompositedChild() const { ASSERT(isAllowedToQueryCompositingState()); return m_hasNonCompositedChild; }
+    bool isAllScrollingContentComposited() const { return m_isAllScrollingContentComposited; }
 
     // Gets the ancestor layer that serves as the containing block of this layer. This is either
     // another out of flow positioned layer, or one that contains paint.
@@ -815,8 +814,6 @@ private:
     unsigned m_visibleDescendantStatusDirty : 1;
     unsigned m_hasVisibleDescendant : 1;
 
-    unsigned m_hasVisibleNonLayerContent : 1;
-
 #if ENABLE(ASSERT)
     unsigned m_needsPositionUpdate : 1;
 #endif
@@ -835,9 +832,9 @@ private:
     // Used only while determining what layers should be composited. Applies to the tree of z-order lists.
     unsigned m_hasCompositingDescendant : 1;
 
-    // Applies to the real layout layer tree (i.e., the tree determined by the layer's parent and children and
-    // as opposed to the tree formed by the z-order and normal flow lists).
-    unsigned m_hasNonCompositedChild : 1;
+    // True iff we have scrollable overflow and all children of m_layoutObject are known to paint
+    // exclusively into their own composited layers.  Set by updateScrollingStateAfterCompositingChange().
+    unsigned m_isAllScrollingContentComposited : 1;
 
     // Should be for stacking contexts having unisolated blending descendants.
     unsigned m_shouldIsolateCompositedDescendants : 1;

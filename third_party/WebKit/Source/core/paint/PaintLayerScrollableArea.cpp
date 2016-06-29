@@ -383,8 +383,7 @@ void PaintLayerScrollableArea::setScrollOffset(const DoublePoint& newScrollOffse
 
     if (box().view()->compositor()->inCompositingMode()) {
         bool onlyScrolledCompositedLayers = scrollsOverflow()
-            && !layer()->hasVisibleNonLayerContent()
-            && !layer()->hasNonCompositedChild()
+            && layer()->isAllScrollingContentComposited()
             && box().style()->backgroundLayers().attachment() != LocalBackgroundAttachment;
 
         if (usesCompositedScrolling() || onlyScrolledCompositedLayers)

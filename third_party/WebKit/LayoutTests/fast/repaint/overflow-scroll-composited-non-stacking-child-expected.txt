@@ -1,0 +1,78 @@
+{
+  "name": "Content Root Layer",
+  "bounds": [800, 600],
+  "children": [
+    {
+      "name": "LayoutView #document",
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "paintInvalidations": [
+        {
+          "object": "LayoutBlockFlow DIV class='scroller'",
+          "rect": [18, 60, 310, 200],
+          "reason": "subtree"
+        },
+        {
+          "object": "LayoutBlockFlow (positioned) DIV class='back'",
+          "rect": [93, 125, 180, 100],
+          "reason": "subtree"
+        },
+        {
+          "object": "LayoutBlockFlow (positioned) DIV class='back'",
+          "rect": [93, 75, 180, 100],
+          "reason": "subtree"
+        },
+        {
+          "object": "LayoutBlockFlow DIV class='scroller'",
+          "rect": [308, 65, 15, 175],
+          "reason": "scroll"
+        }
+      ],
+      "children": [
+        {
+          "name": "LayoutBlockFlow (positioned) DIV class='icon'",
+          "position": [200, 10],
+          "bounds": [40, 40],
+          "contentsOpaque": true,
+          "drawsContent": true,
+          "backgroundColor": "#FFDDBB"
+        },
+        {
+          "name": "Ancestor Clipping Layer",
+          "position": [23, 65],
+          "bounds": [285, 175],
+          "shouldFlattenTransform": false,
+          "children": [
+            {
+              "name": "LayoutBlockFlow (relative positioned) DIV class='list'",
+              "position": [20, -30],
+              "bounds": [180, 250]
+            },
+            {
+              "name": "Squashing Layer (first squashed layer: LayoutBlockFlow (relative positioned) DIV class='commit')",
+              "position": [20, -30],
+              "bounds": [180, 250],
+              "drawsContent": true
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutBlockFlow DIV class='scroller'",
+      "reason": "subtree"
+    },
+    {
+      "object": "VerticalScrollbar",
+      "reason": "scroll"
+    },
+    {
+      "object": "LayoutBlockFlow (positioned) DIV class='back'",
+      "reason": "subtree"
+    }
+  ]
+}
+

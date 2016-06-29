@@ -139,7 +139,6 @@ PaintLayer::PaintLayer(LayoutBoxModelObject* layoutObject)
     , m_hasVisibleContent(false)
     , m_visibleDescendantStatusDirty(false)
     , m_hasVisibleDescendant(false)
-    , m_hasVisibleNonLayerContent(false)
 #if ENABLE(ASSERT)
     , m_needsPositionUpdate(true)
 #endif
@@ -150,7 +149,7 @@ PaintLayer::PaintLayer(LayoutBoxModelObject* layoutObject)
     , m_needsDescendantDependentCompositingInputsUpdate(true)
     , m_childNeedsCompositingInputsUpdate(true)
     , m_hasCompositingDescendant(false)
-    , m_hasNonCompositedChild(false)
+    , m_isAllScrollingContentComposited(false)
     , m_shouldIsolateCompositedDescendants(false)
     , m_lostGroupedMapping(false)
     , m_needsRepaint(false)
@@ -634,18 +633,22 @@ void PaintLayer::dirtyAncestorChainVisibleDescendantStatus()
 void PaintLayer::updateScrollingStateAfterCompositingChange()
 {
     TRACE_EVENT0("blink", "PaintLayer::updateScrollingStateAfterCompositingChange");
-    m_hasVisibleNonLayerContent = false;
+    m_isAllScrollingContentComposited = true;
     for (LayoutObject* r = layoutObject()->slowFirstChild(); r; r = r->nextSibling()) {
         if (!r->hasLayer()) {
-            m_hasVisibleNonLayerContent = true;
-            break;
+            m_isAllScrollingContentComposited = false;
+            return;
         }
     }
 
-    m_hasNonCompositedChild = false;
     for (PaintLayer* child = firstChild(); child; child = child->nextSibling()) {
         if (child->compositingState() == NotComposited) {
-            m_hasNonCompositedChild = true;
+            m_isAllScrollingContentComposited = false;
+            return;
+        } else if (!child->stackingNode()->isStackingContext()) {
+            // If the child is composited, but not a stacking context, it may paint
+            // negative z-index descendants into an ancestor's GraphicsLayer.
+            m_isAllScrollingContentComposited = false;
             return;
         }
     }
