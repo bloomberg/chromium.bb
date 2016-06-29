@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/wm/maximize_mode/maximize_mode_window_manager.h"
+#include "ash/common/wm/maximize_mode/maximize_mode_window_manager.h"
 
 #include <string>
 

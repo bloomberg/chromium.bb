@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/wm/maximize_mode/workspace_backdrop_delegate.h"
+#include "ash/common/wm/maximize_mode/workspace_backdrop_delegate.h"
 
 #include "ash/common/shell_window_ids.h"
 #include "ash/common/wm/workspace/workspace_layout_manager_backdrop_delegate.h"

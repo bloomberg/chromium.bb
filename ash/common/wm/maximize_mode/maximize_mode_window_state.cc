@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/wm/maximize_mode/maximize_mode_window_state.h"
+#include "ash/common/wm/maximize_mode/maximize_mode_window_state.h"
 
 #include <utility>
 
 #include "ash/common/shell_window_ids.h"
+#include "ash/common/wm/maximize_mode/maximize_mode_window_manager.h"
 #include "ash/common/wm/window_animation_types.h"
 #include "ash/common/wm/window_state_util.h"
 #include "ash/common/wm/wm_event.h"
 #include "ash/common/wm/wm_screen_util.h"
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
-#include "ash/wm/maximize_mode/maximize_mode_window_manager.h"
 #include "ui/compositor/layer.h"
 #include "ui/gfx/geometry/rect.h"
 

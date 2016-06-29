@@ -2,12 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/wm/maximize_mode/maximize_mode_window_manager.h"
+#include "ash/common/wm/maximize_mode/maximize_mode_window_manager.h"
 
 #include "ash/common/ash_switches.h"
 #include "ash/common/session/session_state_delegate.h"
 #include "ash/common/shell_window_ids.h"
 #include "ash/common/wm/maximize_mode/maximize_mode_event_handler.h"
+#include "ash/common/wm/maximize_mode/maximize_mode_window_state.h"
+#include "ash/common/wm/maximize_mode/workspace_backdrop_delegate.h"
 #include "ash/common/wm/mru_window_tracker.h"
 #include "ash/common/wm/overview/window_selector_controller.h"
 #include "ash/common/wm/window_state.h"
@@ -16,8 +18,6 @@
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
 #include "ash/common/wm_window_property.h"
-#include "ash/wm/maximize_mode/maximize_mode_window_state.h"
-#include "ash/wm/maximize_mode/workspace_backdrop_delegate.h"
 #include "base/command_line.h"
 #include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
