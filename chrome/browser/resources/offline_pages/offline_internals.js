@@ -11,8 +11,9 @@ cr.define('offlineInternals', function() {
   /** @type {!Array<SavePageRequest>} */
   var savePageRequests = [];
 
-  /** @type {offlineInternals.OfflineInternalsBrowserProxy} */
-  var browserProxy_;
+  /** @type {!offlineInternals.OfflineInternalsBrowserProxy} */
+  var browserProxy_ =
+      offlineInternals.OfflineInternalsBrowserProxyImpl.getInstance();
 
   /**
    * Fill stored pages table.
@@ -181,8 +182,6 @@ cr.define('offlineInternals', function() {
     $('log-request-off').onclick =
         browserProxy_.setRecordRequestQueue.bind(browserProxy_, false);
     $('refresh-logs').onclick = refreshLog;
-    browserProxy_ =
-        offlineInternals.OfflineInternalsBrowserProxyImpl.getInstance();
     refreshAll();
   }
 
