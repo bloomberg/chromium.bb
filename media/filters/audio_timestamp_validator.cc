@@ -115,9 +115,9 @@ void AudioTimestampValidator::CheckForTimestampGap(
   if (std::abs(ts_delta.InMilliseconds()) > drift_warning_threshold_msec_) {
     MEDIA_LOG(ERROR, media_log_)
         << " Large timestamp gap detected; may cause AV sync to drift."
-        << " time:" << buffer->timestamp().InMilliseconds()
-        << " expected:" << expected_ts.InMicroseconds()
-        << " delta:" << ts_delta.InMicroseconds();
+        << " time:" << buffer->timestamp().InMicroseconds() << "us"
+        << " expected:" << expected_ts.InMicroseconds() << "us"
+        << " delta:" << ts_delta.InMicroseconds() << "us";
     // Increase threshold to avoid log spam but, let us know if gap widens.
     drift_warning_threshold_msec_ = std::abs(ts_delta.InMilliseconds());
   }
