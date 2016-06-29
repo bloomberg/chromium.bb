@@ -35,7 +35,6 @@ import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.AwContentsClient;
 import org.chromium.android_webview.AwContentsStatics;
 import org.chromium.android_webview.AwCookieManager;
-import org.chromium.android_webview.AwDataReductionProxyManager;
 import org.chromium.android_webview.AwDevToolsServer;
 import org.chromium.android_webview.AwNetworkChangeNotifierRegistrationPolicy;
 import org.chromium.android_webview.AwQuotaManagerBridge;
@@ -93,7 +92,6 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
 
     // Read/write protected by mLock.
     private boolean mStarted;
-    private AwDataReductionProxyManager mProxyManager;
 
     private SharedPreferences mWebViewPrefs;
     private WebViewDelegate mWebViewDelegate;
@@ -311,10 +309,6 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
         }
         mWebViewsToStart.clear();
         mWebViewsToStart = null;
-
-        // Start listening for data reduction proxy setting changes.
-        mProxyManager = new AwDataReductionProxyManager();
-        mProxyManager.start(ContextUtils.getApplicationContext());
     }
 
     boolean hasStarted() {

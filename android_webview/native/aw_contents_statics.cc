@@ -54,37 +54,6 @@ void ClearClientCertPreferences(JNIEnv* env,
 }
 
 // static
-void SetDataReductionProxyKey(JNIEnv* env,
-                              const JavaParamRef<jclass>&,
-                              const JavaParamRef<jstring>& key) {
-  AwBrowserContext* browser_context = AwBrowserContext::GetDefault();
-  DCHECK(browser_context);
-  // The following call to GetRequestContext() could possibly be the first such
-  // call, which means AwURLRequestContextGetter::InitializeURLRequestContext
-  // will be called on IO thread as a result.
-  AwURLRequestContextGetter* aw_url_request_context_getter =
-      static_cast<AwURLRequestContextGetter*>(
-          content::BrowserContext::GetDefaultStoragePartition(browser_context)->
-              GetURLRequestContext());
-  DCHECK(aw_url_request_context_getter);
-
-  // This PostTask has to be called after GetRequestContext, because SetKeyOnIO
-  // needs a valid DataReductionProxyRequestOptions object.
-  BrowserThread::PostTask(BrowserThread::IO,
-                          FROM_HERE,
-                          base::Bind(&AwURLRequestContextGetter::SetKeyOnIO,
-                                     aw_url_request_context_getter,
-                                     ConvertJavaStringToUTF8(env, key)));
-}
-
-// static
-void SetDataReductionProxyEnabled(JNIEnv* env,
-                                  const JavaParamRef<jclass>&,
-                                  jboolean enabled) {
-  AwBrowserContext::SetDataReductionProxyEnabled(enabled);
-}
-
-// static
 ScopedJavaLocalRef<jstring> GetUnreachableWebDataUrl(
     JNIEnv* env,
     const JavaParamRef<jclass>&) {

@@ -24,9 +24,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/threading/worker_pool.h"
-#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_io_data.h"
-#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_network_delegate.h"
-#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_request_options.h"
 #include "components/network_session_configurator/switches.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_thread.h"
@@ -205,16 +202,11 @@ void AwURLRequestContextGetter::InitializeURLRequestContext() {
   DCHECK(!url_request_context_);
 
   net::URLRequestContextBuilder builder;
-  std::unique_ptr<AwNetworkDelegate> aw_network_delegate(
-      new AwNetworkDelegate());
 
   AwBrowserContext* browser_context = AwBrowserContext::GetDefault();
   DCHECK(browser_context);
 
-  builder.set_network_delegate(
-      browser_context->GetDataReductionProxyIOData()->CreateNetworkDelegate(
-          std::move(aw_network_delegate),
-          false /* No UMA is produced to track bypasses. */));
+  builder.set_network_delegate(base::WrapUnique(new AwNetworkDelegate()));
 #if !defined(DISABLE_FTP_SUPPORT)
   builder.set_ftp_enabled(false);  // Android WebView does not support ftp yet.
 #endif
@@ -271,9 +263,6 @@ void AwURLRequestContextGetter::InitializeURLRequestContext() {
 
   job_factory_ =
       CreateJobFactory(&protocol_handlers_, std::move(request_interceptors_));
-  job_factory_.reset(new net::URLRequestInterceptingJobFactory(
-      std::move(job_factory_),
-      browser_context->GetDataReductionProxyIOData()->CreateInterceptor()));
   url_request_context_->set_job_factory(job_factory_.get());
   url_request_context_->set_http_user_agent_settings(
       http_user_agent_settings_.get());
@@ -301,12 +290,6 @@ void AwURLRequestContextGetter::SetHandlersAndInterceptors(
 
 net::NetLog* AwURLRequestContextGetter::GetNetLog() {
   return net_log_.get();
-}
-
-void AwURLRequestContextGetter::SetKeyOnIO(const std::string& key) {
-  DCHECK(AwBrowserContext::GetDefault()->GetDataReductionProxyIOData());
-  AwBrowserContext::GetDefault()->GetDataReductionProxyIOData()->
-      request_options()->SetKeyOnIO(key);
 }
 
 std::unique_ptr<net::HttpAuthHandlerFactory>

@@ -30,13 +30,6 @@ class SSLHostStateDelegate;
 class WebContents;
 }
 
-namespace data_reduction_proxy {
-class DataReductionProxyConfigurator;
-class DataReductionProxyIOData;
-class DataReductionProxyService;
-class DataReductionProxySettings;
-}
-
 namespace policy {
 class URLBlacklistManager;
 class BrowserPolicyConnectorBase;
@@ -77,7 +70,6 @@ class AwBrowserContext : public content::BrowserContext,
   static AwBrowserContext* FromWebContents(
       content::WebContents* web_contents);
 
-  static void SetDataReductionProxyEnabled(bool enabled);
   static void SetLegacyCacheRemovalDelayForTest(int delay_ms);
 
   // Maps to BrowserMainParts::PreMainMessageLoopRun.
@@ -88,10 +80,6 @@ class AwBrowserContext : public content::BrowserContext,
 
   AwQuotaManagerBridge* GetQuotaManagerBridge();
   AwFormDatabaseService* GetFormDatabaseService();
-  data_reduction_proxy::DataReductionProxySettings*
-      GetDataReductionProxySettings();
-  data_reduction_proxy::DataReductionProxyIOData*
-      GetDataReductionProxyIOData();
   AwURLRequestContextGetter* GetAwURLRequestContext();
   AwMessagePortService* GetMessagePortService();
 
@@ -128,8 +116,6 @@ class AwBrowserContext : public content::BrowserContext,
 
  private:
   void InitUserPrefService();
-  void CreateDataReductionProxyStatisticsIfNecessary();
-  static bool data_reduction_proxy_enabled_;
 
   // Delay, in milliseconds, before removing the legacy cache dir.
   // This is non-const for testing purposes.
@@ -153,13 +139,7 @@ class AwBrowserContext : public content::BrowserContext,
   std::unique_ptr<policy::BrowserPolicyConnectorBase> browser_policy_connector_;
   std::unique_ptr<policy::URLBlacklistManager> blacklist_manager_;
 
-  std::unique_ptr<data_reduction_proxy::DataReductionProxySettings>
-      data_reduction_proxy_settings_;
   std::unique_ptr<AwSSLHostStateDelegate> ssl_host_state_delegate_;
-  std::unique_ptr<data_reduction_proxy::DataReductionProxyIOData>
-      data_reduction_proxy_io_data_;
-  std::unique_ptr<data_reduction_proxy::DataReductionProxyService>
-      data_reduction_proxy_service_;
   std::unique_ptr<content::PermissionManager> permission_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(AwBrowserContext);

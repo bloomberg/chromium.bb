@@ -49,10 +49,6 @@ class AwURLRequestContextGetter : public net::URLRequestContextGetter {
   // threads (UI and IO).
   net::NetLog* GetNetLog();
 
-  // This should be called before the network stack is ever used. It can be
-  // called again afterwards if the key updates.
-  void SetKeyOnIO(const std::string& key);
-
  private:
   friend class AwBrowserContext;
   ~AwURLRequestContextGetter() override;

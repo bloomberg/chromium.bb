@@ -70,10 +70,6 @@
 }
 
 # Accessed via reflection but not present in all builds
--keep class com.android.webview.chromium.Drp {
-  public java.lang.String KEY;
-}
--dontnote com.android.webview.chromium.Drp
 -keep class com.android.webview.chromium.PlatformServiceBridgeGoogle {
   void setMetricsSettingListener(...);
   PlatformServiceBridgeGoogle(...);

@@ -33,7 +33,6 @@ import org.chromium.android_webview.AwBrowserContext;
 import org.chromium.android_webview.AwBrowserProcess;
 import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.AwContentsClient;
-import org.chromium.android_webview.AwContentsStatics;
 import org.chromium.android_webview.AwDevToolsServer;
 import org.chromium.android_webview.AwSettings;
 import org.chromium.android_webview.test.AwTestContainerView;
@@ -65,11 +64,6 @@ public class AwShellActivity extends Activity {
     private EditText mUrlTextView;
     private ImageButton mPrevButton;
     private ImageButton mNextButton;
-
-    // This is the same as data_reduction_proxy::switches::kEnableDataReductionProxy.
-    private static final String ENABLE_DATA_REDUCTION_PROXY = "enable-spdy-proxy-auth";
-    // This is the same as data_reduction_proxy::switches::kDataReductionProxyKey.
-    private static final String DATA_REDUCTION_PROXY_KEY = "spdy-proxy-auth-value";
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -111,14 +105,6 @@ public class AwShellActivity extends Activity {
         mAwTestContainerView.getAwContents().loadUrl(startupUrl);
         AwContents.setShouldDownloadFavicons();
         mUrlTextView.setText(startupUrl);
-
-        if (CommandLine.getInstance().hasSwitch(ENABLE_DATA_REDUCTION_PROXY)) {
-            String key = CommandLine.getInstance().getSwitchValue(DATA_REDUCTION_PROXY_KEY);
-            if (key != null && !key.isEmpty()) {
-                AwContentsStatics.setDataReductionProxyKey(key);
-                AwContentsStatics.setDataReductionProxyEnabled(true);
-            }
-        }
     }
 
     @Override
