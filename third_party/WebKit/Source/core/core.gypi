@@ -1197,6 +1197,8 @@
             'css/CSSPageRule.h',
             'css/CSSPathValue.cpp',
             'css/CSSPathValue.h',
+            'css/CSSPendingSubstitutionValue.cpp',
+            'css/CSSPendingSubstitutionValue.h',
             'css/CSSPrimitiveValue.cpp',
             'css/CSSPrimitiveValue.h',
             'css/CSSPrimitiveValueMappings.h',

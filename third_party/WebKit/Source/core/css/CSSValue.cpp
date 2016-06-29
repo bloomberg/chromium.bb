@@ -49,6 +49,7 @@
 #include "core/css/CSSInitialValue.h"
 #include "core/css/CSSPaintValue.h"
 #include "core/css/CSSPathValue.h"
+#include "core/css/CSSPendingSubstitutionValue.h"
 #include "core/css/CSSPrimitiveValue.h"
 #include "core/css/CSSQuadValue.h"
 #include "core/css/CSSReflectValue.h"
@@ -184,6 +185,8 @@ bool CSSValue::equals(const CSSValue& other) const
             return compareCSSValues<CSSCustomPropertyDeclaration>(*this, other);
         case VariableReferenceClass:
             return compareCSSValues<CSSVariableReferenceValue>(*this, other);
+        case PendingSubstitutionValueClass:
+            return compareCSSValues<CSSPendingSubstitutionValue>(*this, other);
         }
         ASSERT_NOT_REACHED();
         return false;
@@ -276,6 +279,8 @@ String CSSValue::cssText() const
         return toCSSVariableReferenceValue(this)->customCSSText();
     case CustomPropertyDeclarationClass:
         return toCSSCustomPropertyDeclaration(this)->customCSSText();
+    case PendingSubstitutionValueClass:
+        return toCSSPendingSubstitutionValue(this)->customCSSText();
     }
     ASSERT_NOT_REACHED();
     return String();
@@ -407,6 +412,9 @@ void CSSValue::destroy()
     case CustomPropertyDeclarationClass:
         delete toCSSCustomPropertyDeclaration(this);
         return;
+    case PendingSubstitutionValueClass:
+        delete toCSSPendingSubstitutionValue(this);
+        return;
     }
     ASSERT_NOT_REACHED();
 }
@@ -537,6 +545,9 @@ void CSSValue::finalizeGarbageCollectedObject()
     case CustomPropertyDeclarationClass:
         toCSSCustomPropertyDeclaration(this)->~CSSCustomPropertyDeclaration();
         return;
+    case PendingSubstitutionValueClass:
+        toCSSPendingSubstitutionValue(this)->~CSSPendingSubstitutionValue();
+        return;
     }
     ASSERT_NOT_REACHED();
 }
@@ -666,6 +677,9 @@ DEFINE_TRACE(CSSValue)
         return;
     case CustomPropertyDeclarationClass:
         toCSSCustomPropertyDeclaration(this)->traceAfterDispatch(visitor);
+        return;
+    case PendingSubstitutionValueClass:
+        toCSSPendingSubstitutionValue(this)->traceAfterDispatch(visitor);
         return;
     }
     ASSERT_NOT_REACHED();

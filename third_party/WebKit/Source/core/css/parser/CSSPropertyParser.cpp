@@ -25,6 +25,7 @@
 #include "core/css/CSSInitialValue.h"
 #include "core/css/CSSPaintValue.h"
 #include "core/css/CSSPathValue.h"
+#include "core/css/CSSPendingSubstitutionValue.h"
 #include "core/css/CSSPrimitiveValueMappings.h"
 #include "core/css/CSSQuadValue.h"
 #include "core/css/CSSReflectValue.h"
@@ -151,8 +152,10 @@ bool CSSPropertyParser::parseValueStart(CSSPropertyID unresolvedProperty, bool i
 
     CSSParserTokenRange originalRange = m_range;
     CSSPropertyID propertyId = resolveCSSPropertyID(unresolvedProperty);
+    bool isShorthand = isShorthandProperty(propertyId);
 
-    if (isShorthandProperty(propertyId)) {
+    if (isShorthand) {
+        // Variable references will fail to parse here and will fall out to the variable ref parser below.
         if (parseShorthand(unresolvedProperty, important))
             return true;
     } else {
@@ -165,9 +168,14 @@ bool CSSPropertyParser::parseValueStart(CSSPropertyID unresolvedProperty, bool i
     }
 
     if (RuntimeEnabledFeatures::cssVariablesEnabled() && CSSVariableParser::containsValidVariableReferences(originalRange)) {
-        // We don't expand the shorthand here because crazypants.
         CSSVariableReferenceValue* variable = CSSVariableReferenceValue::create(CSSVariableData::create(originalRange));
-        addProperty(propertyId, CSSPropertyInvalid, variable, important);
+
+        if (isShorthand) {
+            CSSPendingSubstitutionValue* pendingValue = CSSPendingSubstitutionValue::create(propertyId, variable);
+            addExpandedPropertyForValue(propertyId, pendingValue, important);
+        } else {
+            addProperty(propertyId, CSSPropertyInvalid, variable, important);
+        }
         return true;
     }
 

@@ -25,6 +25,7 @@
 #include "core/CSSPropertyNames.h"
 #include "core/CoreExport.h"
 #include "core/animation/css/CSSAnimationUpdate.h"
+#include "core/css/CSSPendingSubstitutionValue.h"
 #include "core/css/CSSSVGDocumentValue.h"
 #include "core/css/CSSToLengthConversionData.h"
 #include "core/css/resolver/CSSToStyleMap.h"
@@ -160,6 +161,8 @@ public:
     void setCustomPropertySetForApplyAtRule(const String&, StylePropertySet*);
     StylePropertySet* customPropertySetForApplyAtRule(const String&);
 
+    HeapHashMap<CSSPropertyID, Member<const CSSValue>>& parsedPropertiesForPendingSubstitution(const CSSPendingSubstitutionValue&);
+
 private:
     ElementResolveContext m_elementContext;
     Member<Document> m_document;
@@ -186,6 +189,9 @@ private:
     ElementStyleResources m_elementStyleResources;
 
     HeapHashMap<String, Member<StylePropertySet>> m_customPropertySetsForApplyAtRule;
+
+    HeapHashMap<Member<const CSSPendingSubstitutionValue>, Member<HeapHashMap<CSSPropertyID, Member<const CSSValue>>>> m_parsedPropertiesForPendingSubstitution;
+
 };
 
 } // namespace blink

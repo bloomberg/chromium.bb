@@ -51,6 +51,7 @@
 #include "core/css/CSSHelper.h"
 #include "core/css/CSSImageSetValue.h"
 #include "core/css/CSSPathValue.h"
+#include "core/css/CSSPendingSubstitutionValue.h"
 #include "core/css/CSSPrimitiveValueMappings.h"
 #include "core/css/CSSPropertyMetadata.h"
 #include "core/css/CSSURIValue.h"
@@ -112,8 +113,14 @@ static inline bool isValidVisitedLinkProperty(CSSPropertyID id)
 
 void StyleBuilder::applyProperty(CSSPropertyID id, StyleResolverState& state, const CSSValue& value)
 {
-    if (RuntimeEnabledFeatures::cssVariablesEnabled() && id != CSSPropertyVariable && value.isVariableReferenceValue()) {
-        CSSVariableResolver::resolveAndApplyVariableReferences(state, id, toCSSVariableReferenceValue(value));
+    if (RuntimeEnabledFeatures::cssVariablesEnabled() && id != CSSPropertyVariable
+        && (value.isVariableReferenceValue() || value.isPendingSubstitutionValue())) {
+
+        const CSSValue* resolvedValue = value.isVariableReferenceValue() ?
+            CSSVariableResolver::resolveVariableReferences(state, id, toCSSVariableReferenceValue(value)) :
+            CSSVariableResolver::resolvePendingSubstitutions(state, id, toCSSPendingSubstitutionValue(value));
+        applyProperty(id, state, *resolvedValue);
+
         if (!state.style()->hasVariableReferenceFromNonInheritedProperty() && !CSSPropertyMetadata::isInheritedProperty(id))
             state.style()->setHasVariableReferenceFromNonInheritedProperty();
         return;

@@ -98,6 +98,7 @@ public:
     bool isCustomPropertyDeclaration() const { return m_classType == CustomPropertyDeclarationClass; }
     bool isVariableReferenceValue() const { return m_classType == VariableReferenceClass; }
     bool isGridAutoRepeatValue() const { return m_classType == GridAutoRepeatClass; }
+    bool isPendingSubstitutionValue() const { return m_classType == PendingSubstitutionValueClass; }
 
     bool hasFailedOrCanceledSubresources() const;
 
@@ -163,6 +164,7 @@ protected:
         PathClass,
         VariableReferenceClass,
         CustomPropertyDeclarationClass,
+        PendingSubstitutionValueClass,
 
         // SVG classes.
         CSSSVGDocumentClass,

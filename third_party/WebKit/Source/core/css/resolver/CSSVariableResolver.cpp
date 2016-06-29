@@ -8,6 +8,7 @@
 #include "core/CSSValueKeywords.h"
 #include "core/StyleBuilderFunctions.h"
 #include "core/StylePropertyShorthand.h"
+#include "core/css/CSSPendingSubstitutionValue.h"
 #include "core/css/CSSUnsetValue.h"
 #include "core/css/CSSVariableData.h"
 #include "core/css/CSSVariableReferenceValue.h"
@@ -143,35 +144,58 @@ CSSValue* CSSVariableResolver::resolveVariableReferences(StyleVariableData* styl
     return result;
 }
 
-void CSSVariableResolver::resolveAndApplyVariableReferences(StyleResolverState& state, CSSPropertyID id, const CSSVariableReferenceValue& value)
+const CSSValue* CSSVariableResolver::resolveVariableReferences(StyleResolverState& state, CSSPropertyID id, const CSSVariableReferenceValue& value)
 {
+    // Non-shorthand variable references follow this path.
     CSSVariableResolver resolver(state.style()->variables());
 
     Vector<CSSParserToken> tokens;
     if (resolver.resolveTokenRange(value.variableDataValue()->tokens(), tokens)) {
         CSSParserContext context(HTMLStandardMode, 0);
 
-        HeapVector<CSSProperty, 256> parsedProperties;
-
-        // TODO: Non-shorthands should just call CSSPropertyParser::parseSingleValue
-        if (CSSPropertyParser::parseValue(id, false, CSSParserTokenRange(tokens), context, parsedProperties, StyleRule::RuleType::Style)) {
-            unsigned parsedPropertiesCount = parsedProperties.size();
-            for (unsigned i = 0; i < parsedPropertiesCount; ++i)
-                StyleBuilder::applyProperty(parsedProperties[i].id(), state, *parsedProperties[i].value());
-            return;
-        }
+        CSSValue* value = CSSPropertyParser::parseSingleValue(id, CSSParserTokenRange(tokens), context);
+        if (value)
+            return value;
     }
 
-    CSSUnsetValue* unset = CSSUnsetValue::create();
-    if (isShorthandProperty(id)) {
-        StylePropertyShorthand shorthand = shorthandForProperty(id);
-        for (unsigned i = 0; i < shorthand.length(); i++)
-            StyleBuilder::applyProperty(shorthand.properties()[i], state, *unset);
-        return;
-    }
-
-    StyleBuilder::applyProperty(id, state, *unset);
+    return CSSUnsetValue::create();
 }
+
+const CSSValue* CSSVariableResolver::resolvePendingSubstitutions(StyleResolverState& state, CSSPropertyID id, const CSSPendingSubstitutionValue& pendingValue)
+{
+    // Longhands from shorthand references follow this path.
+    HeapHashMap<CSSPropertyID, Member<const CSSValue>>& propertyCache = state.parsedPropertiesForPendingSubstitution(pendingValue);
+
+    const CSSValue* value = propertyCache.get(id);
+    if (!value) {
+        // TODO(timloh): We shouldn't retry this for all longhands if the shorthand ends up invalid
+        CSSVariableReferenceValue* shorthandValue = pendingValue.shorthandValue();
+        CSSPropertyID shorthandPropertyId = pendingValue.shorthandPropertyId();
+
+        CSSVariableResolver resolver(state.style()->variables());
+
+        Vector<CSSParserToken> tokens;
+        if (resolver.resolveTokenRange(shorthandValue->variableDataValue()->tokens(), tokens)) {
+            CSSParserContext context(HTMLStandardMode, 0);
+
+            HeapVector<CSSProperty, 256> parsedProperties;
+
+            if (CSSPropertyParser::parseValue(shorthandPropertyId, false, CSSParserTokenRange(tokens), context, parsedProperties, StyleRule::RuleType::Style)) {
+                unsigned parsedPropertiesCount = parsedProperties.size();
+                for (unsigned i = 0; i < parsedPropertiesCount; ++i) {
+                    propertyCache.set(parsedProperties[i].id(), parsedProperties[i].value());
+                }
+            }
+        }
+        value = propertyCache.get(id);
+    }
+
+    if (value)
+        return value;
+
+    return CSSUnsetValue::create();
+}
+
 
 void CSSVariableResolver::resolveVariableDefinitions(StyleVariableData* variables)
 {

@@ -25,6 +25,7 @@
 #include "core/CSSValueKeywords.h"
 #include "core/StylePropertyShorthand.h"
 #include "core/css/CSSCustomPropertyDeclaration.h"
+#include "core/css/CSSPendingSubstitutionValue.h"
 #include "core/css/CSSPropertyMetadata.h"
 #include "core/css/CSSValuePool.h"
 #include "wtf/StdLibExtras.h"
@@ -372,7 +373,8 @@ String StylePropertySerializer::commonShorthandChecks(const StylePropertyShortha
         return emptyString();
 
     // TODO(timloh): This should be isCSSWideKeyword()
-    if (longhands[0]->isInitialValue() || longhands[0]->isInheritedValue()) {
+    if (longhands[0]->isInitialValue() || longhands[0]->isInheritedValue()
+        || longhands[0]->isPendingSubstitutionValue()) {
         bool success = true;
         for (int i = 1; i < longhandCount; i++) {
             if (!longhands[i]->equals(*longhands[0])) {
@@ -382,8 +384,11 @@ String StylePropertySerializer::commonShorthandChecks(const StylePropertyShortha
                 break;
             }
         }
-        if (success)
+        if (success) {
+            if (longhands[0]->isPendingSubstitutionValue())
+                return toCSSPendingSubstitutionValue(longhands[0])->shorthandValue()->cssText();
             return longhands[0]->cssText();
+        }
     }
 
     bool allowInitial = allowInitialInShorthand(shorthand.id());
@@ -398,7 +403,7 @@ String StylePropertySerializer::commonShorthandChecks(const StylePropertyShortha
         if (!allowInitial && value.isInitialValue())
             return emptyString();
         // TODO(timloh): This should also check unset
-        if (value.isInheritedValue())
+        if (value.isInheritedValue() || value.isPendingSubstitutionValue())
             return emptyString();
         if (value.isVariableReferenceValue())
             return emptyString();

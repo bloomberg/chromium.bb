@@ -86,4 +86,14 @@ StylePropertySet* StyleResolverState::customPropertySetForApplyAtRule(const Stri
     return m_customPropertySetsForApplyAtRule.get(string);
 }
 
+HeapHashMap<CSSPropertyID, Member<const CSSValue>>& StyleResolverState::parsedPropertiesForPendingSubstitution(const CSSPendingSubstitutionValue& value)
+{
+    HeapHashMap<CSSPropertyID, Member<const CSSValue>>* map = m_parsedPropertiesForPendingSubstitution.get(&value);
+    if (!map) {
+        map = new HeapHashMap<CSSPropertyID, Member<const CSSValue>>;
+        m_parsedPropertiesForPendingSubstitution.set(&value, map);
+    }
+    return *map;
+}
+
 } // namespace blink
