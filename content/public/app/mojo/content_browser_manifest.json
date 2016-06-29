@@ -9,6 +9,9 @@
       "exe:content_renderer": {
         "interfaces": [ "content::mojom::RenderWidgetWindowTreeClientFactory" ]
       },
+      "exe:content_gpu": {
+        "interfaces": [ "content::mojom::ProcessControl" ]
+      },
       "mojo:shell": {
         "classes": [
           "shell:client_process",
