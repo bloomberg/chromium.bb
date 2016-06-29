@@ -773,7 +773,11 @@ Vector<CharacterRange> Font::individualCharacterRanges(const TextRun& run) const
     FontCachePurgePreventer purgePreventer;
     CachingWordShaper shaper(m_fontFallbackList->shapeCache(m_fontDescription));
     auto ranges = shaper.individualCharacterRanges(this, run);
-    DCHECK_EQ(ranges.size(), run.length());
+    // The shaper should return ranges.size == run.length but on some platforms
+    // (OSX10.9.5) we are seeing cases in the upper end of the unicode range
+    // where this is not true (see: crbug.com/620952). To catch these cases on
+    // more popular platforms, and to protect users, we are using a CHECK here.
+    CHECK_EQ(ranges.size(), run.length());
     return ranges;
 }
 
