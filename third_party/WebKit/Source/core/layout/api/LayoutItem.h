@@ -15,6 +15,7 @@ namespace blink {
 class FrameView;
 class LayoutAPIShim;
 class Node;
+class ObjectPaintProperties;
 
 class LayoutItem {
     DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
@@ -265,6 +266,11 @@ public:
     Color resolveColor(int colorProperty) const
     {
         return m_layoutObject->resolveColor(colorProperty);
+    }
+
+    ObjectPaintProperties* objectPaintProperties() const
+    {
+        return m_layoutObject->objectPaintProperties();
     }
 
 protected:

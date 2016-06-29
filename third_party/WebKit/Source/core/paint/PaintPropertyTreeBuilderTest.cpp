@@ -4,7 +4,7 @@
 
 #include "core/layout/LayoutTestHelper.h"
 #include "core/layout/LayoutTreeAsText.h"
-#include "core/layout/LayoutView.h"
+#include "core/layout/api/LayoutViewItem.h"
 #include "core/paint/ObjectPaintProperties.h"
 #include "platform/graphics/paint/TransformPaintPropertyNode.h"
 #include "platform/testing/UnitTestHelpers.h"
@@ -132,8 +132,8 @@ TEST_F(PaintPropertyTreeBuilderTest, FrameScrollingTraditional)
     EXPECT_EQ(FloatRoundedRect(0, 0, 800, 600), frameView->contentClip()->clipRect());
     EXPECT_EQ(nullptr, frameView->contentClip()->parent());
 
-    LayoutView* layoutView = document().layoutView();
-    ObjectPaintProperties* layoutViewProperties = layoutView->objectPaintProperties();
+    LayoutViewItem layoutViewItem = document().layoutViewItem();
+    ObjectPaintProperties* layoutViewProperties = layoutViewItem.objectPaintProperties();
     EXPECT_EQ(nullptr, layoutViewProperties->scrollTranslation());
 }
 
@@ -156,8 +156,8 @@ TEST_F(PaintPropertyTreeBuilderTest, DISABLED_FrameScrollingRootLayerScrolls)
     EXPECT_EQ(TransformationMatrix(), frameView->scrollTranslation()->matrix());
     EXPECT_EQ(frameView->preTranslation(), frameView->scrollTranslation()->parent());
 
-    LayoutView* layoutView = document().layoutView();
-    ObjectPaintProperties* layoutViewProperties = layoutView->objectPaintProperties();
+    LayoutViewItem layoutViewItem = document().layoutViewItem();
+    ObjectPaintProperties* layoutViewProperties = layoutViewItem.objectPaintProperties();
     EXPECT_EQ(TransformationMatrix().translate(0, -100), layoutViewProperties->scrollTranslation()->matrix());
     EXPECT_EQ(frameView->scrollTranslation(), layoutViewProperties->scrollTranslation()->parent());
 }
