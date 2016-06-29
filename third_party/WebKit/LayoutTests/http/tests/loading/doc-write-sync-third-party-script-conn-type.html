@@ -7,12 +7,11 @@
     var loadSuccess = false;
     if (window.internals) {
         internals.settings.setDisallowFetchForDocWrittenScriptsInMainFrameOnSlowConnections(true);
-        internals.setNetworkStateNotifierTestOnly(true);
-        internals.setNetworkConnectionInfo('cellular3g', 2.0);
+        internals.setNetworkConnectionInfoOverride(true, 'cellular3g', 2.0);
         internals.evictAllResources();
 
         window.addEventListener('beforeunload', function() {
-            internals.setNetworkStateNotifierTestOnly(false);
+            internals.clearNetworkConnectionInfoOverride();
             internals.settings.setDisallowFetchForDocWrittenScriptsInMainFrameOnSlowConnections(false);
         }, false);
     }

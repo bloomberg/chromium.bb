@@ -116,6 +116,8 @@ const char kReloadSharedWorkerTestPage[] =
     "files/workers/debug_shared_worker_initialization.html";
 const char kReloadSharedWorkerTestWorker[] =
     "files/workers/debug_shared_worker_initialization.js";
+const char kEmulateNetworkConditionsPage[] =
+    "files/devtools/emulate_network_conditions.html";
 
 template <typename... T>
 void DispatchOnTestSuiteSkipCheck(DevToolsWindow* window,
@@ -1339,4 +1341,17 @@ IN_PROC_BROWSER_TEST_F(DevToolsPixelOutputTests,
                 "MouseWheel", "GestureTap");
 
   CloseDevToolsWindow();
+}
+
+class DevToolsNetInfoTest : public DevToolsSanityTest {
+ protected:
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    command_line->AppendSwitch(switches::kEnableNetworkInformation);
+    command_line->AppendSwitch(
+        switches::kEnableExperimentalWebPlatformFeatures);
+  }
+};
+
+IN_PROC_BROWSER_TEST_F(DevToolsNetInfoTest, EmulateNetworkConditions) {
+  RunTest("testEmulateNetworkConditions", kEmulateNetworkConditionsPage);
 }

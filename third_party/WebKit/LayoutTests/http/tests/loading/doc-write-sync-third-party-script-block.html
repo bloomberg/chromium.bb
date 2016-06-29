@@ -21,14 +21,13 @@
 <script>
     if (window.internals) {
         internals.settings.setDisallowFetchForDocWrittenScriptsInMainFrameOnSlowConnections(true);
-        internals.setNetworkStateNotifierTestOnly(true);
-        internals.setNetworkConnectionInfo('cellular2g', 1.0);
+        internals.setNetworkConnectionInfoOverride(true, 'cellular2g', 1.0);
         internals.evictAllResources();
 
         // Reset the state of the singleton network state notifier.
         window.addEventListener('beforeunload', function() {
             internals.settings.setDisallowFetchForDocWrittenScriptsInMainFrameOnSlowConnections(false);
-            internals.setNetworkStateNotifierTestOnly(false);
+            internals.clearNetworkConnectionInfoOverride();
         }, false);
     }
 

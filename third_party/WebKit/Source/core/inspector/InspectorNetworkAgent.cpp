@@ -56,6 +56,7 @@
 #include "core/loader/FrameLoader.h"
 #include "core/loader/MixedContentChecker.h"
 #include "core/loader/ThreadableLoaderClient.h"
+#include "core/page/NetworkStateNotifier.h"
 #include "core/page/Page.h"
 #include "core/xmlhttprequest/XMLHttpRequest.h"
 #include "platform/blob/BlobData.h"
@@ -98,9 +99,6 @@ static size_t maximumTotalBufferSize = 100 * 1000 * 1000;
 
 // 10MB
 static size_t maximumResourceBufferSize = 10 * 1000 * 1000;
-}
-
-namespace {
 
 // Pattern may contain stars ('*') which match to any (possibly empty) string.
 // Stars implicitly assumed at the begin/end of pattern.
@@ -244,6 +242,30 @@ String buildBlockedReason(ResourceRequestBlockedReason reason)
         NOTREACHED();
         return protocol::Network::BlockedReasonEnum::Other;
     }
+}
+
+WebConnectionType toWebConnectionType(ErrorString* errorString, const String& connectionType)
+{
+    if (connectionType == protocol::Network::ConnectionTypeEnum::None)
+        return WebConnectionTypeNone;
+    if (connectionType == protocol::Network::ConnectionTypeEnum::Cellular2g)
+        return WebConnectionTypeCellular2G;
+    if (connectionType == protocol::Network::ConnectionTypeEnum::Cellular3g)
+        return WebConnectionTypeCellular3G;
+    if (connectionType == protocol::Network::ConnectionTypeEnum::Cellular4g)
+        return WebConnectionTypeCellular4G;
+    if (connectionType == protocol::Network::ConnectionTypeEnum::Bluetooth)
+        return WebConnectionTypeBluetooth;
+    if (connectionType == protocol::Network::ConnectionTypeEnum::Ethernet)
+        return WebConnectionTypeEthernet;
+    if (connectionType == protocol::Network::ConnectionTypeEnum::Wifi)
+        return WebConnectionTypeWifi;
+    if (connectionType == protocol::Network::ConnectionTypeEnum::Wimax)
+        return WebConnectionTypeWimax;
+    if (connectionType == protocol::Network::ConnectionTypeEnum::Other)
+        return WebConnectionTypeOther;
+    *errorString = "Unknown connection type";
+    return WebConnectionTypeUnknown;
 }
 
 } // namespace
@@ -1065,6 +1087,21 @@ void InspectorNetworkAgent::canClearBrowserCache(ErrorString*, bool* result)
 void InspectorNetworkAgent::canClearBrowserCookies(ErrorString*, bool* result)
 {
     *result = true;
+}
+
+void InspectorNetworkAgent::emulateNetworkConditions(ErrorString* errorString, bool offline, double latency, double downloadThroughput, double uploadThroughput, const Maybe<String>& connectionType)
+{
+    WebConnectionType type = WebConnectionTypeUnknown;
+    if (connectionType.isJust()) {
+        type = toWebConnectionType(errorString, connectionType.fromJust());
+        if (!errorString->isEmpty())
+            return;
+    }
+    // TODO(dgozman): networkStateNotifier is per-process. It would be nice to have per-frame override instead.
+    if (offline || latency || downloadThroughput || uploadThroughput)
+        networkStateNotifier().setOverride(!offline, type, downloadThroughput / (1024 * 1024 / 8));
+    else
+        networkStateNotifier().clearOverride();
 }
 
 void InspectorNetworkAgent::setCacheDisabled(ErrorString*, bool cacheDisabled)

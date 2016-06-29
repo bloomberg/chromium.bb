@@ -23,11 +23,11 @@ var handler = function(e) {
     shouldBe('connection.downlinkMax', 'newDownlinkMax');
     connection.removeEventListener('change', handler);
     connection.addEventListener('change', otherHandler);
-    internals.setNetworkConnectionInfo(initialType, initialDownlinkMax);
+    internals.setNetworkConnectionInfoOverride(isTypeOnline(initialType), initialType, initialDownlinkMax);
 };
 
 connection.addEventListener('change', handler);
-internals.setNetworkConnectionInfo(newConnectionType, newDownlinkMax);
+internals.setNetworkConnectionInfoOverride(isTypeOnline(newConnectionType), newConnectionType, newDownlinkMax);
 
 </script>
 </body>

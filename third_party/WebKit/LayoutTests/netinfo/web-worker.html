@@ -20,11 +20,11 @@ worker.addEventListener('message', function(e) {
         if (e.data != connection.type + ',' + connection.downlinkMax) {
             testFailed("Worker type disagrees with main frame.");
         }
-       internals.setNetworkConnectionInfo(newConnectionType, newDownlinkMax);
+       internals.setNetworkConnectionInfoOverride(isTypeOnline(newConnectionType), newConnectionType, newDownlinkMax);
     } else if (msg_count == 1) {
         if (e.data != newConnectionType + ',' + newDownlinkMax)
             testFailed("Worker switched to wrong connection type.");
-        internals.setNetworkConnectionInfo(initialType, initialDownlinkMax);
+        internals.setNetworkConnectionInfoOverride(isTypeOnline(initialType), initialType, initialDownlinkMax);
     } else if (msg_count == 2) {
         if (e.data != initialType + ',' + initialDownlinkMax)
             testFailed("Worker did not revert back to initial type.");

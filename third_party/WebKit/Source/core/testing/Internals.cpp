@@ -2377,12 +2377,7 @@ bool Internals::ignoreLayoutWithPendingStylesheets(Document* document)
     return document->ignoreLayoutWithPendingStylesheets();
 }
 
-void Internals::setNetworkStateNotifierTestOnly(bool testOnly)
-{
-    networkStateNotifier().setTestUpdatesOnly(testOnly);
-}
-
-void Internals::setNetworkConnectionInfo(const String& type, double downlinkMaxMbps, ExceptionState& exceptionState)
+void Internals::setNetworkConnectionInfoOverride(bool onLine, const String& type, double downlinkMaxMbps, ExceptionState& exceptionState)
 {
     WebConnectionType webtype;
     if (type == "cellular2g") {
@@ -2409,7 +2404,12 @@ void Internals::setNetworkConnectionInfo(const String& type, double downlinkMaxM
         exceptionState.throwDOMException(NotFoundError, ExceptionMessages::failedToEnumerate("connection type", type));
         return;
     }
-    networkStateNotifier().setWebConnectionForTest(webtype, downlinkMaxMbps);
+    networkStateNotifier().setOverride(onLine, webtype, downlinkMaxMbps);
+}
+
+void Internals::clearNetworkConnectionInfoOverride()
+{
+    networkStateNotifier().clearOverride();
 }
 
 unsigned Internals::countHitRegions(CanvasRenderingContext* context)

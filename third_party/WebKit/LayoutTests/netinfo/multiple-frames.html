@@ -53,7 +53,7 @@ function maybeFinishTest() {
 connection.addEventListener('change', mainFrameListener);
 childConnection.addEventListener('change', childFrameListener);
 
-internals.setNetworkConnectionInfo(newConnectionType, newDownlinkMax);
+internals.setNetworkConnectionInfoOverride(isTypeOnline(newConnectionType), newConnectionType, newDownlinkMax);
 
 </script>
 </body>

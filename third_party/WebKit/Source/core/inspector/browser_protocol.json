@@ -927,6 +927,12 @@
                 "description": "Request / response headers as keys / values of JSON object."
             },
             {
+                "id": "ConnectionType",
+                "type": "string",
+                "enum": ["none", "cellular2g", "cellular3g", "cellular4g", "bluetooth", "ethernet", "wifi", "wimax", "other"],
+                "description": "Loading priority of a resource request."
+            },
+            {
                 "id": "ResourceTiming",
                 "type": "object",
                 "description": "Timing information for the request.",
@@ -1268,10 +1274,11 @@
                     { "name": "offline", "type": "boolean", "description": "True to emulate internet disconnection." },
                     { "name": "latency", "type": "number", "description": "Additional latency (ms)." },
                     { "name": "downloadThroughput", "type": "number", "description": "Maximal aggregated download throughput." },
-                    { "name": "uploadThroughput", "type": "number", "description": "Maximal aggregated upload throughput." }
+                    { "name": "uploadThroughput", "type": "number", "description": "Maximal aggregated upload throughput." },
+                    { "name": "connectionType", "$ref": "ConnectionType", "optional": true, "description": "Connection type if known."}
                 ],
                 "hidden": true,
-                "handlers": ["browser"]
+                "handlers": ["browser", "renderer"]
             },
             {
                 "name": "setCacheDisabled",

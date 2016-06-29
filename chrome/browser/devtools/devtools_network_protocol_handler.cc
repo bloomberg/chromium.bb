@@ -92,9 +92,7 @@ DevToolsNetworkProtocolHandler::EmulateNetworkConditions(
                                     upload_throughput));
 
   UpdateNetworkState(agent_host, std::move(conditions));
-
-  std::unique_ptr<base::DictionaryValue> result(new base::DictionaryValue());
-  return DevToolsProtocol::CreateSuccessResponse(command_id, std::move(result));
+  return nullptr; // Fall-through.
 }
 
 void DevToolsNetworkProtocolHandler::UpdateNetworkState(

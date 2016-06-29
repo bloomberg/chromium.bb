@@ -298,10 +298,9 @@
 
     boolean ignoreLayoutWithPendingStylesheets(Document document);
 
-    // These functions are for testing NetInfo. You must call setNetworkStateNotifierTestOnly(true)
-    // before calling setNetworkConnectionInfo.
-    void setNetworkStateNotifierTestOnly(boolean testOnly);
-    [RaisesException] void setNetworkConnectionInfo(DOMString type, double downlinkMaxMbps);
+    // These functions are for testing NetInfo. You must call clearNetworkConnectionInfoOverride() at the end.
+    [RaisesException] void setNetworkConnectionInfoOverride(boolean onLine, DOMString type, double downlinkMaxMbps);
+    void clearNetworkConnectionInfoOverride();
 
     // This function is for testing HitRegions on Canvas2D.
     unsigned long countHitRegions(CanvasRenderingContext2D context);

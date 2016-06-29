@@ -11,13 +11,12 @@
     }, "window.internals is required for the test to run");
 
     internals.settings.setDisallowFetchForDocWrittenScriptsInMainFrameOnSlowConnections(true);
-    internals.setNetworkStateNotifierTestOnly(true);
-    internals.setNetworkConnectionInfo('cellular2g', 1.0);
+    internals.setNetworkConnectionInfoOverride(true, 'cellular2g', 1.0);
     internals.evictAllResources();
 
     window.addEventListener('beforeunload', function() {
         internals.settings.setDisallowFetchForDocWrittenScriptsInMainFrameOnSlowConnections(false);
-        internals.setNetworkStateNotifierTestOnly(false);
+        internals.clearNetworkConnectionInfoOverride();
         // Remove localStorage items, just in case they haven't been
         // already removed, due to test failure.
         if (window.localStorage.getItem("errorCount") !== null) {

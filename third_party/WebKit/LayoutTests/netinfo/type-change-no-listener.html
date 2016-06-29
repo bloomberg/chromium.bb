@@ -7,7 +7,7 @@
 <script>
 description('Tests that the type changes without an active listener');
 
-internals.setNetworkConnectionInfo(newConnectionType, newDownlinkMax);
+internals.setNetworkConnectionInfoOverride(isTypeOnline(newConnectionType), newConnectionType, newDownlinkMax);
 shouldBe('connection.type', 'newConnectionType');
 shouldBe('connection.downlinkMax', 'newDownlinkMax');
 

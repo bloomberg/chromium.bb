@@ -42,28 +42,44 @@ NetworkStateNotifier& networkStateNotifier()
     return networkStateNotifier;
 }
 
+NetworkStateNotifier::ScopedNotifier::ScopedNotifier(NetworkStateNotifier& notifier)
+    : m_notifier(notifier)
+{
+    DCHECK(isMainThread());
+    m_before = m_notifier.m_hasOverride ? m_notifier.m_override : m_notifier.m_state;
+}
+
+NetworkStateNotifier::ScopedNotifier::~ScopedNotifier()
+{
+    DCHECK(isMainThread());
+    const NetworkState& after = m_notifier.m_hasOverride ? m_notifier.m_override : m_notifier.m_state;
+    if ((after.type != m_before.type || after.maxBandwidthMbps != m_before.maxBandwidthMbps) && m_before.connectionInitialized)
+        m_notifier.notifyObservers(after.type, after.maxBandwidthMbps);
+    if (after.onLine != m_before.onLine && m_before.onLineInitialized)
+        Page::networkStateChanged(after.onLine);
+}
+
 void NetworkStateNotifier::setOnLine(bool onLine)
 {
-    ASSERT(isMainThread());
-
+    DCHECK(isMainThread());
+    ScopedNotifier notifier(*this);
     {
         MutexLocker locker(m_mutex);
-        if (m_isOnLine == onLine)
-            return;
-
-        m_isOnLine = onLine;
+        m_state.onLineInitialized = true;
+        m_state.onLine = onLine;
     }
-
-    Page::networkStateChanged(onLine);
 }
 
 void NetworkStateNotifier::setWebConnection(WebConnectionType type, double maxBandwidthMbps)
 {
-    ASSERT(isMainThread());
-    if (m_testUpdatesOnly)
-        return;
-
-    setWebConnectionImpl(type, maxBandwidthMbps);
+    DCHECK(isMainThread());
+    ScopedNotifier notifier(*this);
+    {
+        MutexLocker locker(m_mutex);
+        m_state.connectionInitialized = true;
+        m_state.type = type;
+        m_state.maxBandwidthMbps = maxBandwidthMbps;
+    }
 }
 
 void NetworkStateNotifier::addObserver(NetworkStateObserver* observer, ExecutionContext* context)
@@ -100,40 +116,34 @@ void NetworkStateNotifier::removeObserver(NetworkStateObserver* observer, Execut
         collectZeroedObservers(observerList, context);
 }
 
-void NetworkStateNotifier::setTestUpdatesOnly(bool updatesOnly)
+void NetworkStateNotifier::setOverride(bool onLine, WebConnectionType type, double maxBandwidthMbps)
 {
-    ASSERT(isMainThread());
-    MutexLocker locker(m_mutex);
-
-    // Reset state to default when entering or leaving test mode.
-    if (updatesOnly != m_testUpdatesOnly) {
-        m_isOnLine = true;
-        m_type = WebConnectionTypeOther;
-        m_maxBandwidthMbps = std::numeric_limits<double>::infinity();
+    DCHECK(isMainThread());
+    ScopedNotifier notifier(*this);
+    {
+        MutexLocker locker(m_mutex);
+        m_hasOverride = true;
+        m_override.onLineInitialized = true;
+        m_override.onLine = onLine;
+        m_override.connectionInitialized = true;
+        m_override.type = type;
+        m_override.maxBandwidthMbps = maxBandwidthMbps;
     }
-
-    m_testUpdatesOnly = updatesOnly;
 }
 
-void NetworkStateNotifier::setWebConnectionForTest(WebConnectionType type, double maxBandwidthMbps)
+void NetworkStateNotifier::clearOverride()
 {
-    ASSERT(isMainThread());
-    ASSERT(m_testUpdatesOnly);
-    setWebConnectionImpl(type, maxBandwidthMbps);
+    DCHECK(isMainThread());
+    ScopedNotifier notifier(*this);
+    {
+        MutexLocker locker(m_mutex);
+        m_hasOverride = false;
+    }
 }
 
-void NetworkStateNotifier::setWebConnectionImpl(WebConnectionType type, double maxBandwidthMbps)
+void NetworkStateNotifier::notifyObservers(WebConnectionType type, double maxBandwidthMbps)
 {
-    ASSERT(isMainThread());
-
-    MutexLocker locker(m_mutex);
-    m_initialized = true;
-
-    if (m_type == type && m_maxBandwidthMbps == maxBandwidthMbps)
-        return;
-    m_type = type;
-    m_maxBandwidthMbps = maxBandwidthMbps;
-
+    DCHECK(isMainThread());
     for (const auto& entry : m_observers) {
         ExecutionContext* context = entry.key;
         context->postTask(BLINK_FROM_HERE, createCrossThreadTask(&NetworkStateNotifier::notifyObserversOfConnectionChangeOnContext, crossThreadUnretained(this), type, maxBandwidthMbps));

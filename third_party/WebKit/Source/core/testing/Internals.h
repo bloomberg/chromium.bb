@@ -343,10 +343,8 @@ public:
 
     bool ignoreLayoutWithPendingStylesheets(Document*);
 
-    // Test must call setNetworkStateNotifierTestOnly(true) before calling setNetworkConnectionInfo or
-    // setNetworkStateMaxBandwidth.
-    void setNetworkStateNotifierTestOnly(bool);
-    void setNetworkConnectionInfo(const String&, double downlinkMaxMbps, ExceptionState&);
+    void setNetworkConnectionInfoOverride(bool, const String&, double downlinkMaxMbps, ExceptionState&);
+    void clearNetworkConnectionInfoOverride();
 
     unsigned countHitRegions(CanvasRenderingContext*);
 
