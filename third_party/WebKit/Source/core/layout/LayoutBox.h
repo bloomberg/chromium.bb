@@ -425,8 +425,8 @@ public:
     LayoutUnit offsetWidth() const override { return m_frameRect.width(); }
     LayoutUnit offsetHeight() const override { return m_frameRect.height(); }
 
-    int pixelSnappedOffsetWidth() const final;
-    int pixelSnappedOffsetHeight() const final;
+    int pixelSnappedOffsetWidth(const Element*) const final;
+    int pixelSnappedOffsetHeight(const Element*) const final;
 
     // More IE extensions.  clientWidth and clientHeight represent the interior of an object
     // excluding border and scrollbar.  clientLeft/Top are just the borderLeftWidth and borderTopWidth.
@@ -836,8 +836,8 @@ public:
     LayoutUnit lineHeight(bool firstLine, LineDirectionMode, LinePositionMode = PositionOnContainingLine) const override;
     int baselinePosition(FontBaseline, bool firstLine, LineDirectionMode, LinePositionMode = PositionOnContainingLine) const override;
 
-    LayoutUnit offsetLeft() const override;
-    LayoutUnit offsetTop() const override;
+    LayoutUnit offsetLeft(const Element*) const override;
+    LayoutUnit offsetTop(const Element*) const override;
 
     LayoutPoint flipForWritingModeForChild(const LayoutBox* child, const LayoutPoint&) const;
     LayoutUnit flipForWritingMode(LayoutUnit position) const WARN_UNUSED_RETURN {

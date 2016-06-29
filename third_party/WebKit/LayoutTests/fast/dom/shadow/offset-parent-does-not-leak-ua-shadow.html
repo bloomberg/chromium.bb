@@ -31,14 +31,15 @@ shadow.positionedElement.removeAttribute('style');
 shouldBe('child.offsetParent', 'container');
 
 // Test that when the offsetParent is in user agent Shadow DOM, it is
-// not exposed to script
+// not exposed to script, but its shadow host or the host's ancestor
+// which is appropriate as an offsetParent is returned.
 host = document.createElement('details');
 container.appendChild(host);
 host.setAttribute('open', 'open');
 host.appendChild(child);
 var shadow = window.internals.youngestShadowRoot(host);  // this is a UA shadow root
 configureShadowRoot(shadow);
-shouldBe('child.offsetParent', 'null');
+shouldBe('child.offsetParent', 'container');
 
 // Test that offsetParent works 'through' user agent Shadow DOM when there is no
 // positioned ancestor in user agent Shadow DOM

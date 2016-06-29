@@ -458,12 +458,12 @@ int LayoutBox::pixelSnappedClientHeight() const
     return snapSizeToPixel(clientHeight(), location().y() + clientTop());
 }
 
-int LayoutBox::pixelSnappedOffsetWidth() const
+int LayoutBox::pixelSnappedOffsetWidth(const Element*) const
 {
     return snapSizeToPixel(offsetWidth(), location().x() + clientLeft());
 }
 
-int LayoutBox::pixelSnappedOffsetHeight() const
+int LayoutBox::pixelSnappedOffsetHeight(const Element*) const
 {
     return snapSizeToPixel(offsetHeight(), location().y() + clientTop());
 }
@@ -4455,14 +4455,14 @@ LayoutRect LayoutBox::visualOverflowRect() const
     return unionRect(m_overflow->selfVisualOverflowRect(), m_overflow->contentsVisualOverflowRect());
 }
 
-LayoutUnit LayoutBox::offsetLeft() const
+LayoutUnit LayoutBox::offsetLeft(const Element* parent) const
 {
-    return adjustedPositionRelativeToOffsetParent(topLeftLocation()).x();
+    return adjustedPositionRelativeTo(topLeftLocation(), parent).x();
 }
 
-LayoutUnit LayoutBox::offsetTop() const
+LayoutUnit LayoutBox::offsetTop(const Element* parent) const
 {
-    return adjustedPositionRelativeToOffsetParent(topLeftLocation()).y();
+    return adjustedPositionRelativeTo(topLeftLocation(), parent).y();
 }
 
 LayoutPoint LayoutBox::flipForWritingModeForChild(const LayoutBox* child, const LayoutPoint& point) const

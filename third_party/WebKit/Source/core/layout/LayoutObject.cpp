@@ -3179,12 +3179,12 @@ void LayoutObject::imageChanged(ImageResource* image, const IntRect* rect)
     imageChanged(static_cast<WrappedImagePtr>(image), rect);
 }
 
-Element* LayoutObject::offsetParent() const
+Element* LayoutObject::offsetParent(const Element* unclosedBase) const
 {
     if (isDocumentElement() || isBody())
         return nullptr;
 
-    if (isOutOfFlowPositioned() && style()->position() == FixedPosition)
+    if (isFixedPositioned())
         return nullptr;
 
     float effectiveZoom = style()->effectiveZoom();
@@ -3196,6 +3196,16 @@ Element* LayoutObject::offsetParent() const
 
         if (!node)
             continue;
+
+        // TODO(kochi): If |unclosedBase| or |node| is nested deep in shadow roots, this loop may
+        // get expensive, as isUnclosedNodeOf() can take up to O(N+M) time (N and M are depths).
+        if (unclosedBase && (!node->isUnclosedNodeOf(*unclosedBase) || (node->isInShadowTree() && node->containingShadowRoot()->type() == ShadowRootType::UserAgent))) {
+            // If 'position: fixed' node is found while traversing up, terminate the loop and
+            // return null.
+            if (ancestor->isFixedPositioned())
+                return nullptr;
+            continue;
+        }
 
         if (ancestor->isPositioned())
             break;

@@ -353,8 +353,8 @@ bool InspectorHighlight::getBoxModel(Node* node, std::unique_ptr<protocol::DOM::
         .setPadding(buildArrayForQuad(padding))
         .setBorder(buildArrayForQuad(border))
         .setMargin(buildArrayForQuad(margin))
-        .setWidth(modelObject ? adjustForAbsoluteZoom(modelObject->pixelSnappedOffsetWidth(), modelObject) : boundingBox.width())
-        .setHeight(modelObject ? adjustForAbsoluteZoom(modelObject->pixelSnappedOffsetHeight(), modelObject) : boundingBox.height()).build();
+        .setWidth(modelObject ? adjustForAbsoluteZoom(modelObject->pixelSnappedOffsetWidth(modelObject->offsetParent()), modelObject) : boundingBox.width())
+        .setHeight(modelObject ? adjustForAbsoluteZoom(modelObject->pixelSnappedOffsetHeight(modelObject->offsetParent()), modelObject) : boundingBox.height()).build();
 
     Shape::DisplayPaths paths;
     FloatQuad boundsQuad;

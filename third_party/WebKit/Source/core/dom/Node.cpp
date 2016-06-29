@@ -636,6 +636,25 @@ Node& Node::shadowIncludingRoot() const
     return *root;
 }
 
+bool Node::isUnclosedNodeOf(const Node& other) const
+{
+    if (!isInShadowTree() || treeScope() == other.treeScope())
+        return true;
+
+    const TreeScope* scope = &treeScope();
+    for (; scope->parentTreeScope(); scope = scope->parentTreeScope()) {
+        const ContainerNode& root = scope->rootNode();
+        if (root.isShadowRoot() && !toShadowRoot(root).isOpenOrV0())
+            break;
+    }
+
+    for (TreeScope* otherScope = &other.treeScope(); otherScope; otherScope = otherScope->parentTreeScope()) {
+        if (otherScope == scope)
+            return true;
+    }
+    return false;
+}
+
 bool Node::needsDistributionRecalc() const
 {
     return shadowIncludingRoot().childNeedsDistributionRecalc();

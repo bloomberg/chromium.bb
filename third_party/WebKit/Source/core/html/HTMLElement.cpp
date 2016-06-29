@@ -54,6 +54,7 @@
 #include "core/html/HTMLTemplateElement.h"
 #include "core/html/HTMLTextFormControlElement.h"
 #include "core/html/parser/HTMLParserIdioms.h"
+#include "core/layout/LayoutBoxModelObject.h"
 #include "core/layout/LayoutObject.h"
 #include "core/page/SpatialNavigation.h"
 #include "platform/Language.h"
@@ -1049,6 +1050,49 @@ const AtomicString& HTMLElement::eventParameterName()
 {
     DEFINE_STATIC_LOCAL(const AtomicString, eventString, ("event"));
     return eventString;
+}
+
+int HTMLElement::offsetLeftForBinding()
+{
+    document().updateStyleAndLayoutIgnorePendingStylesheetsForNode(this);
+    if (LayoutBoxModelObject* layoutObject = layoutBoxModelObject())
+        return adjustLayoutUnitForAbsoluteZoom(LayoutUnit(layoutObject->pixelSnappedOffsetLeft(unclosedOffsetParent())), layoutObject->styleRef()).round();
+    return 0;
+}
+
+int HTMLElement::offsetTopForBinding()
+{
+    document().updateStyleAndLayoutIgnorePendingStylesheetsForNode(this);
+    if (LayoutBoxModelObject* layoutObject = layoutBoxModelObject())
+        return adjustLayoutUnitForAbsoluteZoom(LayoutUnit(layoutObject->pixelSnappedOffsetTop(unclosedOffsetParent())), layoutObject->styleRef()).round();
+    return 0;
+}
+
+int HTMLElement::offsetWidthForBinding()
+{
+    document().updateStyleAndLayoutIgnorePendingStylesheetsForNode(this);
+    if (LayoutBoxModelObject* layoutObject = layoutBoxModelObject())
+        return adjustLayoutUnitForAbsoluteZoom(LayoutUnit(layoutObject->pixelSnappedOffsetWidth(unclosedOffsetParent())), layoutObject->styleRef()).round();
+    return 0;
+}
+
+int HTMLElement::offsetHeightForBinding()
+{
+    document().updateStyleAndLayoutIgnorePendingStylesheetsForNode(this);
+    if (LayoutBoxModelObject* layoutObject = layoutBoxModelObject())
+        return adjustLayoutUnitForAbsoluteZoom(LayoutUnit(layoutObject->pixelSnappedOffsetHeight(unclosedOffsetParent())), layoutObject->styleRef()).round();
+    return 0;
+}
+
+Element* HTMLElement::unclosedOffsetParent()
+{
+    document().updateStyleAndLayoutIgnorePendingStylesheetsForNode(this);
+
+    LayoutObject* layoutObject = this->layoutObject();
+    if (!layoutObject)
+        return nullptr;
+
+    return layoutObject->offsetParent(this);
 }
 
 } // namespace blink

@@ -617,13 +617,13 @@ void Element::callApplyScroll(ScrollState& scrollState)
         nativeApplyScroll(scrollState);
     if (callback->nativeScrollBehavior() == WebNativeScrollBehavior::PerformAfterNativeScroll)
         callback->handleEvent(&scrollState);
-};
+}
 
 int Element::offsetLeft()
 {
     document().updateStyleAndLayoutIgnorePendingStylesheetsForNode(this);
     if (LayoutBoxModelObject* layoutObject = layoutBoxModelObject())
-        return adjustLayoutUnitForAbsoluteZoom(LayoutUnit(layoutObject->pixelSnappedOffsetLeft()), layoutObject->styleRef()).round();
+        return adjustLayoutUnitForAbsoluteZoom(LayoutUnit(layoutObject->pixelSnappedOffsetLeft(offsetParent())), layoutObject->styleRef()).round();
     return 0;
 }
 
@@ -631,7 +631,7 @@ int Element::offsetTop()
 {
     document().updateStyleAndLayoutIgnorePendingStylesheetsForNode(this);
     if (LayoutBoxModelObject* layoutObject = layoutBoxModelObject())
-        return adjustLayoutUnitForAbsoluteZoom(LayoutUnit(layoutObject->pixelSnappedOffsetTop()), layoutObject->styleRef()).round();
+        return adjustLayoutUnitForAbsoluteZoom(LayoutUnit(layoutObject->pixelSnappedOffsetTop(offsetParent())), layoutObject->styleRef()).round();
     return 0;
 }
 
@@ -639,7 +639,7 @@ int Element::offsetWidth()
 {
     document().updateStyleAndLayoutIgnorePendingStylesheetsForNode(this);
     if (LayoutBoxModelObject* layoutObject = layoutBoxModelObject())
-        return adjustLayoutUnitForAbsoluteZoom(LayoutUnit(layoutObject->pixelSnappedOffsetWidth()), layoutObject->styleRef()).round();
+        return adjustLayoutUnitForAbsoluteZoom(LayoutUnit(layoutObject->pixelSnappedOffsetWidth(offsetParent())), layoutObject->styleRef()).round();
     return 0;
 }
 
@@ -647,7 +647,7 @@ int Element::offsetHeight()
 {
     document().updateStyleAndLayoutIgnorePendingStylesheetsForNode(this);
     if (LayoutBoxModelObject* layoutObject = layoutBoxModelObject())
-        return adjustLayoutUnitForAbsoluteZoom(LayoutUnit(layoutObject->pixelSnappedOffsetHeight()), layoutObject->styleRef()).round();
+        return adjustLayoutUnitForAbsoluteZoom(LayoutUnit(layoutObject->pixelSnappedOffsetHeight(offsetParent())), layoutObject->styleRef()).round();
     return 0;
 }
 
@@ -656,17 +656,7 @@ Element* Element::offsetParent()
     document().updateStyleAndLayoutIgnorePendingStylesheetsForNode(this);
 
     LayoutObject* layoutObject = this->layoutObject();
-    if (!layoutObject)
-        return nullptr;
-
-    Element* element = layoutObject->offsetParent();
-    if (!element)
-        return nullptr;
-
-    if (element->isInShadowTree() && !element->containingShadowRoot()->isOpenOrV0())
-        return nullptr;
-
-    return element;
+    return layoutObject ? layoutObject->offsetParent() : nullptr;
 }
 
 int Element::clientLeft()

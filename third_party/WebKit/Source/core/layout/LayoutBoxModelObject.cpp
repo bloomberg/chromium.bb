@@ -747,7 +747,7 @@ LayoutSize LayoutBoxModelObject::stickyPositionOffset() const
     return LayoutSize(scrollableArea->stickyConstraintsMap().get(layer()).computeStickyOffset(constrainingRect));
 }
 
-LayoutPoint LayoutBoxModelObject::adjustedPositionRelativeToOffsetParent(const LayoutPoint& startPoint) const
+LayoutPoint LayoutBoxModelObject::adjustedPositionRelativeTo(const LayoutPoint& startPoint, const Element* element) const
 {
     // If the element is the HTML body element or doesn't have a parent
     // return 0 and stop this algorithm.
@@ -757,10 +757,8 @@ LayoutPoint LayoutBoxModelObject::adjustedPositionRelativeToOffsetParent(const L
     LayoutPoint referencePoint = startPoint;
     referencePoint.move(parent()->columnOffset(referencePoint));
 
-    // If the offsetParent of the element is null, or is the HTML body element,
-    // return the distance between the canvas origin and the left border edge
-    // of the element and stop this algorithm.
-    Element* element = offsetParent();
+    // If the base element is null, return the distance between the canvas origin and
+    // the left border edge of the element and stop this algorithm.
     if (!element)
         return referencePoint;
 
@@ -800,28 +798,28 @@ LayoutSize LayoutBoxModelObject::offsetForInFlowPosition() const
     return LayoutSize();
 }
 
-LayoutUnit LayoutBoxModelObject::offsetLeft() const
+LayoutUnit LayoutBoxModelObject::offsetLeft(const Element* parent) const
 {
     // Note that LayoutInline and LayoutBox override this to pass a different
-    // startPoint to adjustedPositionRelativeToOffsetParent.
-    return adjustedPositionRelativeToOffsetParent(LayoutPoint()).x();
+    // startPoint to adjustedPositionRelativeTo.
+    return adjustedPositionRelativeTo(LayoutPoint(), parent).x();
 }
 
-LayoutUnit LayoutBoxModelObject::offsetTop() const
+LayoutUnit LayoutBoxModelObject::offsetTop(const Element* parent) const
 {
     // Note that LayoutInline and LayoutBox override this to pass a different
-    // startPoint to adjustedPositionRelativeToOffsetParent.
-    return adjustedPositionRelativeToOffsetParent(LayoutPoint()).y();
+    // startPoint to adjustedPositionRelativeTo.
+    return adjustedPositionRelativeTo(LayoutPoint(), parent).y();
 }
 
-int LayoutBoxModelObject::pixelSnappedOffsetWidth() const
+int LayoutBoxModelObject::pixelSnappedOffsetWidth(const Element* parent) const
 {
-    return snapSizeToPixel(offsetWidth(), offsetLeft());
+    return snapSizeToPixel(offsetWidth(), offsetLeft(parent));
 }
 
-int LayoutBoxModelObject::pixelSnappedOffsetHeight() const
+int LayoutBoxModelObject::pixelSnappedOffsetHeight(const Element* parent) const
 {
-    return snapSizeToPixel(offsetHeight(), offsetTop());
+    return snapSizeToPixel(offsetHeight(), offsetTop(parent));
 }
 
 LayoutUnit LayoutBoxModelObject::computedCSSPadding(const Length& padding) const

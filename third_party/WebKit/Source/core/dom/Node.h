@@ -203,6 +203,7 @@ public:
     Node* lastChild() const;
     Node& treeRoot() const;
     Node& shadowIncludingRoot() const;
+    bool isUnclosedNodeOf(const Node&) const;
 
     void prepend(const HeapVector<NodeOrString>&, ExceptionState&);
     void append(const HeapVector<NodeOrString>&, ExceptionState&);

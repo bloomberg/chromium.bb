@@ -210,18 +210,18 @@ static const LayoutBlock* layoutObjectPlaceholder(const LayoutObject* layoutObje
     return fullScreen->placeholder();
 }
 
-LayoutUnit LayoutVideo::offsetLeft() const
+LayoutUnit LayoutVideo::offsetLeft(const Element* parent) const
 {
     if (const LayoutBlock* block = layoutObjectPlaceholder(this))
-        return block->offsetLeft();
-    return LayoutMedia::offsetLeft();
+        return block->offsetLeft(parent);
+    return LayoutMedia::offsetLeft(parent);
 }
 
-LayoutUnit LayoutVideo::offsetTop() const
+LayoutUnit LayoutVideo::offsetTop(const Element* parent) const
 {
     if (const LayoutBlock* block = layoutObjectPlaceholder(this))
-        return block->offsetTop();
-    return LayoutMedia::offsetTop();
+        return block->offsetTop(parent);
+    return LayoutMedia::offsetTop(parent);
 }
 
 LayoutUnit LayoutVideo::offsetWidth() const

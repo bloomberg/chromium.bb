@@ -67,8 +67,8 @@ private:
     LayoutUnit computeReplacedLogicalHeight(LayoutUnit estimatedUsedWidth = LayoutUnit()) const override;
     LayoutUnit minimumReplacedHeight() const override;
 
-    LayoutUnit offsetLeft() const override;
-    LayoutUnit offsetTop() const override;
+    LayoutUnit offsetLeft(const Element*) const override;
+    LayoutUnit offsetTop(const Element*) const override;
     LayoutUnit offsetWidth() const override;
     LayoutUnit offsetHeight() const override;
 

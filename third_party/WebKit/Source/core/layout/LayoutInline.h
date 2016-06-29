@@ -230,8 +230,8 @@ private:
 
     PaintLayerType layerTypeRequired() const override;
 
-    LayoutUnit offsetLeft() const final;
-    LayoutUnit offsetTop() const final;
+    LayoutUnit offsetLeft(const Element*) const final;
+    LayoutUnit offsetTop(const Element*) const final;
     LayoutUnit offsetWidth() const final { return linesBoundingBox().width(); }
     LayoutUnit offsetHeight() const final { return linesBoundingBox().height(); }
 

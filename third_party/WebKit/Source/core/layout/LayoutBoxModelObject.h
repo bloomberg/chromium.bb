@@ -150,15 +150,15 @@ public:
 
     // IE extensions. Used to calculate offsetWidth/Height.  Overridden by inlines (LayoutFlow)
     // to return the remaining width on a given line (and the height of a single line).
-    virtual LayoutUnit offsetLeft() const;
-    virtual LayoutUnit offsetTop() const;
+    virtual LayoutUnit offsetLeft(const Element*) const;
+    virtual LayoutUnit offsetTop(const Element*) const;
     virtual LayoutUnit offsetWidth() const = 0;
     virtual LayoutUnit offsetHeight() const = 0;
 
-    int pixelSnappedOffsetLeft() const { return roundToInt(offsetLeft()); }
-    int pixelSnappedOffsetTop() const { return roundToInt(offsetTop()); }
-    virtual int pixelSnappedOffsetWidth() const;
-    virtual int pixelSnappedOffsetHeight() const;
+    int pixelSnappedOffsetLeft(const Element* parent) const { return roundToInt(offsetLeft(parent)); }
+    int pixelSnappedOffsetTop(const Element* parent) const { return roundToInt(offsetTop(parent)); }
+    virtual int pixelSnappedOffsetWidth(const Element*) const;
+    virtual int pixelSnappedOffsetHeight(const Element*) const;
 
     bool hasSelfPaintingLayer() const;
     PaintLayer* layer() const { return m_layer.get(); }
@@ -302,7 +302,7 @@ public:
 protected:
     void willBeDestroyed() override;
 
-    LayoutPoint adjustedPositionRelativeToOffsetParent(const LayoutPoint&) const;
+    LayoutPoint adjustedPositionRelativeTo(const LayoutPoint&, const Element*) const;
 
     bool calculateHasBoxDecorations() const;
 

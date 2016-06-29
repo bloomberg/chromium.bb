@@ -1303,8 +1303,8 @@ static PaintLayer* findLayerForGraphicsLayer(PaintLayer* searchRoot, GraphicsLay
             if (searchRoot->layoutObject()->offsetParent() == searchRoot->parent()->layoutObject()->offsetParent()) {
                 LayoutBoxModelObject* current = searchRoot->layoutObject();
                 LayoutBoxModelObject* parent = searchRoot->parent()->layoutObject();
-                layerOffset->setWidth((parent->offsetLeft() - current->offsetLeft()).toInt());
-                layerOffset->setHeight((parent->offsetTop() - current->offsetTop()).toInt());
+                layerOffset->setWidth((parent->offsetLeft(parent->offsetParent()) - current->offsetLeft(parent->offsetParent())).toInt());
+                layerOffset->setHeight((parent->offsetTop(parent->offsetParent()) - current->offsetTop(parent->offsetParent())).toInt());
                 return searchRoot->parent();
             }
         }

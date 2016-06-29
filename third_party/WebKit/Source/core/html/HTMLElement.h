@@ -103,6 +103,13 @@ public:
 
     virtual String altText() const { return String(); }
 
+    int offsetLeftForBinding();
+    int offsetTopForBinding();
+    int offsetWidthForBinding();
+    int offsetHeightForBinding();
+
+    Element* unclosedOffsetParent();
+
 protected:
     HTMLElement(const QualifiedName& tagName, Document&, ConstructionType);
 
