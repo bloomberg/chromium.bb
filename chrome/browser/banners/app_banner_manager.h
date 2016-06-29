@@ -6,18 +6,15 @@
 #define CHROME_BROWSER_BANNERS_APP_BANNER_MANAGER_H_
 
 #include <memory>
+#include <vector>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/banners/app_banner_data_fetcher.h"
+#include "chrome/browser/engagement/site_engagement_observer.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "third_party/WebKit/public/platform/modules/app_banner/WebAppBannerPromptReply.h"
-
-namespace content {
-struct FrameNavigateParams;
-struct LoadCommittedDetails;
-}  // namespace content
 
 namespace banners {
 class AppBannerDataFetcher;
@@ -30,7 +27,8 @@ class AppBannerDataFetcher;
  * requested app. Any work in progress for other apps is discarded.
  */
 class AppBannerManager : public content::WebContentsObserver,
-                         public AppBannerDataFetcher::Delegate {
+                         public AppBannerDataFetcher::Delegate,
+                         public SiteEngagementObserver {
  public:
   static void DisableSecureSchemeCheckForTesting();
 
@@ -42,11 +40,8 @@ class AppBannerManager : public content::WebContentsObserver,
 
   // Requests an app banner. Set |is_debug_mode| when it is triggered by the
   // developer's action in DevTools.
-  void RequestAppBanner(content::RenderFrameHost* render_frame_host,
-                        const GURL& validated_url,
-                        bool is_debug_mode);
+  void RequestAppBanner(const GURL& validated_url, bool is_debug_mode);
 
-  AppBannerManager();
   ~AppBannerManager() override;
 
  protected:
@@ -66,18 +61,25 @@ class AppBannerManager : public content::WebContentsObserver,
 
  private:
   // WebContentsObserver overrides.
-  void DidNavigateMainFrame(
-      const content::LoadCommittedDetails& details,
-      const content::FrameNavigateParams& params) override;
-
+  void DidStartNavigation(
+      content::NavigationHandle* navigation_handle) override;
+  void DidFinishNavigation(
+      content::NavigationHandle* navigation_handle) override;
   void DidFinishLoad(content::RenderFrameHost* render_frame_host,
                      const GURL& validated_url) override;
+  void MediaStartedPlaying(const MediaPlayerId& id) override;
+  void MediaStoppedPlaying(const MediaPlayerId& id) override;
 
   // AppBannerDataFetcher::Delegate overrides.
   bool HandleNonWebApp(const std::string& platform,
                        const GURL& url,
                        const std::string& id,
                        bool is_debug_mode) override;
+
+  // SiteEngagementObserver overrides.
+  void OnEngagementIncreased(content::WebContents* web_contents,
+                             const GURL& url,
+                             double score) override;
 
   // Cancels an active DataFetcher, stopping its banners from appearing.
   void CancelActiveFetcher();
@@ -87,6 +89,16 @@ class AppBannerManager : public content::WebContentsObserver,
 
   // Fetches the data required to display a banner for the current page.
   scoped_refptr<AppBannerDataFetcher> data_fetcher_;
+
+  // We do not want to trigger a banner when the manager is attached to
+  // a WebContents that is playing video. Banners triggering on a site in the
+  // background will appear when the tab is reactivated.
+  std::vector<MediaPlayerId> active_media_players_;
+
+  // If a banner is requested before the page has finished loading, defer
+  // triggering the pipeline until the load is complete.
+  bool banner_request_queued_;
+  bool load_finished_;
 
   // A weak pointer is used as the lifetime of the ServiceWorkerContext is
   // longer than the lifetime of this banner manager. The banner manager

@@ -19,7 +19,6 @@
 #include "chrome/browser/banners/app_banner_metrics.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
-#include "chrome/browser/engagement/site_engagement_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_switches.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
@@ -73,9 +72,7 @@ const char kBannerParamsDirectKey[] = "direct";
 const char kBannerParamsIndirectKey[] = "indirect";
 const char kBannerParamsTotalKey[] = "total";
 const char kBannerParamsMinutesKey[] = "minutes";
-const char kBannerSiteEngagementParamsKey[] = "app_banner_triggering";
-const char kBannerSiteEngagementParamsTotalKey[] =
-    "app_banner_triggering_total";
+const char kBannerSiteEngagementParamsKey[] = "use_site_engagement";
 
 // Engagement weight assigned to direct and indirect navigations.
 // By default, a direct navigation is a page visit via ui::PAGE_TRANSITION_TYPED
@@ -136,8 +133,7 @@ double GetEventEngagement(ui::PageTransition transition_type) {
 // the banner showing.
 void UpdateSiteEngagementToTrigger() {
   std::string total_param = variations::GetVariationParamValue(
-      SiteEngagementService::kEngagementParams,
-      kBannerSiteEngagementParamsTotalKey);
+      kBannerParamsKey, kBannerParamsTotalKey);
 
   if (!total_param.empty()) {
     double total_engagement = -1;
@@ -191,16 +187,6 @@ void UpdateMinutesBetweenVisits() {
     if (base::StringToInt(param, &minimum_minutes))
       AppBannerSettingsHelper::SetMinimumMinutesBetweenVisits(minimum_minutes);
   }
-}
-
-// Returns the site engagement karma score for the given origin URL under the
-// current profile.
-double GetSiteEngagementScoreForOrigin(
-    content::WebContents* web_contents,
-    const GURL& origin_url) {
-  SiteEngagementService* service = SiteEngagementService::Get(
-      Profile::FromBrowserContext(web_contents->GetBrowserContext()));
-  return service ? service->GetScore(origin_url) : 0;
 }
 
 }  // namespace
@@ -428,19 +414,24 @@ bool AppBannerSettingsHelper::ShouldShowBanner(
     return false;
   }
 
+  // If we have gotten this far and want to use site engagement, the banner flow
+  // was triggered by the site engagement service informing the banner manager
+  // that sufficient engagement has been accumulated. Hence there is no need to
+  // check the total amount of engagement.
+  // TODO(dominickn): just return true here and remove all of the following code
+  // in this method when app banners have fully migrated to using site
+  // engagement as a trigger condition. See crbug.com/616322.
+  if (ShouldUseSiteEngagementScore())
+    return true;
+
   double total_engagement = 0;
-  if (ShouldUseSiteEngagementScore()) {
-    total_engagement =
-        GetSiteEngagementScoreForOrigin(web_contents, origin_url);
-  } else {
-    std::vector<BannerEvent> could_show_events = GetCouldShowBannerEvents(
-        web_contents, origin_url, package_name_or_start_url);
+  std::vector<BannerEvent> could_show_events = GetCouldShowBannerEvents(
+      web_contents, origin_url, package_name_or_start_url);
 
-    for (const auto& event : could_show_events)
-      total_engagement += event.engagement;
-  }
+  for (const auto& event : could_show_events)
+    total_engagement += event.engagement;
 
-  if (total_engagement < gTotalEngagementToTrigger) {
+  if (!HasSufficientEngagement(total_engagement)) {
     banners::TrackDisplayEvent(banners::DISPLAY_EVENT_NOT_VISITED_ENOUGH);
     return false;
   }
@@ -524,6 +515,12 @@ base::Time AppBannerSettingsHelper::GetSingleBannerEvent(
   return base::Time::FromInternalValue(internal_time);
 }
 
+bool AppBannerSettingsHelper::HasSufficientEngagement(double total_engagement) {
+  return (base::CommandLine::ForCurrentProcess()->HasSwitch(
+             switches::kBypassAppBannerEngagementChecks)) ||
+         (total_engagement >= gTotalEngagementToTrigger);
+}
+
 void AppBannerSettingsHelper::RecordMinutesFromFirstVisitToShow(
     content::WebContents* web_contents,
     const GURL& origin_url,
@@ -605,16 +602,10 @@ bool AppBannerSettingsHelper::ShouldUseSiteEngagementScore() {
     return true;
   }
 
-  // This experiment is controlled under the same key as the broader site
-  // engagement experiment rather than the banner experiment. This avoids cross
-  // pollution with other site engagement experiments. However, this experiment
-  // must only be active when there is one singular group under the banner
-  // experiment, otherwise the banner and site engagement banner experiments
-  // will conflict.
-  //
-  // Making the experiment active when a variations key is present allows us
-  // to have experiments which enable multiple features under site engagement.
+  // Assume any value which is not "0" or "false" indicates that we should use
+  // site engagement.
   std::string param = variations::GetVariationParamValue(
-      SiteEngagementService::kEngagementParams, kBannerSiteEngagementParamsKey);
-  return !param.empty();
+      kBannerParamsKey, kBannerSiteEngagementParamsKey);
+
+  return (!param.empty() && param != "0" && param != "false");
 }

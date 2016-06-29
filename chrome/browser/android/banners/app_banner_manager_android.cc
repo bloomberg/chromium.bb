@@ -33,7 +33,7 @@ namespace banners {
 AppBannerManagerAndroid::AppBannerManagerAndroid(
     JNIEnv* env,
     jobject obj)
-    : AppBannerManager(),
+    : AppBannerManager(nullptr),
       weak_java_banner_view_manager_(env, obj) {
 }
 
@@ -185,9 +185,9 @@ bool AppBannerManagerAndroid::IsFetcherActive(
 void AppBannerManagerAndroid::RequestAppBanner(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj) {
-  AppBannerManager::RequestAppBanner(web_contents()->GetMainFrame(),
-                                     web_contents()->GetLastCommittedURL(),
-                                     true);
+  // Set debug mode to true as this method is only called from DevTools.
+  AppBannerManager::RequestAppBanner(web_contents()->GetLastCommittedURL(),
+                                     true /* is_debug_mode */);
 }
 
 // static

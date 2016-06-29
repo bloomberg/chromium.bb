@@ -1352,8 +1352,7 @@ void Browser::RequestAppBannerFromDevTools(content::WebContents* web_contents) {
   banners::AppBannerManagerEmulation::CreateForWebContents(web_contents);
   banners::AppBannerManagerEmulation* manager =
       banners::AppBannerManagerEmulation::FromWebContents(web_contents);
-  manager->RequestAppBanner(web_contents->GetMainFrame(),
-                            web_contents->GetLastCommittedURL(), true);
+  manager->RequestAppBanner(web_contents->GetLastCommittedURL(), true);
 }
 
 bool Browser::IsMouseLocked() const {

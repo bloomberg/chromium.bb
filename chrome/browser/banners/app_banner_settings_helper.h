@@ -117,6 +117,11 @@ class AppBannerSettingsHelper {
       const std::string& package_name_or_start_url,
       AppBannerEvent event);
 
+  // Returns true if |total_engagement| is sufficiently high to warrant
+  // triggering a banner, or if the command-line flag to bypass engagement
+  // checking is true.
+  static bool HasSufficientEngagement(double total_engagement);
+
   // Record a UMA statistic measuring the minutes between the first visit to the
   // site and the first showing of the banner.
   static void RecordMinutesFromFirstVisitToShow(
