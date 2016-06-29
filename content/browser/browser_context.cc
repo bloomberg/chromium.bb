@@ -17,6 +17,7 @@
 #include "base/lazy_instance.h"
 #include "base/macros.h"
 #include "base/rand_util.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "content/browser/blob_storage/chrome_blob_storage_context.h"
 #include "content/browser/download/download_manager_impl.h"
@@ -411,7 +412,7 @@ void BrowserContext::Initialize(
                                new base::SupportsUserData::Data);
 
   MojoShellConnection* shell = MojoShellConnection::GetForProcess();
-  if (shell) {
+  if (shell && base::ThreadTaskRunnerHandle::Get()) {
     // NOTE: Many unit tests create a TestBrowserContext without initializing
     // Mojo or the global Mojo shell connection.
 
