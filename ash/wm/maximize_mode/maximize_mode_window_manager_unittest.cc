@@ -903,6 +903,156 @@ TEST_F(MaximizeModeWindowManagerTest, KeepFullScreenModeOn) {
   EXPECT_EQ(SHELF_AUTO_HIDE, shelf->GetVisibilityState());
 }
 
+// Similar to the fullscreen mode, the pinned mode should be kept as well.
+TEST_F(MaximizeModeWindowManagerTest, KeepPinnedModeOn_Case1) {
+  // Scenario: in the default state, pin a window, enter to the maximized mode,
+  // then unpin.
+  gfx::Rect rect(20, 140, 100, 100);
+  std::unique_ptr<aura::Window> w1(
+      CreateWindow(ui::wm::WINDOW_TYPE_NORMAL, rect));
+  wm::WindowState* window_state = wm::GetWindowState(w1.get());
+  EXPECT_FALSE(window_state->IsPinned());
+
+  // Pin the window.
+  {
+    wm::WMEvent event(wm::WM_EVENT_PIN);
+    window_state->OnWMEvent(&event);
+  }
+  EXPECT_TRUE(window_state->IsPinned());
+
+  // Enter to Maximized mode.
+  // The pinned mode should continue to be on.
+  CreateMaximizeModeWindowManager();
+  EXPECT_TRUE(window_state->IsPinned());
+
+  // Then unpin.
+  window_state->Restore();
+  EXPECT_FALSE(window_state->IsPinned());
+
+  // Exit from Maximized mode.
+  // The window should not be back to the pinned mode.
+  DestroyMaximizeModeWindowManager();
+  EXPECT_FALSE(window_state->IsPinned());
+}
+
+TEST_F(MaximizeModeWindowManagerTest, KeepPinnedModeOn_Case2) {
+  // Scenario: in the maximized mode, pin a window, exit from the maximized
+  // mode, then unpin.
+  gfx::Rect rect(20, 140, 100, 100);
+  std::unique_ptr<aura::Window> w1(
+      CreateWindow(ui::wm::WINDOW_TYPE_NORMAL, rect));
+  wm::WindowState* window_state = wm::GetWindowState(w1.get());
+  EXPECT_FALSE(window_state->IsPinned());
+
+  // Enter to Maximized mode.
+  CreateMaximizeModeWindowManager();
+  EXPECT_FALSE(window_state->IsPinned());
+
+  // Pin the window.
+  {
+    wm::WMEvent event(wm::WM_EVENT_PIN);
+    window_state->OnWMEvent(&event);
+  }
+  EXPECT_TRUE(window_state->IsPinned());
+
+  // Exit from Maximized mode.
+  // The pinned mode should continue to be on.
+  DestroyMaximizeModeWindowManager();
+  EXPECT_TRUE(window_state->IsPinned());
+
+  // Then unpin.
+  window_state->Restore();
+  EXPECT_FALSE(window_state->IsPinned());
+
+  // Enter again to Maximized mode for verification.
+  // The window should not be back to the pinned mode.
+  CreateMaximizeModeWindowManager();
+  EXPECT_FALSE(window_state->IsPinned());
+
+  // Exit from Maximized mode.
+  DestroyMaximizeModeWindowManager();
+  EXPECT_FALSE(window_state->IsPinned());
+}
+
+TEST_F(MaximizeModeWindowManagerTest, KeepPinnedModeOn_Case3) {
+  // Scenario: in the default state, pin a window, enter to the maximized mode,
+  // exit from the maximized mode, then unpin.
+  gfx::Rect rect(20, 140, 100, 100);
+  std::unique_ptr<aura::Window> w1(
+      CreateWindow(ui::wm::WINDOW_TYPE_NORMAL, rect));
+  wm::WindowState* window_state = wm::GetWindowState(w1.get());
+  EXPECT_FALSE(window_state->IsPinned());
+
+  // Pin the window.
+  {
+    wm::WMEvent event(wm::WM_EVENT_PIN);
+    window_state->OnWMEvent(&event);
+  }
+  EXPECT_TRUE(window_state->IsPinned());
+
+  // Enter to Maximized mode.
+  // The pinned mode should continue to be on.
+  CreateMaximizeModeWindowManager();
+  EXPECT_TRUE(window_state->IsPinned());
+
+  // Exit from Maximized mode.
+  // The pinned mode should continue to be on, too.
+  DestroyMaximizeModeWindowManager();
+  EXPECT_TRUE(window_state->IsPinned());
+
+  // Then unpin.
+  window_state->Restore();
+  EXPECT_FALSE(window_state->IsPinned());
+
+  // Enter again to Maximized mode for verification.
+  // The window should not be back to the pinned mode.
+  CreateMaximizeModeWindowManager();
+  EXPECT_FALSE(window_state->IsPinned());
+
+  // Exit from Maximized mode.
+  DestroyMaximizeModeWindowManager();
+}
+
+TEST_F(MaximizeModeWindowManagerTest, KeepPinnedModeOn_Case4) {
+  // Scenario: in the maximized mode, pin a window, exit from the maximized
+  // mode, enter back to the maximized mode, then unpin.
+  gfx::Rect rect(20, 140, 100, 100);
+  std::unique_ptr<aura::Window> w1(
+      CreateWindow(ui::wm::WINDOW_TYPE_NORMAL, rect));
+  wm::WindowState* window_state = wm::GetWindowState(w1.get());
+  EXPECT_FALSE(window_state->IsPinned());
+
+  // Enter to Maximized mode.
+  CreateMaximizeModeWindowManager();
+  EXPECT_FALSE(window_state->IsPinned());
+
+  // Pin the window.
+  {
+    wm::WMEvent event(wm::WM_EVENT_PIN);
+    window_state->OnWMEvent(&event);
+  }
+  EXPECT_TRUE(window_state->IsPinned());
+
+  // Exit from Maximized mode.
+  // The pinned mode should continue to be on.
+  DestroyMaximizeModeWindowManager();
+  EXPECT_TRUE(window_state->IsPinned());
+
+  // Enter again to Maximized mode.
+  // The pinned mode should continue to be on, too.
+  CreateMaximizeModeWindowManager();
+  EXPECT_TRUE(window_state->IsPinned());
+
+  // Then unpin.
+  window_state->Restore();
+  EXPECT_FALSE(window_state->IsPinned());
+
+  // Exit from Maximized mode.
+  // The window should not be back to the pinned mode.
+  DestroyMaximizeModeWindowManager();
+  EXPECT_FALSE(window_state->IsPinned());
+}
+
 // Verifies that if a window is un-full-screened while in maximize mode,
 // other changes to that window's state (such as minimizing it) are
 // preserved upon exiting maximize mode.
