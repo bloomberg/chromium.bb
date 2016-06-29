@@ -124,17 +124,16 @@ void GCMEncryptionProvider::DecryptMessage(
   DCHECK(encryption_header != message.data.end());
   DCHECK(crypto_key_header != message.data.end());
 
-  std::vector<EncryptionHeaderValues> encryption_header_values;
-  if (!ParseEncryptionHeader(encryption_header->second,
-                             &encryption_header_values)) {
+  EncryptionHeaderIterator encryption_header_iterator(
+      encryption_header->second.begin(), encryption_header->second.end());
+  if (!encryption_header_iterator.GetNext()) {
     DLOG(ERROR) << "Unable to parse the value of the Encryption header";
     callback.Run(DECRYPTION_RESULT_INVALID_ENCRYPTION_HEADER,
                  IncomingMessage());
     return;
   }
 
-  if (encryption_header_values.size() != 1u ||
-      encryption_header_values[0].salt.size() !=
+  if (encryption_header_iterator.salt().size() !=
           GCMMessageCryptographer::kSaltSize) {
     DLOG(ERROR) << "Invalid values supplied in the Encryption header";
     callback.Run(DECRYPTION_RESULT_INVALID_ENCRYPTION_HEADER,
@@ -142,17 +141,16 @@ void GCMEncryptionProvider::DecryptMessage(
     return;
   }
 
-  std::vector<CryptoKeyHeaderValues> crypto_key_header_values;
-  if (!ParseCryptoKeyHeader(crypto_key_header->second,
-                            &crypto_key_header_values)) {
+  CryptoKeyHeaderIterator crypto_key_header_iterator(
+      crypto_key_header->second.begin(), crypto_key_header->second.end());
+  if (!crypto_key_header_iterator.GetNext()) {
     DLOG(ERROR) << "Unable to parse the value of the Crypto-Key header";
     callback.Run(DECRYPTION_RESULT_INVALID_CRYPTO_KEY_HEADER,
                  IncomingMessage());
     return;
   }
 
-  if (crypto_key_header_values.size() != 1u ||
-      !crypto_key_header_values[0].dh.size()) {
+  if (crypto_key_header_iterator.dh().empty()) {
     DLOG(ERROR) << "Invalid values supplied in the Crypto-Key header";
     callback.Run(DECRYPTION_RESULT_INVALID_CRYPTO_KEY_HEADER,
                  IncomingMessage());
@@ -165,9 +163,9 @@ void GCMEncryptionProvider::DecryptMessage(
                       true /* fallback_to_empty_authorized_entity */,
                       base::Bind(&GCMEncryptionProvider::DecryptMessageWithKey,
                                  weak_ptr_factory_.GetWeakPtr(), message,
-                                 callback, encryption_header_values[0].salt,
-                                 crypto_key_header_values[0].dh,
-                                 encryption_header_values[0].rs));
+                                 callback, encryption_header_iterator.salt(),
+                                 crypto_key_header_iterator.dh(),
+                                 encryption_header_iterator.rs()));
 }
 
 void GCMEncryptionProvider::DidGetEncryptionInfo(

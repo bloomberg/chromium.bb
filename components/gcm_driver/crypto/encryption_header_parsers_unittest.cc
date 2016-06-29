@@ -48,13 +48,16 @@ TEST(EncryptionHeaderParsersTest, ParseValidEncryptionHeaders) {
   for (size_t i = 0; i < arraysize(expected_results); i++) {
     SCOPED_TRACE(i);
 
-    std::vector<EncryptionHeaderValues> values;
-    ASSERT_TRUE(ParseEncryptionHeader(expected_results[i].header, &values));
-    ASSERT_EQ(1u, values.size());
+    std::string header(expected_results[i].header);
 
-    EXPECT_EQ(expected_results[i].parsed_keyid, values[0].keyid);
-    EXPECT_EQ(expected_results[i].parsed_salt, values[0].salt);
-    EXPECT_EQ(expected_results[i].parsed_rs, values[0].rs);
+    EncryptionHeaderIterator iterator(header.begin(), header.end());
+    ASSERT_TRUE(iterator.GetNext());
+
+    EXPECT_EQ(expected_results[i].parsed_keyid, iterator.keyid());
+    EXPECT_EQ(expected_results[i].parsed_salt, iterator.salt());
+    EXPECT_EQ(expected_results[i].parsed_rs, iterator.rs());
+
+    EXPECT_FALSE(iterator.GetNext());
   }
 }
 
@@ -87,48 +90,77 @@ TEST(EncryptionHeaderParsersTest, ParseValidMultiValueEncryptionHeaders) {
   for (size_t i = 0; i < arraysize(expected_results); i++) {
     SCOPED_TRACE(i);
 
-    std::vector<EncryptionHeaderValues> values;
-    ASSERT_TRUE(ParseEncryptionHeader(expected_results[i].header, &values));
-    ASSERT_EQ(kNumberOfValues, values.size());
+    std::string header(expected_results[i].header);
 
+    EncryptionHeaderIterator iterator(header.begin(), header.end());
     for (size_t j = 0; j < kNumberOfValues; ++j) {
-      EXPECT_EQ(expected_results[i].parsed_values[j].keyid, values[j].keyid);
-      EXPECT_EQ(expected_results[i].parsed_values[j].salt, values[j].salt);
-      EXPECT_EQ(expected_results[i].parsed_values[j].rs, values[j].rs);
+      ASSERT_TRUE(iterator.GetNext());
+
+      EXPECT_EQ(expected_results[i].parsed_values[j].keyid, iterator.keyid());
+      EXPECT_EQ(expected_results[i].parsed_values[j].salt, iterator.salt());
+      EXPECT_EQ(expected_results[i].parsed_values[j].rs, iterator.rs());
     }
+
+    EXPECT_FALSE(iterator.GetNext());
   }
 }
 
 TEST(EncryptionHeaderParsersTest, ParseInvalidEncryptionHeaders) {
   const char* const expected_failures[] = {
+    // Values in the name-value pairs are not optional.
     "keyid",
     "keyid=",
-    "keyid=foo;novaluekey",
-    "keyid=foo,keyid",
+    "keyid=foo;keyid",
     "salt",
     "salt=",
-    "salt=YmV/2ZXJ-sMDA",
-    "salt=dHdlbHZlY29vbGJ5dGVz=====",
-    "salt=123$xyz",
-    "salt=c2l4dGVlbmNvb2xieXRlcw,salt=123$xyz",
     "rs",
     "rs=",
+
+    // The salt must be a URL-safe base64 decodable string.
+    "salt=YmV/2ZXJ-sMDA",
+    "salt=dHdlbHZlY29vbGJ5dGVz=====",
+    "salt=c2l4dGVlbmNvb2xieXRlcw;salt=123$xyz",
+    "salt=123$xyz",
+
+    // The record size must be a positive decimal integer greater than one that
+    // does not start with a plus.
     "rs=0",
     "rs=0x13",
     "rs=1",
     "rs=-1",
     "rs=+5",
     "rs=99999999999999999999999999999999",
-    "rs=2,rs=0",
     "rs=foobar",
+  };
+
+  const char* const expected_failures_second_iter[] = {
+    // Valid first field, missing value in the second field.
+    "keyid=foo,novaluekey",
+
+    // Valid first field, undecodable salt in the second field.
+    "salt=c2l4dGVlbmNvb2xieXRlcw,salt=123$xyz",
+
+    // Valid first field, invalid record size in the second field.
+    "rs=2,rs=0",
   };
 
   for (size_t i = 0; i < arraysize(expected_failures); i++) {
     SCOPED_TRACE(i);
 
-    std::vector<EncryptionHeaderValues> values;
-    EXPECT_FALSE(ParseEncryptionHeader(expected_failures[i], &values));
-    EXPECT_EQ(0u, values.size());
+    std::string header(expected_failures[i]);
+
+    EncryptionHeaderIterator iterator(header.begin(), header.end());
+    EXPECT_FALSE(iterator.GetNext());
+  }
+
+  for (size_t i = 0; i < arraysize(expected_failures_second_iter); i++) {
+    SCOPED_TRACE(i);
+
+    std::string header(expected_failures_second_iter[i]);
+
+    EncryptionHeaderIterator iterator(header.begin(), header.end());
+    EXPECT_TRUE(iterator.GetNext());
+    EXPECT_FALSE(iterator.GetNext());
   }
 }
 
@@ -161,13 +193,16 @@ TEST(EncryptionHeaderParsersTest, ParseValidCryptoKeyHeaders) {
   for (size_t i = 0; i < arraysize(expected_results); i++) {
     SCOPED_TRACE(i);
 
-    std::vector<CryptoKeyHeaderValues> values;
-    ASSERT_TRUE(ParseCryptoKeyHeader(expected_results[i].header, &values));
-    ASSERT_EQ(1u, values.size());
+    std::string header(expected_results[i].header);
 
-    EXPECT_EQ(expected_results[i].parsed_keyid, values[0].keyid);
-    EXPECT_EQ(expected_results[i].parsed_aesgcm128, values[0].aesgcm128);
-    EXPECT_EQ(expected_results[i].parsed_dh, values[0].dh);
+    CryptoKeyHeaderIterator iterator(header.begin(), header.end());
+    ASSERT_TRUE(iterator.GetNext());
+
+    EXPECT_EQ(expected_results[i].parsed_keyid, iterator.keyid());
+    EXPECT_EQ(expected_results[i].parsed_aesgcm128, iterator.aesgcm128());
+    EXPECT_EQ(expected_results[i].parsed_dh, iterator.dh());
+
+    EXPECT_FALSE(iterator.GetNext());
   }
 }
 
@@ -200,97 +235,135 @@ TEST(EncryptionHeaderParsersTest, ParseValidMultiValueCryptoKeyHeaders) {
   for (size_t i = 0; i < arraysize(expected_results); i++) {
     SCOPED_TRACE(i);
 
-    std::vector<CryptoKeyHeaderValues> values;
-    ASSERT_TRUE(ParseCryptoKeyHeader(expected_results[i].header, &values));
-    ASSERT_EQ(kNumberOfValues, values.size());
+    std::string header(expected_results[i].header);
 
+    CryptoKeyHeaderIterator iterator(header.begin(), header.end());
     for (size_t j = 0; j < kNumberOfValues; ++j) {
-      EXPECT_EQ(expected_results[i].parsed_values[j].keyid, values[j].keyid);
+      ASSERT_TRUE(iterator.GetNext());
+
+      EXPECT_EQ(expected_results[i].parsed_values[j].keyid, iterator.keyid());
       EXPECT_EQ(expected_results[i].parsed_values[j].aesgcm128,
-                values[j].aesgcm128);
-      EXPECT_EQ(expected_results[i].parsed_values[j].dh, values[j].dh);
+                iterator.aesgcm128());
+      EXPECT_EQ(expected_results[i].parsed_values[j].dh, iterator.dh());
     }
+
+    EXPECT_FALSE(iterator.GetNext());
   }
 }
 
 TEST(EncryptionHeaderParsersTest, ParseInvalidCryptoKeyHeaders) {
   const char* const expected_failures[] = {
+    // Values in the name-value pairs are not optional.
     "keyid",
     "keyid=",
-    "keyid=foo,keyid",
-    "keyid=foo;novaluekey",
+    "keyid=foo;keyid",
     "aesgcm128",
     "aesgcm128=",
-    "aesgcm128=123$xyz",
-    "aesgcm128=foobar,aesgcm128=123$xyz",
     "dh",
     "dh=",
+
+    // The "aesgcm128" parameter must be a URL-safe base64 decodable string.
+    "aesgcm128=123$xyz",
+    "aesgcm128=foobar;aesgcm128=123$xyz",
+
+    // The "dh" parameter must be a URL-safe base64 decodable string.
     "dh=YmV/2ZXJ-sMDA",
     "dh=dHdlbHZlY29vbGJ5dGVz=====",
     "dh=123$xyz",
   };
 
+  const char* const expected_failures_second_iter[] = {
+    // Valid first field, missing value in the second field.
+    "keyid=foo,novaluekey",
+
+    // Valid first field, undecodable aesgcm128 value in the second field.
+    "dh=dHdlbHZlY29vbGJ5dGVz,aesgcm128=123$xyz",
+  };
+
   for (size_t i = 0; i < arraysize(expected_failures); i++) {
     SCOPED_TRACE(i);
 
-    std::vector<CryptoKeyHeaderValues> values;
-    EXPECT_FALSE(ParseCryptoKeyHeader(expected_failures[i], &values));
-    EXPECT_EQ(0u, values.size());
+    std::string header(expected_failures[i]);
+
+    CryptoKeyHeaderIterator iterator(header.begin(), header.end());
+    EXPECT_FALSE(iterator.GetNext());
+  }
+
+  for (size_t i = 0; i < arraysize(expected_failures_second_iter); i++) {
+    SCOPED_TRACE(i);
+
+    std::string header(expected_failures_second_iter[i]);
+
+    CryptoKeyHeaderIterator iterator(header.begin(), header.end());
+    EXPECT_TRUE(iterator.GetNext());
+    EXPECT_FALSE(iterator.GetNext());
   }
 }
 
 TEST(EncryptionHeaderParsersTest, SixValueHeader) {
-  const char* const header = "keyid=0,keyid=1,keyid=2,keyid=3,keyid=4,keyid=5";
+  const std::string header("keyid=0,keyid=1,keyid=2,keyid=3,keyid=4,keyid=5");
 
-  std::vector<EncryptionHeaderValues> encryption_values;
-  ASSERT_TRUE(ParseEncryptionHeader(header, &encryption_values));
+  EncryptionHeaderIterator encryption_iterator(header.begin(), header.end());
+  CryptoKeyHeaderIterator crypto_key_iterator(header.begin(), header.end());
 
-  std::vector<CryptoKeyHeaderValues> crypto_key_values;
-  ASSERT_TRUE(ParseCryptoKeyHeader(header, &crypto_key_values));
-
-  ASSERT_EQ(6u, encryption_values.size());
-  ASSERT_EQ(6u, crypto_key_values.size());
-
-  for (size_t i = 0; i < encryption_values.size(); i++) {
+  for (size_t i = 0; i < 6; ++i) {
     SCOPED_TRACE(i);
 
-    const std::string value = base::IntToString(i);
-
-    EXPECT_EQ(value, encryption_values[i].keyid);
-    EXPECT_EQ(value, crypto_key_values[i].keyid);
+    ASSERT_TRUE(encryption_iterator.GetNext());
+    ASSERT_TRUE(crypto_key_iterator.GetNext());
   }
+
+  EXPECT_FALSE(encryption_iterator.GetNext());
+  EXPECT_FALSE(crypto_key_iterator.GetNext());
 }
 
-TEST(EncryptionHeaderParsersTest, InvalidHeadersDoNotModifyOutput) {
-  EncryptionHeaderValues encryption_value;
-  encryption_value.keyid = "mykeyid";
-  encryption_value.salt = "somesalt";
-  encryption_value.rs = 42u;
+TEST(EncryptionHeaderParsersTest, InvalidHeadersResetOutput) {
+  // Valid first field, invalid record size parameter in the second field.
+  const std::string encryption_header(
+      "keyid=foo;salt=c2l4dGVlbmNvb2xieXRlcw;rs=1024,rs=foobar");
 
-  std::vector<EncryptionHeaderValues> encryption_values;
-  encryption_values.push_back(encryption_value);
+  // Valid first field, undecodable aesgcm128 parameter in the second field.
+  const std::string crypto_key_header(
+      "keyid=foo;aesgcm128=c2l4dGVlbmNvb2xieXRlcw;dh=dHdlbHZlY29vbGJ5dGVz,"
+      "aesgcm128=$$$");
 
-  ASSERT_FALSE(ParseEncryptionHeader("rs=foobar", &encryption_values));
-  ASSERT_EQ(1u, encryption_values.size());
+  EncryptionHeaderIterator encryption_iterator(
+      encryption_header.begin(), encryption_header.end());
 
-  EXPECT_EQ("mykeyid", encryption_values[0].keyid);
-  EXPECT_EQ("somesalt", encryption_values[0].salt);
-  EXPECT_EQ(42u, encryption_values[0].rs);
+  ASSERT_EQ(0u, encryption_iterator.keyid().size());
+  ASSERT_EQ(0u, encryption_iterator.salt().size());
+  ASSERT_EQ(4096u, encryption_iterator.rs());
 
-  CryptoKeyHeaderValues crypto_key_value;
-  crypto_key_value.keyid = "myotherkeyid";
-  crypto_key_value.aesgcm128 = "akey";
-  crypto_key_value.dh = "yourdh";
+  ASSERT_TRUE(encryption_iterator.GetNext());
 
-  std::vector<CryptoKeyHeaderValues> crypto_key_values;
-  crypto_key_values.push_back(crypto_key_value);
+  EXPECT_EQ("foo", encryption_iterator.keyid());
+  EXPECT_EQ("sixteencoolbytes", encryption_iterator.salt());
+  EXPECT_EQ(1024u, encryption_iterator.rs());
 
-  ASSERT_FALSE(ParseCryptoKeyHeader("aesgcm128=$$$", &crypto_key_values));
-  ASSERT_EQ(1u, crypto_key_values.size());
+  ASSERT_FALSE(encryption_iterator.GetNext());
 
-  EXPECT_EQ("myotherkeyid", crypto_key_values[0].keyid);
-  EXPECT_EQ("akey", crypto_key_values[0].aesgcm128);
-  EXPECT_EQ("yourdh", crypto_key_values[0].dh);
+  EXPECT_EQ(0u, encryption_iterator.keyid().size());
+  EXPECT_EQ(0u, encryption_iterator.salt().size());
+  EXPECT_EQ(4096u, encryption_iterator.rs());
+
+  CryptoKeyHeaderIterator crypto_key_iterator(
+      crypto_key_header.begin(), crypto_key_header.end());
+
+  ASSERT_EQ(0u, crypto_key_iterator.keyid().size());
+  ASSERT_EQ(0u, crypto_key_iterator.aesgcm128().size());
+  ASSERT_EQ(0u, crypto_key_iterator.dh().size());
+
+  ASSERT_TRUE(crypto_key_iterator.GetNext());
+
+  EXPECT_EQ("foo", crypto_key_iterator.keyid());
+  EXPECT_EQ("sixteencoolbytes", crypto_key_iterator.aesgcm128());
+  EXPECT_EQ("twelvecoolbytes", crypto_key_iterator.dh());
+
+  ASSERT_FALSE(crypto_key_iterator.GetNext());
+
+  EXPECT_EQ(0u, crypto_key_iterator.keyid().size());
+  EXPECT_EQ(0u, crypto_key_iterator.aesgcm128().size());
+  EXPECT_EQ(0u, crypto_key_iterator.dh().size());
 }
 
 }  // namespace

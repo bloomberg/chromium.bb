@@ -6,24 +6,21 @@
 
 #include "base/base64url.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/strings/string_piece.h"
+
 #include "base/strings/string_util.h"
-#include "net/http/http_util.h"
+
 
 namespace gcm {
 
 namespace {
 
 // The default record size in bytes, as defined in section two of
-// https://tools.ietf.org/html/draft-thomson-http-encryption-02.
+// https://tools.ietf.org/html/draft-thomson-http-encryption.
 const uint64_t kDefaultRecordSizeBytes = 4096;
 
-// Decodes the string between |begin| and |end| using base64url, and writes the
-// decoded value to |*salt|. Returns whether the string could be decoded.
-bool ValueToDecodedString(const std::string::const_iterator& begin,
-                          const std::string::const_iterator& end,
-                          std::string* salt) {
-  const base::StringPiece value(begin, end);
+// Decodes the string in |value| using base64url and writes the decoded value to
+// |*salt|. Returns whether the string is not empty and could be decoded.
+bool ValueToDecodedString(base::StringPiece value, std::string* salt) {
   if (value.empty())
     return false;
 
@@ -31,174 +28,115 @@ bool ValueToDecodedString(const std::string::const_iterator& begin,
       value, base::Base64UrlDecodePolicy::IGNORE_PADDING, salt);
 }
 
-// Parses the record size between |begin| and |end|, and writes the value to
-// |*rs|. The value must be an unsigned, 64-bit integer greater than zero that
-// does not start with a plus. Returns whether the record size was valid.
-bool RecordSizeToInt(const std::string::const_iterator& begin,
-                     const std::string::const_iterator& end,
-                     uint64_t* rs) {
-  const base::StringPiece value(begin, end);
+// Parses the record size in |value| and writes the value to |*rs|. The value
+// must be a positive decimal integer greater than one that does not start
+// with a plus. Returns whether the record size was valid.
+bool RecordSizeToInt(base::StringPiece value, uint64_t* rs) {
   if (value.empty())
     return false;
 
-  // Parsing the "rs" parameter uses stricter semantics than parsing rules for
-  // normal integers, in that we want to reject values such as "+5" for
-  // compatibility with UAs that use other number parsing mechanisms.
+  // Reject a leading plus, as the fact that the value must be positive is
+  // dictated by the specification.
   if (value[0] == '+')
     return false;
 
-  if (!base::StringToUint64(value, rs))
+  uint64_t candidate_rs;
+  if (!base::StringToUint64(value, &candidate_rs))
     return false;
 
-  // The record size MUST be greater than 1.
-  return *rs > 1;
-}
+  // The record size MUST be greater than one byte.
+  if (candidate_rs <= 1)
+    return false;
 
-// Parses the string between |input_begin| and |input_end| according to the
-// extended ABNF syntax for the Encryption HTTP header, per the "parameter"
-// rule from RFC 7231 (https://tools.ietf.org/html/rfc7231).
-//
-// encryption_params = [ parameter *( ";" parameter ) ]
-//
-// This implementation applies the parameters defined in section 3.1 of the
-// HTTP encryption encoding document:
-//
-// https://tools.ietf.org/html/draft-thomson-http-encryption-02#section-3.1
-//
-// This means that the three supported parameters are:
-//
-//     [ "keyid" "=" string ]
-//     [ ";" "salt" "=" base64url ]
-//     [ ";" "rs" "=" octet-count ]
-bool ParseEncryptionHeaderValuesImpl(std::string::const_iterator input_begin,
-                                     std::string::const_iterator input_end,
-                                     EncryptionHeaderValues* values) {
-  net::HttpUtil::NameValuePairsIterator name_value_pairs(
-      input_begin, input_end, ';',
-      net::HttpUtil::NameValuePairsIterator::Values::REQUIRED,
-      net::HttpUtil::NameValuePairsIterator::Quotes::NOT_STRICT);
-
-  while (name_value_pairs.GetNext()) {
-    const base::StringPiece name(name_value_pairs.name_begin(),
-                                 name_value_pairs.name_end());
-
-    if (base::LowerCaseEqualsASCII(name, "keyid")) {
-      values->keyid.assign(name_value_pairs.value_begin(),
-                           name_value_pairs.value_end());
-    } else if (base::LowerCaseEqualsASCII(name, "salt")) {
-      if (!ValueToDecodedString(name_value_pairs.value_begin(),
-                                name_value_pairs.value_end(), &values->salt)) {
-        return false;
-      }
-    } else if (base::LowerCaseEqualsASCII(name, "rs")) {
-      if (!RecordSizeToInt(name_value_pairs.value_begin(),
-                           name_value_pairs.value_end(), &values->rs)) {
-        return false;
-      }
-    } else {
-      // Silently ignore unknown directives for forward compatibility.
-    }
-  }
-
-  return name_value_pairs.valid();
-}
-
-// Parses the string between |input_begin| and |input_end| according to the
-// extended ABNF syntax for the Crypto-Key HTTP header, per the "parameter" rule
-// from RFC 7231 (https://tools.ietf.org/html/rfc7231).
-//
-// encryption_params = [ parameter *( ";" parameter ) ]
-//
-// This implementation applies the parameters defined in section 4 of the
-// HTTP encryption encoding document:
-//
-//https://tools.ietf.org/html/draft-thomson-http-encryption-02#section-4
-//
-// This means that the three supported parameters are:
-//
-//     [ "keyid" "=" string ]
-//     [ ";" "aesgcm128" "=" base64url ]
-//     [ ";" "dh" "=" base64url ]
-bool ParseCryptoKeyHeaderValuesImpl(std::string::const_iterator input_begin,
-                                    std::string::const_iterator input_end,
-                                    CryptoKeyHeaderValues* values) {
-  net::HttpUtil::NameValuePairsIterator name_value_pairs(
-      input_begin, input_end, ';',
-      net::HttpUtil::NameValuePairsIterator::Values::REQUIRED,
-      net::HttpUtil::NameValuePairsIterator::Quotes::NOT_STRICT);
-
-  while (name_value_pairs.GetNext()) {
-    const base::StringPiece name(name_value_pairs.name_begin(),
-                                 name_value_pairs.name_end());
-
-    if (base::LowerCaseEqualsASCII(name, "keyid")) {
-      values->keyid.assign(name_value_pairs.value_begin(),
-                           name_value_pairs.value_end());
-    } else if (base::LowerCaseEqualsASCII(name, "aesgcm128")) {
-      if (!ValueToDecodedString(name_value_pairs.value_begin(),
-                                name_value_pairs.value_end(),
-                                &values->aesgcm128)) {
-        return false;
-      }
-    } else if (base::LowerCaseEqualsASCII(name, "dh")) {
-      if (!ValueToDecodedString(name_value_pairs.value_begin(),
-                                name_value_pairs.value_end(), &values->dh)) {
-        return false;
-      }
-    } else {
-      // Silently ignore unknown directives for forward compatibility.
-    }
-  }
-
-  return name_value_pairs.valid();
+  *rs = candidate_rs;
+  return true;
 }
 
 }  // namespace
 
-bool ParseEncryptionHeader(const std::string& input,
-                           std::vector<EncryptionHeaderValues>* values) {
-  DCHECK(values);
+EncryptionHeaderIterator::EncryptionHeaderIterator(
+    std::string::const_iterator header_begin,
+    std::string::const_iterator header_end)
+    : iterator_(header_begin, header_end, ','),
+      rs_(kDefaultRecordSizeBytes) {}
 
-  std::vector<EncryptionHeaderValues> candidate_values;
+EncryptionHeaderIterator::~EncryptionHeaderIterator() {}
 
-  net::HttpUtil::ValuesIterator value_iterator(input.begin(), input.end(), ',');
-  while (value_iterator.GetNext()) {
-    EncryptionHeaderValues candidate_value;
-    candidate_value.rs = kDefaultRecordSizeBytes;
+bool EncryptionHeaderIterator::GetNext() {
+  keyid_.clear();
+  salt_.clear();
+  rs_ = kDefaultRecordSizeBytes;
 
-    if (!ParseEncryptionHeaderValuesImpl(value_iterator.value_begin(),
-                                         value_iterator.value_end(),
-                                         &candidate_value)) {
-      return false;
+  if (!iterator_.GetNext())
+    return false;
+
+  net::HttpUtil::NameValuePairsIterator name_value_pairs(
+      iterator_.value_begin(), iterator_.value_end(), ';',
+      net::HttpUtil::NameValuePairsIterator::Values::REQUIRED,
+      net::HttpUtil::NameValuePairsIterator::Quotes::NOT_STRICT);
+
+  while (name_value_pairs.GetNext()) {
+    const base::StringPiece name(name_value_pairs.name_begin(),
+                                 name_value_pairs.name_end());
+    const base::StringPiece value(name_value_pairs.value_begin(),
+                                  name_value_pairs.value_end());
+
+    if (base::LowerCaseEqualsASCII(name, "keyid")) {
+      value.CopyToString(&keyid_);
+    } else if (base::LowerCaseEqualsASCII(name, "salt")) {
+      if (!ValueToDecodedString(value, &salt_))
+        return false;
+    } else if (base::LowerCaseEqualsASCII(name, "rs")) {
+      if (!RecordSizeToInt(value, &rs_))
+        return false;
+    } else {
+      // Silently ignore unknown directives for forward compatibility.
     }
-
-    candidate_values.push_back(candidate_value);
   }
 
-  values->swap(candidate_values);
-  return true;
+  return name_value_pairs.valid();
 }
 
-bool ParseCryptoKeyHeader(const std::string& input,
-                          std::vector<CryptoKeyHeaderValues>* values) {
-  DCHECK(values);
+CryptoKeyHeaderIterator::CryptoKeyHeaderIterator(
+    std::string::const_iterator header_begin,
+    std::string::const_iterator header_end)
+    : iterator_(header_begin, header_end, ',') {}
 
-  std::vector<CryptoKeyHeaderValues> candidate_values;
+CryptoKeyHeaderIterator::~CryptoKeyHeaderIterator() {}
 
-  net::HttpUtil::ValuesIterator value_iterator(input.begin(), input.end(), ',');
-  while (value_iterator.GetNext()) {
-    CryptoKeyHeaderValues candidate_value;
-    if (!ParseCryptoKeyHeaderValuesImpl(value_iterator.value_begin(),
-                                        value_iterator.value_end(),
-                                        &candidate_value)) {
-      return false;
+bool CryptoKeyHeaderIterator::GetNext() {
+  keyid_.clear();
+  aesgcm128_.clear();
+  dh_.clear();
+
+  if (!iterator_.GetNext())
+    return false;
+
+  net::HttpUtil::NameValuePairsIterator name_value_pairs(
+      iterator_.value_begin(), iterator_.value_end(), ';',
+      net::HttpUtil::NameValuePairsIterator::Values::REQUIRED,
+      net::HttpUtil::NameValuePairsIterator::Quotes::NOT_STRICT);
+
+  while (name_value_pairs.GetNext()) {
+    const base::StringPiece name(name_value_pairs.name_begin(),
+                                 name_value_pairs.name_end());
+    const base::StringPiece value(name_value_pairs.value_begin(),
+                                  name_value_pairs.value_end());
+
+    if (base::LowerCaseEqualsASCII(name, "keyid")) {
+      value.CopyToString(&keyid_);
+    } else if (base::LowerCaseEqualsASCII(name, "aesgcm128")) {
+      if (!ValueToDecodedString(value, &aesgcm128_))
+        return false;
+    } else if (base::LowerCaseEqualsASCII(name, "dh")) {
+      if (!ValueToDecodedString(value, &dh_))
+        return false;
+    } else {
+      // Silently ignore unknown directives for forward compatibility.
     }
-
-    candidate_values.push_back(candidate_value);
   }
 
-  values->swap(candidate_values);
-  return true;
+  return name_value_pairs.valid();
 }
 
 }  // namespace gcm

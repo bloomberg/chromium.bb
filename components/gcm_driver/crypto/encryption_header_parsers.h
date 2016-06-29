@@ -9,55 +9,84 @@
 #include <string>
 #include <vector>
 
+#include "base/strings/string_piece.h"
+#include "net/http/http_util.h"
+
 namespace gcm {
 
-// Structure representing the parsed values from the Encryption HTTP header.
-// |salt| is stored after having been base64url decoded.
-struct EncryptionHeaderValues {
-  std::string keyid;
-  std::string salt;
-  uint64_t rs;
+// Iterates over a header that follows the syntax of the Encryption HTTP header
+// per the Encrypted Content-Encoding for HTTP draft. This header follows the
+// #list syntax from the extended ABNF syntax defined in section 1.2 of RFC7230.
+//
+// https://tools.ietf.org/html/draft-thomson-http-encryption#section-3
+// https://tools.ietf.org/html/rfc7230#section-1.2
+class EncryptionHeaderIterator {
+ public:
+  EncryptionHeaderIterator(std::string::const_iterator header_begin,
+                           std::string::const_iterator header_end);
+  ~EncryptionHeaderIterator();
+
+  // Advances the iterator to the next header value, if any. Returns true if
+  // there is a next value. Use the keyid(), salt() and rs() methods to access
+  // the key-value pairs included in the header value.
+  bool GetNext();
+
+  const std::string& keyid() const {
+    return keyid_;
+  }
+
+  const std::string& salt() const {
+    return salt_;
+  }
+
+  uint64_t rs() const {
+    return rs_;
+  }
+
+ private:
+  net::HttpUtil::ValuesIterator iterator_;
+
+  std::string keyid_;
+  std::string salt_;
+  uint64_t rs_;
 };
 
-// Parses |input| following the syntax of the Encryption HTTP header. The parsed
-// values will be stored in the |*values| argument.
+// Iterates over a header that follows the syntax of the Crypto-Key HTTP header
+// per the Encrypted Content-Encoding for HTTP draft. This header follows the
+// #list syntax from the extended ABNF syntax defined in section 1.2 of RFC7230.
 //
-// https://tools.ietf.org/html/draft-thomson-http-encryption-02#section-3
-//
-// This header follows the #list syntax from the extended ABNF syntax
-// defined in section 1.2 of RFC 7230:
-//
+// https://tools.ietf.org/html/draft-thomson-http-encryption#section-4
 // https://tools.ietf.org/html/rfc7230#section-1.2
-//
-// Returns whether the |input| could be successfully parsed, and the resulting
-// values are now available in the |*values| argument. Does not modify |*values|
-// unless parsing was successful.
-bool ParseEncryptionHeader(const std::string& input,
-                           std::vector<EncryptionHeaderValues>* values);
+class CryptoKeyHeaderIterator {
+ public:
+  CryptoKeyHeaderIterator(std::string::const_iterator header_begin,
+                          std::string::const_iterator header_end);
+  ~CryptoKeyHeaderIterator();
 
-// Structure representing the parsed values from the Crypto-Key HTTP header.
-// |aesgcm128| and |dh| are stored after having been base64url decoded.
-struct CryptoKeyHeaderValues {
-  std::string keyid;
-  std::string aesgcm128;
-  std::string dh;
+  // Advances the iterator to the next header value, if any. Returns true if
+  // there is a next value. Use the keyid(), aesgcm128() and dh() methods to
+  // access the key-value pairs included in the header value.
+  bool GetNext();
+
+  const std::string& keyid() const {
+    return keyid_;
+  }
+
+  const std::string& aesgcm128() const {
+    return aesgcm128_;
+  }
+
+  const std::string& dh() const {
+    return dh_;
+  }
+
+ private:
+  net::HttpUtil::ValuesIterator iterator_;
+
+  std::string keyid_;
+  std::string aesgcm128_;
+  std::string dh_;
 };
-
-// Parses |input| following the syntax of the Crypto-Key HTTP header. The parsed
-// values will be stored in the |*values| argument.
-//
-// https://tools.ietf.org/html/draft-thomson-http-encryption-02#section-4
-//
-// This header follows the #list syntax from the extended ABNF syntax
-// defined in section 1.2 of RFC 7230:
-//
-// https://tools.ietf.org/html/rfc7230#section-1.2
-//
-// Returns whether the |input| could be successfully parsed, and the resulting
-// values are now available in the |*values| argument. Does not modify |*values|
-// unless parsing was successful.
-bool ParseCryptoKeyHeader(const std::string& input,
-                          std::vector<CryptoKeyHeaderValues>* values);
 
 }  // namespace gcm
 
