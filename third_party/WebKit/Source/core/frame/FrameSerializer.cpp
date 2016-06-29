@@ -374,11 +374,9 @@ void FrameSerializer::serializeCSSRule(CSSRule* rule)
     case CSSRule::PAGE_RULE:
     case CSSRule::KEYFRAMES_RULE:
     case CSSRule::KEYFRAME_RULE:
+    case CSSRule::NAMESPACE_RULE:
     case CSSRule::VIEWPORT_RULE:
         break;
-
-    default:
-        ASSERT_NOT_REACHED();
     }
 }
 
