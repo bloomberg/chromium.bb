@@ -25,8 +25,7 @@ class TopSites;
 
 class Profile;
 
-// Used for creating and fetching a per-profile instance of the
-// TopSites.
+// Used for creating and fetching a per-profile instance of the TopSites.
 class TopSitesFactory : public RefcountedBrowserContextKeyedServiceFactory {
  public:
   // Get the TopSites service for |profile|, creating one if needed.

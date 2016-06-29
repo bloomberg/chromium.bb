@@ -198,7 +198,6 @@ MostVisitedSites::MostVisitedSites(
       blocking_runner_(blocking_pool_->GetTaskRunnerWithShutdownBehavior(
           base::SequencedWorkerPool::CONTINUE_ON_SHUTDOWN)),
       weak_ptr_factory_(this) {
-  DCHECK(top_sites_);
   DCHECK(suggestions_service_);
   supervisor_->SetObserver(this);
 }
@@ -225,13 +224,15 @@ void MostVisitedSites::SetMostVisitedURLsObserver(Observer* observer,
     received_popular_sites_ = true;
   }
 
-  // TopSites updates itself after a delay. To ensure up-to-date results,
-  // force an update now.
-  top_sites_->SyncWithHistory();
+  if (top_sites_) {
+    // TopSites updates itself after a delay. To ensure up-to-date results,
+    // force an update now.
+    top_sites_->SyncWithHistory();
 
-  // Register as TopSitesObserver so that we can update ourselves when the
-  // TopSites changes.
-  scoped_observer_.Add(top_sites_.get());
+    // Register as TopSitesObserver so that we can update ourselves when the
+    // TopSites changes.
+    scoped_observer_.Add(top_sites_.get());
+  }
 
   suggestions_subscription_ = suggestions_service_->AddCallback(
       base::Bind(&MostVisitedSites::OnSuggestionsProfileAvailable,
@@ -246,11 +247,13 @@ void MostVisitedSites::SetMostVisitedURLsObserver(Observer* observer,
 
 void MostVisitedSites::AddOrRemoveBlacklistedUrl(const GURL& url,
                                                  bool add_url) {
-  // Always blacklist in the local TopSites.
-  if (add_url)
-    top_sites_->AddBlacklistedURL(url);
-  else
-    top_sites_->RemoveBlacklistedURL(url);
+  if (top_sites_) {
+    // Always blacklist in the local TopSites.
+    if (add_url)
+      top_sites_->AddBlacklistedURL(url);
+    else
+      top_sites_->RemoveBlacklistedURL(url);
+  }
 
   // Only blacklist in the server-side suggestions service if it's active.
   if (mv_source_ == SUGGESTIONS_SERVICE) {
@@ -320,6 +323,8 @@ void MostVisitedSites::BuildCurrentSuggestions() {
 }
 
 void MostVisitedSites::InitiateTopSitesQuery() {
+  if (!top_sites_)
+    return;
   top_sites_->GetMostVisitedURLs(
       base::Bind(&MostVisitedSites::OnMostVisitedURLsAvailable,
                  weak_ptr_factory_.GetWeakPtr()),
@@ -414,7 +419,7 @@ MostVisitedSites::CreateWhitelistEntryPointSuggestions(
 
   for (const auto& whitelist : supervisor_->whitelists()) {
     // Skip blacklisted sites.
-    if (top_sites_->IsBlacklisted(whitelist.entry_point))
+    if (top_sites_ && top_sites_->IsBlacklisted(whitelist.entry_point))
       continue;
 
     // Skip suggestions already present.
@@ -465,7 +470,7 @@ MostVisitedSites::CreatePopularSitesSuggestions(
       hosts.insert(suggestion.url.host());
     for (const PopularSites::Site& popular_site : popular_sites_->sites()) {
       // Skip blacklisted sites.
-      if (top_sites_->IsBlacklisted(popular_site.url))
+      if (top_sites_ && top_sites_->IsBlacklisted(popular_site.url))
         continue;
       std::string host = popular_site.url.host();
       // Skip suggestions already present in personal or whitelists.

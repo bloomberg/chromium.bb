@@ -7,6 +7,7 @@
 #include <stddef.h>
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/macros.h"
 #include "base/memory/singleton.h"
 #include "build/build_config.h"
@@ -26,6 +27,12 @@
 #include "url/gurl.h"
 
 namespace {
+
+const char kDisableTopSites[] = "disable-top-sites";
+
+bool IsTopSitesDisabled() {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(kDisableTopSites);
+}
 
 struct RawPrepopulatedPage {
   int url_id;        // The resource for the page URL.
@@ -76,6 +83,8 @@ void InitializePrepopulatedPageList(
 // static
 scoped_refptr<history::TopSites> TopSitesFactory::GetForProfile(
     Profile* profile) {
+  if (IsTopSitesDisabled())
+    return nullptr;
   return static_cast<history::TopSites*>(
       GetInstance()->GetServiceForBrowserContext(profile, true).get());
 }
