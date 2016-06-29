@@ -441,11 +441,6 @@ T* Unwrap(const RetainedRefWrapper<T>& o) {
 }
 
 template <typename T>
-const WeakPtr<T>& Unwrap(const WeakPtr<T>& o) {
-  return o;
-}
-
-template <typename T>
 T* Unwrap(const OwnedWrapper<T>& o) {
   return o.get();
 }

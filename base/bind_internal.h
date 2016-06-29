@@ -64,22 +64,6 @@ namespace internal {
 //                 into the Bind() system, doing most of the type resolution.
 //                 There are ARITY BindState types.
 
-// HasNonConstReferenceParam selects true_type when any of the parameters in
-// |Sig| is a non-const reference.
-// Implementation note: This non-specialized case handles zero-arity case only.
-// Non-zero-arity cases should be handled by the specialization below.
-template <typename List>
-struct HasNonConstReferenceItem : std::false_type {};
-
-// Implementation note: Select true_type if the first parameter is a non-const
-// reference.  Otherwise, skip the first parameter and check rest of parameters
-// recursively.
-template <typename T, typename... Args>
-struct HasNonConstReferenceItem<TypeList<T, Args...>>
-    : std::conditional<is_non_const_reference<T>::value,
-                       std::true_type,
-                       HasNonConstReferenceItem<TypeList<Args...>>>::type {};
-
 // HasRefCountedTypeAsRawPtr selects true_type when any of the |Args| is a raw
 // pointer to a RefCounted type.
 // Implementation note: This non-specialized case handles zero-arity case only.
