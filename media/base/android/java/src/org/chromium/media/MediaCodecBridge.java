@@ -450,6 +450,7 @@ class MediaCodecBridge {
                 assert false;
             }
         } catch (IllegalStateException e) {
+            status = MEDIA_CODEC_ERROR;
             Log.e(TAG, "Failed to dequeue output buffer", e);
         }
 
