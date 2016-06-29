@@ -196,7 +196,6 @@ class FakeServer : public base::Thread, base::MessagePumpLibevent::Watcher {
 
   base::WaitableEvent pause_event_;
   base::WaitableEvent resume_event_;
-  bool paused_ = false;
 
   MockCompositor compositor_;
   MockSeat seat_;
