@@ -780,7 +780,7 @@ const FeatureEntry kFeatureEntries[] = {
      IDS_FLAGS_GPU_RASTERIZATION_MSAA_SAMPLE_COUNT_NAME,
      IDS_FLAGS_GPU_RASTERIZATION_MSAA_SAMPLE_COUNT_DESCRIPTION, kOsAll,
      MULTI_VALUE_TYPE(kGpuRasterizationMSAASampleCountChoices)},
-    {"enable-experimental-web-platform-features", // FLAGS:RECORD_UMA
+    {"enable-experimental-web-platform-features",  // FLAGS:RECORD_UMA
      IDS_FLAGS_EXPERIMENTAL_WEB_PLATFORM_FEATURES_NAME,
      IDS_FLAGS_EXPERIMENTAL_WEB_PLATFORM_FEATURES_DESCRIPTION, kOsAll,
      SINGLE_VALUE_TYPE(switches::kEnableExperimentalWebPlatformFeatures)},
@@ -1915,6 +1915,10 @@ const FeatureEntry kFeatureEntries[] = {
      IDS_FLAGS_TAB_DETACHING_IN_FULLSCREEN_DESCRIPTION, kOsMac,
      ENABLE_DISABLE_VALUE_TYPE(switches::kEnableFullscreenTabDetaching,
                                switches::kDisableFullscreenTabDetaching)},
+    {"enable-fullscreen-toolbar-reveal",
+     IDS_FLAGS_FULLSCREEN_TOOLBAR_REVEAL_NAME,
+     IDS_FLAGS_FULLSCREEN_TOOLBAR_REVEAL_DESCRIPTION, kOsMac,
+     SINGLE_VALUE_TYPE(switches::kEnableFullscreenToolbarReveal)},
 #endif
 #if defined(OS_ANDROID)
     {"media-style-notification", IDS_FLAGS_MEDIA_STYLE_NOTIFICATION_NAME,

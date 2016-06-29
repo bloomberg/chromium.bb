@@ -1028,6 +1028,13 @@ bool IsTabDetachingInFullscreenEnabled() {
     if (manager)
       manager->DisplayPendingRequests();
   }
+
+  // If the web contents want to focus on the location bar, do not call the
+  // animation since the location bar will drop down when it's focused.
+  bool willFocusLocationBar =
+      newContents && newContents->FocusLocationBarByDefault();
+  if ([self isInAnyFullscreenMode] && !willFocusLocationBar)
+    [[self presentationModeController] revealToolbarForTabStripChanges];
 }
 
 - (void)zoomChangedForActiveTab:(BOOL)canShowBubble {
@@ -1476,6 +1483,13 @@ bool IsTabDetachingInFullscreenEnabled() {
   [infoBarContainerController_ tabDetachedWithContents:contents];
 }
 
+- (void)onTabInsertedInForeground:(BOOL)inForeground {
+  if ([self isInAnyFullscreenMode] && !inForeground &&
+      ![toolbarController_ isLocationBarFocused]) {
+    [[self presentationModeController] revealToolbarForTabStripChanges];
+  }
+}
+
 - (void)userChangedTheme {
   NSView* rootView = [[[self window] contentView] superview];
   [rootView cr_recursivelyInvokeBlock:^(id view) {
@@ -1822,6 +1836,10 @@ willAnimateFromState:(BookmarkBar::State)oldState
 
 - (PresentationModeController*)presentationModeController {
   return presentationModeController_.get();
+}
+
+- (void)setPresentationModeController:(PresentationModeController*)controller {
+  presentationModeController_.reset([controller retain]);
 }
 
 - (void)executeExtensionCommand:(const std::string&)extension_id

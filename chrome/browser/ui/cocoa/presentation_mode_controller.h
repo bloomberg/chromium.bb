@@ -98,6 +98,9 @@ enum SlidingStyle {
 
   // A Carbon event handler that tracks the revealed fraction of the menu bar.
   EventHandlerRef menuBarTrackingHandler_;
+
+  // True when the toolbar is dropped to show tabstrip changes.
+  BOOL revealToolbarForTabStripChanges_;
 }
 
 @property(readonly, nonatomic) BOOL inPresentationMode;
@@ -137,6 +140,9 @@ enum SlidingStyle {
 // Cancels any running animation and timers.
 - (void)cancelAnimationAndTimers;
 
+// Animates the toolbar dropping down to show changes to the tab strip.
+- (void)revealToolbarForTabStripChanges;
+
 // In any fullscreen mode, the y offset to use for the content at the top of
 // the screen (tab strip, omnibox, bookmark bar, etc).
 // Ranges from 0 to -22.
@@ -163,6 +169,7 @@ enum SlidingStyle {
 // is showing. This function has the side effect of changing the AppKit
 // Fullscreen option for whether the menu bar is shown.
 - (void)changeToolbarFraction:(CGFloat)fraction;
+
 @end
 
 // Notification posted when we're about to enter or leave fullscreen.

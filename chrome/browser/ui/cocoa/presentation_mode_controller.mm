@@ -30,6 +30,9 @@ const NSTimeInterval kMouseExitCheckDelay = 0.1;
 const NSTimeInterval kDropdownShowDelay = 0.3;
 const NSTimeInterval kDropdownHideDelay = 0.2;
 
+// The duration the toolbar is revealed for tab strip changes.
+const NSTimeInterval kDropdownForTabStripChangesDuration = 0.75;
+
 // The event kind value for a undocumented menubar show/hide Carbon event.
 const CGFloat kMenuBarRevealEventKind = 2004;
 
@@ -383,6 +386,16 @@ OSStatus MenuBarRevealHandler(EventHandlerCallRef handler,
   currentAnimation_.reset();
 }
 
+- (void)revealToolbarForTabStripChanges {
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableFullscreenToolbarReveal)) {
+    return;
+  }
+
+  revealToolbarForTabStripChanges_ = YES;
+  [self ensureOverlayShownWithAnimation:YES delay:NO];
+}
+
 - (void)setSystemFullscreenModeTo:(base::mac::FullScreenMode)mode {
   if (mode == systemFullscreenMode_)
     return;
@@ -485,6 +498,20 @@ OSStatus MenuBarRevealHandler(EventHandlerCallRef handler,
   // Don't automatically set up a new tracking area. When explicitly stopped,
   // either another animation is going to start immediately or the state will be
   // changed immediately.
+  if (revealToolbarForTabStripChanges_) {
+    if (toolbarFraction_ > 0.0) {
+      // Set the timer to hide the toolbar.
+      [hideTimer_ invalidate];
+      hideTimer_.reset([[NSTimer
+          scheduledTimerWithTimeInterval:kDropdownForTabStripChangesDuration
+                                  target:self
+                                selector:@selector(hideTimerFire:)
+                                userInfo:nil
+                                 repeats:NO] retain]);
+    } else {
+      revealToolbarForTabStripChanges_ = NO;
+    }
+  }
 }
 
 - (void)animationDidEnd:(NSAnimation*)animation {

@@ -62,6 +62,8 @@ using content::WebContents;
 }
 - (void)onTabDetachedWithContents:(WebContents*)contents {
 }
+- (void)onTabInsertedInForeground:(BOOL)inForeground {
+}
 @end
 
 

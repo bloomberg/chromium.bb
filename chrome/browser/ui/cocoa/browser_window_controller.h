@@ -652,6 +652,9 @@ class Command;
 // Returns the presentation mode controller.
 - (PresentationModeController*)presentationModeController;
 
+// Sets the presentation mode controller.
+- (void)setPresentationModeController:(PresentationModeController*)controller;
+
 @end  // @interface BrowserWindowController (TestingAPI)
 
 

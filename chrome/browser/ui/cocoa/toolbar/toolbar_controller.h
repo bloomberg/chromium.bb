@@ -190,6 +190,9 @@ class NotificationBridge;
 // Returns the app menu controller.
 - (AppMenuController*)appMenuController;
 
+// Returns true of the location bar is focused.
+- (BOOL)isLocationBarFocused;
+
 @end
 
 // A set of private methods used by tests, in the absence of "friends" in ObjC.

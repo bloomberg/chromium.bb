@@ -54,6 +54,7 @@
 #include "components/metrics/proto/omnibox_event.pb.h"
 #include "components/omnibox/browser/autocomplete_classifier.h"
 #include "components/omnibox/browser/autocomplete_match.h"
+#include "components/omnibox/browser/omnibox_edit_model.h"
 #include "components/omnibox/browser/omnibox_view.h"
 #include "components/prefs/pref_service.h"
 #include "components/search_engines/template_url_service.h"
@@ -1113,6 +1114,11 @@ class NotificationBridge : public AppMenuIconController::Delegate {
 
 - (AppMenuController*)appMenuController {
   return appMenuController_.get();
+}
+
+- (BOOL)isLocationBarFocused {
+  OmniboxEditModel* model = locationBarView_->GetOmniboxView()->model();
+  return model->has_focus();
 }
 
 // (URLDropTargetController protocol)

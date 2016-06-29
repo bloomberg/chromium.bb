@@ -80694,6 +80694,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="-1512656386" label="disable-new-audio-rendering-mixing-strategy"/>
   <int value="-1510839574" label="disable-sync-synced-notifications"/>
   <int value="-1497338981" label="disable-accelerated-overflow-scroll"/>
+  <int value="-1491417046" label="enable-fullscreen-toolbar-reveal"/>
   <int value="-1490298774" label="enable-captive-portal-bypass-proxy-option"/>
   <int value="-1482685863" label="enable-request-tablet-site"/>
   <int value="-1478876902" label="disable-permission-action-reporting"/>

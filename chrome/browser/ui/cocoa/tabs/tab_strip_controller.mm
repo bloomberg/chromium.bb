@@ -1285,6 +1285,8 @@ private:
   // into the right state up front as we won't be told to do it from anywhere
   // else.
   [self updateIconsForContents:contents atIndex:modelIndex];
+
+  [delegate_ onTabInsertedInForeground:inForeground];
 }
 
 // Called before |contents| is deactivated.

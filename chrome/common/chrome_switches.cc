@@ -1182,6 +1182,10 @@ const char kEnableHostedAppsInWindows[] = "enable-hosted-apps-in-windows";
 const char kEnableMacViewsNativeAppWindows[] =
     "enable-mac-views-native-app-windows";
 
+// Enables the fullscreen toolbar to reveal itself for tab strip changes.
+const char kEnableFullscreenToolbarReveal[] =
+    "enable-fullscreen-toolbar-reveal";
+
 // Enables Translate experimental new UX which replaces the infobar.
 const char kEnableTranslateNewUX[] = "enable-translate-new-ux";
 

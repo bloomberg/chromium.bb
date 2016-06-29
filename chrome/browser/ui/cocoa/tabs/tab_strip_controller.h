@@ -49,6 +49,10 @@ class WebContents;
 // Stripped down version of TabStripModelObserverBridge:tabDetachedWithContents.
 - (void)onTabDetachedWithContents:(content::WebContents*)contents;
 
+// Stripped down version of
+// TabStripModelObserverBridge:onTabInsertedInForeground.
+- (void)onTabInsertedInForeground:(BOOL)inForeground;
+
 @end
 
 // A class that handles managing the tab strip in a browser window. It uses
