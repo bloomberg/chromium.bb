@@ -19,7 +19,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "ash/common/system/chromeos/session/logout_button_tray.h"
-#include "ash/system/chromeos/virtual_keyboard/virtual_keyboard_tray.h"
+#include "ash/common/system/chromeos/virtual_keyboard/virtual_keyboard_tray.h"
 #endif
 
 namespace ash {

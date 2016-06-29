@@ -438,7 +438,8 @@ void Shell::CreateKeyboard() {
 }
 
 void Shell::DeactivateKeyboard() {
-  keyboard_ui_->Hide();
+  // TODO(jamescook): Move keyboard create and hide into WmShell.
+  wm_shell_->keyboard_ui()->Hide();
   if (in_mus_)
     return;
   if (keyboard::KeyboardController::GetInstance()) {
@@ -1052,9 +1053,9 @@ void Shell::Init(const ShellInitParams& init_params) {
     touch_transformer_controller_.reset(new TouchTransformerController());
 #endif  // defined(OS_CHROMEOS)
 
-  keyboard_ui_ = init_params.keyboard_factory.is_null()
-                     ? KeyboardUI::Create()
-                     : init_params.keyboard_factory.Run();
+  wm_shell_->SetKeyboardUI(init_params.keyboard_factory.is_null()
+                               ? KeyboardUI::Create()
+                               : init_params.keyboard_factory.Run());
 
   window_tree_host_manager_->InitHosts();
 

@@ -5,6 +5,7 @@
 #include "ash/common/wm_shell.h"
 
 #include "ash/common/focus_cycler.h"
+#include "ash/common/keyboard/keyboard_ui.h"
 #include "ash/common/shell_window_ids.h"
 #include "ash/common/system/chromeos/session/logout_confirmation_controller.h"
 #include "ash/common/system/tray/system_tray_delegate.h"
@@ -54,6 +55,10 @@ bool WmShell::IsSystemModalWindowOpen() {
     }
   }
   return false;
+}
+
+void WmShell::SetKeyboardUI(std::unique_ptr<KeyboardUI> keyboard_ui) {
+  keyboard_ui_ = std::move(keyboard_ui);
 }
 
 void WmShell::SetSystemTrayDelegate(

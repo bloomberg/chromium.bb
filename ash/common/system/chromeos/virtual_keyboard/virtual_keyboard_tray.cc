@@ -2,7 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/system/chromeos/virtual_keyboard/virtual_keyboard_tray.h"
+#include "ash/common/system/chromeos/virtual_keyboard/virtual_keyboard_tray.h"
+
+#include <algorithm>
 
 #include "ash/common/keyboard/keyboard_ui.h"
 #include "ash/common/material_design/material_design_controller.h"
@@ -10,7 +12,7 @@
 #include "ash/common/shelf/wm_shelf_util.h"
 #include "ash/common/system/tray/tray_constants.h"
 #include "ash/common/system/tray/tray_utils.h"
-#include "ash/shell.h"
+#include "ash/common/wm_shell.h"
 #include "grit/ash_resources.h"
 #include "grit/ash_strings.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -43,14 +45,14 @@ VirtualKeyboardTray::VirtualKeyboardTray(WmShelf* wm_shelf)
   button_->SetFocusBehavior(FocusBehavior::NEVER);
   SetContentsBackground();
   // The Shell may not exist in some unit tests.
-  if (Shell::HasInstance())
-    Shell::GetInstance()->keyboard_ui()->AddObserver(this);
+  if (WmShell::HasInstance())
+    WmShell::Get()->keyboard_ui()->AddObserver(this);
 }
 
 VirtualKeyboardTray::~VirtualKeyboardTray() {
   // The Shell may not exist in some unit tests.
-  if (Shell::HasInstance())
-    Shell::GetInstance()->keyboard_ui()->RemoveObserver(this);
+  if (WmShell::HasInstance())
+    WmShell::Get()->keyboard_ui()->RemoveObserver(this);
 }
 
 void VirtualKeyboardTray::SetShelfAlignment(ShelfAlignment alignment) {
@@ -86,7 +88,7 @@ void VirtualKeyboardTray::HideBubbleWithView(
 void VirtualKeyboardTray::ClickedOutsideBubble() {}
 
 bool VirtualKeyboardTray::PerformAction(const ui::Event& event) {
-  Shell::GetInstance()->keyboard_ui()->Show();
+  WmShell::Get()->keyboard_ui()->Show();
   return true;
 }
 
@@ -97,7 +99,7 @@ void VirtualKeyboardTray::ButtonPressed(views::Button* sender,
 }
 
 void VirtualKeyboardTray::OnKeyboardEnabledStateChanged(bool new_value) {
-  SetVisible(Shell::GetInstance()->keyboard_ui()->IsEnabled());
+  SetVisible(WmShell::Get()->keyboard_ui()->IsEnabled());
 }
 
 }  // namespace ash

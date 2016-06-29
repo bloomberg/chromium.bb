@@ -102,7 +102,6 @@ class EventTransformationHandler;
 class FirstRunHelper;
 class GPUSupport;
 class HighContrastController;
-class KeyboardUI;
 class KeyboardUMAEventFilter;
 class LinkHandlerModelFactory;
 class LocaleNotificationController;
@@ -521,8 +520,6 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
     return is_touch_hud_projection_enabled_;
   }
 
-  KeyboardUI* keyboard_ui() { return keyboard_ui_.get(); }
-
   // TODO(sky): remove this. This was needed by sysui, but as sysui is going
   // away it should no longer be needed.
   bool in_mus() const { return in_mus_; }
@@ -735,8 +732,6 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
   base::SequencedWorkerPool* blocking_pool_;
 
   bool in_mus_ = false;
-
-  std::unique_ptr<KeyboardUI> keyboard_ui_;
 
   DISALLOW_COPY_AND_ASSIGN(Shell);
 };

@@ -26,6 +26,7 @@ namespace ash {
 class AccessibilityDelegate;
 class DisplayInfo;
 class FocusCycler;
+class KeyboardUI;
 class MruWindowTracker;
 class SessionStateDelegate;
 class ShellObserver;
@@ -57,6 +58,8 @@ class ASH_EXPORT WmShell {
   static bool HasInstance() { return instance_ != nullptr; }
 
   FocusCycler* focus_cycler() { return focus_cycler_.get(); }
+
+  KeyboardUI* keyboard_ui() { return keyboard_ui_.get(); }
 
   SystemTrayNotifier* system_tray_notifier() {
     return system_tray_notifier_.get();
@@ -178,6 +181,8 @@ class ASH_EXPORT WmShell {
   WmShell();
   virtual ~WmShell();
 
+  void SetKeyboardUI(std::unique_ptr<KeyboardUI> keyboard_ui);
+
   // Sets and initializes the |delegate|.
   void SetSystemTrayDelegate(std::unique_ptr<SystemTrayDelegate> delegate);
   void DeleteSystemTrayDelegate();
@@ -190,6 +195,7 @@ class ASH_EXPORT WmShell {
   static WmShell* instance_;
 
   std::unique_ptr<FocusCycler> focus_cycler_;
+  std::unique_ptr<KeyboardUI> keyboard_ui_;
   std::unique_ptr<SystemTrayNotifier> system_tray_notifier_;
   std::unique_ptr<SystemTrayDelegate> system_tray_delegate_;
   std::unique_ptr<WindowSelectorController> window_selector_controller_;
