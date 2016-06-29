@@ -81,6 +81,9 @@ class ASH_EXPORT ShelfTooltipManager : public ui::EventHandler,
   friend class test::ShelfViewTest;
   friend class test::ShelfTooltipManagerTest;
 
+  // A helper function to check for shelf visibility and view validity.
+  bool ShouldShowTooltipForView(views::View* view);
+
   int timer_delay_;
   base::OneShotTimer timer_;
 

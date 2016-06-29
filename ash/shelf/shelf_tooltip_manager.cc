@@ -148,7 +148,7 @@ void ShelfTooltipManager::ShowTooltip(views::View* view) {
     Close();
   }
 
-  if (shelf_layout_manager_ && !shelf_layout_manager_->IsVisible())
+  if (!ShouldShowTooltipForView(view))
     return;
 
   Shelf* shelf = shelf_view_->shelf();
@@ -166,7 +166,7 @@ void ShelfTooltipManager::ShowTooltip(views::View* view) {
 }
 
 void ShelfTooltipManager::ShowTooltipWithDelay(views::View* view) {
-  if (!shelf_layout_manager_ || shelf_layout_manager_->IsVisible()) {
+  if (ShouldShowTooltipForView(view)) {
     timer_.Start(FROM_HERE, base::TimeDelta::FromMilliseconds(timer_delay_),
                  base::Bind(&ShelfTooltipManager::ShowTooltip,
                             weak_factory_.GetWeakPtr(), view));
@@ -207,7 +207,7 @@ void ShelfTooltipManager::OnEvent(ui::Event* event) {
       shelf_view_->GetWidget()->GetNativeWindow(), &point);
   views::View::ConvertPointFromWidget(shelf_view_, &point);
   views::View* view = shelf_view_->GetTooltipHandlerForPoint(point);
-  const bool should_show = shelf_view_->ShouldShowTooltipForView(view);
+  const bool should_show = ShouldShowTooltipForView(view);
 
   timer_.Stop();
   if (IsVisible() && should_show && bubble_->GetAnchorView() != view)
@@ -249,6 +249,11 @@ void ShelfTooltipManager::OnAutoHideStateChanged(ShelfAutoHideState new_state) {
         FROM_HERE,
         base::Bind(&ShelfTooltipManager::Close, weak_factory_.GetWeakPtr()));
   }
+}
+
+bool ShelfTooltipManager::ShouldShowTooltipForView(views::View* view) {
+  return shelf_view_ && shelf_view_->ShouldShowTooltipForView(view) &&
+         shelf_layout_manager_ && shelf_layout_manager_->IsVisible();
 }
 
 }  // namespace ash
