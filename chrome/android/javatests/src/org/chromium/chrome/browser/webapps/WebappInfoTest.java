@@ -70,14 +70,10 @@ public class WebappInfoTest extends InstrumentationTestCase {
     @SmallTest
     @Feature({"Webapps"})
     public void testIntentTitleFallBack() {
-        String id = "webapp id";
         String title = "webapp title";
-        String url = "about:blank";
 
-        Intent intent = new Intent();
-        intent.putExtra(ShortcutHelper.EXTRA_ID, id);
+        Intent intent = createIntentWithUrlAndId();
         intent.putExtra(ShortcutHelper.EXTRA_TITLE, title);
-        intent.putExtra(ShortcutHelper.EXTRA_URL, url);
 
         WebappInfo info = WebappInfo.create(intent);
         assertEquals(title, info.name());
@@ -87,14 +83,10 @@ public class WebappInfoTest extends InstrumentationTestCase {
     @SmallTest
     @Feature({"Webapps"})
     public void testIntentNameBlankNoTitle() {
-        String id = "webapp id";
         String shortName = "name";
-        String url = "about:blank";
 
-        Intent intent = new Intent();
-        intent.putExtra(ShortcutHelper.EXTRA_ID, id);
+        Intent intent = createIntentWithUrlAndId();
         intent.putExtra(ShortcutHelper.EXTRA_SHORT_NAME, shortName);
-        intent.putExtra(ShortcutHelper.EXTRA_URL, url);
 
         WebappInfo info = WebappInfo.create(intent);
         assertEquals("", info.name());
@@ -104,16 +96,12 @@ public class WebappInfoTest extends InstrumentationTestCase {
     @SmallTest
     @Feature({"Webapps"})
     public void testIntentShortNameFallBack() {
-        String id = "webapp id";
         String title = "webapp title";
         String shortName = "name";
-        String url = "about:blank";
 
-        Intent intent = new Intent();
-        intent.putExtra(ShortcutHelper.EXTRA_ID, id);
+        Intent intent = createIntentWithUrlAndId();
         intent.putExtra(ShortcutHelper.EXTRA_TITLE, title);
         intent.putExtra(ShortcutHelper.EXTRA_SHORT_NAME, shortName);
-        intent.putExtra(ShortcutHelper.EXTRA_URL, url);
 
         WebappInfo info = WebappInfo.create(intent);
         assertEquals(title, info.name());
@@ -123,16 +111,12 @@ public class WebappInfoTest extends InstrumentationTestCase {
     @SmallTest
     @Feature({"Webapps"})
     public void testIntentNameShortname() {
-        String id = "webapp id";
         String name = "longName";
         String shortName = "name";
-        String url = "about:blank";
 
-        Intent intent = new Intent();
-        intent.putExtra(ShortcutHelper.EXTRA_ID, id);
+        Intent intent = createIntentWithUrlAndId();
         intent.putExtra(ShortcutHelper.EXTRA_NAME, name);
         intent.putExtra(ShortcutHelper.EXTRA_SHORT_NAME, shortName);
-        intent.putExtra(ShortcutHelper.EXTRA_URL, url);
 
         WebappInfo info = WebappInfo.create(intent);
         assertEquals(name, info.name());
@@ -192,20 +176,78 @@ public class WebappInfoTest extends InstrumentationTestCase {
     @SmallTest
     @Feature({"Webapps"})
     public void testColorsIntentCreation() {
-        String id = "webapp id";
-        String url = "http://money.cnn.com";
         long themeColor = 0xFF00FF00L;
         long backgroundColor = 0xFF0000FFL;
 
-        Intent intent = new Intent();
+        Intent intent = createIntentWithUrlAndId();
         intent.putExtra(ShortcutHelper.EXTRA_THEME_COLOR, themeColor);
         intent.putExtra(ShortcutHelper.EXTRA_BACKGROUND_COLOR, backgroundColor);
-        intent.putExtra(ShortcutHelper.EXTRA_ID, id);
-        intent.putExtra(ShortcutHelper.EXTRA_URL, url);
 
         WebappInfo info = WebappInfo.create(intent);
         assertEquals(info.themeColor(), themeColor);
         assertEquals(info.backgroundColor(), backgroundColor);
+    }
+
+    @SmallTest
+    @Feature({"Webapps", "WebApk"})
+    public void testIntentDisplayMode() {
+        {
+            Intent intent = createIntentWithUrlAndId();
+            intent.putExtra(ShortcutHelper.EXTRA_DISPLAY_MODE, WebDisplayMode.MinimalUi);
+            WebappInfo info = WebappInfo.create(intent);
+            assertEquals(WebDisplayMode.MinimalUi, info.displayMode());
+        }
+        {
+            Intent intent = createIntentWithUrlAndId();
+            intent.putExtra(WebApkConstants.EXTRA_WEBAPK_DISPLAY_MODE, "fullscreen");
+            WebappInfo info = WebappInfo.create(intent);
+            assertEquals(WebDisplayMode.Fullscreen, info.displayMode());
+        }
+        {
+            // EXTRA_WEBAPK_DISPLAY_MODE takes precedence over EXTRA_DISPLAY_MODE.
+            Intent intent = createIntentWithUrlAndId();
+            intent.putExtra(WebApkConstants.EXTRA_WEBAPK_DISPLAY_MODE, "fullscreen");
+            intent.putExtra(ShortcutHelper.EXTRA_DISPLAY_MODE, WebDisplayMode.MinimalUi);
+            WebappInfo info = WebappInfo.create(intent);
+            assertEquals(WebDisplayMode.Fullscreen, info.displayMode());
+        }
+        {
+            Intent intent = createIntentWithUrlAndId();
+            intent.putExtra(WebApkConstants.EXTRA_WEBAPK_DISPLAY_MODE, "invalid");
+            WebappInfo info = WebappInfo.create(intent);
+            assertEquals(WebDisplayMode.Standalone, info.displayMode());
+        }
+    }
+
+    @SmallTest
+    @Feature({"Webapps", "WebApk"})
+    public void testIntentOrientation() {
+        {
+            Intent intent = createIntentWithUrlAndId();
+            intent.putExtra(ShortcutHelper.EXTRA_ORIENTATION, ScreenOrientationValues.LANDSCAPE);
+            WebappInfo info = WebappInfo.create(intent);
+            assertEquals(ScreenOrientationValues.LANDSCAPE, info.orientation());
+        }
+        {
+            Intent intent = createIntentWithUrlAndId();
+            intent.putExtra(WebApkConstants.EXTRA_WEBAPK_ORIENTATION, "natural");
+            WebappInfo info = WebappInfo.create(intent);
+            assertEquals(ScreenOrientationValues.NATURAL, info.orientation());
+        }
+        {
+            // EXTRA_WEBAPK_ORIENTATION takes precedence over EXTRA_ORIENTATION.
+            Intent intent = createIntentWithUrlAndId();
+            intent.putExtra(WebApkConstants.EXTRA_WEBAPK_ORIENTATION, "natural");
+            intent.putExtra(ShortcutHelper.EXTRA_ORIENTATION, ScreenOrientationValues.LANDSCAPE);
+            WebappInfo info = WebappInfo.create(intent);
+            assertEquals(ScreenOrientationValues.NATURAL, info.orientation());
+        }
+        {
+            Intent intent = createIntentWithUrlAndId();
+            intent.putExtra(WebApkConstants.EXTRA_WEBAPK_ORIENTATION, "invalid");
+            WebappInfo info = WebappInfo.create(intent);
+            assertEquals(ScreenOrientationValues.DEFAULT, info.orientation());
+        }
     }
 
     @SmallTest
@@ -267,18 +309,23 @@ public class WebappInfoTest extends InstrumentationTestCase {
     @SmallTest
     @Feature({"WebApk"})
     public void testIntentWebApkPackageName() {
-        String id = WebApkConstants.WEBAPK_ID_PREFIX + "id";
-        String name = "longName";
-        String url = "http://www.foo.com/homepage";
         String packageName = WebApkConstants.WEBAPK_PACKAGE_PREFIX + ".foo";
 
-        Intent intent = new Intent();
-        intent.putExtra(ShortcutHelper.EXTRA_ID, id);
-        intent.putExtra(ShortcutHelper.EXTRA_NAME, name);
-        intent.putExtra(ShortcutHelper.EXTRA_URL, url);
+        Intent intent = createIntentWithUrlAndId();
         intent.putExtra(ShortcutHelper.EXTRA_WEBAPK_PACKAGE_NAME, packageName);
 
         WebappInfo info = WebappInfo.create(intent);
         assertEquals(packageName, info.webApkPackageName());
+    }
+
+    /**
+     * Creates intent with url and id. If the url or id are not set WebappInfo#create() returns
+     * null.
+     */
+    private Intent createIntentWithUrlAndId() {
+        Intent intent = new Intent();
+        intent.putExtra(ShortcutHelper.EXTRA_ID, "web app id");
+        intent.putExtra(ShortcutHelper.EXTRA_URL, "about:blank");
+        return intent;
     }
 }

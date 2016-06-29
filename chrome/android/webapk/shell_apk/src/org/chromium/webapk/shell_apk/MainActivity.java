@@ -13,6 +13,7 @@ import android.content.pm.PackageManager.NameNotFoundException;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.util.Base64;
 import android.util.Log;
 
@@ -28,13 +29,25 @@ public class MainActivity extends Activity {
     // {@link org.chromium.chrome.browser.ShortcutHelper}.
     private static final String EXTRA_ID = "org.chromium.chrome.browser.webapp_id";
     private static final String EXTRA_ICON = "org.chromium.chrome.browser.webapp_icon";
+    private static final String EXTRA_SHORT_NAME = "org.chromium.chrome.browser.webapp_short_name";
     private static final String EXTRA_NAME = "org.chromium.chrome.browser.webapp_name";
     private static final String EXTRA_URL = "org.chromium.chrome.browser.webapp_url";
+    private static final String EXTRA_THEME_COLOR = "org.chromium.chrome.browser.theme_color";
+    private static final String EXTRA_BACKGROUND_COLOR =
+            "org.chromium.chrome.browser.background_color";
+    private static final String EXTRA_IS_ICON_GENERATED =
+            "org.chromium.chrome.browser.is_icon_generated";
     private static final String EXTRA_WEBAPK_PACKAGE_NAME =
             "org.chromium.chrome.browser.webapk_package_name";
 
-    private static final String META_DATA_HOST_URL = "hostUrl";
     private static final String META_DATA_RUNTIME_HOST = "runtimeHost";
+    private static final String META_DATA_START_URL = "startUrl";
+    private static final String META_DATA_NAME = "name";
+    private static final String META_DATA_DISPLAY_MODE = "displayMode";
+    private static final String META_DATA_ORIENTATION = "orientation";
+    private static final String META_DATA_THEME_COLOR = "themeColor";
+    private static final String META_DATA_BACKGROUND_COLOR = "backgroundColor";
+    private static final String META_DATA_ICON_URL = "iconUrl";
 
     private static final String TAG = "cr_MainActivity";
 
@@ -43,16 +56,11 @@ public class MainActivity extends Activity {
         super.onCreate(savedInstanceState);
 
         String packageName = getPackageName();
-        String webappId = null;
-        String name = null;
-        String url = null;
-        String encodedIcon = null;
-        String runtimeHost = null;
         try {
             ApplicationInfo appInfo = getPackageManager().getApplicationInfo(
                     packageName, PackageManager.GET_META_DATA);
             Bundle bundle = appInfo.metaData;
-            url = bundle.getString(META_DATA_HOST_URL);
+            String url = bundle.getString(META_DATA_START_URL);
 
             String overrideUrl = getIntent().getDataString();
             // TODO(pkotwicz): Use same logic as {@code IntentHandler#shouldIgnoreIntent()}
@@ -60,26 +68,41 @@ public class MainActivity extends Activity {
                 url = overrideUrl;
             }
 
-            webappId = WebApkConstants.WEBAPK_ID_PREFIX + packageName;
-            runtimeHost = bundle.getString(META_DATA_RUNTIME_HOST);
-            name = (String) getPackageManager().getApplicationLabel(appInfo);
+            String webappId = WebApkConstants.WEBAPK_ID_PREFIX + packageName;
+            String runtimeHost = bundle.getString(META_DATA_RUNTIME_HOST);
+            String shortName = (String) getPackageManager().getApplicationLabel(appInfo);
             // TODO(hanxi): find a neat solution to avoid encode/decode each time launch the
             // activity.
             Bitmap icon = BitmapFactory.decodeResource(getResources(), R.drawable.app_icon);
-            encodedIcon = encodeBitmapAsString(icon);
-            Log.w(TAG, "Url of the WebAPK: " + url);
-            Log.w(TAG, "WebappId of the WebAPK: " + webappId);
-            Log.w(TAG, "Name of the WebAPK:" + name);
-            Log.w(TAG, "Package name of the WebAPK:" + packageName);
+            String encodedIcon = encodeBitmapAsString(icon);
+            String name = bundle.getString(META_DATA_NAME);
+            String displayMode = bundle.getString(META_DATA_DISPLAY_MODE);
+            String orientation = bundle.getString(META_DATA_ORIENTATION);
+            long themeColor = getLongFromBundle(bundle, META_DATA_THEME_COLOR);
+            long backgroundColor = getLongFromBundle(bundle, META_DATA_BACKGROUND_COLOR);
+            boolean isIconGenerated = TextUtils.isEmpty(bundle.getString(META_DATA_ICON_URL));
+            Log.v(TAG, "Url of the WebAPK: " + url);
+            Log.v(TAG, "WebappId of the WebAPK: " + webappId);
+            Log.v(TAG, "Name of the WebAPK:" + name);
+            Log.v(TAG, "Package name of the WebAPK:" + packageName);
 
             Intent newIntent = new Intent();
             newIntent.setComponent(new ComponentName(runtimeHost,
                     "org.chromium.chrome.browser.webapps.WebappLauncherActivity"));
+            // Chrome expects the ShortcutHelper.EXTRA_DISPLAY_MODE and
+            // ShortcutHelper.EXTRA_ORIENTATION extras to be enum values. We send string extras for
+            // the display mode and orientation so have to use different keys.
             newIntent.putExtra(EXTRA_ID, webappId)
+                     .putExtra(EXTRA_SHORT_NAME, shortName)
                      .putExtra(EXTRA_NAME, name)
                      .putExtra(EXTRA_URL, url)
                      .putExtra(EXTRA_ICON, encodedIcon)
-                     .putExtra(EXTRA_WEBAPK_PACKAGE_NAME, packageName);
+                     .putExtra(EXTRA_THEME_COLOR, themeColor)
+                     .putExtra(EXTRA_BACKGROUND_COLOR, backgroundColor)
+                     .putExtra(EXTRA_IS_ICON_GENERATED, isIconGenerated)
+                     .putExtra(EXTRA_WEBAPK_PACKAGE_NAME, packageName)
+                     .putExtra(WebApkConstants.EXTRA_WEBAPK_DISPLAY_MODE, displayMode)
+                     .putExtra(WebApkConstants.EXTRA_WEBAPK_ORIENTATION, orientation);
             startActivity(newIntent);
             finish();
         } catch (NameNotFoundException e) {
@@ -98,5 +121,21 @@ public class MainActivity extends Activity {
         ByteArrayOutputStream output = new ByteArrayOutputStream();
         bitmap.compress(Bitmap.CompressFormat.PNG, 100, output);
         return Base64.encodeToString(output.toByteArray(), Base64.DEFAULT);
+    }
+
+    /**
+     * Gets a long from a Bundle. The long should be terminated with 'L'. This function is more
+     * reliable than Bundle#getLong() which returns 0 if the value is below Float.MAX_VALUE.
+     */
+    private static long getLongFromBundle(Bundle bundle, String key) {
+        String value = bundle.getString(key);
+        if (value == null || !value.endsWith("L")) {
+            return 0;
+        }
+        try {
+            return Long.parseLong(value.substring(0, value.length() - 1));
+        } catch (NumberFormatException e) {
+        }
+        return 0;
     }
 }

@@ -14,6 +14,7 @@ import org.chromium.chrome.browser.ShortcutHelper;
 import org.chromium.chrome.browser.ShortcutSource;
 import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.content_public.common.ScreenOrientationValues;
+import org.chromium.webapk.lib.common.WebApkConstants;
 
 /**
  * Stores info about a web app.
@@ -56,6 +57,58 @@ public class WebappInfo {
         return shortName == null ? titleFromIntent(intent) : shortName;
     }
 
+    public static int displayModeFromIntent(Intent intent) {
+        String displayMode =
+                IntentUtils.safeGetStringExtra(intent, WebApkConstants.EXTRA_WEBAPK_DISPLAY_MODE);
+        if (displayMode == null) {
+            return IntentUtils.safeGetIntExtra(
+                    intent, ShortcutHelper.EXTRA_DISPLAY_MODE, WebDisplayMode.Standalone);
+        }
+
+        // {@link displayMode} should be one of
+        // https://w3c.github.io/manifest/#dfn-display-modes-values
+        if (displayMode.equals("fullscreen")) {
+            return WebDisplayMode.Fullscreen;
+        } else if (displayMode.equals("minimal-ui")) {
+            return WebDisplayMode.MinimalUi;
+        } else if (displayMode.equals("browser")) {
+            return WebDisplayMode.Browser;
+        } else {
+            return WebDisplayMode.Standalone;
+        }
+    }
+
+    public static int orientationFromIntent(Intent intent) {
+        String orientation =
+                IntentUtils.safeGetStringExtra(intent, WebApkConstants.EXTRA_WEBAPK_ORIENTATION);
+        if (orientation == null) {
+            return IntentUtils.safeGetIntExtra(
+                    intent, ShortcutHelper.EXTRA_ORIENTATION, ScreenOrientationValues.DEFAULT);
+        }
+
+        // {@link orientation} should be one of
+        // w3c.github.io/screen-orientation/#orientationlocktype-enum
+        if (orientation.equals("any")) {
+            return ScreenOrientationValues.ANY;
+        } else if (orientation.equals("natural")) {
+            return ScreenOrientationValues.NATURAL;
+        } else if (orientation.equals("landscape")) {
+            return ScreenOrientationValues.LANDSCAPE;
+        } else if (orientation.equals("landscape-primary")) {
+            return ScreenOrientationValues.LANDSCAPE_PRIMARY;
+        } else if (orientation.equals("landscape-secondary")) {
+            return ScreenOrientationValues.LANDSCAPE_SECONDARY;
+        } else if (orientation.equals("portrait")) {
+            return ScreenOrientationValues.PORTRAIT;
+        } else if (orientation.equals("portrait-primary")) {
+            return ScreenOrientationValues.PORTRAIT_PRIMARY;
+        } else if (orientation.equals("portrait-secondary")) {
+            return ScreenOrientationValues.PORTRAIT_SECONDARY;
+        } else {
+            return ScreenOrientationValues.DEFAULT;
+        }
+    }
+
     /**
      * Construct a WebappInfo.
      * @param intent Intent containing info about the app.
@@ -64,10 +117,8 @@ public class WebappInfo {
         String id = IntentUtils.safeGetStringExtra(intent, ShortcutHelper.EXTRA_ID);
         String icon = IntentUtils.safeGetStringExtra(intent, ShortcutHelper.EXTRA_ICON);
         String url = IntentUtils.safeGetStringExtra(intent, ShortcutHelper.EXTRA_URL);
-        int displayMode = IntentUtils.safeGetIntExtra(intent,
-                ShortcutHelper.EXTRA_DISPLAY_MODE, WebDisplayMode.Standalone);
-        int orientation = IntentUtils.safeGetIntExtra(intent,
-                ShortcutHelper.EXTRA_ORIENTATION, ScreenOrientationValues.DEFAULT);
+        int displayMode = displayModeFromIntent(intent);
+        int orientation = orientationFromIntent(intent);
         int source = IntentUtils.safeGetIntExtra(intent,
                 ShortcutHelper.EXTRA_SOURCE, ShortcutSource.UNKNOWN);
         long themeColor = IntentUtils.safeGetLongExtra(intent,
