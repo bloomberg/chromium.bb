@@ -104,12 +104,6 @@ protected:
         return true;
     }
 
-    Derived* toDerived()
-    {
-        return static_cast<Derived*>(this);
-    }
-
-protected:
     inline void registerWeakCellWithCallback(void** cell, WeakCallback callback)
     {
         ASSERT(toDerived()->getMarkingMode() != Visitor::WeakProcessing);
@@ -117,6 +111,11 @@ protected:
         if (toDerived()->getMarkingMode() == Visitor::SnapshotMarking)
             return;
         toDerived()->heap().pushGlobalWeakCallback(cell, callback);
+    }
+
+    Derived* toDerived()
+    {
+        return static_cast<Derived*>(this);
     }
 
 private:

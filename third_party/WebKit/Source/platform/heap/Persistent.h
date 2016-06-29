@@ -184,10 +184,14 @@ private:
     {
         static_assert(sizeof(T), "T must be fully defined");
         static_assert(IsGarbageCollectedType<T>::value, "T needs to be a garbage collected object");
-        if (weaknessConfiguration == WeakPersistentConfiguration)
-            visitor->registerWeakMembers(this, m_raw, handleWeakPersistent);
-        else
+        if (weaknessConfiguration == WeakPersistentConfiguration) {
+            if (crossThreadnessConfiguration == CrossThreadPersistentConfiguration)
+                visitor->registerWeakCellWithCallback(reinterpret_cast<void**>(this), handleWeakPersistent);
+            else
+                visitor->registerWeakMembers(this, m_raw, handleWeakPersistent);
+        } else {
             visitor->mark(m_raw);
+        }
     }
 
     NO_LAZY_SWEEP_SANITIZE_ADDRESS
@@ -246,11 +250,12 @@ private:
 #endif
     }
 
-    static void handleWeakPersistent(Visitor* self, void* object)
+    static void handleWeakPersistent(Visitor* self, void* persistentPointer)
     {
         using Base = PersistentBase<typename std::remove_const<T>::type, weaknessConfiguration, crossThreadnessConfiguration>;
-        Base* persistent = reinterpret_cast<Base*>(object);
-        if (persistent->get() && !ObjectAliveTrait<T>::isHeapObjectAlive(persistent->get()))
+        Base* persistent = reinterpret_cast<Base*>(persistentPointer);
+        T* object = persistent->get();
+        if (object && !ObjectAliveTrait<T>::isHeapObjectAlive(object))
             persistent->clear();
     }
 
