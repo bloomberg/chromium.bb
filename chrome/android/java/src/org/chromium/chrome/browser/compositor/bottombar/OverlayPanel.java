@@ -121,6 +121,9 @@ public class OverlayPanel extends OverlayPanelAnimation implements ActivityState
     /** If the panel should be ignoring swipe events (for compatibility mode). */
     private boolean mIgnoreSwipeEvents;
 
+    /** This is used to make sure there is one show request to one close request. */
+    private boolean mPanelShown;
+
     // ============================================================================================
     // Constructor
     // ============================================================================================
@@ -159,6 +162,7 @@ public class OverlayPanel extends OverlayPanelAnimation implements ActivityState
 
     @Override
     protected void onClosed(StateChangeReason reason) {
+        mPanelShown = false;
         setBasePageTextControlsVisibility(true);
         destroyComponents();
         mPanelManager.notifyPanelClosed(this, reason);
@@ -184,7 +188,8 @@ public class OverlayPanel extends OverlayPanelAnimation implements ActivityState
 
     @Override
     public void closePanel(StateChangeReason reason, boolean animate) {
-        if (!isShowing()) return;
+        // If the panel hasn't peeked, then it shouldn't need to close.
+        if (!mPanelShown) return;
 
         super.closePanel(reason, animate);
     }
@@ -194,7 +199,7 @@ public class OverlayPanel extends OverlayPanelAnimation implements ActivityState
      * @param reason The reason the panel is being shown.
      */
     public void requestPanelShow(StateChangeReason reason) {
-        if (isShowing()) return;
+        if (mPanelShown) return;
 
         if (mPanelManager != null) {
             mPanelManager.requestPanelShow(this, reason);
@@ -205,6 +210,10 @@ public class OverlayPanel extends OverlayPanelAnimation implements ActivityState
     public void peekPanel(StateChangeReason reason) {
         // TODO(mdjones): This is making a protected API public and should be removed. Animation
         // should only be controlled by the OverlayPanelManager.
+
+        // Since the OverlayPanelManager can show panels without requestPanelShow being called, the
+        // flag for the panel being shown should be set to true here.
+        mPanelShown = true;
         super.peekPanel(reason);
     }
 
