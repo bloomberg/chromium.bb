@@ -747,12 +747,8 @@ bool FFmpegUTCDateToTime(const char* date_utc, base::Time* out) {
       base::StringToInt(time_fields[0], &exploded.hour) &&
       base::StringToInt(time_fields[1], &exploded.minute) &&
       base::StringToInt(time_fields[2], &exploded.second)) {
-    base::Time parsed_time = base::Time::FromUTCExploded(exploded);
-    if (parsed_time.is_null())
-      return false;
-
-    *out = parsed_time;
-    return true;
+    if (base::Time::FromUTCExploded(exploded, out))
+      return true;
   }
 
   return false;

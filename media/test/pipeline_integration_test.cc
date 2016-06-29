@@ -178,7 +178,8 @@ static base::Time kLiveTimelineOffset() {
   exploded_time.minute = 34;
   exploded_time.second = 56;
   exploded_time.millisecond = 789;
-  base::Time timeline_offset = base::Time::FromUTCExploded(exploded_time);
+  base::Time timeline_offset;
+  EXPECT_TRUE(base::Time::FromUTCExploded(exploded_time, &timeline_offset));
 
   timeline_offset += base::TimeDelta::FromMicroseconds(123);
 
@@ -191,8 +192,9 @@ static base::Time TruncateToFFmpegTimeResolution(base::Time t) {
   base::Time::Exploded exploded_time;
   t.UTCExplode(&exploded_time);
   exploded_time.millisecond = 0;
-
-  return base::Time::FromUTCExploded(exploded_time);
+  base::Time out_time;
+  EXPECT_TRUE(base::Time::FromUTCExploded(exploded_time, &out_time));
+  return out_time;
 }
 
 // Note: Tests using this class only exercise the DecryptingDemuxerStream path.
