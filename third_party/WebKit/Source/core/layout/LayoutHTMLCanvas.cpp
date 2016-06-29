@@ -71,8 +71,13 @@ void LayoutHTMLCanvas::canvasSizeChanged()
     LayoutSize oldSize = size();
     updateLogicalWidth();
     updateLogicalHeight();
-    if (oldSize == size())
+    if (oldSize == size() && !hasOverrideLogicalContentWidth() && !hasOverrideLogicalContentHeight()) {
+        // If we have an override size, then we're probably a flex item, and the
+        // check above is insufficient because updateLogical{Width,Height} just
+        // used the override size. We actually have to mark ourselves as needing
+        // layout so the flex algorithm can run and compute our size correctly.
         return;
+    }
 
     if (!selfNeedsLayout())
         setNeedsLayout(LayoutInvalidationReason::SizeChanged);
