@@ -171,4 +171,36 @@
       assertWithMatcher:grey_notNil()];
 }
 
+// Tests tapping on a link with unsupported URL scheme.
+- (void)testNavigationUnsupportedSchema {
+  // Create map of canned responses and set up the test HTML server.
+  std::map<GURL, std::string> responses;
+  const GURL URL =
+      web::test::HttpServer::MakeUrl("http://urlWithUnsupportedSchemeLink");
+  const char pageHTML[] =
+      "<script>"
+      "  function printMsg() {"
+      "    document.body.appendChild(document.createTextNode("
+      "    'No navigation!'));"
+      "  }"
+      "</script>"
+      "<a href='aaa://unsupported' id='link' "
+      "onclick='printMsg();'>unsupportedScheme</a>";
+  responses[URL] = pageHTML;
+
+  web::test::SetUpSimpleHttpServer(responses);
+
+  web::shell_test_util::LoadUrl(URL);
+  [[EarlGrey selectElementWithMatcher:web::addressFieldText(URL.spec())]
+      assertWithMatcher:grey_notNil()];
+
+  web::shell_test_util::TapWebViewElementWithId("link");
+
+  [[EarlGrey selectElementWithMatcher:web::addressFieldText(URL.spec())]
+      assertWithMatcher:grey_notNil()];
+  [[EarlGrey
+      selectElementWithMatcher:web::webViewContainingText("No navigation!")]
+      assertWithMatcher:grey_notNil()];
+}
+
 @end
