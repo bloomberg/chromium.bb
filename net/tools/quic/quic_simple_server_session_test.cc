@@ -167,6 +167,9 @@ class QuicSimpleServerSessionTest
             QuicCompressedCertsCache::kQuicCompressedCertsCacheSize) {
     FLAGS_quic_always_log_bugs_for_tests = true;
     config_.SetMaxStreamsPerConnection(kMaxStreamsForTest, kMaxStreamsForTest);
+    config_.SetMaxIncomingDynamicStreamsToSend(kMaxStreamsForTest);
+    QuicConfigPeer::SetReceivedMaxIncomingDynamicStreams(&config_,
+                                                         kMaxStreamsForTest);
     config_.SetInitialStreamFlowControlWindowToSend(
         kInitialStreamFlowControlWindowForTest);
     config_.SetInitialSessionFlowControlWindowToSend(
@@ -188,6 +191,8 @@ class QuicSimpleServerSessionTest
     QuicSpdySessionPeer::SetHeadersStream(session_.get(), headers_stream_);
     // TODO(jri): Remove this line once tests pass.
     FLAGS_quic_cede_correctly = false;
+
+    session_->OnConfigNegotiated();
   }
 
   StrictMock<MockQuicServerSessionVisitor> owner_;

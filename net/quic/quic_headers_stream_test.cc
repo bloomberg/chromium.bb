@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "base/strings/string_number_conversions.h"
 #include "net/quic/quic_utils.h"
 #include "net/quic/spdy_utils.h"
 #include "net/quic/test_tools/quic_connection_peer.h"
@@ -42,6 +43,13 @@ class MockHpackDebugVisitor : public QuicHeadersStream::HpackDebugVisitor {
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockHpackDebugVisitor);
+};
+
+class QuicHeadersStreamPeer {
+ public:
+  static const SpdyFramer& GetSpdyFramer(QuicHeadersStream* stream) {
+    return stream->spdy_framer_;
+  }
 };
 
 namespace {
@@ -570,6 +578,7 @@ TEST_P(QuicHeadersStreamTest, ProcessSpdyRstStreamFrame) {
 }
 
 TEST_P(QuicHeadersStreamTest, ProcessSpdySettingsFrame) {
+  FLAGS_quic_respect_http2_settings_frame = false;
   SpdySettingsIR data;
   data.AddSetting(SETTINGS_HEADER_TABLE_SIZE, true, true, 0);
   SpdySerializedFrame frame(framer_->SerializeFrame(data));
@@ -577,6 +586,66 @@ TEST_P(QuicHeadersStreamTest, ProcessSpdySettingsFrame) {
                                             "SPDY SETTINGS frame received.", _))
       .WillOnce(InvokeWithoutArgs(
           this, &QuicHeadersStreamTest::TearDownLocalConnectionState));
+  stream_frame_.data_buffer = frame.data();
+  stream_frame_.data_length = frame.size();
+  headers_stream_->OnStreamFrame(stream_frame_);
+}
+
+TEST_P(QuicHeadersStreamTest, RespectHttp2SettingsFrameSupportedFields) {
+  FLAGS_quic_respect_http2_settings_frame = true;
+  const uint32_t kTestHeaderTableSize = 1000;
+  SpdySettingsIR data;
+  // Respect supported settings frames SETTINGS_HEADER_TABLE_SIZE.
+  data.AddSetting(SETTINGS_HEADER_TABLE_SIZE, true, true, kTestHeaderTableSize);
+  SpdySerializedFrame frame(framer_->SerializeFrame(data));
+  stream_frame_.data_buffer = frame.data();
+  stream_frame_.data_length = frame.size();
+  headers_stream_->OnStreamFrame(stream_frame_);
+  EXPECT_EQ(kTestHeaderTableSize,
+            QuicHeadersStreamPeer::GetSpdyFramer(headers_stream_)
+                .header_encoder_table_size());
+}
+
+TEST_P(QuicHeadersStreamTest, RespectHttp2SettingsFrameUnsupportedFields) {
+  FLAGS_quic_respect_http2_settings_frame = true;
+  SpdySettingsIR data;
+  // Does not support SETTINGS_MAX_HEADER_LIST_SIZE,
+  // SETTINGS_MAX_CONCURRENT_STREAMS, SETTINGS_INITIAL_WINDOW_SIZE,
+  // SETTINGS_ENABLE_PUSH and SETTINGS_MAX_FRAME_SIZE.
+  data.AddSetting(SETTINGS_MAX_HEADER_LIST_SIZE, true, true, 2000);
+  data.AddSetting(SETTINGS_MAX_CONCURRENT_STREAMS, true, true, 100);
+  data.AddSetting(SETTINGS_INITIAL_WINDOW_SIZE, true, true, 100);
+  data.AddSetting(SETTINGS_ENABLE_PUSH, true, true, 1);
+  data.AddSetting(SETTINGS_MAX_FRAME_SIZE, true, true, 1250);
+  SpdySerializedFrame frame(framer_->SerializeFrame(data));
+  EXPECT_CALL(
+      *connection_,
+      CloseConnection(QUIC_INVALID_HEADERS_STREAM_DATA,
+                      "Unsupported field of HTTP/2 SETTINGS frame: " +
+                          base::IntToString(SETTINGS_MAX_HEADER_LIST_SIZE),
+                      _));
+  EXPECT_CALL(
+      *connection_,
+      CloseConnection(QUIC_INVALID_HEADERS_STREAM_DATA,
+                      "Unsupported field of HTTP/2 SETTINGS frame: " +
+                          base::IntToString(SETTINGS_MAX_CONCURRENT_STREAMS),
+                      _));
+  EXPECT_CALL(
+      *connection_,
+      CloseConnection(QUIC_INVALID_HEADERS_STREAM_DATA,
+                      "Unsupported field of HTTP/2 SETTINGS frame: " +
+                          base::IntToString(SETTINGS_INITIAL_WINDOW_SIZE),
+                      _));
+  EXPECT_CALL(*connection_,
+              CloseConnection(QUIC_INVALID_HEADERS_STREAM_DATA,
+                              "Unsupported field of HTTP/2 SETTINGS frame: " +
+                                  base::IntToString(SETTINGS_ENABLE_PUSH),
+                              _));
+  EXPECT_CALL(*connection_,
+              CloseConnection(QUIC_INVALID_HEADERS_STREAM_DATA,
+                              "Unsupported field of HTTP/2 SETTINGS frame: " +
+                                  base::IntToString(SETTINGS_MAX_FRAME_SIZE),
+                              _));
   stream_frame_.data_buffer = frame.data();
   stream_frame_.data_length = frame.size();
   headers_stream_->OnStreamFrame(stream_frame_);

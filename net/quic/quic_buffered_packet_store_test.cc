@@ -13,6 +13,9 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using std::list;
+using std::string;
+
 namespace net {
 
 typedef QuicBufferedPacketStore::BufferedPacket BufferedPacket;
@@ -55,7 +58,12 @@ class QuicBufferedPacketStoreTest : public ::testing::Test {
       : store_(&visitor_, &clock_, &alarm_factory_),
         server_address_(Loopback6(), 65535),
         client_address_(Loopback6(), 65535),
-        data_packet_(packet_content_.data(), packet_content_.size()) {}
+        packet_content_("some encrypted content"),
+        packet_time_(
+            QuicTime::Zero().Add(QuicTime::Delta::FromMicroseconds(42))),
+        data_packet_(packet_content_.data(),
+                     packet_content_.size(),
+                     packet_time_) {}
 
  protected:
   QuicBufferedPacketStoreVisitor visitor_;
@@ -64,22 +72,26 @@ class QuicBufferedPacketStoreTest : public ::testing::Test {
   QuicBufferedPacketStore store_;
   IPEndPoint server_address_;
   IPEndPoint client_address_;
-  std::string packet_content_ = "some encrypted content";
-  QuicEncryptedPacket data_packet_;
+  string packet_content_;
+  QuicTime packet_time_;
+  QuicReceivedPacket data_packet_;
 };
 
 TEST_F(QuicBufferedPacketStoreTest, SimpleEnqueueAndDeliverPacket) {
   QuicConnectionId connection_id = 1;
   store_.EnqueuePacket(connection_id, data_packet_, server_address_,
                        client_address_);
-  std::list<BufferedPacket> queue = store_.DeliverPackets(connection_id);
+  EXPECT_TRUE(store_.HasBufferedPackets(connection_id));
+  list<BufferedPacket> queue = store_.DeliverPackets(connection_id);
   ASSERT_EQ(1u, queue.size());
   // Check content of the only packet in the queue.
   EXPECT_EQ(packet_content_, queue.front().packet->AsStringPiece());
+  EXPECT_EQ(packet_time_, queue.front().packet->receipt_time());
   EXPECT_EQ(client_address_, queue.front().client_address);
   EXPECT_EQ(server_address_, queue.front().server_address);
   // No more packets on connection 1 should remain in the store.
   EXPECT_TRUE(store_.DeliverPackets(connection_id).empty());
+  EXPECT_FALSE(store_.HasBufferedPackets(connection_id));
 }
 
 TEST_F(QuicBufferedPacketStoreTest, DifferentPacketAddressOnOneConnection) {
@@ -89,7 +101,7 @@ TEST_F(QuicBufferedPacketStoreTest, DifferentPacketAddressOnOneConnection) {
                        client_address_);
   store_.EnqueuePacket(connection_id, data_packet_, server_address_,
                        addr_with_new_port);
-  std::list<BufferedPacket> queue = store_.DeliverPackets(connection_id);
+  list<BufferedPacket> queue = store_.DeliverPackets(connection_id);
   ASSERT_EQ(2u, queue.size());
   // The address migration path should be preserved.
   EXPECT_EQ(client_address_, queue.front().client_address);
@@ -110,7 +122,7 @@ TEST_F(QuicBufferedPacketStoreTest,
   // Deliver packets in reversed order.
   for (QuicConnectionId connection_id = num_connections; connection_id > 0;
        --connection_id) {
-    std::list<BufferedPacket> queue = store_.DeliverPackets(connection_id);
+    list<BufferedPacket> queue = store_.DeliverPackets(connection_id);
     ASSERT_EQ(2u, queue.size());
   }
 }
@@ -156,7 +168,7 @@ TEST_F(QuicBufferedPacketStoreTest, FailToBufferPacketsForTooManyConnections) {
   // connections.
   for (size_t connection_id = 1; connection_id <= num_connections;
        ++connection_id) {
-    std::list<BufferedPacket> queue = store_.DeliverPackets(connection_id);
+    list<BufferedPacket> queue = store_.DeliverPackets(connection_id);
     if (connection_id <= kDefaultMaxConnectionsInStore) {
       EXPECT_EQ(1u, queue.size());
     } else {
@@ -193,7 +205,7 @@ TEST_F(QuicBufferedPacketStoreTest, PacketQueueExpiredBeforeDelivery) {
 
   // Deliver packets on connection 2. And the queue for connection 2 should be
   // returned.
-  std::list<BufferedPacket> queue = store_.DeliverPackets(connection_id2);
+  list<BufferedPacket> queue = store_.DeliverPackets(connection_id2);
   ASSERT_EQ(1u, queue.size());
   // Packets in connection 2 should use another client address.
   EXPECT_EQ(another_client_address, queue.front().client_address);

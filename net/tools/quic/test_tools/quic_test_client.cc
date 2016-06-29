@@ -304,9 +304,14 @@ ssize_t QuicTestClient::SendMessage(const HTTPMessage& message) {
   // If we're not connected, try to find an sni hostname.
   if (!connected()) {
     GURL url(message.headers()->request_uri().as_string());
-    if (!url.host().empty()) {
-      client_->set_server_id(QuicServerId(url.host(), url.EffectiveIntPort(),
+    if (override_sni_set_) {
+      client_->set_server_id(QuicServerId(override_sni_, url.EffectiveIntPort(),
                                           PRIVACY_MODE_DISABLED));
+    } else {
+      if (!url.host().empty()) {
+        client_->set_server_id(QuicServerId(url.host(), url.EffectiveIntPort(),
+                                            PRIVACY_MODE_DISABLED));
+      }
     }
   }
 

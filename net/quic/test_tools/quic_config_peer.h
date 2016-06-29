@@ -35,6 +35,9 @@ class QuicConfigPeer {
                                               uint32_t bytes);
   static void SetReceivedDisableConnectionMigration(QuicConfig* config);
 
+  static void SetReceivedMaxIncomingDynamicStreams(QuicConfig* config,
+                                                   uint32_t max_streams);
+
  private:
   DISALLOW_COPY_AND_ASSIGN(QuicConfigPeer);
 };

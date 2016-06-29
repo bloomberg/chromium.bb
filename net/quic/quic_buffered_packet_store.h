@@ -32,7 +32,7 @@ class NET_EXPORT_PRIVATE QuicBufferedPacketStore {
 
   // A packets with client/server address.
   struct NET_EXPORT_PRIVATE BufferedPacket {
-    BufferedPacket(std::unique_ptr<QuicEncryptedPacket> packet,
+    BufferedPacket(std::unique_ptr<QuicReceivedPacket> packet,
                    IPEndPoint server_address,
                    IPEndPoint client_address);
     BufferedPacket(BufferedPacket&& other);
@@ -41,7 +41,7 @@ class NET_EXPORT_PRIVATE QuicBufferedPacketStore {
 
     ~BufferedPacket();
 
-    std::unique_ptr<QuicEncryptedPacket> packet;
+    std::unique_ptr<QuicReceivedPacket> packet;
     IPEndPoint server_address;
     IPEndPoint client_address;
   };
@@ -72,7 +72,7 @@ class NET_EXPORT_PRIVATE QuicBufferedPacketStore {
   };
 
   QuicBufferedPacketStore(VisitorInterface* vistor,
-                          QuicClock* clock,
+                          const QuicClock* clock,
                           QuicAlarmFactory* alarm_factory);
 
   QuicBufferedPacketStore(const QuicBufferedPacketStore&) = delete;
@@ -83,9 +83,12 @@ class NET_EXPORT_PRIVATE QuicBufferedPacketStore {
 
   // Adds a copy of packet into packet queue for given connection.
   EnqueuePacketResult EnqueuePacket(QuicConnectionId connection_id,
-                                    const QuicEncryptedPacket& packet,
+                                    const QuicReceivedPacket& packet,
                                     IPEndPoint server_address,
                                     IPEndPoint client_address);
+
+  // Returns true if there are any packets buffered for |connection_id|.
+  bool HasBufferedPackets(QuicConnectionId connection_id) const;
 
   // Returns the list of buffered packets for |connection_id| and removes them
   // from the store. Returns an empty list if no early arrived packets for this
@@ -109,7 +112,7 @@ class NET_EXPORT_PRIVATE QuicBufferedPacketStore {
 
   VisitorInterface* visitor_;  // Unowned.
 
-  QuicClock* clock_;  // Unowned.
+  const QuicClock* clock_;  // Unowned.
 
   // This alarm fires every |connection_life_span_| to clean up
   // packets staying in the store for too long.

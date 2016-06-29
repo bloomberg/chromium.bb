@@ -199,40 +199,40 @@ TEST_P(QuicSpdyStreamTest, ParseHeaderStatusCode) {
 
   // Valid status code.
   headers_.ReplaceOrAppendHeader(":status", "404");
-  EXPECT_TRUE(stream_->ParseHeaderStatusCode(&headers_, &status_code));
+  EXPECT_TRUE(stream_->ParseHeaderStatusCode(headers_, &status_code));
   EXPECT_EQ(404, status_code);
 
   // Invalid status codes.
   headers_.ReplaceOrAppendHeader(":status", "010");
-  EXPECT_FALSE(stream_->ParseHeaderStatusCode(&headers_, &status_code));
+  EXPECT_FALSE(stream_->ParseHeaderStatusCode(headers_, &status_code));
 
   headers_.ReplaceOrAppendHeader(":status", "600");
-  EXPECT_FALSE(stream_->ParseHeaderStatusCode(&headers_, &status_code));
+  EXPECT_FALSE(stream_->ParseHeaderStatusCode(headers_, &status_code));
 
   headers_.ReplaceOrAppendHeader(":status", "200 ok");
-  EXPECT_FALSE(stream_->ParseHeaderStatusCode(&headers_, &status_code));
+  EXPECT_FALSE(stream_->ParseHeaderStatusCode(headers_, &status_code));
 
   headers_.ReplaceOrAppendHeader(":status", "2000");
-  EXPECT_FALSE(stream_->ParseHeaderStatusCode(&headers_, &status_code));
+  EXPECT_FALSE(stream_->ParseHeaderStatusCode(headers_, &status_code));
 
   headers_.ReplaceOrAppendHeader(":status", "+200");
-  EXPECT_FALSE(stream_->ParseHeaderStatusCode(&headers_, &status_code));
+  EXPECT_FALSE(stream_->ParseHeaderStatusCode(headers_, &status_code));
 
   headers_.ReplaceOrAppendHeader(":status", "+20");
-  EXPECT_FALSE(stream_->ParseHeaderStatusCode(&headers_, &status_code));
+  EXPECT_FALSE(stream_->ParseHeaderStatusCode(headers_, &status_code));
 
   // Leading or trailing spaces are also invalid.
   headers_.ReplaceOrAppendHeader(":status", " 200");
-  EXPECT_FALSE(stream_->ParseHeaderStatusCode(&headers_, &status_code));
+  EXPECT_FALSE(stream_->ParseHeaderStatusCode(headers_, &status_code));
 
   headers_.ReplaceOrAppendHeader(":status", "200 ");
-  EXPECT_FALSE(stream_->ParseHeaderStatusCode(&headers_, &status_code));
+  EXPECT_FALSE(stream_->ParseHeaderStatusCode(headers_, &status_code));
 
   headers_.ReplaceOrAppendHeader(":status", " 200 ");
-  EXPECT_FALSE(stream_->ParseHeaderStatusCode(&headers_, &status_code));
+  EXPECT_FALSE(stream_->ParseHeaderStatusCode(headers_, &status_code));
 
   headers_.ReplaceOrAppendHeader(":status", "  ");
-  EXPECT_FALSE(stream_->ParseHeaderStatusCode(&headers_, &status_code));
+  EXPECT_FALSE(stream_->ParseHeaderStatusCode(headers_, &status_code));
 }
 
 TEST_P(QuicSpdyStreamTest, MarkHeadersConsumed) {

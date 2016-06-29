@@ -51,5 +51,12 @@ void QuicConfigPeer::SetReceivedDisableConnectionMigration(QuicConfig* config) {
   config->connection_migration_disabled_.SetReceivedValue(1);
 }
 
+// static
+void QuicConfigPeer::SetReceivedMaxIncomingDynamicStreams(
+    QuicConfig* config,
+    uint32_t max_streams) {
+  config->max_incoming_dynamic_streams_.SetReceivedValue(max_streams);
+}
+
 }  // namespace test
 }  // namespace net

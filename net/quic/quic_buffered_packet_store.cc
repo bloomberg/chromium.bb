@@ -8,6 +8,8 @@
 
 #include "base/stl_util.h"
 
+using std::list;
+
 namespace net {
 
 typedef QuicBufferedPacketStore::BufferedPacket BufferedPacket;
@@ -37,7 +39,7 @@ class ConnectionExpireAlarm : public QuicAlarm::Delegate {
 
 }  // namespace
 
-BufferedPacket::BufferedPacket(std::unique_ptr<QuicEncryptedPacket> packet,
+BufferedPacket::BufferedPacket(std::unique_ptr<QuicReceivedPacket> packet,
                                IPEndPoint server_address,
                                IPEndPoint client_address)
     : packet(std::move(packet)),
@@ -61,7 +63,7 @@ BufferedPacketList::~BufferedPacketList() {}
 
 QuicBufferedPacketStore::QuicBufferedPacketStore(
     VisitorInterface* visitor,
-    QuicClock* clock,
+    const QuicClock* clock,
     QuicAlarmFactory* alarm_factory)
     : connection_life_span_(
           QuicTime::Delta::FromSeconds(kInitialIdleTimeoutSecs)),
@@ -74,7 +76,7 @@ QuicBufferedPacketStore::~QuicBufferedPacketStore() {}
 
 EnqueuePacketResult QuicBufferedPacketStore::EnqueuePacket(
     QuicConnectionId connection_id,
-    const QuicEncryptedPacket& packet,
+    const QuicReceivedPacket& packet,
     IPEndPoint server_address,
     IPEndPoint client_address) {
   if (!ContainsKey(undecryptable_packets_, connection_id) &&
@@ -101,7 +103,7 @@ EnqueuePacketResult QuicBufferedPacketStore::EnqueuePacket(
     queue.creation_time = clock_->ApproximateNow();
   }
 
-  BufferedPacket new_entry(std::unique_ptr<QuicEncryptedPacket>(packet.Clone()),
+  BufferedPacket new_entry(std::unique_ptr<QuicReceivedPacket>(packet.Clone()),
                            server_address, client_address);
 
   queue.buffered_packets.push_back(std::move(new_entry));
@@ -112,9 +114,14 @@ EnqueuePacketResult QuicBufferedPacketStore::EnqueuePacket(
   return SUCCESS;
 }
 
-std::list<BufferedPacket> QuicBufferedPacketStore::DeliverPackets(
+bool QuicBufferedPacketStore::HasBufferedPackets(
+    QuicConnectionId connection_id) const {
+  return ContainsKey(undecryptable_packets_, connection_id);
+}
+
+list<BufferedPacket> QuicBufferedPacketStore::DeliverPackets(
     QuicConnectionId connection_id) {
-  std::list<BufferedPacket> packets_to_deliver;
+  list<BufferedPacket> packets_to_deliver;
   auto it = undecryptable_packets_.find(connection_id);
   if (it != undecryptable_packets_.end()) {
     packets_to_deliver = std::move(it->second.buffered_packets);

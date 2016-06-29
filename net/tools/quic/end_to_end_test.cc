@@ -1181,6 +1181,11 @@ TEST_P(EndToEndTest, NegotiateMaxOpenStreams) {
   ASSERT_TRUE(Initialize());
   client_->client()->WaitForCryptoHandshakeConfirmed();
 
+  if (negotiated_version_ > QUIC_VERSION_34) {
+    // Newer versions use max incoming dynamic streams.
+    return;
+  }
+
   // Make the client misbehave after negotiation.
   const int kServerMaxStreams = kMaxStreamsMinimumIncrement + 1;
   QuicSessionPeer::SetMaxOpenOutgoingStreams(client_->client()->session(),
@@ -1206,6 +1211,70 @@ TEST_P(EndToEndTest, NegotiateMaxOpenStreams) {
     EXPECT_EQ(QUIC_REFUSED_STREAM, client_->stream_error());
     EXPECT_EQ(QUIC_NO_ERROR, client_->connection_error());
   }
+}
+
+TEST_P(EndToEndTest, MaxIncomingDynamicStreamsLimitRespected) {
+  // Set a limit on maximum number of incoming dynamic streams.
+  // Make sure the limit is respected.
+  const uint32_t kServerMaxIncomingDynamicStreams = 1;
+  server_config_.SetMaxIncomingDynamicStreamsToSend(
+      kServerMaxIncomingDynamicStreams);
+  ASSERT_TRUE(Initialize());
+  client_->client()->WaitForCryptoHandshakeConfirmed();
+
+  if (negotiated_version_ <= QUIC_VERSION_34) {
+    // Earlier versions negotiated max open streams.
+    return;
+  }
+
+  // Make the client misbehave after negotiation.
+  const int kServerMaxStreams =
+      kMaxStreamsMinimumIncrement + kServerMaxIncomingDynamicStreams;
+  QuicSessionPeer::SetMaxOpenOutgoingStreams(client_->client()->session(),
+                                             kServerMaxStreams + 1);
+
+  HTTPMessage request(HttpConstants::HTTP_1_1, HttpConstants::POST, "/foo");
+  request.AddHeader("content-length", "3");
+  request.set_has_complete_message(false);
+
+  // The server supports a small number of additional streams beyond the
+  // negotiated limit. Open enough streams to go beyond that limit.
+  for (int i = 0; i < kServerMaxStreams + 1; ++i) {
+    client_->SendMessage(request);
+  }
+  client_->WaitForResponse();
+
+  EXPECT_TRUE(client_->connected());
+  EXPECT_EQ(QUIC_REFUSED_STREAM, client_->stream_error());
+  EXPECT_EQ(QUIC_NO_ERROR, client_->connection_error());
+}
+
+TEST_P(EndToEndTest, SetIndependentMaxIncomingDynamicStreamsLimits) {
+  // Each endpoint can set max incoming dynamic streams independently.
+  const uint32_t kClientMaxIncomingDynamicStreams = 2;
+  const uint32_t kServerMaxIncomingDynamicStreams = 1;
+  client_config_.SetMaxIncomingDynamicStreamsToSend(
+      kClientMaxIncomingDynamicStreams);
+  server_config_.SetMaxIncomingDynamicStreamsToSend(
+      kServerMaxIncomingDynamicStreams);
+  ASSERT_TRUE(Initialize());
+  client_->client()->WaitForCryptoHandshakeConfirmed();
+
+  if (negotiated_version_ <= QUIC_VERSION_34) {
+    // Earlier versions negotiated max open streams.
+    return;
+  }
+
+  // The client has received the server's limit and vice versa.
+  EXPECT_EQ(kServerMaxIncomingDynamicStreams,
+            client_->client()->session()->max_open_outgoing_streams());
+  server_thread_->Pause();
+  QuicDispatcher* dispatcher =
+      QuicServerPeer::GetDispatcher(server_thread_->server());
+  QuicSession* server_session = dispatcher->session_map().begin()->second;
+  EXPECT_EQ(kClientMaxIncomingDynamicStreams,
+            server_session->max_open_outgoing_streams());
+  server_thread_->Resume();
 }
 
 TEST_P(EndToEndTest, NegotiateCongestionControl) {
@@ -1246,6 +1315,10 @@ TEST_P(EndToEndTest, LimitMaxOpenStreams) {
 
   ASSERT_TRUE(Initialize());
   client_->client()->WaitForCryptoHandshakeConfirmed();
+  if (negotiated_version_ > QUIC_VERSION_34) {
+    // No negotiated max streams beyond version 34.
+    return;
+  }
   QuicConfig* client_negotiated_config = client_->client()->session()->config();
   EXPECT_EQ(2u, client_negotiated_config->MaxStreamsPerConnection());
 }
@@ -2389,6 +2462,9 @@ class EndToEndTestServerPush : public EndToEndTest {
   EndToEndTestServerPush() : EndToEndTest() {
     FLAGS_quic_supports_push_promise = true;
     client_config_.SetMaxStreamsPerConnection(kNumMaxStreams, kNumMaxStreams);
+    client_config_.SetMaxIncomingDynamicStreamsToSend(kNumMaxStreams);
+    server_config_.SetMaxStreamsPerConnection(kNumMaxStreams, kNumMaxStreams);
+    server_config_.SetMaxIncomingDynamicStreamsToSend(kNumMaxStreams);
     support_server_push_ = true;
   }
 

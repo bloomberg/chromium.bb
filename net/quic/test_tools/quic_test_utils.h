@@ -816,6 +816,7 @@ class MockNetworkChangeVisitor
 
   MOCK_METHOD0(OnCongestionChange, void());
   MOCK_METHOD0(OnPathDegrading, void());
+  MOCK_METHOD1(OnPathMtuIncreased, void(QuicPacketLength));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockNetworkChangeVisitor);

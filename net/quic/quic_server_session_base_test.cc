@@ -131,6 +131,9 @@ class QuicServerSessionBaseTest : public ::testing::TestWithParam<QuicVersion> {
             QuicCompressedCertsCache::kQuicCompressedCertsCacheSize) {
     FLAGS_quic_always_log_bugs_for_tests = true;
     config_.SetMaxStreamsPerConnection(kMaxStreamsForTest, kMaxStreamsForTest);
+    config_.SetMaxIncomingDynamicStreamsToSend(kMaxStreamsForTest);
+    QuicConfigPeer::SetReceivedMaxIncomingDynamicStreams(&config_,
+                                                         kMaxStreamsForTest);
     config_.SetInitialStreamFlowControlWindowToSend(
         kInitialStreamFlowControlWindowForTest);
     config_.SetInitialSessionFlowControlWindowToSend(
@@ -267,10 +270,13 @@ TEST_P(QuicServerSessionBaseTest, MaxOpenStreams) {
   // streams.  The server accepts slightly more than the negotiated stream limit
   // to deal with rare cases where a client FIN/RST is lost.
 
+  if (GetParam() <= QUIC_VERSION_34) {
+    EXPECT_EQ(kMaxStreamsForTest, session_->max_open_incoming_streams());
+  }
+
   // The slightly increased stream limit is set during config negotiation.  It
   // is either an increase of 10 over negotiated limit, or a fixed percentage
   // scaling, whichever is larger. Test both before continuing.
-  EXPECT_EQ(kMaxStreamsForTest, session_->max_open_incoming_streams());
   session_->OnConfigNegotiated();
   EXPECT_LT(kMaxStreamsMultiplier * kMaxStreamsForTest,
             kMaxStreamsForTest + kMaxStreamsMinimumIncrement);
@@ -312,8 +318,10 @@ TEST_P(QuicServerSessionBaseTest, MaxAvailableStreams) {
   // streams available.  The server accepts slightly more than the negotiated
   // stream limit to deal with rare cases where a client FIN/RST is lost.
 
-  // The slightly increased stream limit is set during config negotiation.
-  EXPECT_EQ(kMaxStreamsForTest, session_->max_open_incoming_streams());
+  if (GetParam() <= QUIC_VERSION_34) {
+    // The slightly increased stream limit is set during config negotiation.
+    EXPECT_EQ(kMaxStreamsForTest, session_->max_open_incoming_streams());
+  }
   session_->OnConfigNegotiated();
   const size_t kAvailableStreamLimit = session_->MaxAvailableStreams();
   EXPECT_EQ(
