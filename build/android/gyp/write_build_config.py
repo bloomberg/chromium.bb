@@ -200,10 +200,8 @@ def main(argv):
       '--type',
       help='Type of this target (e.g. android_library).')
   parser.add_option(
-      '--possible-deps-configs',
-      help='List of paths for dependency\'s build_config files. Some '
-      'dependencies may not write build_config files. Missing build_config '
-      'files are handled differently based on the type of this target.')
+      '--deps-configs',
+      help='List of paths for dependency\'s build_config files. ')
 
   # android_resources options
   parser.add_option('--srcjar', help='Path to target\'s resources srcjar.')
@@ -290,14 +288,7 @@ def main(argv):
       raise Exception(
           '--supports-android is required when using --requires-android')
 
-  possible_deps_config_paths = build_utils.ParseGypList(
-      options.possible_deps_configs)
-
-  unknown_deps = [
-      c for c in possible_deps_config_paths if not os.path.exists(c)]
-
-  direct_deps_config_paths = [
-      c for c in possible_deps_config_paths if not c in unknown_deps]
+  direct_deps_config_paths = build_utils.ParseGypList(options.deps_configs)
   direct_deps_config_paths = _FilterUnwantedDepsPaths(direct_deps_config_paths,
                                                       options.type)
 

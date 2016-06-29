@@ -7,6 +7,58 @@ import("//build/config/sanitizers/sanitizers.gni")
 
 assert(is_android)
 
+# These identify targets that have .build_config files (except for android_apk,
+# java_binary, resource_rewriter, since we never need to depend on these).
+_java_target_whitelist = [
+  "*:*_java",
+  "*:*_javalib",
+  "*:*_java_*",  # e.g. java_test_support
+  "*:java",
+  "*:junit",
+  "*:junit_*",
+  "*:*_junit_*",
+  "*:*javatests",
+  "*:*_assets",
+  "*android*:assets",
+  "*:*_apk_*resources",
+  "*android*:resources",
+  "*:*_resources",
+  "*:*_grd",
+  "*:*locale_paks",
+
+  # TODO(agrieve): Rename targets below to match above patterns.
+  "//android_webview/glue:glue",
+  "//build/android/pylib/device/commands:chromium_commands",
+  "//build/android/rezip:rezip",
+  "//chrome/test/android/cast_emulator:cast_emulator",
+  "//components/cronet/android:cronet_api",
+  "//components/cronet/android:cronet_javadoc_classpath",
+  "//components/policy:app_restrictions_resources",
+  "//device/battery/android:battery_monitor_android",
+  "//device/vibration/android:vibration_manager_android",
+  "//mojo/public/java:bindings",
+  "//mojo/public/java:system",
+  "//third_party/android_tools:emma_device",
+  "//third_party/cardboard-java:cardboard-java",
+  "//third_party/custom_tabs_client:custom_tabs_client_shared_lib",
+  "//third_party/custom_tabs_client:custom_tabs_support_lib",
+  "//third_party/errorprone:chromium_errorprone",
+  "//third_party/haha:haha",
+  "//third_party/junit:hamcrest",
+  "//third_party/netty4:netty_all",
+  "//third_party/netty-tcnative:netty-tcnative",
+  "//third_party/robolectric:android-all-4.3_r2-robolectric-0",
+  "//third_party/robolectric:json-20080701",
+  "//third_party/robolectric:tagsoup-1.2",
+]
+
+# Targets that match the whitelist but are not actually java targets.
+_java_target_blacklist = [
+  "//chrome:packed_extra_resources",
+  "//chrome:packed_resources",
+  "//remoting/android:remoting_android_raw_resources",
+]
+
 # Write the target's .build_config file. This is a json file that contains a
 # dictionary of information about how to build this target (things that
 # require knowledge about this target's dependencies and cannot be calculated
@@ -17,9 +69,34 @@ assert(is_android)
 # See build/android/gyp/write_build_config.py and
 # build/android/gyp/util/build_utils.py:ExpandFileArgs
 template("write_build_config") {
+  type = invoker.type
+
+  # Don't need to enforce naming scheme for these targets since we never
+  # consider them in dependency chains.
+  if (type != "android_apk" && type != "java_binary" &&
+      type != "resource_rewriter") {
+    set_sources_assignment_filter(_java_target_whitelist)
+    _parent_invoker = invoker.invoker
+    _target_label =
+        get_label_info(":${_parent_invoker.target_name}", "label_no_toolchain")
+    sources = [
+      _target_label,
+    ]
+    if (sources != []) {
+      set_sources_assignment_filter(_java_target_blacklist)
+      sources = []
+      sources = [
+        _target_label,
+      ]
+      if (sources != []) {
+        assert(false, "Invalid java target name: $_target_label")
+      }
+    }
+    sources = []
+  }
+
   action(target_name) {
     set_sources_assignment_filter([])
-    type = invoker.type
     build_config = invoker.build_config
 
     assert(type == "android_apk" || type == "java_library" ||
@@ -31,7 +108,6 @@ template("write_build_config") {
                            [
                              "deps",
                              "testonly",
-                             "visibility",
                            ])
     if (!defined(deps)) {
       deps = []
@@ -41,14 +117,32 @@ template("write_build_config") {
     depfile = "$target_gen_dir/$target_name.d"
     inputs = []
 
-    possible_deps_configs = []
-    foreach(d, deps) {
-      dep_gen_dir = get_label_info(d, "target_gen_dir")
-      dep_name = get_label_info(d, "name")
-      possible_deps_configs += [ "$dep_gen_dir/$dep_name.build_config" ]
+    _deps_configs = []
+    if (defined(invoker.possible_config_deps)) {
+      foreach(_possible_dep, invoker.possible_config_deps) {
+        set_sources_assignment_filter(_java_target_whitelist)
+        _target_label = get_label_info(_possible_dep, "label_no_toolchain")
+        sources = [
+          _target_label,
+        ]
+        if (sources == []) {
+          set_sources_assignment_filter(_java_target_blacklist)
+          sources = []
+          sources = [
+            _target_label,
+          ]
+          if (sources != []) {
+            deps += [ "${_target_label}__build_config" ]
+            _dep_gen_dir = get_label_info(_possible_dep, "target_gen_dir")
+            _dep_name = get_label_info(_possible_dep, "name")
+            _deps_configs += [ "$_dep_gen_dir/$_dep_name.build_config" ]
+          }
+        }
+        sources = []
+      }
+      set_sources_assignment_filter([])
     }
-    rebase_possible_deps_configs =
-        rebase_path(possible_deps_configs, root_build_dir)
+    _rebased_deps_configs = rebase_path(_deps_configs, root_build_dir)
 
     outputs = [
       depfile,
@@ -60,7 +154,7 @@ template("write_build_config") {
       type,
       "--depfile",
       rebase_path(depfile, root_build_dir),
-      "--possible-deps-configs=$rebase_possible_deps_configs",
+      "--deps-configs=$_rebased_deps_configs",
       "--build-config",
       rebase_path(build_config, root_build_dir),
     ]
@@ -130,13 +224,11 @@ template("write_build_config") {
 
     if (is_android_assets) {
       if (defined(invoker.asset_sources)) {
-        inputs += invoker.asset_sources
         _rebased_asset_sources =
             rebase_path(invoker.asset_sources, root_build_dir)
         args += [ "--asset-sources=$_rebased_asset_sources" ]
       }
       if (defined(invoker.asset_renaming_sources)) {
-        inputs += invoker.asset_renaming_sources
         _rebased_asset_renaming_sources =
             rebase_path(invoker.asset_renaming_sources, root_build_dir)
         args += [ "--asset-renaming-sources=$_rebased_asset_renaming_sources" ]
@@ -1601,7 +1693,9 @@ if (enable_java_templates) {
       requires_android =
           defined(invoker.requires_android) && invoker.requires_android
 
-      deps = _deps
+      if (defined(invoker.deps)) {
+        possible_config_deps = _deps
+      }
       build_config = _build_config
       jar_path = _jar_path
       if (_supports_android) {
@@ -2027,11 +2121,13 @@ if (enable_java_templates) {
       build_config_target_name = "${_template_name}__build_config"
 
       write_build_config(build_config_target_name) {
-        deps = _accumulated_deps
         if (defined(invoker.is_java_binary) && invoker.is_java_binary) {
           type = "java_binary"
         } else {
           type = "java_library"
+        }
+        if (defined(invoker.deps)) {
+          possible_config_deps = invoker.deps
         }
         supports_android = _supports_android
         requires_android = _requires_android
@@ -2334,11 +2430,10 @@ if (enable_java_templates) {
     build_config_target_name = "${target_name}__build_config"
 
     write_build_config(build_config_target_name) {
-      forward_variables_from(invoker,
-                             [
-                               "deps",
-                               "dex_path",
-                             ])
+      forward_variables_from(invoker, [ "dex_path" ])
+      if (defined(invoker.deps)) {
+        possible_config_deps = invoker.deps
+      }
       type = "deps_dex"
       build_config = build_config
     }
