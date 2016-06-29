@@ -2695,6 +2695,9 @@ bool ChromeContentBrowserClient::PreSpawnRenderer(
 
 bool ChromeContentBrowserClient::IsWin32kLockdownEnabledForMimeType(
     const std::string& mime_type) const {
+  // We don't support PPAPI win32k lockdown prior to Windows 10.
+  if (base::win::GetVersion() < base::win::VERSION_WIN10)
+    return false;
   // First, check if any variation parameters have enabled or disabled this
   // mime type either specifically or globally.
   std::map<std::string, std::string> mime_params;
