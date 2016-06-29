@@ -1685,25 +1685,35 @@ void HandleRemoteSurfaceStateChangedCallback(
     default:
       break;
   }
+
+  uint32_t state_type = ZWP_REMOTE_SHELL_V1_STATE_TYPE_NORMAL;
   switch (new_state_type) {
     case ash::wm::WINDOW_STATE_TYPE_MINIMIZED:
+      state_type = ZWP_REMOTE_SHELL_V1_STATE_TYPE_MINIMIZED;
       if (wl_resource_get_version(resource) >= 2)
         zwp_remote_surface_v1_send_set_minimized(resource);
       break;
     case ash::wm::WINDOW_STATE_TYPE_MAXIMIZED:
+      state_type = ZWP_REMOTE_SHELL_V1_STATE_TYPE_MAXIMIZED;
       if (wl_resource_get_version(resource) >= 2)
         zwp_remote_surface_v1_send_set_maximized(resource);
       break;
     case ash::wm::WINDOW_STATE_TYPE_FULLSCREEN:
+      state_type = ZWP_REMOTE_SHELL_V1_STATE_TYPE_FULLSCREEN;
       zwp_remote_surface_v1_send_set_fullscreen(resource);
       break;
     case ash::wm::WINDOW_STATE_TYPE_PINNED:
+      state_type = ZWP_REMOTE_SHELL_V1_STATE_TYPE_PINNED;
       if (wl_resource_get_version(resource) >= 3)
         zwp_remote_surface_v1_send_set_pinned(resource);
       break;
     default:
       break;
   }
+
+  if (wl_resource_get_version(resource) >= 7)
+    zwp_remote_surface_v1_send_state_type_changed(resource, state_type);
+
   wl_client_flush(wl_resource_get_client(resource));
 }
 
