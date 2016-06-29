@@ -37,7 +37,6 @@ URLRequestContext::URLRequestContext()
       sdch_manager_(nullptr),
       network_quality_estimator_(nullptr),
       url_requests_(new std::set<const URLRequest*>),
-      has_known_mismatched_cookie_store_(false),
       enable_brotli_(false) {}
 
 URLRequestContext::~URLRequestContext() {
