@@ -12,13 +12,19 @@
   <template>
     <style include="settings-shared">
       .list-frame {
+        align-items: initial;
         display: flex;
         flex-direction: column;
-        align-items: initial;
       }
 
       iron-list {
         height: 300px;
+      }
+
+      .ripple-padding {
+        /* Create a little extra space for checkbox ink ripple to flow into. */
+        left: -20px;
+        padding-left: 20px;
       }
     </style>
     <settings-languages languages="{{languages}}"></settings-languages>
@@ -38,7 +44,7 @@
       </div>
       <h2>$i18n{allLanguages}</h2>
       <div class="list-frame vertical-list">
-        <iron-list items="{{languages.supported}}">
+        <iron-list class="ripple-padding" items="{{languages.supported}}">
           <template>
             <div class="list-item">
               <paper-checkbox
