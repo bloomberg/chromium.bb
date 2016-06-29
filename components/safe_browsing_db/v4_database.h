@@ -82,17 +82,13 @@ class V4Database {
              std::unique_ptr<StoreMap> store_map);
 
  private:
-  friend class SafeBrowsingV4DatabaseTest;
-  FRIEND_TEST_ALL_PREFIXES(SafeBrowsingV4DatabaseTest,
-                           TestSetupDatabaseWithFakeStores);
-  FRIEND_TEST_ALL_PREFIXES(SafeBrowsingV4DatabaseTest,
+  friend class V4DatabaseTest;
+  FRIEND_TEST_ALL_PREFIXES(V4DatabaseTest, TestSetupDatabaseWithFakeStores);
+  FRIEND_TEST_ALL_PREFIXES(V4DatabaseTest,
                            TestSetupDatabaseWithFakeStoresFailsReset);
-  FRIEND_TEST_ALL_PREFIXES(SafeBrowsingV4DatabaseTest,
-                           TestApplyUpdateWithNewStates);
-  FRIEND_TEST_ALL_PREFIXES(SafeBrowsingV4DatabaseTest,
-                           TestApplyUpdateWithNoNewState);
-  FRIEND_TEST_ALL_PREFIXES(SafeBrowsingV4DatabaseTest,
-                           TestApplyUpdateWithEmptyUpdate);
+  FRIEND_TEST_ALL_PREFIXES(V4DatabaseTest, TestApplyUpdateWithNewStates);
+  FRIEND_TEST_ALL_PREFIXES(V4DatabaseTest, TestApplyUpdateWithNoNewState);
+  FRIEND_TEST_ALL_PREFIXES(V4DatabaseTest, TestApplyUpdateWithEmptyUpdate);
 
   // Makes the passed |factory| the factory used to instantiate a V4Store. Only
   // for tests.

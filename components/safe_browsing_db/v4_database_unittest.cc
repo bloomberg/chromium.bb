@@ -51,28 +51,26 @@ class FakeV4StoreFactory : public V4StoreFactory {
   bool next_store_reset_fails_;
 };
 
-class SafeBrowsingV4DatabaseTest : public PlatformTest {
+class V4DatabaseTest : public PlatformTest {
  public:
-  SafeBrowsingV4DatabaseTest() : task_runner_(new base::TestSimpleTaskRunner) {}
+  V4DatabaseTest() : task_runner_(new base::TestSimpleTaskRunner) {}
 
   void SetUp() override {
     PlatformTest::SetUp();
 
     // Setup a database in a temporary directory.
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-    database_dirname_ =
-        temp_dir_.path().AppendASCII("SafeBrowsingV4DatabaseTest");
+    database_dirname_ = temp_dir_.path().AppendASCII("V4DatabaseTest");
 
     created_but_not_called_back_ = false;
     created_and_called_back_ = false;
 
-    callback_db_updated_ = base::Bind(
-        &SafeBrowsingV4DatabaseTest::DatabaseUpdated, base::Unretained(this));
+    callback_db_updated_ =
+        base::Bind(&V4DatabaseTest::DatabaseUpdated, base::Unretained(this));
 
-    callback_db_ready_ =
-        base::Bind(&SafeBrowsingV4DatabaseTest::
-                       NewDatabaseReadyWithExpectedStorePathsAndIds,
-                   base::Unretained(this));
+    callback_db_ready_ = base::Bind(
+        &V4DatabaseTest::NewDatabaseReadyWithExpectedStorePathsAndIds,
+        base::Unretained(this));
 
     SetupInfoMapAndExpectedState();
   }
@@ -188,7 +186,7 @@ class SafeBrowsingV4DatabaseTest : public PlatformTest {
 };
 
 // Test to set up the database with fake stores.
-TEST_F(SafeBrowsingV4DatabaseTest, TestSetupDatabaseWithFakeStores) {
+TEST_F(V4DatabaseTest, TestSetupDatabaseWithFakeStores) {
   expected_resets_successfully_ = true;
   RegisterFactory(!expected_resets_successfully_);
 
@@ -202,7 +200,7 @@ TEST_F(SafeBrowsingV4DatabaseTest, TestSetupDatabaseWithFakeStores) {
 }
 
 // Test to set up the database with fake stores that fail to reset.
-TEST_F(SafeBrowsingV4DatabaseTest, TestSetupDatabaseWithFakeStoresFailsReset) {
+TEST_F(V4DatabaseTest, TestSetupDatabaseWithFakeStoresFailsReset) {
   expected_resets_successfully_ = false;
   RegisterFactory(!expected_resets_successfully_);
 
@@ -216,7 +214,7 @@ TEST_F(SafeBrowsingV4DatabaseTest, TestSetupDatabaseWithFakeStoresFailsReset) {
 }
 
 // Test to check database updates as expected.
-TEST_F(SafeBrowsingV4DatabaseTest, TestApplyUpdateWithNewStates) {
+TEST_F(V4DatabaseTest, TestApplyUpdateWithNewStates) {
   expected_resets_successfully_ = true;
   RegisterFactory(!expected_resets_successfully_);
 
@@ -247,7 +245,7 @@ TEST_F(SafeBrowsingV4DatabaseTest, TestApplyUpdateWithNewStates) {
 }
 
 // Test to ensure no state updates leads to no store updates.
-TEST_F(SafeBrowsingV4DatabaseTest, TestApplyUpdateWithNoNewState) {
+TEST_F(V4DatabaseTest, TestApplyUpdateWithNoNewState) {
   expected_resets_successfully_ = true;
   RegisterFactory(!expected_resets_successfully_);
 
@@ -278,7 +276,7 @@ TEST_F(SafeBrowsingV4DatabaseTest, TestApplyUpdateWithNoNewState) {
 }
 
 // Test to ensure no updates leads to no store updates.
-TEST_F(SafeBrowsingV4DatabaseTest, TestApplyUpdateWithEmptyUpdate) {
+TEST_F(V4DatabaseTest, TestApplyUpdateWithEmptyUpdate) {
   expected_resets_successfully_ = true;
   RegisterFactory(!expected_resets_successfully_);
 
