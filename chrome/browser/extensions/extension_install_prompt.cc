@@ -609,7 +609,6 @@ scoped_refptr<Extension>
 
 ExtensionInstallPrompt::ExtensionInstallPrompt(content::WebContents* contents)
     : profile_(ProfileForWebContents(contents)),
-      ui_loop_(base::MessageLoop::current()),
       extension_(NULL),
       install_ui_(extensions::CreateExtensionInstallUI(
           ProfileForWebContents(contents))),
@@ -621,7 +620,6 @@ ExtensionInstallPrompt::ExtensionInstallPrompt(content::WebContents* contents)
 ExtensionInstallPrompt::ExtensionInstallPrompt(Profile* profile,
                                                gfx::NativeWindow native_window)
     : profile_(profile),
-      ui_loop_(base::MessageLoop::current()),
       extension_(NULL),
       install_ui_(extensions::CreateExtensionInstallUI(profile)),
       show_params_(
@@ -660,7 +658,7 @@ void ExtensionInstallPrompt::ShowDialog(
     std::unique_ptr<Prompt> prompt,
     std::unique_ptr<const PermissionSet> custom_permissions,
     const ShowDialogCallback& show_dialog_callback) {
-  DCHECK(ui_loop_ == base::MessageLoop::current());
+  DCHECK(ui_thread_checker_.CalledOnValidThread());
   DCHECK(prompt);
   extension_ = extension;
   done_callback_ = done_callback;

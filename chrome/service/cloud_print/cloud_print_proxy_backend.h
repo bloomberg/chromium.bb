@@ -9,6 +9,8 @@
 #include <string>
 
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
+#include "base/single_thread_task_runner.h"
 #include "base/threading/thread.h"
 #include "chrome/service/cloud_print/connector_settings.h"
 #include "printing/backend/print_backend.h"
@@ -91,9 +93,9 @@ class CloudPrintProxyBackend {
   // which contains printer registration code.
   scoped_refptr<Core> core_;
 
-  // A reference to the MessageLoop used to construct |this|, so we know how
-  // to safely talk back to the SyncFrontend.
-  base::MessageLoop* const frontend_loop_;
+  // A reference to the TaskRunner used to construct |this|, so we know how to
+  // safely talk back to the SyncFrontend.
+  const scoped_refptr<base::SingleThreadTaskRunner> frontend_task_runner_;
 
   // The frontend which is responsible for displaying UI and updating Prefs.
   // Outlives this backend.

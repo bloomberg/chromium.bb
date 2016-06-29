@@ -189,7 +189,7 @@ ChromeUserManagerImpl::ChromeUserManagerImpl()
                  content::NotificationService::AllSources());
 
   // Since we're in ctor postpone any actions till this is fully created.
-  if (base::MessageLoop::current()) {
+  if (base::ThreadTaskRunnerHandle::IsSet()) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::Bind(&ChromeUserManagerImpl::RetrieveTrustedDevicePolicies,

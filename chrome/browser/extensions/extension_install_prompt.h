@@ -17,6 +17,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
+#include "base/threading/thread_checker.h"
 #include "extensions/common/permissions/permission_message.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/image/image.h"
@@ -27,7 +28,6 @@ class Profile;
 
 namespace base {
 class DictionaryValue;
-class MessageLoop;
 }  // namespace base
 
 namespace content {
@@ -354,7 +354,7 @@ class ExtensionInstallPrompt {
 
   Profile* profile_;
 
-  base::MessageLoop* ui_loop_;
+  base::ThreadChecker ui_thread_checker_;
 
   // The extensions installation icon.
   SkBitmap icon_;

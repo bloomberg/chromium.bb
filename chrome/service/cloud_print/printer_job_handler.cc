@@ -812,7 +812,7 @@ void PrinterJobHandler::DoPrint(const JobDetails& job_details,
 }
 
 bool PrinterJobHandler::CurrentlyOnPrintThread() const {
-  return base::MessageLoop::current() == print_thread_.message_loop();
+  return print_thread_.task_runner()->BelongsToCurrentThread();
 }
 
 }  // namespace cloud_print

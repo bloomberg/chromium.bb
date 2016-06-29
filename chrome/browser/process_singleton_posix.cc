@@ -62,12 +62,14 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/posix/safe_strerror.h"
 #include "base/rand_util.h"
 #include "base/sequenced_task_runner_helpers.h"
+#include "base/single_thread_task_runner.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
@@ -77,6 +79,7 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/platform_thread.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "build/build_config.h"
@@ -464,10 +467,10 @@ class ProcessSingleton::LinuxWatcher
   class SocketReader : public base::MessageLoopForIO::Watcher {
    public:
     SocketReader(ProcessSingleton::LinuxWatcher* parent,
-                 base::MessageLoop* ui_message_loop,
+                 scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
                  int fd)
         : parent_(parent),
-          ui_message_loop_(ui_message_loop),
+          ui_task_runner_(ui_task_runner),
           fd_(fd),
           bytes_read_(0) {
       DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -505,8 +508,8 @@ class ProcessSingleton::LinuxWatcher
     // The ProcessSingleton::LinuxWatcher that owns us.
     ProcessSingleton::LinuxWatcher* const parent_;
 
-    // A reference to the UI message loop.
-    base::MessageLoop* const ui_message_loop_;
+    // A reference to the UI task runner.
+    scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner_;
 
     // The file descriptor we're reading.
     const int fd_;
@@ -525,9 +528,7 @@ class ProcessSingleton::LinuxWatcher
 
   // We expect to only be constructed on the UI thread.
   explicit LinuxWatcher(ProcessSingleton* parent)
-      : ui_message_loop_(base::MessageLoop::current()),
-        parent_(parent) {
-  }
+      : ui_task_runner_(base::ThreadTaskRunnerHandle::Get()), parent_(parent) {}
 
   // Start listening for connections on the socket.  This method should be
   // called from the IO thread.
@@ -571,7 +572,7 @@ class ProcessSingleton::LinuxWatcher
 
   // A reference to the UI message loop (i.e., the message loop we were
   // constructed on).
-  base::MessageLoop* ui_message_loop_;
+  scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner_;
 
   // The ProcessSingleton that owns us.
   ProcessSingleton* const parent_;
@@ -594,9 +595,8 @@ void ProcessSingleton::LinuxWatcher::OnFileCanReadWithoutBlocking(int fd) {
   }
   DCHECK(base::SetNonBlocking(connection_socket))
       << "Failed to make non-blocking socket.";
-  SocketReader* reader = new SocketReader(this,
-                                          ui_message_loop_,
-                                          connection_socket);
+  SocketReader* reader =
+      new SocketReader(this, ui_task_runner_, connection_socket);
   readers_.insert(reader);
 }
 
@@ -612,7 +612,7 @@ void ProcessSingleton::LinuxWatcher::StartListening(int socket) {
 void ProcessSingleton::LinuxWatcher::HandleMessage(
     const std::string& current_dir, const std::vector<std::string>& argv,
     SocketReader* reader) {
-  DCHECK(ui_message_loop_ == base::MessageLoop::current());
+  DCHECK(ui_task_runner_->BelongsToCurrentThread());
   DCHECK(reader);
 
   if (parent_->notification_callback_.Run(base::CommandLine(argv),
@@ -696,7 +696,7 @@ void ProcessSingleton::LinuxWatcher::SocketReader::OnFileCanReadWithoutBlocking(
   tokens.erase(tokens.begin());
 
   // Return to the UI thread to handle opening a new browser tab.
-  ui_message_loop_->task_runner()->PostTask(
+  ui_task_runner_->PostTask(
       FROM_HERE, base::Bind(&ProcessSingleton::LinuxWatcher::HandleMessage,
                             parent_, current_dir, tokens, this));
   fd_reader_.StopWatchingFileDescriptor();

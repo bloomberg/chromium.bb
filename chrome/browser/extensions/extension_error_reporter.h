@@ -8,11 +8,12 @@
 #include <string>
 #include <vector>
 
+#include "base/memory/ref_counted.h"
 #include "base/observer_list.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/string16.h"
 
 namespace base {
-class MessageLoop;
 class FilePath;
 }
 
@@ -77,7 +78,7 @@ class ExtensionErrorReporter {
   explicit ExtensionErrorReporter(bool enable_noisy_errors);
   ~ExtensionErrorReporter();
 
-  base::MessageLoop* ui_loop_;
+  scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner_;
   std::vector<base::string16> errors_;
   bool enable_noisy_errors_;
 

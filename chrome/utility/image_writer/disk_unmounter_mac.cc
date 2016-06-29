@@ -93,7 +93,7 @@ std::unique_ptr<base::MessagePump> DiskUnmounterMac::CreateMessagePump() {
 }
 
 void DiskUnmounterMac::UnmountOnWorker(const std::string& device_path) {
-  DCHECK(cf_thread_.message_loop() == base::MessageLoop::current());
+  DCHECK(cf_thread_.task_runner()->BelongsToCurrentThread());
 
   session_.reset(DASessionCreate(NULL));
 

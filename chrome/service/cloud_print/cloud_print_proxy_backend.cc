@@ -16,7 +16,6 @@
 #include "base/macros.h"
 #include "base/metrics/histogram.h"
 #include "base/rand_util.h"
-#include "base/single_thread_task_runner.h"
 #include "base/strings/string_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
@@ -173,7 +172,7 @@ CloudPrintProxyBackend::CloudPrintProxyBackend(
     const gaia::OAuthClientInfo& oauth_client_info,
     bool enable_job_poll)
     : core_thread_("Chrome_CloudPrintProxyCoreThread"),
-      frontend_loop_(base::MessageLoop::current()),
+      frontend_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       frontend_(frontend) {
   DCHECK(frontend_);
   core_ = new Core(this, settings, oauth_client_info, enable_job_poll);
@@ -252,15 +251,15 @@ CloudPrintProxyBackend::Core::Core(
 bool CloudPrintProxyBackend::Core::PostFrontendTask(
     const tracked_objects::Location& from_here,
     const base::Closure& task) {
-  return backend_->frontend_loop_->task_runner()->PostTask(from_here, task);
+  return backend_->frontend_task_runner_->PostTask(from_here, task);
 }
 
 bool CloudPrintProxyBackend::Core::CurrentlyOnFrontendThread() const {
-  return base::MessageLoop::current() == backend_->frontend_loop_;
+  return backend_->frontend_task_runner_->BelongsToCurrentThread();
 }
 
 bool CloudPrintProxyBackend::Core::CurrentlyOnCoreThread() const {
-  return base::MessageLoop::current() == backend_->core_thread_.message_loop();
+  return backend_->core_thread_.task_runner()->BelongsToCurrentThread();
 }
 
 void CloudPrintProxyBackend::Core::CreateAuthAndConnector() {

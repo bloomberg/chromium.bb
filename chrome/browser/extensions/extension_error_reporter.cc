@@ -10,9 +10,9 @@
 #include "base/bind_helpers.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
-#include "base/message_loop/message_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/simple_message_box.h"
 #include "content/public/browser/notification_service.h"
@@ -36,8 +36,9 @@ ExtensionErrorReporter* ExtensionErrorReporter::GetInstance() {
 }
 
 ExtensionErrorReporter::ExtensionErrorReporter(bool enable_noisy_errors)
-    : ui_loop_(base::MessageLoop::current()),
-      enable_noisy_errors_(enable_noisy_errors) {
+    : enable_noisy_errors_(enable_noisy_errors) {
+  if (base::ThreadTaskRunnerHandle::IsSet())
+    ui_task_runner_ = base::ThreadTaskRunnerHandle::Get();
 }
 
 ExtensionErrorReporter::~ExtensionErrorReporter() {}
@@ -66,11 +67,9 @@ void ExtensionErrorReporter::ReportLoadError(
 
 void ExtensionErrorReporter::ReportError(const base::string16& message,
                                          bool be_noisy) {
-  // NOTE: There won't be a ui_loop_ in the unit test environment.
-  if (ui_loop_) {
-    CHECK(base::MessageLoop::current() == ui_loop_)
-        << "ReportError can only be called from the UI thread.";
-  }
+  // NOTE: There won't be a |ui_task_runner_| in the unit test environment.
+  CHECK(!ui_task_runner_ || ui_task_runner_->BelongsToCurrentThread())
+      << "ReportError can only be called from the UI thread.";
 
   errors_.push_back(message);
 
