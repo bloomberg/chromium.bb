@@ -17,8 +17,37 @@ namespace ui {
 
 namespace {
 
-const wchar_t* LAYOUT_US = L"00000409";
-const wchar_t* LAYOUT_FR = L"0000040c";
+enum Layout {
+  LAYOUT_US,
+  LAYOUT_FR,
+  LAYOUT_KR,
+};
+
+// |LoadKeyboardLayout()| ensures the locale to be loaded into the system
+// (Similar to temporarily adding a locale in Control Panel), otherwise
+// |ToUnicodeEx()| will fall-back to the default locale.
+// See MSDN LoadKeyboardLayout():
+// https://msdn.microsoft.com/en-us/library/windows/desktop/ms646305(v=vs.85).aspx
+// And language constants and strings:
+// https://msdn.microsoft.com/en-us/library/windows/desktop/dd318693(v=vs.85).aspx
+HKL GetInputLocale(Layout layout) {
+  switch (layout) {
+    case LAYOUT_US:
+      return ::LoadKeyboardLayout(L"00000409", KLF_ACTIVATE);
+    case LAYOUT_FR:
+      return ::LoadKeyboardLayout(L"0000040c", KLF_ACTIVATE);
+    case LAYOUT_KR:
+      // |LoadKeyboardLayout(L"00000412", KLF_ACTIVATE)| returns the correct
+      // Korean locale, but it will fail on DrMemory tests.
+      // See https://crbug.com/612736#c6
+      // However we could bypass it since we are only testing non-printable keys
+      // on Korean locale.
+      // (This issue only happens on Korean and Japanese).
+      return reinterpret_cast<HKL>(0x04120412);
+    default:
+      return 0;
+  }
+}
 
 struct TestKey {
   KeyboardCode key_code;
@@ -94,7 +123,7 @@ class PlatformKeyMapTest : public testing::Test {
 };
 
 TEST_F(PlatformKeyMapTest, USLayout) {
-  HKL layout = ::LoadKeyboardLayout(LAYOUT_US, 0);
+  HKL layout = GetInputLocale(LAYOUT_US);
   PlatformKeyMap keymap(layout);
 
   const TestKey kUSLayoutTestCases[] = {
@@ -143,7 +172,7 @@ TEST_F(PlatformKeyMapTest, USLayout) {
 }
 
 TEST_F(PlatformKeyMapTest, FRLayout) {
-  HKL layout = ::LoadKeyboardLayout(LAYOUT_FR, 0);
+  HKL layout = GetInputLocale(LAYOUT_FR);
   PlatformKeyMap keymap(layout);
 
   const TestKey kFRLayoutTestCases[] = {
@@ -192,7 +221,7 @@ TEST_F(PlatformKeyMapTest, FRLayout) {
 }
 
 TEST_F(PlatformKeyMapTest, NumPad) {
-  HKL layout = ::LoadKeyboardLayout(LAYOUT_US, 0);
+  HKL layout = GetInputLocale(LAYOUT_US);
   PlatformKeyMap keymap(layout);
 
   const struct TestCase {
@@ -242,7 +271,7 @@ TEST_F(PlatformKeyMapTest, NumPad) {
 }
 
 TEST_F(PlatformKeyMapTest, NonPrintableKey) {
-  HKL layout = ::LoadKeyboardLayout(LAYOUT_US, 0);
+  HKL layout = GetInputLocale(LAYOUT_US);
   PlatformKeyMap keymap(layout);
 
   for (const auto& test_case : kNonPrintableCodeMap) {
@@ -275,6 +304,33 @@ TEST_F(PlatformKeyMapTest, NonPrintableKey) {
               DomKeyFromKeyboardCodeImpl(keymap, key_code,
                                          EF_ALTGR_DOWN | EF_CONTROL_DOWN))
         << key_code << ", " << scan_code;
+  }
+}
+
+TEST_F(PlatformKeyMapTest, KoreanSpecificKeys) {
+  const struct TestCase {
+    KeyboardCode key_code;
+    DomKey key;
+  } kKoreanTestCases[] = {
+      {VKEY_HANGUL, DomKey::HANGUL_MODE}, {VKEY_HANJA, DomKey::HANJA_MODE},
+  };
+
+  // US English should not return values for these keys.
+  HKL us_layout = GetInputLocale(LAYOUT_US);
+  PlatformKeyMap us_keymap(us_layout);
+  for (const auto& test_case : kKoreanTestCases) {
+    EXPECT_EQ(DomKey::NONE, DomKeyFromKeyboardCodeImpl(
+                                us_keymap, test_case.key_code, EF_NONE))
+        << test_case.key_code;
+  }
+
+  // Korean layout should return specific DomKey.
+  HKL ko_layout = GetInputLocale(LAYOUT_KR);
+  PlatformKeyMap ko_keymap(ko_layout);
+  for (const auto& test_case : kKoreanTestCases) {
+    EXPECT_EQ(test_case.key, DomKeyFromKeyboardCodeImpl(
+                                 ko_keymap, test_case.key_code, EF_NONE))
+        << test_case.key_code;
   }
 }
 
