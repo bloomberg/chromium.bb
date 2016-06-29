@@ -1089,8 +1089,8 @@ IPC_MESSAGE_ROUTED1(PpapiHostMsg_PPBGraphics3D_TakeFrontBuffer,
 IPC_MESSAGE_ROUTED2(PpapiHostMsg_PPBGraphics3D_SwapBuffers,
                     ppapi::HostResource /* graphics_3d */,
                     gpu::SyncToken /* sync_token */)
-IPC_SYNC_MESSAGE_ROUTED1_0(PpapiHostMsg_PPBGraphics3D_EnsureWorkVisible,
-                           ppapi::HostResource /* context */)
+IPC_MESSAGE_ROUTED1(PpapiHostMsg_PPBGraphics3D_EnsureWorkVisible,
+                    ppapi::HostResource /* context */)
 
 // PPB_ImageData.
 IPC_SYNC_MESSAGE_ROUTED4_3(PpapiHostMsg_PPBImageData_CreatePlatform,
