@@ -35,7 +35,6 @@ EGL/eglplatform.h
  - Added EGLNative*Type for native linux framebuffers.
 EGL/eglext.h
  - Added EGL_ARM_implicit_external_sync extension tokens
- - Added format modifier for EGL_EXT_image_dma_buf_import extension
 KHR/khrplatform.h
  - Modified KHRONOS_APICALL
 DEPS

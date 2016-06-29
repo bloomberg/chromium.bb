@@ -30,11 +30,11 @@ GpuMemoryBufferImplOzoneNativePixmap::GpuMemoryBufferImplOzoneNativePixmap(
     gfx::BufferFormat format,
     const DestructionCallback& callback,
     std::unique_ptr<ui::ClientNativePixmap> pixmap,
-    const std::vector<gfx::NativePixmapPlane>& planes,
+    const std::vector<std::pair<int, int>>& strides_and_offsets,
     base::ScopedFD fd)
     : GpuMemoryBufferImpl(id, size, format, callback),
       pixmap_(std::move(pixmap)),
-      planes_(planes),
+      strides_and_offsets_(strides_and_offsets),
       fd_(std::move(fd)),
       data_(nullptr) {}
 
@@ -64,7 +64,8 @@ GpuMemoryBufferImplOzoneNativePixmap::CreateFromHandle(
   gfx::NativePixmapHandle native_pixmap_handle;
   native_pixmap_handle.fds.emplace_back(handle.native_pixmap_handle.fds[0].fd,
                                         true /* auto_close */);
-  native_pixmap_handle.planes = handle.native_pixmap_handle.planes;
+  native_pixmap_handle.strides_and_offsets =
+      handle.native_pixmap_handle.strides_and_offsets;
   std::unique_ptr<ui::ClientNativePixmap> native_pixmap =
       ui::ClientNativePixmapFactory::GetInstance()->ImportFromHandle(
           native_pixmap_handle, size, usage);
@@ -72,7 +73,7 @@ GpuMemoryBufferImplOzoneNativePixmap::CreateFromHandle(
 
   return base::WrapUnique(new GpuMemoryBufferImplOzoneNativePixmap(
       handle.id, size, format, callback, std::move(native_pixmap),
-      handle.native_pixmap_handle.planes, std::move(scoped_fd)));
+      handle.native_pixmap_handle.strides_and_offsets, std::move(scoped_fd)));
 }
 
 // static
@@ -137,7 +138,7 @@ gfx::GpuMemoryBufferHandle GpuMemoryBufferImplOzoneNativePixmap::GetHandle()
   handle.id = id_;
   handle.native_pixmap_handle.fds.emplace_back(fd_.get(),
                                                false /* auto_close */);
-  handle.native_pixmap_handle.planes = planes_;
+  handle.native_pixmap_handle.strides_and_offsets = strides_and_offsets_;
   return handle;
 }
 

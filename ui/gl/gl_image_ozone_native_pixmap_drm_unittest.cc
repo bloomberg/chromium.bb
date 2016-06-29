@@ -89,7 +89,7 @@ scoped_refptr<ui::NativePixmap> CreateYVU420Pixmap(const gfx::Size& size,
   gfx::NativePixmapHandle pixmap_handle;
   pixmap_handle.fds.emplace_back(fd, false);
   for (int i = 0; i < 3; i++) {
-    pixmap_handle.planes.emplace_back(pitches[i], offsets[i], 0);
+    pixmap_handle.strides_and_offsets.emplace_back(pitches[i], offsets[i]);
   }
   ui::SurfaceFactoryOzone* surface_factory =
       ui::OzonePlatform::GetInstance()->GetSurfaceFactoryOzone();

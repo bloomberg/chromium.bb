@@ -44,12 +44,14 @@ scoped_refptr<GbmBuffer> DrmThreadProxy::CreateBufferFromFds(
     const gfx::Size& size,
     gfx::BufferFormat format,
     std::vector<base::ScopedFD>&& fds,
-    const std::vector<gfx::NativePixmapPlane>& planes) {
+    std::vector<int> strides,
+    std::vector<int> offsets) {
   scoped_refptr<GbmBuffer> buffer;
-  PostSyncTask(drm_thread_.task_runner(),
-               base::Bind(&DrmThread::CreateBufferFromFds,
-                          base::Unretained(&drm_thread_), size, format,
-                          base::Passed(std::move(fds)), planes, &buffer));
+  PostSyncTask(
+      drm_thread_.task_runner(),
+      base::Bind(&DrmThread::CreateBufferFromFds,
+                 base::Unretained(&drm_thread_), size, format,
+                 base::Passed(std::move(fds)), strides, offsets, &buffer));
   return buffer;
 }
 

@@ -54,11 +54,11 @@ class GPU_EXPORT GpuMemoryBufferImplOzoneNativePixmap
       gfx::BufferFormat format,
       const DestructionCallback& callback,
       std::unique_ptr<ui::ClientNativePixmap> native_pixmap,
-      const std::vector<gfx::NativePixmapPlane>& planes,
+      const std::vector<std::pair<int, int>>& strides_and_offsets,
       base::ScopedFD fd);
 
   std::unique_ptr<ui::ClientNativePixmap> pixmap_;
-  std::vector<gfx::NativePixmapPlane> planes_;
+  std::vector<std::pair<int, int>> strides_and_offsets_;
   base::ScopedFD fd_;
   void* data_;
 

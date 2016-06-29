@@ -32,13 +32,15 @@ GbmBuffer::GbmBuffer(const scoped_refptr<GbmDevice>& gbm,
                      gfx::BufferUsage usage,
                      std::vector<base::ScopedFD>&& fds,
                      const gfx::Size& size,
-                     const std::vector<gfx::NativePixmapPlane>&& planes)
+                     const std::vector<int>& strides,
+                     const std::vector<int>& offsets)
     : GbmBufferBase(gbm, bo, format, usage),
       format_(format),
       usage_(usage),
       fds_(std::move(fds)),
       size_(size),
-      planes_(std::move(planes)) {}
+      strides_(strides),
+      offsets_(offsets) {}
 
 GbmBuffer::~GbmBuffer() {
   if (bo())
@@ -60,24 +62,19 @@ size_t GbmBuffer::GetFdCount() const {
   return fds_.size();
 }
 
-int GbmBuffer::GetFd(size_t index) const {
-  DCHECK_LT(index, fds_.size());
-  return fds_[index].get();
+int GbmBuffer::GetFd(size_t plane) const {
+  DCHECK_LT(plane, fds_.size());
+  return fds_[plane].get();
 }
 
-int GbmBuffer::GetStride(size_t index) const {
-  DCHECK_LT(index, planes_.size());
-  return planes_[index].stride;
+int GbmBuffer::GetStride(size_t plane) const {
+  DCHECK_LT(plane, strides_.size());
+  return strides_[plane];
 }
 
-int GbmBuffer::GetOffset(size_t index) const {
-  DCHECK_LT(index, planes_.size());
-  return planes_[index].offset;
-}
-
-uint64_t GbmBuffer::GetFormatModifier(size_t index) const {
-  DCHECK_LT(index, planes_.size());
-  return planes_[index].modifier;
+int GbmBuffer::GetOffset(size_t plane) const {
+  DCHECK_LT(plane, offsets_.size());
+  return offsets_[plane];
 }
 
 // TODO(reveman): This should not be needed once crbug.com/597932 is fixed,
@@ -123,11 +120,12 @@ scoped_refptr<GbmBuffer> GbmBuffer::CreateBuffer(
   }
   std::vector<base::ScopedFD> fds;
   fds.emplace_back(std::move(fd));
-  std::vector<gfx::NativePixmapPlane> planes;
-  planes.emplace_back(gbm_bo_get_stride(bo), gbm_bo_get_plane_offset(bo, 0),
-                      gbm_bo_get_format_modifier(bo));
+  std::vector<int> strides;
+  strides.push_back(gbm_bo_get_stride(bo));
+  std::vector<int> offsets;
+  offsets.push_back(gbm_bo_get_plane_offset(bo, 0));
   scoped_refptr<GbmBuffer> buffer(new GbmBuffer(
-      gbm, bo, format, usage, std::move(fds), size, std::move(planes)));
+      gbm, bo, format, usage, std::move(fds), size, strides, offsets));
   if (usage == gfx::BufferUsage::SCANOUT && !buffer->GetFramebufferId())
     return nullptr;
 
@@ -140,11 +138,13 @@ scoped_refptr<GbmBuffer> GbmBuffer::CreateBufferFromFds(
     gfx::BufferFormat format,
     const gfx::Size& size,
     std::vector<base::ScopedFD>&& fds,
-    const std::vector<gfx::NativePixmapPlane>& planes) {
+    const std::vector<int>& strides,
+    const std::vector<int>& offsets) {
   TRACE_EVENT2("drm", "GbmBuffer::CreateBufferFromFD", "device",
                gbm->device_path().value(), "size", size.ToString());
-  DCHECK_LE(fds.size(), planes.size());
-  DCHECK_EQ(planes[0].offset, 0);
+  DCHECK_LE(fds.size(), strides.size());
+  DCHECK_EQ(strides.size(), offsets.size());
+  DCHECK_EQ(offsets[0], 0);
 
   uint32_t fourcc_format = GetFourCCFormatFromBufferFormat(format);
 
@@ -158,7 +158,7 @@ scoped_refptr<GbmBuffer> GbmBuffer::CreateBufferFromFds(
     fd_data.fd = fds[0].get();
     fd_data.width = size.width();
     fd_data.height = size.height();
-    fd_data.stride = planes[0].stride;
+    fd_data.stride = strides[0];
     fd_data.format = fourcc_format;
 
     // The fd passed to gbm_bo_import is not ref-counted and need to be
@@ -174,7 +174,7 @@ scoped_refptr<GbmBuffer> GbmBuffer::CreateBufferFromFds(
   scoped_refptr<GbmBuffer> buffer(new GbmBuffer(
       gbm, bo, format,
       use_scanout ? gfx::BufferUsage::SCANOUT : gfx::BufferUsage::GPU_READ,
-      std::move(fds), size, std::move(planes)));
+      std::move(fds), size, strides, offsets));
   // If scanout support for buffer is expected then make sure we managed to
   // create a framebuffer for it as otherwise using it for scanout will fail.
   if (use_scanout && !buffer->GetFramebufferId())
@@ -207,8 +207,8 @@ gfx::NativePixmapHandle GbmPixmap::ExportHandle() {
       handle.fds.emplace_back(
           base::FileDescriptor(scoped_fd.release(), true /* auto_close */));
     }
-    handle.planes.emplace_back(buffer_->GetStride(i), buffer_->GetOffset(i),
-                               buffer_->GetFormatModifier(i));
+    handle.strides_and_offsets.emplace_back(buffer_->GetStride(i),
+                                            buffer_->GetOffset(i));
   }
   return handle;
 }
@@ -238,10 +238,6 @@ int GbmPixmap::GetDmaBufPitch(size_t plane) const {
 
 int GbmPixmap::GetDmaBufOffset(size_t plane) const {
   return buffer_->GetOffset(plane);
-}
-
-uint64_t GbmPixmap::GetDmaBufModifier(size_t plane) const {
-  return buffer_->GetFormatModifier(plane);
 }
 
 gfx::BufferFormat GbmPixmap::GetBufferFormat() const {

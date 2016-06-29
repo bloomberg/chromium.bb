@@ -33,7 +33,8 @@ class GbmBuffer : public GbmBufferBase {
       gfx::BufferFormat format,
       const gfx::Size& size,
       std::vector<base::ScopedFD>&& fds,
-      const std::vector<gfx::NativePixmapPlane>& planes);
+      const std::vector<int>& strides,
+      const std::vector<int>& offsets);
   gfx::BufferFormat GetFormat() const { return format_; }
   gfx::BufferUsage GetUsage() const { return usage_; }
   bool AreFdsValid() const;
@@ -41,7 +42,6 @@ class GbmBuffer : public GbmBufferBase {
   int GetFd(size_t plane) const;
   int GetStride(size_t plane) const;
   int GetOffset(size_t plane) const;
-  uint64_t GetFormatModifier(size_t plane) const;
   gfx::Size GetSize() const override;
 
  private:
@@ -51,15 +51,16 @@ class GbmBuffer : public GbmBufferBase {
             gfx::BufferUsage usage,
             std::vector<base::ScopedFD>&& fds,
             const gfx::Size& size,
-            const std::vector<gfx::NativePixmapPlane>&& planes);
+            const std::vector<int>& strides,
+            const std::vector<int>& offsets);
   ~GbmBuffer() override;
 
   gfx::BufferFormat format_;
   gfx::BufferUsage usage_;
   std::vector<base::ScopedFD> fds_;
   gfx::Size size_;
-
-  std::vector<gfx::NativePixmapPlane> planes_;
+  std::vector<int> strides_;
+  std::vector<int> offsets_;
 
   DISALLOW_COPY_AND_ASSIGN(GbmBuffer);
 };
@@ -79,7 +80,6 @@ class GbmPixmap : public NativePixmap {
   int GetDmaBufFd(size_t plane) const override;
   int GetDmaBufPitch(size_t plane) const override;
   int GetDmaBufOffset(size_t plane) const override;
-  uint64_t GetDmaBufModifier(size_t plane) const override;
   gfx::BufferFormat GetBufferFormat() const override;
   gfx::Size GetBufferSize() const override;
   bool ScheduleOverlayPlane(gfx::AcceleratedWidget widget,
