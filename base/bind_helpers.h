@@ -344,16 +344,9 @@ class RetainedRefWrapper {
 
 template <typename T>
 struct IgnoreResultHelper {
-  explicit IgnoreResultHelper(T functor) : functor_(functor) {}
+  explicit IgnoreResultHelper(T functor) : functor_(std::move(functor)) {}
 
   T functor_;
-};
-
-template <typename T>
-struct IgnoreResultHelper<Callback<T> > {
-  explicit IgnoreResultHelper(const Callback<T>& functor) : functor_(functor) {}
-
-  const Callback<T>& functor_;
 };
 
 // An alternate implementation is to avoid the destructive copy, and instead
@@ -421,8 +414,8 @@ class PassedWrapper {
 
 // Unwrap the stored parameters for the wrappers above.
 template <typename T>
-const T& Unwrap(const T& o) {
-  return o;
+T&& Unwrap(T&& o) {
+  return std::forward<T>(o);
 }
 
 template <typename T>
@@ -611,13 +604,7 @@ static inline internal::PassedWrapper<T> Passed(T* scoper) {
 
 template <typename T>
 static inline internal::IgnoreResultHelper<T> IgnoreResult(T data) {
-  return internal::IgnoreResultHelper<T>(data);
-}
-
-template <typename T>
-static inline internal::IgnoreResultHelper<Callback<T> >
-IgnoreResult(const Callback<T>& data) {
-  return internal::IgnoreResultHelper<Callback<T> >(data);
+  return internal::IgnoreResultHelper<T>(std::move(data));
 }
 
 BASE_EXPORT void DoNothing();
