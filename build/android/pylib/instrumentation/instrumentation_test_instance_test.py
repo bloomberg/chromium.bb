@@ -16,6 +16,8 @@ from pylib.instrumentation import instrumentation_test_instance
 with host_paths.SysPath(host_paths.PYMOCK_PATH):
   import mock  # pylint: disable=import-error
 
+_INSTRUMENTATION_TEST_INSTANCE_PATH = (
+    'pylib.instrumentation.instrumentation_test_instance.%s')
 
 class InstrumentationTestInstanceTest(unittest.TestCase):
 
@@ -25,8 +27,7 @@ class InstrumentationTestInstanceTest(unittest.TestCase):
 
   @staticmethod
   def createTestInstance():
-    c = ('pylib.instrumentation.instrumentation_test_instance.'
-         'InstrumentationTestInstance')
+    c = _INSTRUMENTATION_TEST_INSTANCE_PATH % 'InstrumentationTestInstance'
     with mock.patch('%s._initializeApkAttributes' % c), (
          mock.patch('%s._initializeDataDependencyAttributes' % c)), (
          mock.patch('%s._initializeTestFilterAttributes' % c)), (
@@ -66,8 +67,6 @@ class InstrumentationTestInstanceTest(unittest.TestCase):
       }
     ]
 
-    o._GetTestsFromPickle = mock.MagicMock(return_value=raw_tests)
-
     expected_tests = [
       {
         'annotations': {
@@ -95,7 +94,10 @@ class InstrumentationTestInstanceTest(unittest.TestCase):
       },
     ]
 
-    actual_tests = o.GetTests()
+    with mock.patch(_INSTRUMENTATION_TEST_INSTANCE_PATH % '_GetTestsFromPickle',
+                    return_value=raw_tests):
+      actual_tests = o.GetTests()
+
     self.assertEquals(actual_tests, expected_tests)
 
   def testGetTests_simpleGtestFilter(self):
@@ -117,9 +119,6 @@ class InstrumentationTestInstanceTest(unittest.TestCase):
       }
     ]
 
-    o._GetTestsFromPickle = mock.MagicMock(return_value=raw_tests)
-    o._test_filter = 'org.chromium.test.SampleTest.testMethod1'
-
     expected_tests = [
       {
         'annotations': {
@@ -131,7 +130,11 @@ class InstrumentationTestInstanceTest(unittest.TestCase):
       },
     ]
 
-    actual_tests = o.GetTests()
+    o._test_filter = 'org.chromium.test.SampleTest.testMethod1'
+    with mock.patch(_INSTRUMENTATION_TEST_INSTANCE_PATH % '_GetTestsFromPickle',
+                    return_value=raw_tests):
+      actual_tests = o.GetTests()
+
     self.assertEquals(actual_tests, expected_tests)
 
   def testGetTests_wildcardGtestFilter(self):
@@ -163,9 +166,6 @@ class InstrumentationTestInstanceTest(unittest.TestCase):
       }
     ]
 
-    o._GetTestsFromPickle = mock.MagicMock(return_value=raw_tests)
-    o._test_filter = 'org.chromium.test.SampleTest2.*'
-
     expected_tests = [
       {
         'annotations': {
@@ -177,7 +177,11 @@ class InstrumentationTestInstanceTest(unittest.TestCase):
       },
     ]
 
-    actual_tests = o.GetTests()
+    o._test_filter = 'org.chromium.test.SampleTest2.*'
+    with mock.patch(_INSTRUMENTATION_TEST_INSTANCE_PATH % '_GetTestsFromPickle',
+                    return_value=raw_tests):
+      actual_tests = o.GetTests()
+
     self.assertEquals(actual_tests, expected_tests)
 
   @unittest.skip('crbug.com/623047')
@@ -264,9 +268,6 @@ class InstrumentationTestInstanceTest(unittest.TestCase):
       }
     ]
 
-    o._GetTestsFromPickle = mock.MagicMock(return_value=raw_tests)
-    o._annotations = {'SmallTest': None}
-
     expected_tests = [
       {
         'annotations': {
@@ -286,7 +287,11 @@ class InstrumentationTestInstanceTest(unittest.TestCase):
       },
     ]
 
-    actual_tests = o.GetTests()
+    o._annotations = {'SmallTest': None}
+    with mock.patch(_INSTRUMENTATION_TEST_INSTANCE_PATH % '_GetTestsFromPickle',
+                    return_value=raw_tests):
+      actual_tests = o.GetTests()
+
     self.assertEquals(actual_tests, expected_tests)
 
   def testGetTests_excludedAnnotationFilter(self):
@@ -318,9 +323,6 @@ class InstrumentationTestInstanceTest(unittest.TestCase):
       }
     ]
 
-    o._GetTestsFromPickle = mock.MagicMock(return_value=raw_tests)
-    o._excluded_annotations = {'SmallTest': None}
-
     expected_tests = [
       {
         'annotations': {
@@ -332,7 +334,11 @@ class InstrumentationTestInstanceTest(unittest.TestCase):
       },
     ]
 
-    actual_tests = o.GetTests()
+    o._excluded_annotations = {'SmallTest': None}
+    with mock.patch(_INSTRUMENTATION_TEST_INSTANCE_PATH % '_GetTestsFromPickle',
+                    return_value=raw_tests):
+      actual_tests = o.GetTests()
+
     self.assertEquals(actual_tests, expected_tests)
 
   def testGetTests_annotationSimpleValueFilter(self):
@@ -373,9 +379,6 @@ class InstrumentationTestInstanceTest(unittest.TestCase):
       }
     ]
 
-    o._GetTestsFromPickle = mock.MagicMock(return_value=raw_tests)
-    o._annotations = {'TestValue': '1'}
-
     expected_tests = [
       {
         'annotations': {
@@ -388,7 +391,11 @@ class InstrumentationTestInstanceTest(unittest.TestCase):
       },
     ]
 
-    actual_tests = o.GetTests()
+    o._annotations = {'TestValue': '1'}
+    with mock.patch(_INSTRUMENTATION_TEST_INSTANCE_PATH % '_GetTestsFromPickle',
+                    return_value=raw_tests):
+      actual_tests = o.GetTests()
+
     self.assertEquals(actual_tests, expected_tests)
 
   def testGetTests_annotationDictValueFilter(self):
@@ -420,9 +427,6 @@ class InstrumentationTestInstanceTest(unittest.TestCase):
       }
     ]
 
-    o._GetTestsFromPickle = mock.MagicMock(return_value=raw_tests)
-    o._annotations = {'Feature': 'Bar'}
-
     expected_tests = [
       {
         'annotations': {
@@ -434,7 +438,11 @@ class InstrumentationTestInstanceTest(unittest.TestCase):
       },
     ]
 
-    actual_tests = o.GetTests()
+    o._annotations = {'Feature': 'Bar'}
+    with mock.patch(_INSTRUMENTATION_TEST_INSTANCE_PATH % '_GetTestsFromPickle',
+                    return_value=raw_tests):
+      actual_tests = o.GetTests()
+
     self.assertEquals(actual_tests, expected_tests)
 
   def testGenerateTestResults_noStatus(self):
