@@ -6,6 +6,15 @@
 
 namespace gfx {
 
+NativePixmapPlane::NativePixmapPlane() : stride(0), offset(0), modifier(0) {}
+
+NativePixmapPlane::NativePixmapPlane(int stride, int offset, uint64_t modifier)
+    : stride(stride), offset(offset), modifier(modifier) {}
+
+NativePixmapPlane::NativePixmapPlane(const NativePixmapPlane& other) = default;
+
+NativePixmapPlane::~NativePixmapPlane() {}
+
 NativePixmapHandle::NativePixmapHandle() {}
 NativePixmapHandle::NativePixmapHandle(const NativePixmapHandle& other) =
     default;

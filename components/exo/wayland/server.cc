@@ -521,20 +521,21 @@ void drm_create_prime_buffer(wl_client* client,
     return;
   }
 
-  std::vector<int> strides{stride0, stride1, stride2};
-  std::vector<int> offsets{offset0, offset1, offset2};
+  std::vector<gfx::NativePixmapPlane> planes;
+  planes.emplace_back(stride0, offset0, 0);
+  planes.emplace_back(stride1, offset1, 0);
+  planes.emplace_back(stride2, offset2, 0);
   std::vector<base::ScopedFD> fds;
 
-  int planes =
+  size_t num_planes =
       gfx::NumberOfPlanesForBufferFormat(supported_format->buffer_format);
-  strides.resize(planes);
-  offsets.resize(planes);
+  planes.resize(num_planes);
   fds.push_back(base::ScopedFD(name));
 
   std::unique_ptr<Buffer> buffer =
       GetUserDataAs<Display>(resource)->CreateLinuxDMABufBuffer(
-          gfx::Size(width, height), supported_format->buffer_format, strides,
-          offsets, std::move(fds));
+          gfx::Size(width, height), supported_format->buffer_format, planes,
+          std::move(fds));
   if (!buffer) {
     wl_resource_post_no_memory(resource);
     return;
@@ -667,8 +668,7 @@ void linux_buffer_params_create(wl_client* client,
     return;
   }
 
-  std::vector<int> strides;
-  std::vector<int> offsets;
+  std::vector<gfx::NativePixmapPlane> planes;
   std::vector<base::ScopedFD> fds;
 
   for (uint32_t i = 0; i < num_planes; ++i) {
@@ -680,16 +680,15 @@ void linux_buffer_params_create(wl_client* client,
       return;
     }
     LinuxBufferParams::Plane& plane = plane_it->second;
-    strides.push_back(plane.stride);
-    offsets.push_back(plane.offset);
+    planes.emplace_back(plane.stride, plane.offset, 0);
     if (plane.fd.is_valid())
       fds.push_back(std::move(plane.fd));
   }
 
   std::unique_ptr<Buffer> buffer =
       linux_buffer_params->display->CreateLinuxDMABufBuffer(
-          gfx::Size(width, height), supported_format->buffer_format, strides,
-          offsets, std::move(fds));
+          gfx::Size(width, height), supported_format->buffer_format, planes,
+          std::move(fds));
   if (!buffer) {
     zwp_linux_buffer_params_v1_send_failed(resource);
     return;

@@ -110,17 +110,17 @@ void DrmThread::CreateBuffer(gfx::AcceleratedWidget widget,
   *buffer = GbmBuffer::CreateBuffer(gbm, format, size, usage);
 }
 
-void DrmThread::CreateBufferFromFds(const gfx::Size& size,
-                                    gfx::BufferFormat format,
-                                    std::vector<base::ScopedFD>&& fds,
-                                    std::vector<int> strides,
-                                    std::vector<int> offsets,
-                                    scoped_refptr<GbmBuffer>* buffer) {
+void DrmThread::CreateBufferFromFds(
+    const gfx::Size& size,
+    gfx::BufferFormat format,
+    std::vector<base::ScopedFD>&& fds,
+    const std::vector<gfx::NativePixmapPlane>& planes,
+    scoped_refptr<GbmBuffer>* buffer) {
   scoped_refptr<GbmDevice> gbm =
       static_cast<GbmDevice*>(device_manager_->GetPrimaryDrmDevice().get());
   DCHECK(gbm);
-  *buffer = GbmBuffer::CreateBufferFromFds(gbm, format, size, std::move(fds),
-                                           strides, offsets);
+  *buffer =
+      GbmBuffer::CreateBufferFromFds(gbm, format, size, std::move(fds), planes);
 }
 
 void DrmThread::GetScanoutFormats(

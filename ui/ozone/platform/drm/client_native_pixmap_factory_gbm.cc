@@ -80,7 +80,7 @@ class ClientNativePixmapFactoryGbm : public ClientNativePixmapFactory {
         // TODO(dcastagna): Add support for pixmaps with multiple FDs for non
         // scanout buffers.
         return ClientNativePixmapDmaBuf::ImportFromDmabuf(
-            scoped_fd.release(), size, handle.strides_and_offsets[0].first);
+            scoped_fd.release(), size, handle.planes[0].stride);
 #else
         NOTREACHED();
         return nullptr;
