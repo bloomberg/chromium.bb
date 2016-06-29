@@ -104,6 +104,14 @@ class InterfaceRegistry : public mojom::InterfaceProvider {
   }
   void RemoveInterface(const std::string& name);
 
+  // Temporarily prevent incoming interface requests from being bound. Incoming
+  // requests will be queued internally and dispatched once UnpauseBinding() is
+  // called.
+  void PauseBinding();
+
+  // Resumes incoming interface request binding.
+  void ResumeBinding();
+
  private:
   using NameToInterfaceBinderMap =
       std::map<std::string, std::unique_ptr<InterfaceBinder>>;
@@ -116,6 +124,8 @@ class InterfaceRegistry : public mojom::InterfaceProvider {
   // some filtering policy preventing this interface from being exposed).
   bool SetInterfaceBinderForName(std::unique_ptr<InterfaceBinder> binder,
                                  const std::string& name);
+
+  mojom::InterfaceProviderRequest pending_request_;
 
   mojo::Binding<mojom::InterfaceProvider> binding_;
   Connection* connection_;

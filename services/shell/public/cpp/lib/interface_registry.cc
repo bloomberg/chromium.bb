@@ -38,6 +38,18 @@ void InterfaceRegistry::RemoveInterface(const std::string& name) {
     name_to_binder_.erase(it);
 }
 
+void InterfaceRegistry::PauseBinding() {
+  DCHECK(!pending_request_.is_pending());
+  DCHECK(binding_.is_bound());
+  pending_request_ = binding_.Unbind();
+}
+
+void InterfaceRegistry::ResumeBinding() {
+  DCHECK(pending_request_.is_pending());
+  DCHECK(!binding_.is_bound());
+  binding_.Bind(std::move(pending_request_));
+}
+
 // mojom::InterfaceProvider:
 void InterfaceRegistry::GetInterface(const mojo::String& interface_name,
                                      mojo::ScopedMessagePipeHandle handle) {

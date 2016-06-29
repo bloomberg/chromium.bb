@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/callback_helpers.h"
 #include "base/lazy_instance.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/threading/thread_local.h"
@@ -299,6 +300,14 @@ bool GpuChildThread::AcceptConnection(shell::Connection* connection) {
     GetContentClient()->gpu()->ExposeInterfacesToBrowser(
         connection->GetInterfaceRegistry());
   }
+
+  // We don't want to process any incoming interface requests until
+  // OnInitialize().
+  connection->GetInterfaceRegistry()->PauseBinding();
+  resume_interface_bindings_callback_ = base::Bind(
+      &shell::InterfaceRegistry::ResumeBinding,
+      connection->GetInterfaceRegistry()->GetWeakPtr());
+
   return true;
 }
 
@@ -353,6 +362,9 @@ void GpuChildThread::StoreShaderToDisk(int32_t client_id,
 }
 
 void GpuChildThread::OnInitialize(const gpu::GpuPreferences& gpu_preferences) {
+  if (!resume_interface_bindings_callback_.is_null())
+    base::ResetAndReturn(&resume_interface_bindings_callback_).Run();
+
   gpu_preferences_ = gpu_preferences;
 
   gpu_info_.video_decode_accelerator_capabilities =

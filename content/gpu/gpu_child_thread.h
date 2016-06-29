@@ -11,6 +11,7 @@
 #include <queue>
 #include <string>
 
+#include "base/callback.h"
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -177,6 +178,8 @@ class GpuChildThread : public ChildThreadImpl,
 
   // Bindings to the mojom::ProcessControl impl.
   mojo::BindingSet<mojom::ProcessControl> process_control_bindings_;
+
+  base::Closure resume_interface_bindings_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuChildThread);
 };
