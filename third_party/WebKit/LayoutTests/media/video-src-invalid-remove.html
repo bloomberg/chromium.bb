@@ -1,56 +1,24 @@
-<html>
-    <head>
-        <script src=media-file.js></script>
-        <!-- TODO(foolip): Convert test to testharness.js. crbug.com/588956
-             (Please avoid writing new tests using video-test.js) -->
-        <script src=video-test.js></script>
+<!DOCTYPE html>
+<title>Test that removing "src" attribute does not trigger load of "source" elements.</title>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script src="media-file.js"></script>
+<video></video>
+<script>
+async_test(function(t) {
+    var video = document.querySelector("video");
 
+    video.onloadedmetadata = t.unreached_func();
+    video.onerror = t.step_func(function() {
+        assert_equals(video.error.code, MediaError.MEDIA_ERR_SRC_NOT_SUPPORTED);
 
-        <script>
-            function loadedmetadata()
-            {
-                failTest(relativeURL(video.currentSrc) + "loaded but should not" );
-                consoleWrite("");
-            }
+        setTimeout(t.step_func_done(), 200);
+        video.removeAttribute("src");
+    });
 
-            function errorEvent()
-            {
-                testExpected("video.error.code", MediaError.MEDIA_ERR_SRC_NOT_SUPPORTED);
-
-                // "setTimeout()" is generally bad form in a layout test, but we need to verify
-                // that changing the 'src' attribute does not do something that happens
-                // asynchronously so we don't have a lot of options.
-                setTimeout(function () { endTest(); }, 200) ;
-                run("video.removeAttribute('src')");
-                consoleWrite("");
-            }
-
-            function setup()
-            {
-                findMediaElement();
-
-                video.src = "bogus.mov";
-
-                var source = document.createElement("source");
-                source.setAttribute("src", findMediaFile("video", "content/test"));
-                video.appendChild(source);
-
-                waitForEvent('loadedmetadata', loadedmetadata);
-                waitForEvent('error', errorEvent);
-                consoleWrite("");
-            }
-
-        </script>
-    </head>
-<body onload="setup()">
-
-    <video controls></video>
-
-    <p>Test that removing 'src' attribute does NOT trigger load of &lt;source&gt; elements</p>
-
-    <script>
-
-    </script>
-
-</body>
-</html>
+    video.src = "bogus.mov";
+    var source = document.createElement("source");
+    source.src = findMediaFile("video", "content/test");
+    video.appendChild(source);
+});
+</script>

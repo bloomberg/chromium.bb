@@ -1,46 +1,25 @@
 <!DOCTYPE html>
-<html>
-    <head>
-        <!-- TODO(foolip): Convert test to testharness.js. crbug.com/588956
-             (Please avoid writing new tests using video-test.js) -->
-        <script src=video-test.js></script>
-        <script>
-            var state;
+<title>Test that calling load() with no "src" should not fire "error" event and network state should be NETWORK_EMPTY.</title>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<video></video>
+<script>
+async_test(function(t) {
+    var video = document.querySelector("video");
 
-            function someTimeLater()
-            {
-                testExpected("state", "load() with missing 'src'");
-                testExpected("videos[0].error", null);
-                testExpected("videos[0].networkState", HTMLMediaElement.NETWORK_EMPTY);
-                testExpected("videos[0].src", "");
-                endTest();
-            }
+    video.onerror = t.unreached_func();
+    // Network state should remain in NETWORK_EMPTY with missing "src" attribute.
+    verifyVideoState();
+    video.load();
 
-            function errorEvent()
-            {
-                failTest("<br><i>***'error' event fired***<" + "/i>");
-            }
+    setTimeout(t.step_func_done(function() {
+        verifyVideoState();
+    }), 100);
 
-            function test()
-            {
-                videos = document.querySelectorAll('video');
-
-                consoleWrite("<br><i>Network state should remain in NETWORK_EMPTY with missing 'src' attribute.<" + "/i>");
-                consoleWrite("** &lt;video&gt; with no src attribute**");
-                testExpected("videos[0].error", null);
-                testExpected("videos[0].networkState", HTMLMediaElement.NETWORK_EMPTY);
-                testExpected("videos[0].src", "");
-
-                consoleWrite("<br><i>Calling load() with no 'src' should NOT fire 'error' event, set network state to NETWORK_EMPTY.<" + "/i>");
-                state = "load() with missing 'src'";
-                videos[0].load();
-
-                setTimeout(someTimeLater, 100) ;
-            }
-        </script>
-    </head>
-
-    <body onload="setTimeout(test, 100)">
-        <video width=320 height=60 controls onerror="errorEvent()"></video>
-    </body>
-</html>
+    function verifyVideoState() {
+        assert_equals(video.error, null);
+        assert_equals(video.networkState, HTMLMediaElement.NETWORK_EMPTY);
+        assert_equals(video.src, "");
+    }
+});
+</script>

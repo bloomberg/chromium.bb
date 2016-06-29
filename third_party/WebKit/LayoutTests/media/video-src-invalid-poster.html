@@ -1,30 +1,22 @@
-<!-- TODO(foolip): Convert test to testharness.js. crbug.com/588956
-     (Please avoid writing new tests using video-test.js) -->
-<script src=video-test.js></script>
-<video poster="content/abe.png">
-    <source src="content/bogus" type="bogus">
-</video>
+<!DOCTYPE html>
+<title>Test that media dimensions are equal to poster dimensions when "src" is invalid.</title>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<video poster="content/abe.png"></video>
 <script>
-    findMediaElement();
+async_test(function(t) {
+    var video = document.querySelector("video");
 
-    function listenForWidthAndHeight(expectedWidth, expectedHeight, callback) {
-        if (video.clientWidth == expectedWidth && video.clientHeight == expectedHeight) {
-            callback();
-        } else {
-            // This uses a 20ms sleep loop to accomplish the wait, since the
-            // standard specifies no events that fire on poster load or error.
-            window.setTimeout(listenForWidthAndHeight, 20, expectedWidth, expectedHeight, callback);
-        }
-    }
-
-    function expected() {
-        testExpected("video.clientWidth", 76);
-        testExpected("video.clientHeight", 103);
-        endTest();
-    }
-
-    run("video.load()");
-    waitForEvent("loadstart", function () {
-        listenForWidthAndHeight(76, 103, expected);
+    video.onloadstart = t.step_func(function () {
+        var image = document.createElement("img");
+        image.src = "content/abe.png";
+        // With this we can be reasonably sure that the poster is loaded.
+        image.onload = t.step_func_done(function() {
+            assert_equals(video.clientWidth, 76);
+            assert_equals(video.clientHeight, 103);
+        });
     });
+
+    video.src = "content/bogus";
+});
 </script>
