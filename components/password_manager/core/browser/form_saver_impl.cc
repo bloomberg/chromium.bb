@@ -4,12 +4,21 @@
 
 #include "components/password_manager/core/browser/form_saver_impl.h"
 
+#include <memory>
+#include <vector>
+
 #include "base/auto_reset.h"
 #include "base/strings/string16.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "components/password_manager/core/browser/password_store.h"
+#include "google_apis/gaia/gaia_auth_util.h"
+#include "google_apis/gaia/gaia_urls.h"
+#include "url/gurl.h"
+#include "url/origin.h"
 
 using autofill::PasswordForm;
+using autofill::PasswordFormMap;
 
 namespace password_manager {
 
@@ -59,10 +68,34 @@ void FormSaverImpl::RemovePresavedPassword() {
   presaved_ = nullptr;
 }
 
+void FormSaverImpl::WipeOutdatedCopies(const PasswordForm& pending,
+                                       PasswordFormMap* best_matches,
+                                       const PasswordForm** preferred_match) {
+  DCHECK(preferred_match);  // Note: *preferred_match may still be null.
+  DCHECK(url::Origin(GURL(pending.signon_realm))
+             .IsSameOriginWith(
+                 url::Origin(GaiaUrls::GetInstance()->gaia_url().GetOrigin())))
+      << pending.signon_realm << " is not a GAIA origin";
+
+  for (auto it = best_matches->begin(); it != best_matches->end();
+       /* increment inside the for loop */) {
+    if ((pending.password_value != it->second->password_value) &&
+        gaia::AreEmailsSame(base::UTF16ToUTF8(pending.username_value),
+                            base::UTF16ToUTF8(it->second->username_value))) {
+      if (it->second.get() == *preferred_match)
+        *preferred_match = nullptr;
+      store_->RemoveLogin(*it->second);
+      it = best_matches->erase(it);
+    } else {
+      ++it;
+    }
+  }
+}
+
 void FormSaverImpl::SaveImpl(
     const PasswordForm& pending,
     bool is_new_login,
-    const autofill::PasswordFormMap& best_matches,
+    const PasswordFormMap& best_matches,
     const std::vector<const PasswordForm*>* credentials_to_update,
     const PasswordForm* old_primary_key) {
   // Empty and null |credentials_to_update| mean the same, having a canonical

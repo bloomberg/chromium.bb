@@ -78,6 +78,10 @@ class MockFormSaver : public StubFormSaver {
                     const std::vector<const autofill::PasswordForm*>*
                         credentials_to_update,
                     const autofill::PasswordForm* old_primary_key));
+  MOCK_METHOD3(WipeOutdatedCopies,
+               void(const autofill::PasswordForm& pending,
+                    autofill::PasswordFormMap* best_matches,
+                    const autofill::PasswordForm** preferred_match));
 
   // Convenience downcasting method.
   static MockFormSaver& Get(PasswordFormManager* form_manager) {
@@ -2264,77 +2268,10 @@ TEST_F(PasswordFormManagerTest, WipeStoreCopyIfOutdated_BeforeStoreCallback) {
       submitted_form, PasswordFormManager::IGNORE_OTHER_POSSIBLE_USERNAMES);
 
   base::HistogramTester histogram_tester;
-  EXPECT_CALL(*mock_store(), RemoveLogin(_)).Times(0);
+  EXPECT_CALL(MockFormSaver::Get(&form_manager),
+              WipeOutdatedCopies(form_manager.pending_credentials(), _, _));
   form_manager.WipeStoreCopyIfOutdated();
   histogram_tester.ExpectUniqueSample("PasswordManager.StoreReadyWhenWiping", 0,
-                                      1);
-}
-
-TEST_F(PasswordFormManagerTest, WipeStoreCopyIfOutdated_NotOutdated) {
-  PasswordForm form(*saved_match());
-  form.username_value = ASCIIToUTF16("test@gmail.com");
-  ASSERT_FALSE(form.password_value.empty());
-
-  PasswordFormManager form_manager(password_manager(), client(),
-                                   client()->driver(), form, false,
-                                   base::WrapUnique(new MockFormSaver()));
-
-  // For GAIA authentication, the first two usernames are equivalent to
-  // test@gmail.com, but the third is not.
-  PasswordForm form_related(form);
-  form_related.username_value = ASCIIToUTF16("test@googlemail.com");
-  PasswordForm form_related2(form);
-  form_related2.username_value = ASCIIToUTF16("test");
-  PasswordForm form_unrelated(form);
-  form_unrelated.username_value = ASCIIToUTF16("test.else");
-  EXPECT_CALL(*mock_store(), GetLogins(_, _))
-      .WillOnce(testing::WithArg<1>(
-          InvokeConsumer(form, form_related, form_related2, form_unrelated)));
-  form_manager.FetchDataFromPasswordStore();
-
-  form_manager.ProvisionallySave(
-      form, PasswordFormManager::IGNORE_OTHER_POSSIBLE_USERNAMES);
-
-  base::HistogramTester histogram_tester;
-  EXPECT_CALL(*mock_store(), RemoveLogin(_)).Times(0);
-  form_manager.WipeStoreCopyIfOutdated();
-  histogram_tester.ExpectUniqueSample("PasswordManager.StoreReadyWhenWiping", 1,
-                                      1);
-}
-
-TEST_F(PasswordFormManagerTest, WipeStoreCopyIfOutdated_Outdated) {
-  PasswordForm form(*saved_match());
-  ASSERT_FALSE(form.password_value.empty());
-
-  PasswordFormManager form_manager(password_manager(), client(),
-                                   client()->driver(), form, false,
-                                   base::WrapUnique(new MockFormSaver()));
-
-  // For GAIA authentication, the first two usernames are equivalent to
-  // test@gmail.com, but the third is not.
-  PasswordForm form_related(form);
-  form_related.username_value = ASCIIToUTF16("test@googlemail.com");
-  PasswordForm form_related2(form);
-  form_related2.username_value = ASCIIToUTF16("test");
-  PasswordForm form_unrelated(form);
-  form_unrelated.username_value = ASCIIToUTF16("test.else");
-  EXPECT_CALL(*mock_store(), GetLogins(_, _))
-      .WillOnce(testing::WithArg<1>(
-          InvokeConsumer(form, form_related, form_related2, form_unrelated)));
-  form_manager.FetchDataFromPasswordStore();
-
-  PasswordForm submitted_form(form);
-  submitted_form.password_value += ASCIIToUTF16("add stuff, make it different");
-  form_manager.ProvisionallySave(
-      submitted_form, PasswordFormManager::IGNORE_OTHER_POSSIBLE_USERNAMES);
-
-  base::HistogramTester histogram_tester;
-  EXPECT_CALL(*mock_store(), RemoveLogin(form));
-  EXPECT_CALL(*mock_store(), RemoveLogin(form_related));
-  EXPECT_CALL(*mock_store(), RemoveLogin(form_related2));
-  EXPECT_CALL(*mock_store(), RemoveLogin(form_unrelated)).Times(0);
-  form_manager.WipeStoreCopyIfOutdated();
-  histogram_tester.ExpectUniqueSample("PasswordManager.StoreReadyWhenWiping", 1,
                                       1);
 }
 

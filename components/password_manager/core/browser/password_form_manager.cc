@@ -38,7 +38,6 @@
 #include "components/password_manager/core/browser/password_store.h"
 #include "components/password_manager/core/browser/statistics_table.h"
 #include "components/password_manager/core/common/password_manager_features.h"
-#include "google_apis/gaia/gaia_auth_util.h"
 
 using autofill::FormStructure;
 using autofill::PasswordForm;
@@ -1297,32 +1296,8 @@ void PasswordFormManager::WipeStoreCopyIfOutdated() {
   UMA_HISTOGRAM_BOOLEAN("PasswordManager.StoreReadyWhenWiping",
                         HasCompletedMatching());
 
-  PasswordStore* password_store = client_->GetPasswordStore();
-  if (!password_store)
-    return;
-
-  for (PasswordFormMap::const_iterator stored_credential =
-           best_matches_.begin();
-       stored_credential != best_matches_.end();
-       /*no increment here*/) {
-    // Beware erase() below, keep the cycle iterator valid.
-    PasswordFormMap::const_iterator credential_to_delete = stored_credential;
-    ++stored_credential;
-
-    if (pending_credentials_.password_value ==
-        credential_to_delete->second->password_value) {
-      continue;
-    }
-    if (!gaia::AreEmailsSame(
-            base::UTF16ToUTF8(pending_credentials_.username_value),
-            base::UTF16ToUTF8(credential_to_delete->first))) {
-      continue;
-    }
-    password_store->RemoveLogin(*credential_to_delete->second);
-    if (credential_to_delete->second.get() == preferred_match_)
-      preferred_match_ = nullptr;
-    best_matches_.erase(credential_to_delete);
-  }
+  form_saver_->WipeOutdatedCopies(pending_credentials_, &best_matches_,
+                                  &preferred_match_);
 }
 
 void PasswordFormManager::SaveGenerationFieldDetectedByClassifier(

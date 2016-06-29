@@ -36,6 +36,10 @@ class FormSaverImpl : public FormSaver {
   void PresaveGeneratedPassword(
       const autofill::PasswordForm& generated) override;
   void RemovePresavedPassword() override;
+  void WipeOutdatedCopies(
+      const autofill::PasswordForm& pending,
+      autofill::PasswordFormMap* best_matches,
+      const autofill::PasswordForm** preferred_match) override;
 
  private:
   // Implements both Save and Update, because those methods share most of the

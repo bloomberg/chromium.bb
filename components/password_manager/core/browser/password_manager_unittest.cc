@@ -176,6 +176,13 @@ class PasswordManagerTest : public testing::Test {
     return form;
   }
 
+  PasswordForm MakeSimpleGAIAForm() {
+    PasswordForm form = MakeSimpleForm();
+    form.origin = GURL("https://accounts.google.com");
+    form.signon_realm = form.origin.spec();
+    return form;
+  }
+
   // Create a sign-up form that only has a new password field.
   PasswordForm MakeFormWithOnlyNewPasswordField() {
     PasswordForm form = MakeSimpleForm();
@@ -578,7 +585,7 @@ TEST_F(PasswordManagerTest, PasswordFormReappearance) {
 TEST_F(PasswordManagerTest, SyncCredentialsNotSaved) {
   // Simulate loading a simple form with no existing stored password.
   std::vector<PasswordForm> observed;
-  PasswordForm form(MakeSimpleForm());
+  PasswordForm form(MakeSimpleGAIAForm());
   observed.push_back(form);
   EXPECT_CALL(*store_, GetLogins(_, _))
       .WillRepeatedly(WithArg<1>(InvokeEmptyConsumerWithForms()));
@@ -604,7 +611,7 @@ TEST_F(PasswordManagerTest, SyncCredentialsNotSaved) {
 // When there is a sync password saved, and the user successfully uses the
 // stored version of it, PasswordManager should not drop that password.
 TEST_F(PasswordManagerTest, SyncCredentialsNotDroppedIfUpToDate) {
-  PasswordForm form(MakeSimpleForm());
+  PasswordForm form(MakeSimpleGAIAForm());
   EXPECT_CALL(*store_, GetLogins(_, _))
       .WillRepeatedly(WithArg<1>(InvokeConsumer(form)));
 
@@ -634,7 +641,7 @@ TEST_F(PasswordManagerTest, SyncCredentialsNotDroppedIfUpToDate) {
 // updated version of it, the obsolete one should be dropped, to avoid filling
 // it later.
 TEST_F(PasswordManagerTest, SyncCredentialsDroppedWhenObsolete) {
-  PasswordForm form(MakeSimpleForm());
+  PasswordForm form(MakeSimpleGAIAForm());
   form.password_value = ASCIIToUTF16("old pa55word");
   // Pretend that the password store contains "old pa55word" stored for |form|.
   EXPECT_CALL(*store_, GetLogins(_, _))
