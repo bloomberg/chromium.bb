@@ -78,6 +78,12 @@ void TextInputManager::UpdateTextInputState(
   NotifyObserversAboutInputStateUpdate(view, changed);
 }
 
+void TextInputManager::ImeCancelComposition(RenderWidgetHostViewBase* view) {
+  DCHECK(IsRegistered(view));
+  FOR_EACH_OBSERVER(Observer, observer_list_,
+                    OnImeCancelComposition(this, view));
+}
+
 void TextInputManager::Register(RenderWidgetHostViewBase* view) {
   DCHECK(!IsRegistered(view));
 

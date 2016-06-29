@@ -142,7 +142,6 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   void Focus() override;
   void UpdateCursor(const WebCursor& cursor) override;
   void SetIsLoading(bool is_loading) override;
-  void ImeCancelComposition() override;
   void ImeCompositionRangeChanged(
       const gfx::Range& range,
       const std::vector<gfx::Rect>& character_bounds) override;
@@ -473,6 +472,8 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   void OnUpdateTextInputStateCalled(TextInputManager* text_input_manager,
                                     RenderWidgetHostViewBase* updated_view,
                                     bool did_update_state) override;
+  void OnImeCancelComposition(TextInputManager* text_input_manager,
+                              RenderWidgetHostViewBase* updated_view) override;
 
   // cc::BeginFrameObserver implementation.
   void OnBeginFrame(const cc::BeginFrameArgs& args) override;

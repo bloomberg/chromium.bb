@@ -257,6 +257,12 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView,
   // on all platforms (https://crbug.com/578168).
   virtual void TextInputStateChanged(const TextInputState& text_input_state);
 
+  // Cancel the ongoing composition of the input method attached to the view.
+  // TODO(ekaramad): This method will not stay virtual. It will be moved up top
+  // with the other non-virtual methods after IME is fixed on all platforms.
+  // (https://crbug.com/578168).
+  virtual void ImeCancelComposition();
+
   //----------------------------------------------------------------------------
   // The following static methods are implemented by each platform.
 
@@ -281,9 +287,6 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView,
 
   // Indicates whether the page has finished loading.
   virtual void SetIsLoading(bool is_loading) = 0;
-
-  // Cancel the ongoing composition of the input method attached to the view.
-  virtual void ImeCancelComposition() = 0;
 
   // Notifies the View that the renderer has ceased to exist.
   virtual void RenderProcessGone(base::TerminationStatus status,

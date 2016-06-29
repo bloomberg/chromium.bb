@@ -36,6 +36,11 @@ class CONTENT_EXPORT TextInputManager {
         TextInputManager* text_input_manager,
         RenderWidgetHostViewBase* updated_view,
         bool did_update_state) {}
+    // Called when |updated_view| has called ImeCancelComposition on
+    // TextInputManager.
+    virtual void OnImeCancelComposition(
+        TextInputManager* text_input_manager,
+        RenderWidgetHostViewBase* updated_view) {}
   };
 
   TextInputManager();
@@ -61,6 +66,10 @@ class CONTENT_EXPORT TextInputManager {
   // Updates the TextInputState for |view|.
   void UpdateTextInputState(RenderWidgetHostViewBase* view,
                             const TextInputState& state);
+
+  // The current IME composition has been cancelled on the renderer side for
+  // the widget corresponding to |view|.
+  void ImeCancelComposition(RenderWidgetHostViewBase* view);
 
   // Registers the given |view| for tracking its TextInputState. This is called
   // by any view which has updates in its TextInputState (whether tab's RWHV or

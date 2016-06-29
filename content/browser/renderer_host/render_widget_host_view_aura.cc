@@ -977,12 +977,6 @@ void RenderWidgetHostViewAura::SetIsLoading(bool is_loading) {
   UpdateCursorIfOverSelf();
 }
 
-void RenderWidgetHostViewAura::ImeCancelComposition() {
-  if (GetInputMethod())
-    GetInputMethod()->CancelComposition(this);
-  has_composition_text_ = false;
-}
-
 void RenderWidgetHostViewAura::ImeCompositionRangeChanged(
     const gfx::Range& range,
     const std::vector<gfx::Rect>& character_bounds) {
@@ -3028,6 +3022,18 @@ void RenderWidgetHostViewAura::OnUpdateTextInputStateCalled(
   if (state && state->show_ime_if_needed &&
       state->type != ui::TEXT_INPUT_TYPE_NONE)
     GetInputMethod()->ShowImeIfNeeded();
+}
+
+void RenderWidgetHostViewAura::OnImeCancelComposition(
+    TextInputManager* text_input_manager,
+    RenderWidgetHostViewBase* view) {
+  // |view| is not necessarily the one corresponding to
+  // TextInputManager::GetActiveWidget() as RenderWidgetHostViewAura can call
+  // this method to finish any ongoing composition in response to a mouse down
+  // event.
+  if (GetInputMethod())
+    GetInputMethod()->CancelComposition(this);
+  has_composition_text_ = false;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

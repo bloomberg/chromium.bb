@@ -403,11 +403,18 @@ void RenderWidgetHostViewBase::TransformPointToLocalCoordSpace(
 
 void RenderWidgetHostViewBase::TextInputStateChanged(
     const TextInputState& text_input_state) {
-// TODO(ekaramad): Use TextInputManager code paths when IME is implemented on
-// other platforms.
+// TODO(ekaramad): Use TextInputManager code paths for IME on other platforms.
 #if defined(USE_AURA)
   if (GetTextInputManager())
     GetTextInputManager()->UpdateTextInputState(this, text_input_state);
+#endif
+}
+
+void RenderWidgetHostViewBase::ImeCancelComposition() {
+// TODO(ekaramad): Use TextInputManager code paths for IME on other platforms.
+#if defined(USE_AURA)
+  if (GetTextInputManager())
+    GetTextInputManager()->ImeCancelComposition(this);
 #endif
 }
 
