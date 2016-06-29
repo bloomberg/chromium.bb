@@ -2749,11 +2749,8 @@ LayoutUnit LayoutBox::computePercentageLogicalHeight(const Length& height) const
         LayoutUnit contentBoxHeight = cb->adjustContentBoxLogicalHeightForBoxSizing(cbstyle.logicalHeight().value());
         availableHeight = cb->constrainContentBoxLogicalHeightByMinMax(
             contentBoxHeight - cb->scrollbarLogicalHeight(), LayoutUnit(-1)).clampNegativeToZero();
-        if (cb->isTableCell()) {
+        if (cb->isTableCell())
             includeBorderPadding = true;
-            // We're sizing content to the height from the cell's style so don't involve the intrinsic padding used to align the content.
-            availableHeight -= cb->computedCSSPaddingBefore() + cb->computedCSSPaddingAfter() + cb->borderBefore() + cb->borderAfter();
-        }
     } else if (cb->isTableCell()) {
         if (!skippedAutoHeightContainingBlock) {
             // Table cells violate what the CSS spec says to do with heights. Basically we

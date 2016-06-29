@@ -1161,6 +1161,16 @@ crbug.com/591500 [ Win10 ] compositing/squashing/squashing-print.html [ Failure 
 crbug.com/618082 [ Win10 ] printing/thead-repeats-at-top-of-each-page.html [ Failure ]
 crbug.com/618082 [ Win10 ] virtual/threaded/printing/thead-repeats-at-top-of-each-page.html [ Failure ]
 
+crbug.com/620326 fast/html/details-writing-mode-align-center.html [ NeedsRebaseline ]
+crbug.com/620326 fast/html/details-writing-mode-align-left.html [ NeedsRebaseline ]
+crbug.com/620326 fast/html/details-writing-mode-align-right.html [ NeedsRebaseline ]
+crbug.com/620326 fast/html/details-writing-mode.html [ NeedsRebaseline ]
+crbug.com/620326 fast/table/031.html [ NeedsRebaseline ]
+crbug.com/620326 fast/table/colspan-with-all-percent-cells.html [ NeedsRebaseline ]
+crbug.com/620326 fast/table/dynamic-descendant-percentage-height.html [ NeedsRebaseline ]
+crbug.com/620326 tables/mozilla/core/cell_heights.html [ NeedsRebaseline ]
+crbug.com/620326 tables/mozilla_expected_failures/bugs/bug32205-1.html [ NeedsRebaseline ]
+
 crbug.com/331582 [ Win ] fast/inline/justify-emphasis-inline-box.html [ Failure ]
 crbug.com/474759 fast/writing-mode/vertical-rl-replaced-selection.html [ Failure ]
 
