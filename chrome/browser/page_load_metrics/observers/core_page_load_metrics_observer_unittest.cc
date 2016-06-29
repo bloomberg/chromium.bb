@@ -489,6 +489,7 @@ TEST_F(CorePageLoadMetricsObserverTest, RapporQuickPageLoad) {
 TEST_F(CorePageLoadMetricsObserverTest, Reload) {
   page_load_metrics::PageLoadTiming timing;
   timing.navigation_start = base::Time::FromDoubleT(1);
+  timing.parse_start = base::TimeDelta::FromMilliseconds(5);
   timing.first_contentful_paint = base::TimeDelta::FromMilliseconds(10);
   PopulateRequiredTimingFields(&timing);
 
@@ -499,21 +500,38 @@ TEST_F(CorePageLoadMetricsObserverTest, Reload) {
 
   histogram_tester().ExpectTotalCount(
       internal::kHistogramLoadTypeFirstContentfulPaintReload, 1);
+  histogram_tester().ExpectBucketCount(
+      internal::kHistogramLoadTypeFirstContentfulPaintReload,
+      timing.first_contentful_paint.InMilliseconds(), 1);
   histogram_tester().ExpectTotalCount(
       internal::kHistogramLoadTypeFirstContentfulPaintForwardBack, 0);
   histogram_tester().ExpectTotalCount(
       internal::kHistogramLoadTypeFirstContentfulPaintNewNavigation, 0);
+  histogram_tester().ExpectTotalCount(
+      internal::kHistogramLoadTypeParseStartReload, 1);
+  histogram_tester().ExpectBucketCount(
+      internal::kHistogramLoadTypeParseStartReload,
+      timing.parse_start.InMilliseconds(), 1);
+  histogram_tester().ExpectTotalCount(
+      internal::kHistogramLoadTypeParseStartForwardBack, 0);
+  histogram_tester().ExpectTotalCount(
+      internal::kHistogramLoadTypeParseStartNewNavigation, 0);
 }
 
 TEST_F(CorePageLoadMetricsObserverTest, ForwardBack) {
   page_load_metrics::PageLoadTiming timing;
   timing.navigation_start = base::Time::FromDoubleT(1);
+  timing.parse_start = base::TimeDelta::FromMilliseconds(5);
   timing.first_contentful_paint = base::TimeDelta::FromMilliseconds(10);
   PopulateRequiredTimingFields(&timing);
 
   GURL url(kDefaultTestUrl);
+  // Back navigations to a page that was reloaded report a main transition type
+  // of PAGE_TRANSITION_RELOAD with a PAGE_TRANSITION_FORWARD_BACK
+  // modifier. This test verifies that when we encounter such a page, we log it
+  // as a forward/back navigation.
   NavigateWithPageTransitionAndCommit(
-      url, ui::PageTransitionFromInt(ui::PAGE_TRANSITION_TYPED |
+      url, ui::PageTransitionFromInt(ui::PAGE_TRANSITION_RELOAD |
                                      ui::PAGE_TRANSITION_FORWARD_BACK));
   SimulateTimingUpdate(timing);
   NavigateAndCommit(url);
@@ -522,13 +540,26 @@ TEST_F(CorePageLoadMetricsObserverTest, ForwardBack) {
       internal::kHistogramLoadTypeFirstContentfulPaintReload, 0);
   histogram_tester().ExpectTotalCount(
       internal::kHistogramLoadTypeFirstContentfulPaintForwardBack, 1);
+  histogram_tester().ExpectBucketCount(
+      internal::kHistogramLoadTypeFirstContentfulPaintForwardBack,
+      timing.first_contentful_paint.InMilliseconds(), 1);
   histogram_tester().ExpectTotalCount(
       internal::kHistogramLoadTypeFirstContentfulPaintNewNavigation, 0);
+  histogram_tester().ExpectTotalCount(
+      internal::kHistogramLoadTypeParseStartReload, 0);
+  histogram_tester().ExpectTotalCount(
+      internal::kHistogramLoadTypeParseStartForwardBack, 1);
+  histogram_tester().ExpectBucketCount(
+      internal::kHistogramLoadTypeParseStartForwardBack,
+      timing.parse_start.InMilliseconds(), 1);
+  histogram_tester().ExpectTotalCount(
+      internal::kHistogramLoadTypeParseStartNewNavigation, 0);
 }
 
 TEST_F(CorePageLoadMetricsObserverTest, NewNavigation) {
   page_load_metrics::PageLoadTiming timing;
   timing.navigation_start = base::Time::FromDoubleT(1);
+  timing.parse_start = base::TimeDelta::FromMilliseconds(5);
   timing.first_contentful_paint = base::TimeDelta::FromMilliseconds(10);
   PopulateRequiredTimingFields(&timing);
 
@@ -543,4 +574,16 @@ TEST_F(CorePageLoadMetricsObserverTest, NewNavigation) {
       internal::kHistogramLoadTypeFirstContentfulPaintForwardBack, 0);
   histogram_tester().ExpectTotalCount(
       internal::kHistogramLoadTypeFirstContentfulPaintNewNavigation, 1);
+  histogram_tester().ExpectBucketCount(
+      internal::kHistogramLoadTypeFirstContentfulPaintNewNavigation,
+      timing.first_contentful_paint.InMilliseconds(), 1);
+  histogram_tester().ExpectTotalCount(
+      internal::kHistogramLoadTypeParseStartReload, 0);
+  histogram_tester().ExpectTotalCount(
+      internal::kHistogramLoadTypeParseStartForwardBack, 0);
+  histogram_tester().ExpectTotalCount(
+      internal::kHistogramLoadTypeParseStartNewNavigation, 1);
+  histogram_tester().ExpectBucketCount(
+      internal::kHistogramLoadTypeParseStartNewNavigation,
+      timing.parse_start.InMilliseconds(), 1);
 }

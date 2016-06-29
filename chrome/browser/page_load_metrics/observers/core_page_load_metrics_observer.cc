@@ -190,6 +190,14 @@ const char kHistogramLoadTypeFirstContentfulPaintNewNavigation[] =
     "PageLoad.PaintTiming.NavigationToFirstContentfulPaint.LoadType."
     "NewNavigation";
 
+const char kHistogramLoadTypeParseStartReload[] =
+    "PageLoad.ParseTiming.NavigationToParseStart.LoadType.Reload";
+const char kHistogramLoadTypeParseStartForwardBack[] =
+    "PageLoad.ParseTiming.NavigationToParseStart.LoadType."
+    "ForwardBackNavigation";
+const char kHistogramLoadTypeParseStartNewNavigation[] =
+    "PageLoad.ParseTiming.NavigationToParseStart.LoadType.NewNavigation";
+
 const char kHistogramFirstContentfulPaintHigh[] =
     "PageLoad.Timing2.NavigationToFirstContentfulPaint.HighResolutionClock";
 const char kHistogramFirstContentfulPaintLow[] =
@@ -354,6 +362,24 @@ void CorePageLoadMetricsObserver::OnParseStart(
   if (WasStartedInForegroundEventInForeground(timing.parse_start, info)) {
     PAGE_LOAD_HISTOGRAM(internal::kHistogramParseStartImmediate,
                         timing.parse_start);
+
+    switch (GetPageLoadType(transition_)) {
+      case LOAD_TYPE_RELOAD:
+        PAGE_LOAD_HISTOGRAM(internal::kHistogramLoadTypeParseStartReload,
+                            timing.parse_start);
+        break;
+      case LOAD_TYPE_FORWARD_BACK:
+        PAGE_LOAD_HISTOGRAM(internal::kHistogramLoadTypeParseStartForwardBack,
+                            timing.parse_start);
+        break;
+      case LOAD_TYPE_NEW_NAVIGATION:
+        PAGE_LOAD_HISTOGRAM(internal::kHistogramLoadTypeParseStartNewNavigation,
+                            timing.parse_start);
+        break;
+      case LOAD_TYPE_NONE:
+        NOTREACHED();
+        break;
+    }
   } else {
     PAGE_LOAD_HISTOGRAM(internal::kBackgroundHistogramParseStartImmediate,
                         timing.parse_start);

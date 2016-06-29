@@ -97888,6 +97888,7 @@ To add a new entry, add it with any value and run test to compute valid value.
              URL box, etc)."/>
   <affected-histogram
       name="PageLoad.PaintTiming.NavigationToFirstContentfulPaint"/>
+  <affected-histogram name="PageLoad.ParseTiming.NavigationToParseStart"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="PageLoadMetricsUserGesture" separator=".">

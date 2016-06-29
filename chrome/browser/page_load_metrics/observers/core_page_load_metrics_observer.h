@@ -36,6 +36,10 @@ extern const char kHistogramLoadTypeFirstContentfulPaintReload[];
 extern const char kHistogramLoadTypeFirstContentfulPaintForwardBack[];
 extern const char kHistogramLoadTypeFirstContentfulPaintNewNavigation[];
 
+extern const char kHistogramLoadTypeParseStartReload[];
+extern const char kHistogramLoadTypeParseStartForwardBack[];
+extern const char kHistogramLoadTypeParseStartNewNavigation[];
+
 extern const char kHistogramBackgroundBeforePaint[];
 extern const char kHistogramFailedProvisionalLoad[];
 
