@@ -16,6 +16,8 @@ class InfoBarViewDelegate;
 // How much of infobar is visible. The infobar is only partly visible during
 // showing/hiding animation.
 @property(nonatomic, assign) CGFloat visibleHeight;
+// Label text with links initialized with |stringAsLink:|.
+@property(nonatomic, readonly) NSString* markedLabel;
 
 // Stops propagating events to delegate.
 - (void)resetDelegate;
