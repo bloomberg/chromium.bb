@@ -11,7 +11,6 @@ import static org.junit.Assert.fail;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
-import org.robolectric.annotation.Config;
 
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
@@ -22,7 +21,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * Unit tests for the ChromeBackgroundServiceWaiter.
  */
 @RunWith(JUnit4.class)
-@Config(manifest = Config.NONE)
 public class ChromeBackgroundServiceWaiterTest {
     private static final int TIMEOUT_SECONDS = 30;
 
