@@ -141,7 +141,6 @@ class MEDIA_EXPORT DecoderStream {
     STATE_INITIALIZING,
     STATE_NORMAL,  // Includes idle, pending decoder decode/reset.
     STATE_FLUSHING_DECODER,
-    STATE_PENDING_DEMUXER_READ,
     STATE_REINITIALIZING_DECODER,
     STATE_END_OF_STREAM,  // End of stream reached; returns EOS on all reads.
     STATE_ERROR,
@@ -257,8 +256,8 @@ class MEDIA_EXPORT DecoderStream {
   // crbug.com/603713
   bool received_config_change_during_reinit_;
 
-  // Used to track read requests in case the STATE_PENDIND_DEMUXER_READ get
-  // overwritten by an error.
+  // Used to track read requests; not rolled into |state_| since that is
+  // overwritten in many cases.
   bool pending_demuxer_read_;
 
   // NOTE: Weak pointers must be invalidated before all other member variables.

@@ -810,6 +810,42 @@ TEST_P(VideoFrameStreamTest, FallbackDecoder_EndOfStreamReachedBeforeFallback) {
       frame_read_->metadata()->IsTrue(VideoFrameMetadata::END_OF_STREAM));
 }
 
+TEST_P(VideoFrameStreamTest, FallbackDecoder_DoesReinitializeStompPendingRead) {
+  // Test only the case where there is no decoding delay and parallel decoding.
+  if (GetParam().decoding_delay != 0 || GetParam().parallel_decoding <= 1)
+    return;
+
+  Initialize();
+  decoder1_->HoldDecode();
+
+  // Queue one read, defer the second.
+  frame_read_ = nullptr;
+  pending_read_ = true;
+  video_frame_stream_->Read(
+      base::Bind(&VideoFrameStreamTest::FrameReady, base::Unretained(this)));
+  demuxer_stream_->HoldNextRead();
+
+  // Force an error to occur on the first decode, but ensure it isn't propagated
+  // until after the next read has been started.
+  decoder1_->SimulateError();
+  decoder2_->HoldDecode();
+
+  // Complete the fallback to the second decoder with the read still pending.
+  base::RunLoop().RunUntilIdle();
+
+  // Can't check |decoder1_| right now, it might have been destroyed already.
+  // Verify that there was nothing decoded until we kicked the decoder.
+  EXPECT_EQ(decoder2_->total_bytes_decoded(), 0);
+  decoder2_->SatisfyDecode();
+  const int first_decoded_bytes = decoder2_->total_bytes_decoded();
+  ASSERT_GT(first_decoded_bytes, 0);
+
+  // Satisfy the previously pending read and ensure it is decoded.
+  demuxer_stream_->SatisfyRead();
+  base::RunLoop().RunUntilIdle();
+  ASSERT_GT(decoder2_->total_bytes_decoded(), first_decoded_bytes);
+}
+
 TEST_P(VideoFrameStreamTest,
        FallbackDecoder_SelectedOnInitialDecodeError_Twice) {
   Initialize();

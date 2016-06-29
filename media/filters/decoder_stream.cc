@@ -397,7 +397,7 @@ void DecoderStream<StreamType>::OnDecodeDone(int buffer_size,
                                              DecodeStatus status) {
   FUNCTION_DVLOG(2) << ": " << status;
   DCHECK(state_ == STATE_NORMAL || state_ == STATE_FLUSHING_DECODER ||
-         state_ == STATE_PENDING_DEMUXER_READ || state_ == STATE_ERROR)
+         state_ == STATE_ERROR)
       << state_;
   DCHECK_GT(pending_decode_requests_, 0);
 
@@ -481,7 +481,7 @@ void DecoderStream<StreamType>::OnDecodeOutputReady(
   FUNCTION_DVLOG(2) << ": " << output->timestamp().InMilliseconds() << " ms";
   DCHECK(output.get());
   DCHECK(state_ == STATE_NORMAL || state_ == STATE_FLUSHING_DECODER ||
-         state_ == STATE_PENDING_DEMUXER_READ || state_ == STATE_ERROR)
+         state_ == STATE_ERROR)
       << state_;
 
   if (state_ == STATE_ERROR) {
@@ -539,12 +539,11 @@ void DecoderStream<StreamType>::ReadFromDemuxerStream() {
     return;
   }
 
-  // Set a flag in addition to the state, because the state can be overwritten
-  // when encountering an error. See crbug.com/597605.
-  DCHECK(!pending_demuxer_read_);
-  pending_demuxer_read_ = true;
+  // We may get here when a read is already pending, ignore this.
+  if (pending_demuxer_read_)
+    return;
 
-  state_ = STATE_PENDING_DEMUXER_READ;
+  pending_demuxer_read_ = true;
   stream_->Read(base::Bind(&DecoderStream<StreamType>::OnBufferReady,
                            weak_factory_.GetWeakPtr()));
 }
@@ -560,17 +559,13 @@ void DecoderStream<StreamType>::OnBufferReady(
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK(pending_demuxer_read_);
   if (decoded_frames_since_fallback_) {
-    DCHECK(state_ == STATE_PENDING_DEMUXER_READ || state_ == STATE_ERROR)
-        << state_;
+    DCHECK(pending_demuxer_read_ || state_ == STATE_ERROR) << state_;
   } else {
-    DCHECK(state_ == STATE_PENDING_DEMUXER_READ || state_ == STATE_ERROR ||
-           state_ == STATE_REINITIALIZING_DECODER || state_ == STATE_NORMAL)
+    DCHECK(state_ == STATE_ERROR || state_ == STATE_REINITIALIZING_DECODER ||
+           state_ == STATE_NORMAL)
         << state_;
   }
   DCHECK_EQ(buffer.get() != NULL, status == DemuxerStream::kOk) << status;
-
-  // Unset the flag. STATE_PENDING_DEMUXER_READ might have been overwritten.
-  // See crbug.com/597605.
   pending_demuxer_read_ = false;
 
   // If parallel decode requests are supported, multiple read requests might
