@@ -52,14 +52,14 @@ setup_gitgit
   test_expect_success "git-cl land ok" \
     "$GIT_CL land -f --no-oauth2"
 
+  test_expect_success "branch still has an issue" \
+      "$GIT_CL_STATUS | grep -q 'Issue number'"
+
   git checkout -q master > /dev/null 2>&1
   git pull -q > /dev/null 2>&1
 
   test_expect_success "committed code has proper description" \
       "git show | grep -q 'foo-quux'"
-
-  test_expect_success "issue no longer has a branch" \
-      "$GIT_CL_STATUS | grep -q 'work : None'"
 
   cd $GITREPO_PATH
   test_expect_success "upstream repo has our commit" \

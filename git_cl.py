@@ -4097,7 +4097,6 @@ def SendUpstream(parser, args, cmd):
     else:
       comment += ' (presubmit successful).'
     cl.RpcServer().add_comment(cl.GetIssue(), comment)
-    cl.SetIssue(None)
 
   if pushed_to_pending:
     _, branch = cl.FetchUpstreamTuple(cl.GetBranch())

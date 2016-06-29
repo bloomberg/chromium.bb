@@ -48,13 +48,13 @@ setup_gitsvn
   test_expect_success "git-cl dcommits ok" \
     "$GIT_CL dcommit -f --no-oauth2"
 
+  test_expect_success "branch still has an issue" \
+      "$GIT_CL_STATUS | grep -q 'Issue number'"
+
   git checkout -q master
   git svn -q rebase >/dev/null 2>&1
   test_expect_success "dcommitted code has proper description" \
       "git show | grep -q 'foo-quux'"
-
-  test_expect_success "issue no longer has a branch" \
-      "$GIT_CL_STATUS | grep -q 'work : None'"
 
   test_expect_success "upstream svn has our commit" \
       "svn log $REPO_URL 2>/dev/null | grep -q 'foo-quux'"
