@@ -195,6 +195,9 @@ size_t RegisterChromeCrashKeys() {
     { "aci_wrong_sp_extension_id", kSmallSize },
 
     // Temporary for http://crbug.com/621730
+    { "postmessage_src_origin", kMediumSize },
+    { "postmessage_dst_origin", kMediumSize },
+    { "postmessage_dst_url", kLargeSize },
     { "postmessage_script_info", kLargeSize },
 
     // Temporary for https://crbug.com/616149.
