@@ -167,6 +167,12 @@ void MediaCodecAudioDecoder::Initialize(const AudioDecoderConfig& config,
     return;
   }
 
+  // Guess the channel count from |config_| in case OnOutputFormatChanged
+  // that delivers the true count is not called before the first data arrives.
+  // It seems upon certain input errors a codec may substitute silence and
+  // not call OnOutputFormatChanged in this case.
+  channel_count_ = GetChannelCount(config_);
+
   SetState(STATE_READY);
   bound_init_cb.Run(true);
 }
@@ -626,6 +632,7 @@ void MediaCodecAudioDecoder::OnDecodedFrame(const OutputBufferInfo& out) {
 
   // For proper |frame_count| calculation we need to use the actual number
   // of channels which can be different from |config_| value.
+  DCHECK_GT(channel_count_, 0);
   const int bytes_per_frame = kBytesPerOutputSample * channel_count_;
   const size_t frame_count = out.size / bytes_per_frame;
 
