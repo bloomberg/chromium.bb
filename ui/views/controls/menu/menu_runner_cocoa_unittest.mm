@@ -168,7 +168,7 @@ class MenuRunnerCocoaTest : public ViewsTestBase {
   DISALLOW_COPY_AND_ASSIGN(MenuRunnerCocoaTest);
 };
 
-TEST_F(MenuRunnerCocoaTest, RunMenuAndCancel) {
+TEST_F(MenuRunnerCocoaTest, DISABLED_RunMenuAndCancel) {
   base::TimeTicks min_time = ui::EventTimeForNow();
 
   MenuRunner::RunResult result = RunMenu(base::Bind(
