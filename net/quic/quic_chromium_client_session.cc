@@ -1140,7 +1140,6 @@ void QuicChromiumClientSession::NotifyFactoryOfSessionClosed() {
 
 void QuicChromiumClientSession::OnConnectTimeout() {
   DCHECK(callback_.is_null());
-  DCHECK(IsEncryptionEstablished());
 
   if (IsCryptoHandshakeConfirmed())
     return;
