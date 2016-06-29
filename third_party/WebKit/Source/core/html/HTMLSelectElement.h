@@ -200,6 +200,7 @@ private:
     void resetToDefaultSelection(ResetReason = ResetReasonOthers);
     void typeAheadFind(KeyboardEvent*);
     void saveLastSelection();
+    void saveListboxActiveSelection();
     // Returns the first selected OPTION, or nullptr.
     HTMLOptionElement* selectedOption() const;
 

@@ -377,6 +377,8 @@ void HTMLSelectElement::parseAttribute(const QualifiedName& name, const AtomicSt
             if (inActiveDocument())
                 lazyReattachIfAttached();
             resetToDefaultSelection();
+            if (!usesMenuList())
+                saveListboxActiveSelection();
         }
     } else if (name == multipleAttr) {
         parseMultipleAttribute(value);
@@ -640,7 +642,12 @@ void HTMLSelectElement::saveLastSelection()
 void HTMLSelectElement::setActiveSelectionAnchor(HTMLOptionElement* option)
 {
     m_activeSelectionAnchor = option;
+    if (!usesMenuList())
+        saveListboxActiveSelection();
+}
 
+void HTMLSelectElement::saveListboxActiveSelection()
+{
     // Cache the selection state so we can restore the old selection as the new
     // selection pivots around this anchor index.
     // Example:
