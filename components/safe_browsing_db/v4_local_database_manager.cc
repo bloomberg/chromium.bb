@@ -35,11 +35,13 @@ namespace {
 
 // TODO(vakh): Implement this to populate the map appopriately.
 // Filed as http://crbug.com/608075
-StoreFileNameMap store_file_name_map{
-    {UpdateListIdentifier(PLATFORM_TYPE, URL, MALWARE_THREAT),
-     "UrlMalware.store"},
-    {UpdateListIdentifier(PLATFORM_TYPE, URL, SOCIAL_ENGINEERING_PUBLIC),
-     "UrlSoceng.store"}};
+StoreFileNameMap GetStoreFileNameMap() {
+  return StoreFileNameMap(
+      {{UpdateListIdentifier(PLATFORM_TYPE, URL, MALWARE_THREAT),
+        "UrlMalware.store"},
+       {UpdateListIdentifier(PLATFORM_TYPE, URL, SOCIAL_ENGINEERING_PUBLIC),
+        "UrlSoceng.store"}});
+}
 
 }  // namespace
 
@@ -206,6 +208,7 @@ void V4LocalDatabaseManager::SetupDatabase() {
   // Do not create the database on the IO thread since this may be an expensive
   // operation. Instead, do that on the task_runner and when the new database
   // has been created, swap it out on the IO thread.
+  StoreFileNameMap store_file_name_map = GetStoreFileNameMap();
   DCHECK(!store_file_name_map.empty());
   NewDatabaseReadyCallback db_ready_callback = base::Bind(
       &V4LocalDatabaseManager::DatabaseReady, base::Unretained(this));
