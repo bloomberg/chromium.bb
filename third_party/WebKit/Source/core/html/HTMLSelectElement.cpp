@@ -842,7 +842,7 @@ void HTMLSelectElement::recalcListItems() const
     }
 }
 
-void HTMLSelectElement::resetToDefaultSelection()
+void HTMLSelectElement::resetToDefaultSelection(ResetReason reason)
 {
     // https://html.spec.whatwg.org/multipage/forms.html#ask-for-a-reset
     if (multiple())
@@ -869,6 +869,10 @@ void HTMLSelectElement::resetToDefaultSelection()
         if (!firstEnabledOption && !option->isDisabledFormControl()) {
             firstEnabledOption = option;
             firstEnabledOptionIndex = optionIndex;
+            if (reason == ResetReasonSelectedOptionRemoved) {
+                // There must be no selected OPTIONs.
+                break;
+            }
         }
         ++optionIndex;
     }
@@ -986,7 +990,9 @@ void HTMLSelectElement::optionInserted(HTMLOptionElement& option, bool optionIsS
 void HTMLSelectElement::optionRemoved(const HTMLOptionElement& option)
 {
     setRecalcListItems();
-    if (option.selected() || !m_lastOnChangeOption)
+    if (option.selected())
+        resetToDefaultSelection(ResetReasonSelectedOptionRemoved);
+    else if (!m_lastOnChangeOption)
         resetToDefaultSelection();
     if (m_lastOnChangeOption == &option)
         m_lastOnChangeOption.clear();

@@ -193,7 +193,11 @@ private:
     void dispatchInputAndChangeEventForMenuList();
 
     void recalcListItems() const;
-    void resetToDefaultSelection();
+    enum ResetReason {
+        ResetReasonSelectedOptionRemoved,
+        ResetReasonOthers
+    };
+    void resetToDefaultSelection(ResetReason = ResetReasonOthers);
     void typeAheadFind(KeyboardEvent*);
     void saveLastSelection();
     // Returns the first selected OPTION, or nullptr.
