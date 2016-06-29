@@ -44,6 +44,7 @@ class GLContext;
 }
 
 namespace gpu {
+class GpuDriverBugWorkarounds;
 struct GpuPreferences;
 }
 
@@ -110,6 +111,7 @@ class MEDIA_GPU_EXPORT DXVAVideoDecodeAccelerator
   DXVAVideoDecodeAccelerator(
       const GetGLContextCallback& get_gl_context_cb,
       const MakeGLContextCurrentCallback& make_context_current_cb,
+      const gpu::GpuDriverBugWorkarounds& workarounds,
       const gpu::GpuPreferences& gpu_preferences);
   ~DXVAVideoDecodeAccelerator() override;
 

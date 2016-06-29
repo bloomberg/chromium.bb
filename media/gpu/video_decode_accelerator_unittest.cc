@@ -52,6 +52,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "gpu/command_buffer/service/gpu_preferences.h"
+#include "gpu/config/gpu_driver_bug_workarounds.h"
 #include "media/filters/h264_parser.h"
 #include "media/gpu/fake_video_decode_accelerator.h"
 #include "media/gpu/gpu_video_decode_accelerator_factory_impl.h"
@@ -624,8 +625,10 @@ void GLRenderingVDAClient::CreateAndStartDecoder() {
     if (g_test_import) {
       config.output_mode = VideoDecodeAccelerator::Config::OutputMode::IMPORT;
     }
+    gpu::GpuDriverBugWorkarounds workarounds;
     gpu::GpuPreferences gpu_preferences;
-    decoder_ = vda_factory_->CreateVDA(this, config, gpu_preferences);
+    decoder_ =
+        vda_factory_->CreateVDA(this, config, workarounds, gpu_preferences);
   }
 
   LOG_ASSERT(decoder_) << "Failed creating a VDA";

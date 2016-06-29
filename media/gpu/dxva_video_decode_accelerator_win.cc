@@ -38,6 +38,7 @@
 #include "base/win/windows_version.h"
 #include "build/build_config.h"
 #include "gpu/command_buffer/service/gpu_preferences.h"
+#include "gpu/config/gpu_driver_bug_workarounds.h"
 #include "media/base/win/mf_initializer.h"
 #include "media/gpu/dxva_picture_buffer_win.h"
 #include "media/video/video_decode_accelerator.h"
@@ -571,6 +572,7 @@ DXVAVideoDecodeAccelerator::PendingSampleInfo::~PendingSampleInfo() {}
 DXVAVideoDecodeAccelerator::DXVAVideoDecodeAccelerator(
     const GetGLContextCallback& get_gl_context_cb,
     const MakeGLContextCurrentCallback& make_context_current_cb,
+    const gpu::GpuDriverBugWorkarounds& workarounds,
     const gpu::GpuPreferences& gpu_preferences)
     : client_(NULL),
       dev_manager_reset_token_(0),
@@ -585,7 +587,8 @@ DXVAVideoDecodeAccelerator::DXVAVideoDecodeAccelerator(
       codec_(kUnknownVideoCodec),
       decoder_thread_("DXVAVideoDecoderThread"),
       pending_flush_(false),
-      share_nv12_textures_(gpu_preferences.enable_zero_copy_dxgi_video),
+      share_nv12_textures_(gpu_preferences.enable_zero_copy_dxgi_video &&
+                           !workarounds.disable_dxgi_zero_copy_video),
       use_dx11_(false),
       use_keyed_mutex_(false),
       dx11_video_format_converter_media_type_needs_init_(true),
@@ -597,10 +600,6 @@ DXVAVideoDecodeAccelerator::DXVAVideoDecodeAccelerator(
   weak_ptr_ = weak_this_factory_.GetWeakPtr();
   memset(&input_stream_info_, 0, sizeof(input_stream_info_));
   memset(&output_stream_info_, 0, sizeof(output_stream_info_));
-
-  // Sharing NV12 textures can cause a shutdown hang in Windows 8 or earlier.
-  if (base::win::GetVersion() < base::win::VERSION_WIN8_1)
-    share_nv12_textures_ = false;
 }
 
 DXVAVideoDecodeAccelerator::~DXVAVideoDecodeAccelerator() {

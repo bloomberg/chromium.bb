@@ -355,10 +355,12 @@ bool GpuVideoDecodeAccelerator::Initialize(
     return false;
   }
 
+  const gpu::GpuDriverBugWorkarounds& gpu_workarounds =
+      stub_->channel()->gpu_channel_manager()->gpu_driver_bug_workarounds();
   const gpu::GpuPreferences& gpu_preferences =
       stub_->channel()->gpu_channel_manager()->gpu_preferences();
   video_decode_accelerator_ =
-      vda_factory->CreateVDA(this, config, gpu_preferences);
+      vda_factory->CreateVDA(this, config, gpu_workarounds, gpu_preferences);
   if (!video_decode_accelerator_) {
     LOG(ERROR) << "HW video decode not available for profile " << config.profile
                << (config.is_encrypted ? " with encryption" : "");

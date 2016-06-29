@@ -75,7 +75,8 @@ GpuVideoDecodeAcceleratorFactory::CreateVDA(
 
   const gpu::GpuPreferences gpu_preferences =
       GpuChildThread::current()->gpu_preferences();
-  return gvdafactory_impl_->CreateVDA(client, config, gpu_preferences);
+  return gvdafactory_impl_->CreateVDA(
+      client, config, gpu::GpuDriverBugWorkarounds(), gpu_preferences);
 }
 
 GpuVideoDecodeAcceleratorFactory::GpuVideoDecodeAcceleratorFactory(

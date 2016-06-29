@@ -19,7 +19,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
 {
   "name": "gpu driver bug list",
   // Please update the version number whenever you change this file.
-  "version": "8.72",
+  "version": "8.73",
   "entries": [
     {
       "id": 1,
@@ -1825,6 +1825,33 @@ LONG_STRING_CONST(
       },
       "features": [
         "use_shadowed_tex_level_params"
+      ]
+    },
+    {
+      "id": 170,
+      "description": "Zero copy DXGI video hangs on shutdown on Win < 8.1",
+      "cr_bugs": [621190],
+      "os": {
+        "type": "win",
+        "version": {
+          "op": "<",
+          "value": "8.1"
+        }
+      },
+      "features": [
+        "disable_dxgi_zero_copy_video"
+      ]
+    },
+    {
+      "id": 171,
+      "description": "Zero copy DXGI video hangs on AMD drivers",
+      "cr_bugs": [623029],
+      "os": {
+        "type": "win"
+      },
+      "vendor_id": "0x1002",
+      "features": [
+        "disable_dxgi_zero_copy_video"
       ]
     }
   ]
