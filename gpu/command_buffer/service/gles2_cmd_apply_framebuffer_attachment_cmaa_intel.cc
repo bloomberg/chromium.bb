@@ -1363,6 +1363,7 @@ const char ApplyFramebufferAttachmentCMAAINTELResourceManager::cmaa_frag_s2_[] =
     void CombineEdges() {
       ivec3 screenPosIBase = ivec3(ivec2(gl_FragCoord.xy) * 2, 0);
       vec3 screenPosBase = vec3(screenPosIBase);
+      uvec2 notBottomLeft = uvec2(notEqual(screenPosIBase.xy, ivec2(0, 0)));
       uint packedEdgesArray[3 * 3];
 
       // use only if it has the 'prev frame' flag:[sample * 255.0 - 127.5]
@@ -1380,12 +1381,15 @@ const char ApplyFramebufferAttachmentCMAAINTELResourceManager::cmaa_frag_s2_[] =
                            ivec2(1, 1)).r * 255.0 - 127.5);
 
       packedEdgesArray[(0) * 3 + (0)] = 0u;
-      packedEdgesArray[(1) * 3 + (0)] = sampA.w;
-      packedEdgesArray[(2) * 3 + (0)] = sampA.z;
+      // The bottom-most edge of the texture is not edge.
+      // Note: texelFetch() on out of range gives an undefined value.
+      packedEdgesArray[(1) * 3 + (0)] = sampA.w * notBottomLeft.y;
+      packedEdgesArray[(2) * 3 + (0)] = sampA.z * notBottomLeft.y;
       packedEdgesArray[(1) * 3 + (1)] = sampA.x;
       packedEdgesArray[(2) * 3 + (1)] = sampA.y;
-      packedEdgesArray[(0) * 3 + (1)] = sampB.w;
-      packedEdgesArray[(0) * 3 + (2)] = sampB.x;
+      // The left-most edge of the texture is not edge.
+      packedEdgesArray[(0) * 3 + (1)] = sampB.w * notBottomLeft.x;
+      packedEdgesArray[(0) * 3 + (2)] = sampB.x * notBottomLeft.x;
       packedEdgesArray[(1) * 3 + (2)] = sampB.y;
       packedEdgesArray[(2) * 3 + (2)] = sampC;
 
