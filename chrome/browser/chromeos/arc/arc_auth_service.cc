@@ -291,7 +291,8 @@ void ArcAuthService::OnSignInFailed(arc::mojom::ArcSignInFailureReason reason) {
       UpdateProvisioningResultUMA(ProvisioningResult::UNKNOWN_ERROR);
   }
 
-  if (reason == arc::mojom::ArcSignInFailureReason::CLOUD_PROVISION_FLOW_FAIL) {
+  if (reason == arc::mojom::ArcSignInFailureReason::CLOUD_PROVISION_FLOW_FAIL ||
+      reason == arc::mojom::ArcSignInFailureReason::UNKNOWN_ERROR) {
     clear_required_ = true;
     // We'll delay shutting down the bridge in this case to allow people to send
     // feedback.
