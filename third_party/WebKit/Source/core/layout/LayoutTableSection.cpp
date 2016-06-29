@@ -107,6 +107,7 @@ LayoutTableSection::LayoutTableSection(Element* element)
     , m_needsCellRecalc(false)
     , m_forceSlowPaintPathWithOverflowingCell(false)
     , m_hasMultipleCellLevels(false)
+    , m_offsetForRepeatingHeader(LayoutUnit())
 {
     // init LayoutObject attributes
     setInline(false); // our object is not Inline
@@ -967,6 +968,15 @@ void LayoutTableSection::layoutRows()
     unsigned nEffCols = table()->numEffectiveColumns();
     bool isPaginated = view()->layoutState()->isPaginated();
 
+    if (isPaginated) {
+        LayoutTableSection* header = table()->header();
+        // If we're a table header nested inside a table cell then we want to repeat on each
+        // page, but below the header we're nested inside. Note we don't try to match the padding
+        // on the cell on each repeated header.
+        if (header && header == this)
+            setOffsetForRepeatingHeader(view()->layoutState()->heightOffsetForTableHeaders());
+    }
+
     LayoutState state(*this, locationOffset());
 
     for (unsigned r = 0; r < totalRows; r++) {
@@ -981,11 +991,9 @@ void LayoutTableSection::layoutRows()
             if (isPaginated) {
                 paginationStrutOnRow = paginationStrutForRow(rowLayoutObject, LayoutUnit(m_rowPos[r]));
                 if (paginationStrutOnRow) {
-                    LayoutTableSection* header = table()->header();
                     // If we have a header group we will paint it at the top of each page, move the rows
                     // down to accomodate it.
-                    if (header && header != this)
-                        paginationStrutOnRow += header->logicalHeight().toInt();
+                    paginationStrutOnRow += state.heightOffsetForTableHeaders().toInt();
                     for (unsigned rowIndex = r; rowIndex <= totalRows; rowIndex++)
                         m_rowPos[rowIndex] += paginationStrutOnRow;
                 }

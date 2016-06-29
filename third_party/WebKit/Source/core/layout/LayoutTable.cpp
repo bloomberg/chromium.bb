@@ -536,12 +536,18 @@ void LayoutTable::layout()
 
         distributeExtraLogicalHeight(floorToInt(computedLogicalHeight - totalSectionLogicalHeight));
 
+        bool isPaginated = view()->layoutState()->isPaginated();
         LayoutTableSection* topSection = this->topSection();
         LayoutUnit logicalOffset = topSection ? topSection->logicalTop() : LayoutUnit();
         for (LayoutTableSection* section = topSection; section; section = sectionBelow(section)) {
             section->setLogicalTop(logicalOffset);
             section->layoutRows();
             logicalOffset += section->logicalHeight();
+            if (isPaginated && m_head && m_head == section) {
+                LayoutUnit offsetForTableHeaders = state.heightOffsetForTableHeaders();
+                offsetForTableHeaders += section->logicalHeight();
+                state.setHeightOffsetForTableHeaders(offsetForTableHeaders);
+            }
         }
 
         if (!topSection && computedLogicalHeight > totalSectionLogicalHeight && !document().inQuirksMode()) {

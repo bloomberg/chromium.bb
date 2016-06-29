@@ -80,6 +80,9 @@ public:
     // direction (so an x-offset in vertical text and a y-offset for horizontal text).
     LayoutUnit pageLogicalOffset(const LayoutBox&, const LayoutUnit& childLogicalOffset) const;
 
+    LayoutUnit heightOffsetForTableHeaders() const { return m_heightOffsetForTableHeaders; };
+    void setHeightOffsetForTableHeaders(LayoutUnit offset) { m_heightOffsetForTableHeaders = offset; };
+
     const LayoutSize& layoutOffset() const { return m_layoutOffset; }
     const LayoutSize& pageOffset() const { return m_pageOffset; }
     LayoutUnit pageLogicalHeight() const { return m_pageLogicalHeight; }
@@ -108,6 +111,10 @@ private:
 
     // The current page height for the pagination model that encloses us.
     LayoutUnit m_pageLogicalHeight;
+
+    // The height we need to make available for repeating table headers in paginated layout.
+    LayoutUnit m_heightOffsetForTableHeaders;
+
     // The offset of the start of the first page in the nearest enclosing pagination model.
     LayoutSize m_pageOffset;
 

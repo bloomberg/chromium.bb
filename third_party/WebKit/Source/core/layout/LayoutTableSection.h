@@ -299,6 +299,9 @@ public:
 
     int paginationStrutForRow(LayoutTableRow*, LayoutUnit logicalOffset) const;
 
+    void setOffsetForRepeatingHeader(LayoutUnit offset) { m_offsetForRepeatingHeader = offset; }
+    LayoutUnit offsetForRepeatingHeader() const { return m_offsetForRepeatingHeader; }
+
 protected:
     void styleDidChange(StyleDifference, const ComputedStyle* oldStyle) override;
     bool nodeAtPoint(HitTestResult&, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction) override;
@@ -390,6 +393,8 @@ private:
     // The use is to disable a painting optimization where we just paint the
     // invalidated cells.
     bool m_hasMultipleCellLevels;
+
+    LayoutUnit m_offsetForRepeatingHeader;
 };
 
 DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutTableSection, isTableSection());

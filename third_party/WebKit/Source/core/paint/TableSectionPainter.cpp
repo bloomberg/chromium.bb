@@ -55,10 +55,11 @@ void TableSectionPainter::paintRepeatingHeaderGroup(const PaintInfo& paintInfo, 
         paginationOffset.move(0, pageHeight * static_cast<int>((paintInfo.cullRect().m_rect.y() - paginationOffset.y()) / pageHeight));
     LayoutUnit bottomBound = std::min(LayoutUnit(paintInfo.cullRect().m_rect.maxY()), paintOffset.y() + table->logicalHeight());
     while (paginationOffset.y() < bottomBound) {
+        LayoutPoint nestedOffset = paginationOffset + LayoutPoint(0, m_layoutTableSection.offsetForRepeatingHeader());
         if (itemToPaint == PaintCollapsedBorders)
-            paintCollapsedSectionBorders(paintInfo, paginationOffset, currentBorderValue);
+            paintCollapsedSectionBorders(paintInfo, nestedOffset, currentBorderValue);
         else
-            paintSection(paintInfo, paginationOffset);
+            paintSection(paintInfo, nestedOffset);
         paginationOffset.move(0, pageHeight);
     }
 }
