@@ -49,6 +49,9 @@ class CONTENT_EXPORT NavigationURLLoaderDelegate {
   // until after the renderer was initialized.
   virtual void OnRequestStarted(base::TimeTicks timestamp) = 0;
 
+  // Called when a ServiceWorker was found for the navigation.
+  virtual void OnServiceWorkerEncountered() = 0;
+
  protected:
   NavigationURLLoaderDelegate() {}
   virtual ~NavigationURLLoaderDelegate() {}

@@ -21,17 +21,18 @@ namespace content {
 
 class NavigationURLLoaderImplCore;
 class NavigationData;
-class ServiceWorkerNavigationHandle;
+class ServiceWorkerContextWrapper;
 class StreamHandle;
 struct ResourceResponse;
 
 class NavigationURLLoaderImpl : public NavigationURLLoader {
  public:
   // The caller is responsible for ensuring that |delegate| outlives the loader.
-  NavigationURLLoaderImpl(BrowserContext* browser_context,
-                          std::unique_ptr<NavigationRequestInfo> request_info,
-                          ServiceWorkerNavigationHandle* service_worker_handle,
-                          NavigationURLLoaderDelegate* delegate);
+  NavigationURLLoaderImpl(
+      BrowserContext* browser_context,
+      std::unique_ptr<NavigationRequestInfo> request_info,
+      ServiceWorkerContextWrapper* service_worker_context_wrapper,
+      NavigationURLLoaderDelegate* delegate);
   ~NavigationURLLoaderImpl() override;
 
   // NavigationURLLoader implementation.
@@ -56,6 +57,9 @@ class NavigationURLLoaderImpl : public NavigationURLLoader {
   // Notifies the delegate the begin navigation request was handled and a
   // potential first network request is about to be made.
   void NotifyRequestStarted(base::TimeTicks timestamp);
+
+  // Notifies the delegate that a ServiceWorker was found for this navigation.
+  void NotifyServiceWorkerEncountered();
 
   NavigationURLLoaderDelegate* delegate_;
 

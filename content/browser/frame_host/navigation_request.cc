@@ -16,7 +16,6 @@
 #include "content/browser/frame_host/navigator_impl.h"
 #include "content/browser/loader/navigation_url_loader.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
-#include "content/browser/service_worker/service_worker_navigation_handle.h"
 #include "content/browser/site_instance_impl.h"
 #include "content/common/resource_request_body_impl.h"
 #include "content/public/browser/browser_context.h"
@@ -291,16 +290,6 @@ void NavigationRequest::OnResponseStarted(
     return;
   }
 
-  // Update the service worker params of the request params.
-  request_params_.should_create_service_worker =
-      (frame_tree_node_->pending_sandbox_flags() &
-       blink::WebSandboxFlags::Origin) != blink::WebSandboxFlags::Origin;
-  if (navigation_handle_->service_worker_handle()) {
-    request_params_.service_worker_provider_id =
-        navigation_handle_->service_worker_handle()
-            ->service_worker_provider_host_id();
-  }
-
   // Update the lofi state of the request.
   if (response->head.is_using_lofi)
     common_params_.lofi_state = LOFI_ON;
@@ -358,6 +347,14 @@ void NavigationRequest::OnRequestStarted(base::TimeTicks timestamp) {
                                                         common_params_.url);
 }
 
+void NavigationRequest::OnServiceWorkerEncountered() {
+  request_params_.should_create_service_worker = true;
+
+  // TODO(clamy): the navigation should be sent to a RenderFrameHost to be
+  // picked up by the ServiceWorker.
+  NOTIMPLEMENTED();
+}
+
 void NavigationRequest::OnStartChecksComplete(
     NavigationThrottle::ThrottleCheckResult result) {
   CHECK(result != NavigationThrottle::DEFER);
@@ -370,10 +367,29 @@ void NavigationRequest::OnStartChecksComplete(
     return;
   }
 
-  InitializeServiceWorkerHandleIfNeeded();
+  // Use the SiteInstance of the navigating RenderFrameHost to get access to
+  // the StoragePartition. Using the url of the navigation will result in a
+  // wrong StoragePartition being picked when a WebView is navigating.
+  DCHECK_NE(AssociatedSiteInstanceType::NONE, associated_site_instance_type_);
+  RenderFrameHostImpl* navigating_frame_host =
+      associated_site_instance_type_ == AssociatedSiteInstanceType::SPECULATIVE
+          ? frame_tree_node_->render_manager()->speculative_frame_host()
+          : frame_tree_node_->current_frame_host();
+  DCHECK(navigating_frame_host);
+
+  BrowserContext* browser_context =
+      frame_tree_node_->navigator()->GetController()->GetBrowserContext();
+  StoragePartition* partition = BrowserContext::GetStoragePartition(
+      browser_context, navigating_frame_host->GetSiteInstance());
+  DCHECK(partition);
+
+  ServiceWorkerContextWrapper* service_worker_context =
+      static_cast<ServiceWorkerContextWrapper*>(
+          partition->GetServiceWorkerContext());
+
   loader_ = NavigationURLLoader::Create(
       frame_tree_node_->navigator()->GetController()->GetBrowserContext(),
-      std::move(info_), navigation_handle_->service_worker_handle(), this);
+      std::move(info_), service_worker_context, this);
 }
 
 void NavigationRequest::OnRedirectChecksComplete(
@@ -433,36 +449,6 @@ void NavigationRequest::CommitNavigation() {
   // existing pending navigation.
   if (!common_params_.url.SchemeIs(url::kJavaScriptScheme))
     frame_tree_node_->ResetNavigationRequest(true);
-}
-
-void NavigationRequest::InitializeServiceWorkerHandleIfNeeded() {
-  // Only initialize the ServiceWorkerNavigationHandle if it can be created for
-  // this frame.
-  bool can_create_service_worker =
-      (frame_tree_node_->pending_sandbox_flags() &
-       blink::WebSandboxFlags::Origin) != blink::WebSandboxFlags::Origin;
-  if (!can_create_service_worker)
-    return;
-
-  // Use the SiteInstance of the navigating RenderFrameHost to get access to
-  // the StoragePartition. Using the url of the navigation will result in a
-  // wrong StoragePartition being picked when a WebView is navigating.
-  RenderFrameHostImpl* navigating_frame_host =
-      frame_tree_node_->render_manager()->speculative_frame_host();
-  if (!navigating_frame_host)
-    navigating_frame_host = frame_tree_node_->current_frame_host();
-  DCHECK(navigating_frame_host);
-
-  BrowserContext* browser_context =
-      frame_tree_node_->navigator()->GetController()->GetBrowserContext();
-  StoragePartition* partition = BrowserContext::GetStoragePartition(
-      browser_context, navigating_frame_host->GetSiteInstance());
-  DCHECK(partition);
-
-  ServiceWorkerContextWrapper* service_worker_context =
-      static_cast<ServiceWorkerContextWrapper*>(
-          partition->GetServiceWorkerContext());
-  navigation_handle_->InitServiceWorkerHandle(service_worker_context);
 }
 
 }  // namespace content

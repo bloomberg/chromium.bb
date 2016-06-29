@@ -23,7 +23,7 @@ std::unique_ptr<NavigationURLLoader>
 TestNavigationURLLoaderFactory::CreateLoader(
     BrowserContext* browser_context,
     std::unique_ptr<NavigationRequestInfo> request_info,
-    ServiceWorkerNavigationHandle* service_worker_handle,
+    ServiceWorkerContextWrapper* service_worker_context_wrapper,
     NavigationURLLoaderDelegate* delegate) {
   return std::unique_ptr<NavigationURLLoader>(
       new TestNavigationURLLoader(std::move(request_info), delegate));

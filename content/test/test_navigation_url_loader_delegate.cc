@@ -79,4 +79,6 @@ void TestNavigationURLLoaderDelegate::OnRequestStarted(
     request_started_->Quit();
 }
 
+void TestNavigationURLLoaderDelegate::OnServiceWorkerEncountered() {}
+
 }  // namespace content

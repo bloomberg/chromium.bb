@@ -381,7 +381,6 @@ IPC_STRUCT_TRAITS_BEGIN(content::RequestNavigationParams)
   IPC_STRUCT_TRAITS_MEMBER(is_view_source)
   IPC_STRUCT_TRAITS_MEMBER(should_clear_history_list)
   IPC_STRUCT_TRAITS_MEMBER(should_create_service_worker)
-  IPC_STRUCT_TRAITS_MEMBER(service_worker_provider_id)
 #if defined(OS_ANDROID)
   IPC_STRUCT_TRAITS_MEMBER(data_url_as_string)
 #endif

@@ -60,6 +60,7 @@ class TestNavigationURLLoaderDelegate : public NavigationURLLoaderDelegate {
       std::unique_ptr<NavigationData> navigation_data) override;
   void OnRequestFailed(bool in_cache, int net_error) override;
   void OnRequestStarted(base::TimeTicks timestamp) override;
+  void OnServiceWorkerEncountered() override;
 
  private:
   net::RedirectInfo redirect_info_;

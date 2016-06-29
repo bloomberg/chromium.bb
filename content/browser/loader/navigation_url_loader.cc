@@ -17,15 +17,15 @@ static NavigationURLLoaderFactory* g_factory = nullptr;
 std::unique_ptr<NavigationURLLoader> NavigationURLLoader::Create(
     BrowserContext* browser_context,
     std::unique_ptr<NavigationRequestInfo> request_info,
-    ServiceWorkerNavigationHandle* service_worker_handle,
+    ServiceWorkerContextWrapper* service_worker_context_wrapper,
     NavigationURLLoaderDelegate* delegate) {
   if (g_factory) {
     return g_factory->CreateLoader(browser_context, std::move(request_info),
-                                   service_worker_handle, delegate);
+                                   service_worker_context_wrapper, delegate);
   }
   return std::unique_ptr<NavigationURLLoader>(
       new NavigationURLLoaderImpl(browser_context, std::move(request_info),
-                                  service_worker_handle, delegate));
+                                  service_worker_context_wrapper, delegate));
 }
 
 void NavigationURLLoader::SetFactoryForTesting(

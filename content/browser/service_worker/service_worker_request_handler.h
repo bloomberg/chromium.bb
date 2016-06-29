@@ -36,7 +36,6 @@ class ResourceMessageFilter;
 class ResourceRequestBodyImpl;
 class ServiceWorkerContextCore;
 class ServiceWorkerContextWrapper;
-class ServiceWorkerNavigationHandleCore;
 class ServiceWorkerProviderHost;
 
 // Abstract base class for routing network requests to ServiceWorkers.
@@ -44,19 +43,6 @@ class ServiceWorkerProviderHost;
 class CONTENT_EXPORT ServiceWorkerRequestHandler
     : public base::SupportsUserData::Data {
  public:
-  // PlzNavigate
-  // Attaches a newly created handler if the given |request| needs to be handled
-  // by ServiceWorker.
-  static void InitializeForNavigation(
-      net::URLRequest* request,
-      ServiceWorkerNavigationHandleCore* navigation_handle_core,
-      storage::BlobStorageContext* blob_storage_context,
-      bool skip_service_worker,
-      ResourceType resource_type,
-      RequestContextType request_context_type,
-      RequestContextFrameType frame_type,
-      scoped_refptr<ResourceRequestBodyImpl> body);
-
   // Attaches a newly created handler if the given |request| needs to
   // be handled by ServiceWorker.
   // TODO(kinuko): While utilizing UserData to attach data to URLRequest

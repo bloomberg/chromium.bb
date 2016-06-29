@@ -179,6 +179,7 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate {
       std::unique_ptr<NavigationData> navigation_data) override;
   void OnRequestFailed(bool has_stale_copy_in_cache, int net_error) override;
   void OnRequestStarted(base::TimeTicks timestamp) override;
+  void OnServiceWorkerEncountered() override;
 
   // Called when the NavigationThrottles have been checked by the
   // NavigationHandle.
@@ -190,9 +191,6 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate {
   // Have a RenderFrameHost commit the navigation. The NavigationRequest will
   // be destroyed after this call.
   void CommitNavigation();
-
-  // Called when the navigation is about to be sent to the IO thread.
-  void InitializeServiceWorkerHandleIfNeeded();
 
   FrameTreeNode* frame_tree_node_;
 
