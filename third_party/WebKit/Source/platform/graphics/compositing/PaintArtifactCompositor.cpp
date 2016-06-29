@@ -258,57 +258,41 @@ scoped_refptr<cc::Layer> foreignLayerForPaintChunk(const PaintArtifact& paintArt
     return layer;
 }
 
-static const int kInvalidNodeId = -1;
-static const int kRealRootNodeId = 0;
-static const int kSecondaryRootNodeId = 1;
-static const int kPropertyTreeSequenceNumber = 1;
+
+constexpr int kRealRootNodeId = 0;
+constexpr int kSecondaryRootNodeId = 1;
+constexpr int kPropertyTreeSequenceNumber = 1;
 
 // Creates a minimal set of property trees for the compositor.
 void setMinimalPropertyTrees(cc::PropertyTrees* propertyTrees, int ownerId)
 {
-    // cc's property trees expect a child of the actual root to be used. So we
-    // need to create and populate an additional node for each type of tree.
-
+    // cc is hardcoded to use transform node index 1 for device scale and transform.
     cc::TransformTree& transformTree = propertyTrees->transform_tree;
     transformTree.clear();
-    transformTree.Insert(cc::TransformNode(), kRealRootNodeId);
-    cc::TransformNode& transformNode = *transformTree.back();
+    cc::TransformNode& transformNode = *transformTree.Node(transformTree.Insert(cc::TransformNode(), kRealRootNodeId));
+    DCHECK_EQ(transformNode.id, kSecondaryRootNodeId);
+    transformNode.data.source_node_id = transformNode.parent_id;
     transformTree.SetTargetId(transformNode.id, kRealRootNodeId);
-    transformTree.SetContentTargetId(transformNode.id, kSecondaryRootNodeId);
-    transformNode.data.source_node_id = kRealRootNodeId;
-    transformNode.data.needs_local_transform_update = true;
-    transformNode.owner_id = ownerId;
-    transformTree.set_needs_update(true);
+    transformTree.SetContentTargetId(transformNode.id, kRealRootNodeId);
 
+    // cc is hardcoded to use clip node index 1 for viewport clip.
     cc::ClipTree& clipTree = propertyTrees->clip_tree;
     clipTree.clear();
-    clipTree.Insert(cc::ClipNode(), kRealRootNodeId);
-    cc::ClipNode& clipNode = *clipTree.back();
-    clipNode.data.transform_id = kSecondaryRootNodeId;
-    clipNode.data.target_id = kSecondaryRootNodeId;
+    cc::ClipNode& clipNode = *clipTree.Node(clipTree.Insert(cc::ClipNode(), kRealRootNodeId));
+    DCHECK_EQ(clipNode.id, kSecondaryRootNodeId);
     clipNode.owner_id = ownerId;
-    clipTree.set_needs_update(true);
 
+    // cc is hardcoded to use effect node index 1 for root render surface.
     cc::EffectTree& effectTree = propertyTrees->effect_tree;
     effectTree.clear();
-    // This matches what cc does right now: the secondary root isn't a child
-    // of the first root (at index 0). This may not have been intentional.
-    effectTree.Insert(cc::EffectNode(), kInvalidNodeId);
-    cc::EffectNode& effectNode = *effectTree.back();
-    effectNode.data.has_render_surface = true;
-    effectNode.data.transform_id = kRealRootNodeId;
-    effectNode.data.clip_id = kRealRootNodeId;
+    cc::EffectNode& effectNode = *effectTree.Node(effectTree.Insert(cc::EffectNode(), kRealRootNodeId));
+    DCHECK_EQ(effectNode.id, kSecondaryRootNodeId);
     effectNode.owner_id = ownerId;
-    effectTree.set_needs_update(true);
+    effectNode.data.clip_id = clipNode.id;
+    effectNode.data.has_render_surface = true;
 
     cc::ScrollTree& scrollTree = propertyTrees->scroll_tree;
     scrollTree.clear();
-    scrollTree.Insert(cc::ScrollNode(), kRealRootNodeId);
-    cc::ScrollNode& scrollNode = *scrollTree.back();
-    scrollNode.data.scrollable = false;
-    scrollNode.data.transform_id = kSecondaryRootNodeId;
-    scrollNode.owner_id = ownerId;
-    scrollTree.set_needs_update(true);
 }
 
 } // namespace
@@ -423,11 +407,9 @@ int TransformTreeManager::compositorIdForNode(const TransformPaintPropertyNode* 
     int id = m_transformTree.Insert(cc::TransformNode(), parentId);
 
     cc::TransformNode& compositorNode = *m_transformTree.Node(id);
-    m_transformTree.SetTargetId(id, kSecondaryRootNodeId);
-    m_transformTree.SetContentTargetId(id, kSecondaryRootNodeId);
-    compositorNode.owner_id = dummyLayer->id();
+    m_transformTree.SetTargetId(id, kRealRootNodeId);
+    m_transformTree.SetContentTargetId(id, kRealRootNodeId);
     compositorNode.data.source_node_id = parentId;
-    compositorNode.data.needs_local_transform_update = true;
 
     FloatPoint3D origin = transformNode->origin();
     compositorNode.data.pre_local.matrix().setTranslate(
@@ -441,7 +423,7 @@ int TransformTreeManager::compositorIdForNode(const TransformPaintPropertyNode* 
     dummyLayer->SetTransformTreeIndex(id);
     dummyLayer->SetClipTreeIndex(kSecondaryRootNodeId);
     dummyLayer->SetEffectTreeIndex(kSecondaryRootNodeId);
-    dummyLayer->SetScrollTreeIndex(kSecondaryRootNodeId);
+    dummyLayer->SetScrollTreeIndex(kRealRootNodeId);
     dummyLayer->set_property_tree_sequence_number(kPropertyTreeSequenceNumber);
 
     auto result = m_nodeMap.set(transformNode, id);
@@ -456,15 +438,13 @@ void PaintArtifactCompositor::updateInLayerListMode(const PaintArtifact& paintAr
 {
     cc::LayerTreeHost* host = m_rootLayer->layer_tree_host();
 
-    // The root layer must be the owner so that the render surface
-    // validation works. It's expected to own at least the effect node.
     setMinimalPropertyTrees(host->property_trees(), m_rootLayer->id());
     m_rootLayer->RemoveAllChildren();
     m_rootLayer->set_property_tree_sequence_number(kPropertyTreeSequenceNumber);
     m_rootLayer->SetTransformTreeIndex(kSecondaryRootNodeId);
     m_rootLayer->SetClipTreeIndex(kSecondaryRootNodeId);
     m_rootLayer->SetEffectTreeIndex(kSecondaryRootNodeId);
-    m_rootLayer->SetScrollTreeIndex(kSecondaryRootNodeId);
+    m_rootLayer->SetScrollTreeIndex(kRealRootNodeId);
 
     TransformTreeManager transformTreeManager(host->property_trees()->transform_tree, m_rootLayer.get());
     m_contentLayerClients.clear();
@@ -481,7 +461,7 @@ void PaintArtifactCompositor::updateInLayerListMode(const PaintArtifact& paintAr
         layer->SetTransformTreeIndex(transformId);
         layer->SetClipTreeIndex(kSecondaryRootNodeId);
         layer->SetEffectTreeIndex(kSecondaryRootNodeId);
-        layer->SetScrollTreeIndex(kSecondaryRootNodeId);
+        layer->SetScrollTreeIndex(kRealRootNodeId);
 
         if (m_extraDataForTestingEnabled)
             m_extraDataForTesting->contentLayers.append(layer);
