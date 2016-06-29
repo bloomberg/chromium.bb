@@ -1878,7 +1878,7 @@ void AXNodeObject::addChildren()
 
     for (Node& child : NodeTraversal::childrenOf(*m_node)) {
         AXObject* childObj = axObjectCache().getOrCreate(&child);
-        if (!axObjectCache().isAriaOwned(childObj))
+        if (childObj && !axObjectCache().isAriaOwned(childObj))
             addChild(childObj);
     }
 
