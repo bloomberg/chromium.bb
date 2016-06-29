@@ -67,12 +67,6 @@ namespace cc {
     EXPECT_FLOAT_EQ((expected).height(), (actual).height()); \
   } while (false)
 
-#define EXPECT_SIZE_EQ(expected, actual)               \
-  do {                                                 \
-    EXPECT_EQ((expected).width(), (actual).width());   \
-    EXPECT_EQ((expected).height(), (actual).height()); \
-  } while (false)
-
 // This is a function rather than a macro because when this is included as a
 // macro in bulk, it causes a significant slow-down in compilation time. This
 // problem exists with both gcc and clang, and bugs have been filed at
