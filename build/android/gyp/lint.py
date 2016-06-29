@@ -25,13 +25,17 @@ def _OnStaleMd5(lint_path, config_path, processed_config_path,
                 manifest_path, result_path, product_dir, sources, jar_path,
                 cache_dir, android_sdk_version, resource_sources,
                 classpath=None, can_fail_build=False, silent=False):
-  def _RelativizePath(path):
+  def _RebasePath(path):
     """Returns relative path to top-level src dir.
 
     Args:
       path: A path relative to cwd.
     """
-    return os.path.relpath(os.path.abspath(path), _SRC_ROOT)
+    ret = os.path.relpath(os.path.abspath(path), _SRC_ROOT)
+    # If it's outside of src/, just use abspath.
+    if ret.startswith('..'):
+      ret = os.path.abspath(path)
+    return ret
 
   def _ProcessConfigFile():
     if not config_path or not processed_config_path:
@@ -41,7 +45,7 @@ def _OnStaleMd5(lint_path, config_path, processed_config_path,
 
     with open(config_path, 'rb') as f:
       content = f.read().replace(
-          'PRODUCT_DIR', _RelativizePath(product_dir))
+          'PRODUCT_DIR', _RebasePath(product_dir))
 
     with open(processed_config_path, 'wb') as f:
       f.write(content)
@@ -49,7 +53,7 @@ def _OnStaleMd5(lint_path, config_path, processed_config_path,
   def _ProcessResultFile():
     with open(result_path, 'rb') as f:
       content = f.read().replace(
-          _RelativizePath(product_dir), 'PRODUCT_DIR')
+          _RebasePath(product_dir), 'PRODUCT_DIR')
 
     with open(result_path, 'wb') as f:
       f.write(content)
@@ -81,22 +85,24 @@ def _OnStaleMd5(lint_path, config_path, processed_config_path,
     _ProcessConfigFile()
 
     cmd = [
-        _RelativizePath(lint_path), '-Werror', '--exitcode', '--showall',
-        '--xml', _RelativizePath(result_path),
+        _RebasePath(lint_path), '-Werror', '--exitcode', '--showall',
+        '--xml', _RebasePath(result_path),
     ]
     if jar_path:
       # --classpath is just for .class files for this one target.
-      cmd.extend(['--classpath', _RelativizePath(jar_path)])
+      cmd.extend(['--classpath', _RebasePath(jar_path)])
     if processed_config_path:
-      cmd.extend(['--config', _RelativizePath(processed_config_path)])
+      cmd.extend(['--config', _RebasePath(processed_config_path)])
 
-    def _NewTempSubdir(prefix, all_subdirs):
+    tmp_dir_counter = [0]
+    def _NewTempSubdir(prefix, append_digit=True):
       # Helper function to create a new sub directory based on the number of
-      # subdirs created earlier. Path of the directory is appended to the
-      # all_subdirs list.
-      new_dir = os.path.join(temp_dir, prefix + str(len(all_subdirs)))
-      os.mkdir(new_dir)
-      all_subdirs.append(new_dir)
+      # subdirs created earlier.
+      if append_digit:
+        tmp_dir_counter[0] += 1
+        prefix += str(tmp_dir_counter[0])
+      new_dir = os.path.join(temp_dir, prefix)
+      os.makedirs(new_dir)
       return new_dir
 
     resource_dirs = []
@@ -106,15 +112,17 @@ def _OnStaleMd5(lint_path, config_path, processed_config_path,
       else:
         # This is a zip file with generated resources (e. g. strings from GRD).
         # Extract it to temporary folder.
-        resource_dir = _NewTempSubdir('r', resource_dirs)
+        resource_dir = _NewTempSubdir(_RebasePath(resource_source),
+                                      append_digit=False)
+        resource_dirs.append(resource_dir)
         build_utils.ExtractAll(resource_source, path=resource_dir)
 
     for resource_dir in resource_dirs:
-      cmd.extend(['--resources', _RelativizePath(resource_dir)])
+      cmd.extend(['--resources', _RebasePath(resource_dir)])
 
     if classpath:
       # --libraries is the classpath (excluding active target).
-      cp = ':'.join(_RelativizePath(p) for p in classpath)
+      cp = ':'.join(_RebasePath(p) for p in classpath)
       cmd.extend(['--libraries', cp])
 
     # There may be multiple source files with the same basename (but in
@@ -122,10 +130,14 @@ def _OnStaleMd5(lint_path, config_path, processed_config_path,
     # corresponds to the java package, and so instead just link the source files
     # into temporary directories (creating a new one whenever there is a name
     # conflict).
-    src_dirs = []
     def PathInDir(d, src):
-      return os.path.join(d, os.path.basename(src))
+      subpath = os.path.join(d, _RebasePath(src))
+      subdir = os.path.dirname(subpath)
+      if not os.path.exists(subdir):
+        os.makedirs(subdir)
+      return subpath
 
+    src_dirs = []
     for src in sources:
       src_dir = None
       for d in src_dirs:
@@ -133,11 +145,12 @@ def _OnStaleMd5(lint_path, config_path, processed_config_path,
           src_dir = d
           break
       if not src_dir:
-        src_dir = _NewTempSubdir('s', src_dirs)
-        cmd.extend(['--sources', _RelativizePath(src_dir)])
+        src_dir = _NewTempSubdir('SRC_ROOT')
+        src_dirs.append(src_dir)
+        cmd.extend(['--sources', _RebasePath(src_dir)])
       os.symlink(os.path.abspath(src), PathInDir(src_dir, src))
 
-    project_dir = _NewTempSubdir('p', [])
+    project_dir = _NewTempSubdir('SRC_ROOT')
     if android_sdk_version:
       # Create dummy project.properies file in a temporary "project" directory.
       # It is the only way to add Android SDK to the Lint's classpath. Proper
@@ -151,7 +164,7 @@ def _OnStaleMd5(lint_path, config_path, processed_config_path,
     # are to be included).
     if manifest_path:
       os.symlink(os.path.abspath(manifest_path),
-                 PathInDir(project_dir, manifest_path))
+                 os.path.join(project_dir, 'AndroidManifest.xml'))
     cmd.append(project_dir)
 
     if os.path.exists(result_path):
@@ -160,7 +173,7 @@ def _OnStaleMd5(lint_path, config_path, processed_config_path,
     env = {}
     stderr_filter = None
     if cache_dir:
-      env['_JAVA_OPTIONS'] = '-Duser.home=%s' % _RelativizePath(cache_dir)
+      env['_JAVA_OPTIONS'] = '-Duser.home=%s' % _RebasePath(cache_dir)
       # When _JAVA_OPTIONS is set, java prints to stderr:
       # Picked up _JAVA_OPTIONS: ...
       #
@@ -214,9 +227,7 @@ def _OnStaleMd5(lint_path, config_path, processed_config_path,
              ' - For full explanation, please refer to %s\n'
              ' - For more information about lint and how to fix lint issues,'
              ' please refer to %s\n' %
-             (num_issues,
-              _RelativizePath(result_path),
-              _LINT_MD_URL))
+             (num_issues, _RebasePath(result_path), _LINT_MD_URL))
       if not silent:
         print >> sys.stderr, msg
       if can_fail_build:
