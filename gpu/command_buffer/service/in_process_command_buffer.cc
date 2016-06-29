@@ -251,9 +251,7 @@ bool InProcessCommandBuffer::Initialize(
     scoped_refptr<gl::GLSurface> surface,
     bool is_offscreen,
     gfx::AcceleratedWidget window,
-    const gfx::Size& size,
     const gles2::ContextCreationAttribHelper& attribs,
-    gl::GpuPreference gpu_preference,
     InProcessCommandBuffer* share_group,
     GpuMemoryBufferManager* gpu_memory_buffer_manager,
     ImageFactory* image_factory) {
@@ -270,19 +268,12 @@ bool InProcessCommandBuffer::Initialize(
   }
 
   gpu::Capabilities capabilities;
-  InitializeOnGpuThreadParams params(is_offscreen,
-                                     window,
-                                     size,
-                                     attribs,
-                                     gpu_preference,
-                                     &capabilities,
-                                     share_group,
-                                     image_factory);
+  InitializeOnGpuThreadParams params(is_offscreen, window, attribs,
+                                     &capabilities, share_group, image_factory);
 
   base::Callback<bool(void)> init_task =
       base::Bind(&InProcessCommandBuffer::InitializeOnGpuThread,
-                 base::Unretained(this),
-                 params);
+                 base::Unretained(this), params);
 
   base::WaitableEvent completion(
       base::WaitableEvent::ResetPolicy::MANUAL,
@@ -306,8 +297,6 @@ bool InProcessCommandBuffer::InitializeOnGpuThread(
     const InitializeOnGpuThreadParams& params) {
   CheckSequencedThread();
   gpu_thread_weak_ptr_ = gpu_thread_weak_ptr_factory_.GetWeakPtr();
-
-  DCHECK(params.size.width() >= 0 && params.size.height() >= 0);
 
   TransferBufferManager* manager = new TransferBufferManager(nullptr);
   transfer_buffer_manager_ = manager;
@@ -346,7 +335,7 @@ bool InProcessCommandBuffer::InitializeOnGpuThread(
 
   if (!surface_.get()) {
     if (params.is_offscreen)
-      surface_ = gl::init::CreateOffscreenGLSurface(params.size);
+      surface_ = gl::init::CreateOffscreenGLSurface(gfx::Size());
     else
       surface_ = gl::init::CreateViewGLSurface(params.window);
   }
@@ -369,20 +358,20 @@ bool InProcessCommandBuffer::InitializeOnGpuThread(
     context_ = gl_share_group_->GetSharedContext();
     if (!context_.get()) {
       context_ = gl::init::CreateGLContext(
-          gl_share_group_.get(), surface_.get(), params.gpu_preference);
+          gl_share_group_.get(), surface_.get(), params.attribs.gpu_preference);
       gl_share_group_->SetSharedContext(context_.get());
     }
 
     context_ = new GLContextVirtual(
         gl_share_group_.get(), context_.get(), decoder_->AsWeakPtr());
-    if (context_->Initialize(surface_.get(), params.gpu_preference)) {
+    if (context_->Initialize(surface_.get(), params.attribs.gpu_preference)) {
       VLOG(1) << "Created virtual GL context.";
     } else {
       context_ = NULL;
     }
   } else {
     context_ = gl::init::CreateGLContext(gl_share_group_.get(), surface_.get(),
-                                         params.gpu_preference);
+                                         params.attribs.gpu_preference);
   }
 
   if (!context_.get()) {
@@ -410,7 +399,6 @@ bool InProcessCommandBuffer::InitializeOnGpuThread(
   if (!decoder_->Initialize(surface_,
                             context_,
                             params.is_offscreen,
-                            params.size,
                             disallowed_features,
                             params.attribs)) {
     LOG(ERROR) << "Could not initialize decoder.";

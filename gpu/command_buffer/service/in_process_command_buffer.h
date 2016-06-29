@@ -84,9 +84,7 @@ class GPU_EXPORT InProcessCommandBuffer : public CommandBuffer,
   bool Initialize(scoped_refptr<gl::GLSurface> surface,
                   bool is_offscreen,
                   gfx::AcceleratedWidget window,
-                  const gfx::Size& size,
                   const gles2::ContextCreationAttribHelper& attribs,
-                  gl::GpuPreference gpu_preference,
                   InProcessCommandBuffer* share_group,
                   GpuMemoryBufferManager* gpu_memory_buffer_manager,
                   ImageFactory* image_factory);
@@ -173,9 +171,7 @@ class GPU_EXPORT InProcessCommandBuffer : public CommandBuffer,
   struct InitializeOnGpuThreadParams {
     bool is_offscreen;
     gfx::AcceleratedWidget window;
-    const gfx::Size& size;
     const gles2::ContextCreationAttribHelper& attribs;
-    gl::GpuPreference gpu_preference;
     gpu::Capabilities* capabilities;  // Ouptut.
     InProcessCommandBuffer* context_group;
     ImageFactory* image_factory;
@@ -183,17 +179,13 @@ class GPU_EXPORT InProcessCommandBuffer : public CommandBuffer,
     InitializeOnGpuThreadParams(
         bool is_offscreen,
         gfx::AcceleratedWidget window,
-        const gfx::Size& size,
         const gles2::ContextCreationAttribHelper& attribs,
-        gl::GpuPreference gpu_preference,
         gpu::Capabilities* capabilities,
         InProcessCommandBuffer* share_group,
         ImageFactory* image_factory)
         : is_offscreen(is_offscreen),
           window(window),
-          size(size),
           attribs(attribs),
-          gpu_preference(gpu_preference),
           capabilities(capabilities),
           context_group(share_group),
           image_factory(image_factory) {}

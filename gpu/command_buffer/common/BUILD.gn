@@ -80,6 +80,7 @@ component("gles2_utils") {
 
   deps = [
     "//base",
+    "//ui/gfx/geometry",
   ]
 
   all_dependent_configs = [ "//third_party/khronos:khronos_headers" ]

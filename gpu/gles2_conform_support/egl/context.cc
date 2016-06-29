@@ -295,9 +295,10 @@ bool Context::CreateService(gl::GLSurface* gl_surface) {
   helper.fail_if_major_perf_caveat = false;
   helper.lose_context_when_out_of_memory = kLoseContextWhenOutOfMemory;
   helper.context_type = gpu::gles2::CONTEXT_TYPE_OPENGLES2;
+  helper.offscreen_framebuffer_size = gl_surface->GetSize();
 
   if (!decoder->Initialize(gl_surface, gl_context.get(),
-                           gl_surface->IsOffscreen(), gl_surface->GetSize(),
+                           gl_surface->IsOffscreen(),
                            gpu::gles2::DisallowedFeatures(), helper)) {
     return false;
   }

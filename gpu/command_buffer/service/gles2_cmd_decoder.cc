@@ -585,7 +585,6 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
   bool Initialize(const scoped_refptr<gl::GLSurface>& surface,
                   const scoped_refptr<gl::GLContext>& context,
                   bool offscreen,
-                  const gfx::Size& offscreen_size,
                   const DisallowedFeatures& disallowed_features,
                   const ContextCreationAttribHelper& attrib_helper) override;
   void Destroy(bool have_context) override;
@@ -2912,13 +2911,11 @@ bool GLES2DecoderImpl::Initialize(
     const scoped_refptr<gl::GLSurface>& surface,
     const scoped_refptr<gl::GLContext>& context,
     bool offscreen,
-    const gfx::Size& offscreen_size,
     const DisallowedFeatures& disallowed_features,
     const ContextCreationAttribHelper& attrib_helper) {
   TRACE_EVENT0("gpu", "GLES2DecoderImpl::Initialize");
   DCHECK(context->IsCurrent(surface.get()));
   DCHECK(!context_.get());
-  DCHECK(!offscreen || !offscreen_size.IsEmpty());
 
   surfaceless_ = surface->IsSurfaceless() && !offscreen;
 
@@ -3214,16 +3211,26 @@ bool GLES2DecoderImpl::Initialize(
     offscreen_saved_color_texture_.reset(new BackTexture(this));
     offscreen_saved_color_texture_->Create();
 
+    gfx::Size initial_size = attrib_helper.offscreen_framebuffer_size;
+    if (initial_size.IsEmpty()) {
+      // If we're an offscreen surface with zero width and/or height, set to a
+      // non-zero size so that we have a complete framebuffer for operations
+      // like glClear.
+      // TODO(piman): allow empty framebuffers, similar to
+      // EGL_KHR_surfaceless_context / GL_OES_surfaceless_context.
+      initial_size = gfx::Size(1, 1);
+    }
+
     // Allocate the render buffers at their initial size and check the status
     // of the frame buffers is okay.
-    if (!ResizeOffscreenFrameBuffer(offscreen_size)) {
+    if (!ResizeOffscreenFrameBuffer(initial_size)) {
       LOG(ERROR) << "Could not allocate offscreen buffer storage.";
       Destroy(true);
       return false;
     }
 
-    state_.viewport_width = offscreen_size.width();
-    state_.viewport_height = offscreen_size.height();
+    state_.viewport_width = initial_size.width();
+    state_.viewport_height = initial_size.height();
 
     // Allocate the offscreen saved color texture.
     DCHECK(offscreen_saved_color_format_);

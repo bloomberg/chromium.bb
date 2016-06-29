@@ -55,13 +55,11 @@ IPC_STRUCT_END()
 
 IPC_STRUCT_BEGIN(GPUCreateCommandBufferConfig)
   IPC_STRUCT_MEMBER(gpu::SurfaceHandle, surface_handle)
-  IPC_STRUCT_MEMBER(gfx::Size, size)
   IPC_STRUCT_MEMBER(int32_t, share_group_id)
   IPC_STRUCT_MEMBER(int32_t, stream_id)
   IPC_STRUCT_MEMBER(gpu::GpuStreamPriority, stream_priority)
   IPC_STRUCT_MEMBER(gpu::gles2::ContextCreationAttribHelper, attribs)
   IPC_STRUCT_MEMBER(GURL, active_url)
-  IPC_STRUCT_MEMBER(gl::GpuPreference, gpu_preference)
 IPC_STRUCT_END()
 
 IPC_STRUCT_BEGIN(GpuCommandBufferMsg_CreateImage_Params)

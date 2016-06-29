@@ -452,8 +452,7 @@ scoped_refptr<ContextProviderCommandBuffer> CreateOffscreenContext(
       std::move(gpu_channel_host), stream_id, stream_priority,
       gpu::kNullSurfaceHandle,
       GURL("chrome://gpu/RenderThreadImpl::CreateOffscreenContext"),
-      gl::PreferIntegratedGpu, automatic_flushes, support_locking, limits,
-      attributes, nullptr, type));
+      automatic_flushes, support_locking, limits, attributes, nullptr, type));
 }
 
 }  // namespace
@@ -1906,8 +1905,7 @@ RenderThreadImpl::CreateCompositorOutputSurface(
       new ContextProviderCommandBuffer(
           gpu_channel_host, gpu::GPU_STREAM_DEFAULT,
           gpu::GpuStreamPriority::NORMAL, gpu::kNullSurfaceHandle, url,
-          gl::PreferIntegratedGpu, automatic_flushes, support_locking, limits,
-          attributes, share_context,
+          automatic_flushes, support_locking, limits, attributes, share_context,
           command_buffer_metrics::RENDER_COMPOSITOR_CONTEXT));
 
   if (layout_test_deps_) {

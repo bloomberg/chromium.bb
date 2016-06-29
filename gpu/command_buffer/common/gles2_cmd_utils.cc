@@ -1789,7 +1789,8 @@ const int32_t kContextType = 0x10004;
 }  // namespace
 
 ContextCreationAttribHelper::ContextCreationAttribHelper()
-    : alpha_size(-1),
+    : gpu_preference(gl::PreferIntegratedGpu),
+      alpha_size(-1),
       blue_size(-1),
       green_size(-1),
       red_size(-1),

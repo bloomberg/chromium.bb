@@ -41,7 +41,7 @@ class GL_IN_PROCESS_CONTEXT_EXPORT GLInProcessContext {
   // Create a GLInProcessContext, if |is_offscreen| is true, renders to an
   // offscreen context. |attrib_list| must be NULL or a NONE-terminated list
   // of attribute/value pairs.
-  // If |surface| is not NULL, then it must match |is_offscreen| and |size|,
+  // If |surface| is not NULL, then it must match |is_offscreen|,
   // |window| must be gfx::kNullAcceleratedWidget, and the command buffer
   // service must run on the same thread as this client because GLSurface is
   // not thread safe. If |surface| is NULL, then the other parameters are used
@@ -51,10 +51,8 @@ class GL_IN_PROCESS_CONTEXT_EXPORT GLInProcessContext {
       scoped_refptr<gl::GLSurface> surface,
       bool is_offscreen,
       gfx::AcceleratedWidget window,
-      const gfx::Size& size,
       GLInProcessContext* share_context,
       const gpu::gles2::ContextCreationAttribHelper& attribs,
-      gl::GpuPreference gpu_preference,
       const SharedMemoryLimits& memory_limits,
       GpuMemoryBufferManager* gpu_memory_buffer_manager,
       ImageFactory* image_factory);

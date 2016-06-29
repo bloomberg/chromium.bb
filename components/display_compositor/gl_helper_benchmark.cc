@@ -64,15 +64,15 @@ class GLHelperBenchmark : public testing::Test {
     attributes.samples = 4;
     attributes.sample_buffers = 1;
     attributes.bind_generates_resource = false;
+    attributes.gpu_preference = gl::PreferDiscreteGpu;
 
     context_.reset(gpu::GLInProcessContext::Create(
         nullptr,                     /* service */
         nullptr,                     /* surface */
         true,                        /* offscreen */
         gfx::kNullAcceleratedWidget, /* window */
-        gfx::Size(1, 1),             /* size */
         nullptr,                     /* share_context */
-        attributes, gl::PreferDiscreteGpu, gpu::SharedMemoryLimits(),
+        attributes, gpu::SharedMemoryLimits(),
         nullptr, /* gpu_memory_buffer_manager */
         nullptr /* image_factory */));
     gl_ = context_->GetImplementation();

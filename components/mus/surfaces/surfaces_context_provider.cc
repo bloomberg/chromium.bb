@@ -59,14 +59,12 @@ SurfacesContextProvider::SurfacesContextProvider(
     attributes.sample_buffers = 0;
     attributes.bind_generates_resource = false;
     attributes.lose_context_when_out_of_memory = true;
-    gl::GpuPreference gpu_preference = gl::PreferIntegratedGpu;
     GURL active_url;
     scoped_refptr<base::SingleThreadTaskRunner> task_runner =
         base::ThreadTaskRunnerHandle::Get();
     command_buffer_proxy_impl_ = gpu::CommandBufferProxyImpl::Create(
-        service->gpu_channel_local(), widget, gfx::Size(),
-        shared_command_buffer, stream_id, stream_priority, attributes,
-        active_url, gpu_preference, task_runner);
+        service->gpu_channel_local(), widget, shared_command_buffer, stream_id,
+        stream_priority, attributes, active_url, task_runner);
     command_buffer_proxy_impl_->SetSwapBuffersCompletionCallback(
         base::Bind(&SurfacesContextProvider::OnGpuSwapBuffersCompleted,
                    base::Unretained(this)));

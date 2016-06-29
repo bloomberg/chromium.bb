@@ -83,14 +83,12 @@ bool InProcessContextProvider::BindToCurrentThread() {
   DCHECK(context_thread_checker_.CalledOnValidThread());
 
   if (!context_) {
-    gl::GpuPreference gpu_preference = gl::PreferDiscreteGpu;
     context_.reset(gpu::GLInProcessContext::Create(
         nullptr,  /* service */
         nullptr,  /* surface */
         !window_, /* is_offscreen */
-        window_, gfx::Size(1, 1),
-        (shared_context_ ? shared_context_->context_.get() : nullptr), attribs_,
-        gpu_preference, gpu::SharedMemoryLimits(), gpu_memory_buffer_manager_,
+        window_, (shared_context_ ? shared_context_->context_.get() : nullptr),
+        attribs_, gpu::SharedMemoryLimits(), gpu_memory_buffer_manager_,
         image_factory_));
 
     if (!context_)

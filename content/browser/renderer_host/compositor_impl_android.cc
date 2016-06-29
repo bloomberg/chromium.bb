@@ -684,9 +684,8 @@ void CompositorImpl::CreateOutputSurface() {
 
     context_provider = new ContextProviderCommandBuffer(
         std::move(gpu_channel_host), gpu::GPU_STREAM_DEFAULT,
-        gpu::GpuStreamPriority::NORMAL, surface_handle_, url,
-        gl::PreferIntegratedGpu, automatic_flushes, support_locking, limits,
-        attributes, nullptr,
+        gpu::GpuStreamPriority::NORMAL, surface_handle_, url, automatic_flushes,
+        support_locking, limits, attributes, nullptr,
         command_buffer_metrics::DISPLAY_COMPOSITOR_ONSCREEN_CONTEXT);
     DCHECK(context_provider.get());
 

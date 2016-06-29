@@ -529,10 +529,10 @@ bool PepperVideoEncoderHost::EnsureGpuChannel() {
     return false;
 
   command_buffer_ = gpu::CommandBufferProxyImpl::Create(
-      std::move(channel), gpu::kNullSurfaceHandle, gfx::Size(), nullptr,
+      std::move(channel), gpu::kNullSurfaceHandle, nullptr,
       gpu::GPU_STREAM_DEFAULT, gpu::GpuStreamPriority::NORMAL,
       gpu::gles2::ContextCreationAttribHelper(), GURL::EmptyGURL(),
-      gl::PreferIntegratedGpu, base::ThreadTaskRunnerHandle::Get());
+      base::ThreadTaskRunnerHandle::Get());
   if (!command_buffer_) {
     Close();
     return false;

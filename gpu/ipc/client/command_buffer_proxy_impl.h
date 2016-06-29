@@ -85,13 +85,11 @@ class GPU_EXPORT CommandBufferProxyImpl
   static std::unique_ptr<CommandBufferProxyImpl> Create(
       scoped_refptr<GpuChannelHost> host,
       gpu::SurfaceHandle surface_handle,
-      const gfx::Size& size,
       CommandBufferProxyImpl* share_group,
       int32_t stream_id,
       gpu::GpuStreamPriority stream_priority,
       const gpu::gles2::ContextCreationAttribHelper& attribs,
       const GURL& active_url,
-      gl::GpuPreference gpu_preference,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner);
   ~CommandBufferProxyImpl() override;
 

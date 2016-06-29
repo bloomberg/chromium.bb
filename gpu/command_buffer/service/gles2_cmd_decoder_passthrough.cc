@@ -93,7 +93,6 @@ bool GLES2DecoderPassthroughImpl::Initialize(
     const scoped_refptr<gl::GLSurface>& surface,
     const scoped_refptr<gl::GLContext>& context,
     bool offscreen,
-    const gfx::Size& offscreen_size,
     const DisallowedFeatures& disallowed_features,
     const ContextCreationAttribHelper& attrib_helper) {
   // Take ownership of the context and surface. The surface can be replaced
