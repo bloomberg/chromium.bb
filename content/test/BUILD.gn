@@ -430,6 +430,9 @@ test("content_browsertests") {
           data += [ "$root_out_dir/content_browsertests.exe.pdb" ]
         }
       }
+      if (is_linux) {
+        data += [ "//testing/buildbot/filters/browser-side-navigation.linux.content_browsertests.filter" ]
+      }
     }
   }
 
