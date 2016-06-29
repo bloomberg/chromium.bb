@@ -41,13 +41,8 @@ LiveRegions = function(chromeVoxState) {
    * @private
    */
   this.liveRegionNodeSet_ = new WeakSet();
-
-  // API only exists >= m49. Prevent us from crashing.
-  try {
-    chrome.automation.addTreeChangeObserver(
-        'liveRegionTreeChanges', this.onTreeChange.bind(this));
-  } catch (e) {
-  }
+  chrome.automation.addTreeChangeObserver(
+      'liveRegionTreeChanges', this.onTreeChange.bind(this));
 };
 
 /**

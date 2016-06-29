@@ -11,6 +11,7 @@ goog.provide('Output.EventType');
 
 goog.require('EarconEngine');
 goog.require('Spannable');
+goog.require('Stubs');
 goog.require('constants');
 goog.require('cursors.Cursor');
 goog.require('cursors.Range');
@@ -928,10 +929,8 @@ Output.prototype = {
     }
 
     // Display.
-    if (cvox.ChromeVox.isChromeOS &&
-        this.speechCategory_ != cvox.TtsCategory.LIVE) {
+    if (this.speechCategory_ != cvox.TtsCategory.LIVE)
       chrome.accessibilityPrivate.setFocusRing(this.locations_);
-    }
   },
 
   /**

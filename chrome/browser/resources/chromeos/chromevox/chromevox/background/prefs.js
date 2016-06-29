@@ -108,6 +108,12 @@ cvox.ChromeVoxPrefs.prototype.init = function(pullFromLocalStorage) {
  * cvox.KeyMap.AVAIABLE_KEYMAP_INFO.
 */
 cvox.ChromeVoxPrefs.prototype.switchToKeyMap = function(selectedKeyMap) {
+  // Switching key maps potentially affects the key codes that involve
+  // sequencing. Without resetting this list, potentially stale key
+  // codes remain. The key codes themselves get pushed in
+  // cvox.KeySequence.deserialize which gets called by cvox.KeyMap.
+  cvox.ChromeVox.sequenceSwitchKeyCodes = [];
+
   // TODO(dtseng): Leaking state about multiple key maps here until we have a
   // class to manage multiple key maps.
   localStorage['currentKeyMap'] = selectedKeyMap;

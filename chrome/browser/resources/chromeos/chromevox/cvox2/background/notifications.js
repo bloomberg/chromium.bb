@@ -24,7 +24,8 @@ UpdateNotification.prototype = {
   /** @return {boolean} */
   shouldShow: function() {
     return !localStorage['notifications_update_notification_shown'] &&
-        chrome.runtime.getManifest().version >= '53';
+        chrome.runtime.getManifest().version >= '53' &&
+        cvox.ChromeVox.isChromeOS;
   },
 
 /** Shows the notification. */

@@ -68,5 +68,5 @@ chrome.accessibilityPrivate.onControlHover;
 /** @type ChromeEvent */
 chrome.accessibilityPrivate.onTextChanged;
 
-/** @type ChromeEvent */
+/** @type {ChromeEvent|!Object} */
 chrome.accessibilityPrivate.onAccessibilityGesture;

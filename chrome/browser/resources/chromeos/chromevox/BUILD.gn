@@ -34,6 +34,7 @@ group("chromevox") {
       ":chromevox_background_script",
       ":chromevox_content_script",
       ":chromevox_kbexplorer_script",
+      ":chromevox_min_content_script",
       ":chromevox_options_script",
       ":chromevox_panel_script",
     ]
@@ -163,6 +164,7 @@ run_jsbundler("chromevox_copied_files") {
       chromevox_vars_gypi_values.chromevox_kbexplorer_loader_file,
       chromevox_vars_gypi_values.chromevox_options_script_loader_file,
       chromevox_vars_gypi_values.chromevox_background_script_loader_file,
+      chromevox_vars_gypi_values.chromevox_min_content_script_loader_file,
       chromevox_vars_gypi_values.chromevox_panel_script_loader_file,
     ]
   }
@@ -287,6 +289,13 @@ if (chromevox_compress_js) {
       chromevox_vars_gypi_values.chromevox_background_script_loader_file,
     ]
     output_file = "$chromevox_out_dir/chromeVox2ChromeBackgroundScript.js"
+  }
+
+  compress_js("chromevox_min_content_script") {
+    sources = [
+      chromevox_vars_gypi_values.chromevox_min_content_script_loader_file,
+    ]
+    output_file = "$chromevox_out_dir/chromeVox2ChromePageScript.js"
   }
 
   compress_js("chromevox_panel_script") {

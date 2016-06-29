@@ -18,6 +18,7 @@ goog.require('Notifications');
 goog.require('Output');
 goog.require('Output.EventType');
 goog.require('PanelCommand');
+goog.require('Stubs');
 goog.require('constants');
 goog.require('cursors.Cursor');
 goog.require('cvox.BrailleKeyCommand');
@@ -106,8 +107,8 @@ Background = function() {
   if (cvox.ChromeVox.isChromeOS) {
     Object.defineProperty(cvox.ChromeVox, 'modKeyStr', {
       get: function() {
-        return (this.mode == ChromeVoxMode.CLASSIC || this.mode ==
-            ChromeVoxMode.COMPAT) ?
+        return (this.mode == ChromeVoxMode.CLASSIC ||
+            this.mode == ChromeVoxMode.COMPAT) ?
                 'Search+Shift' : 'Search';
       }.bind(this)
     });
@@ -146,15 +147,10 @@ Background = function() {
    */
   this.mode_ = null;
 
-  if (!chrome.accessibilityPrivate.setKeyboardListener)
-    chrome.accessibilityPrivate.setKeyboardListener = function() {};
-
-  if (cvox.ChromeVox.isChromeOS) {
-    chrome.accessibilityPrivate.onAccessibilityGesture.addListener(
-        this.onAccessibilityGesture_);
-
-    Notifications.onStartup();
-  }};
+  chrome.accessibilityPrivate.onAccessibilityGesture.addListener(
+      this.onAccessibilityGesture_);
+  Notifications.onStartup();
+};
 
 /**
  * @const {string}
@@ -239,25 +235,12 @@ Background.prototype = {
    * @private
    */
   onModeChanged_: function(newMode, oldMode) {
-    // Switching key maps potentially affects the key codes that involve
-    // sequencing. Without resetting this list, potentially stale key codes
-    // remain. The key codes themselves get pushed in
-    // cvox.KeySequence.deserialize which gets called by cvox.KeyMap.
-    cvox.ChromeVox.sequenceSwitchKeyCodes = [];
-
-    var selectedKeyMap =
-        newMode == ChromeVoxMode.CLASSIC || newMode == ChromeVoxMode.COMPAT ?
-        'keymap_classic' : 'keymap_next';
-    window['prefs'].switchToKeyMap(selectedKeyMap);
-
     if (newMode == ChromeVoxMode.CLASSIC) {
       if (chrome.commands &&
           chrome.commands.onCommand.hasListener(this.onGotCommand))
         chrome.commands.onCommand.removeListener(this.onGotCommand);
       chrome.accessibilityPrivate.setKeyboardListener(false, false);
-
-      if (cvox.ChromeVox.isChromeOS)
-        chrome.accessibilityPrivate.setFocusRing([]);
+      chrome.accessibilityPrivate.setFocusRing([]);
     } else {
       if (chrome.commands &&
           !chrome.commands.onCommand.hasListener(this.onGotCommand))
@@ -292,21 +275,37 @@ Background.prototype = {
       }
     }.bind(this));
 
-    // If switching out of a ChromeVox Next mode, make sure we cancel
-    // the progress loading sound just in case.
+    // Switching into either compat or classic.
     if (oldMode === ChromeVoxMode.NEXT ||
-        oldMode === ChromeVoxMode.FORCE_NEXT)
+        oldMode === ChromeVoxMode.FORCE_NEXT) {
+      // Make sure we cancel the progress loading sound just in case.
       cvox.ChromeVox.earcons.cancelEarcon(cvox.Earcon.PAGE_START_LOADING);
+      (new PanelCommand(PanelCommandType.DISABLE_MENUS)).send();
+    }
 
+    // Switching out of next, force next, or uninitialized (on startup).
     if (newMode === ChromeVoxMode.NEXT ||
         newMode === ChromeVoxMode.FORCE_NEXT) {
       (new PanelCommand(PanelCommandType.ENABLE_MENUS)).send();
       if (cvox.TabsApiHandler)
         cvox.TabsApiHandler.shouldOutputSpeechAndBraille = false;
+
+      window['prefs'].switchToKeyMap('keymap_next');
     } else {
-      (new PanelCommand(PanelCommandType.DISABLE_MENUS)).send();
+      // |newMode| is either classic or compat.
       if (cvox.TabsApiHandler)
         cvox.TabsApiHandler.shouldOutputSpeechAndBraille = true;
+
+      // Moving from next to classic/compat should be the only case where
+      // keymaps get reset. Note the classic <-> compat switches should preserve
+      // keymaps especially if a user selected a different one.
+      if (oldMode &&
+          oldMode != ChromeVoxMode.CLASSIC &&
+          oldMode != ChromeVoxMode.COMPAT) {
+        // The user's configured key map gets wiped here; this is consistent
+        // with previous behavior when switching keymaps.
+        window['prefs'].switchToKeyMap('keymap_next');
+      }
     }
   },
 

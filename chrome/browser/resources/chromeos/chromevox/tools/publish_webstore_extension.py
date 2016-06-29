@@ -71,6 +71,7 @@ def MakeChromeVoxManifest():
   context = {
     'is_guest_manifest': '0',
     'is_js_compressed': '1',
+    'is_webstore': '1',
     'set_version': GetVersion()
   }
   generate_manifest.processJinjaTemplate(in_file_name, new_file.name, context)

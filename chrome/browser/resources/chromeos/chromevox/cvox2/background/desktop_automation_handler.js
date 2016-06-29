@@ -11,6 +11,7 @@ goog.provide('DesktopAutomationHandler');
 goog.require('AutomationObjectConstructorInstaller');
 goog.require('BaseAutomationHandler');
 goog.require('ChromeVoxState');
+goog.require('Stubs');
 goog.require('editing.TextEditHandler');
 
 goog.scope(function() {
@@ -101,8 +102,7 @@ DesktopAutomationHandler.prototype = {
     // Don't process nodes inside of web content if ChromeVox Next is inactive.
     if (node.root.role != RoleType.desktop &&
         ChromeVoxState.instance.mode === ChromeVoxMode.CLASSIC) {
-      if (cvox.ChromeVox.isChromeOS)
-        chrome.accessibilityPrivate.setFocusRing([]);
+      chrome.accessibilityPrivate.setFocusRing([]);
       return;
     }
 
@@ -413,8 +413,6 @@ DesktopAutomationHandler.prototype = {
  * @private
  */
 DesktopAutomationHandler.init_ = function() {
-  if (cvox.ChromeVox.isMac)
-    return;
   chrome.automation.getDesktop(function(desktop) {
     ChromeVoxState.desktopAutomationHandler =
         new DesktopAutomationHandler(desktop);
