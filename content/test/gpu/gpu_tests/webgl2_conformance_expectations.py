@@ -34,7 +34,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     # Too slow (take about one hour to run)
     self.Skip('deqp/functional/gles3/builtinprecision/*.html', bug=619403)
 
-    self.Fail('deqp/functional/gles3/fboinvalidate/*.html', bug=483282)
     self.Fail('deqp/functional/gles3/fborender/*.html', bug=483282)
     self.Fail('deqp/functional/gles3/framebufferblit/*.html', bug=483282)
     self.Fail('deqp/data/gles3/shaders/linkage.html', bug=601821)
@@ -118,6 +117,11 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['win'], bug=483282)
 
     self.Fail('deqp/functional/gles3/fbomultisample*',
+        ['win'], bug=483282)
+
+    self.Fail('deqp/functional/gles3/fboinvalidate/sub.html',
+        ['win'], bug=483282)
+    self.Fail('deqp/functional/gles3/fboinvalidate/whole.html',
         ['win'], bug=483282)
 
     # Windows 8 only.
@@ -387,6 +391,9 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('conformance2/rendering/draw-buffers.html',
         ['mac', ('nvidia', 0xfe9)], bug=617410)
 
+    self.Fail('deqp/functional/gles3/fboinvalidate/format_02.html',
+        ['mac', ('nvidia', 0xfe9)], bug=483282)
+
     # Mac AMD
     self.Fail('deqp/functional/gles3/clipping.html',
         ['mac', 'amd'], bug=483282)
@@ -508,6 +515,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['linux', 'nvidia', 'no_angle'], bug=606498)
     self.Fail('deqp/functional/gles3/uniformapi/random.html',
         ['linux', 'nvidia'], bug=621178)
+    self.Fail('deqp/functional/gles3/fboinvalidate/whole.html',
+        ['linux', 'nvidia'], bug=483282)
 
     # Linux NVIDIA with ANGLE only
     self.Fail('deqp/functional/gles3/buffercopy.html',
