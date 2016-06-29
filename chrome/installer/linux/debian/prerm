@@ -16,6 +16,8 @@ if [ "$action" = "upgrade" ] ; then
   exit 0
 fi
 
+@@include@@../common/variables.include
+
 @@include@@../common/prerm.include
 
 # Remove from the alternatives system
