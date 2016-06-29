@@ -10,6 +10,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
+#include "base/strings/string_piece.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/password_manager/core/browser/mock_password_store.h"
@@ -20,6 +21,7 @@
 using autofill::PasswordForm;
 using autofill::PasswordFormMap;
 using base::ASCIIToUTF16;
+using base::StringPiece;
 using base::WrapUnique;
 using testing::_;
 using testing::DoAll;
@@ -41,7 +43,7 @@ PasswordForm CreateObserved() {
 
 // Creates a dummy pending (for saving) form with some basic arbitrary values
 // and |username| and |password| values as specified.
-PasswordForm CreatePending(const char* username, const char* password) {
+PasswordForm CreatePending(StringPiece username, StringPiece password) {
   PasswordForm form = CreateObserved();
   form.username_value = ASCIIToUTF16(username);
   form.password_value = ASCIIToUTF16(password);
@@ -51,7 +53,7 @@ PasswordForm CreatePending(const char* username, const char* password) {
 
 // Creates a dummy pending (for saving) GAIA form with |username| and
 // |password| values as specified.
-PasswordForm CreatePendingGAIA(const char* username, const char* password) {
+PasswordForm CreatePendingGAIA(StringPiece username, StringPiece password) {
   PasswordForm form;
   form.origin = GURL("https://accounts.google.com");
   form.signon_realm = form.origin.spec();
