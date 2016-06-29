@@ -14,6 +14,7 @@
 #include "base/android/jni_utils.h"
 #include "base/android/library_loader/library_loader_hooks.h"
 #include "base/command_line.h"
+#include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
@@ -97,6 +98,7 @@ void CronetInitOnMainThread(JNIEnv* env, const JavaParamRef<jclass>& jcaller) {
   base::i18n::InitializeICU();
 #endif
 
+  base::FeatureList::InitializeInstance(std::string(), std::string());
   // TODO(bengr): Remove once Data Reduction Proxy no longer needs this for
   // configuration information.
   base::CommandLine::Init(0, nullptr);
