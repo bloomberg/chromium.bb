@@ -114,7 +114,7 @@ var SiteSettingsBehaviorImpl = {
   computeIconForContentCategory: function(category) {
     switch (category) {
       case settings.ContentSettingsTypes.AUTOMATIC_DOWNLOADS:
-        return 'settings:file-download';
+        return 'cr:file-download';
       case settings.ContentSettingsTypes.BACKGROUND_SYNC:
         return 'settings:sync';
       case settings.ContentSettingsTypes.CAMERA:
@@ -136,11 +136,11 @@ var SiteSettingsBehaviorImpl = {
       case settings.ContentSettingsTypes.NOTIFICATIONS:
         return 'settings:notifications';
       case settings.ContentSettingsTypes.PLUGINS:
-        return 'settings:extension';
+        return 'cr:extension';
       case settings.ContentSettingsTypes.POPUPS:
         return 'settings:open-in-new';
       case settings.ContentSettingsTypes.UNSANDBOXED_PLUGINS:
-        return 'settings:extension';
+        return 'cr:extension';
       default:
         assertNotReached('Invalid category: ' + category);
         return '';
