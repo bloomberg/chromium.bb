@@ -28,9 +28,6 @@
 // between apps.
 @property(nonatomic, readonly) NSString* hashedGaiaID;
 
-// Whether the ChromeIdentity object has been signed in.
-@property(nonatomic, readonly) BOOL isSignedIn;
-
 @end
 
 #endif  // IOS_PUBLIC_PROVIDER_CHROME_BROWSER_SIGNIN_CHROME_IDENTITY_H_

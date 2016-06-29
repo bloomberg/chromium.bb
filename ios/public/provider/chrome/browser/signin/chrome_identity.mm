@@ -28,9 +28,4 @@
   return nil;
 }
 
-- (BOOL)isSignedIn {
-  NOTREACHED();
-  return false;
-}
-
 @end
