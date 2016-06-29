@@ -63,7 +63,7 @@
     'chromium.chrome': {
       'Google Chrome ChromeOS': 'gn_official_goma_chromeos',
       'Google Chrome Linux x64': 'gn_official_goma',
-      'Google Chrome Mac': 'gyp_official_goma',
+      'Google Chrome Mac': 'gn_official_goma',
       'Google Chrome Win': 'gn_official_goma_minimal_symbols_x86',
     },
 
@@ -638,7 +638,7 @@
     'official.desktop.continuous': {
       'mac beta': 'gyp_official',
       'mac stable': 'gyp_official',
-      'mac trunk': 'gyp_official',
+      'mac trunk': 'gn_official',
       'precise64 beta': 'gn_official',
       'precise64 stable': 'gn_official',
       'precise64 trunk': 'gn_official',
