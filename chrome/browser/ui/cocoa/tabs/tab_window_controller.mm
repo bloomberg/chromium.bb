@@ -182,15 +182,15 @@
     // Return the original window's tab strip view and content view to their
     // places. The TabStripView always needs to be in front of the window's
     // content view and therefore it should always be added after the content
-    // view is set. It needs to be positioned at the bottom of the view
-    // hierarchy to ensure that it does not overlap the avatar button icon.
+    // view is set. It needs to be positioned below the avatar button to ensure
+    // that its overlay will not overlap it.
     [[window contentView] addSubview:originalContentView_
                           positioned:NSWindowBelow
                           relativeTo:nil];
     originalContentView_.frame = [[window contentView] bounds];
     [[window contentView] addSubview:[self tabStripView]
                           positioned:NSWindowBelow
-                          relativeTo:nil];
+                          relativeTo:[self avatarView]];
     [[self tabStripView] setInATabDraggingOverlayWindow:NO];
     [[window contentView] updateTrackingAreas];
 
@@ -313,6 +313,10 @@
   // Subclasses should implement this.
   NOTIMPLEMENTED();
   return 0;
+}
+
+- (NSView*)avatarView {
+  return nil;
 }
 
 - (NSString*)activeTabTitle {

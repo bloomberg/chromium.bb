@@ -1912,6 +1912,10 @@ willAnimateFromState:(BookmarkBar::State)oldState
   return [presentationModeController_ menubarOffset];
 }
 
+- (NSView*)avatarView {
+  return [avatarButtonController_ view];
+}
+
 - (void)enterWebContentFullscreen {
   // HTML5 Fullscreen should only use AppKit fullscreen in 10.10+.
   // However, if the user is using multiple monitors and turned off

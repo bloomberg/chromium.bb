@@ -159,6 +159,9 @@
 // the screen (tab strip, omnibox, bookmark bar, etc). Ranges from 0 to -22.
 - (CGFloat)menubarOffset;
 
+// Returns the view of the avatar button.
+- (NSView*)avatarView;
+
 // Tell the window that it needs to call performClose: as soon as the current
 // drag is complete. This prevents a window (and its overlay) from going away
 // during a drag.
