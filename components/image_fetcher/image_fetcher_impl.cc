@@ -2,25 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/search/suggestions/image_fetcher_impl.h"
+#include "components/image_fetcher/image_fetcher_impl.h"
 
 #include <string>
 
 #include "base/bind.h"
-#include "chrome/browser/search/suggestions/image_decoder_impl.h"
-#include "content/public/browser/browser_thread.h"
 #include "net/base/load_flags.h"
 #include "net/url_request/url_request_context_getter.h"
-#include "ui/gfx/image/image.h"
 
-namespace suggestions {
+namespace image_fetcher {
 
 ImageFetcherImpl::ImageFetcherImpl(
+    std::unique_ptr<ImageDecoder> image_decoder,
     net::URLRequestContextGetter* url_request_context)
     : delegate_(nullptr), url_request_context_(url_request_context),
-      image_decoder_(new suggestions::ImageDecoderImpl()),
-      image_data_fetcher_(
-          new image_fetcher::ImageDataFetcher(url_request_context_)) {
+      image_decoder_(std::move(image_decoder)),
+      image_data_fetcher_(new ImageDataFetcher(url_request_context_.get())) {
 }
 
 ImageFetcherImpl::~ImageFetcherImpl() {}
@@ -32,8 +29,7 @@ ImageFetcherImpl::ImageRequest::ImageRequest(const ImageRequest& other) =
 
 ImageFetcherImpl::ImageRequest::~ImageRequest() { }
 
-void ImageFetcherImpl::SetImageFetcherDelegate(
-    image_fetcher::ImageFetcherDelegate* delegate) {
+void ImageFetcherImpl::SetImageFetcherDelegate(ImageFetcherDelegate* delegate) {
   DCHECK(delegate);
   delegate_ = delegate;
 }
@@ -97,4 +93,4 @@ void ImageFetcherImpl::OnImageDecoded(const GURL& image_url,
   pending_net_requests_.erase(image_iter);
 }
 
-}  // namespace suggestions
+}  // namespace image_fetcher

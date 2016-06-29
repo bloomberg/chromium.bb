@@ -22,6 +22,8 @@
         'image_fetcher/image_decoder.h',
         'image_fetcher/image_fetcher.h',
         'image_fetcher/image_fetcher_delegate.h',
+        'image_fetcher/image_fetcher_impl.cc',
+        'image_fetcher/image_fetcher_impl.h',
       ]
     },
   ],

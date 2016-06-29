@@ -559,8 +559,6 @@
       'browser/search/search.h',
       'browser/search/suggestions/image_decoder_impl.cc',
       'browser/search/suggestions/image_decoder_impl.h',
-      'browser/search/suggestions/image_fetcher_impl.cc',
-      'browser/search/suggestions/image_fetcher_impl.h',
       'browser/search/suggestions/suggestions_service_factory.cc',
       'browser/search/suggestions/suggestions_service_factory.h',
       'browser/search/suggestions/suggestions_ui.cc',

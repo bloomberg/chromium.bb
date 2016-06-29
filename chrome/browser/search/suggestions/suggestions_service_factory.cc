@@ -7,14 +7,16 @@
 #include <memory>
 #include <utility>
 
+#include "base/memory/ptr_util.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/search/suggestions/image_fetcher_impl.h"
+#include "chrome/browser/search/suggestions/image_decoder_impl.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "components/browser_sync/browser/profile_sync_service.h"
 #include "components/image_fetcher/image_fetcher.h"
+#include "components/image_fetcher/image_fetcher_impl.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/leveldb_proto/proto_database.h"
 #include "components/leveldb_proto/proto_database_impl.h"
@@ -31,6 +33,7 @@
 #include "content/public/browser/browser_thread.h"
 
 using content::BrowserThread;
+using image_fetcher::ImageFetcherImpl;
 
 namespace suggestions {
 
@@ -83,7 +86,9 @@ KeyedService* SuggestionsServiceFactory::BuildServiceInstanceFor(
       profile->GetPath().Append(FILE_PATH_LITERAL("Thumbnails")));
 
   std::unique_ptr<ImageFetcherImpl> image_fetcher(
-      new ImageFetcherImpl(profile->GetRequestContext()));
+      new ImageFetcherImpl(
+          base::MakeUnique<suggestions::ImageDecoderImpl>(),
+          profile->GetRequestContext()));
   std::unique_ptr<ImageManager> thumbnail_manager(new ImageManager(
       std::move(image_fetcher), std::move(db), database_dir,
       BrowserThread::GetMessageLoopProxyForThread(BrowserThread::DB)));

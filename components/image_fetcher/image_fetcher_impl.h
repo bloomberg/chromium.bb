@@ -2,10 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SEARCH_SUGGESTIONS_IMAGE_FETCHER_IMPL_H_
-#define CHROME_BROWSER_SEARCH_SUGGESTIONS_IMAGE_FETCHER_IMPL_H_
+#ifndef COMPONENTS_IMAGE_FETCHER_IMAGE_FETCHER_IMPL_H_
+#define COMPONENTS_IMAGE_FETCHER_IMAGE_FETCHER_IMPL_H_
 
 #include <map>
+#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
@@ -25,17 +26,21 @@ namespace net {
 class URLRequestContextGetter;
 }
 
-// TODO(markusheintz): Move the ImageFetcherImpl to components/image_fetcher
-namespace suggestions {
+namespace image_fetcher {
 
-// image_fetcher::ImageFetcher implementation.
+// TODO(markusheintz): Once the iOS implementation of the ImageFetcher is
+// removed merge the two classes ImageFetcher and ImageFetcherImpl.
 class ImageFetcherImpl : public image_fetcher::ImageFetcher {
  public:
-  explicit ImageFetcherImpl(net::URLRequestContextGetter* url_request_context);
+  ImageFetcherImpl(
+      std::unique_ptr<ImageDecoder> image_decoder,
+      net::URLRequestContextGetter* url_request_context);
   ~ImageFetcherImpl() override;
 
-  void SetImageFetcherDelegate(
-      image_fetcher::ImageFetcherDelegate* delegate) override;
+  // Sets the |delegate| of the ImageFetcherImpl. The |delegate| has to be alive
+  // during the lifetime of the ImageFetcherImpl object. It is the caller's
+  // responsibility to ensure this.
+  void SetImageFetcherDelegate(ImageFetcherDelegate* delegate) override;
 
   void StartOrQueueNetworkRequest(
       const std::string& id,
@@ -75,13 +80,13 @@ class ImageFetcherImpl : public image_fetcher::ImageFetcher {
   void OnImageDecoded(const GURL& image_url, const gfx::Image& image);
 
 
-  image_fetcher::ImageFetcherDelegate* delegate_;
+  ImageFetcherDelegate* delegate_;
 
-  net::URLRequestContextGetter* url_request_context_;
+  scoped_refptr<net::URLRequestContextGetter> url_request_context_;
 
-  std::unique_ptr<image_fetcher::ImageDecoder> image_decoder_;
+  std::unique_ptr<ImageDecoder> image_decoder_;
 
-  std::unique_ptr<image_fetcher::ImageDataFetcher> image_data_fetcher_;
+  std::unique_ptr<ImageDataFetcher> image_data_fetcher_;
 
   // Map from each image URL to the request information (associated website
   // url, fetcher, pending callbacks).
@@ -90,6 +95,6 @@ class ImageFetcherImpl : public image_fetcher::ImageFetcher {
   DISALLOW_COPY_AND_ASSIGN(ImageFetcherImpl);
 };
 
-}  // namespace suggestions
+}  // namespace image_fetcher
 
-#endif  // CHROME_BROWSER_SEARCH_SUGGESTIONS_IMAGE_FETCHER_IMPL_H_
+#endif  // COMPONENTS_IMAGE_FETCHER_IMAGE_FETCHER_IMPL_H_

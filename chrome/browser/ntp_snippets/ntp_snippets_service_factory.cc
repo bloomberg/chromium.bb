@@ -11,7 +11,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/suggestions/image_decoder_impl.h"
-#include "chrome/browser/search/suggestions/image_fetcher_impl.h"
 #include "chrome/browser/search/suggestions/suggestions_service_factory.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
@@ -21,6 +20,7 @@
 #include "components/browser_sync/browser/profile_sync_service.h"
 #include "components/image_fetcher/image_decoder.h"
 #include "components/image_fetcher/image_fetcher.h"
+#include "components/image_fetcher/image_fetcher_impl.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/ntp_snippets/ntp_snippets_constants.h"
 #include "components/ntp_snippets/ntp_snippets_database.h"
@@ -44,8 +44,8 @@
 #endif  // OS_ANDROID
 
 using content::BrowserThread;
+using image_fetcher::ImageFetcherImpl;
 using suggestions::ImageDecoderImpl;
-using suggestions::ImageFetcherImpl;
 using suggestions::SuggestionsService;
 using suggestions::SuggestionsServiceFactory;
 
@@ -118,7 +118,8 @@ KeyedService* NTPSnippetsServiceFactory::BuildServiceInstanceFor(
           signin_manager, token_service, request_context,
           base::Bind(&safe_json::SafeJsonParser::Parse),
           chrome::GetChannel() == version_info::Channel::STABLE),
-      base::MakeUnique<ImageFetcherImpl>(request_context.get()),
+      base::MakeUnique<ImageFetcherImpl>(
+          base::MakeUnique<ImageDecoderImpl>(), request_context.get()),
       base::MakeUnique<ImageDecoderImpl>(),
       base::MakeUnique<ntp_snippets::NTPSnippetsDatabase>(database_dir,
                                                           task_runner),
