@@ -20,6 +20,7 @@
 @interface SignInPromoViewController (Testing)
 @property(readonly) NSButton* signInButton;
 @property(readonly) NSButton* noButton;
+@property(readonly) NSButton* closeButton;
 @end
 
 #endif  // CHROME_BROWSER_UI_COCOA_PASSWORDS_SIGNIN_PROMO_VIEW_CONTROLLER_H_

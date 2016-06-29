@@ -74,6 +74,13 @@ TEST_F(SignInPromoViewControllerTest, ClickNo) {
   EXPECT_TRUE([delegate() dismissed]);
 }
 
+TEST_F(SignInPromoViewControllerTest, ClickClose) {
+  EXPECT_CALL(*ui_controller(), NavigateToChromeSignIn()).Times(0);
+  [controller().closeButton performClick:nil];
+
+  EXPECT_TRUE([delegate() dismissed]);
+}
+
 TEST_F(SignInPromoViewControllerTest, CloseBubbleAndHandleClick) {
   // A user may press mouse down, some navigation closes the bubble, mouse up
   // still sends the action.
@@ -81,6 +88,7 @@ TEST_F(SignInPromoViewControllerTest, CloseBubbleAndHandleClick) {
   [delegate() setModel:nil];
   [controller().signInButton performClick:nil];
   [controller().noButton performClick:nil];
+  [controller().closeButton performClick:nil];
 }
 
 }  // namespace

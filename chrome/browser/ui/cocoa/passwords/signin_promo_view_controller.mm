@@ -5,6 +5,8 @@
 #import "chrome/browser/ui/cocoa/passwords/signin_promo_view_controller.h"
 
 #include "base/mac/scoped_nsobject.h"
+#include "chrome/browser/ui/chrome_style.h"
+#import "chrome/browser/ui/cocoa/hover_close_button.h"
 #include "chrome/browser/ui/cocoa/passwords/passwords_bubble_utils.h"
 #include "chrome/browser/ui/passwords/manage_passwords_bubble_model.h"
 #include "grit/generated_resources.h"
@@ -14,11 +16,13 @@
 @interface SignInPromoViewController () {
   base::scoped_nsobject<NSButton> _signInButton;
   base::scoped_nsobject<NSButton> _noButton;
+  base::scoped_nsobject<NSButton> _closeButton;
 }
 
 // "Sign In" and "No thanks" button handlers.
 - (void)onSignInClicked:(id)sender;
 - (void)onNoClicked:(id)sender;
+- (void)onCloseClicked:(id)sender;
 @end
 
 @implementation SignInPromoViewController
@@ -39,11 +43,21 @@
 // ------------------------------------
 - (void)loadView {
   base::scoped_nsobject<NSView> view([[NSView alloc] initWithFrame:NSZeroRect]);
+  // Close button.
+  const int dimension = chrome_style::GetCloseButtonSize();
+  NSRect frame = NSMakeRect(0, 0, dimension, dimension);
+  _closeButton.reset(
+      [[WebUIHoverCloseButton alloc] initWithFrame:frame]);
+  [_closeButton setAction:@selector(onCloseClicked:)];
+  [_closeButton setTarget:self];
+  [view addSubview:_closeButton];
   // Title.
   HyperlinkTextView* titleView = TitleBubbleLabelWithLink(
       [self.delegate model]->title(), gfx::Range(), nil);
   // Force the text to wrap to fit in the bubble size.
-  int titleWidth = kDesiredBubbleWidth - 2*kFramePadding;
+  int titleRightPadding =
+      2 * chrome_style::kCloseButtonPadding + NSWidth([_closeButton frame]);
+  int titleWidth = kDesiredBubbleWidth - kFramePadding - titleRightPadding;
   [titleView setVerticallyResizable:YES];
   [titleView setFrameSize:NSMakeSize(titleWidth, MAXFLOAT)];
   [titleView sizeToFit];
@@ -74,8 +88,14 @@
 
   curY = NSMaxY([_noButton frame]) + kUnrelatedControlVerticalPadding;
   [titleView setFrameOrigin:NSMakePoint(kFramePadding, curY)];
-  [view setFrame:NSMakeRect(0, 0, kDesiredBubbleWidth,
-                            NSMaxY([titleView frame]) + kFramePadding)];
+  const CGFloat height = NSMaxY([titleView frame]) + kFramePadding;
+  // The close button is in the corner.
+  NSPoint closeButtonOrigin = NSMakePoint(
+      NSMaxX([titleView frame]) + chrome_style::kCloseButtonPadding,
+      height - NSHeight([_closeButton frame]) -
+          chrome_style::kCloseButtonPadding);
+  [_closeButton setFrameOrigin:closeButtonOrigin];
+  [view setFrame:NSMakeRect(0, 0, kDesiredBubbleWidth, height)];
   [self setView:view];
 }
 
@@ -93,6 +113,10 @@
   [self.delegate viewShouldDismiss];
 }
 
+- (void)onCloseClicked:(id)sender {
+  [self.delegate viewShouldDismiss];
+}
+
 @end
 
 @implementation SignInPromoViewController (Testing)
@@ -103,6 +127,10 @@
 
 - (NSButton*)noButton {
   return _noButton.get();
+}
+
+- (NSButton*)closeButton {
+  return _closeButton.get();
 }
 
 @end
