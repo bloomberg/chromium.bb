@@ -220,7 +220,7 @@ bool WindowManager::OnWmSetProperty(
 void WindowManager::OnWmClientJankinessChanged(
     const std::set<::mus::Window*>& client_windows,
     bool janky) {
-  for (auto window : client_windows)
+  for (auto* window : client_windows)
     SetWindowIsJanky(window, janky);
 }
 

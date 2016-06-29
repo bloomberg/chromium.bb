@@ -26,7 +26,7 @@ void LayoutManager::Uninstall() {
   if (!owner_)
     return;
   owner_->RemoveObserver(this);
-  for (auto child : owner_->children())
+  for (auto* child : owner_->children())
     child->RemoveObserver(this);
   owner_ = nullptr;
 }
@@ -58,7 +58,7 @@ void LayoutManager::OnWindowBoundsChanged(::mus::Window* window,
     return;
 
   // Changes to the container's bounds require all windows to be laid out.
-  for (auto child : window->children())
+  for (auto* child : window->children())
     LayoutWindow(child);
 }
 

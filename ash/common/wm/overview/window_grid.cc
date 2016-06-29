@@ -411,7 +411,7 @@ WindowGrid::WindowGrid(WmWindow* root_window,
       selected_index_(0),
       num_columns_(0) {
   std::vector<WmWindow*> windows_in_root;
-  for (auto window : windows) {
+  for (auto* window : windows) {
     if (window->GetRootWindow() == root_window)
       windows_in_root.push_back(window);
   }
@@ -424,7 +424,7 @@ WindowGrid::WindowGrid(WmWindow* root_window,
     ReorderItemsGreedyLeastMovement(&windows_in_root, root_window_,
                                     window_selector_->text_filter_bottom());
   }
-  for (auto window : windows_in_root) {
+  for (auto* window : windows_in_root) {
     window->AddObserver(this);
     observed_windows_.insert(window);
     window_list_.push_back(new WindowSelectorItem(window, window_selector_));
@@ -907,7 +907,7 @@ bool WindowGrid::FitWindowRectsInBounds(const gfx::Rect& bounds,
   // necessary to determine each item's scale.
   const gfx::Size item_size(0, height);
   size_t i = 0;
-  for (auto window : window_list_) {
+  for (auto* window : window_list_) {
     const gfx::Rect target_bounds = window->GetWindow()->GetTargetBounds();
     const int width =
         std::max(1, gfx::ToFlooredInt(target_bounds.width() *

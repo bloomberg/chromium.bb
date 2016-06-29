@@ -465,7 +465,7 @@ void ShowDisplayErrorNotification(int message_id) {
 base::string16 GetDisplayErrorNotificationMessageForTest() {
   message_center::NotificationList::Notifications notifications =
       message_center::MessageCenter::Get()->GetVisibleNotifications();
-  for (auto const notification : notifications) {
+  for (auto* const notification : notifications) {
     if (notification->id() == kDisplayErrorNotificationId)
       return notification->message();
   }

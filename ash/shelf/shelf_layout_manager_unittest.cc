@@ -1154,7 +1154,7 @@ TEST_F(ShelfLayoutManagerTest, DimmingBehaviorDualDisplay) {
   EXPECT_EQ(root_windows.size(), 2U);
 
   std::vector<ShelfWidget*> shelf_widgets;
-  for (auto& root_window : root_windows) {
+  for (auto* root_window : root_windows) {
     ShelfLayoutManager* shelf =
         GetRootWindowController(root_window)->GetShelfLayoutManager();
     shelf_widgets.push_back(shelf->shelf_widget());

@@ -284,14 +284,14 @@ void ScopedTransformOverviewWindow::RestoreWindow() {
 void ScopedTransformOverviewWindow::BeginScopedAnimation(
     OverviewAnimationType animation_type,
     ScopedAnimationSettings* animation_settings) {
-  for (const auto& window : GetTransientTreeIterator(window_)) {
+  for (auto* window : GetTransientTreeIterator(window_)) {
     animation_settings->push_back(
         CreateScopedOverviewAnimationSettings(animation_type, window));
   }
 }
 
 bool ScopedTransformOverviewWindow::Contains(const WmWindow* target) const {
-  for (const auto& window : GetTransientTreeIterator(window_)) {
+  for (auto* window : GetTransientTreeIterator(window_)) {
     if (window->Contains(target))
       return true;
   }
@@ -300,7 +300,7 @@ bool ScopedTransformOverviewWindow::Contains(const WmWindow* target) const {
 
 gfx::Rect ScopedTransformOverviewWindow::GetTargetBoundsInScreen() const {
   gfx::Rect bounds;
-  for (const auto& window : GetTransientTreeIterator(window_)) {
+  for (auto* window : GetTransientTreeIterator(window_)) {
     // Ignore other window types when computing bounding box of window
     // selector target item.
     if (window != window_ && window->GetType() != ui::wm::WINDOW_TYPE_NORMAL &&
@@ -397,7 +397,7 @@ void ScopedTransformOverviewWindow::SetTransform(
 
   gfx::Point target_origin(GetTargetBoundsInScreen().origin());
 
-  for (const auto& window : GetTransientTreeIterator(window_)) {
+  for (auto* window : GetTransientTreeIterator(window_)) {
     WmWindow* parent_window = window->GetParent();
     gfx::Point original_origin =
         parent_window->ConvertRectToScreen(window->GetTargetBounds()).origin();
@@ -410,7 +410,7 @@ void ScopedTransformOverviewWindow::SetTransform(
 }
 
 void ScopedTransformOverviewWindow::SetOpacity(float opacity) {
-  for (const auto& window : GetTransientTreeIterator(window_)) {
+  for (auto* window : GetTransientTreeIterator(window_)) {
     window->SetOpacity(opacity);
   }
 }

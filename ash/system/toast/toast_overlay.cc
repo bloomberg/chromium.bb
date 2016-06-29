@@ -173,7 +173,7 @@ ToastOverlayView::ToastOverlayView(ToastOverlay* overlay,
 
   AddChildView(button_);
 
-  auto layout = new views::BoxLayout(views::BoxLayout::kHorizontal, 0, 0, 0);
+  auto* layout = new views::BoxLayout(views::BoxLayout::kHorizontal, 0, 0, 0);
   SetLayoutManager(layout);
   layout->SetFlexForView(label, 1);
   layout->SetFlexForView(button_, 0);

@@ -125,7 +125,7 @@ void UserWindowControllerImpl::AssignIdIfNecessary(::mus::Window* window) {
 void UserWindowControllerImpl::RemoveObservers(::mus::Window* user_container) {
   user_container->RemoveObserver(this);
   user_container->window_tree()->RemoveObserver(this);
-  for (auto iter : user_container->children())
+  for (auto* iter : user_container->children())
     iter->RemoveObserver(window_property_observer_.get());
 }
 

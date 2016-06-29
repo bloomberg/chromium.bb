@@ -184,7 +184,7 @@ void ShowDeprecatedAcceleratorNotification(const char* const notification_id,
 
 void RecordUmaHistogram(const char* histogram_name,
                         DeprecatedAcceleratorUsage sample) {
-  auto histogram = base::LinearHistogram::FactoryGet(
+  auto* histogram = base::LinearHistogram::FactoryGet(
       histogram_name, 1, DEPRECATED_USAGE_COUNT, DEPRECATED_USAGE_COUNT + 1,
       base::HistogramBase::kUmaTargetedHistogramFlag);
   histogram->Add(sample);

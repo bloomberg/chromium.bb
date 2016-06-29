@@ -358,7 +358,7 @@ void WorkspaceLayoutManager::UpdateAlwaysOnTop(WmWindow* window_on_top) {
   // always_on_top containers' layouts are managed by this class all the
   // appropriate windows will be included in the iteration.
   WindowSet windows(windows_);
-  for (auto window : windows) {
+  for (auto* window : windows) {
     wm::WindowState* window_state = window->GetWindowState();
     if (window_on_top)
       window_state->DisableAlwaysOnTop(window_on_top);

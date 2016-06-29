@@ -63,7 +63,7 @@ AshWindowTreeHostUnified::~AshWindowTreeHostUnified() {
 void AshWindowTreeHostUnified::PrepareForShutdown() {
   AshWindowTreeHostPlatform::PrepareForShutdown();
 
-  for (auto host : mirroring_hosts_)
+  for (auto* host : mirroring_hosts_)
     host->PrepareForShutdown();
 }
 
@@ -84,12 +84,12 @@ void AshWindowTreeHostUnified::SetBounds(const gfx::Rect& bounds) {
 }
 
 void AshWindowTreeHostUnified::SetCursorNative(gfx::NativeCursor cursor) {
-  for (auto host : mirroring_hosts_)
+  for (auto* host : mirroring_hosts_)
     host->AsWindowTreeHost()->SetCursor(cursor);
 }
 
 void AshWindowTreeHostUnified::OnCursorVisibilityChangedNative(bool show) {
-  for (auto host : mirroring_hosts_)
+  for (auto* host : mirroring_hosts_)
     host->AsWindowTreeHost()->OnCursorVisibilityChanged(show);
 }
 
