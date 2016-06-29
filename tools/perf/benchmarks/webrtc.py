@@ -7,7 +7,7 @@ from core import perf_benchmark
 from measurements import webrtc
 import page_sets
 from telemetry import benchmark
-from telemetry.timeline import tracing_category_filter
+from telemetry.timeline import chrome_trace_category_filter
 from telemetry.web_perf import timeline_based_measurement
 from telemetry.web_perf.metrics import webrtc_rendering_timeline
 
@@ -67,7 +67,7 @@ class WebrtcRendering(perf_benchmark.PerfBenchmark):
   page_set = page_sets.WebrtcRenderingPageSet
 
   def CreateTimelineBasedMeasurementOptions(self):
-    category_filter = tracing_category_filter.TracingCategoryFilter(
+    category_filter = chrome_trace_category_filter.ChromeTraceCategoryFilter(
         filter_string='webrtc,webkit.console,blink.console')
     options = timeline_based_measurement.Options(category_filter)
     options.SetLegacyTimelineBasedMetrics(

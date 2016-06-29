@@ -4,7 +4,7 @@
 
 from core import perf_benchmark
 
-from telemetry.timeline import tracing_category_filter
+from telemetry.timeline import chrome_trace_category_filter
 from telemetry.web_perf import timeline_based_measurement
 from telemetry.web_perf.metrics import jitter_timeline
 
@@ -21,7 +21,7 @@ class Jitter(perf_benchmark.PerfBenchmark):
   page_set = page_sets.JitterPageSet
 
   def CreateTimelineBasedMeasurementOptions(self):
-    cat_filter = tracing_category_filter.CreateMinimalOverheadFilter()
+    cat_filter = chrome_trace_category_filter.CreateMinimalOverheadFilter()
     cat_filter.AddIncludedCategory(JITTER_CATEGORY)
     cat_filter.AddIncludedCategory(TIMELINE_REQUIRED_CATEGORY)
     options = timeline_based_measurement.Options(

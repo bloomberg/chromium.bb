@@ -9,7 +9,7 @@ from telemetry import benchmark
 from telemetry.page import legacy_page_test
 from telemetry.value import scalar
 from telemetry.value import improvement_direction
-from telemetry.timeline import tracing_category_filter
+from telemetry.timeline import chrome_trace_category_filter
 from telemetry.web_perf import timeline_based_measurement
 from telemetry.web_perf.metrics import v8_gc_latency
 from telemetry.web_perf.metrics import smoothness
@@ -76,7 +76,7 @@ class OortOnlineTBM(perf_benchmark.PerfBenchmark):
         'webkit.console', 'blink.console', 'benchmark', 'trace_event_overhead']
     categories = list(set(v8_gc_latency_categories + smoothness_categories))
     memory_categories = 'blink.console,disabled-by-default-memory-infra'
-    category_filter = tracing_category_filter.TracingCategoryFilter(
+    category_filter = chrome_trace_category_filter.ChromeTraceCategoryFilter(
         memory_categories)
     for category in categories:
       category_filter.AddIncludedCategory(category)

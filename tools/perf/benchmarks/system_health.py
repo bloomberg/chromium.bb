@@ -6,7 +6,7 @@ import re
 
 from core import perf_benchmark
 from telemetry import benchmark
-from telemetry.timeline import tracing_category_filter
+from telemetry.timeline import chrome_trace_category_filter
 from telemetry.web_perf import timeline_based_measurement
 import page_sets
 
@@ -25,8 +25,8 @@ class _SystemHealthBenchmark(perf_benchmark.PerfBenchmark):
 
   def CreateTimelineBasedMeasurementOptions(self):
     options = timeline_based_measurement.Options()
-    options.config.chrome_trace_config.SetTracingCategoryFilter(
-        tracing_category_filter.TracingCategoryFilter(','.join(
+    options.config.chrome_trace_config.SetCategoryFilter(
+        chrome_trace_category_filter.ChromeTraceCategoryFilter(','.join(
             self.TRACING_CATEGORIES)))
     options.SetTimelineBasedMetric('systemHealthMetrics')
     return options
@@ -75,7 +75,7 @@ class _MemorySystemHealthBenchmark(perf_benchmark.PerfBenchmark):
 
   def CreateTimelineBasedMeasurementOptions(self):
     options = timeline_based_measurement.Options(
-        tracing_category_filter.TracingCategoryFilter(
+        chrome_trace_category_filter.ChromeTraceCategoryFilter(
             '-*,disabled-by-default-memory-infra'))
     options.config.enable_android_graphics_memtrack = True
     options.SetTimelineBasedMetric('memoryMetric')

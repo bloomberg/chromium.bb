@@ -16,12 +16,12 @@ import page_sets
 from telemetry import benchmark
 from telemetry import story
 from telemetry.timeline import chrome_trace_config
-from telemetry.timeline import tracing_category_filter
+from telemetry.timeline import chrome_trace_category_filter
 from telemetry.web_perf import timeline_based_measurement
 
 
 def CreateV8TimelineBasedMeasurementOptions():
-  category_filter = tracing_category_filter.CreateMinimalOverheadFilter()
+  category_filter = chrome_trace_category_filter.CreateMinimalOverheadFilter()
   category_filter.AddIncludedCategory('v8')
   category_filter.AddIncludedCategory('blink.console')
   options = timeline_based_measurement.Options(category_filter)
@@ -98,7 +98,7 @@ class _InfiniteScrollBenchmark(perf_benchmark.PerfBenchmark):
     smoothness_categories = [
         'webkit.console', 'blink.console', 'benchmark', 'trace_event_overhead']
     memory_categories = ['blink.console', 'disabled-by-default-memory-infra']
-    category_filter = tracing_category_filter.TracingCategoryFilter(
+    category_filter = chrome_trace_category_filter.ChromeTraceCategoryFilter(
         ','.join(['-*'] + v8_categories +
                  smoothness_categories + memory_categories))
     options = timeline_based_measurement.Options(category_filter)
@@ -202,7 +202,7 @@ class _V8MemoryAndCodeSizeBenchmark(perf_benchmark.PerfBenchmark):
       r'(?<!dump)(?<!process)_(std|count|min|sum|pct_\d{4}(_\d+)?)$')
 
   def CreateTimelineBasedMeasurementOptions(self):
-    category_filter = tracing_category_filter.TracingCategoryFilter(
+    category_filter = chrome_trace_category_filter.ChromeTraceCategoryFilter(
         '-*, disabled-by-default-memory-infra,'
         # TODO(crbug.com/616441, primiano): Remove this temporary workaround,
         # which enables memory-infra V8 code stats in V8 code size benchmarks

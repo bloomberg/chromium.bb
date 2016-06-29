@@ -5,7 +5,7 @@
 from core import perf_benchmark
 
 from telemetry import benchmark
-from telemetry.timeline import tracing_category_filter
+from telemetry.timeline import chrome_trace_category_filter
 from telemetry.web_perf import timeline_based_measurement
 
 import page_sets
@@ -24,7 +24,7 @@ class BlobStorage(perf_benchmark.PerfBenchmark):
   page_set = page_sets.BlobWorkshopPageSet
 
   def CreateTimelineBasedMeasurementOptions(self):
-    cat_filter = tracing_category_filter.CreateMinimalOverheadFilter()
+    cat_filter = chrome_trace_category_filter.CreateMinimalOverheadFilter()
     cat_filter.AddIncludedCategory(BLOB_CATEGORY)
     cat_filter.AddIncludedCategory(TIMELINE_REQUIRED_CATEGORY)
 

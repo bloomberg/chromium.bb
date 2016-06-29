@@ -87,7 +87,7 @@ class MemoryValidator(gpu_test_base.ValidatorBase):
     # ref builds are updated. crbug.com/386847
     config = tracing_config.TracingConfig()
     for c in ['webkit.console', 'blink.console', 'gpu']:
-      config.chrome_trace_config.tracing_category_filter.AddIncludedCategory(c)
+      config.chrome_trace_config.category_filter.AddIncludedCategory(c)
     config.enable_chrome_trace = True
     tab.browser.platform.tracing_controller.StartTracing(config, 60)
 

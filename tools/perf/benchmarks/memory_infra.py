@@ -7,7 +7,7 @@ import re
 from core import perf_benchmark
 
 from telemetry import benchmark
-from telemetry.timeline import tracing_category_filter
+from telemetry.timeline import chrome_trace_category_filter
 from telemetry.web_perf import timeline_based_measurement
 from telemetry.web_perf.metrics import memory_timeline
 
@@ -40,7 +40,7 @@ class _MemoryInfra(perf_benchmark.PerfBenchmark):
   def CreateTimelineBasedMeasurementOptions(self):
     # Enable only memory-infra, to get memory dumps, and blink.console, to get
     # the timeline markers used for mapping threads to tabs.
-    trace_memory = tracing_category_filter.TracingCategoryFilter(
+    trace_memory = chrome_trace_category_filter.ChromeTraceCategoryFilter(
         filter_string='-*,blink.console,disabled-by-default-memory-infra')
     tbm_options = timeline_based_measurement.Options(
         overhead_level=trace_memory)
@@ -208,7 +208,7 @@ class _MemoryV8Benchmark(_MemoryInfra):
     v8_categories = [
         'blink.console', 'renderer.scheduler', 'v8', 'webkit.console']
     memory_categories = ['blink.console', 'disabled-by-default-memory-infra']
-    category_filter = tracing_category_filter.TracingCategoryFilter(
+    category_filter = chrome_trace_category_filter.ChromeTraceCategoryFilter(
         ','.join(['-*'] + v8_categories + memory_categories))
     options = timeline_based_measurement.Options(category_filter)
     options.SetTimelineBasedMetric('v8AndMemoryMetrics')

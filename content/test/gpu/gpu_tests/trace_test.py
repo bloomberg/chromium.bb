@@ -68,7 +68,7 @@ class TraceValidatorBase(gpu_test_base.ValidatorBase):
   def WillNavigateToPage(self, page, tab):
     config = tracing_config.TracingConfig()
     for cat in TOPLEVEL_CATEGORIES:
-      config.chrome_trace_config.tracing_category_filter.AddDisabledByDefault(
+      config.chrome_trace_config.category_filter.AddDisabledByDefault(
           cat)
     config.enable_chrome_trace = True
     tab.browser.platform.tracing_controller.StartTracing(config, 60)

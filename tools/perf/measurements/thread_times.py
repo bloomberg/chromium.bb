@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 
 from telemetry.page import legacy_page_test
-from telemetry.timeline import tracing_category_filter
+from telemetry.timeline import chrome_trace_category_filter
 from telemetry.web_perf.metrics import layout
 
 from measurements import timeline_controller
@@ -25,7 +25,7 @@ class ThreadTimes(legacy_page_test.LegacyPageTest):
       self._timeline_controller.trace_categories = None
     else:
       self._timeline_controller.trace_categories = \
-          tracing_category_filter.CreateNoOverheadFilter().filter_string
+          chrome_trace_category_filter.CreateNoOverheadFilter().filter_string
     self._timeline_controller.SetUp(page, tab)
 
   def DidNavigateToPage(self, page, tab):

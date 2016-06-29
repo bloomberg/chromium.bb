@@ -6,7 +6,7 @@ import os
 from telemetry import benchmark
 from core import perf_benchmark
 from core import path_util
-from telemetry.timeline import tracing_category_filter
+from telemetry.timeline import chrome_trace_category_filter
 from telemetry.web_perf import timeline_based_measurement
 
 from benchmarks.pagesets import media_router_perf_pages
@@ -43,7 +43,7 @@ class TraceEventCastBenckmark(_BaseCastBenchmark):
 
   def CreateTimelineBasedMeasurementOptions(self):
     media_router_category = 'media_router'
-    category_filter = tracing_category_filter.TracingCategoryFilter(
+    category_filter = chrome_trace_category_filter.ChromeTraceCategoryFilter(
         media_router_category)
     category_filter.AddIncludedCategory('blink.console')
     options = timeline_based_measurement.Options(category_filter)

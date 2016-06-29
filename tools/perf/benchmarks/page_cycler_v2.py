@@ -13,13 +13,13 @@ import page_sets
 
 from telemetry import benchmark
 from telemetry.page import cache_temperature
-from telemetry.timeline import tracing_category_filter
+from telemetry.timeline import chrome_trace_category_filter
 from telemetry.web_perf import timeline_based_measurement
 
 
 class _PageCyclerV2(perf_benchmark.PerfBenchmark):
   def CreateTimelineBasedMeasurementOptions(self):
-    cat_filter = tracing_category_filter.TracingCategoryFilter(
+    cat_filter = chrome_trace_category_filter.ChromeTraceCategoryFilter(
         filter_string='blink.console,navigation,blink.user_timing,loading')
 
     # Below categories are needed for first-meaningful-paint computation.

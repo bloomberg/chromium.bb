@@ -6,7 +6,7 @@ from core import perf_benchmark
 import page_sets
 
 from telemetry import benchmark
-from telemetry.timeline import tracing_category_filter
+from telemetry.timeline import chrome_trace_category_filter
 from telemetry.web_perf import timeline_based_measurement
 from telemetry.web_perf.metrics import startup
 
@@ -20,8 +20,9 @@ class _StartupPerfBenchmark(perf_benchmark.PerfBenchmark):
     ])
 
   def CreateTimelineBasedMeasurementOptions(self):
-    startup_category_filter = tracing_category_filter.TracingCategoryFilter(
-        filter_string='startup,blink.user_timing')
+    startup_category_filter = (
+        chrome_trace_category_filter.ChromeTraceCategoryFilter(
+            filter_string='startup,blink.user_timing'))
     options = timeline_based_measurement.Options(
         overhead_level=startup_category_filter)
     options.SetLegacyTimelineBasedMetrics(

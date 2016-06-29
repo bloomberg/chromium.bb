@@ -44,7 +44,7 @@ class TaskExecutionTime(legacy_page_test.LegacyPageTest):
     del page  # unused
     config = tracing_config.TracingConfig()
     for category in self._CATEGORIES:
-      config.chrome_trace_config.tracing_category_filter.AddIncludedCategory(
+      config.chrome_trace_config.category_filter.AddIncludedCategory(
           category)
     config.enable_chrome_trace = True
 

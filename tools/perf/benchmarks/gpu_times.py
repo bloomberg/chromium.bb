@@ -7,7 +7,7 @@ from core import perf_benchmark
 from benchmarks import silk_flags
 
 from telemetry import benchmark
-from telemetry.timeline import tracing_category_filter
+from telemetry.timeline import chrome_trace_category_filter
 from telemetry.web_perf.metrics import gpu_timeline
 from telemetry.web_perf import timeline_based_measurement
 
@@ -21,7 +21,8 @@ class _GPUTimes(perf_benchmark.PerfBenchmark):
 
   def CreateTimelineBasedMeasurementOptions(self):
     cat_string = ','.join(TOPLEVEL_CATEGORIES)
-    cat_filter = tracing_category_filter.TracingCategoryFilter(cat_string)
+    cat_filter = chrome_trace_category_filter.ChromeTraceCategoryFilter(
+        cat_string)
 
     options = timeline_based_measurement.Options(overhead_level=cat_filter)
     options.SetLegacyTimelineBasedMetrics([gpu_timeline.GPUTimelineMetric()])
