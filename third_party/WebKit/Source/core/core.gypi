@@ -798,6 +798,7 @@
             'style/BorderImageLength.h',
             'style/BorderImageLengthBox.h',
             'style/CachedUAStyle.h',
+            'style/ClipPathOperation.h',
             'style/ContentData.cpp',
             'style/CounterDirectives.cpp',
             'style/DataEquivalency.h',

@@ -33,7 +33,7 @@
 
 #include "core/CoreExport.h"
 #include "core/animation/animatable/AnimatableValue.h"
-#include "core/layout/ClipPathOperation.h"
+#include "core/style/ClipPathOperation.h"
 
 namespace blink {
 

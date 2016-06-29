@@ -4,7 +4,7 @@
 
 #include "core/style/ComputedStyle.h"
 
-#include "core/layout/ClipPathOperation.h"
+#include "core/style/ClipPathOperation.h"
 #include "core/style/ShapeValue.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

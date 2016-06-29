@@ -27,7 +27,7 @@
 
 #include "core/CoreExport.h"
 #include "core/css/StyleColor.h"
-#include "core/layout/ClipPathOperation.h"
+#include "core/style/ClipPathOperation.h"
 #include "core/style/ComputedStyleConstants.h"
 #include "core/style/CounterDirectives.h"
 #include "core/style/DataPersistent.h"

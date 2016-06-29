@@ -30,8 +30,8 @@
 
 #include "core/animation/animatable/AnimatableValueTestHelper.h"
 
-#include "core/layout/ClipPathOperation.h"
 #include "core/style/BasicShapes.h"
+#include "core/style/ClipPathOperation.h"
 #include "platform/transforms/ScaleTransformOperation.h"
 #include "platform/transforms/TranslateTransformOperation.h"
 #include "testing/gmock/include/gmock/gmock.h"

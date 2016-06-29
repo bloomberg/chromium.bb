@@ -6,7 +6,6 @@
 
 #include "core/frame/FrameView.h"
 #include "core/frame/Settings.h"
-#include "core/layout/ClipPathOperation.h"
 #include "core/layout/LayoutBlock.h"
 #include "core/layout/LayoutView.h"
 #include "core/layout/svg/LayoutSVGResourceClipper.h"
@@ -20,6 +19,7 @@
 #include "core/paint/ScrollRecorder.h"
 #include "core/paint/ScrollableAreaPainter.h"
 #include "core/paint/Transform3DRecorder.h"
+#include "core/style/ClipPathOperation.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/geometry/FloatPoint3D.h"
 #include "platform/graphics/GraphicsLayer.h"
