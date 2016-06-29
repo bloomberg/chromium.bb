@@ -40,6 +40,7 @@ class WebSocketStreamCreateTestBase {
   void CreateAndConnectStream(const std::string& socket_url,
                               const std::vector<std::string>& sub_protocols,
                               const url::Origin& origin,
+                              const std::string& additional_headers,
                               std::unique_ptr<base::Timer> timer);
 
   static std::vector<HeaderKeyValuePair> RequestHeadersToVector(

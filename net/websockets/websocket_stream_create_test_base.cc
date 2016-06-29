@@ -101,6 +101,7 @@ void WebSocketStreamCreateTestBase::CreateAndConnectStream(
     const std::string& socket_url,
     const std::vector<std::string>& sub_protocols,
     const url::Origin& origin,
+    const std::string& additional_headers,
     std::unique_ptr<base::Timer> timer) {
   for (size_t i = 0; i < ssl_data_.size(); ++i) {
     url_request_context_host_.AddSSLSocketDataProvider(std::move(ssl_data_[i]));
@@ -113,7 +114,7 @@ void WebSocketStreamCreateTestBase::CreateAndConnectStream(
       new DeterministicKeyWebSocketHandshakeStreamCreateHelper(delegate,
                                                                sub_protocols));
   stream_request_ = CreateAndConnectStreamForTesting(
-      GURL(socket_url), std::move(create_helper), origin,
+      GURL(socket_url), std::move(create_helper), origin, additional_headers,
       url_request_context_host_.GetURLRequestContext(), BoundNetLog(),
       std::move(connect_delegate),
       timer ? std::move(timer)
