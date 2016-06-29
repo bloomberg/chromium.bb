@@ -117,6 +117,7 @@ TEST(StringBuilderTest, Append)
     StringBuilder builderForUChar32Append;
     UChar32 frakturAChar = 0x1D504;
     builderForUChar32Append.append(frakturAChar); // The fraktur A is not in the BMP, so it's two UTF-16 code units long.
+    EXPECT_FALSE(builderForUChar32Append.is8Bit());
     EXPECT_EQ(2U, builderForUChar32Append.length());
     builderForUChar32Append.append(static_cast<UChar32>('A'));
     EXPECT_EQ(3U, builderForUChar32Append.length());
@@ -242,17 +243,6 @@ TEST(StringBuilderTest, Equal)
     EXPECT_TRUE(builder1 == builder2);
 }
 
-TEST(StringBuilderTest, CanShrink)
-{
-    StringBuilder builder;
-    builder.reserveCapacity(256);
-    EXPECT_TRUE(builder.canShrink());
-    for (int i = 0; i < 256; i++)
-        builder.append('x');
-    EXPECT_EQ(builder.length(), builder.capacity());
-    EXPECT_FALSE(builder.canShrink());
-}
-
 TEST(StringBuilderTest, ToAtomicString)
 {
     StringBuilder builder;
@@ -261,7 +251,6 @@ TEST(StringBuilderTest, ToAtomicString)
     EXPECT_EQ(String("123"), atomicString);
 
     builder.reserveCapacity(256);
-    EXPECT_TRUE(builder.canShrink());
     for (int i = builder.length(); i < 128; i++)
         builder.append('x');
     AtomicString atomicString1 = builder.toAtomicString();
@@ -273,7 +262,6 @@ TEST(StringBuilderTest, ToAtomicString)
         builder.append('x');
     EXPECT_EQ(128u, atomicString1.length());
 
-    EXPECT_FALSE(builder.canShrink());
     String string = builder.toString();
     AtomicString atomicString2 = builder.toAtomicString();
     // They should share the same StringImpl.

@@ -35,19 +35,17 @@
 namespace WTF {
 
 class WTF_EXPORT StringBuilder {
-    // Disallow copying since it's expensive and we don't want code to do it by accident.
     WTF_MAKE_NONCOPYABLE(StringBuilder);
-
 public:
     StringBuilder()
-        : m_bufferCharacters8(0)
+        : m_buffer(nullptr)
         , m_length(0)
-        , m_is8Bit(true)
-    {
-    }
+        , m_is8Bit(true) {}
 
-    void append(const UChar*, unsigned);
-    void append(const LChar*, unsigned);
+    ~StringBuilder() { clear(); }
+
+    void append(const UChar*, unsigned length);
+    void append(const LChar*, unsigned length);
 
     ALWAYS_INLINE void append(const char* characters, unsigned length) { append(reinterpret_cast<const LChar*>(characters), length); }
 
@@ -56,11 +54,10 @@ public:
         if (!other.m_length)
             return;
 
-        // If we're appending to an empty string, and there is not a buffer (reserveCapacity has not been called)
-        // then just retain the string.
-        if (!m_length && !m_buffer && !other.m_string.isNull()) {
+        if (!m_length && !hasBuffer() && !other.m_string.isNull()) {
             m_string = other.m_string;
-            m_length = other.m_length;
+            m_length = other.m_string.length();
+            m_is8Bit = other.m_string.is8Bit();
             return;
         }
 
@@ -99,7 +96,7 @@ public:
         // inside the parser in the common case when flushing buffered text to
         // a Text node.
         StringImpl* impl = string.sharedImpl();
-        if (!m_length && !m_buffer && impl) {
+        if (!m_length && !hasBuffer() && impl) {
             m_string = impl;
             m_length = impl->length();
             m_is8Bit = impl->is8Bit();
@@ -114,30 +111,26 @@ public:
 
     void append(UChar c)
     {
-        if (m_buffer && m_length < m_buffer->length() && m_string.isNull()) {
-            if (!m_is8Bit) {
-                m_bufferCharacters16[m_length++] = c;
-                return;
-            }
-
-            if (!(c & ~0xff)) {
-                m_bufferCharacters8[m_length++] = static_cast<LChar>(c);
-                return;
-            }
+        if (m_is8Bit && c <= 0xFF) {
+            append(static_cast<LChar>(c));
+            return;
         }
-        append(&c, 1);
+        ensureBuffer16();
+        m_string = String();
+        m_buffer16->append(c);
+        ++m_length;
     }
 
     void append(LChar c)
     {
-        if (m_buffer && m_length < m_buffer->length() && m_string.isNull()) {
-            if (m_is8Bit)
-                m_bufferCharacters8[m_length++] = c;
-            else
-                m_bufferCharacters16[m_length++] = c;
-        } else {
-            append(&c, 1);
+        if (!m_is8Bit) {
+            append(static_cast<UChar>(c));
+            return;
         }
+        ensureBuffer8();
+        m_string = String();
+        m_buffer8->append(c);
+        ++m_length;
     }
 
     void append(char c)
@@ -163,61 +156,18 @@ public:
     void appendNumber(unsigned long long);
     void appendNumber(double, unsigned precision = 6, TrailingZerosTruncatingPolicy = TruncateTrailingZeros);
 
-    String toString()
-    {
-        shrinkToFit();
-        if (m_string.isNull())
-            reifyString();
-        return m_string;
-    }
+    String toString();
+    AtomicString toAtomicString();
+    String substring(unsigned start, unsigned length) const;
 
-    String substring(unsigned position, unsigned length) const
-    {
-        if (!m_length)
-            return emptyString();
-        if (!m_string.isNull())
-            return m_string.substring(position, length);
-        return reifySubstring(position, length);
-    }
-
-    AtomicString toAtomicString() const
-    {
-        if (!m_length)
-            return emptyAtom;
-
-        // If the buffer is sufficiently over-allocated, make a new AtomicString from a copy so its buffer is not so large.
-        if (canShrink()) {
-            if (is8Bit())
-                return AtomicString(characters8(), length());
-            return AtomicString(characters16(), length());
-        }
-
-        if (!m_string.isNull())
-            return AtomicString(m_string);
-
-        DCHECK(m_buffer);
-        return AtomicString(m_buffer.get(), 0, m_length);
-    }
-
-    unsigned length() const
-    {
-        return m_length;
-    }
-
+    unsigned length() const { return m_length; }
     bool isEmpty() const { return !m_length; }
 
+    unsigned capacity() const;
     void reserveCapacity(unsigned newCapacity);
 
-    unsigned capacity() const
-    {
-        return m_buffer ? m_buffer->length() : m_length;
-    }
-
+    // TODO(esprehn): Rename to shrink().
     void resize(unsigned newSize);
-
-    bool canShrink() const;
-
-    void shrinkToFit();
 
     UChar operator[](unsigned i) const
     {
@@ -230,83 +180,61 @@ public:
     const LChar* characters8() const
     {
         DCHECK(m_is8Bit);
-        if (!m_length)
-            return 0;
+        if (!length())
+            return nullptr;
         if (!m_string.isNull())
             return m_string.characters8();
-        DCHECK(m_buffer);
-        return m_buffer->characters8();
+        DCHECK(m_buffer8);
+        return m_buffer8->data();
     }
 
     const UChar* characters16() const
     {
         DCHECK(!m_is8Bit);
-        if (!m_length)
-            return 0;
+        if (!length())
+            return nullptr;
         if (!m_string.isNull())
             return m_string.characters16();
-        DCHECK(m_buffer);
-        return m_buffer->characters16();
+        DCHECK(m_buffer16);
+        return m_buffer16->data();
     }
 
     bool is8Bit() const { return m_is8Bit; }
 
-    void clear()
-    {
-        m_length = 0;
-        m_string = String();
-        m_buffer = nullptr;
-        m_bufferCharacters8 = 0;
-        m_is8Bit = true;
-    }
-
-    void swap(StringBuilder& stringBuilder)
-    {
-        std::swap(m_length, stringBuilder.m_length);
-        m_string.swap(stringBuilder.m_string);
-        m_buffer.swap(stringBuilder.m_buffer);
-        std::swap(m_is8Bit, stringBuilder.m_is8Bit);
-        std::swap(m_bufferCharacters8, stringBuilder.m_bufferCharacters8);
-    }
+    void clear();
+    void swap(StringBuilder&);
 
 private:
-    void allocateBuffer(const LChar* currentCharacters, unsigned requiredLength);
-    void allocateBuffer(const UChar* currentCharacters, unsigned requiredLength);
-    void allocateBufferUpConvert(const LChar* currentCharacters, unsigned requiredLength);
-    template <typename CharType>
-    void reallocateBuffer(unsigned requiredLength);
-    template <typename CharType>
-    ALWAYS_INLINE CharType* appendUninitialized(unsigned length);
-    template <typename CharType>
-    CharType* appendUninitializedSlow(unsigned length);
-    template <typename CharType>
-    ALWAYS_INLINE CharType * getBufferCharacters();
-    void reifyString();
-    String reifySubstring(unsigned position, unsigned length) const;
+    typedef Vector<LChar, 16> Buffer8;
+    typedef Vector<UChar, 16> Buffer16;
 
-    String m_string; // Pointers first: crbug.com/232031
-    RefPtr<StringImpl> m_buffer;
+    void ensureBuffer8()
+    {
+        DCHECK(m_is8Bit);
+        if (!hasBuffer())
+            createBuffer8();
+    }
+
+    void ensureBuffer16()
+    {
+        if (m_is8Bit || !hasBuffer())
+            createBuffer16();
+    }
+
+    void createBuffer8();
+    void createBuffer16();
+
+    bool hasBuffer() const { return m_buffer; }
+
+    String m_string;
     union {
-        LChar* m_bufferCharacters8;
-        UChar* m_bufferCharacters16;
+        Buffer8* m_buffer8;
+        Buffer16* m_buffer16;
+        void* m_buffer;
     };
     unsigned m_length;
     bool m_is8Bit;
 };
-
-template <>
-ALWAYS_INLINE LChar* StringBuilder::getBufferCharacters<LChar>()
-{
-    DCHECK(m_is8Bit);
-    return m_bufferCharacters8;
-}
-
-template <>
-ALWAYS_INLINE UChar* StringBuilder::getBufferCharacters<UChar>()
-{
-    DCHECK(!m_is8Bit);
-    return m_bufferCharacters16;
-}
 
 template <typename CharType>
 bool equal(const StringBuilder& s, const CharType* buffer, unsigned length)
