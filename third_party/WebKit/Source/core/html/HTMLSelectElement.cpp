@@ -884,7 +884,7 @@ void HTMLSelectElement::resetToDefaultSelection(ResetReason reason)
         ++optionIndex;
     }
     if (!lastSelectedOption && m_size <= 1 && firstEnabledOption && !firstEnabledOption->selected()) {
-        selectOption(firstEnabledOption, firstEnabledOptionIndex, 0);
+        selectOption(firstEnabledOption, firstEnabledOptionIndex, reason == ResetReasonSelectedOptionRemoved ? 0 : DeselectOtherOptions);
         lastSelectedOption = firstEnabledOption;
         didChange = true;
     }
@@ -974,11 +974,11 @@ void HTMLSelectElement::optionSelectionStateChanged(HTMLOptionElement* option, b
 {
     ASSERT(option->ownerSelectElement() == this);
     if (optionIsSelected)
-        selectOption(option);
+        selectOption(option, multiple() ? 0 : DeselectOtherOptions);
     else if (!usesMenuList() || multiple())
-        selectOption(nullptr);
+        selectOption(nullptr, multiple() ? 0 : DeselectOtherOptions);
     else
-        selectOption(nextSelectableOption(nullptr));
+        selectOption(nextSelectableOption(nullptr), DeselectOtherOptions);
 }
 
 void HTMLSelectElement::optionInserted(HTMLOptionElement& option, bool optionIsSelected)
@@ -986,7 +986,7 @@ void HTMLSelectElement::optionInserted(HTMLOptionElement& option, bool optionIsS
     ASSERT(option.ownerSelectElement() == this);
     setRecalcListItems();
     if (optionIsSelected) {
-        selectOption(&option);
+        selectOption(&option, multiple() ? 0 : DeselectOtherOptions);
     } else {
         // No need to reset if we already have a selected option.
         if (!m_lastOnChangeOption)
@@ -1028,8 +1028,6 @@ void HTMLSelectElement::selectOption(HTMLOptionElement* option, SelectOptionFlag
 void HTMLSelectElement::selectOption(HTMLOptionElement* element, int optionIndex, SelectOptionFlags flags)
 {
     TRACE_EVENT0("blink", "HTMLSelectElement::selectOption");
-    bool shouldDeselect = !m_multiple || (flags & DeselectOtherOptions);
-
     ASSERT((!element && optionIndex < 0) || (element && optionIndex >= 0));
 
     // selectedIndex() is O(N).
@@ -1043,16 +1041,16 @@ void HTMLSelectElement::selectOption(HTMLOptionElement* element, int optionIndex
     }
 
     // deselectItemsWithoutValidation() is O(N).
-    if (shouldDeselect)
+    if (flags & DeselectOtherOptions)
         deselectItemsWithoutValidation(element);
 
     // We should update active selection after finishing OPTION state change
     // because setActiveSelectionAnchorIndex() stores OPTION's selection state.
     if (element) {
         // setActiveSelectionAnchor is O(N).
-        if (!m_activeSelectionAnchor || shouldDeselect)
+        if (!m_activeSelectionAnchor || !multiple() || flags & DeselectOtherOptions)
             setActiveSelectionAnchor(element);
-        if (!m_activeSelectionEnd || shouldDeselect)
+        if (!m_activeSelectionEnd || !multiple() || flags & DeselectOtherOptions)
             setActiveSelectionEnd(element);
     }
 
@@ -1771,13 +1769,14 @@ void HTMLSelectElement::accessKeySetSelectedIndex(int index)
     EventQueueScope scope;
     // If this index is already selected, unselect. otherwise update the
     // selected index.
+    SelectOptionFlags flags = DispatchInputAndChangeEvent | (multiple() ? 0 : DeselectOtherOptions);
     if (toHTMLOptionElement(element).selected()) {
         if (usesMenuList())
-            selectOption(-1, DispatchInputAndChangeEvent);
+            selectOption(-1, flags);
         else
             toHTMLOptionElement(element).setSelectedState(false);
     } else {
-        selectOption(index, DispatchInputAndChangeEvent);
+        selectOption(index, flags);
     }
     toHTMLOptionElement(element).setDirty(true);
     if (usesMenuList())
