@@ -1831,7 +1831,8 @@ void WebViewImpl::performResize()
 
 void WebViewImpl::updateTopControlsState(WebTopControlsState constraint, WebTopControlsState current, bool animate)
 {
-    topControls().updateConstraints(constraint);
+    topControls().updateConstraintsAndState(constraint, current, animate);
+
     if (m_layerTreeView)
         m_layerTreeView->updateTopControlsState(constraint, current, animate);
 }

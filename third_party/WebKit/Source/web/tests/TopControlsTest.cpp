@@ -559,6 +559,21 @@ TEST_F(TopControlsTest, MAYBE(StateConstraints))
     EXPECT_FLOAT_EQ(20, webView->topControls().contentOffset());
     webView->updateTopControlsState(WebTopControlsBoth, WebTopControlsBoth, false);
     EXPECT_FLOAT_EQ(20, webView->topControls().contentOffset());
+
+    // An animated state change shouldn't cause a change to the content offset
+    // since it'll be driven from the compositor.
+    webView->updateTopControlsState(WebTopControlsHidden, WebTopControlsHidden, true);
+    EXPECT_FLOAT_EQ(20, webView->topControls().contentOffset());
+
+    webView->updateTopControlsState(WebTopControlsShown, WebTopControlsShown, true);
+    EXPECT_FLOAT_EQ(20, webView->topControls().contentOffset());
+
+    // Setting just the constraint should affect the content offset.
+    webView->updateTopControlsState(WebTopControlsHidden, WebTopControlsBoth, false);
+    EXPECT_FLOAT_EQ(0, webView->topControls().contentOffset());
+
+    webView->updateTopControlsState(WebTopControlsShown, WebTopControlsBoth, false);
+    EXPECT_FLOAT_EQ(50, webView->topControls().contentOffset());
 }
 
 // Ensure that top controls do not affect the layout by showing and hiding

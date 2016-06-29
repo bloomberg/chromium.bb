@@ -39,7 +39,10 @@ public:
     float shownRatio() const { return m_shownRatio; }
     void setShownRatio(float);
 
-    void updateConstraints(WebTopControlsState constraints);
+    void updateConstraintsAndState(
+        WebTopControlsState constraints,
+        WebTopControlsState current,
+        bool animate);
 
     void scrollBegin();
 
