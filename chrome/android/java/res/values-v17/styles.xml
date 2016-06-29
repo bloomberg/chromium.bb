@@ -43,6 +43,13 @@
         <item name="android:windowBackground">@drawable/window_background</item>
     </style>
 
+    <style name="FullscreenWhiteDialog" parent="Theme.AppCompat.Light" >
+        <item name="android:windowBackground">@android:color/white</item>
+        <item name="android:textColorLink">@color/light_active_color</item>
+        <item name="colorPrimary">@color/light_active_color</item>
+        <item name="colorAccent">@color/light_active_color</item>
+    </style>
+
     <!-- Web app themes -->
     <style name="WebappTheme" parent="MainTheme">
         <item name="android:windowBackground">@null</item>
@@ -414,16 +421,12 @@
     </style>
 
     <!-- Signin promo dialog-->
-    <style name="SigninPromoDialog" parent="Theme.AppCompat.Light">
+    <style name="SigninPromoDialog" parent="FullscreenWhiteDialog">
         <item name="android:windowNoTitle">true</item>
         <item name="android:windowFrame">@null</item>
         <item name="android:windowIsFloating">true</item>
         <item name="android:windowContentOverlay">@null</item>
         <item name="android:windowAnimationStyle">@android:style/Animation.Dialog</item>
-        <item name="android:windowBackground">@android:color/white</item>
-        <item name="android:textColorLink">@color/light_active_color</item>
-        <item name="colorPrimary">@color/light_active_color</item>
-        <item name="colorAccent">@color/light_active_color</item>
     </style>
 
     <!-- Contextual Search styles -->

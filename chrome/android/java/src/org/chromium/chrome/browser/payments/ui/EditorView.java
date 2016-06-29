@@ -10,12 +10,8 @@ import android.content.DialogInterface;
 import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Handler;
-import android.support.design.widget.TextInputLayout;
 import android.support.v7.widget.Toolbar.OnMenuItemClickListener;
 import android.telephony.PhoneNumberFormattingTextWatcher;
-import android.text.Editable;
-import android.text.InputType;
-import android.text.TextWatcher;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
@@ -24,7 +20,6 @@ import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.view.accessibility.AccessibilityEvent;
 import android.view.inputmethod.EditorInfo;
-import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.LinearLayout;
@@ -54,102 +49,9 @@ import javax.annotation.Nullable;
  */
 public class EditorView extends AlwaysDismissedDialog
         implements OnClickListener, DialogInterface.OnDismissListener {
-    /** The indicator for input fields that are required. */
-    private static final String REQUIRED_FIELD_INDICATOR = "*";
 
     /** Help page that the user is directed to when asking for help. */
     private static final String HELP_URL = "https://support.google.com/chrome/answer/142893?hl=en";
-
-    /** Handles validation and display of one field from the {@link EditorFieldModel}. */
-    private final class EditorFieldView extends TextInputLayout {
-        private final EditorFieldModel mEditorFieldModel;
-        private final AutoCompleteTextView mInput;
-        private boolean mHasFocusedAtLeastOnce;
-
-        public EditorFieldView(Context context, final EditorFieldModel fieldModel) {
-            super(context);
-            mEditorFieldModel = fieldModel;
-
-            // Build up the label.  Required fields are indicated by appending a '*'.
-            CharSequence label = fieldModel.getLabel();
-            if (fieldModel.isRequired()) label = label + REQUIRED_FIELD_INDICATOR;
-            setHint(label);
-
-            // The TextView is a child of this class.  The TextInputLayout manages how it looks.
-            mInput = new AutoCompleteTextView(context);
-            mInput.setText(fieldModel.getValue());
-            mInput.setOnEditorActionListener(mEditorActionListener);
-            addView(mInput);
-
-            // Validate the field when the user de-focuses it.
-            mInput.setOnFocusChangeListener(new OnFocusChangeListener() {
-                @Override
-                public void onFocusChange(View v, boolean hasFocus) {
-                    if (hasFocus) {
-                        mHasFocusedAtLeastOnce = true;
-                    } else if (mHasFocusedAtLeastOnce) {
-                        // Show no errors until the user has already tried to edit the field once.
-                        updateDisplayedError(!mEditorFieldModel.isValid());
-                    }
-                }
-            });
-
-            // Update the model as the user edits the field.
-            mInput.addTextChangedListener(new TextWatcher() {
-                @Override
-                public void afterTextChanged(Editable s) {
-                    fieldModel.setValue(s.toString());
-                    updateDisplayedError(false);
-                    if (mObserverForTest != null) {
-                        mObserverForTest.onPaymentRequestEditorTextUpdate();
-                    }
-                }
-
-                @Override
-                public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
-
-                @Override
-                public void onTextChanged(CharSequence s, int start, int before, int count) {}
-            });
-
-            // Display any autofill suggestions.
-            if (fieldModel.getSuggestions() != null && !fieldModel.getSuggestions().isEmpty()) {
-                mInput.setAdapter(new ArrayAdapter<CharSequence>(mContext,
-                        android.R.layout.simple_spinner_dropdown_item,
-                        fieldModel.getSuggestions()));
-                mInput.setThreshold(0);
-            }
-
-            if (fieldModel.getInputTypeHint() == EditorFieldModel.INPUT_TYPE_HINT_PHONE) {
-                mInput.setId(R.id.payments_edit_phone_input);
-                mInput.setInputType(InputType.TYPE_CLASS_PHONE);
-                mInput.addTextChangedListener(getPhoneFormatter());
-            } else if (fieldModel.getInputTypeHint() == EditorFieldModel.INPUT_TYPE_HINT_EMAIL) {
-                mInput.setId(R.id.payments_edit_email_input);
-                mInput.setInputType(
-                        InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS);
-            }
-        }
-
-        /** @return The EditorFieldModel that the TextView represents. */
-        public EditorFieldModel getFieldModel() {
-            return mEditorFieldModel;
-        }
-
-        /** @return The TextView for the field. */
-        public AutoCompleteTextView getTextView() {
-            return mInput;
-        }
-
-        /**
-         * Updates the error display.
-         *
-         * @param showError If true, displays the error message.  If false, clears it.
-         */
-        public void updateDisplayedError(boolean showError) {
-            setError(showError ? mEditorFieldModel.getErrorMessage() : null);
-        }
-    }
 
     private final Context mContext;
     private final PaymentRequestObserverForTest mObserverForTest;
@@ -169,7 +71,7 @@ public class EditorView extends AlwaysDismissedDialog
      * @param observerForTest Optional event observer for testing.
      */
     public EditorView(Activity activity, PaymentRequestObserverForTest observerForTest) {
-        super(activity, R.style.DialogWhenLarge);
+        super(activity, R.style.FullscreenWhiteDialog);
         mContext = activity;
         mObserverForTest = observerForTest;
         mHandler = new Handler();
@@ -254,7 +156,7 @@ public class EditorView extends AlwaysDismissedDialog
      * @return Whether all fields contain valid information.
      */
     private boolean validateForm() {
-        final List<EditorFieldView> invalidViews = getViewsWithInvalidInformation();
+        final List<EditorTextField> invalidViews = getViewsWithInvalidInformation();
         if (invalidViews.isEmpty()) return true;
 
         // Focus the first field that's invalid.
@@ -264,8 +166,8 @@ public class EditorView extends AlwaysDismissedDialog
         // to clear existing errors on any newly valid fields.
         ViewGroup dataView = (ViewGroup) mLayout.findViewById(R.id.contents);
         for (int i = 0; i < dataView.getChildCount(); i++) {
-            if (!(dataView.getChildAt(i) instanceof EditorFieldView)) continue;
-            EditorFieldView fieldView = (EditorFieldView) dataView.getChildAt(i);
+            if (!(dataView.getChildAt(i) instanceof EditorTextField)) continue;
+            EditorTextField fieldView = (EditorTextField) dataView.getChildAt(i);
             fieldView.updateDisplayedError(invalidViews.contains(fieldView));
         }
 
@@ -310,9 +212,10 @@ public class EditorView extends AlwaysDismissedDialog
         ViewGroup dataView = (ViewGroup) mLayout.findViewById(R.id.contents);
         for (int i = 0; i < mEditorModel.getFields().size(); i++) {
             final EditorFieldModel fieldModel = mEditorModel.getFields().get(i);
-            EditorFieldView inputLayout = new EditorFieldView(mContext, fieldModel);
+            EditorTextField inputLayout = new EditorTextField(mLayout.getContext(), fieldModel,
+                    mEditorActionListener, getPhoneFormatter(), mObserverForTest);
 
-            final AutoCompleteTextView input = inputLayout.getTextView();
+            final AutoCompleteTextView input = inputLayout.getEditText();
             if (fieldModel.getInputTypeHint() == EditorFieldModel.INPUT_TYPE_HINT_PHONE) {
                 assert mPhoneInput == null;
                 mPhoneInput = input;
@@ -337,12 +240,10 @@ public class EditorView extends AlwaysDismissedDialog
         prepareToolbar();
         prepareButtons();
         prepareEditor();
-        getWindow().setLayout(ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.MATCH_PARENT);
         show();
 
         // Immediately focus the first invalid field to make it faster to edit.
-        final List<EditorFieldView> invalidViews = getViewsWithInvalidInformation();
+        final List<EditorTextField> invalidViews = getViewsWithInvalidInformation();
         if (!invalidViews.isEmpty()) {
             mHandler.post(new Runnable() {
                 @Override
@@ -370,15 +271,15 @@ public class EditorView extends AlwaysDismissedDialog
         }
     }
 
-    private List<EditorFieldView> getViewsWithInvalidInformation() {
+    private List<EditorTextField> getViewsWithInvalidInformation() {
         ViewGroup container = (ViewGroup) findViewById(R.id.contents);
 
-        List<EditorFieldView> invalidViews = new ArrayList<>();
+        List<EditorTextField> invalidViews = new ArrayList<>();
         for (int i = 0; i < container.getChildCount(); i++) {
             View layout = container.getChildAt(i);
-            if (!(layout instanceof EditorFieldView)) continue;
+            if (!(layout instanceof EditorTextField)) continue;
 
-            EditorFieldView fieldView = (EditorFieldView) layout;
+            EditorTextField fieldView = (EditorTextField) layout;
             if (!fieldView.getFieldModel().isValid()) invalidViews.add(fieldView);
         }
         return invalidViews;
