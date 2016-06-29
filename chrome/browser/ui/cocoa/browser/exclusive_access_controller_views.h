@@ -57,7 +57,7 @@ class ExclusiveAccessController : public ExclusiveAccessContext,
   // ExclusiveAccessContext:
   Profile* GetProfile() override;
   bool IsFullscreen() const override;
-  void UpdateFullscreenWithToolbar(bool with_toolbar) override;
+  void UpdateUIForTabFullscreen(TabFullscreenState state) override;
   void UpdateFullscreenToolbar() override;
   void EnterFullscreen(const GURL& url,
                        ExclusiveAccessBubbleType type) override;

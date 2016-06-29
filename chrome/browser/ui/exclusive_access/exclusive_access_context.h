@@ -20,6 +20,11 @@ class WebContents;
 // context.
 class ExclusiveAccessContext {
  public:
+  enum TabFullscreenState {
+    STATE_ENTER_TAB_FULLSCREEN,
+    STATE_EXIT_TAB_FULLSCREEN,
+  };
+
   virtual ~ExclusiveAccessContext() {}
 
   // Returns the current profile associated with the window.
@@ -29,11 +34,10 @@ class ExclusiveAccessContext {
   // fullscreen.
   virtual bool IsFullscreen() const = 0;
 
-  // Shows or hides the tab strip, toolbar and bookmark bar with in browser
-  // fullscreen.
-  // Currently only supported on Mac.
-  // TODO (spqchan): Deprecate this method. crbug.com/579259
-  virtual void UpdateFullscreenWithToolbar(bool with_toolbar);
+  // Called when we transition between tab and browser fullscreen. This method
+  // updates the UI by showing/hiding the tab strip, toolbar and bookmark bar
+  // in the browser fullscreen. Currently only supported on Mac.
+  virtual void UpdateUIForTabFullscreen(TabFullscreenState state);
 
   // Updates the toolbar state to be hidden or shown in fullscreen according to
   // the preference's state. Only supported on Mac.

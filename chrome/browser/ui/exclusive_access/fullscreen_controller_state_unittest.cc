@@ -48,7 +48,6 @@ class FullscreenControllerTestWindow : public TestBrowserWindow,
   // BrowserWindow Interface:
   bool ShouldHideUIForFullscreen() const override;
   bool IsFullscreen() const override;
-  void UpdateFullscreenWithToolbar(bool with_toolbar) override;
   static const char* GetWindowStateString(WindowState state);
   WindowState state() const { return state_; }
   void set_browser(Browser* browser) { browser_ = browser; }
@@ -111,11 +110,6 @@ bool FullscreenControllerTestWindow::IsFullscreen() const {
 #else
   return state_ == FULLSCREEN || state_ == TO_NORMAL;
 #endif
-}
-
-void FullscreenControllerTestWindow::UpdateFullscreenWithToolbar(
-    bool with_toolbar) {
-  EnterFullscreen();
 }
 
 // static

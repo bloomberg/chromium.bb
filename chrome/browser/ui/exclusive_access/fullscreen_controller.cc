@@ -140,13 +140,11 @@ void FullscreenController::EnterFullscreenModeForTab(WebContents* web_contents,
     return;
   }
 
+  // Browser Fullscreen -> Tab Fullscreen.
   if (exclusive_access_context->IsFullscreen()) {
-    // Browser Fullscreen with Toolbar -> Tab Fullscreen (no toolbar).
-    exclusive_access_context->UpdateFullscreenWithToolbar(false);
-    state_prior_to_tab_fullscreen_ = STATE_BROWSER_FULLSCREEN_WITH_TOOLBAR;
-  } else {
-    // Browser Fullscreen without Toolbar -> Tab Fullscreen.
-    state_prior_to_tab_fullscreen_ = STATE_BROWSER_FULLSCREEN_NO_TOOLBAR;
+    exclusive_access_context->UpdateUIForTabFullscreen(
+        ExclusiveAccessContext::STATE_ENTER_TAB_FULLSCREEN);
+    state_prior_to_tab_fullscreen_ = STATE_BROWSER_FULLSCREEN;
   }
 
   // We need to update the fullscreen exit bubble, e.g., going from browser
@@ -183,11 +181,10 @@ void FullscreenController::ExitFullscreenModeForTab(WebContents* web_contents) {
     return;
   }
 
-  // Tab Fullscreen -> Browser Fullscreen (with or without toolbar).
-  if (state_prior_to_tab_fullscreen_ == STATE_BROWSER_FULLSCREEN_WITH_TOOLBAR) {
-    // Tab Fullscreen (no toolbar) -> Browser Fullscreen with Toolbar.
-    exclusive_access_context->UpdateFullscreenWithToolbar(true);
-  }
+  // Tab Fullscreen -> Browser Fullscreen.
+  if (state_prior_to_tab_fullscreen_ == STATE_BROWSER_FULLSCREEN)
+    exclusive_access_context->UpdateUIForTabFullscreen(
+        ExclusiveAccessContext::STATE_EXIT_TAB_FULLSCREEN);
 
 #if defined(OS_MACOSX)
   // Clear the bubble URL, which forces the Mac UI to redraw.
@@ -336,19 +333,6 @@ void FullscreenController::ToggleFullscreenModeInternal(
   ExclusiveAccessContext* const exclusive_access_context =
       exclusive_access_manager()->context();
   bool enter_fullscreen = !exclusive_access_context->IsFullscreen();
-
-#if defined(OS_MACOSX)
-  // When a Mac user requests a toggle they may be toggling between
-  // FullscreenWithoutChrome and FullscreenWithToolbar.
-  // TODO(spqchan): Refactor toolbar related code since most of it should be
-  // deprecated.
-  if (exclusive_access_context->IsFullscreen() &&
-      !IsWindowFullscreenForTabOrPending() &&
-      IsExtensionFullscreenOrPending()) {
-    enter_fullscreen = enter_fullscreen ||
-        exclusive_access_context->IsFullscreen();
-  }
-#endif
 
   // In kiosk mode, we always want to be fullscreen. When the browser first
   // starts we're not yet fullscreen, so let the initial toggle go through.

@@ -175,8 +175,7 @@ class FullscreenController : public ExclusiveAccessControllerBase {
   enum PriorFullscreenState {
     STATE_INVALID,
     STATE_NORMAL,
-    STATE_BROWSER_FULLSCREEN_NO_TOOLBAR,
-    STATE_BROWSER_FULLSCREEN_WITH_TOOLBAR,
+    STATE_BROWSER_FULLSCREEN,
   };
   // The state before entering tab fullscreen mode via webkitRequestFullScreen.
   // When not in tab fullscreen, it is STATE_INVALID.

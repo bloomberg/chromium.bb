@@ -1854,10 +1854,17 @@ willAnimateFromState:(BookmarkBar::State)oldState
   [self enterAppKitFullscreen];
 }
 
-- (void)updateFullscreenWithToolbar:(BOOL)withToolbar {
+- (void)updateUIForTabFullscreen:
+    (ExclusiveAccessContext::TabFullscreenState)state {
+  DCHECK([self isInAnyFullscreenMode]);
+  if (state == ExclusiveAccessContext::STATE_ENTER_TAB_FULLSCREEN) {
+    [self adjustUIForSlidingFullscreenStyle:fullscreen_mac::OMNIBOX_TABS_NONE];
+    return;
+  }
+
   [self adjustUIForSlidingFullscreenStyle:
-            withToolbar ? fullscreen_mac::OMNIBOX_TABS_PRESENT
-                        : fullscreen_mac::OMNIBOX_TABS_HIDDEN];
+            shouldShowFullscreenToolbar_ ? fullscreen_mac::OMNIBOX_TABS_PRESENT
+                                         : fullscreen_mac::OMNIBOX_TABS_HIDDEN];
 }
 
 - (void)updateFullscreenExitBubble {
@@ -1881,8 +1888,9 @@ willAnimateFromState:(BookmarkBar::State)oldState
 
   [presentationModeController_ setToolbarFraction:0.0];
   shouldShowFullscreenToolbar_ = visible;
-  if ([self isInAppKitFullscreen])
-    [self updateFullscreenWithToolbar:shouldShowFullscreenToolbar_];
+  [self adjustUIForSlidingFullscreenStyle:
+            shouldShowFullscreenToolbar_ ? fullscreen_mac::OMNIBOX_TABS_PRESENT
+                                         : fullscreen_mac::OMNIBOX_TABS_HIDDEN];
 }
 
 - (BOOL)isInAnyFullscreenMode {

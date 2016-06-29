@@ -10,7 +10,8 @@
 // This file provides default implementations for the ExclusiveAccessContext
 // methods that only some platforms care about.
 
-void ExclusiveAccessContext::UpdateFullscreenWithToolbar(bool with_toolbar) {
+void ExclusiveAccessContext::UpdateUIForTabFullscreen(
+    TabFullscreenState state) {
   NOTIMPLEMENTED();
 }
 

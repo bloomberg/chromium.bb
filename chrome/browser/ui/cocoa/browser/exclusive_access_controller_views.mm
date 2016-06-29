@@ -93,8 +93,9 @@ bool ExclusiveAccessController::IsFullscreen() const {
   return [controller_ isInAnyFullscreenMode];
 }
 
-void ExclusiveAccessController::UpdateFullscreenWithToolbar(bool with_toolbar) {
-  [controller_ updateFullscreenWithToolbar:with_toolbar];
+void ExclusiveAccessController::UpdateUIForTabFullscreen(
+    TabFullscreenState state) {
+  [controller_ updateUIForTabFullscreen:state];
 }
 
 void ExclusiveAccessController::UpdateFullscreenToolbar() {

@@ -24,6 +24,7 @@
 #import "chrome/browser/ui/cocoa/themed_window.h"
 #import "chrome/browser/ui/cocoa/url_drop_target.h"
 #import "chrome/browser/ui/cocoa/view_resizer.h"
+#include "chrome/browser/ui/exclusive_access/exclusive_access_context.h"
 #include "chrome/browser/ui/tabs/tab_utils.h"
 #include "components/translate/core/common/translate_errors.h"
 #include "ui/base/accelerators/accelerator_manager.h"
@@ -536,9 +537,10 @@ class Command;
 // Enters Browser AppKit Fullscreen.
 - (void)enterBrowserFullscreen;
 
-// Adds or removes the tab strip and toolbar from the current window. The
-// window must be in immersive or AppKit Fullscreen.
-- (void)updateFullscreenWithToolbar:(BOOL)withToolbar;
+// Updates the UI for tab fullscreen by adding or removing the tab strip and
+// toolbar from the current window. The window must already be in fullscreen.
+- (void)updateUIForTabFullscreen:
+    (ExclusiveAccessContext::TabFullscreenState)state;
 
 // Exits extension fullscreen if we're currently in the mode. Returns YES
 // if we exited fullscreen.
