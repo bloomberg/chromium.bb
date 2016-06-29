@@ -451,10 +451,10 @@ public:
     void showLineTreeForThis() const;
 
     void showLayoutObject() const;
-    // We don't make printedCharacters an optional parameter so that
+    // We don't make stringBuilder an optional parameter so that
     // showLayoutObject can be called from gdb easily.
-    void showLayoutObject(int printedCharacters) const;
-    void showLayoutTreeAndMark(const LayoutObject* markedObject1 = nullptr, const char* markedLabel1 = nullptr, const LayoutObject* markedObject2 = nullptr, const char* markedLabel2 = nullptr, int depth = 0) const;
+    void showLayoutObject(StringBuilder&) const;
+    void showLayoutTreeAndMark(const LayoutObject* markedObject1 = nullptr, const char* markedLabel1 = nullptr, const LayoutObject* markedObject2 = nullptr, const char* markedLabel2 = nullptr, unsigned depth = 0) const;
 #endif
 
     // This function is used to create the appropriate LayoutObject based

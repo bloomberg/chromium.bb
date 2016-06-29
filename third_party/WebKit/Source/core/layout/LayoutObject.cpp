@@ -1608,41 +1608,41 @@ void LayoutObject::showLineTreeForThis() const
 
 void LayoutObject::showLayoutObject() const
 {
-    showLayoutObject(0);
+    StringBuilder stringBuilder;
+    showLayoutObject(stringBuilder);
 }
 
-void LayoutObject::showLayoutObject(int printedCharacters) const
+void LayoutObject::showLayoutObject(StringBuilder& stringBuilder) const
 {
-    printedCharacters += fprintf(stderr, "%s %p", decoratedName().ascii().data(), this);
+    stringBuilder.append(String::format("%s %p", decoratedName().ascii().data(), this));
 
     if (isText() && toLayoutText(this)->isTextFragment())
-        printedCharacters += fprintf(stderr, " \"%s\" ", toLayoutText(this)->text().ascii().data());
+        stringBuilder.append(String::format(" \"%s\" ", toLayoutText(this)->text().ascii().data()));
 
     if (virtualContinuation())
-        printedCharacters += fprintf(stderr, " continuation=%p", virtualContinuation());
+        stringBuilder.append(String::format(" continuation=%p", virtualContinuation()));
 
     if (node()) {
-        if (printedCharacters)
-            for (; printedCharacters < showTreeCharacterOffset; printedCharacters++)
-                fputc(' ', stderr);
-        fputc('\t', stderr);
-        node()->showNode();
+        while (stringBuilder.length() < showTreeCharacterOffset)
+            stringBuilder.append(' ');
+        stringBuilder.append('\t');
+        node()->showNode(stringBuilder.toString().utf8().data());
     } else {
-        fputc('\n', stderr);
+        WTFLogAlways("%s", stringBuilder.toString().utf8().data());
     }
 }
 
-void LayoutObject::showLayoutTreeAndMark(const LayoutObject* markedObject1, const char* markedLabel1, const LayoutObject* markedObject2, const char* markedLabel2, int depth) const
+void LayoutObject::showLayoutTreeAndMark(const LayoutObject* markedObject1, const char* markedLabel1, const LayoutObject* markedObject2, const char* markedLabel2, unsigned depth) const
 {
-    int printedCharacters = 0;
+    StringBuilder stringBuilder;
     if (markedObject1 == this && markedLabel1)
-        printedCharacters += fprintf(stderr, "%s", markedLabel1);
+        stringBuilder.append(markedLabel1);
     if (markedObject2 == this && markedLabel2)
-        printedCharacters += fprintf(stderr, "%s", markedLabel2);
-    for (; printedCharacters < depth * 2; printedCharacters++)
-        fputc(' ', stderr);
+        stringBuilder.append(markedLabel2);
+    while (stringBuilder.length() < depth * 2)
+        stringBuilder.append(' ');
 
-    showLayoutObject(printedCharacters);
+    showLayoutObject(stringBuilder);
 
     for (const LayoutObject* child = slowFirstChild(); child; child = child->nextSibling())
         child->showLayoutTreeAndMark(markedObject1, markedLabel1, markedObject2, markedLabel2, depth + 1);
@@ -3614,7 +3614,7 @@ void showTree(const blink::LayoutObject* object)
     if (object)
         object->showTreeForThis();
     else
-        fprintf(stderr, "Cannot showTree. Root is (nil)\n");
+        WTFLogAlways("%s", "Cannot showTree. Root is (nil)");
 }
 
 void showLineTree(const blink::LayoutObject* object)
@@ -3622,7 +3622,7 @@ void showLineTree(const blink::LayoutObject* object)
     if (object)
         object->showLineTreeForThis();
     else
-        fprintf(stderr, "Cannot showLineTree. Root is (nil)\n");
+        WTFLogAlways("%s", "Cannot showLineTree. Root is (nil)");
 }
 
 void showLayoutTree(const blink::LayoutObject* object1)
@@ -3638,7 +3638,7 @@ void showLayoutTree(const blink::LayoutObject* object1, const blink::LayoutObjec
             root = root->parent();
         root->showLayoutTreeAndMark(object1, "*", object2, "-", 0);
     } else {
-        fprintf(stderr, "Cannot showLayoutTree. Root is (nil)\n");
+        WTFLogAlways("%s", "Cannot showLayoutTree. Root is (nil)");
     }
 }
 
