@@ -66322,6 +66322,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="124" label="DBMF_INVALID_ORIGIN_ON_GET_SPACE"/>
   <int value="125" label="DBMF_INVALID_ORIGIN_ON_MODIFIED"/>
   <int value="126" label="DBMF_INVALID_ORIGIN_ON_CLOSED"/>
+  <int value="127" label="WSH_INVALID_HEADER_VALUE"/>
 </enum>
 
 <enum name="BadMessageReasonExtensions" type="int">

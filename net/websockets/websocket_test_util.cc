@@ -34,11 +34,14 @@ uint32_t LinearCongruentialGenerator::Generate() {
   return static_cast<uint32_t>(result >> 16);
 }
 
-std::string WebSocketStandardRequest(const std::string& path,
-                                     const std::string& host,
-                                     const url::Origin& origin,
-                                     const std::string& extra_headers) {
+std::string WebSocketStandardRequest(
+    const std::string& path,
+    const std::string& host,
+    const url::Origin& origin,
+    const std::string& send_additional_request_headers,
+    const std::string& extra_headers) {
   return WebSocketStandardRequestWithCookies(path, host, origin, std::string(),
+                                             send_additional_request_headers,
                                              extra_headers);
 }
 
@@ -47,28 +50,34 @@ std::string WebSocketStandardRequestWithCookies(
     const std::string& host,
     const url::Origin& origin,
     const std::string& cookies,
+    const std::string& send_additional_request_headers,
     const std::string& extra_headers) {
   // Unrelated changes in net/http may change the order and default-values of
   // HTTP headers, causing WebSocket tests to fail. It is safe to update this
-  // string in that case.
-  return base::StringPrintf(
-      "GET %s HTTP/1.1\r\n"
-      "Host: %s\r\n"
-      "Connection: Upgrade\r\n"
-      "Pragma: no-cache\r\n"
-      "Cache-Control: no-cache\r\n"
-      "Upgrade: websocket\r\n"
-      "Origin: %s\r\n"
-      "Sec-WebSocket-Version: 13\r\n"
-      "User-Agent:\r\n"
-      "Accept-Encoding: gzip, deflate\r\n"
-      "Accept-Language: en-us,fr\r\n"
-      "%s"
-      "Sec-WebSocket-Key: dGhlIHNhbXBsZSBub25jZQ==\r\n"
-      "Sec-WebSocket-Extensions: permessage-deflate; client_max_window_bits\r\n"
-      "%s\r\n",
-      path.c_str(), host.c_str(), origin.Serialize().c_str(), cookies.c_str(),
-      extra_headers.c_str());
+  // in that case.
+  HttpRequestHeaders headers;
+  std::stringstream request_headers;
+
+  request_headers << base::StringPrintf("GET %s HTTP/1.1\r\n", path.c_str());
+  headers.SetHeader("Host", host);
+  headers.SetHeader("Connection", "Upgrade");
+  headers.SetHeader("Pragma", "no-cache");
+  headers.SetHeader("Cache-Control", "no-cache");
+  headers.SetHeader("Upgrade", "websocket");
+  headers.SetHeader("Origin", origin.Serialize());
+  headers.SetHeader("Sec-WebSocket-Version", "13");
+  headers.SetHeader("User-Agent", "");
+  headers.AddHeadersFromString(send_additional_request_headers);
+  headers.SetHeader("Accept-Encoding", "gzip, deflate");
+  headers.SetHeader("Accept-Language", "en-us,fr");
+  headers.AddHeadersFromString(cookies);
+  headers.SetHeader("Sec-WebSocket-Key", "dGhlIHNhbXBsZSBub25jZQ==");
+  headers.SetHeader("Sec-WebSocket-Extensions",
+                    "permessage-deflate; client_max_window_bits");
+  headers.AddHeadersFromString(extra_headers);
+
+  request_headers << headers.ToString();
+  return request_headers.str();
 }
 
 std::string WebSocketStandardResponse(const std::string& extra_headers) {
