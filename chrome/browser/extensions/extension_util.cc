@@ -37,6 +37,10 @@
 #include "extensions/grit/extensions_browser_resources.h"
 #include "ui/base/resource/resource_bundle.h"
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/file_manager/app_id.h"
+#endif
+
 namespace extensions {
 namespace util {
 
@@ -157,7 +161,14 @@ void SetIsIncognitoEnabled(const std::string& extension_id,
       // This shouldn't be called for component extensions unless it is called
       // by sync, for syncable component extensions.
       // See http://crbug.com/112290 and associated CLs for the sordid history.
-      DCHECK(sync_helper::IsSyncableComponentExtension(extension));
+      bool syncable = sync_helper::IsSyncableComponentExtension(extension);
+#if defined(OS_CHROMEOS)
+      // For some users, the file manager app somehow ended up being synced even
+      // though it's supposed to be unsyncable; see crbug.com/576964. If the bad
+      // data ever gets cleaned up, this hack should be removed.
+      syncable = syncable || extension->id() == file_manager::kFileManagerAppId;
+#endif
+      DCHECK(syncable);
 
       // If we are here, make sure the we aren't trying to change the value.
       DCHECK_EQ(enabled, IsIncognitoEnabled(extension_id, context));
