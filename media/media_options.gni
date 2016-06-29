@@ -55,7 +55,9 @@ declare_args() {
   use_alsa = false
 
   # Alsa should be used on non-Android, non-Mac POSIX systems.
-  if (is_posix && !is_android && !is_mac) {
+  # Alsa should be used on desktop Chromecast and audio-only Chromecast builds.
+  if (is_posix && !is_android && !is_mac &&
+      (!is_chromecast || is_cast_desktop_build || disable_display)) {
     use_alsa = true
 
     # Pulse is not supported on Chromecast platforms.
