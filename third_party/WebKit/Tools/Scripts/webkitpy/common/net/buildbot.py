@@ -202,8 +202,7 @@ class Build(object):
         return self.build_url(self.builder(), self._number)
 
     def results_url(self):
-        results_directory = "r%s (%s)" % (self.revision(), self._number)
-        return "%s/%s" % (self._builder.results_url(), urllib.quote(results_directory))
+        return "%s/%s/layout-test-results" % (self._builder.results_url(), self._number)
 
     def results_zip_url(self):
         return "%s.zip" % self.results_url()

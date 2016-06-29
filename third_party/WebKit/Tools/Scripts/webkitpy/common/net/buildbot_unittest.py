@@ -210,7 +210,7 @@ class BuildBotTest(unittest.TestCase):
         self.assertEqual(build.url(), "http://build.chromium.org/p/chromium.webkit/builders/Test%20Builder/builds/10")
         self.assertEqual(
             build.results_url(),
-            "https://storage.googleapis.com/chromium-layout-test-archives/Test_Builder/r20%20%2810%29")
+            "https://storage.googleapis.com/chromium-layout-test-archives/Test_Builder/10/layout-test-results")
         self.assertEqual(build.revision(), 20)
         self.assertTrue(build.is_green())
 
@@ -219,7 +219,7 @@ class BuildBotTest(unittest.TestCase):
         self.assertEqual(build.url(), "http://build.chromium.org/p/chromium.webkit/builders/Test%20Builder/builds/9")
         self.assertEqual(
             build.results_url(),
-            "https://storage.googleapis.com/chromium-layout-test-archives/Test_Builder/r18%20%289%29")
+            "https://storage.googleapis.com/chromium-layout-test-archives/Test_Builder/9/layout-test-results")
         self.assertEqual(build.revision(), 18)
         self.assertFalse(build.is_green())
 
