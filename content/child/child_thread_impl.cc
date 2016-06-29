@@ -354,13 +354,14 @@ void ChildThreadImpl::ConnectChannel(bool use_mojo_channel,
   if (use_mojo_channel) {
     VLOG(1) << "Mojo is enabled on child";
     mojo::ScopedMessagePipeHandle handle;
-    if (!IsInBrowserProcess()) {
-      DCHECK(!handle.is_valid());
-      handle = mojo::edk::CreateChildMessagePipe(
-          base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-              switches::kMojoChannelToken));
+    std::string token = IsInBrowserProcess() ? ipc_token :
+        base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+            switches::kMojoChannelToken);
+    if (token.empty()) {
+      IPC::mojom::BootstrapRequest request = GetProxy(&pending_bootstrap_);
+      handle = request.PassMessagePipe();
     } else {
-      handle = mojo::edk::CreateChildMessagePipe(ipc_token);
+      handle = mojo::edk::CreateChildMessagePipe(token);
     }
     DCHECK(handle.is_valid());
     channel_->Init(IPC::ChannelMojo::CreateClientFactory(std::move(handle)),
@@ -596,6 +597,14 @@ MojoShellConnection* ChildThreadImpl::GetMojoShellConnection() {
   return mojo_shell_connection_.get();
 }
 
+bool ChildThreadImpl::AcceptConnection(shell::Connection* connection) {
+  connection->GetInterfaceRegistry()->AddInterface(
+      IPC::mojom::Bootstrap::Name_,
+      base::Bind(&ChildThreadImpl::BindBootstrapRequest,
+                 base::Unretained(this)));
+  return true;
+}
+
 shell::InterfaceRegistry* ChildThreadImpl::GetInterfaceRegistry() {
   if (!interface_registry_.get())
     interface_registry_.reset(new shell::InterfaceRegistry(nullptr));
@@ -766,6 +775,13 @@ void ChildThreadImpl::OnProcessFinalRelease() {
 void ChildThreadImpl::EnsureConnected() {
   VLOG(0) << "ChildThreadImpl::EnsureConnected()";
   base::Process::Current().Terminate(0, false);
+}
+
+void ChildThreadImpl::BindBootstrapRequest(
+    mojo::ScopedMessagePipeHandle handle) {
+  IPC::mojom::BootstrapRequest request =
+      mojo::MakeRequest<IPC::mojom::Bootstrap>(std::move(handle));
+  mojo::FuseInterface(std::move(request), pending_bootstrap_.PassInterface());
 }
 
 bool ChildThreadImpl::IsInBrowserProcess() const {

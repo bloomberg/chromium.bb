@@ -26,6 +26,7 @@
     '../gpu/gpu.gyp:gpu',
     '../gpu/gpu.gyp:gpu_ipc_client',
     '../gpu/gpu.gyp:gpu_ipc_common',
+    '../ipc/ipc.gyp:ipc_interfaces',
     '../media/mojo/interfaces/mojo_bindings.gyp:image_capture_mojo_bindings',
     '../mojo/mojo_public.gyp:mojo_cpp_bindings',
     '../mojo/mojo_public.gyp:mojo_js_bindings',

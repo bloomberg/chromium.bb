@@ -20,6 +20,7 @@
 #include "build/build_config.h"
 #include "content/common/content_export.h"
 #include "content/public/child/child_thread.h"
+#include "ipc/ipc.mojom.h"
 #include "ipc/ipc_message.h"  // For IPC_MESSAGE_LOG_ENABLED.
 #include "ipc/ipc_platform_file.h"
 #include "ipc/message_router.h"
@@ -102,6 +103,7 @@ class CONTENT_EXPORT ChildThreadImpl
   shell::InterfaceProvider* GetRemoteInterfaces() override;
 
   // shell::ShellClient:
+  bool AcceptConnection(shell::Connection* connection) override;
   shell::InterfaceRegistry* GetInterfaceRegistryForConnection() override;
   shell::InterfaceProvider* GetInterfaceProviderForConnection() override;
 
@@ -252,8 +254,11 @@ class CONTENT_EXPORT ChildThreadImpl
 
   void EnsureConnected();
 
+  void BindBootstrapRequest(mojo::ScopedMessagePipeHandle handle);
+
   std::unique_ptr<mojo::edk::ScopedIPCSupport> mojo_ipc_support_;
   std::unique_ptr<MojoShellConnection> mojo_shell_connection_;
+  IPC::mojom::BootstrapPtr pending_bootstrap_;
   std::unique_ptr<shell::InterfaceRegistry> interface_registry_;
   std::unique_ptr<shell::InterfaceProvider> remote_interfaces_;
 

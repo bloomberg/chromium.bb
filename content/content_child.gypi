@@ -9,6 +9,7 @@
     '../components/tracing.gyp:tracing',
     '../components/webcrypto/webcrypto.gyp:webcrypto',
     '../ipc/ipc.gyp:ipc',
+    '../ipc/ipc.gyp:ipc_interfaces',
     '../mojo/mojo_base.gyp:mojo_common_lib',
     '../services/shell/shell.gyp:shell_runner_common_lib',
     '../skia/skia.gyp:skia',
