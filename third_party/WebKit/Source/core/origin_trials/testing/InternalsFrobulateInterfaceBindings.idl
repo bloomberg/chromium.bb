@@ -8,7 +8,6 @@
 partial interface Internals {
     const unsigned short FROBULATE_CONST_PARTIAL = 2;
     readonly attribute boolean frobulatePartial;
-    // TODO(chasej): Uncomment when methods are supported for origin trials (crbug.com/621641)
-    //boolean frobulateMethodPartial();
+    boolean frobulateMethodPartial();
 };
 

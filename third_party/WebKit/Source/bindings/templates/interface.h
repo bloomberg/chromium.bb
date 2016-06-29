@@ -158,7 +158,7 @@ public:
     {% if has_conditional_attributes %}
     static void installConditionallyEnabledProperties(v8::Local<v8::Object>, v8::Isolate*);
     {% endif %}
-    {{exported}}static void preparePrototypeAndInterfaceObject(v8::Local<v8::Context>, const DOMWrapperWorld&, v8::Local<v8::Object> prototypeObject, v8::Local<v8::Function> interfaceObject, v8::Local<v8::FunctionTemplate> interfaceTemplate){% if unscopeables or has_conditional_attributes_on_prototype or conditionally_enabled_methods %};
+    {{exported}}static void preparePrototypeAndInterfaceObject(v8::Local<v8::Context>, const DOMWrapperWorld&, v8::Local<v8::Object> prototypeObject, v8::Local<v8::Function> interfaceObject, v8::Local<v8::FunctionTemplate> interfaceTemplate){% if unscopeables or has_conditional_attributes_on_prototype or methods | conditionally_exposed(is_partial) %};
     {% else %} { }
     {% endif %}
     {% if has_partial_interface %}

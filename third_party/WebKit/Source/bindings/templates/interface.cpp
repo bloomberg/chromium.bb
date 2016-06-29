@@ -870,7 +870,7 @@ void {{v8_class}}::installConditionallyEnabledProperties(v8::Local<v8::Object> i
 {##############################################################################}
 {% block prepare_prototype_and_interface_object %}
 {% from 'methods.cpp' import install_conditionally_enabled_methods with context %}
-{% if unscopeables or has_conditional_attributes_on_prototype or conditionally_enabled_methods %}
+{% if unscopeables or has_conditional_attributes_on_prototype or methods | conditionally_exposed(is_partial) %}
 void {{v8_class}}::preparePrototypeAndInterfaceObject(v8::Local<v8::Context> context, const DOMWrapperWorld& world, v8::Local<v8::Object> prototypeObject, v8::Local<v8::Function> interfaceObject, v8::Local<v8::FunctionTemplate> interfaceTemplate)
 {
     v8::Isolate* isolate = context->GetIsolate();
@@ -880,7 +880,7 @@ void {{v8_class}}::preparePrototypeAndInterfaceObject(v8::Local<v8::Context> con
 {% if has_conditional_attributes_on_prototype %}
     {{install_conditionally_enabled_attributes_on_prototype() | indent}}
 {% endif %}
-{% if conditionally_enabled_methods %}
+{% if methods | conditionally_exposed(is_partial) %}
     {{install_conditionally_enabled_methods() | indent}}
 {% endif %}
 }

@@ -98,16 +98,22 @@ def constant_filters():
             'origin_trial_enabled_constants': filter_origin_trial_enabled}
 
 
-def origin_trial_feature_names(constants, attributes):
+def origin_trial_feature_names(interface, constants, attributes, methods):
     """ Returns a list of the names of each origin trial feature used in this interface.
 
-    This list is the union of the sets of names used for constants and attributes.
+    This list is the union of the sets of names used for constants, attributes and methods.
     """
 
     feature_names = set(
         [constant['origin_trial_feature_name'] for constant in constants if constant['origin_trial_feature_name']] +
-        [attribute['origin_trial_feature_name'] for attribute in attributes if attribute['origin_trial_feature_name']]
+        [attribute['origin_trial_feature_name'] for attribute in attributes if attribute['origin_trial_feature_name']] +
+        [method['origin_trial_feature_name'] for method in methods if (
+            v8_methods.method_is_visible(method, interface.is_partial) and
+            method['origin_trial_feature_name'])]
     )
+    if feature_names:
+        includes.add('bindings/core/v8/ScriptState.h')
+        includes.add('core/origin_trials/OriginTrials.h')
     return sorted(feature_names)
 
 
@@ -509,45 +515,6 @@ def interface_context(interface):
             extended_attributes=stringifier_ext_attrs,
             implemented_as=implemented_as))
 
-    conditionally_enabled_methods = []
-    custom_registration_methods = []
-    method_configuration_methods = []
-
-    for method in methods:
-        # Skip all but one method in each set of overloaded methods.
-        if 'overload_index' in method and 'overloads' not in method:
-            continue
-
-        if 'overloads' in method:
-            overloads = method['overloads']
-            if not overloads['visible']:
-                continue
-            # original interface will register instead of partial interface.
-            if overloads['has_partial_overloads'] and interface.is_partial:
-                continue
-            conditionally_exposed_function = overloads['exposed_test_all']
-            runtime_enabled_function = overloads['runtime_enabled_function_all']
-            has_custom_registration = (overloads['has_custom_registration_all'] or
-                                       overloads['runtime_determined_lengths'])
-        else:
-            if not method['visible']:
-                continue
-            conditionally_exposed_function = method['exposed_test']
-            runtime_enabled_function = method['runtime_enabled_function']
-            has_custom_registration = method['has_custom_registration']
-
-        if has_custom_registration:
-            custom_registration_methods.append(method)
-            continue
-        if conditionally_exposed_function:
-            conditionally_enabled_methods.append(method)
-            continue
-        if runtime_enabled_function:
-            custom_registration_methods.append(method)
-            continue
-        if method['should_be_exposed_to_script']:
-            method_configuration_methods.append(method)
-
     for method in methods:
         # The value of the Function object’s “length” property is a Number
         # determined as follows:
@@ -564,8 +531,6 @@ def interface_context(interface):
                             method['number_of_required_arguments'])
 
     context.update({
-        'conditionally_enabled_methods': conditionally_enabled_methods,
-        'custom_registration_methods': custom_registration_methods,
         'has_origin_safe_method_setter': is_global and any(
             method['is_check_security_for_receiver'] and not method['is_unforgeable']
             for method in methods),
@@ -573,7 +538,6 @@ def interface_context(interface):
                                any(method['is_implemented_in_private_script'] for method in methods)),
         'iterator_method': iterator_method,
         'has_array_iterator': has_array_iterator,
-        'method_configuration_methods': method_configuration_methods,
         'methods': methods,
     })
 
@@ -606,7 +570,7 @@ def interface_context(interface):
 
     # Origin Trials
     context.update({
-        'origin_trial_feature_names': origin_trial_feature_names(context['constants'], context['attributes']),
+        'origin_trial_feature_names': origin_trial_feature_names(interface, context['constants'], context['attributes'], context['methods']),
     })
     return context
 
@@ -685,6 +649,13 @@ def overloads_context(interface, overloads):
     assert len(overloads) > 1  # only apply to overloaded names
     for index, method in enumerate(overloads, 1):
         method['overload_index'] = index
+
+    # [OriginTrialEnabled]
+    # TODO(iclelland): Allow origin trials on method overloads
+    # (crbug.com/621641)
+    if any(method.get('origin_trial_feature_name') for method in overloads):
+        raise Exception('[OriginTrialEnabled] cannot be specified on '
+                        'overloaded methods: %s.%s' % (interface.name, overloads[0]['name']))
 
     effective_overloads_by_length = effective_overload_set_by_length(overloads)
     lengths = [length for length, _ in effective_overloads_by_length]

@@ -400,9 +400,6 @@ def origin_trial_enabled_function_name(definition_or_member):
                         '%s.%s' % (definition_or_member.idl_name, definition_or_member.name))
 
     if is_origin_trial_enabled:
-        includes.add('bindings/core/v8/ScriptState.h')
-        includes.add('core/origin_trials/OriginTrials.h')
-
         trial_name = extended_attributes['OriginTrialEnabled']
         return 'OriginTrials::%sEnabled' % uncapitalize(trial_name)
 

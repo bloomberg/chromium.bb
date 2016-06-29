@@ -80,6 +80,7 @@ import v8_callback_interface
 import v8_dictionary
 from v8_globals import includes, interfaces
 import v8_interface
+from v8_methods import method_filters
 import v8_types
 import v8_union
 from v8_utilities import capitalize, cpp_name, for_origin_trial_feature, unique_by
@@ -431,6 +432,7 @@ def initialize_jinja_env(cache_dir):
         })
     jinja_env.filters.update(attribute_filters())
     jinja_env.filters.update(v8_interface.constant_filters())
+    jinja_env.filters.update(method_filters())
     return jinja_env
 
 

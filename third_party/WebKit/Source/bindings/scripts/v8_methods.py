@@ -50,6 +50,61 @@ CUSTOM_REGISTRATION_EXTENDED_ATTRIBUTES = frozenset([
 ])
 
 
+def method_is_visible(method, interface_is_partial):
+    if 'overloads' in method:
+        return method['overloads']['visible'] and not (method['overloads']['has_partial_overloads'] and interface_is_partial)
+    return method['visible'] and 'overload_index' not in method
+
+
+def conditionally_exposed(method):
+    return method['overloads']['exposed_test_all'] if 'overloads' in method else method['exposed_test']
+
+
+def filter_conditionally_exposed(methods, interface_is_partial):
+    return [method for method in methods if (
+        method_is_visible(method, interface_is_partial) and conditionally_exposed(method))]
+
+
+def custom_registration(method):
+    if 'overloads' in method:
+        return (method['overloads']['has_custom_registration_all'] or
+                method['overloads']['runtime_determined_lengths'] or
+                (method['overloads']['runtime_enabled_function_all'] and not conditionally_exposed(method)))
+    return (method['has_custom_registration'] or
+            (method['runtime_enabled_function'] and not conditionally_exposed(method)))
+
+
+def filter_custom_registration(methods, interface_is_partial):
+    return [method for method in methods if (
+        method_is_visible(method, interface_is_partial) and custom_registration(method))]
+
+
+def filter_method_configuration(methods, interface_is_partial):
+    return [method for method in methods if
+            method_is_visible(method, interface_is_partial) and
+            method['should_be_exposed_to_script'] and
+            not method['origin_trial_feature_name'] and
+            not conditionally_exposed(method) and
+            not custom_registration(method)]
+
+
+def method_for_origin_trial_feature(methods, feature_name, interface_is_partial):
+    """Filters the list of methods, and returns those defined for the named origin trial feature."""
+    return [method for method in methods if
+            method_is_visible(method, interface_is_partial) and
+            method['should_be_exposed_to_script'] and
+            method['origin_trial_feature_name'] == feature_name and
+            not conditionally_exposed(method) and
+            not custom_registration(method)]
+
+
+def method_filters():
+    return {'conditionally_exposed': filter_conditionally_exposed,
+            'custom_registration': filter_custom_registration,
+            'has_method_configuration': filter_method_configuration,
+            'method_for_origin_trial_feature': method_for_origin_trial_feature}
+
+
 def use_local_result(method):
     extended_attributes = method.extended_attributes
     idl_type = method.idl_type
@@ -67,13 +122,6 @@ def method_context(interface, method, is_visible=True):
     idl_type = method.idl_type
     is_static = method.is_static
     name = method.name
-
-    # [OriginTrialEnabled]
-    # TODO(iclelland): Allow origin trials on methods
-    # (crbug.com/621641)
-    if v8_utilities.origin_trial_feature_name(method):
-        raise Exception('[OriginTrialEnabled] cannot be specified on '
-                        'individual methods: %s.%s' % (interface.name, method.name))
 
     if is_visible:
         idl_type.add_includes_for_type(extended_attributes)
@@ -198,6 +246,7 @@ def method_context(interface, method, is_visible=True):
         'on_prototype': v8_utilities.on_prototype(interface, method),
         'only_exposed_to_private_script': is_only_exposed_to_private_script,
         'origin_trial_enabled_function': v8_utilities.origin_trial_enabled_function_name(method),  # [OriginTrialEnabled]
+        'origin_trial_feature_name': v8_utilities.origin_trial_feature_name(method),  # [OriginTrialEnabled]
         'private_script_v8_value_to_local_cpp_value': idl_type.v8_value_to_local_cpp_value(
             extended_attributes, 'v8Value', 'cppValue', isolate='scriptState->isolate()', bailout_return_value='false'),
         'property_attributes': property_attributes(interface, method),

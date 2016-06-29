@@ -43,8 +43,6 @@ expect_failure = (t) => {
         assert_not_exists(window.internals, 'FROBULATE_CONST_PARTIAL');
         assert_equals(window.internals['FROBULATE_CONST_PARTIAL'], undefined);
       }
-// TODO(chasej): Uncomment when methods are supported for origin trials bindings (crbug.com/621641)
-/*
   }, {
     desc: 'Method should not exist on partial interface, with trial disabled',
     code: () => {
@@ -52,7 +50,6 @@ expect_failure = (t) => {
         assert_not_exists(window.internals, 'frobulateMethodPartial');
         assert_equals(window.internals['frobulateMethodPartial'], undefined);
       }
-*/
   }];
 
   fetch_tests_from_worker(new Worker('resources/disabled-worker.js'));
@@ -99,13 +96,10 @@ test(() => {
     assert_equals(window.internals.FROBULATE_CONST_PARTIAL, 2, 'Constant should return integer value');
   }, 'Constant should exist on partial interface and return value');
 
-// TODO(chasej): Uncomment when methods are supported for origin trials bindings (crbug.com/621641)
-/*
 test(() => {
     assert_idl_attribute(window.internals, 'frobulateMethodPartial');
     assert_true(window.internals.frobulateMethodPartial(), 'Method should return boolean value');
   }, 'Method should exist on partial interface and return value');
-*/
 
 fetch_tests_from_worker(new Worker('resources/enabled-worker.js'));
 };

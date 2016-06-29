@@ -671,12 +671,12 @@ V8DOMConfiguration::installMethod(isolate, world, {{instance_template}}, {{proto
 
 {######################################}
 {% macro install_conditionally_enabled_methods() %}
-{% if conditionally_enabled_methods %}
+{% if methods | conditionally_exposed(is_partial) %}
 {# Define operations with limited exposure #}
 v8::Local<v8::Signature> signature = v8::Signature::New(isolate, interfaceTemplate);
 ExecutionContext* executionContext = toExecutionContext(prototypeObject->CreationContext());
 ASSERT(executionContext);
-{% for method in conditionally_enabled_methods %}
+{% for method in methods | conditionally_exposed(is_partial) %}
 {% filter exposed(method.overloads.exposed_test_all
                   if method.overloads else
                   method.exposed_test) %}
