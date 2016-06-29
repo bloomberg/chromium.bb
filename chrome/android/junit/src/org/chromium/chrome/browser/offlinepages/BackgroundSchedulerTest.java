@@ -54,6 +54,8 @@ public class BackgroundSchedulerTest {
         assertEquals(OfflinePageUtils.TASK_TAG, task.getTag());
         long scheduledTimeMillis = TaskExtrasPacker.unpackTimeFromBundle(task.getExtras());
         assertTrue(scheduledTimeMillis > 0L);
+        assertEquals(
+                mConditions1, TaskExtrasPacker.unpackTriggerConditionsFromBundle(task.getExtras()));
     }
 
     @Test

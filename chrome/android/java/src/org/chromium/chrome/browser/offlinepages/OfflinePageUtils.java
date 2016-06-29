@@ -213,15 +213,7 @@ public class OfflinePageUtils {
     }
 
     public static DeviceConditions getDeviceConditions(Context context) {
-        IntentFilter filter = new IntentFilter(Intent.ACTION_BATTERY_CHANGED);
-        // Note this is a sticky intent, so we aren't really registering a receiver, just getting
-        // the sticky intent.  That means that we don't need to unregister the filter later.
-        Intent batteryStatus = context.registerReceiver(null, filter);
-        if (batteryStatus == null) return null;
-
-        return new DeviceConditions(isPowerConnected(batteryStatus),
-                batteryPercentage(batteryStatus),
-                NetworkChangeNotifier.getInstance().getCurrentConnectionType());
+        return getInstance().getDeviceConditionsImpl(context);
     }
 
     /**
@@ -278,6 +270,19 @@ public class OfflinePageUtils {
 
     protected OfflinePageBridge getOfflinePageBridge(Profile profile) {
         return OfflinePageBridge.getForProfile(profile);
+    }
+
+    /** Returns the current device conditions. May be overridden for testing. */
+    protected DeviceConditions getDeviceConditionsImpl(Context context) {
+        IntentFilter filter = new IntentFilter(Intent.ACTION_BATTERY_CHANGED);
+        // Note this is a sticky intent, so we aren't really registering a receiver, just getting
+        // the sticky intent.  That means that we don't need to unregister the filter later.
+        Intent batteryStatus = context.registerReceiver(null, filter);
+        if (batteryStatus == null) return null;
+
+        return new DeviceConditions(isPowerConnected(batteryStatus),
+                batteryPercentage(batteryStatus),
+                NetworkChangeNotifier.getInstance().getCurrentConnectionType());
     }
 
     @VisibleForTesting

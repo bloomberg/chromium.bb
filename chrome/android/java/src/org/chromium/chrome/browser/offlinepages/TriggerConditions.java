@@ -37,4 +37,22 @@ public class TriggerConditions {
     public boolean requireUnmeteredNetwork() {
         return mRequireUnmeteredNetwork;
     }
+
+    @Override
+    public int hashCode() {
+        int hash = 13;
+        hash = hash * 31 + (mRequirePowerConnected ? 1 : 0);
+        hash = hash * 31 + mMinimumBatteryPercentage;
+        hash = hash * 31 + (mRequireUnmeteredNetwork ? 1 : 0);
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object other) {
+        if (!(other instanceof TriggerConditions)) return false;
+        TriggerConditions otherTriggerConditions = (TriggerConditions) other;
+        return mRequirePowerConnected == otherTriggerConditions.mRequirePowerConnected
+                && mMinimumBatteryPercentage == otherTriggerConditions.mMinimumBatteryPercentage
+                && mRequireUnmeteredNetwork == otherTriggerConditions.mRequireUnmeteredNetwork;
+    }
 }

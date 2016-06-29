@@ -39,10 +39,20 @@ public class BackgroundOfflinerTask {
                                            ChromeBackgroundServiceWaiter waiter) {
         // Set up backup scheduled task in case processing is killed before RequestCoordinator
         // has a chance to reschedule base on remaining work.
-        BackgroundScheduler.schedule(context, DEFER_START_SECONDS);
+        TriggerConditions previousTriggerConditions =
+                TaskExtrasPacker.unpackTriggerConditionsFromBundle(bundle);
+        BackgroundScheduler.backupSchedule(context, previousTriggerConditions, DEFER_START_SECONDS);
+
+        DeviceConditions currentConditions = OfflinePageUtils.getDeviceConditions(context);
+        if (!currentConditions.isPowerConnected()
+                && currentConditions.getBatteryPercentage()
+                        < previousTriggerConditions.getMinimumBatteryPercentage()) {
+            Log.d(TAG, "Battery percentage is lower than minimum to start processing");
+            return false;
+        }
 
         // Now initiate processing.
-        processBackgroundRequests(bundle, OfflinePageUtils.getDeviceConditions(context), waiter);
+        processBackgroundRequests(bundle, currentConditions, waiter);
 
         // Gather UMA data to measure how often the user's machine is amenable to background
         // loading when we wake to do a task.
