@@ -72,6 +72,10 @@ class TextInputManagerObserverBase {
     success_ = true;
     if (message_loop_runner_)
       message_loop_runner_->Quit();
+
+    // By deleting |tester_| we make sure that the internal observer used in
+    // content/ is removed from the observer list of TextInputManager.
+    tester_.reset(nullptr);
   }
 
  private:
@@ -323,6 +327,12 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessTextInputManagerTest,
                                                &first_view_type));
   EXPECT_EQ(ui::TEXT_INPUT_TYPE_NONE, first_view_type);
 
+  size_t registered_views_count =
+      content::GetRegisteredViewsCountFromTextInputManager(active_contents());
+
+  // We expect at least two views for the two child frames.
+  EXPECT_GT(registered_views_count, 2U);
+
   // Now that the second frame's <input> is focused, we crash the first frame
   // and observe that text input state is updated for the view.
   std::unique_ptr<content::TestRenderWidgetHostViewDestructionObserver>
@@ -331,22 +341,22 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessTextInputManagerTest,
   frames[0]->GetProcess()->Shutdown(0, false);
   destruction_observer->Wait();
 
-  // Verifying that the TextInputManager is no longer tracking TextInputState
-  // for |first_view|. Note that |first_view| is now a dangling pointer.
-  EXPECT_FALSE(content::GetTextInputTypeForView(active_contents(), first_view,
-                                                &first_view_type));
+  // Verify that the TextInputManager is no longer tracking TextInputState for
+  // |first_view|.
+  EXPECT_EQ(
+      registered_views_count - 1U,
+      content::GetRegisteredViewsCountFromTextInputManager(active_contents()));
 
   // Now crash the second <iframe> which has an active view.
-  content::RenderWidgetHostView* second_view = frames[1]->GetView();
-  TextInputManagerChangeObserver change_observer(active_contents());
+  destruction_observer.reset(
+      new content::TestRenderWidgetHostViewDestructionObserver(
+          frames[1]->GetView()));
   frames[1]->GetProcess()->Shutdown(0, false);
-  change_observer.Wait();
-  EXPECT_EQ(ui::TEXT_INPUT_TYPE_NONE,
-            content::GetTextInputTypeFromWebContents(active_contents()));
-  EXPECT_FALSE(!!content::GetActiveViewFromWebContents(active_contents()));
-  ui::TextInputType second_view_type;
-  EXPECT_FALSE(content::GetTextInputTypeForView(active_contents(), second_view,
-                                                &second_view_type));
+  destruction_observer->Wait();
+
+  EXPECT_EQ(
+      registered_views_count - 2U,
+      content::GetRegisteredViewsCountFromTextInputManager(active_contents()));
 }
 
 // The following test loads a page with two child frames: one in process and one

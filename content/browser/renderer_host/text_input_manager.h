@@ -95,12 +95,11 @@ class CONTENT_EXPORT TextInputManager {
   void RemoveObserver(Observer* observer);
 
   RenderWidgetHostViewBase* active_view_for_testing() { return active_view_; }
+  size_t GetRegisteredViewsCountForTesting();
+  ui::TextInputType GetTextInputTypeForViewForTesting(
+      RenderWidgetHostViewBase* view);
 
  private:
-  friend bool GetTextInputTypeForView(WebContents* web_contents,
-                                      RenderWidgetHostView* view,
-                                      ui::TextInputType* type);
-
   void NotifyObserversAboutInputStateUpdate(RenderWidgetHostViewBase* view,
                                             bool did_update_state);
 

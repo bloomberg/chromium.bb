@@ -4,6 +4,8 @@
 
 #include "content/public/test/text_input_test_utils.h"
 
+#include <unordered_set>
+
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_view_aura.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
@@ -196,8 +198,16 @@ bool GetTextInputTypeForView(WebContents* web_contents,
   if (!manager || !manager->IsRegistered(view_base))
     return false;
 
-  *type = manager->text_input_state_map_[view_base].type;
+  *type = manager->GetTextInputTypeForViewForTesting(view_base);
+
   return true;
+}
+
+size_t GetRegisteredViewsCountFromTextInputManager(WebContents* web_contents) {
+  std::unordered_set<RenderWidgetHostView*> views;
+  TextInputManager* manager =
+      static_cast<WebContentsImpl*>(web_contents)->GetTextInputManager();
+  return !!manager ? manager->GetRegisteredViewsCountForTesting() : 0;
 }
 
 RenderWidgetHostView* GetActiveViewFromWebContents(WebContents* web_contents) {

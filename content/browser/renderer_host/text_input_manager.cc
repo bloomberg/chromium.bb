@@ -113,6 +113,16 @@ void TextInputManager::RemoveObserver(Observer* observer) {
   observer_list_.RemoveObserver(observer);
 }
 
+size_t TextInputManager::GetRegisteredViewsCountForTesting() {
+  return text_input_state_map_.size();
+}
+
+ui::TextInputType TextInputManager::GetTextInputTypeForViewForTesting(
+    RenderWidgetHostViewBase* view) {
+  DCHECK(IsRegistered(view));
+  return text_input_state_map_[view].type;
+}
+
 void TextInputManager::NotifyObserversAboutInputStateUpdate(
     RenderWidgetHostViewBase* updated_view,
     bool did_update_state) {

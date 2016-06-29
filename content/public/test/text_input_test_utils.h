@@ -6,8 +6,6 @@
 #define CONTENT_PUBLIC_TEST_TEXT_INPUT_TEST_UTILS_H_
 
 #include <string>
-#include <unordered_map>
-#include <vector>
 
 #include "base/callback.h"
 #include "ui/base/ime/text_input_mode.h"
@@ -31,6 +29,10 @@ ui::TextInputType GetTextInputTypeFromWebContents(WebContents* web_contents);
 bool GetTextInputTypeForView(WebContents* web_contents,
                              RenderWidgetHostView* view,
                              ui::TextInputType* type);
+
+// This method returns the number of RenderWidgetHostViews which are currently
+// registered with the TextInputManager that is owned by |web_contents|.
+size_t GetRegisteredViewsCountFromTextInputManager(WebContents* web_contents);
 
 // Returns the RWHV corresponding to the frame with a focused <input> within the
 // given WebContents.
