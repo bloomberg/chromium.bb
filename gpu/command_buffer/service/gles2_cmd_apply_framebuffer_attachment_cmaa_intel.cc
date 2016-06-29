@@ -1482,7 +1482,7 @@ const char ApplyFramebufferAttachmentCMAAINTELResourceManager::cmaa_frag_s2_[] =
         vec4 edgesFlt = vec4(edges);
 
         float numberOfEdges = dot(edgesFlt, vec4(1, 1, 1, 1));
-        if (numberOfEdges < 2.0)
+        if (numberOfEdges <= 1.0)
           continue;
 
         float fromRight = edgesFlt.r;
@@ -1507,7 +1507,7 @@ const char ApplyFramebufferAttachmentCMAAINTELResourceManager::cmaa_frag_s2_[] =
         // the current pixel's colour in return.
         // However, in the case when this is an actual corner, the pixel's
         // colour will be partially overwritten by it's 2 neighbours.
-        // if( numberOfEdges > 1.0 )
+        if( numberOfEdges == 2.0 )
         {
           // with value of 0.15, the pixel will retain approx 77% of its
           // colour and the remaining 23% will come from its 2 neighbours
@@ -1518,10 +1518,39 @@ const char ApplyFramebufferAttachmentCMAAINTELResourceManager::cmaa_frag_s2_[] =
           // parallel edges, don't do anything
           blurCoeff *= (1.0 - fromBelow * fromAbove) *
                        (1.0 - fromRight * fromLeft);
+
+          if (blurCoeff == 0.0)
+            continue;
+
+          uint packedEdgesL = packedEdgesArray[(0 + _x) * 4 + (1 + _y)];
+          uint packedEdgesB = packedEdgesArray[(1 + _x) * 4 + (0 + _y)];
+          uint packedEdgesR = packedEdgesArray[(2 + _x) * 4 + (1 + _y)];
+          uint packedEdgesT = packedEdgesArray[(1 + _x) * 4 + (2 + _y)];
+
+          // Don't blend large L shape because it would be the intended shape
+          // with high probability. e.g. rectangle
+          // large_l1 large_l2 large_l3 large_l4
+          // _ _         |     |         _ _
+          //   X|       X|     |X       |X
+          //    |     ¯¯¯¯     ¯¯¯¯     |
+          bool large_l1 = (packedEdgesC == (0x01u | 0x02u)) &&
+                           bool(packedEdgesL & 0x02u) &&
+                           bool(packedEdgesB & 0x01u);
+          bool large_l2 = (packedEdgesC == (0x01u | 0x08u)) &&
+                           bool(packedEdgesL & 0x08u) &&
+                           bool(packedEdgesT & 0x01u);
+          bool large_l3 = (packedEdgesC == (0x04u | 0x08u)) &&
+                           bool(packedEdgesR & 0x08u) &&
+                           bool(packedEdgesT & 0x04u);
+          bool large_l4 = (packedEdgesC == (0x02u | 0x04u)) &&
+                           bool(packedEdgesR & 0x02u) &&
+                           bool(packedEdgesB & 0x04u);
+          if (large_l1 || large_l2 || large_l3 || large_l4)
+            continue;
         }
 
         // 2.) U-like shape (surrounded with edges from 3 sides)
-        if (numberOfEdges > 2.0) {
+        if (numberOfEdges == 3.0) {
           // with value of 0.13, the pixel will retain approx 72% of its
           // colour and the remaining 28% will be picked from its 3
           // neighbours (which are unlikely to be blurred too but could be)
@@ -1529,19 +1558,14 @@ const char ApplyFramebufferAttachmentCMAAINTELResourceManager::cmaa_frag_s2_[] =
         }
 
         // 3.) Completely surrounded with edges from all 4 sides
-        if (numberOfEdges > 3.0) {
+        if (numberOfEdges == 4.0) {
           // with value of 0.07, the pixel will retain 78% of its colour
           // and the remaining 22% will come from its 4 neighbours (which
           // are unlikely to be blurred)
           blurCoeff = 0.07;
         }
 
-        if (blurCoeff == 0.0) {
-          // this avoids Z search below as well but that's ok because a Z
-          // shape will also always have some blurCoeff
-          continue;
-        }
-
+        // |blurCoeff| must be not zero at this point.
         vec4 blurMap = xFroms * blurCoeff;
 
         vec4 pixelC = texelFetch(g_screenTexture, screenPosI.xy, 0);
