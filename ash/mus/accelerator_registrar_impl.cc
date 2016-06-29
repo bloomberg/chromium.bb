@@ -35,6 +35,7 @@ AcceleratorRegistrarImpl::AcceleratorRegistrarImpl(
       binding_(this, std::move(request)),
       accelerator_namespace_(accelerator_namespace & 0xffff),
       destroy_callback_(destroy_callback) {
+  window_manager_->AddObserver(this);
   binding_.set_connection_error_handler(base::Bind(
       &AcceleratorRegistrarImpl::OnBindingGone, base::Unretained(this)));
 }
@@ -57,6 +58,7 @@ void AcceleratorRegistrarImpl::ProcessAccelerator(uint32_t accelerator_id,
 }
 
 AcceleratorRegistrarImpl::~AcceleratorRegistrarImpl() {
+  window_manager_->RemoveObserver(this);
   RemoveAllAccelerators();
   destroy_callback_.Run(this);
 }
@@ -130,6 +132,16 @@ void AcceleratorRegistrarImpl::RemoveAccelerator(uint32_t accelerator_id) {
   // there's no point keeping this alive anymore.
   if (accelerators_.empty() && !binding_.is_bound())
     delete this;
+}
+
+void AcceleratorRegistrarImpl::OnAccelerator(uint32_t id,
+                                             const ui::Event& event) {
+  if (OwnsAccelerator(id))
+    ProcessAccelerator(id, event);
+}
+
+void AcceleratorRegistrarImpl::OnWindowTreeClientDestroyed() {
+  delete this;
 }
 
 }  // namespace mus

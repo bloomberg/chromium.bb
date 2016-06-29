@@ -8,7 +8,6 @@
 
 #include "ash/mus/accelerator_registrar_impl.h"
 #include "ash/mus/root_window_controller.h"
-#include "ash/mus/root_windows_observer.h"
 #include "ash/mus/shelf_layout_impl.h"
 #include "ash/mus/user_window_controller_impl.h"
 #include "ash/mus/window_manager.h"
@@ -43,16 +42,6 @@ WindowManagerApplication::~WindowManagerApplication() {
   window_manager_.reset();
 }
 
-void WindowManagerApplication::OnAccelerator(uint32_t id,
-                                             const ui::Event& event) {
-  for (auto* registrar : accelerator_registrars_) {
-    if (registrar->OwnsAccelerator(id)) {
-      registrar->ProcessAccelerator(id, event);
-      break;
-    }
-  }
-}
-
 void WindowManagerApplication::OnAcceleratorRegistrarDestroyed(
     AcceleratorRegistrarImpl* registrar) {
   accelerator_registrars_.erase(registrar);
@@ -61,7 +50,7 @@ void WindowManagerApplication::OnAcceleratorRegistrarDestroyed(
 void WindowManagerApplication::InitWindowManager(
     ::mus::WindowTreeClient* window_tree_client) {
   window_manager_->Init(window_tree_client);
-  window_manager_->AddRootWindowsObserver(this);
+  window_manager_->AddObserver(this);
 }
 
 void WindowManagerApplication::Initialize(shell::Connector* connector,
@@ -69,7 +58,7 @@ void WindowManagerApplication::Initialize(shell::Connector* connector,
                                           uint32_t id) {
   connector_ = connector;
   ::mus::GpuService::Initialize(connector);
-  window_manager_.reset(new WindowManager(this, connector_));
+  window_manager_.reset(new WindowManager(connector_));
 
   aura_init_.reset(new views::AuraInit(connector_, "ash_mus_resources.pak"));
 
@@ -122,6 +111,9 @@ void WindowManagerApplication::Create(
 void WindowManagerApplication::Create(
     shell::Connection* connection,
     mojo::InterfaceRequest<::mus::mojom::AcceleratorRegistrar> request) {
+  if (!window_manager_->window_manager_client())
+    return;  // Can happen during shutdown.
+
   static int accelerator_registrar_count = 0;
   if (accelerator_registrar_count == std::numeric_limits<int>::max()) {
     // Restart from zero if we have reached the limit. It is technically

@@ -31,9 +31,8 @@ namespace ash {
 namespace mus {
 
 class RootWindowController;
-class RootWindowsObserver;
 class ShadowController;
-class WindowManagerApplication;
+class WindowManagerObserver;
 class WmShellMus;
 class WmLookupMus;
 class WmTestHelper;
@@ -46,8 +45,7 @@ class WindowManager : public ::mus::WindowManagerDelegate,
                       public ::mus::WindowObserver,
                       public ::mus::WindowTreeClientDelegate {
  public:
-  WindowManager(WindowManagerApplication* window_manager_app,
-                shell::Connector* connector);
+  explicit WindowManager(shell::Connector* connector);
   ~WindowManager() override;
 
   void Init(::mus::WindowTreeClient* window_tree_client);
@@ -68,8 +66,8 @@ class WindowManager : public ::mus::WindowManagerDelegate,
 
   std::set<RootWindowController*> GetRootWindowControllers();
 
-  void AddRootWindowsObserver(RootWindowsObserver* observer);
-  void RemoveRootWindowsObserver(RootWindowsObserver* observer);
+  void AddObserver(WindowManagerObserver* observer);
+  void RemoveObserver(WindowManagerObserver* observer);
 
  private:
   friend class WmTestHelper;
@@ -105,9 +103,6 @@ class WindowManager : public ::mus::WindowManagerDelegate,
                       const display::Display& display) override;
   void OnAccelerator(uint32_t id, const ui::Event& event) override;
 
-  // TODO(sky): this is unfortunate, remove.
-  WindowManagerApplication* window_manager_app_;
-
   shell::Connector* connector_;
 
   ::mus::WindowTreeClient* window_tree_client_ = nullptr;
@@ -118,7 +113,7 @@ class WindowManager : public ::mus::WindowManagerDelegate,
 
   std::set<std::unique_ptr<RootWindowController>> root_window_controllers_;
 
-  base::ObserverList<RootWindowsObserver> root_windows_observers_;
+  base::ObserverList<WindowManagerObserver> observers_;
 
   std::unique_ptr<display::Screen> screen_;
 

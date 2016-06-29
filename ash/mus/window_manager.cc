@@ -15,9 +15,8 @@
 #include "ash/mus/non_client_frame_controller.h"
 #include "ash/mus/property_util.h"
 #include "ash/mus/root_window_controller.h"
-#include "ash/mus/root_windows_observer.h"
 #include "ash/mus/shadow_controller.h"
-#include "ash/mus/window_manager_application.h"
+#include "ash/mus/window_manager_observer.h"
 #include "ash/public/interfaces/container.mojom.h"
 #include "components/mus/common/event_matcher_util.h"
 #include "components/mus/common/types.h"
@@ -39,9 +38,8 @@ void AssertTrue(bool success) {
   DCHECK(success);
 }
 
-WindowManager::WindowManager(WindowManagerApplication* window_manager_app,
-                             shell::Connector* connector)
-    : window_manager_app_(window_manager_app), connector_(connector) {}
+WindowManager::WindowManager(shell::Connector* connector)
+    : connector_(connector) {}
 
 WindowManager::~WindowManager() {
   // NOTE: |window_tree_client_| may already be null.
@@ -99,12 +97,12 @@ std::set<RootWindowController*> WindowManager::GetRootWindowControllers() {
   return result;
 }
 
-void WindowManager::AddRootWindowsObserver(RootWindowsObserver* observer) {
-  root_windows_observers_.AddObserver(observer);
+void WindowManager::AddObserver(WindowManagerObserver* observer) {
+  observers_.AddObserver(observer);
 }
 
-void WindowManager::RemoveRootWindowsObserver(RootWindowsObserver* observer) {
-  root_windows_observers_.RemoveObserver(observer);
+void WindowManager::RemoveObserver(WindowManagerObserver* observer) {
+  observers_.RemoveObserver(observer);
 }
 
 void WindowManager::AddAccelerators() {
@@ -134,7 +132,7 @@ RootWindowController* WindowManager::CreateRootWindowController(
   root_window_controllers_.insert(std::move(root_window_controller_ptr));
   window->AddObserver(this);
 
-  FOR_EACH_OBSERVER(RootWindowsObserver, root_windows_observers_,
+  FOR_EACH_OBSERVER(WindowManagerObserver, observers_,
                     OnRootWindowControllerAdded(root_window_controller));
   return root_window_controller;
 }
@@ -143,7 +141,7 @@ void WindowManager::OnWindowDestroying(::mus::Window* window) {
   for (auto it = root_window_controllers_.begin();
        it != root_window_controllers_.end(); ++it) {
     if ((*it)->root() == window) {
-      FOR_EACH_OBSERVER(RootWindowsObserver, root_windows_observers_,
+      FOR_EACH_OBSERVER(WindowManagerObserver, observers_,
                         OnWillDestroyRootWindowController((*it).get()));
       return;
     }
@@ -178,8 +176,11 @@ void WindowManager::OnWindowTreeClientDestroyed(
   shell_.reset();
   shadow_controller_.reset();
 
+  FOR_EACH_OBSERVER(WindowManagerObserver, observers_,
+                    OnWindowTreeClientDestroyed());
+
   window_tree_client_ = nullptr;
-  // TODO(sky): this should likely shutdown.
+  window_manager_client_ = nullptr;
 }
 
 void WindowManager::OnEventObserved(const ui::Event& event,
@@ -235,7 +236,8 @@ void WindowManager::OnAccelerator(uint32_t id, const ui::Event& event) {
       window_manager_client()->ActivateNextWindow();
       break;
     default:
-      window_manager_app_->OnAccelerator(id, event);
+      FOR_EACH_OBSERVER(WindowManagerObserver, observers_,
+                        OnAccelerator(id, event));
       break;
   }
 }

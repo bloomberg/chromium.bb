@@ -24,8 +24,7 @@ WmTestHelper::~WmTestHelper() {}
 
 void WmTestHelper::Init() {
   message_loop_.reset(new base::MessageLoopForUI());
-  window_manager_app_.window_manager_.reset(
-      new WindowManager(&window_manager_app_, nullptr));
+  window_manager_app_.window_manager_.reset(new WindowManager(nullptr));
   screen_ = new WmTestScreen;
   window_manager_app_.window_manager_->screen_.reset(screen_);
 

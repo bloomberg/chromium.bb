@@ -10,7 +10,7 @@
 #include <memory>
 #include <set>
 
-#include "ash/mus/root_windows_observer.h"
+#include "ash/mus/window_manager_observer.h"
 #include "ash/public/interfaces/shelf_layout.mojom.h"
 #include "ash/public/interfaces/user_window_controller.mojom.h"
 #include "base/macros.h"
@@ -49,7 +49,7 @@ class WindowManagerApplication
       public shell::InterfaceFactory<mojom::UserWindowController>,
       public shell::InterfaceFactory<::mus::mojom::AcceleratorRegistrar>,
       public mash::session::mojom::ScreenlockStateListener,
-      public RootWindowsObserver {
+      public WindowManagerObserver {
  public:
   WindowManagerApplication();
   ~WindowManagerApplication() override;
@@ -57,9 +57,6 @@ class WindowManagerApplication
   shell::Connector* connector() { return connector_; }
 
   WindowManager* window_manager() { return window_manager_.get(); }
-
-  // TODO(sky): figure out right place for this code.
-  void OnAccelerator(uint32_t id, const ui::Event& event);
 
   mash::session::mojom::Session* session() { return session_.get(); }
 
@@ -94,7 +91,7 @@ class WindowManagerApplication
   // session::mojom::ScreenlockStateListener:
   void ScreenlockStateChanged(bool locked) override;
 
-  // RootWindowsObserver:
+  // WindowManagerObserver:
   void OnRootWindowControllerAdded(RootWindowController* controller) override;
   void OnWillDestroyRootWindowController(
       RootWindowController* controller) override;

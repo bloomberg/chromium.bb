@@ -9,6 +9,7 @@
 
 #include <map>
 
+#include "ash/mus/window_manager_observer.h"
 #include "base/callback.h"
 #include "base/macros.h"
 #include "components/mus/public/interfaces/accelerator_registrar.mojom.h"
@@ -24,7 +25,8 @@ class WindowManager;
 // connection. This manages its own lifetime, and destroys itself when the
 // AcceleratorRegistrar and all its AcceleratorHandlers are disconnected. Upon
 // destruction, it calls the DestroyCallback.
-class AcceleratorRegistrarImpl : public ::mus::mojom::AcceleratorRegistrar {
+class AcceleratorRegistrarImpl : public ::mus::mojom::AcceleratorRegistrar,
+                                 public WindowManagerObserver {
  public:
   using DestroyCallback = base::Callback<void(AcceleratorRegistrarImpl*)>;
   AcceleratorRegistrarImpl(WindowManager* window_manager,
@@ -55,6 +57,10 @@ class AcceleratorRegistrarImpl : public ::mus::mojom::AcceleratorRegistrar {
                       ::mus::mojom::EventMatcherPtr matcher,
                       const AddAcceleratorCallback& callback) override;
   void RemoveAccelerator(uint32_t accelerator_id) override;
+
+  // WindowManagerObserver:
+  void OnAccelerator(uint32_t id, const ui::Event& event) override;
+  void OnWindowTreeClientDestroyed() override;
 
   WindowManager* window_manager_;
   ::mus::mojom::AcceleratorHandlerPtr accelerator_handler_;
