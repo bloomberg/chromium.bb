@@ -13,6 +13,9 @@ source_set("lib") {
     "accelerator.h",
     "access_policy.h",
     "access_policy_delegate.h",
+    "animation_runner.cc",
+    "animation_runner.h",
+    "animation_runner_observer.h",
     "default_access_policy.cc",
     "default_access_policy.h",
     "display.cc",
@@ -44,6 +47,8 @@ source_set("lib") {
     "platform_screen.h",
     "platform_screen_impl.cc",
     "platform_screen_impl.h",
+    "scheduled_animation_group.cc",
+    "scheduled_animation_group.h",
     "server_window.cc",
     "server_window.h",
     "server_window_delegate.h",
@@ -182,11 +187,13 @@ group("tests") {
 
 test("mus_ws_unittests") {
   sources = [
+    "animation_runner_unittest.cc",
     "cursor_unittest.cc",
     "display_unittest.cc",
     "event_dispatcher_unittest.cc",
     "event_matcher_unittest.cc",
     "focus_controller_unittest.cc",
+    "scheduled_animation_group_unittest.cc",
     "server_window_drawn_tracker_unittest.cc",
     "server_window_surface_manager_test_api.cc",
     "server_window_surface_manager_test_api.h",
