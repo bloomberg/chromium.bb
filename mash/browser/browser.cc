@@ -179,14 +179,14 @@ class TabStrip : public views::View,
     AddChildView(new_tab_button_);
   }
   ~TabStrip() override {
-    for (auto tab : tabs_)
+    for (auto* tab : tabs_)
       RemoveObserver(tab);
   }
 
   void SetContainerWindow(mus::Window* container) {
     DCHECK(!container_);
     container_ = container;
-    for (auto tab : tabs_) {
+    for (auto* tab : tabs_) {
       mus::Window* window = container_->window_tree()->NewWindow();
       container_->AddChild(window);
       tab->SetWindow(window);
@@ -669,7 +669,7 @@ class UI : public views::WidgetDelegateView,
       int height = local_bounds.height() - y - debug_view_height;
       content_area_->SetBounds(
           gfx::Rect(offset.x(), offset.y(), width, height));
-      for (auto child : content_area_->children())
+      for (auto* child : content_area_->children())
         child->SetBounds(gfx::Rect(0, 0, width, height));
     }
   }
