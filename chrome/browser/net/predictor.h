@@ -158,6 +158,14 @@ class Predictor {
   static std::vector<GURL> GetPredictedUrlListAtStartup(
       PrefService* user_prefs);
 
+  // Calls ClearPrefsOnUIThread and posts a task to the IO thread to
+  // DiscardAllResults.
+  void DiscardAllResultsAndClearPrefsOnUIThread();
+
+  // Clears the preferences used by the predictor. Must be called on the UI
+  // thread.
+  void ClearPrefsOnUIThread();
+
   static void set_max_queueing_delay(int max_queueing_delay_ms);
 
   static void set_max_parallel_resolves(size_t max_parallel_resolves);
@@ -209,13 +217,11 @@ class Predictor {
   // values into the current referrer list.
   void DeserializeReferrers(const base::ListValue& referral_list);
 
-  void DeserializeReferrersThenDelete(base::ListValue* referral_list);
-
   void DiscardInitialNavigationHistory();
 
   void FinalizeInitializationOnIOThread(
       const std::vector<GURL>& urls_to_prefetch,
-      base::ListValue* referral_list,
+      std::unique_ptr<base::ListValue> referral_list,
       IOThread* io_thread,
       ProfileIOData* profile_io_data);
 

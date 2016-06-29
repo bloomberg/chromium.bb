@@ -23,6 +23,9 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/browsing_data/browsing_data_helper.h"
+#include "chrome/browser/browsing_data/browsing_data_remover.h"
+#include "chrome/browser/browsing_data/browsing_data_remover_factory.h"
 #include "chrome/browser/net/predictor.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -1350,7 +1353,7 @@ IN_PROC_BROWSER_TEST_F(PredictorBrowserTest,
   // Prepare state that will be serialized on this shut-down and read on next
   // start-up. Ensure preresolution over preconnection.
   LearnAboutInitialNavigation(startup_url_);
-  // The target url will have a expected connection count of 2 after this call.
+  // The target URL will have an expected connection count of 2 after this call.
   InstallPredictorObserver(referring_url_, target_url_);
   LearnFromNavigation(referring_url_, target_url_);
 
@@ -1362,21 +1365,8 @@ IN_PROC_BROWSER_TEST_F(PredictorBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(PredictorBrowserTest, ShutdownStartupCyclePreresolve) {
-  // Make sure that the Preferences file is actually wiped of all DNS prefetch
-  // related data after start-up.
-  std::string cleared_startup_list;
-  std::string cleared_referral_list;
-  GetListFromPrefsAsString(prefs::kDnsPrefetchingStartupList,
-                           &cleared_startup_list);
-  GetListFromPrefsAsString(prefs::kDnsPrefetchingHostReferralList,
-                           &cleared_referral_list);
-
-  EXPECT_THAT(cleared_startup_list, Not(HasSubstr(startup_url_.host())));
-  EXPECT_THAT(cleared_referral_list, Not(HasSubstr(referring_url_.host())));
-  EXPECT_THAT(cleared_referral_list, Not(HasSubstr(target_url_.host())));
-
-  // But also make sure this data has been first loaded into the Predictor, by
-  // inspecting that the Predictor starts making the expected hostname requests.
+  // Make sure this data has been loaded into the Predictor, by inspecting that
+  // the Predictor starts making the expected hostname requests.
   PrepareFrameSubresources(referring_url_);
   observer()->WaitUntilHostLookedUp(target_url_);
 
@@ -1384,6 +1374,40 @@ IN_PROC_BROWSER_TEST_F(PredictorBrowserTest, ShutdownStartupCyclePreresolve) {
   // startup URL may be requested before the observer attaches itself.
   ExpectUrlRequestedFromPredictor(startup_url_);
   EXPECT_FALSE(observer()->HostFound(target_url_));
+}
+
+IN_PROC_BROWSER_TEST_F(PredictorBrowserTest, PRE_ClearData) {
+  // The target url will have a expected connection count of 2 after this call.
+  InstallPredictorObserver(referring_url_, target_url_);
+  LearnFromNavigation(referring_url_, target_url_);
+}
+
+// Ensure predictive data is cleared when the history is cleared.
+IN_PROC_BROWSER_TEST_F(PredictorBrowserTest, ClearData) {
+  std::string cleared_startup_list;
+  std::string cleared_referral_list;
+
+  // The pref should persist after startup.
+  GetListFromPrefsAsString(prefs::kDnsPrefetchingStartupList,
+                           &cleared_startup_list);
+  GetListFromPrefsAsString(prefs::kDnsPrefetchingHostReferralList,
+                           &cleared_referral_list);
+  EXPECT_THAT(cleared_referral_list, HasSubstr(referring_url_.host()));
+  EXPECT_THAT(cleared_referral_list, HasSubstr(target_url_.host()));
+
+  // Clear cache which should clear all prefs.
+  BrowsingDataRemover* remover =
+      BrowsingDataRemoverFactory::GetForBrowserContext(browser()->profile());
+  remover->Remove(BrowsingDataRemover::Unbounded(),
+                  BrowsingDataRemover::REMOVE_HISTORY,
+                  BrowsingDataHelper::UNPROTECTED_WEB);
+
+  GetListFromPrefsAsString(prefs::kDnsPrefetchingStartupList,
+                           &cleared_startup_list);
+  GetListFromPrefsAsString(prefs::kDnsPrefetchingHostReferralList,
+                           &cleared_referral_list);
+  EXPECT_THAT(cleared_referral_list, Not(HasSubstr(referring_url_.host())));
+  EXPECT_THAT(cleared_referral_list, Not(HasSubstr(target_url_.host())));
 }
 
 // The predictor should not evict recently used (navigated to) referrers.

@@ -17,6 +17,7 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
@@ -146,25 +147,15 @@ void Predictor::InitNetworkPredictor(PrefService* user_prefs,
   // Gather the list of hostnames to prefetch on startup.
   std::vector<GURL> urls = GetPredictedUrlListAtStartup(user_prefs);
 
-  base::ListValue* referral_list =
-      static_cast<base::ListValue*>(user_prefs->GetList(
-          prefs::kDnsPrefetchingHostReferralList)->DeepCopy());
-
-  // Now that we have the statistics in memory, wipe them from the Preferences
-  // file. They will be serialized back on a clean shutdown. This way we only
-  // have to worry about clearing our in-memory state when Clearing Browsing
-  // Data.
-  user_prefs->ClearPref(prefs::kDnsPrefetchingStartupList);
-  user_prefs->ClearPref(prefs::kDnsPrefetchingHostReferralList);
+  std::unique_ptr<base::ListValue> referral_list = base::WrapUnique(
+      user_prefs->GetList(prefs::kDnsPrefetchingHostReferralList)->DeepCopy());
 
   BrowserThread::PostTask(
-      BrowserThread::IO,
-      FROM_HERE,
-      base::Bind(
-          &Predictor::FinalizeInitializationOnIOThread,
-          base::Unretained(this),
-          urls, referral_list,
-          io_thread, profile_io_data));
+      BrowserThread::IO, FROM_HERE,
+      base::Bind(&Predictor::FinalizeInitializationOnIOThread,
+                 base::Unretained(this), urls,
+                 base::Passed(std::move(referral_list)), io_thread,
+                 profile_io_data));
 }
 
 void Predictor::AnticipateOmniboxUrl(const GURL& url, bool preconnectable) {
@@ -313,6 +304,20 @@ std::vector<GURL> Predictor::GetPredictedUrlListAtStartup(
     urls.push_back(GURL("http://www.google.com:80"));
 
   return urls;
+}
+
+void Predictor::DiscardAllResultsAndClearPrefsOnUIThread() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::Bind(&Predictor::DiscardAllResults, weak_factory_->GetWeakPtr()));
+  ClearPrefsOnUIThread();
+}
+
+void Predictor::ClearPrefsOnUIThread() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  user_prefs_->ClearPref(prefs::kDnsPrefetchingStartupList);
+  user_prefs_->ClearPref(prefs::kDnsPrefetchingHostReferralList);
 }
 
 void Predictor::set_max_queueing_delay(int max_queueing_delay_ms) {
@@ -574,12 +579,6 @@ void Predictor::DeserializeReferrers(const base::ListValue& referral_list) {
   }
 }
 
-void Predictor::DeserializeReferrersThenDelete(
-    base::ListValue* referral_list) {
-  DeserializeReferrers(*referral_list);
-  delete referral_list;
-}
-
 void Predictor::DiscardInitialNavigationHistory() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (initial_observer_.get())
@@ -588,7 +587,7 @@ void Predictor::DiscardInitialNavigationHistory() {
 
 void Predictor::FinalizeInitializationOnIOThread(
     const std::vector<GURL>& startup_urls,
-    base::ListValue* referral_list,
+    std::unique_ptr<base::ListValue> referral_list,
     IOThread* io_thread,
     ProfileIOData* profile_io_data) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -612,7 +611,7 @@ void Predictor::FinalizeInitializationOnIOThread(
   // Prefetch these hostnames on startup.
   DnsPrefetchMotivatedList(startup_urls, UrlInfo::STARTUP_LIST_MOTIVATED);
 
-  DeserializeReferrersThenDelete(referral_list);
+  DeserializeReferrers(*referral_list);
 
   LogStartupMetrics();
 }

@@ -483,6 +483,7 @@ void BrowsingDataRemover::RemoveImpl(
                      profile_->GetNetworkPredictor()),
           base::Bind(&BrowsingDataRemover::OnClearedNetworkPredictor,
                      weak_ptr_factory_.GetWeakPtr()));
+      profile_->GetNetworkPredictor()->ClearPrefsOnUIThread();
     }
 
     // As part of history deletion we also delete the auto-generated keywords.
