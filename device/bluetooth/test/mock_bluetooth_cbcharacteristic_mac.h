@@ -23,6 +23,9 @@
 // Methods for faking events.
 - (void)simulateReadWithValue:(NSData*)value error:(NSError*)error;
 - (void)simulateWriteWithError:(NSError*)error;
+- (void)simulateGattNotifySessionStarted;
+- (void)simulateGattNotifySessionFailedWithError:(NSError*)error;
+- (void)simulateGattCharacteristicChangedWithValue:(NSData*)value;
 
 @end
 

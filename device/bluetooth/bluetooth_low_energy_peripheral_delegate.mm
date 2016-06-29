@@ -39,6 +39,11 @@ class BluetoothLowEnergyPeripheralBridge {
     device_mac_->DidWriteValue(characteristic, error);
   }
 
+  void DidUpdateNotificationState(CBCharacteristic* characteristic,
+                                  NSError* error) {
+    device_mac_->DidUpdateNotificationState(characteristic, error);
+  }
+
   CBPeripheral* GetPeripheral() { return device_mac_->GetPeripheral(); }
 
  private:
@@ -88,5 +93,12 @@ class BluetoothLowEnergyPeripheralBridge {
     didWriteValueForCharacteristic:(nonnull CBCharacteristic*)characteristic
                              error:(nullable NSError*)error {
   bridge_->DidWriteValue(characteristic, error);
+}
+
+- (void)peripheral:(CBPeripheral*)peripheral
+    didUpdateNotificationStateForCharacteristic:
+        (nonnull CBCharacteristic*)characteristic
+                                          error:(nullable NSError*)error {
+  bridge_->DidUpdateNotificationState(characteristic, error);
 }
 @end

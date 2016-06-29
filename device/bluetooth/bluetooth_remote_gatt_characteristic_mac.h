@@ -8,6 +8,7 @@
 #include "device/bluetooth/bluetooth_remote_gatt_characteristic.h"
 
 #include "base/mac/scoped_nsobject.h"
+#include "base/memory/weak_ptr.h"
 
 #if defined(__OBJC__)
 #import <CoreBluetooth/CoreBluetooth.h>
@@ -60,13 +61,20 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattCharacteristicMac
   // Called by the BluetoothRemoteGattServiceMac instance when the
   // characteristics value has been read.
   void DidUpdateValue(NSError* error);
+  // Updates value_ and notifies the adapter of the new value.
+  void UpdateValueAndNotify();
   // Called by the BluetoothRemoteGattServiceMac instance when the
   // characteristics value has been written.
   void DidWriteValue(NSError* error);
+  // Called by the BluetoothRemoteGattServiceMac instance when the notify
+  // session has been started or failed to be started.
+  void DidUpdateNotificationState(NSError* error);
   // Returns true if the characteristic is readable.
   bool IsReadable() const;
   // Returns true if the characteristic is writable.
   bool IsWritable() const;
+  // Returns true if the characteristic supports notifications or indications.
+  bool SupportsNotificationsOrIndications() const;
   // Returns the write type (with or without responses).
   CBCharacteristicWriteType GetCBWriteType() const;
   // Returns CoreBluetooth characteristic.
@@ -88,6 +96,13 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattCharacteristicMac
   std::pair<ValueCallback, ErrorCallback> read_characteristic_value_callbacks_;
   // WriteRemoteCharacteristic request callbacks.
   std::pair<base::Closure, ErrorCallback> write_characteristic_value_callbacks_;
+  // Stores StartNotifySession request callbacks.
+  typedef std::pair<NotifySessionCallback, ErrorCallback>
+      PendingStartNotifyCall;
+  std::vector<PendingStartNotifyCall> start_notify_session_callbacks_;
+  // Flag indicates if GATT event registration is in progress.
+  bool start_notifications_in_progress_;
+  base::WeakPtrFactory<BluetoothRemoteGattCharacteristicMac> weak_ptr_factory_;
 };
 
 }  // namespace device

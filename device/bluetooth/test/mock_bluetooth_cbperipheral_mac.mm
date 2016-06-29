@@ -170,4 +170,9 @@ using base::scoped_nsobject;
   return ObjCCast<CBPeripheral>(self);
 }
 
+- (void)setNotifyValue:(BOOL)notification
+     forCharacteristic:(CBCharacteristic*)characteristic {
+  _bluetoothTestMac->OnFakeBluetoothGattSetCharacteristicNotification();
+}
+
 @end

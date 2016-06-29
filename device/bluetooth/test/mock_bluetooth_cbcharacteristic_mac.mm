@@ -94,6 +94,7 @@ CBCharacteristicProperties GattCharacteristicPropertyToCBCharacteristicProperty(
   scoped_nsobject<CBUUID> _UUID;
   CBCharacteristicProperties _cb_properties;
   base::scoped_nsobject<NSData> _value;
+  BOOL _notifying;
 }
 @end
 
@@ -144,6 +145,29 @@ CBCharacteristicProperties GattCharacteristicPropertyToCBCharacteristicProperty(
                                error:error];
 }
 
+- (void)simulateGattNotifySessionStarted {
+  _notifying = YES;
+  CBPeripheral* peripheral = _service.peripheral;
+  [peripheral.delegate peripheral:peripheral
+      didUpdateNotificationStateForCharacteristic:self.characteristic
+                                            error:nil];
+}
+
+- (void)simulateGattNotifySessionFailedWithError:(NSError*)error {
+  CBPeripheral* peripheral = _service.peripheral;
+  [peripheral.delegate peripheral:peripheral
+      didUpdateNotificationStateForCharacteristic:self.characteristic
+                                            error:error];
+}
+
+- (void)simulateGattCharacteristicChangedWithValue:(NSData*)value {
+  _value.reset([value copy]);
+  CBPeripheral* peripheral = _service.peripheral;
+  [peripheral.delegate peripheral:peripheral
+      didUpdateValueForCharacteristic:self.characteristic
+                                error:nil];
+}
+
 - (CBUUID*)UUID {
   return _UUID.get();
 }
@@ -162,6 +186,10 @@ CBCharacteristicProperties GattCharacteristicPropertyToCBCharacteristicProperty(
 
 - (NSData*)value {
   return _value.get();
+}
+
+- (BOOL)isNotifying {
+  return _notifying;
 }
 
 @end

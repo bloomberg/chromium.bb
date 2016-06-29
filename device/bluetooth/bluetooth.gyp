@@ -74,6 +74,8 @@
         'bluetooth_gatt_notify_session.h',
         'bluetooth_gatt_notify_session_android.cc',
         'bluetooth_gatt_notify_session_android.h',
+        'bluetooth_gatt_notify_session_mac.h',
+        'bluetooth_gatt_notify_session_mac.mm',
         'bluetooth_gatt_notify_session_win.cc',
         'bluetooth_gatt_notify_session_win.h',
         'bluetooth_gatt_service.cc',
