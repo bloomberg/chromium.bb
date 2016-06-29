@@ -99,7 +99,7 @@ class CastContentBrowserClient : public content::ContentBrowserClient {
   bool IsHandledURL(const GURL& url) override;
   void AppendExtraCommandLineSwitches(base::CommandLine* command_line,
                                       int child_process_id) override;
-  content::GeolocationProvider::Delegate* CreateGeolocationDelegate() override;
+  content::GeolocationDelegate* CreateGeolocationDelegate() override;
   void OverrideWebkitPrefs(content::RenderViewHost* render_view_host,
                            content::WebPreferences* prefs) override;
   void ResourceDispatcherHostCreated() override;

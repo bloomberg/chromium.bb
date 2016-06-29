@@ -12,6 +12,7 @@
 #include "build/build_config.h"
 #include "content/browser/geolocation/network_location_provider.h"
 #include "content/public/browser/access_token_store.h"
+#include "content/public/browser/geolocation_delegate.h"
 #include "content/public/common/content_client.h"
 #include "url/gurl.h"
 
@@ -29,7 +30,7 @@ const int64_t LocationArbitratorImpl::kFixStaleTimeoutMilliseconds =
 
 LocationArbitratorImpl::LocationArbitratorImpl(
     const LocationUpdateCallback& callback,
-    GeolocationProvider::Delegate* delegate)
+    GeolocationDelegate* delegate)
     : delegate_(delegate),
       arbitrator_update_callback_(callback),
       provider_update_callback_(

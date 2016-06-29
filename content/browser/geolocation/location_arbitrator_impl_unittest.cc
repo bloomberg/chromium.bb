@@ -10,6 +10,7 @@
 #include "base/memory/ptr_util.h"
 #include "content/browser/geolocation/fake_access_token_store.h"
 #include "content/browser/geolocation/mock_location_provider.h"
+#include "content/public/browser/geolocation_delegate.h"
 #include "content/public/common/geoposition.h"
 #include "content/test/test_content_browser_client.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -66,9 +67,9 @@ void SetReferencePosition(MockLocationProvider* provider) {
 
 namespace {
 
-class FakeDelegate : public GeolocationProvider::Delegate {
+class FakeGeolocationDelegate : public GeolocationDelegate {
  public:
-  FakeDelegate() = default;
+  FakeGeolocationDelegate() = default;
 
   bool UseNetworkLocationProviders() override { return use_network_; }
   void set_use_network(bool use_network) { use_network_ = use_network; }
@@ -87,7 +88,7 @@ class FakeDelegate : public GeolocationProvider::Delegate {
   bool use_network_ = true;
   std::unique_ptr<LocationProvider> system_location_provider_;
 
-  DISALLOW_COPY_AND_ASSIGN(FakeDelegate);
+  DISALLOW_COPY_AND_ASSIGN(FakeGeolocationDelegate);
 };
 
 class TestingLocationArbitrator : public LocationArbitratorImpl {
@@ -95,7 +96,7 @@ class TestingLocationArbitrator : public LocationArbitratorImpl {
   TestingLocationArbitrator(
       const LocationArbitratorImpl::LocationUpdateCallback& callback,
       AccessTokenStore* access_token_store,
-      GeolocationProvider::Delegate* delegate,
+      GeolocationDelegate* delegate,
       bool is_fake_delegate)
       : LocationArbitratorImpl(callback, delegate),
         is_fake_delegate_(is_fake_delegate),
@@ -123,14 +124,14 @@ class TestingLocationArbitrator : public LocationArbitratorImpl {
     return base::WrapUnique(gps_);
   }
 
-  FakeDelegate* GetFakeDelegate() {
+  FakeGeolocationDelegate* GetFakeGeolocationDelegate() {
     DCHECK(is_fake_delegate_);
-    return static_cast<FakeDelegate*>(GetDelegateForTesting());
+    return static_cast<FakeGeolocationDelegate*>(GetDelegateForTesting());
   }
 
   LocationProvider* GetLocationProvider() {
     if (is_fake_delegate_)
-      return GetFakeDelegate()->system_location_provider();
+      return GetFakeGeolocationDelegate()->system_location_provider();
     return GetDelegateForTesting()->OverrideSystemLocationProvider();
   }
 
@@ -158,12 +159,12 @@ class GeolocationLocationArbitratorTest : public testing::Test {
     observer_.reset(new MockLocationObserver);
   }
 
-  // There are two types of test cases: those using FakeDelegate and the ones
-  // exercising whatever the embedder provides. Test cases call this method to
-  // choose the appropriate one.
+  // There are two types of test cases: those using FakeGeolocationDelegate and
+  // the ones exercising whatever the embedder provides. Test cases call this
+  // method to choose the appropriate one.
   void InitializeArbitrator(bool use_fake_delegate) {
-    delegate_.reset(use_fake_delegate ? new FakeDelegate()
-                                      : new GeolocationProvider::Delegate);
+    delegate_.reset(use_fake_delegate ? new FakeGeolocationDelegate()
+                                      : new GeolocationDelegate);
     const LocationArbitratorImpl::LocationUpdateCallback callback =
         base::Bind(&MockLocationObserver::OnLocationUpdate,
                    base::Unretained(observer_.get()));
@@ -207,7 +208,7 @@ class GeolocationLocationArbitratorTest : public testing::Test {
   scoped_refptr<FakeAccessTokenStore> access_token_store_;
   std::unique_ptr<MockLocationObserver> observer_;
   std::unique_ptr<TestingLocationArbitrator> arbitrator_;
-  std::unique_ptr<GeolocationProvider::Delegate> delegate_;
+  std::unique_ptr<GeolocationDelegate> delegate_;
   base::MessageLoop loop_;
 };
 
@@ -270,7 +271,7 @@ TEST_F(GeolocationLocationArbitratorTest, NormalUsage) {
 
 TEST_F(GeolocationLocationArbitratorTest, CustomSystemProviderOnly) {
   InitializeArbitrator(true /* use_fake_delegate */);
-  arbitrator_->GetFakeDelegate()->set_use_network(false);
+  arbitrator_->GetFakeGeolocationDelegate()->set_use_network(false);
   ASSERT_TRUE(arbitrator_);
 
   EXPECT_FALSE(cell());
@@ -303,7 +304,7 @@ TEST_F(GeolocationLocationArbitratorTest, CustomSystemProviderOnly) {
 TEST_F(GeolocationLocationArbitratorTest,
        CustomSystemAndDefaultNetworkProviders) {
   InitializeArbitrator(true /* use_fake_delegate */);
-  arbitrator_->GetFakeDelegate()->set_use_network(true);
+  arbitrator_->GetFakeGeolocationDelegate()->set_use_network(true);
   ASSERT_TRUE(arbitrator_);
 
   EXPECT_FALSE(cell());

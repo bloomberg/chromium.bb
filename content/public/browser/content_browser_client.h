@@ -18,7 +18,6 @@
 #include "base/values.h"
 #include "build/build_config.h"
 #include "content/public/browser/certificate_request_result_type.h"
-#include "content/public/browser/geolocation_provider.h"
 #include "content/public/browser/navigation_throttle.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/media_stream_request.h"
@@ -108,6 +107,7 @@ class BrowserURLHandler;
 class ClientCertificateDelegate;
 class DevToolsManagerDelegate;
 class ExternalVideoSurfaceContainer;
+class GeolocationDelegate;
 class LocationProvider;
 class MediaObserver;
 class NavigationHandle;
@@ -533,7 +533,7 @@ class CONTENT_EXPORT ContentBrowserClient {
 
   // Allows the embedder to provide a Delegate for Geolocation to override some
   // functionality of the API (e.g. AccessTokenStore, LocationProvider).
-  virtual GeolocationProvider::Delegate* CreateGeolocationDelegate();
+  virtual GeolocationDelegate* CreateGeolocationDelegate();
 
   // Returns true if fast shutdown is possible.
   virtual bool IsFastShutdownPossible();

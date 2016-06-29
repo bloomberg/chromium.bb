@@ -41,6 +41,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/certificate_request_result_type.h"
 #include "content/public/browser/client_certificate_delegate.h"
+#include "content/public/browser/geolocation_delegate.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/resource_dispatcher_host.h"
 #include "content/public/browser/web_contents.h"
@@ -85,7 +86,7 @@ static std::unique_ptr<::shell::ShellClient> CreateMojoMediaApplication(
 #endif  // defined(ENABLE_MOJO_MEDIA_IN_BROWSER_PROCESS)
 
 // A provider of services for Geolocation.
-class CastGeolocationDelegate : public content::GeolocationProvider::Delegate {
+class CastGeolocationDelegate : public content::GeolocationDelegate {
  public:
   explicit CastGeolocationDelegate(CastBrowserContext* context)
       : context_(context) {}
@@ -276,7 +277,7 @@ void CastContentBrowserClient::AppendExtraCommandLineSwitches(
   AppendExtraCommandLineSwitches(command_line);
 }
 
-content::GeolocationProvider::Delegate*
+content::GeolocationDelegate*
 CastContentBrowserClient::CreateGeolocationDelegate() {
   return new CastGeolocationDelegate(
       CastBrowserProcess::GetInstance()->browser_context());

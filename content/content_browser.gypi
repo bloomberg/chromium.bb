@@ -190,7 +190,7 @@
       'public/browser/file_descriptor_info.h',
       'public/browser/focused_node_details.h',
       'public/browser/font_list_async.h',
-      'public/browser/geolocation_provider.cc',
+      'public/browser/geolocation_delegate.cc',
       'public/browser/geolocation_provider.h',
       'public/browser/global_request_id.h',
       'public/browser/gpu_data_manager.h',

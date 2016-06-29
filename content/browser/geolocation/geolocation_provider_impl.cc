@@ -15,6 +15,7 @@
 #include "content/browser/geolocation/location_arbitrator_impl.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
+#include "content/public/browser/geolocation_delegate.h"
 
 namespace content {
 
@@ -179,7 +180,7 @@ GeolocationProviderImpl::CreateArbitrator() {
   // Use the embedder's Delegate or fall back to the default one.
   delegate_.reset(GetContentClient()->browser()->CreateGeolocationDelegate());
   if (!delegate_)
-    delegate_.reset(new GeolocationProvider::Delegate);
+    delegate_.reset(new GeolocationDelegate);
 
   return base::WrapUnique(
       new LocationArbitratorImpl(callback, delegate_.get()));

@@ -17,6 +17,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "content/public/browser/client_certificate_delegate.h"
+#include "content/public/browser/geolocation_delegate.h"
 #include "content/public/browser/page_navigator.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/resource_dispatcher_host.h"
@@ -119,7 +120,7 @@ int GetCrashSignalFD(const base::CommandLine& command_line) {
 #endif  // defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_ANDROID)
 
 // A provider of services for Geolocation.
-class ShellGeolocationDelegate : public content::GeolocationProvider::Delegate {
+class ShellGeolocationDelegate : public content::GeolocationDelegate {
  public:
   explicit ShellGeolocationDelegate(ShellBrowserContext* context)
       : context_(context) {}
@@ -369,8 +370,7 @@ ShellBrowserContext*
   return shell_browser_main_parts_->off_the_record_browser_context();
 }
 
-GeolocationProvider::Delegate*
-ShellContentBrowserClient::CreateGeolocationDelegate() {
+GeolocationDelegate* ShellContentBrowserClient::CreateGeolocationDelegate() {
   return new ShellGeolocationDelegate(browser_context());
 }
 

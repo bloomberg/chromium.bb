@@ -28,6 +28,7 @@ class URLRequestContextGetter;
 
 namespace content {
 class AccessTokenStore;
+class GeolocationDelegate;
 class LocationProvider;
 
 // This class is responsible for handling updates from multiple underlying
@@ -43,7 +44,7 @@ class CONTENT_EXPORT LocationArbitratorImpl : public LocationArbitrator {
   typedef base::Callback<void(const Geoposition&)> LocationUpdateCallback;
 
   LocationArbitratorImpl(const LocationUpdateCallback& callback,
-                         GeolocationProvider::Delegate* delegate);
+                         GeolocationDelegate* delegate);
   ~LocationArbitratorImpl() override;
 
   static GURL DefaultNetworkProviderURL();
@@ -68,7 +69,7 @@ class CONTENT_EXPORT LocationArbitratorImpl : public LocationArbitrator {
   virtual std::unique_ptr<LocationProvider> NewSystemLocationProvider();
   virtual base::Time GetTimeNow() const;
 
-  GeolocationProvider::Delegate* GetDelegateForTesting() { return delegate_; }
+  GeolocationDelegate* GetDelegateForTesting() { return delegate_; }
 
  private:
   // Provider will either be added to |providers_| or
@@ -92,7 +93,7 @@ class CONTENT_EXPORT LocationArbitratorImpl : public LocationArbitrator {
                            const Geoposition& new_position,
                            bool from_same_provider) const;
 
-  GeolocationProvider::Delegate* delegate_;
+  GeolocationDelegate* delegate_;
 
   scoped_refptr<AccessTokenStore> access_token_store_;
   LocationUpdateCallback arbitrator_update_callback_;
