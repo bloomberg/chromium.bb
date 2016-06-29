@@ -1,21 +1,14 @@
 <!DOCTYPE html>
-<script src=media-file.js></script>
-<!-- TODO(foolip): Convert test to testharness.js. crbug.com/588956
-     (Please avoid writing new tests using video-test.js) -->
-<script src=video-test.js></script>
+<title>Test that a media element with "preload=none" doesn't fire a "stalled" event.</title>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script src="media-file.js"></script>
+<video preload="none"></video>
 <script>
-function runTest()
-{
-  findMediaElement();
-
-  waitForEventAndEnd("suspend");
-  waitForEventAndFail("stalled");
-  consoleWrite("");
-
-  video.src = findMediaFile("video", "content/test");
-}
+async_test(function(t) {
+    var video = document.querySelector("video");
+    video.onsuspend = t.step_func_done();
+    video.onstalled = t.unreached_func();
+    video.src = findMediaFile("video", "content/test");
+});
 </script>
-<body onload="runTest()">
-  <p>Test to see if a media element with preload=none dispatches a 'stalled' event.</p>
-  <video preload=none></video>
-</body>

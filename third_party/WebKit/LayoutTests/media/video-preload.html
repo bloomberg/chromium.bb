@@ -1,147 +1,58 @@
-<!DOCTYPE HTML>
+<!DOCTYPE html>
+<title>Test media loading behaviour with different "preload" values.</title>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script src="media-file.js"></script>
+<script>
+var movies = [
+    // should not buffer, "preload" is "none".
+    { preload: "none", shouldBuffer: false, autoPlay: false },
+    // should buffer because "autoplay" is set.
+    { preload: "none", shouldBuffer: true, autoPlay: true },
+    // should buffer, because load() is called.
+    { preload: "none", shouldBuffer: true, autoPlay: false, load: "" },
+    // should buffer, because play() is called.
+    { preload: "none", shouldBuffer: true, autoPlay: false, play: "" },
+    // should buffer because "preload" is "metadata".
+    { preload: "metadata", shouldBuffer: true, autoPlay: false },
+    // should buffer because "preload" is "auto".
+    { preload: "auto", shouldBuffer: true, autoPlay: false }
+];
 
-<html>
-    <head>
-        <script src=media-file.js></script>
-        <!-- TODO(foolip): Convert test to testharness.js. crbug.com/588956
-             (Please avoid writing new tests using video-test.js) -->
-        <script src=video-test.js></script>
+for (var movie of movies) {
+    async_test(function(t) {
+        var video = document.createElement("video");
+        video.onerror = t.step_func(function() {});
+        video.onloadstart = t.step_func(function() {});
+        video.onplay = t.step_func(function() {});
 
-        <script>
-            var timer = null;
-            var movieInfo =
-            {
-                current : -1,
-                movies :
-                [
-                    {
-                        // should not buffer, 'preload' is 'none'
-                        preload : "none",
-                        shouldBuffer : false,
-                        autoPlay : false,
-                        playInsteadOfLoad : false,
-                        description : "until 'play()' is called",
-                    },
-                    {
-                        // should buffer, because load() is called.
-                        preload : "none",
-                        shouldBuffer : true,
-                        autoPlay : false,
-                        playInsteadOfLoad : false,
-                        description : "because 'load()' is called",
-                    },
-                    {
-                        // should buffer, because play() is called.
-                        preload : "none",
-                        shouldBuffer : true,
-                        autoPlay : false,
-                        playInsteadOfLoad : true,
-                        description : "because 'play()' is called",
-                    },
-                    {
-                        preload : "metadata",
-                        shouldBuffer : true,
-                        autoPlay : false,
-                        playInsteadOfLoad : false,
-                        description : "",
-                    },
-                    {
-                        preload : "auto",
-                        shouldBuffer : true,
-                        autoPlay : false,
-                        playInsteadOfLoad : false,
-                        description : "",
-                    },
-                    {
-                        // should buffer because 'autoplay' is set
-                        preload : "none",
-                        shouldBuffer : true,
-                        autoPlay : true,
-                        playInsteadOfLoad : false,
-                        description : " because of 'autoplay'",
-                    },
-                ]
-            };
-            var timer = null;
+        video.onloadedmetadata = t.step_func_done(function() {
+            assert_true(movie.shouldBuffer);
+        });
 
-            function checkLoad()
-            {
-                var movie = movieInfo.movies[movieInfo.current];
+        setupAttribute("preload", movie.preload);
+        setupAttribute("autoplay", movie.autoPlay);
+        video.src = findMediaFile("video", "content/test");
 
-                logResult(true, "did not buffer automatically");
+        if (movie.hasOwnProperty("play"))
+            video.play();
+        else if (movie.hasOwnProperty("load"))
+            video.load();
 
-                // start playback, which should force data to load
+        if (!movie.shouldBuffer) {
+            setTimeout(function() {
+                // start playback, which should force data to load.
                 movie.shouldBuffer = true;
-                run("video.play()");
-            }
+                video.play();
+            }, 200);
+        }
 
-            function loadedmetadata()
-            {
-                var movie = movieInfo.movies[movieInfo.current];
-
-                clearTimeout(timer);
-                logResult(movie.shouldBuffer, "buffered automatically");
-                openNextMovie();
-            }
-
-            function setupAttribute(attr, value)
-            {
-                if (value)
-                    run("video.setAttribute('" + attr + "', '" + value + "')");
-                else
-                    run("video.removeAttribute('" + attr + "')");
-            }
-
-            function openNextMovie()
-            {
-                consoleWrite("");
-
-                movieInfo.current++;
-                if (movieInfo.current >= movieInfo.movies.length)
-                {
-                    endTest();
-                    return;
-                }
-
-                var movie = movieInfo.movies[movieInfo.current];
-                var url = findMediaFile("video", "content/test");
-                var desc = "Will load with <em>'preload=" + movie.preload + "'</em>"
-                            + ", <b>should" + (movie.shouldBuffer ? "" : " not") + " </b> buffer automatically "
-                            + movie.description;
-                consoleWrite(desc);
-
-                setupAttribute('preload', movie.preload);
-                setupAttribute('autoplay', movie.autoPlay);
-
-                video.src = url;
-                if (movieInfo.current > 0) {
-                    if (movie.playInsteadOfLoad) {
-                        run("video.play()");
-                    } else {
-                        run("video.load()");
-                    }
-                }
-                if (!movie.shouldBuffer)
-                    timer = setTimeout(checkLoad, 200);
-            }
-
-            function start()
-            {
-                findMediaElement();
-
-                waitForEvent("error");
-                waitForEvent("loadstart");
-                waitForEvent("play");
-                waitForEvent('loadedmetadata', loadedmetadata);
-
-                openNextMovie();
-            }
-
-        </script>
-    </head>
-
-    <body onload="start()">
-        <p>Test to see if media loads automatically when 'preload' is specified.</p>
-        <video controls ></video>
-    </body>
-</html>
+        function setupAttribute(attr, value) {
+            if (value)
+                video.setAttribute(attr, value);
+            else
+                video.removeAttribute(attr);
+        }
+    });
+}
+</script>
