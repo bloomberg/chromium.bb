@@ -519,12 +519,12 @@ NET_EXPORT void CreateNetLogEntriesForActiveObjects(
     NetLog::ThreadSafeObserver* observer) {
   // Put together the list of all requests.
   std::vector<const URLRequest*> requests;
-  for (const auto& context : contexts) {
+  for (auto* context : contexts) {
     // May only be called on the context's thread.
     DCHECK(context->CalledOnValidThread());
     // Contexts should all be using the same NetLog.
     DCHECK_EQ((*contexts.begin())->net_log(), context->net_log());
-    for (const auto& request : *context->url_requests()) {
+    for (auto* request : *context->url_requests()) {
       requests.push_back(request);
     }
   }
@@ -533,7 +533,7 @@ NET_EXPORT void CreateNetLogEntriesForActiveObjects(
   std::sort(requests.begin(), requests.end(), RequestCreatedBefore);
 
   // Create fake events.
-  for (const auto& request : requests) {
+  for (auto* request : requests) {
     NetLog::ParametersCallback callback =
         base::Bind(&GetRequestStateAsValue, base::Unretained(request));
 

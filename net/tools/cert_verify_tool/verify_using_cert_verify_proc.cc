@@ -98,8 +98,7 @@ void PrintCertVerifyResult(const net::CertVerifyResult& result) {
               << FingerPrintOSCertHandle(result.verified_cert->os_cert_handle())
               << " " << SubjectFromX509Certificate(result.verified_cert.get())
               << "\n";
-    for (const auto& os_cert :
-         result.verified_cert->GetIntermediateCertificates()) {
+    for (auto* os_cert : result.verified_cert->GetIntermediateCertificates()) {
       std::cout << " " << FingerPrintOSCertHandle(os_cert) << " "
                 << SubjectFromOSCertHandle(os_cert) << "\n";
     }

@@ -43,7 +43,7 @@ scoped_refptr<SSLPrivateKey> ClientKeyStore::FetchClientCertPrivateKey(
     const X509Certificate& certificate) {
   base::AutoLock auto_lock(lock_);
 
-  for (const auto& provider : providers_) {
+  for (auto* provider : providers_) {
     scoped_refptr<SSLPrivateKey> key;
     if (provider->GetCertificateKey(certificate, &key))
       return key;

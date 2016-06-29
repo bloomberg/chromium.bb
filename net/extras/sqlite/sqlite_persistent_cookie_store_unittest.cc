@@ -659,7 +659,7 @@ TEST_F(SQLitePersistentCookieStoreTest, SameSiteIsPersistent) {
 
   // Put the cookies into a map, by name, for comparison below.
   std::map<std::string, CanonicalCookie*> cookie_map;
-  for (const auto& cookie : cookies)
+  for (auto* cookie : cookies)
     cookie_map[cookie->Name()] = cookie;
 
   // Validate that each cookie has the correct SameSite.

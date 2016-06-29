@@ -126,7 +126,7 @@ void TestParseIntUsingFormat(ParseFunc func, ParseIntFormat format) {
   }
 
   // Test invalid inputs (invalid regardless of parsing format)
-  for (const auto& input : kInvalidParseTests) {
+  for (auto* input : kInvalidParseTests) {
     ExpectParseIntFailure<T>(func, input, format, ParseIntError::FAILED_PARSE);
   }
 

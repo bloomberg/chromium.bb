@@ -248,7 +248,7 @@ ssize_t QuicTestClient::GetOrCreateStreamAndSendRequest(
       return 1;
     if (rv == QUIC_PENDING) {
       // May need to retry request if asynchronous rendezvous fails.
-      auto new_headers = new BalsaHeaders;
+      auto* new_headers = new BalsaHeaders;
       new_headers->CopyFrom(*headers);
       push_promise_data_to_resend_.reset(
           new TestClientDataToResend(new_headers, body, fin, this, delegate));
@@ -291,7 +291,7 @@ ssize_t QuicTestClient::GetOrCreateStreamAndSendRequest(
       new_headers = new BalsaHeaders;
       new_headers->CopyFrom(*headers);
     }
-    auto data_to_resend =
+    auto* data_to_resend =
         new TestClientDataToResend(new_headers, body, fin, this, delegate);
     client()->MaybeAddQuicDataToResend(data_to_resend);
   }

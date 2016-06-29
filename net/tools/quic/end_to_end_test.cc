@@ -2209,7 +2209,7 @@ class MockableQuicClientThatDropsBody : public MockableQuicClient {
 
   QuicClientSession* CreateQuicClientSession(
       QuicConnection* connection) override {
-    auto session =
+    auto* session =
         new ClientSessionThatDropsBody(*config(), connection, server_id(),
                                        crypto_config(), push_promise_index());
     set_session(session);

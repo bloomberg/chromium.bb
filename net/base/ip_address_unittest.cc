@@ -504,7 +504,7 @@ TEST(IPAddressTest, ParseCIDRBlock_Invalid) {
                                       "192.168.1.1/ +1",
                                       "192.168.1.1/"};
 
-  for (const auto& bad_literal : bad_literals) {
+  for (auto* bad_literal : bad_literals) {
     IPAddress ip_address;
     size_t prefix_length_in_bits;
 

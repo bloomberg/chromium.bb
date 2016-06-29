@@ -40,7 +40,7 @@ TEST_F(HpackStaticTableTest, Initialize) {
   HpackHeaderTable::NameToEntryMap static_name_index =
       table_.GetStaticNameIndex();
   std::set<base::StringPiece> names;
-  for (auto entry : static_index) {
+  for (auto* entry : static_index) {
     names.insert(entry->name());
   }
   EXPECT_EQ(names.size(), static_name_index.size());

@@ -249,7 +249,7 @@ int DefaultChannelIDStore::GetChannelID(
 
 void DefaultChannelIDStore::SetChannelID(
     std::unique_ptr<ChannelID> channel_id) {
-  auto task = new SetChannelIDTask(std::move(channel_id));
+  auto* task = new SetChannelIDTask(std::move(channel_id));
   RunOrEnqueueTask(std::unique_ptr<Task>(task));
 }
 
