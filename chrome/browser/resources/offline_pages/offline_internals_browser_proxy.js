@@ -126,12 +126,12 @@ cr.define('offlineInternals', function() {
 
     /** @override */
     setRecordPageModel: function(shouldLog) {
-      chrome.send('setRecordPageModel');
+      chrome.send('setRecordPageModel', [shouldLog]);
     },
 
     /** @override */
     setRecordRequestQueue: function(shouldLog) {
-      chrome.send('setRecordRequestQueue');
+      chrome.send('setRecordRequestQueue', [shouldLog]);
     },
 
     /** @override */
