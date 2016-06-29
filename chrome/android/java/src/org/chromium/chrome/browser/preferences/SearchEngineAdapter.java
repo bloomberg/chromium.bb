@@ -34,6 +34,7 @@ import org.chromium.chrome.browser.preferences.website.WebsitePreferenceBridge;
 import org.chromium.chrome.browser.search_engines.TemplateUrlService;
 import org.chromium.chrome.browser.search_engines.TemplateUrlService.LoadListener;
 import org.chromium.chrome.browser.search_engines.TemplateUrlService.TemplateUrl;
+import org.chromium.components.location.LocationUtils;
 import org.chromium.ui.text.SpanApplier;
 import org.chromium.ui.text.SpanApplier.SpanInfo;
 
@@ -204,7 +205,7 @@ public class SearchEngineAdapter extends BaseAdapter implements LoadListener, On
         if (selected) {
             ForegroundColorSpan linkSpan = new ForegroundColorSpan(
                     ApiCompatibilityUtils.getColor(resources, R.color.pref_accent_color));
-            if (LocationSettings.getInstance().isSystemLocationSettingEnabled()) {
+            if (LocationUtils.getInstance().isSystemLocationSettingEnabled(mContext)) {
                 String message = mContext.getString(
                         locationEnabled(position, true)
                         ? R.string.search_engine_location_allowed
@@ -270,9 +271,8 @@ public class SearchEngineAdapter extends BaseAdapter implements LoadListener, On
     }
 
     private void onLocationLinkClicked() {
-        if (!LocationSettings.getInstance().isSystemLocationSettingEnabled()) {
-            mContext.startActivity(
-                    LocationSettings.getInstance().getSystemLocationSettingsIntent());
+        if (!LocationUtils.getInstance().isSystemLocationSettingEnabled(mContext)) {
+            mContext.startActivity(LocationUtils.getInstance().getSystemLocationSettingsIntent());
         } else {
             Intent settingsIntent = PreferencesLauncher.createIntentForSettingsPage(
                     mContext, SingleWebsitePreferences.class.getName());

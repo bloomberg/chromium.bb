@@ -25,11 +25,11 @@ import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.ParcelUuid;
-import android.os.Process;
 
 import org.chromium.base.Log;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
+import org.chromium.components.location.LocationUtils;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -162,9 +162,8 @@ class Wrappers {
             mContext = context;
         }
 
-        public boolean checkPermission(String permission) {
-            return mContext.checkPermission(permission, Process.myPid(), Process.myUid())
-                    == PackageManager.PERMISSION_GRANTED;
+        public boolean hasAndroidLocationPermission() {
+            return LocationUtils.getInstance().hasAndroidLocationPermission(mContext);
         }
 
         public Intent registerReceiver(BroadcastReceiver receiver, IntentFilter filter) {
