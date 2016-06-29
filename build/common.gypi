@@ -3754,6 +3754,14 @@
                 'variables': {
                   'release_optimize%': 's',
                 },
+              }, {
+                'ldflags': [
+                  # TODO(pcc): Fix linker bug which requires us to link pthread
+                  # unconditionally here (crbug.com/623236).
+                  '-Wl,--no-as-needed',
+                  '-lpthread',
+                  '-Wl,--as-needed',
+                ],
               }],
               ['profiling==1', {
                 'cflags': [
