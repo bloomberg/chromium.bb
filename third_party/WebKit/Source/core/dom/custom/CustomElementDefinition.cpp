@@ -6,7 +6,6 @@
 
 #include "core/dom/Attr.h"
 #include "core/dom/ExceptionCode.h"
-#include "core/dom/custom/CEReactionsScope.h"
 #include "core/dom/custom/CustomElement.h"
 #include "core/dom/custom/CustomElementAttributeChangedCallbackReaction.h"
 #include "core/dom/custom/CustomElementConnectedCallbackReaction.h"
@@ -133,34 +132,31 @@ bool CustomElementDefinition::hasAttributeChangedCallback(
     return m_observedAttributes.contains(name.localName());
 }
 
-static void enqueueReaction(Element* element, CustomElementReaction* reaction)
-{
-    // CEReactionsScope must be created by [CEReactions] in IDL,
-    // or callers must setup explicitly if it does not go through bindings.
-    DCHECK(CEReactionsScope::current());
-    CEReactionsScope::current()->enqueue(element, reaction);
-}
-
 void CustomElementDefinition::enqueueUpgradeReaction(Element* element)
 {
-    enqueueReaction(element, new CustomElementUpgradeReaction(this));
+    CustomElement::enqueue(element,
+        new CustomElementUpgradeReaction(this));
 }
 
 void CustomElementDefinition::enqueueConnectedCallback(Element* element)
 {
-    enqueueReaction(element, new CustomElementConnectedCallbackReaction(this));
+    CustomElement::enqueue(element,
+        new CustomElementConnectedCallbackReaction(this));
 }
 
 void CustomElementDefinition::enqueueDisconnectedCallback(Element* element)
 {
-    enqueueReaction(element, new CustomElementDisconnectedCallbackReaction(this));
+    CustomElement::enqueue(element,
+        new CustomElementDisconnectedCallbackReaction(this));
 }
 
 void CustomElementDefinition::enqueueAttributeChangedCallback(Element* element,
     const QualifiedName& name,
     const AtomicString& oldValue, const AtomicString& newValue)
 {
-    enqueueReaction(element, new CustomElementAttributeChangedCallbackReaction(this, name, oldValue, newValue));
+    CustomElement::enqueue(element,
+        new CustomElementAttributeChangedCallbackReaction(this, name,
+        oldValue, newValue));
 }
 
 void CustomElementDefinition::enqueueAttributeChangedCallbackForAllAttributes(

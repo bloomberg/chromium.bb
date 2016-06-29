@@ -42,6 +42,7 @@ public:
     static HTMLElement* createCustomElementSync(Document&, const QualifiedName&);
     static HTMLElement* createCustomElementAsync(Document&, const QualifiedName&);
 
+    static void enqueue(Element*, CustomElementReaction*);
     static void enqueueConnectedCallback(Element*);
     static void enqueueDisconnectedCallback(Element*);
     static void enqueueAttributeChangedCallback(Element*, const QualifiedName&,

@@ -26,7 +26,8 @@ public:
 
     void push();
     void popInvokingReactions();
-    void enqueue(Element*, CustomElementReaction*);
+    void enqueueToCurrentQueue(Element*, CustomElementReaction*);
+    void enqueueToBackupQueue(Element*, CustomElementReaction*);
 
 private:
     using ElementReactionQueueMap =
@@ -35,6 +36,11 @@ private:
 
     using ElementQueue = HeapVector<Member<Element>, 1>;
     HeapVector<Member<ElementQueue>> m_stack;
+    Member<ElementQueue> m_backupQueue;
+
+    void invokeBackupQueue();
+    void invokeReactions(ElementQueue&);
+    void enqueue(Member<ElementQueue>&, Element*, CustomElementReaction*);
 };
 
 } // namespace blink

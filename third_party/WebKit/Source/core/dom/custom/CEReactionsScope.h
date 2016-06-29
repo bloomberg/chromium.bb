@@ -40,7 +40,7 @@ public:
         s_topOfStack = s_topOfStack->m_prev;
     }
 
-    void enqueue(Element*, CustomElementReaction*);
+    void enqueueToCurrentQueue(Element*, CustomElementReaction*);
 
 private:
     static CEReactionsScope* s_topOfStack;

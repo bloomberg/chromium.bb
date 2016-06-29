@@ -13,15 +13,18 @@ namespace blink {
 
 CEReactionsScope* CEReactionsScope::s_topOfStack = nullptr;
 
-void CEReactionsScope::enqueue(
+void CEReactionsScope::enqueueToCurrentQueue(
     Element* element,
     CustomElementReaction* reaction)
 {
     if (!m_frameHost.get()) {
         m_frameHost = element->document().frameHost();
         m_frameHost->customElementReactionStack().push();
+    } else {
+        DCHECK_EQ(m_frameHost, element->document().frameHost());
     }
-    m_frameHost->customElementReactionStack().enqueue(element, reaction);
+    m_frameHost->customElementReactionStack().enqueueToCurrentQueue(
+        element, reaction);
 }
 
 void CEReactionsScope::invokeReactions()

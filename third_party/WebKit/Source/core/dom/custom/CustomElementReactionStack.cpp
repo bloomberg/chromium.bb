@@ -4,8 +4,11 @@
 
 #include "core/dom/custom/CustomElementReactionStack.h"
 
+#include "bindings/core/v8/Microtask.h"
 #include "core/dom/Element.h"
+#include "core/dom/custom/CEReactionsScope.h"
 #include "core/dom/custom/CustomElementReactionQueue.h"
+#include "core/frame/FrameHost.h"
 
 namespace blink {
 
@@ -20,6 +23,7 @@ DEFINE_TRACE(CustomElementReactionStack)
 {
     visitor->trace(m_map);
     visitor->trace(m_stack);
+    visitor->trace(m_backupQueue);
 }
 
 void CustomElementReactionStack::push()
@@ -30,30 +34,37 @@ void CustomElementReactionStack::push()
 void CustomElementReactionStack::popInvokingReactions()
 {
     ElementQueue* queue = m_stack.last();
-    if (!queue) {
-        m_stack.removeLast();
-        return;
-    }
+    if (queue)
+        invokeReactions(*queue);
+    m_stack.removeLast();
+}
 
-    for (size_t i = 0; i < queue->size(); ++i) {
-        Element* element = (*queue)[i];
+void CustomElementReactionStack::invokeReactions(ElementQueue& queue)
+{
+    for (size_t i = 0; i < queue.size(); ++i) {
+        Element* element = queue[i];
         if (CustomElementReactionQueue* reactions = m_map.get(element)) {
             reactions->invokeReactions(element);
             CHECK(reactions->isEmpty());
             m_map.remove(element);
         }
     }
-
-    m_stack.removeLast();
 }
 
-void CustomElementReactionStack::enqueue(
+void CustomElementReactionStack::enqueueToCurrentQueue(
     Element* element,
     CustomElementReaction* reaction)
 {
-    ElementQueue* queue = m_stack.last();
+    enqueue(m_stack.last(), element, reaction);
+}
+
+void CustomElementReactionStack::enqueue(
+    Member<ElementQueue>& queue,
+    Element* element,
+    CustomElementReaction* reaction)
+{
     if (!queue)
-        m_stack.last() = queue = new ElementQueue();
+        queue = new ElementQueue();
     queue->append(element);
 
     CustomElementReactionQueue* reactions = m_map.get(element);
@@ -63,6 +74,33 @@ void CustomElementReactionStack::enqueue(
     }
 
     reactions->add(reaction);
+}
+
+void CustomElementReactionStack::enqueueToBackupQueue(
+    Element* element,
+    CustomElementReaction* reaction)
+{
+    // https://html.spec.whatwg.org/multipage/scripting.html#backup-element-queue
+
+    DCHECK(!CEReactionsScope::current());
+    DCHECK(m_stack.isEmpty());
+    DCHECK(isMainThread());
+
+    // If the processing the backup element queue is not set:
+    if (!m_backupQueue || m_backupQueue->isEmpty()) {
+        Microtask::enqueueMicrotask(WTF::bind(
+            &CustomElementReactionStack::invokeBackupQueue,
+            Persistent<CustomElementReactionStack>(this)));
+    }
+
+    enqueue(m_backupQueue, element, reaction);
+}
+
+void CustomElementReactionStack::invokeBackupQueue()
+{
+    DCHECK(isMainThread());
+    invokeReactions(*m_backupQueue);
+    m_backupQueue->clear();
 }
 
 } // namespace blink

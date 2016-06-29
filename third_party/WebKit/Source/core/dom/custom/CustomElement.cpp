@@ -6,10 +6,13 @@
 
 #include "core/dom/Document.h"
 #include "core/dom/QualifiedName.h"
+#include "core/dom/custom/CEReactionsScope.h"
 #include "core/dom/custom/CustomElementDefinition.h"
+#include "core/dom/custom/CustomElementReactionStack.h"
 #include "core/dom/custom/CustomElementsRegistry.h"
 #include "core/dom/custom/V0CustomElement.h"
 #include "core/dom/custom/V0CustomElementRegistrationContext.h"
+#include "core/frame/FrameHost.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "core/html/HTMLElement.h"
 #include "platform/text/Character.h"
@@ -157,6 +160,24 @@ HTMLElement* CustomElement::createUndefinedElement(Document& document, const Qua
     element->setCustomElementState(CustomElementState::Undefined);
 
     return element;
+}
+
+void CustomElement::enqueue(Element* element, CustomElementReaction* reaction)
+{
+    // To enqueue an element on the appropriate element queue
+    // https://html.spec.whatwg.org/multipage/scripting.html#enqueue-an-element-on-the-appropriate-element-queue
+
+    // If the custom element reactions stack is not empty, then
+    // Add element to the current element queue.
+    if (CEReactionsScope* current = CEReactionsScope::current()) {
+        current->enqueueToCurrentQueue(element, reaction);
+        return;
+    }
+
+    // If the custom element reactions stack is empty, then
+    // Add element to the backup element queue.
+    element->document().frameHost()->customElementReactionStack()
+        .enqueueToBackupQueue(element, reaction);
 }
 
 void CustomElement::enqueueConnectedCallback(Element* element)
