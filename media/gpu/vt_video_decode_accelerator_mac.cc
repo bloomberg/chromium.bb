@@ -644,7 +644,7 @@ void VTVideoDecodeAccelerator::DecodeTask(const BitstreamBuffer& bitstream,
   }
 
   // If no IDR has been seen yet, skip decoding.
-  if (has_slice && (!session_ || waiting_for_idr_) && config_changed_) {
+  if (has_slice && waiting_for_idr_) {
     if (!missing_idr_logged_) {
       LOG(ERROR) << "Illegal attempt to decode without IDR. "
                  << "Discarding decode requests until next IDR.";
