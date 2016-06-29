@@ -4,7 +4,10 @@
 
 package org.chromium.chrome.browser.payments;
 
+import android.view.View;
+import android.view.ViewGroup;
 import android.widget.EditText;
+import android.widget.Spinner;
 import android.widget.TextView;
 
 import org.chromium.base.ThreadUtils;
@@ -16,6 +19,7 @@ import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.autofill.CardUnmaskPrompt;
 import org.chromium.chrome.browser.autofill.CardUnmaskPrompt.CardUnmaskObserverForTest;
 import org.chromium.chrome.browser.payments.PaymentRequestImpl.PaymentRequestServiceObserverForTest;
+import org.chromium.chrome.browser.payments.ui.EditorTextField;
 import org.chromium.chrome.browser.payments.ui.PaymentRequestUI;
 import org.chromium.chrome.browser.payments.ui.PaymentRequestUI.PaymentRequestObserverForTest;
 import org.chromium.chrome.test.ChromeActivityTestCaseBase;
@@ -122,6 +126,36 @@ abstract class PaymentRequestTestBase extends ChromeActivityTestCaseBase<ChromeA
         helper.waitForCallback(callCount);
     }
 
+    /**
+     * Clicks on an element in the "Shipping summary" section of the payments UI. This section
+     * combines both shipping address and shipping option. It is replaced by "Shipping address" and
+     * "Shipping option" sections upon expanding the payments UI.
+     */
+    protected void clickInShippingSummaryAndWait(final int resourceId, CallbackHelper helper)
+            throws InterruptedException, TimeoutException {
+        int callCount = helper.getCallCount();
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                mUI.getShippingSummarySectionForTest().findViewById(resourceId).performClick();
+            }
+        });
+        helper.waitForCallback(callCount);
+    }
+
+    /** Clicks on an element in the "Shipping address" section of the payments UI. */
+    protected void clickInShippingAddressAndWait(final int resourceId, CallbackHelper helper)
+            throws InterruptedException, TimeoutException {
+        int callCount = helper.getCallCount();
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                mUI.getShippingAddressSectionForTest().findViewById(resourceId).performClick();
+            }
+        });
+        helper.waitForCallback(callCount);
+    }
+
     /** Clicks on an element in the "Contact Info" section of the payments UI. */
     protected void clickInContactInfoAndWait(final int resourceId, CallbackHelper helper)
             throws InterruptedException, TimeoutException {
@@ -161,25 +195,53 @@ abstract class PaymentRequestTestBase extends ChromeActivityTestCaseBase<ChromeA
         helper.waitForCallback(callCount);
     }
 
-    /** Returns the left summary label of the "Shipping Address" section. */
+    /** Returns the left summary label of the "Shipping summary" section. */
     protected String getAddressSectionLabel() throws ExecutionException {
         return ThreadUtils.runOnUiThreadBlocking(new Callable<String>() {
             @Override
             public String call() {
-                return ((TextView) mUI.getShippingAddressSectionForTest().findViewById(
+                return ((TextView) mUI.getShippingSummarySectionForTest().findViewById(
                         R.id.payments_left_summary_label)).getText().toString();
             }
         });
     }
 
-    /** Directly sets the text in the editor UI. */
-    protected void setTextInEditorAndWait(final int resourceId, final String input,
-            CallbackHelper helper) throws InterruptedException, TimeoutException {
+    /** Selects the spinner value in the editor UI. */
+    protected void setSpinnerSelectionInEditor(final int selection, CallbackHelper helper)
+            throws InterruptedException, TimeoutException {
         int callCount = helper.getCallCount();
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                ((EditText) mUI.getEditorView().findViewById(resourceId)).setText(input);
+                ViewGroup contents = (ViewGroup) mUI.getEditorView().findViewById(R.id.contents);
+                assertNotNull(contents);
+                for (int i = 0; i < contents.getChildCount(); i++) {
+                    View view = contents.getChildAt(i);
+                    if (view instanceof Spinner) {
+                        ((Spinner) view).setSelection(selection);
+                        return;
+                    }
+                }
+            }
+        });
+        helper.waitForCallback(callCount);
+    }
+
+    /** Directly sets the text in the editor UI. */
+    protected void setTextInEditorAndWait(final String[] values, CallbackHelper helper)
+            throws InterruptedException, TimeoutException {
+        int callCount = helper.getCallCount();
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                ViewGroup contents = (ViewGroup) mUI.getEditorView().findViewById(R.id.contents);
+                assertNotNull(contents);
+                for (int i = 0, j = 0; i < contents.getChildCount() && j < values.length; i++) {
+                    View view = contents.getChildAt(i);
+                    if (view instanceof EditorTextField) {
+                        ((EditorTextField) view).getEditText().setText(values[j++]);
+                    }
+                }
             }
         });
         helper.waitForCallback(callCount);

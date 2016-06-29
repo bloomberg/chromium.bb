@@ -97,10 +97,14 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
                 @DataType int optionType, Callback<SectionInformation> callback);
 
         /**
-         * Called when the user changes one of their payment options. This method returns true if
-         * this section should be disabled and show a spinner while it's being checked. If this
-         * method returns true, then the checkedCallback will be invoked with the results of the
-         * check and updated information.
+         * Called when the user changes one of their payment options.
+         *
+         * If this method returns true, then:
+         * + The added option should be asynchronously verified.
+         * + The section should be disabled and a progress spinny should be shown while the option
+         *   is being verified.
+         * + The checkedCallback will be invoked with the results of the check and updated
+         *   information.
          *
          * For example, if the website needs a shipping address to calculate shipping options, then
          * calling onSectionOptionSelected(TYPE_SHIPPING_ADDRESS, option, checkedCallback) will
@@ -117,8 +121,20 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
 
         /**
          * Called when the user clicks on the "Add" button for a section.
+         *
+         * If this method returns true, then:
+         * + The added option should be asynchronously verified.
+         * + The section should be disabled and a progress spinny should be shown while the option
+         *   is being verified.
+         * + The checkedCallback will be invoked with the results of the check and updated
+         *   information.
+         *
+         * @param optionType      Data being updated.
+         * @param checkedCallback The callback after an asynchronous check has completed.
+         * @return True if the option needs to be asynchronously checked.
          */
-        void onSectionAddOption(@DataType int optionType);
+        boolean onSectionAddOption(
+                @DataType int optionType, Callback<PaymentInformation> checkedCallback);
 
         /**
          * Called when the user clicks on the “Pay” button. At this point, the UI is disabled and is
@@ -209,6 +225,7 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
     private final ViewGroup mFullContainer;
     private final ViewGroup mRequestView;
     private final PaymentRequestUiErrorView mErrorView;
+    private final Callback<PaymentInformation> mUpdateSectionsCallback;
 
     private ScrollView mPaymentContainer;
     private LinearLayout mPaymentContainerLayout;
@@ -271,6 +288,30 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
         mErrorView = (PaymentRequestUiErrorView) LayoutInflater.from(mContext).inflate(
                 R.layout.payment_request_error, null);
         mErrorView.initialize(title, origin);
+
+        // This callback will be fired if mIsClientCheckingSelection is true.
+        mUpdateSectionsCallback = new Callback<PaymentInformation>() {
+            @Override
+            public void onResult(PaymentInformation result) {
+                mIsClientCheckingSelection = false;
+                updateOrderSummarySection(result.getShoppingCart());
+                if (mRequestShipping) {
+                    updateSection(TYPE_SHIPPING_ADDRESSES, result.getShippingAddresses());
+                    updateSection(TYPE_SHIPPING_OPTIONS, result.getShippingOptions());
+                }
+                if (mRequestContactDetails) {
+                    updateSection(TYPE_CONTACT_DETAILS, result.getContactDetails());
+                }
+                updateSection(TYPE_PAYMENT_METHODS, result.getPaymentMethods());
+                if (mShippingAddressSectionInformation.getSelectedItem() == null) {
+                    mShippingAddressSection.setDisplayMode(
+                            PaymentRequestSection.DISPLAY_MODE_FOCUSED);
+                } else {
+                    expand(null);
+                }
+                updatePayButtonEnabled();
+            }
+        };
 
         mRequestView =
                 (ViewGroup) LayoutInflater.from(mContext).inflate(R.layout.payment_request, null);
@@ -531,29 +572,7 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
                 && mShippingAddressSectionInformation.getSelectedItem() != option) {
             mShippingAddressSectionInformation.setSelectedItem(option);
             mIsClientCheckingSelection = mClient.onSectionOptionSelected(
-                    TYPE_SHIPPING_ADDRESSES, option, new Callback<PaymentInformation>() {
-                        // The callback will be fired only if mIsClientCheckingSelection is true.
-                        @Override
-                        public void onResult(PaymentInformation result) {
-                            mIsClientCheckingSelection = false;
-                            updateOrderSummarySection(result.getShoppingCart());
-                            if (mRequestShipping) {
-                                updateSection(TYPE_SHIPPING_ADDRESSES,
-                                        result.getShippingAddresses());
-                                updateSection(TYPE_SHIPPING_OPTIONS, result.getShippingOptions());
-                            }
-                            if (mRequestContactDetails) {
-                                updateSection(TYPE_CONTACT_DETAILS, result.getContactDetails());
-                            }
-                            updateSection(TYPE_PAYMENT_METHODS, result.getPaymentMethods());
-                            if (mShippingAddressSectionInformation.getSelectedItem() == null) {
-                                section.setDisplayMode(PaymentRequestSection.DISPLAY_MODE_FOCUSED);
-                            } else {
-                                expand(null);
-                            }
-                            updatePayButtonEnabled();
-                        }
-                    });
+                    TYPE_SHIPPING_ADDRESSES, option, mUpdateSectionsCallback);
         } else if (section == mShippingOptionSection) {
             mShippingOptionsSectionInformation.setSelectedItem(option);
             mClient.onSectionOptionSelected(TYPE_SHIPPING_OPTIONS, option, null);
@@ -579,12 +598,20 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
         assert section != mShippingOptionSection;
 
         if (section == mShippingAddressSection) {
-            mClient.onSectionAddOption(TYPE_SHIPPING_ADDRESSES);
+            mIsClientCheckingSelection =
+                    mClient.onSectionAddOption(TYPE_SHIPPING_ADDRESSES, mUpdateSectionsCallback);
         } else if (section == mContactDetailsSection) {
-            mClient.onSectionAddOption(TYPE_CONTACT_DETAILS);
+            mClient.onSectionAddOption(TYPE_CONTACT_DETAILS, null);
         } else if (section == mPaymentMethodSection) {
-            mClient.onSectionAddOption(TYPE_PAYMENT_METHODS);
+            mClient.onSectionAddOption(TYPE_PAYMENT_METHODS, null);
         }
+
+        if (mIsClientCheckingSelection) {
+            startSectionResizeAnimation();
+            section.setDisplayMode(PaymentRequestSection.DISPLAY_MODE_CHECKING);
+        }
+
+        updatePayButtonEnabled();
     }
 
     /** @return The editor user interface. */
@@ -1014,6 +1041,11 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
     @VisibleForTesting
     public Dialog getDialogForTest() {
         return mDialog;
+    }
+
+    @VisibleForTesting
+    public ViewGroup getShippingSummarySectionForTest() {
+        return mShippingSummarySection;
     }
 
     @VisibleForTesting

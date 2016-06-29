@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.payments;
 
-import android.content.Context;
 import android.telephony.PhoneNumberUtils;
 import android.util.Patterns;
 
@@ -15,7 +14,6 @@ import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
 import org.chromium.chrome.browser.payments.ui.EditorFieldModel;
 import org.chromium.chrome.browser.payments.ui.EditorFieldModel.EditorFieldValidator;
 import org.chromium.chrome.browser.payments.ui.EditorModel;
-import org.chromium.chrome.browser.payments.ui.EditorView;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,13 +23,11 @@ import javax.annotation.Nullable;
 /**
  * Contact information editor.
  */
-public class ContactEditor {
+public class ContactEditor extends EditorBase<AutofillContact> {
     private final boolean mRequestPayerPhone;
     private final boolean mRequestPayerEmail;
     private final List<CharSequence> mPhoneNumbers;
     private final List<CharSequence> mEmailAddresses;
-    @Nullable private EditorView mEditorView;
-    @Nullable private Context mContext;
     @Nullable private EditorFieldValidator mPhoneValidator;
     @Nullable private EditorFieldValidator mEmailValidator;
 
@@ -63,17 +59,6 @@ public class ContactEditor {
     }
 
     /**
-     * Sets the user interface to be used for editing contact information.
-     *
-     * @param editorView The user interface to be used.
-     */
-    public void setEditorView(EditorView editorView) {
-        assert editorView != null;
-        mEditorView = editorView;
-        mContext = mEditorView.getContext();
-    }
-
-    /**
      * Adds the given phone number to the autocomplete list, if it's valid.
      *
      * @param phoneNumber The phone number to possibly add.
@@ -91,19 +76,9 @@ public class ContactEditor {
         if (getEmailValidator().isValid(emailAddress)) mEmailAddresses.add(emailAddress);
     }
 
-    /**
-     * Shows the user interface for editing the given contact. The contact is also updated on disk,
-     * so there's no need to do that in the calling code.
-     *
-     * @param toEdit   The contact to edit. Can be null if the user is adding a new contact instead
-     *                 of editing an existing one.
-     * @param callback The callback to invoke with the complete and valid contact information. Can
-     *                 be invoked with null if the user clicked Cancel.
-     */
-    public void editContact(
-            @Nullable AutofillContact toEdit, final Callback<AutofillContact> callback) {
-        assert mEditorView != null;
-        assert mContext != null;
+    @Override
+    public void edit(@Nullable AutofillContact toEdit, final Callback<AutofillContact> callback) {
+        super.edit(toEdit, callback);
 
         final AutofillContact contact = toEdit == null
                 ? new AutofillContact(new AutofillProfile(), null, null, false) : toEdit;
@@ -126,8 +101,9 @@ public class ContactEditor {
                           contact.getPayerEmail())
                 : null;
 
-        EditorModel editor =
-                new EditorModel(mContext.getString(R.string.payments_add_contact_details_label));
+        EditorModel editor = new EditorModel(
+                mContext.getString(toEdit == null ? R.string.payments_add_contact_details_label
+                                                  : R.string.payments_edit_contact_details_label));
         if (phoneField != null) editor.addField(phoneField);
         if (emailField != null) editor.addField(emailField);
 

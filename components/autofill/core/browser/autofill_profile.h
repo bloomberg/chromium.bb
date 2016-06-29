@@ -159,6 +159,14 @@ class AutofillProfile : public AutofillDataModel {
       const std::string& app_locale,
       std::vector<base::string16>* labels);
 
+  // Builds inferred label from the first |num_fields_to_include| non-empty
+  // fields in |label_fields|. Uses as many fields as possible if there are not
+  // enough non-empty fields.
+  base::string16 ConstructInferredLabel(
+      const std::vector<ServerFieldType>& label_fields,
+      size_t num_fields_to_include,
+      const std::string& app_locale) const;
+
   const std::string& language_code() const { return language_code_; }
   void set_language_code(const std::string& language_code) {
     language_code_ = language_code;
@@ -192,14 +200,6 @@ class AutofillProfile : public AutofillDataModel {
 
   // FormGroup:
   void GetSupportedTypes(ServerFieldTypeSet* supported_types) const override;
-
-  // Builds inferred label from the first |num_fields_to_include| non-empty
-  // fields in |label_fields|. Uses as many fields as possible if there are not
-  // enough non-empty fields.
-  base::string16 ConstructInferredLabel(
-      const std::vector<ServerFieldType>& label_fields,
-      size_t num_fields_to_include,
-      const std::string& app_locale) const;
 
   // Creates inferred labels for |profiles| at indices corresponding to
   // |indices|, and stores the results to the corresponding elements of

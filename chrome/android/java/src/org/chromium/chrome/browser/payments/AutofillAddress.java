@@ -4,21 +4,24 @@
 
 package org.chromium.chrome.browser.payments;
 
+import android.text.TextUtils;
+
 import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
 import org.chromium.chrome.browser.payments.ui.PaymentOption;
 import org.chromium.mojom.payments.PaymentAddress;
 
+import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import javax.annotation.Nullable;
 
 /**
  * The locally stored autofill address.
  */
 public class AutofillAddress extends PaymentOption {
-    /**
-     * The pattern for a valid region code.
-     */
-    public static final String REGION_CODE_PATTERN = "^[A-Z]{2}$";
+    /** The pattern for a valid region code. */
+    private static final String REGION_CODE_PATTERN = "^[A-Z]{2}$";
 
     // Language/script code pattern and capture group numbers.
     private static final String LANGUAGE_SCRIPT_CODE_PATTERN =
@@ -26,39 +29,61 @@ public class AutofillAddress extends PaymentOption {
     private static final int LANGUAGE_CODE_GROUP = 1;
     private static final int SCRIPT_CODE_GROUP = 3;
 
-    private final AutofillProfile mProfile;
-    private Matcher mLanguageScriptCodeMatcher;
+    @Nullable private static Pattern sRegionCodePattern;
+
+    private AutofillProfile mProfile;
+    private boolean mIsComplete;
+    @Nullable private Pattern mLanguageScriptCodePattern;
 
     /**
-     * Builds for the autofill address.
+     * Builds the autofill address.
+     *
+     * @param profile The autofill profile containing the address information.
      */
-    public AutofillAddress(AutofillProfile profile) {
-        super(profile.getGUID(), profile.getLabel(), profile.getFullName(), PaymentOption.NO_ICON);
-
-        assert profile.getCountryCode() != null : "Country code should not be null";
-        assert Pattern.compile(REGION_CODE_PATTERN).matcher(profile.getCountryCode()).matches()
-                : "Country code should be in valid format";
-
-        assert profile.getStreetAddress() != null : "Street address should not be null";
-        assert profile.getRegion() != null : "Region should not be null";
-        assert profile.getLocality() != null : "Locality should not be null";
-        assert profile.getDependentLocality() != null : "Dependent locality should not be null";
-        assert profile.getPostalCode() != null : "Postal code should not be null";
-        assert profile.getSortingCode() != null : "Sorting code should not be null";
-        assert profile.getCompanyName() != null : "Company name should not be null";
-        assert profile.getFullName() != null : "Full name should not be null";
-        assert profile.getPhoneNumber() != null : "Phone number should not be null";
-
+    public AutofillAddress(AutofillProfile profile, boolean isComplete) {
+        super(profile.getGUID(), profile.getFullName(), profile.getLabel(), PaymentOption.NO_ICON);
         mProfile = profile;
+        mIsComplete = isComplete;
+    }
+
+    /** @return Whether the data is complete and can be sent to the merchant as-is. */
+    public boolean isComplete() {
+        return mIsComplete;
+    }
+
+    /** @return The autofill profile where this address data lives. */
+    public AutofillProfile getProfile() {
+        return mProfile;
     }
 
     /**
-     * Returns the shipping address for mojo.
+     * Updates the address and marks it "complete." Called after the user has edited this address.
+     * Updates the label and sublabel.
+     *
+     * @param profile The new profile to use. The GUID should not change.
      */
+    public void completeAddress(AutofillProfile profile) {
+        assert profile.getGUID().equals(mProfile.getGUID());
+        mProfile = profile;
+        mIsComplete = true;
+        updateLabels(mProfile.getFullName(), mProfile.getLabel());
+    }
+
+    /** @return The country code to use, e.g., when constructing an editor for this address. */
+    public static String getCountryCode(@Nullable AutofillProfile profile) {
+        if (sRegionCodePattern == null) sRegionCodePattern = Pattern.compile(REGION_CODE_PATTERN);
+
+        return profile == null || TextUtils.isEmpty(profile.getCountryCode())
+                        || !sRegionCodePattern.matcher(profile.getCountryCode()).matches()
+                ? Locale.getDefault().getCountry() : profile.getCountryCode();
+    }
+
+    /** @return The address for the merchant. */
     public PaymentAddress toPaymentAddress() {
+        assert mIsComplete;
         PaymentAddress result = new PaymentAddress();
 
-        result.country = mProfile.getCountryCode();
+        result.country = getCountryCode(mProfile);
         result.addressLine = mProfile.getStreetAddress().split("\n");
         result.region = mProfile.getRegion();
         result.city = mProfile.getLocality();
@@ -74,19 +99,20 @@ public class AutofillAddress extends PaymentOption {
 
         if (mProfile.getLanguageCode() == null) return result;
 
-        if (mLanguageScriptCodeMatcher == null) {
-            mLanguageScriptCodeMatcher = Pattern.compile(LANGUAGE_SCRIPT_CODE_PATTERN)
-                                                 .matcher(mProfile.getLanguageCode());
+        if (mLanguageScriptCodePattern == null) {
+            mLanguageScriptCodePattern = Pattern.compile(LANGUAGE_SCRIPT_CODE_PATTERN);
         }
 
-        if (mLanguageScriptCodeMatcher.matches()) {
-            String languageCode = mLanguageScriptCodeMatcher.group(LANGUAGE_CODE_GROUP);
-            result.languageCode = languageCode != null ? languageCode : "";
-
-            String scriptCode = mLanguageScriptCodeMatcher.group(SCRIPT_CODE_GROUP);
-            result.scriptCode = scriptCode != null ? scriptCode : "";
+        Matcher matcher = mLanguageScriptCodePattern.matcher(mProfile.getLanguageCode());
+        if (matcher.matches()) {
+            result.languageCode = ensureNotNull(matcher.group(LANGUAGE_CODE_GROUP));
+            result.scriptCode = ensureNotNull(matcher.group(SCRIPT_CODE_GROUP));
         }
 
         return result;
+    }
+
+    private static String ensureNotNull(@Nullable String value) {
+        return value == null ? "" : value;
     }
 }

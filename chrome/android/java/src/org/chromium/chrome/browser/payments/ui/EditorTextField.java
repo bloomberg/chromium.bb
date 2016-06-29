@@ -17,13 +17,14 @@ import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.TextView.OnEditorActionListener;
 
-import org.chromium.chrome.R;
+import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.payments.ui.PaymentRequestUI.PaymentRequestObserverForTest;
 
 import javax.annotation.Nullable;
 
 /** Handles validation and display of one field from the {@link EditorFieldModel}. */
-class EditorTextField extends TextInputLayout {
+@VisibleForTesting
+public class EditorTextField extends TextInputLayout {
 
     /** The indicator for input fields that are required. */
     private static final String REQUIRED_FIELD_INDICATOR = "*";
@@ -38,6 +39,7 @@ class EditorTextField extends TextInputLayout {
             OnEditorActionListener actionlistener, PhoneNumberFormattingTextWatcher formatter,
             PaymentRequestObserverForTest observer) {
         super(context);
+        assert fieldModel.getInputTypeHint() != EditorFieldModel.INPUT_TYPE_HINT_DROPDOWN;
         mEditorFieldModel = fieldModel;
         mObserverForTest = observer;
 
@@ -94,14 +96,41 @@ class EditorTextField extends TextInputLayout {
             mInput.setThreshold(0);
         }
 
-        if (fieldModel.getInputTypeHint() == EditorFieldModel.INPUT_TYPE_HINT_PHONE) {
-            mInput.setId(R.id.payments_edit_phone_input);
-            mInput.setInputType(InputType.TYPE_CLASS_PHONE);
-            mInput.addTextChangedListener(formatter);
-        } else if (fieldModel.getInputTypeHint() == EditorFieldModel.INPUT_TYPE_HINT_EMAIL) {
-            mInput.setId(R.id.payments_edit_email_input);
-            mInput.setInputType(
-                    InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS);
+        switch (fieldModel.getInputTypeHint()) {
+            case EditorFieldModel.INPUT_TYPE_HINT_PHONE:
+                mInput.setInputType(InputType.TYPE_CLASS_PHONE);
+                break;
+            case EditorFieldModel.INPUT_TYPE_HINT_EMAIL:
+                mInput.setInputType(InputType.TYPE_CLASS_TEXT
+                        | InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS);
+                break;
+            case EditorFieldModel.INPUT_TYPE_HINT_STREET_LINES:
+                // TODO(rouslan): Provide a hint to the keyboard that the street lines are
+                // likely to have numbers.
+                mInput.setInputType(InputType.TYPE_CLASS_TEXT
+                        | InputType.TYPE_TEXT_FLAG_CAP_WORDS
+                        | InputType.TYPE_TEXT_FLAG_MULTI_LINE
+                        | InputType.TYPE_TEXT_VARIATION_POSTAL_ADDRESS);
+                break;
+            case EditorFieldModel.INPUT_TYPE_HINT_PERSON_NAME:
+                mInput.setInputType(InputType.TYPE_CLASS_TEXT
+                        | InputType.TYPE_TEXT_FLAG_CAP_WORDS
+                        | InputType.TYPE_TEXT_VARIATION_PERSON_NAME);
+                break;
+            case EditorFieldModel.INPUT_TYPE_HINT_REGION:
+                mInput.setInputType(InputType.TYPE_CLASS_TEXT
+                        | InputType.TYPE_TEXT_FLAG_CAP_CHARACTERS
+                        | InputType.TYPE_TEXT_VARIATION_POSTAL_ADDRESS);
+                break;
+            case EditorFieldModel.INPUT_TYPE_HINT_ALPHA_NUMERIC:
+                // Intentionally fall through.
+                // TODO(rouslan): Provide a hint to the keyboard that postal code and sorting
+                // code are likely to have numbers.
+            default:
+                mInput.setInputType(InputType.TYPE_CLASS_TEXT
+                        | InputType.TYPE_TEXT_FLAG_CAP_WORDS
+                        | InputType.TYPE_TEXT_VARIATION_POSTAL_ADDRESS);
+                break;
         }
     }
 

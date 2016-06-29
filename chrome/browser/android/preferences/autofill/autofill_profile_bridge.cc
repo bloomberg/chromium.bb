@@ -14,37 +14,27 @@
 #include "chrome/browser/browser_process.h"
 #include "components/autofill/core/browser/autofill_country.h"
 #include "jni/AutofillProfileBridge_jni.h"
+#include "third_party/libaddressinput/src/cpp/include/libaddressinput/address_field.h"
+#include "third_party/libaddressinput/src/cpp/include/libaddressinput/address_metadata.h"
 #include "third_party/libaddressinput/src/cpp/include/libaddressinput/address_ui.h"
 #include "third_party/libaddressinput/src/cpp/include/libaddressinput/address_ui_component.h"
 #include "third_party/libaddressinput/src/cpp/include/libaddressinput/localization.h"
 #include "ui/base/l10n/l10n_util.h"
 
+namespace autofill {
+
 using base::android::ConvertJavaStringToUTF8;
 using base::android::ConvertUTF8ToJavaString;
 using base::android::ToJavaArrayOfStrings;
 using base::android::ToJavaIntArray;
-
-namespace autofill {
-
-namespace {
-
-// Address field types. This list must be kept in-sync with the corresponding
-// AddressField class in AutofillProfileBridge.java.
-enum AddressField {
-  COUNTRY,             // Country code.
-  ADMIN_AREA,          // Administrative area such as a state, province,
-                       // island, etc.
-  LOCALITY,            // City or locality.
-  DEPENDENT_LOCALITY,  // Dependent locality (may be an inner-city district or
-                       // a suburb).
-  SORTING_CODE,        // Sorting code.
-  POSTAL_CODE,         // Zip or postal code.
-  STREET_ADDRESS,      // Street address lines.
-  ORGANIZATION,        // Organization, company, firm, institution, etc.
-  RECIPIENT            // Name.
-};
-
-} // namespace
+using ::i18n::addressinput::AddressField;
+using ::i18n::addressinput::AddressUiComponent;
+using ::i18n::addressinput::BuildComponents;
+using ::i18n::addressinput::COUNTRY;
+using ::i18n::addressinput::GetRegionCodes;
+using ::i18n::addressinput::IsFieldRequired;
+using ::i18n::addressinput::Localization;
+using ::i18n::addressinput::RECIPIENT;
 
 static ScopedJavaLocalRef<jstring> GetDefaultCountryCode(
     JNIEnv* env,
@@ -60,8 +50,7 @@ static void GetSupportedCountries(
     const JavaParamRef<jclass>& clazz,
     const JavaParamRef<jobject>& j_country_code_list,
     const JavaParamRef<jobject>& j_country_name_list) {
-  std::vector<std::string> country_codes =
-      ::i18n::addressinput::GetRegionCodes();
+  std::vector<std::string> country_codes = GetRegionCodes();
   std::vector<std::string> known_country_codes;
   std::vector<base::string16> known_country_names;
   std::string locale = g_browser_process->GetApplicationLocale();
@@ -83,17 +72,42 @@ static void GetSupportedCountries(
       j_country_name_list);
 }
 
+static void GetRequiredFields(
+    JNIEnv* env,
+    const JavaParamRef<jclass>& clazz,
+    const JavaParamRef<jstring>& j_country_code,
+    const JavaParamRef<jobject>& j_required_fields_list) {
+  std::string country_code = ConvertJavaStringToUTF8(env, j_country_code);
+  std::vector<int> required;
+
+  // Should iterate over all fields in:
+  // third_party/libaddressinput/src/cpp/include/libaddressinput/address_field.h
+  for (int i = COUNTRY; i <= RECIPIENT; ++i) {
+    AddressField field = static_cast<AddressField>(i);
+    if (IsFieldRequired(field, country_code)) {
+      required.push_back(field);
+    }
+  }
+
+  Java_AutofillProfileBridge_intArrayToList(
+      env, ToJavaIntArray(env, required).obj(), j_required_fields_list);
+}
+
 static ScopedJavaLocalRef<jstring> GetAddressUiComponents(
     JNIEnv* env,
     const JavaParamRef<jclass>& clazz,
     const JavaParamRef<jstring>& j_country_code,
     const JavaParamRef<jstring>& j_language_code,
     const JavaParamRef<jobject>& j_id_list,
-    const JavaParamRef<jobject>& j_name_list) {
+    const JavaParamRef<jobject>& j_name_list,
+    const JavaParamRef<jobject>& j_required_list,
+    const JavaParamRef<jobject>& j_length_list) {
   std::string best_language_tag;
   std::vector<int> component_ids;
   std::vector<std::string> component_labels;
-  ::i18n::addressinput::Localization localization;
+  std::vector<int> component_required;
+  std::vector<int> component_length;
+  Localization localization;
   localization.SetGetter(l10n_util::GetStringUTF8);
 
   std::string language_code;
@@ -104,55 +118,27 @@ static ScopedJavaLocalRef<jstring> GetAddressUiComponents(
     language_code = g_browser_process->GetApplicationLocale();
   }
 
-  std::vector<::i18n::addressinput::AddressUiComponent> ui_components =
-      ::i18n::addressinput::BuildComponents(
-          ConvertJavaStringToUTF8(env, j_country_code), localization,
-          language_code, &best_language_tag);
+  std::string country_code = ConvertJavaStringToUTF8(env, j_country_code);
+  std::vector<AddressUiComponent> ui_components = BuildComponents(
+      country_code, localization, language_code, &best_language_tag);
 
-  for (auto ui_component : ui_components) {
+  for (const auto& ui_component : ui_components) {
     component_labels.push_back(ui_component.name);
-
-    switch (ui_component.field) {
-          case ::i18n::addressinput::COUNTRY:
-            component_ids.push_back(AddressField::COUNTRY);
-            break;
-          case ::i18n::addressinput::ADMIN_AREA:
-            component_ids.push_back(AddressField::ADMIN_AREA);
-            break;
-          case ::i18n::addressinput::LOCALITY:
-            component_ids.push_back(AddressField::LOCALITY);
-            break;
-          case ::i18n::addressinput::DEPENDENT_LOCALITY:
-            component_ids.push_back(AddressField::DEPENDENT_LOCALITY);
-            break;
-          case ::i18n::addressinput::SORTING_CODE:
-            component_ids.push_back(AddressField::SORTING_CODE);
-            break;
-          case ::i18n::addressinput::POSTAL_CODE:
-            component_ids.push_back(AddressField::POSTAL_CODE);
-            break;
-          case ::i18n::addressinput::STREET_ADDRESS:
-            component_ids.push_back(AddressField::STREET_ADDRESS);
-            break;
-          case ::i18n::addressinput::ORGANIZATION:
-            component_ids.push_back(AddressField::ORGANIZATION);
-            break;
-          case ::i18n::addressinput::RECIPIENT:
-            component_ids.push_back(AddressField::RECIPIENT);
-            break;
-          default:
-            NOTREACHED();
-    }
+    component_required.push_back(
+        IsFieldRequired(ui_component.field, country_code));
+    component_length.push_back(ui_component.length_hint ==
+                               AddressUiComponent::HINT_LONG);
+    component_ids.push_back(ui_component.field);
   }
 
-  Java_AutofillProfileBridge_intArrayToList(env,
-                                            ToJavaIntArray(
-                                                   env, component_ids).obj(),
-                                               j_id_list);
-  Java_AutofillProfileBridge_stringArrayToList(env,
-                                               ToJavaArrayOfStrings(
-                                                   env, component_labels).obj(),
-                                               j_name_list);
+  Java_AutofillProfileBridge_intArrayToList(
+      env, ToJavaIntArray(env, component_ids).obj(), j_id_list);
+  Java_AutofillProfileBridge_stringArrayToList(
+      env, ToJavaArrayOfStrings(env, component_labels).obj(), j_name_list);
+  Java_AutofillProfileBridge_intArrayToList(
+      env, ToJavaIntArray(env, component_required).obj(), j_required_list);
+  Java_AutofillProfileBridge_intArrayToList(
+      env, ToJavaIntArray(env, component_length).obj(), j_length_list);
 
   return ConvertUTF8ToJavaString(env, best_language_tag);
 }

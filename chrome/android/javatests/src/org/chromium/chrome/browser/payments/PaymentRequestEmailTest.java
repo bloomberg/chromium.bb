@@ -54,7 +54,7 @@ public class PaymentRequestEmailTest extends PaymentRequestTestBase {
         triggerUIAndWait(mReadyToPay);
         clickInContactInfoAndWait(R.id.payments_section, mReadyForInput);
         clickInContactInfoAndWait(R.id.payments_add_option_button, mReadyToEdit);
-        setTextInEditorAndWait(R.id.payments_edit_email_input, "jane.jones", mEditorTextUpdate);
+        setTextInEditorAndWait(new String[] {"jane.jones"}, mEditorTextUpdate);
         clickInEditorAndWait(R.id.payments_edit_done_button, mEditorValidationError);
         clickInEditorAndWait(R.id.payments_edit_cancel_button, mEditorDismissed);
         clickAndWait(R.id.close_button, mDismissed);
@@ -68,8 +68,7 @@ public class PaymentRequestEmailTest extends PaymentRequestTestBase {
         triggerUIAndWait(mReadyToPay);
         clickInContactInfoAndWait(R.id.payments_section, mReadyForInput);
         clickInContactInfoAndWait(R.id.payments_add_option_button, mReadyToEdit);
-        setTextInEditorAndWait(R.id.payments_edit_email_input, "jane.jones@google.com",
-                mEditorTextUpdate);
+        setTextInEditorAndWait(new String[] {"jane.jones@google.com"}, mEditorTextUpdate);
         clickInEditorAndWait(R.id.payments_edit_done_button, mReadyToPay);
         clickAndWait(R.id.button_primary, mReadyForUnmaskInput);
         setTextInCardUnmaskDialogAndWait(R.id.card_unmask_input, "123", mReadyToUnmask);

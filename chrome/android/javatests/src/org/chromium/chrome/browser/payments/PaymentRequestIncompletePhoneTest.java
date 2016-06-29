@@ -45,7 +45,7 @@ public class PaymentRequestIncompletePhoneTest extends PaymentRequestTestBase {
         triggerUIAndWait(mReadyForInput);
         clickInContactInfoAndWait(R.id.payments_section, mReadyForInput);
         clickInContactInfoAndWait(R.id.payments_first_radio_button, mReadyToEdit);
-        setTextInEditorAndWait(R.id.payments_edit_phone_input, "---", mEditorTextUpdate);
+        setTextInEditorAndWait(new String[] {"---"}, mEditorTextUpdate);
         clickInEditorAndWait(R.id.payments_edit_done_button, mEditorValidationError);
         clickInEditorAndWait(R.id.payments_edit_cancel_button, mReadyToClose);
         clickAndWait(R.id.close_button, mDismissed);
@@ -59,7 +59,7 @@ public class PaymentRequestIncompletePhoneTest extends PaymentRequestTestBase {
         triggerUIAndWait(mReadyForInput);
         clickInContactInfoAndWait(R.id.payments_section, mReadyForInput);
         clickInContactInfoAndWait(R.id.payments_first_radio_button, mReadyToEdit);
-        setTextInEditorAndWait(R.id.payments_edit_phone_input, "555-555-5555", mEditorTextUpdate);
+        setTextInEditorAndWait(new String[] {"555-555-5555"}, mEditorTextUpdate);
         clickInEditorAndWait(R.id.payments_edit_done_button, mReadyToPay);
         clickAndWait(R.id.button_primary, mReadyForUnmaskInput);
         setTextInCardUnmaskDialogAndWait(R.id.card_unmask_input, "123", mReadyToUnmask);

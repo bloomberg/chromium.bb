@@ -756,48 +756,6 @@ void AutofillProfile::CreateInferredLabels(
   }
 }
 
-void AutofillProfile::GenerateServerProfileIdentifier() {
-  DCHECK_EQ(SERVER_PROFILE, record_type());
-  base::string16 contents = GetRawInfo(NAME_FIRST);
-  contents.append(GetRawInfo(NAME_MIDDLE));
-  contents.append(GetRawInfo(NAME_LAST));
-  contents.append(GetRawInfo(EMAIL_ADDRESS));
-  contents.append(GetRawInfo(COMPANY_NAME));
-  contents.append(GetRawInfo(ADDRESS_HOME_STREET_ADDRESS));
-  contents.append(GetRawInfo(ADDRESS_HOME_DEPENDENT_LOCALITY));
-  contents.append(GetRawInfo(ADDRESS_HOME_CITY));
-  contents.append(GetRawInfo(ADDRESS_HOME_STATE));
-  contents.append(GetRawInfo(ADDRESS_HOME_ZIP));
-  contents.append(GetRawInfo(ADDRESS_HOME_SORTING_CODE));
-  contents.append(GetRawInfo(ADDRESS_HOME_COUNTRY));
-  contents.append(GetRawInfo(PHONE_HOME_WHOLE_NUMBER));
-  std::string contents_utf8 = UTF16ToUTF8(contents);
-  contents_utf8.append(language_code());
-  server_id_ = base::SHA1HashString(contents_utf8);
-}
-
-void AutofillProfile::RecordAndLogUse() {
-  UMA_HISTOGRAM_COUNTS_1000("Autofill.DaysSinceLastUse.Profile",
-                            (base::Time::Now() - use_date()).InDays());
-  RecordUse();
-}
-
-// static
-base::string16 AutofillProfile::CanonicalizeProfileString(
-    const base::string16& str) {
-  // The locale doesn't matter for general string canonicalization.
-  AutofillProfileComparator comparator("en-US");
-  return comparator.NormalizeForComparison(str);
-}
-
-void AutofillProfile::GetSupportedTypes(
-    ServerFieldTypeSet* supported_types) const {
-  FormGroupList info = FormGroups();
-  for (const auto& it : info) {
-    it->GetSupportedTypes(supported_types);
-  }
-}
-
 base::string16 AutofillProfile::ConstructInferredLabel(
     const std::vector<ServerFieldType>& included_fields,
     size_t num_fields_to_use,
@@ -874,6 +832,48 @@ base::string16 AutofillProfile::ConstructInferredLabel(
   base::ReplaceChars(label, base::ASCIIToUTF16("\n"), separator, &label);
 
   return label;
+}
+
+void AutofillProfile::GenerateServerProfileIdentifier() {
+  DCHECK_EQ(SERVER_PROFILE, record_type());
+  base::string16 contents = GetRawInfo(NAME_FIRST);
+  contents.append(GetRawInfo(NAME_MIDDLE));
+  contents.append(GetRawInfo(NAME_LAST));
+  contents.append(GetRawInfo(EMAIL_ADDRESS));
+  contents.append(GetRawInfo(COMPANY_NAME));
+  contents.append(GetRawInfo(ADDRESS_HOME_STREET_ADDRESS));
+  contents.append(GetRawInfo(ADDRESS_HOME_DEPENDENT_LOCALITY));
+  contents.append(GetRawInfo(ADDRESS_HOME_CITY));
+  contents.append(GetRawInfo(ADDRESS_HOME_STATE));
+  contents.append(GetRawInfo(ADDRESS_HOME_ZIP));
+  contents.append(GetRawInfo(ADDRESS_HOME_SORTING_CODE));
+  contents.append(GetRawInfo(ADDRESS_HOME_COUNTRY));
+  contents.append(GetRawInfo(PHONE_HOME_WHOLE_NUMBER));
+  std::string contents_utf8 = UTF16ToUTF8(contents);
+  contents_utf8.append(language_code());
+  server_id_ = base::SHA1HashString(contents_utf8);
+}
+
+void AutofillProfile::RecordAndLogUse() {
+  UMA_HISTOGRAM_COUNTS_1000("Autofill.DaysSinceLastUse.Profile",
+                            (base::Time::Now() - use_date()).InDays());
+  RecordUse();
+}
+
+// static
+base::string16 AutofillProfile::CanonicalizeProfileString(
+    const base::string16& str) {
+  // The locale doesn't matter for general string canonicalization.
+  AutofillProfileComparator comparator("en-US");
+  return comparator.NormalizeForComparison(str);
+}
+
+void AutofillProfile::GetSupportedTypes(
+    ServerFieldTypeSet* supported_types) const {
+  FormGroupList info = FormGroups();
+  for (const auto& it : info) {
+    it->GetSupportedTypes(supported_types);
+  }
 }
 
 // static

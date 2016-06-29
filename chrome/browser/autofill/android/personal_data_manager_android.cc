@@ -353,6 +353,32 @@ PersonalDataManagerAndroid::GetProfileLabelsToSuggest(
                           personal_data_manager_->GetProfilesToSuggest());
 }
 
+base::android::ScopedJavaLocalRef<jstring>
+PersonalDataManagerAndroid::GetAddressLabelForPaymentRequest(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& unused_obj,
+    const base::android::JavaParamRef<jobject>& jprofile) {
+  std::vector<ServerFieldType> label_fields;
+  label_fields.push_back(COMPANY_NAME);
+  label_fields.push_back(ADDRESS_HOME_LINE1);
+  label_fields.push_back(ADDRESS_HOME_LINE2);
+  label_fields.push_back(ADDRESS_HOME_DEPENDENT_LOCALITY);
+  label_fields.push_back(ADDRESS_HOME_CITY);
+  label_fields.push_back(ADDRESS_HOME_STATE);
+  label_fields.push_back(ADDRESS_HOME_ZIP);
+  label_fields.push_back(ADDRESS_HOME_SORTING_CODE);
+  label_fields.push_back(ADDRESS_HOME_COUNTRY);
+  label_fields.push_back(PHONE_HOME_WHOLE_NUMBER);
+
+  AutofillProfile profile;
+  PopulateNativeProfileFromJava(jprofile, env, &profile);
+
+  return ConvertUTF16ToJavaString(
+      env, profile.ConstructInferredLabel(
+               label_fields, label_fields.size(),
+               g_browser_process->GetApplicationLocale()));
+}
+
 base::android::ScopedJavaLocalRef<jobjectArray>
 PersonalDataManagerAndroid::GetCreditCardGUIDsForSettings(
     JNIEnv* env,

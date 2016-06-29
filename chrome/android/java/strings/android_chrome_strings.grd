@@ -2596,8 +2596,17 @@ You can control the Physical Web in Chrome Settings.
       <message name="IDS_PAYMENTS_ORDER_SUMMARY_LABEL" desc="The title of the section that shows the summary of the order, including names and prices of individual line items, i.e. the bill.">
         Order summary
       </message>
-      <message name="IDS_PAYMENTS_ADD_CONTACT_DETAILS_LABEL" desc="The title of the dialog for user to input their contact information, such as email address or phone number.">
+      <message name="IDS_PAYMENTS_ADD_CONTACT_DETAILS_LABEL" desc="The title of the dialog for user to add new contact information, such as email address or phone number.">
         Add contact info
+      </message>
+      <message name="IDS_PAYMENTS_EDIT_CONTACT_DETAILS_LABEL" desc="The title of the dialog for user to edit their contact information, such as email address or phone number.">
+        Edit contact info
+      </message>
+      <message name="IDS_PAYMENTS_ADD_ADDRESS_LABEL" desc="The title of the dialog for user to add a new address, such as shipping address or billing address.">
+        Add address
+      </message>
+      <message name="IDS_PAYMENTS_EDIT_ADDRESS_LABEL" desc="The title of the dialog for user to edit their address, such as shipping address or billing address.">
+        Edit address
       </message>
       <message name="IDS_PAYMENTS_EDIT_BUTTON" desc="The label for the button that lets the user edit their payment options.">
         Edit
@@ -2622,6 +2631,9 @@ You can control the Physical Web in Chrome Settings.
       </message>
       <message name="IDS_PAYMENTS_REQUIRED_FIELD_MESSAGE" desc="The text that informs the user that '*' character indicates an input field that is required. The '*' character should not be changed.">
         * indicates required field
+      </message>
+      <message name="IDS_PAYMENTS_ADDRESS_FIELD_REQUIRED_VALIDATION_MESSAGE" desc="The text that informs the user that an address field is required.">
+        Required field
       </message>
       <message name="IDS_PAYMENTS_PHONE_REQUIRED_VALIDATION_MESSAGE" desc="The text that informs the user that phone number is required.">
         Phone number required

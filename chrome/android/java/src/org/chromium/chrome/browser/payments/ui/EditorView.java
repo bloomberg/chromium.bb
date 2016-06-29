@@ -207,21 +207,48 @@ public class EditorView extends AlwaysDismissedDialog
         buttonBar.setAlignment(DualControlLayout.ALIGN_END);
     }
 
-    /** Create the visual representation of the EditorModel. */
+    /**
+     * Create the visual representation of the EditorModel.
+     *
+     * Fields are added to the layout at position |getChildCount() - 1| to account for the
+     * additional TextView that says "* indicates required field" at the bottom of the layout.
+     *
+     * TODO(rouslan): Put views side by side if !fieldModel.isFullLine();
+     */
     private void prepareEditor() {
-        ViewGroup dataView = (ViewGroup) mLayout.findViewById(R.id.contents);
+        final ViewGroup dataView = (ViewGroup) mLayout.findViewById(R.id.contents);
         for (int i = 0; i < mEditorModel.getFields().size(); i++) {
             final EditorFieldModel fieldModel = mEditorModel.getFields().get(i);
-            EditorTextField inputLayout = new EditorTextField(mLayout.getContext(), fieldModel,
-                    mEditorActionListener, getPhoneFormatter(), mObserverForTest);
 
-            final AutoCompleteTextView input = inputLayout.getEditText();
-            if (fieldModel.getInputTypeHint() == EditorFieldModel.INPUT_TYPE_HINT_PHONE) {
-                assert mPhoneInput == null;
-                mPhoneInput = input;
+            if (fieldModel.getInputTypeHint() == EditorFieldModel.INPUT_TYPE_HINT_DROPDOWN) {
+                EditorDropdownField dropdownView = new EditorDropdownField(mContext, fieldModel,
+                        new Runnable() {
+                            @Override
+                            public void run() {
+                                // Do not remove the "* indicates required field" label at the
+                                // bottom.
+                                dataView.removeViews(0, dataView.getChildCount() - 1);
+                                prepareEditor();
+                                if (mObserverForTest != null) {
+                                    mObserverForTest.onPaymentRequestReadyToEdit();
+                                }
+                            }
+                        });
+
+                dataView.addView(dropdownView.getLabel(), dataView.getChildCount() - 1);
+                dataView.addView(dropdownView.getDropdown(), dataView.getChildCount() - 1);
+            } else {
+                EditorTextField inputLayout = new EditorTextField(mLayout.getContext(), fieldModel,
+                        mEditorActionListener, getPhoneFormatter(), mObserverForTest);
+
+                final AutoCompleteTextView input = inputLayout.getEditText();
+                if (fieldModel.getInputTypeHint() == EditorFieldModel.INPUT_TYPE_HINT_PHONE) {
+                    assert mPhoneInput == null;
+                    mPhoneInput = input;
+                }
+
+                dataView.addView(inputLayout, dataView.getChildCount() - 1);
             }
-
-            dataView.addView(inputLayout, dataView.getChildCount() - 1);
         }
     }
 

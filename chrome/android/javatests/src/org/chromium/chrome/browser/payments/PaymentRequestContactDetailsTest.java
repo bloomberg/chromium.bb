@@ -54,8 +54,7 @@ public class PaymentRequestContactDetailsTest extends PaymentRequestTestBase {
         triggerUIAndWait(mReadyToPay);
         clickInContactInfoAndWait(R.id.payments_section, mReadyForInput);
         clickInContactInfoAndWait(R.id.payments_add_option_button, mReadyToEdit);
-        setTextInEditorAndWait(R.id.payments_edit_phone_input, "+++", mEditorTextUpdate);
-        setTextInEditorAndWait(R.id.payments_edit_email_input, "jane.jones", mEditorTextUpdate);
+        setTextInEditorAndWait(new String[] {"+++", "jane.jones"}, mEditorTextUpdate);
         clickInEditorAndWait(R.id.payments_edit_done_button, mEditorValidationError);
         clickInEditorAndWait(R.id.payments_edit_cancel_button, mEditorDismissed);
         clickAndWait(R.id.close_button, mDismissed);
@@ -69,8 +68,7 @@ public class PaymentRequestContactDetailsTest extends PaymentRequestTestBase {
         triggerUIAndWait(mReadyToPay);
         clickInContactInfoAndWait(R.id.payments_section, mReadyForInput);
         clickInContactInfoAndWait(R.id.payments_add_option_button, mReadyToEdit);
-        setTextInEditorAndWait(R.id.payments_edit_phone_input, "999-999-9999", mEditorTextUpdate);
-        setTextInEditorAndWait(R.id.payments_edit_email_input, "jane.jones@google.com",
+        setTextInEditorAndWait(new String[] {"999-999-9999", "jane.jones@google.com"},
                 mEditorTextUpdate);
         clickInEditorAndWait(R.id.payments_edit_done_button, mReadyToPay);
         clickAndWait(R.id.button_primary, mReadyForUnmaskInput);

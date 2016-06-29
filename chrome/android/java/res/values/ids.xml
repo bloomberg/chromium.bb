@@ -61,8 +61,6 @@
     <item type="id" name="payments_left_summary_label" />
     <item type="id" name="payments_first_radio_button" />
     <item type="id" name="payments_add_option_button" />
-    <item type="id" name="payments_edit_phone_input" />
-    <item type="id" name="payments_edit_email_input" />
     <item type="id" name="payments_edit_cancel_button" />
     <item type="id" name="payments_edit_done_button" />
 </resources>

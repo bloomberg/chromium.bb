@@ -6,7 +6,6 @@ package org.chromium.chrome.browser.preferences.autofill;
 
 import android.os.Bundle;
 import android.text.TextUtils;
-import android.util.Pair;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -20,7 +19,8 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.autofill.PersonalDataManager;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
 import org.chromium.chrome.browser.preferences.autofill.AutofillProfileBridge.AddressField;
-import org.chromium.chrome.browser.preferences.autofill.AutofillProfileBridge.Country;
+import org.chromium.chrome.browser.preferences.autofill.AutofillProfileBridge.AddressUiComponent;
+import org.chromium.chrome.browser.preferences.autofill.AutofillProfileBridge.DropdownKeyValue;
 import org.chromium.chrome.browser.widget.FloatLabelLayout;
 
 import java.util.ArrayList;
@@ -39,7 +39,7 @@ public class AutofillProfileEditor extends AutofillEditorBase {
     private String mLanguageCodeString;
     private List<String> mCountryCodes;
     private int mCurrentCountryPos;
-    private Spinner mCountriesSpinner;
+    private Spinner mCountriesDropdown;
     private ViewGroup mWidgetRoot;
     private FloatLabelLayout[] mAddressFields;
     private AutofillProfileBridge mAutofillProfileBridge;
@@ -58,11 +58,11 @@ public class AutofillProfileEditor extends AutofillEditorBase {
         mEmailText = (EditText) v.findViewById(R.id.email_address_edit);
         mEmailLabel = (FloatLabelLayout) v.findViewById(R.id.email_address_label);
         mWidgetRoot = (ViewGroup) v.findViewById(R.id.autofill_profile_widget_root);
-        mCountriesSpinner = (Spinner) v.findViewById(R.id.countries);
+        mCountriesDropdown = (Spinner) v.findViewById(R.id.countries);
 
         mAutofillProfileBridge = new AutofillProfileBridge();
 
-        populateCountriesSpinner();
+        populateCountriesDropdown();
         createAndPopulateEditFields();
         initializeButtons(v);
 
@@ -112,18 +112,18 @@ public class AutofillProfileEditor extends AutofillEditorBase {
         }
     }
 
-    private void populateCountriesSpinner() {
-        List<Country> countries = AutofillProfileBridge.getSupportedCountries();
+    private void populateCountriesDropdown() {
+        List<DropdownKeyValue> countries = AutofillProfileBridge.getSupportedCountries();
         mCountryCodes = new ArrayList<String>();
 
-        for (Country country : countries) {
-            mCountryCodes.add(country.mCode);
+        for (DropdownKeyValue country : countries) {
+            mCountryCodes.add(country.getKey());
         }
 
-        ArrayAdapter<Country> countriesAdapter = new ArrayAdapter<Country>(getActivity(),
-                android.R.layout.simple_spinner_item, countries);
+        ArrayAdapter<DropdownKeyValue> countriesAdapter = new ArrayAdapter<DropdownKeyValue>(
+                getActivity(), android.R.layout.simple_spinner_item, countries);
         countriesAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        mCountriesSpinner.setAdapter(countriesAdapter);
+        mCountriesDropdown.setAdapter(countriesAdapter);
     }
 
     private void createAndPopulateEditFields() {
@@ -174,7 +174,7 @@ public class AutofillProfileEditor extends AutofillEditorBase {
             resetFormFields(mCurrentCountryPos, true);
         }
 
-        mCountriesSpinner.setSelection(mCurrentCountryPos);
+        mCountriesDropdown.setSelection(mCurrentCountryPos);
     }
 
     private void resetFormFields(int countryCodeIndex, boolean autoFocusFirstField) {
@@ -192,7 +192,7 @@ public class AutofillProfileEditor extends AutofillEditorBase {
         mWidgetRoot.removeAllViews();
 
         // Get address fields for the selected country.
-        List<Pair<Integer, String>> fields = mAutofillProfileBridge.getAddressUiComponents(
+        List<AddressUiComponent> fields = mAutofillProfileBridge.getAddressUiComponents(
                 mCountryCodes.get(countryCodeIndex),
                 mLanguageCodeString);
         if (!mUseSavedProfileLanguage) {
@@ -201,23 +201,21 @@ public class AutofillProfileEditor extends AutofillEditorBase {
 
         // Create form fields and focus the first field if autoFocusFirstField is true.
         boolean firstField = true;
-        for (Pair<Integer, String> field : fields) {
-            int fieldId = field.first;
-            String fieldLabel = field.second;
+        for (AddressUiComponent field : fields) {
             FloatLabelLayout fieldFloatLabel = (FloatLabelLayout) mInflater.inflate(
                     R.layout.preference_address_float_label_layout, mWidgetRoot, false);
-            fieldFloatLabel.setHint(fieldLabel);
+            fieldFloatLabel.setHint(field.label);
 
             EditText fieldEditText =
                     (EditText) fieldFloatLabel.findViewById(R.id.address_edit_text);
-            fieldEditText.setHint(fieldLabel);
-            fieldEditText.setContentDescription(fieldLabel);
+            fieldEditText.setHint(field.label);
+            fieldEditText.setContentDescription(field.label);
             fieldEditText.addTextChangedListener(this);
-            if (fieldId == AddressField.STREET_ADDRESS) {
+            if (field.id == AddressField.STREET_ADDRESS) {
                 fieldEditText.setSingleLine(false);
             }
 
-            mAddressFields[fieldId] = fieldFloatLabel;
+            mAddressFields[field.id] = fieldFloatLabel;
             mWidgetRoot.addView(fieldFloatLabel);
 
             if (firstField && autoFocusFirstField) {
@@ -277,7 +275,7 @@ public class AutofillProfileEditor extends AutofillEditorBase {
         // Listen for changes to inputs. Enable the save button after something has changed.
         mPhoneText.addTextChangedListener(this);
         mEmailText.addTextChangedListener(this);
-        mCountriesSpinner.setOnItemSelectedListener(this);
+        mCountriesDropdown.setOnItemSelectedListener(this);
         mNoCountryItemIsSelected = true;
     }
 

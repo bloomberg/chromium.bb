@@ -67,11 +67,11 @@ function updateDetails(details, addr) {
       selected: true
     };
     if (addr.region === 'CA') {
-      shippingOption.id = 'ca';
+      shippingOption.id = 'californiaShippingOption';
       shippingOption.label = 'Free shipping in California';
       details.total.amount.value = '5.00';
     } else {
-      shippingOption.id = 'us';
+      shippingOption.id = 'usShippingOption';
       shippingOption.label = 'Standard shipping in US';
       shippingOption.amount.value = '5.00';
       details.total.amount.value = '10.00';

@@ -23,7 +23,6 @@ import org.chromium.chrome.browser.payments.ui.SectionInformation;
 import org.chromium.chrome.browser.payments.ui.ShoppingCart;
 import org.chromium.chrome.browser.preferences.PreferencesLauncher;
 import org.chromium.chrome.browser.preferences.autofill.AutofillCreditCardEditor;
-import org.chromium.chrome.browser.preferences.autofill.AutofillProfileEditor;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.util.UrlUtilities;
 import org.chromium.components.safejson.JsonSanitizer;
@@ -50,7 +49,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
-import java.util.regex.Pattern;
 
 /**
  * Android implementation of the PaymentRequest service defined in
@@ -126,9 +124,9 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
     private SectionInformation mPaymentMethodsSection;
     private PaymentRequestUI mUI;
     private Callback<PaymentInformation> mPaymentInformationCallback;
-    private Pattern mRegionCodePattern;
     private boolean mMerchantNeedsShippingAddress;
     private boolean mPaymentAppRunning;
+    private AddressEditor mAddressEditor;
     private ContactEditor mContactEditor;
 
     /**
@@ -170,7 +168,6 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
                 });
 
         mApps = PaymentAppFactory.create(webContents);
-        mRegionCodePattern = Pattern.compile(AutofillAddress.REGION_CODE_PATTERN);
     }
 
     /**
@@ -218,50 +215,62 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
 
         boolean requestPayerPhone = options != null && options.requestPayerPhone;
         boolean requestPayerEmail = options != null && options.requestPayerEmail;
-        if (requestPayerPhone || requestPayerEmail) {
-            mContactEditor = new ContactEditor(requestPayerPhone, requestPayerEmail);
+
+        List<AutofillProfile> profiles = null;
+        if (requestShipping || requestPayerPhone || requestPayerEmail) {
+            profiles = PersonalDataManager.getInstance().getProfilesToSuggest();
         }
 
-        if (requestShipping || requestPayerPhone || requestPayerEmail) {
-            List<AutofillProfile> profiles =
-                    PersonalDataManager.getInstance().getProfilesToSuggest();
-            List<AutofillContact> contacts = new ArrayList<>();
+        if (requestShipping) {
+            mAddressEditor = new AddressEditor();
             List<AutofillAddress> addresses = new ArrayList<>();
-            int firstCompleteContactIndex = SectionInformation.NO_SELECTION;
+            int firstCompleteAddressIndex = SectionInformation.NO_SELECTION;
+
             for (int i = 0; i < profiles.size(); i++) {
                 AutofillProfile profile = profiles.get(i);
+                mAddressEditor.addPhoneNumberIfValid(profile.getPhoneNumber());
 
+                boolean isComplete = mAddressEditor.isProfileComplete(profile);
+                addresses.add(new AutofillAddress(profile, isComplete));
+                if (isComplete && firstCompleteAddressIndex == SectionInformation.NO_SELECTION
+                        && !mMerchantNeedsShippingAddress) {
+                    firstCompleteAddressIndex = i;
+                }
+            }
+
+            // The shipping address section automatically selects the first complete entry.
+            mShippingAddressesSection =
+                    new SectionInformation(PaymentRequestUI.TYPE_SHIPPING_ADDRESSES,
+                            firstCompleteAddressIndex, addresses);
+        }
+
+        if (requestPayerPhone || requestPayerEmail) {
+            mContactEditor = new ContactEditor(requestPayerPhone, requestPayerEmail);
+            List<AutofillContact> contacts = new ArrayList<>();
+            int firstCompleteContactIndex = SectionInformation.NO_SELECTION;
+
+            for (int i = 0; i < profiles.size(); i++) {
+                AutofillProfile profile = profiles.get(i);
                 String phone = requestPayerPhone && !TextUtils.isEmpty(profile.getPhoneNumber())
                         ? profile.getPhoneNumber() : null;
                 String email = requestPayerEmail && !TextUtils.isEmpty(profile.getEmailAddress())
                         ? profile.getEmailAddress() : null;
+                mContactEditor.addPhoneNumberIfValid(phone);
+                mContactEditor.addEmailAddressIfValid(email);
+
                 if (phone != null || email != null) {
                     boolean isComplete = mContactEditor.isContactInformationComplete(phone, email);
                     contacts.add(new AutofillContact(profile, phone, email, isComplete));
-                    if (isComplete && firstCompleteContactIndex < 0) firstCompleteContactIndex = i;
-                    mContactEditor.addPhoneNumberIfValid(phone);
-                    mContactEditor.addEmailAddressIfValid(email);
+                    if (isComplete
+                            && firstCompleteContactIndex == SectionInformation.NO_SELECTION) {
+                        firstCompleteContactIndex = i;
+                    }
                 }
-
-                if (canUseAddress(profile, requestShipping)) {
-                    addresses.add(new AutofillAddress(profile));
-                }
-            }
-
-            if (requestShipping) {
-                int selectedIndex = SectionInformation.NO_SELECTION;
-                if (!addresses.isEmpty() && mUiShippingOptions.getSelectedItem() != null) {
-                    selectedIndex = 0;
-                }
-                mShippingAddressesSection = new SectionInformation(
-                        PaymentRequestUI.TYPE_SHIPPING_ADDRESSES, selectedIndex, addresses);
             }
 
             // The contact section automatically selects the first complete entry.
-            if (requestPayerPhone || requestPayerEmail) {
-                mContactSection = new SectionInformation(
-                        PaymentRequestUI.TYPE_CONTACT_DETAILS, firstCompleteContactIndex, contacts);
-            }
+            mContactSection = new SectionInformation(
+                    PaymentRequestUI.TYPE_CONTACT_DETAILS, firstCompleteContactIndex, contacts);
         }
 
         mPendingApps = new ArrayList<>(mApps);
@@ -290,6 +299,7 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
         if (mFavicon != null) mUI.setTitleBitmap(mFavicon);
         mFavicon = null;
 
+        if (mAddressEditor != null) mAddressEditor.setEditorView(mUI.getEditorView());
         if (mContactEditor != null) mContactEditor.setEditorView(mUI.getEditorView());
     }
 
@@ -326,16 +336,6 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
             }
         }
         return result;
-    }
-
-    private boolean canUseAddress(AutofillProfile profile, boolean requestShipping) {
-        return requestShipping && profile.getCountryCode() != null
-                && mRegionCodePattern.matcher(profile.getCountryCode()).matches()
-                && profile.getStreetAddress() != null && profile.getRegion() != null
-                && profile.getLocality() != null && profile.getDependentLocality() != null
-                && profile.getPostalCode() != null && profile.getSortingCode() != null
-                && profile.getCompanyName() != null && profile.getFullName() != null
-                && profile.getPhoneNumber() != null;
     }
 
     /**
@@ -583,11 +583,21 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
             PaymentOption option, Callback<PaymentInformation> callback) {
         if (optionType == PaymentRequestUI.TYPE_SHIPPING_ADDRESSES) {
             assert option instanceof AutofillAddress;
-            mShippingAddressesSection.setSelectedItem(option);
+            AutofillAddress address = (AutofillAddress) option;
+
+            if (address.isComplete()) {
+                mShippingAddressesSection.setSelectedItem(option);
+
+                // This updates the line items and the shipping options asynchronously.
+                if (mMerchantNeedsShippingAddress) {
+                    mClient.onShippingAddressChange(address.toPaymentAddress());
+                }
+            } else {
+                editAddress(address);
+            }
+
             if (mMerchantNeedsShippingAddress) {
                 mPaymentInformationCallback = callback;
-                // This updates the line items and the shipping options asynchronously.
-                mClient.onShippingAddressChange(((AutofillAddress) option).toPaymentAddress());
                 return true;
             }
         } else if (optionType == PaymentRequestUI.TYPE_SHIPPING_OPTIONS) {
@@ -597,6 +607,7 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
         } else if (optionType == PaymentRequestUI.TYPE_CONTACT_DETAILS) {
             assert option instanceof AutofillContact;
             AutofillContact contact = (AutofillContact) option;
+
             if (contact.isComplete()) {
                 mContactSection.setSelectedItem(option);
             } else {
@@ -606,23 +617,57 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
             assert option instanceof PaymentInstrument;
             mPaymentMethodsSection.setSelectedItem(option);
         }
+
         return false;
     }
 
     @Override
-    public void onSectionAddOption(@PaymentRequestUI.DataType int optionType) {
+    public boolean onSectionAddOption(
+            @PaymentRequestUI.DataType int optionType, Callback<PaymentInformation> callback) {
         if (optionType == PaymentRequestUI.TYPE_SHIPPING_ADDRESSES) {
-            PreferencesLauncher.launchSettingsPage(mContext, AutofillProfileEditor.class.getName());
+            editAddress(null);
+
+            if (mMerchantNeedsShippingAddress) {
+                mPaymentInformationCallback = callback;
+                return true;
+            }
         } else if (optionType == PaymentRequestUI.TYPE_CONTACT_DETAILS) {
             editContact(null);
         } else if (optionType == PaymentRequestUI.TYPE_PAYMENT_METHODS) {
             PreferencesLauncher.launchSettingsPage(
                     mContext, AutofillCreditCardEditor.class.getName());
         }
+
+        return false;
+    }
+
+    private void editAddress(final AutofillAddress toEdit) {
+        mAddressEditor.edit(toEdit, new Callback<AutofillAddress>() {
+            @Override
+            public void onResult(AutofillAddress completeAddress) {
+                if (completeAddress == null) {
+                    mShippingAddressesSection.setSelectedItemIndex(SectionInformation.NO_SELECTION);
+                } else if (toEdit == null) {
+                    mShippingAddressesSection.addAndSelectItem(completeAddress);
+                }
+
+                if (mMerchantNeedsShippingAddress) {
+                    if (completeAddress == null) {
+                        providePaymentInformation();
+                    } else {
+                        mClient.onShippingAddressChange(completeAddress.toPaymentAddress());
+                    }
+                    return;
+                }
+
+                mUI.updateSection(
+                        PaymentRequestUI.TYPE_SHIPPING_ADDRESSES, mShippingAddressesSection);
+            }
+        });
     }
 
     private void editContact(final AutofillContact toEdit) {
-        mContactEditor.editContact(toEdit, new Callback<AutofillContact>() {
+        mContactEditor.edit(toEdit, new Callback<AutofillContact>() {
             @Override
             public void onResult(AutofillContact completeContact) {
                 if (completeContact == null) {

@@ -48,6 +48,13 @@ public class EditorModel {
     }
 
     /**
+     * Removes all fields from the editor. The field contents are not altered.
+     */
+    public void removeAllFields() {
+        mFields.clear();
+    }
+
+    /**
      * Specifies the callback to invoke when the user clicks "Done."
      *
      * @param callback The callback to invoke when the user clicks "Done."
@@ -66,7 +73,8 @@ public class EditorModel {
     }
 
     /**
-     * Called when the user clicks "Done."
+     * Called when the user clicks "Done." Can be called only once. If this method is called, then
+     * cancel() should not be called.
      */
     public void done() {
         if (mDoneCallback != null) mDoneCallback.run();
@@ -75,7 +83,8 @@ public class EditorModel {
     }
 
     /**
-     * Called when the user clicks "Cancel."
+     * Called when the user clicks "Cancel." Can be called only once. If this method is called, then
+     * done() should not be called.
      */
     public void cancel() {
         if (mCancelCallback != null) mCancelCallback.run();
