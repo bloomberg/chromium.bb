@@ -70,6 +70,7 @@ namespace content {
 class BrowserMainParts;
 class BrowserOnlineStateObserver;
 class BrowserThreadImpl;
+class LoaderDelegateImpl;
 class MediaStreamManager;
 class MojoShellContext;
 class ResourceDispatcherHostImpl;
@@ -281,6 +282,7 @@ class CONTENT_EXPORT BrowserMainLoop {
   std::unique_ptr<ui::ClientNativePixmapFactory> client_native_pixmap_factory_;
 #endif
 
+  std::unique_ptr<LoaderDelegateImpl> loader_delegate_;
   std::unique_ptr<ResourceDispatcherHostImpl> resource_dispatcher_host_;
   std::unique_ptr<MediaStreamManager> media_stream_manager_;
   std::unique_ptr<SpeechRecognitionManagerImpl> speech_recognition_manager_;

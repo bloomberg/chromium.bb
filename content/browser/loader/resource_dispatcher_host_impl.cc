@@ -49,6 +49,7 @@
 #include "content/browser/loader/async_revalidation_manager.h"
 #include "content/browser/loader/cross_site_resource_handler.h"
 #include "content/browser/loader/detachable_resource_handler.h"
+#include "content/browser/loader/loader_delegate.h"
 #include "content/browser/loader/mime_type_resource_handler.h"
 #include "content/browser/loader/navigation_resource_handler.h"
 #include "content/browser/loader/navigation_resource_throttle.h"
@@ -61,7 +62,6 @@
 #include "content/browser/loader/sync_resource_handler.h"
 #include "content/browser/loader/throttling_resource_handler.h"
 #include "content/browser/loader/upload_data_stream_builder.h"
-#include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/resource_context_impl.h"
 #include "content/browser/service_worker/foreign_fetch_request_handler.h"
 #include "content/browser/service_worker/link_header_support.h"
@@ -547,8 +547,9 @@ ResourceDispatcherHostImpl::ResourceDispatcherHostImpl()
           max_num_in_flight_requests_ * kMaxRequestsPerProcessRatio)),
       max_outstanding_requests_cost_per_process_(
           kMaxOutstandingRequestsCostPerProcess),
-      filter_(NULL),
-      delegate_(NULL),
+      filter_(nullptr),
+      delegate_(nullptr),
+      loader_delegate_(nullptr),
       allow_cross_origin_auth_prompt_(false),
       cert_store_for_testing_(nullptr) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -2316,6 +2317,11 @@ void ResourceDispatcherHostImpl::EnableStaleWhileRevalidateForTesting() {
     async_revalidation_manager_.reset(new AsyncRevalidationManager);
 }
 
+void ResourceDispatcherHostImpl::SetLoaderDelegate(
+    LoaderDelegate* loader_delegate) {
+  loader_delegate_ = loader_delegate;
+}
+
 // static
 int ResourceDispatcherHostImpl::CalculateApproximateMemoryCost(
     net::URLRequest* request) {
@@ -2431,27 +2437,6 @@ bool ResourceDispatcherHostImpl::LoadInfoIsMoreInteresting(const LoadInfo& a,
   return a.load_state.state > b.load_state.state;
 }
 
-// static
-void ResourceDispatcherHostImpl::UpdateLoadInfoOnUIThread(
-    std::unique_ptr<LoadInfoMap> info_map) {
-  // TODO(erikchen): Remove ScopedTracker below once http://crbug.com/466285
-  // is fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "466285 ResourceDispatcherHostImpl::UpdateLoadInfoOnUIThread"));
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  for (const auto& load_info : *info_map) {
-    RenderViewHostImpl* view = RenderViewHostImpl::FromID(
-        load_info.first.child_id, load_info.first.route_id);
-    // The view could be gone at this point.
-    if (view) {
-      view->LoadStateChanged(load_info.second.url, load_info.second.load_state,
-                             load_info.second.upload_position,
-                             load_info.second.upload_size);
-    }
-  }
-}
-
 std::unique_ptr<ResourceDispatcherHostImpl::LoadInfoMap>
 ResourceDispatcherHostImpl::GetLoadInfoForAllRoutes() {
   // Populate this map with load state changes, and then send them on to the UI
@@ -2491,10 +2476,12 @@ void ResourceDispatcherHostImpl::UpdateLoadInfo() {
     return;
   }
 
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      base::Bind(&ResourceDispatcherHostImpl::UpdateLoadInfoOnUIThread,
-                 base::Passed(&info_map)));
+  for (const auto& load_info : *info_map) {
+    loader_delegate_->LoadStateChanged(
+        load_info.first.child_id, load_info.first.route_id,
+        load_info.second.url, load_info.second.load_state,
+        load_info.second.upload_position, load_info.second.upload_size);
+  }
 }
 
 void ResourceDispatcherHostImpl::BlockRequestsForRoute(

@@ -60,6 +60,7 @@ class AppCacheService;
 class AsyncRevalidationManager;
 class CertStore;
 class FrameTree;
+class LoaderDelegate;
 class NavigationURLLoaderImplCore;
 class RenderFrameHostImpl;
 class ResourceContext;
@@ -306,6 +307,8 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
   // or experiment status. For unit tests only.
   void EnableStaleWhileRevalidateForTesting();
 
+  void SetLoaderDelegate(LoaderDelegate* loader_delegate);
+
  private:
   friend class LoaderIOThreadNotifier;
   friend class ResourceDispatcherHostTest;
@@ -437,10 +440,6 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
   // done that corresponds to changes that the user might observe, whereas
   // waiting for a host name to resolve implies being stuck.
   static bool LoadInfoIsMoreInteresting(const LoadInfo& a, const LoadInfo& b);
-
-  // Used to marshal calls to LoadStateChanged from the IO to UI threads.  All
-  // are done as a single callback to avoid spamming the UI thread.
-  static void UpdateLoadInfoOnUIThread(std::unique_ptr<LoadInfoMap> info_map);
 
   // Gets the most interesting LoadInfo for each GlobalRoutingID.
   std::unique_ptr<LoadInfoMap> GetLoadInfoForAllRoutes();
@@ -632,6 +631,8 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
   ResourceMessageFilter* filter_;
 
   ResourceDispatcherHostDelegate* delegate_;
+
+  LoaderDelegate* loader_delegate_;
 
   bool allow_cross_origin_auth_prompt_;
 

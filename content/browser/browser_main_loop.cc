@@ -53,6 +53,7 @@
 #include "content/browser/gpu/gpu_process_host_ui_shim.h"
 #include "content/browser/histogram_synchronizer.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
+#include "content/browser/loader_delegate_impl.h"
 #include "content/browser/media/media_internals.h"
 #include "content/browser/mojo/mojo_shell_context.h"
 #include "content/browser/net/browser_online_state_observer.h"
@@ -1266,11 +1267,15 @@ int BrowserMainLoop::BrowserThreadsStarted() {
   UMA_HISTOGRAM_BOOLEAN("Windows.Win32kRendererLockdown",
                         IsWin32kRendererLockdownEnabled());
 #endif
+
   // RDH needs the IO thread to be created
   {
     TRACE_EVENT0("startup",
       "BrowserMainLoop::BrowserThreadsStarted:InitResourceDispatcherHost");
     resource_dispatcher_host_.reset(new ResourceDispatcherHostImpl());
+
+    loader_delegate_.reset(new LoaderDelegateImpl());
+    resource_dispatcher_host_->SetLoaderDelegate(loader_delegate_.get());
   }
 
   // MediaStreamManager needs the IO thread to be created.
