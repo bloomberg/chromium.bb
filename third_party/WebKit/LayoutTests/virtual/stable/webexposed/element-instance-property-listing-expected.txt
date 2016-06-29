@@ -29,6 +29,8 @@ namespace http://www.w3.org/1999/xhtml
     property addEventListener
     property animate
     property appendChild
+    property assignedSlot
+    property attachShadow
     property attributes
     property baseURI
     property blur
@@ -204,6 +206,7 @@ namespace http://www.w3.org/1999/xhtml
     property setAttributeNode
     property setAttributeNodeNS
     property shadowRoot
+    property slot
     property spellcheck
     property style
     property tabIndex
@@ -827,6 +830,8 @@ html element select
 html element shadow
     property getDistributedNodes
 html element slot
+    property assignedNodes
+    property name
 html element small
 html element source
     property media
@@ -1079,6 +1084,8 @@ namespace http://www.w3.org/2000/svg
     property addEventListener
     property animate
     property appendChild
+    property assignedSlot
+    property attachShadow
     property attributes
     property baseURI
     property blur
@@ -1254,6 +1261,7 @@ namespace http://www.w3.org/2000/svg
     property setAttributeNode
     property setAttributeNodeNS
     property shadowRoot
+    property slot
     property spellcheck
     property style
     property tabIndex

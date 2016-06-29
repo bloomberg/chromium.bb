@@ -1046,6 +1046,7 @@ interface DynamicsCompressorNode : AudioNode
 interface Element : Node
     attribute @@toStringTag
     attribute @@unscopables
+    getter assignedSlot
     getter attributes
     getter childElementCount
     getter children
@@ -1081,8 +1082,10 @@ interface Element : Node
     getter scrollTop
     getter scrollWidth
     getter shadowRoot
+    getter slot
     getter tagName
     method animate
+    method attachShadow
     method closest
     method constructor
     method createShadowRoot
@@ -1137,6 +1140,7 @@ interface Element : Node
     setter outerHTML
     setter scrollLeft
     setter scrollTop
+    setter slot
 interface ErrorEvent : Event
     attribute @@toStringTag
     getter colno
@@ -1170,6 +1174,7 @@ interface Event
     getter bubbles
     getter cancelBubble
     getter cancelable
+    getter composed
     getter currentTarget
     getter defaultPrevented
     getter eventPhase
@@ -1179,6 +1184,7 @@ interface Event
     getter target
     getter timeStamp
     getter type
+    method composedPath
     method constructor
     method initEvent
     method preventDefault
@@ -2539,6 +2545,12 @@ interface HTMLShadowElement : HTMLElement
     attribute @@toStringTag
     method constructor
     method getDistributedNodes
+interface HTMLSlotElement : HTMLElement
+    attribute @@toStringTag
+    getter name
+    method assignedNodes
+    method constructor
+    setter name
 interface HTMLSourceElement : HTMLElement
     attribute @@toStringTag
     getter media
@@ -5086,8 +5098,10 @@ interface ServiceWorkerRegistration : EventTarget
 interface ShadowRoot : DocumentFragment
     attribute @@toStringTag
     getter activeElement
+    getter delegatesFocus
     getter host
     getter innerHTML
+    getter mode
     getter olderShadowRoot
     getter pointerLockElement
     getter styleSheets
@@ -5224,6 +5238,7 @@ interface SyncManager
     method register
 interface Text : CharacterData
     attribute @@toStringTag
+    getter assignedSlot
     getter wholeText
     method constructor
     method getDestinationInsertionPoints

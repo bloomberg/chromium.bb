@@ -132,6 +132,7 @@ interface Event
     getter bubbles
     getter cancelBubble
     getter cancelable
+    getter composed
     getter currentTarget
     getter defaultPrevented
     getter eventPhase
@@ -141,6 +142,7 @@ interface Event
     getter target
     getter timeStamp
     getter type
+    method composedPath
     method constructor
     method initEvent
     method preventDefault
