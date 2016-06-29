@@ -1,13 +1,15 @@
-<video controls></video>
-<p>Test that pause() after changing display to "none" doesn't cause a crash.</p>
+<!DOCTYPE html>
+<title>Test that pause() after changing display to "none" doesn't cause a crash.</title>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
 <script src="media-file.js"></script>
-<!-- TODO(foolip): Convert test to testharness.js. crbug.com/588956
-     (Please avoid writing new tests using video-test.js) -->
-<script src="video-test.js"></script>
+<video></video>
 <script>
+test(function() {
+    var video = document.querySelector("video");
     video.src = findMediaFile("video", "content/test");
     video.play();
     video.style.display = "none";
     video.pause();
-    endTest();
+});
 </script>

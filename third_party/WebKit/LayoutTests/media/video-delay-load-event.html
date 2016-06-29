@@ -1,72 +1,46 @@
-<!doctype html>
-<html>
-    <head>
-        <title>delay document 'load' event test</title>
-        <style> video { border: 3px solid red; } </style>
-        <!-- TODO(foolip): Convert test to testharness.js. crbug.com/588956
-             (Please avoid writing new tests using video-test.js) -->
-        <script src=video-test.js></script>
-        <script src=media-file.js></script>
-        <script>
-            var video;
+<!DOCTYPE html>
+<title>Test that the document's load event is delayed until a video's meta data is available.</title>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script src="media-file.js"></script>
+<video id="video1"></video>
+<video id="video2"></video>
+<video id="video3"><source></source></video>
+<script>
+async_test(function(t) {
+    assertVideoNoSrcNoLoad(document.getElementById("video1"));
 
-            function testMovieWithNoSource(elem)
-            {
-                video = elem;   // Need it in a global for testExpected() to see it.
-                consoleWrite("<em>no 'src'.</em>");
-                testExpected("video.networkState", HTMLMediaElement.prototype.NETWORK_EMPTY, "==");
-                testExpected("video.readyState", HTMLMediaElement.prototype.HAVE_NOTHING, "==");
-            }
+    var video = document.getElementById("video2");
+    video.src = findMediaFile("video", "content/test");
+    assertVideoSrcNoLoad(video);
 
-            function testMovieWithSource(elem, hasLoaded, msg)
-            {
-                video = elem;   // Need it in a global for testExpected() to see it.
-                consoleWrite(msg);
-                if (hasLoaded) {
-                    // The movie should have loaded at least to HAVE_CURRENT_DATA
-                    testExpected("video.networkState", HTMLMediaElement.prototype.NETWORK_NO_SOURCE, "!=");
-                    testExpected("video.networkState", HTMLMediaElement.prototype.NETWORK_IDLE, ">=");
-                    testExpected("video.readyState", HTMLMediaElement.prototype.HAVE_CURRENT_DATA, ">=");
-                } else {
-                    testExpected("video.networkState", HTMLMediaElement.prototype.NETWORK_NO_SOURCE, "==");
-                    testExpected("video.readyState", HTMLMediaElement.prototype.HAVE_NOTHING, "==");
-                }
-            }
+    var source = document.querySelector("source");
+    source.src = findMediaFile("video", "content/test");
+    assertVideoSrcNoLoad(document.getElementById("video3"));
 
-            function loaded()
-            {
-                consoleWrite("<br><b>document <em>'load'<" + "/em> event handler</b>");
+    window.onload = t.step_func_done(function() {
+        assertVideoNoSrcNoLoad(document.getElementById("video1"));
+        assertVideoSrcLoad(document.getElementById("video2"));
+        assertVideoSrcLoad(document.getElementById("video3"));
+    });
 
-                testMovieWithNoSource(document.getElementById('video-1'));
-                testMovieWithSource(document.getElementById('video-2'), true, "<br><em>with 'src' attribute.</em>");
-                testMovieWithSource(document.getElementById('video-3'), true, "<br><em>with &lt;source&gt; element.</em>");
+    function assertVideoNoSrcNoLoad(video) {
+        // Video should not load as there is no "src".
+        assert_equals(video.networkState, HTMLMediaElement.NETWORK_EMPTY);
+        assert_equals(video.readyState, HTMLMediaElement.HAVE_NOTHING);
+    }
 
-                if (window.testRunner)
-                    testRunner.notifyDone();
-            }
-        </script>
-    </head>
-    <body onload="loaded()">
-        <video id="video-1"></video>
-        <video id="video-2"></video>
-        <video id="video-3"><source id="source-1"></video>
+    function assertVideoSrcNoLoad(video) {
+        // Video loading has just triggered.
+        assert_equals(video.networkState, HTMLMediaElement.NETWORK_NO_SOURCE);
+        assert_equals(video.readyState, HTMLMediaElement.HAVE_NOTHING);
+    }
 
-        <p>Test the document's load event is delayed until a movie's meta data is available.</p>
-
-        <script>
-            consoleWrite("<br><b>inline script</b>");
-
-            testMovieWithNoSource(document.getElementById('video-1'));
-
-            video = document.getElementById('video-2');
-            video.src = findMediaFile("video", "content/test");
-            testMovieWithSource(video, false, "<br><em>with 'src' attribute.</em>");
-
-            source = document.getElementById('source-1');
-            source.src = findMediaFile("video", "content/test");
-            testMovieWithSource(document.getElementById('video-3'), false, "<br><em>with &lt;source&gt; element.</em>");
-            document.getElementById('video-3').load();
-        </script>
-
-    </body>
-</html>
+    function assertVideoSrcLoad(video) {
+        // The Video should have loaded at least to HAVE_CURRENT_DATA
+        assert_not_equals(video.networkState, HTMLMediaElement.NETWORK_NO_SOURCE);
+        assert_greater_than_equal(video.networkState, HTMLMediaElement.NETWORK_IDLE);
+        assert_greater_than_equal(video.readyState, HTMLMediaElement.HAVE_CURRENT_DATA);
+    }
+});
+</script>
