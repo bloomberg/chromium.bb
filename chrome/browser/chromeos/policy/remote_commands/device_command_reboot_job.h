@@ -6,8 +6,6 @@
 #define CHROME_BROWSER_CHROMEOS_POLICY_REMOTE_COMMANDS_DEVICE_COMMAND_REBOOT_JOB_H_
 
 #include "base/macros.h"
-#include "base/memory/weak_ptr.h"
-#include "base/timer/timer.h"
 #include "components/policy/core/common/remote_commands/remote_command_job.h"
 
 namespace chromeos {
@@ -32,16 +30,9 @@ class DeviceCommandRebootJob : public RemoteCommandJob {
   bool IsExpired(base::TimeTicks now) override;
   void RunImpl(const CallbackWithResult& succeeded_callback,
                const CallbackWithResult& failed_callback) override;
-  void TerminateImpl() override;
   base::TimeDelta GetCommmandTimeout() const override;
 
-  void Reboot() const;
-
   chromeos::PowerManagerClient* power_manager_client_;
-
-  base::OneShotTimer reboot_timer_;
-
-  base::WeakPtrFactory<DeviceCommandRebootJob> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(DeviceCommandRebootJob);
 };
