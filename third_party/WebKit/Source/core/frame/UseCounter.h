@@ -961,7 +961,6 @@ public:
         MediaStreamConstraintsFromDictionary = 1151,
         MediaStreamConstraintsConformant = 1152,
         CSSSelectorIndirectAdjacent = 1153,
-        NodeRootNode = 1154,
         CreateImageBitmap = 1156,
         PresentationConnectionConnectEventListener = 1157,
         PresentationConnectionCloseEventListener = 1158,

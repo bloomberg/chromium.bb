@@ -48,7 +48,7 @@ PASS Node member must be nuked: isSupported
 PASS Node member must be nuked: getFeature 
 PASS Node member must be nuked: getUserData 
 PASS Node member must be nuked: setUserData 
-FAIL Node member must be nuked: rootNode assert_equals: expected (undefined) undefined but got (object) Document node with 0 children
+PASS Node member must be nuked: rootNode 
 PASS Window member must be nuked: attachEvent 
 Harness: the test ran to completion.
 

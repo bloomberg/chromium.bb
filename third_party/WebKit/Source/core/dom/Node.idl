@@ -52,7 +52,6 @@
     [PerWorldBindings] readonly attribute Node? lastChild;
     [PerWorldBindings] readonly attribute Node? previousSibling;
     [PerWorldBindings] readonly attribute Node? nextSibling;
-    [RuntimeEnabled=ShadowDOMV1, MeasureAs=NodeRootNode, ImplementedAs=treeRoot] readonly attribute Node rootNode;
 
     [CEReactions, CustomElementCallbacks] attribute DOMString? nodeValue;
 
