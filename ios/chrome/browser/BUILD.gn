@@ -739,6 +739,20 @@ source_set("about_flags") {
   ]
 }
 
+# Temporary target while moving coordinator classes upstream.
+source_set("chrome_coordinators") {
+  sources = [
+    "chrome_coordinator.h",
+    "chrome_coordinator.mm",
+    "root_coordinator.h",
+    "root_coordinator.mm",
+  ]
+
+  deps = [
+    "//base",
+  ]
+}
+
 # TODO(crbug.com/487804): use js_compile_checked instead once the errors have
 # been fixed.
 js_compile_unchecked("injected_js") {

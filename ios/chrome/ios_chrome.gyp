@@ -748,6 +748,23 @@
       },
     },
     {
+      # GN version: //ios/chrome/browser:chrome_coordinators
+      'target_name': 'ios_chrome_browser_chrome_coordinators',
+      'type': 'static_library',
+      'include_dirs': [
+        '../..',
+      ],
+      'dependencies': [
+        '../../base/base.gyp:base',
+      ],
+      'sources': [
+        'browser/chrome_coordinator.h',
+        'browser/chrome_coordinator.mm',
+        'browser/root_coordinator.h',
+        'browser/root_coordinator.mm',
+       ]
+    },
+    {
       # GN version: //ios/chrome/common
       'target_name': 'ios_chrome_common',
       'type': 'static_library',
