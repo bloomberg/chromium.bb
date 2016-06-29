@@ -651,7 +651,7 @@ void HTMLSelectElement::setActiveSelectionAnchor(HTMLOptionElement* option)
     // 3. Drag the mouse pointer onto the fourth OPTION
     //   m_activeSelectionEndIndex = 3, options at 1-3 indices are selected.
     //   updateListBoxSelection needs to clear selection of the fifth OPTION.
-    m_cachedStateForActiveSelection.clear();
+    m_cachedStateForActiveSelection.resize(0);
     for (auto& element : listItems()) {
         m_cachedStateForActiveSelection.append(isHTMLOptionElement(*element) && toHTMLOptionElement(element)->selected());
     }
@@ -800,7 +800,7 @@ void HTMLSelectElement::setRecalcListItems()
 void HTMLSelectElement::recalcListItems() const
 {
     TRACE_EVENT0("blink", "HTMLSelectElement::recalcListItems");
-    m_listItems.clear();
+    m_listItems.resize(0);
 
     m_shouldRecalcListItems = false;
 
