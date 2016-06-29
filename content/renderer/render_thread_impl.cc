@@ -262,6 +262,20 @@ static_assert(static_cast<v8::MemoryPressureLevel>(
     base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL) ==
         v8::MemoryPressureLevel::kCritical, "critical level not align");
 
+// WebMemoryPressureLevel should correspond to base::MemoryPressureListener.
+static_assert(static_cast<blink::WebMemoryPressureLevel>(
+    base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_NONE) ==
+        blink::WebMemoryPressureLevelNone,
+            "blink::WebMemoryPressureLevelNone not align");
+static_assert(static_cast<blink::WebMemoryPressureLevel>(
+    base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_MODERATE) ==
+        blink::WebMemoryPressureLevelModerate,
+            "blink::WebMemoryPressureLevelModerate not align");
+static_assert(static_cast<blink::WebMemoryPressureLevel>(
+    base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL) ==
+        blink::WebMemoryPressureLevelCritical,
+            "blink::WebMemoryPressureLevelCritical not align");
+
 class WebThreadForCompositor : public WebThreadImplForWorkerScheduler {
  public:
   explicit WebThreadForCompositor(base::Thread::Options options)
