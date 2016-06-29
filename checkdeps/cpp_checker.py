@@ -69,7 +69,7 @@ class CppChecker(object):
 
     if self._resolve_dotdot and '../' in include_path:
       dependee_dir = os.path.dirname(dependee_path)
-      include_path = os.path.normpath(os.path.join(dependee_dir, include_path))
+      include_path = os.path.join(dependee_dir, include_path)
       include_path = os.path.relpath(include_path, self._root_dir)
 
     rule = rules.RuleApplyingTo(include_path, dependee_path)
