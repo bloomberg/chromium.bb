@@ -51,7 +51,10 @@ public interface DesktopViewInterface {
      */
     void setAnimationEnabled(boolean enabled);
 
-    /** An {@link Event} which is triggered when the view is being painted. */
+    /**
+     * An {@link Event} which is triggered when the view is being painted. Adding handlers to this
+     * event causes painting to be triggered continuously until they are all removed.
+     */
     Event<PaintEventParameter> onPaint();
 
     /** An {@link Event} which is triggered when the client size is changed. */

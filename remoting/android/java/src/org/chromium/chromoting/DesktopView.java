@@ -202,7 +202,7 @@ public class DesktopView extends SurfaceView implements DesktopViewInterface,
         getHolder().unlockCanvasAndPost(canvas);
 
         synchronized (mAnimationLock) {
-            if (mInputAnimationRunning) {
+            if (mInputAnimationRunning || !mOnPaint.isEmpty()) {
                 getHandler().postAtTime(new Runnable() {
                     @Override
                     public void run() {
