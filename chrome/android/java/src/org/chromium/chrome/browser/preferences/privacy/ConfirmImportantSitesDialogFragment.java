@@ -241,7 +241,8 @@ public class ConfirmImportantSitesDialogFragment extends DialogFragment {
 
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
-        if (savedInstanceState != null) {
+        // We check the domains and urls as well due to crbug.com/622879.
+        if (savedInstanceState != null || mImportantDomains == null || mFaviconURLs == null) {
             dismiss();
         }
         mProfile = Profile.getLastUsedProfile().getOriginalProfile();
