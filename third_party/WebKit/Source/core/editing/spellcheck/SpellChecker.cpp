@@ -140,6 +140,8 @@ void SpellChecker::didBeginEditing(Element* element)
         }
 
         if (isTextField || !parent->isAlreadySpellChecked()) {
+            if (EditingStrategy::editingIgnoresContent(element))
+                return;
             // We always recheck textfields because markers are removed from them on blur.
             VisibleSelection selection = VisibleSelection::selectionFromContentsOfNode(element);
             markMisspellingsAndBadGrammar(selection);
