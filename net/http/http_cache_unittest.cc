@@ -13,6 +13,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/format_macros.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
@@ -303,6 +304,7 @@ const MockTransaction kFastNoStoreGET_Transaction = {
     TEST_MODE_SYNC_NET_START,
     &FastTransactionServer::FastNoStoreHandler,
     nullptr,
+    nullptr,
     0,
     0,
     OK};
@@ -461,24 +463,15 @@ void RangeTransactionServer::RangeHandler(const HttpRequestInfo* request,
 }
 
 const MockTransaction kRangeGET_TransactionOK = {
-    "http://www.google.com/range",
-    "GET",
-    base::Time(),
-    "Range: bytes = 40-49\r\n" EXTRA_HEADER,
-    LOAD_NORMAL,
+    "http://www.google.com/range", "GET", base::Time(),
+    "Range: bytes = 40-49\r\n" EXTRA_HEADER, LOAD_NORMAL,
     "HTTP/1.1 206 Partial Content",
     "Last-Modified: Sat, 18 Apr 2007 01:10:43 GMT\n"
     "ETag: \"foo\"\n"
     "Accept-Ranges: bytes\n"
     "Content-Length: 10\n",
-    base::Time(),
-    "rg: 40-49 ",
-    TEST_MODE_NORMAL,
-    &RangeTransactionServer::RangeHandler,
-    nullptr,
-    0,
-    0,
-    OK};
+    base::Time(), "rg: 40-49 ", TEST_MODE_NORMAL,
+    &RangeTransactionServer::RangeHandler, nullptr, nullptr, 0, 0, OK};
 
 const char kFullRangeData[] =
     "rg: 00-09 rg: 10-19 rg: 20-29 rg: 30-39 "
@@ -7054,6 +7047,277 @@ TEST(HttpCache, StopCachingTruncatedEntry) {
   // Verify that the disk entry was updated.
   VerifyTruncatedFlag(&cache, kRangeGET_TransactionOK.url, false, 80);
   RemoveMockTransaction(&kRangeGET_TransactionOK);
+}
+
+namespace {
+
+enum class TransactionPhase {
+  BEFORE_FIRST_READ,
+  AFTER_FIRST_READ,
+  AFTER_NETWORK_READ
+};
+
+using CacheInitializer = void (*)(MockHttpCache*);
+using HugeCacheTestConfiguration =
+    std::pair<TransactionPhase, CacheInitializer>;
+
+class HttpCacheHugeResourceTest
+    : public ::testing::TestWithParam<HugeCacheTestConfiguration> {
+ public:
+  static std::list<HugeCacheTestConfiguration> GetTestModes();
+  static std::list<HugeCacheTestConfiguration> kTestModes;
+
+  // CacheInitializer callbacks. These are used to initialize the cache
+  // depending on the test run configuration.
+
+  // Initializes a cache containing a truncated entry containing the first 20
+  // bytes of the reponse body.
+  static void SetupTruncatedCacheEntry(MockHttpCache* cache);
+
+  // Initializes a cache containing a sparse entry. The first 10 bytes are
+  // present in the cache.
+  static void SetupPrefixSparseCacheEntry(MockHttpCache* cache);
+
+  // Initializes a cache containing a sparse entry. The 10 bytes at offset
+  // 99990 are present in the cache.
+  static void SetupInfixSparseCacheEntry(MockHttpCache* cache);
+
+ protected:
+  static void LargeResourceTransactionHandler(
+      const net::HttpRequestInfo* request,
+      std::string* response_status,
+      std::string* response_headers,
+      std::string* response_data);
+  static int LargeBufferReader(int64_t content_length,
+                               int64_t offset,
+                               net::IOBuffer* buf,
+                               int buf_len);
+
+  static void SetFlagOnBeforeNetworkStart(bool* started, bool* /* defer */);
+
+  // Size of resource to be tested.
+  static const int64_t kTotalSize = 5000LL * 1000 * 1000;
+};
+
+const int64_t HttpCacheHugeResourceTest::kTotalSize;
+
+// static
+void HttpCacheHugeResourceTest::LargeResourceTransactionHandler(
+    const net::HttpRequestInfo* request,
+    std::string* response_status,
+    std::string* response_headers,
+    std::string* response_data) {
+  std::string if_range;
+  if (!request->extra_headers.GetHeader(net::HttpRequestHeaders::kIfRange,
+                                        &if_range)) {
+    // If there were no range headers in the request, we are going to just
+    // return the entire response body.
+    *response_status = "HTTP/1.1 200 Success";
+    *response_headers = base::StringPrintf("Content-Length: %" PRId64
+                                           "\n"
+                                           "ETag: \"foo\"\n"
+                                           "Accept-Ranges: bytes\n",
+                                           kTotalSize);
+    return;
+  }
+
+  // From this point on, we should be processing a valid byte-range request.
+  EXPECT_EQ("\"foo\"", if_range);
+
+  std::string range_header;
+  EXPECT_TRUE(request->extra_headers.GetHeader(net::HttpRequestHeaders::kRange,
+                                               &range_header));
+  std::vector<net::HttpByteRange> ranges;
+
+  EXPECT_TRUE(net::HttpUtil::ParseRangeHeader(range_header, &ranges));
+  ASSERT_EQ(1u, ranges.size());
+
+  net::HttpByteRange range = ranges[0];
+  EXPECT_TRUE(range.HasFirstBytePosition());
+  int64_t last_byte_position =
+      range.HasLastBytePosition() ? range.last_byte_position() : kTotalSize - 1;
+
+  *response_status = "HTTP/1.1 206 Partial";
+  *response_headers = base::StringPrintf(
+      "Content-Range: bytes %" PRId64 "-%" PRId64 "/%" PRId64
+      "\n"
+      "Content-Length: %" PRId64 "\n",
+      range.first_byte_position(), last_byte_position, kTotalSize,
+      last_byte_position - range.first_byte_position() + 1);
+}
+
+// static
+int HttpCacheHugeResourceTest::LargeBufferReader(int64_t content_length,
+                                                 int64_t offset,
+                                                 net::IOBuffer* buf,
+                                                 int buf_len) {
+  // This test involves reading multiple gigabytes of data. To make it run in a
+  // reasonable amount of time, we are going to skip filling the buffer with
+  // data. Instead the test relies on verifying that the count of bytes expected
+  // at the end is correct.
+  EXPECT_LT(0, content_length);
+  EXPECT_LE(offset, content_length);
+  int num = std::min(static_cast<int64_t>(buf_len), content_length - offset);
+  return num;
+}
+
+// static
+void HttpCacheHugeResourceTest::SetFlagOnBeforeNetworkStart(bool* started,
+                                                            bool* /* defer */) {
+  *started = true;
+}
+
+// static
+void HttpCacheHugeResourceTest::SetupTruncatedCacheEntry(MockHttpCache* cache) {
+  ScopedMockTransaction scoped_transaction(kRangeGET_TransactionOK);
+  std::string cached_headers = base::StringPrintf(
+      "HTTP/1.1 200 OK\n"
+      "Last-Modified: Sat, 18 Apr 2007 01:10:43 GMT\n"
+      "ETag: \"foo\"\n"
+      "Accept-Ranges: bytes\n"
+      "Content-Length: %" PRId64 "\n",
+      kTotalSize);
+  CreateTruncatedEntry(cached_headers, cache);
+}
+
+// static
+void HttpCacheHugeResourceTest::SetupPrefixSparseCacheEntry(
+    MockHttpCache* cache) {
+  MockTransaction transaction(kRangeGET_TransactionOK);
+  transaction.handler = nullptr;
+  transaction.request_headers = "Range: bytes = 0-9\r\n" EXTRA_HEADER;
+  transaction.response_headers =
+      "Last-Modified: Sat, 18 Apr 2007 01:10:43 GMT\n"
+      "ETag: \"foo\"\n"
+      "Accept-Ranges: bytes\n"
+      "Content-Range: bytes 0-9/5000000000\n"
+      "Content-Length: 10\n";
+  AddMockTransaction(&transaction);
+  std::string headers;
+  RunTransactionTestWithResponse(cache->http_cache(), transaction, &headers);
+  RemoveMockTransaction(&transaction);
+}
+
+// static
+void HttpCacheHugeResourceTest::SetupInfixSparseCacheEntry(
+    MockHttpCache* cache) {
+  MockTransaction transaction(kRangeGET_TransactionOK);
+  transaction.handler = nullptr;
+  transaction.request_headers = "Range: bytes = 99990-99999\r\n" EXTRA_HEADER;
+  transaction.response_headers =
+      "Last-Modified: Sat, 18 Apr 2007 01:10:43 GMT\n"
+      "ETag: \"foo\"\n"
+      "Accept-Ranges: bytes\n"
+      "Content-Range: bytes 99990-99999/5000000000\n"
+      "Content-Length: 10\n";
+  AddMockTransaction(&transaction);
+  std::string headers;
+  RunTransactionTestWithResponse(cache->http_cache(), transaction, &headers);
+  RemoveMockTransaction(&transaction);
+}
+
+// static
+std::list<HugeCacheTestConfiguration>
+HttpCacheHugeResourceTest::GetTestModes() {
+  std::list<HugeCacheTestConfiguration> test_modes;
+  const TransactionPhase kTransactionPhases[] = {
+      TransactionPhase::BEFORE_FIRST_READ, TransactionPhase::AFTER_FIRST_READ,
+      TransactionPhase::AFTER_NETWORK_READ};
+  const CacheInitializer kInitializers[] = {&SetupTruncatedCacheEntry,
+                                            &SetupPrefixSparseCacheEntry,
+                                            &SetupInfixSparseCacheEntry};
+
+  for (const auto phase : kTransactionPhases)
+    for (const auto initializer : kInitializers)
+      test_modes.push_back(std::make_pair(phase, initializer));
+
+  return test_modes;
+}
+
+// static
+std::list<HugeCacheTestConfiguration> HttpCacheHugeResourceTest::kTestModes =
+    HttpCacheHugeResourceTest::GetTestModes();
+
+INSTANTIATE_TEST_CASE_P(
+    _,
+    HttpCacheHugeResourceTest,
+    ::testing::ValuesIn(HttpCacheHugeResourceTest::kTestModes));
+
+}  // namespace
+
+// Test what happens when StopCaching() is called while reading a huge resource
+// fetched via GET. Various combinations of cache state and when StopCaching()
+// is called is controlled by the parameter passed into the test via the
+// INSTANTIATE_TEST_CASE_P invocation above.
+TEST_P(HttpCacheHugeResourceTest,
+       StopCachingFollowedByReadForHugeTruncatedResource) {
+  // This test is going to be repeated for all combinations of TransactionPhase
+  // and CacheInitializers returned by GetTestModes().
+  const TransactionPhase stop_caching_phase = GetParam().first;
+  const CacheInitializer cache_initializer = GetParam().second;
+
+  MockHttpCache cache;
+  (*cache_initializer)(&cache);
+
+  MockTransaction transaction(kSimpleGET_Transaction);
+  transaction.url = kRangeGET_TransactionOK.url;
+  transaction.handler = &LargeResourceTransactionHandler;
+  transaction.read_handler = &LargeBufferReader;
+  ScopedMockTransaction scoped_transaction(transaction);
+
+  MockHttpRequest request(transaction);
+  net::TestCompletionCallback callback;
+  std::unique_ptr<net::HttpTransaction> http_transaction;
+  int rv = cache.http_cache()->CreateTransaction(net::DEFAULT_PRIORITY,
+                                                 &http_transaction);
+  ASSERT_EQ(net::OK, rv);
+  ASSERT_TRUE(http_transaction.get());
+
+  bool network_transaction_started = false;
+  if (stop_caching_phase == TransactionPhase::AFTER_NETWORK_READ) {
+    http_transaction->SetBeforeNetworkStartCallback(
+        base::Bind(&SetFlagOnBeforeNetworkStart, &network_transaction_started));
+  }
+
+  rv = http_transaction->Start(&request, callback.callback(),
+                               net::BoundNetLog());
+  rv = callback.GetResult(rv);
+  ASSERT_EQ(net::OK, rv);
+
+  if (stop_caching_phase == TransactionPhase::BEFORE_FIRST_READ)
+    http_transaction->StopCaching();
+
+  int64_t total_bytes_received = 0;
+
+  EXPECT_EQ(kTotalSize,
+            http_transaction->GetResponseInfo()->headers->GetContentLength());
+  do {
+    // This test simulates reading gigabytes of data. Buffer size is set to 10MB
+    // to reduce the number of reads and speed up the test.
+    const int kBufferSize = 1024 * 1024 * 10;
+    scoped_refptr<net::IOBuffer> buf(new net::IOBuffer(kBufferSize));
+    rv = http_transaction->Read(buf.get(), kBufferSize, callback.callback());
+    rv = callback.GetResult(rv);
+
+    if (stop_caching_phase == TransactionPhase::AFTER_FIRST_READ &&
+        total_bytes_received == 0) {
+      http_transaction->StopCaching();
+    }
+
+    if (rv > 0)
+      total_bytes_received += rv;
+
+    if (network_transaction_started &&
+        stop_caching_phase == TransactionPhase::AFTER_NETWORK_READ) {
+      http_transaction->StopCaching();
+      network_transaction_started = false;
+    }
+  } while (rv > 0);
+
+  // The only verification we are going to do is that the received resource has
+  // the correct size. This is sufficient to verify that the state machine
+  // didn't terminate abruptly due to the StopCaching() call.
+  EXPECT_EQ(kTotalSize, total_bytes_received);
 }
 
 // Tests that we detect truncated resources from the net when there is

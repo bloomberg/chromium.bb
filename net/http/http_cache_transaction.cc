@@ -1173,10 +1173,30 @@ int HttpCache::Transaction::DoCacheReadResponseComplete(int result) {
     return OnCacheReadError(result, true);
   }
 
-  // Some resources may have slipped in as truncated when they're not.
   int current_size = entry_->disk_entry->GetDataSize(kResponseContentIndex);
-  if (response_.headers->GetContentLength() == current_size)
+  int64_t full_response_length = response_.headers->GetContentLength();
+
+  // Some resources may have slipped in as truncated when they're not.
+  if (full_response_length == current_size)
     truncated_ = false;
+
+  // The state machine's handling of StopCaching unfortunately doesn't deal well
+  // with resources that are larger than 2GB when there is a truncated or sparse
+  // cache entry. While the state machine is reworked to resolve this, the
+  // following logic is put in place to defer such requests to the network. The
+  // cache should not be storing multi gigabyte resources. See
+  // http://crbug.com/89567.
+  if ((truncated_ || response_.headers->response_code() == 206) &&
+      !range_requested_ &&
+      full_response_length > std::numeric_limits<int32_t>::max()) {
+    // Does not release the cache entry. If another transaction wants to use
+    // this cache entry while this transaction is active, the second transaction
+    // will fall back to the network after the timeout.
+    DCHECK(!partial_);
+    mode_ = NONE;
+    next_state_ = STATE_SEND_REQUEST;
+    return OK;
+  }
 
   if ((response_.unused_since_prefetch &&
        !(request_->load_flags & LOAD_PREFETCH)) ||

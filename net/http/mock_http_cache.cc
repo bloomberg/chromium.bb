@@ -20,6 +20,14 @@ namespace net {
 
 namespace {
 
+// During testing, we are going to limit the size of a cache entry to this many
+// bytes using DCHECKs in order to prevent a test from causing unbounded memory
+// growth. In practice cache entry shouldn't come anywhere near this limit for
+// tests that use the mock cache. If they do, that's likely a problem with the
+// test. If a test requires using massive cache entries, they should use a real
+// cache backend instead.
+const int kMaxMockCacheEntrySize = 100 * 1000 * 1000;
+
 // We can override the test mode for a given operation by setting this global
 // variable.
 int g_test_mode = 0;
@@ -139,6 +147,7 @@ int MockDiskEntry::WriteData(int index,
   if (offset < 0 || offset > static_cast<int>(data_[index].size()))
     return ERR_FAILED;
 
+  DCHECK_LT(offset + buf_len, kMaxMockCacheEntrySize);
   data_[index].resize(offset + buf_len);
   if (buf_len)
     memcpy(&data_[index][offset], buf->data(), buf_len);
@@ -208,8 +217,10 @@ int MockDiskEntry::WriteSparseData(int64_t offset,
   DCHECK(offset < std::numeric_limits<int32_t>::max());
   int real_offset = static_cast<int>(offset);
 
-  if (static_cast<int>(data_[1].size()) < real_offset + buf_len)
+  if (static_cast<int>(data_[1].size()) < real_offset + buf_len) {
+    DCHECK_LT(real_offset + buf_len, kMaxMockCacheEntrySize);
     data_[1].resize(real_offset + buf_len);
+  }
 
   memcpy(&data_[1][real_offset], buf->data(), buf_len);
   if (MockHttpCache::GetTestMode(test_mode_) & TEST_MODE_SYNC_CACHE_WRITE)

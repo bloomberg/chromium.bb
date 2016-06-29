@@ -51,6 +51,7 @@ const MockTransaction kSimpleGET_Transaction = {
     TEST_MODE_NORMAL,
     nullptr,
     nullptr,
+    nullptr,
     0,
     0,
     OK};
@@ -68,45 +69,26 @@ const MockTransaction kSimplePOST_Transaction = {
     TEST_MODE_NORMAL,
     nullptr,
     nullptr,
+    nullptr,
     0,
     0,
     OK};
 
 const MockTransaction kTypicalGET_Transaction = {
-    "http://www.example.com/~foo/bar.html",
-    "GET",
-    base::Time(),
-    "",
-    LOAD_NORMAL,
-    "HTTP/1.1 200 OK",
+    "http://www.example.com/~foo/bar.html", "GET", base::Time(), "",
+    LOAD_NORMAL, "HTTP/1.1 200 OK",
     "Date: Wed, 28 Nov 2007 09:40:09 GMT\n"
     "Last-Modified: Wed, 28 Nov 2007 00:40:09 GMT\n",
-    base::Time(),
-    "<html><body>Google Blah Blah</body></html>",
-    TEST_MODE_NORMAL,
-    nullptr,
-    nullptr,
-    0,
-    0,
-    OK};
+    base::Time(), "<html><body>Google Blah Blah</body></html>",
+    TEST_MODE_NORMAL, nullptr, nullptr, nullptr, 0, 0, OK};
 
 const MockTransaction kETagGET_Transaction = {
-    "http://www.google.com/foopy",
-    "GET",
-    base::Time(),
-    "",
-    LOAD_NORMAL,
+    "http://www.google.com/foopy", "GET", base::Time(), "", LOAD_NORMAL,
     "HTTP/1.1 200 OK",
     "Cache-Control: max-age=10000\n"
     "Etag: \"foopy\"\n",
-    base::Time(),
-    "<html><body>Google Blah Blah</body></html>",
-    TEST_MODE_NORMAL,
-    nullptr,
-    nullptr,
-    0,
-    0,
-    OK};
+    base::Time(), "<html><body>Google Blah Blah</body></html>",
+    TEST_MODE_NORMAL, nullptr, nullptr, nullptr, 0, 0, OK};
 
 const MockTransaction kRangeGET_Transaction = {
     "http://www.google.com/",
@@ -119,6 +101,7 @@ const MockTransaction kRangeGET_Transaction = {
     base::Time(),
     "<html><body>Google Blah Blah</body></html>",
     TEST_MODE_NORMAL,
+    nullptr,
     nullptr,
     nullptr,
     0,
@@ -144,7 +127,7 @@ const MockTransaction* FindMockTransaction(const GURL& url) {
     if (url == GURL(kBuiltinMockTransactions[i]->url))
       return kBuiltinMockTransactions[i];
   }
-  return NULL;
+  return nullptr;
 }
 
 void AddMockTransaction(const MockTransaction* trans) {
@@ -239,10 +222,12 @@ void TestTransactionConsumer::OnIOComplete(int result) {
 
 MockNetworkTransaction::MockNetworkTransaction(RequestPriority priority,
                                                MockNetworkLayer* factory)
-    : request_(NULL),
+    : request_(nullptr),
       data_cursor_(0),
+      content_length_(0),
       priority_(priority),
-      websocket_handshake_stream_create_helper_(NULL),
+      read_handler_(nullptr),
+      websocket_handshake_stream_create_helper_(nullptr),
       transaction_factory_(factory->AsWeakPtr()),
       received_bytes_(0),
       sent_bytes_(0),
@@ -307,17 +292,23 @@ bool MockNetworkTransaction::IsReadyToRestartForAuth() {
       status_line.find(" 407 ") != std::string::npos;
 }
 
-int MockNetworkTransaction::Read(IOBuffer* buf,
+int MockNetworkTransaction::Read(net::IOBuffer* buf,
                                  int buf_len,
                                  const CompletionCallback& callback) {
   CHECK(!done_reading_called_);
-  int data_len = static_cast<int>(data_.size());
-  int num = std::min(buf_len, data_len - data_cursor_);
-  if (test_mode_ & TEST_MODE_SLOW_READ)
-    num = std::min(num, 1);
-  if (num) {
-    memcpy(buf->data(), data_.data() + data_cursor_, num);
+  int num = 0;
+  if (read_handler_) {
+    num = (*read_handler_)(content_length_, data_cursor_, buf, buf_len);
     data_cursor_ += num;
+  } else {
+    int data_len = static_cast<int>(data_.size());
+    num = std::min(static_cast<int64_t>(buf_len), data_len - data_cursor_);
+    if (test_mode_ & TEST_MODE_SLOW_READ)
+      num = std::min(num, 1);
+    if (num) {
+      memcpy(buf->data(), data_.data() + data_cursor_, num);
+      data_cursor_ += num;
+    }
   }
   if (test_mode_ & TEST_MODE_SYNC_NET_READ)
     return num;
@@ -418,6 +409,13 @@ int MockNetworkTransaction::StartInternal(const HttpRequestInfo* request,
   if (!t)
     return ERR_FAILED;
 
+  if (!before_network_start_callback_.is_null()) {
+    bool defer = false;
+    before_network_start_callback_.Run(&defer);
+    if (defer)
+      return net::ERR_IO_PENDING;
+  }
+
   test_mode_ = t->test_mode;
 
   // Return immediately if we're returning an error.
@@ -436,6 +434,8 @@ int MockNetworkTransaction::StartInternal(const HttpRequestInfo* request,
   std::string resp_data = t->data;
   if (t->handler)
     (t->handler)(request, &resp_status, &resp_headers, &resp_data);
+  if (t->read_handler)
+    read_handler_ = t->read_handler;
 
   std::string header_data = base::StringPrintf(
       "%s\n%s\n", resp_status.c_str(), resp_headers.c_str());
@@ -458,6 +458,7 @@ int MockNetworkTransaction::StartInternal(const HttpRequestInfo* request,
   response_.ssl_info.cert_status = t->cert_status;
   response_.ssl_info.connection_status = t->ssl_connection_status;
   data_ = resp_data;
+  content_length_ = response_.headers->GetContentLength();
 
   if (net_log.net_log())
     socket_log_id_ = net_log.net_log()->NextID();
@@ -474,6 +475,7 @@ int MockNetworkTransaction::StartInternal(const HttpRequestInfo* request,
 
 void MockNetworkTransaction::SetBeforeNetworkStartCallback(
     const BeforeNetworkStartCallback& callback) {
+  before_network_start_callback_ = callback;
 }
 
 void MockNetworkTransaction::SetBeforeHeadersSentCallback(
@@ -518,6 +520,10 @@ void MockNetworkLayer::TransactionDoneReading() {
 
 void MockNetworkLayer::TransactionStopCaching() {
   stop_caching_called_ = true;
+}
+
+void MockNetworkLayer::ResetTransactionCount() {
+  transaction_count_ = 0;
 }
 
 int MockNetworkLayer::CreateTransaction(
