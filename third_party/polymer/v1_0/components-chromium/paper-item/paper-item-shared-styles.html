@@ -16,7 +16,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <dom-module id="paper-item-shared-styles">
   <template>
     <style>
-      :host, .paper-item {
+      :host(paper-item), :host(paper-icon-item), .paper-item {
         display: block;
         position: relative;
         min-height: var(--paper-item-min-height, 48px);
@@ -32,30 +32,30 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         text-align: left;
       }
 
-      :host([hidden]), .paper-item[hidden] {
+      :host(paper-item[hidden]), :host(paper-icon-item[hidden]), .paper-item[hidden] {
         display: none !important;
       }
 
-      :host(.iron-selected), .paper-item.iron-selected {
+      :host(paper-item.iron-selected), :host(paper-icon-item.iron-selected), .paper-item.iron-selected {
         font-weight: var(--paper-item-selected-weight, bold);
 
         @apply(--paper-item-selected);
       }
 
-      :host([disabled]), .paper-item[disabled] {
+      :host(paper-item[disabled]), :host(paper-icon-item[disabled]), .paper-item[disabled] {
         color: var(--paper-item-disabled-color, --disabled-text-color);
 
         @apply(--paper-item-disabled);
       }
 
-      :host(:focus), .paper-item:focus {
+      :host(paper-item:focus), :host(paper-icon-item:focus), .paper-item:focus {
         position: relative;
         outline: 0;
 
         @apply(--paper-item-focused);
       }
 
-      :host(:focus):before, .paper-item:focus:before {
+      :host(paper-item:focus):before, :host(paper-icon-item:focus):before, .paper-item:focus:before {
         @apply(--layout-fit);
 
         background: currentColor;

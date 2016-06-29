@@ -59,6 +59,24 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 </head>
 <body><div hidden="" by-vulcanize=""><script src="chrome://resources/js/load_time_data.js"></script>
 <script src="chrome://downloads/strings.js"></script>
+<style>
+/* Copyright 2016 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file. */
+
+:root {
+  /* This is a custom, Chrome-specific color that does not have a --paper or
+   * --google equivalent. */
+  --md-background-color: rgb(241, 241, 241);
+  /* This is --google-blue-700, rewritten as a native custom property for speed.
+   */
+  --md-toolbar-color: rgb(51, 103, 214);
+}
+
+</style>
+
+
+
 <dom-module id="iron-list" assetpath="chrome://resources/polymer/v1_0/iron-list/">
   <template>
     <style>
@@ -452,8 +470,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   }
 
 </style>
-
-
 <dom-module id="iron-icon" assetpath="chrome://resources/polymer/v1_0/iron-icon/">
 
   <style>
@@ -639,8 +655,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     </style>
   </template>
 </dom-module>
-
-
 <dom-module id="paper-material" assetpath="chrome://resources/polymer/v1_0/paper-material/">
   <template>
     <style include="paper-material-shared-styles"></style>
@@ -1067,8 +1081,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   }
 
 </style>
-
-
 <dom-module id="paper-progress" assetpath="chrome://resources/polymer/v1_0/paper-progress/">
   <template>
     <style>
@@ -1584,6 +1596,8 @@ paper-button {
   </dom-module>
 
 
+
+
 <style is="custom-style">
 
   :root {
@@ -1639,36 +1653,6 @@ paper-button {
     --default-primary-color: var(--primary-color);
 
   }
-
-</style>
-<style>
-/* Copyright 2015 The Chromium Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can be
- * found in the LICENSE file. */
-
-@font-face {
-  font-family: 'Roboto';
-  font-style: normal;
-  font-weight: 400;
-  src: local('Roboto'), local('Roboto-Regular'),
-      url("chrome://resources/roboto/roboto-regular.woff2") format('woff2');
-}
-
-@font-face {
-  font-family: 'Roboto';
-  font-style: normal;
-  font-weight: 500;
-  src: local('Roboto Medium'), local('Roboto-Medium'),
-      url("chrome://resources/roboto/roboto-medium.woff2") format('woff2');
-}
-
-@font-face {
-  font-family: 'Roboto';
-  font-style: normal;
-  font-weight: 700;
-  src: local('Roboto Bold'), local('Roboto-Bold'),
-      url("chrome://resources/roboto/roboto-bold.woff2") format('woff2');
-}
 
 </style>
 <style is="custom-style">
@@ -1827,10 +1811,40 @@ paper-button {
   }
 
 </style>
+<style>
+/* Copyright 2015 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file. */
+
+@font-face {
+  font-family: 'Roboto';
+  font-style: normal;
+  font-weight: 400;
+  src: local('Roboto'), local('Roboto-Regular'),
+      url("chrome://resources/roboto/roboto-regular.woff2") format('woff2');
+}
+
+@font-face {
+  font-family: 'Roboto';
+  font-style: normal;
+  font-weight: 500;
+  src: local('Roboto Medium'), local('Roboto-Medium'),
+      url("chrome://resources/roboto/roboto-medium.woff2") format('woff2');
+}
+
+@font-face {
+  font-family: 'Roboto';
+  font-style: normal;
+  font-weight: 700;
+  src: local('Roboto Bold'), local('Roboto-Bold'),
+      url("chrome://resources/roboto/roboto-bold.woff2") format('woff2');
+}
+
+</style>
 <dom-module id="paper-item-shared-styles" assetpath="chrome://resources/polymer/v1_0/paper-item/">
   <template>
     <style>
-      :host, .paper-item {
+      :host(paper-item), :host(paper-icon-item), .paper-item {
         display: block;
         position: relative;
         min-height: var(--paper-item-min-height, 48px);
@@ -1846,30 +1860,30 @@ paper-button {
         text-align: left;
       }
 
-      :host([hidden]), .paper-item[hidden] {
+      :host(paper-item[hidden]), :host(paper-icon-item[hidden]), .paper-item[hidden] {
         display: none !important;
       }
 
-      :host(.iron-selected), .paper-item.iron-selected {
+      :host(paper-item.iron-selected), :host(paper-icon-item.iron-selected), .paper-item.iron-selected {
         font-weight: var(--paper-item-selected-weight, bold);
 
         @apply(--paper-item-selected);
       }
 
-      :host([disabled]), .paper-item[disabled] {
+      :host(paper-item[disabled]), :host(paper-icon-item[disabled]), .paper-item[disabled] {
         color: var(--paper-item-disabled-color, --disabled-text-color);
 
         @apply(--paper-item-disabled);
       }
 
-      :host(:focus), .paper-item:focus {
+      :host(paper-item:focus), :host(paper-icon-item:focus), .paper-item:focus {
         position: relative;
         outline: 0;
 
         @apply(--paper-item-focused);
       }
 
-      :host(:focus):before, .paper-item:focus:before {
+      :host(paper-item:focus):before, :host(paper-icon-item:focus):before, .paper-item:focus:before {
         @apply(--layout-fit);
 
         background: currentColor;
@@ -1882,8 +1896,6 @@ paper-button {
     </style>
   </template>
 </dom-module>
-
-
 <dom-module id="paper-item" assetpath="chrome://resources/polymer/v1_0/paper-item/">
   <template>
     <style include="paper-item-shared-styles"></style>
@@ -1938,8 +1950,6 @@ paper-button {
     </style>
   </template>
 </dom-module>
-
-
 <dom-module id="paper-menu" assetpath="chrome://resources/polymer/v1_0/paper-menu/">
   <template>
     <style include="paper-menu-shared-styles"></style>
@@ -1991,8 +2001,6 @@ paper-button {
 </dom-module>
 
 <script src="chrome://resources/polymer/v1_0/web-animations-js/web-animations-next-lite.min.js"></script>
-
-
 <dom-module id="iron-dropdown" assetpath="chrome://resources/polymer/v1_0/iron-dropdown/">
   <style>
     :host {
@@ -2662,22 +2670,6 @@ paper-button {
   
   
   </dom-module>
-<style>
-/* Copyright 2016 The Chromium Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can be
- * found in the LICENSE file. */
-
-:root {
-  /* This is a custom, Chrome-specific color that does not have a --paper or
-   * --google equivalent. */
-  --md-background-color: rgb(241, 241, 241);
-  /* This is --google-blue-700, rewritten as a native custom property for speed.
-   */
-  --md-toolbar-color: rgb(51, 103, 214);
-}
-
-</style>
-
 <dom-module id="downloads-manager" assetpath="chrome://downloads/">
   <template><style>
 /* Copyright 2015 The Chromium Authors. All rights reserved.

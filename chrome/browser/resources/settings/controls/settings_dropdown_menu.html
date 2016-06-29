@@ -1,6 +1,6 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-dropdown-menu/paper-dropdown-menu.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-item/paper-item.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-item/paper-item-shared-styles.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-listbox/paper-listbox.html">
 <link rel="import" href="/controls/pref_control_behavior.html">
 <link rel="import" href="/i18n_setup.html">
@@ -9,8 +9,8 @@
 
 <dom-module id="settings-dropdown-menu">
   <template>
-    <style include="settings-shared">
-      paper-item {
+    <style include="settings-shared paper-item-shared-styles">
+      .paper-item {
         color: var(--paper-grey-800);
         font-size: inherit;
       }
@@ -31,13 +31,15 @@
         disabled="[[shouldDisableMenu_(disabled, menuOptions.*)]]">
       <paper-listbox class="dropdown-content" selected="{{selected_}}"
           attr-for-selected="data-value">
-        <template is="dom-repeat" items="[[menuOptions]]">
-          <paper-item data-value$="[[item.value]]">[[item.name]]</paper-item>
+        <template is="dom-repeat" items="[[menuOptions]]" item-count="5">
+          <button class="paper-item" data-value$="[[item.value]]" role="option">
+            [[item.name]]
+          </button>
         </template>
-        <paper-item data-value$="[[notFoundValue_]]"
-            hidden$="[[!isSelectedNotFound_(selected_)]]">
+        <button class="paper-item" data-value$="[[notFoundValue_]]"
+            role="option" hidden$="[[!isSelectedNotFound_(selected_)]]">
           $i18n{custom}
-        </paper-item>
+        </button>
       </paper-listbox>
     </paper-dropdown-menu>
   </template>
