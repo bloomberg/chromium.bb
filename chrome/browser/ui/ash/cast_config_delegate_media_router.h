@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_UI_ASH_CAST_CONFIG_DELEGATE_MEDIA_ROUTER_H_
 #define CHROME_BROWSER_UI_ASH_CAST_CONFIG_DELEGATE_MEDIA_ROUTER_H_
 
-#include "ash/cast_config_delegate.h"
+#include "ash/common/cast_config_delegate.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
 

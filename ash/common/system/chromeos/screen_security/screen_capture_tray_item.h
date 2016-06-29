@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_SYSTEM_CHROMEOS_SCREEN_CAPTURE_SCREEN_CAPTURE_TRAY_ITEM_H_
-#define ASH_SYSTEM_CHROMEOS_SCREEN_CAPTURE_SCREEN_CAPTURE_TRAY_ITEM_H_
+#ifndef ASH_COMMON_SYSTEM_CHROMEOS_SCREEN_SECURITY_SCREEN_CAPTURE_TRAY_ITEM_H_
+#define ASH_COMMON_SYSTEM_CHROMEOS_SCREEN_SECURITY_SCREEN_CAPTURE_TRAY_ITEM_H_
 
 #include "ash/common/shell_observer.h"
 #include "ash/common/system/chromeos/screen_security/screen_capture_observer.h"
-#include "ash/system/chromeos/screen_security/screen_tray_item.h"
+#include "ash/common/system/chromeos/screen_security/screen_tray_item.h"
 #include "base/macros.h"
 
 namespace views {
@@ -49,4 +49,4 @@ class ASH_EXPORT ScreenCaptureTrayItem : public ScreenTrayItem,
 
 }  // namespace ash
 
-#endif  // ASH_SYSTEM_CHROMEOS_SCREEN_CAPTURE_SCREEN_CAPTURE_TRAY_ITEM_H_
+#endif  // ASH_COMMON_SYSTEM_CHROMEOS_SCREEN_SECURITY_SCREEN_CAPTURE_TRAY_ITEM_H_

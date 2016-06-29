@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "ash/common/system/chromeos/screen_security/screen_tray_item.h"
 #include "ash/shell.h"
 #include "ash/system/chromeos/multi_user/user_switch_util.h"
-#include "ash/system/chromeos/screen_security/screen_tray_item.h"
 #include "ash/system/tray/system_tray.h"
 #include "ash/test/ash_test_base.h"
 

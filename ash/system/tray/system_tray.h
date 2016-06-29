@@ -12,7 +12,6 @@
 #include "ash/ash_export.h"
 #include "ash/common/system/tray/system_tray_bubble.h"
 #include "ash/common/system/tray/tray_background_view.h"
-#include "ash/system/cast/tray_cast.h"
 #include "base/macros.h"
 #include "base/memory/scoped_vector.h"
 #include "ui/views/bubble/tray_bubble_view.h"
@@ -26,6 +25,7 @@ class SystemBubbleWrapper;
 class SystemTrayDelegate;
 class SystemTrayItem;
 class TrayAccessibility;
+class TrayCast;
 class TrayDate;
 class TrayUpdate;
 class TrayUser;

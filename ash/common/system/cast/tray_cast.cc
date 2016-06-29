@@ -2,11 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/system/cast/tray_cast.h"
+#include "ash/common/system/cast/tray_cast.h"
 
 #include "ash/common/session/session_state_delegate.h"
 #include "ash/common/shelf/shelf_types.h"
 #include "ash/common/shelf/wm_shelf_util.h"
+#include "ash/common/system/chromeos/screen_security/screen_tray_item.h"
 #include "ash/common/system/tray/fixed_sized_image_view.h"
 #include "ash/common/system/tray/fixed_sized_scroll_view.h"
 #include "ash/common/system/tray/hover_highlight_view.h"
@@ -19,7 +20,6 @@
 #include "ash/common/system/tray/tray_popup_label_button.h"
 #include "ash/common/system/tray/view_click_listener.h"
 #include "ash/common/wm_shell.h"
-#include "ash/system/chromeos/screen_security/screen_tray_item.h"
 #include "ash/system/tray/system_tray.h"
 #include "base/bind.h"
 #include "grit/ash_resources.h"

@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/system/chromeos/screen_security/screen_tray_item.h"
+#include "ash/common/system/chromeos/screen_security/screen_tray_item.h"
 
+#include "ash/common/system/chromeos/screen_security/screen_capture_tray_item.h"
+#include "ash/common/system/chromeos/screen_security/screen_share_tray_item.h"
 #include "ash/common/system/tray/system_tray_notifier.h"
 #include "ash/common/system/tray/tray_item_view.h"
 #include "ash/common/wm_shell.h"
-#include "ash/system/chromeos/screen_security/screen_capture_tray_item.h"
-#include "ash/system/chromeos/screen_security/screen_share_tray_item.h"
 #include "ash/test/ash_test_base.h"
 #include "base/callback.h"
 #include "base/strings/utf_string_conversions.h"
@@ -79,6 +79,7 @@ class ScreenCaptureTest : public ScreenTrayItemTest {
     set_tray_item(item);
   }
 
+ private:
   DISALLOW_COPY_AND_ASSIGN(ScreenCaptureTest);
 };
 

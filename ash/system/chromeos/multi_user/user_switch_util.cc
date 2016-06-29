@@ -4,8 +4,8 @@
 
 #include "ash/system/chromeos/multi_user/user_switch_util.h"
 
+#include "ash/common/system/chromeos/screen_security/screen_tray_item.h"
 #include "ash/shell.h"
-#include "ash/system/chromeos/screen_security/screen_tray_item.h"
 #include "ash/system/tray/system_tray.h"
 #include "grit/ash_strings.h"
 #include "ui/base/l10n/l10n_util.h"

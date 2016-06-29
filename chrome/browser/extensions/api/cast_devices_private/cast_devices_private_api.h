@@ -7,7 +7,7 @@
 
 #include <vector>
 
-#include "ash/cast_config_delegate.h"
+#include "ash/common/cast_config_delegate.h"
 #include "base/callback_list.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
