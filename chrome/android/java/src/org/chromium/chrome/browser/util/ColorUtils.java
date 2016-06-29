@@ -64,7 +64,7 @@ public class ColorUtils {
 
             return Color.WHITE;
         }
-        return getColorWithOverlay(Color.WHITE, color, LOCATION_BAR_TRANSPARENT_BACKGROUND_ALPHA);
+        return getColorWithOverlay(color, Color.WHITE, LOCATION_BAR_TRANSPARENT_BACKGROUND_ALPHA);
     }
 
     /**
@@ -87,12 +87,12 @@ public class ColorUtils {
      */
     public static int getColorWithOverlay(int baseColor, int overlayColor, float overlayAlpha) {
         return Color.rgb(
-            (int) (overlayAlpha * Color.red(baseColor)
-                    + (1f - overlayAlpha) * Color.red(overlayColor)),
-            (int) (overlayAlpha * Color.green(baseColor)
-                    + (1f - overlayAlpha) * Color.green(overlayColor)),
-            (int) (overlayAlpha * Color.blue(baseColor)
-                    + (1f - overlayAlpha) * Color.blue(overlayColor)));
+                (int) MathUtils.interpolate(Color.red(baseColor), Color.red(overlayColor),
+                        overlayAlpha),
+                (int) MathUtils.interpolate(Color.green(baseColor), Color.green(overlayColor),
+                        overlayAlpha),
+                (int) MathUtils.interpolate(Color.blue(baseColor), Color.blue(overlayColor),
+                        overlayAlpha));
     }
 
     /**

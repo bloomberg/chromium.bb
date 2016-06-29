@@ -376,7 +376,7 @@ public class ToolbarProgressBar extends ClipDrawableProgressBar {
         // All other theme colors are computed.
         if (!ColorUtils.shouldUseLightForegroundOnBackground(color) && !isIncognito) {
             // Light theme.
-            setForegroundColor(ColorUtils.getColorWithOverlay(Color.BLACK, color,
+            setForegroundColor(ColorUtils.getColorWithOverlay(color, Color.BLACK,
                     THEMED_FOREGROUND_BLACK_FRACTION));
         } else {
             // Dark theme.
@@ -387,7 +387,7 @@ public class ToolbarProgressBar extends ClipDrawableProgressBar {
             }
         }
 
-        setBackgroundColor(ColorUtils.getColorWithOverlay(Color.WHITE, color,
+        setBackgroundColor(ColorUtils.getColorWithOverlay(color, Color.WHITE,
                 THEMED_BACKGROUND_WHITE_FRACTION));
     }
 
@@ -395,7 +395,7 @@ public class ToolbarProgressBar extends ClipDrawableProgressBar {
     public void setForegroundColor(int color) {
         super.setForegroundColor(color);
         if (mAnimatingView != null) {
-            mAnimatingView.setColor(ColorUtils.getColorWithOverlay(Color.WHITE, color,
+            mAnimatingView.setColor(ColorUtils.getColorWithOverlay(color, Color.WHITE,
                     ANIMATION_WHITE_FRACTION));
         }
     }
