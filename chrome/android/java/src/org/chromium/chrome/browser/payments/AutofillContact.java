@@ -72,7 +72,6 @@ public class AutofillContact extends PaymentOption {
     private void setPhoneEmail(@Nullable String phone, @Nullable String email) {
         mPayerPhone = TextUtils.isEmpty(phone) ? null : phone;
         mPayerEmail = TextUtils.isEmpty(email) ? null : email;
-        assert mPayerPhone != null || mPayerEmail != null;
         updateLabels(mPayerPhone == null ? mPayerEmail : mPayerPhone,
                 mPayerPhone == null ? null : mPayerEmail);
     }

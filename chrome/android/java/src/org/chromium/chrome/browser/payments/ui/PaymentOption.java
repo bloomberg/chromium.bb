@@ -64,7 +64,6 @@ public class PaymentOption {
      * @param sublabel The new sublabel to use. Can be null.
      */
     protected void updateLabels(String label, @Nullable String sublabel) {
-        assert label != null;
         mLabel = label;
         mSublabel = sublabel;
     }
