@@ -286,8 +286,6 @@ crbug.com/543110 [ Mac ] fast/text/international/text-shaping-arabic.html [ Fail
 crbug.com/548904 [ Linux Win ] fast/writing-mode/Kusa-Makura-background-canvas.html [ Failure Pass ]
 
 crbug.com/552433 [ Win7 Debug ] svg/W3C-SVG-1.1/coords-units-02-b.svg [ Failure ]
-# TODO(wangxianzhu): Examine this after rebaseline.
-# crbug.com/605024 [ Mac ] svg/transforms/animated-path-inside-transformed-html.xhtml [ Failure ]
 
 # This directly has manual tests that don't have to run with run-webkit-tests
 crbug.com/359838 http/tests/ManualTests/ [ Skip ]
@@ -792,8 +790,6 @@ crbug.com/400841 media/video-canvas-draw.html [ Failure ]
 crbug.com/400829 media/video-object-fit.html [ Failure ]
 crbug.com/400829 virtual/stable/media/stable/video-object-fit-stable.html [ Failure ]
 
-crbug.com/619630 svg/text/text-viewbox-rescale.html [ NeedsManualRebaseline ]
-
 # We only want to run one of the web-animations-api tests in stable mode.
 crbug.com/441553 virtual/stable/web-animations-api [ Skip ]
 crbug.com/368946 virtual/stable/web-animations-api/eased-keyframes.html [ Pass ]
@@ -1116,8 +1112,7 @@ crbug.com/619103 paint/invalidation/invalidate-after-composited-scroll-of-window
 crbug.com/619103 paint/invalidation/animated-gif.html [ Pass Failure ]
 crbug.com/619103 paint/invalidation/animated-gif-background.html [ Pass Failure ]
 crbug.com/619103 paint/invalidation/animated-gif-background-offscreen.html [ Pass Failure ]
-# TODO(wangxianzhu): Restore this after rebaseline
-# crbug.com/619103 [ Win ] svg/text/text-viewbox-rescale.html [ Pass Failure ]
+crbug.com/619103 [ Win ] svg/text/text-viewbox-rescale.html [ Pass Failure ]
 
 crbug.com/443596 media/sources-fallback-codecs.html [ Pass Failure ]
 
