@@ -31,7 +31,11 @@
 
       #icon {
         --paper-icon-button-ink-color: white;
-        transition: opacity 150ms;
+      }
+
+      #icon,
+      paper-spinner-lite {
+        transition: opacity 200ms;
       }
 
       #prompt {
@@ -42,9 +46,14 @@
         --paper-spinner-color: white;
         height: 20px;
         margin: 0 6px;
+        opacity: 0;
         padding: 6px;
         position: absolute;
         width: 20px;
+      }
+
+      paper-spinner-lite[active] {
+        opacity: 1;
       }
 
       paper-input-container {
