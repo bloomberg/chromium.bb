@@ -63,3 +63,9 @@ document.timeline = {};
  * @return {!Animation}
  */
 document.timeline.play = function(effect) {};
+
+/**
+ * @param {!number} index
+ * @return {undefined}
+ */
+Element.prototype.selectIndex = function(index) {};

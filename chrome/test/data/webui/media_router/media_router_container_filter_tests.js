@@ -191,27 +191,41 @@ cr.define('media_router_container_filter', function() {
 
       // Tests that pressing the Escape key in the FILTER view when a sink has
       // keyboard focus returns |container| to the SINK_LIST view and focuses
-      // the correct sink in the list.
+      // the correct sink in the list. We need to check that the same sink
+      // remains both focused and selected, where focused refers to the
+      // "focused" HTML attribute, and selected refers to the Polymer "selected"
+      // attribute of the paper-menu for the sink list.
       test('filter view escape key on menu item', function(done) {
+        var focusIndex = 2;
         container.allSinks = fakeSinkList;
         MockInteractions.tap(container.$$('#sink-search-icon'));
         setTimeout(function() {
-          var item = container.$$('#search-results')
-                         .querySelectorAll('paper-item')[1];
-          item.focus();
-          var focusedSuccess = item.focused;
-          pressEscapeOnElement(item);
-          checkCurrentView(media_router.MediaRouterView.SINK_LIST);
-          setTimeout(function() {
-            item = container.$$('#sink-list-view')
-                       .querySelectorAll('paper-item')[1];
-            // TODO(crbug.com/608551): This condition handles flakiness around
-            // the search item getting focus earlier. If it doesn't get focus,
-            // the logic that changes focus from a search item to a sink list
-            // item obviously won't do anything.
-            assertEquals(focusedSuccess, item.focused);
+          var searchResults = container.$$('#search-results');
+          // Use the Polymer method for selecting (and focusing on) a sink
+          searchResults.selectIndex(focusIndex);
+          var itemInSearch =
+              searchResults.querySelectorAll('paper-item')[focusIndex];
+          // TODO(crbug.com/608551): This condition handles flakiness around
+          // the search item getting focus earlier. If it doesn't get focus,
+          // the logic that changes focus from a search item to a sink list
+          // item obviously won't do anything.
+          if (itemInSearch.focused) {
+            var selectedIndexInSearch = searchResults.selected;
+            pressEscapeOnElement(itemInSearch);
+            checkCurrentView(media_router.MediaRouterView.SINK_LIST);
+            chainOnAnimationPromise(function() {
+              var sinkList = container.$$('#sink-list');
+              var item = sinkList.querySelectorAll('paper-item')[focusIndex];
+
+              // Check that the "focused" HTML attribute persists.
+              assertTrue(item.focused);
+              // Check that the "selected" Polymer attribute persists.
+              assertEquals(sinkList.selected, selectedIndexInSearch);
+              done();
+            });
+          } else {
             done();
-          });
+          }
         });
       });
 

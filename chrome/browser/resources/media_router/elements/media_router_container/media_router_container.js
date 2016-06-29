@@ -1293,14 +1293,15 @@ Polymer({
     var focusedSink =
         this.$$('#searchResults').itemForElement(focusedElem).sinkItem;
     setTimeout(function() {
+      var sinkListPaperMenu = this.$$('#sink-list');
+      var sinks = sinkListPaperMenu.children;
       var sinkList = this.$$('#sinkList');
-      var sinks = this.$['sink-list-view'].querySelectorAll('paper-item');
-      Array.prototype.some.call(sinks, function(sink) {
-        if (sinkList.itemForElement(sink).id == focusedSink.id) {
-          sink.focus();
-          return true;
+      for (var i = 0; i < sinks.length; i++) {
+        if (sinkList.itemForElement(sinks[i]).id == focusedSink.id) {
+          sinkListPaperMenu.selectIndex(i);
+          break;
         }
-      });
+      }
     }.bind(this));
   },
 
