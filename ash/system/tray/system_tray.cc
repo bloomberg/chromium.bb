@@ -23,7 +23,6 @@
 #include "ash/common/wm_root_window_controller.h"
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
-#include "ash/shell.h"
 #include "ash/system/cast/tray_cast.h"
 #include "ash/system/user/tray_user.h"
 #include "base/logging.h"
@@ -100,9 +99,7 @@ class SystemBubbleWrapper {
 
     // If ChromeVox is enabled, focus the default item if no item is focused and
     // there isn't a delayed close.
-    if (Shell::GetInstance()
-            ->accessibility_delegate()
-            ->IsSpokenFeedbackEnabled() &&
+    if (WmShell::Get()->GetAccessibilityDelegate()->IsSpokenFeedbackEnabled() &&
         !is_persistent) {
       bubble_->FocusDefaultIfNeeded();
     }
@@ -461,11 +458,8 @@ void SystemTray::ShowItems(const std::vector<SystemTrayItem*>& items,
   if (system_bubble_.get() && creation_type == BUBBLE_USE_EXISTING) {
     system_bubble_->bubble()->UpdateView(items, bubble_type);
     // If ChromeVox is enabled, focus the default item if no item is focused.
-    if (Shell::GetInstance()
-            ->accessibility_delegate()
-            ->IsSpokenFeedbackEnabled()) {
+    if (WmShell::Get()->GetAccessibilityDelegate()->IsSpokenFeedbackEnabled())
       system_bubble_->bubble()->FocusDefaultIfNeeded();
-    }
   } else {
     // Cleanup the existing bubble before showing a new one. Otherwise, it's
     // possible to confuse the new system bubble with the old one during

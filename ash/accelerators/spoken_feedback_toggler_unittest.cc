@@ -4,20 +4,20 @@
 
 #include "ash/accelerators/spoken_feedback_toggler.h"
 #include "ash/common/accessibility_delegate.h"
-#include "ash/shell.h"
+#include "ash/common/wm_shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/window_util.h"
 #include "ui/aura/test/test_window_delegate.h"
+#include "ui/aura/window.h"
 #include "ui/events/test/event_generator.h"
 
 namespace ash {
 
-typedef ash::test::AshTestBase SpokenFeedbackTogglerTest;
+using SpokenFeedbackTogglerTest = test::AshTestBase;
 
 TEST_F(SpokenFeedbackTogglerTest, Basic) {
   SpokenFeedbackToggler::ScopedEnablerForTest scoped;
-  Shell* shell = Shell::GetInstance();
-  AccessibilityDelegate* delegate = shell->accessibility_delegate();
+  AccessibilityDelegate* delegate = WmShell::Get()->GetAccessibilityDelegate();
   ui::test::EventGenerator& generator = GetEventGenerator();
   EXPECT_FALSE(delegate->IsSpokenFeedbackEnabled());
 

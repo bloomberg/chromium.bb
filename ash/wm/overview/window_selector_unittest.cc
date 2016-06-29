@@ -140,7 +140,7 @@ class WindowSelectorTest
     aura::Window* window = CreateWindow(bounds);
     aura::client::SetActivationDelegate(window,
                                         &non_activatable_activation_delegate_);
-    EXPECT_FALSE(ash::wm::CanActivateWindow(window));
+    EXPECT_FALSE(wm::CanActivateWindow(window));
     return window;
   }
 
@@ -290,11 +290,11 @@ class WindowSelectorTest
         .IsIdentity();
   }
 
-  views::Widget* GetCloseButton(ash::WindowSelectorItem* window) {
+  views::Widget* GetCloseButton(WindowSelectorItem* window) {
     return window->close_button_->GetWidget();
   }
 
-  views::LabelButton* GetLabelButtonView(ash::WindowSelectorItem* window) {
+  views::LabelButton* GetLabelButtonView(WindowSelectorItem* window) {
     return window->window_label_button_view_;
   }
 
@@ -391,8 +391,7 @@ TEST_P(WindowSelectorTest, OverviewScreenRotation) {
 // Tests that an a11y alert is sent on entering overview mode.
 TEST_P(WindowSelectorTest, A11yAlertOnOverviewMode) {
   gfx::Rect bounds(0, 0, 400, 400);
-  AccessibilityDelegate* delegate =
-      ash::Shell::GetInstance()->accessibility_delegate();
+  AccessibilityDelegate* delegate = WmShell::Get()->GetAccessibilityDelegate();
   std::unique_ptr<aura::Window> window1(CreateWindow(bounds));
   EXPECT_NE(delegate->GetLastAccessibilityAlert(),
             A11Y_ALERT_WINDOW_OVERVIEW_MODE_ENTERED);
@@ -930,8 +929,7 @@ TEST_P(WindowSelectorTest, OverviewUndimsShelf) {
   std::unique_ptr<aura::Window> window1(CreateWindow(bounds));
   wm::WindowState* window_state = wm::GetWindowState(window1.get());
   window_state->Maximize();
-  ash::ShelfWidget* shelf =
-      Shell::GetPrimaryRootWindowController()->shelf_widget();
+  ShelfWidget* shelf = Shell::GetPrimaryRootWindowController()->shelf_widget();
   EXPECT_TRUE(shelf->GetDimsShelf());
   ToggleOverview();
   EXPECT_FALSE(shelf->GetDimsShelf());
@@ -1275,7 +1273,7 @@ TEST_P(WindowSelectorTest, DISABLED_DragDropInProgress) {
   gfx::Rect bounds(0, 0, 400, 400);
   std::unique_ptr<aura::Window> window(CreateWindow(bounds));
   test::ShellTestApi shell_test_api(Shell::GetInstance());
-  ash::DragDropController* drag_drop_controller =
+  DragDropController* drag_drop_controller =
       shell_test_api.drag_drop_controller();
   ui::OSExchangeData data;
   base::ThreadTaskRunnerHandle::Get()->PostTask(

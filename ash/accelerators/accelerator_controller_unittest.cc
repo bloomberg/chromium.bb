@@ -837,7 +837,7 @@ TEST_F(AcceleratorControllerTest, GlobalAccelerators) {
   const ui::Accelerator volume_up(ui::VKEY_VOLUME_UP, ui::EF_NONE);
   {
     TestVolumeControlDelegate* delegate = new TestVolumeControlDelegate;
-    ash::WmShell::Get()->system_tray_delegate()->SetVolumeControlDelegate(
+    WmShell::Get()->system_tray_delegate()->SetVolumeControlDelegate(
         std::unique_ptr<VolumeControlDelegate>(delegate));
     EXPECT_EQ(0, delegate->handle_volume_mute_count());
     EXPECT_TRUE(ProcessInController(volume_mute));
@@ -946,20 +946,19 @@ TEST_F(AcceleratorControllerTest, GlobalAccelerators) {
 }
 
 TEST_F(AcceleratorControllerTest, GlobalAcceleratorsToggleAppList) {
-  AccessibilityDelegate* delegate =
-      ash::Shell::GetInstance()->accessibility_delegate();
-  EXPECT_FALSE(ash::Shell::GetInstance()->GetAppListTargetVisibility());
+  AccessibilityDelegate* delegate = WmShell::Get()->GetAccessibilityDelegate();
+  EXPECT_FALSE(Shell::GetInstance()->GetAppListTargetVisibility());
 
   // The press event should not open the AppList, the release should instead.
   EXPECT_FALSE(
       ProcessInController(ui::Accelerator(ui::VKEY_LWIN, ui::EF_NONE)));
   EXPECT_EQ(ui::VKEY_LWIN, GetCurrentAccelerator().key_code());
 
-  EXPECT_FALSE(ash::Shell::GetInstance()->GetAppListTargetVisibility());
+  EXPECT_FALSE(Shell::GetInstance()->GetAppListTargetVisibility());
 
   EXPECT_TRUE(
       ProcessInController(ReleaseAccelerator(ui::VKEY_LWIN, ui::EF_NONE)));
-  EXPECT_TRUE(ash::Shell::GetInstance()->GetAppListTargetVisibility());
+  EXPECT_TRUE(Shell::GetInstance()->GetAppListTargetVisibility());
 
   EXPECT_EQ(ui::VKEY_LWIN, GetPreviousAccelerator().key_code());
 
@@ -970,13 +969,13 @@ TEST_F(AcceleratorControllerTest, GlobalAcceleratorsToggleAppList) {
   EXPECT_FALSE(
       ProcessInController(ReleaseAccelerator(ui::VKEY_LWIN, ui::EF_NONE)));
   delegate->ToggleSpokenFeedback(A11Y_NOTIFICATION_NONE);
-  EXPECT_TRUE(ash::Shell::GetInstance()->GetAppListTargetVisibility());
+  EXPECT_TRUE(Shell::GetInstance()->GetAppListTargetVisibility());
 
   EXPECT_FALSE(
       ProcessInController(ui::Accelerator(ui::VKEY_LWIN, ui::EF_NONE)));
   EXPECT_TRUE(
       ProcessInController(ReleaseAccelerator(ui::VKEY_LWIN, ui::EF_NONE)));
-  EXPECT_FALSE(ash::Shell::GetInstance()->GetAppListTargetVisibility());
+  EXPECT_FALSE(Shell::GetInstance()->GetAppListTargetVisibility());
 
   // When spoken feedback is on, the AppList should not toggle.
   delegate->ToggleSpokenFeedback(A11Y_NOTIFICATION_NONE);
@@ -985,16 +984,16 @@ TEST_F(AcceleratorControllerTest, GlobalAcceleratorsToggleAppList) {
   EXPECT_FALSE(
       ProcessInController(ReleaseAccelerator(ui::VKEY_LWIN, ui::EF_NONE)));
   delegate->ToggleSpokenFeedback(A11Y_NOTIFICATION_NONE);
-  EXPECT_FALSE(ash::Shell::GetInstance()->GetAppListTargetVisibility());
+  EXPECT_FALSE(Shell::GetInstance()->GetAppListTargetVisibility());
 
 #if defined(OS_CHROMEOS)
   // The press of VKEY_BROWSER_SEARCH should toggle the AppList
   EXPECT_TRUE(ProcessInController(
       ui::Accelerator(ui::VKEY_BROWSER_SEARCH, ui::EF_NONE)));
-  EXPECT_TRUE(ash::Shell::GetInstance()->GetAppListTargetVisibility());
+  EXPECT_TRUE(Shell::GetInstance()->GetAppListTargetVisibility());
   EXPECT_FALSE(ProcessInController(
       ReleaseAccelerator(ui::VKEY_BROWSER_SEARCH, ui::EF_NONE)));
-  EXPECT_TRUE(ash::Shell::GetInstance()->GetAppListTargetVisibility());
+  EXPECT_TRUE(Shell::GetInstance()->GetAppListTargetVisibility());
 #endif
 }
 
@@ -1258,7 +1257,7 @@ TEST_F(AcceleratorControllerTest, DisallowedAtModalWindow) {
     EXPECT_TRUE(ProcessInController(volume_down));
     EXPECT_TRUE(ProcessInController(volume_up));
     TestVolumeControlDelegate* delegate = new TestVolumeControlDelegate;
-    ash::WmShell::Get()->system_tray_delegate()->SetVolumeControlDelegate(
+    WmShell::Get()->system_tray_delegate()->SetVolumeControlDelegate(
         std::unique_ptr<VolumeControlDelegate>(delegate));
     EXPECT_EQ(0, delegate->handle_volume_mute_count());
     EXPECT_TRUE(ProcessInController(volume_mute));
@@ -1277,8 +1276,7 @@ TEST_F(AcceleratorControllerTest, DisallowedAtModalWindow) {
 #endif
 
 TEST_F(AcceleratorControllerTest, DisallowedWithNoWindow) {
-  AccessibilityDelegate* delegate =
-      ash::Shell::GetInstance()->accessibility_delegate();
+  AccessibilityDelegate* delegate = WmShell::Get()->GetAccessibilityDelegate();
 
   for (size_t i = 0; i < kActionsNeedingWindowLength; ++i) {
     delegate->TriggerAccessibilityAlert(A11Y_ALERT_NONE);

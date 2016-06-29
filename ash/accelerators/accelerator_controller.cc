@@ -105,7 +105,7 @@ class DeprecatedAcceleratorNotificationDelegate
   bool HasClickedListener() override { return true; }
 
   void Click() override {
-    if (!Shell::GetInstance()->session_state_delegate()->IsUserSessionBlocked())
+    if (!WmShell::Get()->GetSessionStateDelegate()->IsUserSessionBlocked())
       Shell::GetInstance()->delegate()->OpenKeyboardShortcutHelpPage();
   }
 
@@ -245,24 +245,22 @@ bool CanHandleMagnifyScreen() {
 
 // Magnify the screen
 void HandleMagnifyScreen(int delta_index) {
-  if (ash::Shell::GetInstance()->magnification_controller()->IsEnabled()) {
+  if (Shell::GetInstance()->magnification_controller()->IsEnabled()) {
     // TODO(yoshiki): Move the following logic to MagnificationController.
-    float scale =
-        ash::Shell::GetInstance()->magnification_controller()->GetScale();
+    float scale = Shell::GetInstance()->magnification_controller()->GetScale();
     // Calculate rounded logarithm (base kMagnificationScaleFactor) of scale.
     int scale_index =
         std::floor(std::log(scale) / std::log(kMagnificationScaleFactor) + 0.5);
 
     int new_scale_index = std::max(0, std::min(8, scale_index + delta_index));
 
-    ash::Shell::GetInstance()->magnification_controller()->SetScale(
+    Shell::GetInstance()->magnification_controller()->SetScale(
         std::pow(kMagnificationScaleFactor, new_scale_index), true);
-  } else if (ash::Shell::GetInstance()
+  } else if (Shell::GetInstance()
                  ->partial_magnification_controller()
                  ->is_enabled()) {
     float scale = delta_index > 0 ? kDefaultPartialMagnifiedScale : 1;
-    ash::Shell::GetInstance()->partial_magnification_controller()->SetScale(
-        scale);
+    Shell::GetInstance()->partial_magnification_controller()->SetScale(scale);
   }
 }
 
@@ -331,7 +329,7 @@ void HandleNextIme(ImeControlDelegate* ime_control_delegate) {
 
 void HandleOpenFeedbackPage() {
   base::RecordAction(UserMetricsAction("Accel_Open_Feedback_Page"));
-  ash::Shell::GetInstance()->new_window_delegate()->OpenFeedbackPage();
+  Shell::GetInstance()->new_window_delegate()->OpenFeedbackPage();
 }
 
 bool CanHandlePreviousIme(ImeControlDelegate* ime_control_delegate) {
@@ -377,7 +375,7 @@ void HandleRotateScreen() {
       display::Screen::GetScreen()->GetDisplayNearestPoint(point);
   const DisplayInfo& display_info =
       Shell::GetInstance()->display_manager()->GetDisplayInfo(display.id());
-  ash::ScreenRotationAnimator(display.id())
+  ScreenRotationAnimator(display.id())
       .Rotate(GetNextRotation(display_info.GetActiveRotation()),
               display::Display::ROTATION_SOURCE_USER);
 }
@@ -395,13 +393,13 @@ void HandleRotateActiveWindow() {
         ui::LayerAnimator::REPLACE_QUEUED_ANIMATIONS);
     active_window->layer()->GetAnimator()->StartAnimation(
         new ui::LayerAnimationSequence(
-            new ash::WindowRotation(360, active_window->layer())));
+            new WindowRotation(360, active_window->layer())));
   }
 }
 
 void HandleShowKeyboardOverlay() {
   base::RecordAction(UserMetricsAction("Accel_Show_Keyboard_Overlay"));
-  ash::Shell::GetInstance()->new_window_delegate()->ShowKeyboardOverlay();
+  Shell::GetInstance()->new_window_delegate()->ShowKeyboardOverlay();
 }
 
 bool CanHandleShowMessageCenterBubble() {
@@ -487,11 +485,8 @@ bool CanHandleToggleAppList(const ui::Accelerator& accelerator,
     // When spoken feedback is enabled, we should neither toggle the list nor
     // consume the key since Search+Shift is one of the shortcuts the a11y
     // feature uses. crbug.com/132296
-    if (Shell::GetInstance()
-            ->accessibility_delegate()
-            ->IsSpokenFeedbackEnabled()) {
+    if (WmShell::Get()->GetAccessibilityDelegate()->IsSpokenFeedbackEnabled())
       return false;
-    }
   }
   return true;
 }
@@ -499,7 +494,7 @@ bool CanHandleToggleAppList(const ui::Accelerator& accelerator,
 void HandleToggleAppList(const ui::Accelerator& accelerator) {
   if (accelerator.key_code() == ui::VKEY_LWIN)
     base::RecordAction(base::UserMetricsAction("Accel_Search_LWin"));
-  ash::Shell::GetInstance()->ToggleAppList(NULL);
+  Shell::GetInstance()->ToggleAppList(NULL);
 }
 
 void HandleToggleFullscreen(const ui::Accelerator& accelerator) {
@@ -608,12 +603,12 @@ void HandleKeyboardBrightnessUp(KeyboardBrightnessControlDelegate* delegate,
 }
 
 bool CanHandleLock() {
-  return Shell::GetInstance()->session_state_delegate()->CanLockScreen();
+  return WmShell::Get()->GetSessionStateDelegate()->CanLockScreen();
 }
 
 void HandleLock() {
   base::RecordAction(UserMetricsAction("Accel_LockScreen_L"));
-  Shell::GetInstance()->session_state_delegate()->LockScreen();
+  WmShell::Get()->GetSessionStateDelegate()->LockScreen();
 }
 
 void HandleSuspend() {
@@ -646,7 +641,7 @@ void HandleSwapPrimaryDisplay() {
 bool CanHandleCycleUser() {
   Shell* shell = Shell::GetInstance();
   return shell->delegate()->IsMultiProfilesEnabled() &&
-         shell->session_state_delegate()->NumberOfLoggedInUsers() > 1;
+         WmShell::Get()->GetSessionStateDelegate()->NumberOfLoggedInUsers() > 1;
 }
 
 void HandleCycleUser(SessionStateDelegate::CycleUser cycle_user) {
@@ -660,7 +655,7 @@ void HandleCycleUser(SessionStateDelegate::CycleUser cycle_user) {
       base::RecordAction(UserMetricsAction("Accel_Switch_To_Previous_User"));
       break;
   }
-  Shell::GetInstance()->session_state_delegate()->CycleActiveUser(cycle_user);
+  WmShell::Get()->GetSessionStateDelegate()->CycleActiveUser(cycle_user);
 }
 
 bool CanHandleToggleCapsLock(const ui::Accelerator& accelerator,
@@ -697,7 +692,7 @@ void HandleToggleMirrorMode() {
 void HandleToggleSpokenFeedback() {
   base::RecordAction(UserMetricsAction("Accel_Toggle_Spoken_Feedback"));
 
-  Shell::GetInstance()->accessibility_delegate()->ToggleSpokenFeedback(
+  WmShell::Get()->GetAccessibilityDelegate()->ToggleSpokenFeedback(
       A11Y_NOTIFICATION_SHOW);
 }
 
@@ -1409,13 +1404,14 @@ AcceleratorController::GetAcceleratorProcessingRestriction(int action) {
           actions_allowed_in_pinned_mode_.end()) {
     return RESTRICTION_PREVENT_PROCESSING_AND_PROPAGATION;
   }
-  ash::Shell* shell = ash::Shell::GetInstance();
-  if (!shell->session_state_delegate()->IsActiveUserSessionStarted() &&
+  Shell* shell = Shell::GetInstance();
+  WmShell* wm_shell = WmShell::Get();
+  if (!wm_shell->GetSessionStateDelegate()->IsActiveUserSessionStarted() &&
       actions_allowed_at_login_screen_.find(action) ==
           actions_allowed_at_login_screen_.end()) {
     return RESTRICTION_PREVENT_PROCESSING;
   }
-  if (shell->session_state_delegate()->IsScreenLocked() &&
+  if (wm_shell->GetSessionStateDelegate()->IsScreenLocked() &&
       actions_allowed_at_lock_screen_.find(action) ==
           actions_allowed_at_lock_screen_.end()) {
     return RESTRICTION_PREVENT_PROCESSING;
@@ -1436,7 +1432,7 @@ AcceleratorController::GetAcceleratorProcessingRestriction(int action) {
   }
   if (shell->mru_window_tracker()->BuildMruWindowList().empty() &&
       actions_needing_window_.find(action) != actions_needing_window_.end()) {
-    Shell::GetInstance()->accessibility_delegate()->TriggerAccessibilityAlert(
+    wm_shell->GetAccessibilityDelegate()->TriggerAccessibilityAlert(
         A11Y_ALERT_WINDOW_NEEDED);
     return RESTRICTION_PREVENT_PROCESSING_AND_PROPAGATION;
   }

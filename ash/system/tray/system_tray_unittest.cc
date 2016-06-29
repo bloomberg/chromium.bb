@@ -13,6 +13,7 @@
 #include "ash/common/system/tray/tray_constants.h"
 #include "ash/common/system/tray/tray_popup_item_container.h"
 #include "ash/common/system/web_notification/web_notification_tray.h"
+#include "ash/common/wm_shell.h"
 #include "ash/shell.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/test/ash_test_base.h"
@@ -427,10 +428,8 @@ TEST_F(SystemTrayTest, PersistentBubble) {
 #define MAYBE_WithSystemModal DISABLED_WithSystemModal
 #endif
 TEST_F(SystemTrayTest, MAYBE_WithSystemModal) {
-  // Check if the accessibility item is created even with system modal
-  // dialog.
-  Shell::GetInstance()->accessibility_delegate()->SetVirtualKeyboardEnabled(
-      true);
+  // Check if the accessibility item is created even with system modal dialog.
+  WmShell::Get()->GetAccessibilityDelegate()->SetVirtualKeyboardEnabled(true);
   views::Widget* widget = views::Widget::CreateWindowWithContextAndBounds(
       new ModalWidgetDelegate(), Shell::GetPrimaryRootWindow(),
       gfx::Rect(0, 0, 100, 100));

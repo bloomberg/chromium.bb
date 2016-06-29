@@ -6,7 +6,7 @@
 
 #include "ash/common/accessibility_delegate.h"
 #include "ash/common/ash_switches.h"
-#include "ash/shell.h"
+#include "ash/common/wm_shell.h"
 #include "base/command_line.h"
 
 using media::SoundsManager;
@@ -28,8 +28,7 @@ bool PlaySystemSoundIfSpokenFeedback(SoundsManager::SoundKey key) {
   if (cl->HasSwitch(switches::kAshEnableSystemSounds))
     return SoundsManager::Get()->Play(key);
 
-  Shell* shell = Shell::GetInstance();
-  if (!shell->accessibility_delegate()->IsSpokenFeedbackEnabled())
+  if (!WmShell::Get()->GetAccessibilityDelegate()->IsSpokenFeedbackEnabled())
     return false;
 
   return SoundsManager::Get()->Play(key);
