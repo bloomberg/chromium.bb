@@ -67,7 +67,7 @@ void MusDemo::Initialize(shell::Connector* connector,
                          const shell::Identity& identity,
                          uint32_t id) {
   connector_ = connector;
-  mus::GpuService::GetInstance()->Initialize(connector_);
+  mus::GpuService::Initialize(connector_);
   window_tree_client_ = new mus::WindowTreeClient(this, this, nullptr);
   window_tree_client_->ConnectAsWindowManager(connector);
 }
