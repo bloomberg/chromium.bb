@@ -5,6 +5,7 @@
 #include "base/memory/ptr_util.h"
 #include "chrome/browser/safe_browsing/permission_reporter.h"
 #include "chrome/common/safe_browsing/permission_report.pb.h"
+#include "components/variations/active_field_trials.h"
 #include "content/public/browser/permission_type.h"
 #include "net/url_request/report_sender.h"
 
@@ -103,8 +104,25 @@ bool PermissionReporter::BuildReport(const GURL& origin,
   report.set_origin(origin.spec());
   report.set_permission(PermissionTypeForReport(permission));
   report.set_action(PermissionActionForReport(action));
-  // TODO(stefanocs): Collect field trials and platform type from global
-  // variables to the permission report.
+
+  // Collect platform data.
+#if defined(OS_ANDROID)
+  report.set_platform_type(PermissionReport::ANDROID_PLATFORM);
+#elif defined(OS_MACOSX) || defined(OS_WIN) || defined(OS_CHROMEOS) || \
+    defined(OS_LINUX)
+  report.set_platform_type(PermissionReport::DESKTOP_PLATFORM);
+#else
+#error Unsupported platform.
+#endif
+
+  // Collect field trial data.
+  std::vector<variations::ActiveGroupId> active_group_ids;
+  variations::GetFieldTrialActiveGroupIds(&active_group_ids);
+  for (auto active_group_id : active_group_ids) {
+    PermissionReport::FieldTrial* field_trial = report.add_field_trials();
+    field_trial->set_name_id(active_group_id.name);
+    field_trial->set_group_id(active_group_id.group);
+  }
   return report.SerializeToString(output);
 }
 
