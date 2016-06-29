@@ -42,6 +42,7 @@
 #include "base/logging.h"
 #include "base/memory/free_deleter.h"
 #include "base/stl_util.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
 #include "media/audio/alsa/alsa_util.h"
 #include "media/audio/alsa/alsa_wrapper.h"
@@ -156,7 +157,7 @@ AlsaPcmOutputStream::AlsaPcmOutputStream(const std::string& device_name,
       stop_stream_(false),
       wrapper_(wrapper),
       manager_(manager),
-      message_loop_(base::MessageLoop::current()),
+      task_runner_(base::ThreadTaskRunnerHandle::Get()),
       playback_handle_(NULL),
       frames_per_packet_(packet_size_ / bytes_per_frame_),
       state_(kCreated),
@@ -188,7 +189,7 @@ AlsaPcmOutputStream::~AlsaPcmOutputStream() {
 }
 
 bool AlsaPcmOutputStream::Open() {
-  DCHECK(IsOnAudioThread());
+  DCHECK(CalledOnValidThread());
 
   if (state() == kInError)
     return false;
@@ -246,7 +247,7 @@ bool AlsaPcmOutputStream::Open() {
 }
 
 void AlsaPcmOutputStream::Close() {
-  DCHECK(IsOnAudioThread());
+  DCHECK(CalledOnValidThread());
 
   if (state() != kIsClosed)
     TransitionTo(kIsClosed);
@@ -274,7 +275,7 @@ void AlsaPcmOutputStream::Close() {
 }
 
 void AlsaPcmOutputStream::Start(AudioSourceCallback* callback) {
-  DCHECK(IsOnAudioThread());
+  DCHECK(CalledOnValidThread());
 
   CHECK(callback);
 
@@ -323,7 +324,7 @@ void AlsaPcmOutputStream::Start(AudioSourceCallback* callback) {
 }
 
 void AlsaPcmOutputStream::Stop() {
-  DCHECK(IsOnAudioThread());
+  DCHECK(CalledOnValidThread());
 
   // Reset the callback, so that it is not called anymore.
   set_source_callback(NULL);
@@ -333,19 +334,19 @@ void AlsaPcmOutputStream::Stop() {
 }
 
 void AlsaPcmOutputStream::SetVolume(double volume) {
-  DCHECK(IsOnAudioThread());
+  DCHECK(CalledOnValidThread());
 
   volume_ = static_cast<float>(volume);
 }
 
 void AlsaPcmOutputStream::GetVolume(double* volume) {
-  DCHECK(IsOnAudioThread());
+  DCHECK(CalledOnValidThread());
 
   *volume = volume_;
 }
 
 void AlsaPcmOutputStream::BufferPacket(bool* source_exhausted) {
-  DCHECK(IsOnAudioThread());
+  DCHECK(CalledOnValidThread());
 
   // If stopped, simulate a 0-length packet.
   if (stop_stream_) {
@@ -419,7 +420,7 @@ void AlsaPcmOutputStream::BufferPacket(bool* source_exhausted) {
 }
 
 void AlsaPcmOutputStream::WritePacket() {
-  DCHECK(IsOnAudioThread());
+  DCHECK(CalledOnValidThread());
 
   // If the device is in error, just eat the bytes.
   if (stop_stream_) {
@@ -478,7 +479,7 @@ void AlsaPcmOutputStream::WritePacket() {
 }
 
 void AlsaPcmOutputStream::WriteTask() {
-  DCHECK(IsOnAudioThread());
+  DCHECK(CalledOnValidThread());
 
   if (stop_stream_)
     return;
@@ -494,7 +495,7 @@ void AlsaPcmOutputStream::WriteTask() {
 }
 
 void AlsaPcmOutputStream::ScheduleNextWrite(bool source_exhausted) {
-  DCHECK(IsOnAudioThread());
+  DCHECK(CalledOnValidThread());
 
   if (stop_stream_ || state() != kIsPlaying)
     return;
@@ -527,8 +528,9 @@ void AlsaPcmOutputStream::ScheduleNextWrite(bool source_exhausted) {
     next_fill_time = base::TimeDelta::FromMilliseconds(10);
   }
 
-  message_loop_->PostDelayedTask(FROM_HERE, base::Bind(
-      &AlsaPcmOutputStream::WriteTask, weak_factory_.GetWeakPtr()),
+  task_runner_->PostDelayedTask(
+      FROM_HERE,
+      base::Bind(&AlsaPcmOutputStream::WriteTask, weak_factory_.GetWeakPtr()),
       next_fill_time);
 }
 
@@ -627,7 +629,7 @@ snd_pcm_sframes_t AlsaPcmOutputStream::GetCurrentDelay() {
 }
 
 snd_pcm_sframes_t AlsaPcmOutputStream::GetAvailableFrames() {
-  DCHECK(IsOnAudioThread());
+  DCHECK(CalledOnValidThread());
 
   if (stop_stream_)
     return 0;
@@ -760,7 +762,7 @@ bool AlsaPcmOutputStream::CanTransitionTo(InternalState to) {
 
 AlsaPcmOutputStream::InternalState
 AlsaPcmOutputStream::TransitionTo(InternalState to) {
-  DCHECK(IsOnAudioThread());
+  DCHECK(CalledOnValidThread());
 
   if (!CanTransitionTo(to)) {
     NOTREACHED() << "Cannot transition from: " << state_ << " to: " << to;
@@ -773,10 +775,6 @@ AlsaPcmOutputStream::TransitionTo(InternalState to) {
 
 AlsaPcmOutputStream::InternalState AlsaPcmOutputStream::state() {
   return state_;
-}
-
-bool AlsaPcmOutputStream::IsOnAudioThread() const {
-  return message_loop_ && message_loop_ == base::MessageLoop::current();
 }
 
 int AlsaPcmOutputStream::RunDataCallback(AudioBus* audio_bus,
@@ -797,7 +795,7 @@ void AlsaPcmOutputStream::RunErrorCallback(int code) {
 // Changes the AudioSourceCallback to proxy calls to.  Pass in NULL to
 // release ownership of the currently registered callback.
 void AlsaPcmOutputStream::set_source_callback(AudioSourceCallback* callback) {
-  DCHECK(IsOnAudioThread());
+  DCHECK(CalledOnValidThread());
   source_callback_ = callback;
 }
 

@@ -5,18 +5,16 @@
 #include "media/audio/sounds/test_data.h"
 
 #include "base/logging.h"
-#include "base/message_loop/message_loop.h"
+#include "base/threading/thread_task_runner_handle.h"
 
 namespace media {
 
 TestObserver::TestObserver(const base::Closure& quit)
-    : loop_(base::MessageLoop::current()),
+    : task_runner_(base::ThreadTaskRunnerHandle::Get()),
       quit_(quit),
       num_play_requests_(0),
       num_stop_requests_(0),
-      cursor_(0) {
-  DCHECK(loop_);
-}
+      cursor_(0) {}
 
 TestObserver::~TestObserver() {
 }
@@ -28,7 +26,7 @@ void TestObserver::OnPlay() {
 void TestObserver::OnStop(size_t cursor) {
   ++num_stop_requests_;
   cursor_ = cursor;
-  loop_->PostTask(FROM_HERE, quit_);
+  task_runner_->PostTask(FROM_HERE, quit_);
 }
 
 }  // namespace media

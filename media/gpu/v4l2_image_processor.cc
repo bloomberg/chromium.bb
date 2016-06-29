@@ -15,6 +15,7 @@
 #include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/numerics/safe_conversions.h"
+#include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "media/gpu/v4l2_image_processor.h"
 
@@ -235,7 +236,7 @@ void V4L2ImageProcessor::Process(const scoped_refptr<VideoFrame>& frame,
 void V4L2ImageProcessor::ProcessTask(std::unique_ptr<JobRecord> job_record) {
   int index = job_record->output_buffer_index;
   DVLOG(3) << __func__ << ": Reusing output buffer, index=" << index;
-  DCHECK_EQ(device_thread_.message_loop(), base::MessageLoop::current());
+  DCHECK(device_thread_.task_runner()->BelongsToCurrentThread());
 
   EnqueueOutput(index);
   input_queue_.push(make_linked_ptr(job_record.release()));
@@ -264,7 +265,7 @@ void V4L2ImageProcessor::Destroy() {
 }
 
 void V4L2ImageProcessor::DestroyTask() {
-  DCHECK_EQ(device_thread_.message_loop(), base::MessageLoop::current());
+  DCHECK(device_thread_.task_runner()->BelongsToCurrentThread());
 
   // Stop streaming and the device_poll_thread_.
   StopDevicePoll();
@@ -418,7 +419,7 @@ void V4L2ImageProcessor::DestroyOutputBuffers() {
 }
 
 void V4L2ImageProcessor::DevicePollTask(bool poll_device) {
-  DCHECK_EQ(device_poll_thread_.message_loop(), base::MessageLoop::current());
+  DCHECK(device_poll_thread_.task_runner()->BelongsToCurrentThread());
 
   bool event_pending;
   if (!device_->Poll(poll_device, &event_pending)) {
@@ -434,7 +435,7 @@ void V4L2ImageProcessor::DevicePollTask(bool poll_device) {
 }
 
 void V4L2ImageProcessor::ServiceDeviceTask() {
-  DCHECK_EQ(device_thread_.message_loop(), base::MessageLoop::current());
+  DCHECK(device_thread_.task_runner()->BelongsToCurrentThread());
   // ServiceDeviceTask() should only ever be scheduled from DevicePollTask(),
   // so either:
   // * device_poll_thread_ is running normally
@@ -465,7 +466,7 @@ void V4L2ImageProcessor::ServiceDeviceTask() {
 }
 
 void V4L2ImageProcessor::EnqueueInput() {
-  DCHECK_EQ(device_thread_.message_loop(), base::MessageLoop::current());
+  DCHECK(device_thread_.task_runner()->BelongsToCurrentThread());
 
   const int old_inputs_queued = input_buffer_queued_count_;
   while (!input_queue_.empty() && !free_input_buffers_.empty()) {
@@ -487,7 +488,7 @@ void V4L2ImageProcessor::EnqueueInput() {
 }
 
 void V4L2ImageProcessor::EnqueueOutput(int index) {
-  DCHECK_EQ(device_thread_.message_loop(), base::MessageLoop::current());
+  DCHECK(device_thread_.task_runner()->BelongsToCurrentThread());
 
   const int old_outputs_queued = output_buffer_queued_count_;
   if (!EnqueueOutputRecord(index))
@@ -508,7 +509,7 @@ void V4L2ImageProcessor::EnqueueOutput(int index) {
 }
 
 void V4L2ImageProcessor::Dequeue() {
-  DCHECK_EQ(device_thread_.message_loop(), base::MessageLoop::current());
+  DCHECK(device_thread_.task_runner()->BelongsToCurrentThread());
 
   // Dequeue completed input (VIDEO_OUTPUT) buffers,
   // and recycle to the free list.
@@ -644,7 +645,7 @@ bool V4L2ImageProcessor::EnqueueOutputRecord(int index) {
 
 bool V4L2ImageProcessor::StartDevicePoll() {
   DVLOG(3) << __func__ << ": starting device poll";
-  DCHECK_EQ(device_thread_.message_loop(), base::MessageLoop::current());
+  DCHECK(device_thread_.task_runner()->BelongsToCurrentThread());
   DCHECK(!device_poll_thread_.IsRunning());
 
   // Start up the device poll thread and schedule its first DevicePollTask().
@@ -665,7 +666,7 @@ bool V4L2ImageProcessor::StartDevicePoll() {
 bool V4L2ImageProcessor::StopDevicePoll() {
   DVLOG(3) << __func__ << ": stopping device poll";
   if (device_thread_.IsRunning())
-    DCHECK_EQ(device_thread_.message_loop(), base::MessageLoop::current());
+    DCHECK(device_thread_.task_runner()->BelongsToCurrentThread());
 
   // Signal the DevicePollTask() to stop, and stop the device poll thread.
   if (!device_->SetDevicePollInterrupt())

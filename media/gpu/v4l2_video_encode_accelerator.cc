@@ -18,6 +18,7 @@
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/numerics/safe_conversions.h"
+#include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
 #include "media/base/bind_to_current_loop.h"
@@ -242,7 +243,7 @@ void V4L2VideoEncodeAccelerator::Encode(const scoped_refptr<VideoFrame>& frame,
       image_processor_input_queue_.push(record);
     }
   } else {
-    encoder_thread_.message_loop()->PostTask(
+    encoder_thread_.task_runner()->PostTask(
         FROM_HERE, base::Bind(&V4L2VideoEncodeAccelerator::EncodeTask,
                               base::Unretained(this), frame, force_keyframe));
   }
@@ -267,7 +268,7 @@ void V4L2VideoEncodeAccelerator::UseOutputBitstreamBuffer(
 
   std::unique_ptr<BitstreamBufferRef> buffer_ref(
       new BitstreamBufferRef(buffer.id(), std::move(shm)));
-  encoder_thread_.message_loop()->PostTask(
+  encoder_thread_.task_runner()->PostTask(
       FROM_HERE,
       base::Bind(&V4L2VideoEncodeAccelerator::UseOutputBitstreamBufferTask,
                  base::Unretained(this), base::Passed(&buffer_ref)));
@@ -280,7 +281,7 @@ void V4L2VideoEncodeAccelerator::RequestEncodingParametersChange(
            << ", framerate=" << framerate;
   DCHECK(child_task_runner_->BelongsToCurrentThread());
 
-  encoder_thread_.message_loop()->PostTask(
+  encoder_thread_.task_runner()->PostTask(
       FROM_HERE,
       base::Bind(
           &V4L2VideoEncodeAccelerator::RequestEncodingParametersChangeTask,
@@ -300,7 +301,7 @@ void V4L2VideoEncodeAccelerator::Destroy() {
 
   // If the encoder thread is running, destroy using posted task.
   if (encoder_thread_.IsRunning()) {
-    encoder_thread_.message_loop()->PostTask(
+    encoder_thread_.task_runner()->PostTask(
         FROM_HERE, base::Bind(&V4L2VideoEncodeAccelerator::DestroyTask,
                               base::Unretained(this)));
     // DestroyTask() will put the encoder into kError state and cause all tasks
@@ -383,7 +384,7 @@ void V4L2VideoEncodeAccelerator::FrameProcessed(bool force_keyframe,
       base::Bind(&V4L2VideoEncodeAccelerator::ReuseImageProcessorOutputBuffer,
                  weak_this_, output_buffer_index)));
 
-  encoder_thread_.message_loop()->PostTask(
+  encoder_thread_.task_runner()->PostTask(
       FROM_HERE,
       base::Bind(&V4L2VideoEncodeAccelerator::EncodeTask,
                  base::Unretained(this), output_frame, force_keyframe));
@@ -405,7 +406,7 @@ void V4L2VideoEncodeAccelerator::EncodeTask(
     const scoped_refptr<VideoFrame>& frame,
     bool force_keyframe) {
   DVLOG(3) << "EncodeTask(): force_keyframe=" << force_keyframe;
-  DCHECK_EQ(encoder_thread_.message_loop(), base::MessageLoop::current());
+  DCHECK(encoder_thread_.task_runner()->BelongsToCurrentThread());
   DCHECK_NE(encoder_state_, kUninitialized);
 
   if (encoder_state_ == kError) {
@@ -448,7 +449,7 @@ void V4L2VideoEncodeAccelerator::EncodeTask(
 void V4L2VideoEncodeAccelerator::UseOutputBitstreamBufferTask(
     std::unique_ptr<BitstreamBufferRef> buffer_ref) {
   DVLOG(3) << "UseOutputBitstreamBufferTask(): id=" << buffer_ref->id;
-  DCHECK_EQ(encoder_thread_.message_loop(), base::MessageLoop::current());
+  DCHECK(encoder_thread_.task_runner()->BelongsToCurrentThread());
 
   encoder_output_queue_.push_back(
       linked_ptr<BitstreamBufferRef>(buffer_ref.release()));
@@ -479,7 +480,7 @@ void V4L2VideoEncodeAccelerator::DestroyTask() {
 
 void V4L2VideoEncodeAccelerator::ServiceDeviceTask() {
   DVLOG(3) << "ServiceDeviceTask()";
-  DCHECK_EQ(encoder_thread_.message_loop(), base::MessageLoop::current());
+  DCHECK(encoder_thread_.task_runner()->BelongsToCurrentThread());
   DCHECK_NE(encoder_state_, kUninitialized);
   DCHECK_NE(encoder_state_, kInitialized);
 
@@ -507,7 +508,7 @@ void V4L2VideoEncodeAccelerator::ServiceDeviceTask() {
   //   already.
   DCHECK(device_poll_thread_.message_loop());
   // Queue the DevicePollTask() now.
-  device_poll_thread_.message_loop()->PostTask(
+  device_poll_thread_.task_runner()->PostTask(
       FROM_HERE, base::Bind(&V4L2VideoEncodeAccelerator::DevicePollTask,
                             base::Unretained(this), poll_device));
 
@@ -523,7 +524,7 @@ void V4L2VideoEncodeAccelerator::ServiceDeviceTask() {
 }
 
 void V4L2VideoEncodeAccelerator::Enqueue() {
-  DCHECK_EQ(encoder_thread_.message_loop(), base::MessageLoop::current());
+  DCHECK(encoder_thread_.task_runner()->BelongsToCurrentThread());
 
   DVLOG(3) << "Enqueue() "
            << "free_input_buffers: " << free_input_buffers_.size()
@@ -571,7 +572,7 @@ void V4L2VideoEncodeAccelerator::Enqueue() {
 
 void V4L2VideoEncodeAccelerator::Dequeue() {
   DVLOG(3) << "Dequeue()";
-  DCHECK_EQ(encoder_thread_.message_loop(), base::MessageLoop::current());
+  DCHECK(encoder_thread_.task_runner()->BelongsToCurrentThread());
 
   // Dequeue completed input (VIDEO_OUTPUT) buffers, and recycle to the free
   // list.
@@ -766,7 +767,7 @@ bool V4L2VideoEncodeAccelerator::EnqueueOutputRecord() {
 
 bool V4L2VideoEncodeAccelerator::StartDevicePoll() {
   DVLOG(3) << "StartDevicePoll()";
-  DCHECK_EQ(encoder_thread_.message_loop(), base::MessageLoop::current());
+  DCHECK(encoder_thread_.task_runner()->BelongsToCurrentThread());
   DCHECK(!device_poll_thread_.IsRunning());
 
   // Start up the device poll thread and schedule its first DevicePollTask().
@@ -777,7 +778,7 @@ bool V4L2VideoEncodeAccelerator::StartDevicePoll() {
   }
   // Enqueue a poll task with no devices to poll on -- it will wait only on the
   // interrupt fd.
-  device_poll_thread_.message_loop()->PostTask(
+  device_poll_thread_.task_runner()->PostTask(
       FROM_HERE, base::Bind(&V4L2VideoEncodeAccelerator::DevicePollTask,
                             base::Unretained(this), false));
 
@@ -836,7 +837,7 @@ bool V4L2VideoEncodeAccelerator::StopDevicePoll() {
 
 void V4L2VideoEncodeAccelerator::DevicePollTask(bool poll_device) {
   DVLOG(3) << "DevicePollTask()";
-  DCHECK_EQ(device_poll_thread_.message_loop(), base::MessageLoop::current());
+  DCHECK(device_poll_thread_.task_runner()->BelongsToCurrentThread());
 
   bool event_pending;
   if (!device_->Poll(poll_device, &event_pending)) {
@@ -846,7 +847,7 @@ void V4L2VideoEncodeAccelerator::DevicePollTask(bool poll_device) {
 
   // All processing should happen on ServiceDeviceTask(), since we shouldn't
   // touch encoder state from this thread.
-  encoder_thread_.message_loop()->PostTask(
+  encoder_thread_.task_runner()->PostTask(
       FROM_HERE, base::Bind(&V4L2VideoEncodeAccelerator::ServiceDeviceTask,
                             base::Unretained(this)));
 }
@@ -870,11 +871,12 @@ void V4L2VideoEncodeAccelerator::NotifyError(Error error) {
 void V4L2VideoEncodeAccelerator::SetErrorState(Error error) {
   // We can touch encoder_state_ only if this is the encoder thread or the
   // encoder thread isn't running.
-  if (encoder_thread_.message_loop() != NULL &&
-      encoder_thread_.message_loop() != base::MessageLoop::current()) {
-    encoder_thread_.message_loop()->PostTask(
-        FROM_HERE, base::Bind(&V4L2VideoEncodeAccelerator::SetErrorState,
-                              base::Unretained(this), error));
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner =
+      encoder_thread_.task_runner();
+  if (task_runner && !task_runner->BelongsToCurrentThread()) {
+    task_runner->PostTask(FROM_HERE,
+                          base::Bind(&V4L2VideoEncodeAccelerator::SetErrorState,
+                                     base::Unretained(this), error));
     return;
   }
 
@@ -891,7 +893,7 @@ void V4L2VideoEncodeAccelerator::RequestEncodingParametersChangeTask(
     uint32_t framerate) {
   DVLOG(3) << "RequestEncodingParametersChangeTask(): bitrate=" << bitrate
            << ", framerate=" << framerate;
-  DCHECK_EQ(encoder_thread_.message_loop(), base::MessageLoop::current());
+  DCHECK(encoder_thread_.task_runner()->BelongsToCurrentThread());
 
   if (bitrate < 1)
     bitrate = 1;
@@ -1146,7 +1148,7 @@ bool V4L2VideoEncodeAccelerator::CreateInputBuffers() {
   DVLOG(3) << "CreateInputBuffers()";
   // This function runs on encoder_thread_ after output buffers have been
   // provided by the client.
-  DCHECK_EQ(encoder_thread_.message_loop(), base::MessageLoop::current());
+  DCHECK(encoder_thread_.task_runner()->BelongsToCurrentThread());
   DCHECK(!input_streamon_);
 
   struct v4l2_requestbuffers reqbufs;

@@ -332,7 +332,7 @@ void FileVideoCaptureDevice::StopAndDeAllocate() {
 void FileVideoCaptureDevice::OnAllocateAndStart(
     const VideoCaptureParams& params,
     std::unique_ptr<VideoCaptureDevice::Client> client) {
-  DCHECK_EQ(capture_thread_.message_loop(), base::MessageLoop::current());
+  DCHECK(capture_thread_.task_runner()->BelongsToCurrentThread());
 
   client_ = std::move(client);
 
@@ -352,14 +352,14 @@ void FileVideoCaptureDevice::OnAllocateAndStart(
 }
 
 void FileVideoCaptureDevice::OnStopAndDeAllocate() {
-  DCHECK_EQ(capture_thread_.message_loop(), base::MessageLoop::current());
+  DCHECK(capture_thread_.task_runner()->BelongsToCurrentThread());
   file_parser_.reset();
   client_.reset();
   next_frame_time_ = base::TimeTicks();
 }
 
 void FileVideoCaptureDevice::OnCaptureTask() {
-  DCHECK_EQ(capture_thread_.message_loop(), base::MessageLoop::current());
+  DCHECK(capture_thread_.task_runner()->BelongsToCurrentThread());
   if (!client_)
     return;
 

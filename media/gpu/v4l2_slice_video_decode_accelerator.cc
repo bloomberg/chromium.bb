@@ -23,6 +23,7 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/numerics/safe_conversions.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/stringprintf.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/media_switches.h"
@@ -820,7 +821,7 @@ void V4L2SliceVideoDecodeAccelerator::DismissPictures(
 
 void V4L2SliceVideoDecodeAccelerator::DevicePollTask(bool poll_device) {
   DVLOGF(4);
-  DCHECK_EQ(device_poll_thread_.message_loop(), base::MessageLoop::current());
+  DCHECK(device_poll_thread_.task_runner()->BelongsToCurrentThread());
 
   bool event_pending;
   if (!device_->Poll(poll_device, &event_pending)) {

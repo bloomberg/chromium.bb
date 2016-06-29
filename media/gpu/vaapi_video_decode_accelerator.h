@@ -21,8 +21,9 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/linked_ptr.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "base/message_loop/message_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "base/synchronization/condition_variable.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread.h"
@@ -261,8 +262,8 @@ class MEDIA_GPU_EXPORT VaapiVideoDecodeAccelerator
   typedef base::Callback<void(VaapiPicture*)> OutputCB;
   std::queue<OutputCB> pending_output_cbs_;
 
-  // ChildThread's message loop
-  base::MessageLoop* message_loop_;
+  // ChildThread's task runner.
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
   // WeakPtr<> pointing to |this| for use in posting tasks from the decoder
   // thread back to the ChildThread.  Because the decoder thread is a member of
@@ -276,7 +277,7 @@ class MEDIA_GPU_EXPORT VaapiVideoDecodeAccelerator
   VASurface::ReleaseCB va_surface_release_cb_;
 
   // To expose client callbacks from VideoDecodeAccelerator.
-  // NOTE: all calls to these objects *MUST* be executed on message_loop_.
+  // NOTE: all calls to these objects *MUST* be executed on task_runner_.
   std::unique_ptr<base::WeakPtrFactory<Client>> client_ptr_factory_;
   base::WeakPtr<Client> client_;
 
