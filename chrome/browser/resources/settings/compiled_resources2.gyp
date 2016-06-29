@@ -21,6 +21,7 @@
         'people_page/compiled_resources2.gyp:*',
         'prefs/compiled_resources2.gyp:*',
         'printing_page/compiled_resources2.gyp:*',
+        'privacy_page/compiled_resources2.gyp:*',
         'reset_page/compiled_resources2.gyp:*',
         'settings_main/compiled_resources2.gyp:*',
         'settings_page/compiled_resources2.gyp:*',
