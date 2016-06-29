@@ -317,8 +317,10 @@ void ImageDecoder::setTargetColorProfile(const WebVector<char>& profile)
 
     // FIXME: Add optional ICCv4 support and support for multiple monitors.
     gTargetColorProfile = qcms_profile_from_memory(profile.data(), profile.size());
+    if (!gTargetColorProfile)
+        return;
 
-    if (gTargetColorProfile && qcms_profile_is_bogus(gTargetColorProfile)) {
+    if (qcms_profile_is_bogus(gTargetColorProfile)) {
         qcms_profile_release(gTargetColorProfile);
         gTargetColorProfile = nullptr;
         return;
