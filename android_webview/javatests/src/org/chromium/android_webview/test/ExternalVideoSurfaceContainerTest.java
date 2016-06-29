@@ -5,10 +5,9 @@
 package org.chromium.android_webview.test;
 
 import android.graphics.RectF;
-import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.android_webview.test.util.VideoTestUtil;
-import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.components.external_video_surface.ExternalVideoSurfaceContainer;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.test.util.CallbackHelper;
@@ -96,9 +95,12 @@ public class ExternalVideoSurfaceContainerTest extends AwTestBase {
         });
     }
 
+    /*
     @DisableHardwareAccelerationForTest
     @SmallTest
     @Feature({"AndroidWebView"})
+    */
+    @DisabledTest(message = "crbug.com/597495")
     public void testEnableVideoOverlayForEmbeddedVideo() throws Throwable {
         setUpMockExternalVideoSurfaceContainer();
 
@@ -112,9 +114,12 @@ public class ExternalVideoSurfaceContainerTest extends AwTestBase {
                                  onPositionChangedCallCount, 150.0f, 150.0f);
     }
 
+    /*
     @DisableHardwareAccelerationForTest
     @SmallTest
     @Feature({"AndroidWebView"})
+    */
+    @DisabledTest(message = "crbug.com/597495")
     public void testDisableVideoOverlayForEmbeddedVideo() throws Throwable {
         setUpMockExternalVideoSurfaceContainer();
 

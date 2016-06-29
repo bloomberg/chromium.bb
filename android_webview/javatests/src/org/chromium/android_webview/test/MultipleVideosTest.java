@@ -4,11 +4,8 @@
 
 package org.chromium.android_webview.test;
 
-import android.test.suitebuilder.annotation.MediumTest;
-
 import org.chromium.android_webview.test.util.VideoSurfaceViewUtils;
-import org.chromium.base.test.util.DisableIf;
-import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.test.util.DOMUtils;
 import org.chromium.content_public.browser.WebContents;
@@ -39,11 +36,12 @@ public class MultipleVideosTest extends AwTestBase {
         enableJavaScriptOnUiThread(mTestContainerView.getAwContents());
     }
 
+    /*
     @MediumTest
     @Feature({"AndroidWebView"})
-    @DisableIf.Build(sdk_is_greater_than = 22, message = "crbug.com/616575")
-    public void testFirstVideoPausesWhenSecondVideoStarts()
-            throws Throwable {
+    */
+    @DisabledTest(message = "crbug.com/597495")
+    public void testFirstVideoPausesWhenSecondVideoStarts() throws Throwable {
         // To test video hole surfaces we must force video overlay before loading page.
         getInstrumentation().runOnMainSync(new Runnable() {
             @Override

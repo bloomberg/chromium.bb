@@ -222,9 +222,8 @@ public class AwContentsClientFullScreenTest extends AwTestBase {
     @MediumTest
     @Feature({"AndroidWebView"})
     */
-    @DisabledTest(message = "crbug.com/618749")
-    public void testHolePunchingSurfaceNotCreatedForClearVideo()
-            throws Throwable {
+    @DisabledTest(message = "crbug.com/597495")
+    public void testHolePunchingSurfaceNotCreatedForClearVideo() throws Throwable {
         loadTestPage(VIDEO_TEST_URL);
         assertFalse(DOMUtils.isFullscreen(getWebContentsOnUiThread()));
 
@@ -241,7 +240,7 @@ public class AwContentsClientFullScreenTest extends AwTestBase {
     @MediumTest
     @Feature({"AndroidWebView"})
     */
-    @DisabledTest(message = "crbug.com/618749")
+    @DisabledTest(message = "crbug.com/597495")
     public void testOnShowCustomViewTransfersHolePunchingSurfaceForVideoInsideDiv()
             throws Throwable {
         getInstrumentation().runOnMainSync(new Runnable() {
@@ -278,9 +277,8 @@ public class AwContentsClientFullScreenTest extends AwTestBase {
     @MediumTest
     @Feature({"AndroidWebView"})
     */
-    @DisabledTest(message = "crbug.com/618749")
-    public void testOnShowCustomViewRemovesHolePunchingSurfaceForVideo()
-            throws Throwable {
+    @DisabledTest(message = "crbug.com/597495")
+    public void testOnShowCustomViewRemovesHolePunchingSurfaceForVideo() throws Throwable {
         getInstrumentation().runOnMainSync(new Runnable() {
             @Override
             public void run() {
@@ -569,11 +567,6 @@ public class AwContentsClientFullScreenTest extends AwTestBase {
         loadTestPageAndClickFullscreen(videoTestUrl);
         mContentsClient.waitForCustomViewShown();
         assertWaitForIsFullscreen();
-        if (videoTestUrl.equals(VIDEO_TEST_URL)) {
-            // We only create a ContentVideoView (ie. a hardware accelerated surface) when going
-            // fullscreen on a video element.
-            assertContainsContentVideoView();
-        }
     }
 
     private void loadTestPageAndClickFullscreen(String videoTestUrl) throws Exception {
