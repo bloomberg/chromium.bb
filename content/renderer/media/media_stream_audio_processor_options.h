@@ -9,6 +9,7 @@
 
 #include "base/files/file.h"
 #include "base/macros.h"
+#include "base/threading/thread_checker.h"
 #include "content/common/content_export.h"
 #include "content/public/common/media_stream_request.h"
 #include "third_party/WebKit/public/platform/WebMediaConstraints.h"
@@ -103,13 +104,35 @@ class CONTENT_EXPORT EchoInformation {
   EchoInformation();
   virtual ~EchoInformation();
 
-  void UpdateAecDelayStats(webrtc::EchoCancellation* echo_cancellation);
+  // Updates stats, and reports delay metrics as UMA stats every 5 seconds.
+  // Must be called every time AudioProcessing::ProcessStream() is called.
+  void UpdateAecStats(webrtc::EchoCancellation* echo_cancellation);
+
+  // Reports AEC divergent filter metrics as UMA and resets the associated data.
+  void ReportAndResetAecDivergentFilterStats();
 
  private:
-  // Counter to track 5 seconds of processed 10 ms chunks in order to query a
-  // new metric from webrtc::EchoCancellation::GetEchoDelayMetrics().
-  int num_chunks_;
+  void UpdateAecDelayStats(webrtc::EchoCancellation* echo_cancellation);
+  void UpdateAecDivergentFilterStats(
+      webrtc::EchoCancellation* echo_cancellation);
+
+  // Counter to track 5 seconds of data in order to query a new metric from
+  // webrtc::EchoCancellation::GetEchoDelayMetrics().
+  int delay_stats_time_ms_;
   bool echo_frames_received_;
+
+  // Counter to track 1 second of data in order to query a new divergent filter
+  // fraction metric from webrtc::EchoCancellation::GetMetrics().
+  int divergent_filter_stats_time_ms_;
+
+  // Total number of times we queried for the divergent filter fraction metric.
+  int num_divergent_filter_fraction_;
+
+  // Number of non-zero divergent filter fraction metrics.
+  int num_non_zero_divergent_filter_fraction_;
+
+  // Ensures that this class is accessed on the same thread.
+  base::ThreadChecker thread_checker_;
 
   DISALLOW_COPY_AND_ASSIGN(EchoInformation);
 };

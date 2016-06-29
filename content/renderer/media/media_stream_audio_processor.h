@@ -153,6 +153,9 @@ class CONTENT_EXPORT MediaStreamAudioProcessor :
                   bool key_pressed,
                   float* const* output_ptrs);
 
+  // Update AEC stats. Called on the main render thread.
+  void UpdateAecStats();
+
   // Cached value for the render delay latency. This member is accessed by
   // both the capture audio thread and the render audio thread.
   base::subtle::Atomic32 render_delay_ms_;
@@ -190,13 +193,17 @@ class CONTENT_EXPORT MediaStreamAudioProcessor :
   // Used to DCHECK that some methods are called on the render audio thread.
   base::ThreadChecker render_thread_checker_;
 
+  // Message loop for the main render thread. We're assuming that we're created
+  // on the main render thread.
+  base::MessageLoop* main_thread_message_loop_;
+
   // Flag to enable stereo channel mirroring.
   bool audio_mirroring_;
 
+  // Typing detector. |typing_detected_| is used to show the result of typing
+  // detection. It can be accessed by the capture audio thread and by the
+  // libjingle thread which calls GetStats().
   std::unique_ptr<webrtc::TypingDetection> typing_detector_;
-  // This flag is used to show the result of typing detection.
-  // It can be accessed by the capture audio thread and by the libjingle thread
-  // which calls GetStats().
   base::subtle::Atomic32 typing_detected_;
 
   // Communication with browser for AEC dump.
@@ -205,8 +212,8 @@ class CONTENT_EXPORT MediaStreamAudioProcessor :
   // Flag to avoid executing Stop() more than once.
   bool stopped_;
 
-  // Object for logging echo information when the AEC is enabled. Accessible by
-  // the libjingle thread through GetStats().
+  // Object for logging UMA stats for echo information when the AEC is enabled.
+  // Accessed on the main render thread.
   std::unique_ptr<EchoInformation> echo_information_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaStreamAudioProcessor);

@@ -300,13 +300,32 @@ std::string MediaAudioConstraints::GetGoogArrayGeometry() const {
 }
 
 EchoInformation::EchoInformation()
-    : num_chunks_(0), echo_frames_received_(false) {
+    : delay_stats_time_ms_(0),
+      echo_frames_received_(false),
+      divergent_filter_stats_time_ms_(0),
+      num_divergent_filter_fraction_(0),
+      num_non_zero_divergent_filter_fraction_(0) {}
+
+EchoInformation::~EchoInformation() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  ReportAndResetAecDivergentFilterStats();
 }
 
-EchoInformation::~EchoInformation() {}
+void EchoInformation::UpdateAecStats(
+    webrtc::EchoCancellation* echo_cancellation) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  if (!echo_cancellation->is_enabled())
+    return;
+
+  UpdateAecDelayStats(echo_cancellation);
+  UpdateAecDivergentFilterStats(echo_cancellation);
+}
 
 void EchoInformation::UpdateAecDelayStats(
     webrtc::EchoCancellation* echo_cancellation) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
   // Only start collecting stats if we know echo cancellation has measured an
   // echo. Otherwise we clutter the stats with for example cases where only the
   // microphone is used.
@@ -314,19 +333,18 @@ void EchoInformation::UpdateAecDelayStats(
     return;
 
   echo_frames_received_ = true;
+
   // In WebRTC, three echo delay metrics are calculated and updated every
   // five seconds. We use one of them, |fraction_poor_delays| to log in a UMA
   // histogram an Echo Cancellation quality metric. The stat in WebRTC has a
   // fixed aggregation window of five seconds, so we use the same query
   // frequency to avoid logging old values.
-  const int kNumChunksInFiveSeconds = 500;
-  if (!echo_cancellation->is_delay_logging_enabled() ||
-      !echo_cancellation->is_enabled()) {
+  if (!echo_cancellation->is_delay_logging_enabled())
     return;
-  }
 
-  num_chunks_++;
-  if (num_chunks_ < kNumChunksInFiveSeconds) {
+  delay_stats_time_ms_ += webrtc::AudioProcessing::kChunkSizeMs;
+  if (delay_stats_time_ms_ <
+      500 * webrtc::AudioProcessing::kChunkSizeMs) {  // 5 seconds
     return;
   }
 
@@ -335,7 +353,7 @@ void EchoInformation::UpdateAecDelayStats(
   if (echo_cancellation->GetDelayMetrics(
           &dummy_median, &dummy_std, &fraction_poor_delays) ==
       webrtc::AudioProcessing::kNoError) {
-    num_chunks_ = 0;
+    delay_stats_time_ms_ = 0;
     // Map |fraction_poor_delays| to an Echo Cancellation quality and log in UMA
     // histogram. See DelayBasedEchoQuality for information on histogram
     // buckets.
@@ -343,6 +361,53 @@ void EchoInformation::UpdateAecDelayStats(
                               EchoDelayFrequencyToQuality(fraction_poor_delays),
                               DELAY_BASED_ECHO_QUALITY_MAX);
   }
+}
+
+void EchoInformation::UpdateAecDivergentFilterStats(
+    webrtc::EchoCancellation* echo_cancellation) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  if (!echo_cancellation->are_metrics_enabled())
+    return;
+
+  divergent_filter_stats_time_ms_ += webrtc::AudioProcessing::kChunkSizeMs;
+  if (divergent_filter_stats_time_ms_ <
+      100 * webrtc::AudioProcessing::kChunkSizeMs) {  // 1 second
+    return;
+  }
+
+  webrtc::EchoCancellation::Metrics metrics;
+  if (echo_cancellation->GetMetrics(&metrics) ==
+      webrtc::AudioProcessing::kNoError) {
+    // If not yet calculated, |metrics.divergent_filter_fraction| is -1.0. After
+    // being calculated the first time, it is updated periodically.
+    if (metrics.divergent_filter_fraction < 0.0f) {
+      DCHECK_EQ(num_divergent_filter_fraction_, 0);
+      return;
+    }
+    if (metrics.divergent_filter_fraction > 0.0f) {
+      ++num_non_zero_divergent_filter_fraction_;
+    }
+  } else {
+    DLOG(WARNING) << "Get echo cancellation metrics failed.";
+  }
+  ++num_divergent_filter_fraction_;
+  divergent_filter_stats_time_ms_ = 0;
+}
+
+void EchoInformation::ReportAndResetAecDivergentFilterStats() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  if (num_divergent_filter_fraction_ == 0)
+    return;
+
+  int non_zero_percent = 100 * num_non_zero_divergent_filter_fraction_ /
+                         num_divergent_filter_fraction_;
+  UMA_HISTOGRAM_PERCENTAGE("WebRTC.AecFilterHasDivergence", non_zero_percent);
+
+  divergent_filter_stats_time_ms_ = 0;
+  num_non_zero_divergent_filter_fraction_ = 0;
+  num_divergent_filter_fraction_ = 0;
 }
 
 void EnableEchoCancellation(AudioProcessing* audio_processing) {

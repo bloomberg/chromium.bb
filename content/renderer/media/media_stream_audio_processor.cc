@@ -287,6 +287,7 @@ MediaStreamAudioProcessor::MediaStreamAudioProcessor(
     WebRtcPlayoutDataSource* playout_data_source)
     : render_delay_ms_(0),
       playout_data_source_(playout_data_source),
+      main_thread_message_loop_(base::MessageLoop::current()),
       audio_mirroring_(false),
       typing_detected_(false),
       stopped_(false) {
@@ -389,6 +390,7 @@ bool MediaStreamAudioProcessor::ProcessAndConsumeData(
 
 void MediaStreamAudioProcessor::Stop() {
   DCHECK(main_thread_checker_.CalledOnValidThread());
+
   if (stopped_)
     return;
 
@@ -409,6 +411,9 @@ void MediaStreamAudioProcessor::Stop() {
     playout_data_source_->RemovePlayoutSink(this);
     playout_data_source_ = NULL;
   }
+
+  if (echo_information_)
+    echo_information_->ReportAndResetAecDivergentFilterStats();
 }
 
 const media::AudioParameters& MediaStreamAudioProcessor::InputFormat() const {
@@ -756,13 +761,18 @@ int MediaStreamAudioProcessor::ProcessData(const float* const* process_ptrs,
     base::subtle::Release_Store(&typing_detected_, detected);
   }
 
-  if (echo_information_) {
-    echo_information_.get()->UpdateAecDelayStats(ap->echo_cancellation());
-  }
+  main_thread_message_loop_->PostTask(
+      FROM_HERE, base::Bind(&MediaStreamAudioProcessor::UpdateAecStats, this));
 
   // Return 0 if the volume hasn't been changed, and otherwise the new volume.
   return (agc->stream_analog_level() == volume) ?
       0 : agc->stream_analog_level();
+}
+
+void MediaStreamAudioProcessor::UpdateAecStats() {
+  DCHECK(main_thread_checker_.CalledOnValidThread());
+  if (echo_information_)
+    echo_information_->UpdateAecStats(audio_processing_->echo_cancellation());
 }
 
 }  // namespace content

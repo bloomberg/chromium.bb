@@ -62913,13 +62913,27 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="WebRTC.AecDelayBasedQuality" enum="DelayBasedEchoQuality">
-  <owner>bjornv@chromium.org</owner>
+  <owner>hlundin@chromium.org</owner>
   <summary>
     Captures if the estimated delay between rendered and captured audio is out
     of bounds which can cause the Echo Cancellation to fail. This is logged
     roughly once every 5 seconds. The values are logged in four buckets
     reflecting how well the Echo Cancellation likely performs based on the
     estimated delay.
+  </summary>
+</histogram>
+
+<histogram name="WebRTC.AecFilterHasDivergence" units="%">
+  <owner>grunell@chromium.org</owner>
+  <owner>minyue@chromium.org</owner>
+  <summary>
+    The percentage of measurement periods during a capture stream's lifetime
+    when the echo canceler's filter is considered to have diverged at least
+    once. A diverged filter could mean that there was echo och ducking
+    experienced. The measurement period size is fixed and in the order of one
+    second. The first measurement period is larger, typically 2-3 seconds.
+    Capture streams with shorter lifetimes (i.e. no data available) are not
+    recorded here.
   </summary>
 </histogram>
 
