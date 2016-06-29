@@ -138,7 +138,8 @@ class ArcAppWindowLauncherController::AppWindow : public ui::BaseWindow {
   void Maximize() override { NOTREACHED(); }
 
   void Minimize() override {
-    // TODO(khmel): support window minimizing.
+    if (widget_)
+      widget_->Minimize();
   }
 
   void Restore() override { NOTREACHED(); }
@@ -286,6 +287,7 @@ void ArcAppWindowLauncherController::CheckForAppWindowWidget(
     AppWindow* app_window = GetAppWindowForTask(task_id);
     if (app_window) {
       app_window->set_widget(views::Widget::GetWidgetForNativeWindow(window));
+      ash::SetShelfIDForWindow(app_window->shelf_id(), window);
       if (app_window->controller())
         window->SetTitle(app_window->controller()->GetTitle());
       chrome::MultiUserWindowManager::GetInstance()->SetWindowOwner(
