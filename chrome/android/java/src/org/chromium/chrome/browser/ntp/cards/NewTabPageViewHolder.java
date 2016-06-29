@@ -44,4 +44,10 @@ public class NewTabPageViewHolder extends RecyclerView.ViewHolder {
      * @param dX The amount of horizontal displacement caused by user's action
      */
     public void updateViewStateForDismiss(float dX) {}
+
+    /**
+     * Update the layout params for the view holder.
+     */
+    public void updateLayoutParams() {
+    }
 }

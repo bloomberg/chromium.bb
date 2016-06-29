@@ -12,7 +12,6 @@ import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.view.animation.Interpolator;
 
-import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.util.MathUtils;
 
@@ -38,6 +37,15 @@ public class CardViewHolder extends NewTabPageViewHolder {
     private final int mMaxPeekPadding;
 
     /**
+     * Due to the card background being a 9 patch file - the card border shadow will be part of
+     * the card width and height. This value will be used to adjust values to account for the
+     * borders.
+     */
+    private final int mCards9PatchAdjustment;
+
+    private final NewTabPageRecyclerView mRecyclerView;
+
+    /**
      * Current padding value. The padding and the margins are manipulated together to create the
      * shrunk/peeking appearance of the cards. When the padding is low, the margins are high and
      * the background is visible around the cards. When the padding is maximum
@@ -48,25 +56,26 @@ public class CardViewHolder extends NewTabPageViewHolder {
 
     /**
      * @param layoutId resource id of the layout to inflate and to use as card.
-     * @param parent ViewGroup that will contain the newly created view.
+     * @param recyclerView ViewGroup that will contain the newly created view.
      */
-    public CardViewHolder(int layoutId, final NewTabPageRecyclerView parent) {
-        super(inflateView(layoutId, parent));
+    public CardViewHolder(int layoutId, final NewTabPageRecyclerView recyclerView) {
+        super(inflateView(layoutId, recyclerView));
 
-        mMaxPeekPadding = parent.getResources().getDimensionPixelSize(
+        mCards9PatchAdjustment = recyclerView.getResources().getDimensionPixelSize(
+                R.dimen.snippets_card_9_patch_adjustment);
+
+        mMaxPeekPadding = recyclerView.getResources().getDimensionPixelSize(
                 R.dimen.snippets_padding_and_peeking_card_height);
         mPeekPadding = mMaxPeekPadding;
 
-        ApiCompatibilityUtils.setElevation(
-                itemView, parent.getContext().getResources().getDimensionPixelSize(
-                                  R.dimen.snippets_card_elevation));
+        mRecyclerView = recyclerView;
 
         itemView.setOnClickListener(new OnClickListener() {
 
             @Override
             public void onClick(View v) {
                 if (isPeeking()) {
-                    parent.showCardsFrom(mPeekPadding);
+                    recyclerView.showCardsFrom(mPeekPadding);
                 } else {
                     onCardTapped();
                 }
@@ -87,6 +96,21 @@ public class CardViewHolder extends NewTabPageViewHolder {
 
         // Reset the transparency in case a faded card is being recycled.
         itemView.setAlpha(1f);
+    }
+
+    @Override
+    public void updateLayoutParams() {
+        RecyclerView.LayoutParams params = getParams();
+
+        // Each card has the full elevation effect so we will remove bottom margin to overlay and
+        // hide the bottom shadow of the previous card to give the effect of a divider instead of a
+        // shadow.
+        if (mRecyclerView.getAdapter().getItemViewType(getAdapterPosition() + 1)
+                == NewTabPageListItem.VIEW_TYPE_SNIPPET) {
+            params.bottomMargin = -mCards9PatchAdjustment;
+        } else {
+            params.bottomMargin = 0;
+        }
     }
 
     /**
@@ -122,15 +146,19 @@ public class CardViewHolder extends NewTabPageViewHolder {
     protected void onCardTapped() {}
 
     private void setPeekingStateForPadding(int padding) {
+        // TODO(mcwilliams): Change the 'padding' value to a percentage of what the transition
+        // should be which can be used for alpha and bleed.
         mPeekPadding = padding;
 
         // Modify the padding so as the margin increases, the padding decreases, keeping the card's
         // contents in the same position. The top and bottom remain the same.
         itemView.setPadding(mPeekPadding, mMaxPeekPadding, mPeekPadding, mMaxPeekPadding);
 
-        RecyclerView.LayoutParams params = (RecyclerView.LayoutParams) itemView.getLayoutParams();
-        params.leftMargin = mMaxPeekPadding - mPeekPadding;
-        params.rightMargin = mMaxPeekPadding - mPeekPadding;
+        // This mCards9PatchAdjustment value will be used to adjust the padding so the card width
+        // is the actual width not including the elevation shadow so we can have full bleed.
+        RecyclerView.LayoutParams params = getParams();
+        params.leftMargin = mMaxPeekPadding - (mPeekPadding + mCards9PatchAdjustment);
+        params.rightMargin = mMaxPeekPadding - (mPeekPadding + mCards9PatchAdjustment);
 
         // Set the opacity of the card content to be 0 when peeking and 1 when full width.
         int itemViewChildCount = ((ViewGroup) itemView).getChildCount();
@@ -142,5 +170,9 @@ public class CardViewHolder extends NewTabPageViewHolder {
 
     private static View inflateView(int resourceId, ViewGroup parent) {
         return LayoutInflater.from(parent.getContext()).inflate(resourceId, parent, false);
+    }
+
+    private RecyclerView.LayoutParams getParams() {
+        return (RecyclerView.LayoutParams) itemView.getLayoutParams();
     }
 }

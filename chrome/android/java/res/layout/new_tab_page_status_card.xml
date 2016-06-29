@@ -12,7 +12,7 @@
     android:gravity="end"
     android:orientation="vertical"
     android:padding="@dimen/snippets_padding_and_peeking_card_height"
-    android:background="@color/snippets_background_color">
+    android:background="@drawable/ntp_card">
 
     <org.chromium.ui.widget.TextViewWithLeading
         android:id="@+id/status_title"

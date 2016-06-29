@@ -44,7 +44,6 @@ import org.chromium.chrome.browser.ntp.LogoBridge.Logo;
 import org.chromium.chrome.browser.ntp.LogoBridge.LogoObserver;
 import org.chromium.chrome.browser.ntp.MostVisitedItem.MostVisitedItemManager;
 import org.chromium.chrome.browser.ntp.NewTabPage.OnSearchBoxScrollListener;
-import org.chromium.chrome.browser.ntp.cards.CardItemDecoration;
 import org.chromium.chrome.browser.ntp.cards.CardsLayoutOperations;
 import org.chromium.chrome.browser.ntp.cards.NewTabPageAdapter;
 import org.chromium.chrome.browser.ntp.cards.NewTabPageListItem;
@@ -399,7 +398,6 @@ public class NewTabPageView extends FrameLayout
                 }
             });
             initializeSearchBoxRecyclerViewScrollHandling();
-            mRecyclerView.addItemDecoration(new CardItemDecoration(getContext()));
             mRecyclerView.updateSnippetsHeaderDisplay(mNewTabPageLayout.getPaddingTop());
         } else {
             initializeSearchBoxScrollHandling();

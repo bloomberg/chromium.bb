@@ -107,6 +107,18 @@ public class NewTabPageRecyclerView extends RecyclerView {
         return super.onCreateInputConnection(outAttrs);
     }
 
+    @Override
+    protected void onLayout(boolean changed, int l, int t, int r, int b) {
+        int numberViews = getChildCount();
+        for (int i = 0; i < numberViews; ++i) {
+            View view = getChildAt(i);
+            NewTabPageViewHolder viewHolder = (NewTabPageViewHolder) getChildViewHolder(view);
+            if (viewHolder == null) return;
+            viewHolder.updateLayoutParams();
+        }
+        super.onLayout(changed, l, t, r, b);
+    }
+
     public LinearLayoutManager getLinearLayoutManager() {
         return mLayoutManager;
     }
