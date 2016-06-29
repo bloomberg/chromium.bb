@@ -127,8 +127,8 @@ android_java_prebuilt("google_play_services_default_java") {
     ":android_support_v13_java",
     ":android_support_v7_mediarouter_java",
     ":google_play_services_default_resources",
-    ":legacy_http_javalib",
   ]
+  input_jars_paths = [ "$android_sdk/optional/org.apache.http.legacy.jar" ]
   proguard_preprocess = true
   proguard_config = "//third_party/android_tools/proguard.flags"
   jar_path = "$android_sdk_root/extras/google/google_play_services/libproject/google-play-services_lib/libs/google-play-services.jar"
@@ -151,5 +151,6 @@ android_java_prebuilt("android_support_v17_leanback_java") {
 
 # TODO(jbudorick): Remove this once net_java_test_support no longer needs it.
 android_java_prebuilt("legacy_http_javalib") {
+  testonly = true
   jar_path = "$android_sdk/optional/org.apache.http.legacy.jar"
 }

@@ -557,9 +557,7 @@ if (enable_java_templates) {
       if (defined(invoker.input_jars_paths)) {
         _input_jars_paths += invoker.input_jars_paths
       }
-      inputs = [
-        _proguard_jar_path,
-      ]
+      inputs = _input_jars_paths + [ _proguard_jar_path ]
       if (defined(invoker.alternative_android_sdk_jar)) {
         inputs += [ invoker.alternative_android_sdk_jar ]
         _rebased_android_sdk_jar =
@@ -591,7 +589,7 @@ if (enable_java_templates) {
         _rebased_android_sdk_jar,
       ]
       foreach(c, _input_jars_paths) {
-        args += [ "--classpath=" + c ]
+        args += [ "--classpath=" + rebase_path(c, root_build_dir) ]
       }
       if (proguard_verbose) {
         args += [ "--verbose" ]
