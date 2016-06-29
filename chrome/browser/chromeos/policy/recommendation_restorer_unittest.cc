@@ -30,6 +30,7 @@
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
+#include "extensions/browser/quota_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace policy {
@@ -68,6 +69,9 @@ class RecommendationRestorerTest : public testing::Test {
   void VerifyNotListeningForNotifications() const;
   void VerifyTimerIsStopped() const;
   void VerifyTimerIsRunning() const;
+
+  extensions::QuotaService::ScopedDisablePurgeForTesting
+      disable_purge_for_testing_;
 
   TestingPrefStore* recommended_prefs_;  // Not owned.
   syncable_prefs::TestingPrefServiceSyncable* prefs_;  // Not owned.

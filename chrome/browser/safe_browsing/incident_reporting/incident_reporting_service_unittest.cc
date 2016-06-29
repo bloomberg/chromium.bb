@@ -35,6 +35,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
 #include "components/syncable_prefs/testing_pref_service_syncable.h"
+#include "extensions/browser/quota_service.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -339,6 +340,8 @@ class IncidentReportingServiceTest : public testing::Test {
   bool UploaderDestroyed() const { return uploader_destroyed_; }
   bool DelayedAnalysisRan() const { return delayed_analysis_ran_; }
 
+  extensions::QuotaService::ScopedDisablePurgeForTesting
+      disable_purge_for_testing_;
   scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
   base::ThreadTaskRunnerHandle thread_task_runner_handle_;
   TestingProfileManager profile_manager_;

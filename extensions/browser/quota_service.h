@@ -61,6 +61,17 @@ class QuotaService : public base::NonThreadSafe {
                      const base::ListValue* args,
                      const base::TimeTicks& event_time);
 
+  // An active ScopedDisablePurgeForTesting prevents QuotaService's constructor
+  // from starting a purge timer.
+  class ScopedDisablePurgeForTesting {
+   public:
+    ScopedDisablePurgeForTesting();
+    ~ScopedDisablePurgeForTesting();
+
+   private:
+    DISALLOW_COPY_AND_ASSIGN(ScopedDisablePurgeForTesting);
+  };
+
  private:
   typedef std::string ExtensionId;
   typedef std::string FunctionName;

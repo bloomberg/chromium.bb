@@ -22,6 +22,7 @@
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
 #include "components/syncable_prefs/testing_pref_service_syncable.h"
+#include "extensions/browser/quota_service.h"
 #include "sync/api/fake_sync_change_processor.h"
 #include "sync/api/sync_error_factory_mock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -233,6 +234,8 @@ class ExtensionWelcomeNotificationTest : public testing::Test {
     welcome_notification_->ShowWelcomeNotificationIfNecessary(notification);
   }
 
+  extensions::QuotaService::ScopedDisablePurgeForTesting
+      disable_purge_for_testing_;
   scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
   std::unique_ptr<base::ThreadTaskRunnerHandle> thread_task_runner_handle_;
   std::unique_ptr<TestingProfile> profile_;

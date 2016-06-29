@@ -6,8 +6,7 @@
 
 #include "base/bind.h"
 #include "base/files/file_util.h"
-#include "base/message_loop/message_loop.h"
-#include "base/single_thread_task_runner.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "content/public/browser/browser_thread.h"
 
 using content::BrowserThread;
@@ -16,7 +15,7 @@ FileReader::FileReader(const extensions::ExtensionResource& resource,
                        const Callback& callback)
     : resource_(resource),
       callback_(callback),
-      origin_loop_(base::MessageLoop::current()) {}
+      origin_task_runner_(base::ThreadTaskRunnerHandle::Get()) {}
 
 void FileReader::Start() {
   BrowserThread::PostTask(
@@ -29,6 +28,6 @@ FileReader::~FileReader() {}
 void FileReader::ReadFileOnBackgroundThread() {
   std::string data;
   bool success = base::ReadFileToString(resource_.GetFilePath(), &data);
-  origin_loop_->task_runner()->PostTask(FROM_HERE,
-                                        base::Bind(callback_, success, data));
+  origin_task_runner_->PostTask(FROM_HERE,
+                                base::Bind(callback_, success, data));
 }

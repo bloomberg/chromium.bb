@@ -10,7 +10,6 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
@@ -821,8 +820,9 @@ void ProcessManager::OnKeepaliveImpulseCheck() {
   }
 
   // OnKeepaliveImpulseCheck() is always called in constructor, but in unit
-  // tests there will be no message loop. In that event don't schedule tasks.
-  if (base::MessageLoop::current()) {
+  // tests there will be no thread task runner handle. In that event don't
+  // schedule tasks.
+  if (base::ThreadTaskRunnerHandle::IsSet()) {
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE, base::Bind(&ProcessManager::OnKeepaliveImpulseCheck,
                               weak_ptr_factory_.GetWeakPtr()),

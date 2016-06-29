@@ -20,6 +20,7 @@
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/testing_pref_service.h"
+#include "extensions/browser/quota_service.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -51,6 +52,9 @@ class SAMLOfflineSigninLimiterTest : public testing::Test {
   const AccountId test_account_id_ = AccountId::FromUserEmail(kTestUser);
 
   TestingPrefServiceSimple* GetTestingLocalState();
+
+  extensions::QuotaService::ScopedDisablePurgeForTesting
+      disable_purge_for_testing_;
 
   scoped_refptr<base::TestSimpleTaskRunner> runner_;
   base::ThreadTaskRunnerHandle runner_handle_;
