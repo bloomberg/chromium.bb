@@ -298,4 +298,31 @@ TEST_F(V4UpdateProtocolManagerTest, TestGetUpdatesWithOneBackoff) {
   EXPECT_FALSE(pm->IsUpdateScheduled());
 }
 
+TEST_F(V4UpdateProtocolManagerTest, TestBase64EncodingUsesUrlEncoding) {
+  // NOTE(vakh): I handpicked this value for state by generating random strings
+  // and picked the one that leads to a '-' in the base64 url encoded request
+  // output.
+  std::string state_minus = "z-R~3ruViQH";
+  StoreStateMap store_state_map_minus{
+      {UpdateListIdentifier(LINUX_PLATFORM, URL, MALWARE_THREAT), state_minus}};
+  std::string encoded_request_with_minus =
+      V4UpdateProtocolManager::GetBase64SerializedUpdateRequestProto(
+          store_state_map_minus);
+  EXPECT_EQ("GhMIARACGgt6LVJ-M3J1VmlRSCgB", encoded_request_with_minus);
+
+  // NOTE(vakh): Same process for chosing this string. I am representing it
+  // in base64 encoded form because the actual state value contains non-ASCII
+  // characters.
+  std::string base64_encoded_state_underscore = "VTFfITBf4lBM";
+  std::string state_underscore;
+  base::Base64Decode(base64_encoded_state_underscore, &state_underscore);
+  StoreStateMap store_state_map_underscore{
+      {UpdateListIdentifier(LINUX_PLATFORM, URL, MALWARE_THREAT),
+       state_underscore}};
+  std::string encoded_request_with_underscore =
+      V4UpdateProtocolManager::GetBase64SerializedUpdateRequestProto(
+          store_state_map_underscore);
+  EXPECT_EQ("GhEIARACGglVMV8hMF_iUEwoAQ==", encoded_request_with_underscore);
+}
+
 }  // namespace safe_browsing

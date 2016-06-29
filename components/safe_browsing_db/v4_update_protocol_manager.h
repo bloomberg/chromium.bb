@@ -85,6 +85,8 @@ class V4UpdateProtocolManager : public net::URLFetcherDelegate,
   FRIEND_TEST_ALL_PREFIXES(V4UpdateProtocolManagerTest, TestGetUpdatesNoError);
   FRIEND_TEST_ALL_PREFIXES(V4UpdateProtocolManagerTest,
                            TestGetUpdatesWithOneBackoff);
+  FRIEND_TEST_ALL_PREFIXES(V4UpdateProtocolManagerTest,
+                           TestBase64EncodingUsesUrlEncoding);
   friend class V4UpdateProtocolManagerFactoryImpl;
 
   // The method to populate |gurl| with the URL to be sent to the server.
@@ -96,7 +98,7 @@ class V4UpdateProtocolManager : public net::URLFetcherDelegate,
                               net::HttpRequestHeaders* headers) const;
 
   // Fills a FetchThreatListUpdatesRequest protocol buffer for a request.
-  // Returns the serialized and base 64 encoded request as a string.
+  // Returns the serialized and base64 URL encoded request as a string.
   static std::string GetBase64SerializedUpdateRequestProto(
       const StoreStateMap& store_state_map);
 
