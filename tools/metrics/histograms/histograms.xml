@@ -3644,6 +3644,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>Image codec inferred during decode.</summary>
 </histogram>
 
+<histogram name="Blink.Fonts.HarfBuzzFaceZeroCopyAccess" enum="BooleanSuccess">
+  <owner>drott@chromium.org</owner>
+  <summary>
+    Counts success or failure of attempting to access font tables using the zero
+    copy instantiation method in the HarfBuzz integration layer. This value is
+    only recorded on non-Mac platforms. Reported each time a HarfBuzz face
+    object is created.
+  </summary>
+</histogram>
+
 <histogram name="Blink.Fonts.ShapeCache">
   <owner>eae@chromium.org</owner>
   <summary>

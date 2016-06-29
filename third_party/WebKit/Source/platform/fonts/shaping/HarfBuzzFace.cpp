@@ -30,6 +30,7 @@
 
 #include "platform/fonts/shaping/HarfBuzzFace.h"
 
+#include "platform/Histogram.h"
 #include "platform/fonts/FontCache.h"
 #include "platform/fonts/FontPlatformData.h"
 #include "platform/fonts/SimpleFontData.h"
@@ -327,6 +328,9 @@ hb_face_t* HarfBuzzFace::createFace()
 #else
     hb_face_t* face = nullptr;
 
+    DEFINE_STATIC_LOCAL(BooleanHistogram,
+        zeroCopySuccessHistogram,
+        ("Blink.Fonts.HarfBuzzFaceZeroCopyAccess"));
     SkTypeface* typeface = m_platformData->typeface();
     int ttcIndex = 0;
     SkStreamAsset* typefaceStream = typeface->openStream(&ttcIndex);
@@ -342,8 +346,12 @@ hb_face_t* HarfBuzzFace::createFace()
     }
 
     // Fallback to table copies if there is no in-memory access.
-    if (!face)
+    if (!face) {
         face = hb_face_create_for_tables(harfBuzzSkiaGetTable, m_platformData->typeface(), 0);
+        zeroCopySuccessHistogram.count(false);
+    } else {
+        zeroCopySuccessHistogram.count(true);
+    }
 #endif
     ASSERT(face);
     return face;
