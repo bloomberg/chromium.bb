@@ -29,7 +29,7 @@
             shouldBe("accessibleThree.isSelectedOptionActive", "false");
 
             // Change the selected index by simulating a down arrow keydown event.
-            eventSender.keyDown('downArrow', []);
+            eventSender.keyDown('ArrowDown', []);
 
             shouldBe("accessibleOne.isSelected", "false");
             shouldBe("accessibleOne.isSelectedOptionActive", "false");
@@ -39,7 +39,7 @@
             shouldBe("accessibleThree.isSelectedOptionActive", "false");
 
             // Extend the selection by simulating a Shift + Down Arrow keydown event.
-            eventSender.keyDown('downArrow', ['shiftKey']);
+            eventSender.keyDown('ArrowDown', ['shiftKey']);
 
             shouldBe("accessibleOne.isSelected", "false");
             shouldBe("accessibleOne.isSelectedOptionActive", "false");

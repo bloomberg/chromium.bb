@@ -21,11 +21,11 @@ function test() {
     shouldBeEqualToString('selectedValue()', '2011-12-31');
     shouldBeEqualToString('highlightedValue()', '2011-12-31');
 
-    eventSender.keyDown('rightArrow');
+    eventSender.keyDown('ArrowRight');
     shouldBeEqualToString('highlightedValue()', '2012-01-01');
 
     removeCommitDelay();
-    eventSender.keyDown('\n');
+    eventSender.keyDown('Enter');
     shouldBeEqualToString('document.getElementById("datetimelocal").value', '2012-01-01T12:53:45');
 
     finishJSTest();

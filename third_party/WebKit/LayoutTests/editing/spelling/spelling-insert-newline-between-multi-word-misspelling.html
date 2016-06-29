@@ -40,7 +40,7 @@ initSpellTest("destination", "It should be upper case.", function(textNode) {
     shouldBeEqualToString("spellingMarkerRange.toString()", "upper case");
 
     for(var i = 0; i < 5; ++i)
-        eventSender.keyDown("leftArrow");
+        eventSender.keyDown("ArrowLeft");
 
     document.execCommand("InsertText", false, "\n");
 

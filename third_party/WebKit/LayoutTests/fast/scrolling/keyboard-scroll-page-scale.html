@@ -14,19 +14,19 @@
   function testArrowKeys()
   {
     // Test up and down.
-    window.eventSender.keyDown('downArrow');
+    window.eventSender.keyDown('ArrowDown');
     shouldBeGreaterThan('internals.visualViewportScrollY()', '0');
 
     numScrolls = Math.ceil((pageHeight - internals.visualViewportHeight()) / internals.visualViewportScrollY());
 
     for(var i = 0; i < numScrolls - 1; ++i) {
-      window.eventSender.keyDown('downArrow');
+      window.eventSender.keyDown('ArrowDown');
     }
 
     shouldBe('internals.visualViewportScrollY()', 'pageHeight - internals.visualViewportHeight()');
 
     for(var i = 0; i < numScrolls; ++i) {
-      window.eventSender.keyDown('upArrow');
+      window.eventSender.keyDown('ArrowUp');
     }
 
     shouldBe('internals.visualViewportScrollY()', '0');
@@ -34,17 +34,17 @@
     // Now test left and right.
 
     reset();
-    window.eventSender.keyDown('rightArrow');
+    window.eventSender.keyDown('ArrowRight');
     numScrolls = Math.ceil((pageWidth - internals.visualViewportWidth()) / internals.visualViewportScrollX());
 
     for(var i = 0; i < numScrolls - 1; ++i) {
-      window.eventSender.keyDown('rightArrow');
+      window.eventSender.keyDown('ArrowRight');
     }
 
     shouldBe('internals.visualViewportScrollX()', 'pageWidth - internals.visualViewportWidth()');
 
     for(var i = 0; i < numScrolls; ++i) {
-      window.eventSender.keyDown('leftArrow');
+      window.eventSender.keyDown('ArrowLeft');
     }
 
     shouldBe('internals.visualViewportScrollX()', '0');
@@ -52,29 +52,29 @@
 
   function testHomeEnd()
   {
-    window.eventSender.keyDown('end');
+    window.eventSender.keyDown('End');
     shouldBe('window.scrollY', 'pageHeight - window.innerHeight');
     shouldBe('internals.visualViewportScrollY()', 'pageHeight - internals.visualViewportHeight()');
-    window.eventSender.keyDown('home');
+    window.eventSender.keyDown('Home');
     shouldBe('window.scrollY', '0');
     shouldBe('internals.visualViewportScrollY()', '0');
   }
 
   function testPageUpDown()
   {
-    window.eventSender.keyDown('pageDown');
+    window.eventSender.keyDown('PageDown');
     shouldBeGreaterThan('internals.visualViewportScrollY()', '0');
 
     numScrolls = Math.ceil((pageHeight - internals.visualViewportHeight()) / internals.visualViewportScrollY());
 
     for(var i = 0; i < numScrolls - 1; ++i) {
-      window.eventSender.keyDown('pageDown');
+      window.eventSender.keyDown('PageDown');
     }
 
     shouldBe('internals.visualViewportScrollY()', 'pageHeight - internals.visualViewportHeight()');
 
     for(var i = 0; i < numScrolls; ++i) {
-      window.eventSender.keyDown('pageUp');
+      window.eventSender.keyDown('PageUp');
     }
 
     shouldBe('internals.visualViewportScrollY()', '0');

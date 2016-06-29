@@ -27,10 +27,10 @@ function runTest() {
         eventSender.mouseUp();
         caretRectAtEnd = internals.absoluteCaretBounds(document);
 
-        eventSender.keyDown("rightArrow");
+        eventSender.keyDown("ArrowRight");
         caretRectRightKey = internals.absoluteCaretBounds(document);
 
-        eventSender.keyDown("downArrow");
+        eventSender.keyDown("ArrowDown");
         caretRectDownKey = internals.absoluteCaretBounds(document);
 
         shouldBe("caretRectAtEnd.width", "caretRectAtStart.width");

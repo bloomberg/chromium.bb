@@ -18,27 +18,27 @@ function test() {
     document.getElementById("bug-test").focus();
     if (window.eventSender) {
         debug("Pressing down arrow key");
-        eventSender.keyDown('downArrow');
+        eventSender.keyDown('ArrowDown');
 
         debug("Pressing down arrow key");
-        eventSender.keyDown('downArrow');
+        eventSender.keyDown('ArrowDown');
 
         debug("Pressing up arrow key");
-        eventSender.keyDown('upArrow');
+        eventSender.keyDown('ArrowUp');
 
         debug("Pressing page down key");
-        eventSender.keyDown('pageDown');
+        eventSender.keyDown('PageDown');
 
         debug("Pressing page up key");
-        eventSender.keyDown('pageUp');
+        eventSender.keyDown('PageUp');
 
         debug("Pressing end key");
-        eventSender.keyDown('end');
+        eventSender.keyDown('End');
 
         finishTest = true;
 
         debug("Pressing home key");
-        eventSender.keyDown('home');
+        eventSender.keyDown('Home');
     } else {
         debug("Test manually by pressing up/down key. Should get PASS message");
         finishJSTest();

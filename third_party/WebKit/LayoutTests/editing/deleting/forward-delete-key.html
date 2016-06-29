@@ -10,8 +10,8 @@ if (window.testRunner)
 text = document.getElementById("div").firstChild;
 window.getSelection().setBaseAndExtent(text, 0, text, 1);
 if (window.eventSender) {
-    eventSender.keyDown("delete");
-    eventSender.keyDown("delete");
+    eventSender.keyDown("Delete");
+    eventSender.keyDown("Delete");
     if (text.data == "3456")
         document.getElementById("result").innerHTML = "PASS";
     else

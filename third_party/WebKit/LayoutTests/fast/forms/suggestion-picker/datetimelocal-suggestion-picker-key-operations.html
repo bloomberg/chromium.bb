@@ -94,39 +94,39 @@ function test1() {
 
     debug('Check that up/down arrow keys work.');
     shouldBeNull('highlightedEntry()');
-    eventSender.keyDown('downArrow');
+    eventSender.keyDown('ArrowDown');
     shouldBeEqualToString('highlightedEntry()', '2012-11-22T01:01');
-    eventSender.keyDown('downArrow');
+    eventSender.keyDown('ArrowDown');
     shouldBeEqualToString('highlightedEntry()', '2012-11-22T01:02');
-    eventSender.keyDown('upArrow');
+    eventSender.keyDown('ArrowUp');
     shouldBeEqualToString('highlightedEntry()', '2012-11-22T01:01');
 
     debug('Check that up arrow key at top of list does nothing.');
-    eventSender.keyDown('upArrow');
+    eventSender.keyDown('ArrowUp');
     shouldBeEqualToString('highlightedEntry()', '2012-11-22T01:01');
-    eventSender.keyDown('downArrow');
+    eventSender.keyDown('ArrowDown');
     shouldBeEqualToString('highlightedEntry()', '2012-11-22T01:02');
 
     debug('Check that page up/down arrow keys work.');
-    eventSender.keyDown('pageDown');
+    eventSender.keyDown('PageDown');
     shouldBeEqualToString('highlightedEntry()', '2012-11-22T01:40');
-    eventSender.keyDown('pageDown');
+    eventSender.keyDown('PageDown');
     shouldBeEqualToString('highlightedEntry()', '2012-11-22T02:00');
-    eventSender.keyDown('pageUp');
+    eventSender.keyDown('PageUp');
     shouldBeEqualToString('highlightedEntry()', '2012-11-22T01:21');
-    eventSender.keyDown('pageDown');
+    eventSender.keyDown('PageDown');
     shouldBeEqualToString('highlightedEntry()', '2012-11-22T02:00');
-    eventSender.keyDown('pageDown');
+    eventSender.keyDown('PageDown');
     shouldBeEqualToString('highlightedEntry()', '@openCalendarPicker');
 
     debug('Check that down arrow key at bottom of list does nothing.');
-    eventSender.keyDown('downArrow');
+    eventSender.keyDown('ArrowDown');
     shouldBeEqualToString('highlightedEntry()', '@openCalendarPicker');
     
     debug('Check that enter key sets the highlighted value.');
-    eventSender.keyDown('upArrow');
+    eventSender.keyDown('ArrowUp');
     shouldBeEqualToString('highlightedEntry()', '2012-11-22T02:07');
-    eventSender.keyDown('\n');
+    eventSender.keyDown('Enter');
     waitUntilClosing(test1AfterClosing);
 }
 
@@ -145,7 +145,7 @@ function test2() {
     popupWindow.focus();
 
     debug('Check that escape key closes the popup.');
-    eventSender.keyDown('escape');
+    eventSender.keyDown('Escape');
     waitUntilClosing(test2AfterClosing);
 }
 

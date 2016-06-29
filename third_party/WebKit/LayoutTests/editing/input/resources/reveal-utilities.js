@@ -44,7 +44,7 @@ function performVerticalScrollingTest()
     document.getElementById("input").focus();
     if (window.eventSender) {
         while (offsetFromViewportTop(document.body.children[0]) < initialOffset)
-            eventSender.keyDown("pageUp");
+            eventSender.keyDown("PageUp");
         return true;
     }
     return false;

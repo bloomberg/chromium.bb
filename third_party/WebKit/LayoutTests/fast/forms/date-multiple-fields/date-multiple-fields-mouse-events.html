@@ -44,7 +44,7 @@ onload = function() {
 
     debug('==> Focus on the month field.');
     mouseClickOn(12, center);
-    keyDown('upArrow');
+    keyDown('ArrowUp');
     shouldBeEqualToString('input.value', '2345-08-19');
     mouseClickOn(input.offsetWidth - spinButtonOffset, center - 1);
     shouldBeEqualToString('input.value', '2345-09-19');
@@ -55,7 +55,7 @@ onload = function() {
     debug('');
     debug('==> Focus on the day field.');
     mouseClickOn(60, center);
-    keyDown('upArrow');
+    keyDown('ArrowUp');
     shouldBeEqualToString('input.value', '2345-08-20');
     mouseClickOn(input.offsetWidth - spinButtonOffset, center - 1);
     shouldBeEqualToString('input.value', '2345-08-21');
@@ -66,7 +66,7 @@ onload = function() {
     debug('');
     debug('==> Focus on the year field.');
     mouseClickOn(input.offsetWidth - 115, center);
-    keyDown('upArrow');
+    keyDown('ArrowUp');
     shouldBeEqualToString('input.value', '2346-08-20');
     mouseClickOn(input.offsetWidth - spinButtonOffset, center - 1);
     shouldBeEqualToString('input.value', '2347-08-20');
@@ -78,7 +78,7 @@ onload = function() {
     debug('==> Click on a disabled field.');
     input.disabled = true;
     mouseClickOn(12, center);
-    keyDown('upArrow');
+    keyDown('ArrowUp');
     shouldBeEqualToString('input.value', '2346-08-20');
     input.disabled = false;
 
@@ -86,7 +86,7 @@ onload = function() {
     debug('==> Click on a read-only field.');
     input.readOnly = true;
     mouseClickOn(12, center);
-    keyDown('upArrow');
+    keyDown('ArrowUp');
     shouldBeEqualToString('input.value', '2346-08-20');
     input.readOnly = false;
 

@@ -55,19 +55,19 @@ function runScrollingTest(testName, frame, offsets, scrollFunction) {
     if (!window.eventSender)
         return;
 
-    eventSender.keyDown("pageDown", modifiers);
+    eventSender.keyDown("PageDown", modifiers);
     if (Math.abs(scrollFunction() - offsets[0]) > tolerance) {
         throw "Frame viewport should be around " + offsets[0] +
             "px , not at " + scrollFunction();
     }
 
-    eventSender.keyDown("pageDown", modifiers);
+    eventSender.keyDown("PageDown", modifiers);
     if (Math.abs(scrollFunction() - offsets[1]) > tolerance) {
         throw "Frame viewport should be around " + offsets[1] +
             "px , not " + scrollFunction();
     }
 
-    eventSender.keyDown("pageUp", modifiers);
+    eventSender.keyDown("PageUp", modifiers);
     if (Math.abs(scrollFunction() - offsets[0]) > tolerance) {
         throw "Frame viewport should be around " + offsets[0] +
             "px , not at " + scrollFunction();

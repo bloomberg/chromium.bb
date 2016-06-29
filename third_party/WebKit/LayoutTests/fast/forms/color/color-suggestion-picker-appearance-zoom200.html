@@ -42,12 +42,12 @@ openPicker(document.getElementById('color'), test, function() {
 
 function test() {
     popupWindow.focus();
-    eventSender.keyDown('downArrow');
-    eventSender.keyDown('downArrow');
-    eventSender.keyDown('downArrow');
-    eventSender.keyDown('leftArrow');
-    eventSender.keyDown('upArrow');
-    eventSender.keyDown('rightArrow');
+    eventSender.keyDown('ArrowDown');
+    eventSender.keyDown('ArrowDown');
+    eventSender.keyDown('ArrowDown');
+    eventSender.keyDown('ArrowLeft');
+    eventSender.keyDown('ArrowUp');
+    eventSender.keyDown('ArrowRight');
     finishJSTest();
 }
 </script>

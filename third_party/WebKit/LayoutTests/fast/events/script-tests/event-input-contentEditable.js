@@ -90,7 +90,7 @@ eventSender.keyDown('X');
 
 var target8 = setupForFiringTest('<p id="target8" contentEditable>Deleted</p>', '');
 sel.selectAllChildren(target8);
-eventSender.keyDown('delete');
+eventSender.keyDown('Delete');
 
 var target9parent = makeTestTarget('<div id="target9parent" contenteditable><div id="target9child" contenteditable>foo</div></div>');
 var target9child = document.getElementById('target9child');

@@ -24,9 +24,9 @@ function runOnOpenPopup1() {
     popupWindow.focus();
 
     shouldBeNull('highlightedEntry()');
-    eventSender.keyDown('downArrow');
+    eventSender.keyDown('ArrowDown');
     shouldBeEqualToString('highlightedEntry()', '2012-W01');
-    eventSender.keyDown('\n');
+    eventSender.keyDown('Enter');
     waitUntilClosing(runOnOpenPopup1AfterClosing);
 }
 
@@ -41,9 +41,9 @@ function runOnOpenPopup2() {
     popupWindow.focus();
 
     shouldBeNull('highlightedEntry()');
-    eventSender.keyDown('downArrow');
+    eventSender.keyDown('ArrowDown');
     shouldBeEqualToString('highlightedEntry()', '2012-W01');
-    eventSender.keyDown('\n');
+    eventSender.keyDown('Enter');
     waitUntilClosing(runOnOpenPopup2AfterClosing);
 }
 

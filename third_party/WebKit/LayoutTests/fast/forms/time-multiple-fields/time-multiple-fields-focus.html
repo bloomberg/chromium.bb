@@ -13,7 +13,7 @@ debug('Move focus to the second sub-field:');
 var timeInput = document.getElementById('timeInput');
 timeInput.focus();
 shouldBe('document.activeElement', 'timeInput');
-eventSender.keyDown('rightArrow');
+eventSender.keyDown('ArrowRight');
 shouldBeEqualToString('shadowPseudoIdOfFocused(timeInput)', '-webkit-datetime-edit-minute-field');
 shouldBeEqualToString('timeInput.focus(); shadowPseudoIdOfFocused(timeInput)', '-webkit-datetime-edit-minute-field');
 

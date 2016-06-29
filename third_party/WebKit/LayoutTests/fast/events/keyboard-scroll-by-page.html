@@ -33,9 +33,9 @@
 function keyboardScrollPageDown()
 {
     if (navigator.platform.indexOf('Mac') == 0) {
-        eventSender.keyDown('downArrow', ["altKey"]);
+        eventSender.keyDown('ArrowDown', ["altKey"]);
     } else {
-        eventSender.keyDown('pageDown');
+        eventSender.keyDown('PageDown');
     }
 
     // see kMinFractionToStepWhenPaging = 0.875f in ScrollableArea.cpp
@@ -45,9 +45,9 @@ function keyboardScrollPageDown()
 function keyboardScrollPageUp()
 {
     if (navigator.platform.indexOf('Mac') == 0) {
-        eventSender.keyDown('upArrow', ["altKey"]);
+        eventSender.keyDown('ArrowUp', ["altKey"]);
     } else {
-        eventSender.keyDown('pageUp');
+        eventSender.keyDown('PageUp');
     }
 
     // PageDown + PageUp goes back to 0

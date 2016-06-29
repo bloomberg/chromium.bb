@@ -16,8 +16,8 @@ datetimelocal1.addEventListener('input', handleInput, false);
 openPicker(datetimelocal1, test1);
 
 function test1() {
-    eventSender.keyDown('leftArrow');
-    eventSender.keyDown('\n');
+    eventSender.keyDown('ArrowLeft');
+    eventSender.keyDown('Enter');
     waitUntilClosing(test1AfterClosing);
 }
 

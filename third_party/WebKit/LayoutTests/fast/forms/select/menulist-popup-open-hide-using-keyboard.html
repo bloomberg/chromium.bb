@@ -20,9 +20,9 @@ function test()
 
     debug('Test opening and closing of popup using alt and down arrow key');
     popup.focus();
-    eventSender.keyDown('downArrow', ['altKey']);
+    eventSender.keyDown('ArrowDown', ['altKey']);
     shouldBeTrue('internals.isSelectPopupVisible(popup)');
-    eventSender.keyDown('downArrow', ['altKey']);
+    eventSender.keyDown('ArrowDown', ['altKey']);
     // We need this delay because in ListPicker._handleKeyDown we hide the
     // popup with a delay to avoid reopening the popup.
     setTimeout(test2, 0);
@@ -32,9 +32,9 @@ function test2() {
 
     debug('Test opening and closing of popup using alt and up arrow key');
     popup.focus();
-    eventSender.keyDown('upArrow', ['altKey']);
+    eventSender.keyDown('ArrowUp', ['altKey']);
     shouldBeTrue('internals.isSelectPopupVisible(popup)');
-    eventSender.keyDown('upArrow', ['altKey']);
+    eventSender.keyDown('ArrowUp', ['altKey']);
     // We need this delay because in ListPicker._handleKeyDown we hide the
     // popup with a delay to avoid reopening the popup.
     setTimeout(test3, 0);
@@ -67,7 +67,7 @@ function test3() {
 
     debug('Test opening of popup using up key');
     popup.focus();
-    eventSender.keyDown('upArrow');
+    eventSender.keyDown('ArrowUp');
     shouldBeTrue('internals.isSelectPopupVisible(popup)');
     popup.blur();
 

@@ -16,7 +16,7 @@ function handleChange(element) {
 var changeEventCounter = 0;
 var numberInput = document.getElementsByTagName('input')[0];
 numberInput.focus();
-sendKey('upArrow');
+sendKey('ArrowUp');
 
 testPassed('if not crashed in ASAN build.');
 shouldBe('changeEventCounter', '1');

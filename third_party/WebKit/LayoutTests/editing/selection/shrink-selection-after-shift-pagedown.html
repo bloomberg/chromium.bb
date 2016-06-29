@@ -12,9 +12,9 @@
 
         var lastSelectedLine;
         if (window.eventSender) {
-            eventSender.keyDown("pageDown",["shiftKey"]);
+            eventSender.keyDown("PageDown",["shiftKey"]);
             lastSelectedLine = (ta.value).substring(ta.selectionEnd - 4, ta.selectionEnd);
-            eventSender.keyDown("upArrow",["shiftKey"]);
+            eventSender.keyDown("ArrowUp",["shiftKey"]);
         }
         
         var result;

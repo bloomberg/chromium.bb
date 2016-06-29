@@ -17,7 +17,7 @@ function test()
     var oldScrollTop = document.scrollingElement.scrollTop;
     var focus1 = window[0][0].document.getElementById("focus1");
     focus1.focus();    
-    eventSender.keyDown("pageUp");
+    eventSender.keyDown("PageUp");
     var test1Passed = false;
     if (document.scrollingElement.scrollTop < oldScrollTop)
         test1Passed = true;
@@ -30,7 +30,7 @@ function test()
     oldScrollTop = document.scrollingElement.scrollTop
     var focus2 = window[0][0].document.getElementById("focus2");
     focus2.focus();
-    eventSender.keyDown("pageDown");
+    eventSender.keyDown("PageDown");
     var test2Passed = false;
     if (document.scrollingElement.scrollTop > oldScrollTop)
         test2Passed = true;

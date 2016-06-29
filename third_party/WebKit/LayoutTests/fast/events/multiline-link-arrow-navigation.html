@@ -10,8 +10,8 @@ function runTest()
 {
     var para = document.getElementById("para");
     window.getSelection().collapse(para.childNodes.item(1).childNodes.item(0), 15);
-    eventSender.keyDown("rightArrow");
-    eventSender.keyDown("rightArrow");
+    eventSender.keyDown("ArrowRight");
+    eventSender.keyDown("ArrowRight");
 
     document.getElementById("result").innerText = getSelection().baseOffset == 17 ? "PASS" : "FAIL";
 }

@@ -42,13 +42,13 @@ textarea.focus();
 
 if (window.eventSender) {
     // location=0 indicates that we send events as standard keys.
-    testKeyEventWithLocation("leftShift", VK_SHIFT, "KeyboardEvent.DOM_KEY_LOCATION_LEFT");
-    testKeyEventWithLocation("leftControl", VK_CONTROL, "KeyboardEvent.DOM_KEY_LOCATION_LEFT");
-    testKeyEventWithLocation("leftAlt", VK_MENU, "KeyboardEvent.DOM_KEY_LOCATION_LEFT");
+    testKeyEventWithLocation("ShiftLeft", VK_SHIFT, "KeyboardEvent.DOM_KEY_LOCATION_LEFT");
+    testKeyEventWithLocation("ControlLeft", VK_CONTROL, "KeyboardEvent.DOM_KEY_LOCATION_LEFT");
+    testKeyEventWithLocation("AltLeft", VK_MENU, "KeyboardEvent.DOM_KEY_LOCATION_LEFT");
 
-    testKeyEventWithLocation("rightShift", VK_SHIFT, "KeyboardEvent.DOM_KEY_LOCATION_RIGHT");
-    testKeyEventWithLocation("rightControl", VK_CONTROL, "KeyboardEvent.DOM_KEY_LOCATION_RIGHT");
-    testKeyEventWithLocation("rightAlt", VK_MENU, "KeyboardEvent.DOM_KEY_LOCATION_RIGHT");
+    testKeyEventWithLocation("ShiftRight", VK_SHIFT, "KeyboardEvent.DOM_KEY_LOCATION_RIGHT");
+    testKeyEventWithLocation("ControlRight", VK_CONTROL, "KeyboardEvent.DOM_KEY_LOCATION_RIGHT");
+    testKeyEventWithLocation("AltRight", VK_MENU, "KeyboardEvent.DOM_KEY_LOCATION_RIGHT");
 } else {
     debug("This test requires DumpRenderTree.");
 }

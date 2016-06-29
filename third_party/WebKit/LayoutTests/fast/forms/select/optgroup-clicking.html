@@ -75,8 +75,8 @@ function test()
     debug("\nMenu list with arrow key. The test is expected to fail on OSX because of a key binding difference.");
     $("menulist").selectedIndex = 3;
     $("menulist").focus();
-    eventSender.keyDown("downArrow");
-    eventSender.keyDown("\n");
+    eventSender.keyDown("ArrowDown");
+    eventSender.keyDown("Enter");
     shouldBe('$("menulist").selectedIndex', '8');
 
     finishJSTest();

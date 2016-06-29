@@ -108,7 +108,7 @@ function testFunction()
 
     function hitEnterDumpTextAndNext(next)
     {
-        InspectorTest.fakeKeyEvent(textEditor, "enter", null, step2);
+        InspectorTest.fakeKeyEvent(textEditor, "Enter", null, step2);
         function step2()
         {
             InspectorTest.dumpTextWithSelection(textEditor, true);

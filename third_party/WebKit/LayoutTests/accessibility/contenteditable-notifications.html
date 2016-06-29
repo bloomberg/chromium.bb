@@ -18,8 +18,8 @@ if (window.testRunner && window.accessibilityController) {
     // Focus the contenteditable text box and move the cursor to the end.
     var textbox = document.getElementById("textbox");
     textbox.focus();
-    eventSender.keyDown("downArrow", []);
-    eventSender.keyDown("downArrow", []);
+    eventSender.keyDown("ArrowDown", []);
+    eventSender.keyDown("ArrowDown", []);
 
     var axTextBox = accessibilityController.focusedElement;
 
@@ -44,8 +44,8 @@ if (window.testRunner && window.accessibilityController) {
             }
         });
 
-        eventSender.keyDown("leftArrow", []);
-        eventSender.keyDown("leftArrow", []);
+        eventSender.keyDown("ArrowLeft", []);
+        eventSender.keyDown("ArrowLeft", []);
         eventSender.keyDown("w", []);
         eventSender.keyDown("x", []);
         eventSender.keyDown("y", []);

@@ -42,16 +42,16 @@ function doMove()
 
   switch (gExpectedResults[gIndex][0]) {
   case "Up":
-    direction = "upArrow";
+    direction = "ArrowUp";
     break;
   case "Right":
-    direction = "rightArrow";
+    direction = "ArrowRight";
     break;
   case "Down":
-    direction = "downArrow";
+    direction = "ArrowDown";
     break;
   case "Left":
-    direction = "leftArrow";
+    direction = "ArrowLeft";
     break;
   case "Space":
     direction = " ";

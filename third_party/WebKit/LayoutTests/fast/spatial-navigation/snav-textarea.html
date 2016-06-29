@@ -85,8 +85,12 @@
 
       document.getElementById('start').value = "";
       var text = 'A text containing a space\nand a new line';
-      for (var i = 0; i < text.length; ++i)
-        eventSender.keyDown(text.charAt(i));
+      for (var i = 0; i < text.length; ++i) {
+        var key = text.charAt(i);
+        if (key == '\n')
+          key = 'Enter';
+        eventSender.keyDown(key);
+      }
       shouldBeEqualToString("document.getElementById('start').value", text);
 
       testRunner.notifyDone();

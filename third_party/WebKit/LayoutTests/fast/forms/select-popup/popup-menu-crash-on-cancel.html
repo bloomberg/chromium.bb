@@ -24,8 +24,8 @@ openPicker(menu, test1, openPickerErrorCallback);
 description('Test for crbug.com/477932 . Pass if we don\'t crash.');
 function test1() {
     picker = window.internals.pagePopupWindow.global.picker;
-    eventSender.keyDown('downArrow');
-    eventSender.keyDown('escape');
+    eventSender.keyDown('ArrowDown');
+    eventSender.keyDown('Escape');
 
     finishJSTest();
 }

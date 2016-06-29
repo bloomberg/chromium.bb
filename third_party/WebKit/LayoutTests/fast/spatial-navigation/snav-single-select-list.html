@@ -53,7 +53,7 @@
       shouldBe("gFocusedDocument.getElementById(\"start\").options[1].selected", "false");
       shouldBe("gFocusedDocument.getElementById(\"start\").options[2].selected", "false");
       shouldBe("gFocusedDocument.getElementById(\"start\").options[3].selected", "false");
-      eventSender.keyDown("downArrow");                 //move to 2nd item
+      eventSender.keyDown("ArrowDown");                 //move to 2nd item
       shouldBe("gFocusedDocument.getElementById(\"start\").options[0].selected", "false");
       shouldBe("gFocusedDocument.getElementById(\"start\").options[1].selected", "true");
       shouldBe("gFocusedDocument.getElementById(\"start\").options[2].selected", "false");
@@ -63,7 +63,7 @@
       shouldBe("gFocusedDocument.getElementById(\"start\").options[1].selected", "true");
       shouldBe("gFocusedDocument.getElementById(\"start\").options[2].selected", "false");
       shouldBe("gFocusedDocument.getElementById(\"start\").options[3].selected", "false");
-      eventSender.keyDown("downArrow");                 //move to 4th item (3rd item is disabled) 
+      eventSender.keyDown("ArrowDown");                 //move to 4th item (3rd item is disabled) 
       shouldBe("gFocusedDocument.getElementById(\"start\").options[0].selected", "false");
       shouldBe("gFocusedDocument.getElementById(\"start\").options[1].selected", "false");
       shouldBe("gFocusedDocument.getElementById(\"start\").options[2].selected", "false");
@@ -73,7 +73,7 @@
       shouldBe("gFocusedDocument.getElementById(\"start\").options[1].selected", "false");
       shouldBe("gFocusedDocument.getElementById(\"start\").options[2].selected", "false");
       shouldBe("gFocusedDocument.getElementById(\"start\").options[3].selected", "true");
-      eventSender.keyDown("upArrow");                   //move back to 2nd item
+      eventSender.keyDown("ArrowUp");                   //move back to 2nd item
       shouldBe("gFocusedDocument.getElementById(\"start\").options[0].selected", "false");
       shouldBe("gFocusedDocument.getElementById(\"start\").options[1].selected", "true");
       shouldBe("gFocusedDocument.getElementById(\"start\").options[2].selected", "false");
@@ -83,12 +83,12 @@
       shouldBe("gFocusedDocument.getElementById(\"start\").options[1].selected", "true");
       shouldBe("gFocusedDocument.getElementById(\"start\").options[2].selected", "false");
       shouldBe("gFocusedDocument.getElementById(\"start\").options[3].selected", "false");
-      eventSender.keyDown("upArrow");                   //move back to 1st item
+      eventSender.keyDown("ArrowUp");                   //move back to 1st item
       shouldBe("gFocusedDocument.getElementById(\"start\").options[0].selected", "true");
       shouldBe("gFocusedDocument.getElementById(\"start\").options[1].selected", "false");
       shouldBe("gFocusedDocument.getElementById(\"start\").options[2].selected", "false");
       shouldBe("gFocusedDocument.getElementById(\"start\").options[3].selected", "false");
-      eventSender.keyDown("downArrow", ["shiftKey"]);   //shift-down to 2nd item
+      eventSender.keyDown("ArrowDown", ["shiftKey"]);   //shift-down to 2nd item
       shouldBe("gFocusedDocument.getElementById(\"start\").options[0].selected", "false");
       shouldBe("gFocusedDocument.getElementById(\"start\").options[1].selected", "true");
       shouldBe("gFocusedDocument.getElementById(\"start\").options[2].selected", "false");

@@ -29,14 +29,14 @@
         element.focus();
         if (opt_clear & BEFORE) {
             element.select();
-            eventSender.keyDown('delete');
+            eventSender.keyDown('Delete');
         }
         for (var i = 0; i < text.length; i++) {
             eventSender.keyDown(text.charAt(i));
         }
         if (opt_clear & AFTER) {
             element.select();
-            eventSender.keyDown('delete');
+            eventSender.keyDown('Delete');
         }
         element.blur();
         element.removeEventListener('change', listener, false);

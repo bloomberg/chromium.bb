@@ -97,11 +97,11 @@ mouseClickOnSelect("sl2", 0);
 shouldBe('selectionPattern("sl2")', '"10000"');
 
 debug("3) Select one item with the keyboard (no previous selection)");
-keyDownOnSelect("sl3", "upArrow");
+keyDownOnSelect("sl3", "ArrowUp");
 shouldBe('selectionPattern("sl3")', '"00001"');
 
 debug("4) Select one item with the keyboard (with previous selection)");
-keyDownOnSelect("sl4", "downArrow");
+keyDownOnSelect("sl4", "ArrowDown");
 shouldBe('selectionPattern("sl4")', '"00100"');
 
 debug("5) Attempt to select an item cmd-clicking");
@@ -113,7 +113,7 @@ mouseClickOnSelect("sl6", 1, "rangeSelectionKey");
 shouldBe('selectionPattern("sl6")', '"01000"');
 
 debug("7) Attempt to select a range with the keyboard");
-keyDownOnSelect("sl7", "downArrow", "rangeSelectionKey");
+keyDownOnSelect("sl7", "ArrowDown", "rangeSelectionKey");
 shouldBe('selectionPattern("sl7")', '"00100"');
 
 // Multiple selection tests
@@ -127,11 +127,11 @@ mouseClickOnSelect("sl9", 0);
 shouldBe('selectionPattern("sl9")', '"10000"');
 
 debug("10) Select one item with the keyboard (no previous selection)");
-keyDownOnSelect("sl10", "upArrow");
+keyDownOnSelect("sl10", "ArrowUp");
 shouldBe('selectionPattern("sl10")', '"00001"');
 
 debug("11) Select one item with the keyboard (with previous selection)");
-keyDownOnSelect("sl11", "downArrow");
+keyDownOnSelect("sl11", "ArrowDown");
 shouldBe('selectionPattern("sl11")', '"00100"');
 
 debug("12) Select an item cmd-clicking");
@@ -143,7 +143,7 @@ mouseClickOnSelect("sl13", 3, "rangeSelectionKey");
 shouldBe('selectionPattern("sl13")', '"11110"');
 
 debug("14) Select a range with the keyboard");
-keyDownOnSelect("sl14", "downArrow", "rangeSelectionKey");
+keyDownOnSelect("sl14", "ArrowDown", "rangeSelectionKey");
 shouldBe('selectionPattern("sl14")', '"01100"');
 
 debug("15) Drag upside-down");
@@ -154,15 +154,15 @@ shouldBeEqualToString('selectionPattern("sl15")', "01000");
 shouldBeEqualToString('mouseMoveToOption("sl15", 3); selectionPattern("sl15")', "01110");
 shouldBeEqualToString('mouseMoveToOption("sl15", 2); selectionPattern("sl15")', "01100");
 eventSender.mouseUp(0);
-// activeSelectionEnd is the third OPTION.  upArrow should select the previous
+// activeSelectionEnd is the third OPTION.  ArrowUp should select the previous
 // one of the third OPTION.  Adding new OPTION shouldn't clear
 // activeSelectionEnd.
-shouldBeEqualToString('sl15.add(new Option("a")); eventSender.keyDown("upArrow"); selectionPattern("sl15")', "010000");
+shouldBeEqualToString('sl15.add(new Option("a")); eventSender.keyDown("ArrowUp"); selectionPattern("sl15")', "010000");
 
 debug("16) Active-selection after type-ahead");
 shouldBeEqualToString("mouseClickOnSelect('sl16', 1); selectionPattern('sl16')", "01000");
 shouldBeEqualToString("keyDownOnSelect('sl16', 'e'); selectionPattern('sl16')", "00001");
-shouldBeEqualToString("keyDownOnSelect('sl16', 'upArrow', 'rangeSelectionKey'); selectionPattern('sl16')", "00011");
+shouldBeEqualToString("keyDownOnSelect('sl16', 'ArrowUp', 'rangeSelectionKey'); selectionPattern('sl16')", "00011");
 
 document.getElementById("parent").remove();
 </script>

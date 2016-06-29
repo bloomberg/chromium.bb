@@ -16,13 +16,13 @@ window.getSelection().collapse(div.firstChild, 1);
 
 if (window.testRunner) {
     testRunner.dumpAsText();
-    eventSender.keyDown("rightArrow", ["shiftKey"]);
+    eventSender.keyDown("ArrowRight", ["shiftKey"]);
     logResult("Check Right arrow + Shift", 1);
 
-    eventSender.keyDown("rightArrow", ["shiftKey"], ["ctrlKey"]);
+    eventSender.keyDown("ArrowRight", ["shiftKey"], ["ctrlKey"]);
     logResult("Check Right arrow + Shift + Control", 2);
 
-    eventSender.keyDown("end", ["shiftKey"]);
+    eventSender.keyDown("End", ["shiftKey"]);
     logResult("Check End + Shift", 3);
 }
 

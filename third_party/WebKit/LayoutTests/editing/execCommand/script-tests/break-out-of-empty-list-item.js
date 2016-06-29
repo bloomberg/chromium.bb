@@ -23,7 +23,7 @@ function enterAtTarget(initialContent)
     s.removeAllRanges();
     s.addRange(r);
 
-    pressKey('\n');
+    pressKey('Enter');
     
     return testContainer.innerHTML;
 }

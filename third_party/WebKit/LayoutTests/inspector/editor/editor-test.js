@@ -66,19 +66,19 @@ InspectorTest.typeIn = function(editor, typeText, callback)
         var iterationCallback = charIndex + 1 === typeText.length ? callback : noop;
         switch (typeText[charIndex]) {
         case "\n":
-            InspectorTest.fakeKeyEvent(editor, "enter", null, iterationCallback);
+            InspectorTest.fakeKeyEvent(editor, "Enter", null, iterationCallback);
             break;
         case "L":
-            InspectorTest.fakeKeyEvent(editor, "leftArrow", null, iterationCallback);
+            InspectorTest.fakeKeyEvent(editor, "ArrowLeft", null, iterationCallback);
             break;
         case "R":
-            InspectorTest.fakeKeyEvent(editor, "rightArrow", null, iterationCallback);
+            InspectorTest.fakeKeyEvent(editor, "ArrowRight", null, iterationCallback);
             break;
         case "U":
-            InspectorTest.fakeKeyEvent(editor, "upArrow", null, iterationCallback);
+            InspectorTest.fakeKeyEvent(editor, "ArrowUp", null, iterationCallback);
             break;
         case "D":
-            InspectorTest.fakeKeyEvent(editor, "downArrow", null, iterationCallback);
+            InspectorTest.fakeKeyEvent(editor, "ArrowDown", null, iterationCallback);
             break;
         default:
             InspectorTest.fakeKeyEvent(editor, typeText[charIndex], null, iterationCallback);
@@ -87,12 +87,12 @@ InspectorTest.typeIn = function(editor, typeText, callback)
 }
 
 var eventCodes = {
-    enter: 13,
-    home: 36,
-    leftArrow: 37,
-    upArrow: 38,
-    rightArrow: 39,
-    downArrow: 40
+    Enter: 13,
+    Home: 36,
+    ArrowLeft: 37,
+    ArrowUp: 38,
+    ArrowRight: 39,
+    ArrowDown: 40
 };
 
 function createCodeMirrorFakeEvent(eventType, code, charCode, modifiers)

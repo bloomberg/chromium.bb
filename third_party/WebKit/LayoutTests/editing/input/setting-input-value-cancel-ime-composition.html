@@ -32,7 +32,7 @@ when the value is programmatically set.');
     shouldBeTrue("textInputController.hasMarkedText()");
     shouldBeEqualToString("textInputController.markedRange().toString()", "0,5");
 
-    eventSender.keyDown('downArrow');
+    eventSender.keyDown('ArrowDown');
 
     debug('the text was changed so there should be no marked text');
     shouldBeFalse("textInputController.hasMarkedText()");

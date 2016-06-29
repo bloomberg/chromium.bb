@@ -92,7 +92,7 @@ el = makeInvalid();
 el.focus();
 eventSender.keyDown('a');
 shouldBe(elBackground, 'validColor');
-eventSender.keyDown('backspace', []);
+eventSender.keyDown('Backspace', []);
 shouldBe(elBackground, 'invalidColor');
 
 // --------------------------------

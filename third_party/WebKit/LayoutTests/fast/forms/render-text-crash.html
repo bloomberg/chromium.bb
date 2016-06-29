@@ -31,7 +31,7 @@ move(inputs[0]);
 if (window.eventSender) {
     testRunner.waitUntilDone();
     for (var i = 0; i < inputs.length - 1; i++)
-        eventSender.keyDown('downArrow', []);
+        eventSender.keyDown('ArrowDown', []);
     testRunner.notifyDone();
 }
 

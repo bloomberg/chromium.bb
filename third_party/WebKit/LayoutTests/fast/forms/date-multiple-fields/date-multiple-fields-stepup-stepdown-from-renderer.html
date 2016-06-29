@@ -22,13 +22,13 @@ function setInputAttributes(value, min, max) {
 
 function stepUp(value, min, max) {
     setInputAttributes(value, min, max);
-    eventSender.keyDown('upArrow');
+    eventSender.keyDown('ArrowUp');
     return input.value;
 }
 
 function stepDown(value, min, max) {
     setInputAttributes(value, min, max);
-    eventSender.keyDown('downArrow');
+    eventSender.keyDown('ArrowDown');
     return input.value;
 }
 
@@ -47,7 +47,7 @@ shouldBeEqualToString('stepUp("2000-05-01", "2000-03-01", "2001-05-31")', '2000-
 shouldBeEqualToString('stepDown("2000-05-01", "2000-05-01", "2001-08-31")', '2000-04-01');
 
 debug('Day');
-eventSender.keyDown('rightArrow');
+eventSender.keyDown('ArrowRight');
 shouldBeEqualToString('stepUp("2000-05-10", "2000-05-10", "2000-05-20")', '2000-05-11');
 shouldBeEqualToString('stepDown("2000-05-10", "2000-05-10", "2000-05-20")', '2000-05-20');
 shouldBeEqualToString('stepUp("2000-05-10", "2000-05-05", "2000-05-10")', '2000-05-05');
@@ -63,7 +63,7 @@ shouldBeEqualToString('stepDown("2000-05-10", "2000-05-10", "2000-06-15")', '200
 
 debug('Year');
 setInputAttributes(null, null, null, null);
-eventSender.keyDown('rightArrow');
+eventSender.keyDown('ArrowRight');
 shouldBeEqualToString('stepUp("2000-01-01", "2000-01-01", "2009-12-31")', '2001-01-01');
 shouldBeEqualToString('stepDown("2000-01-01", "2000-01-01", "2009-12-31")', '2009-01-01');
 shouldBeEqualToString('stepUp("2000-01-01", "1990-01-01", "2000-12-31")', '1990-01-01');

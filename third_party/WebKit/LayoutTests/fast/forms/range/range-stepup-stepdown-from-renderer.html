@@ -31,12 +31,12 @@ function stepUp(value, step, max, optionalStepCount) {
     if (typeof optionalStepCount != "undefined")
         if (optionalStepCount < 0)
             for (var i = 0; i < -optionalStepCount; i++)
-                sendKey('downArrow');
+                sendKey('ArrowDown');
         else
             for (var i = 0; i < optionalStepCount; i++)
-                sendKey('upArrow');
+                sendKey('ArrowUp');
     else
-        sendKey('upArrow');
+        sendKey('ArrowUp');
     return input.value;
 }
 
@@ -45,12 +45,12 @@ function stepDown(value, step, min, optionalStepCount) {
     if (typeof optionalStepCount != "undefined")
         if (optionalStepCount < 0)
             for (var i = 0; i < -optionalStepCount; i++)
-                sendKey('upArrow');
+                sendKey('ArrowUp');
         else
             for (var i = 0; i < optionalStepCount; i++)
-                sendKey('downArrow');
+                sendKey('ArrowDown');
     else
-        sendKey('downArrow');
+        sendKey('ArrowDown');
     return input.value;
 }
 
@@ -62,13 +62,13 @@ function stepUpExplicitBounds(min, max, step, value, stepCount) {
     if (typeof stepCount !== 'undefined')
         if (stepCount < 0) {
             for (var i = 0; i < -stepCount; i++)
-                sendKey('downArrow');
+                sendKey('ArrowDown');
         } else {
             for (var i = 0; i < stepCount; i++)
-                sendKey('upArrow');
+                sendKey('ArrowUp');
         }
     else
-        sendKey('upArrow');
+        sendKey('ArrowUp');
     return input.value;
 }
 
@@ -77,13 +77,13 @@ function stepDownExplicitBounds(min, max, step, value, stepCount) {
     if (typeof stepCount !== 'undefined')
         if (stepCount < 0) {
             for (var i = 0; i < -stepCount; i++)
-                sendKey('upArrow');
+                sendKey('ArrowUp');
         } else {
             for (var i = 0; i < stepCount; i++)
-                sendKey('downArrow');
+                sendKey('ArrowDown');
         }
     else
-        sendKey('downArrow');
+        sendKey('ArrowDown');
     return input.value;
 }
 

@@ -20,7 +20,7 @@ function runTest(name, shouldChangeSelection) {
     element.focus();
     eventSender.keyDown('a');
     eventSender.leapForward(100);
-    eventSender.keyDown(name == 'textarea' ? '\n' : 'b');
+    eventSender.keyDown(name == 'textarea' ? 'Enter' : 'b');
     eventSender.leapForward(100);
     if (shouldChangeSelection) {
         element.selectionStart = 1;

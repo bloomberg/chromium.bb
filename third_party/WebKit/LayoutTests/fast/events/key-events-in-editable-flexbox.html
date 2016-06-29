@@ -17,17 +17,17 @@
 
         if (window.testRunner) {
           // Move cursor to the end of line.
-          eventSender.keyDown("end", []);
+          eventSender.keyDown("End", []);
 
           eventSender.keyDown('E');
           eventSender.keyDown('S');
           eventSender.keyDown('T');
           shouldBeEqualToString("targetDiv.innerText", "TEST");
 
-          eventSender.keyDown("backspace", []);
-          eventSender.keyDown("backspace", []);
-          eventSender.keyDown("backspace", []);
-          eventSender.keyDown("backspace", []);
+          eventSender.keyDown("Backspace", []);
+          eventSender.keyDown("Backspace", []);
+          eventSender.keyDown("Backspace", []);
+          eventSender.keyDown("Backspace", []);
           shouldBeEmptyString("targetDiv.innerText");
 
           eventSender.keyDown('T');

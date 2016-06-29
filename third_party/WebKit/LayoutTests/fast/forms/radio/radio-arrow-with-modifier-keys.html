@@ -16,12 +16,12 @@ description('Tests behavior of arrow with modifer keys on radio button.');
 clickElement(document.getElementById('banana'));
 shouldBeTrue('document.getElementById("banana").checked');
 
-eventSender.keyDown('rightArrow', ['ctrlKey']);
+eventSender.keyDown('ArrowRight', ['ctrlKey']);
 shouldBeTrue('document.getElementById("banana").checked');
 
-eventSender.keyDown('leftArrow', ['shiftKey']);
+eventSender.keyDown('ArrowLeft', ['shiftKey']);
 shouldBeTrue('document.getElementById("apple").checked');
 
-eventSender.keyDown('leftArrow', ['altKey']);
+eventSender.keyDown('ArrowLeft', ['altKey']);
 shouldBeTrue('document.getElementById("apple").checked');
 </script>

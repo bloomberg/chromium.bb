@@ -3,14 +3,14 @@ Test keyboard smooth scroll. The main purpose of this test is to ensure that smo
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
 
-PASS downArrow reached target
-PASS upArrow reached target
-PASS rightArrow reached target
-PASS leftArrow reached target
-PASS end reached target
-PASS home reached target
-PASS pageDown reached target
-PASS pageUp reached target
+PASS ArrowDown reached target
+PASS ArrowUp reached target
+PASS ArrowRight reached target
+PASS ArrowLeft reached target
+PASS End reached target
+PASS Home reached target
+PASS PageDown reached target
+PASS PageUp reached target
 PASS   reached target
 PASS successfullyParsed is true
 

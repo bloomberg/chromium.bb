@@ -16,19 +16,19 @@ async_test(function(t) {
         mediaControlsButton(audio, "volume-slider").focus();
 
         // 'Left' reduces volume.
-        eventSender.keyDown("leftArrow");
+        eventSender.keyDown("ArrowLeft");
         assert_less_than(audio.volume, 1);
 
         // 'Right' increases volume (same step as 'Left', but opposite sign).
-        eventSender.keyDown("rightArrow");
+        eventSender.keyDown("ArrowRight");
         assert_equals(audio.volume, 1);
 
         // 'Home' sets minimum volume (0).
-        eventSender.keyDown("home");
+        eventSender.keyDown("Home");
         assert_equals(audio.volume, 0);
 
         // 'End' sets maximum volume (1).
-        eventSender.keyDown("end");
+        eventSender.keyDown("End");
         assert_equals(audio.volume, 1);
 
         audio.onvolumechange = t.step_func_done();

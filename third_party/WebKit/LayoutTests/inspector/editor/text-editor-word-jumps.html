@@ -76,28 +76,28 @@ function testMyCamelMove(foo, bar)
         {
             setCursorAtBeginning();
             dumpEditorSelection();
-            fireEventWhileSelectionChanges("rightArrow", [wordJumpModifier], next);
+            fireEventWhileSelectionChanges("ArrowRight", [wordJumpModifier], next);
         },
 
         function testCtrlLeftArrow(next)
         {
             setCursorAtEnd();
             dumpEditorSelection();
-            fireEventWhileSelectionChanges("leftArrow", [wordJumpModifier], next);
+            fireEventWhileSelectionChanges("ArrowLeft", [wordJumpModifier], next);
         },
 
         function testCtrlShiftRightArrow(next)
         {
             setCursorAtBeginning();
             dumpEditorSelection();
-            fireEventWhileSelectionChanges("rightArrow", [wordJumpModifier, "shiftKey"], next);
+            fireEventWhileSelectionChanges("ArrowRight", [wordJumpModifier, "shiftKey"], next);
         },
 
         function testCtrlShiftLeftArrow(next)
         {
             setCursorAtEnd();
             var selection = dumpEditorSelection();
-            fireEventWhileSelectionChanges("leftArrow", [wordJumpModifier, "shiftKey"], next);
+            fireEventWhileSelectionChanges("ArrowLeft", [wordJumpModifier, "shiftKey"], next);
         },
 
         function testCtrlBackspace(next)
@@ -123,28 +123,28 @@ function testMyCamelMove(foo, bar)
             textEditor.setText(testMyCamelMove.toString());
             setCursorAtBeginning();
             dumpEditorSelection();
-            fireEventWhileSelectionChanges("rightArrow", [camelJumpModifier], next);
+            fireEventWhileSelectionChanges("ArrowRight", [camelJumpModifier], next);
         },
 
         function testAltLeft(next)
         {
             setCursorAtEnd();
             dumpEditorSelection();
-            fireEventWhileSelectionChanges("leftArrow", [camelJumpModifier], next);
+            fireEventWhileSelectionChanges("ArrowLeft", [camelJumpModifier], next);
         },
 
         function testAltShiftRight(next)
         {
             setCursorAtBeginning();
             dumpEditorSelection();
-            fireEventWhileSelectionChanges("rightArrow", [camelJumpModifier, "shiftKey"], next);
+            fireEventWhileSelectionChanges("ArrowRight", [camelJumpModifier, "shiftKey"], next);
         },
 
         function testAltShiftLeft(next)
         {
             setCursorAtEnd();
             dumpEditorSelection();
-            fireEventWhileSelectionChanges("leftArrow", [camelJumpModifier, "shiftKey"], next);
+            fireEventWhileSelectionChanges("ArrowLeft", [camelJumpModifier, "shiftKey"], next);
         }
     ]);
 

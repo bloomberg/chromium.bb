@@ -13,7 +13,7 @@ function testSettingEmptyStringClearsSubFields(type) {
         debug('This test needs to be run on DRT/WTR.');
     else {
         debug('Empty text: ' + emptyText);
-        shouldNotBe('eventSender.keyDown("upArrow"); getUserAgentShadowTextContent(input)', 'emptyText');
+        shouldNotBe('eventSender.keyDown("ArrowUp"); getUserAgentShadowTextContent(input)', 'emptyText');
         shouldBe('input.value = ""; getUserAgentShadowTextContent(input)', 'emptyText');
         input.remove();
     }

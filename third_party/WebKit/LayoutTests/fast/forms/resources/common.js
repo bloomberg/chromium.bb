@@ -221,7 +221,11 @@ function sendString(str) {
         console.log('Require eventSender.');
         return;
     }
-    for (var i = 0; i < str.length; ++i)
-        eventSender.keyDown(str.charAt(i));
+    for (var i = 0; i < str.length; ++i) {
+        var key = str.charAt(i);
+        if (key == '\n')
+            key = 'Enter';
+        eventSender.keyDown(key);
+    }
 }
 

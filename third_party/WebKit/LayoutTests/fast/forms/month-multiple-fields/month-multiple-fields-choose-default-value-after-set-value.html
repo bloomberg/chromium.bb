@@ -32,8 +32,8 @@ shouldBeUndefined('eventsCounter.change');
 // We assume the year-month format is "MMM yyyy".
 
 input.focus();
-eventSender.keyDown('rightArrow');
-eventSender.keyDown('downArrow');
+eventSender.keyDown('ArrowRight');
+eventSender.keyDown('ArrowDown');
 
 shouldBeEqualToString('input.value', '2000-01');
 shouldBe('eventsCounter.input', '1');

@@ -45,31 +45,31 @@ function runCursorMoveTest(testName, frame, selectionSource)
     if (!window.eventSender)
         return;
 
-    eventSender.keyDown("pageDown", modifiers);
+    eventSender.keyDown("PageDown", modifiers);
     var line = selectionSource.getSelection().baseNode.nodeValue;
     if (line != "line 3")
         throw "cursor should be at line 3, not " + line;
 
-    eventSender.keyDown("pageDown", modifiers);
+    eventSender.keyDown("PageDown", modifiers);
     var line = selectionSource.getSelection().baseNode.nodeValue;
     if (line != "line 6")
         throw "cursor should be at line 6, not " + line;
 
-    eventSender.keyDown("pageUp", modifiers);
+    eventSender.keyDown("PageUp", modifiers);
     var line = selectionSource.getSelection().baseNode.nodeValue;
     if (line != "line 3")
         throw "cursor should be at line 3, not " + line;
 
-    // Test that on Mac pageDown/pageUp does not move the cursor at all.
+    // Test that on Mac PageDown/PageUp does not move the cursor at all.
     if (onMacPlatform) {
-      eventSender.keyDown("pageDown", []);
+      eventSender.keyDown("PageDown", []);
       var line = selectionSource.getSelection().baseNode.nodeValue;
       if (line != "line 3") {
           document.getElementById("results").innerText = "cursor should be at line 3, not " + line;
           throw "cursor should be at line 3, not " + line;
       }
 
-      eventSender.keyDown("pageUp", []);
+      eventSender.keyDown("PageUp", []);
       var line = selectionSource.getSelection().baseNode.nodeValue;
       if (line != "line 3") {
           document.getElementById("results").innerText = "cursor should be at line 3, not " + line;

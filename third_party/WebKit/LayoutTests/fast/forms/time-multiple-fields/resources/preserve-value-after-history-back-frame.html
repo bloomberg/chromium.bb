@@ -32,11 +32,11 @@ window.onload = function() {
         case 'direct': {
             testInput1.value = '01:01';
             testInput2.focus();
-            keyDown('upArrow');
+            keyDown('ArrowUp');
             keyDown('\t');
             keyDown('\t');
             keyDown('\t');
-            keyDown('upArrow');
+            keyDown('ArrowUp');
             var nextUri = location.toString().replace('?page1', '?page2');
             setTimeout(function() { window.location.href = nextUri; }, 0);
             break;
@@ -68,7 +68,7 @@ window.onload = function() {
             testInput1.value = '02:02';
             testInput2.focus();
             keyDown('\t');
-            keyDown('downArrow');
+            keyDown('ArrowDown');
             back('backTo1');
             break;
         case 'forwardTo2':

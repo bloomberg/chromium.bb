@@ -35,23 +35,23 @@ if (window.eventSender) {
   var select = document.querySelectorAll('select');
 
   select[1].focus();
-  eventSender.keyDown('downArrow');
-  eventSender.keyDown('downArrow');
-  eventSender.keyDown('downArrow');
+  eventSender.keyDown('ArrowDown');
+  eventSender.keyDown('ArrowDown');
+  eventSender.keyDown('ArrowDown');
   shouldBeEqualToString('select[1].value', 'Four');
 
 
   optgrp[1].style.display = 'none';
   eventSender.keyDown('O');
-  eventSender.keyDown('downArrow');
-  eventSender.keyDown('downArrow');
-  eventSender.keyDown('downArrow');
+  eventSender.keyDown('ArrowDown');
+  eventSender.keyDown('ArrowDown');
+  eventSender.keyDown('ArrowDown');
   shouldBeEqualToString('select[1].value', 'Six');
 
   select[0].focus();
-  eventSender.keyDown('downArrow');
-  eventSender.keyDown('downArrow');
-  eventSender.keyDown('downArrow');
+  eventSender.keyDown('ArrowDown');
+  eventSender.keyDown('ArrowDown');
+  eventSender.keyDown('ArrowDown');
   shouldBeEqualToString('select[0].value', 'Six');
 }
 

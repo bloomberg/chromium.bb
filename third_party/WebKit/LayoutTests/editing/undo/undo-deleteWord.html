@@ -27,7 +27,7 @@ function sendDeleteWordKey()
         deleteWordModifiers = ["ctrlKey"];
 
     if (window.eventSender)
-        eventSender.keyDown("backspace", deleteWordModifiers);
+        eventSender.keyDown("Backspace", deleteWordModifiers);
     window.setTimeout(undoNow, 100);
 }
 

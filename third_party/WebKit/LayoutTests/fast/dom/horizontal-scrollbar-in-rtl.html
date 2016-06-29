@@ -63,10 +63,10 @@
                     // For example, in Mac, HOME/END key reset both x and y scroll position. 
                     // In Chromium, HOME/END key only reset y scroll position, and x scroll position is preserved.
                     window.scrollTo(expectedScrollX, expectedScrollY);
-                    eventSender.keyDown("home");
+                    eventSender.keyDown("Home");
                     log("KeyDown HOME move x-scroll position to right for RTL page: " + window.scrollX, 0);
                     window.scrollTo(expectedScrollX, expectedScrollY);
-                    eventSender.keyDown("end");
+                    eventSender.keyDown("End");
                     log("KeyDown END move x-scroll position to right for RTL page: " + window.scrollX, 0);
                 }
             

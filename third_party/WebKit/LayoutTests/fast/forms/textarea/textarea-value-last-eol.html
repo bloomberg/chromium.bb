@@ -9,7 +9,7 @@ test(function() {
     var textarea = document.querySelector('textarea');
     textarea.focus();
     eventSender.keyDown('H');
-    eventSender.keyDown('\n');
+    eventSender.keyDown('Enter');
     eventSender.keyDown('W');
     assert_equals(textarea.value, 'H\nW');
     textarea.setSelectionRange(2, 3); // "W"

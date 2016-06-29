@@ -120,85 +120,85 @@ function sendWithShiftKeyAndExpectIndices(selectId, key, expectedIndices) {
 }
 
 function testPageDownNoDisabledElements() {
-    shouldBe('sendKeyAndExpectIndex("ss", "pageDown", 0, 3)', 'true');
-    shouldBe('sendKeyAndExpectIndex("ss", "pageDown", 1, 4)', 'true');
-    shouldBe('sendKeyAndExpectIndex("ss", "pageDown", 2, 5)', 'true');
-    shouldBe('sendKeyAndExpectIndex("ss", "pageDown", 3, 6)', 'true');
-    shouldBe('sendKeyAndExpectIndex("ss", "pageDown", 4, 6)', 'true');
-    shouldBe('sendKeyAndExpectIndex("ss", "pageDown", 5, 6)', 'true');
-    shouldBe('sendKeyAndExpectIndex("ss", "pageDown", 6, 6)', 'true');
+    shouldBe('sendKeyAndExpectIndex("ss", "PageDown", 0, 3)', 'true');
+    shouldBe('sendKeyAndExpectIndex("ss", "PageDown", 1, 4)', 'true');
+    shouldBe('sendKeyAndExpectIndex("ss", "PageDown", 2, 5)', 'true');
+    shouldBe('sendKeyAndExpectIndex("ss", "PageDown", 3, 6)', 'true');
+    shouldBe('sendKeyAndExpectIndex("ss", "PageDown", 4, 6)', 'true');
+    shouldBe('sendKeyAndExpectIndex("ss", "PageDown", 5, 6)', 'true');
+    shouldBe('sendKeyAndExpectIndex("ss", "PageDown", 6, 6)', 'true');
 }
 
 function testPageUpNoDisabledElements() {
-    shouldBe('sendKeyAndExpectIndex("ss", "pageUp", 6, 3)', 'true');
-    shouldBe('sendKeyAndExpectIndex("ss", "pageUp", 5, 2)', 'true');
-    shouldBe('sendKeyAndExpectIndex("ss", "pageUp", 4, 1)', 'true');
-    shouldBe('sendKeyAndExpectIndex("ss", "pageUp", 3, 0)', 'true');
-    shouldBe('sendKeyAndExpectIndex("ss", "pageUp", 2, 0)', 'true');
-    shouldBe('sendKeyAndExpectIndex("ss", "pageUp", 1, 0)', 'true');
-    shouldBe('sendKeyAndExpectIndex("ss", "pageUp", 0, 0)', 'true');
+    shouldBe('sendKeyAndExpectIndex("ss", "PageUp", 6, 3)', 'true');
+    shouldBe('sendKeyAndExpectIndex("ss", "PageUp", 5, 2)', 'true');
+    shouldBe('sendKeyAndExpectIndex("ss", "PageUp", 4, 1)', 'true');
+    shouldBe('sendKeyAndExpectIndex("ss", "PageUp", 3, 0)', 'true');
+    shouldBe('sendKeyAndExpectIndex("ss", "PageUp", 2, 0)', 'true');
+    shouldBe('sendKeyAndExpectIndex("ss", "PageUp", 1, 0)', 'true');
+    shouldBe('sendKeyAndExpectIndex("ss", "PageUp", 0, 0)', 'true');
 }
 
 function testHomeNoDisabledElements() {
-    shouldBe('sendKeyAndExpectIndex("ss", "home", 6, 0)', 'true');
-    shouldBe('sendKeyAndExpectIndex("ss", "home", 5, 0)', 'true');
-    shouldBe('sendKeyAndExpectIndex("ss", "home", 4, 0)', 'true');
-    shouldBe('sendKeyAndExpectIndex("ss", "home", 3, 0)', 'true');
-    shouldBe('sendKeyAndExpectIndex("ss", "home", 2, 0)', 'true');
-    shouldBe('sendKeyAndExpectIndex("ss", "home", 1, 0)', 'true');
-    shouldBe('sendKeyAndExpectIndex("ss", "home", 0, 0)', 'true');
+    shouldBe('sendKeyAndExpectIndex("ss", "Home", 6, 0)', 'true');
+    shouldBe('sendKeyAndExpectIndex("ss", "Home", 5, 0)', 'true');
+    shouldBe('sendKeyAndExpectIndex("ss", "Home", 4, 0)', 'true');
+    shouldBe('sendKeyAndExpectIndex("ss", "Home", 3, 0)', 'true');
+    shouldBe('sendKeyAndExpectIndex("ss", "Home", 2, 0)', 'true');
+    shouldBe('sendKeyAndExpectIndex("ss", "Home", 1, 0)', 'true');
+    shouldBe('sendKeyAndExpectIndex("ss", "Home", 0, 0)', 'true');
 }
 
 function testEndNoDisabledElements() {
-    shouldBe('sendKeyAndExpectIndex("ss", "end", 6, 6)', 'true');
-    shouldBe('sendKeyAndExpectIndex("ss", "end", 5, 6)', 'true');
-    shouldBe('sendKeyAndExpectIndex("ss", "end", 4, 6)', 'true');
-    shouldBe('sendKeyAndExpectIndex("ss", "end", 3, 6)', 'true');
-    shouldBe('sendKeyAndExpectIndex("ss", "end", 2, 6)', 'true');
-    shouldBe('sendKeyAndExpectIndex("ss", "end", 1, 6)', 'true');
-    shouldBe('sendKeyAndExpectIndex("ss", "end", 0, 6)', 'true');
+    shouldBe('sendKeyAndExpectIndex("ss", "End", 6, 6)', 'true');
+    shouldBe('sendKeyAndExpectIndex("ss", "End", 5, 6)', 'true');
+    shouldBe('sendKeyAndExpectIndex("ss", "End", 4, 6)', 'true');
+    shouldBe('sendKeyAndExpectIndex("ss", "End", 3, 6)', 'true');
+    shouldBe('sendKeyAndExpectIndex("ss", "End", 2, 6)', 'true');
+    shouldBe('sendKeyAndExpectIndex("ss", "End", 1, 6)', 'true');
+    shouldBe('sendKeyAndExpectIndex("ss", "End", 0, 6)', 'true');
 }
 
 function testPageDownWithDisabledElements() {
-    shouldBe('sendKeyAndExpectIndex("ssd", "pageDown", 0, 4)', 'true');
-    shouldBe('sendKeyAndExpectIndex("ssd", "pageDown", 1, 4)', 'true');
-    shouldBe('sendKeyAndExpectIndex("ssd", "pageDown", 2, 5)', 'true');
-    shouldBe('sendKeyAndExpectIndex("ssd", "pageDown", 4, 6)', 'true');
-    shouldBe('sendKeyAndExpectIndex("ssd", "pageDown", 5, 6)', 'true');
-    shouldBe('sendKeyAndExpectIndex("ssd", "pageDown", 6, 6)', 'true');
-    shouldBe('sendKeyAndExpectIndex("ssd", "pageDown", 7, 6)', 'true');
+    shouldBe('sendKeyAndExpectIndex("ssd", "PageDown", 0, 4)', 'true');
+    shouldBe('sendKeyAndExpectIndex("ssd", "PageDown", 1, 4)', 'true');
+    shouldBe('sendKeyAndExpectIndex("ssd", "PageDown", 2, 5)', 'true');
+    shouldBe('sendKeyAndExpectIndex("ssd", "PageDown", 4, 6)', 'true');
+    shouldBe('sendKeyAndExpectIndex("ssd", "PageDown", 5, 6)', 'true');
+    shouldBe('sendKeyAndExpectIndex("ssd", "PageDown", 6, 6)', 'true');
+    shouldBe('sendKeyAndExpectIndex("ssd", "PageDown", 7, 6)', 'true');
 }
 
 function testPageUpWithDisabledElements() {
-    shouldBe('sendKeyAndExpectIndex("ssd", "pageUp", 7, 4)', 'true');
-    shouldBe('sendKeyAndExpectIndex("ssd", "pageUp", 6, 2)', 'true');
-    shouldBe('sendKeyAndExpectIndex("ssd", "pageUp", 5, 2)', 'true');
-    shouldBe('sendKeyAndExpectIndex("ssd", "pageUp", 4, 1)', 'true');
-    shouldBe('sendKeyAndExpectIndex("ssd", "pageUp", 2, 1)', 'true');
-    shouldBe('sendKeyAndExpectIndex("ssd", "pageUp", 1, 1)', 'true');
-    shouldBe('sendKeyAndExpectIndex("ssd", "pageUp", 0, 1)', 'true');
+    shouldBe('sendKeyAndExpectIndex("ssd", "PageUp", 7, 4)', 'true');
+    shouldBe('sendKeyAndExpectIndex("ssd", "PageUp", 6, 2)', 'true');
+    shouldBe('sendKeyAndExpectIndex("ssd", "PageUp", 5, 2)', 'true');
+    shouldBe('sendKeyAndExpectIndex("ssd", "PageUp", 4, 1)', 'true');
+    shouldBe('sendKeyAndExpectIndex("ssd", "PageUp", 2, 1)', 'true');
+    shouldBe('sendKeyAndExpectIndex("ssd", "PageUp", 1, 1)', 'true');
+    shouldBe('sendKeyAndExpectIndex("ssd", "PageUp", 0, 1)', 'true');
 }
 
 function testHomeWithDisabledElements() {
-    shouldBe('sendKeyAndExpectIndex("ssd", "home", 7, 1)', 'true');
-    shouldBe('sendKeyAndExpectIndex("ssd", "home", 6, 1)', 'true');
-    shouldBe('sendKeyAndExpectIndex("ssd", "home", 5, 1)', 'true');
-    shouldBe('sendKeyAndExpectIndex("ssd", "home", 4, 1)', 'true');
-    shouldBe('sendKeyAndExpectIndex("ssd", "home", 3, 1)', 'true');
-    shouldBe('sendKeyAndExpectIndex("ssd", "home", 2, 1)', 'true');
-    shouldBe('sendKeyAndExpectIndex("ssd", "home", 1, 1)', 'true');
-    shouldBe('sendKeyAndExpectIndex("ssd", "home", 0, 1)', 'true');
+    shouldBe('sendKeyAndExpectIndex("ssd", "Home", 7, 1)', 'true');
+    shouldBe('sendKeyAndExpectIndex("ssd", "Home", 6, 1)', 'true');
+    shouldBe('sendKeyAndExpectIndex("ssd", "Home", 5, 1)', 'true');
+    shouldBe('sendKeyAndExpectIndex("ssd", "Home", 4, 1)', 'true');
+    shouldBe('sendKeyAndExpectIndex("ssd", "Home", 3, 1)', 'true');
+    shouldBe('sendKeyAndExpectIndex("ssd", "Home", 2, 1)', 'true');
+    shouldBe('sendKeyAndExpectIndex("ssd", "Home", 1, 1)', 'true');
+    shouldBe('sendKeyAndExpectIndex("ssd", "Home", 0, 1)', 'true');
 }
 
 function testEndWithDisabledElements() {
-    shouldBe('sendKeyAndExpectIndex("ssd", "end", 7, 6)', 'true');
-    shouldBe('sendKeyAndExpectIndex("ssd", "end", 6, 6)', 'true');
-    shouldBe('sendKeyAndExpectIndex("ssd", "end", 5, 6)', 'true');
-    shouldBe('sendKeyAndExpectIndex("ssd", "end", 4, 6)', 'true');
-    shouldBe('sendKeyAndExpectIndex("ssd", "end", 3, 6)', 'true');
-    shouldBe('sendKeyAndExpectIndex("ssd", "end", 2, 6)', 'true');
-    shouldBe('sendKeyAndExpectIndex("ssd", "end", 1, 6)', 'true');
-    shouldBe('sendKeyAndExpectIndex("ssd", "end", 0, 6)', 'true');
+    shouldBe('sendKeyAndExpectIndex("ssd", "End", 7, 6)', 'true');
+    shouldBe('sendKeyAndExpectIndex("ssd", "End", 6, 6)', 'true');
+    shouldBe('sendKeyAndExpectIndex("ssd", "End", 5, 6)', 'true');
+    shouldBe('sendKeyAndExpectIndex("ssd", "End", 4, 6)', 'true');
+    shouldBe('sendKeyAndExpectIndex("ssd", "End", 3, 6)', 'true');
+    shouldBe('sendKeyAndExpectIndex("ssd", "End", 2, 6)', 'true');
+    shouldBe('sendKeyAndExpectIndex("ssd", "End", 1, 6)', 'true');
+    shouldBe('sendKeyAndExpectIndex("ssd", "End", 0, 6)', 'true');
 }
 
 function testVariousShiftKeysNoDisabledElements() {
@@ -207,29 +207,29 @@ function testVariousShiftKeysNoDisabledElements() {
     clearSelection(select);
     select.selectedIndex = 0;
 
-    shouldBe('sendWithShiftKeyAndExpectIndices("ss", "pageDown", [0, 1, 2, 3])', 'true');
-    shouldBe('sendWithShiftKeyAndExpectIndices("ss", "pageDown", [0, 1, 2, 3, 4, 5, 6])', 'true');
-    shouldBe('sendWithShiftKeyAndExpectIndices("ss", "pageDown", [0, 1, 2, 3, 4, 5, 6])', 'true');
-    shouldBe('sendWithShiftKeyAndExpectIndices("ss", "pageUp", [0, 1, 2, 3])', 'true');
-    shouldBe('sendWithShiftKeyAndExpectIndices("ss", "pageUp", [0])', 'true');
-    shouldBe('sendWithShiftKeyAndExpectIndices("ss", "pageUp", [0])', 'true');
-    shouldBe('sendWithShiftKeyAndExpectIndices("ss", "end", [0, 1, 2, 3, 4, 5, 6])', 'true');
-    shouldBe('sendWithShiftKeyAndExpectIndices("ss", "end", [0, 1, 2, 3, 4, 5, 6])', 'true');
-    shouldBe('sendWithShiftKeyAndExpectIndices("ss", "home", [0])', 'true');
-    shouldBe('sendWithShiftKeyAndExpectIndices("ss", "home", [0])', 'true');
+    shouldBe('sendWithShiftKeyAndExpectIndices("ss", "PageDown", [0, 1, 2, 3])', 'true');
+    shouldBe('sendWithShiftKeyAndExpectIndices("ss", "PageDown", [0, 1, 2, 3, 4, 5, 6])', 'true');
+    shouldBe('sendWithShiftKeyAndExpectIndices("ss", "PageDown", [0, 1, 2, 3, 4, 5, 6])', 'true');
+    shouldBe('sendWithShiftKeyAndExpectIndices("ss", "PageUp", [0, 1, 2, 3])', 'true');
+    shouldBe('sendWithShiftKeyAndExpectIndices("ss", "PageUp", [0])', 'true');
+    shouldBe('sendWithShiftKeyAndExpectIndices("ss", "PageUp", [0])', 'true');
+    shouldBe('sendWithShiftKeyAndExpectIndices("ss", "End", [0, 1, 2, 3, 4, 5, 6])', 'true');
+    shouldBe('sendWithShiftKeyAndExpectIndices("ss", "End", [0, 1, 2, 3, 4, 5, 6])', 'true');
+    shouldBe('sendWithShiftKeyAndExpectIndices("ss", "Home", [0])', 'true');
+    shouldBe('sendWithShiftKeyAndExpectIndices("ss", "Home", [0])', 'true');
 
     clearSelection(select);
     select.selectedIndex = 3;
-    shouldBe('sendWithShiftKeyAndExpectIndices("ss", "pageDown", [3, 4, 5, 6])', 'true');
-    shouldBe('sendWithShiftKeyAndExpectIndices("ss", "pageDown", [3, 4, 5, 6])', 'true');
-    shouldBe('sendWithShiftKeyAndExpectIndices("ss", "pageUp", [3])', 'true');
-    shouldBe('sendWithShiftKeyAndExpectIndices("ss", "pageUp", [0, 1, 2, 3])', 'true');
-    shouldBe('sendWithShiftKeyAndExpectIndices("ss", "pageUp", [0, 1, 2, 3])', 'true');
-    shouldBe('sendWithShiftKeyAndExpectIndices("ss", "pageUp", [0, 1, 2, 3])', 'true');
-    shouldBe('sendWithShiftKeyAndExpectIndices("ss", "end", [3, 4, 5, 6])', 'true');
-    shouldBe('sendWithShiftKeyAndExpectIndices("ss", "end", [3, 4, 5, 6])', 'true');
-    shouldBe('sendWithShiftKeyAndExpectIndices("ss", "home", [0, 1, 2, 3])', 'true');
-    shouldBe('sendWithShiftKeyAndExpectIndices("ss", "home", [0, 1, 2, 3])', 'true');
+    shouldBe('sendWithShiftKeyAndExpectIndices("ss", "PageDown", [3, 4, 5, 6])', 'true');
+    shouldBe('sendWithShiftKeyAndExpectIndices("ss", "PageDown", [3, 4, 5, 6])', 'true');
+    shouldBe('sendWithShiftKeyAndExpectIndices("ss", "PageUp", [3])', 'true');
+    shouldBe('sendWithShiftKeyAndExpectIndices("ss", "PageUp", [0, 1, 2, 3])', 'true');
+    shouldBe('sendWithShiftKeyAndExpectIndices("ss", "PageUp", [0, 1, 2, 3])', 'true');
+    shouldBe('sendWithShiftKeyAndExpectIndices("ss", "PageUp", [0, 1, 2, 3])', 'true');
+    shouldBe('sendWithShiftKeyAndExpectIndices("ss", "End", [3, 4, 5, 6])', 'true');
+    shouldBe('sendWithShiftKeyAndExpectIndices("ss", "End", [3, 4, 5, 6])', 'true');
+    shouldBe('sendWithShiftKeyAndExpectIndices("ss", "Home", [0, 1, 2, 3])', 'true');
+    shouldBe('sendWithShiftKeyAndExpectIndices("ss", "Home", [0, 1, 2, 3])', 'true');
 }
 
 function testVariousShiftKeysWithDisabledElements() {
@@ -238,48 +238,48 @@ function testVariousShiftKeysWithDisabledElements() {
     clearSelection(select);
     select.selectedIndex = 1;
 
-    shouldBe('sendWithShiftKeyAndExpectIndices("ssd", "pageDown", [1, 2, 4])', 'true');
-    shouldBe('sendWithShiftKeyAndExpectIndices("ssd", "pageDown", [1, 2, 4, 5, 6])', 'true');
-    shouldBe('sendWithShiftKeyAndExpectIndices("ssd", "pageDown", [1, 2, 4, 5, 6])', 'true');
-    shouldBe('sendWithShiftKeyAndExpectIndices("ssd", "pageUp", [1, 2])', 'true');
-    shouldBe('sendWithShiftKeyAndExpectIndices("ssd", "pageUp", [1])', 'true');
-    shouldBe('sendWithShiftKeyAndExpectIndices("ssd", "pageUp", [1])', 'true');
-    shouldBe('sendWithShiftKeyAndExpectIndices("ssd", "end", [1, 2, 4, 5, 6])', 'true');
-    shouldBe('sendWithShiftKeyAndExpectIndices("ssd", "end", [1, 2, 4, 5, 6])', 'true');
-    shouldBe('sendWithShiftKeyAndExpectIndices("ssd", "home", [1])', 'true');
-    shouldBe('sendWithShiftKeyAndExpectIndices("ssd", "home", [1])', 'true');
+    shouldBe('sendWithShiftKeyAndExpectIndices("ssd", "PageDown", [1, 2, 4])', 'true');
+    shouldBe('sendWithShiftKeyAndExpectIndices("ssd", "PageDown", [1, 2, 4, 5, 6])', 'true');
+    shouldBe('sendWithShiftKeyAndExpectIndices("ssd", "PageDown", [1, 2, 4, 5, 6])', 'true');
+    shouldBe('sendWithShiftKeyAndExpectIndices("ssd", "PageUp", [1, 2])', 'true');
+    shouldBe('sendWithShiftKeyAndExpectIndices("ssd", "PageUp", [1])', 'true');
+    shouldBe('sendWithShiftKeyAndExpectIndices("ssd", "PageUp", [1])', 'true');
+    shouldBe('sendWithShiftKeyAndExpectIndices("ssd", "End", [1, 2, 4, 5, 6])', 'true');
+    shouldBe('sendWithShiftKeyAndExpectIndices("ssd", "End", [1, 2, 4, 5, 6])', 'true');
+    shouldBe('sendWithShiftKeyAndExpectIndices("ssd", "Home", [1])', 'true');
+    shouldBe('sendWithShiftKeyAndExpectIndices("ssd", "Home", [1])', 'true');
 
     clearSelection(select);
     select.selectedIndex = 4;
-    shouldBe('sendWithShiftKeyAndExpectIndices("ssd", "pageDown", [4, 5, 6])', 'true');
-    shouldBe('sendWithShiftKeyAndExpectIndices("ssd", "pageDown", [4, 5, 6])', 'true');
-    shouldBe('sendWithShiftKeyAndExpectIndices("ssd", "pageUp", [2, 4])', 'true');
-    shouldBe('sendWithShiftKeyAndExpectIndices("ssd", "pageUp", [1, 2, 4])', 'true');
-    shouldBe('sendWithShiftKeyAndExpectIndices("ssd", "pageUp", [1, 2, 4])', 'true');
-    shouldBe('sendWithShiftKeyAndExpectIndices("ssd", "end", [4, 5, 6])', 'true');
-    shouldBe('sendWithShiftKeyAndExpectIndices("ssd", "end", [4, 5, 6])', 'true');
-    shouldBe('sendWithShiftKeyAndExpectIndices("ssd", "home", [1, 2, 4])', 'true');
-    shouldBe('sendWithShiftKeyAndExpectIndices("ssd", "home", [1, 2, 4])', 'true');
+    shouldBe('sendWithShiftKeyAndExpectIndices("ssd", "PageDown", [4, 5, 6])', 'true');
+    shouldBe('sendWithShiftKeyAndExpectIndices("ssd", "PageDown", [4, 5, 6])', 'true');
+    shouldBe('sendWithShiftKeyAndExpectIndices("ssd", "PageUp", [2, 4])', 'true');
+    shouldBe('sendWithShiftKeyAndExpectIndices("ssd", "PageUp", [1, 2, 4])', 'true');
+    shouldBe('sendWithShiftKeyAndExpectIndices("ssd", "PageUp", [1, 2, 4])', 'true');
+    shouldBe('sendWithShiftKeyAndExpectIndices("ssd", "End", [4, 5, 6])', 'true');
+    shouldBe('sendWithShiftKeyAndExpectIndices("ssd", "End", [4, 5, 6])', 'true');
+    shouldBe('sendWithShiftKeyAndExpectIndices("ssd", "Home", [1, 2, 4])', 'true');
+    shouldBe('sendWithShiftKeyAndExpectIndices("ssd", "Home", [1, 2, 4])', 'true');
 }
 
 function testPageDownWithGroup() {
-    shouldBe('sendKeyAndExpectIndex("ssg", "pageDown", 0, 3)', 'true');
-    shouldBe('sendKeyAndExpectIndex("ssg", "pageDown", 1, 3)', 'true');
-    shouldBe('sendKeyAndExpectIndex("ssg", "pageDown", 2, 4)', 'true');
-    shouldBe('sendKeyAndExpectIndex("ssg", "pageDown", 3, 5)', 'true');
-    shouldBe('sendKeyAndExpectIndex("ssg", "pageDown", 4, 6)', 'true');
-    shouldBe('sendKeyAndExpectIndex("ssg", "pageDown", 5, 6)', 'true');
-    shouldBe('sendKeyAndExpectIndex("ssg", "pageDown", 6, 6)', 'true');
+    shouldBe('sendKeyAndExpectIndex("ssg", "PageDown", 0, 3)', 'true');
+    shouldBe('sendKeyAndExpectIndex("ssg", "PageDown", 1, 3)', 'true');
+    shouldBe('sendKeyAndExpectIndex("ssg", "PageDown", 2, 4)', 'true');
+    shouldBe('sendKeyAndExpectIndex("ssg", "PageDown", 3, 5)', 'true');
+    shouldBe('sendKeyAndExpectIndex("ssg", "PageDown", 4, 6)', 'true');
+    shouldBe('sendKeyAndExpectIndex("ssg", "PageDown", 5, 6)', 'true');
+    shouldBe('sendKeyAndExpectIndex("ssg", "PageDown", 6, 6)', 'true');
 }
 
 function testPageUpWithGroup() {
-    shouldBe('sendKeyAndExpectIndex("ssg", "pageUp", 6, 4)', 'true');
-    shouldBe('sendKeyAndExpectIndex("ssg", "pageUp", 5, 3)', 'true');
-    shouldBe('sendKeyAndExpectIndex("ssg", "pageUp", 4, 2)', 'true');
-    shouldBe('sendKeyAndExpectIndex("ssg", "pageUp", 3, 1)', 'true');
-    shouldBe('sendKeyAndExpectIndex("ssg", "pageUp", 2, 0)', 'true');
-    shouldBe('sendKeyAndExpectIndex("ssg", "pageUp", 1, 0)', 'true');
-    shouldBe('sendKeyAndExpectIndex("ssg", "pageUp", 0, 0)', 'true');
+    shouldBe('sendKeyAndExpectIndex("ssg", "PageUp", 6, 4)', 'true');
+    shouldBe('sendKeyAndExpectIndex("ssg", "PageUp", 5, 3)', 'true');
+    shouldBe('sendKeyAndExpectIndex("ssg", "PageUp", 4, 2)', 'true');
+    shouldBe('sendKeyAndExpectIndex("ssg", "PageUp", 3, 1)', 'true');
+    shouldBe('sendKeyAndExpectIndex("ssg", "PageUp", 2, 0)', 'true');
+    shouldBe('sendKeyAndExpectIndex("ssg", "PageUp", 1, 0)', 'true');
+    shouldBe('sendKeyAndExpectIndex("ssg", "PageUp", 0, 0)', 'true');
 }
 
 testPageDownNoDisabledElements();

@@ -40,7 +40,7 @@ test(function() {
 
     // Send delete-word-backward, should delete 'world' across I and B.
     var isMacOSX = navigator.userAgent.indexOf("Mac OS X") != -1;
-    eventSender.keyDown('backspace', [isMacOSX ? 'altKey' : 'ctrlKey']);
+    eventSender.keyDown('Backspace', [isMacOSX ? 'altKey' : 'ctrlKey']);
     assert_equals(sample.innerHTML, 'hel<i>lo&nbsp;</i>');
 }, 'Testing getRanges() returns correct range across elements.');
 
@@ -69,7 +69,7 @@ test(function() {
     sample.addEventListener('beforeinput', handler);
 
     // Send delete-character-backward.
-    eventSender.keyDown('backspace', []);
+    eventSender.keyDown('Backspace', []);
     assert_equals(sample.textContent, 'hell');
     // |getRanges| should be cleared after dispatch.
     assert_equals(lastEvent.getRanges().length, 0);

@@ -26,22 +26,22 @@ sample.focus();
 var paragraph1 = sample.firstChild.firstChild;
 var paragraph2 = sample.childNodes[1].firstChild;
 if (window.eventSender) {
-    eventSender.keyDown('upArrow', ['ctrlKey']);
+    eventSender.keyDown('ArrowUp', ['ctrlKey']);
     shouldBeEqualToString('selection.type', 'Caret');
     shouldBe('selection.focusNode', 'paragraph1');
     shouldBe('selection.focusOffset', '0');
 
-    eventSender.keyDown('downArrow', ['ctrlKey']);
+    eventSender.keyDown('ArrowDown', ['ctrlKey']);
     shouldBeEqualToString('selection.type', 'Caret');
     shouldBe('selection.focusNode', 'paragraph2');
     shouldBe('selection.focusOffset', '3');
 
-    eventSender.keyDown('downArrow', ['ctrlKey', 'shiftKey']);
+    eventSender.keyDown('ArrowDown', ['ctrlKey', 'shiftKey']);
     shouldBeEqualToString('selection.type', 'Range');
     shouldBe('selection.focusNode', 'paragraph2');
     shouldBe('selection.focusOffset', '84');
 
-    eventSender.keyDown('upArrow', ['ctrlKey', 'shiftKey']);
+    eventSender.keyDown('ArrowUp', ['ctrlKey', 'shiftKey']);
     shouldBeEqualToString('selection.type', 'Range');
     shouldBe('selection.focusNode', 'paragraph1');
     shouldBe('selection.focusOffset', '3');

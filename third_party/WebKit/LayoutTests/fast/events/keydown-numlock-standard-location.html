@@ -32,7 +32,7 @@ textarea.focus();
 var VKEY_NUMLOCK = 0x90;
 
 if (window.eventSender) {
-    eventSender.keyDown("numLock");
+    eventSender.keyDown("NumLock");
     shouldBeEqualToString("lastKeyboardEvent.type", "keydown");
     shouldBe("lastKeyboardEvent.keyCode", "VKEY_NUMLOCK");
     shouldBe("lastKeyboardEvent.location", "KeyboardEvent.DOM_KEY_LOCATION_STANDARD");

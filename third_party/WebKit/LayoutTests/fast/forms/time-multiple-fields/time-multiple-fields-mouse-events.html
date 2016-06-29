@@ -51,13 +51,13 @@ onload = function() {
     debug('= Focus to hour field =');
     mouseMoveTo(12, 14);
     mouseClick();
-    keyDown('upArrow');
+    keyDown('ArrowUp');
     shouldBeEqualToString('input.value', '02:23');
     
     debug('= Focus to minute field =');
     mouseMoveTo(70, 14);
     mouseClick();
-    keyDown('upArrow');
+    keyDown('ArrowUp');
     shouldBeEqualToString('input.value', '02:24');
     
     debug('= Click up part of spin button =');
@@ -74,13 +74,13 @@ onload = function() {
     input.disabled = true;
     mouseMoveTo(12, 14);
     mouseClick();
-    keyDown('upArrow');
+    keyDown('ArrowUp');
     shouldBeEqualToString('input.value', '02:24'); // Not changed.
     input.disabled = false;
     input.readOnly = true;
     mouseMoveTo(12, 14);
     mouseClick();
-    keyDown('upArrow');
+    keyDown('ArrowUp');
     shouldBeEqualToString('input.value', '02:24'); // Not changed.
     input.readOnly = false;
     

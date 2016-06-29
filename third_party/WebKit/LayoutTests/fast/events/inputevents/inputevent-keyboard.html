@@ -38,7 +38,7 @@ test(function() {
         // Typing
         testKeyDownInputType('a', [], 'insertText');
         testKeyDownInputType('6', [], 'insertText');
-        testKeyDownInputType('backspace', [], 'deleteContent');
+        testKeyDownInputType('Backspace', [], 'deleteContent');
         testKeyDownInputType('l', ['shiftKey'], 'insertText');
         testKeyDownInputType('w', ['shiftKey'], 'insertText');
 
@@ -50,9 +50,9 @@ test(function() {
             testKeyDownInputType('z', ['ctrlKey', 'shiftKey'], 'redo');
         }
         // Move command should not generate input events.
-        testKeyDownInputType('leftArrow', [], kNoInputEventFired);
-        testKeyDownInputType('leftArrow', ['shiftKey'], kNoInputEventFired);
-        testKeyDownInputType('home', [], kNoInputEventFired);
+        testKeyDownInputType('ArrowLeft', [], kNoInputEventFired);
+        testKeyDownInputType('ArrowLeft', ['shiftKey'], kNoInputEventFired);
+        testKeyDownInputType('Home', [], kNoInputEventFired);
     }
 }, 'Testing beforeinput inputType');
 </script>

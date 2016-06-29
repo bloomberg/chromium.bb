@@ -35,11 +35,11 @@ textarea.defaultValue = 'ab';
 textarea.minLength = 3;
 textarea.focus();
 textarea.setSelectionRange(2, 2);  // Move the cursor at the end.
-eventSender.keyDown('backspace');
+eventSender.keyDown('Backspace');
 shouldBe('textarea.value.length', '1');
 shouldBeTrue('textarea.validity.tooShort');
 // Make the value empty, which means valid.
-eventSender.keyDown('backspace');
+eventSender.keyDown('Backspace');
 shouldBe('textarea.value.length', '0');
 shouldBeFalse('textarea.validity.tooShort');
 sendString('ab');
@@ -62,7 +62,7 @@ debug('');
 debug('Disabling makes the control valid');
 textarea.focus();
 textarea.setSelectionRange(2, 2);  // Move the cursor at the end.
-eventSender.keyDown('backspace');
+eventSender.keyDown('Backspace');
 shouldBeTrue('textarea.validity.tooShort');
 shouldBeFalse('textarea.disabled = true; textarea.validity.tooShort');
 shouldBeTrue('textarea.disabled = false; textarea.validity.tooShort');
@@ -76,7 +76,7 @@ parent.innerHTML = '<form><textarea minlength=3>ab</textarea></form>';
 textarea = parent.firstChild.firstChild;
 textarea.focus();
 textarea.setSelectionRange(2, 2);
-eventSender.keyDown('backspace');
+eventSender.keyDown('Backspace');
 shouldBeTrue('textarea.validity.tooShort');
 parent.firstChild.reset();
 shouldBe('textarea.value', '"ab"');
@@ -103,7 +103,7 @@ textarea.value = fancyX + 'A'; // 4 characters, 2 grapheme cluster.
 textarea.minLength = 2;
 textarea.focus();
 shouldBeFalse('textarea.validity.tooShort');
-eventSender.keyDown('backspace'); // Make the value dirty, 1 grapheme remains.
+eventSender.keyDown('Backspace'); // Make the value dirty, 1 grapheme remains.
 // Not too short because there are three characters.
 shouldBe('textarea.value.length', '3');
 shouldBeFalse('textarea.validity.tooShort');

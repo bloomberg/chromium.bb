@@ -89,23 +89,23 @@ var runTest = function() {
     // With nothing focused, the context menu should appear in the top left
     // corner of the viewport.
     document.addEventListener('contextmenu', handleContextMenuNoFocus, true);
-    eventSender.keyDown("menu");
-    eventSender.keyDown("escape");
+    eventSender.keyDown("ContextMenu");
+    eventSender.keyDown("Escape");
     document.removeEventListener('contextmenu', handleContextMenuNoFocus, true);
 
     // Focus the anchor, make sure the client coordinates and screen coordinates
     // take the viewport's position and scale into account.
     anchor.focus();
     document.addEventListener('contextmenu', handleContextMenuFocus, true);
-    eventSender.keyDown("menu");
-    eventSender.keyDown("escape");
+    eventSender.keyDown("ContextMenu");
+    eventSender.keyDown("Escape");
     document.removeEventListener('contextmenu', handleContextMenuFocus, true);
 
     // Place selection and make sure it still works.
     window.getSelection().selectAllChildren(anchor);
     document.addEventListener('contextmenu', handleContextMenuEditable, true);
-    eventSender.keyDown("menu");
-    eventSender.keyDown("escape");
+    eventSender.keyDown("ContextMenu");
+    eventSender.keyDown("Escape");
     document.removeEventListener('contextmenu', handleContextMenuEditable, true);
 
     testRunner.notifyDone();

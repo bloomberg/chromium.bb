@@ -22,13 +22,13 @@ function setInputAttributes(value, min, max) {
 
 function stepUp(value, min, max) {
     setInputAttributes(value, min, max);
-    eventSender.keyDown('upArrow');
+    eventSender.keyDown('ArrowUp');
     return input.value;
 }
 
 function stepDown(value, min, max) {
     setInputAttributes(value, min, max);
-    eventSender.keyDown('downArrow');
+    eventSender.keyDown('ArrowDown');
     return input.value;
 }
 
@@ -47,7 +47,7 @@ shouldBeEqualToString('stepUp("2000-05", "2000-03", "2001-05")', '2000-06');
 shouldBeEqualToString('stepDown("2000-05", "2000-05", "2001-08")', '2000-04');
 
 debug('Year');
-eventSender.keyDown('rightArrow');
+eventSender.keyDown('ArrowRight');
 shouldBeEqualToString('stepUp("2000-01", "2000-01", "2009-12")', '2001-01');
 shouldBeEqualToString('stepDown("2000-01", "2000-01", "2009-12")', '2009-01');
 shouldBeEqualToString('stepUp("2000-01", "1990-01", "2000-12")', '1990-01');

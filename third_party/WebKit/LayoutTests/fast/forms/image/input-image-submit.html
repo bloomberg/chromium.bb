@@ -106,7 +106,7 @@ function startTests() {
         state.value = 'to-image-on-submit';
         image.type = 'text';
         image.focus();
-        eventSender.keyDown('\n');
+        eventSender.keyDown('Enter');
     } else if (query.indexOf('state=to-image-on-submit') != -1) {
         // Should have image.x and image.y, but their values are 0.
         if (query.indexOf('image.x=0&image.y=0&image=value') == -1) {

@@ -44,7 +44,7 @@ document.querySelector("input[type=image]").addEventListener("load", function() 
         if (element.type == "text") {
             log("Focusing " + element + " type=" + element.type + " and pressing enter");
             element.focus();
-            eventSender.keyDown("\n");
+            eventSender.keyDown("Enter");
             continue;
         }
 
@@ -57,7 +57,7 @@ document.querySelector("input[type=image]").addEventListener("load", function() 
 
         log("Focusing " + element + " type=" + element.type + " and pressing enter");
         element.focus();
-        eventSender.keyDown("\n");
+        eventSender.keyDown("Enter");
     }
 
     if (window.eventSender) {

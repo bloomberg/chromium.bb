@@ -32,7 +32,7 @@ window.onload = function() {
         case 'direct': {
             testInput1.value = '12012-10';
             testInput2.focus();
-            keyDown('upArrow'); // -> [October] 12012
+            keyDown('ArrowUp'); // -> [October] 12012
             var nextUri = location.toString().replace('?page1', '?page2');
             setTimeout(function() { window.location.href = nextUri; }, 0);
             break;
@@ -65,7 +65,7 @@ window.onload = function() {
             testInput1.value = '0001-11';
             testInput2.focus();
             keyDown('\t'); //        -> --------- [yyyy]
-            keyDown('downArrow'); // -> --------- [1999]
+            keyDown('ArrowDown'); // -> --------- [1999]
             back('backTo1');
             break;
         case 'forwardTo2':

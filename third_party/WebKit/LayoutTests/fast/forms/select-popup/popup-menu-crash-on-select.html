@@ -6,7 +6,7 @@ window.onload = function() {
     select.focus();
     if (window.eventSender) {
         eventSender.keyDown('\r', []);
-        eventSender.keyDown('downArrow');
+        eventSender.keyDown('ArrowDown');
         eventSender.keyDown('\r');
     } else {
         document.body.innerHTML = 'Needs eventSender.';

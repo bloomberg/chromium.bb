@@ -21,10 +21,10 @@ window.accessibilityController.setNotificationListener(function(axnode, type) {
             testButtonDescription();
         } else if (activeDescendantCounter == 3) {
             // Highlight 2000-02 in the month popup.
-            setTimeout(function() { eventSender.keyDown('rightArrow'); }, 0);
+            setTimeout(function() { eventSender.keyDown('ArrowRight'); }, 0);
         } else if (activeDescendantCounter == 4) {
             // Highlight 1999-10 in the month popup.
-            setTimeout(function() { eventSender.keyDown('upArrow'); }, 0);
+            setTimeout(function() { eventSender.keyDown('ArrowUp'); }, 0);
         } else if (activeDescendantCounter == 5) {
             finishJSTest();
         }
@@ -35,7 +35,7 @@ var date1 = document.getElementById('date1');
 openPicker(date1, test1);
 
 function test1() {
-    eventSender.keyDown('rightArrow');
+    eventSender.keyDown('ArrowRight');
 }
 
 function testButtonDescription() {

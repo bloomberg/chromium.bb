@@ -19,7 +19,7 @@ shouldBeEqualToString('input.value = ""; getUserAgentShadowTextContent(input)', 
 
 debug('Empty value should clear only editable fields.');
 input.focus();
-shouldBeEqualToString('eventSender.keyDown("upArrow"); getUserAgentShadowTextContent(input)', '01:--:45 --');
+shouldBeEqualToString('eventSender.keyDown("ArrowUp"); getUserAgentShadowTextContent(input)', '01:--:45 --');
 shouldBeEqualToString('input.value = ""; getUserAgentShadowTextContent(input)', '--:--:45 --');
 
 </script>

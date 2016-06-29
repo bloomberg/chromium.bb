@@ -42,7 +42,7 @@ function run(tests, testIdx)
 {
     var expectedSecureTextLen;
     if (testIdx >= 0) {
-        eventSender.keyDown("rightArrow");
+        eventSender.keyDown("ArrowRight");
         if(tests[testIdx][3])
             assert(tests[testIdx][2], window.find(secureText(testnode.value.length), false, true), "secured after delay.");
     }
@@ -53,15 +53,15 @@ function run(tests, testIdx)
     }
 
     testnode.focus();
-    eventSender.keyDown("rightArrow");
+    eventSender.keyDown("ArrowRight");
 
     var charSequence = tests[testIdx][0];
     for (var i = 0; i < charSequence.length - 1; i++) {
         textInputController.setMarkedText(charSequence[i], testnode.value.length, testnode.value.length);
     }
     if (charSequence[charSequence.length - 1] == "backspace") {
-        eventSender.keyDown("leftArrow");
-        eventSender.keyDown("delete");
+        eventSender.keyDown("ArrowLeft");
+        eventSender.keyDown("Delete");
     } else
         textInputController.insertText(charSequence[charSequence.length - 1]);
 

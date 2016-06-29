@@ -21,21 +21,21 @@ function sendKeyEvent(element, key)
 }
 
 debug('Pressing the down arrow key on an input field of which value is lower than the minimum:');
-sendKeyEvent(lower, 'downArrow');
+sendKeyEvent(lower, 'ArrowDown');
 var unchanged = "-10";
 shouldBe('lower.value', 'unchanged');
 
 debug('Pressing the up arrow key on the input:');
-sendKeyEvent(lower, 'upArrow');
+sendKeyEvent(lower, 'ArrowUp');
 shouldBe('lower.value', 'lower.min');
 
 debug('Pressing the up arrow key on an input field of which value is higher than the maximum:');
-sendKeyEvent(higher, 'upArrow');
+sendKeyEvent(higher, 'ArrowUp');
 unchanged = "200";
 shouldBe('higher.value', 'unchanged');
 
 debug('Pressing the down arrow key on the input:');
-sendKeyEvent(higher, 'downArrow');
+sendKeyEvent(higher, 'ArrowDown');
 shouldBe('higher.value', 'higher.max');
 
 parent.innerHTML = '';

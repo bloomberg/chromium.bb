@@ -88,13 +88,13 @@ if (window.testRunner && window.eventSender) {
         function () { eventSender.mouseMoveTo(helloDiv.offsetLeft + 10, helloDiv.offsetTop + 2); },
         function () { eventSender.mouseDown(); },
         function () { eventSender.mouseUp(); },
-        function () { eventSender.keyDown("leftArrow", ['shiftKey']); },
-        function () { eventSender.keyDown("rightArrow", ['shiftKey']); },
+        function () { eventSender.keyDown("ArrowLeft", ['shiftKey']); },
+        function () { eventSender.keyDown("ArrowRight", ['shiftKey']); },
         function () { eventSender.mouseMoveTo(worldDiv.offsetLeft + 10, worldDiv.offsetTop + 2); },
         function () { eventSender.mouseDown(); },
         function () { eventSender.mouseUp(); },
-        function () { eventSender.keyDown("leftArrow", ['shiftKey']); },
-        function () { eventSender.keyDown("rightArrow", ['shiftKey']); },
+        function () { eventSender.keyDown("ArrowLeft", ['shiftKey']); },
+        function () { eventSender.keyDown("ArrowRight", ['shiftKey']); },
     ];
     var j = 0;
 

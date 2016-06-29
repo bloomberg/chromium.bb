@@ -48,20 +48,20 @@ textarea.focus();
 
 if (window.eventSender) {
 
-    testKeyEventWithModifiers("pageUp", ["ctrlKey"], 33);
-    testKeyEventWithModifiers("pageDown", ["shiftKey"], 34);
-    testKeyEventWithModifiers("home", ["altKey"], 36);
-    testKeyEventWithModifiers("end", ["metaKey"], 35);
-    testKeyEventWithModifiers("leftArrow", ["ctrlKey", "shiftKey"], 37);
-    testKeyEventWithModifiers("rightArrow", ["ctrlKey", "shiftKey", "altKey"], 39);
-    testKeyEventWithModifiers("upArrow", ["ctrlKey", "shiftKey", "altKey", "metaKey"], 38);
+    testKeyEventWithModifiers("PageUp", ["ctrlKey"], 33);
+    testKeyEventWithModifiers("PageDown", ["shiftKey"], 34);
+    testKeyEventWithModifiers("Home", ["altKey"], 36);
+    testKeyEventWithModifiers("End", ["metaKey"], 35);
+    testKeyEventWithModifiers("ArrowLeft", ["ctrlKey", "shiftKey"], 37);
+    testKeyEventWithModifiers("ArrowRight", ["ctrlKey", "shiftKey", "altKey"], 39);
+    testKeyEventWithModifiers("ArrowUp", ["ctrlKey", "shiftKey", "altKey", "metaKey"], 38);
 
     forEachModifier( function(eventInitName, eventModifierName, eventSenderName) {
-      testKeyEventWithModifiers("leftArrow", [eventSenderName], 37);
+      testKeyEventWithModifiers("ArrowLeft", [eventSenderName], 37);
     });
 
     var isMacOSX = navigator.userAgent.indexOf("Mac OS X") != -1;
-    eventSender.keyDown("pageUp", [isMacOSX ? "metaKey" : "ctrlKey"]);
+    eventSender.keyDown("PageUp", [isMacOSX ? "metaKey" : "ctrlKey"]);
     shouldBe("lastKeyboardEvent.type", '"keydown"');
     shouldEvaluateTo("lastKeyboardEvent.keyCode", 33);
     shouldEvaluateTo("lastKeyboardEvent.getModifierState('Accel')", "true");

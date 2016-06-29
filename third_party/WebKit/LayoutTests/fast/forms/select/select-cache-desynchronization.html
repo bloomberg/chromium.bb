@@ -9,8 +9,8 @@ var res = document.getElementById("res");
 select.focus();
 if (window.testRunner) {
     testRunner.dumpAsText();
-    eventSender.keyDown("downArrow", []);
-    eventSender.keyDown("downArrow", ["shiftKey"]);
+    eventSender.keyDown("ArrowDown", []);
+    eventSender.keyDown("ArrowDown", ["shiftKey"]);
 } else {
     res.textContent = "Press down arrow.";
 }

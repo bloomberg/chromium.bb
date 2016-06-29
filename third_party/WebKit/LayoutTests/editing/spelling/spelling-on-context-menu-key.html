@@ -28,10 +28,10 @@ initSpellTest("destination", "wellcome home.", function(textNode) {
         window.getSelection().addRange(range);
 
         // Context menu key to show the context menu.
-        eventSender.keyDown("menu");
+        eventSender.keyDown("ContextMenu");
 
         // Esc to close the context menu.
-        eventSender.keyDown("escape");
+        eventSender.keyDown("Escape");
 
         shouldBeEqualToString("window.getSelection().toString()", "wellcome");
     }

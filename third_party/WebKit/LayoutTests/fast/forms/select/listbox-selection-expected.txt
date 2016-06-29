@@ -35,11 +35,11 @@ PASS selectionPattern("sl14") is "01100"
 PASS selectionPattern("sl15") is "01000"
 PASS mouseMoveToOption("sl15", 3); selectionPattern("sl15") is "01110"
 PASS mouseMoveToOption("sl15", 2); selectionPattern("sl15") is "01100"
-PASS sl15.add(new Option("a")); eventSender.keyDown("upArrow"); selectionPattern("sl15") is "010000"
+PASS sl15.add(new Option("a")); eventSender.keyDown("ArrowUp"); selectionPattern("sl15") is "010000"
 16) Active-selection after type-ahead
 PASS mouseClickOnSelect('sl16', 1); selectionPattern('sl16') is "01000"
 PASS keyDownOnSelect('sl16', 'e'); selectionPattern('sl16') is "00001"
-PASS keyDownOnSelect('sl16', 'upArrow', 'rangeSelectionKey'); selectionPattern('sl16') is "00011"
+PASS keyDownOnSelect('sl16', 'ArrowUp', 'rangeSelectionKey'); selectionPattern('sl16') is "00011"
 PASS successfullyParsed is true
 
 TEST COMPLETE

@@ -21,34 +21,34 @@ if (window.testRunner && window.internals) {
 
   // check left/right arrows
   shouldBe("getSelection().baseOffset", "15");
-  eventSender.keyDown("rightArrow");
+  eventSender.keyDown("ArrowRight");
   shouldBe("getSelection().baseOffset", "16");
-  eventSender.keyDown("leftArrow");
+  eventSender.keyDown("ArrowLeft");
   shouldBe("getSelection().baseOffset", "15");
 
   // check left/right arrows + Shift
-  eventSender.keyDown("rightArrow", ["shiftKey"]);
-  eventSender.keyDown("rightArrow", ["shiftKey"]);
-  eventSender.keyDown("rightArrow", ["shiftKey"]);
+  eventSender.keyDown("ArrowRight", ["shiftKey"]);
+  eventSender.keyDown("ArrowRight", ["shiftKey"]);
+  eventSender.keyDown("ArrowRight", ["shiftKey"]);
   shouldBe("getSelection().baseOffset", "15");
   shouldBe("getSelection().extentOffset", "18");
-  eventSender.keyDown("leftArrow", ["shiftKey"]);
+  eventSender.keyDown("ArrowLeft", ["shiftKey"]);
   shouldBe("getSelection().baseOffset", "15");
   shouldBe("getSelection().extentOffset", "17");
 
   // check left/right arrows + Ctrl/Option
   var modifierForWordGranularity = navigator.platform == "MacIntel" ? "altKey" : "ctrlKey";
-  eventSender.keyDown("rightArrow", [modifierForWordGranularity]);
+  eventSender.keyDown("ArrowRight", [modifierForWordGranularity]);
   shouldBe("getSelection().baseOffset", "21");
-  eventSender.keyDown("leftArrow", [modifierForWordGranularity]);
+  eventSender.keyDown("ArrowLeft", [modifierForWordGranularity]);
   shouldBe("getSelection().baseOffset", "16");
 
   // check left/right arrows + Ctrl/Option + Shift
-  eventSender.keyDown("rightArrow", [modifierForWordGranularity, "shiftKey"]);
-  eventSender.keyDown("rightArrow", [modifierForWordGranularity, "shiftKey"]);
+  eventSender.keyDown("ArrowRight", [modifierForWordGranularity, "shiftKey"]);
+  eventSender.keyDown("ArrowRight", [modifierForWordGranularity, "shiftKey"]);
   shouldBe("getSelection().baseOffset", "16");
   shouldBe("getSelection().extentOffset", "26");
-  eventSender.keyDown("leftArrow", [modifierForWordGranularity]);
+  eventSender.keyDown("ArrowLeft", [modifierForWordGranularity]);
   shouldBe("getSelection().baseOffset", "22");
 }
 

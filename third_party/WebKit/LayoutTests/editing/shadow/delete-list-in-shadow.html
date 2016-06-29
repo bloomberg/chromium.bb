@@ -33,7 +33,7 @@ if (window.eventSender) {
     eventSender.mouseMoveTo(list3.offsetLeft + 20, list3.offsetTop + list3.offsetHeight / 2);
     eventSender.mouseUp();
 
-    eventSender.keyDown('delete');
+    eventSender.keyDown('Delete');
 
     var hostTextContent = host.textContent.replace(/^\s+|\s+$/g, '');
     shouldBe("hostTextContent", "'AB345'");

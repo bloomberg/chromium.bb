@@ -21,7 +21,7 @@
     });
     list.focus();
     if (window.eventSender) {
-        eventSender.scheduleAsynchronousKeyDown('\n');
+        eventSender.scheduleAsynchronousKeyDown('Enter');
         eventSender.mouseMoveTo(p.offsetLeft + p.offsetWidth / 2, p.offsetTop + p.offsetHeight / 2);
         eventSender.scheduleAsynchronousClick();
     }

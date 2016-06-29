@@ -14,9 +14,9 @@ test(function() {
     var textarea = document.querySelector('textarea');
     textarea.focus();
     textarea.setSelectionRange(7, 7); // Empty line between P2 and P3.
-    eventSender.keyDown('\n');
-    eventSender.keyDown('upArrow');
-    eventSender.keyDown('\n');
+    eventSender.keyDown('Enter');
+    eventSender.keyDown('ArrowUp');
+    eventSender.keyDown('Enter');
     assert_equals(textarea.value, 'P1\n\nP2\n\n\n\nP3\n');
 }, 'TEXTAREA with white-space:pre-line should not produce nbsp by Enter key');
 </script>

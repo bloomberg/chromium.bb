@@ -24,13 +24,13 @@
             // slider drag
             slider.focus();
             debug('Move left');
-            eventSender.keyDown('leftArrow');
+            eventSender.keyDown('ArrowLeft');
             shouldBeGreaterThanOrEqual('inputEventCounter' , 'lastInputEventCounter + 1');
             shouldBeGreaterThanOrEqual('changeEventCounter', 'lastChangeEventCounter + 1');
             debug('Move right');
             lastInputEventCounter = inputEventCounter;
             lastChangeEventCounter = changeEventCounter;
-            eventSender.keyDown('rightArrow');
+            eventSender.keyDown('ArrowRight');
             shouldBeGreaterThanOrEqual('inputEventCounter' , 'lastInputEventCounter + 1');
             shouldBeGreaterThanOrEqual('changeEventCounter', 'lastChangeEventCounter + 1');
         }

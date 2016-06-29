@@ -35,10 +35,10 @@ function test() {
     {
         function onFirstEnter()
         {
-            InspectorTest.fakeKeyEvent(textEditor, "enter", [], dumpAndNext(next));
+            InspectorTest.fakeKeyEvent(textEditor, "Enter", [], dumpAndNext(next));
         }
 
-        InspectorTest.fakeKeyEvent(textEditor, "enter", [], onFirstEnter);
+        InspectorTest.fakeKeyEvent(textEditor, "Enter", [], onFirstEnter);
     }
 
     var testSuite = [
@@ -85,7 +85,7 @@ function test() {
             InspectorTest.setLineSelections(textEditor, [
                 {line: 1, column: 17}
             ]);
-            InspectorTest.fakeKeyEvent(textEditor, "enter", [], onEnter);
+            InspectorTest.fakeKeyEvent(textEditor, "Enter", [], onEnter);
 
             function onEnter()
             {
@@ -94,7 +94,7 @@ function test() {
 
             function onEditedText()
             {
-                InspectorTest.fakeKeyEvent(textEditor, "enter", [], dumpAndNext(next));
+                InspectorTest.fakeKeyEvent(textEditor, "Enter", [], dumpAndNext(next));
             }
         },
     ];

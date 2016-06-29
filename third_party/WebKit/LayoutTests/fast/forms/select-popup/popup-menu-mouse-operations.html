@@ -95,7 +95,7 @@ function test2() {
     shouldBeEqualToString('picker._selectElement.value', '2');
     shouldBeEqualToString('internals.selectMenuListText(menu)', 'baz');
 
-    eventSender.keyDown('upArrow');
+    eventSender.keyDown('ArrowUp');
     shouldBeEqualToString('picker._selectElement.value', '1');
     shouldBeEqualToString('menu.value', 'baz');
     shouldBeEqualToString('internals.selectMenuListText(menu)', 'bar');

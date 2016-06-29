@@ -21,7 +21,7 @@ function testBadInput(type) {
     shouldBeFalse('input.validity.badInput');
 
     debug('Set a value to the first sub-field. The element becomes badInput.');
-    eventSender.keyDown('upArrow');
+    eventSender.keyDown('ArrowUp');
     shouldBe('colorOf(input)', 'invalidStyleColor');
     shouldBeTrue('input.validity.badInput');
 
@@ -35,8 +35,8 @@ function testBadInput(type) {
             input.value = '2012-02-01T03:04';
         shouldNotBe('colorOf(input)', 'invalidStyleColor', quiet);
         shouldBeFalse('input.validity.badInput');
-        eventSender.keyDown('rightArrow'); // -> 02/[01]/2012 ...
-        eventSender.keyDown('downArrow'); //  -> 02/[31]/2012 ...
+        eventSender.keyDown('ArrowRight'); // -> 02/[01]/2012 ...
+        eventSender.keyDown('ArrowDown'); //  -> 02/[31]/2012 ...
         shouldBeEqualToString('input.value', '');
         shouldBeTrue('input.validity.badInput');
         shouldBe('colorOf(input)', 'invalidStyleColor');

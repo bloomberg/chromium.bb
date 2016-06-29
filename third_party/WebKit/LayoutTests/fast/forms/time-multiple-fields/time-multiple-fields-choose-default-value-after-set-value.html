@@ -32,7 +32,7 @@ shouldBeUndefined('eventsCounter.change');
 // We assume the date format is h:m a.
 
 input.focus();
-eventSender.keyDown('downArrow');
+eventSender.keyDown('ArrowDown');
 
 shouldBeEqualToString('input.value', '01:01:01');
 shouldBe('eventsCounter.input', '1');

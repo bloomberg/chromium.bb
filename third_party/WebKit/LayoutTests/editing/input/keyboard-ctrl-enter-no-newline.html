@@ -17,23 +17,23 @@ test(function() {
     txt.focus();
     // Ctrl+Enter shouldn't insert new line.
     txt.value = '';
-    eventSender.keyDown('\n', ['ctrlKey']);
+    eventSender.keyDown('Enter', ['ctrlKey']);
     assert_equals(txt.value, '');
     // Alt+Enter shouldn't insert new line.
     txt.value = '';
-    eventSender.keyDown('\n', ['altKey']);
+    eventSender.keyDown('Enter', ['altKey']);
     assert_equals(txt.value, '');
     // Alt+Shift+Enter shouldn't insert new line.
     txt.value = '';
-    eventSender.keyDown('\n', ['altKey', 'shiftKey']);
+    eventSender.keyDown('Enter', ['altKey', 'shiftKey']);
     assert_equals(txt.value, '');
     // Enter should insert new line.
     txt.value = '';
-    eventSender.keyDown('\n', []);
+    eventSender.keyDown('Enter', []);
     assert_equals(txt.value, '\n');
     // Shift+Enter should insert line break.
     txt.value = '';
-    eventSender.keyDown('\n', ['shiftKey']);
+    eventSender.keyDown('Enter', ['shiftKey']);
     assert_equals(txt.value, '\n');
 }, 'Testing Ctrl+Enter shouldn\'t insert newline');
 </script>

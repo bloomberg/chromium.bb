@@ -21,11 +21,11 @@ shouldBeEqualToString('getUserAgentShadowTextContent(input)', '1999-07-31 12:59'
 openPicker(input, function() {
     shouldBeEqualToString('getUserAgentShadowTextContent(input)', '1999-07-31 12:59');
 
-    eventSender.keyDown('rightArrow');
+    eventSender.keyDown('ArrowRight');
     shouldBeEqualToString('highlightedValue()', '1999-08-01');
 
     removeCommitDelay();
-    eventSender.keyDown('\n');
+    eventSender.keyDown('Enter');
     shouldBeEqualToString('getUserAgentShadowTextContent(input)', '1999-08-01 12:59');
     finishJSTest();
 });

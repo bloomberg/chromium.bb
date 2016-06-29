@@ -38,13 +38,13 @@ window.onload = function() {
         case 'direct': {
             testInput1.value = '12012-10-09T01:23';
             testInput2.focus();
-            keyDown('upArrow'); // -> [01]/dd/yyyy --:-- --
+            keyDown('ArrowUp'); // -> [01]/dd/yyyy --:-- --
             keyDown('\t'); //      -> 01/[dd]/yyyy --:-- --
             keyDown('\t'); //      -> 01/dd/[yyyy] --:-- --
-            keyDown('upArrow'); // -> 01/dd/[1999] --:-- --
+            keyDown('ArrowUp'); // -> 01/dd/[1999] --:-- --
             keyDown('\t'); //      -> 01/dd/1999 [--]:-- --
             keyDown('\t'); //      -> 01/dd/1999 --:[--] --
-            keyDown('upArrow'); // -> 01/dd/1999 --:[00] --
+            keyDown('ArrowUp'); // -> 01/dd/1999 --:[00] --
 
             var nextUri = location.toString().replace('?page1', '?page2');
             setTimeout(function() { window.location.href = nextUri; }, 0);
@@ -78,13 +78,13 @@ window.onload = function() {
             testInput1.value = '0001-11-17T23:55';
             testInput2.focus();
             keyDown('\t'); //        -> mm/[dd]/yyyy --:-- --
-            keyDown('downArrow'); // -> mm/[31]/yyyy --:-- --
+            keyDown('ArrowDown'); // -> mm/[31]/yyyy --:-- --
             keyDown('\t'); //        -> mm/31/[yyyy] --:-- --
             keyDown('\t'); //        -> mm/31/yyyy [--]:-- --
-            keyDown('downArrow'); // -> mm/31/yyyy [12]:-- --
+            keyDown('ArrowDown'); // -> mm/31/yyyy [12]:-- --
             keyDown('\t'); //        -> mm/31/yyyy 12:[--] --
             keyDown('\t'); //        -> mm/31/yyyy 12:-- [--]
-            keyDown('downArrow'); // -> mm/31/yyyy 12:-- [PM]
+            keyDown('ArrowDown'); // -> mm/31/yyyy 12:-- [PM]
             back('backTo1');
             break;
         case 'forwardTo2':

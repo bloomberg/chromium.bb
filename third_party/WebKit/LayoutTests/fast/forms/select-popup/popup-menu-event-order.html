@@ -34,8 +34,8 @@ function test1() {
     menu.addEventListener('mouseup', recordEvent);
     menu.addEventListener('click', recordEvent);
     menu.addEventListener('change', recordEvent);
-    eventSender.keyDown('downArrow');
-    eventSender.keyDown('\n');
+    eventSender.keyDown('ArrowDown');
+    eventSender.keyDown('Enter');
     shouldBeNull('window.internals.pagePopupWindow');
     shouldBeEqualToString('menu.value', 'garply');
     shouldBeEqualToString('internals.selectMenuListText(menu)', 'garply');

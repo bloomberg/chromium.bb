@@ -86,7 +86,7 @@ el = makeInvalid();
 el.focus();
 eventSender.keyDown('a');
 shouldBe(elBackground, 'validColor');
-eventSender.keyDown('backspace', []);
+eventSender.keyDown('Backspace', []);
 shouldBe(elBackground, 'invalidColor');
 
 // --------------------------------
@@ -106,7 +106,7 @@ shouldBe(elBackground, 'validColor');
 // Make the value dirty by deleting the last character.
 el.focus();
 el.setSelectionRange(10, 10);
-eventSender.keyDown('backspace');
+eventSender.keyDown('Backspace');
 el.maxLength = 5;
 shouldBe(elBackground, 'invalidColor');
 el.maxLength = 10;

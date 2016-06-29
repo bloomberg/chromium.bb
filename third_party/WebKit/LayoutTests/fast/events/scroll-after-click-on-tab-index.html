@@ -24,7 +24,7 @@ function runTest()
   eventSender.mouseMoveTo(center.x, center.y);
   eventSender.mouseDown();
   eventSender.mouseUp();
-  eventSender.keyDown("downArrow");
+  eventSender.keyDown("ArrowDown");
 
   debug("Scroll position is more than 0");
   shouldBecomeEqual("document.scrollingElement.scrollTop > 0", "true", finishJSTest);

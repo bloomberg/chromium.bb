@@ -18,7 +18,7 @@ test(function() {
     document.getElementById('txt').focus();
     document.scrollingElement.scrollTop = 3000;
     assert_not_equals(document.scrollingElement.scrollTop, 0);
-    eventSender.keyDown("menu");
+    eventSender.keyDown("ContextMenu");
     assert_equals(document.scrollingElement.scrollTop, 0);
 }, 'Testing ContextMenu key should reveal focused input.');
 
@@ -30,7 +30,7 @@ test(function() {
     document.getElementById('anchor').focus();
     document.scrollingElement.scrollTop = 3000;
     assert_not_equals(document.scrollingElement.scrollTop, 0);
-    eventSender.keyDown("menu");
+    eventSender.keyDown("ContextMenu");
     assert_equals(document.scrollingElement.scrollTop, 0);
 }, 'Testing ContextMenu key should reveal focused anchor.');
 </script>

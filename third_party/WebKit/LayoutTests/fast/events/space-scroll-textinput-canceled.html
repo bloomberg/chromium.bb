@@ -30,14 +30,14 @@ txt.addEventListener('textInput', function(e) {
 function focusAndPressSpace()
 {
     document.getElementById('txt').focus();
-    // Leave some space for pageUp
+    // Leave some space for PageUp
     document.scrollingElement.scrollTop = window.innerHeight / 2;
 
-    eventSender.keyDown("pageUp", []);
-    // Space key shouldn't cancel pageUp
+    eventSender.keyDown("PageUp", []);
+    // Space key shouldn't cancel PageUp
     eventSender.keyDown(" ", []);
 
-    // pageUp should finish
+    // PageUp should finish
     shouldBecomeEqual("document.scrollingElement.scrollTop", "0", finishJSTest);
 }
 

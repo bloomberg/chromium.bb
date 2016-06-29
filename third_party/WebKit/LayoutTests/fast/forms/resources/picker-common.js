@@ -38,12 +38,12 @@ function openPicker(element, callback, errorCallback) {
     element.offsetTop; // Force to lay out
     element.focus();
     if (element.tagName === "SELECT") {
-        eventSender.keyDown("downArrow", ["altKey"]);
+        eventSender.keyDown("ArrowDown", ["altKey"]);
     } else if (element.tagName === "INPUT") {
         if (element.type === "color") {
             eventSender.keyDown(" ");
         } else {
-            eventSender.keyDown("downArrow", ["altKey"]);
+            eventSender.keyDown("ArrowDown", ["altKey"]);
         }
     }
     popupWindow = window.internals.pagePopupWindow;

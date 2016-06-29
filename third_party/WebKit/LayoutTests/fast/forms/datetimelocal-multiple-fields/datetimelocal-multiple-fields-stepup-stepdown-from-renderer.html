@@ -34,20 +34,20 @@ function test(value, step, min, max, keySequence) {
 }
 
 function stepUp(value, step, min, max) {
-    return test(value, step, min, max, ['upArrow']);
+    return test(value, step, min, max, ['ArrowUp']);
 }
 
 function stepDown(value, step, min, max) {
-    return test(value, step, min, max, ['downArrow']);
+    return test(value, step, min, max, ['ArrowDown']);
 }
 
 input.type = 'datetime-local';
 input.focus();
 debug('Function arguments are (value, step, min, max, [keySequence]).');
 debug('The hour field respects min/max attributes when they have the same date.');
-keyDown('rightArrow');
-keyDown('rightArrow');
-keyDown('rightArrow');
+keyDown('ArrowRight');
+keyDown('ArrowRight');
+keyDown('ArrowRight');
 shouldBeEqualToString('stepUp("2013-01-16T17:00", 1, "2013-01-16T15:00", "2013-01-16T17:00")', '2013-01-16T15:00');
 shouldBeEqualToString('stepDown("2013-01-16T15:00", 1, "2013-01-16T15:00", "2013-01-16T17:00")', '2013-01-16T17:00');
 shouldBeEqualToString('stepUp("2013-01-16T17:00", 1, "2013-01-16T15:00", "2013-01-17T17:00")', '2013-01-16T18:00');

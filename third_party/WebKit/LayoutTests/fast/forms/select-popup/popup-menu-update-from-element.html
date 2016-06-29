@@ -42,7 +42,7 @@ function test1() {
 function test2() {
     hoverOverElement(picker._selectElement.children[0]);
     shouldBeEqualToString('picker._selectElement.value', '0');
-    eventSender.keyDown('downArrow');
+    eventSender.keyDown('ArrowDown');
     shouldBeEqualToString('picker._selectElement.value', '1');
 
     picker.on("didUpdate", onUpdate);

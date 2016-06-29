@@ -28,10 +28,10 @@ date1.addEventListener('change', recordEvent, false);
 openPicker(date1, test1);
 
 function test1() {
-    eventSender.keyDown('rightArrow');
+    eventSender.keyDown('ArrowRight');
     debug('Choosing a new value from the calendar picker. "input" and "change" events should be dispatched in this order.');
     removeCommitDelay();
-    eventSender.keyDown('\n');
+    eventSender.keyDown('Enter');
     shouldBeEqualToString('date1.value', '2000-01-03');
 
     shouldBe('eventsCounter.input', '1');
@@ -45,7 +45,7 @@ function test1() {
 
 function test2() {
     debug('Choosing the same value from the calendar picker. No events should be dispatched.');
-    eventSender.keyDown('\n');
+    eventSender.keyDown('Enter');
     shouldBeEqualToString('date1.value', '2000-01-03');
     shouldBeUndefined('eventsCounter.input');
     shouldBeUndefined('eventsCounter.change');

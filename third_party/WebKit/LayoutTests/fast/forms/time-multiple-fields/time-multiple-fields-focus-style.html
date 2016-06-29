@@ -40,7 +40,7 @@ for (var index = 0; index < fields.length; ++index) {
     var style = getComputedStyle(field);
     shouldBe('"' + id + '"; style.backgroundColor', 'highlight');
     shouldBe('"' + id + '"; style.color', 'highlighttext');
-    keyDown('rightArrow');
+    keyDown('ArrowRight');
 }
 debug('');
 testInput.parentElement.removeChild(testInput);
