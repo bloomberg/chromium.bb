@@ -39,6 +39,7 @@ source_set("bindings") {
     "lib/filter_chain.h",
     "lib/fixed_buffer.cc",
     "lib/fixed_buffer.h",
+    "lib/handle_interface_serialization.h",
     "lib/interface_endpoint_client.cc",
     "lib/interface_endpoint_client.h",
     "lib/interface_endpoint_controller.h",

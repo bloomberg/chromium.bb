@@ -9,11 +9,15 @@ interface FooInterface {};
 struct StructContainsAssociated {
   associated FooInterface? foo_interface;
   associated FooInterface& foo_request;
+  array<associated FooInterface> foo_interfaces;
+  array<associated FooInterface&> foo_requests;
 };
 
 union UnionContainsAssociated {
   associated FooInterface foo_interface;
   associated FooInterface& foo_request;
+  array<associated FooInterface> foo_interfaces;
+  array<associated FooInterface&> foo_requests;
 };
 
 interface InterfacePassesAssociated {

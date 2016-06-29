@@ -101,7 +101,11 @@ struct AssociatedInterface_Data {
 static_assert(sizeof(AssociatedInterface_Data) == 8,
               "Bad_sizeof(AssociatedInterface_Data)");
 
-using AssociatedInterfaceRequest_Data = InterfaceId;
+struct AssociatedInterfaceRequest_Data {
+  InterfaceId interface_id;
+};
+static_assert(sizeof(AssociatedInterfaceRequest_Data) == 4,
+              "Bad_sizeof(AssociatedInterfaceRequest_Data)");
 
 #pragma pack(pop)
 

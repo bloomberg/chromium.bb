@@ -58,8 +58,7 @@ bool {{class_name}}::Validate(
 {%- set last_checked_version = 0 %}
 {%- for packed_field in struct.packed.packed_fields_in_ordinal_order %}
 {%-   set kind = packed_field.field.kind %}
-{%-   if kind|is_object_kind or kind|is_any_handle_kind or
-         kind|is_interface_kind or kind|is_associated_kind or
+{%-   if kind|is_object_kind or kind|is_any_handle_or_interface_kind or
          kind|is_enum_kind %}
 {%-     if packed_field.min_version > last_checked_version %}
 {%-       set last_checked_version = packed_field.min_version %}

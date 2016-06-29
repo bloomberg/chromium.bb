@@ -51,49 +51,21 @@
 {%-   endif %}
 {%- endmacro %}
 
-{#- Validates the specified field, which is supposed to be a handle or contain a
-    handle (in the case of interfaces).
+{#- Validates the specified field, which is supposed to be a handle,
+    an interface, an associated interface or an associated interface request.
     This macro is expanded by the Validate() method. #}
-{%- macro validate_handle(field, field_expr, object_name) %}
+{%- macro validate_handle_or_interface(field, field_expr, object_name) %}
 {%-   set name = field.name %}
 {%-   set kind = field.kind %}
-{%-   if kind|is_interface_kind %}
-  const mojo::internal::Handle_Data {{name}}_handle = {{field_expr}}.handle;
-{%-   else %}
-  const mojo::internal::Handle_Data {{name}}_handle = {{field_expr}};
-{%-   endif %}
 {%-   if not kind|is_nullable_kind %}
-  if (!mojo::internal::ValidateHandleNonNullable(
-          {{name}}_handle,
+  if (!mojo::internal::ValidateHandleOrInterfaceNonNullable(
+          {{field_expr}},
           "invalid {{name}} field in {{object_name}}", validation_context)) {
     return false;
   }
 {%-   endif %}
-  if (!mojo::internal::ValidateHandle({{name}}_handle, validation_context))
-    return false;
-{%- endmacro %}
-
-{#- Validates the specified field, which is supposed to be an associated
-    interface or an associated interface request.
-    This macro is expanded by the Validate() method. #}
-{%- macro validate_associated(field, field_expr, object_name) %}
-{%-   set name = field.name %}
-{%-   set kind = field.kind %}
-{%-   if kind|is_associated_interface_kind %}
-  const mojo::internal::InterfaceId {{name}}_interface_id =
-      {{field_expr}}.interface_id;
-{%-   else %}
-  const mojo::internal::InterfaceId {{name}}_interface_id = {{field_expr}};
-{%-   endif %}
-{%-   if not kind|is_nullable_kind %}
-  if (!mojo::internal::ValidateInterfaceIdNonNullable(
-          {{name}}_interface_id,
-          "invalid {{name}} field in {{object_name}}", validation_context)) {
-    return false;
-  }
-{%-   endif %}
-  if (!mojo::internal::ValidateAssociatedInterfaceId({{name}}_interface_id,
-                                                     validation_context)) {
+  if (!mojo::internal::ValidateHandleOrInterface({{field_expr}},
+                                                 validation_context)) {
     return false;
   }
 {%- endmacro %}
@@ -109,10 +81,8 @@
 {%- macro validate_field(field, field_expr, object_name, union_is_inlined) %}
 {%-   if field.kind|is_object_kind -%}
 {{validate_object(field, field_expr, object_name, union_is_inlined)}}
-{%-   elif field.kind|is_any_handle_kind or field.kind|is_interface_kind -%}
-{{validate_handle(field, field_expr, object_name)}}
-{%-   elif field.kind|is_associated_kind %}
-{{validate_associated(field, field_expr, object_name)}}
+{%-   elif field.kind|is_any_handle_or_interface_kind -%}
+{{validate_handle_or_interface(field, field_expr, object_name)}}
 {%-   elif field.kind|is_enum_kind %}
 {{validate_enum(field, field_expr)}}
 {%-   endif %}

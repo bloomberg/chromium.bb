@@ -267,16 +267,21 @@ struct ArraySerializer<MojomType,
   }
 };
 
-// Serializes and deserializes arrays of handles.
+// Serializes and deserializes arrays of handles or interfaces.
 template <typename MojomType,
           typename MaybeConstUserType,
           typename UserTypeIterator>
-struct ArraySerializer<MojomType,
-                       MaybeConstUserType,
-                       UserTypeIterator,
-                       typename std::enable_if<
-                           BelongsTo<typename MojomType::Element,
-                                     MojomTypeCategory::HANDLE>::value>::type> {
+struct ArraySerializer<
+    MojomType,
+    MaybeConstUserType,
+    UserTypeIterator,
+    typename std::enable_if<
+        BelongsTo<typename MojomType::Element,
+                  MojomTypeCategory::ASSOCIATED_INTERFACE |
+                      MojomTypeCategory::ASSOCIATED_INTERFACE_REQUEST |
+                      MojomTypeCategory::HANDLE |
+                      MojomTypeCategory::INTERFACE |
+                      MojomTypeCategory::INTERFACE_REQUEST>::value>::type> {
   using UserType = typename std::remove_const<MaybeConstUserType>::type;
   using Data = typename MojomTypeTraits<MojomType>::Data;
   using Element = typename MojomType::Element;
@@ -297,29 +302,37 @@ struct ArraySerializer<MojomType,
                                 const ContainerValidateParams* validate_params,
                                 SerializationContext* context) {
     DCHECK(!validate_params->element_validate_params)
-        << "Handle type should not have array validate params";
+        << "Handle or interface type should not have array validate params";
 
     size_t size = input->GetSize();
     for (size_t i = 0; i < size; ++i) {
-      // Transfer ownership of the handle.
-      output->at(i) = context->handles.AddHandle(input->GetNext().release());
+      Serialize<Element>(input->GetNext(), &output->at(i), context);
+
+      static const ValidationError kError =
+          BelongsTo<Element,
+                    MojomTypeCategory::ASSOCIATED_INTERFACE |
+                        MojomTypeCategory::ASSOCIATED_INTERFACE_REQUEST>::value
+              ? VALIDATION_ERROR_UNEXPECTED_INVALID_INTERFACE_ID
+              : VALIDATION_ERROR_UNEXPECTED_INVALID_HANDLE;
       MOJO_INTERNAL_DLOG_SERIALIZATION_WARNING(
-          !validate_params->element_is_nullable && !output->at(i).is_valid(),
-          VALIDATION_ERROR_UNEXPECTED_INVALID_HANDLE,
-          MakeMessageWithArrayIndex(
-              "invalid handle in array expecting valid handles", size, i));
+          !validate_params->element_is_nullable &&
+              !IsHandleOrInterfaceValid(output->at(i)),
+          kError,
+          MakeMessageWithArrayIndex("invalid handle or interface ID in array "
+                                    "expecting valid handles or interface IDs",
+                                    size, i));
     }
   }
   static bool DeserializeElements(Data* input,
                                   UserType* output,
                                   SerializationContext* context) {
-    using HandleType = typename Element::RawHandleType;
     if (!Traits::Resize(*output, input->size()))
       return false;
     ArrayIterator<Traits, UserType> iterator(*output);
     for (size_t i = 0; i < input->size(); ++i) {
-      iterator.GetNext() = MakeScopedHandle(
-          HandleType(context->handles.TakeHandle(input->at(i)).value()));
+      bool result =
+          Deserialize<Element>(&input->at(i), &iterator.GetNext(), context);
+      DCHECK(result);
     }
     return true;
   }

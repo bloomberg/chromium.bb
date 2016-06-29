@@ -49,6 +49,7 @@ union HandleUnion {
   handle<data_pipe_producer> f_data_pipe_producer;
   handle<shared_buffer> f_shared_buffer;
   SmallCache f_small_cache;
+  SmallCache& f_small_cache_request;
 };
 
 struct WrapperStruct {

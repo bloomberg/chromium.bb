@@ -15,6 +15,7 @@
 #include "mojo/public/cpp/bindings/lib/fixed_buffer.h"
 #include "mojo/public/cpp/bindings/lib/serialization.h"
 #include "mojo/public/cpp/bindings/lib/validation_context.h"
+#include "mojo/public/cpp/bindings/lib/validation_errors.h"
 #include "mojo/public/cpp/bindings/string.h"
 #include "mojo/public/cpp/test_support/test_utils.h"
 #include "mojo/public/interfaces/bindings/tests/test_structs.mojom.h"
@@ -809,6 +810,8 @@ TEST(UnionTest, StructInUnionValidation) {
 }
 
 TEST(UnionTest, StructInUnionValidationNonNullable) {
+  mojo::internal::SerializationWarningObserverForTesting warning_observer;
+
   DummyStructPtr dummy(nullptr);
 
   ObjectUnionPtr obj(ObjectUnion::New());
@@ -820,6 +823,8 @@ TEST(UnionTest, StructInUnionValidationNonNullable) {
   mojo::internal::FixedBufferForTesting buf(size);
   internal::ObjectUnion_Data* data = nullptr;
   mojo::internal::Serialize<ObjectUnionPtr>(obj, &buf, &data, false, nullptr);
+  EXPECT_EQ(mojo::internal::VALIDATION_ERROR_UNEXPECTED_NULL_POINTER,
+            warning_observer.last_warning());
 
   data->EncodePointers();
 
@@ -1043,6 +1048,8 @@ TEST(UnionTest, UnionInUnionValidation) {
 }
 
 TEST(UnionTest, UnionInUnionValidationNonNullable) {
+  mojo::internal::SerializationWarningObserverForTesting warning_observer;
+
   PodUnionPtr pod(nullptr);
 
   ObjectUnionPtr obj(ObjectUnion::New());
@@ -1054,6 +1061,9 @@ TEST(UnionTest, UnionInUnionValidationNonNullable) {
   mojo::internal::FixedBufferForTesting buf(size);
   internal::ObjectUnion_Data* data = nullptr;
   mojo::internal::Serialize<ObjectUnionPtr>(obj, &buf, &data, false, nullptr);
+  EXPECT_EQ(mojo::internal::VALIDATION_ERROR_UNEXPECTED_NULL_POINTER,
+            warning_observer.last_warning());
+
   data->EncodePointers();
 
   void* raw_buf = buf.Leak();
@@ -1142,6 +1152,8 @@ TEST(UnionTest, HandleInUnionValidation) {
 }
 
 TEST(UnionTest, HandleInUnionValidationNull) {
+  mojo::internal::SerializationWarningObserverForTesting warning_observer;
+
   ScopedMessagePipeHandle pipe;
   HandleUnionPtr handle(HandleUnion::New());
   handle->set_f_message_pipe(std::move(pipe));
@@ -1155,6 +1167,8 @@ TEST(UnionTest, HandleInUnionValidationNull) {
   internal::HandleUnion_Data* data = nullptr;
   mojo::internal::Serialize<HandleUnionPtr>(handle, &buf, &data, false,
                                             &context);
+  EXPECT_EQ(mojo::internal::VALIDATION_ERROR_UNEXPECTED_INVALID_HANDLE,
+            warning_observer.last_warning());
 
   void* raw_buf = buf.Leak();
   mojo::internal::ValidationContext validation_context(

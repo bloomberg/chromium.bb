@@ -95,13 +95,27 @@ bool ValidateInlinedUnionNonNullable(const T& input,
   return false;
 }
 
-bool ValidateHandleNonNullable(const Handle_Data& input,
-                               const char* error_message,
-                               ValidationContext* validation_context);
+bool IsHandleOrInterfaceValid(const AssociatedInterface_Data& input);
+bool IsHandleOrInterfaceValid(const AssociatedInterfaceRequest_Data& input);
+bool IsHandleOrInterfaceValid(const Interface_Data& input);
+bool IsHandleOrInterfaceValid(const Handle_Data& input);
 
-bool ValidateInterfaceIdNonNullable(InterfaceId input,
-                                    const char* error_message,
-                                    ValidationContext* validation_context);
+bool ValidateHandleOrInterfaceNonNullable(
+    const AssociatedInterface_Data& input,
+    const char* error_message,
+    ValidationContext* validation_context);
+bool ValidateHandleOrInterfaceNonNullable(
+    const AssociatedInterfaceRequest_Data& input,
+    const char* error_message,
+    ValidationContext* validation_context);
+bool ValidateHandleOrInterfaceNonNullable(
+    const Interface_Data& input,
+    const char* error_message,
+    ValidationContext* validation_context);
+bool ValidateHandleOrInterfaceNonNullable(
+    const Handle_Data& input,
+    const char* error_message,
+    ValidationContext* validation_context);
 
 template <typename T>
 bool ValidateArray(const Pointer<Array_Data<T>>& input,
@@ -158,11 +172,14 @@ bool ValidateNonInlinedUnion(const Pointer<T>& input,
                      false);
 }
 
-bool ValidateHandle(const Handle_Data& input,
-                    ValidationContext* validation_context);
-
-bool ValidateAssociatedInterfaceId(InterfaceId input,
-                                   ValidationContext* validation_context);
+bool ValidateHandleOrInterface(const AssociatedInterface_Data& input,
+                               ValidationContext* validation_context);
+bool ValidateHandleOrInterface(const AssociatedInterfaceRequest_Data& input,
+                               ValidationContext* validation_context);
+bool ValidateHandleOrInterface(const Interface_Data& input,
+                               ValidationContext* validation_context);
+bool ValidateHandleOrInterface(const Handle_Data& input,
+                               ValidationContext* validation_context);
 
 }  // namespace internal
 }  // namespace mojo

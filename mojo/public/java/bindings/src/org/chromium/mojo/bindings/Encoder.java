@@ -490,6 +490,18 @@ public class Encoder {
     }
 
     /**
+     * Encodes an array of associated interfaces. Not yet supported.
+     */
+    public void encode(AssociatedInterfaceNotSupported[] v, int offset, int arrayNullability,
+            int expectedLength) {}
+
+    /**
+     * Encodes an array of associated interface requests. Not yet supported.
+     */
+    public void encode(AssociatedInterfaceRequestNotSupported[] v, int offset, int arrayNullability,
+            int expectedLength) {}
+
+    /**
      * Encodes a <code>null</code> pointer iff the object is nullable, raises an exception
      * otherwise.
      */
