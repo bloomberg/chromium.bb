@@ -34,16 +34,61 @@ bool {{struct.name}}DataView::Read{{name|under_to_camel}}(
       pointer, value, context_);
 }
 
-{%-   elif kind|is_any_handle_or_interface_kind %}
+{%-   elif kind|is_interface_kind %}
 {{kind|cpp_wrapper_type}} {{struct.name}}DataView::Take{{name|under_to_camel}}() {
   {{kind|cpp_wrapper_type}} result;
 {%-     if pf.min_version != 0 %}
   if (data_->header_.version < {{pf.min_version}})
     return result;
 {%-     endif %}
-  bool ret = mojo::internal::Deserialize<{{kind|unmapped_type_for_serializer}}>(
-      &data_->{{name}}, &result, context_);
-  DCHECK(ret);
+  mojo::internal::InterfaceDataToPointer(&data_->{{name}}, &result, context_);
+  return result;
+}
+
+{%-   elif kind|is_interface_request_kind %}
+{{kind|cpp_wrapper_type}} {{struct.name}}DataView::Take{{name|under_to_camel}}() {
+  {{kind|cpp_wrapper_type}} result;
+{%-     if pf.min_version != 0 %}
+  if (data_->header_.version < {{pf.min_version}})
+    return result;
+{%-     endif %}
+  result.Bind(context_->handles.TakeHandleAs<mojo::MessagePipeHandle>(
+      data_->{{name}}));
+  return result;
+}
+
+{%-   elif kind|is_any_handle_kind %}
+{{kind|cpp_wrapper_type}} {{struct.name}}DataView::Take{{name|under_to_camel}}() {
+{%-     if pf.min_version != 0 %}
+  if (data_->header_.version < {{pf.min_version}})
+    return {{kind|cpp_wrapper_type}}();
+{%-     endif %}
+
+  return context_->handles.TakeHandleAs<
+      {{kind|cpp_wrapper_type}}::RawHandleType>(data_->{{name}});
+}
+
+{%-   elif kind|is_associated_interface_kind %}
+{{kind|cpp_wrapper_type}} {{struct.name}}DataView::Take{{name|under_to_camel}}() {
+  {{kind|cpp_wrapper_type}} result;
+{%-     if pf.min_version != 0 %}
+  if (data_->header_.version < {{pf.min_version}})
+    return result;
+{%-     endif %}
+  mojo::internal::AssociatedInterfaceDataToPtrInfo(&data_->{{name}}, &result,
+                                                   context_->router.get());
+  return result;
+}
+
+{%-   elif kind|is_associated_interface_request_kind %}
+{{kind|cpp_wrapper_type}} {{struct.name}}DataView::Take{{name|under_to_camel}}() {
+  {{kind|cpp_wrapper_type}} result;
+{%-     if pf.min_version != 0 %}
+  if (data_->header_.version < {{pf.min_version}})
+    return result;
+{%-     endif %}
+  result.Bind(context_->router->CreateLocalEndpointHandle(
+      mojo::internal::FetchAndReset(&data_->{{name}})));
   return result;
 }
 

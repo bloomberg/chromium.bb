@@ -156,8 +156,6 @@ struct ArrayValueTypes {
   array<int64> f3;
   array<float> f4;
   array<double> f5;
-  array<SomeInterface> f6;
-  array<SomeInterface&> f7;
 };
 
 // Used to verify that various float and double values can be encoded and

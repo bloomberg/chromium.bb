@@ -83,7 +83,6 @@ interface ConformanceTestInterface {
   Method14(EnumA param0, EnumB param1);
   Method15(array<EnumA>? param0, array<EnumB>? param1);
   Method16(map<EnumA, EnumA>? param0);
-  Method17(array<InterfaceA> param0);
 };
 
 struct BasicStruct {

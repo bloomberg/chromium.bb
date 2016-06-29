@@ -9,7 +9,9 @@ struct StructTraits<{{mojom_type}}, {{mojom_type}}Ptr> {
 
 {%- for field in struct.fields %}
 {%-   set return_ref = field.kind|is_object_kind or
-                       field.kind|is_any_handle_or_interface_kind %}
+                       field.kind|is_any_handle_kind or
+                       field.kind|is_interface_kind or
+                       field.kind|is_associated_kind %}
 {%-   if return_ref %}
   static decltype({{mojom_type}}::{{field.name}})& {{field.name}}(
       {{mojom_type}}Ptr& input) {

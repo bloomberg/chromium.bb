@@ -47,14 +47,13 @@ class {{union.name}} {
   union Union_ {
     Union_() {}
     ~Union_() {}
-
-{%- for field in union.fields %}
-{%-   if field.kind|is_object_kind or
-         field.kind|is_any_handle_or_interface_kind %}
+{%  for field in union.fields %}
+{%    if field.kind|is_object_kind or field.kind|is_any_handle_kind or
+         field.kind|is_interface_kind or field.kind|is_associated_kind -%}
     {{field.kind|cpp_wrapper_type}}* {{field.name}};
-{%-   else %}
+{%    else -%}
     {{field.kind|cpp_wrapper_type}} {{field.name}};
-{%-   endif %}
+{%    endif -%}
 {%- endfor %}
   };
   void SwitchActive(Tag new_active);

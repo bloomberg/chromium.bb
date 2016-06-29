@@ -142,53 +142,10 @@ bool ValidateControlResponse(const Message* message,
   return false;
 }
 
-bool IsHandleOrInterfaceValid(const AssociatedInterface_Data& input) {
-  return IsValidInterfaceId(input.interface_id);
-}
-
-bool IsHandleOrInterfaceValid(const AssociatedInterfaceRequest_Data& input) {
-  return IsValidInterfaceId(input.interface_id);
-}
-
-bool IsHandleOrInterfaceValid(const Interface_Data& input) {
-  return input.handle.is_valid();
-}
-
-bool IsHandleOrInterfaceValid(const Handle_Data& input) {
-  return input.is_valid();
-}
-
-bool ValidateHandleOrInterfaceNonNullable(
-    const AssociatedInterface_Data& input,
-    const char* error_message,
-    ValidationContext* validation_context) {
-  if (IsHandleOrInterfaceValid(input))
-    return true;
-
-  ReportValidationError(validation_context,
-                        VALIDATION_ERROR_UNEXPECTED_INVALID_INTERFACE_ID,
-                        error_message);
-  return false;
-}
-
-bool ValidateHandleOrInterfaceNonNullable(
-    const AssociatedInterfaceRequest_Data& input,
-    const char* error_message,
-    ValidationContext* validation_context) {
-  if (IsHandleOrInterfaceValid(input))
-    return true;
-
-  ReportValidationError(validation_context,
-                        VALIDATION_ERROR_UNEXPECTED_INVALID_INTERFACE_ID,
-                        error_message);
-  return false;
-}
-
-bool ValidateHandleOrInterfaceNonNullable(
-    const Interface_Data& input,
-    const char* error_message,
-    ValidationContext* validation_context) {
-  if (IsHandleOrInterfaceValid(input))
+bool ValidateHandleNonNullable(const Handle_Data& input,
+                               const char* error_message,
+                               ValidationContext* validation_context) {
+  if (input.is_valid())
     return true;
 
   ReportValidationError(validation_context,
@@ -197,54 +154,34 @@ bool ValidateHandleOrInterfaceNonNullable(
   return false;
 }
 
-bool ValidateHandleOrInterfaceNonNullable(
-    const Handle_Data& input,
-    const char* error_message,
-    ValidationContext* validation_context) {
-  if (IsHandleOrInterfaceValid(input))
+bool ValidateInterfaceIdNonNullable(InterfaceId input,
+                                    const char* error_message,
+                                    ValidationContext* validation_context) {
+  if (IsValidInterfaceId(input))
     return true;
 
   ReportValidationError(validation_context,
-                        VALIDATION_ERROR_UNEXPECTED_INVALID_HANDLE,
+                        VALIDATION_ERROR_UNEXPECTED_INVALID_INTERFACE_ID,
                         error_message);
   return false;
 }
 
-bool ValidateHandleOrInterface(const AssociatedInterface_Data& input,
-                               ValidationContext* validation_context) {
-  if (!IsMasterInterfaceId(input.interface_id))
-    return true;
-
-  ReportValidationError(validation_context,
-                        VALIDATION_ERROR_ILLEGAL_INTERFACE_ID);
-  return false;
-}
-
-bool ValidateHandleOrInterface(const AssociatedInterfaceRequest_Data& input,
-                               ValidationContext* validation_context) {
-  if (!IsMasterInterfaceId(input.interface_id))
-    return true;
-
-  ReportValidationError(validation_context,
-                        VALIDATION_ERROR_ILLEGAL_INTERFACE_ID);
-  return false;
-}
-
-bool ValidateHandleOrInterface(const Interface_Data& input,
-                               ValidationContext* validation_context) {
-  if (validation_context->ClaimHandle(input.handle))
-    return true;
-
-  ReportValidationError(validation_context, VALIDATION_ERROR_ILLEGAL_HANDLE);
-  return false;
-}
-
-bool ValidateHandleOrInterface(const Handle_Data& input,
-                               ValidationContext* validation_context) {
+bool ValidateHandle(const Handle_Data& input,
+                    ValidationContext* validation_context) {
   if (validation_context->ClaimHandle(input))
     return true;
 
   ReportValidationError(validation_context, VALIDATION_ERROR_ILLEGAL_HANDLE);
+  return false;
+}
+
+bool ValidateAssociatedInterfaceId(InterfaceId input,
+                                   ValidationContext* validation_context) {
+  if (!IsMasterInterfaceId(input))
+    return true;
+
+  ReportValidationError(validation_context,
+                        VALIDATION_ERROR_ILLEGAL_INTERFACE_ID);
   return false;
 }
 

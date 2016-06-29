@@ -39,7 +39,6 @@
       'public/cpp/bindings/lib/filter_chain.h',
       'public/cpp/bindings/lib/fixed_buffer.cc',
       'public/cpp/bindings/lib/fixed_buffer.h',
-      'public/cpp/bindings/lib/handle_interface_serialization.h',
       'public/cpp/bindings/lib/interface_endpoint_client.cc',
       'public/cpp/bindings/lib/interface_endpoint_client.h',
       'public/cpp/bindings/lib/interface_endpoint_controller.h',

@@ -782,11 +782,6 @@ def IsAnyHandleKind(kind):
           IsInterfaceRequestKind(kind))
 
 
-def IsAnyHandleOrInterfaceKind(kind):
-  return (IsAnyHandleKind(kind) or IsInterfaceKind(kind) or
-          IsAssociatedKind(kind))
-
-
 def IsAssociatedKind(kind):
   return (IsAssociatedInterfaceKind(kind) or
           IsAssociatedInterfaceRequestKind(kind))

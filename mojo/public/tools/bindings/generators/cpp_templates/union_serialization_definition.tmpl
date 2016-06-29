@@ -52,53 +52,41 @@ void UnionSerializerImpl<{{mojom_type}}Ptr>::Serialize(
     result->size = 16;
     result->tag = input->which();
     switch (input->which()) {
-{%- for field in union.fields %}
+{%  for field in union.fields %}
       case {{mojom_type}}::Tag::{{field.name|upper}}: {
-{%-   set serializer_type = field.kind|unmapped_type_for_serializer %}
-{%-   if field.kind|is_object_kind %}
-{%-     if field.kind|is_union_kind %}
+{%    if field.kind|is_object_kind %}
+{%-     set serializer_type = field.kind|unmapped_type_for_serializer %}
+{%      if field.kind|is_union_kind %}
         mojo::internal::Serialize<{{serializer_type}}>(
             *(input_acc.data()->{{field.name}}), buf,
             &result->data.f_{{field.name}}.ptr, false, context);
-{%-     elif field.kind|is_array_kind or field.kind|is_map_kind %}
+{%      elif field.kind|is_array_kind or field.kind|is_map_kind %}
         const ContainerValidateParams {{field.name}}_validate_params(
             {{field.kind|get_container_validate_params_ctor_args|indent(16)}});
         mojo::internal::Serialize<{{serializer_type}}>(
             *(input_acc.data()->{{field.name}}), buf,
             &result->data.f_{{field.name}}.ptr, &{{field.name}}_validate_params,
             context);
-{%-     else %}
+{%      else %}
         mojo::internal::Serialize<{{serializer_type}}>(
             *(input_acc.data()->{{field.name}}), buf,
             &result->data.f_{{field.name}}.ptr, context);
 {%-     endif %}
-{%-     if not field.kind|is_nullable_kind %}
-        MOJO_INTERNAL_DLOG_SERIALIZATION_WARNING(
-            !result->data.f_{{field.name}}.ptr,
-            mojo::internal::VALIDATION_ERROR_UNEXPECTED_NULL_POINTER,
-            "null {{field.name}} in {{union.name}} union");
-{%-     endif %}
-
-{%-   elif field.kind|is_any_handle_or_interface_kind %}
-        mojo::internal::Serialize<{{serializer_type}}>(
-            *input_acc.data()->{{field.name}}, &result->data.f_{{field.name}},
-            context);
-{%-     if not field.kind|is_nullable_kind %}
-        MOJO_INTERNAL_DLOG_SERIALIZATION_WARNING(
-            !mojo::internal::IsHandleOrInterfaceValid(result->data.f_{{field.name}}),
-{%-       if field.kind|is_associated_kind %}
-            mojo::internal::VALIDATION_ERROR_UNEXPECTED_INVALID_INTERFACE_ID,
-{%-       else %}
-            mojo::internal::VALIDATION_ERROR_UNEXPECTED_INVALID_HANDLE,
-{%-       endif %}
-            "invalid {{field.name}} in {{union.name}} union");
-{%-     endif %}
-
-{%-   elif field.kind|is_enum_kind %}
+{%    elif field.kind|is_any_handle_kind %}
+        result->data.f_{{field.name}} = context->handles.AddHandle(
+            input_acc.data()->{{field.name}}->release());
+{%    elif field.kind|is_interface_kind %}
+        Interface_Data* {{field.name}} = reinterpret_cast<Interface_Data*>(
+            &result->data.f_{{field.name}});
+        InterfacePointerToData(std::move(*input_acc.data()->{{field.name}}),
+                               {{field.name}}, context);
+{%-   elif field.kind|is_associated_kind %}
+        // TODO(yzshen): add seralization logic for associated kinds.
+{%    elif field.kind|is_enum_kind %}
+{%-     set serializer_type = field.kind|unmapped_type_for_serializer %}
         mojo::internal::Serialize<{{serializer_type}}>(
             input_acc.data()->{{field.name}}, &result->data.f_{{field.name}});
-
-{%-   else %}
+{%    else %}
         result->data.f_{{field.name}} = input_acc.data()->{{field.name}};
 {%-   endif %}
         break;
@@ -123,33 +111,38 @@ bool UnionSerializerImpl<{{mojom_type}}Ptr>::Deserialize(
     {{mojom_type}}Ptr result({{mojom_type}}::New());
     UnionAccessor<{{mojom_type}}> result_acc(result.get());
     switch (input->tag) {
-{%- for field in union.fields %}
+{%  for field in union.fields %}
       case {{mojom_type}}::Tag::{{field.name|upper}}: {
-{%-   set serializer_type = field.kind|unmapped_type_for_serializer %}
-{%-   if field.kind|is_object_kind %}
+{%    if field.kind|is_object_kind %}
+{%-     set serializer_type = field.kind|unmapped_type_for_serializer %}
         result_acc.SwitchActive({{mojom_type}}::Tag::{{field.name|upper}});
         if (!mojo::internal::Deserialize<{{serializer_type}}>(
                 input->data.f_{{field.name}}.ptr,
                 result_acc.data()->{{field.name}}, context))
           success = false;
-
-{%-   elif field.kind|is_any_handle_or_interface_kind %}
-        typename std::remove_reference<
-            decltype(result->get_{{field.name}}())>::type result_{{field.name}};
-        bool ret = mojo::internal::Deserialize<{{serializer_type}}>(
-            &input->data.f_{{field.name}}, &result_{{field.name}}, context);
-        DCHECK(ret);
-        result->set_{{field.name}}(std::move(result_{{field.name}}));
-
-{%-   elif field.kind|is_enum_kind %}
+{%    elif field.kind|is_any_handle_kind %}
+        {{field.kind|cpp_wrapper_type}} {{field.name}};
+        {{field.name}} = context->handles.TakeHandleAs<
+            typename {{field.kind|cpp_wrapper_type}}::RawHandleType>(
+                input->data.f_{{field.name}});
+        result->set_{{field.name}}(std::move({{field.name}}));
+{%    elif field.kind|is_interface_kind %}
+        {{field.kind|get_qualified_name_for_kind}}Ptr {{field.name}}_out;
+        Interface_Data* {{field.name}}_in = reinterpret_cast<Interface_Data*>(
+            &input->data.f_{{field.name}});
+        InterfaceDataToPointer({{field.name}}_in, &{{field.name}}_out, context);
+        result->set_{{field.name}}(std::move({{field.name}}_out));
+{%-   elif field.kind|is_associated_kind %}
+        // TODO(yzshen): add deserialization logic for associated kinds.
+{%    elif field.kind|is_enum_kind %}
+{%-     set serializer_type = field.kind|unmapped_type_for_serializer %}
         decltype(result->get_{{field.name}}()) result_{{field.name}};
         if (!mojo::internal::Deserialize<{{serializer_type}}>(
                 input->data.f_{{field.name}}, &result_{{field.name}}))
            success = false;
         else
            result->set_{{field.name}}(result_{{field.name}});
-
-{%-   else %}
+{%    else %}
         result->set_{{field.name}}(input->data.f_{{field.name}});
 {%-   endif %}
         break;

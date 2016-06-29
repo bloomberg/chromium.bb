@@ -39,7 +39,8 @@ class {{struct.name}}DataView {
 {%-   elif kind|is_union_kind %}
   bool Read{{name|under_to_camel}}({{kind|cpp_wrapper_type}}* value);
 
-{%-   elif kind|is_any_handle_or_interface_kind %}
+{%-   elif kind|is_interface_kind or kind|is_any_handle_kind or
+           kind|is_associated_kind %}
   {{kind|cpp_wrapper_type}} Take{{name|under_to_camel}}();
 
 {%-   else %}

@@ -6,8 +6,8 @@ template <typename UnionPtrType>
   switch (tag_) {
 {%- for field in union.fields %}
     case Tag::{{field.name|upper}}:
-{%-   if field.kind|is_object_kind or
-         field.kind|is_any_handle_or_interface_kind %}
+{%-   if field.kind|is_object_kind or field.kind|is_any_handle_kind or
+        field.kind|is_interface_kind or field.kind|is_associated_kind %}
       rv->set_{{field.name}}(mojo::internal::Clone(*data_.{{field.name}}));
 {%-   else %}
       rv->set_{{field.name}}(mojo::internal::Clone(data_.{{field.name}}));
@@ -28,8 +28,8 @@ bool {{union.name}}::Equals(const T& other) const {
   switch (tag_) {
 {%- for field in union.fields %}
     case Tag::{{field.name|upper}}:
-{%-   if field.kind|is_object_kind or
-         field.kind|is_any_handle_or_interface_kind %}
+{%-   if field.kind|is_object_kind or field.kind|is_any_handle_kind or
+         field.kind|is_interface_kind or field.kind|is_associated_kind %}
       return mojo::internal::Equals(*(data_.{{field.name}}), *(other.data_.{{field.name}}));
 {%-   else %}
       return mojo::internal::Equals(data_.{{field.name}}, other.data_.{{field.name}});
