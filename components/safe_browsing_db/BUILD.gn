@@ -4,9 +4,18 @@
 
 import("//third_party/protobuf/proto_library.gni")
 
-proto_library("proto") {
+proto_library("safebrowsing_proto") {
   sources = [
     "safebrowsing.proto",
+  ]
+}
+
+proto_library("v4_store_proto") {
+  sources = [
+    "v4_store.proto",
+  ]
+  deps = [
+    ":safebrowsing_proto",
   ]
 }
 
@@ -23,7 +32,7 @@ group("safe_browsing_db_shared") {
     ":database_manager",
     ":hit_report",
     ":prefix_set",
-    ":proto",
+    ":safebrowsing_proto",
     ":util",
   ]
 }
@@ -164,7 +173,7 @@ source_set("v4_database") {
     "v4_database.h",
   ]
   public_deps = [
-    ":proto",
+    ":safebrowsing_proto",
   ]
   deps = [
     ":v4_protocol_manager_util",
@@ -180,7 +189,7 @@ source_set("v4_get_hash_protocol_manager") {
     "v4_get_hash_protocol_manager.h",
   ]
   public_deps = [
-    ":proto",
+    ":safebrowsing_proto",
   ]
   deps = [
     ":util",
@@ -199,7 +208,7 @@ source_set("v4_local_database_manager") {
   deps = [
     ":database_manager",
     ":hit_report",
-    ":proto",
+    ":safebrowsing_proto",
     ":v4_database",
     ":v4_protocol_manager_util",
     ":v4_update_protocol_manager",
@@ -216,7 +225,7 @@ source_set("v4_protocol_manager_util") {
     "v4_protocol_manager_util.h",
   ]
   deps = [
-    ":proto",
+    ":safebrowsing_proto",
     "//base",
     "//net",
     "//url:url",
@@ -229,7 +238,8 @@ source_set("v4_store") {
     "v4_store.h",
   ]
   public_deps = [
-    ":proto",
+    ":safebrowsing_proto",
+    ":v4_store_proto",
   ]
   deps = [
     ":v4_protocol_manager_util",
@@ -243,7 +253,7 @@ source_set("v4_update_protocol_manager") {
     "v4_update_protocol_manager.h",
   ]
   deps = [
-    ":proto",
+    ":safebrowsing_proto",
     ":util",
     ":v4_protocol_manager_util",
     "//base",
@@ -261,12 +271,13 @@ source_set("unit_tests") {
     "v4_database_unittest.cc",
     "v4_get_hash_protocol_manager_unittest.cc",
     "v4_protocol_manager_util_unittest.cc",
+    "v4_store_unittest.cc",
     "v4_update_protocol_manager_unittest.cc",
   ]
   deps = [
     ":database_manager",
     ":prefix_set",
-    ":proto",
+    ":safebrowsing_proto",
     ":test_database_manager",
     ":util",
     ":v4_database",
@@ -274,6 +285,7 @@ source_set("unit_tests") {
     ":v4_local_database_manager",
     ":v4_protocol_manager_util",
     ":v4_store",
+    ":v4_store_proto",
     ":v4_update_protocol_manager",
     "//base",
     "//content/test:test_support",

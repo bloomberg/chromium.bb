@@ -41,7 +41,7 @@
       'type': 'static_library',
       'dependencies': [
         ':safe_browsing_db_shared',
-        ':safebrowsing_proto',
+        ':v4_store_proto',
       ],
       'sources': [
         'safe_browsing_db/v4_database.h',
@@ -83,7 +83,7 @@
       'msvs_disabled_warnings': [4267, ],
     },
     {
-      # GN version: //components/safe_browsing_db:proto
+      # GN version: //components/safe_browsing_db:safebrowsing_proto
       # Protobuf compiler / generator for the Safe Browsing protocol buffer.
       'target_name': 'safebrowsing_proto',
       'type': 'static_library',
@@ -101,6 +101,19 @@
       'target_name': 'safe_browsing_metadata_proto',
       'type': 'static_library',
       'sources': [ 'safe_browsing_db/metadata.proto' ],
+      'variables': {
+        'proto_in_dir': 'safe_browsing_db',
+        'proto_out_dir': 'components/safe_browsing_db',
+      },
+      'includes': [ '../build/protoc.gypi' ]
+    },
+    {
+      # GN version: //components/safe_browsing_db:v4_store_proto
+      # Protobuf compiler / generator for the Safe Browsing protocol buffer for
+      # storing hash-prefixes on disk.
+      'target_name': 'v4_store_proto',
+      'type': 'static_library',
+      'sources': [ 'safe_browsing_db/v4_store.proto' ],
       'variables': {
         'proto_in_dir': 'safe_browsing_db',
         'proto_out_dir': 'components/safe_browsing_db',

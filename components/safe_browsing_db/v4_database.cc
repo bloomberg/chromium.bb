@@ -6,6 +6,7 @@
 
 #include "base/callback.h"
 #include "base/debug/leak_annotations.h"
+#include "base/files/file_util.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "components/safe_browsing_db/v4_database.h"
@@ -47,6 +48,10 @@ void V4Database::CreateOnTaskRunner(
   if (!factory_) {
     factory_ = new V4StoreFactory();
     ANNOTATE_LEAKING_OBJECT_PTR(factory_);
+  }
+
+  if (!base::CreateDirectory(base_path)) {
+    NOTREACHED();
   }
 
   std::unique_ptr<StoreMap> store_map = base::MakeUnique<StoreMap>();

@@ -46700,6 +46700,32 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="SafeBrowsing.V4StoreReadResult"
+    enum="SafeBrowsingStoreReadResult">
+  <owner>vakh@chromium.org</owner>
+  <summary>
+    Track the parsing results of reading the SafeBrowsing V4 store file from
+    disk. Recorded every time a store is read from disk.
+  </summary>
+</histogram>
+
+<histogram name="SafeBrowsing.V4StoreVersionRead" units="version number">
+  <owner>vakh@chromium.org</owner>
+  <summary>
+    Version of V4Store read from a store file. This would be useful in tracking
+    the usage and rollout of new V4Store versions.
+  </summary>
+</histogram>
+
+<histogram name="SafeBrowsing.V4StoreWriteResult"
+    enum="SafeBrowsingStoreWriteResult">
+  <owner>vakh@chromium.org</owner>
+  <summary>
+    Track the results of writing the SafeBrowsing V4 store file to disk.
+    Recorded every time a store is written to disk.
+  </summary>
+</histogram>
+
 <histogram name="SafeBrowsing.V4UpdateHttpResponseOrErrorCode"
     enum="CombinedHttpResponseAndNetErrorCode">
   <owner>vakh@chromium.org</owner>
@@ -87667,6 +87693,25 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="2" label="NO_THREAT_ENTRY_TYPE_ERROR"/>
   <int value="3" label="NO_THREAT_TYPE_ERROR"/>
   <int value="4" label="NO_STATE_ERROR"/>
+</enum>
+
+<enum name="SafeBrowsingStoreReadResult" type="int">
+  <int value="0" label="READ_SUCCESS"/>
+  <int value="1" label="UNEXPECTED_READ_FAILURE"/>
+  <int value="2" label="FILE_UNREADABLE_FAILURE"/>
+  <int value="3" label="FILE_EMPTY_FAILURE"/>
+  <int value="4" label="PROTO_PARSING_FAILURE"/>
+  <int value="5" label="UNEXPECTED_MAGIC_NUMBER_FAILURE"/>
+  <int value="6" label="FILE_VERSION_TOO_LOW_FAILURE"/>
+  <int value="7" label="HASH_PREFIX_INFO_MISSING_FAILURE"/>
+</enum>
+
+<enum name="SafeBrowsingStoreWriteResult" type="int">
+  <int value="0" label="WRITE_SUCCESS"/>
+  <int value="1" label="UNEXPECTED_WRITE_FAILURE"/>
+  <int value="2" label="INVALID_RESPONSE_TYPE_FAILURE"/>
+  <int value="3" label="UNEXPECTED_BYTES_WRITTEN_FAILURE"/>
+  <int value="4" label="UNABLE_TO_RENAME_FAILURE"/>
 </enum>
 
 <enum name="SafeBrowsingV4OperationResult" type="int">

@@ -704,6 +704,7 @@
       'safe_browsing_db/v4_database_unittest.cc',
       'safe_browsing_db/v4_get_hash_protocol_manager_unittest.cc',
       'safe_browsing_db/v4_protocol_manager_util_unittest.cc',
+      'safe_browsing_db/v4_store_unittest.cc',
       'safe_browsing_db/v4_update_protocol_manager_unittest.cc',
     ],
     'safe_json_unittest_sources': [
