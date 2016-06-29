@@ -37,4 +37,7 @@
     readonly attribute double clientHeight;
 
     readonly attribute double scale;
+
+    attribute EventHandler onresize;
+    attribute EventHandler onscroll;
 };
