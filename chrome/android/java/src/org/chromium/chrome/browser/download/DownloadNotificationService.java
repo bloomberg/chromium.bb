@@ -278,7 +278,7 @@ public class DownloadNotificationService extends Service {
                 mContext.getResources().getString(R.string.download_notification_cancel_button),
                 cancelIntent);
         if (entry.isResumable) {
-            builder.addAction(R.drawable.resume_download,
+            builder.addAction(R.drawable.ic_get_app_white_24dp,
                     mContext.getResources().getString(
                             R.string.download_notification_resume_button),
                     buildPendingIntent(ACTION_DOWNLOAD_RESUME, entry.notificationId,
