@@ -77,6 +77,10 @@
       'includes': ['../include_js.gypi'],
     },
     {
+      'target_name': 'quick_unlock_private',
+      'includes': ['../include_js.gypi'],
+    },
+    {
       'target_name': 'settings_private',
       'includes': ['../include_js.gypi'],
     },
