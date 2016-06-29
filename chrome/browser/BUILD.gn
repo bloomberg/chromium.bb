@@ -81,11 +81,7 @@ if (is_desktop_linux) {
 # require many files from it. This makes linking more efficient. However, on
 # Windows official builds the static library will be too large (> 32-bits) so
 # use source sets in that case.
-if (is_mac || (is_win && is_official_build)) {
-  # TODO(brettw) bug 618797: Remove the mac condition. On Mac making this
-  # target a static_library causes a crash on startup and the browser_tests all
-  # fail. My guess is this is due to a required static initializer not being
-  # brought in.
+if (is_win && is_official_build) {
   chrome_browser_target_type = "source_set"
 } else {
   chrome_browser_target_type = "static_library"

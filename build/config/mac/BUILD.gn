@@ -76,7 +76,7 @@ config("runtime_library") {
 
 # On Mac, this is used for everything except static libraries.
 config("mac_dynamic_flags") {
-  ldflags = []
+  ldflags = [ "-Wl,-ObjC" ]  # Always load Objective-C categories and classes.
 
   if (is_component_build) {
     ldflags += [
