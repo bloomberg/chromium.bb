@@ -6,12 +6,13 @@
   "capabilities": {
     "required": {
       "*": { "classes": [ "app" ] },
-      "exe:content_renderer": {
-        "interfaces": [ "content::mojom::RenderWidgetWindowTreeClientFactory" ]
-      },
-      "exe:content_gpu": {
-        "interfaces": [ "content::mojom::ProcessControl" ]
-      },
+
+      // We allow the browser to connect to any interfaces exposed by its child
+      // processes.
+      "exe:content_renderer": { "classes": [ "all_interfaces" ] },
+      "exe:content_gpu": { "classes": [ "all_interfaces" ] },
+      "exe:content_utility": { "classes": [ "all_interfaces" ] },
+
       "mojo:shell": {
         "classes": [
           "shell:client_process",

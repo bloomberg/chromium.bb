@@ -2,5 +2,9 @@
   "manifest_version":  1,
   "name": "exe:content_utility",
   "display_name": "Content Utility",
-  "capabilities": {}
+  "capabilities": {
+    "provided": {
+      "all_interfaces": [ "*" ]
+    }
+  }
 }

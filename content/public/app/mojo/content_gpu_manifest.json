@@ -2,5 +2,9 @@
   "manifest_version":  1,
   "name": "exe:content_gpu",
   "display_name": "Content Gpu",
-  "capabilities": {}
+  "capabilities": {
+    "provided": {
+      "all_interfaces": [ "*" ]
+    }
+  }
 }
