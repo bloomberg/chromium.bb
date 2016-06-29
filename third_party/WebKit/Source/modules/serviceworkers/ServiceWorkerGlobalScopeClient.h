@@ -71,10 +71,11 @@ public:
 
     virtual void didHandleActivateEvent(int eventID, WebServiceWorkerEventResult) = 0;
     virtual void didHandleExtendableMessageEvent(int eventID, WebServiceWorkerEventResult) = 0;
-    // Calling didHandleFetchEvent without response means no response was
+    // Calling respondToFetchEvent without response means no response was
     // provided by the service worker in the fetch events, so fallback to native.
-    virtual void didHandleFetchEvent(int fetchEventID) = 0;
-    virtual void didHandleFetchEvent(int fetchEventID, const WebServiceWorkerResponse&) = 0;
+    virtual void respondToFetchEvent(int responseID) = 0;
+    virtual void respondToFetchEvent(int responseID, const WebServiceWorkerResponse&) = 0;
+    virtual void didHandleFetchEvent(int eventFinishID, WebServiceWorkerEventResult) = 0;
     virtual void didHandleInstallEvent(int installEventID, WebServiceWorkerEventResult) = 0;
     virtual void didHandleNotificationClickEvent(int eventID, WebServiceWorkerEventResult) = 0;
     virtual void didHandleNotificationCloseEvent(int eventID, WebServiceWorkerEventResult) = 0;

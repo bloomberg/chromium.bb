@@ -237,10 +237,11 @@ void EmbeddedWorkerTestHelper::OnInstallEvent(int embedded_worker_id,
 
 void EmbeddedWorkerTestHelper::OnFetchEvent(
     int embedded_worker_id,
-    int request_id,
+    int response_id,
+    int event_finish_id,
     const ServiceWorkerFetchRequest& request) {
-  SimulateSend(new ServiceWorkerHostMsg_FetchEventFinished(
-      embedded_worker_id, request_id,
+  SimulateSend(new ServiceWorkerHostMsg_FetchEventResponse(
+      embedded_worker_id, response_id,
       SERVICE_WORKER_FETCH_EVENT_RESULT_RESPONSE,
       ServiceWorkerResponse(
           GURL(), 200, "OK", blink::WebServiceWorkerResponseTypeDefault,
@@ -249,6 +250,9 @@ void EmbeddedWorkerTestHelper::OnFetchEvent(
           false /* is_in_cache_storage */,
           std::string() /* cache_storage_cache_name */,
           ServiceWorkerHeaderList() /* cors_exposed_header_names */)));
+  SimulateSend(new ServiceWorkerHostMsg_FetchEventFinished(
+      embedded_worker_id, event_finish_id,
+      blink::WebServiceWorkerEventResultCompleted));
 }
 
 void EmbeddedWorkerTestHelper::OnPushEvent(int embedded_worker_id,
@@ -394,12 +398,14 @@ void EmbeddedWorkerTestHelper::OnInstallEventStub(int request_id) {
 }
 
 void EmbeddedWorkerTestHelper::OnFetchEventStub(
-    int request_id,
+    int response_id,
+    int event_finish_id,
     const ServiceWorkerFetchRequest& request) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&EmbeddedWorkerTestHelper::OnFetchEvent,
-                            weak_factory_.GetWeakPtr(),
-                            current_embedded_worker_id_, request_id, request));
+      FROM_HERE,
+      base::Bind(&EmbeddedWorkerTestHelper::OnFetchEvent,
+                 weak_factory_.GetWeakPtr(), current_embedded_worker_id_,
+                 response_id, event_finish_id, request));
 }
 
 void EmbeddedWorkerTestHelper::OnPushEventStub(

@@ -87,14 +87,19 @@ void ServiceWorkerGlobalScopeClientImpl::didHandleExtendableMessageEvent(int eve
     m_client.didHandleExtendableMessageEvent(eventID, result);
 }
 
-void ServiceWorkerGlobalScopeClientImpl::didHandleFetchEvent(int fetchEventID)
+void ServiceWorkerGlobalScopeClientImpl::respondToFetchEvent(int responseID)
 {
-    m_client.didHandleFetchEvent(fetchEventID);
+    m_client.respondToFetchEvent(responseID);
 }
 
-void ServiceWorkerGlobalScopeClientImpl::didHandleFetchEvent(int fetchEventID, const WebServiceWorkerResponse& webResponse)
+void ServiceWorkerGlobalScopeClientImpl::respondToFetchEvent(int responseID, const WebServiceWorkerResponse& response)
 {
-    m_client.didHandleFetchEvent(fetchEventID, webResponse);
+    m_client.respondToFetchEvent(responseID, response);
+}
+
+void ServiceWorkerGlobalScopeClientImpl::didHandleFetchEvent(int eventFinishID, WebServiceWorkerEventResult result)
+{
+    m_client.didHandleFetchEvent(eventFinishID, result);
 }
 
 void ServiceWorkerGlobalScopeClientImpl::didHandleInstallEvent(int installEventID, WebServiceWorkerEventResult result)

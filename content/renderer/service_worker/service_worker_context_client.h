@@ -137,10 +137,12 @@ class ServiceWorkerContextClient
   void didHandleInstallEvent(
       int request_id,
       blink::WebServiceWorkerEventResult result) override;
-  void didHandleFetchEvent(int request_id) override;
-  void didHandleFetchEvent(
-      int request_id,
+  void respondToFetchEvent(int response_id) override;
+  void respondToFetchEvent(
+      int response_id,
       const blink::WebServiceWorkerResponse& response) override;
+  void didHandleFetchEvent(int event_finish_id,
+                           blink::WebServiceWorkerEventResult result) override;
   void didHandleNotificationClickEvent(
       int request_id,
       blink::WebServiceWorkerEventResult result) override;
@@ -200,7 +202,9 @@ class ServiceWorkerContextClient
       int request_id,
       const ServiceWorkerMsg_ExtendableMessageEvent_Params& params);
   void OnInstallEvent(int request_id);
-  void OnFetchEvent(int request_id, const ServiceWorkerFetchRequest& request);
+  void OnFetchEvent(int response_id,
+                    int event_finish_id,
+                    const ServiceWorkerFetchRequest& request);
   void OnNotificationClickEvent(
       int request_id,
       int64_t persistent_notification_id,

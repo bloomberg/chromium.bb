@@ -145,14 +145,19 @@ private:
 
 RespondWithObserver::~RespondWithObserver() {}
 
-RespondWithObserver* RespondWithObserver::create(ExecutionContext* context, int eventID, const KURL& requestURL, WebURLRequest::FetchRequestMode requestMode, WebURLRequest::FrameType frameType, WebURLRequest::RequestContext requestContext)
+RespondWithObserver* RespondWithObserver::create(ExecutionContext* context, int eventID, const KURL& requestURL, WebURLRequest::FetchRequestMode requestMode, WebURLRequest::FrameType frameType, WebURLRequest::RequestContext requestContext, WaitUntilObserver* observer)
 {
-    return new RespondWithObserver(context, eventID, requestURL, requestMode, frameType, requestContext);
+    return new RespondWithObserver(context, eventID, requestURL, requestMode, frameType, requestContext, observer);
 }
 
 void RespondWithObserver::contextDestroyed()
 {
     ContextLifecycleObserver::contextDestroyed();
+    if (m_observer) {
+        DCHECK_EQ(Pending, m_state);
+        m_observer->decrementPendingActivity();
+        m_observer.clear();
+    }
     m_state = Done;
 }
 
@@ -163,12 +168,14 @@ void RespondWithObserver::didDispatchEvent(DispatchEventResult dispatchResult)
         return;
 
     if (dispatchResult != DispatchEventResult::NotCanceled) {
+        m_observer->incrementPendingActivity();
         responseWasRejected(WebServiceWorkerResponseErrorDefaultPrevented);
         return;
     }
 
-    ServiceWorkerGlobalScopeClient::from(getExecutionContext())->didHandleFetchEvent(m_eventID);
+    ServiceWorkerGlobalScopeClient::from(getExecutionContext())->respondToFetchEvent(m_eventID);
     m_state = Done;
+    m_observer.clear();
 }
 
 void RespondWithObserver::respondWith(ScriptState* scriptState, ScriptPromise scriptPromise, ExceptionState& exceptionState)
@@ -179,6 +186,7 @@ void RespondWithObserver::respondWith(ScriptState* scriptState, ScriptPromise sc
     }
 
     m_state = Pending;
+    m_observer->incrementPendingActivity();
     scriptPromise.then(
         ThenFunction::createFunction(scriptState, this, ThenFunction::Fulfilled),
         ThenFunction::createFunction(scriptState, this, ThenFunction::Rejected));
@@ -193,8 +201,10 @@ void RespondWithObserver::responseWasRejected(WebServiceWorkerResponseError erro
     // to a network error.
     WebServiceWorkerResponse webResponse;
     webResponse.setError(error);
-    ServiceWorkerGlobalScopeClient::from(getExecutionContext())->didHandleFetchEvent(m_eventID, webResponse);
+    ServiceWorkerGlobalScopeClient::from(getExecutionContext())->respondToFetchEvent(m_eventID, webResponse);
     m_state = Done;
+    m_observer->decrementPendingActivity();
+    m_observer.clear();
 }
 
 void RespondWithObserver::responseWasFulfilled(const ScriptValue& value)
@@ -257,11 +267,13 @@ void RespondWithObserver::responseWasFulfilled(const ScriptValue& value)
             buffer->startLoading(FetchDataLoader::createLoaderAsStream(outStream), new NoopLoaderClient);
         }
     }
-    ServiceWorkerGlobalScopeClient::from(getExecutionContext())->didHandleFetchEvent(m_eventID, webResponse);
+    ServiceWorkerGlobalScopeClient::from(getExecutionContext())->respondToFetchEvent(m_eventID, webResponse);
     m_state = Done;
+    m_observer->decrementPendingActivity();
+    m_observer.clear();
 }
 
-RespondWithObserver::RespondWithObserver(ExecutionContext* context, int eventID, const KURL& requestURL, WebURLRequest::FetchRequestMode requestMode, WebURLRequest::FrameType frameType, WebURLRequest::RequestContext requestContext)
+RespondWithObserver::RespondWithObserver(ExecutionContext* context, int eventID, const KURL& requestURL, WebURLRequest::FetchRequestMode requestMode, WebURLRequest::FrameType frameType, WebURLRequest::RequestContext requestContext, WaitUntilObserver* observer)
     : ContextLifecycleObserver(context)
     , m_eventID(eventID)
     , m_requestURL(requestURL)
@@ -269,11 +281,13 @@ RespondWithObserver::RespondWithObserver(ExecutionContext* context, int eventID,
     , m_frameType(frameType)
     , m_requestContext(requestContext)
     , m_state(Initial)
+    , m_observer(observer)
 {
 }
 
 DEFINE_TRACE(RespondWithObserver)
 {
+    visitor->trace(m_observer);
     ContextLifecycleObserver::trace(visitor);
 }
 

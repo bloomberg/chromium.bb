@@ -163,6 +163,9 @@ void WaitUntilObserver::decrementPendingActivity()
     case Activate:
         client->didHandleActivateEvent(m_eventID, result);
         break;
+    case Fetch:
+        client->didHandleFetchEvent(m_eventID, result);
+        break;
     case Install:
         client->didHandleInstallEvent(m_eventID, result);
         break;

@@ -131,7 +131,8 @@ class EmbeddedWorkerTestHelper : public IPC::Sender,
   virtual void OnExtendableMessageEvent(int embedded_worker_id, int request_id);
   virtual void OnInstallEvent(int embedded_worker_id, int request_id);
   virtual void OnFetchEvent(int embedded_worker_id,
-                            int request_id,
+                            int response_id,
+                            int event_finish_id,
                             const ServiceWorkerFetchRequest& request);
   virtual void OnPushEvent(int embedded_worker_id,
                            int request_id,
@@ -164,7 +165,8 @@ class EmbeddedWorkerTestHelper : public IPC::Sender,
       int request_id,
       const ServiceWorkerMsg_ExtendableMessageEvent_Params& params);
   void OnInstallEventStub(int request_id);
-  void OnFetchEventStub(int request_id,
+  void OnFetchEventStub(int response_id,
+                        int event_finish_id,
                         const ServiceWorkerFetchRequest& request);
   void OnPushEventStub(int request_id, const PushEventPayload& payload);
   void OnSetupMojoStub(int thread_id,

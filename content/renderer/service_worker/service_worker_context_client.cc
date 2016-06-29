@@ -506,15 +506,14 @@ void ServiceWorkerContextClient::didHandleInstallEvent(
       GetRoutingID(), request_id, result, proxy_->hasFetchEventHandler()));
 }
 
-void ServiceWorkerContextClient::didHandleFetchEvent(int request_id) {
-  Send(new ServiceWorkerHostMsg_FetchEventFinished(
-      GetRoutingID(), request_id,
-      SERVICE_WORKER_FETCH_EVENT_RESULT_FALLBACK,
+void ServiceWorkerContextClient::respondToFetchEvent(int response_id) {
+  Send(new ServiceWorkerHostMsg_FetchEventResponse(
+      GetRoutingID(), response_id, SERVICE_WORKER_FETCH_EVENT_RESULT_FALLBACK,
       ServiceWorkerResponse()));
 }
 
-void ServiceWorkerContextClient::didHandleFetchEvent(
-    int request_id,
+void ServiceWorkerContextClient::respondToFetchEvent(
+    int response_id,
     const blink::WebServiceWorkerResponse& web_response) {
   ServiceWorkerHeaderMap headers;
   GetServiceWorkerHeaderMapFromWebResponse(web_response, &headers);
@@ -529,10 +528,16 @@ void ServiceWorkerContextClient::didHandleFetchEvent(
       base::Time::FromInternalValue(web_response.responseTime()),
       !web_response.cacheStorageCacheName().isNull(),
       web_response.cacheStorageCacheName().utf8(), cors_exposed_header_names);
-  Send(new ServiceWorkerHostMsg_FetchEventFinished(
-      GetRoutingID(), request_id,
-      SERVICE_WORKER_FETCH_EVENT_RESULT_RESPONSE,
+  Send(new ServiceWorkerHostMsg_FetchEventResponse(
+      GetRoutingID(), response_id, SERVICE_WORKER_FETCH_EVENT_RESULT_RESPONSE,
       response));
+}
+
+void ServiceWorkerContextClient::didHandleFetchEvent(
+    int event_finish_id,
+    blink::WebServiceWorkerEventResult result) {
+  Send(new ServiceWorkerHostMsg_FetchEventFinished(GetRoutingID(),
+                                                   event_finish_id, result));
 }
 
 void ServiceWorkerContextClient::didHandleNotificationClickEvent(
@@ -763,7 +768,8 @@ void ServiceWorkerContextClient::OnInstallEvent(int request_id) {
 }
 
 void ServiceWorkerContextClient::OnFetchEvent(
-    int request_id,
+    int response_id,
+    int event_finish_id,
     const ServiceWorkerFetchRequest& request) {
   blink::WebServiceWorkerRequest webRequest;
   TRACE_EVENT0("ServiceWorker",
@@ -794,9 +800,9 @@ void ServiceWorkerContextClient::OnFetchEvent(
   webRequest.setClientId(blink::WebString::fromUTF8(request.client_id));
   webRequest.setIsReload(request.is_reload);
   if (request.fetch_type == ServiceWorkerFetchType::FOREIGN_FETCH) {
-    proxy_->dispatchForeignFetchEvent(request_id, webRequest);
+    proxy_->dispatchForeignFetchEvent(response_id, event_finish_id, webRequest);
   } else {
-    proxy_->dispatchFetchEvent(request_id, webRequest);
+    proxy_->dispatchFetchEvent(response_id, event_finish_id, webRequest);
   }
 }
 

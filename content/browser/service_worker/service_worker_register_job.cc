@@ -430,10 +430,12 @@ void ServiceWorkerRegisterJob::DispatchInstallEvent() {
       ServiceWorkerMetrics::EventType::INSTALL,
       base::Bind(&ServiceWorkerRegisterJob::OnInstallFailed,
                  weak_factory_.GetWeakPtr()));
-  new_version()->DispatchEvent<ServiceWorkerHostMsg_InstallEventFinished>(
-      request_id, ServiceWorkerMsg_InstallEvent(request_id),
-      base::Bind(&ServiceWorkerRegisterJob::OnInstallFinished,
-                 weak_factory_.GetWeakPtr()));
+  new_version()
+      ->RegisterRequestCallback<ServiceWorkerHostMsg_InstallEventFinished>(
+          request_id, base::Bind(&ServiceWorkerRegisterJob::OnInstallFinished,
+                                 weak_factory_.GetWeakPtr()));
+  new_version()->DispatchEvent({request_id},
+                               ServiceWorkerMsg_InstallEvent(request_id));
 }
 
 void ServiceWorkerRegisterJob::OnInstallFinished(

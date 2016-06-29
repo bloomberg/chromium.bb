@@ -12,6 +12,7 @@
 #include "modules/serviceworkers/ExtendableEvent.h"
 #include "modules/serviceworkers/FetchEventInit.h"
 #include "modules/serviceworkers/RespondWithObserver.h"
+#include "modules/serviceworkers/WaitUntilObserver.h"
 #include "platform/heap/Handle.h"
 
 namespace blink {
@@ -28,7 +29,7 @@ class MODULES_EXPORT FetchEvent final : public ExtendableEvent {
 public:
     static FetchEvent* create();
     static FetchEvent* create(ScriptState*, const AtomicString& type, const FetchEventInit&);
-    static FetchEvent* create(ScriptState*, const AtomicString& type, const FetchEventInit&, RespondWithObserver*);
+    static FetchEvent* create(ScriptState*, const AtomicString& type, const FetchEventInit&, RespondWithObserver*, WaitUntilObserver*);
 
     Request* request() const;
     String clientId() const;
@@ -42,7 +43,7 @@ public:
 
 protected:
     FetchEvent();
-    FetchEvent(ScriptState*, const AtomicString& type, const FetchEventInit&, RespondWithObserver*);
+    FetchEvent(ScriptState*, const AtomicString& type, const FetchEventInit&, RespondWithObserver*, WaitUntilObserver*);
 
 private:
     Member<RespondWithObserver> m_observer;

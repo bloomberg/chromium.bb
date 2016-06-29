@@ -361,11 +361,12 @@ class ProviderDeleteHelper : public EmbeddedWorkerTestHelper {
 
  protected:
   void OnFetchEvent(int embedded_worker_id,
-                    int request_id,
+                    int response_id,
+                    int event_finish_id,
                     const ServiceWorkerFetchRequest& request) override {
     context()->RemoveProviderHost(mock_render_process_id(), kProviderID);
-    SimulateSend(new ServiceWorkerHostMsg_FetchEventFinished(
-        embedded_worker_id, request_id,
+    SimulateSend(new ServiceWorkerHostMsg_FetchEventResponse(
+        embedded_worker_id, response_id,
         SERVICE_WORKER_FETCH_EVENT_RESULT_RESPONSE,
         ServiceWorkerResponse(
             GURL(), 200, "OK", blink::WebServiceWorkerResponseTypeDefault,
@@ -374,6 +375,9 @@ class ProviderDeleteHelper : public EmbeddedWorkerTestHelper {
             false /* response_is_in_cache_storage */,
             std::string() /* response_cache_storage_cache_name */,
             ServiceWorkerHeaderList() /* cors_exposed_header_names */)));
+    SimulateSend(new ServiceWorkerHostMsg_FetchEventFinished(
+        embedded_worker_id, event_finish_id,
+        blink::WebServiceWorkerEventResultCompleted));
   }
 
  private:
@@ -441,10 +445,11 @@ class BlobResponder : public EmbeddedWorkerTestHelper {
 
  protected:
   void OnFetchEvent(int embedded_worker_id,
-                    int request_id,
+                    int response_id,
+                    int event_finish_id,
                     const ServiceWorkerFetchRequest& request) override {
-    SimulateSend(new ServiceWorkerHostMsg_FetchEventFinished(
-        embedded_worker_id, request_id,
+    SimulateSend(new ServiceWorkerHostMsg_FetchEventResponse(
+        embedded_worker_id, response_id,
         SERVICE_WORKER_FETCH_EVENT_RESULT_RESPONSE,
         ServiceWorkerResponse(
             GURL(), 200, "OK", blink::WebServiceWorkerResponseTypeDefault,
@@ -453,6 +458,9 @@ class BlobResponder : public EmbeddedWorkerTestHelper {
             false /* response_is_in_cache_storage */,
             std::string() /* response_cache_storage_cache_name */,
             ServiceWorkerHeaderList() /* cors_exposed_header_names */)));
+    SimulateSend(new ServiceWorkerHostMsg_FetchEventFinished(
+        embedded_worker_id, event_finish_id,
+        blink::WebServiceWorkerEventResultCompleted));
   }
 
   std::string blob_uuid_;
@@ -520,10 +528,11 @@ class StreamResponder : public EmbeddedWorkerTestHelper {
 
  protected:
   void OnFetchEvent(int embedded_worker_id,
-                    int request_id,
+                    int response_id,
+                    int event_finish_id,
                     const ServiceWorkerFetchRequest& request) override {
-    SimulateSend(new ServiceWorkerHostMsg_FetchEventFinished(
-        embedded_worker_id, request_id,
+    SimulateSend(new ServiceWorkerHostMsg_FetchEventResponse(
+        embedded_worker_id, response_id,
         SERVICE_WORKER_FETCH_EVENT_RESULT_RESPONSE,
         ServiceWorkerResponse(
             GURL(), 200, "OK", blink::WebServiceWorkerResponseTypeDefault,
@@ -532,6 +541,9 @@ class StreamResponder : public EmbeddedWorkerTestHelper {
             false /* response_is_in_cache_storage */,
             std::string() /* response_cache_storage_cache_name */,
             ServiceWorkerHeaderList() /* cors_exposed_header_names */)));
+    SimulateSend(new ServiceWorkerHostMsg_FetchEventFinished(
+        embedded_worker_id, event_finish_id,
+        blink::WebServiceWorkerEventResultCompleted));
   }
 
   const GURL stream_url_;
@@ -830,7 +842,8 @@ class FailFetchHelper : public EmbeddedWorkerTestHelper {
 
  protected:
   void OnFetchEvent(int embedded_worker_id,
-                    int request_id,
+                    int response_id,
+                    int event_finish_id,
                     const ServiceWorkerFetchRequest& request) override {
     SimulateWorkerStopped(embedded_worker_id);
   }
@@ -927,6 +940,70 @@ TEST_F(ServiceWorkerURLRequestJobTest, FailToActivate_Subresource) {
       helper_->mock_render_process_id(), kProviderID);
   ASSERT_TRUE(host);
   EXPECT_EQ(host->controlling_version(), version_);
+}
+
+class EarlyResponseHelper : public EmbeddedWorkerTestHelper {
+ public:
+  EarlyResponseHelper() : EmbeddedWorkerTestHelper(base::FilePath()) {}
+  ~EarlyResponseHelper() override {}
+
+  void FinishWaitUntil() {
+    SimulateSend(new ServiceWorkerHostMsg_FetchEventFinished(
+        embedded_worker_id_, event_finish_id_,
+        blink::WebServiceWorkerEventResultCompleted));
+  }
+
+ protected:
+  void OnFetchEvent(int embedded_worker_id,
+                    int response_id,
+                    int event_finish_id,
+                    const ServiceWorkerFetchRequest& request) override {
+    embedded_worker_id_ = embedded_worker_id;
+    event_finish_id_ = event_finish_id;
+    SimulateSend(new ServiceWorkerHostMsg_FetchEventResponse(
+        embedded_worker_id, response_id,
+        SERVICE_WORKER_FETCH_EVENT_RESULT_RESPONSE,
+        ServiceWorkerResponse(
+            GURL(), 200, "OK", blink::WebServiceWorkerResponseTypeDefault,
+            ServiceWorkerHeaderMap(), std::string(), 0, GURL(),
+            blink::WebServiceWorkerResponseErrorUnknown, base::Time(),
+            false /* response_is_in_cache_storage */,
+            std::string() /* response_cache_storage_cache_name */,
+            ServiceWorkerHeaderList() /* cors_exposed_header_names */)));
+  }
+
+ private:
+  int embedded_worker_id_ = 0;
+  int event_finish_id_ = 0;
+  DISALLOW_COPY_AND_ASSIGN(EarlyResponseHelper);
+};
+
+// This simulates the case when a response is returned and the fetch event is
+// still in flight.
+TEST_F(ServiceWorkerURLRequestJobTest, EarlyResponse) {
+  EarlyResponseHelper* helper = new EarlyResponseHelper;
+  SetUpWithHelper(helper);
+
+  version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
+  TestRequest(200, "OK", std::string(), true /* expect_valid_ssl */);
+
+  EXPECT_EQ(0, times_prepare_to_restart_invoked_);
+  ServiceWorkerResponseInfo* info =
+      ServiceWorkerResponseInfo::ForRequest(request_.get());
+  ASSERT_TRUE(info);
+  EXPECT_TRUE(info->was_fetched_via_service_worker());
+  EXPECT_FALSE(info->was_fallback_required());
+  EXPECT_EQ(GURL(), info->original_url_via_service_worker());
+  EXPECT_EQ(blink::WebServiceWorkerResponseTypeDefault,
+            info->response_type_via_service_worker());
+  EXPECT_FALSE(info->service_worker_start_time().is_null());
+  EXPECT_FALSE(info->service_worker_ready_time().is_null());
+  EXPECT_FALSE(info->response_is_in_cache_storage());
+  EXPECT_EQ(std::string(), info->response_cache_storage_cache_name());
+
+  EXPECT_TRUE(version_->HasInflightRequests());
+  helper->FinishWaitUntil();
+  EXPECT_FALSE(version_->HasInflightRequests());
 }
 
 // TODO(kinuko): Add more tests with different response data and also for

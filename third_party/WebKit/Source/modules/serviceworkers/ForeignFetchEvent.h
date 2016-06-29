@@ -12,6 +12,7 @@
 #include "modules/serviceworkers/ExtendableEvent.h"
 #include "modules/serviceworkers/ForeignFetchEventInit.h"
 #include "modules/serviceworkers/ForeignFetchRespondWithObserver.h"
+#include "modules/serviceworkers/WaitUntilObserver.h"
 #include "platform/heap/Handle.h"
 
 namespace blink {
@@ -27,7 +28,7 @@ class MODULES_EXPORT ForeignFetchEvent final : public ExtendableEvent {
 public:
     static ForeignFetchEvent* create();
     static ForeignFetchEvent* create(ScriptState*, const AtomicString& type, const ForeignFetchEventInit&);
-    static ForeignFetchEvent* create(ScriptState*, const AtomicString& type, const ForeignFetchEventInit&, ForeignFetchRespondWithObserver*);
+    static ForeignFetchEvent* create(ScriptState*, const AtomicString& type, const ForeignFetchEventInit&, ForeignFetchRespondWithObserver*, WaitUntilObserver*);
 
     Request* request() const;
     String origin() const;
@@ -40,7 +41,7 @@ public:
 
 protected:
     ForeignFetchEvent();
-    ForeignFetchEvent(ScriptState*, const AtomicString& type, const ForeignFetchEventInit&, ForeignFetchRespondWithObserver*);
+    ForeignFetchEvent(ScriptState*, const AtomicString& type, const ForeignFetchEventInit&, ForeignFetchRespondWithObserver*, WaitUntilObserver*);
 
 private:
     Member<ForeignFetchRespondWithObserver> m_observer;

@@ -56,8 +56,8 @@ public:
     virtual void dispatchExtendableMessageEvent(int eventID, const WebString& message, const WebSecurityOrigin& sourceOrigin, const WebMessagePortChannelArray&, const WebServiceWorkerClientInfo&) = 0;
     virtual void dispatchExtendableMessageEvent(int eventID, const WebString& message, const WebSecurityOrigin& sourceOrigin, const WebMessagePortChannelArray&, std::unique_ptr<WebServiceWorker::Handle>) = 0;
     virtual void dispatchInstallEvent(int eventID) = 0;
-    virtual void dispatchFetchEvent(int eventID, const WebServiceWorkerRequest& webRequest) = 0;
-    virtual void dispatchForeignFetchEvent(int eventID, const WebServiceWorkerRequest& webRequest) = 0;
+    virtual void dispatchFetchEvent(int responseID, int eventFinishID, const WebServiceWorkerRequest& webRequest) = 0;
+    virtual void dispatchForeignFetchEvent(int responseID, int eventFinishID, const WebServiceWorkerRequest& webRequest) = 0;
     virtual void dispatchNotificationClickEvent(int eventID, int64_t notificationID, const WebNotificationData&, int actionIndex) = 0;
     virtual void dispatchNotificationCloseEvent(int eventID, int64_t notificationID, const WebNotificationData&) = 0;
     virtual void dispatchPushEvent(int eventID, const WebString& data) = 0;

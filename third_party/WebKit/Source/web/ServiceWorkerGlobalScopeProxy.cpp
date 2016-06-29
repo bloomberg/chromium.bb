@@ -131,9 +131,10 @@ void ServiceWorkerGlobalScopeProxy::dispatchExtendableMessageEvent(int eventID, 
     workerGlobalScope()->dispatchExtendableEvent(event, observer);
 }
 
-void ServiceWorkerGlobalScopeProxy::dispatchFetchEvent(int eventID, const WebServiceWorkerRequest& webRequest)
+void ServiceWorkerGlobalScopeProxy::dispatchFetchEvent(int responseID, int eventFinishID, const WebServiceWorkerRequest& webRequest)
 {
-    RespondWithObserver* observer = RespondWithObserver::create(workerGlobalScope(), eventID, webRequest.url(), webRequest.mode(), webRequest.frameType(), webRequest.requestContext());
+    WaitUntilObserver* waitUntilObserver = WaitUntilObserver::create(workerGlobalScope(), WaitUntilObserver::Fetch, eventFinishID);
+    RespondWithObserver* respondWithObserver = RespondWithObserver::create(workerGlobalScope(), responseID, webRequest.url(), webRequest.mode(), webRequest.frameType(), webRequest.requestContext(), waitUntilObserver);
     Request* request = Request::create(workerGlobalScope()->scriptController()->getScriptState(), webRequest);
     request->getHeaders()->setGuard(Headers::ImmutableGuard);
     FetchEventInit eventInit;
@@ -141,24 +142,33 @@ void ServiceWorkerGlobalScopeProxy::dispatchFetchEvent(int eventID, const WebSer
     eventInit.setRequest(request);
     eventInit.setClientId(webRequest.isMainResourceLoad() ? WebString() : webRequest.clientId());
     eventInit.setIsReload(webRequest.isReload());
-    FetchEvent* fetchEvent = FetchEvent::create(workerGlobalScope()->scriptController()->getScriptState(), EventTypeNames::fetch, eventInit, observer);
+    FetchEvent* fetchEvent = FetchEvent::create(workerGlobalScope()->scriptController()->getScriptState(), EventTypeNames::fetch, eventInit, respondWithObserver, waitUntilObserver);
+    waitUntilObserver->willDispatchEvent();
     DispatchEventResult dispatchResult = workerGlobalScope()->dispatchEvent(fetchEvent);
-    observer->didDispatchEvent(dispatchResult);
+    respondWithObserver->didDispatchEvent(dispatchResult);
+    // false is okay because waitUntil for fetch event doesn't care about the
+    // promise rejection or an uncaught runtime script error.
+    waitUntilObserver->didDispatchEvent(false /* errorOccurred */);
 }
 
-void ServiceWorkerGlobalScopeProxy::dispatchForeignFetchEvent(int eventID, const WebServiceWorkerRequest& webRequest)
+void ServiceWorkerGlobalScopeProxy::dispatchForeignFetchEvent(int responseID, int eventFinishID, const WebServiceWorkerRequest& webRequest)
 {
     RefPtr<SecurityOrigin> origin = SecurityOrigin::create(webRequest.referrerUrl());
-    ForeignFetchRespondWithObserver* observer = ForeignFetchRespondWithObserver::create(workerGlobalScope(), eventID, webRequest.url(), webRequest.mode(), webRequest.frameType(), webRequest.requestContext(), origin);
+    WaitUntilObserver* waitUntilObserver = WaitUntilObserver::create(workerGlobalScope(), WaitUntilObserver::Fetch, eventFinishID);
+    ForeignFetchRespondWithObserver* respondWithObserver = ForeignFetchRespondWithObserver::create(workerGlobalScope(), responseID, webRequest.url(), webRequest.mode(), webRequest.frameType(), webRequest.requestContext(), origin, waitUntilObserver);
     Request* request = Request::create(workerGlobalScope()->scriptController()->getScriptState(), webRequest);
     request->getHeaders()->setGuard(Headers::ImmutableGuard);
     ForeignFetchEventInit eventInit;
     eventInit.setCancelable(true);
     eventInit.setRequest(request);
     eventInit.setOrigin(origin->toString());
-    ForeignFetchEvent* fetchEvent = ForeignFetchEvent::create(workerGlobalScope()->scriptController()->getScriptState(), EventTypeNames::foreignfetch, eventInit, observer);
+    ForeignFetchEvent* fetchEvent = ForeignFetchEvent::create(workerGlobalScope()->scriptController()->getScriptState(), EventTypeNames::foreignfetch, eventInit, respondWithObserver, waitUntilObserver);
+    waitUntilObserver->willDispatchEvent();
     DispatchEventResult dispatchResult = workerGlobalScope()->dispatchEvent(fetchEvent);
-    observer->didDispatchEvent(dispatchResult);
+    respondWithObserver->didDispatchEvent(dispatchResult);
+    // false is okay because waitUntil for foreign fetch event doesn't care
+    // about the promise rejection or an uncaught runtime script error.
+    waitUntilObserver->didDispatchEvent(false /* errorOccurred */);
 }
 
 void ServiceWorkerGlobalScopeProxy::dispatchInstallEvent(int eventID)

@@ -50648,8 +50648,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <owner>jeremyarcher@chromium.org</owner>
   <summary>
     The time taken between dispatching a FetchEvent to a Service Worker and
-    receiving a fallback-to-network reply. Includes the time for the waitUntil()
-    promise to settle, if any.
+    receiving a fallback-to-network reply.
   </summary>
 </histogram>
 
@@ -50693,6 +50692,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="ServiceWorker.FetchEvent.WaitUntil.Time" units="ms">
+  <owner>shimazu@chromium.org</owner>
+  <summary>
+    The time taken between dispatching a FetchEvent to a Service Worker and
+    finishing the FetchEvent. Includes the time for the waitUntil() promise to
+    settle. If there is no waitUntil promise, this will be almost the same with
+    HasResponse.Time or Fallback.Time.
+  </summary>
+</histogram>
+
 <histogram name="ServiceWorker.FetchEventExecutionTime" units="ms">
   <owner>shimazu@chromium.org</owner>
   <obsolete>
@@ -50719,6 +50728,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     The time taken between dispatching a ForeignFetchEvent to a Service Worker
     and receiving a response. Includes the time for the respondWith() promise to
     settle.
+  </summary>
+</histogram>
+
+<histogram name="ServiceWorker.ForeignFetchEvent.WaitUntil.Time" units="ms">
+  <owner>shimazu@chromium.org</owner>
+  <summary>
+    The time taken between dispatching a ForeignFetchEvent to a Service Worker
+    and finishing the ForeignFetch. Includes the time for the waitUntil()
+    promise to settle. If there is no waitUntil promise, this will be almost the
+    same with HasResponse.Time or Fallback.Time.
   </summary>
 </histogram>
 
@@ -88770,6 +88789,8 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="13" label="FETCH_SUB_RESOURCE"/>
   <int value="14" label="UNKNOWN"/>
   <int value="15" label="FOREIGN_FETCH"/>
+  <int value="16" label="FETCH_WAITUNTIL"/>
+  <int value="17" label="FOREIGN_FETCH_WAITUNTIL"/>
 </enum>
 
 <enum name="ServiceWorkerReadResponseResult" type="int">

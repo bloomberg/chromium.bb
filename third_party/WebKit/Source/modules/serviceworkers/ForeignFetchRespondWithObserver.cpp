@@ -9,9 +9,9 @@
 
 namespace blink {
 
-ForeignFetchRespondWithObserver* ForeignFetchRespondWithObserver::create(ExecutionContext* context, int eventID, const KURL& requestURL, WebURLRequest::FetchRequestMode requestMode, WebURLRequest::FrameType frameType, WebURLRequest::RequestContext requestContext, PassRefPtr<SecurityOrigin> requestOrigin)
+ForeignFetchRespondWithObserver* ForeignFetchRespondWithObserver::create(ExecutionContext* context, int eventID, const KURL& requestURL, WebURLRequest::FetchRequestMode requestMode, WebURLRequest::FrameType frameType, WebURLRequest::RequestContext requestContext, PassRefPtr<SecurityOrigin> requestOrigin, WaitUntilObserver* observer)
 {
-    return new ForeignFetchRespondWithObserver(context, eventID, requestURL, requestMode, frameType, requestContext, requestOrigin);
+    return new ForeignFetchRespondWithObserver(context, eventID, requestURL, requestMode, frameType, requestContext, requestOrigin, observer);
 }
 
 void ForeignFetchRespondWithObserver::responseWasFulfilled(const ScriptValue& value)
@@ -66,8 +66,8 @@ void ForeignFetchRespondWithObserver::responseWasFulfilled(const ScriptValue& va
     RespondWithObserver::responseWasFulfilled(ScriptValue::from(value.getScriptState(), response));
 }
 
-ForeignFetchRespondWithObserver::ForeignFetchRespondWithObserver(ExecutionContext* context, int eventID, const KURL& requestURL, WebURLRequest::FetchRequestMode requestMode, WebURLRequest::FrameType frameType, WebURLRequest::RequestContext requestContext, PassRefPtr<SecurityOrigin> requestOrigin)
-    : RespondWithObserver(context, eventID, requestURL, requestMode, frameType, requestContext)
+ForeignFetchRespondWithObserver::ForeignFetchRespondWithObserver(ExecutionContext* context, int eventID, const KURL& requestURL, WebURLRequest::FetchRequestMode requestMode, WebURLRequest::FrameType frameType, WebURLRequest::RequestContext requestContext, PassRefPtr<SecurityOrigin> requestOrigin, WaitUntilObserver* observer)
+    : RespondWithObserver(context, eventID, requestURL, requestMode, frameType, requestContext, observer)
     , m_requestOrigin(requestOrigin)
 {
 }

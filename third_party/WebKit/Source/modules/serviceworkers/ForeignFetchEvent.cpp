@@ -11,7 +11,6 @@
 #include "wtf/RefPtr.h"
 
 namespace blink {
-
 ForeignFetchEvent* ForeignFetchEvent::create()
 {
     return new ForeignFetchEvent();
@@ -19,12 +18,12 @@ ForeignFetchEvent* ForeignFetchEvent::create()
 
 ForeignFetchEvent* ForeignFetchEvent::create(ScriptState* scriptState, const AtomicString& type, const ForeignFetchEventInit& initializer)
 {
-    return new ForeignFetchEvent(scriptState, type, initializer, nullptr);
+    return new ForeignFetchEvent(scriptState, type, initializer, nullptr, nullptr);
 }
 
-ForeignFetchEvent* ForeignFetchEvent::create(ScriptState* scriptState, const AtomicString& type, const ForeignFetchEventInit& initializer, ForeignFetchRespondWithObserver* observer)
+ForeignFetchEvent* ForeignFetchEvent::create(ScriptState* scriptState, const AtomicString& type, const ForeignFetchEventInit& initializer, ForeignFetchRespondWithObserver* respondWithObserver, WaitUntilObserver* waitUntilObserver)
 {
-    return new ForeignFetchEvent(scriptState, type, initializer, observer);
+    return new ForeignFetchEvent(scriptState, type, initializer, respondWithObserver, waitUntilObserver);
 }
 
 Request* ForeignFetchEvent::request() const
@@ -53,9 +52,9 @@ ForeignFetchEvent::ForeignFetchEvent()
 {
 }
 
-ForeignFetchEvent::ForeignFetchEvent(ScriptState* scriptState, const AtomicString& type, const ForeignFetchEventInit& initializer, ForeignFetchRespondWithObserver* observer)
-    : ExtendableEvent(type, initializer)
-    , m_observer(observer)
+ForeignFetchEvent::ForeignFetchEvent(ScriptState* scriptState, const AtomicString& type, const ForeignFetchEventInit& initializer, ForeignFetchRespondWithObserver* respondWithObserver, WaitUntilObserver* waitUntilObserver)
+    : ExtendableEvent(type, initializer, waitUntilObserver)
+    , m_observer(respondWithObserver)
 {
     if (initializer.hasOrigin())
         m_origin = initializer.origin();

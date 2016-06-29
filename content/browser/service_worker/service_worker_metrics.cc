@@ -67,6 +67,10 @@ std::string EventTypeToSuffix(ServiceWorkerMetrics::EventType event_type) {
       return "_UNKNOWN";
     case ServiceWorkerMetrics::EventType::FOREIGN_FETCH:
       return "_FOREIGN_FETCH";
+    case ServiceWorkerMetrics::EventType::FETCH_WAITUNTIL:
+      return "_FETCH_WAITUNTIL";
+    case ServiceWorkerMetrics::EventType::FOREIGN_FETCH_WAITUNTIL:
+      return "_FOREIGN_FETCH_WAITUNTIL";
     case ServiceWorkerMetrics::EventType::NUM_TYPES:
       NOTREACHED() << static_cast<int>(event_type);
   }
@@ -186,6 +190,10 @@ const char* ServiceWorkerMetrics::EventTypeToString(EventType event_type) {
       return "Unknown";
     case EventType::FOREIGN_FETCH:
       return "Foreign Fetch";
+    case EventType::FETCH_WAITUNTIL:
+      return "Fetch WaitUntil";
+    case EventType::FOREIGN_FETCH_WAITUNTIL:
+      return "Foreign Fetch WaitUntil";
     case EventType::NUM_TYPES:
       break;
   }
@@ -417,6 +425,10 @@ void ServiceWorkerMetrics::RecordEventDuration(EventType event,
                                    time);
       }
       break;
+    case EventType::FETCH_WAITUNTIL:
+      UMA_HISTOGRAM_MEDIUM_TIMES("ServiceWorker.FetchEvent.WaitUntil.Time",
+                                 time);
+      break;
     case EventType::FOREIGN_FETCH:
       if (was_handled) {
         UMA_HISTOGRAM_MEDIUM_TIMES(
@@ -425,6 +437,10 @@ void ServiceWorkerMetrics::RecordEventDuration(EventType event,
         UMA_HISTOGRAM_MEDIUM_TIMES(
             "ServiceWorker.ForeignFetchEvent.Fallback.Time", time);
       }
+      break;
+    case EventType::FOREIGN_FETCH_WAITUNTIL:
+      UMA_HISTOGRAM_MEDIUM_TIMES(
+          "ServiceWorker.ForeignFetchEvent.WaitUntil.Time", time);
       break;
     case EventType::SYNC:
       UMA_HISTOGRAM_MEDIUM_TIMES("ServiceWorker.BackgroundSyncEvent.Time",

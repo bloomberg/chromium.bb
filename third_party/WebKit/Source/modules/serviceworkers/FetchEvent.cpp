@@ -19,12 +19,12 @@ FetchEvent* FetchEvent::create()
 
 FetchEvent* FetchEvent::create(ScriptState* scriptState, const AtomicString& type, const FetchEventInit& initializer)
 {
-    return new FetchEvent(scriptState, type, initializer, nullptr);
+    return new FetchEvent(scriptState, type, initializer, nullptr, nullptr);
 }
 
-FetchEvent* FetchEvent::create(ScriptState* scriptState, const AtomicString& type, const FetchEventInit& initializer, RespondWithObserver* observer)
+FetchEvent* FetchEvent::create(ScriptState* scriptState, const AtomicString& type, const FetchEventInit& initializer, RespondWithObserver* respondWithObserver, WaitUntilObserver* waitUntilObserver)
 {
-    return new FetchEvent(scriptState, type, initializer, observer);
+    return new FetchEvent(scriptState, type, initializer, respondWithObserver, waitUntilObserver);
 }
 
 Request* FetchEvent::request() const
@@ -59,9 +59,9 @@ FetchEvent::FetchEvent()
 {
 }
 
-FetchEvent::FetchEvent(ScriptState* scriptState, const AtomicString& type, const FetchEventInit& initializer, RespondWithObserver* observer)
-    : ExtendableEvent(type, initializer)
-    , m_observer(observer)
+FetchEvent::FetchEvent(ScriptState* scriptState, const AtomicString& type, const FetchEventInit& initializer, RespondWithObserver* respondWithObserver, WaitUntilObserver* waitUntilObserver)
+    : ExtendableEvent(type, initializer, waitUntilObserver)
+    , m_observer(respondWithObserver)
 {
     m_clientId = initializer.clientId();
     m_isReload = initializer.isReload();

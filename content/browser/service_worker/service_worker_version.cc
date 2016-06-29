@@ -563,6 +563,27 @@ void ServiceWorkerVersion::RunAfterStartWorker(
                          error_callback, task));
 }
 
+void ServiceWorkerVersion::DispatchEvent(const std::vector<int>& request_ids,
+                                         const IPC::Message& message) {
+  DCHECK_EQ(EmbeddedWorkerStatus::RUNNING, running_status());
+
+  const ServiceWorkerStatusCode status = embedded_worker_->SendMessage(message);
+
+  for (int request_id : request_ids) {
+    PendingRequest<StatusCallback>* request =
+        custom_requests_.Lookup(request_id);
+    DCHECK(request) << "Invalid request id";
+    DCHECK(!request->is_dispatched)
+        << "Request already dispatched an IPC event";
+    if (status != SERVICE_WORKER_OK) {
+      RunSoon(base::Bind(request->callback, status));
+      custom_requests_.Remove(request_id);
+    } else {
+      request->is_dispatched = true;
+    }
+  }
+}
+
 void ServiceWorkerVersion::AddControllee(
     ServiceWorkerProviderHost* provider_host) {
   const std::string& uuid = provider_host->client_uuid();

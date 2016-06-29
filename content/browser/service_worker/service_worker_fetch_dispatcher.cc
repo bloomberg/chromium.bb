@@ -12,6 +12,7 @@
 #include "content/browser/service_worker/embedded_worker_status.h"
 #include "content/browser/service_worker/service_worker_version.h"
 #include "content/common/service_worker/service_worker_messages.h"
+#include "content/common/service_worker/service_worker_utils.h"
 
 namespace content {
 
@@ -59,6 +60,13 @@ void EndNetLogEventWithServiceWorkerStatus(const net::BoundNetLog& net_log,
                                            ServiceWorkerStatusCode status) {
   net_log.EndEvent(type,
                    base::Bind(&NetLogServiceWorkerStatusCallback, status));
+}
+
+ServiceWorkerMetrics::EventType FetchTypeToWaitUntilEventType(
+    ServiceWorkerFetchType type) {
+  if (type == ServiceWorkerFetchType::FOREIGN_FETCH)
+    return ServiceWorkerMetrics::EventType::FOREIGN_FETCH_WAITUNTIL;
+  return ServiceWorkerMetrics::EventType::FETCH_WAITUNTIL;
 }
 
 }  // namespace
@@ -152,14 +160,22 @@ void ServiceWorkerFetchDispatcher::DispatchFetchEvent() {
   prepare_callback.Run();
 
   net_log_.BeginEvent(net::NetLog::TYPE_SERVICE_WORKER_FETCH_EVENT);
-  int request_id = version_->StartRequest(
+  int response_id = version_->StartRequest(
       GetEventType(),
       base::Bind(&ServiceWorkerFetchDispatcher::DidFailToDispatch,
                  weak_factory_.GetWeakPtr()));
-  version_->DispatchEvent<ServiceWorkerHostMsg_FetchEventFinished>(
-      request_id, ServiceWorkerMsg_FetchEvent(request_id, *request_.get()),
-      base::Bind(&ServiceWorkerFetchDispatcher::DidFinish,
-                 weak_factory_.GetWeakPtr()));
+  int event_finish_id = version_->StartRequest(
+      FetchTypeToWaitUntilEventType(request_->fetch_type),
+      base::Bind(&ServiceWorkerUtils::NoOpStatusCallback));
+
+  version_->RegisterRequestCallback<ServiceWorkerHostMsg_FetchEventResponse>(
+      response_id, base::Bind(&ServiceWorkerFetchDispatcher::DidFinish,
+                              weak_factory_.GetWeakPtr()));
+  version_->RegisterSimpleRequest<ServiceWorkerHostMsg_FetchEventFinished>(
+      event_finish_id);
+  version_->DispatchEvent({response_id, event_finish_id},
+                          ServiceWorkerMsg_FetchEvent(
+                              response_id, event_finish_id, *request_.get()));
 }
 
 void ServiceWorkerFetchDispatcher::DidFailToDispatch(
