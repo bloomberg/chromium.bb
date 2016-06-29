@@ -8,7 +8,6 @@
  *   page: string,
  *   section: string,
  *   subpage: !Array<string>,
- *   dialog: (string|undefined),
  * }}
  */
 var SettingsRoute;
@@ -59,7 +58,6 @@ Polymer({
               page: route.page,
               section: route.section,
               subpage: route.subpage,
-              dialog: route.dialog,
             };
           }
         }
@@ -427,8 +425,7 @@ Polymer({
       url: '/clearBrowserData',
       page: 'advanced',
       section: 'privacy',
-      subpage: [],
-      dialog: 'clear-browsing-data',
+      subpage: ['clear-browsing-data'],
     },
 <if expr="chromeos">
     {
@@ -587,13 +584,12 @@ Polymer({
   currentRouteChanged_: function(newRoute, oldRoute) {
     for (var i = 0; i < this.routes_.length; ++i) {
       var route = this.routes_[i];
-      if (route.page == newRoute.page &&
-          route.section == newRoute.section &&
-          route.dialog == newRoute.dialog &&
+      if (route.page == newRoute.page && route.section == newRoute.section &&
           route.subpage.length == newRoute.subpage.length &&
           newRoute.subpage.every(function(value, index) {
             return value == route.subpage[index];
           })) {
+
         // Update the property containing the titles for the current route.
         this.currentRouteTitles = {
           pageTitle: loadTimeData.getString(route.page + 'PageTitle'),
@@ -609,7 +605,6 @@ Polymer({
           page: newRoute.page,
           section: newRoute.section,
           subpage: newRoute.subpage,
-          dialog: newRoute.dialog,
         };
 
         // Push the current route to the history state, so when the user

@@ -6,8 +6,6 @@
     {
       'target_name': 'settings_main',
       'dependencies': [
-        '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:cr',
-        '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:promise_resolver',
         '../settings_page/compiled_resources2.gyp:main_page_behavior',
         '../settings_page/compiled_resources2.gyp:settings_router',
       ],

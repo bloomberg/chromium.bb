@@ -2,10 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-(function() {
-
-var resolver = new PromiseResolver();
-
 /**
  * @fileoverview
  * 'settings-main' displays the selected settings page.
@@ -68,25 +64,15 @@ Polymer({
       this.showAdvancedPage_ = e.detail;
       this.isAdvancedMenuOpen_ = e.detail;
       if (this.showAdvancedPage_) {
-        doWhenReady(
+        scrollWhenReady(
             function() {
-              var advancedPage = this.$$('settings-advanced-page');
-              return !!advancedPage && advancedPage.scrollHeight > 0;
+              return this.$$('settings-advanced-page');
             }.bind(this),
             function() {
-              this.$$('#toggleContainer').scrollIntoView();
+              return this.$$('#toggleContainer');
             }.bind(this));
       }
     }.bind(this));
-
-    doWhenReady(
-        function() {
-          var basicPage = this.$$('settings-basic-page');
-          return !!basicPage && basicPage.scrollHeight > 0;
-        }.bind(this),
-        function() {
-          resolver.resolve();
-        });
   },
 
   /**
@@ -123,9 +109,3 @@ Polymer({
     this.fire('toggle-advanced-page', !this.isAdvancedMenuOpen_);
   },
 });
-
-cr.define('settings.main', function() {
-  return {rendered: resolver.promise};
-});
-
-})();

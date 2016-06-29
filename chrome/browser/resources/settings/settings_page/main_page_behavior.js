@@ -7,20 +7,22 @@ var EASING_FUNCTION = 'cubic-bezier(0.4, 0, 0.2, 1)';
 var EXPAND_DURATION = 350;
 
 /**
- * Calls |readyTest| repeatedly until it returns true, then calls
- * |readyCallback|.
- * @param {function():boolean} readyTest
- * @param {!Function} readyCallback
+ * Workaround for scrolling an element into view when using Polymer.
+ * @param {function():Element} containerCallback Return parent of element.
+ * @param {function():Element} elementCallback Return element to scroll to.
  */
-function doWhenReady(readyTest, readyCallback) {
-  // TODO(dschuyler): Determine whether this hack can be removed.
+function scrollWhenReady(containerCallback, elementCallback) {
+  // TODO(dschuyler): Determine whether this setTimeout can be removed.
   // See also: https://github.com/Polymer/polymer/issues/3629
-  var intervalId = setInterval(function() {
-    if (readyTest()) {
-      clearInterval(intervalId);
-      readyCallback();
+  setTimeout(function pollForScrollHeight() {
+    var container = containerCallback();
+    if (!container || container.scrollHeight == 0) {
+      setTimeout(pollForScrollHeight.bind(this), 10);
+      return;
     }
-  }, 10);
+
+    elementCallback().scrollIntoView();
+  }.bind(this));
 }
 
 /**
@@ -367,14 +369,14 @@ var RoutableBehaviorImpl = {
 
   /** @private */
   scrollToSection_: function() {
-    doWhenReady(
+    scrollWhenReady(
         function() {
-          return this.scrollHeight > 0;
+          return this;
         }.bind(this),
         function() {
           // If the current section changes while we are waiting for the page to
           // be ready, scroll to the newest requested section.
-          this.getSection_(this.currentRoute.section).scrollIntoView();
+          return this.getSection_(this.currentRoute.section);
         }.bind(this));
   },
 

@@ -28,41 +28,17 @@ Polymer({
     },
 
     /** @private */
-    showClearBrowsingDataDialog_: {
-      computed: 'computeShowClearBrowsingDataDialog_(currentRoute)',
-      type: Boolean,
-    },
+    showClearBrowsingDataDialog_: Boolean,
   },
 
   ready: function() {
     this.ContentSettingsTypes = settings.ContentSettingsTypes;
   },
 
-  /** @suppress {missingProperties} */
-  attached: function() {
-    settings.main.rendered.then(function() {
-      if (this.showClearBrowsingDataDialog_) {
-        var dialog = this.$$('settings-clear-browsing-data-dialog').$.dialog;
-        // TODO(dbeam): cast to a CrDialogElement when it compiles.
-        dialog.refit();
-      }
-    }.bind(this));
-  },
-
-  /**
-   * @return {boolean} Whether the Clear Browsing Data dialog should be showing.
-   * @private
-   */
-  computeShowClearBrowsingDataDialog_: function() {
-    var route = this.currentRoute;
-    return route && route.dialog == 'clear-browsing-data';
-  },
-
   /** @private */
   onManageCertificatesTap_: function() {
 <if expr="use_nss_certs">
-    var pages = /** @type {!SettingsAnimatedPagesElement} */(this.$.pages);
-    pages.setSubpageChain(['manage-certificates']);
+    this.$.pages.setSubpageChain(['manage-certificates']);
 </if>
 <if expr="is_win or is_macosx">
     settings.PrivacyPageBrowserProxyImpl.getInstance().
@@ -72,18 +48,12 @@ Polymer({
 
   /** @private */
   onSiteSettingsTap_: function() {
-    var pages = /** @type {!SettingsAnimatedPagesElement} */(this.$.pages);
-    pages.setSubpageChain(['site-settings']);
+    this.$.pages.setSubpageChain(['site-settings']);
   },
 
   /** @private */
   onClearBrowsingDataTap_: function() {
-    this.currentRoute = {
-      page: this.currentRoute.page,
-      section: this.currentRoute.section,
-      subpage: this.currentRoute.subpage,
-      dialog: 'clear-browsing-data',
-    };
+    this.showClearBrowsingDataDialog_ = true;
   },
 
   /**
@@ -91,14 +61,7 @@ Polymer({
    * @private
    */
   onIronOverlayClosed_: function(event) {
-    if (Polymer.dom(event).rootTarget.tagName != 'CR-DIALOG')
-      return;
-
-    this.currentRoute = {
-      page: this.currentRoute.page,
-      section: this.currentRoute.section,
-      subpage: this.currentRoute.subpage,
-      // Drop dialog key.
-    };
+    if (Polymer.dom(event).rootTarget.tagName == 'CR-DIALOG')
+      this.showClearBrowsingDataDialog_ = false;
   },
 });
