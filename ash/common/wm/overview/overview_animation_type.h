@@ -21,7 +21,13 @@ enum OverviewAnimationType {
   OVERVIEW_ANIMATION_HIDE_WINDOW,
   // Used to restore windows to their original position when exiting overview
   // mode.
-  OVERVIEW_ANIMATION_RESTORE_WINDOW
+  OVERVIEW_ANIMATION_RESTORE_WINDOW,
+  // Used to animate scaling down of a window that is about to get closed while
+  // overview mode is active.
+  OVERVIEW_ANIMATION_CLOSING_SELECTOR_ITEM,
+  // Used to animate hiding of a window that is closed while overview mode is
+  // active.
+  OVERVIEW_ANIMATION_CLOSE_SELECTOR_ITEM
 };
 
 }  // namespace ash

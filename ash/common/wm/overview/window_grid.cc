@@ -753,6 +753,7 @@ void WindowGrid::OnWindowDestroying(WmWindow* window) {
     bool send_focus_alert = selected_index_ == removed_index;
     if (selected_index_ >= removed_index && selected_index_ != 0)
       selected_index_--;
+    SelectedWindow()->SetSelected(true);
     if (send_focus_alert)
       SelectedWindow()->SendAccessibleSelectionEvent();
   }

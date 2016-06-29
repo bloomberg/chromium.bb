@@ -15,6 +15,8 @@
 #include "ash/common/wm_window.h"
 #include "ash/common/wm_window_property.h"
 #include "base/macros.h"
+#include "base/single_thread_task_runner.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "third_party/skia/include/core/SkPaint.h"
 #include "third_party/skia/include/core/SkPath.h"
 #include "third_party/skia/include/core/SkRect.h"
@@ -31,14 +33,20 @@ namespace ash {
 
 namespace {
 
+// When set to true by tests makes closing the widget synchronous.
+bool immediate_close_for_tests = false;
+
 // The opacity level that windows will be set to when they are restored.
 const float kRestoreWindowOpacity = 1.0f;
 
 // Alpha value used to paint mask layer that masks the original window header.
 const int kOverviewContentMaskAlpha = 255;
 
+// Delay closing window with Material Design to allow it to shrink and fade out.
+const int kCloseWindowDelayInMilliseconds = 150;
+
 WmWindow* GetTransientRoot(WmWindow* window) {
-  while (window->GetTransientParent())
+  while (window && window->GetTransientParent())
     window = window->GetTransientParent();
   return window;
 }
@@ -246,7 +254,8 @@ ScopedTransformOverviewWindow::ScopedTransformOverviewWindow(WmWindow* window)
       ignored_by_shelf_(window->GetWindowState()->ignored_by_shelf()),
       overview_started_(false),
       original_transform_(window->GetTargetTransform()),
-      original_opacity_(window->GetTargetOpacity()) {}
+      original_opacity_(window->GetTargetOpacity()),
+      weak_ptr_factory_(this) {}
 
 ScopedTransformOverviewWindow::~ScopedTransformOverviewWindow() {}
 
@@ -388,7 +397,7 @@ void ScopedTransformOverviewWindow::SetTransform(
     int radius) {
   DCHECK(overview_started_);
 
-  if (ash::MaterialDesignController::IsOverviewMaterial()) {
+  if (ash::MaterialDesignController::IsOverviewMaterial() && !mask_) {
     mask_.reset(new OverviewContentMask(
         window()->GetIntProperty(WmWindowProperty::TOP_VIEW_INSET), radius));
     mask_->layer()->SetBounds(GetTargetBoundsInScreen());
@@ -416,7 +425,15 @@ void ScopedTransformOverviewWindow::SetOpacity(float opacity) {
 }
 
 void ScopedTransformOverviewWindow::Close() {
-  GetTransientRoot(window_)->CloseWidget();
+  if (immediate_close_for_tests ||
+      !ash::MaterialDesignController::IsOverviewMaterial()) {
+    CloseWidget();
+    return;
+  }
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE, base::Bind(&ScopedTransformOverviewWindow::CloseWidget,
+                            weak_ptr_factory_.GetWeakPtr()),
+      base::TimeDelta::FromMilliseconds(kCloseWindowDelayInMilliseconds));
 }
 
 void ScopedTransformOverviewWindow::PrepareForOverview() {
@@ -424,6 +441,17 @@ void ScopedTransformOverviewWindow::PrepareForOverview() {
   overview_started_ = true;
   window_->GetWindowState()->set_ignored_by_shelf(true);
   ShowWindowIfMinimized();
+}
+
+void ScopedTransformOverviewWindow::CloseWidget() {
+  WmWindow* parent_window = GetTransientRoot(window_);
+  if (parent_window)
+    parent_window->CloseWidget();
+}
+
+// static
+void ScopedTransformOverviewWindow::SetImmediateCloseForTests() {
+  immediate_close_for_tests = true;
 }
 
 }  // namespace ash

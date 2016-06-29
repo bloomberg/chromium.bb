@@ -91,8 +91,15 @@ static const int kHeaderHeight = 32;
 // Opacity for dimmed items.
 static const float kDimmedItemOpacity = 0.5f;
 
+// Opacity for fading out during closing a window.
+static const float kClosingItemOpacity = 0.8f;
+
 // Duration of background opacity transition for the selected label.
 static const int kSelectorFadeInMilliseconds = 350;
+
+// Before closing a window animate both the window and the caption to shrink by
+// this fraction of size.
+static const float kPreCloseScale = 0.02f;
 
 // Calculates the |window| bounds after being transformed to the selector's
 // space. The returned Rect is in virtual screen coordinates.
@@ -391,6 +398,22 @@ void WindowSelectorItem::SetDimmed(bool dimmed) {
 void WindowSelectorItem::ButtonPressed(views::Button* sender,
                                        const ui::Event& event) {
   if (sender == close_button_) {
+    if (ash::MaterialDesignController::IsOverviewMaterial()) {
+      gfx::Rect inset_bounds(target_bounds_);
+      inset_bounds.Inset(target_bounds_.width() * kPreCloseScale,
+                         target_bounds_.height() * kPreCloseScale);
+      OverviewAnimationType animation_type =
+          OverviewAnimationType::OVERVIEW_ANIMATION_CLOSING_SELECTOR_ITEM;
+      // Scale down both the window and label.
+      SetBounds(inset_bounds, animation_type);
+      // First animate opacity to an intermediate value concurrently with the
+      // scaling animation.
+      AnimateOpacity(kClosingItemOpacity, animation_type);
+
+      // Fade out the window and the label, effectively hiding them.
+      AnimateOpacity(
+          0.0, OverviewAnimationType::OVERVIEW_ANIMATION_CLOSE_SELECTOR_ITEM);
+    }
     transform_window_.Close();
     return;
   }
@@ -550,6 +573,15 @@ void WindowSelectorItem::UpdateHeaderLayout(
         WmLookup::Get()->GetWindowForWidget(window_label_.get());
     WmWindow* window_label_selector_window =
         WmLookup::Get()->GetWindowForWidget(window_label_selector_.get());
+    std::unique_ptr<ScopedOverviewAnimationSettings> animation_settings =
+        ScopedOverviewAnimationSettingsFactory::Get()
+            ->CreateOverviewAnimationSettings(animation_type,
+                                              window_label_window);
+    std::unique_ptr<ScopedOverviewAnimationSettings>
+        animation_settings_selector =
+            ScopedOverviewAnimationSettingsFactory::Get()
+                ->CreateOverviewAnimationSettings(animation_type,
+                                                  window_label_selector_window);
     window_label_selector_window->SetBounds(label_rect);
     // |window_label_window| covers both the transformed window and the header
     // as well as the gap between the windows to prevent events from reaching
@@ -558,10 +590,6 @@ void WindowSelectorItem::UpdateHeaderLayout(
                           transformed_window_bounds.height());
     label_rect.Inset(-kWindowSelectorMargin, -kWindowSelectorMargin);
     window_label_window->SetBounds(label_rect);
-    std::unique_ptr<ScopedOverviewAnimationSettings> animation_settings =
-        ScopedOverviewAnimationSettingsFactory::Get()
-            ->CreateOverviewAnimationSettings(animation_type,
-                                              window_label_window);
     gfx::Transform label_transform;
     label_transform.Translate(transformed_window_bounds.x(),
                               transformed_window_bounds.y());
@@ -584,6 +612,31 @@ void WindowSelectorItem::UpdateHeaderLayout(
                                      transformed_window_bounds.y());
     close_button_widget_window->SetTransform(close_button_transform);
   }
+}
+
+void WindowSelectorItem::AnimateOpacity(float opacity,
+                                        OverviewAnimationType animation_type) {
+  DCHECK_GE(opacity, 0.f);
+  DCHECK_LE(opacity, 1.f);
+  ScopedTransformOverviewWindow::ScopedAnimationSettings animation_settings;
+  transform_window_.BeginScopedAnimation(animation_type, &animation_settings);
+  transform_window_.SetOpacity(opacity);
+
+  WmWindow* window_label_window =
+      WmLookup::Get()->GetWindowForWidget(window_label_.get());
+  std::unique_ptr<ScopedOverviewAnimationSettings> animation_settings_label =
+      ScopedOverviewAnimationSettingsFactory::Get()
+          ->CreateOverviewAnimationSettings(animation_type,
+                                            window_label_window);
+  window_label_window->SetOpacity(opacity);
+
+  WmWindow* window_label_selector_window =
+      WmLookup::Get()->GetWindowForWidget(window_label_selector_.get());
+  std::unique_ptr<ScopedOverviewAnimationSettings> animation_settings_selector =
+      ScopedOverviewAnimationSettingsFactory::Get()
+          ->CreateOverviewAnimationSettings(animation_type,
+                                            window_label_selector_window);
+  window_label_selector_window->SetOpacity(opacity);
 }
 
 void WindowSelectorItem::UpdateCloseButtonAccessibilityName() {

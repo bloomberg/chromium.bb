@@ -12,6 +12,7 @@
 #include "ash/common/material_design/material_design_controller.h"
 #include "ash/common/shell_window_ids.h"
 #include "ash/common/wm/mru_window_tracker.h"
+#include "ash/common/wm/overview/scoped_transform_overview_window.h"
 #include "ash/common/wm/overview/window_grid.h"
 #include "ash/common/wm/overview/window_selector.h"
 #include "ash/common/wm/overview/window_selector_controller.h"
@@ -122,6 +123,7 @@ class WindowSelectorTest
     shelf_view_test_.reset(new test::ShelfViewTestAPI(
         test::ShelfTestAPI(Shelf::ForPrimaryDisplay()).shelf_view()));
     shelf_view_test_->SetAnimationDuration(1);
+    ScopedTransformOverviewWindow::SetImmediateCloseForTests();
   }
 
   void TearDown() override {

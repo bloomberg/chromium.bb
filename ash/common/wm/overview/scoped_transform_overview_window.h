@@ -11,6 +11,7 @@
 #include "ash/ash_export.h"
 #include "ash/common/wm/overview/overview_animation_type.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/transform.h"
 
@@ -116,10 +117,17 @@ class ASH_EXPORT ScopedTransformOverviewWindow {
   void Close();
 
  private:
+  friend class WindowSelectorTest;
   class OverviewContentMask;
 
   // Shows the window if it was minimized.
   void ShowWindowIfMinimized();
+
+  // Closes the window managed by |this|.
+  void CloseWidget();
+
+  // Makes Close() execute synchronously when used in tests.
+  static void SetImmediateCloseForTests();
 
   // A weak pointer to the real window in the overview.
   WmWindow* window_;
@@ -146,6 +154,8 @@ class ASH_EXPORT ScopedTransformOverviewWindow {
 
   // The original opacity of the window before entering overview mode.
   float original_opacity_;
+
+  base::WeakPtrFactory<ScopedTransformOverviewWindow> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ScopedTransformOverviewWindow);
 };

@@ -4,6 +4,7 @@
 
 #include "ash/wm/overview/scoped_overview_animation_settings_aura.h"
 
+#include "ash/common/material_design/material_design_controller.h"
 #include "base/time/time.h"
 #include "ui/aura/window.h"
 #include "ui/compositor/layer.h"
@@ -15,6 +16,14 @@ namespace {
 
 // The time duration for transformation animations.
 const int kTransitionMilliseconds = 200;
+
+// The time duration for fading out when closing an item. Only used with
+// Material Design.
+const int kCloseFadeOutMillisecondsMd = 50;
+
+// The time duration for scaling down when an item is closed. Only used with
+// Material Design.
+const int kCloseScaleMillisecondsMd = 100;
 
 // The time duration for widgets to fade in.
 const int kFadeInMilliseconds = 80;
@@ -29,6 +38,10 @@ base::TimeDelta GetAnimationDuration(OverviewAnimationType animation_type) {
     case OVERVIEW_ANIMATION_RESTORE_WINDOW:
     case OVERVIEW_ANIMATION_HIDE_WINDOW:
       return base::TimeDelta::FromMilliseconds(kTransitionMilliseconds);
+    case OVERVIEW_ANIMATION_CLOSING_SELECTOR_ITEM:
+      return base::TimeDelta::FromMilliseconds(kCloseScaleMillisecondsMd);
+    case OVERVIEW_ANIMATION_CLOSE_SELECTOR_ITEM:
+      return base::TimeDelta::FromMilliseconds(kCloseFadeOutMillisecondsMd);
   }
   NOTREACHED();
   return base::TimeDelta();
@@ -57,7 +70,16 @@ ScopedOverviewAnimationSettingsAura::ScopedOverviewAnimationSettingsAura(
     case OVERVIEW_ANIMATION_RESTORE_WINDOW:
       animation_settings_.SetPreemptionStrategy(
           ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
-      animation_settings_.SetTweenType(gfx::Tween::FAST_OUT_SLOW_IN);
+      animation_settings_.SetTweenType(
+          ash::MaterialDesignController::IsOverviewMaterial()
+              ? gfx::Tween::EASE_IN_2
+              : gfx::Tween::FAST_OUT_SLOW_IN);
+      break;
+    case OVERVIEW_ANIMATION_CLOSING_SELECTOR_ITEM:
+    case OVERVIEW_ANIMATION_CLOSE_SELECTOR_ITEM:
+      animation_settings_.SetPreemptionStrategy(
+          ui::LayerAnimator::ENQUEUE_NEW_ANIMATION);
+      animation_settings_.SetTweenType(gfx::Tween::EASE_OUT);
       break;
     case OVERVIEW_ANIMATION_HIDE_WINDOW:
       animation_settings_.SetPreemptionStrategy(

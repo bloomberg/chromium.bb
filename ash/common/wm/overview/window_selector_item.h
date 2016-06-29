@@ -140,6 +140,10 @@ class ASH_EXPORT WindowSelectorItem : public views::ButtonListener,
   // |animation_type|.
   void UpdateHeaderLayout(OverviewAnimationType animation_type);
 
+  // Animates opacity of the |transform_window_| and its caption to |opacity|
+  // using |animation_type|.
+  void AnimateOpacity(float opacity, OverviewAnimationType animation_type);
+
   // Updates the close buttons accessibility name.
   void UpdateCloseButtonAccessibilityName();
 
