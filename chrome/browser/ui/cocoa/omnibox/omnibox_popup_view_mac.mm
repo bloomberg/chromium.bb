@@ -336,8 +336,8 @@ void OmniboxPopupViewMac::PositionPopup(const CGFloat matrixHeight) {
   }
 }
 
-NSImage* OmniboxPopupViewMac::ImageForMatch(const AutocompleteMatch& match,
-                                            BOOL ignore_dark_theme) const {
+NSImage* OmniboxPopupViewMac::ImageForMatch(
+    const AutocompleteMatch& match) const {
   gfx::Image image = model_->GetIconIfExtensionMatch(match);
   if (!image.IsEmpty())
     return image.AsNSImage();
@@ -348,7 +348,7 @@ NSImage* OmniboxPopupViewMac::ImageForMatch(const AutocompleteMatch& match,
                                 : AutocompleteMatch::TypeToIcon(match.type);
     return OmniboxViewMac::ImageForResource(resource_id);
   }
-  bool is_dark_mode = !ignore_dark_theme && [matrix_ hasDarkTheme];
+  bool is_dark_mode = [matrix_ hasDarkTheme];
   const SkColor icon_color =
       is_dark_mode ? SkColorSetA(SK_ColorWHITE, 0xCC) : gfx::kChromeIconGrey;
   const gfx::VectorIconId vector_icon_id =

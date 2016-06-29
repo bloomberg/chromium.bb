@@ -43,12 +43,11 @@ const NSInteger kMiddleButtonNumber = 2;
         [[OmniboxPopupCellData alloc]
              initWithMatch:match
             contentsOffset:contentsOffset
-                     image:popupView.ImageForMatch(match, NO)
+                     image:popupView.ImageForMatch(match)
                answerImage:(match.answer ? answerImage : nil)
               forDarkTheme:isDarkTheme]);
-    if (isDarkTheme) {
-      [cellData setIncognitoImage:popupView.ImageForMatch(match, YES)];
-    }
+    if (isDarkTheme)
+      [cellData setIncognitoImage:popupView.ImageForMatch(match)];
     [array addObject:cellData];
     if (match.type == AutocompleteMatchType::SEARCH_SUGGEST_TAIL) {
       max_match_contents_width =
