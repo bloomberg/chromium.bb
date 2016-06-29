@@ -61,14 +61,13 @@ Polymer({
 
 <if expr="chromeos">
     /**
-     * True if Pin Unlock is allowed on this machine.
+     * True if quick unlock settings should be displayed on this machine.
+     * @private
      */
-    pinUnlockAllowed_: {
+    quickUnlockAllowed_: {
       type: Boolean,
-      value: function() {
-        /* TODO(jdufault): Return a real value via quickUnlockPrivate API. */
-        return false;
-      },
+      // TODO(jdufault): Get a real value via quickUnlockPrivate API.
+      value: false,
       readOnly: true,
     },
 
@@ -233,6 +232,11 @@ Polymer({
   },
 
 <if expr="chromeos">
+  /** @private */
+  onQuickUnlockTap_: function() {
+    this.$.pages.setSubpageChain(['quick-unlock-authenticate']);
+  },
+
   /** @private */
   onEasyUnlockSetupTap_: function() {
     this.easyUnlockBrowserProxy_.startTurnOnFlow();

@@ -201,6 +201,12 @@ Polymer({
     },
 <if expr="chromeos">
     {
+      url: '/quickUnlock/authenticate',
+      page: 'basic',
+      section: 'people',
+      subpage: ['quick-unlock-authenticate'],
+    },
+    {
       url: '/accounts',
       page: 'basic',
       section: 'people',

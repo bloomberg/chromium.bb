@@ -15,9 +15,9 @@
 
 <if expr="chromeos">
 <link rel="import" href="/people_page/change_picture.html">
-<link rel="import" href="/people_page/pin_keyboard.html">
 <link rel="import" href="/people_page/easy_unlock_browser_proxy.html">
 <link rel="import" href="/people_page/easy_unlock_turn_off_dialog.html">
+<link rel="import" href="/people_page/quick_unlock_authenticate.html">
 <link rel="import" href="/people_page/users_page.html">
 </if>
 <if expr="not chromeos">
@@ -156,21 +156,21 @@
         </div>
 
 <if expr="chromeos">
-        <!-- TODO(jdufault): Confirm if this goes above or below easy unlock
-             settings. -->
-        <template is="dom-if" if=[[pinUnlockAllowed_]]>
-          <div class="settings-box">
-            <!-- TODO(jdufault): i18n -->
-            <p>Quick Unlock PIN</p>
-            <pin-keyboard></pin-keyboard>
-          </div>
-        </template>
-
         <div class="settings-box">
           <settings-checkbox pref="{{prefs.settings.enable_screen_lock}}"
               label="$i18n{enableScreenlock}">
           </settings-checkbox>
         </div>
+
+        <!-- TODO(jdufault): Disable navigating to /quickUnlock/* if pin is
+          disabled. -->
+        <template is="dom-if" if=[[quickUnlockAllowed_]]>
+          <div class="settings-box">
+            <paper-button on-tap="onQuickUnlockTap_" class="primary-button">
+              $i18n{quickUnlockTitle}
+            </paper-button>
+          </div>
+        </template>
 
         <template is="dom-if" if="[[easyUnlockAllowed_]]">
           <div class="settings-box">
@@ -237,6 +237,15 @@
         </settings-subpage>
       </template>
 <if expr="chromeos">
+      <template is="dom-if" name="quick-unlock-authenticate">
+        <settings-subpage page-title="$i18n{quickUnlockTitle}">
+          <settings-quick-unlock-authenticate
+            account-password="{{quickUnlockAccountPassword}}"
+            current-route="{{currentRoute}}"
+            profile-name="[[profileName_]]">
+          </settings-quick-unlock-authenticate>
+        </settings-subpage>
+      </template>
       <template is="dom-if" name="users">
         <settings-subpage page-title="$i18n{usersPageTitle}">
           <settings-users-page prefs="{{prefs}}"></settings-users-page>
