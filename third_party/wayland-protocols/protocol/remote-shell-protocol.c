@@ -60,7 +60,7 @@ static const struct wl_message zwp_remote_shell_v1_events[] = {
 };
 
 WL_EXPORT const struct wl_interface zwp_remote_shell_v1_interface = {
-	"zwp_remote_shell_v1", 6,
+	"zwp_remote_shell_v1", 7,
 	3, zwp_remote_shell_v1_requests,
 	2, zwp_remote_shell_v1_events,
 };
@@ -92,12 +92,13 @@ static const struct wl_message zwp_remote_surface_v1_events[] = {
 	{ "unset_minimized", "2", types + 0 },
 	{ "set_pinned", "3", types + 0 },
 	{ "unset_pinned", "3", types + 0 },
+	{ "state_type_changed", "7u", types + 0 },
 };
 
 WL_EXPORT const struct wl_interface zwp_remote_surface_v1_interface = {
-	"zwp_remote_surface_v1", 6,
+	"zwp_remote_surface_v1", 7,
 	14, zwp_remote_surface_v1_requests,
-	9, zwp_remote_surface_v1_events,
+	10, zwp_remote_surface_v1_events,
 };
 
 static const struct wl_message zwp_notification_surface_v1_requests[] = {

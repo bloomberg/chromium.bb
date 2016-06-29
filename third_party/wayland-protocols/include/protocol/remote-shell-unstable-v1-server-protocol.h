@@ -158,6 +158,38 @@ enum zwp_remote_shell_v1_container {
 };
 #endif /* ZWP_REMOTE_SHELL_V1_CONTAINER_ENUM */
 
+#ifndef ZWP_REMOTE_SHELL_V1_STATE_TYPE_ENUM
+#define ZWP_REMOTE_SHELL_V1_STATE_TYPE_ENUM
+/**
+ * @ingroup iface_zwp_remote_shell_v1
+ * state types for remote surfaces
+ *
+ * Defines common show states for shell surfaces.
+ */
+enum zwp_remote_shell_v1_state_type {
+	/**
+	 * normal window state
+	 */
+	ZWP_REMOTE_SHELL_V1_STATE_TYPE_NORMAL = 1,
+	/**
+	 * minimized window state
+	 */
+	ZWP_REMOTE_SHELL_V1_STATE_TYPE_MINIMIZED = 2,
+	/**
+	 * maximized window state
+	 */
+	ZWP_REMOTE_SHELL_V1_STATE_TYPE_MAXIMIZED = 3,
+	/**
+	 * fullscreen window state
+	 */
+	ZWP_REMOTE_SHELL_V1_STATE_TYPE_FULLSCREEN = 4,
+	/**
+	 * pinned window state
+	 */
+	ZWP_REMOTE_SHELL_V1_STATE_TYPE_PINNED = 5,
+};
+#endif /* ZWP_REMOTE_SHELL_V1_STATE_TYPE_ENUM */
+
 #ifndef ZWP_REMOTE_SHELL_V1_ERROR_ENUM
 #define ZWP_REMOTE_SHELL_V1_ERROR_ENUM
 enum zwp_remote_shell_v1_error {
@@ -470,6 +502,7 @@ struct zwp_remote_surface_v1_interface {
 #define ZWP_REMOTE_SURFACE_V1_UNSET_MINIMIZED	6
 #define ZWP_REMOTE_SURFACE_V1_SET_PINNED	7
 #define ZWP_REMOTE_SURFACE_V1_UNSET_PINNED	8
+#define ZWP_REMOTE_SURFACE_V1_STATE_TYPE_CHANGED	9
 
 /**
  * @ingroup iface_zwp_remote_surface_v1
@@ -507,6 +540,10 @@ struct zwp_remote_surface_v1_interface {
  * @ingroup iface_zwp_remote_surface_v1
  */
 #define ZWP_REMOTE_SURFACE_V1_UNSET_PINNED_SINCE_VERSION	3
+/**
+ * @ingroup iface_zwp_remote_surface_v1
+ */
+#define ZWP_REMOTE_SURFACE_V1_STATE_TYPE_CHANGED_SINCE_VERSION	7
 
 /**
  * @ingroup iface_zwp_remote_surface_v1
@@ -605,6 +642,17 @@ static inline void
 zwp_remote_surface_v1_send_unset_pinned(struct wl_resource *resource_)
 {
 	wl_resource_post_event(resource_, ZWP_REMOTE_SURFACE_V1_UNSET_PINNED);
+}
+
+/**
+ * @ingroup iface_zwp_remote_surface_v1
+ * Sends an state_type_changed event to the client owning the resource.
+ * @param resource_ The client's resource
+ */
+static inline void
+zwp_remote_surface_v1_send_state_type_changed(struct wl_resource *resource_, uint32_t state_type)
+{
+	wl_resource_post_event(resource_, ZWP_REMOTE_SURFACE_V1_STATE_TYPE_CHANGED, state_type);
 }
 
 /**

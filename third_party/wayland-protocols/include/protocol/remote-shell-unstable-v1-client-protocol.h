@@ -155,6 +155,38 @@ enum zwp_remote_shell_v1_container {
 };
 #endif /* ZWP_REMOTE_SHELL_V1_CONTAINER_ENUM */
 
+#ifndef ZWP_REMOTE_SHELL_V1_STATE_TYPE_ENUM
+#define ZWP_REMOTE_SHELL_V1_STATE_TYPE_ENUM
+/**
+ * @ingroup iface_zwp_remote_shell_v1
+ * state types for remote surfaces
+ *
+ * Defines common show states for shell surfaces.
+ */
+enum zwp_remote_shell_v1_state_type {
+	/**
+	 * normal window state
+	 */
+	ZWP_REMOTE_SHELL_V1_STATE_TYPE_NORMAL = 1,
+	/**
+	 * minimized window state
+	 */
+	ZWP_REMOTE_SHELL_V1_STATE_TYPE_MINIMIZED = 2,
+	/**
+	 * maximized window state
+	 */
+	ZWP_REMOTE_SHELL_V1_STATE_TYPE_MAXIMIZED = 3,
+	/**
+	 * fullscreen window state
+	 */
+	ZWP_REMOTE_SHELL_V1_STATE_TYPE_FULLSCREEN = 4,
+	/**
+	 * pinned window state
+	 */
+	ZWP_REMOTE_SHELL_V1_STATE_TYPE_PINNED = 5,
+};
+#endif /* ZWP_REMOTE_SHELL_V1_STATE_TYPE_ENUM */
+
 #ifndef ZWP_REMOTE_SHELL_V1_ERROR_ENUM
 #define ZWP_REMOTE_SHELL_V1_ERROR_ENUM
 enum zwp_remote_shell_v1_error {
@@ -421,6 +453,21 @@ struct zwp_remote_surface_v1_listener {
 	 */
 	void (*unset_pinned)(void *data,
 			     struct zwp_remote_surface_v1 *zwp_remote_surface_v1);
+	/**
+	 * surface state type changed
+	 *
+	 * The state_type_changed event is sent by the compositor when
+	 * the surface state changed.
+	 *
+	 * This is an event to notify that the window state changed in
+	 * compositor. The state change may be triggered by a client's
+	 * request, or some user action directly handled by the compositor.
+	 * The client may choose to ignore this event.
+	 * @since 7
+	 */
+	void (*state_type_changed)(void *data,
+				   struct zwp_remote_surface_v1 *zwp_remote_surface_v1,
+				   uint32_t state_type);
 };
 
 /**
