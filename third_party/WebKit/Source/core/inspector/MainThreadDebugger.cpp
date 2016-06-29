@@ -189,16 +189,7 @@ void MainThreadDebugger::unmuteConsole()
 
 bool MainThreadDebugger::callingContextCanAccessContext(v8::Local<v8::Context> calling, v8::Local<v8::Context> target)
 {
-    ExecutionContext* executionContext = toExecutionContext(target);
-    ASSERT(executionContext);
-
-    if (executionContext->isMainThreadWorkletGlobalScope()) {
-        MainThreadWorkletGlobalScope* globalScope = toMainThreadWorkletGlobalScope(executionContext);
-        return globalScope && BindingSecurity::shouldAllowAccessTo(m_isolate, toLocalDOMWindow(toDOMWindow(calling)), globalScope, DoNotReportSecurityError);
-    }
-
-    DOMWindow* window = toDOMWindow(target);
-    return window && BindingSecurity::shouldAllowAccessTo(m_isolate, toLocalDOMWindow(toDOMWindow(calling)), window, DoNotReportSecurityError);
+    return BindingSecurity::shouldAllowAccessTo(m_isolate, calling, target, DoNotReportSecurityError);
 }
 
 int MainThreadDebugger::ensureDefaultContextInGroup(int contextGroupId)
