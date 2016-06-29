@@ -206,17 +206,6 @@ struct CrossThreadCopier<ResourceResponse> {
     PLATFORM_EXPORT static Type copy(const ResourceResponse&);
 };
 
-template <typename T>
-struct CrossThreadCopier<Member<T>> {
-    STATIC_ONLY(CrossThreadCopier);
-    static_assert(IsGarbageCollectedType<T>::value, "T must be a garbage-collected type.");
-    typedef T* Type;
-    static Type copy(const Member<T>& ptr)
-    {
-        return ptr;
-    }
-};
-
 } // namespace blink
 
 #endif // CrossThreadCopier_h
