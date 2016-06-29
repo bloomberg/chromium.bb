@@ -129,7 +129,6 @@ class WebSocketDispatcherHostTest : public ::testing::Test {
           socket_url,
           requested_protocols,
           origin,
-          "",
           render_frame_id);
       if (!dispatcher_host_->OnMessageReceived(message))
         return false;
@@ -152,7 +151,6 @@ class WebSocketDispatcherHostTest : public ::testing::Test {
           socket_url,
           requested_protocols,
           origin,
-          "",
           render_frame_id);
       if (!dispatcher_host_->OnMessageReceived(messageAddChannelRequest))
         return false;
@@ -228,7 +226,7 @@ TEST_F(WebSocketDispatcherHostTest, AddChannelRequest) {
   url::Origin origin(GURL("http://example.com"));
   int render_frame_id = -2;
   WebSocketHostMsg_AddChannelRequest message(
-      routing_id, socket_url, requested_protocols, origin, "", render_frame_id);
+      routing_id, socket_url, requested_protocols, origin, render_frame_id);
 
   ASSERT_TRUE(dispatcher_host_->OnMessageReceived(message));
 
@@ -262,7 +260,7 @@ TEST_F(WebSocketDispatcherHostTest, SendFrame) {
   url::Origin origin(GURL("http://example.com"));
   int render_frame_id = -2;
   WebSocketHostMsg_AddChannelRequest add_channel_message(
-      routing_id, socket_url, requested_protocols, origin, "", render_frame_id);
+      routing_id, socket_url, requested_protocols, origin, render_frame_id);
 
   ASSERT_TRUE(dispatcher_host_->OnMessageReceived(add_channel_message));
 
@@ -291,10 +289,10 @@ TEST_F(WebSocketDispatcherHostTest, SendFrame) {
 TEST_F(WebSocketDispatcherHostTest, Destruct) {
   WebSocketHostMsg_AddChannelRequest message1(
       123, GURL("ws://example.com/test"), std::vector<std::string>(),
-      url::Origin(GURL("http://example.com")), "", -1);
+      url::Origin(GURL("http://example.com")), -1);
   WebSocketHostMsg_AddChannelRequest message2(
       456, GURL("ws://example.com/test2"), std::vector<std::string>(),
-      url::Origin(GURL("http://example.com")), "", -1);
+      url::Origin(GURL("http://example.com")), -1);
 
   ASSERT_TRUE(dispatcher_host_->OnMessageReceived(message1));
   ASSERT_TRUE(dispatcher_host_->OnMessageReceived(message2));
@@ -421,7 +419,7 @@ TEST_F(WebSocketDispatcherHostTest, InvalidScheme) {
   url::Origin origin(GURL("http://example.com"));
   int render_frame_id = -2;
   WebSocketHostMsg_AddChannelRequest message(
-      routing_id, socket_url, requested_protocols, origin, "", render_frame_id);
+      routing_id, socket_url, requested_protocols, origin, render_frame_id);
 
   ASSERT_TRUE(dispatcher_host_->OnMessageReceived(message));
 

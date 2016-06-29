@@ -921,12 +921,8 @@ void InspectorNetworkAgent::disable(ErrorString*)
     m_knownRequestIdMap.clear();
 }
 
-void InspectorNetworkAgent::setUserAgentOverride(ErrorString* errorString, const String& userAgent)
+void InspectorNetworkAgent::setUserAgentOverride(ErrorString*, const String& userAgent)
 {
-    if (userAgent.contains('\n') || userAgent.contains('\r') || userAgent.contains('\0')) {
-        *errorString = "Invalid characters found in userAgent";
-        return;
-    }
     m_state->setString(NetworkAgentState::userAgentOverride, userAgent);
 }
 

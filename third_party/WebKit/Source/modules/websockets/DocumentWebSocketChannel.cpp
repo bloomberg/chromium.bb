@@ -184,7 +184,8 @@ bool DocumentWebSocketChannel::connect(const KURL& url, const String& protocol)
 
     if (document()->frame())
         document()->frame()->loader().client()->dispatchWillOpenWebSocket(m_handle.get());
-    m_handle->connect(url, webProtocols, WebSecurityOrigin(getExecutionContext()->getSecurityOrigin()), document()->userAgent(), this);
+    m_handle->connect(url, webProtocols, WebSecurityOrigin(getExecutionContext()->getSecurityOrigin()), this);
+
     flowControlIfNecessary();
     TRACE_EVENT_INSTANT1("devtools.timeline", "WebSocketCreate", TRACE_EVENT_SCOPE_THREAD, "data", InspectorWebSocketCreateEvent::data(document(), m_identifier, url, protocol));
     InspectorInstrumentation::didCreateWebSocket(document(), m_identifier, url, protocol);

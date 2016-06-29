@@ -148,7 +148,6 @@ enum BadMessageReason {
   DBMF_INVALID_ORIGIN_ON_GET_SPACE = 124,
   DBMF_INVALID_ORIGIN_ON_MODIFIED = 125,
   DBMF_INVALID_ORIGIN_ON_CLOSED = 126,
-  WSH_INVALID_HEADER_VALUE = 127,
 
   // Please add new elements here. The naming convention is abbreviated class
   // name (e.g. RenderFrameHost becomes RFH) plus a unique description of the

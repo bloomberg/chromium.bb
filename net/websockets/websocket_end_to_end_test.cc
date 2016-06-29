@@ -268,8 +268,7 @@ class WebSocketEndToEndTest : public ::testing::Test {
     event_interface_ = new ConnectTestingEventInterface;
     channel_.reset(
         new WebSocketChannel(base::WrapUnique(event_interface_), &context_));
-    channel_->SendAddChannelRequest(GURL(socket_url), sub_protocols_, origin,
-                                    "");
+    channel_->SendAddChannelRequest(GURL(socket_url), sub_protocols_, origin);
     event_interface_->WaitForResponse();
     return !event_interface_->failed();
   }

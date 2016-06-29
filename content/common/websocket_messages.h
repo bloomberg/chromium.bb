@@ -67,11 +67,10 @@ IPC_STRUCT_TRAITS_END()
 // Open new WebSocket connection to |socket_url|. |requested_protocols| is a
 // list of tokens identifying sub-protocols the renderer would like to use, as
 // described in RFC6455 "Subprotocols Using the WebSocket Protocol".
-IPC_MESSAGE_ROUTED5(WebSocketHostMsg_AddChannelRequest,
+IPC_MESSAGE_ROUTED4(WebSocketHostMsg_AddChannelRequest,
                     GURL /* socket_url */,
                     std::vector<std::string> /* requested_protocols */,
                     url::Origin /* origin */,
-                    std::string /* user_agent_override */,
                     int /* render_frame_id */)
 
 // Send a complete binary WebSocket message consisting of the Blob identified by

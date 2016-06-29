@@ -700,7 +700,6 @@ struct ArgumentCopyingWebSocketStreamCreator {
       const GURL& socket_url,
       const std::vector<std::string>& requested_subprotocols,
       const url::Origin& origin,
-      const std::string& additional_headers,
       URLRequestContext* url_request_context,
       const BoundNetLog& net_log,
       std::unique_ptr<WebSocketStream::ConnectDelegate> connect_delegate) {
@@ -746,8 +745,9 @@ class WebSocketChannelTest : public ::testing::Test {
     channel_.reset(new WebSocketChannel(CreateEventInterface(),
                                         &connect_data_.url_request_context));
     channel_->SendAddChannelRequestForTesting(
-        connect_data_.socket_url, connect_data_.requested_subprotocols,
-        connect_data_.origin, "",
+        connect_data_.socket_url,
+        connect_data_.requested_subprotocols,
+        connect_data_.origin,
         base::Bind(&ArgumentCopyingWebSocketStreamCreator::Create,
                    base::Unretained(&connect_data_.creator)));
   }

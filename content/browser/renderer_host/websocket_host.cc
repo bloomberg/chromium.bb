@@ -399,26 +399,22 @@ void WebSocketHost::OnAddChannelRequest(
     const GURL& socket_url,
     const std::vector<std::string>& requested_protocols,
     const url::Origin& origin,
-    const std::string& user_agent_override,
     int render_frame_id) {
   DVLOG(3) << "WebSocketHost::OnAddChannelRequest"
            << " routing_id=" << routing_id_ << " socket_url=\"" << socket_url
            << "\" requested_protocols=\""
            << base::JoinString(requested_protocols, ", ") << "\" origin=\""
-           << origin << "\" user_agent_override=\"" << user_agent_override
-           << "\"";
+           << origin << "\"";
 
   DCHECK(!channel_);
   if (delay_ > base::TimeDelta()) {
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE,
         base::Bind(&WebSocketHost::AddChannel, weak_ptr_factory_.GetWeakPtr(),
-                  socket_url, requested_protocols, origin,
-                  user_agent_override, render_frame_id),
+                   socket_url, requested_protocols, origin, render_frame_id),
         delay_);
   } else {
-    AddChannel(socket_url, requested_protocols, origin,
-               user_agent_override, render_frame_id);
+    AddChannel(socket_url, requested_protocols, origin, render_frame_id);
   }
   // |this| may have been deleted here.
 }
@@ -427,14 +423,12 @@ void WebSocketHost::AddChannel(
     const GURL& socket_url,
     const std::vector<std::string>& requested_protocols,
     const url::Origin& origin,
-    const std::string& user_agent_override,
     int render_frame_id) {
   DVLOG(3) << "WebSocketHost::AddChannel"
            << " routing_id=" << routing_id_ << " socket_url=\"" << socket_url
            << "\" requested_protocols=\""
            << base::JoinString(requested_protocols, ", ") << "\" origin=\""
-           << origin << "\" user_agent_override=\""
-           << user_agent_override << "\"";
+           << origin << "\"";
 
   DCHECK(!channel_);
 
@@ -457,20 +451,7 @@ void WebSocketHost::AddChannel(
     pending_flow_control_quota_ = 0;
   }
 
-  std::string additional_headers;
-  if (user_agent_override != "") {
-    if (!net::HttpUtil::IsValidHeaderValue(user_agent_override)) {
-      bad_message::ReceivedBadMessage(
-          dispatcher_, bad_message::WSH_INVALID_HEADER_VALUE);
-      return;
-    }
-    additional_headers = base::StringPrintf("%s:%s",
-                                            net::HttpRequestHeaders::kUserAgent,
-                                            user_agent_override.c_str());
-  }
-  channel_->SendAddChannelRequest(
-          socket_url, requested_protocols, origin,
-          additional_headers);
+  channel_->SendAddChannelRequest(socket_url, requested_protocols, origin);
   // |this| may have been deleted here.
 }
 

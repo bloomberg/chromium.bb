@@ -69,13 +69,11 @@ class CONTENT_EXPORT WebSocketHost {
   void OnAddChannelRequest(const GURL& socket_url,
                            const std::vector<std::string>& requested_protocols,
                            const url::Origin& origin,
-                           const std::string& user_agent_override,
                            int render_frame_id);
 
   void AddChannel(const GURL& socket_url,
                   const std::vector<std::string>& requested_protocols,
                   const url::Origin& origin,
-                  const std::string& user_agent_override,
                   int render_frame_id);
 
   void OnSendBlob(const std::string& uuid, uint64_t expected_size);

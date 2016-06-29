@@ -81,7 +81,7 @@ public:
 
     ~MockWebSocketHandle() override { }
 
-    MOCK_METHOD5(connect, void(const WebURL&, const WebVector<WebString>&, const WebSecurityOrigin&, const WebString&, WebSocketHandleClient*));
+    MOCK_METHOD4(connect, void(const WebURL&, const WebVector<WebString>&, const WebSecurityOrigin&, WebSocketHandleClient*));
     MOCK_METHOD4(send, void(bool, WebSocketHandle::MessageType, const char*, size_t));
     MOCK_METHOD1(flowControl, void(int64_t));
     MOCK_METHOD2(close, void(unsigned short, const WebString&));
@@ -133,7 +133,7 @@ public:
     {
         {
             InSequence s;
-            EXPECT_CALL(*handle(), connect(WebURL(KURL(KURL(), "ws://localhost/")), _, _, _, handleClient()));
+            EXPECT_CALL(*handle(), connect(WebURL(KURL(KURL(), "ws://localhost/")), _, _, handleClient()));
             EXPECT_CALL(*handle(), flowControl(65536));
             EXPECT_CALL(*channelClient(), didConnect(String("a"), String("b")));
         }
@@ -164,7 +164,7 @@ TEST_F(DocumentWebSocketChannelTest, connectSuccess)
     Checkpoint checkpoint;
     {
         InSequence s;
-        EXPECT_CALL(*handle(), connect(WebURL(KURL(KURL(), "ws://localhost/")), _, _, _, handleClient()));
+        EXPECT_CALL(*handle(), connect(WebURL(KURL(KURL(), "ws://localhost/")), _, _, handleClient()));
         EXPECT_CALL(*handle(), flowControl(65536));
         EXPECT_CALL(checkpoint, Call(1));
         EXPECT_CALL(*channelClient(), didConnect(String("a"), String("b")));
