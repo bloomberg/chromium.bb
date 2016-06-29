@@ -98,7 +98,9 @@ class DesktopMemorySystemHealth(_MemorySystemHealthBenchmark):
 
   @classmethod
   def ShouldDisable(cls, possible_browser):
-    return possible_browser.platform.GetDeviceTypeName() != 'Desktop'
+    # http://crbug.com/624355 (reference builds).
+    return (possible_browser.platform.GetDeviceTypeName() != 'Desktop' or
+            possible_browser.browser_type == 'reference')
 
 
 class MobileMemorySystemHealth(_MemorySystemHealthBenchmark):
