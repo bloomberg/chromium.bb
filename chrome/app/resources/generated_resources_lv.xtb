@@ -183,7 +183,6 @@
 <translation id="1259724620062607540">7. plaukta vienums</translation>
 <translation id="1260240842868558614">Rādīt:</translation>
 <translation id="126710816202626562">Tulkojuma valoda:</translation>
-<translation id="1269690813141254680">Izmantojiet <ph name="BEGIN_LINK" />Google aktivitātes vadīklas<ph name="END_LINK" />, lai kontrolētu to, kā Google var izmantot jūsu pārlūkošanas vēsturi, lai personalizētu Meklēšanu un citus Google pakalpojumus.</translation>
 <translation id="1272079795634619415">Apturēt</translation>
 <translation id="1272978324304772054">Šis lietotāja konts nepieder domēnam, kurā ierīce ir reģistrēta. Ja vēlaties ierīci reģistrēt citā domēnā, vispirms ir jāveic ierīces atkopšana.</translation>
 <translation id="127353061808977798">Fonti un kodēšana</translation>
@@ -1675,7 +1674,6 @@ no <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3317459757438853210">Divpusēja</translation>
 <translation id="331752765902890099">Poga <ph name="PROFILE_NAME" />: pierakstīšanās kļūda</translation>
 <translation id="3319048459796106952">Jauns &amp;inkognito logs</translation>
-<translation id="3319364804843246307">Android lietotnes</translation>
 <translation id="3320859581025497771">jūsu informācijas nesējs</translation>
 <translation id="3323235640813116393">Ļauj saglabāt lapas kā MHTML: vienu teksta failu ar HTML un visiem apakšresursiem.</translation>
 <translation id="3323447499041942178">Tekstlodziņš</translation>
@@ -2470,7 +2468,6 @@ Lai turpinātu skatīšanu, nospiediet jebkuru taustiņu.</translation>
 <translation id="4479639480957787382">tīkls Ethernet</translation>
 <translation id="4479812471636796472">ASV Dvoraka tastatūra</translation>
 <translation id="4481249487722541506">Ielādēt atpakotu paplašinājumu...</translation>
-<translation id="4482194545587547824">Google var izmantot jūsu pārlūkošanas vēsturi, lai personalizētu Meklēšanu un citus Google pakalpojumus.</translation>
 <translation id="4487088045714738411">Beļģu tastatūra</translation>
 <translation id="4492190037599258964">Vaicājuma “<ph name="SEARCH_STRING" />” meklēšanas rezultāti</translation>
 <translation id="4495021739234344583">Atsaukt reģistrāciju un restartēt</translation>

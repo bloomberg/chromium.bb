@@ -79,7 +79,6 @@ Du må ha slått på Bluetooth og Posisjon for å bruke det fysiske nettet.</tra
 <translation id="194341124344773587">Slå på tillatelsen for Chrome i <ph name="BEGIN_LINK" />Android-innstillingene<ph name="END_LINK" />.</translation>
 <translation id="1943432128510653496">Lagring av passord</translation>
 <translation id="1944384637046898011">Kryptér alt med Google-passord fra og med <ph name="TIME" /></translation>
-<translation id="1946005195648379376">Kontrollér hvordan Google bruker nettlesingsloggen din for å gi Søk og andre Google-tjenester et personlig preg.</translation>
 <translation id="1966710179511230534">Oppdater påloggingsinformasjonen din.</translation>
 <translation id="1974060860693918893">Avansert</translation>
 <translation id="1984321224716884559">Bokmerker fra Chrome Dev</translation>
@@ -427,6 +426,7 @@ Du er imidlertid ikke usynlig. Inkognito-modusen skjuler ikke surfingen din for 
 <translation id="6140912465461743537">Land/område</translation>
 <translation id="6159335304067198720"><ph name="PERCENT" /> datasparing</translation>
 <translation id="6165508094623778733">Les mer</translation>
+<translation id="6177390657002841081">Slå på Datasparing</translation>
 <translation id="6181444274883918285">Legg til et nettsted som unntak</translation>
 <translation id="6192792657125177640">Unntak</translation>
 <translation id="6232535412751077445">Hvis du slår på «Deaktivering av sporing», blir det sendt en forespørsel sammen med nettrafikken din. Hvilke virkninger dette eventuelt får, avhenger av om det aktuelle nettstedet svarer på forespørselen eller ikke, samt hvordan forespørselen tolkes.
@@ -485,6 +485,7 @@ Noen nettsteder kan for eksempel svare på denne forespørselen ved å vise deg 
 <translation id="6857778194843072568">Bare send via Wi-Fi</translation>
 <translation id="6865313869410766144">Skjemadata lagret med autofyll</translation>
 <translation id="6868088497967843822">Logg på for å få bokmerkene, loggen, passordene og de andre innstillingene dine på alle enhetene du bruker.</translation>
+<translation id="6903907808598579934">Slå på synkronisering</translation>
 <translation id="6945221475159498467">Velg</translation>
 <translation id="6963766334940102469">Slett bokmerker</translation>
 <translation id="6965382102122355670">OK</translation>

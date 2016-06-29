@@ -79,7 +79,6 @@ Fiziksel Web'i kullanabilmeniz için Bluetooth ve Konum özelliklerinin açık o
 <translation id="194341124344773587"><ph name="BEGIN_LINK" />Android Ayarları<ph name="END_LINK" />'nda Chrome için izni açın.</translation>
 <translation id="1943432128510653496">Şifreleri kaydetme</translation>
 <translation id="1944384637046898011"><ph name="TIME" /> itibariyle tüm Google şifrelerini şifrele</translation>
-<translation id="1946005195648379376">Google'ın, Arama ve diğer Google hizmetlerini kişiselleştirmek için tarama geçmişinizi nasıl kullanacağını kontrol edin.</translation>
 <translation id="1966710179511230534">Lütfen oturum açma ayrıntılarınızı güncelleyin.</translation>
 <translation id="1974060860693918893">Gelişmiş</translation>
 <translation id="1984321224716884559">Chrome Dev yer işaretleri</translation>
@@ -427,6 +426,7 @@ Yine de, görünmez olmazsınız. Gizli moda geçmeniz web'de yaptıklarınızı
 <translation id="6140912465461743537">Ülke/Bölge</translation>
 <translation id="6159335304067198720"><ph name="PERCENT" /> veri tasarrufu</translation>
 <translation id="6165508094623778733">Daha fazla bilgi edinin</translation>
+<translation id="6177390657002841081">Veri Tasarrufu'nu aç</translation>
 <translation id="6181444274883918285">Site istisnası ekle</translation>
 <translation id="6192792657125177640">İstisnalar</translation>
 <translation id="6232535412751077445">"Do Not Track" seçeneği etkinleştirildiğinde, göz atma trafiğinize bir istek eklenir. Her türlü etki, bir web sitesinin isteğe cevap verip vermemesine ve isteğin nasıl yorumlandığına bağlıdır.
@@ -485,6 +485,7 @@ Yine de, görünmez olmazsınız. Gizli moda geçmeniz web'de yaptıklarınızı
 <translation id="6857778194843072568">Yalnızca kablosuz ağda gönder</translation>
 <translation id="6865313869410766144">Form otomatik doldurma verileri</translation>
 <translation id="6868088497967843822">Yer işaretlerinize, geçmişinize ve diğer ayarlarınıza tüm cihazlarınızdan erişmek için oturum açın.</translation>
+<translation id="6903907808598579934">Senkronizasyonu aç</translation>
 <translation id="6945221475159498467">Seç</translation>
 <translation id="6963766334940102469">Yer işaretlerini silme</translation>
 <translation id="6965382102122355670">Tamam</translation>

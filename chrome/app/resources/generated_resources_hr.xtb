@@ -183,7 +183,6 @@
 <translation id="1259724620062607540">Stavka s police 7.</translation>
 <translation id="1260240842868558614">Prikaži:</translation>
 <translation id="126710816202626562">Jezik prijevoda:</translation>
-<translation id="1269690813141254680">Upravljajte načinom na koji Google upotrebljava vašu povijest pregledavanja za prilagodbu Pretraživanja i drugih Googleovih usluga putem <ph name="BEGIN_LINK" />kontrola aktivnosti na Googleu<ph name="END_LINK" />.</translation>
 <translation id="1272079795634619415">Zaustavi</translation>
 <translation id="1272978324304772054">Ovaj korisnički račun ne pripada domeni na koju je uređaj prijavljen. Ako se želite prijaviti na neku drugu domenu, prvo morate proći oporavak uređaja.</translation>
 <translation id="127353061808977798">Fontovi i kodiranje</translation>
@@ -1672,7 +1671,6 @@ s <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3317459757438853210">Obostrano</translation>
 <translation id="331752765902890099"><ph name="PROFILE_NAME" /> gumb: pogreška prijave</translation>
 <translation id="3319048459796106952">&amp;Novi anonimni prozor</translation>
-<translation id="3319364804843246307">Android aplikacije</translation>
 <translation id="3320859581025497771">vaš davatelj usluge</translation>
 <translation id="3323235640813116393">Omogućuje spremanje stranica u MHTML obliku: jedna tekstna datoteka koja sadrži HTML i sve podređene resurse.</translation>
 <translation id="3323447499041942178">Tekstni okvir</translation>
@@ -2467,7 +2465,6 @@ Pritisnite bilo koju tipku da biste nastavili istraživati.</translation>
 <translation id="4479639480957787382">Eternet</translation>
 <translation id="4479812471636796472">SAD Dvorak tipkovnica</translation>
 <translation id="4481249487722541506">Učitaj otpakirano proširenje...</translation>
-<translation id="4482194545587547824">Google može upotrebljavati vašu povijest pregledavanja za prilagodbu Pretraživanja i drugih Googleovih usluga.</translation>
 <translation id="4487088045714738411">Belgijska tipkovnica</translation>
 <translation id="4492190037599258964">Rezultati pretraživanja za upit '<ph name="SEARCH_STRING" />'</translation>
 <translation id="4495021739234344583">Odjavi i ponovo pokreni</translation>

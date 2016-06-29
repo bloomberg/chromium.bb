@@ -79,7 +79,6 @@ Chcete-li fyzický web používat, je třeba aktivovat Bluetooth a určování 
 <translation id="194341124344773587">Oprávnění pro Chrome zapnete v <ph name="BEGIN_LINK" />Nastavení pro Android<ph name="END_LINK" />.</translation>
 <translation id="1943432128510653496">Ukládání hesel</translation>
 <translation id="1944384637046898011">Zašifrovat vše pomocí hesla Google z <ph name="TIME" /></translation>
-<translation id="1946005195648379376">Nastavte, jak má Google využívat vaši historii procházení k personalizaci Vyhledávání a dalších služeb Google.</translation>
 <translation id="1966710179511230534">Aktualizujte prosím své přihlašovací údaje.</translation>
 <translation id="1974060860693918893">Rozšířená nastavení</translation>
 <translation id="1984321224716884559">Záložky z Chrome Dev</translation>
@@ -427,6 +426,7 @@ Nejste však neviditelní. Anonymní režim neskryje vaši aktivitu před zaměs
 <translation id="6140912465461743537">Země/Region</translation>
 <translation id="6159335304067198720">Úspora dat: <ph name="PERCENT" /></translation>
 <translation id="6165508094623778733">Další informace</translation>
+<translation id="6177390657002841081">Zapnutí Spořiče dat</translation>
 <translation id="6181444274883918285">Přidat výjimku pro konkrétní web</translation>
 <translation id="6192792657125177640">Výjimky</translation>
 <translation id="6232535412751077445">Pokud povolíte požadavek Do Not Track, bude připojován k datům provozu prohlížení. Účinek tohoto požadavku závisí na tom, zda na něj budou webové stránky reagovat a jak jej budou interpretovat.
@@ -485,6 +485,7 @@ Některé weby mohou například na tento požadavek reagovat tak, že vám zobr
 <translation id="6857778194843072568">Odesílat pouze v sítích Wi-Fi</translation>
 <translation id="6865313869410766144">Automatické vyplňování formulářů</translation>
 <translation id="6868088497967843822">Přihlaste se a synchronizujte záložky, historii, hesla a další nastavení do všech svých zařízení.</translation>
+<translation id="6903907808598579934">Zapnout synchronizaci</translation>
 <translation id="6945221475159498467">Vybrat</translation>
 <translation id="6963766334940102469">Smazat záložky</translation>
 <translation id="6965382102122355670">OK</translation>

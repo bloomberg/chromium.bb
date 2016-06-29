@@ -79,7 +79,6 @@ Lai izmantotu fizisko tīmekli, ir jābūt ieslēgtam Bluetooth savienojumam un 
 <translation id="194341124344773587"><ph name="BEGIN_LINK" />Android iestatījumos<ph name="END_LINK" /> ieslēdziet atļauju pārlūkam Chrome.</translation>
 <translation id="1943432128510653496">Paroļu saglabāšana</translation>
 <translation id="1944384637046898011">Šifrēt visu ar Google paroli, sākot no: <ph name="TIME" /></translation>
-<translation id="1946005195648379376">Kontrolējiet to, kā Google var izmantot jūsu pārlūkošanas vēsturi, lai personalizētu Meklēšanu un citus Google pakalpojumus.</translation>
 <translation id="1966710179511230534">Lūdzu, atjauniniet pierakstīšanās informāciju.</translation>
 <translation id="1974060860693918893">Papildu</translation>
 <translation id="1984321224716884559">Chrome izstrādātāju versijas grāmatzīmes</translation>
@@ -427,6 +426,7 @@ Lai pielāgotu meklēšanas vienumu, nospiediet un turiet to. Lai veiktu precīz
 <translation id="6140912465461743537">Valsts/reģions</translation>
 <translation id="6159335304067198720">Datu lietojuma samazinājums: <ph name="PERCENT" /></translation>
 <translation id="6165508094623778733">Uzziniet vairāk</translation>
+<translation id="6177390657002841081">Ieslēgt Datu lietojuma samazinātāju</translation>
 <translation id="6181444274883918285">Pievienot vietnes izņēmumu</translation>
 <translation id="6192792657125177640">Izņēmumi</translation>
 <translation id="6232535412751077445">Iespējojot funkciju “Nesekot”, jūsu pārlūkošanas datplūsmā tiks iekļauts pieprasījums. Rezultāts būs atkarīgs no tā, vai vietne nodrošinās atbildi uz pieprasījumu un kā pieprasījums tiks interpretēts.
@@ -485,6 +485,7 @@ Piemēram, dažas vietnes, reaģējot uz šo pieprasījumu, var rādīt jums rek
 <translation id="6857778194843072568">Sūtīt tikai Wi-Fi tīklā</translation>
 <translation id="6865313869410766144">Automātiskās aizpildes veidlapas dati</translation>
 <translation id="6868088497967843822">Pierakstieties, lai jūsu grāmatzīmes, vēsture, paroles un citi iestatījumi būtu pieejami visās jūsu ierīcēs.</translation>
+<translation id="6903907808598579934">Ieslēgt sinhronizāciju</translation>
 <translation id="6945221475159498467">Atlasīt</translation>
 <translation id="6963766334940102469">Dzēst grāmatzīmes</translation>
 <translation id="6965382102122355670">Labi</translation>

@@ -10,6 +10,7 @@
 <translation id="2704606927547763573">कॉपी केले</translation>
 <translation id="2747003861858887689">मागील फील्ड</translation>
 <translation id="2780046210906776326">ईमेल खाती नाहीत</translation>
+<translation id="3172213052701798825">संकेतशब्दांसाठी Google Smart Lock</translation>
 <translation id="3244271242291266297">MM</translation>
 <translation id="3252394070589632019"><ph name="NUM_SUGGESTIONS" /> पैकी <ph name="VALUE" />, <ph name="ADDITIONAL_INFO" />, <ph name="INDEX" /></translation>
 <translation id="3335947283844343239">बंद केलेले टॅब पुन्हा उघडा</translation>
@@ -20,6 +21,7 @@
 <translation id="4399225372525667111">या साइटसाठी URL योग्य आहे हे सत्यापित करण्यासाठी Chrome अक्षम आहे.</translation>
 <translation id="4728558894243024398">प्लॅटफॉर्म</translation>
 <translation id="473775607612524610">अद्यतनित करा</translation>
+<translation id="4875622588773761625"><ph name="PASSWORD_MANAGER_BRAND" /> नी या साइटसाठी आपला संकेतशब्द अद्यतनित करावा असे आपण इच्छिता?</translation>
 <translation id="5317780077021120954">जतन करा</translation>
 <translation id="605721222689873409">YY</translation>
 <translation id="6149061208933997199">संकेतशब्द वापरा</translation>
@@ -28,7 +30,9 @@
 <translation id="6344783595350022745">मजकूर साफ करा</translation>
 <translation id="6456425917241817154">संकेतशब्द Chrome द्वारे व्युत्पन्न करण्यात आला</translation>
 <translation id="6535543971741225613">आपण प्रवेश करण्याचा प्रयत्न करत असलेली साइट विचित्रपणे वागत आहे आणि तिची URL योग्य आहे हे सत्यापित करण्यासाठी Chrome अक्षम आहे. सुरक्षिततेच्या कारणासाठी आपण पुढे जाऊ नये आणि कदाचित उद्या प्रयत्न करा किंवा कुठेतरी अन्यत्र जा.</translation>
+<translation id="6647073004883890710">आपण <ph name="PASSWORD_MANAGER_BRAND" /> ने या साइटसाठी <ph name="USERNAME" /> करिता संकेतशब्द अद्यतनित करावा असे इच्छिता?</translation>
 <translation id="7222245588540287464">संदर्भीय शोध सक्षम केला आहे किंवा नाही.</translation>
+<translation id="7378627244592794276">नाही</translation>
 <translation id="7456847797759667638">स्थान उघडा...</translation>
 <translation id="7481312909269577407">पुढील</translation>
 <translation id="7484580869648358686">चेतावणी: येथे काहीतरी नाही!</translation>

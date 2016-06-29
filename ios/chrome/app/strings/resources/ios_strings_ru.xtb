@@ -10,6 +10,7 @@
 <translation id="2704606927547763573">Скопировано</translation>
 <translation id="2747003861858887689">Предыдущее поле</translation>
 <translation id="2780046210906776326">Создайте аккаунт</translation>
+<translation id="3172213052701798825">Smart Lock для паролей</translation>
 <translation id="3244271242291266297">ММ</translation>
 <translation id="3252394070589632019"><ph name="VALUE" />, <ph name="ADDITIONAL_INFO" />, <ph name="INDEX" /> из <ph name="NUM_SUGGESTIONS" /></translation>
 <translation id="3335947283844343239">Открыть закрытую вкладку</translation>
@@ -20,6 +21,7 @@
 <translation id="4399225372525667111">Не удалось проверить подлинность URL.</translation>
 <translation id="4728558894243024398">Платформа</translation>
 <translation id="473775607612524610">Обновление</translation>
+<translation id="4875622588773761625">Обновить пароль для этого сайта в сервисе "<ph name="PASSWORD_MANAGER_BRAND" />"?</translation>
 <translation id="5317780077021120954">Сохранить</translation>
 <translation id="605721222689873409">ГГ</translation>
 <translation id="6149061208933997199">Использовать пароль</translation>
@@ -28,7 +30,9 @@
 <translation id="6344783595350022745">Очистить</translation>
 <translation id="6456425917241817154">Пароль от Chrome</translation>
 <translation id="6535543971741225613">Сайт, на который вы собираетесь перейти, подозрителен: Chrome не может проверить подлинность URL. В целях безопасности мы рекомендуем повторить попытку через некоторое время или отказаться от просмотра этой страницы.</translation>
+<translation id="6647073004883890710">Сохранить в <ph name="PASSWORD_MANAGER_BRAND" /> новый пароль пользователя <ph name="USERNAME" /> для этого сайта?</translation>
 <translation id="7222245588540287464">Включить или отключить Контекстный поиск</translation>
+<translation id="7378627244592794276">Нет</translation>
 <translation id="7456847797759667638">Открыть адрес...</translation>
 <translation id="7481312909269577407">Вперед</translation>
 <translation id="7484580869648358686">Внимание! Обнаружена проблема!</translation>

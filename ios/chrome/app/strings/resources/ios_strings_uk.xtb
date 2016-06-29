@@ -10,6 +10,7 @@
 <translation id="2704606927547763573">Скопійов.</translation>
 <translation id="2747003861858887689">Попереднє поле</translation>
 <translation id="2780046210906776326">Немає облік. записів</translation>
+<translation id="3172213052701798825">Google Smart Lock для паролів</translation>
 <translation id="3244271242291266297">ММ</translation>
 <translation id="3252394070589632019"><ph name="VALUE" />, <ph name="ADDITIONAL_INFO" />, <ph name="INDEX" /> з <ph name="NUM_SUGGESTIONS" /></translation>
 <translation id="3335947283844343239">Знову відкрити закриту вкладку</translation>
@@ -20,6 +21,7 @@
 <translation id="4399225372525667111">Chrome не може підтвердити правильність URL-адреси цього сайту.</translation>
 <translation id="4728558894243024398">Платформа</translation>
 <translation id="473775607612524610">Оновити</translation>
+<translation id="4875622588773761625">Оновити пароль для цього сайту в <ph name="PASSWORD_MANAGER_BRAND" />?</translation>
 <translation id="5317780077021120954">Зберегти</translation>
 <translation id="605721222689873409">РР</translation>
 <translation id="6149061208933997199">Прийняти пароль</translation>
@@ -28,7 +30,9 @@
 <translation id="6344783595350022745">Очистити текст</translation>
 <translation id="6456425917241817154">Пароль, згенерований Chrome</translation>
 <translation id="6535543971741225613">Сайт, який ви намагаєтеся відкрити, поводиться дивно. Тому Chrome не може підтвердити правильність його URL-адреси. З міркувань безпеки радимо не продовжувати і, можливо, повторити спробу завтра чи перейти на інший сайт.</translation>
+<translation id="6647073004883890710">Оновити пароль користувача <ph name="USERNAME" /> для цього сайту в <ph name="PASSWORD_MANAGER_BRAND" />?</translation>
 <translation id="7222245588540287464">Увімкнути чи вимкнути контекстний пошук.</translation>
+<translation id="7378627244592794276">Ні</translation>
 <translation id="7456847797759667638">Відкрити розташування...</translation>
 <translation id="7481312909269577407">Переслати</translation>
 <translation id="7484580869648358686">Застереження. Можлива небезпека.</translation>

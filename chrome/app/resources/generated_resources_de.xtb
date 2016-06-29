@@ -183,7 +183,6 @@
 <translation id="1259724620062607540">Ablageartikel 7</translation>
 <translation id="1260240842868558614">Anzeigen:</translation>
 <translation id="126710816202626562">Zielsprache:</translation>
-<translation id="1269690813141254680">In den <ph name="BEGIN_LINK" />Google-Aktivitätseinstellungen<ph name="END_LINK" /> können Sie verwalten, wie Google Ihren Browserverlauf nutzt, um die Suche und andere Google-Dienste zu personalisieren.</translation>
 <translation id="1272079795634619415">Stopp</translation>
 <translation id="1272978324304772054">Dieses Nutzerkonto gehört nicht zu der Domain, in der das Gerät angemeldet ist. Wenn Sie sich in einer anderen Domain anmelden möchten, müssen Sie zunächst eine Gerätewiederherstellung durchführen.</translation>
 <translation id="127353061808977798">Schrift und Codierung</translation>
@@ -1669,7 +1668,6 @@ von <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3317459757438853210">Beidseitig</translation>
 <translation id="331752765902890099">Schaltfläche für <ph name="PROFILE_NAME" />: Anmeldefehler</translation>
 <translation id="3319048459796106952">Neues &amp;Inkognito-Fenster</translation>
-<translation id="3319364804843246307">Android-Apps</translation>
 <translation id="3320859581025497771">Ihr Mobilfunkanbieter</translation>
 <translation id="3323235640813116393">Bei Aktivierung werden Seiten als MHTML gespeichert: eine einzelne Textdatei mit HTML und allen Unterressourcen.</translation>
 <translation id="3323447499041942178">Textfeld</translation>
@@ -2464,7 +2462,6 @@ Drücken Sie eine beliebige Taste, um fortzufahren.</translation>
 <translation id="4479639480957787382">Ethernet</translation>
 <translation id="4479812471636796472">US-amerikanische Dvorak-Tastatur</translation>
 <translation id="4481249487722541506">Entpackte Erweiterung laden...</translation>
-<translation id="4482194545587547824">Google kann die Suche und andere Google-Dienste anhand Ihres Browserverlaufs für Sie personalisieren.</translation>
 <translation id="4487088045714738411">Belgische Tastatur</translation>
 <translation id="4492190037599258964">Suchergebnisse für "<ph name="SEARCH_STRING" />"</translation>
 <translation id="4495021739234344583">Registrierung aufheben und Gerät neu starten</translation>

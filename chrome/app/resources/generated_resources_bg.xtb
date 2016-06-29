@@ -183,7 +183,6 @@
 <translation id="1259724620062607540">Елемент 7 в лавицата</translation>
 <translation id="1260240842868558614">Показване:</translation>
 <translation id="126710816202626562">Език за превод:</translation>
-<translation id="1269690813141254680">Чрез <ph name="BEGIN_LINK" />контролите за активността в Google<ph name="END_LINK" /> управлявайте начина, по който използваме историята ви на сърфиране, за да персонализираме търсенето и други услуги на Google.</translation>
 <translation id="1272079795634619415">Стоп</translation>
 <translation id="1272978324304772054">Този профил на потребител не принадлежи на домейна, с който е записано устройството.  Ако искате да регистрирате устройството с друг домейн, първо трябва да преминете през процеса на възстановяване.</translation>
 <translation id="127353061808977798">Шрифтове и кодиране</translation>
@@ -1669,7 +1668,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="3317459757438853210">Двустранно</translation>
 <translation id="331752765902890099">Бутон за <ph name="PROFILE_NAME" />: Грешка при влизане в профила</translation>
 <translation id="3319048459796106952">Нов &amp;прозорец при използване на функцията „инкогнито“</translation>
-<translation id="3319364804843246307">Приложения за Android</translation>
 <translation id="3320859581025497771">оператора</translation>
 <translation id="3323235640813116393">Активира запазването на страниците като MHTML: един текстов файл, съдържащ HTML кода и всички подресурси.</translation>
 <translation id="3323447499041942178">Текстово поле</translation>
@@ -2464,7 +2462,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="4479639480957787382">Ethernet</translation>
 <translation id="4479812471636796472">Американска (Дворак) клавиатура</translation>
 <translation id="4481249487722541506">Зареждане на разпакетирано разширение...</translation>
-<translation id="4482194545587547824">Възможно е да използваме историята ви на сърфиране, за да персонализираме търсенето и други услуги на Google</translation>
 <translation id="4487088045714738411">Белгийска клавиатура</translation>
 <translation id="4492190037599258964">Резултати от търсенето на „<ph name="SEARCH_STRING" />“</translation>
 <translation id="4495021739234344583">Отмяна на записването и рестартиране</translation>

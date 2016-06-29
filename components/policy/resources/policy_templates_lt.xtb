@@ -6,6 +6,15 @@
 <translation id="1019101089073227242">Nustatyti naudotojo duomenų katalogą</translation>
 <translation id="1022361784792428773">Plėtinių, kurių diegti naudotojams turi būti neleidžiama (arba „*“, jei neleidžiama nė vieno), ID</translation>
 <translation id="102492767056134033">Nustatyti numatytąją ekrano klaviatūros būseną prisijungimo ekrane</translation>
+<translation id="1027000705181149370">Nurodoma, ar į naudotojo profilį turi būti perduodami autentifikavimo slapukai, kuriuos nustatė SAML IdP.
+
+      Jei prisijungiantis naudotojas autentifikuojamas naudojant SAML IdP, IdP nustatyti slapukai pirmiausia įrašomi į laikiną profilį. Šiuos slapukus galima perkelti į naudotojo profilį, kad būtų galima toliau autentifikuoti.
+
+     Kai ši politika nustatyta kaip „tiesa“, IdP nustatyti slapukai perkeliami į naudotojo profilį kaskart, kai jie prisijungiant autentifikuojami pagal SAML IdP.
+
+      Kai ši politika nustatyta kaip „netiesa“ arba nenustatyta, IdP nustatyti slapukai perkeliami į naudotojo profilį, tik kai naudotojas pirmą kartą prisijungia įrenginyje.
+
+      Ši politika paveikia tik tuos naudotojus, kurių domenas sutampa su įrenginio registracijos domenu. Kitų naudotojų atvejais IdP nustatyti slapukai perkeliami į naudotojo profilį, tik kai naudotojas pirmą kartą prisijungia įrenginyje.</translation>
 <translation id="1040446814317236570">PAC URL perdavimo įgalinimas (skirta https://)</translation>
 <translation id="1044878202534415707">Teikiamos aparatinės įrangos statistikos, pvz., centrinio procesoriaus / laisvosios prieigos atminties naudojimo, ataskaitos.
 
@@ -49,17 +58,7 @@
 
       Jei ši politika nenustatyta, numatytasis dažnis yra 3 val. Minimalus
       leistinas dažnis yra 60 sekundžių.</translation>
-<translation id="1213523811751486361">Nurodomas paieškos variklio, naudoto paieškos pasiūlymams teikti, URL. URL turėtų būti eilutė „<ph name="SEARCH_TERM_MARKER" />“, kuri teikiant užklausą bus pakeista naudotojo jau įvestu tekstu.
-
-          Ši politika pasirenkama. Nenustačius jos, joks siūlomas URL nebus naudojamas.
-
-          Į šią politiką atsižvelgiama, tik jei įgalinta politika „Numatytasis paieškos teikėjas įgalintas“.</translation>
 <translation id="1221359380862872747">Įkelti nurodytus URL prisijungiant prie demonstracinės versijos</translation>
-<translation id="1240643596769627465">Nurodomas paieškos variklio, naudoto tiesioginiams rezultatams teikti, URL. URL turi būti eilutė <ph name="SEARCH_TERM_MARKER" />, kuri pateikiant užklausą bus pakeista naudotojo jau įvestu tekstu.
-
-          Ši politika pasirenkama. Jos nenustačius nebus pateikta jokių tiesioginių paieškos rezultatų.
-
-          Į šią politiką atsižvelgiama, tik jei įgalinta politika „Numatytasis paieškos teikėjas įgalintas“.</translation>
 <translation id="1265053460044691532">Apribokite laiką, per kurį per SAML autentifikuotas naudotojas gali prisijungti neprisijungęs</translation>
 <translation id="1291880496936992484">Įspėjimas: RC4 bus visiškai pašalinta iš „<ph name="PRODUCT_NAME" />“ įdiegus 52 versiją (maždaug 2016 m. rugsėjo mėn.) ir ši politika nebegalios.
 
@@ -208,6 +207,8 @@
       Atminkite, kad šią politiką galima pakeisti taikant „EnabledPlugins“ (įgalinti papildiniai) ir „DisabledPluginsExceptions“ (neleidžiamų papildinių išimtys).
 
       Nenustačius šios politikos, naudotojas (-a) gali naudoti bet kokį sistemoje įdiegtą papildinį, išskyrus užprogramuotuosius nesuderinamus, pasenusius ar pavojingus papildinius.</translation>
+<translation id="1864269674877167562">Jei ši politika nustatyta į tuščią eilutę arba yra nesukonfigūruota, „<ph name="PRODUCT_OS_NAME" />“ nerodys automatinio užbaigimo parinkties naudotojų prisijungimo eigoje.
+      Jei ši politika nustatyta į eilutę, kuri nurodo domeno pavadinimą, „<ph name="PRODUCT_OS_NAME" />“ rodys automatinio užbaigimo parinktį prisijungiant ir naudotojai galės įvesti tik savo naudotojo vardą be domeno pavadinimo plėtinio. Naudotojas galės nepaisyti šio domeno pavadinimo plėtinio.</translation>
 <translation id="1865417998205858223">Raktų leidimai</translation>
 <translation id="186719019195685253">Veiksmas, kuris bus atliktas, kai bus pasiektas neaktyvumo delsos laikas, veikiant iš kintamosios srovės šaltinio</translation>
 <translation id="187819629719252111">Leidžiama pasiekti įrenginyje saugomus vietinius failus leidžiant „<ph name="PRODUCT_NAME" />“ pateikti failų pasirinkimo dialogo langus.
@@ -335,6 +336,13 @@
 <translation id="2337466621458842053">Leidžiama nustatyti URL šablonų, nurodančių svetaines, kuriose leidžiama pateikti vaizdų, sąrašą.
 
           Nenustačius šios politikos, visose svetainėse naudojama visuotinė numatytoji vertė iš politikos „Numatytasis vaizdų nustatymas“ (jei nustatyta) ar naudotojo asmeninės konfigūracijos.</translation>
+<translation id="2359612025446382967">Jei ši politika bus nustatyta kaip „netiesa“, „<ph name="PRODUCT_OS_NAME" />“ išjungs „Bluetooth“ ir naudotojas negalės jo vėl įjungti.
+
+      Jei ši politika bus nustatyta kaip „tiesa“ arba nenustatyta, naudotojas galės pasirinkti įjungti arba išjungti „Bluetooth“.
+
+      Jei ši politika nustatyta, naudotojas negali jos pakeisti ar nepaisyti.
+
+      Įgalinus „Bluetooth“, įrenginį reikia paleisti iš naujo, kad pakeitimai įsigaliotų (išjungus „Bluetooth“, įrenginio nereikia paleisti iš naujo).</translation>
 <translation id="2366415278352956652">Įgalinamas perdavimas</translation>
 <translation id="2371309782685318247">Nurodomas laikotarpis milisekundėmis, kuriuo įrenginio valdymo paslaugai pateikiama užklausa dėl naudotojo politikos informacijos.
 
@@ -569,6 +577,32 @@
           Jei įgalinsite šį nustatymą, „<ph name="PRODUCT_NAME" />“ nepaisys visų su tarpiniu serveriu susijusių parinkčių, nurodytų komandos eilutėje.
 
           Jei ši politika bus nenustatyta, naudotojai galės patys pasirinkti tarpinio serverio nustatymus.</translation>
+<translation id="2818551149761607847">Konfigūruokite naudotojo pseudoportreto vaizdą.
+
+      Ši politika suteikia galimybę konfigūruoti prisijungimo ekrane rodomą naudotojo pseudoportreto vaizdą. Politiką reikia nustatyti nurodant URL, iš kurio „<ph name="PRODUCT_OS_NAME" />“ gali atsisiųsti pseudoportreto vaizdą, ir kriptografinę maišos vertę, kuri naudojama atsisiuntimo vientisumui patvirtinti. Vaizdas turi būti JPEG formato, o dydis neturi viršyti 512 KB. URL turi būti pasiekiamas be autentifikavimo.
+
+      Pseudoportreto vaizdas atsisiunčiamas ir įkeliamas į talpyklą. Jis bus iš naujo atsisiųstas pasikeitus URL arba maišos vertei.
+
+      Politika turi būti nurodyta kaip eilutė, kurioje JSON formatu pateikiami URL ir maišos vertė. Ji turi atitikti šią schemą:
+      {
+        "type": "object",
+        "properties": {
+          "url": {
+            "description": "URL, iš kurio galima atsisiųsti pseudoportreto vaizdą.",
+            "type": "string"
+          },
+          "hash": {
+            "description": "Pseudoportreto vaizdo SHA-1 maišos vertė.",
+            "type": "string"
+          }
+        }
+      }
+
+      Jei ši politika nustatyta, „<ph name="PRODUCT_OS_NAME" />“ atsisiųs ir naudos pseudoportreto vaizdą.
+
+      Jei nustatysite šią politiką, naudotojai negalės jos pakeisti ar nepaisyti.
+
+      Jei politika nenustatyta, naudotojas gali pasirinkti pseudoportreto vaizdą, rodomą prisijungimo ekrane.</translation>
 <translation id="2824715612115726353">Įgalinti inkognito režimą</translation>
 <translation id="2844404652289407061">Įgalinamas paieškos palietus pasiekiamumas „<ph name="PRODUCT_NAME" />“ turinio rodinyje.
 
@@ -1124,9 +1158,6 @@ Jei nustatyta kaip „Netiesa“ arba nenustatyta, kreipiantis į API įvyks kla
 <translation id="4928632305180102854">Valdoma, ar „<ph name="PRODUCT_OS_NAME" />“ leidžiama kurti naujų naudotojų paskyrų. Jei ši politika nustatyta į „false“ (netiesa), paskyros dar neturintys naudotojai negali prisijungti.
 
       Jei ši politika nustatyta į „true“ (tiesa) arba nesukonfigūruota, leidžiama sukurti naujų naudotojų paskyrų, jei pagal „<ph name="DEVICEUSERWHITELISTPROTO_POLICY_NAME" />“ leidžiama naudotojui prisijungti.</translation>
-<translation id="4962195944157514011">Nurodomas paieškos variklio, naudojamo atliekant numatytąją paiešką, URL. URL turėtų būti eilutė „<ph name="SEARCH_TERM_MARKER" />“, kuri pateikiant užklausą bus pakeista terminais, kurių naudotojas (-a) ieško.
-
-          Ši parinktis turi būti nustatyta, kai politika „Numatytasis paieškos teikėjas įgalintas“ įgalinta, ir į ją bus atsižvelgta tik šiuo atveju.</translation>
 <translation id="4971529314808359013">Jums leidžiama nurodyti URL šablonų sąrašą, nurodantį, kurioms svetainėms „<ph name="PRODUCT_NAME" />“ turi automatiškai pasirinkti kliento sertifikatą (jei svetainėje jo reikalaujama).
 
           Vertė turi būti eilutėmis suskirstytų JSON žodynų masyvas. Kiekvienas žodynas turi būti tokios formos: { "pattern": "$URL_PATTERN", "filter" : $FILTER }, kur $URL_PATTERN yra turinio nustatymo šablonas. $FILTER apriboja, iš kurių klientų sertifikatų naršyklė automatiškai pasirinks. Neatsižvelgiant į filtrą, bus pasirinkti tik tie sertifikatai, kurie atitinka serverio sertifikato užklausą. Jei $FILTER yra tokios formos: { "ISSUER": { "CN": "$ISSUER_CN" } }, papildomai pasirenkami tik klientų sertifikatai, kurie išduoti pagal sertifikatą, kurio „CommonName“ $ISSUER_CN. Jei $FILTER yra tuščias žodynas {}, klientų sertifikatų pasirinkimas nėra papildomai ribojamas.
@@ -1721,10 +1752,31 @@ Jei nustatyta kaip „Netiesa“ arba nenustatyta, kreipiantis į API įvyks kla
       Jei neleidžiama, jokios žymės neimportuojamos.
 
       Jei nenustatyta, naudotojo gali būti klausiama, ar importuoti, arba gali būti importuojama automatiškai.</translation>
+<translation id="7055358889740598917">Konfigūruokite numatytojo pagrindinio „<ph name="PRODUCT_NAME" />“ puslapio URL ir neleiskite naudotojams jo pakeisti.
+
+          Pagrindinis puslapis atidaromas spustelėjus mygtuką „Pagrindinis“. Paleidžiant atidaromus puslapius kontroliuoja politika „RestoreOnStartup“.
+
+          Pagrindinio puslapio tipas gali būti nustatytas kaip URL, kurį čia nurodote, arba naujo skirtuko puslapis. Jei pasirenkate naujo skirtuko puslapį, tada šios politikos nepaisoma.
+
+          Jei įgalinsite šį nustatymą, naudotojai negalės keisti pagrindinio puslapio URL in „<ph name="PRODUCT_NAME" />“, bet vis tiek gali pasirinkti naujo skirtuko puslapį kaip pagrindinį puslapį.
+
+          Nenustačius šios politikos, naudotojas galės pats pasirinkti savo pagrindinį puslapį, jei nenustatyta ir „HomepageIsNewTabPage“.
+
+          Ši politika neveikia „Windows“ objektuose, kurie neprijungti
+          prie „Active Directory“ domeno.</translation>
 <translation id="7063895219334505671">Leisti iššokančiuosius langus šiose svetainėse</translation>
 <translation id="706669471845501145">Leisti svetainėse rodyti darbalaukio pranešimus</translation>
 <translation id="7079519252486108041">Blokuoti iššokančiuosius langus šiose svetainėse</translation>
 <translation id="7091198954851103976">Visada paleidžiami papildiniai, kuriuos naudojant reikalinga prieigos teisė</translation>
+<translation id="7106631983877564505">Kai „<ph name="PRODUCT_OS_NAME" />“ įrenginiai tampa neaktyvūs ar sustabdomi, įjungiamas užraktas.
+
+      Jei įgalinsite šį nustatymą, naudotojų bus prašoma pateikti slaptažodį, kad būtų galima atrakinti įrenginį iš miego režimo.
+
+      Jei išjungsite šio nustatymo, naudotojų nebus prašoma pateikti slaptažodžio norint atrakinti įrenginį iš miego režimo.
+
+      Jei įgalinsite arba išjungsite šį nustatymą, naudotojai negalės jo pakeisti arba nepaisyti.
+
+      Nenustačius politikos, naudotojas galės pasirinkti, ar atrakinant įrenginį turi būti prašoma slaptažodžio.</translation>
 <translation id="7115494316187648452">Nustatoma, ar „<ph name="PRODUCT_NAME" />“ procesas pradedamas prisijungiant prie OS ir toliau vykdomas, kai uždaromas paskutinis naršyklės langas, leidžiant foninėms programoms ir dabartinei naršymo sesijai išlikti aktyvioms, įskaitant visus sesijos slapukus. Vykdant foninį procesą pateikiama piktograma sistemos juostelėje; jį galima bet kada čia uždaryti.
 
       Jei ši politika nustatyta į „True“, foninis režimas įgalinamas ir naudotojas negali jo valdyti naršyklės nustatymuose.
@@ -2084,6 +2136,13 @@ Jei nustatyta kaip „Netiesa“ arba nenustatyta, kreipiantis į API įvyks kla
           Jei nustatysite šią politiką, naudotojai negalės jos keisti ar nepaisyti.
 
           Jei ši politika nebus nustatyta, didelio kontrasto režimas bus išjungtas, bet naudotojas jį gali bet kada įgalinti.</translation>
+<translation id="815061180603915310">Jei ši politika įgalinama, priverstinai įjungiamas profilio trumpalaikis režimas. Jei ši politika nurodyta kaip OS politika (pvz., „Windows“ sistemoje taikomas GPO), ji bus taikoma kiekvienam sistemos profiliui; jei politika nustatyta kaip debesies politika, ji bus taikoma tik tam profiliui, prie kurio prisijungta naudojant valdomą paskyrą.
+
+      Jei įjungtas šis režimas, profilio duomenys diske išlieka tik naudotojo seanso laiką. Uždarius naršyklę, funkcijos, pvz., naršyklės istorija, plėtiniai ir jų duomenys, bei žiniatinklio duomenys, pvz., slapukai ir žiniatinklio duomenų bazės, neišsaugomi. Tačiau naudotojas vis tiek gali neautomatiškai į diską atsisiųsti bet kokius failus, išsaugoti puslapius ar juos atsispausdinti.
+
+      Jei naudotojas įgalina sinchronizavimo funkciją, visi šie duomenys išsaugomi sinchronizavimo profilyje taip, kaip jie būtų išsaugomi įprastuose profiliuose. Be to, galima naudoti inkognito režimą, jei politikos nuostatose aiškiai nenurodyta, jog jis neleidžiamas.
+
+      Jei politika neįgalinta arba nenustatyta, prisijungiant jungiamasi prie įprastų profilių.</translation>
 <translation id="8164246350636985940">Numatytoji elgsena, skirta svetainėms, kurių nėra jokiame turinio pakete.
 
           Ši politika skirta naudoti tik „<ph name="PRODUCT_NAME" />“ viduje.</translation>
@@ -2154,6 +2213,18 @@ Jei plėtinio nėra sąraše arba sąrašas nenustatytas, kreipiantis į API įv
 <translation id="8312129124898414409">Leidžiama nustatyti, ar svetainėse leidžiama naudoti rakto generavimą. Naudoti rakto generavimą gali būti leidžiama arba draudžiama visose svetainėse.
 
           Nenustačius šios politikos, bus naudojama „BlockKeygen“ ir naudotojas galės tai pakeisti.</translation>
+<translation id="8316806736175990584">Konfigūruokite numatytojo „<ph name="PRODUCT_NAME" />“ pagrindinio puslapio tipą ir neleiskite naudotojams keisti pagrindinio puslapio nuostatų. Pagrindinį puslapį galima nustatyti nurodant URL arba kaip naujo skirtuko puslapį.
+
+          Jei įgalinsite šį nustatymą, naujo skirtuko puslapis visada bus naudojamas kaip pagrindinis puslapis, o pagrindinio puslapio URL vietos bus nepaisoma.
+
+          Jei šį nustatymą išjungsite, naudotojo pagrindinis puslapis niekada nebus naujo skirtuko puslapis, jei jo URL nebus nustatytas kaip „chrome://newtab“.
+
+          Jei šį nustatymą įgalinsite arba išjungsite, paleidę „<ph name="PRODUCT_NAME" />“ naudotojai negalės pakeisti pagrindinio puslapio tipo.
+
+          Nenustačius šios politikos, naudotojas galės pats pasirinkti, ar naujo skirtuko puslapis turi būti pagrindinis puslapis.
+
+          Ši politika neveikia „Windows“ objektuose, kurie neprijungti
+          prie „Active Directory“ domeno.</translation>
 <translation id="8329984337216493753">Ši politika aktyvi tik mažmeninės prekybos režimu.
 
       Kai nurodyta „Įrenginio neveikos būsenos atjungimo skirtasis laikas“, pagal šią politiką apibrėžiama įspėjimo laukelio su laiko skaičiavimo atgal laikmačiu, kuris rodomas naudotojui prieš atjungiant, trukmė.

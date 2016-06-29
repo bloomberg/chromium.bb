@@ -10,6 +10,7 @@
 <translation id="2704606927547763573">Copiata</translation>
 <translation id="2747003861858887689">Campo precedente</translation>
 <translation id="2780046210906776326">Nessun account email</translation>
+<translation id="3172213052701798825">Google Smart Lock per password</translation>
 <translation id="3244271242291266297">MM</translation>
 <translation id="3252394070589632019"><ph name="VALUE" />, <ph name="ADDITIONAL_INFO" />, <ph name="INDEX" /> di <ph name="NUM_SUGGESTIONS" /></translation>
 <translation id="3335947283844343239">Riapri scheda chiusa</translation>
@@ -20,6 +21,7 @@
 <translation id="4399225372525667111">Chrome non riesce a verificare l'esattezza dell'URL di questo sito.</translation>
 <translation id="4728558894243024398">Piattaforma</translation>
 <translation id="473775607612524610">Aggiorna</translation>
+<translation id="4875622588773761625">Vuoi che <ph name="PASSWORD_MANAGER_BRAND" /> aggiorni la password di questo sito?</translation>
 <translation id="5317780077021120954">Salva</translation>
 <translation id="605721222689873409">AA</translation>
 <translation id="6149061208933997199">Utilizza password</translation>
@@ -28,7 +30,9 @@
 <translation id="6344783595350022745">Cancella testo</translation>
 <translation id="6456425917241817154">Password generata da Chrome</translation>
 <translation id="6535543971741225613">Il sito a cui desideri accedere sta agendo in modo strano e Chrome non è in grado di verificare l'esattezza del relativo URL. Per motivi di sicurezza non dovresti procedere e potresti provare di nuovo domani o visitare un altro sito.</translation>
+<translation id="6647073004883890710">Vuoi che <ph name="PASSWORD_MANAGER_BRAND" /> aggiorni la password di questo sito per l'account <ph name="USERNAME" />?</translation>
 <translation id="7222245588540287464">Se la Ricerca contestuale è attivata.</translation>
+<translation id="7378627244592794276">No</translation>
 <translation id="7456847797759667638">Apri percorso...</translation>
 <translation id="7481312909269577407">Avanti</translation>
 <translation id="7484580869648358686">Avviso: C'è qualcosa che non va qui.</translation>

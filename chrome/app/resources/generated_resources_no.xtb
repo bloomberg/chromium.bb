@@ -183,7 +183,6 @@
 <translation id="1259724620062607540">Hylleelement 7</translation>
 <translation id="1260240842868558614">Vis:</translation>
 <translation id="126710816202626562">Målspråket:</translation>
-<translation id="1269690813141254680">Kontrollér hvordan Google bruker nettlesingsloggen din for å tilpasse søk og andre Google-tjenester, fra <ph name="BEGIN_LINK" />Google Aktivitetslagring<ph name="END_LINK" />.</translation>
 <translation id="1272079795634619415">Stopp</translation>
 <translation id="1272978324304772054">Denne brukerkontoen tilhører ikke domenet som enheten er registrert for. Hvis du vil registrere deg for et annet domene, må du først gå gjennom enhetsgjenoppretting.</translation>
 <translation id="127353061808977798">Skrifter og koding</translation>
@@ -1667,7 +1666,6 @@ Fra <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3317459757438853210">Tosidig</translation>
 <translation id="331752765902890099"><ph name="PROFILE_NAME" />-knapp: påloggingsfeil</translation>
 <translation id="3319048459796106952">Nytt &amp;inkognitovindu</translation>
-<translation id="3319364804843246307">Android-apper</translation>
 <translation id="3320859581025497771">din operatør</translation>
 <translation id="3323235640813116393">Gjør det mulig å lagre sider som MHTML – én enkelt tekstfil som inneholder HTML og alle underressurser.</translation>
 <translation id="3323447499041942178">Tekstboks</translation>
@@ -2460,7 +2458,6 @@ Trykk på en tast for å fortsette økten.</translation>
 <translation id="4479639480957787382">Ethernet</translation>
 <translation id="4479812471636796472">Amerikansk tastatur (Dvorak)</translation>
 <translation id="4481249487722541506">Last inn upakket utvidelse</translation>
-<translation id="4482194545587547824">Google kan bruke nettlesingsloggen din for å gi Søk og andre Google-tjenester et personlig preg</translation>
 <translation id="4487088045714738411">Belgisk tastatur</translation>
 <translation id="4492190037599258964">Søkeresultater for «<ph name="SEARCH_STRING" />»</translation>
 <translation id="4495021739234344583">Avregistrer og start på nytt</translation>

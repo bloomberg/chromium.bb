@@ -79,7 +79,6 @@
 <translation id="194341124344773587">V <ph name="BEGIN_LINK" />nastavitvah za Android<ph name="END_LINK" /> vklopite dovoljenje za Chrome.</translation>
 <translation id="1943432128510653496">Shranjevanje gesel</translation>
 <translation id="1944384637046898011">Šifriranje vsega z geslom za Google Račun z dne <ph name="TIME" /></translation>
-<translation id="1946005195648379376">Nadzirajte, kako Google na podlagi vaše zgodovine brskanja prilagaja Iskanje Google in druge Googlove storitve.</translation>
 <translation id="1966710179511230534">Posodobite podrobnosti prijave.</translation>
 <translation id="1974060860693918893">Dodatno</translation>
 <translation id="1984321224716884559">Zaznamki iz Chroma Dev</translation>
@@ -427,6 +426,7 @@ Kljub temu niste nevidni. Če uporabljate način brez beleženja zgodovine, ne s
 <translation id="6140912465461743537">Država/regija</translation>
 <translation id="6159335304067198720">Prihranek pri prenosu podatkov: <ph name="PERCENT" /></translation>
 <translation id="6165508094623778733">Več o tem</translation>
+<translation id="6177390657002841081">Vklop varčevanja s podatki</translation>
 <translation id="6181444274883918285">Dodaj izjemo za spletno mesto</translation>
 <translation id="6192792657125177640">Izjeme</translation>
 <translation id="6232535412751077445">Če omogočite možnost »Ne sledi«, bo zahteva vključena v vaš promet brskanja. Učinek je odvisen od odziva spletnega mesta na zahtevo in od tega, kako si zahtevo razlaga.
@@ -485,6 +485,7 @@ Nekatera spletna mesta se lahko na primer na zahtevo odzovejo tako, da prikažej
 <translation id="6857778194843072568">Pošlji samo v omrežju Wi-Fi</translation>
 <translation id="6865313869410766144">Podatki za samodejno izpolnjevanje obrazcev</translation>
 <translation id="6868088497967843822">Prijavite se, da boste lahko dostopali do zaznamkov, zgodovine, gesel in drugih nastavitev v vseh napravah.</translation>
+<translation id="6903907808598579934">Vklopi sinhronizacijo</translation>
 <translation id="6945221475159498467">Izberi</translation>
 <translation id="6963766334940102469">Izbriši zaznamke</translation>
 <translation id="6965382102122355670">V redu</translation>

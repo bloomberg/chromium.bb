@@ -79,7 +79,6 @@ A Fizikai web használatához be kell kapcsolnia a Bluetooth funkciót és a hel
 <translation id="194341124344773587">A Chrome-ra vonatkozó engedély aktiválása az <ph name="BEGIN_LINK" />Android beállításaiban<ph name="END_LINK" />.</translation>
 <translation id="1943432128510653496">Jelszavak mentése</translation>
 <translation id="1944384637046898011">Az összes titkosítása Google-jelszóval ekkortól: <ph name="TIME" /></translation>
-<translation id="1946005195648379376">Annak szabályozása, hogy a Google hogyan használhatja fel a böngészési előzményeket a Keresés és más Google-szolgáltatások személyre szabására.</translation>
 <translation id="1966710179511230534">Kérjük, frissítse bejelentkezési adatait.</translation>
 <translation id="1974060860693918893">Speciális</translation>
 <translation id="1984321224716884559">Chrome Dev-könyvjelzők</translation>
@@ -427,6 +426,7 @@ Mindazonáltal Ön nem lesz láthatatlan. Az inkognitómód használatával nem 
 <translation id="6140912465461743537">Ország/régió</translation>
 <translation id="6159335304067198720"><ph name="PERCENT" />-os adatmegtakarítás</translation>
 <translation id="6165508094623778733">További információ</translation>
+<translation id="6177390657002841081">Az Adatforgalom-csökkentő bekapcsolása</translation>
 <translation id="6181444274883918285">Webhelykivétel hozzáadása</translation>
 <translation id="6192792657125177640">Kivételek</translation>
 <translation id="6232535412751077445">A „Nincs nyomon követés” engedélyezése azt jelenti, hogy a böngészési forgalommal együtt kérelmet is küld a rendszer. Ennek hatása attól függ, hogy a webhely reagál-e a kérelemre, és hogyan értelmezi azt.
@@ -485,6 +485,7 @@ Egyes webhelyek például válaszolhatnak rá úgy, hogy olyan hirdetéseket jel
 <translation id="6857778194843072568">Csak Wi-Fi-hálózaton keresztül küldjön</translation>
 <translation id="6865313869410766144">Automatikus kitöltési űrlapadatok</translation>
 <translation id="6868088497967843822">Jelentkezzen be, hogy könyvjelzőit, előzményeit, jelszavait és más beállításait az összes eszközén elérje.</translation>
+<translation id="6903907808598579934">Szinkronizálás bekapcsolása</translation>
 <translation id="6945221475159498467">Kiválasztás</translation>
 <translation id="6963766334940102469">Könyvjelzők törlése</translation>
 <translation id="6965382102122355670">OK</translation>

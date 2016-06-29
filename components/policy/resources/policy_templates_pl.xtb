@@ -49,9 +49,7 @@
 
       Jeśli ta zasada nie jest skonfigurowana, domyślna częstotliwość wynosi trzy
       godziny. Minimalna dopuszczalna częstotliwość to 60 sekund.</translation>
-<translation id="1213523811751486361">Określa URL wyszukiwarki dostarczającej sugestie wyszukiwania. URL powinien zawierać ciąg „<ph name="SEARCH_TERM_MARKER" />”, który w trakcie przesyłania zapytania zostanie zastąpiony tekstem dotychczas wpisanym przez użytkownika. Ta zasada jest opcjonalna. Jeśli nie zostanie ustawiona, URL sugestii nie będzie używany. Ta zasada jest stosowana tylko wówczas, gdy jest włączona zasada „DefaultSearchProviderEnabled”.</translation>
 <translation id="1221359380862872747">Załaduj podane URL-e przy logowaniu demonstracyjnym</translation>
-<translation id="1240643596769627465">Pozwala określić URL wyszukiwarki, z której pobierane są wyniki wyszukiwania dynamicznego. URL musi zawierać ciąg <ph name="SEARCH_TERM_MARKER" />, który podczas wyszukiwania jest zastępowany tekstem wprowadzonym przez użytkownika. Ta zasada jest opcjonalna. Jeśli nie zostanie skonfigurowana, wyniki wyszukiwania dynamicznego nie będą dostarczane. Ta zasada jest egzekwowana tylko wówczas, gdy włączona jest zasada „DefaultSearchProviderEnabled”.</translation>
 <translation id="1265053460044691532">Ograniczenie czasu, przez który użytkownik uwierzytelniony za pomocą SAML może logować się offline</translation>
 <translation id="1291880496936992484">Ostrzeżenie: RC4 zostanie całkowicie usunięty z <ph name="PRODUCT_NAME" /> po wersji 52 (około września 2016 r.) i wtedy ta zasada przestanie działać.
 
@@ -1040,7 +1038,6 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
 <translation id="4928632305180102854">Określa, czy <ph name="PRODUCT_OS_NAME" /> pozwala na tworzenie nowych kont użytkowników. Jeśli będzie mieć wartość false, użytkownicy, którzy nie mają jeszcze konta, nie będą mogli się zalogować.
 
       Jeśli ta zasada będzie mieć wartość true lub nie zostanie skonfigurowana, tworzenie nowych kont użytkowników będzie dozwolone pod warunkiem, że zasada <ph name="DEVICEUSERWHITELISTPROTO_POLICY_NAME" /> nie będzie zakazywać użytkownikom logowania się.</translation>
-<translation id="4962195944157514011">Określa URL wyszukiwarki używanej podczas wyszukiwania domyślnego. URL powinien zawierać ciąg „<ph name="SEARCH_TERM_MARKER" />”, który podczas zapytania zostanie zastąpiony hasłami wyszukiwanymi przez użytkownika. Ta opcja musi być ustawiona w przypadku włączenia zasady „DefaultSearchProviderEnabled” i tylko wtedy będzie uwzględniana.</translation>
 <translation id="4971529314808359013">Umożliwia określenie listy wzorców adresu URL definiujących witryny, dla których <ph name="PRODUCT_NAME" /> automatycznie wybiera certyfikaty klienta, jeśli dana witryna żąda certyfikatu.
 
           Wartość musi być tablicą słowników JSON odwzorowanych na ciąg. Każdy słownik musi mieć postać { "pattern": "$URL_PATTERN", "filter" : $FILTER }, gdzie $URL_PATTERN jest wzorcem ustawiającym zawartość. $FILTER ogranicza certyfikaty klienta, spośród których przeglądarka może dokonać automatycznego wyboru. Niezależnie od filtra wybierane mogą być tylko te certyfikaty, które są zgodne z żądaniem certyfikatu serwera. Jeśli $FILTER ma postać { "ISSUER": { "CN": "$ISSUER_CN" } }, to dodatkowo wybierane będą tylko te certyfikaty klienta, które zostały wydane przez certyfikat z CommonName $ISSUER_CN. Jeśli $FILTER jest pustym słownikiem {}, wybór certyfikatów klienta nie jest dodatkowo ograniczany.

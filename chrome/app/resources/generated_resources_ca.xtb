@@ -183,7 +183,6 @@
 <translation id="1259724620062607540">Objecte de prestatge 7</translation>
 <translation id="1260240842868558614">Mostra:</translation>
 <translation id="126710816202626562">Idioma de traducció:</translation>
-<translation id="1269690813141254680">Als <ph name="BEGIN_LINK" />Controls d'activitat de Google<ph name="END_LINK" /> podeu especificar com Google utilitza el vostre historial de navegació per personalitzar la Cerca i altres serveis de Google.</translation>
 <translation id="1272079795634619415">Atura</translation>
 <translation id="1272978324304772054">Aquest compte d'usuari no pertany al domini on s'ha registrat el dispositiu. Si el voleu registrar en un domini diferent, primer cal que apliqueu el procés de recuperació del dispositiu.</translation>
 <translation id="127353061808977798">Tipus de lletra i codificació</translation>
@@ -1669,7 +1668,6 @@ Del domini <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3317459757438853210">A dues cares</translation>
 <translation id="331752765902890099">Botó de: <ph name="PROFILE_NAME" />, error d'inici de sessió</translation>
 <translation id="3319048459796106952">Finestra d'incògnit nova</translation>
-<translation id="3319364804843246307">Aplicacions per a Android</translation>
 <translation id="3320859581025497771">el vostre operador</translation>
 <translation id="3323235640813116393">Activa l'opció per desar pàgines com a MHTML: un únic fitxer de text que conté HTML i tots els subrecursos.</translation>
 <translation id="3323447499041942178">Quadre de text</translation>
@@ -2461,7 +2459,6 @@ Premeu qualsevol tecla per continuar explorant.</translation>
 <translation id="4479639480957787382">Ethernet</translation>
 <translation id="4479812471636796472">Teclat Dvorak nord-americà</translation>
 <translation id="4481249487722541506">Carrega l'extensió desempaquetada...</translation>
-<translation id="4482194545587547824">És possible que Google utilitzi el vostre historial de navegació per personalitzar la Cerca i altres serveis de Google</translation>
 <translation id="4487088045714738411">Teclat belga</translation>
 <translation id="4492190037599258964">Resultats de la cerca per a "<ph name="SEARCH_STRING" />"</translation>
 <translation id="4495021739234344583">Cancel·la el registre i reinicia</translation>

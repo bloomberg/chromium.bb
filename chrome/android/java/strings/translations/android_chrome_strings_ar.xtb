@@ -79,7 +79,6 @@
 <translation id="194341124344773587">‏تشغيل الإذن لـ Chrome في <ph name="BEGIN_LINK" />إعدادات Android<ph name="END_LINK" /></translation>
 <translation id="1943432128510653496">حفظ كلمات المرور</translation>
 <translation id="1944384637046898011">‏ترميز الكل باستخدام كلمة مرور Google بدءًا من <ph name="TIME" /></translation>
-<translation id="1946005195648379376">‏يمكنك التحكم في الطريقة التي تتبعها Google عند استخدام سجل التصفح لتخصيص البحث وخدمات Google الأخرى.</translation>
 <translation id="1966710179511230534">الرجاء تحديث تفاصيل تسجيل الدخول.</translation>
 <translation id="1974060860693918893">إعدادات متقدمة</translation>
 <translation id="1984321224716884559">‏الإشارات المرجعية لإصدار مطوّري البرامج من Chrome</translation>
@@ -426,6 +425,7 @@
 <translation id="6140912465461743537">الدولة/الإقليم</translation>
 <translation id="6159335304067198720">توفير البيانات بنسبة <ph name="PERCENT" /></translation>
 <translation id="6165508094623778733">مزيد من المعلومات</translation>
+<translation id="6177390657002841081">تشغيل إضافة "توفير البيانات"</translation>
 <translation id="6181444274883918285">إضافة موقع ويب إلى قائمة الاستثناءات</translation>
 <translation id="6192792657125177640">الاستثناءات</translation>
 <translation id="6232535412751077445">يعني تمكين ميزة "عدم التعقب" تضمين الطلب مع عدد زيارات التصفح. ويعتمد أي تأثير على استجابة موقع الويب للطلب من عدمه، بالإضافة إلى كيفية تفسير الطلب.
@@ -484,6 +484,7 @@
 <translation id="6857778194843072568">‏الإرسال عبر Wi-Fi فقط</translation>
 <translation id="6865313869410766144">الملء التلقائي من البيانات</translation>
 <translation id="6868088497967843822">سجّل الدخول للحصول على الإشارات المرجعية، والسجل، وكلمات المرور، والإعدادات الأخرى على كل أجهزتك.</translation>
+<translation id="6903907808598579934">تشغيل المزامنة</translation>
 <translation id="6945221475159498467">تحديد</translation>
 <translation id="6963766334940102469">حذف الإشارات المرجعية</translation>
 <translation id="6965382102122355670">موافق</translation>

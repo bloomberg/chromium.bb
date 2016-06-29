@@ -48,17 +48,7 @@
 <translation id="1198465924256827162">Ni mara ngapi vipakiwa vya hali ya kifaa hutumwa, katika milisekunde.
 
      Sera hii isipowekwa, idadi chaguo-msingi ni saa 3. Idadi ya chini inayoruhusiwa ni sekunde 60.</translation>
-<translation id="1213523811751486361">Hubainisha URL ya mtambo wa kutafuta inayotumika ili kutoa mapendekezo ya utafutaji. URL inafaa kujumlisha maneno '<ph name="SEARCH_TERM_MARKER" />', ambayo nafasi yake itachukuliwa wakati wa kuandika hoja na maandishi ambayo mtumiaji atakuwa ameingiza kufikia wakati huo.
-
-          Sera hii ni ya hiari. Ikiwa haijawekwa, hakuna URL ya mapendekezo itakayotumika.
-
-          Hii inazingatiwa tu ikiwa sera ya 'DefaultSearchProviderEnabled' imewashwa.</translation>
 <translation id="1221359380862872747">Pakia url maalum kwenye onyesho la kuingia.</translation>
-<translation id="1240643596769627465">Hubainisha URL ya mtambo wa kutafuta inayotumiwa kutoa matokeo ya papo hapo. URL itakuwa na maneno <ph name="SEARCH_TERM_MARKER" />, ambayo nafasi yake itachukuliwa wakati wa kuandika hoja na maandishi ambayo mtumiaji atakuwa ameingiza kufikia wakati huo.
-
-          Sera hii ni ya hiari. Isipowekwa, hakuna matokeo ya utafutaji ya papo hapo yatatolewa.
-
-          Sera hii itazingatiwa tu ikiwa sera ya 'DefaultSearchProviderEnabled' itawashwa.</translation>
 <translation id="1265053460044691532">Weka kikomo cha muda ambao mtumiaji aliyethibitishwa kupitia SAML anaweza kuingia katika akunti nje ya mtandaoni</translation>
 <translation id="1291880496936992484">Onyo: RC4 itaondolewa kabisa kwenye <ph name="PRODUCT_NAME" /> baada ya toleo la 52 (kufikia Septemba 2016) na sera hii kufanya kazi wakati huo.
 
@@ -1098,9 +1088,6 @@ Iwapo sera hii haijawekwa, kishale kikubwa kitazimwa mwanzoni lakini kitawashwa 
 <translation id="4928632305180102854">Inadhibiti iwapo <ph name="PRODUCT_OS_NAME" /> inaruhusu akaunti mpya za mtumiaji kuundwa. Ikiwa sera hii imewekwa kuwa siyo Ndivyo, watumiaji ambao hawana akaunti tayari hawataweza kuingia.
 
       Ikiwa sera hii imewekwa kuwa Ndivyo au haijasanidiwa, akaunti mpya za mtumiaji itaruhusiwa kuundwa mradi tu <ph name="DEVICEUSERWHITELISTPROTO_POLICY_NAME" /> haimzuii mtumiaji kuingia.</translation>
-<translation id="4962195944157514011">Hubainisha URL ya mtambo wa kutafuta inayotumika unapofanya utafutaji chaguo-msingi. URL inafaa kujumlisha maneno '<ph name="SEARCH_TERM_MARKER" />', ambayo nafasi yake inachukuliwa wakati wa kuandika hoja ya maneno ambayo mtumiaji atakuwa akitafuta.
-
-          Chaguo hili sharti liwekwe wakati sera ya 'DefaultSearchProviderEnabled' imewashwa na itazingatiwa tu ikiwa hii ndiyo hali.</translation>
 <translation id="4971529314808359013">Hukuruhusu kubainisha orodha ya ruwaza za url zinazobainisha tovuti ambazo <ph name="PRODUCT_NAME" /> inapaswa kuchagua cheti cha seva teja kiotomatiki, tovuti ikiomba cheti.
 
           Lazima thamani iwe orodha ya kamusi za JSON zenye mfuatano. Lazima kila kamusi iwe na muundo wa { "pattern": "$URL_PATTERN", "filter" : $FILTER }, ambapo $URL_PATTERN ni ruwaza ya mipangilio ya maudhui. $FILTER huweka vikwazo vya ni vyeti vipi vya seva teja ambavyo kivinjari kitateua kiotomatiki kutoka kwavyo. Kwa kutotegemea kichujio, vyeti pekee ndivyo vitakavyochaguliwa vinavyolingana na ombi la cheti cha seva. Ikiwa $FILTER ina muundo wa { "ISSUER": { "CN": "$ISSUER_CN" } }, zaidi ya hayo vyeti vya seva teja tu ndivyo vinavyochaguliwa vinavyotolewa na cheti chenye CommonName $ISSUER_CN. Ikiwa $FILTER ni kamusi tupu {}, uchaguzi wa vyeti vya seva teja hauwekewi vikwazo.

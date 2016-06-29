@@ -11,8 +11,6 @@
         permintaan ke URL ini tidak dibenarkan untuk sementara waktu.</translation>
 <translation id="106701514854093668">Penanda Halaman Desktop</translation>
 <translation id="1080116354587839789">Muat ikut lebar</translation>
-<translation id="1090046120949329821">Berbilang pengepala Pelupusan Kandungan berbeza diterima.  Hal ini tidak dibenarkan
-    bagi melindungi daripada serangan pemisahan respons HTTP.</translation>
 <translation id="1091911885099639251">Mengesahkan kad</translation>
 <translation id="1103523840287552314">Sentiasa terjemahkan <ph name="LANGUAGE" /></translation>
 <translation id="1107591249535594099">Jika ditandai, Chrome akan menyimpan salinan kad anda pada peranti ini untuk pengisian borang yang lebih cepat.</translation>
@@ -27,10 +25,8 @@
 <translation id="1161325031994447685">Menyambung semula kepada Wi-Fi</translation>
 <translation id="1175364870820465910">&amp;Cetak...</translation>
 <translation id="1181037720776840403">Buang</translation>
-<translation id="1195447618553298278">Ralat tidak diketahui.</translation>
 <translation id="1201402288615127009">Seterusnya</translation>
 <translation id="1201895884277373915">Lagi dari tapak ini</translation>
-<translation id="1202290638211552064">Get laluan atau pelayan proksi tamat masa semasa menunggu respons daripada pelayan atas.</translation>
 <translation id="121201262018556460">Anda cuba untuk mencapai <ph name="DOMAIN" /> , tetapi pelayan memberi sijil yang mengandungi kunci yang lemah, Penyerang mungkin telah merosakkan kunci peribadi dan pelayan tersebut mungkin bukan pelayan yang anda jangkakan (anda mungkin berkomunikasi dengan penyerang).</translation>
 <translation id="1219129156119358924">Keselamatan Sistem</translation>
 <translation id="1227224963052638717">Dasar tidak diketahui.</translation>
@@ -89,7 +85,6 @@
 <translation id="1962204205936693436"><ph name="DOMAIN" /> Penanda halaman</translation>
 <translation id="1973335181906896915">Ralat penyirian</translation>
 <translation id="1974060860693918893">Lanjutan</translation>
-<translation id="201192063813189384">Ralat membaca data daripada cache.</translation>
 <translation id="2025186561304664664">Proksi ditetapkan kepada auto konfigurasi.</translation>
 <translation id="2030481566774242610">Adakah anda maksudkan <ph name="LINK" />?</translation>
 <translation id="2031925387125903299">Anda melihat mesej ini kerana ibu bapa anda perlu meluluskan tapak baharu pada lawatan pertama anda.</translation>
@@ -117,7 +112,6 @@
 <translation id="2230458221926704099">Betulkan sambungan anda menggunakan <ph name="BEGIN_LINK" />apl diagnostik<ph name="END_LINK" /></translation>
 <translation id="225207911366869382">Nilai ini tidak lagi digunakan untuk dasar ini.</translation>
 <translation id="2262243747453050782">Ralat HTTP</translation>
-<translation id="2279770628980885996">Keadaan tidak dijangka dihadapi apabila pelayan sedang cuba untuk memenuhi permintaan.</translation>
 <translation id="2282872951544483773">Eksperimen Tidak Tersedia</translation>
 <translation id="2292556288342944218">Akses Internet anda disekat</translation>
 <translation id="229702904922032456">Sijil akar atau perantara telah tamat tempoh.</translation>
@@ -183,7 +177,6 @@
 <translation id="2922350208395188000">Sijil pelayan tidak boleh diperiksa.</translation>
 <translation id="2941952326391522266">Pelayan ini tidak dapat membuktikan bahawa domainnya ialah <ph name="DOMAIN" />; sijil keselamatannya adalah dari <ph name="DOMAIN2" />. Ini mungkin disebabkan oleh kesilapan konfigurasi atau penyerang yang memintasi sambungan anda.</translation>
 <translation id="2948083400971632585">Anda boleh melumpuhkan sebarang proksi yang dikonfigurasi untuk sambungan dari halaman tetapan.</translation>
-<translation id="2950186680359523359">Pelayan menutup sambungan tanpa menghantar sebarang data.</translation>
 <translation id="2955913368246107853">Tutup bar cari</translation>
 <translation id="2958431318199492670">Konfigurasi rangkaian tidak mematuhi piawaian ONC. Sebahagian konfigurasi tidak boleh diimport.</translation>
 <translation id="2969319727213777354">Untuk mewujudkan sambungan yang selamat, jam anda perlu ditetapkan dengan betul. Perkara ini perlu dilakukan kerana sijil yang digunakan laman web untuk mengenal pastinya hanya sah untuk tempoh masa yang tertentu. Memandangkan jam peranti anda tidak betul, Google Chrome tidak boleh mengesahkan sijil ini.</translation>
@@ -200,10 +193,8 @@
 <translation id="3093245981617870298">Anda di luar talian.</translation>
 <translation id="3105172416063519923">ID Aset:</translation>
 <translation id="3109728660330352905">Anda tidak mempunyai kebenaran untuk melihat halaman ini.</translation>
-<translation id="3118046075435288765">Pelayan menutup sambungan tanpa disangka-sangka.</translation>
 <translation id="31207688938192855"><ph name="BEGIN_LINK" />Cuba jalankan Diagnostik Sambungan<ph name="END_LINK" />.</translation>
 <translation id="3145945101586104090">Gagal menyahkod balasan</translation>
-<translation id="3147485256806412701">Tapak ini menggunakan domain tahap atas generik baharu.</translation>
 <translation id="3150653042067488994">Ralat pelayan sementara</translation>
 <translation id="3157931365184549694">Pulihkan</translation>
 <translation id="3167968892399408617">Halaman yang anda lihat dalam tab inkognito tidak akan kekal dalam sejarah, simpanan kuki atau sejarah carian penyemak imbas anda selepas anda menutup semua tab inkognito anda. Sebarang fail yang anda muat turun atau penanda halaman yang anda buat akan disimpan.</translation>
@@ -263,7 +254,6 @@
       semula.</translation>
 <translation id="3648607100222897006">Ciri percubaan ini mungkin berubah, pecah atau hilang pada bila-bila masa. Kami sama sekali tidak menjamin mengenai apa yang akan berlaku jika anda menghidupkan salah satu percubaan ini, dan penyemak imbas anda juga mungkin terbakar secara spontan. Saya tidak melawak, penyemak imbas anda boleh memadamkan semua data, atau keselamatan dan privasi anda boleh terjejas dalam cara yang tidak dijangka. Sebarang percubaan yang anda dayakan akan dilumpuhkan untuk semua pengguna penyemak imbas ini. Sila teruskan dengan berhati-hati.</translation>
 <translation id="3650584904733503804">Pengesahan berjaya</translation>
-<translation id="3651020361689274926">Sumber yang diminta tidak lagi wujud, dan tiada alamat pengiriman semula. Ini dijangkakan menjadi keadaan kekal.</translation>
 <translation id="3655670868607891010">Jika anda kerap melihatnya, cuba <ph name="HELP_LINK" /> ini.</translation>
 <translation id="3658742229777143148">Semakan</translation>
 <translation id="3681007416295224113">Maklumat sijil</translation>
@@ -277,7 +267,6 @@
 <translation id="3739623965217189342">Pautan yang anda salin</translation>
 <translation id="3744899669254331632">Anda tidak boleh melawat <ph name="SITE" /> sekarang kerana tapak web telah menghantar bukti kelayakan hancur yang tidak boleh diproses oleh Chromium. Ralat dan serangan rangkaian biasanya sementara. Oleh itu halaman ini mungkin akan berfungsi kemudian.</translation>
 <translation id="3748071062818261683">Sahkan Kad</translation>
-<translation id="3748412725338508953">Terlalu banyak penghalaan semula.</translation>
 <translation id="375403751935624634">Gagal menterjemah disebabkan ralat pelayan.</translation>
 <translation id="3759461132968374835">Tiada laporan nahas yang dibuat baru-baru ini.  Nahas yang berlaku apabila laporan nahas dilumpuhkan tidak akan kelihatan di sini.</translation>
 <translation id="3788090790273268753">Sijil untuk tapak web ini tamat tempoh pada tahun 2016 dan rantaian sijil ini mengandungi sijil yang ditandatangani menggunakan SHA-1.</translation>
@@ -289,9 +278,7 @@
 <translation id="3884278016824448484">Pengecam peranti bercanggah</translation>
 <translation id="3885155851504623709">Mukim</translation>
 <translation id="3901925938762663762">Kad telah tamat tempoh</translation>
-<translation id="3903912596042358459">Pelayan enggan memenuhi permintaan.</translation>
 <translation id="3934680773876859118">Gagal untuk memuatkan dokumen PDF</translation>
-<translation id="3950924596163729246">Tidak dapat mengakses rangkaian.</translation>
 <translation id="3963721102035795474">Mod Pembaca</translation>
 <translation id="3973234410852337861"><ph name="HOST_NAME" /> disekat</translation>
 <translation id="4021036232240155012">DNS ialah perkhidmatan rangkaian yang menterjemahkan nama tapak web kepada alamat Internetnya.</translation>
@@ -305,7 +292,6 @@
 <translation id="4103763322291513355">Lawati &lt;strong&gt;chrome://policy&lt;/strong&gt; untuk melihat senarai URL yang disenarai hitam dan dasar lain yang dikuatkuasakan oleh pentadbir sistem anda.</translation>
 <translation id="4117700440116928470">Skop dasar tidak disokong.</translation>
 <translation id="4130226655945681476">Memeriksa kabel rangkaian, modem dan penghala</translation>
-<translation id="4147376274874979956">Tidak dapat mengakses fail tersebut.</translation>
 <translation id="4148925816941278100">American Express</translation>
 <translation id="4169947484918424451">Adakah anda mahu Chromium menyimpan kad ini?</translation>
 <translation id="4171400957073367226">Tandatangan pengesahan tidak sah</translation>
@@ -327,7 +313,6 @@
 <translation id="4381091992796011497">Nama Pengguna:</translation>
 <translation id="4394049700291259645">Lumpuhkan</translation>
 <translation id="4395129973926795186"><ph name="START_DATE" /> hingga <ph name="END_DATE" /></translation>
-<translation id="4405141258442788789">Operasi tamat masa.</translation>
 <translation id="4406896451731180161">hasil carian</translation>
 <translation id="4424024547088906515">Pelayan ini tidak dapat membuktikan bahawa domainnya ialah <ph name="DOMAIN" />; sijil keselamatannya tidak dipercayai oleh Chrome. Ini mungkin disebabkan oleh kesilapan konfigurasi atau penyerang memintasi sambungan anda.</translation>
 <translation id="443673843213245140">Penggunaan proksi dilumpuhkan tetapi konfigurasi proksi yang jelas dinyatakan.</translation>
@@ -339,7 +324,6 @@
 <translation id="4506599922270137252">Menghubungi pentadbir sistem</translation>
 <translation id="450710068430902550">Berkongsi dengan Pentadbir</translation>
 <translation id="4522570452068850558">Butiran</translation>
-<translation id="4535734014498033861">Sambungan pelayan proksi gagal.</translation>
 <translation id="4553532082208702698">Masukkan CVC 4 digit dari bahagian depan <ph name="CREDIT_CARD" /> anda</translation>
 <translation id="4558551763791394412">Cuba lumpuhkan sambungan anda.</translation>
 <translation id="4587425331216688090">Alih keluar alamat daripada Chrome?</translation>
@@ -359,7 +343,6 @@
 <translation id="4756388243121344051">&amp;Sejarah</translation>
 <translation id="4764776831041365478">Laman web di <ph name="URL" /> mungkin tergendala buat sementara waktu atau ia mungkin dpindahkan secara kekal ke alamat web baharu.</translation>
 <translation id="4771973620359291008">Ralat tidak diketahui telah berlaku.</translation>
-<translation id="477518548916168453">Pelayan tidak menyokong fungsi yang diperlukan untuk memenuhi permintaan.</translation>
 <translation id="4782449893814226250">Anda telah bertanya kepada ibu bapa anda sama ada ok untuk melawat halaman ini.</translation>
 <translation id="4800132727771399293">Semak tarikh tamat tempoh serta CVC anda dan cuba lagi</translation>
 <translation id="4807049035289105102">Anda tidak boleh melawati <ph name="SITE" /> sekarang kerana tapak web ini menghantar bukti kelayakan yang dicampuradukkan yang tidak boleh diproses oleh Google Chrome. Ralat rangkaian dan serangan biasanya bersifat sementara, oleh itu halaman ini mungkin akan berfungsi sebentar lagi.</translation>
@@ -395,7 +378,6 @@
 <translation id="5179510805599951267">Bukan dalam <ph name="ORIGINAL_LANGUAGE" />? Laporkan ralat ini</translation>
 <translation id="5190835502935405962">Bar Penanda Halaman</translation>
 <translation id="5199729219167945352">Eksperimen</translation>
-<translation id="5228309736894624122">Ralat protokol SSL.</translation>
 <translation id="5251803541071282808">Awan</translation>
 <translation id="5299298092464848405">Ralat semasa menghuraikan dasar</translation>
 <translation id="5300589172476337783">Paparkan</translation>
@@ -416,7 +398,6 @@
 <translation id="5492298309214877701">Tapak ini yang berada di intranet syarikat, organisasi atau sekolah mempunyai URL yang sama dengan tapak web luar.
     <ph name="LINE_BREAK" />
     Cuba hubungi pentadbir sistem anda.</translation>
-<translation id="5498951625591520696">Tidak dapat mencapai pelayan.</translation>
 <translation id="5509780412636533143">Penanda halaman terurus</translation>
 <translation id="5510766032865166053">Fail mungkin telah dipindahkan atau dipadamkan.</translation>
 <translation id="5523118979700054094">Nama dasar</translation>
@@ -446,10 +427,8 @@
 <translation id="5869405914158311789">Tapak ini tidak dapat dicapai</translation>
 <translation id="5869522115854928033">Kata laluan disimpan</translation>
 <translation id="5872918882028971132">Cadangan Ibu Bapa</translation>
-<translation id="5900623698597156974">Jatuh balik TLS 1.0 dapat berjabat tangan dengan pelayan tetapi kami tidak lagi menerima jatuh balik TLS 1.0. Pelayan perlu dikemaskinikan untuk melaksanakan rundingan versi dengan betul dan sebaik-baiknya menyokong TLS 1.2.</translation>
 <translation id="59107663811261420">Kad jenis ini tidak disokong oleh Google Payments untuk pedagang ini. Sila pilih kad yang lain.</translation>
 <translation id="59174027418879706">Didayakan</translation>
-<translation id="5949910269212525572">Tidak dapat menyelesaikan alamat DNS pelayan.</translation>
 <translation id="5966707198760109579">Minggu</translation>
 <translation id="5967867314010545767">Buang daripada sejarah</translation>
 <translation id="5975083100439434680">Zum keluar</translation>
@@ -472,8 +451,6 @@
 <translation id="6218753634732582820">Alih keluar alamat daripada Chromium?</translation>
 <translation id="6232139169545176020">Skim URI yang diminta tidak disokong.</translation>
 <translation id="6259156558325130047">&amp;Buat Asal Susun Semula</translation>
-<translation id="6262796033958342538">Berbilang pengepala Lokasi berbeza diterima.  Hal ini tidak dibenarkan bagi melindungi
-    daripada serangan pemisahan respons HTTP.</translation>
 <translation id="6263376278284652872">Penanda halaman <ph name="DOMAIN" /></translation>
 <translation id="6264485186158353794">Kembali ke keselamatan</translation>
 <translation id="6282194474023008486">Poskod</translation>
@@ -485,7 +462,6 @@
 <translation id="6355080345576803305">Pembatalan sesi awam</translation>
 <translation id="6358450015545214790">Apakah maksudnya?</translation>
 <translation id="6387478394221739770">Berminat dengan ciri Chrome baharu yang hebat? Cuba saluran beta kami di chrome.com/beta.</translation>
-<translation id="6391832066170725637">Fail atau direktori tidak dapat dijumpai.</translation>
 <translation id="641480858134062906"><ph name="URL" /> gagal untuk muatkan</translation>
 <translation id="6417515091412812850">Tidak dapat memeriksa sama ada sijil telah dibatalkan.</translation>
 <translation id="6433595998831338502"><ph name="HOST_NAME" /> enggan menyambung.</translation>
@@ -494,7 +470,6 @@
 <translation id="6458467102616083041">Diabaikan kerana carian lalai dilumpuhkan oleh dasar.</translation>
 <translation id="647261751007945333">Dasar peranti</translation>
 <translation id="6489534406876378309">Mulakan muat naik ranap sistem</translation>
-<translation id="6500116422101723010">Pelayan kini tidak dapat mengendalikan permintaan.  Kod ini menunjukkan ini adalah keadaan sementara, dan pelayan akan pulih semula selepas penangguhan.</translation>
 <translation id="6518133107902771759">Sahkan</translation>
 <translation id="6529602333819889595">&amp;Buat Semula Pemadaman</translation>
 <translation id="6533019874004191247">URL tidak disokong.</translation>
@@ -502,7 +477,6 @@
 <translation id="6596325263575161958">Pilihan penyulitan</translation>
 <translation id="6610562986279010327">Chrome tak blh buka URL ini</translation>
 <translation id="662080504995468778">Kekal di sini</translation>
-<translation id="6626108645084335023">Menunggu alat duga DNS.</translation>
 <translation id="6628463337424475685"><ph name="ENGINE" /> Carian</translation>
 <translation id="6634865548447745291">Anda tidak boleh melawati <ph name="SITE" /> sekarang kerana <ph name="BEGIN_LINK" />sijil ini telah dibatalkan<ph name="END_LINK" />. Ralat rangkaian dan serangan biasanya bersifat sementara oleh itu, halaman ini mungkin akan berfungsi sebentar lagi.</translation>
 <translation id="6637478299472506933">Muat Turun Gagal</translation>
@@ -516,11 +490,8 @@
 <translation id="6710594484020273272">&lt;Taip istilah carian&gt;</translation>
 <translation id="6711464428925977395">Ada sesuatu yang tidak kena dengan pelayan proksi atau alamat tidak betul.</translation>
 <translation id="674375294223700098">Ralat sijil pelayan tidak diketahui.</translation>
-<translation id="6746710319270251222">Berbilang pengepala Panjang Kandungan berbeza diterima.  Hal ini tidak dibenarkan
-    bagi melindungi daripada serangan pemisahan respons HTTP.</translation>
 <translation id="6753269504797312559">Nilai dasar</translation>
 <translation id="6757797048963528358">Peranti anda tidak aktif.</translation>
-<translation id="6781404225664080496">Permintaan ke URL ini telah didikitkan untuk sementara waktu.</translation>
 <translation id="6820686453637990663">CVC</translation>
 <translation id="6830600606572693159">Halaman web di <ph name="URL" /> kini tidak tersedia.  Ia mungkin terlebih muatan atau tergendala akibat penyelenggaraan.</translation>
 <translation id="6831043979455480757">Terjemah</translation>
@@ -528,6 +499,7 @@
 <translation id="6874604403660855544">&amp;Buat semula tambahkan</translation>
 <translation id="6891596781022320156">Tahap dasar tidak disokong.</translation>
 <translation id="6897140037006041989">Ejen Pengguna</translation>
+<translation id="6903907808598579934">Hidupkan penyegerakan</translation>
 <translation id="6915804003454593391">Pengguna:</translation>
 <translation id="6957887021205513506">Sijil pelayan rupanya adalah pemalsuan.</translation>
 <translation id="6965382102122355670">OK</translation>
@@ -538,7 +510,6 @@
 <translation id="7012363358306927923">China UnionPay</translation>
 <translation id="7029809446516969842">Kata laluan</translation>
 <translation id="7050187094878475250">Anda cuba untuk mencapai <ph name="DOMAIN" />, tetapi pelayan memberikan sijil yang tempoh sahnya terlalu panjang untuk boleh dipercayai.</translation>
-<translation id="7052500709156631672">Get laluan atau pelayan proksi menerima respons yang tidak sah daripada pelayan huluan.</translation>
 <translation id="7087282848513945231">Daerah</translation>
 <translation id="7088615885725309056">Lebih lama</translation>
 <translation id="7090678807593890770">Cari <ph name="LINK" /> di Google</translation>
@@ -574,7 +545,6 @@ Psst! <ph name="SHORTCUT_KEY" /> mod Inkognito mungkin akan berguna pada masa ak
 <translation id="7424977062513257142">Halaman terbenam pada halaman web ini menyatakan:</translation>
 <translation id="7441627299479586546">Subjek dasar salah</translation>
 <translation id="7445762425076701745">Identiti pelayan yang disambungkan kepada anda tidak dapat disahkan sepenuhnya. Anda disambungkan ke pelayan menggunakan nama yang sah dalam rangkaian anda sahaja, apabila pihak berkuasa sijil luaran tiada cara untuk mengesahkan pemilikan. Oleh kerana beberapa pihak berkuasa sijil juga akan terus mengeluarkan sijil untuk nama ini, tiada cara untuk memastikan anda disambungkan ke tapak web yang diingini dan bukannya penyerang.</translation>
-<translation id="7450732239874446337">Rangkaian IO digantung.</translation>
 <translation id="7451311239929941790"><ph name="BEGIN_LINK" />Ketahui lebih lanjut<ph name="END_LINK" /> tentang masalah ini.</translation>
 <translation id="7481312909269577407">Majukan</translation>
 <translation id="7485870689360869515">Tiada data dijumpai.</translation>
@@ -597,7 +567,6 @@ Psst! <ph name="SHORTCUT_KEY" /> mod Inkognito mungkin akan berguna pada masa ak
 <translation id="7633887239437305289">Masukkan CVC 4 digit dari bahagian depan <ph name="CREDIT_CARD" /> anda untuk pengesahan</translation>
 <translation id="7634554953375732414">Sambungan anda ke tapak ini tidak berciri peribadi.</translation>
 <translation id="7637571805876720304">Alih keluar kad kredit daripada Chromium?</translation>
-<translation id="7643817847124207232">Sambungan Internet terputus.</translation>
 <translation id="765676359832457558">Sembunyikan tetapan lanjutan...</translation>
 <translation id="7658239707568436148">Batal</translation>
 <translation id="7668654391829183341">Peranti tidak diketahui</translation>
@@ -640,7 +609,6 @@ Psst! <ph name="SHORTCUT_KEY" /> mod Inkognito mungkin akan berguna pada masa ak
 <translation id="8150722005171944719">Fail di <ph name="URL" /> tidak boleh dibaca.  Fail mungkin telah dialih keluar, dipindahkan atau kebenaran fail mungkin menghalang akses.</translation>
 <translation id="8194797478851900357">&amp;Buat Asal Pindahkan</translation>
 <translation id="8201077131113104583">URL kemas kini tidak sah untuk sambungan dengan ID "<ph name="EXTENSION_ID" />".</translation>
-<translation id="8204086856545141093">Permintaan kepada pelayan telah disekat oleh dasar.</translation>
 <translation id="8218327578424803826">Lokasi yang Ditentukan:</translation>
 <translation id="8225771182978767009">Orang yang menyediakan komputer ini telah memilih untuk menyekat tapak ini.</translation>
 <translation id="8241707690549784388">Halaman yang anda cari untuk maklumat terpakai yang anda masukkan. Kembali ke halaman tersebut mungkin menyebabkan mana-mana tindakan yang anda ambil akan diulang. Adakah anda mahu teruskan?</translation>
@@ -660,7 +628,6 @@ Psst! <ph name="SHORTCUT_KEY" /> mod Inkognito mungkin akan berguna pada masa ak
 <translation id="8428213095426709021">Tetapan</translation>
 <translation id="8437238597147034694">&amp;Buat asal pindahkan</translation>
 <translation id="8488350697529856933">Diguna pakai untuk</translation>
-<translation id="8494979374722910010">Cubaan untuk disambungkan ke pelayar gagal.</translation>
 <translation id="8498891568109133222"><ph name="HOST_NAME" /> mengambil masa terlalu lama untuk bertindak balas.</translation>
 <translation id="8530504477309582336">Kad jenis ini tidak disokong oleh Google Payments. Sila pilih kad yang lain.</translation>
 <translation id="8550022383519221471">Perkhidmatan segerak tidak tersedia untuk domain anda.</translation>
@@ -670,8 +637,6 @@ Psst! <ph name="SHORTCUT_KEY" /> mod Inkognito mungkin akan berguna pada masa ak
 <translation id="8571890674111243710">Menterjemah halaman ke <ph name="LANGUAGE" />...</translation>
 <translation id="8591846766485502580">Anda melihat mesej ini kerana salah seorang antara ibu bapa anda menyekat tapak ini.</translation>
 <translation id="859285277496340001">Sijil tidak menyatakan mekanisme untuk memeriksa sama ada ia telah dibatalkan.</translation>
-<translation id="8629916158020966496">Menyemak imbas Internet dilumpuhkan sehingga semakan pengesahan pendaftaran perusahaan telah selesai.
-    Anda masih boleh menggunakan alat diagnostik yang diberikan di sini untuk menyelesaikan masalah sambungan anda.</translation>
 <translation id="8647750283161643317">Tetapkan semula semua kepada lalai</translation>
 <translation id="8680787084697685621">Butiran log masuk akaun sudah lapuk.</translation>
 <translation id="8703575177326907206">Sambungan anda ke <ph name="DOMAIN" /> tidak disulitkan.</translation>
@@ -685,7 +650,6 @@ Psst! <ph name="SHORTCUT_KEY" /> mod Inkognito mungkin akan berguna pada masa ak
 <translation id="8790007591277257123">&amp;Buat semula pemadaman</translation>
 <translation id="8798099450830957504">Lalai</translation>
 <translation id="8804164990146287819">Dasar Privasi</translation>
-<translation id="88201174049725495">Lawatan ke URL ini yang dibuat oleh sambungan telah disekat buat sementara waktu.</translation>
 <translation id="8820817407110198400">Penanda buku</translation>
 <translation id="8824019021993735287">Chrome tidak dapat mengesahkan kad anda pada masa ini. Sila cuba lagi kemudian.</translation>
 <translation id="8834246243508017242">Dayakan Auto-Isian menggunakan Kenalan ...</translation>
@@ -708,9 +672,7 @@ Psst! <ph name="SHORTCUT_KEY" /> mod Inkognito mungkin akan berguna pada masa ak
 <translation id="8988760548304185580">Masukkan tarikh tamat tempoh dan CVC 3 digit dari bahagian belakang kad anda</translation>
 <translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
 <translation id="9001074447101275817"><ph name="DOMAIN" /> proksi memerlukan nama pengguna dan kata laluan.</translation>
-<translation id="9013589315497579992">Sijil pengesahan klien SSL tidak sah.</translation>
 <translation id="901974403500617787">Bendera yang diguna pakai di seluruh sistem hanya boleh ditetapkan oleh pemilik: <ph name="OWNER_EMAIL" />.</translation>
-<translation id="9020142588544155172">Pelayan menolak sambungan.</translation>
 <translation id="9020542370529661692">Halaman ini telah diterjemahkan kepada <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="9038649477754266430">Gunakan perkhidmatan ramalan untuk memuatkan halaman lebih cepat</translation>
 <translation id="9039213469156557790">Selain itu, halaman ini mengandungi sumber lain yang tidak selamat. Sumber ini boleh dilihat oleh orang lain semasa dalam transit dan boleh diubah oleh penyerang untuk menukar kelakuan halaman.</translation>

@@ -10,6 +10,7 @@
 <translation id="2704606927547763573">Imenakiliwa</translation>
 <translation id="2747003861858887689">Sehemu iliyotangulia</translation>
 <translation id="2780046210906776326">Hakuna Akaunti za Barua pepe</translation>
+<translation id="3172213052701798825">Google Smart Lock ya Manenosiri</translation>
 <translation id="3244271242291266297">MW</translation>
 <translation id="3252394070589632019"><ph name="VALUE" />, <ph name="ADDITIONAL_INFO" />, <ph name="INDEX" /> kati ya <ph name="NUM_SUGGESTIONS" /></translation>
 <translation id="3335947283844343239">Fungua Tena Kichupo Kilichofugwa</translation>
@@ -20,6 +21,7 @@
 <translation id="4399225372525667111">Chrome haiwezi kuthibitisha kuwa URL ya tovuti hii ni sahihi.</translation>
 <translation id="4728558894243024398">Mfumo wa uendeshaji</translation>
 <translation id="473775607612524610">Sasisha</translation>
+<translation id="4875622588773761625">Je, unataka <ph name="PASSWORD_MANAGER_BRAND" /> isasishe nenosiri lako kwa wavuti huu?</translation>
 <translation id="5317780077021120954">Hifadhi</translation>
 <translation id="605721222689873409">MK</translation>
 <translation id="6149061208933997199">Tumia Nenosiri</translation>
@@ -28,7 +30,9 @@
 <translation id="6344783595350022745">Futa Matini</translation>
 <translation id="6456425917241817154">Nenosiri Lililoundwa na Chrome</translation>
 <translation id="6535543971741225613">Tovuti unayojaribu kufikia inaonekana si ya kawaida, na Chrome haiwezi kuthibitisha iwapo URL yake ni sahihi. Kwa sababu za usalama, hustahili kuendelea, labda ujaribu tena kesho au uende kwingine.</translation>
+<translation id="6647073004883890710">Je, ungependa <ph name="PASSWORD_MANAGER_BRAND" /> isasishe nenosiri lako la <ph name="USERNAME" /> kwa ajili ya tovuti hii?</translation>
 <translation id="7222245588540287464">Iwapo Kutafuta katika Muktadha kumewashwa au la</translation>
+<translation id="7378627244592794276">La</translation>
 <translation id="7456847797759667638">Fungua Mahali...</translation>
 <translation id="7481312909269577407">Mbele</translation>
 <translation id="7484580869648358686">Onyo: Kuna Tatizo Limetokea Hapa!</translation>

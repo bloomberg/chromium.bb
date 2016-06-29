@@ -183,7 +183,6 @@
 <translation id="1259724620062607540">Hyldeelement 7</translation>
 <translation id="1260240842868558614">Vis:</translation>
 <translation id="126710816202626562">Sprog, der skal oversættes til:</translation>
-<translation id="1269690813141254680">Kontrollér, hvordan Google bruger din browserhistorik til at personliggøre Søgning og andre Google-tjenester fra <ph name="BEGIN_LINK" />Administration af aktivitet på Google<ph name="END_LINK" />.</translation>
 <translation id="1272079795634619415">Stop</translation>
 <translation id="1272978324304772054">Denne brugerkonto tilhører ikke det domæne, som enheden er tilmeldt. Hvis du vil foretage en tilmelding til et andet domæne, skal enheden først genoprettes.</translation>
 <translation id="127353061808977798">Skrifttyper og kodning</translation>
@@ -1673,7 +1672,6 @@ Fra <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3317459757438853210">Tosidet</translation>
 <translation id="331752765902890099">Knappen <ph name="PROFILE_NAME" />: loginfejl</translation>
 <translation id="3319048459796106952">Nyt &amp;inkognito-vindue</translation>
-<translation id="3319364804843246307">Android-apps</translation>
 <translation id="3320859581025497771">dit telefonselskab</translation>
 <translation id="3323235640813116393">Aktiverer lagring af sider som MHTML: en enkelt tekstfil, der indeholder HTML, og alle underressourcer.</translation>
 <translation id="3323447499041942178">Tekstfelt</translation>
@@ -2467,7 +2465,6 @@ Tryk på en vilkårlig tast for at fortsætte udforskningen.</translation>
 <translation id="4479639480957787382">Ethernet</translation>
 <translation id="4479812471636796472">Amerikansk (Dvorak) tastatur</translation>
 <translation id="4481249487722541506">Indlæs upakket udvidelse...</translation>
-<translation id="4482194545587547824">Google bruger muligvis din browserhistorik til at personliggøre Søgning og andre Google-tjenester</translation>
 <translation id="4487088045714738411">Belgisk tastatur</translation>
 <translation id="4492190037599258964">Søgeresultater for '<ph name="SEARCH_STRING" />'</translation>
 <translation id="4495021739234344583">Frameld og genstart</translation>

@@ -49,17 +49,7 @@
 
       Če ta pravilnik ni nastavljen, je vrednost privzete pogostosti 3 ure. Najmanjša
       dovoljena vrednost pogostosti je 60 sekund.</translation>
-<translation id="1213523811751486361">Določa URL iskalnika, ki se uporablja za predloge za iskanje. URL mora vsebovati niz »<ph name="SEARCH_TERM_MARKER" />«, ki ga bo ob času poizvedbe nadomestilo besedilo, ki ga je uporabnik vnesel do takrat.
-
-          Ta pravilnik je izbiren. Če ni nastavljen, ne bo uporabljen noben predlagani URL.
-
-          Ta pravilnik velja le, če je omogočen pravilnik »DefaultSearchProviderEnabled«.</translation>
 <translation id="1221359380862872747">Naloži določene URL-je v predstavitveni seji</translation>
-<translation id="1240643596769627465">Določi URL iskalnika, ki se uporablja za rezultate dinamičnega iskanja. URL mora vsebovati niz <ph name="SEARCH_TERM_MARKER" />, ki ga bo ob času poizvedbe nadomestilo besedilo uporabnika, ki ga je do takrat vnesel.
-
-          Ta pravilnik je izbiren. Če ni nastavljen, rezultati dinamičnega iskanja ne bodo prikazani.
-
-          Pravilnik velja samo, če je omogočen pravilnik »DefaultSearchProviderEnabled«.</translation>
 <translation id="1265053460044691532">Omejitev časa, ki je uporabniku, katerega pristnost je preverjena prek SAML-ja, na voljo za prijavo brez internetne povezave</translation>
 <translation id="1291880496936992484">Opozorilo: RC4 bo v celoti odstranjen iz programa <ph name="PRODUCT_NAME" /> po različici 52 (okoli septembra 2016) in ta pravilnik bo takrat prenehal delovati.
 
@@ -1124,9 +1114,6 @@ Vrednost pravilnika mora vedno biti navedena v sekundah. Vrednosti so navzdol om
 <translation id="4928632305180102854">Nadzira, ali <ph name="PRODUCT_OS_NAME" /> omogoča ustvarjanje novih uporabniških računov. Če je ta pravilnik onemogočen, se uporabniki, ki še nimajo računa, ne morejo prijaviti.
 
       Če je pravilnik omogočen ali ni nastavljen, je mogoče ustvariti nove uporabniške račune, če <ph name="DEVICEUSERWHITELISTPROTO_POLICY_NAME" /> uporabniku ne preprečuje prijave.</translation>
-<translation id="4962195944157514011">Določi URL iskalnika, ki se uporablja pri privzetem iskanju. URL mora vsebovati niz »<ph name="SEARCH_TERM_MARKER" />«, ki ga bodo ob času poizvedbe nadomestili izrazi, ki jih išče uporabnik.
-
-          Ta možnost mora biti nastavljena, ko je omogočen pravilnik »DefaultSearchProviderEnabled«, in bo veljala samo v tem primeru.</translation>
 <translation id="4971529314808359013">Omogoča, da določite seznam vzorcev URL-jev, ki določajo spletna mesta, za katera mora <ph name="PRODUCT_NAME" /> samodejno izbrati potrdilo odjemalca, če spletno mesto zahteva potrdilo.
 
           Vrednost mora biti polje slovarjev JSON v obliki nizov. Vsak slovar mora imeti obliko { "pattern": "$URL_PATTERN", "filter" : $FILTER }, pri čemer je $URL_PATTERN vzorec nastavljanja vsebine. $FILTER omejuje, katera potrdila odjemalcev bo brskalnik izbral samodejno. Ne glede na filter bodo izbrana samo potrdila, ki se ujema z zahtevo strežnika za potrdilo. Če ima $FILTER obliko { "ISSUER": { "CN": "$ISSUER_CN" } }, so poleg tega izbrana samo potrdila odjemalcev, ki jih izda izdajatelj potrdila s pravim imenom $ISSUER_CN. Če je $FILTER prazen slovar {}, izbor potrdil odjemalcev ni dodatno omejen.

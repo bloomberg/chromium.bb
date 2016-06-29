@@ -10,6 +10,7 @@
 <translation id="2704606927547763573">Kopierat</translation>
 <translation id="2747003861858887689">Föregående fält</translation>
 <translation id="2780046210906776326">Inga e-postkonton</translation>
+<translation id="3172213052701798825">Google Smart Lock för lösenord</translation>
 <translation id="3244271242291266297">MM</translation>
 <translation id="3252394070589632019"><ph name="VALUE" />, <ph name="ADDITIONAL_INFO" />, <ph name="INDEX" /> av <ph name="NUM_SUGGESTIONS" /></translation>
 <translation id="3335947283844343239">Öppna stängd flik igen</translation>
@@ -20,6 +21,7 @@
 <translation id="4399225372525667111">Chrome kan inte verifiera att den här webbplatsens webbadress är korrekt.</translation>
 <translation id="4728558894243024398">Plattform</translation>
 <translation id="473775607612524610">Uppdatera</translation>
+<translation id="4875622588773761625">Vill du att lösenordet för den här webbplatsen ska uppdateras med <ph name="PASSWORD_MANAGER_BRAND" />?</translation>
 <translation id="5317780077021120954">Spara</translation>
 <translation id="605721222689873409">ÅÅ</translation>
 <translation id="6149061208933997199">Använd lösenordet</translation>
@@ -28,7 +30,9 @@
 <translation id="6344783595350022745">Rensa text</translation>
 <translation id="6456425917241817154">Lösenord från Chrome</translation>
 <translation id="6535543971741225613">Webbplatsen som du försöker nå beter sig inte som väntat och Chrome kan inte verifiera att webbadressen är korrekt. Av säkerhetsskäl bör du inte fortsätta. Försök hellre igen imorgon eller fortsätt till en annan sida.</translation>
+<translation id="6647073004883890710">Vill du att <ph name="PASSWORD_MANAGER_BRAND" /> ska uppdatera lösenordet för <ph name="USERNAME" /> på den här webbplatsen?</translation>
 <translation id="7222245588540287464">Om kontextsökning är aktiverad eller inte.</translation>
+<translation id="7378627244592794276">Nej</translation>
 <translation id="7456847797759667638">Öppna plats...</translation>
 <translation id="7481312909269577407">Framåt</translation>
 <translation id="7484580869648358686">Varning! Något står inte rätt till här.</translation>

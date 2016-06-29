@@ -78,7 +78,6 @@ Heu de tenir activats el Bluetooth i la ubicació per poder utilitzar el Web fí
 <translation id="194341124344773587">Activeu el permís per a Chrome a la <ph name="BEGIN_LINK" />configuració d'Android<ph name="END_LINK" />.</translation>
 <translation id="1943432128510653496">Desa les contrasenyes</translation>
 <translation id="1944384637046898011">Encripta totes les dades amb la contrasenya de Google del dia <ph name="TIME" /></translation>
-<translation id="1946005195648379376">Especifiqueu com Google utilitza el vostre historial de navegació per personalitzar la Cerca i altres serveis de Google.</translation>
 <translation id="1966710179511230534">Actualitzeu les dades d'inici de sessió.</translation>
 <translation id="1974060860693918893">Configuració avançada</translation>
 <translation id="1984321224716884559">Adreces d'interès de Chrome Dev</translation>
@@ -411,6 +410,7 @@ Tanmateix, no sou invisible. El vostre cap, el vostre proveïdor de serveis d'In
 <translation id="6140912465461743537">País/regió</translation>
 <translation id="6159335304067198720"><ph name="PERCENT" /> de reducció de dades</translation>
 <translation id="6165508094623778733">Més informació</translation>
+<translation id="6177390657002841081">Activa l'Economitzador de dades</translation>
 <translation id="6181444274883918285">Afegeix una excepció per a un lloc</translation>
 <translation id="6192792657125177640">Excepcions</translation>
 <translation id="6232535412751077445">Si activeu l'opció No segueixis, s'inclourà una sol·licitud al trànsit de navegació. Que s'apliqui o no dependrà de si algun lloc web respon a la sol·licitud i de com s'interpreta.
@@ -466,6 +466,7 @@ Per exemple, és possible que alguns llocs web responguin a aquesta sol·licitud
 <translation id="6857778194843072568">Envia només amb Wi-Fi</translation>
 <translation id="6865313869410766144">Dades d'emplenament automàtic de formularis</translation>
 <translation id="6868088497967843822">Inicieu la sessió per tenir les adreces d'interès, l'historial, les contrasenyes i altres configuracions en tots els vostres dispositius</translation>
+<translation id="6903907808598579934">Activa la sincronització</translation>
 <translation id="6945221475159498467">Selecciona</translation>
 <translation id="6963766334940102469">Suprimeix les adreces d'interès</translation>
 <translation id="6965382102122355670">D'acord</translation>

@@ -183,7 +183,6 @@
 <translation id="1259724620062607540">7. položka na poličke</translation>
 <translation id="1260240842868558614">Zobraziť:</translation>
 <translation id="126710816202626562">Jazyk prekladu:</translation>
-<translation id="1269690813141254680">V časti <ph name="BEGIN_LINK" />Riadenie aktivity Google<ph name="END_LINK" /> môžete ovládať, ako bude Google používať vašu históriu prehliadania na prispôsobenie Vyhľadávania a ďalších služieb Google.</translation>
 <translation id="1272079795634619415">Zastaviť</translation>
 <translation id="1272978324304772054">Tento používateľský účet nepatrí do domény, do ktorej je zaregistrované toto zariadenie. Ak sa chcete zaregistrovať do inej domény, musíte najprv zariadenie obnoviť.</translation>
 <translation id="127353061808977798">Písma a kódovanie</translation>
@@ -1674,7 +1673,6 @@ z domény <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3317459757438853210">Obojstranne</translation>
 <translation id="331752765902890099">Tlačidlo <ph name="PROFILE_NAME" /> : chyba prihlásenia</translation>
 <translation id="3319048459796106952">Nové okno i&amp;nkognito</translation>
-<translation id="3319364804843246307">Aplikácie pre Android</translation>
 <translation id="3320859581025497771">váš operátor</translation>
 <translation id="3323235640813116393">Povolí ukladanie stránok iba vo formáte MHTML, t. j. do jedného textového súboru s kódom HTML a so všetkými čiastkovými zdrojmi.</translation>
 <translation id="3323447499041942178">Textové pole</translation>
@@ -2469,7 +2467,6 @@ Ak chcete pokračovať v práci, stlačte ľubovoľný kláves.</translation>
 <translation id="4479639480957787382">Ethernet</translation>
 <translation id="4479812471636796472">americká klávesnica s rozložením klávesov Dvorak</translation>
 <translation id="4481249487722541506">Načítať rozbalené rozšírenie...</translation>
-<translation id="4482194545587547824">Google môže používať vašu históriu prehliadania na prispôsobenie Vyhľadávania a ďalších služieb Google</translation>
 <translation id="4487088045714738411">belgická klávesnica</translation>
 <translation id="4492190037599258964">Výsledky vyhľadávania pre dopyt „<ph name="SEARCH_STRING" />“</translation>
 <translation id="4495021739234344583">Zrušiť registráciu a reštartovať</translation>

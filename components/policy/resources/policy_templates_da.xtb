@@ -49,9 +49,7 @@
 
       Hvis denne politik ikke angives, er standardfrekvensen tre timer. Den laveste
       tilladte frekvens er 60 sekunder.</translation>
-<translation id="1213523811751486361">Angiver webadressen for den søgemaskine, der anvendes til at levere søgeforeslag. Webadressen skal indeholde strengen "<ph name="SEARCH_TERM_MARKER" />", der erstattes af den tekst, som brugeren indtaster, når han påbegynder en forespørgsel. Denne politik er valgfri. Hvis den ikke er valgt, anvendes der ikke webadresseforslag. Denne politik respekteres kun, hvis politikken "DefaultSearchProviderEnabled" er aktiveret.</translation>
 <translation id="1221359380862872747">Indlæs de angivne webadresser ved demologin</translation>
-<translation id="1240643596769627465">Angiver webadressen for den søgemaskine, der bruges til at give direkte resultater. Webadressen skal indeholde strengen <ph name="SEARCH_TERM_MARKER" />, som erstattes på forespørgselstidspunktet af den tekst, som brugeren har indtastet hidtil. Denne politik er valgfri. Hvis dette ikke angives, gives der ikke øjeblikkelige søgeresultater. Denne politik respekteres kun, hvis politikken "DefaultSearchProviderEnabled" er aktiveret.</translation>
 <translation id="1265053460044691532">Begræns den tid, hvor en bruger, der er godkendt via SAML, kan logge på offline</translation>
 <translation id="1291880496936992484">Advarsel! RC4 bliver fjernet helt fra <ph name="PRODUCT_NAME" /> efter version 52 (omkring september 2016), og på det tidspunkt vil denne politik holde op med at virke.
 
@@ -1052,7 +1050,6 @@ Mens selve politikken understøttes på ovenstående platforme, kan den funktion
 <translation id="4928632305180102854">Kontrollerer, om <ph name="PRODUCT_OS_NAME" /> tillader oprettelse af nye brugerkonti. Hvis denne politik angives til falsk, vil brugere, som ikke allerede har en konto, ikke kunne logge ind.
 
       Hvis denne politik er angivet til sand eller ikke er konfigureret, vil det være muligt at oprette nye brugerkonti, såfremt <ph name="DEVICEUSERWHITELISTPROTO_POLICY_NAME" /> ikke forhindrer brugeren i at logge ind.</translation>
-<translation id="4962195944157514011">Angiver webadressen for den søgemaskine, der bruges ved standardsøgninger. Webadressen skal indeholde strengen "<ph name="SEARCH_TERM_MARKER" />", som erstattes af brugerens termer, når denne foretager en søgning. Denne indstilling skal aktiveres, når politikken "DefaultSearchProviderEnabled" er aktiveret, og den vil kun blive respekteret, hvis dette er tilfældet.</translation>
 <translation id="4971529314808359013">Giver dig mulighed for at angive en række webadressemønstre, som angiver websites, hvor <ph name="PRODUCT_NAME" /> automatisk skal vælge et klientcertifikat, hvis websitet anmoder om et certifikat.
 
           Værdien skal være en matrix af JSON-ordbøger i strengformat. Alle ordbøgerne skal have formatet { "pattern": "$URL_PATTERN", "filter" : $FILTER }, hvor $URL_PATTERN er et mønster for indholdsangivelse. $FILTER begrænser, hvilke klientcertifikater browseren automatisk vælger fra. Uafhængigt af filteret vælges der kun certifikater, der stemmer overens med serverens certifikatanmodning. Hvis $FILTER har formatet { "ISSUER": { "CN": "$ISSUER_CN" } }, vælges der desuden kun klientcertifikater, der er udstedt af et certifikat med CommonName $ISSUER_CN. Hvis $FILTER er den tomme ordbog {}, begrænses valget af klientcertifikater ikke yderligere.

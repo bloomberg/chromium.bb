@@ -48,13 +48,7 @@
 
       Hvis denne regelen ikke spesifiseres, er standardfrekvensen 3 timer. 
       Korteste tillatte frekvens er 60 sekunder.</translation>
-<translation id="1213523811751486361">Angir nettadressen til søkemotoren som brukes til å gi søkeforslag. Nettadressen skal inneholde søkestrengen <ph name="SEARCH_TERM_MARKER" />, som blir erstattet av teksten brukeren har skrevet inn, når søket utføres.
-
-          Denne retningslinjen er valgfri. Hvis den ikke er aktivert, brukes det ingen forslagsnettadresse.
-
-          Denne retningslinjen gjelder bare hvis retningslinjen DefaultSearchProviderEnabled er aktivert.</translation>
 <translation id="1221359380862872747">Last inn angitte nettadresser ved demo-pålogging</translation>
-<translation id="1240643596769627465">Angir nettadressen til søkemotoren som brukes til å gi umiddelbare resultater. Nettadressen skal inneholde strengen <ph name="SEARCH_TERM_MARKER" />, som blir erstattet av teksten brukeren har skrevet inn, når søket utføres. Denne retningslinjen er valgfri. Hvis den ikke er aktivert, brukes det ingen forslagsnettadresse. Denne retningslinjen gjelder bare hvis retningslinjen DefaultSearchProviderEnabled er aktivert.</translation>
 <translation id="1265053460044691532">Begrens hvor lenge en bruker som er autentisert via SAML kan logge på uten nett</translation>
 <translation id="1291880496936992484">Advarsel: RC4 fjernes helt fra <ph name="PRODUCT_NAME" /> etter versjon 52 (rundt september 2016), og da slutter denne regelen å fungere.
 
@@ -1084,9 +1078,6 @@
 <translation id="4928632305180102854">Kontrollerer om <ph name="PRODUCT_OS_NAME" /> tillater oppretting av nye brukerkontoer. Hvis denne retningslinjen er angitt som Usann, vil ikke brukere som ikke allerede har en konto, ikke kunne logge seg på.
 
       Hvis denne retningslinjen er angitt som Usann eller ikke er konfigurert, tillates det oppretting av nye brukerkontoer dersom <ph name="DEVICEUSERWHITELISTPROTO_POLICY_NAME" /> ikke forhindrer brukeren fra å logge seg på.</translation>
-<translation id="4962195944157514011">Angir nettadressen til søkemotoren som brukes til et standard søk. Nettadressen skal inneholde strengen <ph name="SEARCH_TERM_MARKER" />, som erstattes når søket utføres av termene brukeren søker etter.
-
-          Dette alternativet må angis når retningslinjen DefaultSearchProviderEnabled er aktivert, og respekteres bare hvis dette er tilfellet.</translation>
 <translation id="4971529314808359013">Gjør det mulig å spesifisere en liste over nettadressemønstre som spesifiserer nettsteder <ph name="PRODUCT_NAME" /> skal velge klientsertifikat for automatisk, hvis nettstedet krever sertifikat.
 
           Verdien må være en matrise med JSON-ordlister i strengformat. Hver ordliste må ha formen { "mønster": "$URL_PATTERN", "filter" : $FILTER }, der $URL_PATTERN er et mønster for spesifisering av innhold. $FILTER begrenser klientsertifikatene nettleseren automatisk velger fra. Uavhengig av hvilket filter som brukes, blir det bare valgt sertifikater som stemmer overens med tjenerens sertifikatforespørsel. Hvis $FILTER har formen { "ISSUER": { "CN": "$ISSUER_CN" } }, velges det bare klientsertifikater som er utstedt av et sertifikat med CommonName $ISSUER_CN. Hvis $FILTER er den tomme katalogen {}, brukes det ikke ytterligere begrensninger for valg av klientsertifikater.

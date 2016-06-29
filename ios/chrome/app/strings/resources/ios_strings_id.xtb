@@ -10,6 +10,7 @@
 <translation id="2704606927547763573">Disalin</translation>
 <translation id="2747003861858887689">Bidang sebelumnya</translation>
 <translation id="2780046210906776326">Tidak Ada Akun Email</translation>
+<translation id="3172213052701798825">Google Smart Lock untuk Sandi</translation>
 <translation id="3244271242291266297">BB</translation>
 <translation id="3252394070589632019"><ph name="VALUE" />, <ph name="ADDITIONAL_INFO" />, <ph name="INDEX" /> dari <ph name="NUM_SUGGESTIONS" /></translation>
 <translation id="3335947283844343239">Buka Kembali Tab yang Tertutup</translation>
@@ -20,6 +21,7 @@
 <translation id="4399225372525667111">Chrome tidak dapat memverifikasi bahwa URL untuk situs ini benar.</translation>
 <translation id="4728558894243024398">Platform</translation>
 <translation id="473775607612524610">Mutakhirkan</translation>
+<translation id="4875622588773761625">Apakah Anda ingin <ph name="PASSWORD_MANAGER_BRAND" /> memperbarui sandi untuk situs ini?</translation>
 <translation id="5317780077021120954">Simpan</translation>
 <translation id="605721222689873409">TT</translation>
 <translation id="6149061208933997199">Gunakan Sandi</translation>
@@ -28,7 +30,9 @@
 <translation id="6344783595350022745">Hapus Teks</translation>
 <translation id="6456425917241817154">Sandi Dibuat oleh Chrome</translation>
 <translation id="6535543971741225613">Situs yang Anda akses bertingkah aneh, dan Chrome tidak dapat memverifikasi bahwa URL tersebut benar. Demi alasan keamanan, Anda sebaiknya tidak meneruskan, dan coba lagi besok atau buka situs lain.</translation>
+<translation id="6647073004883890710">Ingin <ph name="PASSWORD_MANAGER_BRAND" /> memperbarui sandi bagi <ph name="USERNAME" /> untuk situs ini?</translation>
 <translation id="7222245588540287464">Baik Penelusuran Kontekstual diaktifkan atau tidak.</translation>
+<translation id="7378627244592794276">Nggak</translation>
 <translation id="7456847797759667638">Buka Lokasi...</translation>
 <translation id="7481312909269577407">Maju</translation>
 <translation id="7484580869648358686">Peringatan: Ada Yang Aneh!</translation>

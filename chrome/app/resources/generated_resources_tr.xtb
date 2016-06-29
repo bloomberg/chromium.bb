@@ -183,7 +183,6 @@
 <translation id="1259724620062607540">Raf öğesi 7</translation>
 <translation id="1260240842868558614">Göster:</translation>
 <translation id="126710816202626562">Çeviri dili:</translation>
-<translation id="1269690813141254680">Google'ın, Arama ve diğer Google hizmetlerini kişiselleştirmek için tarama geçmişinizi nasıl kullanacağını <ph name="BEGIN_LINK" />Google Etkinlik Kontrolleri<ph name="END_LINK" />'nden kontrol edin.</translation>
 <translation id="1272079795634619415">Durdur</translation>
 <translation id="1272978324304772054">Bu kullanıcı hesabı, cihazın kaydedildiği alan adına ait değil. Farklı bir alan adına kaydolmak istiyorsanız, öncelikle cihaz kurtarma işlemini tamamlamanız gerekir.</translation>
 <translation id="127353061808977798">Yazı tipleri ve kodlama</translation>
@@ -1674,7 +1673,6 @@ Bunlar ve diğer talimatlar için lütfen <ph name="ACCOUNT_EMAIL" /> e-postanı
 <translation id="3317459757438853210">İki taraflı</translation>
 <translation id="331752765902890099"><ph name="PROFILE_NAME" /> düğmesi: Oturum açma hatası</translation>
 <translation id="3319048459796106952">Yeni &amp;gizli pencere</translation>
-<translation id="3319364804843246307">Android Uygulamaları</translation>
 <translation id="3320859581025497771">operatörünüz</translation>
 <translation id="3323235640813116393">Sayfaların MHTML olarak kaydedilmesini etkinleştirir. MHTML, HTML'yi ve tüm alt kaynaklarını içeren tek bir metin dosyasıdır.</translation>
 <translation id="3323447499041942178">Metin kutusu</translation>
@@ -2469,7 +2467,6 @@ Keşfetmeye devam etmek için herhangi bir tuşa basın.</translation>
 <translation id="4479639480957787382">Ethernet</translation>
 <translation id="4479812471636796472">ABD Dvorak klavye</translation>
 <translation id="4481249487722541506">Paketi açılmış uzantı yükle...</translation>
-<translation id="4482194545587547824">Google, Arama ve diğer Google hizmetlerini kişiselleştirmek için tarama geçmişinizi kullanabilir</translation>
 <translation id="4487088045714738411">Belçika dilinde klavye</translation>
 <translation id="4492190037599258964">'<ph name="SEARCH_STRING" />' için arama sonuçları</translation>
 <translation id="4495021739234344583">Kaydı sil ve yeniden başlat</translation>

@@ -79,7 +79,6 @@ Debes activar Bluetooth y la Ubicación para poder utilizar la Web física.</tra
 <translation id="194341124344773587">Activa el permiso para Chrome en <ph name="BEGIN_LINK" />Configuración de Android<ph name="END_LINK" />.</translation>
 <translation id="1943432128510653496">Guardar contraseñas</translation>
 <translation id="1944384637046898011">Encriptar todo con la contraseña de Google a partir del <ph name="TIME" /></translation>
-<translation id="1946005195648379376">Controla la forma en que Google usa tu historial de navegación para personalizar Búsqueda y otros servicios de Google.</translation>
 <translation id="1966710179511230534">Actualiza los datos de acceso.</translation>
 <translation id="1974060860693918893">Avanzada</translation>
 <translation id="1984321224716884559">Marcadores de Chrome Dev</translation>
@@ -428,6 +427,7 @@ Sin embargo, no vas a pasar completamente desapercibido. El modo de navegación 
 <translation id="6140912465461743537">País o región</translation>
 <translation id="6159335304067198720"><ph name="PERCENT" /> de ahorro de datos</translation>
 <translation id="6165508094623778733">Más información</translation>
+<translation id="6177390657002841081">Activar la extensión Reducir datos</translation>
 <translation id="6181444274883918285">Agregar excepción del sitio</translation>
 <translation id="6192792657125177640">Excepciones</translation>
 <translation id="6232535412751077445">Si se habilita la opción de "No realizar seguimiento", se incluirá una solicitud con tu tráfico de navegación. Los efectos dependerán de si hay algún sitio web que responda a la solicitud y de cómo se interprete.
@@ -486,6 +486,7 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mediante anuncio
 <translation id="6857778194843072568">Enviar solo con Wi-Fi</translation>
 <translation id="6865313869410766144">Datos del formulario de autocompletar</translation>
 <translation id="6868088497967843822">Accede a tu cuenta para ver los marcadores, el historial, las contraseñas y otras opciones de configuración en todos los dispositivos.</translation>
+<translation id="6903907808598579934">Activar la sincronización</translation>
 <translation id="6945221475159498467">Seleccionar</translation>
 <translation id="6963766334940102469">Borrar marcadores</translation>
 <translation id="6965382102122355670">Aceptar</translation>

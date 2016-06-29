@@ -49,9 +49,7 @@
 
       Ako se to pravilo ne postavi, zadana učestalost iznosi 3 sata. Minimalna
       dopuštena učestalost iznosi 60 sekundi.</translation>
-<translation id="1213523811751486361">Određuje URL tražilice koja se upotrebljava za davanje prijedloga pretraživanja. URL treba sadržavati niz "<ph name="SEARCH_TERM_MARKER" />" koji će u trenutku upita biti zamijenjen tekstom koji je korisnik dotad unio. Ovo je pravilo izborno. Ako nije postavljeno, neće se upotrijebiti nijedan URL prijedloga. Ovo se pravilo poštuje samo ako je omogućeno pravilo "DefaultSearchProviderEnabled".</translation>
 <translation id="1221359380862872747">Učitaj navedene URL-ove pri demonstracijskoj prijavi</translation>
-<translation id="1240643596769627465">Određuje URL tražilice koja se upotrebljava za pružanje rezultata usluge Instant. URL treba sadržavati niz <ph name="SEARCH_TERM_MARKER" /> koji će biti zamijenjen u trenutku postavljanja upita tekstom koji je korisnik dotad unio. Ovo je pravilo izborno. Ako ga ne postavite, neće se pružati rezultati pretraživanja uz uslugu Instant. Ovo pravilo poštovat će se samo ako je omogućeno pravilo "DefaultSearchProviderEnabled".</translation>
 <translation id="1265053460044691532">Ograničite vrijeme koliko se dugo korisnik autentificiran putem SAML-a može izvanmrežno prijaviti</translation>
 <translation id="1291880496936992484">Upozorenje: RC4 potpuno će se ukloniti iz preglednika <ph name="PRODUCT_NAME" /> nakon verzije 52 (oko rujna 2016.) i ovo će pravilo tada prestati funkcionirati.
 
@@ -1036,7 +1034,6 @@
 <translation id="4928632305180102854">Kontrolira dopušta li sustav <ph name="PRODUCT_OS_NAME" /> stvaranje novih korisničkih računa. Ako je to pravilo postavljeno na "lažno", korisnici koji još nemaju račun neće se moći prijaviti.
 
       Ako je to pravilo postavljeno na "istinito" ili ako nije konfigurirano, izrada novih korisničkih računa bit će dopuštena pod uvjetom da pravilo <ph name="DEVICEUSERWHITELISTPROTO_POLICY_NAME" /> ne sprječava prijavu korisnika.</translation>
-<translation id="4962195944157514011">Određuje URL tražilice koja se upotrebljava prilikom zadanog pretraživanja. URL treba sadržavati niz "<ph name="SEARCH_TERM_MARKER" />" koji će u trenutku upita biti zamijenjen pojmovima koje korisnik traži. Ova opcija mora biti postavljena kada je omogućeno pravilo "DefaultSearchProviderEnabled" i poštovat će se samo u tom slučaju.</translation>
 <translation id="4971529314808359013">Omogućuje vam da navedete popis uzoraka URL-ova koji određuju web-lokacije za koje <ph name="PRODUCT_NAME" /> treba automatski odabrati klijentski certifikat, ako web-lokacija zahtijeva certifikat.
 
           Vrijednost mora biti polje JSON rječnika u nizovima. Svaki rječnik mora biti u obliku { "pattern": "$URL_PATTERN", "filter" : $FILTER }, pri čemu je $URL_PATTERN uzorak postavke sadržaja. $FILTER ograničava između kojih će klijentskih certifikata preglednik automatski birati. Neovisno o filtru, birat će se samo certifikati koji se podudaraju sa zahtjevom poslužitelja za certifikat. Ako je $FILTER u obliku { "ISSUER": { "CN": "$ISSUER_CN" } }, dodatno se biraju samo klijentski certifikati koje izdaje certifikat koji ima CommonName $ISSUER_CN. Ako je $FILTER prazan rječnik {}, odabir klijentskih certifikata nije dodatno ograničen.

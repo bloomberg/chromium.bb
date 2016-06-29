@@ -49,17 +49,7 @@
 
       이 정책이 설정되지 않은 경우 기본 빈도는 3시간입니다. 허용되는
       최소 빈도는 60초입니다.</translation>
-<translation id="1213523811751486361">추천 검색어를 제공하는 데 사용되는 검색엔진의 URL을 지정합니다. URL에 '<ph name="SEARCH_TERM_MARKER" />' 문자열이 포함되어야 하며, 이 문자열은 검색 시 사용자가 지금까지 입력한 텍스트로 교체됩니다.
-
-          이 정책은 선택사항입니다. 설정하지 않은 경우 추천 URL이 사용되지 않습니다.
-
-          이 정책은 'DefaultSearchProviderEnabled' 정책을 사용하도록 설정한 경우에만 적용됩니다.</translation>
 <translation id="1221359380862872747">데모 로그인 시 지정된 URL 로드</translation>
-<translation id="1240643596769627465">순간 검색 결과를 제공하는 데 사용되는 검색엔진의 URL을 지정합니다. URL에는 <ph name="SEARCH_TERM_MARKER" /> 문자열이 포함되어야 하며, 이 문자열은 검색 시 사용자가 지금까지 입력한 내용으로 대체됩니다.
-
-          이 정책은 선택사항입니다. 설정하지 않으면 순간 검색 결과가 제공되지 않습니다.
-
-          이 정책은 'DefaultSearchProviderEnabled' 정책을 사용하도록 설정한 경우에만 적용됩니다.</translation>
 <translation id="1265053460044691532">SAML을 통해 인증한 사용자가 오프라인에서 로그인할 수 있는 기간을 제한</translation>
 <translation id="1291880496936992484">경고: 버전 52(2016년 9월경)부터 <ph name="PRODUCT_NAME" />에서 RC4가 완전히 제거되며, 이후 이 정책은 적용되지 않습니다.
 
@@ -1117,9 +1107,6 @@
 <translation id="4928632305180102854"><ph name="PRODUCT_OS_NAME" />이(가) 새 사용자 계정을 생성할 수 있는지 여부를 조정합니다. 이 정책을 false로 설정하면 계정이 없는 사용자는 로그인할 수 없습니다.
 
       이 정책을 true로 설정하거나 구성하지 않으면 <ph name="DEVICEUSERWHITELISTPROTO_POLICY_NAME" />이(가) 사용자 로그인을 차단하지 않을 경우 새 사용자 계정이 생성될 수 있습니다.</translation>
-<translation id="4962195944157514011">기본 검색을 수행할 때 사용되는 검색엔진의 URL을 지정합니다. URL은 '<ph name="SEARCH_TERM_MARKER" />' 문자열을 포함해야 하며 이 문자열은 검색 시 사용자의 검색어로 대체됩니다.
-
-          'DefaultSearchProviderEnabled' 정책을 사용하도록 설정한 경우 이 옵션을 설정해야 하며 이 경우에만 적용됩니다.</translation>
 <translation id="4971529314808359013">사이트에서 인증서를 요청하는 경우 <ph name="PRODUCT_NAME" />에서 클라이언트 인증서를 자동으로 선택할 사이트를 지정하는 URL 패턴 목록을 지정하도록 허용합니다.
 
           이 값은 문자열화된 JSON 사전의 배열이어야 합니다. 각 사전은 { "pattern": "$URL_PATTERN", "filter" : $FILTER } 형태여야 하며, 여기에서 $URL_PATTERN은 콘텐츠 설정 패턴입니다. $FILTER는 브라우저에서 선택할 수 있는 클라이언트 인증서를 제한합니다. 필터와 관계없이 서버의 인증서 요청과 일치하는 인증서만이 선택됩니다. 또한 $FILTER가 { "ISSUER": { "CN": "$ISSUER_CN" } } 형태인 경우 CommonName $ISSUER_CN으로 된 인증서에 의해 발급된 클라이언트 인증서만이 선택됩니다. $FILTER가 빈 사전 {}인 경우 클라이언트 인증서 선택에 추가 제한은 없습니다.

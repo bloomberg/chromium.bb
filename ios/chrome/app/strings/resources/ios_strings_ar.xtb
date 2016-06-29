@@ -10,6 +10,7 @@
 <translation id="2704606927547763573">تم النسخ</translation>
 <translation id="2747003861858887689">الحقل السابق</translation>
 <translation id="2780046210906776326">لا تتوفر حسابات بريد إلكتروني</translation>
+<translation id="3172213052701798825">‏Google Smart Lock لكلمات المرور</translation>
 <translation id="3244271242291266297">الشهر</translation>
 <translation id="3252394070589632019"><ph name="VALUE" />، و<ph name="ADDITIONAL_INFO" />، و<ph name="INDEX" /> من <ph name="NUM_SUGGESTIONS" /></translation>
 <translation id="3335947283844343239">إعادة فتح علامة التبويب المغلقة</translation>
@@ -20,6 +21,7 @@
 <translation id="4399225372525667111">‏يتعذر على متصفح Chrome التحقق من صحة عنوان URL لموقع الويب هذا.</translation>
 <translation id="4728558894243024398">النظام الأساسي</translation>
 <translation id="473775607612524610">تحديث</translation>
+<translation id="4875622588773761625">هل تريد تحديث كلمة مرورك لهذا الموقع من خلال <ph name="PASSWORD_MANAGER_BRAND" />؟</translation>
 <translation id="5317780077021120954">حفظ</translation>
 <translation id="605721222689873409">العام</translation>
 <translation id="6149061208933997199">استخدام كلمة المرور</translation>
@@ -28,7 +30,9 @@
 <translation id="6344783595350022745">محو النص</translation>
 <translation id="6456425917241817154">‏تم إنشاء كلمة المرور من قبل Chrome</translation>
 <translation id="6535543971741225613">‏يتصرف موقع الويب الذي تحاول الدخول إليه بغرابة، ويتعذر على متصفح Chrome التحقق من صحة عنوان URL لموقع الويب هذا. لأسباب تتعلق بالأمان، لا يجب عليك المتابعة، ربما عليك المحاولة مجددًا غدًا أو الانتقال إلى موقع ويب آخر.</translation>
+<translation id="6647073004883890710">هل تريد من <ph name="PASSWORD_MANAGER_BRAND" /> تحديث كلمة المرور لـ <ph name="USERNAME" /> لهذا الموقع؟</translation>
 <translation id="7222245588540287464">تحديد ما إذا كان البحث السياقي ممكنًا.</translation>
+<translation id="7378627244592794276">لا</translation>
 <translation id="7456847797759667638">فتح موقع...</translation>
 <translation id="7481312909269577407">إلى الأمام</translation>
 <translation id="7484580869648358686">تحذير: هناك شيء غير سليم هنا.</translation>

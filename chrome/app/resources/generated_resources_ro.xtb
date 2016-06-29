@@ -183,7 +183,6 @@
 <translation id="1259724620062607540">Elementul 7 din raft</translation>
 <translation id="1260240842868558614">Afișați:</translation>
 <translation id="126710816202626562">Limba traducerii:</translation>
-<translation id="1269690813141254680">Controlează cum poate folosi Google istoricul de navigare pentru a personaliza Căutarea și alte servicii Google din <ph name="BEGIN_LINK" />Opțiuni privind activitatea Google<ph name="END_LINK" />.</translation>
 <translation id="1272079795634619415">Oprește</translation>
 <translation id="1272978324304772054">Acest cont de utilizator nu aparține domeniului pe care este înscris dispozitivul. Dacă doriți să vă înscrieți pe un alt domeniu, trebuie să parcurgeți mai întâi procesul de recuperare a dispozitivului.</translation>
 <translation id="127353061808977798">Fonturi și codificare</translation>
@@ -1672,7 +1671,6 @@ De la <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3317459757438853210">Față-verso</translation>
 <translation id="331752765902890099">Butonul <ph name="PROFILE_NAME" />: eroare la conectare</translation>
 <translation id="3319048459796106952">Fereastră nouă &amp;incognito</translation>
-<translation id="3319364804843246307">Aplicații Android</translation>
 <translation id="3320859581025497771">operatorul tău</translation>
 <translation id="3323235640813116393">Permite salvarea paginilor în format MHTML: un singur fișier text care conține cod HTML și toate subresursele.</translation>
 <translation id="3323447499041942178">Casetă de text</translation>
@@ -2467,7 +2465,6 @@ Apăsați pe orice tastă pentru a continua explorarea.</translation>
 <translation id="4479639480957787382">Ethernet</translation>
 <translation id="4479812471636796472">Tastatură S.U.A. Dvorak</translation>
 <translation id="4481249487722541506">Încarcă extensia neîmpachetată...</translation>
-<translation id="4482194545587547824">Google poate folosi istoricul de navigare pentru a personaliza Căutarea și alte servicii Google</translation>
 <translation id="4487088045714738411">Tastatură bulgară</translation>
 <translation id="4492190037599258964">Rezultatele căutării pentru „<ph name="SEARCH_STRING" />”</translation>
 <translation id="4495021739234344583">Anulează înregistrarea și repornește</translation>

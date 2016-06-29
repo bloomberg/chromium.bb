@@ -49,17 +49,7 @@
 
       Om inget värde anges för principen är standardfrekvensen 3 timmar. Den kortaste
       tillåtna frekvensen är 60 sekunder.</translation>
-<translation id="1213523811751486361">Policyn anger webbadressen till sökmotorn som används för att visa sökförslag. Webbadressen ska innehålla strängen <ph name="SEARCH_TERM_MARKER" />, som ersätts när frågan körs av den text som användaren har skrivit dittills.
-
-          Policyn är valfri. Om den inte anges används inga adressförslag.
-
-          Policyn tillämpas bara om policyn DefaultSearchProviderEnabled har aktiverats.</translation>
 <translation id="1221359380862872747">Läs in angivna webbadresser vid demoinloggning</translation>
-<translation id="1240643596769627465">Policyn anger webbadressen till sökmotorn som användes för att visa direktresultat. Webbadressen ska innehålla strängen <ph name="SEARCH_TERM_MARKER" />, som ersätts av den text användaren skrivit hittills när sökningen körs.
-
-          Policyn är valfri. Om den inte anges visas inget direktresultat.
-
-          Policyn används bara om policyn DefaultSearchProviderEnabled är aktiverad.</translation>
 <translation id="1265053460044691532">Begränsa tiden som en användare som verifierats via SAML kan logga in offline</translation>
 <translation id="1291880496936992484">Varning: RC4 kommer att helt tas bort från <ph name="PRODUCT_NAME" /> efter version 52 (kring september 2016) och den här principen upphör då att fungera.
 
@@ -1012,7 +1002,7 @@
 <translation id="4449545651113180484">Rotera skärmen 270 grader medurs</translation>
 <translation id="4467952432486360968">Blockera cookies från tredje part</translation>
 <translation id="4474167089968829729">Aktivera lösenordshanteraren för sparade lösenord</translation>
-<translation id="447686899376429408">Om det här alternativet är inställt på sant eller inte inställt kan användarna casta flikar, webbplatser eller skrivbordet från webbläsaren. Om det är inställt på falskt går det inte att casta.</translation>
+<translation id="447686899376429408">Om det här alternativet är inställt på sant eller inte är inställt kan användarna casta flikar, webbplatser eller skrivbordet från webbläsaren. Om det är inställt på falskt går det inte att casta.</translation>
 <translation id="4480694116501920047">Tvinga fram användning av SafeSearch</translation>
 <translation id="4482640907922304445">Policyn visar knappen Startsida i verktygsfältet i <ph name="PRODUCT_NAME" />.
 
@@ -1128,9 +1118,6 @@
 <translation id="4928632305180102854">Avgör om det går att skapa nya användarkonton i <ph name="PRODUCT_OS_NAME" />. Om policyn är inställd på falskt kan inte användare som inte har något konto logga in.
 
       Om policyn är inställd på sant eller inte är konfigurerad kan nya användarkonton skapas under förutsättning att <ph name="DEVICEUSERWHITELISTPROTO_POLICY_NAME" /> inte förhindrar att användaren loggar in.</translation>
-<translation id="4962195944157514011">Policyn anger webbadressen till sökmotorn som används för standardsökning. Webbadressen ska innehålla strängen <ph name="SEARCH_TERM_MARKER" />, som ersätts av användarens sökord när sökningen utförs.
-
-          Alternativet måste anges om policyn DefaultSearchProviderEnabled är aktiverad och används bara om så är fallet.</translation>
 <translation id="4971529314808359013">Med den här principen kan du ange en lista med webbadressmönster som anger för vilka webbplatser <ph name="PRODUCT_NAME" /> ska välja ett klientcertifikat automatiskt, om webbplatsen kräver ett certifikat.
 
           Värdet måste vara JSON-ordlistor i strängformat i en matris. Varje ordlista måste ha formen { "pattern": "$URL_PATTERN", "filter" : $FILTER }, där $URL_PATTERN är ett innehållsinställningsmönster. $FILTER begränsar vilka klientcertifikat webbläsaren automatiskt väljer mellan. Oavsett vilket filter som används väljs bara certifikat som matchar serverns certifikatbegäran. Om $FILTER har formen { "ISSUER": { "CN": "$ISSUER_CN" } } är det dessutom endast klientcertifikat som har skapats av ett certifikat med CommonName $ISSUER_CN som väljs. Om $FILTER är en tom ordlista {} begränsas inte valet av klientcertifikat ytterligare.

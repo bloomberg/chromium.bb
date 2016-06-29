@@ -49,17 +49,7 @@
 
       Kui see reegel on määramata, on vaikesagedus 3 tundi. Minimaalne
       lubatud sagedus on 60 sekundit.</translation>
-<translation id="1213523811751486361">Määrab otsingumootori URL-i, mida kasutatakse otsingusoovituste näitamiseks. URL peab hõlmama stringi „<ph name="SEARCH_TERM_MARKER" />”, mis asendatakse päringu esitamisel kasutaja sisestatud tekstiga.
-
-          See reegel on valikuline. Kui see jäetakse määramata, siis soovituse URL-i ei kasutata.
-
-          Reegel on jõus vaid juhul, kui reegel „DefaultSearchProviderEnabled” on lubatud.</translation>
 <translation id="1221359380862872747">Laadi määratud URL-id demosse sisselogimisel</translation>
-<translation id="1240643596769627465">Määrab otsingumootori URL-i, mida kasutatakse vahetute (instant) otsingutulemuste esitamiseks. URL peab sisaldama stringi <ph name="SEARCH_TERM_MARKER" />, mis asendatakse päringu tegemisel kasutaja sisestatud tekstiga.
-
-          Reegel on valikuline. Kui jätate selle määramata, siis ei esitata vahetuid otsingutulemusi.
-
-          See reegel kehtib vaid juhul, kui reegel „DefaultSearchProviderEnabled” on lubatud.</translation>
 <translation id="1265053460044691532">Piirake aega, mille jooksul SAML-i kaudu autenditud kasutaja saab võrguühenduseta sisse logida</translation>
 <translation id="1291880496936992484">Hoiatus. RC4 eemaldatakse teenusest <ph name="PRODUCT_NAME" /> pärast versiooni 52 täielikult (umbes septembris 2016) ja sellest hetkest see reegel enam ei tööta.
 
@@ -1108,9 +1098,6 @@
 <translation id="4928632305180102854">Määrab, kas <ph name="PRODUCT_OS_NAME" /> lubab luua uusi kasutajakontosid. Selle reegli keelamisel ei saa kontota kasutajad sisse logida.
 
       Kui lubate selle reegli või jätate määramata, siis on uute kasutajakontode loomine lubatud eeldusel, et <ph name="DEVICEUSERWHITELISTPROTO_POLICY_NAME" /> ei takista kasutajal sisse logida.</translation>
-<translation id="4962195944157514011">Määrab vaikeotsingu puhul kasutatava otsingumootori URL-i. URL peab sisaldama stringi „<ph name="SEARCH_TERM_MARKER" />”, mis asendatakse päringu ajal kasutaja sisestatud terminitega.
-
-          Valik tuleb määrata ja seda rakendatakse vaid juhul, kui reegel „DefaultSearchProviderEnabled” on lubatud.</translation>
 <translation id="4971529314808359013">Võimaldab määrata URL-i mustrite loendi, mis täpsustab saidid, millele teenus <ph name="PRODUCT_NAME" /> peaks automaatselt valima kliendi sertifikaadi, kui sait sertifikaati taotleb.
 
           Väärtus peab olema rida stringideks jaotatud JSON-i sõnastikke. Igas sõnastikus peab olema vorm { "pattern": "$URL_PATTERN", "filter" : $FILTER }, kus $URL_PATTERN on sisuseadete muster. $FILTER piirab seda, milliste kliendisertifikaatide hulgast brauser automaatselt valib. Olenemata filtrist, valitakse ainult sertifikaadid, mis ühtivad serveri sertifikaadi taotlusega. Kui $FILTER on vormis { "ISSUER": { "CN": "$ISSUER_CN" } }, valitakse lisaks ainult kliendisertifikaadid, mille on väljastanud sertifikaat mustriga CommonName $ISSUER_CN. Kui $FILTER on tühi sõnastik {}, ei ole kliendisertifikaatide valik täiendavalt piiratud.

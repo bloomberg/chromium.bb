@@ -79,7 +79,6 @@ Bluetooth och Plats måste vara aktiverade om du vill använda Physical Web-tjä
 <translation id="194341124344773587">Aktivera behörighet för Chrome i <ph name="BEGIN_LINK" />Android-inställningar<ph name="END_LINK" />.</translation>
 <translation id="1943432128510653496">Spara lösenord</translation>
 <translation id="1944384637046898011">Kryptera alla med Google-lösenordet från <ph name="TIME" /></translation>
-<translation id="1946005195648379376">Styr hur Google anpassar Sök och andra Google-tjänster utifrån webbhistoriken.</translation>
 <translation id="1966710179511230534">Uppdatera dina inloggningsuppgifter.</translation>
 <translation id="1974060860693918893">Avancerat</translation>
 <translation id="1984321224716884559">Bokmärken i Chrome Dev</translation>
@@ -427,6 +426,7 @@ Du är dock inte osynlig. Trots inkognitoläget kan din arbetsgivare, din intern
 <translation id="6140912465461743537">Land/region</translation>
 <translation id="6159335304067198720">Sparat utrymme: <ph name="PERCENT" /></translation>
 <translation id="6165508094623778733">Läs mer</translation>
+<translation id="6177390657002841081">Aktivera Databesparing</translation>
 <translation id="6181444274883918285">Lägg till en webbplats i undantagen</translation>
 <translation id="6192792657125177640">Undantag</translation>
 <translation id="6232535412751077445">Om du aktiverar Do Not Track inkluderas en begäran i din surftrafik. Eventuella effekter beror på om webbplatsen svarar på begäran och hur begäran tolkas.
@@ -485,6 +485,7 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="6857778194843072568">Skicka endast via Wi-Fi</translation>
 <translation id="6865313869410766144">Formuläruppgifter för Autofyll</translation>
 <translation id="6868088497967843822">Logga in om du vill att bokmärken, historik, lösenord och andra inställningar ska vara tillgängliga på alla dina enheter.</translation>
+<translation id="6903907808598579934">Aktivera synkronisering</translation>
 <translation id="6945221475159498467">Välj</translation>
 <translation id="6963766334940102469">Radera bokmärken</translation>
 <translation id="6965382102122355670">OK</translation>

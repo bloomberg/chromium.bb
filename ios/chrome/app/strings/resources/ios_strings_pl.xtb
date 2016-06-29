@@ -10,6 +10,7 @@
 <translation id="2704606927547763573">Skopiowane</translation>
 <translation id="2747003861858887689">Poprzednie pole</translation>
 <translation id="2780046210906776326">Brak kont e-mail</translation>
+<translation id="3172213052701798825">Smart Lock Google na hasła</translation>
 <translation id="3244271242291266297">MM</translation>
 <translation id="3252394070589632019"><ph name="VALUE" />, <ph name="ADDITIONAL_INFO" />, <ph name="INDEX" /> z <ph name="NUM_SUGGESTIONS" /></translation>
 <translation id="3335947283844343239">Otwórz ponownie zamkniętą kartę</translation>
@@ -20,6 +21,7 @@
 <translation id="4399225372525667111">Chrome nie może sprawdzić, czy URL tej strony jest prawidłowy.</translation>
 <translation id="4728558894243024398">Platforma</translation>
 <translation id="473775607612524610">Aktualizuj</translation>
+<translation id="4875622588773761625">Czy <ph name="PASSWORD_MANAGER_BRAND" /> ma zaktualizować hasło do tej strony?</translation>
 <translation id="5317780077021120954">Zapisz</translation>
 <translation id="605721222689873409">RR</translation>
 <translation id="6149061208933997199">Użyj hasła</translation>
@@ -28,7 +30,9 @@
 <translation id="6344783595350022745">Wyczyść tekst</translation>
 <translation id="6456425917241817154">Hasło wygenerowane przez Chrome</translation>
 <translation id="6535543971741225613">Strona, którą chcesz otworzyć, zachowuje się dziwnie, a Chrome nie może sprawdzić, czy jej URL jest prawidłowy. Dla własnego bezpieczeństwa nie wchodź na tę stronę – spróbuj ponownie jutro albo otwórz inną stronę.</translation>
+<translation id="6647073004883890710">Czy <ph name="PASSWORD_MANAGER_BRAND" /> ma zaktualizować hasło użytkownika <ph name="USERNAME" /> do tej witryny?</translation>
 <translation id="7222245588540287464">Określa, czy jest włączone Wyszukiwanie kontekstowe.</translation>
+<translation id="7378627244592794276">Nie</translation>
 <translation id="7456847797759667638">Otwórz lokalizację...</translation>
 <translation id="7481312909269577407">Dalej</translation>
 <translation id="7484580869648358686">Ostrzeżenie: coś tu jest nie w porządku!</translation>

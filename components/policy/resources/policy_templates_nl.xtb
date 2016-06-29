@@ -48,13 +48,7 @@
 <translation id="1198465924256827162">De frequentie, in milliseconden, waarmee uploads van de apparaatstatus worden verzonden.
 
       Als dit beleid niet is ingesteld, is de standaardfrequentie 3 uur. De minimaal toegestane frequentie is 60 seconden.</translation>
-<translation id="1213523811751486361">Hiermee wordt de URL gespecificeerd voor de zoekmachine die wordt gebruikt om zoeksuggesties te leveren. De URL moet de tekenreeks '<ph name="SEARCH_TERM_MARKER" />' bevatten, die op het moment van de zoekopdracht wordt vervangen door de tekst die de gebruiker tot op dat moment heeft getypt. Dit beleid is optioneel. Als het beleid niet is ingesteld, wordt er geen suggestie-URL gebruikt. Dit beleid wordt alleen gerespecteerd als het beleid 'DefaultSearchProviderEnabled' is ingeschakeld.</translation>
 <translation id="1221359380862872747">Gespecificeerde URL's laden in demo-aanmeldvenster</translation>
-<translation id="1240643596769627465">Hiermee kun je de URL opgeven van de zoekmachine die wordt gebruikt om instant resultaten te leveren. De URL moet de tekenreeks '<ph name="SEARCH_TERM_MARKER" />' bevatten, die op het moment van de zoekopdracht wordt vervangen door de tekst die de gebruiker tot op dat moment heeft getypt.
-
-          Dit beleid is optioneel. Als het beleid niet is ingesteld, worden er geen instant resultaten geleverd.
-
-          Dit beleid wordt alleen gerespecteerd als het beleid 'DefaultSearchProviderEnabled' is ingeschakeld.</translation>
 <translation id="1265053460044691532">De offline inlogtijd beperken voor een gebruiker die is geverifieerd via SAML</translation>
 <translation id="1291880496936992484">Waarschuwing: RC4 wordt volledig verwijderd van <ph name="PRODUCT_NAME" /> na versie 52 (rond september 2016) en dit beleid werkt vanaf dan niet meer.
 
@@ -1110,9 +1104,6 @@
 <translation id="4928632305180102854">Controleert of <ph name="PRODUCT_OS_NAME" /> het maken van nieuwe gebruikersaccounts toestaat. Als dit beleid is ingesteld op 'false', kunnen gebruikers die nog geen account hebben inloggen.
 
       Als dit beleid is ingesteld op 'true' of niet is geconfigureerd, kunnen er nieuwe gebruikersaccounts worden gemaakt, mits <ph name="DEVICEUSERWHITELISTPROTO_POLICY_NAME" /> de gebruiker toestaat in te loggen.</translation>
-<translation id="4962195944157514011">Hiermee wordt de URL gespecificeerd voor de zoekmachine die wordt gebruikt voor standaard zoekopdrachten. De URL moet de tekenreeks '<ph name="SEARCH_TERM_MARKER" />' bevatten, die op het moment van de zoekopdracht wordt vervangen door de termen waarnaar de gebruiker zoekt.
-
-          Deze optie moet worden ingesteld wanneer het beleid 'DefaultSearchProviderEnabled' is ingeschakeld en wordt alleen gerespecteerd als dit het geval is.</translation>
 <translation id="4971529314808359013">Hiermee kun je een lijst met URL-patronen opgeven die sites specificeren waarvoor <ph name="PRODUCT_NAME" /> automatisch een clientcertificaat moet selecteren als de site vraagt om een certificaat.
 
           De waarde moet een array van JSON-woordenboeken met tekenreeksen zijn. Elk woordenboek moet de indeling { "pattern": "$URL_PATTERN", "filter" : $FILTER } hebben, waarbij $URL_PATTERN een patroon voor het instellen van inhoud is. $FILTER beperkt de clientcertificaten die de browser automatisch kan selecteren. Onafhankelijk van het filter, worden alleen certificaten geselecteerd die overeenkomen met het certificaatverzoek van de server. Als $FILTER de indeling { "ISSUER": { "CN": "$ISSUER_CN" } } heeft, worden daarnaast alleen clientcertificaten geselecteerd die zijn uitgegeven door een certificaat met de CommonName $ISSUER_CN. Als $FILTER het lege woordenboek {} is, wordt de selectie van clientcertificaten niet verder beperkt.

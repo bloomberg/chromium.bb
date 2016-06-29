@@ -183,7 +183,6 @@
 <translation id="1259724620062607540">Hyllobjekt 7</translation>
 <translation id="1260240842868558614">Visa:</translation>
 <translation id="126710816202626562">Översättningsspråk:</translation>
-<translation id="1269690813141254680">I <ph name="BEGIN_LINK" />Googles aktivitetsinställningar<ph name="END_LINK" /> kan du styra på vilket sätt Google använder webbhistorik för att anpassa Sök och andra Google-tjänster.</translation>
 <translation id="1272079795634619415">Stopp</translation>
 <translation id="1272978324304772054">Det här användarkontot hör inte till den domän som enheten är registrerad för. Om du vill registrera enheten för en annan domän måste du återställa den först.</translation>
 <translation id="127353061808977798">Teckensnitt och kodning</translation>
@@ -1675,7 +1674,6 @@ Från <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3317459757438853210">Dubbelsidig</translation>
 <translation id="331752765902890099">Knapp för <ph name="PROFILE_NAME" />: inloggningsfel</translation>
 <translation id="3319048459796106952">Nytt &amp;inkognitofönster</translation>
-<translation id="3319364804843246307">Android-appar</translation>
 <translation id="3320859581025497771">din operatör</translation>
 <translation id="3323235640813116393">När det här alternativet är aktiverat kan du spara sidor som MHTML: en enda textfil med HTML-koden och alla dess underresurser.</translation>
 <translation id="3323447499041942178">Textruta</translation>
@@ -2470,7 +2468,6 @@ Tryck på någon tangent om du vill fortsätta utforska.</translation>
 <translation id="4479639480957787382">Ethernet</translation>
 <translation id="4479812471636796472">Dvorak-tangentbord för USA</translation>
 <translation id="4481249487722541506">Hämta okomprimerat tillägg...</translation>
-<translation id="4482194545587547824">Google kan använda webbhistoriken för att anpassa Sök och andra tjänster från Google.</translation>
 <translation id="4487088045714738411">Belgiskt tangentbord</translation>
 <translation id="4492190037599258964">Sökresultat för "<ph name="SEARCH_STRING" />"</translation>
 <translation id="4495021739234344583">Avregistrera och starta om</translation>

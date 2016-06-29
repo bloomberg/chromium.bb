@@ -79,7 +79,6 @@
 <translation id="194341124344773587">‏הפעל הרשאה בשביל Chrome ב<ph name="BEGIN_LINK" />הגדרות Android<ph name="END_LINK" />.</translation>
 <translation id="1943432128510653496">שמור סיסמאות</translation>
 <translation id="1944384637046898011">‏הצפן הכל באמצעות סיסמת Google החל מ-<ph name="TIME" /></translation>
-<translation id="1946005195648379376">‏קבע כיצד Google משתמשת בהיסטוריית הגלישה שלך כדי להתאים אישית את החיפוש ושירותים אחרים של Google.</translation>
 <translation id="1966710179511230534">עדכן את פרטי הכניסה שלך.</translation>
 <translation id="1974060860693918893">מתקדם</translation>
 <translation id="1984321224716884559">‏סימניות של Chrome בגירסת הפיתוח</translation>
@@ -149,7 +148,9 @@
 <translation id="2748463065602559597">‏אתה מציג דף Google Chrome מאובטח.</translation>
 <translation id="2762000892062317888">ברגע זה</translation>
 <translation id="2770465223704140727">הסר מהרשימה</translation>
+<translation id="2777555524387840389">נותרו <ph name="SECONDS" /> שניות</translation>
 <translation id="278029852808208386">‏לא נמצאו מכשירי Bluetooth. <ph name="BEGIN_LINK" />חפש שוב<ph name="END_LINK" />.</translation>
+<translation id="2781151931089541271">נותרה שניה אחת</translation>
 <translation id="2781389167600714117">בחר אפשרויות משלוח</translation>
 <translation id="2811892995384186721">אינך רואה את המכשיר? <ph name="BEGIN_LINK" />קבל עזרה<ph name="END_LINK" /></translation>
 <translation id="2836148919159985482">כדי לצאת ממסך מלא, גע בלחצן 'הקודם'.</translation>
@@ -188,6 +189,7 @@
 <translation id="321773570071367578">אם שכחת את ביטוי הסיסמה או אם ברצונך לשנות את ההגדרה הזו, <ph name="BEGIN_LINK" />אפס את הסינכרון<ph name="END_LINK" /></translation>
 <translation id="3227137524299004712">מיקרופון</translation>
 <translation id="3232754137068452469">אפליקציית אינטרנט</translation>
+<translation id="3236059992281584593">נותרה דקה אחת</translation>
 <translation id="3244271242291266297">MM</translation>
 <translation id="3254409185687681395">הוסף את הדף לסימניות</translation>
 <translation id="326254929494722411">‏עדיין לא הגדרת חשבון Google במכשיר הזה</translation>
@@ -302,6 +304,7 @@
 <translation id="4720023427747327413">פתח ב-<ph name="PRODUCT_NAME" /></translation>
 <translation id="473775607612524610">עדכן</translation>
 <translation id="4738836084190194332">סונכרן לאחרונה: <ph name="WHEN" /></translation>
+<translation id="4758311279753947758">הוסף פרטים ליצירת קשר</translation>
 <translation id="4759238208242260848">הורדות</translation>
 <translation id="4773299976671772492">הופסק</translation>
 <translation id="4797039098279997504">גע כדי לחזור אל <ph name="URL_OF_THE_CURRENT_TAB" /></translation>
@@ -326,6 +329,7 @@
 <translation id="5063480226653192405">שימוש</translation>
 <translation id="5087580092889165836">הוסף כרטיס</translation>
 <translation id="5100237604440890931">מכווץ - לחץ כדי להרחיב.</translation>
+<translation id="510275257476243843">נותרה שעה אחת</translation>
 <translation id="5107381076085091558">ההורדה הושהתה.</translation>
 <translation id="5118713593561876160">תחומי עניין</translation>
 <translation id="5127805178023152808">סנכרון כבוי</translation>
@@ -409,6 +413,7 @@
 <translation id="5911030830365207728">Google Translate</translation>
 <translation id="5916664084637901428">פועל</translation>
 <translation id="5939518447894949180">אפס</translation>
+<translation id="5961742032223302715">בחר פרטים ליצירת קשר</translation>
 <translation id="5968595432776860642">מפעיל את "<ph name="VIDEO_TITLE" />"</translation>
 <translation id="6010869025736512584">גישה לפלט אודיו</translation>
 <translation id="6012342843556706400">‏Chrome זקוק לגישה אל המיקום כדי לשתף אותו עם האתר הזה.</translation>
@@ -419,6 +424,7 @@
 <translation id="604996488070107836">הורדת <ph name="FILE_NAME" /> נכשלה עקב שגיאה לא ידועה.</translation>
 <translation id="605721222689873409">YY</translation>
 <translation id="6075798973483050474">עריכת דף הבית</translation>
+<translation id="60923314841986378">נותרו <ph name="HOURS" /> שעות</translation>
 <translation id="6108923351542677676">ההגדרה מתבצעת…</translation>
 <translation id="6112702117600201073">מרענן את הדף</translation>
 <translation id="6127379762771434464">הפריט הוסר</translation>
@@ -427,6 +433,7 @@
 <translation id="6140912465461743537">ארץ/אזור</translation>
 <translation id="6159335304067198720">חיסכון בצריכת נתונים בשיעור של <ph name="PERCENT" /></translation>
 <translation id="6165508094623778733">למידע נוסף</translation>
+<translation id="6177390657002841081">‏הפעל את חוסך הנתונים (Data Saver)</translation>
 <translation id="6181444274883918285">הוסף חריג של אתר</translation>
 <translation id="6192792657125177640">יוצאי דופן</translation>
 <translation id="6232535412751077445">אם תפעיל את התכונה 'אל תעקוב', בקשה זו תיכלל בתנועת הגלישה שלך. השפעת הבקשה תלויה באופן הפעולה של כל אתר - אם הוא מגיב לבקשה או לא, וכיצד הוא מפרש אותה.
@@ -485,6 +492,7 @@
 <translation id="6857778194843072568">‏שלח ב-Wi-Fi בלבד</translation>
 <translation id="6865313869410766144">נתוני טפסים למילוי אוטומטי</translation>
 <translation id="6868088497967843822">היכנס כדי לקבל גישה אל הסימניות, ההיסטוריה, הסיסמאות והגדרות נוספות בכל המכשירים שברשותך</translation>
+<translation id="6903907808598579934">הפעל סנכרון</translation>
 <translation id="6945221475159498467">בחר</translation>
 <translation id="6963766334940102469">מחק סימניות</translation>
 <translation id="6965382102122355670">אישור</translation>
@@ -504,6 +512,7 @@
 <translation id="7056999826593229648">זוהה חיבור איטי</translation>
 <translation id="7057058088140140610">‏שימוש בכרטיסי אשראי ובכתובות באמצעות Google Payments</translation>
 <translation id="7063006564040364415">לא ניתן היה להתחבר אל שרת הסנכרון.</translation>
+<translation id="7064851114919012435">פרטים ליצירת קשר</translation>
 <translation id="7074853159844403180"><ph name="SITE" /> רוצה לבצע התאמה עם:</translation>
 <translation id="7081639897063626814">שמור בנפרד את הנתונים הקיימים</translation>
 <translation id="7094922512924405309">לא נמצאו דפים של האינטרנט הווירטופיזי בקרבת מקום</translation>
@@ -519,6 +528,7 @@
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" /> משתמש במיקום שלך כדי להציג תוצאות חיפוש מקומיות</translation>
 <translation id="7299441085833132046"><ph name="BEGIN_LINK" />עזרה<ph name="END_LINK" /></translation>
 <translation id="7299721129597238157">מחק סימניה</translation>
+<translation id="7327835590071894791">הכרטיסייה שלך פועלת כעת ברקע.</translation>
 <translation id="7347770551817603360">תוכן לא מקוון</translation>
 <translation id="7358452246665489050">מחשב...</translation>
 <translation id="7363354739009474003">טוען את "<ph name="VIDEO_TITLE" />"</translation>
@@ -569,6 +579,7 @@
 <translation id="780301667611848630">לא תודה</translation>
 <translation id="7829298379596169484">גישה לקלט אודיו</translation>
 <translation id="7837582000577464779">אירעה שגיאה במהלך עיבוד ההזמנה. בדוק את החשבון שלך ונסה שוב.</translation>
+<translation id="7837721118676387834">אפשר הפעלה אוטומטית של סרטונים מושתקים באתר ספציפי.</translation>
 <translation id="7846076177841592234">בטל את הבחירה</translation>
 <translation id="7851858861565204677">מכשירים אחרים</translation>
 <translation id="7876243839304621966">הסר הכל</translation>
@@ -583,6 +594,7 @@
 <translation id="8007176423574883786">כבוי בשביל המכשיר הזה</translation>
 <translation id="8026334261755873520">נקה נתוני גלישה</translation>
 <translation id="8035133914807600019">תיקייה חדשה…</translation>
+<translation id="8037750541064988519">נותרו <ph name="DAYS" /> ימים</translation>
 <translation id="8063895661287329888">הוספת הסימנייה נכשלה.</translation>
 <translation id="8068648041423924542">אין אפשרות לבחור אישור.</translation>
 <translation id="8069239273282989646">לאחר דחיסה</translation>
@@ -595,6 +607,7 @@
 <translation id="8137558756159375272">‏'גע כדי לחפש' שולח אל חיפוש Google את המילה הנבחרת, יחד עם הדף הנוכחי בתור הקשר. תוכל לכבות זאת ב<ph name="BEGIN_LINK" />הגדרות<ph name="END_LINK" />.</translation>
 <translation id="8168435359814927499">תוכן</translation>
 <translation id="8173098127580644436">משחר ההיסטוריה</translation>
+<translation id="8190358571722158785">נותר יום אחד</translation>
 <translation id="8200772114523450471">חדש</translation>
 <translation id="8202097416529803614">סיכום הזמנה</translation>
 <translation id="8209050860603202033">פתח את התמונה</translation>
@@ -619,6 +632,7 @@
 <translation id="8518901949365209398">‏באתר הזה נעשה שימוש בתצורת אבטחה חלשה (חתימות SHA-1), כך שייתכן שהחיבור שלך לא יהיה פרטי.</translation>
 <translation id="8525306231823319788">מסך מלא</translation>
 <translation id="854522910157234410">פתח דף זה</translation>
+<translation id="8559882854823529713">‏קרא מאוחר יותר ב-Chrome</translation>
 <translation id="8562452229998620586">הסיסמאות השמורות יופיעו כאן.</translation>
 <translation id="856481929701340285">בקש אתר לשולחן העבודה</translation>
 <translation id="857943718398505171">מותרת (מומלץ)</translation>
@@ -681,6 +695,7 @@
 <translation id="938850635132480979">שגיאה: <ph name="ERROR_CODE" /></translation>
 <translation id="945632385593298557">גישה למיקרופון שלך</translation>
 <translation id="969096075394517431">החלף שפות</translation>
+<translation id="970715775301869095">נותרו <ph name="MINUTES" /> דקות</translation>
 <translation id="981121421437150478">לא מקוון</translation>
 <translation id="983192555821071799">סגור את כל הכרטיסיות</translation>
 </translationbundle>

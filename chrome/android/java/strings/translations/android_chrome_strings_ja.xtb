@@ -79,7 +79,6 @@
 <translation id="194341124344773587"><ph name="BEGIN_LINK" />Android の設定<ph name="END_LINK" />で Chrome の権限を有効にしてください。</translation>
 <translation id="1943432128510653496">パスワードを保存する</translation>
 <translation id="1944384637046898011"><ph name="TIME" />時点の Google パスワードですべてのデータを暗号化する</translation>
-<translation id="1946005195648379376">Google が閲覧履歴をどのような方法で使用し、検索やその他の Google サービスをカスタマイズするかを設定します。</translation>
 <translation id="1966710179511230534">ログイン情報を更新してください。</translation>
 <translation id="1974060860693918893">詳細設定</translation>
 <translation id="1984321224716884559">Chrome Dev のブックマーク</translation>
@@ -427,6 +426,7 @@
 <translation id="6140912465461743537">国 / 地域</translation>
 <translation id="6159335304067198720"><ph name="PERCENT" /> のデータを削減</translation>
 <translation id="6165508094623778733">詳しく見る</translation>
+<translation id="6177390657002841081">データセーバーをオンにする</translation>
 <translation id="6181444274883918285">サイトの例外を追加</translation>
 <translation id="6192792657125177640">例外</translation>
 <translation id="6232535412751077445">「トラッキング拒否」を有効にすると、リクエストが閲覧トラフィックに含まれるようになります。ウェブサイトがリクエストに応答するかどうか、またリクエストがどのように解釈されるかによって、この影響は異なります。
@@ -485,6 +485,7 @@
 <translation id="6857778194843072568">Wi-Fi のみで送信</translation>
 <translation id="6865313869410766144">自動入力フォームのデータ</translation>
 <translation id="6868088497967843822">ログインすると、お使いのどのデバイスでも同じブックマーク、履歴、パスワード、その他の設定を利用できるようになります。</translation>
+<translation id="6903907808598579934">同期を有効にする</translation>
 <translation id="6945221475159498467">選択</translation>
 <translation id="6963766334940102469">ブックマークを削除</translation>
 <translation id="6965382102122355670">OK</translation>

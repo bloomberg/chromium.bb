@@ -48,17 +48,7 @@ Na straně serveru tato funkce v současné době není k dispozici.</translat
 <translation id="1198465924256827162">Frekvence odesílání informací o stavu zařízení (v milisekundách).
 
 Není-li tato zásada nastavena, výchozí frekvence je 3 hodiny. Minimální povolená frekvence je 60 sekund.</translation>
-<translation id="1213523811751486361">Určuje adresu URL vyhledávače, který bude použit k získání návrhů pro vyhledávání. Adresa URL by měla obsahovat řetězec <ph name="SEARCH_TERM_MARKER" />, který bude během dotazování nahrazen textem zadávaným uživatelem.
-
-          Tato zásada je nepovinná. Pokud ji nenastavíte, nebude adresa URL pro návrhy použita.
-
-          Zásada bude dodržována pouze v případě, že je aktivní zásada DefaultSearchProviderEnabled.</translation>
 <translation id="1221359380862872747">Načíst konkrétní adresy URL při přihlášení do ukázky</translation>
-<translation id="1240643596769627465">Určuje adresu URL vyhledávače, který bude použit k získání výsledků dynamického vyhledávání. Adresa URL by měla obsahovat řetězec <ph name="SEARCH_TERM_MARKER" />.Tento řetězec bude při odesílání dotazu nahrazen textem, který do daného okamžiku zadal uživatel.
-
-          Tato zásada je nepovinná. Pokud není nastavena, nebudou se zobrazovat výsledky dynamického vyhledávání.
-
-          Zásada je dodržována pouze v případě, že je aktivní zásada DefaultSearchProviderEnabled.</translation>
 <translation id="1265053460044691532">Omezit dobu, po kterou se uživatel ověřený pomocí technologie SAML může přihlásit offline</translation>
 <translation id="1291880496936992484">Upozornění: Po verzi 52 (přibližně v září 2016) bude šifrovací algoritmus RC4 z prohlížeče <ph name="PRODUCT_NAME" /> zcela odstraněn a tato zásada přestane fungovat.
 
@@ -1079,9 +1069,6 @@ Pokud ji ponecháte nenastavenou, lupa bude ve výchozím nastavení deaktivová
 <translation id="4928632305180102854">Určuje, zda v systému <ph name="PRODUCT_OS_NAME" /> bude možné vytvářet nové uživatelské účty. Pokud je tato zásada nastavena na hodnotu False, uživatelé, kteří ještě nemají účet, se nebudou moci přihlásit.
 
       Pokud je zásada nastavena na hodnotu True nebo není nastavena, bude možné vytvářet nové uživatelské účty za předpokladu, že přihlášení uživatele není blokováno zásadou <ph name="DEVICEUSERWHITELISTPROTO_POLICY_NAME" />.</translation>
-<translation id="4962195944157514011">Určuje adresu URL vyhledávače, který bude použit při výchozím vyhledávání. Adresa URL by měla obsahovat řetězec <ph name="SEARCH_TERM_MARKER" />, který bude během dotazování nahrazen vyhledávacími dotazy uživatele.
-
-          Tato možnost musí být nastavena, pokud je aktivní zásada DefaultSearchProviderEnabled, a bude dodržována pouze v takovém případě.</translation>
 <translation id="4971529314808359013">Umožňuje zadat seznam vzorů adres URL, pro které by měl prohlížeč <ph name="PRODUCT_NAME" /> automaticky vybrat klientský certifikát, pokud o něj web požádá.
 
           Hodnota musí být pole slovníků JSON převedených na řetězce. Každý slovník musí mít tvar { "pattern": "$URL_PATTERN", "filter" : $FILTER }, kde $URL_PATTERN je vzor nastavení obsahu. $FILTER omezuje klientské certifikáty, ze kterých bude prohlížeč automaticky vybírat. Nezávisle na filtru budou vybrány pouze ty certifikáty, které odpovídají žádosti serveru o certifikát. Pokud má $FILTER tvar { "ISSUER": { "CN": "$ISSUER_CN" } }, budou navíc vybrány pouze ty klientské certifikáty, které byly vydány certifikátem s běžným názvem $ISSUER_CN. Pokud je $FILTER prázdný slovník {}, výběr klientských certifikátů není nijak dále omezen.

@@ -50,17 +50,7 @@
 
       Bu politika ayarlanmadan bırakılırsa varsayılan sıklık 3 saattir. İzin
       verilen minimum sıklık ise 60 saniyedir.</translation>
-<translation id="1213523811751486361">Arama önerileri sağlamak için kullanılan arama motorunun URL'sini belirtir. URL, '<ph name="SEARCH_TERM_MARKER" />' dizesini içermelidir. Sorgu sırasında bu dizenin yerini, kullanıcının o zamana kadar girmiş olduğu metin alacaktır.
-
-          Bu politika isteğe bağlıdır. Ayarlanmazsa, herhangi bir öneri URL'si kullanılmaz.
-
-          Bu politikaya yalnızca 'DefaultSearchProviderEnabled' politikası etkinleştirildiğinde uyulur.</translation>
 <translation id="1221359380862872747">Demo girişinde belirtilen URL'leri yükle</translation>
-<translation id="1240643596769627465">Anında arama sonuçları sağlamak için kullanılan arama motorunun URL'sini belirtir. URL, <ph name="SEARCH_TERM_MARKER" /> dizesini içermelidir. Sorgu sırasında, kullanıcının girmekte olduğu metin bu dizenin yerini alır.
-
-          Bu politika isteğe bağlıdır. Ayarlanmazsa, herhangi bir arama sonucu sağlanmaz.
-
-          Bu politikaya yalnızca 'DefaultSearchProviderEnabled' politikası etkinleştirilirse uyulur.</translation>
 <translation id="1265053460044691532">SAML kullanarak kimlik doğrulaması yapmış kullanıcının çevrimdışı olarak giriş yapabileceği süreyi sınırla</translation>
 <translation id="1291880496936992484">Uyarı: RC4, sürüm 52'den sonra (yaklaşık olarak Eylül 2016'da) <ph name="PRODUCT_NAME" /> ürününden tamamen kaldırılacak ve sonrasında bu politika çalışmayacaktır.
 
@@ -1124,9 +1114,6 @@ politikayı geçersiz kılamaz.
 <translation id="4928632305180102854">Yeni kullanıcı hesaplarının oluşturulmasına <ph name="PRODUCT_OS_NAME" /> tarafından izin verilip verilmeyeceğini denetler. Bu politika false değerine ayarlanırsa, hesabı olmayan kullanıcılar giriş yapamaz.
 
       Bu politika true olarak ayarlanırsa veya hiçbir şekilde ayarlanmazsa, <ph name="DEVICEUSERWHITELISTPROTO_POLICY_NAME" /> tarafından kullanıcıların giriş yapmasının engellenmemesi koşuluyla yeni kullanıcı hesaplarının oluşturulmasına izin verilir.</translation>
-<translation id="4962195944157514011">Bir varsayılan arama gerçekleştirilirken kullanılan arama motorunun URL'sini belirtir. URL, '<ph name="SEARCH_TERM_MARKER" />' dizesini içermelidir. Sorgu sırasında, kullanıcının aramakta olduğu terimler bu dizenin yerini alır.
-
-          'DefaultSearchProviderEnabled' politikası etkinleştirildiğinde bu seçenek ayarlanmalıdır ve yalnızca bu durumda uygulanır.</translation>
 <translation id="4971529314808359013">Site bir sertifika istiyorsa, <ph name="PRODUCT_NAME" /> ürününün otomatik olarak hangi siteler için bir istemci sertifikası seçeceğini belirten URL kalıplarının listesini sağlamanıza olanak verir.
 
           Değer, dizeleştirilmiş bir JSON sözlükleri dizisi olmalıdır. Her sözlük { "pattern": "$URL_PATTERN", "filter" : $FILTER } biçiminde olmalıdır; burada $URL_PATTERN içerik ayarı kalıbıdır. $FILTER, tarayıcının otomatik olarak seçeceği istemci sertifikalarını kısıtlar. Filtre ayarı ne olursa olsun, sadece sunucunun sertifika isteğiyle eşleşen sertifikalar seçilir. $FILTER ifadesi { "ISSUER": { "CN": "$ISSUER_CN" } } biçimindeyse, bunun yanı sıra sadece CommonName $ISSUER_CN olarak belirtilmiş bir sertifika tarafından yayınlanan istemci sertifikaları seçilir. $FILTER boş bir sözlük {} olursa, istemci sertifikalarının seçimi üzerinde başka kısıtlanma uygulanmaz.

@@ -49,17 +49,7 @@
 
       Ja šai politikai nav iestatīta vērtība, tiek lietots noklusējuma biežums:
       3 stundas. Minimālais atļautais biežums ir 60 sekundes.</translation>
-<translation id="1213523811751486361">Norāda meklētājprogrammas URL, kas tiek izmantota ieteikumu rādīšanai. URL ir jāietver virkne <ph name="SEARCH_TERM_MARKER" />, kas vaicājuma ievadīšanas brīdī tiks aizvietota ar lietotāja tobrīd ievadīto tekstu.
-
-          Šī politika ir neobligāta. Ja tā nav iestatīta, ieteikumu URL netiks lietots.
-
-          Šī politika tiek ievērota tikai tad, ja ir iespējota politika DefaultSearchProviderEnabled.</translation>
 <translation id="1221359380862872747">Ielādēt norādītos vietrāžus URL demonstrācijas pieteikšanās brīdī</translation>
-<translation id="1240643596769627465">Norāda meklētājprogrammas URL, kas tiek izmantota dinamiskās meklēšanas rezultātu rādīšanai. URL ir jāietver virkne <ph name="SEARCH_TERM_MARKER" />, kas vaicājuma ievadīšanas brīdī tiks aizvietota ar lietotāja tobrīd ievadīto tekstu.
-
-          Šī politika ir neobligāta. Ja tā nav iestatīta, dinamiskās meklēšanas rezultāti netiks rādīti.
-
-          Šī politika tiek ievērota tikai tad, ja ir iespējota politika DefaultSearchProviderEnabled.</translation>
 <translation id="1265053460044691532">Ierobežojiet laiku, kad autentificēts lietotājs, izmantojot SAML, var pieteikties bezsaistē.</translation>
 <translation id="1291880496936992484">Brīdinājums: RC4 tiks pilnībā noņemts no <ph name="PRODUCT_NAME" /> pēc 52. versijas (aptuveni 2016. gada septembrī), un šī politika vairs nebūs spēkā.
 
@@ -1114,9 +1104,6 @@
 <translation id="4928632305180102854">Kontrolē to, vai produkts <ph name="PRODUCT_OS_NAME" /> ļauj veidot jaunu lietotāju kontus. Ja politika ir iestatīta uz Aplama, lietotāji, kuriem nav konta, nevar pieteikties.
 
       Ja politika ir iestatīta uz Aplama vai netiek konfigurēta, jaunu lietotāju kontus drīkst izveidot, norādot to, ka produkts <ph name="DEVICEUSERWHITELISTPROTO_POLICY_NAME" /> neliedz lietotājam pieteikties.</translation>
-<translation id="4962195944157514011">Norāda meklētājprogrammas URL, kas tiek izmantota noklusējuma meklēšanai. URL ir jāietver virkne <ph name="SEARCH_TERM_MARKER" />, kas vaicājuma ievadīšanas brīdī tiks aizvietota ar lietotāja meklētajiem vārdiem.
-
-          Šai opcijai jābūt iestatītai, ja ir iespējota politika DefaultSearchProviderEnabled, un tā tiks ievērota tikai šādā gadījumā.</translation>
 <translation id="4971529314808359013">Ļauj norādīt tādu URL šablonu sarakstu, kas norāda vietnes, kurām pārlūkā <ph name="PRODUCT_NAME" /> ir automātiski jāatlasa klienta sertifikāts, ja vietne pieprasa sertifikātu.
 
           Vērtībai ir jābūt virknētai JSON vārdnīcu masīvam. Katrai vārdnīcai ir jābūt šādā formā: { "pattern": "$URL_PATTERN", "filter" : $FILTER } (kur $URL_PATTERN ir satura iestatījuma raksts). $FILTER ierobežo, no kura klienta pārlūkprogrammā tiks automātiski atlasīti sertifikāti. Neatkarīgi no filtra tiks atlasīti tikai sertifikāti, kas atbilst servera sertifikāta pieprasījumam. Ja $FILTER ir formā { "ISSUER": { "CN": "$ISSUER_CN" } }, papildus tiek atlasīti tikai klienta sertifikāti, kas izsniegti, izmantojot sertifikātu ar nosaukumu CommonName $ISSUER_CN. Ja $FILTER ir tukšā vārdnīca {}, klienta sertifikātu atlasīšana nav papildus ierobežota.

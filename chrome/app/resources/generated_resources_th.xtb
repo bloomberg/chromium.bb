@@ -183,7 +183,6 @@
 <translation id="1259724620062607540">รายการชั้นวาง 7</translation>
 <translation id="1260240842868558614">แสดง:</translation>
 <translation id="126710816202626562">ภาษาที่แปล:</translation>
-<translation id="1269690813141254680">ควบคุมวิธีที่ Google ใช้ประวัติการท่องเว็บของคุณเพื่อปรับเปลี่ยน Search และบริการอื่นๆ ของ Google ในแบบของคุณจาก<ph name="BEGIN_LINK" />ส่วนควบคุมกิจกรรม Google<ph name="END_LINK" /></translation>
 <translation id="1272079795634619415">หยุด</translation>
 <translation id="1272978324304772054">บัญชีผู้ใช้นี้ไม่ได้อยู่ในโดเมนที่ลงทะเบียนอุปกรณ์ ถ้าคุณต้องการลงทะเบียนไปยังโดเมนอื่น คุณจะต้องกู้คืนอุปกรณ์ก่อน</translation>
 <translation id="127353061808977798">แบบอักษรและการเข้ารหัส</translation>
@@ -1672,7 +1671,6 @@
 <translation id="3317459757438853210">สองด้าน</translation>
 <translation id="331752765902890099">ปุ่ม <ph name="PROFILE_NAME" />: เกิดข้อผิดพลาดในการลงชื่อเข้าใช้</translation>
 <translation id="3319048459796106952">หน้าต่างใหม่และไม่ระบุตัวตน</translation>
-<translation id="3319364804843246307">แอป Android</translation>
 <translation id="3320859581025497771">ผู้ให้บริการของคุณ</translation>
 <translation id="3323235640813116393">เปิดใช้การบันทึกหน้าเป็น MHTML ซึ่งเป็นไฟล์ข้อความไฟล์เดียวที่มี HTML และทรัพยากรย่อยทั้งหมด</translation>
 <translation id="3323447499041942178">ช่องข้อความ</translation>
@@ -2467,7 +2465,6 @@
 <translation id="4479639480957787382">อีเทอร์เน็ต</translation>
 <translation id="4479812471636796472">แป้นพิมพ์ภาษาดีโวรักสหรัฐอเมริกา</translation>
 <translation id="4481249487722541506">โหลดส่วนขยายที่คลายการแพคแล้ว...</translation>
-<translation id="4482194545587547824">Google อาจใช้ประวัติการท่องเว็บของคุณเพื่อปรับเปลี่ยน Search และบริการอื่นๆ ของ Google ในแบบของคุณ</translation>
 <translation id="4487088045714738411">แป้นพิมพ์ภาษาเบลเยียม</translation>
 <translation id="4492190037599258964">ผลการค้นหาคำว่า "<ph name="SEARCH_STRING" />"</translation>
 <translation id="4495021739234344583">ยกเลิกการลงทะเบียนและรีสตาร์ท</translation>

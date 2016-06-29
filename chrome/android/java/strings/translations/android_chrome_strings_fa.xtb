@@ -79,7 +79,6 @@
 <translation id="194341124344773587">‏مجوز Chrome را در <ph name="BEGIN_LINK" />تنظیمات Android <ph name="END_LINK" /> روشن کنید.</translation>
 <translation id="1943432128510653496">ذخیره گذرواژه‌ها</translation>
 <translation id="1944384637046898011">‏رمزگذاری همه با گذرواژه Google از تاریخ <ph name="TIME" /></translation>
-<translation id="1946005195648379376">‏نحوه استفاده Google از سابقه مرورتان را برای شخصی‌سازی جستجو و سایر سرویس‌های Google کنترل کنید.</translation>
 <translation id="1966710179511230534">لطفاً جزئیات ورود به سیستم را به‌روز کنید.</translation>
 <translation id="1974060860693918893">پیشرفته</translation>
 <translation id="1984321224716884559">‏نشانک‌های Chrome پیشرفته</translation>
@@ -426,6 +425,7 @@
 <translation id="6140912465461743537">کشور/منطقه</translation>
 <translation id="6159335304067198720">ذخیره داده‌ها: <ph name="PERCENT" /></translation>
 <translation id="6165508094623778733">بیشتر بدانید</translation>
+<translation id="6177390657002841081">روشن کردن «صرفه‌جویی در مصرف داده»</translation>
 <translation id="6181444274883918285">افزودن استثنای سایت</translation>
 <translation id="6192792657125177640">موارد استثنا</translation>
 <translation id="6232535412751077445">فعال کردن «ردیابی نشود» به این معنی است که درخواستی به ترافیک مرور شما اضافه می‌شود. هر گونه اثری به این بستگی دارد که وب‌سایت به درخواست‌ پاسخ می‌دهد یا نه و درخواست چگونه تفسیر می‌شود.
@@ -484,6 +484,7 @@
 <translation id="6857778194843072568">‏ارسال فقط از طریق Wi-Fi</translation>
 <translation id="6865313869410766144">تکمیل خودکار داده‌های فرم</translation>
 <translation id="6868088497967843822">برای دریافت نشانک‌ها، سابقه، گذرواژه‌ها و سایر تنظیماتتان در همه دستگاه‌هایتان، به سیستم وارد شوید</translation>
+<translation id="6903907808598579934">روشن کردن همگام‌سازی</translation>
 <translation id="6945221475159498467">انتخاب</translation>
 <translation id="6963766334940102469">حذف نشانک‌ها</translation>
 <translation id="6965382102122355670">تأیید</translation>

@@ -79,7 +79,6 @@
 <translation id="194341124344773587">在 <ph name="BEGIN_LINK" />Android 设置<ph name="END_LINK" />中为 Chrome 启用这项权限。</translation>
 <translation id="1943432128510653496">保存密码</translation>
 <translation id="1944384637046898011">自 <ph name="TIME" />起，使用 Google 密码加密所有数据</translation>
-<translation id="1946005195648379376">控制 Google 如何使用您的浏览记录对 Google 搜索和其他 Google 服务进行个性化设置。</translation>
 <translation id="1966710179511230534">请更新您的登录详细信息。</translation>
 <translation id="1974060860693918893">高级</translation>
 <translation id="1984321224716884559">Chrome Dev 版书签</translation>
@@ -427,6 +426,7 @@
 <translation id="6140912465461743537">国家/地区</translation>
 <translation id="6159335304067198720">节省 <ph name="PERCENT" /> 的数据流量</translation>
 <translation id="6165508094623778733">了解详情</translation>
+<translation id="6177390657002841081">启用流量节省程序</translation>
 <translation id="6181444274883918285">添加例外网站</translation>
 <translation id="6192792657125177640">例外</translation>
 <translation id="6232535412751077445">如果您启用了“不跟踪”，您的浏览流量中将会包含一项请求。具体影响取决于网站是否会回应该请求以及如何解读该请求。
@@ -485,6 +485,7 @@
 <translation id="6857778194843072568">仅在使用 WLAN 网络时发送</translation>
 <translation id="6865313869410766144">自动填充表单数据</translation>
 <translation id="6868088497967843822">登录后可获取您所有设备上保存的书签、历史记录、密码和其他设置</translation>
+<translation id="6903907808598579934">开启同步功能</translation>
 <translation id="6945221475159498467">选择</translation>
 <translation id="6963766334940102469">删除书签</translation>
 <translation id="6965382102122355670">确定</translation>

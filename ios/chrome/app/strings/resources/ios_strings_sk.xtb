@@ -10,6 +10,7 @@
 <translation id="2704606927547763573">Skopírované</translation>
 <translation id="2747003861858887689">Predchádzajúce pole</translation>
 <translation id="2780046210906776326">Žiadne e-mailové účty</translation>
+<translation id="3172213052701798825">Google Smart Lock na heslá</translation>
 <translation id="3244271242291266297">MM</translation>
 <translation id="3252394070589632019"><ph name="VALUE" />, <ph name="ADDITIONAL_INFO" />, <ph name="INDEX" /> z <ph name="NUM_SUGGESTIONS" /></translation>
 <translation id="3335947283844343239">Znova otvoriť zatvorenú kartu</translation>
@@ -20,6 +21,7 @@
 <translation id="4399225372525667111">Prehliadaču Chrome sa nepodarilo verifikovať, či je webová adresa pre tieto stránky správna.</translation>
 <translation id="4728558894243024398">Platforma</translation>
 <translation id="473775607612524610">Aktualizovať</translation>
+<translation id="4875622588773761625">Chcete, aby <ph name="PASSWORD_MANAGER_BRAND" /> ukladal heslá pre tieto stránky?</translation>
 <translation id="5317780077021120954">Uložiť</translation>
 <translation id="605721222689873409">RR</translation>
 <translation id="6149061208933997199">Použiť heslo</translation>
@@ -28,7 +30,9 @@
 <translation id="6344783595350022745">Prehľadný text</translation>
 <translation id="6456425917241817154">Heslo vygenerované prehliadačom Chrome</translation>
 <translation id="6535543971741225613">Stránky, ktoré sa snažíte otvoriť, sa správajú čudne a prehliadaču Chrome sa nepodarilo verifikovať, či je ich webová adresa správna. Z bezpečnostných dôvodov by ste preto nemali pokračovať. Skúste to buď zajtra, alebo prejdite na iné stránky.</translation>
+<translation id="6647073004883890710">Chcete, aby aplikácia <ph name="PASSWORD_MANAGER_BRAND" /> aktualizovala heslo používateľa <ph name="USERNAME" /> pre tento web?</translation>
 <translation id="7222245588540287464">Určuje, či je alebo nie je povolené kontextové vyhľadávanie.</translation>
+<translation id="7378627244592794276">Nie</translation>
 <translation id="7456847797759667638">Otvoriť umiestnenie...</translation>
 <translation id="7481312909269577407">Dopredu</translation>
 <translation id="7484580869648358686">Upozornenie: Niečo tu nesedí!</translation>

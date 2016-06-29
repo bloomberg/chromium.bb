@@ -10,6 +10,7 @@
 <translation id="2704606927547763573">Nokopēts</translation>
 <translation id="2747003861858887689">Iepriekšējais lauks</translation>
 <translation id="2780046210906776326">Nav e-pasta kontu</translation>
+<translation id="3172213052701798825">Google Smart Lock parolēm</translation>
 <translation id="3244271242291266297">MM</translation>
 <translation id="3252394070589632019"><ph name="VALUE" />, <ph name="ADDITIONAL_INFO" />, <ph name="INDEX" />. no <ph name="NUM_SUGGESTIONS" /></translation>
 <translation id="3335947283844343239">Vēlreiz atvērt aizvērto cilni</translation>
@@ -20,6 +21,7 @@
 <translation id="4399225372525667111">Chrome nevar apstiprināt, ka šīs vietnes URL ir pareizs.</translation>
 <translation id="4728558894243024398">Platforma</translation>
 <translation id="473775607612524610">Atjaunināt</translation>
+<translation id="4875622588773761625">Vai vēlaties, lai <ph name="PASSWORD_MANAGER_BRAND" /> atjauninātu jūsu paroli šai vietnei?</translation>
 <translation id="5317780077021120954">Saglabāt</translation>
 <translation id="605721222689873409">GG</translation>
 <translation id="6149061208933997199">Izmantot paroli</translation>
@@ -28,7 +30,9 @@
 <translation id="6344783595350022745">Notīrīt tekstu</translation>
 <translation id="6456425917241817154">Chrome ģenerēta parole</translation>
 <translation id="6535543971741225613">Vietnē, kurai mēģināt piekļūt, notiek neparastas darbības, un Chrome nevar apstiprināt, ka vietnes URL ir pareizs. Drošības nolūkos ieteicams pārtraukt šo sesiju. Varat mēģināt atvērt šo vietni vēlreiz rīt, vai arī apmeklējiet citu vietni.</translation>
+<translation id="6647073004883890710">Vai vēlaties, lai <ph name="PASSWORD_MANAGER_BRAND" /> atjauninātu lietotāja <ph name="USERNAME" /> paroli šai vietnei?</translation>
 <translation id="7222245588540287464">Nosaka, vai ir iespējota kontekstuālā meklēšana.</translation>
+<translation id="7378627244592794276">Nē</translation>
 <translation id="7456847797759667638">Atvērt atrašanās vietu...</translation>
 <translation id="7481312909269577407">Pārsūtīt</translation>
 <translation id="7484580869648358686">Brīdinājums! Šeit kaut kas nav kārtībā.</translation>

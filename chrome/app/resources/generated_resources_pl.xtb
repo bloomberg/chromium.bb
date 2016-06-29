@@ -183,7 +183,6 @@
 <translation id="1259724620062607540">7 element na półce</translation>
 <translation id="1260240842868558614">Wyświetl:</translation>
 <translation id="126710816202626562">Język tłumaczenia:</translation>
-<translation id="1269690813141254680">Określ, jak Google może korzystać z Twojej historii przeglądania, by dostosowywać wyniki wyszukiwania i działanie innych usług, korzystając ze strony <ph name="BEGIN_LINK" />Zarządzanie aktywnością w Google<ph name="END_LINK" />.</translation>
 <translation id="1272079795634619415">Zatrzymaj</translation>
 <translation id="1272978324304772054">To konto użytkownika nie należy do domeny, w której urządzenie jest zarejestrowane. Jeśli chcesz się zarejestrować w innej domenie, musisz najpierw przeprowadzić odzyskiwanie urządzenia.</translation>
 <translation id="127353061808977798">Czcionki i kodowanie</translation>
@@ -1673,7 +1672,6 @@ Dalsze instrukcje znajdziesz w e-mailu przesłanym na adres <ph name="ACCOUNT_EM
 <translation id="3317459757438853210">Dwustronne</translation>
 <translation id="331752765902890099">Przycisk <ph name="PROFILE_NAME" />: błąd logowania</translation>
 <translation id="3319048459796106952">Nowe okno &amp;incognito</translation>
-<translation id="3319364804843246307">Aplikacje na Androida</translation>
 <translation id="3320859581025497771">Twój operator</translation>
 <translation id="3323235640813116393">Włącza zapisywanie stron w formacie MHTML: pojedynczego pliku tekstowego zawierającego kod HTML i wszystkie zasoby podrzędne.</translation>
 <translation id="3323447499041942178">Pole tekstowe</translation>
@@ -2468,7 +2466,6 @@ Naciśnij dowolny klawisz, by kontynuować przeglądanie.</translation>
 <translation id="4479639480957787382">Ethernet</translation>
 <translation id="4479812471636796472">Klawiatura amerykańska (Dvorak)</translation>
 <translation id="4481249487722541506">Wczytaj rozszerzenie bez pakietu...</translation>
-<translation id="4482194545587547824">Google może korzystać z Twojej historii przeglądania, by dostosowywać wyniki wyszukiwania i działanie innych usług</translation>
 <translation id="4487088045714738411">Klawiatura belgijska</translation>
 <translation id="4492190037599258964">Wyniki wyszukiwania dla „<ph name="SEARCH_STRING" />”</translation>
 <translation id="4495021739234344583">Wyrejestruj i ponownie uruchom</translation>

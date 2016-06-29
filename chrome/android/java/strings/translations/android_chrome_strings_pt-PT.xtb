@@ -79,7 +79,6 @@ Tem de ter a Localização e o Bluetooth ativados para poder utilizar a Web fís
 <translation id="194341124344773587">Ative a autorização para o Chrome nas <ph name="BEGIN_LINK" />Definições do Android<ph name="END_LINK" />.</translation>
 <translation id="1943432128510653496">Guardar palavras-passe</translation>
 <translation id="1944384637046898011">Encriptar tudo com uma palavra-passe do Google a partir de <ph name="TIME" /></translation>
-<translation id="1946005195648379376">Controle a forma como a Google utiliza o seu histórico de navegação para personalizar a Pesquisa Google e outros serviços Google.</translation>
 <translation id="1966710179511230534">Atualize os detalhes de início de sessão.</translation>
 <translation id="1974060860693918893">Avançadas</translation>
 <translation id="1984321224716884559">Marcadores do Chrome Dev</translation>
@@ -427,6 +426,7 @@ No entanto, a navegação não é invisível. Passar para o modo de navegação 
 <translation id="6140912465461743537">País/região</translation>
 <translation id="6159335304067198720"><ph name="PERCENT" /> de poupança de dados</translation>
 <translation id="6165508094623778733">Saiba mais</translation>
+<translation id="6177390657002841081">Ativar a Poupança de dados</translation>
 <translation id="6181444274883918285">Adicionar exceção de site</translation>
 <translation id="6192792657125177640">Excepções</translation>
 <translation id="6232535412751077445">A ativação da funcionalidade "Não Monitorizar" significa que é incluído um pedido no seu tráfego de navegação. Qualquer efeito depende de um Website responder ou não ao pedido e do modo como o pedido é interpretado.
@@ -485,6 +485,7 @@ Por exemplo, alguns Websites podem responder a este pedido ao mostrar-lhe anúnc
 <translation id="6857778194843072568">Enviar apenas em Wi-Fi</translation>
 <translation id="6865313869410766144">Dados de formulário de Preenchimento automático</translation>
 <translation id="6868088497967843822">Iniciar sessão para aceder aos marcadores, ao histórico, às palavras-passe e a outras definições em todos os dispositivos</translation>
+<translation id="6903907808598579934">Ativar sincronização</translation>
 <translation id="6945221475159498467">Seleccionar</translation>
 <translation id="6963766334940102469">Eliminar marcadores</translation>
 <translation id="6965382102122355670">OK</translation>

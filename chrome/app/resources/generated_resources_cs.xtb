@@ -183,7 +183,6 @@ Na následující obrazovce prosím zadejte zpětnou vazbu, která nám problém
 <translation id="1259724620062607540">Položka č. 7 v poličce</translation>
 <translation id="1260240842868558614">Zobrazit:</translation>
 <translation id="126710816202626562">Jazyk překladu:</translation>
-<translation id="1269690813141254680">Způsob, jakým Google používá vaši historii k přizpůsobení Vyhledávání a dalších služeb Google, můžete ovládat pomocí <ph name="BEGIN_LINK" />Ovládacích prvků aktivity Google<ph name="END_LINK" />.</translation>
 <translation id="1272079795634619415">Zastavit</translation>
 <translation id="1272978324304772054">Tento uživatelský účet nepatří do domény, do které je zaregistrováno toto zařízení. Chcete-li se zaregistrovat do jiné domény, je nutné nejdříve provést obnovení zařízení.</translation>
 <translation id="127353061808977798">Písmo a kódování</translation>
@@ -1671,7 +1670,6 @@ Pokud nezměníte výchozí nastavení, uživatel <ph name="USER_DISPLAY_NAME" /
 <translation id="3317459757438853210">Oboustranně</translation>
 <translation id="331752765902890099">Tlačítko <ph name="PROFILE_NAME" />: chyba přihlášení</translation>
 <translation id="3319048459796106952">Nové &amp;anonymní okno</translation>
-<translation id="3319364804843246307">Aplikace pro Android</translation>
 <translation id="3320859581025497771">svého operátora</translation>
 <translation id="3323235640813116393">Aktivuje ukládání stránek ve formátu MHTML, tj. do jednoho textového souboru s kódem HTML a všemi dílčími zdroji.</translation>
 <translation id="3323447499041942178">Textové pole</translation>
@@ -2465,7 +2463,6 @@ Chcete-li pokračovat v práci, stiskněte libovolnou klávesu.</translation>
 <translation id="4479639480957787382">Ethernet</translation>
 <translation id="4479812471636796472">Americká klávesnice s rozložením Dvorak</translation>
 <translation id="4481249487722541506">Načíst rozbalené rozšíření...</translation>
-<translation id="4482194545587547824">Google vaši historii procházení může používat k přizpůsobení Vyhledávání a dalších služeb Google.</translation>
 <translation id="4487088045714738411">Belgická klávesnice</translation>
 <translation id="4492190037599258964">Výsledky vyhledávání pro výraz „<ph name="SEARCH_STRING" />“</translation>
 <translation id="4495021739234344583">Zrušit registraci a restartovat</translation>

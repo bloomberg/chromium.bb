@@ -10,6 +10,7 @@
 <translation id="2704606927547763573">Kopyalandı</translation>
 <translation id="2747003861858887689">Önceki alan</translation>
 <translation id="2780046210906776326">E-posta Hesabı Yok</translation>
+<translation id="3172213052701798825">Şifreler için Google Smart Lock</translation>
 <translation id="3244271242291266297">AA</translation>
 <translation id="3252394070589632019"><ph name="VALUE" />, <ph name="ADDITIONAL_INFO" />, <ph name="INDEX" /> / <ph name="NUM_SUGGESTIONS" /></translation>
 <translation id="3335947283844343239">Kapatılan Sekmeyi Tekrar Aç</translation>
@@ -20,6 +21,7 @@
 <translation id="4399225372525667111">Chrome bu sitenin URL'sinin doğruluğunu onaylayamıyor.</translation>
 <translation id="4728558894243024398">Platform</translation>
 <translation id="473775607612524610">Güncelle</translation>
+<translation id="4875622588773761625">Bu siteye ait şifrenizin <ph name="PASSWORD_MANAGER_BRAND" /> tarafından güncellenmesini ister misiniz?</translation>
 <translation id="5317780077021120954">Kaydet</translation>
 <translation id="605721222689873409">YY</translation>
 <translation id="6149061208933997199">Şifre Kullan</translation>
@@ -28,7 +30,9 @@
 <translation id="6344783595350022745">Metni Temizle</translation>
 <translation id="6456425917241817154">Chrome'un Oluşturduğu Şifre</translation>
 <translation id="6535543971741225613">Erişmeye çalıştığınız site garip davranıyor ve Chrome bu URL'nin doğruluğunu onaylayamıyor. Güvenlik nedenleriyle devam etmemelisiniz; belki de yarın deneyebilir veya başka bir yere gidebilirsiniz.</translation>
+<translation id="6647073004883890710"><ph name="USERNAME" /> adlı kullanıcının bu siteye ait şifresinin <ph name="PASSWORD_MANAGER_BRAND" /> tarafından güncellenmesini istiyor musunuz?</translation>
 <translation id="7222245588540287464">Bağlama Dayalı Arama'nın etkin olup olmadığı.</translation>
+<translation id="7378627244592794276">Hayır</translation>
 <translation id="7456847797759667638">Konumu Aç...</translation>
 <translation id="7481312909269577407">İleri</translation>
 <translation id="7484580869648358686">Uyarı: Burada Yanlış Giden Bir Şeyler Var!</translation>

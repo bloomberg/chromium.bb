@@ -48,17 +48,7 @@ Si esta política se establece en False, no se informará sobre el estado del co
 <translation id="1198465924256827162">Frecuencia con la que se envían los informes del estado del dispositivo, expresada en milisegundos.
 
 Si no se establece ningún valor para esta política, la frecuencia predeterminada serán 3 horas. La frecuencia mínima permitida son 60 segundos.</translation>
-<translation id="1213523811751486361">Permite especificar la URL del motor de búsqueda que se usa para obtener sugerencias de búsqueda. La URL debe contener la cadena "<ph name="SEARCH_TERM_MARKER" />", que se sustituirá por el texto que el usuario haya introducido al hacer la consulta.
-
-          Esta política es opcional. Si no se establece, no se usarán URL de sugerencia.
-
-          Solo se respetará esta política si se habilita la política DefaultSearchProviderEnabled.</translation>
 <translation id="1221359380862872747">Cargar URL especificadas en el inicio de sesión de demostración</translation>
-<translation id="1240643596769627465">Especifica la URL del motor de búsqueda utilizado para obtener resultados instantáneos. La URL debe contener la cadena "<ph name="SEARCH_TERM_MARKER" />", que se sustituirá por el texto que introduzca el usuario al realizar la consulta.
-
-          Esta política es opcional. Si no se establece, no se obtendrán resultados de búsqueda instantáneos.
-
-          Para que se respete esta política, se debe habilitar la política DefaultSearchProviderEnabled.</translation>
 <translation id="1265053460044691532">Limitar el tiempo durante el que un usuario autenticado a través de SAML puede iniciar sesión sin conexión</translation>
 <translation id="1291880496936992484">Advertencia: RC4 se eliminará completamente de <ph name="PRODUCT_NAME" /> después de la versión 52 (en torno a septiembre de 2016) y dejará de funcionar.
 
@@ -1121,9 +1111,6 @@ Si esta política está configurada, el usuario no puede cambiarla y el acceso d
 <translation id="4928632305180102854">Permite controlar la creación de nuevas cuentas de usuario en <ph name="PRODUCT_OS_NAME" />. Si el valor correspondiente a esta política se establece en "false", los usuarios que no dispongan de una cuenta previamente no podrán iniciar sesión.
 
       Si el valor correspondiente a esta política se establece en "true" o esta no se configura, se permitirá crear nuevas cuentas de usuario, siempre que <ph name="DEVICEUSERWHITELISTPROTO_POLICY_NAME" /> no evite que el usuario inicie sesión.</translation>
-<translation id="4962195944157514011">Permite especificar la URL del motor de búsqueda que se debe usar al hacer búsquedas predeterminadas. La URL debe incluir la cadena "<ph name="SEARCH_TERM_MARKER" />", que se sustituirá automáticamente por los términos de búsqueda del usuario.
-
-          Esta opción se debe seleccionar si la política DefaultSearchProviderEnabled está habilitada y solo se respetará en este caso.</translation>
 <translation id="4971529314808359013">Te permite definir una lista de patrones de URL que especifican sitios web para los que <ph name="PRODUCT_NAME" /> selecciona automáticamente un certificado de cliente, en caso de que el sitio web solicite un certificado.
 
           El valor debe ser un conjunto de diccionarios JSON de tipo Stringify. Cada diccionario debe tener la forma { "pattern": "$URL_PATTERN", "filter" : $FILTER }, donde $URL_PATTERN es un patrón de configuración de contenido. $FILTER limita desde qué certificados de cliente podrá seleccionar el navegador automáticamente. Independientemente del filtro, solo se seleccionarán certificados que coincidan con la solicitud de certificado del servidor. Además, si $FILTER tiene la forma { "ISSUER": { "CN": "$ISSUER_CN" } }, solo se seleccionarán certificados de cliente emitidos por un certificado con el valor $ISSUER_CN para CommonName. Si $FILTER es el diccionario vacío {}, no se limitará de forma adicional la selección de los certificados de cliente.

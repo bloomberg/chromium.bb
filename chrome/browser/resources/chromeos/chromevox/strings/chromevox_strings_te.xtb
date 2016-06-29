@@ -17,6 +17,7 @@
 <translation id="1155043339247954670">తదుపరి జాబితా అంశం లేదు.</translation>
 <translation id="1157782847298808853">కీబోర్డ్ సహాయం</translation>
 <translation id="1157843803349774103"><ph name="VALUE" />, <ph name="NAME" />, కాంబో పెట్టె</translation>
+<translation id="1161762950103988776">దాటివేయి</translation>
 <translation id="1167230103353892028"><ph name="NAME" />, మెను అంశం, ఉపమెనుని కలిగి ఉంది</translation>
 <translation id="1177863135347784049">అనుకూలీకరించిన</translation>
 <translation id="1188858454923323853">బహుమానపూర్వకం</translation>
@@ -665,6 +666,7 @@
 <translation id="8049189770492311300">టైమర్</translation>
 <translation id="8065607967589909823">ఎంచుకున్నది</translation>
 <translation id="8066678206530322333">బ్యానర్</translation>
+<translation id="8076492880354921740">ట్యాబ్‌లు</translation>
 <translation id="8110647606445335195">ARIA మైలురాళ్లు లేవు.</translation>
 <translation id="8153880621934657047">లోపల పట్టిక కాదు.</translation>
 <translation id="817440585505441544">{COUNT,plural, =1{అండర్‌స్కోర్ గుర్తు}other{# అండర్‌స్కోర్ గుర్తులు}}</translation>
@@ -758,8 +760,10 @@
 <translation id="9178973770513562274">బ్రౌజ్ చేయడానికి పైకి మరియు క్రిందికి బాణం కీలను ఉపయోగించండి లేదా శోధించడానికి టైప్ చేయండి.</translation>
 <translation id="9192904702577636854">మార్కీ</translation>
 <translation id="9212322457209634662">తదుపరి విభాగం లేదు.</translation>
+<translation id="923331726185079994">ChromeVox నవీకరించబడింది</translation>
 <translation id="930275611743429116">ఎంపికను ప్రారంభించండి లేదా ముగించండి.</translation>
 <translation id="948171205378458592">ప్రసంగ రేటుని తగ్గించండి</translation>
 <translation id="962913030769097253">తదుపరి స్థాయి 1 శీర్షిక</translation>
 <translation id="973955474346881951">స్టిక్కీ మోడ్‌ను ప్రారంభించండి/ఆపివేయండి</translation>
+<translation id="976849232629612000">అంశాలు లేవు.</translation>
 </translationbundle>

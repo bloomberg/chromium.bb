@@ -79,7 +79,6 @@
 <translation id="194341124344773587">Укључите дозволу за Chrome у <ph name="BEGIN_LINK" />Android подешавањима<ph name="END_LINK" />.</translation>
 <translation id="1943432128510653496">Сачувај лозинке</translation>
 <translation id="1944384637046898011">Шифруј све помоћу Google лозинке од <ph name="TIME" /></translation>
-<translation id="1946005195648379376">Контролишите како Google користи историју прегледања за персонализацију Претраге и других Google услуга</translation>
 <translation id="1966710179511230534">Ажурирајте податке за пријављивање.</translation>
 <translation id="1974060860693918893">Напредне опције</translation>
 <translation id="1984321224716884559">Chrome Dev обележивачи</translation>
@@ -427,6 +426,7 @@
 <translation id="6140912465461743537">Земља/регија</translation>
 <translation id="6159335304067198720"><ph name="PERCENT" /> уштеде података</translation>
 <translation id="6165508094623778733">Сазнајте више</translation>
+<translation id="6177390657002841081">Укључи Уштеду података</translation>
 <translation id="6181444274883918285">Додај изузетак за сајтове</translation>
 <translation id="6192792657125177640">Изузеци</translation>
 <translation id="6232535412751077445">Ако омогућите функцију „Не прати“, захтев ће бити обухваћен саобраћајем прегледања. Последица те радње зависи од тога да ли веб-сајт одговара на захтев и како се захтев тумачи.
@@ -485,6 +485,7 @@
 <translation id="6857778194843072568">Шаљи само преко Wi-Fi-ја</translation>
 <translation id="6865313869410766144">Подаци Аутоматског попуњавања за обрасце</translation>
 <translation id="6868088497967843822">Пријавите се да би вам обележивачи, историја, лозинке и друга подешавања били доступни на свим уређајима</translation>
+<translation id="6903907808598579934">Укључи синхронизацију</translation>
 <translation id="6945221475159498467">Изабери</translation>
 <translation id="6963766334940102469">Избриши обележиваче</translation>
 <translation id="6965382102122355670">Потврди</translation>

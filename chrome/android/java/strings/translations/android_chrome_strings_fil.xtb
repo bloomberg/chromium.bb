@@ -79,7 +79,6 @@ Dapat na na-on mo ang Bluetooth at Lokasyon upang magamit ang Pisikal na Web.</t
 <translation id="194341124344773587">I-on ang pahintulot para sa Chrome sa <ph name="BEGIN_LINK" />Mga Setting ng Android<ph name="END_LINK" />.</translation>
 <translation id="1943432128510653496">I-save ang mga password</translation>
 <translation id="1944384637046898011">I-encrypt lahat gamit ang password ng Google simula sa <ph name="TIME" /></translation>
-<translation id="1946005195648379376">Kontrolin kung paano ginagamit ng Google ang iyong history ng pagba-browse upang i-personalize ang Search at iba pang mga serbisyo ng Google.</translation>
 <translation id="1966710179511230534">Paki-update ang iyong mga detalye sa pag-sign in.</translation>
 <translation id="1974060860693918893">Advanced</translation>
 <translation id="1984321224716884559">Mga bookmark ng Chrome Dev</translation>
@@ -427,6 +426,7 @@ Gayunpaman, hindi ka invisible. Hindi tinatago ng pagiging incognito ang iyong p
 <translation id="6140912465461743537">Bansa/Rehiyon</translation>
 <translation id="6159335304067198720"><ph name="PERCENT" /> natipid sa data</translation>
 <translation id="6165508094623778733">Matuto nang higit pa</translation>
+<translation id="6177390657002841081">I-on ang Data Saver</translation>
 <translation id="6181444274883918285">Magdagdag ng pagbubukod ng site</translation>
 <translation id="6192792657125177640">Mga Pagbubukod</translation>
 <translation id="6232535412751077445">Kapag na-enable mo ang “Huwag Subaybayan,” magsasama ng isang kahilingan sa trapiko ng iyong pagba-browse. Ang anumang magiging epekto ay dedepende sa pagtugon at pagbibigay-kahulugan ng website sa nabanggit na kahilingan.
@@ -485,6 +485,7 @@ Halimbawa, maaaring tumugon ang ilang website sa kahilingang ito sa pamamagitan 
 <translation id="6857778194843072568">Ipadala lang gamit ang Wi-Fi</translation>
 <translation id="6865313869410766144">Data ng form ng autofill</translation>
 <translation id="6868088497967843822">Mag-sign in upang makuha ang iyong mga bookmark, history, password at ibang mga setting sa lahat ng iyong device</translation>
+<translation id="6903907808598579934">I-on ang pag-sync</translation>
 <translation id="6945221475159498467">Pumili</translation>
 <translation id="6963766334940102469">Mag-delete ng mga bookmark</translation>
 <translation id="6965382102122355670">OK</translation>

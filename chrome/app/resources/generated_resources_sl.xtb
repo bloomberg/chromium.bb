@@ -183,7 +183,6 @@
 <translation id="1259724620062607540">Element na polici 7</translation>
 <translation id="1260240842868558614">Prikaži:</translation>
 <translation id="126710816202626562">Jezik prevoda:</translation>
-<translation id="1269690813141254680">V <ph name="BEGIN_LINK" />Googlovih kontrolnikih za dejavnost<ph name="END_LINK" /> je mogoče nadzirati, kako Google uporablja vašo zgodovino brskanja za prilagajanje Iskanja Google in drugih Googlovih storitev.</translation>
 <translation id="1272079795634619415">Ustavi</translation>
 <translation id="1272978324304772054">Uporabniški račun ne sodi v domeno, v katero je včlanjena naprava. Če se želite včlaniti v drugo domeno, morate najprej obnoviti napravo.</translation>
 <translation id="127353061808977798">Pisave in kodiranje</translation>
@@ -1675,7 +1674,6 @@ Iz <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3317459757438853210">Obojestransko</translation>
 <translation id="331752765902890099">Gumb profila <ph name="PROFILE_NAME" />: napaka pri prijavi</translation>
 <translation id="3319048459796106952">Novo &amp;okno brez beleženja zgodovine</translation>
-<translation id="3319364804843246307">Aplikacije za Android</translation>
 <translation id="3320859581025497771">vaš operater</translation>
 <translation id="3323235640813116393">Omogoča shranjevanje strani v obliki MHTML: ena besedilna datoteka, ki vsebuje HTML in vse podrejene vire.</translation>
 <translation id="3323447499041942178">Besedilno polje</translation>
@@ -2470,7 +2468,6 @@ Pritisnite katero koli tipko, če želite še naprej raziskovati.</translation>
 <translation id="4479639480957787382">Ethernet</translation>
 <translation id="4479812471636796472">Angleška tipkovnica Dvorak (ZDA)</translation>
 <translation id="4481249487722541506">Naloži odpakirano razširitev ...</translation>
-<translation id="4482194545587547824">Google lahko vašo zgodovino brskanja uporabi za prilagajanje Iskanja Google in drugih Googlovih storitev</translation>
 <translation id="4487088045714738411">Belgijska tipkovnica</translation>
 <translation id="4492190037599258964">Rezultati iskanja za »<ph name="SEARCH_STRING" />«</translation>
 <translation id="4495021739234344583">Preklic včlanitve in vnovični zagon</translation>

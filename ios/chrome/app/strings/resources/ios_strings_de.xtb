@@ -10,6 +10,7 @@
 <translation id="2704606927547763573">Kopiert</translation>
 <translation id="2747003861858887689">Vorheriges Feld</translation>
 <translation id="2780046210906776326">Keine E-Mail-Konten vorhanden</translation>
+<translation id="3172213052701798825">Google Smart Lock für Passwörter</translation>
 <translation id="3244271242291266297">MM</translation>
 <translation id="3252394070589632019"><ph name="VALUE" />, <ph name="ADDITIONAL_INFO" />, <ph name="INDEX" /> von <ph name="NUM_SUGGESTIONS" /></translation>
 <translation id="3335947283844343239">Geschlossenen Tab wieder öffnen</translation>
@@ -20,6 +21,7 @@
 <translation id="4399225372525667111">Chrome kann die Richtigkeit dieser Website-URL nicht bestätigen.</translation>
 <translation id="4728558894243024398">Plattform</translation>
 <translation id="473775607612524610">Aktualisieren</translation>
+<translation id="4875622588773761625">Soll <ph name="PASSWORD_MANAGER_BRAND" /> Ihr Passwort für diese Website aktualisieren?</translation>
 <translation id="5317780077021120954">Speichern</translation>
 <translation id="605721222689873409">JJ</translation>
 <translation id="6149061208933997199">Passwort verwenden</translation>
@@ -28,7 +30,9 @@
 <translation id="6344783595350022745">Text entfernen</translation>
 <translation id="6456425917241817154">Passwort von Chrome erstellt</translation>
 <translation id="6535543971741225613">Die Website, auf die Sie zugreifen möchten, verhält sich seltsam und Chrome kann die Richtigkeit dieser URL nicht bestätigen. Aus Sicherheitsgründen sollten Sie nicht fortfahren. Versuchen Sie es morgen erneut oder besuchen Sie eine andere Website.</translation>
+<translation id="6647073004883890710">Soll <ph name="PASSWORD_MANAGER_BRAND" /> das Passwort für <ph name="USERNAME" /> für diese Website aktualisieren?</translation>
 <translation id="7222245588540287464">Gibt an, ob die Kontextsuche aktiviert ist.</translation>
+<translation id="7378627244592794276">Nein</translation>
 <translation id="7456847797759667638">Adresse öffnen...</translation>
 <translation id="7481312909269577407">Vorwärts</translation>
 <translation id="7484580869648358686">Warnung: Irgendetwas stimmt hier nicht!</translation>

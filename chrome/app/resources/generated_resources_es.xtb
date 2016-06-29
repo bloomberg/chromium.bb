@@ -183,7 +183,6 @@
 <translation id="1259724620062607540">Elemento 7 de la estantería</translation>
 <translation id="1260240842868558614">Mostrar:</translation>
 <translation id="126710816202626562">Idioma de traducción:</translation>
-<translation id="1269690813141254680">Controla cómo utiliza Google tu historial de navegación para personalizar la Búsqueda y otros servicios en la página <ph name="BEGIN_LINK" />Controles de actividad de Google<ph name="END_LINK" />.</translation>
 <translation id="1272079795634619415">Interrumpir</translation>
 <translation id="1272978324304772054">Esta cuenta de usuario no pertenece al dominio en el que se ha registrado el dispositivo. Si quieres registrarlo en un dominio diferente, primero debes llevar a cabo el proceso de recuperación de dispositivo.</translation>
 <translation id="127353061808977798">Fuentes y codificación</translation>
@@ -1673,7 +1672,6 @@ Si no cambias la configuración predeterminada, <ph name="USER_DISPLAY_NAME" /> 
 <translation id="3317459757438853210">Doble cara</translation>
 <translation id="331752765902890099">Botón de <ph name="PROFILE_NAME" />: error de inicio de sesión</translation>
 <translation id="3319048459796106952">Nueva ventana de &amp;incógnito</translation>
-<translation id="3319364804843246307">Aplicaciones de Android</translation>
 <translation id="3320859581025497771">tu operador de telefonía</translation>
 <translation id="3323235640813116393">Permite guardar páginas como MHTML, es decir, un único archivo de texto que contiene código HTML y todos los subrecursos.</translation>
 <translation id="3323447499041942178">Cuadro de texto</translation>
@@ -2467,7 +2465,6 @@ Pulsa cualquier tecla para seguir con la exploración.</translation>
 <translation id="4479639480957787382">Ethernet</translation>
 <translation id="4479812471636796472">Teclado de EE.UU. Dvorak</translation>
 <translation id="4481249487722541506">Cargar extensión descomprimida...</translation>
-<translation id="4482194545587547824">Google puede utilizar tu historial de navegación para personalizar la Búsqueda y otros servicios de Google</translation>
 <translation id="4487088045714738411">Teclado belga</translation>
 <translation id="4492190037599258964">Resultados de búsqueda de "<ph name="SEARCH_STRING" />"</translation>
 <translation id="4495021739234344583">Anular registro y reiniciar</translation>

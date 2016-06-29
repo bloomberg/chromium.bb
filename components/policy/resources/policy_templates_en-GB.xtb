@@ -6,6 +6,15 @@
 <translation id="1019101089073227242">Set user data directory</translation>
 <translation id="1022361784792428773">Extension IDs the user should be prevented from installing (or * for all)</translation>
 <translation id="102492767056134033">Set default state of the on-screen keyboard on the login screen</translation>
+<translation id="1027000705181149370">Specifies whether authentication cookies set by a SAML IdP during login should be transferred to the user's profile.
+
+      When a user authenticates via a SAML IdP during login, cookies set by the IdP are written to a temporary profile at first. These cookies can be transferred to the user's profile to carry forward the authentication state.
+
+      When this policy is set to true, cookies set by the IdP are transferred to the user's profile every time they authenticate against the SAML IdP during login.
+
+      When this policy is set to false or unset, cookies set by the IdP are transferred to the user's profile during their first login on a device only.
+
+      This policy affects users whose domain matches the device's enrolment domain only. For all other users, cookies set by the IdP are transferred to the user's profile during their first login on the device only.</translation>
 <translation id="1040446814317236570">Enable PAC URL stripping (for https://)</translation>
 <translation id="1044878202534415707">Report hardware statistics such as CPU/RAM usage.
 
@@ -49,17 +58,7 @@
 
       If this policy is unset, the default frequency is 3 hours. The minimum
       allowed frequency is 60 seconds.</translation>
-<translation id="1213523811751486361">Specifies the URL of the search engine used to provide search suggestions. The URL should contain the string '<ph name="SEARCH_TERM_MARKER" />', which will be replaced at query time by the text that the user has entered so far.
-
-          This policy is optional. If not set, no suggest URL will be used.
-
-          This policy is only respected if the 'DefaultSearchProviderEnabled' policy is enabled.</translation>
 <translation id="1221359380862872747">Load specified URLs on demo login</translation>
-<translation id="1240643596769627465">Specifies the URL of the search engine used to provide instant results. The URL should contain the string <ph name="SEARCH_TERM_MARKER" />, which will be replaced at query time by the text that the user has entered so far.
-
-          This policy is optional. If not set, no instant search results will be provided.
-
-          This policy is only respected if the 'DefaultSearchProviderEnabled' policy is enabled.</translation>
 <translation id="1265053460044691532">Limit the time for which a user authenticated via SAML can log in offline</translation>
 <translation id="1291880496936992484">Warning: RC4 will be completely removed from <ph name="PRODUCT_NAME" /> after version 52 (around September 2016) and this policy will stop working then.
 
@@ -208,6 +207,8 @@
       Note that this policy can be overridden by EnabledPlugins and DisabledPluginsExceptions.
 
       If this policy is left not set the user can use any plugin installed on the system except for hard-coded incompatible, outdated or dangerous plugins.</translation>
+<translation id="1864269674877167562">If this policy is set to a blank string or not configured, <ph name="PRODUCT_OS_NAME" /> will not show an auto-complete option during user sign-in flow.
+      If this policy is set to a string representing a domain name, <ph name="PRODUCT_OS_NAME" /> will show an auto-complete option during user sign-in allowing the user to type in only their user name without the domain name extension. The user will be able to overwrite this domain name extension.</translation>
 <translation id="1865417998205858223">Key Permissions</translation>
 <translation id="186719019195685253">Action to take when the idle delay is reached while running on AC power</translation>
 <translation id="187819629719252111">Allows access to local files on the machine by allowing <ph name="PRODUCT_NAME" /> to display file selection dialogues.
@@ -335,6 +336,13 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
 <translation id="2337466621458842053">Allows you to set a list of url patterns that specify sites which are allowed to display images.
 
           If this policy is left unset, the global default value will be used for all sites either from the 'DefaultImagesSetting' policy, if it is set, or the user's personal configuration otherwise.</translation>
+<translation id="2359612025446382967">If this policy is set to false, <ph name="PRODUCT_OS_NAME" /> will disable Bluetooth and the user cannot re-enable it.
+
+      If this policy is set to true or left unset, the user will be able to enable or disable Bluetooth as they wish.
+
+      If this policy is set, the user cannot change or override it.
+
+      After enabling Bluetooth, the device must be rebooted for the changes to take effect (no need to reboot the device when disabling Bluetooth).</translation>
 <translation id="2366415278352956652">Enables cast</translation>
 <translation id="2371309782685318247">Specifies the period in milliseconds at which the device management service is queried for user policy information.
 
@@ -569,6 +577,32 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
           If you enable this setting, <ph name="PRODUCT_NAME" /> ignores all proxy-related options specified from the command line.
 
           Leaving this policy unset will allow the users to choose the proxy settings on their own.</translation>
+<translation id="2818551149761607847">Configure user avatar image.
+
+      This policy allows you to configure the avatar image representing the user on the login screen. The policy is set by specifying the URL from which <ph name="PRODUCT_OS_NAME" /> can download the avatar image and a cryptographic hash used to verify the integrity of the download. The image must be in JPEG format, its size must not exceed 512 KB. The URL must be accessible without any authentication.
+
+      The avatar image is downloaded and cached. It will be re-downloaded whenever the URL or the hash changes.
+
+      The policy should be specified as a string that expresses the URL and hash in JSON format, conforming to the following schema:
+      {
+        "type": "object",
+        "properties": {
+          "url": {
+            "description": "The URL from which the avatar image can be downloaded",
+            "type": "string"
+          },
+          "hash": {
+            "description": "The SHA-256 hash of the avatar image",
+            "type": "string"
+          }
+        }
+      }
+
+      If this policy is set, <ph name="PRODUCT_OS_NAME" /> will download and use the avatar image.
+
+      If you set this policy, users cannot change or override it.
+
+      If the policy is left not set, the user can choose the avatar image representing them on the login screen.</translation>
 <translation id="2824715612115726353">Enable Incognito mode</translation>
 <translation id="2844404652289407061">Enables the availability of Touch to Search in <ph name="PRODUCT_NAME" />'s content view.
 
@@ -1125,9 +1159,6 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 <translation id="4928632305180102854">Controls whether <ph name="PRODUCT_OS_NAME" /> allows new user accounts to be created. If this policy is set to false, users that do not have an account already will not be able to login.
 
       If this policy is set to true or not configured, new user accounts are allowed to be created, provided that <ph name="DEVICEUSERWHITELISTPROTO_POLICY_NAME" /> does not prevent the user from logging in.</translation>
-<translation id="4962195944157514011">Specifies the URL of the search engine used when doing a default search. The URL should contain the string '<ph name="SEARCH_TERM_MARKER" />', which will be replaced at query time by the terms the user is searching for.
-
-          This option must be set when the 'DefaultSearchProviderEnabled' policy is enabled and will only be respected if this is the case.</translation>
 <translation id="4971529314808359013">Allows you to specify a list of URL patterns that specify sites for which <ph name="PRODUCT_NAME" /> should automatically select a client certificate, if the site requests a certificate.
 
           The value must be an array of stringified JSON dictionaries. Each dictionary must have the form { "pattern": "$URL_PATTERN", "filter" : $FILTER }, where $URL_PATTERN is a content setting pattern. $FILTER restricts from which client certificates the browser will automatically select. Independent of the filter, only certificates will be selected that match the server's certificate request. If $FILTER has the form { "ISSUER": { "CN": "$ISSUER_CN" } }, additionally only client certificates are selected that are issued by a certificate with the CommonName $ISSUER_CN. If $FILTER is the empty dictionary {}, the selection of client certificates is not additionally restricted.
@@ -1720,10 +1751,31 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
       If disabled, no bookmarks are imported.
 
       If it is not set, the user may be asked whether to import or importing may happen automatically.</translation>
+<translation id="7055358889740598917">Configures the default homepage URL in <ph name="PRODUCT_NAME" /> and prevents users from changing it.
+
+          The homepage is the page opened by the Home button. The pages that open on start-up are controlled by the RestoreOnStart-Up policies.
+
+          The homepage type can either be set to a URL that you specify here or set to the New Tab Page. If you select the New Tab Page, then this policy does not take effect.
+
+          If you enable this setting, users cannot change their homepage URL in <ph name="PRODUCT_NAME" />, but they can still choose the New Tab Page as their homepage.
+
+          Leaving this policy not set will allow the user to choose their homepage on their own if HomepageIsNewTabPage is not set too.
+
+          This policy is not available on Windows instances that are not joined
+          to an Active Directory domain.</translation>
 <translation id="7063895219334505671">Allow pop-ups on these sites</translation>
 <translation id="706669471845501145">Allow SITE to show desktop notifications?</translation>
 <translation id="7079519252486108041">Block pop-ups on these sites</translation>
 <translation id="7091198954851103976">Always runs plug-ins that require authorisation</translation>
+<translation id="7106631983877564505">Enable lock when <ph name="PRODUCT_OS_NAME" /> devices become idle or suspended.
+
+      If you enable this setting, users will be asked for a password to unlock the device from sleep.
+
+      If you disable this setting, users will not be asked for a password to unlock the device from sleep.
+
+      If you enable or disable this setting, users cannot change or override it.
+
+      If the policy is left not set the user can choose whether they want to be asked for password to unlock the device or not.</translation>
 <translation id="7115494316187648452">Determines whether a <ph name="PRODUCT_NAME" /> process is started on OS login and keeps running when the last browser window is closed, allowing background apps and the current browsing session to remain active, including any session cookies. The background process displays an icon in the system tray and can always be closed from there.
 
       If this policy is set to True, background mode is enabled and cannot be controlled by the user in the browser settings.
@@ -2084,6 +2136,13 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
           If you set this policy, users cannot change or override it.
 
           If this policy is left unset, high contrast mode is disabled initially but can be enabled by the user at any time.</translation>
+<translation id="815061180603915310">If set to enabled this policy forces the profile to be switched to ephemeral mode. If this policy is specified as an OS policy (e.g. GPO on Windows) it will apply to every profile on the system; if the policy is set as a Cloud policy it will apply only to a profile signed in with a managed account.
+
+      In this mode the profile data is persisted on disk only for the length of the user session. Features like browser history, extensions and their data, web data like cookies and web databases are not preserved after the browser is closed. However this does not prevent the user from downloading any data to disk manually, save pages or print them.
+
+      If the user has enabled sync, all this data is preserved in their sync profile just as with regular profiles. Incognito mode is also available if not explicitly disabled by policy.
+
+      If the policy is set to disabled or left not set signing in leads to regular profiles.</translation>
 <translation id="8164246350636985940">The default behaviour for sites not in any content pack.
 
           This policy is for internal use by <ph name="PRODUCT_NAME" /> itself.</translation>
@@ -2154,6 +2213,18 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 <translation id="8312129124898414409">Allows you to set whether websites are allowed to use key generation. Using key generation can be either allowed for all websites or denied for all websites.
 
           If this policy is left not set, 'BlockKeygen' will be used and the user will be able to change it.</translation>
+<translation id="8316806736175990584">Configures the type of the default homepage in <ph name="PRODUCT_NAME" /> and prevents users from changing homepage preferences. The homepage can either be set to a URL that you specify or set to the New Tab Page.
+
+          If you enable this setting, the New Tab Page is always used for the homepage, and the homepage URL location is ignored.
+
+          If you disable this setting, the user's homepage will never be the New Tab Page, unless its URL is set to 'chrome://newtab'.
+
+          If you enable or disable this setting, users cannot change their homepage type in <ph name="PRODUCT_NAME" />.
+
+          Leaving this policy not set will allow the user to choose whether the new tab page is their homepage on their own.
+
+          This policy is not available on Windows instances that are not joined
+          to an Active Directory domain.</translation>
 <translation id="8329984337216493753">This policy is active in retail mode only.
 
       When DeviceIdleLogoutTimeout is specified, this policy defines the duration of the warning box with a count down timer that is shown to the user before the logout is executed.

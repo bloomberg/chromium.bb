@@ -10,6 +10,7 @@
 <translation id="2704606927547763573">Копирано</translation>
 <translation id="2747003861858887689">Предишното поле</translation>
 <translation id="2780046210906776326">Няма имейл адреси</translation>
+<translation id="3172213052701798825">Google Smart Lock за пароли</translation>
 <translation id="3244271242291266297">ММ</translation>
 <translation id="3252394070589632019"><ph name="VALUE" />, <ph name="ADDITIONAL_INFO" />, <ph name="INDEX" /> от <ph name="NUM_SUGGESTIONS" /></translation>
 <translation id="3335947283844343239">Повторно отваряне на затворения раздел</translation>
@@ -20,6 +21,7 @@
 <translation id="4399225372525667111">Chrome не може да потвърди, че URL адресът за този сайт е правилен.</translation>
 <translation id="4728558894243024398">Платформа</translation>
 <translation id="473775607612524610">Актуализиране</translation>
+<translation id="4875622588773761625">Искате ли <ph name="PASSWORD_MANAGER_BRAND" /> да актуализира паролата ви за този сайт?</translation>
 <translation id="5317780077021120954">Запазване</translation>
 <translation id="605721222689873409">ГГ</translation>
 <translation id="6149061208933997199">Ползване на паролата</translation>
@@ -28,7 +30,9 @@
 <translation id="6344783595350022745">Изчистване на текста</translation>
 <translation id="6456425917241817154">Парола, генерирана от Chrome</translation>
 <translation id="6535543971741225613">Сайтът, до който се опитвате да осъществите достъп, се държи странно и Chrome не може да потвърди, че URL адресът му е правилен. От съображения за сигурност не бива да продължавате. Вместо това опитайте отново утре например или отворете друг сайт.</translation>
+<translation id="6647073004883890710">Искате ли <ph name="PASSWORD_MANAGER_BRAND" /> да актуализира паролата за <ph name="USERNAME" /> за този сайт?</translation>
 <translation id="7222245588540287464">Дали контекстното търсене да е активирано или не.</translation>
+<translation id="7378627244592794276">Не</translation>
 <translation id="7456847797759667638">Отваряне на местоположение...</translation>
 <translation id="7481312909269577407">Препращане</translation>
 <translation id="7484580869648358686">Предупреждение: Нещо тук не е наред!</translation>

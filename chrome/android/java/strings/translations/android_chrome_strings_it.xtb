@@ -79,7 +79,6 @@ Per poter utilizzare il Physical Web, devi attivare il Bluetooth e la geolocaliz
 <translation id="194341124344773587">Abilita l'autorizzazione per Chrome in <ph name="BEGIN_LINK" />Impostazioni Android<ph name="END_LINK" />.</translation>
 <translation id="1943432128510653496">Salva password</translation>
 <translation id="1944384637046898011">Cripta tutto con la password Google a partire dal <ph name="TIME" /></translation>
-<translation id="1946005195648379376">Controlla il modo in cui Google utilizza la cronologia di navigazione per personalizzare la Ricerca e altri servizi Google.</translation>
 <translation id="1966710179511230534">Aggiorna i dati di accesso.</translation>
 <translation id="1974060860693918893">Avanzate</translation>
 <translation id="1984321224716884559">Preferiti di Chrome Dev</translation>
@@ -149,7 +148,9 @@ Puoi gestire il Physical Web nelle impostazioni di Chrome.
 <translation id="2748463065602559597">È visualizzata una pagina sicura di Google Chrome.</translation>
 <translation id="2762000892062317888">in questo istante</translation>
 <translation id="2770465223704140727">Rimuovi dall'elenco</translation>
+<translation id="2777555524387840389"><ph name="SECONDS" /> sec rimanenti</translation>
 <translation id="278029852808208386">Nessun dispositivo Bluetooth trovato. <ph name="BEGIN_LINK" />Esegui di nuovo la ricerca<ph name="END_LINK" />.</translation>
+<translation id="2781151931089541271">1 sec rimanente</translation>
 <translation id="2781389167600714117">Seleziona spedizione</translation>
 <translation id="2811892995384186721">Non trovi il tuo dispositivo? <ph name="BEGIN_LINK" />Ricevi assistenza<ph name="END_LINK" />.</translation>
 <translation id="2836148919159985482">Tocca il pulsante Indietro per uscire dalla modalità a schermo intero.</translation>
@@ -188,6 +189,7 @@ Puoi gestire il Physical Web nelle impostazioni di Chrome.
 <translation id="321773570071367578">Se non ricordi la passphrase o vuoi modificare questa impostazione, <ph name="BEGIN_LINK" />reimposta la sincronizzazione<ph name="END_LINK" /></translation>
 <translation id="3227137524299004712">Microfono</translation>
 <translation id="3232754137068452469">App web</translation>
+<translation id="3236059992281584593">1 min rimanente</translation>
 <translation id="3244271242291266297">MM</translation>
 <translation id="3254409185687681395">Aggiungi ai Preferiti</translation>
 <translation id="326254929494722411">Non hai ancora configurato un account Google sul dispositivo</translation>
@@ -302,6 +304,7 @@ Per modificare il termine di ricerca, premi a lungo per selezionarlo. Per perfez
 <translation id="4720023427747327413">Apri in <ph name="PRODUCT_NAME" /></translation>
 <translation id="473775607612524610">Aggiorna</translation>
 <translation id="4738836084190194332">Ultima sincronizzazione: <ph name="WHEN" /></translation>
+<translation id="4758311279753947758">Aggiungi info di contatto</translation>
 <translation id="4759238208242260848">Download</translation>
 <translation id="4773299976671772492">Interrotta</translation>
 <translation id="4797039098279997504">Tocca per tornare a <ph name="URL_OF_THE_CURRENT_TAB" /></translation>
@@ -326,6 +329,7 @@ Per modificare il termine di ricerca, premi a lungo per selezionarlo. Per perfez
 <translation id="5063480226653192405">Utilizzo</translation>
 <translation id="5087580092889165836">Aggiungi carta</translation>
 <translation id="5100237604440890931">Compresso. Fai clic per espandere.</translation>
+<translation id="510275257476243843">1 ora rimanente</translation>
 <translation id="5107381076085091558">Download sospeso.</translation>
 <translation id="5118713593561876160">Interessi</translation>
 <translation id="5127805178023152808">La sincronizzazione è disattivata</translation>
@@ -409,6 +413,7 @@ Tuttavia, le tue attività non sono invisibili. L'attivazione della modalità di
 <translation id="5911030830365207728">Google Traduttore</translation>
 <translation id="5916664084637901428">On</translation>
 <translation id="5939518447894949180">Ripristina</translation>
+<translation id="5961742032223302715">Seleziona le informazioni di contatto</translation>
 <translation id="5968595432776860642">"<ph name="VIDEO_TITLE" />" in riproduzione</translation>
 <translation id="6010869025736512584">Accesso all'input video in corso</translation>
 <translation id="6012342843556706400">Chrome deve avere accesso alla posizione per condividerla con questo sito.</translation>
@@ -419,6 +424,7 @@ Tuttavia, le tue attività non sono invisibili. L'attivazione della modalità di
 <translation id="604996488070107836">Download del file <ph name="FILE_NAME" /> non riuscito a causa di un errore sconosciuto.</translation>
 <translation id="605721222689873409">AA</translation>
 <translation id="6075798973483050474">Modifica Home page</translation>
+<translation id="60923314841986378"><ph name="HOURS" /> ore rimanenti</translation>
 <translation id="6108923351542677676">Configurazione in corso…</translation>
 <translation id="6112702117600201073">Aggiornamento della pagina in corso</translation>
 <translation id="6127379762771434464">Elemento rimosso</translation>
@@ -427,6 +433,7 @@ Tuttavia, le tue attività non sono invisibili. L'attivazione della modalità di
 <translation id="6140912465461743537">Paese/regione</translation>
 <translation id="6159335304067198720">Riduzioni dei dati: <ph name="PERCENT" /></translation>
 <translation id="6165508094623778733">Ulteriori informazioni</translation>
+<translation id="6177390657002841081">Attiva Risparmio dati</translation>
 <translation id="6181444274883918285">Aggiungi eccezione per un sito</translation>
 <translation id="6192792657125177640">Eccezioni</translation>
 <translation id="6232535412751077445">Se attivi l'opzione "Non tenere traccia", verrà inclusa una richiesta nel tuo traffico di navigazione. Gli effetti dipendono dall'eventuale risposta dei siti web alla richiesta e dall'interpretazione di quest'ultima.
@@ -485,6 +492,7 @@ Ad esempio, alcuni siti web potrebbero rispondere alla richiesta mostrando annun
 <translation id="6857778194843072568">Invia solo su Wi-Fi</translation>
 <translation id="6865313869410766144">Dati della Compilazione automatica dei moduli</translation>
 <translation id="6868088497967843822">Accedi per visualizzare i tuoi Preferiti, la cronologia, le password e altre impostazioni su tutti i tuoi dispositivi</translation>
+<translation id="6903907808598579934">Attiva la sincronizzazione</translation>
 <translation id="6945221475159498467">Seleziona</translation>
 <translation id="6963766334940102469">Elimina Preferiti</translation>
 <translation id="6965382102122355670">OK</translation>
@@ -504,6 +512,7 @@ Ad esempio, alcuni siti web potrebbero rispondere alla richiesta mostrando annun
 <translation id="7056999826593229648">È stata rilevata una connessione lenta</translation>
 <translation id="7057058088140140610">Carte di credito e indirizzi che utilizzano Google Payments</translation>
 <translation id="7063006564040364415">Impossibile collegarsi al server di sincronizzazione.</translation>
+<translation id="7064851114919012435">Informazioni di contatto</translation>
 <translation id="7074853159844403180"><ph name="SITE" /> desidera accoppiarsi con:</translation>
 <translation id="7081639897063626814">Mantieni separati i dati esistenti</translation>
 <translation id="7094922512924405309">Nessuna pagina Physical Web trovata nelle vicinanze</translation>
@@ -519,6 +528,7 @@ Ad esempio, alcuni siti web potrebbero rispondere alla richiesta mostrando annun
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" /> utilizza la tua posizione per mostrare i risultati della ricerca locale.</translation>
 <translation id="7299441085833132046"><ph name="BEGIN_LINK" />Guida<ph name="END_LINK" /></translation>
 <translation id="7299721129597238157">Elimina preferito</translation>
+<translation id="7327835590071894791">La scheda è ora in secondo piano.</translation>
 <translation id="7347770551817603360">Contenuto offline</translation>
 <translation id="7358452246665489050">Elaborazione...</translation>
 <translation id="7363354739009474003">Caricamento di "<ph name="VIDEO_TITLE" />" in corso</translation>
@@ -569,6 +579,7 @@ Il tuo account Google potrebbe avere altre forme di cronologia di navigazione, a
 <translation id="780301667611848630">No grazie</translation>
 <translation id="7829298379596169484">Accesso all'input audio in corso</translation>
 <translation id="7837582000577464779">Si è verificato un errore durante l'elaborazione dell'ordine. Controlla il tuo conto e riprova.</translation>
+<translation id="7837721118676387834">Consenti la riproduzione automatica dei video con audio disattivato in un sito specifico.</translation>
 <translation id="7846076177841592234">Annulla selezione</translation>
 <translation id="7851858861565204677">Altri dispositivi</translation>
 <translation id="7876243839304621966">Rimuovi tutto</translation>
@@ -583,6 +594,7 @@ Il tuo account Google potrebbe avere altre forme di cronologia di navigazione, a
 <translation id="8007176423574883786">Disattivata per questo dispositivo</translation>
 <translation id="8026334261755873520">Cancella dati di navigazione</translation>
 <translation id="8035133914807600019">Nuova cartella…</translation>
+<translation id="8037750541064988519"><ph name="DAYS" /> giorni rimanenti</translation>
 <translation id="8063895661287329888">Impossibile aggiungere preferito.</translation>
 <translation id="8068648041423924542">Impossibile selezionare il certificato.</translation>
 <translation id="8069239273282989646">Dopo la compressione</translation>
@@ -595,6 +607,7 @@ Il tuo account Google potrebbe avere altre forme di cronologia di navigazione, a
 <translation id="8137558756159375272">La funzione Tocca per cercare invia la parola selezionata e la pagina corrente come contesto alla Ricerca Google. Puoi disattivare la funzione nelle <ph name="BEGIN_LINK" />Impostazioni<ph name="END_LINK" />.</translation>
 <translation id="8168435359814927499">Contenuti</translation>
 <translation id="8173098127580644436">tutto</translation>
+<translation id="8190358571722158785">1 giorno rimanente</translation>
 <translation id="8200772114523450471">Riprendi</translation>
 <translation id="8202097416529803614">Riepilogo dell’ordine</translation>
 <translation id="8209050860603202033">Apri immagine</translation>
@@ -619,6 +632,7 @@ Il tuo account Google potrebbe avere altre forme di cronologia di navigazione, a
 <translation id="8518901949365209398">Questo sito utilizza una configurazione di sicurezza poco efficace (firme basate sull'algoritmo SHA-1), pertanto la tua connessione potrebbe non risultare privata.</translation>
 <translation id="8525306231823319788">Schermo intero</translation>
 <translation id="854522910157234410">Apri questa pagina</translation>
+<translation id="8559882854823529713">Leggi più tardi in Chrome</translation>
 <translation id="8562452229998620586">Le password salvate verranno visualizzate qui.</translation>
 <translation id="856481929701340285">Richiedi sito desktop</translation>
 <translation id="857943718398505171">Consentita (opzione consigliata)</translation>
@@ -683,6 +697,7 @@ Per ottenere nuove licenze, connettiti a Internet e riproduci i contenuti scaric
 <translation id="938850635132480979">Errore: <ph name="ERROR_CODE" /></translation>
 <translation id="945632385593298557">Accesso al microfono</translation>
 <translation id="969096075394517431">Cambia le lingue</translation>
+<translation id="970715775301869095"><ph name="MINUTES" /> min rimanenti</translation>
 <translation id="981121421437150478">Offline</translation>
 <translation id="983192555821071799">Chiudi tutte le schede</translation>
 </translationbundle>

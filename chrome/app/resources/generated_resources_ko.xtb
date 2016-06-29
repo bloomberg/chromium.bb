@@ -183,7 +183,6 @@
 <translation id="1259724620062607540">서가 항목 7</translation>
 <translation id="1260240842868558614">보기:</translation>
 <translation id="126710816202626562">번역 언어:</translation>
-<translation id="1269690813141254680"><ph name="BEGIN_LINK" />Google 활동 제어<ph name="END_LINK" />에서 검색 및 기타 Google 서비스를 맞춤설정하기 위하여 Google이 인터넷 사용 기록을 사용하는 방법을 제어하세요.</translation>
 <translation id="1272079795634619415">중지</translation>
 <translation id="1272978324304772054">이 사용자 계정은 기기가 등록된 도메인에 속해 있지 않습니다. 다른 도메인에 등록하려면 먼저 기기 복구 절차를 거쳐야 합니다.</translation>
 <translation id="127353061808977798">글꼴 및 인코딩</translation>
@@ -1675,7 +1674,6 @@
 <translation id="3317459757438853210">양면</translation>
 <translation id="331752765902890099"><ph name="PROFILE_NAME" /> 버튼: 로그인 오류</translation>
 <translation id="3319048459796106952">새 시크릿 창(&amp;I)</translation>
-<translation id="3319364804843246307">Android 앱</translation>
 <translation id="3320859581025497771">네트워크 사업자</translation>
 <translation id="3323235640813116393">페이지를 MHTML로 저장하도록 설정: HTML 및 모든 하위 리소스를 포함하는 단일 텍스트 파일</translation>
 <translation id="3323447499041942178">입력란</translation>
@@ -2469,7 +2467,6 @@
 <translation id="4479639480957787382">이더넷</translation>
 <translation id="4479812471636796472">영어(미국식) 드보락 키보드</translation>
 <translation id="4481249487722541506">압축해제된 확장 프로그램 로드...</translation>
-<translation id="4482194545587547824">검색 및 다른 Google 서비스를 맞춤설정하기 위하여 Google에서 인터넷 사용 기록을 사용할 수 있습니다.</translation>
 <translation id="4487088045714738411">벨기에어 키보드</translation>
 <translation id="4492190037599258964">'<ph name="SEARCH_STRING" />'에 대한 검색결과</translation>
 <translation id="4495021739234344583">등록 취소한 뒤 다시 시작</translation>

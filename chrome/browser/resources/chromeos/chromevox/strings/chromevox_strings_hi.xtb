@@ -17,6 +17,7 @@
 <translation id="1155043339247954670">कोई अगला सूची आइटम नहीं.</translation>
 <translation id="1157782847298808853">कीबोर्ड सहायता</translation>
 <translation id="1157843803349774103"><ph name="VALUE" />, <ph name="NAME" />, कॉम्‍बो बॉक्‍स</translation>
+<translation id="1161762950103988776">जाएं</translation>
 <translation id="1167230103353892028"><ph name="NAME" />, मेनू आइटम, सबमेनू सहित</translation>
 <translation id="1177863135347784049">कस्टम</translation>
 <translation id="1188858454923323853">पूरक</translation>
@@ -665,6 +666,7 @@
 <translation id="8049189770492311300">टाइमर</translation>
 <translation id="8065607967589909823">यह चयनित है:</translation>
 <translation id="8066678206530322333">बैनर</translation>
+<translation id="8076492880354921740">टैब</translation>
 <translation id="8110647606445335195">कोई ARIA स्थानचिह्न नहीं.</translation>
 <translation id="8153880621934657047">तालिका में नहीं है.</translation>
 <translation id="817440585505441544">{COUNT,plural, =1{अंडरस्कोर}one{# अंडरस्कोर}other{# अंडरस्कोर}}</translation>
@@ -758,8 +760,10 @@
 <translation id="9178973770513562274">ब्राउज़ करने के लिए ऊपर या नीचे तीर कुंजियों का उपयोग करें, या खोजने के लिए लिखें.</translation>
 <translation id="9192904702577636854">मार्की</translation>
 <translation id="9212322457209634662">कोई अगला अनुभाग नहीं.</translation>
+<translation id="923331726185079994">ChromeVox अपडेट किया गया</translation>
 <translation id="930275611743429116">चयन प्रारंभ या समाप्त करें.</translation>
 <translation id="948171205378458592">बोली की दर घटाएं</translation>
 <translation id="962913030769097253">अगले स्तर 1 का शीर्षक</translation>
 <translation id="973955474346881951">रोचक मोड सक्षम/अक्षम करें</translation>
+<translation id="976849232629612000">कोई आइटम नहीं.</translation>
 </translationbundle>

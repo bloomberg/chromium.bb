@@ -10,6 +10,7 @@
 <translation id="2704606927547763573">Copiado</translation>
 <translation id="2747003861858887689">Campo anterior</translation>
 <translation id="2780046210906776326">Sem contas de e-mail</translation>
+<translation id="3172213052701798825">Google Smart Lock para senhas</translation>
 <translation id="3244271242291266297">MM</translation>
 <translation id="3252394070589632019"><ph name="VALUE" />, <ph name="ADDITIONAL_INFO" />, <ph name="INDEX" /> de <ph name="NUM_SUGGESTIONS" /></translation>
 <translation id="3335947283844343239">Reabrir guia fechada</translation>
@@ -20,6 +21,7 @@
 <translation id="4399225372525667111">O Google Chrome não consegue confirmar se o URL deste site está correto.</translation>
 <translation id="4728558894243024398">Plataforma</translation>
 <translation id="473775607612524610">Atualizar</translation>
+<translation id="4875622588773761625">Deseja que <ph name="PASSWORD_MANAGER_BRAND" /> atualize sua senha para este site?</translation>
 <translation id="5317780077021120954">Salvar</translation>
 <translation id="605721222689873409">AA</translation>
 <translation id="6149061208933997199">Usar senha</translation>
@@ -28,7 +30,9 @@
 <translation id="6344783595350022745">Limpar texto</translation>
 <translation id="6456425917241817154">Senha gerada pelo Google Chrome</translation>
 <translation id="6535543971741225613">O site que você está tentando acessar está agindo de forma suspeita e o Google Chrome não consegue confirmar se o URL está correto. Por motivos de segurança, você não deve continuar. Tente novamente amanhã ou acesse outro lugar.</translation>
+<translation id="6647073004883890710">Deseja que <ph name="PASSWORD_MANAGER_BRAND" /> atualize a senha de <ph name="USERNAME" /> para este site?</translation>
 <translation id="7222245588540287464">Se a Pesquisa contextual está ou não ativada.</translation>
+<translation id="7378627244592794276">Não</translation>
 <translation id="7456847797759667638">Abrir local...</translation>
 <translation id="7481312909269577407">Avançar</translation>
 <translation id="7484580869648358686">Aviso: algo está errado aqui!</translation>

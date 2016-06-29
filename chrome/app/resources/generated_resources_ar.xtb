@@ -183,7 +183,6 @@
 <translation id="1259724620062607540">عنصر الرف 7</translation>
 <translation id="1260240842868558614">عرض:</translation>
 <translation id="126710816202626562">لغة الترجمة:</translation>
-<translation id="1269690813141254680">‏يمكنك التحكم في الطريقة التي تتبعها Google عند استخدام سجل التصفح لتخصيص البحث وخدمات Google الأخرى من <ph name="BEGIN_LINK" />عناصر التحكم في نشاط Google<ph name="END_LINK" />.</translation>
 <translation id="1272079795634619415">إيقاف</translation>
 <translation id="1272978324304772054">لا ينتمي حساب المستخدم هذا إلى النطاق المسجَّل به هذا الجهاز. إذا أردت التسجيل بنطاق مختلف، فيلزمك إجراء استرداد الجهاز أولاً.</translation>
 <translation id="127353061808977798">الخطوط والتشفير</translation>
@@ -1670,7 +1669,6 @@
 <translation id="3317459757438853210">طباعة على الجانبين</translation>
 <translation id="331752765902890099">زر <ph name="PROFILE_NAME" />:  خطأ في تسجيل الدخول</translation>
 <translation id="3319048459796106952">نافذة &amp; جديدة للتصفح المتخفي</translation>
-<translation id="3319364804843246307">‏تطبيقات Android</translation>
 <translation id="3320859581025497771">شركة الاتصالات</translation>
 <translation id="3323235640813116393">‏يُمكِّن من حفظ الصفحات بصيغة MHTML: ملف نصي واحد يحتوي على HTML وجميع الموارد الفرعية.</translation>
 <translation id="3323447499041942178">مربع نص</translation>
@@ -2462,7 +2460,6 @@
 <translation id="4479639480957787382">إيثرنت</translation>
 <translation id="4479812471636796472">‏لوحة المفاتيح الأمريكية Dvorak</translation>
 <translation id="4481249487722541506">تحميل إضافة تم فك حزمتها...</translation>
-<translation id="4482194545587547824">‏قد يستخدم Google سجل التصفح لتخصيص البحث وخدمات Google الأخرى.</translation>
 <translation id="4487088045714738411">لوحة المفاتيح البلجيكية</translation>
 <translation id="4492190037599258964">نتائج البحث عن '<ph name="SEARCH_STRING" />'</translation>
 <translation id="4495021739234344583">إلغاء التسجيل وإعادة التشغيل</translation>

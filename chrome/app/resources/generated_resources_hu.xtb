@@ -183,7 +183,6 @@
 <translation id="1259724620062607540">7. polcelem</translation>
 <translation id="1260240842868558614">Megjelenítés:</translation>
 <translation id="126710816202626562">A fordítás nyelve:</translation>
-<translation id="1269690813141254680">A <ph name="BEGIN_LINK" />Google Tevékenységvezérlők<ph name="END_LINK" /> funkcióval szabályozhatja, hogy miként használhatja fel a Google a böngészési előzményeket a Keresés és más Google-szolgáltatások személyre szabására.</translation>
 <translation id="1272079795634619415">Leállítás</translation>
 <translation id="1272978324304772054">Ez a felhasználói fiók nem ahhoz a domainhez tartozik, amelyhez az eszköz. Ha másik domainen kívánja regisztrálni azt, először vissza kell állítania az eszköz beállításait.</translation>
 <translation id="127353061808977798">Betűtípusok és karakterkódolás</translation>
@@ -1674,7 +1673,6 @@ Innen: <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3317459757438853210">Kétoldalas</translation>
 <translation id="331752765902890099"><ph name="PROFILE_NAME" /> gomb: bejelentkezési hiba</translation>
 <translation id="3319048459796106952">Új &amp;inkognitóablak</translation>
-<translation id="3319364804843246307">Android-alkalmazások</translation>
 <translation id="3320859581025497771">adathordozó</translation>
 <translation id="3323235640813116393">Lehetővé teszi az oldalak MHTML formátumban való mentését; ez egyetlen szöveges fájlban tartalmazza a HTML-t és az összes alárendelt forrást.</translation>
 <translation id="3323447499041942178">Szövegmező</translation>
@@ -2467,7 +2465,6 @@ Az összes felhasználónak ki kell jelentkeznie a folytatáshoz.</translation>
 <translation id="4479639480957787382">Ethernet</translation>
 <translation id="4479812471636796472">Amerikai Dvorak billentyűzet</translation>
 <translation id="4481249487722541506">Kicsomagolt bővítmények betöltése...</translation>
-<translation id="4482194545587547824">A Google felhasználhatja a böngészési előzményeket a Keresés és más Google-szolgáltatások személyre szabására.</translation>
 <translation id="4487088045714738411">Belga billentyűzet</translation>
 <translation id="4492190037599258964">Találatok a(z) „<ph name="SEARCH_STRING" />” kifejezésre</translation>
 <translation id="4495021739234344583">Regisztráció törlése és újraindítás</translation>

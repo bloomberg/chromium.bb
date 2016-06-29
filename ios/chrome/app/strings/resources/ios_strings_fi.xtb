@@ -10,6 +10,7 @@
 <translation id="2704606927547763573">Kopioitu</translation>
 <translation id="2747003861858887689">Edellinen kenttä</translation>
 <translation id="2780046210906776326">Ei sähköpostitilejä</translation>
+<translation id="3172213052701798825">Google Smart Lock salasanoille</translation>
 <translation id="3244271242291266297">KK</translation>
 <translation id="3252394070589632019"><ph name="VALUE" />, <ph name="ADDITIONAL_INFO" />, <ph name="INDEX" />/<ph name="NUM_SUGGESTIONS" /></translation>
 <translation id="3335947283844343239">Avaa suljettu välilehti uudelleen</translation>
@@ -20,6 +21,7 @@
 <translation id="4399225372525667111">Chrome ei voi varmistaa, onko tämän sivuston URL-osoite oikea.</translation>
 <translation id="4728558894243024398">Käyttöympäristö</translation>
 <translation id="473775607612524610">Päivitä</translation>
+<translation id="4875622588773761625">Haluatko, että <ph name="PASSWORD_MANAGER_BRAND" /> päivittää tämän sivuston salasanasi?</translation>
 <translation id="5317780077021120954">Tallenna</translation>
 <translation id="605721222689873409">VV</translation>
 <translation id="6149061208933997199">Käytä salasanaa</translation>
@@ -28,7 +30,9 @@
 <translation id="6344783595350022745">Tyhjennä teksti</translation>
 <translation id="6456425917241817154">Salasanan loi Chrome</translation>
 <translation id="6535543971741225613">Käyttämäsi sivusto toimii epäilyttävästi, eikä Chrome voi varmistaa, onko sen URL-osoite oikea. Emme suosittele jatkamaan sivustoon. Voit yrittää käyttää sivustoa uudelleen huomenna tai siirtyä toiseen sivustoon.</translation>
+<translation id="6647073004883890710">Haluatko, että <ph name="PASSWORD_MANAGER_BRAND" /> päivittää tilin <ph name="USERNAME" /> salasanan tällä sivustolla?</translation>
 <translation id="7222245588540287464">Onko kontekstihaku käytössä.</translation>
+<translation id="7378627244592794276">Ei</translation>
 <translation id="7456847797759667638">Avaa sijainti...</translation>
 <translation id="7481312909269577407">Seuraava</translation>
 <translation id="7484580869648358686">Varoitus: jotain on vialla!</translation>

@@ -79,7 +79,6 @@ Je moet Bluetooth en Locatie hebben ingeschakeld om het Fysieke web te gebruiken
 <translation id="194341124344773587">Schakel het recht in voor Chrome via de <ph name="BEGIN_LINK" />Android-instellingen<ph name="END_LINK" />.</translation>
 <translation id="1943432128510653496">Wachtwoorden opslaan</translation>
 <translation id="1944384637046898011">Alles versleutelen met Google-wachtwoord vanaf <ph name="TIME" /></translation>
-<translation id="1946005195648379376">Beheer hoe Google je browsegeschiedenis gebruikt om Google Zoeken en andere Google-services te personaliseren.</translation>
 <translation id="1966710179511230534">Update je inloggegevens.</translation>
 <translation id="1974060860693918893">Geavanceerd</translation>
 <translation id="1984321224716884559">Chrome Dev-bladwijzers</translation>
@@ -427,6 +426,7 @@ Je bent echter niet onzichtbaar. Als je incognito bent, wordt je browsegeschiede
 <translation id="6140912465461743537">Land/regio</translation>
 <translation id="6159335304067198720"><ph name="PERCENT" /> besparing van data</translation>
 <translation id="6165508094623778733">Meer informatie</translation>
+<translation id="6177390657002841081">Databesparing inschakelen</translation>
 <translation id="6181444274883918285">Site-uitzondering toevoegen</translation>
 <translation id="6192792657125177640">Uitzonderingen</translation>
 <translation id="6232535412751077445">Als je 'Niet bijhouden' inschakelt, wordt hiervoor een verzoek opgenomen in je browseverkeer. Het resultaat daarvan hangt af van of een website reageert op het verzoek en hoe het verzoek wordt geïnterpreteerd.
@@ -485,6 +485,7 @@ Zo kunnen sommige websites op dit verzoek reageren door advertenties weer te gev
 <translation id="6857778194843072568">Alleen verzenden via wifi</translation>
 <translation id="6865313869410766144">Formuliergegevens voor Automatisch aanvullen</translation>
 <translation id="6868088497967843822">Log in om je bladwijzers, geschiedenis, wachtwoorden en andere instellingen op al je apparaten te gebruiken</translation>
+<translation id="6903907808598579934">Synchronisatie inschakelen</translation>
 <translation id="6945221475159498467">Selecteren</translation>
 <translation id="6963766334940102469">Bladwijzers verwijderen</translation>
 <translation id="6965382102122355670">OK</translation>

@@ -10,6 +10,7 @@
 <translation id="2704606927547763573">Đã sao chép</translation>
 <translation id="2747003861858887689">Trường trước</translation>
 <translation id="2780046210906776326">Ko có TK email nào</translation>
+<translation id="3172213052701798825">Google Smart Lock cho Mật khẩu</translation>
 <translation id="3244271242291266297">MM</translation>
 <translation id="3252394070589632019"><ph name="VALUE" />, <ph name="ADDITIONAL_INFO" />, <ph name="INDEX" /> trong số <ph name="NUM_SUGGESTIONS" /></translation>
 <translation id="3335947283844343239">Mở lại Tab đã Đóng</translation>
@@ -20,6 +21,7 @@
 <translation id="4399225372525667111">Chrome không thể xác minh rằng URL của trang web này chính xác.</translation>
 <translation id="4728558894243024398">Nền tảng</translation>
 <translation id="473775607612524610">Cập nhật</translation>
+<translation id="4875622588773761625">Bạn có muốn <ph name="PASSWORD_MANAGER_BRAND" /> cập nhật mật khẩu của mình cho trang web này không?</translation>
 <translation id="5317780077021120954">Lưu</translation>
 <translation id="605721222689873409">YY</translation>
 <translation id="6149061208933997199">Sử dụng mật khẩu</translation>
@@ -28,7 +30,9 @@
 <translation id="6344783595350022745">Xóa văn bản</translation>
 <translation id="6456425917241817154">Chrome đã tạo mật khẩu</translation>
 <translation id="6535543971741225613">Trang web bạn đang cố gắng truy cập có hoạt động lạ và Chrome không thể xác minh URL của trang web là chính xác. Vì lý do bảo mật, bạn không nên tiếp tục và có lẽ nên thử lại vào ngày mai hoặc truy cập vào một trang web khác.</translation>
+<translation id="6647073004883890710">Bạn có muốn <ph name="PASSWORD_MANAGER_BRAND" /> cập nhật mật khẩu cho <ph name="USERNAME" /> cho trang web này không?</translation>
 <translation id="7222245588540287464">Dù tính năng Tìm kiếm theo ngữ cảnh đã bật hay chưa.</translation>
+<translation id="7378627244592794276">Không</translation>
 <translation id="7456847797759667638">Mở Vị trí...</translation>
 <translation id="7481312909269577407">Chuyển tiếp</translation>
 <translation id="7484580869648358686">Cảnh báo: Phần mềm độc hại có thể không có ngay ở đây!</translation>

@@ -183,7 +183,6 @@
 <translation id="1259724620062607540">Riiuliüksus 7</translation>
 <translation id="1260240842868558614">Näita:</translation>
 <translation id="126710816202626562">Tõlkimiskeel:</translation>
-<translation id="1269690813141254680"><ph name="BEGIN_LINK" />Google'i kontotegevuste haldus<ph name="END_LINK" /> võimaldab juhtida seda, kuidas Google kasutab teie sirvimisajalugu otsingu ja muude Google'i teenuste isikupärastamiseks.</translation>
 <translation id="1272079795634619415">Peata</translation>
 <translation id="1272978324304772054">See kasutajakonto ei kuulu domeeni, kus seade on registreeritud. Kui soovite registreeruda mõnel teisel domeenil, peate esmalt tegema seadmetaaste.</translation>
 <translation id="127353061808977798">Fondid ja kodeering</translation>
@@ -1674,7 +1673,6 @@ Asukohast <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3317459757438853210">Kahepoolne</translation>
 <translation id="331752765902890099">Profiili <ph name="PROFILE_NAME" /> nupp: sisselogimise viga</translation>
 <translation id="3319048459796106952">Uus &amp;inkognito aken</translation>
-<translation id="3319364804843246307">Androidi rakendused</translation>
 <translation id="3320859581025497771">teie operaator</translation>
 <translation id="3323235640813116393">Võimaldab lehed salvestada MHTML-ina: üks tekstifail, mis sisaldab HTML-i ja kõiki alamressursse.</translation>
 <translation id="3323447499041942178">Tekstiväli</translation>
@@ -2468,7 +2466,6 @@ Jätkamiseks peavad kõik kasutajad välja logima.</translation>
 <translation id="4479639480957787382">Ethernet</translation>
 <translation id="4479812471636796472">USA Dvoraki klaviatuur</translation>
 <translation id="4481249487722541506">Laadi pakkimata laiendus...</translation>
-<translation id="4482194545587547824">Google võib kasutada teie sirvimisajalugu otsingu ja teiste Google'i teenuste isikupärastamiseks</translation>
 <translation id="4487088045714738411">Belgia klaviatuur</translation>
 <translation id="4492190037599258964">Otsingutulemused „<ph name="SEARCH_STRING" />“ kohta</translation>
 <translation id="4495021739234344583">Tühista registreerimine ja taaskäivita</translation>

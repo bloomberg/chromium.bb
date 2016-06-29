@@ -79,7 +79,6 @@ Aby korzystać z internetu rzeczy, musisz włączyć Bluetooth i Lokalizację.</
 <translation id="194341124344773587">Przyznaj Chrome uprawnienie w <ph name="BEGIN_LINK" />ustawieniach Androida<ph name="END_LINK" />.</translation>
 <translation id="1943432128510653496">Zapisuj hasła</translation>
 <translation id="1944384637046898011">Zaszyfruj wszystko za pomocą hasła do Google z <ph name="TIME" /></translation>
-<translation id="1946005195648379376">Określ, jak Google może korzystać z Twojej historii przeglądania, by dostosowywać wyniki wyszukiwania i działanie innych usług.</translation>
 <translation id="1966710179511230534">Zaktualizuj swoje dane logowania.</translation>
 <translation id="1974060860693918893">Zaawansowane</translation>
 <translation id="1984321224716884559">Zakładki z Chrome Dev</translation>
@@ -427,6 +426,7 @@ To jednak nie oznacza, że Cię nie widać. Nawet gdy przejdziesz w tryb incogni
 <translation id="6140912465461743537">Kraj/region</translation>
 <translation id="6159335304067198720">Oszczędność danych: <ph name="PERCENT" /></translation>
 <translation id="6165508094623778733">Więcej informacji</translation>
+<translation id="6177390657002841081">Włącz Oszczędzanie danych</translation>
 <translation id="6181444274883918285">Dodaj witrynę do wyjątków</translation>
 <translation id="6192792657125177640">Wyjątki</translation>
 <translation id="6232535412751077445">Włączenie opcji „Bez śledzenia” oznacza, że podczas przeglądania będzie wysyłane żądanie. Jego wynik zależy od tego, czy strona na nie odpowie oraz jak zostanie ono zinterpretowane.
@@ -485,6 +485,7 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 <translation id="6857778194843072568">Wysyłaj tylko przez Wi-Fi</translation>
 <translation id="6865313869410766144">Autouzupełnianie danych formularzy</translation>
 <translation id="6868088497967843822">Zaloguj się, by korzystać z zakładek, historii, haseł i innych ustawień na wszystkich swoich urządzeniach</translation>
+<translation id="6903907808598579934">Włącz synchronizację</translation>
 <translation id="6945221475159498467">Wybierz</translation>
 <translation id="6963766334940102469">Usuń zakładki</translation>
 <translation id="6965382102122355670">OK</translation>

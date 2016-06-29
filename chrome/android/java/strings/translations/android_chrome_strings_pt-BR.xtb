@@ -79,7 +79,6 @@
 <translation id="194341124344773587">Ative a permissão para o Chrome nas <ph name="BEGIN_LINK" />configurações do Android<ph name="END_LINK" />.</translation>
 <translation id="1943432128510653496">Salvar senhas</translation>
 <translation id="1944384637046898011">Criptografar tudo com senha do Google a partir de <ph name="TIME" /></translation>
-<translation id="1946005195648379376">Controle a maneira como o Google usa seu histórico de navegação para personalizar a Pesquisa e outros serviços do Google.</translation>
 <translation id="1966710179511230534">Atualize seus detalhes de login.</translation>
 <translation id="1974060860693918893">Avançado</translation>
 <translation id="1984321224716884559">Favoritos do Chrome Dev</translation>
@@ -426,6 +425,7 @@ Para ajustar seu termo de pesquisa, mantenha-o pressionado para selecionar. Para
 <translation id="6140912465461743537">País/região</translation>
 <translation id="6159335304067198720">Economia de dados de <ph name="PERCENT" /></translation>
 <translation id="6165508094623778733">Saiba mais</translation>
+<translation id="6177390657002841081">Ativar a Economia de dados</translation>
 <translation id="6181444274883918285">Adicionar site às exceções</translation>
 <translation id="6192792657125177640">Exceções</translation>
 <translation id="6232535412751077445">A ativação de "Não rastrear" significa que uma solicitação será incluída no tráfego de navegação. Todo efeito depende de um website responder à solicitação e de como a solicitação é interpretada.
@@ -484,6 +484,7 @@ Por exemplo, alguns websites podem responder a esta solicitação mostrando anú
 <translation id="6857778194843072568">Enviar somente em Wi-Fi</translation>
 <translation id="6865313869410766144">Preenchimento automático dos dados do formulário</translation>
 <translation id="6868088497967843822">Faça login para que favoritos, histórico, senhas e outras configurações fiquem disponíveis em todos os seus dispositivos</translation>
+<translation id="6903907808598579934">Ativar a sincronização</translation>
 <translation id="6945221475159498467">Selecionar</translation>
 <translation id="6963766334940102469">Excluir favoritos</translation>
 <translation id="6965382102122355670">OK</translation>

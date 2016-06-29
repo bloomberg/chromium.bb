@@ -49,17 +49,7 @@
 
       Kung hindi itatakda ang patakarang ito, ang default na dalas ay 3 oras. Ang minimum
       na pinapayagang dalas ay 60 segundo.</translation>
-<translation id="1213523811751486361">Tinutukoy ang URL ng search engine na ginamit upang magbigay ng mga suhestiyon sa paghahanap. Dapat na maglaman ng string na '<ph name="SEARCH_TERM_MARKER" />' ang URL, na papalitan sa panahon ng query ng tektsong inilagay ng user sa ngayon.
-
-          Opsyonal ang patakarang ito. Kung hindi nakatakda, walang suhestiyong URL ang gagamitin.
-
-          Kikilalanin lamang ang patakaran kung pinagana ang patakaran ng 'DefaultSearchProviderEnabled.'</translation>
 <translation id="1221359380862872747">Mag-load ng mga tinukoy na url sa pag-login sa demo</translation>
-<translation id="1240643596769627465">Tinutukoy ang URL ng search engine na ginagamit upang magbigay ng mga instant na resulta. Dapat na maglaman ng string na <ph name="SEARCH_TERM_MARKER" /> ang URL, na papalitan sa panahon ng query ng tekstong inilagay ng user sa ngayon.
-
-          Opsyonal ang patakarang ito. Kung hindi nakatakda, walang mga instant na resulta sa paghahanap ang ibibigay.
-
-          Kinikilala lamang ang patakarang ito kung pinagana ang patakaran ng 'DefaultSearchProviderEnabled.'</translation>
 <translation id="1265053460044691532">Limitahan ang oras na maaaring mag-log in offline ang isang user na na-authenticate gamit ang SAML</translation>
 <translation id="1291880496936992484">Babala: Tuluyan nang maalis ang RC4 sa <ph name="PRODUCT_NAME" /> pagkatapos ng bersyon 52 (tinatayang lalabas sa Setyembre 2016) at hindi na gagana ang patakarang ito.
 
@@ -1115,9 +1105,6 @@
 <translation id="4928632305180102854">Kinokontrol kung pinapayagan ng <ph name="PRODUCT_OS_NAME" /> na malikha ang mga bagong user account. Kung nakatakda sa false ang patakarang ito, hindi makakapag-login ang mga user na wala pang account.
 
       Kung nakatakda sa true o hindi naka-configure ang patakarang ito, papayagang malikha ang mga bagong user account kung hindi pinipigilan ng <ph name="DEVICEUSERWHITELISTPROTO_POLICY_NAME" /> ang pag-log in ng user.</translation>
-<translation id="4962195944157514011">Tinutukoy ang URL ng search engine na ginamit kapag nagsasagawa ng isang default na paghahanap. Dapat na maglaman ng string na '<ph name="SEARCH_TERM_MARKER" />' ang URL, na papalitan sa panahon ng query ng mga terminong hinahanap ng user.
-
-          Dapat na itakda ang pagpipiliang ito kapag pinagana ang patakarang 'DefaultSearchProviderEnabled' at kikilalanin lamang kung ito ang sitwasyon.</translation>
 <translation id="4971529314808359013">Pinapayagan kang tukuyin ang isang listahan ng mga pattern ng url na tumutukoy sa mga site kung saan awtomatiko dapat na pumili ang <ph name="PRODUCT_NAME" /> ng client certificate, kung kailangan ng site ng isang certificate.
 
           Ang value ay dapat na isang array ng stringified na mga diksyunaryong JSON. Ang bawat diksyunaryo ay dapat na mayroong anyong { "pattern": "$URL_PATTERN", "filter" : $FILTER }, kung saan ang $URL_PATTERN ay isang pattern ng setting ng content. Nililimitahan ng $FILTER kung aling mga client certificate ang awtomatikong pipiliin ng browser. Anuman ang filter, ang mga certificate na tumutugma sa kahilingan sa certificate ng server ang pipiliin. Kung ang $FILTER ay may anyong { "ISSUER": { "CN": "$ISSUER_CN" } }, mga client certificate na ibinigay ng isang certificate na may CommonName $ISSUER_CN lang ang pipiliin. Kung ang $FILTER ay ang walang lamang diksyunaryo na {}, hindi na nililimitahan ang pagpili ng mga client certificate.

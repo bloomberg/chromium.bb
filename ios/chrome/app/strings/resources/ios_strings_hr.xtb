@@ -10,6 +10,7 @@
 <translation id="2704606927547763573">Kopirano</translation>
 <translation id="2747003861858887689">Prethodno polje</translation>
 <translation id="2780046210906776326">Nema računa e-pošte</translation>
+<translation id="3172213052701798825">Google Smart Lock za zaporke</translation>
 <translation id="3244271242291266297">MM</translation>
 <translation id="3252394070589632019"><ph name="VALUE" />, <ph name="ADDITIONAL_INFO" />, <ph name="INDEX" /> od <ph name="NUM_SUGGESTIONS" /></translation>
 <translation id="3335947283844343239">Ponovo otvori zatvorenu karticu</translation>
@@ -20,6 +21,7 @@
 <translation id="4399225372525667111">Chrome ne može potvrditi da je URL ove stranice točan.</translation>
 <translation id="4728558894243024398">Platforma</translation>
 <translation id="473775607612524610">Ažuriraj</translation>
+<translation id="4875622588773761625">Želite li da <ph name="PASSWORD_MANAGER_BRAND" /> ažurira vašu zaporku za tu web-lokaciju?</translation>
 <translation id="5317780077021120954">Spremi</translation>
 <translation id="605721222689873409">GG</translation>
 <translation id="6149061208933997199">Upotrijebi zaporku</translation>
@@ -28,7 +30,9 @@
 <translation id="6344783595350022745">Izbriši tekst</translation>
 <translation id="6456425917241817154">Zaporka koju je generirao Chrome</translation>
 <translation id="6535543971741225613">Web-lokacija koju pokušavate otvoriti ponaša se čudno, a Chrome ne može potvrditi da je URL ove stranice točan. Iz sigurnosnih razloga ne biste trebali nastaviti, a preporučujemo da pokušate sutra ili na nekoj drugoj lokaciji.</translation>
+<translation id="6647073004883890710">Želite li da <ph name="PASSWORD_MANAGER_BRAND" /> ažurira zaporku korisnika <ph name="USERNAME" /> za tu web-lokaciju?</translation>
 <translation id="7222245588540287464">Je li omogućeno kontekstualno pretraživanje.</translation>
+<translation id="7378627244592794276">Ne</translation>
 <translation id="7456847797759667638">Otvori lokaciju...</translation>
 <translation id="7481312909269577407">Naprijed</translation>
 <translation id="7484580869648358686">Upozorenje: Nešto nije u redu!</translation>

@@ -48,17 +48,7 @@
 
       Ak toto pravidlo nie je nastavené, použije sa predvolená frekvencia 3 hodiny. Minimálna
       povolená frekvencia je 60 sekúnd.</translation>
-<translation id="1213523811751486361">Určuje webovú adresu vyhľadávača, ktorý poskytuje návrhy pre vyhľadávanie. Webová adresa by mala obsahovať reťazec <ph name="SEARCH_TERM_MARKER" />, ktorý bude počas posielania dopytu nahradený textom zadávaným používateľom.
-
-          Toto pravidlo je voliteľné. Ak nebude nastavené, nepoužije sa žiadna webová adresa návrhu.
-
-          Toto pravidlo bude dodržané len v prípade, ak je povolené pravidlo „DefaultSearchProviderEnabled“.</translation>
 <translation id="1221359380862872747">Po prihlásení v režime ukážky načítať zadané webové adresy</translation>
-<translation id="1240643596769627465">Určuje webovú adresu vyhľadávača, ktorý poskytuje výsledky dynamického vyhľadávania. Webová adresa by mala obsahovať reťazec <ph name="SEARCH_TERM_MARKER" />, ktorý bude počas posielania dopytu nahradený textom zadávaným používateľom.
-
-          Toto pravidlo je voliteľné. Ak ho nenastavíte, nebudú sa vám zobrazovať žiadne výsledky dynamického vyhľadávania.
-
-          Toto pravidlo bude dodržané len v prípade, ak je povolené pravidlo „DefaultSearchProviderEnabled“.</translation>
 <translation id="1265053460044691532">Stanovte časový limit prihlásenia v režime offline pre používateľa, ktorého totožnosť bola overená prostredníctvom štandardu SAML</translation>
 <translation id="1291880496936992484">Upozornenie: Po verzii 52 (približne v septembri 2016) bude šifrovací algoritmus RC4 z prehliadača <ph name="PRODUCT_NAME" /> úplne odstránený a toto pravidlo prestane fungovať.
 
@@ -1112,9 +1102,6 @@ Ak toto pravidlo nie je nastavené alebo je prázdne, akýkoľvek používateľ 
 <translation id="4928632305180102854">Určuje, či v systéme <ph name="PRODUCT_OS_NAME" /> bude možné vytvárať nové používateľské účty. Ak toto pravidlo nastavíte na hodnotu false, do zariadenia sa nebudú môcť prihlásiť používatelia, ktorí ešte nemajú účet.
 
       Ak je toto pravidlo nastavené na hodnotu true, alebo je nenakonfigurované, bude možné vytvárať nové používateľské účty (za predpokladu, že daný používateľ nie je zablokovaný pravidlom <ph name="DEVICEUSERWHITELISTPROTO_POLICY_NAME" />).</translation>
-<translation id="4962195944157514011">Určuje webovú adresu vyhľadávača používaného pri predvolenom vyhľadávaní. Webová adresa by mala obsahovať reťazec <ph name="SEARCH_TERM_MARKER" />, ktorý bude počas posielania dopytu nahradený používateľom hľadanými výrazmi.
-
-          Táto možnosť musí byť nastavená v prípade, že je povolené pravidlo „DefaultSearchProviderEnabled“ a bude dodržané len v takom prípade.</translation>
 <translation id="4971529314808359013">Umožňuje vám uviesť zoznam vzorov webových adries, ktorý uvádza webové stránky, pre ktoré by mal prehliadač <ph name="PRODUCT_NAME" /> automaticky vybrať certifikát klienta (ak stránky vyžadujú certifikát).
 
           Hodnota musí byť pole slovníkov JSON prevedených na reťazce. Každý slovník musí mať tvar { "pattern": "$URL_PATTERN", "filter" : $FILTER }, kde $URL_PATTERN je vzor nastavenia obsahu. $FILTER obmedzuje certifikáty klienta, z ktorých bude prehliadač automaticky vyberať. Nezávisle od filtra budú vybraté iba tie certifikáty, ktoré zodpovedajú žiadosti servera o certifikát. Ak má $FILTER tvar { "ISSUER": { "CN": "$ISSUER_CN" } }, budú navyše vybraté iba tie certifikáty klienta, ktoré boli vydané certifikátom s bežným názvom $ISSUER_CN. Ak je $FILTER prázdny slovník {}, výber certifikátov klienta nie je nijako ďalej obmedzený.

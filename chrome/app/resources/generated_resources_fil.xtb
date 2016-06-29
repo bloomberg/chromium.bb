@@ -183,7 +183,6 @@
 <translation id="1259724620062607540">Item 7 sa shelf</translation>
 <translation id="1260240842868558614">Ipakita:</translation>
 <translation id="126710816202626562">Wika ng pagsasalin</translation>
-<translation id="1269690813141254680">Kontrolin kung paano ginagamit ng Google ang iyong history ng pagba-browse upang ma-personalize ang Search at iba pang mga serbisyo ng Google mula sa <ph name="BEGIN_LINK" />Mga Kontrol sa Aktibidad ng Google<ph name="END_LINK" />.</translation>
 <translation id="1272079795634619415">Stop</translation>
 <translation id="1272978324304772054">Ang user account na ito ay hindi pagmamay-ari ng domain kung saan nakatala ang device.  Kung nais mong magpatala sa ibang domain, kailangan mo munang sumailalim sa pagbawi ng device.</translation>
 <translation id="127353061808977798">Mga font at pag-e-encode 
@@ -1676,7 +1675,6 @@ Mula Sa <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3317459757438853210">Magkabilaan</translation>
 <translation id="331752765902890099">Button ng <ph name="PROFILE_NAME" />: error sa pag-sign in</translation>
 <translation id="3319048459796106952">Bagong &amp;incognito window</translation>
-<translation id="3319364804843246307">Mga Android App</translation>
 <translation id="3320859581025497771">ang iyong carrier</translation>
 <translation id="3323235640813116393">Pinapagana ang pag-save ng mga page bilang MHTML: iisang text file na naglalaman ng HTML at ng lahat ng sub-resource.</translation>
 <translation id="3323447499041942178">Text box</translation>
@@ -2472,7 +2470,6 @@ Pumindot ng anumang key upang magpatuloy sa pagtuklas.</translation>
 <translation id="4479639480957787382">Ethernet</translation>
 <translation id="4479812471636796472">US Dvorak na keyboard</translation>
 <translation id="4481249487722541506">I-load ang na-unpack na extension...</translation>
-<translation id="4482194545587547824">Maaaring gamitin ng Google ang iyong history ng pagba-browse upang ma-personalize ang Search at iba pang mga serbisyo ng Google</translation>
 <translation id="4487088045714738411">Belgian na keyboard</translation>
 <translation id="4492190037599258964">Mga resulta ng paghahanap para sa '<ph name="SEARCH_STRING" />'</translation>
 <translation id="4495021739234344583">Mag-unenroll at mag-restart</translation>

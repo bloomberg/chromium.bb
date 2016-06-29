@@ -79,7 +79,6 @@ Pentru a folosi Webul material, trebuie să activezi Bluetooth și Locația.</tr
 <translation id="194341124344773587">Activează permisiunea pentru Chrome din <ph name="BEGIN_LINK" />Setări Android<ph name="END_LINK" />.</translation>
 <translation id="1943432128510653496">Parole salvate</translation>
 <translation id="1944384637046898011">Criptează toate datele folosind parola Google din data de <ph name="TIME" /></translation>
-<translation id="1946005195648379376">Controlează cum poate folosi Google istoricul de navigare pentru a personaliza Căutarea și alte servicii Google.</translation>
 <translation id="1966710179511230534">Actualizați detaliile de conectare.</translation>
 <translation id="1974060860693918893">Avansate</translation>
 <translation id="1984321224716884559">Marcaje Chrome Dev</translation>
@@ -427,6 +426,7 @@ Totuși, nu ești invizibil(ă). Trecerea în modul incognito nu ascunde activit
 <translation id="6140912465461743537">Țară/Regiune</translation>
 <translation id="6159335304067198720">Economie de date de <ph name="PERCENT" /></translation>
 <translation id="6165508094623778733">Află mai multe</translation>
+<translation id="6177390657002841081">Activează Economizorul de date</translation>
 <translation id="6181444274883918285">Adaugă o excepție privind site-urile</translation>
 <translation id="6192792657125177640">Excepții</translation>
 <translation id="6232535412751077445">Dacă activezi opțiunea „Nu urmări”, o solicitare va fi inclusă împreună cu traficul de navigare. Efectul variază în funcție de răspunsul site-ului la solicitare și în funcție de modul în care este interpretată solicitarea.
@@ -485,6 +485,7 @@ De exemplu, unele site-uri pot răspunde la această solicitare afișând anunț
 <translation id="6857778194843072568">Trimite numai prin Wi-Fi</translation>
 <translation id="6865313869410766144">Datele salvate pentru completarea automată a formularelor</translation>
 <translation id="6868088497967843822">Conectează-te pentru a avea marcajele, istoricul, parolele și alte setări pe toate dispozitivele</translation>
+<translation id="6903907808598579934">Activează sincronizarea</translation>
 <translation id="6945221475159498467">Selectează</translation>
 <translation id="6963766334940102469">Șterge marcaje</translation>
 <translation id="6965382102122355670">OK</translation>

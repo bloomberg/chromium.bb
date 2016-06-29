@@ -79,7 +79,6 @@ Lazima uwashe Bluetooth na kipengele cha Mahali ili uweze kutumia Wavuti Kila Ma
 <translation id="194341124344773587">Washa ruhusa ya Chrome katika <ph name="BEGIN_LINK" />Mipangilio ya Android<ph name="END_LINK" />.</translation>
 <translation id="1943432128510653496">Hifadhi manenosiri</translation>
 <translation id="1944384637046898011">Simba yote kwa njia fiche ukitumia nenosiri la Google kuanzia <ph name="TIME" /></translation>
-<translation id="1946005195648379376">Dhibiti namna Google inavyotumia historia yako ya kuvinjari ili uweke mapendeleo kwenye huduma ya Tafuta na huduma nyingine za Google.</translation>
 <translation id="1966710179511230534">Tafadhali sasisha maelezo yako ya kuingia katika akaunti.</translation>
 <translation id="1974060860693918893">Mipangilio ya kina</translation>
 <translation id="1984321224716884559">Alamisho za Chrome Dev</translation>
@@ -427,6 +426,7 @@ Hata hivyo, huonekani. Kuvinjari katika hali fiche hakufichi kuvinjari kwako kus
 <translation id="6140912465461743537">Nchi/Eneo</translation>
 <translation id="6159335304067198720"><ph name="PERCENT" /> ya data imeokolewa</translation>
 <translation id="6165508094623778733">Pata maelezo zaidi</translation>
+<translation id="6177390657002841081">Washa Kiokoa Data</translation>
 <translation id="6181444274883918285">Ongeza tovuti mpya kwenye orodha ya vighairi</translation>
 <translation id="6192792657125177640">Vighairi</translation>
 <translation id="6232535412751077445">Kuwasha ‘Usifuatilie’ kunamaanisha kuwa ombi litajumuishwa pamoja na maelezo yako mengine ya kuvinjari. Athari yoyote itategemea ikiwa tovuti inajibu ombi, na namna ombi litakavyofasiriwa.
@@ -485,6 +485,7 @@ Kwa mfano, baadhi ya tovuti zinaweza kujibu ombi hili kwa kukuonyesha matangazo 
 <translation id="6857778194843072568">Tuma kwenye Wi-Fi pekee</translation>
 <translation id="6865313869410766144">Data ya fomu ya Kujaza Kiotomatiki</translation>
 <translation id="6868088497967843822">Ingia katika akaunti ili upate alamisho, historia, manenosiri, na mipangilio yako mingine kwenye vifaa vyako vyote</translation>
+<translation id="6903907808598579934">Washa kipengele cha kusawazisha</translation>
 <translation id="6945221475159498467">Chagua</translation>
 <translation id="6963766334940102469">Futa alamisho</translation>
 <translation id="6965382102122355670">Sawa</translation>

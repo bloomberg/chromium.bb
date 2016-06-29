@@ -79,7 +79,6 @@
 <translation id="194341124344773587">เปิดการใช้สิทธิ์สำหรับ Chrome ใน<ph name="BEGIN_LINK" />การตั้งค่า Android<ph name="END_LINK" /></translation>
 <translation id="1943432128510653496">บันทึกรหัสผ่าน</translation>
 <translation id="1944384637046898011">เข้ารหัสทั้งหมดด้วยรหัสผ่าน Google ตั้งแต่วันที่ <ph name="TIME" /></translation>
-<translation id="1946005195648379376">ควบคุมวิธีที่ Google ใช้ประวัติการท่องเว็บของคุณเพื่อปรับเปลี่ยนการค้นหาในแบบของคุณและบริการอื่นๆ ของ Google</translation>
 <translation id="1966710179511230534">โปรดอัปเดตรายละเอียดการลงชื่อเข้าใช้ของคุณ</translation>
 <translation id="1974060860693918893">ขั้นสูง</translation>
 <translation id="1984321224716884559">บุ๊กมาร์กของ Chrome Dev</translation>
@@ -427,6 +426,7 @@
 <translation id="6140912465461743537">ประเทศ/ภูมิภาค</translation>
 <translation id="6159335304067198720">ประหยัดอินเทอร์เน็ต <ph name="PERCENT" /></translation>
 <translation id="6165508094623778733">เรียนรู้เพิ่มเติม</translation>
+<translation id="6177390657002841081">เปิดโปรแกรมประหยัดอินเทอร์เน็ต</translation>
 <translation id="6181444274883918285">เพิ่มข้อยกเว้นของเว็บไซต์</translation>
 <translation id="6192792657125177640">ข้อยกเว้น</translation>
 <translation id="6232535412751077445">การเปิดใช้ "ไม่ติดตาม" หมายความว่าจะมีการรวมคำขอหนึ่งไว้กับการเข้าชมของคุณ ผลกระทบทั้งหมดขึ้นอยู่กับว่าเว็บไซต์ตอบสนองต่อคำขอนั้นไหม และวิธีตีความคำขอ
@@ -485,6 +485,7 @@
 <translation id="6857778194843072568">ส่งเมื่อใช้ Wi-Fi เท่านั้น</translation>
 <translation id="6865313869410766144">ข้อมูลฟอร์มที่ป้อนอัตโนมัติ</translation>
 <translation id="6868088497967843822">ลงชื่อเข้าใช้เพื่อรับบุ๊กมาร์ก ประวัติการเข้าชม รหัสผ่าน และการตั้งค่าอื่นๆ บนอุปกรณ์ทั้งหมดของคุณ</translation>
+<translation id="6903907808598579934">เปิดการซิงค์</translation>
 <translation id="6945221475159498467">เลือก</translation>
 <translation id="6963766334940102469">ลบบุ๊กมาร์ก</translation>
 <translation id="6965382102122355670">ตกลง</translation>

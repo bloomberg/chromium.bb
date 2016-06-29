@@ -10,6 +10,7 @@
 <translation id="2704606927547763573">Kopieret</translation>
 <translation id="2747003861858887689">Forrige felt</translation>
 <translation id="2780046210906776326">Ingen e-mailkonti</translation>
+<translation id="3172213052701798825">Google Smart Lock til adgangskoder</translation>
 <translation id="3244271242291266297">MM</translation>
 <translation id="3252394070589632019"><ph name="VALUE" />, <ph name="ADDITIONAL_INFO" />, <ph name="INDEX" /> af <ph name="NUM_SUGGESTIONS" /></translation>
 <translation id="3335947283844343239">Åbn lukket fane igen</translation>
@@ -20,6 +21,7 @@
 <translation id="4399225372525667111">Chrome kan ikke bekræfte, at webadressen for dette website er korrekt.</translation>
 <translation id="4728558894243024398">Platform</translation>
 <translation id="473775607612524610">Opdater</translation>
+<translation id="4875622588773761625">Skal <ph name="PASSWORD_MANAGER_BRAND" /> opdatere din adgangskode til dette website?</translation>
 <translation id="5317780077021120954">Gem</translation>
 <translation id="605721222689873409">ÅÅ</translation>
 <translation id="6149061208933997199">Brug adgangskoden</translation>
@@ -28,7 +30,9 @@
 <translation id="6344783595350022745">Ryd tekst</translation>
 <translation id="6456425917241817154">Adgangskode genereret af Chrome</translation>
 <translation id="6535543971741225613">Det website, du forsøger at få adgang til, opfører sig mærkeligt, og Chrome kan ikke bekræfte, at dets webadresse er korrekt. Af sikkerhedsmæssige årsager, bør du ikke fortsætte. Du kan evt. prøve igen i morgen eller besøge et andet website.</translation>
+<translation id="6647073004883890710">Skal <ph name="PASSWORD_MANAGER_BRAND" /> opdatere adgangskoden for <ph name="USERNAME" /> for dette website?</translation>
 <translation id="7222245588540287464">Uanset om Kontekstuel søgning er aktiveret.</translation>
+<translation id="7378627244592794276">Nej</translation>
 <translation id="7456847797759667638">Åbn placering...</translation>
 <translation id="7481312909269577407">Frem</translation>
 <translation id="7484580869648358686">Advarsel: Der er noget galt her!</translation>

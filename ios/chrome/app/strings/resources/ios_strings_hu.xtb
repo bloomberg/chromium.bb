@@ -10,6 +10,7 @@
 <translation id="2704606927547763573">Másolt</translation>
 <translation id="2747003861858887689">Előző mező</translation>
 <translation id="2780046210906776326">Nincs e-mail fiók</translation>
+<translation id="3172213052701798825">Google Smart Lock a jelszavakhoz</translation>
 <translation id="3244271242291266297">HH</translation>
 <translation id="3252394070589632019"><ph name="VALUE" />, <ph name="ADDITIONAL_INFO" />, <ph name="NUM_SUGGESTIONS" />/<ph name="INDEX" />. javaslat</translation>
 <translation id="3335947283844343239">Bezárt lap megnyitása</translation>
@@ -20,6 +21,7 @@
 <translation id="4399225372525667111">A Chrome nem tudja ellenőrizni, hogy az oldalhoz tartozó URL helyes-e.</translation>
 <translation id="4728558894243024398">Platform</translation>
 <translation id="473775607612524610">Frissítés</translation>
+<translation id="4875622588773761625">Szeretné, hogy a(z) <ph name="PASSWORD_MANAGER_BRAND" /> frissítse jelszavát ezen a webhelyen?</translation>
 <translation id="5317780077021120954">Mentés</translation>
 <translation id="605721222689873409">ÉÉ</translation>
 <translation id="6149061208933997199">Jelszó használata</translation>
@@ -28,7 +30,9 @@
 <translation id="6344783595350022745">Szöveg törlése</translation>
 <translation id="6456425917241817154">A Chrome által generált jelszó</translation>
 <translation id="6535543971741225613">Az elérni próbált webhely szokatlanul viselkedik, és a Chrome nem tudja ellenőrizni, hogy annak URL-je helyes-e. Az Ön biztonsága érdekében kérjük, ne folytassa, vagy próbálja újra holnap, illetve egy másik helyről.</translation>
+<translation id="6647073004883890710">Szeretné, hogy a <ph name="PASSWORD_MANAGER_BRAND" /> frissítse a(z) <ph name="USERNAME" /> fiók jelszavát ennél a webhelynél?</translation>
 <translation id="7222245588540287464">A Kontextusfüggő keresés engedélyezett-e vagy sem.</translation>
+<translation id="7378627244592794276">Nem</translation>
 <translation id="7456847797759667638">Hely megnyitása...</translation>
 <translation id="7481312909269577407">Előre</translation>
 <translation id="7484580869648358686">Figyelem! Valami nincs rendben!</translation>

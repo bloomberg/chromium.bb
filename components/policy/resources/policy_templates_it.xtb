@@ -6,6 +6,15 @@
 <translation id="1019101089073227242">Imposta directory dati utente</translation>
 <translation id="1022361784792428773">ID delle estensioni (oppure * per tutte le estensioni) per cui non è consentita l'installazione</translation>
 <translation id="102492767056134033">Impostazione stato predefinito della tastiera sullo schermo nella schermata di accesso</translation>
+<translation id="1027000705181149370">Consente di specificare se trasferire o meno al profilo dell'utente i cookie di autenticazione impostati da un IdP SAML durante l'accesso.
+
+      Se durante l'accesso un utente esegue l'autenticazione tramite un IdP SAML, i cookie impostati dall'IdP vengono scritti innanzitutto in un profilo temporaneo. Questi cookie possono essere trasferiti al profilo dell'utente per far avanzare lo stato dell'autenticazione.
+
+      Se questa norma viene impostata su true, i cookie impostati dall'IdP vengono trasferiti al profilo dell'utente ogni volta che l'utente esegue l'autenticazione tramite l'IdP SAML durante l'accesso.
+
+      Se questa norma viene impostata su false o non viene impostata, i cookie impostati dall'IdP vengono trasferiti al profilo dell'utente soltanto durante il primo accesso su un dispositivo.
+
+      . Questa norma è valida soltanto per gli utenti il cui dominio corrisponde al dominio di registrazione del dispositivo. Per tutti gli altri utenti, i cookie impostati dall'IdP vengono trasferiti al profilo dell'utente soltanto durante il primo accesso sul dispositivo.</translation>
 <translation id="1040446814317236570">Attiva la rimozione per gli URL PAC (https://)</translation>
 <translation id="1044878202534415707">Consente di segnalare statistiche relative all'hardware, ad esempio l'utilizzo di CPU/RAM.
 
@@ -46,9 +55,7 @@
 <translation id="1198465924256827162">Consente di stabilire la frequenza di invio, in millisecondi, dei caricamenti dello stato del dispositivo.
 
       Se questa norma non viene impostata, la frequenza predefinita è pari a tre ore. La frequenza minima consentita è pari a 60 secondi.</translation>
-<translation id="1213523811751486361">Consente di specificare l'URL del motore di ricerca utilizzato per fornire suggerimenti di ricerca. L'URL deve contenere la stringa "<ph name="SEARCH_TERM_MARKER" />", che verrà sostituita in fase di query dal testo inserito fino a quel momento dall'utente. Questa norma è facoltativa. Se non viene impostata, non verranno utilizzati URL di suggerimento. Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled" è attiva.</translation>
 <translation id="1221359380862872747">Carica gli URL specificati all'accesso demo</translation>
-<translation id="1240643596769627465">Consente di specificare l'URL del motore di ricerca utilizzato per fornire risultati immediati. L'URL deve contenere la stringa "<ph name="SEARCH_TERM_MARKER" />", che sarà sostituita in fase di query dal testo inserito dall'utente fino a quel momento. Questa norma è facoltativa. Se non viene impostata, non verranno restituiti risultati di ricerca immediati. Questa norma viene rispettata soltanto se è attiva la norma "DefaultSearchProviderEnabled".</translation>
 <translation id="1265053460044691532">Limita il tempo per cui un utente autenticato tramite SAML può eseguire l'accesso offline</translation>
 <translation id="1291880496936992484">Avviso. RC4 sarà rimosso completamente da <ph name="PRODUCT_NAME" /> dopo la versione 52 (nel periodo di settembre 2016), dopodiché questa norma non sarà più attiva.
 
@@ -183,6 +190,8 @@ Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled
       Tieni presente che questa norma può essere sostituita dalle norme EnabledPlugins e DisabledPluginsExceptions.
 
       Se questa norma non viene impostata, gli utenti potranno utilizzare qualsiasi plug-in installato sul sistema, tranne i plug-in hard-coded, non compatibili, obsoleti o pericolosi.</translation>
+<translation id="1864269674877167562">Se questa norma non viene configurata o se viene impostata una stringa vuota, non verrà mostrata un'opzione di completamento automatico durante il flusso di accesso dell'utente in <ph name="PRODUCT_OS_NAME" />.
+      Se per questa norma viene impostata una stringa che rappresenta un nome di dominio, durante l'accesso dell'utente in <ph name="PRODUCT_OS_NAME" /> verrà mostrata un'opzione di completamento automatico che consentirà all'utente di digitare soltanto il nome utente senza l'estensione del nome di dominio. L'utente potrà sostituire l'estensione del nome di dominio.</translation>
 <translation id="1865417998205858223">Autorizzazioni chiave</translation>
 <translation id="186719019195685253">Azione da compiere quando il ritardo di inattività viene raggiunto durante l'utilizzo della corrente CA</translation>
 <translation id="187819629719252111">Consente di accedere ai file locali presenti sul computer, permettendo a <ph name="PRODUCT_NAME" /> di visualizzare le finestre di dialogo di selezione dei file. Se attivi questa impostazione, gli utenti potranno aprire le finestre di dialogo di selezione dei file come di consueto. Se disattivi questa impostazione, ogni volta che l'utente eseguirà un'azione che apre una finestra di dialogo di selezione file (ad esempio importazione di Preferiti, caricamento di file, salvataggio di link e così via), verrà visualizzato un messaggio e il sistema presupporrà che l'utente abbia fatto clic sul pulsante Annulla della finestra di dialogo stessa. Se questa impostazione non viene impostata, gli utenti potranno aprire le finestre di dialogo di selezione file come di consueto.</translation>
@@ -284,6 +293,13 @@ Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled
 <translation id="2309390639296060546">Impostazione di geolocalizzazione predefinita</translation>
 <translation id="2312134445771258233">Consente di configurare le pagine che vengono caricate all'avvio. I contenuti dell'elenco "Pagine da aprire all'avvio" vengono ignorati a meno che non selezioni "Apri un elenco di URL" in "Azione all'avvio".</translation>
 <translation id="2337466621458842053">Consente di impostare un elenco di pattern URL che specificano i siti in cui è consentita la visualizzazione di immagini. Se questa norma non viene impostata, per tutti i siti verrà utilizzato il valore predefinito globale della norma "DefaultImagesSetting", se è impostata, oppure verrà utilizzata la configurazione personale dell'utente.</translation>
+<translation id="2359612025446382967">Se questa norma viene impostata su false, il Bluetooth verrà disattivato in <ph name="PRODUCT_OS_NAME" /> e l'utente non potrà riattivarlo.
+
+     Se questa norma viene impostata su true o non viene impostata, l'utente potrà attivare o disattivare il Bluetooth come preferisce.
+
+      Se questa norma viene impostata, l'utente non potrà modificarla o eseguirne l'override.
+
+      Dopo avere attivato il Bluetooth, è necessario riavviare il dispositivo per applicare le modifiche (non è necessario riavviare il dispositivo se il Bluetooth viene disattivato).</translation>
 <translation id="2366415278352956652">Consente di attivare la trasmissione</translation>
 <translation id="2371309782685318247">Consente di specificare il periodo in millisecondi per cui il servizio di gestione del dispositivo viene interrogato sulle informazioni relative alle norme utente.
 
@@ -508,6 +524,32 @@ Se la norma non viene impostata l'impostazione verrà attivata ma gli utenti pot
           Se attivi questa impostazione, <ph name="PRODUCT_NAME" /> ignora tutte le opzioni relative al proxy specificate dalla riga di comando.
 
           Se questa norma non viene impostata, gli utenti potranno scegliere autonomamente le impostazioni proxy.</translation>
+<translation id="2818551149761607847">Consente di configurare l'immagine avatar dell'utente.
+
+      Questa norma consente di configurare l'immagine avatar che rappresenta l'utente nella schermata di accesso. Per impostare la norma, è necessario specificare l'URL da cui scaricare l'immagine avatar in <ph name="PRODUCT_OS_NAME" /> e un hash crittografico la cui funzione è quella di verificare l'integrità del download. L'immagine deve essere in formato JPEG e non deve superare le dimensioni di 512 kB. L'URL deve essere accessibile senza dover eseguire l'autenticazione.
+
+      L'immagine avatar viene scaricata e memorizzata nella cache. Questa operazione viene eseguita ogni volta che vengono modificati l'URL o l'hash.
+
+      La norma deve essere specificata sotto forma di stringa contenente l'URL e l'hash in formato JSON, conforme al seguente schema:
+      {
+        "type": "object",
+        "properties": {
+          "url": {
+            "description": "URL da cui scaricare l'immagine avatar.",
+            "type": "string"
+          },
+          "hash": {
+            "description": "Hash SHA-256 dell'immagine avatar.",
+            "type": "string"
+          }
+        }
+      }
+
+      Se questa norma viene impostata, l'immagine avatar verrà scaricata e utilizzata in <ph name="PRODUCT_OS_NAME" />.
+
+      Se viene impostata, gli utenti non potranno modificarla o eseguirne l'override.
+
+      Se la norma non viene impostata, l'utente può scegliere l'immagine avatar che lo rappresenti nella schermata di accesso.</translation>
 <translation id="2824715612115726353">Attiva modalità di navigazione in incognito</translation>
 <translation id="2844404652289407061">Consente di attivare la disponibilità della funzione Tocca per cercare nella visualizzazione contenuti di <ph name="PRODUCT_NAME" />.
 
@@ -1003,7 +1045,6 @@ Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled
 <translation id="4928632305180102854">È possibile stabilire se consentire o meno la creazione di nuovi account utente in <ph name="PRODUCT_OS_NAME" />.
 
       Se questa norma viene impostata su true o non viene configurata, sarà possibile creare nuovi account utente se la norma <ph name="DEVICEUSERWHITELISTPROTO_POLICY_NAME" /> non impedisce l'accesso agli utenti.</translation>
-<translation id="4962195944157514011">Consente di specificare l'URL del motore di ricerca utilizzato per eseguire una ricerca per impostazione predefinita. L'URL deve contenere la stringa "<ph name="SEARCH_TERM_MARKER" />", che verrà sostituita in fase di query dai termini di ricerca inseriti dall'utente. Questa opzione deve essere impostata quando la norma "DefaultSearchProviderEnabled" è attiva e verrà rispettata soltanto in questo caso.</translation>
 <translation id="4971529314808359013">Consente di specificare un elenco di pattern URL che specificano i siti per cui <ph name="PRODUCT_NAME" /> deve selezionare automaticamente un certificato client, se il sito ne richiede uno.
 
           Il valore deve essere un array di dizionari JSON in stringa. Ogni dizionario deve avere questa forma: { "pattern": "$URL_PATTERN", "filter" : $FILTER }, dove $URL_PATTERN è un pattern di impostazione dei contenuti. $FILTER restringe i certificati client da cui il browser effettua automaticamente la selezione. Indipendentemente dal filtro, saranno selezionati solo certificati che soddisfano la richiesta di certificato del server. Se $FILTER presenta la forma { "ISSUER": { "CN": "$ISSUER_CN" } }, vengono inoltre selezionati solo i certificati client emessi da certificati con valore CommonName uguale a $ISSUER_CN. Se $FILTER è il dizionario vuoto {}, la selezione del certificato client non viene limitata ulteriormente.
@@ -1520,10 +1561,30 @@ Vedi anche RemoteAccessHostClientDomain.</translation>
 <translation id="7040229947030068419">Valore di esempio:</translation>
 <translation id="7049373494483449255">Permette di consentire a <ph name="PRODUCT_NAME" /> di inviare documenti da stampare a <ph name="CLOUD_PRINT_NAME" />. NOTA. Questo riguarda soltanto il supporto di <ph name="CLOUD_PRINT_NAME" /> in <ph name="PRODUCT_NAME" />. Non impedisce agli utenti di inviare processi di stampa su siti web. Se questa impostazione viene attivata o non viene configurata, gli utenti potranno stampare con <ph name="CLOUD_PRINT_NAME" /> utilizzando la finestra di dialogo di stampa di <ph name="PRODUCT_NAME" />. Se questa impostazione viene disattivata, gli utenti non potranno stampare con <ph name="CLOUD_PRINT_NAME" /> utilizzando la finestra di dialogo di stampa di <ph name="PRODUCT_NAME" />.</translation>
 <translation id="7053678646221257043">Se è attiva, questa norma impone l'importazione dei Preferiti dal browser predefinito corrente. Se la norma è attiva incide anche sulla finestra di dialogo di importazione. Se non è attiva, i Preferiti non vengono importati. Se non viene impostata, all'utente potrebbe essere chiesto se desidera effettuare l'importazione, oppure l'importazione potrebbe avvenire automaticamente.</translation>
+<translation id="7055358889740598917">Consente di configurare l'URL della pagina iniziale predefinita di <ph name="PRODUCT_NAME" /> e di impedire agli utenti di modificare la pagina.
+
+          La pagina iniziale è la pagina che viene aperta quando viene fatto clic sul pulsante Pagina iniziale. Le pagine che si aprono all'avvio vengono stabilite dalle norme RestoreOnStartup.
+
+          La pagina iniziale può essere un URL specificato qui oppure la pagina Nuova scheda. Se viene impostata la pagina Nuova scheda, questa norma non viene applicata.
+
+          Se questa impostazione viene attivata, gli utenti non possono cambiare l'URL della propria pagina iniziale di <ph name="PRODUCT_NAME" />, ma possono scegliere come pagina iniziale la pagina Nuova scheda.
+
+          Se questa norma non viene impostata, e non viene impostata neanche la norma HomepageIsNewTabPage, l'utente potrà scegliere la pagina iniziale che preferisce.
+
+          Questa norma non è disponibile su istanze di Windows che non fanno parte di un dominio Active Directory.</translation>
 <translation id="7063895219334505671">Consenti popup su questi siti</translation>
 <translation id="706669471845501145">Consenti la visualizzazione di notifiche desktop da parte dei siti</translation>
 <translation id="7079519252486108041">Blocca popup su questi siti</translation>
 <translation id="7091198954851103976">Esegue sempre i plug-in che richiedono l'autorizzazione</translation>
+<translation id="7106631983877564505">Consente di attivare il blocco quando lo stato dei dispositivi <ph name="PRODUCT_OS_NAME" /> diventa inattivo o sospeso.
+
+      Se questa impostazione viene attivata, agli utenti verrà chiesto di inserire una password per sbloccare il dispositivo dalla sospensione.
+
+      Se questa impostazione viene disattivata, agli utenti non verrà chiesto di inserire una password per sbloccare il dispositivo dalla sospensione.
+
+      Se questa impostazione viene attivata o disattivata, gli utenti non potranno modificarla o eseguirne l'override.
+
+      Se la norma non viene impostata, gli utenti potranno scegliere se impostare o meno la richiesta della password per lo sblocco del dispositivo.</translation>
 <translation id="7115494316187648452">Consente di stabilire se un processo di <ph name="PRODUCT_NAME" /> è stato avviato all'accesso al sistema operativo e se resta in esecuzione dopo la chiusura dell'ultima finestra del browser, consentendo di tenere attive le applicazioni in background e la sessione di navigazione corrente, compresi eventuali cookie di sessione. Nella barra delle applicazioni viene visualizzata un'icona per il processo in background che consente di chiudere il processo in qualsiasi momento.
 
       Se questa norma viene impostata su true, la modalità in background viene attivata e non può essere controllata dall'utente tramite le impostazioni del browser.
@@ -1851,6 +1912,13 @@ Se la norma viene impostata su false, la modalità ad alto contrasto sarà sempr
 Se la norma viene impostata, gli utenti non potranno modificarla o ignorarla.
 
 Se la norma non viene configurata, la modalità ad alto contrasto viene inizialmente disattivata ma potrà essere attivata dagli utenti in qualsiasi momento.</translation>
+<translation id="815061180603915310">Se viene attivata, questa norma forza l'attivazione della modalità temporanea per il profilo. Se viene specificata come norma del sistema operativo (ad esempio GPO su Windows) viene applicata a ogni profilo nel sistema; se la norma viene impostata come norma Cloud, viene applicata soltanto a un profilo a cui viene eseguito l'accesso con un account gestito.
+
+      In questa modalità, i dati del profilo rimangono memorizzati su disco soltanto per la durata della sessione utente. Funzionalità quali cronologia del browser, estensioni e relativi dati, dati web quali cookie e database web, non rimangono memorizzate alla chiusura del browser. L'utente può comunque scaricare i dati su disco manualmente, salvare pagine o stamparle.
+
+      Se l'utente ha attivato la sincronizzazione, tutti i dati rimangono memorizzati nel suo profilo sincronizzato così come avviene per i profili normali. È disponibile anche la modalità di navigazione in incognito se non è disattivata esplicitamente dalla norma.
+
+      Se la norma viene disattivata o non viene impostata, l'accesso rimanda a profili normali.</translation>
 <translation id="8164246350636985940">Il comportamento predefinito per i siti non presenti in alcun pacchetto di contenuti.
 
           Questa norma è per uso interno di <ph name="PRODUCT_NAME" />.</translation>
@@ -1904,6 +1972,17 @@ Se questa norma non viene impostata, le pagine saranno sottoposte a scansione pe
 <translation id="8312129124898414409">Consente di stabilire se consentire o meno l'utilizzo della generazione di chiavi sui siti web. L'utilizzo della generazione di chiavi può essere consentito o negato per tutti i siti web.
 
           Se questa norma non viene impostata, verrà utilizzato il valore della norma "BlockKeygen", che potrà essere modificato dagli utenti.</translation>
+<translation id="8316806736175990584">Consente di configurare il tipo di pagina iniziale predefinita di <ph name="PRODUCT_NAME" /> e di impedire agli utenti di modificare le preferenze della pagina iniziale. La pagina iniziale può essere un URL specificato oppure la pagina Nuova scheda.
+
+          Se questa impostazione viene attivata, per la pagina iniziale verrà sempre utilizzata la pagina Nuova scheda e il percorso dell'URL della pagina iniziale verrà ignorato.
+
+          Se questa impostazione viene disattivata, la pagina iniziale dell'utente non sarà mai la pagina Nuova scheda, a meno che l'URL sia impostato su "chrome://newtab".
+
+          Se questa impostazione viene attivata o disattivata, gli utenti non potranno modificare il tipo di pagina iniziale in <ph name="PRODUCT_NAME" />.
+
+          Se questa norma non viene impostata, l'utente potrà scegliere se impostare o meno la pagina Nuova scheda come pagina iniziale.
+
+          Questa norma non è disponibile su istanze di Windows che non fanno parte di un dominio Active Directory.</translation>
 <translation id="8329984337216493753">Questa norma è attiva soltanto in modalità retail.
 
       Se viene specificata la norma DeviceIdleLogoutTimeout, questa norma consente di definire la durata della casella di avviso con un timer per il conto alla rovescia che viene mostrato all'utente prima dell'esecuzione dell'uscita.

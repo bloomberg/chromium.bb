@@ -183,7 +183,6 @@
 <translation id="1259724620062607540">Elemento 7 de la biblioteca</translation>
 <translation id="1260240842868558614">Mostrar:</translation>
 <translation id="126710816202626562">Idioma de traducción:</translation>
-<translation id="1269690813141254680">Controla la forma en que Google usa tu historial de búsqueda para personalizar Búsqueda y otros servicios de Google en <ph name="BEGIN_LINK" />Controles de actividad de Google<ph name="END_LINK" />.</translation>
 <translation id="1272079795634619415">Interrumpir</translation>
 <translation id="1272978324304772054">Esta cuenta de usuario no pertenece al dominio en el que se inscribió el dispositivo. Si deseas inscribirte en un dominio diferente, primero tendrás que realizar el proceso de recuperación del dispositivo.</translation>
 <translation id="127353061808977798">Fuentes y codificación</translation>
@@ -1036,6 +1035,7 @@ No creo que este sitio deba estar bloqueado.</translation>
 <translation id="2501278716633472235">Ir atrás</translation>
 <translation id="2501797496290880632">Escribe un acceso directo.</translation>
 <translation id="2502441965851148920">Las actualizaciones automáticas están habilitadas. Tu administrador inhabilitó las actualizaciones manuales.</translation>
+<translation id="2505324914378689427">{SCREEN_INDEX,plural, =1{Pantalla #}other{Pantalla #}}</translation>
 <translation id="2505402373176859469"><ph name="RECEIVED_AMOUNT" /> de <ph name="TOTAL_SIZE" /></translation>
 <translation id="2507649982651274960">El dispositivo se inscribió correctamente para la administración empresarial, pero se produjo un error al intentar enviar la información de la ubicación y del recurso. Ingresa los datos manualmente en la Consola del administrador del dispositivo.</translation>
 <translation id="2509739495444557741">No hay complementos instalados.</translation>
@@ -1669,7 +1669,6 @@ De <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3317459757438853210">Doble cara</translation>
 <translation id="331752765902890099">Botón de <ph name="PROFILE_NAME" />: error de acceso</translation>
 <translation id="3319048459796106952">Nueva ventana de &amp;incógnito</translation>
-<translation id="3319364804843246307">Apps de Android</translation>
 <translation id="3320859581025497771">tu proveedor</translation>
 <translation id="3323235640813116393">Permite guardar páginas como MHTML (un único archivo de texto que contiene una página HTML y todos los recursos secundarios).</translation>
 <translation id="3323447499041942178">Cuadro de texto</translation>
@@ -2464,7 +2463,6 @@ Presiona cualquier tecla para seguir navegando.</translation>
 <translation id="4479639480957787382">Ethernet</translation>
 <translation id="4479812471636796472">Teclado Dvorak en inglés de EE.UU.</translation>
 <translation id="4481249487722541506">Cargar extensión sin empaquetar...</translation>
-<translation id="4482194545587547824">Es posible que Google use tu historial de navegación para personalizar Búsqueda y otros servicios de Google</translation>
 <translation id="4487088045714738411">Teclado belga</translation>
 <translation id="4492190037599258964">Resultados de búsqueda de '<ph name="SEARCH_STRING" />'</translation>
 <translation id="4495021739234344583">Anular registro y reiniciar</translation>

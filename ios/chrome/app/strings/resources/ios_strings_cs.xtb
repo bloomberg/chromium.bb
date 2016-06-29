@@ -10,6 +10,7 @@
 <translation id="2704606927547763573">Zkopírováno</translation>
 <translation id="2747003861858887689">Předchozí pole</translation>
 <translation id="2780046210906776326">Žádné e-mailové účty</translation>
+<translation id="3172213052701798825">Google Smart Lock na hesla</translation>
 <translation id="3244271242291266297">MM</translation>
 <translation id="3252394070589632019"><ph name="VALUE" />, <ph name="ADDITIONAL_INFO" />, <ph name="INDEX" /> z <ph name="NUM_SUGGESTIONS" /></translation>
 <translation id="3335947283844343239">Znovu otevřít zavřenou kartu</translation>
@@ -20,6 +21,7 @@
 <translation id="4399225372525667111">Chrome nemohl ověřit správnost adresy URL tohoto webu.</translation>
 <translation id="4728558894243024398">Platforma</translation>
 <translation id="473775607612524610">Aktualizovat</translation>
+<translation id="4875622588773761625">Chcete, aby aplikace <ph name="PASSWORD_MANAGER_BRAND" /> aktualizovala vaše heslo pro tento web?</translation>
 <translation id="5317780077021120954">Uložit</translation>
 <translation id="605721222689873409">RR</translation>
 <translation id="6149061208933997199">Použít heslo</translation>
@@ -28,7 +30,9 @@
 <translation id="6344783595350022745">Smazat text</translation>
 <translation id="6456425917241817154">Heslo vygenerované Chromem</translation>
 <translation id="6535543971741225613">Web, na který se pokoušíte připojit, se chová neobvykle a Chrome nemohl ověřit správnost jeho adresy URL. Z důvodu bezpečnosti byste neměli pokračovat a raději se zkusit připojit zítra nebo přejít někam jinam.</translation>
+<translation id="6647073004883890710">Chcete, aby aplikace <ph name="PASSWORD_MANAGER_BRAND" /> aktualizovala heslo uživatele <ph name="USERNAME" /> pro tento web?</translation>
 <translation id="7222245588540287464">Určuje, zda je aktivní kontextové vyhledávání, nebo nikoliv.</translation>
+<translation id="7378627244592794276">Ne</translation>
 <translation id="7456847797759667638">Otevřít umístění...</translation>
 <translation id="7481312909269577407">Vpřed</translation>
 <translation id="7484580869648358686">Upozornění: Tady není něco v pořádku!</translation>
