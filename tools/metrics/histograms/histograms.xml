@@ -49054,6 +49054,32 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Scheduling.Browser.BeginMainFrameStartToCommit"
+    units="microseconds">
+  <obsolete>
+    Replaced by BeginMainFrameStartToCommitDuration. This was recorded as a
+    result of a typo in the code that didn't include &quot;Duration&quot;.
+  </obsolete>
+  <owner>brianderson@chromium.org</owner>
+  <summary>
+    The time from when the main side actually starts the BeginMainFrame to when
+    the commit completes on the impl side.
+  </summary>
+</histogram>
+
+<histogram name="Scheduling.Browser.BeginMainFrameStartToCommit2"
+    units="microseconds">
+  <obsolete>
+    Replaced by BeginMainFrameStartToCommitDuration2. This was recorded as a
+    result of a typo in the code that didn't include &quot;Duration&quot;.
+  </obsolete>
+  <owner>brianderson@chromium.org</owner>
+  <summary>
+    The time from when the main side actually starts the BeginMainFrame to when
+    the commit completes on the impl side.
+  </summary>
+</histogram>
+
 <histogram name="Scheduling.CommitInterval" units="microseconds">
   <obsolete>
     Replaced by CommitInterval2, due to inefficient bucketing scheme.
