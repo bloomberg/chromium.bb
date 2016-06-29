@@ -18684,6 +18684,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="InputMethod.ImeMenu.ActivationChanged"
+    enum="BooleanActivation">
+  <owner>azurewei@chromium.org</owner>
+  <owner>shuchen@chromium.org</owner>
+  <summary>
+    Whether the opt-in IME menu in the shelf has been activated.
+  </summary>
+</histogram>
+
 <histogram name="InputMethod.ImeSwitch" enum="IMESwitchType">
   <owner>shuchen@chromium.org</owner>
   <summary>The trigger type of input method switches by user.</summary>
@@ -66543,6 +66552,11 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <enum name="BooleanAccepted" type="int">
   <int value="0" label="Not Accepted"/>
   <int value="1" label="Accepted"/>
+</enum>
+
+<enum name="BooleanActivation" type="int">
+  <int value="0" label="Deactivated"/>
+  <int value="1" label="Activated"/>
 </enum>
 
 <enum name="BooleanActive" type="int">

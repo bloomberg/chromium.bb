@@ -1189,6 +1189,8 @@ void InputMethodManagerImpl::ImeMenuActivationChanged(bool is_active) {
   is_ime_menu_activated_ = is_active;
   FOR_EACH_OBSERVER(InputMethodManager::ImeMenuObserver, ime_menu_observers_,
                     ImeMenuActivationChanged(is_active));
+  UMA_HISTOGRAM_BOOLEAN("InputMethod.ImeMenu.ActivationChanged",
+                        is_ime_menu_activated_);
 }
 
 void InputMethodManagerImpl::NotifyImeMenuListChanged() {
