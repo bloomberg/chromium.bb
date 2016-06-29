@@ -1133,56 +1133,53 @@
             '../url/url.gyp:url_unittests',
           ],
         },
-      ],  # targets
-      'conditions': [
-        ['branding=="Chrome"', {
-          'targets': [
-            {
-              'target_name': 'chrome_official_builder_no_unittests',
-              'type': 'none',
+        {
+          'target_name': 'chrome_official_builder_no_unittests',
+          'type': 'none',
+          'dependencies': [
+            '../chrome/chrome.gyp:gcapi_dll',
+            '../chrome/chrome.gyp:pack_policy_templates',
+            '../chrome/installer/mini_installer.gyp:mini_installer',
+            '../courgette/courgette.gyp:courgette',
+            '../courgette/courgette.gyp:courgette64',
+            '../remoting/remoting.gyp:remoting_webapp',
+            '../third_party/widevine/cdm/widevine_cdm.gyp:widevinecdmadapter',
+          ],
+          'conditions': [
+            ['component != "shared_library" and wix_exists == "True"', {
+              # GN uses target_cpu==x86 && is_chrome_branded instead, and
+              # so doesn't need the wix_exists check.
               'dependencies': [
-                '../chrome/chrome.gyp:gcapi_dll',
-                '../chrome/chrome.gyp:pack_policy_templates',
-                '../chrome/installer/mini_installer.gyp:mini_installer',
-                '../courgette/courgette.gyp:courgette',
-                '../courgette/courgette.gyp:courgette64',
-                '../remoting/remoting.gyp:remoting_webapp',
-                '../third_party/widevine/cdm/widevine_cdm.gyp:widevinecdmadapter',
+                '../remoting/remoting.gyp:remoting_host_installation',
               ],
-              'conditions': [
-                ['component != "shared_library" and wix_exists == "True"', {
-                  'dependencies': [
-                    '../remoting/remoting.gyp:remoting_host_installation',
-                  ],
-                }], # component != "shared_library"
-              ]
-            }, {
-              'target_name': 'chrome_official_builder',
-              'type': 'none',
-              'dependencies': [
-                'chrome_official_builder_no_unittests',
-                '../base/base.gyp:base_unittests',
-                '../chrome/chrome.gyp:browser_tests',
-                '../chrome/chrome.gyp:sync_integration_tests',
-                '../ipc/ipc.gyp:ipc_tests',
-                '../media/capture/capture.gyp:capture_unittests',
-                '../media/media.gyp:media_unittests',
-                '../media/midi/midi.gyp:midi_unittests',
-                '../net/net.gyp:net_unittests',
-                '../printing/printing.gyp:printing_unittests',
-                '../sql/sql.gyp:sql_unittests',
-                '../sync/sync.gyp:sync_unit_tests',
-                '../ui/base/ui_base_tests.gyp:ui_base_unittests',
-                '../ui/gfx/gfx_tests.gyp:gfx_unittests',
-                '../ui/gl/gl_tests.gyp:gl_unittests',
-                '../ui/touch_selection/ui_touch_selection.gyp:ui_touch_selection_unittests',
-                '../ui/views/views.gyp:views_unittests',
-                '../url/url.gyp:url_unittests',
-              ],
-            },
-          ], # targets
-        }], # branding=="Chrome"
-       ], # conditions
+            }], # component != "shared_library"
+          ]
+        },
+        {
+          'target_name': 'chrome_official_builder',
+          'type': 'none',
+          'dependencies': [
+            'chrome_official_builder_no_unittests',
+            '../base/base.gyp:base_unittests',
+            '../chrome/chrome.gyp:browser_tests',
+            '../chrome/chrome.gyp:sync_integration_tests',
+            '../ipc/ipc.gyp:ipc_tests',
+            '../media/capture/capture.gyp:capture_unittests',
+            '../media/media.gyp:media_unittests',
+            '../media/midi/midi.gyp:midi_unittests',
+            '../net/net.gyp:net_unittests',
+            '../printing/printing.gyp:printing_unittests',
+            '../sql/sql.gyp:sql_unittests',
+            '../sync/sync.gyp:sync_unit_tests',
+            '../ui/base/ui_base_tests.gyp:ui_base_unittests',
+            '../ui/gfx/gfx_tests.gyp:gfx_unittests',
+            '../ui/gl/gl_tests.gyp:gl_unittests',
+            '../ui/touch_selection/ui_touch_selection.gyp:ui_touch_selection_unittests',
+            '../ui/views/views.gyp:views_unittests',
+            '../url/url.gyp:url_unittests',
+          ],
+        },
+      ], # targets
     }], # OS="win"
     ['chromeos==1', {
       'targets': [

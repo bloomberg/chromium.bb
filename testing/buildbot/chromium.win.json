@@ -1812,19 +1812,9 @@
       }
     ]
   },
-  "Win8 Aura": {
-    "additional_compile_targets": [
-      "all"
-    ]
-  },
-  "Win8 GN (dbg)": {
-    "additional_compile_targets": [
-      "all"
-    ]
-  },
   "Win8 GYP": {
     "additional_compile_targets": [
-      "all"
+      "chrome_official_builder"
     ]
   },
   "Win8 GYP (dbg)": {

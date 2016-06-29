@@ -1,17 +1,22 @@
 {
-  "Mac GN": {
-    "additional_compile_targets": [
-      "all"
-    ]
-  },
-  "Mac GN (dbg)": {
-    "additional_compile_targets": [
-      "all"
-    ]
-  },
   "Mac GYP": {
     "additional_compile_targets": [
-      "all"
+      "base_unittests",
+      "browser_tests",
+      "chrome",
+      "content_browsertests",
+      "content_unittests",
+      "interactive_ui_tests",
+      "ipc_tests",
+      "media_unittests",
+      "net_unittests",
+      "printing_unittests",
+      "skia_unittests",
+      "sql_unittests",
+      "sync_unit_tests",
+      "ui_base_unittests",
+      "unit_tests",
+      "url_unittests"
     ]
   },
   "Mac GYP (dbg)": {
