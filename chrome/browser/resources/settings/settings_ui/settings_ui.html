@@ -17,6 +17,33 @@
 <dom-module id="settings-ui">
   <template>
     <style include="settings-shared">
+      /* TODO(dbeam): remove appeal before launch. */
+      #appeal {
+        align-items: center;
+        background: rgb(123, 170, 247);
+        display: flex;
+      }
+
+      #request {
+        flex: 1;
+        font-size: .8125rem;
+        font-weight: bold;
+        padding: 8px 24px;
+      }
+
+      #request h1 {
+        font-size: 1rem;
+        margin: 0;
+      }
+
+      #request a {
+        color: rgb(100, 100, 255);
+      }
+
+      #close {
+        padding: 20px;
+      }
+
       :host {
         @apply(--layout-fit);
         -webkit-user-select: none;
@@ -29,6 +56,7 @@
         --paper-header-panel-shadow: {
           z-index: 2;
         };
+        flex: 1;
       }
 
       .heading {
@@ -106,6 +134,18 @@
       <settings-main prefs="{{prefs}}" current-route="{{currentRoute}}">
       </settings-main>
     </paper-header-panel>
+
+    <!-- TODO(dbeam): remove before launch. -->
+    <div id="appeal" hidden="[[appealClosed_]]">
+      <span id="request">
+        <h1>Please read: A personal appeal from the Chrome settings team.</h1>
+        <a href="https://goo.gl/btju6c">Please file bugs</a>
+        before you
+        <a href="chrome://settings-frame">go back to the old settings</a>.
+      </span>
+      <span id="close" tabindex=0 on-tap="onCloseAppealTap_">&#x2715;</span>
+    </div>
+
   </template>
   <script src="settings_ui.js"></script>
 </dom-module>

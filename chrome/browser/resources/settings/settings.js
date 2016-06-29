@@ -16,18 +16,4 @@ Polymer({
   ready: function() {
     this.$.ui.directionDelegate = new settings.DirectionDelegateImpl;
   },
-
-  properties: {
-    appealClosed_: {
-      type: Boolean,
-      value: function() {
-        return !!(sessionStorage.appealClosed_ || localStorage.appealClosed_);
-      },
-    },
-  },
-
-  /** @private */
-  onCloseAppealTap_: function(e) {
-    sessionStorage.appealClosed_ = this.appealClosed_ = true;
-  },
 });

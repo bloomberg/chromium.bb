@@ -19,51 +19,8 @@
         :host {
           color: var(--paper-grey-800);
         }
-
-        #appeal {
-          align-items: center;
-          background: rgb(123, 170, 247);
-          bottom: 0;
-          display: flex;
-          left: 0;
-          position: fixed;
-          right: 0;
-          z-index: 9999;
-        }
-
-        #request {
-          flex: 1;
-          font-size: .8125rem;
-          font-weight: bold;
-          padding: 8px 24px;
-        }
-
-        #request h1 {
-          font-size: 1rem;
-          margin: 0;
-        }
-
-        #request a {
-          color: rgb(100, 100, 255);
-        }
-
-        #close {
-          padding: 20px;
-        }
       </style>
       <settings-prefs id="prefs" prefs="{{prefs_}}"></settings-prefs>
-
-      <!-- TODO(dbeam): remove before launching ;). -->
-      <div id="appeal" hidden="[[appealClosed_]]">
-        <span id="request">
-          <h1>Please read: A personal appeal from the Chrome settings team.</h1>
-          <a href="https://goo.gl/btju6c">Please file bugs</a>
-          before you
-          <a href="chrome://settings-frame">go back to the old settings</a>.
-        </span>
-        <span id="close" tabindex=0 on-tap="onCloseAppealTap_">&#x2715;</span>
-      </div>
-
       <settings-ui id="ui" prefs="{{prefs_}}"></settings-ui>
     </template>
     <script src="/settings.js"></script>

@@ -25,10 +25,22 @@ Polymer({
       observer: 'directionDelegateChanged_',
       type: Object,
     },
+
+    appealClosed_: {
+      type: Boolean,
+      value: function() {
+        return !!(sessionStorage.appealClosed_ || localStorage.appealClosed_);
+      },
+    },
   },
 
   listeners: {
     'sideNav.iron-activate': 'onIronActivate_',
+  },
+
+  /** @private */
+  onCloseAppealTap_: function() {
+    sessionStorage.appealClosed_ = this.appealClosed_ = true;
   },
 
   /**
