@@ -233,9 +233,20 @@ bool AudioInputSyncWriter::PushDataToFifo(const AudioBus* data,
                                           bool key_pressed,
                                           uint32_t hardware_delay_bytes) {
   if (overflow_buses_.size() == kMaxOverflowBusesSize) {
-    const std::string error_message = "AISW: No room in fifo.";
-    LOG(ERROR) << error_message;
-    AddToNativeLog(error_message);
+    // We use |write_error_count_| for capping number of log messages.
+    // |write_error_count_| also includes socket Send() errors, but those should
+    // be rare.
+    if (write_error_count_ <= 50) {
+      const std::string error_message = "AISW: No room in fifo.";
+      LOG(WARNING) << error_message;
+      AddToNativeLog(error_message);
+      if (write_error_count_ == 50) {
+        const std::string error_message =
+            "AISW: Log cap reached, suppressing further fifo overflow logs.";
+        LOG(WARNING) << error_message;
+        AddToNativeLog(error_message);
+      }
+    }
     return false;
   }
 
@@ -321,7 +332,7 @@ bool AudioInputSyncWriter::SignalDataWrittenAndUpdateCounters() {
   if (socket_->Send(&current_segment_id_, sizeof(current_segment_id_)) !=
       sizeof(current_segment_id_)) {
     const std::string error_message = "AISW: No room in socket buffer.";
-    LOG(ERROR) << error_message;
+    LOG(WARNING) << error_message;
     AddToNativeLog(error_message);
     return false;
   }
