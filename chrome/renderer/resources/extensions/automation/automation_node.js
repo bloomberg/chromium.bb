@@ -92,6 +92,13 @@ var GetChildIDAtIndex = requireNative('automationInternal').GetChildIDAtIndex;
 /**
  * @param {number} axTreeID The id of the accessibility tree.
  * @param {number} nodeID The id of a node.
+ * @return {?Object} An object mapping html attributes to values.
+ */
+var GetHtmlAttributes = requireNative('automationInternal').GetHtmlAttributes;
+
+/**
+ * @param {number} axTreeID The id of the accessibility tree.
+ * @param {number} nodeID The id of a node.
  * @return {?number} The index of this node in its parent, or undefined if
  *     the tree or node or node parent wasn't found.
  */
@@ -226,6 +233,10 @@ AutomationNodeImpl.prototype = {
       return this.hostNode_;
     var parentID = GetParentID(this.treeID, this.id);
     return this.rootImpl.get(parentID);
+  },
+
+  get htmlAttributes() {
+    return GetHtmlAttributes(this.treeID, this.id) || {};
   },
 
   get state() {
@@ -1011,6 +1022,7 @@ utils.expose(AutomationNode, AutomationNodeImpl, {
       'location',
       'indexInParent',
       'root',
+      'htmlAttributes',
   ]),
 });
 

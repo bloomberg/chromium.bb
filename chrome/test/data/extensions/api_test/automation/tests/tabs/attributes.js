@@ -242,6 +242,13 @@ var allTests = [
       assertFalse(attributeAttr in div);
     }
     chrome.test.succeed();
+  },
+
+  function testHtmlAttributes() {
+    var editable = rootNode.find({ role: 'textField' });
+    assertTrue(editable !== undefined);
+    assertEq('text', editable.htmlAttributes.type);
+    chrome.test.succeed();
   }
 ];
 

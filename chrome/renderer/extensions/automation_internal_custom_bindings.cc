@@ -434,6 +434,7 @@ AutomationInternalCustomBindings::AutomationInternalCustomBindings(
   ROUTE_FUNCTION(RemoveTreeChangeObserver);
   ROUTE_FUNCTION(GetChildIDAtIndex);
   ROUTE_FUNCTION(GetFocus);
+  ROUTE_FUNCTION(GetHtmlAttributes);
   ROUTE_FUNCTION(GetState);
   #undef ROUTE_FUNCTION
 
@@ -871,6 +872,33 @@ void AutomationInternalCustomBindings::GetFocus(
   result->Set(CreateV8String(isolate, "nodeId"),
               v8::Integer::New(isolate, focused_node->id()));
   args.GetReturnValue().Set(result);
+}
+
+void AutomationInternalCustomBindings::GetHtmlAttributes(
+    const v8::FunctionCallbackInfo<v8::Value>& args) {
+  v8::Isolate* isolate = GetIsolate();
+  if (args.Length() < 2 || !args[0]->IsNumber() || !args[1]->IsNumber())
+    ThrowInvalidArgumentsException(this);
+
+  int tree_id = args[0]->Int32Value();
+  int node_id = args[1]->Int32Value();
+
+  TreeCache* cache = GetTreeCacheFromTreeID(tree_id);
+  if (!cache)
+    return;
+
+  ui::AXNode* node = cache->tree.GetFromId(node_id);
+  if (!node)
+    return;
+
+  v8::Local<v8::Object> dst(v8::Object::New(isolate));
+  base::StringPairs src = node->data().html_attributes;
+  for (size_t i = 0; i < src.size(); i++) {
+    std::string& key = src[i].first;
+    std::string& value = src[i].second;
+    dst->Set(CreateV8String(isolate, key), CreateV8String(isolate, value));
+  }
+  args.GetReturnValue().Set(dst);
 }
 
 void AutomationInternalCustomBindings::GetState(
