@@ -45,7 +45,7 @@ DesktopAutomationHandler = function(node) {
   this.addListener_(e.activedescendantchanged, this.onActiveDescendantChanged);
   this.addListener_(e.alert, this.onAlert);
   this.addListener_(e.ariaAttributeChanged, this.onEventIfInRange);
-  this.addListener_(e.checkedStateChanged, this.onEventIfInRange);
+  this.addListener_(e.checkedStateChanged, this.onCheckedStateChanged);
   this.addListener_(e.focus, this.onFocus);
   this.addListener_(e.hover, this.onHover);
   this.addListener_(e.loadComplete, this.onLoadComplete);
@@ -192,6 +192,19 @@ DesktopAutomationHandler.prototype = {
     var range = cursors.Range.fromNode(node);
 
     new Output().withSpeechAndBraille(range, null, evt.type).go();
+  },
+
+  /**
+   * Provides all feedback once a checked state changed event fires.
+   * @param {!AutomationEvent} evt
+   */
+  onCheckedStateChanged: function(evt) {
+    if (!AutomationPredicate.checkable(evt.target))
+      return;
+
+    this.onEventIfInRange(
+        new chrome.automation.AutomationEvent(
+            EventType.checkedStateChanged, evt.target));
   },
 
   /**

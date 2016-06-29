@@ -289,4 +289,17 @@ AutomationPredicate.shouldIgnoreNode = function(node) {
        node.role == RoleType.staticText);
 };
 
+
+/**
+ * Returns if the node has a meaningful checked state.
+ * @param {!AutomationNode} node
+ * @return {boolean}
+ */
+AutomationPredicate.checkable = function(node) {
+  return node.role == RoleType.checkBox ||
+      node.role == RoleType.radioButton ||
+      node.role == RoleType.menuItemCheckBox ||
+      node.role == RoleType.menuItemRadio;
+};
+
 });  // goog.scope
