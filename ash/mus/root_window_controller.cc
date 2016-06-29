@@ -235,9 +235,10 @@ void RootWindowController::CreateLayoutManagers() {
   std::unique_ptr<WorkspaceLayoutManagerDelegateImpl>
       workspace_layout_manager_delegate(new WorkspaceLayoutManagerDelegateImpl(
           wm_root_window_controller_.get()));
+  workspace_layout_manager_ = new WorkspaceLayoutManager(
+      default_container, std::move(workspace_layout_manager_delegate));
   default_container->SetLayoutManager(
-      base::WrapUnique(new WorkspaceLayoutManager(
-          default_container, std::move(workspace_layout_manager_delegate))));
+      base::WrapUnique(workspace_layout_manager_));
 
   WmWindowMus* docked_container =
       GetWindowByShellWindowId(kShellWindowId_DockedContainer);

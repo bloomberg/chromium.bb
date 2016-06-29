@@ -715,6 +715,10 @@ void WmWindowMus::RemoveObserver(WmWindowObserver* observer) {
   observers_.RemoveObserver(observer);
 }
 
+bool WmWindowMus::HasObserver(const WmWindowObserver* observer) const {
+  return observers_.HasObserver(observer);
+}
+
 void WmWindowMus::OnTreeChanging(const TreeChangeParams& params) {
   WmWindowObserver::TreeChangeParams wm_params;
   wm_params.target = Get(params.target);

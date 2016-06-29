@@ -179,7 +179,7 @@ bool MaximizeModeController::IsMaximizeModeWindowManagerEnabled() const {
   return maximize_mode_window_manager_.get() != NULL;
 }
 
-void MaximizeModeController::AddWindow(aura::Window* window) {
+void MaximizeModeController::AddWindow(WmWindow* window) {
   if (IsMaximizeModeWindowManagerEnabled())
     maximize_mode_window_manager_->AddWindow(window);
 }

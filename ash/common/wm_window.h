@@ -273,6 +273,7 @@ class ASH_EXPORT WmWindow {
 
   virtual void AddObserver(WmWindowObserver* observer) = 0;
   virtual void RemoveObserver(WmWindowObserver* observer) = 0;
+  virtual bool HasObserver(const WmWindowObserver* observer) const = 0;
 
  protected:
   virtual ~WmWindow() {}

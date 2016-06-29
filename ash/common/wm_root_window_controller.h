@@ -20,6 +20,7 @@ class WmShelf;
 class WmShell;
 class WmRootWindowControllerObserver;
 class WmWindow;
+class WorkspaceLayoutManagerBackdropDelegate;
 
 // Provides state associated with a root of a window hierarchy.
 class ASH_EXPORT WmRootWindowController {
@@ -31,6 +32,11 @@ class ASH_EXPORT WmRootWindowController {
   virtual WmShell* GetShell() = 0;
 
   virtual wm::WorkspaceWindowState GetWorkspaceWindowState() = 0;
+
+  // TODO: remove when WorkspaceController moved to common:
+  // http://crbug.com/624173.
+  virtual void SetMaximizeBackdropDelegate(
+      std::unique_ptr<WorkspaceLayoutManagerBackdropDelegate> delegate) = 0;
 
   virtual AlwaysOnTopController* GetAlwaysOnTopController() = 0;
 

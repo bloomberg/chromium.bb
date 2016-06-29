@@ -38,6 +38,7 @@ class MaximizeModeControllerTest;
 class ScopedDisableInternalMouseAndKeyboard;
 class MaximizeModeWindowManager;
 class MaximizeModeWindowManagerTest;
+class WmWindow;
 namespace test {
 class MultiUserWindowManagerChromeOSTest;
 class VirtualKeyboardControllerTest;
@@ -76,7 +77,7 @@ class ASH_EXPORT MaximizeModeController :
   // only required for special windows which are handled by other window
   // managers like the |MultiUserWindowManager|.
   // If the maximize mode is not enabled no action will be performed.
-  void AddWindow(aura::Window* window);
+  void AddWindow(WmWindow* window);
 
   // ShellObserver:
   void OnAppTerminating() override;

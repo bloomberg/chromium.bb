@@ -152,6 +152,7 @@ class ASH_EXPORT WmWindowAura : public WmWindow, public aura::WindowObserver {
   void SetDescendantsStayInSameRootWindow(bool value) override;
   void AddObserver(WmWindowObserver* observer) override;
   void RemoveObserver(WmWindowObserver* observer) override;
+  bool HasObserver(const WmWindowObserver* observer) const override;
 
  private:
   // aura::WindowObserver:

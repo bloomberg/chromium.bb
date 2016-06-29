@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager_chromeos.h"
 
+#include "ash/aura/wm_window_aura.h"
 #include "ash/common/ash_switches.h"
 #include "ash/common/session/session_state_delegate.h"
 #include "ash/common/shell_window_ids.h"
@@ -739,8 +740,10 @@ void MultiUserWindowManagerChromeOS::SetWindowVisible(
   // are not user activatable. Since invisible windows are not being tracked,
   // we tell it to maximize / track this window now before it gets shown, to
   // reduce animation jank from multiple resizes.
-  if (visible)
-    ash::Shell::GetInstance()->maximize_mode_controller()->AddWindow(window);
+  if (visible) {
+    ash::Shell::GetInstance()->maximize_mode_controller()->AddWindow(
+        ash::WmWindowAura::Get(window));
+  }
 
   AnimationSetter animation_setter(
       window,

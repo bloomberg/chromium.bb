@@ -22,6 +22,7 @@ namespace ash {
 
 class AlwaysOnTopController;
 class RootWindowControllerCommon;
+class WorkspaceLayoutManager;
 
 namespace mus {
 
@@ -65,6 +66,9 @@ class RootWindowController : public ShelfLayoutManagerDelegate {
 
   ShelfLayoutManager* GetShelfLayoutManager();
   StatusLayoutManager* GetStatusLayoutManager();
+  WorkspaceLayoutManager* workspace_layout_manager() {
+    return workspace_layout_manager_;
+  }
 
   AlwaysOnTopController* always_on_top_controller() {
     return always_on_top_controller_.get();
@@ -96,6 +100,8 @@ class RootWindowController : public ShelfLayoutManagerDelegate {
   std::unique_ptr<WmRootWindowControllerMus> wm_root_window_controller_;
   std::unique_ptr<WmShelfMus> wm_shelf_;
 
+  // Owned by the corresponding container.
+  WorkspaceLayoutManager* workspace_layout_manager_ = nullptr;
   std::map<::mus::Window*, std::unique_ptr<LayoutManager>> layout_managers_;
 
   std::unique_ptr<AlwaysOnTopController> always_on_top_controller_;

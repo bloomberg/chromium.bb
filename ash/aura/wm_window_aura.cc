@@ -86,6 +86,10 @@ WmWindowAura::WmWindowAura(aura::Window* window)
   window_->SetProperty(kWmWindowKey, this);
 }
 
+WmWindowAura::~WmWindowAura() {
+  window_->RemoveObserver(this);
+}
+
 // static
 const WmWindow* WmWindowAura::Get(const aura::Window* window) {
   if (!window)
@@ -639,8 +643,8 @@ void WmWindowAura::RemoveObserver(WmWindowObserver* observer) {
   observers_.RemoveObserver(observer);
 }
 
-WmWindowAura::~WmWindowAura() {
-  window_->RemoveObserver(this);
+bool WmWindowAura::HasObserver(const WmWindowObserver* observer) const {
+  return observers_.HasObserver(observer);
 }
 
 void WmWindowAura::OnWindowHierarchyChanging(

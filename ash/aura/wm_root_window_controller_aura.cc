@@ -7,6 +7,7 @@
 #include "ash/aura/wm_shelf_aura.h"
 #include "ash/aura/wm_shell_aura.h"
 #include "ash/aura/wm_window_aura.h"
+#include "ash/common/wm/workspace/workspace_layout_manager_backdrop_delegate.h"
 #include "ash/common/wm_root_window_controller_observer.h"
 #include "ash/display/window_tree_host_manager.h"
 #include "ash/root_window_controller.h"
@@ -71,6 +72,12 @@ WmShell* WmRootWindowControllerAura::GetShell() {
 
 wm::WorkspaceWindowState WmRootWindowControllerAura::GetWorkspaceWindowState() {
   return root_window_controller_->workspace_controller()->GetWindowState();
+}
+
+void WmRootWindowControllerAura::SetMaximizeBackdropDelegate(
+    std::unique_ptr<WorkspaceLayoutManagerBackdropDelegate> delegate) {
+  root_window_controller_->workspace_controller()->SetMaximizeBackdropDelegate(
+      std::move(delegate));
 }
 
 AlwaysOnTopController* WmRootWindowControllerAura::GetAlwaysOnTopController() {

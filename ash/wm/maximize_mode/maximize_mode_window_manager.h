@@ -13,15 +13,13 @@
 #include "ash/ash_export.h"
 #include "ash/common/shell_observer.h"
 #include "ash/common/wm/window_state.h"
-#include "base/compiler_specific.h"
+#include "ash/common/wm_window_observer.h"
 #include "base/macros.h"
-#include "ui/aura/window_observer.h"
 #include "ui/display/display_observer.h"
 
 namespace ash {
 class MaximizeModeController;
 class MaximizeModeWindowState;
-class WmWindow;
 
 namespace wm {
 class MaximizeModeEventHandler;
@@ -33,7 +31,7 @@ class MaximizeModeEventHandler;
 // behind the window so that no other windows are visible and/or obscured.
 // With the destruction of the manager all windows will be restored to their
 // original state.
-class ASH_EXPORT MaximizeModeWindowManager : public aura::WindowObserver,
+class ASH_EXPORT MaximizeModeWindowManager : public WmWindowObserver,
                                              public display::DisplayObserver,
                                              public ShellObserver {
  public:
@@ -47,22 +45,22 @@ class ASH_EXPORT MaximizeModeWindowManager : public aura::WindowObserver,
   // managers for windows which needs to get tracked due to (upcoming) state
   // changes.
   // The call gets ignored if the window was already or should not be handled.
-  void AddWindow(aura::Window* window);
+  void AddWindow(WmWindow* window);
 
   // Called from a window state object when it gets destroyed.
-  void WindowStateDestroyed(WmWindow* wm_window);
+  void WindowStateDestroyed(WmWindow* window);
 
   // ShellObserver overrides:
   void OnOverviewModeStarting() override;
   void OnOverviewModeEnded() override;
 
   // Overridden from WindowObserver:
-  void OnWindowDestroying(aura::Window* window) override;
-  void OnWindowAdded(aura::Window* window) override;
-  void OnWindowPropertyChanged(aura::Window* window,
-                               const void* key,
-                               intptr_t old) override;
-  void OnWindowBoundsChanged(aura::Window* window,
+  void OnWindowDestroying(WmWindow* window) override;
+  void OnWindowTreeChanged(WmWindow* window,
+                           const TreeChangeParams& params) override;
+  void OnWindowPropertyChanged(WmWindow* window,
+                               WmWindowProperty window_property) override;
+  void OnWindowBoundsChanged(WmWindow* window,
                              const gfx::Rect& old_bounds,
                              const gfx::Rect& new_bounds) override;
 
@@ -79,7 +77,7 @@ class ASH_EXPORT MaximizeModeWindowManager : public aura::WindowObserver,
   MaximizeModeWindowManager();
 
  private:
-  typedef std::map<aura::Window*, MaximizeModeWindowState*> WindowToState;
+  using WindowToState = std::map<WmWindow*, MaximizeModeWindowState*>;
 
   // Maximize all windows and restore their current state.
   void MaximizeAllWindows();
@@ -96,13 +94,13 @@ class ASH_EXPORT MaximizeModeWindowManager : public aura::WindowObserver,
   // state).
   // Note: If the given window cannot be handled by us the function will return
   // immediately.
-  void MaximizeAndTrackWindow(aura::Window* window);
+  void MaximizeAndTrackWindow(WmWindow* window);
 
   // Remove a window from our tracking list.
-  void ForgetWindow(aura::Window* window);
+  void ForgetWindow(WmWindow* window);
 
   // Returns true when the given window should be modified in any way by us.
-  bool ShouldHandleWindow(aura::Window* window);
+  bool ShouldHandleWindow(WmWindow* window);
 
   // Add window creation observers to track creation of new windows.
   void AddWindowCreationObservers();
@@ -115,7 +113,7 @@ class ASH_EXPORT MaximizeModeWindowManager : public aura::WindowObserver,
   void DisplayConfigurationChanged();
 
   // Returns true when the |window| is a container window.
-  bool IsContainerWindow(aura::Window* window);
+  bool IsContainerWindow(WmWindow* window);
 
   // Add a backdrop behind the currently active window on each desktop.
   void EnableBackdropBehindTopWindowOnEachDisplay(bool enable);
@@ -124,7 +122,7 @@ class ASH_EXPORT MaximizeModeWindowManager : public aura::WindowObserver,
   WindowToState window_state_map_;
 
   // All container windows which have to be tracked.
-  std::set<aura::Window*> observed_container_windows_;
+  std::set<WmWindow*> observed_container_windows_;
 
   // True if all backdrops are hidden.
   bool backdrops_hidden_;

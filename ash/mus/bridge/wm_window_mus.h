@@ -210,6 +210,7 @@ class WmWindowMus : public WmWindow, public ::mus::WindowObserver {
   void SetDescendantsStayInSameRootWindow(bool value) override;
   void AddObserver(WmWindowObserver* observer) override;
   void RemoveObserver(WmWindowObserver* observer) override;
+  bool HasObserver(const WmWindowObserver* observer) const override;
 
  private:
   // mus::WindowObserver:

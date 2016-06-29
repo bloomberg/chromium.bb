@@ -36,6 +36,9 @@ class ASH_EXPORT WmRootWindowControllerAura : public WmRootWindowController,
   bool HasShelf() override;
   WmShell* GetShell() override;
   wm::WorkspaceWindowState GetWorkspaceWindowState() override;
+  void SetMaximizeBackdropDelegate(
+      std::unique_ptr<WorkspaceLayoutManagerBackdropDelegate> delegate)
+      override;
   AlwaysOnTopController* GetAlwaysOnTopController() override;
   WmShelf* GetShelf() override;
   WmWindow* GetWindow() override;
