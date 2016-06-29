@@ -273,6 +273,7 @@ textOrientation
 textOverflow
 textRendering
 textShadow
+textSizeAdjust
 textTransform
 textUnderlinePosition
 top

@@ -46,6 +46,7 @@
 namespace blink {
 
 class RotateTransformOperation;
+class TextSizeAdjust;
 class TranslateTransformOperation;
 class ScaleTransformOperation;
 class StylePath;
@@ -97,6 +98,7 @@ public:
     static PassRefPtr<SVGDashArray> convertStrokeDasharray(StyleResolverState&, const CSSValue&);
     static StyleColor convertStyleColor(StyleResolverState&, const CSSValue&, bool forVisitedLink = false);
     static float convertTextStrokeWidth(StyleResolverState&, const CSSValue&);
+    static TextSizeAdjust convertTextSizeAdjust(StyleResolverState&, const CSSValue&);
     static TransformOrigin convertTransformOrigin(StyleResolverState&, const CSSValue&);
 
     static void convertGridTrackList(const CSSValue&, Vector<GridTrackSize>&, NamedGridLinesMap&, OrderedNamedGridLines&,

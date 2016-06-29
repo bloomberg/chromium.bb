@@ -234,6 +234,7 @@ textOrientation
 textOverflow
 textRendering
 textShadow
+textSizeAdjust
 textTransform
 top
 touchAction

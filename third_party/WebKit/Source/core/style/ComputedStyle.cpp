@@ -587,6 +587,7 @@ bool ComputedStyle::diffNeedsFullLayoutAndPaintInvalidation(const ComputedStyle&
             || rareInheritedData->m_textOrientation != other.rareInheritedData->m_textOrientation
             || rareInheritedData->m_textCombine != other.rareInheritedData->m_textCombine
             || rareInheritedData->m_tabSize != other.rareInheritedData->m_tabSize
+            || rareInheritedData->m_textSizeAdjust != other.rareInheritedData->m_textSizeAdjust
             || rareInheritedData->listStyleImage != other.rareInheritedData->listStyleImage
             || rareInheritedData->m_snapHeightUnit != other.rareInheritedData->m_snapHeightUnit
             || rareInheritedData->m_snapHeightPosition != other.rareInheritedData->m_snapHeightPosition
@@ -1348,9 +1349,10 @@ Length ComputedStyle::lineHeight() const
     // recalculated on demand as we only store the specified line height.
     // FIXME: Should consider scaling the fixed part of any calc expressions
     // too, though this involves messily poking into CalcExpressionLength.
-    float multiplier = textAutosizingMultiplier();
-    if (multiplier > 1 && lh.isFixed())
+    if (lh.isFixed()) {
+        float multiplier = textAutosizingMultiplier();
         return Length(TextAutosizer::computeAutosizedFontSize(lh.value(), multiplier), Fixed);
+    }
 
     return lh;
 }
@@ -1407,10 +1409,8 @@ void ComputedStyle::setTextAutosizingMultiplier(float multiplier)
     desc.setSpecifiedSize(size);
     desc.setComputedSize(size);
 
-    if (multiplier > 1) {
-        float autosizedFontSize = TextAutosizer::computeAutosizedFontSize(size, multiplier);
-        desc.setComputedSize(std::min(maximumAllowedFontSize, autosizedFontSize));
-    }
+    float autosizedFontSize = TextAutosizer::computeAutosizedFontSize(size, multiplier);
+    desc.setComputedSize(std::min(maximumAllowedFontSize, autosizedFontSize));
 
     setFontDescription(desc);
     font().update(currentFontSelector);

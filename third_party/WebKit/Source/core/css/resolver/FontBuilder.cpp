@@ -332,8 +332,7 @@ void FontBuilder::updateAdjustedSize(FontDescription& fontDescription, const Com
     adjustedSize = getComputedSizeFromSpecifiedSize(fontDescription, style.effectiveZoom(), adjustedSize);
 
     float multiplier = style.textAutosizingMultiplier();
-    if (multiplier > 1)
-        adjustedSize = TextAutosizer::computeAutosizedFontSize(adjustedSize, multiplier);
+    adjustedSize = TextAutosizer::computeAutosizedFontSize(adjustedSize, multiplier);
     fontDescription.setAdjustedSize(adjustedSize);
 }
 
@@ -341,8 +340,7 @@ void FontBuilder::updateComputedSize(FontDescription& fontDescription, const Com
 {
     float computedSize = getComputedSizeFromSpecifiedSize(fontDescription, style.effectiveZoom(), fontDescription.specifiedSize());
     float multiplier = style.textAutosizingMultiplier();
-    if (multiplier > 1)
-        computedSize = TextAutosizer::computeAutosizedFontSize(computedSize, multiplier);
+    computedSize = TextAutosizer::computeAutosizedFontSize(computedSize, multiplier);
     fontDescription.setComputedSize(computedSize);
 }
 

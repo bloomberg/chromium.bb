@@ -173,6 +173,7 @@ static const CSSPropertyID staticComputableProperties[] = {
     CSSPropertyTextIndent,
     CSSPropertyTextRendering,
     CSSPropertyTextShadow,
+    CSSPropertyTextSizeAdjust,
     CSSPropertyTextOverflow,
     CSSPropertyTextTransform,
     CSSPropertyTop,

@@ -722,6 +722,15 @@ static CSSValue* consumeTabSize(CSSParserTokenRange& range, CSSParserMode cssPar
     return consumeLength(range, cssParserMode, ValueRangeNonNegative);
 }
 
+static CSSValue* consumeTextSizeAdjust(CSSParserTokenRange& range, CSSParserMode cssParserMode)
+{
+    if (range.peek().id() == CSSValueAuto)
+        return consumeIdent(range);
+    if (range.peek().id() == CSSValueNone)
+        return consumeIdent(range);
+    return consumePercent(range, ValueRangeNonNegative);
+}
+
 static CSSValue* consumeFontSize(CSSParserTokenRange& range, CSSParserMode cssParserMode, UnitlessQuirk unitless = UnitlessQuirk::Forbid)
 {
     if (range.peek().id() >= CSSValueXxSmall && range.peek().id() <= CSSValueLarger)
@@ -3605,6 +3614,8 @@ CSSValue* CSSPropertyParser::parseSingleValue(CSSPropertyID unresolvedProperty, 
         return consumeSpacing(m_range, m_context.mode());
     case CSSPropertyTabSize:
         return consumeTabSize(m_range, m_context.mode());
+    case CSSPropertyTextSizeAdjust:
+        return consumeTextSizeAdjust(m_range, m_context.mode());
     case CSSPropertyFontSize:
         return consumeFontSize(m_range, m_context.mode(), UnitlessQuirk::Allow);
     case CSSPropertyLineHeight:

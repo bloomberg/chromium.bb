@@ -52,6 +52,7 @@ struct SameSizeAsStyleRareInheritedData : public RefCounted<SameSizeAsStyleRareI
     Color touchColors;
     TabSize tabSize;
     void* variables[1];
+    TextSizeAdjust textSizeAdjust;
 };
 
 static_assert(sizeof(StyleRareInheritedData) <= sizeof(SameSizeAsStyleRareInheritedData), "StyleRareInheritedData should stay small");
@@ -99,6 +100,7 @@ StyleRareInheritedData::StyleRareInheritedData()
     , m_snapHeightUnit(0)
     , tapHighlightColor(ComputedStyle::initialTapHighlightColor())
     , m_tabSize(ComputedStyle::initialTabSize())
+    , m_textSizeAdjust(ComputedStyle::initialTextSizeAdjust())
 {
 }
 
@@ -159,6 +161,7 @@ StyleRareInheritedData::StyleRareInheritedData(const StyleRareInheritedData& o)
     , appliedTextDecorations(o.appliedTextDecorations)
     , m_tabSize(o.m_tabSize)
     , variables(o.variables)
+    , m_textSizeAdjust(o.m_textSizeAdjust)
 {
 }
 
@@ -223,7 +226,8 @@ bool StyleRareInheritedData::operator==(const StyleRareInheritedData& o) const
         && m_rubyPosition == o.m_rubyPosition
         && dataEquivalent(listStyleImage.get(), o.listStyleImage.get())
         && dataEquivalent(appliedTextDecorations, o.appliedTextDecorations)
-        && dataEquivalent(variables, o.variables);
+        && dataEquivalent(variables, o.variables)
+        && m_textSizeAdjust == o.m_textSizeAdjust;
 }
 
 bool StyleRareInheritedData::shadowDataEquivalent(const StyleRareInheritedData& o) const

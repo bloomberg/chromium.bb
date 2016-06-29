@@ -1846,6 +1846,10 @@ const CSSValue* ComputedStyleCSSValueMapping::get(CSSPropertyID propertyID, cons
     case CSSPropertyTabSize:
         return CSSPrimitiveValue::create(
             style.getTabSize().getPixelSize(1.0), style.getTabSize().isSpaces() ? CSSPrimitiveValue::UnitType::Number : CSSPrimitiveValue::UnitType::Pixels);
+    case CSSPropertyTextSizeAdjust:
+        if (style.getTextSizeAdjust().isAuto())
+            return CSSPrimitiveValue::createIdentifier(CSSValueAuto);
+        return CSSPrimitiveValue::create(style.getTextSizeAdjust().multiplier() * 100, CSSPrimitiveValue::UnitType::Percentage);
     case CSSPropertyCursor: {
         CSSValueList* list = nullptr;
         CursorList* cursors = style.cursors();

@@ -45,6 +45,7 @@
 #include "core/css/CSSValuePair.h"
 #include "core/css/resolver/FilterOperationResolver.h"
 #include "core/frame/LocalFrame.h"
+#include "core/style/TextSizeAdjust.h"
 #include "core/svg/SVGURIReference.h"
 #include "platform/transforms/RotateTransformOperation.h"
 #include "platform/transforms/ScaleTransformOperation.h"
@@ -935,6 +936,17 @@ float StyleBuilderConverter::convertTextStrokeWidth(StyleResolverState& state, c
         return CSSPrimitiveValue::create(multiplier / 48, CSSPrimitiveValue::UnitType::Ems)->computeLength<float>(state.cssToLengthConversionData());
     }
     return primitiveValue.computeLength<float>(state.cssToLengthConversionData());
+}
+
+TextSizeAdjust StyleBuilderConverter::convertTextSizeAdjust(StyleResolverState& state, const CSSValue& value)
+{
+    const CSSPrimitiveValue& primitiveValue = toCSSPrimitiveValue(value);
+    if (primitiveValue.getValueID() == CSSValueNone)
+        return TextSizeAdjust::adjustNone();
+    if (primitiveValue.getValueID() == CSSValueAuto)
+        return TextSizeAdjust::adjustAuto();
+    DCHECK(primitiveValue.isPercentage());
+    return TextSizeAdjust(primitiveValue.getFloatValue() / 100.0f);
 }
 
 TransformOrigin StyleBuilderConverter::convertTransformOrigin(StyleResolverState& state, const CSSValue& value)

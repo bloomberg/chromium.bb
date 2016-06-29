@@ -763,6 +763,8 @@ public:
     EBreak breakBefore() const { return static_cast<EBreak>(noninherited_flags.breakBefore); }
     EBreak breakInside() const { return static_cast<EBreak>(noninherited_flags.breakInside); }
 
+    TextSizeAdjust getTextSizeAdjust() const { return rareInheritedData->m_textSizeAdjust; }
+
     // CSS3 Getter Methods
 
     int outlineOffset() const
@@ -1318,6 +1320,8 @@ public:
     void setBreakBefore(EBreak b) { ASSERT(b <= BreakValueLastAllowedForBreakAfterAndBefore); noninherited_flags.breakBefore = b;  }
     void setBreakInside(EBreak b) { ASSERT(b <= BreakValueLastAllowedForBreakInside); noninherited_flags.breakInside = b;  }
 
+    void setTextSizeAdjust(TextSizeAdjust sizeAdjust) { SET_VAR(rareInheritedData, m_textSizeAdjust, sizeAdjust); }
+
     // CSS3 Setters
     void setOutlineOffset(int v) { SET_VAR(m_background, m_outline.m_offset, v); }
     void setTextShadow(PassRefPtr<ShadowList>);
@@ -1847,6 +1851,8 @@ public:
     static GridPosition initialGridRowEnd() { return GridPosition(); }
 
     static TabSize initialTabSize() { return TabSize(8); }
+
+    static TextSizeAdjust initialTextSizeAdjust() { return TextSizeAdjust::adjustAuto(); }
 
     static WrapFlow initialWrapFlow() { return WrapFlowAuto; }
     static WrapThrough initialWrapThrough() { return WrapThroughWrap; }

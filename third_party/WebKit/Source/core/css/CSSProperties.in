@@ -317,6 +317,7 @@ text-indent interpolable, inherited, custom_all
 text-justify runtime_flag=CSS3Text, inherited, type_name=TextJustify
 text-overflow type_name=TextOverflow
 text-shadow interpolable, inherited, converter=convertShadow
+text-size-adjust inherited, converter=convertTextSizeAdjust, type_name=TextSizeAdjust
 text-transform inherited
 text-underline-position runtime_flag=CSS3TextDecorations, inherited, type_name=TextUnderlinePosition
 top typedom_types=[Length], keywords=[auto], supports_percentage, interpolable, initial=initialOffset, converter=convertLengthOrAuto
@@ -576,6 +577,7 @@ columns longhands=column-width;column-count
 -webkit-shape-image-threshold alias_for=shape-image-threshold
 -webkit-shape-margin alias_for=shape-margin
 -webkit-shape-outside alias_for=shape-outside
+-webkit-text-size-adjust alias_for=text-size-adjust
 -webkit-transform alias_for=transform
 -webkit-transform-origin alias_for=transform-origin
 -webkit-transform-style alias_for=transform-style

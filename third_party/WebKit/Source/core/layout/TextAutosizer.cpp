@@ -988,6 +988,13 @@ void TextAutosizer::applyMultiplier(LayoutObject* layoutObject, float multiplier
 {
     ASSERT(layoutObject);
     ComputedStyle& currentStyle = layoutObject->mutableStyleRef();
+    if (!currentStyle.getTextSizeAdjust().isAuto()) {
+        multiplier = currentStyle.getTextSizeAdjust().multiplier();
+    } else if (multiplier < 1) {
+        // Unlike text-size-adjust, the text autosizer should only inflate fonts.
+        multiplier = 1;
+    }
+
     if (currentStyle.textAutosizingMultiplier() == multiplier)
         return;
 
@@ -1183,6 +1190,8 @@ TextAutosizer::DeferUpdatePageInfo::~DeferUpdatePageInfo()
 
 float TextAutosizer::computeAutosizedFontSize(float specifiedSize, float multiplier)
 {
+    DCHECK_GE(multiplier, 0);
+
     // Somewhat arbitrary "pleasant" font size.
     const float pleasantSize = 16;
 
@@ -1199,7 +1208,8 @@ float TextAutosizer::computeAutosizedFontSize(float specifiedSize, float multipl
     const float gradientAfterPleasantSize = 0.5;
 
     float computedSize;
-    if (specifiedSize <= pleasantSize) {
+    // Skip linear backoff for multipliers that shrink the size or when the font sizes are small.
+    if (multiplier <= 1 || specifiedSize <= pleasantSize) {
         computedSize = multiplier * specifiedSize;
     } else {
         computedSize = multiplier * pleasantSize + gradientAfterPleasantSize * (specifiedSize - pleasantSize);

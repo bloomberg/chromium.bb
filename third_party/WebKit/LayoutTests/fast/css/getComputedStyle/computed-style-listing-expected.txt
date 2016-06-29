@@ -273,6 +273,7 @@ text-justify: auto
 text-overflow: clip
 text-rendering: auto
 text-shadow: none
+text-size-adjust: auto
 text-transform: none
 text-underline-position: auto
 top: auto
