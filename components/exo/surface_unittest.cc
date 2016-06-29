@@ -206,8 +206,6 @@ TEST_F(SurfaceTest, SetBlendMode) {
   surface->SetBlendMode(SkXfermode::kSrc_Mode);
   surface->Commit();
 
-  EXPECT_FALSE(surface->window()->layer()->fills_bounds_opaquely());
-
   const cc::DelegatedFrameData* frame_data = GetFrameFromSurface(surface.get());
   ASSERT_EQ(1u, frame_data->render_pass_list.size());
   ASSERT_EQ(1u, frame_data->render_pass_list.back()->quad_list.size());
