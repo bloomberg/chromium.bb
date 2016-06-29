@@ -51,6 +51,7 @@
     </message>
     <message name="IDS_PDF_PAGE_INDEX" desc="Accessible label for each page, describing the page number">
       {COUNT, plural,
+         =1 {Page 1}
          other {Page #}}
     </message>
   </if>
