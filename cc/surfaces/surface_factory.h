@@ -62,7 +62,7 @@ class CC_SURFACES_EXPORT SurfaceFactory
   // The callback is called the first time this frame is used to draw, or if
   // the frame is discarded.
   void SubmitCompositorFrame(SurfaceId surface_id,
-                             std::unique_ptr<CompositorFrame> frame,
+                             CompositorFrame frame,
                              const DrawCallback& callback);
   void RequestCopyOfSurface(SurfaceId surface_id,
                             std::unique_ptr<CopyOutputRequest> copy_request);

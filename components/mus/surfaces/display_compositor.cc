@@ -81,10 +81,10 @@ DisplayCompositor::~DisplayCompositor() {
 }
 
 void DisplayCompositor::SubmitCompositorFrame(
-    std::unique_ptr<cc::CompositorFrame> frame,
+    cc::CompositorFrame frame,
     const base::Callback<void(cc::SurfaceDrawStatus)>& callback) {
   gfx::Size frame_size =
-      frame->delegated_frame_data->render_pass_list.back()->output_rect.size();
+      frame.delegated_frame_data->render_pass_list.back()->output_rect.size();
   if (frame_size.IsEmpty() || frame_size != display_size_) {
     if (!surface_id_.is_null())
       factory_.Destroy(surface_id_);
@@ -93,7 +93,7 @@ void DisplayCompositor::SubmitCompositorFrame(
     display_size_ = frame_size;
     display_->Resize(display_size_);
   }
-  display_->SetSurfaceId(surface_id_, frame->metadata.device_scale_factor);
+  display_->SetSurfaceId(surface_id_, frame.metadata.device_scale_factor);
   factory_.SubmitCompositorFrame(surface_id_, std::move(frame), callback);
 }
 

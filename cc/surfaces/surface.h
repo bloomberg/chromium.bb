@@ -54,16 +54,18 @@ class CC_SURFACES_EXPORT Surface {
     return gpu_memory_buffer_client_id_;
   }
 
-  void QueueFrame(std::unique_ptr<CompositorFrame> frame,
-                  const DrawCallback& draw_callback);
+  void QueueFrame(CompositorFrame frame, const DrawCallback& draw_callback);
   void RequestCopyOfOutput(std::unique_ptr<CopyOutputRequest> copy_request);
   // Adds each CopyOutputRequest in the current frame to copy_requests. The
   // caller takes ownership of them.
   void TakeCopyOutputRequests(
       std::multimap<RenderPassId, std::unique_ptr<CopyOutputRequest>>*
           copy_requests);
+
   // Returns the most recent frame that is eligible to be rendered.
-  const CompositorFrame* GetEligibleFrame();
+  // If the CompositorFrame's DelegateFrameData is null then there is
+  // no eligible frame.
+  const CompositorFrame& GetEligibleFrame();
 
   // Returns a number that increments by 1 every time a new frame is enqueued.
   int frame_index() const { return frame_index_; }
@@ -102,7 +104,7 @@ class CC_SURFACES_EXPORT Surface {
   int gpu_memory_buffer_client_id_ = -1;
   base::WeakPtr<SurfaceFactory> factory_;
   // TODO(jamesr): Support multiple frames in flight.
-  std::unique_ptr<CompositorFrame> current_frame_;
+  CompositorFrame current_frame_;
   int frame_index_;
   bool destroyed_;
   std::vector<SurfaceSequence> destruction_dependencies_;

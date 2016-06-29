@@ -36,7 +36,7 @@ class CC_SURFACES_EXPORT SurfaceAggregator {
                     bool aggregate_only_damaged);
   ~SurfaceAggregator();
 
-  std::unique_ptr<CompositorFrame> Aggregate(SurfaceId surface_id);
+  CompositorFrame Aggregate(SurfaceId surface_id);
   void ReleaseResources(SurfaceId surface_id);
   SurfaceIndexMap& previous_contained_surfaces() {
     return previous_contained_surfaces_;

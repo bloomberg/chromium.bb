@@ -191,9 +191,9 @@ const cc::DelegatedFrameData* GetFrameFromSurface(Surface* surface) {
   cc::SurfaceId surface_id = surface->surface_id();
   cc::SurfaceManager* surface_manager =
       aura::Env::GetInstance()->context_factory()->GetSurfaceManager();
-  const cc::CompositorFrame* frame =
+  const cc::CompositorFrame& frame =
       surface_manager->GetSurfaceForId(surface_id)->GetEligibleFrame();
-  return frame->delegated_frame_data.get();
+  return frame.delegated_frame_data.get();
 }
 
 TEST_F(SurfaceTest, SetBlendMode) {

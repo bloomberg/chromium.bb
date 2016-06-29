@@ -70,9 +70,7 @@ void ServerWindowSurface::SubmitCompositorFrame(
       surface_factory_.Create(surface_id_);
     }
   }
-  std::unique_ptr<cc::CompositorFrame> frame_copy(new cc::CompositorFrame);
-  *frame_copy = std::move(frame);
-  surface_factory_.SubmitCompositorFrame(surface_id_, std::move(frame_copy),
+  surface_factory_.SubmitCompositorFrame(surface_id_, std::move(frame),
                                          base::Bind(&CallCallback, callback));
   last_submitted_frame_size_ = frame_size;
   window()->delegate()->OnScheduleWindowPaint(window());

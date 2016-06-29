@@ -808,8 +808,8 @@ void Surface::UpdateSurface(bool full_damage) {
   }
 
   delegated_frame->render_pass_list.push_back(std::move(render_pass));
-  std::unique_ptr<cc::CompositorFrame> frame(new cc::CompositorFrame);
-  frame->delegated_frame_data = std::move(delegated_frame);
+  cc::CompositorFrame frame;
+  frame.delegated_frame_data = std::move(delegated_frame);
 
   factory_owner_->surface_factory_->SubmitCompositorFrame(
       surface_id_, std::move(frame), cc::SurfaceFactory::DrawCallback());

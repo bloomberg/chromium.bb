@@ -68,10 +68,7 @@ void CompositorFrameSinkImpl::SubmitCompositorFrame(
     factory_.Create(surface_id_);
     last_submitted_frame_size_ = frame_size;
   }
-  std::unique_ptr<cc::CompositorFrame> compositor_frame_copy(
-      new cc::CompositorFrame);
-  *compositor_frame_copy = std::move(compositor_frame);
-  factory_.SubmitCompositorFrame(surface_id_, std::move(compositor_frame_copy),
+  factory_.SubmitCompositorFrame(surface_id_, std::move(compositor_frame),
                                  base::Bind(&CallCallback, callback));
 }
 
