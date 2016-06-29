@@ -175,7 +175,7 @@ class Port(object):
         self._helper = None
         self._http_server = None
         self._websocket_server = None
-        self._is_wpt_enabled = hasattr(options, 'enable_wptserve') and options.enable_wptserve
+        self._is_wptserve_enabled = getattr(options, 'enable_wptserve', False)
         self._wpt_server = None
         self._image_differ = None
         self._server_process_constructor = server_process.ServerProcess  # overridable for testing
@@ -1165,20 +1165,24 @@ class Port(object):
         server.start()
         self._websocket_server = server
 
-    def is_wpt_enabled(self):
+    def is_wptserve_enabled(self):
         """Used as feature flag for WPT Serve feature."""
-        return self._is_wpt_enabled
+        return self._is_wptserve_enabled
 
-    def is_wpt_test(self, test):
-        """Whether this test is part of a web-platform-tests which require wptserve servers."""
+    @staticmethod
+    def is_wptserve_test(test):
+        """Whether wptserve should be used for a given test if enabled."""
         return test.startswith("imported/wpt/")
+
+    def should_use_wptserve(self, test):
+        return self.is_wptserve_enabled() and self.is_wptserve_test(test)
 
     def start_wptserve(self):
         """Start a WPT web server. Raise an error if it can't start or is already running.
 
         Ports can stub this out if they don't need a WPT web server to be running."""
         assert not self._wpt_server, 'Already running an http server.'
-        assert self.is_wpt_enabled(), 'Cannot start server if WPT is not enabled.'
+        assert self.is_wptserve_enabled(), 'Cannot start server if WPT is not enabled.'
 
         # We currently don't support any output mechanism for the WPT server.
         server = wptserve.WPTServe(self, self.results_directory())
@@ -1323,7 +1327,7 @@ class Port(object):
             self._filesystem.join(self.layout_tests_dir(), 'StaleTestExpectations'),
             self._filesystem.join(self.layout_tests_dir(), 'SlowTests'),
         ]
-        if self._is_wpt_enabled:
+        if self.is_wptserve_enabled():
             paths.append(self._filesystem.join(self.layout_tests_dir(), 'WPTServeExpectations'))
         paths.extend(self._flag_specific_expectations_files())
         return paths
@@ -1657,7 +1661,7 @@ class Port(object):
         if self._options.pixel_test_directories:
             return any(test_input.test_name.startswith(directory) for directory in self._options.pixel_test_directories)
         # TODO(burnik): Make sure this is the right way to do it.
-        if self.is_wpt_enabled() and self.is_wpt_test(test_input.test_name):
+        if self.should_use_wptserve(test_input.test_name):
             return False
         return True
 

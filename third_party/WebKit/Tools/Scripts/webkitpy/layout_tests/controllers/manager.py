@@ -230,7 +230,7 @@ class Manager(object):
         return self.INSPECTOR_SUBDIR in test
 
     def _is_websocket_test(self, test):
-        if self._port.is_wpt_enabled() and self._port.is_wpt_test(test):
+        if self._port.should_use_wptserve(test):
             return False
 
         return self.WEBSOCKET_SUBDIR in test
@@ -369,7 +369,7 @@ class Manager(object):
                                       tests_to_skip, num_workers, retry_attempt)
 
     def _start_servers(self, tests_to_run):
-        if self._port.is_wpt_enabled() and any(self._port.is_wpt_test(test) for test in tests_to_run):
+        if self._port.is_wptserve_enabled() and any(self._port.is_wptserve_test(test) for test in tests_to_run):
             self._printer.write_update('Starting WPTServe ...')
             self._port.start_wptserve()
             self._wptserve_started = True

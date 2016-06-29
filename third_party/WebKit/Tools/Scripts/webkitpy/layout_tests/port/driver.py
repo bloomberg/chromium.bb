@@ -228,11 +228,8 @@ class Driver(object):
     def is_http_test(self, test_name):
         return test_name.startswith(self.HTTP_DIR) and not test_name.startswith(self.HTTP_LOCAL_DIR)
 
-    def _should_treat_as_wpt_test(self, test_name):
-        return self._port.is_wpt_enabled() and self._port.is_wpt_test(test_name)
-
     def _get_http_host_and_ports_for_test(self, test_name):
-        if self._should_treat_as_wpt_test(test_name):
+        if self._port.should_use_wptserve(test_name):
             # TODO(burnik): Read from config or args.
             return ("web-platform.test", 8001, 8444)
         else:
@@ -246,12 +243,12 @@ class Driver(object):
         their name (e.g. 'http/tests/security/mixedContent/test1.https.html') will
         be loaded over HTTPS; all other tests over HTTP.
         """
-        is_wpt_test = self._should_treat_as_wpt_test(test_name)
+        using_wptserve = self._port.should_use_wptserve(test_name)
 
-        if not self.is_http_test(test_name) and not is_wpt_test:
+        if not self.is_http_test(test_name) and not using_wptserve:
             return path.abspath_to_uri(self._port.host.platform, self._port.abspath_for_test(test_name))
 
-        if is_wpt_test:
+        if using_wptserve:
             test_dir_prefix = self.WPT_DIR
         else:
             test_dir_prefix = self.HTTP_DIR
@@ -413,7 +410,7 @@ class Driver(object):
         if driver_input.test_name.startswith(
                 'http://') or driver_input.test_name.startswith('https://') or driver_input.test_name == ('about:blank'):
             command = driver_input.test_name
-        elif self.is_http_test(driver_input.test_name) or self._should_treat_as_wpt_test(driver_input.test_name):
+        elif self.is_http_test(driver_input.test_name) or self._port.should_use_wptserve(driver_input.test_name):
             command = self.test_to_uri(driver_input.test_name)
         else:
             command = self._port.abspath_for_test(driver_input.test_name)
