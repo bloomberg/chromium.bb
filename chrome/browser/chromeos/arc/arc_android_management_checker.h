@@ -9,20 +9,18 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/timer/timer.h"
 #include "chrome/browser/chromeos/policy/android_management_client.h"
 #include "google_apis/gaia/oauth2_token_service.h"
 
-class ProfileOAuth2TokenService;
-
-namespace arc {
-
 class ArcAndroidManagementCheckerDelegate;
+class ProfileOAuth2TokenService;
 
 class ArcAndroidManagementChecker : public OAuth2TokenService::Observer {
  public:
   ArcAndroidManagementChecker(ArcAndroidManagementCheckerDelegate* delegate,
                               ProfileOAuth2TokenService* token_service,
-                              const std::string& account_id,
+                              const std::string account_id,
                               bool background_mode);
   ~ArcAndroidManagementChecker() override;
 
@@ -40,6 +38,7 @@ class ArcAndroidManagementChecker : public OAuth2TokenService::Observer {
   void DispatchResult(policy::AndroidManagementClient::Result result);
   void OnAndroidManagementChecked(
       policy::AndroidManagementClient::Result result);
+  void OnRefreshTokenTimeout();
 
   // Unowned pointers.
   ArcAndroidManagementCheckerDelegate* const delegate_;
@@ -54,13 +53,13 @@ class ArcAndroidManagementChecker : public OAuth2TokenService::Observer {
   // Keeps current retry time for background mode.
   int retry_time_ms_;
 
+  base::OneShotTimer refresh_token_timeout_;
+
   policy::AndroidManagementClient android_management_client_;
 
   base::WeakPtrFactory<ArcAndroidManagementChecker> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ArcAndroidManagementChecker);
 };
-
-}  // namespace arc
 
 #endif  // CHROME_BROWSER_CHROMEOS_ARC_ARC_ANDROID_MANAGEMENT_CHECKER_H_

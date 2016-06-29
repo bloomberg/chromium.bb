@@ -28,14 +28,12 @@
 
 namespace {
 const char kAction[] = "action";
-const char kCanEnable[] = "canEnable";
 const char kCode[] = "code";
-const char kCountryCode[] = "countryCode";
+const char kCanEnable[] = "canEnable";
+const char kStatus[] = "status";
 const char kData[] = "data";
 const char kDeviceId[] = "deviceId";
 const char kOn[] = "on";
-const char kSilentMode[] = "silentMode";
-const char kStatus[] = "status";
 const char kPage[] = "page";
 const char kText[] = "text";
 const char kActionInitialize[] = "initialize";
@@ -138,7 +136,7 @@ void ArcSupportHost::Initialize() {
 
   const std::string& app_locale = g_browser_process->GetApplicationLocale();
   const std::string& country_code = base::CountryCodeForCurrentTimezone();
-  localized_strings->SetString(kCountryCode, country_code);
+  localized_strings->SetString("countryCode", country_code);
 
   webui::SetLoadTimeDataDefaults(app_locale, localized_strings.get());
 
@@ -153,8 +151,6 @@ void ArcSupportHost::Initialize() {
   request.SetString(kAction, kActionInitialize);
   request.Set(kData, std::move(localized_strings));
   request.SetString(kDeviceId, device_id);
-  request.SetBoolean(kSilentMode, arc_auth_service->IsArcManaged());
-
   base::JSONWriter::Write(request, &request_string);
   client_->PostMessageFromNativeHost(request_string);
 }

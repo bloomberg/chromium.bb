@@ -13,10 +13,9 @@
 #include "components/policy/core/common/cloud/device_management_service.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 
-namespace arc {
-
 namespace {
 
+constexpr int kRefreshTokenTimeoutMs = 10 * 1000;    // 10 sec.
 constexpr int kRetryTimeMinMs = 10 * 1000;           // 10 sec.
 constexpr int kRetryTimeMaxMs = 1 * 60 * 60 * 1000;  // 1 hour.
 
@@ -31,7 +30,7 @@ policy::DeviceManagementService* GetDeviceManagementService() {
 ArcAndroidManagementChecker::ArcAndroidManagementChecker(
     ArcAndroidManagementCheckerDelegate* delegate,
     ProfileOAuth2TokenService* token_service,
-    const std::string& account_id,
+    const std::string account_id,
     bool background_mode)
     : delegate_(delegate),
       token_service_(token_service),
@@ -46,8 +45,12 @@ ArcAndroidManagementChecker::ArcAndroidManagementChecker(
   if (token_service_->RefreshTokenIsAvailable(account_id_)) {
     StartCheck();
   } else {
-    DCHECK(background_mode_);
     token_service_->AddObserver(this);
+    if (!background_mode_) {
+      refresh_token_timeout_.Start(
+          FROM_HERE, base::TimeDelta::FromMilliseconds(kRefreshTokenTimeoutMs),
+          this, &ArcAndroidManagementChecker::OnRefreshTokenTimeout);
+    }
   }
 }
 
@@ -68,6 +71,14 @@ void ArcAndroidManagementChecker::OnRefreshTokenAvailable(
 }
 
 void ArcAndroidManagementChecker::OnRefreshTokensLoaded() {
+  token_service_->RemoveObserver(this);
+  refresh_token_timeout_.Stop();
+  StartCheck();
+}
+
+void ArcAndroidManagementChecker::OnRefreshTokenTimeout() {
+  DCHECK(!background_mode_);
+  VLOG(2) << "Failed to wait for refresh token for android management check.";
   token_service_->RemoveObserver(this);
   StartCheck();
 }
@@ -120,5 +131,3 @@ void ArcAndroidManagementChecker::OnAndroidManagementChecked(
       FROM_HERE, base::Bind(&ArcAndroidManagementChecker::DispatchResult,
                             weak_ptr_factory_.GetWeakPtr(), result));
 }
-
-}  // namespace arc

@@ -7,8 +7,6 @@
 
 #include "chrome/browser/chromeos/policy/android_management_client.h"
 
-namespace arc {
-
 class ArcAndroidManagementCheckerDelegate {
  public:
   virtual void OnAndroidManagementChecked(
@@ -17,7 +15,5 @@ class ArcAndroidManagementCheckerDelegate {
  protected:
   virtual ~ArcAndroidManagementCheckerDelegate() {}
 };
-
-}  // namespace arc
 
 #endif  // CHROME_BROWSER_CHROMEOS_ARC_ARC_ANDROID_MANAGEMENT_CHECKER_DELEGATE_H_

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/arc/arc_auth_service.h"
 
+#include <string>
 #include <utility>
 
 #include "ash/shelf/shelf_delegate.h"
@@ -14,9 +15,9 @@
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/strings/string16.h"
+#include "base/strings/stringprintf.h"
 #include "base/threading/thread_checker.h"
 #include "chrome/browser/chromeos/arc/arc_android_management_checker.h"
-#include "chrome/browser/chromeos/arc/arc_auth_context.h"
 #include "chrome/browser/chromeos/arc/arc_auth_notification.h"
 #include "chrome/browser/chromeos/arc/arc_optin_uma.h"
 #include "chrome/browser/chromeos/arc/arc_support_host.h"
@@ -26,6 +27,8 @@
 #include "chrome/browser/policy/profile_policy_connector_factory.h"
 #include "chrome/browser/prefs/pref_service_syncable_util.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
+#include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_launcher.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
@@ -41,11 +44,16 @@
 #include "components/policy/core/browser/browser_policy_connector.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
+#include "components/signin/core/browser/profile_oauth2_token_service.h"
+#include "components/signin/core/browser/signin_manager_base.h"
 #include "components/syncable_prefs/pref_service_syncable.h"
 #include "components/user_manager/user.h"
+#include "content/public/browser/storage_partition.h"
+#include "content/public/common/url_constants.h"
 #include "extensions/browser/app_window/app_window_registry.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
+#include "google_apis/gaia/gaia_constants.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace arc {
@@ -348,7 +356,20 @@ void ArcAuthService::OnPrimaryUserProfilePrepared(Profile* profile) {
   PrefServiceSyncableFromProfile(profile_)->AddSyncedPrefObserver(
       prefs::kArcEnabled, this);
 
-  context_.reset(new ArcAuthContext(this, profile_));
+  // Reuse storage used in ARC OptIn platform app.
+  const std::string site_url = base::StringPrintf(
+      "%s://%s/persist?%s", content::kGuestScheme, ArcSupportHost::kHostAppId,
+      ArcSupportHost::kStorageId);
+  storage_partition_ = content::BrowserContext::GetStoragePartitionForSite(
+      profile_, GURL(site_url));
+  CHECK(storage_partition_);
+
+  // Get token service and account ID to fetch auth tokens.
+  token_service_ = ProfileOAuth2TokenServiceFactory::GetForProfile(profile_);
+  const SigninManagerBase* const signin_manager =
+      SigninManagerFactory::GetForProfile(profile_);
+  CHECK(token_service_ && signin_manager);
+  account_id_ = signin_manager->GetAuthenticatedAccountId();
 
   // In case UI is disabled we assume that ARC is opted-in.
   if (!IsOptInVerificationDisabled()) {
@@ -398,8 +419,9 @@ void ArcAuthService::Shutdown() {
     pref_service_syncable->RemoveSyncedPrefObserver(prefs::kArcEnabled, this);
   }
   pref_change_registrar_.RemoveAll();
-  context_.reset();
   profile_ = nullptr;
+  token_service_ = nullptr;
+  account_id_.clear();
   SetState(State::NOT_INITIALIZED);
 }
 
@@ -426,11 +448,33 @@ void ArcAuthService::ShowUI(UIPage page, const base::string16& status) {
       profile_, extension, NEW_WINDOW, extensions::SOURCE_CHROME_INTERNAL));
 }
 
-void ArcAuthService::OnContextReady() {
+void ArcAuthService::OnMergeSessionSuccess(const std::string& data) {
   DCHECK(thread_checker.Get().CalledOnValidThread());
 
   DCHECK(!initial_opt_in_);
+  context_prepared_ = true;
   CheckAndroidManagement(false);
+}
+
+void ArcAuthService::OnMergeSessionFailure(
+    const GoogleServiceAuthError& error) {
+  DCHECK(thread_checker.Get().CalledOnValidThread());
+  VLOG(2) << "Failed to merge gaia session " << error.ToString() << ".";
+  OnPrepareContextFailed();
+}
+
+void ArcAuthService::OnUbertokenSuccess(const std::string& token) {
+  DCHECK(thread_checker.Get().CalledOnValidThread());
+  merger_fetcher_.reset(
+      new GaiaAuthFetcher(this, GaiaConstants::kChromeOSSource,
+                          storage_partition_->GetURLRequestContext()));
+  merger_fetcher_->StartMergeSession(token, std::string());
+}
+
+void ArcAuthService::OnUbertokenFailure(const GoogleServiceAuthError& error) {
+  DCHECK(thread_checker.Get().CalledOnValidThread());
+  VLOG(2) << "Failed to get ubertoken " << error.ToString() << ".";
+  OnPrepareContextFailed();
 }
 
 void ArcAuthService::OnSyncedPrefChanged(const std::string& path,
@@ -493,6 +537,8 @@ void ArcAuthService::OnOptInPreferenceChanged() {
 void ArcAuthService::ShutdownBridge() {
   playstore_launcher_.reset();
   auth_callback_.Reset();
+  ubertoken_fetcher_.reset();
+  merger_fetcher_.reset();
   android_management_checker_.reset();
   arc_bridge_service()->Shutdown();
   if (state_ != State::NOT_INITIALIZED)
@@ -627,6 +673,15 @@ void ArcAuthService::DisableArc() {
   profile_->GetPrefs()->SetBoolean(prefs::kArcEnabled, false);
 }
 
+void ArcAuthService::PrepareContext() {
+  DCHECK(thread_checker.Get().CalledOnValidThread());
+
+  ubertoken_fetcher_.reset(
+      new UbertokenFetcher(token_service_, this, GaiaConstants::kChromeOSSource,
+                           storage_partition_->GetURLRequestContext()));
+  ubertoken_fetcher_->StartFetchingToken(account_id_);
+}
+
 void ArcAuthService::StartUI() {
   DCHECK(thread_checker.Get().CalledOnValidThread());
 
@@ -634,12 +689,11 @@ void ArcAuthService::StartUI() {
 
   if (initial_opt_in_) {
     initial_opt_in_ = false;
-    if (IsArcManaged())
-      context_->PrepareContext();
-    else
-      ShowUI(UIPage::START, base::string16());
+    ShowUI(UIPage::START, base::string16());
+  } else if (context_prepared_) {
+    CheckAndroidManagement(false);
   } else {
-    context_->PrepareContext();
+    PrepareContext();
   }
 }
 
@@ -652,7 +706,7 @@ void ArcAuthService::OnPrepareContextFailed() {
   UpdateOptInCancelUMA(OptInCancelReason::NETWORK_ERROR);
 }
 
-void ArcAuthService::CheckAndroidManagement(bool background_mode) {
+void ArcAuthService::CheckAndroidManagement(bool backround_mode) {
   // Do not send requests for Chrome OS managed users.
   if (IsAccountManaged(profile_)) {
     StartArcIfSignedIn();
@@ -666,10 +720,9 @@ void ArcAuthService::CheckAndroidManagement(bool background_mode) {
     return;
   }
 
-  android_management_checker_.reset(
-      new ArcAndroidManagementChecker(this, context_->token_service(),
-                                      context_->account_id(), background_mode));
-  if (background_mode)
+  android_management_checker_.reset(new ArcAndroidManagementChecker(
+      this, token_service_, account_id_, backround_mode));
+  if (backround_mode)
     StartArcIfSignedIn();
 }
 
