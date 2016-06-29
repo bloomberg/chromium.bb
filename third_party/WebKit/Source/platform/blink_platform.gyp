@@ -150,6 +150,7 @@
       '<(DEPTH)/mojo/mojo_public.gyp:mojo_cpp_bindings_wtf_support',
       '<(DEPTH)/net/net.gyp:net',
       '<(DEPTH)/skia/skia.gyp:skia',
+      '<(DEPTH)/third_party/ced/ced.gyp:ced',
       '<(DEPTH)/third_party/harfbuzz-ng/harfbuzz.gyp:harfbuzz-ng',
       '<(DEPTH)/third_party/iccjpeg/iccjpeg.gyp:iccjpeg',
       '<(DEPTH)/third_party/icu/icu.gyp:icui18n',
