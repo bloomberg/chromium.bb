@@ -5,6 +5,7 @@
 #include "ios/chrome/browser/bookmarks/bookmark_client_impl.h"
 
 #include "base/logging.h"
+#include "base/metrics/user_metrics.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "components/bookmarks/browser/bookmark_node.h"
 #include "components/bookmarks/browser/bookmark_storage.h"
@@ -15,7 +16,6 @@
 #include "components/keyed_service/core/service_access_type.h"
 #include "ios/chrome/browser/favicon/favicon_service_factory.h"
 #include "ios/chrome/browser/history/history_service_factory.h"
-#include "ios/web/public/user_metrics.h"
 
 BookmarkClientImpl::BookmarkClientImpl(ios::ChromeBrowserState* browser_state)
     : browser_state_(browser_state) {}
@@ -70,7 +70,7 @@ bool BookmarkClientImpl::IsPermanentNodeVisible(
 }
 
 void BookmarkClientImpl::RecordAction(const base::UserMetricsAction& action) {
-  web::RecordAction(action);
+  base::RecordAction(action);
 }
 
 bookmarks::LoadExtraCallback BookmarkClientImpl::GetLoadExtraNodesCallback() {

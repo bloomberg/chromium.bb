@@ -35,7 +35,6 @@
 #include "ios/chrome/browser/web_data_service_factory.h"
 #include "ios/net/http_cache_helper.h"
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
-#include "ios/web/public/user_metrics.h"
 #include "ios/web/public/web_thread.h"
 #include "net/base/net_errors.h"
 #include "net/cookies/cookie_store.h"
@@ -93,7 +92,7 @@ IOSChromeBrowsingDataRemover* IOSChromeBrowsingDataRemover::CreateForPeriod(
     TimePeriod period) {
   switch (period) {
     case EVERYTHING:
-      web::RecordAction(UserMetricsAction("ClearBrowsingData_Everything"));
+      base::RecordAction(UserMetricsAction("ClearBrowsingData_Everything"));
       break;
   }
   return new IOSChromeBrowsingDataRemover(
@@ -142,7 +141,7 @@ void IOSChromeBrowsingDataRemover::RemoveImpl(int remove_mask) {
   // to clear data for (e.g., unprotected web vs. extensions). On iOS, this
   // mask is always implicitly the unprotected web, which is the only type that
   // is relevant. This metric is left here for historical consistency.
-  web::RecordAction(
+  base::RecordAction(
       UserMetricsAction("ClearBrowsingData_MaskContainsUnprotectedWeb"));
 
   if (remove_mask & REMOVE_HISTORY) {
@@ -151,7 +150,7 @@ void IOSChromeBrowsingDataRemover::RemoveImpl(int remove_mask) {
             browser_state_, ServiceAccessType::EXPLICIT_ACCESS);
     if (history_service) {
       std::set<GURL> restrict_urls;
-      web::RecordAction(UserMetricsAction("ClearBrowsingData_History"));
+      base::RecordAction(UserMetricsAction("ClearBrowsingData_History"));
       waiting_for_clear_history_ = true;
 
       history_service->ExpireLocalAndRemoteHistoryBetween(
@@ -233,7 +232,7 @@ void IOSChromeBrowsingDataRemover::RemoveImpl(int remove_mask) {
   }
 
   if (remove_mask & REMOVE_COOKIES) {
-    web::RecordAction(UserMetricsAction("ClearBrowsingData_Cookies"));
+    base::RecordAction(UserMetricsAction("ClearBrowsingData_Cookies"));
 
     ++waiting_for_clear_cookies_count_;
     WebThread::PostTask(
@@ -246,7 +245,7 @@ void IOSChromeBrowsingDataRemover::RemoveImpl(int remove_mask) {
   }
 
   if (remove_mask & REMOVE_CHANNEL_IDS) {
-    web::RecordAction(UserMetricsAction("ClearBrowsingData_ChannelIDs"));
+    base::RecordAction(UserMetricsAction("ClearBrowsingData_ChannelIDs"));
     if (main_context_getter_) {
       waiting_for_clear_channel_ids_ = true;
       WebThread::PostTask(
@@ -257,7 +256,7 @@ void IOSChromeBrowsingDataRemover::RemoveImpl(int remove_mask) {
   }
 
   if (remove_mask & REMOVE_PASSWORDS) {
-    web::RecordAction(UserMetricsAction("ClearBrowsingData_Passwords"));
+    base::RecordAction(UserMetricsAction("ClearBrowsingData_Passwords"));
     password_manager::PasswordStore* password_store =
         IOSChromePasswordStoreFactory::GetForBrowserState(
             browser_state_, ServiceAccessType::EXPLICIT_ACCESS)
@@ -273,7 +272,7 @@ void IOSChromeBrowsingDataRemover::RemoveImpl(int remove_mask) {
   }
 
   if (remove_mask & REMOVE_FORM_DATA) {
-    web::RecordAction(UserMetricsAction("ClearBrowsingData_Autofill"));
+    base::RecordAction(UserMetricsAction("ClearBrowsingData_Autofill"));
     scoped_refptr<autofill::AutofillWebDataService> web_data_service =
         ios::WebDataServiceFactory::GetAutofillWebDataForBrowserState(
             browser_state_, ServiceAccessType::EXPLICIT_ACCESS);
@@ -299,7 +298,7 @@ void IOSChromeBrowsingDataRemover::RemoveImpl(int remove_mask) {
   }
 
   if (remove_mask & REMOVE_CACHE) {
-    web::RecordAction(UserMetricsAction("ClearBrowsingData_Cache"));
+    base::RecordAction(UserMetricsAction("ClearBrowsingData_Cache"));
 
     waiting_for_clear_cache_ = true;
     DCHECK(delete_begin_.is_null()) << "Partial clearing not supported";

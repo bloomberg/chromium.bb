@@ -8,10 +8,10 @@
 #include "base/bind_helpers.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
+#include "base/metrics/user_metrics.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "ios/public/provider/web/web_ui_ios.h"
-#include "ios/web/public/user_metrics.h"
 
 using base::ListValue;
 using base::UserMetricsAction;
@@ -31,7 +31,7 @@ void MetricsHandler::RegisterMessages() {
 
 void MetricsHandler::HandleRecordAction(const base::ListValue* args) {
   std::string string_action = base::UTF16ToUTF8(ExtractStringValue(args));
-  web::RecordComputedAction(string_action);
+  base::RecordComputedAction(string_action);
 }
 
 void MetricsHandler::HandleRecordInHistogram(const base::ListValue* args) {

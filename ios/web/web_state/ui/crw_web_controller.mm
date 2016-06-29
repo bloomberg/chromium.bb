@@ -30,6 +30,7 @@
 #include "base/mac/scoped_cftyperef.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/metrics/histogram.h"
+#include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
 #include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
@@ -64,7 +65,6 @@
 #include "ios/web/public/ssl_status.h"
 #import "ios/web/public/url_scheme_util.h"
 #include "ios/web/public/url_util.h"
-#include "ios/web/public/user_metrics.h"
 #include "ios/web/public/web_client.h"
 #include "ios/web/public/web_kit_constants.h"
 #import "ios/web/public/web_state/context_menu_params.h"
@@ -2149,7 +2149,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   // implementation. This will be inaccurate if the reload fails or is
   // cancelled.
   _lastUserInteraction.reset();
-  web::RecordAction(UserMetricsAction("Reload"));
+  base::RecordAction(UserMetricsAction("Reload"));
   if (_webView) {
     web::NavigationItem* transientItem =
         _webStateImpl->GetNavigationManagerImpl().GetTransientItem();
@@ -4803,7 +4803,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 - (void)stopLoading {
   _stoppedWKNavigation.reset(_latestWKNavigation);
 
-  web::RecordAction(UserMetricsAction("Stop"));
+  base::RecordAction(UserMetricsAction("Stop"));
   // Discard the pending and transient entried before notifying the tab model
   // observers of the change via |-abortLoad|.
   [[self sessionController] discardNonCommittedEntries];

@@ -14,6 +14,7 @@
 #include "base/logging.h"
 #include "base/mac/objc_property_releaser.h"
 #import "base/mac/scoped_nsobject.h"
+#include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
 #include "base/strings/sys_string_conversions.h"
 #import "ios/web/history_state_util.h"
@@ -28,7 +29,6 @@
 #include "ios/web/public/browser_url_rewriter.h"
 #include "ios/web/public/referrer.h"
 #include "ios/web/public/ssl_status.h"
-#include "ios/web/public/user_metrics.h"
 
 using base::UserMetricsAction;
 
@@ -660,7 +660,7 @@ NSString* const kXCallbackParametersKey = @"xCallbackParameters";
   if (hadTransientEntry)
     return;
 
-  web::RecordAction(UserMetricsAction("Back"));
+  base::RecordAction(UserMetricsAction("Back"));
   _previousNavigationIndex = _currentNavigationIndex;
   // To stop the user getting 'stuck' on redirecting pages they weren't even
   // aware existed, it is necessary to pass over pages that would immediately
@@ -678,7 +678,7 @@ NSString* const kXCallbackParametersKey = @"xCallbackParameters";
 - (void)goForward {
   [self discardTransientEntry];
 
-  web::RecordAction(UserMetricsAction("Forward"));
+  base::RecordAction(UserMetricsAction("Forward"));
   if (_currentNavigationIndex + 1 < static_cast<NSInteger>([_entries count])) {
     _previousNavigationIndex = _currentNavigationIndex;
     ++_currentNavigationIndex;

@@ -10,11 +10,11 @@
 #include "base/mac/scoped_block.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/metrics/histogram.h"
+#include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
 #include "base/time/time.h"
 #import "breakpad/src/client/ios/BreakpadController.h"
 #include "ios/chrome/browser/experimental_flags.h"
-#include "ios/web/public/user_metrics.h"
 
 using base::UserMetricsAction;
 
@@ -314,11 +314,11 @@ NSString* CreateSessionIdentifierFromTask(NSURLSessionTask* task) {
                     [defaults integerForKey:kReportsUploadedInBackground];
                 [defaults setInteger:(uploadedCrashes + 1)
                               forKey:kReportsUploadedInBackground];
-                web::RecordAction(
+                base::RecordAction(
                     UserMetricsAction("BackgroundUploadReportSucceeded"));
 
               } else {
-                web::RecordAction(
+                base::RecordAction(
                     UserMetricsAction("BackgroundUploadReportAborted"));
               }
             }
