@@ -180,11 +180,13 @@ std::unique_ptr<views::InkDropHighlight> MdTextButton::CreateInkDropHighlight()
     return LabelButton::CreateInkDropHighlight();
 
   // The call to action hover effect is a shadow.
-  const int kYOffset = 2;
-  const int kSkiaBlurRadius = 2;
+  const int kYOffset = 1;
+  const int kSkiaBlurRadius = 1;
   std::vector<gfx::ShadowValue> shadows;
-  // The notion of blur that gfx::ShadowValue uses is twice the skia value,
-  // which is a number of pixels outside of the shadowed area.
+  // The notion of blur that gfx::ShadowValue uses is twice the Skia/CSS value.
+  // Skia counts the number of pixels outside the mask area whereas
+  // gfx::ShadowValue counts together the number of pixels inside and outside
+  // the mask bounds.
   shadows.push_back(gfx::ShadowValue(gfx::Vector2d(0, kYOffset),
                                      2 * kSkiaBlurRadius,
                                      SkColorSetA(SK_ColorBLACK, 0x3D)));

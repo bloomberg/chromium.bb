@@ -132,13 +132,56 @@ sk_sp<SkShader> CreateGradientShader(int start_point,
       grad_points, grad_colors, NULL, 2, SkShader::kClamp_TileMode);
 }
 
-static SkScalar RadiusToSigma(double radius) {
+// TODO(estade): remove. Only exists to support legacy CreateShadowDrawLooper.
+static SkScalar DeprecatedRadiusToSigma(double radius) {
   // This captures historically what skia did under the hood. Now skia accepts
   // sigma, not radius, so we perform the conversion.
   return radius > 0 ? SkDoubleToScalar(0.57735f * radius + 0.5) : 0;
 }
 
+// This is copied from
+// third_party/WebKit/Source/platform/graphics/skia/SkiaUtils.h
+static SkScalar RadiusToSigma(double radius) {
+  return radius > 0 ? SkDoubleToScalar(0.288675f * radius + 0.5f) : 0;
+}
+
 sk_sp<SkDrawLooper> CreateShadowDrawLooper(
+    const std::vector<ShadowValue>& shadows) {
+  if (shadows.empty())
+    return nullptr;
+
+  SkLayerDrawLooper::Builder looper_builder;
+
+  looper_builder.addLayer();  // top layer of the original.
+
+  SkLayerDrawLooper::LayerInfo layer_info;
+  layer_info.fPaintBits |= SkLayerDrawLooper::kMaskFilter_Bit;
+  layer_info.fPaintBits |= SkLayerDrawLooper::kColorFilter_Bit;
+  layer_info.fColorMode = SkXfermode::kSrc_Mode;
+
+  for (size_t i = 0; i < shadows.size(); ++i) {
+    const ShadowValue& shadow = shadows[i];
+
+    layer_info.fOffset.set(SkIntToScalar(shadow.x()),
+                           SkIntToScalar(shadow.y()));
+
+    SkPaint* paint = looper_builder.addLayer(layer_info);
+    // SkBlurMaskFilter's blur radius defines the range to extend the blur from
+    // original mask, which is half of blur amount as defined in ShadowValue.
+    // Note that because this function uses DeprecatedRadiusToSigma, it actually
+    // creates a draw looper with roughly twice the desired blur.
+    paint->setMaskFilter(SkBlurMaskFilter::Make(
+        kNormal_SkBlurStyle, DeprecatedRadiusToSigma(shadow.blur() / 2),
+        SkBlurMaskFilter::kHighQuality_BlurFlag));
+    paint->setColorFilter(
+        SkColorFilter::MakeModeFilter(shadow.color(),
+                                      SkXfermode::kSrcIn_Mode));
+  }
+
+  return looper_builder.detach();
+}
+
+sk_sp<SkDrawLooper> CreateShadowDrawLooperCorrectBlur(
     const std::vector<ShadowValue>& shadows) {
   if (shadows.empty())
     return nullptr;

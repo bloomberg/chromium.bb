@@ -153,28 +153,25 @@ gfx::Vector2dF BorderShadowLayerDelegate::GetCenteringOffset() const {
 
 void BorderShadowLayerDelegate::OnPaintLayer(const ui::PaintContext& context) {
   SkPaint paint;
-  paint.setLooper(gfx::CreateShadowDrawLooper(shadows_));
+  paint.setLooper(gfx::CreateShadowDrawLooperCorrectBlur(shadows_));
   paint.setStyle(SkPaint::kStrokeAndFill_Style);
   paint.setAntiAlias(true);
   paint.setColor(SK_ColorTRANSPARENT);
   paint.setStrokeJoin(SkPaint::kRound_Join);
-  gfx::RectF bounds(bounds_);
-  bounds -= GetPaintedBounds().OffsetFromOrigin();
-  gfx::RectF stroke_bounds = bounds;
-  stroke_bounds.Inset(-gfx::InsetsF(0.5f));
+  SkRect path_bounds = gfx::RectFToSkRect(
+      gfx::RectF(bounds_ - GetPaintedBounds().OffsetFromOrigin()));
 
   ui::PaintRecorder recorder(context, GetPaintedBounds().size());
   const SkScalar corner = SkFloatToScalar(corner_radius_);
   SkPath path;
-  path.addRoundRect(gfx::RectFToSkRect(stroke_bounds), corner, corner,
-                    SkPath::kCCW_Direction);
+  path.addRoundRect(path_bounds, corner, corner, SkPath::kCCW_Direction);
   recorder.canvas()->DrawPath(path, paint);
 
   SkPaint clear_paint;
   clear_paint.setAntiAlias(true);
   clear_paint.setXfermodeMode(SkXfermode::kClear_Mode);
-  recorder.canvas()->sk_canvas()->drawRoundRect(gfx::RectFToSkRect(bounds),
-                                                corner, corner, clear_paint);
+  recorder.canvas()->sk_canvas()->drawRoundRect(path_bounds, corner, corner,
+                                                clear_paint);
 }
 
 }  // namespace views
