@@ -175,7 +175,7 @@ void SpawnerCommunicator::SendCommandAndWaitForResultOnIOThread(
     std::string* data_received) {
   base::MessageLoop* loop = io_thread_.message_loop();
   DCHECK(loop);
-  DCHECK_EQ(base::MessageLoop::current(), loop);
+  DCHECK(loop->task_runner()->BelongsToCurrentThread());
 
   // Prepare the URLRequest for sending the command.
   DCHECK(!cur_request_.get());

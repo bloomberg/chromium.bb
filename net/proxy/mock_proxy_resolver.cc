@@ -8,7 +8,6 @@
 
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
-#include "base/message_loop/message_loop.h"
 
 namespace net {
 
@@ -16,12 +15,7 @@ MockAsyncProxyResolver::Request::Request(MockAsyncProxyResolver* resolver,
                                          const GURL& url,
                                          ProxyInfo* results,
                                          const CompletionCallback& callback)
-    : resolver_(resolver),
-      url_(url),
-      results_(results),
-      callback_(callback),
-      origin_loop_(base::MessageLoop::current()) {
-}
+    : resolver_(resolver), url_(url), results_(results), callback_(callback) {}
 
 void MockAsyncProxyResolver::Request::CompleteNow(int rv) {
   CompletionCallback callback = callback_;
