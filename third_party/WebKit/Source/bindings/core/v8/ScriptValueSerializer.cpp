@@ -78,47 +78,6 @@ bool shouldCheckForCycles(int depth)
     return !(depth & (depth - 1));
 }
 
-v8::Local<v8::Object> toV8Object(MessagePort* impl, v8::Local<v8::Object> creationContext, v8::Isolate* isolate)
-{
-    if (!impl)
-        return v8::Local<v8::Object>();
-    v8::Local<v8::Value> wrapper = toV8(impl, creationContext, isolate);
-    if (wrapper.IsEmpty())
-        return v8::Local<v8::Object>();
-    DCHECK(wrapper->IsObject());
-    return wrapper.As<v8::Object>();
-}
-
-v8::Local<v8::Object> toV8Object(ImageBitmap* impl, v8::Local<v8::Object> creationContext, v8::Isolate* isolate)
-{
-    if (!impl)
-        return v8::Local<v8::Object>();
-    v8::Local<v8::Value> wrapper = toV8(impl, creationContext, isolate);
-    if (wrapper.IsEmpty())
-        return v8::Local<v8::Object>();
-    return wrapper.As<v8::Object>();
-}
-
-v8::Local<v8::Object> toV8Object(OffscreenCanvas* impl, v8::Local<v8::Object> creationContext, v8::Isolate* isolate)
-{
-    if (!impl)
-        return v8::Local<v8::Object>();
-    v8::Local<v8::Value> wrapper = toV8(impl, creationContext, isolate);
-    if (wrapper.IsEmpty())
-        return v8::Local<v8::Object>();
-    return wrapper.As<v8::Object>();
-}
-
-v8::Local<v8::Object> toV8Object(DOMArrayBufferBase* impl, v8::Local<v8::Object> creationContext, v8::Isolate* isolate)
-{
-    if (!impl)
-        return v8::Local<v8::Object>();
-    v8::Local<v8::Value> wrapper = toV8(impl, creationContext, isolate);
-    if (wrapper.IsEmpty())
-        return v8::Local<v8::Object>();
-    return wrapper.As<v8::Object>();
-}
-
 // Returns true if the provided object is to be considered a 'host object', as used in the
 // HTML5 structured clone algorithm.
 bool isHostObject(v8::Local<v8::Object> object)
@@ -729,13 +688,13 @@ void ScriptValueSerializer::copyTransferables(const Transferables& transferables
 
     const auto& messagePorts = transferables.messagePorts;
     for (size_t i = 0; i < messagePorts.size(); ++i) {
-        v8::Local<v8::Object> v8MessagePort = toV8Object(messagePorts[i].get(), creationContext, isolate());
+        v8::Local<v8::Object> v8MessagePort = toV8(messagePorts[i].get(), creationContext, isolate()).As<v8::Object>();
         m_transferredMessagePorts.set(v8MessagePort, i);
     }
 
     const auto& arrayBuffers = transferables.arrayBuffers;
     for (size_t i = 0; i < arrayBuffers.size(); ++i)  {
-        v8::Local<v8::Object> v8ArrayBuffer = toV8Object(arrayBuffers[i].get(), creationContext, isolate());
+        v8::Local<v8::Object> v8ArrayBuffer = toV8(arrayBuffers[i].get(), creationContext, isolate()).As<v8::Object>();
         // Coalesce multiple occurences of the same buffer to the first index.
         if (!m_transferredArrayBuffers.contains(v8ArrayBuffer))
             m_transferredArrayBuffers.set(v8ArrayBuffer, i);
@@ -743,14 +702,14 @@ void ScriptValueSerializer::copyTransferables(const Transferables& transferables
 
     const auto& imageBitmaps = transferables.imageBitmaps;
     for (size_t i = 0; i < imageBitmaps.size(); ++i) {
-        v8::Local<v8::Object> v8ImageBitmap = toV8Object(imageBitmaps[i].get(), creationContext, isolate());
+        v8::Local<v8::Object> v8ImageBitmap = toV8(imageBitmaps[i].get(), creationContext, isolate()).As<v8::Object>();
         if (!m_transferredImageBitmaps.contains(v8ImageBitmap))
             m_transferredImageBitmaps.set(v8ImageBitmap, i);
     }
 
     const auto& offscreenCanvases = transferables.offscreenCanvases;
     for (size_t i = 0; i < offscreenCanvases.size(); ++i) {
-        v8::Local<v8::Object> v8OffscreenCanvas = toV8Object(offscreenCanvases[i].get(), creationContext, isolate());
+        v8::Local<v8::Object> v8OffscreenCanvas = toV8(offscreenCanvases[i].get(), creationContext, isolate()).As<v8::Object>();
         if (!m_transferredOffscreenCanvas.contains(v8OffscreenCanvas))
             m_transferredOffscreenCanvas.set(v8OffscreenCanvas, i);
     }
