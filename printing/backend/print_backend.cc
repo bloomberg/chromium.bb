@@ -4,6 +4,10 @@
 
 #include "printing/backend/print_backend.h"
 
+namespace {
+bool g_native_cups_enabled = false;
+}  // namespace
+
 namespace printing {
 
 PrinterBasicInfo::PrinterBasicInfo()
@@ -39,5 +43,15 @@ PrinterCapsAndDefaults::PrinterCapsAndDefaults(
 PrinterCapsAndDefaults::~PrinterCapsAndDefaults() {}
 
 PrintBackend::~PrintBackend() {}
+
+// static
+bool PrintBackend::GetNativeCupsEnabled() {
+  return g_native_cups_enabled;
+}
+
+// static
+void PrintBackend::SetNativeCupsEnabled(bool enabled) {
+  g_native_cups_enabled = enabled;
+}
 
 }  // namespace printing

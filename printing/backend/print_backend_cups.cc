@@ -2,11 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "printing/backend/print_backend.h"
+#include "printing/backend/print_backend_cups.h"
 
 #include <dlfcn.h>
 #include <errno.h>
 #include <pthread.h>
+
+#include <string>
 
 #include "base/debug/leak_annotations.h"
 #include "base/files/file_util.h"
@@ -67,43 +69,6 @@ bool PrinterBasicInfoFromCUPS(const cups_dest_t& printer,
 }
 
 }  // namespace
-
-class PrintBackendCUPS : public PrintBackend {
- public:
-  PrintBackendCUPS(const GURL& print_server_url,
-                   http_encryption_t encryption, bool blocking);
-
- private:
-  ~PrintBackendCUPS() override {}
-
-  // PrintBackend implementation.
-  bool EnumeratePrinters(PrinterList* printer_list) override;
-  std::string GetDefaultPrinterName() override;
-  bool GetPrinterBasicInfo(const std::string& printer_name,
-                           PrinterBasicInfo* printer_info) override;
-  bool GetPrinterSemanticCapsAndDefaults(
-      const std::string& printer_name,
-      PrinterSemanticCapsAndDefaults* printer_info) override;
-  bool GetPrinterCapsAndDefaults(const std::string& printer_name,
-                                 PrinterCapsAndDefaults* printer_info) override;
-  std::string GetPrinterDriverInfo(const std::string& printer_name) override;
-  bool IsValidPrinter(const std::string& printer_name) override;
-
-  // The following functions are wrappers around corresponding CUPS functions.
-  // <functions>2() are called when print server is specified, and plain version
-  // in another case. There is an issue specifying CUPS_HTTP_DEFAULT in the
-  // functions>2(), it does not work in CUPS prior to 1.4.
-  int GetDests(cups_dest_t** dests);
-  base::FilePath GetPPD(const char* name);
-
-  // Wrapper around cupsGetNamedDest(). Returned result should be freed with
-  // cupsFreeDests().
-  cups_dest_t* GetNamedDest(const std::string& printer_name);
-
-  GURL print_server_url_;
-  http_encryption_t cups_encryption_;
-  bool blocking_;
-};
 
 PrintBackendCUPS::PrintBackendCUPS(const GURL& print_server_url,
                                    http_encryption_t encryption,
@@ -230,6 +195,7 @@ bool PrintBackendCUPS::IsValidPrinter(const std::string& printer_name) {
   return true;
 }
 
+#if !defined(OS_CHROMEOS)
 scoped_refptr<PrintBackend> PrintBackend::CreateInstance(
     const base::DictionaryValue* print_backend_settings) {
   std::string print_server_url_str, cups_blocking;
@@ -248,6 +214,7 @@ scoped_refptr<PrintBackend> PrintBackend::CreateInstance(
                               static_cast<http_encryption_t>(encryption),
                               cups_blocking == kValueTrue);
 }
+#endif  // !defined(OS_CHROMEOS)
 
 int PrintBackendCUPS::GetDests(cups_dest_t** dests) {
   if (print_server_url_.is_empty()) {  // Use default (local) print server.

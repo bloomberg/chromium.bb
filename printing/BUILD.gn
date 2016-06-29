@@ -123,13 +123,6 @@ component("printing") {
     ]
   }
 
-  if (is_chromeos) {
-    sources += [
-      "printing_context_no_system_dialog.cc",
-      "printing_context_no_system_dialog.h",
-    ]
-  }
-
   if (use_cups) {
     configs += [ ":cups" ]
 
@@ -177,15 +170,18 @@ component("printing") {
       "backend/cups_helper.cc",
       "backend/cups_helper.h",
       "backend/print_backend_cups.cc",
+      "backend/print_backend_cups.h",
     ]
   }
 
   if (is_chromeos) {
-    # PRINT_BACKEND_AVAILABLE disables the default dummy implementation
-    # of the print backend and enables a custom implementation instead.
     defines += [ "PRINT_BACKEND_AVAILABLE" ]
 
-    sources += [ "backend/print_backend_chromeos.cc" ]
+    sources += [
+      "backend/print_backend_chromeos.cc",
+      "printing_context_no_system_dialog.cc",
+      "printing_context_no_system_dialog.h",
+    ]
   } else if (is_linux) {  # Non-ChromeOS Linux.
     sources += [
       "printing_context_linux.cc",

@@ -123,6 +123,11 @@ class PRINTING_EXPORT PrintBackend
   static scoped_refptr<PrintBackend> CreateInstance(
       const base::DictionaryValue* print_backend_settings);
 
+  // Returns the value of the native cups flag
+  static bool GetNativeCupsEnabled();
+
+  static void SetNativeCupsEnabled(bool enabled);
+
  protected:
   friend class base::RefCountedThreadSafe<PrintBackend>;
   virtual ~PrintBackend();

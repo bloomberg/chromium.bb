@@ -141,6 +141,7 @@
 #include "net/socket/ssl_server_socket.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context_getter.h"
+#include "printing/backend/print_backend.h"
 #include "ui/base/ime/chromeos/ime_keyboard.h"
 #include "ui/base/ime/chromeos/input_method_manager.h"
 #include "ui/base/touch/touch_device.h"
@@ -504,6 +505,10 @@ void ChromeBrowserMainPartsChromeos::PreProfileInit() {
       ShouldAutoLaunchKioskApp(parsed_command_line())) {
     WizardController::SetZeroDelays();
   }
+
+  // Enable/disable native CUPS integration
+  printing::PrintBackend::SetNativeCupsEnabled(
+      parsed_command_line().HasSwitch(::switches::kEnableNativeCups));
 
   power_prefs_.reset(new PowerPrefs(PowerPolicyController::Get()));
 
