@@ -602,6 +602,12 @@ if (!is_component_build) {
   }
 }
 
+# TODO(brettw) move to //build/split_static_library.gni when set_defaults can
+# be practically implemented outside of this file.
+set_defaults("split_static_library") {
+  configs = _native_compiler_configs
+}
+
 # Test defaults.
 set_defaults("test") {
   if (is_android) {

@@ -6,6 +6,7 @@ import("//build/config/chrome_build.gni")
 import("//build/config/crypto.gni")
 import("//build/config/features.gni")
 import("//build/config/ui.gni")
+import("//build/split_static_library.gni")
 import("//chrome/common/features.gni")
 import("//media/media_options.gni")
 import("//third_party/protobuf/proto_library.gni")
@@ -78,15 +79,16 @@ if (is_desktop_linux) {
 }
 
 # Use a static library here because many test binaries depend on this but don't
-# require many files from it. This makes linking more efficient. However, on
-# Windows official builds the static library will be too large (> 32-bits) so
-# use source sets in that case.
-if (is_win && is_official_build) {
-  chrome_browser_target_type = "source_set"
-} else {
-  chrome_browser_target_type = "static_library"
-}
-target(chrome_browser_target_type, "browser") {
+# require many files from it. This makes linking more efficient.
+split_static_library("browser") {
+  # Split into multiple static libraries on Windows official builds, where we
+  # run into a 2GB max size limit.
+  if (is_win && is_official_build) {
+    split_count = 5
+  } else {
+    split_count = 1
+  }
+
   configs += [
     "//build/config/compiler:wexit_time_destructors",
     "//build/config:precompiled_headers",
