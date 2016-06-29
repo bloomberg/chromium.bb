@@ -187,9 +187,6 @@ void SiteEngagementService::Helper::RecordMediaPlaying(bool is_hidden) {
 
 void SiteEngagementService::Helper::DidFinishNavigation(
     content::NavigationHandle* handle) {
-  input_tracker_.Stop();
-  media_tracker_.Stop();
-
   // Ignore all schemes except HTTP and HTTPS, as well as uncommitted, non
   // main-frame, same page, or error page navigations.
   record_engagement_ = handle->GetURL().SchemeIsHTTPOrHTTPS();
@@ -197,6 +194,9 @@ void SiteEngagementService::Helper::DidFinishNavigation(
       handle->IsSamePage() || handle->IsErrorPage() || !record_engagement_) {
     return;
   }
+
+  input_tracker_.Stop();
+  media_tracker_.Stop();
 
   // Ignore prerender loads. This means that prerenders will not receive
   // navigation engagement. The implications are as follows:
