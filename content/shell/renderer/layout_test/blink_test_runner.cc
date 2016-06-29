@@ -234,27 +234,12 @@ WebURL RewriteAbsolutePathInWPT(const std::string& utf8_url) {
 #else
   std::string path = utf8_url.substr(kFileSchemeLen);
 #endif
-  // LayoutTests use file: URLs in various ways.
-  //  - The magic URL prefix "file:///tmp/LayoutTests/" to access file:
-  //    resources from http resources.
-  //  - $TMP to download a blob URL
-  //  - out/$CONFIG/gen/ and third_party/WebKit/Source/devtools to load
-  //    DevTools code.
-  // We rewite only a few patterns used in web-platform-tests to avoid to
-  // rewrite non-WPT URLs. We can remove this hack if we run all WPT tests
-  // with wptserve.
-  if (base::StartsWith(path, "common/", base::CompareCase::SENSITIVE) ||
-      base::StartsWith(path, "images/", base::CompareCase::SENSITIVE) ||
-      base::StartsWith(path, "media/", base::CompareCase::SENSITIVE) ||
-      base::StartsWith(path, "resources/", base::CompareCase::SENSITIVE)) {
-    base::FilePath new_path =
-        LayoutTestRenderThreadObserver::GetInstance()
-            ->webkit_source_dir()
-            .Append(FILE_PATH_LITERAL("LayoutTests/imported/wpt/"))
-            .AppendASCII(path);
-    return WebURL(net::FilePathToFileURL(new_path));
-  }
-  return WebURL();
+  base::FilePath new_path =
+      LayoutTestRenderThreadObserver::GetInstance()
+          ->webkit_source_dir()
+          .Append(FILE_PATH_LITERAL("LayoutTests/imported/wpt/"))
+          .AppendASCII(path);
+  return WebURL(net::FilePathToFileURL(new_path));
 }
 
 }  // namespace
