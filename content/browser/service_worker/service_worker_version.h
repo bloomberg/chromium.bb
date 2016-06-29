@@ -32,8 +32,8 @@
 #include "content/common/content_export.h"
 #include "content/common/service_worker/service_worker_status_code.h"
 #include "content/common/service_worker/service_worker_types.h"
-#include "content/public/common/service_registry.h"
 #include "ipc/ipc_message.h"
+#include "services/shell/public/cpp/interface_provider.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerEventResult.h"
 #include "url/gurl.h"
 #include "url/origin.h"
@@ -719,8 +719,7 @@ base::WeakPtr<Interface> ServiceWorkerVersion::GetMojoServiceForRequest(
           mojo_services_.get(Interface::Name_));
   if (!service) {
     mojo::InterfacePtr<Interface> interface;
-    embedded_worker_->GetServiceRegistry()->ConnectToRemoteService(
-        mojo::GetProxy(&interface));
+    embedded_worker_->GetRemoteInterfaces()->GetInterface(&interface);
     interface.set_connection_error_handler(
         base::Bind(&ServiceWorkerVersion::OnMojoConnectionError,
                    weak_factory_.GetWeakPtr(), Interface::Name_));

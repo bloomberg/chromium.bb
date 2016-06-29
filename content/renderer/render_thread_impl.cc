@@ -375,8 +375,8 @@ void CreateFrameFactory(mojom::FrameFactoryRequest request) {
 }
 
 void SetupEmbeddedWorkerOnWorkerThread(
-    shell::mojom::InterfaceProviderRequest services,
-    shell::mojom::InterfaceProviderPtrInfo exposed_services) {
+    shell::mojom::InterfaceProviderRequest request,
+    shell::mojom::InterfaceProviderPtrInfo remote_interfaces) {
   ServiceWorkerContextClient* client =
       ServiceWorkerContextClient::ThreadSpecificInstance();
   // It is possible for client to be null if for some reason the worker died
@@ -384,8 +384,8 @@ void SetupEmbeddedWorkerOnWorkerThread(
   // nothing and let mojo close the connection.
   if (!client)
     return;
-  client->BindServiceRegistry(std::move(services),
-                              mojo::MakeProxy(std::move(exposed_services)));
+  client->BindInterfaceProviders(std::move(request),
+                                 mojo::MakeProxy(std::move(remote_interfaces)));
 }
 
 class EmbeddedWorkerSetupImpl : public mojom::EmbeddedWorkerSetup {
@@ -396,12 +396,12 @@ class EmbeddedWorkerSetupImpl : public mojom::EmbeddedWorkerSetup {
 
   void ExchangeInterfaceProviders(
       int32_t thread_id,
-      shell::mojom::InterfaceProviderRequest services,
-      shell::mojom::InterfaceProviderPtr exposed_services) override {
+      shell::mojom::InterfaceProviderRequest request,
+      shell::mojom::InterfaceProviderPtr remote_interfaces) override {
     WorkerThreadRegistry::Instance()->GetTaskRunnerFor(thread_id)->PostTask(
         FROM_HERE,
-        base::Bind(&SetupEmbeddedWorkerOnWorkerThread, base::Passed(&services),
-                   base::Passed(exposed_services.PassInterface())));
+        base::Bind(&SetupEmbeddedWorkerOnWorkerThread, base::Passed(&request),
+                   base::Passed(remote_interfaces.PassInterface())));
   }
 
  private:

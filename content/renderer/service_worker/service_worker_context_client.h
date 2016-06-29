@@ -83,11 +83,10 @@ class ServiceWorkerContextClient
                          int embedded_worker_id,
                          const IPC::Message& message);
 
-  // Called some time after the worker has started. Attempts to use the
-  // ServiceRegistry to connect to services before this method is called are
-  // queued up and will resolve after this method is called.
-  void BindServiceRegistry(shell::mojom::InterfaceProviderRequest services,
-                           shell::mojom::InterfaceProviderPtr exposed_services);
+  // Called some time after the worker has started.
+  void BindInterfaceProviders(
+      shell::mojom::InterfaceProviderRequest request,
+      shell::mojom::InterfaceProviderPtr remote_interfaces);
 
   // WebServiceWorkerContextClient overrides.
   blink::WebURL scope() const override;

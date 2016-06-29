@@ -17,7 +17,6 @@
 #include "content/browser/service_worker/embedded_worker_status.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/common/content_switches_internal.h"
-#include "content/common/mojo/service_registry_impl.h"
 #include "content/common/service_worker/embedded_worker_messages.h"
 #include "content/common/service_worker/embedded_worker_settings.h"
 #include "content/common/service_worker/embedded_worker_setup.mojom.h"
@@ -28,6 +27,7 @@
 #include "content/public/common/child_process_host.h"
 #include "ipc/ipc_message.h"
 #include "services/shell/public/cpp/interface_provider.h"
+#include "services/shell/public/cpp/interface_registry.h"
 #include "url/gurl.h"
 
 namespace content {
@@ -104,8 +104,8 @@ void RegisterToWorkerDevToolsManagerOnUI(
 void SetupMojoOnUIThread(
     int process_id,
     int thread_id,
-    shell::mojom::InterfaceProviderRequest services,
-    shell::mojom::InterfaceProviderPtrInfo exposed_services) {
+    shell::mojom::InterfaceProviderRequest remote_interfaces,
+    shell::mojom::InterfaceProviderPtrInfo exposed_interfaces) {
   RenderProcessHost* rph = RenderProcessHost::FromID(process_id);
   // |rph| or its InterfaceProvider may be NULL in unit tests.
   if (!rph || !rph->GetRemoteInterfaces())
@@ -113,8 +113,8 @@ void SetupMojoOnUIThread(
   mojom::EmbeddedWorkerSetupPtr setup;
   rph->GetRemoteInterfaces()->GetInterface(&setup);
   setup->ExchangeInterfaceProviders(
-      thread_id, std::move(services),
-      mojo::MakeProxy(std::move(exposed_services)));
+      thread_id, std::move(remote_interfaces),
+      mojo::MakeProxy(std::move(exposed_interfaces)));
 }
 
 }  // namespace
@@ -439,7 +439,8 @@ void EmbeddedWorkerInstance::Start(
   status_ = EmbeddedWorkerStatus::STARTING;
   starting_phase_ = ALLOCATING_PROCESS;
   network_accessed_for_script_ = false;
-  service_registry_.reset(new ServiceRegistryImpl());
+  interface_registry_.reset(new shell::InterfaceRegistry(nullptr));
+  remote_interfaces_.reset(new shell::InterfaceProvider);
   FOR_EACH_OBSERVER(Listener, listener_list_, OnStarting());
 
   params->embedded_worker_id = embedded_worker_id_;
@@ -505,11 +506,18 @@ void EmbeddedWorkerInstance::ResumeAfterDownload() {
                                     embedded_worker_id_));
 }
 
-ServiceRegistry* EmbeddedWorkerInstance::GetServiceRegistry() {
+shell::InterfaceRegistry* EmbeddedWorkerInstance::GetInterfaceRegistry() {
   DCHECK(status_ == EmbeddedWorkerStatus::STARTING ||
          status_ == EmbeddedWorkerStatus::RUNNING)
       << static_cast<int>(status_);
-  return service_registry_.get();
+  return interface_registry_.get();
+}
+
+shell::InterfaceProvider* EmbeddedWorkerInstance::GetRemoteInterfaces() {
+  DCHECK(status_ == EmbeddedWorkerStatus::STARTING ||
+         status_ == EmbeddedWorkerStatus::RUNNING)
+      << static_cast<int>(status_);
+  return remote_interfaces_.get();
 }
 
 EmbeddedWorkerInstance::EmbeddedWorkerInstance(
@@ -646,15 +654,16 @@ void EmbeddedWorkerInstance::OnThreadStarted(int thread_id) {
   thread_id_ = thread_id;
   FOR_EACH_OBSERVER(Listener, listener_list_, OnThreadStarted());
 
-  shell::mojom::InterfaceProviderPtr exposed_services;
-  service_registry_->Bind(GetProxy(&exposed_services));
-  shell::mojom::InterfaceProviderRequest request =
-      service_registry_->TakeRemoteRequest();
+  shell::mojom::InterfaceProviderPtr exposed_interfaces;
+  interface_registry_->Bind(GetProxy(&exposed_interfaces));
+  shell::mojom::InterfaceProviderPtr remote_interfaces;
+  shell::mojom::InterfaceProviderRequest request = GetProxy(&remote_interfaces);
+  remote_interfaces_->Bind(std::move(remote_interfaces));
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::Bind(SetupMojoOnUIThread, process_id(), thread_id_,
                  base::Passed(&request),
-                 base::Passed(exposed_services.PassInterface())));
+                 base::Passed(exposed_interfaces.PassInterface())));
 }
 
 void EmbeddedWorkerInstance::OnScriptLoadFailed() {
@@ -797,7 +806,8 @@ void EmbeddedWorkerInstance::ReleaseProcess() {
   process_handle_.reset();
   status_ = EmbeddedWorkerStatus::STOPPED;
   thread_id_ = kInvalidEmbeddedWorkerThreadId;
-  service_registry_.reset();
+  interface_registry_.reset();
+  remote_interfaces_.reset();
 }
 
 void EmbeddedWorkerInstance::OnStartFailed(const StatusCallback& callback,

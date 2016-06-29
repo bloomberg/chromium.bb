@@ -38,12 +38,15 @@ namespace IPC {
 class Message;
 }
 
+namespace shell {
+class InterfaceProvider;
+class InterfaceRegistry;
+}
+
 namespace content {
 
 class EmbeddedWorkerRegistry;
 class MessagePortMessageFilter;
-class ServiceRegistry;
-class ServiceRegistryImpl;
 class ServiceWorkerContextCore;
 
 // This gives an interface to control one EmbeddedWorker instance, which
@@ -130,9 +133,11 @@ class CONTENT_EXPORT EmbeddedWorkerInstance {
   // Resumes the worker if it paused after download.
   void ResumeAfterDownload();
 
-  // Returns the ServiceRegistry for this worker. It is invalid to call this
-  // when the worker is not in STARTING or RUNNING status.
-  ServiceRegistry* GetServiceRegistry();
+  // Returns the shell::InterfaceRegistry and shell::InterfaceProvider for this
+  // worker. It is invalid to call this when the worker is not in STARTING or
+  // RUNNING status.
+  shell::InterfaceRegistry* GetInterfaceRegistry();
+  shell::InterfaceProvider* GetRemoteInterfaces();
 
   int embedded_worker_id() const { return embedded_worker_id_; }
   EmbeddedWorkerStatus status() const { return status_; }
@@ -297,7 +302,8 @@ class CONTENT_EXPORT EmbeddedWorkerInstance {
   // Current running information.
   std::unique_ptr<EmbeddedWorkerInstance::WorkerProcessHandle> process_handle_;
   int thread_id_;
-  std::unique_ptr<ServiceRegistryImpl> service_registry_;
+  std::unique_ptr<shell::InterfaceRegistry> interface_registry_;
+  std::unique_ptr<shell::InterfaceProvider> remote_interfaces_;
 
   // Whether devtools is attached or not.
   bool devtools_attached_;

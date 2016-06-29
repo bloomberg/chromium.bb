@@ -65,12 +65,12 @@ class EmbeddedWorkerTestHelper::MockEmbeddedWorkerSetup
 
   void ExchangeInterfaceProviders(
       int32_t thread_id,
-      shell::mojom::InterfaceProviderRequest services,
-      shell::mojom::InterfaceProviderPtr exposed_services) override {
+      shell::mojom::InterfaceProviderRequest request,
+      shell::mojom::InterfaceProviderPtr remote_interfaces) override {
     if (!helper_)
       return;
-    helper_->OnSetupMojoStub(thread_id, std::move(services),
-                             std::move(exposed_services));
+    helper_->OnSetupMojoStub(thread_id, std::move(request),
+                             std::move(remote_interfaces));
   }
 
  private:
@@ -209,7 +209,8 @@ bool EmbeddedWorkerTestHelper::OnMessageToWorker(int thread_id,
   return handled;
 }
 
-void EmbeddedWorkerTestHelper::OnSetupMojo(ServiceRegistry* service_registry) {}
+void EmbeddedWorkerTestHelper::OnSetupMojo(
+    shell::InterfaceRegistry* interface_registry) {}
 
 void EmbeddedWorkerTestHelper::OnActivateEvent(int embedded_worker_id,
                                                int request_id) {
@@ -419,17 +420,19 @@ void EmbeddedWorkerTestHelper::OnPushEventStub(
 
 void EmbeddedWorkerTestHelper::OnSetupMojoStub(
     int thread_id,
-    shell::mojom::InterfaceProviderRequest services,
-    shell::mojom::InterfaceProviderPtr exposed_services) {
-  std::unique_ptr<ServiceRegistryImpl> new_registry(new ServiceRegistryImpl);
-  new_registry->Bind(std::move(services));
-  // TODO(beng): this shouldn't be necessary once we adjust this API to look
-  //             more like the one we've created for Frame.
-  //             http://crbug.com/621187
-  mojo::FuseInterface(new_registry->TakeRemoteRequest(),
-                      exposed_services.PassInterface());
-  OnSetupMojo(new_registry.get());
-  thread_id_service_registry_map_.add(thread_id, std::move(new_registry));
+    shell::mojom::InterfaceProviderRequest request,
+    shell::mojom::InterfaceProviderPtr remote_interfaces) {
+  std::unique_ptr<shell::InterfaceRegistry> local(
+      new shell::InterfaceRegistry(nullptr));
+  local->Bind(std::move(request));
+
+  std::unique_ptr<shell::InterfaceProvider> remote(
+      new shell::InterfaceProvider);
+  remote->Bind(std::move(remote_interfaces));
+
+  OnSetupMojo(local.get());
+  InterfaceRegistryAndProvider pair(std::move(local), std::move(remote));
+  thread_id_service_registry_map_[thread_id] = std::move(pair);
 }
 
 EmbeddedWorkerRegistry* EmbeddedWorkerTestHelper::registry() {

@@ -12,7 +12,7 @@
 #include <vector>
 
 #include "base/callback.h"
-#include "base/containers/scoped_ptr_hash_map.h"
+#include "base/containers/hash_tables.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "content/common/mojo/service_registry_impl.h"
@@ -120,8 +120,8 @@ class EmbeddedWorkerTestHelper : public IPC::Sender,
                                  const IPC::Message& message);
 
   // Called to setup mojo for a new embedded worker. Override to register
-  // services the worker should expose to the browser.
-  virtual void OnSetupMojo(ServiceRegistry* service_registry);
+  // interfaces the worker should expose to the browser.
+  virtual void OnSetupMojo(shell::InterfaceRegistry* interface_registry);
 
   // On*Event handlers. Called by the default implementation of
   // OnMessageToWorker when events are sent to the embedded
@@ -152,6 +152,10 @@ class EmbeddedWorkerTestHelper : public IPC::Sender,
   EmbeddedWorkerRegistry* registry();
 
  private:
+  using InterfaceRegistryAndProvider =
+      std::pair<std::unique_ptr<shell::InterfaceRegistry>,
+                std::unique_ptr<shell::InterfaceProvider>>;
+
   class MockEmbeddedWorkerSetup;
 
   void OnStartWorkerStub(const EmbeddedWorkerMsg_StartWorker_Params& params);
@@ -190,9 +194,9 @@ class EmbeddedWorkerTestHelper : public IPC::Sender,
 
   std::map<int, int64_t> embedded_worker_id_service_worker_version_id_map_;
 
-  // Stores the ServiceRegistries that are associated with each individual
-  // service worker.
-  base::ScopedPtrHashMap<int, std::unique_ptr<ServiceRegistryImpl>>
+  // Stores the InterfaceRegistry/InterfaceProviders that are associated with
+  // each individual service worker.
+  base::hash_map<int, InterfaceRegistryAndProvider>
       thread_id_service_registry_map_;
 
   // Updated each time MessageToWorker message is received.

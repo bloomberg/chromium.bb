@@ -176,7 +176,9 @@ struct ServiceWorkerContextClient::WorkerContextData {
             IDMapOwnPointer>;
 
   explicit WorkerContextData(ServiceWorkerContextClient* owner)
-      : weak_factory(owner), proxy_weak_factory(owner->proxy_) {}
+      : interface_registry(nullptr),
+        weak_factory(owner),
+        proxy_weak_factory(owner->proxy_) {}
 
   ~WorkerContextData() {
     DCHECK(thread_checker.CalledOnValidThread());
@@ -197,7 +199,8 @@ struct ServiceWorkerContextClient::WorkerContextData {
   // Pending callbacks for Background Sync Events
   SyncEventCallbacksMap sync_event_callbacks;
 
-  ServiceRegistryImpl service_registry;
+  shell::InterfaceRegistry interface_registry;
+  shell::InterfaceProvider remote_interfaces;
 
   base::ThreadChecker thread_checker;
   base::WeakPtrFactory<ServiceWorkerContextClient> weak_factory;
@@ -273,12 +276,11 @@ void ServiceWorkerContextClient::OnMessageReceived(
   DCHECK(handled);
 }
 
-void ServiceWorkerContextClient::BindServiceRegistry(
-    shell::mojom::InterfaceProviderRequest services,
-    shell::mojom::InterfaceProviderPtr exposed_services) {
-  context_->service_registry.Bind(std::move(services));
-  mojo::FuseInterface(context_->service_registry.TakeRemoteRequest(),
-                      exposed_services.PassInterface());
+void ServiceWorkerContextClient::BindInterfaceProviders(
+    shell::mojom::InterfaceProviderRequest request,
+    shell::mojom::InterfaceProviderPtr remote_interfaces) {
+  context_->interface_registry.Bind(std::move(request));
+  context_->remote_interfaces.Bind(std::move(remote_interfaces));
 }
 
 blink::WebURL ServiceWorkerContextClient::scope() const {
@@ -376,8 +378,8 @@ void ServiceWorkerContextClient::workerContextStarted(
   DCHECK_NE(registration_info.registration_id,
             kInvalidServiceWorkerRegistrationId);
 
-  // Register Mojo services.
-  context_->service_registry.ServiceRegistry::AddService(
+  // Register Mojo interfaces.
+  context_->interface_registry.AddInterface(
       base::Bind(&BackgroundSyncClientImpl::Create));
 
   SetRegistrationInServiceWorkerGlobalScope(registration_info, version_attrs);
