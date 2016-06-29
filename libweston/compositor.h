@@ -783,6 +783,8 @@ struct weston_compositor {
 
 	struct weston_launcher *launcher;
 
+	struct wl_list plugin_api_list; /* struct weston_plugin_api::link */
+
 	uint32_t output_id_pool;
 
 	struct xkb_rule_names xkb_names;

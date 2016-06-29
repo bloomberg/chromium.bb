@@ -90,6 +90,8 @@ libweston_la_SOURCES =					\
 	libweston/noop-renderer.c			\
 	libweston/pixman-renderer.c			\
 	libweston/pixman-renderer.h			\
+	libweston/plugin-registry.c				\
+	libweston/plugin-registry.h				\
 	libweston/timeline.c				\
 	libweston/timeline.h				\
 	libweston/timeline-object.h			\
@@ -235,6 +237,7 @@ libwestoninclude_HEADERS =			\
 	libweston/compositor-rdp.h		\
 	libweston/compositor-wayland.h		\
 	libweston/compositor-x11.h		\
+	libweston/plugin-registry.h		\
 	libweston/timeline-object.h		\
 	shared/matrix.h				\
 	shared/config-parser.h			\
@@ -1092,6 +1095,7 @@ shared_tests =					\
 	zuctest
 
 module_tests =					\
+	plugin-registry-test.la			\
 	surface-test.la				\
 	surface-global-test.la
 
@@ -1142,6 +1146,10 @@ noinst_PROGRAMS +=			\
 
 test_module_ldflags = \
 	-module -avoid-version -rpath $(libdir) $(COMPOSITOR_LIBS)
+
+plugin_registry_test_la_SOURCES = tests/plugin-registry-test.c
+plugin_registry_test_la_LDFLAGS = $(test_module_ldflags)
+plugin_registry_test_la_CFLAGS = $(AM_CFLAGS) $(COMPOSITOR_CFLAGS)
 
 surface_global_test_la_SOURCES = tests/surface-global-test.c
 surface_global_test_la_LDFLAGS = $(test_module_ldflags)

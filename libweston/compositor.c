@@ -61,6 +61,7 @@
 #include "shared/timespec-util.h"
 #include "git-version.h"
 #include "version.h"
+#include "plugin-registry.h"
 
 #define DEFAULT_REPAINT_WINDOW 7 /* milliseconds */
 
@@ -4702,6 +4703,8 @@ weston_compositor_create(struct wl_display *display, void *user_data)
 	wl_list_init(&ec->axis_binding_list);
 	wl_list_init(&ec->debug_binding_list);
 
+	wl_list_init(&ec->plugin_api_list);
+
 	weston_plane_init(&ec->primary_plane, ec, 0, 0);
 	weston_compositor_stack_plane(ec, &ec->primary_plane, NULL);
 
@@ -4947,6 +4950,9 @@ weston_compositor_destroy(struct weston_compositor *compositor)
 
 	if (compositor->backend)
 		compositor->backend->destroy(compositor);
+
+	weston_plugin_api_destroy_list(compositor);
+
 	free(compositor);
 }
 
