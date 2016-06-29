@@ -1618,6 +1618,11 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
 
         String updatedUrl = null;
         if (suggestion.getType() != OmniboxSuggestionType.VOICE_SUGGEST) {
+            if (selectedIndex >= mSuggestionItems.size()) {
+                // Adding to track down the source of the crash in crbug.com/595395.
+                throw new IllegalStateException("Selected index out of bounds");
+            }
+
             // TODO(mariakhomenko): Ideally we want to update match destination URL with new aqs
             // for query in the omnibox and voice suggestions, but it's currently difficult to do.
             long elapsedTimeSinceInputChange = mNewOmniboxEditSessionTimestamp > 0
