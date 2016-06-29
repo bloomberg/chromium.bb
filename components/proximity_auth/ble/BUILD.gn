@@ -17,6 +17,8 @@ source_set("ble") {
     "bluetooth_low_energy_weave_defines.h",
     "bluetooth_low_energy_weave_packet_generator.cc",
     "bluetooth_low_energy_weave_packet_generator.h",
+    "bluetooth_low_energy_weave_packet_receiver.cc",
+    "bluetooth_low_energy_weave_packet_receiver.h",
     "fake_wire_message.cc",
     "fake_wire_message.h",
     "pref_names.cc",
@@ -50,6 +52,7 @@ source_set("unit_tests") {
     "bluetooth_low_energy_connection_unittest.cc",
     "bluetooth_low_energy_device_whitelist_unittest.cc",
     "bluetooth_low_energy_weave_packet_generator_unittest.cc",
+    "bluetooth_low_energy_weave_packet_receiver_unittest.cc",
   ]
 
   configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
