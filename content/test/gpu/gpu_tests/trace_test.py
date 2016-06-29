@@ -111,7 +111,7 @@ class TraceTest(TraceTestBase):
     return trace_test_expectations.TraceTestExpectations()
 
   def CustomizeBrowserOptions(self, options):
-    options.enable_logging = True
+    options.logging_verbosity = options.VERBOSE_LOGGING
 
 
 class DeviceTraceTest(TraceTestBase):
