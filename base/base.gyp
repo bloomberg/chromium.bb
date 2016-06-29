@@ -407,7 +407,7 @@
         'deferred_sequenced_task_runner_unittest.cc',
         'environment_unittest.cc',
         'feature_list_unittest.cc',
-        'file_version_info_win_unittest.cc',
+        'file_version_info_unittest.cc',
         'files/dir_reader_posix_unittest.cc',
         'files/file_locking_unittest.cc',
         'files/file_path_unittest.cc',
@@ -683,6 +683,9 @@
         ['desktop_linux == 1 or chromeos == 1', {
           'defines': [
             'USE_SYMBOLIZE',
+          ],
+          'sources!': [
+            'file_version_info_unittest.cc',
           ],
           'conditions': [
             [ 'desktop_linux==1', {

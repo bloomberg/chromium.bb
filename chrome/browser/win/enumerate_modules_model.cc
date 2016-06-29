@@ -15,7 +15,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/environment.h"
-#include "base/file_version_info.h"
+#include "base/file_version_info_win.h"
 #include "base/files/file_path.h"
 #include "base/i18n/case_conversion.h"
 #include "base/macros.h"
@@ -630,10 +630,16 @@ void ModuleEnumerator::PopulateModuleInformation(Module* module) {
   module->recommended_action = NONE;
   std::unique_ptr<FileVersionInfo> version_info(
       FileVersionInfo::CreateFileVersionInfo(base::FilePath(module->location)));
-  if (version_info) {
-    module->description = version_info->file_description();
-    module->version = version_info->file_version();
-    module->product_name = version_info->product_name();
+  if (version_info.get()) {
+    FileVersionInfoWin* version_info_win =
+        static_cast<FileVersionInfoWin*>(version_info.get());
+
+    VS_FIXEDFILEINFO* fixed_file_info = version_info_win->fixed_file_info();
+    if (fixed_file_info) {
+      module->description = version_info_win->file_description();
+      module->version = version_info_win->file_version();
+      module->product_name = version_info_win->product_name();
+    }
   }
 }
 

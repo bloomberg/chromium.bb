@@ -1752,7 +1752,7 @@ test("base_unittests") {
     "deferred_sequenced_task_runner_unittest.cc",
     "environment_unittest.cc",
     "feature_list_unittest.cc",
-    "file_version_info_win_unittest.cc",
+    "file_version_info_unittest.cc",
     "files/dir_reader_posix_unittest.cc",
     "files/file_locking_unittest.cc",
     "files/file_path_unittest.cc",
@@ -2058,6 +2058,8 @@ test("base_unittests") {
   }
 
   if (is_linux) {
+    sources -= [ "file_version_info_unittest.cc" ]
+
     if (is_desktop_linux) {
       sources += [ "nix/xdg_util_unittest.cc" ]
     }

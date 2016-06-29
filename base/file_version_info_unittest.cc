@@ -2,26 +2,27 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/file_version_info_win.h"
-
-#include <windows.h>
+#include "base/file_version_info.h"
 
 #include <stddef.h>
 
 #include <memory>
 
-#include "base/file_version_info.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/path_service.h"
-#include "base/scoped_native_library.h"
+#include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+#if defined(OS_WIN)
+#include "base/file_version_info_win.h"
+#endif
 
 using base::FilePath;
 
 namespace {
 
+#if defined(OS_WIN)
 FilePath GetTestDataPath() {
   FilePath path;
   PathService::Get(base::DIR_SOURCE_ROOT, &path);
@@ -31,54 +32,12 @@ FilePath GetTestDataPath() {
   path = path.AppendASCII("file_version_info_unittest");
   return path;
 }
-
-class FileVersionInfoFactory {
- public:
-  explicit FileVersionInfoFactory(const FilePath& path) : path_(path) {}
-
-  std::unique_ptr<FileVersionInfo> Create() const {
-    return base::WrapUnique(FileVersionInfo::CreateFileVersionInfo(path_));
-  }
-
- private:
-  const FilePath path_;
-
-  DISALLOW_COPY_AND_ASSIGN(FileVersionInfoFactory);
-};
-
-class FileVersionInfoForModuleFactory {
- public:
-  explicit FileVersionInfoForModuleFactory(const FilePath& path)
-      // Load the library with LOAD_LIBRARY_AS_IMAGE_RESOURCE since it shouldn't
-      // be executed.
-      : library_(::LoadLibraryEx(path.value().c_str(),
-                                 nullptr,
-                                 LOAD_LIBRARY_AS_IMAGE_RESOURCE)) {
-    EXPECT_TRUE(library_.is_valid());
-  }
-
-  std::unique_ptr<FileVersionInfo> Create() const {
-    return base::WrapUnique(
-        FileVersionInfo::CreateFileVersionInfoForModule(library_.get()));
-  }
-
- private:
-  const base::ScopedNativeLibrary library_;
-
-  DISALLOW_COPY_AND_ASSIGN(FileVersionInfoForModuleFactory);
-};
-
-template <typename T>
-class FileVersionInfoTest : public testing::Test {};
-
-using FileVersionInfoFactories =
-    ::testing::Types<FileVersionInfoFactory, FileVersionInfoForModuleFactory>;
+#endif
 
 }  // namespace
 
-TYPED_TEST_CASE(FileVersionInfoTest, FileVersionInfoFactories);
-
-TYPED_TEST(FileVersionInfoTest, HardCodedProperties) {
+#if defined(OS_WIN)
+TEST(FileVersionInfoTest, HardCodedProperties) {
   const wchar_t kDLLName[] = {L"FileVersionInfoTest1.dll"};
 
   const wchar_t* const kExpectedValues[15] = {
@@ -103,9 +62,8 @@ TYPED_TEST(FileVersionInfoTest, HardCodedProperties) {
   FilePath dll_path = GetTestDataPath();
   dll_path = dll_path.Append(kDLLName);
 
-  TypeParam factory(dll_path);
-  std::unique_ptr<FileVersionInfo> version_info(factory.Create());
-  ASSERT_TRUE(version_info);
+  std::unique_ptr<FileVersionInfo> version_info(
+      FileVersionInfo::CreateFileVersionInfo(dll_path));
 
   int j = 0;
   EXPECT_EQ(kExpectedValues[j++], version_info->company_name());
@@ -124,52 +82,62 @@ TYPED_TEST(FileVersionInfoTest, HardCodedProperties) {
   EXPECT_EQ(kExpectedValues[j++], version_info->legal_trademarks());
   EXPECT_EQ(kExpectedValues[j++], version_info->last_change());
 }
+#endif
 
-TYPED_TEST(FileVersionInfoTest, IsOfficialBuild) {
-  constexpr struct {
-    const wchar_t* const dll_name;
-    const bool is_official_build;
-  } kTestItems[]{
-      {L"FileVersionInfoTest1.dll", true}, {L"FileVersionInfoTest2.dll", false},
+#if defined(OS_WIN)
+TEST(FileVersionInfoTest, IsOfficialBuild) {
+  const wchar_t* kDLLNames[] = {
+    L"FileVersionInfoTest1.dll",
+    L"FileVersionInfoTest2.dll"
   };
 
-  for (const auto& test_item : kTestItems) {
-    const FilePath dll_path = GetTestDataPath().Append(test_item.dll_name);
+  const bool kExpected[] = {
+    true,
+    false,
+  };
 
-    TypeParam factory(dll_path);
-    std::unique_ptr<FileVersionInfo> version_info(factory.Create());
-    ASSERT_TRUE(version_info);
+  // Test consistency check.
+  ASSERT_EQ(arraysize(kDLLNames), arraysize(kExpected));
 
-    EXPECT_EQ(test_item.is_official_build, version_info->is_official_build());
+  for (size_t i = 0; i < arraysize(kDLLNames); ++i) {
+    FilePath dll_path = GetTestDataPath();
+    dll_path = dll_path.Append(kDLLNames[i]);
+
+    std::unique_ptr<FileVersionInfo> version_info(
+        FileVersionInfo::CreateFileVersionInfo(dll_path));
+
+    EXPECT_EQ(kExpected[i], version_info->is_official_build());
   }
 }
+#endif
 
-TYPED_TEST(FileVersionInfoTest, CustomProperties) {
+#if defined(OS_WIN)
+TEST(FileVersionInfoTest, CustomProperties) {
   FilePath dll_path = GetTestDataPath();
   dll_path = dll_path.AppendASCII("FileVersionInfoTest1.dll");
 
-  TypeParam factory(dll_path);
-  std::unique_ptr<FileVersionInfo> version_info(factory.Create());
-  ASSERT_TRUE(version_info);
+  std::unique_ptr<FileVersionInfo> version_info(
+      FileVersionInfo::CreateFileVersionInfo(dll_path));
 
   // Test few existing properties.
   std::wstring str;
   FileVersionInfoWin* version_info_win =
       static_cast<FileVersionInfoWin*>(version_info.get());
-  EXPECT_TRUE(version_info_win->GetValue(L"Custom prop 1", &str));
+  EXPECT_TRUE(version_info_win->GetValue(L"Custom prop 1",  &str));
   EXPECT_EQ(L"Un", str);
   EXPECT_EQ(L"Un", version_info_win->GetStringValue(L"Custom prop 1"));
 
-  EXPECT_TRUE(version_info_win->GetValue(L"Custom prop 2", &str));
+  EXPECT_TRUE(version_info_win->GetValue(L"Custom prop 2",  &str));
   EXPECT_EQ(L"Deux", str);
   EXPECT_EQ(L"Deux", version_info_win->GetStringValue(L"Custom prop 2"));
 
-  EXPECT_TRUE(version_info_win->GetValue(L"Custom prop 3", &str));
+  EXPECT_TRUE(version_info_win->GetValue(L"Custom prop 3",  &str));
   EXPECT_EQ(L"1600 Amphitheatre Parkway Mountain View, CA 94043", str);
   EXPECT_EQ(L"1600 Amphitheatre Parkway Mountain View, CA 94043",
             version_info_win->GetStringValue(L"Custom prop 3"));
 
   // Test an non-existing property.
-  EXPECT_FALSE(version_info_win->GetValue(L"Unknown property", &str));
+  EXPECT_FALSE(version_info_win->GetValue(L"Unknown property",  &str));
   EXPECT_EQ(L"", version_info_win->GetStringValue(L"Unknown property"));
 }
+#endif
