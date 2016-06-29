@@ -1512,7 +1512,7 @@ const char ApplyFramebufferAttachmentCMAAINTELResourceManager::cmaa_frag_s2_[] =
           // with value of 0.15, the pixel will retain approx 77% of its
           // colour and the remaining 23% will come from its 2 neighbours
           // (which are likely to be blurred too in the opposite direction)
-          blurCoeff = 0.08;
+          blurCoeff = 0.15;
 
           // Only do blending if it's L shape - if we're between two
           // parallel edges, don't do anything
@@ -1525,7 +1525,7 @@ const char ApplyFramebufferAttachmentCMAAINTELResourceManager::cmaa_frag_s2_[] =
           // with value of 0.13, the pixel will retain approx 72% of its
           // colour and the remaining 28% will be picked from its 3
           // neighbours (which are unlikely to be blurred too but could be)
-          blurCoeff = 0.11;
+          blurCoeff = 0.13;
         }
 
         // 3.) Completely surrounded with edges from all 4 sides
@@ -1533,7 +1533,7 @@ const char ApplyFramebufferAttachmentCMAAINTELResourceManager::cmaa_frag_s2_[] =
           // with value of 0.07, the pixel will retain 78% of its colour
           // and the remaining 22% will come from its 4 neighbours (which
           // are unlikely to be blurred)
-          blurCoeff = 0.05;
+          blurCoeff = 0.07;
         }
 
         if (blurCoeff == 0.0) {
@@ -1565,30 +1565,29 @@ const char ApplyFramebufferAttachmentCMAAINTELResourceManager::cmaa_frag_s2_[] =
 
         vec4 color = vec4(0, 0, 0, 0);
         if (fromLeftWeight > 0.0) {
-          vec3 pixelL = texelFetchOffset(g_screenTexture, screenPosI.xy, 0,
-                                         ivec2(-1, 0)).rgb;
-          color.rgb += fromLeftWeight * pixelL;
+          vec4 pixelL = texelFetchOffset(g_screenTexture, screenPosI.xy, 0,
+                                         ivec2(-1, 0));
+          color += fromLeftWeight * pixelL;
         }
         if (fromAboveWeight > 0.0) {
-          vec3 pixelT = texelFetchOffset(g_screenTexture, screenPosI.xy, 0,
-                                         ivec2(0, 1)).rgb;
-          color.rgb += fromAboveWeight * pixelT;
+          vec4 pixelT = texelFetchOffset(g_screenTexture, screenPosI.xy, 0,
+                                         ivec2(0, 1));
+          color += fromAboveWeight * pixelT;
         }
         if (fromRightWeight > 0.0) {
-          vec3 pixelR = texelFetchOffset(g_screenTexture, screenPosI.xy, 0,
-                                         ivec2(1, 0)).rgb;
-          color.rgb += fromRightWeight * pixelR;
+          vec4 pixelR = texelFetchOffset(g_screenTexture, screenPosI.xy, 0,
+                                         ivec2(1, 0));
+          color += fromRightWeight * pixelR;
         }
         if (fromBelowWeight > 0.0) {
-          vec3 pixelB = texelFetchOffset(g_screenTexture, screenPosI.xy, 0,
-                                         ivec2(0, -1)).rgb;
-          color.rgb += fromBelowWeight * pixelB;
+          vec4 pixelB = texelFetchOffset(g_screenTexture, screenPosI.xy, 0,
+                                         ivec2(0, -1));
+          color += fromBelowWeight * pixelB;
         }
 
         color /= fourWeightSum + 0.0001;
-        color.a = 1.0 - centerWeight / allWeightSum;
 
-        color.rgb = mix(pixelC.rgb, color.rgb, color.a).rgb;
+        color = mix(color, pixelC, centerWeight / allWeightSum);
     \n#ifdef IN_GAMMA_CORRECT_MODE\n
         color.rgb = D3DX_FLOAT3_to_SRGB(color.rgb);
     \n#endif\n
@@ -1597,8 +1596,7 @@ const char ApplyFramebufferAttachmentCMAAINTELResourceManager::cmaa_frag_s2_[] =
         imageStore(g_resultTextureSlot2, screenPosI.xy,
                    PackBlurAAInfo(screenPosI.xy, uint(numberOfEdges)));
     \n#endif\n
-        imageStore(g_resultTextureFlt4Slot1, screenPosI.xy,
-                   vec4(color.rgb, pixelC.a));
+        imageStore(g_resultTextureFlt4Slot1, screenPosI.xy, color);
 
         if (numberOfEdges == 2.0) {
           uint packedEdgesL = packedEdgesArray[(0 + _x) * 4 + (1 + _y)];
