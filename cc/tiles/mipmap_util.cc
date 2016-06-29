@@ -55,12 +55,20 @@ SkSize MipMapUtil::GetScaleAdjustmentForLevel(const gfx::Size& src_size,
   if (src_size.width() == 0 || src_size.height() == 0 || mip_level == -1)
     return SkSize::Make(-1, -1);
 
-  gfx::Size target_size(ScaleAxisToMipLevel(src_size.width(), mip_level),
-                        ScaleAxisToMipLevel(src_size.height(), mip_level));
+  gfx::Size target_size = GetSizeForLevel(src_size, mip_level);
 
   return SkSize::Make(
       static_cast<float>(target_size.width()) / src_size.width(),
       static_cast<float>(target_size.height()) / src_size.height());
+}
+
+gfx::Size MipMapUtil::GetSizeForLevel(const gfx::Size& src_size,
+                                      int mip_level) {
+  if (src_size.width() == 0 || src_size.height() == 0 || mip_level == -1)
+    return gfx::Size(-1, -1);
+
+  return gfx::Size(ScaleAxisToMipLevel(src_size.width(), mip_level),
+                   ScaleAxisToMipLevel(src_size.height(), mip_level));
 }
 
 SkSize MipMapUtil::GetScaleAdjustmentForSize(const gfx::Size& src_size,

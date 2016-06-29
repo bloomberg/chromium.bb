@@ -27,6 +27,11 @@ class CC_EXPORT MipMapUtil {
   static SkSize GetScaleAdjustmentForLevel(const gfx::Size& src_size,
                                            int mip_level);
 
+  // Determine the size of the given |mip_level|. Returns (-1, -1) if
+  // |src_size| is invalid (width/height <= 0) or if mip-level is invalid (==
+  // -1).
+  static gfx::Size GetSizeForLevel(const gfx::Size& src_size, int mip_level);
+
   // Determines the scale factor for the smallest mip level that is larger than
   // |target_size|. Returns (-1, -1) if |src_size| or |target_size| is invalid
   // (width/height <= 0).
