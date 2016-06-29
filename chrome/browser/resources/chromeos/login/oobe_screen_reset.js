@@ -58,6 +58,12 @@ login.createScreen('ResetScreen', 'reset', function() {
       this.context.addObserver(
           CONTEXT_KEY_SCREEN_STATE,
           function(state) {
+            if (Oobe.getInstance().currentScreen != this) {
+              setTimeout(function() {
+                Oobe.resetSigninUI(false);
+                Oobe.showScreen({id: SCREEN_OOBE_RESET});
+              }, 0);
+            }
             if (state == self.RESET_SCREEN_STATE.RESTART_REQUIRED)
               self.ui_state = self.RESET_SCREEN_UI_STATE.RESTART_REQUIRED;
             if (state == self.RESET_SCREEN_STATE.REVERT_PROMISE)
