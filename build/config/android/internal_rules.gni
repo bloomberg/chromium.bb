@@ -1983,9 +1983,25 @@ if (enable_java_templates) {
 
     # Don't enable coverage, lint, findbugs unless the target has some
     # non-generated files.
-    _chromium_code = defined(invoker.java_files) && invoker.java_files != []
     if (defined(invoker.chromium_code)) {
       _chromium_code = invoker.chromium_code
+    } else {
+      _chromium_code = defined(invoker.java_files) && invoker.java_files != []
+      if (_chromium_code) {
+        # Make chromium_code = false be the default for targets within
+        # third_party which contain no chromium-namespaced java files.
+        set_sources_assignment_filter([ "*\bthird_party\b*" ])
+        sources = [
+          get_label_info(":$target_name", "dir"),
+        ]
+        if (sources == []) {
+          set_sources_assignment_filter([ "*\bchromium\b*" ])
+          sources = invoker.java_files
+          _chromium_code = invoker.java_files != sources
+        }
+        set_sources_assignment_filter([])
+        sources = []
+      }
     }
 
     _emma_never_instrument = !_chromium_code

@@ -38,6 +38,7 @@ android_library("custom_tabs_client_shared_lib") {
   deps = [
     ":custom_tabs_support_lib",
   ]
+  chromium_code = true
 }
 
 android_library("custom_tabs_support_lib") {
@@ -54,6 +55,7 @@ android_library("custom_tabs_support_lib") {
     "//third_party/android_tools:android_support_v13_java",
   ]
   srcjar_deps = [ ":chrome_custom_tabs_service_aidl" ]
+  chromium_code = true
 }
 
 android_aidl("chrome_custom_tabs_service_aidl") {
