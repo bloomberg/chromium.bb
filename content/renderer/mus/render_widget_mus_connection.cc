@@ -120,7 +120,8 @@ void RenderWidgetMusConnection::OnInputEventAck(
 }
 
 void RenderWidgetMusConnection::NotifyInputEventHandled(
-    blink::WebInputEvent::Type handled_type) {
+    blink::WebInputEvent::Type handled_type,
+    InputEventAckState ack_result) {
   NOTIMPLEMENTED();
 }
 

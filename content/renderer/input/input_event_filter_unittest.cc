@@ -330,19 +330,22 @@ TEST_F(InputEventFilterTest, NonBlockingWheel) {
   EXPECT_EQ(1u, message_recorder_.message_count());
 
   // Second event was queued; ack the first.
-  filter_->NotifyInputEventHandled(kTestRoutingID, WebInputEvent::MouseWheel);
+  filter_->NotifyInputEventHandled(kTestRoutingID, WebInputEvent::MouseWheel,
+                                   INPUT_EVENT_ACK_STATE_CONSUMED);
   base::RunLoop().RunUntilIdle();
   ASSERT_EQ(4u, ipc_sink_.message_count());
   EXPECT_EQ(2u, message_recorder_.message_count());
 
   // Third event won't be coalesced into the second because modifiers are
   // different.
-  filter_->NotifyInputEventHandled(kTestRoutingID, WebInputEvent::MouseWheel);
+  filter_->NotifyInputEventHandled(kTestRoutingID, WebInputEvent::MouseWheel,
+                                   INPUT_EVENT_ACK_STATE_CONSUMED);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(3u, message_recorder_.message_count());
 
   // The last events will be coalesced.
-  filter_->NotifyInputEventHandled(kTestRoutingID, WebInputEvent::MouseWheel);
+  filter_->NotifyInputEventHandled(kTestRoutingID, WebInputEvent::MouseWheel,
+                                   INPUT_EVENT_ACK_STATE_CONSUMED);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(3u, message_recorder_.message_count());
 
@@ -408,19 +411,22 @@ TEST_F(InputEventFilterTest, NonBlockingTouch) {
   EXPECT_EQ(1u, message_recorder_.message_count());
 
   // Second event was queued; ack the first.
-  filter_->NotifyInputEventHandled(kTestRoutingID, WebInputEvent::TouchStart);
+  filter_->NotifyInputEventHandled(kTestRoutingID, WebInputEvent::TouchStart,
+                                   INPUT_EVENT_ACK_STATE_CONSUMED);
   base::RunLoop().RunUntilIdle();
   ASSERT_EQ(4u, ipc_sink_.message_count());
   EXPECT_EQ(2u, message_recorder_.message_count());
 
   // Third event won't be coalesced into the second because modifiers are
   // different.
-  filter_->NotifyInputEventHandled(kTestRoutingID, WebInputEvent::TouchMove);
+  filter_->NotifyInputEventHandled(kTestRoutingID, WebInputEvent::TouchMove,
+                                   INPUT_EVENT_ACK_STATE_CONSUMED);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(3u, message_recorder_.message_count());
 
   // The last events will be coalesced.
-  filter_->NotifyInputEventHandled(kTestRoutingID, WebInputEvent::TouchMove);
+  filter_->NotifyInputEventHandled(kTestRoutingID, WebInputEvent::TouchMove,
+                                   INPUT_EVENT_ACK_STATE_CONSUMED);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(3u, message_recorder_.message_count());
 
@@ -503,7 +509,8 @@ TEST_F(InputEventFilterTest, IntermingledNonBlockingTouch) {
 
   {
     // Second event was queued; ack the first.
-    filter_->NotifyInputEventHandled(kTestRoutingID, WebInputEvent::TouchStart);
+    filter_->NotifyInputEventHandled(kTestRoutingID, WebInputEvent::TouchStart,
+                                     INPUT_EVENT_ACK_STATE_CONSUMED);
     base::RunLoop().RunUntilIdle();
     EXPECT_EQ(2u, message_recorder_.message_count());
 
@@ -524,7 +531,8 @@ TEST_F(InputEventFilterTest, IntermingledNonBlockingTouch) {
 
   {
     // Third event should be put in the queue.
-    filter_->NotifyInputEventHandled(kTestRoutingID, WebInputEvent::TouchEnd);
+    filter_->NotifyInputEventHandled(kTestRoutingID, WebInputEvent::TouchEnd,
+                                     INPUT_EVENT_ACK_STATE_CONSUMED);
     base::RunLoop().RunUntilIdle();
     EXPECT_EQ(3u, message_recorder_.message_count());
 

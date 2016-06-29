@@ -867,13 +867,14 @@ void RenderWidget::OnInputEventAck(
 }
 
 void RenderWidget::NotifyInputEventHandled(
-    blink::WebInputEvent::Type handled_type) {
+    blink::WebInputEvent::Type handled_type,
+    InputEventAckState ack_result) {
   RenderThreadImpl* render_thread = RenderThreadImpl::current();
   InputHandlerManager* input_handler_manager =
       render_thread ? render_thread->input_handler_manager() : NULL;
   if (input_handler_manager) {
-    input_handler_manager->NotifyInputEventHandledOnMainThread(routing_id_,
-                                                               handled_type);
+    input_handler_manager->NotifyInputEventHandledOnMainThread(
+        routing_id_, handled_type, ack_result);
   }
 }
 

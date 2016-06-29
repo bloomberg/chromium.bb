@@ -187,23 +187,25 @@ void InputHandlerManager::ObserveGestureEventAndResultOnCompositorThread(
 
 void InputHandlerManager::NotifyInputEventHandledOnMainThread(
     int routing_id,
-    blink::WebInputEvent::Type type) {
+    blink::WebInputEvent::Type type,
+    InputEventAckState ack_result) {
   task_runner_->PostTask(
       FROM_HERE,
       base::Bind(
           &InputHandlerManager::NotifyInputEventHandledOnCompositorThread,
-          base::Unretained(this), routing_id, type));
+          base::Unretained(this), routing_id, type, ack_result));
 }
 
 void InputHandlerManager::NotifyInputEventHandledOnCompositorThread(
     int routing_id,
-    blink::WebInputEvent::Type handled_type) {
+    blink::WebInputEvent::Type handled_type,
+    InputEventAckState ack_result) {
   DCHECK(task_runner_->BelongsToCurrentThread());
   auto it = input_handlers_.find(routing_id);
   if (it == input_handlers_.end())
     return;
 
-  client_->NotifyInputEventHandled(routing_id, handled_type);
+  client_->NotifyInputEventHandled(routing_id, handled_type, ack_result);
 }
 
 InputEventAckState InputHandlerManager::HandleInputEvent(

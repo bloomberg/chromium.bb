@@ -68,7 +68,8 @@ class CONTENT_EXPORT InputEventFilter : public InputHandlerManagerClient,
   void DidStartFlinging(int routing_id) override;
   void DidStopFlinging(int routing_id) override;
   void NotifyInputEventHandled(int routing_id,
-                               blink::WebInputEvent::Type type) override;
+                               blink::WebInputEvent::Type type,
+                               InputEventAckState ack_result) override;
 
   // IPC::MessageFilter methods:
   void OnFilterAdded(IPC::Sender* sender) override;
@@ -81,6 +82,13 @@ class CONTENT_EXPORT InputEventFilter : public InputHandlerManagerClient,
                              const blink::WebInputEvent* event,
                              const ui::LatencyInfo& latency,
                              InputEventDispatchType dispatch_type) override;
+  // Send an InputEventAck IPC message. |touch_event_id| represents
+  // the unique event id for the original WebTouchEvent and should
+  // be 0 if otherwise. See WebInputEventTraits::GetUniqueTouchEventId.
+  void SendInputEventAck(int routing_id,
+                         blink::WebInputEvent::Type type,
+                         InputEventAckState ack_result,
+                         uint32_t touch_event_id) override;
 
  private:
   ~InputEventFilter() override;

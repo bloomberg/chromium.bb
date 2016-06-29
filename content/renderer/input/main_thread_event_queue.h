@@ -25,6 +25,7 @@ class EventWithDispatchType : public BaseClass {
       : BaseClass(e, l), type(t) {}
 
   InputEventDispatchType type;
+  std::deque<uint32_t> eventsToAck;
 
   bool CanCoalesceWith(const EventWithDispatchType& other) const
       WARN_UNUSED_RESULT {
@@ -32,6 +33,14 @@ class EventWithDispatchType : public BaseClass {
   }
 
   void CoalesceWith(const EventWithDispatchType& other) {
+    // If we are blocking and are coalescing touch, make sure to keep
+    // the touch ids that need to be acked.
+    if (type == DISPATCH_TYPE_BLOCKING_NOTIFY_MAIN) {
+      // We should only have blocking touch events that need coalescing.
+      DCHECK(blink::WebInputEvent::isTouchEventType(other.event.type));
+      eventsToAck.push_back(
+          WebInputEventTraits::GetUniqueTouchEventId(other.event));
+    }
     BaseClass::CoalesceWith(other);
   }
 };
@@ -52,6 +61,11 @@ class CONTENT_EXPORT MainThreadEventQueueClient {
                                      const blink::WebInputEvent* event,
                                      const ui::LatencyInfo& latency,
                                      InputEventDispatchType dispatch_type) = 0;
+
+  virtual void SendInputEventAck(int routing_id,
+                                 blink::WebInputEvent::Type type,
+                                 InputEventAckState ack_result,
+                                 uint32_t touch_event_id) = 0;
 };
 
 // MainThreadEventQueue implements a series of queues (one touch
@@ -104,7 +118,8 @@ class CONTENT_EXPORT MainThreadEventQueue {
 
   // Call once the main thread has handled an outstanding |type| event
   // in flight.
-  void EventHandled(blink::WebInputEvent::Type type);
+  void EventHandled(blink::WebInputEvent::Type type,
+                    InputEventAckState ack_result);
 
   void set_is_flinging(bool is_flinging) { is_flinging_ = is_flinging; }
 
@@ -115,6 +130,11 @@ class CONTENT_EXPORT MainThreadEventQueue {
   WebInputEventQueue<PendingMouseWheelEvent> wheel_events_;
   WebInputEventQueue<PendingTouchEvent> touch_events_;
   bool is_flinging_;
+
+  // TODO(dtapuska): These can be removed when the queues are dequeued
+  // on the main thread. See crbug.com/624021
+  std::unique_ptr<PendingMouseWheelEvent> in_flight_wheel_event_;
+  std::unique_ptr<PendingTouchEvent> in_flight_touch_event_;
 
   DISALLOW_COPY_AND_ASSIGN(MainThreadEventQueue);
 };

@@ -428,7 +428,7 @@ void RenderWidgetInputHandler::HandleInputEvent(
       dispatch_type == DISPATCH_TYPE_NON_BLOCKING_NOTIFY_MAIN) {
     // |non_blocking| means it was ack'd already by the InputHandlerProxy
     // so let the delegate know the event has been handled.
-    delegate_->NotifyInputEventHandled(input_event.type);
+    delegate_->NotifyInputEventHandled(input_event.type, ack_result);
   }
 
   if ((dispatch_type == DISPATCH_TYPE_BLOCKING ||

@@ -98,21 +98,36 @@ bool MainThreadEventQueue::HandleEvent(
   return non_blocking;
 }
 
-void MainThreadEventQueue::EventHandled(blink::WebInputEvent::Type type) {
+void MainThreadEventQueue::EventHandled(blink::WebInputEvent::Type type,
+                                        InputEventAckState ack_result) {
   if (type == blink::WebInputEvent::MouseWheel) {
+    // There should not be two blocking wheel events in flight.
+    DCHECK(!in_flight_wheel_event_ ||
+           in_flight_wheel_event_->eventsToAck.size() == 0);
+
     if (!wheel_events_.empty()) {
-      std::unique_ptr<PendingMouseWheelEvent> event = wheel_events_.Pop();
-      client_->SendEventToMainThread(routing_id_, &event->event, event->latency,
-                                     event->type);
+      in_flight_wheel_event_ = wheel_events_.Pop();
+      client_->SendEventToMainThread(
+          routing_id_, &in_flight_wheel_event_->event,
+          in_flight_wheel_event_->latency, in_flight_wheel_event_->type);
     } else {
+      in_flight_wheel_event_.reset();
       wheel_events_.set_state(WebInputEventQueueState::ITEM_NOT_PENDING);
     }
   } else if (blink::WebInputEvent::isTouchEventType(type)) {
+    if (in_flight_touch_event_) {
+      // Send acks for blocking touch events.
+      for (const auto id : in_flight_touch_event_->eventsToAck)
+        client_->SendInputEventAck(routing_id_, type, ack_result, id);
+    }
+
     if (!touch_events_.empty()) {
-      std::unique_ptr<PendingTouchEvent> event = touch_events_.Pop();
-      client_->SendEventToMainThread(routing_id_, &event->event, event->latency,
-                                     event->type);
+      in_flight_touch_event_ = touch_events_.Pop();
+      client_->SendEventToMainThread(
+          routing_id_, &in_flight_touch_event_->event,
+          in_flight_touch_event_->latency, in_flight_touch_event_->type);
     } else {
+      in_flight_touch_event_.reset();
       touch_events_.set_state(WebInputEventQueueState::ITEM_NOT_PENDING);
     }
   } else {

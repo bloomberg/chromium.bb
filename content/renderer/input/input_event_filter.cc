@@ -101,15 +101,15 @@ void InputEventFilter::DidStopFlinging(int routing_id) {
   SendMessage(base::WrapUnique(new InputHostMsg_DidStopFlinging(routing_id)));
 }
 
-void InputEventFilter::NotifyInputEventHandled(
-    int routing_id,
-    blink::WebInputEvent::Type type) {
+void InputEventFilter::NotifyInputEventHandled(int routing_id,
+                                               blink::WebInputEvent::Type type,
+                                               InputEventAckState ack_result) {
   DCHECK(target_task_runner_->BelongsToCurrentThread());
   RouteQueueMap::iterator iter = route_queues_.find(routing_id);
   if (iter == route_queues_.end() || !iter->second)
     return;
 
-  iter->second->EventHandled(type);
+  iter->second->EventHandled(type, ack_result);
 }
 
 void InputEventFilter::OnFilterAdded(IPC::Sender* sender) {
@@ -241,6 +241,15 @@ void InputEventFilter::SendEventToMainThread(
   IPC::Message new_msg =
       InputMsg_HandleInputEvent(routing_id, event, latency_info, dispatch_type);
   main_task_runner_->PostTask(FROM_HERE, base::Bind(main_listener_, new_msg));
+}
+
+void InputEventFilter::SendInputEventAck(int routing_id,
+                                         blink::WebInputEvent::Type type,
+                                         InputEventAckState ack_result,
+                                         uint32_t touch_event_id) {
+  InputEventAck ack(type, ack_result, touch_event_id);
+  SendMessage(std::unique_ptr<IPC::Message>(
+      new InputHostMsg_HandleInputEvent_ACK(routing_id, ack)));
 }
 
 }  // namespace content

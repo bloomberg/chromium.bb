@@ -67,7 +67,8 @@ class CONTENT_EXPORT InputHandlerManager {
       const cc::InputHandlerScrollResult& scroll_result);
 
   void NotifyInputEventHandledOnMainThread(int routing_id,
-                                           blink::WebInputEvent::Type);
+                                           blink::WebInputEvent::Type,
+                                           InputEventAckState);
 
   // Callback only from the compositor's thread.
   void RemoveInputHandler(int routing_id);
@@ -111,7 +112,8 @@ class CONTENT_EXPORT InputHandlerManager {
       const cc::InputHandlerScrollResult& scroll_result);
 
   void NotifyInputEventHandledOnCompositorThread(int routing_id,
-                                                 blink::WebInputEvent::Type);
+                                                 blink::WebInputEvent::Type,
+                                                 InputEventAckState);
 
   typedef base::ScopedPtrHashMap<int,  // routing_id
                                  std::unique_ptr<InputHandlerWrapper>>

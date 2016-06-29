@@ -51,7 +51,8 @@ class CONTENT_EXPORT InputHandlerManagerClient {
   virtual void DidStartFlinging(int routing_id) = 0;
   virtual void DidStopFlinging(int routing_id) = 0;
   virtual void NotifyInputEventHandled(int routing_id,
-                                       blink::WebInputEvent::Type type) = 0;
+                                       blink::WebInputEvent::Type type,
+                                       InputEventAckState ack_result) = 0;
 
  protected:
   InputHandlerManagerClient() {}

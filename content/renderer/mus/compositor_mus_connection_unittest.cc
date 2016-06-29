@@ -129,8 +129,10 @@ class TestInputHandlerManagerClient
                      const content::DidOverscrollParams& params) override {}
   void DidStartFlinging(int routing_id) override {}
   void DidStopFlinging(int routing_id) override {}
-  void NotifyInputEventHandled(int routing_id,
-                               blink::WebInputEvent::Type type) override {}
+  void NotifyInputEventHandled(
+      int routing_id,
+      blink::WebInputEvent::Type type,
+      content::InputEventAckState ack_result) override {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TestInputHandlerManagerClient);
