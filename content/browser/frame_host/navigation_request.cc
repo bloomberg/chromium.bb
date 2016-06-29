@@ -41,6 +41,7 @@ int LoadFlagFromNavigationType(FrameMsg_Navigate_Type::Value navigation_type) {
   int load_flags = net::LOAD_NORMAL;
   switch (navigation_type) {
     case FrameMsg_Navigate_Type::RELOAD:
+    case FrameMsg_Navigate_Type::RELOAD_MAIN_RESOURCE:
     case FrameMsg_Navigate_Type::RELOAD_ORIGINAL_REQUEST_URL:
       load_flags |= net::LOAD_VALIDATE_CACHE;
       break;
