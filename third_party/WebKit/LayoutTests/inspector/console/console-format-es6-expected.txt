@@ -73,8 +73,9 @@ Object {a: Symbol(), Symbol(a): 2}
 console-format-es6.html:11 Map {Object {a: Symbol(), Symbol(a): 2} => Object {foo: 1}}
     size: (...)
     __proto__: Map
-    <entries>[1]
+    [[Entries]]: Array[1]
         0: {Object => Object}
+        length: 1
 console-format-es6.html:12 [Map]
     0: Map
     length: 1
@@ -83,12 +84,14 @@ globals[4]
 Map {Object {a: Symbol(), Symbol(a): 2} => Object {foo: 1}}
     size: (...)
     __proto__: Map
-    <entries>[1]
+    [[Entries]]: Array[1]
         0: {Object => Object}
+        length: 1
 console-format-es6.html:11 WeakMap {Object {a: Symbol(), Symbol(a): 2} => Object {foo: 1}}
     __proto__: WeakMap
-    <entries>[1]
+    [[Entries]]: Array[1]
         0: {Object => Object}
+        length: 1
 console-format-es6.html:12 [WeakMap]
     0: WeakMap
     length: 1
@@ -96,13 +99,15 @@ console-format-es6.html:12 [WeakMap]
 globals[5]
 WeakMap {Object {a: Symbol(), Symbol(a): 2} => Object {foo: 1}}
     __proto__: WeakMap
-    <entries>[1]
+    [[Entries]]: Array[1]
         0: {Object => Object}
+        length: 1
 console-format-es6.html:11 Set {Object {a: Symbol(), Symbol(a): 2}}
     size: (...)
     __proto__: Set
-    <entries>[1]
+    [[Entries]]: Array[1]
         0: Object
+        length: 1
 console-format-es6.html:12 [Set]
     0: Set
     length: 1
@@ -111,12 +116,14 @@ globals[6]
 Set {Object {a: Symbol(), Symbol(a): 2}}
     size: (...)
     __proto__: Set
-    <entries>[1]
+    [[Entries]]: Array[1]
         0: Object
+        length: 1
 console-format-es6.html:11 WeakSet {Object {a: Symbol(), Symbol(a): 2}}
     __proto__: WeakSet
-    <entries>[1]
+    [[Entries]]: Array[1]
         0: Object
+        length: 1
 console-format-es6.html:12 [WeakSet]
     0: WeakSet
     length: 1
@@ -124,13 +131,15 @@ console-format-es6.html:12 [WeakSet]
 globals[7]
 WeakSet {Object {a: Symbol(), Symbol(a): 2}}
     __proto__: WeakSet
-    <entries>[1]
+    [[Entries]]: Array[1]
         0: Object
+        length: 1
 console-format-es6.html:11 Map {Map {} => WeakMap {}}
     size: (...)
     __proto__: Map
-    <entries>[1]
+    [[Entries]]: Array[1]
         0: {Map => WeakMap}
+        length: 1
 console-format-es6.html:12 [Map]
     0: Map
     length: 1
@@ -139,13 +148,15 @@ globals[8]
 Map {Map {} => WeakMap {}}
     size: (...)
     __proto__: Map
-    <entries>[1]
+    [[Entries]]: Array[1]
         0: {Map => WeakMap}
+        length: 1
 console-format-es6.html:11 Map {Map {…} => WeakMap {…}}
     size: (...)
     __proto__: Map
-    <entries>[1]
+    [[Entries]]: Array[1]
         0: {Map => WeakMap}
+        length: 1
 console-format-es6.html:12 [Map]
     0: Map
     length: 1
@@ -154,13 +165,15 @@ globals[9]
 Map {Map {…} => WeakMap {…}}
     size: (...)
     __proto__: Map
-    <entries>[1]
+    [[Entries]]: Array[1]
         0: {Map => WeakMap}
+        length: 1
 console-format-es6.html:11 Set {WeakSet {}}
     size: (...)
     __proto__: Set
-    <entries>[1]
+    [[Entries]]: Array[1]
         0: WeakSet
+        length: 1
 console-format-es6.html:12 [Set]
     0: Set
     length: 1
@@ -169,13 +182,15 @@ globals[10]
 Set {WeakSet {}}
     size: (...)
     __proto__: Set
-    <entries>[1]
+    [[Entries]]: Array[1]
         0: WeakSet
+        length: 1
 console-format-es6.html:11 Set {WeakSet {…}}
     size: (...)
     __proto__: Set
-    <entries>[1]
+    [[Entries]]: Array[1]
         0: WeakSet
+        length: 1
 console-format-es6.html:12 [Set]
     0: Set
     length: 1
@@ -184,17 +199,19 @@ globals[11]
 Set {WeakSet {…}}
     size: (...)
     __proto__: Set
-    <entries>[1]
+    [[Entries]]: Array[1]
         0: WeakSet
+        length: 1
 console-format-es6.html:11 Map {" from str " => " to str ", undefined => undefined, null => null, 42 => 42, Object {foo: "from"} => Object {foo: "to"}}
     size: (...)
     __proto__: Map
-    <entries>[5]
+    [[Entries]]: Array[5]
         0: {" from str " => " to str "}
         1: {undefined => undefined}
         2: {null => null}
         3: {42 => 42}
         4: {Object => Object}
+        length: 5
 console-format-es6.html:12 [Map]
     0: Map
     length: 1
@@ -203,10 +220,11 @@ globals[12]
 Map {" from str " => " to str ", undefined => undefined, null => null, 42 => 42, Object {foo: "from"} => Object {foo: "to"}}
     size: (...)
     __proto__: Map
-    <entries>[5]
+    [[Entries]]: Array[5]
         0: {" from str " => " to str "}
         1: {undefined => undefined}
         2: {null => null}
         3: {42 => 42}
         4: {Object => Object}
+        length: 5
 

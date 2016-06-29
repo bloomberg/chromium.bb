@@ -635,7 +635,26 @@ InjectedScript.prototype = {
             }
         }
 
+        if (subtype === "internal#entry") {
+            if ("key" in obj)
+                return "{" + this._describeIncludingPrimitives(obj.key) + " => " + this._describeIncludingPrimitives(obj.value) + "}";
+            return this._describeIncludingPrimitives(obj.value);
+        }
+
         return className;
+    },
+
+    /**
+     * @param {*} value
+     * @return {string}
+     */
+    _describeIncludingPrimitives: function(value)
+    {
+        if (typeof value === "string")
+            return "\"" + value.replace(/\n/g, "\u21B5") + "\"";
+        if (value === null)
+            return "" + value;
+        return this.isPrimitiveValue(value) ? toStringDescription(value) : (this._describe(value) || "");
     },
 
     /**
@@ -827,7 +846,12 @@ InjectedScript.RemoteObject.prototype = {
             // Add internal properties to preview.
             var rawInternalProperties = InjectedScriptHost.getInternalProperties(object) || [];
             var internalProperties = [];
+            var entries = null;
             for (var i = 0; i < rawInternalProperties.length; i += 2) {
+                if (rawInternalProperties[i] === "[[Entries]]") {
+                    entries = /** @type {!Array<*>} */(rawInternalProperties[i + 1]);
+                    continue;
+                }
                 push(internalProperties, {
                     name: rawInternalProperties[i],
                     value: rawInternalProperties[i + 1],
@@ -839,7 +863,7 @@ InjectedScript.RemoteObject.prototype = {
             this._appendPropertyDescriptors(preview, internalProperties, propertiesThreshold, secondLevelKeys, isTable);
 
             if (this.subtype === "map" || this.subtype === "set" || this.subtype === "iterator")
-                this._appendEntriesPreview(object, preview, skipEntriesPreview);
+                this._appendEntriesPreview(entries, preview, skipEntriesPreview);
 
         } catch (e) {}
 
@@ -947,13 +971,12 @@ InjectedScript.RemoteObject.prototype = {
     },
 
     /**
-     * @param {!Object} object
+     * @param {?Array<*>} entries
      * @param {!RuntimeAgent.ObjectPreview} preview
      * @param {boolean=} skipEntriesPreview
      */
-    _appendEntriesPreview: function(object, preview, skipEntriesPreview)
+    _appendEntriesPreview: function(entries, preview, skipEntriesPreview)
     {
-        var entries = InjectedScriptHost.collectionEntries(object);
         if (!entries)
             return;
         if (skipEntriesPreview) {

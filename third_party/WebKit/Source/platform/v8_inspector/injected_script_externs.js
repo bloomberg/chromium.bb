@@ -33,12 +33,6 @@ InjectedScriptHostClass.prototype.subtype = function(obj) {}
 InjectedScriptHostClass.prototype.isTypedArray = function(obj) {}
 
 /**
- * @param {!Object} obj
- * @return {?Array.<*>}
- */
-InjectedScriptHostClass.prototype.collectionEntries = function(obj) {}
-
-/**
  * @param {*} obj
  * @return {!Array.<*>}
  */

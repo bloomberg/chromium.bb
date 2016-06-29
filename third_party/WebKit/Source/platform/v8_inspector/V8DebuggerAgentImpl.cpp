@@ -25,7 +25,6 @@ using blink::protocol::Array;
 using blink::protocol::Maybe;
 using blink::protocol::Debugger::BreakpointId;
 using blink::protocol::Debugger::CallFrame;
-using blink::protocol::Debugger::CollectionEntry;
 using blink::protocol::Runtime::ExceptionDetails;
 using blink::protocol::Debugger::FunctionDetails;
 using blink::protocol::Debugger::GeneratorObjectDetails;
@@ -712,40 +711,6 @@ void V8DebuggerAgentImpl::getGeneratorObjectDetails(ErrorString* errorString, co
     if (hasInternalError(errorString, !protocolDetails))
         return;
     *outDetails = std::move(protocolDetails);
-}
-
-void V8DebuggerAgentImpl::getCollectionEntries(ErrorString* errorString, const String16& objectId, std::unique_ptr<protocol::Array<CollectionEntry>>* outEntries)
-{
-    if (!checkEnabled(errorString))
-        return;
-    InjectedScript::ObjectScope scope(errorString, m_debugger, m_session->contextGroupId(), objectId);
-    if (!scope.initialize())
-        return;
-    if (!scope.object()->IsObject()) {
-        *errorString = "Object with given id is not a collection";
-        return;
-    }
-    v8::Local<v8::Object> object = scope.object().As<v8::Object>();
-
-    v8::Local<v8::Value> entriesValue = m_debugger->collectionEntries(object);
-    if (hasInternalError(errorString, entriesValue.IsEmpty()))
-        return;
-    if (entriesValue->IsUndefined()) {
-        *errorString = "Object with given id is not a collection";
-        return;
-    }
-    if (hasInternalError(errorString, !entriesValue->IsArray()))
-        return;
-    v8::Local<v8::Array> entriesArray = entriesValue.As<v8::Array>();
-    if (!scope.injectedScript()->wrapPropertyInArray(errorString, entriesArray, toV8StringInternalized(m_isolate, "key"), scope.objectGroupName()))
-        return;
-    if (!scope.injectedScript()->wrapPropertyInArray(errorString, entriesArray, toV8StringInternalized(m_isolate, "value"), scope.objectGroupName()))
-        return;
-    protocol::ErrorSupport errors;
-    std::unique_ptr<protocol::Array<CollectionEntry>> entries = protocol::Array<CollectionEntry>::parse(toProtocolValue(scope.context(), entriesArray).get(), &errors);
-    if (hasInternalError(errorString, !entries))
-        return;
-    *outEntries = std::move(entries);
 }
 
 void V8DebuggerAgentImpl::schedulePauseOnNextStatement(const String16& breakReason, std::unique_ptr<protocol::DictionaryValue> data)

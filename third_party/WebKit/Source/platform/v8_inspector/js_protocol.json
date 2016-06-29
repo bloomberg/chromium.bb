@@ -377,16 +377,6 @@
                 "description": "Information about the generator object."
             },
             {
-                "id": "CollectionEntry",
-                "hidden": true,
-                "type": "object",
-                "properties": [
-                    { "name": "key", "$ref": "Runtime.RemoteObject", "optional": true, "description": "Entry key of a map-like collection, otherwise not provided." },
-                    { "name": "value", "$ref": "Runtime.RemoteObject", "description": "Entry value." }
-                ],
-                "description": "Collection entry."
-            },
-            {
                 "id": "CallFrame",
                 "type": "object",
                 "properties": [
@@ -598,17 +588,6 @@
                     { "name": "details", "$ref": "GeneratorObjectDetails", "description": "Information about the generator object." }
                 ],
                 "description": "Returns detailed information on given generator object."
-            },
-            {
-                "name": "getCollectionEntries",
-                "hidden": true,
-                "parameters": [
-                    { "name": "objectId", "$ref": "Runtime.RemoteObjectId", "description": "Id of the collection to get entries for." }
-                ],
-                "returns": [
-                    { "name": "entries", "type": "array", "items": { "$ref": "CollectionEntry" }, "description": "Array of collection entries." }
-                ],
-                "description": "Returns entries of given collection."
             },
             {
                 "name": "setPauseOnExceptions",

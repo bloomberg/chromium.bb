@@ -98,9 +98,6 @@ public:
     void getGeneratorObjectDetails(ErrorString*,
         const String16& objectId,
         std::unique_ptr<protocol::Debugger::GeneratorObjectDetails>*) override;
-    void getCollectionEntries(ErrorString*,
-        const String16& objectId,
-        std::unique_ptr<protocol::Array<protocol::Debugger::CollectionEntry>>*) override;
     void pause(ErrorString*) override;
     void resume(ErrorString*) override;
     void stepOver(ErrorString*) override;

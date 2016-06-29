@@ -21,9 +21,10 @@ console-format-es6-2.html:11 MapIterator {41, Object {foo: 1}}
     [[IteratorHasMore]]: true
     [[IteratorIndex]]: 0
     [[IteratorKind]]: "keys"
-    <entries>[2]
+    [[Entries]]: Array[2]
         0: 41
         1: Object
+        length: 2
 console-format-es6-2.html:12 [MapIterator]
     0: MapIterator
     length: 1
@@ -34,17 +35,19 @@ MapIterator {41, Object {foo: 1}}
     [[IteratorHasMore]]: true
     [[IteratorIndex]]: 0
     [[IteratorKind]]: "keys"
-    <entries>[2]
+    [[Entries]]: Array[2]
         0: 41
         1: Object
+        length: 2
 console-format-es6-2.html:11 MapIterator {42, Object {foo: 2}}
     __proto__: Map Iterator
     [[IteratorHasMore]]: true
     [[IteratorIndex]]: 0
     [[IteratorKind]]: "values"
-    <entries>[2]
+    [[Entries]]: Array[2]
         0: 42
         1: Object
+        length: 2
 console-format-es6-2.html:12 [MapIterator]
     0: MapIterator
     length: 1
@@ -55,17 +58,19 @@ MapIterator {42, Object {foo: 2}}
     [[IteratorHasMore]]: true
     [[IteratorIndex]]: 0
     [[IteratorKind]]: "values"
-    <entries>[2]
+    [[Entries]]: Array[2]
         0: 42
         1: Object
+        length: 2
 console-format-es6-2.html:11 MapIterator {[41, 42], [Object, Object]}
     __proto__: Map Iterator
     [[IteratorHasMore]]: true
     [[IteratorIndex]]: 0
     [[IteratorKind]]: "entries"
-    <entries>[2]
+    [[Entries]]: Array[2]
         0: Array[2]
         1: Array[2]
+        length: 2
 console-format-es6-2.html:12 [MapIterator]
     0: MapIterator
     length: 1
@@ -76,17 +81,19 @@ MapIterator {[41, 42], [Object, Object]}
     [[IteratorHasMore]]: true
     [[IteratorIndex]]: 0
     [[IteratorKind]]: "entries"
-    <entries>[2]
+    [[Entries]]: Array[2]
         0: Array[2]
         1: Array[2]
+        length: 2
 console-format-es6-2.html:11 SetIterator {41, Object {foo: 1}}
     __proto__: Set Iterator
     [[IteratorHasMore]]: true
     [[IteratorIndex]]: 0
     [[IteratorKind]]: "values"
-    <entries>[2]
+    [[Entries]]: Array[2]
         0: 41
         1: Object
+        length: 2
 console-format-es6-2.html:12 [SetIterator]
     0: SetIterator
     length: 1
@@ -97,17 +104,19 @@ SetIterator {41, Object {foo: 1}}
     [[IteratorHasMore]]: true
     [[IteratorIndex]]: 0
     [[IteratorKind]]: "values"
-    <entries>[2]
+    [[Entries]]: Array[2]
         0: 41
         1: Object
+        length: 2
 console-format-es6-2.html:11 SetIterator {41, Object {foo: 1}}
     __proto__: Set Iterator
     [[IteratorHasMore]]: true
     [[IteratorIndex]]: 0
     [[IteratorKind]]: "values"
-    <entries>[2]
+    [[Entries]]: Array[2]
         0: 41
         1: Object
+        length: 2
 console-format-es6-2.html:12 [SetIterator]
     0: SetIterator
     length: 1
@@ -118,17 +127,19 @@ SetIterator {41, Object {foo: 1}}
     [[IteratorHasMore]]: true
     [[IteratorIndex]]: 0
     [[IteratorKind]]: "values"
-    <entries>[2]
+    [[Entries]]: Array[2]
         0: 41
         1: Object
+        length: 2
 console-format-es6-2.html:11 SetIterator {[41, 41], [Object, Object]}
     __proto__: Set Iterator
     [[IteratorHasMore]]: true
     [[IteratorIndex]]: 0
     [[IteratorKind]]: "entries"
-    <entries>[2]
+    [[Entries]]: Array[2]
         0: Array[2]
         1: Array[2]
+        length: 2
 console-format-es6-2.html:12 [SetIterator]
     0: SetIterator
     length: 1
@@ -139,16 +150,18 @@ SetIterator {[41, 41], [Object, Object]}
     [[IteratorHasMore]]: true
     [[IteratorIndex]]: 0
     [[IteratorKind]]: "entries"
-    <entries>[2]
+    [[Entries]]: Array[2]
         0: Array[2]
         1: Array[2]
+        length: 2
 console-format-es6-2.html:11 MapIterator {Object {foo: 2}}
     __proto__: Map Iterator
     [[IteratorHasMore]]: true
     [[IteratorIndex]]: 1
     [[IteratorKind]]: "values"
-    <entries>[1]
+    [[Entries]]: Array[1]
         0: Object
+        length: 1
 console-format-es6-2.html:12 [MapIterator]
     0: MapIterator
     length: 1
@@ -159,15 +172,17 @@ MapIterator {Object {foo: 2}}
     [[IteratorHasMore]]: true
     [[IteratorIndex]]: 1
     [[IteratorKind]]: "values"
-    <entries>[1]
+    [[Entries]]: Array[1]
         0: Object
+        length: 1
 console-format-es6-2.html:11 SetIterator {Object {foo: 1}}
     __proto__: Set Iterator
     [[IteratorHasMore]]: true
     [[IteratorIndex]]: 1
     [[IteratorKind]]: "values"
-    <entries>[1]
+    [[Entries]]: Array[1]
         0: Object
+        length: 1
 console-format-es6-2.html:12 [SetIterator]
     0: SetIterator
     length: 1
@@ -178,6 +193,7 @@ SetIterator {Object {foo: 1}}
     [[IteratorHasMore]]: true
     [[IteratorIndex]]: 1
     [[IteratorKind]]: "values"
-    <entries>[1]
+    [[Entries]]: Array[1]
         0: Object
+        length: 1
 

@@ -37,6 +37,7 @@
 #include "platform/v8_inspector/ScriptBreakpoint.h"
 #include "platform/v8_inspector/V8Compat.h"
 #include "platform/v8_inspector/V8DebuggerAgentImpl.h"
+#include "platform/v8_inspector/V8InjectedScriptHost.h"
 #include "platform/v8_inspector/V8InspectorSessionImpl.h"
 #include "platform/v8_inspector/V8RuntimeAgentImpl.h"
 #include "platform/v8_inspector/V8StackTraceImpl.h"
@@ -669,6 +670,23 @@ v8::MaybeLocal<v8::Value> V8DebuggerImpl::functionScopes(v8::Local<v8::Function>
     return callDebuggerMethod("getFunctionScopes", 1, argv);
 }
 
+v8::MaybeLocal<v8::Array> V8DebuggerImpl::internalProperties(v8::Local<v8::Context> context, v8::Local<v8::Value> value)
+{
+    v8::Local<v8::Array> properties;
+    if (!v8::Debug::GetInternalProperties(m_isolate, value).ToLocal(&properties))
+        return v8::MaybeLocal<v8::Array>();
+    if (!enabled())
+        return properties;
+    if (value->IsMap() || value->IsWeakMap() || value->IsSet() || value->IsWeakSet() || value->IsSetIterator() || value->IsMapIterator()) {
+        v8::Local<v8::Value> entries = collectionEntries(context, v8::Local<v8::Object>::Cast(value));
+        if (entries->IsArray()) {
+            properties->Set(properties->Length(), v8InternalizedString("[[Entries]]"));
+            properties->Set(properties->Length(), entries);
+        }
+    }
+    return properties;
+}
+
 v8::Local<v8::Value> V8DebuggerImpl::generatorObjectDetails(v8::Local<v8::Object>& object)
 {
     if (!enabled()) {
@@ -679,14 +697,27 @@ v8::Local<v8::Value> V8DebuggerImpl::generatorObjectDetails(v8::Local<v8::Object
     return callDebuggerMethod("getGeneratorObjectDetails", 1, argv).ToLocalChecked();
 }
 
-v8::Local<v8::Value> V8DebuggerImpl::collectionEntries(v8::Local<v8::Object>& object)
+v8::Local<v8::Value> V8DebuggerImpl::collectionEntries(v8::Local<v8::Context> context, v8::Local<v8::Object> object)
 {
     if (!enabled()) {
         NOTREACHED();
-        return v8::Local<v8::Value>::New(m_isolate, v8::Undefined(m_isolate));
+        return v8::Undefined(m_isolate);
     }
     v8::Local<v8::Value> argv[] = { object };
-    return callDebuggerMethod("getCollectionEntries", 1, argv).ToLocalChecked();
+    v8::Local<v8::Value> entriesValue = callDebuggerMethod("getCollectionEntries", 1, argv).ToLocalChecked();
+    if (!entriesValue->IsArray())
+        return v8::Undefined(m_isolate);
+    v8::Local<v8::Array> entries = entriesValue.As<v8::Array>();
+    for (size_t i = 0; i < entries->Length(); ++i) {
+        v8::Local<v8::Value> entry;
+        if (!entries->Get(context, i).ToLocal(&entry) || !entry->IsObject())
+            continue;
+        if (!entry.As<v8::Object>()->SetPrivate(context, V8InjectedScriptHost::internalEntryPrivate(m_isolate), v8::True(m_isolate)).FromMaybe(false))
+            continue;
+    }
+    if (!entries->SetPrototype(context, v8::Null(m_isolate)).FromMaybe(false))
+        return v8::Undefined(m_isolate);
+    return entries;
 }
 
 bool V8DebuggerImpl::isPaused()
