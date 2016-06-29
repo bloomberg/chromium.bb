@@ -59,6 +59,19 @@ var termsReloadTimeout = null;
 var currentDeviceId = null;
 
 /**
+ * Indicates that OptIn flow is started in silent mode and no user interaction
+ * is expected.
+ * @type {boolean}
+ */
+var silentMode = false;
+
+/**
+ * Timeout to retry LSO in silent mode.
+ * @type {object}
+ */
+var retryTimeout = null;
+
+/**
  * Closes current window in response to request from native code. This does not
  * issue 'cancelAuthCode' message to native code.
  */
@@ -66,6 +79,7 @@ function closeWindowInternally() {
   windowClosedInternally = true;
   appWindow.close();
   appWindow = null;
+  cancelRetry();
 }
 
 /**
@@ -82,9 +96,11 @@ function sendNativeMessage(code, opt_Props) {
  * Applies localization for html content and sets terms webview.
  * @param {!Object} data Localized strings and relevant information.
  * @param {string} deviceId Current device id.
+ * @param {boolean} silentMode Indicates if OptIn started in silent mode.
  */
-function initialize(data, deviceId) {
+function initialize(data, deviceId, silentMode) {
   currentDeviceId = deviceId;
+  window.silentMode = silentMode;
   var doc = appWindow.contentWindow.document;
   var loadTimeData = appWindow.contentWindow.loadTimeData;
   loadTimeData.data = data;
@@ -171,7 +187,7 @@ function onNativeMessage(message) {
   }
 
   if (message.action == 'initialize') {
-    initialize(message.data, message.deviceId);
+    initialize(message.data, message.deviceId, message.silentMode);
   } else if (message.action == 'setMetricsMode') {
     setMetricsMode(message.text, message.canEnable, message.on);
   } else if (message.action == 'closeUI') {
@@ -188,6 +204,30 @@ function connectPort() {
   var hostName = 'com.google.arc_support';
   port = chrome.runtime.connectNative(hostName);
   port.onMessage.addListener(onNativeMessage);
+}
+
+/**
+ * Cancels current request to get authority code from LSO if it was previously
+ * scheduled.
+ */
+function cancelRetry() {
+  if (!retryTimeout) {
+    return;
+  }
+  clearTimeout(retryTimeout);
+  retryTimeout = null;
+}
+
+/**
+ * Schedules next retry to get authority code from LSO. Previous request is
+ * automatically canceled.
+ */
+function scheduleRetry() {
+  cancelRetry();
+  var retry = function() {
+    showPage('lso-loading');
+  };
+  retryTimeout = setTimeout(retry, 60000);
 }
 
 /**
@@ -227,7 +267,16 @@ function showPage(pageDivId) {
                   'device_type=arc_plus_plus&device_id=' + currentDeviceId +
                   '&hl=' + navigator.language;
   }
-  appWindow.show();
+
+  if (!silentMode) {
+    appWindow.show();
+  } else {
+    if (pageDivId == 'arc-loading') {
+      cancelRetry();
+    } else {
+      scheduleRetry();
+    }
+  }
 }
 
 /**
@@ -297,6 +346,12 @@ chrome.app.runtime.onLaunched.addListener(function() {
       if (!isApprovalResponse(lsoView.src)) {
         // Show LSO page when its content is ready.
         showPage('lso');
+        if (silentMode) {
+          var submitApproveCode =
+            'document.getElementById("connect_approve").submit();';
+          lsoView.executeScript({code: submitApproveCode}, function(results) {
+          });
+        }
         return;
       }
 
@@ -306,6 +361,7 @@ chrome.app.runtime.onLaunched.addListener(function() {
             authCodePrefix) {
           var authCode = results[0].substring(authCodePrefix.length);
           sendNativeMessage('setAuthCode', {code: authCode});
+          cancelRetry();
         } else {
           setErrorMessage(appWindow.contentWindow.loadTimeData.getString(
               'authorizationFailed'));
@@ -398,6 +454,7 @@ chrome.app.runtime.onLaunched.addListener(function() {
       clearTimeout(termsReloadTimeout);
       termsReloadTimeout = null;
     }
+    cancelRetry();
 
     if (windowClosedInternally) {
       return;
