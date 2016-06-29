@@ -29,6 +29,7 @@
 #include "base/files/file_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
+#include "base/run_loop.h"
 #include "platform/SharedBuffer.h"
 #include "platform/Timer.h"
 #include "platform/heap/Handle.h"
@@ -79,7 +80,7 @@ PassRefPtr<SharedBuffer> readFromFile(const String& path)
 
 void enterRunLoop()
 {
-    base::MessageLoop::current()->Run();
+    base::RunLoop().Run();
 }
 
 void exitRunLoop()

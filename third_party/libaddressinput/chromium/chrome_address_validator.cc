@@ -10,6 +10,7 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "third_party/libaddressinput/chromium/addressinput_util.h"
 #include "third_party/libaddressinput/chromium/input_suggester.h"
 #include "third_party/libaddressinput/src/cpp/include/libaddressinput/address_data.h"
@@ -147,11 +148,9 @@ void AddressValidator::RulesLoaded(bool success,
   if (success || attempts_number_[region_code] + 1 >= kMaxAttemptsNumber)
     return;
 
-  base::MessageLoop::current()->PostDelayedTask(
-      FROM_HERE,
-      base::Bind(&AddressValidator::RetryLoadRules,
-                 weak_factory_.GetWeakPtr(),
-                 region_code),
+  base::MessageLoop::current()->task_runner()->PostDelayedTask(
+      FROM_HERE, base::Bind(&AddressValidator::RetryLoadRules,
+                            weak_factory_.GetWeakPtr(), region_code),
       GetBaseRetryPeriod() * pow(2, attempts_number_[region_code]++));
 }
 

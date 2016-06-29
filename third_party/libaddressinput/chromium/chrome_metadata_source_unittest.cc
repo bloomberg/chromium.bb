@@ -4,6 +4,7 @@
 
 #include "third_party/libaddressinput/chromium/chrome_metadata_source.h"
 
+#include "base/run_loop.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_request_test_util.h"
@@ -40,7 +41,7 @@ class ChromeMetadataSourceTest : public testing::Test {
         ::i18n::addressinput::BuildCallback(
             this, &ChromeMetadataSourceTest::OnDownloaded));
     impl.Get(url_.spec(), *callback);
-    base::MessageLoop::current()->RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
   }
 
   void set_url(const GURL& url) { url_ = url; }

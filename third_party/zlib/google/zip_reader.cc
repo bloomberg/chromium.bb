@@ -11,6 +11,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -394,7 +395,7 @@ void ZipReader::ExtractCurrentEntryToFilePathAsync(
     return;
   }
 
-  base::MessageLoop::current()->PostTask(
+  base::MessageLoop::current()->task_runner()->PostTask(
       FROM_HERE,
       base::Bind(&ZipReader::ExtractChunk, weak_ptr_factory_.GetWeakPtr(),
                  Passed(std::move(output_file)), success_callback,
@@ -501,7 +502,7 @@ void ZipReader::ExtractChunk(base::File output_file,
 
     progress_callback.Run(current_progress);
 
-    base::MessageLoop::current()->PostTask(
+    base::MessageLoop::current()->task_runner()->PostTask(
         FROM_HERE,
         base::Bind(&ZipReader::ExtractChunk, weak_ptr_factory_.GetWeakPtr(),
                    Passed(std::move(output_file)), success_callback,
