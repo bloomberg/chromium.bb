@@ -179,6 +179,19 @@ void NodeController::ConnectToChild(
     DCHECK(inserted);
   }
 
+#if defined(OS_WIN)
+  // On Windows, we need to duplicate the process handle because we have no
+  // control over its lifetime and it may become invalid by the time the posted
+  // task runs.
+  HANDLE dup_handle = INVALID_HANDLE_VALUE;
+  BOOL ok = ::DuplicateHandle(
+      base::GetCurrentProcessHandle(), process_handle,
+      base::GetCurrentProcessHandle(), &dup_handle,
+      0, FALSE, DUPLICATE_SAME_ACCESS);
+  DPCHECK(ok);
+  process_handle = dup_handle;
+#endif
+
   io_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&NodeController::ConnectToChildOnIOThread,

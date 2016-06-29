@@ -109,6 +109,7 @@ class NodeChannel : public base::RefCountedThreadSafe<NodeChannel>,
   // Invokes the bad message callback for this channel, if any.
   void NotifyBadMessage(const std::string& error);
 
+  // Note: On Windows, we take ownership of the remote process handle.
   void SetRemoteProcessHandle(base::ProcessHandle process_handle);
   bool HasRemoteProcessHandle();
   // Note: The returned |ProcessHandle| is owned by the caller and should be
@@ -191,6 +192,9 @@ class NodeChannel : public base::RefCountedThreadSafe<NodeChannel>,
 
   base::Lock remote_process_handle_lock_;
   base::ProcessHandle remote_process_handle_ = base::kNullProcessHandle;
+#if defined(OS_WIN)
+  ScopedPlatformHandle scoped_remote_process_handle_;
+#endif
 
 #if defined(OS_MACOSX) && !defined(OS_IOS)
   base::Lock pending_mach_messages_lock_;

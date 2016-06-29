@@ -223,8 +223,13 @@ void NodeChannel::NotifyBadMessage(const std::string& error) {
 void NodeChannel::SetRemoteProcessHandle(base::ProcessHandle process_handle) {
   DCHECK(io_task_runner_->RunsTasksOnCurrentThread());
   base::AutoLock lock(remote_process_handle_lock_);
+  DCHECK_EQ(base::kNullProcessHandle, remote_process_handle_);
   CHECK_NE(remote_process_handle_, base::GetCurrentProcessHandle());
   remote_process_handle_ = process_handle;
+#if defined(OS_WIN)
+  DCHECK(!scoped_remote_process_handle_.is_valid());
+  scoped_remote_process_handle_.reset(PlatformHandle(process_handle));
+#endif
 }
 
 bool NodeChannel::HasRemoteProcessHandle() {
@@ -243,7 +248,7 @@ base::ProcessHandle NodeChannel::CopyRemoteProcessHandle() {
         base::GetCurrentProcessHandle(), remote_process_handle_,
         base::GetCurrentProcessHandle(), &handle, 0, FALSE,
         DUPLICATE_SAME_ACCESS);
-    DCHECK(result);
+    DPCHECK(result);
     return handle;
   }
   return base::kNullProcessHandle;
