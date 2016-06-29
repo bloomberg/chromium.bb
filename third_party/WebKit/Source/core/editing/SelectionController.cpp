@@ -318,7 +318,7 @@ void SelectionController::selectClosestWordFromHitTestResult(const HitTestResult
         // If node doesn't have text except space, tab or line break, do not
         // select that 'empty' area.
         EphemeralRangeInFlatTree range(newSelection.start(), newSelection.end());
-        const String& str = plainText(range, TextIteratorEmitsObjectReplacementCharacter);
+        const String& str = plainText(range, innerNode->hasEditableStyle() ? TextIteratorEmitsObjectReplacementCharacter : TextIteratorDefaultBehavior);
         if (str.isEmpty() || str.simplifyWhiteSpace().containsOnlyWhitespace())
             return;
 
