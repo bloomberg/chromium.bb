@@ -38,6 +38,7 @@ class TestGclientWriteConfigFile(
     self._AssertGclientConfigSpec("""solutions = [{'custom_deps': {},
   'custom_vars': {},
   'deps_file': '.DEPS.git',
+  'managed': True,
   'name': 'src',
   'url': 'https://chromium.googlesource.com/chromium/src.git'}]
 """)
@@ -49,6 +50,7 @@ class TestGclientWriteConfigFile(
     self._AssertGclientConfigSpec("""solutions = [{'custom_deps': {},
   'custom_vars': {},
   'deps_file': '.DEPS.git',
+  'managed': True,
   'name': 'src',
   'url': 'https://chromium.googlesource.com/chromium/src.git'}]
 """, use_cache=False)
@@ -59,11 +61,13 @@ class TestGclientWriteConfigFile(
     self._AssertGclientConfigSpec("""solutions = [{'custom_deps': {},
   'custom_vars': {},
   'deps_file': '.DEPS.git',
+  'managed': True,
   'name': 'src',
   'url': 'https://chromium.googlesource.com/chromium/src.git'},
  {'custom_deps': {},
   'custom_vars': {},
   'deps_file': '.DEPS.git',
+  'managed': True,
   'name': 'src-internal',
   'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git'}]
 """)
@@ -75,6 +79,7 @@ class TestGclientWriteConfigFile(
     self._AssertGclientConfigSpec("""solutions = [{'custom_deps': {},
   'custom_vars': {},
   'deps_file': '.DEPS.git',
+  'managed': True,
   'name': 'src',
   'url': 'https://chromium.googlesource.com/chromium/src.git@7becbe4afb42b3301d42149d7d1cade017f150ff'}]
 """)
@@ -86,11 +91,13 @@ class TestGclientWriteConfigFile(
     self._AssertGclientConfigSpec("""solutions = [{'custom_deps': {},
   'custom_vars': {},
   'deps_file': '.DEPS.git',
+  'managed': True,
   'name': 'src',
   'url': 'https://chromium.googlesource.com/chromium/src.git@7becbe4afb42b3301d42149d7d1cade017f150ff'},
  {'custom_deps': {},
   'custom_vars': {},
   'deps_file': '.DEPS.git',
+  'managed': True,
   'name': 'src-internal',
   'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git'}]
 """)
@@ -101,6 +108,7 @@ class TestGclientWriteConfigFile(
     self._AssertGclientConfigSpec("""solutions = [{'custom_deps': {},
   'custom_vars': {},
   'deps_file': 'releases/45.0.2431.1/DEPS',
+  'managed': True,
   'name': 'CHROME_DEPS',
   'url': 'https://chrome-internal.googlesource.com/chrome/tools/buildspec.git'}]
 """)
@@ -111,6 +119,7 @@ class TestGclientWriteConfigFile(
     self._AssertGclientConfigSpec("""solutions = [{'custom_deps': {},
   'custom_vars': {},
   'deps_file': '.DEPS.git',
+  'managed': True,
   'name': 'src',
   'url': 'https://chromium.googlesource.com/chromium/src.git@refs/tags/41.0.2270.0'}]
 """)
@@ -121,6 +130,7 @@ class TestGclientWriteConfigFile(
     self._AssertGclientConfigSpec("""solutions = [{'custom_deps': {},
   'custom_vars': {},
   'deps_file': 'releases/41.0.2270.0/.DEPS.git',
+  'managed': True,
   'name': 'CHROME_DEPS',
   'url': 'https://chrome-internal.googlesource.com/chrome/tools/buildspec.git'}]
 """)
@@ -154,6 +164,7 @@ class TestGclientWriteConfigFile(
     self._AssertGclientConfigSpec("""solutions = [{'custom_deps': {'dep1': '1'},
   'custom_vars': {'var1': 'test1', 'var2': 'test2'},
   'deps_file': '.DEPS.git',
+  'managed': True,
   'name': 'src',
   'url': 'https://chromium.googlesource.com/chromium/src.git@7becbe4afb42b3301d42149d7d1cade017f150ff'},
  {'custom_deps': {'dep2': '2', 'dep3': '3'}, 'name': 'no-vars'},
@@ -161,6 +172,7 @@ class TestGclientWriteConfigFile(
  {'custom_deps': {},
   'custom_vars': {},
   'deps_file': '.DEPS.git',
+  'managed': True,
   'name': 'src-internal',
   'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git'}]
 """)
