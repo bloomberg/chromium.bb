@@ -185,7 +185,7 @@ public:
             }
             ASSERT(m_readerThread);
             if (!m_readerThread->isCurrentThread()) {
-                m_readerThread->getWebTaskRunner()->postTask(BLINK_FROM_HERE, threadSafeBind(&DestinationContext::notify, this));
+                m_readerThread->getWebTaskRunner()->postTask(BLINK_FROM_HERE, threadSafeBind(&DestinationContext::notify, wrapPassRefPtr(this)));
                 return;
             }
         }
@@ -272,7 +272,7 @@ public:
             // We need to use threadSafeBind here to retain the context. Note
             // |context()| return value is of type DestinationContext*, not
             // PassRefPtr<DestinationContext>.
-            Platform::current()->currentThread()->getWebTaskRunner()->postTask(BLINK_FROM_HERE, threadSafeBind(&DestinationContext::notify, context()));
+            Platform::current()->currentThread()->getWebTaskRunner()->postTask(BLINK_FROM_HERE, threadSafeBind(&DestinationContext::notify, wrapPassRefPtr(context())));
         }
     }
     ~DestinationReader() override

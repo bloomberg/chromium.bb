@@ -52,7 +52,6 @@ void AsyncAudioDecoder::decodeAsync(DOMArrayBuffer* audioData, float sampleRate,
     if (!audioData)
         return;
 
-    // The leak references to successCallback and errorCallback are picked up on notifyComplete.
     m_thread->getWebTaskRunner()->postTask(BLINK_FROM_HERE, threadSafeBind(&AsyncAudioDecoder::decode, wrapCrossThreadPersistent(audioData), sampleRate, wrapCrossThreadPersistent(successCallback), wrapCrossThreadPersistent(errorCallback), wrapCrossThreadPersistent(resolver), wrapCrossThreadPersistent(context)));
 }
 
@@ -61,16 +60,13 @@ void AsyncAudioDecoder::decode(DOMArrayBuffer* audioData, float sampleRate, Audi
     RefPtr<AudioBus> bus = createBusFromInMemoryAudioFile(audioData->data(), audioData->byteLength(), false, sampleRate);
 
     // Decoding is finished, but we need to do the callbacks on the main thread.
-    // The leaked reference to audioBuffer is picked up in notifyComplete.
-    Platform::current()->mainThread()->getWebTaskRunner()->postTask(BLINK_FROM_HERE, threadSafeBind(&AsyncAudioDecoder::notifyComplete, wrapCrossThreadPersistent(audioData), wrapCrossThreadPersistent(successCallback), wrapCrossThreadPersistent(errorCallback), bus.release().leakRef(), wrapCrossThreadPersistent(resolver), wrapCrossThreadPersistent(context)));
+    // A reference to |*bus| is retained by WTF::Function and will be removed after notifyComplete() is done.
+    Platform::current()->mainThread()->getWebTaskRunner()->postTask(BLINK_FROM_HERE, threadSafeBind(&AsyncAudioDecoder::notifyComplete, wrapCrossThreadPersistent(audioData), wrapCrossThreadPersistent(successCallback), wrapCrossThreadPersistent(errorCallback), bus.release(), wrapCrossThreadPersistent(resolver), wrapCrossThreadPersistent(context)));
 }
 
 void AsyncAudioDecoder::notifyComplete(DOMArrayBuffer*, AudioBufferCallback* successCallback, AudioBufferCallback* errorCallback, AudioBus* audioBus, ScriptPromiseResolver* resolver, AbstractAudioContext* context)
 {
     ASSERT(isMainThread());
-
-    // Adopt references, so everything gets correctly dereffed.
-    RefPtr<AudioBus> audioBusRef = adoptRef(audioBus);
 
     AudioBuffer* audioBuffer = AudioBuffer::createFromAudioBus(audioBus);
 

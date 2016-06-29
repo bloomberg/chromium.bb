@@ -142,7 +142,7 @@ private:
             return;
         }
         ++m_token;
-        m_readerThread->getWebTaskRunner()->postTask(BLINK_FROM_HERE, threadSafeBind(&Context::updateReader, this, m_token));
+        m_readerThread->getWebTaskRunner()->postTask(BLINK_FROM_HERE, threadSafeBind(&Context::updateReader, wrapPassRefPtr(this), m_token));
     }
 
     std::unique_ptr<Reader> m_reader;

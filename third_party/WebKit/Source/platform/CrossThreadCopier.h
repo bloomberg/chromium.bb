@@ -71,50 +71,31 @@ struct CrossThreadCopierPassThrough {
     }
 };
 
-template <typename T, bool isArithmeticOrEnum, bool isThreadSafeRefCounted>
+template <typename T, bool isArithmeticOrEnum>
 struct CrossThreadCopierBase;
 
 // Arithmetic values (integers or floats) and enums can be safely copied.
-template <typename T, bool isThreadSafeRefCounted>
-struct CrossThreadCopierBase<T, true, isThreadSafeRefCounted> : public CrossThreadCopierPassThrough<T> {
+template <typename T>
+struct CrossThreadCopierBase<T, true> : public CrossThreadCopierPassThrough<T> {
     STATIC_ONLY(CrossThreadCopierBase);
 };
 
-// Custom copy method for ThreadSafeRefCounted.
 template <typename T>
-struct CrossThreadCopierBase<T, false, true> {
-    STATIC_ONLY(CrossThreadCopierBase);
-    typedef typename WTF::RemoveTemplate<T, RefPtr>::Type TypeWithoutRefPtr;
-    typedef typename WTF::RemoveTemplate<TypeWithoutRefPtr, PassRefPtr>::Type TypeWithoutPassRefPtr;
-    typedef typename std::remove_pointer<TypeWithoutPassRefPtr>::type RefCountedType;
-
-    // Verify that only one of the above did a change.
-    static_assert((std::is_same<RefPtr<RefCountedType>, T>::value
-        || std::is_same<PassRefPtr<RefCountedType>, T>::value
-        || std::is_same<RefCountedType*, T>::value),
-        "only one type modification should be allowed");
-
-    typedef PassRefPtr<RefCountedType> Type;
-    static Type copy(const T& refPtr)
-    {
-        return refPtr;
-    }
-};
-
-template <typename T>
-struct CrossThreadCopier : public CrossThreadCopierBase<
-    T,
-    std::is_arithmetic<T>::value || std::is_enum<T>::value,
-    WTF::IsSubclassOfTemplate<typename WTF::RemoveTemplate<T, RefPtr>::Type, ThreadSafeRefCounted>::value
-    || WTF::IsSubclassOfTemplate<typename std::remove_pointer<T>::type, ThreadSafeRefCounted>::value
-    || WTF::IsSubclassOfTemplate<typename WTF::RemoveTemplate<T, PassRefPtr>::Type, ThreadSafeRefCounted>::value
-    || std::is_base_of<SkRefCnt, typename WTF::RemoveTemplate<T, RefPtr>::Type>::value
-    || std::is_base_of<SkRefCnt, typename std::remove_pointer<T>::type>::value
-    || std::is_base_of<SkRefCnt, typename WTF::RemoveTemplate<T, PassRefPtr>::Type>::value> {
+struct CrossThreadCopier : public CrossThreadCopierBase<T, std::is_arithmetic<T>::value || std::is_enum<T>::value> {
     STATIC_ONLY(CrossThreadCopier);
 };
 
 // CrossThreadCopier specializations follow.
+template <typename T>
+struct CrossThreadCopier<PassRefPtr<T>> : public CrossThreadCopierPassThrough<PassRefPtr<T>> {
+    STATIC_ONLY(CrossThreadCopier);
+    static_assert(WTF::IsSubclassOfTemplate<T, ThreadSafeRefCounted>::value || std::is_base_of<SkRefCnt, T>::value, "PassRefPtr<T> can be passed across threads only if T is ThreadSafeRefCounted or SkRefCnt.");
+};
+template <typename T>
+struct CrossThreadCopier<RefPtr<T>> : public CrossThreadCopierPassThrough<RefPtr<T>> {
+    STATIC_ONLY(CrossThreadCopier);
+    static_assert(WTF::IsSubclassOfTemplate<T, ThreadSafeRefCounted>::value || std::is_base_of<SkRefCnt, T>::value, "RefPtr<T> can be passed across threads only if T is ThreadSafeRefCounted or SkRefCnt.");
+};
 
 // nullptr_t can be passed through without any changes.
 template <>

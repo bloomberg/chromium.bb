@@ -61,8 +61,8 @@ public:
         ThreadHolder holder(this);
         m_waitableEvent = wrapUnique(new WaitableEvent());
 
-        postTaskToUpdatingThreadAndWait(BLINK_FROM_HERE, threadSafeBind(&Self::createHandle, this));
-        postTaskToReadingThreadAndWait(BLINK_FROM_HERE, threadSafeBind(&Self::obtainReader, this));
+        postTaskToUpdatingThreadAndWait(BLINK_FROM_HERE, threadSafeBind(&Self::createHandle, wrapPassRefPtr(this)));
+        postTaskToReadingThreadAndWait(BLINK_FROM_HERE, threadSafeBind(&Self::obtainReader, wrapPassRefPtr(this)));
     }
 
 private:
@@ -76,14 +76,14 @@ private:
     void obtainReader()
     {
         m_reader = m_handle->obtainReader(&m_client);
-        postTaskToUpdatingThread(BLINK_FROM_HERE, threadSafeBind(&Self::update, this));
+        postTaskToUpdatingThread(BLINK_FROM_HERE, threadSafeBind(&Self::update, wrapPassRefPtr(this)));
     }
     void update()
     {
         m_updater->update(DataConsumerHandle::create("handle2", m_context));
         m_updater.clear();
-        postTaskToReadingThread(BLINK_FROM_HERE, threadSafeBind(&Self::resetReader, this));
-        postTaskToReadingThread(BLINK_FROM_HERE, threadSafeBind(&Self::signalDone, this));
+        postTaskToReadingThread(BLINK_FROM_HERE, threadSafeBind(&Self::resetReader, wrapPassRefPtr(this)));
+        postTaskToReadingThread(BLINK_FROM_HERE, threadSafeBind(&Self::signalDone, wrapPassRefPtr(this)));
     }
 
     std::unique_ptr<WebDataConsumerHandle> m_handle;
@@ -100,8 +100,8 @@ public:
         ThreadHolder holder(this);
         m_waitableEvent = wrapUnique(new WaitableEvent());
 
-        postTaskToUpdatingThreadAndWait(BLINK_FROM_HERE, threadSafeBind(&Self::createHandle, this));
-        postTaskToReadingThreadAndWait(BLINK_FROM_HERE, threadSafeBind(&Self::obtainReader, this));
+        postTaskToUpdatingThreadAndWait(BLINK_FROM_HERE, threadSafeBind(&Self::createHandle, wrapPassRefPtr(this)));
+        postTaskToReadingThreadAndWait(BLINK_FROM_HERE, threadSafeBind(&Self::obtainReader, wrapPassRefPtr(this)));
     }
 
 private:
@@ -116,15 +116,15 @@ private:
     void obtainReader()
     {
         m_reader = m_handle->obtainReader(&m_client);
-        postTaskToUpdatingThread(BLINK_FROM_HERE, threadSafeBind(&Self::update, this));
+        postTaskToUpdatingThread(BLINK_FROM_HERE, threadSafeBind(&Self::update, wrapPassRefPtr(this)));
     }
     void update()
     {
         m_updater->update(DataConsumerHandle::create("handle2", m_context));
         m_updater.clear();
         m_handle = nullptr;
-        postTaskToReadingThread(BLINK_FROM_HERE, threadSafeBind(&Self::resetReader, this));
-        postTaskToReadingThread(BLINK_FROM_HERE, threadSafeBind(&Self::signalDone, this));
+        postTaskToReadingThread(BLINK_FROM_HERE, threadSafeBind(&Self::resetReader, wrapPassRefPtr(this)));
+        postTaskToReadingThread(BLINK_FROM_HERE, threadSafeBind(&Self::signalDone, wrapPassRefPtr(this)));
     }
 
     std::unique_ptr<WebDataConsumerHandle> m_handle;
@@ -141,8 +141,8 @@ public:
         ThreadHolder holder(this);
         m_waitableEvent = wrapUnique(new WaitableEvent());
 
-        postTaskToUpdatingThreadAndWait(BLINK_FROM_HERE, threadSafeBind(&Self::createHandle, this));
-        postTaskToReadingThreadAndWait(BLINK_FROM_HERE, threadSafeBind(&Self::obtainReader, this));
+        postTaskToUpdatingThreadAndWait(BLINK_FROM_HERE, threadSafeBind(&Self::createHandle, wrapPassRefPtr(this)));
+        postTaskToReadingThreadAndWait(BLINK_FROM_HERE, threadSafeBind(&Self::obtainReader, wrapPassRefPtr(this)));
     }
 
 private:
@@ -157,15 +157,15 @@ private:
     void obtainReader()
     {
         m_reader = m_handle->obtainReader(&m_client);
-        postTaskToUpdatingThread(BLINK_FROM_HERE, threadSafeBind(&Self::update, this));
+        postTaskToUpdatingThread(BLINK_FROM_HERE, threadSafeBind(&Self::update, wrapPassRefPtr(this)));
     }
     void update()
     {
-        postTaskToReadingThread(BLINK_FROM_HERE, threadSafeBind(&Self::resetReader, this));
+        postTaskToReadingThread(BLINK_FROM_HERE, threadSafeBind(&Self::resetReader, wrapPassRefPtr(this)));
         m_updater->update(DataConsumerHandle::create("handle2", m_context));
         m_updater.clear();
-        postTaskToReadingThread(BLINK_FROM_HERE, threadSafeBind(&Self::resetReader, this));
-        postTaskToReadingThread(BLINK_FROM_HERE, threadSafeBind(&Self::signalDone, this));
+        postTaskToReadingThread(BLINK_FROM_HERE, threadSafeBind(&Self::resetReader, wrapPassRefPtr(this)));
+        postTaskToReadingThread(BLINK_FROM_HERE, threadSafeBind(&Self::signalDone, wrapPassRefPtr(this)));
     }
 
     std::unique_ptr<WebDataConsumerHandle> m_handle;
@@ -183,8 +183,8 @@ public:
         m_waitableEvent = wrapUnique(new WaitableEvent());
         m_updateEvent = wrapUnique(new WaitableEvent());
 
-        postTaskToUpdatingThreadAndWait(BLINK_FROM_HERE, threadSafeBind(&Self::createHandle, this));
-        postTaskToReadingThreadAndWait(BLINK_FROM_HERE, threadSafeBind(&Self::obtainReader, this));
+        postTaskToUpdatingThreadAndWait(BLINK_FROM_HERE, threadSafeBind(&Self::createHandle, wrapPassRefPtr(this)));
+        postTaskToReadingThreadAndWait(BLINK_FROM_HERE, threadSafeBind(&Self::obtainReader, wrapPassRefPtr(this)));
     }
 
 private:
@@ -199,17 +199,17 @@ private:
     void obtainReader()
     {
         m_reader = m_handle->obtainReader(&m_client);
-        postTaskToUpdatingThread(BLINK_FROM_HERE, threadSafeBind(&Self::update, this));
+        postTaskToUpdatingThread(BLINK_FROM_HERE, threadSafeBind(&Self::update, wrapPassRefPtr(this)));
         m_updateEvent->wait();
     }
 
     void update()
     {
-        postTaskToReadingThread(BLINK_FROM_HERE, threadSafeBind(&Self::reobtainReader, this));
+        postTaskToReadingThread(BLINK_FROM_HERE, threadSafeBind(&Self::reobtainReader, wrapPassRefPtr(this)));
         m_updater->update(DataConsumerHandle::create("handle2", m_context));
         m_updater.clear();
-        postTaskToReadingThread(BLINK_FROM_HERE, threadSafeBind(&Self::resetReader, this));
-        postTaskToReadingThread(BLINK_FROM_HERE, threadSafeBind(&Self::signalDone, this));
+        postTaskToReadingThread(BLINK_FROM_HERE, threadSafeBind(&Self::resetReader, wrapPassRefPtr(this)));
+        postTaskToReadingThread(BLINK_FROM_HERE, threadSafeBind(&Self::signalDone, wrapPassRefPtr(this)));
         m_updateEvent->signal();
     }
 
@@ -235,8 +235,8 @@ public:
         m_waitableEvent = wrapUnique(new WaitableEvent());
         m_updateEvent = wrapUnique(new WaitableEvent());
 
-        postTaskToUpdatingThreadAndWait(BLINK_FROM_HERE, threadSafeBind(&Self::createHandle, this));
-        postTaskToReadingThreadAndWait(BLINK_FROM_HERE, threadSafeBind(&Self::obtainReader, this));
+        postTaskToUpdatingThreadAndWait(BLINK_FROM_HERE, threadSafeBind(&Self::createHandle, wrapPassRefPtr(this)));
+        postTaskToReadingThreadAndWait(BLINK_FROM_HERE, threadSafeBind(&Self::obtainReader, wrapPassRefPtr(this)));
     }
 
 private:
@@ -251,7 +251,7 @@ private:
     void obtainReader()
     {
         m_reader = m_handle->obtainReader(&m_client);
-        postTaskToUpdatingThread(BLINK_FROM_HERE, threadSafeBind(&Self::update, this));
+        postTaskToUpdatingThread(BLINK_FROM_HERE, threadSafeBind(&Self::update, wrapPassRefPtr(this)));
         // Stalls this thread while updating handles.
         m_updateEvent->wait();
     }
@@ -261,8 +261,8 @@ private:
         m_updater->update(DataConsumerHandle::create("handle3", m_context));
         m_updateEvent->signal();
         m_updater.clear();
-        postTaskToReadingThread(BLINK_FROM_HERE, threadSafeBind(&Self::resetReader, this));
-        postTaskToReadingThread(BLINK_FROM_HERE, threadSafeBind(&Self::signalDone, this));
+        postTaskToReadingThread(BLINK_FROM_HERE, threadSafeBind(&Self::resetReader, wrapPassRefPtr(this)));
+        postTaskToReadingThread(BLINK_FROM_HERE, threadSafeBind(&Self::signalDone, wrapPassRefPtr(this)));
     }
 
     std::unique_ptr<WebDataConsumerHandle> m_handle;

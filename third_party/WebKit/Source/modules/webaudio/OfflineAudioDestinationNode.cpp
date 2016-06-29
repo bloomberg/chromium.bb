@@ -115,14 +115,14 @@ void OfflineAudioDestinationHandler::startRendering()
     if (!m_isRenderingStarted) {
         m_isRenderingStarted = true;
         m_renderThread->getWebTaskRunner()->postTask(BLINK_FROM_HERE,
-            threadSafeBind(&OfflineAudioDestinationHandler::startOfflineRendering, this));
+            threadSafeBind(&OfflineAudioDestinationHandler::startOfflineRendering, wrapPassRefPtr(this)));
         return;
     }
 
     // Rendering is already started, which implicitly means we resume the
     // rendering by calling |doOfflineRendering| on the render thread.
     m_renderThread->getWebTaskRunner()->postTask(BLINK_FROM_HERE,
-        threadSafeBind(&OfflineAudioDestinationHandler::doOfflineRendering, this));
+        threadSafeBind(&OfflineAudioDestinationHandler::doOfflineRendering, wrapPassRefPtr(this)));
 }
 
 void OfflineAudioDestinationHandler::stopRendering()

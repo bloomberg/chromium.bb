@@ -195,7 +195,7 @@ void DataConsumerHandleTestUtil::ReplayingHandle::Context::notify()
     if (!m_client)
         return;
     ASSERT(m_readerThread);
-    m_readerThread->getWebTaskRunner()->postTask(BLINK_FROM_HERE, threadSafeBind(&Context::notifyInternal, this));
+    m_readerThread->getWebTaskRunner()->postTask(BLINK_FROM_HERE, threadSafeBind(&Context::notifyInternal, wrapPassRefPtr(this)));
 }
 
 void DataConsumerHandleTestUtil::ReplayingHandle::Context::notifyInternal()

@@ -100,6 +100,12 @@ private:
 };
 
 template <typename T>
+PassRefPtr<T> wrapPassRefPtr(T* ptr)
+{
+    return PassRefPtr<T>(ptr);
+}
+
+template <typename T>
 template <typename U> inline PassRefPtr<T>::PassRefPtr(const RefPtr<U>& o, EnsurePtrConvertibleArgDefn(U, T))
     : m_ptr(o.get())
 {
