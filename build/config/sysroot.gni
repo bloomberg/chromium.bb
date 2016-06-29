@@ -11,11 +11,21 @@ declare_args() {
   # The absolute path of the sysroot that is applied when compiling using
   # the target toolchain.
   target_sysroot = ""
+
+  # The absolute path to directory containing sysroots for linux 32 and 64bit
+  target_sysroot_dir = ""
+
   use_sysroot = true
 }
 
-if (current_os == target_os && current_cpu == target_cpu &&
-    target_sysroot != "") {
+if (is_linux && target_sysroot_dir != "") {
+  if (current_cpu == "x64") {
+    sysroot = target_sysroot_dir + "/wheezy-x64"
+  } else if (current_cpu == "x86") {
+    sysroot = target_sysroot_dir + "/wheezy-ia32"
+  }
+} else if (current_os == target_os && current_cpu == target_cpu &&
+           target_sysroot != "") {
   sysroot = target_sysroot
 } else if (is_android) {
   import("//build/config/android/config.gni")
