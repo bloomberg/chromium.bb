@@ -119,9 +119,6 @@ using DocumentElementSetMap = HeapHashMap<WeakMember<Document>, Member<WeakMedia
 
 namespace {
 
-// URL protocol used to signal that the media source API is being used.
-const char mediaSourceBlobProtocol[] = "blob";
-
 enum MediaControlsShow {
     MediaControlsShowAttribute = 0,
     MediaControlsShowFullscreen,
@@ -1031,23 +1028,12 @@ void HTMLMediaElement::loadResource(const WebMediaPlayerSource& source, const Co
 
     bool attemptLoad = true;
 
-    bool isStreamOrBlobUrl = source.isMediaStream() || url.protocolIs(mediaSourceBlobProtocol);
-    if (isStreamOrBlobUrl) {
-        bool isMediaStream = source.isMediaStream() || (source.isURL() && isMediaStreamURL(url.getString()));
-        if (isMediaStream) {
-            m_autoplayHelper->unlockUserGesture(GesturelessPlaybackEnabledByStream);
-        } else {
-            m_mediaSource = HTMLMediaSource::lookup(url.getString());
-
-            if (m_mediaSource) {
-                if (!m_mediaSource->attachToElement(this)) {
-                    // Forget our reference to the MediaSource, so we leave it alone
-                    // while processing remainder of load failure.
-                    m_mediaSource = nullptr;
-                    attemptLoad = false;
-                }
-            }
-        }
+    m_mediaSource = HTMLMediaSource::lookup(url.getString());
+    if (m_mediaSource && !m_mediaSource->attachToElement(this)) {
+        // Forget our reference to the MediaSource, so we leave it alone
+        // while processing remainder of load failure.
+        m_mediaSource = nullptr;
+        attemptLoad = false;
     }
 
     bool canLoadResource = source.isMediaStream() || canLoadURL(url, contentType);
@@ -1057,7 +1043,7 @@ void HTMLMediaElement::loadResource(const WebMediaPlayerSource& source, const Co
         // Conditionally defer the load if effective preload is 'none'.
         // Skip this optional deferral for MediaStream sources or any blob URL,
         // including MediaSource blob URLs.
-        if (!isStreamOrBlobUrl && effectivePreloadType() == WebMediaPlayer::PreloadNone) {
+        if (!source.isMediaStream() && !url.protocolIs("blob") && effectivePreloadType() == WebMediaPlayer::PreloadNone) {
             MEDIA_LOG << "loadResource(" << (void*)this << ") : Delaying load because preload == 'none'";
             deferLoad();
         } else {
@@ -1223,7 +1209,7 @@ WebMediaPlayer::LoadType HTMLMediaElement::loadType() const
     if (m_mediaSource)
         return WebMediaPlayer::LoadTypeMediaSource;
 
-    if (m_srcObject || isMediaStreamURL(m_currentSrc.getString()))
+    if (m_srcObject || (!m_currentSrc.isNull() && isMediaStreamURL(m_currentSrc.getString())))
         return WebMediaPlayer::LoadTypeMediaStream;
 
     return WebMediaPlayer::LoadTypeURL;
@@ -3723,6 +3709,9 @@ void HTMLMediaElement::unlockUserGesture()
 bool HTMLMediaElement::isGestureNeededForPlayback() const
 {
     if (!m_lockedPendingUserGesture)
+        return false;
+
+    if (loadType() == WebMediaPlayer::LoadTypeMediaStream)
         return false;
 
     // We want to allow muted video to autoplay if:
