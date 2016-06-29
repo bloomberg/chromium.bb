@@ -126,7 +126,8 @@ TEST_F(TimeTest, TimeT) {
   EXPECT_EQ(tms.tm_sec, exploded.second);
 
   // Convert exploded back to the time struct.
-  Time our_time_2 = Time::FromLocalExploded(exploded);
+  Time our_time_2;
+  EXPECT_TRUE(Time::FromLocalExploded(exploded, &our_time_2));
   EXPECT_TRUE(our_time_1 == our_time_2);
 
   time_t now_t_2 = our_time_2.ToTimeT();
@@ -165,7 +166,8 @@ TEST_F(TimeTest, FromExplodedWithMilliseconds) {
   Time::Exploded exploded1 = {0};
   now.UTCExplode(&exploded1);
   exploded1.millisecond = 500;
-  Time time = Time::FromUTCExploded(exploded1);
+  Time time;
+  EXPECT_TRUE(Time::FromUTCExploded(exploded1, &time));
   Time::Exploded exploded2 = {0};
   time.UTCExplode(&exploded2);
   EXPECT_EQ(exploded1.millisecond, exploded2.millisecond);
@@ -183,7 +185,8 @@ TEST_F(TimeTest, LocalExplode) {
   Time::Exploded exploded;
   a.LocalExplode(&exploded);
 
-  Time b = Time::FromLocalExploded(exploded);
+  Time b;
+  EXPECT_TRUE(Time::FromLocalExploded(exploded, &b));
 
   // The exploded structure doesn't have microseconds, and on Mac & Linux, the
   // internal OS conversion uses seconds, which will cause truncation. So we
@@ -196,7 +199,8 @@ TEST_F(TimeTest, UTCExplode) {
   Time::Exploded exploded;
   a.UTCExplode(&exploded);
 
-  Time b = Time::FromUTCExploded(exploded);
+  Time b;
+  EXPECT_TRUE(Time::FromUTCExploded(exploded, &b));
   EXPECT_TRUE((a - b) < TimeDelta::FromSeconds(1));
 }
 
@@ -611,7 +615,8 @@ TEST_F(TimeTest, FromLocalExplodedCrashOnAndroid) {
   static char buffer[] = "TZ=America/Santiago";
   putenv(buffer);
   tzset();
-  Time t = Time::FromLocalExploded(midnight);
+  Time t;
+  EXPECT_TRUE(Time::FromLocalExploded(midnight, &t));
   EXPECT_EQ(1381633200, t.ToTimeT());
 }
 #endif  // OS_ANDROID
@@ -833,7 +838,8 @@ TEST(TimeDelta, WindowsEpoch) {
   exploded.minute = 0;
   exploded.second = 0;
   exploded.millisecond = 0;
-  Time t = Time::FromUTCExploded(exploded);
+  Time t;
+  EXPECT_TRUE(Time::FromUTCExploded(exploded, &t));
   // Unix 1970 epoch.
   EXPECT_EQ(INT64_C(11644473600000000), t.ToInternalValue());
 

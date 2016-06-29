@@ -52,7 +52,8 @@ TEST(TimeFormattingTest, MAYBE_TimeFormatTimeOfDayDefault12h) {
   test::ScopedRestoreICUDefaultLocale restore_locale;
   i18n::SetICUDefaultLocale("en_US");
 
-  Time time(Time::FromLocalExploded(kTestDateTimeExploded));
+  Time time;
+  EXPECT_TRUE(Time::FromLocalExploded(kTestDateTimeExploded, &time));
   string16 clock24h(ASCIIToUTF16("15:42"));
   string16 clock12h_pm(ASCIIToUTF16("3:42 PM"));
   string16 clock12h(ASCIIToUTF16("3:42"));
@@ -94,7 +95,8 @@ TEST(TimeFormattingTest, MAYBE_TimeFormatTimeOfDayDefault24h) {
   test::ScopedRestoreICUDefaultLocale restore_locale;
   i18n::SetICUDefaultLocale("en_GB");
 
-  Time time(Time::FromLocalExploded(kTestDateTimeExploded));
+  Time time;
+  EXPECT_TRUE(Time::FromLocalExploded(kTestDateTimeExploded, &time));
   string16 clock24h(ASCIIToUTF16("15:42"));
   string16 clock12h_pm(ASCIIToUTF16("3:42 pm"));
   string16 clock12h(ASCIIToUTF16("3:42"));
@@ -135,7 +137,8 @@ TEST(TimeFormattingTest, MAYBE_TimeFormatTimeOfDayJP) {
   test::ScopedRestoreICUDefaultLocale restore_locale;
   i18n::SetICUDefaultLocale("ja_JP");
 
-  Time time(Time::FromLocalExploded(kTestDateTimeExploded));
+  Time time;
+  EXPECT_TRUE(Time::FromLocalExploded(kTestDateTimeExploded, &time));
   string16 clock24h(ASCIIToUTF16("15:42"));
   string16 clock12h_pm(WideToUTF16(L"\x5348\x5f8c" L"3:42"));
   string16 clock12h(ASCIIToUTF16("3:42"));
@@ -174,7 +177,8 @@ TEST(TimeFormattingTest, MAYBE_TimeFormatDateUS) {
   test::ScopedRestoreICUDefaultLocale restore_locale;
   i18n::SetICUDefaultLocale("en_US");
 
-  Time time(Time::FromLocalExploded(kTestDateTimeExploded));
+  Time time;
+  EXPECT_TRUE(Time::FromLocalExploded(kTestDateTimeExploded, &time));
 
   EXPECT_EQ(ASCIIToUTF16("Apr 30, 2011"), TimeFormatShortDate(time));
   EXPECT_EQ(ASCIIToUTF16("4/30/11"), TimeFormatShortDateNumeric(time));
@@ -202,7 +206,8 @@ TEST(TimeFormattingTest, MAYBE_TimeFormatDateGB) {
   test::ScopedRestoreICUDefaultLocale restore_locale;
   i18n::SetICUDefaultLocale("en_GB");
 
-  Time time(Time::FromLocalExploded(kTestDateTimeExploded));
+  Time time;
+  EXPECT_TRUE(Time::FromLocalExploded(kTestDateTimeExploded, &time));
 
   EXPECT_EQ(ASCIIToUTF16("30 Apr 2011"), TimeFormatShortDate(time));
   EXPECT_EQ(ASCIIToUTF16("30/04/2011"), TimeFormatShortDateNumeric(time));

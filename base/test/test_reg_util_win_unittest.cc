@@ -101,7 +101,8 @@ TEST_F(RegistryOverrideManagerTest, Basic) {
 
 TEST_F(RegistryOverrideManagerTest, DeleteStaleKeys) {
   base::Time::Exploded kTestTimeExploded = {2013, 11, 1, 4, 0, 0, 0, 0};
-  base::Time kTestTime = base::Time::FromUTCExploded(kTestTimeExploded);
+  base::Time kTestTime;
+  EXPECT_TRUE(base::Time::FromUTCExploded(kTestTimeExploded, &kTestTime));
 
   base::string16 path_garbage = fake_test_key_root_ + L"\\Blah";
   base::string16 path_very_stale =
