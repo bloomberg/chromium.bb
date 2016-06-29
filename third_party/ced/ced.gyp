@@ -47,7 +47,7 @@
               'COMPILER_MSVC',
             ],
           },
-          'msvs_disabled_warnings': [4005, 4006, 4244, 4309, 4800, 4267],
+          'msvs_disabled_warnings': [4005, 4006, 4018, 4244, 4309, 4800, 4267],
         }, {
           'direct_dependent_settings': {
             'defines': [
