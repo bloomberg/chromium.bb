@@ -13,31 +13,20 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "chrome/browser/chromeos/arc/arc_android_management_checker_delegate.h"
+#include "chrome/browser/chromeos/arc/arc_auth_context_delegate.h"
 #include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_service.h"
 #include "components/arc/common/auth.mojom.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/syncable_prefs/pref_service_syncable_observer.h"
 #include "components/syncable_prefs/synced_pref_observer.h"
-#include "google_apis/gaia/ubertoken_fetcher.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
-class ArcAndroidManagementChecker;
 class ArcAppLauncher;
-class GaiaAuthFetcher;
 class Profile;
-class ProfileOAuth2TokenService;
 
 namespace ash {
 class ShelfDelegate;
-}
-
-namespace content {
-class StoragePartition;
-}
-
-namespace net {
-class URLRequestContextGetter;
 }
 
 namespace user_prefs {
@@ -46,14 +35,16 @@ class PrefRegistrySyncable;
 
 namespace arc {
 
+class ArcAndroidManagementChecker;
+class ArcAuthContext;
+
 // This class proxies the request from the client to fetch an auth code from
 // LSO.
 class ArcAuthService : public ArcService,
                        public mojom::AuthHost,
                        public ArcBridgeService::Observer,
                        public ArcAndroidManagementCheckerDelegate,
-                       public UbertokenConsumer,
-                       public GaiaAuthConsumer,
+                       public ArcAuthContextDelegate,
                        public syncable_prefs::PrefServiceSyncableObserver,
                        public syncable_prefs::SyncedPrefObserver {
  public:
@@ -160,19 +151,15 @@ class ArcAuthService : public ArcService,
   void EnableArc();
   void DisableArc();
 
-  // UbertokenConsumer:
-  void OnUbertokenSuccess(const std::string& token) override;
-  void OnUbertokenFailure(const GoogleServiceAuthError& error) override;
-
-  // GaiaAuthConsumer:
-  void OnMergeSessionSuccess(const std::string& data) override;
-  void OnMergeSessionFailure(const GoogleServiceAuthError& error) override;
-
   // syncable_prefs::PrefServiceSyncableObserver
   void OnIsSyncingChanged() override;
 
   // syncable_prefs::SyncedPrefObserver
   void OnSyncedPrefChanged(const std::string& path, bool from_sync) override;
+
+  // ArcAuthContextDelegate:
+  void OnContextReady() override;
+  void OnPrepareContextFailed() override;
 
   // ArcAndroidManagementCheckerDelegate:
   void OnAndroidManagementChecked(
@@ -186,7 +173,6 @@ class ArcAuthService : public ArcService,
 
  private:
   void StartArc();
-  void PrepareContext();
   void ShowUI(UIPage page, const base::string16& status);
   void CloseUI();
   void SetUIPage(UIPage page, const base::string16& status);
@@ -196,16 +182,12 @@ class ArcAuthService : public ArcService,
   void ShutdownBridgeAndShowUI(UIPage page, const base::string16& status);
   void OnOptInPreferenceChanged();
   void StartUI();
-  void OnPrepareContextFailed();
   void StartAndroidManagementClient();
   void CheckAndroidManagement(bool background_mode);
   void StartArcIfSignedIn();
 
   // Unowned pointer. Keeps current profile.
   Profile* profile_ = nullptr;
-  // Owned by content::BrowserContent. Used to isolate cookies for auth server
-  // communication and shared with Arc OptIn UI platform app.
-  content::StoragePartition* storage_partition_ = nullptr;
 
   // Registrar used to monitor ARC enabled state.
   PrefChangeRegistrar pref_change_registrar_;
@@ -213,20 +195,16 @@ class ArcAuthService : public ArcService,
   mojo::Binding<AuthHost> binding_;
   State state_ = State::NOT_INITIALIZED;
   base::ObserverList<Observer> observer_list_;
-  std::unique_ptr<GaiaAuthFetcher> merger_fetcher_;
-  std::unique_ptr<UbertokenFetcher> ubertoken_fetcher_;
   std::unique_ptr<ArcAppLauncher> playstore_launcher_;
   std::string auth_code_;
   GetAuthCodeCallback auth_callback_;
   bool initial_opt_in_ = false;
-  bool context_prepared_ = false;
   bool disable_arc_from_ui_ = false;
   UIPage ui_page_ = UIPage::NO_PAGE;
   base::string16 ui_page_status_;
   bool clear_required_ = false;
 
-  ProfileOAuth2TokenService* token_service_;
-  std::string account_id_;
+  std::unique_ptr<ArcAuthContext> context_;
   std::unique_ptr<ArcAndroidManagementChecker> android_management_checker_;
 
   base::Time sign_in_time_;
