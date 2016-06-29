@@ -48,6 +48,7 @@ void SVGPreserveAspectRatioTearOff::setAlign(unsigned short align, ExceptionStat
     }
 
     target()->setAlign(static_cast<SVGPreserveAspectRatio::SVGPreserveAspectRatioType>(align));
+    commitChange();
 }
 
 void SVGPreserveAspectRatioTearOff::setMeetOrSlice(unsigned short meetOrSlice, ExceptionState& exceptionState)
@@ -62,6 +63,7 @@ void SVGPreserveAspectRatioTearOff::setMeetOrSlice(unsigned short meetOrSlice, E
     }
 
     target()->setMeetOrSlice(static_cast<SVGPreserveAspectRatio::SVGMeetOrSliceType>(meetOrSlice));
+    commitChange();
 }
 
 SVGPreserveAspectRatioTearOff::SVGPreserveAspectRatioTearOff(SVGPreserveAspectRatio* target, SVGElement* contextElement, PropertyIsAnimValType propertyIsAnimVal, const QualifiedName& attributeName)
