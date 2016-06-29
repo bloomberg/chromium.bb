@@ -211,6 +211,10 @@ std::string V4UpdateProtocolManager::GetBase64SerializedUpdateRequestProto(
     if (!state.empty()) {
       list_update_request->set_state(state);
     }
+
+    // TODO(vakh): Accept other compression formats also.
+    // See: https://bugs.chromium.org/p/chromium/issues/detail?id=624567
+    list_update_request->mutable_constraints()->add_supported_compressions(RAW);
   }
 
   // Serialize and Base64 encode.

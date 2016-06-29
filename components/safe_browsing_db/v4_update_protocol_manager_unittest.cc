@@ -308,7 +308,7 @@ TEST_F(V4UpdateProtocolManagerTest, TestBase64EncodingUsesUrlEncoding) {
   std::string encoded_request_with_minus =
       V4UpdateProtocolManager::GetBase64SerializedUpdateRequestProto(
           store_state_map_minus);
-  EXPECT_EQ("GhMIARACGgt6LVJ-M3J1VmlRSCgB", encoded_request_with_minus);
+  EXPECT_EQ("GhcIARACGgt6LVJ-M3J1VmlRSCICIAEoAQ==", encoded_request_with_minus);
 
   // NOTE(vakh): Same process for chosing this string. I am representing it
   // in base64 encoded form because the actual state value contains non-ASCII
@@ -322,7 +322,8 @@ TEST_F(V4UpdateProtocolManagerTest, TestBase64EncodingUsesUrlEncoding) {
   std::string encoded_request_with_underscore =
       V4UpdateProtocolManager::GetBase64SerializedUpdateRequestProto(
           store_state_map_underscore);
-  EXPECT_EQ("GhEIARACGglVMV8hMF_iUEwoAQ==", encoded_request_with_underscore);
+  EXPECT_EQ("GhUIARACGglVMV8hMF_iUEwiAiABKAE=",
+            encoded_request_with_underscore);
 }
 
 }  // namespace safe_browsing
