@@ -5,7 +5,7 @@
 package org.chromium.chrome.browser.ntp.snippets;
 
 import android.animation.Animator;
-import android.animation.Animator.AnimatorListener;
+import android.animation.AnimatorListenerAdapter;
 import android.animation.ObjectAnimator;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -92,17 +92,11 @@ public class SnippetHeaderViewHolder extends NewTabPageViewHolder {
 
         mAnimator = ObjectAnimator.ofFloat(itemView, View.ALPHA, currentAlpha, targetAlpha);
         mAnimator.setDuration(ANIMATION_DURATION_MS);
-        mAnimator.addListener(new AnimatorListener() {
-            @Override
-            public void onAnimationStart(Animator animator) {}
-            @Override
-            public void onAnimationRepeat(Animator animator) {}
+        mAnimator.addListener(new AnimatorListenerAdapter() {
             @Override
             public void onAnimationEnd(Animator animator) {
                 mAnimator = null;
             }
-            @Override
-            public void onAnimationCancel(Animator animator) {}
         });
         mAnimator.start();
     }

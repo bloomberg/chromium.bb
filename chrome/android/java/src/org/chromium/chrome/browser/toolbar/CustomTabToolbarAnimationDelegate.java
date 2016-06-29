@@ -14,6 +14,7 @@ import android.view.View;
 import android.widget.TextView;
 
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.widget.animation.CancelAwareAnimatorListener;
 import org.chromium.ui.interpolators.BakedBezierInterpolator;
 
 /**
@@ -39,6 +40,7 @@ class CustomTabToolbarAnimationDelegate {
 
     private TextView mUrlBar;
     private TextView mTitleBar;
+    private int mSecurityButtonWidth;
     // A flag controlling whether the animation has run before.
     private boolean mShouldRunTitleAnimation;
 
@@ -48,44 +50,43 @@ class CustomTabToolbarAnimationDelegate {
     CustomTabToolbarAnimationDelegate(View securityButton, final View titleUrlContainer) {
         mSecurityButton = securityButton;
         mTitleUrlContainer = titleUrlContainer;
+        mSecurityButtonWidth = securityButton.getResources()
+                .getDimensionPixelSize(R.dimen.location_bar_icon_width);
+
+        titleUrlContainer.setTranslationX(-mSecurityButtonWidth);
 
         mSecurityButtonShowAnimator = new AnimatorSet();
-        int securityButtonWidth = securityButton.getResources()
-                .getDimensionPixelSize(R.dimen.location_bar_icon_width);
         Animator translateRight = ObjectAnimator.ofFloat(titleUrlContainer,
-                View.TRANSLATION_X, securityButtonWidth);
+                View.TRANSLATION_X, 0);
         translateRight.setInterpolator(BakedBezierInterpolator.TRANSFORM_CURVE);
         translateRight.setDuration(CUSTOM_TAB_TOOLBAR_SLIDE_DURATION_MS);
 
         Animator fadeIn = ObjectAnimator.ofFloat(mSecurityButton, View.ALPHA, 1);
-        fadeIn.addListener(new AnimatorListenerAdapter() {
-            @Override
-            public void onAnimationStart(Animator animation) {
-                mSecurityButton.setVisibility(View.VISIBLE);
-                mSecurityButton.setAlpha(0f);
-                titleUrlContainer.setTranslationX(0);
-            }
-        });
         fadeIn.setInterpolator(BakedBezierInterpolator.FADE_IN_CURVE);
         fadeIn.setDuration(CUSTOM_TAB_TOOLBAR_FADE_DURATION_MS);
+        fadeIn.addListener(new CancelAwareAnimatorListener() {
+            @Override
+            public void onStart(Animator animation) {
+                mSecurityButton.setVisibility(View.VISIBLE);
+            }
+        });
         mSecurityButtonShowAnimator.playSequentially(translateRight, fadeIn);
 
         mSecurityButtonHideAnimator = new AnimatorSet();
         Animator fadeOut = ObjectAnimator.ofFloat(mSecurityButton, View.ALPHA, 0);
         fadeOut.setInterpolator(BakedBezierInterpolator.FADE_OUT_CURVE);
         fadeOut.setDuration(CUSTOM_TAB_TOOLBAR_FADE_DURATION_MS);
-
-        Animator translateLeft = ObjectAnimator.ofFloat(titleUrlContainer,
-                View.TRANSLATION_X, -securityButtonWidth);
-        translateLeft.setInterpolator(BakedBezierInterpolator.TRANSFORM_CURVE);
-        translateLeft.setDuration(CUSTOM_TAB_TOOLBAR_SLIDE_DURATION_MS);
-        translateLeft.addListener(new AnimatorListenerAdapter() {
+        fadeOut.addListener(new CancelAwareAnimatorListener() {
             @Override
-            public void onAnimationEnd(Animator animation) {
-                mSecurityButton.setVisibility(View.GONE);
-                titleUrlContainer.setTranslationX(0);
+            public void onEnd(Animator animation) {
+                mSecurityButton.setVisibility(View.INVISIBLE);
             }
         });
+
+        Animator translateLeft = ObjectAnimator.ofFloat(titleUrlContainer,
+                View.TRANSLATION_X, -mSecurityButtonWidth);
+        translateLeft.setInterpolator(BakedBezierInterpolator.TRANSFORM_CURVE);
+        translateLeft.setDuration(CUSTOM_TAB_TOOLBAR_SLIDE_DURATION_MS);
         mSecurityButtonHideAnimator.playSequentially(fadeOut, translateLeft);
     }
 
@@ -160,7 +161,11 @@ class CustomTabToolbarAnimationDelegate {
      * Starts the animation to show the security button.
      */
     void showSecurityButton() {
-        if (mSecurityButtonShowAnimator.isStarted()) return;
+        if (mSecurityButtonHideAnimator.isStarted()) mSecurityButtonHideAnimator.cancel();
+        if (mSecurityButtonShowAnimator.isStarted()
+                || mSecurityButton.getVisibility() == View.VISIBLE) {
+            return;
+        }
         mSecurityButtonShowAnimator.start();
     }
 
@@ -168,14 +173,11 @@ class CustomTabToolbarAnimationDelegate {
      * Starts the animation to hide the security button.
      */
     void hideSecurityButton() {
-        // An optimization for the case that show and hide are called almost at the same time.
-        if (mSecurityButtonShowAnimator.isStarted()
-                && mSecurityButton.getVisibility() == View.GONE) {
-            mSecurityButtonShowAnimator.cancel();
-            mTitleUrlContainer.setTranslationX(0);
+        if (mSecurityButtonShowAnimator.isStarted()) mSecurityButtonShowAnimator.cancel();
+        if (mSecurityButtonHideAnimator.isStarted()
+                || mTitleUrlContainer.getTranslationX() == -mSecurityButtonWidth) {
             return;
         }
-        if (mSecurityButtonHideAnimator.isStarted()) return;
         mSecurityButtonHideAnimator.start();
     }
 }

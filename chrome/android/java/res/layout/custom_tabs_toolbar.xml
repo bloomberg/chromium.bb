@@ -24,7 +24,7 @@
             android:layout_gravity="center_vertical"
             android:contentDescription="@string/accessibility_toolbar_btn_site_info"
             android:scaleType="center"
-            android:visibility="gone" />
+            android:visibility="invisible" />
         <view
             class="org.chromium.chrome.browser.toolbar.CustomTabToolbar$InterceptTouchLayout"
             android:id="@+id/title_url_container"

@@ -90,6 +90,7 @@ import org.chromium.chrome.browser.util.KeyNavigationUtil;
 import org.chromium.chrome.browser.util.ViewUtils;
 import org.chromium.chrome.browser.widget.TintedImageButton;
 import org.chromium.chrome.browser.widget.animation.AnimatorProperties;
+import org.chromium.chrome.browser.widget.animation.CancelAwareAnimatorListener;
 import org.chromium.components.security_state.ConnectionSecurityLevel;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.WebContents;
@@ -2215,22 +2216,9 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
             mFadeOutOmniboxBackgroundAnimator.setDuration(OMNIBOX_CONTAINER_BACKGROUND_FADE_MS);
             mFadeOutOmniboxBackgroundAnimator.setInterpolator(
                     BakedBezierInterpolator.FADE_OUT_CURVE);
-            mFadeOutOmniboxBackgroundAnimator.addListener(new AnimatorListenerAdapter() {
-                private boolean mIsCancelled;
-
+            mFadeOutOmniboxBackgroundAnimator.addListener(new CancelAwareAnimatorListener() {
                 @Override
-                public void onAnimationStart(Animator animation) {
-                    mIsCancelled = false;
-                }
-
-                @Override
-                public void onAnimationCancel(Animator animation) {
-                    mIsCancelled = true;
-                }
-
-                @Override
-                public void onAnimationEnd(Animator animation) {
-                    if (mIsCancelled) return;
+                public void onEnd(Animator animator) {
                     updateOmniboxResultsContainerVisibility(false);
                 }
             });

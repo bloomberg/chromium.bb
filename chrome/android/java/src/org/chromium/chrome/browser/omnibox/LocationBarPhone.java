@@ -387,11 +387,7 @@ public class LocationBarPhone extends LocationBarLayout {
 
             @Override
             public void onAnimationEnd(Animator animation) {
-                mIsMenuBadgeAnimationRunning = false;
-            }
-
-            @Override
-            public void onAnimationCancel(Animator animation) {
+                // animator#cancel() will trigger onAnimationEnd() as well.
                 mIsMenuBadgeAnimationRunning = false;
             }
         });

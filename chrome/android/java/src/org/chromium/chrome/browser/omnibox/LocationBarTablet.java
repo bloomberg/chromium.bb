@@ -20,6 +20,7 @@ import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.toolbar.ToolbarTablet;
+import org.chromium.chrome.browser.widget.animation.CancelAwareAnimatorListener;
 import org.chromium.ui.UiUtils;
 import org.chromium.ui.base.LocalizationUtils;
 import org.chromium.ui.interpolators.BakedBezierInterpolator;
@@ -188,21 +189,15 @@ public class LocationBarTablet extends LocationBarLayout {
                 ObjectAnimator.ofFloat(this, mUrlFocusChangePercentProperty, hasFocus ? 1f : 0f);
         mUrlFocusChangeAnimator.setDuration(
                 (long) (MAX_NTP_KEYBOARD_FOCUS_DURATION_MS * screenSizeRatio));
-        mUrlFocusChangeAnimator.addListener(new AnimatorListenerAdapter() {
-            private boolean mIsCancelled;
-
+        mUrlFocusChangeAnimator.addListener(new CancelAwareAnimatorListener() {
             @Override
-            public void onAnimationCancel(Animator animation) {
-                mIsCancelled = true;
+            public void onEnd(Animator animator) {
+                finishUrlFocusChange(hasFocus);
             }
 
             @Override
-            public void onAnimationEnd(Animator animation) {
-                if (mIsCancelled) {
-                    setUrlFocusChangeInProgress(false);
-                    return;
-                }
-                finishUrlFocusChange(hasFocus);
+            public void onCancel(Animator animator) {
+                setUrlFocusChangeInProgress(false);
             }
         });
         setUrlFocusChangeInProgress(true);

@@ -473,7 +473,7 @@ public class CustomTabToolbar extends ToolbarLayout implements LocationBar,
 
     @Override
     public void updateSecurityIcon(int securityLevel) {
-        if (mSecurityIconType == securityLevel || mState == STATE_TITLE_ONLY) return;
+        if (mState == STATE_TITLE_ONLY) return;
 
         mSecurityIconType = securityLevel;
 
