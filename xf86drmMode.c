@@ -948,6 +948,22 @@ int drmModePageFlip(int fd, uint32_t crtc_id, uint32_t fb_id,
 	return DRM_IOCTL(fd, DRM_IOCTL_MODE_PAGE_FLIP, &flip);
 }
 
+int drmModePageFlipTarget(int fd, uint32_t crtc_id, uint32_t fb_id,
+			  uint32_t flags, void *user_data,
+			  uint32_t target_vblank)
+{
+	struct drm_mode_crtc_page_flip_target flip_target;
+
+	memclear(flip_target);
+	flip_target.fb_id = fb_id;
+	flip_target.crtc_id = crtc_id;
+	flip_target.user_data = VOID2U64(user_data);
+	flip_target.flags = flags;
+	flip_target.sequence = target_vblank;
+
+	return DRM_IOCTL(fd, DRM_IOCTL_MODE_PAGE_FLIP, &flip_target);
+}
+
 int drmModeSetPlane(int fd, uint32_t plane_id, uint32_t crtc_id,
 		    uint32_t fb_id, uint32_t flags,
 		    int32_t crtc_x, int32_t crtc_y,
