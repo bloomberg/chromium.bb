@@ -27,6 +27,7 @@ namespace {
 // this array may either refer to features defined in the header of this file or
 // in other locations in the code base (e.g. chrome/, components/, etc).
 const base::Feature* kFeaturesExposedToJava[] = {
+    &features::kAutoplayMutedVideos,
     &features::kCredentialManagementAPI,
     &features::kSimplifiedFullscreenUI,
     &kAndroidPayIntegrationV1,

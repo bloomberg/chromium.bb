@@ -11,9 +11,9 @@ import android.preference.Preference.OnPreferenceClickListener;
 import android.preference.PreferenceFragment;
 
 import org.chromium.base.ApiCompatibilityUtils;
-import org.chromium.base.CommandLine;
 import org.chromium.base.FieldTrialList;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ContentSettingsType;
 import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
 import org.chromium.chrome.browser.preferences.LocationSettings;
@@ -52,6 +52,8 @@ public class SiteSettingsPreferences extends PreferenceFragment
     static final String PROTECTED_CONTENT_KEY = "protected_content";
     static final String STORAGE_KEY = "use_storage";
 
+    static final String AUTOPLAY_MUTED_VIDEOS = "AutoplayMutedVideos";
+
     // Whether the Autoplay menu is available for display.
     boolean mAutoplayMenuAvailable = false;
 
@@ -72,7 +74,7 @@ public class SiteSettingsPreferences extends PreferenceFragment
         String autoplayTrialGroupName =
                 FieldTrialList.findFullName("MediaElementGestureOverrideExperiment");
         mAutoplayMenuAvailable = autoplayTrialGroupName.startsWith("Enabled")
-                || CommandLine.getInstance().hasSwitch("enable-autoplay-muted-videos");
+                || ChromeFeatureList.isEnabled(AUTOPLAY_MUTED_VIDEOS);
 
         String category = "";
         if (getArguments() != null) {

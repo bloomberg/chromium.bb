@@ -1927,10 +1927,10 @@ const FeatureEntry kFeatureEntries[] = {
     {"important-sites-in-cbd", IDS_FLAGS_IMPORTANT_SITES_IN_CBD_NAME,
      IDS_FLAGS_IMPORTANT_SITES_IN_CBD_DESCRIPTION, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kImportantSitesInCBD)},
-    {"enable-autoplay-muted-videos",
+    {"autoplay-muted-videos",
      IDS_FLAGS_ENABLE_AUTOPLAY_MUTED_VIDEOS_NAME,
      IDS_FLAGS_ENABLE_AUTOPLAY_MUTED_VIDEOS_DESCRIPTION, kOsAndroid,
-     SINGLE_VALUE_TYPE(switches::kEnableAutoplayMutedVideos)},
+     FEATURE_VALUE_TYPE(features::kAutoplayMutedVideos)},
 #endif
     {"enable-pointer-events",  // FLAGS:RECORD_UMA
      IDS_FLAGS_EXPERIMENTAL_POINTER_EVENT_NAME,
