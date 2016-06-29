@@ -97,6 +97,25 @@ bool HTMLOptGroupElement::matchesEnabledPseudoClass() const
     return !isDisabledFormControl();
 }
 
+Node::InsertionNotificationRequest HTMLOptGroupElement::insertedInto(ContainerNode* insertionPoint)
+{
+    HTMLElement::insertedInto(insertionPoint);
+    if (HTMLSelectElement* select = ownerSelectElement()) {
+        if (insertionPoint == select)
+            select->optGroupInsertedOrRemoved(*this);
+    }
+    return InsertionDone;
+}
+
+void HTMLOptGroupElement::removedFrom(ContainerNode* insertionPoint)
+{
+    if (isHTMLSelectElement(*insertionPoint)) {
+        if (!parentNode())
+            toHTMLSelectElement(insertionPoint)->optGroupInsertedOrRemoved(*this);
+    }
+    HTMLElement::removedFrom(insertionPoint);
+}
+
 void HTMLOptGroupElement::updateNonComputedStyle()
 {
     m_style = originalStyleForLayoutObject();

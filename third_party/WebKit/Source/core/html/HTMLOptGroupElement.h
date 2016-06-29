@@ -55,6 +55,8 @@ private:
     void attach(const AttachContext& = AttachContext()) override;
     void detach(const AttachContext& = AttachContext()) override;
     bool matchesEnabledPseudoClass() const override;
+    InsertionNotificationRequest insertedInto(ContainerNode*) override;
+    void removedFrom(ContainerNode*) override;
 
     // <optgroup> might not have a layoutObject so we manually manage a cached style.
     void updateNonComputedStyle();

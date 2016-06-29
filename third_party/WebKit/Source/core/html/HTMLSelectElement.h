@@ -38,6 +38,8 @@ namespace blink {
 
 class AutoscrollController;
 class ExceptionState;
+class HTMLHRElement;
+class HTMLOptGroupElement;
 class HTMLOptionElement;
 class HTMLOptionElementOrHTMLOptGroupElement;
 class HTMLElementOrLong;
@@ -122,6 +124,9 @@ public:
     void optionInserted(HTMLOptionElement&, bool optionIsSelected);
     void optionRemoved(const HTMLOptionElement&);
     bool anonymousIndexedSetter(unsigned, HTMLOptionElement*, ExceptionState&);
+
+    void optGroupInsertedOrRemoved(const HTMLOptGroupElement&);
+    void hrInsertedOrRemoved(const HTMLHRElement&);
 
     void updateListOnLayoutObject();
 
@@ -246,7 +251,6 @@ private:
     AutoscrollController* autoscrollController() const;
     void scrollToOptionTask();
 
-    void childrenChanged(const ChildrenChange&) override;
     bool areAuthorShadowsAllowed() const override { return false; }
     void finishParsingChildren() override;
 

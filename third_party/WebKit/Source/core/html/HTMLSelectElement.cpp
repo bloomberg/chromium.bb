@@ -422,15 +422,6 @@ HTMLOptionsCollection* HTMLSelectElement::options()
     return ensureCachedCollection<HTMLOptionsCollection>(SelectOptions);
 }
 
-void HTMLSelectElement::childrenChanged(const ChildrenChange& change)
-{
-    setRecalcListItems();
-    setNeedsValidityCheck();
-    m_lastOnChangeSelection.clear();
-
-    HTMLFormControlElementWithState::childrenChanged(change);
-}
-
 void HTMLSelectElement::optionElementChildrenChanged(const HTMLOptionElement& option)
 {
     setNeedsValidityCheck();
@@ -992,6 +983,8 @@ void HTMLSelectElement::optionInserted(HTMLOptionElement& option, bool optionIsS
         if (!m_lastOnChangeOption)
             resetToDefaultSelection();
     }
+    setNeedsValidityCheck();
+    m_lastOnChangeSelection.clear();
 }
 
 void HTMLSelectElement::optionRemoved(const HTMLOptionElement& option)
@@ -1011,6 +1004,21 @@ void HTMLSelectElement::optionRemoved(const HTMLOptionElement& option)
         m_activeSelectionEnd.clear();
     if (option.selected())
         setAutofilled(false);
+    setNeedsValidityCheck();
+    m_lastOnChangeSelection.clear();
+}
+
+void HTMLSelectElement::optGroupInsertedOrRemoved(const HTMLOptGroupElement&)
+{
+    setRecalcListItems();
+    setNeedsValidityCheck();
+    m_lastOnChangeSelection.clear();
+}
+
+void HTMLSelectElement::hrInsertedOrRemoved(const HTMLHRElement&)
+{
+    setRecalcListItems();
+    m_lastOnChangeSelection.clear();
 }
 
 void HTMLSelectElement::selectOption(int optionIndex, SelectOptionFlags flags)

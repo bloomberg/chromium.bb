@@ -27,6 +27,8 @@
 #include "core/HTMLNames.h"
 #include "core/css/CSSColorValue.h"
 #include "core/css/StylePropertySet.h"
+#include "core/html/HTMLOptGroupElement.h"
+#include "core/html/HTMLSelectElement.h"
 
 namespace blink {
 
@@ -88,6 +90,41 @@ void HTMLHRElement::collectStyleForPresentationAttribute(const QualifiedName& na
     } else {
         HTMLElement::collectStyleForPresentationAttribute(name, value, style);
     }
+}
+
+HTMLSelectElement* HTMLHRElement::ownerSelectElement() const
+{
+    if (!parentNode())
+        return nullptr;
+    if (isHTMLSelectElement(*parentNode()))
+        return toHTMLSelectElement(parentNode());
+    if (!isHTMLOptGroupElement(*parentNode()))
+        return nullptr;
+    Node* grandParent = parentNode()->parentNode();
+    return isHTMLSelectElement(grandParent) ? toHTMLSelectElement(grandParent) : nullptr;
+}
+
+Node::InsertionNotificationRequest HTMLHRElement::insertedInto(ContainerNode* insertionPoint)
+{
+    HTMLElement::insertedInto(insertionPoint);
+    if (HTMLSelectElement* select = ownerSelectElement()) {
+        if (insertionPoint == select || (isHTMLOptGroupElement(*insertionPoint) && insertionPoint->parentNode() == select))
+            select->hrInsertedOrRemoved(*this);
+    }
+    return InsertionDone;
+}
+
+void HTMLHRElement::removedFrom(ContainerNode* insertionPoint)
+{
+    if (isHTMLSelectElement(*insertionPoint)) {
+        if (!parentNode() || isHTMLOptGroupElement(*parentNode()))
+            toHTMLSelectElement(insertionPoint)->hrInsertedOrRemoved(*this);
+    } else if (isHTMLOptGroupElement(*insertionPoint)) {
+        Node* parent = insertionPoint->parentNode();
+        if (isHTMLSelectElement(parent))
+            toHTMLSelectElement(parent)->hrInsertedOrRemoved(*this);
+    }
+    HTMLElement::removedFrom(insertionPoint);
 }
 
 } // namespace blink
