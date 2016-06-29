@@ -76035,6 +76035,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="1423" label="DocumentPointerLockElementInV0Shadow"/>
   <int value="1424" label="TextAreaMaxLength"/>
   <int value="1425" label="TextAreaMinLength"/>
+  <int value="1426" label="TopNavigationFromSubFrame"/>
 </enum>
 
 <enum name="FetchRequestMode" type="int">

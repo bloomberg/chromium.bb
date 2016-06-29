@@ -34,6 +34,7 @@
 #include "core/frame/FrameHost.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/Settings.h"
+#include "core/frame/UseCounter.h"
 #include "core/html/HTMLFrameElementBase.h"
 #include "core/input/EventHandler.h"
 #include "core/inspector/InspectorInstrumentation.h"
@@ -184,6 +185,7 @@ bool Frame::canNavigate(const Frame& targetFrame)
         const unsigned userGestureBit = 0x1;
         const unsigned allowedBit = 0x2;
         unsigned framebustParams = 0;
+        UseCounter::count(&targetFrame, UseCounter::TopNavigationFromSubFrame);
         if (UserGestureIndicator::processingUserGesture())
             framebustParams |= userGestureBit;
         if (isAllowedNavigation)
