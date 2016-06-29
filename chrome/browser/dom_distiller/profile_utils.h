@@ -7,8 +7,12 @@
 
 #include "chrome/browser/profiles/profile.h"
 
+namespace dom_distiller {
+
 // Setup URLDataSource for the chrome-distiller:// scheme for the given
 // |profile|.
-void RegisterDomDistillerViewerSource(Profile* profile);
+void RegisterViewerSource(Profile* profile);
+
+}  // namespace dom_distiller
 
 #endif  // CHROME_BROWSER_DOM_DISTILLER_PROFILE_UTILS_H_

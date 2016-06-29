@@ -34,7 +34,6 @@
 #include "build/build_config.h"
 #include "chrome/browser/app_mode/app_mode_utils.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/dom_distiller/tab_utils.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/printing/print_dialog_cloud.h"
 #include "chrome/browser/printing/print_error_dialog.h"
@@ -62,8 +61,6 @@
 #include "components/cloud_devices/common/cloud_device_description.h"
 #include "components/cloud_devices/common/cloud_devices_urls.h"
 #include "components/cloud_devices/common/printer_description.h"
-#include "components/dom_distiller/core/dom_distiller_switches.h"
-#include "components/dom_distiller/core/url_utils.h"
 #include "components/prefs/pref_service.h"
 #include "components/printing/common/print_messages.h"
 #include "components/signin/core/browser/gaia_cookie_manager_service.h"
@@ -110,7 +107,7 @@ enum UserActionBuckets {
   FALLBACK_TO_ADVANCED_SETTINGS_DIALOG,
   PREVIEW_FAILED,
   PREVIEW_STARTED,
-  INITIATOR_CRASHED,  // UNUSED
+  INITIATOR_CRASHED_UNUSED,
   INITIATOR_CLOSED,
   PRINT_WITH_CLOUD_PRINT,
   PRINT_WITH_PRIVET,
@@ -136,7 +133,7 @@ enum PrintSettingsBuckets {
   NON_DEFAULT_MEDIA,
   COPIES,
   NON_DEFAULT_MARGINS,
-  DISTILL_PAGE,
+  DISTILL_PAGE_UNUSED,
   PRINT_SETTINGS_BUCKET_BOUNDARY
 };
 
@@ -281,12 +278,6 @@ void ReportPrintSettingsStats(const base::DictionaryValue& settings) {
   if (settings.GetBoolean(printing::kSettingOpenPDFInPreview,
                           &external_preview) && external_preview) {
     ReportPrintSettingHistogram(EXTERNAL_PDF_PREVIEW);
-  }
-
-  bool distill_page = false;
-  if (settings.GetBoolean(printing::kSettingDistillPageEnabled,
-                          &distill_page) && distill_page) {
-    ReportPrintSettingHistogram(DISTILL_PAGE);
   }
 }
 
@@ -844,27 +835,14 @@ void PrintPreviewHandler::HandleGetPreview(const base::ListValue* args) {
 
   VLOG(1) << "Print preview request start";
 
-  bool distill_page = false;
-  if (!settings->GetBoolean(printing::kSettingDistillPageEnabled,
-                            &distill_page)) {
-    NOTREACHED();
-  }
-
   bool selection_only = false;
   if (!settings->GetBoolean(printing::kSettingShouldPrintSelectionOnly,
                             &selection_only)) {
     NOTREACHED();
   }
 
-  if (distill_page && !selection_only) {
-    print_preview_distiller_.reset(new PrintPreviewDistiller(
-        initiator, base::Bind(&PrintPreviewUI::OnPrintPreviewFailed,
-                              print_preview_ui()->GetWeakPtr()),
-        std::move(settings)));
-  } else {
-    RenderViewHost* rvh = initiator->GetRenderViewHost();
-    rvh->Send(new PrintMsg_PrintPreview(rvh->GetRoutingID(), *settings));
-  }
+  RenderViewHost* rvh = initiator->GetRenderViewHost();
+  rvh->Send(new PrintMsg_PrintPreview(rvh->GetRoutingID(), *settings));
 }
 
 void PrintPreviewHandler::HandlePrint(const base::ListValue* args) {
@@ -1294,13 +1272,6 @@ void PrintPreviewHandler::SendInitialSettings(
     GetNumberFormatAndMeasurementSystem(&initial_settings);
   web_ui()->CallJavascriptFunctionUnsafe("setInitialSettings",
                                          initial_settings);
-
-  if (PrintPreviewDistiller::IsEnabled()) {
-    using dom_distiller::url_utils::IsUrlDistillable;
-    WebContents* initiator = GetInitiator();
-    if (initiator && IsUrlDistillable(initiator->GetLastCommittedURL()))
-      web_ui()->CallJavascriptFunctionUnsafe("allowDistillPage");
-  }
 }
 
 void PrintPreviewHandler::ClosePreviewDialog() {

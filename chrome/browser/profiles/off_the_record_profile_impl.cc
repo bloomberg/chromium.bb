@@ -166,7 +166,7 @@ void OffTheRecordProfileImpl::Init() {
 
   // The DomDistillerViewerSource is not a normal WebUI so it must be registered
   // as a URLDataSource early.
-  RegisterDomDistillerViewerSource(this);
+  dom_distiller::RegisterViewerSource(this);
 }
 
 OffTheRecordProfileImpl::~OffTheRecordProfileImpl() {

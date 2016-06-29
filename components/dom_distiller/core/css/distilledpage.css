@@ -277,28 +277,6 @@ video::-webkit-media-controls-fullscreen-button {
   width: 100%;
 }
 
-@media print {
-  #closeReaderView {
-    display: none;
-  }
-  #feedbackContainer {
-    display: none;
-  }
-
-  /* Remove backgrounds and custom colors. */
-  .light, .dark, .sepia {
-      color: #000 !important;
-      background-color: #fff !important;
-      font-family: sans-serif !important;
-  }
-
-  /* If the transition duration is unchanged, the above color changes
-  happen after the document is ready for print. */
-  body {
-      transition-duration: unset !important;
-  }
-}
-
 #content {
   margin: 24px 16px 24px 16px;
 }

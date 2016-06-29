@@ -86292,7 +86292,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="3" label="FALLBACK_TO_ADVANCED_SETTINGS_DIALOG"/>
   <int value="4" label="PREVIEW_FAILED"/>
   <int value="5" label="PREVIEW_STARTED"/>
-  <int value="6" label="INITIATOR_TAB_CRASHED"/>
+  <int value="6" label="INITIATOR_TAB_CRASHED_UNUSED"/>
   <int value="7" label="INITIATOR_TAB_CLOSED"/>
   <int value="8" label="PRINT_WITH_CLOUD_PRINT"/>
   <int value="9" label="PRINT_WITH_PRIVET"/>
@@ -86317,7 +86317,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="14" label="NON_DEFAULT_MEDIA"/>
   <int value="15" label="COPIES"/>
   <int value="16" label="NON_DEFAULT_MARGINS"/>
-  <int value="17" label="DISTILL_PAGE"/>
+  <int value="17" label="DISTILL_PAGE_UNUSED"/>
 </enum>
 
 <enum name="PrivetNotificationsEvent" type="int">

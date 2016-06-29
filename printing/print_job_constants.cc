@@ -54,9 +54,6 @@ const char kSettingDeviceName[] = "deviceName";
 // Option to disable scaling. True if scaling is disabled else false.
 const char kSettingDisableScaling[] = "disableScaling";
 
-// Option to print a distilled page: true if requested, false if not.
-const char kSettingDistillPageEnabled[] = "distillPage";
-
 // Print job duplex mode.
 const char kSettingDuplexMode[] = "duplex";
 

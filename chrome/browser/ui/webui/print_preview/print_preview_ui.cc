@@ -259,8 +259,6 @@ content::WebUIDataSource* CreatePrintPreviewUISource() {
   source->AddLocalizedString("printPagesLabel",
                              IDS_PRINT_PREVIEW_PRINT_PAGES_LABEL);
   source->AddLocalizedString("optionsLabel", IDS_PRINT_PREVIEW_OPTIONS_LABEL);
-  source->AddLocalizedString("optionDistillPage",
-                             IDS_PRINT_PREVIEW_OPTION_DISTILL_PAGE);
   source->AddLocalizedString("optionHeaderFooter",
                              IDS_PRINT_PREVIEW_OPTION_HEADER_FOOTER);
   source->AddLocalizedString("optionFitToPage",
@@ -410,8 +408,7 @@ PrintPreviewUI::PrintPreviewUI(content::WebUI* web_ui)
       handler_(NULL),
       source_is_modifiable_(true),
       source_has_selection_(false),
-      dialog_closed_(false),
-      weak_ptr_factory_(this) {
+      dialog_closed_(false) {
   // Set up the chrome://print/ data source.
   Profile* profile = Profile::FromWebUI(web_ui);
   content::WebUIDataSource::Add(profile, CreatePrintPreviewUISource());
@@ -671,8 +668,4 @@ void PrintPreviewUI::SetSelectedFileForTesting(const base::FilePath& path) {
 void PrintPreviewUI::SetPdfSavedClosureForTesting(
     const base::Closure& closure) {
   handler_->SetPdfSavedClosureForTesting(closure);
-}
-
-base::WeakPtr<PrintPreviewUI> PrintPreviewUI::GetWeakPtr() {
-  return weak_ptr_factory_.GetWeakPtr();
 }

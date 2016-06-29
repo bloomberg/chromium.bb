@@ -40,15 +40,6 @@ function fillYouTubePlaceholders() {
 function showLoadingIndicator(isLastPage) {
   document.getElementById('loadingIndicator').className =
       isLastPage ? 'hidden' : 'visible';
-  // This function will be one of the last things to occur when a page is
-  // loaded. This is temporarily used to signal print preview to generate
-  // a PDF.
-  if (isLastPage && typeof isPrintPreviewDistiller !== 'undefined'
-      && isPrintPreviewDistiller) {
-    setTimeout(function() {
-        window.location = window.location + "#loaded";
-    }, 0);
-  }
 }
 
 // Sets the title.

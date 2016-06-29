@@ -20,45 +20,37 @@
 #include "components/dom_distiller/core/dom_distiller_switches.h"
 #include "components/dom_distiller/core/url_constants.h"
 
-#if defined(ENABLE_PRINT_PREVIEW)
-#include "chrome/browser/ui/webui/print_preview/print_preview_distiller.h"
-#endif  // defined(ENABLE_PRINT_PREVIEW)
-
 #if BUILDFLAG(ANDROID_JAVA_UI)
 #include "chrome/browser/android/dom_distiller/distiller_ui_handle_android.h"
 #endif  // BUILDFLAG(ANDROID_JAVA_UI)
 
-void RegisterDomDistillerViewerSource(Profile* profile) {
+namespace dom_distiller {
+
+void RegisterViewerSource(Profile* profile) {
   bool enabled_distiller = base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnableDomDistiller);
-#if defined(ENABLE_PRINT_PREVIEW)
-  if (PrintPreviewDistiller::IsEnabled())
-    enabled_distiller = true;
-#endif  // defined(ENABLE_PRINT_PREVIEW)
+  if (!enabled_distiller)
+    return;
 
-  if (enabled_distiller) {
-    dom_distiller::DomDistillerServiceFactory* dom_distiller_service_factory =
-        dom_distiller::DomDistillerServiceFactory::GetInstance();
-    // The LazyDomDistillerService deletes itself when the profile is destroyed.
-    dom_distiller::LazyDomDistillerService* lazy_service =
-        new dom_distiller::LazyDomDistillerService(
-            profile, dom_distiller_service_factory);
-    std::unique_ptr<dom_distiller::DistillerUIHandle> ui_handle;
+  DomDistillerServiceFactory* dom_distiller_service_factory =
+      DomDistillerServiceFactory::GetInstance();
+  // The LazyDomDistillerService deletes itself when the profile is destroyed.
+  LazyDomDistillerService* lazy_service =
+      new LazyDomDistillerService(profile, dom_distiller_service_factory);
+  std::unique_ptr<DistillerUIHandle> ui_handle;
 
 #if BUILDFLAG(ANDROID_JAVA_UI)
-    ui_handle.reset(
-        new dom_distiller::android::DistillerUIHandleAndroid());
+  ui_handle.reset(new dom_distiller::android::DistillerUIHandleAndroid());
 #endif  // BUILDFLAG(ANDROID_JAVA_UI)
 
-    // Set the JavaScript world ID.
-    if (!dom_distiller::DistillerJavaScriptWorldIdIsSet()) {
-      dom_distiller::SetDistillerJavaScriptWorldId(
-          chrome::ISOLATED_WORLD_ID_CHROME_INTERNAL);
-    }
-
-    content::URLDataSource::Add(
-        profile, new dom_distiller::DomDistillerViewerSource(
-                     lazy_service, dom_distiller::kDomDistillerScheme,
-                     std::move(ui_handle)));
+  // Set the JavaScript world ID.
+  if (!DistillerJavaScriptWorldIdIsSet()) {
+    SetDistillerJavaScriptWorldId(chrome::ISOLATED_WORLD_ID_CHROME_INTERNAL);
   }
+
+  content::URLDataSource::Add(
+      profile, new DomDistillerViewerSource(lazy_service, kDomDistillerScheme,
+                                            std::move(ui_handle)));
 }
+
+}  // namespace dom_distiller

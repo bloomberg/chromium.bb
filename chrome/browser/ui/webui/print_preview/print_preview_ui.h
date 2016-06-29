@@ -13,7 +13,6 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "chrome/browser/ui/webui/constrained_web_dialog_ui.h"
 
@@ -165,8 +164,6 @@ class PrintPreviewUI : public ConstrainedWebDialogUI {
   // Passes |closure| to PrintPreviewHandler::SetPdfSavedClosureForTesting().
   void SetPdfSavedClosureForTesting(const base::Closure& closure);
 
-  base::WeakPtr<PrintPreviewUI> GetWeakPtr();
-
  private:
   FRIEND_TEST_ALL_PREFIXES(PrintPreviewDialogControllerUnitTest,
                            TitleAfterReload);
@@ -198,8 +195,6 @@ class PrintPreviewUI : public ConstrainedWebDialogUI {
 
   // Keeps track of whether OnClosePrintPreviewDialog() has been called or not.
   bool dialog_closed_;
-
-  base::WeakPtrFactory<PrintPreviewUI> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(PrintPreviewUI);
 };
