@@ -1128,13 +1128,7 @@ TEST_F(TextfieldTest, CursorMovement) {
   EXPECT_STR_EQ("one two", last_contents_);
 }
 
-// Disabled on Mac (synthesized event bug). http://crbug.com/623420.
-#if defined(OS_MACOSX)
-#define MAYBE_FocusTraversalTest DISABLED_FocusTraversalTest
-#else
-#define MAYBE_FocusTraversalTest FocusTraversalTest
-#endif
-TEST_F(TextfieldTest, MAYBE_FocusTraversalTest) {
+TEST_F(TextfieldTest, FocusTraversalTest) {
   InitTextfields(3);
   textfield_->RequestFocus();
 
@@ -1592,13 +1586,7 @@ TEST_F(TextfieldTest, ReadOnlyTest) {
   EXPECT_STR_EQ(" four five six ", textfield_->GetSelectedText());
 }
 
-// Disabled on Mac (synthesized event bug). http://crbug.com/623420.
-#if defined(OS_MACOSX)
-#define MAYBE_TextInputClientTest DISABLED_TextInputClientTest
-#else
-#define MAYBE_TextInputClientTest TextInputClientTest
-#endif
-TEST_F(TextfieldTest, MAYBE_TextInputClientTest) {
+TEST_F(TextfieldTest, TextInputClientTest) {
   InitTextfield();
   ui::TextInputClient* client = textfield_;
   EXPECT_TRUE(client);
@@ -2502,15 +2490,7 @@ TEST_F(TextfieldTest, GetTextfieldBaseline_FontFallbackTest) {
 
 // Tests that a textfield view can be destroyed from OnKeyEvent() on its
 // controller and it does not crash.
-// Disabled on Mac (synthesized event bug). http://crbug.com/623420.
-#if defined(OS_MACOSX)
-#define MAYBE_DestroyingTextfieldFromOnKeyEvent \
-    DISABLED_DestroyingTextfieldFromOnKeyEvent
-#else
-#define MAYBE_DestroyingTextfieldFromOnKeyEvent \
-    DestroyingTextfieldFromOnKeyEvent
-#endif
-TEST_F(TextfieldTest, MAYBE_DestroyingTextfieldFromOnKeyEvent) {
+TEST_F(TextfieldTest, DestroyingTextfieldFromOnKeyEvent) {
   InitTextfield();
 
   // The controller assumes ownership of the textfield.

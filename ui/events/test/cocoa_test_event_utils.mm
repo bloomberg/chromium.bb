@@ -2,43 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import <Cocoa/Cocoa.h>
-#include <mach/mach_time.h>
+#import "ui/events/test/cocoa_test_event_utils.h"
+
 #include <stdint.h>
 
+#include "base/time/time.h"
+#include "ui/events/base_event_utils.h"
 #import "ui/events/keycodes/keyboard_code_conversion_mac.h"
-#include "ui/events/test/cocoa_test_event_utils.h"
 
 namespace cocoa_test_event_utils {
-
-namespace {
-
-// From
-// http://stackoverflow.com/questions/1597383/cgeventtimestamp-to-nsdate
-// Which credits Apple sample code for this routine.
-uint64_t UpTimeInNanoseconds(void) {
-  uint64_t time;
-  uint64_t timeNano;
-  static mach_timebase_info_data_t sTimebaseInfo;
-
-  time = mach_absolute_time();
-
-  // Convert to nanoseconds.
-
-  // If this is the first time we've run, get the timebase.
-  // We can use denom == 0 to indicate that sTimebaseInfo is
-  // uninitialised because it makes no sense to have a zero
-  // denominator is a fraction.
-  if (sTimebaseInfo.denom == 0) {
-    (void) mach_timebase_info(&sTimebaseInfo);
-  }
-
-  // This could overflow; for testing needs we probably don't care.
-  timeNano = time * sTimebaseInfo.numer / sTimebaseInfo.denom;
-  return timeNano;
-}
-
-}  // namespace
 
 NSEvent* MouseEventAtPoint(NSPoint point, NSEventType type,
                            NSUInteger modifiers) {
@@ -61,7 +33,7 @@ NSEvent* MouseEventAtPoint(NSPoint point, NSEventType type,
   return [NSEvent mouseEventWithType:type
                             location:point
                        modifierFlags:modifiers
-                           timestamp:0
+                           timestamp:TimeIntervalSinceSystemStartup()
                         windowNumber:0
                              context:nil
                          eventNumber:0
@@ -80,7 +52,7 @@ NSEvent* MouseEventAtPointInWindow(NSPoint point,
   return [NSEvent mouseEventWithType:type
                             location:point
                        modifierFlags:0
-                           timestamp:0
+                           timestamp:TimeIntervalSinceSystemStartup()
                         windowNumber:[window windowNumber]
                              context:nil
                          eventNumber:0
@@ -142,7 +114,7 @@ NSEvent* KeyEventWithKeyCode(unsigned short key_code,
   return [NSEvent keyEventWithType:event_type
                           location:NSZeroPoint
                      modifierFlags:modifiers
-                         timestamp:0
+                         timestamp:TimeIntervalSinceSystemStartup()
                       windowNumber:0
                            context:nil
                         characters:chars
@@ -155,7 +127,7 @@ static NSEvent* EnterExitEventWithType(NSEventType event_type) {
   return [NSEvent enterExitEventWithType:event_type
                                 location:NSZeroPoint
                            modifierFlags:0
-                               timestamp:0
+                               timestamp:TimeIntervalSinceSystemStartup()
                             windowNumber:0
                                  context:nil
                              eventNumber:0
@@ -175,7 +147,7 @@ NSEvent* OtherEventWithType(NSEventType event_type) {
   return [NSEvent otherEventWithType:event_type
                             location:NSZeroPoint
                        modifierFlags:0
-                           timestamp:0
+                           timestamp:TimeIntervalSinceSystemStartup()
                         windowNumber:0
                              context:nil
                              subtype:0
@@ -184,7 +156,8 @@ NSEvent* OtherEventWithType(NSEventType event_type) {
 }
 
 NSTimeInterval TimeIntervalSinceSystemStartup() {
-  return UpTimeInNanoseconds() / 1000000000.0;
+  base::TimeDelta time_elapsed = ui::EventTimeForNow() - base::TimeTicks();
+  return time_elapsed.InSecondsF();
 }
 
 NSEvent* SynthesizeKeyEvent(NSWindow* window,
