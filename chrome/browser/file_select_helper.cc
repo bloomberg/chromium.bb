@@ -198,7 +198,7 @@ void FileSelectHelper::FileSelectedWithExtraInfo(
       FROM_HERE,
       base::Bind(&FileSelectHelper::ProcessSelectedFilesMac, this, files));
 #else
-  NotifyRenderViewHostAndEnd(files);
+  NotifyRenderFrameHostAndEnd(files);
 #endif  // defined(OS_MACOSX)
 }
 
@@ -223,12 +223,12 @@ void FileSelectHelper::MultiFilesSelectedWithExtraInfo(
       FROM_HERE,
       base::Bind(&FileSelectHelper::ProcessSelectedFilesMac, this, files));
 #else
-  NotifyRenderViewHostAndEnd(files);
+  NotifyRenderFrameHostAndEnd(files);
 #endif  // defined(OS_MACOSX)
 }
 
 void FileSelectHelper::FileSelectionCanceled(void* params) {
-  NotifyRenderViewHostAndEnd(std::vector<ui::SelectedFileInfo>());
+  NotifyRenderFrameHostAndEnd(std::vector<ui::SelectedFileInfo>());
 }
 
 void FileSelectHelper::StartNewEnumeration(const base::FilePath& path,
@@ -279,14 +279,14 @@ void FileSelectHelper::OnListDone(int id, int error) {
       FilePathListToSelectedFileInfoList(entry->results_);
 
   if (id == kFileSelectEnumerationId) {
-    NotifyRenderViewHostAndEnd(selected_files);
+    NotifyRenderFrameHostAndEnd(selected_files);
   } else {
     entry->rvh_->DirectoryEnumerationFinished(id, entry->results_);
     EnumerateDirectoryEnd();
   }
 }
 
-void FileSelectHelper::NotifyRenderViewHostAndEnd(
+void FileSelectHelper::NotifyRenderFrameHostAndEnd(
     const std::vector<ui::SelectedFileInfo>& files) {
   if (!render_frame_host_) {
     RunFileChooserEnd();
@@ -308,8 +308,9 @@ void FileSelectHelper::NotifyRenderViewHostAndEnd(
             ->GetFileSystemContext();
     file_manager::util::ConvertSelectedFileInfoListToFileChooserFileInfoList(
         file_system_context, site_instance->GetSiteURL(), files,
-        base::Bind(&FileSelectHelper::NotifyRenderViewHostAndEndAfterConversion,
-                   this));
+        base::Bind(
+            &FileSelectHelper::NotifyRenderFrameHostAndEndAfterConversion,
+            this));
     return;
   }
 #endif  // defined(OS_CHROMEOS)
@@ -322,10 +323,10 @@ void FileSelectHelper::NotifyRenderViewHostAndEnd(
     chooser_files.push_back(chooser_file);
   }
 
-  NotifyRenderViewHostAndEndAfterConversion(chooser_files);
+  NotifyRenderFrameHostAndEndAfterConversion(chooser_files);
 }
 
-void FileSelectHelper::NotifyRenderViewHostAndEndAfterConversion(
+void FileSelectHelper::NotifyRenderFrameHostAndEndAfterConversion(
     const std::vector<content::FileChooserFileInfo>& list) {
   if (render_frame_host_)
     render_frame_host_->FilesSelectedInChooser(list, dialog_mode_);
@@ -341,7 +342,7 @@ void FileSelectHelper::DeleteTemporaryFiles() {
   temporary_files_.clear();
 }
 
-void FileSelectHelper::CleanUpOnRenderViewHostChange() {
+void FileSelectHelper::CleanUp() {
   if (!temporary_files_.empty()) {
     DeleteTemporaryFiles();
 
@@ -541,7 +542,7 @@ void FileSelectHelper::ProceedWithSafeBrowsingVerdict(
     std::unique_ptr<content::FileChooserParams> params,
     bool allowed_by_safe_browsing) {
   if (!allowed_by_safe_browsing) {
-    NotifyRenderViewHostAndEnd(std::vector<ui::SelectedFileInfo>());
+    NotifyRenderFrameHostAndEnd(std::vector<ui::SelectedFileInfo>());
     return;
   }
   RunFileChooserOnUIThread(default_file_path, std::move(params));
@@ -648,19 +649,24 @@ void FileSelectHelper::Observe(int type,
                                const content::NotificationSource& source,
                                const content::NotificationDetails& details) {
   DCHECK_EQ(content::NOTIFICATION_RENDER_WIDGET_HOST_DESTROYED, type);
-  DCHECK_EQ(content::Source<RenderWidgetHost>(source).ptr(),
-            render_frame_host_->GetRenderViewHost()->GetWidget());
   render_frame_host_ = nullptr;
 }
 
-void FileSelectHelper::RenderViewHostChanged(RenderViewHost* old_host,
-                                             RenderViewHost* new_host) {
-  CleanUpOnRenderViewHostChange();
+void FileSelectHelper::RenderFrameHostChanged(
+    content::RenderFrameHost* old_host,
+    content::RenderFrameHost* new_host) {
+  render_frame_host_ = nullptr;
+}
+
+void FileSelectHelper::RenderFrameDeleted(
+    content::RenderFrameHost* render_frame_host) {
+  render_frame_host_ = nullptr;
 }
 
 void FileSelectHelper::WebContentsDestroyed() {
+  render_frame_host_ = nullptr;
   web_contents_ = nullptr;
-  CleanUpOnRenderViewHostChange();
+  CleanUp();
 }
 
 // static

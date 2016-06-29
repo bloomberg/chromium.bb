@@ -33,9 +33,9 @@ namespace ui {
 struct SelectedFileInfo;
 }
 
-// This class handles file-selection requests coming from WebUI elements
-// (via the extensions::ExtensionHost class). It implements both the
-// initialisation and listener functions for file-selection dialogs.
+// This class handles file-selection requests coming from renderer processes.
+// It implements both the initialisation and listener functions for
+// file-selection dialogs.
 //
 // Since FileSelectHelper has-a NotificationRegistrar, it needs to live on and
 // be destroyed on the UI thread. References to FileSelectHelper may be passed
@@ -132,8 +132,9 @@ class FileSelectHelper : public base::RefCountedThreadSafe<
                const content::NotificationDetails& details) override;
 
   // content::WebContentsObserver overrides.
-  void RenderViewHostChanged(content::RenderViewHost* old_host,
-                             content::RenderViewHost* new_host) override;
+  void RenderFrameHostChanged(content::RenderFrameHost* old_host,
+                              content::RenderFrameHost* new_host) override;
+  void RenderFrameDeleted(content::RenderFrameHost* render_frame_host) override;
   void WebContentsDestroyed() override;
 
   void EnumerateDirectory(int request_id,
@@ -173,21 +174,21 @@ class FileSelectHelper : public base::RefCountedThreadSafe<
   static base::FilePath ZipPackage(const base::FilePath& path);
 #endif  // defined(OS_MACOSX)
 
-  // Utility method that passes |files| to the render view host, and ends the
+  // Utility method that passes |files| to the RenderFrameHost, and ends the
   // file chooser.
-  void NotifyRenderViewHostAndEnd(
+  void NotifyRenderFrameHostAndEnd(
       const std::vector<ui::SelectedFileInfo>& files);
 
   // Sends the result to the render process, and call |RunFileChooserEnd|.
-  void NotifyRenderViewHostAndEndAfterConversion(
+  void NotifyRenderFrameHostAndEndAfterConversion(
       const std::vector<content::FileChooserFileInfo>& list);
 
   // Schedules the deletion of the files in |temporary_files_| and clears the
   // vector.
   void DeleteTemporaryFiles();
 
-  // Cleans up when the RenderViewHost of our WebContents changes.
-  void CleanUpOnRenderViewHostChange();
+  // Cleans up when the initiator of the file chooser is no longer valid.
+  void CleanUp();
 
   // Helper method to get allowed extensions for select file dialog from
   // the specified accept types as defined in the spec:

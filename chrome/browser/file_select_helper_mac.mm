@@ -138,5 +138,5 @@ void FileSelectHelper::ProcessSelectedFilesMacOnUIThread(
     }
   }
 
-  NotifyRenderViewHostAndEnd(files);
+  NotifyRenderFrameHostAndEnd(files);
 }
