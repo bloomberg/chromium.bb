@@ -1261,7 +1261,7 @@ PaintController& GraphicsLayer::getPaintController()
     return *m_paintController;
 }
 
-void GraphicsLayer::setElementId(uint64_t id)
+void GraphicsLayer::setElementId(const CompositorElementId& id)
 {
     if (WebLayer* layer = platformLayer())
         layer->setElementId(id);

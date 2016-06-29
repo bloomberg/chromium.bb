@@ -1196,9 +1196,9 @@ TEST_F(ElementAnimationsTest,
   EXPECT_EQ(0.f, client_.GetOpacity(element_id_, ElementListType::ACTIVE));
 
   // Send the synchronized start time.
-  animations->NotifyAnimationStarted(
-      AnimationEvent(AnimationEvent::STARTED, 0, 1, TargetProperty::OPACITY,
-                     kInitialTickTime + TimeDelta::FromMilliseconds(2000)));
+  animations->NotifyAnimationStarted(AnimationEvent(
+      AnimationEvent::STARTED, ElementId(), 1, TargetProperty::OPACITY,
+      kInitialTickTime + TimeDelta::FromMilliseconds(2000)));
   animations->Animate(kInitialTickTime + TimeDelta::FromMilliseconds(5000));
   animations->UpdateState(true, events.get());
   EXPECT_EQ(1.f, client_.GetOpacity(element_id_, ElementListType::ACTIVE));

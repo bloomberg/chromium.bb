@@ -235,7 +235,8 @@ void AnimationHost::PushPropertiesToImplThread(AnimationHost* host_impl) {
 
 scoped_refptr<ElementAnimations>
 AnimationHost::GetElementAnimationsForElementId(ElementId element_id) const {
-  DCHECK(element_id);
+  if (!element_id)
+    return nullptr;
   auto iter = element_to_animations_map_.find(element_id);
   return iter == element_to_animations_map_.end() ? nullptr : iter->second;
 }
@@ -301,14 +302,14 @@ void AnimationHost::SetAnimationEvents(
     std::unique_ptr<AnimationEvents> events) {
   for (size_t event_index = 0; event_index < events->events_.size();
        ++event_index) {
-    int event_layer_id = events->events_[event_index].element_id;
+    ElementId element_id = events->events_[event_index].element_id;
 
     // Use the map of all ElementAnimations, not just active ones, since
     // non-active ElementAnimations may still receive events for impl-only
     // animations.
     const ElementToAnimationsMap& all_element_animations =
         element_to_animations_map_;
-    auto iter = all_element_animations.find(event_layer_id);
+    auto iter = all_element_animations.find(element_id);
     if (iter != all_element_animations.end()) {
       switch (events->events_[event_index].type) {
         case AnimationEvent::STARTED:

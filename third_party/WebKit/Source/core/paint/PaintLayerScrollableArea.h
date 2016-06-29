@@ -436,6 +436,8 @@ public:
     void invalidateAllStickyConstraints();
     void invalidateStickyConstraintsFor(PaintLayer*, bool needsCompositingUpdate = true);
 
+    uint64_t id() const;
+
     DECLARE_VIRTUAL_TRACE();
 
 private:

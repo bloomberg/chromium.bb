@@ -142,19 +142,19 @@ TEST_F(CompositorWorkerTest, plumbingElementIdAndMutableProperties)
     WebLayer* proxiedLayer = webLayerFromElement(proxiedElement);
     EXPECT_TRUE(proxiedLayer->compositorMutableProperties() & CompositorMutableProperty::kTransform);
     EXPECT_FALSE(proxiedLayer->compositorMutableProperties() & (CompositorMutableProperty::kScrollLeft | CompositorMutableProperty::kScrollTop | CompositorMutableProperty::kOpacity));
-    EXPECT_NE(0UL, proxiedLayer->elementId());
+    EXPECT_TRUE(proxiedLayer->elementId());
 
     Element* scrollElement = document->getElementById("proxied-scroller");
     WebLayer* scrollLayer = scrollingWebLayerFromElement(scrollElement);
     EXPECT_TRUE(scrollLayer->compositorMutableProperties() & (CompositorMutableProperty::kScrollLeft | CompositorMutableProperty::kScrollTop));
     EXPECT_FALSE(scrollLayer->compositorMutableProperties() & (CompositorMutableProperty::kTransform | CompositorMutableProperty::kOpacity));
-    EXPECT_NE(0UL, scrollLayer->elementId());
+    EXPECT_TRUE(scrollLayer->elementId());
 
     WebLayer* rootScrollLayer = getRootScrollLayer();
     EXPECT_TRUE(rootScrollLayer->compositorMutableProperties() & (CompositorMutableProperty::kScrollLeft | CompositorMutableProperty::kScrollTop));
     EXPECT_FALSE(rootScrollLayer->compositorMutableProperties() & (CompositorMutableProperty::kTransform | CompositorMutableProperty::kOpacity));
 
-    EXPECT_NE(0UL, rootScrollLayer->elementId());
+    EXPECT_TRUE(rootScrollLayer->elementId());
 }
 
 TEST_F(CompositorWorkerTest, noProxies)
@@ -176,14 +176,16 @@ TEST_F(CompositorWorkerTest, noProxies)
     WebLayer* proxiedLayer = webLayerFromElement(proxiedElement);
     EXPECT_TRUE(!proxiedLayer);
 
+    // Note: we presume the existance of mutable properties implies that the the
+    // element has a corresponding compositor proxy. Element ids (which are also
+    // used by animations) do not have this implication, so we do not check for
+    // them here.
     Element* scrollElement = document->getElementById("proxied-scroller");
     WebLayer* scrollLayer = scrollingWebLayerFromElement(scrollElement);
     EXPECT_FALSE(!!scrollLayer->compositorMutableProperties());
-    EXPECT_EQ(0UL, scrollLayer->elementId());
 
     WebLayer* rootScrollLayer = getRootScrollLayer();
     EXPECT_FALSE(!!rootScrollLayer->compositorMutableProperties());
-    EXPECT_EQ(0UL, rootScrollLayer->elementId());
 }
 
 TEST_F(CompositorWorkerTest, disconnectedProxies)
@@ -208,11 +210,9 @@ TEST_F(CompositorWorkerTest, disconnectedProxies)
     Element* scrollElement = document->getElementById("proxied-scroller");
     WebLayer* scrollLayer = scrollingWebLayerFromElement(scrollElement);
     EXPECT_FALSE(!!scrollLayer->compositorMutableProperties());
-    EXPECT_EQ(0UL, scrollLayer->elementId());
 
     WebLayer* rootScrollLayer = getRootScrollLayer();
     EXPECT_FALSE(!!rootScrollLayer->compositorMutableProperties());
-    EXPECT_EQ(0UL, rootScrollLayer->elementId());
 }
 
 TEST_F(CompositorWorkerTest, applyingMutationsMultipleElements)
@@ -229,8 +229,7 @@ TEST_F(CompositorWorkerTest, applyingMutationsMultipleElements)
         WebLayer* proxiedLayer = webLayerFromElement(proxiedElement);
         EXPECT_TRUE(proxiedLayer->compositorMutableProperties() & CompositorMutableProperty::kTransform);
         EXPECT_FALSE(proxiedLayer->compositorMutableProperties() & (CompositorMutableProperty::kScrollLeft | CompositorMutableProperty::kScrollTop | CompositorMutableProperty::kOpacity));
-        uint64_t elementId = proxiedLayer->elementId();
-        EXPECT_NE(0UL, elementId);
+        EXPECT_TRUE(proxiedLayer->elementId());
 
         TransformationMatrix transformMatrix(11, 12, 13, 14, 21, 22, 23, 24, 31, 32, 33, 34, 41, 42, 43, 44);
         CompositorMutation mutation;
@@ -247,8 +246,7 @@ TEST_F(CompositorWorkerTest, applyingMutationsMultipleElements)
         WebLayer* proxiedLayer = webLayerFromElement(proxiedElement);
         EXPECT_TRUE(proxiedLayer->compositorMutableProperties() & CompositorMutableProperty::kOpacity);
         EXPECT_FALSE(proxiedLayer->compositorMutableProperties() & (CompositorMutableProperty::kScrollLeft | CompositorMutableProperty::kScrollTop | CompositorMutableProperty::kTransform));
-        uint64_t elementId = proxiedLayer->elementId();
-        EXPECT_NE(0UL, elementId);
+        EXPECT_TRUE(proxiedLayer->elementId());
 
         CompositorMutation mutation;
         mutation.setOpacity(0.5);
@@ -275,8 +273,7 @@ TEST_F(CompositorWorkerTest, applyingMutationsMultipleProperties)
     EXPECT_TRUE(proxiedLayer->compositorMutableProperties() & CompositorMutableProperty::kTransform);
     EXPECT_TRUE(proxiedLayer->compositorMutableProperties() & CompositorMutableProperty::kOpacity);
     EXPECT_FALSE(proxiedLayer->compositorMutableProperties() & (CompositorMutableProperty::kScrollLeft | CompositorMutableProperty::kScrollTop));
-    uint64_t elementId = proxiedLayer->elementId();
-    EXPECT_NE(0UL, elementId);
+    EXPECT_TRUE(proxiedLayer->elementId());
 
     TransformationMatrix transformMatrix(11, 12, 13, 14, 21, 22, 23, 24, 31, 32, 33, 34, 41, 42, 43, 44);
     std::unique_ptr<CompositorMutation> mutation = wrapUnique(new CompositorMutation);

@@ -248,16 +248,16 @@ class CC_EXPORT LayerTreeHostImpl
   void DidAnimateScrollOffset();
   void SetViewportDamage(const gfx::Rect& damage_rect);
 
-  void SetTreeLayerFilterMutated(int layer_id,
+  void SetTreeLayerFilterMutated(ElementId element_id,
                                  LayerTreeImpl* tree,
                                  const FilterOperations& filters);
-  void SetTreeLayerOpacityMutated(int layer_id,
+  void SetTreeLayerOpacityMutated(ElementId element_id,
                                   LayerTreeImpl* tree,
                                   float opacity);
-  void SetTreeLayerTransformMutated(int layer_id,
+  void SetTreeLayerTransformMutated(ElementId element_id,
                                     LayerTreeImpl* tree,
                                     const gfx::Transform& transform);
-  void SetTreeLayerScrollOffsetMutated(int layer_id,
+  void SetTreeLayerScrollOffsetMutated(ElementId element_id,
                                        LayerTreeImpl* tree,
                                        const gfx::ScrollOffset& scroll_offset);
   bool AnimationsPreserveAxisAlignment(const LayerImpl* layer) const;

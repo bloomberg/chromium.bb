@@ -25,6 +25,7 @@
 
 #include "web/LinkHighlightImpl.h"
 
+#include "core/dom/DOMNodeIds.h"
 #include "core/dom/LayoutTreeBuilderTraversal.h"
 #include "core/dom/Node.h"
 #include "core/frame/FrameView.h"
@@ -40,6 +41,8 @@
 #include "platform/animation/CompositorTargetProperty.h"
 #include "platform/animation/TimingFunction.h"
 #include "platform/graphics/Color.h"
+#include "platform/graphics/CompositorElementId.h"
+#include "platform/graphics/CompositorMutableProperties.h"
 #include "platform/graphics/GraphicsLayer.h"
 #include "platform/graphics/paint/DrawingRecorder.h"
 #include "public/platform/Platform.h"
@@ -93,17 +96,19 @@ LinkHighlightImpl::LinkHighlightImpl(Node* node, WebViewImpl* owningWebViewImpl)
     m_compositorPlayer->setAnimationDelegate(this);
     if (m_owningWebViewImpl->linkHighlightsTimeline())
         m_owningWebViewImpl->linkHighlightsTimeline()->playerAttached(*this);
-    m_compositorPlayer->attachLayer(m_contentLayer->layer());
 
+    CompositorElementId elementId = createCompositorElementId(DOMNodeIds::idForNode(node), CompositorSubElementId::LinkHighlight);
+    m_compositorPlayer->attachElement(elementId);
     m_contentLayer->layer()->setDrawsContent(true);
     m_contentLayer->layer()->setOpacity(1);
+    m_contentLayer->layer()->setElementId(elementId);
     m_geometryNeedsUpdate = true;
 }
 
 LinkHighlightImpl::~LinkHighlightImpl()
 {
-    if (m_compositorPlayer->isLayerAttached())
-        m_compositorPlayer->detachLayer();
+    if (m_compositorPlayer->isElementAttached())
+        m_compositorPlayer->detachElement();
     if (m_owningWebViewImpl->linkHighlightsTimeline())
         m_owningWebViewImpl->linkHighlightsTimeline()->playerDestroyed(*this);
     m_compositorPlayer->setAnimationDelegate(nullptr);

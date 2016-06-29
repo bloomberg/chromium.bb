@@ -17,6 +17,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/observer_list.h"
+#include "cc/animation/element_id.h"
 #include "cc/animation/target_property.h"
 #include "cc/base/cc_export.h"
 #include "cc/base/region.h"
@@ -491,8 +492,8 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
 
   int num_copy_requests_in_target_subtree();
 
-  void SetElementId(uint64_t id);
-  uint64_t element_id() const { return element_id_; }
+  void SetElementId(ElementId id);
+  ElementId element_id() const { return element_id_; }
 
   void SetMutableProperties(uint32_t properties);
   uint32_t mutable_properties() const { return mutable_properties_; }
@@ -628,7 +629,7 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   int clip_tree_index_;
   int scroll_tree_index_;
   int property_tree_sequence_number_;
-  uint64_t element_id_;
+  ElementId element_id_;
   uint32_t mutable_properties_;
   gfx::Vector2dF offset_to_transform_parent_;
   uint32_t main_thread_scrolling_reasons_;

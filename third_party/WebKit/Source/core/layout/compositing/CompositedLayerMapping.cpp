@@ -1528,36 +1528,52 @@ void CompositedLayerMapping::updateShouldFlattenTransform()
     }
 }
 
+// Some background on when you receive an element id or mutable properties.
+//
+// element id:
+//   If you have a compositor proxy, an animation, or you're a scroller (and
+//   might impl animate).
+//
+// mutable properties:
+//   Only if you have a compositor proxy.
+//
+// The element id for the scroll layers is assigned when they're constructed,
+// since this is unconditional. However, the element id for the primary layer as
+// well as the mutable properties for all layers may change according to the
+// rules above so we update those values here.
 void CompositedLayerMapping::updateElementIdAndCompositorMutableProperties()
 {
-    if (!RuntimeEnabledFeatures::compositorWorkerEnabled())
-        return;
-
-    TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("compositor-worker"), "CompositedLayerMapping::updateElementId()");
-
-    uint64_t elementId = 0;
-    uint32_t mainMutableProperties = CompositorMutableProperty::kNone;
+    int elementId = 0;
+    uint32_t primaryMutableProperties = CompositorMutableProperty::kNone;
     uint32_t scrollMutableProperties = CompositorMutableProperty::kNone;
 
-    if (m_owningLayer.layoutObject()->style()->hasCompositorProxy()) {
-        if (Node* owningNode = m_owningLayer.layoutObject()->generatingNode()) {
-            if (owningNode->isElementNode()) {
-                Element* owningElement = toElement(owningNode);
-                uint32_t compositorMutableProperties = owningElement->compositorMutableProperties();
-                elementId = DOMNodeIds::idForNode(owningNode);
-                mainMutableProperties = (CompositorMutableProperty::kOpacity | CompositorMutableProperty::kTransform) & compositorMutableProperties;
-                scrollMutableProperties = (CompositorMutableProperty::kScrollLeft | CompositorMutableProperty::kScrollTop) & compositorMutableProperties;
-            }
-        }
+    Node* owningNode = m_owningLayer.layoutObject()->generatingNode();
+    Element* owningElement = nullptr;
+    if (owningNode && owningNode->isElementNode())
+        owningElement = toElement(owningNode);
+
+    if (RuntimeEnabledFeatures::compositorWorkerEnabled() && owningElement && m_owningLayer.layoutObject()->style()->hasCompositorProxy()) {
+        uint32_t compositorMutableProperties = owningElement->compositorMutableProperties();
+        elementId = DOMNodeIds::idForNode(owningNode);
+        primaryMutableProperties = (CompositorMutableProperty::kOpacity | CompositorMutableProperty::kTransform) & compositorMutableProperties;
+        scrollMutableProperties = (CompositorMutableProperty::kScrollLeft | CompositorMutableProperty::kScrollTop) & compositorMutableProperties;
     }
 
-    m_graphicsLayer->setElementId(elementId);
-    m_graphicsLayer->setCompositorMutableProperties(mainMutableProperties);
+    if (m_owningLayer.layoutObject()->style()->shouldCompositeForCurrentAnimations() && owningNode)
+        elementId = DOMNodeIds::idForNode(owningNode);
 
-    if (m_scrollingContentsLayer.get()) {
-        m_scrollingContentsLayer->setElementId(elementId);
+    CompositorElementId compositorElementId;
+    if (elementId)
+        compositorElementId = createCompositorElementId(elementId, CompositorSubElementId::Primary);
+
+    m_graphicsLayer->setElementId(compositorElementId);
+    m_graphicsLayer->setCompositorMutableProperties(primaryMutableProperties);
+
+    // We always set the elementId for m_scrollingContentsLayer since it can be
+    // animated for smooth scrolling, so we don't need to set it conditionally
+    // here.
+    if (m_scrollingContentsLayer.get())
         m_scrollingContentsLayer->setCompositorMutableProperties(scrollMutableProperties);
-    }
 }
 
 bool CompositedLayerMapping::updateForegroundLayer(bool needsForegroundLayer)
@@ -1644,6 +1660,12 @@ bool CompositedLayerMapping::updateScrollingLayers(bool needsScrollingLayers)
 
             // Inner layer which renders the content that scrolls.
             m_scrollingContentsLayer = createGraphicsLayer(CompositingReasonLayerForScrollingContents);
+
+            if (Node* owningNode = m_owningLayer.layoutObject()->generatingNode()) {
+                m_scrollingContentsLayer->setElementId(createCompositorElementId(DOMNodeIds::idForNode(owningNode), CompositorSubElementId::Scroll));
+                m_scrollingContentsLayer->setCompositorMutableProperties(CompositorMutableProperty::kScrollLeft | CompositorMutableProperty::kScrollTop);
+            }
+
             m_scrollingLayer->addChild(m_scrollingContentsLayer.get());
 
             layerChanged = true;

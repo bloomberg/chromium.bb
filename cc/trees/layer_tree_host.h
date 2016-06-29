@@ -351,6 +351,10 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
 
   Layer* LayerById(int id) const;
 
+  Layer* LayerByElementId(ElementId element_id) const;
+  void AddToElementMap(Layer* layer);
+  void RemoveFromElementMap(Layer* layer);
+
   void AddLayerShouldPushProperties(Layer* layer);
   void RemoveLayerShouldPushProperties(Layer* layer);
   std::unordered_set<Layer*>& LayersThatShouldPushProperties();
@@ -423,6 +427,8 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
   bool IsRemoteServer() const;
   bool IsRemoteClient() const;
   void BuildPropertyTreesForTesting();
+
+  void SetElementIdsForTesting();
 
   ImageSerializationProcessor* image_serialization_processor() const {
     return image_serialization_processor_;
@@ -601,6 +607,10 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
 
   using LayerIdMap = std::unordered_map<int, Layer*>;
   LayerIdMap layer_id_map_;
+
+  using ElementLayersMap = std::unordered_map<ElementId, Layer*, ElementIdHash>;
+  ElementLayersMap element_layers_map_;
+
   // Set of layers that need to push properties.
   std::unordered_set<Layer*> layers_that_should_push_properties_;
 

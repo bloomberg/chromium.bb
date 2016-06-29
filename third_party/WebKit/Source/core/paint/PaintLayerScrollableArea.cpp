@@ -45,6 +45,7 @@
 
 #include "core/css/PseudoStyleRequest.h"
 #include "core/dom/AXObjectCache.h"
+#include "core/dom/DOMNodeIds.h"
 #include "core/dom/Node.h"
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/editing/FrameSelection.h"
@@ -1637,6 +1638,11 @@ void PaintLayerScrollableArea::ScrollbarManager::destroyScrollbar(ScrollbarOrien
     toFrameView(scrollbar->parent())->removeChild(scrollbar.get());
     scrollbar->disconnectFromScrollableArea();
     scrollbar = nullptr;
+}
+
+uint64_t PaintLayerScrollableArea::id() const
+{
+    return DOMNodeIds::idForNode(box().node());
 }
 
 DEFINE_TRACE(PaintLayerScrollableArea::ScrollbarManager)

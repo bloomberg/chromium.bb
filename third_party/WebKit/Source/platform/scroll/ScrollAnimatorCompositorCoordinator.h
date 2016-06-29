@@ -12,6 +12,7 @@
 #include "platform/animation/CompositorAnimationDelegate.h"
 #include "platform/animation/CompositorAnimationPlayerClient.h"
 #include "platform/geometry/FloatPoint.h"
+#include "platform/graphics/CompositorElementId.h"
 #include "platform/heap/Handle.h"
 #include "platform/scroll/ScrollTypes.h"
 #include "wtf/Allocator.h"
@@ -140,7 +141,7 @@ protected:
     };
 
     std::unique_ptr<CompositorAnimationPlayer> m_compositorPlayer;
-    int m_compositorAnimationAttachedToLayerId;
+    CompositorElementId m_compositorAnimationAttachedToElementId;
     RunState m_runState;
     int m_compositorAnimationId;
     int m_compositorAnimationGroupId;

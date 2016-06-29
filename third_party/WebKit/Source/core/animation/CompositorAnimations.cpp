@@ -37,6 +37,7 @@
 #include "core/animation/animatable/AnimatableFilterOperations.h"
 #include "core/animation/animatable/AnimatableTransform.h"
 #include "core/animation/animatable/AnimatableValue.h"
+#include "core/dom/DOMNodeIds.h"
 #include "core/layout/LayoutBoxModelObject.h"
 #include "core/layout/LayoutObject.h"
 #include "core/layout/compositing/CompositedLayerMapping.h"
@@ -376,39 +377,26 @@ void CompositorAnimations::pauseAnimationForTestingOnCompositor(const Element& e
     compositorPlayer->pauseAnimation(id, pauseTime);
 }
 
-bool CompositorAnimations::canAttachCompositedLayers(const Element& element, const Animation& animation)
+void CompositorAnimations::attachCompositedLayers(Element& element, const Animation& animation)
 {
     if (!animation.compositorPlayer())
-        return false;
+        return;
 
     if (!element.layoutObject() || !element.layoutObject()->isBoxModelObject())
-        return false;
+        return;
 
     PaintLayer* layer = toLayoutBoxModelObject(element.layoutObject())->layer();
 
     if (!layer || !layer->isAllowedToQueryCompositingState()
         || !layer->compositedLayerMapping()
         || !layer->compositedLayerMapping()->mainGraphicsLayer())
-        return false;
+        return;
 
     if (!layer->compositedLayerMapping()->mainGraphicsLayer()->platformLayer())
-        return false;
-
-    return true;
-}
-
-void CompositorAnimations::attachCompositedLayers(const Element& element, const Animation& animation)
-{
-    ASSERT(element.layoutObject());
-
-    PaintLayer* layer = toLayoutBoxModelObject(element.layoutObject())->layer();
-    ASSERT(layer);
+        return;
 
     CompositorAnimationPlayer* compositorPlayer = animation.compositorPlayer();
-    ASSERT(compositorPlayer);
-
-    ASSERT(layer->compositedLayerMapping());
-    compositorPlayer->attachLayer(layer->compositedLayerMapping()->mainGraphicsLayer()->platformLayer());
+    compositorPlayer->attachElement(createCompositorElementId(DOMNodeIds::idForNode(&element), CompositorSubElementId::Primary));
 }
 
 bool CompositorAnimations::convertTimingForCompositor(const Timing& timing, double timeOffset, CompositorTiming& out, double animationPlaybackRate)

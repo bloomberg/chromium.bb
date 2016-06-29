@@ -7,6 +7,7 @@
 #include "core/dom/DOMNodeIds.h"
 #include "core/dom/Element.h"
 #include "core/dom/ExceptionCode.h"
+#include "platform/graphics/CompositorElementId.h"
 #include "wtf/PtrUtil.h"
 #include <memory>
 
@@ -94,7 +95,7 @@ void ScrollState::consumeDeltaNative(double x, double y)
 
 Element* ScrollState::currentNativeScrollingElement() const
 {
-    uint64_t elementId = m_data->current_native_scrolling_element();
+    uint64_t elementId = m_data->current_native_scrolling_element().primaryId;
     if (elementId == 0)
         return nullptr;
     return elementForId(elementId);
@@ -102,12 +103,12 @@ Element* ScrollState::currentNativeScrollingElement() const
 
 void ScrollState::setCurrentNativeScrollingElement(Element* element)
 {
-    m_data->set_current_native_scrolling_element(DOMNodeIds::idForNode(element));
+    m_data->set_current_native_scrolling_element(createCompositorElementId(DOMNodeIds::idForNode(element), CompositorSubElementId::Scroll));
 }
 
 void ScrollState::setCurrentNativeScrollingElementById(int elementId)
 {
-    m_data->set_current_native_scrolling_element(elementId);
+    m_data->set_current_native_scrolling_element(createCompositorElementId(elementId, CompositorSubElementId::Scroll));
 }
 
 } // namespace blink

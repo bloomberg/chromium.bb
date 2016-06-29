@@ -57,8 +57,8 @@ class CC_EXPORT ScrollStateData {
   ScrollNode* current_native_scrolling_node() const;
   void set_current_native_scrolling_node(
       ScrollNode* current_native_scrolling_node);
-  uint64_t current_native_scrolling_element() const;
-  void set_current_native_scrolling_element(uint64_t element_id);
+  ElementId current_native_scrolling_element() const;
+  void set_current_native_scrolling_element(ElementId element_id);
 
  private:
   // Only one of current_native_scrolling_node_ and
@@ -69,7 +69,7 @@ class CC_EXPORT ScrollStateData {
   ScrollNode* current_native_scrolling_node_;
   // The id of the last native element to respond to a scroll, or 0 if none
   // exists.
-  uint64_t current_native_scrolling_element_;
+  ElementId current_native_scrolling_element_;
 };
 
 }  // namespace cc

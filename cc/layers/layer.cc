@@ -15,6 +15,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
+#include "cc/animation/animation_host.h"
 #include "cc/animation/mutable_properties.h"
 #include "cc/base/simple_enclosed_region.h"
 #include "cc/debug/frame_viewer_instrumentation.h"
@@ -58,7 +59,6 @@ Layer::Layer()
       clip_tree_index_(-1),
       scroll_tree_index_(-1),
       property_tree_sequence_number_(-1),
-      element_id_(0),
       mutable_properties_(MutableProperty::kNone),
       main_thread_scrolling_reasons_(
           MainThreadScrollingReason::kNotScrollingOnMain),
@@ -123,10 +123,20 @@ void Layer::SetLayerTreeHost(LayerTreeHost* host) {
     layer_tree_host_->property_trees()->RemoveIdFromIdToIndexMaps(id());
     layer_tree_host_->property_trees()->needs_rebuild = true;
     layer_tree_host_->UnregisterLayer(this);
+    if (element_id_) {
+      layer_tree_host_->animation_host()->UnregisterElement(
+          element_id_, ElementListType::ACTIVE);
+      layer_tree_host_->RemoveFromElementMap(this);
+    }
   }
   if (host) {
     host->property_trees()->needs_rebuild = true;
     host->RegisterLayer(this);
+    if (element_id_) {
+      host->AddToElementMap(this);
+      host->animation_host()->RegisterElement(element_id_,
+                                              ElementListType::ACTIVE);
+    }
   }
 
   layer_tree_host_ = host;
@@ -1804,13 +1814,26 @@ void Layer::RunMicroBenchmark(MicroBenchmark* benchmark) {
   benchmark->RunOnLayer(this);
 }
 
-void Layer::SetElementId(uint64_t id) {
+void Layer::SetElementId(ElementId id) {
   DCHECK(IsPropertyChangeAllowed());
   if (element_id_ == id)
     return;
   TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("compositor-worker"),
-               "Layer::SetElementId", "id", id);
+               "Layer::SetElementId", "element", id.AsValue().release());
+  if (element_id_ && layer_tree_host()) {
+    layer_tree_host()->animation_host()->UnregisterElement(
+        element_id_, ElementListType::ACTIVE);
+    layer_tree_host()->RemoveFromElementMap(this);
+  }
+
   element_id_ = id;
+
+  if (element_id_ && layer_tree_host()) {
+    layer_tree_host()->animation_host()->RegisterElement(
+        element_id_, ElementListType::ACTIVE);
+    layer_tree_host()->AddToElementMap(this);
+  }
+
   SetNeedsCommit();
 }
 

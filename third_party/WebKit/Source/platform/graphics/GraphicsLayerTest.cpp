@@ -31,6 +31,7 @@
 #include "platform/animation/CompositorAnimationTimeline.h"
 #include "platform/animation/CompositorFloatAnimationCurve.h"
 #include "platform/animation/CompositorTargetProperty.h"
+#include "platform/graphics/CompositorElementId.h"
 #include "platform/scroll/ScrollableArea.h"
 #include "platform/testing/FakeGraphicsLayer.h"
 #include "platform/testing/FakeGraphicsLayerClient.h"
@@ -117,8 +118,10 @@ TEST_F(GraphicsLayerTest, updateLayerShouldFlattenTransformWithAnimations)
     layerTreeView()->attachCompositorAnimationTimeline(compositorTimeline->animationTimeline());
     compositorTimeline->playerAttached(player);
 
-    player.compositorPlayer()->attachLayer(m_platformLayer);
-    ASSERT_TRUE(player.compositorPlayer()->isLayerAttached());
+    m_platformLayer->setElementId(CompositorElementId(m_platformLayer->id(), 0));
+
+    player.compositorPlayer()->attachElement(m_platformLayer->elementId());
+    ASSERT_TRUE(player.compositorPlayer()->isElementAttached());
 
     player.compositorPlayer()->addAnimation(floatAnimation.release());
 
@@ -140,8 +143,8 @@ TEST_F(GraphicsLayerTest, updateLayerShouldFlattenTransformWithAnimations)
 
     ASSERT_FALSE(m_platformLayer->hasActiveAnimationForTesting());
 
-    player.compositorPlayer()->detachLayer();
-    ASSERT_FALSE(player.compositorPlayer()->isLayerAttached());
+    player.compositorPlayer()->detachElement();
+    ASSERT_FALSE(player.compositorPlayer()->isElementAttached());
 
     compositorTimeline->playerDestroyed(player);
     layerTreeView()->detachCompositorAnimationTimeline(compositorTimeline->animationTimeline());

@@ -8,6 +8,7 @@
 #include "cc/animation/animation.h"
 #include "cc/animation/animation_curve.h"
 #include "cc/animation/animation_timeline.h"
+#include "cc/animation/element_id.h"
 #include "cc/animation/transform_operations.h"
 #include "cc/output/filter_operations.h"
 #include "cc/test/geometry_test_utils.h"
@@ -117,56 +118,57 @@ int AddOpacityStepsToElementAnimations(ElementAnimations* target,
                                        float end_opacity,
                                        int num_steps);
 
-void AddAnimationToLayerWithPlayer(int layer_id,
-                                   scoped_refptr<AnimationTimeline> timeline,
-                                   std::unique_ptr<Animation> animation);
-void AddAnimationToLayerWithExistingPlayer(
-    int layer_id,
+void AddAnimationToElementWithPlayer(ElementId element_id,
+                                     scoped_refptr<AnimationTimeline> timeline,
+                                     std::unique_ptr<Animation> animation);
+void AddAnimationToElementWithExistingPlayer(
+    ElementId element_id,
     scoped_refptr<AnimationTimeline> timeline,
     std::unique_ptr<Animation> animation);
 
-void RemoveAnimationFromLayerWithExistingPlayer(
-    int layer_id,
+void RemoveAnimationFromElementWithExistingPlayer(
+    ElementId element_id,
     scoped_refptr<AnimationTimeline> timeline,
     int animation_id);
 
-Animation* GetAnimationFromLayerWithExistingPlayer(
-    int layer_id,
+Animation* GetAnimationFromElementWithExistingPlayer(
+    ElementId element_id,
     scoped_refptr<AnimationTimeline> timeline,
     int animation_id);
 
-int AddAnimatedFilterToLayerWithPlayer(
-    int layer_id,
+int AddAnimatedFilterToElementWithPlayer(
+    ElementId element_id,
     scoped_refptr<AnimationTimeline> timeline,
     double duration,
     float start_brightness,
     float end_brightness);
 
-int AddAnimatedTransformToLayerWithPlayer(
-    int layer_id,
+int AddAnimatedTransformToElementWithPlayer(
+    ElementId element_id,
     scoped_refptr<AnimationTimeline> timeline,
     double duration,
     int delta_x,
     int delta_y);
 
-int AddAnimatedTransformToLayerWithPlayer(
-    int layer_id,
+int AddAnimatedTransformToElementWithPlayer(
+    ElementId element_id,
     scoped_refptr<AnimationTimeline> timeline,
     double duration,
     TransformOperations start_operations,
     TransformOperations operations);
 
-int AddOpacityTransitionToLayerWithPlayer(
-    int layer_id,
+int AddOpacityTransitionToElementWithPlayer(
+    ElementId element_id,
     scoped_refptr<AnimationTimeline> timeline,
     double duration,
     float start_opacity,
     float end_opacity,
     bool use_timing_function);
 
-void AbortAnimationsOnLayerWithPlayer(int layer_id,
-                                      scoped_refptr<AnimationTimeline> timeline,
-                                      TargetProperty::Type target_property);
+void AbortAnimationsOnElementWithPlayer(
+    ElementId element_id,
+    scoped_refptr<AnimationTimeline> timeline,
+    TargetProperty::Type target_property);
 
 }  // namespace cc
 

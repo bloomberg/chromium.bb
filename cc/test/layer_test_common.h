@@ -157,6 +157,10 @@ class LayerTestCommon {
     scoped_refptr<AnimationTimeline> timeline() { return timeline_; }
     scoped_refptr<AnimationTimeline> timeline_impl() { return timeline_impl_; }
 
+    void SetElementIdsForTesting() {
+      host_impl()->active_tree()->SetElementIdsForTesting();
+    }
+
    private:
     FakeLayerTreeHostClient client_;
     TestTaskGraphRunner task_graph_runner_;

@@ -204,7 +204,7 @@ TEST(LayerImplTest, VerifyLayerChangesAreTrackedProperly) {
   // Changing these properties does not cause the layer to be marked as changed
   // but does cause the layer to need to push properties.
   EXECUTE_AND_VERIFY_NEEDS_PUSH_PROPERTIES_AND_SUBTREE_DID_NOT_CHANGE(
-      root->SetElementId(2); root->SetNeedsPushProperties());
+      root->SetElementId(ElementId(2, 0)));
   EXECUTE_AND_VERIFY_NEEDS_PUSH_PROPERTIES_AND_SUBTREE_DID_NOT_CHANGE(
       root->SetMutableProperties(MutableProperty::kOpacity);
       root->SetNeedsPushProperties());
@@ -336,7 +336,7 @@ TEST(LayerImplTest, VerifyNeedsUpdateDrawProperties) {
   VERIFY_NO_NEEDS_UPDATE_DRAW_PROPERTIES(
       layer->SetTransform(arbitrary_transform));
   VERIFY_NO_NEEDS_UPDATE_DRAW_PROPERTIES(layer->SetBounds(arbitrary_size));
-  VERIFY_NO_NEEDS_UPDATE_DRAW_PROPERTIES(layer->SetElementId(2));
+  VERIFY_NO_NEEDS_UPDATE_DRAW_PROPERTIES(layer->SetElementId(ElementId(2, 0)));
   VERIFY_NO_NEEDS_UPDATE_DRAW_PROPERTIES(
       layer->SetMutableProperties(MutableProperty::kTransform));
 }

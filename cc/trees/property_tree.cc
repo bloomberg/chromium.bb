@@ -635,7 +635,6 @@ ScrollNodeData::ScrollNodeData()
       should_flatten(false),
       user_scrollable_horizontal(false),
       user_scrollable_vertical(false),
-      element_id(0),
       transform_id(0),
       num_drawn_descendants(0) {}
 
@@ -680,7 +679,7 @@ void ScrollNodeData::ToProtobuf(proto::TreeNode* proto) const {
   data->set_should_flatten(should_flatten);
   data->set_user_scrollable_horizontal(user_scrollable_horizontal);
   data->set_user_scrollable_vertical(user_scrollable_vertical);
-  data->set_element_id(element_id);
+  element_id.ToProtobuf(data->mutable_element_id());
   data->set_transform_id(transform_id);
 }
 
@@ -703,7 +702,7 @@ void ScrollNodeData::FromProtobuf(const proto::TreeNode& proto) {
   should_flatten = data.should_flatten();
   user_scrollable_horizontal = data.user_scrollable_horizontal();
   user_scrollable_vertical = data.user_scrollable_vertical();
-  element_id = data.element_id();
+  element_id.FromProtobuf(data.element_id());
   transform_id = data.transform_id();
 }
 
@@ -717,7 +716,8 @@ void ScrollNodeData::AsValueInto(base::trace_event::TracedValue* value) const {
   value->SetBoolean("should_flatten", should_flatten);
   value->SetBoolean("user_scrollable_horizontal", user_scrollable_horizontal);
   value->SetBoolean("user_scrollable_vertical", user_scrollable_vertical);
-  value->SetInteger("element_id", element_id);
+
+  element_id.AddToTracedValue(value);
   value->SetInteger("transform_id", transform_id);
 }
 

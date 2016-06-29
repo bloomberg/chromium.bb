@@ -31,6 +31,7 @@
 #include "core/css/FontFaceSet.h"
 #include "core/css/resolver/StyleResolver.h"
 #include "core/dom/AXObjectCache.h"
+#include "core/dom/DOMNodeIds.h"
 #include "core/dom/Fullscreen.h"
 #include "core/dom/IntersectionObserverController.h"
 #include "core/editing/EditingUtilities.h"

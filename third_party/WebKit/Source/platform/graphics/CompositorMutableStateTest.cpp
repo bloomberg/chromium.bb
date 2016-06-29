@@ -12,6 +12,7 @@
 #include "cc/test/test_task_graph_runner.h"
 #include "cc/trees/layer_tree_host_impl.h"
 #include "cc/trees/layer_tree_impl.h"
+#include "platform/graphics/CompositorElementId.h"
 #include "platform/graphics/CompositorMutableProperties.h"
 #include "platform/graphics/CompositorMutableStateProvider.h"
 #include "platform/graphics/CompositorMutation.h"
@@ -83,24 +84,6 @@ TEST_F(CompositorMutableStateTest, NoMutableState)
     EXPECT_FALSE(state);
 }
 
-TEST_F(CompositorMutableStateTest, MutableStateNoMutableProperties)
-{
-    // In this test, there is a layer with an element id, but no mutable
-    // properties. This should behave just as if we'd had no element id.
-    std::unique_ptr<LayerImpl> root = LayerImpl::Create(hostImpl().active_tree(), 42);
-    SetLayerPropertiesForTesting(root.get());
-    root->SetElementId(42);
-
-    hostImpl().SetViewportSize(root->bounds());
-    hostImpl().active_tree()->SetRootLayerForTesting(std::move(root));
-    hostImpl().UpdateNumChildrenAndDrawPropertiesForActiveTree();
-
-    CompositorMutations mutations;
-    CompositorMutableStateProvider provider(hostImpl().active_tree(), &mutations);
-    std::unique_ptr<CompositorMutableState> state(provider.getMutableStateFor(42));
-    EXPECT_FALSE(state);
-}
-
 TEST_F(CompositorMutableStateTest, MutableStateMutableProperties)
 {
     // In this test, there is a layer with an element id and mutable properties.
@@ -116,8 +99,10 @@ TEST_F(CompositorMutableStateTest, MutableStateMutableProperties)
     root->test_properties()->AddChild(std::move(scopedLayer));
 
     SetLayerPropertiesForTesting(layer);
-    layer->SetElementId(12);
-    root->SetElementId(layer->element_id());
+
+    int primaryId = 12;
+    root->SetElementId(createCompositorElementId(primaryId, CompositorSubElementId::Primary));
+    layer->SetElementId(createCompositorElementId(primaryId, CompositorSubElementId::Scroll));
 
     root->SetMutableProperties(CompositorMutableProperty::kOpacity | CompositorMutableProperty::kTransform);
     layer->SetMutableProperties(CompositorMutableProperty::kScrollLeft | CompositorMutableProperty::kScrollTop);
@@ -129,7 +114,7 @@ TEST_F(CompositorMutableStateTest, MutableStateMutableProperties)
     CompositorMutations mutations;
     CompositorMutableStateProvider provider(hostImpl().active_tree(), &mutations);
 
-    std::unique_ptr<CompositorMutableState> state(provider.getMutableStateFor(layer->element_id()));
+    std::unique_ptr<CompositorMutableState> state(provider.getMutableStateFor(primaryId));
     EXPECT_TRUE(state.get());
 
     EXPECT_EQ(1.0, rootLayer()->Opacity());
@@ -151,7 +136,7 @@ TEST_F(CompositorMutableStateTest, MutableStateMutableProperties)
     // The corresponding mutation should reflect the changed values.
     EXPECT_EQ(1ul, mutations.map.size());
 
-    const CompositorMutation& mutation = *mutations.map.find(layer->element_id())->value;
+    const CompositorMutation& mutation = *mutations.map.find(primaryId)->value;
     EXPECT_TRUE(mutation.isOpacityMutated());
     EXPECT_TRUE(mutation.isTransformMutated());
     EXPECT_TRUE(mutation.isScrollLeftMutated());

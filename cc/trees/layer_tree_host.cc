@@ -980,6 +980,14 @@ void LayerTreeHost::BuildPropertyTreesForTesting() {
       gfx::Rect(device_viewport_size_), identity_transform, &property_trees_);
 }
 
+static void SetElementIdForTesting(Layer* layer) {
+  layer->SetElementId(LayerIdToElementIdForTesting(layer->id()));
+}
+
+void LayerTreeHost::SetElementIdsForTesting() {
+  LayerTreeHostCommon::CallFunctionForEveryLayer(this, SetElementIdForTesting);
+}
+
 bool LayerTreeHost::UsingSharedMemoryResources() {
   return GetRendererCapabilities().using_shared_memory_resources;
 }
@@ -1303,7 +1311,26 @@ void LayerTreeHost::SetLayerTreeMutator(
 
 Layer* LayerTreeHost::LayerById(int id) const {
   LayerIdMap::const_iterator iter = layer_id_map_.find(id);
-  return iter != layer_id_map_.end() ? iter->second : NULL;
+  return iter != layer_id_map_.end() ? iter->second : nullptr;
+}
+
+Layer* LayerTreeHost::LayerByElementId(ElementId element_id) const {
+  ElementLayersMap::const_iterator iter = element_layers_map_.find(element_id);
+  return iter != element_layers_map_.end() ? iter->second : nullptr;
+}
+
+void LayerTreeHost::AddToElementMap(Layer* layer) {
+  if (!layer->element_id())
+    return;
+
+  element_layers_map_[layer->element_id()] = layer;
+}
+
+void LayerTreeHost::RemoveFromElementMap(Layer* layer) {
+  if (!layer->element_id())
+    return;
+
+  element_layers_map_.erase(layer->element_id());
 }
 
 void LayerTreeHost::AddLayerShouldPushProperties(Layer* layer) {
@@ -1327,20 +1354,26 @@ void LayerTreeHost::RegisterLayer(Layer* layer) {
   DCHECK(!LayerById(layer->id()));
   DCHECK(!in_paint_layer_contents_);
   layer_id_map_[layer->id()] = layer;
-  animation_host_->RegisterElement(layer->id(), ElementListType::ACTIVE);
+  if (layer->element_id()) {
+    animation_host_->RegisterElement(layer->element_id(),
+                                     ElementListType::ACTIVE);
+  }
 }
 
 void LayerTreeHost::UnregisterLayer(Layer* layer) {
   DCHECK(LayerById(layer->id()));
   DCHECK(!in_paint_layer_contents_);
-  animation_host_->UnregisterElement(layer->id(), ElementListType::ACTIVE);
+  if (layer->element_id()) {
+    animation_host_->UnregisterElement(layer->element_id(),
+                                       ElementListType::ACTIVE);
+  }
   RemoveLayerShouldPushProperties(layer);
   layer_id_map_.erase(layer->id());
 }
 
 bool LayerTreeHost::IsElementInList(ElementId element_id,
                                     ElementListType list_type) const {
-  return list_type == ElementListType::ACTIVE && LayerById(element_id);
+  return list_type == ElementListType::ACTIVE && LayerByElementId(element_id);
 }
 
 void LayerTreeHost::SetMutatorsNeedCommit() {
@@ -1354,7 +1387,7 @@ void LayerTreeHost::SetMutatorsNeedRebuildPropertyTrees() {
 void LayerTreeHost::SetElementFilterMutated(ElementId element_id,
                                             ElementListType list_type,
                                             const FilterOperations& filters) {
-  Layer* layer = LayerById(element_id);
+  Layer* layer = LayerByElementId(element_id);
   DCHECK(layer);
   layer->OnFilterAnimated(filters);
 }
@@ -1362,7 +1395,7 @@ void LayerTreeHost::SetElementFilterMutated(ElementId element_id,
 void LayerTreeHost::SetElementOpacityMutated(ElementId element_id,
                                              ElementListType list_type,
                                              float opacity) {
-  Layer* layer = LayerById(element_id);
+  Layer* layer = LayerByElementId(element_id);
   DCHECK(layer);
   layer->OnOpacityAnimated(opacity);
 }
@@ -1371,7 +1404,7 @@ void LayerTreeHost::SetElementTransformMutated(
     ElementId element_id,
     ElementListType list_type,
     const gfx::Transform& transform) {
-  Layer* layer = LayerById(element_id);
+  Layer* layer = LayerByElementId(element_id);
   DCHECK(layer);
   layer->OnTransformAnimated(transform);
 }
@@ -1380,7 +1413,7 @@ void LayerTreeHost::SetElementScrollOffsetMutated(
     ElementId element_id,
     ElementListType list_type,
     const gfx::ScrollOffset& scroll_offset) {
-  Layer* layer = LayerById(element_id);
+  Layer* layer = LayerByElementId(element_id);
   DCHECK(layer);
   layer->OnScrollOffsetAnimated(scroll_offset);
 }
@@ -1390,7 +1423,7 @@ void LayerTreeHost::ElementTransformIsAnimatingChanged(
     ElementListType list_type,
     AnimationChangeType change_type,
     bool is_animating) {
-  Layer* layer = LayerById(element_id);
+  Layer* layer = LayerByElementId(element_id);
   if (layer) {
     switch (change_type) {
       case AnimationChangeType::POTENTIAL:
@@ -1412,7 +1445,7 @@ void LayerTreeHost::ElementOpacityIsAnimatingChanged(
     ElementListType list_type,
     AnimationChangeType change_type,
     bool is_animating) {
-  Layer* layer = LayerById(element_id);
+  Layer* layer = LayerByElementId(element_id);
   if (layer) {
     switch (change_type) {
       case AnimationChangeType::POTENTIAL:
@@ -1431,83 +1464,84 @@ void LayerTreeHost::ElementOpacityIsAnimatingChanged(
 
 gfx::ScrollOffset LayerTreeHost::GetScrollOffsetForAnimation(
     ElementId element_id) const {
-  Layer* layer = LayerById(element_id);
+  Layer* layer = LayerByElementId(element_id);
   DCHECK(layer);
   return layer->ScrollOffsetForAnimation();
 }
 
 bool LayerTreeHost::ScrollOffsetAnimationWasInterrupted(
     const Layer* layer) const {
-  return animation_host_->ScrollOffsetAnimationWasInterrupted(layer->id());
+  return animation_host_->ScrollOffsetAnimationWasInterrupted(
+      layer->element_id());
 }
 
 bool LayerTreeHost::IsAnimatingFilterProperty(const Layer* layer) const {
-  return animation_host_->IsAnimatingFilterProperty(layer->id(),
+  return animation_host_->IsAnimatingFilterProperty(layer->element_id(),
                                                     ElementListType::ACTIVE);
 }
 
 bool LayerTreeHost::IsAnimatingOpacityProperty(const Layer* layer) const {
-  return animation_host_->IsAnimatingOpacityProperty(layer->id(),
+  return animation_host_->IsAnimatingOpacityProperty(layer->element_id(),
                                                      ElementListType::ACTIVE);
 }
 
 bool LayerTreeHost::IsAnimatingTransformProperty(const Layer* layer) const {
-  return animation_host_->IsAnimatingTransformProperty(layer->id(),
+  return animation_host_->IsAnimatingTransformProperty(layer->element_id(),
                                                        ElementListType::ACTIVE);
 }
 
 bool LayerTreeHost::HasPotentiallyRunningFilterAnimation(
     const Layer* layer) const {
   return animation_host_->HasPotentiallyRunningFilterAnimation(
-      layer->id(), ElementListType::ACTIVE);
+      layer->element_id(), ElementListType::ACTIVE);
 }
 
 bool LayerTreeHost::HasPotentiallyRunningOpacityAnimation(
     const Layer* layer) const {
   return animation_host_->HasPotentiallyRunningOpacityAnimation(
-      layer->id(), ElementListType::ACTIVE);
+      layer->element_id(), ElementListType::ACTIVE);
 }
 
 bool LayerTreeHost::HasPotentiallyRunningTransformAnimation(
     const Layer* layer) const {
   return animation_host_->HasPotentiallyRunningTransformAnimation(
-      layer->id(), ElementListType::ACTIVE);
+      layer->element_id(), ElementListType::ACTIVE);
 }
 
 bool LayerTreeHost::HasOnlyTranslationTransforms(const Layer* layer) const {
-  return animation_host_->HasOnlyTranslationTransforms(layer->id(),
+  return animation_host_->HasOnlyTranslationTransforms(layer->element_id(),
                                                        ElementListType::ACTIVE);
 }
 
 bool LayerTreeHost::MaximumTargetScale(const Layer* layer,
                                        float* max_scale) const {
   return animation_host_->MaximumTargetScale(
-      layer->id(), ElementListType::ACTIVE, max_scale);
+      layer->element_id(), ElementListType::ACTIVE, max_scale);
 }
 
 bool LayerTreeHost::AnimationStartScale(const Layer* layer,
                                         float* start_scale) const {
   return animation_host_->AnimationStartScale(
-      layer->id(), ElementListType::ACTIVE, start_scale);
+      layer->element_id(), ElementListType::ACTIVE, start_scale);
 }
 
 bool LayerTreeHost::HasAnyAnimationTargetingProperty(
     const Layer* layer,
     TargetProperty::Type property) const {
-  return animation_host_->HasAnyAnimationTargetingProperty(layer->id(),
+  return animation_host_->HasAnyAnimationTargetingProperty(layer->element_id(),
                                                            property);
 }
 
 bool LayerTreeHost::AnimationsPreserveAxisAlignment(const Layer* layer) const {
-  return animation_host_->AnimationsPreserveAxisAlignment(layer->id());
+  return animation_host_->AnimationsPreserveAxisAlignment(layer->element_id());
 }
 
 bool LayerTreeHost::HasAnyAnimation(const Layer* layer) const {
-  return animation_host_->HasAnyAnimation(layer->id());
+  return animation_host_->HasAnyAnimation(layer->element_id());
 }
 
 bool LayerTreeHost::HasActiveAnimationForTesting(const Layer* layer) const {
-  return animation_host_->HasActiveAnimationForTesting(layer->id());
+  return animation_host_->HasActiveAnimationForTesting(layer->element_id());
 }
 
 bool LayerTreeHost::IsSingleThreaded() const {

@@ -192,10 +192,10 @@ class TestHostClient : public MutatorHostClient {
  private:
   std::unique_ptr<AnimationHost> host_;
 
-  using LayerIdToTestLayer =
-      std::unordered_map<int, std::unique_ptr<TestLayer>>;
-  LayerIdToTestLayer layers_in_active_tree_;
-  LayerIdToTestLayer layers_in_pending_tree_;
+  using ElementIdToTestLayer =
+      std::unordered_map<ElementId, std::unique_ptr<TestLayer>, ElementIdHash>;
+  ElementIdToTestLayer layers_in_active_tree_;
+  ElementIdToTestLayer layers_in_pending_tree_;
 
   gfx::ScrollOffset scroll_offset_;
   bool mutators_need_commit_;
@@ -264,7 +264,7 @@ class AnimationTimelinesTest : public testing::Test {
   void AnimateLayersTransferEvents(base::TimeTicks time,
                                    unsigned expect_events);
 
-  AnimationPlayer* GetPlayerForLayerId(ElementId element_id);
+  AnimationPlayer* GetPlayerForElementId(ElementId element_id);
   AnimationPlayer* GetImplPlayerForLayerId(ElementId element_id);
 
   int NextTestLayerId();
@@ -277,7 +277,7 @@ class AnimationTimelinesTest : public testing::Test {
 
   const int timeline_id_;
   const int player_id_;
-  int element_id_;
+  ElementId element_id_;
 
   int next_test_layer_id_;
 

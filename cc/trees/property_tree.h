@@ -11,6 +11,7 @@
 #include <unordered_map>
 #include <vector>
 
+#include "cc/animation/element_id.h"
 #include "cc/base/cc_export.h"
 #include "cc/base/synced_property.h"
 #include "cc/output/filter_operations.h"
@@ -339,7 +340,7 @@ struct CC_EXPORT ScrollNodeData {
   bool should_flatten;
   bool user_scrollable_horizontal;
   bool user_scrollable_vertical;
-  int element_id;
+  ElementId element_id;
   int transform_id;
   // Number of drawn layers pointing to this node or any of its descendants.
   int num_drawn_descendants;

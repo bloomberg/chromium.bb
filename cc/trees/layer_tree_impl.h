@@ -156,20 +156,9 @@ class CC_EXPORT LayerTreeImpl {
   LayerImplList::reverse_iterator rbegin();
   LayerImplList::reverse_iterator rend();
 
-  struct CC_EXPORT ElementLayers {
-    // Transform and opacity mutations apply to this layer.
-    LayerImpl* main = nullptr;
-    // Scroll mutations apply to this layer.
-    LayerImpl* scroll = nullptr;
-  };
-
-  void AddToElementMap(LayerImpl* layer);
-  void RemoveFromElementMap(LayerImpl* layer);
-
   void AddToOpacityAnimationsMap(int id, float opacity);
   void AddToTransformAnimationsMap(int id, gfx::Transform transform);
 
-  ElementLayers GetMutableLayers(uint64_t element_id);
   int source_frame_number() const { return source_frame_number_; }
   void set_source_frame_number(int frame_number) {
     source_frame_number_ = frame_number;
@@ -267,6 +256,8 @@ class CC_EXPORT LayerTreeImpl {
     return top_controls_shown_ratio_.get();
   }
 
+  void SetElementIdsForTesting();
+
   // Updates draw properties and render surface layer list, as well as tile
   // priorities. Returns false if it was unable to update.  Updating lcd
   // text may cause invalidations, so should only be done after a commit.
@@ -308,6 +299,13 @@ class CC_EXPORT LayerTreeImpl {
   gfx::Rect RootScrollLayerDeviceViewportBounds() const;
 
   LayerImpl* LayerById(int id) const;
+
+  // TODO(vollick): this is deprecated. It is used by
+  // animation/compositor-worker to look up layers to mutate, but in future, we
+  // will update property trees.
+  LayerImpl* LayerByElementId(ElementId element_id) const;
+  void AddToElementMap(LayerImpl* layer);
+  void RemoveFromElementMap(LayerImpl* layer);
 
   void AddLayerShouldPushProperties(LayerImpl* layer);
   void RemoveLayerShouldPushProperties(LayerImpl* layer);
@@ -532,7 +530,7 @@ class CC_EXPORT LayerTreeImpl {
   // Set of layers that need to push properties.
   std::unordered_set<LayerImpl*> layers_that_should_push_properties_;
 
-  std::unordered_map<uint64_t, ElementLayers> element_layers_map_;
+  std::unordered_map<ElementId, LayerImpl*, ElementIdHash> element_layers_map_;
 
   std::unordered_map<int, float> opacity_animations_map_;
   std::unordered_map<int, gfx::Transform> transform_animations_map_;

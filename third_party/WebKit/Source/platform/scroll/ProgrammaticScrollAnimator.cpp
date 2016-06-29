@@ -116,7 +116,7 @@ void ProgrammaticScrollAnimator::updateCompositorAnimations()
     }
 
     if (m_runState == RunState::WaitingToSendToCompositor) {
-        if (!m_compositorAnimationAttachedToLayerId)
+        if (!m_compositorAnimationAttachedToElementId)
             reattachCompositorPlayerIfNeeded(getScrollableArea()->compositorAnimationTimeline());
 
         bool sentToCompositor = false;

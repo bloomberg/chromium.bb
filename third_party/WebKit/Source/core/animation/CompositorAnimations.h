@@ -60,8 +60,7 @@ public:
     static void cancelAnimationOnCompositor(const Element&, const Animation&, int id);
     static void pauseAnimationForTestingOnCompositor(const Element&, const Animation&, int id, double pauseTime);
 
-    static bool canAttachCompositedLayers(const Element&, const Animation&);
-    static void attachCompositedLayers(const Element&, const Animation&);
+    static void attachCompositedLayers(Element&, const Animation&);
 
     static bool getAnimatedBoundingBox(FloatBox&, const EffectModel&, double minValue, double maxValue);
 

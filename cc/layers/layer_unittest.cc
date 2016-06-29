@@ -1709,7 +1709,7 @@ TEST_F(LayerTest, CheckPropertyChangeCausesCorrectBehavior) {
       gfx::Rect(10, 10)));
   EXPECT_SET_NEEDS_COMMIT(1, test_layer->SetForceRenderSurfaceForTesting(true));
   EXPECT_SET_NEEDS_COMMIT(1, test_layer->SetHideLayerAndSubtree(true));
-  EXPECT_SET_NEEDS_COMMIT(1, test_layer->SetElementId(2));
+  EXPECT_SET_NEEDS_COMMIT(1, test_layer->SetElementId(ElementId(2, 0)));
   EXPECT_SET_NEEDS_COMMIT(
       1, test_layer->SetMutableProperties(MutableProperty::kTransform));
 
@@ -2509,15 +2509,15 @@ TEST_F(LayerTest, ElementIdAndMutablePropertiesArePushed) {
 
   EXPECT_CALL(*layer_tree_host_, SetNeedsCommit()).Times(2);
 
-  test_layer->SetElementId(2);
+  test_layer->SetElementId(ElementId(2, 0));
   test_layer->SetMutableProperties(MutableProperty::kTransform);
 
-  EXPECT_EQ(0lu, impl_layer->element_id());
+  EXPECT_FALSE(impl_layer->element_id());
   EXPECT_EQ(MutableProperty::kNone, impl_layer->mutable_properties());
 
   test_layer->PushPropertiesTo(impl_layer.get());
 
-  EXPECT_EQ(2lu, impl_layer->element_id());
+  EXPECT_EQ(ElementId(2, 0), impl_layer->element_id());
   EXPECT_EQ(MutableProperty::kTransform, impl_layer->mutable_properties());
 }
 

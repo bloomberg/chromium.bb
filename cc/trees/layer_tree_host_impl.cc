@@ -2786,7 +2786,11 @@ bool LayerTreeHostImpl::ScrollAnimationCreate(ScrollNode* scroll_node,
       scroll_tree.current_scroll_offset(scroll_node->owner_id);
   gfx::ScrollOffset target_offset = scroll_tree.ClampScrollOffsetToLimits(
       current_offset + gfx::ScrollOffset(delta), scroll_node);
-  animation_host_->ImplOnlyScrollAnimationCreate(scroll_node->owner_id,
+  DCHECK_EQ(
+      ElementId(active_tree()->LayerById(scroll_node->owner_id)->element_id()),
+      scroll_node->data.element_id);
+
+  animation_host_->ImplOnlyScrollAnimationCreate(scroll_node->data.element_id,
                                                  target_offset, current_offset);
 
   SetNeedsOneBeginImplFrame();
@@ -3805,8 +3809,12 @@ void LayerTreeHostImpl::ScrollAnimationAbort(LayerImpl* layer_impl) {
 bool LayerTreeHostImpl::ScrollAnimationUpdateTarget(
     ScrollNode* scroll_node,
     const gfx::Vector2dF& scroll_delta) {
+  DCHECK_EQ(
+      ElementId(active_tree()->LayerById(scroll_node->owner_id)->element_id()),
+      scroll_node->data.element_id);
+
   return animation_host_->ImplOnlyScrollAnimationUpdateTarget(
-      scroll_node->owner_id, scroll_delta,
+      scroll_node->data.element_id, scroll_delta,
       active_tree_->property_trees()->scroll_tree.MaxScrollOffset(
           scroll_node->id),
       CurrentBeginFrameArgs().frame_time);
@@ -3815,12 +3823,13 @@ bool LayerTreeHostImpl::ScrollAnimationUpdateTarget(
 bool LayerTreeHostImpl::IsElementInList(ElementId element_id,
                                         ElementListType list_type) const {
   if (list_type == ElementListType::ACTIVE) {
-    return active_tree() ? active_tree()->LayerById(element_id) != nullptr
-                         : false;
+    return active_tree()
+               ? active_tree()->LayerByElementId(element_id) != nullptr
+               : false;
   } else {
-    if (pending_tree() && pending_tree()->LayerById(element_id))
+    if (pending_tree() && pending_tree()->LayerByElementId(element_id))
       return true;
-    if (recycle_tree() && recycle_tree()->LayerById(element_id))
+    if (recycle_tree() && recycle_tree()->LayerByElementId(element_id))
       return true;
 
     return false;
@@ -3832,48 +3841,48 @@ void LayerTreeHostImpl::SetMutatorsNeedCommit() {}
 void LayerTreeHostImpl::SetMutatorsNeedRebuildPropertyTrees() {}
 
 void LayerTreeHostImpl::SetTreeLayerFilterMutated(
-    int layer_id,
+    ElementId element_id,
     LayerTreeImpl* tree,
     const FilterOperations& filters) {
   if (!tree)
     return;
 
-  LayerImpl* layer = tree->LayerById(layer_id);
+  LayerImpl* layer = tree->LayerByElementId(element_id);
   if (layer)
     layer->OnFilterAnimated(filters);
 }
 
-void LayerTreeHostImpl::SetTreeLayerOpacityMutated(int layer_id,
+void LayerTreeHostImpl::SetTreeLayerOpacityMutated(ElementId element_id,
                                                    LayerTreeImpl* tree,
                                                    float opacity) {
   if (!tree)
     return;
 
-  LayerImpl* layer = tree->LayerById(layer_id);
+  LayerImpl* layer = tree->LayerByElementId(element_id);
   if (layer)
     layer->OnOpacityAnimated(opacity);
 }
 
 void LayerTreeHostImpl::SetTreeLayerTransformMutated(
-    int layer_id,
+    ElementId element_id,
     LayerTreeImpl* tree,
     const gfx::Transform& transform) {
   if (!tree)
     return;
 
-  LayerImpl* layer = tree->LayerById(layer_id);
+  LayerImpl* layer = tree->LayerByElementId(element_id);
   if (layer)
     layer->OnTransformAnimated(transform);
 }
 
 void LayerTreeHostImpl::SetTreeLayerScrollOffsetMutated(
-    int layer_id,
+    ElementId element_id,
     LayerTreeImpl* tree,
     const gfx::ScrollOffset& scroll_offset) {
   if (!tree)
     return;
 
-  LayerImpl* layer = tree->LayerById(layer_id);
+  LayerImpl* layer = tree->LayerByElementId(element_id);
   if (layer) {
     layer->OnScrollOffsetAnimated(scroll_offset);
     // Run mutation callbacks to respond to updated scroll offset.
@@ -3883,7 +3892,7 @@ void LayerTreeHostImpl::SetTreeLayerScrollOffsetMutated(
 
 bool LayerTreeHostImpl::AnimationsPreserveAxisAlignment(
     const LayerImpl* layer) const {
-  return animation_host_->AnimationsPreserveAxisAlignment(layer->id());
+  return animation_host_->AnimationsPreserveAxisAlignment(layer->element_id());
 }
 
 void LayerTreeHostImpl::SetElementFilterMutated(
@@ -3942,7 +3951,7 @@ void LayerTreeHostImpl::ElementTransformIsAnimatingChanged(
       list_type == ElementListType::ACTIVE ? active_tree() : pending_tree();
   if (!tree)
     return;
-  LayerImpl* layer = tree->LayerById(element_id);
+  LayerImpl* layer = tree->LayerByElementId(element_id);
   if (layer) {
     switch (change_type) {
       case AnimationChangeType::POTENTIAL:
@@ -3968,7 +3977,7 @@ void LayerTreeHostImpl::ElementOpacityIsAnimatingChanged(
       list_type == ElementListType::ACTIVE ? active_tree() : pending_tree();
   if (!tree)
     return;
-  LayerImpl* layer = tree->LayerById(element_id);
+  LayerImpl* layer = tree->LayerByElementId(element_id);
   if (layer) {
     switch (change_type) {
       case AnimationChangeType::POTENTIAL:
@@ -3995,7 +4004,7 @@ void LayerTreeHostImpl::ScrollOffsetAnimationFinished() {
 gfx::ScrollOffset LayerTreeHostImpl::GetScrollOffsetForAnimation(
     ElementId element_id) const {
   if (active_tree()) {
-    LayerImpl* layer = active_tree()->LayerById(element_id);
+    LayerImpl* layer = active_tree()->LayerByElementId(element_id);
     if (layer)
       return layer->ScrollOffsetForAnimation();
   }

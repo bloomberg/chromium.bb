@@ -44,6 +44,7 @@ namespace cc {
 class Layer;
 class LayerClient;
 class FilterOperations;
+struct ElementId;
 }
 
 namespace blink {
@@ -197,8 +198,8 @@ public:
     virtual const cc::Layer* ccLayer() const = 0;
     virtual cc::Layer* ccLayer() = 0;
 
-    virtual void setElementId(uint64_t) = 0;
-    virtual uint64_t elementId() const = 0;
+    virtual void setElementId(const cc::ElementId&) = 0;
+    virtual cc::ElementId elementId() const = 0;
 
     virtual void setCompositorMutableProperties(uint32_t) = 0;
     virtual uint32_t compositorMutableProperties() const = 0;

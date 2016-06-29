@@ -30,6 +30,7 @@
 
 #include "core/frame/VisualViewport.h"
 
+#include "core/dom/DOMNodeIds.h"
 #include "core/frame/FrameHost.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
@@ -47,6 +48,7 @@
 #include "platform/TraceEvent.h"
 #include "platform/geometry/DoubleRect.h"
 #include "platform/geometry/FloatSize.h"
+#include "platform/graphics/CompositorMutableProperties.h"
 #include "platform/graphics/GraphicsLayer.h"
 #include "platform/scroll/Scrollbar.h"
 #include "platform/scroll/ScrollbarThemeOverlay.h"
@@ -397,6 +399,10 @@ void VisualViewport::attachToLayerTree(GraphicsLayer* currentLayerTreeRoot)
         m_innerViewportScrollLayer->platformLayer()->setScrollClipLayer(
             m_innerViewportContainerLayer->platformLayer());
         m_innerViewportScrollLayer->platformLayer()->setUserScrollable(true, true);
+        if (mainFrame()) {
+            if (Document* document = mainFrame()->document())
+                m_innerViewportScrollLayer->setElementId(createCompositorElementId(DOMNodeIds::idForNode(document), CompositorSubElementId::Scroll));
+        }
 
         m_rootTransformLayer->addChild(m_innerViewportContainerLayer.get());
         m_innerViewportContainerLayer->addChild(m_overscrollElasticityLayer.get());
