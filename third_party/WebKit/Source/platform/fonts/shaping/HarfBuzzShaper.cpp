@@ -644,6 +644,7 @@ PassRefPtr<ShapeResult> HarfBuzzShaper::shapeResult()
 
             CaseMappingHarfBuzzBufferFiller(
                 caseMapIntend,
+                fontDescription.locale(),
                 harfBuzzBuffer.get(),
                 m_normalizedBuffer.get(),
                 m_normalizedBufferLength,

@@ -6,6 +6,7 @@
 #define CaseMappingHarfBuzzBufferFiller_h
 
 #include "wtf/Allocator.h"
+#include "wtf/text/AtomicString.h"
 #include "wtf/text/Unicode.h"
 
 #include <hb.h>
@@ -24,6 +25,7 @@ class CaseMappingHarfBuzzBufferFiller {
 public:
     CaseMappingHarfBuzzBufferFiller(
         CaseMapIntend,
+        AtomicString locale,
         hb_buffer_t* harfBuzzBuffer,
         const UChar* buffer,
         unsigned bufferLength,
@@ -31,6 +33,12 @@ public:
         unsigned numCharacters);
 
 private:
+    void fillSlowCase(CaseMapIntend,
+        AtomicString locale,
+        const UChar* buffer,
+        unsigned bufferLength,
+        unsigned startIndex,
+        unsigned numCharacters);
     hb_buffer_t* m_harfBuzzBuffer;
 };
 
