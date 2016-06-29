@@ -20,6 +20,7 @@
 #include "base/time/time.h"
 #include "base/values.h"
 #include "components/google/core/browser/google_util.h"
+#include "components/ntp_tiles/constants.h"
 #include "components/ntp_tiles/pref_names.h"
 #include "components/ntp_tiles/switches.h"
 #include "components/pref_registry/pref_registry_syncable.h"
@@ -28,6 +29,7 @@
 #include "components/search_engines/search_engine_type.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/variations/service/variations_service.h"
+#include "components/variations/variations_associated_data.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_status_code.h"
 
@@ -87,6 +89,16 @@ std::string GetDefaultSearchEngineCountryCode(
   return std::string();
 }
 
+std::string GetVariationCountry() {
+  return variations::GetVariationParamValue(kPopularSitesFieldTrialName,
+                                            "country");
+}
+
+std::string GetVariationVersion() {
+  return variations::GetVariationParamValue(kPopularSitesFieldTrialName,
+                                            "version");
+}
+
 // Determine the country code to use. In order of precedence:
 // - The explicit "override country" pref set by the user.
 // - The country code from the field trial config (variation parameter).
@@ -96,13 +108,12 @@ std::string GetDefaultSearchEngineCountryCode(
 // - A default fallback.
 std::string GetCountryToUse(const PrefService* prefs,
                             const TemplateURLService* template_url_service,
-                            VariationsService* variations_service,
-                            const std::string& variation_param_country) {
+                            VariationsService* variations_service) {
   std::string country_code =
       prefs->GetString(ntp_tiles::prefs::kPopularSitesOverrideCountry);
 
   if (country_code.empty())
-    country_code = variation_param_country;
+    country_code = GetVariationCountry();
 
   if (country_code.empty())
     country_code = GetDefaultSearchEngineCountryCode(template_url_service);
@@ -120,13 +131,12 @@ std::string GetCountryToUse(const PrefService* prefs,
 // - The explicit "override version" pref set by the user.
 // - The version from the field trial config (variation parameter).
 // - A default fallback.
-std::string GetVersionToUse(const PrefService* prefs,
-                            const std::string& variation_param_version) {
+std::string GetVersionToUse(const PrefService* prefs) {
   std::string version =
       prefs->GetString(ntp_tiles::prefs::kPopularSitesOverrideVersion);
 
   if (version.empty())
-    version = variation_param_version;
+    version = GetVariationVersion();
 
   if (version.empty())
     version = kPopularSitesDefaultVersion;
@@ -167,8 +177,6 @@ PopularSites::PopularSites(
     VariationsService* variations_service,
     net::URLRequestContextGetter* download_context,
     const base::FilePath& directory,
-    const std::string& variation_param_country,
-    const std::string& variation_param_version,
     bool force_download,
     const FinishedCallback& callback)
     : callback_(callback),
@@ -189,9 +197,9 @@ PopularSites::PopularSites(
       base::TimeDelta::FromHours(kPopularSitesRedownloadIntervalHours);
   const bool download_time_is_future = base::Time::Now() < last_download_time;
 
-  const std::string country = GetCountryToUse(
-      prefs, template_url_service, variations_service, variation_param_country);
-  const std::string version = GetVersionToUse(prefs, variation_param_version);
+  const std::string country =
+      GetCountryToUse(prefs, template_url_service, variations_service);
+  const std::string version = GetVersionToUse(prefs);
 
   const GURL override_url =
       GURL(prefs->GetString(ntp_tiles::prefs::kPopularSitesOverrideURL));

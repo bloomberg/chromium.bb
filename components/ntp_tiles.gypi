@@ -20,6 +20,8 @@
         'variations',
       ],
       'sources': [
+        'ntp_tiles/constants.cc',
+        'ntp_tiles/constants.h',
         'ntp_tiles/most_visited_sites.cc',
         'ntp_tiles/most_visited_sites.h',
         'ntp_tiles/popular_sites.cc',

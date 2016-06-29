@@ -20,11 +20,11 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "components/history/core/browser/top_sites.h"
+#include "components/ntp_tiles/constants.h"
 #include "components/ntp_tiles/pref_names.h"
 #include "components/ntp_tiles/switches.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
-#include "components/variations/variations_associated_data.h"
 #include "ui/gfx/codec/jpeg_codec.h"
 #include "url/gurl.h"
 
@@ -43,8 +43,6 @@ const char kHistogramServerName[] = "server";
 const char kHistogramServerFormat[] = "server%d";
 const char kHistogramPopularName[] = "popular";
 const char kHistogramWhitelistName[] = "whitelist";
-
-const char kPopularSitesFieldTrialName[] = "NTPPopularSites";
 
 const base::Feature kDisplaySuggestionsServiceTiles{
     "DisplaySuggestionsServiceTiles", base::FEATURE_ENABLED_BY_DEFAULT};
@@ -96,16 +94,6 @@ bool ShouldShowPopularSites() {
     return true;
   return base::StartsWith(group_name, "Enabled",
                           base::CompareCase::INSENSITIVE_ASCII);
-}
-
-std::string GetPopularSitesCountry() {
-  return variations::GetVariationParamValue(kPopularSitesFieldTrialName,
-                                            "country");
-}
-
-std::string GetPopularSitesVersion() {
-  return variations::GetVariationParamValue(kPopularSitesFieldTrialName,
-                                            "version");
 }
 
 // Determine whether we need any popular suggestions to fill up a grid of
@@ -216,8 +204,7 @@ void MostVisitedSites::SetMostVisitedURLsObserver(Observer* observer,
       NeedPopularSites(prefs_, num_sites_)) {
     popular_sites_.reset(new PopularSites(
         blocking_pool_, prefs_, template_url_service_, variations_service_,
-        download_context_, popular_sites_directory_, GetPopularSitesCountry(),
-        GetPopularSitesVersion(), false,
+        download_context_, popular_sites_directory_, false,
         base::Bind(&MostVisitedSites::OnPopularSitesAvailable,
                    base::Unretained(this))));
   } else {

@@ -66,17 +66,12 @@ class PopularSites : public net::URLFetcherDelegate {
   //
   // Set |force_download| to enforce re-downloading the suggestions file, even
   // if it already exists on disk.
-  //
-  // TODO(treib): PopularSites should query the variation params itself instead
-  // of having them passed in.
   PopularSites(const scoped_refptr<base::SequencedWorkerPool>& blocking_pool,
                PrefService* prefs,
                const TemplateURLService* template_url_service,
                variations::VariationsService* variations_service,
                net::URLRequestContextGetter* download_context,
                const base::FilePath& directory,
-               const std::string& variation_param_country,
-               const std::string& variation_param_version,
                bool force_download,
                const FinishedCallback& callback);
 
