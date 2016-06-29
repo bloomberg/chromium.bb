@@ -2574,14 +2574,29 @@ cr.define('login', function() {
     },
 
     /**
+     * Toggles pod PIN keyboard visiblity.
+     * @param {!user} username
+     * @param {boolean} visible
+     */
+    setPinVisibility: function(username, visible) {
+      var pod = this.getPodWithUsername_(username);
+      if (!pod) {
+        console.warn('Attempt to change pin visibility to ' + visible +
+            ' for missing pod');
+        return;
+      }
+
+      pod.setPinVisibility(visible);
+    },
+
+    /**
      * Removes user pod from pod row.
-     * @param {string} email User's email.
+     * @param {!user} username
      */
     removeUserPod: function(username) {
       var podToRemove = this.getPodWithUsername_(username);
       if (podToRemove == null) {
-        console.warn('Attempt to remove not existing pod for ' + username +
-            '.');
+        console.warn('Attempt to remove pod that does not exist');
         return;
       }
       this.removeChild(podToRemove);

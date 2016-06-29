@@ -359,16 +359,7 @@ login.createScreen('AccountPickerScreen', 'account-picker', function() {
      * @param {!user} user The user who can no longer enter a PIN.
      */
     disablePinKeyboardForUser: function(user) {
-      var pinContainer = $('pin-container');
-
-      // Transition opacity to 0, and when the transition is done hide the
-      // keyboard so it doesn't take layout space.
-      pinContainer.style.opacity = 0;
-      pinContainer.addEventListener('webkitTransitionEnd', function f(e) {
-        pinContainer.removeEventListener('webkitTransitionEnd', f);
-        pinContainer.hidden = true;
-      });
-      ensureTransitionEndEvent(pinContainer);
+      $('pod-row').setPinVisibility(user, false);
     },
 
     /**
