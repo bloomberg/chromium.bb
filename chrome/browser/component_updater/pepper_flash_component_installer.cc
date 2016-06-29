@@ -184,7 +184,7 @@ class FlashComponentInstallerTraits : public ComponentInstallerTraits {
   base::FilePath GetRelativeInstallDir() const override;
   void GetHash(std::vector<uint8_t>* hash) const override;
   std::string GetName() const override;
-  std::string GetAp() const override;
+  update_client::InstallerAttributes GetInstallerAttributes() const override;
 
   DISALLOW_COPY_AND_ASSIGN(FlashComponentInstallerTraits);
 };
@@ -253,8 +253,9 @@ std::string FlashComponentInstallerTraits::GetName() const {
   return "pepper_flash";
 }
 
-std::string FlashComponentInstallerTraits::GetAp() const {
-  return std::string();
+update_client::InstallerAttributes
+FlashComponentInstallerTraits::GetInstallerAttributes() const {
+  return update_client::InstallerAttributes();
 }
 #endif  // defined(GOOGLE_CHROME_BUILD)
 

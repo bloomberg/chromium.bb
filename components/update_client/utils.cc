@@ -239,23 +239,42 @@ bool IsValidBrand(const std::string& brand) {
          }) == brand.end();
 }
 
-bool IsValidAp(const std::string& ap) {
-  const size_t kMaxApSize = 256;
-  if (ap.size() > kMaxApSize)
+// Helper function.
+// Returns true if |part| matches the expression
+// ^[<special_chars>a-zA-Z0-9]{min_length,max_length}$
+bool IsValidInstallerAttributePart(const std::string& part,
+                                   const std::string& special_chars,
+                                   size_t min_length,
+                                   size_t max_length) {
+  if (part.size() < min_length || part.size() > max_length)
     return false;
 
-  return std::find_if_not(ap.begin(), ap.end(), [](char ch) {
+  return std::find_if_not(part.begin(), part.end(), [&special_chars](char ch) {
            if (base::IsAsciiAlpha(ch) || base::IsAsciiDigit(ch))
              return true;
 
-           const char kSpecialChars[] = "+-_=";
-           for (auto c : kSpecialChars) {
+           for (auto c : special_chars) {
              if (c == ch)
                return true;
            }
 
            return false;
-         }) == ap.end();
+         }) == part.end();
+}
+
+// Returns true if the |name| parameter matches ^[-_a-zA-Z0-9]{1,256}$ .
+bool IsValidInstallerAttributeName(const std::string& name) {
+  return IsValidInstallerAttributePart(name, "-_", 1, 256);
+}
+
+// Returns true if the |value| parameter matches ^[-.,;+_=a-zA-Z0-9]{0,256}$ .
+bool IsValidInstallerAttributeValue(const std::string& value) {
+  return IsValidInstallerAttributePart(value, "-.,;+_=", 0, 256);
+}
+
+bool IsValidInstallerAttribute(const InstallerAttribute& attr) {
+  return IsValidInstallerAttributeName(attr.first) &&
+         IsValidInstallerAttributeValue(attr.second);
 }
 
 void RemoveUnsecureUrls(std::vector<GURL>* urls) {

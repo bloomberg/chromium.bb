@@ -102,8 +102,9 @@ std::string OriginTrialsComponentInstallerTraits::GetName() const {
   return "Origin Trials";
 }
 
-std::string OriginTrialsComponentInstallerTraits::GetAp() const {
-  return std::string();
+update_client::InstallerAttributes
+OriginTrialsComponentInstallerTraits::GetInstallerAttributes() const {
+  return update_client::InstallerAttributes();
 }
 
 void RegisterOriginTrialsComponent(ComponentUpdateService* cus,

@@ -22,6 +22,7 @@
 #include "components/update_client/crx_update_item.h"
 #include "components/update_client/persisted_data.h"
 #include "components/update_client/request_sender.h"
+#include "components/update_client/update_client.h"
 #include "components/update_client/utils.h"
 #include "url/gurl.h"
 
@@ -34,9 +35,15 @@ std::string SanitizeBrand(const std::string& brand) {
   return IsValidBrand(brand) ? brand : std::string("");
 }
 
-// Returns a sanitized version of the |ap| or an empty string otherwise.
-std::string SanitizeAp(const std::string& ap) {
-  return IsValidAp(ap) ? ap : std::string();
+// Filters invalid attributes from |installer_attributes|.
+update_client::InstallerAttributes SanitizeInstallerAttributes(
+    const update_client::InstallerAttributes& installer_attributes) {
+  update_client::InstallerAttributes sanitized_attrs;
+  for (const auto& attr : installer_attributes) {
+    if (IsValidInstallerAttribute(attr))
+      sanitized_attrs.insert(attr);
+  }
+  return sanitized_attrs;
 }
 
 // Returns true if at least one item requires network encryption.
@@ -70,7 +77,8 @@ std::string BuildUpdateCheckRequest(const Configurator& config,
   std::string app_elements;
   for (size_t i = 0; i != items.size(); ++i) {
     const CrxUpdateItem* item = items[i];
-    const std::string ap(SanitizeAp(item->component.ap));
+    const update_client::InstallerAttributes installer_attributes(
+        SanitizeInstallerAttributes(item->component.installer_attributes));
     std::string app("<app ");
     base::StringAppendF(&app, "appid=\"%s\" version=\"%s\"", item->id.c_str(),
                         item->component.version.GetString().c_str());
@@ -78,8 +86,11 @@ std::string BuildUpdateCheckRequest(const Configurator& config,
       base::StringAppendF(&app, " brand=\"%s\"", brand.c_str());
     if (item->on_demand)
       base::StringAppendF(&app, " installsource=\"ondemand\"");
-    if (!ap.empty())
-      base::StringAppendF(&app, " ap=\"%s\"", ap.c_str());
+
+    for (const auto& attr : installer_attributes)
+      base::StringAppendF(&app, " %s=\"%s\"", attr.first.c_str(),
+                          attr.second.c_str());
+
     base::StringAppendF(&app, ">");
     base::StringAppendF(&app, "<updatecheck />");
     base::StringAppendF(&app, "<ping rd=\"%d\" ping_freshness=\"%s\" />",

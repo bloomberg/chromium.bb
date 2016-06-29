@@ -41,7 +41,7 @@ class EVWhitelistComponentInstallerTraits : public ComponentInstallerTraits {
   base::FilePath GetRelativeInstallDir() const override;
   void GetHash(std::vector<uint8_t>* hash) const override;
   std::string GetName() const override;
-  std::string GetAp() const override;
+  update_client::InstallerAttributes GetInstallerAttributes() const override;
 
   static base::FilePath GetInstalledPath(const base::FilePath& base);
 

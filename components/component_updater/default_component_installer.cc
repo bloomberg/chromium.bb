@@ -332,7 +332,7 @@ void DefaultComponentInstaller::FinishRegistration(
     crx.version = current_version_;
     crx.fingerprint = current_fingerprint_;
     crx.name = installer_traits_->GetName();
-    crx.ap = installer_traits_->GetAp();
+    crx.installer_attributes = installer_traits_->GetInstallerAttributes();
     crx.requires_network_encryption =
         installer_traits_->RequiresNetworkEncryption();
     if (!cus->RegisterComponent(crx)) {

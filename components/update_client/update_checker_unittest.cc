@@ -170,7 +170,7 @@ TEST_F(UpdateCheckerTest, UpdateCheckSuccess) {
   update_checker_ = UpdateChecker::Create(config_, metadata_.get());
 
   CrxUpdateItem item(BuildCrxUpdateItem());
-  item.component.ap = "some_ap";
+  item.component.installer_attributes["ap"] = "some_ap";
   std::vector<CrxUpdateItem*> items_to_check;
   items_to_check.push_back(&item);
 
@@ -220,7 +220,8 @@ TEST_F(UpdateCheckerTest, UpdateCheckInvalidAp) {
   update_checker_ = UpdateChecker::Create(config_, metadata_.get());
 
   CrxUpdateItem item(BuildCrxUpdateItem());
-  item.component.ap = std::string(257, 'a');  // Too long.
+  // Make "ap" too long.
+  item.component.installer_attributes["ap"] = std::string(257, 'a');
   std::vector<CrxUpdateItem*> items_to_check;
   items_to_check.push_back(&item);
 

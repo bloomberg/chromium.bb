@@ -91,8 +91,9 @@ std::string SubresourceFilterComponentInstallerTraits::GetName() const {
   return kSubresourceFilterSetFetcherManifestName;
 }
 
-std::string SubresourceFilterComponentInstallerTraits::GetAp() const {
-  return std::string();
+update_client::InstallerAttributes
+SubresourceFilterComponentInstallerTraits::GetInstallerAttributes() const {
+  return update_client::InstallerAttributes();
 }
 
 void SubresourceFilterComponentInstallerTraits::

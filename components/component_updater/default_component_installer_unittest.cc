@@ -42,7 +42,7 @@ const uint8_t kSha256Hash[] = {0x94, 0x16, 0x0b, 0x6d, 0x41, 0x75, 0xe9, 0xec,
 
 class MockUpdateClient : public UpdateClient {
  public:
-  MockUpdateClient() {};
+  MockUpdateClient() {}
   MOCK_METHOD1(AddObserver, void(Observer* observer));
   MOCK_METHOD1(RemoveObserver, void(Observer* observer));
   MOCK_METHOD3(Install,
@@ -61,7 +61,7 @@ class MockUpdateClient : public UpdateClient {
                void(const std::string& id, const Version& version, int reason));
 
  private:
-  ~MockUpdateClient() override {};
+  ~MockUpdateClient() override {}
 };
 
 class FakeInstallerTraits : public ComponentInstallerTraits {
@@ -95,7 +95,12 @@ class FakeInstallerTraits : public ComponentInstallerTraits {
 
   std::string GetName() const override { return "fake name"; }
 
-  std::string GetAp() const override { return "fake-ap"; }
+  update_client::InstallerAttributes GetInstallerAttributes() const override {
+    update_client::InstallerAttributes installer_attributes;
+    installer_attributes["ap"] = "fake-ap";
+    installer_attributes["is-enterprise"] = "1";
+    return installer_attributes;
+  }
 
  private:
   static void GetPkHash(std::vector<uint8_t>* hash) {
@@ -203,13 +208,18 @@ TEST_F(DefaultComponentInstallerTest, RegisterComponent) {
   CrxUpdateItem item;
   EXPECT_TRUE(component_updater()->GetComponentDetails(id, &item));
   const CrxComponent& component(item.component);
+
+  update_client::InstallerAttributes expected_attrs;
+  expected_attrs["ap"] = "fake-ap";
+  expected_attrs["is-enterprise"] = "1";
+
   EXPECT_EQ(
       std::vector<uint8_t>(std::begin(kSha256Hash), std::end(kSha256Hash)),
       component.pk_hash);
   EXPECT_EQ(base::Version("0.0.0.0"), component.version);
   EXPECT_TRUE(component.fingerprint.empty());
   EXPECT_STREQ("fake name", component.name.c_str());
-  EXPECT_STREQ("fake-ap", component.ap.c_str());
+  EXPECT_EQ(expected_attrs, component.installer_attributes);
   EXPECT_TRUE(component.requires_network_encryption);
 }
 

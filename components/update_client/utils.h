@@ -7,6 +7,7 @@
 
 #include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
 
@@ -27,6 +28,11 @@ namespace update_client {
 class Configurator;
 struct CrxComponent;
 struct CrxUpdateItem;
+
+// Defines a name-value pair that represents an installer attribute.
+// Installer attributes are component-specific metadata, which may be serialized
+// in an update check request.
+using InstallerAttribute = std::pair<std::string, std::string>;
 
 // An update protocol request starts with a common preamble which includes
 // version and platform information for Chrome and the operating system,
@@ -99,8 +105,10 @@ bool VerifyFileHash256(const base::FilePath& filepath,
 // Returns true if the |brand| parameter matches ^[a-zA-Z]{4}?$ .
 bool IsValidBrand(const std::string& brand);
 
-// Returns true if the |ap| parameter matches ^[-+_=a-zA-Z0-9]{0,256}$ .
-bool IsValidAp(const std::string& ap);
+// Returns true if the name part of the |attr| parameter matches
+// ^[-_a-zA-Z0-9]{1,256}$ and the value part of the |attr| parameter
+// matches ^[-.,;+_=a-zA-Z0-9]{0,256}$ .
+bool IsValidInstallerAttribute(const InstallerAttribute& attr);
 
 // Removes the unsecure urls in the |urls| parameter.
 void RemoveUnsecureUrls(std::vector<GURL>* urls);

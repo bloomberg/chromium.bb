@@ -5,6 +5,9 @@
 #ifndef CHROME_BROWSER_COMPONENT_UPDATER_SUBRESOURCE_FILTER_COMPONENT_INSTALLER_H_
 #define CHROME_BROWSER_COMPONENT_UPDATER_SUBRESOURCE_FILTER_COMPONENT_INSTALLER_H_
 
+#include <string>
+#include <vector>
+
 #include "components/component_updater/default_component_installer.h"
 
 namespace base {
@@ -39,7 +42,7 @@ class SubresourceFilterComponentInstallerTraits
   base::FilePath GetRelativeInstallDir() const override;
   void GetHash(std::vector<uint8_t>* hash) const override;
   std::string GetName() const override;
-  std::string GetAp() const override;
+  update_client::InstallerAttributes GetInstallerAttributes() const override;
 
   // Reads and parses the on-disk ruleset file.
   void LoadSubresourceFilterRulesFromDisk(const base::FilePath& file_path,

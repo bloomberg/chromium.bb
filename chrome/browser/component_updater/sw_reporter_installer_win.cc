@@ -140,7 +140,9 @@ class SwReporterInstallerTraits : public ComponentInstallerTraits {
 
   std::string GetName() const override { return "Software Reporter Tool"; }
 
-  std::string GetAp() const override { return std::string(); }
+  update_client::InstallerAttributes GetInstallerAttributes() const override {
+    return update_client::InstallerAttributes();
+  }
 
   static std::string ID() {
     update_client::CrxComponent component;

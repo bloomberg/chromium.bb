@@ -131,8 +131,9 @@ std::string EVWhitelistComponentInstallerTraits::GetName() const {
   return kEVWhitelistManifestName;
 }
 
-std::string EVWhitelistComponentInstallerTraits::GetAp() const {
-  return std::string();
+update_client::InstallerAttributes
+EVWhitelistComponentInstallerTraits::GetInstallerAttributes() const {
+  return update_client::InstallerAttributes();
 }
 
 void RegisterEVWhitelistComponent(ComponentUpdateService* cus,

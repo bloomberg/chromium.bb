@@ -113,8 +113,9 @@ std::string FileTypePoliciesComponentInstallerTraits::GetName() const {
   return kFileTypePoliciesManifestName;
 }
 
-std::string FileTypePoliciesComponentInstallerTraits::GetAp() const {
-  return std::string();
+update_client::InstallerAttributes
+FileTypePoliciesComponentInstallerTraits::GetInstallerAttributes() const {
+  return update_client::InstallerAttributes();
 }
 
 void RegisterFileTypePoliciesComponent(ComponentUpdateService* cus,
