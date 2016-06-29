@@ -1141,12 +1141,6 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   [super dealloc];
 }
 
-- (BOOL)runUnloadListenerBeforeClosing {
-  // There's not much that can be done since there's limited access to WebKit.
-  // Always return that it's ok to close immediately.
-  return YES;
-}
-
 - (void)dismissKeyboard {
   [_webView endEditing:YES];
   if ([self.nativeController respondsToSelector:@selector(dismissKeyboard)])
