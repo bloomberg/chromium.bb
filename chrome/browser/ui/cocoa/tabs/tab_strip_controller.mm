@@ -1564,7 +1564,7 @@ private:
   } else if (contents->IsWaitingForResponse()) {
     newState = kTabWaiting;
     if (ui::MaterialDesignController::IsModeMaterial() &&
-        [[[tabController view] window] inIncognitoMode]) {
+        [[[tabController view] window] hasDarkTheme]) {
       throbberImage = throbberWaitingIncognitoImage;
     } else {
       throbberImage = throbberWaitingImage;
@@ -1572,7 +1572,7 @@ private:
   } else if (contents->IsLoadingToDifferentDocument()) {
     newState = kTabLoading;
     if (ui::MaterialDesignController::IsModeMaterial() &&
-        [[[tabController view] window] inIncognitoMode]) {
+        [[[tabController view] window] hasDarkTheme]) {
       throbberImage = throbberLoadingIncognitoImage;
     } else {
       throbberImage = throbberLoadingImage;
