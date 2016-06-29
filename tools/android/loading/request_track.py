@@ -259,6 +259,7 @@ class Request(object):
     """
     assert self.HasReceivedResponse()
     assert not self.from_disk_cache and not self.served_from_cache
+    assert self.protocol != 'about'
     if self.failed:
       # TODO(gabadie): Once crbug.com/622018 is fixed, remove this branch.
       return 0
@@ -815,6 +816,8 @@ class RequestTrack(devtools_monitor.Track):
     assert (status == RequestTrack._STATUS_RESPONSE
             or status == RequestTrack._STATUS_DATA)
     r.encoded_data_length = params['encodedDataLength']
+    assert (r.encoded_data_length > 0 or r.protocol == 'about' or
+            r.from_disk_cache or r.served_from_cache)
     r.timing.loading_finished = r._TimestampOffsetFromStartMs(
         params['timestamp'])
     self._requests_in_flight[request_id] = (r, RequestTrack._STATUS_FINISHED)

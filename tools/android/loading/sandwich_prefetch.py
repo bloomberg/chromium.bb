@@ -116,6 +116,8 @@ def _FilterOutDataAndIncompleteRequests(requests):
     if request.protocol is None:
       assert not request.HasReceivedResponse()
       continue
+    if request.protocol == 'about':
+      continue
     if request.protocol not in {'http/0.9', 'http/1.0', 'http/1.1'}:
       raise RuntimeError('Unknown request protocol {}'.format(request.protocol))
     yield request
