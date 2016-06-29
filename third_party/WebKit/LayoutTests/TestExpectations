@@ -1294,7 +1294,7 @@ crbug.com/611658 [ Win7 ] fast/writing-mode/english-lr-text.html [ Failure ]
 
 crbug.com/605059 [ Retina ] fast/text/international/rtl-negative-letter-spacing.html [ Failure ]
 
-crbug.com/610464 [ Win7 Debug ] inspector/components/throttler.html [ Failure Pass ]
+crbug.com/610464 [ Linux Win7 Debug ] inspector/components/throttler.html [ Failure Pass ]
 
 # TODO(jlebel): Remove when methods are implemented.
 crbug.com/624019 [ Mac ] bluetooth/notifications/add-multiple-event-listeners.html [ Skip ]
