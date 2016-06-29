@@ -10808,6 +10808,9 @@ I don't think this site should be blocked!
       <message name="IDS_PROFILES_PROFILE_SIGNOUT_BUTTON" desc="Button in the avatar menu bubble view to sign-out the current profile.">
         Exit and childlock
       </message>
+      <message name="IDS_PROFILES_CLOSE_ALL_WINDOWS_BUTTON" desc="Button in the avatar menu bubble view to close all windows of the current profile.">
+        Close all your windows
+      </message>
       <message name="IDS_PROFILES_PROFILE_SIGNOUT_BUTTON_TIP" desc="Tool-tip text shown for button in the avatar menu bubble view to sign-out the current profile.">
         Sign-out user <ph name="PROFILE_USERNAME">$1<ex>user@gmail.com</ex></ph>.
       </message>

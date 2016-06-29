@@ -24,6 +24,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_dialogs.h"
+#include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/singleton_tabs.h"
 #include "chrome/browser/ui/user_manager.h"
@@ -630,8 +631,11 @@ void ProfileChooserView::ShowBubble(
   // Don't start creating the view if it would be an empty fast user switcher.
   // It has to happen here to prevent the view system from creating an empty
   // container.
+  // Same for material design user menu since fast profile switcher will be
+  // migrated to the left-click menu.
   if (view_mode == profiles::BUBBLE_VIEW_MODE_FAST_PROFILE_CHOOSER &&
-      !profiles::HasProfileSwitchTargets(browser->profile())) {
+      (!profiles::HasProfileSwitchTargets(browser->profile()) ||
+       switches::IsMaterialDesignUserMenu())) {
     return;
   }
 
@@ -693,27 +697,29 @@ void ProfileChooserView::ResetView() {
   open_other_profile_indexes_map_.clear();
   delete_account_button_map_.clear();
   reauth_account_button_map_.clear();
-  manage_accounts_link_ = NULL;
-  signin_current_profile_link_ = NULL;
-  auth_error_email_button_ = NULL;
-  current_profile_photo_ = NULL;
-  current_profile_name_ = NULL;
-  users_button_ = NULL;
-  go_incognito_button_ = NULL;
-  lock_button_ = NULL;
-  add_account_link_ = NULL;
-  gaia_signin_cancel_button_ = NULL;
-  remove_account_button_ = NULL;
-  account_removal_cancel_button_ = NULL;
-  add_person_button_ = NULL;
-  disconnect_button_ = NULL;
-  switch_user_cancel_button_ = NULL;
-  tutorial_sync_settings_ok_button_ = NULL;
-  tutorial_close_button_ = NULL;
-  tutorial_sync_settings_link_ = NULL;
-  tutorial_see_whats_new_button_ = NULL;
-  tutorial_not_you_link_ = NULL;
-  tutorial_learn_more_link_ = NULL;
+  manage_accounts_link_ = nullptr;
+  signin_current_profile_link_ = nullptr;
+  auth_error_email_button_ = nullptr;
+  current_profile_photo_ = nullptr;
+  current_profile_name_ = nullptr;
+  guest_profile_button_ = nullptr;
+  users_button_ = nullptr;
+  go_incognito_button_ = nullptr;
+  lock_button_ = nullptr;
+  close_all_windows_button_ = nullptr;
+  add_account_link_ = nullptr;
+  gaia_signin_cancel_button_ = nullptr;
+  remove_account_button_ = nullptr;
+  account_removal_cancel_button_ = nullptr;
+  add_person_button_ = nullptr;
+  disconnect_button_ = nullptr;
+  switch_user_cancel_button_ = nullptr;
+  tutorial_sync_settings_ok_button_ = nullptr;
+  tutorial_close_button_ = nullptr;
+  tutorial_sync_settings_link_ = nullptr;
+  tutorial_see_whats_new_button_ = nullptr;
+  tutorial_not_you_link_ = nullptr;
+  tutorial_learn_more_link_ = nullptr;
 }
 
 void ProfileChooserView::Init() {
@@ -902,7 +908,12 @@ bool ProfileChooserView::HandleContextMenu(
 
 void ProfileChooserView::ButtonPressed(views::Button* sender,
                                        const ui::Event& event) {
-  if (sender == users_button_) {
+  if (sender == guest_profile_button_) {
+    PrefService* service = g_browser_process->local_state();
+    DCHECK(service);
+    DCHECK(service->GetBoolean(prefs::kBrowserGuestModeEnabled));
+    profiles::SwitchToGuestProfile(ProfileManager::CreateCallback());
+  } else if (sender == users_button_) {
     // If this is a guest session, close all the guest browser windows.
     if (browser_->profile()->IsGuestSession()) {
       profiles::CloseGuestProfileWindows();
@@ -919,6 +930,8 @@ void ProfileChooserView::ButtonPressed(views::Button* sender,
   } else if (sender == lock_button_) {
     profiles::LockProfile(browser_->profile());
     PostActionPerformed(ProfileMetrics::PROFILE_DESKTOP_MENU_LOCK);
+  } else if (sender == close_all_windows_button_) {
+    profiles::CloseProfileWindows(browser_->profile());
   } else if (sender == auth_error_email_button_) {
     ShowViewFromMode(profiles::BUBBLE_VIEW_MODE_GAIA_REAUTH);
   } else if (sender == tutorial_sync_settings_ok_button_) {
@@ -1091,7 +1104,8 @@ void ProfileChooserView::PopulateCompleteProfileChooserView(
     const AvatarMenu::Item& item = avatar_menu->GetItemAt(i);
     if (item.active) {
       option_buttons_view = CreateOptionsView(
-          item.signed_in && profiles::IsLockAvailable(browser_->profile()));
+          item.signed_in && profiles::IsLockAvailable(browser_->profile()),
+          avatar_menu);
       current_profile_view = CreateCurrentProfileView(item, false);
       if (IsProfileChooser(view_mode_)) {
         tutorial_view = CreateTutorialViewIfNeeded(item);
@@ -1114,7 +1128,7 @@ void ProfileChooserView::PopulateCompleteProfileChooserView(
   if (!current_profile_view) {
     // Guest windows don't have an active profile.
     current_profile_view = CreateGuestProfileView();
-    option_buttons_view = CreateOptionsView(false);
+    option_buttons_view = CreateOptionsView(false, avatar_menu);
   }
 
   layout->StartRow(1, 0);
@@ -1498,21 +1512,56 @@ views::View* ProfileChooserView::CreateOtherProfilesView(
   return view;
 }
 
-views::View* ProfileChooserView::CreateOptionsView(bool display_lock) {
+views::View* ProfileChooserView::CreateOptionsView(bool display_lock,
+                                                   AvatarMenu* avatar_menu) {
   views::View* view = new views::View();
   views::GridLayout* layout = CreateSingleColumnLayout(view, kFixedMenuWidth);
+
+  const int kIconSize = switches::IsMaterialDesignUserMenu() ? 20 : 16;
+  if (switches::IsMaterialDesignUserMenu()) {
+    // Add the user switching buttons
+    const int kProfileIconSize = 18;
+    layout->StartRowWithPadding(1, 0, 0, views::kRelatedControlVerticalSpacing);
+    for (size_t i = 0; i < avatar_menu->GetNumberOfItems(); ++i) {
+      const AvatarMenu::Item& item = avatar_menu->GetItemAt(i);
+      if (!item.active) {
+        gfx::Image image = profiles::GetSizedAvatarIcon(
+            item.icon, true, kProfileIconSize, kProfileIconSize,
+            profiles::SHAPE_CIRCLE);
+        views::LabelButton* button = new BackgroundColorHoverButton(
+            this, profiles::GetProfileSwitcherTextForItem(item),
+            *image.ToImageSkia());
+        open_other_profile_indexes_map_[button] = i;
+
+        layout->StartRow(1, 0);
+        layout->AddView(button);
+      }
+    }
+
+    // Add the "Guest" button for browsing as guest
+    if (!browser_->profile()->IsGuestSession()) {
+      PrefService* service = g_browser_process->local_state();
+      DCHECK(service);
+      if (service->GetBoolean(prefs::kBrowserGuestModeEnabled)) {
+        guest_profile_button_ = new BackgroundColorHoverButton(
+            this, l10n_util::GetStringUTF16(IDS_GUEST_PROFILE_NAME),
+            gfx::CreateVectorIcon(gfx::VectorIconId::ACCOUNT_BOX, kIconSize,
+                                  gfx::kChromeIconGrey));
+        layout->StartRow(1, 0);
+        layout->AddView(guest_profile_button_);
+      }
+    }
+  }
 
   base::string16 text = browser_->profile()->IsGuestSession() ?
       l10n_util::GetStringUTF16(IDS_PROFILES_EXIT_GUEST) :
       l10n_util::GetStringUTF16(IDS_PROFILES_SWITCH_USERS_BUTTON);
+  gfx::VectorIconId settings_icon = gfx::VectorIconId::ACCOUNT_BOX;
   if (!browser_->profile()->IsGuestSession()
       && switches::IsMaterialDesignUserMenu()) {
     text = l10n_util::GetStringUTF16(IDS_PROFILES_MANAGE_USERS_BUTTON);
+    settings_icon = gfx::VectorIconId::SETTINGS;
   }
-  const int kIconSize = 16;
-
-  gfx::VectorIconId settings_icon = switches::IsMaterialDesignUserMenu() ?
-      gfx::VectorIconId::SETTINGS : gfx::VectorIconId::ACCOUNT_BOX;
   users_button_ = new BackgroundColorHoverButton(
       this, text, gfx::CreateVectorIcon(settings_icon, kIconSize,
                                         gfx::kChromeIconGrey));
@@ -1534,8 +1583,10 @@ views::View* ProfileChooserView::CreateOptionsView(bool display_lock) {
   }
 
   if (display_lock) {
-    layout->StartRow(1, 0);
-    layout->AddView(new views::Separator(views::Separator::HORIZONTAL));
+    if (!switches::IsMaterialDesignUserMenu()) {
+      layout->StartRow(1, 0);
+      layout->AddView(new views::Separator(views::Separator::HORIZONTAL));
+    }
 
     lock_button_ = new BackgroundColorHoverButton(
         this, l10n_util::GetStringUTF16(IDS_PROFILES_PROFILE_SIGNOUT_BUTTON),
@@ -1543,7 +1594,27 @@ views::View* ProfileChooserView::CreateOptionsView(bool display_lock) {
                               gfx::kChromeIconGrey));
     layout->StartRow(1, 0);
     layout->AddView(lock_button_);
+  } else if (switches::IsMaterialDesignUserMenu() &&
+             !browser_->profile()->IsGuestSession()) {
+    int num_browsers = 0;
+    for (auto* browser : *BrowserList::GetInstance()) {
+      if (browser->profile()->GetOriginalProfile() ==
+          browser_->profile()->GetOriginalProfile())
+        num_browsers++;
+    }
+    if (num_browsers > 1) {
+      close_all_windows_button_ = new BackgroundColorHoverButton(
+          this,
+          l10n_util::GetStringUTF16(IDS_PROFILES_CLOSE_ALL_WINDOWS_BUTTON),
+          gfx::CreateVectorIcon(gfx::VectorIconId::LOCK, kIconSize,
+                                gfx::kChromeIconGrey));
+      layout->StartRow(1, 0);
+      layout->AddView(close_all_windows_button_);
+    }
   }
+
+  if (switches::IsMaterialDesignUserMenu())
+    layout->StartRowWithPadding(1, 0, 0, views::kRelatedControlVerticalSpacing);
   return view;
 }
 

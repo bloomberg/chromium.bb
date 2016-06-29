@@ -360,7 +360,7 @@ void CreateAndSwitchToNewProfile(ProfileManager::CreateCallback callback,
   ProfileMetrics::LogProfileAddNewUser(metric);
 }
 
-void GuestBrowserCloseSuccess(const base::FilePath& profile_path) {
+void ProfileBrowserCloseSuccess(const base::FilePath& profile_path) {
   UserManager::Show(base::FilePath(),
                     profiles::USER_MANAGER_NO_TUTORIAL,
                     profiles::USER_MANAGER_SELECT_PROFILE_NO_ACTION);
@@ -373,7 +373,7 @@ void CloseGuestProfileWindows() {
 
   if (profile) {
     BrowserList::CloseAllBrowsersWithProfile(
-        profile, base::Bind(&GuestBrowserCloseSuccess));
+        profile, base::Bind(&ProfileBrowserCloseSuccess));
   }
 }
 
@@ -439,6 +439,12 @@ bool IsLockAvailable(Profile* profile) {
       return true;
   }
   return false;
+}
+
+void CloseProfileWindows(Profile* profile) {
+  DCHECK(profile);
+  BrowserList::CloseAllBrowsersWithProfile(
+      profile, base::Bind(&ProfileBrowserCloseSuccess));
 }
 
 void CreateSystemProfileForUserManager(

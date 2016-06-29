@@ -39,12 +39,25 @@ extern const SkColor kAvatarBubbleAccountsBackgroundColor;
 extern const SkColor kAvatarBubbleGaiaBackgroundColor;
 extern const SkColor kUserManagerBackgroundColor;
 
+// Avatar shape.
+enum AvatarShape {
+  SHAPE_CIRCLE,  // Only available for desktop platforms
+  SHAPE_SQUARE,
+};
+
 // Returns a version of |image| of a specific size. Note that no checks are
 // done on the width/height so make sure they're reasonable values; in the
 // range of 16-256 is probably best.
 gfx::Image GetSizedAvatarIcon(const gfx::Image& image,
                               bool is_rectangle,
-                              int width, int height);
+                              int width,
+                              int height,
+                              AvatarShape shape);
+
+gfx::Image GetSizedAvatarIcon(const gfx::Image& image,
+                              bool is_rectangle,
+                              int width,
+                              int height);
 
 // Returns a version of |image| suitable for use in menus.
 gfx::Image GetAvatarIconForMenu(const gfx::Image& image,

@@ -98,11 +98,16 @@ bool HasProfileSwitchTargets(Profile* profile);
 void CreateAndSwitchToNewProfile(ProfileManager::CreateCallback callback,
                                  ProfileMetrics::ProfileAdd metric);
 
-// Closes all browser windows that belong to the guest profile.
+// Closes all browser windows that belong to the guest profile and opens the
+// user manager.
 void CloseGuestProfileWindows();
 
-// Closes all the browser windows for |profile| and opens the user manager.
+// Closes and locks all the browser windows for |profile| and opens the user
+// manager.
 void LockProfile(Profile* profile);
+
+// Close all the browser windows for |profile| and opens the user manager.
+void CloseProfileWindows(Profile* profile);
 
 // Returns whether lock is available to this profile.
 bool IsLockAvailable(Profile* profile);

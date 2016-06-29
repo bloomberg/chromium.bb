@@ -150,7 +150,7 @@ class ProfileChooserView : public content::WebContentsDelegate,
       bool is_guest);
   views::View* CreateGuestProfileView();
   views::View* CreateOtherProfilesView(const Indexes& avatars_to_show);
-  views::View* CreateOptionsView(bool display_lock);
+  views::View* CreateOptionsView(bool display_lock, AvatarMenu* avatar_menu);
   views::View* CreateSupervisedUserDisclaimerView();
 
   // Account Management view for the profile |avatar_item|.
@@ -246,9 +246,11 @@ class ProfileChooserView : public content::WebContentsDelegate,
   EditableProfileName* current_profile_name_;
 
   // Action buttons.
+  views::LabelButton* guest_profile_button_;
   views::LabelButton* users_button_;
   views::LabelButton* go_incognito_button_;
   views::LabelButton* lock_button_;
+  views::LabelButton* close_all_windows_button_;
   views::Link* add_account_link_;
 
   // Buttons displayed in the gaia signin view.
