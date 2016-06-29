@@ -66,19 +66,23 @@ function generateTest()
     });
 }
 
+function loadImage(image, src) {
+    return new Promise((resolve, reject) => {
+        image.src = src;
+        image.addEventListener('load', () => {
+            resolve();
+        });
+    });
+}
+
 function init()
 {
     if (window.testRunner) {
         testRunner.overridePreference("WebKitWebGLEnabled", "1");
         testRunner.dumpAsText();
     }
-    image1.onload = function() {
-        image2.onload = function() {
-            generateTest();
-        }
-    }
-    image1.src = "resources/red-green-semi-transparent.png";
-    image2.src = "resources/square-with-colorspin-profile.png";
+
+    Promise.all([loadImage(image1, 'resources/red-green-semi-transparent.png'), loadImage(image2, 'resources/square-with-colorspin-profile.png')]).then(generateTest);
 }
 </script>
 </head>
