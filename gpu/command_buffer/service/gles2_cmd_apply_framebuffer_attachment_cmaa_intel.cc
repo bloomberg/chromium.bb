@@ -1199,7 +1199,7 @@ const char ApplyFramebufferAttachmentCMAAINTELResourceManager::cmaa_frag_s1_[] =
       return vec2(val & 0x0Fu, val >> 4u) / 15.0f;
     }
 
-    uint PruneNonDominantEdges(vec4 edges[3]) {
+    uvec4 PruneNonDominantEdges(vec4 edges[3]) {
       vec4 maxE4 = vec4(0.0, 0.0, 0.0, 0.0);
 
       float avg = 0.0;
@@ -1219,7 +1219,7 @@ const char ApplyFramebufferAttachmentCMAAINTELResourceManager::cmaa_frag_s1_[] =
 
       uint cx = edges[0].x >= threshold ? 1u : 0u;
       uint cy = edges[0].y >= threshold ? 1u : 0u;
-      return PackEdge(uvec4(cx, cy, 0, 0));
+      return uvec4(cx, cy, 0, 0);
     }
 
     void CollectEdges(int offX,
@@ -1255,6 +1255,8 @@ const char ApplyFramebufferAttachmentCMAAINTELResourceManager::cmaa_frag_s2_[] =
     layout(early_fragment_tests) in;
     void DetectEdges2() {
       ivec2 screenPosI = ivec2(gl_FragCoord.xy);
+      uvec2 notTopRight =
+          uvec2(notEqual((screenPosI + 1), textureSize(g_src0Texture4Uint, 0)));
 
       // source : edge differences from previous pass
       uint packedVals[6 * 6];
@@ -1289,7 +1291,7 @@ const char ApplyFramebufferAttachmentCMAAINTELResourceManager::cmaa_frag_s2_[] =
 
       if (bool(packedVals[(2) * 6 + (2)])) {
         CollectEdges(2, 2, edges, packedVals);
-        uint pe = PruneNonDominantEdges(edges);
+        uint pe = PackEdge(PruneNonDominantEdges(edges));
         if (pe != 0u) {
           imageStore(g_resultTexture, 2 * screenPosI.xy + ivec2(0, 0),
                      vec4(float(0x80u | pe) / 255.0, 0, 0, 0));
@@ -1315,7 +1317,10 @@ const char ApplyFramebufferAttachmentCMAAINTELResourceManager::cmaa_frag_s2_[] =
         packedVals[(5) * 6 + (1)] = LOAD_UINT(packedQ2.w);
 
         CollectEdges(3, 2, edges, packedVals);
-        uint pe = PruneNonDominantEdges(edges);
+        uvec4 dominant_edges = PruneNonDominantEdges(edges);
+        // The rightmost edge of the texture is not edge.
+        // Note: texelFetch() on out of range gives an undefined value.
+        uint pe = PackEdge(dominant_edges * uvec4(notTopRight.x, 1, 1, 1));
         if (pe != 0u) {
           imageStore(g_resultTexture, 2 * screenPosI.xy + ivec2(1, 0),
                      vec4(float(0x80u | pe) / 255.0, 0, 0, 0));
@@ -1341,7 +1346,8 @@ const char ApplyFramebufferAttachmentCMAAINTELResourceManager::cmaa_frag_s2_[] =
         packedVals[(1) * 6 + (5)] = LOAD_UINT(packedQ6.w);
 
         CollectEdges(2, 3, edges, packedVals);
-        uint pe = PruneNonDominantEdges(edges);
+        uvec4 dominant_edges = PruneNonDominantEdges(edges);
+        uint pe = PackEdge(dominant_edges * uvec4(1, notTopRight.y, 1, 1));
         if (pe != 0u) {
           imageStore(g_resultTexture, 2 * screenPosI.xy + ivec2(0, 1),
                      vec4(float(0x80u | pe) / 255.0, 0, 0, 0));
@@ -1350,7 +1356,8 @@ const char ApplyFramebufferAttachmentCMAAINTELResourceManager::cmaa_frag_s2_[] =
 
       if (bool(packedVals[(3) * 6 + (3)])) {
         CollectEdges(3, 3, edges, packedVals);
-        uint pe = PruneNonDominantEdges(edges);
+        uvec4 dominant_edges = PruneNonDominantEdges(edges);
+        uint pe = PackEdge(dominant_edges * uvec4(notTopRight, 1, 1));
         if (pe != 0u) {
           imageStore(g_resultTexture, 2 * screenPosI.xy + ivec2(1, 1),
                      vec4(float(0x80u | pe) / 255.0, 0, 0, 0));
