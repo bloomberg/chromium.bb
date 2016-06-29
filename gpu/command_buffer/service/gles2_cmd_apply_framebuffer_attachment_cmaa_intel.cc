@@ -805,17 +805,17 @@ const char ApplyFramebufferAttachmentCMAAINTELResourceManager::cmaa_frag_s1_[] =
 
     // how .rgba channels from the edge texture maps to pixel edges:
     //
-    //                   A - 0x08
+    //                   A - 0x02
     //              |¯¯¯¯¯¯¯¯¯|
     //              |         |
     //     0x04 - B |  pixel  | R - 0x01
     //              |         |
     //              |_________|
-    //                   G - 0x02
+    //                   G - 0x08
     //
-    // (A - there's an edge between us and a pixel above us)
+    // (A - there's an edge between us and a pixel at the bottom)
     // (R - there's an edge between us and a pixel to the right)
-    // (G - there's an edge between us and a pixel at the bottom)
+    // (G - there's an edge between us and a pixel above us)
     // (B - there's an edge between us and a pixel to the left)
 
     // Expecting values of 1 and 0 only!
@@ -916,24 +916,28 @@ const char ApplyFramebufferAttachmentCMAAINTELResourceManager::cmaa_frag_s1_[] =
       uint maskRight = uint(0);
       uint bitsContinueRight = uint(0);
       {
-      // Horizontal (vertical is the same, just rotated 90º
-      // counter-clockwise)
+      // Horizontal (vertical is the same, just rotated 90º counter-clockwise)
       // Inverted Z case:              // Normal Z case:
       //   __                          // __
       //  X|                           //  X|
       // --                            //    --
       //
+      // Vertical
+      // Inverted Z case:              // Normal Z case:
+      //  |                            //   |
+      //   --                          //  --
+      //   X|                          // |X
         uint maskTraceLeft = uint(0);
         uint maskTraceRight = uint(0);
         uint maskStopLeft = uint(0);
         uint maskStopRight = uint(0);
         if (horizontal) {
           if (invertedZShape) {
-            maskTraceLeft = 0x02u;  // tracing bottom edge
-            maskTraceRight = 0x08u; // tracing top edge
+            maskTraceLeft = 0x08u;  // tracing bottom edge
+            maskTraceRight = 0x02u; // tracing top edge
           } else {
-            maskTraceLeft = 0x08u;  // tracing top edge
-            maskTraceRight = 0x02u; // tracing bottom edge
+            maskTraceLeft = 0x02u;  // tracing top edge
+            maskTraceRight = 0x08u; // tracing bottom edge
           }
           maskStopLeft = 0x01u;  // stop on right edge
           maskStopRight = 0x04u; // stop on left edge
@@ -945,8 +949,8 @@ const char ApplyFramebufferAttachmentCMAAINTELResourceManager::cmaa_frag_s1_[] =
             maskTraceLeft = 0x04u;  // tracing left edge
             maskTraceRight = 0x01u; // tracing right edge
           }
-          maskStopLeft = 0x08u;  // stop on top edge
-          maskStopRight = 0x02u; // stop on bottom edge
+          maskStopLeft = 0x02u;  // stop on top edge
+          maskStopRight = 0x08u; // stop on bottom edge
         }
 
         maskLeft = maskTraceLeft | maskStopLeft;
@@ -990,8 +994,8 @@ const char ApplyFramebufferAttachmentCMAAINTELResourceManager::cmaa_frag_s1_[] =
       int lineLengthLeft = 0;
       int lineLengthRight = 0;
 
-      ivec2 stepRight = (horizontal) ? (ivec2(1, 0)) : (ivec2(0, -1));
-      vec2 blendDir = (horizontal) ? (vec2(0, -1)) : (vec2(-1, 0));
+      ivec2 stepRight = (horizontal) ? (ivec2(1, 0)) : (ivec2(0, 1));
+      vec2 blendDir = (horizontal) ? (vec2(0, -1)) : (vec2(1, 0));
 
       FindLineLength(lineLengthLeft, lineLengthRight, screenPos,
                      horizontal, invertedZShape, stepRight);
@@ -1021,7 +1025,7 @@ const char ApplyFramebufferAttachmentCMAAINTELResourceManager::cmaa_frag_s1_[] =
                    totalLength;
         m = saturate(m);
         float k = m - ((i > 0) ? 1.0 : 0.0);
-        k = (invertedZShape) ? (-k) : (k);
+        k = (invertedZShape) ? (k) : (-k);
 
         vec4 color = textureLod(g_screenTexture,
                                 (pixelPosFlt + blendDir * k) * pixelSize,
@@ -1482,9 +1486,9 @@ const char ApplyFramebufferAttachmentCMAAINTELResourceManager::cmaa_frag_s2_[] =
           continue;
 
         float fromRight = edgesFlt.r;
-        float fromBelow = edgesFlt.g;
+        float fromAbove = edgesFlt.g;
         float fromLeft = edgesFlt.b;
-        float fromAbove = edgesFlt.a;
+        float fromBelow = edgesFlt.a;
 
         vec4 xFroms = vec4(fromBelow, fromAbove, fromRight, fromLeft);
 
@@ -1567,7 +1571,7 @@ const char ApplyFramebufferAttachmentCMAAINTELResourceManager::cmaa_frag_s2_[] =
         }
         if (fromAboveWeight > 0.0) {
           vec3 pixelT = texelFetchOffset(g_screenTexture, screenPosI.xy, 0,
-                                         ivec2(0, -1)).rgb;
+                                         ivec2(0, 1)).rgb;
           color.rgb += fromAboveWeight * pixelT;
         }
         if (fromRightWeight > 0.0) {
@@ -1577,7 +1581,7 @@ const char ApplyFramebufferAttachmentCMAAINTELResourceManager::cmaa_frag_s2_[] =
         }
         if (fromBelowWeight > 0.0) {
           vec3 pixelB = texelFetchOffset(g_screenTexture, screenPosI.xy, 0,
-                                         ivec2(0, 1)).rgb;
+                                         ivec2(0, -1)).rgb;
           color.rgb += fromBelowWeight * pixelB;
         }
 
@@ -1598,21 +1602,21 @@ const char ApplyFramebufferAttachmentCMAAINTELResourceManager::cmaa_frag_s2_[] =
 
         if (numberOfEdges == 2.0) {
           uint packedEdgesL = packedEdgesArray[(0 + _x) * 4 + (1 + _y)];
-          uint packedEdgesT = packedEdgesArray[(1 + _x) * 4 + (0 + _y)];
+          uint packedEdgesB = packedEdgesArray[(1 + _x) * 4 + (0 + _y)];
           uint packedEdgesR = packedEdgesArray[(2 + _x) * 4 + (1 + _y)];
-          uint packedEdgesB = packedEdgesArray[(1 + _x) * 4 + (2 + _y)];
+          uint packedEdgesT = packedEdgesArray[(1 + _x) * 4 + (2 + _y)];
 
           bool isHorizontalA = ((packedEdgesC) == (0x01u | 0x02u)) &&
-             ((packedEdgesR & (0x01u | 0x08u)) == (0x08u));
+             ((packedEdgesR & 0x08u) == 0x08u);
           bool isHorizontalB = ((packedEdgesC) == (0x01u | 0x08u)) &&
-             ((packedEdgesR & (0x01u | 0x02u)) == (0x02u));
+             ((packedEdgesR & 0x02u) == 0x02u);
 
           bool isHCandidate = isHorizontalA || isHorizontalB;
 
-          bool isVerticalA = ((packedEdgesC) == (0x08u | 0x01u)) &&
-             ((packedEdgesT & (0x08u | 0x04u)) == (0x04u));
-          bool isVerticalB = ((packedEdgesC) == (0x08u | 0x04u)) &&
-             ((packedEdgesT & (0x08u | 0x01u)) == (0x01u));
+          bool isVerticalA = ((packedEdgesC) == (0x02u | 0x04u)) &&
+             ((packedEdgesT & 0x01u) == 0x01u);
+          bool isVerticalB = ((packedEdgesC) == (0x01u | 0x02u)) &&
+             ((packedEdgesT & 0x04u) == 0x04u);
           bool isVCandidate = isVerticalA || isVerticalB;
 
           bool isCandidate = isHCandidate || isVCandidate;
@@ -1639,7 +1643,7 @@ const char ApplyFramebufferAttachmentCMAAINTELResourceManager::cmaa_frag_s2_[] =
           } else {
             packedEdgesM1P0 = packedEdgesB;
             packedEdgesP1P0 = packedEdgesT;
-            offsetC = ivec2(0, -2);
+            offsetC = ivec2(0, 2);
           }
 
           uvec4 edgesM1P0 = UnpackEdge(packedEdgesM1P0);
@@ -1661,17 +1665,12 @@ const char ApplyFramebufferAttachmentCMAAINTELResourceManager::cmaa_frag_s2_[] =
             arg4 = true;
           } else {
             // Reuse the same code for vertical (used for horizontal above)
-            // but rotate input data 90º counter-clockwise, so that:
-            // left     becomes     bottom
-            // top      becomes     left
-            // right    becomes     top
-            // bottom   becomes     right
-
-            // we also have to rotate edges, thus .argb
-            arg0 = uvec4(edges.argb);
-            arg1 = edgesM1P0.argb;
-            arg2 = edgesP1P0.argb;
-            arg3 = edgesP2P0.argb;
+            // but rotate input data 90º counter-clockwise. See FindLineLength()
+            // e.g. arg0.r (new top) must be mapped to edges.g (old top)
+            arg0 = uvec4(edges.gbar);
+            arg1 = edgesM1P0.gbar;
+            arg2 = edgesP1P0.gbar;
+            arg3 = edgesP2P0.gbar;
             arg4 = false;
           }
 
@@ -1682,10 +1681,11 @@ const char ApplyFramebufferAttachmentCMAAINTELResourceManager::cmaa_frag_s2_[] =
             uvec4 _edgesP1P0 = arg2;
             uvec4 _edgesP2P0 = arg3;
             bool horizontal = arg4;
-            // Inverted Z case:
-            //   __
+
+            // Normal Z case:
+            // __
             //  X|
-            // ¯¯
+            //   ¯¯
             bool isInvertedZ = false;
             bool isNormalZ = false;
             {
@@ -1704,14 +1704,14 @@ const char ApplyFramebufferAttachmentCMAAINTELResourceManager::cmaa_frag_s2_[] =
                               // and at least one of these need to be there
     \n#endif\n
               if (isZShape > 0u) {
-                isInvertedZ = true;
+                isNormalZ = true;
               }
             }
 
-            // Normal Z case:
-            // __
+            // Inverted Z case:
+            //   __
             //  X|
-            //   ¯¯
+            // ¯¯
             {
     \n#ifndef SETTINGS_ALLOW_SHORT_Zs\n
               uint isZShape = _edges.r * _edges.a * _edgesM1P0.a *
@@ -1728,7 +1728,7 @@ const char ApplyFramebufferAttachmentCMAAINTELResourceManager::cmaa_frag_s2_[] =
     \n#endif\n
 
               if (isZShape > 0u) {
-                isNormalZ = true;
+                isInvertedZ = true;
               }
             }
 
