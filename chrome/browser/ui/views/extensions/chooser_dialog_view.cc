@@ -17,13 +17,11 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/views/controls/styled_label.h"
 #include "ui/views/window/dialog_client_view.h"
-#include "url/origin.h"
 
-ChooserDialogView::ChooserDialogView(content::WebContents* web_contents,
-                                     ChooserController* chooser_controller)
-    : chooser_content_view_(nullptr),
-      web_contents_(web_contents),
-      chooser_controller_(chooser_controller) {
+ChooserDialogView::ChooserDialogView(
+    content::WebContents* web_contents,
+    std::unique_ptr<ChooserController> chooser_controller)
+    : web_contents_(web_contents), chooser_content_view_(nullptr) {
   // ------------------------------------
   // | Chooser dialog title             |
   // | -------------------------------- |
@@ -40,29 +38,30 @@ ChooserDialogView::ChooserDialogView(content::WebContents* web_contents,
   // ------------------------------------
 
   DCHECK(web_contents_);
-
-  chooser_content_view_ = new ChooserContentView(this, chooser_controller_);
+  DCHECK(chooser_controller);
+  origin_ = chooser_controller->GetOrigin();
+  chooser_content_view_ =
+      new ChooserContentView(this, std::move(chooser_controller));
 }
 
 ChooserDialogView::~ChooserDialogView() {}
 
 base::string16 ChooserDialogView::GetWindowTitle() const {
   base::string16 chooser_title;
-  url::Origin origin = chooser_controller_->GetOrigin();
   content::BrowserContext* browser_context = web_contents_->GetBrowserContext();
   extensions::ExtensionRegistry* extension_registry =
       extensions::ExtensionRegistry::Get(browser_context);
   if (extension_registry) {
     const extensions::Extension* extension =
         extension_registry->enabled_extensions().GetExtensionOrAppByURL(
-            GURL(origin.Serialize()));
+            GURL(origin_.Serialize()));
     if (extension)
       chooser_title = base::UTF8ToUTF16(extension->name());
   }
 
   if (chooser_title.empty()) {
     chooser_title = url_formatter::FormatOriginForSecurityDisplay(
-        origin, url_formatter::SchemeDisplay::OMIT_CRYPTOGRAPHIC);
+        origin_, url_formatter::SchemeDisplay::OMIT_CRYPTOGRAPHIC);
   }
 
   return l10n_util::GetStringFUTF16(IDS_DEVICE_CHOOSER_PROMPT, chooser_title);
@@ -131,7 +130,7 @@ views::TableView* ChooserDialogView::table_view_for_test() const {
 }
 
 void ChromeExtensionChooserDialog::ShowDialogImpl(
-    ChooserController* chooser_controller) const {
+    std::unique_ptr<ChooserController> chooser_controller) const {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(chooser_controller);
 
@@ -139,7 +138,7 @@ void ChromeExtensionChooserDialog::ShowDialogImpl(
       web_modal::WebContentsModalDialogManager::FromWebContents(web_contents_);
   if (manager) {
     constrained_window::ShowWebModalDialogViews(
-        new ChooserDialogView(web_contents_, chooser_controller),
+        new ChooserDialogView(web_contents_, std::move(chooser_controller)),
         web_contents_);
   }
 }

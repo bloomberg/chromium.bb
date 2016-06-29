@@ -20,9 +20,8 @@ class RenderFrameHost;
 // class and pass it to BubbleManager::ShowBubble() to show the bubble.
 class ChooserBubbleDelegate : public BubbleDelegate {
  public:
-  explicit ChooserBubbleDelegate(
-      content::RenderFrameHost* owner,
-      std::unique_ptr<ChooserController> chooser_controller);
+  ChooserBubbleDelegate(content::RenderFrameHost* owner,
+                        std::unique_ptr<ChooserController> chooser_controller);
   ~ChooserBubbleDelegate() override;
 
   // BubbleDelegate:
@@ -30,13 +29,14 @@ class ChooserBubbleDelegate : public BubbleDelegate {
   std::unique_ptr<BubbleUi> BuildBubbleUi() override;
   const content::RenderFrameHost* OwningFrame() const override;
 
-  ChooserController* chooser_controller() const {
-    return chooser_controller_.get();
-  }
-
  private:
   const content::RenderFrameHost* const owning_frame_;
   Browser* browser_;
+  // |chooser_controller_| is not owned by this class, it is owned by
+  // ChooserContentView[Cocoa].
+  // This field only temporarily owns the ChooserController. It is moved
+  // into the ChooserContentView[Cocoa] when BuildBubbleUi() is called
+  // and the bubble is shown.
   std::unique_ptr<ChooserController> chooser_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(ChooserBubbleDelegate);

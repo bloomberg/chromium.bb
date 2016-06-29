@@ -13,17 +13,18 @@
 #import "chrome/browser/ui/cocoa/constrained_window/constrained_window_custom_sheet.h"
 #import "chrome/browser/ui/cocoa/constrained_window/constrained_window_custom_window.h"
 #import "chrome/browser/ui/cocoa/extensions/chooser_dialog_cocoa_controller.h"
+#include "components/chooser_controller/chooser_controller.h"
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
 
-ChooserDialogCocoa::ChooserDialogCocoa(content::WebContents* web_contents,
-                                       ChooserController* chooser_controller)
-    : web_contents_(web_contents), chooser_controller_(chooser_controller) {
+ChooserDialogCocoa::ChooserDialogCocoa(
+    content::WebContents* web_contents,
+    std::unique_ptr<ChooserController> chooser_controller)
+    : web_contents_(web_contents) {
   DCHECK(web_contents_);
-  DCHECK(chooser_controller_);
-  chooser_controller_->set_observer(this);
+  DCHECK(chooser_controller);
   chooser_dialog_cocoa_controller_.reset([[ChooserDialogCocoaController alloc]
       initWithChooserDialogCocoa:this
-               chooserController:chooser_controller_]);
+               chooserController:std::move(chooser_controller)]);
 }
 
 ChooserDialogCocoa::~ChooserDialogCocoa() {}
@@ -31,21 +32,6 @@ ChooserDialogCocoa::~ChooserDialogCocoa() {}
 void ChooserDialogCocoa::OnConstrainedWindowClosed(
     ConstrainedWindowMac* window) {
   base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, this);
-}
-
-void ChooserDialogCocoa::OnOptionsInitialized() {
-  if (chooser_dialog_cocoa_controller_)
-    [chooser_dialog_cocoa_controller_ onOptionsInitialized];
-}
-
-void ChooserDialogCocoa::OnOptionAdded(size_t index) {
-  if (chooser_dialog_cocoa_controller_)
-    [chooser_dialog_cocoa_controller_ onOptionAdded:index];
-}
-
-void ChooserDialogCocoa::OnOptionRemoved(size_t index) {
-  if (chooser_dialog_cocoa_controller_)
-    [chooser_dialog_cocoa_controller_ onOptionRemoved:index];
 }
 
 void ChooserDialogCocoa::ShowDialog() {
@@ -64,16 +50,17 @@ void ChooserDialogCocoa::Dismissed() {
 }
 
 void ChromeExtensionChooserDialog::ShowDialog(
-    ChooserController* chooser_controller) const {
+    std::unique_ptr<ChooserController> chooser_controller) const {
   if (chrome::ToolkitViewsWebUIDialogsEnabled())
-    return ChromeExtensionChooserDialog::ShowDialogImpl(chooser_controller);
+    return ChromeExtensionChooserDialog::ShowDialogImpl(
+        std::move(chooser_controller));
 
   web_modal::WebContentsModalDialogManager* manager =
       web_modal::WebContentsModalDialogManager::FromWebContents(web_contents_);
   if (manager) {
     // These objects will delete themselves when the dialog closes.
     ChooserDialogCocoa* chooser_dialog =
-        new ChooserDialogCocoa(web_contents_, chooser_controller);
+        new ChooserDialogCocoa(web_contents_, std::move(chooser_controller));
     chooser_dialog->ShowDialog();
   }
 }

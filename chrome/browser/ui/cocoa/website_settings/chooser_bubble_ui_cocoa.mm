@@ -11,7 +11,6 @@
 
 #include "base/mac/scoped_nsobject.h"
 #include "base/memory/ptr_util.h"
-#include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -25,18 +24,18 @@
 #include "chrome/browser/ui/website_settings/chooser_bubble_delegate.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/bubble/bubble_controller.h"
+#include "components/chooser_controller/chooser_controller.h"
 #include "components/url_formatter/elide_url.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "ui/base/cocoa/cocoa_base_utils.h"
 #include "ui/base/cocoa/window_size_constants.h"
-#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
 std::unique_ptr<BubbleUi> ChooserBubbleDelegate::BuildBubbleUi() {
   return base::WrapUnique(
-      new ChooserBubbleUiCocoa(browser_, chooser_controller()));
+      new ChooserBubbleUiCocoa(browser_, std::move(chooser_controller_)));
 }
 
 @interface ChooserBubbleUiController
@@ -50,16 +49,13 @@ std::unique_ptr<BubbleUi> ChooserBubbleDelegate::BuildBubbleUi() {
   NSTableView* tableView_;   // Weak.
   NSButton* connectButton_;  // Weak.
   NSButton* cancelButton_;   // Weak.
-  NSButton* helpButton_;     // Weak.
 
-  Browser* browser_;                      // Weak.
-  ChooserController* chooserController_;  // Weak.
+  Browser* browser_;  // Weak.
 }
 
 // Designated initializer.  |browser| and |bridge| must both be non-nil.
 - (id)initWithBrowser:(Browser*)browser
-    chooserController:(ChooserController*)chooserController
-      bubbleReference:(BubbleReference)bubbleReference
+    chooserController:(std::unique_ptr<ChooserController>)chooserController
                bridge:(ChooserBubbleUiCocoa*)bridge;
 
 // Makes the bubble visible.
@@ -76,15 +72,6 @@ std::unique_ptr<BubbleUi> ChooserBubbleDelegate::BuildBubbleUi() {
 // Should only be used outside this class for tests.
 - (bool)hasLocationBar;
 
-// Update |tableView_| when chooser options were initialized.
-- (void)onOptionsInitialized;
-
-// Update |tableView_| when chooser option was added.
-- (void)onOptionAdded:(NSInteger)index;
-
-// Update |tableView_| when chooser option was removed.
-- (void)onOptionRemoved:(NSInteger)index;
-
 // Update |tableView_| when chooser options changed.
 - (void)updateTableView;
 
@@ -100,24 +87,18 @@ std::unique_ptr<BubbleUi> ChooserBubbleDelegate::BuildBubbleUi() {
 // Called when the "Cancel" button is pressed.
 - (void)onCancel:(id)sender;
 
-// Called when the "Get help" button is pressed.
-- (void)onHelpPressed:(id)sender;
-
 @end
 
 @implementation ChooserBubbleUiController
 
 - (id)initWithBrowser:(Browser*)browser
-    chooserController:(ChooserController*)chooserController
-      bubbleReference:(BubbleReference)bubbleReference
+    chooserController:(std::unique_ptr<ChooserController>)chooserController
                bridge:(ChooserBubbleUiCocoa*)bridge {
   DCHECK(browser);
   DCHECK(chooserController);
-  DCHECK(bubbleReference);
   DCHECK(bridge);
 
   browser_ = browser;
-  chooserController_ = chooserController;
 
   base::scoped_nsobject<InfoBubbleWindow> window([[InfoBubbleWindow alloc]
       initWithContentRect:ui::kWindowSizeDeterminedLater
@@ -129,7 +110,6 @@ std::unique_ptr<BubbleUi> ChooserBubbleDelegate::BuildBubbleUi() {
   if ((self = [super initWithWindow:window
                        parentWindow:[self getExpectedParentWindow]
                          anchoredAt:NSZeroPoint])) {
-    self.bubbleReference = bubbleReference;
     [self setShouldCloseOnResignKey:NO];
     [self setShouldOpenAsKeyWindow:YES];
     [[self bubble] setArrowLocation:[self getExpectedArrowLocation]];
@@ -139,7 +119,30 @@ std::unique_ptr<BubbleUi> ChooserBubbleDelegate::BuildBubbleUi() {
                selector:@selector(parentWindowDidMove:)
                    name:NSWindowDidMoveNotification
                  object:[self getExpectedParentWindow]];
+
+    url::Origin origin = chooserController->GetOrigin();
+    chooserContentView_.reset([[ChooserContentViewCocoa alloc]
+        initWithChooserTitle:
+            l10n_util::GetNSStringF(
+                IDS_DEVICE_CHOOSER_PROMPT,
+                url_formatter::FormatOriginForSecurityDisplay(
+                    origin, url_formatter::SchemeDisplay::OMIT_CRYPTOGRAPHIC))
+           chooserController:std::move(chooserController)]);
+
+    tableView_ = [chooserContentView_ tableView];
+    connectButton_ = [chooserContentView_ connectButton];
+    cancelButton_ = [chooserContentView_ cancelButton];
+
+    [connectButton_ setTarget:self];
+    [connectButton_ setAction:@selector(onConnect:)];
+    [cancelButton_ setTarget:self];
+    [cancelButton_ setAction:@selector(onCancel:)];
+    [tableView_ setDelegate:self];
+    [tableView_ setDataSource:self];
+
+    [[[self window] contentView] addSubview:chooserContentView_.get()];
   }
+
   return self;
 }
 
@@ -149,7 +152,7 @@ std::unique_ptr<BubbleUi> ChooserBubbleDelegate::BuildBubbleUi() {
                 name:NSWindowDidMoveNotification
               object:nil];
   if (!buttonPressed_)
-    chooserController_->Close();
+    [chooserContentView_ close];
   bridge_->OnBubbleClosing();
   [super windowWillClose:notification];
 }
@@ -168,30 +171,6 @@ std::unique_ptr<BubbleUi> ChooserBubbleDelegate::BuildBubbleUi() {
 }
 
 - (void)show {
-  chooserContentView_.reset([[ChooserContentViewCocoa alloc]
-      initWithChooserTitle:
-          l10n_util::GetNSStringF(
-              IDS_DEVICE_CHOOSER_PROMPT,
-              url_formatter::FormatOriginForSecurityDisplay(
-                  chooserController_->GetOrigin(),
-                  url_formatter::SchemeDisplay::OMIT_CRYPTOGRAPHIC))]);
-
-  tableView_ = [chooserContentView_ tableView];
-  connectButton_ = [chooserContentView_ connectButton];
-  cancelButton_ = [chooserContentView_ cancelButton];
-  helpButton_ = [chooserContentView_ helpButton];
-
-  [connectButton_ setTarget:self];
-  [connectButton_ setAction:@selector(onConnect:)];
-  [cancelButton_ setTarget:self];
-  [cancelButton_ setAction:@selector(onCancel:)];
-  [tableView_ setDelegate:self];
-  [tableView_ setDataSource:self];
-  [helpButton_ setTarget:self];
-  [helpButton_ setAction:@selector(onHelpPressed:)];
-
-  [[[self window] contentView] addSubview:chooserContentView_.get()];
-
   NSRect bubbleFrame =
       [[self window] frameRectForContentRect:[chooserContentView_ frame]];
   if ([[self window] isVisible]) {
@@ -215,26 +194,13 @@ std::unique_ptr<BubbleUi> ChooserBubbleDelegate::BuildBubbleUi() {
 }
 
 - (NSInteger)numberOfRowsInTableView:(NSTableView*)tableView {
-  // When there are no devices, the table contains a message saying there are
-  // no devices, so the number of rows is always at least 1.
-  return std::max(static_cast<NSInteger>(chooserController_->NumOptions()),
-                  static_cast<NSInteger>(1));
+  return [chooserContentView_ numberOfOptions];
 }
 
 - (id)tableView:(NSTableView*)tableView
     objectValueForTableColumn:(NSTableColumn*)tableColumn
                           row:(NSInteger)rowIndex {
-  NSInteger num_options =
-      static_cast<NSInteger>(chooserController_->NumOptions());
-  if (num_options == 0) {
-    DCHECK_EQ(0, rowIndex);
-    return l10n_util::GetNSString(IDS_DEVICE_CHOOSER_NO_DEVICES_FOUND_PROMPT);
-  }
-
-  DCHECK_GE(rowIndex, 0);
-  DCHECK_LT(rowIndex, num_options);
-  return base::SysUTF16ToNSString(
-      chooserController_->GetOption(static_cast<size_t>(rowIndex)));
+  return [chooserContentView_ optionAtIndex:rowIndex];
 }
 
 - (BOOL)tableView:(NSTableView*)aTableView
@@ -243,33 +209,8 @@ std::unique_ptr<BubbleUi> ChooserBubbleDelegate::BuildBubbleUi() {
   return NO;
 }
 
-- (void)onOptionsInitialized {
-  [self updateTableView];
-}
-
-- (void)onOptionAdded:(NSInteger)index {
-  [self updateTableView];
-}
-
-- (void)onOptionRemoved:(NSInteger)index {
-  // |tableView_| will automatically select the removed item's next item.
-  // So here it tracks if the removed item is the item that was currently
-  // selected, if so, deselect it. Also if the removed item is before the
-  // currently selected item, the currently selected item's index needs to
-  // be adjusted by one.
-  NSInteger selectedRow = [tableView_ selectedRow];
-  if (selectedRow == index)
-    [tableView_ deselectRow:index];
-  else if (selectedRow > index)
-    [tableView_ selectRowIndexes:[NSIndexSet indexSetWithIndex:selectedRow - 1]
-            byExtendingSelection:NO];
-
-  [self updateTableView];
-}
-
 - (void)updateTableView {
-  [tableView_ setEnabled:chooserController_->NumOptions() > 0];
-  [tableView_ reloadData];
+  [chooserContentView_ updateTableView];
 }
 
 - (void)tableViewSelectionDidChange:(NSNotification*)aNotification {
@@ -329,74 +270,56 @@ std::unique_ptr<BubbleUi> ChooserBubbleDelegate::BuildBubbleUi() {
 
 - (void)onConnect:(id)sender {
   buttonPressed_ = true;
-  NSInteger row = [tableView_ selectedRow];
-  chooserController_->Select(row);
+  [chooserContentView_ accept];
   self.bubbleReference->CloseBubble(BUBBLE_CLOSE_ACCEPTED);
   [self close];
 }
 
 - (void)onCancel:(id)sender {
   buttonPressed_ = true;
-  chooserController_->Cancel();
+  [chooserContentView_ cancel];
   self.bubbleReference->CloseBubble(BUBBLE_CLOSE_CANCELED);
   [self close];
-}
-
-- (void)onHelpPressed:(id)sender {
-  chooserController_->OpenHelpCenterUrl();
 }
 
 @end
 
 ChooserBubbleUiCocoa::ChooserBubbleUiCocoa(
     Browser* browser,
-    ChooserController* chooser_controller)
+    std::unique_ptr<ChooserController> chooser_controller)
     : browser_(browser),
-      chooser_controller_(chooser_controller),
       chooser_bubble_ui_controller_(nil) {
-  DCHECK(browser);
+  DCHECK(browser_);
   DCHECK(chooser_controller);
-  chooser_controller_->set_observer(this);
+  chooser_bubble_ui_controller_ = [[ChooserBubbleUiController alloc]
+        initWithBrowser:browser_
+      chooserController:std::move(chooser_controller)
+                 bridge:this];
 }
 
 ChooserBubbleUiCocoa::~ChooserBubbleUiCocoa() {
-  chooser_controller_->set_observer(nullptr);
-  [chooser_bubble_ui_controller_ close];
-  chooser_bubble_ui_controller_ = nil;
+  if (chooser_bubble_ui_controller_) {
+    [chooser_bubble_ui_controller_ close];
+    chooser_bubble_ui_controller_ = nil;
+  }
 }
 
 void ChooserBubbleUiCocoa::Show(BubbleReference bubble_reference) {
-  if (!chooser_bubble_ui_controller_) {
-    chooser_bubble_ui_controller_ =
-        [[ChooserBubbleUiController alloc] initWithBrowser:browser_
-                                         chooserController:chooser_controller_
-                                           bubbleReference:bubble_reference
-                                                    bridge:this];
-  }
-
+  [chooser_bubble_ui_controller_ setBubbleReference:bubble_reference];
   [chooser_bubble_ui_controller_ show];
   [chooser_bubble_ui_controller_ updateTableView];
 }
 
 void ChooserBubbleUiCocoa::Close() {
-  [chooser_bubble_ui_controller_ close];
-  chooser_bubble_ui_controller_ = nil;
+  if (chooser_bubble_ui_controller_) {
+    [chooser_bubble_ui_controller_ close];
+    chooser_bubble_ui_controller_ = nil;
+  }
 }
 
 void ChooserBubbleUiCocoa::UpdateAnchorPosition() {
-  [chooser_bubble_ui_controller_ updateAnchorPosition];
-}
-
-void ChooserBubbleUiCocoa::OnOptionsInitialized() {
-  [chooser_bubble_ui_controller_ onOptionsInitialized];
-}
-
-void ChooserBubbleUiCocoa::OnOptionAdded(size_t index) {
-  [chooser_bubble_ui_controller_ onOptionAdded:static_cast<NSInteger>(index)];
-}
-
-void ChooserBubbleUiCocoa::OnOptionRemoved(size_t index) {
-  [chooser_bubble_ui_controller_ onOptionRemoved:static_cast<NSInteger>(index)];
+  if (chooser_bubble_ui_controller_)
+    [chooser_bubble_ui_controller_ updateAnchorPosition];
 }
 
 void ChooserBubbleUiCocoa::OnBubbleClosing() {

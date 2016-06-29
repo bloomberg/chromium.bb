@@ -5,10 +5,13 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_EXTENSIONS_CHOOSER_DIALOG_VIEW_H_
 #define CHROME_BROWSER_UI_VIEWS_EXTENSIONS_CHOOSER_DIALOG_VIEW_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "ui/views/controls/styled_label_listener.h"
 #include "ui/views/controls/table/table_view_observer.h"
 #include "ui/views/window/dialog_delegate.h"
+#include "url/origin.h"
 
 class ChooserContentView;
 class ChooserController;
@@ -28,7 +31,7 @@ class ChooserDialogView : public views::DialogDelegateView,
                           public views::TableViewObserver {
  public:
   ChooserDialogView(content::WebContents* web_contents,
-                    ChooserController* chooser_controller);
+                    std::unique_ptr<ChooserController> chooser_controller);
   ~ChooserDialogView() override;
 
   // views::WidgetDelegate:
@@ -60,9 +63,9 @@ class ChooserDialogView : public views::DialogDelegateView,
   views::TableView* table_view_for_test() const;
 
  private:
-  ChooserContentView* chooser_content_view_;
   content::WebContents* web_contents_;
-  ChooserController* chooser_controller_;
+  url::Origin origin_;
+  ChooserContentView* chooser_content_view_;
 
   DISALLOW_COPY_AND_ASSIGN(ChooserDialogView);
 };

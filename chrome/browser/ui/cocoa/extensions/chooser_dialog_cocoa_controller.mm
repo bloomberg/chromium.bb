@@ -21,16 +21,15 @@
 
 - (instancetype)
 initWithChooserDialogCocoa:(ChooserDialogCocoa*)chooserDialogCocoa
-         chooserController:(ChooserController*)chooserController {
+         chooserController:
+             (std::unique_ptr<ChooserController>)chooserController {
   DCHECK(chooserDialogCocoa);
   DCHECK(chooserController);
-  if ((self = [super init])) {
+  if ((self = [super init]))
     chooserDialogCocoa_ = chooserDialogCocoa;
-    chooserController_ = chooserController;
-  }
 
   base::string16 chooserTitle;
-  url::Origin origin = chooserController_->GetOrigin();
+  url::Origin origin = chooserController->GetOrigin();
   content::WebContents* web_contents = chooserDialogCocoa_->web_contents();
   content::BrowserContext* browser_context = web_contents->GetBrowserContext();
   extensions::ExtensionRegistry* extension_registry =
@@ -50,12 +49,12 @@ initWithChooserDialogCocoa:(ChooserDialogCocoa*)chooserDialogCocoa
 
   chooserContentView_.reset([[ChooserContentViewCocoa alloc]
       initWithChooserTitle:l10n_util::GetNSStringF(IDS_DEVICE_CHOOSER_PROMPT,
-                                                   chooserTitle)]);
+                                                   chooserTitle)
+         chooserController:std::move(chooserController)]);
 
   tableView_ = [chooserContentView_ tableView];
   connectButton_ = [chooserContentView_ connectButton];
   cancelButton_ = [chooserContentView_ cancelButton];
-  helpButton_ = [chooserContentView_ helpButton];
 
   [connectButton_ setTarget:self];
   [connectButton_ setAction:@selector(onConnect:)];
@@ -63,35 +62,20 @@ initWithChooserDialogCocoa:(ChooserDialogCocoa*)chooserDialogCocoa
   [cancelButton_ setAction:@selector(onCancel:)];
   [tableView_ setDelegate:self];
   [tableView_ setDataSource:self];
-  [helpButton_ setTarget:self];
-  [helpButton_ setAction:@selector(onHelpPressed:)];
   self.view = chooserContentView_;
-  [self updateTableView];
+  [chooserContentView_ updateTableView];
 
   return self;
 }
 
 - (NSInteger)numberOfRowsInTableView:(NSTableView*)tableView {
-  // When there are no devices, the table contains a message saying there are
-  // no devices, so the number of rows is always at least 1.
-  return std::max(static_cast<NSInteger>(chooserController_->NumOptions()),
-                  static_cast<NSInteger>(1));
+  return [chooserContentView_ numberOfOptions];
 }
 
 - (id)tableView:(NSTableView*)tableView
     objectValueForTableColumn:(NSTableColumn*)tableColumn
                           row:(NSInteger)rowIndex {
-  NSInteger num_options =
-      static_cast<NSInteger>(chooserController_->NumOptions());
-  if (num_options == 0) {
-    DCHECK_EQ(0, rowIndex);
-    return l10n_util::GetNSString(IDS_DEVICE_CHOOSER_NO_DEVICES_FOUND_PROMPT);
-  }
-
-  DCHECK_GE(rowIndex, 0);
-  DCHECK_LT(rowIndex, num_options);
-  return base::SysUTF16ToNSString(
-      chooserController_->GetOption(static_cast<size_t>(rowIndex)));
+  return [chooserContentView_ optionAtIndex:rowIndex];
 }
 
 - (BOOL)tableView:(NSTableView*)aTableView
@@ -100,52 +84,18 @@ initWithChooserDialogCocoa:(ChooserDialogCocoa*)chooserDialogCocoa
   return NO;
 }
 
-- (void)onOptionsInitialized {
-  [self updateTableView];
-}
-
-- (void)onOptionAdded:(NSInteger)index {
-  [self updateTableView];
-}
-
-- (void)onOptionRemoved:(NSInteger)index {
-  // |tableView_| will automatically select the removed item's next item.
-  // So here it tracks if the removed item is the item that was currently
-  // selected, if so, deselect it. Also if the removed item is before the
-  // currently selected item, the currently selected item's index needs to
-  // be adjusted by one.
-  NSInteger selectedRow = [tableView_ selectedRow];
-  if (selectedRow == index)
-    [tableView_ deselectRow:index];
-  else if (selectedRow > index)
-    [tableView_ selectRowIndexes:[NSIndexSet indexSetWithIndex:selectedRow - 1]
-            byExtendingSelection:NO];
-
-  [self updateTableView];
-}
-
-- (void)updateTableView {
-  [tableView_ setEnabled:chooserController_->NumOptions() > 0];
-  [tableView_ reloadData];
-}
-
 - (void)tableViewSelectionDidChange:(NSNotification*)aNotification {
   [connectButton_ setEnabled:[tableView_ numberOfSelectedRows] > 0];
 }
 
 - (void)onConnect:(id)sender {
-  NSInteger row = [tableView_ selectedRow];
+  [chooserContentView_ accept];
   chooserDialogCocoa_->Dismissed();
-  chooserController_->Select(row);
 }
 
 - (void)onCancel:(id)sender {
+  [chooserContentView_ cancel];
   chooserDialogCocoa_->Dismissed();
-  chooserController_->Cancel();
-}
-
-- (void)onHelpPressed:(id)sender {
-  chooserController_->OpenHelpCenterUrl();
 }
 
 - (ChooserContentViewCocoa*)chooserContentView {

@@ -5,6 +5,7 @@
 #include "components/chooser_controller/chooser_controller.h"
 
 #include "content/public/browser/render_frame_host.h"
+#include "url/origin.h"
 
 ChooserController::ChooserController(content::RenderFrameHost* owner)
     : owning_frame_(owner) {}
@@ -12,6 +13,6 @@ ChooserController::ChooserController(content::RenderFrameHost* owner)
 ChooserController::~ChooserController() {}
 
 url::Origin ChooserController::GetOrigin() const {
-  return const_cast<content::RenderFrameHost*>(owning_frame_)
-      ->GetLastCommittedOrigin();
+  return owning_frame_ ? owning_frame_->GetLastCommittedOrigin()
+                       : url::Origin();
 }

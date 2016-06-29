@@ -11,6 +11,7 @@
       'dependencies': [
         '../base/base.gyp:base',
         '../content/content.gyp:content_browser',
+        '../url/url.gyp:url_lib',
       ],
       'include_dirs': [
         '..',

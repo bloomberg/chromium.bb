@@ -7,32 +7,28 @@
 
 #import <Cocoa/Cocoa.h>
 
+#include <memory>
+
 #include "base/mac/scoped_nsobject.h"
 #import "chrome/browser/ui/cocoa/constrained_window/constrained_window_mac.h"
-#include "components/chooser_controller/chooser_controller.h"
+
+class ChooserController;
+@class ChooserDialogCocoaController;
 
 namespace content {
 class WebContents;
 }
 
-@class ChooserDialogCocoaController;
-
 // Displays a chooser dialog as a modal sheet constrained
 // to the window/tab displaying the given web contents.
-class ChooserDialogCocoa : public ConstrainedWindowMacDelegate,
-                           public ChooserController::Observer {
+class ChooserDialogCocoa : public ConstrainedWindowMacDelegate {
  public:
   ChooserDialogCocoa(content::WebContents* web_contents,
-                     ChooserController* chooser_controller);
-  ~ChooserDialogCocoa() override;
+                     std::unique_ptr<ChooserController> chooser_controller);
+  virtual ~ChooserDialogCocoa();
 
   // ConstrainedWindowMacDelegate:
   void OnConstrainedWindowClosed(ConstrainedWindowMac* window) override;
-
-  // ChooserController::Observer:
-  void OnOptionsInitialized() override;
-  void OnOptionAdded(size_t index) override;
-  void OnOptionRemoved(size_t index) override;
 
   // Create and show the modal dialog.
   void ShowDialog();
@@ -47,8 +43,7 @@ class ChooserDialogCocoa : public ConstrainedWindowMacDelegate,
   base::scoped_nsobject<ChooserDialogCocoaController>
       chooser_dialog_cocoa_controller_;
   std::unique_ptr<ConstrainedWindowMac> constrained_window_;
-  content::WebContents* web_contents_;     // Weak.
-  ChooserController* chooser_controller_;  // Weak.
+  content::WebContents* web_contents_;  // Weak.
 };
 
 #endif  // CHROME_BROWSER_UI_COCOA_EXTENSIONS_CHOOSER_DIALOG_COCOA_H_

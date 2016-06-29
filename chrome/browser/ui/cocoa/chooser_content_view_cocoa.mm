@@ -4,11 +4,15 @@
 
 #import "chrome/browser/ui/cocoa/chooser_content_view_cocoa.h"
 
+#include <algorithm>
+
+#include "base/macros.h"
+#include "base/strings/sys_string_conversions.h"
 #import "chrome/browser/ui/cocoa/constrained_window/constrained_window_button.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/chooser_controller/chooser_controller.h"
 #import "third_party/google_toolbox_for_mac/src/AppKit/GTMUILocalizerAndLayoutTweaker.h"
 #import "ui/base/cocoa/controls/hyperlink_button_cell.h"
-#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 
 namespace {
@@ -36,9 +40,74 @@ const CGFloat kSeparatorHeight = 1.0f;
 
 }  // namespace
 
+class TableViewController : public ChooserController::Observer {
+ public:
+  TableViewController(ChooserController* chooser_controller,
+                      NSTableView* table_view);
+  ~TableViewController() override;
+
+  // ChooserController::Observer:
+  void OnOptionsInitialized() override;
+  void OnOptionAdded(size_t index) override;
+  void OnOptionRemoved(size_t index) override;
+
+  void UpdateTableView();
+
+ private:
+  ChooserController* chooser_controller_;
+  NSTableView* table_view_;
+
+  DISALLOW_COPY_AND_ASSIGN(TableViewController);
+};
+
+TableViewController::TableViewController(ChooserController* chooser_controller,
+                                         NSTableView* table_view)
+    : chooser_controller_(chooser_controller), table_view_(table_view) {
+  DCHECK(chooser_controller_);
+  DCHECK(table_view_);
+  chooser_controller_->set_observer(this);
+}
+
+TableViewController::~TableViewController() {
+  chooser_controller_->set_observer(nullptr);
+}
+
+void TableViewController::OnOptionsInitialized() {
+  UpdateTableView();
+}
+
+void TableViewController::OnOptionAdded(size_t index) {
+  UpdateTableView();
+}
+
+void TableViewController::OnOptionRemoved(size_t index) {
+  // |table_view_| will automatically select the removed item's next item.
+  // So here it tracks if the removed item is the item that was currently
+  // selected, if so, deselect it. Also if the removed item is before the
+  // currently selected item, the currently selected item's index needs to
+  // be adjusted by one.
+  NSInteger idx = static_cast<NSInteger>(index);
+  NSInteger selected_row = [table_view_ selectedRow];
+  if (selected_row == idx)
+    [table_view_ deselectRow:idx];
+  else if (selected_row > idx)
+    [table_view_
+            selectRowIndexes:[NSIndexSet indexSetWithIndex:selected_row - 1]
+        byExtendingSelection:NO];
+
+  UpdateTableView();
+}
+
+void TableViewController::UpdateTableView() {
+  [table_view_ setEnabled:chooser_controller_->NumOptions() > 0];
+  [table_view_ reloadData];
+}
+
 @implementation ChooserContentViewCocoa
 
-- (instancetype)initWithChooserTitle:(NSString*)chooserTitle {
+- (instancetype)initWithChooserTitle:(NSString*)chooserTitle
+                   chooserController:
+                       (std::unique_ptr<ChooserController>)chooserController {
   // ------------------------------------
   // | Chooser title                    |
   // | -------------------------------- |
@@ -60,6 +129,8 @@ const CGFloat kSeparatorHeight = 1.0f;
   NSRect chooserFrame = NSMakeRect(0, 0, kChooserWidth, kChooserHeight);
 
   if ((self = [super initWithFrame:chooserFrame])) {
+    chooserController_ = std::move(chooserController);
+
     // Create the views.
     // Title.
     titleView_ = [self createChooserTitle:chooserTitle];
@@ -156,7 +227,12 @@ const CGFloat kSeparatorHeight = 1.0f;
     CGFloat helpButtonOriginY = kMarginY;
     [helpButton_
         setFrameOrigin:NSMakePoint(helpButtonOriginX, helpButtonOriginY)];
+    [helpButton_ setTarget:self];
+    [helpButton_ setAction:@selector(onHelpPressed:)];
     [self addSubview:helpButton_];
+
+    tableViewController_.reset(
+        new TableViewController(chooserController_.get(), tableView_.get()));
   }
 
   return self;
@@ -247,6 +323,48 @@ const CGFloat kSeparatorHeight = 1.0f;
 
 - (NSButton*)helpButton {
   return helpButton_.get();
+}
+
+- (NSInteger)numberOfOptions {
+  // When there are no devices, the table contains a message saying there are
+  // no devices, so the number of rows is always at least 1.
+  return std::max(static_cast<NSInteger>(chooserController_->NumOptions()),
+                  static_cast<NSInteger>(1));
+}
+
+- (NSString*)optionAtIndex:(NSInteger)index {
+  NSInteger numOptions =
+      static_cast<NSInteger>(chooserController_->NumOptions());
+  if (numOptions == 0) {
+    DCHECK_EQ(0, index);
+    return l10n_util::GetNSString(IDS_DEVICE_CHOOSER_NO_DEVICES_FOUND_PROMPT);
+  }
+
+  DCHECK_GE(index, 0);
+  DCHECK_LT(index, numOptions);
+
+  return base::SysUTF16ToNSString(
+      chooserController_->GetOption(static_cast<size_t>(index)));
+}
+
+- (void)updateTableView {
+  tableViewController_->UpdateTableView();
+}
+
+- (void)accept {
+  chooserController_->Select([tableView_ selectedRow]);
+}
+
+- (void)cancel {
+  chooserController_->Cancel();
+}
+
+- (void)close {
+  chooserController_->Close();
+}
+
+- (void)onHelpPressed:(id)sender {
+  chooserController_->OpenHelpCenterUrl();
 }
 
 @end

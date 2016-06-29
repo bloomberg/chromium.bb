@@ -7,7 +7,12 @@
 
 #import <Cocoa/Cocoa.h>
 
+#include <memory>
+
 #include "base/mac/scoped_nsobject.h"
+
+class ChooserController;
+class TableViewController;
 
 // A chooser content view class that user can select an option.
 @interface ChooserContentViewCocoa : NSView {
@@ -21,10 +26,14 @@
   base::scoped_nsobject<NSBox> separator_;
   base::scoped_nsobject<NSTextField> message_;
   base::scoped_nsobject<NSButton> helpButton_;
+  std::unique_ptr<ChooserController> chooserController_;
+  std::unique_ptr<TableViewController> tableViewController_;
 }
 
 // Designated initializer.
-- (instancetype)initWithChooserTitle:(NSString*)chooserTitle;
+- (instancetype)initWithChooserTitle:(NSString*)chooserTitle
+                   chooserController:
+                       (std::unique_ptr<ChooserController>)chooserController;
 
 // Creates the title for the chooser.
 - (base::scoped_nsobject<NSTextField>)createChooserTitle:(NSString*)title;
@@ -58,6 +67,27 @@
 
 // Gets the "Get help" button.
 - (NSButton*)helpButton;
+
+// The number of options in the |tableView_|.
+- (NSInteger)numberOfOptions;
+
+// The |index|th option string which is listed in the chooser.
+- (NSString*)optionAtIndex:(NSInteger)index;
+
+// Update |tableView_| when chooser options changed.
+- (void)updateTableView;
+
+// Called when the "Connect" button is pressed.
+- (void)accept;
+
+// Called when the "Cancel" button is pressed.
+- (void)cancel;
+
+// Called when the chooser is closed.
+- (void)close;
+
+// Called when the "Get help" button is pressed.
+- (void)onHelpPressed:(id)sender;
 
 @end
 

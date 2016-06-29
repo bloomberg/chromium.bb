@@ -4,11 +4,14 @@
 
 #include "chrome/browser/ui/browser_dialogs.h"
 
+#include <memory>
+
 #include "chrome/browser/extensions/api/chrome_device_permissions_prompt.h"
 #include "chrome/browser/extensions/chrome_extension_chooser_dialog.h"
 #include "chrome/browser/extensions/extension_install_prompt.h"
 #include "chrome/browser/ui/login/login_handler.h"
 #include "chrome/browser/ui/views/new_task_manager_view.h"
+#include "components/chooser_controller/chooser_controller.h"
 
 // This file provides definitions of desktop browser dialog-creation methods for
 // all toolkit-views platforms other than Mac. It also provides the definitions
@@ -43,8 +46,8 @@ void ChromeDevicePermissionsPrompt::ShowDialog() {
 }
 
 void ChromeExtensionChooserDialog::ShowDialog(
-    ChooserController* chooser_controller) const {
-  ShowDialogImpl(chooser_controller);
+    std::unique_ptr<ChooserController> chooser_controller) const {
+  ShowDialogImpl(std::move(chooser_controller));
 }
 
 namespace chrome {

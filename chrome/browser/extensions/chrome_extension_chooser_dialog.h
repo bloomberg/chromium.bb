@@ -19,10 +19,11 @@ class ChromeExtensionChooserDialog {
       : web_contents_(web_contents) {}
   ~ChromeExtensionChooserDialog() {}
 
-  void ShowDialog(ChooserController* chooser_controller) const;
+  void ShowDialog(std::unique_ptr<ChooserController> chooser_controller) const;
 
  private:
-  void ShowDialogImpl(ChooserController* chooser_controller) const;
+  void ShowDialogImpl(
+      std::unique_ptr<ChooserController> chooser_controller) const;
 
   content::WebContents* web_contents_;
 

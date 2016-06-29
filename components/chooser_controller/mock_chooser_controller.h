@@ -13,7 +13,7 @@
 
 class MockChooserController : public ChooserController {
  public:
-  MockChooserController(content::RenderFrameHost* owner);
+  explicit MockChooserController(content::RenderFrameHost* owner);
   ~MockChooserController() override;
 
   // ChooserController:

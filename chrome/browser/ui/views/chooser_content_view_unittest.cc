@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/views/chooser_content_view.h"
 
+#include <memory>
+
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/grit/generated_resources.h"
@@ -41,10 +43,12 @@ class ChooserContentViewTest : public testing::Test {
 
   // testing::Test:
   void SetUp() override {
-    mock_chooser_controller_.reset(new MockChooserController(nullptr));
+    std::unique_ptr<MockChooserController> mock_chooser_controller(
+        new MockChooserController(nullptr));
+    mock_chooser_controller_ = mock_chooser_controller.get();
     mock_table_view_observer_.reset(new MockTableViewObserver());
     chooser_content_view_.reset(new ChooserContentView(
-        mock_table_view_observer_.get(), mock_chooser_controller_.get()));
+        mock_table_view_observer_.get(), std::move(mock_chooser_controller)));
     table_view_ = chooser_content_view_->table_view_for_test();
     ASSERT_TRUE(table_view_);
     table_model_ = table_view_->model();
@@ -56,9 +60,9 @@ class ChooserContentViewTest : public testing::Test {
   }
 
  protected:
-  std::unique_ptr<MockChooserController> mock_chooser_controller_;
   std::unique_ptr<MockTableViewObserver> mock_table_view_observer_;
   std::unique_ptr<ChooserContentView> chooser_content_view_;
+  MockChooserController* mock_chooser_controller_;
   views::TableView* table_view_;
   ui::TableModel* table_model_;
   std::unique_ptr<MockStyledLabelListener> mock_styled_label_listener_;

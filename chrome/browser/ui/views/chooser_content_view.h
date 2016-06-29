@@ -31,7 +31,7 @@ class TableViewObserver;
 class ChooserContentView : public views::View {
  public:
   ChooserContentView(views::TableViewObserver* observer,
-                     ChooserController* chooser_controller);
+                     std::unique_ptr<ChooserController> chooser_controller);
   ~ChooserContentView() override;
 
   // views::View:
@@ -45,17 +45,15 @@ class ChooserContentView : public views::View {
   void Accept();
   void Cancel();
   void Close();
-  void StyledLabelLinkClicked() const;
+  void StyledLabelLinkClicked();
   void UpdateTableModel();
 
   views::TableView* table_view_for_test() const { return table_view_; }
 
  private:
-  void ChooserControllerDestroying();
-
-  ChooserController* chooser_controller_;  // Weak.
-  views::TableView* table_view_;
+  std::unique_ptr<ChooserController> chooser_controller_;
   std::unique_ptr<ChooserTableModel> chooser_table_model_;
+  views::TableView* table_view_;
 
   DISALLOW_COPY_AND_ASSIGN(ChooserContentView);
 };

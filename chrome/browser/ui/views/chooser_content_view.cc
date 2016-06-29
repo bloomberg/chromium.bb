@@ -26,7 +26,7 @@ class ChooserTableModel : public ui::TableModel,
                           public ChooserController::Observer {
  public:
   explicit ChooserTableModel(ChooserController* chooser_controller);
-  ~ChooserTableModel() override {}
+  ~ChooserTableModel() override;
 
   // ui::TableModel:
   int RowCount() override;
@@ -53,18 +53,17 @@ ChooserTableModel::ChooserTableModel(ChooserController* chooser_controller)
   chooser_controller_->set_observer(this);
 }
 
+ChooserTableModel::~ChooserTableModel() {
+  chooser_controller_->set_observer(nullptr);
+}
+
 int ChooserTableModel::RowCount() {
-  if (!chooser_controller_)
-    return 0;
   // When there are no devices, the table contains a message saying there
   // are no devices, so the number of rows is always at least 1.
   return std::max(static_cast<int>(chooser_controller_->NumOptions()), 1);
 }
 
 base::string16 ChooserTableModel::GetText(int row, int column_id) {
-  if (!chooser_controller_)
-    return base::string16();
-
   int num_options = static_cast<int>(chooser_controller_->NumOptions());
   if (num_options == 0) {
     DCHECK_EQ(0, row);
@@ -103,9 +102,6 @@ void ChooserTableModel::OnOptionRemoved(size_t index) {
 }
 
 void ChooserTableModel::Update() {
-  if (!chooser_controller_)
-    return;
-
   views::TableView* table_view = static_cast<views::TableView*>(observer_);
 
   if (chooser_controller_->NumOptions() == 0) {
@@ -116,16 +112,13 @@ void ChooserTableModel::Update() {
   }
 }
 
-void ChooserTableModel::ChooserControllerDestroying() {
-  chooser_controller_ = nullptr;
-}
-
-ChooserContentView::ChooserContentView(views::TableViewObserver* observer,
-                                       ChooserController* chooser_controller)
-    : chooser_controller_(chooser_controller), table_view_(nullptr) {
+ChooserContentView::ChooserContentView(
+    views::TableViewObserver* observer,
+    std::unique_ptr<ChooserController> chooser_controller)
+    : chooser_controller_(std::move(chooser_controller)), table_view_(nullptr) {
   std::vector<ui::TableColumn> table_columns;
   table_columns.push_back(ui::TableColumn());
-  chooser_table_model_.reset(new ChooserTableModel(chooser_controller_));
+  chooser_table_model_.reset(new ChooserTableModel(chooser_controller_.get()));
   table_view_ = new views::TableView(chooser_table_model_.get(), table_columns,
                                      views::TEXT_ONLY, true);
   table_view_->set_select_on_remove(false);
@@ -177,36 +170,21 @@ views::StyledLabel* ChooserContentView::CreateFootnoteView(
 }
 
 void ChooserContentView::Accept() {
-  if (chooser_controller_) {
-    chooser_controller_->Select(table_view_->selection_model().active());
-    ChooserControllerDestroying();
-  }
+  chooser_controller_->Select(table_view_->selection_model().active());
 }
 
 void ChooserContentView::Cancel() {
-  if (chooser_controller_) {
-    chooser_controller_->Cancel();
-    ChooserControllerDestroying();
-  }
+  chooser_controller_->Cancel();
 }
 
 void ChooserContentView::Close() {
-  if (chooser_controller_) {
-    chooser_controller_->Close();
-    ChooserControllerDestroying();
-  }
+  chooser_controller_->Close();
 }
 
-void ChooserContentView::StyledLabelLinkClicked() const {
-  if (chooser_controller_)
-    chooser_controller_->OpenHelpCenterUrl();
+void ChooserContentView::StyledLabelLinkClicked() {
+  chooser_controller_->OpenHelpCenterUrl();
 }
 
 void ChooserContentView::UpdateTableModel() {
   chooser_table_model_->Update();
-}
-
-void ChooserContentView::ChooserControllerDestroying() {
-  chooser_controller_ = nullptr;
-  chooser_table_model_->ChooserControllerDestroying();
 }

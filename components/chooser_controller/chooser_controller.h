@@ -83,7 +83,7 @@ class ChooserController {
   Observer* observer() const { return observer_; }
 
  private:
-  const content::RenderFrameHost* const owning_frame_;
+  content::RenderFrameHost* owning_frame_;
   Observer* observer_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(ChooserController);

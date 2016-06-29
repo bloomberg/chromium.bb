@@ -35,11 +35,12 @@ class ChooserDialogCocoaControllerTest : public CocoaProfileTest {
         content::WebContents::Create(content::WebContents::CreateParams(
             profile(), content::SiteInstance::Create(profile())));
     ASSERT_TRUE(web_contents);
-    chooser_controller_.reset(
+    std::unique_ptr<MockChooserController> chooser_controller(
         new MockChooserController(web_contents->GetMainFrame()));
-    ASSERT_TRUE(chooser_controller_);
+    ASSERT_TRUE(chooser_controller);
+    chooser_controller_ = chooser_controller.get();
     chooser_dialog_.reset(
-        new ChooserDialogCocoa(web_contents, chooser_controller_.get()));
+        new ChooserDialogCocoa(web_contents, std::move(chooser_controller)));
     ASSERT_TRUE(chooser_dialog_);
     chooser_dialog_controller_ =
         chooser_dialog_->chooser_dialog_cocoa_controller_.get();
@@ -56,9 +57,9 @@ class ChooserDialogCocoaControllerTest : public CocoaProfileTest {
     ASSERT_TRUE(help_button_);
   }
 
-  std::unique_ptr<MockChooserController> chooser_controller_;
   std::unique_ptr<ChooserDialogCocoa> chooser_dialog_;
 
+  MockChooserController* chooser_controller_;
   ChooserDialogCocoaController* chooser_dialog_controller_;
   ChooserContentViewCocoa* chooser_content_view_;
   NSTableView* table_view_;

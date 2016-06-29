@@ -6,6 +6,8 @@
 
 #include "base/macros.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
+#include "chrome/browser/platform_util.h"
+#include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/chooser_controller/mock_chooser_controller.h"
@@ -14,6 +16,8 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/range/range.h"
 #include "ui/views/controls/table/table_view.h"
+#include "ui/views/widget/widget.h"
+#include "ui/views/window/dialog_client_view.h"
 
 class ChooserDialogViewTest : public ExtensionBrowserTest {
  public:
@@ -23,18 +27,27 @@ class ChooserDialogViewTest : public ExtensionBrowserTest {
   void SetUpOnMainThread() override {
     content::WebContents* web_contents =
         browser()->tab_strip_model()->GetWebContentsAt(0);
-    mock_chooser_controller_.reset(new MockChooserController(nullptr));
-    chooser_dialog_view_.reset(
-        new ChooserDialogView(web_contents, mock_chooser_controller_.get()));
+    std::unique_ptr<MockChooserController> mock_chooser_controller(
+        new MockChooserController(nullptr));
+    mock_chooser_controller_ = mock_chooser_controller.get();
+    std::unique_ptr<ChooserDialogView> chooser_dialog_view(
+        new ChooserDialogView(web_contents,
+                              std::move(mock_chooser_controller)));
+    chooser_dialog_view_ = chooser_dialog_view.get();
     table_view_ = chooser_dialog_view_->table_view_for_test();
     ASSERT_TRUE(table_view_);
     table_model_ = table_view_->model();
     ASSERT_TRUE(table_model_);
+    views::Widget* modal_dialog = views::DialogDelegate::CreateDialogWidget(
+        chooser_dialog_view.release(), nullptr,
+        platform_util::GetViewForWindow(
+            browser()->window()->GetNativeWindow()));
+    modal_dialog->Show();
   }
 
  protected:
-  std::unique_ptr<MockChooserController> mock_chooser_controller_;
-  std::unique_ptr<ChooserDialogView> chooser_dialog_view_;
+  MockChooserController* mock_chooser_controller_;
+  ChooserDialogView* chooser_dialog_view_;
   views::TableView* table_view_;
   ui::TableModel* table_model_;
 

@@ -6,6 +6,8 @@
 
 #include <stddef.h>
 
+#include <memory>
+
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/string16.h"
@@ -31,7 +33,7 @@
 
 std::unique_ptr<BubbleUi> ChooserBubbleDelegate::BuildBubbleUi() {
   return base::WrapUnique(
-      new ChooserBubbleUiView(browser_, chooser_controller()));
+      new ChooserBubbleUiView(browser_, std::move(chooser_controller_)));
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -40,10 +42,10 @@ class ChooserBubbleUiViewDelegate : public views::BubbleDialogDelegateView,
                                     public views::StyledLabelListener,
                                     public views::TableViewObserver {
  public:
-  ChooserBubbleUiViewDelegate(views::View* anchor_view,
-                              views::BubbleBorder::Arrow anchor_arrow,
-                              ChooserController* chooser_controller,
-                              BubbleReference bubble_reference);
+  ChooserBubbleUiViewDelegate(
+      views::View* anchor_view,
+      views::BubbleBorder::Arrow anchor_arrow,
+      std::unique_ptr<ChooserController> chooser_controller);
   ~ChooserBubbleUiViewDelegate() override;
 
   // views::WidgetDelegate:
@@ -75,12 +77,12 @@ class ChooserBubbleUiViewDelegate : public views::BubbleDialogDelegateView,
   void UpdateAnchor(views::View* anchor_view,
                     views::BubbleBorder::Arrow anchor_arrow);
 
+  void set_bubble_reference(BubbleReference bubble_reference);
   void UpdateTableModel() const;
 
  private:
+  url::Origin origin_;
   ChooserContentView* chooser_content_view_;
-
-  ChooserController* chooser_controller_;
   BubbleReference bubble_reference_;
 
   DISALLOW_COPY_AND_ASSIGN(ChooserBubbleUiViewDelegate);
@@ -89,12 +91,9 @@ class ChooserBubbleUiViewDelegate : public views::BubbleDialogDelegateView,
 ChooserBubbleUiViewDelegate::ChooserBubbleUiViewDelegate(
     views::View* anchor_view,
     views::BubbleBorder::Arrow anchor_arrow,
-    ChooserController* chooser_controller,
-    BubbleReference bubble_reference)
+    std::unique_ptr<ChooserController> chooser_controller)
     : views::BubbleDialogDelegateView(anchor_view, anchor_arrow),
-      chooser_content_view_(nullptr),
-      chooser_controller_(chooser_controller),
-      bubble_reference_(bubble_reference) {
+      chooser_content_view_(nullptr) {
   // ------------------------------------
   // | Chooser bubble title             |
   // | -------------------------------- |
@@ -110,9 +109,9 @@ ChooserBubbleUiViewDelegate::ChooserBubbleUiViewDelegate(
   // | Not seeing your device? Get help |
   // ------------------------------------
 
-  DCHECK(bubble_reference_);
-
-  chooser_content_view_ = new ChooserContentView(this, chooser_controller_);
+  origin_ = chooser_controller->GetOrigin();
+  chooser_content_view_ =
+      new ChooserContentView(this, std::move(chooser_controller));
 }
 
 ChooserBubbleUiViewDelegate::~ChooserBubbleUiViewDelegate() {}
@@ -121,8 +120,7 @@ base::string16 ChooserBubbleUiViewDelegate::GetWindowTitle() const {
   return l10n_util::GetStringFUTF16(
       IDS_DEVICE_CHOOSER_PROMPT,
       url_formatter::FormatOriginForSecurityDisplay(
-          chooser_controller_->GetOrigin(),
-          url_formatter::SchemeDisplay::OMIT_CRYPTOGRAPHIC));
+          origin_, url_formatter::SchemeDisplay::OMIT_CRYPTOGRAPHIC));
 }
 
 base::string16 ChooserBubbleUiViewDelegate::GetDialogButtonLabel(
@@ -191,26 +189,32 @@ void ChooserBubbleUiViewDelegate::UpdateAnchor(
   SetAnchorView(anchor_view);
 }
 
+void ChooserBubbleUiViewDelegate::set_bubble_reference(
+    BubbleReference bubble_reference) {
+  bubble_reference_ = bubble_reference;
+  DCHECK(bubble_reference_);
+}
+
 void ChooserBubbleUiViewDelegate::UpdateTableModel() const {
   chooser_content_view_->UpdateTableModel();
 }
 
 //////////////////////////////////////////////////////////////////////////////
 // ChooserBubbleUiView
-ChooserBubbleUiView::ChooserBubbleUiView(Browser* browser,
-                                         ChooserController* chooser_controller)
-    : browser_(browser),
-      chooser_controller_(chooser_controller),
-      chooser_bubble_ui_view_delegate_(nullptr) {
+ChooserBubbleUiView::ChooserBubbleUiView(
+    Browser* browser,
+    std::unique_ptr<ChooserController> chooser_controller)
+    : browser_(browser), chooser_bubble_ui_view_delegate_(nullptr) {
   DCHECK(browser_);
-  DCHECK(chooser_controller_);
+  DCHECK(chooser_controller);
+  chooser_bubble_ui_view_delegate_ = new ChooserBubbleUiViewDelegate(
+      GetAnchorView(), GetAnchorArrow(), std::move(chooser_controller));
 }
 
 ChooserBubbleUiView::~ChooserBubbleUiView() {}
 
 void ChooserBubbleUiView::Show(BubbleReference bubble_reference) {
-  chooser_bubble_ui_view_delegate_ = new ChooserBubbleUiViewDelegate(
-      GetAnchorView(), GetAnchorArrow(), chooser_controller_, bubble_reference);
+  chooser_bubble_ui_view_delegate_->set_bubble_reference(bubble_reference);
 
   // Set |parent_window| because some valid anchors can become hidden.
   views::Widget* widget = views::Widget::GetWidgetForNativeWindow(

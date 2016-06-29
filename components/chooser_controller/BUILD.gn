@@ -11,6 +11,7 @@ source_set("chooser_controller") {
   deps = [
     "//base",
     "//content/public/browser",
+    "//url",
   ]
 }
 
