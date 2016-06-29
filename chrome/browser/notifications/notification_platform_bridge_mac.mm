@@ -122,7 +122,8 @@ void NotificationPlatformBridgeMac::Display(const std::string& notification_id,
            [notification_center deliveredNotifications]) {
         NSString* identifier =
             [existing_notification valueForKey:@"identifier"];
-        if ([identifier isEqual:base::SysUTF8ToNSString(notification.tag())]) {
+        if ([identifier
+                isEqualToString:base::SysUTF8ToNSString(notification.tag())]) {
           [notification_center
               removeDeliveredNotification:existing_notification];
           break;
@@ -152,9 +153,8 @@ void NotificationPlatformBridgeMac::Close(const std::string& profile_id,
 
     NSString* persistent_profile_id = [toast.userInfo
         objectForKey:notification_constants::kNotificationProfileId];
-
-    if (toast_id == candidate_id &&
-        persistent_profile_id == current_profile_id) {
+    if ([toast_id isEqualToString:candidate_id] &&
+        [persistent_profile_id isEqualToString:current_profile_id]) {
       [notification_center_ removeDeliveredNotification:toast];
     }
   }
