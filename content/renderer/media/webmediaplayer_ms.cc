@@ -152,8 +152,8 @@ void WebMediaPlayerMS::load(LoadType load_type,
   }
   if (video_frame_provider_)
     video_frame_provider_->Start();
-  if (audio_renderer_ && !video_frame_provider_) {
-    // This is audio-only mode.
+  if (audio_renderer_) {
+    // Do not wait for first video frame to start playing
     SetReadyState(WebMediaPlayer::ReadyStateHaveMetadata);
     SetReadyState(WebMediaPlayer::ReadyStateHaveEnoughData);
   }
@@ -488,8 +488,10 @@ void WebMediaPlayerMS::OnFrameAvailable(
 
   if (!received_first_frame_) {
     received_first_frame_ = true;
-    SetReadyState(WebMediaPlayer::ReadyStateHaveMetadata);
-    SetReadyState(WebMediaPlayer::ReadyStateHaveEnoughData);
+    if (getReadyState() < WebMediaPlayer::ReadyStateHaveEnoughData) {
+      SetReadyState(WebMediaPlayer::ReadyStateHaveMetadata);
+      SetReadyState(WebMediaPlayer::ReadyStateHaveEnoughData);
+    }
 
     if (video_frame_provider_.get()) {
       video_weblayer_.reset(new cc_blink::WebLayerImpl(
