@@ -161,7 +161,7 @@ FrameView::FrameView(LocalFrame* frame)
     , m_hiddenForThrottling(false)
     , m_crossOriginForThrottling(false)
     , m_subtreeThrottled(false)
-    , m_isUpdatingAllLifecyclePhases(false)
+    , m_currentUpdateLifecyclePhasesTargetState(DocumentLifecycle::Uninitialized)
     , m_scrollAnchor(this)
     , m_needsScrollbarsUpdate(false)
     , m_suppressAdjustViewSize(false)
@@ -1227,9 +1227,26 @@ void FrameView::updateWidgetGeometries()
     Vector<RefPtr<LayoutPart>> parts;
     copyToVector(m_parts, parts);
 
-    // Script or plugins could detach the frame so abort processing if that happens.
-    for (size_t i = 0; i < parts.size() && !layoutViewItem().isNull(); ++i)
-        parts[i]->updateWidgetGeometry();
+    for (auto part : parts) {
+        // Script or plugins could detach the frame so abort processing if that happens.
+        if (layoutViewItem().isNull())
+            break;
+
+        if (Widget* widget = part->widget()) {
+            if (widget->isFrameView()) {
+                FrameView* frameView = toFrameView(widget);
+                bool didNeedLayout = frameView->needsLayout();
+                // LayoutPart::updateWidgetGeometry() may invalidate and update layout of the sub-FrameView. This is
+                // allowed, but layout should be clean after updateWidgetGeometry unless the FrameView is throttled.
+                TemporaryChange<bool> allowLayoutInvalidation(frameView->m_allowsLayoutInvalidationAfterLayoutClean, true);
+                part->updateWidgetGeometry();
+                if (!didNeedLayout && !frameView->shouldThrottleRendering())
+                    frameView->checkDoesNotNeedLayout();
+            } else {
+                part->updateWidgetGeometry();
+            }
+        }
+    }
 }
 
 void FrameView::addPartToUpdate(LayoutEmbeddedObject& object)
@@ -1832,11 +1849,13 @@ void FrameView::checkLayoutInvalidationIsAllowed() const
     }
 
     CHECK(lifecycle().stateAllowsLayoutInvalidation());
-    if (m_isUpdatingAllLifecyclePhases) {
-        // If we are updating all lifecycle phases, we don't expect dirty layout after layout has been clean.
-        if (m_allowsLayoutInvalidationAfterLayoutClean)
-            CHECK(lifecycle().state() <= DocumentLifecycle::LayoutClean);
-        else
+
+    if (m_allowsLayoutInvalidationAfterLayoutClean)
+        return;
+
+    // If we are updating all lifecycle phases beyond LayoutClean, we don't expect dirty layout after LayoutClean.
+    if (FrameView* rootFrameView = m_frame->localFrameRoot()->view()) {
+        if (rootFrameView->m_currentUpdateLifecyclePhasesTargetState > DocumentLifecycle::LayoutClean)
             CHECK(lifecycle().state() < DocumentLifecycle::LayoutClean);
     }
 }
@@ -1920,26 +1939,11 @@ bool FrameView::needsLayout() const
         || isSubtreeLayout();
 }
 
-NOINLINE void FrameView::checkNoLayoutPending() const
-{
-    CHECK(!layoutPending());
-}
-
-NOINLINE void FrameView::checkLayoutViewDoesNotNeedLayout() const
-{
-    CHECK(layoutViewItem().isNull() || !layoutViewItem().needsLayout());
-}
-
-NOINLINE void FrameView::checkIsNotSubtreeLayout() const
-{
-    CHECK(!isSubtreeLayout());
-}
-
 NOINLINE void FrameView::checkDoesNotNeedLayout() const
 {
-    checkNoLayoutPending();
-    checkLayoutViewDoesNotNeedLayout();
-    checkIsNotSubtreeLayout();
+    CHECK(!layoutPending());
+    CHECK(layoutViewItem().isNull() || !layoutViewItem().needsLayout());
+    CHECK(!isSubtreeLayout());
 }
 
 void FrameView::setNeedsLayout()
@@ -2464,29 +2468,30 @@ void FrameView::updateWidgetGeometriesIfNeeded()
 
 void FrameView::updateAllLifecyclePhases()
 {
-    frame().localFrameRoot()->view()->updateLifecyclePhasesInternal(AllPhases);
+    frame().localFrameRoot()->view()->updateLifecyclePhasesInternal(DocumentLifecycle::PaintClean);
 }
 
 // TODO(chrishtr): add a scrolling update lifecycle phase.
 void FrameView::updateLifecycleToCompositingCleanPlusScrolling()
 {
-    frame().localFrameRoot()->view()->updateLifecyclePhasesInternal(OnlyUpToCompositingCleanPlusScrolling);
+    frame().localFrameRoot()->view()->updateLifecyclePhasesInternal(DocumentLifecycle::CompositingClean);
 }
 
 void FrameView::updateAllLifecyclePhasesExceptPaint()
 {
-    frame().localFrameRoot()->view()->updateLifecyclePhasesInternal(AllPhasesExceptPaint);
+    frame().localFrameRoot()->view()->updateLifecyclePhasesInternal(DocumentLifecycle::PrePaintClean);
 }
 
 void FrameView::updateLifecycleToLayoutClean()
 {
-    frame().localFrameRoot()->view()->updateLifecyclePhasesInternal(OnlyUpToLayoutClean);
+    frame().localFrameRoot()->view()->updateLifecyclePhasesInternal(DocumentLifecycle::LayoutClean);
 }
 
 void FrameView::scheduleVisualUpdateForPaintInvalidationIfNeeded()
 {
     LocalFrame* localFrameRoot = frame().localFrameRoot();
-    if (!localFrameRoot->view()->m_isUpdatingAllLifecyclePhases || lifecycle().state() >= DocumentLifecycle::PrePaintClean) {
+    if (localFrameRoot->view()->m_currentUpdateLifecyclePhasesTargetState < DocumentLifecycle::PaintInvalidationClean
+        || lifecycle().state() >= DocumentLifecycle::PrePaintClean) {
         // Schedule visual update to process the paint invalidation in the next cycle.
         localFrameRoot->scheduleVisualUpdateUnlessThrottled();
     }
@@ -2494,26 +2499,30 @@ void FrameView::scheduleVisualUpdateForPaintInvalidationIfNeeded()
 }
 
 // TODO(leviw): We don't assert lifecycle information from documents in child PluginViews.
-void FrameView::updateLifecyclePhasesInternal(LifeCycleUpdateOption phases)
+void FrameView::updateLifecyclePhasesInternal(DocumentLifecycle::LifecycleState targetState)
 {
-    Optional<TemporaryChange<bool>> isUpdatingAllLifecyclePhasesScope;
-    if (phases == AllPhases)
-        isUpdatingAllLifecyclePhasesScope.emplace(m_isUpdatingAllLifecyclePhases, true);
-
     // This must be called from the root frame, since it recurses down, not up.
     // Otherwise the lifecycles of the frames might be out of sync.
-    ASSERT(m_frame->isLocalRoot());
+    DCHECK(m_frame->isLocalRoot());
+
+    // Only the following target states are supported.
+    DCHECK(targetState == DocumentLifecycle::LayoutClean
+        || targetState == DocumentLifecycle::CompositingClean
+        || targetState == DocumentLifecycle::PrePaintClean
+        || targetState == DocumentLifecycle::PaintClean);
+
+    TemporaryChange<DocumentLifecycle::LifecycleState> targetStateScope(m_currentUpdateLifecyclePhasesTargetState, targetState);
 
     if (shouldThrottleRendering()) {
-        updateViewportIntersectionsForSubtree(std::min(phases, OnlyUpToCompositingCleanPlusScrolling));
+        updateViewportIntersectionsForSubtree(std::min(targetState, DocumentLifecycle::CompositingClean));
         return;
     }
 
     updateStyleAndLayoutIfNeededRecursive();
-    ASSERT(lifecycle().state() >= DocumentLifecycle::LayoutClean);
+    DCHECK(lifecycle().state() >= DocumentLifecycle::LayoutClean);
 
-    if (phases == OnlyUpToLayoutClean) {
-        updateViewportIntersectionsForSubtree(phases);
+    if (targetState == DocumentLifecycle::LayoutClean) {
+        updateViewportIntersectionsForSubtree(targetState);
         return;
     }
 
@@ -2528,7 +2537,7 @@ void FrameView::updateLifecyclePhasesInternal(LifeCycleUpdateOption phases)
 
             ASSERT(lifecycle().state() >= DocumentLifecycle::CompositingClean);
 
-            if (phases == AllPhases || phases == AllPhasesExceptPaint) {
+            if (targetState >= DocumentLifecycle::PrePaintClean) {
                 if (!RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled())
                     invalidateTreeIfNeededRecursive();
 
@@ -2539,12 +2548,12 @@ void FrameView::updateLifecyclePhasesInternal(LifeCycleUpdateOption phases)
             }
         }
 
-        if (phases == AllPhases || phases == AllPhasesExceptPaint) {
+        if (targetState >= DocumentLifecycle::PrePaintClean) {
             if (RuntimeEnabledFeatures::slimmingPaintV2Enabled())
                 updatePaintProperties();
         }
 
-        if (phases == AllPhases) {
+        if (targetState == DocumentLifecycle::PaintClean) {
             if (!m_frame->document()->printing())
                 synchronizedPaint();
 
@@ -2557,7 +2566,7 @@ void FrameView::updateLifecyclePhasesInternal(LifeCycleUpdateOption phases)
         }
     }
 
-    updateViewportIntersectionsForSubtree(phases);
+    updateViewportIntersectionsForSubtree(targetState);
 }
 
 void FrameView::updatePaintProperties()
@@ -4108,14 +4117,14 @@ void FrameView::updateViewportIntersectionIfNeeded()
     m_viewportIntersection.intersect(viewport);
 }
 
-void FrameView::updateViewportIntersectionsForSubtree(LifeCycleUpdateOption phases)
+void FrameView::updateViewportIntersectionsForSubtree(DocumentLifecycle::LifecycleState targetState)
 {
     bool hadValidIntersection = m_viewportIntersectionValid;
     bool hadEmptyIntersection = m_viewportIntersection.isEmpty();
     updateViewportIntersectionIfNeeded();
 
     // Notify javascript IntersectionObservers
-    if (phases == AllPhases && frame().document()->intersectionObserverController())
+    if (targetState == DocumentLifecycle::PaintClean && frame().document()->intersectionObserverController())
         frame().document()->intersectionObserverController()->computeTrackedIntersectionObservations();
 
     // Adjust render throttling for iframes based on visibility
@@ -4131,7 +4140,7 @@ void FrameView::updateViewportIntersectionsForSubtree(LifeCycleUpdateOption phas
         if (!child->isLocalFrame())
             continue;
         if (FrameView* view = toLocalFrame(child)->view())
-            view->updateViewportIntersectionsForSubtree(phases);
+            view->updateViewportIntersectionsForSubtree(targetState);
     }
 }
 

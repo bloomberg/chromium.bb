@@ -653,14 +653,8 @@ private:
 
     void setScrollOffset(const DoublePoint&, ScrollType) override;
 
-    enum LifeCycleUpdateOption {
-        OnlyUpToLayoutClean,
-        OnlyUpToCompositingCleanPlusScrolling,
-        AllPhasesExceptPaint,
-        AllPhases,
-    };
+    void updateLifecyclePhasesInternal(DocumentLifecycle::LifecycleState targetState);
 
-    void updateLifecyclePhasesInternal(LifeCycleUpdateOption);
     void invalidateTreeIfNeededRecursive();
     void scrollContentsIfNeededRecursive();
     void updateStyleAndLayoutIfNeededRecursive();
@@ -766,7 +760,7 @@ private:
     template <typename Function> void forAllNonThrottledFrameViews(const Function&);
 
     void setNeedsUpdateViewportIntersection();
-    void updateViewportIntersectionsForSubtree(LifeCycleUpdateOption);
+    void updateViewportIntersectionsForSubtree(DocumentLifecycle::LifecycleState targetState);
     void updateViewportIntersectionIfNeeded();
     void notifyRenderThrottlingObservers();
     void updateThrottlingStatus();
@@ -774,10 +768,6 @@ private:
     // PaintInvalidationCapableScrollableArea
     LayoutBox& boxForScrollControlPaintInvalidation() const override;
     LayoutScrollbarPart* resizer() const override { return nullptr; }
-
-    void checkNoLayoutPending() const;
-    void checkLayoutViewDoesNotNeedLayout() const;
-    void checkIsNotSubtreeLayout() const;
 
     void checkLayoutInvalidationIsAllowed() const;
 
@@ -916,7 +906,9 @@ private:
     // TODO(trchen): This will not be needed once settings->rootLayerScrolls() is enabled.
     RefPtr<ClipPaintPropertyNode> m_contentClip;
 
-    bool m_isUpdatingAllLifecyclePhases;
+    // This is set on the local root frame view only.
+    DocumentLifecycle::LifecycleState m_currentUpdateLifecyclePhasesTargetState;
+
     ScrollAnchor m_scrollAnchor;
 
     bool m_needsScrollbarsUpdate;
