@@ -54,8 +54,6 @@ GL_EXPORT extern const char kOverrideUseGLWithOSMesaForTests[];
 GL_EXPORT extern const char* kGLSwitchesCopiedFromGpuProcessHost[];
 GL_EXPORT extern const int kGLSwitchesCopiedFromGpuProcessHostNumSwitches;
 
-GL_EXPORT extern const char kEnableCMAAShaders[];
-
 }  // namespace switches
 
 #endif  // UI_GL_GL_SWITCHES_H_

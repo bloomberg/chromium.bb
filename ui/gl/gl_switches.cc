@@ -93,11 +93,6 @@ const char kOverrideUseGLWithOSMesaForTests[] =
 // Disables specified comma separated GL Extensions if found.
 const char kDisableGLExtensions[] = "disable-gl-extensions";
 
-// Enables GL_INTEL_framebuffer_CMAA via shaders. Will be used if the platform
-// does not support GL_INTEL_framebuffer_CMAA and the context is at least
-// OpenGL ES 3.1 or OpenGL 3.0 with the required extensions.
-const char kEnableCMAAShaders[] = "enable-cmaa-shaders";
-
 // This is the list of switches passed from this file that are passed from the
 // GpuProcessHost to the GPU Process. Add your switch to this list if you need
 // to read it in the GPU process, else don't add it.
@@ -112,7 +107,6 @@ const char* kGLSwitchesCopiedFromGpuProcessHost[] = {
     kOverrideUseGLWithOSMesaForTests,
     kUseANGLE,
     kDisableDirectComposition,
-    kEnableCMAAShaders,
 };
 const int kGLSwitchesCopiedFromGpuProcessHostNumSwitches =
     arraysize(kGLSwitchesCopiedFromGpuProcessHost);

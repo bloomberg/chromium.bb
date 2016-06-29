@@ -181,9 +181,6 @@ void FeatureInfo::InitializeBasicState(const base::CommandLine* command_line) {
   disable_shader_translator_ =
       command_line->HasSwitch(switches::kDisableGLSLTranslator);
 
-  enable_cmaa_shaders_switch_ =
-      command_line->HasSwitch(switches::kEnableCMAAShaders);
-
   unsafe_es3_apis_enabled_ = false;
 
   // Default context_type_ to a GLES2 Context.
@@ -892,7 +889,7 @@ void FeatureInfo::InitializeFeatures() {
   if (extensions.Contains("GL_INTEL_framebuffer_CMAA")) {
     feature_flags_.chromium_screen_space_antialiasing = true;
     AddExtensionString("GL_CHROMIUM_screen_space_antialiasing");
-  } else if (enable_cmaa_shaders_switch_ &&
+  } else if (!workarounds_.disable_framebuffer_cmaa &&
              (gl_version_info_->IsAtLeastGLES(3, 1) ||
               (gl_version_info_->IsAtLeastGL(3, 0) &&
                extensions.Contains("GL_ARB_shading_language_420pack") &&

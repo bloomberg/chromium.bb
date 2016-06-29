@@ -45,6 +45,8 @@
          disable_dxgi_zero_copy_video)                       \
   GPU_OP(DISABLE_EXT_DRAW_BUFFERS,                           \
          disable_ext_draw_buffers)                           \
+  GPU_OP(DISABLE_FRAMEBUFFER_CMAA,                           \
+         disable_framebuffer_cmaa)                           \
   GPU_OP(DISABLE_GL_RGB_FORMAT,                              \
          disable_gl_rgb_format)                              \
   GPU_OP(DISABLE_MULTIMONITOR_MULTISAMPLING,                 \

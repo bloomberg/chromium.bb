@@ -193,9 +193,6 @@ class GPU_EXPORT FeatureInfo : public base::RefCounted<FeatureInfo> {
   bool disable_shader_translator_;
   std::unique_ptr<gl::GLVersionInfo> gl_version_info_;
 
-  // Whether the command line switch kEnableCMAAShaders is passed in.
-  bool enable_cmaa_shaders_switch_;
-
   DISALLOW_COPY_AND_ASSIGN(FeatureInfo);
 };
 
