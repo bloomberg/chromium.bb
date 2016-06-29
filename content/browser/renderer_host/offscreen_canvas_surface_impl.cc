@@ -28,8 +28,10 @@ OffscreenCanvasSurfaceImpl::~OffscreenCanvasSurfaceImpl() {
   if (!GetSurfaceManager()) {
     // Inform both members that SurfaceManager's no longer alive to
     // avoid their destruction errors.
-    surface_factory_->didDestroySurfaceManager();
-    id_allocator_->didDestroySurfaceManager();
+    if (surface_factory_)
+        surface_factory_->didDestroySurfaceManager();
+    if (id_allocator_)
+        id_allocator_->didDestroySurfaceManager();
   }
   surface_factory_->Destroy(surface_id_);
 }
