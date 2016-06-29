@@ -29,4 +29,13 @@ bool WebStateDelegateBridge::HandleContextMenu(
   return NO;
 }
 
+JavaScriptDialogPresenter* WebStateDelegateBridge::GetJavaScriptDialogPresenter(
+    WebState* source) {
+  SEL selector = @selector(javaScriptDialogPresenterForWebState:);
+  if ([delegate_ respondsToSelector:selector]) {
+    return [delegate_ javaScriptDialogPresenterForWebState:source];
+  }
+  return nullptr;
+}
+
 }  // web

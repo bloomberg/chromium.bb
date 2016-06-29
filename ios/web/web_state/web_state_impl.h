@@ -20,6 +20,8 @@
 #include "ios/web/navigation/navigation_manager_delegate.h"
 #include "ios/web/navigation/navigation_manager_impl.h"
 #include "ios/web/net/request_tracker_impl.h"
+#import "ios/web/public/java_script_dialog_callback.h"
+#include "ios/web/public/java_script_dialog_type.h"
 #include "ios/web/public/web_state/web_state.h"
 #include "url/gurl.h"
 
@@ -263,6 +265,16 @@ class WebStateImpl : public WebState, public NavigationManagerDelegate {
   void SendChangeLoadProgress(double progress);
   // Notifies the delegate that a context menu needs handling.
   bool HandleContextMenu(const ContextMenuParams& params);
+
+  // Notifies the delegate that a JavaScript dialog needs to be presented.
+  void RunJavaScriptDialog(const GURL& origin_url,
+                           JavaScriptDialogType java_script_dialog_type,
+                           NSString* message_text,
+                           NSString* default_prompt_text,
+                           const DialogClosedCallback& callback);
+
+  // Cancels all dialogs associated with this web_state.
+  void CancelActiveAndPendingDialogs();
 
   // NavigationManagerDelegate:
   void NavigateToPendingEntry() override;

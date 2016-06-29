@@ -68,4 +68,11 @@ TEST_F(WebStateDelegateBridgeTest, HandleContextMenu) {
   EXPECT_EQ(context_menu_params.location.y, result_params->location.y);
 }
 
+// Tests |GetJavaScriptDialogPresenter| forwarding.
+TEST_F(WebStateDelegateBridgeTest, GetJavaScriptDialogPresenter) {
+  EXPECT_FALSE([delegate_ javaScriptDialogPresenterRequested]);
+  bridge_->GetJavaScriptDialogPresenter(nullptr);
+  EXPECT_TRUE([delegate_ javaScriptDialogPresenterRequested]);
+}
+
 }  // namespace web

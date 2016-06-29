@@ -16,6 +16,7 @@ class SSLInfo;
 namespace web {
 
 struct ContextMenuParams;
+class JavaScriptDialogPresenter;
 struct SSLStatus;
 class WebState;
 
@@ -35,6 +36,12 @@ class WebStateDelegate {
   // handled by the delegate.
   virtual bool HandleContextMenu(WebState* source,
                                  const ContextMenuParams& params);
+
+  // Returns a pointer to a service to manage dialogs. May return nullptr in
+  // which case dialogs aren't shown.
+  // TODO(crbug.com/622084): Find better place for this method.
+  virtual JavaScriptDialogPresenter* GetJavaScriptDialogPresenter(
+      WebState* source);
 
  protected:
   virtual ~WebStateDelegate();

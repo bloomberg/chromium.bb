@@ -10,6 +10,8 @@
 @implementation CRWWebStateDelegateStub {
   // Backs up the property with the same name.
   std::unique_ptr<web::ContextMenuParams> _contextMenuParams;
+  // Backs up the property with the same name.
+  BOOL _javaScriptDialogPresenterRequested;
 }
 
 @synthesize webState = _webState;
@@ -27,8 +29,19 @@
   return YES;
 }
 
+- (web::JavaScriptDialogPresenter*)javaScriptDialogPresenterForWebState:
+    (web::WebState*)webState {
+  _webState = webState;
+  _javaScriptDialogPresenterRequested = YES;
+  return nil;
+}
+
 - (web::ContextMenuParams*)contextMenuParams {
   return _contextMenuParams.get();
+}
+
+- (BOOL)javaScriptDialogPresenterRequested {
+  return _javaScriptDialogPresenterRequested;
 }
 
 @end

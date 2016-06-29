@@ -24,6 +24,11 @@ bool WebStateDelegate::HandleContextMenu(WebState*, const ContextMenuParams&) {
   return false;
 }
 
+JavaScriptDialogPresenter* WebStateDelegate::GetJavaScriptDialogPresenter(
+    WebState*) {
+  return nullptr;
+}
+
 void WebStateDelegate::Attach(WebState* source) {
   DCHECK(attached_states_.find(source) == attached_states_.end());
   attached_states_.insert(source);

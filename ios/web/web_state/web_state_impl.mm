@@ -14,6 +14,7 @@
 #include "ios/web/navigation/navigation_item_impl.h"
 #include "ios/web/net/request_group_util.h"
 #include "ios/web/public/browser_state.h"
+#import "ios/web/public/java_script_dialog_presenter.h"
 #include "ios/web/public/navigation_item.h"
 #include "ios/web/public/url_util.h"
 #include "ios/web/public/web_client.h"
@@ -427,6 +428,32 @@ bool WebStateImpl::HandleContextMenu(const web::ContextMenuParams& params) {
     return delegate_->HandleContextMenu(this, params);
   }
   return false;
+}
+
+void WebStateImpl::RunJavaScriptDialog(
+    const GURL& origin_url,
+    JavaScriptDialogType javascript_dialog_type,
+    NSString* message_text,
+    NSString* default_prompt_text,
+    const DialogClosedCallback& callback) {
+  JavaScriptDialogPresenter* presenter =
+      delegate_ ? delegate_->GetJavaScriptDialogPresenter(this) : nullptr;
+  if (!presenter) {
+    callback.Run(false, nil);
+    return;
+  }
+  presenter->RunJavaScriptDialog(this, origin_url, javascript_dialog_type,
+                                 message_text, default_prompt_text, callback);
+}
+
+void WebStateImpl::CancelActiveAndPendingDialogs() {
+  if (delegate_) {
+    JavaScriptDialogPresenter* presenter =
+        delegate_->GetJavaScriptDialogPresenter(this);
+    if (presenter) {
+      presenter->CancelActiveAndPendingDialogs(this);
+    }
+  }
 }
 
 WebUIIOS* WebStateImpl::CreateWebUIIOS(const GURL& url) {

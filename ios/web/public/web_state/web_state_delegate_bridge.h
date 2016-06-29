@@ -25,6 +25,11 @@
 - (BOOL)webState:(web::WebState*)webState
     handleContextMenu:(const web::ContextMenuParams&)params;
 
+// Returns a pointer to a service to manage dialogs. May return null in which
+// case dialogs aren't shown.
+- (web::JavaScriptDialogPresenter*)javaScriptDialogPresenterForWebState:
+    (web::WebState*)webState;
+
 @end
 
 namespace web {
@@ -39,6 +44,8 @@ class WebStateDelegateBridge : public web::WebStateDelegate {
   void LoadProgressChanged(WebState* source, double progress) override;
   bool HandleContextMenu(WebState* source,
                          const ContextMenuParams& params) override;
+  JavaScriptDialogPresenter* GetJavaScriptDialogPresenter(
+      WebState* source) override;
 
  private:
   // CRWWebStateDelegate which receives forwarded calls.
