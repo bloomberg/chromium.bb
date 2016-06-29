@@ -37,6 +37,9 @@ bool IsReadingListEnabled();
 // Whether the All Bookmarks view is visible in bookmarks.
 bool IsAllBookmarksEnabled();
 
+// Whether the Physical Web feature is enabled.
+bool IsPhysicalWebEnabled();
+
 }  // namespace experimental_flags
 
 #endif  // IOS_CHROME_BROWSER_EXPERIMENTAL_FLAGS_H_

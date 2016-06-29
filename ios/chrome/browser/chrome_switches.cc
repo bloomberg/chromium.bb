@@ -49,6 +49,9 @@ const char kDisableTabEviction[] = "disable-tab-eviction";
 // Disables the tab switcher.
 const char kDisableTabSwitcher[] = "disable-tab-switcher";
 
+// Disables Physical Web scanning for nearby URLs.
+const char kDisableIOSPhysicalWeb[] = "disable-ios-physical-web";
+
 // Enables all bookmarks view in bookmark manager.
 const char kEnableAllBookmarksView[] = "enable-all-bookmarks-view";
 
@@ -91,6 +94,9 @@ const char kEnableTabEviction[] = "enable-tab-eviction";
 
 // Enables the tab switcher.
 const char kEnableTabSwitcher[] = "enable-tab-switcher";
+
+// Enables Physical Web scanning for nearby URLs.
+const char kEnableIOSPhysicalWeb[] = "enable-ios-physical-web";
 
 // Forces additional Chrome Variation Ids that will be sent in X-Client-Data
 // header, specified as a 64-bit encoded list of numeric experiment ids. Ids

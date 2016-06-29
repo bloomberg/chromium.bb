@@ -118,6 +118,15 @@ void AppendSwitchesFromExperimentalSettings(base::CommandLine* command_line) {
     command_line->AppendSwitch(switches::kDisableIOSPasswordGeneration);
   }
 
+  // Populate command line flags from PhysicalWebEnabled.
+  NSString* enablePhysicalWebValue =
+      [defaults stringForKey:@"PhysicalWebEnabled"];
+  if ([enablePhysicalWebValue isEqualToString:@"Enabled"]) {
+    command_line->AppendSwitch(switches::kEnableIOSPhysicalWeb);
+  } else if ([enablePhysicalWebValue isEqualToString:@"Disabled"]) {
+    command_line->AppendSwitch(switches::kDisableIOSPhysicalWeb);
+  }
+
   // Web page replay flags.
   BOOL webPageReplayEnabled = [defaults boolForKey:@"WebPageReplayEnabled"];
   NSString* webPageReplayProxy =
