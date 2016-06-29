@@ -41,6 +41,7 @@
 #include "core/events/Event.h"
 #include "core/frame/FrameHost.h"
 #include "core/frame/LocalFrame.h"
+#include "core/frame/UseCounter.h"
 #include "core/html/FormData.h"
 #include "core/html/forms/FormController.h"
 #include "core/html/parser/HTMLParserIdioms.h"
@@ -192,8 +193,10 @@ void HTMLTextAreaElement::parseAttribute(const QualifiedName& name, const Atomic
     } else if (name == accesskeyAttr) {
         // ignore for the moment
     } else if (name == maxlengthAttr) {
+        UseCounter::count(document(), UseCounter::TextAreaMaxLength);
         setNeedsValidityCheck();
     } else if (name == minlengthAttr) {
+        UseCounter::count(document(), UseCounter::TextAreaMinLength);
         setNeedsValidityCheck();
     } else {
         HTMLTextFormControlElement::parseAttribute(name, oldValue, value);

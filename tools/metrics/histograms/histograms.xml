@@ -76033,6 +76033,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="1421" label="ElementRequestPointerLockInShadow"/>
   <int value="1422" label="ShadowRootPointerLockElement"/>
   <int value="1423" label="DocumentPointerLockElementInV0Shadow"/>
+  <int value="1424" label="TextAreaMaxLength"/>
+  <int value="1425" label="TextAreaMinLength"/>
 </enum>
 
 <enum name="FetchRequestMode" type="int">
