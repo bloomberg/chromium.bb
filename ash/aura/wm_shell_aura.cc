@@ -17,6 +17,7 @@
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
 #include "ash/wm/drag_window_resizer.h"
+#include "ash/wm/maximize_mode/maximize_mode_event_handler_aura.h"
 #include "ash/wm/screen_pinning_controller.h"
 #include "ash/wm/window_util.h"
 #include "base/memory/ptr_util.h"
@@ -126,6 +127,11 @@ std::unique_ptr<WindowResizer> WmShellAura::CreateDragWindowResizer(
     wm::WindowState* window_state) {
   return base::WrapUnique(
       DragWindowResizer::Create(next_window_resizer.release(), window_state));
+}
+
+std::unique_ptr<wm::MaximizeModeEventHandler>
+WmShellAura::CreateMaximizeModeEventHandler() {
+  return base::WrapUnique(new wm::MaximizeModeEventHandlerAura);
 }
 
 void WmShellAura::OnOverviewModeStarting() {

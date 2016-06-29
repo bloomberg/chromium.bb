@@ -39,6 +39,7 @@ class WmRootWindowController;
 class WmWindow;
 
 namespace wm {
+class MaximizeModeEventHandler;
 class WindowState;
 }
 
@@ -137,6 +138,9 @@ class ASH_EXPORT WmShell {
   virtual std::unique_ptr<WindowResizer> CreateDragWindowResizer(
       std::unique_ptr<WindowResizer> next_window_resizer,
       wm::WindowState* window_state) = 0;
+
+  virtual std::unique_ptr<wm::MaximizeModeEventHandler>
+  CreateMaximizeModeEventHandler() = 0;
 
   // Called when the overview mode is about to be started (before the windows
   // get re-arranged).

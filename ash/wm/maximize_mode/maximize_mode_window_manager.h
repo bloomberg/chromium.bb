@@ -17,16 +17,15 @@
 #include "base/macros.h"
 #include "ui/aura/window_observer.h"
 #include "ui/display/display_observer.h"
-#include "ui/events/event_handler.h"
-
-namespace ui {
-class TouchEvent;
-}
 
 namespace ash {
 class MaximizeModeController;
 class MaximizeModeWindowState;
 class WmWindow;
+
+namespace wm {
+class MaximizeModeEventHandler;
+}
 
 // A window manager which - when created - will force all windows into maximized
 // mode. Exception are panels and windows which cannot be maximized.
@@ -36,8 +35,7 @@ class WmWindow;
 // original state.
 class ASH_EXPORT MaximizeModeWindowManager : public aura::WindowObserver,
                                              public display::DisplayObserver,
-                                             public ShellObserver,
-                                             public ui::EventHandler {
+                                             public ShellObserver {
  public:
   // This should only be deleted by the creator (ash::Shell).
   ~MaximizeModeWindowManager() override;
@@ -73,9 +71,6 @@ class ASH_EXPORT MaximizeModeWindowManager : public aura::WindowObserver,
   void OnDisplayRemoved(const display::Display& display) override;
   void OnDisplayMetricsChanged(const display::Display& display,
                                uint32_t metrics) override;
-
-  // ui::EventHandler override:
-  void OnTouchEvent(ui::TouchEvent* event) override;
 
  protected:
   friend class MaximizeModeController;
@@ -133,6 +128,8 @@ class ASH_EXPORT MaximizeModeWindowManager : public aura::WindowObserver,
 
   // True if all backdrops are hidden.
   bool backdrops_hidden_;
+
+  std::unique_ptr<wm::MaximizeModeEventHandler> event_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(MaximizeModeWindowManager);
 };

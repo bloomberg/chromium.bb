@@ -64,6 +64,8 @@ class WmShellMus : public WmShell, public ::mus::WindowTreeClientObserver {
   std::unique_ptr<WindowResizer> CreateDragWindowResizer(
       std::unique_ptr<WindowResizer> next_window_resizer,
       wm::WindowState* window_state) override;
+  std::unique_ptr<wm::MaximizeModeEventHandler> CreateMaximizeModeEventHandler()
+      override;
   void OnOverviewModeStarting() override;
   void OnOverviewModeEnded() override;
   AccessibilityDelegate* GetAccessibilityDelegate() override;

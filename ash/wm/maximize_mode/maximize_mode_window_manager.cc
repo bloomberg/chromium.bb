@@ -8,6 +8,7 @@
 #include "ash/common/ash_switches.h"
 #include "ash/common/session/session_state_delegate.h"
 #include "ash/common/shell_window_ids.h"
+#include "ash/common/wm/maximize_mode/maximize_mode_event_handler.h"
 #include "ash/common/wm/mru_window_tracker.h"
 #include "ash/common/wm/overview/window_selector_controller.h"
 #include "ash/common/wm/window_state.h"
@@ -29,10 +30,6 @@ namespace ash {
 
 namespace {
 
-// The height of the area in which a touch operation leads to exiting the
-// full screen mode.
-const int kLeaveFullScreenAreaHeightInPixel = 2;
-
 // Exits overview mode if it is currently active.
 void CancelOverview() {
   WindowSelectorController* controller =
@@ -49,7 +46,6 @@ MaximizeModeWindowManager::~MaximizeModeWindowManager() {
   // overview: http://crbug.com/366605
   CancelOverview();
 
-  Shell::GetInstance()->RemovePreTargetHandler(this);
   WmShell::Get()->RemoveShellObserver(this);
   display::Screen::GetScreen()->RemoveObserver(this);
   EnableBackdropBehindTopWindowOnEachDisplay(false);
@@ -166,47 +162,6 @@ void MaximizeModeWindowManager::OnDisplayMetricsChanged(const display::Display&,
   // Nothing to do here.
 }
 
-void MaximizeModeWindowManager::OnTouchEvent(ui::TouchEvent* event) {
-  const SessionStateDelegate* delegate =
-      Shell::GetInstance()->session_state_delegate();
-
-  if (delegate->IsScreenLocked())
-    return;
-
-  switch (delegate->GetSessionState()) {
-    case SessionStateDelegate::SESSION_STATE_LOGIN_PRIMARY:
-      return;
-    case SessionStateDelegate::SESSION_STATE_ACTIVE:
-      break;
-    case SessionStateDelegate::SESSION_STATE_LOGIN_SECONDARY:
-      return;
-  }
-
-  if (event->type() != ui::ET_TOUCH_PRESSED)
-    return;
-
-  // Find the active window (from the primary screen) to un-fullscreen.
-  aura::Window* window = wm::GetActiveWindow();
-  if (!window)
-    return;
-
-  wm::WindowState* window_state = wm::GetWindowState(window);
-  if (!window_state->IsFullscreen() || window_state->in_immersive_fullscreen())
-    return;
-
-  // Test that the touch happened in the top or bottom lines.
-  int y = event->y();
-  if (y >= kLeaveFullScreenAreaHeightInPixel &&
-      y < (window->bounds().height() - kLeaveFullScreenAreaHeightInPixel)) {
-    return;
-  }
-
-  // Leave full screen mode.
-  event->StopPropagation();
-  wm::WMEvent toggle_fullscreen(wm::WM_EVENT_TOGGLE_FULLSCREEN);
-  window_state->OnWMEvent(&toggle_fullscreen);
-}
-
 MaximizeModeWindowManager::MaximizeModeWindowManager()
     : backdrops_hidden_(false) {
   // The overview mode needs to be ended before the maximize mode is started. To
@@ -218,7 +173,7 @@ MaximizeModeWindowManager::MaximizeModeWindowManager()
   EnableBackdropBehindTopWindowOnEachDisplay(true);
   display::Screen::GetScreen()->AddObserver(this);
   WmShell::Get()->AddShellObserver(this);
-  Shell::GetInstance()->AddPreTargetHandler(this);
+  event_handler_ = WmShell::Get()->CreateMaximizeModeEventHandler();
 }
 
 void MaximizeModeWindowManager::MaximizeAllWindows() {

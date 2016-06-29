@@ -10,6 +10,7 @@
 #include "ash/common/shell_observer.h"
 #include "ash/common/shell_window_ids.h"
 #include "ash/common/system/tray/default_system_tray_delegate.h"
+#include "ash/common/wm/maximize_mode/maximize_mode_event_handler.h"
 #include "ash/common/wm/mru_window_tracker.h"
 #include "ash/common/wm/window_resizer.h"
 #include "ash/common/wm_activation_observer.h"
@@ -228,6 +229,14 @@ std::unique_ptr<WindowResizer> WmShellMus::CreateDragWindowResizer(
     wm::WindowState* window_state) {
   return base::WrapUnique(
       new DragWindowResizer(std::move(next_window_resizer), window_state));
+}
+
+std::unique_ptr<wm::MaximizeModeEventHandler>
+WmShellMus::CreateMaximizeModeEventHandler() {
+  // TODO: need support for window manager to get events before client:
+  // http://crbug.com/624157.
+  NOTIMPLEMENTED();
+  return nullptr;
 }
 
 void WmShellMus::OnOverviewModeStarting() {
