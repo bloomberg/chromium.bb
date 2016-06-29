@@ -23,6 +23,9 @@ include_rules = [
   "+ui/aura",
   "+ui/views",
 
+  # Content Shell can depend on more components than content/, since:
+  #   1) it's an example browser
+  #   2) it's not linked into the content library
   "+components/crash",
   "+components/devtools_discovery",
   "+components/devtools_http_handler",

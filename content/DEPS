@@ -1,6 +1,5 @@
 # Do NOT add chrome to the list below. We shouldn't be including files
-# from src/chrome in src/content. Also, we may only depend on files in
-# src/components that are shared with the mojo html_viewer.
+# from src/chrome in src/content.
 include_rules = [
   # The subdirectories in content/ will manually allow their own include
   # directories in content/ so we disallow all of them.
@@ -12,7 +11,7 @@ include_rules = [
   "+content/public/test",
   "+content/test",
 
-  "+blink",
+  "+blink/public/resources/grit",
 
   "+cc",
   "-cc/blink",
@@ -20,6 +19,16 @@ include_rules = [
   "-cc/base/scoped_ptr_algorithm.h",
   "-cc/base/scoped_ptr_deque.h",
   "-cc/base/scoped_ptr_vector.h",
+
+  "-components",
+  # Content can depend on components that are:
+  #   1) related to the implementation of the web platform
+  #   2) shared code between third_party/WebKit and content
+  # It should not depend on chrome features or implementation details, i.e. the
+  # original components/ directories which was code split out from chrome/ to be
+  # shared with iOS. This includes, but isn't limited to, browser features such
+  # as autofill or extensions, and chrome implementation details such as
+  # settings, packaging details, installation or crash reporting.
 
   "+crypto",
   "+grit/blink_resources.h",

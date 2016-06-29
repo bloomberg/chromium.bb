@@ -1,8 +1,4 @@
 include_rules = [
-  # This is used by both //content and //components/html_viewer, so prevent
-  # any dependencies on //content
-  "-content",
-
   "+media/base/mime_util.h",  # Only for platforms other than iOS
   "+net/base",
 ]
