@@ -91,7 +91,7 @@ public:
     void setHasSyntacticallyValidCSSHeader(bool isValidCss);
     bool hasSyntacticallyValidCSSHeader() const { return m_hasSyntacticallyValidCSSHeader; }
 
-    void setHasFontFaceRule(bool b) { m_hasFontFaceRule = b; }
+    void setHasFontFaceRule() { m_hasFontFaceRule = true; }
     bool hasFontFaceRule() const { return m_hasFontFaceRule; }
     void findFontFaceRules(HeapVector<Member<const StyleRuleFontFace>>& fontFaceRules);
 

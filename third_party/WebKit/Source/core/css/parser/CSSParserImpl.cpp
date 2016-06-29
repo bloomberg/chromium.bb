@@ -505,6 +505,9 @@ StyleRuleMedia* CSSParserImpl::consumeMediaRule(CSSParserTokenRange prelude, CSS
         m_observerWrapper->observer().startRuleBody(m_observerWrapper->previousTokenStartOffset(block));
     }
 
+    if (m_styleSheet)
+        m_styleSheet->setHasMediaQueries();
+
     consumeRuleList(block, RegularRuleList, [&rules](StyleRuleBase* rule) {
         rules.append(rule);
     });
@@ -575,7 +578,7 @@ StyleRuleFontFace* CSSParserImpl::consumeFontFaceRule(CSSParserTokenRange prelud
     }
 
     if (m_styleSheet)
-        m_styleSheet->setHasFontFaceRule(true);
+        m_styleSheet->setHasFontFaceRule();
 
     consumeDeclarationList(block, StyleRule::FontFace);
     return StyleRuleFontFace::create(createStylePropertySet(m_parsedProperties, m_context.mode()));

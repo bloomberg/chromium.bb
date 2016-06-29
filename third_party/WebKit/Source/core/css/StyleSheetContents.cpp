@@ -175,9 +175,6 @@ void StyleSheetContents::parserAppendRule(StyleRuleBase* rule)
         return;
     }
 
-    if (rule->isMediaRule())
-        setHasMediaQueries();
-
     m_childRules.append(rule);
 }
 
@@ -270,11 +267,6 @@ bool StyleSheetContents::wrapperInsertRule(StyleRuleBase* rule, unsigned index)
         return false;
 
     index -= m_namespaceRules.size();
-
-    if (rule->isMediaRule())
-        setHasMediaQueries();
-    else if (rule->isFontFaceRule())
-        setHasFontFaceRule(true);
 
     m_childRules.insert(index, rule);
     return true;
