@@ -14812,6 +14812,11 @@ void GLES2DecoderImpl::DoCompressedCopyTextureCHROMIUM(GLuint source_id,
     return;
   }
 
+  if (!ValidateCompressedCopyTextureCHROMIUM(kFunctionName, source_texture_ref,
+                                             dest_texture_ref)) {
+    return;
+  }
+
   Texture* source_texture = source_texture_ref->texture();
   Texture* dest_texture = dest_texture_ref->texture();
   int source_width = 0;
@@ -14850,11 +14855,6 @@ void GLES2DecoderImpl::DoCompressedCopyTextureCHROMIUM(GLuint source_id,
   if (dest_texture->IsImmutable()) {
     LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, kFunctionName,
                        "texture is immutable");
-    return;
-  }
-
-  if (!ValidateCompressedCopyTextureCHROMIUM(kFunctionName, source_texture_ref,
-                                             dest_texture_ref)) {
     return;
   }
 

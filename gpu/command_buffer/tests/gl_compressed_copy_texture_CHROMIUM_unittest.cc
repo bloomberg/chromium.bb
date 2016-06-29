@@ -275,6 +275,13 @@ TEST_F(GLCompressedCopyTextureCHROMIUMTest, InvalidTextureIds) {
   EXPECT_TRUE(glGetError() == GL_NO_ERROR);
 }
 
+TEST_F(GLCompressedCopyTextureCHROMIUMTest, InvalidTextureTarget) {
+  glBindTexture(GL_TEXTURE_CUBE_MAP, textures_[0]);
+  glBindTexture(GL_TEXTURE_CUBE_MAP, textures_[1]);
+  glCompressedCopyTextureCHROMIUM(textures_[0], textures_[1]);
+  EXPECT_TRUE(glGetError() == GL_INVALID_VALUE);
+}
+
 // Validate that some basic GL state is not touched upon execution of
 // the extension.
 TEST_F(GLCompressedCopyTextureCHROMIUMTest, BasicStatePreservation) {
