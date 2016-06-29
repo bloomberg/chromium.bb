@@ -10,10 +10,12 @@ import android.preference.Preference;
 import android.preference.Preference.OnPreferenceClickListener;
 import android.preference.PreferenceFragment;
 
+import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.CommandLine;
 import org.chromium.base.FieldTrialList;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ContentSettingsType;
+import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
 import org.chromium.chrome.browser.preferences.LocationSettings;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 
@@ -205,7 +207,17 @@ public class SiteSettingsPreferences extends PreferenceFragment
 
             int contentType = keyToContentSettingsType(prefName);
             p.setTitle(ContentSettingsResources.getTitle(contentType));
-            if (COOKIES_KEY.equals(prefName) && checked
+            p.setIcon(ContentSettingsResources.getIcon(contentType));
+            p.setOnPreferenceClickListener(this);
+
+            // Disable autoplay preference if Data Saver is ON.
+            if (AUTOPLAY_KEY.equals(prefName)
+                    && DataReductionProxySettings.getInstance().isDataReductionProxyEnabled()) {
+                p.setSummary(ContentSettingsResources.getAutoplayDisabledByDataSaverSummary());
+                p.setEnabled(false);
+                p.getIcon().setTintList(ApiCompatibilityUtils.getColorStateList(getResources(),
+                        R.color.primary_text_disabled_material_light));
+            } else if (COOKIES_KEY.equals(prefName) && checked
                     && prefServiceBridge.isBlockThirdPartyCookiesEnabled()) {
                 p.setSummary(ContentSettingsResources.getCookieAllowedExceptThirdPartySummary());
             } else if (LOCATION_KEY.equals(prefName) && checked
@@ -214,8 +226,6 @@ public class SiteSettingsPreferences extends PreferenceFragment
             } else {
                 p.setSummary(ContentSettingsResources.getCategorySummary(contentType, checked));
             }
-            p.setIcon(ContentSettingsResources.getIcon(contentType));
-            p.setOnPreferenceClickListener(this);
         }
 
         Preference p = findPreference(ALL_SITES_KEY);

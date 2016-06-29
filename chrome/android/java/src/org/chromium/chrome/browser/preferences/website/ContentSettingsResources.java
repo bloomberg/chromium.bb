@@ -279,4 +279,12 @@ public class ContentSettingsResources {
     public static int getCookieAllowedExceptThirdPartySummary() {
         return R.string.website_settings_category_allowed_except_third_party;
     }
+
+    /**
+     * Returns the summary for Autoplay content settings when it is disabled because of Data Saver
+     * being enabled.
+     */
+    public static int getAutoplayDisabledByDataSaverSummary() {
+        return R.string.website_settings_category_autoplay_disabled_data_saver;
+    }
 }

@@ -669,6 +669,9 @@ Your Google account may have other forms of browsing history like searches and a
       <message name="IDS_WEBSITE_SETTINGS_CATEGORY_AUTOPLAY_ALLOWED" desc="Summary text explaining that sites are allowed to automatically play muted videos and that it is the recommended setting.">
         Allow sites to automatically play muted videos (recommended)
       </message>
+      <message name="IDS_WEBSITE_SETTINGS_CATEGORY_AUTOPLAY_DISABLED_DATA_SAVER" desc="Summary text explaining that autoplay setting is unavailable when Data Saver is turned on.">
+        Unavailable when Data Saver is turned on
+      </message>
       <message name="IDS_WEBSITE_SETTINGS_CATEGORY_JAVASCRIPT_ALLOWED" desc="Summary text explaining that sites are allowed to run Javascript and that it is the recommended setting.">
         Allow sites to run JavaScript (recommended)
       </message>
