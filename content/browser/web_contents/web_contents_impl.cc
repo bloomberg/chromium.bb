@@ -96,6 +96,7 @@
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_widget_host_iterator.h"
 #include "content/public/browser/resource_request_details.h"
 #include "content/public/browser/screen_orientation_dispatcher_host.h"

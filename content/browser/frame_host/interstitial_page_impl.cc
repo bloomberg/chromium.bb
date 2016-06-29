@@ -43,6 +43,7 @@
 #include "content/public/browser/invalidate_type.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
+#include "content/public/browser/notification_types.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents_delegate.h"

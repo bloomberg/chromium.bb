@@ -32,7 +32,6 @@
 #include "content/browser/loader/resource_scheduler.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/global_request_id.h"
-#include "content/public/browser/notification_types.h"
 #include "content/public/browser/resource_dispatcher_host.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/resource_type.h"
