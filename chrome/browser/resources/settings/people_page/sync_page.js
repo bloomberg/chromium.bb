@@ -15,6 +15,24 @@ var RadioButtonNames = {
 };
 
 /**
+ * Names of the individual data type properties to be cached from
+ * settings.SyncPrefs when the user checks 'Sync All'.
+ * @type {!Array<string>}
+ */
+var SyncPrefsIndividualDataTypes = [
+  'appsSynced',
+  'extensionsSynced',
+  'preferencesSynced',
+  'autofillSynced',
+  'typedUrlsSynced',
+  'themesSynced',
+  'bookmarksSynced',
+  'passwordsSynced',
+  'tabsSynced',
+  'paymentsIntegrationEnabled',
+];
+
+/**
  * @fileoverview
  * 'settings-sync-page' is the settings page containing sync settings.
  *
@@ -63,6 +81,15 @@ Polymer({
      * @type {?settings.SyncPrefs}
      */
     syncPrefs: {
+      type: Object,
+    },
+
+    /**
+     * Caches the individually selected synced data types. This is used to
+     * be able to restore the selections after checking and unchecking Sync All.
+     * @private
+     */
+    cachedSyncPrefs_: {
       type: Object,
     },
 
@@ -184,22 +211,26 @@ Polymer({
 
   /**
    * Handler for when the sync all data types checkbox is changed.
-   * @param {Event} event
+   * @param {!Event} event
    * @private
    */
   onSyncAllDataTypesChanged_: function(event) {
     if (event.target.checked) {
       this.set('syncPrefs.syncAllDataTypes', true);
-      this.set('syncPrefs.appsSynced', true);
-      this.set('syncPrefs.extensionsSynced', true);
-      this.set('syncPrefs.preferencesSynced', true);
-      this.set('syncPrefs.autofillSynced', true);
-      this.set('syncPrefs.typedUrlsSynced', true);
-      this.set('syncPrefs.themesSynced', true);
-      this.set('syncPrefs.bookmarksSynced', true);
-      this.set('syncPrefs.passwordsSynced', true);
-      this.set('syncPrefs.tabsSynced', true);
-      this.set('syncPrefs.paymentsIntegrationEnabled', true);
+
+      // Cache the previously selected preference before checking every box.
+      this.cachedSyncPrefs_ = {};
+      for (var dataType of SyncPrefsIndividualDataTypes) {
+        // These are all booleans, so this shallow copy is sufficient.
+        this.cachedSyncPrefs_[dataType] = this.syncPrefs[dataType];
+
+        this.set(['syncPrefs', dataType], true);
+      }
+    } else if (this.cachedSyncPrefs_) {
+      // Restore the previously selected preference.
+      for (dataType of SyncPrefsIndividualDataTypes) {
+        this.set(['syncPrefs', dataType], this.cachedSyncPrefs_[dataType]);
+      }
     }
 
     this.onSingleSyncDataTypeChanged_();
