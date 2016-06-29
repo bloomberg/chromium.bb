@@ -166,6 +166,9 @@ def _GetGclientSolutions(internal, rev, template):
     solution.setdefault('custom_deps', {})
     solution.setdefault('custom_vars', {})
 
+    # Use managed:True for now, see crbug.com/624177
+    solution.setdefault('managed', True)
+
   return solutions
 
 
