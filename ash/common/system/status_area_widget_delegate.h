@@ -2,12 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_SYSTEM_STATUS_AREA_WIDGET_DELEGATE_H_
-#define ASH_SYSTEM_STATUS_AREA_WIDGET_DELEGATE_H_
+#ifndef ASH_COMMON_SYSTEM_STATUS_AREA_WIDGET_DELEGATE_H_
+#define ASH_COMMON_SYSTEM_STATUS_AREA_WIDGET_DELEGATE_H_
 
 #include "ash/ash_export.h"
 #include "ash/common/shelf/shelf_types.h"
-#include "ash/wm/gestures/shelf_gesture_handler.h"
 #include "base/macros.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/views/accessible_pane_view.h"
@@ -16,6 +15,7 @@
 namespace ash {
 class FocusCycler;
 
+// The View for the status area widget.
 class ASH_EXPORT StatusAreaWidgetDelegate : public views::AccessiblePaneView,
                                             public views::WidgetDelegate {
  public:
@@ -61,13 +61,13 @@ class ASH_EXPORT StatusAreaWidgetDelegate : public views::AccessiblePaneView,
   void SetBorderOnChild(views::View* child, bool extend_border_to_edge);
 
   const FocusCycler* focus_cycler_for_testing_;
-  ShelfAlignment alignment_;
 
-  ShelfGestureHandler gesture_handler_;
+  // TODO(jamescook): Get this from WmShelf.
+  ShelfAlignment alignment_;
 
   DISALLOW_COPY_AND_ASSIGN(StatusAreaWidgetDelegate);
 };
 
 }  // namespace ash
 
-#endif  // ASH_SYSTEM_STATUS_AREA_WIDGET_DELEGATE_H_
+#endif  // ASH_COMMON_SYSTEM_STATUS_AREA_WIDGET_DELEGATE_H_

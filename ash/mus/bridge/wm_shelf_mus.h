@@ -41,6 +41,8 @@ class WmShelfMus : public WmShelf {
   gfx::Rect GetUserWorkAreaBounds() const override;
   void UpdateIconPositionForWindow(WmWindow* window) override;
   gfx::Rect GetScreenBoundsOfItemIconForWindow(WmWindow* window) override;
+  bool ProcessGestureEvent(const ui::GestureEvent& event,
+                           WmWindow* target_window) override;
   void UpdateAutoHideForMouseEvent(ui::MouseEvent* event) override;
   void UpdateAutoHideForGestureEvent(ui::GestureEvent* event) override;
   void AddObserver(WmShelfObserver* observer) override;

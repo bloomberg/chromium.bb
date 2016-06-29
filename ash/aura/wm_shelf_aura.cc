@@ -123,6 +123,12 @@ gfx::Rect WmShelfAura::GetScreenBoundsOfItemIconForWindow(WmWindow* window) {
       WmWindowAura::GetAuraWindow(window));
 }
 
+bool WmShelfAura::ProcessGestureEvent(const ui::GestureEvent& event,
+                                      WmWindow* target_window) {
+  return gesture_handler_.ProcessGestureEvent(
+      event, WmWindowAura::GetAuraWindow(target_window));
+}
+
 void WmShelfAura::UpdateAutoHideForMouseEvent(ui::MouseEvent* event) {
   // Auto-hide support for ash_sysui.
   if (Shell::GetInstance()->in_mus() && shelf_layout_manager_)

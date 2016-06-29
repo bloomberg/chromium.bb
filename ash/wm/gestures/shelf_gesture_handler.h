@@ -19,6 +19,8 @@ namespace ash {
 
 // This manages gestures on the shelf (e.g. launcher, status tray) that affects
 // the shelf visibility.
+// TODO(jamescook): Consolidate this with ShelfLayoutManager and its notion of
+// drag status.
 class ShelfGestureHandler {
  public:
   ShelfGestureHandler();

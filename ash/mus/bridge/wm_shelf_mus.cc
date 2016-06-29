@@ -102,6 +102,12 @@ gfx::Rect WmShelfMus::GetScreenBoundsOfItemIconForWindow(WmWindow* window) {
   return gfx::Rect();
 }
 
+bool WmShelfMus::ProcessGestureEvent(const ui::GestureEvent& event,
+                                     WmWindow* target_window) {
+  NOTIMPLEMENTED();
+  return false;
+}
+
 void WmShelfMus::UpdateAutoHideForMouseEvent(ui::MouseEvent* event) {
   NOTIMPLEMENTED();
 }

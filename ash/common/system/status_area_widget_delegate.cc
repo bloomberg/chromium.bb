@@ -2,17 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/system/status_area_widget_delegate.h"
+#include "ash/common/system/status_area_widget_delegate.h"
 
 #include "ash/ash_export.h"
 #include "ash/common/ash_switches.h"
 #include "ash/common/focus_cycler.h"
 #include "ash/common/material_design/material_design_controller.h"
 #include "ash/common/shelf/shelf_constants.h"
+#include "ash/common/shelf/wm_shelf.h"
 #include "ash/common/shelf/wm_shelf_util.h"
 #include "ash/common/shell_window_ids.h"
 #include "ash/common/system/tray/tray_constants.h"
+#include "ash/common/wm_lookup.h"
+#include "ash/common/wm_root_window_controller.h"
 #include "ash/common/wm_shell.h"
+#include "ash/common/wm_window.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
@@ -78,10 +82,11 @@ const views::Widget* StatusAreaWidgetDelegate::GetWidget() const {
 }
 
 void StatusAreaWidgetDelegate::OnGestureEvent(ui::GestureEvent* event) {
-  aura::Window* target_window = static_cast<views::View*>(event->target())
-                                    ->GetWidget()
-                                    ->GetNativeWindow();
-  if (gesture_handler_.ProcessGestureEvent(*event, target_window))
+  views::Widget* target_widget =
+      static_cast<views::View*>(event->target())->GetWidget();
+  WmWindow* target_window = WmLookup::Get()->GetWindowForWidget(target_widget);
+  WmShelf* shelf = target_window->GetRootWindowController()->GetShelf();
+  if (shelf->ProcessGestureEvent(*event, target_window))
     event->StopPropagation();
   else
     views::AccessiblePaneView::OnGestureEvent(event);

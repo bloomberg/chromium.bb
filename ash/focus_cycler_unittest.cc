@@ -6,11 +6,11 @@
 
 #include <memory>
 
+#include "ash/common/system/status_area_widget_delegate.h"
 #include "ash/common/wm_shell.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/system/status_area_widget.h"
-#include "ash/system/status_area_widget_delegate.h"
 #include "ash/system/tray/system_tray.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/status_area_widget_test_helper.h"

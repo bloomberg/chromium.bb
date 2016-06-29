@@ -6,6 +6,7 @@
 
 #include "ash/common/shelf/wm_shelf.h"
 #include "ash/common/shell_window_ids.h"
+#include "ash/common/system/status_area_widget_delegate.h"
 #include "ash/common/system/tray/system_tray_delegate.h"
 #include "ash/common/system/web_notification/web_notification_tray.h"
 #include "ash/common/wm_lookup.h"
@@ -13,7 +14,6 @@
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
 #include "ash/system/overview/overview_button_tray.h"
-#include "ash/system/status_area_widget_delegate.h"
 #include "ash/system/tray/system_tray.h"
 #include "base/i18n/time_formatting.h"
 
