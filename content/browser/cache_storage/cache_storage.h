@@ -112,7 +112,6 @@ class CONTENT_EXPORT CacheStorage {
  private:
   friend class CacheStorageCacheHandle;
   friend class CacheStorageCache;
-  friend class TestCacheStorage;
   class CacheLoader;
   class MemoryLoader;
   class SimpleCacheLoader;
@@ -130,14 +129,6 @@ class CONTENT_EXPORT CacheStorage {
   // If the CacheStorageCache has been deleted, creates a new one.
   std::unique_ptr<CacheStorageCacheHandle> GetLoadedCache(
       const std::string& cache_name);
-
-  // Holds a reference to a cache for a short period in case they're used again
-  // soon.
-  void TemporarilyPreserveCache(
-      std::unique_ptr<CacheStorageCacheHandle> cache_handle);
-  virtual void SchedulePreservedCacheRemoval(
-      const base::Closure& callback);  // Virtual for testing.
-  void RemovePreservedCache(const CacheStorageCache* cache);
 
   // Initializer and its callback are below.
   void LazyInit();
@@ -259,11 +250,6 @@ class CONTENT_EXPORT CacheStorage {
 
   // Performs backend specific operations (memory vs disk).
   std::unique_ptr<CacheLoader> cache_loader_;
-
-  // Holds handles to recently opened caches so that they can be reused
-  // without having to open the cache again.
-  std::map<const CacheStorageCache*, std::unique_ptr<CacheStorageCacheHandle>>
-      preserved_caches_;
 
   // The quota manager.
   scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy_;

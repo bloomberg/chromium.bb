@@ -40,8 +40,6 @@ namespace content {
 
 namespace {
 
-const int kCachePreservationInSecs = 30;
-
 std::string HexedHash(const std::string& value) {
   std::string value_hash = base::SHA1HashString(value);
   std::string valued_hexed_hash = base::ToLowerASCII(
@@ -745,8 +743,6 @@ void CacheStorage::CreateCacheDidCreateCache(
         ->StoreCacheHandle(cache_name, CreateCacheHandle(cache_ptr));
   }
 
-  TemporarilyPreserveCache(CreateCacheHandle(cache_ptr));
-
   cache_loader_->WriteIndex(
       ordered_cache_names_,
       base::Bind(&CacheStorage::CreateCacheDidWriteIndex,
@@ -988,39 +984,10 @@ std::unique_ptr<CacheStorageCacheHandle> CacheStorage::GetLoadedCache(
     CacheStorageCache* cache_ptr = new_cache.get();
     map_iter->second = std::move(new_cache);
 
-    TemporarilyPreserveCache(CreateCacheHandle(cache_ptr));
     return CreateCacheHandle(cache_ptr);
   }
 
   return CreateCacheHandle(cache);
-}
-
-void CacheStorage::TemporarilyPreserveCache(
-    std::unique_ptr<CacheStorageCacheHandle> cache_handle) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  DCHECK(!ContainsKey(preserved_caches_, cache_handle->value()));
-
-  CacheStorageCache* cache_ptr = cache_handle->value();
-  SchedulePreservedCacheRemoval(base::Bind(&CacheStorage::RemovePreservedCache,
-                                           weak_factory_.GetWeakPtr(),
-                                           cache_ptr));
-  preserved_caches_[cache_ptr] = std::move(cache_handle);
-}
-
-void CacheStorage::SchedulePreservedCacheRemoval(
-    const base::Closure& callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-
-  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE, callback,
-      base::TimeDelta::FromSeconds(kCachePreservationInSecs));
-}
-
-void CacheStorage::RemovePreservedCache(const CacheStorageCache* cache) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  DCHECK(ContainsKey(preserved_caches_, cache));
-
-  preserved_caches_.erase(cache);
 }
 
 void CacheStorage::GetSizeThenCloseAllCachesImpl(const SizeCallback& callback) {

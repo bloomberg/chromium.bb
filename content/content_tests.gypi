@@ -396,7 +396,6 @@
       'browser/cache_storage/cache_storage_cache_unittest.cc',
       'browser/cache_storage/cache_storage_manager_unittest.cc',
       'browser/cache_storage/cache_storage_scheduler_unittest.cc',
-      'browser/cache_storage/cache_storage_unittest.cc',
       'browser/child_process_security_policy_unittest.cc',
       'browser/cocoa/system_hotkey_map_unittest.mm',
       'browser/compositor/reflector_impl_unittest.cc',

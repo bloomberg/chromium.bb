@@ -12,6 +12,8 @@
 #include "base/macros.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/threading/thread_task_runner_handle.h"
+#include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "content/browser/bad_message.h"
 #include "content/browser/cache_storage/cache_storage_cache.h"
@@ -31,6 +33,7 @@ namespace content {
 namespace {
 
 const uint32_t kFilteredMessageClasses[] = {CacheStorageMsgStart};
+const int32_t kCachePreservationSeconds = 5;
 
 blink::WebServiceWorkerCacheError ToWebServiceWorkerCacheError(
     CacheStorageError err) {
@@ -59,12 +62,14 @@ bool OriginCanAccessCacheStorage(const url::Origin& origin) {
   return !origin.unique() && IsOriginSecure(GURL(origin.Serialize()));
 }
 
+void StopPreservingCache(
+    std::unique_ptr<CacheStorageCacheHandle> cache_handle) {}
+
 }  // namespace
 
 CacheStorageDispatcherHost::CacheStorageDispatcherHost()
     : BrowserMessageFilter(kFilteredMessageClasses,
-                           arraysize(kFilteredMessageClasses)) {
-}
+                           arraysize(kFilteredMessageClasses)) {}
 
 CacheStorageDispatcherHost::~CacheStorageDispatcherHost() {
 }
@@ -348,6 +353,14 @@ void CacheStorageDispatcherHost::OnCacheStorageOpenCallback(
         thread_id, request_id, ToWebServiceWorkerCacheError(error)));
     return;
   }
+
+  // Hang on to the cache for a few seconds. This way if the user quickly closes
+  // and reopens it the cache backend won't have to be reinitialized.
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE,
+      base::Bind(&StopPreservingCache, base::Passed(cache_handle->Clone())),
+      base::TimeDelta::FromSeconds(kCachePreservationSeconds));
+
   CacheID cache_id = StoreCacheReference(std::move(cache_handle));
   Send(new CacheStorageMsg_CacheStorageOpenSuccess(thread_id, request_id,
                                                    cache_id));

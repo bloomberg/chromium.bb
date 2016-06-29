@@ -165,7 +165,7 @@ class CacheStorageManagerTest : public testing::Test {
 
     bool error = callback_error_ != CACHE_STORAGE_OK;
     if (error)
-      EXPECT_TRUE(!callback_cache_handle_);
+      EXPECT_FALSE(callback_cache_handle_);
     else
       EXPECT_TRUE(callback_cache_handle_);
     return !error;
@@ -637,6 +637,28 @@ TEST_F(CacheStorageManagerTest, BadOriginName) {
   EXPECT_TRUE(Keys(bad_origin));
   EXPECT_EQ(1u, callback_strings_.size());
   EXPECT_STREQ("foo", callback_strings_[0].c_str());
+}
+
+// With a persistent cache if the client drops its reference to a
+// CacheStorageCache it should be deleted.
+TEST_F(CacheStorageManagerTest, DropReference) {
+  EXPECT_TRUE(Open(origin1_, "foo"));
+  base::WeakPtr<CacheStorageCache> cache =
+      callback_cache_handle_->value()->AsWeakPtr();
+  callback_cache_handle_ = nullptr;
+  EXPECT_FALSE(cache);
+}
+
+// With a memory cache the cache can't be freed from memory until the client
+// calls delete.
+TEST_F(CacheStorageManagerMemoryOnlyTest, MemoryLosesReferenceOnlyAfterDelete) {
+  EXPECT_TRUE(Open(origin1_, "foo"));
+  base::WeakPtr<CacheStorageCache> cache =
+      callback_cache_handle_->value()->AsWeakPtr();
+  callback_cache_handle_ = nullptr;
+  EXPECT_TRUE(cache);
+  EXPECT_TRUE(Delete(origin1_, "foo"));
+  EXPECT_FALSE(cache);
 }
 
 TEST_P(CacheStorageManagerTestP, DeleteBeforeRelease) {
