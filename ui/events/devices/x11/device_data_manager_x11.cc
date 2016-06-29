@@ -771,6 +771,10 @@ void DeviceDataManagerX11::UpdateScrollClassDevice(
   DCHECK(deviceid >= 0 && deviceid < kMaxDeviceNum);
   ScrollInfo& info = scroll_data_[deviceid];
 
+  // TODO: xinput2 is disabled until edge cases are fixed.
+  // http://crbug.com/616308
+  return;
+
   bool legacy_scroll_available =
       (scroll_class_info->flags & XIScrollFlagNoEmulation) == 0;
   // If the device's highest resolution is lower than the resolution of xinput1
