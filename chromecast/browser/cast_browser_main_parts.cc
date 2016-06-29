@@ -261,6 +261,23 @@ CastBrowserMainParts::CastBrowserMainParts(
 }
 
 CastBrowserMainParts::~CastBrowserMainParts() {
+#if !defined(OS_ANDROID)
+  if (media_thread_ && media_pipeline_backend_manager_) {
+    // Make sure that media_pipeline_backend_manager_ is destroyed after any
+    // pending media thread tasks. The CastAudioOutputStream implementation
+    // calls into media_pipeline_backend_manager_ when the stream is closed;
+    // therefore, we must be sure that all CastAudioOutputStreams are gone
+    // before destroying media_pipeline_backend_manager_. This is guaranteed
+    // once the AudioManager is destroyed; the AudioManager destruction is
+    // posted to the media thread in the BrowserMainLoop destructor, just before
+    // the BrowserMainParts are destroyed (ie, here). Therefore, if we delete
+    // the media_pipeline_backend_manager_ using DeleteSoon on the media thread,
+    // it is guaranteed that the AudioManager and all AudioOutputStreams have
+    // been destroyed before media_pipeline_backend_manager_ is destroyed.
+    media_thread_->task_runner()->DeleteSoon(
+        FROM_HERE, media_pipeline_backend_manager_.release());
+  }
+#endif  // !defined(OS_ANDROID)
 }
 
 scoped_refptr<base::SingleThreadTaskRunner>
@@ -496,7 +513,6 @@ void CastBrowserMainParts::PostDestroyThreads() {
 #if !defined(OS_ANDROID)
   media_resource_tracker_->FinalizeAndDestroy();
   media_resource_tracker_ = nullptr;
-  media_pipeline_backend_manager_.reset();
 #endif
 }
 
