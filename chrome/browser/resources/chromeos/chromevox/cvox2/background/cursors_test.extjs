@@ -369,7 +369,7 @@ TEST_F('CursorsTest', 'MultiLineOffsetSelection', function() {
     assertEquals('diff ', secondLine.name);
 
     var secondLineCursor = new cursors.Cursor(secondLine, -1);
-    assertEquals(-1, secondLineCursor.selectionIndex_);
+    assertEquals(0, secondLineCursor.selectionIndex_);
     secondLineCursor = new cursors.Cursor(secondLine, 0);
     secondLineCursor.index = 0;
     assertEquals(6, secondLineCursor.selectionIndex_);

@@ -935,3 +935,32 @@ TEST_F('BackgroundTest', 'SymetricComplexHeading', function() {
         .replay();
   });
 });
+
+TEST_F('BackgroundTest', 'ContentEditableJumpSyncsRange', function() {
+  var mockFeedback = this.createMockFeedback();
+  this.runWithLoadedTree(function(root) {/*!
+    <div contenteditable>
+      <h1>Top News</h1>
+      <h1>Most Popular</h1>
+      <h1>Sports</h1>
+    </div>
+  */}, function(root) {
+    var assertRangeHasText = function(text) {
+      return function() {
+        assertEquals(text,
+                     ChromeVoxState.instance.getCurrentRange().start.node.name);
+      };
+    };
+
+    mockFeedback.call(doCmd('nextHeading'))
+        .expectSpeech('Top News')
+        .call(assertRangeHasText('Top News'))
+        .call(doCmd('nextHeading'))
+        .expectSpeech('Most Popular')
+        .call(assertRangeHasText('Most Popular'))
+        .call(doCmd('nextLine'))
+        .expectSpeech('Sports')
+        .call(assertRangeHasText('Sports'))
+        .replay();
+  });
+});

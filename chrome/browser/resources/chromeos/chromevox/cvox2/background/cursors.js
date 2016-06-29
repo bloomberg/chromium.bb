@@ -137,7 +137,7 @@ cursors.Cursor.prototype = {
    */
   get selectionIndex_() {
     if (this.index_ == cursors.NODE_INDEX)
-      return cursors.NODE_INDEX;
+      return 0;
 
     var adjustedIndex = this.index_;
 
