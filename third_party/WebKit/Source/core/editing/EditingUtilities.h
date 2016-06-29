@@ -150,6 +150,7 @@ bool isTabHTMLSpanElement(const Node*);
 bool isTabHTMLSpanElementTextNode(const Node*);
 bool isMailHTMLBlockquoteElement(const Node*);
 bool isDisplayInsideTable(const Node*);
+bool isInline(const Node*);
 bool isTableCell(const Node*);
 bool isEmptyTableCell(const Node*);
 bool isTableStructureNode(const Node*);

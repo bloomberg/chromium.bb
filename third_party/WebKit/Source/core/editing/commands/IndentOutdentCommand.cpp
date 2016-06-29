@@ -54,12 +54,6 @@ static bool isHTMLListOrBlockquoteElement(const Node* node)
     return isHTMLUListElement(element) || isHTMLOListElement(element) || element.hasTagName(blockquoteTag);
 }
 
-static bool isInline(const Node* node)
-{
-    return node && node->layoutObject() && node->layoutObject()->isInline();
-}
-
-
 IndentOutdentCommand::IndentOutdentCommand(Document& document, EIndentType typeOfAction)
     : ApplyBlockElementCommand(document, blockquoteTag, "margin: 0 0 0 40px; border: none; padding: 0px;")
     , m_typeOfAction(typeOfAction)

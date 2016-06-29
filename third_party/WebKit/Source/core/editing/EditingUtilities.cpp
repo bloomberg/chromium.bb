@@ -29,6 +29,7 @@
 #include "core/HTMLNames.h"
 #include "core/dom/Document.h"
 #include "core/dom/ElementTraversal.h"
+#include "core/dom/NodeComputedStyle.h"
 #include "core/dom/Range.h"
 #include "core/dom/Text.h"
 #include "core/dom/shadow/ShadowRoot.h"
@@ -764,7 +765,7 @@ bool isEnclosingBlock(const Node* node)
 
 bool isInline(const Node* node)
 {
-    return node && node->layoutObject() && node->layoutObject()->isInline();
+    return node && node->computedStyle()->display() == INLINE;
 }
 
 // TODO(yosin) Deploy this in all of the places where |enclosingBlockFlow()| and
