@@ -2198,6 +2198,22 @@ TEST_F(PipelineIntegrationTest, BasicPlayback_VP9_Odd_WebM) {
   ASSERT_TRUE(WaitUntilOnEnded());
 }
 
+// Verify that VP9 video with alpha channel can be played back.
+TEST_F(PipelineIntegrationTest, BasicPlayback_VP9A_WebM) {
+  ASSERT_EQ(PIPELINE_OK, Start("bear-vp9a.webm"));
+  Play();
+  ASSERT_TRUE(WaitUntilOnEnded());
+  EXPECT_VIDEO_FORMAT_EQ(last_video_frame_format_, PIXEL_FORMAT_YV12A);
+}
+
+// Verify that VP9A video with odd width/height can be played back.
+TEST_F(PipelineIntegrationTest, BasicPlayback_VP9A_Odd_WebM) {
+  ASSERT_EQ(PIPELINE_OK, Start("bear-vp9a-odd-dimensions.webm"));
+  Play();
+  ASSERT_TRUE(WaitUntilOnEnded());
+  EXPECT_VIDEO_FORMAT_EQ(last_video_frame_format_, PIXEL_FORMAT_YV12A);
+}
+
 // Verify that VP8 video with inband text track can be played back.
 TEST_F(PipelineIntegrationTest, MAYBE_TEXT(BasicPlayback_VP8_WebVTT_WebM)) {
   EXPECT_CALL(*this, OnAddTextTrack(_, _));
