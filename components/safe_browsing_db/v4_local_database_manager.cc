@@ -254,9 +254,10 @@ void V4LocalDatabaseManager::StopOnIOThread(bool shutdown) {
 }
 
 void V4LocalDatabaseManager::UpdateRequestCompleted(
-    const std::vector<ListUpdateResponse>& responses) {
+    std::unique_ptr<ParsedServerResponse> parsed_server_response) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  v4_database_->ApplyUpdate(responses, db_updated_callback_);
+  v4_database_->ApplyUpdate(std::move(parsed_server_response),
+                            db_updated_callback_);
 }
 
 void V4LocalDatabaseManager::DatabaseUpdated() {

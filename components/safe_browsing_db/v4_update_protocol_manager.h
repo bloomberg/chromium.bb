@@ -41,7 +41,7 @@ class V4UpdateProtocolManagerFactory;
 // Parameters:
 //   - The vector of update response protobufs received from the server for
 //     each list type.
-typedef base::Callback<void(const std::vector<ListUpdateResponse>&)>
+typedef base::Callback<void(std::unique_ptr<ParsedServerResponse>)>
     V4UpdateCallback;
 
 class V4UpdateProtocolManager : public net::URLFetcherDelegate,
@@ -106,9 +106,8 @@ class V4UpdateProtocolManager : public net::URLFetcherDelegate,
   // FetchThreatListUpdatesResponse protobuf and returns each of the
   // ListUpdateResponse protobufs contained in it as a vector.
   // Returns true if parsing is successful, false otherwise.
-  bool ParseUpdateResponse(
-      const std::string& data_base64,
-      std::vector<ListUpdateResponse>* list_update_responses);
+  bool ParseUpdateResponse(const std::string& data_base64,
+                           ParsedServerResponse* parsed_server_response);
 
   // Resets the update error counter and multiplier.
   void ResetUpdateErrors();

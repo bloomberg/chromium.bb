@@ -78,20 +78,23 @@ bool V4Store::Reset() {
 }
 
 void V4Store::ApplyUpdate(
-    const ListUpdateResponse& response,
+    std::unique_ptr<ListUpdateResponse> response,
     const scoped_refptr<base::SingleThreadTaskRunner>& callback_task_runner,
     UpdatedStoreReadyCallback callback) {
   std::unique_ptr<V4Store> new_store(
       new V4Store(this->task_runner_, this->store_path_));
 
-  // TODO(vakh): The new store currently only picks up the new state. Do more.
-  new_store->state_ = response.new_client_state();
-
-  // TODO(vakh): Merge the old store and the new update in new_store.
-  // Then, create a ListUpdateResponse containing RICE encoded hash-prefixes and
+  new_store->state_ = response->new_client_state();
+  // TODO(vakh):
+  // 1. Merge the old store and the new update in new_store.
+  // 2. Create a ListUpdateResponse containing RICE encoded hash-prefixes and
   // response_type as FULL_UPDATE, and write that to disk.
-  StoreWriteResult result = new_store->WriteToDisk(response);
-  RecordStoreWriteResult(result);
+  // 3. Remove this if condition after completing 1. and 2.
+  if (response->has_response_type() &&
+      response->response_type() == ListUpdateResponse::FULL_UPDATE) {
+    StoreWriteResult result = new_store->WriteToDisk(std::move(response));
+    RecordStoreWriteResult(result);
+  }
 
   // new_store is done updating, pass it to the callback.
   callback_task_runner->PostTask(
@@ -142,15 +145,15 @@ StoreReadResult V4Store::ReadFromDisk() {
 }
 
 StoreWriteResult V4Store::WriteToDisk(
-    const ListUpdateResponse& response) const {
+    std::unique_ptr<ListUpdateResponse> response) const {
   // Do not write partial updates to the disk.
   // After merging the updates, the ListUpdateResponse passed to this method
   // should be a FULL_UPDATE.
-  if (!response.has_response_type() ||
-      response.response_type() != ListUpdateResponse::FULL_UPDATE) {
-    DVLOG(1) << "response.has_response_type(): "
-             << response.has_response_type();
-    DVLOG(1) << "response.response_type(): " << response.response_type();
+  if (!response->has_response_type() ||
+      response->response_type() != ListUpdateResponse::FULL_UPDATE) {
+    DVLOG(1) << "response->has_response_type(): "
+             << response->has_response_type();
+    DVLOG(1) << "response->response_type(): " << response->response_type();
     return INVALID_RESPONSE_TYPE_FAILURE;
   }
 
@@ -162,7 +165,7 @@ StoreWriteResult V4Store::WriteToDisk(
   file_format.set_version_number(kFileVersion);
   ListUpdateResponse* response_to_write =
       file_format.mutable_list_update_response();
-  *response_to_write = response;
+  response_to_write->Swap(response.get());
   std::string file_format_string;
   file_format.SerializeToString(&file_format_string);
   size_t written = base::WriteFile(new_filename, file_format_string.data(),

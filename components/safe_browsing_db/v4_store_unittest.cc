@@ -4,6 +4,7 @@
 
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/time/time.h"
@@ -113,27 +114,27 @@ TEST_F(V4StoreTest, TestReadFromNoHashPrefixesFile) {
 }
 
 TEST_F(V4StoreTest, TestWriteNoResponseType) {
-  ListUpdateResponse list_update_response;
-  EXPECT_EQ(
-      INVALID_RESPONSE_TYPE_FAILURE,
-      V4Store(task_runner_, store_path_).WriteToDisk(list_update_response));
+  EXPECT_EQ(INVALID_RESPONSE_TYPE_FAILURE,
+            V4Store(task_runner_, store_path_)
+                .WriteToDisk(base::WrapUnique(new ListUpdateResponse)));
 }
 
 TEST_F(V4StoreTest, TestWritePartialResponseType) {
-  ListUpdateResponse list_update_response;
-  list_update_response.set_response_type(ListUpdateResponse::PARTIAL_UPDATE);
-  EXPECT_EQ(
-      INVALID_RESPONSE_TYPE_FAILURE,
-      V4Store(task_runner_, store_path_).WriteToDisk(list_update_response));
+  std::unique_ptr<ListUpdateResponse> list_update_response(
+      new ListUpdateResponse);
+  list_update_response->set_response_type(ListUpdateResponse::PARTIAL_UPDATE);
+  EXPECT_EQ(INVALID_RESPONSE_TYPE_FAILURE,
+            V4Store(task_runner_, store_path_)
+                .WriteToDisk(std::move(list_update_response)));
 }
 
 TEST_F(V4StoreTest, TestWriteFullResponseType) {
-  ListUpdateResponse list_update_response;
-  list_update_response.set_response_type(ListUpdateResponse::FULL_UPDATE);
-  list_update_response.set_new_client_state("test_client_state");
-  EXPECT_EQ(
-      WRITE_SUCCESS,
-      V4Store(task_runner_, store_path_).WriteToDisk(list_update_response));
+  std::unique_ptr<ListUpdateResponse> list_update_response(
+      new ListUpdateResponse);
+  list_update_response->set_response_type(ListUpdateResponse::FULL_UPDATE);
+  list_update_response->set_new_client_state("test_client_state");
+  EXPECT_EQ(WRITE_SUCCESS, V4Store(task_runner_, store_path_)
+                               .WriteToDisk(std::move(list_update_response)));
 
   std::unique_ptr<V4Store> read_store(new V4Store(task_runner_, store_path_));
   EXPECT_EQ(READ_SUCCESS, read_store->ReadFromDisk());

@@ -62,7 +62,8 @@ class V4LocalDatabaseManager : public SafeBrowsingDatabaseManager {
 
   // The callback called each time the protocol manager downloads updates
   // successfully.
-  void UpdateRequestCompleted(const std::vector<ListUpdateResponse>& responses);
+  void UpdateRequestCompleted(
+      std::unique_ptr<ParsedServerResponse> parsed_server_response);
 
   void SetupUpdateProtocolManager(
       net::URLRequestContextGetter* request_context_getter,

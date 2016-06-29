@@ -45,21 +45,21 @@ class V4UpdateProtocolManagerTest : public PlatformTest {
  protected:
   void ValidateGetUpdatesResults(
       const std::vector<ListUpdateResponse>& expected_lurs,
-      const std::vector<ListUpdateResponse>& list_update_responses) {
+      std::unique_ptr<ParsedServerResponse> parsed_server_response) {
     // The callback should never be called if expect_callback_to_be_called_ is
     // false.
     EXPECT_TRUE(expect_callback_to_be_called_);
-    ASSERT_EQ(expected_lurs.size(), list_update_responses.size());
+    ASSERT_EQ(expected_lurs.size(), parsed_server_response->size());
 
-    for (unsigned int i = 0; i < list_update_responses.size(); ++i) {
+    for (unsigned int i = 0; i < parsed_server_response->size(); ++i) {
       const ListUpdateResponse& expected = expected_lurs[i];
-      const ListUpdateResponse& actual = list_update_responses[i];
-
-      EXPECT_EQ(expected.platform_type(), actual.platform_type());
-      EXPECT_EQ(expected.response_type(), actual.response_type());
-      EXPECT_EQ(expected.threat_entry_type(), actual.threat_entry_type());
-      EXPECT_EQ(expected.threat_type(), actual.threat_type());
-      EXPECT_EQ(expected.new_client_state(), actual.new_client_state());
+      const std::unique_ptr<ListUpdateResponse>& actual =
+          (*parsed_server_response)[i];
+      EXPECT_EQ(expected.platform_type(), actual->platform_type());
+      EXPECT_EQ(expected.response_type(), actual->response_type());
+      EXPECT_EQ(expected.threat_entry_type(), actual->threat_entry_type());
+      EXPECT_EQ(expected.threat_type(), actual->threat_type());
+      EXPECT_EQ(expected.new_client_state(), actual->new_client_state());
 
       // TODO(vakh): Test more fields from the proto.
     }

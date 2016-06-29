@@ -8,6 +8,7 @@
 
 #include "base/base64url.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/rand_util.h"
 #include "base/timer/timer.h"
@@ -222,7 +223,7 @@ std::string V4UpdateProtocolManager::GetBase64SerializedUpdateRequestProto(
 
 bool V4UpdateProtocolManager::ParseUpdateResponse(
     const std::string& data,
-    std::vector<ListUpdateResponse>* list_update_responses) {
+    ParsedServerResponse* parsed_server_response) {
   FetchThreatListUpdatesResponse response;
 
   if (!response.ParseFromString(data)) {
@@ -244,8 +245,8 @@ bool V4UpdateProtocolManager::ParseUpdateResponse(
   }
 
   // TODO(vakh): Do something useful with this response.
-  for (const ListUpdateResponse& list_update_response :
-       response.list_update_responses()) {
+  for (ListUpdateResponse& list_update_response :
+       *response.mutable_list_update_responses()) {
     if (!list_update_response.has_platform_type()) {
       RecordParseUpdateResult(NO_PLATFORM_TYPE_ERROR);
     } else if (!list_update_response.has_threat_entry_type()) {
@@ -255,7 +256,9 @@ bool V4UpdateProtocolManager::ParseUpdateResponse(
     } else if (!list_update_response.has_new_client_state()) {
       RecordParseUpdateResult(NO_STATE_ERROR);
     } else {
-      list_update_responses->push_back(list_update_response);
+      std::unique_ptr<ListUpdateResponse> add(new ListUpdateResponse);
+      add->Swap(&list_update_response);
+      parsed_server_response->push_back(std::move(add));
     }
   }
   return true;
@@ -302,14 +305,15 @@ void V4UpdateProtocolManager::OnURLFetchComplete(
 
   last_response_time_ = Time::Now();
 
-  std::vector<ListUpdateResponse> list_update_responses;
+  std::unique_ptr<ParsedServerResponse> parsed_server_response(
+      new ParsedServerResponse);
   if (status.is_success() && response_code == net::HTTP_OK) {
     RecordUpdateResult(V4OperationResult::STATUS_200);
     ResetUpdateErrors();
     std::string data;
     source->GetResponseAsString(&data);
-    if (!ParseUpdateResponse(data, &list_update_responses)) {
-      list_update_responses.clear();
+    if (!ParseUpdateResponse(data, parsed_server_response.get())) {
+      parsed_server_response->clear();
       RecordUpdateResult(V4OperationResult::PARSE_ERROR);
     }
     request_.reset();
@@ -317,11 +321,10 @@ void V4UpdateProtocolManager::OnURLFetchComplete(
     UMA_HISTOGRAM_COUNTS("SafeBrowsing.V4UpdateResponseSizeKB",
                          data.size() / 1024);
 
-    // Invoke the callback with list_update_responses.
-    // The caller should update its state now, based on list_update_responses.
+    // The caller should update its state now, based on parsed_server_response.
     // The callback must call ScheduleNextUpdate() at the end to resume
     // downloading updates.
-    update_callback_.Run(list_update_responses);
+    update_callback_.Run(std::move(parsed_server_response));
   } else {
     DVLOG(1) << "SafeBrowsing GetEncodedUpdates request for: "
              << source->GetURL() << " failed with error: " << status.error()

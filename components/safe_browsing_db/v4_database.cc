@@ -92,8 +92,9 @@ V4Database::~V4Database() {
   DCHECK(db_task_runner_->RunsTasksOnCurrentThread());
 }
 
-void V4Database::ApplyUpdate(const std::vector<ListUpdateResponse>& responses,
-                             DatabaseUpdatedCallback db_updated_callback) {
+void V4Database::ApplyUpdate(
+    std::unique_ptr<ParsedServerResponse> parsed_server_response,
+    DatabaseUpdatedCallback db_updated_callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(!pending_store_updates_);
   DCHECK(db_updated_callback_.is_null());
@@ -104,12 +105,13 @@ void V4Database::ApplyUpdate(const std::vector<ListUpdateResponse>& responses,
   // current thread.
   const scoped_refptr<base::SingleThreadTaskRunner>& current_task_runner =
       base::MessageLoop::current()->task_runner();
-  for (const ListUpdateResponse& response : responses) {
-    UpdateListIdentifier identifier(response);
+  for (std::unique_ptr<ListUpdateResponse>& response :
+       *parsed_server_response) {
+    UpdateListIdentifier identifier(*response);
     StoreMap::const_iterator iter = store_map_->find(identifier);
     if (iter != store_map_->end()) {
       const std::unique_ptr<V4Store>& old_store = iter->second;
-      if (old_store->state() != response.new_client_state()) {
+      if (old_store->state() != response->new_client_state()) {
         // A different state implies there are updates to process.
         pending_store_updates_++;
         UpdatedStoreReadyCallback store_ready_callback = base::Bind(
@@ -117,7 +119,8 @@ void V4Database::ApplyUpdate(const std::vector<ListUpdateResponse>& responses,
         db_task_runner_->PostTask(
             FROM_HERE,
             base::Bind(&V4Store::ApplyUpdate, base::Unretained(old_store.get()),
-                       response, current_task_runner, store_ready_callback));
+                       base::Passed(std::move(response)), current_task_runner,
+                       store_ready_callback));
       }
     } else {
       NOTREACHED() << "Got update for unexpected identifier: " << identifier;

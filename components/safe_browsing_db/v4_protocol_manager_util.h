@@ -58,7 +58,7 @@ struct UpdateListIdentifier {
   ThreatType threat_type;
 
   UpdateListIdentifier(PlatformType, ThreatEntryType, ThreatType);
-  UpdateListIdentifier(const ListUpdateResponse&);
+  explicit UpdateListIdentifier(const ListUpdateResponse&);
 
   bool operator==(const UpdateListIdentifier& other) const;
   bool operator!=(const UpdateListIdentifier& other) const;
@@ -81,6 +81,9 @@ typedef base::hash_map<UpdateListIdentifier, std::string> StoreFileNameMap;
 
 // Represents the state of each store.
 typedef base::hash_map<UpdateListIdentifier, std::string> StoreStateMap;
+
+// Sever response, parsed in vector form.
+typedef std::vector<std::unique_ptr<ListUpdateResponse>> ParsedServerResponse;
 
 // Enumerate failures for histogramming purposes.  DO NOT CHANGE THE
 // ORDERING OF THESE VALUES.

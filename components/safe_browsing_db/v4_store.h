@@ -102,7 +102,7 @@ class V4Store {
 
   const base::FilePath& store_path() const { return store_path_; }
 
-  void ApplyUpdate(const ListUpdateResponse&,
+  void ApplyUpdate(std::unique_ptr<ListUpdateResponse> response,
                    const scoped_refptr<base::SingleThreadTaskRunner>&,
                    UpdatedStoreReadyCallback);
 
@@ -133,7 +133,8 @@ class V4Store {
   StoreReadResult ReadFromDisk();
 
   // Writes the FULL_UPDATE |response| to disk as a V4StoreFileFormat proto.
-  StoreWriteResult WriteToDisk(const ListUpdateResponse& response) const;
+  StoreWriteResult WriteToDisk(
+      std::unique_ptr<ListUpdateResponse> response) const;
 
   // The state of the store as returned by the PVer4 server in the last applied
   // update response.

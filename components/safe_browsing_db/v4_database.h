@@ -68,7 +68,7 @@ class V4Database {
 
   // Updates the stores with the response received from the SafeBrowsing service
   // and calls the db_updated_callback when done.
-  void ApplyUpdate(const std::vector<ListUpdateResponse>& response,
+  void ApplyUpdate(std::unique_ptr<ParsedServerResponse> parsed_server_response,
                    DatabaseUpdatedCallback db_updated_callback);
 
   // Returns the current state of each of the stores being managed.
