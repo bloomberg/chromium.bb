@@ -25,10 +25,13 @@
 #include "chrome/browser/engagement/site_engagement_score.h"
 #include "chrome/browser/engagement/site_engagement_service_factory.h"
 #include "chrome/browser/history/history_service_factory.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/pref_names.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
 #include "components/history/core/browser/history_service.h"
+#include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
 #include "url/gurl.h"
@@ -221,6 +224,11 @@ void SiteEngagementService::SetLastShortcutLaunchTime(const GURL& url) {
 }
 
 double SiteEngagementService::GetScore(const GURL& url) const {
+  // Ensure that if engagement is stale, we clean things up before fetching the
+  // score.
+  if (IsLastEngagementStale())
+    CleanupEngagementScores(true);
+
   return CreateEngagementScore(url).GetScore();
 }
 
@@ -245,32 +253,81 @@ SiteEngagementService::SiteEngagementService(Profile* profile,
 }
 
 void SiteEngagementService::AddPoints(const GURL& url, double points) {
-  SiteEngagementScore score = CreateEngagementScore(url);
+  // Trigger a cleanup and date adjustment if it has been a substantial length
+  // of time since *any* engagement was recorded by the service. This will
+  // ensure that we do not decay scores when the user did not use the browser.
+  if (IsLastEngagementStale())
+    CleanupEngagementScores(true);
 
+  SiteEngagementScore score = CreateEngagementScore(url);
   score.AddPoints(points);
   score.Commit();
+
+  SetLastEngagementTime(score.last_engagement_time());
 }
 
 void SiteEngagementService::AfterStartupTask() {
-  CleanupEngagementScores();
+  // Check if we need to reset last engagement times on startup - we want to
+  // avoid doing this in AddPoints() if possible. It is still necessary to check
+  // in AddPoints for people who never restart Chrome, but leave it open and
+  // their computer on standby.
+  CleanupEngagementScores(IsLastEngagementStale());
   RecordMetrics();
 }
 
-void SiteEngagementService::CleanupEngagementScores() {
+void SiteEngagementService::CleanupEngagementScores(
+    bool update_last_engagement_time) const {
+  // This method should not be called with |update_last_engagement_time| = true
+  // if the last engagement time isn't stale.
+  DCHECK(!update_last_engagement_time || IsLastEngagementStale());
+
   HostContentSettingsMap* settings_map =
       HostContentSettingsMapFactory::GetForProfile(profile_);
   std::unique_ptr<ContentSettingsForOneType> engagement_settings =
       GetEngagementContentSettings(settings_map);
 
+  // We want to rebase last engagement times relative to MaxDecaysPerScore
+  // periods of decay in the past.
+  base::Time now = clock_->Now();
+  base::Time last_engagement_time = GetLastEngagementTime();
+  base::Time rebase_time = now - GetMaxDecayPeriod();
+  base::Time new_last_engagement_time;
   for (const auto& site : *engagement_settings) {
     GURL origin(site.primary_pattern.ToString());
-    if (origin.is_valid() && GetScore(origin) != 0)
-      continue;
 
+    if (origin.is_valid()) {
+      SiteEngagementScore score = CreateEngagementScore(origin);
+      if (update_last_engagement_time) {
+        // Work out the offset between this score's last engagement time and the
+        // last time the service recorded any engagement. Set the score's last
+        // engagement time to rebase_time - offset to preserve its state,
+        // relative to the rebase date. This ensures that the score will decay
+        // the next time it is used, but will not decay too much.
+        DCHECK_LE(score.last_engagement_time(), rebase_time);
+        base::TimeDelta offset =
+            last_engagement_time - score.last_engagement_time();
+        base::Time rebase_score_time = rebase_time - offset;
+        score.set_last_engagement_time(rebase_score_time);
+        if (rebase_score_time > new_last_engagement_time)
+          new_last_engagement_time = rebase_score_time;
+
+        score.Commit();
+      }
+
+      if (score.GetScore() != 0)
+        continue;
+    }
+
+    // This origin has a score of 0. Wipe it from content settings.
     settings_map->SetWebsiteSettingDefaultScope(
         origin, GURL(), CONTENT_SETTINGS_TYPE_SITE_ENGAGEMENT, std::string(),
         nullptr);
   }
+
+  // Set the last engagement time to be consistent with the scores. This will
+  // only occur if |update_last_engagement_time| is true.
+  if (!new_last_engagement_time.is_null())
+    SetLastEngagementTime(new_last_engagement_time);
 }
 
 void SiteEngagementService::RecordMetrics() {
@@ -305,6 +362,29 @@ void SiteEngagementService::RecordMetrics() {
     SiteEngagementMetrics::RecordPercentOriginsWithMaxEngagement(
         percent_origins_with_max_engagement);
   }
+}
+
+base::Time SiteEngagementService::GetLastEngagementTime() const {
+  return base::Time::FromInternalValue(
+      profile_->GetPrefs()->GetInt64(prefs::kSiteEngagementLastUpdateTime));
+}
+
+void SiteEngagementService::SetLastEngagementTime(
+    base::Time last_engagement_time) const {
+  profile_->GetPrefs()->SetInt64(prefs::kSiteEngagementLastUpdateTime,
+                                 last_engagement_time.ToInternalValue());
+}
+
+base::TimeDelta SiteEngagementService::GetMaxDecayPeriod() const {
+  return base::TimeDelta::FromDays(
+             SiteEngagementScore::GetDecayPeriodInDays()) *
+         SiteEngagementScore::GetMaxDecaysPerScore();
+}
+
+base::TimeDelta SiteEngagementService::GetStalePeriod() const {
+  return GetMaxDecayPeriod() +
+         base::TimeDelta::FromHours(
+             SiteEngagementScore::GetLastEngagementGracePeriodInHours());
 }
 
 double SiteEngagementService::GetMedianEngagement(
@@ -372,6 +452,16 @@ void SiteEngagementService::HandleUserInput(
       OnEngagementIncreased(web_contents, url, GetScore(url)));
 }
 
+bool SiteEngagementService::IsLastEngagementStale() const {
+  // This only happens when Chrome is first run and the user has never recorded
+  // any engagement.
+  base::Time last_engagement_time = GetLastEngagementTime();
+  if (last_engagement_time.is_null())
+    return false;
+
+  return (clock_->Now() - last_engagement_time) >= GetStalePeriod();
+}
+
 void SiteEngagementService::OnURLsDeleted(
     history::HistoryService* history_service,
     bool all_history,
@@ -391,15 +481,8 @@ void SiteEngagementService::OnURLsDeleted(
           weak_factory_.GetWeakPtr(), hs, origins, expired));
 }
 
-const SiteEngagementScore SiteEngagementService::CreateEngagementScore(
-    const GURL& origin) const {
-  return SiteEngagementScore(
-      clock_.get(), origin,
-      HostContentSettingsMapFactory::GetForProfile(profile_));
-}
-
 SiteEngagementScore SiteEngagementService::CreateEngagementScore(
-    const GURL& origin) {
+    const GURL& origin) const {
   return SiteEngagementScore(
       clock_.get(), origin,
       HostContentSettingsMapFactory::GetForProfile(profile_));
@@ -503,4 +586,6 @@ void SiteEngagementService::GetCountsAndLastVisitForOriginsComplete(
 
     engagement_score.Commit();
   }
+
+  SetLastEngagementTime(now);
 }

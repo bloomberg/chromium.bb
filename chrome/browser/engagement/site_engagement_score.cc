@@ -42,6 +42,8 @@ const char* kVariationNames[] = {
     "first_daily_engagement_points",
     "medium_engagement_boundary",
     "high_engagement_boundary",
+    "max_decays_per_score",
+    "last_engagement_grace_period_in_hours",
 };
 
 bool DoublesConsideredDifferent(double value1, double value2, double delta) {
@@ -83,6 +85,8 @@ double SiteEngagementScore::param_values[] = {
     8,     // BOOTSTRAP_POINTS
     5,     // MEDIUM_ENGAGEMENT_BOUNDARY
     50,    // HIGH_ENGAGEMENT_BOUNDARY
+    1,     // MAX_DECAYS_PER_SCORE
+    72,    // LAST_ENGAGEMENT_GRACE_PERIOD_IN_HOURS
 };
 
 const char* SiteEngagementScore::kRawScoreKey = "rawScore";
@@ -137,6 +141,14 @@ double SiteEngagementScore::GetMediumEngagementBoundary() {
 
 double SiteEngagementScore::GetHighEngagementBoundary() {
   return param_values[HIGH_ENGAGEMENT_BOUNDARY];
+}
+
+double SiteEngagementScore::GetMaxDecaysPerScore() {
+  return param_values[MAX_DECAYS_PER_SCORE];
+}
+
+double SiteEngagementScore::GetLastEngagementGracePeriodInHours() {
+  return param_values[LAST_ENGAGEMENT_GRACE_PERIOD_IN_HOURS];
 }
 
 // static
@@ -337,6 +349,8 @@ void SiteEngagementScore::SetParamValuesForTesting() {
   param_values[BOOTSTRAP_POINTS] = 8;
   param_values[MEDIUM_ENGAGEMENT_BOUNDARY] = 5;
   param_values[HIGH_ENGAGEMENT_BOUNDARY] = 50;
+  param_values[MAX_DECAYS_PER_SCORE] = 1;
+  param_values[LAST_ENGAGEMENT_GRACE_PERIOD_IN_HOURS] = 72;
 
   // This is set to zero to avoid interference with tests and is set when
   // testing this functionality.

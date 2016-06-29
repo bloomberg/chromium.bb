@@ -130,6 +130,7 @@ class SiteEngagementService : public KeyedService,
   FRIEND_TEST_ALL_PREFIXES(SiteEngagementServiceTest, EngagementLevel);
   FRIEND_TEST_ALL_PREFIXES(SiteEngagementServiceTest, Observers);
   FRIEND_TEST_ALL_PREFIXES(SiteEngagementServiceTest, ScoreDecayHistograms);
+  FRIEND_TEST_ALL_PREFIXES(SiteEngagementServiceTest, LastEngagementTime);
   FRIEND_TEST_ALL_PREFIXES(AppBannerSettingsHelperTest, SiteEngagementTrigger);
 
   // Only used in tests.
@@ -140,14 +141,33 @@ class SiteEngagementService : public KeyedService,
   void AddPoints(const GURL& url, double points);
 
   // Retrieves the SiteEngagementScore object for |origin|.
-  SiteEngagementScore CreateEngagementScore(const GURL& origin);
-  const SiteEngagementScore CreateEngagementScore(const GURL& origin) const;
+  SiteEngagementScore CreateEngagementScore(const GURL& origin) const;
 
-  // Post startup tasks: cleaning up origins which have decayed to 0, and
-  // logging UMA statistics.
+  // Runs site engagement maintenance tasks.
   void AfterStartupTask();
-  void CleanupEngagementScores();
+
+  // Removes any origins which have decayed to 0 engagement. If
+  // |update_last_engagement_time| is true, the last engagement time of all
+  // origins is reset by calculating the delta between the last engagement event
+  // recorded by the site engagement service and the origin. The origin's last
+  // engagement time is then set to clock_->Now() - delta.
+  //
+  // If a user does not use the browser at all for some period of time,
+  // engagement is not decayed, and the state is restored equivalent to how they
+  // left it once they return.
+  void CleanupEngagementScores(bool update_last_engagement_time) const;
+
+  // Records UMA metrics.
   void RecordMetrics();
+
+  // Get and set the last engagement time from prefs.
+  base::Time GetLastEngagementTime() const;
+  void SetLastEngagementTime(base::Time last_engagement_time) const;
+
+  // Get the maximum decay period and the stale period for last engagement
+  // times.
+  base::TimeDelta GetMaxDecayPeriod() const;
+  base::TimeDelta GetStalePeriod() const;
 
   // Returns the median engagement score of all recorded origins.
   double GetMedianEngagement(const std::map<GURL, double>& score_map) const;
@@ -166,6 +186,12 @@ class SiteEngagementService : public KeyedService,
   // time-on-site, based on user input.
   void HandleUserInput(content::WebContents* web_contents,
                        SiteEngagementMetrics::EngagementType type);
+
+  // Returns true if the last engagement increasing event seen by the site
+  // engagement service was sufficiently long ago that we need to reset all
+  // scores to be relative to now. This ensures that users who do not use the
+  // browser for an extended period of time do not have their engagement decay.
+  bool IsLastEngagementStale() const;
 
   // Overridden from history::HistoryServiceObserver:
   void OnURLsDeleted(history::HistoryService* history_service,

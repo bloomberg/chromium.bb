@@ -87,6 +87,8 @@ void Profile::RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
 #endif
   registry->RegisterBooleanPref(prefs::kSessionExitedCleanly, true);
   registry->RegisterStringPref(prefs::kSessionExitType, std::string());
+  registry->RegisterInt64Pref(prefs::kSiteEngagementLastUpdateTime, 0,
+                              PrefRegistry::LOSSY_PREF);
   registry->RegisterBooleanPref(
       prefs::kSafeBrowsingEnabled,
       true,

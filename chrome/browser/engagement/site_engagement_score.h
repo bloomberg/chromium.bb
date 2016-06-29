@@ -62,6 +62,18 @@ class SiteEngagementScore {
     MEDIUM_ENGAGEMENT_BOUNDARY,
     HIGH_ENGAGEMENT_BOUNDARY,
 
+    // The maximum number of decays that a SiteEngagementScore can incur before
+    // entering a grace period. MAX_DECAYS_PER_SCORE * DECAY_PERIOD_IN_DAYS is
+    // the max decay period, i.e. the maximum duration permitted for
+    // (clock_->Now() - score.last_engagement_time()).
+    MAX_DECAYS_PER_SCORE,
+
+    // If a SiteEngagamentScore has not been accessed or updated for a period
+    // longer than the max decay period + LAST_ENGAGEMENT_GRACE_PERIOD_IN_HOURS
+    // (see above), its last engagement time will be reset to be max decay
+    // period prior to clock_->Now().
+    LAST_ENGAGEMENT_GRACE_PERIOD_IN_HOURS,
+
     MAX_VARIATION
   };
 
@@ -80,6 +92,8 @@ class SiteEngagementScore {
   static double GetBootstrapPoints();
   static double GetMediumEngagementBoundary();
   static double GetHighEngagementBoundary();
+  static double GetMaxDecaysPerScore();
+  static double GetLastEngagementGracePeriodInHours();
 
   // Update the default engagement settings via variations.
   static void UpdateFromVariations(const char* param_name);
@@ -108,10 +122,7 @@ class SiteEngagementScore {
   bool MaxPointsPerDayAdded() const;
 
   // Resets the score to |points| and resets the daily point limit. If
-  // |updated_time| is non-null, sets the last engagement time and last
-  // shortcut launch time (if it is non-null) to |updated_time|. Otherwise, last
-  // engagement time is set to the current time and last shortcut launch time is
-  // left unchanged.
+  // |updated_time| is non-null, sets the last engagement time to that value.
   void Reset(double points, const base::Time updated_time);
 
   // Get/set the last time this origin was launched from an installed shortcut.
@@ -120,6 +131,14 @@ class SiteEngagementScore {
   }
   void set_last_shortcut_launch_time(const base::Time& time) {
     last_shortcut_launch_time_ = time;
+  }
+
+  // Get/set the last time this origin recorded an engagement change.
+  base::Time last_engagement_time() const {
+    return last_engagement_time_;
+  }
+  void set_last_engagement_time(const base::Time& time) {
+    last_engagement_time_ = time;
   }
 
  private:
