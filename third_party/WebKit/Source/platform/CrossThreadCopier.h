@@ -32,9 +32,9 @@
 #define CrossThreadCopier_h
 
 #include "platform/PlatformExport.h"
-#include "platform/heap/Handle.h"
 #include "wtf/Assertions.h"
 #include "wtf/Forward.h"
+#include "wtf/Functional.h" // FunctionThreadAffinity
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefPtr.h"
 #include "wtf/ThreadSafeRefCounted.h"
@@ -60,6 +60,8 @@ class ResourceRequest;
 class ResourceResponse;
 struct CrossThreadResourceResponseData;
 struct CrossThreadResourceRequestData;
+template<typename T>class CrossThreadPersistent;
+template<typename T>class CrossThreadWeakPersistent;
 
 template <typename T>
 struct CrossThreadCopierPassThrough {

@@ -5,7 +5,7 @@
 #include "platform/heap/Persistent.h"
 
 #include "platform/ThreadSafeFunctional.h"
-#include "platform/heap/Heap.h"
+#include "platform/heap/Handle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include <memory>
 
