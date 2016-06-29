@@ -34,7 +34,8 @@ TEST(NSSUtilTest, PRTimeConversion) {
   prxtime.tm_usec = 342000;
 
   PRTime pr_time = PR_ImplodeTime(&prxtime);
-  base::Time base_time = base::Time::FromUTCExploded(exploded);
+  base::Time base_time;
+  EXPECT_TRUE(base::Time::FromUTCExploded(exploded, &base_time));
 
   EXPECT_EQ(base_time, PRTimeToBaseTime(pr_time));
   EXPECT_EQ(pr_time, BaseTimeToPRTime(base_time));
