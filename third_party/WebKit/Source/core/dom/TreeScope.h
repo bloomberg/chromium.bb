@@ -57,6 +57,7 @@ public:
     bool isInclusiveOlderSiblingShadowRootOrAncestorTreeScopeOf(const TreeScope&) const;
 
     Element* adjustedFocusedElement() const;
+    Element* adjustedPointerLockElement(const Element&) const;
     Element* getElementById(const AtomicString&) const;
     const HeapVector<Member<Element>>& getAllElementsById(const AtomicString&) const;
     bool hasElementWithId(const AtomicString& id) const;

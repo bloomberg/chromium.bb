@@ -75953,6 +75953,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="1418" label="AddEventListenerPassiveFalse"/>
   <int value="1419" label="CSPReferrerDirective"/>
   <int value="1420" label="DocumentOpen"/>
+  <int value="1421" label="ElementRequestPointerLockInShadow"/>
+  <int value="1422" label="ShadowRootPointerLockElement"/>
+  <int value="1423" label="DocumentPointerLockElementInV0Shadow"/>
 </enum>
 
 <enum name="FetchRequestMode" type="int">

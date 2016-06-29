@@ -153,7 +153,6 @@ interface Document : Node {
     // https://dvcs.w3.org/hg/pointerlock/raw-file/default/index.html#extensions-to-the-document-interface
     attribute EventHandler onpointerlockchange;
     attribute EventHandler onpointerlockerror;
-    [MeasureAs=DocumentPointerLockElement] readonly attribute Element? pointerLockElement;
     [MeasureAs=DocumentExitPointerLock] void exitPointerLock();
 
     // Touch Events

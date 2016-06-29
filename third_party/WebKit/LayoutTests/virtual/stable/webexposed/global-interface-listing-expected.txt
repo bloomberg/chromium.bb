@@ -5089,6 +5089,7 @@ interface ShadowRoot : DocumentFragment
     getter host
     getter innerHTML
     getter olderShadowRoot
+    getter pointerLockElement
     getter styleSheets
     method cloneNode
     method constructor

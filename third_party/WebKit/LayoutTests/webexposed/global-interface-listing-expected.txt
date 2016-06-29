@@ -5930,6 +5930,7 @@ interface ShadowRoot : DocumentFragment
     getter innerHTML
     getter mode
     getter olderShadowRoot
+    getter pointerLockElement
     getter styleSheets
     method cloneNode
     method constructor

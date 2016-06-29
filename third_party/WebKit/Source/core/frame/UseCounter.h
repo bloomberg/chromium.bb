@@ -1225,6 +1225,9 @@ public:
         AddEventListenerPassiveFalse = 1418,
         CSPReferrerDirective = 1419,
         DocumentOpen = 1420,
+        ElementRequestPointerLockInShadow = 1421,
+        ShadowRootPointerLockElement = 1422,
+        DocumentPointerLockElementInV0Shadow = 1423,
 
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.
