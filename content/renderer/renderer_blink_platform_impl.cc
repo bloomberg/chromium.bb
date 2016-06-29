@@ -1085,8 +1085,6 @@ RendererBlinkPlatformImpl::createOffscreenGraphicsContext3DProvider(
   attributes.samples = 0;
   attributes.sample_buffers = 0;
   attributes.bind_generates_resource = false;
-  // Prefer discrete GPU for WebGL.
-  attributes.gpu_preference = gl::PreferDiscreteGpu;
 
   attributes.fail_if_major_perf_caveat =
       web_attributes.failIfMajorPerformanceCaveat;
@@ -1099,13 +1097,15 @@ RendererBlinkPlatformImpl::createOffscreenGraphicsContext3DProvider(
 
   constexpr bool automatic_flushes = true;
   constexpr bool support_locking = false;
+  // Prefer discrete GPU for WebGL.
+  constexpr gl::GpuPreference gpu_preference = gl::PreferDiscreteGpu;
 
   scoped_refptr<ContextProviderCommandBuffer> provider(
       new ContextProviderCommandBuffer(
           std::move(gpu_channel_host), gpu::GPU_STREAM_DEFAULT,
           gpu::GpuStreamPriority::NORMAL, gpu::kNullSurfaceHandle,
-          GURL(top_document_web_url), automatic_flushes, support_locking,
-          gpu::SharedMemoryLimits(), attributes, share_context,
+          GURL(top_document_web_url), gpu_preference, automatic_flushes,
+          support_locking, gpu::SharedMemoryLimits(), attributes, share_context,
           command_buffer_metrics::OFFSCREEN_CONTEXT_FOR_WEBGL));
   return new WebGraphicsContext3DProviderImpl(std::move(provider));
 }

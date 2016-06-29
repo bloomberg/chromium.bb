@@ -468,7 +468,8 @@ void GLES2DecoderTestBase::InitDecoderWithCommandLine(
   decoder_->SetIgnoreCachedStateForTest(ignore_cached_state_for_test_);
   decoder_->GetLogger()->set_log_synthesized_gl_errors(false);
   ASSERT_TRUE(decoder_->Initialize(surface_, context_, false,
-                                   DisallowedFeatures(), attribs));
+                                   surface_->GetSize(), DisallowedFeatures(),
+                                   attribs));
 
   EXPECT_CALL(*context_, MakeCurrent(surface_.get())).WillOnce(Return(true));
   if (context_->WasAllocatedUsingRobustnessExtension()) {

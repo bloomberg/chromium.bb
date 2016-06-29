@@ -18,8 +18,6 @@
 #include "base/macros.h"
 #include "base/numerics/safe_math.h"
 #include "gpu/command_buffer/common/gles2_utils_export.h"
-#include "ui/gfx/geometry/size.h"
-#include "ui/gl/gpu_preference.h"
 
 namespace gpu {
 namespace gles2 {
@@ -309,8 +307,6 @@ struct GLES2_UTILS_EXPORT ContextCreationAttribHelper {
 
   bool Parse(const std::vector<int32_t>& attribs);
 
-  gfx::Size offscreen_framebuffer_size;
-  gl::GpuPreference gpu_preference;
   // -1 if invalid or unspecified.
   int32_t alpha_size;
   int32_t blue_size;

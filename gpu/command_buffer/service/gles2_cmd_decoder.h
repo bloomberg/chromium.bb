@@ -154,6 +154,7 @@ class GPU_EXPORT GLES2Decoder : public base::SupportsWeakPtr<GLES2Decoder>,
   virtual bool Initialize(const scoped_refptr<gl::GLSurface>& surface,
                           const scoped_refptr<gl::GLContext>& context,
                           bool offscreen,
+                          const gfx::Size& offscreen_size,
                           const DisallowedFeatures& disallowed_features,
                           const ContextCreationAttribHelper& attrib_helper) = 0;
 

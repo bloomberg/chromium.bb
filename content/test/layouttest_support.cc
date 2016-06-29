@@ -203,8 +203,8 @@ class LayoutTestDependenciesImpl : public LayoutTestDependencies {
             gpu::GpuStreamPriority::NORMAL, gpu::kNullSurfaceHandle,
             GURL(
                 "chrome://gpu/LayoutTestDependenciesImpl::CreateOutputSurface"),
-            automatic_flushes, support_locking, gpu::SharedMemoryLimits(),
-            attributes, nullptr,
+            gl::PreferIntegratedGpu, automatic_flushes, support_locking,
+            gpu::SharedMemoryLimits(), attributes, nullptr,
             command_buffer_metrics::OFFSCREEN_CONTEXT_FOR_TESTING));
 
     cc::LayerTreeSettings settings =

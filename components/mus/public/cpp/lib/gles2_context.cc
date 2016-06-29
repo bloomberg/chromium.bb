@@ -54,6 +54,7 @@ bool GLES2Context::Initialize(const std::vector<int32_t>& attribs,
     gpu::CommandBufferProxyImpl* shared_command_buffer = nullptr;
     gpu::GpuStreamId stream_id = gpu::GpuStreamId::GPU_STREAM_DEFAULT;
     gpu::GpuStreamPriority stream_priority = gpu::GpuStreamPriority::NORMAL;
+    gl::GpuPreference gpu_preference = gl::PreferIntegratedGpu;
     gpu::gles2::ContextCreationAttribHelper attributes;
     // TODO(penghuang): figure a useful active_url.
     GURL active_url;
@@ -62,9 +63,9 @@ bool GLES2Context::Initialize(const std::vector<int32_t>& attribs,
     if (!attributes.Parse(attribs))
       return false;
     command_buffer_proxy_impl_ = gpu::CommandBufferProxyImpl::Create(
-        std::move(gpu_channel_host), surface_handle, shared_command_buffer,
-        stream_id, stream_priority, attributes, active_url,
-        std::move(task_runner));
+        std::move(gpu_channel_host), surface_handle, gfx::Size(),
+        shared_command_buffer, stream_id, stream_priority, attributes,
+        active_url, gpu_preference, std::move(task_runner));
     if (!command_buffer_proxy_impl_)
       return false;
     command_buffer = command_buffer_proxy_impl_.get();

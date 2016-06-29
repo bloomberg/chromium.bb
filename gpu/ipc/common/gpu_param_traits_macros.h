@@ -114,8 +114,6 @@ IPC_STRUCT_TRAITS_BEGIN(gpu::MemoryAllocation)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(gpu::gles2::ContextCreationAttribHelper)
-  IPC_STRUCT_TRAITS_MEMBER(offscreen_framebuffer_size)
-  IPC_STRUCT_TRAITS_MEMBER(gpu_preference)
   IPC_STRUCT_TRAITS_MEMBER(alpha_size)
   IPC_STRUCT_TRAITS_MEMBER(blue_size)
   IPC_STRUCT_TRAITS_MEMBER(green_size)

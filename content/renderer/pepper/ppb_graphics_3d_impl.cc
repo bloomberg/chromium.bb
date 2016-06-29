@@ -225,9 +225,9 @@ bool PPB_Graphics3D_Impl::InitRaw(PPB_Graphics3D_API* share_context,
   if (!channel)
     return false;
 
-  gpu::gles2::ContextCreationAttribHelper attrib_helper;
+  gfx::Size surface_size;
   std::vector<int32_t> attribs;
-  attrib_helper.gpu_preference = gl::PreferDiscreteGpu;
+  gl::GpuPreference gpu_preference = gl::PreferDiscreteGpu;
   // TODO(alokp): Change CommandBufferProxyImpl::Create()
   // interface to accept width and height in the attrib_list so that
   // we do not need to filter for width and height here.
@@ -236,13 +236,13 @@ bool PPB_Graphics3D_Impl::InitRaw(PPB_Graphics3D_API* share_context,
          attr += 2) {
       switch (attr[0]) {
         case PP_GRAPHICS3DATTRIB_WIDTH:
-          attrib_helper.offscreen_framebuffer_size.set_width(attr[1]);
+          surface_size.set_width(attr[1]);
           break;
         case PP_GRAPHICS3DATTRIB_HEIGHT:
-          attrib_helper.offscreen_framebuffer_size.set_height(attr[1]);
+          surface_size.set_height(attr[1]);
           break;
         case PP_GRAPHICS3DATTRIB_GPU_PREFERENCE:
-          attrib_helper.gpu_preference =
+          gpu_preference =
               (attr[1] == PP_GRAPHICS3DATTRIB_GPU_PREFERENCE_LOW_POWER)
                   ? gl::PreferIntegratedGpu
                   : gl::PreferDiscreteGpu;
@@ -258,6 +258,7 @@ bool PPB_Graphics3D_Impl::InitRaw(PPB_Graphics3D_API* share_context,
     }
     attribs.push_back(PP_GRAPHICS3DATTRIB_NONE);
   }
+  gpu::gles2::ContextCreationAttribHelper attrib_helper;
   if (!attrib_helper.Parse(attribs))
     return false;
 
@@ -269,9 +270,10 @@ bool PPB_Graphics3D_Impl::InitRaw(PPB_Graphics3D_API* share_context,
   }
 
   command_buffer_ = gpu::CommandBufferProxyImpl::Create(
-      std::move(channel), gpu::kNullSurfaceHandle, share_buffer,
-      gpu::GPU_STREAM_DEFAULT, gpu::GpuStreamPriority::NORMAL, attrib_helper,
-      GURL::EmptyGURL(), base::ThreadTaskRunnerHandle::Get());
+      std::move(channel), gpu::kNullSurfaceHandle, surface_size, share_buffer,
+      gpu::GPU_STREAM_DEFAULT, gpu::GpuStreamPriority::NORMAL,
+      attrib_helper, GURL::EmptyGURL(), gpu_preference,
+      base::ThreadTaskRunnerHandle::Get());
   if (!command_buffer_)
     return false;
 

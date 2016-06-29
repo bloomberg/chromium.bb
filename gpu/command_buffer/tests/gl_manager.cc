@@ -279,6 +279,7 @@ void GLManager::InitializeWithCommandLine(
       mailbox_manager ? mailbox_manager : new gles2::MailboxManagerImpl;
   share_group_ = share_group ? share_group : new gl::GLShareGroup;
 
+  gl::GpuPreference gpu_preference(gl::PreferDiscreteGpu);
   gles2::ContextCreationAttribHelper attribs;
   attribs.red_size = 8;
   attribs.green_size = 8;
@@ -292,7 +293,6 @@ void GLManager::InitializeWithCommandLine(
   attribs.alpha_size = options.backbuffer_alpha ? 8 : 0;
   attribs.should_use_native_gmb_for_backbuffer =
       options.image_factory != nullptr;
-  attribs.offscreen_framebuffer_size = options.size;
 
   if (!context_group) {
     GpuDriverBugWorkarounds gpu_driver_bug_workaround(&command_line);
@@ -329,23 +329,23 @@ void GLManager::InitializeWithCommandLine(
   if (base_context_) {
     context_ = scoped_refptr<gl::GLContext>(new gpu::GLContextVirtual(
         share_group_.get(), base_context_->get(), decoder_->AsWeakPtr()));
-    ASSERT_TRUE(context_->Initialize(surface_.get(), attribs.gpu_preference));
+    ASSERT_TRUE(context_->Initialize(surface_.get(), gl::PreferIntegratedGpu));
   } else {
     if (real_gl_context) {
       context_ = scoped_refptr<gl::GLContext>(new gpu::GLContextVirtual(
           share_group_.get(), real_gl_context, decoder_->AsWeakPtr()));
       ASSERT_TRUE(
-          context_->Initialize(surface_.get(), attribs.gpu_preference));
+          context_->Initialize(surface_.get(), gl::PreferIntegratedGpu));
     } else {
       context_ = gl::init::CreateGLContext(share_group_.get(), surface_.get(),
-                                           attribs.gpu_preference);
+                                           gpu_preference);
     }
   }
   ASSERT_TRUE(context_.get() != NULL) << "could not create GL context";
 
   ASSERT_TRUE(context_->MakeCurrent(surface_.get()));
 
-  if (!decoder_->Initialize(surface_.get(), context_.get(), true,
+  if (!decoder_->Initialize(surface_.get(), context_.get(), true, options.size,
                             ::gpu::gles2::DisallowedFeatures(), attribs)) {
     return;
   }

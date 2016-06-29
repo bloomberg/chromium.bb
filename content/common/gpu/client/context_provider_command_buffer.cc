@@ -59,6 +59,7 @@ ContextProviderCommandBuffer::ContextProviderCommandBuffer(
     gpu::GpuStreamPriority stream_priority,
     gpu::SurfaceHandle surface_handle,
     const GURL& active_url,
+    gl::GpuPreference gpu_preference,
     bool automatic_flushes,
     bool support_locking,
     const gpu::SharedMemoryLimits& memory_limits,
@@ -69,6 +70,7 @@ ContextProviderCommandBuffer::ContextProviderCommandBuffer(
       stream_priority_(stream_priority),
       surface_handle_(surface_handle),
       active_url_(active_url),
+      gpu_preference_(gpu_preference),
       automatic_flushes_(automatic_flushes),
       support_locking_(support_locking),
       memory_limits_(memory_limits),
@@ -158,8 +160,10 @@ bool ContextProviderCommandBuffer::BindToCurrentThread() {
     if (!task_runner)
       task_runner = base::ThreadTaskRunnerHandle::Get();
     command_buffer_ = gpu::CommandBufferProxyImpl::Create(
-        std::move(channel_), surface_handle_, shared_command_buffer, stream_id_,
-        stream_priority_, attributes_, active_url_, std::move(task_runner));
+        std::move(channel_), surface_handle_, gfx::Size(),
+        shared_command_buffer, stream_id_, stream_priority_,
+        attributes_, active_url_, gpu_preference_,
+        std::move(task_runner));
     if (!command_buffer_) {
       DLOG(ERROR) << "GpuChannelHost failed to create command buffer.";
       command_buffer_metrics::UmaRecordContextInitFailed(context_type_);

@@ -62,7 +62,8 @@ AwRenderThreadContextProvider::AwRenderThreadContextProvider(
 
   context_.reset(gpu::GLInProcessContext::Create(
       service, surface, surface->IsOffscreen(), gfx::kNullAcceleratedWidget,
-      nullptr /* share_context */, attributes, limits, nullptr, nullptr));
+      surface->GetSize(), nullptr /* share_context */, attributes,
+      gl::PreferDiscreteGpu, limits, nullptr, nullptr));
 
   context_->GetImplementation()->SetLostContextCallback(base::Bind(
       &AwRenderThreadContextProvider::OnLostContext, base::Unretained(this)));

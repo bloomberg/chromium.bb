@@ -83,7 +83,6 @@ bool CommandBufferDriver::Initialize(
   gpu::gles2::ContextCreationAttribHelper attrib_helper;
   if (!attrib_helper.Parse(attribs.storage()))
     return false;
-  // TODO(piman): attribs can't currently represent gpu_preference.
 
   const bool offscreen = widget_ == gfx::kNullAcceleratedWidget;
   if (offscreen) {
@@ -117,9 +116,9 @@ bool CommandBufferDriver::Initialize(
   if (!surface_.get())
     return false;
 
-  // TODO(piman): virtual contexts.
-  context_ = gl::init::CreateGLContext(
-      gpu_state_->share_group(), surface_.get(), attrib_helper.gpu_preference);
+  // TODO(piman): virtual contexts, gpu preference.
+  context_ = gl::init::CreateGLContext(gpu_state_->share_group(),
+                                       surface_.get(), gl::PreferIntegratedGpu);
   if (!context_.get())
     return false;
 
@@ -162,8 +161,8 @@ bool CommandBufferDriver::Initialize(
 
   gpu::gles2::DisallowedFeatures disallowed_features;
 
-  if (!decoder_->Initialize(surface_, context_, offscreen, disallowed_features,
-                            attrib_helper))
+  if (!decoder_->Initialize(surface_, context_, offscreen, gfx::Size(1, 1),
+                            disallowed_features, attrib_helper))
     return false;
 
   command_buffer_->SetPutOffsetChangeCallback(base::Bind(
