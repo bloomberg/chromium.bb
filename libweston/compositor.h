@@ -1720,6 +1720,9 @@ void
 weston_seat_set_keyboard_focus(struct weston_seat *seat,
 			       struct weston_surface *surface);
 
+int
+weston_compositor_load_xwayland(struct weston_compositor *compositor);
+
 #ifdef  __cplusplus
 }
 #endif

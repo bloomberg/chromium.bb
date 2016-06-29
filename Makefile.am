@@ -143,7 +143,8 @@ bin_PROGRAMS += weston
 
 weston_LDFLAGS = -export-dynamic
 weston_CPPFLAGS = $(AM_CPPFLAGS) -DIN_WESTON 		\
-				 -DMODULEDIR='"$(moduledir)"'
+				 -DMODULEDIR='"$(moduledir)"' \
+				 -DXSERVER_PATH='"@XSERVER_PATH@"'
 weston_CFLAGS = $(AM_CFLAGS) $(COMPOSITOR_CFLAGS) $(LIBUNWIND_CFLAGS)
 weston_LDADD = $(COMPOSITOR_LIBS) $(LIBUNWIND_LIBS) \
 	$(DLOPEN_LIBS) $(LIBINPUT_BACKEND_LIBS) \
@@ -152,7 +153,8 @@ weston_LDADD = $(COMPOSITOR_LIBS) $(LIBUNWIND_LIBS) \
 weston_SOURCES = 					\
 	compositor/main.c				\
 	compositor/weston-screenshooter.c		\
-	compositor/text-backend.c
+	compositor/text-backend.c			\
+	compositor/xwayland.c
 
 # Track this dependency explicitly instead of using BUILT_SOURCES.  We
 # add BUILT_SOURCES to CLEANFILES, but we want to keep git-version.h
@@ -958,7 +960,7 @@ endif
 
 if ENABLE_XWAYLAND
 
-module_LTLIBRARIES += xwayland.la
+libweston_module_LTLIBRARIES += xwayland.la
 
 xwayland_la_CPPFLAGS =				\
 	-I$(top_builddir)/protocol		\
@@ -968,8 +970,7 @@ xwayland_la_CPPFLAGS =				\
 	-I$(top_builddir)/xwayland		\
 	-DDATADIR='"$(datadir)"'		\
 	-DMODULEDIR='"$(moduledir)"'		\
-	-DLIBEXECDIR='"$(libexecdir)"'		\
-	-DXSERVER_PATH='"@XSERVER_PATH@"'
+	-DLIBEXECDIR='"$(libexecdir)"'
 
 xwayland_la_LDFLAGS = -module -avoid-version
 xwayland_la_LIBADD =			\
@@ -989,6 +990,9 @@ xwayland_la_SOURCES =				\
 	xwayland/hash.c				\
 	xwayland/hash.h				\
 	shared/helpers.h
+
+libwestoninclude_HEADERS += xwayland/xwayland-api.h
+
 endif
 
 

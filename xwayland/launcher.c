@@ -36,119 +36,27 @@
 #include <signal.h>
 
 #include "xwayland.h"
+#include "xwayland-api.h"
 #include "shared/helpers.h"
 #include "compositor/weston.h"
-
-static int
-handle_sigusr1(int signal_number, void *data)
-{
-	struct weston_xserver *wxs = data;
-
-	/* We'd be safer if we actually had the struct
-	 * signalfd_siginfo from the signalfd data and could verify
-	 * this came from Xwayland.*/
-	wxs->wm = weston_wm_create(wxs, wxs->wm_fd);
-	wl_event_source_remove(wxs->sigusr1_source);
-
-	return 1;
-}
 
 static int
 weston_xserver_handle_event(int listen_fd, uint32_t mask, void *data)
 {
 	struct weston_xserver *wxs = data;
-	char display[8], s[8], abstract_fd[8], unix_fd[8], wm_fd[8];
-	int sv[2], wm[2], fd;
-	char *xserver = NULL;
-	struct weston_config *config = wet_get_config(wxs->compositor);
-	struct weston_config_section *section;
+	char display[8];
 
-	if (socketpair(AF_UNIX, SOCK_STREAM | SOCK_CLOEXEC, 0, sv) < 0) {
-		weston_log("wl connection socketpair failed\n");
+	snprintf(display, sizeof display, ":%d", wxs->display);
+
+	wxs->pid = wxs->spawn_func(wxs->user_data, display, wxs->abstract_fd, wxs->unix_fd);
+	if (wxs->pid == -1) {
+		weston_log("Failed to spawn the Xwayland server\n");
 		return 1;
 	}
 
-	if (socketpair(AF_UNIX, SOCK_STREAM | SOCK_CLOEXEC, 0, wm) < 0) {
-		weston_log("X wm connection socketpair failed\n");
-		return 1;
-	}
-
-	wxs->process.pid = fork();
-	switch (wxs->process.pid) {
-	case 0:
-		/* SOCK_CLOEXEC closes both ends, so we need to unset
-		 * the flag on the client fd. */
-		fd = dup(sv[1]);
-		if (fd < 0)
-			goto fail;
-		snprintf(s, sizeof s, "%d", fd);
-		setenv("WAYLAND_SOCKET", s, 1);
-
-		snprintf(display, sizeof display, ":%d", wxs->display);
-
-		fd = dup(wxs->abstract_fd);
-		if (fd < 0)
-			goto fail;
-		snprintf(abstract_fd, sizeof abstract_fd, "%d", fd);
-		fd = dup(wxs->unix_fd);
-		if (fd < 0)
-			goto fail;
-		snprintf(unix_fd, sizeof unix_fd, "%d", fd);
-		fd = dup(wm[1]);
-		if (fd < 0)
-			goto fail;
-		snprintf(wm_fd, sizeof wm_fd, "%d", fd);
-
-		section = weston_config_get_section(config,
-						    "xwayland", NULL, NULL);
-		weston_config_section_get_string(section, "path",
-						 &xserver, XSERVER_PATH);
-
-		/* Ignore SIGUSR1 in the child, which will make the X
-		 * server send SIGUSR1 to the parent (weston) when
-		 * it's done with initialization.  During
-		 * initialization the X server will round trip and
-		 * block on the wayland compositor, so avoid making
-		 * blocking requests (like xcb_connect_to_fd) until
-		 * it's done with that. */
-		signal(SIGUSR1, SIG_IGN);
-
-		if (execl(xserver,
-			  xserver,
-			  display,
-			  "-rootless",
-			  "-listen", abstract_fd,
-			  "-listen", unix_fd,
-			  "-wm", wm_fd,
-			  "-terminate",
-			  NULL) < 0)
-			weston_log("exec of '%s %s -rootless "
-                                   "-listen %s -listen %s -wm %s "
-                                   "-terminate' failed: %m\n",
-                                   xserver, display,
-                                   abstract_fd, unix_fd, wm_fd);
-	fail:
-		_exit(EXIT_FAILURE);
-
-	default:
-		weston_log("forked X server, pid %d\n", wxs->process.pid);
-
-		close(sv[1]);
-		wxs->client = wl_client_create(wxs->wl_display, sv[0]);
-
-		close(wm[1]);
-		wxs->wm_fd = wm[0];
-
-		weston_watch_process(&wxs->process);
-
-		wl_event_source_remove(wxs->abstract_source);
-		wl_event_source_remove(wxs->unix_source);
-		break;
-
-	case -1:
-		weston_log( "failed to fork\n");
-		break;
-	}
+	weston_log("Spawned Xwayland server, pid %d\n", wxs->pid);
+	wl_event_source_remove(wxs->abstract_source);
+	wl_event_source_remove(wxs->unix_source);
 
 	return 1;
 }
@@ -162,7 +70,7 @@ weston_xserver_shutdown(struct weston_xserver *wxs)
 	unlink(path);
 	snprintf(path, sizeof path, "/tmp/.X11-unix/X%d", wxs->display);
 	unlink(path);
-	if (wxs->process.pid == 0) {
+	if (wxs->pid == 0) {
 		wl_event_source_remove(wxs->abstract_source);
 		wl_event_source_remove(wxs->unix_source);
 	}
@@ -173,39 +81,6 @@ weston_xserver_shutdown(struct weston_xserver *wxs)
 		wxs->wm = NULL;
 	}
 	wxs->loop = NULL;
-}
-
-static void
-weston_xserver_cleanup(struct weston_process *process, int status)
-{
-	struct weston_xserver *wxs =
-		container_of(process, struct weston_xserver, process);
-
-	wxs->process.pid = 0;
-	wxs->client = NULL;
-	wxs->resource = NULL;
-
-	wxs->abstract_source =
-		wl_event_loop_add_fd(wxs->loop, wxs->abstract_fd,
-				     WL_EVENT_READABLE,
-				     weston_xserver_handle_event, wxs);
-
-	wxs->unix_source =
-		wl_event_loop_add_fd(wxs->loop, wxs->unix_fd,
-				     WL_EVENT_READABLE,
-				     weston_xserver_handle_event, wxs);
-
-	if (wxs->wm) {
-		weston_log("xserver exited, code %d\n", status);
-		weston_wm_destroy(wxs->wm);
-		wxs->wm = NULL;
-	} else {
-		/* If the X server crashes before it binds to the
-		 * xserver interface, shut down and don't try
-		 * again. */
-		weston_log("xserver crashing too fast: %d\n", status);
-		weston_xserver_shutdown(wxs);
-	}
 }
 
 static int
@@ -349,25 +224,32 @@ weston_xserver_destroy(struct wl_listener *l, void *data)
 	free(wxs);
 }
 
-WL_EXPORT int
-module_init(struct weston_compositor *compositor,
-	    int *argc, char *argv[])
-
+static struct weston_xwayland *
+weston_xwayland_get(struct weston_compositor *compositor)
 {
-	struct wl_display *display = compositor->wl_display;
+	struct wl_listener *listener;
 	struct weston_xserver *wxs;
+
+	listener = wl_signal_get(&compositor->destroy_signal,
+				 weston_xserver_destroy);
+	if (!listener)
+		return NULL;
+
+	wxs = wl_container_of(listener, wxs, destroy_listener);
+	return (struct weston_xwayland *)wxs;
+}
+
+static int
+weston_xwayland_listen(struct weston_xwayland *xwayland, void *user_data,
+		       weston_xwayland_spawn_xserver_func_t spawn_func)
+{
+	struct weston_xserver *wxs = (struct weston_xserver *)xwayland;
 	char lockfile[256], display_name[8];
 
-	wxs = zalloc(sizeof *wxs);
-	if (wxs == NULL)
-		return -1;
-	wxs->process.cleanup = weston_xserver_cleanup;
-	wxs->wl_display = display;
-	wxs->compositor = compositor;
+	wxs->user_data = user_data;
+	wxs->spawn_func = spawn_func;
 
-	wxs->display = 0;
-
- retry:
+retry:
 	if (create_lockfile(wxs->display, lockfile, sizeof lockfile) < 0) {
 		if (errno == EAGAIN) {
 			goto retry;
@@ -399,7 +281,7 @@ module_init(struct weston_compositor *compositor,
 	weston_log("xserver listening on display %s\n", display_name);
 	setenv("DISPLAY", display_name, 1);
 
-	wxs->loop = wl_display_get_event_loop(display);
+	wxs->loop = wl_display_get_event_loop(wxs->wl_display);
 	wxs->abstract_source =
 		wl_event_loop_add_fd(wxs->loop, wxs->abstract_fd,
 				     WL_EVENT_READABLE,
@@ -409,8 +291,79 @@ module_init(struct weston_compositor *compositor,
 				     WL_EVENT_READABLE,
 				     weston_xserver_handle_event, wxs);
 
-	wxs->sigusr1_source = wl_event_loop_add_signal(wxs->loop, SIGUSR1,
-						       handle_sigusr1, wxs);
+	return 0;
+}
+
+static void
+weston_xwayland_xserver_loaded(struct weston_xwayland *xwayland,
+			       struct wl_client *client, int wm_fd)
+{
+	struct weston_xserver *wxs = (struct weston_xserver *)xwayland;
+	wxs->wm = weston_wm_create(wxs, wm_fd);
+	wxs->client = client;
+}
+
+static void
+weston_xwayland_xserver_exited(struct weston_xwayland *xwayland,
+			       int exit_status)
+{
+	struct weston_xserver *wxs = (struct weston_xserver *)xwayland;
+
+	wxs->pid = 0;
+	wxs->client = NULL;
+
+	wxs->abstract_source =
+		wl_event_loop_add_fd(wxs->loop, wxs->abstract_fd,
+				     WL_EVENT_READABLE,
+				     weston_xserver_handle_event, wxs);
+	wxs->unix_source =
+		wl_event_loop_add_fd(wxs->loop, wxs->unix_fd,
+				     WL_EVENT_READABLE,
+				     weston_xserver_handle_event, wxs);
+
+	if (wxs->wm) {
+		weston_log("xserver exited, code %d\n", exit_status);
+		weston_wm_destroy(wxs->wm);
+		wxs->wm = NULL;
+	} else {
+		/* If the X server crashes before it binds to the
+		 * xserver interface, shut down and don't try
+		 * again. */
+		weston_log("xserver crashing too fast: %d\n", exit_status);
+		weston_xserver_shutdown(wxs);
+	}
+}
+
+const struct weston_xwayland_api api = {
+	weston_xwayland_get,
+	weston_xwayland_listen,
+	weston_xwayland_xserver_loaded,
+	weston_xwayland_xserver_exited,
+};
+
+WL_EXPORT int
+module_init(struct weston_compositor *compositor,
+	    int *argc, char *argv[])
+
+{
+	struct wl_display *display = compositor->wl_display;
+	struct weston_xserver *wxs;
+	int ret;
+
+	wxs = zalloc(sizeof *wxs);
+	if (wxs == NULL)
+		return -1;
+	wxs->wl_display = display;
+	wxs->compositor = compositor;
+
+	ret = weston_plugin_api_register(compositor, WESTON_XWAYLAND_API_NAME,
+					 &api, sizeof(api));
+	if (ret < 0) {
+		weston_log("Failed to register the xwayland module API.\n");
+		free(wxs);
+		return -1;
+	}
+
 	wxs->destroy_listener.notify = weston_xserver_destroy;
 	wl_signal_add(&compositor->destroy_signal, &wxs->destroy_listener);
 

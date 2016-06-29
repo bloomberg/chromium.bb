@@ -31,6 +31,7 @@
 
 #include "compositor.h"
 #include "compositor/weston.h"
+#include "xwayland-api.h"
 
 #define SEND_EVENT_MASK (0x80)
 #define EVENT_TYPE(event) ((event)->response_type & ~SEND_EVENT_MASK)
@@ -38,20 +39,18 @@
 struct weston_xserver {
 	struct wl_display *wl_display;
 	struct wl_event_loop *loop;
-	struct wl_event_source *sigchld_source;
 	int abstract_fd;
 	struct wl_event_source *abstract_source;
 	int unix_fd;
 	struct wl_event_source *unix_source;
-	int wm_fd;
 	int display;
-	struct wl_event_source *sigusr1_source;
-	struct weston_process process;
-	struct wl_resource *resource;
+	pid_t pid;
 	struct wl_client *client;
 	struct weston_compositor *compositor;
 	struct weston_wm *wm;
 	struct wl_listener destroy_listener;
+	weston_xwayland_spawn_xserver_func_t spawn_func;
+	void *user_data;
 };
 
 struct weston_wm {

@@ -63,6 +63,9 @@ wet_get_config(struct weston_compositor *compositor);
 void *
 wet_load_module(const char *name, const char *entrypoint);
 
+int
+wet_load_xwayland(struct weston_compositor *comp);
+
 #ifdef  __cplusplus
 }
 #endif
