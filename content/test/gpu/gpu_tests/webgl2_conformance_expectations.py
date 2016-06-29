@@ -115,7 +115,7 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('deqp/functional/gles3/fboinvalidate/sub.html',
         ['win'], bug=483282)
     self.Fail('deqp/functional/gles3/fboinvalidate/whole.html',
-        ['win'], bug=483282)
+        ['win'], bug=624506)
 
     # Windows 8 only.
 
@@ -504,7 +504,7 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         'random_teximage2d_cube.html',
         ['linux'], bug=483282)
     self.Fail('deqp/functional/gles3/fboinvalidate/whole.html',
-        ['linux'], bug=483282)
+        ['linux'], bug=624506)
 
     # Linux NVIDIA only.
     self.Fail('conformance2/glsl3/array-complex-indexing.html',
