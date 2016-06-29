@@ -14,7 +14,7 @@ namespace blink {
 PassRefPtr<SerializedScriptValue> SerializedScriptValueForModulesFactory::create(v8::Isolate* isolate, v8::Local<v8::Value> value, Transferables* transferables, WebBlobInfoArray* blobInfo, ExceptionState& exceptionState)
 {
     SerializedScriptValueWriterForModules writer;
-    ScriptValueSerializerForModules serializer(writer, transferables, blobInfo, ScriptState::current(isolate));
+    ScriptValueSerializerForModules serializer(writer, blobInfo, ScriptState::current(isolate));
     return serializer.serialize(value, transferables, exceptionState);
 }
 

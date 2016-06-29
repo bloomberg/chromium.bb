@@ -73,14 +73,14 @@ class ScriptValueSerializerForModules final : public ScriptValueSerializer {
     STACK_ALLOCATED();
     WTF_MAKE_NONCOPYABLE(ScriptValueSerializerForModules);
 public:
-    ScriptValueSerializerForModules(SerializedScriptValueWriter&, const Transferables*, WebBlobInfoArray*, ScriptState*);
+    ScriptValueSerializerForModules(SerializedScriptValueWriter&, WebBlobInfoArray*, ScriptState*);
 
 private:
-    ScriptValueSerializer::StateBase* doSerializeObject(v8::Local<v8::Object>, ScriptValueSerializer::StateBase* next) override;
+    StateBase* doSerializeObject(v8::Local<v8::Object>, StateBase* next) override;
 
-    ScriptValueSerializer::StateBase* writeDOMFileSystem(v8::Local<v8::Value>, ScriptValueSerializer::StateBase* next);
+    StateBase* writeDOMFileSystem(v8::Local<v8::Value>, StateBase* next);
     bool writeCryptoKey(v8::Local<v8::Value>);
-    ScriptValueSerializer::StateBase* writeRTCCertificate(v8::Local<v8::Value>, ScriptValueSerializer::StateBase* next);
+    StateBase* writeRTCCertificate(v8::Local<v8::Value>, StateBase* next);
 };
 
 class ScriptValueDeserializerForModules final : public ScriptValueDeserializer {

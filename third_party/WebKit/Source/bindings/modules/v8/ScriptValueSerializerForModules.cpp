@@ -79,12 +79,12 @@ enum AssymetricCryptoKeyType {
 };
 
 
-ScriptValueSerializerForModules::ScriptValueSerializerForModules(SerializedScriptValueWriter& writer, const Transferables* transferables, WebBlobInfoArray* blobInfo, ScriptState* scriptState)
-    : ScriptValueSerializer(writer, transferables, blobInfo, scriptState)
+ScriptValueSerializerForModules::ScriptValueSerializerForModules(SerializedScriptValueWriter& writer, WebBlobInfoArray* blobInfo, ScriptState* scriptState)
+    : ScriptValueSerializer(writer, blobInfo, scriptState)
 {
 }
 
-ScriptValueSerializer::StateBase* ScriptValueSerializerForModules::writeDOMFileSystem(v8::Local<v8::Value> value, ScriptValueSerializer::StateBase* next)
+ScriptValueSerializer::StateBase* ScriptValueSerializerForModules::writeDOMFileSystem(v8::Local<v8::Value> value, StateBase* next)
 {
     DOMFileSystem* fs = V8DOMFileSystem::toImpl(value.As<v8::Object>());
     if (!fs)
@@ -104,7 +104,7 @@ bool ScriptValueSerializerForModules::writeCryptoKey(v8::Local<v8::Value> value)
     return toSerializedScriptValueWriterForModules(writer()).writeCryptoKey(key->key());
 }
 
-ScriptValueSerializer::StateBase* ScriptValueSerializerForModules::writeRTCCertificate(v8::Local<v8::Value> value, ScriptValueSerializer::StateBase* next)
+ScriptValueSerializer::StateBase* ScriptValueSerializerForModules::writeRTCCertificate(v8::Local<v8::Value> value, StateBase* next)
 {
     RTCCertificate* certificate = V8RTCCertificate::toImpl(value.As<v8::Object>());
     if (!certificate)
@@ -314,7 +314,7 @@ void SerializedScriptValueWriterForModules::doWriteKeyUsages(const WebCryptoKeyU
     doWriteUint32(value);
 }
 
-ScriptValueSerializer::StateBase* ScriptValueSerializerForModules::doSerializeObject(v8::Local<v8::Object> jsObject, ScriptValueSerializer::StateBase* next)
+ScriptValueSerializer::StateBase* ScriptValueSerializerForModules::doSerializeObject(v8::Local<v8::Object> jsObject, StateBase* next)
 {
     DCHECK(!jsObject.IsEmpty());
 

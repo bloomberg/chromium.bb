@@ -20,7 +20,7 @@ SerializedScriptValueFactory* SerializedScriptValueFactory::m_instance = 0;
 PassRefPtr<SerializedScriptValue> SerializedScriptValueFactory::create(v8::Isolate* isolate, v8::Local<v8::Value> value, Transferables* transferables, WebBlobInfoArray* blobInfo, ExceptionState& exceptionState)
 {
     SerializedScriptValueWriter writer;
-    ScriptValueSerializer serializer(writer, transferables, blobInfo, ScriptState::current(isolate));
+    ScriptValueSerializer serializer(writer, blobInfo, ScriptState::current(isolate));
     return serializer.serialize(value, transferables, exceptionState);
 }
 
