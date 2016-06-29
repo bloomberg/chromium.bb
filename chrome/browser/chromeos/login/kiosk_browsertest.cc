@@ -2297,7 +2297,12 @@ IN_PROC_BROWSER_TEST_F(KioskEnterpriseTest, EnterpriseKioskApp) {
   content::RunAllPendingInMessageLoop();
 }
 
-IN_PROC_BROWSER_TEST_F(KioskEnterpriseTest, PrivateStore) {
+#if defined(OS_CHROMEOS)
+#define MAYBE_PrivateStore DISABLED_PrivateStore
+#else
+#define MAYBE_PrivateStore PrivateStore
+#endif
+IN_PROC_BROWSER_TEST_F(KioskEnterpriseTest, MAYBE_PrivateStore) {
   set_test_app_id(kTestEnterpriseKioskApp);
 
   const char kPrivateStoreUpdate[] = "/private_store_update";
