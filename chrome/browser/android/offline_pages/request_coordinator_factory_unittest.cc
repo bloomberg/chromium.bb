@@ -6,6 +6,7 @@
 
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "components/offline_pages/background/request_coordinator.h"
+#include "content/public/browser/browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace offline_pages {
@@ -14,11 +15,17 @@ class RequestCoordinatorFactoryTest : public ChromeRenderViewHostTestHarness {
  public:
   RequestCoordinatorFactoryTest();
   ~RequestCoordinatorFactoryTest() override;
+
+  void FlushBlockingPool();
 };
 
 RequestCoordinatorFactoryTest::RequestCoordinatorFactoryTest() {}
 
 RequestCoordinatorFactoryTest::~RequestCoordinatorFactoryTest() {}
+
+void RequestCoordinatorFactoryTest::FlushBlockingPool() {
+  content::BrowserThread::GetBlockingPool()->FlushForTesting();
+}
 
 TEST_F(RequestCoordinatorFactoryTest, BuildRequestCoordinator) {
   RequestCoordinatorFactory* factory = RequestCoordinatorFactory::GetInstance();
@@ -33,6 +40,7 @@ TEST_F(RequestCoordinatorFactoryTest, BuildRequestCoordinator) {
   // Calling twice gives us the same coordinator.
   EXPECT_EQ(coordinator1, coordinator2);
 
+  FlushBlockingPool();
 }
 
 }  // namespace offline_pages

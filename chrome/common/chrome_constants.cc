@@ -152,6 +152,8 @@ const base::FilePath::CharType kOfflinePageArchivesDirname[] =
     FPL("Offline Pages/archives");
 const base::FilePath::CharType kOfflinePageMetadataDirname[] =
     FPL("Offline Pages/metadata");
+const base::FilePath::CharType kOfflinePageRequestQueueDirname[] =
+    FPL("Offline Pages/request_queue");
 const base::FilePath::CharType kPreferencesFilename[] = FPL("Preferences");
 const base::FilePath::CharType kProtectedPreferencesFilenameDeprecated[] =
     FPL("Protected Preferences");

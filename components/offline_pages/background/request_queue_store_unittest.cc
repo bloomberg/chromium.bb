@@ -311,4 +311,32 @@ TYPED_TEST(RequestQueueStoreTest, ResetStore) {
   ASSERT_TRUE(this->last_requests().empty());
 }
 
+class RequestQueueStoreSQLTest
+    : public RequestQueueStoreTest<RequestQueueStoreSQLFactory> {};
+
+// Makes sure that persistent DB is actually persisting requests across store
+// restarts.
+TEST_F(RequestQueueStoreSQLTest, SaveCloseReopenRead) {
+  std::unique_ptr<RequestQueueStore> store(BuildStore());
+  base::Time creation_time = base::Time::Now();
+  SavePageRequest original_request(kRequestId, kUrl, kClientId, creation_time);
+  store->AddOrUpdateRequest(
+      original_request, base::Bind(&RequestQueueStoreTestBase::AddOrUpdateDone,
+                                   base::Unretained(this)));
+  PumpLoop();
+  ClearResults();
+
+  // Resets the store, using the same temp directory. The contents should be
+  // intact. First reset is done separately to release DB lock.
+  store.reset();
+  store = BuildStore();
+  store->GetRequests(base::Bind(&RequestQueueStoreTestBase::GetRequestsDone,
+                                base::Unretained(this)));
+  ASSERT_EQ(LastResult::kNone, this->last_result());
+  this->PumpLoop();
+  ASSERT_EQ(LastResult::kTrue, this->last_result());
+  ASSERT_EQ(1ul, this->last_requests().size());
+  ASSERT_TRUE(original_request == this->last_requests()[0]);
+}
+
 }  // offline_pages
