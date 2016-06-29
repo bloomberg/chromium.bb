@@ -49,6 +49,10 @@ public:
     ~SourceBufferList() override;
 
     unsigned length() const { return m_list.size(); }
+
+    DEFINE_ATTRIBUTE_EVENT_LISTENER(addsourcebuffer);
+    DEFINE_ATTRIBUTE_EVENT_LISTENER(removesourcebuffer);
+
     SourceBuffer* item(unsigned index) const { return (index < m_list.size()) ? m_list[index].get() : 0; }
 
     void add(SourceBuffer*);

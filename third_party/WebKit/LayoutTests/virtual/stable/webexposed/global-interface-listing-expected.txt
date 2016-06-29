@@ -3218,6 +3218,9 @@ interface MediaSource : EventTarget
     attribute @@toStringTag
     getter activeSourceBuffers
     getter duration
+    getter onsourceclose
+    getter onsourceended
+    getter onsourceopen
     getter readyState
     getter sourceBuffers
     method addSourceBuffer
@@ -3225,6 +3228,9 @@ interface MediaSource : EventTarget
     method endOfStream
     method removeSourceBuffer
     setter duration
+    setter onsourceclose
+    setter onsourceended
+    setter onsourceopen
 interface MediaStreamAudioDestinationNode : AudioNode
     attribute @@toStringTag
     getter stream
@@ -5129,6 +5135,11 @@ interface SourceBuffer : EventTarget
     getter appendWindowStart
     getter buffered
     getter mode
+    getter onabort
+    getter onerror
+    getter onupdate
+    getter onupdateend
+    getter onupdatestart
     getter timestampOffset
     getter updating
     method abort
@@ -5138,12 +5149,21 @@ interface SourceBuffer : EventTarget
     setter appendWindowEnd
     setter appendWindowStart
     setter mode
+    setter onabort
+    setter onerror
+    setter onupdate
+    setter onupdateend
+    setter onupdatestart
     setter timestampOffset
 interface SourceBufferList : EventTarget
     attribute @@toStringTag
     getter length
+    getter onaddsourcebuffer
+    getter onremovesourcebuffer
     method @@iterator
     method constructor
+    setter onaddsourcebuffer
+    setter onremovesourcebuffer
 interface SpeechSynthesisEvent : Event
     attribute @@toStringTag
     getter charIndex

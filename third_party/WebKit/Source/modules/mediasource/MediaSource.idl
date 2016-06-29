@@ -48,12 +48,12 @@ enum EndOfStreamError {
     readonly attribute SourceBufferList activeSourceBuffers;
 
     [RaisesException=Setter] attribute unrestricted double duration;
-
+    attribute EventHandler onsourceopen;
+    attribute EventHandler onsourceended;
+    attribute EventHandler onsourceclose;
     [RaisesException] SourceBuffer addSourceBuffer(DOMString type);
     [RaisesException] void removeSourceBuffer(SourceBuffer buffer);
-
     readonly attribute DOMString readyState;
-
     [RaisesException] void endOfStream(optional EndOfStreamError error);
 
     [RaisesException, RuntimeEnabled=MediaSourceExperimental] void setLiveSeekableRange(double start, double end);

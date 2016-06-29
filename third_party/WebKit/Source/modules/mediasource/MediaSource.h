@@ -33,10 +33,10 @@
 
 #include "bindings/core/v8/ActiveScriptWrappable.h"
 #include "core/dom/ActiveDOMObject.h"
-#include "core/events/EventTarget.h"
 #include "core/html/HTMLMediaSource.h"
 #include "core/html/TimeRanges.h"
 #include "core/html/URLRegistry.h"
+#include "modules/EventTargetModules.h"
 #include "modules/mediasource/SourceBuffer.h"
 #include "modules/mediasource/SourceBufferList.h"
 #include "public/platform/WebMediaSource.h"
@@ -72,6 +72,11 @@ public:
     SourceBuffer* addSourceBuffer(const String& type, ExceptionState&);
     void removeSourceBuffer(SourceBuffer*, ExceptionState&);
     void setDuration(double, ExceptionState&);
+
+    DEFINE_ATTRIBUTE_EVENT_LISTENER(sourceopen);
+    DEFINE_ATTRIBUTE_EVENT_LISTENER(sourceended);
+    DEFINE_ATTRIBUTE_EVENT_LISTENER(sourceclose);
+
     const AtomicString& readyState() const { return m_readyState; }
     void endOfStream(const AtomicString& error, ExceptionState&);
     void endOfStream(ExceptionState&);

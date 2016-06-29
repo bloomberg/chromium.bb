@@ -60,6 +60,12 @@ enum AppendMode {
     // Presentation timestamp for the end of append window.
     [RaisesException=Setter] attribute unrestricted double appendWindowEnd;
 
+    attribute EventHandler onupdatestart;
+    attribute EventHandler onupdate;
+    attribute EventHandler onupdateend;
+    attribute EventHandler onerror;
+    attribute EventHandler onabort;
+
     // Append segment data.
     [RaisesException] void appendBuffer(ArrayBuffer data);
     [RaisesException] void appendBuffer(ArrayBufferView data);
