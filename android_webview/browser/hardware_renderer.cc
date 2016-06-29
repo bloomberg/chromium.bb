@@ -9,29 +9,15 @@
 #include "android_webview/browser/aw_gl_surface.h"
 #include "android_webview/browser/aw_render_thread_context_provider.h"
 #include "android_webview/browser/child_frame.h"
-#include "android_webview/browser/deferred_gpu_command_service.h"
 #include "android_webview/browser/parent_compositor_draw_constraints.h"
-#include "android_webview/browser/parent_output_surface.h"
 #include "android_webview/browser/render_thread_manager.h"
+#include "android_webview/browser/surfaces_instance.h"
 #include "android_webview/public/browser/draw_gl.h"
-#include "base/auto_reset.h"
-#include "base/strings/string_number_conversions.h"
 #include "base/trace_event/trace_event.h"
 #include "cc/output/compositor_frame.h"
-#include "cc/output/output_surface.h"
-#include "cc/output/renderer_settings.h"
-#include "cc/output/texture_mailbox_deleter.h"
-#include "cc/quads/shared_quad_state.h"
-#include "cc/quads/surface_draw_quad.h"
-#include "cc/scheduler/begin_frame_source.h"
-#include "cc/surfaces/display.h"
-#include "cc/surfaces/display_scheduler.h"
 #include "cc/surfaces/surface_factory.h"
 #include "cc/surfaces/surface_id_allocator.h"
-#include "gpu/command_buffer/client/gl_in_process_context.h"
-#include "gpu/command_buffer/common/gles2_cmd_utils.h"
-#include "ui/gfx/geometry/rect_conversions.h"
-#include "ui/gfx/geometry/rect_f.h"
+#include "cc/surfaces/surface_manager.h"
 #include "ui/gfx/transform.h"
 #include "ui/gl/gl_bindings.h"
 
@@ -40,57 +26,22 @@ namespace android_webview {
 HardwareRenderer::HardwareRenderer(RenderThreadManager* state)
     : render_thread_manager_(state),
       last_egl_context_(eglGetCurrentContext()),
-      gl_surface_(new AwGLSurface),
+      surfaces_(SurfacesInstance::GetOrCreateInstance()),
+      surface_id_allocator_(surfaces_->CreateSurfaceIdAllocator()),
       last_committed_output_surface_id_(0u),
-      last_submitted_output_surface_id_(0u),
-      output_surface_(NULL) {
+      last_submitted_output_surface_id_(0u) {
   DCHECK(last_egl_context_);
-
-  cc::RendererSettings settings;
-
-  // Should be kept in sync with compositor_impl_android.cc.
-  settings.allow_antialiasing = false;
-  settings.highp_threshold_min = 2048;
-
-  // Webview does not own the surface so should not clear it.
-  settings.should_clear_root_render_pass = false;
-
-  surface_manager_.reset(new cc::SurfaceManager);
-  surface_id_allocator_.reset(new cc::SurfaceIdAllocator(1));
-  surface_id_allocator_->RegisterSurfaceIdNamespace(surface_manager_.get());
-  surface_manager_->RegisterSurfaceFactoryClient(
+  surfaces_->GetSurfaceManager()->RegisterSurfaceFactoryClient(
       surface_id_allocator_->id_namespace(), this);
-
-  std::unique_ptr<cc::BeginFrameSource> begin_frame_source(
-      new cc::StubBeginFrameSource);
-  std::unique_ptr<cc::TextureMailboxDeleter> texture_mailbox_deleter(
-      new cc::TextureMailboxDeleter(nullptr));
-  std::unique_ptr<ParentOutputSurface> output_surface_holder(
-      new ParentOutputSurface(AwRenderThreadContextProvider::Create(
-          gl_surface_, DeferredGpuCommandService::GetInstance())));
-  output_surface_ = output_surface_holder.get();
-  std::unique_ptr<cc::DisplayScheduler> scheduler(new cc::DisplayScheduler(
-      begin_frame_source.get(), nullptr,
-      output_surface_holder->capabilities().max_frames_pending));
-  display_.reset(new cc::Display(
-      surface_manager_.get(), nullptr /* shared_bitmap_manager */,
-      nullptr /* gpu_memory_buffer_manager */, settings,
-      surface_id_allocator_->id_namespace(), std::move(begin_frame_source),
-      std::move(output_surface_holder), std::move(scheduler),
-      std::move(texture_mailbox_deleter)));
-  display_->Initialize(this);
 }
 
 HardwareRenderer::~HardwareRenderer() {
   // Must reset everything before |surface_factory_| to ensure all
   // resources are returned before resetting.
-  if (!root_id_.is_null())
-    surface_factory_->Destroy(root_id_);
   if (!child_id_.is_null())
-    surface_factory_->Destroy(child_id_);
-  display_.reset();
+    DestroySurface();
   surface_factory_.reset();
-  surface_manager_->UnregisterSurfaceFactoryClient(
+  surfaces_->GetSurfaceManager()->UnregisterSurfaceFactoryClient(
       surface_id_allocator_->id_namespace());
 
   // Reset draw constraints.
@@ -134,20 +85,15 @@ void HardwareRenderer::DrawGL(AwDrawGLInfo* draw_info,
   if (child_frame_.get() && child_frame_->frame.get()) {
     if (!compositor_id_.Equals(child_frame_->compositor_id) ||
         last_submitted_output_surface_id_ != child_frame_->output_surface_id) {
-      if (!root_id_.is_null())
-        surface_factory_->Destroy(root_id_);
       if (!child_id_.is_null())
-        surface_factory_->Destroy(child_id_);
-
-      root_id_ = cc::SurfaceId();
-      child_id_ = cc::SurfaceId();
+        DestroySurface();
 
       // This will return all the resources to the previous compositor.
       surface_factory_.reset();
       compositor_id_ = child_frame_->compositor_id;
       last_submitted_output_surface_id_ = child_frame_->output_surface_id;
       surface_factory_.reset(
-          new cc::SurfaceFactory(surface_manager_.get(), this));
+          new cc::SurfaceFactory(surfaces_->GetSurfaceManager(), this));
     }
 
     std::unique_ptr<cc::CompositorFrame> child_compositor_frame =
@@ -160,9 +106,8 @@ void HardwareRenderer::DrawGL(AwDrawGLInfo* draw_info,
     frame_size_ = frame_size;
     if (child_id_.is_null() || size_changed) {
       if (!child_id_.is_null())
-        surface_factory_->Destroy(child_id_);
-      child_id_ = surface_id_allocator_->GenerateId();
-      surface_factory_->Create(child_id_);
+        DestroySurface();
+      AllocateSurface();
     }
 
     surface_factory_->SubmitCompositorFrame(child_id_,
@@ -191,44 +136,24 @@ void HardwareRenderer::DrawGL(AwDrawGLInfo* draw_info,
   gfx::Rect clip(draw_info->clip_left, draw_info->clip_top,
                  draw_info->clip_right - draw_info->clip_left,
                  draw_info->clip_bottom - draw_info->clip_top);
+  surfaces_->DrawAndSwap(viewport, clip, transform, frame_size_, child_id_,
+                         gl_state);
+}
 
-  // Create a frame with a single SurfaceDrawQuad referencing the child
-  // Surface and transformed using the given transform.
-  std::unique_ptr<cc::RenderPass> render_pass = cc::RenderPass::Create();
-  render_pass->SetAll(cc::RenderPassId(1, 1), gfx::Rect(viewport), clip,
-                      gfx::Transform(), false);
+void HardwareRenderer::AllocateSurface() {
+  DCHECK(child_id_.is_null());
+  DCHECK(surface_factory_);
+  child_id_ = surface_id_allocator_->GenerateId();
+  surface_factory_->Create(child_id_);
+  surfaces_->AddChildId(child_id_);
+}
 
-  cc::SharedQuadState* quad_state =
-      render_pass->CreateAndAppendSharedQuadState();
-  quad_state->quad_to_target_transform = transform;
-  quad_state->quad_layer_bounds = frame_size_;
-  quad_state->visible_quad_layer_rect = gfx::Rect(frame_size_);
-  quad_state->opacity = 1.f;
-
-  cc::SurfaceDrawQuad* surface_quad =
-      render_pass->CreateAndAppendDrawQuad<cc::SurfaceDrawQuad>();
-  surface_quad->SetNew(quad_state, gfx::Rect(quad_state->quad_layer_bounds),
-                       gfx::Rect(quad_state->quad_layer_bounds), child_id_);
-
-  std::unique_ptr<cc::DelegatedFrameData> delegated_frame(
-      new cc::DelegatedFrameData);
-  delegated_frame->render_pass_list.push_back(std::move(render_pass));
-  cc::CompositorFrame frame;
-  frame.delegated_frame_data = std::move(delegated_frame);
-
-  if (root_id_.is_null()) {
-    root_id_ = surface_id_allocator_->GenerateId();
-    surface_factory_->Create(root_id_);
-    display_->SetSurfaceId(root_id_, 1.f);
-  }
-  surface_factory_->SubmitCompositorFrame(root_id_, std::move(frame),
-                                          cc::SurfaceFactory::DrawCallback());
-
-  display_->Resize(viewport);
-
-  output_surface_->SetGLState(gl_state);
-  display_->SetExternalClip(clip);
-  display_->DrawAndSwap();
+void HardwareRenderer::DestroySurface() {
+  DCHECK(!child_id_.is_null());
+  DCHECK(surface_factory_);
+  surfaces_->RemoveChildId(child_id_);
+  surface_factory_->Destroy(child_id_);
+  child_id_ = cc::SurfaceId();
 }
 
 void HardwareRenderer::ReturnResources(
@@ -244,7 +169,7 @@ void HardwareRenderer::SetBeginFrameSource(
 
 void HardwareRenderer::SetBackingFrameBufferObject(
     int framebuffer_binding_ext) {
-  gl_surface_->SetBackingFrameBufferObject(framebuffer_binding_ext);
+  surfaces_->SetBackingFrameBufferObject(framebuffer_binding_ext);
 }
 
 void HardwareRenderer::ReturnResourcesInChildFrame() {

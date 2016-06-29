@@ -496,6 +496,8 @@ source_set("common") {
     "browser/scoped_allow_wait_for_legacy_web_view_api.h",
     "browser/scoped_app_gl_state_restore.cc",
     "browser/scoped_app_gl_state_restore.h",
+    "browser/surfaces_instance.cc",
+    "browser/surfaces_instance.h",
     "common/android_webview_message_generator.cc",
     "common/android_webview_message_generator.h",
     "common/aw_content_client.cc",
