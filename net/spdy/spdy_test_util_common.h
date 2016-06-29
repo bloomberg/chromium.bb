@@ -53,7 +53,7 @@ class SpdyStreamRequest;
 
 // Default upload data used by both, mock objects and framer when creating
 // data frames.
-const char kDefaultURL[] = "http://www.example.org/";
+const char kDefaultUrl[] = "https://www.example.org/";
 const char kUploadData[] = "hello!";
 const int kUploadDataSize = arraysize(kUploadData)-1;
 
@@ -207,7 +207,6 @@ struct SpdySessionDependencies {
   bool enable_priority_dependencies;
   bool enable_spdy31;
   bool enable_quic;
-  bool enable_alternative_service_for_insecure_origins;
   NextProto protocol;
   size_t session_max_recv_window_size;
   size_t stream_max_recv_window_size;
@@ -528,7 +527,6 @@ class SpdyTestUtil {
   SpdyMajorVersion spdy_version() const { return spdy_version_; }
   bool include_version_header() const { return protocol_ < kProtoHTTP2; }
 
-  const GURL& default_url() const { return default_url_; }
   void set_default_url(const GURL& url) { default_url_ = url; }
 
   const char* GetMethodKey() const;

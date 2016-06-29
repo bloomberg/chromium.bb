@@ -1216,8 +1216,7 @@ int HttpNetworkTransaction::DoReadHeadersComplete(int result) {
     return OK;
   }
 
-  if (session_->params().enable_alternative_service_for_insecure_origins ||
-      IsSecureRequest()) {
+  if (IsSecureRequest()) {
     session_->http_stream_factory()->ProcessAlternativeServices(
         session_, response_.headers.get(), url::SchemeHostPort(request_->url));
   }

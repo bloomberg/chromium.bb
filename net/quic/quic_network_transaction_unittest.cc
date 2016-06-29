@@ -267,8 +267,6 @@ class QuicNetworkTransactionTest
     request_.load_flags = 0;
     clock_->AdvanceTime(QuicTime::Delta::FromMilliseconds(20));
 
-    params_.enable_alternative_service_for_insecure_origins = true;
-
     scoped_refptr<X509Certificate> cert(
         ImportCertFromFile(GetTestCertsDirectory(), "wildcard.pem"));
     verify_details_.cert_verify_result.verified_cert = cert;
@@ -1011,19 +1009,19 @@ TEST_P(QuicNetworkTransactionTest, SetAlternativeServiceWithScheme) {
   socket_factory_.AddSSLSocketDataProvider(&ssl_data_);
 
   CreateSession();
-  // Send http request, ignore alternative service advertising if response
+  // Send https request, ignore alternative service advertising if response
   // header advertises alternative service for mail.example.org.
-  request_.url = GURL("http://mail.example.org:443");
+  request_.url = GURL("https://mail.example.org:443");
   SendRequestAndExpectHttpResponse("hello world");
   HttpServerProperties* http_server_properties =
       session_->http_server_properties();
   url::SchemeHostPort http_server("http", "mail.example.org", 443);
   url::SchemeHostPort https_server("https", "mail.example.org", 443);
   // Check alternative service is set for the correct origin.
-  EXPECT_EQ(2u,
-            http_server_properties->GetAlternativeServices(http_server).size());
   EXPECT_EQ(
-      0u, http_server_properties->GetAlternativeServices(https_server).size());
+      2u, http_server_properties->GetAlternativeServices(https_server).size());
+  EXPECT_TRUE(
+      http_server_properties->GetAlternativeServices(http_server).empty());
 }
 
 TEST_P(QuicNetworkTransactionTest, DoNotGetAltSvcForDifferentOrigin) {

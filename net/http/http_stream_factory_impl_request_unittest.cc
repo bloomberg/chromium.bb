@@ -86,7 +86,7 @@ TEST_P(HttpStreamFactoryImplRequestTest, DelayMainJob) {
 
   HttpRequestInfo request_info;
   request_info.method = "GET";
-  request_info.url = GURL("http://www.google.com");
+  request_info.url = GURL("https://www.google.com");
 
   HttpStreamFactoryImpl::Request request(
       request_info.url, job_controller, &request_delegate, nullptr,

@@ -218,8 +218,7 @@ HttpStreamFactoryImpl::Job::Job(Delegate* delegate,
       stream_type_(HttpStreamRequest::BIDIRECTIONAL_STREAM),
       ptr_factory_(this) {
   DCHECK(session);
-  if (IsSpdyAlternative() &&
-      !session_->params().enable_alternative_service_for_insecure_origins) {
+  if (IsSpdyAlternative()) {
     DCHECK(origin_url_.SchemeIs("https"));
   }
   if (IsQuicAlternative()) {

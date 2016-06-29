@@ -356,7 +356,6 @@ SpdySessionDependencies::SpdySessionDependencies(
       enable_priority_dependencies(true),
       enable_spdy31(true),
       enable_quic(false),
-      enable_alternative_service_for_insecure_origins(true),
       protocol(protocol),
       session_max_recv_window_size(
           SpdySession::GetDefaultInitialWindowSize(protocol)),
@@ -418,8 +417,6 @@ HttpNetworkSession::Params SpdySessionDependencies::CreateSessionParams(
       session_deps->enable_priority_dependencies;
   params.enable_spdy31 = session_deps->enable_spdy31;
   params.enable_quic = session_deps->enable_quic;
-  params.enable_alternative_service_for_insecure_origins =
-      session_deps->enable_alternative_service_for_insecure_origins;
   params.spdy_default_protocol = session_deps->protocol;
   params.spdy_session_max_recv_window_size =
       session_deps->session_max_recv_window_size;
@@ -684,7 +681,7 @@ SpdyTestUtil::SpdyTestUtil(NextProto protocol, bool dependency_priorities)
       headerless_spdy_framer_(spdy_version_),
       request_spdy_framer_(spdy_version_),
       response_spdy_framer_(spdy_version_),
-      default_url_(GURL(kDefaultURL)),
+      default_url_(GURL(kDefaultUrl)),
       dependency_priorities_(dependency_priorities) {
   DCHECK(next_proto_is_spdy(protocol)) << "Invalid protocol: " << protocol;
 }

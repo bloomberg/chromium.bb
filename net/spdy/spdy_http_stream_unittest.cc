@@ -116,6 +116,7 @@ class SpdyHttpStreamTest : public testing::Test,
         session_deps_(GetProtocol()) {
     session_deps_.enable_priority_dependencies = GetDependenciesFromPriority();
     session_deps_.net_log = &net_log_;
+    spdy_util_.set_default_url(GURL("http://www.example.org/"));
   }
 
   ~SpdyHttpStreamTest() {}

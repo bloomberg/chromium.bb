@@ -65,10 +65,10 @@ enum SpdyNetworkTransactionTestSSLType {
   // Request an https:// URL and use NPN (or ALPN) to negotiate SPDY during
   // the TLS handshake.
   HTTPS_SPDY_VIA_NPN,
-  // Request and http:// URL to a server that supports SPDY via Alternative
-  // Service on port 443.
-  // See: https//tools.ietf.org/id/draft-ietf-httpbis-alt-svc-06.html
-  HTTP_SPDY_VIA_ALT_SVC,
+  // Request an https:// URL to a server that supports SPDY via Alternative
+  // Service.
+  // See: http://httpwg.org/http-extensions/alt-svc.html.
+  HTTPS_SPDY_VIA_ALT_SVC,
 };
 
 struct SpdyNetworkTransactionTestParams {
@@ -88,8 +88,8 @@ struct SpdyNetworkTransactionTestParams {
                                   const SpdyNetworkTransactionTestParams& p) {
     std::string type_str;
     switch (p.ssl_type) {
-      case HTTP_SPDY_VIA_ALT_SVC:
-        type_str = "HTTP_SPDY_VIA_ALT_SVC";
+      case HTTPS_SPDY_VIA_ALT_SVC:
+        type_str = "HTTPS_SPDY_VIA_ALT_SVC";
         break;
       case HTTPS_SPDY_VIA_NPN:
         type_str = "HTTPS_SPDY_VIA_NPN";
@@ -108,12 +108,12 @@ struct SpdyNetworkTransactionTestParams {
 
 void UpdateSpdySessionDependencies(SpdyNetworkTransactionTestParams test_params,
                                    SpdySessionDependencies* session_deps) {
-  if (test_params.ssl_type == HTTP_SPDY_VIA_ALT_SVC) {
+  if (test_params.ssl_type == HTTPS_SPDY_VIA_ALT_SVC) {
     base::Time expiration = base::Time::Now() + base::TimeDelta::FromDays(1);
     session_deps->http_server_properties->SetAlternativeService(
-        url::SchemeHostPort("http", "www.example.org", 80),
+        url::SchemeHostPort(GURL(kDefaultUrl)),
         AlternativeService(AlternateProtocolFromNextProto(test_params.protocol),
-                           "www.example.org", 443),
+                           "mail.example.org", 443),
         expiration);
   }
   session_deps->enable_priority_dependencies =
@@ -144,9 +144,9 @@ class SpdyNetworkTransactionTest
     : public ::testing::TestWithParam<SpdyNetworkTransactionTestParams> {
  protected:
   SpdyNetworkTransactionTest()
-      : spdy_util_(GetParam().protocol, GetParam().priority_to_dependency) {
-    spdy_util_.set_default_url(GURL(GetDefaultUrl()));
-  }
+      : default_url_(kDefaultUrl),
+        host_port_pair_(HostPortPair::FromURL(default_url_)),
+        spdy_util_(GetParam().protocol, GetParam().priority_to_dependency) {}
 
   virtual ~SpdyNetworkTransactionTest() {
     // UploadDataStream may post a deletion tasks back to the message loop on
@@ -187,7 +187,6 @@ class SpdyNetworkTransactionTest
               SpdySessionDependencies::SpdyCreateSession(session_deps_.get())),
           log_(log),
           test_params_(test_params),
-          port_(443),
           spdy_enabled_(true) {}
 
     ~NormalSpdyTransactionHelper() {
@@ -204,7 +203,6 @@ class SpdyNetworkTransactionTest
 
     void SetSpdyDisabled() {
       spdy_enabled_ = false;
-      port_ = test_params_.ssl_type == HTTP_SPDY_VIA_ALT_SVC ? 80 : 443;
     }
 
     void RunPreTestSetup() {
@@ -267,7 +265,7 @@ class SpdyNetworkTransactionTest
                   response->was_npn_negotiated);
       }
       EXPECT_EQ("127.0.0.1", response->socket_address.host());
-      EXPECT_EQ(port_, response->socket_address.port());
+      EXPECT_EQ(443, response->socket_address.port());
       output_.status_line = response->headers->GetStatusLine();
       output_.response_info = *response;  // Make a copy so we can verify.
       output_.rv = ReadTransaction(trans_.get(), &output_.response_data);
@@ -339,7 +337,7 @@ class SpdyNetworkTransactionTest
       ssl_vector_.push_back(std::move(ssl_provider));
 
       session_deps_->socket_factory->AddSocketDataProvider(data);
-      if (test_params_.ssl_type == HTTP_SPDY_VIA_ALT_SVC) {
+      if (test_params_.ssl_type == HTTPS_SPDY_VIA_ALT_SVC) {
         MockConnect hanging_connect(SYNCHRONOUS, ERR_IO_PENDING);
         std::unique_ptr<StaticSocketDataProvider> hanging_non_alt_svc_socket(
             base::WrapUnique(new StaticSocketDataProvider(NULL, 0, NULL, 0)));
@@ -361,7 +359,6 @@ class SpdyNetworkTransactionTest
     std::unique_ptr<SpdySessionDependencies>& session_deps() {
       return session_deps_;
     }
-    int port() const { return port_; }
     SpdyNetworkTransactionTestParams test_params() const {
       return test_params_;
     }
@@ -384,7 +381,6 @@ class SpdyNetworkTransactionTest
     AlternateVector alternate_vector_;
     const BoundNetLog log_;
     SpdyNetworkTransactionTestParams test_params_;
-    int port_;
     bool spdy_enabled_;
   };
 
@@ -403,7 +399,7 @@ class SpdyNetworkTransactionTest
   const HttpRequestInfo& CreateGetRequest() {
     if (!get_request_initialized_) {
       get_request_.method = "GET";
-      get_request_.url = GURL(GetDefaultUrl());
+      get_request_.url = default_url_;
       get_request_.load_flags = 0;
       get_request_initialized_ = true;
     }
@@ -413,7 +409,7 @@ class SpdyNetworkTransactionTest
   const HttpRequestInfo& CreateGetRequestWithUserAgent() {
     if (!get_request_initialized_) {
       get_request_.method = "GET";
-      get_request_.url = GURL(GetDefaultUrl());
+      get_request_.url = default_url_;
       get_request_.load_flags = 0;
       get_request_.extra_headers.SetHeader("User-Agent", "Chrome");
       get_request_initialized_ = true;
@@ -430,7 +426,7 @@ class SpdyNetworkTransactionTest
           new ElementsUploadDataStream(std::move(element_readers), 0));
 
       post_request_.method = "POST";
-      post_request_.url = GURL(GetDefaultUrl());
+      post_request_.url = default_url_;
       post_request_.upload_data_stream = upload_data_stream_.get();
       post_request_initialized_ = true;
     }
@@ -452,7 +448,7 @@ class SpdyNetworkTransactionTest
           new ElementsUploadDataStream(std::move(element_readers), 0));
 
       post_request_.method = "POST";
-      post_request_.url = GURL(GetDefaultUrl());
+      post_request_.url = default_url_;
       post_request_.upload_data_stream = upload_data_stream_.get();
       post_request_initialized_ = true;
     }
@@ -477,7 +473,7 @@ class SpdyNetworkTransactionTest
         new ElementsUploadDataStream(std::move(element_readers), 0));
 
     post_request_.method = "POST";
-    post_request_.url = GURL(GetDefaultUrl());
+    post_request_.url = default_url_;
     post_request_.upload_data_stream = upload_data_stream_.get();
     post_request_initialized_ = true;
     return post_request_;
@@ -507,7 +503,7 @@ class SpdyNetworkTransactionTest
           new ElementsUploadDataStream(std::move(element_readers), 0));
 
       post_request_.method = "POST";
-      post_request_.url = GURL(GetDefaultUrl());
+      post_request_.url = default_url_;
       post_request_.upload_data_stream = upload_data_stream_.get();
       post_request_initialized_ = true;
     }
@@ -518,7 +514,7 @@ class SpdyNetworkTransactionTest
     if (!chunked_post_request_initialized_) {
       upload_chunked_data_stream_.reset(new ChunkedUploadDataStream(0));
       chunked_post_request_.method = "POST";
-      chunked_post_request_.url = GURL(GetDefaultUrl());
+      chunked_post_request_.url = default_url_;
       chunked_post_request_.upload_data_stream =
           upload_chunked_data_stream_.get();
       chunked_post_request_initialized_ = true;
@@ -555,8 +551,7 @@ class SpdyNetworkTransactionTest
     // session.  Once we have the session, we verify that the streams are
     // all closed and not leaked at this point.
     const GURL& url = helper.request().url;
-    HostPortPair host_port_pair(url.host(), 443);
-    SpdySessionKey key(host_port_pair, ProxyServer::Direct(),
+    SpdySessionKey key(HostPortPair::FromURL(url), ProxyServer::Direct(),
                        PRIVACY_MODE_DISABLED);
     BoundNetLog log;
     HttpNetworkSession* session = helper.session();
@@ -655,22 +650,12 @@ class SpdyNetworkTransactionTest
     return upload_chunked_data_stream_.get();
   }
 
-  const char* GetDefaultUrl() {
-    switch (GetParam().ssl_type) {
-      case HTTP_SPDY_VIA_ALT_SVC:
-        return "http://www.example.org";
-      case HTTPS_SPDY_VIA_NPN:
-        return "https://www.example.org";
-      default:
-        NOTREACHED();
-        return "";
-    }
-  }
-
   std::string GetDefaultUrlWithPath(const char* path) {
-    return std::string(GetDefaultUrl()) + path;
+    return std::string(kDefaultUrl) + path;
   }
 
+  const GURL default_url_;
+  const HostPortPair host_port_pair_;
   SpdyTestUtil spdy_util_;
 
  private:
@@ -700,17 +685,17 @@ INSTANTIATE_TEST_CASE_P(
                                          HTTPS_SPDY_VIA_NPN,
                                          false),
         SpdyNetworkTransactionTestParams(kProtoSPDY31,
-                                         HTTP_SPDY_VIA_ALT_SVC,
+                                         HTTPS_SPDY_VIA_ALT_SVC,
                                          false),
         SpdyNetworkTransactionTestParams(kProtoHTTP2,
                                          HTTPS_SPDY_VIA_NPN,
                                          false),
         SpdyNetworkTransactionTestParams(kProtoHTTP2, HTTPS_SPDY_VIA_NPN, true),
         SpdyNetworkTransactionTestParams(kProtoHTTP2,
-                                         HTTP_SPDY_VIA_ALT_SVC,
+                                         HTTPS_SPDY_VIA_ALT_SVC,
                                          false),
         SpdyNetworkTransactionTestParams(kProtoHTTP2,
-                                         HTTP_SPDY_VIA_ALT_SVC,
+                                         HTTPS_SPDY_VIA_ALT_SVC,
                                          true)));
 
 // Verify HttpNetworkTransaction constructor.
@@ -754,7 +739,6 @@ TEST_P(SpdyNetworkTransactionTest, GetAtEachPriority) {
        p = RequestPriority(p + 1)) {
     SpdyTestUtil spdy_test_util(GetParam().protocol,
                                 GetParam().priority_to_dependency);
-    spdy_test_util.set_default_url(GURL(GetDefaultUrl()));
 
     // Construct the request.
     std::unique_ptr<SpdySerializedFrame> req(
@@ -1669,10 +1653,10 @@ TEST_P(SpdyNetworkTransactionTest, Put) {
   // Setup the request
   HttpRequestInfo request;
   request.method = "PUT";
-  request.url = GURL(GetDefaultUrl());
+  request.url = default_url_;
 
   SpdyHeaderBlock put_headers(
-      spdy_util_.ConstructPutHeaderBlock(GetDefaultUrl(), 0));
+      spdy_util_.ConstructPutHeaderBlock(kDefaultUrl, 0));
   std::unique_ptr<SpdySerializedFrame> req(
       spdy_util_.ConstructSpdySyn(1, std::move(put_headers), LOWEST, true));
   MockWrite writes[] = {
@@ -1704,10 +1688,10 @@ TEST_P(SpdyNetworkTransactionTest, Head) {
   // Setup the request
   HttpRequestInfo request;
   request.method = "HEAD";
-  request.url = GURL(GetDefaultUrl());
+  request.url = default_url_;
 
   SpdyHeaderBlock head_headers(
-      spdy_util_.ConstructHeadHeaderBlock(GetDefaultUrl(), 0));
+      spdy_util_.ConstructHeadHeaderBlock(kDefaultUrl, 0));
   std::unique_ptr<SpdySerializedFrame> req(
       spdy_util_.ConstructSpdySyn(1, std::move(head_headers), LOWEST, true));
   MockWrite writes[] = {
@@ -1737,7 +1721,7 @@ TEST_P(SpdyNetworkTransactionTest, Head) {
 // Test that a simple POST works.
 TEST_P(SpdyNetworkTransactionTest, Post) {
   std::unique_ptr<SpdySerializedFrame> req(spdy_util_.ConstructSpdyPost(
-      GetDefaultUrl(), 1, kUploadDataSize, LOWEST, NULL, 0));
+      kDefaultUrl, 1, kUploadDataSize, LOWEST, NULL, 0));
   std::unique_ptr<SpdySerializedFrame> body(
       spdy_util_.ConstructSpdyBodyFrame(1, true));
   MockWrite writes[] = {
@@ -1765,7 +1749,7 @@ TEST_P(SpdyNetworkTransactionTest, Post) {
 // Test that a POST with a file works.
 TEST_P(SpdyNetworkTransactionTest, FilePost) {
   std::unique_ptr<SpdySerializedFrame> req(spdy_util_.ConstructSpdyPost(
-      GetDefaultUrl(), 1, kUploadDataSize, LOWEST, NULL, 0));
+      kDefaultUrl, 1, kUploadDataSize, LOWEST, NULL, 0));
   std::unique_ptr<SpdySerializedFrame> body(
       spdy_util_.ConstructSpdyBodyFrame(1, true));
   MockWrite writes[] = {
@@ -1815,7 +1799,7 @@ TEST_P(SpdyNetworkTransactionTest, UnreadableFilePost) {
 // Test that a complex POST works.
 TEST_P(SpdyNetworkTransactionTest, ComplexPost) {
   std::unique_ptr<SpdySerializedFrame> req(spdy_util_.ConstructSpdyPost(
-      GetDefaultUrl(), 1, kUploadDataSize, LOWEST, NULL, 0));
+      kDefaultUrl, 1, kUploadDataSize, LOWEST, NULL, 0));
   std::unique_ptr<SpdySerializedFrame> body(
       spdy_util_.ConstructSpdyBodyFrame(1, true));
   MockWrite writes[] = {
@@ -1940,14 +1924,14 @@ TEST_P(SpdyNetworkTransactionTest, NullPost) {
   // Setup the request
   HttpRequestInfo request;
   request.method = "POST";
-  request.url = GURL(GetDefaultUrl());
+  request.url = default_url_;
   // Create an empty UploadData.
   request.upload_data_stream = NULL;
 
   // When request.upload_data_stream is NULL for post, content-length is
   // expected to be 0.
   SpdyHeaderBlock req_block(
-      spdy_util_.ConstructPostHeaderBlock(GetDefaultUrl(), 0));
+      spdy_util_.ConstructPostHeaderBlock(kDefaultUrl, 0));
   std::unique_ptr<SpdySerializedFrame> req(
       spdy_util_.ConstructSpdySyn(1, std::move(req_block), LOWEST, true));
 
@@ -1986,13 +1970,13 @@ TEST_P(SpdyNetworkTransactionTest, EmptyPost) {
   // Setup the request
   HttpRequestInfo request;
   request.method = "POST";
-  request.url = GURL(GetDefaultUrl());
+  request.url = default_url_;
   request.upload_data_stream = &stream;
 
   const uint64_t kContentLength = 0;
 
   SpdyHeaderBlock req_block(
-      spdy_util_.ConstructPostHeaderBlock(GetDefaultUrl(), kContentLength));
+      spdy_util_.ConstructPostHeaderBlock(kDefaultUrl, kContentLength));
   std::unique_ptr<SpdySerializedFrame> req(
       spdy_util_.ConstructSpdySyn(1, std::move(req_block), LOWEST, true));
 
@@ -2335,6 +2319,9 @@ TEST_P(SpdyNetworkTransactionTest, CancelledTransactionSendRst) {
 // to start another transaction on a session that is closing down. See
 // http://crbug.com/47455
 TEST_P(SpdyNetworkTransactionTest, StartTransactionOnReadCallback) {
+  if (GetParam().ssl_type != HTTPS_SPDY_VIA_NPN)
+    return;
+
   std::unique_ptr<SpdySerializedFrame> req(
       spdy_util_.ConstructSpdyGet(nullptr, 0, 1, LOWEST, true));
   MockWrite writes[] = {CreateMockWrite(*req)};
@@ -2384,7 +2371,7 @@ TEST_P(SpdyNetworkTransactionTest, StartTransactionOnReadCallback) {
   rv = trans->Read(
       buf.get(), kSize,
       base::Bind(&SpdyNetworkTransactionTest::StartTransactionCallback,
-                 helper.session(), GURL(GetDefaultUrl())));
+                 helper.session(), default_url_));
   ASSERT_EQ(ERR_IO_PENDING, rv);
   // This forces an err_IO_pending, which sets the callback.
   data.Resume();
@@ -2448,7 +2435,7 @@ TEST_P(SpdyNetworkTransactionTest, DeleteSessionOnReadCallback) {
 
 // Send a spdy request to www.example.org that gets redirected to www.foo.com.
 TEST_P(SpdyNetworkTransactionTest, DISABLED_RedirectGetRequest) {
-  SpdyHeaderBlock headers(spdy_util_.ConstructGetHeaderBlock(GetDefaultUrl()));
+  SpdyHeaderBlock headers(spdy_util_.ConstructGetHeaderBlock(kDefaultUrl));
   headers["user-agent"] = "";
   headers["accept-encoding"] = "gzip, deflate";
 
@@ -2495,7 +2482,7 @@ TEST_P(SpdyNetworkTransactionTest, DISABLED_RedirectGetRequest) {
   {
     SpdyURLRequestContext spdy_url_request_context(GetParam().protocol);
     std::unique_ptr<URLRequest> r(spdy_url_request_context.CreateRequest(
-        GURL(GetDefaultUrl()), DEFAULT_PRIORITY, &d));
+        default_url_, DEFAULT_PRIORITY, &d));
     spdy_url_request_context.socket_factory().
         AddSocketDataProvider(&data);
     spdy_url_request_context.socket_factory().
@@ -2524,7 +2511,7 @@ TEST_P(SpdyNetworkTransactionTest, DISABLED_RedirectGetRequest) {
 // Send a spdy request to www.example.org. Get a pushed stream that redirects to
 // www.foo.com.
 TEST_P(SpdyNetworkTransactionTest, DISABLED_RedirectServerPush) {
-  SpdyHeaderBlock headers(spdy_util_.ConstructGetHeaderBlock(GetDefaultUrl()));
+  SpdyHeaderBlock headers(spdy_util_.ConstructGetHeaderBlock(kDefaultUrl));
   headers["user-agent"] = "";
   headers["accept-encoding"] = "gzip, deflate";
 
@@ -2581,7 +2568,7 @@ TEST_P(SpdyNetworkTransactionTest, DISABLED_RedirectServerPush) {
   SpdyURLRequestContext spdy_url_request_context(GetParam().protocol);
   {
     std::unique_ptr<URLRequest> r(spdy_url_request_context.CreateRequest(
-        GURL(GetDefaultUrl()), DEFAULT_PRIORITY, &d));
+        default_url_, DEFAULT_PRIORITY, &d));
     spdy_url_request_context.socket_factory().
         AddSocketDataProvider(&data);
 
@@ -3289,7 +3276,6 @@ TEST_P(SpdyNetworkTransactionTest, SynReplyHeaders) {
   for (size_t i = 0; i < arraysize(test_cases); ++i) {
     SpdyTestUtil spdy_test_util(GetParam().protocol,
                                 GetParam().priority_to_dependency);
-    spdy_test_util.set_default_url(GURL(GetDefaultUrl()));
     std::unique_ptr<SpdySerializedFrame> req(
         spdy_test_util.ConstructSpdyGet(nullptr, 0, 1, LOWEST, true));
     MockWrite writes[] = {CreateMockWrite(*req, 0)};
@@ -3379,7 +3365,6 @@ TEST_P(SpdyNetworkTransactionTest, SynReplyHeadersVary) {
   for (size_t i = 0; i < arraysize(test_cases); ++i) {
     SpdyTestUtil spdy_test_util(GetParam().protocol,
                                 GetParam().priority_to_dependency);
-    spdy_test_util.set_default_url(GURL(GetDefaultUrl()));
 
     // Construct the request.
     std::unique_ptr<SpdySerializedFrame> frame_req(
@@ -3477,7 +3462,6 @@ TEST_P(SpdyNetworkTransactionTest, InvalidSynReply) {
   for (size_t i = 0; i < arraysize(test_cases); ++i) {
     SpdyTestUtil spdy_test_util(GetParam().protocol,
                                 GetParam().priority_to_dependency);
-    spdy_test_util.set_default_url(GURL(GetDefaultUrl()));
 
     std::unique_ptr<SpdySerializedFrame> req(
         spdy_test_util.ConstructSpdyGet(nullptr, 0, 1, LOWEST, true));
@@ -3764,7 +3748,7 @@ TEST_P(SpdyNetworkTransactionTest, NetLog) {
                      ": www.example.org");
   expected.push_back(std::string(spdy_util_.GetPathKey()) + ": /");
   expected.push_back(std::string(spdy_util_.GetSchemeKey()) + ": " +
-                     spdy_util_.default_url().scheme());
+                     default_url_.scheme());
   expected.push_back(std::string(spdy_util_.GetMethodKey()) + ": GET");
   expected.push_back("user-agent: Chrome");
   if (spdy_util_.spdy_version() < HTTP2) {
@@ -4237,10 +4221,7 @@ TEST_P(SpdyNetworkTransactionTest, SettingsSaved) {
   helper.RunPreTestSetup();
 
   // Verify that no settings exist initially.
-  HostPortPair host_port_pair("www.example.org", helper.port());
-  url::SchemeHostPort spdy_server("https", host_port_pair.host(),
-                                  host_port_pair.port());
-
+  url::SchemeHostPort spdy_server(default_url_);
   SpdySessionPool* spdy_session_pool = helper.session()->spdy_session_pool();
   EXPECT_TRUE(spdy_session_pool->http_server_properties()
                   ->GetSpdySettings(spdy_server)
@@ -4352,9 +4333,7 @@ TEST_P(SpdyNetworkTransactionTest, SettingsPlayback) {
   pool_peer.SetEnableSendingInitialData(true);
 
   // Verify that no settings exist initially.
-  HostPortPair host_port_pair("www.example.org", helper.port());
-  url::SchemeHostPort spdy_server("https", host_port_pair.host(),
-                                  host_port_pair.port());
+  url::SchemeHostPort spdy_server(default_url_);
   EXPECT_TRUE(spdy_session_pool->http_server_properties()
                   ->GetSpdySettings(spdy_server)
                   .empty());
@@ -4538,7 +4517,7 @@ TEST_P(SpdyNetworkTransactionTest, HTTP11RequiredRetry) {
 
   HttpRequestInfo request;
   request.method = "GET";
-  request.url = GURL("https://www.example.org/");
+  request.url = default_url_;
   std::unique_ptr<SpdySessionDependencies> session_deps(
       CreateSpdySessionDependencies(GetParam()));
   // Do not force SPDY so that second socket can negotiate HTTP/1.1.
@@ -4546,8 +4525,7 @@ TEST_P(SpdyNetworkTransactionTest, HTTP11RequiredRetry) {
                                      GetParam(), std::move(session_deps));
 
   // First socket: HTTP/2 request rejected with HTTP_1_1_REQUIRED.
-  const char* url = request.url.spec().c_str();
-  SpdyHeaderBlock headers(spdy_util_.ConstructGetHeaderBlock(url));
+  SpdyHeaderBlock headers(spdy_util_.ConstructGetHeaderBlock(kDefaultUrl));
   std::unique_ptr<SpdySerializedFrame> req(
       spdy_util_.ConstructSpdySyn(1, std::move(headers), LOWEST, true));
   MockWrite writes0[] = {CreateMockWrite(*req, 0)};
@@ -4589,14 +4567,13 @@ TEST_P(SpdyNetworkTransactionTest, HTTP11RequiredRetry) {
 
   HttpServerProperties* http_server_properties =
       helper.session()->spdy_session_pool()->http_server_properties();
-  const HostPortPair host_port_pair = HostPortPair::FromURL(GURL(url));
-  EXPECT_FALSE(http_server_properties->RequiresHTTP11(host_port_pair));
+  EXPECT_FALSE(http_server_properties->RequiresHTTP11(host_port_pair_));
 
   helper.RunPreTestSetup();
   helper.StartDefaultTest();
   helper.FinishDefaultTestWithoutVerification();
   helper.VerifyDataConsumed();
-  EXPECT_TRUE(http_server_properties->RequiresHTTP11(host_port_pair));
+  EXPECT_TRUE(http_server_properties->RequiresHTTP11(host_port_pair_));
 
   const HttpResponseInfo* response = helper.trans()->GetResponseInfo();
   ASSERT_TRUE(response);
@@ -4627,7 +4604,7 @@ TEST_P(SpdyNetworkTransactionTest, HTTP11RequiredProxyRetry) {
 
   HttpRequestInfo request;
   request.method = "GET";
-  request.url = GURL("https://www.example.org/");
+  request.url = default_url_;
   std::unique_ptr<SpdySessionDependencies> session_deps(
       CreateSpdySessionDependencies(
           GetParam(),
@@ -4836,12 +4813,11 @@ TEST_P(SpdyNetworkTransactionTest, DirectConnectProxyReconnect) {
   EXPECT_EQ("hello!", out.response_data);
 
   // Check that the SpdySession is still in the SpdySessionPool.
-  HostPortPair host_port_pair("www.example.org", helper.port());
-  SpdySessionKey session_pool_key_direct(
-      host_port_pair, ProxyServer::Direct(), PRIVACY_MODE_DISABLED);
+  SpdySessionKey session_pool_key_direct(host_port_pair_, ProxyServer::Direct(),
+                                         PRIVACY_MODE_DISABLED);
   EXPECT_TRUE(HasSpdySession(spdy_session_pool, session_pool_key_direct));
   SpdySessionKey session_pool_key_proxy(
-      host_port_pair,
+      host_port_pair_,
       ProxyServer::FromURI("www.foo.com", ProxyServer::SCHEME_HTTP),
       PRIVACY_MODE_DISABLED);
   EXPECT_FALSE(HasSpdySession(spdy_session_pool, session_pool_key_proxy));
@@ -4923,6 +4899,8 @@ TEST_P(SpdyNetworkTransactionTest, DirectConnectProxyReconnect) {
 // This can happen when a server reboots without saying goodbye, or when
 // we're behind a NAT that masked the RST.
 TEST_P(SpdyNetworkTransactionTest, VerifyRetryOnConnectionReset) {
+  if (GetParam().ssl_type != HTTPS_SPDY_VIA_NPN)
+    return;
   std::unique_ptr<SpdySerializedFrame> resp(
       spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 1));
   std::unique_ptr<SpdySerializedFrame> body(
@@ -5796,8 +5774,7 @@ TEST_P(SpdyNetworkTransactionTest, ServerPushValidCrossOrigin) {
   EXPECT_EQ(OK, rv);
 
   SpdySessionPool* spdy_session_pool = helper.session()->spdy_session_pool();
-  HostPortPair host_port_pair("www.example.org", 443);
-  SpdySessionKey key(host_port_pair, ProxyServer::Direct(),
+  SpdySessionKey key(host_port_pair_, ProxyServer::Direct(),
                      PRIVACY_MODE_DISABLED);
   base::WeakPtr<SpdySession> spdy_session =
       spdy_session_pool->FindAvailableSession(key, GURL(), log);
@@ -6247,8 +6224,7 @@ TEST_P(SpdyNetworkTransactionTest, WindowUpdateReceived) {
   std::unique_ptr<std::string> content(
       new std::string(kMaxSpdyFrameChunkSize, 'a'));
   std::unique_ptr<SpdySerializedFrame> req(spdy_util_.ConstructSpdyPost(
-      GetDefaultUrl(), 1, kMaxSpdyFrameChunkSize * kFrameCount, LOWEST, NULL,
-      0));
+      kDefaultUrl, 1, kMaxSpdyFrameChunkSize * kFrameCount, LOWEST, NULL, 0));
   std::unique_ptr<SpdySerializedFrame> body(spdy_util_.ConstructSpdyBodyFrame(
       1, content->c_str(), content->size(), false));
   std::unique_ptr<SpdySerializedFrame> body_end(
@@ -6293,7 +6269,7 @@ TEST_P(SpdyNetworkTransactionTest, WindowUpdateReceived) {
   // Setup the request
   HttpRequestInfo request;
   request.method = "POST";
-  request.url = GURL(GetDefaultUrl());
+  request.url = default_url_;
   request.upload_data_stream = &upload_data_stream;
 
   NormalSpdyTransactionHelper helper(request, DEFAULT_PRIORITY,
@@ -6472,8 +6448,7 @@ TEST_P(SpdyNetworkTransactionTest, WindowUpdateOverflow) {
   std::unique_ptr<std::string> content(
       new std::string(kMaxSpdyFrameChunkSize, 'a'));
   std::unique_ptr<SpdySerializedFrame> req(spdy_util_.ConstructSpdyPost(
-      GetDefaultUrl(), 1, kMaxSpdyFrameChunkSize * kFrameCount, LOWEST, NULL,
-      0));
+      kDefaultUrl, 1, kMaxSpdyFrameChunkSize * kFrameCount, LOWEST, NULL, 0));
   std::unique_ptr<SpdySerializedFrame> body(spdy_util_.ConstructSpdyBodyFrame(
       1, content->c_str(), content->size(), false));
   std::unique_ptr<SpdySerializedFrame> rst(
@@ -6507,7 +6482,7 @@ TEST_P(SpdyNetworkTransactionTest, WindowUpdateOverflow) {
   // Setup the request
   HttpRequestInfo request;
   request.method = "POST";
-  request.url = GURL(GetDefaultUrl());
+  request.url = default_url_;
   request.upload_data_stream = &upload_data_stream;
 
   NormalSpdyTransactionHelper helper(request, DEFAULT_PRIORITY,
@@ -6559,7 +6534,7 @@ TEST_P(SpdyNetworkTransactionTest, FlowControlStallResume) {
   std::string content(kMaxSpdyFrameChunkSize, 'a');
 
   std::unique_ptr<SpdySerializedFrame> req(spdy_util_.ConstructSpdyPost(
-      GetDefaultUrl(), 1,
+      kDefaultUrl, 1,
       /*content_length=*/kBufferSize * num_upload_buffers + kUploadDataSize,
       LOWEST, NULL, 0));
 
@@ -6649,7 +6624,7 @@ TEST_P(SpdyNetworkTransactionTest, FlowControlStallResume) {
 
   HttpRequestInfo request;
   request.method = "POST";
-  request.url = GURL(GetDefaultUrl());
+  request.url = default_url_;
   request.upload_data_stream = &upload_data_stream;
   NormalSpdyTransactionHelper helper(request, DEFAULT_PRIORITY, BoundNetLog(),
                                      GetParam(), NULL);
@@ -6708,7 +6683,7 @@ TEST_P(SpdyNetworkTransactionTest, FlowControlStallResumeAfterSettings) {
   std::string content(kMaxSpdyFrameChunkSize, 'a');
 
   std::unique_ptr<SpdySerializedFrame> req(spdy_util_.ConstructSpdyPost(
-      GetDefaultUrl(), 1,
+      kDefaultUrl, 1,
       /*content_length=*/kBufferSize * num_upload_buffers + kUploadDataSize,
       LOWEST, NULL, 0));
 
@@ -6808,7 +6783,7 @@ TEST_P(SpdyNetworkTransactionTest, FlowControlStallResumeAfterSettings) {
 
   HttpRequestInfo request;
   request.method = "POST";
-  request.url = GURL(GetDefaultUrl());
+  request.url = default_url_;
   request.upload_data_stream = &upload_data_stream;
   NormalSpdyTransactionHelper helper(request, DEFAULT_PRIORITY,
                                      BoundNetLog(), GetParam(), NULL);
@@ -6874,7 +6849,7 @@ TEST_P(SpdyNetworkTransactionTest, FlowControlNegativeSendWindowSize) {
   std::string content(kMaxSpdyFrameChunkSize, 'a');
 
   std::unique_ptr<SpdySerializedFrame> req(spdy_util_.ConstructSpdyPost(
-      GetDefaultUrl(), 1,
+      kDefaultUrl, 1,
       /*content_length=*/kBufferSize * num_upload_buffers + kUploadDataSize,
       LOWEST, NULL, 0));
 
@@ -6976,7 +6951,7 @@ TEST_P(SpdyNetworkTransactionTest, FlowControlNegativeSendWindowSize) {
 
   HttpRequestInfo request;
   request.method = "POST";
-  request.url = GURL(GetDefaultUrl());
+  request.url = default_url_;
   request.upload_data_stream = &upload_data_stream;
   NormalSpdyTransactionHelper helper(request, DEFAULT_PRIORITY,
                                      BoundNetLog(), GetParam(), NULL);
@@ -7078,10 +7053,10 @@ TEST_P(SpdyNetworkTransactionTest, LargeRequest) {
 
   HttpRequestInfo request;
   request.method = "GET";
-  request.url = GURL(GetDefaultUrl());
+  request.url = default_url_;
   request.extra_headers.SetHeader(kKey, kValue);
 
-  SpdyHeaderBlock headers(spdy_util_.ConstructGetHeaderBlock(GetDefaultUrl()));
+  SpdyHeaderBlock headers(spdy_util_.ConstructGetHeaderBlock(kDefaultUrl));
   headers[kKey] = kValue;
   std::unique_ptr<SpdySerializedFrame> req(
       spdy_util_.ConstructSpdySyn(1, std::move(headers), LOWEST, true));
@@ -7112,7 +7087,7 @@ TEST_P(SpdyNetworkTransactionTest, LargeRequest) {
 
 // Regression test for https://crbug.com/535629: response header exceeds 16 kB.
 TEST_P(SpdyNetworkTransactionTest, LargeResponseHeader) {
-  SpdyHeaderBlock headers(spdy_util_.ConstructGetHeaderBlock(GetDefaultUrl()));
+  SpdyHeaderBlock headers(spdy_util_.ConstructGetHeaderBlock(kDefaultUrl));
   std::unique_ptr<SpdySerializedFrame> req(
       spdy_util_.ConstructSpdySyn(1, std::move(headers), LOWEST, true));
   MockWrite writes[] = {
@@ -7137,7 +7112,7 @@ TEST_P(SpdyNetworkTransactionTest, LargeResponseHeader) {
 
   HttpRequestInfo request;
   request.method = "GET";
-  request.url = GURL(GetDefaultUrl());
+  request.url = default_url_;
   NormalSpdyTransactionHelper helper(request, DEFAULT_PRIORITY, BoundNetLog(),
                                      GetParam(), nullptr);
 
@@ -7175,7 +7150,7 @@ class SpdyNetworkTransactionNoTLSUsageCheckTest
                              arraysize(writes));
     HttpRequestInfo request;
     request.method = "GET";
-    request.url = GURL("https://www.example.org/");
+    request.url = default_url_;
     NormalSpdyTransactionHelper helper(
         request, DEFAULT_PRIORITY, BoundNetLog(), GetParam(), NULL);
     helper.RunToCompletionWithSSLData(&data, std::move(ssl_provider));
@@ -7229,7 +7204,7 @@ class SpdyNetworkTransactionTLSUsageCheckTest
     StaticSocketDataProvider data(NULL, 0, writes, arraysize(writes));
     HttpRequestInfo request;
     request.method = "GET";
-    request.url = GURL("https://www.example.org/");
+    request.url = default_url_;
     NormalSpdyTransactionHelper helper(
         request, DEFAULT_PRIORITY, BoundNetLog(), GetParam(), NULL);
     helper.RunToCompletionWithSSLData(&data, std::move(ssl_provider));

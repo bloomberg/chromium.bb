@@ -71,6 +71,7 @@ class SpdyStreamTest : public ::testing::Test,
       : spdy_util_(GetProtocol(), GetDependenciesFromPriority()),
         session_deps_(GetProtocol()),
         offset_(0) {
+    spdy_util_.set_default_url(GURL(kStreamUrl));
     session_deps_.enable_priority_dependencies = GetDependenciesFromPriority();
     session_ = SpdySessionDependencies::SpdyCreateSession(&session_deps_);
   }
