@@ -974,6 +974,23 @@ struct FuzzTraits<content::SyntheticGesturePacket> {
         gesture_params.reset(params);
         break;
       }
+      case content::SyntheticGestureParams::GestureType::POINTER_ACTION: {
+        content::SyntheticPointerActionParams::PointerActionType action_type;
+        gfx::PointF position;
+        int index;
+        if (!FuzzParam(&action_type, fuzzer))
+          return false;
+        if (!FuzzParam(&position, fuzzer))
+          return false;
+        if (!FuzzParam(&index, fuzzer))
+          return false;
+        content::SyntheticPointerActionParams* params =
+            new content::SyntheticPointerActionParams(action_type);
+        params->set_position(position);
+        params->set_index(index);
+        gesture_params.reset(params);
+        break;
+      }
     }
     p->set_gesture_params(std::move(gesture_params));
     return true;
