@@ -73,6 +73,16 @@ gfx::Rect FilterOperations::MapRect(const gfx::Rect& rect,
                          accumulate_rect);
 }
 
+gfx::Rect FilterOperations::MapRectReverse(const gfx::Rect& rect,
+                                           const SkMatrix& matrix) const {
+  auto accumulate_rect = [&matrix](const gfx::Rect& rect,
+                                   const FilterOperation& op) {
+    return op.MapRectReverse(rect, matrix);
+  };
+  return std::accumulate(operations_.rbegin(), operations_.rend(), rect,
+                         accumulate_rect);
+}
+
 void FilterOperations::GetOutsets(int* top,
                                   int* right,
                                   int* bottom,

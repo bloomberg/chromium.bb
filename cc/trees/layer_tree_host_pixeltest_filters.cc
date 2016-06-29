@@ -862,6 +862,76 @@ TEST_F(FilterWithGiantCropRectNoClip, GL) {
       base::FilePath(FILE_PATH_LITERAL("filter_with_giant_crop_rect.png")));
 }
 
+class BackgroundFilterWithDeviceScaleFactorTest
+    : public LayerTreeHostFiltersPixelTest {
+ protected:
+  void RunPixelTestType(float device_scale_factor,
+                        PixelTestType test_type,
+                        const base::FilePath& expected_result) {
+    device_scale_factor_ = device_scale_factor;
+
+    scoped_refptr<Layer> root =
+        CreateSolidColorLayer(gfx::Rect(200, 200), SK_ColorWHITE);
+
+    scoped_refptr<SolidColorLayer> background =
+        CreateSolidColorLayer(gfx::Rect(100, 120), SK_ColorBLACK);
+    root->AddChild(background);
+
+    scoped_refptr<SolidColorLayer> filtered = CreateSolidColorLayer(
+        gfx::Rect(0, 100, 200, 100), SkColorSetA(SK_ColorGREEN, 127));
+    FilterOperations filters;
+    filters.Append(FilterOperation::CreateReferenceFilter(
+        SkOffsetImageFilter::Make(0, 80, nullptr)));
+    filtered->SetBackgroundFilters(filters);
+    root->AddChild(filtered);
+
+    // This should appear as a grid of 4 100x100 squares which are:
+    // BLACK       WHITE
+    // DARK GREEN  LIGHT GREEN
+    RunPixelTest(test_type, std::move(root), expected_result);
+  }
+
+ private:
+  // LayerTreePixelTest overrides
+
+  void InitializeSettings(LayerTreeSettings* settings) override {
+    LayerTreeHostFiltersPixelTest::InitializeSettings(settings);
+    // Required so that device scale is inherited by content scale.
+    settings->layer_transforms_should_scale_layer_contents = true;
+  }
+
+  void SetupTree() override {
+    layer_tree_host()->SetDeviceScaleFactor(device_scale_factor_);
+    LayerTreeHostFiltersPixelTest::SetupTree();
+  }
+
+  float device_scale_factor_ = 1;
+};
+
+TEST_F(BackgroundFilterWithDeviceScaleFactorTest, StandardDpi_GL) {
+  RunPixelTestType(
+      1.f, PIXEL_TEST_GL,
+      base::FilePath(FILE_PATH_LITERAL("offset_background_filter_1x.png")));
+}
+
+TEST_F(BackgroundFilterWithDeviceScaleFactorTest, StandardDpi_Software) {
+  RunPixelTestType(
+      1.f, PIXEL_TEST_SOFTWARE,
+      base::FilePath(FILE_PATH_LITERAL("offset_background_filter_1x.png")));
+}
+
+TEST_F(BackgroundFilterWithDeviceScaleFactorTest, HiDpi_GL) {
+  RunPixelTestType(
+      2.f, PIXEL_TEST_GL,
+      base::FilePath(FILE_PATH_LITERAL("offset_background_filter_2x.png")));
+}
+
+TEST_F(BackgroundFilterWithDeviceScaleFactorTest, HiDpi_Software) {
+  RunPixelTestType(
+      2.f, PIXEL_TEST_SOFTWARE,
+      base::FilePath(FILE_PATH_LITERAL("offset_background_filter_2x.png")));
+}
+
 }  // namespace
 }  // namespace cc
 

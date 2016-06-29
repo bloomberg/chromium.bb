@@ -58,6 +58,10 @@ class CC_EXPORT FilterOperations {
   // by pixels in the source rect.
   gfx::Rect MapRect(const gfx::Rect& rect, const SkMatrix& matrix) const;
 
+  // Maps "backward" to determine which pixels in the source affect the pixels
+  // in the destination rect.
+  gfx::Rect MapRectReverse(const gfx::Rect& rect, const SkMatrix& matrix) const;
+
   void GetOutsets(int* top, int* right, int* bottom, int* left) const;
   bool HasFilterThatMovesPixels() const;
   bool HasFilterThatAffectsOpacity() const;

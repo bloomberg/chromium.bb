@@ -318,41 +318,68 @@ void FilterOperation::AsValueInto(base::trace_event::TracedValue* value) const {
   }
 }
 
-static SkVector MapStdDeviation(float std_deviation, const SkMatrix& matrix) {
+namespace {
+
+SkVector MapStdDeviation(float std_deviation, const SkMatrix& matrix) {
   // Corresponds to SpreadForStdDeviation in filter_operations.cc.
   SkVector sigma = SkVector::Make(std_deviation, std_deviation);
   matrix.mapVectors(&sigma, 1);
   return sigma * SkIntToScalar(3);
 }
 
-gfx::Rect FilterOperation::MapRect(const gfx::Rect& rect,
-                                   const SkMatrix& matrix) const {
-  switch (type_) {
+gfx::Rect MapRectInternal(const FilterOperation& op,
+                          const gfx::Rect& rect,
+                          const SkMatrix& matrix,
+                          SkImageFilter::MapDirection direction) {
+  switch (op.type()) {
     case FilterOperation::BLUR: {
-      SkVector spread = MapStdDeviation(amount(), matrix);
+      SkVector spread = MapStdDeviation(op.amount(), matrix);
+      float spreadX = std::abs(spread.x());
+      float spreadY = std::abs(spread.y());
       gfx::Rect result = rect;
-      result.Inset(-spread.x(), -spread.y(), -spread.x(), -spread.y());
+      result.Inset(-spreadX, -spreadY, -spreadX, -spreadY);
       return result;
     }
     case FilterOperation::DROP_SHADOW: {
-      SkVector spread = MapStdDeviation(amount(), matrix);
+      SkVector spread = MapStdDeviation(op.amount(), matrix);
+      float spreadX = std::abs(spread.x());
+      float spreadY = std::abs(spread.y());
       gfx::Rect result = rect;
-      result.Inset(-spread.x(), -spread.y(), -spread.x(), -spread.y());
-      result += drop_shadow_offset().OffsetFromOrigin();
+      result.Inset(-spreadX, -spreadY, -spreadX, -spreadY);
+
+      gfx::Vector2d drop_shadow_offset =
+          op.drop_shadow_offset().OffsetFromOrigin();
+      if (direction == SkImageFilter::kForward_MapDirection)
+        result += drop_shadow_offset;
+      else
+        result -= drop_shadow_offset;
+
       result.Union(rect);
       return result;
     }
     case FilterOperation::REFERENCE: {
-      if (!image_filter())
+      if (!op.image_filter())
         return rect;
-      SkIRect in_rect = gfx::RectToSkIRect(rect);
-      SkIRect out_rect = image_filter()->filterBounds(
-          in_rect, matrix, SkImageFilter::kForward_MapDirection);
-      return gfx::SkIRectToRect(out_rect);
+      return gfx::SkIRectToRect(op.image_filter()->filterBounds(
+          gfx::RectToSkIRect(rect), matrix, direction));
     }
     default:
       return rect;
   }
+}
+
+}  // namespace
+
+gfx::Rect FilterOperation::MapRect(const gfx::Rect& rect,
+                                   const SkMatrix& matrix) const {
+  return MapRectInternal(*this, rect, matrix,
+                         SkImageFilter::kForward_MapDirection);
+}
+
+gfx::Rect FilterOperation::MapRectReverse(const gfx::Rect& rect,
+                                          const SkMatrix& matrix) const {
+  return MapRectInternal(*this, rect, matrix,
+                         SkImageFilter::kReverse_MapDirection);
 }
 
 }  // namespace cc

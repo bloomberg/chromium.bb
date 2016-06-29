@@ -800,9 +800,16 @@ gfx::Rect GLRenderer::GetBackdropBoundingBoxForRenderPassQuad(
       contents_device_transform, scaled_region.BoundingBox()));
 
   if (ShouldApplyBackgroundFilters(quad)) {
-    int top, right, bottom, left;
-    quad->background_filters.GetOutsets(&top, &right, &bottom, &left);
-    backdrop_rect.Inset(-left, -top, -right, -bottom);
+    SkMatrix matrix;
+    matrix.setScale(quad->filters_scale.x(), quad->filters_scale.y());
+    if (FlippedFramebuffer(frame)) {
+      // TODO(jbroman): This probably isn't the right way to account for this.
+      // Probably some combination of frame->projection_matrix,
+      // frame->window_matrix and contents_device_transform?
+      matrix.postScale(1, -1);
+    }
+    backdrop_rect =
+        quad->background_filters.MapRectReverse(backdrop_rect, matrix);
   }
 
   if (!backdrop_rect.IsEmpty() && use_aa) {

@@ -235,6 +235,10 @@ class CC_EXPORT FilterOperation {
   // by pixels in the source rect.
   gfx::Rect MapRect(const gfx::Rect& rect, const SkMatrix& matrix) const;
 
+  // Maps "backward" to determine which pixels in the source affect the pixels
+  // in the destination rect.
+  gfx::Rect MapRectReverse(const gfx::Rect& rect, const SkMatrix& matrix) const;
+
  private:
   FilterOperation(FilterType type, float amount);
 

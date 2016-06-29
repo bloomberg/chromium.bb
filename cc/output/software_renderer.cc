@@ -702,9 +702,10 @@ gfx::Rect SoftwareRenderer::GetBackdropBoundingBoxForRenderPassQuad(
   gfx::Rect backdrop_rect = gfx::ToEnclosingRect(
       MathUtil::MapClippedRect(contents_device_transform, QuadVertexRect()));
 
-  int top, right, bottom, left;
-  quad->background_filters.GetOutsets(&top, &right, &bottom, &left);
-  backdrop_rect.Inset(-left, -top, -right, -bottom);
+  SkMatrix matrix;
+  matrix.setScale(quad->filters_scale.x(), quad->filters_scale.y());
+  backdrop_rect =
+      quad->background_filters.MapRectReverse(backdrop_rect, matrix);
 
   backdrop_rect.Intersect(MoveFromDrawToWindowSpace(
       frame, frame->current_render_pass->output_rect));
