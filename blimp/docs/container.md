@@ -58,6 +58,7 @@ generated target `out-linux/Debug/gen/engine-manifest.txt`.
 Using the tarfile you can create a Docker image:
 
 ```bash
+docker build -f Dockerfile.base -t base - < ./out-linux/Debug/blimp_engine_bundle.tar.gz
 docker build -t blimp_engine - < ./out-linux/Debug/blimp_engine_bundle.tar.gz
 ```
 
