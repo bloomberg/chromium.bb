@@ -22450,8 +22450,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Media.Video.Autoplay" enum="AutoplaySource">
-  <owner>mlamouri@chromium.org</owner>
   <owner>avayvod@chromium.org</owner>
+  <owner>mlamouri@chromium.org</owner>
   <owner>zqzhang@chromium.org</owner>
   <summary>
     Records the autoplay source of videos. This includes
@@ -22460,10 +22460,19 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Media.Video.Autoplay.Muted" enum="AutoplaySource">
-  <owner>mlamouri@chromium.org</owner>
   <owner>avayvod@chromium.org</owner>
+  <owner>mlamouri@chromium.org</owner>
   <owner>zqzhang@chromium.org</owner>
   <summary>Records the autoplay source of muted videos.</summary>
+</histogram>
+
+<histogram name="Media.Video.Autoplay.Muted.UnmuteAction" enum="BooleanSuccess">
+  <owner>avayvod@chromium.org</owner>
+  <owner>mlamouri@chromium.org</owner>
+  <owner>zqzhang@chromium.org</owner>
+  <summary>
+    Status of the unmute action on a video that autoplayed because it was muted.
+  </summary>
 </histogram>
 
 <histogram name="Media.VideoCapture.AspectRatio" units="%">

@@ -2276,11 +2276,13 @@ void HTMLMediaElement::setMuted(bool muted)
 {
     MEDIA_LOG << "setMuted(" << (void*)this << ", " << boolString(muted) << ")";
 
-    if (UserGestureIndicator::processingUserGesture())
-        unlockUserGesture();
-
     if (m_muted == muted)
         return;
+
+    bool wasAutoplayingMuted = !paused() && m_muted && isLockedPendingUserGesture();
+
+    if (UserGestureIndicator::processingUserGesture())
+        unlockUserGesture();
 
     m_muted = muted;
     m_autoplayHelper->mutedChanged();
@@ -2294,9 +2296,16 @@ void HTMLMediaElement::setMuted(bool muted)
 
     scheduleEvent(EventTypeNames::volumechange);
 
-    // Pause the element when unmuting if it's still locked.
-    if (!muted && isGestureNeededForPlayback())
-        pause();
+    // If an element autoplayed while muted, it needs to be unlocked to unmute,
+    // otherwise, it will be paused.
+    if (wasAutoplayingMuted) {
+        if (isGestureNeededForPlayback()) {
+            pause();
+            recordAutoplayUnmuteStatus(AutoplayUnmuteActionFailure);
+        } else {
+            recordAutoplayUnmuteStatus(AutoplayUnmuteActionSuccess);
+        }
+    }
 }
 
 void HTMLMediaElement::updateVolume()
@@ -3885,6 +3894,13 @@ void HTMLMediaElement::recordAutoplaySourceMetric(int source)
     } else {
         audioHistogram.count(source);
     }
+}
+
+void HTMLMediaElement::recordAutoplayUnmuteStatus(AutoplayUnmuteActionStatus status)
+{
+    DEFINE_STATIC_LOCAL(EnumerationHistogram, autoplayUnmuteHistogram, ("Media.Video.Autoplay.Muted.UnmuteAction", AutoplayUnmuteActionMax));
+
+    autoplayUnmuteHistogram.count(status);
 }
 
 void HTMLMediaElement::onVisibilityChangedForAutoplay(bool isVisible)

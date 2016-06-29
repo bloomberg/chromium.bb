@@ -298,6 +298,13 @@ protected:
     void recordAutoplayMetric(AutoplayMetrics);
 
 private:
+    // These values are used for histograms. Do not reorder.
+    enum AutoplayUnmuteActionStatus {
+        AutoplayUnmuteActionFailure = 0,
+        AutoplayUnmuteActionSuccess = 1,
+        AutoplayUnmuteActionMax
+    };
+
     void resetMediaPlayerAndMediaSource();
 
     bool alwaysCreateUserAgentShadowRoot() const final { return true; }
@@ -493,6 +500,7 @@ private:
     EnumerationHistogram& showControlsHistogram() const;
 
     void recordAutoplaySourceMetric(int source);
+    void recordAutoplayUnmuteStatus(AutoplayUnmuteActionStatus);
 
     void onVisibilityChangedForAutoplay(bool isVisible);
 
