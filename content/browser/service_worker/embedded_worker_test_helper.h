@@ -15,9 +15,9 @@
 #include "base/containers/hash_tables.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "content/common/mojo/service_registry_impl.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_test_sink.h"
+#include "services/shell/public/interfaces/interface_provider.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 

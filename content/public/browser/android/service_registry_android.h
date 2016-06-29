@@ -18,8 +18,6 @@ class InterfaceProvider;
 
 namespace content {
 
-class ServiceRegistry;
-
 // Android wrapper over ServiceRegistry, allowing the browser services in Java
 // to register with ServiceRegistry.java (and abstracting away the JNI calls).
 class CONTENT_EXPORT ServiceRegistryAndroid {

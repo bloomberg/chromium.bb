@@ -10,7 +10,6 @@
 #include "base/android/jni_string.h"
 #include "base/callback.h"
 #include "base/memory/ptr_util.h"
-#include "content/public/common/service_registry.h"
 #include "jni/ServiceRegistry_jni.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 #include "services/shell/public/cpp/interface_provider.h"
@@ -91,19 +90,10 @@ void ServiceRegistryAndroidImpl::AddService(
   ScopedJavaGlobalRef<jobject> j_scoped_factory;
   j_scoped_factory.Reset(env, j_factory);
 
-  if (interface_registry_) {
-    interface_registry_->AddInterface(
-        name, base::Bind(&CreateImplAndAttach, j_scoped_service_registry,
-                         j_scoped_manager, j_scoped_factory),
-        nullptr);
-  } else if (service_registry_) {
-    service_registry_->AddService(
-        name, base::Bind(&CreateImplAndAttach, j_scoped_service_registry,
-                         j_scoped_manager, j_scoped_factory),
-        nullptr);
-  } else {
-    NOTREACHED();
-  }
+  interface_registry_->AddInterface(
+      name, base::Bind(&CreateImplAndAttach, j_scoped_service_registry,
+                        j_scoped_manager, j_scoped_factory),
+      nullptr);
 }
 
 void ServiceRegistryAndroidImpl::RemoveService(
@@ -111,12 +101,7 @@ void ServiceRegistryAndroidImpl::RemoveService(
     const JavaParamRef<jobject>& j_service_registry,
     const JavaParamRef<jstring>& j_name) {
   std::string name(ConvertJavaStringToUTF8(env, j_name));
-  if (interface_registry_)
-    interface_registry_->RemoveInterface(name);
-  else if (service_registry_)
-    service_registry_->RemoveService(name);
-  else
-    NOTREACHED();
+  interface_registry_->RemoveInterface(name);
 }
 
 void ServiceRegistryAndroidImpl::ConnectToRemoteService(
@@ -126,12 +111,7 @@ void ServiceRegistryAndroidImpl::ConnectToRemoteService(
     jint j_handle) {
   std::string name(ConvertJavaStringToUTF8(env, j_name));
   mojo::ScopedMessagePipeHandle handle((mojo::MessagePipeHandle(j_handle)));
-  if (remote_interfaces_)
-    remote_interfaces_->GetInterface(name, std::move(handle));
-  else if (service_registry_)
-    service_registry_->ConnectToRemoteService(name, std::move(handle));
-  else
-    NOTREACHED();
+  remote_interfaces_->GetInterface(name, std::move(handle));
 }
 
 }  // namespace content

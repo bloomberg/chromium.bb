@@ -43,7 +43,6 @@ class ServiceRegistryAndroidImpl : public ServiceRegistryAndroid {
       jint handle) override;
   const base::android::ScopedJavaGlobalRef<jobject>& GetObj() override;
 
-  ServiceRegistry* service_registry_ = nullptr;
   shell::InterfaceRegistry* interface_registry_ = nullptr;
   shell::InterfaceProvider* remote_interfaces_ = nullptr;
   base::android::ScopedJavaGlobalRef<jobject> obj_;

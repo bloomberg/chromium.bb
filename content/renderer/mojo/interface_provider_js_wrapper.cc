@@ -7,7 +7,6 @@
 #include <memory>
 #include <utility>
 
-#include "content/common/mojo/service_registry_impl.h"
 #include "mojo/edk/js/handle.h"
 #include "services/shell/public/cpp/interface_provider.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
