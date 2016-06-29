@@ -15,6 +15,7 @@
 #include "components/scheduler/scheduler_export.h"
 #include "third_party/WebKit/public/platform/WebScheduler.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
+#include "v8/include/v8.h"
 
 namespace base {
 namespace trace_event {
@@ -37,42 +38,17 @@ class RenderWidgetSchedulingState;
 
 class SCHEDULER_EXPORT RendererScheduler : public ChildScheduler {
  public:
+  class SCHEDULER_EXPORT RAILModeObserver {
+   public:
+    virtual ~RAILModeObserver();
+    virtual void OnRAILModeChanged(v8::RAILMode rail_mode) = 0;
+  };
+
   ~RendererScheduler() override;
   static std::unique_ptr<RendererScheduler> Create();
 
   // Returns the compositor task runner.
   virtual scoped_refptr<TaskQueue> CompositorTaskRunner() = 0;
-
-  // Keep RendererScheduler::UseCaseToString in sync with this enum.
-  enum class UseCase {
-    // No active use case detected.
-    NONE,
-    // A continuous gesture (e.g., scroll, pinch) which is being driven by the
-    // compositor thread.
-    COMPOSITOR_GESTURE,
-    // An unspecified touch gesture which is being handled by the main thread.
-    // Note that since we don't have a full view of the use case, we should be
-    // careful to prioritize all work equally.
-    MAIN_THREAD_CUSTOM_INPUT_HANDLING,
-    // A continuous gesture (e.g., scroll, pinch) which is being driven by the
-    // compositor thread but also observed by the main thread. An example is
-    // synchronized scrolling where a scroll listener on the main thread changes
-    // page layout based on the current scroll position.
-    SYNCHRONIZED_GESTURE,
-    // A gesture has recently started and we are about to run main thread touch
-    // listeners to find out the actual gesture type. To minimize touch latency,
-    // only input handling work should run in this state.
-    TOUCHSTART,
-    // The page is loading.
-    LOADING,
-    // A continuous gesture (e.g., scroll) which is being handled by the main
-    // thread.
-    MAIN_THREAD_GESTURE,
-    // Must be the last entry.
-    USE_CASE_COUNT,
-    FIRST_USE_CASE = NONE,
-  };
-  static const char* UseCaseToString(UseCase use_case);
 
   // Creates a WebThread implementation for the renderer main thread.
   virtual std::unique_ptr<blink::WebThread> CreateMainThread() = 0;
@@ -190,6 +166,13 @@ class SCHEDULER_EXPORT RendererScheduler : public ChildScheduler {
   // attributed in this renderer. |blame_context| must outlive this scheduler.
   virtual void SetTopLevelBlameContext(
       base::trace_event::BlameContext* blame_context) = 0;
+
+  // The renderer scheduler maintains an estimated RAIL mode[1]. This observer
+  // can be used to get notified when the mode changes. The observer will be
+  // called on the main thread and must outlive this class.
+  // [1]
+  // https://developers.google.com/web/tools/chrome-devtools/profile/evaluate-performance/rail
+  virtual void SetRAILModeObserver(RAILModeObserver* observer) = 0;
 
  protected:
   RendererScheduler();

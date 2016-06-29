@@ -32,11 +32,7 @@
 #define WebKit_h
 
 #include "../platform/Platform.h"
-
-namespace v8 {
-class Isolate;
-enum class MemoryPressureLevel;
-}
+#include <v8.h>
 
 namespace blink {
 
@@ -88,6 +84,9 @@ BLINK_EXPORT void decommitFreeableMemory();
 // Send memory pressure notification to worker thread isolate.
 BLINK_EXPORT void MemoryPressureNotificationToWorkerThreadIsolates(
     v8::MemoryPressureLevel);
+
+// Set the RAIL performance mode on all worker thread isolates.
+BLINK_EXPORT void setRAILModeOnWorkerThreadIsolates(v8::RAILMode);
 
 } // namespace blink
 

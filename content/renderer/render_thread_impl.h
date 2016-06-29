@@ -22,6 +22,7 @@
 #include "base/threading/thread_checker.h"
 #include "base/timer/timer.h"
 #include "build/build_config.h"
+#include "components/scheduler/renderer/renderer_scheduler.h"
 #include "content/child/child_thread_impl.h"
 #include "content/common/content_export.h"
 #include "content/common/frame.mojom.h"
@@ -79,7 +80,6 @@ class GpuVideoAcceleratorFactories;
 }
 
 namespace scheduler {
-class RendererScheduler;
 class WebThreadBase;
 }
 
@@ -147,6 +147,7 @@ class CONTENT_EXPORT RenderThreadImpl
     : public RenderThread,
       public ChildThreadImpl,
       public gpu::GpuChannelHostFactory,
+      public scheduler::RendererScheduler::RAILModeObserver,
       NON_EXPORTED_BASE(public CompositorDependencies) {
  public:
   static RenderThreadImpl* Create(const InProcessChildThreadParams& params);
@@ -219,6 +220,9 @@ class CONTENT_EXPORT RenderThreadImpl
   cc::TaskGraphRunner* GetTaskGraphRunner() override;
   bool AreImageDecodeTasksEnabled() override;
   bool IsThreadedAnimationEnabled() override;
+
+  // scheduler::RendererScheduler::RAILModeObserver implementation.
+  void OnRAILModeChanged(v8::RAILMode rail_mode) override;
 
   // Synchronously establish a channel to the GPU plugin if not previously
   // established or if it has been lost (for example if the GPU plugin crashed).

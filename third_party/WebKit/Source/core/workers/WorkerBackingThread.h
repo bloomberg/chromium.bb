@@ -55,6 +55,8 @@ public:
     static void MemoryPressureNotificationToWorkerThreadIsolates(
         v8::MemoryPressureLevel);
 
+    static void setRAILModeOnWorkerThreadIsolates(v8::RAILMode);
+
 private:
     WorkerBackingThread(const char* name, bool shouldCallGCOnShutdown);
     WorkerBackingThread(WebThread*, bool shouldCallGCOnSHutdown);

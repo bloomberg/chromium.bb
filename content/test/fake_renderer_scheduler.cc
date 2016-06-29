@@ -131,4 +131,6 @@ void FakeRendererScheduler::SetTimerQueueSuspensionWhenBackgroundedEnabled(
 void FakeRendererScheduler::SetTopLevelBlameContext(
     base::trace_event::BlameContext* blame_context) {}
 
+void FakeRendererScheduler::SetRAILModeObserver(RAILModeObserver* observer) {}
+
 }  // namespace content

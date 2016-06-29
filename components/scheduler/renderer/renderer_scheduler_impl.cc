@@ -132,7 +132,8 @@ RendererSchedulerImpl::MainThreadOnly::MainThreadOnly(
       has_visible_render_widget_with_touch_handler(false),
       begin_frame_not_expected_soon(false),
       expensive_task_blocking_allowed(true),
-      in_idle_period_for_testing(false) {}
+      in_idle_period_for_testing(false),
+      rail_mode_observer(nullptr) {}
 
 RendererSchedulerImpl::MainThreadOnly::~MainThreadOnly() {}
 
@@ -155,6 +156,7 @@ void RendererSchedulerImpl::Shutdown() {
   throttling_helper_.reset();
   helper_.Shutdown();
   MainThreadOnly().was_shutdown = true;
+  MainThreadOnly().rail_mode_observer = nullptr;
 }
 
 std::unique_ptr<blink::WebThread> RendererSchedulerImpl::CreateMainThread() {
@@ -731,9 +733,12 @@ void RendererSchedulerImpl::UpdatePolicyLocked(UpdateType update_type) {
 
   Policy new_policy;
   ExpensiveTaskPolicy expensive_task_policy = ExpensiveTaskPolicy::RUN;
+  new_policy.rail_mode = v8::PERFORMANCE_ANIMATION;
+
   switch (use_case) {
     case UseCase::COMPOSITOR_GESTURE:
       if (touchstart_expected_soon) {
+        new_policy.rail_mode = v8::PERFORMANCE_RESPONSE;
         expensive_task_policy = ExpensiveTaskPolicy::BLOCK;
         new_policy.compositor_queue_policy.priority = TaskQueue::HIGH_PRIORITY;
       } else {
@@ -751,6 +756,7 @@ void RendererSchedulerImpl::UpdatePolicyLocked(UpdateType update_type) {
           main_thread_compositing_is_fast ? TaskQueue::HIGH_PRIORITY
                                           : TaskQueue::NORMAL_PRIORITY;
       if (touchstart_expected_soon) {
+        new_policy.rail_mode = v8::PERFORMANCE_RESPONSE;
         expensive_task_policy = ExpensiveTaskPolicy::BLOCK;
       } else {
         expensive_task_policy = ExpensiveTaskPolicy::THROTTLE;
@@ -774,6 +780,7 @@ void RendererSchedulerImpl::UpdatePolicyLocked(UpdateType update_type) {
       // handling over other tasks.
       new_policy.compositor_queue_policy.priority = TaskQueue::HIGH_PRIORITY;
       if (touchstart_expected_soon) {
+        new_policy.rail_mode = v8::PERFORMANCE_RESPONSE;
         expensive_task_policy = ExpensiveTaskPolicy::BLOCK;
       } else {
         expensive_task_policy = ExpensiveTaskPolicy::THROTTLE;
@@ -781,6 +788,7 @@ void RendererSchedulerImpl::UpdatePolicyLocked(UpdateType update_type) {
       break;
 
     case UseCase::TOUCHSTART:
+      new_policy.rail_mode = v8::PERFORMANCE_RESPONSE;
       new_policy.compositor_queue_policy.priority = TaskQueue::HIGH_PRIORITY;
       new_policy.loading_queue_policy.is_enabled = false;
       new_policy.timer_queue_policy.is_enabled = false;
@@ -793,11 +801,13 @@ void RendererSchedulerImpl::UpdatePolicyLocked(UpdateType update_type) {
       // driven gesture.
       if (touchstart_expected_soon &&
           AnyThread().last_gesture_was_compositor_driven) {
+        new_policy.rail_mode = v8::PERFORMANCE_RESPONSE;
         expensive_task_policy = ExpensiveTaskPolicy::BLOCK;
       }
       break;
 
     case UseCase::LOADING:
+      new_policy.rail_mode = v8::PERFORMANCE_LOAD;
       new_policy.loading_queue_policy.priority = TaskQueue::HIGH_PRIORITY;
       new_policy.default_queue_policy.priority = TaskQueue::HIGH_PRIORITY;
       break;
@@ -805,6 +815,10 @@ void RendererSchedulerImpl::UpdatePolicyLocked(UpdateType update_type) {
     default:
       NOTREACHED();
   }
+
+  // TODO(skyostil): Add an idle state for foreground tabs too.
+  if (MainThreadOnly().renderer_hidden)
+    new_policy.rail_mode = v8::PERFORMANCE_IDLE;
 
   if (expensive_task_policy == ExpensiveTaskPolicy::BLOCK &&
       (!MainThreadOnly().expensive_task_blocking_allowed ||
@@ -856,6 +870,8 @@ void RendererSchedulerImpl::UpdatePolicyLocked(UpdateType update_type) {
       this, AsValueLocked(now));
   TRACE_COUNTER1(TRACE_DISABLED_BY_DEFAULT("renderer.scheduler"), "use_case",
                  use_case);
+  TRACE_COUNTER1(TRACE_DISABLED_BY_DEFAULT("renderer.scheduler"), "rail_mode",
+                 new_policy.rail_mode);
   TRACE_COUNTER1(TRACE_DISABLED_BY_DEFAULT("renderer.scheduler"),
                  "touchstart_expected_soon",
                  MainThreadOnly().touchstart_expected_soon);
@@ -898,6 +914,11 @@ void RendererSchedulerImpl::UpdatePolicyLocked(UpdateType update_type) {
   ApplyTaskQueuePolicy(helper_.DefaultTaskRunner().get(),
                        MainThreadOnly().current_policy.default_queue_policy,
                        new_policy.default_queue_policy);
+  if (MainThreadOnly().rail_mode_observer &&
+      new_policy.rail_mode != MainThreadOnly().current_policy.rail_mode) {
+    MainThreadOnly().rail_mode_observer->OnRAILModeChanged(
+        new_policy.rail_mode);
+  }
 
   DCHECK(compositor_task_runner_->IsQueueEnabled());
   MainThreadOnly().current_policy = new_policy;
@@ -1094,6 +1115,8 @@ RendererSchedulerImpl::AsValueLocked(base::TimeTicks optional_now) const {
       MainThreadOnly().has_visible_render_widget_with_touch_handler);
   state->SetString("current_use_case",
                    UseCaseToString(MainThreadOnly().current_use_case));
+  state->SetString("rail_mode",
+                   RAILModeToString(MainThreadOnly().current_policy.rail_mode));
   state->SetBoolean("expensive_task_blocking_allowed",
                     MainThreadOnly().expensive_task_blocking_allowed);
   state->SetBoolean("loading_tasks_seem_expensive",
@@ -1273,6 +1296,10 @@ void RendererSchedulerImpl::SetTopLevelBlameContext(
   idle_helper_.IdleTaskRunner()->SetBlameContext(blame_context);
 }
 
+void RendererSchedulerImpl::SetRAILModeObserver(RAILModeObserver* observer) {
+  MainThreadOnly().rail_mode_observer = observer;
+}
+
 void RendererSchedulerImpl::RegisterTimeDomain(TimeDomain* time_domain) {
   helper_.RegisterTimeDomain(time_domain);
 }
@@ -1291,20 +1318,20 @@ base::TickClock* RendererSchedulerImpl::tick_clock() const {
 
 void RendererSchedulerImpl::AddWebViewScheduler(
     WebViewSchedulerImpl* web_view_scheduler) {
-  MainThreadOnly().web_view_schedulers_.insert(web_view_scheduler);
+  MainThreadOnly().web_view_schedulers.insert(web_view_scheduler);
 }
 
 void RendererSchedulerImpl::RemoveWebViewScheduler(
     WebViewSchedulerImpl* web_view_scheduler) {
-  DCHECK(MainThreadOnly().web_view_schedulers_.find(web_view_scheduler) !=
-         MainThreadOnly().web_view_schedulers_.end());
-  MainThreadOnly().web_view_schedulers_.erase(web_view_scheduler);
+  DCHECK(MainThreadOnly().web_view_schedulers.find(web_view_scheduler) !=
+         MainThreadOnly().web_view_schedulers.end());
+  MainThreadOnly().web_view_schedulers.erase(web_view_scheduler);
 }
 
 void RendererSchedulerImpl::BroadcastConsoleWarning(
     const std::string& message) {
   helper_.CheckOnValidThread();
-  for (auto& web_view_scheduler : MainThreadOnly().web_view_schedulers_)
+  for (auto& web_view_scheduler : MainThreadOnly().web_view_schedulers)
     web_view_scheduler->AddConsoleWarning(message);
 }
 
@@ -1345,6 +1372,46 @@ void RendererSchedulerImpl::OnTriedToExecuteBlockedTask(
         "to avoid this. Please see "
         "https://developers.google.com/web/tools/chrome-devtools/profile/evaluate-performance/rail"
         " and https://crbug.com/574343#c40 for more information.");
+  }
+}
+
+// static
+const char* RendererSchedulerImpl::UseCaseToString(UseCase use_case) {
+  switch (use_case) {
+    case UseCase::NONE:
+      return "none";
+    case UseCase::COMPOSITOR_GESTURE:
+      return "compositor_gesture";
+    case UseCase::MAIN_THREAD_CUSTOM_INPUT_HANDLING:
+      return "main_thread_custom_input_handling";
+    case UseCase::SYNCHRONIZED_GESTURE:
+      return "synchronized_gesture";
+    case UseCase::TOUCHSTART:
+      return "touchstart";
+    case UseCase::LOADING:
+      return "loading";
+    case UseCase::MAIN_THREAD_GESTURE:
+      return "main_thread_gesture";
+    default:
+      NOTREACHED();
+      return nullptr;
+  }
+}
+
+// static
+const char* RendererSchedulerImpl::RAILModeToString(v8::RAILMode rail_mode) {
+  switch (rail_mode) {
+    case v8::PERFORMANCE_RESPONSE:
+      return "response";
+    case v8::PERFORMANCE_ANIMATION:
+      return "animation";
+    case v8::PERFORMANCE_IDLE:
+      return "idle";
+    case v8::PERFORMANCE_LOAD:
+      return "load";
+    default:
+      NOTREACHED();
+      return nullptr;
   }
 }
 

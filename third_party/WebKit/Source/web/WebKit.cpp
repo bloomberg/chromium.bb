@@ -186,4 +186,9 @@ void MemoryPressureNotificationToWorkerThreadIsolates(
         MemoryPressureNotificationToWorkerThreadIsolates(level);
 }
 
+void setRAILModeOnWorkerThreadIsolates(v8::RAILMode railMode)
+{
+    WorkerBackingThread::setRAILModeOnWorkerThreadIsolates(railMode);
+}
+
 } // namespace blink

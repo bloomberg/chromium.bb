@@ -8,6 +8,7 @@ include_rules = [
   "+ui/gfx",
   "+third_party/WebKit/public/platform",
   "+third_party/WebKit/public/web",
+  "+v8",
 ]
 
 specific_include_rules = {

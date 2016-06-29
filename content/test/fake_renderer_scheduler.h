@@ -58,6 +58,7 @@ class FakeRendererScheduler : public scheduler::RendererScheduler {
   void SetTimerQueueSuspensionWhenBackgroundedEnabled(bool enabled) override;
   void SetTopLevelBlameContext(
       base::trace_event::BlameContext* blame_context) override;
+  void SetRAILModeObserver(RAILModeObserver* observer) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(FakeRendererScheduler);

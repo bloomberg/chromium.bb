@@ -38,6 +38,38 @@ class SCHEDULER_EXPORT RendererSchedulerImpl
       public SchedulerHelper::Observer,
       public RenderWidgetSignals::Observer {
  public:
+  // Keep RendererScheduler::UseCaseToString in sync with this enum.
+  enum class UseCase {
+    // No active use case detected.
+    NONE,
+    // A continuous gesture (e.g., scroll, pinch) which is being driven by the
+    // compositor thread.
+    COMPOSITOR_GESTURE,
+    // An unspecified touch gesture which is being handled by the main thread.
+    // Note that since we don't have a full view of the use case, we should be
+    // careful to prioritize all work equally.
+    MAIN_THREAD_CUSTOM_INPUT_HANDLING,
+    // A continuous gesture (e.g., scroll, pinch) which is being driven by the
+    // compositor thread but also observed by the main thread. An example is
+    // synchronized scrolling where a scroll listener on the main thread changes
+    // page layout based on the current scroll position.
+    SYNCHRONIZED_GESTURE,
+    // A gesture has recently started and we are about to run main thread touch
+    // listeners to find out the actual gesture type. To minimize touch latency,
+    // only input handling work should run in this state.
+    TOUCHSTART,
+    // The page is loading.
+    LOADING,
+    // A continuous gesture (e.g., scroll) which is being handled by the main
+    // thread.
+    MAIN_THREAD_GESTURE,
+    // Must be the last entry.
+    USE_CASE_COUNT,
+    FIRST_USE_CASE = NONE,
+  };
+  static const char* UseCaseToString(UseCase use_case);
+  static const char* RAILModeToString(v8::RAILMode rail_mode);
+
   RendererSchedulerImpl(scoped_refptr<SchedulerTqmDelegate> main_task_runner);
   ~RendererSchedulerImpl() override;
 
@@ -81,6 +113,7 @@ class SCHEDULER_EXPORT RendererSchedulerImpl
   void SetTimerQueueSuspensionWhenBackgroundedEnabled(bool enabled) override;
   void SetTopLevelBlameContext(
       base::trace_event::BlameContext* blame_context) override;
+  void SetRAILModeObserver(RAILModeObserver* observer) override;
 
   // RenderWidgetSignals::Observer implementation:
   void SetAllRenderWidgetsHidden(bool hidden) override;
@@ -155,12 +188,14 @@ class SCHEDULER_EXPORT RendererSchedulerImpl
     TaskQueuePolicy loading_queue_policy;
     TaskQueuePolicy timer_queue_policy;
     TaskQueuePolicy default_queue_policy;
+    v8::RAILMode rail_mode = v8::PERFORMANCE_ANIMATION;
 
     bool operator==(const Policy& other) const {
       return compositor_queue_policy == other.compositor_queue_policy &&
              loading_queue_policy == other.loading_queue_policy &&
              timer_queue_policy == other.timer_queue_policy &&
-             default_queue_policy == other.default_queue_policy;
+             default_queue_policy == other.default_queue_policy &&
+             rail_mode == other.rail_mode;
     }
   };
 
@@ -348,7 +383,8 @@ class SCHEDULER_EXPORT RendererSchedulerImpl
     bool begin_frame_not_expected_soon;
     bool expensive_task_blocking_allowed;
     bool in_idle_period_for_testing;
-    std::set<WebViewSchedulerImpl*> web_view_schedulers_;  // Not owned.
+    std::set<WebViewSchedulerImpl*> web_view_schedulers;  // Not owned.
+    RAILModeObserver* rail_mode_observer;                 // Not owned.
   };
 
   struct AnyThread {

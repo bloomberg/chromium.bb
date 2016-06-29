@@ -9,6 +9,7 @@
     '../mojo/mojo_public.gyp:mojo_cpp_bindings',
     '../services/shell/shell.gyp:shell_lib',
     '../services/shell/shell_public.gyp:shell_public',
+    '../third_party/WebKit/public/blink.gyp:blink',
     '../url/url.gyp:url_lib',
   ],
   'variables': {

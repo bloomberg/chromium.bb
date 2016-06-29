@@ -111,4 +111,13 @@ void WorkerBackingThread::MemoryPressureNotificationToWorkerThreadIsolates(
         isolate->MemoryPressureNotification(level);
 }
 
+// static
+void WorkerBackingThread::setRAILModeOnWorkerThreadIsolates(
+    v8::RAILMode railMode)
+{
+    MutexLocker lock(isolatesMutex());
+    for (v8::Isolate* isolate : isolates())
+        isolate->SetRAILMode(railMode);
+}
+
 } // namespace blink

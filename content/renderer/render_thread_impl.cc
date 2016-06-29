@@ -963,6 +963,7 @@ void RenderThreadImpl::Shutdown() {
   // Shut down the message loop and the renderer scheduler before shutting down
   // Blink. This prevents a scenario where a pending task in the message loop
   // accesses Blink objects after Blink shuts down.
+  renderer_scheduler_->SetRAILModeObserver(nullptr);
   renderer_scheduler_->Shutdown();
   if (main_message_loop_)
     main_message_loop_->RunUntilIdle();
@@ -1176,6 +1177,7 @@ void RenderThreadImpl::InitializeWebKit(
   v8::Isolate* isolate = blink::mainThreadIsolate();
   isolate->SetCreateHistogramFunction(CreateHistogram);
   isolate->SetAddHistogramSampleFunction(AddHistogramSample);
+  renderer_scheduler_->SetRAILModeObserver(this);
 
   main_thread_compositor_task_runner_ =
       renderer_scheduler_->CompositorTaskRunner();
@@ -1641,6 +1643,11 @@ bool RenderThreadImpl::AreImageDecodeTasksEnabled() {
 
 bool RenderThreadImpl::IsThreadedAnimationEnabled() {
   return is_threaded_animation_enabled_;
+}
+
+void RenderThreadImpl::OnRAILModeChanged(v8::RAILMode rail_mode) {
+  blink::mainThreadIsolate()->SetRAILMode(rail_mode);
+  blink::setRAILModeOnWorkerThreadIsolates(rail_mode);
 }
 
 bool RenderThreadImpl::IsMainThread() {
