@@ -112,19 +112,4 @@ void ShouldPopupDialogAboutOtherFormsOfBrowsingHistory(
           &MergeBooleanCallbacks::RunCallback, base::Unretained(merger)));
 }
 
-// TODO(crbug.com/614319): This function is deprecated and should be removed.
-void ShouldPopupDialogAboutOtherFormsOfBrowsingHistory(
-    const sync_driver::SyncService* sync_service,
-    history::WebHistoryService* history_service,
-    base::Callback<void(bool)> callback) {
-  if (!history_service ||
-      !testing::g_override_other_forms_of_browsing_history_query) {
-    callback.Run(false);
-    return;
-  }
-
-  ShouldShowNoticeAboutOtherFormsOfBrowsingHistory(
-      sync_service, history_service, callback);
-}
-
 }  // namespace browsing_data_ui

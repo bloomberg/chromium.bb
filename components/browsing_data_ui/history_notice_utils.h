@@ -53,13 +53,6 @@ void ShouldPopupDialogAboutOtherFormsOfBrowsingHistory(
     version_info::Channel channel,
     base::Callback<void(bool)> callback);
 
-// A deprecated overloaded version of the above function called by iOS.
-// TODO(crbug.com/614319): Remove this when iOS calls the correct version.
-void ShouldPopupDialogAboutOtherFormsOfBrowsingHistory(
-    const sync_driver::SyncService* sync_service,
-    history::WebHistoryService* history_service,
-    base::Callback<void(bool)> callback);
-
 }  // namespace browsing_data_ui
 
 #endif  // COMPONENTS_BROWSING_DATA_UI_HISTORY_NOTICE_UTILS_H_
