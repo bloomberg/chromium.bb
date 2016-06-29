@@ -65,7 +65,7 @@ int32_t VerifyCommittedLayer(const ppapi::CompositorLayerData* old_layer,
   if (new_layer->texture) {
     if (old_layer) {
       // Make sure the old layer is a texture layer too.
-      if (!new_layer->texture)
+      if (!old_layer->texture)
         return PP_ERROR_BADARGUMENT;
       // The mailbox should be same, if the resource_id is not changed.
       if (new_layer->common.resource_id == old_layer->common.resource_id) {
@@ -87,7 +87,7 @@ int32_t VerifyCommittedLayer(const ppapi::CompositorLayerData* old_layer,
   if (new_layer->image) {
     if (old_layer) {
       // Make sure the old layer is an image layer too.
-      if (!new_layer->image)
+      if (!old_layer->image)
         return PP_ERROR_BADARGUMENT;
       // The image data resource should be same, if the resource_id is not
       // changed.
