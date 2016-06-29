@@ -13744,6 +13744,17 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Extensions.ApiBindingGenerationTime" units="ms">
+  <owner>rdevlin.cronin@chromium.org</owner>
+  <summary>
+    The amount of time it takes to generate the JavaScript API bindings for a
+    particular extension API. This includes the time from when a JavaScript
+    context tries to access the API, triggering the lazy initializion, to the
+    time when the API object is returned. This is only recorded if the binding
+    is successfully generated. See also Extensions.DidCreateScriptContext_*.
+  </summary>
+</histogram>
+
 <histogram name="Extensions.APIUse_RelativeURL" enum="UrlResolutionResult">
   <obsolete>
     Deprecated 04/2016 as doesn't have data nor owner.
