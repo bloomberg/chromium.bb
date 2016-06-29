@@ -8,6 +8,8 @@
 #include <stdint.h>
 #include <string>
 
+#include "base/bind.h"
+#include "base/callback.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "chromecast/media/base/decrypt_context_impl.h"
@@ -22,7 +24,7 @@ namespace {
 
 class DecoderBufferClear : public DecoderBufferBase {
  public:
-  explicit DecoderBufferClear(const scoped_refptr<DecoderBufferBase>& buffer);
+  explicit DecoderBufferClear(scoped_refptr<DecoderBufferBase> buffer);
 
   // DecoderBufferBase implementation.
   StreamId stream_id() const override;
@@ -43,10 +45,8 @@ class DecoderBufferClear : public DecoderBufferBase {
   DISALLOW_COPY_AND_ASSIGN(DecoderBufferClear);
 };
 
-DecoderBufferClear::DecoderBufferClear(
-    const scoped_refptr<DecoderBufferBase>& buffer)
-    : buffer_(buffer) {
-}
+DecoderBufferClear::DecoderBufferClear(scoped_refptr<DecoderBufferBase> buffer)
+    : buffer_(buffer) {}
 
 DecoderBufferClear::~DecoderBufferClear() {
 }
@@ -89,16 +89,21 @@ DecoderBufferClear::ToMediaBuffer() const {
   return buffer_->ToMediaBuffer();
 }
 
+void OnBufferDecrypted(scoped_refptr<DecoderBufferBase> buffer,
+                       const BufferDecryptedCB& buffer_decrypted_cb,
+                       bool success) {
+  scoped_refptr<DecoderBufferBase> out_buffer =
+      success ? new DecoderBufferClear(buffer) : buffer;
+  buffer_decrypted_cb.Run(out_buffer, success);
+}
 }  // namespace
 
-scoped_refptr<DecoderBufferBase> DecryptDecoderBuffer(
-    const scoped_refptr<DecoderBufferBase>& buffer,
-    DecryptContextImpl* decrypt_ctxt) {
-  if (decrypt_ctxt->Decrypt(buffer.get(), buffer->writable_data(), 0))
-    return scoped_refptr<DecoderBufferBase>(new DecoderBufferClear(buffer));
-
-  NOTREACHED();
-  return buffer;
+void DecryptDecoderBuffer(scoped_refptr<DecoderBufferBase> buffer,
+                          DecryptContextImpl* decrypt_ctxt,
+                          const BufferDecryptedCB& buffer_decrypted_cb) {
+  decrypt_ctxt->DecryptAsync(
+      buffer.get(), buffer->writable_data(), 0,
+      base::Bind(&OnBufferDecrypted, buffer, buffer_decrypted_cb));
 }
 
 }  // namespace media

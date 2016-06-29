@@ -7,6 +7,7 @@
 #include <openssl/aes.h>
 #include <string.h>
 
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -26,9 +27,16 @@ DecryptContextImplClearKey::DecryptContextImplClearKey(
 
 DecryptContextImplClearKey::~DecryptContextImplClearKey() {}
 
-bool DecryptContextImplClearKey::Decrypt(CastDecoderBuffer* buffer,
-                                         uint8_t* output,
-                                         size_t data_offset) {
+void DecryptContextImplClearKey::DecryptAsync(CastDecoderBuffer* buffer,
+                                              uint8_t* output,
+                                              size_t data_offset,
+                                              const DecryptCB& decrypt_cb) {
+  decrypt_cb.Run(DoDecrypt(buffer, output, data_offset));
+}
+
+bool DecryptContextImplClearKey::DoDecrypt(CastDecoderBuffer* buffer,
+                                           uint8_t* output,
+                                           size_t data_offset) {
   DCHECK(buffer);
   DCHECK(output);
 

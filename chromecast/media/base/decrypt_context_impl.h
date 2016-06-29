@@ -8,6 +8,9 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
+
+#include "base/callback.h"
 #include "chromecast/public/media/cast_key_system.h"
 #include "chromecast/public/media/decrypt_context.h"
 
@@ -20,6 +23,8 @@ namespace media {
 // decryption context.
 class DecryptContextImpl : public DecryptContext {
  public:
+  using DecryptCB = base::Callback<void(bool)>;
+
   explicit DecryptContextImpl(CastKeySystem key_system);
   ~DecryptContextImpl() override;
 
@@ -40,6 +45,13 @@ class DecryptContextImpl : public DecryptContext {
   virtual bool Decrypt(CastDecoderBuffer* buffer,
                        uint8_t* output,
                        size_t data_offset);
+
+  // Similar as the above one. Decryption success or not will be returned in
+  // |decrypt_cb|. |decrypt_cb| will be called on caller's thread.
+  virtual void DecryptAsync(CastDecoderBuffer* buffer,
+                            uint8_t* output,
+                            size_t data_offset,
+                            const DecryptCB& decrypt_cb);
 
   // Returns whether the data can be decrypted into user memory.
   // If the key system doesn't support secure output or the app explicitly

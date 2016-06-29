@@ -4,12 +4,23 @@
 
 #include "chromecast/media/base/decrypt_context_impl.h"
 
+#include <memory>
 #include <vector>
 
+#include "base/bind.h"
+#include "base/logging.h"
 #include "chromecast/public/media/cast_decoder_buffer.h"
 
 namespace chromecast {
 namespace media {
+namespace {
+void BufferDecryptCB(bool* called, bool* ret, bool success) {
+  DCHECK(called);
+  DCHECK(ret);
+  *called = true;
+  *ret = success;
+}
+}
 
 DecryptContextImpl::DecryptContextImpl(CastKeySystem key_system)
     : key_system_(key_system) {}
@@ -29,7 +40,20 @@ bool DecryptContextImpl::Decrypt(CastDecoderBuffer* buffer,
 bool DecryptContextImpl::Decrypt(CastDecoderBuffer* buffer,
                                  uint8_t* output,
                                  size_t data_offset) {
-  return false;
+  bool called = false;
+  bool success = false;
+  DecryptAsync(buffer, output, data_offset,
+               base::Bind(&BufferDecryptCB, &called, &success));
+  CHECK(called) << "Sync Decrypt isn't supported";
+
+  return success;
+}
+
+void DecryptContextImpl::DecryptAsync(CastDecoderBuffer* buffer,
+                                      uint8_t* output,
+                                      size_t data_offset,
+                                      const DecryptCB& decrypt_cb) {
+  decrypt_cb.Run(false);
 }
 
 bool DecryptContextImpl::CanDecryptToBuffer() const {

@@ -34,6 +34,7 @@ class BufferingFrameProvider;
 class BufferingState;
 class CodedFrameProvider;
 class DecoderBufferBase;
+class DecryptContextImpl;
 
 class AvPipelineImpl : MediaPipelineBackend::Decoder::Delegate {
  public:
@@ -108,12 +109,16 @@ class AvPipelineImpl : MediaPipelineBackend::Decoder::Delegate {
 
   // Process a pending buffer.
   void ProcessPendingBuffer();
+  void PushPendingBuffer();
 
   // Callbacks:
   // - when BrowserCdm updated its state.
   // - when BrowserCdm has been destroyed.
   void OnCdmStateChanged();
   void OnCdmDestroyed();
+  void OnBufferDecrypted(std::unique_ptr<DecryptContextImpl> decrypt_context,
+                         scoped_refptr<DecoderBufferBase> buffer,
+                         bool success);
 
   // Callback invoked when a media buffer has been buffered by |frame_provider_|
   // which is a BufferingFrameProvider.

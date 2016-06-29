@@ -207,7 +207,6 @@ void AvPipelineImpl::ProcessPendingBuffer() {
     enable_feeding_ = false;
   }
 
-  std::unique_ptr<DecryptContextImpl> decrypt_context;
   if (!pending_buffer_->end_of_stream() &&
       pending_buffer_->decrypt_config()) {
     // Verify that CDM has the key ID.
@@ -218,8 +217,10 @@ void AvPipelineImpl::ProcessPendingBuffer() {
                           << pending_buffer_->timestamp();
       return;
     }
-    decrypt_context = cast_cdm_context_->GetDecryptContext(key_id);
-    if (!decrypt_context.get()) {
+
+    std::unique_ptr<DecryptContextImpl> decrypt_context =
+        cast_cdm_context_->GetDecryptContext(key_id);
+    if (!decrypt_context) {
       CMALOG(kLogControl) << "frame(pts=" << pending_buffer_->timestamp()
                           << "): waiting for key id "
                           << base::HexEncode(&key_id[0], key_id.size());
@@ -228,13 +229,29 @@ void AvPipelineImpl::ProcessPendingBuffer() {
       return;
     }
 
+    DCHECK_NE(decrypt_context->GetKeySystem(), KEY_SYSTEM_NONE);
+
     // If we can get the clear content, decrypt the pending buffer
     if (decrypt_context->CanDecryptToBuffer()) {
-      pending_buffer_ =
-          DecryptDecoderBuffer(pending_buffer_, decrypt_context.get());
-      decrypt_context.reset();
+      auto buffer = pending_buffer_;
+      pending_buffer_ = nullptr;
+      DecryptDecoderBuffer(
+          buffer, decrypt_context.get(),
+          base::Bind(&AvPipelineImpl::OnBufferDecrypted, weak_this_,
+                     base::Passed(&decrypt_context)));
+
+      return;
     }
+
+    pending_buffer_->set_decrypt_context(std::move(decrypt_context));
   }
+
+  PushPendingBuffer();
+}
+
+void AvPipelineImpl::PushPendingBuffer() {
+  DCHECK(pending_buffer_);
+  DCHECK(!pushed_buffer_);
 
   if (!pending_buffer_->end_of_stream() && buffering_state_.get()) {
     base::TimeDelta timestamp =
@@ -243,16 +260,25 @@ void AvPipelineImpl::ProcessPendingBuffer() {
       buffering_state_->SetMaxRenderingTime(timestamp);
   }
 
-  DCHECK(!pushed_buffer_);
   pushed_buffer_ = pending_buffer_;
-  if (decrypt_context && decrypt_context->GetKeySystem() != KEY_SYSTEM_NONE)
-    pushed_buffer_->set_decrypt_context(std::move(decrypt_context));
   pending_buffer_ = nullptr;
   MediaPipelineBackend::BufferStatus status =
       decoder_->PushBuffer(pushed_buffer_.get());
 
   if (status != MediaPipelineBackend::kBufferPending)
     OnPushBufferComplete(status);
+}
+
+void AvPipelineImpl::OnBufferDecrypted(
+    std::unique_ptr<DecryptContextImpl> decrypt_context,
+    scoped_refptr<DecoderBufferBase> buffer,
+    bool success) {
+  if (!success) {
+    LOG(WARNING) << "Can't decrypt with decrypt_context";
+    buffer->set_decrypt_context(std::move(decrypt_context));
+  }
+  pending_buffer_ = buffer;
+  PushPendingBuffer();
 }
 
 void AvPipelineImpl::OnPushBufferComplete(BufferStatus status) {
