@@ -1074,13 +1074,6 @@ class CommitQueueSyncStage(MasterSlaveLKGMSyncStage):
     # Clear the chroot version as we are in the middle of building it.
     chroot_manager.ClearChrootVersion()
 
-    if self._run.config.build_before_patching:
-      assert not self._run.config.master
-      pre_build_passed = self.RunPrePatchBuild()
-      logging.PrintBuildbotStepName('CommitQueueSync : Apply Patches')
-      if not pre_build_passed:
-        logging.PrintBuildbotStepText('Pre-patch build failed.')
-
     # Syncing to a pinned manifest ensures that we have the specified
     # revisions, but, unfortunately, repo won't bother to update branches.
     # Sync with an unpinned manifest first to ensure that branches are updated
@@ -1092,6 +1085,13 @@ class CommitQueueSyncStage(MasterSlaveLKGMSyncStage):
     # already synced to this manifest, so self.skip_sync is set and
     # this is a no-op.
     super(CommitQueueSyncStage, self).ManifestCheckout(next_manifest)
+
+    if self._run.config.build_before_patching:
+      assert not self._run.config.master
+      pre_build_passed = self.RunPrePatchBuild()
+      logging.PrintBuildbotStepName('CommitQueueSync : Apply Patches')
+      if not pre_build_passed:
+        logging.PrintBuildbotStepText('Pre-patch build failed.')
 
     # On slaves, initialize our pool and apply patches. On the master,
     # we've already done that in GetNextManifest, so this is a no-op.
