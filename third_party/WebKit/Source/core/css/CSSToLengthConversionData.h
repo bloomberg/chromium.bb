@@ -42,7 +42,7 @@
 namespace blink {
 
 class ComputedStyle;
-class LayoutView;
+class LayoutViewItem;
 class Font;
 
 class CORE_EXPORT CSSToLengthConversionData {
@@ -71,7 +71,7 @@ public:
     public:
         ViewportSize() { }
         ViewportSize(double width, double height) : m_size(width, height) { }
-        explicit ViewportSize(const LayoutView*);
+        explicit ViewportSize(const LayoutViewItem&);
 
         double width() const { return m_size.width(); }
         double height() const { return m_size.height(); }
@@ -81,7 +81,7 @@ public:
 
     CSSToLengthConversionData() { }
     CSSToLengthConversionData(const ComputedStyle*, const FontSizes&, const ViewportSize&, float zoom);
-    CSSToLengthConversionData(const ComputedStyle* currStyle, const ComputedStyle* rootStyle, const LayoutView*, float zoom);
+    CSSToLengthConversionData(const ComputedStyle* currStyle, const ComputedStyle* rootStyle, const LayoutViewItem&, float zoom);
 
     float zoom() const { return m_zoom; }
 

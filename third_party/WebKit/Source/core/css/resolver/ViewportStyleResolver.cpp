@@ -40,6 +40,7 @@
 #include "core/dom/NodeComputedStyle.h"
 #include "core/dom/ViewportDescription.h"
 #include "core/frame/Settings.h"
+#include "core/layout/api/LayoutViewItem.h"
 
 namespace blink {
 
@@ -211,7 +212,7 @@ Length ViewportStyleResolver::viewportLengthValue(CSSPropertyID id) const
     documentStyle->setHasViewportUnits(false);
 
     CSSToLengthConversionData::FontSizes fontSizes(documentStyle, documentStyle);
-    CSSToLengthConversionData::ViewportSize viewportSize(m_document->layoutView());
+    CSSToLengthConversionData::ViewportSize viewportSize(m_document->layoutViewItem());
 
     if (primitiveValue->getValueID() == CSSValueAuto)
         return Length(Auto);

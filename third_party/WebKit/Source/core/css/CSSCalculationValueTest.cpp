@@ -33,6 +33,7 @@
 #include "core/css/CSSPrimitiveValue.h"
 #include "core/css/CSSToLengthConversionData.h"
 #include "core/css/StylePropertySet.h"
+#include "core/layout/api/LayoutViewItem.h"
 #include "core/style/ComputedStyle.h"
 #include "core/style/StyleInheritedData.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -78,7 +79,7 @@ TEST(CSSCalculationValue, AccumulatePixelsAndPercent)
 {
     RefPtr<ComputedStyle> style = ComputedStyle::create();
     style->setEffectiveZoom(5);
-    CSSToLengthConversionData conversionData(style.get(), style.get(), nullptr, style->effectiveZoom());
+    CSSToLengthConversionData conversionData(style.get(), style.get(), LayoutViewItem(nullptr), style->effectiveZoom());
 
     testAccumulatePixelsAndPercent(conversionData,
         CSSCalcValue::createExpressionNode(CSSPrimitiveValue::create(10, CSSPrimitiveValue::UnitType::Pixels), true),

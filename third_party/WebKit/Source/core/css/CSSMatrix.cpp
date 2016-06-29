@@ -34,6 +34,7 @@
 #include "core/css/resolver/TransformBuilder.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/frame/UseCounter.h"
+#include "core/layout/api/LayoutViewItem.h"
 #include "core/style/ComputedStyle.h"
 #include "core/style/StyleInheritedData.h"
 #include "wtf/MathExtras.h"
@@ -76,7 +77,7 @@ void CSSMatrix::setMatrixValue(const String& string, ExceptionState& exceptionSt
 
         DEFINE_STATIC_REF(ComputedStyle, initialStyle, createInitialStyle());
         TransformOperations operations;
-        TransformBuilder::createTransformOperations(*value, CSSToLengthConversionData(initialStyle, initialStyle, nullptr, 1.0f), operations);
+        TransformBuilder::createTransformOperations(*value, CSSToLengthConversionData(initialStyle, initialStyle, LayoutViewItem(nullptr), 1.0f), operations);
 
         // Convert transform operations to a TransformationMatrix. This can fail
         // if a param has a percentage ('%')

@@ -128,6 +128,11 @@ public:
         return toView()->viewWidth(scrollbarInclusion);
     }
 
+    FloatSize viewportSizeForViewportUnits() const
+    {
+        return toView()->viewportSizeForViewportUnits();
+    }
+
 private:
     LayoutView* toView() { return toLayoutView(layoutObject()); }
     const LayoutView* toView() const { return toLayoutView(layoutObject()); }

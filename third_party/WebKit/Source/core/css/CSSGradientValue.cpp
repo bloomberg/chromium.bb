@@ -33,6 +33,7 @@
 #include "core/dom/NodeComputedStyle.h"
 #include "core/dom/TextLinkColors.h"
 #include "core/layout/LayoutObject.h"
+#include "core/layout/api/LayoutViewItem.h"
 #include "platform/geometry/IntSize.h"
 #include "platform/graphics/Gradient.h"
 #include "platform/graphics/GradientGeneratedImage.h"
@@ -71,7 +72,7 @@ PassRefPtr<Image> CSSGradientValue::image(const LayoutObject& layoutObject, cons
     RefPtr<Gradient> gradient;
 
     const ComputedStyle* rootStyle = layoutObject.document().documentElement()->computedStyle();
-    CSSToLengthConversionData conversionData(layoutObject.style(), rootStyle, layoutObject.view(), layoutObject.style()->effectiveZoom());
+    CSSToLengthConversionData conversionData(layoutObject.style(), rootStyle, LayoutViewItem(layoutObject.view()), layoutObject.style()->effectiveZoom());
     if (isLinearGradientValue())
         gradient = toCSSLinearGradientValue(this)->createGradient(conversionData, size, layoutObject);
     else

@@ -34,6 +34,7 @@
 #include "core/css/resolver/FontBuilder.h"
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
+#include "core/layout/api/LayoutViewItem.h"
 #include "core/style/CachedUAStyle.h"
 #include "core/style/ComputedStyle.h"
 #include "core/style/StyleInheritedData.h"
@@ -67,7 +68,7 @@ public:
     {
         // FIXME: Improve RAII of StyleResolverState to remove this function.
         m_style = style;
-        m_cssToLengthConversionData = CSSToLengthConversionData(m_style.get(), rootElementStyle(), document().layoutView(), m_style->effectiveZoom());
+        m_cssToLengthConversionData = CSSToLengthConversionData(m_style.get(), rootElementStyle(), document().layoutViewItem(), m_style->effectiveZoom());
     }
     const ComputedStyle* style() const { return m_style.get(); }
     ComputedStyle* style() { return m_style.get(); }

@@ -66,7 +66,7 @@ CSSToLengthConversionData StyleResolverState::fontSizeConversionData() const
     float em = parentStyle()->specifiedFontSize();
     float rem = rootElementStyle() ? rootElementStyle()->specifiedFontSize() : 1;
     CSSToLengthConversionData::FontSizes fontSizes(em, rem, &parentStyle()->font());
-    CSSToLengthConversionData::ViewportSize viewportSize(document().layoutView());
+    CSSToLengthConversionData::ViewportSize viewportSize(document().layoutViewItem());
 
     return CSSToLengthConversionData(style(), fontSizes, viewportSize, 1);
 }
