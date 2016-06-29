@@ -1772,6 +1772,13 @@ bool LayoutBlock::recalcChildOverflowAfterStyleChange()
         }
     }
 
+    return recalcPositionedDescendantsOverflowAfterStyleChange() || childrenOverflowChanged;
+}
+
+bool LayoutBlock::recalcPositionedDescendantsOverflowAfterStyleChange()
+{
+    bool childrenOverflowChanged = false;
+
     TrackedLayoutBoxListHashSet* positionedDescendants = positionedObjects();
     if (!positionedDescendants)
         return childrenOverflowChanged;

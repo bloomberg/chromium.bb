@@ -228,6 +228,7 @@ public:
 
 protected:
     bool recalcNormalFlowChildOverflowIfNeeded(LayoutObject*);
+    bool recalcPositionedDescendantsOverflowAfterStyleChange();
 public:
     virtual bool recalcChildOverflowAfterStyleChange();
     bool recalcOverflowAfterStyleChange();

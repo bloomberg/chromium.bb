@@ -424,9 +424,9 @@ bool LayoutTable::recalcChildOverflowAfterStyleChange()
     for (LayoutTableSection* section = topSection(); section; section = sectionBelow(section)) {
         if (!section->childNeedsOverflowRecalcAfterStyleChange())
             continue;
-        childrenOverflowChanged |= section->recalcChildOverflowAfterStyleChange();
+        childrenOverflowChanged = section->recalcChildOverflowAfterStyleChange() || childrenOverflowChanged;
     }
-    return childrenOverflowChanged;
+    return recalcPositionedDescendantsOverflowAfterStyleChange() || childrenOverflowChanged;
 }
 
 void LayoutTable::layout()
