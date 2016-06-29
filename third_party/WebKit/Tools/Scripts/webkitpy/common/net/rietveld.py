@@ -16,7 +16,6 @@ BASE_CODEREVIEW_URL = 'https://codereview.chromium.org/api'
 
 TryJob = collections.namedtuple('TryJob', ('builder_name', 'master_name', 'build_number'))
 
-
 def latest_try_jobs(issue_number, builder_names, web, patchset_number=None):
     """Returns a list of TryJob objects for jobs on the latest patchset.
 
@@ -80,3 +79,12 @@ def _issue_url(issue_number):
 
 def _patchset_url(issue_number, patchset_number):
     return '%s/%s' % (_issue_url(issue_number), patchset_number)
+
+
+def get_latest_try_job_results(issue_number, web):
+    url = _latest_patchset_url(issue_number, web)
+    patchset_data = _get_json(url, web)
+    results = {}
+    for job in patchset_data['try_job_results']:
+        results[job['builder']] = job['result']
+    return results

@@ -7,7 +7,7 @@ import logging
 import unittest
 import urllib2
 
-from webkitpy.common.net.rietveld import latest_try_jobs, TryJob
+from webkitpy.common.net.rietveld import latest_try_jobs, TryJob, get_latest_try_job_results
 from webkitpy.common.net.web_mock import MockWeb
 from webkitpy.common.system.outputcapture import OutputCapture
 
@@ -28,11 +28,13 @@ class RietveldTest(unittest.TestCase):
                         'builder': 'some builder',
                         'master': 'some master',
                         'buildnumber': 10,
+                        'result': -1
                     },
                     {
                         'builder': 'my builder',
                         'master': 'my master',
                         'buildnumber': 50,
+                        'results': 0
                     },
                 ],
             }),
@@ -42,11 +44,13 @@ class RietveldTest(unittest.TestCase):
                         'builder': 'some builder',
                         'master': 'some master',
                         'buildnumber': 20,
+                        'result': 1
                     },
                     {
                         'builder': 'my builder',
                         'master': 'my master',
                         'buildnumber': 60,
+                        'result': 0
                     },
                 ],
             }),
@@ -86,3 +90,6 @@ class RietveldTest(unittest.TestCase):
 
     def test_latest_try_jobs_no_relevant_builders(self):
         self.assertEqual(latest_try_jobs(11112222, ('foo', 'bar'), self.web), [])
+
+    def test_get_latest_try_job_results(self):
+        self.assertEqual(get_latest_try_job_results(11112222, self.web), {'some builder': 1, 'my builder': 0})
