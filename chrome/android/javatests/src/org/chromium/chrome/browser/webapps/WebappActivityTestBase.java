@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.webapps;
 
+import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
+
 import android.content.Intent;
 import android.net.Uri;
 import android.view.ViewGroup;
@@ -28,6 +30,8 @@ public abstract class WebappActivityTestBase extends ChromeActivityTestCaseBase<
     static final String WEBAPP_ID = "webapp_id";
     static final String WEBAPP_NAME = "webapp name";
     static final String WEBAPP_SHORT_NAME = "webapp short name";
+
+    private static final long STARTUP_TIMEOUT = scaleTimeout(10000);
 
     // Empty 192x192 image generated with:
     // ShortcutHelper.encodeBitmapAsString(Bitmap.createBitmap(192, 192, Bitmap.Config.ARGB_4444));
@@ -139,7 +143,7 @@ public abstract class WebappActivityTestBase extends ChromeActivityTestCaseBase<
                         return getActivity().getActivityTab() != null
                                 && !getActivity().getActivityTab().isLoading();
                     }
-                });
+                }, STARTUP_TIMEOUT, CriteriaHelper.DEFAULT_POLLING_INTERVAL);
         } catch (InterruptedException exception) {
             fail();
         }
