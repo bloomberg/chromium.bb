@@ -53,9 +53,10 @@ def CombineList(test_files_dir, list_output_file, include_filters,
             raise Exception("Filter found for unknown target: " +
                 test_binary_name)
 
-          # Note: This may overwrite a previous rule. This is okay, since higher
-          # priority files are evaluated after lower priority files.
-          test_filters[test_binary_name] = filter
+          if test_binary_name in test_filters:
+            test_filters[test_binary_name] += " " + filter
+          else:
+            test_filters[test_binary_name] = filter
 
   test_binaries = [
       binary + " " + (additional_runtime_options or "")

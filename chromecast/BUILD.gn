@@ -95,6 +95,10 @@ cast_test_group("cast_tests") {
       # DoAppendUTF8Invalid fails because of dcheck_always_on flag in Eng builds
       "url_unittests --gtest_filter=-URLCanonTest.DoAppendUTF8Invalid",
     ]
+
+    if (disable_display) {
+      filters += [ "base_unittests --gtest_filter=-TimeFormattingTest.*" ]
+    }
   } else if (is_cast_desktop_build || target_os == "android") {
     filters += [
       # URLRequestTestHTTP.GetTest_ManyCookies takes roughly 55s to run. Increase
