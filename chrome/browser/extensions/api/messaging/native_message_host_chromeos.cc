@@ -125,7 +125,9 @@ const char* const kRemotingIt2MeOrigins[] = {
     "chrome-extension://odkaodonbgfohohmklejpjiejmcipmib/",
     "chrome-extension://dokpleeekgeeiehdhmdkeimnkmoifgdd/",
     "chrome-extension://ajoainacpilcemgiakehflpbkbfipojk/",
-    "chrome-extension://hmboipgjngjoiaeicfdifdoeacilalgc/"};
+    "chrome-extension://hmboipgjngjoiaeicfdifdoeacilalgc/",
+    "chrome-extension://inomeogfingihgjfjlpeplalcfajhgai/",
+    "chrome-extension://hpodccmdligbeohchckkeajbfohibipg/"};
 
 static const BuiltInHost kBuiltInHost[] = {
     {"com.google.chrome.test.echo", // ScopedTestNativeMessagingHost::kHostName
