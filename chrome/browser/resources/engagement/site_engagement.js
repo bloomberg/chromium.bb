@@ -129,7 +129,7 @@ define('main', [
 
       // Compare the hosts of the origin ignoring schemes.
       if (sortKey == 'origin')
-        return new URL(val1).host > new URL(val2).host ? 1 : -1;
+        return new URL(val1.url).host > new URL(val2.url).host ? 1 : -1;
 
       if (sortKey == 'score')
         return val1 - val2;
