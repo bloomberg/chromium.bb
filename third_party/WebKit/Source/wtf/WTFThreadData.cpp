@@ -26,7 +26,6 @@
 
 #include "wtf/WTFThreadData.h"
 
-#include "wtf/PtrUtil.h"
 #include "wtf/text/TextCodecICU.h"
 
 namespace WTF {
@@ -34,18 +33,15 @@ namespace WTF {
 ThreadSpecific<WTFThreadData>* WTFThreadData::staticData;
 
 WTFThreadData::WTFThreadData()
-    : m_atomicStringTable(nullptr)
-    , m_atomicStringTableDestructor(nullptr)
+    : m_atomicStringTable(new AtomicStringTable)
     , m_compressibleStringTable(nullptr)
     , m_compressibleStringTableDestructor(nullptr)
-    , m_cachedConverterICU(wrapUnique(new ICUConverterWrapper))
+    , m_cachedConverterICU(new ICUConverterWrapper)
 {
 }
 
 WTFThreadData::~WTFThreadData()
 {
-    if (m_atomicStringTableDestructor)
-        m_atomicStringTableDestructor(m_atomicStringTable);
     if (m_compressibleStringTableDestructor)
         m_compressibleStringTableDestructor(m_compressibleStringTable);
 }

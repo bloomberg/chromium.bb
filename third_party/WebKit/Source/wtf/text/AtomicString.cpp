@@ -35,84 +35,14 @@ using namespace Unicode;
 
 static_assert(sizeof(AtomicString) == sizeof(String), "AtomicString and String must be same size");
 
-class AtomicStringTable {
-    USING_FAST_MALLOC(AtomicStringTable);
-    WTF_MAKE_NONCOPYABLE(AtomicStringTable);
-public:
-    static AtomicStringTable* create(WTFThreadData& data)
-    {
-        data.m_atomicStringTable = new AtomicStringTable;
-        data.m_atomicStringTableDestructor = AtomicStringTable::destroy;
-        data.m_atomicStringTable->addStaticStrings();
-        return data.m_atomicStringTable;
-    }
-
-    StringImpl* addStringImpl(StringImpl* string)
-    {
-        if (!string->length())
-            return StringImpl::empty();
-
-        StringImpl* result = *m_table.add(string).storedValue;
-
-        if (!result->isAtomic())
-            result->setIsAtomic(true);
-
-        ASSERT(!string->isStatic() || result->isStatic());
-        return result;
-    }
-
-    HashSet<StringImpl*>& table()
-    {
-        return m_table;
-    }
-
-private:
-    AtomicStringTable() { }
-
-    void addStaticStrings()
-    {
-        const StaticStringsTable& staticStrings = StringImpl::allStaticStrings();
-
-        StaticStringsTable::const_iterator it = staticStrings.begin();
-        for (; it != staticStrings.end(); ++it) {
-            addStringImpl(it->value);
-        }
-    }
-
-    static void destroy(AtomicStringTable* table)
-    {
-        HashSet<StringImpl*>::iterator end = table->m_table.end();
-        for (HashSet<StringImpl*>::iterator iter = table->m_table.begin(); iter != end; ++iter) {
-            StringImpl* string = *iter;
-            if (!string->isStatic()) {
-                ASSERT(string->isAtomic());
-                string->setIsAtomic(false);
-            }
-        }
-        delete table;
-    }
-
-    HashSet<StringImpl*> m_table;
-};
-
-static inline AtomicStringTable& getAtomicStringTable()
-{
-    // Once possible we should make this non-lazy (constructed in WTFThreadData's constructor).
-    WTFThreadData& data = wtfThreadData();
-    AtomicStringTable* table = data.getAtomicStringTable();
-    if (UNLIKELY(!table))
-        table = AtomicStringTable::create(data);
-    return *table;
-}
-
 static inline HashSet<StringImpl*>& atomicStrings()
 {
-    return getAtomicStringTable().table();
+    return wtfThreadData().getAtomicStringTable().table();
 }
 
 void AtomicString::reserveTableCapacity(size_t size)
 {
-    getAtomicStringTable().table().reserveCapacityForSize(size);
+    wtfThreadData().getAtomicStringTable().table().reserveCapacityForSize(size);
 }
 
 template<typename T, typename HashTranslator>
@@ -371,7 +301,7 @@ PassRefPtr<StringImpl> AtomicString::add(const LChar* s, unsigned length)
 
 PassRefPtr<StringImpl> AtomicString::addSlowCase(StringImpl* string)
 {
-    return getAtomicStringTable().addStringImpl(string);
+    return wtfThreadData().getAtomicStringTable().addStringImpl(string);
 }
 
 template<typename CharacterType>

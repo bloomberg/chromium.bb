@@ -131,6 +131,8 @@
             'text/AtomicString.h',
             'text/AtomicStringCF.cpp',
             'text/AtomicStringHash.h',
+            'text/AtomicStringTable.cpp',
+            'text/AtomicStringTable.h',
             'text/Base64.cpp',
             'text/Base64.h',
             'text/CString.cpp',
