@@ -57,12 +57,14 @@ class BotUpdateApi(recipe_api.RecipeApi):
                       patch=True, update_presentation=True,
                       force=False, patch_root=None, no_shallow=False,
                       with_branch_heads=False, refs=None,
-                      patch_oauth2=False,
+                      patch_oauth2=False, use_site_config_creds=True,
                       output_manifest=True, clobber=False,
                       root_solution_revision=None, rietveld=None, issue=None,
                       patchset=None, gerrit_no_reset=False, **kwargs):
     """
     Args:
+      use_site_config_creds: If the oauth2 credentials are in the buildbot
+        site_config. See crbug.com/624212 for more information.
       gclient_config: The gclient configuration to use when running bot_update.
         If omitted, the current gclient configuration is used.
       rietveld: The rietveld server to use. If omitted, will infer from
@@ -119,10 +121,16 @@ class BotUpdateApi(recipe_api.RecipeApi):
     # Point to the oauth2 auth files if specified.
     # These paths are where the bots put their credential files.
     if patch_oauth2:
-      email_file = self.m.path['build'].join(
-          'site_config', '.rietveld_client_email')
-      key_file = self.m.path['build'].join(
-          'site_config', '.rietveld_secret_key')
+      # TODO(martiniss): remove this hack :(. crbug.com/624212
+      if use_site_config_creds:
+        email_file = self.m.path['build'].join(
+            'site_config', '.rietveld_client_email')
+        key_file = self.m.path['build'].join(
+            'site_config', '.rietveld_secret_key')
+      else: #pragma: no cover
+        #TODO(martiniss): make this use path.join, so it works on windows
+        email_file = '/creds/rietveld/client_email'
+        key_file = '/creds/rietveld/secret_key'
     else:
       email_file = key_file = None
 
