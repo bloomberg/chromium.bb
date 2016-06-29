@@ -35,7 +35,6 @@
 #include "core/dom/Document.h"
 #include "core/dom/DocumentFragment.h"
 #include "core/dom/Element.h"
-#include "core/dom/NodeComputedStyle.h"
 #include "core/dom/Text.h"
 #include "core/editing/EditingUtilities.h"
 #include "core/editing/FrameSelection.h"
@@ -795,23 +794,6 @@ static void removeHeadContents(ReplacementFragment& fragment)
     }
 }
 
-static bool followBlockElementStyle(const Node* node)
-{
-    if (!node->isHTMLElement())
-        return false;
-
-    const HTMLElement& element = toHTMLElement(*node);
-    return element.computedStyle()->display() == LIST_ITEM
-        || element.computedStyle()->display() == TABLE_CELL
-        || element.hasTagName(preTag)
-        || element.hasTagName(h1Tag)
-        || element.hasTagName(h2Tag)
-        || element.hasTagName(h3Tag)
-        || element.hasTagName(h4Tag)
-        || element.hasTagName(h5Tag)
-        || element.hasTagName(h6Tag);
-}
-
 // Remove style spans before insertion if they are unnecessary.  It's faster because we'll
 // avoid doing a layout.
 static bool handleStyleSpansBeforeInsertion(ReplacementFragment& fragment, const Position& insertionPos)
@@ -825,19 +807,10 @@ static bool handleStyleSpansBeforeInsertion(ReplacementFragment& fragment, const
     if (isMailPasteAsQuotationHTMLBlockQuoteElement(topNode) || enclosingNodeOfType(firstPositionInOrBeforeNode(topNode), isMailHTMLBlockquoteElement, CanCrossEditingBoundary))
         return false;
 
-    // Remove style spans to follow the styles of parent block element when |fragment| becomes a part of it.
-    // See bugs http://crbug.com/226941 and http://crbug.com/335955.
+    // Remove style spans to follow the styles of list item when |fragment| becomes a list item.
+    // See bug http://crbug.com/335955.
     HTMLSpanElement* wrappingStyleSpan = toHTMLSpanElement(topNode);
-    const Node* node = insertionPos.anchorNode();
-    // |node| can be an inline element like <br> under <li>
-    // e.g.) editing/execCommand/switch-list-type.html
-    //       editing/deleting/backspace-merge-into-block.html
-    if (node->computedStyle()->display() == INLINE) {
-        if (!(node = enclosingBlock(insertionPos.anchorNode())))
-            return false;
-    }
-
-    if (followBlockElementStyle(node)) {
+    if (isListItem(enclosingBlock(insertionPos.anchorNode()))) {
         fragment.removeNodePreservingChildren(wrappingStyleSpan);
         return true;
     }
