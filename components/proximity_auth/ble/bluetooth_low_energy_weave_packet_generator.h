@@ -38,15 +38,15 @@ class BluetoothLowEnergyWeavePacketGenerator {
     static Factory* factory_instance_;
   };
 
-  Packet CreateConnectionRequest();
-  Packet CreateConnectionResponse();
-  Packet CreateConnectionClose(ReasonForClose reason_for_close);
+  virtual Packet CreateConnectionRequest();
+  virtual Packet CreateConnectionResponse();
+  virtual Packet CreateConnectionClose(ReasonForClose reason_for_close);
 
   // Packet size must be greater than or equal to 20.
-  void SetMaxPacketSize(uint16_t size);
+  virtual void SetMaxPacketSize(uint16_t size);
 
   // Will crash if message is empty.
-  std::vector<Packet> EncodeDataMessage(std::string message);
+  virtual std::vector<Packet> EncodeDataMessage(std::string message);
 
  protected:
   BluetoothLowEnergyWeavePacketGenerator();
