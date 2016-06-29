@@ -3,7 +3,8 @@
 // found in the LICENSE file.
 
 chrome.test.runTests([
-  function testActivate() {
+  // Tests input.ime.activate and input.ime.onFocus APIs.
+  function testActivateAndFocus() {
     var focused = false;
     var activated = false;
     chrome.input.ime.onFocus.addListener(function(context) {
@@ -25,6 +26,7 @@ chrome.test.runTests([
         chrome.test.succeed();
     });
   },
+  // Test input.ime.createWindow API.
   function testNormalCreateWindow() {
     var options = { windowType: 'normal' };
     chrome.input.ime.createWindow(options, function(win) {
@@ -53,7 +55,7 @@ chrome.test.runTests([
       chrome.test.succeed();
     });
   },
-
+  // Test input.ime.sendKeyEvents API.
   function testSendKeyEvents() {
     chrome.input.ime.sendKeyEvents({
       'contextID': 1,
@@ -71,6 +73,7 @@ chrome.test.runTests([
     });
     chrome.test.succeed();
   },
+  // Test input.ime.commitText API.
   function testCommitText() {
     chrome.input.ime.commitText({
       contextID: 1,
@@ -83,6 +86,7 @@ chrome.test.runTests([
       chrome.test.succeed();
     });
   },
+  // Tests input.ime.activate and input.ime.setComposition API.
   function testSetComposition() {
     chrome.input.ime.setComposition({
       contextID: 1,
@@ -95,5 +99,18 @@ chrome.test.runTests([
       }
       chrome.test.succeed();
     });
-  }
+  },
+  // Tests input.ime.onBlur API.
+  function testBlur() {
+    chrome.input.ime.onBlur.addListener(function(context) {
+      if (context.type == 'none') {
+        chrome.test.fail();
+        return;
+      }
+      // Waits for the 'get_blur_event' message in InputImeApiTest.BasicApiTest.
+      chrome.test.sendMessage('get_blur_event');
+      chrome.test.succeed();
+    });
+    chrome.test.succeed();
+  },
 ]);

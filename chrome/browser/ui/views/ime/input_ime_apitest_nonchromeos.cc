@@ -7,6 +7,7 @@
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/common/chrome_switches.h"
+#include "extensions/test/extension_test_message_listener.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/ime/composition_text.h"
@@ -41,6 +42,9 @@ IN_PROC_BROWSER_TEST_F(InputImeApiTest, BasicApiTest) {
   ExtensionFunction::ScopedUserGestureForTests scoped_user_gesture;
   InputImeActivateFunction::disable_bubble_for_testing_ = true;
 
+  // Listens for the input.ime.onBlur event.
+  ExtensionTestMessageListener blur_listener("get_blur_event", false);
+
   ASSERT_TRUE(RunExtensionTest("input_ime_nonchromeos")) << message_;
 
   // Test the input.ime.sendKeyEvents API.
@@ -61,7 +65,14 @@ IN_PROC_BROWSER_TEST_F(InputImeApiTest, BasicApiTest) {
   ASSERT_EQ(1, client->set_composition_count());
   ASSERT_EQ(composition, client->last_composition());
 
-  input_method->DetachTextInputClient(client.get());
+  // Tests input.ime.onBlur API should get event when focusing to another
+  // text input client.
+  std::unique_ptr<ui::DummyTextInputClient> client2(
+      new ui::DummyTextInputClient(ui::TEXT_INPUT_TYPE_TEXT));
+  input_method->SetFocusedTextInputClient(client2.get());
+  ASSERT_TRUE(blur_listener.WaitUntilSatisfied()) << message_;
+
+  input_method->DetachTextInputClient(client2.get());
 }
 
 }  // namespace extensions
