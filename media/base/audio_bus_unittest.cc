@@ -544,7 +544,7 @@ struct ZeroingOutTestData {
     // [1.0, 2.0, 3.0, ...]
     bus_under_test = AudioBus::Create(kChannelCount, kFrameCount);
     for (int ch = 0; ch < kChannelCount; ++ch) {
-      auto sample_array_for_current_channel = bus_under_test->channel(ch);
+      auto* sample_array_for_current_channel = bus_under_test->channel(ch);
       for (int frame_index = 0; frame_index < kFrameCount; frame_index++) {
         sample_array_for_current_channel[frame_index] =
             static_cast<float>(frame_index + 1);
@@ -568,7 +568,7 @@ TEST_F(AudioBusTest, FromInterleavedZerosOutUntouchedFrames) {
 
   // Verification
   for (int ch = 0; ch < test_data.kChannelCount; ++ch) {
-    auto sample_array_for_current_channel =
+    auto* sample_array_for_current_channel =
         test_data.bus_under_test->channel(ch);
     for (int frame_index = test_data.kInterleavedFrameCount;
          frame_index < test_data.kFrameCount; frame_index++) {
@@ -591,7 +591,7 @@ TEST_F(AudioBusTest, FromInterleavedPartialDoesNotZeroOutUntouchedFrames) {
 
     // Verification
     for (int ch = 0; ch < test_data.kChannelCount; ++ch) {
-      auto sample_array_for_current_channel =
+      auto* sample_array_for_current_channel =
           test_data.bus_under_test->channel(ch);
       for (int frame_index =
                test_data.kInterleavedFrameCount + kWriteOffsetInFrames;
@@ -614,7 +614,7 @@ TEST_F(AudioBusTest, FromInterleavedPartialDoesNotZeroOutUntouchedFrames) {
 
     // Verification
     for (int ch = 0; ch < test_data.kChannelCount; ++ch) {
-      auto sample_array_for_current_channel =
+      auto* sample_array_for_current_channel =
           test_data.bus_under_test->channel(ch);
       // Check untouched frames before write offset
       for (int frame_index = 0; frame_index < kWriteOffsetInFrames;

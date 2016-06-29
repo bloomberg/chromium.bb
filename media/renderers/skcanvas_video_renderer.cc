@@ -377,7 +377,7 @@ void SkCanvasVideoRenderer::Paint(const scoped_refptr<VideoFrame>& video_frame,
             NewSkImageFromVideoFrameNative(video_frame.get(), context_3d);
       }
     } else {
-      auto video_generator = new VideoImageGenerator(video_frame);
+      auto* video_generator = new VideoImageGenerator(video_frame);
       last_image_ = SkImage::MakeFromGenerator(video_generator);
     }
     if (!last_image_)  // Couldn't create the SkImage.

@@ -689,7 +689,7 @@ MidiManagerAlsa::AlsaSeqState::ToMidiPortState(const AlsaCardMap& alsa_cards) {
   int card_midi_device = -1;
   for (const auto& client_pair : clients_) {
     int client_id = client_pair.first;
-    const auto& client = client_pair.second.get();
+    auto* client = client_pair.second.get();
 
     // Get client metadata.
     const std::string client_name = client->name();

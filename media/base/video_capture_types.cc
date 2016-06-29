@@ -97,11 +97,11 @@ std::string VideoCaptureFormat::PixelStorageToString(
 bool VideoCaptureFormat::ComparePixelFormatPreference(
     const VideoPixelFormat& lhs,
     const VideoPixelFormat& rhs) {
-  const auto& format_lhs = std::find(
+  auto* format_lhs = std::find(
       kSupportedCapturePixelFormats,
       kSupportedCapturePixelFormats + arraysize(kSupportedCapturePixelFormats),
       lhs);
-  const auto& format_rhs = std::find(
+  auto* format_rhs = std::find(
       kSupportedCapturePixelFormats,
       kSupportedCapturePixelFormats + arraysize(kSupportedCapturePixelFormats),
       rhs);

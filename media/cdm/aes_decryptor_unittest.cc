@@ -386,7 +386,7 @@ class AesDecryptorTest : public testing::TestWithParam<std::string> {
   }
 
   bool KeysInfoContains(std::vector<uint8_t> expected) {
-    for (const auto& key_id : keys_info_) {
+    for (auto* key_id : keys_info_) {
       if (key_id->key_id == expected)
         return true;
     }

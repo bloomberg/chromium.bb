@@ -1410,7 +1410,7 @@ base::TimeDelta SourceBufferStream::GetBufferedDuration() const {
 
 size_t SourceBufferStream::GetBufferedSize() const {
   size_t ranges_size = 0;
-  for (const auto& range : ranges_)
+  for (auto* range : ranges_)
     ranges_size += range->size_in_bytes();
   return ranges_size;
 }

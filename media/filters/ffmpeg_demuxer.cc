@@ -975,7 +975,7 @@ void FFmpegDemuxer::AddTextStreams() {
 
 int64_t FFmpegDemuxer::GetMemoryUsage() const {
   int64_t allocation_size = 0;
-  for (const auto& stream : streams_) {
+  for (auto* stream : streams_) {
     if (stream)
       allocation_size += stream->MemoryUsage();
   }
@@ -1611,7 +1611,7 @@ void FFmpegDemuxer::OnDataSourceError() {
 
 void FFmpegDemuxer::SetLiveness(DemuxerStream::Liveness liveness) {
   DCHECK(task_runner_->BelongsToCurrentThread());
-  for (const auto& stream : streams_) {  // |stream| is a ref to a pointer.
+  for (auto* stream : streams_) {
     if (stream)
       stream->SetLiveness(liveness);
   }
