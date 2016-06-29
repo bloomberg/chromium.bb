@@ -15,6 +15,18 @@ namespace blink {
 class TextTest : public EditingTestBase {
 };
 
+TEST_F(TextTest, SetDataToChangeFirstLetterTextNode)
+{
+    setBodyContent("<style>pre::first-letter {color:red;}</style><pre id=sample>a<span>b</span></pre>");
+
+    Node* sample = document().getElementById("sample");
+    Text* text = toText(sample->firstChild());
+    text->setData(" ");
+    updateAllLifecyclePhases();
+
+    EXPECT_FALSE(text->layoutObject()->isTextFragment());
+}
+
 TEST_F(TextTest, RemoveFirstLetterPseudoElementWhenNoLetter)
 {
     setBodyContent("<style>*::first-letter{font:icon;}</style><pre>AB\n</pre>");
