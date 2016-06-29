@@ -2,22 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_COMMON_DWRITE_TEXT_ANALYSIS_SOURCE_WIN_H_
-#define CONTENT_COMMON_DWRITE_TEXT_ANALYSIS_SOURCE_WIN_H_
+#ifndef UI_GFX_WIN_TEXT_ANALYSIS_SOURCE_H_
+#define UI_GFX_WIN_TEXT_ANALYSIS_SOURCE_H_
 
 #include <dwrite.h>
 #include <wrl.h>
 
 #include "base/macros.h"
 #include "base/strings/string16.h"
-#include "content/common/content_export.h"
+#include "ui/gfx/gfx_export.h"
 
-namespace content {
+namespace gfx {
+namespace win {
 
 // Implements an IDWriteTextAnalysisSource, describing a single pre-defined
 // chunk of text with a uniform locale, reading direction, and number
 // substitution.
-class CONTENT_EXPORT TextAnalysisSource
+class GFX_EXPORT TextAnalysisSource
     : public Microsoft::WRL::RuntimeClass<
           Microsoft::WRL::RuntimeClassFlags<Microsoft::WRL::ClassicCom>,
           IDWriteTextAnalysisSource> {
@@ -59,6 +60,7 @@ class CONTENT_EXPORT TextAnalysisSource
   DISALLOW_ASSIGN(TextAnalysisSource);
 };
 
-}  // namespace content
+}  // namespace win
+}  // namespace gfx
 
-#endif  // CONTENT_COMMON_DWRITE_TEXT_ANALYSIS_SOURCE_WIN_H_
+#endif  // UI_GFX_WIN_TEXT_ANALYSIS_SOURCE_H_

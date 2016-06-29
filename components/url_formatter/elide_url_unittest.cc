@@ -8,6 +8,7 @@
 
 #include "base/ios/ios_util.h"
 #include "base/macros.h"
+#include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -108,6 +109,10 @@ TEST(TextEliderTest, TestTrailingEllipsisSlashEllipsisHack) {
 
 // Test eliding of empty strings, URLs with ports, passwords, queries, etc.
 TEST(TextEliderTest, TestMoreEliding) {
+#if defined(OS_WIN)
+  // Needed to bypass DCHECK in GetFallbackFont.
+  base::MessageLoopForUI message_loop;
+#endif
   const std::string kEllipsisStr(gfx::kEllipsis);
   Testcase testcases[] = {
       {"http://www.google.com/foo?bar", "www.google.com/foo?bar"},

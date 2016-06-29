@@ -14,6 +14,7 @@
 #include "base/files/file_path.h"
 #include "base/i18n/rtl.h"
 #include "base/macros.h"
+#include "base/run_loop.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
@@ -330,6 +331,10 @@ static void CheckCodeUnitPairs(const base::string16& text,
 #define MAYBE_ElideTextAtomicSequences ElideTextAtomicSequences
 #endif
 TEST(TextEliderTest, MAYBE_ElideTextAtomicSequences) {
+#if defined(OS_WIN)
+  // Needed to bypass DCHECK in GetFallbackFont.
+  base::MessageLoopForUI message_loop;
+#endif
   const FontList font_list;
   // The below is 'MUSICAL SYMBOL G CLEF' (U+1D11E), which is represented in
   // UTF-16 as two code units forming a surrogate pair: 0xD834 0xDD1E.

@@ -84,10 +84,10 @@ class GFX_EXPORT LinkedFontsIterator {
 // Finds a fallback font to render the specified |text| with respect to an
 // initial |font|. Returns the resulting font via out param |result|. Returns
 // |true| if a fallback font was found.
-bool GetUniscribeFallbackFont(const Font& font,
-                              const wchar_t* text,
-                              int text_length,
-                              Font* result);
+bool GetFallbackFont(const Font& font,
+                     const wchar_t* text,
+                     int text_length,
+                     Font* result);
 
 }  // namespace gfx
 

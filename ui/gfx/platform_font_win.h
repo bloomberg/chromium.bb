@@ -15,6 +15,7 @@
 #include "ui/gfx/platform_font.h"
 
 struct IDWriteFactory;
+struct IDWriteFont;
 
 namespace gfx {
 
@@ -203,6 +204,12 @@ class GFX_EXPORT PlatformFontWin : public PlatformFont {
 
   DISALLOW_COPY_AND_ASSIGN(PlatformFontWin);
 };
+
+// Returns the family name for the |IDWriteFont| interface passed in.
+// The family name is returned in the |family_name| parameter.
+// Returns S_OK on success.
+HRESULT GetFamilyNameFromDirectWriteFont(IDWriteFont* dwrite_font,
+                                         base::string16* family_name);
 
 }  // namespace gfx
 

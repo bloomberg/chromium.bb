@@ -135,6 +135,7 @@
             'icon_util_unittests.rc',
             'path_win_unittest.cc',
             'platform_font_win_unittest.cc',
+            'win/text_analysis_source_unittest.cc',
           ],
           'msvs_settings': {
             'VCLinkerTool': {

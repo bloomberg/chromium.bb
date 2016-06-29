@@ -199,6 +199,8 @@ component("gfx") {
     "win/singleton_hwnd.h",
     "win/singleton_hwnd_observer.cc",
     "win/singleton_hwnd_observer.h",
+    "win/text_analysis_source.cc",
+    "win/text_analysis_source.h",
     "win/window_impl.cc",
     "win/window_impl.h",
   ]
@@ -859,6 +861,7 @@ test("gfx_unittests") {
       "icon_util_unittests.rc",
       "path_win_unittest.cc",
       "platform_font_win_unittest.cc",
+      "win/text_analysis_source_unittest.cc",
     ]
 
     ldflags = [

@@ -12,9 +12,9 @@
 
 #include "base/memory/ref_counted.h"
 #include "content/child/dwrite_font_proxy/dwrite_font_proxy_win.h"
-#include "content/common/dwrite_text_analysis_source_win.h"
 #include "content/test/dwrite_font_fake_sender_win.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/gfx/win/text_analysis_source.h"
 
 namespace mswr = Microsoft::WRL;
 
@@ -78,8 +78,8 @@ TEST_F(FontFallbackUnitTest, MapCharacters) {
   UINT32 mapped_length = 0;
   float scale = 0.0;
 
-  mswr::ComPtr<TextAnalysisSource> text;
-  mswr::MakeAndInitialize<TextAnalysisSource>(
+  mswr::ComPtr<gfx::win::TextAnalysisSource> text;
+  mswr::MakeAndInitialize<gfx::win::TextAnalysisSource>(
       &text, L"hello", L"en-us", number_substitution_.Get(),
       DWRITE_READING_DIRECTION_LEFT_TO_RIGHT);
   fallback->MapCharacters(text.Get(), 0, 5, nullptr, nullptr,
@@ -100,8 +100,8 @@ TEST_F(FontFallbackUnitTest, DuplicateCallsShouldNotRepeatIPC) {
   UINT32 mapped_length = 0;
   float scale = 0.0;
 
-  mswr::ComPtr<TextAnalysisSource> text;
-  mswr::MakeAndInitialize<TextAnalysisSource>(
+  mswr::ComPtr<gfx::win::TextAnalysisSource> text;
+  mswr::MakeAndInitialize<gfx::win::TextAnalysisSource>(
       &text, L"hello", L"en-us", number_substitution_.Get(),
       DWRITE_READING_DIRECTION_LEFT_TO_RIGHT);
   fallback->MapCharacters(text.Get(), 0, 5, nullptr, nullptr,
@@ -127,8 +127,8 @@ TEST_F(FontFallbackUnitTest, DifferentFamilyShouldNotReuseCache) {
   UINT32 mapped_length = 0;
   float scale = 0.0;
 
-  mswr::ComPtr<TextAnalysisSource> text;
-  mswr::MakeAndInitialize<TextAnalysisSource>(
+  mswr::ComPtr<gfx::win::TextAnalysisSource> text;
+  mswr::MakeAndInitialize<gfx::win::TextAnalysisSource>(
       &text, L"hello", L"en-us", number_substitution_.Get(),
       DWRITE_READING_DIRECTION_LEFT_TO_RIGHT);
   fallback->MapCharacters(text.Get(), 0, 5, nullptr, L"font1",
@@ -152,12 +152,12 @@ TEST_F(FontFallbackUnitTest, CacheMissShouldRepeatIPC) {
   UINT32 mapped_length = 0;
   float scale = 0.0;
 
-  mswr::ComPtr<TextAnalysisSource> text;
-  mswr::MakeAndInitialize<TextAnalysisSource>(
+  mswr::ComPtr<gfx::win::TextAnalysisSource> text;
+  mswr::MakeAndInitialize<gfx::win::TextAnalysisSource>(
       &text, L"hello", L"en-us", number_substitution_.Get(),
       DWRITE_READING_DIRECTION_LEFT_TO_RIGHT);
-  mswr::ComPtr<TextAnalysisSource> unmappable_text;
-  mswr::MakeAndInitialize<TextAnalysisSource>(
+  mswr::ComPtr<gfx::win::TextAnalysisSource> unmappable_text;
+  mswr::MakeAndInitialize<gfx::win::TextAnalysisSource>(
       &unmappable_text, L"\uffff", L"en-us", number_substitution_.Get(),
       DWRITE_READING_DIRECTION_LEFT_TO_RIGHT);
   fallback->MapCharacters(text.Get(), 0, 5, nullptr, nullptr,
@@ -181,12 +181,12 @@ TEST_F(FontFallbackUnitTest, SurrogatePairCacheHit) {
   UINT32 mapped_length = 0;
   float scale = 0.0;
 
-  mswr::ComPtr<TextAnalysisSource> text;
-  mswr::MakeAndInitialize<TextAnalysisSource>(
+  mswr::ComPtr<gfx::win::TextAnalysisSource> text;
+  mswr::MakeAndInitialize<gfx::win::TextAnalysisSource>(
       &text, L"hello", L"en-us", number_substitution_.Get(),
       DWRITE_READING_DIRECTION_LEFT_TO_RIGHT);
-  mswr::ComPtr<TextAnalysisSource> surrogate_pair_text;
-  mswr::MakeAndInitialize<TextAnalysisSource>(
+  mswr::ComPtr<gfx::win::TextAnalysisSource> surrogate_pair_text;
+  mswr::MakeAndInitialize<gfx::win::TextAnalysisSource>(
       &surrogate_pair_text, L"\U0001d300", L"en-us", number_substitution_.Get(),
       DWRITE_READING_DIRECTION_LEFT_TO_RIGHT);
   fallback->MapCharacters(text.Get(), 0, 5, nullptr, nullptr,

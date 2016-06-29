@@ -20,9 +20,9 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/common/dwrite_font_proxy_messages.h"
-#include "content/common/dwrite_text_analysis_source_win.h"
 #include "ipc/ipc_message_macros.h"
 #include "ui/gfx/win/direct_write.h"
+#include "ui/gfx/win/text_analysis_source.h"
 
 namespace mswr = Microsoft::WRL;
 
@@ -258,7 +258,7 @@ void DWriteFontProxyMessageFilter::OnMapCharacters(
     return;
   }
   mswr::ComPtr<IDWriteTextAnalysisSource> analysis_source;
-  if (FAILED(mswr::MakeAndInitialize<TextAnalysisSource>(
+  if (FAILED(mswr::MakeAndInitialize<gfx::win::TextAnalysisSource>(
           &analysis_source, text, locale_name, number_substitution.Get(),
           static_cast<DWRITE_READING_DIRECTION>(reading_direction)))) {
     DCHECK(false);

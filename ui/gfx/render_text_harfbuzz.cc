@@ -1393,15 +1393,15 @@ void RenderTextHarfBuzz::ShapeRun(const base::string16& text,
   }
 
 #if defined(OS_WIN)
-  Font uniscribe_font(primary_font);
-  std::string uniscribe_family;
+  Font fallback_font(primary_font);
+  std::string fallback_family;
   const base::char16* run_text = &(text[run->range.start()]);
-  if (GetUniscribeFallbackFont(primary_font, run_text, run->range.length(),
-                               &uniscribe_font)) {
-    uniscribe_family = uniscribe_font.GetFontName();
-    if (CompareFamily(text, uniscribe_font,
-                      uniscribe_font.GetFontRenderParams(), run,
-                      &best_font, &best_render_params, &best_missing_glyphs))
+  if (GetFallbackFont(primary_font, run_text, run->range.length(),
+                      &fallback_font)) {
+    fallback_family = fallback_font.GetFontName();
+    if (CompareFamily(text, fallback_font, fallback_font.GetFontRenderParams(),
+                      run, &best_font, &best_render_params,
+                      &best_missing_glyphs))
       return;
   }
 #endif
@@ -1409,11 +1409,11 @@ void RenderTextHarfBuzz::ShapeRun(const base::string16& text,
   std::vector<Font> fallback_font_list = GetFallbackFonts(primary_font);
 
 #if defined(OS_WIN)
-  // Append fonts in the fallback list of the Uniscribe font.
-  if (!uniscribe_family.empty()) {
-    std::vector<Font> uniscribe_fallbacks = GetFallbackFonts(uniscribe_font);
-    fallback_font_list.insert(fallback_font_list.end(),
-        uniscribe_fallbacks.begin(), uniscribe_fallbacks.end());
+  // Append fonts in the fallback list of the fallback font.
+  if (!fallback_family.empty()) {
+    std::vector<Font> fallback_fonts = GetFallbackFonts(fallback_font);
+    fallback_font_list.insert(fallback_font_list.end(), fallback_fonts.begin(),
+                              fallback_fonts.end());
   }
 
   // Add Segoe UI and its associated linked fonts to the fallback font list to
@@ -1422,7 +1422,7 @@ void RenderTextHarfBuzz::ShapeRun(const base::string16& text,
   // could be a raster font like System, which would not give us a reasonable
   // fallback font list.
   if (!base::LowerCaseEqualsASCII(primary_font.GetFontName(), "segoe ui") &&
-      !base::LowerCaseEqualsASCII(uniscribe_family, "segoe ui")) {
+      !base::LowerCaseEqualsASCII(fallback_family, "segoe ui")) {
     std::vector<Font> default_fallback_families =
         GetFallbackFonts(Font("Segoe UI", 13));
     fallback_font_list.insert(fallback_font_list.end(),
@@ -1440,7 +1440,7 @@ void RenderTextHarfBuzz::ShapeRun(const base::string16& text,
     if (font_name == primary_font.GetFontName())
       continue;
 #if defined(OS_WIN)
-    if (font_name == uniscribe_family)
+    if (font_name == fallback_family)
       continue;
 #endif
     if (fallback_fonts.find(font) != fallback_fonts.end())

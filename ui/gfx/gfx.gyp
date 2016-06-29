@@ -356,6 +356,8 @@
         'win/singleton_hwnd.h',
         'win/singleton_hwnd_observer.cc',
         'win/singleton_hwnd_observer.h',
+        'win/text_analysis_source.cc',
+        'win/text_analysis_source.h',
         'win/window_impl.cc',
         'win/window_impl.h',
       ],

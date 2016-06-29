@@ -71,36 +71,6 @@ gfx::Font::Weight ToGfxFontWeight(int weight) {
   return static_cast<gfx::Font::Weight>(weight);
 }
 
-// Returns the family name for the |IDWriteFont| interface passed in.
-// The family name is returned in the |family_name_ret| parameter.
-// Returns S_OK on success.
-// TODO(ananta)
-// Remove the CHECKs in this function once this stabilizes on the field.
-HRESULT GetFamilyNameFromDirectWriteFont(IDWriteFont* dwrite_font,
-                                         base::string16* family_name_ret) {
-  base::win::ScopedComPtr<IDWriteFontFamily> font_family;
-  HRESULT hr = dwrite_font->GetFontFamily(font_family.Receive());
-  if (FAILED(hr))
-    CHECK(false);
-
-  base::win::ScopedComPtr<IDWriteLocalizedStrings> family_name;
-  hr = font_family->GetFamilyNames(family_name.Receive());
-  if (FAILED(hr))
-    CHECK(false);
-
-  // TODO(ananta)
-  // Add support for retrieving the family for the current locale.
-  wchar_t family_name_for_locale[MAX_PATH] = {0};
-  hr = family_name->GetString(0,
-                              family_name_for_locale,
-                              arraysize(family_name_for_locale));
-  if (FAILED(hr))
-    CHECK(false);
-
-  *family_name_ret = family_name_for_locale;
-  return hr;
-}
-
 // Uses the GDI interop functionality exposed by DirectWrite to find a
 // matching DirectWrite font for the LOGFONT passed in. If we fail to
 // find a direct match then we try the DirectWrite font substitution
@@ -271,7 +241,7 @@ HRESULT GetMatchingDirectWriteFont(LOGFONT* font_info,
   }
 
   base::string16 font_name;
-  GetFamilyNameFromDirectWriteFont(*dwrite_font, &font_name);
+  gfx::GetFamilyNameFromDirectWriteFont(*dwrite_font, &font_name);
   wcscpy_s(font_info->lfFaceName, arraysize(font_info->lfFaceName),
            font_name.c_str());
   return hr;
@@ -291,6 +261,32 @@ PlatformFontWin::GetMinimumFontSizeCallback
     PlatformFontWin::get_minimum_font_size_callback = NULL;
 
 IDWriteFactory* PlatformFontWin::direct_write_factory_ = nullptr;
+
+// TODO(ananta)
+// Remove the CHECKs in this function once this stabilizes on the field.
+HRESULT GetFamilyNameFromDirectWriteFont(IDWriteFont* dwrite_font,
+                                         base::string16* family_name) {
+  base::win::ScopedComPtr<IDWriteFontFamily> font_family;
+  HRESULT hr = dwrite_font->GetFontFamily(font_family.Receive());
+  if (FAILED(hr))
+    CHECK(false);
+
+  base::win::ScopedComPtr<IDWriteLocalizedStrings> family_names;
+  hr = font_family->GetFamilyNames(family_names.Receive());
+  if (FAILED(hr))
+    CHECK(false);
+
+  // TODO(ananta)
+  // Add support for retrieving the family for the current locale.
+  wchar_t family_name_for_locale[MAX_PATH] = {0};
+  hr = family_names->GetString(0, family_name_for_locale,
+                               arraysize(family_name_for_locale));
+  if (FAILED(hr))
+    CHECK(false);
+
+  *family_name = family_name_for_locale;
+  return hr;
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 // PlatformFontWin, public

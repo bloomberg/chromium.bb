@@ -2,11 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/common/dwrite_text_analysis_source_win.h"
+#include "ui/gfx/win/text_analysis_source.h"
 
 #include "base/logging.h"
 
-namespace content {
+namespace gfx {
+namespace win {
 
 TextAnalysisSource::TextAnalysisSource() = default;
 TextAnalysisSource::~TextAnalysisSource() = default;
@@ -79,4 +80,5 @@ HRESULT TextAnalysisSource::RuntimeClassInitialize(
   return S_OK;
 }
 
-}  // namespace content
+}  // namespace win
+}  // namespace gfx

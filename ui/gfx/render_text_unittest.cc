@@ -14,6 +14,7 @@
 #include "base/format_macros.h"
 #include "base/i18n/break_iterator.h"
 #include "base/macros.h"
+#include "base/run_loop.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -303,7 +304,13 @@ class RenderTextAllBackends {
 
 }  // namespace
 
-using RenderTextTest = testing::Test;
+class RenderTextTest : public testing::Test {
+ private:
+#if defined(OS_WIN)
+  // Needed to bypass DCHECK in GetFallbackFont.
+  base::MessageLoopForUI message_loop_;
+#endif
+};
 
 TEST_F(RenderTextTest, DefaultStyles) {
   // Check the default styles applied to new instances and adjusted text.
