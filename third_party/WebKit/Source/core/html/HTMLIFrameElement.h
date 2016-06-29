@@ -24,19 +24,26 @@
 #ifndef HTMLIFrameElement_h
 #define HTMLIFrameElement_h
 
+#include "core/CoreExport.h"
 #include "core/html/HTMLFrameElementBase.h"
+#include "core/html/HTMLIFrameElementPermissions.h"
 #include "core/html/HTMLIFrameElementSandbox.h"
+#include "public/platform/WebVector.h"
+#include "public/platform/modules/permissions/WebPermissionType.h"
 
 namespace blink {
 
-class HTMLIFrameElement final : public HTMLFrameElementBase, public DOMTokenListObserver {
+class CORE_EXPORT HTMLIFrameElement final : public HTMLFrameElementBase {
     DEFINE_WRAPPERTYPEINFO();
-    USING_GARBAGE_COLLECTED_MIXIN(HTMLIFrameElement);
 public:
     DECLARE_NODE_FACTORY(HTMLIFrameElement);
     DECLARE_VIRTUAL_TRACE();
     ~HTMLIFrameElement() override;
     DOMTokenList* sandbox() const;
+    DOMTokenList* permissions() const;
+
+    void sandboxValueWasSet();
+    void permissionsValueWasSet();
 
 private:
     explicit HTMLIFrameElement(Document&);
@@ -55,16 +62,21 @@ private:
     void didLoadNonEmptyDocument() override { m_didLoadNonEmptyDocument = true; }
     bool isInteractiveContent() const override;
 
-    void valueWasSet() override;
-
     ReferrerPolicy referrerPolicyAttribute() override;
 
     bool allowFullscreen() const override { return m_allowFullscreen; }
+
+    const WebVector<WebPermissionType>& delegatedPermissions() const override { return m_delegatedPermissions; }
+
+    bool initializePermissionsAttribute();
 
     AtomicString m_name;
     bool m_didLoadNonEmptyDocument;
     bool m_allowFullscreen;
     Member<HTMLIFrameElementSandbox> m_sandbox;
+    Member<HTMLIFrameElementPermissions> m_permissions;
+
+    WebVector<WebPermissionType> m_delegatedPermissions;
 
     ReferrerPolicy m_referrerPolicy;
 };

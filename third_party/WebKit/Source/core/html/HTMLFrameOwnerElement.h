@@ -83,6 +83,7 @@ public:
     int marginWidth() const override { return -1; }
     int marginHeight() const override { return -1; }
     bool allowFullscreen() const override { return false; }
+    const WebVector<WebPermissionType>& delegatedPermissions() const override;
 
     DECLARE_VIRTUAL_TRACE();
 

@@ -4,10 +4,37 @@
 
 #include "core/html/HTMLIFrameElementSandbox.h"
 
+#include "core/html/HTMLIFrameElement.h"
+
 namespace blink {
 
-HTMLIFrameElementSandbox::HTMLIFrameElementSandbox(DOMTokenListObserver* observer)
-    : DOMTokenList(observer)
+namespace {
+
+const char* kSupportedTokens[] = {
+    "allow-forms",
+    "allow-modals",
+    "allow-pointer-lock",
+    "allow-popups",
+    "allow-popups-to-escape-sandbox",
+    "allow-same-origin",
+    "allow-scripts",
+    "allow-top-navigation"
+};
+
+bool isTokenSupported(const AtomicString& token)
+{
+    for (const char* supportedToken : kSupportedTokens) {
+        if (token == supportedToken)
+            return true;
+    }
+    return false;
+}
+
+} // namespace
+
+HTMLIFrameElementSandbox::HTMLIFrameElementSandbox(HTMLIFrameElement* element)
+    : DOMTokenList(this)
+    , m_element(element)
 {
 }
 
@@ -15,28 +42,21 @@ HTMLIFrameElementSandbox::~HTMLIFrameElementSandbox()
 {
 }
 
-using SandboxSupportedTokens = HashSet<AtomicString>;
-
-static SandboxSupportedTokens& supportedTokens()
+DEFINE_TRACE(HTMLIFrameElementSandbox)
 {
-    DEFINE_STATIC_LOCAL(SandboxSupportedTokens, supportedValues, ());
-    if (supportedValues.isEmpty()) {
-        supportedValues.add("allow-forms");
-        supportedValues.add("allow-modals");
-        supportedValues.add("allow-pointer-lock");
-        supportedValues.add("allow-popups");
-        supportedValues.add("allow-popups-to-escape-sandbox");
-        supportedValues.add("allow-same-origin");
-        supportedValues.add("allow-scripts");
-        supportedValues.add("allow-top-navigation");
-    }
-
-    return supportedValues;
+    visitor->trace(m_element);
+    DOMTokenList::trace(visitor);
+    DOMTokenListObserver::trace(visitor);
 }
 
 bool HTMLIFrameElementSandbox::validateTokenValue(const AtomicString& tokenValue, ExceptionState&) const
 {
-    return supportedTokens().contains(tokenValue);
+    return isTokenSupported(tokenValue);
+}
+
+void HTMLIFrameElementSandbox::valueWasSet()
+{
+    m_element->sandboxValueWasSet();
 }
 
 } // namespace blink

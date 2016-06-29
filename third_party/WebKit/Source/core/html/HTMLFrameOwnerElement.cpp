@@ -215,6 +215,12 @@ void HTMLFrameOwnerElement::dispatchLoad()
     dispatchScopedEvent(Event::create(EventTypeNames::load));
 }
 
+const WebVector<WebPermissionType>& HTMLFrameOwnerElement::delegatedPermissions() const
+{
+    DEFINE_STATIC_LOCAL(WebVector<WebPermissionType>, permissions, ());
+    return permissions;
+}
+
 Document* HTMLFrameOwnerElement::getSVGDocument(ExceptionState& exceptionState) const
 {
     Document* doc = contentDocument();

@@ -48,8 +48,8 @@ DEFINE_NODE_FACTORY(HTMLIFrameElement)
 DEFINE_TRACE(HTMLIFrameElement)
 {
     visitor->trace(m_sandbox);
+    visitor->trace(m_permissions);
     HTMLFrameElementBase::trace(visitor);
-    DOMTokenListObserver::trace(visitor);
 }
 
 HTMLIFrameElement::~HTMLIFrameElement()
@@ -59,6 +59,11 @@ HTMLIFrameElement::~HTMLIFrameElement()
 DOMTokenList* HTMLIFrameElement::sandbox() const
 {
     return m_sandbox.get();
+}
+
+DOMTokenList* HTMLIFrameElement::permissions() const
+{
+    return m_permissions.get();
 }
 
 bool HTMLIFrameElement::isPresentationAttribute(const QualifiedName& name) const
@@ -109,6 +114,9 @@ void HTMLIFrameElement::parseAttribute(const QualifiedName& name, const AtomicSt
         m_allowFullscreen = !value.isNull();
         if (m_allowFullscreen != oldAllowFullscreen)
             frameOwnerPropertiesChanged();
+    } else if (name == permissionsAttr) {
+        if (initializePermissionsAttribute())
+            m_permissions->setValue(value);
     } else {
         if (name == srcAttr)
             logUpdateAttributeIfIsolatedWorldAndInDocument("iframe", srcAttr, oldValue, value);
@@ -147,7 +155,20 @@ bool HTMLIFrameElement::isInteractiveContent() const
     return true;
 }
 
-void HTMLIFrameElement::valueWasSet()
+void HTMLIFrameElement::permissionsValueWasSet()
+{
+    if (!initializePermissionsAttribute())
+        return;
+
+    String invalidTokens;
+    m_delegatedPermissions = m_permissions->parseDelegatedPermissions(invalidTokens);
+    if (!invalidTokens.isNull())
+        document().addConsoleMessage(ConsoleMessage::create(OtherMessageSource, ErrorMessageLevel, "Error while parsing the 'permissions' attribute: " + invalidTokens));
+    setSynchronizedLazyAttribute(permissionsAttr, m_permissions->value());
+    frameOwnerPropertiesChanged();
+}
+
+void HTMLIFrameElement::sandboxValueWasSet()
 {
     String invalidTokens;
     setSandboxFlags(m_sandbox->value().isNull() ? SandboxNone : parseSandboxPolicy(m_sandbox->tokens(), invalidTokens));
@@ -160,4 +181,15 @@ ReferrerPolicy HTMLIFrameElement::referrerPolicyAttribute()
 {
     return m_referrerPolicy;
 }
+
+bool HTMLIFrameElement::initializePermissionsAttribute()
+{
+    if (!RuntimeEnabledFeatures::permissionDelegationEnabled())
+        return false;
+
+    if (!m_permissions)
+        m_permissions = HTMLIFrameElementPermissions::create(this);
+    return true;
+}
+
 } // namespace blink

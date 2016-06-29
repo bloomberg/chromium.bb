@@ -144,6 +144,7 @@ void WebFrame::setFrameOwnerProperties(const WebFrameOwnerProperties& properties
     owner->setMarginWidth(properties.marginWidth);
     owner->setMarginHeight(properties.marginHeight);
     owner->setAllowFullscreen(properties.allowFullscreen);
+    owner->setDelegatedpermissions(properties.delegatedPermissions);
 }
 
 WebFrame* WebFrame::opener() const

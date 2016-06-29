@@ -33,7 +33,8 @@ interface HTMLIFrameElement : HTMLElement {
     readonly attribute Window? contentWindow;
     [CheckSecurity=ReturnValue, RaisesException] Document? getSVGDocument();
     [CEReactions, Reflect, ReflectOnly=("","no-referrer","origin","no-referrer-when-downgrade","origin-when-cross-origin","unsafe-url"), ReflectMissing="", ReflectInvalid=""] attribute DOMString referrerpolicy;
-
+    // https://noncombatant.github.io/permission-delegation-api/#delegation-via-the-declarative-api
+    [RuntimeEnabled=PermissionDelegation, PutForwards=value] readonly attribute DOMTokenList permissions;
 
     // obsolete members
     // https://html.spec.whatwg.org/#HTMLIFrameElement-partial

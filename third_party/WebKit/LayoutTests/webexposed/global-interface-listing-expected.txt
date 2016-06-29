@@ -2449,6 +2449,7 @@ interface HTMLIFrameElement : HTMLElement
     getter marginHeight
     getter marginWidth
     getter name
+    getter permissions
     getter referrerpolicy
     getter sandbox
     getter scrolling
@@ -2465,6 +2466,7 @@ interface HTMLIFrameElement : HTMLElement
     setter marginHeight
     setter marginWidth
     setter name
+    setter permissions
     setter referrerpolicy
     setter sandbox
     setter scrolling

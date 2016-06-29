@@ -9,6 +9,8 @@
 #include "core/dom/SandboxFlags.h"
 #include "platform/heap/Handle.h"
 #include "platform/scroll/ScrollTypes.h"
+#include "public/platform/WebVector.h"
+#include "public/platform/modules/permissions/WebPermissionType.h"
 
 namespace blink {
 
@@ -39,6 +41,7 @@ public:
     virtual int marginWidth() const = 0;
     virtual int marginHeight() const = 0;
     virtual bool allowFullscreen() const = 0;
+    virtual const WebVector<WebPermissionType>& delegatedPermissions() const = 0;
 };
 
 class CORE_EXPORT DummyFrameOwner : public GarbageCollectedFinalized<DummyFrameOwner>, public FrameOwner {
@@ -61,6 +64,11 @@ public:
     int marginWidth() const override { return -1; }
     int marginHeight() const override { return -1; }
     bool allowFullscreen() const override { return false; }
+    const WebVector<WebPermissionType>& delegatedPermissions() const override
+    {
+        DEFINE_STATIC_LOCAL(WebVector<WebPermissionType>, permissions, ());
+        return permissions;
+    }
 
 private:
     // Intentionally private to prevent redundant checks when the type is

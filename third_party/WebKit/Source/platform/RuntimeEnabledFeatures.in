@@ -158,6 +158,7 @@ PassPaintVisualRectToCompositor
 PathOpsSVGClipping status=stable
 PaymentRequest status=experimental
 PerformanceObserver status=stable
+PermissionDelegation status=test
 Permissions status=stable
 PermissionsRequestRevoke status=experimental
 PointerEvent status=experimental
