@@ -476,7 +476,10 @@ LayoutUnit LayoutFlexibleBox::childIntrinsicWidth(const LayoutBox& child) const
 {
     if (!child.isHorizontalWritingMode() && needToStretchChildLogicalHeight(child))
         return constrainedChildIntrinsicContentLogicalHeight(child);
-    // TOOO(cbiesinger): should this return the maxPreferredLogicalWidth?
+    if (child.isHorizontalWritingMode() && child.styleRef().width().isAuto()) {
+        // This value is already clamped by min/max-width
+        return child.maxPreferredLogicalWidth();
+    }
     return child.size().width();
 }
 
