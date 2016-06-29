@@ -80,9 +80,8 @@ public class PhysicalWebPreferenceFragment extends PreferenceFragment {
         ChromeSwitchPreference physicalWebSwitch =
                 (ChromeSwitchPreference) findPreference(PREF_PHYSICAL_WEB_SWITCH);
 
-        boolean isPhysicalWebEnabled =
-                PrivacyPreferencesManager.getInstance(getActivity()).isPhysicalWebEnabled();
-        physicalWebSwitch.setChecked(isPhysicalWebEnabled);
+        physicalWebSwitch.setChecked(
+                PrivacyPreferencesManager.getInstance().isPhysicalWebEnabled());
 
         physicalWebSwitch.setOnPreferenceChangeListener(new OnPreferenceChangeListener() {
             @Override
@@ -94,7 +93,7 @@ public class PhysicalWebPreferenceFragment extends PreferenceFragment {
                 } else {
                     PhysicalWebUma.onPrefsFeatureDisabled(getActivity());
                 }
-                PrivacyPreferencesManager.getInstance(getActivity()).setPhysicalWebEnabled(enabled);
+                PrivacyPreferencesManager.getInstance().setPhysicalWebEnabled(enabled);
                 return true;
             }
         });

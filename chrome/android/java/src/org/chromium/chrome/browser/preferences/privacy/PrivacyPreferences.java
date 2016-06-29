@@ -50,8 +50,7 @@ public class PrivacyPreferences extends PreferenceFragment
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        PrivacyPreferencesManager privacyPrefManager =
-                PrivacyPreferencesManager.getInstance(getActivity());
+        PrivacyPreferencesManager privacyPrefManager = PrivacyPreferencesManager.getInstance();
         privacyPrefManager.migrateNetworkPredictionPreferences();
         addPreferencesFromResource(R.xml.privacy_preferences);
         getActivity().setTitle(R.string.prefs_privacy);
@@ -148,8 +147,7 @@ public class PrivacyPreferences extends PreferenceFragment
         } else if (PREF_CRASH_DUMP_UPLOAD_NO_CELLULAR.equals(key)) {
             PrefServiceBridge.getInstance().setCrashReportingEnabled((boolean) newValue);
         } else if (PREF_CRASH_DUMP_UPLOAD.equals(key)) {
-            PrivacyPreferencesManager.getInstance(getActivity()).setUploadCrashDump(
-                    (String) newValue);
+            PrivacyPreferencesManager.getInstance().setUploadCrashDump((String) newValue);
         }
 
         return true;
@@ -167,8 +165,7 @@ public class PrivacyPreferences extends PreferenceFragment
     public void updateSummaries() {
         PrefServiceBridge prefServiceBridge = PrefServiceBridge.getInstance();
 
-        PrivacyPreferencesManager privacyPrefManager =
-                PrivacyPreferencesManager.getInstance(getActivity());
+        PrivacyPreferencesManager privacyPrefManager = PrivacyPreferencesManager.getInstance();
 
         CharSequence textOn = getActivity().getResources().getText(R.string.text_on);
         CharSequence textOff = getActivity().getResources().getText(R.string.text_off);

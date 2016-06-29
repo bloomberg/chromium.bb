@@ -27,13 +27,12 @@ public class FirstRunGlueImpl implements FirstRunGlue {
 
     @Override
     public boolean isNeverUploadCrashDump(Context appContext) {
-        return PrivacyPreferencesManager.getInstance(appContext).isNeverUploadCrashDump();
+        return PrivacyPreferencesManager.getInstance().isNeverUploadCrashDump();
     }
 
     @Override
     public void acceptTermsOfService(Context appContext, boolean allowCrashUpload) {
-        PrivacyPreferencesManager.getInstance(appContext)
-                .initCrashUploadPreference(allowCrashUpload);
+        PrivacyPreferencesManager.getInstance().initCrashUploadPreference(allowCrashUpload);
         PrefServiceBridge.getInstance().setEulaAccepted();
     }
 

@@ -63,9 +63,9 @@ public class PrivacyPreferencesManager implements CrashReportingPermissionManage
         mCrashDumpAlwaysUpload = context.getString(R.string.crash_dump_always_upload_value);
     }
 
-    public static PrivacyPreferencesManager getInstance(Context context) {
+    public static PrivacyPreferencesManager getInstance() {
         if (sInstance == null) {
-            sInstance = new PrivacyPreferencesManager(context.getApplicationContext());
+            sInstance = new PrivacyPreferencesManager(ContextUtils.getApplicationContext());
         }
         return sInstance;
     }

@@ -1905,7 +1905,7 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
         updateNavigationButton();
 
         if (!CommandLine.getInstance().hasSwitch(ChromeSwitches.DISABLE_INSTANT)
-                && PrivacyPreferencesManager.getInstance(getContext()).shouldPrerender()) {
+                && PrivacyPreferencesManager.getInstance().shouldPrerender()) {
             mOmniboxPrerender.prerenderMaybe(
                     userText,
                     getOriginalUrl(),

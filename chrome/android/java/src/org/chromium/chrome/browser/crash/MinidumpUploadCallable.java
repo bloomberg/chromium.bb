@@ -71,7 +71,7 @@ public class MinidumpUploadCallable implements Callable<Integer> {
 
     public MinidumpUploadCallable(File fileToUpload, File logfile, Context context) {
         this(fileToUpload, logfile, new HttpURLConnectionFactoryImpl(),
-                PrivacyPreferencesManager.getInstance(context));
+                PrivacyPreferencesManager.getInstance());
         removeOutdatedPrefs(ContextUtils.getAppSharedPreferences());
     }
 

@@ -123,8 +123,7 @@ public abstract class FirstRunFlowSequencer  {
 
     @VisibleForTesting
     protected void enableCrashUpload() {
-        PrivacyPreferencesManager.getInstance(mActivity.getApplicationContext())
-                .initCrashUploadPreference(true);
+        PrivacyPreferencesManager.getInstance().initCrashUploadPreference(true);
     }
 
     @VisibleForTesting

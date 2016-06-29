@@ -46,9 +46,7 @@ public class PhysicalWebOptInActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 PhysicalWebUma.onOptInDeclineButtonPressed(PhysicalWebOptInActivity.this);
-                PrivacyPreferencesManager privacyPrefManager =
-                        PrivacyPreferencesManager.getInstance(PhysicalWebOptInActivity.this);
-                privacyPrefManager.setPhysicalWebEnabled(false);
+                PrivacyPreferencesManager.getInstance().setPhysicalWebEnabled(false);
                 finish();
             }
         });
@@ -58,9 +56,7 @@ public class PhysicalWebOptInActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 PhysicalWebUma.onOptInEnableButtonPressed(PhysicalWebOptInActivity.this);
-                PrivacyPreferencesManager privacyPrefManager =
-                        PrivacyPreferencesManager.getInstance(PhysicalWebOptInActivity.this);
-                privacyPrefManager.setPhysicalWebEnabled(true);
+                PrivacyPreferencesManager.getInstance().setPhysicalWebEnabled(true);
                 startActivity(createListUrlsIntent(PhysicalWebOptInActivity.this));
                 finish();
             }

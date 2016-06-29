@@ -107,8 +107,7 @@ public class DeferredStartupHandler {
                                 "UMA.Debug.EnableCrashUpload.Uptime2",
                                 asyncTaskStartTime - UmaUtils.getMainEntryPointTime(),
                                 TimeUnit.MILLISECONDS);
-                        PrivacyPreferencesManager.getInstance(mAppContext)
-                                .enablePotentialCrashUploading();
+                        PrivacyPreferencesManager.getInstance().enablePotentialCrashUploading();
                         MinidumpUploadService.tryUploadAllCrashDumps(mAppContext);
                     }
                     CrashFileManager crashFileManager =

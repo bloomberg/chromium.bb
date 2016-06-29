@@ -41,7 +41,7 @@ public class PhysicalWeb {
      * @return boolean {@code true} if the preference is On.
      */
     public static boolean isPhysicalWebPreferenceEnabled(Context context) {
-        return PrivacyPreferencesManager.getInstance(context).isPhysicalWebEnabled();
+        return PrivacyPreferencesManager.getInstance().isPhysicalWebEnabled();
     }
 
     /**
@@ -52,7 +52,7 @@ public class PhysicalWeb {
      * @return boolean {@code true} if onboarding is complete.
      */
     public static boolean isOnboarding(Context context) {
-        return PrivacyPreferencesManager.getInstance(context).isPhysicalWebOnboarding();
+        return PrivacyPreferencesManager.getInstance().isPhysicalWebOnboarding();
     }
 
     /**

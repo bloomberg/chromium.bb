@@ -74,7 +74,7 @@ public class ListUrlsActivityTest extends InstrumentationTestCase {
     @SmallTest
     public void testTapEntryOpensUrl() throws InterruptedException {
         // Ensure the Physical Web is enabled.
-        PrivacyPreferencesManager prefsManager = PrivacyPreferencesManager.getInstance(mContext);
+        PrivacyPreferencesManager prefsManager = PrivacyPreferencesManager.getInstance();
         prefsManager.setPhysicalWebEnabled(true);
         assertFalse(prefsManager.isPhysicalWebOnboarding());
         assertTrue(prefsManager.isPhysicalWebEnabled());
@@ -107,7 +107,7 @@ public class ListUrlsActivityTest extends InstrumentationTestCase {
         // In onboarding, we scan for nearby URLs but do not send them to the resolution service to
         // protect the user's privacy. This test checks that the URL list, which only displays
         // resolved URLs, is empty during onboarding.
-        PrivacyPreferencesManager prefsManager = PrivacyPreferencesManager.getInstance(mContext);
+        PrivacyPreferencesManager prefsManager = PrivacyPreferencesManager.getInstance();
         assertTrue(prefsManager.isPhysicalWebOnboarding());
         assertFalse(prefsManager.isPhysicalWebEnabled());
 
@@ -130,7 +130,7 @@ public class ListUrlsActivityTest extends InstrumentationTestCase {
     @SmallTest
     public void testUrlsListEmptyWithPhysicalWebDisabled() {
         // With the Physical Web disabled, the URLs list should always be empty.
-        PrivacyPreferencesManager prefsManager = PrivacyPreferencesManager.getInstance(mContext);
+        PrivacyPreferencesManager prefsManager = PrivacyPreferencesManager.getInstance();
         prefsManager.setPhysicalWebEnabled(false);
         assertFalse(prefsManager.isPhysicalWebOnboarding());
         assertFalse(prefsManager.isPhysicalWebEnabled());
