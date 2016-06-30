@@ -119,6 +119,8 @@ class DeviceCloudPolicyManagerChromeOS : public CloudPolicyManager {
 
   // Initializes requisition settings at OOBE with values from VPD.
   void InitializeRequisition();
+  // Initializes enrollment settings at OOBE with values from flags.
+  void InitializeEnrollment();
 
   void NotifyConnected();
   void NotifyDisconnected();

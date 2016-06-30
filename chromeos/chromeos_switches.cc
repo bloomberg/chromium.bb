@@ -210,6 +210,10 @@ const char kEnterpriseEnrollmentInitialModulus[] =
 const char kEnterpriseEnrollmentModulusLimit[] =
     "enterprise-enrollment-modulus-limit";
 
+// Enables the zero-touch enterprise enrollment flow.
+const char kEnterpriseEnableZeroTouchEnrollment[] =
+    "enterprise-enable-zero-touch-enrollment";
+
 // Enables the chromecast support for video player app.
 const char kEnableVideoPlayerChromecastSupport[] =
     "enable-video-player-chromecast-support";

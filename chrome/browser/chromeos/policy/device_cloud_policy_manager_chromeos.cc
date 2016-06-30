@@ -52,9 +52,13 @@ namespace policy {
 
 namespace {
 
+// Well-known requisition types.
 const char kNoRequisition[] = "none";
 const char kRemoraRequisition[] = "remora";
 const char kSharkRequisition[] = "shark";
+
+// Zero-touch enrollment flag values.
+const char kZeroTouchEnrollmentForced[] = "forced";
 
 // These are the machine serial number keys that we check in order until we
 // find a non-empty serial number. The VPD spec says the serial number should be
@@ -136,6 +140,7 @@ void DeviceCloudPolicyManagerChromeOS::Initialize(PrefService* local_state) {
                  base::Unretained(this)));
 
   InitializeRequisition();
+  InitializeEnrollment();
 }
 
 void DeviceCloudPolicyManagerChromeOS::AddDeviceCloudPolicyManagerObserver(
@@ -175,8 +180,7 @@ void DeviceCloudPolicyManagerChromeOS::SetDeviceRequisition(
         local_state_->ClearPref(prefs::kDeviceEnrollmentAutoStart);
         local_state_->ClearPref(prefs::kDeviceEnrollmentCanExit);
       } else {
-        local_state_->SetBoolean(prefs::kDeviceEnrollmentAutoStart, true);
-        local_state_->SetBoolean(prefs::kDeviceEnrollmentCanExit, false);
+        SetDeviceEnrollmentAutoStart();
       }
     }
   }
@@ -320,8 +324,7 @@ void DeviceCloudPolicyManagerChromeOS::InitializeRequisition() {
                               requisition);
       if (requisition == kRemoraRequisition ||
           requisition == kSharkRequisition) {
-        local_state_->SetBoolean(prefs::kDeviceEnrollmentAutoStart, true);
-        local_state_->SetBoolean(prefs::kDeviceEnrollmentCanExit, false);
+        SetDeviceEnrollmentAutoStart();
       } else {
         local_state_->SetBoolean(
             prefs::kDeviceEnrollmentAutoStart,
@@ -333,6 +336,21 @@ void DeviceCloudPolicyManagerChromeOS::InitializeRequisition() {
                            false));
       }
     }
+  }
+}
+
+void DeviceCloudPolicyManagerChromeOS::InitializeEnrollment() {
+  // Enrollment happens during OOBE only.
+  if (chromeos::StartupUtils::IsOobeCompleted())
+    return;
+
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(
+          chromeos::switches::kEnterpriseEnableZeroTouchEnrollment) &&
+      command_line->GetSwitchValueASCII(
+          chromeos::switches::kEnterpriseEnableZeroTouchEnrollment) ==
+          kZeroTouchEnrollmentForced) {
+    SetDeviceEnrollmentAutoStart();
   }
 }
 
