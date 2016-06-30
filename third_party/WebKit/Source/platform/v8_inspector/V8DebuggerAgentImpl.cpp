@@ -78,61 +78,6 @@ static bool positionComparator(const std::pair<int, int>& a, const std::pair<int
     return a.second < b.second;
 }
 
-static const LChar hexDigits[17] = "0123456789ABCDEF";
-
-static void appendUnsignedAsHex(unsigned number, String16Builder* destination)
-{
-    for (size_t i = 0; i < 8; ++i) {
-        destination->append(hexDigits[number & 0xF]);
-        number >>= 4;
-    }
-}
-
-// Hash algorithm for substrings is described in "Über die Komplexität der Multiplikation in
-// eingeschränkten Branchingprogrammmodellen" by Woelfe.
-// http://opendatastructures.org/versions/edition-0.1d/ods-java/node33.html#SECTION00832000000000000000
-static String16 calculateHash(const String16& str)
-{
-    static uint64_t prime[] = { 0x3FB75161, 0xAB1F4E4F, 0x82675BC5, 0xCD924D35, 0x81ABE279 };
-    static uint64_t random[] = { 0x67452301, 0xEFCDAB89, 0x98BADCFE, 0x10325476, 0xC3D2E1F0 };
-    static uint32_t randomOdd[] = { 0xB4663807, 0xCC322BF5, 0xD4F91BBD, 0xA7BEA11D, 0x8F462907 };
-
-    uint64_t hashes[] = { 0, 0, 0, 0, 0 };
-    uint64_t zi[] = { 1, 1, 1, 1, 1 };
-
-    const size_t hashesSize = PROTOCOL_ARRAY_LENGTH(hashes);
-
-    size_t current = 0;
-    const uint32_t* data = nullptr;
-    data = reinterpret_cast<const uint32_t*>(str.characters16());
-    for (size_t i = 0; i < str.sizeInBytes() / 4; i += 4) {
-        uint32_t v = data[i];
-        uint64_t xi = v * randomOdd[current] & 0x7FFFFFFF;
-        hashes[current] = (hashes[current] + zi[current] * xi) % prime[current];
-        zi[current] = (zi[current] * random[current]) % prime[current];
-        current = current == hashesSize - 1 ? 0 : current + 1;
-    }
-    if (str.sizeInBytes() % 4) {
-        uint32_t v = 0;
-        for (size_t i = str.sizeInBytes() - str.sizeInBytes() % 4; i < str.sizeInBytes(); ++i) {
-            v <<= 8;
-            v |= reinterpret_cast<const uint8_t*>(data)[i];
-        }
-        uint64_t xi = v * randomOdd[current] & 0x7FFFFFFF;
-        hashes[current] = (hashes[current] + zi[current] * xi) % prime[current];
-        zi[current] = (zi[current] * random[current]) % prime[current];
-        current = current == hashesSize - 1 ? 0 : current + 1;
-    }
-
-    for (size_t i = 0; i < hashesSize; ++i)
-        hashes[i] = (hashes[i] + zi[i] * (prime[i] - 1)) % prime[i];
-
-    String16Builder hash;
-    for (size_t i = 0; i < hashesSize; ++i)
-        appendUnsignedAsHex(hashes[i], &hash);
-    return hash.toString();
-}
-
 static bool hasInternalError(ErrorString* errorString, bool hasError)
 {
     if (hasError)
@@ -189,10 +134,10 @@ void V8DebuggerAgentImpl::enable()
     m_state->setBoolean(DebuggerAgentState::debuggerEnabled, true);
     debugger().debuggerAgentEnabled();
 
-    std::vector<V8DebuggerParsedScript> compiledScripts;
+    std::vector<std::unique_ptr<V8DebuggerScript>> compiledScripts;
     debugger().getCompiledScripts(m_session->contextGroupId(), compiledScripts);
     for (size_t i = 0; i < compiledScripts.size(); i++)
-        didParseSource(compiledScripts[i]);
+        didParseSource(std::move(compiledScripts[i]), true);
 
     // FIXME(WK44513): breakpoints activated flag should be synchronized between all front-ends
     debugger().setBreakpointsActivated(true);
@@ -358,7 +303,7 @@ void V8DebuggerAgentImpl::setBreakpointByUrl(ErrorString* errorString,
 
     ScriptBreakpoint breakpoint(lineNumber, columnNumber, condition);
     for (const auto& script : m_scripts) {
-        if (!matches(m_debugger, script.second.sourceURL(), url, isRegex))
+        if (!matches(m_debugger, script.second->sourceURL(), url, isRegex))
             continue;
         std::unique_ptr<protocol::Debugger::Location> location = resolveBreakpoint(breakpointId, script.first, breakpoint, UserBreakpointSource);
         if (location)
@@ -493,7 +438,7 @@ bool V8DebuggerAgentImpl::isCallFrameWithUnknownScriptOrBlackboxed(JavaScriptCal
         return true;
     }
     if (m_blackboxPattern) {
-        const String16& scriptSourceURL = it->second.sourceURL();
+        const String16& scriptSourceURL = it->second->sourceURL();
         if (!scriptSourceURL.isEmpty() && m_blackboxPattern->match(scriptSourceURL) != -1)
             return true;
     }
@@ -551,8 +496,7 @@ std::unique_ptr<protocol::Debugger::Location> V8DebuggerAgentImpl::resolveBreakp
     ScriptsMap::iterator scriptIterator = m_scripts.find(scriptId);
     if (scriptIterator == m_scripts.end())
         return nullptr;
-    const V8DebuggerScript& script = scriptIterator->second;
-    if (breakpoint.lineNumber < script.startLine() || script.endLine() < breakpoint.lineNumber)
+    if (breakpoint.lineNumber < scriptIterator->second->startLine() || scriptIterator->second->endLine() < breakpoint.lineNumber)
         return nullptr;
 
     int actualLineNumber;
@@ -573,9 +517,10 @@ void V8DebuggerAgentImpl::searchInContent(ErrorString* error, const String16& sc
     const Maybe<bool>& optionalIsRegex,
     std::unique_ptr<Array<protocol::Debugger::SearchMatch>>* results)
 {
+    v8::HandleScope handles(m_isolate);
     ScriptsMap::iterator it = m_scripts.find(scriptId);
     if (it != m_scripts.end())
-        *results = V8ContentSearchUtil::searchInTextByLines(m_session, it->second.source(), query, optionalCaseSensitive.fromMaybe(false), optionalIsRegex.fromMaybe(false));
+        *results = V8ContentSearchUtil::searchInTextByLines(m_session, toProtocolString(it->second->source(m_isolate)), query, optionalCaseSensitive.fromMaybe(false), optionalIsRegex.fromMaybe(false));
     else
         *error = String16("No script for id: " + scriptId);
 }
@@ -591,19 +536,21 @@ void V8DebuggerAgentImpl::setScriptSource(ErrorString* errorString,
 {
     if (!checkEnabled(errorString))
         return;
-    if (!debugger().setScriptSource(scriptId, newContent, preview.fromMaybe(false), errorString, optOutCompileError, &m_pausedCallFrames, stackChanged))
+
+    v8::HandleScope handles(m_isolate);
+    v8::Local<v8::String> newSource = toV8String(m_isolate, newContent);
+    if (!debugger().setScriptSource(scriptId, newSource, preview.fromMaybe(false), errorString, optOutCompileError, &m_pausedCallFrames, stackChanged))
         return;
+
+    ScriptsMap::iterator it = m_scripts.find(scriptId);
+    if (it != m_scripts.end())
+        it->second->setSource(m_isolate, newSource);
 
     std::unique_ptr<Array<CallFrame>> callFrames = currentCallFrames(errorString);
     if (!callFrames)
         return;
     *newCallFrames = std::move(callFrames);
     *asyncStackTrace = currentAsyncStackTrace();
-
-    ScriptsMap::iterator it = m_scripts.find(scriptId);
-    if (it == m_scripts.end())
-        return;
-    it->second.setSource(newContent);
 }
 
 void V8DebuggerAgentImpl::restartFrame(ErrorString* errorString,
@@ -645,7 +592,8 @@ void V8DebuggerAgentImpl::getScriptSource(ErrorString* error, const String16& sc
         *error = "No script for id: " + scriptId;
         return;
     }
-    *scriptSource = it->second.source();
+    v8::HandleScope handles(m_isolate);
+    *scriptSource = toProtocolString(it->second->source(m_isolate));
 }
 
 void V8DebuggerAgentImpl::getFunctionDetails(ErrorString* errorString, const String16& functionId, std::unique_ptr<FunctionDetails>* details)
@@ -1100,47 +1048,44 @@ std::unique_ptr<StackTrace> V8DebuggerAgentImpl::currentAsyncStackTrace()
     return stackTrace ? stackTrace->buildInspectorObjectForTail(m_debugger) : nullptr;
 }
 
-void V8DebuggerAgentImpl::didParseSource(const V8DebuggerParsedScript& parsedScript)
+void V8DebuggerAgentImpl::didParseSource(std::unique_ptr<V8DebuggerScript> script, bool success)
 {
-    V8DebuggerScript script = parsedScript.script;
-
+    v8::HandleScope handles(m_isolate);
+    String16 scriptSource = toProtocolString(script->source(m_isolate));
     bool isDeprecatedSourceURL = false;
-    if (!parsedScript.success)
-        script.setSourceURL(V8ContentSearchUtil::findSourceURL(script.source(), false, &isDeprecatedSourceURL));
-    else if (script.hasSourceURL())
-        V8ContentSearchUtil::findSourceURL(script.source(), false, &isDeprecatedSourceURL);
+    if (!success)
+        script->setSourceURL(V8ContentSearchUtil::findSourceURL(scriptSource, false, &isDeprecatedSourceURL));
+    else if (script->hasSourceURL())
+        V8ContentSearchUtil::findSourceURL(scriptSource, false, &isDeprecatedSourceURL);
 
     bool isDeprecatedSourceMappingURL = false;
-    if (!parsedScript.success)
-        script.setSourceMappingURL(V8ContentSearchUtil::findSourceMapURL(script.source(), false, &isDeprecatedSourceMappingURL));
-    else if (!script.sourceMappingURL().isEmpty())
-        V8ContentSearchUtil::findSourceMapURL(script.source(), false, &isDeprecatedSourceMappingURL);
+    if (!success)
+        script->setSourceMappingURL(V8ContentSearchUtil::findSourceMapURL(scriptSource, false, &isDeprecatedSourceMappingURL));
+    else if (!script->sourceMappingURL().isEmpty())
+        V8ContentSearchUtil::findSourceMapURL(scriptSource, false, &isDeprecatedSourceMappingURL);
 
-    script.setHash(calculateHash(script.source()));
-
-    int executionContextId = script.executionContextId();
-    bool isContentScript = script.isContentScript();
-    bool isInternalScript = script.isInternalScript();
-    bool isLiveEdit = script.isLiveEdit();
-    bool hasSourceURL = script.hasSourceURL();
-    String16 scriptURL = script.sourceURL();
-    String16 sourceMapURL = script.sourceMappingURL();
+    bool isContentScript = script->isContentScript();
+    bool isInternalScript = script->isInternalScript();
+    bool isLiveEdit = script->isLiveEdit();
+    bool hasSourceURL = script->hasSourceURL();
+    String16 scriptId = script->scriptId();
+    String16 scriptURL = script->sourceURL();
     bool deprecatedCommentWasUsed = isDeprecatedSourceURL || isDeprecatedSourceMappingURL;
 
-    const Maybe<String16>& sourceMapURLParam = sourceMapURL;
+    const Maybe<String16>& sourceMapURLParam = script->sourceMappingURL();
     const bool* isContentScriptParam = isContentScript ? &isContentScript : nullptr;
     const bool* isInternalScriptParam = isInternalScript ? &isInternalScript : nullptr;
     const bool* isLiveEditParam = isLiveEdit ? &isLiveEdit : nullptr;
     const bool* hasSourceURLParam = hasSourceURL ? &hasSourceURL : nullptr;
     const bool* deprecatedCommentWasUsedParam = deprecatedCommentWasUsed ? &deprecatedCommentWasUsed : nullptr;
-    if (parsedScript.success)
-        m_frontend.scriptParsed(parsedScript.scriptId, scriptURL, script.startLine(), script.startColumn(), script.endLine(), script.endColumn(), executionContextId, script.hash(), isContentScriptParam, isInternalScriptParam, isLiveEditParam, sourceMapURLParam, hasSourceURLParam, deprecatedCommentWasUsedParam);
+    if (success)
+        m_frontend.scriptParsed(scriptId, scriptURL, script->startLine(), script->startColumn(), script->endLine(), script->endColumn(), script->executionContextId(), script->hash(), isContentScriptParam, isInternalScriptParam, isLiveEditParam, sourceMapURLParam, hasSourceURLParam, deprecatedCommentWasUsedParam);
     else
-        m_frontend.scriptFailedToParse(parsedScript.scriptId, scriptURL, script.startLine(), script.startColumn(), script.endLine(), script.endColumn(), executionContextId, script.hash(), isContentScriptParam, isInternalScriptParam, sourceMapURLParam, hasSourceURLParam, deprecatedCommentWasUsedParam);
+        m_frontend.scriptFailedToParse(scriptId, scriptURL, script->startLine(), script->startColumn(), script->endLine(), script->endColumn(), script->executionContextId(), script->hash(), isContentScriptParam, isInternalScriptParam, sourceMapURLParam, hasSourceURLParam, deprecatedCommentWasUsedParam);
 
-    m_scripts[parsedScript.scriptId] = script;
+    m_scripts[scriptId] = std::move(script);
 
-    if (scriptURL.isEmpty() || !parsedScript.success)
+    if (scriptURL.isEmpty() || !success)
         return;
 
     protocol::DictionaryValue* breakpointsCookie = m_state->getObject(DebuggerAgentState::javaScriptBreakpoints);
@@ -1160,7 +1105,7 @@ void V8DebuggerAgentImpl::didParseSource(const V8DebuggerParsedScript& parsedScr
         breakpointObject->getNumber(DebuggerAgentState::lineNumber, &breakpoint.lineNumber);
         breakpointObject->getNumber(DebuggerAgentState::columnNumber, &breakpoint.columnNumber);
         breakpointObject->getString(DebuggerAgentState::condition, &breakpoint.condition);
-        std::unique_ptr<protocol::Debugger::Location> location = resolveBreakpoint(cookie.first, parsedScript.scriptId, breakpoint, UserBreakpointSource);
+        std::unique_ptr<protocol::Debugger::Location> location = resolveBreakpoint(cookie.first, scriptId, breakpoint, UserBreakpointSource);
         if (location)
             m_frontend.breakpointResolved(cookie.first, std::move(location));
     }

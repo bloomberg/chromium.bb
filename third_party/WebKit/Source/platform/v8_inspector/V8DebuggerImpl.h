@@ -41,6 +41,7 @@
 
 #include <v8-debug.h>
 #include <v8.h>
+#include <vector>
 
 #include <vector>
 
@@ -87,13 +88,13 @@ public:
     void stepOutOfFunction();
     void clearStepping();
 
-    bool setScriptSource(const String16& sourceID, const String16& newContent, bool preview, ErrorString*, Maybe<protocol::Debugger::SetScriptSourceError>*, JavaScriptCallFrames* newCallFrames, Maybe<bool>* stackChanged);
+    bool setScriptSource(const String16& sourceID, v8::Local<v8::String> newSource, bool preview, ErrorString*, Maybe<protocol::Debugger::SetScriptSourceError>*, JavaScriptCallFrames* newCallFrames, Maybe<bool>* stackChanged);
     JavaScriptCallFrames currentCallFrames(int limit = 0);
 
     // Each script inherits debug data from v8::Context where it has been compiled.
     // Only scripts whose debug data matches |contextGroupId| will be reported.
     // Passing 0 will result in reporting all scripts.
-    void getCompiledScripts(int contextGroupId, std::vector<V8DebuggerParsedScript>&);
+    void getCompiledScripts(int contextGroupId, std::vector<std::unique_ptr<V8DebuggerScript>>&);
     void debuggerAgentEnabled();
     void debuggerAgentDisabled();
 
@@ -161,8 +162,6 @@ private:
     v8::MaybeLocal<v8::Value> callDebuggerMethod(const char* functionName, int argc, v8::Local<v8::Value> argv[]);
     v8::Local<v8::Context> debuggerContext() const;
     void clearBreakpoints();
-
-    V8DebuggerParsedScript createParsedScript(v8::Local<v8::Object> sourceObject, bool success);
 
     static void breakProgramCallback(const v8::FunctionCallbackInfo<v8::Value>&);
     void handleProgramBreak(v8::Local<v8::Context> pausedContext, v8::Local<v8::Object> executionState, v8::Local<v8::Value> exception, v8::Local<v8::Array> hitBreakpoints, bool isPromiseRejection = false);

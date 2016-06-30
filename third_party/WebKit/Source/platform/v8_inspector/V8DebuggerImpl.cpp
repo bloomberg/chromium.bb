@@ -182,7 +182,7 @@ V8DebuggerAgentImpl* V8DebuggerImpl::findEnabledDebuggerAgent(v8::Local<v8::Cont
     return findEnabledDebuggerAgent(getGroupId(context));
 }
 
-void V8DebuggerImpl::getCompiledScripts(int contextGroupId, std::vector<V8DebuggerParsedScript>& result)
+void V8DebuggerImpl::getCompiledScripts(int contextGroupId, std::vector<std::unique_ptr<V8DebuggerScript>>& result)
 {
     v8::HandleScope scope(m_isolate);
     v8::MicrotasksScope microtasks(m_isolate, v8::MicrotasksScope::kDoNotRunMicrotasks);
@@ -195,9 +195,11 @@ void V8DebuggerImpl::getCompiledScripts(int contextGroupId, std::vector<V8Debugg
         return;
     DCHECK(value->IsArray());
     v8::Local<v8::Array> scriptsArray = v8::Local<v8::Array>::Cast(value);
-    result.resize(scriptsArray->Length());
-    for (unsigned i = 0; i < scriptsArray->Length(); ++i)
-        result[i] = createParsedScript(v8::Local<v8::Object>::Cast(scriptsArray->Get(v8::Integer::New(m_isolate, i))), true);
+    result.reserve(scriptsArray->Length());
+    for (unsigned i = 0; i < scriptsArray->Length(); ++i) {
+        v8::Local<v8::Object> scriptObject = v8::Local<v8::Object>::Cast(scriptsArray->Get(v8::Integer::New(m_isolate, i)));
+        result.push_back(wrapUnique(new V8DebuggerScript(m_isolate, scriptObject, inLiveEditScope)));
+    }
 }
 
 String16 V8DebuggerImpl::setBreakpoint(const String16& sourceID, const ScriptBreakpoint& scriptBreakpoint, int* actualLineNumber, int* actualColumnNumber, bool interstatementLocation)
@@ -365,7 +367,7 @@ void V8DebuggerImpl::clearStepping()
     callDebuggerMethod("clearStepping", 0, argv);
 }
 
-bool V8DebuggerImpl::setScriptSource(const String16& sourceID, const String16& newContent, bool preview, ErrorString* error, Maybe<protocol::Debugger::SetScriptSourceError>* errorData, JavaScriptCallFrames* newCallFrames, Maybe<bool>* stackChanged)
+bool V8DebuggerImpl::setScriptSource(const String16& sourceID, v8::Local<v8::String> newSource, bool preview, ErrorString* error, Maybe<protocol::Debugger::SetScriptSourceError>* errorData, JavaScriptCallFrames* newCallFrames, Maybe<bool>* stackChanged)
 {
     class EnableLiveEditScope {
     public:
@@ -390,7 +392,7 @@ bool V8DebuggerImpl::setScriptSource(const String16& sourceID, const String16& n
     if (!isPaused())
         contextScope = wrapUnique(new v8::Context::Scope(debuggerContext()));
 
-    v8::Local<v8::Value> argv[] = { toV8String(m_isolate, sourceID), toV8String(m_isolate, newContent), v8Boolean(preview, m_isolate) };
+    v8::Local<v8::Value> argv[] = { toV8String(m_isolate, sourceID), newSource, v8Boolean(preview, m_isolate) };
 
     v8::Local<v8::Value> v8result;
     {
@@ -569,8 +571,8 @@ void V8DebuggerImpl::handleV8DebugEvent(const v8::Debug::EventDetails& eventDeta
             v8::Local<v8::Value> argv[] = { eventDetails.GetEventData() };
             v8::Local<v8::Value> value = callDebuggerMethod("getAfterCompileScript", 1, argv).ToLocalChecked();
             DCHECK(value->IsObject());
-            v8::Local<v8::Object> object = v8::Local<v8::Object>::Cast(value);
-            agent->didParseSource(createParsedScript(object, event == v8::AfterCompile));
+            v8::Local<v8::Object> scriptObject = v8::Local<v8::Object>::Cast(value);
+            agent->didParseSource(wrapUnique(new V8DebuggerScript(m_isolate, scriptObject, inLiveEditScope)), event == v8::AfterCompile);
         } else if (event == v8::Exception) {
             v8::Local<v8::Object> eventData = eventDetails.GetEventData();
             v8::Local<v8::Value> exception = callInternalGetterFunction(eventData, "exception");
@@ -611,29 +613,6 @@ V8StackTraceImpl* V8DebuggerImpl::currentAsyncCallChain()
     if (!m_currentStacks.size())
         return nullptr;
     return m_currentStacks.back().get();
-}
-
-V8DebuggerParsedScript V8DebuggerImpl::createParsedScript(v8::Local<v8::Object> object, bool success)
-{
-    v8::Local<v8::Value> id = object->Get(v8InternalizedString("id"));
-    DCHECK(!id.IsEmpty() && id->IsInt32());
-
-    V8DebuggerParsedScript parsedScript;
-    parsedScript.scriptId = String16::number(id->Int32Value());
-    parsedScript.script.setURL(toProtocolStringWithTypeCheck(object->Get(v8InternalizedString("name"))))
-        .setSourceURL(toProtocolStringWithTypeCheck(object->Get(v8InternalizedString("sourceURL"))))
-        .setSourceMappingURL(toProtocolStringWithTypeCheck(object->Get(v8InternalizedString("sourceMappingURL"))))
-        .setSource(toProtocolStringWithTypeCheck(object->Get(v8InternalizedString("source"))))
-        .setStartLine(object->Get(v8InternalizedString("startLine"))->ToInteger(m_isolate)->Value())
-        .setStartColumn(object->Get(v8InternalizedString("startColumn"))->ToInteger(m_isolate)->Value())
-        .setEndLine(object->Get(v8InternalizedString("endLine"))->ToInteger(m_isolate)->Value())
-        .setEndColumn(object->Get(v8InternalizedString("endColumn"))->ToInteger(m_isolate)->Value())
-        .setIsContentScript(object->Get(v8InternalizedString("isContentScript"))->ToBoolean(m_isolate)->Value())
-        .setIsInternalScript(object->Get(v8InternalizedString("isInternalScript"))->ToBoolean(m_isolate)->Value())
-        .setExecutionContextId(object->Get(v8InternalizedString("executionContextId"))->ToInteger(m_isolate)->Value())
-        .setIsLiveEdit(inLiveEditScope);
-    parsedScript.success = success;
-    return parsedScript;
 }
 
 void V8DebuggerImpl::compileDebuggerScript()

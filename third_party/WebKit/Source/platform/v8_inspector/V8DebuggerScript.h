@@ -37,15 +37,17 @@
 namespace blink {
 
 class V8DebuggerScript {
-    PROTOCOL_DISALLOW_NEW();
+    PROTOCOL_DISALLOW_COPY(V8DebuggerScript);
 public:
-    V8DebuggerScript();
+    V8DebuggerScript(v8::Isolate*, v8::Local<v8::Object>, bool isLiveEdit);
+    ~V8DebuggerScript();
 
+    String16 scriptId() const { return m_id; }
     String16 url() const { return m_url; }
     bool hasSourceURL() const { return !m_sourceURL.isEmpty(); }
     String16 sourceURL() const;
     String16 sourceMappingURL() const { return m_sourceMappingURL; }
-    String16 source() const { return m_source; }
+    v8::Local<v8::String> source(v8::Isolate*) const;
     String16 hash() const { return m_hash; }
     int startLine() const { return m_startLine; }
     int startColumn() const { return m_startColumn; }
@@ -56,25 +58,16 @@ public:
     bool isInternalScript() const { return m_isInternalScript; }
     bool isLiveEdit() const { return m_isLiveEdit; }
 
-    V8DebuggerScript& setURL(const String16&);
-    V8DebuggerScript& setSourceURL(const String16&);
-    V8DebuggerScript& setSourceMappingURL(const String16&);
-    V8DebuggerScript& setSource(const String16&);
-    V8DebuggerScript& setHash(const String16&);
-    V8DebuggerScript& setStartLine(int);
-    V8DebuggerScript& setStartColumn(int);
-    V8DebuggerScript& setEndLine(int);
-    V8DebuggerScript& setEndColumn(int);
-    V8DebuggerScript& setExecutionContextId(int);
-    V8DebuggerScript& setIsContentScript(bool);
-    V8DebuggerScript& setIsInternalScript(bool);
-    V8DebuggerScript& setIsLiveEdit(bool);
+    void setSourceURL(const String16&);
+    void setSourceMappingURL(const String16&);
+    void setSource(v8::Isolate*, v8::Local<v8::String>);
 
 private:
+    String16 m_id;
     String16 m_url;
     String16 m_sourceURL;
     String16 m_sourceMappingURL;
-    String16 m_source;
+    v8::Global<v8::String> m_source;
     String16 m_hash;
     int m_startLine;
     int m_startColumn;
@@ -84,12 +77,6 @@ private:
     bool m_isContentScript;
     bool m_isInternalScript;
     bool m_isLiveEdit;
-};
-
-struct V8DebuggerParsedScript {
-    String16 scriptId;
-    V8DebuggerScript script;
-    bool success;
 };
 
 } // namespace blink

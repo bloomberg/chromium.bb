@@ -142,7 +142,7 @@ public:
     // Interface for V8DebuggerImpl
     SkipPauseRequest didPause(v8::Local<v8::Context>, v8::Local<v8::Value> exception, const std::vector<String16>& hitBreakpoints, bool isPromiseRejection);
     void didContinue();
-    void didParseSource(const V8DebuggerParsedScript&);
+    void didParseSource(std::unique_ptr<V8DebuggerScript>, bool success);
     void willExecuteScript(int scriptId);
     void didExecuteScript();
 
@@ -178,7 +178,7 @@ private:
 
     bool setBlackboxPattern(ErrorString*, const String16& pattern);
 
-    using ScriptsMap = protocol::HashMap<String16, V8DebuggerScript>;
+    using ScriptsMap = protocol::HashMap<String16, std::unique_ptr<V8DebuggerScript>>;
     using BreakpointIdToDebuggerBreakpointIdsMap = protocol::HashMap<String16, std::vector<String16>>;
     using DebugServerBreakpointToBreakpointIdAndSourceMap = protocol::HashMap<String16, std::pair<String16, BreakpointSource>>;
     using MuteBreakpoins = protocol::HashMap<String16, std::pair<String16, int>>;
