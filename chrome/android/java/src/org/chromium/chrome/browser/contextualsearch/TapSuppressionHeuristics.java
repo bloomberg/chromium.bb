@@ -8,16 +8,16 @@ package org.chromium.chrome.browser.contextualsearch;
  * A set of {@link ContextualSearchHeuristic}s that support experimentation and logging.
  */
 public class TapSuppressionHeuristics extends ContextualSearchHeuristics {
-
     /**
      * Gets all the heuristics needed for Tap suppression.
      * @param selectionController The {@link ContextualSearchSelectionController}.
      * @param previousTapState The state of the previous tap, or {@code null}.
      * @param x The x position of the Tap.
      * @param y The y position of the Tap.
+     * @param tapsSinceOpen the number of Tap gestures since the last open of the panel.
      */
     TapSuppressionHeuristics(ContextualSearchSelectionController selectionController,
-                             ContextualSearchTapState previousTapState, int x, int y) {
+            ContextualSearchTapState previousTapState, int x, int y, int tapsSinceOpen) {
         super();
         RecentScrollTapSuppression scrollTapExperiment =
                 new RecentScrollTapSuppression(selectionController);
@@ -31,6 +31,10 @@ public class TapSuppressionHeuristics extends ContextualSearchHeuristics {
         BarOverlapTapSuppression barOverlapTapSuppression =
                 new BarOverlapTapSuppression(selectionController, x, y);
         mHeuristics.add(barOverlapTapSuppression);
+        // General Tap Suppression and Tap Twice.
+        TapSuppression tapSuppression =
+                new TapSuppression(selectionController, previousTapState, x, y, tapsSinceOpen);
+        mHeuristics.add(tapSuppression);
     }
 
     /**

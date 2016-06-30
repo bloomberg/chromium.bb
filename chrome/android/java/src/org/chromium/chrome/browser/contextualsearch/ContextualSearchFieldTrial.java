@@ -63,7 +63,8 @@ public class ContextualSearchFieldTrial {
     // Quick Answers.
     private static final String ENABLE_QUICK_ANSWERS = "enable_quick_answers";
 
-    // Triggering suppression.
+    // Tap triggering suppression.
+    private static final String SUPPRESSION_TAPS = "suppression_taps";
     // Enables collection of recent scroll seen/unseen histograms.
     // TODO(donnd): remove all supporting code once short-lived data collection is done.
     private static final String ENABLE_RECENT_SCROLL_COLLECTION = "enable_recent_scroll_collection";
@@ -96,6 +97,7 @@ public class ContextualSearchFieldTrial {
     private static Integer sScreenTopSuppressionDps;
     private static Boolean sIsBarOverlapCollectionEnabled;
     private static Boolean sIsBarOverlapSuppressionEnabled;
+    private static Integer sSuppressionTaps;
 
     /**
      * Don't instantiate.
@@ -368,11 +370,29 @@ public class ContextualSearchFieldTrial {
      * @return Whether triggering is suppressed by a selection nearly overlapping the normal
      *         Bar peeking location.
      */
-    static boolean isBarOverlapSupressionEnabled() {
+    static boolean isBarOverlapSuppressionEnabled() {
         if (sIsBarOverlapSuppressionEnabled == null) {
             sIsBarOverlapSuppressionEnabled = getBooleanParam(BAR_OVERLAP_SUPPRESSION_ENABLED);
         }
         return sIsBarOverlapSuppressionEnabled.booleanValue();
+    }
+
+    /**
+     * @return Whether triggering by Tap is suppressed (through a combination of various signals).
+     */
+    static boolean isTapSuppressionEnabled() {
+        return getSuppressionTaps() > 0;
+    }
+
+    /**
+     * @return The suppression threshold, expressed as the number of Taps since the last open where
+     *         we start suppressing the UX on Tap.
+     */
+    static int getSuppressionTaps() {
+        if (sSuppressionTaps == null) {
+            sSuppressionTaps = getIntParamValueOrDefault(SUPPRESSION_TAPS, 0);
+        }
+        return sSuppressionTaps.intValue();
     }
 
     // --------------------------------------------------------------------------------------------

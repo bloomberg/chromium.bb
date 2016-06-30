@@ -33,7 +33,7 @@ public class BarOverlapTapSuppression extends ContextualSearchHeuristic {
         mActivity = selectionController.getActivity();
         mDoesBarOverlap = doesBarOverlap(x, y);
         mIsConditionSatisfied =
-                mDoesBarOverlap && ContextualSearchFieldTrial.isBarOverlapSupressionEnabled();
+                mDoesBarOverlap && ContextualSearchFieldTrial.isBarOverlapSuppressionEnabled();
     }
 
     @Override
@@ -43,7 +43,7 @@ public class BarOverlapTapSuppression extends ContextualSearchHeuristic {
 
     @Override
     protected void logConditionState() {
-        if (ContextualSearchFieldTrial.isBarOverlapSupressionEnabled()) {
+        if (ContextualSearchFieldTrial.isBarOverlapSuppressionEnabled()) {
             ContextualSearchUma.logBarOverlapSuppression(mIsConditionSatisfied);
         }
     }

@@ -50451,6 +50451,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Search.ContextualSearchSecondTapSeen"
+    enum="ContextualSearchResultsSeen">
+  <owner>donnd@chromium.org</owner>
+  <owner>twellington@chromium.org</owner>
+  <summary>
+    Whether results were seen for a Tap during suppression when Tap Suppression
+    is enabled. Recorded when the UX is hidden. Implemented for Android.
+  </summary>
+</histogram>
+
 <histogram name="Search.ContextualSearchSelectionValid"
     enum="ContextualSearchSelectionValid">
   <owner>donnd@chromium.org</owner>
@@ -50495,6 +50505,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>
     The count of taps that showed a peeking bar with the opt-out promo since
     this user has last opened the panel.
+  </summary>
+</histogram>
+
+<histogram name="Search.ContextualSearchTapSuppressionSeen"
+    enum="ContextualSearchResultsSeen">
+  <owner>donnd@chromium.org</owner>
+  <owner>twellington@chromium.org</owner>
+  <summary>
+    Whether results were seen for a Tap before suppression when Tap Suppression
+    is enabled. Recorded when the UX is hidden. Implemented for Android.
   </summary>
 </histogram>
 

@@ -10,6 +10,7 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchBlacklist.BlacklistReason;
+import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content_public.browser.GestureStateListener;
@@ -53,8 +54,6 @@ public class ContextualSearchSelectionController {
 
     // Max selection length must be limited or the entire request URL can go past the 2K limit.
     private static final int MAX_SELECTION_LENGTH = 100;
-
-    private static final int MILLISECONDS_TO_NANOSECONDS = 1000000;
 
     private final ChromeActivity mActivity;
     private final ContextualSearchSelectionHandler mHandler;
@@ -350,8 +349,13 @@ public class ContextualSearchSelectionController {
         // TODO(donnd): refactor to avoid needing a new handler API method as suggested by Pedro.
         if (mSelectionType != SelectionType.LONG_PRESS) {
             mWasTapGestureDetected = true;
+            long tapTimeNanoseconds = System.nanoTime();
+            // TODO(donnd): add a policy method to get adjusted tap count.
+            ChromePreferenceManager prefs = ChromePreferenceManager.getInstance(mActivity);
+            int adjustedTapsSinceOpen = prefs.getContextualSearchTapCount()
+                    - prefs.getContextualSearchTapQuickAnswerCount();
             TapSuppressionHeuristics tapHeuristics =
-                    new TapSuppressionHeuristics(this, mLastTapState, x, y);
+                    new TapSuppressionHeuristics(this, mLastTapState, x, y, adjustedTapsSinceOpen);
             // TODO(donnd): Move to be called when the panel closes to work with states that change.
             tapHeuristics.logConditionState();
             // Tell the manager what it needs in order to log metrics on whether the tap would have
@@ -360,8 +364,6 @@ public class ContextualSearchSelectionController {
             mX = x;
             mY = y;
             boolean shouldSuppressTap = tapHeuristics.shouldSuppressTap();
-            // Remember the tap state for subsequent tap evaluation.
-            mLastTapState = new ContextualSearchTapState(x, y, shouldSuppressTap);
             if (shouldSuppressTap) {
                 mHandler.handleSuppressedTap();
             } else {
@@ -375,7 +377,11 @@ public class ContextualSearchSelectionController {
                     }
                 }, TAP_NAVIGATION_DETECTION_DELAY);
             }
+            // Remember the tap state for subsequent tap evaluation.
+            mLastTapState =
+                    new ContextualSearchTapState(x, y, tapTimeNanoseconds, shouldSuppressTap);
         } else {
+            // Long press; reset last tap state.
             mLastTapState = null;
             mHandler.handleInvalidTap();
         }

@@ -13,6 +13,7 @@ abstract class ContextualSearchHeuristic {
 
     /**
      * Gets whether this heuristic's condition was satisfied or not.
+     * In the case of a Tap heuristic, if the condition is satisfied the Tap is suppressed.
      * This heuristic may be called in logResultsSeen regardless of whether the condition was
      * satisfied.
      * @return Whether this heuristic's condition was satisfied or not.
