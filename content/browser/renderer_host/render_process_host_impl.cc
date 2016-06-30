@@ -163,7 +163,6 @@
 #include "gpu/command_buffer/service/gpu_switches.h"
 #include "ipc/attachment_broker.h"
 #include "ipc/attachment_broker_privileged.h"
-#include "ipc/ipc.mojom.h"
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_channel_mojo.h"
 #include "ipc/ipc_logging.h"
@@ -750,7 +749,7 @@ bool RenderProcessHostImpl::Init() {
             channel_id,
             BrowserThread::UnsafeGetMessageLoopForThread(BrowserThread::IO)
                 ->task_runner(),
-            std::string(),
+            mojo_channel_token_,
             mojo_child_connection_->shell_client_token())));
 
     base::Thread::Options options;
@@ -811,9 +810,9 @@ std::unique_ptr<IPC::ChannelProxy> RenderProcessHostImpl::CreateChannelProxy(
     const std::string& channel_id) {
   scoped_refptr<base::SingleThreadTaskRunner> runner =
       BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO);
-  IPC::mojom::BootstrapPtr bootstrap;
-  mojo_child_connection_->connection()->GetInterface(&bootstrap);
-  mojo::ScopedMessagePipeHandle handle = bootstrap.PassInterface().PassHandle();
+  mojo_channel_token_ = mojo::edk::GenerateRandomToken();
+  mojo::ScopedMessagePipeHandle handle =
+      mojo::edk::CreateParentMessagePipe(mojo_channel_token_, child_token_);
 
   // Do NOT expand ifdef or run time condition checks here! Synchronous
   // IPCs from browser process are banned. It is only narrowly allowed
@@ -1339,6 +1338,10 @@ void RenderProcessHostImpl::AppendRendererCommandLine(
 
   AppendCompositorCommandLineFlags(command_line);
 
+  if (!mojo_channel_token_.empty()) {
+    command_line->AppendSwitchASCII(switches::kMojoChannelToken,
+                                    mojo_channel_token_);
+  }
   command_line->AppendSwitchASCII(switches::kMojoApplicationChannelToken,
                                   mojo_child_connection_->shell_client_token());
 }
