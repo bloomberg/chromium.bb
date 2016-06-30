@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.payments;
 import android.content.DialogInterface;
 import android.test.suitebuilder.annotation.MediumTest;
 
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.autofill.AutofillTestHelper;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
@@ -80,6 +81,7 @@ public class PaymentRequestFreeShippingTest extends PaymentRequestTestBase {
     }
 
     /** Change the country in the spinner, add a valid address, and complete the transaction. */
+    @DisabledTest // https://crbug.com/624653
     @MediumTest
     public void testChangeCountryAddAddressAndPay()
             throws InterruptedException, ExecutionException, TimeoutException {
