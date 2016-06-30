@@ -202,7 +202,7 @@ class HWTestList(object):
     default_dict = dict(file_bugs=True,
                         timeout=config_lib.HWTestConfig.ASYNC_HW_TEST_TIMEOUT,
                         priority=constants.HWTEST_PFQ_PRIORITY,
-                        retry=True, max_retries=None, minimum_duts=4)
+                        retry=True, max_retries=None, minimum_duts=3)
     # Allows kwargs overrides to default_dict for pfq.
     default_dict.update(kwargs)
 
@@ -212,7 +212,7 @@ class HWTestList(object):
     #                                num=8, pool=constants.HWTEST_MACH_POOL,
     #                                **default_dict),
     return [config_lib.HWTestConfig(constants.HWTEST_ARC_COMMIT_SUITE,
-                                    num=4, pool=constants.HWTEST_MACH_POOL,
+                                    num=3, pool=constants.HWTEST_MACH_POOL,
                                     **default_dict)]
 
   @classmethod
