@@ -303,10 +303,12 @@ bool GpuChildThread::AcceptConnection(shell::Connection* connection) {
 
   // We don't want to process any incoming interface requests until
   // OnInitialize().
-  connection->GetInterfaceRegistry()->PauseBinding();
-  resume_interface_bindings_callback_ = base::Bind(
-      &shell::InterfaceRegistry::ResumeBinding,
-      connection->GetInterfaceRegistry()->GetWeakPtr());
+  if (!gpu_channel_manager_) {
+    connection->GetInterfaceRegistry()->PauseBinding();
+    resume_interface_bindings_callback_ = base::Bind(
+        &shell::InterfaceRegistry::ResumeBinding,
+        connection->GetInterfaceRegistry()->GetWeakPtr());
+  }
 
   return true;
 }
