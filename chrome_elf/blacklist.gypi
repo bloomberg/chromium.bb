@@ -15,11 +15,13 @@
         'blacklist/blacklist.h',
         'blacklist/blacklist_interceptions.cc',
         'blacklist/blacklist_interceptions.h',
+        'blacklist/crashpad_helper.cc',
+        'blacklist/crashpad_helper.h',
       ],
       'dependencies': [
         '../base/base.gyp:base',
-        '../chrome_elf/chrome_elf.gyp:chrome_elf_breakpad',
         '../chrome_elf/chrome_elf.gyp:chrome_elf_constants',
+        '../components/components.gyp:crash_component',
         '../sandbox/sandbox.gyp:sandbox',
       ],
     },
@@ -34,6 +36,22 @@
         '../base/base.gyp:base',
         'blacklist',
       ],
+      'msvs_settings': {
+        'VCLinkerTool': {
+          'DelayLoadDLLs': [
+            'dbghelp.dll',
+            'ole32.dll',
+            'psapi.dll',
+            'rpcrt4.dll',
+            'shell32.dll',
+            'shlwapi.dll',
+            'user32.dll',
+            'winhttp.dll',
+            'winmm.dll',
+            'ws2_32.dll',
+          ],
+        },
+      },
     },
     {
       'target_name': 'blacklist_test_dll_1',

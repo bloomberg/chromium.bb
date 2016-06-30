@@ -22,9 +22,11 @@ typedef void (*GetCrashReportsPointer)(
 void GetReportsThunk(
     std::vector<crash_reporter::Report>* reports) {
   static GetCrashReportsPointer get_crash_reports = []() {
-    HMODULE exe_module = GetModuleHandle(chrome::kBrowserProcessExecutableName);
+    // The crash reporting is handled by chrome_elf.dll which loads early in
+    // the chrome process.
+    HMODULE elf_module = GetModuleHandle(chrome::kChromeElfDllName);
     return reinterpret_cast<GetCrashReportsPointer>(
-        exe_module ? GetProcAddress(exe_module, "GetCrashReportsImpl")
+        elf_module ? GetProcAddress(elf_module, "GetCrashReportsImpl")
                    : nullptr);
   }();
 

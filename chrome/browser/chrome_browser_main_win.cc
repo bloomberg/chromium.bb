@@ -85,8 +85,9 @@ void InitializeWindowProcExceptions() {
   base::win::WinProcExceptionFilter exception_filter =
       reinterpret_cast<base::win::WinProcExceptionFilter>(
           ::GetProcAddress(::GetModuleHandle(
-                               chrome::kBrowserProcessExecutableName),
+                               chrome::kChromeElfDllName),
                            "CrashForException"));
+  CHECK(exception_filter);
   exception_filter = base::win::SetWinProcExceptionFilter(exception_filter);
   DCHECK(!exception_filter);
 }
