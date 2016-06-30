@@ -129,7 +129,7 @@ void WontCompile() {
   WeakPtr<Unrelated> ptr = AsWeakPtr(&f);
 }
 
-#elif defined(NCTEST_AMBIGUOUS_ANCESTORS)  // [r"fatal error: member 'AsWeakPtr' found in multiple base classes of different types"]
+#elif defined(NCTEST_AMBIGUOUS_ANCESTORS)  // [r"fatal error: use of undeclared identifier 'AsWeakPtrImpl'"]
 
 void WontCompile() {
   MultiplyDerivedProducer f;
