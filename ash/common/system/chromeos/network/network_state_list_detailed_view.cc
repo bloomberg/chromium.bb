@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/system/chromeos/network/network_state_list_detailed_view.h"
+#include "ash/common/system/chromeos/network/network_state_list_detailed_view.h"
 
 #include <algorithm>
 #include <vector>
@@ -10,6 +10,8 @@
 #include "ash/common/ash_constants.h"
 #include "ash/common/ash_switches.h"
 #include "ash/common/shell_window_ids.h"
+#include "ash/common/system/chromeos/network/tray_network_state_observer.h"
+#include "ash/common/system/chromeos/network/vpn_list_view.h"
 #include "ash/common/system/networking_config_delegate.h"
 #include "ash/common/system/tray/fixed_sized_image_view.h"
 #include "ash/common/system/tray/fixed_sized_scroll_view.h"
@@ -20,12 +22,10 @@
 #include "ash/common/system/tray/tray_details_view.h"
 #include "ash/common/system/tray/tray_popup_header_button.h"
 #include "ash/common/system/tray/tray_popup_label_button.h"
+#include "ash/common/wm_lookup.h"
+#include "ash/common/wm_root_window_controller.h"
 #include "ash/common/wm_shell.h"
-#include "ash/root_window_controller.h"
-#include "ash/shell.h"
-#include "ash/shell_delegate.h"
-#include "ash/system/chromeos/network/tray_network_state_observer.h"
-#include "ash/system/chromeos/network/vpn_list_view.h"
+#include "ash/common/wm_window.h"
 #include "ash/system/tray/system_tray.h"
 #include "base/command_line.h"
 #include "base/strings/string_number_conversions.h"
@@ -43,7 +43,6 @@
 #include "grit/ui_chromeos_strings.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 #include "ui/accessibility/ax_view_state.h"
-#include "ui/aura/window.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/chromeos/network/network_connect.h"
@@ -131,9 +130,6 @@ class NetworkStateListDetailedView::InfoBubble
       : views::BubbleDialogDelegateView(anchor, views::BubbleBorder::TOP_RIGHT),
         detailed_view_(detailed_view) {
     set_can_activate(false);
-    set_parent_window(Shell::GetContainer(
-        anchor->GetWidget()->GetNativeWindow()->GetRootWindow(),
-        kShellWindowId_SettingBubbleContainer));
     SetLayoutManager(new views::FillLayout());
     AddChildView(content);
   }
@@ -143,6 +139,18 @@ class NetworkStateListDetailedView::InfoBubble
  private:
   // BubbleDialogDelegateView:
   int GetDialogButtons() const override { return ui::DIALOG_BUTTON_NONE; }
+
+  void OnBeforeBubbleWidgetInit(views::Widget::InitParams* params,
+                                views::Widget* widget) const override {
+    DCHECK(anchor_widget());
+    // Place the bubble in the anchor widget's root window.
+    WmLookup::Get()
+        ->GetWindowForWidget(anchor_widget())
+        ->GetRootWindowController()
+        ->ConfigureWidgetInitParamsForContainer(
+            widget, kShellWindowId_SettingBubbleContainer, params);
+    params->name = "NetworkStateListDetailedView::InfoBubble";
+  }
 
   // Not owned.
   NetworkStateListDetailedView* detailed_view_;

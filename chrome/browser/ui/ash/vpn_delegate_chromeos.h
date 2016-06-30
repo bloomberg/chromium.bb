@@ -7,7 +7,7 @@
 
 #include <vector>
 
-#include "ash/system/chromeos/network/vpn_delegate.h"
+#include "ash/common/system/chromeos/network/vpn_delegate.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "content/public/browser/notification_observer.h"

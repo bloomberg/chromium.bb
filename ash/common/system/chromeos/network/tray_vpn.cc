@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/system/chromeos/network/tray_vpn.h"
+#include "ash/common/system/chromeos/network/tray_vpn.h"
 
 #include "ash/common/session/session_state_delegate.h"
+#include "ash/common/system/chromeos/network/network_state_list_detailed_view.h"
+#include "ash/common/system/chromeos/network/vpn_delegate.h"
 #include "ash/common/system/tray/system_tray_delegate.h"
 #include "ash/common/system/tray/tray_constants.h"
 #include "ash/common/system/tray/tray_item_more.h"
 #include "ash/common/system/tray/tray_popup_label_button.h"
 #include "ash/common/wm_shell.h"
-#include "ash/system/chromeos/network/network_state_list_detailed_view.h"
-#include "ash/system/chromeos/network/vpn_delegate.h"
 #include "ash/system/tray/system_tray.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"

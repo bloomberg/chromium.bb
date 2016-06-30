@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_SYSTEM_CHROMEOS_NETWORK_NETWORK_DETAILED_VIEW_H
-#define ASH_SYSTEM_CHROMEOS_NETWORK_NETWORK_DETAILED_VIEW_H
+#ifndef ASH_COMMON_SYSTEM_CHROMEOS_NETWORK_NETWORK_DETAILED_VIEW_H_
+#define ASH_COMMON_SYSTEM_CHROMEOS_NETWORK_NETWORK_DETAILED_VIEW_H_
 
 #include "ash/common/system/tray/tray_details_view.h"
 #include "chromeos/network/network_state_handler.h"
@@ -40,4 +40,4 @@ class NetworkDetailedView : public TrayDetailsView {
 }  // namespace tray
 }  // namespace ash
 
-#endif  // ASH_SYSTEM_CHROMEOS_NETWORK_NETWORK_DETAILED_VIEW_H
+#endif  // ASH_COMMON_SYSTEM_CHROMEOS_NETWORK_NETWORK_DETAILED_VIEW_H_

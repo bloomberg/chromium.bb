@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_SYSTEM_CHROMEOS_NETWORK_NETWORK_STATE_LIST_DETAILED_VIEW_H_
-#define ASH_SYSTEM_CHROMEOS_NETWORK_NETWORK_STATE_LIST_DETAILED_VIEW_H_
+#ifndef ASH_COMMON_SYSTEM_CHROMEOS_NETWORK_NETWORK_STATE_LIST_DETAILED_VIEW_H_
+#define ASH_COMMON_SYSTEM_CHROMEOS_NETWORK_NETWORK_STATE_LIST_DETAILED_VIEW_H_
 
 #include <memory>
 #include <string>
 
 #include "ash/common/login_status.h"
+#include "ash/common/system/chromeos/network/network_detailed_view.h"
 #include "ash/common/system/tray/view_click_listener.h"
-#include "ash/system/chromeos/network/network_detailed_view.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "ui/chromeos/network/network_list_delegate.h"
@@ -153,4 +153,4 @@ class NetworkStateListDetailedView
 }  // namespace tray
 }  // namespace ash
 
-#endif  // ASH_SYSTEM_CHROMEOS_NETWORK_NETWORK_STATE_LIST_DETAILED_VIEW_H_
+#endif  // ASH_COMMON_SYSTEM_CHROMEOS_NETWORK_NETWORK_STATE_LIST_DETAILED_VIEW_H_

@@ -2,10 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/system/chromeos/network/tray_network.h"
+#include "ash/common/system/chromeos/network/tray_network.h"
 
 #include "ash/common/ash_switches.h"
 #include "ash/common/shelf/wm_shelf_util.h"
+#include "ash/common/system/chromeos/network/network_state_list_detailed_view.h"
+#include "ash/common/system/chromeos/network/tray_network_state_observer.h"
 #include "ash/common/system/tray/system_tray_delegate.h"
 #include "ash/common/system/tray/system_tray_notifier.h"
 #include "ash/common/system/tray/tray_constants.h"
@@ -13,8 +15,6 @@
 #include "ash/common/system/tray/tray_item_view.h"
 #include "ash/common/system/tray/tray_utils.h"
 #include "ash/common/wm_shell.h"
-#include "ash/system/chromeos/network/network_state_list_detailed_view.h"
-#include "ash/system/chromeos/network/tray_network_state_observer.h"
 #include "ash/system/tray/system_tray.h"
 #include "base/command_line.h"
 #include "base/strings/utf_string_conversions.h"

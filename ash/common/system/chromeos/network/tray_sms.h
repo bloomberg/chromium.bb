@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_SYSTEM_CHROMEOS_NETWORK_TRAY_SMS_H
-#define ASH_SYSTEM_CHROMEOS_NETWORK_TRAY_SMS_H
+#ifndef ASH_COMMON_SYSTEM_CHROMEOS_NETWORK_TRAY_SMS_H_
+#define ASH_COMMON_SYSTEM_CHROMEOS_NETWORK_TRAY_SMS_H_
 
 #include <stddef.h>
 
@@ -63,4 +63,4 @@ class TraySms : public SystemTrayItem,
 
 }  // namespace ash
 
-#endif  // ASH_SYSTEM_CHROMEOS_NETWORK_TRAY_SMS_H
+#endif  // ASH_COMMON_SYSTEM_CHROMEOS_NETWORK_TRAY_SMS_H_

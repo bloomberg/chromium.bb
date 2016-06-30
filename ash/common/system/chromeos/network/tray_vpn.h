@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_SYSTEM_CHROMEOS_NETWORK_TRAY_VPN_H
-#define ASH_SYSTEM_CHROMEOS_NETWORK_TRAY_VPN_H
+#ifndef ASH_COMMON_SYSTEM_CHROMEOS_NETWORK_TRAY_VPN_H_
+#define ASH_COMMON_SYSTEM_CHROMEOS_NETWORK_TRAY_VPN_H_
 
 #include <memory>
 
+#include "ash/common/system/chromeos/network/tray_network_state_observer.h"
 #include "ash/common/system/tray/system_tray_item.h"
-#include "ash/system/chromeos/network/tray_network_state_observer.h"
 #include "base/macros.h"
 
 namespace ash {
@@ -49,4 +49,4 @@ class TrayVPN : public SystemTrayItem,
 
 }  // namespace ash
 
-#endif  // ASH_SYSTEM_CHROMEOS_NETWORK_TRAY_VPN_H
+#endif  // ASH_COMMON_SYSTEM_CHROMEOS_NETWORK_TRAY_VPN_H_

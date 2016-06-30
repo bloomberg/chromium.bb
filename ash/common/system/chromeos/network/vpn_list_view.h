@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_SYSTEM_CHROMEOS_NETWORK_VPN_LIST_VIEW_H_
-#define ASH_SYSTEM_CHROMEOS_NETWORK_VPN_LIST_VIEW_H_
+#ifndef ASH_COMMON_SYSTEM_CHROMEOS_NETWORK_VPN_LIST_VIEW_H_
+#define ASH_COMMON_SYSTEM_CHROMEOS_NETWORK_VPN_LIST_VIEW_H_
 
 #include <map>
 #include <string>
 
+#include "ash/common/system/chromeos/network/vpn_delegate.h"
 #include "ash/common/system/tray/view_click_listener.h"
-#include "ash/system/chromeos/network/vpn_delegate.h"
 #include "base/macros.h"
 #include "chromeos/network/network_state_handler.h"
 #include "ui/chromeos/network/network_list_view_base.h"
@@ -92,4 +92,4 @@ class VPNListView : public ui::NetworkListViewBase,
 
 }  // namespace ash
 
-#endif  // ASH_SYSTEM_CHROMEOS_NETWORK_VPN_LIST_VIEW_H_
+#endif  // ASH_COMMON_SYSTEM_CHROMEOS_NETWORK_VPN_LIST_VIEW_H_

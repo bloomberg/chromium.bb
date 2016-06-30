@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/system/chromeos/network/vpn_delegate.h"
+#include "ash/common/system/chromeos/network/vpn_delegate.h"
 
 #include "chromeos/network/network_state.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"

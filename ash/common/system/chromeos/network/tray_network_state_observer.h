@@ -2,12 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_SYSTEM_CHROMEOS_NETWORK_TRAY_NETWORK_STATE_OBSERVER_H
-#define ASH_SYSTEM_CHROMEOS_NETWORK_TRAY_NETWORK_STATE_OBSERVER_H
+#ifndef ASH_COMMON_SYSTEM_CHROMEOS_NETWORK_TRAY_NETWORK_STATE_OBSERVER_H_
+#define ASH_COMMON_SYSTEM_CHROMEOS_NETWORK_TRAY_NETWORK_STATE_OBSERVER_H_
 
-#include <string>
-
-#include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/timer/timer.h"
 #include "chromeos/network/network_state_handler_observer.h"
@@ -61,4 +58,4 @@ class TrayNetworkStateObserver : public chromeos::NetworkStateHandlerObserver {
 
 }  // namespace ash
 
-#endif  // ASH_SYSTEM_CHROMEOS_NETWORK_TRAY_NETWORK_STATE_OBSERVER_H
+#endif  // ASH_COMMON_SYSTEM_CHROMEOS_NETWORK_TRAY_NETWORK_STATE_OBSERVER_H_

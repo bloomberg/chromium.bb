@@ -44,6 +44,9 @@
 #include "ui/views/view.h"
 
 #if defined(OS_CHROMEOS)
+#include "ash/common/system/chromeos/network/tray_network.h"
+#include "ash/common/system/chromeos/network/tray_sms.h"
+#include "ash/common/system/chromeos/network/tray_vpn.h"
 #include "ash/common/system/chromeos/power/power_status.h"
 #include "ash/common/system/chromeos/power/tray_power.h"
 #include "ash/common/system/chromeos/screen_security/screen_capture_tray_item.h"
@@ -57,9 +60,6 @@
 #include "ash/system/chromeos/brightness/tray_brightness.h"
 #include "ash/system/chromeos/enterprise/tray_enterprise.h"
 #include "ash/system/chromeos/media_security/multi_profile_media_tray_item.h"
-#include "ash/system/chromeos/network/tray_network.h"
-#include "ash/system/chromeos/network/tray_sms.h"
-#include "ash/system/chromeos/network/tray_vpn.h"
 #include "ash/system/chromeos/rotation/tray_rotation_lock.h"
 #include "ash/system/chromeos/supervised/tray_supervised_user.h"
 #include "ash/system/chromeos/tray_caps_lock.h"
