@@ -79,13 +79,6 @@ class GFX_EXPORT GpuMemoryBuffer {
   // after this has been called.
   virtual void Unmap() = 0;
 
-  // Returns true if the buffer is currently being read from by the system's
-  // window server, and should not be written to.
-  // TODO(ccameron): This is specific to the Mac OS WindowServer process, and
-  // should be merged with synchronization mechanisms from other platforms, if
-  // possible.
-  virtual bool IsInUseByMacOSWindowServer() const;
-
   // Returns the size for the buffer.
   virtual Size GetSize() const = 0;
 

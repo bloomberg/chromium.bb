@@ -12,7 +12,6 @@ namespace media {
 
 namespace {
 
-bool gpu_memory_buffers_in_use_by_window_server = false;
 int g_next_gpu_memory_buffer_id = 1;
 
 class GpuMemoryBufferImpl : public gfx::GpuMemoryBuffer {
@@ -48,9 +47,6 @@ class GpuMemoryBufferImpl : public gfx::GpuMemoryBuffer {
   void Unmap() override {
     DCHECK(mapped_);
     mapped_ = false;
-  }
-  bool IsInUseByMacOSWindowServer() const override {
-    return gpu_memory_buffers_in_use_by_window_server;
   }
   gfx::Size GetSize() const override { return size_; }
   gfx::BufferFormat GetFormat() const override {
@@ -101,11 +97,6 @@ MockGpuVideoAcceleratorFactories::AllocateGpuMemoryBuffer(
   if (fail_to_allocate_gpu_memory_buffer_)
     return nullptr;
   return base::WrapUnique(new GpuMemoryBufferImpl(size, format));
-}
-
-void MockGpuVideoAcceleratorFactories::
-    SetGpuMemoryBuffersInUseByMacOSWindowServer(bool in_use) {
-  gpu_memory_buffers_in_use_by_window_server = in_use;
 }
 
 std::unique_ptr<base::SharedMemory>

@@ -42,7 +42,6 @@ class GPU_EXPORT GpuMemoryBufferImplIOSurface : public GpuMemoryBufferImpl {
   bool Map() override;
   void* memory(size_t plane) override;
   void Unmap() override;
-  bool IsInUseByMacOSWindowServer() const override;
   int stride(size_t plane) const override;
   gfx::GpuMemoryBufferHandle GetHandle() const override;
 

@@ -32,8 +32,7 @@ class GpuMemoryBufferImpl : public gfx::GpuMemoryBuffer {
         shared_memory_(std::move(shared_memory)),
         offset_(offset),
         stride_(stride),
-        mapped_(false),
-        is_in_use_by_window_server_(false) {}
+        mapped_(false) {}
 
   ~GpuMemoryBufferImpl() override { manager_->OnGpuMemoryBufferDestroyed(id_); }
 
@@ -58,9 +57,6 @@ class GpuMemoryBufferImpl : public gfx::GpuMemoryBuffer {
     shared_memory_->Unmap();
     mapped_ = false;
   }
-  bool IsInUseByMacOSWindowServer() const override {
-    return is_in_use_by_window_server_;
-  }
   gfx::Size GetSize() const override { return size_; }
   gfx::BufferFormat GetFormat() const override { return format_; }
   int stride(size_t plane) const override {
@@ -81,10 +77,6 @@ class GpuMemoryBufferImpl : public gfx::GpuMemoryBuffer {
     return reinterpret_cast<ClientBuffer>(this);
   }
 
-  void SetIsInUseByMacOSWindowServer(bool value) {
-    is_in_use_by_window_server_ = value;
-  }
-
  private:
   TestGpuMemoryBufferManager* manager_;
   gfx::GpuMemoryBufferId id_;
@@ -94,7 +86,6 @@ class GpuMemoryBufferImpl : public gfx::GpuMemoryBuffer {
   size_t offset_;
   size_t stride_;
   bool mapped_;
-  bool is_in_use_by_window_server_;
 };
 
 class GpuMemoryBufferFromClient : public gfx::GpuMemoryBuffer {
@@ -111,9 +102,6 @@ class GpuMemoryBufferFromClient : public gfx::GpuMemoryBuffer {
   bool Map() override { return client_buffer_->Map(); }
   void* memory(size_t plane) override { return client_buffer_->memory(plane); }
   void Unmap() override { client_buffer_->Unmap(); }
-  bool IsInUseByMacOSWindowServer() const override {
-    return client_buffer_->IsInUseByMacOSWindowServer();
-  }
   gfx::Size GetSize() const override { return client_buffer_->GetSize(); }
   gfx::BufferFormat GetFormat() const override {
     return client_buffer_->GetFormat();
@@ -156,13 +144,6 @@ TestGpuMemoryBufferManager::CreateClientGpuMemoryBufferManager() {
 
   clients_[client->client_id_] = client.get();
   return client;
-}
-
-void TestGpuMemoryBufferManager::SetGpuMemoryBufferIsInUseByMacOSWindowServer(
-    gfx::GpuMemoryBuffer* gpu_memory_buffer,
-    bool in_use) {
-  static_cast<GpuMemoryBufferImpl*>(gpu_memory_buffer)
-      ->SetIsInUseByMacOSWindowServer(in_use);
 }
 
 void TestGpuMemoryBufferManager::OnGpuMemoryBufferDestroyed(

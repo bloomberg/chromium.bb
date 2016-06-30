@@ -104,10 +104,6 @@ void GpuMemoryBufferImplIOSurface::Unmap() {
   mapped_ = false;
 }
 
-bool GpuMemoryBufferImplIOSurface::IsInUseByMacOSWindowServer() const {
-  return IOSurfaceIsInUse(io_surface_);
-}
-
 int GpuMemoryBufferImplIOSurface::stride(size_t plane) const {
   DCHECK_LT(plane, gfx::NumberOfPlanesForBufferFormat(format_));
   return IOSurfaceGetBytesPerRowOfPlane(io_surface_, plane);

@@ -21,10 +21,6 @@ class TestGpuMemoryBufferManager : public gpu::GpuMemoryBufferManager {
   CreateClientGpuMemoryBufferManager();
   int GetClientId() { return client_id_; }
 
-  void SetGpuMemoryBufferIsInUseByMacOSWindowServer(
-      gfx::GpuMemoryBuffer* gpu_memory_buffer,
-      bool in_use);
-
   void OnGpuMemoryBufferDestroyed(gfx::GpuMemoryBufferId gpu_memory_buffer_id);
 
   // Overridden from gpu::GpuMemoryBufferManager:

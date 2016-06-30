@@ -25,8 +25,4 @@ GpuMemoryBufferHandle::GpuMemoryBufferHandle(
 
 GpuMemoryBufferHandle::~GpuMemoryBufferHandle() {}
 
-bool GpuMemoryBuffer::IsInUseByMacOSWindowServer() const {
-  return false;
-}
-
 }  // namespace gfx
