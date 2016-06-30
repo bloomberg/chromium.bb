@@ -70,15 +70,12 @@ gfx::Point MovePointToWindow(const NSPoint& point,
                     NSHeight(content_rect) - point_in_window.y);
 }
 
-// Checks if there's an active MenuController during key event dispatch. If
-// there is one, it gets preference, and it will likely swallow the event.
-bool DispatchEventToMenu(views::Widget* widget, ui::KeyEvent* event) {
-  MenuController* menuController = MenuController::GetActiveInstance();
-  if (menuController && menuController->owner() == widget) {
-    if (menuController->OnWillDispatchKeyEvent(event) == ui::POST_DISPATCH_NONE)
-      return true;
-  }
-  return false;
+// Dispatch |event| to |menu_controller| and return true if |event| is
+// swallowed.
+bool DispatchEventToMenu(MenuController* menu_controller, ui::KeyEvent* event) {
+  return menu_controller &&
+         menu_controller->OnWillDispatchKeyEvent(event) ==
+             ui::POST_DISPATCH_NONE;
 }
 
 // Returns true if |client| has RTL text.
@@ -214,6 +211,10 @@ ui::KeyEvent GetCharacterEventFromNSEvent(NSEvent* event) {
 
 @interface BridgedContentView ()
 
+// Returns the active menu controller corresponding to |hostedView_|,
+// nil otherwise.
+- (MenuController*)activeMenuController;
+
 // Passes |event| to the InputMethod for dispatch.
 - (void)handleKeyEvent:(ui::KeyEvent*)event;
 
@@ -236,6 +237,9 @@ ui::KeyEvent GetCharacterEventFromNSEvent(NSEvent* event) {
 
 // Notification handler invoked when the Full Keyboard Access mode is changed.
 - (void)onFullKeyboardAccessModeChanged:(NSNotification*)notification;
+
+// Helper method which forwards |text| to the active menu or |textInputClient_|.
+- (void)insertTextInternal:(id)text;
 
 // Returns the native Widget's drag drop client. Possibly null.
 - (views::DragDropClientMac*)dragDropClient;
@@ -374,12 +378,19 @@ ui::KeyEvent GetCharacterEventFromNSEvent(NSEvent* event) {
 
 // BridgedContentView private implementation.
 
+- (MenuController*)activeMenuController {
+  MenuController* menuController = MenuController::GetActiveInstance();
+  return menuController && menuController->owner() == hostedView_->GetWidget()
+             ? menuController
+             : nullptr;
+}
+
 - (void)handleKeyEvent:(ui::KeyEvent*)event {
   if (!hostedView_)
     return;
 
   DCHECK(event);
-  if (DispatchEventToMenu(hostedView_->GetWidget(), event))
+  if (DispatchEventToMenu([self activeMenuController], event))
     return;
 
   hostedView_->GetWidget()->GetInputMethod()->DispatchKeyEvent(event);
@@ -395,7 +406,7 @@ ui::KeyEvent GetCharacterEventFromNSEvent(NSEvent* event) {
   // Generate a synthetic event with the keycode toolkit-views expects.
   ui::KeyEvent event(ui::ET_KEY_PRESSED, keyCode, domCode, eventFlags);
 
-  if (DispatchEventToMenu(hostedView_->GetWidget(), &event))
+  if (DispatchEventToMenu([self activeMenuController], &event))
     return;
 
   // If there's an active TextInputClient, schedule the editing command to be
@@ -410,6 +421,42 @@ ui::KeyEvent GetCharacterEventFromNSEvent(NSEvent* event) {
   DCHECK([[notification name]
       isEqualToString:kFullKeyboardAccessChangedNotification]);
   [self updateFullKeyboardAccess];
+}
+
+- (void)insertTextInternal:(id)text {
+  if (!hostedView_)
+    return;
+
+  if ([text isKindOfClass:[NSAttributedString class]])
+    text = [text string];
+
+  bool isCharacterEvent = keyDownEvent_ && [text length] == 1;
+
+  // Forward the |text| to |textInputClient_| if no menu is active.
+  if (textInputClient_ && ![self activeMenuController]) {
+    // If a single character is inserted by keyDown's call to
+    // interpretKeyEvents: then use InsertChar() to allow editing events to be
+    // merged.
+    if (isCharacterEvent)
+      textInputClient_->InsertChar(GetCharacterEventFromNSEvent(keyDownEvent_));
+    else
+      textInputClient_->InsertText(base::SysNSStringToUTF16(text));
+    return;
+  }
+
+  // Only handle the case where no. of characters is 1. Cases not handled (not
+  // an exhaustive list):
+  // - |text| contains a unicode surrogate pair, i.e. a single grapheme which
+  //   requires two 16 bit characters. Currently Views menu only supports
+  //   mnemonics using a single 16 bit character, so it is ok to ignore this
+  //   case.
+  // - Programmatically created events.
+  // - Input from IME. But this case should not occur since inputContext is
+  //   nil.
+  if (isCharacterEvent) {
+    ui::KeyEvent charEvent = GetCharacterEventFromNSEvent(keyDownEvent_);
+    [self handleKeyEvent:&charEvent];
+  }
 }
 
 - (views::DragDropClientMac*)dragDropClient {
@@ -634,8 +681,7 @@ ui::KeyEvent GetCharacterEventFromNSEvent(NSEvent* event) {
   // If a menu is active, and -[NSView interpretKeyEvents:] asks for the
   // input context, return nil. This ensures the action message is sent to
   // the view, rather than any NSTextInputClient a subview has installed.
-  MenuController* menuController = MenuController::GetActiveInstance();
-  if (menuController && menuController->owner() == hostedView_->GetWidget())
+  if ([self activeMenuController])
     return nil;
 
   // When not in an editable mode, or while entering passwords
@@ -690,19 +736,7 @@ ui::KeyEvent GetCharacterEventFromNSEvent(NSEvent* event) {
 // text goes directly to insertText:replacementRange:.
 - (void)insertText:(id)text {
   DCHECK_EQ(nil, [self inputContext]);
-
-  // Only handle the case where no. of characters is 1. Cases not handled (not
-  // an exhaustive list):
-  // - |text| contains a unicode surrogate pair, i.e. a single grapheme which
-  //   requires two 16 bit characters. Currently Views menu only supports
-  //   mnemonics using a single 16 bit character, so it is ok to ignore this
-  //   case.
-  // - Programmatically created events.
-  // - Input from IME. But this case should not occur since inputContext is nil.
-  if (keyDownEvent_ && [text length] == 1) {
-    ui::KeyEvent charEvent = GetCharacterEventFromNSEvent(keyDownEvent_);
-    [self handleKeyEvent:&charEvent];
-  }
+  [self insertTextInternal:text];
 }
 
 // Selection movement and scrolling.
@@ -1145,21 +1179,12 @@ ui::KeyEvent GetCharacterEventFromNSEvent(NSEvent* event) {
   if (!hostedView_)
     return;
 
-  if ([text isKindOfClass:[NSAttributedString class]])
-    text = [text string];
-
   // Verify inputContext is not nil, i.e. |textInputClient_| is valid and no
   // menu is active.
   DCHECK([self inputContext]);
 
   textInputClient_->DeleteRange(gfx::Range(replacementRange));
-
-  // If a single character is inserted by keyDown's call to interpretKeyEvents:
-  // then use InsertChar() to allow editing events to be merged.
-  if (keyDownEvent_ && [text length] == 1)
-    textInputClient_->InsertChar(GetCharacterEventFromNSEvent(keyDownEvent_));
-  else
-    textInputClient_->InsertText(base::SysNSStringToUTF16(text));
+  [self insertTextInternal:text];
 }
 
 - (NSRange)markedRange {

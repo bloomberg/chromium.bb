@@ -955,6 +955,31 @@ TEST_F(TextfieldTest, PasswordTest) {
   EXPECT_STR_EQ("foofoofoo", textfield_->text());
 }
 
+// Check that text insertion works appropriately for password and read-only
+// textfields.
+TEST_F(TextfieldTest, TextInputType_InsertionTest) {
+  InitTextfield();
+  textfield_->SetTextInputType(ui::TEXT_INPUT_TYPE_PASSWORD);
+  EXPECT_EQ(ui::TEXT_INPUT_TYPE_PASSWORD, textfield_->GetTextInputType());
+
+  SendKeyEvent(ui::VKEY_A);
+  SendKeyEvent(kHebrewLetterSamekh);
+  SendKeyEvent(ui::VKEY_B);
+
+  EXPECT_EQ(WideToUTF16(L"a\x05E1"
+                        L"b"),
+            textfield_->text());
+
+  textfield_->SetReadOnly(true);
+  EXPECT_EQ(ui::TEXT_INPUT_TYPE_NONE, textfield_->GetTextInputType());
+  SendKeyEvent(ui::VKEY_C);
+
+  // No text should be inserted for read only textfields.
+  EXPECT_EQ(WideToUTF16(L"a\x05E1"
+                        L"b"),
+            textfield_->text());
+}
+
 TEST_F(TextfieldTest, TextInputType) {
   InitTextfield();
 
