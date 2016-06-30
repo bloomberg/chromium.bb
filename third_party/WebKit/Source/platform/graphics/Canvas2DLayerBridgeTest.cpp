@@ -27,7 +27,7 @@
 #include "SkSurface.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu/command_buffer/common/capabilities.h"
-#include "platform/ThreadSafeFunctional.h"
+#include "platform/CrossThreadFunctional.h"
 #include "platform/WaitableEvent.h"
 #include "platform/graphics/ImageBuffer.h"
 #include "platform/graphics/UnacceleratedImageBufferSurface.h"
@@ -360,7 +360,7 @@ void postAndWaitCreateBridgeTask(const WebTraceLocation& location, WebThread* te
     std::unique_ptr<WaitableEvent> bridgeCreatedEvent = wrapUnique(new WaitableEvent());
     testThread->getWebTaskRunner()->postTask(
         location,
-        threadSafeBind(&runCreateBridgeTask,
+        crossThreadBind(&runCreateBridgeTask,
             crossThreadUnretained(bridgePtr),
             crossThreadUnretained(gl),
             crossThreadUnretained(testHost),
@@ -379,7 +379,7 @@ void postDestroyBridgeTask(const WebTraceLocation& location, WebThread* testThre
 {
     testThread->getWebTaskRunner()->postTask(
         location,
-        threadSafeBind(&runDestroyBridgeTask,
+        crossThreadBind(&runDestroyBridgeTask,
             crossThreadUnretained(bridgePtr),
             nullptr));
 }
@@ -389,7 +389,7 @@ void postAndWaitDestroyBridgeTask(const WebTraceLocation& location, WebThread* t
     std::unique_ptr<WaitableEvent> bridgeDestroyedEvent = wrapUnique(new WaitableEvent());
     testThread->getWebTaskRunner()->postTask(
         location,
-        threadSafeBind(&runDestroyBridgeTask,
+        crossThreadBind(&runDestroyBridgeTask,
             crossThreadUnretained(bridgePtr),
             crossThreadUnretained(bridgeDestroyedEvent.get())));
     bridgeDestroyedEvent->wait();
@@ -406,7 +406,7 @@ void postSetIsHiddenTask(const WebTraceLocation& location, WebThread* testThread
 {
     testThread->getWebTaskRunner()->postTask(
         location,
-        threadSafeBind(&runSetIsHiddenTask,
+        crossThreadBind(&runSetIsHiddenTask,
             crossThreadUnretained(bridge),
             value,
             crossThreadUnretained(doneEvent)));
@@ -586,7 +586,7 @@ void postAndWaitRenderingTask(const WebTraceLocation& location, WebThread* testT
     std::unique_ptr<WaitableEvent> doneEvent = wrapUnique(new WaitableEvent());
     testThread->getWebTaskRunner()->postTask(
         location,
-        threadSafeBind(&runRenderingTask,
+        crossThreadBind(&runRenderingTask,
             crossThreadUnretained(bridge),
             crossThreadUnretained(doneEvent.get())));
     doneEvent->wait();
@@ -934,7 +934,7 @@ TEST_F(Canvas2DLayerBridgeTest, DISABLED_HibernationAbortedDueToPendingTeardown)
     EXPECT_CALL(*mockLoggerPtr, reportHibernationEvent(Canvas2DLayerBridge::HibernationAbortedDueToPendingDestruction))
         .WillOnce(testing::InvokeWithoutArgs(hibernationAbortedEvent.get(), &WaitableEvent::signal));
     postSetIsHiddenTask(BLINK_FROM_HERE, testThread.get(), bridge.get(), true);
-    testThread->getWebTaskRunner()->postTask(BLINK_FROM_HERE, threadSafeBind(&Canvas2DLayerBridge::beginDestruction, crossThreadUnretained(bridge.get())));
+    testThread->getWebTaskRunner()->postTask(BLINK_FROM_HERE, crossThreadBind(&Canvas2DLayerBridge::beginDestruction, crossThreadUnretained(bridge.get())));
     hibernationAbortedEvent->wait();
 
     ::testing::Mock::VerifyAndClearExpectations(mockLoggerPtr);

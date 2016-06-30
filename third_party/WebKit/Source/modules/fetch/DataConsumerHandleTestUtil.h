@@ -11,7 +11,7 @@
 #include "modules/fetch/DataConsumerHandleUtil.h"
 #include "modules/fetch/FetchDataConsumerHandle.h"
 #include "modules/fetch/FetchDataLoader.h"
-#include "platform/ThreadSafeFunctional.h"
+#include "platform/CrossThreadFunctional.h"
 #include "platform/WaitableEvent.h"
 #include "platform/WebThreadSupportingGC.h"
 #include "platform/heap/Handle.h"
@@ -256,7 +256,7 @@ public:
             m_waitableEvent = wrapUnique(new WaitableEvent());
             m_handle = std::move(handle);
 
-            postTaskToReadingThreadAndWait(BLINK_FROM_HERE, threadSafeBind(&Self::obtainReader, wrapPassRefPtr(this)));
+            postTaskToReadingThreadAndWait(BLINK_FROM_HERE, crossThreadBind(&Self::obtainReader, wrapPassRefPtr(this)));
         }
 
     private:
@@ -267,8 +267,8 @@ public:
         }
         void didGetReadable() override
         {
-            postTaskToReadingThread(BLINK_FROM_HERE, threadSafeBind(&Self::resetReader, wrapPassRefPtr(this)));
-            postTaskToReadingThread(BLINK_FROM_HERE, threadSafeBind(&Self::signalDone, wrapPassRefPtr(this)));
+            postTaskToReadingThread(BLINK_FROM_HERE, crossThreadBind(&Self::resetReader, wrapPassRefPtr(this)));
+            postTaskToReadingThread(BLINK_FROM_HERE, crossThreadBind(&Self::signalDone, wrapPassRefPtr(this)));
         }
 
         std::unique_ptr<WebDataConsumerHandle> m_handle;
@@ -285,7 +285,7 @@ public:
             m_waitableEvent = wrapUnique(new WaitableEvent());
             m_handle = std::move(handle);
 
-            postTaskToReadingThreadAndWait(BLINK_FROM_HERE, threadSafeBind(&Self::obtainReader, wrapPassRefPtr(this)));
+            postTaskToReadingThreadAndWait(BLINK_FROM_HERE, crossThreadBind(&Self::obtainReader, wrapPassRefPtr(this)));
         }
 
     private:
@@ -294,7 +294,7 @@ public:
         {
             m_reader = m_handle->obtainReader(this);
             m_reader = nullptr;
-            postTaskToReadingThread(BLINK_FROM_HERE, threadSafeBind(&Self::signalDone, wrapPassRefPtr(this)));
+            postTaskToReadingThread(BLINK_FROM_HERE, crossThreadBind(&Self::signalDone, wrapPassRefPtr(this)));
         }
         void didGetReadable() override
         {
@@ -499,7 +499,7 @@ public:
             , m_event(wrapUnique(new WaitableEvent()))
             , m_isDone(false)
         {
-            m_thread->thread()->postTask(BLINK_FROM_HERE, threadSafeBind(&HandleReaderRunner::start, crossThreadUnretained(this), passed(std::move(handle))));
+            m_thread->thread()->postTask(BLINK_FROM_HERE, crossThreadBind(&HandleReaderRunner::start, crossThreadUnretained(this), passed(std::move(handle))));
         }
         ~HandleReaderRunner()
         {

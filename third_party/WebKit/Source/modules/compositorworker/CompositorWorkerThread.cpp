@@ -10,7 +10,7 @@
 #include "core/workers/WorkerBackingThread.h"
 #include "core/workers/WorkerThreadStartupData.h"
 #include "modules/compositorworker/CompositorWorkerGlobalScope.h"
-#include "platform/ThreadSafeFunctional.h"
+#include "platform/CrossThreadFunctional.h"
 #include "platform/TraceEvent.h"
 #include "platform/WaitableEvent.h"
 #include "platform/WebThreadSupportingGC.h"
@@ -66,7 +66,7 @@ private:
         : m_thread(useBackingThread ? std::move(useBackingThread) : WorkerBackingThread::create(Platform::current()->compositorThread()))
     {
         DCHECK(isMainThread());
-        m_thread->backingThread().postTask(BLINK_FROM_HERE, threadSafeBind(&BackingThreadHolder::initializeOnThread, crossThreadUnretained(this)));
+        m_thread->backingThread().postTask(BLINK_FROM_HERE, crossThreadBind(&BackingThreadHolder::initializeOnThread, crossThreadUnretained(this)));
     }
 
     static Mutex& holderInstanceMutex()
@@ -87,7 +87,7 @@ private:
     {
         DCHECK(isMainThread());
         WaitableEvent doneEvent;
-        m_thread->backingThread().postTask(BLINK_FROM_HERE, threadSafeBind(&BackingThreadHolder::shutdownOnThread, crossThreadUnretained(this), crossThreadUnretained(&doneEvent)));
+        m_thread->backingThread().postTask(BLINK_FROM_HERE, crossThreadBind(&BackingThreadHolder::shutdownOnThread, crossThreadUnretained(this), crossThreadUnretained(&doneEvent)));
         doneEvent.wait();
     }
 

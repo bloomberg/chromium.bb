@@ -29,7 +29,7 @@
 #include "core/dom/ExecutionContext.h"
 #include "core/dom/ExecutionContextTask.h"
 #include "core/inspector/InspectorInstrumentation.h"
-#include "platform/ThreadSafeFunctional.h"
+#include "platform/CrossThreadFunctional.h"
 #include "public/platform/Platform.h"
 #include "wtf/Assertions.h"
 
@@ -49,7 +49,7 @@ MainThreadTaskRunner::~MainThreadTaskRunner()
 
 void MainThreadTaskRunner::postTaskInternal(const WebTraceLocation& location, std::unique_ptr<ExecutionContextTask> task, bool isInspectorTask, bool instrumenting)
 {
-    Platform::current()->mainThread()->getWebTaskRunner()->postTask(location, threadSafeBind(
+    Platform::current()->mainThread()->getWebTaskRunner()->postTask(location, crossThreadBind(
         &MainThreadTaskRunner::perform,
         m_weakFactory.createWeakPtr(),
         passed(std::move(task)),

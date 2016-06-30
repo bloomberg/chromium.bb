@@ -62,7 +62,7 @@ namespace WTF {
 // WTF::bind() and SameThreadClosure should be used for same-thread closures
 // only, i.e. the closures must be created, executed and destructed on
 // the same thread.
-// Use threadSafeBind() and CrossThreadClosure if the function/task is called
+// Use crossThreadBind() and CrossThreadClosure if the function/task is called
 // or destructed on a (potentially) different thread from the current thread.
 
 // WTF::bind() and move semantics

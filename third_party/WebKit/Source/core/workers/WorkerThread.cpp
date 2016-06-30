@@ -38,8 +38,8 @@
 #include "core/workers/WorkerClients.h"
 #include "core/workers/WorkerReportingProxy.h"
 #include "core/workers/WorkerThreadStartupData.h"
+#include "platform/CrossThreadFunctional.h"
 #include "platform/Histogram.h"
-#include "platform/ThreadSafeFunctional.h"
 #include "platform/WaitableEvent.h"
 #include "platform/WebThreadSupportingGC.h"
 #include "platform/heap/SafePoint.h"
@@ -194,7 +194,7 @@ void WorkerThread::start(std::unique_ptr<WorkerThreadStartupData> startupData)
         return;
 
     m_started = true;
-    workerBackingThread().backingThread().postTask(BLINK_FROM_HERE, threadSafeBind(&WorkerThread::initializeOnWorkerThread, crossThreadUnretained(this), passed(std::move(startupData))));
+    workerBackingThread().backingThread().postTask(BLINK_FROM_HERE, crossThreadBind(&WorkerThread::initializeOnWorkerThread, crossThreadUnretained(this), passed(std::move(startupData))));
 }
 
 void WorkerThread::terminate()
@@ -252,7 +252,7 @@ void WorkerThread::postTask(const WebTraceLocation& location, std::unique_ptr<Ex
         DCHECK(isCurrentThread());
         InspectorInstrumentation::asyncTaskScheduled(workerGlobalScope(), "Worker task", task.get());
     }
-    workerBackingThread().backingThread().postTask(location, threadSafeBind(&WorkerThread::performTaskOnWorkerThread, crossThreadUnretained(this), passed(std::move(task)), isInstrumented));
+    workerBackingThread().backingThread().postTask(location, crossThreadBind(&WorkerThread::performTaskOnWorkerThread, crossThreadUnretained(this), passed(std::move(task)), isInstrumented));
 }
 
 void WorkerThread::appendDebuggerTask(std::unique_ptr<CrossThreadClosure> task)
@@ -263,13 +263,13 @@ void WorkerThread::appendDebuggerTask(std::unique_ptr<CrossThreadClosure> task)
         if (m_terminated)
             return;
     }
-    m_inspectorTaskRunner->appendTask(threadSafeBind(&WorkerThread::performDebuggerTaskOnWorkerThread, crossThreadUnretained(this), passed(std::move(task))));
+    m_inspectorTaskRunner->appendTask(crossThreadBind(&WorkerThread::performDebuggerTaskOnWorkerThread, crossThreadUnretained(this), passed(std::move(task))));
     {
         MutexLocker lock(m_threadStateMutex);
         if (isolate() && !m_readyToShutdown)
             m_inspectorTaskRunner->interruptAndRunAllTasksDontWait(isolate());
     }
-    workerBackingThread().backingThread().postTask(BLINK_FROM_HERE, threadSafeBind(&WorkerThread::performDebuggerTaskDontWaitOnWorkerThread, crossThreadUnretained(this)));
+    workerBackingThread().backingThread().postTask(BLINK_FROM_HERE, crossThreadBind(&WorkerThread::performDebuggerTaskDontWaitOnWorkerThread, crossThreadUnretained(this)));
 }
 
 void WorkerThread::startRunningDebuggerTasksOnPauseOnWorkerThread()
@@ -418,8 +418,8 @@ void WorkerThread::terminateInternal(TerminationMode mode)
     }
 
     m_inspectorTaskRunner->kill();
-    workerBackingThread().backingThread().postTask(BLINK_FROM_HERE, threadSafeBind(&WorkerThread::prepareForShutdownOnWorkerThread, crossThreadUnretained(this)));
-    workerBackingThread().backingThread().postTask(BLINK_FROM_HERE, threadSafeBind(&WorkerThread::performShutdownOnWorkerThread, crossThreadUnretained(this)));
+    workerBackingThread().backingThread().postTask(BLINK_FROM_HERE, crossThreadBind(&WorkerThread::prepareForShutdownOnWorkerThread, crossThreadUnretained(this)));
+    workerBackingThread().backingThread().postTask(BLINK_FROM_HERE, crossThreadBind(&WorkerThread::performShutdownOnWorkerThread, crossThreadUnretained(this)));
 }
 
 void WorkerThread::forciblyTerminateExecution()

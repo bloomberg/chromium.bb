@@ -26,9 +26,10 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/ThreadSafeFunctional.h"
-#include "platform/audio/AudioBus.h"
 #include "platform/audio/ReverbConvolver.h"
+
+#include "platform/CrossThreadFunctional.h"
+#include "platform/audio/AudioBus.h"
 #include "platform/audio/VectorMath.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebTaskRunner.h"
@@ -172,7 +173,7 @@ void ReverbConvolver::process(const AudioChannel* sourceChannel, AudioChannel* d
 
     // Now that we've buffered more input, post another task to the background thread.
     if (m_backgroundThread)
-        m_backgroundThread->getWebTaskRunner()->postTask(BLINK_FROM_HERE, threadSafeBind(&ReverbConvolver::processInBackground, crossThreadUnretained(this)));
+        m_backgroundThread->getWebTaskRunner()->postTask(BLINK_FROM_HERE, crossThreadBind(&ReverbConvolver::processInBackground, crossThreadUnretained(this)));
 }
 
 void ReverbConvolver::reset()

@@ -133,7 +133,7 @@ void WorkerInspectorProxy::connectToInspector(WorkerInspectorProxy::PageInspecto
         return;
     DCHECK(!m_pageInspector);
     m_pageInspector = pageInspector;
-    m_workerThread->appendDebuggerTask(threadSafeBind(connectToWorkerGlobalScopeInspectorTask, crossThreadUnretained(m_workerThread)));
+    m_workerThread->appendDebuggerTask(crossThreadBind(connectToWorkerGlobalScopeInspectorTask, crossThreadUnretained(m_workerThread)));
 }
 
 static void disconnectFromWorkerGlobalScopeInspectorTask(WorkerThread* workerThread)
@@ -147,7 +147,7 @@ void WorkerInspectorProxy::disconnectFromInspector(WorkerInspectorProxy::PageIns
     DCHECK(m_pageInspector == pageInspector);
     m_pageInspector = nullptr;
     if (m_workerThread)
-        m_workerThread->appendDebuggerTask(threadSafeBind(disconnectFromWorkerGlobalScopeInspectorTask, crossThreadUnretained(m_workerThread)));
+        m_workerThread->appendDebuggerTask(crossThreadBind(disconnectFromWorkerGlobalScopeInspectorTask, crossThreadUnretained(m_workerThread)));
 }
 
 static void dispatchOnInspectorBackendTask(const String& message, WorkerThread* workerThread)
@@ -159,7 +159,7 @@ static void dispatchOnInspectorBackendTask(const String& message, WorkerThread* 
 void WorkerInspectorProxy::sendMessageToInspector(const String& message)
 {
     if (m_workerThread)
-        m_workerThread->appendDebuggerTask(threadSafeBind(dispatchOnInspectorBackendTask, message, crossThreadUnretained(m_workerThread)));
+        m_workerThread->appendDebuggerTask(crossThreadBind(dispatchOnInspectorBackendTask, message, crossThreadUnretained(m_workerThread)));
 }
 
 void WorkerInspectorProxy::writeTimelineStartedEvent(const String& sessionId)

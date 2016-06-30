@@ -5,7 +5,7 @@
 #include "core/html/canvas/CanvasAsyncBlobCreator.h"
 
 #include "core/fileapi/Blob.h"
-#include "platform/ThreadSafeFunctional.h"
+#include "platform/CrossThreadFunctional.h"
 #include "platform/graphics/ImageBuffer.h"
 #include "platform/image-encoders/JPEGImageEncoder.h"
 #include "platform/image-encoders/PNGImageEncoder.h"
@@ -130,7 +130,7 @@ void CanvasAsyncBlobCreator::scheduleAsyncBlobCreation(bool canUseIdlePeriodSche
         this->postDelayedTaskToMainThread(BLINK_FROM_HERE, bind(&CanvasAsyncBlobCreator::idleTaskStartTimeoutEvent, wrapPersistent(this), quality), IdleTaskStartTimeoutDelay);
     } else if (m_mimeType == MimeTypeWebp) {
         BackgroundTaskRunner::TaskSize taskSize = (m_size.height() * m_size.width() >= LongTaskImageSizeThreshold) ? BackgroundTaskRunner::TaskSizeLongRunningTask : BackgroundTaskRunner::TaskSizeShortRunningTask;
-        BackgroundTaskRunner::postOnBackgroundThread(BLINK_FROM_HERE, threadSafeBind(&CanvasAsyncBlobCreator::encodeImageOnEncoderThread, wrapCrossThreadPersistent(this), quality), taskSize);
+        BackgroundTaskRunner::postOnBackgroundThread(BLINK_FROM_HERE, crossThreadBind(&CanvasAsyncBlobCreator::encodeImageOnEncoderThread, wrapCrossThreadPersistent(this), quality), taskSize);
     }
 }
 
@@ -283,11 +283,11 @@ void CanvasAsyncBlobCreator::encodeImageOnEncoderThread(double quality)
     ASSERT(m_mimeType == MimeTypeWebp);
 
     if (!ImageDataBuffer(m_size, m_data->data()).encodeImage("image/webp", quality, m_encodedImage.get())) {
-        Platform::current()->mainThread()->getWebTaskRunner()->postTask(BLINK_FROM_HERE, threadSafeBind(&BlobCallback::handleEvent, wrapCrossThreadPersistent(m_callback.get()), nullptr));
+        Platform::current()->mainThread()->getWebTaskRunner()->postTask(BLINK_FROM_HERE, crossThreadBind(&BlobCallback::handleEvent, wrapCrossThreadPersistent(m_callback.get()), nullptr));
         return;
     }
 
-    Platform::current()->mainThread()->getWebTaskRunner()->postTask(BLINK_FROM_HERE, threadSafeBind(&CanvasAsyncBlobCreator::createBlobAndInvokeCallback, wrapCrossThreadPersistent(this)));
+    Platform::current()->mainThread()->getWebTaskRunner()->postTask(BLINK_FROM_HERE, crossThreadBind(&CanvasAsyncBlobCreator::createBlobAndInvokeCallback, wrapCrossThreadPersistent(this)));
 }
 
 bool CanvasAsyncBlobCreator::initializePngStruct()

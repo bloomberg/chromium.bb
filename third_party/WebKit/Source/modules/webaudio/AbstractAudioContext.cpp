@@ -23,6 +23,7 @@
  */
 
 #include "modules/webaudio/AbstractAudioContext.h"
+
 #include "bindings/core/v8/Dictionary.h"
 #include "bindings/core/v8/ExceptionMessages.h"
 #include "bindings/core/v8/ExceptionState.h"
@@ -65,8 +66,8 @@
 #include "modules/webaudio/ScriptProcessorNode.h"
 #include "modules/webaudio/StereoPannerNode.h"
 #include "modules/webaudio/WaveShaperNode.h"
+#include "platform/CrossThreadFunctional.h"
 #include "platform/Histogram.h"
-#include "platform/ThreadSafeFunctional.h"
 #include "platform/UserGestureIndicator.h"
 #include "platform/audio/IIRFilter.h"
 #include "public/platform/Platform.h"
@@ -648,7 +649,7 @@ void AbstractAudioContext::releaseFinishedSourceNodes()
         }
     }
     if (didRemove)
-        Platform::current()->mainThread()->getWebTaskRunner()->postTask(BLINK_FROM_HERE, threadSafeBind(&AbstractAudioContext::removeFinishedSourceNodes, wrapCrossThreadPersistent(this)));
+        Platform::current()->mainThread()->getWebTaskRunner()->postTask(BLINK_FROM_HERE, crossThreadBind(&AbstractAudioContext::removeFinishedSourceNodes, wrapCrossThreadPersistent(this)));
 
     m_finishedSourceHandlers.clear();
 }
@@ -761,7 +762,7 @@ void AbstractAudioContext::resolvePromisesForResume()
     // promises in the main thread.
     if (!m_isResolvingResumePromises && m_resumeResolvers.size() > 0) {
         m_isResolvingResumePromises = true;
-        Platform::current()->mainThread()->getWebTaskRunner()->postTask(BLINK_FROM_HERE, threadSafeBind(&AbstractAudioContext::resolvePromisesForResumeOnMainThread, wrapCrossThreadPersistent(this)));
+        Platform::current()->mainThread()->getWebTaskRunner()->postTask(BLINK_FROM_HERE, crossThreadBind(&AbstractAudioContext::resolvePromisesForResumeOnMainThread, wrapCrossThreadPersistent(this)));
     }
 }
 

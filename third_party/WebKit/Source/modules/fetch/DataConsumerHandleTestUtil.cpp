@@ -15,13 +15,13 @@ DataConsumerHandleTestUtil::Thread::Thread(const char* name, InitializationPolic
     , m_initializationPolicy(initializationPolicy)
     , m_waitableEvent(wrapUnique(new WaitableEvent()))
 {
-    m_thread->postTask(BLINK_FROM_HERE, threadSafeBind(&Thread::initialize, crossThreadUnretained(this)));
+    m_thread->postTask(BLINK_FROM_HERE, crossThreadBind(&Thread::initialize, crossThreadUnretained(this)));
     m_waitableEvent->wait();
 }
 
 DataConsumerHandleTestUtil::Thread::~Thread()
 {
-    m_thread->postTask(BLINK_FROM_HERE, threadSafeBind(&Thread::shutdown, crossThreadUnretained(this)));
+    m_thread->postTask(BLINK_FROM_HERE, crossThreadBind(&Thread::shutdown, crossThreadUnretained(this)));
     m_waitableEvent->wait();
 }
 
@@ -195,7 +195,7 @@ void DataConsumerHandleTestUtil::ReplayingHandle::Context::notify()
     if (!m_client)
         return;
     ASSERT(m_readerThread);
-    m_readerThread->getWebTaskRunner()->postTask(BLINK_FROM_HERE, threadSafeBind(&Context::notifyInternal, wrapPassRefPtr(this)));
+    m_readerThread->getWebTaskRunner()->postTask(BLINK_FROM_HERE, crossThreadBind(&Context::notifyInternal, wrapPassRefPtr(this)));
 }
 
 void DataConsumerHandleTestUtil::ReplayingHandle::Context::notifyInternal()

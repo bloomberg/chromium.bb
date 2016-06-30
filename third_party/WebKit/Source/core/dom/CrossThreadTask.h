@@ -33,13 +33,13 @@
 
 #include "core/dom/ExecutionContext.h"
 #include "core/dom/ExecutionContextTask.h"
-#include "platform/ThreadSafeFunctional.h"
+#include "platform/CrossThreadFunctional.h"
 #include <type_traits>
 
 namespace blink {
 
 // createCrossThreadTask(...) is ExecutionContextTask version of
-// threadSafeBind().
+// crossThreadBind().
 // Using WTF::bind() directly is not thread-safe due to temporary objects, see
 // https://crbug.com/390851 for details.
 //
@@ -75,8 +75,8 @@ namespace blink {
 // ExecutionContext:
 //     |context| is supplied by the target thread.
 //
-// Deep copies by threadSafeBind():
-//     |ptr|, |p1|, ..., |pn| are processed by threadSafeBind() and thus
+// Deep copies by crossThreadBind():
+//     |ptr|, |p1|, ..., |pn| are processed by crossThreadBind() and thus
 //     CrossThreadCopier.
 //     You don't have to call manually e.g. isolatedCopy().
 //     To pass things that cannot be copied by CrossThreadCopier
@@ -85,7 +85,7 @@ namespace blink {
 template<typename FunctionType, typename... P>
 std::unique_ptr<ExecutionContextTask> createCrossThreadTask(FunctionType function, P&&... parameters)
 {
-    return internal::createCallClosureTask(threadSafeBind(function, std::forward<P>(parameters)...));
+    return internal::createCallClosureTask(crossThreadBind(function, std::forward<P>(parameters)...));
 }
 
 } // namespace blink

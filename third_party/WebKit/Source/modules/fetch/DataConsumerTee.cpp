@@ -8,7 +8,7 @@
 #include "core/dom/ExecutionContext.h"
 #include "modules/fetch/DataConsumerHandleUtil.h"
 #include "modules/fetch/FetchBlobDataConsumerHandle.h"
-#include "platform/ThreadSafeFunctional.h"
+#include "platform/CrossThreadFunctional.h"
 #include "platform/heap/Handle.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebTaskRunner.h"
@@ -185,7 +185,7 @@ public:
             }
             ASSERT(m_readerThread);
             if (!m_readerThread->isCurrentThread()) {
-                m_readerThread->getWebTaskRunner()->postTask(BLINK_FROM_HERE, threadSafeBind(&DestinationContext::notify, wrapPassRefPtr(this)));
+                m_readerThread->getWebTaskRunner()->postTask(BLINK_FROM_HERE, crossThreadBind(&DestinationContext::notify, wrapPassRefPtr(this)));
                 return;
             }
         }
@@ -269,10 +269,10 @@ public:
         MutexLocker locker(context()->mutex());
         context()->attachReader(client);
         if (client) {
-            // We need to use threadSafeBind here to retain the context. Note
+            // We need to use crossThreadBind here to retain the context. Note
             // |context()| return value is of type DestinationContext*, not
             // PassRefPtr<DestinationContext>.
-            Platform::current()->currentThread()->getWebTaskRunner()->postTask(BLINK_FROM_HERE, threadSafeBind(&DestinationContext::notify, wrapPassRefPtr(context())));
+            Platform::current()->currentThread()->getWebTaskRunner()->postTask(BLINK_FROM_HERE, crossThreadBind(&DestinationContext::notify, wrapPassRefPtr(context())));
         }
     }
     ~DestinationReader() override

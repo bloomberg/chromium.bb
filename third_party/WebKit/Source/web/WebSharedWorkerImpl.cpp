@@ -47,8 +47,8 @@
 #include "core/workers/WorkerLoaderProxy.h"
 #include "core/workers/WorkerScriptLoader.h"
 #include "core/workers/WorkerThreadStartupData.h"
+#include "platform/CrossThreadFunctional.h"
 #include "platform/RuntimeEnabledFeatures.h"
-#include "platform/ThreadSafeFunctional.h"
 #include "platform/heap/Handle.h"
 #include "platform/network/ContentSecurityPolicyParsers.h"
 #include "platform/network/ResourceResponse.h"
@@ -241,7 +241,7 @@ void WebSharedWorkerImpl::postMessageToPageInspectorOnMainThread(const String& m
 
 void WebSharedWorkerImpl::workerGlobalScopeClosed()
 {
-    Platform::current()->mainThread()->getWebTaskRunner()->postTask(BLINK_FROM_HERE, threadSafeBind(&WebSharedWorkerImpl::workerGlobalScopeClosedOnMainThread, crossThreadUnretained(this)));
+    Platform::current()->mainThread()->getWebTaskRunner()->postTask(BLINK_FROM_HERE, crossThreadBind(&WebSharedWorkerImpl::workerGlobalScopeClosedOnMainThread, crossThreadUnretained(this)));
 }
 
 void WebSharedWorkerImpl::workerGlobalScopeClosedOnMainThread()
@@ -257,7 +257,7 @@ void WebSharedWorkerImpl::workerGlobalScopeStarted(WorkerGlobalScope*)
 
 void WebSharedWorkerImpl::workerThreadTerminated()
 {
-    Platform::current()->mainThread()->getWebTaskRunner()->postTask(BLINK_FROM_HERE, threadSafeBind(&WebSharedWorkerImpl::workerThreadTerminatedOnMainThread, crossThreadUnretained(this)));
+    Platform::current()->mainThread()->getWebTaskRunner()->postTask(BLINK_FROM_HERE, crossThreadBind(&WebSharedWorkerImpl::workerThreadTerminatedOnMainThread, crossThreadUnretained(this)));
 }
 
 void WebSharedWorkerImpl::workerThreadTerminatedOnMainThread()

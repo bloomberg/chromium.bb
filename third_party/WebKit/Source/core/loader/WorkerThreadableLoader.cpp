@@ -37,7 +37,7 @@
 #include "core/workers/WorkerGlobalScope.h"
 #include "core/workers/WorkerLoaderProxy.h"
 #include "core/workers/WorkerThread.h"
-#include "platform/ThreadSafeFunctional.h"
+#include "platform/CrossThreadFunctional.h"
 #include "platform/WaitableEvent.h"
 #include "platform/heap/SafePoint.h"
 #include "platform/network/ResourceError.h"

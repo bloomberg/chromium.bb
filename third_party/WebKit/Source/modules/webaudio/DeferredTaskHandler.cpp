@@ -26,7 +26,7 @@
 #include "modules/webaudio/AudioNode.h"
 #include "modules/webaudio/AudioNodeOutput.h"
 #include "modules/webaudio/OfflineAudioContext.h"
-#include "platform/ThreadSafeFunctional.h"
+#include "platform/CrossThreadFunctional.h"
 #include "public/platform/Platform.h"
 
 namespace blink {
@@ -290,7 +290,7 @@ void DeferredTaskHandler::requestToDeleteHandlersOnMainThread()
         return;
     m_deletableOrphanHandlers.appendVector(m_renderingOrphanHandlers);
     m_renderingOrphanHandlers.clear();
-    Platform::current()->mainThread()->getWebTaskRunner()->postTask(BLINK_FROM_HERE, threadSafeBind(&DeferredTaskHandler::deleteHandlersOnMainThread, PassRefPtr<DeferredTaskHandler>(this)));
+    Platform::current()->mainThread()->getWebTaskRunner()->postTask(BLINK_FROM_HERE, crossThreadBind(&DeferredTaskHandler::deleteHandlersOnMainThread, PassRefPtr<DeferredTaskHandler>(this)));
 }
 
 void DeferredTaskHandler::deleteHandlersOnMainThread()

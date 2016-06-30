@@ -12,9 +12,9 @@
 #include "core/fetch/ScriptResource.h"
 #include "core/frame/Settings.h"
 #include "core/html/parser/TextResourceDecoder.h"
+#include "platform/CrossThreadFunctional.h"
 #include "platform/Histogram.h"
 #include "platform/SharedBuffer.h"
-#include "platform/ThreadSafeFunctional.h"
 #include "platform/TraceEvent.h"
 #include "public/platform/WebScheduler.h"
 #include "wtf/Deque.h"
@@ -232,7 +232,7 @@ public:
 
         // Inform main thread to re-queue the data.
         m_loadingTaskRunner->postTask(
-            BLINK_FROM_HERE, threadSafeBind(&SourceStream::fetchDataFromResourceBuffer, crossThreadUnretained(this), 0));
+            BLINK_FROM_HERE, crossThreadBind(&SourceStream::fetchDataFromResourceBuffer, crossThreadUnretained(this), 0));
     }
 
     void didFinishLoading()
@@ -441,7 +441,7 @@ void ScriptStreamer::streamingCompleteOnBackgroundThread()
 
     // notifyFinished might already be called, or it might be called in the
     // future (if the parsing finishes earlier because of a parse error).
-    m_loadingTaskRunner->postTask(BLINK_FROM_HERE, threadSafeBind(&ScriptStreamer::streamingComplete, wrapCrossThreadPersistent(this)));
+    m_loadingTaskRunner->postTask(BLINK_FROM_HERE, crossThreadBind(&ScriptStreamer::streamingComplete, wrapCrossThreadPersistent(this)));
 
     // The task might delete ScriptStreamer, so it's not safe to do anything
     // after posting it. Note that there's no way to guarantee that this
@@ -549,7 +549,7 @@ void ScriptStreamer::notifyAppendData(ScriptResource* resource)
             return;
         }
 
-        ScriptStreamerThread::shared()->postTask(threadSafeBind(&ScriptStreamerThread::runScriptStreamingTask, passed(std::move(scriptStreamingTask)), wrapCrossThreadPersistent(this)));
+        ScriptStreamerThread::shared()->postTask(crossThreadBind(&ScriptStreamerThread::runScriptStreamingTask, passed(std::move(scriptStreamingTask)), wrapCrossThreadPersistent(this)));
         recordStartedStreamingHistogram(m_scriptType, 1);
     }
     if (m_stream)

@@ -25,8 +25,8 @@
 
 #include "platform/graphics/ImageFrameGenerator.h"
 
+#include "platform/CrossThreadFunctional.h"
 #include "platform/SharedBuffer.h"
-#include "platform/ThreadSafeFunctional.h"
 #include "platform/graphics/ImageDecodingStore.h"
 #include "platform/graphics/test/MockImageDecoder.h"
 #include "platform/image-decoders/SegmentReader.h"
@@ -187,7 +187,7 @@ TEST_F(ImageFrameGeneratorTest, incompleteDecodeBecomesCompleteMultiThreaded)
     setFrameStatus(ImageFrame::FrameComplete);
     addNewData();
     std::unique_ptr<WebThread> thread = wrapUnique(Platform::current()->createThread("DecodeThread"));
-    thread->getWebTaskRunner()->postTask(BLINK_FROM_HERE, threadSafeBind(&decodeThreadMain, m_generator, m_segmentReader));
+    thread->getWebTaskRunner()->postTask(BLINK_FROM_HERE, crossThreadBind(&decodeThreadMain, m_generator, m_segmentReader));
     thread.reset();
     EXPECT_EQ(2, m_decodeRequestCount);
     EXPECT_EQ(1, m_decodersDestroyed);

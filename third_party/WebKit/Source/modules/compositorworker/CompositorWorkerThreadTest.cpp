@@ -14,7 +14,7 @@
 #include "core/workers/WorkerBackingThread.h"
 #include "core/workers/WorkerLoaderProxy.h"
 #include "core/workers/WorkerThreadStartupData.h"
-#include "platform/ThreadSafeFunctional.h"
+#include "platform/CrossThreadFunctional.h"
 #include "platform/WaitableEvent.h"
 #include "platform/WebThreadSupportingGC.h"
 #include "platform/heap/Handle.h"
@@ -136,7 +136,7 @@ public:
     void checkWorkerCanExecuteScript(WorkerThread* worker)
     {
         std::unique_ptr<WaitableEvent> waitEvent = wrapUnique(new WaitableEvent());
-        worker->workerBackingThread().backingThread().postTask(BLINK_FROM_HERE, threadSafeBind(&CompositorWorkerThreadTest::executeScriptInWorker, crossThreadUnretained(this),
+        worker->workerBackingThread().backingThread().postTask(BLINK_FROM_HERE, crossThreadBind(&CompositorWorkerThreadTest::executeScriptInWorker, crossThreadUnretained(this),
             crossThreadUnretained(worker), crossThreadUnretained(waitEvent.get())));
         waitEvent->wait();
     }

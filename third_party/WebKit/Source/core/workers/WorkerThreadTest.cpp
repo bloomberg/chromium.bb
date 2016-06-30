@@ -25,7 +25,7 @@ void waitForTermination(WorkerThread* workerThread)
     EXPECT_TRUE(workerThread->isCurrentThread());
 
     // Notify the main thread that the debugger task is waiting for termination.
-    Platform::current()->mainThread()->getWebTaskRunner()->postTask(BLINK_FROM_HERE, threadSafeBind(&testing::exitRunLoop));
+    Platform::current()->mainThread()->getWebTaskRunner()->postTask(BLINK_FROM_HERE, crossThreadBind(&testing::exitRunLoop));
     workerThread->terminationEvent()->wait();
 }
 
@@ -189,7 +189,7 @@ TEST_F(WorkerThreadTest, StartAndTerminateOnInitialization_TerminateWhileDebugge
         V8CacheOptionsDefault);
     m_workerThread->start(std::move(startupData));
 
-    m_workerThread->appendDebuggerTask(threadSafeBind(&waitForTermination, crossThreadUnretained(m_workerThread.get())));
+    m_workerThread->appendDebuggerTask(crossThreadBind(&waitForTermination, crossThreadUnretained(m_workerThread.get())));
 
     // Wait for the debugger task.
     testing::enterRunLoop();

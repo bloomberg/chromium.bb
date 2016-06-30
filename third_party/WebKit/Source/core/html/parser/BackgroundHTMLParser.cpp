@@ -29,8 +29,8 @@
 #include "core/html/parser/HTMLDocumentParser.h"
 #include "core/html/parser/TextResourceDecoder.h"
 #include "core/html/parser/XSSAuditor.h"
+#include "platform/CrossThreadFunctional.h"
 #include "platform/Histogram.h"
-#include "platform/ThreadSafeFunctional.h"
 #include "platform/TraceEvent.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebTaskRunner.h"
@@ -159,7 +159,7 @@ void BackgroundHTMLParser::updateDocument(const String& decodedData)
         m_lastSeenEncodingData = encodingData;
 
         m_xssAuditor->setEncoding(encodingData.encoding());
-        runOnMainThread(threadSafeBind(&HTMLDocumentParser::didReceiveEncodingDataFromBackgroundParser, m_parser, encodingData));
+        runOnMainThread(crossThreadBind(&HTMLDocumentParser::didReceiveEncodingDataFromBackgroundParser, m_parser, encodingData));
     }
 
     if (decodedData.isEmpty())
@@ -317,7 +317,7 @@ void BackgroundHTMLParser::sendTokensToMainThread()
     chunkEnqueueTime.count(monotonicallyIncreasingTimeMS() - chunkStartTime);
 
     if (isEmpty) {
-        runOnMainThread(threadSafeBind(&HTMLDocumentParser::notifyPendingParsedChunks, m_parser));
+        runOnMainThread(crossThreadBind(&HTMLDocumentParser::notifyPendingParsedChunks, m_parser));
     }
 
     m_pendingTokens = wrapUnique(new CompactHTMLTokenStream);

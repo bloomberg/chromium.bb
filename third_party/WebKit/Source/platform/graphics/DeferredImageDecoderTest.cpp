@@ -25,8 +25,8 @@
 
 #include "platform/graphics/DeferredImageDecoder.h"
 
+#include "platform/CrossThreadFunctional.h"
 #include "platform/SharedBuffer.h"
-#include "platform/ThreadSafeFunctional.h"
 #include "platform/graphics/ImageDecodingStore.h"
 #include "platform/graphics/ImageFrameGenerator.h"
 #include "platform/graphics/test/MockImageDecoder.h"
@@ -246,7 +246,7 @@ TEST_F(DeferredImageDecoderTest, decodeOnOtherThread)
 
     // Create a thread to rasterize SkPicture.
     std::unique_ptr<WebThread> thread = wrapUnique(Platform::current()->createThread("RasterThread"));
-    thread->getWebTaskRunner()->postTask(BLINK_FROM_HERE, threadSafeBind(&rasterizeMain, crossThreadUnretained(m_surface->getCanvas()), crossThreadUnretained(picture.get())));
+    thread->getWebTaskRunner()->postTask(BLINK_FROM_HERE, crossThreadBind(&rasterizeMain, crossThreadUnretained(m_surface->getCanvas()), crossThreadUnretained(picture.get())));
     thread.reset();
     EXPECT_EQ(0, m_decodeRequestCount);
 

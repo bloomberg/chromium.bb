@@ -6,7 +6,7 @@
 
 #include "core/animation/CustomCompositorAnimationManager.h"
 #include "core/dom/CompositorProxy.h"
-#include "platform/ThreadSafeFunctional.h"
+#include "platform/CrossThreadFunctional.h"
 #include "platform/TraceEvent.h"
 #include "platform/WaitableEvent.h"
 #include "platform/graphics/CompositorMutationsTarget.h"
@@ -41,7 +41,7 @@ std::unique_ptr<CompositorMutatorClient> CompositorMutatorImpl::createClient()
     std::unique_ptr<CompositorMutatorClient> mutatorClient;
     WaitableEvent doneEvent;
     if (WebThread* compositorThread = Platform::current()->compositorThread()) {
-        compositorThread->getWebTaskRunner()->postTask(BLINK_FROM_HERE, threadSafeBind(&createCompositorMutatorClient, crossThreadUnretained(&mutatorClient), crossThreadUnretained(&doneEvent)));
+        compositorThread->getWebTaskRunner()->postTask(BLINK_FROM_HERE, crossThreadBind(&createCompositorMutatorClient, crossThreadUnretained(&mutatorClient), crossThreadUnretained(&doneEvent)));
     } else {
         createCompositorMutatorClient(&mutatorClient, &doneEvent);
     }

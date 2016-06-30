@@ -83,8 +83,8 @@
 #include "modules/webgl/WebGLVertexArrayObject.h"
 #include "modules/webgl/WebGLVertexArrayObjectOES.h"
 #include "platform/CheckedInt.h"
+#include "platform/CrossThreadFunctional.h"
 #include "platform/RuntimeEnabledFeatures.h"
-#include "platform/ThreadSafeFunctional.h"
 #include "platform/WaitableEvent.h"
 #include "platform/geometry/IntSize.h"
 #include "platform/graphics/GraphicsContext.h"
@@ -555,7 +555,7 @@ static std::unique_ptr<WebGraphicsContext3DProvider> createContextProviderOnWork
     creationInfo.glInfo = glInfo;
     creationInfo.scriptState = scriptState;
     WebTaskRunner* taskRunner = Platform::current()->mainThread()->getWebTaskRunner();
-    taskRunner->postTask(BLINK_FROM_HERE, threadSafeBind(&createContextProviderOnMainThread, crossThreadUnretained(&creationInfo), crossThreadUnretained(&waitableEvent)));
+    taskRunner->postTask(BLINK_FROM_HERE, crossThreadBind(&createContextProviderOnMainThread, crossThreadUnretained(&creationInfo), crossThreadUnretained(&waitableEvent)));
     waitableEvent.wait();
     return std::move(creationInfo.createdContextProvider);
 }

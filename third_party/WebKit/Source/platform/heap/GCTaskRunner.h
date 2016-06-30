@@ -31,7 +31,7 @@
 #ifndef GCTaskRunner_h
 #define GCTaskRunner_h
 
-#include "platform/ThreadSafeFunctional.h"
+#include "platform/CrossThreadFunctional.h"
 #include "platform/heap/ThreadState.h"
 #include "public/platform/WebTaskRunner.h"
 #include "public/platform/WebThread.h"
@@ -50,7 +50,7 @@ public:
         // GCTask has an empty run() method. Its only purpose is to guarantee
         // that MessageLoop will have a task to process which will result
         // in GCTaskRunner::didProcessTask being executed.
-        m_taskRunner->postTask(BLINK_FROM_HERE, threadSafeBind(&runGCTask));
+        m_taskRunner->postTask(BLINK_FROM_HERE, crossThreadBind(&runGCTask));
     }
 
 private:

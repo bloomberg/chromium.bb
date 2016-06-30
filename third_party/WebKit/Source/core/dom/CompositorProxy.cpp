@@ -11,7 +11,7 @@
 #include "core/dom/ExecutionContext.h"
 #include "core/workers/WorkerClients.h"
 #include "core/workers/WorkerGlobalScope.h"
-#include "platform/ThreadSafeFunctional.h"
+#include "platform/CrossThreadFunctional.h"
 #include "platform/graphics/CompositorMutableProperties.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebTraceLocation.h"
@@ -139,7 +139,7 @@ CompositorProxy::CompositorProxy(uint64_t elementId, uint32_t compositorMutableP
     if (isMainThread()) {
         incrementCompositorProxiedPropertiesForElement(m_elementId, m_compositorMutableProperties);
     } else {
-        Platform::current()->mainThread()->getWebTaskRunner()->postTask(BLINK_FROM_HERE, threadSafeBind(&incrementCompositorProxiedPropertiesForElement, m_elementId, m_compositorMutableProperties));
+        Platform::current()->mainThread()->getWebTaskRunner()->postTask(BLINK_FROM_HERE, crossThreadBind(&incrementCompositorProxiedPropertiesForElement, m_elementId, m_compositorMutableProperties));
     }
 }
 
@@ -276,7 +276,7 @@ void CompositorProxy::disconnectInternal()
     if (isMainThread()) {
         decrementCompositorProxiedPropertiesForElement(m_elementId, m_compositorMutableProperties);
     } else {
-        Platform::current()->mainThread()->getWebTaskRunner()->postTask(BLINK_FROM_HERE, threadSafeBind(&decrementCompositorProxiedPropertiesForElement, m_elementId, m_compositorMutableProperties));
+        Platform::current()->mainThread()->getWebTaskRunner()->postTask(BLINK_FROM_HERE, crossThreadBind(&decrementCompositorProxiedPropertiesForElement, m_elementId, m_compositorMutableProperties));
     }
 }
 

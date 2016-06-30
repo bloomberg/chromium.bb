@@ -43,8 +43,8 @@
 #include "core/imagebitmap/ImageBitmapOptions.h"
 #include "core/svg/graphics/SVGImage.h"
 #include "core/workers/WorkerGlobalScope.h"
+#include "platform/CrossThreadFunctional.h"
 #include "platform/SharedBuffer.h"
-#include "platform/ThreadSafeFunctional.h"
 #include "platform/image-decoders/ImageDecoder.h"
 #include "platform/threading/BackgroundTaskRunner.h"
 #include "public/platform/Platform.h"
@@ -221,7 +221,7 @@ void ImageBitmapFactories::ImageBitmapLoader::scheduleAsyncImageBitmapDecoding(D
     if (arrayBuffer->byteLength() >= longTaskByteLengthThreshold)
         taskSize = BackgroundTaskRunner::TaskSizeLongRunningTask;
     WebTaskRunner* taskRunner = Platform::current()->currentThread()->getWebTaskRunner();
-    BackgroundTaskRunner::postOnBackgroundThread(BLINK_FROM_HERE, threadSafeBind(&ImageBitmapFactories::ImageBitmapLoader::decodeImageOnDecoderThread, wrapCrossThreadPersistent(this), crossThreadUnretained(taskRunner), wrapCrossThreadPersistent(arrayBuffer)), taskSize);
+    BackgroundTaskRunner::postOnBackgroundThread(BLINK_FROM_HERE, crossThreadBind(&ImageBitmapFactories::ImageBitmapLoader::decodeImageOnDecoderThread, wrapCrossThreadPersistent(this), crossThreadUnretained(taskRunner), wrapCrossThreadPersistent(arrayBuffer)), taskSize);
 }
 
 void ImageBitmapFactories::ImageBitmapLoader::decodeImageOnDecoderThread(WebTaskRunner* taskRunner, DOMArrayBuffer* arrayBuffer)
@@ -241,7 +241,7 @@ void ImageBitmapFactories::ImageBitmapLoader::decodeImageOnDecoderThread(WebTask
         decoder->setData(sharedBuffer.get(), true);
         frame = ImageBitmap::getSkImageFromDecoder(std::move(decoder));
     }
-    taskRunner->postTask(BLINK_FROM_HERE, threadSafeBind(&ImageBitmapFactories::ImageBitmapLoader::resolvePromiseOnOriginalThread, wrapCrossThreadPersistent(this), frame.release()));
+    taskRunner->postTask(BLINK_FROM_HERE, crossThreadBind(&ImageBitmapFactories::ImageBitmapLoader::resolvePromiseOnOriginalThread, wrapCrossThreadPersistent(this), frame.release()));
 }
 
 void ImageBitmapFactories::ImageBitmapLoader::resolvePromiseOnOriginalThread(PassRefPtr<SkImage> frame)

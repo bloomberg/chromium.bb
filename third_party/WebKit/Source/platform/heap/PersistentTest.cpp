@@ -4,7 +4,7 @@
 
 #include "platform/heap/Persistent.h"
 
-#include "platform/ThreadSafeFunctional.h"
+#include "platform/CrossThreadFunctional.h"
 #include "platform/heap/Handle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include <memory>
@@ -46,7 +46,7 @@ TEST(PersistentTest, CrossThreadBindCancellation)
 {
     Receiver* receiver = new Receiver;
     int counter = 0;
-    std::unique_ptr<CrossThreadClosure> function = blink::threadSafeBind(&Receiver::increment, wrapCrossThreadWeakPersistent(receiver), WTF::crossThreadUnretained(&counter));
+    std::unique_ptr<CrossThreadClosure> function = blink::crossThreadBind(&Receiver::increment, wrapCrossThreadWeakPersistent(receiver), WTF::crossThreadUnretained(&counter));
 
     (*function)();
     EXPECT_EQ(1, counter);

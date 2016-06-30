@@ -4,7 +4,7 @@
 
 #include "modules/fetch/CompositeDataConsumerHandle.h"
 
-#include "platform/ThreadSafeFunctional.h"
+#include "platform/CrossThreadFunctional.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebTaskRunner.h"
 #include "public/platform/WebThread.h"
@@ -142,7 +142,7 @@ private:
             return;
         }
         ++m_token;
-        m_readerThread->getWebTaskRunner()->postTask(BLINK_FROM_HERE, threadSafeBind(&Context::updateReader, wrapPassRefPtr(this), m_token));
+        m_readerThread->getWebTaskRunner()->postTask(BLINK_FROM_HERE, crossThreadBind(&Context::updateReader, wrapPassRefPtr(this), m_token));
     }
 
     std::unique_ptr<Reader> m_reader;

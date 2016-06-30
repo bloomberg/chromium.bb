@@ -64,8 +64,8 @@
 #include "modules/indexeddb/InspectorIndexedDBAgent.h"
 #include "modules/storage/InspectorDOMStorageAgent.h"
 #include "modules/webdatabase/InspectorDatabaseAgent.h"
+#include "platform/CrossThreadFunctional.h"
 #include "platform/RuntimeEnabledFeatures.h"
-#include "platform/ThreadSafeFunctional.h"
 #include "platform/TraceEvent.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/paint/PaintController.h"
@@ -665,7 +665,7 @@ void WebDevToolsAgentImpl::runDebuggerTask(int sessionId, std::unique_ptr<WebDev
 void WebDevToolsAgent::interruptAndDispatch(int sessionId, MessageDescriptor* rawDescriptor)
 {
     // rawDescriptor can't be a std::unique_ptr because interruptAndDispatch is a WebKit API function.
-    MainThreadDebugger::interruptMainThreadAndRun(threadSafeBind(WebDevToolsAgentImpl::runDebuggerTask, sessionId, passed(wrapUnique(rawDescriptor))));
+    MainThreadDebugger::interruptMainThreadAndRun(crossThreadBind(WebDevToolsAgentImpl::runDebuggerTask, sessionId, passed(wrapUnique(rawDescriptor))));
 }
 
 bool WebDevToolsAgent::shouldInterruptForMethod(const WebString& method)

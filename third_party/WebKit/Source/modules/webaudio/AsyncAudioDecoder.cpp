@@ -27,7 +27,7 @@
 #include "modules/webaudio/AsyncAudioDecoder.h"
 #include "modules/webaudio/AudioBuffer.h"
 #include "modules/webaudio/AudioBufferCallback.h"
-#include "platform/ThreadSafeFunctional.h"
+#include "platform/CrossThreadFunctional.h"
 #include "platform/audio/AudioBus.h"
 #include "platform/audio/AudioFileReader.h"
 #include "public/platform/Platform.h"
@@ -52,7 +52,7 @@ void AsyncAudioDecoder::decodeAsync(DOMArrayBuffer* audioData, float sampleRate,
     if (!audioData)
         return;
 
-    m_thread->getWebTaskRunner()->postTask(BLINK_FROM_HERE, threadSafeBind(&AsyncAudioDecoder::decode, wrapCrossThreadPersistent(audioData), sampleRate, wrapCrossThreadPersistent(successCallback), wrapCrossThreadPersistent(errorCallback), wrapCrossThreadPersistent(resolver), wrapCrossThreadPersistent(context)));
+    m_thread->getWebTaskRunner()->postTask(BLINK_FROM_HERE, crossThreadBind(&AsyncAudioDecoder::decode, wrapCrossThreadPersistent(audioData), sampleRate, wrapCrossThreadPersistent(successCallback), wrapCrossThreadPersistent(errorCallback), wrapCrossThreadPersistent(resolver), wrapCrossThreadPersistent(context)));
 }
 
 void AsyncAudioDecoder::decode(DOMArrayBuffer* audioData, float sampleRate, AudioBufferCallback* successCallback, AudioBufferCallback* errorCallback, ScriptPromiseResolver* resolver, AbstractAudioContext* context)
@@ -61,7 +61,7 @@ void AsyncAudioDecoder::decode(DOMArrayBuffer* audioData, float sampleRate, Audi
 
     // Decoding is finished, but we need to do the callbacks on the main thread.
     // A reference to |*bus| is retained by WTF::Function and will be removed after notifyComplete() is done.
-    Platform::current()->mainThread()->getWebTaskRunner()->postTask(BLINK_FROM_HERE, threadSafeBind(&AsyncAudioDecoder::notifyComplete, wrapCrossThreadPersistent(audioData), wrapCrossThreadPersistent(successCallback), wrapCrossThreadPersistent(errorCallback), bus.release(), wrapCrossThreadPersistent(resolver), wrapCrossThreadPersistent(context)));
+    Platform::current()->mainThread()->getWebTaskRunner()->postTask(BLINK_FROM_HERE, crossThreadBind(&AsyncAudioDecoder::notifyComplete, wrapCrossThreadPersistent(audioData), wrapCrossThreadPersistent(successCallback), wrapCrossThreadPersistent(errorCallback), bus.release(), wrapCrossThreadPersistent(resolver), wrapCrossThreadPersistent(context)));
 }
 
 void AsyncAudioDecoder::notifyComplete(DOMArrayBuffer*, AudioBufferCallback* successCallback, AudioBufferCallback* errorCallback, AudioBus* audioBus, ScriptPromiseResolver* resolver, AbstractAudioContext* context)

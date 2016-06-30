@@ -26,9 +26,10 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/TaskSynchronizer.h"
-#include "platform/ThreadSafeFunctional.h"
 #include "platform/audio/HRTFDatabaseLoader.h"
+
+#include "platform/CrossThreadFunctional.h"
+#include "platform/TaskSynchronizer.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebTaskRunner.h"
 #include "public/platform/WebTraceLocation.h"
@@ -95,7 +96,7 @@ void HRTFDatabaseLoader::loadAsynchronously()
         // Start the asynchronous database loading process.
         m_thread = wrapUnique(Platform::current()->createThread("HRTF database loader"));
         // TODO(alexclarke): Should this be posted as a loading task?
-        m_thread->getWebTaskRunner()->postTask(BLINK_FROM_HERE, threadSafeBind(&HRTFDatabaseLoader::loadTask, crossThreadUnretained(this)));
+        m_thread->getWebTaskRunner()->postTask(BLINK_FROM_HERE, crossThreadBind(&HRTFDatabaseLoader::loadTask, crossThreadUnretained(this)));
     }
 }
 
@@ -119,7 +120,7 @@ void HRTFDatabaseLoader::waitForLoaderThreadCompletion()
 
     TaskSynchronizer sync;
     // TODO(alexclarke): Should this be posted as a loading task?
-    m_thread->getWebTaskRunner()->postTask(BLINK_FROM_HERE, threadSafeBind(&HRTFDatabaseLoader::cleanupTask, crossThreadUnretained(this), crossThreadUnretained(&sync)));
+    m_thread->getWebTaskRunner()->postTask(BLINK_FROM_HERE, crossThreadBind(&HRTFDatabaseLoader::cleanupTask, crossThreadUnretained(this), crossThreadUnretained(&sync)));
     sync.waitForTaskCompletion();
     m_thread.reset();
 }

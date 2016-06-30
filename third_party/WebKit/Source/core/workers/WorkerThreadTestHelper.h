@@ -14,7 +14,7 @@
 #include "core/workers/WorkerThread.h"
 #include "core/workers/WorkerThreadLifecycleObserver.h"
 #include "core/workers/WorkerThreadStartupData.h"
-#include "platform/ThreadSafeFunctional.h"
+#include "platform/CrossThreadFunctional.h"
 #include "platform/WaitableEvent.h"
 #include "platform/WebThreadSupportingGC.h"
 #include "platform/heap/Handle.h"
@@ -132,7 +132,7 @@ public:
     void waitForInit()
     {
         std::unique_ptr<WaitableEvent> completionEvent = wrapUnique(new WaitableEvent());
-        workerBackingThread().backingThread().postTask(BLINK_FROM_HERE, threadSafeBind(&WaitableEvent::signal, crossThreadUnretained(completionEvent.get())));
+        workerBackingThread().backingThread().postTask(BLINK_FROM_HERE, crossThreadBind(&WaitableEvent::signal, crossThreadUnretained(completionEvent.get())));
         completionEvent->wait();
     }
 

@@ -32,8 +32,8 @@
 #include "modules/webdatabase/DatabaseTask.h"
 #include "modules/webdatabase/SQLTransactionClient.h"
 #include "modules/webdatabase/SQLTransactionCoordinator.h"
+#include "platform/CrossThreadFunctional.h"
 #include "platform/Logging.h"
-#include "platform/ThreadSafeFunctional.h"
 #include "platform/WebThreadSupportingGC.h"
 #include "public/platform/Platform.h"
 #include "wtf/PtrUtil.h"
@@ -65,7 +65,7 @@ void DatabaseThread::start()
     if (m_thread)
         return;
     m_thread = WebThreadSupportingGC::create("WebCore: Database", true);
-    m_thread->postTask(BLINK_FROM_HERE, threadSafeBind(&DatabaseThread::setupDatabaseThread, wrapCrossThreadPersistent(this)));
+    m_thread->postTask(BLINK_FROM_HERE, crossThreadBind(&DatabaseThread::setupDatabaseThread, wrapCrossThreadPersistent(this)));
 }
 
 void DatabaseThread::setupDatabaseThread()
@@ -84,7 +84,7 @@ void DatabaseThread::terminate()
         m_terminationRequested = true;
         m_cleanupSync = &sync;
         WTF_LOG(StorageAPI, "DatabaseThread %p was asked to terminate\n", this);
-        m_thread->postTask(BLINK_FROM_HERE, threadSafeBind(&DatabaseThread::cleanupDatabaseThread, wrapCrossThreadPersistent(this)));
+        m_thread->postTask(BLINK_FROM_HERE, crossThreadBind(&DatabaseThread::cleanupDatabaseThread, wrapCrossThreadPersistent(this)));
     }
     sync.waitForTaskCompletion();
     // The WebThread destructor blocks until all the tasks of the database
@@ -172,7 +172,7 @@ void DatabaseThread::scheduleTask(std::unique_ptr<DatabaseTask> task)
     }
 #endif
     // WebThread takes ownership of the task.
-    m_thread->postTask(BLINK_FROM_HERE, threadSafeBind(&DatabaseTask::run, std::move(task)));
+    m_thread->postTask(BLINK_FROM_HERE, crossThreadBind(&DatabaseTask::run, std::move(task)));
 }
 
 } // namespace blink
