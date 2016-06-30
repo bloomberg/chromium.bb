@@ -193,6 +193,7 @@ crbug.com/493815 inspector/elements/iframe-load-event.html [ Pass Failure ]
 crbug.com/248938 [ Win Debug ] virtual/threaded/transitions/transition-end-event-multiple-03.html [ Pass Failure ]
 crbug.com/248938 [ Win Debug ] virtual/threaded/transitions/transition-end-event-multiple-04.html [ Pass Failure ]
 crbug.com/352405 virtual/threaded/animations/transition-and-animation-1.html [ Pass Timeout ]
+crbug.com/248938 virtual/threaded/transitions/transition-end-event-rendering.html [ Pass Timeout ]
 
 crbug.com/542541 [ Debug ] fast/events/click-count.html [ Pass Failure ]
 
