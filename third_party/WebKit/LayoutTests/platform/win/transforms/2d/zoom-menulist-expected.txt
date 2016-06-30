@@ -2,13 +2,13 @@ layer at (0,0) size 800x600
   LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
-    LayoutBlockFlow {BODY} at (8,8) size 784x584
-      LayoutBlockFlow {H1} at (0,0) size 784x37
-        LayoutText {#text} at (0,0) size 273x36
-          text run at (0,0) width 273: "Zooming Menu List"
-      LayoutBlockFlow (anonymous) at (0,58.44) size 784x56
-        LayoutMenuList {SELECT} at (0,0) size 177x56 [bgcolor=#FFFFFF] [border: (3px solid #A9A9A9)]
-          LayoutBlockFlow (anonymous) at (3,3) size 171x51
-            LayoutText (anonymous) at (12,3) size 76x44
-              text run at (12,3) width 76: "One"
+    LayoutBlockFlow {BODY} at (12,12) size 776x576
+      LayoutBlockFlow {H1} at (0,0) size 776x55
+        LayoutText {#text} at (0,1) size 409x53
+          text run at (0,1) width 409: "Zooming Menu List"
+      LayoutBlockFlow (anonymous) at (0,87.16) size 776x83
+        LayoutMenuList {SELECT} at (0,0) size 264x83 [bgcolor=#FFFFFF] [border: (4px solid #A9A9A9)]
+          LayoutBlockFlow (anonymous) at (4,4) size 256x77
+            LayoutText (anonymous) at (18,5) size 114x67
+              text run at (18,5) width 114: "One"
         LayoutText {#text} at (0,0) size 0x0
