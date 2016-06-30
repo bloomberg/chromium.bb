@@ -9,7 +9,8 @@
 
 MockBrowsingDataAppCacheHelper::MockBrowsingDataAppCacheHelper(
     content::BrowserContext* browser_context)
-    : BrowsingDataAppCacheHelper(browser_context) {
+    : BrowsingDataAppCacheHelper(browser_context),
+      response_(new content::AppCacheInfoCollection) {
 }
 
 MockBrowsingDataAppCacheHelper::~MockBrowsingDataAppCacheHelper() {
@@ -24,4 +25,26 @@ void MockBrowsingDataAppCacheHelper::StartFetching(
 
 void MockBrowsingDataAppCacheHelper::DeleteAppCacheGroup(
     const GURL& manifest_url) {
+}
+
+void MockBrowsingDataAppCacheHelper::AddAppCacheSamples() {
+  GURL kOrigin("http://hello/");
+  content::AppCacheInfo mock_manifest_1;
+  content::AppCacheInfo mock_manifest_2;
+  content::AppCacheInfo mock_manifest_3;
+  mock_manifest_1.manifest_url = kOrigin.Resolve("manifest1");
+  mock_manifest_1.size = 1;
+  mock_manifest_2.manifest_url = kOrigin.Resolve("manifest2");
+  mock_manifest_2.size = 2;
+  mock_manifest_3.manifest_url = kOrigin.Resolve("manifest3");
+  mock_manifest_3.size = 3;
+  content::AppCacheInfoVector info_vector;
+  info_vector.push_back(mock_manifest_1);
+  info_vector.push_back(mock_manifest_2);
+  info_vector.push_back(mock_manifest_3);
+  response_->infos_by_origin[kOrigin] = info_vector;
+}
+
+void MockBrowsingDataAppCacheHelper::Notify() {
+  completion_callback_.Run(response_);
 }

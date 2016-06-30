@@ -34,22 +34,23 @@ void MockBrowsingDataFileSystemHelper::DeleteFileSystemOrigin(
 
 void MockBrowsingDataFileSystemHelper::AddFileSystem(
     const GURL& origin, bool has_persistent, bool has_temporary,
-    bool has_syncable) {
+    bool has_syncable, int64_t size_persistent, int64_t size_temporary,
+    int64_t size_syncable) {
   BrowsingDataFileSystemHelper::FileSystemInfo info(origin);
   if (has_persistent)
-    info.usage_map[storage::kFileSystemTypePersistent] = 0;
+    info.usage_map[storage::kFileSystemTypePersistent] = size_persistent;
   if (has_temporary)
-    info.usage_map[storage::kFileSystemTypeTemporary] = 0;
+    info.usage_map[storage::kFileSystemTypeTemporary] = size_temporary;
   if (has_syncable)
-    info.usage_map[storage::kFileSystemTypeSyncable] = 0;
+    info.usage_map[storage::kFileSystemTypeSyncable] = size_syncable;
   response_.push_back(info);
   file_systems_[origin.spec()] = true;
 }
 
 void MockBrowsingDataFileSystemHelper::AddFileSystemSamples() {
-  AddFileSystem(GURL("http://fshost1:1/"), false, true, false);
-  AddFileSystem(GURL("http://fshost2:2/"), true, false, true);
-  AddFileSystem(GURL("http://fshost3:3/"), true, true, true);
+  AddFileSystem(GURL("http://fshost1:1/"), false, true, false, 0, 1, 0);
+  AddFileSystem(GURL("http://fshost2:2/"), true, false, true, 2, 0, 2);
+  AddFileSystem(GURL("http://fshost3:3/"), true, true, true, 3, 3, 3);
 }
 
 void MockBrowsingDataFileSystemHelper::Notify() {

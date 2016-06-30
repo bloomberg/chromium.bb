@@ -18,10 +18,18 @@ class MockBrowsingDataAppCacheHelper
   void StartFetching(const FetchCallback& completion_callback) override;
   void DeleteAppCacheGroup(const GURL& manifest_url) override;
 
+  // Adds AppCache samples.
+  void AddAppCacheSamples();
+
+  // Notifies the callback.
+  void Notify();
+
  private:
   ~MockBrowsingDataAppCacheHelper() override;
 
   FetchCallback completion_callback_;
+
+  scoped_refptr<content::AppCacheInfoCollection> response_;
 
   DISALLOW_COPY_AND_ASSIGN(MockBrowsingDataAppCacheHelper);
 };

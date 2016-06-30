@@ -48,10 +48,12 @@ void MockBrowsingDataServiceWorkerHelper::AddServiceWorkerSamples() {
   scopes2.push_back(GURL("https://swhost2:2/*"));
 
   content::ServiceWorkerUsageInfo info1(kOrigin1, scopes1);
+  info1.total_size_bytes = 1;
   response_.push_back(info1);
   origins_[kOrigin1] = true;
 
   content::ServiceWorkerUsageInfo info2(kOrigin2, scopes2);
+  info2.total_size_bytes = 2;
   response_.push_back(info2);
   origins_[kOrigin2] = true;
 }

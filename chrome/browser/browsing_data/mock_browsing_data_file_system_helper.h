@@ -28,7 +28,10 @@ class MockBrowsingDataFileSystemHelper : public BrowsingDataFileSystemHelper {
   void AddFileSystem(const GURL& origin,
                      bool has_persistent,
                      bool has_temporary,
-                     bool has_syncable);
+                     bool has_syncable,
+                     int64_t size_persistent,
+                     int64_t size_temporary,
+                     int64_t size_syncable);
 
   // Adds some FilesystemInfo samples.
   void AddFileSystemSamples();

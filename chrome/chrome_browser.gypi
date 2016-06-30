@@ -116,6 +116,8 @@
       'browser/browsing_data/passwords_counter.cc',
       'browser/browsing_data/passwords_counter.h',
       'browser/browsing_data/registrable_domain_filter_builder.cc',
+      'browser/browsing_data/site_data_size_collector.cc',
+      'browser/browsing_data/site_data_size_collector.h',
       'browser/budget_service/background_budget_service.cc',
       'browser/budget_service/background_budget_service.h',
       'browser/budget_service/background_budget_service_factory.cc',
