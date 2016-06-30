@@ -2348,13 +2348,13 @@ and perhaps notable changes.
 @findex lou_translateString
 
 @example
-int lou_translateString (
+int lou_translateString(
   const char *tableList,
   const widechar *inbuf,
   int *inlen,
   widechar *outbuf,
   int *outlen,
-  char *typeform,
+  formtype *typeform,
   char *spacing,
   int mode);
 @end example
@@ -2407,13 +2407,13 @@ contain the maximum input and output lengths, respectively. When it
 returns, they are set to the actual lengths used.
 
 The @code{typeform} parameter is used to indicate italic type,
-boldface type, computer braille, etc. It is a string of characters
+boldface type, computer braille, etc. It is an array of @code{formtype}
 with the same length as the input buffer pointed to by @code{*inbuf}.
 However, it is used to pass back character-by-character results, so
 enough space must be provided to match the @code{*outlen} parameter.
-Each character indicates the typeform of the corresponding character
-in the input buffer. The values are as follows: 0 plain-text; 1
-italic; 2 bold; 4 underline; 8 computer braille. These values can be
+Each element indicates the typeform of the corresponding character
+in the input buffer. The values and their meaning can be consulted in the
+@code{typeforms} enum in @file{liblouis.h}. These values can be
 added for multiple emphasis. If this parameter is @code{NULL}, no
 checking for type forms is done. In addition, if this parameter is not
 @code{NULL}, it is set on return to have an 8 at every position
@@ -2439,13 +2439,13 @@ complete translation could not be done.
 @findex lou_translate
 
 @example
-int lou_translate (
+int lou_translate(
   const char *tableList,
   const widechar *inbuf,
   int *inlen,
   widechar *outbuf,
   int *outlen,
-  char *typeform,
+  formtype *typeform,
   char *spacing,
   int *outputPos,
   int *inputPos,
@@ -2502,13 +2502,13 @@ failure (return value of 0).
 @findex lou_backTranslateString
 
 @example
-int lou_backTranslateString (
+int lou_backTranslateString(
   const char *tableList,
   const widechar *inbuf,
   int *inlen,
   widechar *outbuf,
   int *outlen,
-  char *typeform,
+  formtype *typeform,
   char *spacing,
   int mode);
 @end example
@@ -2528,13 +2528,13 @@ should be done.
 @findex lou_backTranslate
 
 @example
-int lou_backTranslate (
+int lou_backTranslate(
   const char *tableList,
   const widechar *inbuf,
   int *inlen,
   widechar *outbuf,
   int *outlen,
-  char *typeform,
+  formtype *typeform,
   char *spacing,
   int *outputPos,
   int *inputPos,
