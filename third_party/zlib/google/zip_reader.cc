@@ -167,12 +167,9 @@ ZipReader::EntryInfo::EntryInfo(const std::string& file_name_in_zip,
   exploded_time.minute = raw_file_info.tmu_date.tm_min;
   exploded_time.second = raw_file_info.tmu_date.tm_sec;
   exploded_time.millisecond = 0;
-  if (exploded_time.HasValidValues()) {
-    last_modified_ = base::Time::FromLocalExploded(exploded_time);
-  } else {
-    // Use Unix time epoch if the time stamp data is invalid.
+
+  if (!base::Time::FromLocalExploded(exploded_time, &last_modified_))
     last_modified_ = base::Time::UnixEpoch();
-  }
 }
 
 ZipReader::ZipReader()
