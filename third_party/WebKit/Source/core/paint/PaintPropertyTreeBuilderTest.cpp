@@ -918,4 +918,152 @@ TEST_F(PaintPropertyTreeBuilderTest, ColumnSpannerUnderRelativePositioned)
     EXPECT_EQ(LayoutPoint(55, 44), spanner.objectPaintProperties()->localBorderBoxProperties()->paintOffset);
 }
 
+TEST_F(PaintPropertyTreeBuilderTest, FractionalPaintOffset)
+{
+    setBodyInnerHTML(
+        "<style>"
+        "  * { margin: 0; }"
+        "  div { position: absolute; }"
+        "</style>"
+        "<div id='a' style='width: 70px; height: 70px; left: 0.1px; top: 0.3px;'>"
+        "  <div id='b' style='width: 40px; height: 40px; left: 0.5px; top: 11.1px;'></div>"
+        "</div>"
+    );
+
+    ObjectPaintProperties* aProperties = document().getElementById("a")->layoutObject()->objectPaintProperties();
+    LayoutPoint aPaintOffset = LayoutPoint(FloatPoint(0.1, 0.3));
+    EXPECT_EQ(aPaintOffset, aProperties->localBorderBoxProperties()->paintOffset);
+
+    ObjectPaintProperties* bProperties = document().getElementById("b")->layoutObject()->objectPaintProperties();
+    LayoutPoint bPaintOffset = aPaintOffset + LayoutPoint(FloatPoint(0.5, 11.1));
+    EXPECT_EQ(bPaintOffset, bProperties->localBorderBoxProperties()->paintOffset);
+}
+
+TEST_F(PaintPropertyTreeBuilderTest, PaintOffsetWithBasicPixelSnapping)
+{
+    setBodyInnerHTML(
+        "<style>"
+        "  * { margin: 0; }"
+        "  div { position: relative; }"
+        "</style>"
+        "<div id='a' style='width: 70px; height: 70px; left: 0.3px; top: 0.3px;'>"
+        "  <div id='b' style='width: 40px; height: 40px; transform: translateZ(0);'>"
+        "    <div id='c' style='width: 40px; height: 40px; left: 0.1px; top: 0.1px;'></div>"
+        "  </div>"
+        "</div>"
+    );
+
+    ObjectPaintProperties* bProperties = document().getElementById("b")->layoutObject()->objectPaintProperties();
+    EXPECT_EQ(TransformationMatrix().translate3d(0, 0, 0), bProperties->transform()->matrix());
+    // The paint offset transform should be snapped from (0.3,0.3) to (0,0).
+    EXPECT_EQ(TransformationMatrix().translate(0, 0), bProperties->transform()->parent()->matrix());
+    // The residual subpixel adjustment should be (0.3,0.3) - (0,0) = (0.3,0.3).
+    LayoutPoint subpixelAccumulation = LayoutPoint(FloatPoint(0.3, 0.3));
+    EXPECT_EQ(subpixelAccumulation, bProperties->localBorderBoxProperties()->paintOffset);
+
+    // c should be painted starting at subpixelAccumulation + (0.1,0.1) = (0.4,0.4).
+    LayoutPoint cPaintOffset = subpixelAccumulation + LayoutPoint(FloatPoint(0.1, 0.1));
+    ObjectPaintProperties* cProperties = document().getElementById("c")->layoutObject()->objectPaintProperties();
+    EXPECT_EQ(cPaintOffset, cProperties->localBorderBoxProperties()->paintOffset);
+}
+
+TEST_F(PaintPropertyTreeBuilderTest, PaintOffsetWithPixelSnappingThroughTransform)
+{
+    setBodyInnerHTML(
+        "<style>"
+        "  * { margin: 0; }"
+        "  div { position: relative; }"
+        "</style>"
+        "<div id='a' style='width: 70px; height: 70px; left: 0.7px; top: 0.7px;'>"
+        "  <div id='b' style='width: 40px; height: 40px; transform: translateZ(0);'>"
+        "    <div id='c' style='width: 40px; height: 40px; left: 0.7px; top: 0.7px;'></div>"
+        "  </div>"
+        "</div>"
+    );
+
+    ObjectPaintProperties* bProperties = document().getElementById("b")->layoutObject()->objectPaintProperties();
+    EXPECT_EQ(TransformationMatrix().translate3d(0, 0, 0), bProperties->transform()->matrix());
+    // The paint offset transform should be snapped from (0.7,0.7) to (1,1).
+    EXPECT_EQ(TransformationMatrix().translate(1, 1), bProperties->transform()->parent()->matrix());
+    // The residual subpixel adjustment should be (0.7,0.7) - (1,1) = (-0.3,-0.3).
+    LayoutPoint subpixelAccumulation = LayoutPoint(LayoutPoint(FloatPoint(0.7, 0.7)) - LayoutPoint(1, 1));
+    EXPECT_EQ(subpixelAccumulation, bProperties->localBorderBoxProperties()->paintOffset);
+
+    // c should be painted starting at subpixelAccumulation + (0.7,0.7) = (0.4,0.4).
+    LayoutPoint cPaintOffset = subpixelAccumulation + LayoutPoint(FloatPoint(0.7, 0.7));
+    ObjectPaintProperties* cProperties = document().getElementById("c")->layoutObject()->objectPaintProperties();
+    EXPECT_EQ(cPaintOffset, cProperties->localBorderBoxProperties()->paintOffset);
+}
+
+TEST_F(PaintPropertyTreeBuilderTest, PaintOffsetWithPixelSnappingThroughMultipleTransforms)
+{
+    setBodyInnerHTML(
+        "<style>"
+        "  * { margin: 0; }"
+        "  div { position: relative; }"
+        "</style>"
+        "<div id='a' style='width: 70px; height: 70px; left: 0.7px; top: 0.7px;'>"
+        "  <div id='b' style='width: 40px; height: 40px; transform: translate3d(5px, 7px, 0);'>"
+        "    <div id='c' style='width: 40px; height: 40px; transform: translate3d(11px, 13px, 0);'>"
+        "      <div id='d' style='width: 40px; height: 40px; left: 0.7px; top: 0.7px;'></div>"
+        "    </div>"
+        "  </div>"
+        "</div>"
+    );
+
+    ObjectPaintProperties* bProperties = document().getElementById("b")->layoutObject()->objectPaintProperties();
+    EXPECT_EQ(TransformationMatrix().translate3d(5, 7, 0), bProperties->transform()->matrix());
+    // The paint offset transform should be snapped from (0.7,0.7) to (1,1).
+    EXPECT_EQ(TransformationMatrix().translate(1, 1), bProperties->transform()->parent()->matrix());
+    // The residual subpixel adjustment should be (0.7,0.7) - (1,1) = (-0.3,-0.3).
+    LayoutPoint subpixelAccumulation = LayoutPoint(LayoutPoint(FloatPoint(0.7, 0.7)) - LayoutPoint(1, 1));
+    EXPECT_EQ(subpixelAccumulation, bProperties->localBorderBoxProperties()->paintOffset);
+
+    ObjectPaintProperties* cProperties = document().getElementById("c")->layoutObject()->objectPaintProperties();
+    EXPECT_EQ(TransformationMatrix().translate3d(11, 13, 0), cProperties->transform()->matrix());
+    // The paint offset should be (-0.3,-0.3) but the paint offset transform should still be at
+    // (0,0) because it should be snapped.
+    EXPECT_EQ(TransformationMatrix().translate(0, 0), cProperties->transform()->parent()->matrix());
+    // The residual subpixel adjustment should still be (-0.3,-0.3).
+    EXPECT_EQ(subpixelAccumulation, cProperties->localBorderBoxProperties()->paintOffset);
+
+    // d should be painted starting at subpixelAccumulation + (0.7,0.7) = (0.4,0.4).
+    LayoutPoint dPaintOffset = subpixelAccumulation + LayoutPoint(FloatPoint(0.7, 0.7));
+    ObjectPaintProperties* dProperties = document().getElementById("d")->layoutObject()->objectPaintProperties();
+    EXPECT_EQ(dPaintOffset, dProperties->localBorderBoxProperties()->paintOffset);
+}
+
+TEST_F(PaintPropertyTreeBuilderTest, PaintOffsetWithPixelSnappingWithFixedPos)
+{
+    setBodyInnerHTML(
+        "<style>"
+        "  * { margin: 0; }"
+        "</style>"
+        "<div id='a' style='width: 70px; height: 70px; left: 0.7px; position: relative;'>"
+        "  <div id='b' style='width: 40px; height: 40px; transform: translateZ(0); position: relative;'>"
+        "    <div id='fixed' style='width: 40px; height: 40px; position: fixed;'>"
+        "      <div id='d' style='width: 40px; height: 40px; left: 0.7px; position: relative;'></div>"
+        "    </div>"
+        "  </div>"
+        "</div>"
+    );
+
+    ObjectPaintProperties* bProperties = document().getElementById("b")->layoutObject()->objectPaintProperties();
+    EXPECT_EQ(TransformationMatrix().translate(0, 0), bProperties->transform()->matrix());
+    // The paint offset transform should be snapped from (0.7,0) to (1,0).
+    EXPECT_EQ(TransformationMatrix().translate(1, 0), bProperties->transform()->parent()->matrix());
+    // The residual subpixel adjustment should be (0.7,0) - (1,0) = (-0.3,0).
+    LayoutPoint subpixelAccumulation = LayoutPoint(LayoutPoint(FloatPoint(0.7, 0)) - LayoutPoint(1, 0));
+    EXPECT_EQ(subpixelAccumulation, bProperties->localBorderBoxProperties()->paintOffset);
+
+    ObjectPaintProperties* fixedProperties = document().getElementById("fixed")->layoutObject()->objectPaintProperties();
+    // The residual subpixel adjustment should still be (-0.3,0).
+    EXPECT_EQ(subpixelAccumulation, fixedProperties->localBorderBoxProperties()->paintOffset);
+
+    // d should be painted starting at subpixelAccumulation + (0.7,0) = (0.4,0).
+    LayoutPoint dPaintOffset = subpixelAccumulation + LayoutPoint(FloatPoint(0.7, 0));
+    ObjectPaintProperties* dProperties = document().getElementById("d")->layoutObject()->objectPaintProperties();
+    EXPECT_EQ(dPaintOffset, dProperties->localBorderBoxProperties()->paintOffset);
+}
+
 } // namespace blink

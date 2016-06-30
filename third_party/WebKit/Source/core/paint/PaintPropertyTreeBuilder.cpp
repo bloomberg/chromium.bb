@@ -77,11 +77,19 @@ void PaintPropertyTreeBuilder::updatePaintOffsetTranslation(const LayoutObject& 
     if (context.paintOffset == LayoutPoint())
         return;
 
+    // We should use the same subpixel paint offset values for snapping regardless of whether a
+    // transform is present. If there is a transform we round the paint offset but keep around
+    // the residual fractional component for the transformed content to paint with.
+    // In spv1 this was called "subpixel accumulation". For more information, see
+    // PaintLayer::subpixelAccumulation() and PaintLayerPainter::paintFragmentByApplyingTransform.
+    IntPoint roundedPaintOffset = roundedIntPoint(context.paintOffset);
+    LayoutPoint fractionalPaintOffset = LayoutPoint(context.paintOffset - roundedPaintOffset);
+
     RefPtr<TransformPaintPropertyNode> paintOffsetTranslation = TransformPaintPropertyNode::create(
-        TransformationMatrix().translate(context.paintOffset.x(), context.paintOffset.y()),
+        TransformationMatrix().translate(roundedPaintOffset.x(), roundedPaintOffset.y()),
         FloatPoint3D(), context.currentTransform);
     context.currentTransform = paintOffsetTranslation.get();
-    context.paintOffset = LayoutPoint();
+    context.paintOffset = fractionalPaintOffset;
     object.getMutableForPainting().ensureObjectPaintProperties().setPaintOffsetTranslation(paintOffsetTranslation.release());
 }
 
@@ -98,8 +106,7 @@ static FloatPoint3D transformOrigin(const LayoutBox& box)
 void PaintPropertyTreeBuilder::updateTransform(const LayoutObject& object, PaintPropertyTreeBuilderContext& context)
 {
     if (object.isSVG() && !object.isSVGRoot()) {
-        // SVG does not use paint offset internally and the root should have already accounted for
-        // any paint offset in the root's svgLocalToBorderBox transform.
+        // SVG does not use paint offset internally.
         DCHECK(context.paintOffset == LayoutPoint());
 
         // FIXME(pdr): Check for the presence of a transform instead of the value. Checking for an
@@ -121,7 +128,6 @@ void PaintPropertyTreeBuilder::updateTransform(const LayoutObject& object, Paint
     const ComputedStyle& style = object.styleRef();
     if (!object.isBox() || !style.hasTransform())
         return;
-    ASSERT(context.paintOffset == LayoutPoint());
 
     TransformationMatrix matrix;
     style.applyTransform(matrix, toLayoutBox(object).size(), ComputedStyle::ExcludeTransformOrigin,
