@@ -116,3 +116,5 @@ crbug.com/572723 [ Linux ] inspector/sources/debugger/debugger-completions-on-ca
 
 # Intentionally failed allocations, via partitionAllocGenericFlags()
 crbug.com/577889 [ Linux ] fast/js/typed-array-allocation-failure.html [ Crash ]
+
+crbug.com/624712 [ Linux ] virtual/threaded/fast/compositorworker/compositor-attribute-change-worker.html [Timeout]
