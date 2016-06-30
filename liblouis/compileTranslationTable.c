@@ -5202,7 +5202,7 @@ cleanup:
 }
 
 static ChainEntry *lastTrans = NULL;
-static void *
+void *
 getTable (const char *tableList)
 {
 /*Keep track of which tables have already been compiled */
@@ -5217,9 +5217,7 @@ getTable (const char *tableList)
   /*See if this is the last table used. */
   if (lastTrans != NULL)
     if (tableListLen == lastTrans->tableListLength && (memcmp
-						       (&lastTrans->
-							tableList
-							[0],
+						       (&lastTrans->tableList[0],
 							tableList,
 							tableListLen)) == 0)
       return (table = lastTrans->table);
@@ -5228,9 +5226,7 @@ getTable (const char *tableList)
   while (currentEntry != NULL)
     {
       if (tableListLen == currentEntry->tableListLength && (memcmp
-							    (&currentEntry->
-							     tableList
-							     [0],
+							    (&currentEntry->tableList[0],
 							     tableList,
 							     tableListLen))
 	  == 0)
@@ -5259,6 +5255,7 @@ getTable (const char *tableList)
       lastTrans = newEntry;
       return newEntry->table;
     }
+  logMessage (LOG_ERROR, "%s could not be found", tableList);
   return NULL;
 }
 
@@ -5288,14 +5285,15 @@ getEmphClasses(const char* tableList)
 void *EXPORT_CALL
 lou_getTable (const char *tableList)
 {
-  void *xtable = NULL;
-  if (tableList == NULL || tableList[0] == 0)
-    return NULL;
-  errorCount = fileCount = 0;
-  xtable = getTable (tableList);
-  if (!xtable)
-    logMessage (LOG_ERROR, "%s could not be found", tableList);
-  return xtable;
+  return getTable(tableList);
+}
+
+int EXPORT_CALL
+lou_checkTable (const char *tableList)
+{
+  if (getTable(tableList))
+    return 1;
+  return 0;
 }
 
 static unsigned char *destSpacing = NULL;
@@ -5511,7 +5509,7 @@ lou_charSize ()
 int EXPORT_CALL
 lou_compileString (const char *tableList, const char *inString)
 {
-  if (!lou_getTable (tableList))
+  if (!getTable (tableList))
     return 0;
   return compileString (inString);
 }

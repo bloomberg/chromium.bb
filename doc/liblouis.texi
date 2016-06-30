@@ -181,6 +181,7 @@ Programming with liblouis
 * lou_setDataPath::
 * lou_getDataPath::
 * lou_getTable::
+* lou_checkTable::
 * lou_readCharFromFile::
 * lou_free::
 * Python bindings::
@@ -2198,6 +2199,7 @@ the doctest directory in the source distribution.
 * lou_setDataPath::
 * lou_getDataPath::
 * lou_getTable::
+* lou_checkTable::
 * lou_readCharFromFile::
 * lou_free::
 * Python bindings::
@@ -2236,9 +2238,10 @@ License along with Liblouis. If not, see
 
 You use the liblouis library by calling the following functions,
 @code{lou_translateString}, @code{lou_backTranslateString},
+@code{lou_translate}, @code{lou_backTranslate},
 @code{lou_registerLogCallback}, @code{lou_setLogLevel},
 @code{lou_logFile}, @code{lou_logPrint}, @code{lou_logEnd},
-@code{lou_getTable}, @code{lou_translate}, @code{lou_backTranslate},
+@code{lou_getTable}, @code{lou_checkTable},
 @code{lou_hyphenate}, @code{lou_charToDots}, @code{lou_dotsToChar},
 @code{lou_compileString}, @code{lou_readCharFromFile},
 @code{lou_version} and @code{lou_free}.  These are described
@@ -2260,7 +2263,7 @@ yet been compiled @file{compileTranslationTable.c} checks it for
 correctness and compiles it into an efficient internal representation.
 The main entry point is @code{lou_getTable}. Since it is the module
 that keeps track of memory usage, it also contains the @code{lou_free}
-function. In addition, it contains the @code{lou_registerLogCallback},
+function. In addition, it contains the @code{lou_checkTable}, @code{lou_registerLogCallback},
 @code{lou_setLogLevel}, @code{lou_logFile}, @code{lou_logPrint} and
 @code{lou_logEnd} functions, plus some utility functions which are
 used by the other modules.
@@ -2786,10 +2789,10 @@ This function returns a pointer to the path set by
 
 @example
 void *lou_getTable (
-  char *tablelist);
+  char *tableList);
 @end example
 
-@code{tablelist} is a list of names of table files separated by
+@code{tableList} is a list of names of table files separated by
 commas, as explained previously
 (@pxref{translation-tables,,@code{tableList} parameter in
 @code{lou_translateString}}). If no errors are found this function
@@ -2797,6 +2800,25 @@ returns a pointer to the compiled table. If errors are found error
 messages are logged to the log callback (see
 @code{lou_registerLogCallback}). Errors result in a @code{NULL}
 pointer being returned.
+
+@node lou_checkTable
+@section lou_checkTable
+@findex lou_checkTable
+
+@example
+int lou_checkTable (char *tableList);
+@end example
+
+This function does the same as @code{lou_getTable}
+but does not return a pointer to the resulting table.
+It is to be preferred if only the validity of a table needs to be checked.
+@code{tableList} is a list of names of table files separated by
+commas, as explained previously
+(@pxref{translation-tables,,@code{tableList} parameter in
+@code{lou_translateString}}). If no errors are found this function
+returns a non-zero. If errors are found error
+messages are logged to the log callback (see
+@code{lou_registerLogCallback}) and the return value is @code{0}.
 
 @node lou_readCharFromFile
 @section lou_readCharFromFile
@@ -2835,7 +2857,9 @@ tables every time they are used, resulting in great inefficiency.
 @section Python bindings
 
 There are Python bindings for @code{lou_translateString},
-@code{lou_translate}, @code{lou_backTranslateString}, @code{lou_backTranslate}, @code{lou_hyphenate}, @code{lou_getTable} (called @code{checkTable}), @code{lou_compileString} and @code{lou_version}. For installation
+@code{lou_translate}, @code{lou_backTranslateString},
+@code{lou_backTranslate}, @code{lou_hyphenate}, @code{checkTable},
+@code{lou_compileString} and @code{lou_version}. For installation
 instructions see the the @file{README} file in the @file{python}
 directory. Usage information is included in the Python module itself.
 
@@ -2864,7 +2888,8 @@ directory. Usage information is included in the Python module itself.
 @c  LocalWords:  liblouis opcode args BRLTTY ViewPlus Abilitiessoft LGPL lou
 @c  LocalWords:  checktable allround checkhyphens Opcodes Multipass dotsToChar
 @c  LocalWords:  translateString backTranslateString backTranslate charToDots
-@c  LocalWords:  compileString logFile logPrint getTable readCharFromFile itemx
+@c  LocalWords:  compileString logFile logPrint
+@c  LocalWords:  getTable checkTable readCharFromFile itemx
 @c  LocalWords:  README liblouisxml pindex samp kbd opcodes opcoderef numsign
 @c  LocalWords:  FIXME ctb nemeth filename multipass suboperand uplow litdigit
 @c  LocalWords:  capsign begcaps endcaps letsign noletsign largesign typeform

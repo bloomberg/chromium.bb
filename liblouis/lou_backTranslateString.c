@@ -91,7 +91,7 @@ backTranslateWithTracing (const char *tableList, const widechar * inbuf,
 				inlen, outbuf, outlen,
 				typeform, spacing, outputPos, inputPos,
 				cursorPos, modex);
-  table = lou_getTable (tableList);
+  table = getTable (tableList);
   if (table == NULL)
     return 0;
   srcmax = 0;

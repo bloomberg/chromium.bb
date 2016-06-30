@@ -152,9 +152,14 @@ formtype *typeform, char *spacing, int
 
   void * EXPORT_CALL lou_getTable (const char *tableList);
 /* This function checks a table for errors. If none are found it loads 
-* the table into memory and returns a pointer to it. if errors are found 
+* the table into memory and returns a pointer to it. If errors are found 
 * it returns a null pointer. It is called by lou_translateString and 
 * lou_backTranslateString and also by functions in liblouisxml
+*/
+
+  int EXPORT_CALL lou_checkTable (const char *tableList);
+/* This function checks a table for errors. If none are found it loads 
+* the table into memory and returns a non-zero value. Else the return value is 0.
 */
 
 void EXPORT_CALL lou_registerTableResolver (char ** (* resolver) (const char *table, const char *base));

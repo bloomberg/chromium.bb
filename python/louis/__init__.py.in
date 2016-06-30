@@ -97,8 +97,7 @@ liblouis.lou_backTranslate.argtypes = (
 liblouis.lou_hyphenate.argtypes = (
          c_char_p, c_wchar_p, c_int, POINTER(c_char), c_int)
 
-liblouis.lou_getTable.argtypes = (c_char_p,)
-liblouis.lou_getTable.restype = c_void_p
+liblouis.lou_checkTable.argtypes = (c_char_p,)
 
 liblouis.lou_compileString.argtypes = (c_char_p, c_char_p)
 
@@ -286,11 +285,10 @@ def checkTable(tableList):
     @param tableList: A list of translation tables.
     @type tableList: list of str
     @raise RuntimeError: If compilation failed.
-    @see: lou_getTable in the liblouis documentation
+    @see: lou_checkTable in the liblouis documentation
     """
-    # TODO: Add this function to the C API and use that instead.
     tablesString = _createTablesString(tableList)
-    if not liblouis.lou_getTable(tablesString):
+    if not liblouis.lou_checkTable(tablesString):
         raise RuntimeError("Can't compile: tables %s"%tableList)
 
 def compileString(tableList, inString):
