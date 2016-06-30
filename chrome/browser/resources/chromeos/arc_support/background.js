@@ -90,6 +90,7 @@ function initialize(data, deviceId) {
   loadTimeData.data = data;
   appWindow.contentWindow.i18nTemplate.process(doc, loadTimeData);
   var countryCode = data.countryCode.toLowerCase();
+  setBackupRestoreMode(data.textBackupRestore, data.backupRestoreEnabled);
 
   var scriptSetCountryCode = 'document.countryCode = \'' + countryCode + '\';';
   termsView.addContentScripts([
@@ -110,6 +111,17 @@ function initialize(data, deviceId) {
 }
 
 /**
+ * Handles the event when the user clicks on a learn more link. Opens the
+ * support page for the user.
+ * @param {Event} event
+ */
+var onLearnMore = function(event) {
+  var url = 'https://support.google.com/chromebook?p=playapps';
+  chrome.browser.openTab({'url': url}, function() {});
+  event.preventDefault();
+};
+
+/**
  * Sets current metrics mode.
  * @param {string} text Describes current metrics state.
  * @param {boolean} canEnable Defines if user is allowed to change this metrics
@@ -127,18 +139,28 @@ function setMetricsMode(text, canEnable, on) {
     event.preventDefault();
   };
 
-  var onLearnMore = function(event) {
-    var url = 'https://support.google.com/chromebook?p=playapps';
-    chrome.browser.openTab({'url': url}, function() {});
-    event.preventDefault();
-  };
-
   doc.getElementById('text-metrics').innerHTML = text;
   doc.getElementById('settings-link').addEventListener('click', onSettings);
-  doc.getElementById('learn-more-link').addEventListener('click', onLearnMore);
+  doc.getElementById('learn-more-link-metrics').addEventListener('click',
+      onLearnMore);
 
   // Applying metrics mode changes page layout, update terms height.
   updateTermsHeight();
+}
+
+/**
+ * Sets current metrics mode.
+ * @param {string} text String used to display next to checkbox.
+ * @param {boolean} defaultCheckValue Defines the default value for backup and
+ *     restore checkbox.
+ */
+function setBackupRestoreMode(text, defaultCheckValue) {
+  var doc = appWindow.contentWindow.document;
+  doc.getElementById('enable-backup-restore').checked = defaultCheckValue;
+
+  doc.getElementById('text-backup-restore').innerHTML = text;
+  doc.getElementById('learn-more-link-backup-restore').addEventListener('click',
+      onLearnMore);
 }
 
 /**
@@ -356,9 +378,17 @@ chrome.app.runtime.onLaunched.addListener(function() {
 
     var onAgree = function() {
       var enableMetrics = doc.getElementById('enable-metrics');
-      if (!enableMetrics.hidden && enableMetrics.checked) {
-        sendNativeMessage('enableMetrics');
+      if (!enableMetrics.hidden) {
+        sendNativeMessage('enableMetrics', {
+          'enabled': enableMetrics.checked
+        });
       }
+
+      var enableBackupRestore = doc.getElementById('enable-backup-restore');
+      sendNativeMessage('setBackupRestore', {
+        'enabled': enableBackupRestore.checked
+      });
+
       sendNativeMessage('startLso');
     };
 

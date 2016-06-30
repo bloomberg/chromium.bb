@@ -50,10 +50,14 @@
     <div class="section-terms" id ="terms-container">
       <webview id="terms" partition="persist:arc_support"></webview>
     </div>
-    <div class="layout horizontal section-metrics">
-      <input type="checkbox" class="checkbox-metrics" id="enable-metrics"
-        hidden>
-      <p class="text-metrics" id="text-metrics"></p>
+    <div class="layout horizontal section-checkbox-container">
+      <input type="checkbox" class="checkbox-option" id="enable-metrics" hidden>
+      <p class="checkbox-text" id="text-metrics"></p>
+    </div>
+    <div id="section-backup-restore" class="layout horizontal
+        section-checkbox-container">
+      <input type="checkbox" class="checkbox-option" id="enable-backup-restore">
+      <p class="checkbox-text" id="text-backup-restore"></p>
     </div>
     <div class="layout horizontal end-justified section-buttons">
       <paper-button class="white" id="button-cancel"

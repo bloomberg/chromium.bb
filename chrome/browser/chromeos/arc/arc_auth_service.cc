@@ -126,6 +126,7 @@ void ArcAuthService::RegisterProfilePrefs(
       prefs::kArcEnabled, false,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
   registry->RegisterBooleanPref(prefs::kArcSignedIn, false);
+  registry->RegisterBooleanPref(prefs::kArcBackupRestoreEnabled, true);
 }
 
 // static

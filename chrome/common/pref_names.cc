@@ -16,6 +16,8 @@ namespace prefs {
 #if defined(OS_CHROMEOS) && defined(ENABLE_APP_LIST)
 // A preference to keep list of Android apps and their state.
 const char kArcApps[] = "arc.apps";
+// A preference to store backup and restore state for Android apps.
+const char kArcBackupRestoreEnabled[] = "arc.backup_restore.enabled";
 // A preference to keep Android apps enabled state.
 const char kArcEnabled[] = "arc.enabled";
 // A preference to keep list of Android packages and their infomation.

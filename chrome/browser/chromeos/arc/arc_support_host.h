@@ -39,7 +39,8 @@ class ArcSupportHost : public extensions::NativeMessageHost,
   void OnMetricsPreferenceChanged();
   void Initialize();
   void SendMetricsMode();
-  void EnableMetrics();
+  void EnableMetrics(bool is_enabled);
+  void EnableBackupRestore(bool is_enabled);
 
   // Unowned pointer.
   Client* client_ = nullptr;
