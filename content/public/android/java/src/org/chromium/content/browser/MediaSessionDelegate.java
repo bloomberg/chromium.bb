@@ -34,8 +34,9 @@ public class MediaSessionDelegate implements AudioManager.OnAudioFocusChangeList
     private int mFocusType;
     private boolean mIsDucking = false;
 
-    // Native pointer to C++ content::MediaSessionAndroid.
-    private final long mNativeMediaSessionDelegateAndroid;
+    // Native pointer to C++ content::MediaSessionDelegateAndroid.
+    // It will be set to 0 when the native MediaSessionDelegateAndroid object is destroyed.
+    private long mNativeMediaSessionDelegateAndroid;
 
     private MediaSessionDelegate(final Context context, long nativeMediaSessionDelegateAndroid) {
         mContext = context;
@@ -51,6 +52,7 @@ public class MediaSessionDelegate implements AudioManager.OnAudioFocusChangeList
     @CalledByNative
     private void tearDown() {
         abandonAudioFocus();
+        mNativeMediaSessionDelegateAndroid = 0;
     }
 
     @CalledByNative
@@ -75,6 +77,8 @@ public class MediaSessionDelegate implements AudioManager.OnAudioFocusChangeList
 
     @Override
     public void onAudioFocusChange(int focusChange) {
+        if (mNativeMediaSessionDelegateAndroid == 0) return;
+
         switch (focusChange) {
             case AudioManager.AUDIOFOCUS_GAIN:
                 if (mIsDucking) {
