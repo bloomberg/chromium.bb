@@ -68,7 +68,6 @@ class MEDIA_EXPORT SdkMediaCodecBridge : public MediaCodecBridge {
                                           size_t offset,
                                           const uint8_t** addr,
                                           size_t* capacity) override;
-  bool IsSoftwareCodec() override;
 
   static bool RegisterSdkMediaCodecBridge(JNIEnv* env);
 

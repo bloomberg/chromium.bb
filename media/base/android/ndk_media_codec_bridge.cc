@@ -249,10 +249,4 @@ MediaCodecStatus NdkMediaCodecBridge::GetOutputBufferAddress(
   return MEDIA_CODEC_OK;
 }
 
-bool NdkMediaCodecBridge::IsSoftwareCodec() {
-  // There does not appear to be an AMediaCodec_getName() for us to find the
-  // codec name.
-  return false;
-}
-
 }  // namespace media

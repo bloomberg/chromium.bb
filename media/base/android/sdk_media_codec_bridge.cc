@@ -334,11 +334,6 @@ MediaCodecStatus SdkMediaCodecBridge::GetOutputBufferAddress(
   return MEDIA_CODEC_OK;
 }
 
-bool SdkMediaCodecBridge::IsSoftwareCodec() {
-  JNIEnv* env = AttachCurrentThread();
-  return Java_MediaCodecBridge_isSoftwareCodec(env, j_media_codec_.obj());
-}
-
 // static
 bool SdkMediaCodecBridge::RegisterSdkMediaCodecBridge(JNIEnv* env) {
   return RegisterNativesImpl(env);

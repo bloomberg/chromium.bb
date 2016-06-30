@@ -226,7 +226,11 @@ class MediaCodecBridge {
     @CalledByNative
     private void release() {
         try {
-            Log.w(TAG, "calling MediaCodec.release() on " + mMediaCodec.getName());
+            String codecName = "unknown";
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
+                codecName = mMediaCodec.getName();
+            }
+            Log.w(TAG, "calling MediaCodec.release() on " + codecName);
             mMediaCodec.release();
         } catch (IllegalStateException e) {
             // The MediaCodec is stuck in a wrong state, possibly due to losing
@@ -750,20 +754,5 @@ class MediaCodecBridge {
             default:
                 return AudioFormat.CHANNEL_OUT_DEFAULT;
         }
-    }
-
-    /**
-     * Return true if and only if this codec is a software codec.
-     */
-    @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
-    @CalledByNative
-    private boolean isSoftwareCodec() {
-        boolean result = false;
-        try {
-            result = MediaCodecUtil.isSoftwareCodec(mMediaCodec.getName());
-        } catch (Exception e) {
-            Log.e(TAG, "Cannot determine software codec", e);
-        }
-        return result;
     }
 }

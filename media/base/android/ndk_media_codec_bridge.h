@@ -63,7 +63,6 @@ class MEDIA_EXPORT NdkMediaCodecBridge : public MediaCodecBridge {
                                           size_t offset,
                                           const uint8_t** addr,
                                           size_t* capacity) override;
-  bool IsSoftwareCodec() override;
 
  protected:
   NdkMediaCodecBridge(const std::string& mime,

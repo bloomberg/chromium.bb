@@ -1416,7 +1416,11 @@ void AndroidVideoDecodeAccelerator::ActualDestroy() {
     // backed by hardware, else it may hang too.  Post it to the construction
     // thread, and it'll get freed if things start working.  If things are
     // already working, then it'll be freed soon.
-    if (media_codec_->IsSoftwareCodec()) {
+    //
+    // We require software codecs when |allow_autodetection_| is false, so use
+    // the stored value as a proxy for whether the MediaCodec is software backed
+    // or not.
+    if (!codec_config_->allow_autodetection_) {
       media_codec_.reset();
     } else {
       manager->ConstructionTaskRunner()->DeleteSoon(FROM_HERE,
