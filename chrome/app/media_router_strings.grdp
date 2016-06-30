@@ -66,6 +66,9 @@
   <message name="IDS_MEDIA_ROUTER_HELP" desc="Title of a menu item which, on click, opens a page to the Chromecast help center.">
    Help
   </message>
+  <message name="IDS_MEDIA_ROUTER_REMOVE_TOOLBAR_ACTION" desc="Title of a menu item which, on click, removes the Media Router Action icon from the toolbar.">
+   Remove icon
+  </message>
   <message name="IDS_MEDIA_ROUTER_REPORT_ISSUE" desc="Title of a menu item which, on click, opens a page to give feedback or report an issue with Chromecast integration.">
    Report an issue
   </message>

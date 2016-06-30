@@ -39,7 +39,7 @@ MediaRouterContextualMenu::MediaRouterContextualMenu(Browser* browser)
   menu_model_.AddItemWithStringId(IDC_MEDIA_ROUTER_HELP,
                                   IDS_MEDIA_ROUTER_HELP);
   menu_model_.AddItemWithStringId(IDC_MEDIA_ROUTER_REMOVE_TOOLBAR_ACTION,
-                                  IDS_EXTENSIONS_UNINSTALL);
+                                  IDS_MEDIA_ROUTER_REMOVE_TOOLBAR_ACTION);
   menu_model_.AddSeparator(ui::NORMAL_SEPARATOR);
 #if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
   menu_model_.AddItemWithStringId(IDC_MEDIA_ROUTER_MANAGE_DEVICES,
