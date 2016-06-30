@@ -158,6 +158,10 @@ class AutofillWebDataBackendImpl
       const AutofillProfile& profile,
       WebDatabase* db);
 
+  WebDatabase::State UpdateServerCardBillingAddress(
+      const CreditCard& card,
+      WebDatabase* db);
+
   WebDatabase::State ClearAllServerData(WebDatabase* db);
 
   // Removes Autofill records from the database. Valid only for local

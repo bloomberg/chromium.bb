@@ -118,10 +118,10 @@ public class AutofillPreferences extends PreferenceFragment
             pref.setSummary(card.getFormattedExpirationDate(getActivity()));
 
             if (card.getIsLocal()) {
-                pref.setFragment(AutofillCreditCardEditor.class.getName());
+                pref.setFragment(AutofillLocalCardEditor.class.getName());
             } else {
+                pref.setFragment(AutofillServerCardEditor.class.getName());
                 pref.setWidgetLayoutResource(R.layout.autofill_server_data_label);
-                pref.setFragment(AutofillServerCardPreferences.class.getName());
             }
 
             Bundle args = pref.getExtras();

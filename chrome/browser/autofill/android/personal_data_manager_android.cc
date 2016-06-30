@@ -31,6 +31,7 @@
 #include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/browser/payments/full_card_request.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
+#include "components/autofill/core/common/autofill_constants.h"
 #include "components/autofill/core/common/autofill_pref_names.h"
 #include "components/autofill/core/common/autofill_switches.h"
 #include "components/prefs/pref_service.h"
@@ -424,6 +425,19 @@ ScopedJavaLocalRef<jstring> PersonalDataManagerAndroid::SetCreditCard(
     personal_data_manager_->UpdateCreditCard(card);
   }
   return ConvertUTF8ToJavaString(env, card.guid());
+}
+
+
+void PersonalDataManagerAndroid::UpdateServerCardBillingAddress(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& unused_obj,
+    const JavaParamRef<jstring>& jguid,
+    const JavaParamRef<jstring>& jbilling_address_id) {
+  CreditCard card(ConvertJavaStringToUTF8(env, jguid), kSettingsOrigin);
+  card.set_record_type(CreditCard::MASKED_SERVER_CARD);
+  card.set_billing_address_id(ConvertJavaStringToUTF8(env,
+      jbilling_address_id));
+  personal_data_manager_->UpdateServerCardBillingAddress(card);
 }
 
 void PersonalDataManagerAndroid::AddServerCreditCardForTest(

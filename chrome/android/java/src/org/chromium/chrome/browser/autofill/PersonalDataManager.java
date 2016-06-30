@@ -605,6 +605,11 @@ public class PersonalDataManager {
         return nativeSetCreditCard(mPersonalDataManagerAndroid, card);
     }
 
+    public void updateServerCardBillingAddress(String guid, String billingAddressId) {
+        ThreadUtils.assertOnUiThread();
+        nativeUpdateServerCardBillingAddress(mPersonalDataManagerAndroid, guid, billingAddressId);
+    }
+
     @VisibleForTesting
     public void addServerCreditCardForTest(CreditCard card) {
         ThreadUtils.assertOnUiThread();
@@ -700,6 +705,8 @@ public class PersonalDataManager {
             String guid);
     private native String nativeSetCreditCard(long nativePersonalDataManagerAndroid,
             CreditCard card);
+    private native void nativeUpdateServerCardBillingAddress(long nativePersonalDataManagerAndroid,
+            String guid, String billingAddressId);
     private native void nativeAddServerCreditCardForTest(long nativePersonalDataManagerAndroid,
             CreditCard card);
     private native void nativeRemoveByGUID(long nativePersonalDataManagerAndroid, String guid);

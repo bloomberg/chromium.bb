@@ -406,6 +406,22 @@ WebDatabase::State AutofillWebDataBackendImpl::UpdateServerAddressUsageStats(
   return WebDatabase::COMMIT_NEEDED;
 }
 
+WebDatabase::State AutofillWebDataBackendImpl::UpdateServerCardBillingAddress(
+    const CreditCard& card,
+    WebDatabase* db) {
+  DCHECK(db_thread_->BelongsToCurrentThread());
+  if (!AutofillTable::FromWebDatabase(db)->UpdateServerCardBillingAddress(
+          card)) {
+    return WebDatabase::COMMIT_NOT_NEEDED;
+  }
+
+  FOR_EACH_OBSERVER(AutofillWebDataServiceObserverOnDBThread, db_observer_list_,
+                    CreditCardChanged(CreditCardChange(CreditCardChange::UPDATE,
+                                                       card.guid(), &card)));
+
+  return WebDatabase::COMMIT_NEEDED;
+}
+
 WebDatabase::State AutofillWebDataBackendImpl::ClearAllServerData(
     WebDatabase* db) {
   DCHECK(db_thread_->BelongsToCurrentThread());

@@ -92,7 +92,12 @@ public abstract class AutofillEditorBase
         inflater.inflate(R.menu.payments_editor_menu, menu);
 
         MenuItem deleteItem = menu.findItem(R.id.delete_menu_id);
-        if (deleteItem != null) deleteItem.setVisible(!mIsNewEntry);
+        if (deleteItem != null) deleteItem.setVisible(!mIsNewEntry && getIsDeletable());
+    }
+
+    /** @return True if the item is deletable. Can be false for server credit cards, for example. */
+    protected boolean getIsDeletable() {
+        return true;
     }
 
     /** Initializes the buttons within the layout. */
@@ -126,13 +131,18 @@ public abstract class AutofillEditorBase
     protected abstract void saveEntry();
 
     /** Called when the entry being edited should be deleted. */
-    protected abstract void deleteEntry();
+    protected void deleteEntry() {
+        assert false;
+    }
 
     /** @return ID of the String to use as the title in the ActionBar. */
     protected abstract int getTitleResourceId(boolean isNewEntry);
 
     @Override
     public void onNothingSelected(AdapterView<?> parent) {}
+
+    @Override
+    public void onTextChanged(CharSequence s, int start, int before, int count) {}
 
     @Override
     public void afterTextChanged(Editable s) {}

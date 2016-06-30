@@ -224,6 +224,14 @@ void AutofillWebDataService::UpdateServerAddressUsageStats(
            autofill_backend_, profile));
 }
 
+void AutofillWebDataService::UpdateServerCardBillingAddress(
+    const CreditCard& credit_card) {
+  wdbs_->ScheduleDBTask(
+      FROM_HERE,
+      Bind(&AutofillWebDataBackendImpl::UpdateServerCardBillingAddress,
+           autofill_backend_, credit_card));
+}
+
 void AutofillWebDataService::RemoveAutofillDataModifiedBetween(
     const Time& delete_begin,
     const Time& delete_end) {

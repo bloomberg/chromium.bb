@@ -161,6 +161,10 @@ struct FormFieldData;
 //                      with locally stored cards and generating descriptions.
 //   exp_month          Expiration month: 1-12
 //   exp_year           Four-digit year: 2017
+//   billing_address_id The guid string that identifies the local profile which
+//                      is the billing address for this card. Can be null in the
+//                      database, but always returned as an empty string in
+//                      CreditCard. Added in version 67.
 //
 // unmasked_credit_cards
 //                      When a masked credit credit card is unmasked and the
@@ -356,6 +360,8 @@ class AutofillTable : public WebDatabaseTable {
   bool UpdateServerCardUsageStats(const CreditCard& credit_card);
   bool UpdateServerAddressUsageStats(const AutofillProfile& profile);
 
+  bool UpdateServerCardBillingAddress(const CreditCard& credit_card);
+
   // Deletes all data from the server card and profile tables. Returns true if
   // any data was deleted, false if not (so false means "commit not needed"
   // rather than "error").
@@ -413,6 +419,7 @@ class AutofillTable : public WebDatabaseTable {
   bool MigrateToVersion64AddUnmaskDate();
   bool MigrateToVersion65AddServerMetadataTables();
   bool MigrateToVersion66AddCardBillingAddress();
+  bool MigrateToVersion67AddMaskedCardBillingAddress();
 
   // Max data length saved in the table, AKA the maximum length allowed for
   // form data.

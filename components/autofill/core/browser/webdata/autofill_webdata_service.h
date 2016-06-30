@@ -99,6 +99,7 @@ class AutofillWebDataService : public AutofillWebData,
 
   void UpdateServerCardUsageStats(const CreditCard& credit_card) override;
   void UpdateServerAddressUsageStats(const AutofillProfile& profile) override;
+  void UpdateServerCardBillingAddress(const CreditCard& credit_card) override;
 
   void RemoveAutofillDataModifiedBetween(const base::Time& delete_begin,
                                          const base::Time& delete_end) override;

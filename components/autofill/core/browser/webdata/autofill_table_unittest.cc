@@ -1788,6 +1788,33 @@ TEST_F(AutofillTableTest, SetServerCardUpdateUsageStats) {
   outputs.clear();
 }
 
+TEST_F(AutofillTableTest, UpdateServerCardBillingAddress) {
+  // Add a masked card.
+  CreditCard masked_card(CreditCard::MASKED_SERVER_CARD, "a123");
+  masked_card.SetRawInfo(CREDIT_CARD_NAME_FULL,
+                         ASCIIToUTF16("Paul F. Tompkins"));
+  masked_card.SetRawInfo(CREDIT_CARD_EXP_MONTH, ASCIIToUTF16("1"));
+  masked_card.SetRawInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR, ASCIIToUTF16("2020"));
+  masked_card.SetRawInfo(CREDIT_CARD_NUMBER, ASCIIToUTF16("1111"));
+  masked_card.set_billing_address_id("billing-address-id-1");
+  masked_card.SetTypeForMaskedCard(kVisaCard);
+  test::SetServerCreditCards(table_.get(),
+                             std::vector<CreditCard>(1, masked_card));
+  ScopedVector<CreditCard> outputs;
+  table_->GetServerCreditCards(&outputs.get());
+  ASSERT_EQ(1u, outputs.size());
+
+  EXPECT_EQ("billing-address-id-1", outputs[0]->billing_address_id());
+
+  masked_card.set_billing_address_id("billing-address-id-2");
+  table_->UpdateServerCardBillingAddress(masked_card);
+  outputs.clear();
+  table_->GetServerCreditCards(&outputs.get());
+  ASSERT_EQ(1u, outputs.size());
+
+  EXPECT_EQ("billing-address-id-2", outputs[0]->billing_address_id());
+}
+
 TEST_F(AutofillTableTest, SetServerProfile) {
   AutofillProfile one(AutofillProfile::SERVER_PROFILE, "a123");
   std::vector<AutofillProfile> inputs;

@@ -138,8 +138,12 @@ class PersonalDataManager : public KeyedService,
   virtual void UpdateCreditCard(const CreditCard& credit_card);
 
   // Update a server card. Only the full number and masked/unmasked
-  // status can be changed.
+  // status can be changed. Looks up the card by server ID.
   virtual void UpdateServerCreditCard(const CreditCard& credit_card);
+
+  // Updates the billing address for the server |credit_card|. Looks up the card
+  // by GUID.
+  void UpdateServerCardBillingAddress(const CreditCard& credit_card);
 
   // Resets the card for |guid| to the masked state.
   void ResetFullServerCard(const std::string& guid);

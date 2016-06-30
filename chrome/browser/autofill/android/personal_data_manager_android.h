@@ -104,6 +104,12 @@ class PersonalDataManagerAndroid : public PersonalDataManagerObserver {
       const base::android::JavaParamRef<jobject>& unused_obj,
       const base::android::JavaParamRef<jobject>& jcard);
 
+  // Updates the billing address of a server credit card with GUID |jguid|.
+  void UpdateServerCardBillingAddress(JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& unused_obj,
+      const base::android::JavaParamRef<jstring>& jguid,
+      const base::android::JavaParamRef<jstring>& jbilling_address_id);
+
   // Adds a server credit card. Used only in tests.
   void AddServerCreditCardForTest(
       JNIEnv* env,

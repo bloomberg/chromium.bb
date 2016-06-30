@@ -22,7 +22,7 @@ import org.chromium.chrome.browser.payments.ui.PaymentRequestUI;
 import org.chromium.chrome.browser.payments.ui.SectionInformation;
 import org.chromium.chrome.browser.payments.ui.ShoppingCart;
 import org.chromium.chrome.browser.preferences.PreferencesLauncher;
-import org.chromium.chrome.browser.preferences.autofill.AutofillCreditCardEditor;
+import org.chromium.chrome.browser.preferences.autofill.AutofillLocalCardEditor;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.util.UrlUtilities;
 import org.chromium.components.safejson.JsonSanitizer;
@@ -635,7 +635,7 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
             editContact(null);
         } else if (optionType == PaymentRequestUI.TYPE_PAYMENT_METHODS) {
             PreferencesLauncher.launchSettingsPage(
-                    mContext, AutofillCreditCardEditor.class.getName());
+                    mContext, AutofillLocalCardEditor.class.getName());
         }
 
         return false;

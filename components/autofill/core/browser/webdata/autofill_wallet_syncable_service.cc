@@ -117,6 +117,25 @@ AutofillProfile ProfileFromSpecifics(
   return profile;
 }
 
+// Searches for CreditCards with identical server IDs and copies the billing
+// address ID from the existing cards on disk into the new cards from server.
+// The credit card's IDs do not change over time.
+void CopyBillingAddressesFromDisk(AutofillTable* table,
+                                  std::vector<CreditCard>* cards_from_server) {
+  ScopedVector<CreditCard> cards_on_disk;
+  table->GetServerCreditCards(&cards_on_disk.get());
+
+  // The reasons behind brute-force search are explained in SetDataIfChanged.
+  for (const CreditCard* saved_card : cards_on_disk) {
+    for (CreditCard& server_card : *cards_from_server) {
+      if (saved_card->server_id() == server_card.server_id()) {
+        server_card.set_billing_address_id(saved_card->billing_address_id());
+        break;
+      }
+    }
+  }
+}
+
 // This function handles conditionally updating the AutofillTable with either
 // a set of CreditCards or AutocompleteProfiles only when the existing data
 // doesn't match.
@@ -268,12 +287,18 @@ syncer::SyncMergeResult AutofillWalletSyncableService::SetSyncData(
     }
   }
 
+  // Users can set billing address of the server credit card locally, but that
+  // information does not propagate to either Chrome Sync or Google Payments
+  // server. To preserve user's preferred billing address, copy the billing
+  // addresses from disk into |wallet_cards|.
+  AutofillTable* table =
+      AutofillTable::FromWebDatabase(webdata_backend_->GetDatabase());
+  CopyBillingAddressesFromDisk(table, &wallet_cards);
+
   // In the common case, the database won't have changed. Committing an update
   // to the database will require at least one DB page write and will schedule
   // a fsync. To avoid this I/O, it should be more efficient to do a read and
   // only do the writes if something changed.
-  AutofillTable* table =
-      AutofillTable::FromWebDatabase(webdata_backend_->GetDatabase());
   size_t prev_card_count = 0;
   size_t prev_address_count = 0;
   bool changed_cards = SetDataIfChanged(
