@@ -572,7 +572,7 @@ void PanelLayoutManager::RestorePanel(WmWindow* panel) {
 }
 
 void PanelLayoutManager::Relayout() {
-  if (!shelf_)
+  if (!shelf_ || !shelf_->GetWindow())
     return;
 
   // Suppress layouts during overview mode because changing window bounds
