@@ -152,7 +152,6 @@ class ComponentLoader {
   void AddHotwordHelperExtension();
   void AddImageLoaderExtension();
   void AddNetworkSpeechSynthesisExtension();
-  void AddGoogleNowExtension();
 
   void AddWithNameAndDescription(int manifest_resource_id,
                                  const base::FilePath& root_directory,
@@ -165,12 +164,6 @@ class ComponentLoader {
 
   scoped_refptr<const Extension> CreateExtension(
       const ComponentExtensionInfo& info, std::string* utf8_error);
-
-  // Deletes the extension storage for an extension that has not yet been
-  // loaded. If the extension has been loaded, use ComponentLoader::Remove
-  // instead.
-  void DeleteData(int manifest_resource_id,
-                  const base::FilePath& root_directory);
 
   // Unloads |component| from the memory.
   void UnloadComponent(ComponentExtensionInfo* component);

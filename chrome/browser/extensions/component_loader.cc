@@ -9,7 +9,6 @@
 #include "base/command_line.h"
 #include "base/files/file_util.h"
 #include "base/json/json_string_value_serializer.h"
-#include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/path_service.h"
 #include "base/time/time.h"
@@ -22,7 +21,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/hotword_service.h"
 #include "chrome/browser/search/hotword_service_factory.h"
-#include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
@@ -31,8 +29,6 @@
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/crx_file/id_util.h"
-#include "components/signin/core/browser/signin_manager.h"
-#include "components/signin/core/browser/signin_manager_base.h"
 #include "components/version_info/version_info.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/plugin_service.h"
@@ -66,10 +62,6 @@
 #include "content/public/browser/storage_partition.h"
 #include "extensions/browser/extensions_browser_client.h"
 #include "storage/browser/fileapi/file_system_context.h"
-#endif
-
-#if defined(ENABLE_APP_LIST) && defined(OS_CHROMEOS)
-#include "chrome/browser/ui/app_list/google_now_extension.h"
 #endif
 
 using content::BrowserThread;
@@ -380,46 +372,6 @@ void ComponentLoader::AddNetworkSpeechSynthesisExtension() {
       base::FilePath(FILE_PATH_LITERAL("network_speech_synthesis")));
 }
 
-void ComponentLoader::AddGoogleNowExtension() {
-#if BUILDFLAG(ENABLE_GOOGLE_NOW)
-  const char kEnablePrefix[] = "Enable";
-  const char kFieldTrialName[] = "GoogleNow";
-  std::string enable_prefix(kEnablePrefix);
-  std::string field_trial_result =
-      base::FieldTrialList::FindFullName(kFieldTrialName);
-
-  bool enabled_via_field_trial =
-      field_trial_result.compare(0, enable_prefix.length(), enable_prefix) == 0;
-
-  // Enable the feature on trybots and trunk builds.
-  bool enabled_via_trunk_build =
-      chrome::GetChannel() == version_info::Channel::UNKNOWN;
-
-  bool is_authenticated =
-      SigninManagerFactory::GetForProfile(profile_)->IsAuthenticated();
-
-  bool enabled =
-      (enabled_via_field_trial && is_authenticated) || enabled_via_trunk_build;
-
-#if defined(ENABLE_APP_LIST) && defined(OS_CHROMEOS)
-  // Don't load if newer trial is running (== new extension id is available).
-  std::string ignored_extension_id;
-  if (GetGoogleNowExtensionId(&ignored_extension_id)) {
-    enabled = false;
-  }
-#endif  // defined(ENABLE_APP_LIST) && defined(OS_CHROMEOS)
-
-  const int google_now_manifest_id = IDR_GOOGLE_NOW_MANIFEST;
-  const base::FilePath root_directory =
-      base::FilePath(FILE_PATH_LITERAL("google_now"));
-  if (enabled) {
-    Add(google_now_manifest_id, root_directory);
-  } else {
-    DeleteData(google_now_manifest_id, root_directory);
-  }
-#endif  // BUILDFLAG(ENABLE_GOOGLE_NOW)
-}
-
 #if defined(OS_CHROMEOS)
 void ComponentLoader::AddChromeVoxExtension(
     const base::Closure& done_cb) {
@@ -630,7 +582,6 @@ void ComponentLoader::AddDefaultComponentExtensionsWithBackgroundPages(
     AddHotwordAudioVerificationApp();
     AddHotwordHelperExtension();
     AddImageLoaderExtension();
-    AddGoogleNowExtension();
 
     bool install_feedback = enable_background_extensions_during_testing;
 #if defined(GOOGLE_CHROME_BUILD)
@@ -709,27 +660,6 @@ void ComponentLoader::
   }
 
   AddHangoutServicesExtension();
-}
-
-void ComponentLoader::DeleteData(int manifest_resource_id,
-                                 const base::FilePath& root_directory) {
-  std::string manifest_contents =
-      ResourceBundle::GetSharedInstance().GetRawDataResource(
-          manifest_resource_id).as_string();
-  base::DictionaryValue* manifest = ParseManifest(manifest_contents);
-  if (!manifest)
-    return;
-
-  ComponentExtensionInfo info(manifest, root_directory);
-  std::string error;
-  scoped_refptr<const Extension> extension(CreateExtension(info, &error));
-  if (!extension.get()) {
-    LOG(ERROR) << error;
-    return;
-  }
-
-  DataDeleter::StartDeleting(
-      profile_, extension.get(), base::Bind(base::DoNothing));
 }
 
 void ComponentLoader::UnloadComponent(ComponentExtensionInfo* component) {
