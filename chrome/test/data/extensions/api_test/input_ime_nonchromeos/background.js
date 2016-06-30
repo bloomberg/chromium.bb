@@ -113,21 +113,4 @@ chrome.test.runTests([
     });
     chrome.test.succeed();
   },
-  // Tests input.ime.onKeyEvent API.
-  function testOnKeyEvent() {
-    chrome.input.ime.onKeyEvent.addListener(
-      function(engine, keyData){
-        chrome.test.sendMessage('onKeyEvent:'
-          + (keyData.extensionId || '') + ':'
-          + keyData.type + ':'
-          + keyData.key + ':'
-          + keyData.code + ':'
-          + keyData.ctrlKey + ':'
-          + keyData.altKey + ':'
-          + keyData.shiftKey + ':'
-          + keyData.capsLock);
-      return false;
-    });
-    chrome.test.succeed();
-  }
 ]);
