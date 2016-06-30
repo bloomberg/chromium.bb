@@ -89,7 +89,7 @@ IN_PROC_BROWSER_TEST_F(ClearBrowserDataBrowserTest,
                               "browser.clear_data.passwords",
                               "browser.clear_data.form_data",
                               "browser.clear_data.hosted_apps_data",
-                              "browser.clear_data.content_licenses"};
+                              "browser.clear_data.media_licenses"};
 
   PrefService* prefs = browser()->profile()->GetPrefs();
   for (size_t i = 0; i < arraysize(kDataTypes); ++i) {

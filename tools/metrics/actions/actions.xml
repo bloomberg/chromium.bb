@@ -2333,7 +2333,11 @@ should be able to be added at any place in this file.
 
 <action name="ClearBrowsingData_ContentLicenses">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
+  <description>
+    Content licenses for Flash were deauthorized as the user selected
+    &quot;Media Licenses&quot; when clearing browsing data and Flash was
+    enabled.
+  </description>
 </action>
 
 <action name="ClearBrowsingData_Cookies">

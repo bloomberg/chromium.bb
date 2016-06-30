@@ -76,12 +76,15 @@
           <span i18n-content="deleteHostedAppsDataCheckbox"></span>
         </label>
       </div>
-      <div id="deauthorize-content-licenses-container"
-          class="checkbox pepper-flash-settings">
+      <div id="delete-media-licenses-container" class="checkbox">
         <label>
-          <input id="deauthorize-content-licenses-checkbox"
-              pref="browser.clear_data.content_licenses" type="checkbox">
-          <span i18n-content="deauthorizeContentLicensesCheckbox"></span>
+          <input id="delete-media-licenses-checkbox"
+              pref="browser.clear_data.media_licenses" type="checkbox"
+              aria-controls="delete-media-licenses-counter">
+          <span i18n-content="deleteMediaLicensesCheckbox"></span>
+          <span class="clear-browser-data-counter" role="note"
+              aria-live="polite" id="delete-media-licenses-counter"></span>
+        </label>
         </label>
       </div>
     </div>

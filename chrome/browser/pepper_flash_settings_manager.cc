@@ -682,8 +682,8 @@ void PepperFlashSettingsManager::Core::
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   if (manager_.get()) {
-    manager_->client_->OnDeauthorizeContentLicensesCompleted(
-        request_id, success);
+    manager_->client_->OnDeauthorizeFlashContentLicensesCompleted(request_id,
+                                                                  success);
   }
 }
 
@@ -760,7 +760,7 @@ void PepperFlashSettingsManager::Core::NotifyError(
         NOTREACHED();
         break;
       case DEAUTHORIZE_CONTENT_LICENSES:
-        manager_->client_->OnDeauthorizeContentLicensesCompleted(
+        manager_->client_->OnDeauthorizeFlashContentLicensesCompleted(
             iter->first, false);
         break;
       case GET_PERMISSION_SETTINGS:
@@ -970,8 +970,6 @@ bool PepperFlashSettingsManager::IsPepperFlashInUse(
 // static
 void PepperFlashSettingsManager::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
-  registry->RegisterBooleanPref(prefs::kDeauthorizeContentLicenses, false);
-
   registry->RegisterBooleanPref(prefs::kPepperFlashSettingsEnabled, true);
 }
 

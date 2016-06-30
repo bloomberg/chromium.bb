@@ -7777,8 +7777,8 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_DEL_HOSTED_APPS_DATA_CHKBOX" desc="Checkbox for deleting data of hosted apps">
         Hosted app data
       </message>
-      <message name="IDS_DEAUTHORIZE_CONTENT_LICENSES_CHKBOX" desc="Checkbox for deauthorizing content licenses (DRM videos, etc.)">
-        Content licenses
+      <message name="IDS_DEL_MEDIA_LICENSES_CHKBOX" desc="Checkbox for deleting media licenses (premium content, etc.)">
+        Media licenses
       </message>
       <message name="IDS_CLEAR_BROWSING_DATA_COMMIT" desc="Title for OK button on dialog">
         Clear browsing data
@@ -7898,9 +7898,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_DEL_COOKIES_COUNTER" desc="A static message shown in the Clear Browsing Data dialog explaining to the user that deleting cookies and site data will result in the user being signed out of most websites.">
         This will sign you out of most websites.
       </message>
-      <message name="IDS_DEL_CONTENT_LICENSES_COUNTER" desc="A static message shown in the Clear Browsing Data dialog explaining to the user that the 'Content licenses' option will deauthorize their Flash Player licenses for protected content.">
-        This will deauthorize Flash Player licenses for protected content.
-      </message>
       <message name="IDS_DEL_DOWNLOADS_COUNTER" desc="A counter showing how many items of downloads history the user has.">
         {COUNT, plural,
          =0 {none}
@@ -7918,6 +7915,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
         {COUNT, plural,
          =1 {and 1 more}
          other {and # more}}
+      </message>
+      <message name="IDS_DEL_MEDIA_LICENSES_COUNTER_GENERAL_COMMENT" desc="A static message shown in the Clear Browsing Data dialog explaining to the user that clearing media licenses will result in the user being unable to play some premium content">
+        You may lose access to premium content from some sites.
+      </message>
+      <message name="IDS_DEL_MEDIA_LICENSES_COUNTER_SITE_COMMENT" desc="A message shown in the Clear Browsing Data dialog explaining to the user that clearing media licenses will result in the user being unable to play some premium content from at least one specific web site">
+        You may lose access to premium content from <ph name="SITE">$1<ex>youtube.com</ex></ph> and some other sites.
       </message>
 
       <!-- Supervised User (Legacy and Accounts for Kids) Avatar Menu -->

@@ -18,6 +18,7 @@
 #include "chrome/browser/browsing_data/downloads_counter.h"
 #include "chrome/browser/browsing_data/history_counter.h"
 #include "chrome/browser/browsing_data/hosted_apps_counter.h"
+#include "chrome/browser/browsing_data/media_licenses_counter.h"
 #include "chrome/browser/browsing_data/passwords_counter.h"
 #include "chrome/browser/history/web_history_service_factory.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
@@ -108,11 +109,8 @@ void ClearBrowsingDataHandler::HandleClearBrowsingData(
   if (prefs->GetBoolean(prefs::kDeleteFormData))
     remove_mask |= BrowsingDataRemover::REMOVE_FORM_DATA;
 
-  // Clearing Content Licenses is only supported in Pepper Flash.
-  if (prefs->GetBoolean(prefs::kDeauthorizeContentLicenses) &&
-      prefs->GetBoolean(prefs::kPepperFlashSettingsEnabled)) {
-    remove_mask |= BrowsingDataRemover::REMOVE_CONTENT_LICENSES;
-  }
+  if (prefs->GetBoolean(prefs::kDeleteMediaLicenses))
+    remove_mask |= BrowsingDataRemover::REMOVE_MEDIA_LICENSES;
 
   if (prefs->GetBoolean(prefs::kDeleteHostedAppsData)) {
     remove_mask |= site_data_mask;
@@ -143,7 +141,7 @@ void ClearBrowsingDataHandler::HandleClearBrowsingData(
         prefs::kDeleteCookies,
         prefs::kDeleteFormData,
         prefs::kDeleteHostedAppsData,
-        prefs::kDeauthorizeContentLicenses,
+        prefs::kDeleteMediaLicenses,
     };
     static size_t num_other_types = arraysize(other_types);
     int checked_other_types = std::count_if(
@@ -191,6 +189,7 @@ void ClearBrowsingDataHandler::HandleInitialize(const base::ListValue* args) {
   AddCounter(base::WrapUnique(new HistoryCounter()));
   AddCounter(base::WrapUnique(new HostedAppsCounter()));
   AddCounter(base::WrapUnique(new PasswordsCounter()));
+  AddCounter(base::WrapUnique(new MediaLicensesCounter()));
 
   OnStateChanged();
   RefreshHistoryNotice();

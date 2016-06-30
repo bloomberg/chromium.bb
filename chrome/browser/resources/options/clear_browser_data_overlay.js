@@ -60,7 +60,7 @@ cr.define('options', function() {
                    'browser.clear_data.passwords',
                    'browser.clear_data.form_data',
                    'browser.clear_data.hosted_apps_data',
-                   'browser.clear_data.content_licenses'];
+                   'browser.clear_data.media_licenses'];
       types.forEach(function(type) {
           Preferences.getInstance().addEventListener(type, f);
       });
@@ -258,7 +258,7 @@ cr.define('options', function() {
       $('delete-passwords-checkbox').disabled = clearing;
       $('delete-form-data-checkbox').disabled = clearing;
       $('delete-hosted-apps-data-checkbox').disabled = clearing;
-      $('deauthorize-content-licenses-checkbox').disabled = clearing;
+      $('delete-media-licenses-checkbox').disabled = clearing;
       $('clear-browser-data-time-period').disabled = clearing;
       $('cbd-throbber').style.visibility = clearing ? 'visible' : 'hidden';
       $('clear-browser-data-dismiss').disabled = clearing;

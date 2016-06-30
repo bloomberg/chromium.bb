@@ -29,6 +29,7 @@
 #include "chrome/browser/browsing_data/browsing_data_remover_factory.h"
 #include "chrome/browser/browsing_data/cache_counter.h"
 #include "chrome/browser/browsing_data/history_counter.h"
+#include "chrome/browser/browsing_data/media_licenses_counter.h"
 #include "chrome/browser/browsing_data/passwords_counter.h"
 #include "chrome/browser/history/web_history_service_factory.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
@@ -83,8 +84,6 @@ ClearBrowserDataHandler::~ClearBrowserDataHandler() {
 void ClearBrowserDataHandler::InitializeHandler() {
   PrefService* prefs = Profile::FromWebUI(web_ui())->GetPrefs();
   clear_plugin_lso_data_enabled_.Init(prefs::kClearPluginLSODataEnabled, prefs);
-  pepper_flash_settings_enabled_.Init(prefs::kPepperFlashSettingsEnabled,
-                                      prefs);
   allow_deleting_browser_history_.Init(
       prefs::kAllowDeletingBrowserHistory,
       prefs,
@@ -96,6 +95,7 @@ void ClearBrowserDataHandler::InitializeHandler() {
     AddCounter(base::WrapUnique(new HistoryCounter()));
     AddCounter(base::WrapUnique(new CacheCounter()));
     AddCounter(base::WrapUnique(new AutofillCounter()));
+    AddCounter(base::WrapUnique(new MediaLicensesCounter()));
 
     sync_service_ =
         ProfileSyncServiceFactory::GetForProfile(Profile::FromWebUI(web_ui()));
@@ -157,27 +157,26 @@ void ClearBrowserDataHandler::GetLocalizedValues(
   DCHECK(localized_strings);
 
   static OptionsStringResource resources[] = {
-    { "clearBrowserDataLabel", IDS_CLEAR_BROWSING_DATA_LABEL },
-    { "clearBrowserDataSyncWarning", IDS_CLEAR_BROWSING_DATA_SYNCED_DELETION },
-    { "clearBrowserDataSupportString", AreCountersEnabled()
-        ? IDS_CLEAR_BROWSING_DATA_SOME_STUFF_REMAINS_SIMPLE
-        : IDS_CLEAR_BROWSING_DATA_SOME_STUFF_REMAINS },
-    { "clearBrowserDataHistoryNoticeTitle",
-        IDS_CLEAR_BROWSING_DATA_HISTORY_NOTICE_TITLE },
-    { "clearBrowserDataHistoryNoticeOk",
-        IDS_CLEAR_BROWSING_DATA_HISTORY_NOTICE_OK },
-    { "deleteBrowsingHistoryCheckbox", IDS_DEL_BROWSING_HISTORY_CHKBOX },
-    { "deleteDownloadHistoryCheckbox", IDS_DEL_DOWNLOAD_HISTORY_CHKBOX },
-    { "deleteCacheCheckbox", IDS_DEL_CACHE_CHKBOX },
-    { "deleteCookiesCheckbox", IDS_DEL_COOKIES_CHKBOX },
-    { "deleteCookiesFlashCheckbox", IDS_DEL_COOKIES_FLASH_CHKBOX },
-    { "deletePasswordsCheckbox", IDS_DEL_PASSWORDS_CHKBOX },
-    { "deleteFormDataCheckbox", IDS_DEL_FORM_DATA_CHKBOX },
-    { "deleteHostedAppsDataCheckbox", IDS_DEL_HOSTED_APPS_DATA_CHKBOX },
-    { "deauthorizeContentLicensesCheckbox",
-        IDS_DEAUTHORIZE_CONTENT_LICENSES_CHKBOX },
-    { "clearBrowserDataCommit", IDS_CLEAR_BROWSING_DATA_COMMIT },
-    { "flashStorageUrl", IDS_FLASH_STORAGE_URL },
+      {"clearBrowserDataLabel", IDS_CLEAR_BROWSING_DATA_LABEL},
+      {"clearBrowserDataSyncWarning", IDS_CLEAR_BROWSING_DATA_SYNCED_DELETION},
+      {"clearBrowserDataSupportString",
+       AreCountersEnabled() ? IDS_CLEAR_BROWSING_DATA_SOME_STUFF_REMAINS_SIMPLE
+                            : IDS_CLEAR_BROWSING_DATA_SOME_STUFF_REMAINS},
+      {"clearBrowserDataHistoryNoticeTitle",
+       IDS_CLEAR_BROWSING_DATA_HISTORY_NOTICE_TITLE},
+      {"clearBrowserDataHistoryNoticeOk",
+       IDS_CLEAR_BROWSING_DATA_HISTORY_NOTICE_OK},
+      {"deleteBrowsingHistoryCheckbox", IDS_DEL_BROWSING_HISTORY_CHKBOX},
+      {"deleteDownloadHistoryCheckbox", IDS_DEL_DOWNLOAD_HISTORY_CHKBOX},
+      {"deleteCacheCheckbox", IDS_DEL_CACHE_CHKBOX},
+      {"deleteCookiesCheckbox", IDS_DEL_COOKIES_CHKBOX},
+      {"deleteCookiesFlashCheckbox", IDS_DEL_COOKIES_FLASH_CHKBOX},
+      {"deletePasswordsCheckbox", IDS_DEL_PASSWORDS_CHKBOX},
+      {"deleteFormDataCheckbox", IDS_DEL_FORM_DATA_CHKBOX},
+      {"deleteHostedAppsDataCheckbox", IDS_DEL_HOSTED_APPS_DATA_CHKBOX},
+      {"deleteMediaLicensesCheckbox", IDS_DEL_MEDIA_LICENSES_CHKBOX},
+      {"clearBrowserDataCommit", IDS_CLEAR_BROWSING_DATA_COMMIT},
+      {"flashStorageUrl", IDS_FLASH_STORAGE_URL},
   };
 
   RegisterStrings(localized_strings, resources, arraysize(resources));
@@ -269,11 +268,8 @@ void ClearBrowserDataHandler::HandleClearBrowserData(
     remove_mask |= BrowsingDataRemover::REMOVE_PASSWORDS;
   if (prefs->GetBoolean(prefs::kDeleteFormData))
     remove_mask |= BrowsingDataRemover::REMOVE_FORM_DATA;
-  // Clearing Content Licenses is only supported in Pepper Flash.
-  if (prefs->GetBoolean(prefs::kDeauthorizeContentLicenses) &&
-      *pepper_flash_settings_enabled_) {
-    remove_mask |= BrowsingDataRemover::REMOVE_CONTENT_LICENSES;
-  }
+  if (prefs->GetBoolean(prefs::kDeleteMediaLicenses))
+    remove_mask |= BrowsingDataRemover::REMOVE_MEDIA_LICENSES;
   if (prefs->GetBoolean(prefs::kDeleteHostedAppsData)) {
     remove_mask |= site_data_mask;
     origin_mask |= BrowsingDataHelper::PROTECTED_WEB;
@@ -302,7 +298,7 @@ void ClearBrowserDataHandler::HandleClearBrowserData(
         prefs::kDeleteCookies,
         prefs::kDeleteFormData,
         prefs::kDeleteHostedAppsData,
-        prefs::kDeauthorizeContentLicenses,
+        prefs::kDeleteMediaLicenses,
     };
     static size_t num_other_types = arraysize(other_types);
     int checked_other_types = std::count_if(

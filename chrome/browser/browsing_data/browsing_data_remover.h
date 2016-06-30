@@ -104,7 +104,7 @@ class BrowsingDataRemover : public KeyedService
     REMOVE_PASSWORDS = 1 << 10,
     REMOVE_WEBSQL = 1 << 11,
     REMOVE_CHANNEL_IDS = 1 << 12,
-    REMOVE_CONTENT_LICENSES = 1 << 13,
+    REMOVE_MEDIA_LICENSES = 1 << 13,
     REMOVE_SERVICE_WORKERS = 1 << 14,
     REMOVE_SITE_USAGE_DATA = 1 << 15,
     // REMOVE_NOCHECKS intentionally does not check if the Profile's prohibited
@@ -144,7 +144,7 @@ class BrowsingDataRemover : public KeyedService
                  REMOVE_FORM_DATA |
                  REMOVE_HISTORY |
                  REMOVE_PASSWORDS |
-                 REMOVE_CONTENT_LICENSES,
+                 REMOVE_MEDIA_LICENSES,
 
     // Includes all available remove options. Meant to be used when the Profile
     // is scheduled to be deleted, and all possible data should be wiped from
@@ -325,8 +325,8 @@ class BrowsingDataRemover : public KeyedService
   void OnWaitableEventSignaled(base::WaitableEvent* waitable_event);
 
   // PepperFlashSettingsManager::Client implementation.
-  void OnDeauthorizeContentLicensesCompleted(uint32_t request_id,
-                                             bool success) override;
+  void OnDeauthorizeFlashContentLicensesCompleted(uint32_t request_id,
+                                                  bool success) override;
 #endif
 
 #if defined (OS_CHROMEOS)
@@ -461,13 +461,13 @@ class BrowsingDataRemover : public KeyedService
   std::unique_ptr<PepperFlashSettingsManager> pepper_flash_settings_manager_;
 #endif
 
-  uint32_t deauthorize_content_licenses_request_id_ = 0;
+  uint32_t deauthorize_flash_content_licenses_request_id_ = 0;
   // True if we're waiting for various data to be deleted.
   // These may only be accessed from UI thread in order to avoid races!
   bool waiting_for_clear_autofill_origin_urls_ = false;
   bool waiting_for_clear_cache_ = false;
   bool waiting_for_clear_channel_ids_ = false;
-  bool waiting_for_clear_content_licenses_ = false;
+  bool waiting_for_clear_flash_content_licenses_ = false;
   // Non-zero if waiting for cookies to be cleared.
   int waiting_for_clear_cookies_count_ = 0;
   bool waiting_for_clear_domain_reliability_monitor_ = false;

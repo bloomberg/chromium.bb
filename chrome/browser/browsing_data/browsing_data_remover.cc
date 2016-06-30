@@ -906,6 +906,14 @@ void BrowsingDataRemover::RemoveImpl(
         content::StoragePartition::REMOVE_DATA_MASK_WEBRTC_IDENTITY;
   }
 
+  // Content Decryption Modules used by Encrypted Media store licenses in a
+  // private filesystem. These are different than content licenses used by
+  // Flash (which are deleted father down in this method).
+  if (remove_mask & REMOVE_MEDIA_LICENSES) {
+    storage_partition_remove_mask |=
+        content::StoragePartition::REMOVE_DATA_MASK_PLUGIN_PRIVATE_DATA;
+  }
+
   if (storage_partition_remove_mask) {
     waiting_for_clear_storage_partition_data_ = true;
 
@@ -944,17 +952,19 @@ void BrowsingDataRemover::RemoveImpl(
                    weak_ptr_factory_.GetWeakPtr()));
   }
 
-#if defined(ENABLE_PLUGINS)
-  if (remove_mask & REMOVE_CONTENT_LICENSES) {
+  if (remove_mask & REMOVE_MEDIA_LICENSES) {
+    // TODO(jrummell): This UMA should be renamed to indicate it is for Media
+    // Licenses.
     content::RecordAction(
         UserMetricsAction("ClearBrowsingData_ContentLicenses"));
 
-    waiting_for_clear_content_licenses_ = true;
+#if defined(ENABLE_PLUGINS)
+    waiting_for_clear_flash_content_licenses_ = true;
     if (!pepper_flash_settings_manager_.get()) {
       pepper_flash_settings_manager_.reset(
           new PepperFlashSettingsManager(this, profile_));
     }
-    deauthorize_content_licenses_request_id_ =
+    deauthorize_flash_content_licenses_request_id_ =
         pepper_flash_settings_manager_->DeauthorizeContentLicenses(prefs);
 #if defined(OS_CHROMEOS)
     // On Chrome OS, also delete any content protection platform keys.
@@ -973,9 +983,9 @@ void BrowsingDataRemover::RemoveImpl(
                          weak_ptr_factory_.GetWeakPtr()));
       waiting_for_clear_platform_keys_ = true;
     }
-#endif
+#endif  // defined(OS_CHROMEOS)
+#endif  // defined(ENABLE_PLUGINS)
   }
-#endif
 
   // Remove omnibox zero-suggest cache results.
   if ((remove_mask & (REMOVE_CACHE | REMOVE_COOKIES)))
@@ -1104,7 +1114,8 @@ base::Time BrowsingDataRemover::CalculateBeginDeleteTime(
 
 bool BrowsingDataRemover::AllDone() {
   return !waiting_for_clear_autofill_origin_urls_ &&
-         !waiting_for_clear_cache_ && !waiting_for_clear_content_licenses_ &&
+         !waiting_for_clear_cache_ &&
+         !waiting_for_clear_flash_content_licenses_ &&
          !waiting_for_clear_channel_ids_ && !waiting_for_clear_cookies_count_ &&
          !waiting_for_clear_domain_reliability_monitor_ &&
          !waiting_for_clear_form_ && !waiting_for_clear_history_ &&
@@ -1223,13 +1234,13 @@ void BrowsingDataRemover::OnWaitableEventSignaled(
   NotifyIfDone();
 }
 
-void BrowsingDataRemover::OnDeauthorizeContentLicensesCompleted(
+void BrowsingDataRemover::OnDeauthorizeFlashContentLicensesCompleted(
     uint32_t request_id,
     bool /* success */) {
-  DCHECK(waiting_for_clear_content_licenses_);
-  DCHECK_EQ(request_id, deauthorize_content_licenses_request_id_);
+  DCHECK(waiting_for_clear_flash_content_licenses_);
+  DCHECK_EQ(request_id, deauthorize_flash_content_licenses_request_id_);
 
-  waiting_for_clear_content_licenses_ = false;
+  waiting_for_clear_flash_content_licenses_ = false;
   NotifyIfDone();
 }
 #endif

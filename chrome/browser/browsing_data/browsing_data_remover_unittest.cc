@@ -2257,7 +2257,7 @@ TEST_F(BrowsingDataRemoverTest, ContentProtectionPlatformKeysRemoval) {
 
   BlockUntilBrowsingDataRemoved(
       BrowsingDataRemover::EVERYTHING,
-      BrowsingDataRemover::REMOVE_CONTENT_LICENSES, false);
+      BrowsingDataRemover::REMOVE_MEDIA_LICENSES, false);
 
   chromeos::DBusThreadManager::Shutdown();
 }

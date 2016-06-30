@@ -5,9 +5,11 @@
 #include "chrome/browser/browsing_data/browsing_data_counter_utils.h"
 
 #include "base/command_line.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browsing_data/autofill_counter.h"
 #include "chrome/browser/browsing_data/cache_counter.h"
 #include "chrome/browser/browsing_data/history_counter.h"
+#include "chrome/browser/browsing_data/media_licenses_counter.h"
 #include "chrome/browser/browsing_data/passwords_counter.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
@@ -170,6 +172,18 @@ base::string16 GetCounterTextFromResult(
         NOTREACHED();
     }
 
+  } else if (pref_name == prefs::kDeleteMediaLicenses) {
+    const MediaLicensesCounter::MediaLicenseResult* media_license_result =
+        static_cast<const MediaLicensesCounter::MediaLicenseResult*>(result);
+    if (media_license_result->Value() > 0) {
+      text = l10n_util::GetStringFUTF16(
+          IDS_DEL_MEDIA_LICENSES_COUNTER_SITE_COMMENT,
+          base::UTF8ToUTF16(media_license_result->GetOneOrigin()));
+    } else {
+      text = l10n_util::GetStringUTF16(
+          IDS_DEL_MEDIA_LICENSES_COUNTER_GENERAL_COMMENT);
+    }
+
 #if defined(ENABLE_EXTENSIONS)
   } else if (pref_name == prefs::kDeleteHostedAppsData) {
     // Hosted apps counter.
@@ -205,7 +219,6 @@ base::string16 GetCounterTextFromResult(
         replacements,
         nullptr);
 #endif
-
   }
 
   return text;

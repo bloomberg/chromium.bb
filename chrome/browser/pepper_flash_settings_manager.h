@@ -33,8 +33,8 @@ class PepperFlashSettingsManager {
    public:
     virtual ~Client() {}
 
-    virtual void OnDeauthorizeContentLicensesCompleted(uint32_t request_id,
-                                                       bool success) {}
+    virtual void OnDeauthorizeFlashContentLicensesCompleted(uint32_t request_id,
+                                                            bool success) {}
     virtual void OnGetPermissionSettingsCompleted(
         uint32_t request_id,
         bool success,
@@ -68,10 +68,10 @@ class PepperFlashSettingsManager {
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
   // Requests to deauthorize content licenses.
-  // Client::OnDeauthorizeContentLicensesCompleted() will be called when the
-  // operation is completed.
+  // Client::OnDeauthorizeFlashContentLicensesCompleted() will be called when
+  // the operation is completed.
   // The return value is the same as the request ID passed into
-  // Client::OnDeauthorizeContentLicensesCompleted().
+  // Client::OnDeauthorizeFlashContentLicensesCompleted().
   uint32_t DeauthorizeContentLicenses(PrefService* prefs);
 
   // Gets permission settings.

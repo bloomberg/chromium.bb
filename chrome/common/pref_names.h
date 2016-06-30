@@ -308,7 +308,7 @@ extern const char kDeleteCookies[];
 extern const char kDeletePasswords[];
 extern const char kDeleteFormData[];
 extern const char kDeleteHostedAppsData[];
-extern const char kDeauthorizeContentLicenses[];
+extern const char kDeleteMediaLicenses[];
 extern const char kEnableContinuousSpellcheck[];
 extern const char kSpeechRecognitionFilterProfanities[];
 extern const char kSavingBrowserHistoryDisabled[];

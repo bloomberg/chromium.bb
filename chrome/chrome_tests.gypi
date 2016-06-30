@@ -87,6 +87,7 @@
       'browser/browsing_data/conditional_cache_deletion_helper_browsertest.cc',
       'browser/browsing_data/downloads_counter_browsertest.cc',
       'browser/browsing_data/history_counter_browsertest.cc',
+      'browser/browsing_data/media_licenses_counter_browsertest.cc',
       'browser/browsing_data/passwords_counter_browsertest.cc',
       'browser/chrome_browser_main_mac_browsertest.mm',
       'browser/chrome_content_browser_client_browsertest.cc',
