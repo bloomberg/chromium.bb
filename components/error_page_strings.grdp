@@ -380,36 +380,6 @@
 
   <!-- iOS specific error page messages -->
   <if expr="is_ios">
-    <message name="IDS_ERRORPAGES_HEADING_DOWNLOAD_FILE_TYPE_ERROR" desc="A one-line title for error message to tell user that the requested type of file cannot be downloaded. [Length: 20em]">
-      Download Failed
-    </message>
-    <message name="IDS_ERRORPAGES_SUMMARY_DOWNLOAD_FILE_TYPE_ERROR" desc="A short error message to tell user that the requested type of file cannot be downloaded. [Length: 40em]">
-      Chrome cannot download this file.
-    </message>
-    <message name="IDS_ERRORPAGES_DETAILS_DOWNLOAD_FILE_TYPE_ERROR" desc="A short message to tell user that the file type is unknown. [Length: 20em]">
-      Unknown File Type.
-    </message>
-    <message name="IDS_ERRORPAGES_HEADING_UNSUPPORTED_SCHEME_ERROR" desc="Header error message to tell user that the requested URI Scheme is not supported [Length: 20em]">
-      Chrome cannot open this URL
-    </message>
-    <message name="IDS_ERRORPAGES_SUMMARY_UNSUPPORTED_SCHEME_ERROR" desc="Summary error message to tell user that the requested URI Scheme is not supported [Length: 40em]">
-      The requested URI Scheme is not supported.
-    </message>
-    <message name="IDS_ERRORPAGES_DETAILS_UNSUPPORTED_SCHEME_ERROR" desc="Details error message to tell user that the requested URI Scheme is not supported [Length: 20em]">
-      Unsupported URL.
-    </message>
-    <message name="IDS_ERRORPAGES_TITLE_UNSAFE_PORT" desc="Title of error message to tell user that the requested port is blocked as unsafe. [Length: 20em]">
-      Unsafe Port <ph name="SITE">$1<ex>google.xom</ex></ph>
-    </message>
-    <message name="IDS_ERRORPAGES_HEADING_UNSAFE_PORT" desc="Header error message to tell user that the requested port is blocked as unsafe. [Length: 20em]">
-      Unsafe Port Blocked
-    </message>
-    <message name="IDS_ERRORPAGES_SUMMARY_UNSAFE_PORT" desc="Summary error message to tell user that the requested port is blocked as unsafe. [Length: 40em]">
-      The requested port is unsafe and has been blocked.
-    </message>
-    <message name="IDS_ERRORPAGES_DETAILS_UNSAFE_PORT" desc="Details error message to tell user that the requested port is blocked as unsafe [Length: 20em]">
-      Unsafe port blocked.
-    </message>
     <message name="IDS_ERRORPAGES_SUMMARY_NOT_AVAILABLE_NO_EMPHASIS" desc="Summary in the error page when we can't connect to a site. [iOS only]">
       The webpage at <ph name="SITE">$1<ex>google.xom</ex></ph> might be temporarily down or it may have moved permanently to a new web address.
     </message>
