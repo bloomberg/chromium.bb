@@ -421,9 +421,14 @@ inline bool paintFastBottomLayer(const LayoutBoxModelObject& obj, const PaintInf
     FloatRoundedRect border = info.isRoundedFill
         ? backgroundRoundedRectAdjustedForBleedAvoidance(obj, rect, bleedAvoidance, box, boxSize, info.includeLeftEdge, info.includeRightEdge)
         : FloatRoundedRect(pixelSnappedIntRect(rect));
-    // We only take this path for BorderFillBox. https://www.w3.org/TR/css3-background/#corner-overlap
-    // should ensure that the border rrect is renderable.
-    DCHECK(border.isRenderable());
+
+    Optional<RoundedInnerRectClipper> clipper;
+    if (info.isRoundedFill && !border.isRenderable()) {
+        // When the rrect is not renderable, we resort to clipping.
+        // RoundedInnerRectClipper handles this case via discrete, corner-wise clipping.
+        clipper.emplace(obj, paintInfo, rect, border, ApplyToContext);
+        border.setRadii(FloatRoundedRect::Radii());
+    }
 
     // Paint the color + shadow if needed.
     if (info.shouldPaintColor) {
