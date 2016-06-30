@@ -13,7 +13,6 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
-#include "base/message_loop/message_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -708,7 +707,7 @@ ManagedNetworkConfigurationHandlerImpl::ManagedNetworkConfigurationHandlerImpl()
       network_configuration_handler_(NULL),
       network_device_handler_(NULL),
       weak_ptr_factory_(this) {
-  CHECK(base::MessageLoop::current());
+  CHECK(base::ThreadTaskRunnerHandle::IsSet());
 }
 
 ManagedNetworkConfigurationHandlerImpl::
