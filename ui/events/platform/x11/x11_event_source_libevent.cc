@@ -68,8 +68,15 @@ std::unique_ptr<ui::Event> TranslateXI2EventToEvent(const XEvent& xev) {
     case ET_TOUCH_CANCELLED:
     case ET_TOUCH_RELEASED:
       return base::WrapUnique(
-          new TouchEvent(event_type, EventLocationFromXEvent(xev),
-                         GetTouchIdFromXEvent(xev), EventTimeFromXEvent(xev)));
+          new TouchEvent(event_type,
+                         EventLocationFromXEvent(xev),
+                         /* flags */ 0,
+                         GetTouchIdFromXEvent(xev),
+                         EventTimeFromXEvent(xev),
+                         GetTouchRadiusXFromXEvent(xev),
+                         GetTouchRadiusYFromXEvent(xev),
+                         /* angle */ 0.f,
+                         GetTouchForceFromXEvent(xev)));
     case ET_UNKNOWN:
       return nullptr;
     default:
