@@ -146,6 +146,7 @@
               'AdditionalDependencies': [
                 'd2d1.lib',
                 'd3d10_1.lib',
+                'dwrite.lib',
               ],
             },
           },
