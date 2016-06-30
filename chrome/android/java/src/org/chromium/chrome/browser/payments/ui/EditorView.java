@@ -225,6 +225,7 @@ public class EditorView extends AlwaysDismissedDialog
                         new Runnable() {
                             @Override
                             public void run() {
+                                removeTextChangedListenerFromPhoneInputField();
                                 // Do not remove the "* indicates required field" label at the
                                 // bottom.
                                 dataView.removeViews(0, dataView.getChildCount() - 1);
@@ -283,9 +284,14 @@ public class EditorView extends AlwaysDismissedDialog
 
     @Override
     public void onDismiss(DialogInterface dialog) {
-        if (mPhoneInput != null) mPhoneInput.removeTextChangedListener(getPhoneFormatter());
+        removeTextChangedListenerFromPhoneInputField();
         mEditorModel.cancel();
         if (mObserverForTest != null) mObserverForTest.onPaymentRequestEditorDismissed();
+    }
+
+    private void removeTextChangedListenerFromPhoneInputField() {
+        if (mPhoneInput != null) mPhoneInput.removeTextChangedListener(getPhoneFormatter());
+        mPhoneInput = null;
     }
 
     /** Immediately returns the phone formatter or null if it has not initialized yet. */
