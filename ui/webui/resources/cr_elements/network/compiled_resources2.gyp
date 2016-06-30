@@ -22,11 +22,24 @@
       'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
     },
     {
-      'target_name': 'cr_network_list_item',
+      'target_name': 'cr_network_list_custom_item',
+      'dependencies': [
+        '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:load_time_data',
+        'cr_network_list_types',
+        'cr_onc_types',
+      ],
+      'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
+    },
+    {
+      'target_name': 'cr_network_list_network_item',
       'dependencies': [
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:load_time_data',
         'cr_onc_types',
       ],
+      'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
+    },
+    {
+      'target_name': 'cr_network_list_types',
       'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
     },
     {

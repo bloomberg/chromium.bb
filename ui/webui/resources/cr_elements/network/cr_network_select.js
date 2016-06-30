@@ -56,12 +56,45 @@ Polymer({
 
     /**
      * List of all network state data for all visible networks.
+     * See <cr-network-list-network-item/> for details.
+     *
      * @type {!Array<!CrOnc.NetworkStateProperties>}
      */
     networkStateList: {
       type: Array,
       value: function() { return []; }
-    }
+    },
+
+    /**
+     * List of custom items to display at the end of networks list.
+     * See <cr-network-list-custom-item/> for details.
+     *
+     * @type {!Array<Object>}
+     */
+    customItems: {
+      type: Array,
+      value: function() { return []; },
+    },
+
+    /**
+     * Show all buttons in list items.
+     */
+    showButtons: {
+      type: Boolean,
+      value: false,
+    },
+
+    /**
+     * Whether to handle "item-selected" for network items.
+     * If this property is false, "network-item-selected" event is fired
+     * carrying CrOnc.NetworkStateProperties as event detail.
+     *
+     * @type {Function}
+     */
+    handleNetworkItemSelected: {
+      type: Boolean,
+      value: false,
+    },
   },
 
   /**
@@ -102,7 +135,7 @@ Polymer({
   },
 
   /**
-   * Polymer chnaged function.
+   * Polymer changed function.
    * @private
    */
   networkListOpenedChanged_: function() {
@@ -134,14 +167,21 @@ Polymer({
   },
 
   /**
-   * Event triggered when a cr-network-list-item is selected.
+   * Event triggered when a cr-network-list-network-item is selected.
    * @param {!{detail: !CrOnc.NetworkStateProperties}} event
    * @private
    */
   onNetworkListItemSelected_: function(event) {
     var state = event.detail;
+
+    if (!this.handleNetworkItemSelected) {
+      this.fire("network-item-selected", state);
+      return;
+    }
+
     if (state.ConnectionState != CrOnc.ConnectionState.NOT_CONNECTED)
       return;
+
     chrome.networkingPrivate.startConnect(state.GUID, function() {
       var lastError = chrome.runtime.lastError;
       if (lastError && lastError != 'connecting')

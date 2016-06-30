@@ -65,10 +65,10 @@ function getNetworkName(network) {
 }
 
 /**
- * Polymer class definition for 'cr-network-list-item'.
+ * Polymer class definition for 'cr-network-list-network-item'.
  */
 Polymer({
-  is: 'cr-network-list-item',
+  is: 'cr-network-list-network-item',
 
   properties: {
     /**
@@ -96,6 +96,14 @@ Polymer({
       value: 'none',
       observer: 'networkStateChanged_'
     },
+
+    /**
+     * Whether to show buttons.
+     */
+    showButtons: {
+      type: Boolean,
+      value: false,
+    },
   },
 
   /**
@@ -105,26 +113,30 @@ Polymer({
   networkStateChanged_: function() {
     if (!this.networkState)
       return;
-
     var network = this.networkState;
     var isDisconnected =
         network.ConnectionState == CrOnc.ConnectionState.NOT_CONNECTED;
+
+    if (network.ConnectionState == CrOnc.ConnectionState.CONNECTED) {
+      this.fire("network-connected", this.networkState);
+    }
+
     var name = getNetworkName(network);
     if (this.isListItem_(this.listItemType)) {
-      this.$.networkName.textContent = name;
-      this.$.networkName.classList.toggle('connected', !isDisconnected);
+      this.$.itemName.textContent = name;
+      this.$.itemName.classList.toggle('connected', !isDisconnected);
       return;
     }
     if (network.Name && network.ConnectionState) {
-      this.$.networkName.textContent = getText('OncType' + network.Type);
-      this.$.networkName.classList.toggle('connected', false);
+      this.$.itemName.textContent = getText('OncType' + network.Type);
+      this.$.itemName.classList.toggle('connected', false);
       this.$.networkStateText.textContent =
           getConnectionStateText(network.ConnectionState, name);
       this.$.networkStateText.classList.toggle('connected', !isDisconnected);
       return;
     }
-    this.$.networkName.textContent = getText('OncType' + network.Type);
-    this.$.networkName.classList.toggle('connected', false);
+    this.$.itemName.textContent = getText('OncType' + network.Type);
+    this.$.itemName.classList.toggle('connected', false);
     this.$.networkStateText.textContent = getText('networkDisabled');
     this.$.networkStateText.classList.toggle('connected', false);
 
@@ -215,6 +227,24 @@ Polymer({
    */
   isListItemType_: function(listItemType, type) {
     return listItemType == type;
+  },
+
+  /**
+   * @param {boolean} showButtons this.showButtons property
+   * @param {string} listItemType this.listItemType property
+   * @private
+   */
+  isSettingsButtonVisible_: function(showButtons, listItemType) {
+    return showButtons && this.isListItemType_(listItemType, 'visible');
+  },
+
+  /**
+   * @param {boolean} showButtons this.showButtons property
+   * @param {string} listItemType this.listItemType property
+   * @private
+   */
+  areKnownButtonsVisible_: function(showButtons, listItemType) {
+    return showButtons && this.isListItemType_(listItemType, 'known');
   },
 });
 })();

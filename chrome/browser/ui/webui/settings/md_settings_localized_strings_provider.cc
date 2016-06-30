@@ -571,7 +571,7 @@ void AddInternetStrings(content::WebUIDataSource* html_source) {
       {"internetPageTitle", IDS_SETTINGS_INTERNET},
       {"internetDetailPageTitle", IDS_SETTINGS_INTERNET_DETAIL},
       {"internetKnownNetworksPageTitle", IDS_SETTINGS_INTERNET_KNOWN_NETWORKS},
-      // Required by cr_network_list_item.js. TODO(stevenjb): Add to
+      // Required by cr_network_list_network_item.js. TODO(stevenjb): Add to
       // settings_strings.grdp or provide an alternative translation method.
       // crbug.com/512214.
       {"networkConnected", IDS_ASH_STATUS_TRAY_NETWORK_CONNECTED},
