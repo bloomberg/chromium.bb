@@ -38,6 +38,22 @@
 
 namespace {
 
+const int kWifiMask = 0x2;
+const int k4GMask = 0x8;
+const int k3GMask = 0x10;
+const int k2GMask = 0x20;
+
+const int kAirplaneModeLatency = 0;
+const int kAirplaneModeThroughput = 0;
+const int kWifiLatency = 2;
+const int kWifiThroughput = 30720 * 1024;
+const int k4GLatency = 20;
+const int k4GThroughput = 4096 * 1024;
+const int k3GLatency = 100;
+const int k3GThroughput = 750 * 1024;
+const int k2GLatency = 300;
+const int k2GThroughput = 250 * 1024;
+
 const char kWindowHandlePrefix[] = "CDwindow-";
 
 std::string WebViewIdToWindowHandle(const std::string& web_view_id) {
@@ -502,6 +518,72 @@ Status ExecuteGetNetworkConditions(Session* session,
       "upload_throughput",
       session->overridden_network_conditions->upload_throughput);
   value->reset(conditions.DeepCopy());
+  return Status(kOk);
+}
+
+Status ExecuteSetNetworkConnection(Session* session,
+                                   const base::DictionaryValue& params,
+                                   std::unique_ptr<base::Value>* value) {
+  int connection_type;
+  if (!params.GetInteger("parameters.type", &connection_type))
+    return Status(kUnknownError, "invalid connection_type");
+
+  ChromeDesktopImpl* desktop = nullptr;
+  Status status = session->chrome->GetAsDesktop(&desktop);
+  if (status.IsError())
+    return status;
+
+  desktop->SetNetworkConnection(connection_type);
+
+  std::unique_ptr<NetworkConditions> network_conditions(
+      new NetworkConditions());
+
+  if (connection_type & kWifiMask) {
+    network_conditions->latency = kWifiLatency;
+    network_conditions->upload_throughput = kWifiThroughput;
+    network_conditions->download_throughput = kWifiThroughput;
+    network_conditions->offline = false;
+  } else if (connection_type & k4GMask) {
+    network_conditions->latency = k4GLatency;
+    network_conditions->upload_throughput = k4GThroughput;
+    network_conditions->download_throughput = k4GThroughput;
+    network_conditions->offline = false;
+  } else if (connection_type & k3GMask) {
+    network_conditions->latency = k3GLatency;
+    network_conditions->upload_throughput = k3GThroughput;
+    network_conditions->download_throughput = k3GThroughput;
+    network_conditions->offline = false;
+  } else if (connection_type & k2GMask) {
+    network_conditions->latency = k2GLatency;
+    network_conditions->upload_throughput = k2GThroughput;
+    network_conditions->download_throughput = k2GThroughput;
+    network_conditions->offline = false;
+  } else {
+    network_conditions->latency = kAirplaneModeLatency;
+    network_conditions->upload_throughput = kAirplaneModeThroughput;
+    network_conditions->download_throughput = kAirplaneModeThroughput;
+    network_conditions->offline = true;
+  }
+
+  session->overridden_network_conditions.reset(
+      network_conditions.release());
+
+  // Applies overridden network connection to all WebViews of the session
+  // to ensure that network emulation is applied on a per-session basis
+  // rather than the just to the current WebView.
+  std::list<std::string> web_view_ids;
+  status = session->chrome->GetWebViewIds(&web_view_ids);
+  if (status.IsError())
+    return status;
+
+  for (std::string web_view_id : web_view_ids) {
+    WebView* web_view;
+    status = session->chrome->GetWebViewById(web_view_id, &web_view);
+    if (status.IsError())
+      return status;
+    web_view->OverrideNetworkConditions(
+      *session->overridden_network_conditions);
+  }
   return Status(kOk);
 }
 

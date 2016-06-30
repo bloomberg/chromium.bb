@@ -57,11 +57,15 @@ class ChromeDesktopImpl : public ChromeImpl {
 
   const base::CommandLine& command() const;
 
+  int GetNetworkConnection() const;
+  void SetNetworkConnection(int network_connection);
+
  private:
   base::Process process_;
   base::CommandLine command_;
   base::ScopedTempDir user_data_dir_;
   base::ScopedTempDir extension_dir_;
+  int network_connection_;
 
   // Lazily initialized, may be null.
   std::unique_ptr<AutomationExtension> automation_extension_;

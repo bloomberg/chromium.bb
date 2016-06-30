@@ -382,6 +382,11 @@ HttpHandler::HttpHandler(
           "session/:sessionId/location",
           WrapToCommand("SetGeolocation", base::Bind(&ExecuteSetLocation))),
       CommandMapping(
+          kPost,
+          "session/:sessionId/network_connection",
+          WrapToCommand("SetNetworkConnection",
+                        base::Bind(&ExecuteSetNetworkConnection))),
+      CommandMapping(
           kGet,
           "session/:sessionId/chromium/network_conditions",
           WrapToCommand("GetNetworkConditions",

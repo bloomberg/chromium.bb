@@ -146,6 +146,8 @@ class Command(object):
   SET_AUTO_REPORTING = (_Method.POST, '/session/:sessionId/autoreport')
   GET_SESSION_LOGS = (_Method.POST, '/logs')
   STATUS = (_Method.GET, '/status')
+  SET_NETWORK_CONNECTION = (
+      _Method.POST, '/session/:sessionId/network_connection')
 
   # Custom Chrome commands.
   IS_LOADING = (_Method.GET, '/session/:sessionId/is_loading')

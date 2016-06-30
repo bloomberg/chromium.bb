@@ -201,3 +201,12 @@ Status ChromeDesktopImpl::QuitImpl() {
 const base::CommandLine& ChromeDesktopImpl::command() const {
   return command_;
 }
+
+int ChromeDesktopImpl::GetNetworkConnection() const {
+  return network_connection_;
+}
+
+void ChromeDesktopImpl::SetNetworkConnection(
+    int network_connection) {
+  network_connection_ = network_connection;
+}

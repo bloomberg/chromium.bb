@@ -409,3 +409,7 @@ class ChromeDriver(object):
 
   def DeleteNetworkConditions(self):
     self.ExecuteCommand(Command.DELETE_NETWORK_CONDITIONS)
+
+  def SetNetworkConnection(self, connection_type):
+    params = {'parameters': {'type': connection_type}}
+    self.ExecuteCommand(Command.SET_NETWORK_CONNECTION, params)
