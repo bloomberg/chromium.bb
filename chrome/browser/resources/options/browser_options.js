@@ -832,12 +832,14 @@ cr.define('options', function() {
       if (cr.isChromeOS) {
         $('android-apps-settings-label').innerHTML =
             loadTimeData.getString('androidAppsSettingsLabel');
-        $('android-apps-enabled').addEventListener('change', function(e) {
+        Preferences.getInstance().addEventListener('arc.enabled', function(e) {
           var settings = $('android-apps-settings');
-          if (!settings)
+          // Only change settings visibility on committed settings changes.
+          if (!settings || e.value.uncommitted)
             return;
-          settings.hidden = !$('android-apps-enabled').checked;
+          settings.hidden = !e.value.value;
         });
+
         $('android-apps-settings-link').addEventListener('click', function(e) {
             chrome.send('showAndroidAppsSettings');
         });
