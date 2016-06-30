@@ -77,7 +77,6 @@
 <translation id="1791429645902722292">Google Smart Lock</translation>
 <translation id="1821930232296380041">پارامترهای درخواست یا درخواست نامعتبر</translation>
 <translation id="1871208020102129563">‏تنظیم پروکسی به گونه‌ای است که از سرورهای ثابت پروکسی استفاده کند و از آدرس اسکریپت pac. استفاده نکند.</translation>
-<translation id="1871625979288021266">درگاه ناامن مسدود شد</translation>
 <translation id="1883255238294161206">کوچک کردن فهرست</translation>
 <translation id="1898423065542865115">فیلتر کردن</translation>
 <translation id="1911837502049945214"><ph name="HOST_NAME" /> گواهی ثبت ورود شما را نپذیرفت، یا ممکن است گواهی ثبت ورود شما منقضی شده باشد.</translation>
@@ -128,7 +127,6 @@
 <translation id="2386255080630008482">گواهی سرور باطل شده است.</translation>
 <translation id="2392959068659972793">نمایش خط‌مشی‌ها با مقدار تنظیم نشده</translation>
 <translation id="2396249848217231973">&amp;واگرد حذف</translation>
-<translation id="2400837204278978822">نوع فایل ناشناخته است.</translation>
 <translation id="2413528052993050574">این سرور نتوانست اثبات کند که این <ph name="DOMAIN" /> است؛ ممکن است گواهی امنیتی آن باطل شده باشد. ممکن است علت این موضوع پیکربندی اشتباه باشد یا مهاجمی اتصال شما را قطع کرده است.</translation>
 <translation id="2455981314101692989">این صفحهٔ وب، تکمیل خودکار این فرم را غیر فعال کرده است.</translation>
 <translation id="2467694685043708798"><ph name="BEGIN_LINK" />در حال اجرای عیب‌یابی شبکه<ph name="END_LINK" /></translation>
@@ -171,7 +169,6 @@
 <translation id="2855922900409897335"><ph name="CREDIT_CARD" /> را تأیید کنید</translation>
 <translation id="2889159643044928134">تازه‌سازی نشود</translation>
 <translation id="2896499918916051536">این افزایه پشتیبانی نمی‌شود.</translation>
-<translation id="2897655920961181107">درگاه درخواستی ناامن است و مسدود شده است</translation>
 <translation id="2909946352844186028">تغییر شبکه تشخیص داده شد.</translation>
 <translation id="2915500479781995473">این سرور نتوانست اثبات کند که این <ph name="DOMAIN" /> است؛ گواهینامه امنیتی آن منقضی شده است. ممکن است علت این موضوع پیکربندی اشتباه باشد یا مهاجمی اتصال شما را قطع کرده است. در حال حاضر ساعت رایانه‌تان روی <ph name="CURRENT_TIME" /> تنظیم شده است. آیا این زمان درست است؟ اگر درست نیست، باید ساعت سیستم‌تان را تنظیم کنید و سپس این صفحه را بازخوانی نمایید.</translation>
 <translation id="2922350208395188000">گواهی سرور بررسی نمی‌شود.</translation>
@@ -347,7 +344,6 @@
 <translation id="4807049035289105102">‏در این لحظه نمی‌توانید از <ph name="SITE" /> دیدن کنید زیرا این وب‌سایت اعتبارنامه‌های درهمی ارسال کرده است که Google Chrome نمی‌تواند پردازش کند. خطاهای شبکه و حمله‌ها معمولاً موقتی هستند، بنابراین احتمالاً این صفحه بعداً کار خواهد کرد.</translation>
 <translation id="4813512666221746211">خطای شبکه</translation>
 <translation id="4816492930507672669">متناسب با صفحه</translation>
-<translation id="4841640898320458950">درگاه ناامن مسدود شد</translation>
 <translation id="4850886885716139402">نما</translation>
 <translation id="4880827082731008257">سابقه جستجو</translation>
 <translation id="4923417429809017348">این صفحه از یک زبان ناشناخته به <ph name="LANGUAGE_LANGUAGE" /> ترجمه شده است.</translation>
@@ -448,7 +444,6 @@
 <translation id="6165508094623778733">بیشتر بدانید</translation>
 <translation id="6203231073485539293">اتصال اینترنتتان را بررسی کنید</translation>
 <translation id="6218753634732582820">‏آدرس از Chromium پاک شود؟</translation>
-<translation id="6232139169545176020">‏طرح نشانی وب درخواستی پشتیبانی نمی‌‎شود.</translation>
 <translation id="6259156558325130047">&amp;انجام مجدد ترتیب‌بندی مجدد</translation>
 <translation id="6263376278284652872">نشانک‌های <ph name="DOMAIN" /></translation>
 <translation id="6264485186158353794">بازگشت به ایمنی</translation>
@@ -471,14 +466,11 @@
 <translation id="6489534406876378309">شروع آپلود کردن خرابی‌ها</translation>
 <translation id="6518133107902771759">تأیید</translation>
 <translation id="6529602333819889595">&amp;انجام مجدد حذف</translation>
-<translation id="6533019874004191247">نشانی وب پشتیبانی نمی‌شود.</translation>
 <translation id="6550675742724504774">گزینه‌ها</translation>
 <translation id="6596325263575161958">گزینه‌های رمزگذاری</translation>
-<translation id="6610562986279010327">‏‫Chrome نمی‌‎تواند این نشانی وب را باز کند</translation>
 <translation id="662080504995468778">ماندن</translation>
 <translation id="6628463337424475685">جستجوی <ph name="ENGINE" /></translation>
 <translation id="6634865548447745291">در حال حاضر نمی‌توانید از <ph name="SITE" /> بازدید کنید زیرا <ph name="BEGIN_LINK" />این گواهینامه باطل شده است<ph name="END_LINK" />. معمولاً خطاهای شبکه و حمله‌ها موقتی هستند، بنابراین احتمالاً این صفحه بعداً کار خواهد کرد.</translation>
-<translation id="6637478299472506933">بارگیری نشد</translation>
 <translation id="6644283850729428850">این قانون قدیمی شده است.</translation>
 <translation id="6646897916597483132">‏کد تأیید چهار رقمی CVC را از روی کارت‌تان وارد کنید</translation>
 <translation id="6656103420185847513">ویرایش پوشه</translation>
@@ -584,7 +576,6 @@
 <translation id="780301667611848630">نه متشکرم</translation>
 <translation id="7805768142964895445">وضعیت</translation>
 <translation id="7813600968533626083">‏پیشنهاد فرم از Chrome پاک شود؟</translation>
-<translation id="7825436071901023927">درگاه ناامن <ph name="SITE" /></translation>
 <translation id="785549533363645510">اما، شما نامرئی نیستید. با استفاده از حالت ناشناس، مرورتان از چشمان کارفرمای شما، ارائه‌دهنده خدمات اینترنت یا وب‌‌سایت‌هایی که بازدید می‌کنید پنهان نمی‌ماند.</translation>
 <translation id="7887683347370398519">‏CVC را بررسی کرده و دوباره امتحان کنید</translation>
 <translation id="7894616681410591072">وای! برای دسترسی به این صفحه باید از <ph name="NAME" /> اجازه بگیرید.</translation>
@@ -661,7 +652,6 @@
 <translation id="8876793034577346603">پیکربندی شبکه نتوانست تجزیه شود.</translation>
 <translation id="8891727572606052622">حالت پروکسی نامعتبر است.</translation>
 <translation id="889901481107108152">متأسفیم، این آزمایش بر روی دستگاه شما قابل انجام نیست.</translation>
-<translation id="890308499387283275">‏Chrome نمی‌تواند این فایل را دانلود کند.</translation>
 <translation id="8903921497873541725">بزرگ‌نمایی</translation>
 <translation id="8931333241327730545">‏می‌خواهید این کارت را در حساب Google خود ذخیره کنید؟</translation>
 <translation id="8932102934695377596">ساعت شما عقب است</translation>

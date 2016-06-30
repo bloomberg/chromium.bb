@@ -77,7 +77,6 @@
 <translation id="1791429645902722292">Google Smart Lock</translation>
 <translation id="1821930232296380041">Solicitarea sau parametrii săi sunt greșiți</translation>
 <translation id="1871208020102129563">Configurația proxy este setată să utilizeze servere proxy fixe, și nu o adresă URL pentru scripturi .pac.</translation>
-<translation id="1871625979288021266">Port nesigur blocat</translation>
 <translation id="1883255238294161206">Restrângeți lista</translation>
 <translation id="1898423065542865115">Filtrarea</translation>
 <translation id="1911837502049945214"><ph name="HOST_NAME" /> nu a acceptat certificatul de conectare sau certificatul de conectare a expirat.</translation>
@@ -128,7 +127,6 @@
 <translation id="2386255080630008482">Certificatul serverului a fost revocat.</translation>
 <translation id="2392959068659972793">Afișați politicile care nu au valori setate</translation>
 <translation id="2396249848217231973">&amp;Anulați ștergerea</translation>
-<translation id="2400837204278978822">Tip fișier necunos.</translation>
 <translation id="2413528052993050574">Acest server nu a putut dovedi că este <ph name="DOMAIN" />; este posibil ca certificatul său de securitate să fie revocat. Cauza poate fi o configurare greșită sau interceptarea conexiunii de către un atacator.</translation>
 <translation id="2455981314101692989">Această pagină web a dezactivat completarea automată a formularului.</translation>
 <translation id="2467694685043708798"><ph name="BEGIN_LINK" />să rulezi Diagnostice rețea<ph name="END_LINK" />;</translation>
@@ -171,7 +169,6 @@
 <translation id="2855922900409897335">Confirmă <ph name="CREDIT_CARD" /></translation>
 <translation id="2889159643044928134">Nu reîncărca</translation>
 <translation id="2896499918916051536">Acest plugin nu este acceptat.</translation>
-<translation id="2897655920961181107">Portul solicitat este nesigur și blocat.</translation>
 <translation id="2909946352844186028">A fost detectată o schimbare a rețelei.</translation>
 <translation id="2915500479781995473">Acest server nu a putut dovedi că este <ph name="DOMAIN" />; certificatul său de securitate a expirat. Cauza poate fi o configurare greșită sau interceptarea conexiunii de către un atacator. În prezent, ceasul computerului este setat la <ph name="CURRENT_TIME" />. Este corect? Dacă nu, trebuie să corectezi ora sistemului, apoi să actualizezi pagina.</translation>
 <translation id="2922350208395188000">Certificatul serverului nu poate fi verificat.</translation>
@@ -347,7 +344,6 @@
 <translation id="4807049035289105102">Nu poți accesa acum site-ul <ph name="SITE" />, deoarece acesta a trimis date de conectare într-un format necunoscut, pe care Google Chrome nu le poate procesa. Erorile de rețea și atacurile sunt de obicei temporare și probabil că această pagină va funcționa mai târziu.</translation>
 <translation id="4813512666221746211">Eroare de rețea</translation>
 <translation id="4816492930507672669">Încadrați în pagină</translation>
-<translation id="4841640898320458950">Port nesigur blocat.</translation>
 <translation id="4850886885716139402">Afișează</translation>
 <translation id="4880827082731008257">Caută în istoric</translation>
 <translation id="4923417429809017348">Această pagină a fost tradusă dintr-o limbă necunoscută în <ph name="LANGUAGE_LANGUAGE" /></translation>
@@ -448,7 +444,6 @@
 <translation id="6165508094623778733">Află mai multe</translation>
 <translation id="6203231073485539293">Verificați conexiunea la internet</translation>
 <translation id="6218753634732582820">Elimini adresa din Chromium?</translation>
-<translation id="6232139169545176020">Schema URI solicitată nu este acceptată.</translation>
 <translation id="6259156558325130047">&amp;Repetați reordonarea</translation>
 <translation id="6263376278284652872">Marcaje <ph name="DOMAIN" /></translation>
 <translation id="6264485186158353794">Înapoi la zona sigură</translation>
@@ -471,14 +466,11 @@
 <translation id="6489534406876378309">Începeți încărcarea rapoartelor de blocare</translation>
 <translation id="6518133107902771759">Confirmați</translation>
 <translation id="6529602333819889595">&amp;Repetați ștergerea</translation>
-<translation id="6533019874004191247">Adresă URL neaccep.</translation>
 <translation id="6550675742724504774">Opțiuni</translation>
 <translation id="6596325263575161958">Opțiuni de criptare</translation>
-<translation id="6610562986279010327">Chrome nu poate deschide adresa URL</translation>
 <translation id="662080504995468778">Rămâi pe pagină</translation>
 <translation id="6628463337424475685">Căutare <ph name="ENGINE" /></translation>
 <translation id="6634865548447745291">Nu puteți accesa acum site-ul <ph name="SITE" />, deoarece <ph name="BEGIN_LINK" />acest certificat a fost revocat<ph name="END_LINK" />. Erorile de rețea și atacurile sunt de obicei temporare și probabil că această pagină va funcționa mai târziu.</translation>
-<translation id="6637478299472506933">Descărc. nu a reușit</translation>
 <translation id="6644283850729428850">Această politică este învechită.</translation>
 <translation id="6646897916597483132">Introdu codul CVC alcătuit din 4 cifre înscris pe fața a cardului</translation>
 <translation id="6656103420185847513">Modificați dosarul</translation>
@@ -584,7 +576,6 @@ Data viitoare ați putea utiliza combinația <ph name="SHORTCUT_KEY" /> pentru a
 <translation id="780301667611848630">Nu, mulțumesc</translation>
 <translation id="7805768142964895445">Stare</translation>
 <translation id="7813600968533626083">Elimini sugestia pentru formular din Chrome?</translation>
-<translation id="7825436071901023927">Port nesigur <ph name="SITE" /></translation>
 <translation id="785549533363645510">Cu toate acestea, nu ești invizibil(ă). Trecerea în modul incognito nu ascunde activitatea de navigare față de angajator, față de furnizorul de servicii de internet sau față de site-urile pe care le accesezi.</translation>
 <translation id="7887683347370398519">Verifică codul CVC și încearcă din nou</translation>
 <translation id="7894616681410591072">Hopa! Este nevoie ca <ph name="NAME" /> să îți acorde permisiunea de a accesa această pagină.</translation>
@@ -661,7 +652,6 @@ Data viitoare ați putea utiliza combinația <ph name="SHORTCUT_KEY" /> pentru a
 <translation id="8876793034577346603">Configurația rețelei nu a putut fi analizată.</translation>
 <translation id="8891727572606052622">Mod proxy nevalid.</translation>
 <translation id="889901481107108152">Ne pare rău, acest experiment nu este disponibil pe platforma dvs.</translation>
-<translation id="890308499387283275">Chrome nu poate descărca acest fișier.</translation>
 <translation id="8903921497873541725">Mărește</translation>
 <translation id="8931333241327730545">Dorești să salvezi acest card în Contul Google?</translation>
 <translation id="8932102934695377596">Ora este setată în trecut</translation>

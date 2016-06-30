@@ -21,6 +21,7 @@
 <translation id="1167230103353892028"><ph name="NAME" />, menu-item, met submenu</translation>
 <translation id="1177863135347784049">Aangepast</translation>
 <translation id="1188858454923323853">aanvullend</translation>
+<translation id="1201402288615127009">Volgende</translation>
 <translation id="1206619573307042055">marquee</translation>
 <translation id="1213216066620407844">ChromeVox - Geef Chrome een stem</translation>
 <translation id="1229276918471378188">Vorige sprong</translation>
@@ -122,7 +123,6 @@
 <translation id="2553108862507765288">grammaticafout</translation>
 <translation id="257674075312929031">Groep</translation>
 <translation id="2582407057977008361">Terzijde</translation>
-<translation id="2589102159832527089">Deze pagina bevat de tekst die automatisch is opgehaald uit het pdf-bestand &lt;b&gt;<ph name="FILENAME" />&lt;/b&gt;. &lt;a href="<ph name="URL" />"&gt;Klik hier voor het origineel.&lt;/a&gt;</translation>
 <translation id="2606210917827248971">met {COUNT,plural, =1{# item}other{# items}}</translation>
 <translation id="2614981083756825552">MathML-indeling</translation>
 <translation id="2626530649491650971">klikbaar</translation>
@@ -510,7 +510,6 @@
 <translation id="6129953537138746214">Spatie</translation>
 <translation id="6142308968191113180">Kop 4</translation>
 <translation id="6169420925157477918">Afbeelding met lange beschrijving</translation>
-<translation id="6172087735260766220">Kan toegankelijke tekst niet openen vanuit een pdf met kopieerbeveiliging.</translation>
 <translation id="6186305613600865047">Naar de onderkant van de pagina</translation>
 <translation id="6193330012414963395">a.m./p.m.</translation>
 <translation id="622484624075952240">Omlaag</translation>
@@ -549,6 +548,7 @@
 <translation id="6659594942844771486">Tabblad</translation>
 <translation id="667999046851023355">Document</translation>
 <translation id="6697092096875747123">Vorige keuzelijst met invoervak</translation>
+<translation id="6710213216561001401">Vorige</translation>
 <translation id="6714813999819678458">Vorige kop voor niveau 2</translation>
 <translation id="6716505898850596801">Functietoetsen</translation>
 <translation id="671916444866103745">Geen volgend ARIA-oriëntatiepunt.</translation>
@@ -690,6 +690,7 @@
 <translation id="842922884199979200">Geen volgende kop voor niveau 3.</translation>
 <translation id="8430049249787218991">mnubr</translation>
 <translation id="844681116543532394">Geen vorig selectievakje.</translation>
+<translation id="8446884382197647889">Meer informatie</translation>
 <translation id="8455868257606149352">Max. <ph name="X" /></translation>
 <translation id="84575901236241018">heeft toegangscode, <ph name="KEY" /></translation>
 <translation id="8476508772960940536">vensteroverzicht</translation>

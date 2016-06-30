@@ -130,6 +130,7 @@ Host</translation>
 <translation id="4156740505453712750">Per protegir l'accés a aquest ordinador, trieu un PIN de <ph name="BOLD_START" />sis dígits com a mínim<ph name="BOLD_END" />. Necessitareu aquest PIN per connectar-vos a aquest ordinador des d'una altra ubicació.</translation>
 <translation id="4176825807642096119">Codi d'accés</translation>
 <translation id="4207623512727273241">Executeu l'instal·lador abans de continuar.</translation>
+<translation id="4227991223508142681">Utilitat de l'administració de l'amfitrió</translation>
 <translation id="4240294130679914010">Programa de desinstal·lació de Chromoting Host</translation>
 <translation id="4277463233460010382">La configuració d'aquest ordinador permet que un o més clients es connectin sense introduir cap PIN.</translation>
 <translation id="4277736576214464567">El codi d'accés no és vàlid. Torneu-ho a provar.</translation>
@@ -271,7 +272,7 @@ remot de Chrome</translation>
 <translation id="809687642899217504">Els meus ordinadors</translation>
 <translation id="811307782653349804">Accediu al vostre ordinador des de qualsevol lloc.</translation>
 <translation id="8116630183974937060">S'ha produït un error de xarxa. Comproveu que el dispositiu estigui en línia i torneu-ho a provar.</translation>
-<translation id="8178433417677596899">Ús compartit de pantalla d'usuari a usuari, perfecte per a l'assistència tècnica remota.</translation>
+<translation id="8178433417677596899">Pantalla compartida entre usuaris, una opció perfecta per a l'assistència tècnica remota.</translation>
 <translation id="8187079423890319756">Copyright 2013 Els autors de Chromium. Tots els drets reservats.</translation>
 <translation id="8196755618196986400">La vostra adreça electrònica s'inclourà en tots els suggeriments que envieu perquè us puguem escriure i proporcionar-vos més informació.</translation>
 <translation id="8244400547700556338">Més informació</translation>

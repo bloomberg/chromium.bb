@@ -77,7 +77,6 @@
 <translation id="1791429645902722292">Google Smart Lock</translation>
 <translation id="1821930232296380041">הבקשה או הפרמטרים של הבקשה אינם חוקיים</translation>
 <translation id="1871208020102129563">‏שרת ה-Proxy מוגדר להשתמש בשרתי Proxy קבועים, לא בכתובת אתר של סקריפט ‎.Pac</translation>
-<translation id="1871625979288021266">יציאה לא בטוחה נחסמה</translation>
 <translation id="1883255238294161206">כווץ רשימה</translation>
 <translation id="1898423065542865115">סינון</translation>
 <translation id="1911837502049945214"><ph name="HOST_NAME" /> לא אישר את אישור ההתחברות שלך, או שפג תוקפו של אישור ההתחברות.</translation>
@@ -128,7 +127,6 @@
 <translation id="2386255080630008482">אישור השרת נשלל.</translation>
 <translation id="2392959068659972793">הצגת מדיניות ללא ערך מוגדר</translation>
 <translation id="2396249848217231973">&amp;ביטול מחיקה</translation>
-<translation id="2400837204278978822">סוג קובץ לא ידוע.</translation>
 <translation id="2413528052993050574">השרת הזה לא הצליח להוכיח שהוא <ph name="DOMAIN" />. ייתכן שאישור האבטחה שלו בוטל. הסיבה לכך עשויה להיות הגדרה שגויה או תוקף המיירט את החיבור שלך.</translation>
 <translation id="2455981314101692989">דף אינטרנט זה השבית מילוי אוטומטי של טופס זה.</translation>
 <translation id="2467694685043708798"><ph name="BEGIN_LINK" />מפעיל את אבחון הרשת<ph name="END_LINK" /></translation>
@@ -171,7 +169,6 @@
 <translation id="2855922900409897335">אמת את ה-<ph name="CREDIT_CARD" /></translation>
 <translation id="2889159643044928134">אל תטען מחדש</translation>
 <translation id="2896499918916051536">הפלאגין הזה אינו נתמך.</translation>
-<translation id="2897655920961181107">היציאה המבוקשת אינה בטוחה והיא נחסמה.</translation>
 <translation id="2909946352844186028">אותר שינוי ברשת.</translation>
 <translation id="2915500479781995473">לשרת זה לא הייתה אפשרות להוכיח שהוא <ph name="DOMAIN" />; פג תוקפו של אישור האבטחה שלו. ייתכן שמצב זה נגרם בשל תצורה שגויה או שתוקף מיירט את החיבור שלך. שעון המחשב שלך מוגדר כעת ל-<ph name="CURRENT_TIME" />. האם השעה נכונה? אם לא, עליך לכוון את שעון המערכת ולאחר מכן לרענן דף זה.</translation>
 <translation id="2922350208395188000">לא ניתן לבדוק את אישור השרת.</translation>
@@ -351,7 +348,6 @@ Del</translation>
 <translation id="4807049035289105102">‏לא ניתן לבקר כעת באתר <ph name="SITE" /> מכיוון שהאתר שלח אישורים משובשים ש-Google Chrome אינו יכול לעבד. שגיאות רשת ותקיפות מתרחשות בדרך כלל לזמן מוגבל, כך שסביר להניח שהדף הזה יפעל מאוחר יותר.</translation>
 <translation id="4813512666221746211">שגיאת רשת</translation>
 <translation id="4816492930507672669">התאמה לדף</translation>
-<translation id="4841640898320458950">יציאה לא בטוחה נחסמה.</translation>
 <translation id="4850886885716139402">הצג</translation>
 <translation id="4880827082731008257">חפש בהיסטוריה</translation>
 <translation id="4923417429809017348">דף זה תורגם משפה לא ידועה ל<ph name="LANGUAGE_LANGUAGE" /></translation>
@@ -453,7 +449,6 @@ Del</translation>
 <translation id="6165508094623778733">למידע נוסף</translation>
 <translation id="6203231073485539293">בדוק את חיבור האינטרנט</translation>
 <translation id="6218753634732582820">‏האם להסיר מ-Chromium את הכתובת?</translation>
-<translation id="6232139169545176020">‏סכימת ה-URI המבוקשת אינה נתמכת.</translation>
 <translation id="6259156558325130047">&amp;ביצוע מחדש של שינוי סדר</translation>
 <translation id="6263376278284652872">סימניות <ph name="DOMAIN" /></translation>
 <translation id="6264485186158353794">חזרה לחוף מבטחים</translation>
@@ -476,14 +471,11 @@ Del</translation>
 <translation id="6489534406876378309">התחל להעלות קריסות</translation>
 <translation id="6518133107902771759">אימות</translation>
 <translation id="6529602333819889595">&amp;ביצוע מחדש של מחיקה</translation>
-<translation id="6533019874004191247">כתובת האתר אינה נתמכת.</translation>
 <translation id="6550675742724504774">אפשרויות</translation>
 <translation id="6596325263575161958">אפשרויות הצפנה</translation>
-<translation id="6610562986279010327">‏‫Chrome אינו יכול לפתוח כתובת אתר זו</translation>
 <translation id="662080504995468778">הישאר</translation>
 <translation id="6628463337424475685"><ph name="ENGINE" /> חיפוש</translation>
 <translation id="6634865548447745291">לא ניתן לבקר כעת באתר <ph name="SITE" /> מכיוון ש<ph name="BEGIN_LINK" />פג התוקף של אישור זה<ph name="END_LINK" />. שגיאות רשת ותקיפות מתרחשות בדרך כלל לזמן מוגבל, כך שסביר להניח שדף זה יפעל מאוחר יותר.</translation>
-<translation id="6637478299472506933">ההורדה נכשלה</translation>
 <translation id="6644283850729428850">מדיניות זו אינה בתוקף.</translation>
 <translation id="6646897916597483132">‏הזן את ה-CVC בן ארבע הספרות המופיע בחזית הכרטיס</translation>
 <translation id="6656103420185847513">ערוך תיקייה</translation>
@@ -589,7 +581,6 @@ Del</translation>
 <translation id="780301667611848630">לא תודה</translation>
 <translation id="7805768142964895445">סטטוס</translation>
 <translation id="7813600968533626083">‏האם להסיר מ-Chrome הצעות בשביל טפסים?</translation>
-<translation id="7825436071901023927">יציאה לא בטוחה <ph name="SITE" /></translation>
 <translation id="785549533363645510">עם זאת, אינך בלתי נראה. המעבר למצב גלישה בסתר לא מסתיר את הגלישה שלך מהמעסיק, מספק האינטרנט או מהאתרים שאליהם אתה נכנס.</translation>
 <translation id="7887683347370398519">‏בדוק את ה-CVC ונסה שוב</translation>
 <translation id="7894616681410591072">אופס! אתה צריך אישור מ<ph name="NAME" /> כדי לגשת לדף הזה.</translation>
@@ -666,7 +657,6 @@ Del</translation>
 <translation id="8876793034577346603">ניתוח תצורת הרשת נכשל.</translation>
 <translation id="8891727572606052622">‏מצב שרת Proxy לא חוקי.</translation>
 <translation id="889901481107108152">מצטערים, ניסוי זה אינו זמין בפלטפורמה שלך.</translation>
-<translation id="890308499387283275">‏דפדפן Chrome לא יכול להוריד קובץ זה.</translation>
 <translation id="8903921497873541725">התקרב</translation>
 <translation id="8931333241327730545">‏האם ברצונך לשמור את הכרטיס הזה בחשבון Google שלך?</translation>
 <translation id="8932102934695377596">השעון שלך מאחר</translation>

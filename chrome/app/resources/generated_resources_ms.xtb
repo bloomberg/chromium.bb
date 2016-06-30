@@ -289,7 +289,6 @@
 <translation id="1415990189994829608"><ph name="EXTENSION_NAME" /> (ID sambungan "<ph name="EXTENSION_ID" />") tidak dibenarkan dalam jenis sesi ini.</translation>
 <translation id="1416836038590872660">EAP-MD5</translation>
 <translation id="1420684932347524586">Yikes! Gagal untuk menjanakan kunci persendirian RSA rawak.</translation>
-<translation id="1421115928968836111">Pilihan ini akan membatalkan kebenaran lesen Pemain Flash untuk kandungan yang dilindungi.</translation>
 <translation id="1425734930786274278">Kuki berikut disekat (kuki pihak ketiga disekat tanpa pengecualian):</translation>
 <translation id="1426410128494586442">Ya</translation>
 <translation id="1427049173708736891">Biarkan <ph name="DEVICE_TYPE" /> tidak dikunci apabila telefon Android anda tidak dikunci dan berada berdekatan—tidak perlu menaip kata laluan anda.</translation>
@@ -2245,7 +2244,6 @@ Daripada <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="4098354747657067197">Tapak menipu di hadapan</translation>
 <translation id="4099585076575543605">{COUNT,plural, =0{tiada}=1{1}other{#}}</translation>
 <translation id="409980434320521454">Penyegerakan gagal</translation>
-<translation id="4100079375692032441">Ringkaskan halaman pada pratonton cetakan</translation>
 <translation id="4101878899871018532">Pengurus kata laluan tidak akan menawarkan untuk menyimpan bukti kelayakan yang digunakan untuk penyegerakan.</translation>
 <translation id="4104163789986725820">E&amp;ksport...</translation>
 <translation id="4105563239298244027">Dapatkan 1 TB percuma dengan Google Drive</translation>
@@ -2373,7 +2371,6 @@ Semua pengguna mesti melog keluar untuk meneruskan.</translation>
 <translation id="4297391862525234515">Rak diminimumkan apabila diklik</translation>
 <translation id="42981349822642051">Kembangkan</translation>
 <translation id="4298972503445160211">Papan kekunci Denmark</translation>
-<translation id="4299273509016391946">Mendayakan kotak pilihan ringkaskan halaman pada dialog pratonton cetakan</translation>
 <translation id="4299729908419173967">Bahasa Brazil</translation>
 <translation id="430714521864499800">Dayakan pelaksanaan arahan "Cache-Control: stale-while-revalidate". Pelaksanaan ini membenarkan pelayan untuk menentukan bahawa sesetengah sumber boleh disahkan semula di latar belakang untuk menambah baik kependaman.</translation>
 <translation id="4307281933914537745">Ketahui lebih lanjut mengenai pemulihan sistem</translation>
@@ -2450,7 +2447,6 @@ Tekan sebarang kekunci untuk terus meneroka.</translation>
 <translation id="4434147949468540706">Kesan tatal akhir</translation>
 <translation id="443464694732789311">Teruskan</translation>
 <translation id="4436456292809448986">Tambahkan pada Desktop...</translation>
-<translation id="4439244508678316632">Lesen kandungan</translation>
 <translation id="4439318412377770121">Adakah anda ingin mendaftar <ph name="DEVICE_NAME" /> ke Peranti Awan Google?</translation>
 <translation id="4441124369922430666">Adakah anda ingin mulakan apl ini secara automatik apabila mesin ini dihidupkan?</translation>
 <translation id="444134486829715816">Kembangkan...</translation>
@@ -3478,7 +3474,6 @@ Tekan sebarang kekunci untuk terus meneroka.</translation>
   Eksponen Awam (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bit):
   <ph name="EXPONENT_HEX_DUMP" /></translation>
 <translation id="59174027418879706">Didayakan</translation>
-<translation id="592068147111860043">Tentukan pemalam PPAPI yang akan dijalankan dalam dasar kotak pasir kunci semua Win32k.</translation>
 <translation id="5925147183566400388">Penuding Pernyataan Amalan Pensijilan</translation>
 <translation id="5930693802084567591">Data anda telah disulitkan dengan kata laluan Google anda bermula dari <ph name="TIME" />. Sila masukkannya di bawah.</translation>
 <translation id="5931146425219109062">Baca dan ubah semua data anda pada tapak web yang anda lawati</translation>
@@ -3497,7 +3492,6 @@ Tekan sebarang kekunci untuk terus meneroka.</translation>
 <translation id="5956585768868398362">Adakah ini halaman carian yang anda jangkakan?</translation>
 <translation id="5957613098218939406">Lebih Banyak Pilihan</translation>
 <translation id="5958529069007801266">Pengguna diselia</translation>
-<translation id="5958994127112619898">Ringkaskan halaman</translation>
 <translation id="5959471481388474538">Rangkaian tak tersedia</translation>
 <translation id="5963026469094486319">Dapatkan tema</translation>
 <translation id="5963453369025043595"><ph name="NUM_HANDLES" /> (<ph name="NUM_KILOBYTES_LIVE" /> puncak)</translation>

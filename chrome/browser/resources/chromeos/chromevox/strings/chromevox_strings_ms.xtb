@@ -21,6 +21,7 @@
 <translation id="1167230103353892028">item menu, <ph name="NAME" />, dengan submenu</translation>
 <translation id="1177863135347784049">Tersuai</translation>
 <translation id="1188858454923323853">pelengkap</translation>
+<translation id="1201402288615127009">Seterusnya</translation>
 <translation id="1206619573307042055">marki</translation>
 <translation id="1213216066620407844">ChromeVox - Memberikan Suara kepada Chrome</translation>
 <translation id="1229276918471378188">Langkauan sebelumnya</translation>
@@ -122,7 +123,6 @@
 <translation id="2553108862507765288">kesilapan tatabahasa</translation>
 <translation id="257674075312929031">Kumpulan</translation>
 <translation id="2582407057977008361">Ke sebelah</translation>
-<translation id="2589102159832527089">Halaman ini mengandungi teks yang dikeluarkan secara automatik daripada fail PDF &lt;b&gt;<ph name="FILENAME" />&lt;/b&gt;. &lt;a href="<ph name="URL" />"&gt;Klik di sini untuk melihat yang asal.&lt;/a&gt;</translation>
 <translation id="2606210917827248971">dengan {COUNT,plural, =1{# item}other{# item}}</translation>
 <translation id="2614981083756825552">Reka Letak ML Matematik</translation>
 <translation id="2626530649491650971">boleh klik</translation>
@@ -510,7 +510,6 @@
 <translation id="6129953537138746214">Ruang</translation>
 <translation id="6142308968191113180">Tajuk 4</translation>
 <translation id="6169420925157477918">Imej dengan huraian panjang</translation>
-<translation id="6172087735260766220">Tidak dapat mengakses teks yang boleh diakses daripada fail PDF yang dilindung salin.</translation>
 <translation id="6186305613600865047">Langkau ke bahagian bawah halaman</translation>
 <translation id="6193330012414963395">PG PTG/MLM</translation>
 <translation id="622484624075952240">Bawah</translation>
@@ -549,6 +548,7 @@
 <translation id="6659594942844771486">Tab</translation>
 <translation id="667999046851023355">Dokumen</translation>
 <translation id="6697092096875747123">Kotak kombo sebelumnya</translation>
+<translation id="6710213216561001401">Sebelumnya</translation>
 <translation id="6714813999819678458">Tajuk tahap 2 sebelumnya</translation>
 <translation id="6716505898850596801">Kunci pengubah suai</translation>
 <translation id="671916444866103745">Tiada mercu tanda ARIA seterusnya.</translation>
@@ -690,6 +690,7 @@
 <translation id="842922884199979200">Tiada tajuk tahap 3 seterusnya.</translation>
 <translation id="8430049249787218991">mnubr</translation>
 <translation id="844681116543532394">Tiada kotak pilihan terdahulu.</translation>
+<translation id="8446884382197647889">Ketahui Lebih Lanjut</translation>
 <translation id="8455868257606149352">Maks <ph name="X" /></translation>
 <translation id="84575901236241018">mempunyai kekunci akses, <ph name="KEY" /></translation>
 <translation id="8476508772960940536">ikhtisar tetingkap</translation>

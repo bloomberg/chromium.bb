@@ -6,6 +6,15 @@
 <translation id="1019101089073227242">Estableix el directori de dades de l'usuari</translation>
 <translation id="1022361784792428773">ID de les extensions que l'usuari no pot instal·lar (o bé * per a totes)</translation>
 <translation id="102492767056134033">Defineix l'estat predeterminat del teclat en pantalla a la pàgina d'inici de sessió</translation>
+<translation id="1027000705181149370">Especifica si les galetes d'autenticació establertes per un proveïdor d'identitat (IdP) SAML durant l'inici de sessió s'han de transferir al perfil de l'usuari.
+
+      Quan un usuari s'autentica amb un IdP SAML durant l'inici de sessió, les galetes definides per l'IdP s'escriuen primer en un perfil temporal. Aquestes galetes es poden transferir al perfil de l'usuari per notificar l'estat d'autenticació.
+
+      Quan aquesta política s'estableix en "true", les galetes establertes per l'IdP es transfereixen al perfil de l'usuari cada vegada que s'autentica amb l'IdP SAML durant l'inici de sessió.
+
+      Quan aquesta política s'estableix en "false" o no s'estableix, les galetes establertes per l'IdP es transfereixen al perfil de l'usuari durant el seu primer inici de sessió només en un dispositiu.
+
+      Aquesta política afecta els usuaris amb dominis que coincideixen només amb el domini de registre del dispositiu. Per a la resta d'usuaris, les galetes establertes per l'IdP es transfereixen al perfil de l'usuari durant el seu primer inici de sessió només en un dispositiu.</translation>
 <translation id="1040446814317236570">Activeu la retirada de l'URL de PAC (per a https://)</translation>
 <translation id="1044878202534415707">Informa d'estadístiques del maquinari com ara l'ús de CPU o de RAM.
 
@@ -28,6 +37,13 @@
           Actualment, aquesta funció està desactivada al servidor.</translation>
 <translation id="1096105751829466145">Proveïdor de cerca predeterminat</translation>
 <translation id="1103860406762205913">Activa l'inici de sessió basat en el web antic</translation>
+<translation id="1128903365609589950">Configura el directori que <ph name="PRODUCT_NAME" /> utilitzarà per emmagatzemar fitxers a la memòria cau del disc.
+
+      Si definiu aquesta política, <ph name="PRODUCT_NAME" /> farà servir el directori proporcionat independentment de si l'usuari ha especificat la marca "--disk-cache-dir" o no. Per evitar la pèrdua de dades o altres errors inesperats, aquesta política no s'ha d'establir al directori arrel del volum ni en un directori utilitzat per a altres finalitats, ja que <ph name="PRODUCT_NAME" /> n'administra els continguts.
+
+      Aneu a https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables per veure una llista de les variables que es poden utilitzar.
+
+      Si no es defineix aquesta política, s'utilitzarà el directori de memòria cau predeterminat i l'usuari podrà substituir-lo per la marca de la línia d'ordres "--disk-cache-dir".</translation>
 <translation id="1138294736309071213">Aquesta política només està activa en mode de venta.
 
       Determina la durada abans no es mostri el protector de pantalla a la pantalla d'inici de sessió per als dispositius en mode de venta.
@@ -185,6 +201,8 @@
       Tingueu en compte que aquesta política es pot substituir per EnabledPlugins i DisabledPluginsExceptions.
 
       Si no definiu aquesta política, l'usuari no podrà utilitzar cap connector instal·lat al sistema, excepte en el cas de connectors codificats incompatibles, obsolets o perillosos.</translation>
+<translation id="1864269674877167562">Si aquesta política s'estableix en una cadena en blanc o no està configurada, <ph name="PRODUCT_OS_NAME" /> no mostrarà una opció d'emplenament automàtic durant el flux d'inici de sessió de l'usuari.
+      Si aquesta política s'estableix en una cadena que representa un nom de domini, <ph name="PRODUCT_OS_NAME" /> mostrarà una opció de compleció automàtica durant l'inici de sessió de l'usuari que li permetrà escriure només el nom d'usuari, sense l'extensió del nom del domini. L'usuari podrà substituir aquesta extensió del nom del domini.</translation>
 <translation id="1865417998205858223">Permisos clau</translation>
 <translation id="186719019195685253">Acció que s'ha d'emprendre quan s'està inactiu mentre s'està connectat al CA</translation>
 <translation id="187819629719252111">Permet que <ph name="PRODUCT_NAME" /> mostri diàlegs de selecció de fitxers per permetre l'accés als fitxers locals de l'equip. Si activeu aquest paràmetre, els usuaris podran obrir els diàlegs de selecció de fitxers de la manera habitual. Si el desactiveu, cada vegada que un usuari dugui a terme una acció que provoqui l'obertura d'un diàleg de selecció de fitxers (com ara la importació d'adreces d'interès, la càrrega de fitxers, el desament d'enllaços, etc.), li apareixerà un missatge que serà com si l'usuari fes clic a Cancel·la al diàleg de selecció de fitxers. Si no definiu aquest paràmetre, els usuaris podran obrir diàlegs de selecció de fitxers de la manera habitual.</translation>
@@ -293,6 +311,14 @@ Si aquesta opció està desactivada o no especificada, no apareix cap botó gran
 <translation id="2309390639296060546">Configuració d'ubicació geogràfica predeterminada</translation>
 <translation id="2312134445771258233">Us permet configurar les pàgines que es carreguen en iniciar. El contingut de la llista "URL que s'han d'obrir en iniciar" s'ignora tret que seleccioneu "Obre una llista d'URL" a "Acció a l'inici".</translation>
 <translation id="2337466621458842053">Us permet definir una llista de patrons d'URL que especifiquen els llocs que poden mostrar imatges. Si no es defineix aquesta política, s'utilitzarà el valor global predeterminat per a tots els llocs tant de la política "DefaultImagesSetting", si es defineix, com d'un altre tipus de configuració personal de l'usuari.</translation>
+<translation id="2359612025446382967">Si aquesta política s'estableix en "false", <ph name="PRODUCT_OS_NAME" /> desactiva el Bluetooth i l'usuari no el pot tornar a activar.
+
+      Si aquesta política s'estableix en "true" o no s'estableix, l'usuari pot activar o desactivar el Bluetooth sempre que vulgui.
+
+      Si aquesta política s'estableix, l'usuari no la pot canviar ni substituir.
+
+      Després d'activar el Bluetooth, cal reiniciar el dispositiu perquè s'apliquin els canvis (no cal fer-ho en desactivar el Bluetooth).</translation>
+<translation id="2366415278352956652">Activa l'emissió</translation>
 <translation id="2371309782685318247">Especifica el període en mil·lisegons en què es realitzen consultes al servei de gestió de dispositius sobre informació de la política de l'usuari.
 
       Si es defineix aquesta política, se substituirà el valor predeterminat de tres hores. Els valors vàlids per a aquesta política es troben en un interval d'1.800.000 (30 minuts) a 86.400.000 (un dia). Tots els valors que no es trobin dins d'aquest interval quedaran en els límits respectius.
@@ -516,6 +542,32 @@ Cada entrada de la llista especifica un identificador, que s'utilitza internamen
           Si activeu aquesta opció de configuració, <ph name="PRODUCT_NAME" /> ignora totes les opcions relacionades amb el servidor intermediari que s'han especificat des de la línia d'ordres.
 
           Si deixeu aquesta política sense establir, els usuaris poden triar pel seu compte la configuració del servidor intermediari.</translation>
+<translation id="2818551149761607847">Configureu la imatge d'avatar de l'usuari.
+
+      Aquesta política us permet configurar la imatge d'avatar que representa l'usuari a la pantalla d'inici de sessió. Per establir aquesta política, s'especifica l'URL des del qual <ph name="PRODUCT_OS_NAME" /> pot baixar la imatge d'avatar i un hash criptogràfic que s'utilitza per verificar la integritat de la baixada. La imatge ha de tenir el format JPEG i no pot superar els 512 kB. S'ha de poder accedir a l'URL sense cap tipus d'autenticació.
+
+      La imatge d'avatar es baixa i es desa a la memòria cau. Es tornarà a baixar quan l'URL o el hash canviïn.
+
+      La política s'ha d'establir com una cadena que expressi l'URL i el hash en format JSON, d'acord amb l'esquema següent:
+      {
+        "type": "object",
+        "properties": {
+          "url": {
+            "description": "L'URL des del qual es pot baixar la imatge d'avatar",
+            "type": "string"
+          },
+          "hash": {
+            "description": "El hash SHA-256 de la imatge d'avatar",
+            "type": "string"
+          }
+        }
+      }
+
+      Si aquesta política s'estableix, <ph name="PRODUCT_OS_NAME" /> baixarà i farà servir la imatge d'avatar.
+
+      Si establiu aquesta política, els usuaris no la podran canviar ni substituir.
+
+      Si la política no s'estableix, l'usuari podrà triar la imatge d'avatar que el representarà a la pantalla d'inici de sessió.</translation>
 <translation id="2824715612115726353">Activa el mode d'incògnit</translation>
 <translation id="2844404652289407061">Permet que la funció Toca per cercar estigui disponible a la visualització de contingut de <ph name="PRODUCT_NAME" />.
 
@@ -927,6 +979,7 @@ Si no es configura aquesta opció, no s'aplicarà cap restricció sobre els tipu
 <translation id="4449545651113180484">Gira la pantalla 270 graus en el sentit de les agulles del rellotge</translation>
 <translation id="4467952432486360968">Bloqueja les galetes de tercers</translation>
 <translation id="4474167089968829729">Permet que el gestor de contrasenyes desi contrasenyes</translation>
+<translation id="447686899376429408">Si s'estableix com a "true" o no s'estableix, els usuaris poden emetre pestanyes, llocs o l'escriptori des del navegador. Si s'estableix com a "false", l'opció es desactiva.</translation>
 <translation id="4480694116501920047">Força SafeSearch</translation>
 <translation id="4482640907922304445">Mostra el botó d'inici a la barra d'eines de <ph name="PRODUCT_NAME" />. Si activeu aquest paràmetre, el botó d'inici es mostrarà sempre. Si el desactiveu, el botó d'inici no es mostrarà mai. Si l'activeu o el desactiveu, els usuaris no podran canviar ni substituir aquesta configuració a <ph name="PRODUCT_NAME" />. Si no definiu aquesta política, l'usuari podrà decidir si vol que es mostri el botó d'inici.</translation>
 <translation id="4492287494009043413">Desactivació de les captures de pantalla</translation>
@@ -1541,16 +1594,50 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
 <translation id="7003334574344702284">Si està activada, aquesta política fa que les contrasenyes desades s'importin des del navegador predeterminat anterior. Si està activada, aquesta política també afecta el diàleg d'importació. Si està desactivada, les contrasenyes desades no s'importaran. Si no es defineix, pot ser que es demani a l'usuari si vol importar o bé la importació es pot produir de manera automàtica.</translation>
 <translation id="7003746348783715221">Preferències de <ph name="PRODUCT_NAME" /></translation>
 <translation id="7006788746334555276">Configuració del contingut</translation>
+<translation id="7007671350884342624">Configura el directori que <ph name="PRODUCT_NAME" /> utilitzarà per emmagatzemar dades d'usuari.
+
+
+
+      Si definiu aquesta política, <ph name="PRODUCT_NAME" /> farà servir el directori proporcionat independentment de si l'usuari ha especificat la marca "--user-data-dir" o no. Per evitar la pèrdua de dades o altres errors inesperats, aquesta política no s'ha d'establir al directori arrel del volum ni en un directori utilitzat per a altres finalitats, ja que <ph name="PRODUCT_NAME" /> n'administra els continguts.
+
+
+
+      Aneu a https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables per veure una llista de les variables que es poden utilitzar.
+
+
+
+      Si no es defineix aquesta política, s'utilitzarà el camí de perfil predeterminat i l'usuari podrà substituir-lo per la marca de la línia d'ordres "--user-data-dir".</translation>
 <translation id="7027785306666625591">Configureu la gestió de l'alimentació de <ph name="PRODUCT_OS_NAME" />.
 
       Aquestes polítiques us permeten configurar el comportament de <ph name="PRODUCT_OS_NAME" /> quan l'usuari està inactiu durant un temps determinat.</translation>
 <translation id="7040229947030068419">Valor d'exemple:</translation>
 <translation id="7049373494483449255">Permet que <ph name="PRODUCT_NAME" /> enviï documents a <ph name="CLOUD_PRINT_NAME" /> per imprimir. NOTA: Això només afecta a l'assistència de <ph name="CLOUD_PRINT_NAME" /> a <ph name="PRODUCT_NAME" />. No impedeix que els usuaris enviïn treballs d'impressió als llocs web. Si aquest paràmetre està activat o no està configurat, els usuaris podran imprimir a <ph name="CLOUD_PRINT_NAME" /> des del diàleg d'impressió <ph name="PRODUCT_NAME" />. Si aquest paràmetre està desactivat, els usuaris no podran imprimir a <ph name="CLOUD_PRINT_NAME" /> des del diàleg d'impressió <ph name="PRODUCT_NAME" />.</translation>
 <translation id="7053678646221257043">Si està activada, aquesta política fa que s'importin les adreces d'interès des del navegador predeterminat actual. Si està activada, aquesta política també afecta el diàleg d'importació. Si està desactivada, no s'importaran les adreces d'interès. Si no s'ha definit, es demanarà a l'usuari si vol importar o la importació es pot produir de forma automàtica.</translation>
+<translation id="7055358889740598917">Configura l'URL de la pàgina d'inici predeterminada a <ph name="PRODUCT_NAME" /> i impedeix que els usuaris la modifiquin.
+
+          La pàgina d'inici és la pàgina que s'obre amb el botó Inici. Les polítiques RestoreOnStartup controlen les pàgines que s'obren en iniciar el dispositiu.
+
+          El tipus de pàgina d'inici es pot establir en un URL que especifiqueu o a la pàgina Pestanya nova. Si seleccioneu aquesta pàgina, aquesta política no s'aplicarà.
+
+          Si activeu aquesta opció de configuració, els usuaris no podran canviar el seu URL de pàgina d'inici a <ph name="PRODUCT_NAME" />, però sí que podran triar la pàgina Pestanya nova com a pàgina d'inici.
+
+          Si deixeu aquesta política sense establir i HomepageIsNewTabPage també es deixa sense establir, l'usuari podrà triar la seva pàgina d'inici.
+
+          Aquesta política no està disponible en les instàncies de Windows que no
+          estan vinculades a un domini d'Active Directory.</translation>
 <translation id="7063895219334505671">Permet les finestres emergents en aquests llocs</translation>
 <translation id="706669471845501145">Permet que els llocs mostrin les notificacions d'escriptori</translation>
 <translation id="7079519252486108041">Bloqueja les finestres emergents en aquests llocs</translation>
 <translation id="7091198954851103976">Executa sempre els connectors que requereixen autorització</translation>
+<translation id="7106631983877564505">Activeu el bloqueig quan els dispositius de <ph name="PRODUCT_OS_NAME" /> estiguin inactius o suspesos.
+
+      Si activeu aquesta opció de configuració, es demanarà als usuaris una contrasenya per desbloquejar el dispositiu que estigui inactiu.
+
+      Si la desactiveu, no es demanarà als usuaris cap contrasenya per desbloquejar el dispositiu que estigui inactiu.
+
+      Tant si activeu com si desactiveu aquesta opció de configuració, els usuaris no la podran modificar ni substituir.
+
+      Si aquesta política no s'estableix, l'usuari podrà triar si vol que se li demani una contrasenya per desbloquejar el dispositiu o no.</translation>
 <translation id="7115494316187648452">Determina si s'inicia un procés de <ph name="PRODUCT_NAME" /> en iniciar la sessió al sistema operatiu i si es continua executant quan es tanqui l'última finestra del navegador, de manera que les aplicacions en segon pla i la sessió de navegació actual continuïn actives, com també totes les galetes de la sessió. El procés en segon pla mostra una icona a la safata del sistema, des d'on es pot tancar en qualsevol moment.
 
       Si aquesta política s'estableix en True, el mode de segon pla s'activa i l'usuari no el pot controlar a la configuració del navegador.
@@ -1892,6 +1979,13 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
           Si s'estableix aquesta política, els usuaris no podran canviar-la ni ignorar-la.
 
           Si no s'estableix aquesta política, el mode de contrast elevat es desactivarà inicialment, però l'usuari el podrà activar en qualsevol moment.</translation>
+<translation id="815061180603915310">Si s'estableix com a activada, aquesta política obliga a canviar el perfil al mode efímer. Si aquesta política s'estableix com una política de sistema operatiu (per exemple, GPO a Windows), s'aplicarà a tots els perfils del sistema; si s'estableix com una política en núvol, s'aplicarà només a un perfil amb la sessió iniciada com un compte gestionat.
+
+      En aquest mode, les dades del perfil només són presents al disc durant el temps que dura la sessió. Un cop tancat el navegador, no es conserven característiques com l'historial de navegació, les extensions i les seves dades, les dades web com ara galetes i les bases de dades web. Tanmateix, això no impedeix que l'usuari baixi manualment qualsevol dada al disc, desi pàgines o n'imprimeixi.
+
+       Si l'usuari ha activat la sincronització, totes aquestes dades es conservaran al seu perfil de sincronització, igual que es fa amb els perfils normals. El mode d'incògnit també estarà disponible si la política no el desactiva expressament.
+
+      Si la política s'estableix com a desactivada o no s'estableix, l'inici de sessió donarà accés a perfils normals.</translation>
 <translation id="8164246350636985940">Comportament predeterminat dels llocs no inclosos en paquets de contingut.
 
 
@@ -1921,6 +2015,26 @@ Si es defineix aquesta política, la pantalla d'inici de sessió farà servir la
 Si la política no es defineix, <ph name="PRODUCT_OS_NAME" /> farà servir l'ID del compte de correu electrònic del compte local del dispositiu com a nom visible a la pantalla d'inici de sessió.
 
 Aquesta política s'ignora en els comptes d'usuari normals.</translation>
+<translation id="8279832363395120715">Suprimeix les parts dels URL de tipus https:// que contenen informació confidencial i de seguretat abans d'enviar-los als scripts PAC (configuració automàtica de servidor intermediari) que utilitza <ph name="PRODUCT_NAME" /> durant la resolució del servidor intermediari.
+
+      Quan s'estableix com a "true", s'activa la funció de seguretat i se suprimeixen els URL de tipus https://
+      abans d'enviar-los als scripts PAC. D'aquesta manera, l'script PAC
+      no podrà veure la informació que normalment està protegida per un
+      canal encriptat (com el camí i la consulta de l'URL).
+
+      Quan s'estableix com a "false", es desactiva la funció de seguretat i, per tant, implícitament els scripts
+      poden veure tots els components d'un URL
+      de tipus https://. Aquesta opció de configuració s'aplica a tots els scripts PAC independentment de l'origen (com ara
+      els scripts obtinguts amb un mètode de transport no segur o els obtinguts de manera no segura
+      amb l'optimització WPAD).
+
+      S'estableix com a "true" de manera predeterminada (funció de seguretat activada), excepte en el cas dels usuaris d'empreses
+      que utilitzen Chrome OS, que s'estableix de manera predeterminada com a "false".
+
+      Es recomana establir-la com a "true". L'única raó per establir-la com a
+      "false" és que hi hagi problemes de compatibilitat amb els scripts PAC existents.
+
+      La voluntat és suprimir aquesta anul·lació en el futur.</translation>
 <translation id="8285435910062771358">Lupa de pantalla completa activada</translation>
 <translation id="8294750666104911727">Normalment, les pàgines compatibles amb X-UA que s'estableixen com a chrome=1 es renderitzen a <ph name="PRODUCT_FRAME_NAME" />, independentment de la política "ChromeFrameRendererSettings".
 
@@ -1935,6 +2049,18 @@ Aquesta política s'ignora en els comptes d'usuari normals.</translation>
 <translation id="8312129124898414409">Us permet definir si els llocs web estan autoritzats a utilitzar la generació de claus. L'ús de la generació de claus es pot autoritzar o denegar per a tots els llocs web.
 
           Si aquesta política es deixa sense establir, s'utilitzarà "BlockKeygen" i l'usuari podrà canviar-la.</translation>
+<translation id="8316806736175990584">Configura el tipus de pàgina d'inici predeterminada a <ph name="PRODUCT_NAME" /> i impedeix que els usuaris modifiquin les preferències de la pàgina d'inici. La pàgina d'inici pot ser tant un URL que especifiqueu com la pàgina Pestanya nova.
+
+          Si activeu aquesta opció de configuració, s'utilitzarà sempre la pàgina Pestanya nova com a pàgina d'inici i s'ignorarà la ubicació de l'URL de la pàgina d'inici.
+
+          Si desactiveu aquesta opció de configuració, la pàgina d'inici de l'usuari mai no serà la pàgina Pestanya nova, tret que s'estableixi l'URL com a "chrome://newtab".
+
+          Tant si activeu com si desactiveu aquesta opció de configuració, els usuaris no podran canviar el tipus de pàgina d'inici a <ph name="PRODUCT_NAME" />.
+
+          Si deixeu aquesta política sense establir, l'usuari podrà triar si vol que la pàgina Pestanya nova sigui la seva pàgina d'inici o no.
+
+          Aquesta política no està disponible en les instàncies de Windows que no
+          estan vinculades a un domini d'Active Directory.</translation>
 <translation id="8329984337216493753">Aquesta política només està activa en mode de venta.
 
       Quan DeviceIdleLogoutTimeout estigui especificat, aquesta política defineix la durada del quadre d'advertència amb un temporitzador de compte enrere que es mostra a l'usuari abans no s'executi el tancament de sessió.

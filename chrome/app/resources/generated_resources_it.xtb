@@ -289,7 +289,6 @@ Tieni presente che il Bluetooth verrà attivato per tutti i dispositivi compatib
 <translation id="1415990189994829608">L'estensione <ph name="EXTENSION_NAME" /> (ID estensione "<ph name="EXTENSION_ID" />") non è consentita in questo tipo di sessione.</translation>
 <translation id="1416836038590872660">EAP-MD5</translation>
 <translation id="1420684932347524586">Spiacenti, operazione di generazione della chiave privata RSA casuale non riuscita.</translation>
-<translation id="1421115928968836111">L'opzione comporta la revoca dell'autorizzazione delle licenze di Flash Player per i contenuti protetti.</translation>
 <translation id="1425734930786274278">I seguenti cookie sono stati bloccati (i cookie di terze parti vengono bloccati senza eccezioni):</translation>
 <translation id="1426410128494586442">Sì</translation>
 <translation id="1427049173708736891">Mantieni sbloccato il tuo <ph name="DEVICE_TYPE" /> quando il telefono Android è anch'esso sbloccato e nelle vicinanze: in questo modo, non sarà necessario digitare la password.</translation>
@@ -2241,7 +2240,6 @@ Se non modifichi le impostazioni predefinite, <ph name="USER_DISPLAY_NAME" /> pu
 <translation id="4098354747657067197">Sito ingannevole in vista</translation>
 <translation id="4099585076575543605">{COUNT,plural, =0{nessuna}=1{1}other{#}}</translation>
 <translation id="409980434320521454">Sincronizzazione non riuscita</translation>
-<translation id="4100079375692032441">Pagina semplificata nell'anteprima di stampa</translation>
 <translation id="4101878899871018532">Gestione password non proporrà di salvare la credenziale utilizzata per la sincronizzazione.</translation>
 <translation id="4104163789986725820">E&amp;sporta...</translation>
 <translation id="4105563239298244027">Ottieni 1 TB gratis con Google Drive</translation>
@@ -2369,7 +2367,6 @@ Per continuare, devono disconnettersi tutti gli utenti.</translation>
 <translation id="4297391862525234515">Riduzione a icona in caso di clic nella shelf</translation>
 <translation id="42981349822642051">Espandi</translation>
 <translation id="4298972503445160211">Tastiera danese</translation>
-<translation id="4299273509016391946">Consente di attivare la casella di controllo Pagina semplificata nella finestra dell'anteprima di stampa</translation>
 <translation id="4299729908419173967">Brasiliano</translation>
 <translation id="430714521864499800">Consente di attivare l'implementazione sperimentale dell'istruzione "Cache-Control: stale-while-revalidate", che permette ai server di specificare che alcune risorse potrebbero essere riconvalidate in background per migliorare la latenza.</translation>
 <translation id="4307281933914537745">Ulteriori informazioni sul ripristino del sistema</translation>
@@ -2446,7 +2443,6 @@ Premi un tasto qualsiasi per continuare a esplorare.</translation>
 <translation id="4434147949468540706">Scorrimento ed effetto</translation>
 <translation id="443464694732789311">Continua</translation>
 <translation id="4436456292809448986">Aggiungi al desktop...</translation>
-<translation id="4439244508678316632">Licenze per i contenuti</translation>
 <translation id="4439318412377770121">Vuoi registrare <ph name="DEVICE_NAME" /> su Google Cloud Devices?</translation>
 <translation id="4441124369922430666">Vuoi avviare automaticamente questa app all'accensione del computer?</translation>
 <translation id="444134486829715816">Espandi...</translation>
@@ -2995,8 +2991,8 @@ Premi un tasto qualsiasi per continuare a esplorare.</translation>
 <translation id="5262311848634918433"><ph name="MARKUP_1" />Accedi ai file ovunque, anche offline.<ph name="MARKUP_2" />
     I file in Google Drive sono aggiornati e disponibili da qualsiasi dispositivo.<ph name="MARKUP_3" />
     <ph name="MARKUP_4" />Tieni al sicuro i tuoi file.<ph name="MARKUP_5" />
-    Indipendentemente da ciò che accade al tuo dispositivo, i tuoi file rimangono memorizzati al sicuro in Google Drive.<ph name="MARKUP_6" />
-    <ph name="MARKUP_7" />Condividi, crea e realizza in collaborazione<ph name="MARKUP_8" /> file con altre persone, il tutto in un'unica posizione.<ph name="MARKUP_9" /></translation>
+    Qualsiasi cosa accada al tuo dispositivo, i tuoi file rimangono memorizzati al sicuro in Google Drive.<ph name="MARKUP_6" />
+    <ph name="MARKUP_7" />Condividi, crea e collabora<ph name="MARKUP_8" /> a file con altre persone, il tutto in un'unica posizione.<ph name="MARKUP_9" /></translation>
 <translation id="5264252276333215551">Connettiti a Internet per avviare l'app in modalità kiosk.</translation>
 <translation id="5265562206369321422">Offline per più di una settimana</translation>
 <translation id="5266113311903163739">Errore di importazione dell'autorità di certificazione</translation>
@@ -3470,7 +3466,6 @@ Premi un tasto qualsiasi per continuare a esplorare.</translation>
   Esponente pubblico (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bit):
   <ph name="EXPONENT_HEX_DUMP" /></translation>
 <translation id="59174027418879706">Attiva</translation>
-<translation id="592068147111860043">Consente di specificare i plug-in PPAPI che verranno eseguiti nella norma relativa alla sandbox di blocco di Win32k.</translation>
 <translation id="5925147183566400388">Puntatore Certification Practice Statement</translation>
 <translation id="5930693802084567591">I tuoi dati sono stati crittografati con la tua password Google in data <ph name="TIME" />. Inseriscila qui di seguito.</translation>
 <translation id="5931146425219109062">Leggere e modificare tutti i dati sui siti web visitati</translation>
@@ -3489,7 +3484,6 @@ Premi un tasto qualsiasi per continuare a esplorare.</translation>
 <translation id="5956585768868398362">È la pagina di ricerca prevista?</translation>
 <translation id="5957613098218939406">Altre opzioni</translation>
 <translation id="5958529069007801266">Utente supervisionato</translation>
-<translation id="5958994127112619898">Pagina semplificata</translation>
 <translation id="5959471481388474538">Rete non disponibile</translation>
 <translation id="5963026469094486319">Scegli un tema</translation>
 <translation id="5963453369025043595"><ph name="NUM_HANDLES" /> (picco di <ph name="NUM_KILOBYTES_LIVE" />)</translation>

@@ -504,6 +504,7 @@
 <translation id="7053983685419859001">अवरोधित करें</translation>
 <translation id="7056999826593229648">धीमे कनेक्शन का पता चला</translation>
 <translation id="7057058088140140610">Google पेमेंट्स का उपयोग करने वाले क्रेडिट कार्ड और पते</translation>
+<translation id="7062545763355031412">स्वीकार करें और खातों को बदलें</translation>
 <translation id="7063006564040364415">समन्‍वयन सर्वर से कनेक्‍ट नहीं किया जा सका.</translation>
 <translation id="7074853159844403180"><ph name="SITE" /> इनके साथ युग्मन करना चाहती है:</translation>
 <translation id="7081639897063626814">मौजूदा डेटा को अलग रखें</translation>
@@ -564,6 +565,7 @@
 <translation id="7713873128508426081">हमेशा अनुमति है</translation>
 <translation id="7764225426217299476">पता जोड़ें</translation>
 <translation id="7765158879357617694">ले जाएं</translation>
+<translation id="7769602470925380267">स्वीकार करें और प्रस्थान करें</translation>
 <translation id="7772032839648071052">पासफ़्रेज़ की दुबारा पूछें</translation>
 <translation id="7788788617745289808">Chrome को कैमरा ऐक्सेस की आवश्यकता है ताकि कैमरे को इस साइट के साथ साझा किया जा सके.</translation>
 <translation id="7791543448312431591">जोड़ें</translation>
@@ -676,6 +678,7 @@
 <translation id="9141510419986760385">आप समन्वयन खातों को <ph name="FROM_ACCOUNT" /> से <ph name="TO_ACCOUNT" /> में बदल रहे हैं. आप अपने मौजूदा बुकमार्क, इतिहास, पासवर्ड और अन्य सेटिंग का क्या करना चाहते हैं?</translation>
 <translation id="917685106653909562">आस-पास के शारीरिक वेब पृष्ठ</translation>
 <translation id="9187199695613236444">मोबाइल के अनुकूल दृश्‍य</translation>
+<translation id="9188680907066685419">प्रबंधित खाते से प्रस्थान करें</translation>
 <translation id="9192643434065497760">युग्‍मन की अनुमति देने के लिए <ph name="BEGIN_LINK" />डिवाइस सेटिंग<ph name="END_LINK" /> में ब्‍लूटूथ चालू करें.</translation>
 <translation id="9198708126133947749">इस डिवाइस के डेटा को <ph name="TO_ACCOUNT" /> के डेटा से बदलें. आप <ph name="FROM_ACCOUNT" /> पर वापस जाकर अपना मौजूदा डेटा पुनः प्राप्त कर सकते हैं.</translation>
 <translation id="9206873250291191720">A</translation>

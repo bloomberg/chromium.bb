@@ -77,7 +77,6 @@
 <translation id="1791429645902722292">Google Smart Lock</translation>
 <translation id="1821930232296380041">Neveljavna zahteva ali parametri zahteve</translation>
 <translation id="1871208020102129563">Proxy je nastavljen na uporabo stalnih strežnikov proxy, ne na URL skripta .pac.</translation>
-<translation id="1871625979288021266">Nevarna vrata blokirana</translation>
 <translation id="1883255238294161206">Strni seznam</translation>
 <translation id="1898423065542865115">Filtriranje</translation>
 <translation id="1911837502049945214">Spletno mesto <ph name="HOST_NAME" /> ni sprejelo potrdila za prijavo ali pa je to poteklo.</translation>
@@ -128,7 +127,6 @@
 <translation id="2386255080630008482">Potrdilo strežnika je bilo preklicano.</translation>
 <translation id="2392959068659972793">Pokaži pravilnike brez nastavljene vrednosti</translation>
 <translation id="2396249848217231973">&amp;Razveljavi izbris</translation>
-<translation id="2400837204278978822">Neznana vrsta datoteke.</translation>
 <translation id="2413528052993050574">Strežniku ni uspelo dokazati, da je <ph name="DOMAIN" />; njegovo varnostno potrdilo je bilo morda preklicano. Razlog za to je lahko napačna konfiguracija ali napadalčevo prestrezanje povezave.</translation>
 <translation id="2455981314101692989">Spletna stran je onemogočila samodejno izpolnjevanje za ta obrazec.</translation>
 <translation id="2467694685043708798"><ph name="BEGIN_LINK" />Izvajanje orodja za omrežno diagnostiko<ph name="END_LINK" /></translation>
@@ -171,7 +169,6 @@
 <translation id="2855922900409897335">Preverjanje kartice <ph name="CREDIT_CARD" /></translation>
 <translation id="2889159643044928134">Ne naloži znova</translation>
 <translation id="2896499918916051536">Ta vtičnik ni podprt.</translation>
-<translation id="2897655920961181107">Zahtevana vrata niso varna in so blokirana.</translation>
 <translation id="2909946352844186028">Zaznana je bila sprememba omrežja.</translation>
 <translation id="2915500479781995473">Strežniku ni uspelo dokazati, da je <ph name="DOMAIN" />; njegovo varnostno potrdilo je poteklo. Razlog za to je lahko napačna konfiguracija ali napadalčevo prestrezanje povezave. Ura v računalniku je trenutno nastavljena na <ph name="CURRENT_TIME" />. Je to pravilno? Če ni, popravite uro v sistemu in osvežite stran.
 </translation>
@@ -348,7 +345,6 @@
 <translation id="4807049035289105102">Spletnega mesta <ph name="SITE" /> trenutno ne morete obiskati, saj je poslalo šifrirane poverilnice, ki jih Google Chrome ne more obdelati. Napake omrežja in napadi na omrežje so običajno začasni, zato bo ta stran verjetno delovala pozneje.</translation>
 <translation id="4813512666221746211">Napaka v omrežju</translation>
 <translation id="4816492930507672669">Prilagodi strani</translation>
-<translation id="4841640898320458950">Nevarna vrata blokirana.</translation>
 <translation id="4850886885716139402">Pogled</translation>
 <translation id="4880827082731008257">Zgodovina iskanja</translation>
 <translation id="4923417429809017348">Stran je bila iz neznanega jezika prevedena v jezik »<ph name="LANGUAGE_LANGUAGE" />«</translation>
@@ -449,7 +445,6 @@
 <translation id="6165508094623778733">Več o tem</translation>
 <translation id="6203231073485539293">Preverite internetno povezavo</translation>
 <translation id="6218753634732582820">Želite naslov odstraniti iz Chromiuma?</translation>
-<translation id="6232139169545176020">Zahtevana shema URI ni podprta.</translation>
 <translation id="6259156558325130047">&amp;Uveljavi razvrstitev</translation>
 <translation id="6263376278284652872">Zaznamki <ph name="DOMAIN" /></translation>
 <translation id="6264485186158353794">Nazaj na varnost</translation>
@@ -472,14 +467,11 @@
 <translation id="6489534406876378309">Začetek prenašanja zrušitev v storitev</translation>
 <translation id="6518133107902771759">Preveri</translation>
 <translation id="6529602333819889595">&amp;Uveljavi izbris</translation>
-<translation id="6533019874004191247">Nepodprt URL.</translation>
 <translation id="6550675742724504774">Možnosti</translation>
 <translation id="6596325263575161958">Možnosti šifriranja</translation>
-<translation id="6610562986279010327">Chrome ne more odpreti tega URL-ja</translation>
 <translation id="662080504995468778">Ostani</translation>
 <translation id="6628463337424475685"><ph name="ENGINE" /> Iskanje</translation>
 <translation id="6634865548447745291">Spletnega mesta <ph name="SITE" /> trenutno ni mogoče obiskati, saj <ph name="BEGIN_LINK" />je to potrdilo preklicano<ph name="END_LINK" />. Napake omrežja in napadi na omrežje so običajno začasni, zato bo ta stran verjetno delovala pozneje.</translation>
-<translation id="6637478299472506933">Prenos ni uspel</translation>
 <translation id="6644283850729428850">Ta pravilnik je zastarel.</translation>
 <translation id="6646897916597483132">Vnesite štirimestno kodo CVC na sprednji strani kartice</translation>
 <translation id="6656103420185847513">Urejanje mape</translation>
@@ -585,7 +577,6 @@ Pst! Naslednjič vam lahko pride prav bližnjica <ph name="SHORTCUT_KEY" /> za n
 <translation id="780301667611848630">Ne, hvala</translation>
 <translation id="7805768142964895445">Stanje</translation>
 <translation id="7813600968533626083">Želite odstraniti predlog obrazca iz Chroma?</translation>
-<translation id="7825436071901023927">Vrata <ph name="SITE" /> niso varna</translation>
 <translation id="785549533363645510">Kljub temu pa niste nevidni. Z uporabo načina brez beleženja zgodovine brskanja ne skrijete pred delodajalcem, ponudnikom internetnih storitev ali spletnimi mesti, ki jih obiščete.</translation>
 <translation id="7887683347370398519">Preverite CVC in poskusite znova</translation>
 <translation id="7894616681410591072">Ojoj! Če želite dostop do te strani, potrebujete dovoljenje te osebe: <ph name="NAME" />.</translation>
@@ -662,7 +653,6 @@ Pst! Naslednjič vam lahko pride prav bližnjica <ph name="SHORTCUT_KEY" /> za n
 <translation id="8876793034577346603">Omrežne konfiguracije ni bilo mogoče razčleniti.</translation>
 <translation id="8891727572606052622">Neveljaven način strežnika proxy.</translation>
 <translation id="889901481107108152">Oprostite, ta poskus ni na voljo za vaše okolje.</translation>
-<translation id="890308499387283275">Chrome ne more prenesti te datoteke.</translation>
 <translation id="8903921497873541725">Povečaj</translation>
 <translation id="8931333241327730545">Ali želite to kartico shraniti v Google Račun?</translation>
 <translation id="8932102934695377596">Ura zaostaja</translation>

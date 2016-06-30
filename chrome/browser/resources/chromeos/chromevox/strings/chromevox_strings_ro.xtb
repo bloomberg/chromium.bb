@@ -21,6 +21,7 @@
 <translation id="1167230103353892028"><ph name="NAME" />, element din meniu cu submeniu</translation>
 <translation id="1177863135347784049">Personalizează</translation>
 <translation id="1188858454923323853">complementar</translation>
+<translation id="1201402288615127009">Înainte</translation>
 <translation id="1206619573307042055">text derulant</translation>
 <translation id="1213216066620407844">ChromeVox - Voce pentru Chrome</translation>
 <translation id="1229276918471378188">Saltul anterior</translation>
@@ -122,7 +123,6 @@
 <translation id="2553108862507765288">greșeală gramaticală</translation>
 <translation id="257674075312929031">Grup</translation>
 <translation id="2582407057977008361">Separat</translation>
-<translation id="2589102159832527089">Această pagină conține textul extras automat din fișierul PDF &lt;b&gt;<ph name="FILENAME" />&lt;/b&gt;. &lt;a href="<ph name="URL" />"&gt;Dați clic aici pentru original.&lt;/a&gt;</translation>
 <translation id="2606210917827248971">cu {COUNT,plural, =1{# element}few{# elemente}other{# de elemente}}</translation>
 <translation id="2614981083756825552">Aspect Math ML</translation>
 <translation id="2626530649491650971">pe care se poate da clic</translation>
@@ -510,7 +510,6 @@
 <translation id="6129953537138746214">Spațiu</translation>
 <translation id="6142308968191113180">Titlu 4</translation>
 <translation id="6169420925157477918">Imagine cu descriere lungă</translation>
-<translation id="6172087735260766220">Textul accesibil din fișierul PDF protejat la copiere nu poate fi accesat.</translation>
 <translation id="6186305613600865047">Navigați la sfârșitul paginii</translation>
 <translation id="6193330012414963395">a.m. p.m.</translation>
 <translation id="622484624075952240">Jos</translation>
@@ -549,6 +548,7 @@
 <translation id="6659594942844771486">Filă</translation>
 <translation id="667999046851023355">Document</translation>
 <translation id="6697092096875747123">Caseta combo anterioară</translation>
+<translation id="6710213216561001401">Înapoi</translation>
 <translation id="6714813999819678458">Titlul de nivel 2 anterior</translation>
 <translation id="6716505898850596801">Taste de modificare</translation>
 <translation id="671916444866103745">Nu există un reper ARIA următor.</translation>
@@ -690,6 +690,7 @@
 <translation id="842922884199979200">Nu există un titlu de nivel 3 următor.</translation>
 <translation id="8430049249787218991">bară meniu</translation>
 <translation id="844681116543532394">Nu există o casetă de selectare anterioară.</translation>
+<translation id="8446884382197647889">Aflați mai multe</translation>
 <translation id="8455868257606149352">Max. <ph name="X" /></translation>
 <translation id="84575901236241018">are tastă de acces, <ph name="KEY" /></translation>
 <translation id="8476508772960940536">prezentarea ferestrei</translation>

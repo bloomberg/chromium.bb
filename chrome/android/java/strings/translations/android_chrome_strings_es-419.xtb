@@ -148,7 +148,9 @@ Puedes controlar la Web física desde la configuración de Chrome.
 <translation id="2748463065602559597">Estás viendo una página segura de Google Chrome.</translation>
 <translation id="2762000892062317888">recién</translation>
 <translation id="2770465223704140727">Eliminar de la lista</translation>
+<translation id="2777555524387840389"><ph name="SECONDS" /> segundos restantes</translation>
 <translation id="278029852808208386">No se encontraron dispositivos Bluetooth. <ph name="BEGIN_LINK" />Vuelve a buscar<ph name="END_LINK" />.</translation>
+<translation id="2781151931089541271">1 segundo restante</translation>
 <translation id="2781389167600714117">Seleccionar el envío</translation>
 <translation id="2811892995384186721">¿No ves el dispositivo? <ph name="BEGIN_LINK" />Obtén ayuda<ph name="END_LINK" /></translation>
 <translation id="2836148919159985482">Toca el botón Atrás para salir de la pantalla completa.</translation>
@@ -187,6 +189,7 @@ Puedes controlar la Web física desde la configuración de Chrome.
 <translation id="321773570071367578">Si olvidaste la frase de contraseña o quieres cambiar esta configuración, <ph name="BEGIN_LINK" />restablece la contraseña<ph name="END_LINK" /></translation>
 <translation id="3227137524299004712">Micrófono</translation>
 <translation id="3232754137068452469">Aplicación web</translation>
+<translation id="3236059992281584593">1 minuto restante</translation>
 <translation id="3244271242291266297">MM</translation>
 <translation id="3254409185687681395">Agregar esta página a Marcadores</translation>
 <translation id="326254929494722411">No configuraste ninguna cuenta de Google en el dispositivo.</translation>
@@ -301,6 +304,7 @@ Para ajustar el término de búsqueda, mantén presionado el texto y seleccióna
 <translation id="4720023427747327413">Abrir en <ph name="PRODUCT_NAME" /></translation>
 <translation id="473775607612524610">Actualizar</translation>
 <translation id="4738836084190194332">Última sincronización: <ph name="WHEN" /></translation>
+<translation id="4758311279753947758">Agregar información de contacto</translation>
 <translation id="4759238208242260848">Descargas</translation>
 <translation id="4773299976671772492">Detenida</translation>
 <translation id="4797039098279997504">Toca para volver a <ph name="URL_OF_THE_CURRENT_TAB" /></translation>
@@ -325,6 +329,7 @@ Para ajustar el término de búsqueda, mantén presionado el texto y seleccióna
 <translation id="5063480226653192405">Uso</translation>
 <translation id="5087580092889165836">Agregar tarjeta</translation>
 <translation id="5100237604440890931">Contraído; haz clic para expandir.</translation>
+<translation id="510275257476243843">1 hora restante</translation>
 <translation id="5107381076085091558">Descarga en pausa</translation>
 <translation id="5118713593561876160">Intereses</translation>
 <translation id="5127805178023152808">La sincronización está desactivada.</translation>
@@ -409,6 +414,7 @@ Sin embargo, no vas a pasar completamente desapercibido. El modo de navegación 
 <translation id="5911030830365207728">Google Traductor</translation>
 <translation id="5916664084637901428">Activada</translation>
 <translation id="5939518447894949180">Restablecer</translation>
+<translation id="5961742032223302715">Seleccionar información de contacto</translation>
 <translation id="5968595432776860642">Reproduciendo "<ph name="VIDEO_TITLE" />"</translation>
 <translation id="6010869025736512584">Accediendo a la entrada de video</translation>
 <translation id="6012342843556706400">Chrome necesita acceso a la ubicación para compartirla con este sitio.</translation>
@@ -419,6 +425,7 @@ Sin embargo, no vas a pasar completamente desapercibido. El modo de navegación 
 <translation id="604996488070107836"><ph name="FILE_NAME" /> no se pudo descargar debido a un error desconocido.</translation>
 <translation id="605721222689873409">AA</translation>
 <translation id="6075798973483050474">Editar la Página principal</translation>
+<translation id="60923314841986378"><ph name="HOURS" /> horas restantes</translation>
 <translation id="6108923351542677676">Configuración en curso…</translation>
 <translation id="6112702117600201073">Actualizando la página</translation>
 <translation id="6127379762771434464">Se eliminó el elemento</translation>
@@ -505,7 +512,9 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mediante anuncio
 <translation id="7053983685419859001">Bloquear</translation>
 <translation id="7056999826593229648">Se detectó una conexión lenta</translation>
 <translation id="7057058088140140610">Tarjetas de crédito y direcciones que utilizan Google Payments</translation>
+<translation id="7062545763355031412">Aceptar y cambiar de cuenta</translation>
 <translation id="7063006564040364415">No se pudo establecer conexión con el servidor de sincronización.</translation>
+<translation id="7064851114919012435">Información de contacto</translation>
 <translation id="7074853159844403180"><ph name="SITE" /> quiere sincronizarse con:</translation>
 <translation id="7081639897063626814">Mantener los datos existentes por separado</translation>
 <translation id="7094922512924405309">No se encontró ninguna página web física cercana</translation>
@@ -521,6 +530,7 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mediante anuncio
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" /> usa tu ubicación para mostrar resultados de la búsqueda a nivel local.</translation>
 <translation id="7299441085833132046"><ph name="BEGIN_LINK" />Ayuda<ph name="END_LINK" /></translation>
 <translation id="7299721129597238157">Eliminar marcador</translation>
+<translation id="7327835590071894791">La pestaña ahora está en segundo plano.</translation>
 <translation id="7347770551817603360">Contenido sin conexión</translation>
 <translation id="7358452246665489050">Calculando…</translation>
 <translation id="7363354739009474003">Cargando "<ph name="VIDEO_TITLE" />"</translation>
@@ -565,12 +575,14 @@ Es posible que tu cuenta de Google tenga otros formularios del historial de nave
 <translation id="7713873128508426081">Permitir siempre</translation>
 <translation id="7764225426217299476">Agregar dirección</translation>
 <translation id="7765158879357617694">Mover</translation>
+<translation id="7769602470925380267">Aceptar y salir</translation>
 <translation id="7772032839648071052">Confirmar frase de contraseña</translation>
 <translation id="7788788617745289808">Chrome necesita acceso a la cámara para compartirla con este sitio.</translation>
 <translation id="7791543448312431591">Agregar</translation>
 <translation id="780301667611848630">No, gracias</translation>
 <translation id="7829298379596169484">Accediendo a la entrada de audio</translation>
 <translation id="7837582000577464779">Se produjo un error al procesar tu pedido. Comprueba tu cuenta e inténtalo de nuevo.</translation>
+<translation id="7837721118676387834">Permite la reproducción automática de videos silenciados para un sitio específico.</translation>
 <translation id="7846076177841592234">Cancelar la selección</translation>
 <translation id="7851858861565204677">Otros dispositivos</translation>
 <translation id="7876243839304621966">Eliminar todo</translation>
@@ -585,6 +597,7 @@ Es posible que tu cuenta de Google tenga otros formularios del historial de nave
 <translation id="8007176423574883786">Desactivado para este dispositivo</translation>
 <translation id="8026334261755873520">Eliminar datos de navegación</translation>
 <translation id="8035133914807600019">Nueva carpeta…</translation>
+<translation id="8037750541064988519"><ph name="DAYS" /> días restantes</translation>
 <translation id="8063895661287329888">Se produjo un error al agregar el marcador.</translation>
 <translation id="8068648041423924542">No es posible seleccionar un certificado</translation>
 <translation id="8069239273282989646">Poscompresión</translation>
@@ -597,6 +610,7 @@ Es posible que tu cuenta de Google tenga otros formularios del historial de nave
 <translation id="8137558756159375272">La función Tocar para buscar envía la palabra seleccionada y la página actual como contexto a la Búsqueda de Google. Para desactivarla, accede a <ph name="BEGIN_LINK" />Configuración<ph name="END_LINK" />.</translation>
 <translation id="8168435359814927499">Contenido</translation>
 <translation id="8173098127580644436">el principio</translation>
+<translation id="8190358571722158785">1 día restante</translation>
 <translation id="8200772114523450471">Reanudar</translation>
 <translation id="8202097416529803614">Resumen del pedido</translation>
 <translation id="8209050860603202033">Abrir imagen</translation>
@@ -621,6 +635,7 @@ Es posible que tu cuenta de Google tenga otros formularios del historial de nave
 <translation id="8518901949365209398">Este sitio usa una configuración de seguridad vulnerable (firmas SHA-1). Por lo tanto, es posible que la conexión no sea privada.</translation>
 <translation id="8525306231823319788">Pantalla completa</translation>
 <translation id="854522910157234410">Abrir esta página</translation>
+<translation id="8559882854823529713">Leer más tarde en Chrome</translation>
 <translation id="8562452229998620586">Las contraseñas guardadas aparecerán aquí.</translation>
 <translation id="856481929701340285">Solicitar versión de escritorio</translation>
 <translation id="857943718398505171">Permitido (recomendado)</translation>
@@ -677,6 +692,7 @@ Conéctate a Internet y reproduce el contenido descargado para obtener licencias
 <translation id="9141510419986760385">Estás cambiando la cuenta de sincronización de <ph name="FROM_ACCOUNT" /> a <ph name="TO_ACCOUNT" />. ¿Qué deseas hacer con los marcadores, el historial, las contraseñas y otras opciones de configuración existentes?</translation>
 <translation id="917685106653909562">Páginas web físicas cercanas</translation>
 <translation id="9187199695613236444">Vista optimizada para celulares</translation>
+<translation id="9188680907066685419">Salir de la cuenta administrada</translation>
 <translation id="9192643434065497760">Activa Bluetooth en la <ph name="BEGIN_LINK" />configuración del dispositivo<ph name="END_LINK" /> para permitir la sincronización.</translation>
 <translation id="9198708126133947749">Reemplaza los datos de este dispositivo con los datos de <ph name="TO_ACCOUNT" />. Puedes recuperar tus datos existentes al volver a <ph name="FROM_ACCOUNT" />.</translation>
 <translation id="9206873250291191720">A</translation>
@@ -685,6 +701,7 @@ Conéctate a Internet y reproduce el contenido descargado para obtener licencias
 <translation id="938850635132480979">Error: <ph name="ERROR_CODE" /></translation>
 <translation id="945632385593298557">Acceso al micrófono</translation>
 <translation id="969096075394517431">Cambiar idiomas</translation>
+<translation id="970715775301869095"><ph name="MINUTES" /> minutos restantes</translation>
 <translation id="981121421437150478">Sin conexión</translation>
 <translation id="983192555821071799">Cerrar todas las pestañas</translation>
 </translationbundle>

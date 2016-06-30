@@ -148,7 +148,9 @@
 <translation id="2748463065602559597">‏أنت تعرض صفحة Google Chrome آمنة.</translation>
 <translation id="2762000892062317888">الآن</translation>
 <translation id="2770465223704140727">إزالة من القائمة</translation>
+<translation id="2777555524387840389">عدد الثواني المتبقية: <ph name="SECONDS" /></translation>
 <translation id="278029852808208386">لم يتم العثور على أجهزة بلوتوث. <ph name="BEGIN_LINK" />ابحث مرة أخرى<ph name="END_LINK" />.</translation>
+<translation id="2781151931089541271">يتبقى ثانية واحدة</translation>
 <translation id="2781389167600714117">تحديد خيارات الشحن</translation>
 <translation id="2811892995384186721">ألا ترى جهازك؟ <ph name="BEGIN_LINK" />احصل على المساعدة<ph name="END_LINK" />.</translation>
 <translation id="2836148919159985482">المس زر الرجوع للخروج من وضع ملء الشاشة.</translation>
@@ -187,6 +189,7 @@
 <translation id="321773570071367578">إذا نسيت عبارة المرور أو رغبت في تغيير هذا الإعداد، يمكنك <ph name="BEGIN_LINK" />إعادة تعيين المزامنة<ph name="END_LINK" /></translation>
 <translation id="3227137524299004712">الميكروفون</translation>
 <translation id="3232754137068452469">تطبيق الويب</translation>
+<translation id="3236059992281584593">يتبقى دقيقة واحدة</translation>
 <translation id="3244271242291266297">الشهر</translation>
 <translation id="3254409185687681395">وضع إشارة على هذه الصفحة</translation>
 <translation id="326254929494722411">‏لم يتم إعداد حساب Google على هذا الجهاز حتى الآن</translation>
@@ -300,6 +303,7 @@
 <translation id="4720023427747327413">الفتح في <ph name="PRODUCT_NAME" /></translation>
 <translation id="473775607612524610">تحديث</translation>
 <translation id="4738836084190194332">آخر مزامنة: <ph name="WHEN" /></translation>
+<translation id="4758311279753947758">إضافة معلومات الاتصال</translation>
 <translation id="4759238208242260848">التنزيلات</translation>
 <translation id="4773299976671772492">متوقفة</translation>
 <translation id="4797039098279997504">المس  للعودة إلى <ph name="URL_OF_THE_CURRENT_TAB" /></translation>
@@ -324,6 +328,7 @@
 <translation id="5063480226653192405">الاستخدام</translation>
 <translation id="5087580092889165836">إضافة بطاقة</translation>
 <translation id="5100237604440890931">تم التصغير - انقر للتوسيع.</translation>
+<translation id="510275257476243843">يتبقى ساعة واحدة</translation>
 <translation id="5107381076085091558">تم توقف التنزيل مؤقتًا.</translation>
 <translation id="5118713593561876160">الاهتمامات</translation>
 <translation id="5127805178023152808">المزامنة معطلة</translation>
@@ -407,6 +412,7 @@
 <translation id="5911030830365207728">‏الترجمة من Google</translation>
 <translation id="5916664084637901428">تشغيل</translation>
 <translation id="5939518447894949180">إعادة</translation>
+<translation id="5961742032223302715">تحديد تفاصيل جهة الاتصال</translation>
 <translation id="5968595432776860642">يتم الآن التشغيل "<ph name="VIDEO_TITLE" />"</translation>
 <translation id="6010869025736512584">جارٍ الوصول إلى إدخال الفيديو</translation>
 <translation id="6012342843556706400">‏يحتاج Chrome إلى الحصول على حق الوصول إلى الموقع لمشاركته مع موقع الويب هذا.</translation>
@@ -417,6 +423,7 @@
 <translation id="604996488070107836">أخفق تنزيل الملف <ph name="FILE_NAME" /> بسبب خطأ غير معلوم.</translation>
 <translation id="605721222689873409">العام</translation>
 <translation id="6075798973483050474">تعديل الصفحة الرئيسية</translation>
+<translation id="60923314841986378">عدد الساعات المتبقية: <ph name="HOURS" /></translation>
 <translation id="6108923351542677676">الإعداد قيد التقدّم…</translation>
 <translation id="6112702117600201073">يتم الآن تحديث الصفحة</translation>
 <translation id="6127379762771434464">أُزيلَ عنصر</translation>
@@ -503,7 +510,9 @@
 <translation id="7053983685419859001">منع</translation>
 <translation id="7056999826593229648">تم اكتشاف اتصال بطيء بالإنترنت</translation>
 <translation id="7057058088140140610">‏بطاقات الائتمان والعناوين باستخدام Google Payments</translation>
+<translation id="7062545763355031412">قبول الحسابات وتبديلها</translation>
 <translation id="7063006564040364415">تعذر الاتصال بخادم المزامنة.</translation>
+<translation id="7064851114919012435">معلومات الاتصال</translation>
 <translation id="7074853159844403180">يريد <ph name="SITE" /> الاقتران مع:</translation>
 <translation id="7081639897063626814">الحفاظ على البيانات الموجودة منفصلة</translation>
 <translation id="7094922512924405309">لم يتم العثور على صفحات الشبكة المادية المجاورة</translation>
@@ -519,6 +528,7 @@
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" /> يستخدم موقعك لعرض نتائج البحث المحلي</translation>
 <translation id="7299441085833132046"><ph name="BEGIN_LINK" />مساعدة<ph name="END_LINK" /></translation>
 <translation id="7299721129597238157">حذف الإشارة المرجعية</translation>
+<translation id="7327835590071894791">توجد الآن علامة التبويب في الخلفية.</translation>
 <translation id="7347770551817603360">محتوى بلا اتصال</translation>
 <translation id="7358452246665489050">جارٍ الحوسبة...</translation>
 <translation id="7363354739009474003">يتم الآن تحميل "<ph name="VIDEO_TITLE" />"</translation>
@@ -563,12 +573,14 @@
 <translation id="7713873128508426081">السماح بذلك دائمًا</translation>
 <translation id="7764225426217299476">إضافة عنوان</translation>
 <translation id="7765158879357617694">نقل</translation>
+<translation id="7769602470925380267">قبول وتسجيل الخروج</translation>
 <translation id="7772032839648071052">تأكيد عبارة المرور</translation>
 <translation id="7788788617745289808">‏يحتاج Chrome الحصول على حق الوصول إلى الكاميرا لمشاركتها مع هذا الموقع.</translation>
 <translation id="7791543448312431591">إضافة</translation>
 <translation id="780301667611848630">لا، شكرًا</translation>
 <translation id="7829298379596169484">جارٍ الوصول إلى إدخال الصوت</translation>
 <translation id="7837582000577464779">حدث خطأ أثناء معالجة طلبك.  الرجاء التحقق من حسابك والمحاولة مرة أخرى.</translation>
+<translation id="7837721118676387834">السماح بالتشغيل التلقائي لمقاطع الفيديو المكتومة الصوت لموقع معين.</translation>
 <translation id="7846076177841592234">إلغاء التحديد</translation>
 <translation id="7851858861565204677">أجهزة أخرى</translation>
 <translation id="7876243839304621966">إزالة الكل</translation>
@@ -583,6 +595,7 @@
 <translation id="8007176423574883786">تم إيقافه لهذا الجهاز</translation>
 <translation id="8026334261755873520">محو بيانات التصفُّح</translation>
 <translation id="8035133914807600019">مجلد جديد...</translation>
+<translation id="8037750541064988519">عدد الأيام المتبقية: <ph name="DAYS" /></translation>
 <translation id="8063895661287329888">أخفقت إضافة الإشارة المرجعية.</translation>
 <translation id="8068648041423924542">يتعذر تحديد الشهادة.</translation>
 <translation id="8069239273282989646">بعد الضغط</translation>
@@ -595,6 +608,7 @@
 <translation id="8137558756159375272">‏يرسل "المس للبحث" الكلمة المحددة والصفحة الحالية كسياق إلى بحث Google. يمكنك إيقافه في <ph name="BEGIN_LINK" />الإعدادات<ph name="END_LINK" />.</translation>
 <translation id="8168435359814927499">المحتوى</translation>
 <translation id="8173098127580644436">بدايةَ الوقت</translation>
+<translation id="8190358571722158785">يتبقى يوم واحد</translation>
 <translation id="8200772114523450471">استئناف</translation>
 <translation id="8202097416529803614">ملخص الطلب</translation>
 <translation id="8209050860603202033">فتح الصورة</translation>
@@ -619,6 +633,7 @@
 <translation id="8518901949365209398">‏يستخدم هذا الموقع تهيئة أمان ضعيفة (توقيعات SHA-1)، لذا قد لا يتم اتصالك بشكل خاص.</translation>
 <translation id="8525306231823319788">ملء الشاشة</translation>
 <translation id="854522910157234410">فتح هذه الصفحة</translation>
+<translation id="8559882854823529713">‏القراءة لاحقًا في Chrome</translation>
 <translation id="8562452229998620586">ستظهر هنا كلمات المرور المحفوظة.</translation>
 <translation id="856481929701340285">طلب موقع الكمبيوتر</translation>
 <translation id="857943718398505171">مسموح به (موصى به)</translation>
@@ -675,6 +690,7 @@
 <translation id="9141510419986760385">أنت تجري تبديلاً لحسابات المزامنة من <ph name="FROM_ACCOUNT" /> إلى <ph name="TO_ACCOUNT" />. ما الإجراء الذي تريد اتخاذه حيال الإشارات المرجعية، والسجل، وكلمات المرور، والإعدادات الأخرى الحالية؟</translation>
 <translation id="917685106653909562">صفحات الشبكة المادية المجاورة</translation>
 <translation id="9187199695613236444">عرض مناسب للجوال</translation>
+<translation id="9188680907066685419">تسجيل الخروج من الحساب المُدار</translation>
 <translation id="9192643434065497760">شغّل البلوتوث من <ph name="BEGIN_LINK" />إعدادات الجهاز<ph name="END_LINK" /> للسماح بالإقران.</translation>
 <translation id="9198708126133947749">استبدال بيانات هذا الجهاز ببيانات <ph name="TO_ACCOUNT" />. يمكنك استرداد بياناتك الحالية بالتبديل مرة ثانية إلى <ph name="FROM_ACCOUNT" />.</translation>
 <translation id="9206873250291191720">A</translation>
@@ -683,6 +699,7 @@
 <translation id="938850635132480979">الخطأ: <ph name="ERROR_CODE" /></translation>
 <translation id="945632385593298557">الدخول إلى الميكروفون</translation>
 <translation id="969096075394517431">تغيير اللغات</translation>
+<translation id="970715775301869095">عدد الدقائق المتبقية: <ph name="MINUTES" /></translation>
 <translation id="981121421437150478">بلا اتصال</translation>
 <translation id="983192555821071799">إغلاق جميع علامات التبويب</translation>
 </translationbundle>

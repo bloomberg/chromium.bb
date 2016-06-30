@@ -287,7 +287,6 @@
 <translation id="1415990189994829608">ഇത്തരം സെഷനിൽ <ph name="EXTENSION_NAME" /> (വിപുലീകരണ ഐഡി "<ph name="EXTENSION_ID" />") അനുവദനീയമല്ല.</translation>
 <translation id="1416836038590872660">EAP-MD5</translation>
 <translation id="1420684932347524586">അയ്യോ! ക്രമരഹിത RSA സ്വകാര്യ കീ ജനറേറ്റ് ചെയ്യുന്നതിന് പരാജയപ്പെട്ടു. </translation>
-<translation id="1421115928968836111">ഇത് പരിരക്ഷിതമായ ഉള്ളടക്കത്തിന്റെ Flash Player ലൈസൻസുകളുടെ അംഗീകാരം ഇല്ലാതാക്കും.</translation>
 <translation id="1425734930786274278">ഇനിപ്പറയുന്ന കുക്കികളെ തടഞ്ഞു (മൂന്നാം-കക്ഷി കുക്കികളെ വേര്‍തിരിവ് ഇല്ലാതെ തടഞ്ഞു):</translation>
 <translation id="1426410128494586442">അതെ</translation>
 <translation id="1427049173708736891">നിങ്ങളുടെ Android ഫോൺ അൺലോക്ക് ചെയ്‌ത് വിളിപ്പാടരികെയായിരിക്കുമ്പോൾ, <ph name="DEVICE_TYPE" /> അൺലോക്കുചെയ്‌ത് സൂക്ഷിക്കുക - നിങ്ങളുടെ പാസ്‌വേഡ് ടൈപ്പുചെയ്യേണ്ടതില്ല.</translation>
@@ -2232,7 +2231,6 @@
 <translation id="4098354747657067197">വഞ്ചനാപരമായ സൈറ്റ് ഉണ്ട്</translation>
 <translation id="4099585076575543605">{COUNT,plural, =0{ഒന്നുമില്ല}=1{1}other{#}}</translation>
 <translation id="409980434320521454">സമന്വയം പരാജയപ്പെട്ടു</translation>
-<translation id="4100079375692032441">പ്രിന്റ് പ്രിവ്യൂയിൽ പേജ് ലഘൂകരിക്കുക</translation>
 <translation id="4101878899871018532">സമന്വയിപ്പിക്കാൻ ഉപയോഗിക്കുന്ന ക്രെഡൻഷ്യലിനെ പാസ്‌വേഡ് മാനേജർ സംരക്ഷിക്കുകയില്ല.</translation>
 <translation id="4104163789986725820">കയ&amp;റ്റുമതി ചെയ്യുക...</translation>
 <translation id="4105563239298244027">Google ഡ്രൈവിൽ 1 TB  സൗജന്യമായി നേടുക</translation>
@@ -2359,7 +2357,6 @@
 <translation id="4297391862525234515">ക്ലിക്കുചെയ്യുമ്പോൾ ചെറുതാകുന്ന ഷെൽഫ്</translation>
 <translation id="42981349822642051">വികസിപ്പിക്കുക</translation>
 <translation id="4298972503445160211">ഡാനിഷ് കീബോര്‍ഡ്</translation>
-<translation id="4299273509016391946">പ്രിന്റ് പ്രിവ്യൂ ഡയലോഗിൽ 'പേജ് ചെക്ക് ബോക്‌സ് ലഘൂകരിക്കുക' പ്രവർത്തനക്ഷമമാക്കുന്നു</translation>
 <translation id="4299729908419173967">ബ്രസീലിയന്‍</translation>
 <translation id="430714521864499800">"Cache-Control: stale-while-revalidate" ഡയറക്‌റ്റീവിന്റെ പരീക്ഷണാത്മക നിർവ്വഹണം പ്രവർത്തനക്ഷമമാക്കുക. ലേറ്റൻസി മെച്ചപ്പെടുത്താൻ പശ്ചാത്തലത്തിൽ ചില ഉറവിടങ്ങളെ വീണ്ടും മൂല്യനിർണ്ണയം ചെയ്യാനിടയുണ്ടെന്ന് വ്യക്തമാക്കാൻ ഇത് സെർവറുകളെ അനുവദിക്കുന്നു.</translation>
 <translation id="4307281933914537745">സിസ്റ്റം റിക്കവറിയെ പറ്റി കൂടുതലറിയുക</translation>
@@ -2436,7 +2433,6 @@
 <translation id="4434147949468540706">സ്ക്രോൾ എൻഡ് ഇഫക്റ്റ്</translation>
 <translation id="443464694732789311">തുടരുക</translation>
 <translation id="4436456292809448986">ഡെസ്‌ക്‌ടോപ്പിലേക്ക് ചേർക്കുക...</translation>
-<translation id="4439244508678316632">ഉള്ളടക്ക ലൈസൻസ്</translation>
 <translation id="4439318412377770121">Google ക്ലൗഡ് ഉപകരണങ്ങളിൽ <ph name="DEVICE_NAME" /> രജിസ്റ്റർ ചെയ്യണോ?</translation>
 <translation id="4441124369922430666">മെഷീൻ ഓണാകുമ്പോൾ ഈ അപ്ലിക്കേഷൻ സ്വയമേവ ആരംഭിക്കാൻ നിങ്ങൾക്ക് താൽപ്പര്യമുണ്ടോ?</translation>
 <translation id="444134486829715816">വികസിപ്പിക്കുക...</translation>
@@ -3461,7 +3457,6 @@
   പബ്ലിക് എക്‌സ്‌പൊണന്റ് (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> ബിറ്റുകൾ):
   <ph name="EXPONENT_HEX_DUMP" /></translation>
 <translation id="59174027418879706">പ്രാപ്‌തമാക്കി</translation>
-<translation id="592068147111860043">Win32k ലോക്ക്‌ഡൗൺ സാൻഡ്‌ബോക്‌സ് നയത്തിൽത്തന്നെ പ്രവർത്തിക്കുന്ന PPAPI പ്ലഗിന്നുകൾ വ്യക്തമാക്കുക.</translation>
 <translation id="5925147183566400388">സര്‍‌ട്ടിഫിക്കേഷന്‍‌ പ്രാക്റ്റീസ് സ്റ്റേറ്റ്‌മെന്‍റ് പോയിന്‍റര്‍‌</translation>
 <translation id="5930693802084567591"><ph name="TIME" /> സമയത്ത് Google പാസ്‌ഫ്രെയ്‌സ് ഉപയോഗിച്ച് നിങ്ങളുടെ ഡാറ്റ എൻക്രിപ്റ്റുചെയ്‌തു. അത് ചുവടെ നൽകുക.</translation>
 <translation id="5931146425219109062">നിങ്ങൾ സന്ദർശിച്ച വെബ്സൈറ്റുകളിലെ എല്ലാ ഡാറ്റയും റീഡുചെയ്യുക, മാറ്റുക</translation>
@@ -3480,7 +3475,6 @@
 <translation id="5956585768868398362">നിങ്ങൾ പ്രതീക്ഷിക്കുന്ന തിരയൽ പേജ് ഇതാണോ?</translation>
 <translation id="5957613098218939406">കൂടുതൽ ഓപ്‌ഷനുകൾ</translation>
 <translation id="5958529069007801266">സൂപ്പർവൈസുചെയ്‌ത ഉപയോക്താവ്</translation>
-<translation id="5958994127112619898">പേജ് ലഘൂകരിക്കുക</translation>
 <translation id="5959471481388474538">നെറ്റ്‌വർക്ക് ലഭ്യമല്ല</translation>
 <translation id="5963026469094486319">തീമുകള്‍ നേടുക</translation>
 <translation id="5963453369025043595"><ph name="NUM_HANDLES" /> (<ph name="NUM_KILOBYTES_LIVE" /> പീക്ക്)</translation>

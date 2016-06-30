@@ -512,6 +512,7 @@ Par exemple, certains sites Web peuvent répondre à cette demande en diffusant 
 <translation id="7053983685419859001">Bloquer</translation>
 <translation id="7056999826593229648">Connexion lente détectée</translation>
 <translation id="7057058088140140610">Cartes de paiement et adresses utilisant Google Payments</translation>
+<translation id="7062545763355031412">Accepter et changer de compte</translation>
 <translation id="7063006564040364415">Impossible de se connecter au serveur de synchronisation.</translation>
 <translation id="7064851114919012435">Coordonnées</translation>
 <translation id="7074853159844403180">Le site <ph name="SITE" /> souhaite être associé à l'appareil suivant :</translation>
@@ -574,6 +575,7 @@ Votre compte Google conserve peut-être d'autres formes d'historique de navigati
 <translation id="7713873128508426081">Toujours autorisé</translation>
 <translation id="7764225426217299476">Ajouter une adresse</translation>
 <translation id="7765158879357617694">Déplacer</translation>
+<translation id="7769602470925380267">Accepter et se déconnecter</translation>
 <translation id="7772032839648071052">Confirmer la phrase secrète</translation>
 <translation id="7788788617745289808">Chrome doit disposer de l'accès à la caméra pour la partager avec ce site.</translation>
 <translation id="7791543448312431591">Ajouter</translation>
@@ -690,6 +692,7 @@ Pour obtenir de nouvelles licences, connectez-vous à Internet et lisez le conte
 <translation id="9141510419986760385">Vous changez de compte synchronisé pour passer de <ph name="FROM_ACCOUNT" /> à <ph name="TO_ACCOUNT" />. Que souhaitez-vous faire des favoris, de l'historique, des mots de passe et des autres paramètres actuels ?</translation>
 <translation id="917685106653909562">Pages Web physique à proximité</translation>
 <translation id="9187199695613236444">Affichage adapté au mobile</translation>
+<translation id="9188680907066685419">Se déconnecter d'un compte géré</translation>
 <translation id="9192643434065497760">Pour permettre l'association, activez le Bluetooth dans les <ph name="BEGIN_LINK" />paramètres de l'appareil<ph name="END_LINK" />.</translation>
 <translation id="9198708126133947749">Remplacer les données de cet appareil avec celles du compte <ph name="TO_ACCOUNT" />. Vous pouvez récupérer vos données en revenant dans le compte <ph name="FROM_ACCOUNT" />.</translation>
 <translation id="9206873250291191720">A</translation>

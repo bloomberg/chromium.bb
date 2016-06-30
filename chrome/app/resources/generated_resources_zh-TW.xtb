@@ -289,7 +289,6 @@
 <translation id="1415990189994829608">這個工作階段類型不允許使用 <ph name="EXTENSION_NAME" /> (擴充功能 ID 為「<ph name="EXTENSION_ID" />」)。</translation>
 <translation id="1416836038590872660">EAP-MD5</translation>
 <translation id="1420684932347524586">哎呀！產生隨機 RSA 私密金鑰失敗。</translation>
-<translation id="1421115928968836111">受保護內容的 Flash Player 授權會因此遭到取消。</translation>
 <translation id="1425734930786274278">已封鎖下列 Cookie (系統會封鎖所有第三方 Cookie，沒有例外)：</translation>
 <translation id="1426410128494586442">是</translation>
 <translation id="1427049173708736891">當您的 Android 手機在附近並已解除鎖定時，您的 <ph name="DEVICE_TYPE" /> 就會保持解鎖狀態 (不需輸入密碼)。</translation>
@@ -2242,7 +2241,6 @@
 <translation id="4098354747657067197">您即將前往詐騙網站</translation>
 <translation id="4099585076575543605">{COUNT,plural, =0{無}=1{1}other{#}}</translation>
 <translation id="409980434320521454">同步處理失敗</translation>
-<translation id="4100079375692032441">允許在列印預覽時簡化頁面</translation>
 <translation id="4101878899871018532">密碼管理員將不再詢問您是否要儲存同步處理所需的憑證。</translation>
 <translation id="4104163789986725820">匯出(&amp;X)...</translation>
 <translation id="4105563239298244027">取得 1 TB 的免費 Google 雲端硬碟空間</translation>
@@ -2370,7 +2368,6 @@
 <translation id="4297391862525234515">允許檔案櫃在點擊後縮到最小</translation>
 <translation id="42981349822642051">展開</translation>
 <translation id="4298972503445160211">丹麥文鍵盤</translation>
-<translation id="4299273509016391946">在列印預覽對話方塊中啟用簡化頁面核取方塊</translation>
 <translation id="4299729908419173967">巴西語系</translation>
 <translation id="430714521864499800">啟用實驗性「Cache-Control: stale-while-revalidate」指令實作功能。這樣一來，伺服器便可指定在背景重新驗證部分資源，以改善延遲情況。</translation>
 <translation id="4307281933914537745">進一步瞭解系統還原</translation>
@@ -2447,7 +2444,6 @@
 <translation id="4434147949468540706">捲動至底部效果</translation>
 <translation id="443464694732789311">繼續</translation>
 <translation id="4436456292809448986">加到桌面...</translation>
-<translation id="4439244508678316632">內容授權</translation>
 <translation id="4439318412377770121">您要將 <ph name="DEVICE_NAME" /> 註冊到 Google 雲端裝置嗎？</translation>
 <translation id="4441124369922430666">您要在裝置開機時自動啟動這個應用程式嗎？</translation>
 <translation id="444134486829715816">展開...</translation>
@@ -3470,7 +3466,6 @@
   公開指數 (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> 位元)：
   <ph name="EXPONENT_HEX_DUMP" /></translation>
 <translation id="59174027418879706">已啟用</translation>
-<translation id="592068147111860043">指定 PPAPI 外掛程式，該程式將在 Win32k 鎖定沙盒政策中執行。</translation>
 <translation id="5925147183566400388">憑證實務作業基準指標</translation>
 <translation id="5930693802084567591">您已在 <ph name="TIME" />使用 Google 密碼對資料進行加密，請在下方輸入密碼。</translation>
 <translation id="5931146425219109062">讀取及變更您造訪過的網站上的所有資料</translation>
@@ -3489,7 +3484,6 @@
 <translation id="5956585768868398362">這是您想要的搜尋頁面嗎？</translation>
 <translation id="5957613098218939406">更多選項</translation>
 <translation id="5958529069007801266">受監管的使用者</translation>
-<translation id="5958994127112619898">簡化網頁</translation>
 <translation id="5959471481388474538">網路無法使用</translation>
 <translation id="5963026469094486319">下載主題</translation>
 <translation id="5963453369025043595"><ph name="NUM_HANDLES" /> 個 (最多 <ph name="NUM_KILOBYTES_LIVE" /> 個)</translation>

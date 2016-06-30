@@ -75,7 +75,6 @@
 <translation id="1791429645902722292">Google Smart Lock</translation>
 <translation id="1821930232296380041">Neplatný požadavek nebo parametry požadavku</translation>
 <translation id="1871208020102129563">Proxy je nastaveno na používání pevně daných serverů proxy, nikoliv adresy URL skriptu PAC.</translation>
-<translation id="1871625979288021266">Nebezpečný port blokován</translation>
 <translation id="1883255238294161206">Sbalit seznam</translation>
 <translation id="1898423065542865115">Filtrování</translation>
 <translation id="1911837502049945214">Web <ph name="HOST_NAME" /> nepřijal přihlašovací certifikát. Je možné, že platnost certifikátu vypršela.</translation>
@@ -126,7 +125,6 @@
 <translation id="2386255080630008482">Certifikát serveru byl zamítnut.</translation>
 <translation id="2392959068659972793">Zobrazit zásady bez nastavených hodnot</translation>
 <translation id="2396249848217231973">&amp;Vrátit smazání zpět</translation>
-<translation id="2400837204278978822">Neznámý typ souboru</translation>
 <translation id="2413528052993050574">Server nedokázal prokázat, že patří doméně <ph name="DOMAIN" />. Jeho bezpečnostní certifikát byl zřejmě zrušen. Může to být způsobeno nesprávnou konfigurací nebo tím, že vaše připojení zachytává útočník.</translation>
 <translation id="2455981314101692989">U tohoto formuláře je na dané webové stránce vypnuto automatické vyplňování.</translation>
 <translation id="2467694685043708798"><ph name="BEGIN_LINK" />Spustit Diagnostiku sítě<ph name="END_LINK" /></translation>
@@ -169,7 +167,6 @@
 <translation id="2855922900409897335">Ověření karty <ph name="CREDIT_CARD" /></translation>
 <translation id="2889159643044928134">Nenačítat znovu</translation>
 <translation id="2896499918916051536">Tento plugin není podporován.</translation>
-<translation id="2897655920961181107">Požadovaný port je nebezpečný a byl zablokován.</translation>
 <translation id="2909946352844186028">Byla zjištěna změna sítě.</translation>
 <translation id="2915500479781995473">Tento server nemohl prokázat, že patří do domény <ph name="DOMAIN" />. Platnost jeho bezpečnostního certifikátu vypršela. Může to být způsobeno nesprávnou konfigurací nebo tím, že vaše připojení zachytává útočník. Hodiny ve vašem počítači jsou aktuálně nastaveny na <ph name="CURRENT_TIME" />. Je to správně? Pokud ne, měli byste čas v počítači opravit a poté tuto stránku načíst znovu.</translation>
 <translation id="2922350208395188000">Certifikát serveru nelze zkontrolovat.</translation>
@@ -341,7 +338,6 @@
 <translation id="4807049035289105102">Web <ph name="SITE" /> nyní nemůžete navštívit, protože webové stránky odeslaly zakódované identifikační údaje, které Chrome nedokáže zpracovat. Síťové chyby a útoky jsou obvykle dočasné, tato stránka pravděpodobně později bude fungovat.</translation>
 <translation id="4813512666221746211">Chyba sítě</translation>
 <translation id="4816492930507672669">Přizpůsobit na stránku</translation>
-<translation id="4841640898320458950">Nebezpečný port je blokován.</translation>
 <translation id="4850886885716139402">Zobrazit</translation>
 <translation id="4880827082731008257">Hledat v historii</translation>
 <translation id="4923417429809017348">Tato stránka byla přeložena z neznámého jazyka do jazyka <ph name="LANGUAGE_LANGUAGE" /></translation>
@@ -441,7 +437,6 @@ Kontaktujte administrátora systému.</translation>
 <translation id="6165508094623778733">Další informace</translation>
 <translation id="6203231073485539293">Zkontrolujte připojení k internetu</translation>
 <translation id="6218753634732582820">Odstranit adresu z prohlížeče Chromium?</translation>
-<translation id="6232139169545176020">Požadované schéma URI není podporováno.</translation>
 <translation id="6259156558325130047">&amp;Opakovat změnu uspořádání</translation>
 <translation id="6263376278284652872">Záložky webu <ph name="DOMAIN" /></translation>
 <translation id="6264485186158353794">Zpět na bezpečnější stránku</translation>
@@ -464,14 +459,11 @@ Kontaktujte administrátora systému.</translation>
 <translation id="6489534406876378309">Začít nahrávat zprávy o selhání</translation>
 <translation id="6518133107902771759">Ověřit</translation>
 <translation id="6529602333819889595">&amp;Opakovat smazání</translation>
-<translation id="6533019874004191247">Nepodporovaná URL.</translation>
 <translation id="6550675742724504774">Možnosti</translation>
 <translation id="6596325263575161958">Možnosti šifrování</translation>
-<translation id="6610562986279010327">Tuto adresu URL v Chromu nelze otevřít</translation>
 <translation id="662080504995468778">Zůstat</translation>
 <translation id="6628463337424475685">Vyhledávání <ph name="ENGINE" /></translation>
 <translation id="6634865548447745291">Web <ph name="SITE" /> nyní nemůžete navštívit, protože <ph name="BEGIN_LINK" />tento certifikát byl zrušen<ph name="END_LINK" />. Síťové chyby a útoky jsou obvykle dočasné, tato stránka pravděpodobně později bude fungovat.</translation>
-<translation id="6637478299472506933">Stažení se nezdařilo</translation>
 <translation id="6644283850729428850">Tato zásada se již nepoužívá.</translation>
 <translation id="6646897916597483132">Zadejte čtyřmístný kód CVC z přední strany karty</translation>
 <translation id="6656103420185847513">Úprava složky</translation>
@@ -577,7 +569,6 @@ Pssst! Příště by se vám mohl hodit anonymní režim (<ph name="SHORTCUT_KEY
 <translation id="780301667611848630">Ne, děkuji</translation>
 <translation id="7805768142964895445">Stav</translation>
 <translation id="7813600968533626083">Odstranit návrh položky formuláře z Chromu?</translation>
-<translation id="7825436071901023927">Nebezpečný port <ph name="SITE" /></translation>
 <translation id="785549533363645510">To neznamená, že jste neviditelní. Anonymní režim neskryje vaši aktivitu před vaším zaměstnavatelem, poskytovatelem internetových služeb ani webovými stránkami, které navštívíte.</translation>
 <translation id="7887683347370398519">Zkontrolujte kód CVC a zkuste to znovu</translation>
 <translation id="7894616681410591072">Jejda! Přístup na tuto stránku vyžaduje povolení uživatele <ph name="NAME" />.</translation>
@@ -654,7 +645,6 @@ Pssst! Příště by se vám mohl hodit anonymní režim (<ph name="SHORTCUT_KEY
 <translation id="8876793034577346603">Analýza konfigurace sítě se nezdařila.</translation>
 <translation id="8891727572606052622">Neplatný režim proxy serveru.</translation>
 <translation id="889901481107108152">Je nám líto, tento experiment není na vaší platformě dostupný.</translation>
-<translation id="890308499387283275">Chrome tento soubor stáhnout nemůže.</translation>
 <translation id="8903921497873541725">Přiblížit</translation>
 <translation id="8931333241327730545">Chcete tuto kartu uložit do účtu Google?</translation>
 <translation id="8932102934695377596">Vaše hodiny se zpožďují</translation>

@@ -287,7 +287,6 @@
 <translation id="1415990189994829608">இந்த வகை அமர்வில் <ph name="EXTENSION_NAME" /> (நீட்டிப்பு ஐடி "<ph name="EXTENSION_ID" />") ஆனது அனுமதிக்கப்படாது.</translation>
 <translation id="1416836038590872660">EAP-MD5</translation>
 <translation id="1420684932347524586">அச்சோ! RSA தனிப்பட்ட விசையை உருவாக்குவதில் தோல்வியடைந்தது.</translation>
-<translation id="1421115928968836111">இது பாதுகாக்கப்பட்ட உள்ளடக்கத்திற்கான ஃபிளாஷ் பிளேயர் உரிமங்களின் அங்கீகாரத்தை அகற்றும்.</translation>
 <translation id="1425734930786274278">பின்வரும் குக்கீகள் தடுக்கப்பட்டன (மூன்றாம் தரப்பு குக்கீகள் எந்த விலக்கும் இன்றி தடுக்கப்பட்டன):</translation>
 <translation id="1426410128494586442">ஆம்</translation>
 <translation id="1427049173708736891">Android ஃபோன் திறக்கப்பட்டு அருகில் இருக்கும் போது, <ph name="DEVICE_TYPE" />ஐத் திறந்த நிலையில் வைத்திருக்கும்—கடவுச்சொல்லை உள்ளிட வேண்டியதில்லை.</translation>
@@ -2234,7 +2233,6 @@
 <translation id="4098354747657067197">மோசடிசெய்யும் தளம் உள்ளது</translation>
 <translation id="4099585076575543605">{COUNT,plural, =0{ஏதுமில்லை}=1{1}other{#}}</translation>
 <translation id="409980434320521454">ஒத்திசைவு தோல்வி</translation>
-<translation id="4100079375692032441">அச்சு மாதிரிக்காட்சியில் பக்கத்தை எளிதாக்கு</translation>
 <translation id="4101878899871018532">ஒத்திசைவிற்குப் பயன்படுத்தும் நற்சான்றிதழைச் சேமிக்கவா எனக் கடவுச்சொல் நிர்வாகி கேட்காது.</translation>
 <translation id="4104163789986725820">ஏற்று&amp;மதி...</translation>
 <translation id="4105563239298244027">Google இயக்ககம் மூலம் 1 டெ.பை. இலவசமாகப் பெறுக</translation>
@@ -2349,7 +2347,7 @@
 <translation id="4279490309300973883">பிரதிபலிக்கிறது</translation>
 <translation id="4281844954008187215">சேவை விதிமுறைகள்</translation>
 <translation id="4284105660453474798">"$1" ஐ நிச்சயமாக நீக்க வேண்டுமா?</translation>
-<translation id="4285498937028063278">விலக்கு</translation>
+<translation id="4285498937028063278">நிலையாக வைக்க வேண்டாம்</translation>
 <translation id="428565720843367874">இந்தக் கோப்பை ஸ்கேன் செய்யும்போது எதிர்பாராதவிதமாக வைரஸ் தடுப்பு மென்பொருள் தோல்வியடைந்தது.</translation>
 <translation id="428608937826130504">ஷெல்ஃப் உருப்படி 8</translation>
 <translation id="4287167099933143704">PIN திறத்தல் விசையை உள்ளிடவும்</translation>
@@ -2362,7 +2360,6 @@
 <translation id="4297391862525234515">கிளிக்-செய்யும்போது ஷெல்ஃப் சிறிதாக்குதல்</translation>
 <translation id="42981349822642051">விரிவாக்கு</translation>
 <translation id="4298972503445160211">டேனிஷ் விசைப்பலகை</translation>
-<translation id="4299273509016391946">அச்சு மாதிரிக்காட்சி உரையாடலில் பக்கத்தை எளிதாக்கு எனும் செக் பாக்ஸை இயக்கும்</translation>
 <translation id="4299729908419173967">பிரேசிலியன்</translation>
 <translation id="430714521864499800">Cache-Control: stale-while-revalidate கட்டளையின் சோதனைச் செயலாக்கத்தை இயக்கும். இது தாமதநிலையைக் குறைக்க, பின்னணியில் சில மூலங்கள் மறுசரிபார்ப்பு செய்யப்படலாம் என்பதைக் குறிக்க சேவையகங்களை அனுமதிக்கும்.</translation>
 <translation id="4307281933914537745">முறைமை மீட்பு குறித்து மேலும் அறியவும்</translation>
@@ -2439,7 +2436,6 @@
 <translation id="4434147949468540706">உருட்டுதல் முடிவின் விளைவு</translation>
 <translation id="443464694732789311">தொடரவும்</translation>
 <translation id="4436456292809448986">டெஸ்க்டாப்பில் சேர்...</translation>
-<translation id="4439244508678316632">உள்ளடக்க உரிமங்கள்</translation>
 <translation id="4439318412377770121">Google மேகக்கணி சாதனங்களில் <ph name="DEVICE_NAME" />ஐப் பதிவு செய்ய விருப்பமா?</translation>
 <translation id="4441124369922430666">கணினி தொடங்கப்பட்டவுடன் தானாகவே இந்தப் பயன்பாட்டைத் தொடங்க விரும்புகிறீர்களா?</translation>
 <translation id="444134486829715816">விரிவாக்கு...</translation>
@@ -3459,7 +3455,6 @@
   பொது அடுக்குக்குறி (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> பிட்கள்):
   <ph name="EXPONENT_HEX_DUMP" /></translation>
 <translation id="59174027418879706">செயலாக்கப்பட்டது</translation>
-<translation id="592068147111860043">Win32k பூட்டு சாண்ட்பாக்ஸ் கொள்கைக்குள் இயங்கும் PPAPI செருகுநிரல்களைக் குறிப்பிடவும்.</translation>
 <translation id="5925147183566400388">சான்றிதழ் பயிற்சி அறிக்கை சுட்டி</translation>
 <translation id="5930693802084567591"><ph name="TIME" /> அன்று முதல் உங்கள் Google கடவுச்சொல் மூலம் எல்லா தரவும் குறியாக்கப்பட்டது. அதை கீழே உள்ளிடவும்.</translation>
 <translation id="5931146425219109062">நீங்கள் பார்வையிடும் இணையதளங்களில் உள்ள உங்கள் எல்லா தரவையும் படிக்கலாம் மற்றும் திருத்தலாம்</translation>
@@ -3478,7 +3473,6 @@
 <translation id="5956585768868398362">இந்தத் தேடல் பக்கம் நீங்கள் எதிர்பார்த்தது போன்று உள்ளதா?</translation>
 <translation id="5957613098218939406">கூடுதல் விருப்பங்கள்</translation>
 <translation id="5958529069007801266">கண்காணிக்கப்படும் பயனர்</translation>
-<translation id="5958994127112619898">பக்கத்தை எளிதாக்கு</translation>
 <translation id="5959471481388474538">நெட்வொர்க் கிடைக்கவில்லை</translation>
 <translation id="5963026469094486319">தீம்களைப் பெறு</translation>
 <translation id="5963453369025043595"><ph name="NUM_HANDLES" /> (<ph name="NUM_KILOBYTES_LIVE" /> உச்சம்)</translation>
@@ -4453,7 +4447,7 @@
 <translation id="7456847797759667638">இருப்பிடத்தைத் திற...</translation>
 <translation id="7457232995997878302">முன்சேர்ப்புகள் மட்டுமல்லாமல் உட்சரங்களின் (டோக்கன் முன்சேர்ப்புகள்) அடிப்படையிலும் தன்னிரப்பி பரிந்துரைகளை ஒப்பிடு.</translation>
 <translation id="7460898608667578234">உக்ரைனியன்</translation>
-<translation id="7461924472993315131">பொருத்து</translation>
+<translation id="7461924472993315131">நிலையாக வை</translation>
 <translation id="7463006580194749499">நபரைச் சேர்</translation>
 <translation id="7464490149090366184">ஜிப் செய்தல் ரத்தானது, இருக்கும் உருப்படி: "$1"</translation>
 <translation id="7465778193084373987">Netscape சான்றிதழ் தளர்த்தல் URL</translation>

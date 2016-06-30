@@ -77,7 +77,6 @@
 <translation id="1791429645902722292">Google Smart Lock</translation>
 <translation id="1821930232296380041">अवैध विनंती किंवा विनंती मापदंड</translation>
 <translation id="1871208020102129563">प्रॉक्सी निश्चित प्रॉक्सी सर्व्हर वापरण्‍यास सेट करण्‍यात आले आहे, .pac स्क्रिप्ट URL नव्हे.</translation>
-<translation id="1871625979288021266">असुरक्षित पोर्ट अवरोधित केले</translation>
 <translation id="1883255238294161206">सूची संकुचित करा</translation>
 <translation id="1898423065542865115">फिल्टर करणे</translation>
 <translation id="1911837502049945214"><ph name="HOST_NAME" /> नी आपले लॉग इन प्रमाणपत्र स्वीकारले नाही किंवा कदाचित आपले लॉग इन प्रमाणपत्र कालबाह्य झाले असावे.</translation>
@@ -128,7 +127,6 @@
 <translation id="2386255080630008482">सर्व्हरचे प्रमाणपत्र निरस्त केले गेले.</translation>
 <translation id="2392959068659972793">कोणतेही मूल्य सेट केल्याशिवाय धोरणे दर्शवा</translation>
 <translation id="2396249848217231973">&amp;हटवा पूर्ववत करा</translation>
-<translation id="2400837204278978822">अज्ञात फाईल प्रकार.</translation>
 <translation id="2413528052993050574">हा सर्व्हर हे <ph name="DOMAIN" /> असल्याचे सिद्ध करू शकला नाही; त्याचे सुरक्षितता प्रमाणपत्र कदाचित रद्द केले असू शकते. हे कदाचित एका चुकीच्या कॉन्फिगरेशनमुळे किंवा आक्रमणकर्त्याने आपले कनेक्शन आंतरखंडित केल्यामुळे झाले असू शकते.</translation>
 <translation id="2455981314101692989">या वेबपृष्ठाने या फॉर्मकरिता स्वयंचलितरित्या भरणे अक्षम केले आहे.</translation>
 <translation id="2467694685043708798"><ph name="BEGIN_LINK" />नेटवर्क निदान चालविणे<ph name="END_LINK" /></translation>
@@ -171,7 +169,6 @@
 <translation id="2855922900409897335">आपले <ph name="CREDIT_CARD" /> सत्यापित करा</translation>
 <translation id="2889159643044928134">रीलोड करु नका</translation>
 <translation id="2896499918916051536">हे प्लगिन समर्थित नाही.</translation>
-<translation id="2897655920961181107">विनंती केलेले पोर्ट असुरक्षित आहे आणि अवरोधित केले गेले आहे.</translation>
 <translation id="2909946352844186028">एक नेटवर्क बदल आढळला.</translation>
 <translation id="2915500479781995473">हे सर्व्हर ते <ph name="DOMAIN" /> असल्याचे सिद्ध करू शकले नाही; त्याचे सुरक्षितता प्रमाणपत्र कालबाह्य झाले आहे. हे कदाचित एका चुकीच्या कॉन्फिगरेशनमुळे किंवा आक्रमणकर्त्याने आपले कनेक्शन आंतरखंडित केल्यामुळे झाले असू शकते. आपल्या संगणकाचे घड्याळ सध्या <ph name="CURRENT_TIME" /> वर सेट केले आहे. ते बरोबर वाटते आहे? नसल्यास, आपण आपल्या प्रणालीचे घड्याळ दुरुस्त करावे आणि नंतर हे पृष्ठ रीफ्रेश करावे.</translation>
 <translation id="2922350208395188000">सर्व्हरचे प्रमाणपत्र तपासणे शक्य नाही.</translation>
@@ -347,7 +344,6 @@
 <translation id="4807049035289105102">Google Chrome प्रक्रिया करू शकत नाही असे न समजणारे क्रेडेन्शियल वेबसाइटने पाठविल्यामुळे आपण आत्ता <ph name="SITE" /> ला भेट देऊ शकत नाही. नेटवर्क त्रुटी आणि आक्रमण सामान्यतः तात्पुरते असतात, यामुळे हे पृष्ठ कदाचित नंतर कार्य करेल.</translation>
 <translation id="4813512666221746211">नेटवर्क त्रुटी</translation>
 <translation id="4816492930507672669">पृष्‍ठानुरुप करा</translation>
-<translation id="4841640898320458950">असुरक्षित पोर्ट अवरोधित केले.</translation>
 <translation id="4850886885716139402">पहा</translation>
 <translation id="4880827082731008257">इतिहास शोध</translation>
 <translation id="4923417429809017348">हे पृष्ठ अज्ञात भाषेतून <ph name="LANGUAGE_LANGUAGE" /> मध्ये अनुवादित करण्यात आले</translation>
@@ -449,7 +445,6 @@
 <translation id="6165508094623778733">अधिक जाणून घ्या</translation>
 <translation id="6203231073485539293">आपले इंटरनेट कनेक्शन तपासा</translation>
 <translation id="6218753634732582820">Chromium वरून पत्ता काढायचा?</translation>
-<translation id="6232139169545176020">विनंती केलेली URI योजना समर्थित नाही.</translation>
 <translation id="6259156558325130047">&amp;पुनर्क्रमित करा पुन्हा करा</translation>
 <translation id="6263376278284652872"><ph name="DOMAIN" /> बुकमार्क</translation>
 <translation id="6264485186158353794">सुरक्षिततेकडे परत</translation>
@@ -472,14 +467,11 @@
 <translation id="6489534406876378309">क्रॅश अपलोड करणे प्रारंभ करा</translation>
 <translation id="6518133107902771759">सत्यापित करा</translation>
 <translation id="6529602333819889595">&amp;पुन्हा करा हटवा</translation>
-<translation id="6533019874004191247">असमर्थित URL.</translation>
 <translation id="6550675742724504774">पर्याय</translation>
 <translation id="6596325263575161958">कूटबद्धता पर्याय</translation>
-<translation id="6610562986279010327">Chrome ही URL उघडू शकत नाही</translation>
 <translation id="662080504995468778">यावर रहा</translation>
 <translation id="6628463337424475685"><ph name="ENGINE" /> शोध</translation>
 <translation id="6634865548447745291"><ph name="BEGIN_LINK" />हे प्रमाणपत्र रद्द केले गेल्यामुळे<ph name="END_LINK" /> आपण आत्ता <ph name="SITE" /> ला भेट देऊ शकत नाही. नेटवर्क त्रुटी आणि आक्रमणे सामान्यतः तात्पुरती असतात, यामुळे हे पृष्ठ कदाचित नंतर कार्य करेल.</translation>
-<translation id="6637478299472506933">डाउनलोड अयशस्वी</translation>
 <translation id="6644283850729428850">हे धोरण नापसंत आहे.</translation>
 <translation id="6646897916597483132">आपल्या कार्डच्या पुढील भागावर असलेले 4-अंकी CVC प्रविष्ट करा</translation>
 <translation id="6656103420185847513">फोल्डर संपादित करा</translation>
@@ -585,7 +577,6 @@
 <translation id="780301667611848630">नाही, धन्यवाद</translation>
 <translation id="7805768142964895445">स्थिती</translation>
 <translation id="7813600968533626083">Chrome मधून सूचना फॉर्म काढायचा?</translation>
-<translation id="7825436071901023927">असुरक्षित पोर्ट <ph name="SITE" /></translation>
 <translation id="785549533363645510">तथापि, आपण अदृश्य नाही. गुप्त झाल्याने आपले ब्राउझिंग आपला नियोक्ता, आपला इंटरनेट सेवा प्रदाता, किंवा आपण भेट देता त्या वेबसाइटपासून लपत नाही.</translation>
 <translation id="7887683347370398519">आपले CVC तपासा आणि पुन्हा प्रयत्न करा</translation>
 <translation id="7894616681410591072">अरेरे, या पृष्ठावर प्रवेश करण्यासाठी <ph name="NAME" /> द्वारे आपल्याला परवानगी आवश्यक आहे.</translation>
@@ -662,7 +653,6 @@
 <translation id="8876793034577346603">विश्लेषण करण्यात नेटवर्क कॉन्फिगरेशन अयशस्वी.</translation>
 <translation id="8891727572606052622">अवैध प्रॉक्सी मोड.</translation>
 <translation id="889901481107108152">क्षमस्व, हा प्रयोग आपल्या प्लॅटफॉर्मवर उपलब्ध नाही.</translation>
-<translation id="890308499387283275">Chrome ही फाईल डाऊनलोड करु शकत नाही.</translation>
 <translation id="8903921497873541725">झूम वाढवा</translation>
 <translation id="8931333241327730545">आपण आपल्या Google खात्यात हे कार्ड जतन करू इच्छिता?</translation>
 <translation id="8932102934695377596">आपले घड्याळ मागे आहे</translation>

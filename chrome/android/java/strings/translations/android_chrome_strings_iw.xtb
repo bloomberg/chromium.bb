@@ -511,6 +511,7 @@
 <translation id="7053983685419859001">חסום</translation>
 <translation id="7056999826593229648">זוהה חיבור איטי</translation>
 <translation id="7057058088140140610">‏שימוש בכרטיסי אשראי ובכתובות באמצעות Google Payments</translation>
+<translation id="7062545763355031412">קבל והחלף חשבונות</translation>
 <translation id="7063006564040364415">לא ניתן היה להתחבר אל שרת הסנכרון.</translation>
 <translation id="7064851114919012435">פרטים ליצירת קשר</translation>
 <translation id="7074853159844403180"><ph name="SITE" /> רוצה לבצע התאמה עם:</translation>
@@ -573,6 +574,7 @@
 <translation id="7713873128508426081">מותר תמיד</translation>
 <translation id="7764225426217299476">הוסף כתובת</translation>
 <translation id="7765158879357617694">העבר</translation>
+<translation id="7769602470925380267">קבל וצא מהחשבון</translation>
 <translation id="7772032839648071052">אשר משפט-סיסמה</translation>
 <translation id="7788788617745289808">‏Chrome זקוק לגישה למצלמה כדי לשתף אותה עם האתר הזה.</translation>
 <translation id="7791543448312431591">הוסף</translation>
@@ -687,6 +689,7 @@
 <translation id="9141510419986760385">אתה מחליף חשבונות סינכרון מ-<ph name="FROM_ACCOUNT" /> ל-<ph name="TO_ACCOUNT" />. מה ברצונך לעשות עם הסימניות, ההיסטוריה, הסיסמאות ושאר ההגדרות הקיימות?</translation>
 <translation id="917685106653909562">דפים של האינטרנט הווירטופיזי בקרבת מקום</translation>
 <translation id="9187199695613236444">תצוגה מותאמת למכשירים ניידים</translation>
+<translation id="9188680907066685419">צא מהחשבון המנוהל</translation>
 <translation id="9192643434065497760">‏הפעל את Bluetooth ב<ph name="BEGIN_LINK" />הגדרות המכשיר<ph name="END_LINK" /> כדי לאפשר התאמה.</translation>
 <translation id="9198708126133947749">החלף את נתוני המכשיר הזה בנתונים של <ph name="TO_ACCOUNT" />. תוכל לאחזר את הנתונים הקיימים שלך על-ידי חזרה אל <ph name="FROM_ACCOUNT" />.</translation>
 <translation id="9206873250291191720">A</translation>

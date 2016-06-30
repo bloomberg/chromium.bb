@@ -21,6 +21,7 @@
 <translation id="1167230103353892028"><ph name="NAME" />, stavka izbornika, s podizbornikom</translation>
 <translation id="1177863135347784049">Prilagođeno</translation>
 <translation id="1188858454923323853">dopunski</translation>
+<translation id="1201402288615127009">Sljedeće</translation>
 <translation id="1206619573307042055">pomični tekst</translation>
 <translation id="1213216066620407844">ChromeVox – daje Chromeu glas</translation>
 <translation id="1229276918471378188">Prethodni skok</translation>
@@ -122,7 +123,6 @@
 <translation id="2553108862507765288">gramatička pogreška</translation>
 <translation id="257674075312929031">Grupa</translation>
 <translation id="2582407057977008361">Pored</translation>
-<translation id="2589102159832527089">Ova stranica sadrži tekst automatski izlučen iz PDF datoteke &lt;b&gt;<ph name="FILENAME" />&lt;/b&gt;. &lt;a href="<ph name="URL" />"&gt;Kliknite ovdje za prikaz originala.&lt;/a&gt;</translation>
 <translation id="2606210917827248971">s {COUNT,plural, =1{# stavkom}one{# stavkom}few{# stavke}other{# stavki}}</translation>
 <translation id="2614981083756825552">Math ML raspored</translation>
 <translation id="2626530649491650971">može se kliknuti</translation>
@@ -510,7 +510,6 @@
 <translation id="6129953537138746214">Razmak</translation>
 <translation id="6142308968191113180">Naslov 4</translation>
 <translation id="6169420925157477918">Slika s dugačkim opisom</translation>
-<translation id="6172087735260766220">Ne može se pristupiti dostupnom tekstu PDF-a zaštićenog od kopiranja.</translation>
 <translation id="6186305613600865047">Skok na dno stranice</translation>
 <translation id="6193330012414963395">prijepodne popodne</translation>
 <translation id="622484624075952240">Dolje</translation>
@@ -549,6 +548,7 @@
 <translation id="6659594942844771486">Kartica</translation>
 <translation id="667999046851023355">Dokument</translation>
 <translation id="6697092096875747123">Prethodni kombinirani okvir</translation>
+<translation id="6710213216561001401">Prethodno</translation>
 <translation id="6714813999819678458">Prethodni naslov razine 2</translation>
 <translation id="6716505898850596801">Modifikatorske tipke</translation>
 <translation id="671916444866103745">Nema sljedećeg ARIA orijentira.</translation>
@@ -690,6 +690,7 @@
 <translation id="842922884199979200">Nema sljedećeg naslova razine 3.</translation>
 <translation id="8430049249787218991">trizb</translation>
 <translation id="844681116543532394">Nema prethodnog potvrdnog okvira.</translation>
+<translation id="8446884382197647889">Saznajte više</translation>
 <translation id="8455868257606149352">Maksimalno <ph name="X" /></translation>
 <translation id="84575901236241018">ima pristupni ključ, <ph name="KEY" /></translation>
 <translation id="8476508772960940536">prozor pregleda</translation>

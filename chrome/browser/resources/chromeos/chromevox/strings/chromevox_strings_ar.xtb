@@ -21,6 +21,7 @@
 <translation id="1167230103353892028">عنصر القائمة <ph name="NAME" /> مع قائمة فرعية</translation>
 <translation id="1177863135347784049">مخصص</translation>
 <translation id="1188858454923323853">تكميلي</translation>
+<translation id="1201402288615127009">التالي</translation>
 <translation id="1206619573307042055">صورة بها نص متحرك</translation>
 <translation id="1213216066620407844">‏ChromeVox - تزويد Chrome بالصوت</translation>
 <translation id="1229276918471378188">الانتقال السابق</translation>
@@ -122,7 +123,6 @@
 <translation id="2553108862507765288">خطأ نحوي</translation>
 <translation id="257674075312929031">مجموعة</translation>
 <translation id="2582407057977008361">جانبًا</translation>
-<translation id="2589102159832527089">‏تتضمن هذه الصفحة النص المستخرج تلقائيًا من ملف PDF &lt;b&gt;<ph name="FILENAME" />&lt;/b&gt;. &lt;a href="<ph name="URL" />"&gt;انقر هنا للحصول على الملف الأصلي.&lt;/a&gt;</translation>
 <translation id="2606210917827248971">مع {COUNT,plural, =1{عنصر واحد (#)}zero{# عنصر}two{عنصران (#)}few{# عناصر}many{# عنصرًا}other{# عنصر}}</translation>
 <translation id="2614981083756825552">تخطيط لغة التوصيف الرياضية</translation>
 <translation id="2626530649491650971">قابل للنقر</translation>
@@ -510,7 +510,6 @@
 <translation id="6129953537138746214">مسافة</translation>
 <translation id="6142308968191113180">العنوان الرابع</translation>
 <translation id="6169420925157477918">الصورة بها وصف مطول</translation>
-<translation id="6172087735260766220">‏يتعذر الدخول إلى نص يمكن الوصول إليه من نسخة PDF محمية.</translation>
 <translation id="6186305613600865047">انتقال إلى أسفل الصفحة</translation>
 <translation id="6193330012414963395">صباحًا/مساءً</translation>
 <translation id="622484624075952240">Down</translation>
@@ -549,6 +548,7 @@
 <translation id="6659594942844771486">علامة تبويب</translation>
 <translation id="667999046851023355">مستند</translation>
 <translation id="6697092096875747123">مربع التحرير والسرد السابق</translation>
+<translation id="6710213216561001401">السابق</translation>
 <translation id="6714813999819678458">عنوان المستوى الثاني السابق</translation>
 <translation id="6716505898850596801">مفاتيح التعديل</translation>
 <translation id="671916444866103745">‏ليس هناك معلم ARIA تالٍ.</translation>
@@ -690,6 +690,7 @@
 <translation id="842922884199979200">ليس هناك عنوان تالٍ من المستوى الثالث.</translation>
 <translation id="8430049249787218991">mnubr</translation>
 <translation id="844681116543532394">ليس هناك مربع اختيار سابق.</translation>
+<translation id="8446884382197647889">مزيد من المعلومات</translation>
 <translation id="8455868257606149352">الحد الأقصى <ph name="X" /></translation>
 <translation id="84575901236241018">لديه مفتاح دخول، <ph name="KEY" /></translation>
 <translation id="8476508772960940536">نظرة عامة للنافذة</translation>

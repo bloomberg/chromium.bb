@@ -77,7 +77,6 @@
 <translation id="1791429645902722292">Google Smart Lock</translation>
 <translation id="1821930232296380041">Неважећи захтев или параметри захтева</translation>
 <translation id="1871208020102129563">Прокси је подешен да користи фиксне прокси сервере, а не URL адресу .pac скрипте.</translation>
-<translation id="1871625979288021266">Небезбедан порт је блокиран</translation>
 <translation id="1883255238294161206">Скупи листу</translation>
 <translation id="1898423065542865115">Филтрирање</translation>
 <translation id="1911837502049945214">Хост <ph name="HOST_NAME" /> није прихватио сертификат за пријављивање или је сертификат за пријављивање можда истекао.</translation>
@@ -128,7 +127,6 @@
 <translation id="2386255080630008482">Сертификат сервера је опозван.</translation>
 <translation id="2392959068659972793">Прикажи смернице без подешених вредности</translation>
 <translation id="2396249848217231973">&amp;Опозови брисање</translation>
-<translation id="2400837204278978822">Непознат тип датотеке.</translation>
 <translation id="2413528052993050574">Овај сервер не може да докаже да је <ph name="DOMAIN" />; његов безбедносни сертификат ће можда бити опозван. Узрок томе је можда погрешна конфигурација или нападач који је прекинуо везу.</translation>
 <translation id="2455981314101692989">Ова веб-страница је онемогућила аутоматско попуњавање за овај образац.</translation>
 <translation id="2467694685043708798"><ph name="BEGIN_LINK" />да покренете дијагностику мреже<ph name="END_LINK" /></translation>
@@ -171,7 +169,6 @@
 <translation id="2855922900409897335">Верификујте <ph name="CREDIT_CARD" /></translation>
 <translation id="2889159643044928134">Не учитавај поново</translation>
 <translation id="2896499918916051536">Ова додатна компонента није подржана.</translation>
-<translation id="2897655920961181107">Захтевани порт није безбедан и блокиран је.</translation>
 <translation id="2909946352844186028">Откривена је промена на мрежи.</translation>
 <translation id="2915500479781995473">Овај сервер не може да докаже да је <ph name="DOMAIN" />; његов безбедносни сертификат је истекао. Узрок томе је можда погрешна конфигурација или нападач који је прекинуо везу. Сат рачунара је тренутно подешен на <ph name="CURRENT_TIME" />. Да ли вам то делује тачно? Ако не делује, треба да исправите сат система и освежите ову страницу.</translation>
 <translation id="2922350208395188000">Није могуће проверити сертификат сервера.</translation>
@@ -347,7 +344,6 @@
 <translation id="4807049035289105102">Тренутно не можете да посетите <ph name="SITE" /> зато што је веб-сајт послао шифроване акредитиве које Google Chrome не може да обради. Грешке и напади на мрежи су обично привремени, па ће ова страница вероватно функционисати касније.</translation>
 <translation id="4813512666221746211">Грешка на мрежи</translation>
 <translation id="4816492930507672669">Уклопи у страницу</translation>
-<translation id="4841640898320458950">Небезбедан порт је блокиран.</translation>
 <translation id="4850886885716139402">Приказ</translation>
 <translation id="4880827082731008257">Претражи историју</translation>
 <translation id="4923417429809017348">Ова страница је преведена са непознатог језика на <ph name="LANGUAGE_LANGUAGE" /></translation>
@@ -447,7 +443,6 @@
 <translation id="6165508094623778733">Сазнајте више</translation>
 <translation id="6203231073485539293">Проверите интернет везу</translation>
 <translation id="6218753634732582820">Желите ли да уклоните адресу из Chromium-а?</translation>
-<translation id="6232139169545176020">Захтевана URI шема није подржана.</translation>
 <translation id="6259156558325130047">&amp;Понови промену редоследа</translation>
 <translation id="6263376278284652872">Обележивачи домена <ph name="DOMAIN" /></translation>
 <translation id="6264485186158353794">Назад на безбедно</translation>
@@ -470,14 +465,11 @@
 <translation id="6489534406876378309">Покрени отпремање отказивања</translation>
 <translation id="6518133107902771759">Верификуј</translation>
 <translation id="6529602333819889595">&amp;Понови брисање</translation>
-<translation id="6533019874004191247">Неподржана URL адреса.</translation>
 <translation id="6550675742724504774">Опције</translation>
 <translation id="6596325263575161958">Опције шифровања</translation>
-<translation id="6610562986279010327">Chrome не може да отвори овај URL</translation>
 <translation id="662080504995468778">Не напуштај</translation>
 <translation id="6628463337424475685"><ph name="ENGINE" /> претрага</translation>
 <translation id="6634865548447745291">Тренутно не можете да посетите <ph name="SITE" /> зато што је <ph name="BEGIN_LINK" />овај сертификат опозван<ph name="END_LINK" />. Грешке и напади на мрежи су обично привремени, па ће ова страница вероватно функционисати касније.</translation>
-<translation id="6637478299472506933">Преузимање није успело</translation>
 <translation id="6644283850729428850">Ове смернице су застареле.</translation>
 <translation id="6646897916597483132">Унесите четвороцифрени CVC који се налази на предњој страни картице</translation>
 <translation id="6656103420185847513">Измена директоријума</translation>
@@ -583,7 +575,6 @@
 <translation id="780301667611848630">Не, хвала</translation>
 <translation id="7805768142964895445">Статус</translation>
 <translation id="7813600968533626083">Желите ли да уклоните предлог из Chrome-а?</translation>
-<translation id="7825436071901023927">Небезбедан порт <ph name="SITE" /></translation>
 <translation id="785549533363645510">Али, нисте невидљиви. Преласком у режим без архивирања нећете сакрити прегледање од послодавца, интернет провајдера или веб-сајтова које посећујете.</translation>
 <translation id="7887683347370398519">Проверите CVC и покушајте поново</translation>
 <translation id="7894616681410591072">Упс! Потребна вам је дозвола корисника <ph name="NAME" /> да бисте приступили овој страници.</translation>
@@ -660,7 +651,6 @@
 <translation id="8876793034577346603">Рашчлањивање конфигурације мреже није успело.</translation>
 <translation id="8891727572606052622">Неважећи режим проксија.</translation>
 <translation id="889901481107108152">Жао нам је, овај експеримент није доступан на платформи.</translation>
-<translation id="890308499387283275">Chrome не може да преузме ову датотеку.</translation>
 <translation id="8903921497873541725">Увећавање</translation>
 <translation id="8931333241327730545">Да ли желите да сачувате ову картицу на Google налог?</translation>
 <translation id="8932102934695377596">Сат вам касни</translation>

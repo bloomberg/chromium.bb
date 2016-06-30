@@ -287,7 +287,6 @@
 <translation id="1415990189994829608"><ph name="EXTENSION_NAME" /> ("<ph name="EXTENSION_ID" />" विस्तार ID) या प्रकारच्या सत्रामध्ये अनुमत नाही.</translation>
 <translation id="1416836038590872660">EAP-MD5</translation>
 <translation id="1420684932347524586">अरेरे! यादृच्छिक RSA खासगी की व्युत्पन्न करण्यात अयशस्वी.</translation>
-<translation id="1421115928968836111">हे संरक्षित सामग्रीसाठी फ्लॅश प्लेअर परवाने अनधिकृत करेल.</translation>
 <translation id="1425734930786274278">खालील कुकीज अवरोधित केलेल्या आहेत (तृतीय-पक्षाच्या कुकीज अपवादाशिवाय अवरोधित केलेल्या आहेत):</translation>
 <translation id="1426410128494586442">होय</translation>
 <translation id="1427049173708736891">आपला Android फोन अनलॉक आणि जवळपास असताना आपले <ph name="DEVICE_TYPE" /> अनलॉक केलेले ठेवा—आपला संकेतशब्द टाइप करण्‍याची आवश्‍यकता नाही.</translation>
@@ -2227,7 +2226,6 @@
 <translation id="4098354747657067197">भ्रामक साइट पुढे आहे</translation>
 <translation id="4099585076575543605">{COUNT,plural, =0{काहीही नाही}=1{1}one{#}other{#}}</translation>
 <translation id="409980434320521454">समक्रमण अयशस्वी झाले</translation>
-<translation id="4100079375692032441">मुद्रण पूर्वावलोकनावर पृष्ठ सरलीकृत करा</translation>
 <translation id="4101878899871018532">संकेतशब्द व्यवस्थापक संकालित करण्यासाठी वापरले जाणारे क्रेडेन्शियल जतन करण्‍याची ऑफर देणार नाही.</translation>
 <translation id="4104163789986725820">नि&amp;र्यात करा...</translation>
 <translation id="4105563239298244027">Google ड्राइव्हसह 1 TB विनामूल्य मिळवा</translation>
@@ -2355,7 +2353,6 @@
 <translation id="4297391862525234515">क्लिक केल्‍यावर कमी होणारी शेल्फ</translation>
 <translation id="42981349822642051">विस्तृत करा</translation>
 <translation id="4298972503445160211">डॅनिश कीबोर्ड</translation>
-<translation id="4299273509016391946">मुद्रण पूर्वावलोकन संवादावरील पृष्‍ठ सरलीकृत करा चेकबॉक्स सक्षम करते</translation>
 <translation id="4299729908419173967">ब्राझिलियन</translation>
 <translation id="430714521864499800">"Cache-Control: stale-while-revalidate" आदेशाची प्रायोगिक अंमलबजावणी सक्षम करा. यात विलंब सुधारण्यासाठी काही संसाधनांचे पार्श्वभूमीत पुन्हा प्रमाणीकरण केले जाऊ शकते हे निर्दिष्ट करण्यासाठी सर्व्हरना परवानगी देते.</translation>
 <translation id="4307281933914537745">सिस्टम पुनर्प्राप्तीबद्दल अधिक जाणून घ्या</translation>
@@ -2432,7 +2429,6 @@
 <translation id="4434147949468540706">अंतिम प्रभाव स्क्रोल करा</translation>
 <translation id="443464694732789311">सुरु ठेवा</translation>
 <translation id="4436456292809448986">डेस्कटॉपमध्ये जोडा...</translation>
-<translation id="4439244508678316632">सामग्री परवाने</translation>
 <translation id="4439318412377770121">आपण Google मेघ डिव्हाइसेसवर <ph name="DEVICE_NAME" /> ची नोंदणी करू इच्छिता?</translation>
 <translation id="4441124369922430666">मशीन चालू होते तेव्हा आपण हा अॅप स्वयंचलितपणे प्रारंभ करू इच्छिता?</translation>
 <translation id="444134486829715816">विस्तृत करा...</translation>
@@ -3456,7 +3452,6 @@
   सार्वजनिक एक्सपोनेंट (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> बिट):
   <ph name="EXPONENT_HEX_DUMP" /></translation>
 <translation id="59174027418879706">सक्षम केलेले</translation>
-<translation id="592068147111860043">Win32k लॉकडाउन सॅन्डबॉक्स धोरणामध्ये चालवले जातील असे PPAPI प्लगइन निर्दिष्ट करा.</translation>
 <translation id="5925147183566400388">प्रमाणपत्र सराव विधान पॉइंटर</translation>
 <translation id="5930693802084567591">आपल्या Google संकेतशब्दासह <ph name="TIME" /> प्रमाणे आपला डेटा कूटबद्ध करण्यात आला. कृपया तो खाली प्रविष्ट करा.</translation>
 <translation id="5931146425219109062">आपण भेट देत असलेल्या वेबसाइटवर आपला सर्वे डेटा वाचा आणि बदला</translation>
@@ -3475,7 +3470,6 @@
 <translation id="5956585768868398362">आपण अपेक्षा करत होता हे तेच शोध पृष्ठ आहे?</translation>
 <translation id="5957613098218939406">अधिक पर्याय</translation>
 <translation id="5958529069007801266">पर्यवेक्षी वापरकर्ता</translation>
-<translation id="5958994127112619898">पृष्‍ठ सरलीकृत करा</translation>
 <translation id="5959471481388474538">नेटवर्क उपलब्ध नाही</translation>
 <translation id="5963026469094486319">थीम मिळवा</translation>
 <translation id="5963453369025043595"><ph name="NUM_HANDLES" /> (<ph name="NUM_KILOBYTES_LIVE" /> सर्वोच्च)</translation>

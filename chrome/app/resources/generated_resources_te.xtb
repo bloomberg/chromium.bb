@@ -287,7 +287,6 @@
 <translation id="1415990189994829608"><ph name="EXTENSION_NAME" /> (పొడిగింపు ID "<ph name="EXTENSION_ID" />") ఈ రకమైన సెషన్‌లో అనుమతించబడదు.</translation>
 <translation id="1416836038590872660">EAP-MD5</translation>
 <translation id="1420684932347524586">అరె! RSA ప్రైవేట్ కీని రాండమ్‌గా రూపొందించడంలో విఫలమైంది.</translation>
-<translation id="1421115928968836111">ఇది సంరక్షిత కంటెంట్ కోసం Flash ప్లేయర్ లైసెన్స్‌ల ప్రామాణికతను రద్దు చేస్తుంది.</translation>
 <translation id="1425734930786274278">ఈ క్రింది కుక్కీలు నిరోధించబడ్డాయి (మూడవ-పార్టీ కుక్కీలు మినహాయింపు లేకుండా నిరోధించబడుతున్నాయి):</translation>
 <translation id="1426410128494586442">అవును</translation>
 <translation id="1427049173708736891">మీ Android ఫోన్ అన్‌లాక్ చేయబడి, సమీపంలో ఉంటే మీ <ph name="DEVICE_TYPE" /> అన్‌లాక్ అయ్యేలా చేయండి, అప్పుడు మీ పాస్‌వర్డ్‌ను టైప్ చేయాల్సిన అవసరం ఉండదు.</translation>
@@ -2233,7 +2232,6 @@
 <translation id="4098354747657067197">ముందు వంచనాత్మక సైట్ ఉంది</translation>
 <translation id="4099585076575543605">{COUNT,plural, =0{ఏదీ లేదు}=1{1}other{#}}</translation>
 <translation id="409980434320521454">సమకాలీకరణ విఫలమైంది</translation>
-<translation id="4100079375692032441">ముద్రణ పరిదృశ్యంలో పేజీని సరళీకరించండి</translation>
 <translation id="4101878899871018532">పాస్‌వర్డ్ నిర్వాహికి సమకాలీకరణ కోసం ఉపయోగించే ఆధారం సేవ్ చేయడాన్ని ఆఫర్ చేయదు.</translation>
 <translation id="4104163789986725820">ఎ&amp;గుమతి...</translation>
 <translation id="4105563239298244027">Google డిస్క్‌తో 1 TB నిల్వని ఉచితంగా పొందండి</translation>
@@ -2361,7 +2359,6 @@
 <translation id="4297391862525234515">క్లిక్ చేసినప్పుడు అర కనిష్టీకరణ</translation>
 <translation id="42981349822642051">విస్తరించు</translation>
 <translation id="4298972503445160211">డానిష్ కీబోర్డ్</translation>
-<translation id="4299273509016391946">ముద్రణ పరిదృశ్యం డైలాగ్‌లో పేజీని సరళీకృతం చేయి తనిఖీ పెట్టెను ప్రారంభిస్తుంది</translation>
 <translation id="4299729908419173967">బ్రెజిలియన్</translation>
 <translation id="430714521864499800">"కాష్-నియంత్రణ: stale-while-revalidate" డైరెక్టివ్ ప్రయోగాత్మక అమలుని ప్రారంభిస్తుంది. ఇది ప్రతిస్పందన సమయాన్ని మెరుగుపరచడానికి నేపథ్యంలో కొన్ని వనరులను పునఃప్రామాణీకరించబడవచ్చని పేర్కొనడానికి సర్వర్‌లను అనుమతిస్తుంది.</translation>
 <translation id="4307281933914537745">సిస్టమ్ రికవరీ గురించి మరింత తెలుసుకోండి</translation>
@@ -2438,7 +2435,6 @@
 <translation id="4434147949468540706">స్క్రోల్ ముగింపు ప్రభావం</translation>
 <translation id="443464694732789311">కొనసాగించు</translation>
 <translation id="4436456292809448986">డెస్క్‌టాప్‌కి జోడించు...</translation>
-<translation id="4439244508678316632">కంటెంట్ లైసెన్స్‌లు</translation>
 <translation id="4439318412377770121">మీరు <ph name="DEVICE_NAME" />ని Google Cloud పరికరాలకు నమోదు చేయాలనుకుంటున్నారా?</translation>
 <translation id="4441124369922430666">మెషీన్ ప్రారంభించబడినప్పుడు స్వయంచాలకంగా ఈ అనువర్తనం ప్రారంభించబడాలని మీరు కోరుకుంటున్నారా?</translation>
 <translation id="444134486829715816">విస్తరించు...</translation>
@@ -3462,7 +3458,6 @@
   పబ్లిక్ ఘాతాంశం (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> బిట్‌లు):
   <ph name="EXPONENT_HEX_DUMP" /></translation>
 <translation id="59174027418879706">ప్రారంభించబడింది</translation>
-<translation id="592068147111860043">Win32k లాక్‌డౌన్ శాండ్‌బాక్స్ విధానంలో అమలు కాగల PPAPI ప్లగిన్‌లను పేర్కొంటుంది.</translation>
 <translation id="5925147183566400388">సర్టిఫికేషన్ ప్రాక్టీస్ ప్రకటన పాయింటర్</translation>
 <translation id="5930693802084567591"><ph name="TIME" />న మీ Google పాస్‌వర్డ్‌తో మీ డేటా గుప్తీకరించబడింది. దయచేసి దీన్ని దిగువ నమోదు చేయండి.</translation>
 <translation id="5931146425219109062">మీరు సందర్శించే వెబ్‌సైట్‌ల్లో మీ మొత్తం డేటాను చదవడం మరియు మార్చడం</translation>
@@ -3481,7 +3476,6 @@
 <translation id="5956585768868398362">మీరు ఆశిస్తున్న శోధన పేజీ ఇదేనా?</translation>
 <translation id="5957613098218939406">మరిన్ని ఎంపికలు</translation>
 <translation id="5958529069007801266">పర్యవేక్షించబడే వినియోగదారు</translation>
-<translation id="5958994127112619898">పేజీని సరళీకరించు</translation>
 <translation id="5959471481388474538">నెట్‌వర్క్ అందుబాటులో లేదు</translation>
 <translation id="5963026469094486319">థీమ్‌లను పొందండి</translation>
 <translation id="5963453369025043595"><ph name="NUM_HANDLES" /> (<ph name="NUM_KILOBYTES_LIVE" /> మిగిలి ఉన్నాయి)</translation>

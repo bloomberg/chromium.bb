@@ -6,6 +6,15 @@
 <translation id="1019101089073227242">Weka saraka ya data ya mtumiaji</translation>
 <translation id="1022361784792428773">Vitambuslisho vya Kiendelezi ambacho mtumiaji anahitaji kuzuiwa kusakinisha (au * kwa zote)</translation>
 <translation id="102492767056134033">Weka hali chaguo-msingi ya kibodi ya skrini kwenye skrini ya kuingia katika akaunti</translation>
+<translation id="1027000705181149370">Hubainisha iwapo vidakuzi vya kuthibitisha vilivyowekwa na SAML IdP wakati wa kuingia katika akaunti vinapaswa kuhamishiwa kwenye wasifu wa mtumiaji.
+
+      Mtumiaji anapothibitisha kupitia SAML IdP anapoingia katika akaunti, vidakuzi vilivyowekwa na IdP kwanza huandikwa kwenye wasifu wa muda mfupi. Vidakuzi hivi vinaweza kuhamishiwa kwenye wasifu wa mtumiaji ili kuendelea na hali ya uthibitishaji.
+
+      Sera ikiwekwa kuwa ndivyo, vidakuzi vilivyowekwa na IdP huhamishiwa kwenye wasifu wa mtumiajia kila vinapothibitisha dhidi ya SAML IdP wakati wa kuingia katika akaunti.
+
+      Sera hii ikiwekwa kuwa sivyo au isipowekwa, vidakuzi vilivyowekwa na IdP huhamishiwa kwenye wasifu wa mtumiaji anapoingia katika kifaa kwa mara ya kwanza pekee.
+
+      Sera hii inaathiri watumiaji ambao vikoa vyao vinalingana na kikoa cha usajili wa kifaa pekee. Kwa watumiaji wengine wote, vidakuzi vinavyowekwa na IdP huhamishiwa kwenye wasifu wa mtumiaji anapoingia kwa mara ya kwanza kwenye kifaa chake pekee.</translation>
 <translation id="1040446814317236570">Washa kipengee cha kuondoa URL ya PAC (kwa https://)</translation>
 <translation id="1044878202534415707">Ripoti takwimu za maunzi kama vile matumizi ya CPU/RAM.
 
@@ -192,6 +201,8 @@ itabadilishwa na data ya hoja za utafutaji za kweli.
       Fahamu kuwa sera hii inaweza kufutwa kwa EnabledPlugins na DisabledPluginsExceptions.
 
       Ikiwa sera hii itaachwa bila kuwekwa mtumiaji anaweza kuitumia programu jalizi yoyote iliyosakinishwa kwenye mfumo isipokuwa kwa msimbo mgumu usiotangamana, programu jalizi hatari au zilizochina.</translation>
+<translation id="1864269674877167562">Sera hii ikiwekwa kuwa mfuatano mtupu au isipowekwa, <ph name="PRODUCT_OS_NAME" /> haitaonyesha chaguo la kukamilisha kiotomatiki wakati wa mtiririko wa mtumiaji kuingia katika akaunti.
+      Sera hii ikiwekwa kuwa mfuatano unaowakilisha jina la kikoa, <ph name="PRODUCT_OS_NAME" /> itaonyesha chaguo la kukamilisha kiotomatiki wakati wa mtumiaji kuingia katika akaunti hivyo kumruhusu kuandika jina lake la mtumiaji pekee bila kiendelezi cha jina la kikoa.  Mtumiaji ataweza kufuta jina la kiendelezi cha kikoa hiki.</translation>
 <translation id="1865417998205858223">Ruhusa za Funguo</translation>
 <translation id="186719019195685253">Kitendo cha kuchukua ucheleweshwaji wa kutulia unapofikiwa wakati inaendeshwa kutumia nishati ya AC</translation>
 <translation id="187819629719252111">Huruhusu faili zilizo kwenye mashine kufikiwa kwa kuruhusu <ph name="PRODUCT_NAME" /> kuonyesha vidadisi vya uteuzi vya faili.
@@ -318,6 +329,13 @@ Sera hii ikiondolewa, chaguo-msingi zitatumika kwa mipangilio yote.</translation
 <translation id="2337466621458842053">Inakuruhusu kuweka orodha ya ruwaza za url zinazobainisha tovuti zinazoruhusiwa kuonyesha picha.
 
          Ikiwa sera hii itaachwa bila thamani chaguo-msingi yote itatumiwa kwa tovuti zote kutoka kwenye sera ya 'DefaultImageSetting' ikiwa imewekwa, au vinginevyo usanidi binafsi wa mtumiaji.</translation>
+<translation id="2359612025446382967">Sera hii ikiwekwa kuwa sivyo, <ph name="PRODUCT_OS_NAME" /> itazima Bluetooth na mtumiaji hawezi kuiwasha tena.
+
+     Sera hii ikiwekwa kuwa ndivyo au isipowekwa, mtumiaji ataweza kuwasha au kuzima Bluetooth apendavyo.
+
+      Sera hii ikiwekwa, mtumiaji hawezi kuibadilisha au kuibatilisha.
+
+      Baada ya kuwasha Bluetooth, lazima kifaa kiwashwe tena ili mabadiliko yatekelezwe (hakuna haja ya kuwasha kifaa tena unapozima Bluetooth).</translation>
 <translation id="2366415278352956652">Huwasha kipengele cha kutuma</translation>
 <translation id="2371309782685318247">Inabainisha muda katika milisekunde ambapo huduma ya usimamizi wa kifaa inahojiwa kwa maelezo ya sera ya mtumiaji.
 
@@ -544,6 +562,32 @@ Kama sera hii haitawekwa, hii itawashwa lakini mtumiaji ataweza kuibadilisha.</t
           Ukiwasha mipangilio hii, <ph name="PRODUCT_NAME" /> itapuuza chaguo zote zinazohusiana na seva mbadala zilizobainishwa kwenye mstari wa amri.
 
           Kuacha sera hii bila kuiweka kutawaruhusu watumiaji kuchagua mipangilio ya seva mbadala wenyewe.</translation>
+<translation id="2818551149761607847">Weka mipangilio ya picha ya ishara.
+
+      Sera hii inakuruhusu kuweka mipangilio ya picha ya ishara inayowakilisha mtumiaji kwenye skrini ya kuingia katika akaunti. Sera huwekwa kwa kubainisha URL ambayo <ph name="PRODUCT_OS_NAME" /> inaweza kupakua picha ya ishara na alama ya reli ya kriptografia inayotumiwa kuthibitisha kwamba kipakuliwa hakina virusi. Lazima picha iwe katika aina ya faili ya JPEG, ukubwa wake usizidi kB 512. Lazima URL ifikiwe bila uthibitishaji wowote.
+
+      Picha ya ishara hupakuliwa na kuakibishwa. Itapakuliwa tena wakati URL au alama ya reli inabadilika.
+
+      Sera inapaswa kubainishwa kama mfuatano unaoeleza URL na alama ya reli katika aina ya faili ya JSON, inayofuata taratibu hizi:
+      {
+        "type": "object",
+        "properties": {
+          "url": {
+            "description": "URL ambayo picha ya ishara inaweza kupakuliwa.",
+            "type": "mfuatano"
+          },
+          "hash": {
+            "description": "Alama ya reli ya SHA-256 ya picha ya ishara.",
+            "type": "mfuatano"
+          }
+        }
+      }
+
+     Sera hii ikiwekwa, <ph name="PRODUCT_OS_NAME" /> itapakua picha ya ishara.
+
+     Ukiweka sera hii, watumiaji hawawezi kuibadilisha au kuibatilisha.
+
+      Sera isipowekwa, mtumiaji anaweza kuchagua picha ya ishara inayomwakilisha kwenye skrini ya kuingia katika akaunti.</translation>
 <translation id="2824715612115726353">Washa hali Fiche</translation>
 <translation id="2844404652289407061">Huwasha kipengele cha Gusa ili Utafute katika mwonekano wa maudhui ya <ph name="PRODUCT_NAME" />.
 
@@ -1678,10 +1722,30 @@ Iwapo sera hii haijawekwa, maoni yanayotamkwaa yatazimwa mwanzoni lakini yanawez
       Isipotekelezwa, hakuna alamishi zitakazoingizwa.
 
       Ikiwa hii haitawekwa, huenda mtumiaji akaulizwa aingize alamisho, au huenda zikaingizwa kiotomatiki.</translation>
+<translation id="7055358889740598917">Huweka mipangilio ya URL chaguo-msingi ya ukurasa wa kwanza katika <ph name="PRODUCT_NAME" /> na huwazuia watumiaji wasiibadilishe.
+
+          Ukurasa wa mwanzo ni ukurasa unaofunguliwa na kitufe cha Mwanzo. Kurasa zinazofunguka baada ya kuwasha hudhibitiwa na sera za RestoreOnStartup.
+
+          Ukurasa wa mwanzo unaweza kuwekwa kuwa URL utakayobainisha hapa au kuwekwa na Ukurasa wa Kichupo Kipya. Ukichagua Ukurasa wa Kichupo Kipya, basi sera hii haitatumika.
+
+         Ukiwasha mipangilio hii, watumiaji hawawezi kubadilisha URL ya ukurasa wao wa mwanzo katika <ph name="PRODUCT_NAME" />, lakini bado wanaweza kuchagua Ukurasa wa Kichupo Kipya kama ukurasa wao wa mwanzo.
+
+          Kuacha sera hii bila kuiweka kutaruhusu mtumiaji kujichagulia ukurasa wao wa mwanzo ikiwa HomepageIsNewTabPage haijawekwa pia.
+
+          Sera hii haipatikani kwenye matukio ya Windows ambayo hayajaunganishwa kwenye kikoa cha Saraka Inayotumika.</translation>
 <translation id="7063895219334505671">Ruhusu ibukizi kwenye tovuti hizi</translation>
 <translation id="706669471845501145">Ruhusu tovuti kuonyesha arifa za eneo-kazi</translation>
 <translation id="7079519252486108041">Zuia madirisha ibukizi kwenye tovuti hizi</translation>
 <translation id="7091198954851103976">Kila wakati inaendesha programu jalizi ambazo zinahitaji uidhinishaji.</translation>
+<translation id="7106631983877564505">Washa kipengele cha kufunga wakati vifaa vya <ph name="PRODUCT_OS_NAME" /> vinapokuwa havifanyi kitu au vikisimamishwa.
+
+      Ukiwasha mipangilio hii, watumiaji wataombwa nenosiri ili kufungua kifaa ambacho hakitumiki.
+
+      Ukizima mipangilio hii, watumiaji hawataombwa nenosiri ili kufungua kifaa ambacho hakitumiki.
+
+      Ukiwasha au kuzima mipangilio hii, watumiaji hawawezi kukibadilisha au kukifuta.
+
+      Ikiwa sera hii haitawekwa, mtumiaji anaweza kuchagua kama angependa kuombwa nenosiri ili afungue kifaa au la.</translation>
 <translation id="7115494316187648452">Huamua ikiwa machakato wa <ph name="PRODUCT_NAME" /> utaanza wakati wa kuingia katika Mfumo wa Uendeshaji na kuendelea kutekeleza dirisha la mwisho la kivinjari linapofungwa, hivyo kuruhusu programu za chini chini na kipindi cha kuvinjari cha sasa kuendelea, ikiwa ni pamoja na vidakuzi vya kipindi. Mchakato wa chini chini huonyesha aikoni katika treya ya mfumo na unaweza kufungwa kutoka huko wakati wowote.
 
      Sera hii ikiwekwa kuwa Ndivyo, kipengee cha hali ya chinichini huwashwa na hakiwezi kudhibitiwa na mtumiaji katika mipangilio ya kivinjari.
@@ -2032,6 +2096,13 @@ Kama sera hii imewekwa kuwa kweli, hali ya juu ya utofautishaji itawashwa kila w
 Kama sera hii imewekwa kuwa haitumiki, hali ya juu ya utofautishaji itazimwa kila wakati.
 Kama sera hii imewekwa, watumiaji hawawezi kuibadilisha au kuipuuza.
 Kama sera hii haitawekwa, hali ya juu ya utofautishaji itazimwa mwanzoni lakini inaweza kuwashwa na mtumiaji wakati wowote.</translation>
+<translation id="815061180603915310">Sera hii ikiwekwa kuwa imewashwa hulazimisha wasifu ubadilishwe kuwa kipindi cha matumizi ya muda. Sera hii ikibainishwa kuwa sera ya Mfumo wa Uendeshaji (k.m. GPO kwenye Windows) itatumika katika kila wasifu kwenye mfumo; sera hii ikiwekwa kuwa sera ya Wingu, itatumika kwenye wasifu ulioingia ukitumia akaunti inayosimamiwa pekee.
+
+      Katika hali hii, data ya wasifu huchanganuliwa kwenye diski kwa muda wote wa kipindi cha mtumiaji. Vipengele kama vile historia ya kivinjari, viendelezi na data yake, data ya wavuti kama vile vidakuzi na hifadhidata za wavuti hazihifadhiwi baada ya kufunga kivinjari. Hata hivyo, jambo hili halimzuii mtumiaji kupakua data yoyote kwenye diski, kuhifadhi au kuchapisha kurasa.
+
+      Ikiwa mtumiaji amewasha kipengele cha kusawazisha, data hii yote itahifadhiwa katika wasifu wake wa kusawazisha kama wasifu wa kawaida. Pia hali fiche inapatikana isipozimwa kabisa na sera.
+
+      Sera ikiwekwa kuwa imezimwa au isipowekwa, kuingia katika akaunti husababisha kuwepo kwa wasifu wa kawaida.</translation>
 <translation id="8164246350636985940">Tabia chaguo-msingi ya tovuti zisizo katika furushi lolote la maudhui.
 
           Sera hii ni ya matumizi ya ndani na <ph name="PRODUCT_NAME" /> yenyewe.</translation>
@@ -2097,6 +2168,17 @@ Kama sera hii haitawekwa, hali ya juu ya utofautishaji itazimwa mwanzoni lakini 
 <translation id="8312129124898414409">Hukuruhusu kuweka iwapo tovuti zinaruhusiwa kutumia uundaji wa ufunguo. Kutumia uundaji ufunguo kunaweza kuruhusiwa kwa tovuti zote au ukataliwe kwa tovuti zote.
 
          Sera hii ikiachwa bila kuwekwa, 'BlockKeygen' itatumiwa na mtumiaji anaweza kuibadilisha.</translation>
+<translation id="8316806736175990584">Huweka mipangilio ya aina ya ukurasa wa mwanzo chaguo-msingi katika <ph name="PRODUCT_NAME" /> na huzuia watumiaji kubadilisha mapendeleo ya ukurasa wa kwanza. Ukurasa wa mwanzo unaweza kuwekwa kuwa URL unayobainisha au kuweka kwenye Ukurasa wa Kichupo Kipya.
+
+         Ukiwasha mipangilio hii, Ukurasa wa Kichupo Kipya utatumiwa kila wakati kwenye ukurasa wa mwanzo, na eneo la URL ya ukurasa wa mwanzo hupuuzwa.
+
+          Ukizima mipangilio hii, ukurasa wa mwanzo wa mtumiaji hautawahi kuwa Ukurasa wa Kichupo Kipya, isipokuwa URL yake iwekwe kuwa 'chrome://newtab'.
+
+          Ukiwasha au kuzima mipangilio hii, watumiaji hawawezi kubadilisha aina ya ukurasa wao wa mwanzo katika <ph name="PRODUCT_NAME" />.
+
+         Kuacha sera hii bila kuwekwa kutaruhusu mtumiaji ajichagulie ikiwa ukurasa wa kichupo kipya utakuwa ukurasa wake mwanzo .
+
+          Sera hii haipatikani kwenye matukio ya Windows ambayo hayajaunganishwa kwenye kikoa cha Saraka Inayotumika.</translation>
 <translation id="8329984337216493753">Sera hii ni amilifu katika modi ya rejareja tu.
 
       Wakati DeviceIdleLogoutTimeout inapobainishwa sera hii inafafanua muda wa kikasha cha onyo kwa kipima muda kinachoonyeshwa kwa mtumiaji kabla ya kuondoka kutekelezwa.

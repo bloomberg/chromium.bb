@@ -77,7 +77,6 @@
 <translation id="1791429645902722292">Google Smart Lock</translation>
 <translation id="1821930232296380041">Invalid request or request parameters</translation>
 <translation id="1871208020102129563">Proxy is set to use fixed proxy servers, not a .pac script URL.</translation>
-<translation id="1871625979288021266">Unsafe Port Blocked</translation>
 <translation id="1883255238294161206">Collapse list</translation>
 <translation id="1898423065542865115">Filtering</translation>
 <translation id="1911837502049945214"><ph name="HOST_NAME" /> didn’t accept your login certificate or your login certificate may have expired.</translation>
@@ -128,7 +127,6 @@
 <translation id="2386255080630008482">Server's certificate has been revoked</translation>
 <translation id="2392959068659972793">Show policies with no value set</translation>
 <translation id="2396249848217231973">&amp;Undo delete</translation>
-<translation id="2400837204278978822">Unknown File Type.</translation>
 <translation id="2413528052993050574">This server could not prove that it is <ph name="DOMAIN" />; its security certificate might be revoked. This may be caused by a misconfiguration or an attacker intercepting your connection.</translation>
 <translation id="2455981314101692989">This web page has disabled automatic filling for this form.</translation>
 <translation id="2467694685043708798"><ph name="BEGIN_LINK" />Running Network Diagnostics<ph name="END_LINK" /></translation>
@@ -171,7 +169,6 @@
 <translation id="2855922900409897335">Verify your <ph name="CREDIT_CARD" /></translation>
 <translation id="2889159643044928134">Don't reload</translation>
 <translation id="2896499918916051536">This plug-in is not supported.</translation>
-<translation id="2897655920961181107">The requested port is unsafe and has been blocked.</translation>
 <translation id="2909946352844186028">A network change was detected.</translation>
 <translation id="2915500479781995473">This server could not prove that it is <ph name="DOMAIN" />; its security certificate expired. This may be caused by a misconfiguration or an attacker intercepting your connection. Your computer's clock is currently set to <ph name="CURRENT_TIME" />. Does that look right? If not, you should correct your system's clock and then refresh this page.</translation>
 <translation id="2922350208395188000">Server's certificate cannot be checked.</translation>
@@ -347,7 +344,6 @@
 <translation id="4807049035289105102">You cannot visit <ph name="SITE" /> at the moment because the website sent scrambled credentials that Google Chrome cannot process. Network errors and attacks are usually temporary, so this page will probably work later.</translation>
 <translation id="4813512666221746211">Network error</translation>
 <translation id="4816492930507672669">Fit to page</translation>
-<translation id="4841640898320458950">Unsafe port blocked.</translation>
 <translation id="4850886885716139402">View</translation>
 <translation id="4880827082731008257">Search history</translation>
 <translation id="4923417429809017348">This page has been translated from an unknown language into <ph name="LANGUAGE_LANGUAGE" /></translation>
@@ -448,7 +444,6 @@
 <translation id="6165508094623778733">Learn more</translation>
 <translation id="6203231073485539293">Check your Internet connection</translation>
 <translation id="6218753634732582820">Remove address from Chromium?</translation>
-<translation id="6232139169545176020">The requested URI Scheme is not supported.</translation>
 <translation id="6259156558325130047">&amp;Redo Reorder</translation>
 <translation id="6263376278284652872"><ph name="DOMAIN" /> bookmarks</translation>
 <translation id="6264485186158353794">Back to safety</translation>
@@ -471,14 +466,11 @@
 <translation id="6489534406876378309">Start uploading crashes</translation>
 <translation id="6518133107902771759">Verify</translation>
 <translation id="6529602333819889595">&amp;Redo Delete</translation>
-<translation id="6533019874004191247">Unsupported URL.</translation>
 <translation id="6550675742724504774">Options</translation>
 <translation id="6596325263575161958">Encryption options</translation>
-<translation id="6610562986279010327">Chrome cannot open this URL</translation>
 <translation id="662080504995468778">Stay</translation>
 <translation id="6628463337424475685"><ph name="ENGINE" /> Search</translation>
 <translation id="6634865548447745291">You cannot visit <ph name="SITE" /> at the moment because <ph name="BEGIN_LINK" />this certificate has been revoked<ph name="END_LINK" />. Network errors and attacks are usually temporary, so this page will probably work later.</translation>
-<translation id="6637478299472506933">Download Failed</translation>
 <translation id="6644283850729428850">This policy has been deprecated.</translation>
 <translation id="6646897916597483132">Enter the 4-digit CVC from the front of your card</translation>
 <translation id="6656103420185847513">Edit Folder</translation>
@@ -584,7 +576,6 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY" /> may come in handy next time.</tr
 <translation id="780301667611848630">No, thank you</translation>
 <translation id="7805768142964895445">Status</translation>
 <translation id="7813600968533626083">Remove form suggestion from Chrome?</translation>
-<translation id="7825436071901023927">Unsafe Port <ph name="SITE" /></translation>
 <translation id="785549533363645510">However, you aren’t invisible. Going incognito doesn’t hide your browsing from your employer, your Internet service provider or the websites that you visit.</translation>
 <translation id="7887683347370398519">Check your CVC and try again</translation>
 <translation id="7894616681410591072">Oops! You need permission from <ph name="NAME" /> to access this page.</translation>
@@ -661,7 +652,6 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY" /> may come in handy next time.</tr
 <translation id="8876793034577346603">Network configuration failed to be parsed.</translation>
 <translation id="8891727572606052622">Invalid proxy mode.</translation>
 <translation id="889901481107108152">Sorry, this experiment is not available on your platform.</translation>
-<translation id="890308499387283275">Chrome cannot download this file.</translation>
 <translation id="8903921497873541725">Zoom in</translation>
 <translation id="8931333241327730545">Do you want to save this card to your Google Account?</translation>
 <translation id="8932102934695377596">Your clock is behind</translation>

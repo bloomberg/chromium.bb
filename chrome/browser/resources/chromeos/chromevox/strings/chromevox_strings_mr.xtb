@@ -21,6 +21,7 @@
 <translation id="1167230103353892028"><ph name="NAME" />, सबमेनूसह मेनू आयटम</translation>
 <translation id="1177863135347784049">सानुकूल</translation>
 <translation id="1188858454923323853">पूरक</translation>
+<translation id="1201402288615127009">पुढील</translation>
 <translation id="1206619573307042055">marquee</translation>
 <translation id="1213216066620407844">ChromeVox - Chrome ला आवाज देत आहे</translation>
 <translation id="1229276918471378188">मागील जंप</translation>
@@ -122,7 +123,6 @@
 <translation id="2553108862507765288">grammatical mistake</translation>
 <translation id="257674075312929031">गट</translation>
 <translation id="2582407057977008361">बाजूचा</translation>
-<translation id="2589102159832527089">या पृष्ठामध्ये &lt;b&gt;<ph name="FILENAME" />&lt;/b&gt; PDF फायलीमधून स्वयंचलितपणे काढलेला मजकूर आहे. &lt;a href="<ph name="URL" />"&gt;मूळ साठी येथे क्लिक करा.&lt;/a&gt;</translation>
 <translation id="2606210917827248971">यासह {COUNT,plural, =1{# आयटम}one{# आयटम}other{# आयटम}}</translation>
 <translation id="2614981083756825552">Math ML लेआउट</translation>
 <translation id="2626530649491650971">क्लिक करण्‍यायोग्य</translation>
@@ -510,7 +510,6 @@
 <translation id="6129953537138746214">जागा</translation>
 <translation id="6142308968191113180">मथळा 4</translation>
 <translation id="6169420925157477918">मोठ्या वर्णनासह प्रतिमा</translation>
-<translation id="6172087735260766220">कॉपी-संरक्षित PDF वरून प्रवेशयोग्य मजकूरामध्ये प्रवेश करण्यात अक्षम.</translation>
 <translation id="6186305613600865047">पृष्ठाच्या तळाशी जंप करा</translation>
 <translation id="6193330012414963395">AM PM</translation>
 <translation id="622484624075952240">Down</translation>
@@ -549,6 +548,7 @@
 <translation id="6659594942844771486">टॅब</translation>
 <translation id="667999046851023355">दस्तऐवज</translation>
 <translation id="6697092096875747123">मागील कॉम्बो बॉक्स</translation>
+<translation id="6710213216561001401">मागील</translation>
 <translation id="6714813999819678458">मागील स्तर 2 शीर्षक</translation>
 <translation id="6716505898850596801">सुधारणा की</translation>
 <translation id="671916444866103745">पुढील ARIA महत्त्वाची खूण नाही.</translation>
@@ -690,6 +690,7 @@
 <translation id="842922884199979200">पुढील स्‍तर 3 मथळा नाही.</translation>
 <translation id="8430049249787218991">mnubr</translation>
 <translation id="844681116543532394">मागील चेकबॉक्‍स नाही.</translation>
+<translation id="8446884382197647889">अधिक जाणून घ्या</translation>
 <translation id="8455868257606149352">कमाल <ph name="X" /></translation>
 <translation id="84575901236241018">प्रवेश की आहे, <ph name="KEY" /></translation>
 <translation id="8476508772960940536">विंडो विहंगावलोकन</translation>

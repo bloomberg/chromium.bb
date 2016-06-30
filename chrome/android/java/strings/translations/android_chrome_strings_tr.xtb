@@ -148,7 +148,9 @@ Chrome Ayarları'ndan Fiziksel Web'i kontrol edebilirsiniz.
 <translation id="2748463065602559597">Güvenli bir Google Chrome sayfasını görüntülüyorsunuz.</translation>
 <translation id="2762000892062317888">az önce</translation>
 <translation id="2770465223704140727">Listeden kaldır</translation>
+<translation id="2777555524387840389"><ph name="SECONDS" /> sn. kaldı</translation>
 <translation id="278029852808208386">Bluetooth cihaz bulunamadı. <ph name="BEGIN_LINK" />Tekrar arayın<ph name="END_LINK" />.</translation>
+<translation id="2781151931089541271">1 sn. kaldı</translation>
 <translation id="2781389167600714117">Gönderimi seç</translation>
 <translation id="2811892995384186721">Cihazınızı görmüyor musunuz? <ph name="BEGIN_LINK" />Yardım alın<ph name="END_LINK" /></translation>
 <translation id="2836148919159985482">Tam ekrandan çıkmak için geri düğmesine dokunun.</translation>
@@ -187,6 +189,7 @@ Chrome Ayarları'ndan Fiziksel Web'i kontrol edebilirsiniz.
 <translation id="321773570071367578">Parolanızı unuttuysanız veya bu ayarı değiştirmek istiyorsanız <ph name="BEGIN_LINK" />senkronizasyonu sıfırlayın<ph name="END_LINK" /></translation>
 <translation id="3227137524299004712">Mikrofon</translation>
 <translation id="3232754137068452469">Web Uygulaması</translation>
+<translation id="3236059992281584593">1 dk. kaldı</translation>
 <translation id="3244271242291266297">AA</translation>
 <translation id="3254409185687681395">Bu sayfaya yer işareti koy</translation>
 <translation id="326254929494722411">Bu cihazda henüz bir Google Hesabı oluşturmadınız</translation>
@@ -301,6 +304,7 @@ Arama teriminizi düzeltmek için uzun basarak terimi seçin. Aramanızı ayrın
 <translation id="4720023427747327413"><ph name="PRODUCT_NAME" /> uygulamasında aç</translation>
 <translation id="473775607612524610">Güncelle</translation>
 <translation id="4738836084190194332">Son senkronizasyon: <ph name="WHEN" /></translation>
+<translation id="4758311279753947758">İletişim bilgilerinizi ekleyin</translation>
 <translation id="4759238208242260848">İndirilenler</translation>
 <translation id="4773299976671772492">Durduruldu</translation>
 <translation id="4797039098279997504"><ph name="URL_OF_THE_CURRENT_TAB" /> adresine dönmek için dokunun</translation>
@@ -325,6 +329,7 @@ Arama teriminizi düzeltmek için uzun basarak terimi seçin. Aramanızı ayrın
 <translation id="5063480226653192405">Kullanım</translation>
 <translation id="5087580092889165836">Kart ekle</translation>
 <translation id="5100237604440890931">Daraltıldı - Genişletmek için tıklayın.</translation>
+<translation id="510275257476243843">1 saat kaldı</translation>
 <translation id="5107381076085091558">İndirme işlemi duraklatıldı.</translation>
 <translation id="5118713593561876160">İlgi alanları</translation>
 <translation id="5127805178023152808">Senkronizasyon kapalı</translation>
@@ -408,6 +413,7 @@ Yine de, görünmez olmazsınız. Gizli moda geçmeniz web'de yaptıklarınızı
 <translation id="5911030830365207728">Google Çeviri</translation>
 <translation id="5916664084637901428">Açık</translation>
 <translation id="5939518447894949180">Sıfırla</translation>
+<translation id="5961742032223302715">İletişim ayrıntılarını seçin</translation>
 <translation id="5968595432776860642">“<ph name="VIDEO_TITLE" />” oynatılıyor</translation>
 <translation id="6010869025736512584">Video girişine erişiliyor</translation>
 <translation id="6012342843556706400">Chrome'un konumu bu siteyle paylaşması için konum erişimine ihtiyacı var.</translation>
@@ -418,6 +424,7 @@ Yine de, görünmez olmazsınız. Gizli moda geçmeniz web'de yaptıklarınızı
 <translation id="604996488070107836">Bilinmeyen bir hata nedeniyle <ph name="FILE_NAME" /> dosyası indirilemedi.</translation>
 <translation id="605721222689873409">YY</translation>
 <translation id="6075798973483050474">Ana sayfayı düzenle</translation>
+<translation id="60923314841986378"><ph name="HOURS" /> saat kaldı</translation>
 <translation id="6108923351542677676">Kurulum devam ediyor…</translation>
 <translation id="6112702117600201073">Sayfa yenileniyor</translation>
 <translation id="6127379762771434464">Öğe kaldırıldı</translation>
@@ -504,7 +511,9 @@ Yine de, görünmez olmazsınız. Gizli moda geçmeniz web'de yaptıklarınızı
 <translation id="7053983685419859001">Engelle</translation>
 <translation id="7056999826593229648">Yavaş bağlantı algılandı</translation>
 <translation id="7057058088140140610">Google Payments'ı kullanan kredi kartları ve adresler</translation>
+<translation id="7062545763355031412">Kabul et ve hesabı değiştir</translation>
 <translation id="7063006564040364415">Senkronizasyon sunucusuna bağlanılamadı.</translation>
+<translation id="7064851114919012435">İletişim bilgisi</translation>
 <translation id="7074853159844403180"><ph name="SITE" />, şu cihazla eşlenmek istiyor:</translation>
 <translation id="7081639897063626814">Mevcut verileri ayrı tut</translation>
 <translation id="7094922512924405309">Yakınlarda herhangi bir Fiziksel Web sayfası bulunamadı</translation>
@@ -520,6 +529,7 @@ Yine de, görünmez olmazsınız. Gizli moda geçmeniz web'de yaptıklarınızı
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" />, yerel arama sonuçlarını göstermek için konumunuzu kullanır</translation>
 <translation id="7299441085833132046"><ph name="BEGIN_LINK" />Yardım<ph name="END_LINK" /></translation>
 <translation id="7299721129597238157">Yer işaretini sil</translation>
+<translation id="7327835590071894791">Sekmeniz şimdi arka planda.</translation>
 <translation id="7347770551817603360">Çevrimdışı içerik</translation>
 <translation id="7358452246665489050">Hesaplanıyor...</translation>
 <translation id="7363354739009474003">“<ph name="VIDEO_TITLE" />” yükleniyor</translation>
@@ -564,12 +574,14 @@ Diğer Google hizmetlerinden yapılan aramalar ve etkinlikler gibi Google hesab�
 <translation id="7713873128508426081">Her zaman izin veriliyor</translation>
 <translation id="7764225426217299476">Adres ekle</translation>
 <translation id="7765158879357617694">Taşı</translation>
+<translation id="7769602470925380267">Kabul et ve oturumu kapat</translation>
 <translation id="7772032839648071052">Parolayı onayla</translation>
 <translation id="7788788617745289808">Chrome'un kamerayı bu siteyle paylaşması için kamera erişimine ihtiyacı var.</translation>
 <translation id="7791543448312431591">Ekle</translation>
 <translation id="780301667611848630">Hayır, teşekkürler</translation>
 <translation id="7829298379596169484">Ses girişine erişiliyor</translation>
 <translation id="7837582000577464779">Siparişiniz işlenirken bir hata oldu. Lütfen hesabınızı kontrol edin ve tekrar deneyin.</translation>
+<translation id="7837721118676387834">Belirli bir sitenin, sesi kapatılmış videoları otomatik olarak oynatmasına izin verin.</translation>
 <translation id="7846076177841592234">Seçimi iptal et</translation>
 <translation id="7851858861565204677">Diğer cihazlar</translation>
 <translation id="7876243839304621966">Tümünü kaldır</translation>
@@ -584,6 +596,7 @@ Diğer Google hizmetlerinden yapılan aramalar ve etkinlikler gibi Google hesab�
 <translation id="8007176423574883786">Bu cihaz için kapatıldı</translation>
 <translation id="8026334261755873520">Tarama verilerini temizle</translation>
 <translation id="8035133914807600019">Yeni klasör…</translation>
+<translation id="8037750541064988519"><ph name="DAYS" /> gün kaldı</translation>
 <translation id="8063895661287329888">Yer işareti eklenemedi.</translation>
 <translation id="8068648041423924542">Sertifika seçilemiyor.</translation>
 <translation id="8069239273282989646">Sıkıştırmadan sonra</translation>
@@ -596,6 +609,7 @@ Diğer Google hizmetlerinden yapılan aramalar ve etkinlikler gibi Google hesab�
 <translation id="8137558756159375272">Dokun ve Ara, seçilen kelimeyi ve geçerli sayfayı Google Arama'ya bağlam olarak gönderir. Bu özelliği <ph name="BEGIN_LINK" />Ayarlar<ph name="END_LINK" />'da kapatabilirsiniz.</translation>
 <translation id="8168435359814927499">İçerik</translation>
 <translation id="8173098127580644436">en baştan</translation>
+<translation id="8190358571722158785">1 gün kaldı</translation>
 <translation id="8200772114523450471">Sürdür</translation>
 <translation id="8202097416529803614">Sipariş özeti</translation>
 <translation id="8209050860603202033">Resmi aç</translation>
@@ -620,6 +634,7 @@ Diğer Google hizmetlerinden yapılan aramalar ve etkinlikler gibi Google hesab�
 <translation id="8518901949365209398">Bu site düşük bir güvenlik yapılandırması (SHA-1 imzaları) kullandığından bağlantınız gizli olmayabilir.</translation>
 <translation id="8525306231823319788">Tam ekran</translation>
 <translation id="854522910157234410">Şu sayfayı aç:</translation>
+<translation id="8559882854823529713">Chrome'da daha sonra oku</translation>
 <translation id="8562452229998620586">Kayıtlı şifreleriniz burada görünür.</translation>
 <translation id="856481929701340285">Masaüstü sitesi iste</translation>
 <translation id="857943718398505171">İzin verildi (önerilir)</translation>
@@ -676,6 +691,7 @@ Yeni lisansları edinmek için İnternet'e bağlanın ve indirdiğiniz içeriği
 <translation id="9141510419986760385">Senkronizasyon hesapları arasında (<ph name="FROM_ACCOUNT" /> hesabından <ph name="TO_ACCOUNT" /> hesabına) geçiş yapıyorsunuz. Mevcut yer işaretleri, geçmiş, şifreler ve diğer ayarlarınızla ne yapmak istiyorsunuz?</translation>
 <translation id="917685106653909562">Yakınlardaki Fiziksel Web sayfaları</translation>
 <translation id="9187199695613236444">Mobil uyumlu görünüm</translation>
+<translation id="9188680907066685419">Yönetilen hesabın oturumunu kapat</translation>
 <translation id="9192643434065497760">Eşlemeye izin vermek için Bluetooth'u <ph name="BEGIN_LINK" />cihaz ayarlarında<ph name="END_LINK" /> açın.</translation>
 <translation id="9198708126133947749">Bu cihazın verilerini, <ph name="TO_ACCOUNT" /> hesabının verileriyle değiştirin. Mevcut verilerinizi tekrar <ph name="FROM_ACCOUNT" /> hesabına geçerek alabilirsiniz.</translation>
 <translation id="9206873250291191720">A</translation>
@@ -684,6 +700,7 @@ Yeni lisansları edinmek için İnternet'e bağlanın ve indirdiğiniz içeriği
 <translation id="938850635132480979">Hata: <ph name="ERROR_CODE" /></translation>
 <translation id="945632385593298557">Mikrofonunuza erişim</translation>
 <translation id="969096075394517431">Dilleri değiştir</translation>
+<translation id="970715775301869095"><ph name="MINUTES" /> dk. kaldı</translation>
 <translation id="981121421437150478">Çevrimdışı</translation>
 <translation id="983192555821071799">Tüm sekmeleri kapat</translation>
 </translationbundle>

@@ -289,7 +289,6 @@
 <translation id="1415990189994829608"><ph name="EXTENSION_NAME" /> (extension ID "<ph name="EXTENSION_ID" />") is not allowed in this type of session.</translation>
 <translation id="1416836038590872660">EAP-MD5</translation>
 <translation id="1420684932347524586">Yikes! Failed to generate random RSA private key.</translation>
-<translation id="1421115928968836111">This will deauthorise Flash Player licenses for protected content.</translation>
 <translation id="1425734930786274278">The following cookies were blocked (third-party cookies are being blocked without exception):</translation>
 <translation id="1426410128494586442">Yes</translation>
 <translation id="1427049173708736891">Keep your <ph name="DEVICE_TYPE" /> unlocked when your Android phone is unlocked and nearby – no need to type your password.</translation>
@@ -2245,7 +2244,6 @@ From <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="4098354747657067197">Deceptive site ahead</translation>
 <translation id="4099585076575543605">{COUNT,plural, =0{none}=1{1}other{#}}</translation>
 <translation id="409980434320521454">Sync failed</translation>
-<translation id="4100079375692032441">Simplify page on print preview</translation>
 <translation id="4101878899871018532">The password manager will not offer to save the credential used to sync.</translation>
 <translation id="4104163789986725820">E&amp;xport...</translation>
 <translation id="4105563239298244027">Get 1 TB free with Google Drive</translation>
@@ -2373,7 +2371,6 @@ All users must sign out to continue.</translation>
 <translation id="4297391862525234515">Shelf minimise-on-click</translation>
 <translation id="42981349822642051">Expand</translation>
 <translation id="4298972503445160211">Danish keyboard</translation>
-<translation id="4299273509016391946">Enables the simplify page tick box on the print preview dialogue</translation>
 <translation id="4299729908419173967">Brazilian</translation>
 <translation id="430714521864499800">Enable the experimental implementation of the "Cache-Control: stale-while-revalidate" directive. This permits servers to specify that some resources may be revalidated in the background to improve latency.</translation>
 <translation id="4307281933914537745">Learn more about system recovery</translation>
@@ -2450,7 +2447,6 @@ Press any key to continue exploring.</translation>
 <translation id="4434147949468540706">Scroll end effect</translation>
 <translation id="443464694732789311">Continue</translation>
 <translation id="4436456292809448986">Add to Desktop...</translation>
-<translation id="4439244508678316632">Content licences</translation>
 <translation id="4439318412377770121">Do you wish to register <ph name="DEVICE_NAME" /> to Google Cloud Devices?</translation>
 <translation id="4441124369922430666">Do you want to automatically start this app when the machine turns on?</translation>
 <translation id="444134486829715816">Expand...</translation>
@@ -3478,7 +3474,6 @@ Press any key to continue exploring.</translation>
   Public Exponent (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
   <ph name="EXPONENT_HEX_DUMP" /></translation>
 <translation id="59174027418879706">Enabled</translation>
-<translation id="592068147111860043">Specify the PPAPI plugins which will be run within the Win32k lockdown sandbox policy.</translation>
 <translation id="5925147183566400388">Certification Practice Statement Pointer</translation>
 <translation id="5930693802084567591">Your data was encrypted with your Google password as of <ph name="TIME" />. Please enter it below.</translation>
 <translation id="5931146425219109062">Read and change all your data on the websites that you visit</translation>
@@ -3497,7 +3492,6 @@ Press any key to continue exploring.</translation>
 <translation id="5956585768868398362">Is this the search page that you were expecting?</translation>
 <translation id="5957613098218939406">More Options</translation>
 <translation id="5958529069007801266">Supervised user</translation>
-<translation id="5958994127112619898">Simplify page</translation>
 <translation id="5959471481388474538">Network not available</translation>
 <translation id="5963026469094486319">Get themes</translation>
 <translation id="5963453369025043595"><ph name="NUM_HANDLES" /> (<ph name="NUM_KILOBYTES_LIVE" /> peak)</translation>

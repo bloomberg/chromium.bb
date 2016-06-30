@@ -6,6 +6,15 @@
 <translation id="1019101089073227242">Definir diretório de dados do utilizador</translation>
 <translation id="1022361784792428773">IDs das extensões que os utilizadores não poderão instalar (ou * para todas)</translation>
 <translation id="102492767056134033">Definir o estado predefinido do teclado no ecrã no ecrã de início de sessão</translation>
+<translation id="1027000705181149370">Especifica se os cookies de autenticação definidos por um SAML IdP durante o início de sessão devem ser transferidos para o perfil do utilizador.
+
+      Quando um utilizador autentica através de um SAML IdP durante o início de sessão, os cookies definidos pelo IdP são gravados num perfil temporário inicialmente. Estes cookies podem ser transferidos para o perfil do utilizador para encaminhar o estado da autenticação.
+
+      Quando esta política está definida como verdadeira, os cookies definidos pelo IdP são transferidos para o perfil do utilizador sempre que este autentique face ao SAML IdP durante o início de sessão.
+
+      Quando esta política está definida como falsa ou não definida, os cookies definidos pelo IdP são transferidos para o perfil do utilizador durante o primeiro início de sessão apenas num dispositivo.
+
+      Esta política afeta os utilizadores cujo domínio coincide com o domínio de inscrição apenas do dispositivo. Para todos os outros utilizadores, os cookies definidos pelo IdP são transferidos para o perfil do utilizador durante o seu primeiro início de sessão apenas no dispositivo.</translation>
 <translation id="1040446814317236570">Ativar a remoção de URL de PAC (para https://)</translation>
 <translation id="1044878202534415707">Comunicar estatísticas de hardware como a utilização de CPU/RAM.
 
@@ -196,6 +205,8 @@
       Tenha presente que esta política pode ser substituída por EnabledPlugins e DisabledPluginsExceptions.
 
       Se deixar esta política por definir, o utilizador poderá utilizar qualquer plug-in instalado no sistema, com exceção de plug-ins incompatíveis, desatualizados ou perigosos determinados pelo hardware.</translation>
+<translation id="1864269674877167562">Se esta política for definida para uma string em branco ou não for configurada, o <ph name="PRODUCT_OS_NAME" /> não apresenta uma opção de preenchimento automático durante o fluxo de início de sessão do utilizador.
+      Se esta política for definida para uma string que represente um nome de domínio, o <ph name="PRODUCT_OS_NAME" /> apresenta uma opção de preenchimento automático durante o início de sessão do utilizador, o que permite ao utilizador escrever apenas o seu nome de utilizador sem a extensão do nome do domínio. O utilizador pode substituir esta extensão do nome do domínio.</translation>
 <translation id="1865417998205858223">Autorizações principais</translation>
 <translation id="186719019195685253">Ação a executar quando o atraso de inatividade é atingido e estiver a ser utilizada a energia CA</translation>
 <translation id="187819629719252111">Permite aceder a ficheiros locais no computador, ao permitir que o <ph name="PRODUCT_NAME" /> apresente caixas de diálogo de seleção de ficheiros. Se ativar esta definição, os utilizadores poderão abrir caixas de diálogo de seleção de ficheiros normalmente. Se desativar esta definição, sempre que os utilizadores efetuarem uma ação que origine uma caixa de diálogo de seleção de ficheiros (como importar marcadores, carregar ficheiros, guardar links, etc.), aparecerá uma mensagem e assume-se que os utilizadores clicaram em Cancelar na caixa de diálogo. Se esta definição não for definida, os utilizadores poderão abrir as caixas de diálogo de seleção de ficheiros normalmente.</translation>
@@ -303,6 +314,13 @@
 <translation id="2309390639296060546">Definição de geolocalização predefinida</translation>
 <translation id="2312134445771258233">Permite-lhe configurar as páginas que são carregadas no arranque. O conteúdo da lista "URLs a abrir no aranque" é ignorado, a menos que selecione "Abrir uma lista de URLs" em "Ação no arranque".</translation>
 <translation id="2337466621458842053">Permite definir uma lista de padrões de URL que especificam os Web sites autorizados a apresentar imagens. Se esta política não for definida, será utilizado o valor global predefinido para todos os Web sites, seja a partir da política "DefaultImagesSetting", caso esteja definida, ou a partir da configuração pessoal do utilizador.</translation>
+<translation id="2359612025446382967">Se esta política for definida como falsa, o <ph name="PRODUCT_OS_NAME" /> desativa o Bluetooth e o utilizador não o pode reativar.
+
+      Se esta política for definida como verdadeira ou não for definida, o utilizador pode ativar ou desativar o Bluetooth conforme pretender.
+
+      Se esta política for definida, o utilizador não a pode alterar ou substituir.
+
+      Após a ativação do Bluetooth, é necessário reiniciar o dispositivo para que as alterações sejam aplicadas (não é necessário reiniciar o dispositivo quando desativar o Bluetooth).</translation>
 <translation id="2366415278352956652">Ativa a transmissão</translation>
 <translation id="2371309782685318247">Especifica o período, em milissegundos, durante o qual é efetuada uma consulta ao serviço de gestão do dispositivo para obter informações sobre a política de utilizador.
 
@@ -527,6 +545,32 @@
           Se ativar esta definição, o <ph name="PRODUCT_NAME" /> ignora todas as opções relacionadas com o proxy especificadas a partir da linha de comandos.
 
           Se deixar esta política por definir, permite que os utilizadores escolham as definições de proxy conforme pretendam.</translation>
+<translation id="2818551149761607847">Configurar a imagem do avatar do utilizador.
+
+      Esta política permite configurar a imagem do avatar que representa o utilizador no ecrã de início de sessão. A política é definida ao especificar o URL a partir do qual o <ph name="PRODUCT_OS_NAME" /> pode transferir a imagem do avatar e um hash criptográfico utilizado para confirmar a integridade da transferência. A imagem tem de estar em formato JPEG e o tamanho não pode exceder 512 kB. O URL tem de estar acessível sem qualquer autenticação.
+
+      A imagem do avatar é transferida e colocada em cache. É transferida novamente sempre que o URL ou o hash for alterado.
+
+      A política deve ser especificada como uma string que expresse o URL e o hash em formato JSON, em conformidade com o esquema seguinte:
+      {
+        "type": "object",
+        "properties": {
+          "url": {
+            "description": "O URL a partir do qual é possível transferir a imagem do avatar.",
+            "type": "string"
+          },
+          "hash": {
+            "description": "O hash SHA-256 da imagem do avatar.",
+            "type": "string"
+          }
+        }
+      }
+
+      Se esta política for definida, o <ph name="PRODUCT_OS_NAME" /> transfere e utiliza a imagem do avatar.
+
+      Se definir esta política, os utilizadores não a podem alterar nem substituir.
+
+      Se a política não for definida, o utilizador pode escolher a imagem do avatar que o representa no ecrã de início de sessão.</translation>
 <translation id="2824715612115726353">Ativar o modo de navegação anónima</translation>
 <translation id="2844404652289407061">Ativa a disponibilidade de Tocar para pesquisar na vista de conteúdo do <ph name="PRODUCT_NAME" />.
 
@@ -1564,10 +1608,31 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 <translation id="7040229947030068419">Valor do exemplo:</translation>
 <translation id="7049373494483449255">Permite que o <ph name="PRODUCT_NAME" /> envie documentos para o <ph name="CLOUD_PRINT_NAME" /> para impressão. NOTA: isto apenas afeta o suporte do <ph name="CLOUD_PRINT_NAME" /> no <ph name="PRODUCT_NAME" />. Não impede que os utilizadores enviem tarefas de impressão a partir de Web sites. Se esta definição estiver ativada ou não estiver configurada, os utilizadores poderão imprimir para o <ph name="CLOUD_PRINT_NAME" /> a partir da caixa de diálogo de impressão do <ph name="PRODUCT_NAME" />. Se esta definição estiver desativada, os utilizadores não poderão imprimir para o <ph name="CLOUD_PRINT_NAME" /> a partir da caixa de diálogo de impressão do <ph name="PRODUCT_NAME" />.</translation>
 <translation id="7053678646221257043">Se esta política estiver ativada, força a importação de marcadores a partir do navegador predefinido atual e também afeta a caixa de diálogo de importação. Se estiver desativada, não serão importados quaisquer marcadores. Se não estiver definida, o utilizador poderá ser questionado se pretende importá-los ou a importação poderá ocorrer automaticamente.</translation>
+<translation id="7055358889740598917">Configura o URL da página inicial predefinida no <ph name="PRODUCT_NAME" /> e impede que os utilizadores o alterem.
+
+          A página inicial é a página que se abre com o botão Página inicial. As páginas abertas no arranque são controladas pelas políticas RestoreOnStartup.
+
+          O tipo de página inicial pode ser definido para um URL que especifique aqui ou para a página Novo separador. Se selecionar a página Novo separador, esta política não tem efeito.
+
+          Se ativar esta definição, os utilizadores não podem alterar o URL da respetiva página inicial no <ph name="PRODUCT_NAME" />, mas podem escolher a página Novo separador como página inicial.
+
+          Se deixar esta política por definir, o utilizador pode escolher a respetiva página inicial conforme pretenda se HomepageIsNewTabPage também não estiver definido.
+
+          Esta política não está disponível em instâncias do Windows que não
+          estejam associadas a um domínio do Active Directory.</translation>
 <translation id="7063895219334505671">Permitir pop-ups nestes sites</translation>
 <translation id="706669471845501145">Permitir que os sites mostrem notificações do ambiente de trabalho</translation>
 <translation id="7079519252486108041">Bloquear pop-ups nestes sites</translation>
 <translation id="7091198954851103976">Executa sempre plug-ins que requerem autorização</translation>
+<translation id="7106631983877564505">Ativar o bloqueio quando os dispositivos <ph name="PRODUCT_OS_NAME" /> ficam inativos ou entram em suspensão.
+
+      Se ativar esta definição, os utilizadores são solicitados a introduzir uma palavra-passe para desbloquear o dispositivo do modo de suspensão.
+
+      Se desativar esta definição, os utilizadores não são solicitados a introduzir uma palavra-passe para desbloquear o dispositivo do modo de suspensão.
+
+      Quer ative ou desative esta definição, os utilizadores não a podem alterar ou substituir.
+
+      Se a política não for definida, o utilizador pode decidir se pretende ou não que lhe seja solicitada a introdução de uma palavra-passe para desbloquear o dispositivo.</translation>
 <translation id="7115494316187648452">Determina se um processo do <ph name="PRODUCT_NAME" /> é iniciado ao iniciar sessão no SO e continua a ser executado quando a última janela do navegador é fechada, permitindo que as aplicações em segundo plano e a sessão de navegação atual permaneçam ativas, incluindo todos os cookies de sessão. O processo em segundo plano apresenta um ícone no tabuleiro do sistema e pode sempre ser fechado a partir daí.
 
       Se esta política estiver definida como verdadeira, o modo de segundo plano é ativado e não pode ser controlado pelo utilizador nas definições do navegador.
@@ -1903,6 +1968,13 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
           Se definir esta política, os utilizadores não a poderão alterar ou substituir.
 
            Se esta política não for definida, o modo de alto contraste estará inicialmente desativado, mas poderá ser ativado a qualquer momento pelo utilizador.</translation>
+<translation id="815061180603915310">Se for definida como ativada, esta política força a alteração do perfil para o modo temporário. Se esta política for especificada como uma política do SO (por exemplo, GPO no Windows), aplicar-se a todos os perfis no sistema; se a política for definida como uma política da nuvem, apenas se aplica a um perfil com sessão iniciada com uma conta gerida.
+
+      Neste modo, os dados do perfil são mantidos no disco apenas enquanto durar a sessão do utilizador. Funcionalidades como o histórico do navegador, as extensões e respetivos dados, e os dados Web, como cookies e bases de dados da Web, não são mantidos após fechar o navegador. Porém, isto não impede o utilizador de transferir quaisquer dados para o disco manualmente, de guardar páginas ou de as imprimir.
+
+      Se o utilizador tiver ativado a sincronização, todos estes dados são mantidos no perfil de sincronização, tal como nos perfis normais. O modo de navegação anónima também está disponível se não tiver sido explicitamente desativado pela política.
+
+      Se a política for definida como desativada ou não for definida, o início de sessão encaminha para perfis normais.</translation>
 <translation id="8164246350636985940">O comportamento predefinido para sites que não estejam num pacote de conteúdo.
 
           Esta política destina-se à utilização interna do próprio <ph name="PRODUCT_NAME" />.</translation>
@@ -1966,6 +2038,18 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
           Se não estiver definido ou estiver definido como falso, os utilizadores poderão transferir ficheiros para o Google Drive através de redes móveis.</translation>
 <translation id="8312129124898414409">Permite definir se os Websites estão autorizados a utilizar a geração de chaves. É possível permitir a geração de chaves para todos os Websites ou negá-la para todos os Websites.
           Se esta política não for definida, é utilizada a opção "BlockKeygen" e o utilizador pode alterá-la.</translation>
+<translation id="8316806736175990584">Configura o tipo da página inicial predefinida no <ph name="PRODUCT_NAME" /> e impede que os utilizadores alterem as preferências da página inicial. A página inicial pode ser definida como um URL que especifique ou definida como a página Novo separador.
+
+          Se ativar esta definição, a página Novo separador é sempre utilizada como a página inicial e a localização do URL da página inicial é ignorada.
+
+          Se desativar esta definição, a página inicial do utilizador nunca será a página Novo separador, a menos que o URL esteja definido como "chrome://newtab".
+
+          Se ativar ou desativar esta definição, os utilizadores não podem alterar o respetivo tipo de página inicial no <ph name="PRODUCT_NAME" />.
+
+          Se esta política não for definida, o utilizador pode escolher se a página Novo separador é a respetiva página inicial conforme pretenda.
+
+          Esta política não está disponível em instâncias do Windows que não
+          estejam associadas a um domínio do Active Directory.</translation>
 <translation id="8329984337216493753">Esta política está ativa apenas no modo de retalho.
 
       Quando a política DeviceIdleLogoutTimeout é especificada, define a duração da caixa de aviso com uma contagem decrescente que é mostrada ao utilizador antes do encerramento da sessão.

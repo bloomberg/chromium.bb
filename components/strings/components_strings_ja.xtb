@@ -77,7 +77,6 @@
 <translation id="1791429645902722292">Google Smart Lock</translation>
 <translation id="1821930232296380041">無効なリクエストまたはリクエスト パラメータです</translation>
 <translation id="1871208020102129563">プロキシは .pac スクリプト URL ではなく固定プロキシ サーバーを使用するように設定されています。</translation>
-<translation id="1871625979288021266">安全でないポートをブロック</translation>
 <translation id="1883255238294161206">リストを折りたたむ</translation>
 <translation id="1898423065542865115">フィルタ</translation>
 <translation id="1911837502049945214"><ph name="HOST_NAME" /> でログイン証明書が承認されなかった、またはログイン証明書の有効期限が切れている可能性があります。</translation>
@@ -128,7 +127,6 @@
 <translation id="2386255080630008482">サーバーの証明書は取り消されています。</translation>
 <translation id="2392959068659972793">値が設定されていないポリシーを表示する</translation>
 <translation id="2396249848217231973">削除の取り消し（&amp;U）</translation>
-<translation id="2400837204278978822">不明な形式です。</translation>
 <translation id="2413528052993050574">このサーバーが <ph name="DOMAIN" /> であることを確認できませんでした。このサーバーのセキュリティ証明書は取り消されている可能性があります。原因としては、不適切な設定や、悪意のあるユーザーによる接続妨害が考えられます。</translation>
 <translation id="2455981314101692989">このウェブページでは、フォームへの自動入力が無効になっています。</translation>
 <translation id="2467694685043708798"><ph name="BEGIN_LINK" />ネットワーク診断ツールを実行する<ph name="END_LINK" /></translation>
@@ -171,7 +169,6 @@
 <translation id="2855922900409897335"><ph name="CREDIT_CARD" /> の確認</translation>
 <translation id="2889159643044928134">再読み込みを中止</translation>
 <translation id="2896499918916051536">このプラグインはサポートされていません。</translation>
-<translation id="2897655920961181107">要求されたポートは安全でないためブロックされました。</translation>
 <translation id="2909946352844186028">ネットワークの変更が検出されました。</translation>
 <translation id="2915500479781995473">このサーバーが <ph name="DOMAIN" /> であることを確認できませんでした。セキュリティ証明書の期限が切れています。原因として、設定が不適切か、悪意のあるユーザーが接続を妨害している可能性があります。パソコンの時計は現在 <ph name="CURRENT_TIME" /> に設定されています。この時刻が正しくない場合は、システムの時計を修正して、このページを更新してください。</translation>
 <translation id="2922350208395188000">サーバーの証明書を確認できません。</translation>
@@ -347,7 +344,6 @@
 <translation id="4807049035289105102"><ph name="SITE" /> から、Google Chrome で処理できない暗号化された認証情報が返されたため、現在このウェブサイトにはアクセスできません。通常、ネットワーク エラーや不正な操作は一時的なものです。少し時間をおくと、ページにアクセスできるようになる可能性があります。</translation>
 <translation id="4813512666221746211">ネットワーク エラー</translation>
 <translation id="4816492930507672669">ページサイズに合わせる</translation>
-<translation id="4841640898320458950">安全でないポートをブロックしました。</translation>
 <translation id="4850886885716139402">表示</translation>
 <translation id="4880827082731008257">履歴を検索</translation>
 <translation id="4923417429809017348">このページは、不明な言語から<ph name="LANGUAGE_LANGUAGE" />に翻訳されました。</translation>
@@ -448,7 +444,6 @@
 <translation id="6165508094623778733">詳しく見る</translation>
 <translation id="6203231073485539293">インターネット接続を確認してください</translation>
 <translation id="6218753634732582820">Chromium からアドレスを削除してもよろしいですか？</translation>
-<translation id="6232139169545176020">要求された URI スキームは非対応です。</translation>
 <translation id="6259156558325130047">順序変更のやり直し（&amp;R）</translation>
 <translation id="6263376278284652872"><ph name="DOMAIN" /> のブックマーク</translation>
 <translation id="6264485186158353794">セキュリティで保護されたページに戻る</translation>
@@ -471,14 +466,11 @@
 <translation id="6489534406876378309">クラッシュのアップロードを開始</translation>
 <translation id="6518133107902771759">確認</translation>
 <translation id="6529602333819889595">削除のやり直し（&amp;R）</translation>
-<translation id="6533019874004191247">非対応 URL。</translation>
 <translation id="6550675742724504774">オプション</translation>
 <translation id="6596325263575161958">暗号化オプション</translation>
-<translation id="6610562986279010327">この URL を開くことができません</translation>
 <translation id="662080504995468778">とどまる</translation>
 <translation id="6628463337424475685"><ph name="ENGINE" /> 検索</translation>
 <translation id="6634865548447745291"><ph name="BEGIN_LINK" />証明書が取り消されている<ph name="END_LINK" />ため、現在 <ph name="SITE" /> にアクセスできません。通常、ネットワーク エラーや不正な操作は一時的なものです。少し時間をおくと、またページにアクセスできるようになる可能性があります。</translation>
-<translation id="6637478299472506933">ダウンロードの失敗</translation>
 <translation id="6644283850729428850">このポリシーは廃止されました。</translation>
 <translation id="6646897916597483132">カードの表側に記載されている 4 桁の CVC を入力します</translation>
 <translation id="6656103420185847513">フォルダの編集</translation>
@@ -584,7 +576,6 @@
 <translation id="780301667611848630">いいえ</translation>
 <translation id="7805768142964895445">ステータス</translation>
 <translation id="7813600968533626083">Chrome から候補を削除してもよろしいですか？</translation>
-<translation id="7825436071901023927">安全でないポート: <ph name="SITE" /></translation>
 <translation id="785549533363645510">あらゆる場所に記録が一切残らないわけではありません。シークレット モードを使っても、雇用主、インターネット サービス プロバイダ、訪問先のウェブサイトに閲覧内容が知られる可能性はあります。</translation>
 <translation id="7887683347370398519">CVC を確認してからもう一度お試しください</translation>
 <translation id="7894616681410591072">このページにアクセスするには <ph name="NAME" /> さんの許可が必要です。</translation>
@@ -661,7 +652,6 @@
 <translation id="8876793034577346603">ネットワーク設定を解析できませんでした。</translation>
 <translation id="8891727572606052622">プロキシ モードが無効です。</translation>
 <translation id="889901481107108152">この試験運用機能は、お使いのプラットフォームでは利用できません。</translation>
-<translation id="890308499387283275">このファイルはダウンロードできません。</translation>
 <translation id="8903921497873541725">拡大する</translation>
 <translation id="8931333241327730545">このカードを Google アカウントに保存しますか？</translation>
 <translation id="8932102934695377596">時計が遅れています</translation>

@@ -21,6 +21,7 @@
 <translation id="1167230103353892028"><ph name="NAME" />, elemento de menú, con submenú</translation>
 <translation id="1177863135347784049">Personalizado</translation>
 <translation id="1188858454923323853">complementario</translation>
+<translation id="1201402288615127009">Siguiente</translation>
 <translation id="1206619573307042055">marquee</translation>
 <translation id="1213216066620407844">ChromeVox, la voz de Chrome</translation>
 <translation id="1229276918471378188">Salto anterior</translation>
@@ -122,7 +123,6 @@
 <translation id="2553108862507765288">error gramatical</translation>
 <translation id="257674075312929031">Grupo</translation>
 <translation id="2582407057977008361">Etiqueta de contenido tangencial</translation>
-<translation id="2589102159832527089">Esta página incluye el texto extraído automáticamente del archivo PDF &lt;b&gt;<ph name="FILENAME" />&lt;/b&gt;. &lt;a href="<ph name="URL" />"&gt;Haz clic aquí para acceder al archivo original&lt;/a&gt;.</translation>
 <translation id="2606210917827248971">con {COUNT,plural, =1{# elemento}other{# elementos}}</translation>
 <translation id="2614981083756825552">Diseño de MathML</translation>
 <translation id="2626530649491650971">elemento en el que se puede hacer clic</translation>
@@ -510,7 +510,6 @@
 <translation id="6129953537138746214">Espacio</translation>
 <translation id="6142308968191113180">Título 4</translation>
 <translation id="6169420925157477918">Imagen con descripción larga</translation>
-<translation id="6172087735260766220">No se puede acceder a texto accesible desde un PDF protegido contra copias.</translation>
 <translation id="6186305613600865047">Accede al final de la página</translation>
 <translation id="6193330012414963395">a.m. p.m.</translation>
 <translation id="622484624075952240">Flecha hacia abajo</translation>
@@ -549,6 +548,7 @@
 <translation id="6659594942844771486">Pestaña</translation>
 <translation id="667999046851023355">Documento</translation>
 <translation id="6697092096875747123">Cuadro combinado anterior</translation>
+<translation id="6710213216561001401">Anterior</translation>
 <translation id="6714813999819678458">Encabezado anterior de nivel 2</translation>
 <translation id="6716505898850596801">Teclas modificadoras</translation>
 <translation id="671916444866103745">No hay ningún punto de referencia de ARIA posterior.</translation>
@@ -690,6 +690,7 @@
 <translation id="842922884199979200">No hay ningún título de nivel 3 posterior.</translation>
 <translation id="8430049249787218991">mnubr</translation>
 <translation id="844681116543532394">No hay ninguna casilla de verificación anterior.</translation>
+<translation id="8446884382197647889">Más información</translation>
 <translation id="8455868257606149352">Máximo <ph name="X" /></translation>
 <translation id="84575901236241018">tiene clave de acceso, <ph name="KEY" /></translation>
 <translation id="8476508772960940536">visión general de la ventana</translation>

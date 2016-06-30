@@ -148,7 +148,9 @@
 <translation id="2748463065602559597">Google Chrome の安全なページを表示しています。</translation>
 <translation id="2762000892062317888">たった今</translation>
 <translation id="2770465223704140727">リストから削除</translation>
+<translation id="2777555524387840389">残り <ph name="SECONDS" /> 秒</translation>
 <translation id="278029852808208386">Bluetooth デバイスが見つかりませんでした。<ph name="BEGIN_LINK" />もう一度検索してください<ph name="END_LINK" />。</translation>
+<translation id="2781151931089541271">残り 1 秒</translation>
 <translation id="2781389167600714117">配送方法を選択</translation>
 <translation id="2811892995384186721">お使いの端末が表示されない場合は、<ph name="BEGIN_LINK" />ヘルプ<ph name="END_LINK" />をご覧ください。</translation>
 <translation id="2836148919159985482">全画面表示を終了するには戻るボタンをタップします。</translation>
@@ -187,6 +189,7 @@
 <translation id="321773570071367578">パスフレーズを忘れた場合や、この設定を変更する場合は、<ph name="BEGIN_LINK" />同期をリセット<ph name="END_LINK" />します</translation>
 <translation id="3227137524299004712">マイク</translation>
 <translation id="3232754137068452469">ウェブアプリ</translation>
+<translation id="3236059992281584593">残り 1 分</translation>
 <translation id="3244271242291266297">MM</translation>
 <translation id="3254409185687681395">このページをブックマークに追加します</translation>
 <translation id="326254929494722411">このデバイスには Google アカウントがまだ設定されていません</translation>
@@ -301,6 +304,7 @@
 <translation id="4720023427747327413"><ph name="PRODUCT_NAME" /> で開く</translation>
 <translation id="473775607612524610">アップデート</translation>
 <translation id="4738836084190194332">最終同期: <ph name="WHEN" /></translation>
+<translation id="4758311279753947758">連絡先情報を追加</translation>
 <translation id="4759238208242260848">ダウンロード</translation>
 <translation id="4773299976671772492">停止しました</translation>
 <translation id="4797039098279997504">タップすると <ph name="URL_OF_THE_CURRENT_TAB" /> に戻ります</translation>
@@ -325,6 +329,7 @@
 <translation id="5063480226653192405">使用状況</translation>
 <translation id="5087580092889165836">カードを追加</translation>
 <translation id="5100237604440890931">折りたたまれています - クリックすると展開します。</translation>
+<translation id="510275257476243843">残り 1 時間</translation>
 <translation id="5107381076085091558">ダウンロードを一時停止しました。</translation>
 <translation id="5118713593561876160">興味 / 関心</translation>
 <translation id="5127805178023152808">同期は無効です</translation>
@@ -408,6 +413,7 @@
 <translation id="5911030830365207728">Google 翻訳</translation>
 <translation id="5916664084637901428">オン</translation>
 <translation id="5939518447894949180">リセット</translation>
+<translation id="5961742032223302715">連絡先情報を選択</translation>
 <translation id="5968595432776860642">「<ph name="VIDEO_TITLE" />」を再生しています</translation>
 <translation id="6010869025736512584">ビデオ入力にアクセスしています</translation>
 <translation id="6012342843556706400">このサイトと位置情報を共有するには Chrome に位置情報へのアクセスを許可する必要があります。</translation>
@@ -418,6 +424,7 @@
 <translation id="604996488070107836">不明なエラーが発生したため、<ph name="FILE_NAME" /> をダウンロードできませんでした。</translation>
 <translation id="605721222689873409">YY</translation>
 <translation id="6075798973483050474">ホームページの編集</translation>
+<translation id="60923314841986378">残り <ph name="HOURS" /> 時間</translation>
 <translation id="6108923351542677676">設定しています...</translation>
 <translation id="6112702117600201073">ページを更新しています</translation>
 <translation id="6127379762771434464">アイテムを削除しました</translation>
@@ -504,7 +511,9 @@
 <translation id="7053983685419859001">ブロック</translation>
 <translation id="7056999826593229648">低速な接続が見つかりました</translation>
 <translation id="7057058088140140610">Google ペイメントのクレジット カードと住所</translation>
+<translation id="7062545763355031412">同意してアカウントを切り替える</translation>
 <translation id="7063006564040364415">同期サーバーに接続できませんでした。</translation>
+<translation id="7064851114919012435">連絡先情報</translation>
 <translation id="7074853159844403180"><ph name="SITE" /> とペア設定するデバイスを選択:</translation>
 <translation id="7081639897063626814">既存のデータを別に保持する</translation>
 <translation id="7094922512924405309">近くにフィジカル ウェブページは見つかりませんでした</translation>
@@ -520,6 +529,7 @@
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" /> では地域の検索結果を表示するためにユーザーの位置情報が使用されます</translation>
 <translation id="7299441085833132046"><ph name="BEGIN_LINK" />ヘルプ<ph name="END_LINK" /></translation>
 <translation id="7299721129597238157">ブックマークを削除</translation>
+<translation id="7327835590071894791">タブをバックグラウンドに保存しました。</translation>
 <translation id="7347770551817603360">オフライン コンテンツ</translation>
 <translation id="7358452246665489050">計算しています...</translation>
 <translation id="7363354739009474003">「<ph name="VIDEO_TITLE" />」を読み込んでいます</translation>
@@ -564,12 +574,14 @@
 <translation id="7713873128508426081">常に許可する</translation>
 <translation id="7764225426217299476">住所を追加</translation>
 <translation id="7765158879357617694">移動</translation>
+<translation id="7769602470925380267">同意してログアウトする</translation>
 <translation id="7772032839648071052">パスフレーズの確認</translation>
 <translation id="7788788617745289808">このサイトとカメラを共有するには Chrome にカメラへのアクセスを許可する必要があります。</translation>
 <translation id="7791543448312431591">追加</translation>
 <translation id="780301667611848630">いいえ</translation>
 <translation id="7829298379596169484">音声入力にアクセスしています</translation>
 <translation id="7837582000577464779">注文の処理中にエラーが発生しました。アカウントを確認してから、もう一度お試しください。</translation>
+<translation id="7837721118676387834">特定のサイトに対し、ミュートされた動画の自動再生を許可します。</translation>
 <translation id="7846076177841592234">選択解除</translation>
 <translation id="7851858861565204677">その他のデバイス</translation>
 <translation id="7876243839304621966">すべて削除</translation>
@@ -584,6 +596,7 @@
 <translation id="8007176423574883786">このデバイスに対して無効</translation>
 <translation id="8026334261755873520">閲覧履歴データを消去する</translation>
 <translation id="8035133914807600019">新しいフォルダ...</translation>
+<translation id="8037750541064988519">残り <ph name="DAYS" /> 日</translation>
 <translation id="8063895661287329888">ブックマークを追加できませんでした。</translation>
 <translation id="8068648041423924542">証明書を選択できません</translation>
 <translation id="8069239273282989646">圧縮後</translation>
@@ -596,6 +609,7 @@
 <translation id="8137558756159375272">「タップして検索」では選択したキーワードと現在のページがコンテキストとして Google 検索に送信されます。これは [<ph name="BEGIN_LINK" />設定<ph name="END_LINK" />] で無効にすることができます。</translation>
 <translation id="8168435359814927499">コンテンツ</translation>
 <translation id="8173098127580644436">始めから</translation>
+<translation id="8190358571722158785">残り 1 日</translation>
 <translation id="8200772114523450471">再開</translation>
 <translation id="8202097416529803614">ご注文概要</translation>
 <translation id="8209050860603202033">画像を開く</translation>
@@ -620,6 +634,7 @@
 <translation id="8518901949365209398">このサイトのセキュリティは弱いため（SHA-1 署名）、接続時にプライバシーが保護されない可能性があります。</translation>
 <translation id="8525306231823319788">全画面表示</translation>
 <translation id="854522910157234410">このページを開く</translation>
+<translation id="8559882854823529713">Chrome に保存して後で読む</translation>
 <translation id="8562452229998620586">保存したパスワードはこちらに表示されます。</translation>
 <translation id="856481929701340285">PC版サイトを見る</translation>
 <translation id="857943718398505171">許可（推奨）</translation>
@@ -676,6 +691,7 @@
 <translation id="9141510419986760385">同期アカウントを <ph name="FROM_ACCOUNT" /> から <ph name="TO_ACCOUNT" /> に切り替えます。既存のブックマーク、履歴、パスワード、その他の設定をどのように処理しますか？</translation>
 <translation id="917685106653909562">近くのフィジカル ウェブページ</translation>
 <translation id="9187199695613236444">モバイル向け表示</translation>
+<translation id="9188680907066685419">管理対象アカウントからログアウトする</translation>
 <translation id="9192643434065497760">ペア設定するには<ph name="BEGIN_LINK" />デバイスの設定<ph name="END_LINK" />で Bluetooth をオンにしてください。</translation>
 <translation id="9198708126133947749">この端末のデータを <ph name="TO_ACCOUNT" /> のデータに置き換えます。<ph name="FROM_ACCOUNT" /> に切り替えると、以前のデータを取得できます。</translation>
 <translation id="9206873250291191720">A</translation>
@@ -684,6 +700,7 @@
 <translation id="938850635132480979">エラー: <ph name="ERROR_CODE" /></translation>
 <translation id="945632385593298557">マイクへのアクセス</translation>
 <translation id="969096075394517431">言語を変更</translation>
+<translation id="970715775301869095">残り <ph name="MINUTES" /> 分</translation>
 <translation id="981121421437150478">オフライン</translation>
 <translation id="983192555821071799">すべてのタブを閉じる</translation>
 </translationbundle>

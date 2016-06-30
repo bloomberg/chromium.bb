@@ -148,7 +148,9 @@ Du kan kontrollere Fysisk web i Chrome-indstillingerne.
 <translation id="2748463065602559597">Du får vist en sikker Google Chrome-side.</translation>
 <translation id="2762000892062317888">lige nu</translation>
 <translation id="2770465223704140727">Fjern fra listen</translation>
+<translation id="2777555524387840389"><ph name="SECONDS" /> sekunder tilbage</translation>
 <translation id="278029852808208386">Der blev ikke fundet nogen enheder. <ph name="BEGIN_LINK" />Søg igen<ph name="END_LINK" />.</translation>
+<translation id="2781151931089541271">1 sekund tilbage</translation>
 <translation id="2781389167600714117">Vælg forsendelse</translation>
 <translation id="2811892995384186721">Kan du ikke se din enhed? <ph name="BEGIN_LINK" />Få hjælp<ph name="END_LINK" /></translation>
 <translation id="2836148919159985482">Tryk på tilbageknappen for at afslutte fuld skærm.</translation>
@@ -187,6 +189,7 @@ Du kan kontrollere Fysisk web i Chrome-indstillingerne.
 <translation id="321773570071367578">Hvis du har glemt din adgangssætning eller vil ændre denne indstilling, skal du <ph name="BEGIN_LINK" />nulstille synkroniseringen<ph name="END_LINK" /></translation>
 <translation id="3227137524299004712">Mikrofon</translation>
 <translation id="3232754137068452469">Webapp</translation>
+<translation id="3236059992281584593">1 minut tilbage</translation>
 <translation id="3244271242291266297">MM</translation>
 <translation id="3254409185687681395">Tilføj denne side som bogmærke</translation>
 <translation id="326254929494722411">Du har endnu ikke oprettet en Google-konto på denne enhed</translation>
@@ -301,6 +304,7 @@ Tryk længe på din søgeterm for at vælge den og tilpasse den. Du kan afgræns
 <translation id="4720023427747327413">Åbn i <ph name="PRODUCT_NAME" /></translation>
 <translation id="473775607612524610">Opdater</translation>
 <translation id="4738836084190194332">Seneste synkronisering: <ph name="WHEN" /></translation>
+<translation id="4758311279753947758">Tilføj kontaktoplysninger</translation>
 <translation id="4759238208242260848">Downloads</translation>
 <translation id="4773299976671772492">Stoppet</translation>
 <translation id="4797039098279997504">Tryk for at gå tilbage til <ph name="URL_OF_THE_CURRENT_TAB" /></translation>
@@ -325,6 +329,7 @@ Tryk længe på din søgeterm for at vælge den og tilpasse den. Du kan afgræns
 <translation id="5063480226653192405">Forbrug</translation>
 <translation id="5087580092889165836">Tilføj kort</translation>
 <translation id="5100237604440890931">Skjult – klik for at udvide.</translation>
+<translation id="510275257476243843">1 time tilbage</translation>
 <translation id="5107381076085091558">Downloaden er sat på pause.</translation>
 <translation id="5118713593561876160">Interesser</translation>
 <translation id="5127805178023152808">Synkronisering er slået fra</translation>
@@ -408,6 +413,7 @@ Du er dog ikke usynlig. Inkognitotilstanden skjuler ikke dine søgninger fra din
 <translation id="5911030830365207728">Google Oversæt</translation>
 <translation id="5916664084637901428">Til</translation>
 <translation id="5939518447894949180">Nulstil</translation>
+<translation id="5961742032223302715">Vælg kontaktoplysninger</translation>
 <translation id="5968595432776860642">Afspiller "<ph name="VIDEO_TITLE" />"</translation>
 <translation id="6010869025736512584">Åbner videoinput</translation>
 <translation id="6012342843556706400">Chrome skal have adgang til din placering for at kunne dele den med dette website.</translation>
@@ -418,6 +424,7 @@ Du er dog ikke usynlig. Inkognitotilstanden skjuler ikke dine søgninger fra din
 <translation id="604996488070107836"><ph name="FILE_NAME" /> kunne ikke downloades, da der opstod en ukendt fejl.</translation>
 <translation id="605721222689873409">ÅÅ</translation>
 <translation id="6075798973483050474">Rediger startside</translation>
+<translation id="60923314841986378"><ph name="HOURS" /> timer tilbage</translation>
 <translation id="6108923351542677676">Konfigurationen er i gang...</translation>
 <translation id="6112702117600201073">Opdaterer siden</translation>
 <translation id="6127379762771434464">Elementet blev fjernet</translation>
@@ -504,7 +511,9 @@ Nogle websites kan f.eks. reagere på denne anmodning ved at vise dig annoncer, 
 <translation id="7053983685419859001">Bloker</translation>
 <translation id="7056999826593229648">Der er registreret en langsom forbindelse.</translation>
 <translation id="7057058088140140610">Kreditkort og adresser via Google Payments</translation>
+<translation id="7062545763355031412">Acceptér, og skift konto</translation>
 <translation id="7063006564040364415">Der kunne ikke oprettes forbindelse til synkroniseringsserveren.</translation>
+<translation id="7064851114919012435">Kontaktoplysninger</translation>
 <translation id="7074853159844403180"><ph name="SITE" /> vil parre med:</translation>
 <translation id="7081639897063626814">Hold eksisterende data adskilt</translation>
 <translation id="7094922512924405309">Der blev ikke fundet nogen Fysisk web-sider i nærheden</translation>
@@ -520,6 +529,7 @@ Nogle websites kan f.eks. reagere på denne anmodning ved at vise dig annoncer, 
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" /> anvender din placering til at vise lokale søgeresultater</translation>
 <translation id="7299441085833132046"><ph name="BEGIN_LINK" />Hjælp<ph name="END_LINK" /></translation>
 <translation id="7299721129597238157">Slet bogmærke</translation>
+<translation id="7327835590071894791">Fanen er nu i baggrunden.</translation>
 <translation id="7347770551817603360">Offlineindhold</translation>
 <translation id="7358452246665489050">Beregner...</translation>
 <translation id="7363354739009474003">Indlæser "<ph name="VIDEO_TITLE" />"</translation>
@@ -564,12 +574,14 @@ Din Google-konto kan have andre former for browserhistorik, f.eks. søgninger og
 <translation id="7713873128508426081">Tillad altid</translation>
 <translation id="7764225426217299476">Tilføj adresse</translation>
 <translation id="7765158879357617694">Flyt</translation>
+<translation id="7769602470925380267">Acceptér, og log ud</translation>
 <translation id="7772032839648071052">Bekræft adgangssætning</translation>
 <translation id="7788788617745289808">Chrome skal have adgang til kameraet for at kunne dele det med dette website.</translation>
 <translation id="7791543448312431591">Tilføj</translation>
 <translation id="780301667611848630">Nej tak</translation>
 <translation id="7829298379596169484">Åbner lydinput</translation>
 <translation id="7837582000577464779">Der opstod en fejl under behandlingen af din ordre.  Kontrollér din konto, og prøv igen.</translation>
+<translation id="7837721118676387834">Tillad automatisk afspilning af videoer, hvor lyden er slået fra, for et bestemt website.</translation>
 <translation id="7846076177841592234">Annuller valg</translation>
 <translation id="7851858861565204677">Andre enheder</translation>
 <translation id="7876243839304621966">Fjern alt</translation>
@@ -584,6 +596,7 @@ Din Google-konto kan have andre former for browserhistorik, f.eks. søgninger og
 <translation id="8007176423574883786">Deaktiveret på denne enhed</translation>
 <translation id="8026334261755873520">Ryd browserdata</translation>
 <translation id="8035133914807600019">Ny mappe…</translation>
+<translation id="8037750541064988519"><ph name="DAYS" /> dage tilbage</translation>
 <translation id="8063895661287329888">Bogmærket kunne ikke tilføjes.</translation>
 <translation id="8068648041423924542">Certifikatet kunne ikke vælges.</translation>
 <translation id="8069239273282989646">Efter komprimering</translation>
@@ -596,6 +609,7 @@ Din Google-konto kan have andre former for browserhistorik, f.eks. søgninger og
 <translation id="8137558756159375272">Funktionen "Tryk for at søge" sender det markerede ord og den aktuelle side som kontekst til Google Søgning. Du kan slå den fra under <ph name="BEGIN_LINK" />Indstillinger<ph name="END_LINK" />.</translation>
 <translation id="8168435359814927499">Indhold</translation>
 <translation id="8173098127580644436">altid</translation>
+<translation id="8190358571722158785">1 dag tilbage</translation>
 <translation id="8200772114523450471">Genoptag</translation>
 <translation id="8202097416529803614">Ordreoversigt</translation>
 <translation id="8209050860603202033">Åbn billede</translation>
@@ -620,6 +634,7 @@ Din Google-konto kan have andre former for browserhistorik, f.eks. søgninger og
 <translation id="8518901949365209398">Dette website benytter en svag sikkerhedskonfiguration (SHA-1-signaturer), så din forbindelse er muligvis ikke privat.</translation>
 <translation id="8525306231823319788">Fuld skærm</translation>
 <translation id="854522910157234410">Åbn denne side</translation>
+<translation id="8559882854823529713">Læs det senere i Chrome</translation>
 <translation id="8562452229998620586">Dine gemte adgangskoder vises her.</translation>
 <translation id="856481929701340285">Vis computerversion</translation>
 <translation id="857943718398505171">Tilladt (anbefales)</translation>
@@ -676,6 +691,7 @@ Du kan få nye licenser ved at oprette forbindelse til internettet og afspille d
 <translation id="9141510419986760385">Du er ved at skifte synkroniseringskonto fra <ph name="FROM_ACCOUNT" /> til <ph name="TO_ACCOUNT" />. Hvad vil du gøre med dine eksisterende bogmærker, din historik, dine adgangskoder og andre indstillinger?</translation>
 <translation id="917685106653909562">Fysisk web-sider i nærheden</translation>
 <translation id="9187199695613236444">Mobilvenlig visning</translation>
+<translation id="9188680907066685419">Log ud af den administrerede konto</translation>
 <translation id="9192643434065497760">Slå Bluetooth til under <ph name="BEGIN_LINK" />Enhedsindstillinger<ph name="END_LINK" /> for at tillade parring.</translation>
 <translation id="9198708126133947749">Erstat denne enheds data med data fra <ph name="TO_ACCOUNT" />. Du kan hente dine eksisterende data ved at skifte tilbage til <ph name="FROM_ACCOUNT" />.</translation>
 <translation id="9206873250291191720">A</translation>
@@ -684,6 +700,7 @@ Du kan få nye licenser ved at oprette forbindelse til internettet og afspille d
 <translation id="938850635132480979">Fejl: <ph name="ERROR_CODE" /></translation>
 <translation id="945632385593298557">Adgang til din mikrofon</translation>
 <translation id="969096075394517431">Skift sprog</translation>
+<translation id="970715775301869095"><ph name="MINUTES" /> minutter tilbage</translation>
 <translation id="981121421437150478">Offline</translation>
 <translation id="983192555821071799">Luk alle faner</translation>
 </translationbundle>

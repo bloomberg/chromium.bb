@@ -6,6 +6,15 @@
 <translation id="1019101089073227242">Angi katalog for brukerdata</translation>
 <translation id="1022361784792428773">Utvidelses-ID-er brukeren skal hindres i å installere (eller * for alle)</translation>
 <translation id="102492767056134033">Angi skjermtastaturets standardtilstand på påloggingssiden</translation>
+<translation id="1027000705181149370">Spesifiserer om informasjonskapsler for autentisering som angis av en SAML-IdP ved pålogging, skal overføres til brukerens profil.
+
+      Når en bruker autentiseres via en SAML-IdP ved pålogging, blir informasjonskapsler angitt av IdP-en, først skrevet til en midlertidig profil. Disse informasjonskapslene kan overføres til brukerens profil for å videreføre autentiseringsstatusen.
+
+      Når denne regelen settes til true (sann), overføres informasjonskapsler som er angitt av IdP-en, til brukerens profil hver gang vedkommende autentiseres mot SAML-IdP-en ved pålogging.
+
+      Når denne regelen settes til false (usann) eller ikke spesifiseres, overføres informasjonskapsler som er angitt av IdP-en, til brukerens profil bare første gang vedkommende logger på en enhet.
+
+      Denne regelen berører bare brukere med domener som samsvarer med enhetens registreringsdomene. For alle andre brukere overføres informasjonskapslene som angis av IdP-en, til brukerens profil bare første gang vedkommende logger på enheten.</translation>
 <translation id="1040446814317236570">Slå på PAC-nettadressestripping (for https://)</translation>
 <translation id="1044878202534415707">Rapportér maskinvarestatistikk, for eksempel bruk av prosessor og minne.
 
@@ -197,6 +206,8 @@
       Vær oppmerksom på at denne retningslinjen kan overstyres av EnabledPlugins og DisabledPluginsExceptions.
 
       Hvis denne innstillingen ikke angis med et valg, betyr dette at brukeren kan bruke et hvilket som helst programtillegg installert på systemet, bortsett fra hardkodede programtillegg som enten er ikke-kompatible, foreldede eller farlige.</translation>
+<translation id="1864269674877167562">Hvis denne regelen settes til en tom streng eller ikke konfigureres, ser ikke brukerne noe alternativ for autofullføring i <ph name="PRODUCT_OS_NAME" /> under påloggingsprosessen.
+      Hvis denne regelen settes til en streng som representerer et domenenavn, ser brukeren alternativet for autofullføring i <ph name="PRODUCT_OS_NAME" /> under påloggingsprosessen, slik at vedkommende kan skrive inn bare brukernavnet sitt uten domenenavnutvidelsen. Brukeren kan overskrive denne domenenavnutvidelsen.</translation>
 <translation id="1865417998205858223">Nøkkeltillatelser</translation>
 <translation id="186719019195685253">Handling som skal utføres når inaktivitetsforsinkelsen overgås og maskinen kjører på vekselstrøm</translation>
 <translation id="187819629719252111">Gir tilgang til lokale filer på maskinen ved å tillate <ph name="PRODUCT_NAME" /> å vise dialoger om filutvalg.
@@ -315,6 +326,13 @@
 <translation id="2309390639296060546">Standardinnstilling for geoposisjonering</translation>
 <translation id="2312134445771258233">Lar deg konfigurere sidene som lastes inn ved oppstart. Innholdet i listen «Nettadresser som skal åpnes ved oppstart» ignoreres, med mindre du velger «Åpne en liste over nettadresser» i «Handling ved oppstart».</translation>
 <translation id="2337466621458842053">Gjør at du kan angi en liste over nettadressemønstre for nettsteder som kan vise bilder. Hvis denne retningslinjen ikke angis, blir den globale standardverdien brukt for alle nettsteder, enten fra retningslinjen DefaultImagesSetting hvis den er angitt, eller fra brukerens egen konfigurasjon hvis nevnte retningslinje ikke er angitt.</translation>
+<translation id="2359612025446382967">Hvis denne regelen settes til false (usann), slår <ph name="PRODUCT_OS_NAME" /> av Bluetooth. Brukerne kan ikke slå på Bluetooth igjen.
+
+      Hvis denne regelen settes til true (sann) eller ikke spesifiseres, kan brukerne slå av eller på Bluetooth etter behov.
+
+      Hvis denne regelen spesifiseres, kan ikke brukerne endre eller overstyre den.
+
+      Når Bluetooth er slått på, må enheten startes på nytt for at endringene skal tre i kraft. (Det er ikke nødvendig å starte enheten på nytt når Bluetooth slås av).</translation>
 <translation id="2366415278352956652">Slår på cast</translation>
 <translation id="2371309782685318247">Spesifiserer perioden i millisekunder – angir frekvens for hvor ofte tjenesten for enhetsadministrasjon blir kontaktet for informasjon om brukeretningslinjer.
 
@@ -547,6 +565,33 @@
           Hvis du slår på denne innstillingen, ignorerer <ph name="PRODUCT_NAME" /> alle proxy-tjenerrelaterte alternativer som spesifiseres fra kommandolinjen.
 
           Hvis du ikke spesifiserer denne regelen, kan brukerne velge egne innstillinger for proxy-tjenere.</translation>
+<translation id="2818551149761607847">Konfigurer brukerbildet.
+
+      Med denne regelen kan du konfigurere brukerbildet som representerer brukeren på påloggingsskjermen. Innstillingen konfigureres ved å angi nettadressen <ph name="PRODUCT_OS_NAME" /> kan laste ned brukerbildet fra, og en kryptografisk hash-kode brukes for å sikre integriteten til nedlastingen. Bildet må være i JPEG format, og størrelsen må ikke overskride 512 kB. Nettadressen må være tilgjengelig uten autentisering.
+
+      Brukerbildet er lastet ned og bufret. Det kommer til å bli lastet ned på nytt hver gang nettadressen eller hash-koden endres.
+
+      Regelen skal spesifiseres som en streng som inneholder nettadressen og hash-koden i JSON-format, og den må følge følgende skjema:
+      {
+        "type": "object",
+        "properties": {
+          "url": {
+            "description": "Nettadressen brukerbildet kan lastes ned fra.",
+            "type": "string"
+          },
+          "hash": {
+            "description": "SHA-256-hash-koden til brukerbildet.",
+            "type": "string"
+          }
+        }
+      }
+
+      Hvis denne regelen er angitt, laster <ph name="PRODUCT_OS_NAME" /> ned brukerbildet og bruker det.
+
+
+      Hvis du angir denne regelen, kan ikke brukere endre eller overstyre den.
+
+      Hvis du ikke angir regelen, kan brukerne velge sine egne brukerbilder for påloggingskjermen.</translation>
 <translation id="2824715612115726353">Aktiver inkognitomodus</translation>
 <translation id="2844404652289407061">Gjør «Trykk for å søke» tilgjengelig i innholdsvisningen i <ph name="PRODUCT_NAME" />.
 
@@ -1657,10 +1702,31 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
 
       Hvis denne innstillingen er deaktivert, kan ikke brukerne sende utskrift tl <ph name="CLOUD_PRINT_NAME" /> fra <ph name="PRODUCT_NAME" />-utskriftsdialogen</translation>
 <translation id="7053678646221257043">Denne retningslinjen fremtvinger import av bokmerker fra gjeldende standard nettleser, hvis den er aktivert. Hvis den er aktivert, påvirker denne retningslinjen også importeringsdialogen. Hvis den er deaktivert, kan det hende brukeren blir spurt om vedkommende vil importere, eller så kan importen skje automatisk.</translation>
+<translation id="7055358889740598917">Konfigurerer nettadressen for standard startside i <ph name="PRODUCT_NAME" /> og hindrer brukerne i å endre den.
+
+          Startsiden er siden som åpnes med startsideknappen. Siden som åpnes ved oppstart, kontrolleres av RestoreOnStartup-reglene.
+
+          Startsidetypen kan enten angis til en nettadresse du spesifiserer her, eller angis til Ny fane-siden. Hvis du velger Ny fane-siden, aktiveres ikke denne regelen.
+
+          Hvis du slår på denne regelen, kan ikke brukere endre nettadressen til startsidene sine i <ph name="PRODUCT_NAME" />, men de kan fortsatt velge Ny fane-siden som startsiden sin.
+
+          Hvis du ikke angir denne regelen, kommer brukeren til å kunne velge startsiden sin selv om ikke HomepageIsNewTabPage er angitt heller.
+
+          Denne regelen er ikke tilgjengelig på Windows-forekomster som ikke er
+          tilknyttet et Active Directory-domene.</translation>
 <translation id="7063895219334505671">Tillat forgrunnsvindu på disse nettstedene</translation>
 <translation id="706669471845501145">Tillat nettsteder å vise varsler på skrivebordet</translation>
 <translation id="7079519252486108041">Blokkér forgrunnsvinder på disse nettstedene</translation>
 <translation id="7091198954851103976">Kjører alltid programtillegg som krever godkjenning</translation>
+<translation id="7106631983877564505">Slå på lås når <ph name="PRODUCT_OS_NAME" />-enheter blir inaktive eller suspenderte.
+
+      Hvis du slår på denne innstillingen, må brukere angi passord for å låse opp enheten fra hvilemodus.
+
+      Hvis du slår av denne innstillingen, trenger ikke brukere passord for å låse opp enheten fra hvilemodus.
+
+      Hvis du slår på eller av denne innstillingen, kan ikke brukere endre eller overstyre den.
+
+      Hvis regelen ikke er angitt, kan brukeren velge om det skal brukes passord for å låse opp enheten eller ikke.</translation>
 <translation id="7115494316187648452">Avgjør om <ph name="PRODUCT_NAME" />-prosesser skal starte ved OS-pålogging og fortsette å kjøre når det siste nettleservinduet lukkes, noe som gjør at bakgrunnsapper og den gjeldende nettleserøkten, samt eventuelle informasjonskapsler for økten, fortsatt er aktive. Det vises et ikon i systemfeltet for bakgrunnsprosesser som er i gang, og de kan alltids lukkes derfra.
 
       Hvis denne regelen settes til sann, slås bakgrunnsmodusen på. Den kan ikke kontrolleres av brukerne i nettleserinnstillingene.
@@ -2013,6 +2079,13 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
           Hvis du angir denne innstillingen, kan ikke brukere endre eller overstyre den.
 
           Hvis denne innstillingen ikke angis, deaktiveres høykontrastmodus til å begynne med, men brukere kan aktivere den når som helst.</translation>
+<translation id="815061180603915310">Hvis denne regelen er angitt som aktivert, tvinger den profilen til å bytte til engangsmodus. Hvis denne regelen er spesifisert som en OS-regel (f.eks. GPO på Windows), gjelder den for alle profilene på systemet. Hvis regelen er angitt som en Nettsky-regel, gjelder den bare for profiler som er logget på med en administrert konto.
+
+      I denne modusen blir profildataene bare lagret på disk til brukerøkten er avsluttet. Funksjoner som nettlogg, utvidelser med tilhørende data, nettdata – som informasjonskapsler – og nettdatabaser lagres ikke når nettleseren lukkes. Dette hindrer derimot ikke brukeren i å manuelt laste ned data til disk, lagre sider eller skrive dem ut.
+
+      Hvis brukeren har slått på synkronisering, lagres alle disse dataene i vedkommendes synkroniseringsprofil på samme måte som vanlige profiler. Inkognitomodus er også tilgjengelig hvis den ikke er eksplisitt slått av av regelen.
+
+      Hvis regelen er slått av eller ikke angitt, aktiveres vanlige profiler ved pålogging.</translation>
 <translation id="8164246350636985940">Standardfunksjonalitet for nettsteder som ikke er i noen innholdspakke.
 
           Denne regelen er bare for intern bruk i <ph name="PRODUCT_NAME" />.</translation>
@@ -2085,6 +2158,19 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
 <translation id="8312129124898414409">Gjør det mulig å angi om nettsteder har tillatelse til å bruke nøkkelgenerering. Bruk av nøkkelgenerering kan enten være tillatt for alle nettsteder eller blokkert for alle nettsteder.
 
           Hvis denne regelen ikke angis, brukes «BlockKeygen», og brukeren kan endre den.</translation>
+<translation id="8316806736175990584">Konfigurerer typen for standard startside i <ph name="PRODUCT_NAME" />, og hindrer brukere å endre startsideinnstillingene. Startsiden kan enten angis til en nettadresse du spesifiserer, eller angis til Ny fane-siden.
+
+          Hvis du slår på denne innstillingen, brukes alltid Ny fane-siden som startside, og nettadressen til startsiden ignoreres.
+
+          Hvis du slår av denne innstillingen, kommer aldri brukerens startside til å bli Ny fane-siden, med mindre nettadressen er angitt som «chrome://newtab».
+
+          Hvis du slår på eller av denne innstillingen, kan ikke brukere endre startsidetypen i <ph name="PRODUCT_NAME" />.
+
+          Hvis denne regelen ikke angis, kommer brukere selv til å kunne velge om den nye fanen skal være startsiden deres.
+
+          
+          Denne regelen er ikke tilgjengelig på Windows-forekomster som ikke er
+          tilknyttet et Active Directory-domene.</translation>
 <translation id="8329984337216493753">Denne retningslinjen er aktiv bare i detaljistmodus.
 
       Når DeviceIdleLogoutTimeout er spesifisert, definerer denne retningslinjen varigheten av advarselfeltet med en nedtellingsklokke som vises til brukeren før den blir logget av.

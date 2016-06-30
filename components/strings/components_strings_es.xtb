@@ -77,7 +77,6 @@
 <translation id="1791429645902722292">Google Smart Lock</translation>
 <translation id="1821930232296380041">Parámetros de solicitud o solicitud no válidos</translation>
 <translation id="1871208020102129563">Se ha configurado el proxy de forma que use servidores proxy fijos, en lugar de una URL de secuencia de comandos .pac.</translation>
-<translation id="1871625979288021266">Bloqueo puerto no seguro</translation>
 <translation id="1883255238294161206">Contraer lista</translation>
 <translation id="1898423065542865115">Filtrado</translation>
 <translation id="1911837502049945214"><ph name="HOST_NAME" /> no ha aceptado el certificado de inicio de sesión o puede que este haya caducado.</translation>
@@ -128,7 +127,6 @@
 <translation id="2386255080630008482">Se ha revocado el certificado de servidor.</translation>
 <translation id="2392959068659972793">Mostrar políticas sin valores establecidos</translation>
 <translation id="2396249848217231973">&amp;Deshacer eliminación</translation>
-<translation id="2400837204278978822">Archivo desconocido</translation>
 <translation id="2413528052993050574">Este servidor no ha podido probar que su dominio es <ph name="DOMAIN" /> y se podría rechazar su certificado de seguridad. Este problema puede deberse a una configuración incorrecta o a que un atacante haya interceptado la conexión.</translation>
 <translation id="2455981314101692989">Esta página ha inhabilitado la opción de autocompletar para este formulario.</translation>
 <translation id="2467694685043708798"><ph name="BEGIN_LINK" />Ejecutar Diagnósticos de red<ph name="END_LINK" /></translation>
@@ -171,7 +169,6 @@
 <translation id="2855922900409897335">Verifica tu <ph name="CREDIT_CARD" /></translation>
 <translation id="2889159643044928134">No volver a cargar</translation>
 <translation id="2896499918916051536">No se admite este complemento.</translation>
-<translation id="2897655920961181107">Puerto solicitado no seguro y bloqueado.</translation>
 <translation id="2909946352844186028">Se ha detectado un cambio de red.</translation>
 <translation id="2915500479781995473">Este servidor no ha podido probar que su dominio sea <ph name="DOMAIN" />, ya que su certificado de seguridad ha caducado. Este problema puede deberse a una configuración incorrecta o a que un atacante haya interceptado la conexión. La hora actual del reloj de tu ordenador es <ph name="CURRENT_TIME" />. ¿Es correcta? Si no lo es, debes corregir la hora del sistema y, a continuación, actualizar esta página.</translation>
 <translation id="2922350208395188000">No es posible comprobar el certificado del servidor.</translation>
@@ -347,7 +344,6 @@
 <translation id="4807049035289105102">No puedes acceder a <ph name="SITE" /> en este momento porque el sitio web ha enviado credenciales codificadas que Google Chrome no puede procesar. Los ataques y los errores de red suelen ser temporales, por lo que es probable que esta página funcione más tarde.</translation>
 <translation id="4813512666221746211">Error de red</translation>
 <translation id="4816492930507672669">Ajustar a página</translation>
-<translation id="4841640898320458950">Bloqueo puerto no seguro.</translation>
 <translation id="4850886885716139402">Ver</translation>
 <translation id="4880827082731008257">Buscar en el historial</translation>
 <translation id="4923417429809017348">Esta página se ha traducido de un idioma desconocido al <ph name="LANGUAGE_LANGUAGE" />.</translation>
@@ -448,7 +444,6 @@
 <translation id="6165508094623778733">Más información</translation>
 <translation id="6203231073485539293">Comprueba tu conexión a Internet</translation>
 <translation id="6218753634732582820">¿Quitar dirección de Chromium?</translation>
-<translation id="6232139169545176020">El esquema de URI solicitado no es compatible.</translation>
 <translation id="6259156558325130047">&amp;Rehacer reorganización</translation>
 <translation id="6263376278284652872">Marcadores de <ph name="DOMAIN" /></translation>
 <translation id="6264485186158353794">Volver para estar a salvo</translation>
@@ -471,14 +466,11 @@
 <translation id="6489534406876378309">Empezar a subir errores</translation>
 <translation id="6518133107902771759">Verificar</translation>
 <translation id="6529602333819889595">&amp;Rehacer eliminación</translation>
-<translation id="6533019874004191247">URL no compatible</translation>
 <translation id="6550675742724504774">Configuración</translation>
 <translation id="6596325263575161958">Opciones de cifrado</translation>
-<translation id="6610562986279010327">Chrome no puede abrir esta URL</translation>
 <translation id="662080504995468778">Seguir aquí</translation>
 <translation id="6628463337424475685">Búsqueda de <ph name="ENGINE" /></translation>
 <translation id="6634865548447745291">No puedes acceder a <ph name="SITE" /> en este momento porque <ph name="BEGIN_LINK" />este certificado se ha revocado<ph name="END_LINK" />. Los ataques y los errores de red suelen ser temporales, por lo que es probable que esta página funcione más tarde.</translation>
-<translation id="6637478299472506933">Error de descarga</translation>
 <translation id="6644283850729428850">Esta política está obsoleta.</translation>
 <translation id="6646897916597483132">Introduce el código CVC de cuatro dígitos que aparece en el anverso de tu tarjeta</translation>
 <translation id="6656103420185847513">Editar carpeta</translation>
@@ -584,7 +576,6 @@
 <translation id="780301667611848630">No, gracias</translation>
 <translation id="7805768142964895445">Estado</translation>
 <translation id="7813600968533626083">¿Eliminar sugerencia de formulario de Chrome?</translation>
-<translation id="7825436071901023927">Puerto no seguro <ph name="SITE" /></translation>
 <translation id="785549533363645510">Ten en cuenta que tus acciones no serán totalmente invisibles. El uso del modo incógnito no te permite ocultar tu actividad de navegación a tu empresa, a tu proveedor de servicios de Internet o a los sitios web que visites.</translation>
 <translation id="7887683347370398519">Comprueba el código CVC y vuelve a intentarlo</translation>
 <translation id="7894616681410591072">¡Vaya! Necesitas permiso de <ph name="NAME" /> para acceder a esta página.</translation>
@@ -661,7 +652,6 @@
 <translation id="8876793034577346603">No se ha podido analizar la configuración de red.</translation>
 <translation id="8891727572606052622">El modo de proxy no es válido.</translation>
 <translation id="889901481107108152">Esta función experimental no está disponible en tu plataforma.</translation>
-<translation id="890308499387283275">Chrome no puede descargar este archivo.</translation>
 <translation id="8903921497873541725">Acercar</translation>
 <translation id="8931333241327730545">¿Quieres guardar esta tarjeta en tu cuenta de Google?</translation>
 <translation id="8932102934695377596">Tu reloj está atrasado</translation>

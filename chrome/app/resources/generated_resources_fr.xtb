@@ -289,7 +289,6 @@
 <translation id="1415990189994829608"><ph name="EXTENSION_NAME" /> (ID d'extension "<ph name="EXTENSION_ID" />") n'est pas autorisé à se joindre à ce type de session.</translation>
 <translation id="1416836038590872660">EAP-MD5</translation>
 <translation id="1420684932347524586">Échec de génération de clé privée RSA aléatoire</translation>
-<translation id="1421115928968836111">Cette option annule l'autorisation des licences Flash Player pour le contenu protégé.</translation>
 <translation id="1425734930786274278">Les cookies suivants ont été bloqués (tous les cookies tiers sont bloqués, sans exception) :</translation>
 <translation id="1426410128494586442">Oui</translation>
 <translation id="1427049173708736891">Votre <ph name="DEVICE_TYPE" /> reste déverrouillé lorsque votre téléphone Android est déverrouillé et se trouve à proximité ; nul besoin de saisir votre mot de passe.</translation>
@@ -2244,7 +2243,6 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" /> ?</translation>
 <translation id="4098354747657067197">Le site Web que vous allez ouvrir est trompeur</translation>
 <translation id="4099585076575543605">{COUNT,plural, =0{aucun}=1{1}one{#}other{#}}</translation>
 <translation id="409980434320521454">Échec de la synchronisation</translation>
-<translation id="4100079375692032441">Simplifier la page pour l'aperçu avant impression</translation>
 <translation id="4101878899871018532">Le gestionnaire de mots de passe ne proposera pas d'enregistrer les identifiants utilisés pour la synchronisation.</translation>
 <translation id="4104163789986725820">E&amp;xporter...</translation>
 <translation id="4105563239298244027">Profitez d'un téraoctet d'espace de stockage gratuit grâce à Google Drive</translation>
@@ -2372,7 +2370,6 @@ Tous les utilisateurs doivent se déconnecter pour continuer.</translation>
 <translation id="4297391862525234515">Réduction de l'étagère suite à un clic</translation>
 <translation id="42981349822642051">Développer</translation>
 <translation id="4298972503445160211">Clavier danois</translation>
-<translation id="4299273509016391946">Cette option active une case à cocher permettant de simplifier la page dans la boîte de dialogue d'aperçu avant impression.</translation>
 <translation id="4299729908419173967">brésilien</translation>
 <translation id="430714521864499800">Activer l'implémentation expérimentale de la directive "Cache-Control: stale-while-revalidate" (elle permet aux serveurs d'exiger la revalidation de certaines ressources en arrière-plan pour optimiser la latence)</translation>
 <translation id="4307281933914537745">En savoir plus sur la récupération du système</translation>
@@ -2449,7 +2446,6 @@ Pour poursuivre l'exploration, veuillez appuyer sur n'importe quelle touche.</tr
 <translation id="4434147949468540706">Effet en fin de défilement</translation>
 <translation id="443464694732789311">Continuer</translation>
 <translation id="4436456292809448986">Ajouter au bureau…</translation>
-<translation id="4439244508678316632">Licences de contenu</translation>
 <translation id="4439318412377770121">Voulez-vous vous enregistrer l'appareil <ph name="DEVICE_NAME" /> dans Google Cloud Devices ?</translation>
 <translation id="4441124369922430666">Voulez-vous démarrer automatiquement cette application à la mise sous tension de l'ordinateur ?</translation>
 <translation id="444134486829715816">Développer...</translation>
@@ -3477,7 +3473,6 @@ Assurez-vous de ne pas dévoiler d'informations sensibles.</translation>
   Exposant public (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits) :
   <ph name="EXPONENT_HEX_DUMP" /></translation>
 <translation id="59174027418879706">Activée</translation>
-<translation id="592068147111860043">Spécifier les plug-ins PPAPI qui seront exécutés dans le cadre de la règle de bac à sable Win32k Lockdown.</translation>
 <translation id="5925147183566400388">Pointeur de la déclaration CPS (Certification Practice Statement)</translation>
 <translation id="5930693802084567591">Vos données ont été chiffrées avec votre mot de passe Google le <ph name="TIME" />. Veuillez le saisir ci-dessous.</translation>
 <translation id="5931146425219109062">Accéder à toutes vos données sur les sites Web que vous consultez et les modifier</translation>
@@ -3496,7 +3491,6 @@ Assurez-vous de ne pas dévoiler d'informations sensibles.</translation>
 <translation id="5956585768868398362">Est-ce la page de recherche que vous attendiez ?</translation>
 <translation id="5957613098218939406">Plus d'options</translation>
 <translation id="5958529069007801266">Utilisateur supervisé</translation>
-<translation id="5958994127112619898">Simplifier la page</translation>
 <translation id="5959471481388474538">Réseau indisponible</translation>
 <translation id="5963026469094486319">Obtenir d'autres thèmes</translation>
 <translation id="5963453369025043595"><ph name="NUM_HANDLES" /> (pic : <ph name="NUM_KILOBYTES_LIVE" />)</translation>

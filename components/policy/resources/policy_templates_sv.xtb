@@ -6,6 +6,15 @@
 <translation id="1019101089073227242">Ange katalog för användardata</translation>
 <translation id="1022361784792428773">Tilläggs-ID:n som användaren inte får installera (eller * om det gäller alla)</translation>
 <translation id="102492767056134033">Ange standardläget för skärmtangentbordet på inloggningsskärmen</translation>
+<translation id="1027000705181149370">Anger om autentiseringskoder som anges av en SAML IdP under inloggning ska överföras till användarens profil.
+
+      När en användare autentiserar via en SAML IdP under inloggning skrivs cookies som anges av IdP:n först till en tillfällig profil. Dessa cookies kan överföras till användarens profil för att vidarebefordra autentiseringstillståndet.
+
+      När den här policyn är inställd på sant överförs cookies som anges av IdP:n till användarens profil varje gång användaren autentiserar mot SAML IdP:n under inloggning.
+
+      När den här policyn är inställd på falskt eller inte har ställts in överförs cookies som ställts in av IdP:n bara till användarens profil under den första inloggningen på en enhet.
+
+      Den här policyn gäller bara användare vars domän matchar enhetens registreringsdomän. För alla andra användare överförs cookies som anges av IdP:n bara till användarens profil under den första inloggningen på enheten.</translation>
 <translation id="1040446814317236570">Aktivera filtrering av webbadresser för PAC (för https://)</translation>
 <translation id="1044878202534415707">Rapportera maskinvarustatistik som exempelvis användning av processor eller RAM-minne.
 
@@ -202,6 +211,8 @@
       Observera att den här policyn kan åsidosättas av EnabledPlugins och DisabledPluginsExceptions.
 
       Om den här policyn inte anges kan användaren använda alla plugin-program som är installerade på datorn förutom hårdkodade inkompatibla, föråldrade eller farliga plugin-program.</translation>
+<translation id="1864269674877167562">Om policyn anges som en tom sträng eller inte har konfigurerats visar inte <ph name="PRODUCT_OS_NAME" /> alternativet för autoslutförande under användarens inloggningsflöde.
+      Om policyn är inställd på en sträng som motsvarar ett domännamn visar <ph name="PRODUCT_OS_NAME" /> ett alternativ för autoslutförande under användarens inloggning så att användaren bara kan skriva sitt användarnamn utan domännamnstillägget. Användaren kan skriva över detta domännamnstillägg.</translation>
 <translation id="1865417998205858223">Nyckelbehörigheter</translation>
 <translation id="186719019195685253">Åtgärd som vidtas när fördröjning på grund av inaktivitet har uppnåtts vid anslutning till ett elnät</translation>
 <translation id="187819629719252111">Policyn tillåter åtkomst till lokala filer på datorn genom att tillåta att <ph name="PRODUCT_NAME" /> visar dialogrutor för filval.
@@ -329,6 +340,13 @@
 <translation id="2337466621458842053">Policyn gör att du kan ställa in en lista med adressmönster som anger webbplatser som får visa bilder.
 
           Om den här policyn inte ställs in används det globala standardvärdet för alla webbplatser, antingen från policyn DefaultImagesSetting om den är inställd, eller från användarens personliga konfiguration om den inte är det.</translation>
+<translation id="2359612025446382967">Om policyn är inställd på falskt inaktiveras Bluetooth för <ph name="PRODUCT_OS_NAME" /> och användaren kan inte aktivera det igen.
+
+      Om policyn är inställd på sant eller inte inställd alls kan användaren aktivera eller inaktivera Bluetooth när som helst.
+
+      Om policyn är inställd kan användaren inte ändra eller åsidosätta den.
+
+      När Bluetooth har aktiverats måste enheten startas om innan ändringarna tillämpas (du behöver inte starta om enheten när du inaktiverar Bluetooth).</translation>
 <translation id="2366415278352956652">Aktiverar cast</translation>
 <translation id="2371309782685318247">Policyn anger hur ofta i millisekunder som enhetshanteringstjänsten avfrågas efter användarpolicyinformation.
 
@@ -563,6 +581,32 @@
           Om du aktiverar inställningen ignorerar <ph name="PRODUCT_NAME" /> alla proxyrelaterade alternativ som har angetts i kommandoraden.
 
           Om du inte anger inställningarna kan användarna själva välja proxyinställningar.</translation>
+<translation id="2818551149761607847">Konfigurera användarens avatarbild.
+
+      Med den här policyn kan du konfigurera avatarbilden som representerar användaren på inloggningsskärmen. Du kan ställa in policyn genom att ange en webbadress från vilken <ph name="PRODUCT_OS_NAME" /> kan ladda ned avatarbilden och en kryptografisk hash som används för att verifiera nedladdningens integritet. Bilden måste vara i JPEG-format och får inte vara större än 512 kB. Webbadressen måste vara åtkomlig utan autentisering.
+
+      Avatarbilden laddas ned och cachelagras. Den kan laddas ned igen varje gång webbadressen eller hashen ändras.
+
+      Policyn ska anges som en sträng som uttrycker webbadressen och hashen i JSON-format enligt följande schema:
+      {
+        "type": "object",
+        "properties": {
+          "url": {
+            "description": "Den webbadress varifrån avatarbilden kan laddas ned.",
+            "type": "string"
+          },
+          "hash": {
+            "description": "Avatarbildens SHA-256-hash.",
+            "type": "string"
+          }
+        }
+      }
+
+      Om policyn är inställd laddar <ph name="PRODUCT_OS_NAME" /> ned avatarbilden och använder den.
+
+      Om du ställer in den här policyn kan den inte ändras eller åsidosättas av användare.
+
+      Om policyn inte ställs in kan användarna välja vilken avatarbild som ska representera dem på inloggningsskärmen.</translation>
 <translation id="2824715612115726353">Aktivera inkognitoläge</translation>
 <translation id="2844404652289407061">Aktiverar tillgången till Tryck för att söka i innehållsvyn i <ph name="PRODUCT_NAME" />.
 
@@ -1713,10 +1757,31 @@
       Om policyn är inaktiverad importeras inga bokmärken.
 
       Om policyn inte har angetts kan användaren få välja om importen ska göras, eller så utförs importen automatiskt.</translation>
+<translation id="7055358889740598917">Konfigurerar webbadressen till standardstartsidan i <ph name="PRODUCT_NAME" /> och förhindrar att användarna ändrar den.
+
+          Startsidan är den sida som öppnas när användaren klickar på startknappen. Vilken sida som öppnas vid start styrs av RestoreOnStartup-policyerna.
+
+          Startsidans typ kan ställas in på en webbadress du anger här eller på sidan Ny flik. Om du väljer sidan Ny flik gäller inte den här policyn.
+
+          Om du aktiverar den här inställningen kan användarna inte ändra startsideadressen i <ph name="PRODUCT_NAME" />, men de kan fortfarande välja sidan Ny flik som startsida.
+
+          Om den här policyn inte ställs in kan användaren välja sin startsida själv om HomepageIsNewTabPage inte heller är inställd.
+
+          Den här policyn är inte tillgänglig i Windows-instanser som inte är kopplade
+          till en Active Directory-domän.</translation>
 <translation id="7063895219334505671">Tillåt popup-fönster på dessa webbplatser</translation>
 <translation id="706669471845501145">Tillåt att webbplatser visar aviseringar på skrivbordet</translation>
 <translation id="7079519252486108041">Blockera popup-fönster på dessa webbplatser</translation>
 <translation id="7091198954851103976">Kör alltid pluginprogram som kräver auktorisering</translation>
+<translation id="7106631983877564505">Policyn aktiverar lås när <ph name="PRODUCT_OS_NAME" />-enheter blir inaktiva eller stängs av.
+
+      Om du aktiverar inställningen måste användarna ange ett lösenord för att låsa upp enheter som är i viloläge.
+
+      Om du inaktiverar inställningen behöver användarna inte ange något lösenord för att låsa upp enheter som är i viloläge.
+
+      Om du aktiverar eller inaktiverar inställningen kan användarna inte ändra eller åsidosätta den.
+
+      Om du inte anger policyn kan användarna välja om det ska behövas ett lösenord för att låsa upp enheten eller inte.</translation>
 <translation id="7115494316187648452">Avgör om en process i <ph name="PRODUCT_NAME" /> startas när användaren loggar in i operativsystemet och fortsätter köras när det sista webbläsarfönstret har stängts, så att bakgrundsappar och den aktuella sessionen kan fortsätta vara aktiva (inklusive eventuella sessionscookies). Bakgrundsprocessen visas som en ikon i systemfältet och kan alltid stängas därifrån.
 
       Om policyn är inställd på sant aktiveras bakgrundsläget och det kan inte ändras av användaren i webbläsarinställningarna.
@@ -2075,6 +2140,13 @@
           Om du anger den här principen kan användarna inte ändra eller åsidosätta den.
 
           Om den här principen inte anges är högkontrastläget inte aktiverat från start, men användaren kan aktivera det när som helst.</translation>
+<translation id="815061180603915310">Om den här policyn är aktiverad måste profilen växlas till tillfälligt läge. Om den här policyn anges som en OS-policy (t.ex. GPO i Windows) gäller den för alla profiler i systemet. Om den ställs in som en molnpolicy gäller den bara för profiler som är inloggade med ett hanterat konto.
+
+      I det här läget sparas profildata bara på hårddisken under användarsessionen. Funktioner som webbläsarhistorik, tillägg och tilläggsdata, webbdata som cookies och webbdatabaser sparas inte efter att webbläsaren har stängts. Detta förhindrar dock inte att användaren laddar ned data till hårddisken manuellt, sparar sidor eller skriver ut.
+
+      Om användaren har aktiverat synkronisering sparas all data i synkprofilen, precis som med vanliga profiler. Inkognitoläge är också tillgängligt om det inte har inaktiverats explicit av en policy.
+
+      Om policyn är inaktiverad eller inte inställd aktiveras vanliga profiler vid inloggning.</translation>
 <translation id="8164246350636985940">Standardinställningen för webbplatser som inte har något innehållspaket.
 
           Denna princip gäller endast internt i <ph name="PRODUCT_NAME" />.</translation>
@@ -2145,6 +2217,18 @@
 <translation id="8312129124898414409">Gör att du kan ange om webbplatser får använda nyckelgenerering. Du kan antingen tillåta eller blockera användning av nyckelgenerering på alla webbplatser.
 
           Om du inte anger policyn används BlockKeygen och inställningen kan ändras av användaren.</translation>
+<translation id="8316806736175990584">Konfigurerar standardstartsidans typ i <ph name="PRODUCT_NAME" /> och förhindrar att användaren ändrar inställningarna för startsidan. Startsidan kan ställas in på en webbadress du anger eller på sidan Ny flik.
+
+          Om du aktiverar den här inställningen används alltid sidan Ny flik som startsida, och startsidans webbadress ignoreras.
+
+          Om du inaktiverar den här inställningen är aldrig användarens startsida sidan Ny flik, om inte webbadressen ställs in på chrome://newtab.
+
+          Om du aktiverar eller inaktiverar den här inställningen kan användarna inte ändra startsidans typ i <ph name="PRODUCT_NAME" />.
+
+          Om du inte ställer in den här policyn kan användarna välja om sidan Ny flik ska vara deras startsida.
+
+          Den här policyn är inte tillgänglig i Windows-instanser som inte är kopplade
+          till en Active Directory-domän.</translation>
 <translation id="8329984337216493753">Den här policyn är bara aktiv i återförsäljarläge.
 
       När DeviceIdleLogoutTimeout har angetts definierar den här policyn hur länge en varningsruta med nedräkning ska visas för användaren innan utloggningen genomförs.

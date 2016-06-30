@@ -21,6 +21,7 @@
 <translation id="1167230103353892028"><ph name="NAME" />, menü öğesi, alt menüye sahip</translation>
 <translation id="1177863135347784049">Özel</translation>
 <translation id="1188858454923323853">tamamlayıcı</translation>
+<translation id="1201402288615127009">Sonraki</translation>
 <translation id="1206619573307042055">marquee</translation>
 <translation id="1213216066620407844">ChromeVox - Chrome'un Sesi</translation>
 <translation id="1229276918471378188">Önceki atlama</translation>
@@ -122,7 +123,6 @@
 <translation id="2553108862507765288">grammatical mistake</translation>
 <translation id="257674075312929031">Grup</translation>
 <translation id="2582407057977008361">Kenar</translation>
-<translation id="2589102159832527089">Bu sayfada &lt;b&gt;<ph name="FILENAME" />&lt;/b&gt; adlı PDF dosyasından otomatik olarak ayıklanmış metin bulunmaktadır. &lt;a href="<ph name="URL" />"&gt;Orijinali görmek için burayı tıklayın.&lt;/a&gt;</translation>
 <translation id="2606210917827248971">{COUNT,plural, =1{# öğeyle}other{# öğeyle}}</translation>
 <translation id="2614981083756825552">Matematik ML Düzeni</translation>
 <translation id="2626530649491650971">tıklanabilir</translation>
@@ -510,7 +510,6 @@
 <translation id="6129953537138746214">Boşluk</translation>
 <translation id="6142308968191113180">Başlık 4</translation>
 <translation id="6169420925157477918">Uzun açıklamalı resim</translation>
-<translation id="6172087735260766220">Kopyalamaya karşı korumalı PDF dosyasındaki erişilebilir metne erişilemiyor.</translation>
 <translation id="6186305613600865047">Sayfanın en alt kısmına atlar</translation>
 <translation id="6193330012414963395">ÖÖ ÖS</translation>
 <translation id="622484624075952240">Aşağı</translation>
@@ -549,6 +548,7 @@
 <translation id="6659594942844771486">Sekme</translation>
 <translation id="667999046851023355">Doküman</translation>
 <translation id="6697092096875747123">Önceki birleşik kutu</translation>
+<translation id="6710213216561001401">Önceki</translation>
 <translation id="6714813999819678458">Önceki 2. düzey başlık</translation>
 <translation id="6716505898850596801">Değiştirici tuşlar</translation>
 <translation id="671916444866103745">Sonraki ARIA önemli noktası yok.</translation>
@@ -690,6 +690,7 @@
 <translation id="842922884199979200">Sonraki 3. düzey başlık yok.</translation>
 <translation id="8430049249787218991">mnubr</translation>
 <translation id="844681116543532394">Önceki onay kutusu yok.</translation>
+<translation id="8446884382197647889">Daha Fazla Bilgi Edinin</translation>
 <translation id="8455868257606149352">En çok: <ph name="X" /></translation>
 <translation id="84575901236241018">erişim tuşu var, <ph name="KEY" /></translation>
 <translation id="8476508772960940536">pencere genel bakışı</translation>

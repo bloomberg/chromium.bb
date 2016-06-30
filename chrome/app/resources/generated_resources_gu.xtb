@@ -287,7 +287,6 @@
 <translation id="1415990189994829608"><ph name="EXTENSION_NAME" /> (એક્સ્ટેન્શન ID "<ph name="EXTENSION_ID" />") ને આ પ્રકારના સત્રમાં મંજૂરી નથી.</translation>
 <translation id="1416836038590872660">EAP-MD5</translation>
 <translation id="1420684932347524586">અરેરે! રેંડમ RSA ખાનગી કી જનરેટ કરવામાં નિષ્ફળ.</translation>
-<translation id="1421115928968836111">આ સુરક્ષિત સામગ્રી માટે Flash Player લાઇસન્સની અધિકૃતિને નામંજૂર કરશે.</translation>
 <translation id="1425734930786274278">નીચેની કૂકીઝ અવરોધિત કરવામાં આવી હતી (તૃતીય-પક્ષ કૂકીઝ કોઈપણ અપવાદ સિવાય અવરોધિત કરવામાં આવી રહી છે):</translation>
 <translation id="1426410128494586442">હા</translation>
 <translation id="1427049173708736891">જ્યારે તમારો Android ફોન અનલૉક હોય અને નજીકમાં હોય ત્યારે તમારા <ph name="DEVICE_TYPE" /> ને અનલૉક કરેલું રાખો—તમારો પાસવર્ડ લખવાની જરૂર નથી.</translation>
@@ -2230,7 +2229,6 @@
 <translation id="4098354747657067197">આગળ છેતરામણી સાઇટ છે</translation>
 <translation id="4099585076575543605">{COUNT,plural, =0{કોઈ નહીં}=1{1}one{#}other{#}}</translation>
 <translation id="409980434320521454">સમન્વયન નિષ્ફળ </translation>
-<translation id="4100079375692032441">પ્રિંટ પૂર્વાવલોકન પર પૃષ્ઠ સરળ બનાવો</translation>
 <translation id="4101878899871018532">પાસવર્ડ સંચાલક સમન્વયન માટે ઉપયોગમાં લેવાતાં ઓળખાણપત્રને સાચવવા માટેની ઑફર કરશે નહીં.</translation>
 <translation id="4104163789986725820">નિ&amp;કાસ કરો...</translation>
 <translation id="4105563239298244027">Google ડ્રાઇવ સાથે 1 TB મફત મેળવો</translation>
@@ -2358,7 +2356,6 @@
 <translation id="4297391862525234515">શેલ્ફને ક્લિક-પર-ન્યૂનતમ કરો</translation>
 <translation id="42981349822642051">વિસ્તૃત કરો</translation>
 <translation id="4298972503445160211">ડેનિશ કીબોર્ડ</translation>
-<translation id="4299273509016391946">પ્રિંટ પૂર્વાવલોકન સંવાદ પર પૃષ્ઠ સરળ બનાવો ચેક બોક્સને સક્ષમ કરે છે</translation>
 <translation id="4299729908419173967">બ્રાઝિલિયન</translation>
 <translation id="430714521864499800">"કેશ-કંટ્રોલ: stale-while-revalidate" નિર્દેશનું પ્રાયોગિક અમલીકરણ સક્ષમ કરો. આ વિલંબતાને બહેતર બનાવવા માટે કેટલાક સંસાધનો પૃષ્ઠભૂમિમાં પુનઃમાન્ય કરવામાં આવી શકે છે તેનો ઉલ્લેખ કરવાની સર્વર્સને પરવાનગી આપે છે.</translation>
 <translation id="4307281933914537745">સિસ્ટમ પુનર્પ્રાપ્તિ વિશે વધુ જાણો</translation>
@@ -2435,7 +2432,6 @@
 <translation id="4434147949468540706">સ્ક્રોલ સમાપ્તિ અસર</translation>
 <translation id="443464694732789311">ચાલુ રાખો</translation>
 <translation id="4436456292809448986">ડેસ્કટૉપ પર ઉમેરો ...</translation>
-<translation id="4439244508678316632">સામગ્રી લાઇસેંસેસ</translation>
 <translation id="4439318412377770121">શું તમે Google મેઘ ઉપકરણો પર <ph name="DEVICE_NAME" /> ને નોંધાવવા માગો છો?</translation>
 <translation id="4441124369922430666">શું જ્યારે મશીન ચાલુ થાય ત્યારે તમે આ એપ્લિકેશનને આપમેળે પ્રારંભ કરવા માંગો છો?</translation>
 <translation id="444134486829715816">વિસ્તૃત કરો...</translation>
@@ -3457,7 +3453,6 @@
   પબ્લિક એક્સપોનન્ટ (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> બિટ્સ):
   <ph name="EXPONENT_HEX_DUMP" /></translation>
 <translation id="59174027418879706">સક્ષમ</translation>
-<translation id="592068147111860043">PPAPI પ્લગ-ઇન્સનો ઉલ્લેખ કરો જે Win32k લોકડાઉન સેન્ડબોક્સ નીતિ અંતર્ગત શરૂ થશે.</translation>
 <translation id="5925147183566400388">સર્ટિફિકેશન પ્રેક્ટીસ સ્ટેટમેન્ટ પોઇન્ટર</translation>
 <translation id="5930693802084567591">તમારો ડેટા <ph name="TIME" /> ના રોજ તમારા Google પાસવર્ડ સાથે એન્ક્રિપ્ટ કરાયો છે. કૃપા કરી તેને નીચે દાખલ કરો.</translation>
 <translation id="5931146425219109062">તમે મુલાકાત લો છો તે વેબસાઇટ્સ પરના તમારા ડેટાને વાંચો અને બદલો</translation>
@@ -3476,7 +3471,6 @@
 <translation id="5956585768868398362">શું આ તમારી અપેક્ષા મુજબનું શોધ પૃષ્ઠ છે?</translation>
 <translation id="5957613098218939406">વધુ વિકલ્પો</translation>
 <translation id="5958529069007801266">નિરીક્ષણ કરેલ વપરાશકર્તા</translation>
-<translation id="5958994127112619898">પૃષ્ઠ સરળ બનાવો</translation>
 <translation id="5959471481388474538">નેટવર્ક ઉપલબ્ધ નથી</translation>
 <translation id="5963026469094486319">થીમ્સ મેળવો</translation>
 <translation id="5963453369025043595"><ph name="NUM_HANDLES" /> (<ph name="NUM_KILOBYTES_LIVE" /> પિક)</translation>

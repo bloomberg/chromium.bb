@@ -6,6 +6,15 @@
 <translation id="1019101089073227242">Kullanıcı veri dizinini ayarla</translation>
 <translation id="1022361784792428773">Kullanıcının yüklemesine engel olunacak uzantı kimlikleri (veya tümü için *)</translation>
 <translation id="102492767056134033">Giriş ekranında ekran klavyesinin varsayılan durumunu ayarla</translation>
+<translation id="1027000705181149370">Giriş yapılırken bir SAML IdP tarafından ayarlanan kimlik doğrulama çerezlerinin kullanıcının profiline aktarılıp aktarılmayacağını belirtir.
+
+      Kullanıcı giriş yaparken SAML IdP aracılığıyla kimlik doğrulaması yaparsa, IdP tarafından ayarlanan çerezler önce geçici bir profile yazılır. Bu çerezler kimlik doğrulama durumunu iletmek için kullanıcının profiline aktarılabilir.
+
+      Bu politika doğru (true) seçeneğine ayarlandığında, kullanıcı giriş yaparken SAML IdP ile her kimlik doğrulaması gerçekleştirdiğinde, IdP tarafından ayarlanan çerezler kullanıcının profiline aktarılır.
+
+      Bu politika yanlış (false) seçeneğine ayarlandığında veya ayarlanmadan bırakıldığında, IdP tarafından ayarlanan çerezler kullanıcının profiline sadece bir cihazda ilk defa giriş yaparken aktarılır.
+
+      Bu politika yalnızca, alan adı ile cihazın kaydolduğu alan adı eşleşen kullanıcıları etkiler. Diğer tüm kullanıcılar için, IdP tarafından ayarlanan çerezler kullanıcının profiline sadece cihazda ilk defa giriş yaparken aktarılır.</translation>
 <translation id="1040446814317236570">PAC URL ayırmayı etkinleştir (https:// için)</translation>
 <translation id="1044878202534415707">CPU/RAM kullanımı gibi donanım istatistiklerini bildirin.
 
@@ -205,6 +214,8 @@
       Bu politikanın EnabledPlugins ve DisabledPluginsExceptions tarafından geçersiz kılınabileceğini unutmayın.
 
       Bu politika ayarlanmadan bırakılırsa, kullanıcı sabit kodlu uyumsuz, eski veya tehlikeli olan eklentiler dışında, sistemde yüklü olan tüm eklentileri kullanabilir.</translation>
+<translation id="1864269674877167562">Bu politika için boş bir dize ayarlanırsa veya politika hiç yapılandırılmazsa <ph name="PRODUCT_OS_NAME" />, kullanıcı oturum açma akışında bir otomatik tamamlama seçeneği görüntülemez.
+      Bu politika için bir alan adına karşılık gelen dize ayarlanırsa <ph name="PRODUCT_OS_NAME" />, kullanıcı oturum açma akışı sırasında bir otomatik tamamlama seçeneği görüntüleyerek kullanıcının sadece kullanıcı adını (alan adı uzantısı olmadan) yazmasına olanak verir. Kullanıcı bu alan adı uzantısının üzerine yazabilir.</translation>
 <translation id="1865417998205858223">Temel İzinler</translation>
 <translation id="186719019195685253">Cihaz AC güçle çalışırken boşta kalma süresine ulaşıldığında yapılacak işlem</translation>
 <translation id="187819629719252111"><ph name="PRODUCT_NAME" /> tarafından dosya seçme iletişim kutularının görüntülenmesine izin vererek makinedeki yerel dosyalara erişim olanağı sağlar.
@@ -330,6 +341,13 @@
 <translation id="2337466621458842053">Resimleri görüntülemelerine izin verilen sitelerin belirtildiği bir URL kalıpları listesini ayarlamanıza olanak tanır.
 
           Bu politika ayarlanmadan bırakılırsa, 'DefaultImagesSetting' politikası ayarlandıysa buradaki değer, aksi takdirde kullanıcının kişisel yapılandırması tüm siteler için genel varsayılan değer olarak kullanılır.</translation>
+<translation id="2359612025446382967">Bu politika yanlış (false) değerine ayarlanırsa <ph name="PRODUCT_OS_NAME" />, Bluetooth'u devre dışı bırakır ve kullanıcı, bu işlevi etkinleştiremez.
+
+      Bu politika doğru (true) değerine ayarlanır veya ayarlanmadan bırakılırsa kullanıcı, Bluetooth'u istediği gibi etkinleştirebilir veya devre dışı bırakabilir.
+
+      Bu politika ayarlanırsa kullanıcı, bunu değiştiremez veya geçersiz kılamaz.
+
+      Bluetooth etkinleştirildikten sonra, değişikliklerin yürürlüğe girmesi için cihazın yeniden başlatılması gerekir (Bluetooth devre dışı bırakılırken cihazın yeniden başlatılması gerekmez).</translation>
 <translation id="2366415278352956652">Yayınlamayı etkinleştirir</translation>
 <translation id="2371309782685318247">Cihaz yönetimi hizmetinin kullanıcı politikası bilgileri için sorgulandığı süreyi milisaniye cinsinden belirtir.
 
@@ -564,6 +582,32 @@
           Bu ayarı etkinleştirirseniz <ph name="PRODUCT_NAME" />, komut satırında proxy ile ilgili belirtilen tüm seçenekleri göz ardı eder.
 
           Bu politikanın ayarlanmadan bırakılması, kullanıcıların proxy ayarlarını kendi başlarına seçmelerine olanak tanır.</translation>
+<translation id="2818551149761607847">Kullanıcı avatar resmini yapılandırın.
+
+      Bu politika, giriş ekranında kullanıcıyı temsil eden avatar resmini yapılandırmanıza olanak tanır. Politika, <ph name="PRODUCT_OS_NAME" /> ürününün avatar resmini indireceği URL'nin belirtilmesi ve indirme işleminin bütünlüğünü doğrulamak için kullanılacak şifreleme karmasının tanımlanmasıyla ayarlanır. Resim JPEG biçiminde olmalı, boyutu 512 kB'tan fazla olmamalıdır. URL'ye kimlik doğrulama yapılmaksızın erişilebilmelidir.
+
+      Avatar resmi indirilir ve önbelleğe kaydedilir. URL veya şifreleme karması her değiştiğinde tekrar indirilir.
+
+      Politika, aşağıdaki şemaya uygun şekilde, URL'yi ve karmayı JSON biçiminde ifade eden bir dize olarak belirtilmelidir:
+      {
+        "type": "object",
+        "properties": {
+          "url": {
+            "description": "Avatar resminin indirilebileceği URL.",
+            "type": "string"
+          },
+          "hash": {
+            "description": "Avatar resminin SHA-256 karması.",
+            "type": "string"
+          }
+        }
+      }
+
+      Bu politika ayarlanırsa <ph name="PRODUCT_OS_NAME" /> avatar resmini indirir ve kullanır.
+
+      Bu politikayı ayarlarsanız kullanıcılar avatar resmini değiştiremez veya geçersiz kılamaz.
+
+      Politika ayarlanmadan bırakılırsa kullanıcı giriş ekranında kendisini temsil edecek avatar resmini seçebilir."</translation>
 <translation id="2824715612115726353">Gizli modu etkinleştir</translation>
 <translation id="2844404652289407061"><ph name="PRODUCT_NAME" /> ürününün içerik görünümünde Dokun ve Ara özelliğinin kullanılabilmesini sağlar.
 
@@ -1706,10 +1750,30 @@ Bu politika ayarlanmadan bırakılırsa varsayılan profil yolu kullanılır ve 
       Devre dışı bırakılırsa, hiçbir yer işareti içe aktarılmaz.
 
       Ayarlanmazsa, kullanıcıdan içe aktarma işlemini gerçekleştirmesi istenebilir veya içe aktarma otomatik olarak gerçekleşebilir.</translation>
+<translation id="7055358889740598917"><ph name="PRODUCT_NAME" /> içindeki varsayılan ana sayfa URL'sini yapılandırır ve kullanıcıların bunu değiştirmelerini önler.
+
+          Ana sayfa, Ana Sayfa düğmesiyle açılan sayfadır. Başlangıçta açılan sayfalar, RestoreOnStartup politikalarıyla kontrol edilir.
+
+          Ana sayfa türü ya burada belirttiğiniz URL'ye ya da Yeni Sekme Sayfası'na ayarlanabilir. Yeni Sekme Sayfası'nı seçerseniz bu politika göz ardı edilir.
+
+          Bu ayarı etkinleştirirseniz kullanıcılar ana sayfa URL'sini <ph name="PRODUCT_NAME" /> içinden değiştiremezler, ancak ana sayfa olarak Yeni Sekme Sayfası'nı seçmeye devam edebilirler.
+
+          Bu politikanın ayarlanmadan bırakılması, HomepageIsNewTabPage politikası da ayarlanmamışsa kullanıcının ana sayfasını kendi başına seçmesine olanak tanır.
+
+          Bu politika bir Active Directory alan adına katılmamış Windows örneklerinde kullanılamaz.</translation>
 <translation id="7063895219334505671">Bu sitelerde pop-up'lara izin ver</translation>
 <translation id="706669471845501145">Sitelerin masaüstü bildirimi göstermesine izin ver</translation>
 <translation id="7079519252486108041">Bu sitelerde pop-up'ları engelle</translation>
 <translation id="7091198954851103976">Yetkilendirme gerektiren eklentileri her zaman çalıştırır</translation>
+<translation id="7106631983877564505"><ph name="PRODUCT_OS_NAME" /> cihazları boştayken veya askıya alındığında kilidi etkinleştir.
+
+      Bu ayarı etkinleştirirseniz uykudaki cihazlarının kilidini açabilmeleri için kullanıcılardan bir şifre girmeleri istenir.
+
+      Bu ayarı devre dışı bırakırsanız uykudaki cihazlarını uyandırmaları için kullanıcılardan bir şifre istenmez.
+
+      Bu ayarı etkinleştirir veya devre dışı bırakırsanız kullanıcılar bu ayarı değiştiremez veya geçersiz kılamaz.
+
+      Politika ayarlanmadan bırakılırsa kullanıcı, cihazın kilidini açmak için şifre sorulup sorulmayacağını belirleyebilir.</translation>
 <translation id="7115494316187648452">OS girişi sırasında bir <ph name="PRODUCT_NAME" /> işleminin başlatılıp başlatılmayacağını ve son tarayıcı penceresi kapatılsa dahi çalışmaya devam edip etmeyeceğini belirler. Bu şekilde etkin olmaya devam eden işlemler, arka plan uygulamalarının ve oturum çerezleri dahil olmak üzere geçerli göz atma oturumunun etkin kalmasına olanak verir. Arka plan işlemleri, sistem tepsisinde bir simge görüntüler ve istendiğinde oradan kapatılabilir.
 
       Bu politika Doğru seçeneğine ayarlanırsa arka plan modu etkinleştirilir ve tarayıcı ayarlarında kullanıcı tarafından kontrol edilemez.
@@ -2057,6 +2121,13 @@ Bu politika ayarlanmadan bırakılırsa varsayılan profil yolu kullanılır ve 
           Bu politikayı ayarlarsanız, kullanıcılar bunu değiştiremez ve geçersiz kılamaz.
 
           Bu politika ayarlanmadan bırakılırsa, başlangıçta yüksek kontrast modu devre dışıdır, ancak istenildiğinde kullanıcı tarafından etkinleştirilebilir.</translation>
+<translation id="815061180603915310">Bu politika etkinleştirilirse profil geçici moda geçmeye zorlanır. Bu politika bir OS politikası olarak belirlenirse (ör. Windows'da GPO) sistemdeki tüm profiller için geçerli olur; Bulut politikası olarak belirlenirse yalnızca yönetilen hesapla oturum açılan bir profil için geçerli olur.
+
+      Bu modda, profil verileri disk üzerinde sadece kullanıcının oturumu süresince kalır. Tarayıcı geçmişi gibi özellikler, uzantılar ve uzantıların verilerinin yanı sıra çerezler ve web veritabanları gibi web verileri tarayıcı kapandıktan sonra saklanmaz. Ancak bu durum, kullanıcının verileri manuel olarak diske indirmesine, sayfaları kaydetmesine veya yazdırmasına engel olmaz.
+
+      Kullanıcı, senkronizasyonu etkinleştirmişse tüm bu veriler normal profillerde olduğu gibi kullanıcının senkronizasyon profilinde saklanır. Politika tarafından açıkça devre dışı bırakılmamışsa gizli mod da kullanılabilir.
+
+      Politika devre dışı olarak ayarlanırsa veya ayarlanmadan bırakılırsa oturum açıldığında normal profiller kullanılır.</translation>
 <translation id="8164246350636985940">Siteler için varsayılan davranış hiçbir içerik paketinde yok.
 
           Bu politika <ph name="PRODUCT_NAME" /> tarafından dahili kullanım içindir.</translation>
@@ -2130,6 +2201,17 @@ Bu politika ayarlanmadan bırakılırsa varsayılan profil yolu kullanılır ve 
 <translation id="8312129124898414409">Web sitelerinin anahtar oluşturma işlevini kullanmasına izin verilip verilmeyeceğini ayarlamanıza olanak tanır. Anahtar oluşturma işlevini kullanma izni ya tüm web siteleri için verilebilir ya da hepsi için reddedilebilir.
 
           Bu politika ayarlanmadan bırakılırsa, "BlockKeygen" kullanılır ve kullanıcı bu ayarı değiştirebilir.</translation>
+<translation id="8316806736175990584"><ph name="PRODUCT_NAME" /> ürününde varsayılan ana sayfa türünü yapılandırır ve kullanıcıların ana sayfa tercihlerini değiştirmesini engeller. Ana sayfa sizin belirttiğiniz bir URL'ye veya Yeni Sekme Sayfası'na ayarlanabilir.
+
+          Bu ayarı etkinleştirirseniz ana sayfa için her zaman Yeni Sekme Sayfası kullanılır ve ana sayfa URL konumu yoksayılır.
+
+          Bu ayarı devre dışı bırakırsanız kullanıcının ana sayfası (URL'si "chrome://newtab" olarak ayarlanmadığı sürece) hiçbir zaman Yeni Sekme Sayfası olmaz.
+
+          Bu ayarı etkinleştirir veya devre dışı bırakırsanız kullanıcılar <ph name="PRODUCT_NAME" /> ürününde ana sayfalarının türünü değiştiremezler.
+
+          Bu politika ayarlanmadan bırakılırsa kullanıcı istediği zaman kendi ana sayfası olarak yeni sekme sayfasını seçebilir.
+
+          Bu politika bir Active Directory alan adına katılmamış Windows örneklerinde kullanılamaz.</translation>
 <translation id="8329984337216493753">Bu politika sadece perakende modunda etkindir.
 
       DeviceIdleLogoutTimeout belirtildiğinde, bu politika uyarı kutusunun süresini tanımlar ve çıkış yapılmadan önce kullanıcıya bir geri sayım saati gösterir.

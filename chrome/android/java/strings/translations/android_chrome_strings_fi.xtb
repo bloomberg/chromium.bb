@@ -511,6 +511,7 @@ Jotkin verkkosivustot voivat vastata tähän pyyntöön esimerkiksi näyttämäl
 <translation id="7053983685419859001">Estä</translation>
 <translation id="7056999826593229648">Hidas yhteys havaittu</translation>
 <translation id="7057058088140140610">Google Paymentsia käyttävät luottokortit ja osoitteet</translation>
+<translation id="7062545763355031412">Hyväksy ja vaihda tiliä</translation>
 <translation id="7063006564040364415">Synkronointipalvelimeen ei saada yhteyttä.</translation>
 <translation id="7064851114919012435">Yhteystiedot</translation>
 <translation id="7074853159844403180"><ph name="SITE" /> haluaa muodostaa parin seuraavien laitteiden kanssa:</translation>
@@ -573,6 +574,7 @@ Google-tililläsi voi olla muita selaushistoriatietoja, kuten hakuja ja toiminta
 <translation id="7713873128508426081">Salli aina</translation>
 <translation id="7764225426217299476">Lisää osoite</translation>
 <translation id="7765158879357617694">Siirrä</translation>
+<translation id="7769602470925380267">Hyväksy ja kirjaudu ulos</translation>
 <translation id="7772032839648071052">Vahvista tunnuslause</translation>
 <translation id="7788788617745289808">Chrome tarvitsee kameran käyttöoikeuden voidakseen jakaa sen tämän sivuston kanssa.</translation>
 <translation id="7791543448312431591">Lisää</translation>
@@ -689,6 +691,7 @@ Hanki uudet käyttöoik. muodostam. verkkoyhteys ja toistamalla ladattu sisält�
 <translation id="9141510419986760385">Muutoksen jälkeen synkronointi käyttää tilin <ph name="FROM_ACCOUNT" /> sijaan tiliä <ph name="TO_ACCOUNT" />. Mitä nykyisille kirjanmerkeille, historiatiedoille, salasanoille ja muille asetuksille tehdään?</translation>
 <translation id="917685106653909562">Lähistöllä on Fyysisen webin sivuja.</translation>
 <translation id="9187199695613236444">Mobiililaitteille sopiva näkymä</translation>
+<translation id="9188680907066685419">Kirjaudu ulos hallinnoidulta tililtä</translation>
 <translation id="9192643434065497760">Ota Bluetooth käyttöön <ph name="BEGIN_LINK" />laitteen asetuksissa<ph name="END_LINK" />, jotta laiteparin muodostus onnistuu.</translation>
 <translation id="9198708126133947749">Laitteen tiedot korvataan tilin <ph name="TO_ACCOUNT" /> tiedoilla. Voit palauttaa nykyiset tiedot kirjautumalla takaisin tilille <ph name="FROM_ACCOUNT" />.</translation>
 <translation id="9206873250291191720">A</translation>

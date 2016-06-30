@@ -148,7 +148,9 @@
 <translation id="2748463065602559597">Ви переглядаєте безпечну сторінку Google Chrome.</translation>
 <translation id="2762000892062317888">щойно</translation>
 <translation id="2770465223704140727">Видалити зі списку</translation>
+<translation id="2777555524387840389">Залишилося <ph name="SECONDS" /> с</translation>
 <translation id="278029852808208386">Пристроїв Bluetooth не знайдено. <ph name="BEGIN_LINK" />Пошукайте ще раз<ph name="END_LINK" />.</translation>
+<translation id="2781151931089541271">Залишилась 1 с</translation>
 <translation id="2781389167600714117">Вибрати варіант доставки</translation>
 <translation id="2811892995384186721">Немає вашого пристрою? <ph name="BEGIN_LINK" />Перегляньте довідку<ph name="END_LINK" />.</translation>
 <translation id="2836148919159985482">Щоб вийти з повноекранного режиму, торкніться кнопки "Назад".</translation>
@@ -187,6 +189,7 @@
 <translation id="321773570071367578">Якщо ви забули парольну фразу або хочете змінити це налаштування, <ph name="BEGIN_LINK" />скиньте синхронізацію<ph name="END_LINK" /></translation>
 <translation id="3227137524299004712">Мікрофон</translation>
 <translation id="3232754137068452469">Веб-додаток</translation>
+<translation id="3236059992281584593">Залишилась 1 хв</translation>
 <translation id="3244271242291266297">ММ</translation>
 <translation id="3254409185687681395">Додати цю сторінку до закладок</translation>
 <translation id="326254929494722411">Ви ще не налаштували обліковий запис Google на цьому пристрої</translation>
@@ -301,6 +304,7 @@
 <translation id="4720023427747327413">Відкрити в <ph name="PRODUCT_NAME" /></translation>
 <translation id="473775607612524610">Оновити</translation>
 <translation id="4738836084190194332">Востаннє синхронізовано: <ph name="WHEN" /></translation>
+<translation id="4758311279753947758">Додати контактну інформацію</translation>
 <translation id="4759238208242260848">Завантаження</translation>
 <translation id="4773299976671772492">Зупинено</translation>
 <translation id="4797039098279997504">Торкніться, щоб повернутися на сторінку <ph name="URL_OF_THE_CURRENT_TAB" /></translation>
@@ -325,6 +329,7 @@
 <translation id="5063480226653192405">Використання</translation>
 <translation id="5087580092889165836">Додати картку</translation>
 <translation id="5100237604440890931">Згорнуто – натисніть, щоб розгорнути.</translation>
+<translation id="510275257476243843">Залишилась 1 година</translation>
 <translation id="5107381076085091558">Завантаження призупинено.</translation>
 <translation id="5118713593561876160">Інтереси</translation>
 <translation id="5127805178023152808">Синхронізацію вимкнено</translation>
@@ -408,6 +413,7 @@
 <translation id="5911030830365207728">Перекладач Google</translation>
 <translation id="5916664084637901428">Увімкнути</translation>
 <translation id="5939518447894949180">Скинути</translation>
+<translation id="5961742032223302715">Виберіть контактні дані</translation>
 <translation id="5968595432776860642">Відео "<ph name="VIDEO_TITLE" />" відтворюється</translation>
 <translation id="6010869025736512584">Отримання доступу до відеовходу</translation>
 <translation id="6012342843556706400">Chrome потрібен доступ до геоданих, щоб дозволити цьому сайту використовувати їх.</translation>
@@ -418,6 +424,7 @@
 <translation id="604996488070107836">Не вдалося завантажити файл <ph name="FILE_NAME" />. Сталася невідома помилка.</translation>
 <translation id="605721222689873409">РР</translation>
 <translation id="6075798973483050474">Змінити домашню сторінку</translation>
+<translation id="60923314841986378">Залишилося <ph name="HOURS" /> год</translation>
 <translation id="6108923351542677676">Виконується налаштування…</translation>
 <translation id="6112702117600201073">Оновлення сторінки</translation>
 <translation id="6127379762771434464">Веб-сайт видалено</translation>
@@ -504,7 +511,9 @@
 <translation id="7053983685419859001">Блокувати</translation>
 <translation id="7056999826593229648">Виявлено повільне з’єднання</translation>
 <translation id="7057058088140140610">Кредитні картки й адреси, додані в Google Payments</translation>
+<translation id="7062545763355031412">Прийняти та перейти в інший обліковий запис</translation>
 <translation id="7063006564040364415">Не вдалося з’єднатись із сервером синхронізації.</translation>
+<translation id="7064851114919012435">Контактна інформація</translation>
 <translation id="7074853159844403180">Сайт <ph name="SITE" /> хоче підключитися до:</translation>
 <translation id="7081639897063626814">Зберігати наявні дані окремо</translation>
 <translation id="7094922512924405309">Немає сторінок із сервісу "Інтернет навколо нас"</translation>
@@ -520,6 +529,7 @@
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" /> використовує ваші геодані, щоб показувати результати місцевого пошуку</translation>
 <translation id="7299441085833132046"><ph name="BEGIN_LINK" />Довідка<ph name="END_LINK" /></translation>
 <translation id="7299721129597238157">Видалити закладку</translation>
+<translation id="7327835590071894791">Ваша вкладка тепер у фоновому режимі.</translation>
 <translation id="7347770551817603360">Офлайн-вміст</translation>
 <translation id="7358452246665489050">Обчислення…</translation>
 <translation id="7363354739009474003">Відео "<ph name="VIDEO_TITLE" />" завантажується</translation>
@@ -564,12 +574,14 @@
 <translation id="7713873128508426081">Завжди дозволяти</translation>
 <translation id="7764225426217299476">Додати адресу</translation>
 <translation id="7765158879357617694">Перемістити</translation>
+<translation id="7769602470925380267">Прийняти та вийти</translation>
 <translation id="7772032839648071052">Підтвердити парольну фразу</translation>
 <translation id="7788788617745289808">Chrome потрібен доступ до камери, щоб дозволити цьому сайту використовувати її.</translation>
 <translation id="7791543448312431591">Додати</translation>
 <translation id="780301667611848630">Ні, дякую</translation>
 <translation id="7829298379596169484">Отримання доступу до аудіовходу</translation>
 <translation id="7837582000577464779">Під час обробки вашого замовлення сталася помилка. Перевірте свій рахунок і спробуйте ще раз.</translation>
+<translation id="7837721118676387834">Дозволити автоматичне відтворення відео з вимкненим звуком для певних сайтів.</translation>
 <translation id="7846076177841592234">Скасувати вибір</translation>
 <translation id="7851858861565204677">Інші пристрої</translation>
 <translation id="7876243839304621966">Видалити все</translation>
@@ -584,6 +596,7 @@
 <translation id="8007176423574883786">Вимкнено для цього пристрою</translation>
 <translation id="8026334261755873520">Очистити дані веб-перегляду</translation>
 <translation id="8035133914807600019">Нова папка…</translation>
+<translation id="8037750541064988519">Залишилося <ph name="DAYS" /> дн.</translation>
 <translation id="8063895661287329888">Не вдалося додати закладку.</translation>
 <translation id="8068648041423924542">Не вдалося вибрати сертифікат.</translation>
 <translation id="8069239273282989646">Після стиснення</translation>
@@ -596,6 +609,7 @@
 <translation id="8137558756159375272">Функція пошуку дотиком надсилає слово та поточну сторінку як додаткові дані в Пошук Google. Її можна вимкнути в <ph name="BEGIN_LINK" />налаштуваннях<ph name="END_LINK" />.</translation>
 <translation id="8168435359814927499">Вміст</translation>
 <translation id="8173098127580644436">весь період</translation>
+<translation id="8190358571722158785">Залишився 1 день</translation>
 <translation id="8200772114523450471">Поновити</translation>
 <translation id="8202097416529803614">Підсумок замовлення</translation>
 <translation id="8209050860603202033">Відкрити зображення</translation>
@@ -620,6 +634,7 @@
 <translation id="8518901949365209398">На цьому сайті використовується ненадійна конфігурація безпеки (підписи SHA-1), тому ваше з’єднання не конфіденційне.</translation>
 <translation id="8525306231823319788">На весь екран</translation>
 <translation id="854522910157234410">Відкрити цю сторінку</translation>
+<translation id="8559882854823529713">Читати в Chrome пізніше</translation>
 <translation id="8562452229998620586">Тут відображатимуться збережені паролі.</translation>
 <translation id="856481929701340285">Версія для комп’ютера</translation>
 <translation id="857943718398505171">Дозволено (рекомендується)</translation>
@@ -676,6 +691,7 @@
 <translation id="9141510419986760385">Ви переходите з облікового запису для синхронізації <ph name="FROM_ACCOUNT" /> у <ph name="TO_ACCOUNT" />. Що ви хочете зробити з наявними закладками, історією, паролями й іншими налаштуваннями?</translation>
 <translation id="917685106653909562">Сторінки поблизу в сервісі "Інтернет навколо нас"</translation>
 <translation id="9187199695613236444">Режим для мобільних телефонів</translation>
+<translation id="9188680907066685419">Вийти з керованого облікового запису</translation>
 <translation id="9192643434065497760">Щоб підключити, увімкніть Bluetooth у <ph name="BEGIN_LINK" />налаштуваннях пристрою<ph name="END_LINK" />.</translation>
 <translation id="9198708126133947749">Дані цього пристрою буде замінено даними з облікового запису <ph name="TO_ACCOUNT" />. Щоб відновити наявні дані, поверніться в обліковий запис <ph name="FROM_ACCOUNT" />.</translation>
 <translation id="9206873250291191720">A</translation>
@@ -684,6 +700,7 @@
 <translation id="938850635132480979">Помилка: <ph name="ERROR_CODE" /></translation>
 <translation id="945632385593298557">Доступ до мікрофона</translation>
 <translation id="969096075394517431">Змінити мови</translation>
+<translation id="970715775301869095">Залишилося <ph name="MINUTES" /> хв</translation>
 <translation id="981121421437150478">Офлайн</translation>
 <translation id="983192555821071799">Закрити всі вкладки</translation>
 </translationbundle>

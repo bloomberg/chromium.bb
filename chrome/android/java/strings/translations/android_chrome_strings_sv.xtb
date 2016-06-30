@@ -148,7 +148,9 @@ Du kan styra Physical Web i inställningarna för Chrome
 <translation id="2748463065602559597">Du tittar på en säker Google Chrome-sida.</translation>
 <translation id="2762000892062317888">nyss</translation>
 <translation id="2770465223704140727">Ta bort från listan</translation>
+<translation id="2777555524387840389"><ph name="SECONDS" /> sekunder kvar</translation>
 <translation id="278029852808208386">Inga Bluetooth-enheter hittades. <ph name="BEGIN_LINK" />Gör om sökningen<ph name="END_LINK" />.</translation>
+<translation id="2781151931089541271">1 sekund kvar</translation>
 <translation id="2781389167600714117">Välj frakt</translation>
 <translation id="2811892995384186721">Visas inte enheten? <ph name="BEGIN_LINK" />Få hjälp<ph name="END_LINK" /></translation>
 <translation id="2836148919159985482">Tryck på bakåtknappen för att lämna helskärmsläget.</translation>
@@ -187,6 +189,7 @@ Du kan styra Physical Web i inställningarna för Chrome
 <translation id="321773570071367578">Om du har glömt lösenfrasen eller vill ändra inställningen <ph name="BEGIN_LINK" />återställer du synkroniseringen<ph name="END_LINK" /></translation>
 <translation id="3227137524299004712">Mikrofon</translation>
 <translation id="3232754137068452469">Webbapp</translation>
+<translation id="3236059992281584593">1 minut kvar</translation>
 <translation id="3244271242291266297">MM</translation>
 <translation id="3254409185687681395">Bokmärk sidan</translation>
 <translation id="326254929494722411">Inget Google-konto har konfigurerats på den här enheten ännu</translation>
@@ -301,6 +304,7 @@ Om du vill ändra söktermen trycker du länge för att välja. Om du vill förf
 <translation id="4720023427747327413">Öppna i <ph name="PRODUCT_NAME" /></translation>
 <translation id="473775607612524610">Uppdatera</translation>
 <translation id="4738836084190194332">Synkroniserades senast: <ph name="WHEN" /></translation>
+<translation id="4758311279753947758">Lägg till kontaktuppgifter</translation>
 <translation id="4759238208242260848">Nedladdningar</translation>
 <translation id="4773299976671772492">Har stoppats</translation>
 <translation id="4797039098279997504">Tryck här om du vill återgå till <ph name="URL_OF_THE_CURRENT_TAB" /></translation>
@@ -325,6 +329,7 @@ Om du vill ändra söktermen trycker du länge för att välja. Om du vill förf
 <translation id="5063480226653192405">Användning</translation>
 <translation id="5087580092889165836">Lägg till kort</translation>
 <translation id="5100237604440890931">Vyn har komprimerats. Expandera den genom att klicka.</translation>
+<translation id="510275257476243843">1 timme kvar</translation>
 <translation id="5107381076085091558">Nedladdning pausad.</translation>
 <translation id="5118713593561876160">Intressen</translation>
 <translation id="5127805178023152808">Synkronisering är av</translation>
@@ -408,6 +413,7 @@ Du är dock inte osynlig. Trots inkognitoläget kan din arbetsgivare, din intern
 <translation id="5911030830365207728">Google Översätt</translation>
 <translation id="5916664084637901428">På</translation>
 <translation id="5939518447894949180">Återställ</translation>
+<translation id="5961742032223302715">Välj kontaktuppgifter</translation>
 <translation id="5968595432776860642">Spelar upp <ph name="VIDEO_TITLE" /></translation>
 <translation id="6010869025736512584">Får åtkomst till videoindata</translation>
 <translation id="6012342843556706400">Chrome behöver tillgång till platsinformation för att kunna dela den på den här webbplatsen.</translation>
@@ -418,6 +424,7 @@ Du är dock inte osynlig. Trots inkognitoläget kan din arbetsgivare, din intern
 <translation id="604996488070107836">Det gick inte att ladda ned <ph name="FILE_NAME" /> på grund av ett okänt fel.</translation>
 <translation id="605721222689873409">ÅÅ</translation>
 <translation id="6075798973483050474">Redigera startsidan</translation>
+<translation id="60923314841986378"><ph name="HOURS" /> timmar kvar</translation>
 <translation id="6108923351542677676">Konfigurationen pågår ...</translation>
 <translation id="6112702117600201073">Uppdaterar sidan</translation>
 <translation id="6127379762771434464">Objektet har tagits bort</translation>
@@ -504,7 +511,9 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="7053983685419859001">Blockera</translation>
 <translation id="7056999826593229648">En långsam anslutning upptäcktes</translation>
 <translation id="7057058088140140610">Kreditkort och adresser som används med Google Payments</translation>
+<translation id="7062545763355031412">Godkänn och byt konto</translation>
 <translation id="7063006564040364415">Det gick inte att ansluta till synkroniseringsservern.</translation>
+<translation id="7064851114919012435">Kontaktuppgifter</translation>
 <translation id="7074853159844403180"><ph name="SITE" /> vill koppla till:</translation>
 <translation id="7081639897063626814">Håll befintlig data separat</translation>
 <translation id="7094922512924405309">Inga Physical Web-sidor hittades i närheten</translation>
@@ -520,6 +529,7 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" /> använder din platsinformation för att visa lokala sökresultat</translation>
 <translation id="7299441085833132046"><ph name="BEGIN_LINK" />Hjälp<ph name="END_LINK" /></translation>
 <translation id="7299721129597238157">Ta bort bokmärke</translation>
+<translation id="7327835590071894791">Fliken är nu i bakgrunden.</translation>
 <translation id="7347770551817603360">Offlineinnehåll</translation>
 <translation id="7358452246665489050">Beräknar …</translation>
 <translation id="7363354739009474003">Läser in <ph name="VIDEO_TITLE" /></translation>
@@ -564,12 +574,14 @@ Det kan finnas andra former av webbhistorik i Google-kontot på <ph name="BEGIN_
 <translation id="7713873128508426081">Tillåt alltid</translation>
 <translation id="7764225426217299476">Lägg till adress</translation>
 <translation id="7765158879357617694">Flytta</translation>
+<translation id="7769602470925380267">Godkänn och logga ut</translation>
 <translation id="7772032839648071052">Bekräfta lösenfras</translation>
 <translation id="7788788617745289808">Chrome behöver tillgång till kameran för att kunna dela den på den här webbplatsen.</translation>
 <translation id="7791543448312431591">Lägg till</translation>
 <translation id="780301667611848630">Nej tack</translation>
 <translation id="7829298379596169484">Får åtkomst till ljudindata</translation>
 <translation id="7837582000577464779">Det uppstod ett problem när din beställning behandlades. Kontrollera kontot och försök igen.</translation>
+<translation id="7837721118676387834">Tillåt automatisk uppspelning av videor utan ljud för en specifik webbplats.</translation>
 <translation id="7846076177841592234">Rensa val</translation>
 <translation id="7851858861565204677">Andra enheter</translation>
 <translation id="7876243839304621966">Ta bort alla</translation>
@@ -584,6 +596,7 @@ Det kan finnas andra former av webbhistorik i Google-kontot på <ph name="BEGIN_
 <translation id="8007176423574883786">Inaktiverad för den här enheten</translation>
 <translation id="8026334261755873520">Rensa webbinformation</translation>
 <translation id="8035133914807600019">Ny mapp …</translation>
+<translation id="8037750541064988519"><ph name="DAYS" /> dagar kvar</translation>
 <translation id="8063895661287329888">Det gick inte att lägga till bokmärket.</translation>
 <translation id="8068648041423924542">Det går inte att välja certifikat.</translation>
 <translation id="8069239273282989646">Efter komprimering</translation>
@@ -596,6 +609,7 @@ Det kan finnas andra former av webbhistorik i Google-kontot på <ph name="BEGIN_
 <translation id="8137558756159375272">Funktionen Tryck för att söka skickar det markerade ordet till Google Sök med den aktuella sidan som kontext. Du kan stänga av funktionen i <ph name="BEGIN_LINK" />Inställningar<ph name="END_LINK" />.</translation>
 <translation id="8168435359814927499">Innehåll</translation>
 <translation id="8173098127580644436">tidens början</translation>
+<translation id="8190358571722158785">1 dag kvar</translation>
 <translation id="8200772114523450471">Återuppta</translation>
 <translation id="8202097416529803614">Beställningsöversikt</translation>
 <translation id="8209050860603202033">Öppna bild</translation>
@@ -620,6 +634,7 @@ Det kan finnas andra former av webbhistorik i Google-kontot på <ph name="BEGIN_
 <translation id="8518901949365209398">Den här webbplatsen använder en svag säkerhetskonfiguration (signaturer med SHA-1), så anslutningen kanske inte är privat.</translation>
 <translation id="8525306231823319788">Helskärm</translation>
 <translation id="854522910157234410">Öppna sidan</translation>
+<translation id="8559882854823529713">Läs det senare i Chrome</translation>
 <translation id="8562452229998620586">Sparade lösenord visas här.</translation>
 <translation id="856481929701340285">Begär skrivbordsversion</translation>
 <translation id="857943718398505171">Tillåten (rekommenderas)</translation>
@@ -676,6 +691,7 @@ Du hämtar nya licenser genom att ansluta till internet och spela upp det nedlad
 <translation id="9141510419986760385">Du håller på att byta synkroniseringskonto från <ph name="FROM_ACCOUNT" /> till <ph name="TO_ACCOUNT" />. Vad vill du ska hända med bokmärken, historik, lösenord och andra inställningar?</translation>
 <translation id="917685106653909562">Physical Web-sidor i närheten</translation>
 <translation id="9187199695613236444">Mobilanpassad vy</translation>
+<translation id="9188680907066685419">Logga ut från hanterat konto</translation>
 <translation id="9192643434065497760">Aktivera Bluetooth i <ph name="BEGIN_LINK" />enhetsinställningarna<ph name="END_LINK" /> om du vill tillåta koppling.</translation>
 <translation id="9198708126133947749">Ersätt enhetens data med data från <ph name="TO_ACCOUNT" />. Du kan hämta befintlig data genom att byta tillbaka till <ph name="FROM_ACCOUNT" />.</translation>
 <translation id="9206873250291191720">A</translation>
@@ -684,6 +700,7 @@ Du hämtar nya licenser genom att ansluta till internet och spela upp det nedlad
 <translation id="938850635132480979">Fel: <ph name="ERROR_CODE" /></translation>
 <translation id="945632385593298557">Tillgång till din mikrofon</translation>
 <translation id="969096075394517431">Ändra språk</translation>
+<translation id="970715775301869095"><ph name="MINUTES" /> minuter kvar</translation>
 <translation id="981121421437150478">Offline</translation>
 <translation id="983192555821071799">Stäng alla flikar</translation>
 </translationbundle>

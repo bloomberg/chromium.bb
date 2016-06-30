@@ -77,7 +77,6 @@
 <translation id="1791429645902722292">Google Smart Lock</translation>
 <translation id="1821930232296380041">Недопустимый запрос или неверные параметры запроса</translation>
 <translation id="1871208020102129563">Выбрано использование фиксированных прокси-серверов, а не URL PAC-скрипта.</translation>
-<translation id="1871625979288021266">Блокировка опасного порта</translation>
 <translation id="1883255238294161206">Свернуть список</translation>
 <translation id="1898423065542865115">Фильтры</translation>
 <translation id="1911837502049945214">Ваш сертификат отклонен сайтом <ph name="HOST_NAME" /> или просрочен.</translation>
@@ -128,7 +127,6 @@
 <translation id="2386255080630008482">Сертификат сервера отозван.</translation>
 <translation id="2392959068659972793">Показывать правила, значения которых не заданы</translation>
 <translation id="2396249848217231973">&amp;Отменить удаление</translation>
-<translation id="2400837204278978822">Неизвестный тип файла.</translation>
 <translation id="2413528052993050574">Не удалось подтвердить, что это сервер <ph name="DOMAIN" />. Его сертификат безопасности может быть отозван. Возможно, сервер настроен неправильно или кто-то пытается перехватить ваши данные.</translation>
 <translation id="2455981314101692989">На этой веб-странице отключено автоматическое заполнение формы.</translation>
 <translation id="2467694685043708798"><ph name="BEGIN_LINK" />Выполните диагностику сети<ph name="END_LINK" /></translation>
@@ -171,7 +169,6 @@
 <translation id="2855922900409897335">Подтвердите данные карты <ph name="CREDIT_CARD" /></translation>
 <translation id="2889159643044928134">Не обновлять</translation>
 <translation id="2896499918916051536">Плагин не поддерживается.</translation>
-<translation id="2897655920961181107">Запрашиваемый порт оказался опасен и был заблокирован.</translation>
 <translation id="2909946352844186028">Похоже, вы подключились к другой сети.</translation>
 <translation id="2915500479781995473">Не удалось подтвердить, что это сервер <ph name="DOMAIN" />. Срок действия его сертификата безопасности истек. Возможно, сервер настроен неправильно или кто-то пытается перехватить ваши данные. Обратите внимание, что на компьютере установлено время <ph name="CURRENT_TIME" />. Если оно неправильное, измените его и обновите страницу.</translation>
 <translation id="2922350208395188000">Не удается проверить сертификат сервера.</translation>
@@ -346,7 +343,6 @@
 <translation id="4807049035289105102">Перейти на сайт <ph name="SITE" /> невозможно, так как его идентификационные данные зашифрованы, и Google Chrome не может их обработать. Это могло произойти из-за ошибки сети или атаки на сайт. Скорее всего, он заработает через некоторое время.</translation>
 <translation id="4813512666221746211">Ошибка сети</translation>
 <translation id="4816492930507672669">По размеру страницы</translation>
-<translation id="4841640898320458950">Опасный порт заблокирован.</translation>
 <translation id="4850886885716139402">Посмотреть</translation>
 <translation id="4880827082731008257">Искать в истории</translation>
 <translation id="4923417429809017348">Эта страница была автоматически переведена с неизвестного языка на <ph name="LANGUAGE_LANGUAGE" /></translation>
@@ -447,7 +443,6 @@
 <translation id="6165508094623778733">Подробнее...</translation>
 <translation id="6203231073485539293">Проверьте подключение к Интернету</translation>
 <translation id="6218753634732582820">Удалить адрес из Chromium?</translation>
-<translation id="6232139169545176020">Запрашиваемая схема URI не поддерживается.</translation>
 <translation id="6259156558325130047">&amp;Повторить изменение порядка</translation>
 <translation id="6263376278284652872">Закладки <ph name="DOMAIN" /></translation>
 <translation id="6264485186158353794">Назад к безопасности</translation>
@@ -470,14 +465,11 @@
 <translation id="6489534406876378309">Начать загрузку сведений об ошибках</translation>
 <translation id="6518133107902771759">Подтвердить</translation>
 <translation id="6529602333819889595">&amp;Повторить удаление</translation>
-<translation id="6533019874004191247">Неподдерживаемый URL.</translation>
 <translation id="6550675742724504774">Параметры</translation>
 <translation id="6596325263575161958">Параметры шифрования</translation>
-<translation id="6610562986279010327">Не удается открыть URL</translation>
 <translation id="662080504995468778">Остаться</translation>
 <translation id="6628463337424475685">Поиск <ph name="ENGINE" /></translation>
 <translation id="6634865548447745291">Перейти на сайт <ph name="SITE" /> невозможно, так как <ph name="BEGIN_LINK" />его сертификат отозван<ph name="END_LINK" />. Это могло произойти из-за ошибки сети или атаки на сайт. Скорее всего, он заработает через некоторое время.</translation>
-<translation id="6637478299472506933">Ошибка при скачивании</translation>
 <translation id="6644283850729428850">Правило устарело.</translation>
 <translation id="6646897916597483132">Введите четырехзначный CVC-код, указанный на лицевой стороне карты.</translation>
 <translation id="6656103420185847513">Редактировать папку</translation>
@@ -583,7 +575,6 @@
 <translation id="780301667611848630">Спасибо, не надо</translation>
 <translation id="7805768142964895445">Состояние</translation>
 <translation id="7813600968533626083">Удалить подсказку из Chrome?</translation>
-<translation id="7825436071901023927">Опасный порт <ph name="SITE" /></translation>
 <translation id="785549533363645510">Тем не менее ваши действия будут видны системному администратору и интернет-провайдеру, а также доступны веб-сайтам, которые вы посещаете.</translation>
 <translation id="7887683347370398519">Проверьте CVC-код и повторите попытку</translation>
 <translation id="7894616681410591072">Администратор (<ph name="NAME" />) должен разрешить вам просмотр этой страницы.</translation>
@@ -660,7 +651,6 @@
 <translation id="8876793034577346603">Не удалось выполнить анализ конфигурации сети.</translation>
 <translation id="8891727572606052622">Недопустимый режим работы прокси-сервера.</translation>
 <translation id="889901481107108152">К сожалению, данное действие невозможно выполнить на этой платформе.</translation>
-<translation id="890308499387283275">Не удается скачать этот файл.</translation>
 <translation id="8903921497873541725">Увеличить</translation>
 <translation id="8931333241327730545">Сохранить эту карту в аккаунте Google?</translation>
 <translation id="8932102934695377596">Часы отстают</translation>

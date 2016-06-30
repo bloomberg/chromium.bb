@@ -289,7 +289,6 @@
 <translation id="1415990189994829608"><ph name="EXTENSION_NAME" /> (ID tiện ích "<ph name="EXTENSION_ID" />") không được cho phép trong loại phiên này.</translation>
 <translation id="1416836038590872660">EAP-MD5</translation>
 <translation id="1420684932347524586">Rất tiếc! Không thể tạo khóa cá nhân RSA ngẫu nhiên.</translation>
-<translation id="1421115928968836111">Thao tác này sẽ hủy cấp phép giấy phép Flash Player cho nội dung được bảo vệ.</translation>
 <translation id="1425734930786274278">Các cookie sau đã bị chặn (các cookie của bên thứ ba hiện đang bị chặn mà không có ngoại lệ):</translation>
 <translation id="1426410128494586442">Có</translation>
 <translation id="1427049173708736891">Mở khóa <ph name="DEVICE_TYPE" /> khi điện thoại Android của bạn được mở khóa và ở gần đó mà không cần nhập mật khẩu của bạn.</translation>
@@ -2246,7 +2245,6 @@ Từ <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="4098354747657067197">Trang web lừa đảo phía trước</translation>
 <translation id="4099585076575543605">{COUNT,plural, =0{không có}=1{1}other{#}}</translation>
 <translation id="409980434320521454">Đồng bộ hóa không thành công</translation>
-<translation id="4100079375692032441">Đơn giản hóa trang trên xem trước bản in</translation>
 <translation id="4101878899871018532">Trình quản lý mật khẩu sẽ không đề xuất lưu thông tin đăng nhập được sử dụng để đồng bộ hóa.</translation>
 <translation id="4104163789986725820">X&amp;uất...</translation>
 <translation id="4105563239298244027">Nhận 1 TB miễn phí với Google Drive</translation>
@@ -2374,7 +2372,6 @@ Tất cả người dùng phải đăng xuất để tiếp tục.</translation>
 <translation id="4297391862525234515">Thu nhỏ khi nhấp chuột đối với giá</translation>
 <translation id="42981349822642051">Mở rộng</translation>
 <translation id="4298972503445160211">Bàn phím tiếng Đan Mạch</translation>
-<translation id="4299273509016391946">Chọn hộp kiểm đơn giản hóa trang trên hộp thoại xem trước bản in</translation>
 <translation id="4299729908419173967">Tiếng Braxin</translation>
 <translation id="430714521864499800">Cho phép triển khai thử nghiệm lệnh "Kiểm soát bộ nhớ cache: cũ trong khi xác thực lại". Thao tác này cho phép máy chủ chỉ định một số tài nguyên có thể được xác thực lại trong nền để cải thiện độ trễ.</translation>
 <translation id="4307281933914537745">Tìm hiểu thêm về khôi phục hệ thống</translation>
@@ -2451,7 +2448,6 @@ Nhấn phím bất kỳ để tiếp tục khám phá.</translation>
 <translation id="4434147949468540706">Hiệu ứng kết thúc cuộn</translation>
 <translation id="443464694732789311">Tiếp tục</translation>
 <translation id="4436456292809448986">Thêm vào máy tính để bàn...</translation>
-<translation id="4439244508678316632">Giấy phép nội dung</translation>
 <translation id="4439318412377770121">Bạn có muốn đăng ký <ph name="DEVICE_NAME" /> với Google Cloud Devices không?</translation>
 <translation id="4441124369922430666">Bạn có muốn tự động khởi động ứng dụng này khi máy bật không?</translation>
 <translation id="444134486829715816">Mở rộng...</translation>
@@ -3479,7 +3475,6 @@ Nhấn phím bất kỳ để tiếp tục khám phá.</translation>
   Số mũ công khai (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bit):
   <ph name="EXPONENT_HEX_DUMP" /></translation>
 <translation id="59174027418879706">Đã bật</translation>
-<translation id="592068147111860043">Chỉ định plugin PPAPI sẽ được chạy bên trong chính sách hộp cát khóa Win32k.</translation>
 <translation id="5925147183566400388">Con trỏ tới Báo cáo Thực hành Chứng nhận</translation>
 <translation id="5930693802084567591">Dữ liệu của bạn đã được mã hóa với mật khẩu Google của bạn kể từ <ph name="TIME" />. Vui lòng nhập mật khẩu đó dưới đây.</translation>
 <translation id="5931146425219109062">Đọc và thay đổi tất cả dữ liệu của bạn trên các trang web bạn truy cập</translation>
@@ -3498,7 +3493,6 @@ Nhấn phím bất kỳ để tiếp tục khám phá.</translation>
 <translation id="5956585768868398362">Đây có phải là trang tìm kiếm bạn muốn không?</translation>
 <translation id="5957613098218939406">Tùy chọn khác</translation>
 <translation id="5958529069007801266">Người dùng được giám sát</translation>
-<translation id="5958994127112619898">Đơn giản hóa trang</translation>
 <translation id="5959471481388474538">Không có mạng</translation>
 <translation id="5963026469094486319">Tải chủ đề</translation>
 <translation id="5963453369025043595"><ph name="NUM_HANDLES" /> (tối đa <ph name="NUM_KILOBYTES_LIVE" />)</translation>

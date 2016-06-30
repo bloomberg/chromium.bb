@@ -77,7 +77,6 @@
 <translation id="1791429645902722292">Google Smart Lock</translation>
 <translation id="1821930232296380041">要求或要求參數無效</translation>
 <translation id="1871208020102129563">Proxy 設定為使用固定的 Proxy 伺服器，而非 .pac 指令碼網址。</translation>
-<translation id="1871625979288021266">已封鎖不安全的通訊埠</translation>
 <translation id="1883255238294161206">收合清單</translation>
 <translation id="1898423065542865115">篩選</translation>
 <translation id="1911837502049945214"><ph name="HOST_NAME" /> 不接受您的登入憑證，或是您的登入憑證可能已過期。</translation>
@@ -128,7 +127,6 @@
 <translation id="2386255080630008482">伺服器憑證已遭撤銷。</translation>
 <translation id="2392959068659972793">顯示尚未設定任何值的政策</translation>
 <translation id="2396249848217231973">復原刪除(&amp;U)</translation>
-<translation id="2400837204278978822">檔案類型不明。</translation>
 <translation id="2413528052993050574">伺服器無法證明其屬於 <ph name="DOMAIN" /> 網域；其安全性憑證已遭撤銷。這可能是因為設定錯誤，或有攻擊者攔截您的連線所致。</translation>
 <translation id="2455981314101692989">這個網頁已停用這個表單的自動填入功能。</translation>
 <translation id="2467694685043708798"><ph name="BEGIN_LINK" />執行網路診斷<ph name="END_LINK" /></translation>
@@ -171,7 +169,6 @@
 <translation id="2855922900409897335">驗證您的 <ph name="CREDIT_CARD" /></translation>
 <translation id="2889159643044928134">不要重新載入</translation>
 <translation id="2896499918916051536">系統不支援這個外掛程式。</translation>
-<translation id="2897655920961181107">您所要求的通訊埠不安全，已遭到封鎖。</translation>
 <translation id="2909946352844186028">系統偵測到網路變更。</translation>
 <translation id="2915500479781995473">伺服器無法證明其屬於 <ph name="DOMAIN" /> 網域；其安全性憑證已過期。這可能是因為設定錯誤，或有攻擊者攔截您的連線所致。您電腦時鐘目前設定的時間是 <ph name="CURRENT_TIME" />，是否正確？如果設定有誤，請更正您系統的時鐘，再重新整理這個頁面。</translation>
 <translation id="2922350208395188000">無法檢查伺服器憑證。</translation>
@@ -347,7 +344,6 @@
 <translation id="4807049035289105102">您目前無法造訪 <ph name="SITE" />，因為這個網站傳送的憑證是亂碼，Google Chrome 無法處理。網路錯誤和攻擊行為通常是暫時性的，因此這個網頁可能稍後就會正常運作。</translation>
 <translation id="4813512666221746211">網路錯誤</translation>
 <translation id="4816492930507672669">依頁面大小自動調整</translation>
-<translation id="4841640898320458950">不安全的通訊埠已遭到系統封鎖。</translation>
 <translation id="4850886885716139402">檢視</translation>
 <translation id="4880827082731008257">搜尋紀錄</translation>
 <translation id="4923417429809017348">系統已將此網頁從不明語言翻譯成<ph name="LANGUAGE_LANGUAGE" /></translation>
@@ -448,7 +444,6 @@
 <translation id="6165508094623778733">瞭解詳情</translation>
 <translation id="6203231073485539293">檢查網際網路連線</translation>
 <translation id="6218753634732582820">要從 Chromium 中移除地址嗎？</translation>
-<translation id="6232139169545176020">要求的 URI 協定不受支援。</translation>
 <translation id="6259156558325130047">重做重新排序(&amp;R)</translation>
 <translation id="6263376278284652872"><ph name="DOMAIN" /> 書籤</translation>
 <translation id="6264485186158353794">返回安全性瀏覽</translation>
@@ -471,14 +466,11 @@
 <translation id="6489534406876378309">開始上傳當機報告</translation>
 <translation id="6518133107902771759">確認</translation>
 <translation id="6529602333819889595">重做刪除(&amp;R)</translation>
-<translation id="6533019874004191247">網址不受支援。</translation>
 <translation id="6550675742724504774">選項</translation>
 <translation id="6596325263575161958">加密選項</translation>
-<translation id="6610562986279010327">Chrome 無法開啟這個網址</translation>
 <translation id="662080504995468778">不離開</translation>
 <translation id="6628463337424475685"><ph name="ENGINE" /> 搜尋</translation>
 <translation id="6634865548447745291">您目前無法造訪 <ph name="SITE" />，因為<ph name="BEGIN_LINK" />這個網站的憑證已遭撤銷<ph name="END_LINK" />。網路錯誤和攻擊行為通常是暫時性的，所以這個網頁可能稍後就能正常使用。</translation>
-<translation id="6637478299472506933">下載失敗</translation>
 <translation id="6644283850729428850">這項政策已遭取代。</translation>
 <translation id="6646897916597483132">請輸入信用卡正面的四位數信用卡安全碼</translation>
 <translation id="6656103420185847513">編輯資料夾</translation>
@@ -584,7 +576,6 @@
 <translation id="780301667611848630">不用了，謝謝</translation>
 <translation id="7805768142964895445">狀態</translation>
 <translation id="7813600968533626083">要從 Chrome 中移除建議嗎？</translation>
-<translation id="7825436071901023927">通訊埠 <ph name="SITE" /> 不安全</translation>
 <translation id="785549533363645510">不過，這並不意味著您可以完全隱形。使用無痕模式時，您的雇主和網際網路服務供應商仍然可以追蹤您的瀏覽紀錄，您所造訪的網站也可能會記錄您的瀏覽行為。</translation>
 <translation id="7887683347370398519">請檢查您的 CVC，然後再試一次</translation>
 <translation id="7894616681410591072">注意：您需要取得 <ph name="NAME" /> 的授權才能存取這個網頁。</translation>
@@ -661,7 +652,6 @@
 <translation id="8876793034577346603">無法解析網路設定。</translation>
 <translation id="8891727572606052622">Proxy 模式無效。</translation>
 <translation id="889901481107108152">很抱歉，這項實驗功能無法支援您的平台。</translation>
-<translation id="890308499387283275">Chrome 無法下載這個檔案。</translation>
 <translation id="8903921497873541725">放大</translation>
 <translation id="8931333241327730545">您要將這張卡片的資訊儲存到您的 Google 帳戶嗎？</translation>
 <translation id="8932102934695377596">您的時鐘時間過慢</translation>

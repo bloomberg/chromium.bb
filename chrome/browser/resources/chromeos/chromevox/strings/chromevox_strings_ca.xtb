@@ -17,9 +17,11 @@
 <translation id="1155043339247954670">No hi ha cap element de llista més.</translation>
 <translation id="1157782847298808853">Ajuda del teclat</translation>
 <translation id="1157843803349774103"><ph name="VALUE" />, <ph name="NAME" />, quadre combinat</translation>
+<translation id="1161762950103988776">Desplaçament</translation>
 <translation id="1167230103353892028"><ph name="NAME" />, element de menú, amb submenú</translation>
 <translation id="1177863135347784049">Personalitzat</translation>
 <translation id="1188858454923323853">complementari</translation>
+<translation id="1201402288615127009">Següent</translation>
 <translation id="1206619573307042055">marquee</translation>
 <translation id="1213216066620407844">ChromeVox: dóna veu a Chrome</translation>
 <translation id="1229276918471378188">Salt anterior</translation>
@@ -121,7 +123,6 @@
 <translation id="2553108862507765288">error gramatical</translation>
 <translation id="257674075312929031">Grup</translation>
 <translation id="2582407057977008361">A part</translation>
-<translation id="2589102159832527089">Aquesta pàgina conté el text extret automàticament del fitxer PDF &lt;b&gt;<ph name="FILENAME" />&lt;/b&gt;. &lt;a href="<ph name="URL" />"&gt;Feu clic aquí per veure l'original.&lt;/a&gt;</translation>
 <translation id="2606210917827248971">amb {COUNT,plural, =1{# element}other{# elements}}</translation>
 <translation id="2614981083756825552">Disseny de MathML</translation>
 <translation id="2626530649491650971">s'hi pot fer clic</translation>
@@ -509,7 +510,6 @@
 <translation id="6129953537138746214">Espai</translation>
 <translation id="6142308968191113180">Capçalera 4</translation>
 <translation id="6169420925157477918">Imatge amb descripció llarga</translation>
-<translation id="6172087735260766220">No es pot accedir a text accessible des d'un PDF protegit contra còpia.</translation>
 <translation id="6186305613600865047">Vés a la part inferior de la pàgina.</translation>
 <translation id="6193330012414963395">a. m./p. m.</translation>
 <translation id="622484624075952240">Avall</translation>
@@ -548,6 +548,7 @@
 <translation id="6659594942844771486">Pestanya</translation>
 <translation id="667999046851023355">Document</translation>
 <translation id="6697092096875747123">Quadre combinat anterior</translation>
+<translation id="6710213216561001401">Anterior</translation>
 <translation id="6714813999819678458">Capçalera del nivell 2 anterior</translation>
 <translation id="6716505898850596801">Tecles de modificació</translation>
 <translation id="671916444866103745">No hi ha cap punt de referència ARIA més.</translation>
@@ -665,6 +666,7 @@
 <translation id="8049189770492311300">Temporitzador</translation>
 <translation id="8065607967589909823">La selecció és</translation>
 <translation id="8066678206530322333">Bàner</translation>
+<translation id="8076492880354921740">Pestanyes</translation>
 <translation id="8110647606445335195">No hi ha cap punt de referència ARIA.</translation>
 <translation id="8153880621934657047">No sou dins la taula.</translation>
 <translation id="817440585505441544">{COUNT,plural, =1{ratlla baixa}other{# ratlles baixes}}</translation>
@@ -688,6 +690,7 @@
 <translation id="842922884199979200">No hi ha cap capçalera més del nivell 3.</translation>
 <translation id="8430049249787218991">mnubr</translation>
 <translation id="844681116543532394">No hi ha cap casella de selecció anterior.</translation>
+<translation id="8446884382197647889">Més informació</translation>
 <translation id="8455868257606149352">Màx.: <ph name="X" /></translation>
 <translation id="84575901236241018">té una tecla d'accés, <ph name="KEY" /></translation>
 <translation id="8476508772960940536">visió general de la finestra</translation>
@@ -758,8 +761,10 @@
 <translation id="9178973770513562274">Utilitzeu les tecles de fletxa amunt o avall per navegar, o bé escriviu per cercar.</translation>
 <translation id="9192904702577636854">Marquesina</translation>
 <translation id="9212322457209634662">No hi ha cap secció més.</translation>
+<translation id="923331726185079994">S'ha actualitzat ChromeVox</translation>
 <translation id="930275611743429116">Inicia o finalitza la selecció.</translation>
 <translation id="948171205378458592">Disminueix la velocitat de la veu.</translation>
 <translation id="962913030769097253">Capçalera del nivell 1 següent</translation>
 <translation id="973955474346881951">Activa/desactiva el mode atractiu</translation>
+<translation id="976849232629612000">No hi ha elements.</translation>
 </translationbundle>

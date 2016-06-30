@@ -6,6 +6,15 @@
 <translation id="1019101089073227242">Ustaw katalog danych użytkownika</translation>
 <translation id="1022361784792428773">Identyfikatory rozszerzeń, których nie może instalować użytkownik (wartość * oznacza wszystkie)</translation>
 <translation id="102492767056134033">Ustaw domyślny stan klawiatury ekranowej na ekranie logowania</translation>
+<translation id="1027000705181149370">Określa, czy pliki cookie uwierzytelniania ustawione przez dostawcę tożsamości SAML podczas logowania powinny zostać przesłane do profilu użytkownika.
+
+      Gdy uwierzytelnianie użytkownika odbywa się przez dostawcę tożsamości SAML podczas logowania, pliki cookie ustawione przez dostawcę tożsamości są najpierw zapisywane w profilu tymczasowym. Mogą one zostać następnie przesłane do profilu użytkownika, by przenieść stan uwierzytelniania.
+
+      Jeśli ta zasada jest włączona, pliki cookie ustawione przez dostawcę tożsamości są przesyłane do profilu użytkownika za każdym razem, gdy jest on uwierzytelniany przez dostawcę tożsamości SAML podczas logowania.
+
+      Jeśli zasada jest wyłączona lub nieskonfigurowana, pliki cookie ustawione przez dostawcę tożsamości są przesyłane do profilu użytkownika tylko podczas jego pierwszego logowania na urządzeniu.
+
+      Ta zasada dotyczy tylko tych użytkowników, których domena odpowiada domenie rejestracji urządzenia. W przypadku wszystkich pozostałych użytkowników pliki cookie ustawione przez dostawcę tożsamości są przesyłane do profilu użytkownika tylko podczas jego pierwszego logowania na urządzeniu.</translation>
 <translation id="1040446814317236570">Włącz wycinanie elementów adresów URL PAC (na potrzeby https://)</translation>
 <translation id="1044878202534415707">Raportuj statystki sprzętu, np. użycie procesora i pamięci RAM.
 
@@ -190,6 +199,8 @@
 
       Jeśli utrzymanie zgodności z wadliwie działającym serwerem jest konieczne, można wybrać „tls1.1”. To jednak tylko rozwiązanie tymczasowe – serwer trzeba jak najszybciej naprawić.</translation>
 <translation id="1861037019115362154">Pozwala określić listę wtyczek wyłączonych w <ph name="PRODUCT_NAME" /> i uniemożliwia użytkownikom zmianę tego ustawienia. Możesz użyć symboli wieloznacznych „*” i „?”, by dopasować sekwencje dowolnych znaków. Symbol „*” odpowiada dowolnej liczbie znaków, natomiast „?” oznacza jeden opcjonalny znak (czyli jeden lub zero znaków). Znakiem zmiany znaczenia jest „\”, dlatego by wprowadzić faktyczny znak „*”, „?” lub „\”, musisz umieścić przed nim znak „\”. Jeśli włączysz to ustawienie, wtyczki wymienione na liście nigdy nie będą używane w <ph name="PRODUCT_NAME" />. Wtyczki są oznaczone jako wyłączone na stronie „about:plugins”, a użytkownicy nie mogą ich włączyć. Pamiętaj, że ta zasada jest zastępowana przez zasady EnabledPlugins i DisabledPluginsExceptions. Jeśli zasada nie zostanie ustawiona, użytkownik będzie mógł korzystać ze wszystkich wtyczek zainstalowanych w systemie oprócz przestarzałych, niebezpiecznych i niezgodnych wbudowanych wtyczek.</translation>
+<translation id="1864269674877167562">Jeśli ta zasada jest pusta lub nieskonfigurowana, <ph name="PRODUCT_OS_NAME" /> nie będzie wyświetlać opcji autouzupełniania podczas logowania użytkownika.
+      Jeśli zasada jest ustawiona na nazwę domeny, <ph name="PRODUCT_OS_NAME" /> będzie wyświetlać opcję autouzupełniania podczas logowania użytkownika, umożliwiając mu wpisanie tylko jego nazwy, bez konieczności podawania rozszerzenia nazwy domeny. Użytkownik będzie mógł nadpisać rozszerzenie nazwy domeny.</translation>
 <translation id="1865417998205858223">Uprawnienia klucza</translation>
 <translation id="186719019195685253">Działanie, jakie ma zostać podjęte po osiągnięciu opóźnienia bezczynności przy zasilaniu prądem zmiennym</translation>
 <translation id="187819629719252111">Umożliwia dostęp do plików lokalnych na komputerze, zezwalając <ph name="PRODUCT_NAME" /> na wyświetlanie okien dialogowych wyboru pliku. Po włączeniu tego ustawienia użytkownicy mogą w normalny sposób otwierać okna dialogowe wyboru pliku. Jeśli wyłączysz ustawienie, w momencie wykonania przez użytkownika czynności powodującej wywołanie okna dialogowego wyboru pliku (np. zaimportowanie zakładek, przesłanie plików, zapisanie linków itp.) zostanie wyświetlony komunikat, a działanie przeglądarki będzie kontynuowane, tak jakby użytkownik kliknął przycisk Anuluj w oknie dialogowym wyboru pliku. Jeśli ustawienie jest nieskonfigurowane, użytkownicy mogą w normalny sposób otwierać okna dialogowe wyboru pliku.</translation>
@@ -298,6 +309,13 @@
 <translation id="2309390639296060546">Domyślne ustawienie geolokalizacji</translation>
 <translation id="2312134445771258233">Umożliwia skonfigurowanie stron wczytywanych po uruchomieniu. Zawartość listy „Adresy URL otwierane po uruchomieniu” jest ignorowana, chyba że wybierzesz opcję „Otwórz adresy URL z listy” w ustawieniu „Działanie po uruchomieniu”.</translation>
 <translation id="2337466621458842053">Umożliwia skonfigurowanie listy wzorcowych URL-i określających witryny, w których mogą być wyświetlane obrazy. Jeśli ta zasada nie zostanie skonfigurowana, dla wszystkich witryn będzie używana globalna wartość domyślna pochodząca z zasady „DefaultImagesSettings” (jeśli została skonfigurowana) lub z osobistej konfiguracji użytkownika.</translation>
+<translation id="2359612025446382967">Jeśli ta zasada ma wartość Fałsz, <ph name="PRODUCT_OS_NAME" /> wyłącza Bluetooth i użytkownik nie może włączyć go ponownie.
+
+      Jeśli zasada ma wartość Prawda lub nie ma wartości, użytkownik może swobodnie włączać i wyłączać Bluetooth.
+
+      Jeśli ustawisz wartość tej zasady, użytkownik nie może jej zmienić ani zastąpić.
+
+      Aby zmiany zostały zastosowane, po włączeniu Bluetootha musisz ponownie uruchomić urządzenie (po wyłączeniu Bluetootha nie jest to konieczne).</translation>
 <translation id="2366415278352956652">Włącza przesyłanie</translation>
 <translation id="2371309782685318247">Pozwala określić w milisekundach okres wysyłania zapytań dotyczących zasad użytkownika do usługi zarządzania urządzeniem. 
 
@@ -525,6 +543,32 @@
           Jeśli włączysz to ustawienie, <ph name="PRODUCT_NAME" /> zignoruje wszystkie opcje związane z serwerem proxy podane w wierszu poleceń.
 
           Jeśli ta zasada pozostanie nieustawiona, użytkownicy będą mogli samodzielnie wybrać ustawienia serwera proxy.</translation>
+<translation id="2818551149761607847">Konfigurowanie obrazu awatara użytkownika.
+
+      Ta zasada umożliwia skonfigurowanie obrazu awatara przedstawiającego użytkownika na ekranie logowania. Zasadę konfiguruje się przez podanie adresu URL, z którego <ph name="PRODUCT_OS_NAME" /> może pobrać obraz awatara, oraz skrótu kryptograficznego służącego do weryfikacji integralności pobranego pliku. Obraz musi mieć format JPEG i nie może być większy niż 512 KB. URL musi być dostępny bez uwierzytelniania.
+
+      Obraz awatara jest pobierany i przechowywany w pamięci podręcznej. Będzie pobierany ponownie po każdej zmianie adresu lub skrótu.
+
+      Zasada musi być podana w postaci ciągu w formacie JSON zawierającego URL i skrót, zgodnego z tym schematem:
+      {
+        "type": "object",
+        "properties": {
+          "url": {
+            "description": "URL, z którego można pobrać obraz awatara.",
+            "type": "string"
+          },
+          "hash": {
+            "description": "Skrót SHA-256 obrazu awatara.",
+            "type": "string"
+          }
+        }
+      }
+
+      Jeśli ta zasada jest skonfigurowana, <ph name="PRODUCT_OS_NAME" /> będzie pobierać obraz awatara i używać go.
+
+      Jeśli skonfigurujesz tę zasadę, użytkownicy nie będą mogli jej zmienić ani zastąpić.
+
+      Jeśli zasada pozostanie nieskonfigurowana, użytkownicy będą mogli wybierać obrazy awatara przedstawiające ich na ekranie logowania.</translation>
 <translation id="2824715612115726353">Włącz tryb incognito</translation>
 <translation id="2844404652289407061">Pozwala korzystać z funkcji „Dotknij, by wyszukać” w widoku treści w <ph name="PRODUCT_NAME" />.
 
@@ -1554,10 +1598,31 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
 <translation id="7040229947030068419">Przykładowa wartość:</translation>
 <translation id="7049373494483449255">Pozwala <ph name="PRODUCT_NAME" /> przesyłać dokumenty do <ph name="CLOUD_PRINT_NAME" /> w celu wydrukowania. UWAGA: to ustawienie wpływa tylko na obsługę <ph name="CLOUD_PRINT_NAME" /> w <ph name="PRODUCT_NAME" />. Nie uniemożliwia użytkownikom drukowania za pośrednictwem innych witryn. W przypadku włączenia lub nieskonfigurowania tego ustawienia, użytkownicy będą mogli drukować w <ph name="CLOUD_PRINT_NAME" /> z okna drukowania w <ph name="PRODUCT_NAME" />. Jeśli to ustawienie zostanie wyłączone, użytkownicy nie będą mogli drukować za pomocą <ph name="CLOUD_PRINT_NAME" /> w oknie drukowania przeglądarki <ph name="PRODUCT_NAME" />.</translation>
 <translation id="7053678646221257043">Po włączeniu tej zasady wymuszany jest import zakładek z bieżącej przeglądarki domyślnej. Włączenie zasady ma również wpływ na opcje w oknie dialogowym importowania. W przypadku jej wyłączenia zakładki nie są importowane. Jeśli zasada nie jest skonfigurowana, użytkownik może zostać zapytany, czy zakładki mają zostać zaimportowane lub operacja ta zostanie wykonana automatycznie.</translation>
+<translation id="7055358889740598917">Konfiguruje URL domyślnej strony startowej <ph name="PRODUCT_NAME" /> i uniemożliwia użytkownikom jego zmianę.
+
+          Stronę startową otwiera się przyciskiem strony startowej. Strony otwierane po uruchomieniu są określone w zasadach RestoreOnStartup.
+
+          Jako stronę startową można ustawić podany tu URL albo stronę nowej karty. Wybranie strony nowej karty powoduje, że ta zasada nie jest stosowana.
+
+          Jeśli ta zasada jest włączona, użytkownicy nie mogą zmienić adresu URL strony startowej <ph name="PRODUCT_NAME" />, ale mogą wybrać stronę nowej karty jako swoją stronę startową.
+
+          Jeśli ta zasada jest nieskonfigurowana, użytkownik może wybrać stronę startową, o ile nie jest też skonfigurowana zasada HomepageIsNewTabPage.
+
+          Zasada nie jest dostępna w systemach Windows
+          niepodłączonych do domeny Active Directory.</translation>
 <translation id="7063895219334505671">Zezwalaj na wyskakujące okienka w tych witrynach</translation>
 <translation id="706669471845501145">Zezwalaj witrynom na pokazywanie powiadomień na pulpicie</translation>
 <translation id="7079519252486108041">Blokuj wyskakujące okienka w tych witrynach</translation>
 <translation id="7091198954851103976">Zawsze uruchamiaj wtyczki wymagające autoryzacji</translation>
+<translation id="7106631983877564505">Powoduje włączenie blokady w przypadku bezczynności lub zawieszenia działania urządzenia z systemem operacyjnym <ph name="PRODUCT_OS_NAME" />.
+
+      Jeśli włączysz to ustawienie, użytkownik w celu odblokowania uśpionego urządzenia będzie musiał podać hasło.
+
+      Po wyłączeniu ustawienia wybudzenie nie wymaga podawania hasła.
+
+      Jeśli ustawienie jest włączone lub wyłączone, użytkownicy nie mogą go zmienić ani zastąpić.
+
+      Jeśli zasada nie zostanie skonfigurowana, użytkownik może wybrać, czy chce odblokowywać urządzenie przy użyciu hasła.</translation>
 <translation id="7115494316187648452">Określa, czy proces <ph name="PRODUCT_NAME" /> ma się uruchamiać po zalogowaniu w systemie operacyjnym i działać po zamknięciu ostatniego okna przeglądarki, umożliwiając zachowanie aktywności aplikacji działających w tle oraz bieżącej sesji przeglądania, w tym wszelkich plików cookie sesji. Proces działający w tle reprezentuje ikona na pasku systemowym, gdzie zawsze można go zamknąć.
 
       Jeśli włączysz tę zasadę, tryb działania w tle będzie dostępny, a użytkownik nie będzie mógł zmienić tej opcji w ustawieniach przeglądarki.
@@ -1893,6 +1958,13 @@ Więcej opcji i szczegółowych przykładów znajdziesz na:
           Gdy ją ustawisz, użytkownicy nie mogą jej zmienić ani zastąpić.
 
           Jeśli zasada pozostanie nieustawiona, tryb wysokiego kontrastu jest początkowo wyłączony, ale użytkownik może go w każdej chwili włączyć.</translation>
+<translation id="815061180603915310">Włączenie tej zasady powoduje wymuszenie przełączenia profilu w tryb tymczasowy. Jeśli zasada jest określona jako zasada systemu operacyjnego (np. obiekt zasad grupy w systemie Windows), zostanie zastosowana do każdego profilu w systemie. Ustawienie jej jako zasady w chmurze powoduje zastosowanie jej tylko do profilu zalogowanego przez konto zarządzane.
+
+      W tym trybie dane profilu są zachowywane na dysku tylko na czas sesji użytkownika. Funkcje takie jak historia przeglądarki, rozszerzenia i ich dane, dane internetowe (na przykład pliki cookie) oraz internetowe bazy danych nie zostają zachowane po zamknięciu przeglądarki. Użytkownik może jednak ręcznie pobrać dane na dysk, zapisać strony lub je wydrukować.
+
+      Jeśli użytkownik włączył synchronizację, te wszystkie dane są zachowywane w jego profilu synchronizacji podobnie jak w zwykłych profilach. Dostępny jest też tryb incognito, o ile nie został wyłączony przez zasadę.
+
+      Jeśli zasada jest wyłączona lub nie została ustawiona, logowanie prowadzi do zwykłych profili.</translation>
 <translation id="8164246350636985940">Domyślne działanie w przypadku witryn, których nie ma w żadnym pakiecie treści.
 
           Ta zasada jest przeznaczona do użytku wewnętrznego w <ph name="PRODUCT_NAME" />.</translation>
@@ -1959,6 +2031,18 @@ Więcej opcji i szczegółowych przykładów znajdziesz na:
 <translation id="8312129124898414409">Umożliwia określenie, czy w witrynach mogą być generowane klucze. Generowanie kluczy może być dozwolone lub zabronione we wszystkich witrynach.
 
           Jeśli ta zasada nie zostanie skonfigurowana, będzie używane ustawienie „BlockKeygen”, a użytkownik będzie mógł je zmienić.</translation>
+<translation id="8316806736175990584">Konfiguruje typ domyślnej strony startowej w <ph name="PRODUCT_NAME" /> i uniemożliwia zmienianie preferencji strony startowej przez użytkowników. Dla strony startowej można ustawić wybrany URL lub stronę nowej karty.
+
+          Włączenie tego ustawienia powoduje, że jako strona startowa zawsze stosowana jest strona nowej karty, a URL strony startowej jest ignorowany.
+
+          Po wyłączeniu ustawienia strona nowej karty nigdy nie będzie się ustawiała jako strona startowa użytkownika, chyba że jako URL zostanie podana wartość „chrome://newtab”.
+
+          Jeśli włączysz lub wyłączysz to ustawienie, użytkownicy nie będą mogli zmienić typu strony startowej w <ph name="PRODUCT_NAME" />.
+
+          W przypadku pozostawienia zasady nieskonfigurowanej użytkownik może wybrać, czy jako strona nowej karty ma się wyświetlać wskazana przez niego strona startowa.
+
+          Ta zasada nie jest dostępna w systemach Windows
+          niepodłączonych do domeny Active Directory.</translation>
 <translation id="8329984337216493753">Ta zasada jest aktywna tylko w trybie sklepu.
 
       W przypadku określenia zasady DeviceIdleLogoutTimeout ta zasada określa czas wyświetlania okna ostrzegawczego z licznikiem czasu, które jest wyświetlane przed wylogowaniem użytkownika.

@@ -6,6 +6,15 @@
 <translation id="1019101089073227242">Iestata lietotāja datu direktoriju</translation>
 <translation id="1022361784792428773">Paplašinājumu ID numuri, kurus lietotājam nav atļauts instalēt (vai *, lai iestatītu visus)</translation>
 <translation id="102492767056134033">Ekrāna tastatūras noklusējuma stāvokļa iestatīšana pieteikšanās ekrānā</translation>
+<translation id="1027000705181149370">Norāda, vai pieteikšanās laikā SAML identitātes nodrošinātāja iestatītie autentifikācijas sīkfaili ir jāpārsūta uz lietotāja profilu.
+
+      Ja lietotājs pieteikšanās laikā veic autentifikāciju, izmantojot SAML identitātes nodrošinātāju, identitātes nodrošinātāja iestatītie sīkfaili vispirms tiek rakstīti pagaidu profilā. Šos sīkfailus var pārsūtīt uz lietotāja profilu, lai pārnestu autentifikācijas statusu.
+
+      Ja šai politikai ir iestatīta vērtība “Patiesa”, identitātes nodrošinātāja iestatītie sīkfaili tiek pārsūtīti uz lietotāja profilu katru reizi, kad lietotājs pieteikšanās laikā veic autentifikāciju, izmantojot SAML identitātes nodrošinātāju.
+
+      Ja šai politikai ir iestatīta vērtība “Nepatiesa” vai nav iestatīta nekāda vērtība, identitātes nodrošinātāja iestatītie sīkfaili tiek pārsūtīti uz lietotāja profilu tikai pirmajā reizē, kad lietotājs piesakās kādā ierīcē.
+
+      Šī politika attiecas tikai uz tiem lietotājiem, kuru domēns ir tāds pats kā ierīces reģistrācijas domēns. Visiem citiem lietotājiem identitātes nodrošinātāja iestatītie sīkfaili tiek pārsūtīti uz lietotāja profilu tikai pirmajā reizē, kad lietotājs piesakās kādā ierīcē.</translation>
 <translation id="1040446814317236570">Iespējot PAC URL noņemšanu (protokolam https://)</translation>
 <translation id="1044878202534415707">Tiek ziņota aparatūras statistika, piemēram, centrālā procesora/RAM lietojums.
 
@@ -198,6 +207,8 @@
       Ņemiet vērā, ka šo politiku var ignorēt, iestatot politikas EnabledPlugins un DisabledPluginsExceptions.
 
       Ja šī politika nav iestatīta, lietotājs var izmantot jebkuru datorā instalēto spraudni, izņemot nesaderīgus, novecojušus vai bīstamus spraudņus.</translation>
+<translation id="1864269674877167562">Ja kā šīs politikas vērtība tiek iestatīta tukša virkne vai ja politika nav konfigurēta, operētājsistēmā <ph name="PRODUCT_OS_NAME" /> lietotāja pierakstīšanās plūsmā netiks rādīta automātiskās pabeigšanas opcija.
+      Ja kā šīs politikas vērtība tiek iestatīta virkne ar domēna nosaukumu, operētājsistēmā <ph name="PRODUCT_OS_NAME" /> lietotāja pierakstīšanās plūsmā tiks parādīta automātiskās pabeigšanas opcija, ļaujot lietotājam ievadīt tikai lietotājvārdu bez domēna nosaukuma paplašinājuma. Lietotājs varēs pārrakstīt šo domēna nosaukuma paplašinājumu.</translation>
 <translation id="1865417998205858223">Atslēgu atļaujas</translation>
 <translation id="186719019195685253">Darbība, kas ir jāveic, kad ir aizritējis laiks līdz dīkstāvei un tiek izmantota maiņstrāva</translation>
 <translation id="187819629719252111">Ļauj piekļūt datora lokālajiem failiem, ļaujot produktam <ph name="PRODUCT_NAME" /> rādīt failu atlases dialoglodziņus.
@@ -326,6 +337,13 @@
 <translation id="2337466621458842053">Ļauj iestatīt URL rakstu sarakstu, kurā ir norādītas vietnes, kurām ir atļauts attēlot attēlus.
 
           Ja šī politika nav iestatīta, visām vietnēm tiks izmantota globālā noklusējuma vērtība no politikas DefaultImagesSetting (ja tā ir iestatīta) vai pretējā gadījumā no lietotāja personīgās konfigurācijas.</translation>
+<translation id="2359612025446382967">Ja šai politikai ir iestatīta vērtība “Nepatiesa”, <ph name="PRODUCT_OS_NAME" /> atspējos Bluetooth un lietotājs nevarēs to iespējot.
+
+      Ja šai politikai ir iestatīta vērtība “Patiesa” vai tā nav iestatīta, lietotājs varēs pēc izvēles iespējot vai atspējot Bluetooth.
+
+      Ja šī politika ir iestatīta, lietotājs to nevar mainīt vai ignorēt.
+
+      Pēc Bluetooth iespējošanas ierīce ir atkārtoti jāpalaiž, lai izmaiņas stātos spēkā (atspējojot Bluetooth, ierīce nav atkārtoti jāpalaiž).</translation>
 <translation id="2366415278352956652">Iespējo apraidi</translation>
 <translation id="2371309782685318247">Norāda laika periodu milisekundēs, kurā ierīču pārvaldības pakalpojumam tiek pieprasīta lietotāja politikas informācija.
 
@@ -560,6 +578,32 @@
           Ja šis iestatījums ir iespējots, <ph name="PRODUCT_NAME" /> ignorē visas ar starpniekserveri saistītās opcijas, kas tiek norādītas komandrindā.
 
           Ja šīs politikas nav iestatītas, lietotāji varēs izvēlēties savus starpniekserveru iestatījumus.</translation>
+<translation id="2818551149761607847">Lietotāja iemiesojuma attēla konfigurēšana.
+
+      Šī politika ļauj konfigurēt iemiesojuma attēlu, kas pieteikšanās ekrānā tiks rādīts konkrētam lietotājam. Politika tiek iestatīta, norādot vietrādi URL, no kura operētājsistēma <ph name="PRODUCT_OS_NAME" /> var lejupielādēt iemiesojuma attēlu un kriptogrāfisko jaucējalgoritmu, kas tiek izmantots lejupielādes integritātes pārbaudei. Attēlam ir jābūt JPEG formātā, un tā lielums nedrīkst pārsniegt 512 KB. Vietrādim URL ir jābūt pieejamam bez autentifikācijas.
+
+      Iemiesojuma attēls tiks lejupielādēts un saglabāts kešatmiņā. Ikreiz, kad tiks mainīts vietrādis URL vai jaucējalgoritms, attēls tiks atkārtoti ielādēts.
+
+      Politika ir jānorāda kā virkne, kurā izteikts vietrādis URL un jaucējalgoritms JSON formātā un kura atbilst šādai shēmai:
+      {
+        "type": "object",
+        "properties": {
+          "url": {
+            "description": "Vietrādis URL, no kura var lejupielādēt iemiesojuma attēlu.",
+            "type": "string"
+          },
+          "hash": {
+            "description": "iemiesojuma attēla jaucējalgoritms SHA-256.",
+            "type": "string"
+          }
+        }
+      }
+
+      Ja šī politika ir iestatīta, operētājsistēma <ph name="PRODUCT_OS_NAME" /> lejupielādēs un izmantos iemiesojuma attēlu.
+
+      Ja iestatīsiet šo politiku, lietotāji nevarēs mainīt vai ignorēt attēlu.
+
+      Ja šī politika netiks iestatīta, lietotājs varēs izvēlēties savu iemiesojuma attēlu, ko rādīt pieteikšanās ekrānā.</translation>
 <translation id="2824715612115726353">Iespējo inkognito režīmu</translation>
 <translation id="2844404652289407061">Izmantojot šo politiku, pārlūka <ph name="PRODUCT_NAME" /> satura skatā var iespējot funkciju “Meklēšana pieskaroties”.
 
@@ -1695,10 +1739,31 @@
       Ja tā ir atspējota, grāmatzīmes netiek importētas.
 
       Ja tā nav iestatīta, vai nu lietotājam var tikt vaicāts, vai importēt, vai arī importēšana var notikt automātiski.</translation>
+<translation id="7055358889740598917">Konfigurē produktā <ph name="PRODUCT_NAME" /> izmantoto noklusējuma sākumlapas URL un neļauj lietotājiem to mainīt.
+
+          Sākumlapa ir lapa, kas tiek atvērta, noklikšķinot uz pogas Sākums. Uz lapām, kuras tiek atvērtas, sākot darbu, attiecas “RestoreOnStartup” politikas.
+
+          Sākumlapas veids var būt iestatīts kā URL, ko norādāt šeit, vai kā jaunas cilnes lapa. Ja atlasāt jaunas cilnes lapu, šī politika nav spēkā.
+
+          Ja iespējojat šo iestatījumu, lietotāji nevar mainīt produkta <ph name="PRODUCT_NAME" /> sākumlapas URL, tomēr kā sākumlapu var izvēlēties jaunas cilnes lapu.
+
+          Ja neiestatīsiet ne šo politiku, ne arī politiku “HomepageIsNewTabPage”, lietotājs pats varēs izvēlēties sākumlapu.
+
+          Šī politika nav pieejama Windows datoros, kas nav pievienoti
+          Active Directory domēnam.</translation>
 <translation id="7063895219334505671">Atļauj uznirstošos logus šajās vietnēs</translation>
 <translation id="706669471845501145">Atļaut vietnēm rādīt paziņojumus darbvirsmā</translation>
 <translation id="7079519252486108041">Bloķēt uznirstošos logus šajās vietnēs</translation>
 <translation id="7091198954851103976">Vienmēr izpilda spraudņus, kuriem nepieciešama autorizācija</translation>
+<translation id="7106631983877564505">Blokatora iespējošana, ja <ph name="PRODUCT_OS_NAME" /> ierīces ir neaktīvas vai to darbība tiek apturēta.
+
+      Ja šis iestatījums ir iespējots, lietotājiem būs jāievada parole, lai atbloķētu ierīci no miega režīma.
+
+      Ja šis iestatījums ir atspējots, lietotājiem nebūs jāievada parole, lai atbloķētu ierīci no miega režīma.
+
+      Ja šis iestatījums ir iespējots vai atspējots, lietotāji to nevar mainīt vai ignorēt.
+
+      Ja šī politika nav iestatīta, lietotājs var izvēlēties, vai ierīces atbloķēšanai tiek prasīta parole.</translation>
 <translation id="7115494316187648452">Šī politika tiek izmantota, lai noteiktu, vai <ph name="PRODUCT_NAME" /> process tiek sākts līdz ar pieteikšanos operētājsistēmā un vai tas tiek turpināts, līdz tiek aizvērts pēdējais pārlūka logs, ļaujot fona lietotnēm un pašreizējai pārlūkošanas sesijai un jebkādiem sesijas sīkfailiem palikt aktīviem. Fona process tiek rādīts kā ikona sistēmas teknē, kur to jebkurā brīdī var pārtraukt.
 
       Ja šai politikai ir iestatīta vērtība Patiesa, fona režīms ir iespējots un lietotājs nevar to kontrolēt pārlūka iestatījumos.
@@ -2059,6 +2124,13 @@
           Ja iestatāt šo politiku, lietotāji nevar to mainīt vai ignorēt.
 
           Ja šī politika nav iestatīta, augsta kontrasta režīms sākotnēji ir atspējots, taču lietotājs var jebkurā brīdī to iespējot.</translation>
+<translation id="815061180603915310">Ja šī politika ir iespējota, profilam tiek veikta piespiedu pārslēgšana uz īslaicīgo režīmu. Ja šī politika ir norādīta kā OS politika (piemēram, GPO operētājsistēmā Windows), tā tiks lietota visiem sistēmā esošajiem profiliem. Ja politika ir iestatīta kā mākoņa politika, tā tiks lietota tikai profilam, kurā ir veikta pierakstīšanās, izmantojot pārvaldītu kontu.
+
+      Šajā režīmā profila dati tiek uzglabāti diskā tikai lietotāja sesijas laikā. Tādas funkcijas kā pārlūkprogrammas vēsture, paplašinājumi un to dati, kā arī tādi tīmekļa dati kā sīkfaili un tīmekļa datu bāzes netiek saglabāti pēc pārlūkprogrammas aizvēršanas. Tomēr lietotājs joprojām var manuāli lejupielādēt jebkādus datus diskā, saglabāt lapas un drukāt tās.
+
+      Ja lietotājs ir iespējojis sinhronizāciju, visi šie dati tiek saglabāti lietotāja sinhronizācijas profilā tieši tāpat kā parastos profilos. Inkognito režīms arī ir pieejams, ja nav atspējots saskaņā ar politiku.
+
+      Ja politika ir iestatīta kā atspējota vai nav iestatīta, pierakstīšanās tiek veikta parastajos profilos.</translation>
 <translation id="8164246350636985940">Noklusējuma darbība vietnēm, kas nav iekļautas nevienā satura pakotnē.
 
           Šī politika ir paredzēta tikai <ph name="PRODUCT_NAME" /> iekšējai lietošanai.</translation>
@@ -2129,6 +2201,18 @@
 <translation id="8312129124898414409">Ļauj iestatīt, vai vietnēs ir atļauts izmantot atslēgu ģenerēšanu. Atslēgu ģenerēšanas izmantošana var tikt atļauta vai noraidīta visām vietnēm.
 
           Ja šī politika nav iestatīta, tiks lietota politika “BlockKeygen” un lietotājs to varēs mainīt.</translation>
+<translation id="8316806736175990584">Konfigurē noklusējuma sākumlapas veidu produktā <ph name="PRODUCT_NAME" /> un neļauj lietotājiem mainīt sākumlapas preferences. Par sākumlapu var tikt iestatīts konkrēts URL vai jaunas cilnes lapa.
+
+          Ja šis iestatījums ir iespējots, par sākumlapu vienmēr tiek izmantota jaunas cilnes lapa un tiek ignorēta sākumlapas URL atrašanās vieta.
+
+          Ja šis iestatījums ir atspējots, par lietotāja sākumlapu nekad netiek izmantota jaunas cilnes lapa, izņemot gadījumus, kad par tās URL ir iestatīta vērtība chrome://newtab.
+
+          Ja šis iestatījums ir iespējots vai atspējots, lietotāji nevar mainīt savu sākumlapas veidu produktā <ph name="PRODUCT_NAME" />.
+
+          Ja šī politika nav iestatīta, lietotājs var izvēlēties, vai jaunas cilnes lapa ir sākumlapa.
+
+          Šī politika nav pieejama Windows datoros, kas nav pievienoti
+          Active Directory domēnam.</translation>
 <translation id="8329984337216493753">Šī politika darbojas tikai mazumtirdzniecības režīmā.
 
       Ja politika DeviceIdleLogoutTimeout ir norādīta, tā definē brīdinājuma lodziņa ilgumu ar atpakaļskaitīšanas taimeri, kas tiek rādīts lietotājam pirms atteikšanās izpildes.

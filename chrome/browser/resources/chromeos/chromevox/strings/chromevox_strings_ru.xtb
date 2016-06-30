@@ -21,6 +21,7 @@
 <translation id="1167230103353892028">Пункт меню "<ph name="NAME" />", есть подменю</translation>
 <translation id="1177863135347784049">Персонализированные</translation>
 <translation id="1188858454923323853">дополнительно</translation>
+<translation id="1201402288615127009">Далее</translation>
 <translation id="1206619573307042055">marquee</translation>
 <translation id="1213216066620407844">ChromeVox – голосовой интерфейс для Chrome</translation>
 <translation id="1229276918471378188">Предыдущий переход</translation>
@@ -122,7 +123,6 @@
 <translation id="2553108862507765288">grammatical mistake</translation>
 <translation id="257674075312929031">Группа.</translation>
 <translation id="2582407057977008361">Боковой блок.</translation>
-<translation id="2589102159832527089">На странице содержится текст, извлеченный из PDF-файла &lt;b&gt;<ph name="FILENAME" />&lt;/b&gt;. &lt;a href="<ph name="URL" />"&gt;Открыть оригинал&lt;/a&gt;</translation>
 <translation id="2606210917827248971">из {COUNT,plural, =1{# пункта}one{# пункта}few{# пунктов}many{# пунктов}other{# пункта}}</translation>
 <translation id="2614981083756825552">Схема MathML.</translation>
 <translation id="2626530649491650971">clickable</translation>
@@ -510,7 +510,6 @@
 <translation id="6129953537138746214">Пробел</translation>
 <translation id="6142308968191113180">Заголовок четвертого уровня</translation>
 <translation id="6169420925157477918">Изображение с подробным описанием</translation>
-<translation id="6172087735260766220">Невозможно получить доступ к озвучиваемому тексту PDF-документа, защищенного от копирования.</translation>
 <translation id="6186305613600865047">Перейти в конец страницы</translation>
 <translation id="6193330012414963395">AM/PM</translation>
 <translation id="622484624075952240">Вниз</translation>
@@ -549,6 +548,7 @@
 <translation id="6659594942844771486">Вкладка</translation>
 <translation id="667999046851023355">Документ</translation>
 <translation id="6697092096875747123">Перейти к предыдущему полю со списком</translation>
+<translation id="6710213216561001401">Назад</translation>
 <translation id="6714813999819678458">Перейти к предыдущему заголовку второго уровня</translation>
 <translation id="6716505898850596801">Клавиши-модификаторы</translation>
 <translation id="671916444866103745">Следующего ориентира ARIA нет.</translation>
@@ -690,6 +690,7 @@
 <translation id="842922884199979200">Следующего заголовка третьего уровня нет.</translation>
 <translation id="8430049249787218991">mnubr</translation>
 <translation id="844681116543532394">Предыдущего флажка нет.</translation>
+<translation id="8446884382197647889">Подробнее...</translation>
 <translation id="8455868257606149352">Максимум <ph name="X" />.</translation>
 <translation id="84575901236241018">имеет ключ доступа <ph name="KEY" />.</translation>
 <translation id="8476508772960940536">режим обзора</translation>

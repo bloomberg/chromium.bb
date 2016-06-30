@@ -6,6 +6,15 @@
 <translation id="1019101089073227242">Nastaviť adresár používateľských údajov</translation>
 <translation id="1022361784792428773">ID rozšírení, ktorých inštalácia by mala byť používateľovi zakázaná (alebo hodnota * pre všetky)</translation>
 <translation id="102492767056134033">Nastavuje na prihlasovacej obrazovke predvolený stav klávesnice na obrazovke</translation>
+<translation id="1027000705181149370">Určuje, či sa súbory cookie na overenie totožnosti nastavené poskytovateľom identity SAML počas prihlásenia majú preniesť do profilu používateľa.
+
+      Ak overenie totožnosti používateľa počas prihlásenia prebehne prostredníctvom poskytovateľa identity SAML, súbory cookie nastavené poskytovateľom identity sa najskôr zapíšu do dočasného profilu. Tieto súbory cookie môžu byť prenesené do profilu používateľa a použiť sa v ďalšom procese overenia totožnosti.
+
+      Ak je toto pravidlo nastavené na hodnotu True, súbory cookie nastavené poskytovateľom identity sa prenesú do profilu používateľa vždy v priebehu overenia identity prostredníctvom poskytovateľa identity SAML počas prihlásenia.
+
+      Ak je toto pravidlo nastavené na hodnotu False alebo nie je nakonfigurované, súbory cookie nastavené poskytovateľom identity sa prenesú do profilu používateľa iba počas prvého prihlásenia používateľa na zariadení.
+
+      Toto pravidlo má vplyv iba na používateľov, ktorých doména sa zhoduje s doménou registrácie zariadenia. Pre všetkých ostatných používateľov platí, že súbory cookie nastavené poskytovateľom identity sa prenesú do profilu používateľa iba počas prvého prihlásenia používateľa na zariadení.</translation>
 <translation id="1040446814317236570">Aktivovať odstraňovanie častí z webových adries pred odoslaním do skriptov PAC (pre adresy https://)</translation>
 <translation id="1044878202534415707">Nahlasovanie štatistík hardvéru, napríklad využitia CPU/RAM.
       Ak je pravidlo nastavené na možnosť False, štatistiky nebudú hlásené.
@@ -189,6 +198,8 @@ Ak je toto nastavenie zakázané alebo nie je nakonfigurované, nebudú môcť p
       Toto pravidlo je možné nahradiť pravidlami EnabledPlugins a DisabledPluginsExceptions.
 
       Ak toto pravidlo ponecháte nenastavené, používateľ bude môcť použiť ľubovoľný doplnok nainštalovaný v systéme okrem doplnkov, ktoré sú nekompatibilne zakódované, zastarané alebo nebezpečné.</translation>
+<translation id="1864269674877167562">Ak nie je toto pravidlo nakonfigurované alebo ak je nastavené na prázdny textový reťazec, <ph name="PRODUCT_OS_NAME" /> nezobrazí počas procesu prihlásenia možnosť automatického dopĺňania.
+      Ak je toto pravidlo nastavené na textový reťazec, ktorý zastupuje názov domény, <ph name="PRODUCT_OS_NAME" /> zobrazí počas procesu prihlásenia možnosť automatického dopĺňania. Takto bude môcť používateľ zadávať iba používateľské meno bez prípony s názvom domény. Používateľ bude môcť príponu s názvom domény prepísať.</translation>
 <translation id="1865417998205858223">Kľúčové povolenia</translation>
 <translation id="186719019195685253">Akcia, ktorá sa má vykonať po uplynutí určitého času nečinnosti počas prevádzky s napájaním</translation>
 <translation id="187819629719252111">Umožňuje pristupovať k miestnym súborom v počítači tým, že prehliadaču <ph name="PRODUCT_NAME" /> umožní zobrazenie dialógových okien na výber súboru.
@@ -314,6 +325,13 @@ Ak je toto nastavenie zakázané alebo nie je nakonfigurované, nebudú môcť p
 <translation id="2337466621458842053">Umožňuje nastaviť zoznam vzorov webových adries určujúcich webové stránky, na ktorých sa môžu zobrazovať obrázky.
 
           Ak toto pravidlo ponecháte nenastavené, použije sa v prípade všetkých webových stránok globálna predvolená hodnota buď z pravidla „DefaultImagesSetting“ (ak je nastavené), alebo z osobnej konfigurácie používateľa.</translation>
+<translation id="2359612025446382967">Ak je toto pravidlo nastavené na hodnotu False, <ph name="PRODUCT_OS_NAME" /> vypne rozhranie Bluetooth a používateľ ho nebude môcť znova zapnúť.
+
+      Ak toto pravidlo nie je nastavené alebo ak je nastavené na hodnotu True. používateľ bude môcť rozhranie Bluetooth zapnúť alebo vypnúť podľa svojho uváženia.
+
+      Keď je toto pravidlo nastavené, používateľ ho nemôže zmeniť ani prepísať.
+
+      Na to, aby sa po povolení rozhrania Bluetooth uplatnili zmeny, je potrebné zariadenie reštartovať (pri zakázaní rozhrania Bluetooth sa reštart zariadenia nevyžaduje).</translation>
 <translation id="2366415278352956652">Povolenie prenosu</translation>
 <translation id="2371309782685318247">Určuje interval v milisekundách, v ktorom budú službe správy zariadenia odosielané žiadosti o informácie o pravidlách pre používateľov.
 
@@ -552,6 +570,32 @@ Ak je toto nastavenie zakázané alebo nie je nakonfigurované, nebudú môcť p
           Ak toto nastavenie povolíte, prehliadač <ph name="PRODUCT_NAME" /> bude ignorovať všetky možnosti súvisiace s proxy severom zadané do príkazového riadka.
 
           Ak toto nastavenie nepoužijete, používatelia si budú môcť vybrať vlastné nastavenia proxy servera.</translation>
+<translation id="2818551149761607847">Konfigurácia obrázka avatara používateľa.
+
+      Toto pravidlo umožňuje konfigurovať obrázok avatara, ktorý na prihlasovacej obrazovke predstavuje používateľa. Pravidlo vytvoríte zadaním webovej adresy, z ktorej môže <ph name="PRODUCT_OS_NAME" /> stiahnuť obrázok avatara a kryptografickú hodnotu hash, ktorá slúži na overenie integrity stiahnutého obsahu. Obrázok musí byť vo formáte JPEG a jeho veľkosť nesmie prekročiť 512 kB. Webová adresa musí byť prístupná bez overenia totožnosti.
+
+      Obrázok avatara sa stiahne a uloží do vyrovnávacej pamäti. Obrázok sa znova stiahne, keď sa zmení webová adresa alebo hodnota hash.
+
+      Toto pravidlo je potrebné zadať ako reťazec, ktorý udáva webovú adresu a hodnotu hash vo formáte JSON, a to podľa nasledujúcej schémy:
+      {
+        "type": "object",
+        "properties": {
+          "url": {
+            "description": "Webová adresa, z ktorej je možné stiahnuť obrázok avatara.",
+            "type": "string"
+          },
+          "hash": {
+            "description": "Hodnota hash SHA-256 obrázka avatara.",
+            "type": "string"
+          }
+        }
+      }
+
+      Keď je pravidlo nastavené, systém <ph name="PRODUCT_OS_NAME" /> obrázok avatara stiahne a použije.
+
+      Ak toto pravidlo nastavíte, používatelia ho nebudú môcť zmeniť ani prepísať.
+
+      Ak pravidlo nenastavíte, používatelia si budú môcť zvoliť obrázok avatara, ktorý ich bude predstavovať na prihlasovacej obrazovke.</translation>
 <translation id="2824715612115726353">Povoliť režim inkognito</translation>
 <translation id="2844404652289407061">Povolí dostupnosť Vyhľadávania klepnutím v zobrazení obsahu v prehliadači <ph name="PRODUCT_NAME" />.
 
@@ -1691,10 +1735,30 @@ Pozrite si tiež pravidlo RemoteAccessHostClientDomain.</translation>
       Ak je zakázané, nebudú importované žiadne záložky.
 
       Ak nie je nastavené, môže sa používateľovi zobraziť výzva, či chce domovskú stránku importovať alebo či má import prebehnúť automaticky.</translation>
+<translation id="7055358889740598917">Konfiguruje predvolenú webovú adresu domovskej stránky prehliadača <ph name="PRODUCT_NAME" /> a zabraňuje používateľom jej úpravu.
+
+          Domovská stránka je stránka, ktorá sa otvára tlačidlom Domovská stránka. Stránky, ktoré sa otvoria po spustení, sú ovládané pravidlami RestoreOnStartup.
+
+          Typ domovskej stránky môže byť nastavený buď na tu uvedenú webovú adresu, alebo na stránku na novej karte. Ak vyberiete stránku na novej karte, toto pravidlo sa neuplatní.
+
+          Ak toto nastavenie povolíte, používatelia nebudú môcť v prehliadači <ph name="PRODUCT_NAME" /> zmeniť webovú adresu domovskej stránky, budú však stále môcť nastaviť svoju domovskú stránku na stránku na novej karte.
+
+          Ak ponecháte toto pravidlo nenastavené, umožní to používateľovi zvoliť si domovskú stránku samostatne v prípade, keď nie je nastavené ani pravidlo HomepageIsNewTabPage.
+
+          Toto pravidlo nie je k dispozícii v inštanciách systému Windows, ktoré nie sú pripojené k doméne Active Directory.</translation>
 <translation id="7063895219334505671">Povoliť na týchto stránkach kontextové okná</translation>
 <translation id="706669471845501145">Povoliť webovým stránkam zobrazovať upozornenia na pracovnej ploche</translation>
 <translation id="7079519252486108041">Blokovať kontextové okná na týchto webových stránkach</translation>
 <translation id="7091198954851103976">Vždy spustí doplnky, ktoré vyžadujú autorizáciu</translation>
+<translation id="7106631983877564505">Povolí uzamknutie v prípade, ak sú zariadenia so systémom <ph name="PRODUCT_OS_NAME" /> nečinné alebo pozastavené.
+
+      Ak toto nastavenie povolíte, pri pokuse o odomknutie zariadenia a prebudenie z režimu spánku sa používateľom zobrazí výzva na zadanie hesla.
+
+      Ak toto nastavenie zakážete, používatelia budú môcť zariadenie prebudiť z režimu spánku aj bez hesla.
+
+      Ak toto nastavenie povolíte alebo zakážete, používatelia ho nebudú môcť zmeniť ani prepísať.
+
+      Ak toto nastavenie ponecháte nenastavené, používateľ si bude môcť zvoliť, či chce, aby sa mu pri pokuse o odomknutie zariadenia zobrazovala výzva na zadanie hesla.</translation>
 <translation id="7115494316187648452">Určuje, či sa pri prihlásení do operačného systému spustí proces prehliadača <ph name="PRODUCT_NAME" /> a zostane spustený aj po zatvorení posledného okna prehliadača, čím umožní aplikáciám na pozadí, aktuálnej relácii prehliadania, ako aj všetkým súborom cookie relácie zostať aktivovanými. Proces na pozadí zobrazí v oblasti oznámení ikonu, takže ho odtiaľ budete môcť kedykoľvek ukončiť.
 
       Ak toto pravidlo nastavíte na možnosť True, povolí sa režim na pozadí, ktorý používateľ nebude môcť ovládať pomocou nastavení prehliadača.
@@ -2048,6 +2112,13 @@ Pozrite si tiež pravidlo RemoteAccessHostClientDomain.</translation>
       Ak toto pravidlo povolíte alebo zakážete, používatelia ho nebudú môcť zmeniť.
 
       Ak toto pravidlo ponecháte nenastavené, režim vysokého kontrastu bude spočiatku zakázaný, ale používateľ to bude môcť kedykoľvek zmeniť.</translation>
+<translation id="815061180603915310">Ak je toto pravidlo povolené, vynucuje prepnutie profilu do režimu dočasných profilov. Ak je toto pravidlo nastavené ako pravidlo operačného systému (napr. GPO v systéme Windows), použije sa na všetky profily v systéme. Ak je nastavené ako pravidlo cloudu, použije sa iba na profil prihlásený pomocou spravovaného účtu.
+
+      V tomto režime zostávajú dáta profilu na disku iba počas trvania relácie používateľa. Funkcie, ako história prehliadača, rozšírenia a ich dáta, dáta webov (napr. súbory cookie) ani webové databáze nezostanú po zavretí prehliadača uchované. To však nebráni používateľom ručne sťahovať dáta na disk ani ukladať alebo tlačiť stránky.
+
+      Ak používateľ povolil synchronizáciu, všetky tieto dáta zostanú uchované v synchronizovanom profile, rovnako ako v prípade bežných profilov. K dispozícii je aj anonymný režim (ak nie je vyslovene zakázaný pomocou pravidla).
+
+      Ak je toto pravidlo zakázané alebo ponechané nenastavené, budú sa používať bežné profily.</translation>
 <translation id="8164246350636985940">Predvolené správanie stránok, ktoré sa nenachádzajú v žiadnom obsahovom balíku.
 
           Toto pravidlo sa vzťahuje len na interné používanie prehliadača <ph name="PRODUCT_NAME" />.</translation>
@@ -2118,6 +2189,17 @@ Pozrite si tiež pravidlo RemoteAccessHostClientDomain.</translation>
 <translation id="8312129124898414409">Umožňuje nastaviť, či môžu webové stránky používať generovanie kľúčov. Používanie generovania kľúčov je možné buď povoliť pre všetky webové stránky, alebo ho pre všetky webové stránky zakázať.
 
           Ak toto pravidlo ponecháte nenastavené, použije sa pravidlo BlockKeygen a používateľ ho bude môcť zmeniť.</translation>
+<translation id="8316806736175990584">Nakonfiguruje typ predvolenej domovskej stránky v prehliadači <ph name="PRODUCT_NAME" /> a zabráni používateľom meniť predvoľby domovskej stránky. Ako domovskú stránku môžete nastaviť zadanú webovú adresu alebo stránku na novej karte.
+
+          Ak toto nastavenie povolíte, ako domovská stránka sa vždy použije stránka na novej karte a webová adresa domovskej stránky sa bude ignorovať.
+
+          Ak toto nastavenie zakážete, ako domovská stránka používateľa sa nikdy nepoužije stránka na novej karte. Stane sa tak iba vtedy, keď jej webová adresa bude „chrome://newtab“.
+
+          Ak toto nastavenie povolíte alebo zakážete, používatelia nebudú môcť v prehliadači <ph name="PRODUCT_NAME" /> meniť typ svojej domovskej stránky.
+
+          Ak toto pravidlo nenastavíte, umožníte tým používateľom zvoliť si, či chcú ako domovskú stránku používať stránku na novej karte.
+
+          Toto pravidlo nie je k dispozícii v inštanciách systému Windows, ktoré nie sú pripojené k doméne Active Directory.</translation>
 <translation id="8329984337216493753">Toto pravidlo je aktívne iba v režime určenom pre predaj.
 
       Ak je zadané pravidlo DeviceIdleLogoutTimeout, určuje toto pravidlo dobu zobrazenia poľa s upozornením a odpočítavaním, ktoré sa používateľovi zobrazí predtým, než dôjde k odhláseniu.

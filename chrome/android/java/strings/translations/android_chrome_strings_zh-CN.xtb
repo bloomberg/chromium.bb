@@ -148,7 +148,9 @@
 <translation id="2748463065602559597">您正在查看的是安全的 Google Chrome 浏览器网页。</translation>
 <translation id="2762000892062317888">刚刚</translation>
 <translation id="2770465223704140727">从列表中移除</translation>
+<translation id="2777555524387840389">还剩 <ph name="SECONDS" /> 秒</translation>
 <translation id="278029852808208386">未发现任何蓝牙设备。<ph name="BEGIN_LINK" />重新搜索<ph name="END_LINK" />。</translation>
+<translation id="2781151931089541271">还剩 1 秒</translation>
 <translation id="2781389167600714117">选择送货</translation>
 <translation id="2811892995384186721">没看到您的设备？<ph name="BEGIN_LINK" />寻求帮助<ph name="END_LINK" /></translation>
 <translation id="2836148919159985482">触摸“返回”按钮即可退出全屏模式。</translation>
@@ -187,6 +189,7 @@
 <translation id="321773570071367578">如果您忘记了密码或想更改此设置，请<ph name="BEGIN_LINK" />重置同步设置<ph name="END_LINK" /></translation>
 <translation id="3227137524299004712">麦克风</translation>
 <translation id="3232754137068452469">网络应用</translation>
+<translation id="3236059992281584593">还剩 1 分钟</translation>
 <translation id="3244271242291266297">MM</translation>
 <translation id="3254409185687681395">为此页添加书签</translation>
 <translation id="326254929494722411">您尚未在此设备上设置 Google 帐户</translation>
@@ -301,6 +304,7 @@
 <translation id="4720023427747327413">在<ph name="PRODUCT_NAME" />中打开</translation>
 <translation id="473775607612524610">更新</translation>
 <translation id="4738836084190194332">上次同步时间：<ph name="WHEN" /></translation>
+<translation id="4758311279753947758">添加联系信息</translation>
 <translation id="4759238208242260848">下载内容</translation>
 <translation id="4773299976671772492">已停止</translation>
 <translation id="4797039098279997504">触摸即可返回到 <ph name="URL_OF_THE_CURRENT_TAB" /></translation>
@@ -325,6 +329,7 @@
 <translation id="5063480226653192405">使用情况</translation>
 <translation id="5087580092889165836">添加新卡</translation>
 <translation id="5100237604440890931">已收起 - 点击此处即可展开。</translation>
+<translation id="510275257476243843">还剩 1 小时</translation>
 <translation id="5107381076085091558">已暂停下载。</translation>
 <translation id="5118713593561876160">兴趣</translation>
 <translation id="5127805178023152808">同步功能已关闭</translation>
@@ -408,6 +413,7 @@
 <translation id="5911030830365207728">Google 翻译</translation>
 <translation id="5916664084637901428">启用</translation>
 <translation id="5939518447894949180">重置</translation>
+<translation id="5961742032223302715">选择详细联系信息</translation>
 <translation id="5968595432776860642">正在播放“<ph name="VIDEO_TITLE" />”</translation>
 <translation id="6010869025736512584">正在存取视频输入</translation>
 <translation id="6012342843556706400">Chrome 需要具有位置信息使用权，才能批准此网站的分享请求。</translation>
@@ -418,6 +424,7 @@
 <translation id="604996488070107836">出现未知错误，未能下载 <ph name="FILE_NAME" />。</translation>
 <translation id="605721222689873409">YY</translation>
 <translation id="6075798973483050474">修改主页</translation>
+<translation id="60923314841986378">还剩 <ph name="HOURS" /> 小时</translation>
 <translation id="6108923351542677676">正在设置…</translation>
 <translation id="6112702117600201073">正在刷新页面</translation>
 <translation id="6127379762771434464">该项已移除</translation>
@@ -504,7 +511,9 @@
 <translation id="7053983685419859001">禁止</translation>
 <translation id="7056999826593229648">检测到网速很慢</translation>
 <translation id="7057058088140140610">使用 Google Payments 存储的信用卡和地址信息</translation>
+<translation id="7062545763355031412">接受并切换帐户</translation>
 <translation id="7063006564040364415">无法连接到同步服务器。</translation>
+<translation id="7064851114919012435">联系信息</translation>
 <translation id="7074853159844403180"><ph name="SITE" /> 希望与以下设备配对：</translation>
 <translation id="7081639897063626814">将现有数据单独存储</translation>
 <translation id="7094922512924405309">找不到附近的“实物网”网页</translation>
@@ -520,6 +529,7 @@
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" /> 将根据您的位置信息显示本地搜索结果</translation>
 <translation id="7299441085833132046"><ph name="BEGIN_LINK" />帮助<ph name="END_LINK" /></translation>
 <translation id="7299721129597238157">删除书签</translation>
+<translation id="7327835590071894791">您的标签页现已在后台中。</translation>
 <translation id="7347770551817603360">离线内容</translation>
 <translation id="7358452246665489050">正在计算…</translation>
 <translation id="7363354739009474003">正在加载“<ph name="VIDEO_TITLE" />”</translation>
@@ -564,12 +574,14 @@
 <translation id="7713873128508426081">始终允许</translation>
 <translation id="7764225426217299476">添加地址</translation>
 <translation id="7765158879357617694">移动</translation>
+<translation id="7769602470925380267">接受并退出</translation>
 <translation id="7772032839648071052">确认密码</translation>
 <translation id="7788788617745289808">Chrome 需要具有摄像头使用权限，才能批准此网站的分享请求。</translation>
 <translation id="7791543448312431591">添加</translation>
 <translation id="780301667611848630">不用了，谢谢</translation>
 <translation id="7829298379596169484">正在存取音频输入</translation>
 <translation id="7837582000577464779">处理您的订单时出错。请检查您的帐户，然后重试。</translation>
+<translation id="7837721118676387834">允许特定网站自动播放静音的视频。</translation>
 <translation id="7846076177841592234">取消选择</translation>
 <translation id="7851858861565204677">来自其他设备的同步</translation>
 <translation id="7876243839304621966">全部删除</translation>
@@ -584,6 +596,7 @@
 <translation id="8007176423574883786">已对此设备停用</translation>
 <translation id="8026334261755873520">清除浏览数据</translation>
 <translation id="8035133914807600019">新建文件夹…</translation>
+<translation id="8037750541064988519">还剩 <ph name="DAYS" /> 天</translation>
 <translation id="8063895661287329888">无法添加书签。</translation>
 <translation id="8068648041423924542">无法选择证书。</translation>
 <translation id="8069239273282989646">压缩后</translation>
@@ -596,6 +609,7 @@
 <translation id="8137558756159375272">“触摸搜索”会将所选字词和当前页面（作为上下文）一起发送给 Google 搜索。您可以在<ph name="BEGIN_LINK" />设置<ph name="END_LINK" />中停用此功能。</translation>
 <translation id="8168435359814927499">内容</translation>
 <translation id="8173098127580644436">自始至今</translation>
+<translation id="8190358571722158785">还剩 1 天</translation>
 <translation id="8200772114523450471">继续</translation>
 <translation id="8202097416529803614">订单摘要</translation>
 <translation id="8209050860603202033">打开图片</translation>
@@ -620,6 +634,7 @@
 <translation id="8518901949365209398">此网站使用了安全系数较低的安全配置（SHA-1 签名），因此您的连接可能不具有私密性。</translation>
 <translation id="8525306231823319788">全屏</translation>
 <translation id="854522910157234410">打开此网页</translation>
+<translation id="8559882854823529713">稍后在 Chrome 中查看</translation>
 <translation id="8562452229998620586">已保存的密码将显示在这里。</translation>
 <translation id="856481929701340285">请求切换到桌面版网站</translation>
 <translation id="857943718398505171">已允许（推荐）</translation>
@@ -676,6 +691,7 @@
 <translation id="9141510419986760385">您正要将同步帐户从 <ph name="FROM_ACCOUNT" /> 切换到 <ph name="TO_ACCOUNT" />。您希望如何处理现有书签、历史记录、密码及其他设置？</translation>
 <translation id="917685106653909562">附近的“实物网”网页</translation>
 <translation id="9187199695613236444">适合在移动设备上浏览的视图</translation>
+<translation id="9188680907066685419">退出受管理的帐户</translation>
 <translation id="9192643434065497760">请在<ph name="BEGIN_LINK" />设备设置<ph name="END_LINK" />部分开启蓝牙，以允许配对。</translation>
 <translation id="9198708126133947749">系统会将此设备的数据替换为 <ph name="TO_ACCOUNT" /> 的数据。不过，您可以切换回 <ph name="FROM_ACCOUNT" /> 来获取现有数据。</translation>
 <translation id="9206873250291191720">A</translation>
@@ -684,6 +700,7 @@
 <translation id="938850635132480979">错误：<ph name="ERROR_CODE" /></translation>
 <translation id="945632385593298557">使用您的麦克风</translation>
 <translation id="969096075394517431">更改语言</translation>
+<translation id="970715775301869095">还剩 <ph name="MINUTES" /> 分钟</translation>
 <translation id="981121421437150478">离线</translation>
 <translation id="983192555821071799">关闭所有标签页</translation>
 </translationbundle>

@@ -504,6 +504,7 @@
 <translation id="7053983685419859001">Блокировать</translation>
 <translation id="7056999826593229648">Низкая скорость подключения</translation>
 <translation id="7057058088140140610">Банковские карты и адреса с помощью Google Payments</translation>
+<translation id="7062545763355031412">Принять и переключиться</translation>
 <translation id="7063006564040364415">Не удалось связаться с сервером синхронизации</translation>
 <translation id="7074853159844403180">Сайт <ph name="SITE" /> запрашивает подключение к следующему устройству:</translation>
 <translation id="7081639897063626814">Хранить добавленные ранее данные отдельно</translation>
@@ -564,6 +565,7 @@
 <translation id="7713873128508426081">Разрешать всегда</translation>
 <translation id="7764225426217299476">Добавить адрес</translation>
 <translation id="7765158879357617694">Переместить</translation>
+<translation id="7769602470925380267">Принять и выйти</translation>
 <translation id="7772032839648071052">Подтвердите кодовую фразу</translation>
 <translation id="7788788617745289808">Предоставьте браузеру Chrome доступ к камере, чтобы пользоваться ею на этом сайте.</translation>
 <translation id="7791543448312431591">Добавить</translation>
@@ -676,6 +678,7 @@
 <translation id="9141510419986760385">Вы переключаетесь с синхронизируемого аккаунта <ph name="FROM_ACCOUNT" /> на <ph name="TO_ACCOUNT" />. Что нужно сделать с текущими закладками, паролями, историей и другими настройками?</translation>
 <translation id="917685106653909562">Веб-страницы из Интернета вокруг нас</translation>
 <translation id="9187199695613236444">Адаптировано для мобильных устройств</translation>
+<translation id="9188680907066685419">Выход из управляемого аккаунта</translation>
 <translation id="9192643434065497760">Чтобы разрешить соединение, включите Bluetooth в <ph name="BEGIN_LINK" />настройках устройства<ph name="END_LINK" />.</translation>
 <translation id="9198708126133947749">Данные на устройстве будут заменены данными из аккаунта <ph name="TO_ACCOUNT" />. Чтобы скачать текущие данные, войдите в аккаунт <ph name="FROM_ACCOUNT" />.</translation>
 <translation id="9206873250291191720">А</translation>

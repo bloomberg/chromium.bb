@@ -102,7 +102,7 @@ Per poter utilizzare il Physical Web, devi attivare il Bluetooth e la geolocaliz
 <translation id="219985413780390209">Proteggi te stesso e il tuo dispositivo da siti pericolosi</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME" />, app web. <ph name="APP_URL" /></translation>
 <translation id="2268044343513325586">Perfeziona</translation>
-<translation id="2279474006916349339">I dati di tutte le app di Chrome saranno eliminati definitivamente. Sono inclusi tutti i file, le impostazioni, gli account, i database e così via.</translation>
+<translation id="2279474006916349339">Tutti i dati delle app di Chrome saranno eliminati definitivamente. Sono inclusi tutti i file, le impostazioni, gli account, i database e così via.</translation>
 <translation id="2286841657746966508">Indirizzo di fatturazione</translation>
 <translation id="2315043854645842844">La selezione del certificato lato client non è supportata dal sistema operativo.</translation>
 <translation id="2321958826496381788">Trascina il cursore finché leggi il testo senza problemi. Il testo dovrebbe avere queste dimensioni minime quando tocchi due volte un paragrafo.</translation>
@@ -170,7 +170,7 @@ Puoi gestire il Physical Web nelle impostazioni di Chrome.
 <translation id="2979025552038692506">Scheda in incognito selezionata</translation>
 <translation id="2996291259634659425">Crea passphrase</translation>
 <translation id="2996809686854298943">URL obbligatorio</translation>
-<translation id="300526633675317032">Tutti i <ph name="SIZE_IN_KB" /> di memoria utilizzata dal sito web saranno cancellati.</translation>
+<translation id="300526633675317032">Verranno cancellati tutti i <ph name="SIZE_IN_KB" /> di memoria utilizzata dai siti web.</translation>
 <translation id="3012408695656332380">Sostituisci i dati di questo dispositivo con quelli dell'account <ph name="TO_ACCOUNT" />. Puoi recuperare i tuoi dati esistenti tornando all'account <ph name="FROM_ACCOUNT" />, ma i dati creati dopo esserti scollegato andranno persi.</translation>
 <translation id="3029704984691124060">Le passphrase non corrispondono</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Richiedi assistenza<ph name="END_LINK" /></translation>
@@ -511,6 +511,7 @@ Ad esempio, alcuni siti web potrebbero rispondere alla richiesta mostrando annun
 <translation id="7053983685419859001">Blocca</translation>
 <translation id="7056999826593229648">È stata rilevata una connessione lenta</translation>
 <translation id="7057058088140140610">Carte di credito e indirizzi che utilizzano Google Payments</translation>
+<translation id="7062545763355031412">Accetta e cambia account</translation>
 <translation id="7063006564040364415">Impossibile collegarsi al server di sincronizzazione.</translation>
 <translation id="7064851114919012435">Informazioni di contatto</translation>
 <translation id="7074853159844403180"><ph name="SITE" /> desidera accoppiarsi con:</translation>
@@ -573,6 +574,7 @@ Il tuo account Google potrebbe avere altre forme di cronologia di navigazione, a
 <translation id="7713873128508426081">Sempre consentito</translation>
 <translation id="7764225426217299476">Aggiungi indirizzo</translation>
 <translation id="7765158879357617694">Sposta</translation>
+<translation id="7769602470925380267">Accetta ed esci</translation>
 <translation id="7772032839648071052">Conferma passphrase</translation>
 <translation id="7788788617745289808">Chrome deve avere accesso alla fotocamera per condividerla con questo sito.</translation>
 <translation id="7791543448312431591">Aggiungi</translation>
@@ -689,6 +691,7 @@ Per ottenere nuove licenze, connettiti a Internet e riproduci i contenuti scaric
 <translation id="9141510419986760385">Stai per cambiare account di sincronizzazione, passando dall'account <ph name="FROM_ACCOUNT" /> all'account <ph name="TO_ACCOUNT" />. Che cosa intendi fare con i preferiti, la cronologia, le password e le altre impostazioni esistenti?</translation>
 <translation id="917685106653909562">Pagine Physical Web nelle vicinanze</translation>
 <translation id="9187199695613236444">Visualizzazione ottimizzata per dispositivi mobili</translation>
+<translation id="9188680907066685419">Esci dall'account gestito</translation>
 <translation id="9192643434065497760">Per consentire l'accoppiamento, attiva il Bluetooth nelle <ph name="BEGIN_LINK" />impostazioni del dispositivo<ph name="END_LINK" />.</translation>
 <translation id="9198708126133947749">Sostituisci i dati di questo dispositivo con i dati dell'account <ph name="TO_ACCOUNT" />. Puoi recuperare i tuoi dati esistenti tornando all'account <ph name="FROM_ACCOUNT" />.</translation>
 <translation id="9206873250291191720">A</translation>

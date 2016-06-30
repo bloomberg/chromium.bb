@@ -6,6 +6,15 @@
 <translation id="1019101089073227242">Configurar directorio de datos de usuarios</translation>
 <translation id="1022361784792428773">ID de extensiones que el usuario no debe poder instalar (o * para incluirlas todas).</translation>
 <translation id="102492767056134033">Establecer el estado predeterminado del teclado en pantalla en la pantalla de acceso</translation>
+<translation id="1027000705181149370">Especifica si las cookies de autenticación que establece un IdP de SAML durante el acceso se deben transferir al perfil del usuario.
+
+      Cuando un usuario se autentica a través de un IdP de SAML durante el acceso, las cookies que establece el IdP se escriben primero en un perfil temporal. Estas cookies se pueden transferir al perfil del usuario para transportar el estado de autenticación.
+
+      Cuando esta política se establece como verdadera, las cookies que establece el IdP se transfieren al perfil del usuario cada vez que se autentica con el IdP de SAML durante el acceso.
+
+      Cuando esta política se establece como falsa o no se configura, las cookies que establece el IdP se transfieren al perfil del usuario únicamente durante el primer acceso en un dispositivo.
+
+      Esta política afecta solo a los usuarios cuyo dominio coincide con el dominio de inscripción del dispositivo. Para todos los demás usuarios, las cookies que establece el IdP se transfieren al perfil del usuario únicamente durante el primer acceso en el dispositivo.</translation>
 <translation id="1040446814317236570">Habilitar la eliminación de URL de PAC (para https://)</translation>
 <translation id="1044878202534415707">Informar estadísticas de hardware, como el uso de CPU/RAM
 
@@ -191,6 +200,8 @@ Si esta política no se configura, se utilizará 'Permitir complementos' y el us
       Ten en cuenta que tanto EnabledPlugins como DisabledPluginsExceptions pueden omitir esta política.
 
       Si no se establece esta política, el usuario puede usar cualquier complemento instalado en el sistema, salvo los complementos peligrosos, obsoletos o incompatibles codificados de forma rígida.</translation>
+<translation id="1864269674877167562">Si esta política no se configura o se establece como una string en blanco, <ph name="PRODUCT_OS_NAME" /> no mostrará una opción de autocompletar durante el flujo de acceso del usuario.
+      Si esta política se establece como una string que representa un nombre de dominio, <ph name="PRODUCT_OS_NAME" /> mostrará una opción de autocompletar durante el acceso del usuario, lo que permitirá que el usuario escriba solamente el nombre de usuario sin la extensión del nombre de dominio. El usuario podrá sobrescribir esta extensión de nombre de dominio.</translation>
 <translation id="1865417998205858223">Permisos de clave</translation>
 <translation id="186719019195685253">Acción a realizar si se alcanza la demora de inactividad mientras el dispositivo funciona con alimentación de corriente</translation>
 <translation id="187819629719252111">Permite el acceso a archivos locales en la máquina al permitir que <ph name="PRODUCT_NAME" /> muestre los cuadros de diálogo de selección de archivos. Si se habilita esta configuración, los usuarios podrán abrir los cuadros de diálogo de selección de archivos como de costumbre. Si se inhabilita esta configuración, siempre que el usuario realice una acción que podría provocar un cuadro de diálogo de selección de archivos (como importar marcadores, cargar archivos, guardar enlaces, etc.), se mostrará un mensaje y se asumirá que el usuario ha hecho clic en Cancelar en el cuadro de diálogo de selección de archivos. Si esta opción no se configura, los usuarios podrán abrir cuadros de diálogo de selección de archivos como de costumbre.</translation>
@@ -292,6 +303,13 @@ Si esta política no se configura, se utilizará 'Permitir complementos' y el us
 <translation id="2309390639296060546">Configuración de geolocalización predeterminada</translation>
 <translation id="2312134445771258233">Te permite configurar las páginas que se cargan al iniciar. El contenido de la lista "Direcciones URL que se abrirán al iniciar" se ignora a menos que se haya seleccionado "Abrir una lista de direcciones URL en acción al iniciar".</translation>
 <translation id="2337466621458842053">Te permite configurar una lista de patrones de URL que especifican los sitios a los que se les permite mostrar imágenes. Si esta política no se configura, se usará el valor predeterminado global para todos los sitios, ya sea de la política "DefaultImagesSetting", si está configurada, o de otro tipo de configuración personal del usuario.</translation>
+<translation id="2359612025446382967">Si esta política se establece como falsa, <ph name="PRODUCT_OS_NAME" /> inhabilitará Bluetooth, y el usuario no podrá volver a habilitarlo.
+
+      Si esta política se establece como verdadera o no se establece, el usuario podrá habilitar o inhabilitar Bluetooth como lo desee.
+
+      Si esta política está establecida, el usuario no puede cambiarla ni anularla.
+
+      Después de habilitar Bluetooth, debe reiniciarse el dispositivo para que se apliquen los cambios (si se inhabilita Bluetooth, no es necesario reiniciar el dispositivo).</translation>
 <translation id="2366415278352956652">Permite la transmisión</translation>
 <translation id="2371309782685318247">Especifica el período en milisegundos en el que se solicita información sobre políticas de usuarios al servicio de administración de dispositivos.
 
@@ -516,6 +534,32 @@ Si esta política no se configura, se utilizará 'Permitir complementos' y el us
           Si habilitas esta configuración, <ph name="PRODUCT_NAME" /> ignora todas las opciones relacionadas con el proxy que se especificaron en la línea de comandos.
 
           Si no estableces esta política, los usuarios podrán elegir las opciones de configuración por su cuenta.</translation>
+<translation id="2818551149761607847">Permite configurar la imagen de avatar del usuario.
+
+      Esta política permite configurar la imagen de avatar que identifica al usuario en la pantalla de acceso. Para establecerla, indica la URL desde la cual <ph name="PRODUCT_OS_NAME" /> puede descargar la imagen de avatar y un hash criptográfico que verifique la integridad de la descarga. La imagen debe estar en formato JPEG y no pesar más de 512 kB. Se debe poder acceder a la URL sin autenticación previa.
+
+      La imagen de avatar se descarga y queda almacenada en caché. Cada vez que cambie la URL o el hash, la imagen se volverá a descargar.
+
+      La política debe indicarse como un string que expresa la URL y el hash en formato JSON, y según el siguiente esquema:
+      {
+        "type": "object",
+        "properties": {
+          "url": {
+            "description": "The URL from which the avatar image can be downloaded.",
+            "type": "string"
+          },
+          "hash": {
+            "description": "The SHA-256 hash of the avatar image.",
+            "type": "string"
+          }
+        }
+      }
+
+      Si se establece esta política, <ph name="PRODUCT_OS_NAME" /> descargará y utilizará la imagen de avatar.
+
+      Si estableces esta política, los usuarios no podrán cambiarla ni anularla.
+
+      Si no se establece esta política, los usuarios podrán elegir la imagen de avatar que los identifique en la pantalla de acceso.</translation>
 <translation id="2824715612115726353">Activar el modo de incógnito</translation>
 <translation id="2844404652289407061">Habilita la disponibilidad de Tocar para buscar en la vista de contenido de <ph name="PRODUCT_NAME" />.
 
@@ -1542,10 +1586,31 @@ desactivarlo).</translation>
 <translation id="7040229947030068419">Valor de ejemplo:</translation>
 <translation id="7049373494483449255">Habilita a <ph name="PRODUCT_NAME" /> para enviar documentos a <ph name="CLOUD_PRINT_NAME" /> para la impresión. NOTA: Esto solo afecta el soporte de <ph name="CLOUD_PRINT_NAME" /> en <ph name="PRODUCT_NAME" />. No evita que los usuarios envíen trabajos de impresión en las páginas web. Si se habilita esta opción o no se configura, los usuarios podrán imprimir en <ph name="CLOUD_PRINT_NAME" /> desde el cuadro de diálogo de impresión de <ph name="PRODUCT_NAME" />. Si se inhabilita esta configuración, los usuarios no podrán imprimir en <ph name="CLOUD_PRINT_NAME" /> desde el cuadro de diálogo de impresión de <ph name="PRODUCT_NAME" />.</translation>
 <translation id="7053678646221257043">Esta política, si se habilita, fuerza la importación de los marcadores del navegador predeterminado actual. Si se habilita, esta política también afecta el cuadro de diálogo de importación. Si se inhabilita, no se importará ningún marcador. Si no se configura, se le puede preguntar al usuario si desea importar o la importación puede realizarse de forma automática.</translation>
+<translation id="7055358889740598917">Configura la URL de la página principal predeterminada en <ph name="PRODUCT_NAME" /> e impide que los usuarios la cambien.
+
+          La página principal es la página que se abre mediante el botón Página principal. Las políticas RestoreOnStartup controlan las páginas que se abren en el inicio.
+
+          El tipo de página principal se puede establecer en una URL que se especifica aquí o mediante la página Nueva pestaña. Si seleccionas la página Nueva pestaña, esta política no se implementará.
+
+          Si habilitas esta configuración, los usuarios no pueden cambiar la URL de la página principal en <ph name="PRODUCT_NAME" />, pero pueden elegir la página Nueva pestaña como página principal.
+
+          Si no estableces esta política, el usuario podrá elegir la página principal por su cuenta si tampoco se establece HomepageIsNewTabPage.
+
+          Esta política no está disponible en instancias de Windows que no se
+          encuentran unidas a un dominio de Active Directory.</translation>
 <translation id="7063895219334505671">Permitir ventanas emergentes en estos sitios</translation>
 <translation id="706669471845501145">Permitir que los sitios muestren notificaciones de escritorio.</translation>
 <translation id="7079519252486108041">Bloquear ventanas emergentes en estos sitios</translation>
 <translation id="7091198954851103976">Siempre se ejecutan complementos que requieren autorización</translation>
+<translation id="7106631983877564505">Habilitar el bloqueo cuando los dispositivos <ph name="PRODUCT_OS_NAME" /> están inactivos o suspendidos.
+
+      Si habilitas esta configuración, los usuarios deberán ingresar una contraseña para que los dispositivos salgan del modo de suspensión.
+
+      Si inhabilitas esta configuración, no se pedirá a los usuarios que ingresen una contraseña para que los dispositivos salgan del modo de suspensión.
+
+      Independientemente de que habilites o inhabilites esta opción, los usuarios no podrán modificarla ni anularla.
+
+      Si no estableces esta política, los usuarios podrán decidir si quieren que sea necesaria una contraseña para volver a activar el dispositivo o no.</translation>
 <translation id="7115494316187648452">Determina si se inició un proceso de <ph name="PRODUCT_NAME" /> en el SO y mantiene su ejecución cuando se cierra la última ventana del navegador, lo que permite que las aplicaciones en segundo plano y la sesión de navegación actual se mantengan activas, incluidas las cookies de la sesión. El proceso en segundo plano muestra un ícono en la bandeja del sistema y siempre se puede cerrar desde allí.
 
       Si esta política se establece en True, se habilita el modo en segundo plano, y el usuario no puede controlarlo en la configuración del navegador.
@@ -1876,6 +1941,13 @@ desactivarlo).</translation>
           Si estableces esta política, los usuarios no podrán modificarla ni anularla.
 
           Si no se establece esta política, inicialmente el modo de contraste alto estará inhabilitado, pero el usuario podrá habilitarlo en cualquier momento.</translation>
+<translation id="815061180603915310">Si se habilita, esta política cambia el perfil al modo efímero. Si se especifica como política del sistema operativo (p. ej., GPO en Windows), se aplica a todos los perfiles del sistema. Si se establece como política en la nube, solo se aplica a un perfil que haya accedido con una cuenta administrada.
+
+      En este modo, los datos de perfil solo se mantienen en el disco hasta que termine la sesión del usuario. Una vez que se cierra el navegador, no se conservan ciertas funciones, como el historial web, las extensiones y su información, los datos de Internet (las cookies) o las bases de datos web. Sin embargo, esto no impide que el usuario pueda descargar datos en el disco manualmente, guardar páginas o imprimirlas.
+
+      Si el usuario habilita la sincronización, todos estos datos se conservan en el perfil de sincronización, al igual que ocurre con los perfiles normales. A menos que se inhabilite expresamente mediante esta política, el modo de navegación de incógnito también está disponible.
+
+      Si esta política se inhabilita o no se establece, el acceso direcciona al usuario a los perfiles normales.</translation>
 <translation id="8164246350636985940">Es el comportamiento predeterminado de los sitios no incluidos en paquetes de contenido.
 
           Esta política es para uso interno de <ph name="PRODUCT_NAME" />.</translation>
@@ -1942,6 +2014,18 @@ desactivarlo).</translation>
 <translation id="8312129124898414409">Te permite establecer si los sitios web están autorizados a utilizar la generación de claves. La generación de claves puede permitirse o rechazarse para todos los sitios web. 
 
           Si esta política no se configura, se usará "BlockKeygen" y el usuario podrá cambiarla.</translation>
+<translation id="8316806736175990584">Configura el tipo de página principal predeterminada en <ph name="PRODUCT_NAME" /> e impide que los usuarios modifiquen las preferencias de la página principal. La página principal puede establecerse con una URL especificada o con la página Nueva pestaña.
+
+          Si se habilita esta configuración, la página Nueva pestaña se usa siempre para la página principal y se ignora la ubicación de la URL de la página principal.
+
+          Si se inhabilita esta configuración, la página principal del usuario nunca será la página Nueva pestaña, a menos que la URL se establezca como "chrome://newtab".
+
+          Si se habilita o inhabilita esta configuración, los usuarios no podrán cambiar el tipo de página principal en <ph name="PRODUCT_NAME" />.
+
+          Si esta política no se establece, los usuarios podrán elegir si desean que la página Nueva pestaña sea solo la página principal.
+
+          Esta política no está disponible en instancias de Windows que no estén
+          unidas a un dominio de Active Directory.</translation>
 <translation id="8329984337216493753">Esta política solo se encuentra activa en el modo de venta.
 
       Cuando se especifica DeviceIdleLogoutTimeout, esta política definela duración del cuadro de advertencia con un cuenta regresiva que se mostrará al usuario antes de que este salga automáticamente del navegador.

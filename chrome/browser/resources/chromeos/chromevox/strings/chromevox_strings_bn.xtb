@@ -21,6 +21,7 @@
 <translation id="1167230103353892028"><ph name="NAME" />, মেনু আইটেম, উপমেনু সহ</translation>
 <translation id="1177863135347784049">কাস্টম</translation>
 <translation id="1188858454923323853">পরিপূরক</translation>
+<translation id="1201402288615127009">পরবর্তী</translation>
 <translation id="1206619573307042055">marquee</translation>
 <translation id="1213216066620407844">ChromeVox - Chrome কে ভয়েস প্রদান</translation>
 <translation id="1229276918471378188">পূর্ববর্তী জাম্প</translation>
@@ -122,7 +123,6 @@
 <translation id="2553108862507765288">ব্যাকরণগত ভুল</translation>
 <translation id="257674075312929031">গোষ্ঠী</translation>
 <translation id="2582407057977008361">একপাশে</translation>
-<translation id="2589102159832527089">এই পৃষ্ঠাটিতে PDF ফাইল &lt;b&gt;<ph name="FILENAME" />&lt;/b&gt; থেকে স্বয়ংক্রিয়ভাবে নিষ্কাশিত হওয়া পাঠ্য রয়েছে৷ &lt;a href="<ph name="URL" />"&gt;আসলটির জন্য এখানে ক্লিক করুন৷&lt;/a&gt;</translation>
 <translation id="2606210917827248971">সাথে আছে {COUNT,plural, =1{#টি আইটেম}one{#টি আইটেম}other{#টি আইটেম}}</translation>
 <translation id="2614981083756825552">গাণিতিক ML লেআউট</translation>
 <translation id="2626530649491650971">ক্লিক যোগ্য</translation>
@@ -510,7 +510,6 @@
 <translation id="6129953537138746214">ব্যবধান</translation>
 <translation id="6142308968191113180">শিরোলেখ ৪</translation>
 <translation id="6169420925157477918">দীর্ঘ বিবরণ সহ চিত্র</translation>
-<translation id="6172087735260766220">অনুলিপি-সুরক্ষিত PDF থেকে অ্যাক্সেসযোগ্য পাঠ্য অ্যাক্সেস করতে অক্ষম।</translation>
 <translation id="6186305613600865047">পৃষ্ঠাটির একেবারে নীচে চলে যান</translation>
 <translation id="6193330012414963395">AM PM</translation>
 <translation id="622484624075952240">নিচের</translation>
@@ -549,6 +548,7 @@
 <translation id="6659594942844771486">ট্যাব</translation>
 <translation id="667999046851023355">দস্তাবেজ</translation>
 <translation id="6697092096875747123">পূর্ববর্তী কম্বো বাক্স</translation>
+<translation id="6710213216561001401">পূর্ববর্তী</translation>
 <translation id="6714813999819678458">পূর্ববর্তী স্তর ২ শিরোনাম</translation>
 <translation id="6716505898850596801">সংশোধক কীগুলি</translation>
 <translation id="671916444866103745">কোনো পরবর্তী ARIA ল্যান্ডমার্ক নেই৷</translation>
@@ -690,6 +690,7 @@
 <translation id="842922884199979200">কোনো পূর্ববর্তী স্তর ২ শিরোনাম নেই৷</translation>
 <translation id="8430049249787218991">mnubr</translation>
 <translation id="844681116543532394">কোনো পূর্ববর্তী চেকবাক্স নেই৷</translation>
+<translation id="8446884382197647889">আরো জানুন</translation>
 <translation id="8455868257606149352">সর্বোচ্চ <ph name="X" /></translation>
 <translation id="84575901236241018">অ্যাক্সেস কী আছে, <ph name="KEY" /></translation>
 <translation id="8476508772960940536">এক নজরে উইন্ডো</translation>

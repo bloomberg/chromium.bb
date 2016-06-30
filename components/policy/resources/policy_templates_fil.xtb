@@ -6,6 +6,15 @@
 <translation id="1019101089073227242">Itakda ang direktoryo ng data ng user</translation>
 <translation id="1022361784792428773">Ang mga ID ng Extension na dapat na iwasan ng user mula sa pag-install (o * para sa lahat)</translation>
 <translation id="102492767056134033">Itakda ang default na estado ng on-screen na keyboard sa screen sa pag-login</translation>
+<translation id="1027000705181149370">Tinutukoy kung dapat bang ilipat sa profile ng user ang cookies sa pagpapatotoo na itinatakda ng SAML IdP sa pag-log in.
+
+      Kapag nagpatotoo ang isang user sa pamamagitan ng SAML IdP sa pag-log in, inilalagay muna ang cookies na itinakda ng IdP sa isang pansamantalang profile. Maaaring ilipat ang cookies na ito sa profile ng user upang mapanatili ang katayuan ng pagpapatotoo.
+
+      Kapag itinakda ang patakarang ito sa true, ililipat ang cookies na itatakda ng IdP sa profile ng user sa tuwing magpapatotoo siya sa SAML IdP sa pag-log in.
+
+      Kapag itinakda ang patakarang ito sa false o hindi nakatakda, ililipat ang cookies na itatakda ng IdP sa profile ng user sa unang pag-log in niya lang sa isang device.
+
+      Naaapektuhan ng patakarang ito ang mga user na tumutugma ang domain sa domain sa pag-enroll lang ng device. Para sa lahat ng iba pang user, ililipat ang cookies na itatakda ng IdP sa profile ng user sa unang pag-log in lang sa device.</translation>
 <translation id="1040446814317236570">I-enable ang pag-strip ng PAC URL (para sa https://)</translation>
 <translation id="1044878202534415707">Mag-ulat ng mga istatistika ng hardware gaya ng paggamit ng CPU/RAM.
 
@@ -196,6 +205,8 @@
       Tandaan na maaaring i-override ng EnabledPlugins at DisabledPluginsExceptions ang patakarang ito.
 
       Kung hinayaang hindi nakatakda ang patakarang ito, magagamit ng user ang anumang plugin na naka-install sa system maliban sa mga naka-hard-code na plugin na hindi tugma, luma o mapanganib.</translation>
+<translation id="1864269674877167562">Kung nakatakda sa isang blangkong string o hindi naka-configure ang patakaran na ito, hindi magpapakita ang <ph name="PRODUCT_OS_NAME" /> ng isang opsyon sa pag-autocomplete sa flow ng pag-sign in ng user.
+      Kung ang patakaran na ito ay nakatakda sa isang string na kumakatawan sa isang domain name, magpapakita ang <ph name="PRODUCT_OS_NAME" /> ng opsyon sa pag-autocomplete sa pag-sign in ng user na nagbibigay-daan sa user na i-type lang ang kanyang user name nang wala ang extension ng domain name. Magagawa ng user na i-overwrite ang extension ng domain name na ito.</translation>
 <translation id="1865417998205858223">Mga Pangunahing Pahintulot</translation>
 <translation id="186719019195685253">Pagkilos na gagawin kapag naabot na ang pagkaantala ng idle habang tumatakbo gamit ang AC power</translation>
 <translation id="187819629719252111">Binibigyang-daan ang access sa mga lokal na file sa machine sa pamamagitan ng pagpayag sa <ph name="PRODUCT_NAME" /> na magpakita ng mga dialog ng pagpili ng file.
@@ -321,6 +332,13 @@
 <translation id="2337466621458842053">Binibigyang-daan kang magtakda ng isang listahan ng mga pattern ng url  na tumutukoy sa mga site na pinapayagang magpakita ng mga larawan.
 
           Kung hinayaang hindi nakatakda ang patakarang ito gagamitin ang global na default na halaga para sa lahat ng site mula sa patakarang 'DefaultImagesSetting' kung nakatakda ito, o kung hindi man, ang personal na configuration ng user.</translation>
+<translation id="2359612025446382967">Kung nakatakda ang patakarang ito sa false, idi-disable ng <ph name="PRODUCT_OS_NAME" /> ang Bluetooth at hindi na ito muling mae-enable ng user.
+
+      Kung nakatakda ang patakarang ito sa true o hindi nakatakda, mae-enable o madi-disable ng user ang Bluetooth kailanman niya gustuhin.
+
+      Kung nakatakda ang patakarang ito, hindi na ito mababago o mao-override ng user.
+
+      Pagkatapos i-enable ang Bluetooth, dapat i-reboot ang device upang malapat ang mga pagbabago (hindi na kailangang i-reboot ang device kapag idi-disable ang Bluetooth).</translation>
 <translation id="2366415278352956652">Ine-enable ang pag-cast</translation>
 <translation id="2371309782685318247">Tinutukoy ang tagal sa milliseconds kung kailan na-query sa serbisyo ng pamamahala sa device ang impormasyon ng patakaran ng user.
 
@@ -556,6 +574,32 @@
           Kung ie-enable mo ang setting na ito, babalewalain ng <ph name="PRODUCT_NAME" /> ang lahat ng nakasaad na opsyong nauugnay sa proxy sa linya ng command.
 
           Kapag hindi mo itinakda ang patakarang ito, mabibigyang-daan ang mga user na piliin ang mga setting ng proxy nang mag-isa.</translation>
+<translation id="2818551149761607847">I-configure ang larawan ng avatar ng user.
+
+      Nagbibigay-daan sa iyo ang patakarang ito na i-configure ang larawan ng avatar na kumakatawan sa user sa screen sa pag-login. Itinatakda ang patakaran sa pamamagitan ng pagtukoy sa URL kung saan mada-download ng <ph name="PRODUCT_OS_NAME" /> ang larawan ng avatar at ang isang cryptographic hash na ginagamit upang i-verify ang integridad ng pag-download. Dapat ay nasa JPEG format ang larawan, ang laki nito ay hindi dapat lumampas sa 512kB. Dapat ay naa-access ang URL nang walang anumang pagpapatotoo.
+
+      Dina-download at kina-cache ang larawan ng avatar. Muli itong ida-download sa tuwing magbabago ang URL o ang hash.
+
+      Dapat ay tukuyin ang patakaran bilang isang string na nagpapahayag sa URL at hash sa JSON format, na umaayon sa sumusunod na schema:
+      {
+        "type": "object",
+        "properties": {
+          "url": {
+            "description": "Ang URL kung saan mada-download ang larawan ng avatar.",
+            "type": "string"
+          },
+          "hash": {
+            "description": "Ang SHA-256 hash ng larawan ng avatar.",
+            "type": "string"
+          }
+        }
+      }
+
+      Kung nakatakda na ang patakarang ito, ida-download at gagamitin ng <ph name="PRODUCT_OS_NAME" /> ang larawan ng avatar.
+
+      Kung itatakda mo ang patakarang ito, hindi ito mababago o mao-override ng mga user.
+
+      Kung iiwanang hindi nakatakda ang patakaran, maaaring piliin ng user ang larawan ng avatar na kumakatawan sa kanya sa screen sa pag-login.</translation>
 <translation id="2824715612115726353">Paganahin ang Incognito mode</translation>
 <translation id="2844404652289407061">Ine-enable ang availability ng Pindutin upang Hanapin sa view ng content ng <ph name="PRODUCT_NAME" />.
 
@@ -1697,10 +1741,31 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
       Kung hindi pinagana, walang ini-import na mga bookmark.
 
       Kung hindi nakatakda, maaaring tanungin sa user kung mag-i-import o hindi, o maaaring awtomatikong mangyari ang pag-import.</translation>
+<translation id="7055358889740598917">Kino-configure ang default na URL ng home page sa <ph name="PRODUCT_NAME" /> at pinipigilan ang mga user na mabago ito.
+
+          Ang home page ay ang page na binubuksan ng Home button. Ang mga page na magbubukas sa startup ay kinokontrol ng mga patakaran ng RestoreOnStartup.
+
+          Ang uri ng home page ay maaaring itakda sa isang URL na tutukuyin mo rito o maaaring itakda sa Page ng Bagong Tab. Kung pipiliin mo ang Page ng Bagong Tab, hindi magkakaroon ng bisa ang patakarang ito.
+
+          Kung ie-enable mo ang setting na ito, hindi mababago ng mga user ang URL ng kanilang home page sa <ph name="PRODUCT_NAME" />, ngunit maaari pa rin nilang piliin ang Page ng Bagong Tab bilang kanilang home page.
+
+          Kung iiwang hindi nakatakda ang patakarang iro, magagawa ng mismong user na piliin ang kanyang home page kung hindi rin nakatakda ang HomepageIsNewTabPage.
+
+          Hindi available ang patakarang ito sa mga instance ng Windows na hindi nakakonekta
+          sa isang domain ng Aktibong Directory.</translation>
 <translation id="7063895219334505671">Pinapayagan ang mga popup sa mga site na ito</translation>
 <translation id="706669471845501145">Payagan ang mga site upang magpakita ng mga notification sa desktop</translation>
 <translation id="7079519252486108041">I-block ang mga popup sa mga site na ito</translation>
 <translation id="7091198954851103976">Palaging patakbuhin ang mga plugin na nangangailangan ng pahintulot</translation>
+<translation id="7106631983877564505">Paganahin ang pag-lock kapag naging idle o nasuspinde ang mga device ng <ph name="PRODUCT_OS_NAME" />.
+
+      Kung ie-enable mo ang setting na ito, hihingan ng password ang mga user upang i-unlock ang device mula sa pag-sleep.
+
+      Kung idi-disable mo ang setting na ito, hindi hihingan ng password ang mga user upang i-unlock ang device mula sa pag-sleep.
+
+      Kung ie-enable o idi-disable mo ang setting na ito, hindi ito mababago o mao-override ng mga user.
+
+      Kung hindi nakatakda ang patakaran, makakapili ang user kung gusto niyang mahingan ng password upang i-unlock ang device o hindi.</translation>
 <translation id="7115494316187648452">Tinutukoy kung sinimulan ang isang proseso ng <ph name="PRODUCT_NAME" /> sa pag-login ng OS at patuloy na tumatakbo kapag isinara ang huling window ng browser, na nagbibigay-daan sa mga app sa background at sa kasalukuyang session sa pagba-browse na manatiling aktibo, kabilang ang anumang cookies ng session. Nagpapakita ang proseso sa background ng icon sa system tray at maaaring maisara kailanman mula roon.
 
       Kung nakatakda sa True ang patakarang ito, naka-enable ang background mode at hindi makokontrol ng user sa mga setting ng browser.
@@ -2054,6 +2119,13 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
           Kung itatakda mo ang patakarang ito, hindi ito maaaring baguhin o i-override ng mga user.
 
           Kung iiwanang hindi nakatakda ang patakarang ito, naka-disable ang high contrast mode sa umpisa ngunit maaaring i-enable ng user anumang oras.</translation>
+<translation id="815061180603915310">Kung nakatakda na naka-enable, pepwersahin ng patakarang ito ang profile na mailipat sa ephemeral mode. Kung tinukoy ang patakarang ito bilang patakaran ng OS (hal. GPO sa Windows) ilalapat ito sa bawat profile sa system; kung nakatakda ang patakaran bilang isang patakaran sa Cloud, ilalapat lang ito sa isang profile na naka-sign in sa isang pinamamahalaang account.
+
+      Sa mode na ito, pinapanatili lang sa disk ang data ng profile para lang sa tagal ng session ng user. Ang mga feature tulad ng history ng browser, mga extension at ang data ng mga ito, data sa web tulad ng cookies at mga database sa web ay hindi mananatili kapag naisara na ang browser. Gayunpaman, hindi nito pinipigilan ang user na manual na mag-download ng anumang data sa disk, mag-save ng mga page o mag-print ng mga ito.
+
+      Kung na-enable ng user ang pag-sync, pinapanatili ang lahat ng data na ito sa profile sa pag-sync ng mga ito tulad sa mga regular na profile. Available din ang Incognito mode kung hindi hayagang dini-disable ng patakaran.
+
+      Kung nakatakda ang patakaran sa naka-disable o hinayaang hindi nakatakda, hahantong ang mga pag-sign in sa mga regular na profile.</translation>
 <translation id="8164246350636985940">Ang default na gawi para sa mga site na wala sa anumang content pack.
 
           Ang patakarang ito ay para sa internal na paggamit ng <ph name="PRODUCT_NAME" /> mismo.</translation>
@@ -2124,6 +2196,18 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 <translation id="8312129124898414409">Binibigyang-daan ka na itakda kung pinapayagan ang mga website na gumamit ng pagbuo ng key. Ang paggamit ng pagbuo ng key ay maaaring pinapayagan para sa lahat ng website o tinatanggihan para sa lahat ng website.
 
           Kung hinayaang hindi nakatakda ang patakarang ito, gagamitin ang 'BlockKeygen' at magagawa itong baguhin ng isa pang user.</translation>
+<translation id="8316806736175990584">Kino-configure ang uri ng default na home page sa <ph name="PRODUCT_NAME" /> at pinipigilan ang mga user na mabago ang mga kagustuhan sa home page. Ang home page ay maaaring itakda sa isang URL na tutukuyin o itatakda mo sa Page ng Bagong Tab.
+
+          Kung ie-enable mo ang setting na ito, palaging gagamitin ang Page ng Bagong Tab para sa home page, at babalewalain ang lokasyon ng URL ng home page.
+
+          Kung idi-disable mo ang setting na ito, hinding hindi magiging Page ng Bagong Tab ang homepage ng user, maliban na lang kung nakatakda ang URL nito sa 'chrome://newtab'.
+
+          Kung ie-enable o idi-disable mo ang setting na ito, hindi mababago ng mga user ang uri ng kanilang homepage sa <ph name="PRODUCT_NAME" />.
+
+          Kung hindi mo itatakda ang patakarang ito, magagawang piliin ng mismong user na gawing home page niya ang page ng bagong tab.
+
+          Hindi available ang patakarang ito sa mga instance ng Windows na hindi nakakonekta
+          sa isang domain ng Aktibong Directory.</translation>
 <translation id="8329984337216493753">Sa mode ng retail lamang aktibo ang patakarang ito.
 
       Kapag nakatukoy ang DeviceIdleLogoutTimeout, tinutukoy ng patakarang ito ang tagal ng kahon ng babala gamit ang count down timer na ipinapakita sa user bago isagawa ang pag-logout.

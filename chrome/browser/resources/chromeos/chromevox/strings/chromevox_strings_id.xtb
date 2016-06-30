@@ -21,6 +21,7 @@
 <translation id="1167230103353892028"><ph name="NAME" />, item menu, dengan submenu</translation>
 <translation id="1177863135347784049">Sesuaikan</translation>
 <translation id="1188858454923323853">komplementer</translation>
+<translation id="1201402288615127009">Berikutnya</translation>
 <translation id="1206619573307042055">marquee</translation>
 <translation id="1213216066620407844">ChromeVox - Memberikan Suara untuk Chrome</translation>
 <translation id="1229276918471378188">Lompatan sebelumnya</translation>
@@ -122,7 +123,6 @@
 <translation id="2553108862507765288">kesalahan tata bahasa</translation>
 <translation id="257674075312929031">Grup</translation>
 <translation id="2582407057977008361">Pinggir</translation>
-<translation id="2589102159832527089">Laman ini berisi teks yang diekstrak secara otomatis dari file PDF &lt;b&gt;<ph name="FILENAME" />&lt;/b&gt;. &lt;a href="<ph name="URL" />"&gt;Klik di sini untuk aslinya.&lt;/a&gt;</translation>
 <translation id="2606210917827248971">dengan {COUNT,plural, =1{# item}other{# item}}</translation>
 <translation id="2614981083756825552">Tata Letak Math ML</translation>
 <translation id="2626530649491650971">dapat diklik</translation>
@@ -510,7 +510,6 @@
 <translation id="6129953537138746214">Spasi</translation>
 <translation id="6142308968191113180">Judul 4</translation>
 <translation id="6169420925157477918">Gambar dengan deskripsi panjang</translation>
-<translation id="6172087735260766220">Tidak dapat mengakses teks yang dapat diakses, dari PDF yang tidak dapat disalin.</translation>
 <translation id="6186305613600865047">Melompat ke bagian bawah laman</translation>
 <translation id="6193330012414963395">AM PM</translation>
 <translation id="622484624075952240">Bawah</translation>
@@ -549,6 +548,7 @@
 <translation id="6659594942844771486">Tab</translation>
 <translation id="667999046851023355">Dokumen</translation>
 <translation id="6697092096875747123">Kotak kombo sebelumnya</translation>
+<translation id="6710213216561001401">Sebelumnya</translation>
 <translation id="6714813999819678458">Judul tingkat 2 sebelumnya</translation>
 <translation id="6716505898850596801">Tombol pengubah</translation>
 <translation id="671916444866103745">Tidak ada bangunan terkenal ARIA berikutnya.</translation>
@@ -690,6 +690,7 @@
 <translation id="842922884199979200">Tidak ada judul tingkat 3 berikutnya.</translation>
 <translation id="8430049249787218991">mnubr</translation>
 <translation id="844681116543532394">Tidak ada kotak centang sebelumnya.</translation>
+<translation id="8446884382197647889">Pelajari Lebih Lanjut</translation>
 <translation id="8455868257606149352">Maks <ph name="X" /></translation>
 <translation id="84575901236241018">memiliki tombol akses, <ph name="KEY" /></translation>
 <translation id="8476508772960940536">ringkasan jendela</translation>
