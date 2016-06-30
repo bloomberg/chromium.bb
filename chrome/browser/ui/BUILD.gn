@@ -288,11 +288,6 @@ split_static_library("ui") {
       "//ui/app_list/presenter:mojom",
       "//ui/keyboard:mojom",
     ]
-    if (!is_chromeos) {
-      sources += rebase_path(gypi_values.chrome_browser_ui_ash_non_chromeos,
-                             ".",
-                             "//chrome")
-    }
   } else {  # Not ash.
     sources += rebase_path(gypi_values.chrome_browser_ui_non_ash_sources,
                            ".",
