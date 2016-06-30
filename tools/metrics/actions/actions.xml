@@ -8794,6 +8794,24 @@ should be able to be added at any place in this file.
   <obsolete>Deprecated as of 8/2015</obsolete>
 </action>
 
+<action name="MobileExternalNavigationDispatched">
+  <owner>mariakhomenko@chromium.org</owner>
+  <description>
+    Records when the system started a VIEW intent on a navigation click. This
+    happens when there is another application in the system that's not a browser
+    and that can handle this URL (e.g. Maps app for  http://maps.google.com/
+    url).
+  </description>
+</action>
+
+<action name="MobileExternalNavigationReceived">
+  <owner>mariakhomenko@chromium.org</owner>
+  <description>
+    Records when a user was given a choice between using Chrome and an installed
+    app and chose Chrome.
+  </description>
+</action>
+
 <action name="MobileFirstEditInOmnibox">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>

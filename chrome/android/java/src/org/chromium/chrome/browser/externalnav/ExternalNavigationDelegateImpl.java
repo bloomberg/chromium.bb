@@ -30,6 +30,8 @@ import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.PathUtils;
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.VisibleForTesting;
+import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeFeatureList;
@@ -47,6 +49,7 @@ import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.base.WindowAndroid.PermissionCallback;
 import org.chromium.webapk.lib.client.WebApkValidator;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -239,13 +242,15 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
 
     @Override
     public int countSpecializedHandlers(List<ResolveInfo> infos) {
-        return countSpecializedHandlersWithFilter(infos, null);
+        return getSpecializedHandlersWithFilter(infos, null).size();
     }
 
-    static int countSpecializedHandlersWithFilter(
+    @VisibleForTesting
+    static ArrayList<String> getSpecializedHandlersWithFilter(
             List<ResolveInfo> infos, String filterPackageName) {
+        ArrayList<String> result = new ArrayList<String>();
         if (infos == null) {
-            return 0;
+            return result;
         }
 
         int count = 0;
@@ -266,9 +271,9 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
                 continue;
             }
 
-            ++count;
+            result.add(info.activityInfo != null ? info.activityInfo.packageName : "");
         }
-        return count;
+        return result;
     }
 
     /**
@@ -285,7 +290,7 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
         try {
             List<ResolveInfo> handlers = context.getPackageManager().queryIntentActivities(
                     intent, PackageManager.GET_RESOLVED_FILTER);
-            return countSpecializedHandlersWithFilter(handlers, packageName) > 0;
+            return getSpecializedHandlersWithFilter(handlers, packageName).size() > 0;
         } catch (RuntimeException e) {
             logTransactionTooLargeOrRethrow(e, intent);
         }
@@ -312,6 +317,7 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
             Context context = getAvailableContext();
             if (!(context instanceof Activity)) intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             context.startActivity(intent);
+            recordExternalNavigationDispatched(intent);
         } catch (RuntimeException e) {
             logTransactionTooLargeOrRethrow(e, intent);
         }
@@ -319,6 +325,7 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
 
     @Override
     public boolean startActivityIfNeeded(Intent intent) {
+        boolean activityWasLaunched;
         // Only touches disk on Kitkat. See http://crbug.com/617725 for more context.
         StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskWrites();
         StrictMode.allowThreadDiskReads();
@@ -326,15 +333,25 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
             forcePdfViewerAsIntentHandlerIfNeeded(mApplicationContext, intent);
             Context context = getAvailableContext();
             if (context instanceof Activity) {
-                return ((Activity) context).startActivityIfNeeded(intent, -1);
+                activityWasLaunched = ((Activity) context).startActivityIfNeeded(intent, -1);
             } else {
-                return false;
+                activityWasLaunched = false;
             }
+            if (activityWasLaunched) recordExternalNavigationDispatched(intent);
+            return activityWasLaunched;
         } catch (RuntimeException e) {
             logTransactionTooLargeOrRethrow(e, intent);
             return false;
         } finally {
             StrictMode.setThreadPolicy(oldPolicy);
+        }
+    }
+
+    private void recordExternalNavigationDispatched(Intent intent) {
+        ArrayList<String> specializedHandlers = intent.getStringArrayListExtra(
+                IntentHandler.EXTRA_EXTERNAL_NAV_PACKAGES);
+        if (specializedHandlers != null && specializedHandlers.size() > 0) {
+            RecordUserAction.record("MobileExternalNavigationDispatched");
         }
     }
 
@@ -521,5 +538,11 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
         if (TextUtils.isEmpty(fileExtension)) return false;
 
         return PDF_EXTENSION.equals(fileExtension);
+    }
+
+    @Override
+    public void maybeRecordAppHandlersInIntent(Intent intent, List<ResolveInfo> infos) {
+        intent.putExtra(IntentHandler.EXTRA_EXTERNAL_NAV_PACKAGES,
+                getSpecializedHandlersWithFilter(infos, null));
     }
 }

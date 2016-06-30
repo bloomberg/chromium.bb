@@ -357,6 +357,7 @@ public class ExternalNavigationHandler {
         if (params.isOpenInNewTab()) intent.putExtra(Browser.EXTRA_CREATE_NEW_TAB, true);
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         mDelegate.maybeSetWindowId(intent);
+        mDelegate.maybeRecordAppHandlersInIntent(intent, resolvingInfos);
 
         if (params.getReferrerUrl() != null) {
             IntentHandler.setPendingReferrer(intent, params.getReferrerUrl());

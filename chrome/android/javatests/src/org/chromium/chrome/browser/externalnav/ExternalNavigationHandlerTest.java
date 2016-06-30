@@ -1001,9 +1001,14 @@ public class ExternalNavigationHandlerTest extends InstrumentationTestCase {
         }
 
         @Override
-        public int countSpecializedHandlers(List<ResolveInfo> infos) {
+        public int countSpecializedHandlers(List<ResolveInfo> resolveInfos) {
+            return getSpecializedHandlers(resolveInfos).size();
+        }
+
+        private ArrayList<String> getSpecializedHandlers(List<ResolveInfo> infos) {
+            ArrayList<String> result = new ArrayList<>();
             if (infos == null) {
-                return 0;
+                return result;
             }
             int count = 0;
             for (ResolveInfo info : infos) {
@@ -1013,10 +1018,10 @@ public class ExternalNavigationHandlerTest extends InstrumentationTestCase {
                         || packageName.equals(NATIVE_APP_PACKAGE_NAME)
                         || packageName.equals(WEBAPK_PACKAGE_NAME)
                         || packageName.equals(WEBAPK_WITH_NATIVE_APP_PACKAGE_NAME)) {
-                    ++count;
+                    result.add(packageName);
                 }
             }
-            return count;
+            return result;
         }
 
         @Override
@@ -1079,6 +1084,10 @@ public class ExternalNavigationHandlerTest extends InstrumentationTestCase {
 
         @Override
         public void maybeSetWindowId(Intent intent) {
+        }
+
+        @Override
+        public void maybeRecordAppHandlersInIntent(Intent intent, List<ResolveInfo> info) {
         }
 
         @Override

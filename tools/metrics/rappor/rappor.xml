@@ -137,6 +137,15 @@ components/rappor/rappor_parameters.h.
 <rappor-metrics>
 <!-- Rappor metric definitions -->
 
+<rappor-metric name="Android.ExternalNavigationNotChosen"
+    type="UMA_RAPPOR_TYPE">
+  <owner>mariakhomenko@chromium.org</owner>
+  <summary>
+    The package name of an application that was given as an alternative choice
+    to handling a URL in Chrome, but wasn't chosen.
+  </summary>
+</rappor-metric>
+
 <rappor-metric name="AppBanner.NativeApp.Dismissed" type="ETLD_PLUS_ONE">
   <owner>dfalcantara@chromium.org</owner>
   <summary>

@@ -32,7 +32,7 @@ interface ExternalNavigationDelegate {
      * Search for intent handlers that are specific to this URL aka, specialized apps like
      * google maps or youtube
      */
-    boolean isSpecializedHandlerAvailable(List<ResolveInfo> intent);
+    boolean isSpecializedHandlerAvailable(List<ResolveInfo> infos);
 
     /**
      * Returns the number of specialized intent handlers in {@params infos}. Specialized intent
@@ -105,6 +105,9 @@ interface ExternalNavigationDelegate {
 
     /** Adds a window id to the intent, if necessary. */
     void maybeSetWindowId(Intent intent);
+
+    /** Adds the package name of a specialized intent handler. */
+    void maybeRecordAppHandlersInIntent(Intent intent, List<ResolveInfo> info);
 
     /**
      * Determine if the Chrome app is in the foreground.

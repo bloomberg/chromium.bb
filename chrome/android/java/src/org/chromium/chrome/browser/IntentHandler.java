@@ -23,10 +23,12 @@ import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordHistogram;
+import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.browser.externalauth.ExternalAuthUtils;
 import org.chromium.chrome.browser.externalnav.ExternalNavigationDelegateImpl;
 import org.chromium.chrome.browser.externalnav.IntentWithGesturesHandler;
 import org.chromium.chrome.browser.omnibox.AutocompleteController;
+import org.chromium.chrome.browser.rappor.RapporServiceBridge;
 import org.chromium.chrome.browser.search_engines.TemplateUrlService;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.document.ActivityDelegate;
@@ -131,6 +133,12 @@ public class IntentHandler {
      * For multi-window, passes the id of the window.
      */
     public static final String EXTRA_WINDOW_ID = "org.chromium.chrome.browser.window_id";
+
+    /**
+     * Records package names of other applications in the system that could have handled
+     * this intent.
+     */
+    public static final String EXTRA_EXTERNAL_NAV_PACKAGES = "org.chromium.chrome.browser.eenp";
 
     /**
      * Fake ComponentName used in constructing TRUSTED_APPLICATION_CODE_EXTRA.
@@ -290,6 +298,22 @@ public class IntentHandler {
     }
 
     /**
+     * Records an action when a user chose to handle a URL in Chrome that could have been handled
+     * by an application installed on the phone. Also records the name of that application.
+     * This doesn't include generic URL handlers, such as browsers.
+     */
+    private void recordAppHandlersForIntent(Intent intent) {
+        List<String> packages = IntentUtils.safeGetStringArrayListExtra(intent,
+                IntentHandler.EXTRA_EXTERNAL_NAV_PACKAGES);
+        if (packages != null && packages.size() > 0) {
+            RecordUserAction.record("MobileExternalNavigationReceived");
+            for (String name : packages) {
+                RapporServiceBridge.sampleString("Android.ExternalNavigationNotChosen", name);
+            }
+        }
+    }
+
+    /**
      * Handles an Intent after the ChromeTabbedActivity decides that it shouldn't ignore the
      * Intent.
      *
@@ -316,6 +340,7 @@ public class IntentHandler {
                 IntentUtils.safeGetStringExtra(intent, Browser.EXTRA_APPLICATION_ID),
                 tabIdToBringToFront, hasUserGesture, intent);
         recordExternalIntentSourceUMA(intent);
+        recordAppHandlersForIntent(intent);
         return true;
     }
 
