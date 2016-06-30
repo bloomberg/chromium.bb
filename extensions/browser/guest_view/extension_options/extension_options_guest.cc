@@ -226,7 +226,7 @@ void ExtensionOptionsGuest::DidNavigateMainFrame(
     const content::LoadCommittedDetails& details,
     const content::FrameNavigateParams& params) {
   if (attached()) {
-    auto guest_zoom_controller =
+    auto* guest_zoom_controller =
         zoom::ZoomController::FromWebContents(web_contents());
     guest_zoom_controller->SetZoomMode(
         zoom::ZoomController::ZOOM_MODE_ISOLATED);

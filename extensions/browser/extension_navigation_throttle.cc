@@ -44,7 +44,7 @@ ExtensionNavigationThrottle::WillStartRequest() {
   // the ancestor chain, so find the current RenderFrameHost and use it to
   // traverse up to the main frame.
   content::RenderFrameHost* navigating_frame = nullptr;
-  for (auto frame : navigation_handle()->GetWebContents()->GetAllFrames()) {
+  for (auto* frame : navigation_handle()->GetWebContents()->GetAllFrames()) {
     if (frame->GetFrameTreeNodeId() ==
         navigation_handle()->GetFrameTreeNodeId()) {
       navigating_frame = frame;

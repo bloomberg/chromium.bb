@@ -132,7 +132,7 @@ bool IsWebRequestEvent(const std::string& event_name) {
     web_request_event_name.replace(
         0, strlen(webview::kWebViewEventPrefix), kWebRequestEventPrefix);
   }
-  const auto web_request_events_end =
+  auto* const* web_request_events_end =
       kWebRequestEvents + arraysize(kWebRequestEvents);
   return std::find(kWebRequestEvents, web_request_events_end,
                    web_request_event_name) != web_request_events_end;

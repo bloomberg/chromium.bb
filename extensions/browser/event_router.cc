@@ -179,7 +179,7 @@ EventRouter::EventRouter(BrowserContext* browser_context,
 }
 
 EventRouter::~EventRouter() {
-  for (auto process : observed_process_set_)
+  for (auto* process : observed_process_set_)
     process->RemoveObserver(this);
 }
 

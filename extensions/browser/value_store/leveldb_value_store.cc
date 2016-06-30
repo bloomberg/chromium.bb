@@ -252,7 +252,7 @@ bool LeveldbValueStore::OnMemoryDump(
   res = base::StringToUint64(value, &size);
   DCHECK(res);
 
-  auto dump = pmd->CreateAllocatorDump(base::StringPrintf(
+  auto* dump = pmd->CreateAllocatorDump(base::StringPrintf(
       "leveldb/value_store/%s/0x%" PRIXPTR, open_histogram_name().c_str(),
       reinterpret_cast<uintptr_t>(this)));
   dump->AddScalar(base::trace_event::MemoryAllocatorDump::kNameSize,

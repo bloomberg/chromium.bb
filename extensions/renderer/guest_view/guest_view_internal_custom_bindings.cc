@@ -137,7 +137,7 @@ void GuestViewInternalCustomBindings::AttachGuest(
 
   int element_instance_id = args[0]->Int32Value();
   // An element instance ID uniquely identifies a GuestViewContainer.
-  auto guest_view_container =
+  auto* guest_view_container =
       guest_view::GuestViewContainer::FromID(element_instance_id);
 
   // TODO(fsamuel): Should we be reporting an error if the element instance ID
@@ -182,7 +182,7 @@ void GuestViewInternalCustomBindings::DetachGuest(
 
   int element_instance_id = args[0]->Int32Value();
   // An element instance ID uniquely identifies a GuestViewContainer.
-  auto guest_view_container =
+  auto* guest_view_container =
       guest_view::GuestViewContainer::FromID(element_instance_id);
 
   // TODO(fsamuel): Should we be reporting an error if the element instance ID
@@ -382,7 +382,7 @@ void GuestViewInternalCustomBindings::RegisterElementResizeCallback(
   int element_instance_id = args[0]->Int32Value();
   // An element instance ID uniquely identifies a ExtensionsGuestViewContainer
   // within a RenderView.
-  auto guest_view_container = static_cast<ExtensionsGuestViewContainer*>(
+  auto* guest_view_container = static_cast<ExtensionsGuestViewContainer*>(
       guest_view::GuestViewContainer::FromID(element_instance_id));
   if (!guest_view_container)
     return;
@@ -408,7 +408,7 @@ void GuestViewInternalCustomBindings::RegisterView(
   // ID as the key. The reference is made weak so that it will not extend the
   // lifetime of the object.
   int view_instance_id = args[0]->Int32Value();
-  auto object =
+  auto* object =
       new v8::Global<v8::Object>(args.GetIsolate(), args[1].As<v8::Object>());
   weak_view_map.Get().insert(std::make_pair(view_instance_id, object));
 
