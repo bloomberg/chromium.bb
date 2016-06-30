@@ -1014,6 +1014,51 @@ should be able to be added at any place in this file.
   <description>
     This user action is logged when Autofill detects a form submission.
   </description>
+  <obsolete>
+    Deprecated 6/2016. Replaced by the versions with a suffix, which are more
+    descriptive.
+  </obsolete>
+</action>
+
+<action name="Autofill_FormSubmitted_FilledAll">
+  <owner>sebsg@chromium.org</owner>
+  <description>
+    This user action is logged when Autofill detects a form submission for a
+    form where all the fields were autofilled.
+  </description>
+</action>
+
+<action name="Autofill_FormSubmitted_FilledNone_SuggestionsNotShown">
+  <owner>sebsg@chromium.org</owner>
+  <description>
+    This user action is logged when Autofill detects a form submission for a
+    form where Autofill suggestions were not shown.
+  </description>
+</action>
+
+<action name="Autofill_FormSubmitted_FilledNone_SuggestionsShown">
+  <owner>sebsg@chromium.org</owner>
+  <description>
+    This user action is logged when Autofill detects a form submission for a
+    form where an Autofill suggestion was shown but no fields were filled.
+  </description>
+</action>
+
+<action name="Autofill_FormSubmitted_FilledSome">
+  <owner>sebsg@chromium.org</owner>
+  <description>
+    This user action is logged when Autofill detects a form submission for a
+    form where some field were filled.
+  </description>
+</action>
+
+<action name="Autofill_FormSubmitted_NonFillable">
+  <owner>sebsg@chromium.org</owner>
+  <description>
+    This user action is logged when Autofill detects a form submission for a
+    form that is not Autofillable or for a form that was filled with new
+    information that Autofill could not predict.
+  </description>
 </action>
 
 <action name="Autofill_OnWillSubmitForm">

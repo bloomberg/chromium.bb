@@ -1671,7 +1671,8 @@ TEST_F(AutofillMetricsTest, CreditCardCheckoutFlowUserActions) {
     autofill_manager_->SubmitForm(form, TimeTicks::Now());
     EXPECT_EQ(1,
               user_action_tester.GetActionCount("Autofill_OnWillSubmitForm"));
-    EXPECT_EQ(1, user_action_tester.GetActionCount("Autofill_FormSubmitted"));
+    EXPECT_EQ(1, user_action_tester.GetActionCount(
+                     "Autofill_FormSubmitted_NonFillable"));
   }
 }
 
@@ -1748,7 +1749,8 @@ TEST_F(AutofillMetricsTest, ProfileCheckoutFlowUserActions) {
     autofill_manager_->SubmitForm(form, TimeTicks::Now());
     EXPECT_EQ(1,
               user_action_tester.GetActionCount("Autofill_OnWillSubmitForm"));
-    EXPECT_EQ(1, user_action_tester.GetActionCount("Autofill_FormSubmitted"));
+    EXPECT_EQ(1, user_action_tester.GetActionCount(
+                     "Autofill_FormSubmitted_NonFillable"));
   }
 }
 
@@ -3363,10 +3365,13 @@ TEST_F(AutofillMetricsTest, AutofillFormSubmittedState) {
   // No data entered in the form.
   {
     base::HistogramTester histogram_tester;
+    base::UserActionTester user_action_tester;
     autofill_manager_->SubmitForm(form, TimeTicks::Now());
     histogram_tester.ExpectUniqueSample(
         "Autofill.FormSubmittedState",
         AutofillMetrics::NON_FILLABLE_FORM_OR_NEW_DATA, 1);
+    EXPECT_EQ(1, user_action_tester.GetActionCount(
+                     "Autofill_FormSubmitted_NonFillable"));
   }
 
   // Non fillable form.
@@ -3376,10 +3381,13 @@ TEST_F(AutofillMetricsTest, AutofillFormSubmittedState) {
 
   {
     base::HistogramTester histogram_tester;
+    base::UserActionTester user_action_tester;
     autofill_manager_->SubmitForm(form, TimeTicks::Now());
     histogram_tester.ExpectUniqueSample(
         "Autofill.FormSubmittedState",
         AutofillMetrics::NON_FILLABLE_FORM_OR_NEW_DATA, 1);
+    EXPECT_EQ(1, user_action_tester.GetActionCount(
+                     "Autofill_FormSubmitted_NonFillable"));
   }
 
   // Fill in the third field.
@@ -3389,21 +3397,27 @@ TEST_F(AutofillMetricsTest, AutofillFormSubmittedState) {
   // Autofilled none with no suggestions shown.
   {
     base::HistogramTester histogram_tester;
+    base::UserActionTester user_action_tester;
     autofill_manager_->SubmitForm(form, TimeTicks::Now());
     histogram_tester.ExpectUniqueSample(
         "Autofill.FormSubmittedState",
         AutofillMetrics::FILLABLE_FORM_AUTOFILLED_NONE_DID_NOT_SHOW_SUGGESTIONS,
         1);
+    EXPECT_EQ(1, user_action_tester.GetActionCount(
+                     "Autofill_FormSubmitted_FilledNone_SuggestionsNotShown"));
   }
 
   // Autofilled none with suggestions shown.
   autofill_manager_->DidShowSuggestions(true, form, form.fields[2]);
   {
     base::HistogramTester histogram_tester;
+    base::UserActionTester user_action_tester;
     autofill_manager_->SubmitForm(form, TimeTicks::Now());
     histogram_tester.ExpectUniqueSample(
         "Autofill.FormSubmittedState",
         AutofillMetrics::FILLABLE_FORM_AUTOFILLED_NONE_DID_SHOW_SUGGESTIONS, 1);
+    EXPECT_EQ(1, user_action_tester.GetActionCount(
+                     "Autofill_FormSubmitted_FilledNone_SuggestionsShown"));
   }
 
   // Mark one of the fields as autofilled.
@@ -3413,10 +3427,13 @@ TEST_F(AutofillMetricsTest, AutofillFormSubmittedState) {
   // Autofilled some of the fields.
   {
     base::HistogramTester histogram_tester;
+    base::UserActionTester user_action_tester;
     autofill_manager_->SubmitForm(form, TimeTicks::Now());
     histogram_tester.ExpectUniqueSample(
         "Autofill.FormSubmittedState",
         AutofillMetrics::FILLABLE_FORM_AUTOFILLED_SOME, 1);
+    EXPECT_EQ(1, user_action_tester.GetActionCount(
+                     "Autofill_FormSubmitted_FilledSome"));
   }
 
   // Mark all of the fillable fields as autofilled.
@@ -3427,10 +3444,13 @@ TEST_F(AutofillMetricsTest, AutofillFormSubmittedState) {
   // Autofilled all the fields.
   {
     base::HistogramTester histogram_tester;
+    base::UserActionTester user_action_tester;
     autofill_manager_->SubmitForm(form, TimeTicks::Now());
     histogram_tester.ExpectUniqueSample(
         "Autofill.FormSubmittedState",
         AutofillMetrics::FILLABLE_FORM_AUTOFILLED_ALL, 1);
+    EXPECT_EQ(1, user_action_tester.GetActionCount(
+                     "Autofill_FormSubmitted_FilledAll"));
   }
 
   // Clear out the third field's value.
@@ -3440,10 +3460,13 @@ TEST_F(AutofillMetricsTest, AutofillFormSubmittedState) {
   // Non fillable form.
   {
     base::HistogramTester histogram_tester;
+    base::UserActionTester user_action_tester;
     autofill_manager_->SubmitForm(form, TimeTicks::Now());
     histogram_tester.ExpectUniqueSample(
         "Autofill.FormSubmittedState",
         AutofillMetrics::NON_FILLABLE_FORM_OR_NEW_DATA, 1);
+    EXPECT_EQ(1, user_action_tester.GetActionCount(
+                     "Autofill_FormSubmitted_NonFillable"));
   }
 }
 

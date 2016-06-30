@@ -581,6 +581,37 @@ void AutofillMetrics::LogAutofillFormSubmittedState(
     AutofillFormSubmittedState state) {
   UMA_HISTOGRAM_ENUMERATION("Autofill.FormSubmittedState", state,
                             AUTOFILL_FORM_SUBMITTED_STATE_ENUM_SIZE);
+
+  switch (state) {
+    case NON_FILLABLE_FORM_OR_NEW_DATA:
+      base::RecordAction(
+          base::UserMetricsAction("Autofill_FormSubmitted_NonFillable"));
+      break;
+
+    case FILLABLE_FORM_AUTOFILLED_ALL:
+      base::RecordAction(
+          base::UserMetricsAction("Autofill_FormSubmitted_FilledAll"));
+      break;
+
+    case FILLABLE_FORM_AUTOFILLED_SOME:
+      base::RecordAction(
+          base::UserMetricsAction("Autofill_FormSubmitted_FilledSome"));
+      break;
+
+    case FILLABLE_FORM_AUTOFILLED_NONE_DID_SHOW_SUGGESTIONS:
+      base::RecordAction(base::UserMetricsAction(
+          "Autofill_FormSubmitted_FilledNone_SuggestionsShown"));
+      break;
+
+    case FILLABLE_FORM_AUTOFILLED_NONE_DID_NOT_SHOW_SUGGESTIONS:
+      base::RecordAction(base::UserMetricsAction(
+          "Autofill_FormSubmitted_FilledNone_SuggestionsNotShown"));
+      break;
+
+    default:
+      NOTREACHED();
+      break;
+  }
 }
 
 // static
@@ -772,8 +803,6 @@ void AutofillMetrics::FormEventLogger::OnFormSubmitted() {
   } else {
     Log(AutofillMetrics::FORM_EVENT_LOCAL_SUGGESTION_SUBMITTED_ONCE);
   }
-
-  base::RecordAction(base::UserMetricsAction("Autofill_FormSubmitted"));
 }
 
 void AutofillMetrics::FormEventLogger::Log(FormEvent event) const {
