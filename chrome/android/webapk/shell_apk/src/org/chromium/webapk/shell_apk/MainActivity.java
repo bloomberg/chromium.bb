@@ -32,6 +32,7 @@ public class MainActivity extends Activity {
     private static final String EXTRA_SHORT_NAME = "org.chromium.chrome.browser.webapp_short_name";
     private static final String EXTRA_NAME = "org.chromium.chrome.browser.webapp_name";
     private static final String EXTRA_URL = "org.chromium.chrome.browser.webapp_url";
+    private static final String EXTRA_SOURCE = "org.chromium.chrome.browser.webapp_source";
     private static final String EXTRA_THEME_COLOR = "org.chromium.chrome.browser.theme_color";
     private static final String EXTRA_BACKGROUND_COLOR =
             "org.chromium.chrome.browser.background_color";
@@ -62,11 +63,13 @@ public class MainActivity extends Activity {
             Bundle bundle = appInfo.metaData;
             String url = bundle.getString(META_DATA_START_URL);
 
-            String overrideUrl = getIntent().getDataString();
+            Intent intent = getIntent();
+            String overrideUrl = intent.getDataString();
             // TODO(pkotwicz): Use same logic as {@code IntentHandler#shouldIgnoreIntent()}
             if (overrideUrl != null && overrideUrl.startsWith("https:")) {
                 url = overrideUrl;
             }
+            int source = intent.getIntExtra(EXTRA_SOURCE, 0);
 
             String webappId = WebApkConstants.WEBAPK_ID_PREFIX + packageName;
             String runtimeHost = bundle.getString(META_DATA_RUNTIME_HOST);
@@ -97,6 +100,7 @@ public class MainActivity extends Activity {
                      .putExtra(EXTRA_NAME, name)
                      .putExtra(EXTRA_URL, url)
                      .putExtra(EXTRA_ICON, encodedIcon)
+                     .putExtra(EXTRA_SOURCE, source)
                      .putExtra(EXTRA_THEME_COLOR, themeColor)
                      .putExtra(EXTRA_BACKGROUND_COLOR, backgroundColor)
                      .putExtra(EXTRA_IS_ICON_GENERATED, isIconGenerated)

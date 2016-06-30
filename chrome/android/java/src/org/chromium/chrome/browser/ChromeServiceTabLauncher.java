@@ -21,7 +21,7 @@ import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.common.Referrer;
 import org.chromium.content_public.common.ResourceRequestBody;
 import org.chromium.ui.base.PageTransition;
-import org.chromium.webapk.lib.client.NavigationClient;
+import org.chromium.webapk.lib.client.WebApkNavigationClient;
 import org.chromium.webapk.lib.client.WebApkValidator;
 
 /**
@@ -50,8 +50,13 @@ public class ChromeServiceTabLauncher extends ServiceTabLauncher {
         if (CommandLine.getInstance().hasSwitch(ChromeSwitches.ENABLE_WEBAPK)) {
             String webApkPackageName = WebApkValidator.queryWebApkPackage(context, url);
             if (webApkPackageName != null) {
-                NavigationClient.launchWebApk(context, webApkPackageName, url);
-                return;
+                Intent intent =
+                        WebApkNavigationClient.createLaunchWebApkIntent(webApkPackageName, url);
+                if (intent != null) {
+                    intent.putExtra(ShortcutHelper.EXTRA_SOURCE, ShortcutSource.NOTIFICATION);
+                    context.startActivity(intent);
+                    return;
+                }
             }
         }
 

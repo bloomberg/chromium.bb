@@ -4,29 +4,28 @@
 
 package org.chromium.webapk.lib.client;
 
-import android.content.Context;
 import android.content.Intent;
 
 /**
- * NavigationClient provides an API to launch a WebAPK.
+ * WebApkNavigationClient provides an API to get an intent to launch a WebAPK.
  */
-public class NavigationClient {
+public class WebApkNavigationClient {
     /**
-     * Launches a WebAPK.
-     * @param context Application context.
+     * Creates intent to launch a WebAPK.
      * @param webApkPackageName Package name of the WebAPK to launch.
      * @param url URL to navigate WebAPK to.
+     * @return The intent.
      */
-    public static void launchWebApk(Context context, String webApkPackageName, String url) {
+    public static Intent createLaunchWebApkIntent(String webApkPackageName, String url) {
         Intent intent;
         try {
             intent = Intent.parseUri(url, Intent.URI_INTENT_SCHEME);
         } catch (Exception e) {
-            return;
+            return null;
         }
 
         intent.setPackage(webApkPackageName);
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        context.startActivity(intent);
+        return intent;
     }
 }
