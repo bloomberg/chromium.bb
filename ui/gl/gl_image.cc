@@ -10,8 +10,4 @@ bool GLImage::EmulatingRGB() const {
   return false;
 }
 
-GLImage::Type GLImage::GetType() const {
-  return Type::NONE;
-}
-
 }  // namespace gl
