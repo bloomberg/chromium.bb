@@ -650,28 +650,6 @@ TEST_F(BindTest, ArrayArgumentBinding) {
   EXPECT_EQ(3, const_array_cb.Run());
 }
 
-// Verify SupportsAddRefAndRelease correctly introspects the class type for
-// AddRef() and Release().
-//  - Class with AddRef() and Release()
-//  - Class without AddRef() and Release()
-//  - Derived Class with AddRef() and Release()
-//  - Derived Class without AddRef() and Release()
-//  - Derived Class with AddRef() and Release() and a private destructor.
-TEST_F(BindTest, SupportsAddRefAndRelease) {
-  EXPECT_TRUE(internal::SupportsAddRefAndRelease<HasRef>::value);
-  EXPECT_FALSE(internal::SupportsAddRefAndRelease<NoRef>::value);
-
-  // StrictMock<T> is a derived class of T.  So, we use StrictMock<HasRef> and
-  // StrictMock<NoRef> to test that SupportsAddRefAndRelease works over
-  // inheritance.
-  EXPECT_TRUE(internal::SupportsAddRefAndRelease<StrictMock<HasRef> >::value);
-  EXPECT_FALSE(internal::SupportsAddRefAndRelease<StrictMock<NoRef> >::value);
-
-  // This matters because the implementation creates a dummy class that
-  // inherits from the template type.
-  EXPECT_TRUE(internal::SupportsAddRefAndRelease<HasRefPrivateDtor>::value);
-}
-
 // Unretained() wrapper support.
 //   - Method bound to Unretained() non-const object.
 //   - Const method bound to Unretained() non-const object.

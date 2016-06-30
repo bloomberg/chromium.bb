@@ -240,64 +240,6 @@ namespace internal {
 //
 // Works on gcc-4.2, gcc-4.4, and Visual Studio 2008.
 //
-// TODO(ajwong): Move to ref_counted.h or template_util.h when we've vetted
-// this works well.
-//
-// TODO(ajwong): Make this check for Release() as well.
-// See http://crbug.com/82038.
-template <typename T>
-class SupportsAddRefAndRelease {
-  using Yes = char[1];
-  using No = char[2];
-
-  struct BaseMixin {
-    void AddRef();
-  };
-
-// MSVC warns when you try to use Base if T has a private destructor, the
-// common pattern for refcounted types. It does this even though no attempt to
-// instantiate Base is made.  We disable the warning for this definition.
-#if defined(OS_WIN)
-#pragma warning(push)
-#pragma warning(disable:4624)
-#endif
-  struct Base : public T, public BaseMixin {
-  };
-#if defined(OS_WIN)
-#pragma warning(pop)
-#endif
-
-  template <void(BaseMixin::*)()> struct Helper {};
-
-  template <typename C>
-  static No& Check(Helper<&C::AddRef>*);
-
-  template <typename >
-  static Yes& Check(...);
-
- public:
-  enum { value = sizeof(Check<Base>(0)) == sizeof(Yes) };
-};
-
-// Helpers to assert that arguments of a recounted type are bound with a
-// scoped_refptr.
-template <bool IsClasstype, typename T>
-struct UnsafeBindtoRefCountedArgHelper : std::false_type {
-};
-
-template <typename T>
-struct UnsafeBindtoRefCountedArgHelper<true, T>
-    : std::integral_constant<bool, SupportsAddRefAndRelease<T>::value> {
-};
-
-template <typename T>
-struct UnsafeBindtoRefCountedArg : std::false_type {
-};
-
-template <typename T>
-struct UnsafeBindtoRefCountedArg<T*>
-    : UnsafeBindtoRefCountedArgHelper<std::is_class<T>::value, T> {
-};
 
 template <typename T>
 class HasIsMethodTag {
