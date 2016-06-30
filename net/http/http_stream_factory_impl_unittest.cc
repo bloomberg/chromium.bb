@@ -1539,7 +1539,8 @@ class HttpStreamFactoryBidirectionalQuicTest
       public ::testing::WithParamInterface<QuicVersion> {
  protected:
   HttpStreamFactoryBidirectionalQuicTest()
-      : clock_(new MockClock),
+      : default_url_(kDefaultUrl),
+        clock_(new MockClock),
         client_packet_maker_(GetParam(),
                              0,
                              clock_,
@@ -1600,9 +1601,8 @@ class HttpStreamFactoryBidirectionalQuicTest
     base::Time expiration = base::Time::Now() + base::TimeDelta::FromDays(1);
     alternative_service_info_vector.push_back(
         AlternativeServiceInfo(alternative_service, expiration));
-    url::SchemeHostPort server("https", "www.example.org", 443);
     http_server_properties_.SetAlternativeServices(
-        server, alternative_service_info_vector);
+        url::SchemeHostPort(default_url_), alternative_service_info_vector);
   };
 
   test::QuicTestPacketMaker& client_packet_maker() {
@@ -1615,6 +1615,8 @@ class HttpStreamFactoryBidirectionalQuicTest
   MockClientSocketFactory& socket_factory() { return socket_factory_; }
 
   HttpNetworkSession* session() { return session_.get(); }
+
+  const GURL default_url_;
 
  private:
   MockClock* clock_;  // Owned by QuicStreamFactory
@@ -1642,8 +1644,6 @@ INSTANTIATE_TEST_CASE_P(Version,
 
 TEST_P(HttpStreamFactoryBidirectionalQuicTest,
        RequestBidirectionalStreamImplQuicAlternative) {
-  GURL url = GURL("https://www.example.org");
-
   MockQuicData mock_quic_data;
   SpdyPriority priority =
       ConvertRequestPriorityToQuicPriority(DEFAULT_PRIORITY);
@@ -1678,7 +1678,7 @@ TEST_P(HttpStreamFactoryBidirectionalQuicTest,
   SSLConfig ssl_config;
   HttpRequestInfo request_info;
   request_info.method = "GET";
-  request_info.url = GURL("https://www.example.org");
+  request_info.url = default_url_;
   request_info.load_flags = 0;
 
   StreamRequestWaiter waiter;
@@ -1696,7 +1696,7 @@ TEST_P(HttpStreamFactoryBidirectionalQuicTest,
 
   BidirectionalStreamRequestInfo bidi_request_info;
   bidi_request_info.method = "GET";
-  bidi_request_info.url = GURL("https://www.example.org/");
+  bidi_request_info.url = default_url_;
   bidi_request_info.end_stream_on_headers = true;
   bidi_request_info.priority = LOWEST;
 
@@ -1725,8 +1725,6 @@ TEST_P(HttpStreamFactoryBidirectionalQuicTest,
 // used instead.
 TEST_P(HttpStreamFactoryBidirectionalQuicTest,
        RequestBidirectionalStreamImplQuicNotEnabled) {
-  GURL url = GURL("https://www.example.org");
-
   // Make the http job fail.
   std::unique_ptr<StaticSocketDataProvider> http_job_data;
   http_job_data.reset(new StaticSocketDataProvider());
@@ -1745,7 +1743,7 @@ TEST_P(HttpStreamFactoryBidirectionalQuicTest,
   SSLConfig ssl_config;
   HttpRequestInfo request_info;
   request_info.method = "GET";
-  request_info.url = GURL("https://www.example.org");
+  request_info.url = default_url_;
   request_info.load_flags = 0;
 
   StreamRequestWaiter waiter;
@@ -1768,8 +1766,6 @@ TEST_P(HttpStreamFactoryBidirectionalQuicTest,
 // BidirectionalStreamQuicImpl.
 TEST_P(HttpStreamFactoryBidirectionalQuicTest,
        RequestBidirectionalStreamImplHttpJobFailsQuicJobSucceeds) {
-  GURL url = GURL("https://www.example.org");
-
   // Set up Quic data.
   MockQuicData mock_quic_data;
   SpdyPriority priority =
@@ -1805,7 +1801,7 @@ TEST_P(HttpStreamFactoryBidirectionalQuicTest,
   SSLConfig ssl_config;
   HttpRequestInfo request_info;
   request_info.method = "GET";
-  request_info.url = GURL("https://www.example.org");
+  request_info.url = default_url_;
   request_info.load_flags = 0;
 
   StreamRequestWaiter waiter;
@@ -1823,7 +1819,7 @@ TEST_P(HttpStreamFactoryBidirectionalQuicTest,
 
   BidirectionalStreamRequestInfo bidi_request_info;
   bidi_request_info.method = "GET";
-  bidi_request_info.url = GURL("https://www.example.org/");
+  bidi_request_info.url = default_url_;
   bidi_request_info.end_stream_on_headers = true;
   bidi_request_info.priority = LOWEST;
 

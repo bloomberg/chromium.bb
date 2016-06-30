@@ -333,6 +333,9 @@ class BidirectionalStreamTest : public testing::TestWithParam<bool> {
   BidirectionalStreamTest()
       : spdy_util_(kProtoHTTP2, true),
         session_deps_(kProtoHTTP2),
+        default_url_(kDefaultUrl),
+        host_port_pair_(HostPortPair::FromURL(default_url_)),
+        key_(host_port_pair_, ProxyServer::Direct(), PRIVACY_MODE_DISABLED),
         ssl_data_(SSLSocketDataProvider(ASYNC, OK)) {
     ssl_data_.SetNextProto(kProtoHTTP2);
     ssl_data_.cert = ImportCertFromFile(GetTestCertsDirectory(), "ok_cert.pem");
@@ -351,8 +354,7 @@ class BidirectionalStreamTest : public testing::TestWithParam<bool> {
   void InitSession(MockRead* reads,
                    size_t reads_count,
                    MockWrite* writes,
-                   size_t writes_count,
-                   const SpdySessionKey& key) {
+                   size_t writes_count) {
     ASSERT_TRUE(ssl_data_.cert.get());
     session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl_data_);
     sequenced_data_.reset(
@@ -361,12 +363,15 @@ class BidirectionalStreamTest : public testing::TestWithParam<bool> {
     session_deps_.net_log = net_log_.bound().net_log();
     http_session_ = SpdySessionDependencies::SpdyCreateSession(&session_deps_);
     session_ =
-        CreateSecureSpdySession(http_session_.get(), key, net_log_.bound());
+        CreateSecureSpdySession(http_session_.get(), key_, net_log_.bound());
   }
 
   BoundTestNetLog net_log_;
   SpdyTestUtil spdy_util_;
   SpdySessionDependencies session_deps_;
+  const GURL default_url_;
+  const HostPortPair host_port_pair_;
+  const SpdySessionKey key_;
   std::unique_ptr<SequencedSocketData> sequenced_data_;
   std::unique_ptr<HttpNetworkSession> http_session_;
 
@@ -415,7 +420,7 @@ TEST_F(BidirectionalStreamTest,
 // BidirectionalStreamSpdyImpl.
 TEST_F(BidirectionalStreamTest, TestReadDataAfterClose) {
   std::unique_ptr<SpdySerializedFrame> req(
-      spdy_util_.ConstructSpdyGet("https://www.example.org", 1, LOWEST));
+      spdy_util_.ConstructSpdyGet(kDefaultUrl, 1, LOWEST));
   // Empty DATA frame with an END_STREAM flag.
   std::unique_ptr<SpdySerializedFrame> end_stream(
       spdy_util_.ConstructSpdyBodyFrame(1, nullptr, 0, true));
@@ -444,15 +449,12 @@ TEST_F(BidirectionalStreamTest, TestReadDataAfterClose) {
       MockRead(SYNCHRONOUS, 0, 7),
   };
 
-  HostPortPair host_port_pair("www.example.org", 443);
-  SpdySessionKey key(host_port_pair, ProxyServer::Direct(),
-                     PRIVACY_MODE_DISABLED);
-  InitSession(reads, arraysize(reads), writes, arraysize(writes), key);
+  InitSession(reads, arraysize(reads), writes, arraysize(writes));
 
   std::unique_ptr<BidirectionalStreamRequestInfo> request_info(
       new BidirectionalStreamRequestInfo);
   request_info->method = "GET";
-  request_info->url = GURL("https://www.example.org/");
+  request_info->url = default_url_;
   request_info->end_stream_on_headers = true;
   request_info->priority = LOWEST;
 
@@ -507,7 +509,7 @@ TEST_F(BidirectionalStreamTest, TestNetLogContainEntries) {
   BufferedSpdyFramer framer(spdy_util_.spdy_version());
 
   std::unique_ptr<SpdySerializedFrame> req(spdy_util_.ConstructSpdyPost(
-      "https://www.example.org", 1, kBodyDataSize * 3, LOWEST, nullptr, 0));
+      kDefaultUrl, 1, kBodyDataSize * 3, LOWEST, nullptr, 0));
   std::unique_ptr<SpdySerializedFrame> data_frame(
       framer.CreateDataFrame(1, kBodyData, kBodyDataSize, DATA_FLAG_FIN));
   MockWrite writes[] = {
@@ -536,15 +538,12 @@ TEST_F(BidirectionalStreamTest, TestNetLogContainEntries) {
       MockRead(ASYNC, 0, 8),
   };
 
-  HostPortPair host_port_pair("www.example.org", 443);
-  SpdySessionKey key(host_port_pair, ProxyServer::Direct(),
-                     PRIVACY_MODE_DISABLED);
-  InitSession(reads, arraysize(reads), writes, arraysize(writes), key);
+  InitSession(reads, arraysize(reads), writes, arraysize(writes));
 
   std::unique_ptr<BidirectionalStreamRequestInfo> request_info(
       new BidirectionalStreamRequestInfo);
   request_info->method = "POST";
-  request_info->url = GURL("https://www.example.org/");
+  request_info->url = default_url_;
   request_info->priority = LOWEST;
   request_info->extra_headers.SetHeader(net::HttpRequestHeaders::kContentLength,
                                         base::SizeTToString(kBodyDataSize * 3));
@@ -642,7 +641,7 @@ TEST_F(BidirectionalStreamTest, TestInterleaveReadDataAndSendData) {
   BufferedSpdyFramer framer(spdy_util_.spdy_version());
 
   std::unique_ptr<SpdySerializedFrame> req(spdy_util_.ConstructSpdyPost(
-      "https://www.example.org", 1, kBodyDataSize * 3, LOWEST, nullptr, 0));
+      kDefaultUrl, 1, kBodyDataSize * 3, LOWEST, nullptr, 0));
   std::unique_ptr<SpdySerializedFrame> data_frame1(
       framer.CreateDataFrame(1, kBodyData, kBodyDataSize, DATA_FLAG_NONE));
   std::unique_ptr<SpdySerializedFrame> data_frame2(
@@ -671,15 +670,12 @@ TEST_F(BidirectionalStreamTest, TestInterleaveReadDataAndSendData) {
       MockRead(ASYNC, 0, 10),
   };
 
-  HostPortPair host_port_pair("www.example.org", 443);
-  SpdySessionKey key(host_port_pair, ProxyServer::Direct(),
-                     PRIVACY_MODE_DISABLED);
-  InitSession(reads, arraysize(reads), writes, arraysize(writes), key);
+  InitSession(reads, arraysize(reads), writes, arraysize(writes));
 
   std::unique_ptr<BidirectionalStreamRequestInfo> request_info(
       new BidirectionalStreamRequestInfo);
   request_info->method = "POST";
-  request_info->url = GURL("https://www.example.org/");
+  request_info->url = default_url_;
   request_info->priority = LOWEST;
   request_info->extra_headers.SetHeader(net::HttpRequestHeaders::kContentLength,
                                         base::SizeTToString(kBodyDataSize * 3));
@@ -749,7 +745,7 @@ TEST_F(BidirectionalStreamTest, TestCoalesceSmallDataBuffers) {
   BufferedSpdyFramer framer(spdy_util_.spdy_version());
 
   std::unique_ptr<SpdySerializedFrame> req(spdy_util_.ConstructSpdyPost(
-      "https://www.example.org", 1, kBodyDataSize * 1, LOWEST, nullptr, 0));
+      kDefaultUrl, 1, kBodyDataSize * 1, LOWEST, nullptr, 0));
   std::string body_data = "some really long piece of data";
   std::unique_ptr<SpdySerializedFrame> data_frame1(framer.CreateDataFrame(
       1, body_data.c_str(), body_data.size(), DATA_FLAG_FIN));
@@ -767,15 +763,12 @@ TEST_F(BidirectionalStreamTest, TestCoalesceSmallDataBuffers) {
       CreateMockRead(*response_body_frame1, 4), MockRead(ASYNC, 0, 5),
   };
 
-  HostPortPair host_port_pair("www.example.org", 443);
-  SpdySessionKey key(host_port_pair, ProxyServer::Direct(),
-                     PRIVACY_MODE_DISABLED);
-  InitSession(reads, arraysize(reads), writes, arraysize(writes), key);
+  InitSession(reads, arraysize(reads), writes, arraysize(writes));
 
   std::unique_ptr<BidirectionalStreamRequestInfo> request_info(
       new BidirectionalStreamRequestInfo);
   request_info->method = "POST";
-  request_info->url = GURL("https://www.example.org/");
+  request_info->url = default_url_;
   request_info->priority = LOWEST;
   request_info->extra_headers.SetHeader(net::HttpRequestHeaders::kContentLength,
                                         base::SizeTToString(kBodyDataSize * 1));
@@ -848,7 +841,7 @@ TEST_F(BidirectionalStreamTest, TestCoalesceSmallDataBuffers) {
 // read even if the read queue is empty.
 TEST_F(BidirectionalStreamTest, TestCompleteAsyncRead) {
   std::unique_ptr<SpdySerializedFrame> req(
-      spdy_util_.ConstructSpdyGet("https://www.example.org", 1, LOWEST));
+      spdy_util_.ConstructSpdyGet(kDefaultUrl, 1, LOWEST));
   // Empty DATA frame with an END_STREAM flag.
   std::unique_ptr<SpdySerializedFrame> end_stream(
       spdy_util_.ConstructSpdyBodyFrame(1, nullptr, 0, true));
@@ -867,15 +860,12 @@ TEST_F(BidirectionalStreamTest, TestCompleteAsyncRead) {
       CreateMockRead(*response_body_frame, 3), MockRead(SYNCHRONOUS, 0, 4),
   };
 
-  HostPortPair host_port_pair("www.example.org", 443);
-  SpdySessionKey key(host_port_pair, ProxyServer::Direct(),
-                     PRIVACY_MODE_DISABLED);
-  InitSession(reads, arraysize(reads), writes, arraysize(writes), key);
+  InitSession(reads, arraysize(reads), writes, arraysize(writes));
 
   std::unique_ptr<BidirectionalStreamRequestInfo> request_info(
       new BidirectionalStreamRequestInfo);
   request_info->method = "GET";
-  request_info->url = GURL("https://www.example.org/");
+  request_info->url = default_url_;
   request_info->priority = LOWEST;
   request_info->end_stream_on_headers = true;
 
@@ -910,7 +900,7 @@ TEST_F(BidirectionalStreamTest, TestCompleteAsyncRead) {
 
 TEST_F(BidirectionalStreamTest, TestBuffering) {
   std::unique_ptr<SpdySerializedFrame> req(
-      spdy_util_.ConstructSpdyGet("https://www.example.org", 1, LOWEST));
+      spdy_util_.ConstructSpdyGet(kDefaultUrl, 1, LOWEST));
   // Empty DATA frame with an END_STREAM flag.
   std::unique_ptr<SpdySerializedFrame> end_stream(
       spdy_util_.ConstructSpdyBodyFrame(1, nullptr, 0, true));
@@ -937,15 +927,12 @@ TEST_F(BidirectionalStreamTest, TestBuffering) {
       MockRead(SYNCHRONOUS, 0, 6),
   };
 
-  HostPortPair host_port_pair("www.example.org", 443);
-  SpdySessionKey key(host_port_pair, ProxyServer::Direct(),
-                     PRIVACY_MODE_DISABLED);
-  InitSession(reads, arraysize(reads), writes, arraysize(writes), key);
+  InitSession(reads, arraysize(reads), writes, arraysize(writes));
 
   std::unique_ptr<BidirectionalStreamRequestInfo> request_info(
       new BidirectionalStreamRequestInfo);
   request_info->method = "GET";
-  request_info->url = GURL("https://www.example.org/");
+  request_info->url = default_url_;
   request_info->priority = LOWEST;
   request_info->end_stream_on_headers = true;
 
@@ -994,7 +981,7 @@ TEST_F(BidirectionalStreamTest, TestBuffering) {
 
 TEST_F(BidirectionalStreamTest, TestBufferingWithTrailers) {
   std::unique_ptr<SpdySerializedFrame> req(
-      spdy_util_.ConstructSpdyGet("https://www.example.org", 1, LOWEST));
+      spdy_util_.ConstructSpdyGet(kDefaultUrl, 1, LOWEST));
   // Empty DATA frame with an END_STREAM flag.
   std::unique_ptr<SpdySerializedFrame> end_stream(
       spdy_util_.ConstructSpdyBodyFrame(1, nullptr, 0, true));
@@ -1026,10 +1013,7 @@ TEST_F(BidirectionalStreamTest, TestBufferingWithTrailers) {
       MockRead(SYNCHRONOUS, 0, 7),
   };
 
-  HostPortPair host_port_pair("www.example.org", 443);
-  SpdySessionKey key(host_port_pair, ProxyServer::Direct(),
-                     PRIVACY_MODE_DISABLED);
-  InitSession(reads, arraysize(reads), writes, arraysize(writes), key);
+  InitSession(reads, arraysize(reads), writes, arraysize(writes));
 
   scoped_refptr<IOBuffer> read_buffer(new IOBuffer(kReadBufferSize));
   MockTimer* timer = new MockTimer();
@@ -1039,7 +1023,7 @@ TEST_F(BidirectionalStreamTest, TestBufferingWithTrailers) {
   std::unique_ptr<BidirectionalStreamRequestInfo> request_info(
       new BidirectionalStreamRequestInfo);
   request_info->method = "GET";
-  request_info->url = GURL("https://www.example.org/");
+  request_info->url = default_url_;
   request_info->priority = LOWEST;
   request_info->end_stream_on_headers = true;
 
@@ -1079,7 +1063,7 @@ TEST_F(BidirectionalStreamTest, CancelStreamAfterSendData) {
   BufferedSpdyFramer framer(spdy_util_.spdy_version());
 
   std::unique_ptr<SpdySerializedFrame> req(spdy_util_.ConstructSpdyPost(
-      "https://www.example.org", 1, kBodyDataSize * 3, LOWEST, nullptr, 0));
+      kDefaultUrl, 1, kBodyDataSize * 3, LOWEST, nullptr, 0));
   std::unique_ptr<SpdySerializedFrame> data_frame(
       framer.CreateDataFrame(1, kBodyData, kBodyDataSize, DATA_FLAG_NONE));
   std::unique_ptr<SpdySerializedFrame> rst(
@@ -1102,15 +1086,12 @@ TEST_F(BidirectionalStreamTest, CancelStreamAfterSendData) {
       MockRead(ASYNC, 0, 6),
   };
 
-  HostPortPair host_port_pair("www.example.org", 443);
-  SpdySessionKey key(host_port_pair, ProxyServer::Direct(),
-                     PRIVACY_MODE_DISABLED);
-  InitSession(reads, arraysize(reads), writes, arraysize(writes), key);
+  InitSession(reads, arraysize(reads), writes, arraysize(writes));
 
   std::unique_ptr<BidirectionalStreamRequestInfo> request_info(
       new BidirectionalStreamRequestInfo);
   request_info->method = "POST";
-  request_info->url = GURL("https://www.example.org/");
+  request_info->url = default_url_;
   request_info->priority = LOWEST;
   request_info->extra_headers.SetHeader(net::HttpRequestHeaders::kContentLength,
                                         base::SizeTToString(kBodyDataSize * 3));
@@ -1149,7 +1130,7 @@ TEST_F(BidirectionalStreamTest, CancelStreamDuringReadData) {
   BufferedSpdyFramer framer(spdy_util_.spdy_version());
 
   std::unique_ptr<SpdySerializedFrame> req(spdy_util_.ConstructSpdyPost(
-      "https://www.example.org", 1, kBodyDataSize * 3, LOWEST, nullptr, 0));
+      kDefaultUrl, 1, kBodyDataSize * 3, LOWEST, nullptr, 0));
   std::unique_ptr<SpdySerializedFrame> data_frame(
       framer.CreateDataFrame(1, kBodyData, kBodyDataSize, DATA_FLAG_NONE));
   std::unique_ptr<SpdySerializedFrame> rst(
@@ -1170,15 +1151,12 @@ TEST_F(BidirectionalStreamTest, CancelStreamDuringReadData) {
       CreateMockRead(*response_body_frame, 3), MockRead(ASYNC, 0, 5),
   };
 
-  HostPortPair host_port_pair("www.example.org", 443);
-  SpdySessionKey key(host_port_pair, ProxyServer::Direct(),
-                     PRIVACY_MODE_DISABLED);
-  InitSession(reads, arraysize(reads), writes, arraysize(writes), key);
+  InitSession(reads, arraysize(reads), writes, arraysize(writes));
 
   std::unique_ptr<BidirectionalStreamRequestInfo> request_info(
       new BidirectionalStreamRequestInfo);
   request_info->method = "POST";
-  request_info->url = GURL("https://www.example.org/");
+  request_info->url = default_url_;
   request_info->priority = LOWEST;
   request_info->extra_headers.SetHeader(net::HttpRequestHeaders::kContentLength,
                                         base::SizeTToString(kBodyDataSize * 3));
@@ -1212,7 +1190,7 @@ TEST_F(BidirectionalStreamTest, CancelStreamDuringReadData) {
 // which should be propagated via Delegate::OnFailed.
 TEST_F(BidirectionalStreamTest, PropagateProtocolError) {
   std::unique_ptr<SpdySerializedFrame> req(spdy_util_.ConstructSpdyPost(
-      "https://www.example.org", 1, kBodyDataSize * 3, LOW, nullptr, 0));
+      kDefaultUrl, 1, kBodyDataSize * 3, LOW, nullptr, 0));
   std::unique_ptr<SpdySerializedFrame> rst(
       spdy_util_.ConstructSpdyRstStream(1, RST_STREAM_PROTOCOL_ERROR));
 
@@ -1228,15 +1206,12 @@ TEST_F(BidirectionalStreamTest, PropagateProtocolError) {
       CreateMockRead(*resp, 1), MockRead(ASYNC, 0, 3),
   };
 
-  HostPortPair host_port_pair("www.example.org", 443);
-  SpdySessionKey key(host_port_pair, ProxyServer::Direct(),
-                     PRIVACY_MODE_DISABLED);
-  InitSession(reads, arraysize(reads), writes, arraysize(writes), key);
+  InitSession(reads, arraysize(reads), writes, arraysize(writes));
 
   std::unique_ptr<BidirectionalStreamRequestInfo> request_info(
       new BidirectionalStreamRequestInfo);
   request_info->method = "POST";
-  request_info->url = GURL("https://www.example.org/");
+  request_info->url = default_url_;
   request_info->extra_headers.SetHeader(net::HttpRequestHeaders::kContentLength,
                                         base::SizeTToString(kBodyDataSize * 3));
 
@@ -1285,7 +1260,7 @@ INSTANTIATE_TEST_CASE_P(CancelOrDeleteTests,
 
 TEST_P(BidirectionalStreamTest, CancelOrDeleteStreamDuringOnHeadersReceived) {
   std::unique_ptr<SpdySerializedFrame> req(
-      spdy_util_.ConstructSpdyGet("https://www.example.org", 1, LOWEST));
+      spdy_util_.ConstructSpdyGet(kDefaultUrl, 1, LOWEST));
 
   std::unique_ptr<SpdySerializedFrame> rst(
       spdy_util_.ConstructSpdyRstStream(1, RST_STREAM_CANCEL));
@@ -1302,15 +1277,12 @@ TEST_P(BidirectionalStreamTest, CancelOrDeleteStreamDuringOnHeadersReceived) {
       CreateMockRead(*resp, 1), MockRead(ASYNC, 0, 3),
   };
 
-  HostPortPair host_port_pair("www.example.org", 443);
-  SpdySessionKey key(host_port_pair, ProxyServer::Direct(),
-                     PRIVACY_MODE_DISABLED);
-  InitSession(reads, arraysize(reads), writes, arraysize(writes), key);
+  InitSession(reads, arraysize(reads), writes, arraysize(writes));
 
   std::unique_ptr<BidirectionalStreamRequestInfo> request_info(
       new BidirectionalStreamRequestInfo);
   request_info->method = "GET";
-  request_info->url = GURL("https://www.example.org/");
+  request_info->url = default_url_;
   request_info->priority = LOWEST;
   request_info->end_stream_on_headers = true;
 
@@ -1341,7 +1313,7 @@ TEST_P(BidirectionalStreamTest, CancelOrDeleteStreamDuringOnHeadersReceived) {
 
 TEST_P(BidirectionalStreamTest, CancelOrDeleteStreamDuringOnDataRead) {
   std::unique_ptr<SpdySerializedFrame> req(
-      spdy_util_.ConstructSpdyGet("https://www.example.org", 1, LOWEST));
+      spdy_util_.ConstructSpdyGet(kDefaultUrl, 1, LOWEST));
 
   std::unique_ptr<SpdySerializedFrame> rst(
       spdy_util_.ConstructSpdyRstStream(1, RST_STREAM_CANCEL));
@@ -1362,15 +1334,12 @@ TEST_P(BidirectionalStreamTest, CancelOrDeleteStreamDuringOnDataRead) {
       MockRead(ASYNC, 0, 4),
   };
 
-  HostPortPair host_port_pair("www.example.org", 443);
-  SpdySessionKey key(host_port_pair, ProxyServer::Direct(),
-                     PRIVACY_MODE_DISABLED);
-  InitSession(reads, arraysize(reads), writes, arraysize(writes), key);
+  InitSession(reads, arraysize(reads), writes, arraysize(writes));
 
   std::unique_ptr<BidirectionalStreamRequestInfo> request_info(
       new BidirectionalStreamRequestInfo);
   request_info->method = "GET";
-  request_info->url = GURL("https://www.example.org/");
+  request_info->url = default_url_;
   request_info->priority = LOWEST;
   request_info->end_stream_on_headers = true;
 
@@ -1400,7 +1369,7 @@ TEST_P(BidirectionalStreamTest, CancelOrDeleteStreamDuringOnDataRead) {
 
 TEST_P(BidirectionalStreamTest, CancelOrDeleteStreamDuringOnTrailersReceived) {
   std::unique_ptr<SpdySerializedFrame> req(
-      spdy_util_.ConstructSpdyGet("https://www.example.org", 1, LOWEST));
+      spdy_util_.ConstructSpdyGet(kDefaultUrl, 1, LOWEST));
 
   std::unique_ptr<SpdySerializedFrame> rst(
       spdy_util_.ConstructSpdyRstStream(1, RST_STREAM_CANCEL));
@@ -1426,15 +1395,12 @@ TEST_P(BidirectionalStreamTest, CancelOrDeleteStreamDuringOnTrailersReceived) {
       CreateMockRead(*response_trailers, 3), MockRead(ASYNC, 0, 5),
   };
 
-  HostPortPair host_port_pair("www.example.org", 443);
-  SpdySessionKey key(host_port_pair, ProxyServer::Direct(),
-                     PRIVACY_MODE_DISABLED);
-  InitSession(reads, arraysize(reads), writes, arraysize(writes), key);
+  InitSession(reads, arraysize(reads), writes, arraysize(writes));
 
   std::unique_ptr<BidirectionalStreamRequestInfo> request_info(
       new BidirectionalStreamRequestInfo);
   request_info->method = "GET";
-  request_info->url = GURL("https://www.example.org/");
+  request_info->url = default_url_;
   request_info->priority = LOWEST;
   request_info->end_stream_on_headers = true;
 
@@ -1466,7 +1432,7 @@ TEST_P(BidirectionalStreamTest, CancelOrDeleteStreamDuringOnTrailersReceived) {
 
 TEST_P(BidirectionalStreamTest, CancelOrDeleteStreamDuringOnFailed) {
   std::unique_ptr<SpdySerializedFrame> req(
-      spdy_util_.ConstructSpdyGet("https://www.example.org", 1, LOWEST));
+      spdy_util_.ConstructSpdyGet(kDefaultUrl, 1, LOWEST));
 
   std::unique_ptr<SpdySerializedFrame> rst(
       spdy_util_.ConstructSpdyRstStream(1, RST_STREAM_PROTOCOL_ERROR));
@@ -1483,15 +1449,12 @@ TEST_P(BidirectionalStreamTest, CancelOrDeleteStreamDuringOnFailed) {
       CreateMockRead(*resp, 1), MockRead(ASYNC, 0, 3),
   };
 
-  HostPortPair host_port_pair("www.example.org", 443);
-  SpdySessionKey key(host_port_pair, ProxyServer::Direct(),
-                     PRIVACY_MODE_DISABLED);
-  InitSession(reads, arraysize(reads), writes, arraysize(writes), key);
+  InitSession(reads, arraysize(reads), writes, arraysize(writes));
 
   std::unique_ptr<BidirectionalStreamRequestInfo> request_info(
       new BidirectionalStreamRequestInfo);
   request_info->method = "GET";
-  request_info->url = GURL("https://www.example.org/");
+  request_info->url = default_url_;
   request_info->priority = LOWEST;
   request_info->end_stream_on_headers = true;
 
@@ -1520,7 +1483,7 @@ TEST_P(BidirectionalStreamTest, CancelOrDeleteStreamDuringOnFailed) {
 
 TEST_F(BidirectionalStreamTest, TestHonorAlternativeServiceHeader) {
   std::unique_ptr<SpdySerializedFrame> req(
-      spdy_util_.ConstructSpdyGet("https://www.example.org", 1, LOWEST));
+      spdy_util_.ConstructSpdyGet(kDefaultUrl, 1, LOWEST));
   // Empty DATA frame with an END_STREAM flag.
   std::unique_ptr<SpdySerializedFrame> end_stream(
       spdy_util_.ConstructSpdyBodyFrame(1, nullptr, 0, true));
@@ -1542,19 +1505,15 @@ TEST_F(BidirectionalStreamTest, TestHonorAlternativeServiceHeader) {
       MockRead(SYNCHRONOUS, 0, 3),
   };
 
-  HostPortPair host_port_pair("www.example.org", 443);
-  url::SchemeHostPort server("https", "www.example.org", 443);
-  SpdySessionKey key(host_port_pair, ProxyServer::Direct(),
-                     PRIVACY_MODE_DISABLED);
   // Enable QUIC so that the alternative service header can be added to
   // HttpServerProperties.
   session_deps_.enable_quic = true;
-  InitSession(reads, arraysize(reads), writes, arraysize(writes), key);
+  InitSession(reads, arraysize(reads), writes, arraysize(writes));
 
   std::unique_ptr<BidirectionalStreamRequestInfo> request_info(
       new BidirectionalStreamRequestInfo);
   request_info->method = "GET";
-  request_info->url = GURL("https://www.example.org/");
+  request_info->url = default_url_;
   request_info->priority = LOWEST;
   request_info->end_stream_on_headers = true;
 
@@ -1577,7 +1536,8 @@ TEST_F(BidirectionalStreamTest, TestHonorAlternativeServiceHeader) {
             delegate->GetTotalReceivedBytes());
 
   AlternativeServiceVector alternative_service_vector =
-      http_session_->http_server_properties()->GetAlternativeServices(server);
+      http_session_->http_server_properties()->GetAlternativeServices(
+          url::SchemeHostPort(default_url_));
   ASSERT_EQ(1u, alternative_service_vector.size());
   EXPECT_EQ(AlternateProtocolFromNextProto(kProtoQUIC1SPDY3),
             alternative_service_vector[0].protocol);

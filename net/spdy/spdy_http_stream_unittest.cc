@@ -113,7 +113,9 @@ class SpdyHttpStreamTest : public testing::Test,
  public:
   SpdyHttpStreamTest()
       : spdy_util_(GetProtocol(), GetDependenciesFromPriority()),
-        session_deps_(GetProtocol()) {
+        session_deps_(GetProtocol()),
+        host_port_pair_(HostPortPair::FromURL(GURL(kDefaultUrl))),
+        key_(host_port_pair_, ProxyServer::Direct(), PRIVACY_MODE_DISABLED) {
     session_deps_.enable_priority_dependencies = GetDependenciesFromPriority();
     session_deps_.net_log = &net_log_;
     spdy_util_.set_default_url(GURL("http://www.example.org/"));
@@ -141,14 +143,13 @@ class SpdyHttpStreamTest : public testing::Test,
   void InitSession(MockRead* reads,
                    size_t reads_count,
                    MockWrite* writes,
-                   size_t writes_count,
-                   const SpdySessionKey& key) {
+                   size_t writes_count) {
     sequenced_data_.reset(
         new SequencedSocketData(reads, reads_count, writes, writes_count));
     session_deps_.socket_factory->AddSocketDataProvider(sequenced_data_.get());
     http_session_ = SpdySessionDependencies::SpdyCreateSession(&session_deps_);
     session_ =
-        CreateInsecureSpdySession(http_session_.get(), key, BoundNetLog());
+        CreateInsecureSpdySession(http_session_.get(), key_, BoundNetLog());
   }
 
   void TestSendCredentials(
@@ -159,6 +160,8 @@ class SpdyHttpStreamTest : public testing::Test,
   SpdyTestUtil spdy_util_;
   TestNetLog net_log_;
   SpdySessionDependencies session_deps_;
+  const HostPortPair host_port_pair_;
+  const SpdySessionKey key_;
   std::unique_ptr<SequencedSocketData> sequenced_data_;
   std::unique_ptr<HttpNetworkSession> http_session_;
   base::WeakPtr<SpdySession> session_;
@@ -180,10 +183,7 @@ TEST_P(SpdyHttpStreamTest, GetUploadProgressBeforeInitialization) {
     MockRead(ASYNC, 0, 0)  // EOF
   };
 
-  HostPortPair host_port_pair("www.example.org", 80);
-  SpdySessionKey key(host_port_pair, ProxyServer::Direct(),
-                     PRIVACY_MODE_DISABLED);
-  InitSession(reads, arraysize(reads), nullptr, 0, key);
+  InitSession(reads, arraysize(reads), nullptr, 0);
 
   SpdyHttpStream stream(session_, false);
   UploadProgress progress = stream.GetUploadProgress();
@@ -206,10 +206,7 @@ TEST_P(SpdyHttpStreamTest, SendRequest) {
       CreateMockRead(*resp, 1), MockRead(SYNCHRONOUS, 0, 2)  // EOF
   };
 
-  HostPortPair host_port_pair("www.example.org", 80);
-  SpdySessionKey key(host_port_pair, ProxyServer::Direct(),
-                     PRIVACY_MODE_DISABLED);
-  InitSession(reads, arraysize(reads), writes, arraysize(writes), key);
+  InitSession(reads, arraysize(reads), writes, arraysize(writes));
 
   HttpRequestInfo request;
   request.method = "GET";
@@ -232,7 +229,7 @@ TEST_P(SpdyHttpStreamTest, SendRequest) {
 
   EXPECT_EQ(ERR_IO_PENDING, http_stream->SendRequest(headers, &response,
                                                      callback.callback()));
-  EXPECT_TRUE(HasSpdySession(http_session_->spdy_session_pool(), key));
+  EXPECT_TRUE(HasSpdySession(http_session_->spdy_session_pool(), key_));
   EXPECT_FALSE(http_stream->GetLoadTimingInfo(&load_timing_info));
 
   callback.WaitForResult();
@@ -242,7 +239,7 @@ TEST_P(SpdyHttpStreamTest, SendRequest) {
 
   // Because we abandoned the stream, we don't expect to find a session in the
   // pool anymore.
-  EXPECT_FALSE(HasSpdySession(http_session_->spdy_session_pool(), key));
+  EXPECT_FALSE(HasSpdySession(http_session_->spdy_session_pool(), key_));
 
   TestLoadTimingNotReused(*http_stream);
   http_stream->Close(true);
@@ -281,10 +278,7 @@ TEST_P(SpdyHttpStreamTest, LoadTimingTwoRequests) {
     MockRead(ASYNC, 0, 6)  // EOF
   };
 
-  HostPortPair host_port_pair("www.example.org", 80);
-  SpdySessionKey key(host_port_pair, ProxyServer::Direct(),
-                     PRIVACY_MODE_DISABLED);
-  InitSession(reads, arraysize(reads), writes, arraysize(writes), key);
+  InitSession(reads, arraysize(reads), writes, arraysize(writes));
 
   HttpRequestInfo request1;
   request1.method = "GET";
@@ -311,7 +305,7 @@ TEST_P(SpdyHttpStreamTest, LoadTimingTwoRequests) {
                                            CompletionCallback()));
   EXPECT_EQ(ERR_IO_PENDING, http_stream1->SendRequest(headers1, &response1,
                                                       callback1.callback()));
-  EXPECT_TRUE(HasSpdySession(http_session_->spdy_session_pool(), key));
+  EXPECT_TRUE(HasSpdySession(http_session_->spdy_session_pool(), key_));
 
   EXPECT_LE(0, callback1.WaitForResult());
 
@@ -328,7 +322,7 @@ TEST_P(SpdyHttpStreamTest, LoadTimingTwoRequests) {
                                            CompletionCallback()));
   EXPECT_EQ(ERR_IO_PENDING, http_stream2->SendRequest(headers2, &response2,
                                                       callback2.callback()));
-  EXPECT_TRUE(HasSpdySession(http_session_->spdy_session_pool(), key));
+  EXPECT_TRUE(HasSpdySession(http_session_->spdy_session_pool(), key_));
 
   EXPECT_LE(0, callback2.WaitForResult());
   TestLoadTimingReused(*http_stream2);
@@ -378,10 +372,7 @@ TEST_P(SpdyHttpStreamTest, SendChunkedPost) {
       MockRead(SYNCHRONOUS, 0, 4)  // EOF
   };
 
-  HostPortPair host_port_pair("www.example.org", 80);
-  SpdySessionKey key(host_port_pair, ProxyServer::Direct(),
-                     PRIVACY_MODE_DISABLED);
-  InitSession(reads, arraysize(reads), writes, arraysize(writes), key);
+  InitSession(reads, arraysize(reads), writes, arraysize(writes));
   EXPECT_EQ(spdy_util_.spdy_version(), session_->GetProtocolVersion());
 
   ChunkedUploadDataStream upload_stream(0);
@@ -409,7 +400,7 @@ TEST_P(SpdyHttpStreamTest, SendChunkedPost) {
 
   EXPECT_EQ(ERR_IO_PENDING, http_stream.SendRequest(
       headers, &response, callback.callback()));
-  EXPECT_TRUE(HasSpdySession(http_session_->spdy_session_pool(), key));
+  EXPECT_TRUE(HasSpdySession(http_session_->spdy_session_pool(), key_));
 
   EXPECT_EQ(OK, callback.WaitForResult());
 
@@ -420,7 +411,7 @@ TEST_P(SpdyHttpStreamTest, SendChunkedPost) {
 
   // Because the server closed the connection, we there shouldn't be a session
   // in the pool anymore.
-  EXPECT_FALSE(HasSpdySession(http_session_->spdy_session_pool(), key));
+  EXPECT_FALSE(HasSpdySession(http_session_->spdy_session_pool(), key_));
 }
 
 // This unittest tests the request callback is properly called and handled.
@@ -442,10 +433,7 @@ TEST_P(SpdyHttpStreamTest, SendChunkedPostLastEmpty) {
       MockRead(SYNCHRONOUS, 0, 4)  // EOF
   };
 
-  HostPortPair host_port_pair("www.example.org", 80);
-  SpdySessionKey key(host_port_pair, ProxyServer::Direct(),
-                     PRIVACY_MODE_DISABLED);
-  InitSession(reads, arraysize(reads), writes, arraysize(writes), key);
+  InitSession(reads, arraysize(reads), writes, arraysize(writes));
   EXPECT_EQ(spdy_util_.spdy_version(), session_->GetProtocolVersion());
 
   ChunkedUploadDataStream upload_stream(0);
@@ -467,7 +455,7 @@ TEST_P(SpdyHttpStreamTest, SendChunkedPostLastEmpty) {
                                              net_log, CompletionCallback()));
   EXPECT_EQ(ERR_IO_PENDING,
             http_stream.SendRequest(headers, &response, callback.callback()));
-  EXPECT_TRUE(HasSpdySession(http_session_->spdy_session_pool(), key));
+  EXPECT_TRUE(HasSpdySession(http_session_->spdy_session_pool(), key_));
 
   EXPECT_EQ(OK, callback.WaitForResult());
 
@@ -478,7 +466,7 @@ TEST_P(SpdyHttpStreamTest, SendChunkedPostLastEmpty) {
 
   // Because the server closed the connection, there shouldn't be a session
   // in the pool anymore.
-  EXPECT_FALSE(HasSpdySession(http_session_->spdy_session_pool(), key));
+  EXPECT_FALSE(HasSpdySession(http_session_->spdy_session_pool(), key_));
 }
 
 TEST_P(SpdyHttpStreamTest, ConnectionClosedDuringChunkedPost) {
@@ -499,10 +487,7 @@ TEST_P(SpdyHttpStreamTest, ConnectionClosedDuringChunkedPost) {
       MockRead(ASYNC, ERR_CONNECTION_CLOSED, 2)  // Server hangs up early.
   };
 
-  HostPortPair host_port_pair("www.example.org", 80);
-  SpdySessionKey key(host_port_pair, ProxyServer::Direct(),
-                     PRIVACY_MODE_DISABLED);
-  InitSession(reads, arraysize(reads), writes, arraysize(writes), key);
+  InitSession(reads, arraysize(reads), writes, arraysize(writes));
   EXPECT_EQ(spdy_util_.spdy_version(), session_->GetProtocolVersion());
 
   ChunkedUploadDataStream upload_stream(0);
@@ -526,7 +511,7 @@ TEST_P(SpdyHttpStreamTest, ConnectionClosedDuringChunkedPost) {
 
   EXPECT_EQ(ERR_IO_PENDING,
             http_stream.SendRequest(headers, &response, callback.callback()));
-  EXPECT_TRUE(HasSpdySession(http_session_->spdy_session_pool(), key));
+  EXPECT_TRUE(HasSpdySession(http_session_->spdy_session_pool(), key_));
 
   EXPECT_EQ(ERR_CONNECTION_CLOSED, callback.WaitForResult());
 
@@ -536,7 +521,7 @@ TEST_P(SpdyHttpStreamTest, ConnectionClosedDuringChunkedPost) {
 
   // Because the server closed the connection, we there shouldn't be a session
   // in the pool anymore.
-  EXPECT_FALSE(HasSpdySession(http_session_->spdy_session_pool(), key));
+  EXPECT_FALSE(HasSpdySession(http_session_->spdy_session_pool(), key_));
 
   // Appending a second chunk now should not result in a crash.
   upload_stream.AppendData(kUploadData, kUploadDataSize, true);
@@ -579,10 +564,7 @@ TEST_P(SpdyHttpStreamTest, DelayedSendChunkedPost) {
     MockRead(ASYNC, 0, 8)  // EOF
   };
 
-  HostPortPair host_port_pair("www.example.org", 80);
-  SpdySessionKey key(host_port_pair, ProxyServer::Direct(),
-                     PRIVACY_MODE_DISABLED);
-  InitSession(reads, arraysize(reads), writes, arraysize(writes), key);
+  InitSession(reads, arraysize(reads), writes, arraysize(writes));
 
   ChunkedUploadDataStream upload_stream(0);
 
@@ -607,7 +589,7 @@ TEST_P(SpdyHttpStreamTest, DelayedSendChunkedPost) {
   // complete asynchronously.
   EXPECT_EQ(ERR_IO_PENDING, http_stream->SendRequest(headers, &response,
                                                      callback.callback()));
-  EXPECT_TRUE(HasSpdySession(http_session_->spdy_session_pool(), key));
+  EXPECT_TRUE(HasSpdySession(http_session_->spdy_session_pool(), key_));
 
   // Complete the initial request write and the first chunk.
   base::RunLoop().RunUntilIdle();
@@ -680,10 +662,7 @@ TEST_P(SpdyHttpStreamTest, DelayedSendChunkedPostWithEmptyFinalDataFrame) {
     MockRead(ASYNC, 0, 6)  // EOF
   };
 
-  HostPortPair host_port_pair("www.example.org", 80);
-  SpdySessionKey key(host_port_pair, ProxyServer::Direct(),
-                     PRIVACY_MODE_DISABLED);
-  InitSession(reads, arraysize(reads), writes, arraysize(writes), key);
+  InitSession(reads, arraysize(reads), writes, arraysize(writes));
 
   ChunkedUploadDataStream upload_stream(0);
 
@@ -708,7 +687,7 @@ TEST_P(SpdyHttpStreamTest, DelayedSendChunkedPostWithEmptyFinalDataFrame) {
   // complete asynchronously.
   EXPECT_EQ(ERR_IO_PENDING, http_stream->SendRequest(headers, &response,
                                                      callback.callback()));
-  EXPECT_TRUE(HasSpdySession(http_session_->spdy_session_pool(), key));
+  EXPECT_TRUE(HasSpdySession(http_session_->spdy_session_pool(), key_));
 
   // Complete the initial request write and the first chunk.
   base::RunLoop().RunUntilIdle();
@@ -770,10 +749,7 @@ TEST_P(SpdyHttpStreamTest, ChunkedPostWithEmptyPayload) {
     MockRead(ASYNC, 0, 4)  // EOF
   };
 
-  HostPortPair host_port_pair("www.example.org", 80);
-  SpdySessionKey key(host_port_pair, ProxyServer::Direct(),
-                     PRIVACY_MODE_DISABLED);
-  InitSession(reads, arraysize(reads), writes, arraysize(writes), key);
+  InitSession(reads, arraysize(reads), writes, arraysize(writes));
 
   ChunkedUploadDataStream upload_stream(0);
 
@@ -798,7 +774,7 @@ TEST_P(SpdyHttpStreamTest, ChunkedPostWithEmptyPayload) {
   // complete asynchronously.
   EXPECT_EQ(ERR_IO_PENDING, http_stream->SendRequest(headers, &response,
                                                      callback.callback()));
-  EXPECT_TRUE(HasSpdySession(http_session_->spdy_session_pool(), key));
+  EXPECT_TRUE(HasSpdySession(http_session_->spdy_session_pool(), key_));
 
   // Complete writing request, followed by a FIN.
   base::RunLoop().RunUntilIdle();
@@ -838,10 +814,7 @@ TEST_P(SpdyHttpStreamTest, SpdyURLTest) {
       CreateMockRead(*resp, 1), MockRead(SYNCHRONOUS, 0, 2)  // EOF
   };
 
-  HostPortPair host_port_pair("www.example.org", 80);
-  SpdySessionKey key(host_port_pair, ProxyServer::Direct(),
-                     PRIVACY_MODE_DISABLED);
-  InitSession(reads, arraysize(reads), writes, arraysize(writes), key);
+  InitSession(reads, arraysize(reads), writes, arraysize(writes));
 
   HttpRequestInfo request;
   request.method = "GET";
@@ -870,7 +843,7 @@ TEST_P(SpdyHttpStreamTest, SpdyURLTest) {
 
   // Because we abandoned the stream, we don't expect to find a session in the
   // pool anymore.
-  EXPECT_FALSE(HasSpdySession(http_session_->spdy_session_pool(), key));
+  EXPECT_FALSE(HasSpdySession(http_session_->spdy_session_pool(), key_));
 }
 
 // Test the receipt of a WINDOW_UPDATE frame while waiting for a chunk to be
@@ -896,11 +869,7 @@ TEST_P(SpdyHttpStreamTest, DelayedSendChunkedPostWithWindowUpdate) {
       MockRead(ASYNC, 0, 6)  // EOF
   };
 
-  HostPortPair host_port_pair("www.example.org", 80);
-  SpdySessionKey key(host_port_pair, ProxyServer::Direct(),
-                     PRIVACY_MODE_DISABLED);
-
-  InitSession(reads, arraysize(reads), writes, arraysize(writes), key);
+  InitSession(reads, arraysize(reads), writes, arraysize(writes));
 
   ChunkedUploadDataStream upload_stream(0);
 
@@ -924,7 +893,7 @@ TEST_P(SpdyHttpStreamTest, DelayedSendChunkedPostWithWindowUpdate) {
   TestCompletionCallback callback;
   EXPECT_EQ(ERR_IO_PENDING, http_stream->SendRequest(headers, &response,
                                                      callback.callback()));
-  EXPECT_TRUE(HasSpdySession(http_session_->spdy_session_pool(), key));
+  EXPECT_TRUE(HasSpdySession(http_session_->spdy_session_pool(), key_));
 
   // Complete the initial request write and first chunk.
   base::RunLoop().RunUntilIdle();
@@ -1004,10 +973,7 @@ TEST_P(SpdyHttpStreamTest, DataReadErrorSynchronous) {
       CreateMockRead(*resp, 2), MockRead(SYNCHRONOUS, 0, 3),
   };
 
-  HostPortPair host_port_pair("www.example.org", 80);
-  SpdySessionKey key(host_port_pair, ProxyServer::Direct(),
-                     PRIVACY_MODE_DISABLED);
-  InitSession(reads, arraysize(reads), writes, arraysize(writes), key);
+  InitSession(reads, arraysize(reads), writes, arraysize(writes));
   EXPECT_EQ(spdy_util_.spdy_version(), session_->GetProtocolVersion());
 
   ReadErrorUploadDataStream upload_data_stream(
@@ -1032,7 +998,7 @@ TEST_P(SpdyHttpStreamTest, DataReadErrorSynchronous) {
 
   // Because the server has not closed the connection yet, there shouldn't be
   // a stream but a session in the pool
-  EXPECT_FALSE(HasSpdySession(http_session_->spdy_session_pool(), key));
+  EXPECT_FALSE(HasSpdySession(http_session_->spdy_session_pool(), key_));
 }
 
 TEST_P(SpdyHttpStreamTest, DataReadErrorAsynchronous) {
@@ -1057,10 +1023,7 @@ TEST_P(SpdyHttpStreamTest, DataReadErrorAsynchronous) {
       MockRead(ASYNC, 0, 2),
   };
 
-  HostPortPair host_port_pair("www.example.org", 80);
-  SpdySessionKey key(host_port_pair, ProxyServer::Direct(),
-                     PRIVACY_MODE_DISABLED);
-  InitSession(reads, arraysize(reads), writes, arraysize(writes), key);
+  InitSession(reads, arraysize(reads), writes, arraysize(writes));
   EXPECT_EQ(spdy_util_.spdy_version(), session_->GetProtocolVersion());
 
   ReadErrorUploadDataStream upload_data_stream(
@@ -1086,7 +1049,7 @@ TEST_P(SpdyHttpStreamTest, DataReadErrorAsynchronous) {
 
   // Because the server has closed the connection, there shouldn't be a session
   // in the pool anymore.
-  EXPECT_FALSE(HasSpdySession(http_session_->spdy_session_pool(), key));
+  EXPECT_FALSE(HasSpdySession(http_session_->spdy_session_pool(), key_));
 }
 
 // TODO(willchan): Write a longer test for SpdyStream that exercises all

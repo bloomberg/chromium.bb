@@ -1431,7 +1431,7 @@ TEST_P(QuicStreamFactoryTest, OnNetworkChangeSoonToDisconnect) {
   // Cause QUIC stream to be created.
   HttpRequestInfo request_info;
   request_info.method = "GET";
-  request_info.url = GURL("https://www.example.org/");
+  request_info.url = url_;
   EXPECT_EQ(OK, stream->InitializeStream(&request_info, DEFAULT_PRIORITY,
                                          net_log_, CompletionCallback()));
 
@@ -1543,7 +1543,7 @@ TEST_P(QuicStreamFactoryTest, OnNetworkChangeDisconnected) {
   // Cause QUIC stream to be created.
   HttpRequestInfo request_info;
   request_info.method = "GET";
-  request_info.url = GURL("https://www.example.org/");
+  request_info.url = url_;
   EXPECT_EQ(OK, stream->InitializeStream(&request_info, DEFAULT_PRIORITY,
                                          net_log_, CompletionCallback()));
 
@@ -2130,7 +2130,7 @@ TEST_P(QuicStreamFactoryTest, MigrateSessionEarly) {
   // Cause QUIC stream to be created.
   HttpRequestInfo request_info;
   request_info.method = "GET";
-  request_info.url = GURL("https://www.example.org/");
+  request_info.url = url_;
   EXPECT_EQ(OK, stream->InitializeStream(&request_info, DEFAULT_PRIORITY,
                                          net_log_, CompletionCallback()));
 
@@ -2654,11 +2654,8 @@ TEST_P(QuicStreamFactoryTest, RacingConnections) {
   alternative_service_info_vector.push_back(
       AlternativeServiceInfo(alternative_service1, expiration));
 
-  url::SchemeHostPort server("https", kDefaultServerHostName,
-                             kDefaultServerPort);
-
   http_server_properties_.SetAlternativeServices(
-      server, alternative_service_info_vector);
+      url::SchemeHostPort(url_), alternative_service_info_vector);
 
   crypto_client_stream_factory_.set_handshake_mode(
       MockCryptoClientStream::ZERO_RTT);
@@ -3672,9 +3669,8 @@ TEST_P(QuicStreamFactoryTest, EnableDelayTcpRace) {
 
   ServerNetworkStats stats1;
   stats1.srtt = base::TimeDelta::FromMicroseconds(10);
-  url::SchemeHostPort server("https", kDefaultServerHostName,
-                             kDefaultServerPort);
-  http_server_properties_.SetServerNetworkStats(server, stats1);
+  http_server_properties_.SetServerNetworkStats(url::SchemeHostPort(url_),
+                                                stats1);
 
   crypto_client_stream_factory_.set_handshake_mode(
       MockCryptoClientStream::COLD_START);
@@ -3728,10 +3724,8 @@ TEST_P(QuicStreamFactoryTest, MaybeInitialize) {
   base::Time expiration = base::Time::Now() + base::TimeDelta::FromDays(1);
   alternative_service_info_vector.push_back(
       AlternativeServiceInfo(alternative_service1, expiration));
-  url::SchemeHostPort server("https", kDefaultServerHostName,
-                             kDefaultServerPort);
   http_server_properties_.SetAlternativeServices(
-      server, alternative_service_info_vector);
+      url::SchemeHostPort(url_), alternative_service_info_vector);
 
   HostPortPair host_port_pair2(kServer2HostName, kDefaultServerPort);
   url::SchemeHostPort server2("https", kServer2HostName, kDefaultServerPort);
@@ -4013,14 +4007,14 @@ TEST_P(QuicStreamFactoryTest, ServerPushSessionAffinity) {
 
   QuicChromiumClientSession* session = GetActiveSession(host_port_pair_);
 
-  QuicClientPromisedInfo promised(session, kServerDataStreamId1, url);
+  QuicClientPromisedInfo promised(session, kServerDataStreamId1, kDefaultUrl);
   (*QuicStreamFactoryPeer::GetPushPromiseIndex(factory_.get())
-        ->promised_by_url())[url] = &promised;
+        ->promised_by_url())[kDefaultUrl] = &promised;
 
   QuicStreamRequest request2(factory_.get());
   EXPECT_EQ(OK, request2.Request(host_port_pair_, privacy_mode_,
-                                 /*cert_verify_flags=*/0, GURL(url), "GET",
-                                 net_log_, callback_.callback()));
+                                 /*cert_verify_flags=*/0, url_, "GET", net_log_,
+                                 callback_.callback()));
 
   EXPECT_EQ(1, QuicStreamFactoryPeer::GetNumPushStreamsCreated(factory_.get()));
 }
@@ -4061,24 +4055,24 @@ TEST_P(QuicStreamFactoryTest, ServerPushPrivacyModeMismatch) {
   string url = "https://www.example.org/";
   QuicChromiumClientSession* session = GetActiveSession(host_port_pair_);
 
-  QuicClientPromisedInfo promised(session, kServerDataStreamId1, url);
+  QuicClientPromisedInfo promised(session, kServerDataStreamId1, kDefaultUrl);
 
   QuicClientPushPromiseIndex* index =
       QuicStreamFactoryPeer::GetPushPromiseIndex(factory_.get());
 
-  (*index->promised_by_url())[url] = &promised;
-  EXPECT_EQ(index->GetPromised(url), &promised);
+  (*index->promised_by_url())[kDefaultUrl] = &promised;
+  EXPECT_EQ(index->GetPromised(kDefaultUrl), &promised);
 
   // Doing the request should not use the push stream, but rather
   // cancel it because the privacy modes do not match.
   QuicStreamRequest request2(factory_.get());
   EXPECT_EQ(ERR_IO_PENDING,
             request2.Request(host_port_pair_, PRIVACY_MODE_ENABLED,
-                             /*cert_verify_flags=*/0, GURL(url), "GET",
-                             net_log_, callback_.callback()));
+                             /*cert_verify_flags=*/0, url_, "GET", net_log_,
+                             callback_.callback()));
 
   EXPECT_EQ(0, QuicStreamFactoryPeer::GetNumPushStreamsCreated(factory_.get()));
-  EXPECT_EQ(index->GetPromised(url), nullptr);
+  EXPECT_EQ(index->GetPromised(kDefaultUrl), nullptr);
 
   EXPECT_EQ(OK, callback_.WaitForResult());
   std::unique_ptr<QuicHttpStream> stream2 = request2.CreateStream();
