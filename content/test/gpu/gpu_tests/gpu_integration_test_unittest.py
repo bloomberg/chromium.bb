@@ -75,6 +75,8 @@ class SimpleIntegrationUnittest(gpu_integration_test.GpuIntegrationTest):
 
 class GpuIntegrationTestUnittest(unittest.TestCase):
   @mock.patch('telemetry.internal.util.binary_manager.InitDependencyManager')
+  # https://crbug.com/352807
+  @unittest.skip("Temporarily skip until Catapult rolls forward")
   def testSimpleIntegrationUnittest(self, mockInitDependencyManager):
     options = browser_test_runner.TestRunOptions()
     # Suppress printing out information for passing tests.
