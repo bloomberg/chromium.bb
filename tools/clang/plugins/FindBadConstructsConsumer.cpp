@@ -124,6 +124,12 @@ std::string GetAutoReplacementTypeAsString(QualType type) {
     result += " const";
   if (non_reference_type.isLocalVolatileQualified())
     result += " volatile";
+  if (type->isReferenceType() && !non_reference_type.isLocalConstQualified()) {
+    if (type->isLValueReferenceType())
+      result += "&";
+    else if (type->isRValueReferenceType())
+      result += "&&";
+  }
   return result;
 }
 
