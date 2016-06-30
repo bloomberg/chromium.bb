@@ -54,7 +54,8 @@ void DeleteFromTextNodeCommand::doApply(EditingState*)
     if (exceptionState.hadException())
         return;
 
-    m_node->deleteData(m_offset, m_count, exceptionState, CharacterData::DeprecatedRecalcStyleImmediatlelyForEditing);
+    m_node->deleteData(m_offset, m_count, exceptionState);
+    m_node->document().updateStyleAndLayout();
 }
 
 void DeleteFromTextNodeCommand::doUnapply()
@@ -64,7 +65,8 @@ void DeleteFromTextNodeCommand::doUnapply()
     if (!m_node->hasEditableStyle())
         return;
 
-    m_node->insertData(m_offset, m_text, IGNORE_EXCEPTION, CharacterData::DeprecatedRecalcStyleImmediatlelyForEditing);
+    m_node->insertData(m_offset, m_text, IGNORE_EXCEPTION);
+    m_node->document().updateStyleAndLayout();
 }
 
 DEFINE_TRACE(DeleteFromTextNodeCommand)

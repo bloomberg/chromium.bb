@@ -59,7 +59,8 @@ void InsertIntoTextNodeCommand::doApply(EditingState*)
             layoutText->momentarilyRevealLastTypedCharacter(m_offset + m_text.length() - 1);
     }
 
-    m_node->insertData(m_offset, m_text, IGNORE_EXCEPTION, CharacterData::DeprecatedRecalcStyleImmediatlelyForEditing);
+    m_node->insertData(m_offset, m_text, IGNORE_EXCEPTION);
+    document().updateStyleAndLayout();
 }
 
 void InsertIntoTextNodeCommand::doUnapply()
@@ -67,7 +68,8 @@ void InsertIntoTextNodeCommand::doUnapply()
     if (!m_node->hasEditableStyle())
         return;
 
-    m_node->deleteData(m_offset, m_text.length(), IGNORE_EXCEPTION, CharacterData::DeprecatedRecalcStyleImmediatlelyForEditing);
+    m_node->deleteData(m_offset, m_text.length(), IGNORE_EXCEPTION);
+    document().updateStyleAndLayout();
 }
 
 DEFINE_TRACE(InsertIntoTextNodeCommand)
