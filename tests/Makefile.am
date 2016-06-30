@@ -18,6 +18,7 @@ backtranslate_SOURCES = backtranslate.c
 backtranslate_with_letsign_SOURCES = backtranslate_with_letsign.c
 capitalization_SOURCES = capitalization.c
 capitalized_word_SOURCES = default_table.h capitalized_word.c
+checkTable_SOURCES = checkTable.c
 emphclass_SOURCES = emphclass.c
 en_gb_g1_italics_SOURCES = en_gb_g1_italics.c
 findTable_SOURCES = findTable.c
@@ -78,7 +79,8 @@ program_TESTS =					\
 	resolve_table				\
 	logging					\
 	findTable				\
-	emphclass
+	emphclass				\
+	checkTable
 
 check_PROGRAMS = $(program_TESTS)
 
