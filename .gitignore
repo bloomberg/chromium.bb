@@ -296,6 +296,7 @@ vs-chromium-project.txt
 /third_party/angle_dx11
 /third_party/apache-mime4j
 /third_party/apache-portable-runtime/src
+/third_party/apache_velocity/lib/*.jar
 /third_party/apache-win32/bin/*.exe
 /third_party/apache-win32/bin/*.dll
 /third_party/apache-win32/bin/iconv/*.so
