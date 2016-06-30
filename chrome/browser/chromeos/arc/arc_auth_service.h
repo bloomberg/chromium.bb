@@ -203,6 +203,7 @@ class ArcAuthService : public ArcService,
   UIPage ui_page_ = UIPage::NO_PAGE;
   base::string16 ui_page_status_;
   bool clear_required_ = false;
+  bool waiting_for_reply_ = false;
 
   std::unique_ptr<ArcAuthContext> context_;
   std::unique_ptr<ArcAndroidManagementChecker> android_management_checker_;

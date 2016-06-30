@@ -195,6 +195,12 @@ void ArcAuthService::OnAuthInstanceReady() {
 }
 
 void ArcAuthService::OnBridgeStopped() {
+  if (waiting_for_reply_) {
+    // Using SERVICE_UNAVAILABLE instead of UNKNOWN_ERROR, since the latter
+    // causes this code to not try to stop ARC, so it would retry without the
+    // user noticing.
+    OnSignInFailed(arc::mojom::ArcSignInFailureReason::SERVICE_UNAVAILABLE);
+  }
   if (!clear_required_)
     return;
   clear_required_ = false;
@@ -237,6 +243,8 @@ void ArcAuthService::OnSignInComplete() {
   DCHECK_EQ(state_, State::ACTIVE);
   DCHECK(!sign_in_time_.is_null());
 
+  waiting_for_reply_ = false;
+
   if (!IsOptInVerificationDisabled() &&
       !profile_->GetPrefs()->GetBoolean(prefs::kArcSignedIn)) {
     playstore_launcher_.reset(
@@ -254,6 +262,8 @@ void ArcAuthService::OnSignInFailed(arc::mojom::ArcSignInFailureReason reason) {
   DCHECK(thread_checker.Get().CalledOnValidThread());
   DCHECK_EQ(state_, State::ACTIVE);
   DCHECK(!sign_in_time_.is_null());
+
+  waiting_for_reply_ = false;
 
   UpdateProvisioningTiming(base::Time::Now() - sign_in_time_, false,
                            IsAccountManaged(profile_));
@@ -564,6 +574,7 @@ void ArcAuthService::SetAuthCodeAndStartArc(const std::string& auth_code) {
   SetUIPage(UIPage::START_PROGRESS, base::string16());
   ShutdownBridge();
   auth_code_ = auth_code;
+  waiting_for_reply_ = true;
   StartArc();
 }
 
