@@ -1297,8 +1297,8 @@ notify_motion_absolute(struct weston_seat *seat,
 }
 
 WL_EXPORT void
-weston_surface_activate(struct weston_surface *surface,
-			struct weston_seat *seat)
+weston_seat_set_keyboard_focus(struct weston_seat *seat,
+			       struct weston_surface *surface)
 {
 	struct weston_compositor *compositor = seat->compositor;
 	struct weston_keyboard *keyboard = weston_seat_get_keyboard(seat);

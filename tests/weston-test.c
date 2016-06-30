@@ -182,13 +182,13 @@ activate_surface(struct wl_client *client, struct wl_resource *resource,
 	seat = get_seat(test);
 	keyboard = weston_seat_get_keyboard(seat);
 	if (surface) {
-		weston_surface_activate(surface, seat);
+		weston_seat_set_keyboard_focus(seat, surface);
 		notify_keyboard_focus_in(seat, &keyboard->keys,
 					 STATE_UPDATE_AUTOMATIC);
 	}
 	else {
 		notify_keyboard_focus_out(seat);
-		weston_surface_activate(surface, seat);
+		weston_seat_set_keyboard_focus(seat, surface);
 	}
 }
 

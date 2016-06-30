@@ -89,7 +89,7 @@ pointer_focus_changed(struct wl_listener *listener, void *data)
 	struct weston_pointer *pointer = data;
 
 	if (pointer->focus && pointer->focus->surface->resource)
-		weston_surface_activate(pointer->focus->surface, pointer->seat);
+		weston_seat_set_keyboard_focus(pointer->seat, pointer->focus->surface);
 }
 
 static void
@@ -118,7 +118,7 @@ seat_caps_changed(struct wl_listener *l, void *data)
 	if (keyboard && keyboard->focus != NULL) {
 		wl_list_for_each(fsout, &listener->shell->output_list, link) {
 			if (fsout->surface) {
-				weston_surface_activate(fsout->surface, seat);
+				weston_seat_set_keyboard_focus(seat, fsout->surface);
 				return;
 			}
 		}
@@ -704,7 +704,7 @@ fullscreen_shell_present_surface(struct wl_client *client,
 				weston_seat_get_keyboard(seat);
 
 			if (keyboard && !keyboard->focus)
-				weston_surface_activate(surface, seat);
+				weston_seat_set_keyboard_focus(seat, surface);
 		}
 	}
 }
@@ -755,7 +755,7 @@ fullscreen_shell_present_surface_for_mode(struct wl_client *client,
 			weston_seat_get_keyboard(seat);
 
 		if (keyboard && !keyboard->focus)
-			weston_surface_activate(surface, seat);
+			weston_seat_set_keyboard_focus(seat, surface);
 	}
 }
 

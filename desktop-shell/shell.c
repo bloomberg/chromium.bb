@@ -5168,7 +5168,7 @@ activate(struct desktop_shell *shell, struct weston_surface *es,
 	 * Leave fullscreen surfaces on unrelated outputs alone. */
 	lower_fullscreen_layer(shell, shsurf->output);
 
-	weston_surface_activate(es, seat);
+	weston_seat_set_keyboard_focus(seat, es);
 
 	state = ensure_focus_state(shell, seat);
 	if (state == NULL)

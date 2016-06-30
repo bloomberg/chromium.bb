@@ -1167,8 +1167,8 @@ int
 weston_spring_done(struct weston_spring *spring);
 
 void
-weston_surface_activate(struct weston_surface *surface,
-			struct weston_seat *seat);
+weston_seat_set_keyboard_focus(struct weston_seat *seat,
+			       struct weston_surface *surface);
 void
 notify_motion(struct weston_seat *seat, uint32_t time,
 	      struct weston_pointer_motion_event *event);

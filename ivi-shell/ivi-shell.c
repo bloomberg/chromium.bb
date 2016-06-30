@@ -445,7 +445,7 @@ activate_binding(struct weston_seat *seat,
 	if (get_ivi_shell_surface(main_surface) == NULL)
 		return;
 
-	weston_surface_activate(focus, seat);
+	weston_seat_set_keyboard_focus(seat, focus);
 }
 
 static void
