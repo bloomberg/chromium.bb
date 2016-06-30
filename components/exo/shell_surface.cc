@@ -678,7 +678,7 @@ void ShellSurface::OnPostWindowStateTypeChange(
   if (widget_)
     UpdateWidgetBounds();
 
-  if (!state_changed_callback_.is_null())
+  if (old_type != new_type && !state_changed_callback_.is_null())
     state_changed_callback_.Run(old_type, new_type);
 
   // Re-enable animations if they were disabled in pre state change handler.
