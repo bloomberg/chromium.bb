@@ -217,8 +217,8 @@ per-file sync_sessions.gypi=file://components/sync_sessions/OWNERS
 
 per-file timers.gypi=file://components/timers/OWNERS
 
-per-file tracing.gypi=file://components/tracing/OWNERS
-per-file tracing_nacl.gypi=file://components/tracing/OWNERS
+per-file tracing.gyp=file://components/tracing/OWNERS
+per-file tracing_nacl.gyp=file://components/tracing/OWNERS
 
 per-file translate.gypi=file://components/translate/OWNERS
 per-file translate_strings.grdp=file://components/translate/OWNERS
