@@ -290,8 +290,7 @@ gfx::Size OmniboxResultView::GetPreferredSize() const {
   if (!match_.answer)
     return gfx::Size(0, GetContentLineHeight());
   // An answer implies a match and a description in a large font.
-  const auto& text_fields = match_.answer->second_line().text_fields();
-  if (text_fields.empty() || !text_fields.front().has_num_lines())
+  if (match_.answer->second_line().num_text_lines() == 1)
     return gfx::Size(0, GetContentLineHeight() + GetAnswerLineHeight());
   if (!description_rendertext_) {
     description_rendertext_ =

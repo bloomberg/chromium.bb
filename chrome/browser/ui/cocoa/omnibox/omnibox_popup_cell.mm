@@ -268,14 +268,6 @@ NSAttributedString* CreateAnswerString(const base::string16& text,
   return result.autorelease();
 }
 
-int ParseNumLines(const SuggestionAnswer::TextFields& text_fields) {
-  for (const SuggestionAnswer::TextField& text_field : text_fields) {
-    if (text_field.has_num_lines() && text_field.num_lines() > 1)
-      return text_field.num_lines();
-  }
-  return 1;
-}
-
 NSAttributedString* CreateAnswerLine(const SuggestionAnswer::ImageLine& line,
                                      BOOL is_dark_theme) {
   base::scoped_nsobject<NSMutableAttributedString> answer_string(
@@ -444,7 +436,7 @@ NSAttributedString* CreateClassifiedAttributedString(
           [CreateAnswerLine(match.answer->first_line(), isDarkTheme) retain];
       description_ =
           [CreateAnswerLine(match.answer->second_line(), isDarkTheme) retain];
-      max_lines_ = ParseNumLines(match.answer->second_line().text_fields());
+      max_lines_ = match.answer->second_line().num_text_lines();
     } else {
       contents_ = [CreateClassifiedAttributedString(
           match.contents, ContentTextColor(isDarkTheme), match.contents_class,

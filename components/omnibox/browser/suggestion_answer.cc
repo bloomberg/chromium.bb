@@ -67,9 +67,11 @@ bool SuggestionAnswer::TextField::Equals(const TextField& field) const {
 
 // SuggestionAnswer::ImageLine -------------------------------------------------
 
-SuggestionAnswer::ImageLine::ImageLine() {}
+SuggestionAnswer::ImageLine::ImageLine()
+    : num_text_lines_(1) {}
 SuggestionAnswer::ImageLine::ImageLine(const ImageLine& line)
     : text_fields_(line.text_fields_),
+      num_text_lines_(line.num_text_lines_),
       additional_text_(line.additional_text_ ?
                        new TextField(*line.additional_text_) : nullptr),
       status_text_(line.status_text_ ?
@@ -90,6 +92,7 @@ bool SuggestionAnswer::ImageLine::ParseImageLine(
       fields_json->GetSize() == 0)
     return false;
 
+  bool found_num_lines = false;
   for (size_t i = 0; i < fields_json->GetSize(); ++i) {
     const base::DictionaryValue* field_json;
     TextField text_field;
@@ -97,6 +100,10 @@ bool SuggestionAnswer::ImageLine::ParseImageLine(
         !TextField::ParseTextField(field_json, &text_field))
       return false;
     image_line->text_fields_.push_back(text_field);
+    if (!found_num_lines && text_field.has_num_lines()) {
+      found_num_lines = true;
+      image_line->num_text_lines_ = text_field.num_lines();
+    }
   }
 
   if (inner_json->HasKey(kAnswerJsonAdditionalText)) {
@@ -148,6 +155,9 @@ bool SuggestionAnswer::ImageLine::Equals(const ImageLine& line) const {
       return false;
   }
 
+  if (num_text_lines_ != line.num_text_lines_)
+    return false;
+
   if (additional_text_ || line.additional_text_) {
     if (!additional_text_ || !line.additional_text_)
       return false;
@@ -179,10 +189,6 @@ base::string16 SuggestionAnswer::ImageLine::AccessibleText() const {
 // SuggestionAnswer ------------------------------------------------------------
 
 SuggestionAnswer::SuggestionAnswer() : type_(-1) {}
-SuggestionAnswer::SuggestionAnswer(const SuggestionAnswer& answer)
-    : first_line_(answer.first_line_),
-      second_line_(answer.second_line_),
-      type_(answer.type_) {}
 
 SuggestionAnswer::~SuggestionAnswer() {}
 
