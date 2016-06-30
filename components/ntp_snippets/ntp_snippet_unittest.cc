@@ -19,14 +19,8 @@ TEST(NTPSnippetTest, FromChromeContentSuggestionsDictionary) {
       "  \"title\" : \"Foo Barred from Baz\","
       "  \"summaryText\" : \"...\","
       "  \"fullPageUrl\" : \"http://localhost/foobar\","
-      "  \"publishTime\" : {"
-      "    \"seconds\": 1466510682,"
-      "    \"nanos\": 552743000 "
-      "  },"
-      "  \"expirationTime\" : {"
-      "    \"seconds\" : 1466597082,"
-      "    \"nanos\" : 552743000 "
-      "  },"
+      "  \"publishTime\" : \"2016-06-30T11:01:37.000Z\","
+      "  \"expirationTime\" : \"2016-07-01T11:01:37.000Z\","
       "  \"publisherName\" : \"Foo News\","
       "  \"imageUrl\" : \"http://localhost/foobar.jpg\","
       "  \"ampUrl\" : \"http://localhost/amp\","
@@ -45,7 +39,7 @@ TEST(NTPSnippetTest, FromChromeContentSuggestionsDictionary) {
   EXPECT_EQ(snippet->salient_image_url(), GURL("http://localhost/foobar.jpg"));
   auto unix_publish_date = snippet->publish_date() - base::Time::UnixEpoch();
   auto expiry_duration = snippet->expiry_date() - snippet->publish_date();
-  EXPECT_FLOAT_EQ(unix_publish_date.InSecondsF(), 1466510682.552743f);
+  EXPECT_FLOAT_EQ(unix_publish_date.InSecondsF(), 1467284497.000000f);
   EXPECT_FLOAT_EQ(expiry_duration.InSecondsF(), 86400.000000f);
 
   EXPECT_EQ(snippet->best_source().publisher_name, "Foo News");

@@ -19,16 +19,9 @@ namespace {
 bool GetTimeValue(const base::DictionaryValue& dict,
                   const std::string& key,
                   base::Time* time) {
-  const base::DictionaryValue* time_value;
-  int seconds = 0, nanos = 0;
-  if (!(dict.GetDictionary(key, &time_value) &&
-        time_value->GetInteger("seconds", &seconds) &&
-        time_value->GetInteger("nanos", &nanos))) {
-    return false;
-  }
-  *time = base::Time::UnixEpoch() + base::TimeDelta::FromSeconds(seconds) +
-          base::TimeDelta::FromMicroseconds(nanos / 1000);  // No nano support.
-  return true;
+  std::string time_value;
+  return dict.GetString(key, &time_value) &&
+         base::Time::FromString(time_value.c_str(), time);
 }
 
 // dict.Get() specialization for GURL values
