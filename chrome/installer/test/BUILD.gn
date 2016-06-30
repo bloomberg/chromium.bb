@@ -24,7 +24,7 @@ executable("alternate_version_generator") {
   ]
 }
 
-source_set("alternate_version_generator_lib") {
+static_library("alternate_version_generator_lib") {
   testonly = true
   sources = [
     "alternate_version_generator.cc",

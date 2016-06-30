@@ -5,6 +5,7 @@
 import("//build/config/crypto.gni")
 import("//build/config/features.gni")
 import("//build/config/ui.gni")
+import("//build/split_static_library.gni")
 import("//chrome/common/features.gni")
 
 gypi_values = exec_script("//build/gypi_to_gn.py",
@@ -20,18 +21,16 @@ config("ui_warnings") {
 }
 
 # Use a static library here because many test binaries depend on this but don't
-# require many files from it. This makes linking more efficient. However, on
-# Windows official builds the static library will be too large (> 32-bits) so
-# use source sets in that case.
-if (is_mac || (is_win && is_official_build)) {
-  # TODO(brettw) bug 618797: On Mac making this target a static_library causes
-  # a crash on startup and the browser_tests all fail. My guess is this is due
-  # to a required static initializer not being brought in.
-  chrome_browser_target_type = "source_set"
-} else {
-  chrome_browser_target_type = "static_library"
-}
-target(chrome_browser_target_type, "ui") {
+# require many files from it. This makes linking more efficient.
+split_static_library("ui") {
+  # Split into multiple static libraries on Windows official builds, where we
+  # run into a 2GB max size limit.
+  if (is_win && is_official_build) {
+    split_count = 5
+  } else {
+    split_count = 1
+  }
+
   sources = []
   defines = []
   libs = []
@@ -647,7 +646,7 @@ if (is_mac) {
 }
 
 # In GYP this is part of test_support_common.
-source_set("test_support") {
+static_library("test_support") {
   testonly = true
 
   sources = [

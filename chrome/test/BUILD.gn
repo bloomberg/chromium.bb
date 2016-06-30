@@ -311,7 +311,7 @@ group("telemetry_gpu_integration_test") {
 
 if (!is_android) {
   # GYP version: chrome/chrome_tests.gypi:test_support_ui
-  source_set("test_support_ui") {
+  static_library("test_support_ui") {
     defines = []
     testonly = true
 

@@ -31,7 +31,7 @@ if (is_win) {
     ]
   }
 
-  source_set("lib") {
+  static_library("lib") {
     sources = [
       "app_launcher_installer.cc",
       "app_launcher_installer.h",

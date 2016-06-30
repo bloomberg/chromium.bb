@@ -226,37 +226,18 @@ template("json_schema_api") {
     lib_deps += invoker.deps
   }
 
-  # Generate either a static library or a source set.
-  if (defined(invoker.generate_static_library) &&
-      invoker.generate_static_library) {
-    static_library(target_name) {
-      sources = lib_sources
-      deps = lib_deps
-      public_deps = lib_public_deps
-      configs += lib_extra_configs
-      public_configs = [ ":$generated_config_name" ]
+  static_library(target_name) {
+    sources = lib_sources
+    deps = lib_deps
+    public_deps = lib_public_deps
+    configs += lib_extra_configs
+    public_configs = [ ":$generated_config_name" ]
 
-      if (defined(invoker.visibility)) {
-        visibility = invoker.visibility
-      }
-      if (defined(invoker.output_name)) {
-        output_name = invoker.output_name
-      }
+    if (defined(invoker.visibility)) {
+      visibility = invoker.visibility
     }
-  } else {
-    source_set(target_name) {
-      sources = lib_sources
-      deps = lib_deps
-      public_deps = lib_public_deps
-      configs += lib_extra_configs
-      public_configs = [ ":$generated_config_name" ]
-
-      if (defined(invoker.visibility)) {
-        visibility = invoker.visibility
-      }
-      if (defined(invoker.output_name)) {
-        output_name = invoker.output_name
-      }
+    if (defined(invoker.output_name)) {
+      output_name = invoker.output_name
     }
   }
 }

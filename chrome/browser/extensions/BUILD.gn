@@ -14,7 +14,7 @@ gypi_values =
                 [ "../../chrome_browser_extensions.gypi" ])
 
 # GYP version: chrome/chrome_browser_extensions.gypi:browser_extensions
-source_set("extensions") {
+static_library("extensions") {
   sources = []
   sources += rebase_path(gypi_values.chrome_browser_extensions_enabled_sources,
                          ".",
