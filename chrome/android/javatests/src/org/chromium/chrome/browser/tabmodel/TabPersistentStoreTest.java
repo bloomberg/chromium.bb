@@ -13,6 +13,7 @@ import android.util.SparseArray;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.AdvancedMockContext;
+import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.TabState;
 import org.chromium.chrome.browser.compositor.overlays.strip.StripLayoutHelper;
 import org.chromium.chrome.browser.snackbar.undo.UndoBarController;
@@ -255,6 +256,7 @@ public class TabPersistentStoreTest extends NativeLibraryTestBase {
     }
 
     @SmallTest
+    @Feature({"TabPersistentStore"})
     public void testBasic() throws Exception {
         TabModelMetaDataInfo info = TestTabModelDirectory.TAB_MODEL_METADATA_V4;
         int numExpectedTabs = info.contents.length;
@@ -302,6 +304,7 @@ public class TabPersistentStoreTest extends NativeLibraryTestBase {
     }
 
     @SmallTest
+    @Feature({"TabPersistentStore"})
     public void testInterruptedButStillRestoresAllTabs() throws Exception {
         TabModelMetaDataInfo info = TestTabModelDirectory.TAB_MODEL_METADATA_V4;
         int numExpectedTabs = info.contents.length;
@@ -375,6 +378,7 @@ public class TabPersistentStoreTest extends NativeLibraryTestBase {
     }
 
     @SmallTest
+    @Feature({"TabPersistentStore"})
     public void testMissingTabStateButStillRestoresTab() throws Exception {
         TabModelMetaDataInfo info = TestTabModelDirectory.TAB_MODEL_METADATA_V5;
         int numExpectedTabs = info.contents.length;
@@ -417,6 +421,7 @@ public class TabPersistentStoreTest extends NativeLibraryTestBase {
     }
 
     @SmallTest
+    @Feature({"TabPersistentStore"})
     public void testRestoresTabWithMissingTabStateWhileIgnoringIncognitoTab() throws Exception {
         TabModelMetaDataInfo info = TestTabModelDirectory.TAB_MODEL_METADATA_V5_WITH_INCOGNITO;
         int numExpectedTabs = info.contents.length;
@@ -452,6 +457,7 @@ public class TabPersistentStoreTest extends NativeLibraryTestBase {
     }
 
     @SmallTest
+    @Feature({"TabPersistentStore"})
     public void testPrefetchActiveTab() throws Exception {
         final TabModelMetaDataInfo info = TestTabModelDirectory.TAB_MODEL_METADATA_V5_NO_M18;
         mMockDirectory.writeTabModelFiles(info, true);
@@ -493,6 +499,7 @@ public class TabPersistentStoreTest extends NativeLibraryTestBase {
      * an updated metadata file when a closure is undone.
      */
     @SmallTest
+    @Feature({"TabPersistentStore"})
     public void testUndoSingleTabClosureWritesTabListFile() throws Exception {
         TabModelMetaDataInfo info = TestTabModelDirectory.TAB_MODEL_METADATA_V5_NO_M18;
         mMockDirectory.writeTabModelFiles(info, true);
@@ -519,6 +526,7 @@ public class TabPersistentStoreTest extends NativeLibraryTestBase {
      * canceling the closure of all the tabs simultaneously.
      */
     @SmallTest
+    @Feature({"TabPersistentStore"})
     public void testUndoCloseAllTabsWritesTabListFile() throws Exception {
         final TabModelMetaDataInfo info = TestTabModelDirectory.TAB_MODEL_METADATA_V5_NO_M18;
         mMockDirectory.writeTabModelFiles(info, true);

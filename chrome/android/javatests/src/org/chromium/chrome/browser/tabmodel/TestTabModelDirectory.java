@@ -344,7 +344,7 @@ public class TestTabModelDirectory {
      */
     public void writeTabModelFiles(TabModelMetaDataInfo info, boolean writeTabStates)
             throws Exception {
-        writeFile(mDataDirectory, "tab_state", info.encodedFile);
+        writeFile(mDataDirectory, "tab_state0", info.encodedFile);
         for (TabStateInfo tabStateInfo : info.contents) {
             writeTabStateFile(tabStateInfo);
         }

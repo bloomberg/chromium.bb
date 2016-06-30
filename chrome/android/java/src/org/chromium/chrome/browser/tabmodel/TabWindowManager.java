@@ -31,7 +31,6 @@ public class TabWindowManager implements ActivityStateListener {
     public static final int INVALID_WINDOW_INDEX = -1;
 
     /** The maximum number of simultaneous TabModelSelector instances in this Application. */
-    @VisibleForTesting
     public static final int MAX_SIMULTANEOUS_SELECTORS = 3;
 
     /**

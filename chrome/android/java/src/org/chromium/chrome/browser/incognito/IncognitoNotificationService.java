@@ -34,7 +34,6 @@ import org.chromium.chrome.browser.util.FeatureUtilities;
 
 import java.io.File;
 import java.lang.ref.WeakReference;
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -82,13 +81,10 @@ public class IncognitoNotificationService extends IntentService {
                 }
             });
         } else {
-            List<Integer> processedSelectors = closeIncognitoTabsInRunningTabbedActivities();
+            closeIncognitoTabsInRunningTabbedActivities();
 
-            for (int i = 0; i < TabWindowManager.MAX_SIMULTANEOUS_SELECTORS; i++) {
-                if (processedSelectors.contains(i)) continue;
-                clearedIncognito &= deleteIncognitoStateFilesInDirectory(
-                        TabPersistentStore.getOrCreateSelectorStateDirectory(i));
-            }
+            clearedIncognito = deleteIncognitoStateFilesInDirectory(
+                    TabPersistentStore.getOrCreateStateDirectory());
         }
 
         // If we failed clearing all of the incognito tabs, then do not dismiss the notification.
@@ -193,36 +189,27 @@ public class IncognitoNotificationService extends IntentService {
      * Iterate across the running activities and for any running tabbed mode activities close their
      * incognito tabs.
      *
-     * @return The list of window indexes that were processed.
-     *
      * @see TabWindowManager#getIndexForWindow(Activity)
      */
-    private List<Integer> closeIncognitoTabsInRunningTabbedActivities() {
-        return ThreadUtils.runOnUiThreadBlockingNoException(
-                new Callable<List<Integer>>() {
-                    @Override
-                    public List<Integer> call() {
-                        List<Integer> selectorIndexes = new ArrayList<>();
+    private void closeIncognitoTabsInRunningTabbedActivities() {
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                List<WeakReference<Activity>> runningActivities =
+                        ApplicationStatus.getRunningActivities();
+                for (int i = 0; i < runningActivities.size(); i++) {
+                    Activity activity = runningActivities.get(i).get();
+                    if (activity == null) continue;
+                    if (!(activity instanceof ChromeTabbedActivity)) continue;
 
-                        List<WeakReference<Activity>> runningActivities =
-                                ApplicationStatus.getRunningActivities();
-                        for (int i = 0; i < runningActivities.size(); i++) {
-                            Activity activity = runningActivities.get(i).get();
-                            if (activity == null) continue;
-                            if (!(activity instanceof ChromeTabbedActivity)) continue;
+                    ChromeTabbedActivity tabbedActivity = (ChromeTabbedActivity) activity;
+                    if (tabbedActivity.isActivityDestroyed()) continue;
 
-                            ChromeTabbedActivity tabbedActivity = (ChromeTabbedActivity) activity;
-                            if (tabbedActivity.isActivityDestroyed()) continue;
-
-                            tabbedActivity.getTabModelSelector().getModel(true).closeAllTabs(
-                                    false, false);
-                            selectorIndexes.add(TabWindowManager.getInstance().getIndexForWindow(
-                                    tabbedActivity));
-                        }
-
-                        return selectorIndexes;
-                    }
-                });
+                    tabbedActivity.getTabModelSelector().getModel(true).closeAllTabs(
+                            false, false);
+                }
+            }
+        });
     }
 
     /**

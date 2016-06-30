@@ -321,10 +321,8 @@ public class TabContentManager {
 
         // BUG: We support multiple tab model selectors, and they all share the same thumbnail
         // directory. This cleanup code checks only the current model selector to see if the
-        // thumbnails are no longer used. It should instead:
-        // a) consult with *all* tab model selectors (which may not even be in memory)
-        // b) use separate thumbnail directories for each tab model (perhaps using hardlink to
-        //    eliminate disk overhead)
+        // thumbnails are no longer used. It should instead consult with *all* tab model selectors
+        // (which may not even be in memory).
         new AsyncTask<Void, Void, String[]>() {
             @Override
             protected String[] doInBackground(Void... voids) {

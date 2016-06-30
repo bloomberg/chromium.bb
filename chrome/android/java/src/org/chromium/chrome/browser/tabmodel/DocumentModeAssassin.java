@@ -342,8 +342,8 @@ public class DocumentModeAssassin {
             @Override
             protected Boolean doInBackground(Void... params) {
                 if (mSerializedMetadata != null) {
-                    File tabbedDirectory = getTabbedDataDirectory();
-                    TabPersistentStore.saveListToFile(tabbedDirectory, mSerializedMetadata);
+                    TabPersistentStore.saveListToFile(
+                            getTabbedDataDirectory(), TAB_MODEL_INDEX, mSerializedMetadata);
                     return true;
                 } else {
                     return false;
@@ -543,9 +543,9 @@ public class DocumentModeAssassin {
         return new StorageDelegate().getStateDirectory();
     }
 
-    /** @return Where tabbed mode data is stored for the main {@link TabModelImpl}. */
+    /** @return Where tabbed mode data is stored. */
     protected File getTabbedDataDirectory() {
-        return TabPersistentStore.getOrCreateSelectorStateDirectory(TAB_MODEL_INDEX);
+        return TabPersistentStore.getOrCreateStateDirectory();
     }
 
     /** @return True if the user is not in document mode. */
