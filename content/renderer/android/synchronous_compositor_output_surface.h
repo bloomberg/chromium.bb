@@ -76,6 +76,7 @@ class SynchronousCompositorOutputSurface
   void DetachFromClient() override;
   void Reshape(const gfx::Size& size,
                float scale_factor,
+               const gfx::ColorSpace& color_space,
                bool has_alpha) override;
   void SwapBuffers(cc::CompositorFrame frame) override;
   void Invalidate() override;

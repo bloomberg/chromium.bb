@@ -64,6 +64,8 @@ class GpuProcessTransportFactory
   std::unique_ptr<cc::SurfaceIdAllocator> CreateSurfaceIdAllocator() override;
   void ResizeDisplay(ui::Compositor* compositor,
                      const gfx::Size& size) override;
+  void SetDisplayColorSpace(ui::Compositor* compositor,
+                            const gfx::ColorSpace& color_space) override;
   void SetAuthoritativeVSyncInterval(ui::Compositor* compositor,
                                      base::TimeDelta interval) override;
   void SetOutputIsSecure(ui::Compositor* compositor, bool secure) override;

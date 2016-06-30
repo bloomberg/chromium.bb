@@ -20,6 +20,7 @@
 #include "cc/surfaces/surfaces_export.h"
 #include "gpu/command_buffer/common/texture_in_use_response.h"
 #include "ui/events/latency_info.h"
+#include "ui/gfx/color_space.h"
 
 namespace gpu {
 class GpuMemoryBufferManager;
@@ -72,6 +73,7 @@ class CC_SURFACES_EXPORT Display : public DisplaySchedulerClient,
   // what scale this was rendered at.
   void SetSurfaceId(SurfaceId id, float device_scale_factor);
   void Resize(const gfx::Size& new_size);
+  void SetColorSpace(const gfx::ColorSpace& color_space);
   void SetExternalClip(const gfx::Rect& clip);
   void SetOutputIsSecure(bool secure);
 
@@ -125,6 +127,7 @@ class CC_SURFACES_EXPORT Display : public DisplaySchedulerClient,
   uint32_t compositor_surface_namespace_;
   gfx::Size current_surface_size_;
   float device_scale_factor_ = 1.f;
+  gfx::ColorSpace device_color_space_;
   bool swapped_since_resize_ = false;
   gfx::Rect external_clip_;
   gfx::Size enlarge_texture_amount_;

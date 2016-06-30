@@ -316,6 +316,10 @@ void Compositor::SetScaleAndSize(float scale, const gfx::Size& size_in_pixel) {
   }
 }
 
+void Compositor::SetDisplayColorSpace(const gfx::ColorSpace& color_space) {
+  context_factory_->SetDisplayColorSpace(this, color_space);
+}
+
 void Compositor::SetBackgroundColor(SkColor color) {
   host_->set_background_color(color);
   ScheduleDraw();

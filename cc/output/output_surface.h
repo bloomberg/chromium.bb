@@ -26,6 +26,7 @@ class LatencyInfo;
 }
 
 namespace gfx {
+class ColorSpace;
 class Rect;
 class Size;
 class Transform;
@@ -123,7 +124,10 @@ class CC_EXPORT OutputSurface : public base::trace_event::MemoryDumpProvider {
   virtual void EnsureBackbuffer();
   virtual void DiscardBackbuffer();
 
-  virtual void Reshape(const gfx::Size& size, float scale_factor, bool alpha);
+  virtual void Reshape(const gfx::Size& size,
+                       float scale_factor,
+                       const gfx::ColorSpace& color_space,
+                       bool alpha);
   gfx::Size SurfaceSize() const { return surface_size_; }
   float device_scale_factor() const { return device_scale_factor_; }
 

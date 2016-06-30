@@ -215,6 +215,7 @@ void OutputSurface::DiscardBackbuffer() {
 
 void OutputSurface::Reshape(const gfx::Size& size,
                             float scale_factor,
+                            const gfx::ColorSpace& color_space,
                             bool has_alpha) {
   if (size == surface_size_ && scale_factor == device_scale_factor_ &&
       has_alpha == has_alpha_)

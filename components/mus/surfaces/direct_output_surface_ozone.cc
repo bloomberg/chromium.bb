@@ -156,8 +156,9 @@ uint32_t DirectOutputSurfaceOzone::GetFramebufferCopyTextureFormat() {
 // must create the native window in the size that the hardware reports.
 void DirectOutputSurfaceOzone::Reshape(const gfx::Size& size,
                                        float scale_factor,
+                                       const gfx::ColorSpace& color_space,
                                        bool alpha) {
-  OutputSurface::Reshape(size, scale_factor, alpha);
+  OutputSurface::Reshape(size, scale_factor, color_space, alpha);
   DCHECK(buffer_queue_);
   buffer_queue_->Reshape(SurfaceSize(), scale_factor);
 }

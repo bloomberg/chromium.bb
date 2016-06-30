@@ -81,10 +81,8 @@ bool PixelTest::RunPixelTestWithReadbackTargetAndArea(
                                    ? device_viewport_rect
                                    : external_device_clip_rect_;
   renderer_->DecideRenderPassAllocationsForFrame(*pass_list);
-  renderer_->DrawFrame(pass_list,
-                       device_scale_factor,
-                       device_viewport_rect,
-                       device_clip_rect,
+  renderer_->DrawFrame(pass_list, device_scale_factor, gfx::ColorSpace(),
+                       device_viewport_rect, device_clip_rect,
                        disable_picture_quad_image_filtering_);
 
   // Wait for the readback to complete.

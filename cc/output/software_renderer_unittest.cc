@@ -67,11 +67,8 @@ class SoftwareRendererTest : public testing::Test, public RendererClient {
                        base::Unretained(&bitmap_result),
                        loop.QuitClosure())));
 
-    renderer()->DrawFrame(list,
-                          device_scale_factor,
-                          device_viewport_rect,
-                          device_viewport_rect,
-                          false);
+    renderer()->DrawFrame(list, device_scale_factor, gfx::ColorSpace(),
+                          device_viewport_rect, device_viewport_rect, false);
     loop.Run();
     return bitmap_result;
   }

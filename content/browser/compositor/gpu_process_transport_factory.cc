@@ -647,6 +647,18 @@ void GpuProcessTransportFactory::ResizeDisplay(ui::Compositor* compositor,
     data->display->Resize(size);
 }
 
+void GpuProcessTransportFactory::SetDisplayColorSpace(
+    ui::Compositor* compositor,
+    const gfx::ColorSpace& color_space) {
+  PerCompositorDataMap::iterator it = per_compositor_data_.find(compositor);
+  if (it == per_compositor_data_.end())
+    return;
+  PerCompositorData* data = it->second;
+  DCHECK(data);
+  if (data->display)
+    data->display->SetColorSpace(color_space);
+}
+
 void GpuProcessTransportFactory::SetAuthoritativeVSyncInterval(
     ui::Compositor* compositor,
     base::TimeDelta interval) {

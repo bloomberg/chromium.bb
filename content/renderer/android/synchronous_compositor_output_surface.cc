@@ -148,9 +148,11 @@ void SynchronousCompositorOutputSurface::DetachFromClient() {
   CancelFallbackTick();
 }
 
-void SynchronousCompositorOutputSurface::Reshape(const gfx::Size& size,
-                                                 float scale_factor,
-                                                 bool has_alpha) {
+void SynchronousCompositorOutputSurface::Reshape(
+    const gfx::Size& size,
+    float scale_factor,
+    const gfx::ColorSpace& color_space,
+    bool has_alpha) {
   // Intentional no-op: surface size is controlled by the embedder.
 }
 

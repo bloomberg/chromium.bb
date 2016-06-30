@@ -198,6 +198,7 @@ void DirectRenderer::DecideRenderPassAllocationsForFrame(
 
 void DirectRenderer::DrawFrame(RenderPassList* render_passes_in_draw_order,
                                float device_scale_factor,
+                               const gfx::ColorSpace& device_color_space,
                                const gfx::Rect& device_viewport_rect,
                                const gfx::Rect& device_clip_rect,
                                bool disable_picture_quad_image_filtering) {
@@ -226,6 +227,7 @@ void DirectRenderer::DrawFrame(RenderPassList* render_passes_in_draw_order,
   // can leave the window at the wrong size if we never draw and the proper
   // viewport size is never set.
   output_surface_->Reshape(device_viewport_rect.size(), device_scale_factor,
+                           device_color_space,
                            frame.root_render_pass->has_transparent_background);
 
   BeginDrawingFrame(&frame);

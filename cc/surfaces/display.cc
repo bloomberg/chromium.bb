@@ -128,6 +128,10 @@ void Display::Resize(const gfx::Size& size) {
     scheduler_->DisplayResized();
 }
 
+void Display::SetColorSpace(const gfx::ColorSpace& color_space) {
+  device_color_space_ = color_space;
+}
+
 void Display::SetExternalClip(const gfx::Rect& clip) {
   external_clip_ = clip;
 }
@@ -291,7 +295,8 @@ bool Display::DrawAndSwap() {
     renderer_->DecideRenderPassAllocationsForFrame(
         frame_data->render_pass_list);
     renderer_->DrawFrame(&frame_data->render_pass_list, device_scale_factor_,
-                         device_viewport_rect, device_clip_rect,
+                         device_color_space_, device_viewport_rect,
+                         device_clip_rect,
                          disable_picture_quad_image_filtering);
   } else {
     TRACE_EVENT_INSTANT0("cc", "Draw skipped.", TRACE_EVENT_SCOPE_THREAD);

@@ -1220,6 +1220,10 @@ class GLRendererWithOverlaysTest : public testing::Test {
         resource_provider_.get()));
   }
 
+  void DrawFrame(RenderPassList* pass_list, const gfx::Rect& viewport_rect) {
+    renderer_->DrawFrame(pass_list, 1.f, gfx::ColorSpace(), viewport_rect,
+                         viewport_rect, false);
+  }
   void SwapBuffers() {
     renderer_->SwapBuffers(CompositorFrameMetadata());
     output_surface_->OnSwapBuffersComplete();
@@ -1282,7 +1286,7 @@ TEST_F(GLRendererWithOverlaysTest, OverlayQuadNotDrawn) {
                                    kOverlayBottomRightRect,
                                    BoundingRect(kUVTopLeft, kUVBottomRight)))
       .Times(1);
-  renderer_->DrawFrame(&pass_list, 1.f, viewport_rect, viewport_rect, false);
+  DrawFrame(&pass_list, viewport_rect);
   EXPECT_EQ(1U, output_surface_->bind_framebuffer_count());
 
   SwapBuffers();
@@ -1322,7 +1326,7 @@ TEST_F(GLRendererWithOverlaysTest, OccludedQuadInUnderlay) {
               Schedule(-1, gfx::OVERLAY_TRANSFORM_NONE, _, kOverlayRect,
                        BoundingRect(kUVTopLeft, kUVBottomRight)))
       .Times(1);
-  renderer_->DrawFrame(&pass_list, 1.f, viewport_rect, viewport_rect, false);
+  DrawFrame(&pass_list, viewport_rect);
   EXPECT_EQ(1U, output_surface_->bind_framebuffer_count());
 
   SwapBuffers();
@@ -1355,7 +1359,7 @@ TEST_F(GLRendererWithOverlaysTest, NoValidatorNoOverlay) {
   output_surface_->set_is_displayed_as_overlay_plane(false);
   EXPECT_CALL(*renderer_, DoDrawQuad(_, _, _)).Times(3);
   EXPECT_CALL(scheduler_, Schedule(_, _, _, _, _)).Times(0);
-  renderer_->DrawFrame(&pass_list, 1.f, viewport_rect, viewport_rect, false);
+  DrawFrame(&pass_list, viewport_rect);
   EXPECT_EQ(1U, output_surface_->bind_framebuffer_count());
   SwapBuffers();
   Mock::VerifyAndClearExpectations(renderer_.get());
@@ -1387,7 +1391,7 @@ TEST_F(GLRendererWithOverlaysTest, OccludedQuadNotDrawnWhenPartialSwapEnabled) {
   output_surface_->set_is_displayed_as_overlay_plane(true);
   EXPECT_CALL(*renderer_, DoDrawQuad(_, _, _)).Times(0);
   EXPECT_CALL(scheduler_, Schedule(_, _, _, _, _)).Times(2);
-  renderer_->DrawFrame(&pass_list, 1.f, viewport_rect, viewport_rect, false);
+  DrawFrame(&pass_list, viewport_rect);
   EXPECT_EQ(1U, output_surface_->bind_framebuffer_count());
   SwapBuffers();
   Mock::VerifyAndClearExpectations(renderer_.get());
@@ -1419,7 +1423,7 @@ TEST_F(GLRendererWithOverlaysTest, OccludedQuadNotDrawnWhenEmptySwapAllowed) {
   output_surface_->set_is_displayed_as_overlay_plane(true);
   EXPECT_CALL(*renderer_, DoDrawQuad(_, _, _)).Times(0);
   EXPECT_CALL(scheduler_, Schedule(_, _, _, _, _)).Times(2);
-  renderer_->DrawFrame(&pass_list, 1.f, viewport_rect, viewport_rect, false);
+  DrawFrame(&pass_list, viewport_rect);
   EXPECT_EQ(1U, output_surface_->bind_framebuffer_count());
   SwapBuffers();
   Mock::VerifyAndClearExpectations(renderer_.get());

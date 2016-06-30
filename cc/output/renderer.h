@@ -12,6 +12,7 @@
 #include "cc/output/compositor_frame_metadata.h"
 #include "cc/output/renderer_capabilities.h"
 #include "cc/output/renderer_settings.h"
+#include "ui/gfx/color_space.h"
 #include "ui/gfx/geometry/rect.h"
 
 namespace cc {
@@ -70,6 +71,7 @@ class CC_EXPORT Renderer {
   // window space.
   virtual void DrawFrame(RenderPassList* render_passes_in_draw_order,
                          float device_scale_factor,
+                         const gfx::ColorSpace& device_color_space,
                          const gfx::Rect& device_viewport_rect,
                          const gfx::Rect& device_clip_rect,
                          bool disable_picture_quad_image_filtering) = 0;

@@ -85,5 +85,9 @@ cc::SurfaceManager* StubContextFactory::GetSurfaceManager() {
 void StubContextFactory::ResizeDisplay(ui::Compositor* compositor,
                                        const gfx::Size& size) {}
 
+void StubContextFactory::SetDisplayColorSpace(
+    ui::Compositor* compositor,
+    const gfx::ColorSpace& color_space) {}
+
 }  // namespace sysui
 }  // namespace ash

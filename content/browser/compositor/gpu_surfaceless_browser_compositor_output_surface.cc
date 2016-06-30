@@ -94,9 +94,13 @@ GLenum GpuSurfacelessBrowserCompositorOutputSurface::
 void GpuSurfacelessBrowserCompositorOutputSurface::Reshape(
     const gfx::Size& size,
     float scale_factor,
+    const gfx::ColorSpace& color_space,
     bool alpha) {
-  GpuBrowserCompositorOutputSurface::Reshape(size, scale_factor, alpha);
+  GpuBrowserCompositorOutputSurface::Reshape(size, scale_factor, color_space,
+                                             alpha);
   DCHECK(buffer_queue_);
+  // TODO(ccameron): Plumb the color profile to the output GpuMemoryBuffer.
+  // https://crbug.com/622133
   buffer_queue_->Reshape(SurfaceSize(), scale_factor);
 }
 

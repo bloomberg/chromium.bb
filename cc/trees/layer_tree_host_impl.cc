@@ -1686,11 +1686,12 @@ void LayerTreeHostImpl::DrawLayers(FrameData* frame) {
                                  use_image_hijack_canvas);
     temp_software_renderer->DrawFrame(
         &frame->render_passes, active_tree_->device_scale_factor(),
-        DeviceViewport(), DeviceClip(), disable_picture_quad_image_filtering);
+        gfx::ColorSpace(), DeviceViewport(), DeviceClip(),
+        disable_picture_quad_image_filtering);
   } else {
     renderer_->DrawFrame(&frame->render_passes,
-                         active_tree_->device_scale_factor(), DeviceViewport(),
-                         DeviceClip(), false);
+                         active_tree_->device_scale_factor(), gfx::ColorSpace(),
+                         DeviceViewport(), DeviceClip(), false);
   }
   // The render passes should be consumed by the renderer.
   DCHECK(frame->render_passes.empty());
