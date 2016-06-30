@@ -577,78 +577,244 @@ T* findExistingTrackById(const TrackListBase<T>& trackList, const String& id)
     return trackList.getTrackById(id);
 }
 
-WebVector<WebMediaPlayer::TrackId> SourceBuffer::initializationSegmentReceived(const WebVector<MediaTrackInfo>& newTracks)
+const TrackDefault* SourceBuffer::getTrackDefault(const AtomicString& trackType, const AtomicString& byteStreamTrackID) const
+{
+    // This is a helper for implementation of default track label and default track language algorithms.
+    // defaultTrackLabel spec: https://w3c.github.io/media-source/#sourcebuffer-default-track-label
+    // defaultTrackLanguage spec: https://w3c.github.io/media-source/#sourcebuffer-default-track-language
+
+    // 1. If trackDefaults contains a TrackDefault object with a type attribute equal to type and a byteStreamTrackID attribute equal to byteStreamTrackID,
+    // then return the value of the label/language attribute on this matching object and abort these steps.
+    // 2. If trackDefaults contains a TrackDefault object with a type attribute equal to type and a byteStreamTrackID attribute equal to an empty string,
+    // then return the value of the label/language attribute on this matching object and abort these steps.
+    // 3. Return an empty string to the caller
+    const TrackDefault* trackDefaultWithEmptyBytestreamId = nullptr;
+    for (unsigned i = 0; i < m_trackDefaults->length(); ++i) {
+        const TrackDefault* trackDefault = m_trackDefaults->item(i);
+        if (trackDefault->type() != trackType)
+            continue;
+        if (trackDefault->byteStreamTrackID() == byteStreamTrackID)
+            return trackDefault;
+        if (!trackDefaultWithEmptyBytestreamId && trackDefault->byteStreamTrackID() == "")
+            trackDefaultWithEmptyBytestreamId = trackDefault;
+    }
+    return trackDefaultWithEmptyBytestreamId;
+}
+
+AtomicString SourceBuffer::defaultTrackLabel(const AtomicString& trackType, const AtomicString& byteStreamTrackID) const
+{
+    // Spec: https://w3c.github.io/media-source/#sourcebuffer-default-track-label
+    const TrackDefault* trackDefault = getTrackDefault(trackType, byteStreamTrackID);
+    return trackDefault ? AtomicString(trackDefault->label()) : "";
+}
+
+AtomicString SourceBuffer::defaultTrackLanguage(const AtomicString& trackType, const AtomicString& byteStreamTrackID) const
+{
+    // Spec: https://w3c.github.io/media-source/#sourcebuffer-default-track-language
+    const TrackDefault* trackDefault = getTrackDefault(trackType, byteStreamTrackID);
+    return trackDefault ? AtomicString(trackDefault->language()) : "";
+}
+
+bool SourceBuffer::initializationSegmentReceived(const WebVector<MediaTrackInfo>& newTracks)
 {
     SBLOG << __FUNCTION__ << " this=" << this << " tracks=" << newTracks.size();
     DCHECK(m_source);
     DCHECK(m_source->mediaElement());
     DCHECK(m_updating);
 
-    // TODO(servolk): Implement proper 'initialization segment received' algorithm according to MSE spec:
-    // https://w3c.github.io/media-source/#sourcebuffer-init-segment-received
-    WebVector<WebMediaPlayer::TrackId> result(newTracks.size());
-    unsigned resultIdx = 0;
-    for (const auto& trackInfo : newTracks) {
-        if (!RuntimeEnabledFeatures::audioVideoTracksEnabled()) {
-            static unsigned nextTrackId = 0;
-            StringBuilder stringBuilder;
-            stringBuilder.appendNumber(++nextTrackId);
-            result[resultIdx++] = stringBuilder.toString();
-            continue;
+    if (!RuntimeEnabledFeatures::audioVideoTracksEnabled()) {
+        if (!m_firstInitializationSegmentReceived) {
+            m_source->setSourceBufferActive(this);
+            m_firstInitializationSegmentReceived = true;
         }
+        return true;
+    }
 
-        const TrackBase* trackBase = nullptr;
+    // Implementation of Initialization Segment Received, see
+    // https://w3c.github.io/media-source/#sourcebuffer-init-segment-received
+
+    // Sort newTracks into audio and video tracks to facilitate implementation
+    // of subsequent steps of this algorithm.
+    Vector<MediaTrackInfo> newAudioTracks;
+    Vector<MediaTrackInfo> newVideoTracks;
+    for (const MediaTrackInfo& trackInfo : newTracks) {
+        const TrackBase* track = nullptr;
         if (trackInfo.trackType == WebMediaPlayer::AudioTrack) {
-            AudioTrack* audioTrack = nullptr;
-            if (!m_firstInitializationSegmentReceived) {
-                audioTrack = AudioTrack::create(trackInfo.id, trackInfo.kind, trackInfo.label, trackInfo.language, false);
-                SourceBufferTrackBaseSupplement::setSourceBuffer(*audioTrack, this);
-                audioTracks().add(audioTrack);
-                m_source->mediaElement()->audioTracks().add(audioTrack);
-            } else {
-                audioTrack = findExistingTrackById(audioTracks(), trackInfo.id);
-                DCHECK(audioTrack);
-            }
-            trackBase = audioTrack;
-            result[resultIdx++] = audioTrack->id();
+            newAudioTracks.append(trackInfo);
+            if (m_firstInitializationSegmentReceived)
+                track = findExistingTrackById(audioTracks(), trackInfo.id);
         } else if (trackInfo.trackType == WebMediaPlayer::VideoTrack) {
-            VideoTrack* videoTrack = nullptr;
-            if (!m_firstInitializationSegmentReceived) {
-                videoTrack = VideoTrack::create(trackInfo.id, trackInfo.kind, trackInfo.label, trackInfo.language, false);
-                SourceBufferTrackBaseSupplement::setSourceBuffer(*videoTrack, this);
-                videoTracks().add(videoTrack);
-                m_source->mediaElement()->videoTracks().add(videoTrack);
-            } else {
-                videoTrack = findExistingTrackById(videoTracks(), trackInfo.id);
-                DCHECK(videoTrack);
-            }
-            trackBase = videoTrack;
-            result[resultIdx++] = videoTrack->id();
+            newVideoTracks.append(trackInfo);
+            if (m_firstInitializationSegmentReceived)
+                track = findExistingTrackById(videoTracks(), trackInfo.id);
         } else {
+            SBLOG << __FUNCTION__ << " this=" << this << " failed: unsupported track type " << trackInfo.trackType;
+            // TODO(servolk): Add handling of text tracks.
             NOTREACHED();
         }
-        (void)trackBase;
+        if (m_firstInitializationSegmentReceived && !track) {
+            SBLOG << __FUNCTION__ << " this=" << this << " failed: tracks mismatch the first init segment.";
+            return false;
+        }
 #if !LOG_DISABLED
-        const char* logActionStr = m_firstInitializationSegmentReceived ? "using existing" : "added";
         const char* logTrackTypeStr = (trackInfo.trackType == WebMediaPlayer::AudioTrack) ? "audio" : "video";
-        SBLOG << __FUNCTION__ << "(" << this << ") " << logActionStr << " "
-            << logTrackTypeStr << " Track " << trackBase << " id=" << String(trackBase->id())
-            << " label=" << trackBase->label() << " lang=" << trackBase->language();
+        SBLOG << __FUNCTION__ << " this=" << this << " : " << logTrackTypeStr << " track "
+            << " id=" << String(trackInfo.id) << " byteStreamTrackID=" << String(trackInfo.byteStreamTrackID)
+            << " kind=" << String(trackInfo.kind) << " label=" << String(trackInfo.label) << " language=" << String(trackInfo.language);
 #endif
     }
 
-    if (!m_firstInitializationSegmentReceived) {
-        // 5. If active track flag equals true, then run the following steps:
-        // 5.1. Add this SourceBuffer to activeSourceBuffers.
-        // 5.2. Queue a task to fire a simple event named addsourcebuffer at
-        // activesourcebuffers.
-        m_source->setSourceBufferActive(this);
+    // 1. Update the duration attribute if it currently equals NaN:
+    // TODO(servolk): Pass also stream duration into initSegmentReceived.
 
-        // 6. Set first initialization segment received flag to true.
+    // 2. If the initialization segment has no audio, video, or text tracks, then run the append error algorithm with the decode error parameter set to true and abort these steps.
+    if (newTracks.size() == 0) {
+        SBLOG << __FUNCTION__ << " this=" << this << " failed: no tracks found in the init segment.";
+        // The append error algorithm will be called at the top level after we return false here to indicate failure.
+        return false;
+    }
+
+    // 3. If the first initialization segment received flag is true, then run the following steps:
+    if (m_firstInitializationSegmentReceived) {
+        // 3.1 Verify the following properties. If any of the checks fail then run the append error algorithm with the decode error parameter set to true and abort these steps.
+        bool tracksMatchFirstInitSegment = true;
+        // - The number of audio, video, and text tracks match what was in the first initialization segment.
+        if (newAudioTracks.size() != audioTracks().length() || newVideoTracks.size() != videoTracks().length()) {
+            tracksMatchFirstInitSegment = false;
+        }
+        // - The codecs for each track, match what was specified in the first initialization segment.
+        // This is currently done in MediaSourceState::OnNewConfigs.
+        // - If more than one track for a single type are present (ie 2 audio tracks), then the Track IDs match the ones in the first initialization segment.
+        if (tracksMatchFirstInitSegment && newAudioTracks.size() > 1) {
+            for (size_t i = 0; i < newAudioTracks.size(); ++i) {
+                const String& newTrackId = newVideoTracks[i].id;
+                if (newTrackId != String(audioTracks().anonymousIndexedGetter(i)->id())) {
+                    tracksMatchFirstInitSegment = false;
+                    break;
+                }
+            }
+        }
+
+        if (tracksMatchFirstInitSegment && newVideoTracks.size() > 1) {
+            for (size_t i = 0; i < newVideoTracks.size(); ++i) {
+                const String& newTrackId = newVideoTracks[i].id;
+                if (newTrackId != String(videoTracks().anonymousIndexedGetter(i)->id())) {
+                    tracksMatchFirstInitSegment = false;
+                    break;
+                }
+            }
+        }
+
+        if (!tracksMatchFirstInitSegment) {
+            SBLOG << __FUNCTION__ << " this=" << this << " failed: tracks mismatch the first init segment.";
+            // The append error algorithm will be called at the top level after we return false here to indicate failure.
+            return false;
+        }
+
+        // 3.2 Add the appropriate track descriptions from this initialization segment to each of the track buffers.
+        // This is done in Chromium code in stream parsers and demuxer implementations.
+
+        // 3.3 Set the need random access point flag on all track buffers to true.
+        // This is done in Chromium code, see MediaSourceState::OnNewConfigs.
+    }
+
+    // 4. Let active track flag equal false.
+    m_activeTrack = false;
+
+    // 5. If the first initialization segment received flag is false, then run the following steps:
+    if (!m_firstInitializationSegmentReceived) {
+        // 5.1 If the initialization segment contains tracks with codecs the user agent does not support, then run the append error algorithm with the decode error parameter set to true and abort these steps.
+        // This is done in Chromium code, see MediaSourceState::OnNewConfigs.
+
+        // 5.2 For each audio track in the initialization segment, run following steps:
+        for (const MediaTrackInfo& trackInfo : newAudioTracks) {
+            // 5.2.1 Let audio byte stream track ID be the Track ID for the current track being processed.
+            const auto& byteStreamTrackID = trackInfo.byteStreamTrackID;
+            // 5.2.2 Let audio language be a BCP 47 language tag for the language specified in the initialization segment for this track or an empty string if no language info is present.
+            WebString language = trackInfo.language;
+            // 5.2.3 If audio language equals an empty string or the 'und' BCP 47 value, then run the default track language algorithm with byteStreamTrackID set to
+            // audio byte stream track ID and type set to "audio" and assign the value returned by the algorithm to audio language.
+            if (language.isEmpty() || language == "und")
+                language = defaultTrackLanguage(TrackDefault::audioKeyword(), byteStreamTrackID);
+            // 5.2.4 Let audio label be a label specified in the initialization segment for this track or an empty string if no label info is present.
+            WebString label = trackInfo.label;
+            // 5.3.5 If audio label equals an empty string, then run the default track label algorithm with byteStreamTrackID set to audio byte stream track ID and
+            // type set to "audio" and assign the value returned by the algorithm to audio label.
+            if (label.isEmpty())
+                label = defaultTrackLabel(TrackDefault::audioKeyword(), byteStreamTrackID);
+            // 5.2.6 Let audio kinds be an array of kind strings specified in the initialization segment for this track or an empty array if no kind information is provided.
+            const auto& kind = trackInfo.kind;
+            // 5.2.7 TODO(servolk): Implement track kind processing.
+            // 5.2.8.2 Let new audio track be a new AudioTrack object.
+            AudioTrack* audioTrack = AudioTrack::create(byteStreamTrackID, kind, label, language, false);
+            SourceBufferTrackBaseSupplement::setSourceBuffer(*audioTrack, this);
+            // 5.2.8.7 If audioTracks.length equals 0, then run the following steps:
+            if (audioTracks().length() == 0) {
+                // 5.2.8.7.1 Set the enabled property on new audio track to true.
+                audioTrack->setEnabled(true);
+                // 5.2.8.7.2 Set active track flag to true.
+                m_activeTrack = true;
+            }
+            // 5.2.8.8 Add new audio track to the audioTracks attribute on this SourceBuffer object.
+            // 5.2.8.9 Queue a task to fire a trusted event named addtrack, that does not bubble and is not cancelable, and that uses the TrackEvent interface, at the AudioTrackList object referenced by the audioTracks attribute on this SourceBuffer object.
+            audioTracks().add(audioTrack);
+            // 5.2.8.10 Add new audio track to the audioTracks attribute on the HTMLMediaElement.
+            // 5.2.8.11 Queue a task to fire a trusted event named addtrack, that does not bubble and is not cancelable, and that uses the TrackEvent interface, at the AudioTrackList object referenced by the audioTracks attribute on the HTMLMediaElement.
+            m_source->mediaElement()->audioTracks().add(audioTrack);
+        }
+
+        // 5.3. For each video track in the initialization segment, run following steps:
+        for (const MediaTrackInfo& trackInfo : newVideoTracks) {
+            // 5.3.1 Let video byte stream track ID be the Track ID for the current track being processed.
+            const auto& byteStreamTrackID = trackInfo.byteStreamTrackID;
+            // 5.3.2 Let video language be a BCP 47 language tag for the language specified in the initialization segment for this track or an empty string if no language info is present.
+            WebString language = trackInfo.language;
+            // 5.3.3 If video language equals an empty string or the 'und' BCP 47 value, then run the default track language algorithm with byteStreamTrackID set to
+            // video byte stream track ID and type set to "video" and assign the value returned by the algorithm to video language.
+            if (language.isEmpty() || language == "und")
+                language = defaultTrackLanguage(TrackDefault::videoKeyword(), byteStreamTrackID);
+            // 5.3.4 Let video label be a label specified in the initialization segment for this track or an empty string if no label info is present.
+            WebString label = trackInfo.label;
+            // 5.3.5 If video label equals an empty string, then run the default track label algorithm with byteStreamTrackID set to video byte stream track ID and
+            // type set to "video" and assign the value returned by the algorithm to video label.
+            if (label.isEmpty())
+                label = defaultTrackLabel(TrackDefault::videoKeyword(), byteStreamTrackID);
+            // 5.3.6 Let video kinds be an array of kind strings specified in the initialization segment for this track or an empty array if no kind information is provided.
+            const auto& kind = trackInfo.kind;
+            // 5.3.7 TODO(servolk): Implement track kind processing.
+            // 5.3.8.2 Let new video track be a new VideoTrack object.
+            VideoTrack* videoTrack = VideoTrack::create(byteStreamTrackID, kind, label, language, false);
+            SourceBufferTrackBaseSupplement::setSourceBuffer(*videoTrack, this);
+            // 5.3.8.7 If videoTracks.length equals 0, then run the following steps:
+            if (videoTracks().length() == 0) {
+                // 5.3.8.7.1 Set the selected property on new audio track to true.
+                videoTrack->setSelected(true);
+                // 5.3.8.7.2 Set active track flag to true.
+                m_activeTrack = true;
+            }
+            // 5.3.8.8 Add new video track to the videoTracks attribute on this SourceBuffer object.
+            // 5.3.8.9 Queue a task to fire a trusted event named addtrack, that does not bubble and is not cancelable, and that uses the TrackEvent interface, at the VideoTrackList object referenced by the videoTracks attribute on this SourceBuffer object.
+            videoTracks().add(videoTrack);
+            // 5.3.8.10 Add new video track to the videoTracks attribute on the HTMLMediaElement.
+            // 5.3.8.11 Queue a task to fire a trusted event named addtrack, that does not bubble and is not cancelable, and that uses the TrackEvent interface, at the VideoTrackList object referenced by the videoTracks attribute on the HTMLMediaElement.
+            m_source->mediaElement()->videoTracks().add(videoTrack);
+        }
+
+        // 5.4 TODO(servolk): Add text track processing here.
+
+        // 5.5 If active track flag equals true, then run the following steps:
+        // activesourcebuffers.
+        if (m_activeTrack) {
+            // 5.5.1 Add this SourceBuffer to activeSourceBuffers.
+            // 5.5.2 Queue a task to fire a simple event named addsourcebuffer at activeSourceBuffers
+            m_source->setSourceBufferActive(this);
+        }
+
+        // 5.6. Set first initialization segment received flag to true.
         m_firstInitializationSegmentReceived = true;
     }
 
-    return result;
+    return true;
 }
 
 bool SourceBuffer::hasPendingActivity() const

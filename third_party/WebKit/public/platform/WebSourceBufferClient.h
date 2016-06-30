@@ -21,15 +21,15 @@ public:
     struct MediaTrackInfo {
         WebMediaPlayer::TrackType trackType;
         WebMediaPlayer::TrackId id;
+        WebString byteStreamTrackID;
         WebString kind;
         WebString label;
         WebString language;
     };
 
     // Notifies SourceBuffer that parsing of a new init segment has been completed successfully. The input parameter is a collection
-    // of information about media tracks found in the new init segment. The return value is a vector of blink WebMediaPlayer track ids
-    // assigned to each track of the input collection (the order of output track ids must match the input track information).
-    virtual WebVector<WebMediaPlayer::TrackId> initializationSegmentReceived(const WebVector<MediaTrackInfo>& tracks) = 0;
+    // of information about media tracks found in the new init segment. The return value is true in case of success.
+    virtual bool initializationSegmentReceived(const WebVector<MediaTrackInfo>& tracks) = 0;
 };
 
 } // namespace blink

@@ -22,7 +22,7 @@
                     assert_equals(sourceBuffer.videoTracks.length, 1, "videoTracks.length");
                     assert_equals(sourceBuffer.videoTracks[0].kind, "main", "videoTrack.kind");
                     assert_equals(sourceBuffer.videoTracks[0].label, "", "videoTrack.label");
-                    assert_equals(sourceBuffer.videoTracks[0].language, "eng", "videoTrack.language");
+                    assert_equals(sourceBuffer.videoTracks[0].language, "", "videoTrack.language");
                     assert_equals(sourceBuffer.videoTracks[0].sourceBuffer, sourceBuffer, "videoTrack.sourceBuffer");
                     // The first video track is selected by default.
                     assert_true(sourceBuffer.videoTracks[0].selected, "sourceBuffer.videoTracks[0].selected");
@@ -30,7 +30,7 @@
                     assert_equals(sourceBuffer.audioTracks.length, 1, "audioTracks.length");
                     assert_equals(sourceBuffer.audioTracks[0].kind, "main", "audioTrack.kind");
                     assert_equals(sourceBuffer.audioTracks[0].label, "", "audioTrack.label");
-                    assert_equals(sourceBuffer.audioTracks[0].language, "eng", "audioTrack.language");
+                    assert_equals(sourceBuffer.audioTracks[0].language, "", "audioTrack.language");
                     assert_equals(sourceBuffer.audioTracks[0].sourceBuffer, sourceBuffer, "audioTrack.sourceBuffer");
                     // The first audio track is enabled by default.
                     assert_true(sourceBuffer.audioTracks[0].enabled, "sourceBuffer.audioTracks[0].enabled");

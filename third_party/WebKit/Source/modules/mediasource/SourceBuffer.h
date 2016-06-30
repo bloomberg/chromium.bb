@@ -116,7 +116,7 @@ public:
     const AtomicString& interfaceName() const override;
 
     // WebSourceBufferClient interface
-    WebVector<WebMediaPlayer::TrackId> initializationSegmentReceived(const WebVector<MediaTrackInfo>&) override;
+    bool initializationSegmentReceived(const WebVector<MediaTrackInfo>&) override;
 
     DECLARE_VIRTUAL_TRACE();
 
@@ -153,6 +153,10 @@ private:
 
     void removeMediaTracks();
 
+    const TrackDefault* getTrackDefault(const AtomicString& trackType, const AtomicString& byteStreamTrackID) const;
+    AtomicString defaultTrackLabel(const AtomicString& trackType, const AtomicString& byteStreamTrackID) const;
+    AtomicString defaultTrackLanguage(const AtomicString& trackType, const AtomicString& byteStreamTrackID) const;
+
     // FileReaderLoaderClient interface
     void didStartLoading() override;
     void didReceiveDataForClient(const char* data, unsigned dataLength) override;
@@ -169,6 +173,7 @@ private:
     double m_timestampOffset;
     Member<AudioTrackList> m_audioTracks;
     Member<VideoTrackList> m_videoTracks;
+    bool m_activeTrack = false;
     double m_appendWindowStart;
     double m_appendWindowEnd;
     bool m_firstInitializationSegmentReceived;

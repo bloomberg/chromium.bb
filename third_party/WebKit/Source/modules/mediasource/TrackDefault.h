@@ -15,6 +15,10 @@ class ExceptionState;
 class TrackDefault final : public GarbageCollectedFinalized<TrackDefault>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
+    static const AtomicString& audioKeyword();
+    static const AtomicString& videoKeyword();
+    static const AtomicString& textKeyword();
+
     static TrackDefault* create(const AtomicString& type, const String& language, const String& label, const Vector<String>& kinds, const String& byteStreamTrackID, ExceptionState&);
 
     virtual ~TrackDefault();
