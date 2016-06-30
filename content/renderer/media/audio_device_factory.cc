@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "base/logging.h"
+#include "build/build_config.h"
 #include "content/common/content_constants_internal.h"
 #include "content/renderer/media/audio_input_message_filter.h"
 #include "content/renderer/media/audio_message_filter.h"
@@ -25,7 +26,15 @@ namespace content {
 AudioDeviceFactory* AudioDeviceFactory::factory_ = NULL;
 
 namespace {
-const int64_t kMaxAuthorizationTimeoutMs = 4000;
+#if defined(OS_WIN)
+// Due to driver deadlock issues on Windows (http://crbug/422522) there is a
+// chance device authorization response is never received from the browser side.
+// In this case we will time out, to avoid renderer hang forever waiting for
+// device authorization (http://crbug/615589). This will result in "no audio".
+const int64_t kMaxAuthorizationTimeoutMs = 900;
+#else
+const int64_t kMaxAuthorizationTimeoutMs = 0;  // No timeout.
+#endif  // defined(OS_WIN)
 
 media::AudioLatency::LatencyType GetSourceLatencyType(
     AudioDeviceFactory::SourceType source) {

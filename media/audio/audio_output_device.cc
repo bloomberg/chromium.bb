@@ -169,15 +169,17 @@ void AudioOutputDevice::RequestDeviceAuthorizationOnIOThread() {
   ipc_->RequestDeviceAuthorization(this, session_id_, device_id_,
                                    security_origin_);
 
-  // Create the timer on the thread it's used on. It's guaranteed to be
-  // deleted on the same thread since users must call Stop() before deleting
-  // AudioOutputDevice; see ShutDownOnIOThread().
-  auth_timeout_action_.reset(new base::OneShotTimer());
-  auth_timeout_action_->Start(
-      FROM_HERE, auth_timeout_,
-      base::Bind(&AudioOutputDevice::OnDeviceAuthorized, this,
-                 OUTPUT_DEVICE_STATUS_ERROR_TIMED_OUT, media::AudioParameters(),
-                 std::string()));
+  if (auth_timeout_ > base::TimeDelta()) {
+    // Create the timer on the thread it's used on. It's guaranteed to be
+    // deleted on the same thread since users must call Stop() before deleting
+    // AudioOutputDevice; see ShutDownOnIOThread().
+    auth_timeout_action_.reset(new base::OneShotTimer());
+    auth_timeout_action_->Start(
+        FROM_HERE, auth_timeout_,
+        base::Bind(&AudioOutputDevice::OnDeviceAuthorized, this,
+                   OUTPUT_DEVICE_STATUS_ERROR_TIMED_OUT,
+                   media::AudioParameters(), std::string()));
+  }
 }
 
 void AudioOutputDevice::CreateStreamOnIOThread(const AudioParameters& params) {
