@@ -130,7 +130,10 @@ TAGS
 /tests/capitalization
 /tests/capitalized_with_sentance
 /tests/capitalized_word
+/tests/checkTable
+/tests/emphclass
 /tests/en_gb_g1_italics
+/tests/findTable
 /tests/getTable
 /tests/hash_collision
 /tests/hyphenate
@@ -143,6 +146,7 @@ TAGS
 /tests/inpos_match_replace
 /tests/lastworditalafter
 /tests/letterDefTest
+/tests/logging
 /tests/outpos
 /tests/pass0_typebuf
 /tests/pass1Only
@@ -154,9 +158,6 @@ TAGS
 /tests/squash_space
 /tests/typeform
 /tests/uplow_with_unicode
-/tests/logging
-/tests/findTable
-/tests/emphclass
 /tests/yaml/*.log
 /tests/yaml/*.trs
 
