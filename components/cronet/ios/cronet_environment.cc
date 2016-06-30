@@ -26,6 +26,8 @@
 #include "net/base/net_errors.h"
 #include "net/base/network_change_notifier.h"
 #include "net/cert/cert_verify_result.h"
+#include "net/cert/ct_policy_enforcer.h"
+#include "net/cert/multi_log_ct_verifier.h"
 #include "net/dns/host_resolver.h"
 #include "net/dns/mapped_host_resolver.h"
 #include "net/http/http_auth_handler_factory.h"
@@ -263,6 +265,7 @@ CronetEnvironment::~CronetEnvironment() {
 
 void CronetEnvironment::InitializeOnNetworkThread() {
   DCHECK(network_io_thread_->task_runner()->BelongsToCurrentThread());
+  // TODO(mef): Use net:UrlRequestContextBuilder instead of manual build.
   main_context_.reset(new net::URLRequestContext);
   main_context_->set_net_log(net_log_.get());
   std::string user_agent(user_agent_product_name_ +
@@ -291,6 +294,9 @@ void CronetEnvironment::InitializeOnNetworkThread() {
     cert_verifier_ = net::CertVerifier::CreateDefault();
   main_context_->set_cert_verifier(cert_verifier_.get());
 
+  main_context_->set_cert_transparency_verifier(new net::MultiLogCTVerifier());
+  main_context_->set_ct_policy_enforcer(new net::CTPolicyEnforcer());
+
   main_context_->set_http_auth_handler_factory(
       net::HttpAuthHandlerRegistryFactory::CreateDefault(
           main_context_->host_resolver())
@@ -315,6 +321,9 @@ void CronetEnvironment::InitializeOnNetworkThread() {
 
   params.host_resolver = main_context_->host_resolver();
   params.cert_verifier = main_context_->cert_verifier();
+  params.cert_transparency_verifier =
+      main_context_->cert_transparency_verifier();
+  params.ct_policy_enforcer = main_context_->ct_policy_enforcer();
   params.channel_id_service = main_context_->channel_id_service();
   params.transport_security_state = main_context_->transport_security_state();
   params.proxy_service = main_context_->proxy_service();
