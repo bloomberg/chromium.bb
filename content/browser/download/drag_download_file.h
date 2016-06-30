@@ -11,8 +11,10 @@
 #include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "content/browser/download/download_file.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/download_item.h"
@@ -59,7 +61,7 @@ class CONTENT_EXPORT DragDownloadFile : public ui::DownloadFileProvider {
 
   base::FilePath file_path_;
   base::File file_;
-  base::MessageLoop* drag_message_loop_;
+  const scoped_refptr<base::SingleThreadTaskRunner> drag_task_runner_;
   State state_;
   scoped_refptr<ui::DownloadFileObserver> observer_;
   base::RunLoop nested_loop_;

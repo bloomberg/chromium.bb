@@ -565,7 +565,7 @@ void ChildThreadImpl::OnChannelError() {
 }
 
 bool ChildThreadImpl::Send(IPC::Message* msg) {
-  DCHECK(base::MessageLoop::current() == message_loop());
+  DCHECK(message_loop_->task_runner()->BelongsToCurrentThread());
   if (!channel_) {
     delete msg;
     return false;
@@ -617,13 +617,13 @@ shell::InterfaceProvider* ChildThreadImpl::GetInterfaceProviderForConnection() {
 }
 
 IPC::MessageRouter* ChildThreadImpl::GetRouter() {
-  DCHECK(base::MessageLoop::current() == message_loop());
+  DCHECK(message_loop_->task_runner()->BelongsToCurrentThread());
   return &router_;
 }
 
 std::unique_ptr<base::SharedMemory> ChildThreadImpl::AllocateSharedMemory(
     size_t buf_size) {
-  DCHECK(base::MessageLoop::current() == message_loop());
+  DCHECK(message_loop_->task_runner()->BelongsToCurrentThread());
   return AllocateSharedMemory(buf_size, this, nullptr);
 }
 

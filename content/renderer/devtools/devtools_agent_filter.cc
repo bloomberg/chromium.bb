@@ -5,7 +5,6 @@
 #include "content/renderer/devtools/devtools_agent_filter.h"
 
 #include "base/bind.h"
-#include "base/message_loop/message_loop.h"
 #include "content/child/child_process.h"
 #include "content/common/devtools_messages.h"
 #include "content/renderer/devtools/devtools_agent.h"
@@ -48,10 +47,8 @@ class MessageImpl : public WebDevToolsAgent::MessageDescriptor {
 }  // namespace
 
 DevToolsAgentFilter::DevToolsAgentFilter()
-    : render_thread_loop_(base::MessageLoop::current()),
-      io_task_runner_(ChildProcess::current()->io_task_runner()),
-      current_routing_id_(0) {
-}
+    : io_task_runner_(ChildProcess::current()->io_task_runner()),
+      current_routing_id_(0) {}
 
 bool DevToolsAgentFilter::OnMessageReceived(const IPC::Message& message) {
   // Dispatch debugger commands directly from IO.

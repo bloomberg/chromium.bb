@@ -91,7 +91,7 @@ class AppCacheResponseTest : public testing::Test {
   }
 
   void SetUpTest() {
-    DCHECK(base::MessageLoop::current() == io_thread_->message_loop());
+    DCHECK(io_thread_->task_runner()->BelongsToCurrentThread());
     DCHECK(task_stack_.empty());
     storage_delegate_.reset(new MockStorageDelegate(this));
     service_.reset(new MockAppCacheService());
@@ -107,7 +107,7 @@ class AppCacheResponseTest : public testing::Test {
   }
 
   void TearDownTest() {
-    DCHECK(base::MessageLoop::current() == io_thread_->message_loop());
+    DCHECK(io_thread_->task_runner()->BelongsToCurrentThread());
     while (!task_stack_.empty())
       task_stack_.pop();
 
@@ -124,7 +124,7 @@ class AppCacheResponseTest : public testing::Test {
   void TestFinished() {
     // We unwind the stack prior to finishing up to let stack
     // based objects get deleted.
-    DCHECK(base::MessageLoop::current() == io_thread_->message_loop());
+    DCHECK(io_thread_->task_runner()->BelongsToCurrentThread());
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::Bind(&AppCacheResponseTest::TestFinishedUnwound,
                               base::Unretained(this)));
@@ -144,7 +144,7 @@ class AppCacheResponseTest : public testing::Test {
   }
 
   void ScheduleNextTask() {
-    DCHECK(base::MessageLoop::current() == io_thread_->message_loop());
+    DCHECK(io_thread_->task_runner()->BelongsToCurrentThread());
     if (task_stack_.empty()) {
       TestFinished();
       return;
