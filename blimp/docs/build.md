@@ -1,3 +1,10 @@
+[TOC]
+
+# Checkout
+If you want to build the Android client then you will need to follow
+instructions [here](https://www.chromium.org/developers/how-tos/android-build-instructions)
+to sync Android related code as well.
+
 # Using GN
 Blimp only supports building using [GN](../../tools/gn/README.md). A quick
 overview over how to use GN can be found in the GN
@@ -44,6 +51,10 @@ To add your own build preferences:
 ```bash
 gn args out-android/Debug
 ```
+
+For example, you can build `x86` APK by adding `target_cpu = "x86"` to the `gn
+args`.
+
 
 ### Engine
 
