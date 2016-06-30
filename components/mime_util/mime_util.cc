@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/strings/string_util.h"
 #include "build/build_config.h"
+#include "net/base/mime_util.h"
 
 #if !defined(OS_IOS)
 // iOS doesn't use and must not depend on //media
