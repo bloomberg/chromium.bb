@@ -26,3 +26,24 @@
 extensions-item {
   display: inline-block;
 }
+
+.paper-header {
+  align-items: center;
+  background: rgb(63, 85, 102);
+  color: white;
+  display: flex;
+  height: 56px;
+}
+
+.paper-header cr-search-field {
+  -webkit-padding-end: 10px;
+}
+
+.paper-header h1 {
+  -webkit-margin-start: 24px;
+  flex: 1;
+  font-size: 107.7%;
+  font-weight: normal;
+  margin-bottom: 0;
+  margin-top: 0;
+}
