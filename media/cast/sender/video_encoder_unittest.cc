@@ -253,8 +253,8 @@ class VideoEncoderTest
       EXPECT_EQ(expected_last_referenced_frame_id,
                 encoded_frame->referenced_frame_id);
       EXPECT_FALSE(encoded_frame->data.empty());
-      ASSERT_TRUE(std::isfinite(encoded_frame->deadline_utilization));
-      EXPECT_LE(0.0, encoded_frame->deadline_utilization);
+      ASSERT_TRUE(std::isfinite(encoded_frame->encoder_utilization));
+      EXPECT_LE(0.0, encoded_frame->encoder_utilization);
       ASSERT_TRUE(std::isfinite(encoded_frame->lossy_utilization));
       EXPECT_LE(0.0, encoded_frame->lossy_utilization);
     }

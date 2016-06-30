@@ -272,7 +272,7 @@ void FrameSender::SendEncodedFrame(
   encode_event->size = base::checked_cast<uint32_t>(encoded_frame->data.size());
   encode_event->key_frame = encoded_frame->dependency == EncodedFrame::KEY;
   encode_event->target_bitrate = requested_bitrate_before_encode;
-  encode_event->encoder_cpu_utilization = encoded_frame->deadline_utilization;
+  encode_event->encoder_cpu_utilization = encoded_frame->encoder_utilization;
   encode_event->idealized_bitrate_utilization =
       encoded_frame->lossy_utilization;
   cast_environment_->logger()->DispatchFrameEvent(std::move(encode_event));

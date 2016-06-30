@@ -60,7 +60,7 @@ struct InProgressFrameEncode {
   const int target_bit_rate;
 
   // The real-world encode start time.  This is used to compute the encoded
-  // frame's |deadline_utilization| and so it uses the real-world clock instead
+  // frame's |encoder_utilization| and so it uses the real-world clock instead
   // of the CastEnvironment clock, the latter of which might be simulated.
   const base::TimeTicks start_time;
 
@@ -307,11 +307,11 @@ class ExternalVideoEncoder::VEAClientImpl
       if (request.video_frame->metadata()->GetTimeDelta(
               media::VideoFrameMetadata::FRAME_DURATION, &frame_duration) &&
           frame_duration > base::TimeDelta()) {
-        // Compute deadline utilization as the real-world time elapsed divided
+        // Compute encoder utilization as the real-world time elapsed divided
         // by the frame duration.
         const base::TimeDelta processing_time =
             base::TimeTicks::Now() - request.start_time;
-        encoded_frame->deadline_utilization =
+        encoded_frame->encoder_utilization =
             processing_time.InSecondsF() / frame_duration.InSecondsF();
 
         const double actual_bit_rate =

@@ -29,13 +29,13 @@
 // |                         @@@@@@@@@@@@@@@@      16.7 1280x720 0:15.12 |
 // +---------------------------------------------------------------------+
 //
-// Line 1: Reads as, "1 frame ago, the encoder deadline utilization for the
-// frame was 45% and the lossy utilization was 75%."  Encoder deadline
-// utilization is in terms the amount of real-world time it took to encode the
-// frame, divided by the maximum amount of time allowed.  Lossy utilization is
-// the amount of "complexity" in the frame's content versus the target encoded
-// byte size, where a value over 100% means the frame's content is too complex
-// to encode within the target number of bytes.
+// Line 1: Reads as, "1 frame ago, the encoder utilization for the frame was 45%
+// and the lossy utilization was 75%."  For CPU-bound encoders, encoder
+// utilization is usually measured as the amount of real-world time it took to
+// encode the frame, divided by the maximum amount of time allowed.  Lossy
+// utilization is the amount of "complexity" in the frame's content versus the
+// target encoded byte size, where a value over 100% means the frame's content
+// is too complex to encode within the target number of bytes.
 //
 // Line 2: Reads as, "Capture of this frame took 22 ms.  The current target
 // playout delay is 400 ms and low-latency adjustment mode is not active.  The
@@ -64,7 +64,7 @@ void MaybeRenderPerformanceMetricsOverlay(base::TimeDelta target_playout_delay,
                                           bool in_low_latency_mode,
                                           int target_bitrate,
                                           int frames_ago,
-                                          double deadline_utilization,
+                                          double encoder_utilization,
                                           double lossy_utilization,
                                           VideoFrame* frame);
 

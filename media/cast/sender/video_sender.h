@@ -102,7 +102,7 @@ class VideoSender : public FrameSender,
   // The video encoder's performance metrics as of the last call to
   // OnEncodedVideoFrame().  See header file comments for SenderEncodedFrame for
   // an explanation of these values.
-  double last_reported_deadline_utilization_;
+  double last_reported_encoder_utilization_;
   double last_reported_lossy_utilization_;
 
   // This tracks the time when the request was sent to encoder to encode a key

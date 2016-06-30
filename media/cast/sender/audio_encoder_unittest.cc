@@ -65,7 +65,7 @@ class TestEncodedAudioFrameReceiver {
     lower_bound_ = encoded_frame->reference_time;
     EXPECT_GT(upper_bound_, encoded_frame->reference_time);
 
-    EXPECT_LE(0.0, encoded_frame->deadline_utilization);
+    EXPECT_LE(0.0, encoded_frame->encoder_utilization);
     EXPECT_EQ(-1.0, encoded_frame->lossy_utilization);
 
     ++frames_received_;

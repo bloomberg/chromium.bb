@@ -218,7 +218,7 @@ void MaybeRenderPerformanceMetricsOverlay(base::TimeDelta target_playout_delay,
                                           bool in_low_latency_mode,
                                           int target_bitrate,
                                           int frames_ago,
-                                          double deadline_utilization,
+                                          double encoder_utilization,
                                           double lossy_utilization,
                                           VideoFrame* frame) {
   if (VideoFrame::PlaneHorizontalBitsPerPixel(frame->format(), kPlane) != 8) {
@@ -299,16 +299,13 @@ void MaybeRenderPerformanceMetricsOverlay(base::TimeDelta target_playout_delay,
     return;
 
   // Line 1: Recent utilization metrics.
-  const int deadline_pct =
-      base::saturated_cast<int>(deadline_utilization * 100.0 + 0.5);
+  const int encoder_pct =
+      base::saturated_cast<int>(encoder_utilization * 100.0 + 0.5);
   const int lossy_pct =
       base::saturated_cast<int>(lossy_utilization * 100.0 + 0.5);
-  RenderLineOfText(base::StringPrintf("%d %3.1d%% %3.1d%%",
-                                      frames_ago,
-                                      deadline_pct,
-                                      lossy_pct),
-                   top,
-                   frame);
+  RenderLineOfText(base::StringPrintf("%d %3.1d%% %3.1d%%", frames_ago,
+                                      encoder_pct, lossy_pct),
+                   top, frame);
 }
 
 }  // namespace cast

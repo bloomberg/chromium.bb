@@ -63,10 +63,10 @@ void FakeSoftwareVideoEncoder::Encode(
       std::max<size_t>(encoded_frame->data.size(), frame_size_), ' ');
 
   if (encoded_frame->dependency == EncodedFrame::KEY) {
-    encoded_frame->deadline_utilization = 1.0;
+    encoded_frame->encoder_utilization = 1.0;
     encoded_frame->lossy_utilization = 6.0;
   } else {
-    encoded_frame->deadline_utilization = 0.8;
+    encoded_frame->encoder_utilization = 0.8;
     encoded_frame->lossy_utilization = 0.8;
   }
 }

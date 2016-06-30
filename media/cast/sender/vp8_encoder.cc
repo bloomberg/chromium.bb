@@ -31,16 +31,16 @@ const int kRestartFramePeriods = 3;
 // The smaller, the shorter of the time averaging window.
 const int kEncodingSpeedAccHalfLife = 120000;  // 0.12 second.
 
-// The target deadline utilization signal. This is a trade-off between quality
+// The target encoder utilization signal. This is a trade-off between quality
 // and less CPU usage. The range of this value is [0, 1]. Higher the value,
 // better the quality and higher the CPU usage.
 //
 // For machines with more than two encoding threads.
-const double kHiTargetDeadlineUtilization = 0.7;
+const double kHiTargetEncoderUtilization = 0.7;
 // For machines with two encoding threads.
-const double kMidTargetDeadlineUtilization = 0.6;
+const double kMidTargetEncoderUtilization = 0.6;
 // For machines with single encoding thread.
-const double kLoTargetDeadlineUtilization = 0.5;
+const double kLoTargetEncoderUtilization = 0.5;
 
 // This is the equivalent change on encoding speed for the change on each
 // quantizer step.
@@ -65,12 +65,12 @@ bool HasSufficientFeedback(
 
 Vp8Encoder::Vp8Encoder(const VideoSenderConfig& video_config)
     : cast_config_(video_config),
-      target_deadline_utilization_(
+      target_encoder_utilization_(
           video_config.number_of_encode_threads > 2
-              ? kHiTargetDeadlineUtilization
+              ? kHiTargetEncoderUtilization
               : (video_config.number_of_encode_threads > 1
-                     ? kMidTargetDeadlineUtilization
-                     : kLoTargetDeadlineUtilization)),
+                     ? kMidTargetEncoderUtilization
+                     : kLoTargetEncoderUtilization)),
       key_frame_requested_(true),
       bitrate_kbit_(cast_config_.start_bitrate / 1000),
       next_frame_id_(FrameId::first()),
@@ -192,7 +192,7 @@ void Vp8Encoder::Encode(const scoped_refptr<media::VideoFrame>& video_frame,
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(encoded_frame);
 
-  // Note: This is used to compute the |deadline_utilization| and so it uses the
+  // Note: This is used to compute the |encoder_utilization| and so it uses the
   // real-world clock instead of the CastEnvironment clock, the latter of which
   // might be simulated.
   const base::TimeTicks start_time = base::TimeTicks::Now();
@@ -308,10 +308,10 @@ void Vp8Encoder::Encode(const scoped_refptr<media::VideoFrame>& video_frame,
     base::debug::ClearCrashKey(kZeroEncodeDetails);
   }
 
-  // Compute deadline utilization as the real-world time elapsed divided by the
+  // Compute encoder utilization as the real-world time elapsed divided by the
   // frame duration.
   const base::TimeDelta processing_time = base::TimeTicks::Now() - start_time;
-  encoded_frame->deadline_utilization =
+  encoded_frame->encoder_utilization =
       processing_time.InSecondsF() / predicted_frame_duration.InSecondsF();
 
   // Compute lossy utilization.  The VP8 encoder took an estimated guess at what
@@ -336,7 +336,7 @@ void Vp8Encoder::Encode(const scoped_refptr<media::VideoFrame>& video_frame,
 
   DVLOG(2) << "VP8 encoded frame_id " << encoded_frame->frame_id
            << ", sized: " << encoded_frame->data.size()
-           << ", deadline_utilization: " << encoded_frame->deadline_utilization
+           << ", encoder_utilization: " << encoded_frame->encoder_utilization
            << ", lossy_utilization: " << encoded_frame->lossy_utilization
            << " (quantizer chosen by the encoder was " << quantizer << ')';
 
@@ -353,8 +353,8 @@ void Vp8Encoder::Encode(const scoped_refptr<media::VideoFrame>& video_frame,
         kEquivalentEncodingSpeedStepPerQpStep *
             std::max(0, quantizer - cast_config_.min_qp);
     double adjusted_encoding_speed = actual_encoding_speed *
-                                     encoded_frame->deadline_utilization /
-                                     target_deadline_utilization_;
+                                     encoded_frame->encoder_utilization /
+                                     target_encoder_utilization_;
     encoding_speed_acc_.Update(adjusted_encoding_speed,
                                video_frame->timestamp());
   }

@@ -17,18 +17,16 @@ struct SenderEncodedFrame : public EncodedFrame {
   SenderEncodedFrame();
   ~SenderEncodedFrame() final;
 
-  // The amount of real-world time it took to encode the frame, divided by the
-  // maximum amount of time allowed.  Example: For the software VP8 encoder,
-  // this would be the elapsed encode time (according to the base::TimeTicks
-  // clock) divided by the VideoFrame's duration.
+  // The amount the encoder was utilized for this frame. Example: For the
+  // software VP8 encoder, this would be the elapsed encode time (according to
+  // the base::TimeTicks clock) divided by the VideoFrame's duration.
   //
   // Meaningful values are non-negative, with 0.0 [impossibly] representing 0%
   // utilization, 1.0 representing 100% utilization, and values greater than 1.0
-  // indicating the encode time took longer than the media duration of the
-  // frame.  Negative values indicate the field was not computed.
-  //
-  // TODO(miu): Rename to encoder_cpu_utilization.
-  double deadline_utilization;
+  // indicating the encoder utilized more resources than a maximum sustainable
+  // rate, based on the data volume of the input.  Negative values indicate the
+  // field was not computed.
+  double encoder_utilization;
 
   // The amount of "lossiness" needed to encode the frame within the targeted
   // bandwidth.  More-complex frame content and/or lower target encode bitrates

@@ -53,7 +53,7 @@ class Vp8Encoder : public SoftwareVideoEncoder {
 
   const VideoSenderConfig cast_config_;
 
-  const double target_deadline_utilization_;
+  const double target_encoder_utilization_;
 
   // VP8 internal objects.  These are valid for use only while is_initialized()
   // returns true.

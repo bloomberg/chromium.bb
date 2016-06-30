@@ -124,7 +124,7 @@ class AudioEncoder::ImplBase
     // Encode all audio in |audio_bus| into zero or more frames.
     int src_pos = 0;
     while (src_pos < audio_bus->frames()) {
-      // Note: This is used to compute the deadline utilization and so it uses
+      // Note: This is used to compute the encoder utilization and so it uses
       // the real-world clock instead of the CastEnvironment clock, the latter
       // of which might be simulated.
       const base::TimeTicks start_time = base::TimeTicks::Now();
@@ -152,15 +152,15 @@ class AudioEncoder::ImplBase
                                "rtp_timestamp",
                                frame_rtp_timestamp_.lower_32_bits());
       if (EncodeFromFilledBuffer(&audio_frame->data)) {
-        // Compute deadline utilization as the real-world time elapsed divided
+        // Compute encoder utilization as the real-world time elapsed divided
         // by the signal duration.
-        audio_frame->deadline_utilization =
+        audio_frame->encoder_utilization =
             (base::TimeTicks::Now() - start_time).InSecondsF() /
-                frame_duration_.InSecondsF();
+            frame_duration_.InSecondsF();
 
         TRACE_EVENT_ASYNC_END1("cast.stream", "Audio Encode", audio_frame.get(),
-                               "Deadline utilization",
-                               audio_frame->deadline_utilization);
+                               "encoder_utilization",
+                               audio_frame->encoder_utilization);
 
         audio_frame->encode_completion_time =
             cast_environment_->Clock()->NowTicks();

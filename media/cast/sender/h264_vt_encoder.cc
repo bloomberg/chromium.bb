@@ -573,7 +573,7 @@ void H264VideoToolboxEncoder::CompressionCallback(void* encoder_opaque,
                                                   &encoded_frame->data);
   }
 
-  // TODO(miu): Compute and populate the |deadline_utilization| and
+  // TODO(miu): Compute and populate the |encoder_utilization| and
   // |lossy_utilization| performance metrics in |encoded_frame|.
 
   encoded_frame->encode_completion_time =
