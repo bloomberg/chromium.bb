@@ -56,32 +56,6 @@ net::NetworkChangeNotifier* g_network_change_notifier = nullptr;
 // MessageLoop on the main thread.
 base::MessageLoop* g_main_message_loop = nullptr;
 
-#if USE_FAKE_CERT_VERIFIER
-// TODO(mef): Remove this after GRPC testing is done.
-class FakeCertVerifier : public net::CertVerifier {
- public:
-  FakeCertVerifier() {}
-
-  ~FakeCertVerifier() override {}
-
-  // CertVerifier implementation
-  int Verify(net::X509Certificate* cert,
-             const std::string& hostname,
-             const std::string& ocsp_response,
-             int flags,
-             net::CRLSet* crl_set,
-             net::CertVerifyResult* verify_result,
-             const net::CompletionCallback& callback,
-             std::unique_ptr<Request>* out_req,
-             const net::BoundNetLog& net_log) override {
-    // It's all good!
-    verify_result->verified_cert = cert;
-    verify_result->cert_status = MapNetErrorToCertStatus(net::OK);
-    return net::OK;
-  }
-};
-#endif  // USE_FAKE_CERT_VERIFIER
-
 }  // namespace
 
 namespace cronet {
@@ -213,11 +187,6 @@ CronetEnvironment::CronetEnvironment(const std::string& user_agent_product_name)
       net_log_(new net::NetLog) {}
 
 void CronetEnvironment::Start() {
-#if USE_FAKE_CERT_VERIFIER
-  // TODO(mef): Remove this and FakeCertVerifier after GRPC testing.
-  set_cert_verifier(std::unique_ptr<net::CertVerifier>(new FakeCertVerifier()));
-#endif  // USE_FAKE_CERT_VERIFIER
-
   // Threads setup.
   network_cache_thread_.reset(new base::Thread("Chrome Network Cache Thread"));
   network_cache_thread_->StartWithOptions(
