@@ -352,6 +352,8 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   friend class InputMethodResultAuraTest;
   friend class RenderWidgetHostViewAuraCopyRequestTest;
   friend class TestInputMethodObserver;
+  FRIEND_TEST_ALL_PREFIXES(InputMethodResultAuraTest,
+                           FinishImeCompositionSession);
   FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostViewAuraTest,
                            PopupRetainsCaptureAfterMouseRelease);
   FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostViewAuraTest, SetCompositionText);

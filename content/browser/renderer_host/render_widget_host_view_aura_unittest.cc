@@ -4216,4 +4216,21 @@ TEST_F(InputMethodResultAuraTest, InsertText) {
   }
 }
 
+// This test makes a specific child frame's view active and then forces the
+// tab's view end the current IME composition session by sending out an IME
+// IPC to confirm composition. The test then verifies that the message is sent
+//  to the active widget's process.
+TEST_F(InputMethodResultAuraTest, FinishImeCompositionSession) {
+  base::Closure ime_finish_session_call =
+      base::Bind(&RenderWidgetHostViewAura::FinishImeCompositionSession,
+                 base::Unretained(tab_view()));
+  for (auto index : active_view_sequence_) {
+    ActivateViewForTextInputManager(views_[index], ui::TEXT_INPUT_TYPE_TEXT);
+    SetHasCompositionTextToTrue();
+    EXPECT_TRUE(!!RunAndReturnIPCSent(ime_finish_session_call,
+                                      processes_[index],
+                                      InputMsg_ImeConfirmComposition::ID));
+  }
+}
+
 }  // namespace content

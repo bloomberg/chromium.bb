@@ -2527,10 +2527,10 @@ bool RenderWidgetHostViewAura::NeedsMouseCapture() {
 void RenderWidgetHostViewAura::FinishImeCompositionSession() {
   if (!has_composition_text_)
     return;
-  // TODO(wjmaclean): can host_ ever be null?
-  if (host_) {
-    host_->ImeConfirmComposition(base::string16(), gfx::Range::InvalidRange(),
-                                 false);
+
+  if (!!text_input_manager_ && !!text_input_manager_->GetActiveWidget()) {
+    text_input_manager_->GetActiveWidget()->ImeConfirmComposition(
+        base::string16(), gfx::Range::InvalidRange(), false);
   }
   ImeCancelComposition();
 }
