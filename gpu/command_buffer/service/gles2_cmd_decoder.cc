@@ -1345,6 +1345,9 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
       bool clear_uncleared_images, const char* func_name);
   // Generates |gl_error| if the bound read fbo is incomplete.
   bool CheckBoundReadFramebufferValid(const char* func_name, GLenum gl_error);
+  // This is only used by DoBlitFramebufferCHROMIUM which operates read/draw
+  // framebuffer at the same time.
+  bool CheckBoundFramebufferValid(const char* func_name);
 
   // Checks if the current program exists and is valid. If not generates the
   // appropriate GL error.  Returns true if the current program is in a usable
@@ -4180,6 +4183,31 @@ bool GLES2DecoderImpl::CheckBoundReadFramebufferValid(
   Framebuffer* framebuffer = GetFramebufferInfoForTarget(target);
   bool valid = CheckFramebufferValid(
       framebuffer, target, true, gl_error, func_name);
+  return valid;
+}
+
+bool GLES2DecoderImpl::CheckBoundFramebufferValid(const char* func_name) {
+  GLenum target = features().chromium_framebuffer_multisample ?
+      GL_DRAW_FRAMEBUFFER : GL_FRAMEBUFFER;
+  Framebuffer* draw_framebuffer = GetFramebufferInfoForTarget(target);
+  bool valid = CheckFramebufferValid(
+      draw_framebuffer, target, true,
+      GL_INVALID_FRAMEBUFFER_OPERATION, func_name);
+
+  target = features().chromium_framebuffer_multisample ?
+      GL_READ_FRAMEBUFFER : GL_FRAMEBUFFER;
+  Framebuffer* read_framebuffer = GetFramebufferInfoForTarget(target);
+  valid = valid && CheckFramebufferValid(
+      read_framebuffer, target, true,
+      GL_INVALID_FRAMEBUFFER_OPERATION, func_name);
+
+  if (valid && feature_info_->feature_flags().desktop_srgb_support) {
+    bool enable_framebuffer_srgb =
+        (draw_framebuffer && draw_framebuffer->HasSRGBAttachments()) ||
+        (read_framebuffer && read_framebuffer->HasSRGBAttachments());
+    state_.EnableDisableFramebufferSRGB(enable_framebuffer_srgb);
+  }
+
   return valid;
 }
 
@@ -7340,9 +7368,7 @@ void GLES2DecoderImpl::DoBlitFramebufferCHROMIUM(
   const char* func_name = "glBlitFramebufferCHROMIUM";
   DCHECK(!ShouldDeferReads() && !ShouldDeferDraws());
 
-  if (!CheckBoundDrawFramebufferValid(true, func_name) ||
-      !CheckBoundReadFramebufferValid(func_name,
-                                      GL_INVALID_FRAMEBUFFER_OPERATION)) {
+  if (!CheckBoundFramebufferValid(func_name)) {
     return;
   }
 
