@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- 
+<!--
      Any copyright is dedicated to the Public Domain.
      http://creativecommons.org/publicdomain/zero/1.0/
- -->
-<!--  Reference case for behavior of the 'baseline' value for align-items and
+-->
+<!-- Reference case for behavior of the 'baseline' value for align-items and
      align-self.
 
      NOTE: For multi-line 'display: block' elements in the testcase (and inline
@@ -11,7 +11,7 @@
      wrapper here in the reference case, so that we get first-line baseline
      alignment instead of the last-line baseline-alignment that an inline-block
      would give us.
- -->
+-->
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <title>CSS Reftest Reference</title>
@@ -50,9 +50,14 @@
   </head>
   <body>
     <div class="flexbox">
-      <div class="lime">blk_1line</div><table cellspacing="0" cellpadding="0"
-              class="yellow">blk<br/>2lines</table><div class="orange"><span class="super">super</span></div><div class="pink"><span class="sub">sub</span></div><table cellspacing="0" cellpadding="0"
-              class="aqua big">big<br/>text<br/>3lines</table><table class="tan" cellspacing="0" cellpadding="0">
+      <div class="lime">blk_1line</div
+      ><table cellspacing="0" cellpadding="0"
+              class="yellow">blk<br/>2lines</table
+      ><div class="orange"><span class="super">super</span></div
+      ><div class="pink"><span class="sub">sub</span></div
+      ><table cellspacing="0" cellpadding="0"
+              class="aqua big">big<br/>text<br/>3lines</table
+      ><table class="tan" cellspacing="0" cellpadding="0">
         <i>ital<br/>ic</i>
       </table>
     </div>

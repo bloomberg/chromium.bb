@@ -1,8 +1,8 @@
 <!DOCTYPE html>
-<!-- 
+<!--
      Any copyright is dedicated to the Public Domain.
      http://creativecommons.org/publicdomain/zero/1.0/
- -->
+-->
 <html>
 <head>
   <title>CSS Test: Testing that strut formation (from visibility:collapse) happens *after* lines have been stretched</title>
@@ -39,14 +39,14 @@
   </style>
 </head>
 <body>
-  <!--  In this testcase, the first flex line initially has a cross-size of
+  <!-- In this testcase, the first flex line initially has a cross-size of
        10px, and the second flex line has a cross-size of 30px. Both lines are
        stretched by 10px each (to hit the container's total cross-size, 60px).
        Then, we handle "visibility:collapse" and convert the collapsed item
        into a strut with the second line's stretched cross-size (40px), and we
        restart flex layout. This strut then ends up in the *first* line (since
        it has 0 main-size), which means both flex lines end up being 40px tall.
-     -->
+    -->
   <div class="flexContainer">
     <div class="shortItem"></div>
     <div class="collapsedItem"></div>

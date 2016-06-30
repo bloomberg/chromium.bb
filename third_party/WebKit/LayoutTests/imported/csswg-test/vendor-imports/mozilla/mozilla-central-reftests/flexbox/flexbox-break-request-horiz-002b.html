@@ -1,8 +1,8 @@
 <!DOCTYPE html>
-<!-- 
+<!--
      Any copyright is dedicated to the Public Domain.
      http://creativecommons.org/publicdomain/zero/1.0/
- -->
+-->
 <html>
 <head>
   <title>CSS Test: Testing page-break-after in horizontal single-line flex containers (should have no effect)</title>
@@ -27,16 +27,16 @@
   </style>
 </head>
 <body>
-  <!--  page-break-after specified on first (and only) item, at a point where
-       we're already "breaking" (the end):  -->
-  <!--  * With 'page-break-after: auto, avoid' (not requesting a break):  -->
+  <!-- page-break-after specified on first (and only) item, at a point where
+       we're already "breaking" (the end): -->
+  <!-- * With 'page-break-after: auto, avoid' (not requesting a break): -->
   <div class="flexbox">
     <div class="item" style="page-break-after: auto"></div>
   </div>
   <div class="flexbox">
     <div class="item" style="page-break-after: avoid"></div>
   </div>
-  <!--  * With 'page-break-after: always, left, right' (requesting a break):  -->
+  <!-- * With 'page-break-after: always, left, right' (requesting a break): -->
   <div class="flexbox">
     <div class="item" style="page-break-after: always"></div>
   </div>
@@ -48,9 +48,9 @@
   </div>
   <div style="clear: both"></div>
 
-  <!--  page-break-after specified on first item, at a point where breaking
-       would otherwise be unnecessary:  -->
-  <!--  * With 'page-break-after: auto, avoid' (not requesting a break):  -->
+  <!-- page-break-after specified on first item, at a point where breaking
+       would otherwise be unnecessary: -->
+  <!-- * With 'page-break-after: auto, avoid' (not requesting a break): -->
   <div class="flexbox">
     <div class="item" style="page-break-after: auto"></div>
     <div class="item"></div>
@@ -59,7 +59,7 @@
     <div class="item" style="page-break-after: avoid"></div>
     <div class="item"></div>
   </div>
-  <!--  * With 'page-break-after: always, left, right' (requesting a break):  -->
+  <!-- * With 'page-break-after: always, left, right' (requesting a break): -->
   <div class="flexbox">
     <div class="item" style="page-break-after: always"></div>
     <div class="item"></div>
@@ -74,9 +74,9 @@
   </div>
   <div style="clear: both"></div>
 
-  <!--  page-break-after specified on second item, at a point where breaking
-       is already necessary:  -->
-  <!--  * With 'page-break-after: auto, avoid' (not requesting a break):  -->
+  <!-- page-break-after specified on second item, at a point where breaking
+       is already necessary: -->
+  <!-- * With 'page-break-after: auto, avoid' (not requesting a break): -->
   <div class="flexbox">
     <div class="item"></div>
     <div class="item" style="page-break-after: auto"></div>
@@ -87,7 +87,7 @@
     <div class="item" style="page-break-after: avoid"></div>
     <div class="item"></div>
   </div>
-  <!--  * With 'page-break-after: always, left, right' (requesting a break):  -->
+  <!-- * With 'page-break-after: always, left, right' (requesting a break): -->
   <div class="flexbox">
     <div class="item"></div>
     <div class="item" style="page-break-after: always"></div>

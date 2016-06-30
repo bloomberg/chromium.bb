@@ -1,12 +1,12 @@
 <!DOCTYPE html>
-<!-- 
+<!--
      Any copyright is dedicated to the Public Domain.
      http://creativecommons.org/publicdomain/zero/1.0/
- -->
-<!--  In this reference case, we get each container to be sized the same as
+-->
+<!-- In this reference case, we get each container to be sized the same as
      in the testcase, without any visible baseline alignemnt, by using some
      hidden flex items.
- -->
+-->
 <html>
 <head>
   <title>CSS Reftest Reference</title>
@@ -46,16 +46,16 @@
 <body>
   <div class="flexContainer">
     <div class="largeFont">a</div>
-    <!--  Hidden flex items used to determine container's cross size,
-         based on their baseline-aligned combined cross size:  -->
+    <!-- Hidden flex items used to determine container's cross size,
+         based on their baseline-aligned combined cross size: -->
     <div class="largeFont hiddenItemForSizing">a</div>
     <div class="smallFont hiddenItemForSizing">b</div>
   </div>
 
   <div class="flexContainer">
     <div class="smallFont">b</div>
-    <!--  Hidden flex items used to determine container's cross size,
-         based on their baseline-aligned combined cross size:  -->
+    <!-- Hidden flex items used to determine container's cross size,
+         based on their baseline-aligned combined cross size: -->
     <div class="largeFont hiddenItemForSizing">a</div>
     <div class="smallFont hiddenItemForSizing">b</div>
   </div>

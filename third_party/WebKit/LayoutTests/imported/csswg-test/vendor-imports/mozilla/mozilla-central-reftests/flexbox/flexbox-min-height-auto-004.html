@@ -1,8 +1,8 @@
 <!DOCTYPE html>
-<!-- 
+<!--
      Any copyright is dedicated to the Public Domain.
      http://creativecommons.org/publicdomain/zero/1.0/
- -->
+-->
 <html>
   <head>
     <meta charset="utf-8">
@@ -10,7 +10,7 @@
     <link rel="author" title="Daniel Holbert" href="mailto:dholbert@mozilla.com">
     <link rel="help" href="http://www.w3.org/TR/css-flexbox-1/#min-size-auto">
     <link rel="match" href="flexbox-min-height-auto-004-ref.html">
-<!-- 
+<!--
      This testcase checks how "overflow-x" indirectly impacts the sizing
      behavior of flex items with "min-height:auto" (the new initial value
      for "min-height"), via its influence on "overflow-y".
@@ -22,7 +22,7 @@
      as well, as described at
        http://www.w3.org/TR/css-overflow-3/#overflow-properties
      So, "overflow-x" has an indirect effect (via "overflow-y") here.
- -->
+-->
     <style>
       .flexbox {
         display: flex;
@@ -51,10 +51,10 @@
     </style>
   </head>
   <body>
-    <!--  min-height:auto should prevent shrinking below intrinsic height when
+    <!-- min-height:auto should prevent shrinking below intrinsic height when
          the flex item has "overflow-x: visible", but not for any other
          overflow-x values (because of overflow-x's influence on overflow-y).
-     -->
+    -->
     <div class="flexbox"><div class="xvisible"><div></div></div></div>
     <div class="flexbox"><div class="xhidden"><div></div></div></div>
     <div class="flexbox"><div class="xscroll"><div></div></div></div>

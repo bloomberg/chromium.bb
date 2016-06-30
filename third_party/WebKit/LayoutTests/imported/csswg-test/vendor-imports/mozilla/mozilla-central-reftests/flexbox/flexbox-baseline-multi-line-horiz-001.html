@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<!-- 
+<!--
      Any copyright is dedicated to the Public Domain.
      http://creativecommons.org/publicdomain/zero/1.0/
- -->
-<!--  Testcase for how we compute the baseline of a horizontal flex container
+-->
+<!-- Testcase for how we compute the baseline of a horizontal flex container
      with several flex lines.
      The spec says this about this case:
       [Given that the first line has no baseline-aligned items:]
@@ -11,7 +11,7 @@
        first flex item has a baseline parallel to the flex
        container's main axis, the flex container's main-axis
        baseline is that baseline.
- -->
+-->
 <html>
 <head>
   <title>CSS Test: Testing the baseline of a horizontal flex container with multiple flex lines</title>
@@ -54,19 +54,28 @@
 </head>
 <body>
   a
-  <!--  Flex containers with flex items that have a mix of baselines:  -->
+  <!-- Flex containers with flex items that have a mix of baselines: -->
   <div class="flexContainer">
-    <div class="medFont">b</div><div class="bigFont">c</div><div class="bigFont">d</div><div class="medFont">e</div>
+    <div class="medFont">b</div
+    ><div class="bigFont">c</div
+    ><div class="bigFont">d</div
+    ><div class="medFont">e</div>
   </div>
 
   <div class="flexContainer">
-    <div class="bigFont">f</div><div class="smallFont">g</div><div class="medFont">h</div><div class="bigFont">i</div>
+    <div class="bigFont">f</div
+    ><div class="smallFont">g</div
+    ><div class="medFont">h</div
+    ><div class="bigFont">i</div>
   </div>
 
-  <!--  Flex container with second line baseline-aligned
-       (shouldn't make a difference)  -->
+  <!-- Flex container with second line baseline-aligned
+       (shouldn't make a difference) -->
   <div class="flexContainer">
-    <div class="smallFont">j</div><div class="bigFont">k</div><div class="bigFont" style="align-self: baseline">l</div><div class="medFont" style="align-self: baseline">m</div>
+    <div class="smallFont">j</div
+    ><div class="bigFont">k</div
+    ><div class="bigFont" style="align-self: baseline">l</div
+    ><div class="medFont" style="align-self: baseline">m</div>
   </div>
   n
 

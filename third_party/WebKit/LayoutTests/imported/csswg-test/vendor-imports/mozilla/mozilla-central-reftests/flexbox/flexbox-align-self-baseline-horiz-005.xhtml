@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- 
+<!--
      Any copyright is dedicated to the Public Domain.
      http://creativecommons.org/publicdomain/zero/1.0/
- -->
-<!--  Testcase for behavior of the 'baseline' value for align-items (and
+-->
+<!-- Testcase for behavior of the 'baseline' value for align-items (and
      align-self, implicitly), in a wrap-reverse multi-line flex container.
      This test baseline-aligns variously-sized flex items, and the container's
      vertical size depends on the aggregate post-alignment height of its items.
-   -->
+  -->
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <title>CSS Test: Baseline alignment of block flex items with 'baseline' value for 'align-items' / 'align-self' in a multi-line flex container</title>
@@ -36,18 +36,18 @@
   </head>
   <body>
     <div class="flexbox">
-      <!--  First flex line: Just 3 different sizes of text  -->
+      <!-- First flex line: Just 3 different sizes of text -->
       <div class="big">a</div>
       <div class="small">b</div>
       <div class="medium">c</div>
 
-      <!--  Second flex line: different margin/padding amounts on each item,
-           and one non-baseline-aligned item. -->
+      <!-- Second flex line: different margin/padding amounts on each item,
+           and one non-baseline-aligned item.-->
       <div class="medium" style="padding-top: 10px">d</div>
       <div class="medium" style="margin-bottom: 8px">e</div>
       <div class="medium" style="align-self: stretch">f</div>
 
-      <!--  Third flex line: other margin/padding amounts on each item  -->
+      <!-- Third flex line: other margin/padding amounts on each item -->
       <div class="small" style="margin-top: 20px">g</div>
       <div class="big">h</div>
       <div class="medium" style="padding-bottom: 6px">i</div>

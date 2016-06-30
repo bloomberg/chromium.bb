@@ -1,8 +1,8 @@
 <!DOCTYPE html>
-<!-- 
+<!--
      Any copyright is dedicated to the Public Domain.
      http://creativecommons.org/publicdomain/zero/1.0/
- -->
+-->
 <html>
   <head>
     <meta charset="utf-8">
@@ -10,7 +10,7 @@
     <link rel="author" title="Daniel Holbert" href="mailto:dholbert@mozilla.com">
     <link rel="help" href="http://www.w3.org/TR/css-flexbox-1/#min-size-auto">
     <link rel="match" href="flexbox-min-width-auto-001-ref.html">
-<!-- 
+<!--
      This testcase tests the used value of "min-width:auto" (the property's
      initial value) on flex items in a horizontal flex container.
 
@@ -27,7 +27,7 @@
 
     This test checks for situations where we should resolve the min-width as
     (a), (b), or (c) above. Another test will check (d).
- -->
+-->
     <style>
       .flexbox {
         display: flex;
@@ -49,50 +49,50 @@
     </style>
   </head>
   <body>
-    <!--  Check for min-width:auto resolving correctly when the smallest
-         candidate value is:  -->
-    <!--  *** (a) Used 'flex-basis' (from 'width') ***  -->
-    <!--  First, without definite max-width:  -->
+    <!-- Check for min-width:auto resolving correctly when the smallest
+         candidate value is: -->
+    <!-- *** (a) Used 'flex-basis' (from 'width') *** -->
+    <!-- First, without definite max-width: -->
     <div class="flexbox">
       <div style="width: 50px"><div></div></div>
     </div>
-    <!--  ...and now with definite (& large) 'max-width':  -->
+    <!-- ...and now with definite (& large) 'max-width': -->
     <div class="flexbox">
       <div style="width: 50px; max-width: 120px;"><div></div></div>
     </div>
-    <!--  ...and now with used 'flex-basis' being a calc expression: -->
+    <!-- ...and now with used 'flex-basis' being a calc expression:-->
     <div class="flexbox">
       <div style="width: calc(10% + 50px)"><div></div></div>
     </div>
 
-    <!--  *** (b) The computed 'max-width' ***  -->
-    <!--  First, with a larger candidate 'flex-basis' value (from 'width')  -->
+    <!-- *** (b) The computed 'max-width' *** -->
+    <!-- First, with a larger candidate 'flex-basis' value (from 'width') -->
     <div class="flexbox">
       <div style="width: 100px; max-width:50px"><div></div></div>
     </div>
-    <!--  ...and now with a larger explicit 'flex-basis' value (which shouldn't
-         be considered for 'min-width:auto' anyway)  -->
+    <!-- ...and now with a larger explicit 'flex-basis' value (which shouldn't
+         be considered for 'min-width:auto' anyway) -->
     <div class="flexbox">
       <div style="flex-basis: 100px; max-width:50px"><div></div></div>
     </div>
-    <!--  ...and now with a smaller explicit 'flex-basis' value (which shouldn't
-         be considered for 'min-width:auto' anyway)  -->
+    <!-- ...and now with a smaller explicit 'flex-basis' value (which shouldn't
+         be considered for 'min-width:auto' anyway) -->
     <div class="flexbox">
       <div style="flex-basis: 10px; max-width:50px"><div></div></div>
     </div>
 
-    <!--  *** (c) (no intrinsic aspect ratio) The min-content size ***  -->
-    <!--  First, with a larger candidate 'flex-basis' value (from 'width')  -->
+    <!-- *** (c) (no intrinsic aspect ratio) The min-content size *** -->
+    <!-- First, with a larger candidate 'flex-basis' value (from 'width') -->
     <div class="flexbox">
       <div style="width: 100px"><div></div></div>
     </div>
-    <!--  ...and now with a larger explicit 'flex-basis' value (which shouldn't
-         be considered for 'min-width:auto' anyway)  -->
+    <!-- ...and now with a larger explicit 'flex-basis' value (which shouldn't
+         be considered for 'min-width:auto' anyway) -->
     <div class="flexbox">
       <div style="flex-basis: 100px"><div></div></div>
     </div>
-    <!--  ...and now with a smaller explicit 'flex-basis' value (which shouldn't
-         be considered for 'min-width:auto' anyway)  -->
+    <!-- ...and now with a smaller explicit 'flex-basis' value (which shouldn't
+         be considered for 'min-width:auto' anyway) -->
     <div class="flexbox">
       <div style="flex-basis: 10px"><div></div></div>
     </div>

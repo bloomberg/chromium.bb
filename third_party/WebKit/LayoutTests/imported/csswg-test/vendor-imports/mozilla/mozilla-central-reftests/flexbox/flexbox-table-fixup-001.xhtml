@@ -1,15 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- 
+<!--
      Any copyright is dedicated to the Public Domain.
      http://creativecommons.org/publicdomain/zero/1.0/
- -->
-<!-- 
+-->
+<!--
      Testcase with table parts inside of a flex container, which should *not*
      trigger table-fixup.  We use justify-content:space-between to stick packing
      space between flex items, so that we can verify that e.g. a contiguous
      run of <td>s will each be blockified & form its own flex item (instead of
      being aggregated into a single table & single flex item).
- -->
+-->
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <title>CSS Test: Testing that table cells in a flex container get blockified and each form their own flex item</title>
@@ -47,18 +47,18 @@
     </style>
   </head>
   <body>
-    <!--  The adjacent table-parts in each example below should *not* be
-         grouped into the same flex item.  -->
-    <!--  2 adjacent table cells  -->
+    <!-- The adjacent table-parts in each example below should *not* be
+         grouped into the same flex item. -->
+    <!-- 2 adjacent table cells -->
     <div class="flexbox"
          ><td class="a">cell1</td><td class="b">cell2</td></div>
 
-    <!--  Table cell followed by tbody  -->
+    <!-- Table cell followed by tbody -->
     <div class="flexbox"
          ><td class="a">cell1</td><tbody class="b">t</tbody></div>
 
-    <!--  Empty table cell (ends up occupying 2px of width), followed by
-         nonempty table cell. -->
+    <!-- Empty table cell (ends up occupying 2px of width), followed by
+         nonempty table cell.-->
     <div class="flexbox"
          ><td></td><td class="b">cell1</td></div>
   </body>

@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- 
+<!--
      Any copyright is dedicated to the Public Domain.
      http://creativecommons.org/publicdomain/zero/1.0/
- -->
-<!--  Reference case for align-items / align-self behavior, using blocks in
+-->
+<!-- Reference case for align-items / align-self behavior, using blocks in
      place of flex items and using float and width keywords to emulate the
-     align-items / align-self properties.  -->
+     align-items / align-self properties. -->
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <title>CSS Reftest Reference</title>
@@ -86,10 +86,10 @@
       <div class="baseline big">abc</div>
       <div class="clearFloats"></div>
       <div class="stretch">stretch</div>
-      <!--  Force a 3px + 1px = 4px margin between this and the previous div
+      <!-- Force a 3px + 1px = 4px margin between this and the previous div
            (to thwart the effects of margin-collapsing). This is the only
            place we need this hack, because everywhere else in this test
-           we use floats or inline-blocks, whose margins don't collapse.  -->
+           we use floats or inline-blocks, whose margins don't collapse. -->
       <div class="stretch big" style="margin-top: 4px">a b</div>
     </div>
   </body>

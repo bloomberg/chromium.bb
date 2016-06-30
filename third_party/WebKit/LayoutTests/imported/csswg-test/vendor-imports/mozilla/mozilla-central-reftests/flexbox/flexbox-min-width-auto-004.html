@@ -1,8 +1,8 @@
 <!DOCTYPE html>
-<!-- 
+<!--
      Any copyright is dedicated to the Public Domain.
      http://creativecommons.org/publicdomain/zero/1.0/
- -->
+-->
 <html>
   <head>
     <meta charset="utf-8">
@@ -10,7 +10,7 @@
     <link rel="author" title="Daniel Holbert" href="mailto:dholbert@mozilla.com">
     <link rel="help" href="http://www.w3.org/TR/css-flexbox-1/#min-size-auto">
     <link rel="match" href="flexbox-min-width-auto-004-ref.html">
-<!-- 
+<!--
      This testcase checks how "overflow-y" indirectly impacts the sizing
      behavior of flex items with "min-width:auto" (the new initial value
      for "min-width"), via its influence on "overflow-x".
@@ -22,7 +22,7 @@
      as well, as described at
        http://www.w3.org/TR/css-overflow-3/#overflow-properties
      So, "overflow-y" has an indirect effect (via "overflow-x") here.
- -->
+-->
     <style>
       .flexbox {
         display: flex;
@@ -49,10 +49,10 @@
     </style>
   </head>
   <body>
-    <!--  min-width:auto should prevent shrinking below intrinsic width when
+    <!-- min-width:auto should prevent shrinking below intrinsic width when
          the flex item has "overflow-y: visible", but not for any other
          overflow-y values (because of overflow-y's influence on overflow-x).
-     -->
+    -->
     <div class="flexbox"><div class="yvisible"><div></div></div></div>
     <div class="flexbox"><div class="yhidden"><div></div></div></div>
     <div class="flexbox"><div class="yscroll"><div></div></div></div>

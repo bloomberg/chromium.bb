@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- 
+<!--
      Any copyright is dedicated to the Public Domain.
      http://creativecommons.org/publicdomain/zero/1.0/
- -->
-<!--  Testcase with percent-valued padding and/or margin on flex items. The spec
+-->
+<!-- Testcase with percent-valued padding and/or margin on flex items. The spec
      says that percentage values on padding/margin-top and -bottom should be
      resolved against the flex container's height (not its width, as would
      be the case in a block).
- -->
+-->
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <title>CSS Test: Testing percent-valued padding and margin on flex items</title>
@@ -52,23 +52,37 @@
     </style>
   </head>
   <body>
-    <!--  Flex container is auto-height - vertical margin and padding should
-         resolve to 0, since they don't have anything to resolve % against.  -->
+    <!-- Flex container is auto-height - vertical margin and padding should
+         resolve to 0, since they don't have anything to resolve % against. -->
     <div class="flexbox"
-         ><div class="child1 paddingA"><div class="filler"/></div><div class="child2 paddingB"><div class="filler"/></div><div class="child1 marginA"></div><div class="child2 marginB"></div></div>
+         ><div class="child1 paddingA"><div class="filler"/></div
+         ><div class="child2 paddingB"><div class="filler"/></div
+         ><div class="child1 marginA"></div
+         ><div class="child2 marginB"></div
+    ></div>
 
-    <!--  Flex container has height: 50px - vertical margin and padding should
-         resolve % values against that.  -->
+    <!-- Flex container has height: 50px - vertical margin and padding should
+         resolve % values against that. -->
     <div class="flexbox height50"
-         ><div class="child1 paddingA"><div class="filler"/></div><div class="child2 paddingB"><div class="filler"/></div><div class="child1 marginA"></div><div class="child2 marginB"></div></div>
+         ><div class="child1 paddingA"><div class="filler"/></div
+         ><div class="child2 paddingB"><div class="filler"/></div
+         ><div class="child1 marginA"></div
+         ><div class="child2 marginB"></div
+    ></div>
 
-    <!--  ...and now with align-items: flex-end, so we can see the margin-bottom
-         in action  -->
+    <!-- ...and now with align-items: flex-end, so we can see the margin-bottom
+         in action -->
     <div class="flexbox height50" style="align-items: flex-end"
-         ><div class="child1 paddingA"><div class="filler"/></div><div class="child2 paddingB"><div class="filler"/></div><div class="child1 marginA"></div><div class="child2 marginB"></div></div>
+         ><div class="child1 paddingA"><div class="filler"/></div
+         ><div class="child2 paddingB"><div class="filler"/></div
+         ><div class="child1 marginA"></div
+         ><div class="child2 marginB"></div
+    ></div>
 
-    <!--  ...and finally, with margin and padding applied to the same items  -->
+    <!-- ...and finally, with margin and padding applied to the same items -->
     <div class="flexbox height50"
-         ><div class="child1 paddingA marginA"><div class="filler"/></div><div class="child2 paddingB marginB"><div class="filler"/></div></div>
+         ><div class="child1 paddingA marginA"><div class="filler"/></div
+         ><div class="child2 paddingB marginB"><div class="filler"/></div
+    ></div>
   </body>
 </html>

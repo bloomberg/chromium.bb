@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- 
+<!--
      Any copyright is dedicated to the Public Domain.
      http://creativecommons.org/publicdomain/zero/1.0/
- -->
+-->
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <title>CSS Reftest Reference</title>
@@ -38,7 +38,7 @@
   </head>
   <body>
 
-    <!--  default (start)  -->
+    <!-- default (start) -->
     <div class="flexbox">
       <div class="a"/>
     </div>
@@ -49,7 +49,7 @@
       <div class="a"/><div class="b"/><div class="c"/>
     </div>
 
-    <!--  flex-start  -->
+    <!-- flex-start -->
     <div class="flexbox">
       <div class="a"/>
     </div>
@@ -60,7 +60,7 @@
       <div class="a"/><div class="b"/><div class="c"/>
     </div>
 
-    <!--  flex-end  -->
+    <!-- flex-end -->
     <div class="flexbox" style="float:right; clear:right;">
       <div class="a"/>
     </div>
@@ -72,7 +72,7 @@
     </div>
     <div style="clear:right;"></div>
 
-    <!--  center  -->
+    <!-- center -->
     <div class="centerParent">
       <div class="flexbox center">
         <div class="a"/>
@@ -89,7 +89,7 @@
       </div>
     </div>
 
-    <!--  space-between  -->
+    <!-- space-between -->
     <div class="flexbox">
       <div class="a"/>
     </div>
@@ -99,25 +99,25 @@
     <div class="flexbox">
       <div class="a" style="display:block; float: left"/>
       <div class="c" style="float:right"/>
-      <!--  Use fixed-size margins to subtract space for "a" and "c", and then
-           use auto margins to center 'b' within the remaining space  -->
+      <!-- Use fixed-size margins to subtract space for "a" and "c", and then
+           use auto margins to center 'b' within the remaining space -->
       <div style="display: block; margin-left: 10px; margin-right: 100px">
         <div class="b" style="margin: auto"/>
       </div>
     </div>
 
-    <!--  space-around  -->
-    <!--  Center "a" here just as we did above in the "center" case.  -->
+    <!-- space-around -->
+    <!-- Center "a" here just as we did above in the "center" case. -->
     <div class="centerParent">
       <div class="flexbox center">
         <div class="a"/>
       </div>
     </div>
-    <!--  For the rest, we'll use a flex container with invisible flexible items
+    <!-- For the rest, we'll use a flex container with invisible flexible items
          instead of packing space. That's simpler than trying to hack up
          a width-independent reference case for "justify-content: space-around".
          (There are other reftests to ensure that basic flex container
-         behavior is correct, so it's safe to rely on it here.)  -->
+         behavior is correct, so it's safe to rely on it here.) -->
     <div class="flexbox" style="display: flex">
       <div style="flex: 0.5"/>
       <div class="a"/>

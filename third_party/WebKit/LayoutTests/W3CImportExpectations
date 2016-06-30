@@ -154,6 +154,7 @@ imported/csswg-test/vendor-imports/mozilla/mozilla-central-reftests/contain [ Sk
 imported/csswg-test/vendor-imports/mozilla/mozilla-central-reftests/conditional3 [ Skip ]
 imported/csswg-test/vendor-imports/mozilla/mozilla-central-reftests/css21 [ Skip ]
 imported/csswg-test/vendor-imports/mozilla/mozilla-central-reftests/filters [ Skip ]
+imported/csswg-test/vendor-imports/mozilla/mozilla-central-reftests/background [ Skip ]
 ## Owners: cbiesinger@chromium.org
 # imported/csswg-test/vendor-imports/mozilla/mozilla-central-reftests/flexbox [ Skip ]
 imported/csswg-test/vendor-imports/mozilla/mozilla-central-reftests/flexbox/reftest.list [ Skip ]

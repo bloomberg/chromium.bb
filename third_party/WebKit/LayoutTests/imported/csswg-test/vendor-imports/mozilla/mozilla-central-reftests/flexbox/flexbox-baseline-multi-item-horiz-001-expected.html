@@ -1,13 +1,13 @@
 <!DOCTYPE html>
-<!-- 
+<!--
      Any copyright is dedicated to the Public Domain.
      http://creativecommons.org/publicdomain/zero/1.0/
- -->
-<!--  Reference case, using inline-block instead of inline-flex, and with the
+-->
+<!-- Reference case, using inline-block instead of inline-flex, and with the
      baseline-aligned items aligned using specific font-size / line-heights,
      and with unaligned children taken out of baseline-alignment using
      "vertical-align:top".
- -->
+-->
 <html>
 <head>
   <title>CSS Reftest Reference</title>
@@ -33,10 +33,12 @@
 <body>
   a
   <div class="flexContainer smallFont">
-    <div class="smallFont">b</div><div class="bigFont unaligned">c</div>
+    <div class="smallFont">b</div
+    ><div class="bigFont unaligned">c</div>
   </div>
   <div class="flexContainer bigFont">
-    <div class="bigFont">d</div><div class="smallFont unaligned">e</div>
+    <div class="bigFont">d</div
+    ><div class="smallFont unaligned">e</div>
   </div>
 </body>
 </html>

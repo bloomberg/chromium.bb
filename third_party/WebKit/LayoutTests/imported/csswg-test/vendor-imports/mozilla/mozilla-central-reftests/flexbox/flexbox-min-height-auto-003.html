@@ -1,8 +1,8 @@
 <!DOCTYPE html>
-<!-- 
+<!--
      Any copyright is dedicated to the Public Domain.
      http://creativecommons.org/publicdomain/zero/1.0/
- -->
+-->
 <html>
   <head>
     <meta charset="utf-8">
@@ -10,14 +10,14 @@
     <link rel="author" title="Daniel Holbert" href="mailto:dholbert@mozilla.com">
     <link rel="help" href="http://www.w3.org/TR/css-flexbox-1/#min-size-auto">
     <link rel="match" href="flexbox-min-height-auto-003-ref.html">
-<!-- 
+<!--
      This testcase checks how "overflow-y" impacts the sizing behavior of flex
      items with "min-height:auto" (the new initial value for "min-height").
 
      In particular, the flex-item-specific "min-height:auto" behavior is
      supposed to be disabled (e.g. we end up with min-height:0) when
      "overflow-y" is non-"visible".
- -->
+-->
     <style>
       .flexbox {
         display: flex;
@@ -46,9 +46,9 @@
     </style>
   </head>
   <body>
-    <!--  min-height:auto should prevent shrinking below intrinsic height when
+    <!-- min-height:auto should prevent shrinking below intrinsic height when
          the flex item has "overflow-y: visible", but not for any other
-         overflow-y values.  -->
+         overflow-y values. -->
     <div class="flexbox"><div class="yvisible"><div></div></div></div>
     <div class="flexbox"><div class="yhidden"><div></div></div></div>
     <div class="flexbox"><div class="yscroll"><div></div></div></div>

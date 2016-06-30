@@ -1,12 +1,12 @@
 <!DOCTYPE html>
-<!-- 
+<!--
      Any copyright is dedicated to the Public Domain.
      http://creativecommons.org/publicdomain/zero/1.0/
- -->
-<!--  In this reference case, we have inline-blocks instead of inline
+-->
+<!-- In this reference case, we have inline-blocks instead of inline
      flex containers. We stick an Ahem whitespace character in each
      inline-block, with a customized line-height to make the baseline
-     end up at the bottom of the inline-block's content-box.  -->
+     end up at the bottom of the inline-block's content-box. -->
 <html>
 <head>
   <title>CSS Reftest Reference</title>
@@ -36,9 +36,9 @@
 </head>
 <body>
   A
-  <!--  We have to include a character in the inline-blocks in order for them
+  <!-- We have to include a character in the inline-blocks in order for them
        to baseline-align; otherwise, they align the bottom of their
-       border-boxes.  -->
+       border-boxes. -->
   <div class="flexContainer">&nbsp;</div>
   <div class="flexContainer" style="padding-bottom: 20px">&nbsp;</div>
   <div class="flexContainer" style="padding: 10px">&nbsp;</div>

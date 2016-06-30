@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- 
+<!--
      Any copyright is dedicated to the Public Domain.
      http://creativecommons.org/publicdomain/zero/1.0/
- -->
-<!-- 
+-->
+<!--
      This test verifies that we don't create anonymous flex items around
      runs of inline content that are _purely_ whitespace.
 
@@ -13,7 +13,7 @@
      The test also uses 'justify-content: space-around' to be sure we can
      tell whether anonymous flex items are being created around the whitespace
      (since they'd claim a share of the packing space if they were there).
- -->
+-->
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <title>CSS Test: Test that anonymous flex items aren't created for pure-whitespace inline content</title>
@@ -43,13 +43,13 @@
     </style>
   </head>
   <body>
-    <!--  whitespace & tab after flex item  -->
+    <!-- whitespace & tab after flex item -->
     <div class="flexbox"><div class="a"/> 	</div>
 
-    <!--  2 spaces before flex item  -->
+    <!-- 2 spaces before flex item -->
     <div class="flexbox">  <div class="a"/><div class="b"/></div>
 
-    <!--  newline & whitespace between flex items   -->
+    <!-- newline & whitespace between flex items  -->
     <div class="flexbox"><img src="solidblue.png"/>
       <img src="solidblue.png"/></div>
   </body>
