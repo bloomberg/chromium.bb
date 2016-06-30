@@ -11793,7 +11793,7 @@ Some features may be unavailable.  Please check that the profile exists and you 
 
         <!-- Personalize Google Services section of the configure sync dialog -->
         <message name="IDS_SYNC_PERSONALIZE_GOOGLE_SERVICES_MESSAGE" desc="Text of the section containing a link to the Google Activity Controls.">
-          Control how Google uses your browsing history to personalize Search, ads, and other Google services from <ph name="BEGIN_LINK">&lt;a id="activity-controls" href="$1" target=&quot;_blank&quot;&gt;</ph>Google Activity Controls<ph name="END_LINK">&lt;/a&gt;</ph>.
+          Control how Google uses your browsing history to personalize Search, ads, and other Google services from <ph name="BEGIN_LINK">&lt;a id="activity-controls" href="$1" target=&quot;_blank&quot;&gt;<ex>&lt;a id="activity-controls" href="$1" target=&quot;_blank&quot;&gt;</ex></ph>Google Activity Controls<ph name="END_LINK">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>.
         </message>
 
         <!-- Passphrase dialog strings -->
