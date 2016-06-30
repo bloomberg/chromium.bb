@@ -2014,9 +2014,8 @@ notify_key(struct weston_seat *seat, uint32_t time, uint32_t key,
 				      state);
 	}
 
+	keyboard->grab_serial = wl_display_get_serial(compositor->wl_display);
 	if (state == WL_KEYBOARD_KEY_STATE_PRESSED) {
-		keyboard->grab_serial =
-			wl_display_get_serial(compositor->wl_display);
 		keyboard->grab_time = time;
 		keyboard->grab_key = key;
 	}
