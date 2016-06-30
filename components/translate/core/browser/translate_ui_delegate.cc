@@ -6,6 +6,7 @@
 
 #include "base/i18n/string_compare.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/strings/string_number_conversions.h"
 #include "components/translate/core/browser/language_state.h"
 #include "components/translate/core/browser/translate_client.h"
 #include "components/translate/core/browser/translate_download_manager.h"
@@ -13,6 +14,7 @@
 #include "components/translate/core/browser/translate_manager.h"
 #include "components/translate/core/browser/translate_prefs.h"
 #include "components/translate/core/common/translate_constants.h"
+#include "components/variations/variations_associated_data.h"
 #include "third_party/icu/source/i18n/unicode/coll.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -302,14 +304,27 @@ bool TranslateUIDelegate::ShouldAlwaysTranslate() {
 }
 
 bool TranslateUIDelegate::ShouldAlwaysTranslateBeCheckedByDefault() {
-  // After 2 clicks on Translate for the same language.
-  // We check for == 2 instead of >= 2 because if the user translates with the
+  if (ShouldAlwaysTranslate())
+    return true;
+
+  std::map<std::string, std::string> params;
+  if (!variations::GetVariationParams(translate::kTranslateUI2016Q2TrialName,
+                                      &params))
+    return false;
+  int threshold = 0;
+  base::StringToInt(params[translate::kAlwaysTranslateOfferThreshold],
+                    &threshold);
+  if (threshold <= 0)
+    return false;
+
+  // After N clicks on Translate for the same language.
+  // We check for == N instead of >= N because if the user translates with the
   // "Always do this?" on, then the next time the bubble won't show up.
   // The only chance the bubble will show up is after the user manually unchecks
   // "Always do this?". In that case, since it is after user explictly unchecks,
-  // we should show as it as unchecked so we only check == 2 instead of >= 2.
-  return ShouldAlwaysTranslate() ||
-         prefs_->GetTranslationAcceptedCount(GetOriginalLanguageCode()) == 2;
+  // we should show as it as unchecked so we only check == N instead of >= N.
+  return prefs_->GetTranslationAcceptedCount(GetOriginalLanguageCode()) ==
+         threshold;
 }
 
 void TranslateUIDelegate::SetAlwaysTranslate(bool value) {

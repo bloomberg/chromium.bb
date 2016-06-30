@@ -49,6 +49,7 @@ source_set("browser") {
     "//components/resources:components_resources",
     "//components/strings",
     "//components/translate/core/common",
+    "//components/variations",
     "//google_apis",
     "//net",
     "//third_party/icu",
@@ -92,6 +93,7 @@ source_set("unit_tests") {
     "//components/pref_registry:test_support",
     "//components/prefs",
     "//components/translate/core/common",
+    "//components/variations",
     "//net:test_support",
     "//testing/gtest",
   ]

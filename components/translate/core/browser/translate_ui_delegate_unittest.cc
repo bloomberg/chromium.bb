@@ -18,6 +18,7 @@
 #include "components/translate/core/browser/translate_infobar_delegate.h"
 #include "components/translate/core/browser/translate_manager.h"
 #include "components/translate/core/browser/translate_prefs.h"
+#include "components/variations/variations_associated_data.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -195,7 +196,28 @@ TEST_F(TranslateUIDelegateTest, SetLanguageBlockedIn2016Q2UI) {
   EXPECT_TRUE(manager_->GetLanguageState().translate_enabled());
 }
 
-TEST_F(TranslateUIDelegateTest, ShouldAlwaysTranslateBeCheckedByDefault) {
+TEST_F(TranslateUIDelegateTest, ShouldAlwaysTranslateBeCheckedByDefaultNever) {
+  std::unique_ptr<TranslatePrefs> prefs(client_->GetTranslatePrefs());
+  prefs->ResetTranslationAcceptedCount("ar");
+
+  for (int i = 0; i < 100; i++) {
+    EXPECT_FALSE(delegate_->ShouldAlwaysTranslateBeCheckedByDefault());
+    prefs->IncrementTranslationAcceptedCount("ar");
+  }
+}
+
+TEST_F(TranslateUIDelegateTest, ShouldAlwaysTranslateBeCheckedByDefault2) {
+  const char kGroupName[] = "GroupA";
+  std::map<std::string, std::string> params = {
+      {kAlwaysTranslateOfferThreshold, "2"}};
+  variations::AssociateVariationParams(translate::kTranslateUI2016Q2TrialName,
+                                       kGroupName, params);
+  // need a trial_list to init the global instance used internally
+  // inside CreateFieldTrial().
+  base::FieldTrialList trial_list(nullptr);
+  base::FieldTrialList::CreateFieldTrial(translate::kTranslateUI2016Q2TrialName,
+                                         kGroupName);
+
   std::unique_ptr<TranslatePrefs> prefs(client_->GetTranslatePrefs());
   prefs->ResetTranslationAcceptedCount("ar");
 

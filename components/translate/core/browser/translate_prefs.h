@@ -35,6 +35,13 @@ namespace translate {
 // Feature flag for "Translate UI 2016 Q2" project.
 extern const base::Feature kTranslateUI2016Q2;
 
+// The trial (study) name in finch study config.
+extern const char kTranslateUI2016Q2TrialName[];
+
+// The name of the parameter for the number of translations, after which the
+// "Always Translate" checkbox default to checked.
+extern const char kAlwaysTranslateOfferThreshold[];
+
 class TranslateAcceptLanguages;
 
 // Allows updating denial times for a specific language while maintaining the
@@ -157,6 +164,7 @@ class TranslatePrefs {
                             const std::string& language);
   bool ShouldAutoTranslate(const std::string& original_language,
                            std::string* target_language);
+
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
   static void MigrateUserPrefs(PrefService* user_prefs,
                                const char* accept_languages_pref);

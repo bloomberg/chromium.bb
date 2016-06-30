@@ -35,6 +35,9 @@ const char TranslatePrefs::kPrefTranslateLastDeniedTimeForLanguage[] =
     "translate_last_denied_time_for_language";
 const char TranslatePrefs::kPrefTranslateTooOftenDeniedForLanguage[] =
     "translate_too_often_denied_for_language";
+const char kTranslateUI2016Q2TrialName[] = "TranslateUI2016Q2";
+const char kAlwaysTranslateOfferThreshold[] =
+    "always_translate_offer_threshold";
 
 // The below properties used to be used but now are deprecated. Don't use them
 // since an old profile might have some values there.
