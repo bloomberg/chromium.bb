@@ -33,7 +33,6 @@
 #include "wtf/ThreadSpecific.h"
 #include "wtf/Threading.h"
 #include "wtf/WTFExport.h"
-#include "wtf/text/AtomicStringTable.h"
 #include "wtf/text/StringHash.h"
 #include <memory>
 
@@ -49,6 +48,7 @@ typedef void (*CompressibleStringTableDestructor)(CompressibleStringTable*);
 
 namespace WTF {
 
+class AtomicStringTable;
 struct ICUConverterWrapper;
 
 class WTF_EXPORT WTFThreadData {

@@ -60,6 +60,7 @@
 #include "platform/weborigin/SchemeRegistry.h"
 #include "platform/weborigin/SecurityPolicy.h"
 #include "wtf/allocator/Partitions.h"
+#include "wtf/text/AtomicStringTable.h"
 
 namespace blink {
 
@@ -104,7 +105,8 @@ void CoreInitializer::initialize()
 
     StringImpl::reserveStaticStringsCapacityForSize(coreStaticStringsCount + StringImpl::allStaticStrings().size());
     QualifiedName::initAndReserveCapacityForSize(qualifiedNamesCount);
-    AtomicString::reserveTableCapacity(coreStaticStringsCount);
+
+    AtomicStringTable::instance().reserveCapacity(coreStaticStringsCount);
 
     HTMLNames::init();
     SVGNames::init();

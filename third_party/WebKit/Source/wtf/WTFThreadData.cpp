@@ -26,6 +26,7 @@
 
 #include "wtf/WTFThreadData.h"
 
+#include "wtf/text/AtomicStringTable.h"
 #include "wtf/text/TextCodecICU.h"
 
 namespace WTF {

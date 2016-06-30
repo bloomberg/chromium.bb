@@ -31,6 +31,7 @@
 #include "wtf/allocator/PartitionAlloc.h"
 #include "wtf/allocator/Partitions.h"
 #include "wtf/text/AtomicString.h"
+#include "wtf/text/AtomicStringTable.h"
 #include "wtf/text/CharacterNames.h"
 #include "wtf/text/StringBuffer.h"
 #include "wtf/text/StringHash.h"
@@ -276,7 +277,7 @@ inline StringImpl::~StringImpl()
     STRING_STATS_REMOVE_STRING(this);
 
     if (isAtomic())
-        AtomicString::remove(this);
+        AtomicStringTable::instance().remove(this);
 }
 
 void StringImpl::destroyIfNotStatic()

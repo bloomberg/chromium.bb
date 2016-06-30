@@ -37,34 +37,31 @@ class WTF_EXPORT AtomicString {
     USING_FAST_MALLOC(AtomicString);
 public:
     static void init();
-    static void reserveTableCapacity(size_t);
 
-    AtomicString() { }
-    AtomicString(const LChar* s) : m_string(add(s)) { }
-    AtomicString(const char* s) : m_string(add(s)) { }
-    AtomicString(const LChar* s, unsigned length) : m_string(add(s, length)) { }
-    AtomicString(const UChar* s, unsigned length) : m_string(add(s, length)) { }
-    AtomicString(const UChar* s, unsigned length, unsigned existingHash) : m_string(add(s, length, existingHash)) { }
-    AtomicString(const UChar* s) : m_string(add(s)) { }
+    AtomicString() {}
+    AtomicString(const LChar* chars)
+        : AtomicString(chars, chars ? strlen(reinterpret_cast<const char*>(chars)) : 0) {}
+    AtomicString(const char* chars)
+        : AtomicString(reinterpret_cast<const LChar*>(chars)) {}
+    AtomicString(const LChar* chars, unsigned length);
+    AtomicString(const UChar* chars, unsigned length);
+    AtomicString(const UChar* chars, unsigned length, unsigned existingHash);
+    AtomicString(const UChar* chars);
 
     template<size_t inlineCapacity>
-    explicit AtomicString(const Vector<UChar, inlineCapacity>& characters)
-        : m_string(add(characters.data(), characters.size()))
-    {
-    }
+    explicit AtomicString(const Vector<UChar, inlineCapacity>& vector)
+        : AtomicString(vector.data(), vector.size()) {}
 
     // Constructing an AtomicString from a String / StringImpl can be expensive if
     // the StringImpl is not already atomic.
     explicit AtomicString(StringImpl* impl) : m_string(add(impl)) { }
     explicit AtomicString(const String& s) : m_string(add(s.impl())) { }
 
-    AtomicString(StringImpl* baseString, unsigned start, unsigned length) : m_string(add(baseString, start, length)) { }
+    AtomicString(StringImpl* baseString, unsigned start, unsigned length);
 
     // Hash table deleted values, which are only constructed and never copied or destroyed.
     AtomicString(WTF::HashTableDeletedValueType) : m_string(WTF::HashTableDeletedValue) { }
     bool isHashTableDeletedValue() const { return m_string.isHashTableDeletedValue(); }
-
-    static StringImpl* find(const StringImpl*);
 
     operator const String&() const { return m_string; }
     const String& getString() const { return m_string; }
@@ -128,15 +125,14 @@ public:
     bool isNull() const { return m_string.isNull(); }
     bool isEmpty() const { return m_string.isEmpty(); }
 
-    static void remove(StringImpl*);
-
 #ifdef __OBJC__
     AtomicString(NSString* s) : m_string(add((CFStringRef)s)) { }
     operator NSString*() const { return m_string; }
 #endif
     // AtomicString::fromUTF8 will return a null string if
     // the input data contains invalid UTF-8 sequences.
-    static AtomicString fromUTF8(const char*, size_t);
+    // NOTE: Passing a zero size means use the whole string.
+    static AtomicString fromUTF8(const char*, size_t length);
     static AtomicString fromUTF8(const char*);
 
     CString ascii() const { return m_string.ascii(); }
@@ -150,19 +146,6 @@ public:
 private:
     String m_string;
 
-    ALWAYS_INLINE static PassRefPtr<StringImpl> add(const LChar* characters)
-    {
-        if (!characters)
-            return nullptr;
-        return add(characters, strlen(reinterpret_cast<const char*>(characters)));
-    }
-    ALWAYS_INLINE static PassRefPtr<StringImpl> add(const char* s) { return add(reinterpret_cast<const LChar*>(s)); }
-    static PassRefPtr<StringImpl> add(const LChar*, unsigned length);
-    static PassRefPtr<StringImpl> add(const UChar*, unsigned length);
-    ALWAYS_INLINE static PassRefPtr<StringImpl> add(const char* s, unsigned length) { return add(reinterpret_cast<const LChar*>(s), length); }
-    static PassRefPtr<StringImpl> add(const UChar*, unsigned length, unsigned existingHash);
-    static PassRefPtr<StringImpl> add(const UChar*);
-    static PassRefPtr<StringImpl> add(StringImpl*, unsigned offset, unsigned length);
     ALWAYS_INLINE static PassRefPtr<StringImpl> add(StringImpl* r)
     {
         if (!r || r->isAtomic())
@@ -173,8 +156,6 @@ private:
 #if OS(MACOSX)
     static PassRefPtr<StringImpl> add(CFStringRef);
 #endif
-
-    static AtomicString fromUTF8Internal(const char*, const char*);
 };
 
 inline bool operator==(const AtomicString& a, const AtomicString& b) { return a.impl() == b.impl(); }
@@ -217,23 +198,6 @@ WTF_EXPORT extern const AtomicString& xmlAtom;
 WTF_EXPORT extern const AtomicString& xmlnsAtom;
 WTF_EXPORT extern const AtomicString& xlinkAtom;
 
-inline AtomicString AtomicString::fromUTF8(const char* characters, size_t length)
-{
-    if (!characters)
-        return nullAtom;
-    if (!length)
-        return emptyAtom;
-    return fromUTF8Internal(characters, characters + length);
-}
-
-inline AtomicString AtomicString::fromUTF8(const char* characters)
-{
-    if (!characters)
-        return nullAtom;
-    if (!*characters)
-        return emptyAtom;
-    return fromUTF8Internal(characters, 0);
-}
 
 // AtomicStringHash is the default hash for AtomicString
 template<typename T> struct DefaultHash;
