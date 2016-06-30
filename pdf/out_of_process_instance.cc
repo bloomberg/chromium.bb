@@ -13,8 +13,6 @@
 #include <math.h>
 #include <list>
 
-#include "base/json/json_reader.h"
-#include "base/json/json_writer.h"
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
@@ -50,11 +48,6 @@ namespace chrome_pdf {
 const char kChromePrint[] = "chrome://print/";
 const char kChromeExtension[] =
     "chrome-extension://mhjfbmdgcfjbbpaeojofohoefgiehjai";
-
-// Dictionary Value key names for the document accessibility info
-const char kAccessibleNumberOfPages[] = "numberOfPages";
-const char kAccessibleLoaded[] = "loaded";
-const char kAccessibleCopyable[] = "copyable";
 
 // Constants used in handling postMessage() messages.
 const char kType[] = "type";
@@ -106,12 +99,6 @@ const char kJSPreviewPageIndex[] = "index";
 const char kJSSetScrollPositionType[] = "setScrollPosition";
 const char kJSPositionX[] = "x";
 const char kJSPositionY[] = "y";
-// Request accessibility JSON data (Page -> Plugin)
-const char kJSGetAccessibilityJSONType[] = "getAccessibilityJSON";
-const char kJSAccessibilityPageNumber[] = "page";
-// Reply with accessibility JSON data (Plugin -> Page)
-const char kJSGetAccessibilityJSONReplyType[] = "getAccessibilityJSONReply";
-const char kJSAccessibilityJSON[] = "json";
 // Cancel the stream URL request (Plugin -> Page)
 const char kJSCancelStreamUrlType[] = "cancelStreamUrl";
 // Navigate to the given URL (Plugin -> Page)
@@ -461,27 +448,6 @@ void OutOfProcessInstance::HandleMessage(const pp::Var& message) {
              dict.Get(pp::Var(kJSPreviewPageIndex)).is_int()) {
     ProcessPreviewPageInfo(dict.Get(pp::Var(kJSPreviewPageUrl)).AsString(),
                            dict.Get(pp::Var(kJSPreviewPageIndex)).AsInt());
-  } else if (type == kJSGetAccessibilityJSONType) {
-    pp::VarDictionary reply;
-    reply.Set(pp::Var(kType), pp::Var(kJSGetAccessibilityJSONReplyType));
-    if (dict.Get(pp::Var(kJSAccessibilityPageNumber)).is_int()) {
-      int page = dict.Get(pp::Var(kJSAccessibilityPageNumber)).AsInt();
-      reply.Set(pp::Var(kJSAccessibilityJSON),
-                        pp::Var(engine_->GetPageAsJSON(page)));
-    } else {
-      base::DictionaryValue node;
-      node.SetInteger(kAccessibleNumberOfPages, engine_->GetNumberOfPages());
-      node.SetBoolean(kAccessibleLoaded,
-                      document_load_state_ != LOAD_STATE_LOADING);
-      bool has_permissions =
-          engine_->HasPermission(PDFEngine::PERMISSION_COPY) ||
-          engine_->HasPermission(PDFEngine::PERMISSION_COPY_ACCESSIBLE);
-      node.SetBoolean(kAccessibleCopyable, has_permissions);
-      std::string json;
-      base::JSONWriter::Write(node, &json);
-      reply.Set(pp::Var(kJSAccessibilityJSON), pp::Var(json));
-    }
-    PostMessage(reply);
   } else if (type == kJSStopScrollingType) {
     stop_scrolling_ = true;
   } else if (type == kJSGetSelectedTextType) {

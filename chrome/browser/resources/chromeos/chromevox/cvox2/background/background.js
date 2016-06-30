@@ -214,14 +214,18 @@ Background.prototype = {
     if (!target)
       return ChromeVoxMode.CLASSIC;
 
+    var root = target.root;
+    if (root && this.isWhitelistedForCompat_(root.docUrl))
+      return ChromeVoxMode.COMPAT;
+
     // Closure complains, but clearly, |target| is not null.
-    var root =
+    var topLevelRoot =
         AutomationUtil.getTopLevelRoot(/** @type {!AutomationNode} */(target));
-    if (!root)
+    if (!topLevelRoot)
       return ChromeVoxMode.COMPAT;
-    if (this.isWhitelistedForCompat_(root.docUrl))
+    if (this.isWhitelistedForCompat_(topLevelRoot.docUrl))
       return ChromeVoxMode.COMPAT;
-    else if (this.isWhitelistedForNext_(root.docUrl))
+    else if (this.isWhitelistedForNext_(topLevelRoot.docUrl))
       return ChromeVoxMode.NEXT;
     else
       return ChromeVoxMode.CLASSIC;

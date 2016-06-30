@@ -14,10 +14,6 @@
 #include "third_party/pdfium/public/fpdf_formfill.h"
 #include "third_party/pdfium/public/fpdf_text.h"
 
-namespace base {
-class Value;
-}
-
 namespace chrome_pdf {
 
 class PDFiumEngine;
@@ -42,9 +38,6 @@ class PDFiumPage {
 
   // Returns FPDF_TEXTPAGE for the page, loading and parsing it if necessary.
   FPDF_TEXTPAGE GetTextPage();
-
-  // Returns a DictionaryValue version of the page.
-  base::Value* GetAccessibleContentAsValue(int rotation);
 
   // Given a start char index, find the longest continuous run of text that's
   // in a single direction and with the same style and font size. Return the

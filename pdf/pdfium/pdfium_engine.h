@@ -90,7 +90,6 @@ class PDFiumEngine : public PDFEngine,
   int GetVerticalScrollbarYPosition() override { return position_.y(); }
   void SetGrayscale(bool grayscale) override;
   void OnCallback(int id) override;
-  std::string GetPageAsJSON(int index) override;
   int GetCharCount(int page_index) override;
   pp::FloatRect GetCharBounds(int page_index, int char_index) override;
   uint32_t GetCharUnicode(int page_index, int char_index) override;

@@ -604,9 +604,6 @@ PDFViewer.prototype = {
             '&body=' + message.data.body;
         window.location.href = href;
         break;
-      case 'getAccessibilityJSONReply':
-        this.sendScriptingMessage_(message.data);
-        break;
       case 'getPassword':
         // If the password screen isn't up, put it up. Otherwise we're
         // responding to an incorrect password so deny it.
@@ -782,7 +779,6 @@ PDFViewer.prototype = {
     }
 
     switch (message.data.type.toString()) {
-      case 'getAccessibilityJSON':
       case 'getSelectedText':
       case 'print':
       case 'selectAll':

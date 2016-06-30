@@ -60,7 +60,6 @@ chromevox_modules = [
   "chromevox/injected/navigation_shifter.js",
   "chromevox/injected/navigation_speaker.js",
   "chromevox/injected/node_breadcrumb.js",
-  "chromevox/injected/pdf_processor.js",
   "chromevox/injected/script_installer.js",
   "chromevox/injected/serializer.js",
   "chromevox/injected/ui/braille_overlay_widget.js",

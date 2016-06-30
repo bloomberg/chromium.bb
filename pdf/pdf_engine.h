@@ -247,8 +247,6 @@ class PDFEngine {
   virtual void SetGrayscale(bool grayscale) = 0;
   // Callback for timer that's set with ScheduleCallback().
   virtual void OnCallback(int id) = 0;
-  // Gets the JSON representation of the PDF file
-  virtual std::string GetPageAsJSON(int index) = 0;
   // Get the number of characters on a given page.
   virtual int GetCharCount(int page_index) = 0;
   // Get the bounds in page pixels of a character on a given page.

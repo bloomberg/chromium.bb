@@ -1730,9 +1730,6 @@
       <message desc="Spoken when entering group exploration." name="IDS_CHROMEVOX_ENTER_GROUP_EXPLORATION">
         Exploring groups
       </message>
-      <message desc="A message displayed at the top of PDF files where text has been automatically extracted for accessibility." name="IDS_CHROMEVOX_PDF_HEADER">
-        This page contains the text automatically extracted from the PDF file &lt;b&gt;<ph name="filename">$1</ph>&lt;/b&gt;. &lt;a href="<ph name="url">$2</ph>"&gt;Click here for the original.&lt;/a&gt;
-      </message>
       <message desc="A message spoken when the user switches to the object granularity, which allows users to navigate the page by objects." name="IDS_CHROMEVOX_OBJECT_STRATEGY">
         Object
       </message>
@@ -2352,9 +2349,6 @@
       </message>
       <message desc="Spoken and brailled when the braille captions feature is disabled. This feature shows the braille output in a small overlay on the screen for development and demonstration purposes." name="IDS_CHROMEVOX_BRAILLE_CAPTIONS_DISABLED">
         Braille captions disabled.
-      </message>
-      <message desc="Message displayed and spoken to user if they open a copy-protected PDF and the browser is unable to offer accessible text." name="IDS_CHROMEVOX_COPY_PROTECTED_PDF">
-        Unable to access accessible text from copy-protected PDF.
       </message>
       <message desc="Message spoken to user when switching to a mode where searching is not case-sensitive." name="IDS_CHROMEVOX_IGNORING_CASE">
         Ignoring case.

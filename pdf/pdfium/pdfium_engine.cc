@@ -13,7 +13,6 @@
 
 #include "base/i18n/icu_encoding_detection.h"
 #include "base/i18n/icu_string_conversions.h"
-#include "base/json/json_writer.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/macros.h"
@@ -23,7 +22,6 @@
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/values.h"
 #include "gin/array_buffer.h"
 #include "gin/public/gin_embedders.h"
 #include "gin/public/isolate_holder.h"
@@ -2292,22 +2290,6 @@ void PDFiumEngine::OnCallback(int id) {
   timers_[id].second(id);
   if (timers_.count(id))  // The callback might delete the timer.
     client_->ScheduleCallback(id, timers_[id].first);
-}
-
-std::string PDFiumEngine::GetPageAsJSON(int index) {
-  if (!(HasPermission(PERMISSION_COPY) ||
-        HasPermission(PERMISSION_COPY_ACCESSIBLE))) {
-    return "{}";
-  }
-
-  if (index < 0 || static_cast<size_t>(index) > pages_.size() - 1)
-    return "{}";
-
-  std::unique_ptr<base::Value> node(
-      pages_[index]->GetAccessibleContentAsValue(current_rotation_));
-  std::string page_json;
-  base::JSONWriter::Write(*node, &page_json);
-  return page_json;
 }
 
 int PDFiumEngine::GetCharCount(int page_index) {

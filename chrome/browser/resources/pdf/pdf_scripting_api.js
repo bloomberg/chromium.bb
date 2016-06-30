@@ -76,12 +76,6 @@ function PDFScriptingAPI(window, plugin) {
         if (this.loadCallback_)
           this.loadCallback_(this.loadState_ == LoadState.SUCCESS);
         break;
-      case 'getAccessibilityJSONReply':
-        if (this.accessibilityCallback_) {
-          this.accessibilityCallback_(event.data.json);
-          this.accessibilityCallback_ = null;
-        }
-        break;
       case 'getSelectedTextReply':
         if (this.selectedTextCallback_) {
           this.selectedTextCallback_(event.data.selectedText);
@@ -187,30 +181,6 @@ PDFScriptingAPI.prototype = {
       url: url,
       index: index
     });
-  },
-
-  /**
-   * Get accessibility JSON for the document. May only be called after document
-   * load.
-   * @param {Function} callback a callback to be called with the accessibility
-   *     json that has been retrieved.
-   * @param {number} [page] the 0-indexed page number to get accessibility data
-   *     for. If this is not provided, data about the entire document is
-   *     returned.
-   * @return {boolean} true if the function is successful, false if there is an
-   *     outstanding request for accessibility data that has not been answered.
-   */
-  getAccessibilityJSON: function(callback, page) {
-    if (this.accessibilityCallback_)
-      return false;
-    this.accessibilityCallback_ = callback;
-    var message = {
-      type: 'getAccessibilityJSON',
-    };
-    if (page || page == 0)
-      message.page = page;
-    this.sendMessage_(message);
-    return true;
   },
 
   /**
