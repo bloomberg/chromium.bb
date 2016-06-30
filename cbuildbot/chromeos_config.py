@@ -648,6 +648,7 @@ _waterfall_config_map = {
 
     constants.WATERFALL_INTERNAL: frozenset([
         # Experimental Paladins.
+        'elm-paladin',
         'elm-cheets-paladin',
         'lakitu_next-paladin',
 
