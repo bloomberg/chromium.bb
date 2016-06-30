@@ -394,6 +394,7 @@ vs-chromium-project.txt
 /third_party/openmax_dl/
 /third_party/openh264/src
 /third_party/opus/src
+/third_party/ow2_asm/lib/*.jar
 /third_party/pdfsqueeze
 /third_party/pdfium
 /third_party/pefile

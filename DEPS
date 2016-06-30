@@ -636,6 +636,16 @@ hooks = [
     ],
   },
   {
+    'name': 'ow2_asm',
+    'pattern': '.',
+    'action': ['python',
+               'src/build/android/update_deps/update_third_party_deps.py',
+               'download',
+               '-b', 'chromium-ow2-asm',
+               '-l', 'third_party/ow2_asm'
+    ],
+  },
+  {
     # Downloads the current stable linux sysroot to build/linux/ if needed.
     # This sysroot updates at about the same rate that the chrome build deps
     # change. This script is a no-op except for linux users who are doing
