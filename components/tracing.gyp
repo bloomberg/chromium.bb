@@ -42,6 +42,8 @@
         'tracing/common/tracing_messages.h',
         'tracing/common/tracing_switches.cc',
         'tracing/common/tracing_switches.h',
+        'tracing/core/scattered_stream_writer.cc',
+        'tracing/core/scattered_stream_writer.h',
         'tracing/core/trace_ring_buffer.cc',
         'tracing/core/trace_ring_buffer.h',
         'tracing/tracing_export.h',

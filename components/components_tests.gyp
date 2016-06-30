@@ -882,6 +882,7 @@
       'tracing/common/graphics_memory_dump_provider_android_unittest.cc',
       'tracing/common/process_metrics_memory_dump_provider_unittest.cc',
       'tracing/core/trace_ring_buffer_unittest.cc',
+      'tracing/core/scattered_stream_writer_unittest.cc',
     ],
     'translate_unittest_sources': [
       'translate/core/browser/language_state_unittest.cc',
