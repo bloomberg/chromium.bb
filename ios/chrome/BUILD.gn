@@ -84,6 +84,7 @@ test("ios_chrome_unittests") {
     "//components/update_client",
     "//components/version_info",
     "//ios/chrome/app",
+    "//ios/chrome/app/resources:packed_resources",
     "//ios/chrome/browser",
     "//ios/chrome/browser:test_support",
     "//ios/chrome/common",

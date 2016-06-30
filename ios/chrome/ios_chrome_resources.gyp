@@ -118,6 +118,7 @@
       },
     },
     {
+      # GN version: //ios/chrome/app/resources:packed_resources
       'target_name': 'ios_packed_resources',
       'type': 'none',
       'dependencies': [
@@ -129,6 +130,7 @@
       ],
       'actions': [
         {
+          # GN version: //ios/chrome/app/resources:repack_locales
           'action_name': 'repack_ios_locales',
           'variables': {
             'repack_locales_path': 'tools/build/ios_repack_locales.py',
@@ -157,6 +159,7 @@
           ],
         },
         {
+          # GN version: //ios/chrome/app/resources:repack_scalable_resources
           'action_name': 'repack_ios_resources_100_percent',
           'variables': {
             'pak_inputs': [
@@ -169,6 +172,7 @@
           'includes': [ '../../build/repack_action.gypi' ],
         },
         {
+          # GN version: //ios/chrome/app/resources:repack_scalable_resources
           'action_name': 'repack_ios_resources_200_percent',
           'variables': {
             'pak_inputs': [
@@ -181,6 +185,7 @@
           'includes': [ '../../build/repack_action.gypi' ],
         },
         {
+          # GN version: //ios/chrome/app/resources:repack_scalable_resources
           'action_name': 'repack_ios_resources_300_percent',
           'variables': {
             'pak_inputs': [
@@ -193,6 +198,7 @@
           'includes': [ '../../build/repack_action.gypi' ],
         },
         {
+          # GN version: //ios/chrome/app/resources:repack_unscaled_resources
           'action_name': 'repack_ios_resources',
           'variables': {
             'pak_inputs': [
@@ -208,6 +214,7 @@
       ],
     },
     {
+      # GN version: //ios/chrome/browser/variations:ios_chrome_ui_string_overrider_factory
       'target_name': 'ios_chrome_ui_string_overrider_factory_gen',
       'type': 'none',
       'hard_dependency': 1,
@@ -243,6 +250,7 @@
       ],
     },
     {
+      # GN version: //ios/chrome/browser/variations:ios_chrome_ui_string_overrider_factory
       'target_name': 'ios_chrome_ui_string_overrider_factory',
       'type': 'static_library',
       'dependencies': [
