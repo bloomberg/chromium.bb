@@ -71,7 +71,7 @@ proto_library("proto_internal") {
 
   cc_generator_options = "dllexport_decl=CC_PROTO_EXPORT:"
   cc_include = "cc/proto/cc_proto_export.h"
-
+  component_build_force_source_set = true
   defines = [ "CC_PROTO_IMPLEMENTATION" ]
 
   # Warn if clang creates exit destructors.

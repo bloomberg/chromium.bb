@@ -8,6 +8,7 @@ import("//third_party/protobuf/proto_library.gni")
 # dependency structure is currently. Since proto_library generates a source
 # set, here we link the result into a component.
 component("proto") {
+  output_name = "policy_proto"
   public_deps = [
     ":proto_internal",
   ]
@@ -30,5 +31,6 @@ proto_library("proto_internal") {
   proto_out_dir = "policy/proto"
   cc_generator_options = "dllexport_decl=POLICY_PROTO_EXPORT:"
   cc_include = "components/policy/policy_proto_export.h"
+  component_build_force_source_set = true
   defines = [ "POLICY_PROTO_COMPILATION" ]
 }

@@ -81,6 +81,7 @@ proto_library("proto") {
 
   cc_generator_options = "dllexport_decl=GCM_EXPORT:"
   cc_include = "google_apis/gcm/base/gcm_export.h"
+  component_build_force_source_set = true
   defines = [ "GCM_IMPLEMENTATION" ]
 }
 

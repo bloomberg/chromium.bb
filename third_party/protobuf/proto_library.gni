@@ -23,7 +23,8 @@
 #       'dllexport_decl=FOO_EXPORT:' (note trailing colon).
 #
 #       It is likely you also need to #include a file for the above EXPORT
-#       macro to work. See cc_include.
+#       macro to work (see cc_include) and set
+#       component_build_force_source_set = true.
 #
 #   cc_include (optional)
 #       String listing an extra include that should be passed.
@@ -34,6 +35,13 @@
 #
 # Parameters for compiling the generated code:
 #
+#   component_build_force_source_set (Default=false)
+#       When set true the generated code will be compiled as a source set in
+#       the component build. This does not affect static builds.  If you are
+#       exporting symbols from a component, this is required to prevent those
+#       symbols from being stripped. If you're not using dllexports in
+#       cc_generator_options, it's usually best to leave this false.
+#
 #   defines (optional)
 #       Defines to supply to the source set that compiles the generated source
 #       code.
@@ -42,7 +50,7 @@
 #       A list of config labels that will be appended to the configs applying
 #       to the source set.
 #
-# Example:
+# Example
 #  proto_library("mylib") {
 #    sources = [
 #      "foo.proto",
@@ -150,7 +158,14 @@ template("proto_library") {
     }
   }
 
-  source_set(target_name) {
+  if (defined(invoker.component_build_force_source_set) &&
+      invoker.component_build_force_source_set &&
+      is_component_build) {
+    link_target_type = "source_set"
+  } else {
+    link_target_type = "static_library"
+  }
+  target(link_target_type, target_name) {
     forward_variables_from(invoker,
                            [
                              "visibility",

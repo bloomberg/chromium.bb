@@ -436,6 +436,7 @@ proto_library("net_quic_proto") {
   ]
   cc_generator_options = "dllexport_decl=NET_EXPORT_PRIVATE:"
   cc_include = "net/base/net_export.h"
+  component_build_force_source_set = true
 
   defines = [ "NET_IMPLEMENTATION" ]
 
