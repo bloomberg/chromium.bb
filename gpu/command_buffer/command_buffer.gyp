@@ -18,6 +18,7 @@
       },
       'dependencies': [
         '../../base/base.gyp:base',
+        '../../ui/gfx/gfx.gyp:gfx_geometry',
         '../../third_party/khronos/khronos.gyp:khronos_headers',
       ],
       'export_dependent_settings': [

@@ -41,7 +41,6 @@ class GLES2DecoderPassthroughImpl : public GLES2Decoder {
   bool Initialize(const scoped_refptr<gl::GLSurface>& surface,
                   const scoped_refptr<gl::GLContext>& context,
                   bool offscreen,
-                  const gfx::Size& offscreen_size,
                   const DisallowedFeatures& disallowed_features,
                   const ContextCreationAttribHelper& attrib_helper) override;
 

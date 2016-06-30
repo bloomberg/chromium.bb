@@ -476,7 +476,7 @@ bool GpuCommandBufferStub::Initialize(
   // Virtualize PreferIntegratedGpu contexts by default on OS X to prevent
   // performance regressions when enabling FCM.
   // http://crbug.com/180463
-  if (init_params.gpu_preference == gl::PreferIntegratedGpu)
+  if (init_params.attribs.gpu_preference == gl::PreferIntegratedGpu)
     use_virtualized_gl_context_ = true;
 #endif
 
@@ -505,14 +505,6 @@ bool GpuCommandBufferStub::Initialize(
   if (surface_format != default_surface->GetFormat() && !offscreen)
     use_virtualized_gl_context_ = false;
 #endif
-
-  gfx::Size initial_size = init_params.size;
-  if (offscreen && initial_size.IsEmpty()) {
-    // If we're an offscreen surface with zero width and/or height, set to a
-    // non-zero size so that we have a complete framebuffer for operations like
-    // glClear.
-    initial_size = gfx::Size(1, 1);
-  }
 
   command_buffer_.reset(new CommandBufferService(
       context_group_->transfer_buffer_manager()));
@@ -546,7 +538,7 @@ bool GpuCommandBufferStub::Initialize(
     context = gl_share_group->GetSharedContext();
     if (!context.get()) {
       context = gl::init::CreateGLContext(gl_share_group, default_surface,
-                                          init_params.gpu_preference);
+                                          init_params.attribs.gpu_preference);
       if (!context.get()) {
         DLOG(ERROR) << "Failed to create shared context for virtualization.";
         return false;
@@ -563,7 +555,8 @@ bool GpuCommandBufferStub::Initialize(
            gl::GetGLImplementation() == gl::kGLImplementationMockGL);
     context = new GLContextVirtual(
         gl_share_group, context.get(), decoder_->AsWeakPtr());
-    if (!context->Initialize(surface_.get(), init_params.gpu_preference)) {
+    if (!context->Initialize(surface_.get(),
+                             init_params.attribs.gpu_preference)) {
       // The real context created above for the default offscreen surface
       // might not be compatible with this surface.
       context = NULL;
@@ -573,7 +566,7 @@ bool GpuCommandBufferStub::Initialize(
   }
   if (!context.get()) {
     context = gl::init::CreateGLContext(gl_share_group, surface_.get(),
-                                        init_params.gpu_preference);
+                                        init_params.attribs.gpu_preference);
   }
   if (!context.get()) {
     DLOG(ERROR) << "Failed to create context.";
@@ -596,7 +589,7 @@ bool GpuCommandBufferStub::Initialize(
   }
 
   // Initialize the decoder with either the view or pbuffer GLContext.
-  if (!decoder_->Initialize(surface_, context, offscreen, initial_size,
+  if (!decoder_->Initialize(surface_, context, offscreen,
                             gpu::gles2::DisallowedFeatures(),
                             init_params.attribs)) {
     DLOG(ERROR) << "Failed to initialize decoder.";

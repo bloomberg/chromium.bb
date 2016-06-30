@@ -214,13 +214,11 @@ TEST_F(GpuChannelTest, CreateViewCommandBufferAllowed) {
   int32_t kRouteId = 1;
   GPUCreateCommandBufferConfig init_params;
   init_params.surface_handle = surface_handle;
-  init_params.size = gfx::Size();
   init_params.share_group_id = MSG_ROUTING_NONE;
   init_params.stream_id = 0;
   init_params.stream_priority = GpuStreamPriority::NORMAL;
   init_params.attribs = gles2::ContextCreationAttribHelper();
   init_params.active_url = GURL();
-  init_params.gpu_preference = gl::PreferIntegratedGpu;
   bool result = false;
   gpu::Capabilities capabilities;
   HandleMessage(channel, new GpuChannelMsg_CreateCommandBuffer(
@@ -245,13 +243,11 @@ TEST_F(GpuChannelTest, CreateViewCommandBufferDisallowed) {
   int32_t kRouteId = 1;
   GPUCreateCommandBufferConfig init_params;
   init_params.surface_handle = surface_handle;
-  init_params.size = gfx::Size();
   init_params.share_group_id = MSG_ROUTING_NONE;
   init_params.stream_id = 0;
   init_params.stream_priority = GpuStreamPriority::NORMAL;
   init_params.attribs = gles2::ContextCreationAttribHelper();
   init_params.active_url = GURL();
-  init_params.gpu_preference = gl::PreferIntegratedGpu;
   bool result = false;
   gpu::Capabilities capabilities;
   HandleMessage(channel, new GpuChannelMsg_CreateCommandBuffer(
@@ -271,13 +267,11 @@ TEST_F(GpuChannelTest, CreateOffscreenCommandBuffer) {
   int32_t kRouteId = 1;
   GPUCreateCommandBufferConfig init_params;
   init_params.surface_handle = kNullSurfaceHandle;
-  init_params.size = gfx::Size(1, 1);
   init_params.share_group_id = MSG_ROUTING_NONE;
   init_params.stream_id = 0;
   init_params.stream_priority = GpuStreamPriority::NORMAL;
   init_params.attribs = gles2::ContextCreationAttribHelper();
   init_params.active_url = GURL();
-  init_params.gpu_preference = gl::PreferIntegratedGpu;
   bool result = false;
   gpu::Capabilities capabilities;
   HandleMessage(channel, new GpuChannelMsg_CreateCommandBuffer(
@@ -299,13 +293,11 @@ TEST_F(GpuChannelTest, IncompatibleStreamIds) {
   int32_t kStreamId1 = 1;
   GPUCreateCommandBufferConfig init_params;
   init_params.surface_handle = kNullSurfaceHandle;
-  init_params.size = gfx::Size(1, 1);
   init_params.share_group_id = MSG_ROUTING_NONE;
   init_params.stream_id = kStreamId1;
   init_params.stream_priority = GpuStreamPriority::NORMAL;
   init_params.attribs = gles2::ContextCreationAttribHelper();
   init_params.active_url = GURL();
-  init_params.gpu_preference = gl::PreferIntegratedGpu;
   bool result = false;
   gpu::Capabilities capabilities;
   HandleMessage(channel, new GpuChannelMsg_CreateCommandBuffer(
@@ -325,7 +317,6 @@ TEST_F(GpuChannelTest, IncompatibleStreamIds) {
   init_params.stream_priority = GpuStreamPriority::NORMAL;
   init_params.attribs = gles2::ContextCreationAttribHelper();
   init_params.active_url = GURL();
-  init_params.gpu_preference = gl::PreferIntegratedGpu;
   HandleMessage(channel, new GpuChannelMsg_CreateCommandBuffer(
                              init_params, kRouteId2, GetSharedHandle(), &result,
                              &capabilities));
@@ -346,13 +337,11 @@ TEST_F(GpuChannelTest, StreamLifetime) {
   GpuStreamPriority kStreamPriority1 = GpuStreamPriority::NORMAL;
   GPUCreateCommandBufferConfig init_params;
   init_params.surface_handle = kNullSurfaceHandle;
-  init_params.size = gfx::Size(1, 1);
   init_params.share_group_id = MSG_ROUTING_NONE;
   init_params.stream_id = kStreamId1;
   init_params.stream_priority = kStreamPriority1;
   init_params.attribs = gles2::ContextCreationAttribHelper();
   init_params.active_url = GURL();
-  init_params.gpu_preference = gl::PreferIntegratedGpu;
   bool result = false;
   gpu::Capabilities capabilities;
   HandleMessage(channel, new GpuChannelMsg_CreateCommandBuffer(
@@ -377,7 +366,6 @@ TEST_F(GpuChannelTest, StreamLifetime) {
   init_params.stream_priority = kStreamPriority2;
   init_params.attribs = gles2::ContextCreationAttribHelper();
   init_params.active_url = GURL();
-  init_params.gpu_preference = gl::PreferIntegratedGpu;
   HandleMessage(channel, new GpuChannelMsg_CreateCommandBuffer(
                              init_params, kRouteId2, GetSharedHandle(), &result,
                              &capabilities));
@@ -399,13 +387,11 @@ TEST_F(GpuChannelTest, RealTimeStreamsDisallowed) {
   GpuStreamPriority kStreamPriority = GpuStreamPriority::REAL_TIME;
   GPUCreateCommandBufferConfig init_params;
   init_params.surface_handle = kNullSurfaceHandle;
-  init_params.size = gfx::Size(1, 1);
   init_params.share_group_id = MSG_ROUTING_NONE;
   init_params.stream_id = kStreamId;
   init_params.stream_priority = kStreamPriority;
   init_params.attribs = gles2::ContextCreationAttribHelper();
   init_params.active_url = GURL();
-  init_params.gpu_preference = gl::PreferIntegratedGpu;
   bool result = false;
   gpu::Capabilities capabilities;
   HandleMessage(channel, new GpuChannelMsg_CreateCommandBuffer(
@@ -429,13 +415,11 @@ TEST_F(GpuChannelTest, RealTimeStreamsAllowed) {
   GpuStreamPriority kStreamPriority = GpuStreamPriority::REAL_TIME;
   GPUCreateCommandBufferConfig init_params;
   init_params.surface_handle = kNullSurfaceHandle;
-  init_params.size = gfx::Size(1, 1);
   init_params.share_group_id = MSG_ROUTING_NONE;
   init_params.stream_id = kStreamId;
   init_params.stream_priority = kStreamPriority;
   init_params.attribs = gles2::ContextCreationAttribHelper();
   init_params.active_url = GURL();
-  init_params.gpu_preference = gl::PreferIntegratedGpu;
   bool result = false;
   gpu::Capabilities capabilities;
   HandleMessage(channel, new GpuChannelMsg_CreateCommandBuffer(
@@ -458,13 +442,11 @@ TEST_F(GpuChannelTest, CreateFailsIfSharedContextIsLost) {
     SCOPED_TRACE("kSharedRouteId");
     GPUCreateCommandBufferConfig init_params;
     init_params.surface_handle = kNullSurfaceHandle;
-    init_params.size = gfx::Size(1, 1);
     init_params.share_group_id = MSG_ROUTING_NONE;
     init_params.stream_id = 0;
     init_params.stream_priority = GpuStreamPriority::NORMAL;
     init_params.attribs = gles2::ContextCreationAttribHelper();
     init_params.active_url = GURL();
-    init_params.gpu_preference = gl::PreferIntegratedGpu;
     bool result = false;
     gpu::Capabilities capabilities;
     HandleMessage(channel, new GpuChannelMsg_CreateCommandBuffer(
@@ -480,13 +462,11 @@ TEST_F(GpuChannelTest, CreateFailsIfSharedContextIsLost) {
     SCOPED_TRACE("kFriendlyRouteId");
     GPUCreateCommandBufferConfig init_params;
     init_params.surface_handle = kNullSurfaceHandle;
-    init_params.size = gfx::Size(1, 1);
     init_params.share_group_id = kSharedRouteId;
     init_params.stream_id = 0;
     init_params.stream_priority = GpuStreamPriority::NORMAL;
     init_params.attribs = gles2::ContextCreationAttribHelper();
     init_params.active_url = GURL();
-    init_params.gpu_preference = gl::PreferIntegratedGpu;
     bool result = false;
     gpu::Capabilities capabilities;
     HandleMessage(channel, new GpuChannelMsg_CreateCommandBuffer(
@@ -506,13 +486,11 @@ TEST_F(GpuChannelTest, CreateFailsIfSharedContextIsLost) {
     SCOPED_TRACE("kAnotherRouteId");
     GPUCreateCommandBufferConfig init_params;
     init_params.surface_handle = kNullSurfaceHandle;
-    init_params.size = gfx::Size(1, 1);
     init_params.share_group_id = kSharedRouteId;
     init_params.stream_id = 0;
     init_params.stream_priority = GpuStreamPriority::NORMAL;
     init_params.attribs = gles2::ContextCreationAttribHelper();
     init_params.active_url = GURL();
-    init_params.gpu_preference = gl::PreferIntegratedGpu;
     bool result = false;
     gpu::Capabilities capabilities;
     HandleMessage(channel, new GpuChannelMsg_CreateCommandBuffer(
