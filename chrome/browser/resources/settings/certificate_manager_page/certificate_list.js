@@ -16,7 +16,7 @@ Polymer({
       value: function() { return []; },
     },
 
-    /** @type {!settings.CertificateType} */
+    /** @type {!CertificateType} */
     certificateType: String,
   },
 
@@ -31,13 +31,13 @@ Polymer({
       return this.i18n('certificateManagerNoCertificates');
 
     switch (this.certificateType) {
-      case settings.CertificateType.PERSONAL:
+      case CertificateType.PERSONAL:
         return this.i18n('certificateManagerYourCertificatesDescription');
-      case settings.CertificateType.SERVER:
+      case CertificateType.SERVER:
         return this.i18n('certificateManagerServersDescription');
-      case settings.CertificateType.CA:
+      case CertificateType.CA:
         return this.i18n('certificateManagerAuthoritiesDescription');
-      case settings.CertificateType.OTHER:
+      case CertificateType.OTHER:
         return this.i18n('certificateManagerOthersDescription');
     }
 
@@ -49,12 +49,12 @@ Polymer({
    * @private
    */
   canImport_: function() {
-    return this.certificateType != settings.CertificateType.OTHER;
+    return this.certificateType != CertificateType.OTHER;
   },
 
   /**
    * Handles a rejected Promise returned from |browserProxy_|.
-   * @param {null|!CertificatesError|!CertificatesImportError} error
+   * @param {*} error Expects {!CertificatesError|!CertificatesImportError}.
    * @private
    */
   onRejected_: function(error) {
@@ -78,7 +78,7 @@ Polymer({
     this.fire(
         settings.CertificateActionEvent,
         /** @type {!CertificateActionEventDetail} */ ({
-          action: settings.CertificateAction.IMPORT,
+          action: CertificateAction.IMPORT,
           subnode: subnode,
           certificateType: this.certificateType,
         }));
@@ -87,20 +87,20 @@ Polymer({
   /** @private */
   onImportTap_: function() {
     var browserProxy = settings.CertificatesBrowserProxyImpl.getInstance();
-    if (this.certificateType == settings.CertificateType.PERSONAL) {
+    if (this.certificateType == CertificateType.PERSONAL) {
       browserProxy.importPersonalCertificate(false).then(
           function(showPasswordPrompt) {
             if (showPasswordPrompt)
               this.dispatchImportActionEvent_(null);
           }.bind(this),
           this.onRejected_.bind(this));
-    } else if (this.certificateType == settings.CertificateType.CA) {
+    } else if (this.certificateType == CertificateType.CA) {
       browserProxy.importCaCertificate().then(
           function(certificateName) {
             this.dispatchImportActionEvent_({name: certificateName});
           }.bind(this),
           this.onRejected_.bind(this));
-    } else if (this.certificateType == settings.CertificateType.SERVER) {
+    } else if (this.certificateType == CertificateType.SERVER) {
       browserProxy.importServerCertificate().catch(
           this.onRejected_.bind(this));
     } else {

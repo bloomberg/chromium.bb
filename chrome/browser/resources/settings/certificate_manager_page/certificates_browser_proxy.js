@@ -58,13 +58,24 @@ var CaTrustInfo;
  */
 var CertificatesError;
 
+/**
+ * Enumeration of all possible certificate types.
+ * @enum {string}
+ */
+var CertificateType = {
+  CA: 'ca',
+  OTHER: 'other',
+  PERSONAL: 'personal',
+  SERVER: 'server',
+};
+
 
 /**
  * Error returned from C++ via a Promise reject callback, when some certificates
  * fail to be imported.
  * @typedef {{
  *   title: string,
- *   description: string
+ *   description: string,
  *   certificateErrors: !Array<{name: string, error: string}>
  * }}
  * @see chrome/browser/ui/webui/settings/certificates_handler.cc
@@ -72,16 +83,6 @@ var CertificatesError;
 var CertificatesImportError;
 
 cr.define('settings', function() {
-  /**
-   * Enumeration of all possible certificate types.
-   * @enum {string}
-   */
-  var CertificateType = {
-    CA: 'ca',
-    OTHER: 'other',
-    PERSONAL: 'personal',
-    SERVER: 'server',
-  };
 
   /** @interface */
   function CertificatesBrowserProxy() {}
@@ -269,7 +270,7 @@ cr.define('settings', function() {
   };
 
   return {
+    CertificatesBrowserProxy: CertificatesBrowserProxy,
     CertificatesBrowserProxyImpl: CertificatesBrowserProxyImpl,
-    CertificateType: CertificateType,
   };
 });

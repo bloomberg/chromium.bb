@@ -7,29 +7,7 @@
  * sub-entry.
  */
 
-/**
- * The payload of the certificate-action event that is emitted from this
- * component.
- * @typedef {{
- *   action: !settings.CertificateAction,
- *   subnode: null|CertificateSubnode|NewCertificateSubNode,
- *   certificateType: !settings.CertificateType
- * }}
- */
-var CertificateActionEventDetail;
-
 cr.define('settings', function() {
-  /**
-   * Enumeration of actions that require a popup menu to be shown to the user.
-   * @enum {number}
-   */
-  var CertificateAction = {
-    DELETE: 0,
-    EDIT: 1,
-    EXPORT_PERSONAL: 2,
-    IMPORT: 3,
-  };
-
   /**
    * The name of the event that is fired when a menu item is tapped.
    * @type {string}
@@ -37,7 +15,6 @@ cr.define('settings', function() {
   var CertificateActionEvent = 'certificate-action';
 
   return {
-    CertificateAction: CertificateAction,
     CertificateActionEvent: CertificateActionEvent,
   };
 });
@@ -46,14 +23,14 @@ Polymer({
   is: 'settings-certificate-subentry',
 
   properties: {
-    /** @type {!CertificateSubnode>} */
+    /** @type {!CertificateSubnode} */
     model: Object,
 
-    /** @type {!settings.CertificateType} */
+    /** @type {!CertificateType} */
     certificateType: String,
   },
 
-  /** @private {!settings.CertificatesManagerBrowserProxy} */
+  /** @private {settings.CertificatesBrowserProxy} */
   browserProxy_: null,
 
   /** @override */
@@ -64,7 +41,7 @@ Polymer({
   /**
    * Dispatches an event indicating which certificate action was tapped. It is
    * used by the parent of this element to display a modal dialog accordingly.
-   * @param {!settings.CertificateAction} action
+   * @param {!CertificateAction} action
    * @private
    */
   dispatchCertificateActionEvent_: function(action) {
@@ -80,7 +57,7 @@ Polymer({
   /**
    * Handles the case where a call to the browser resulted in a rejected
    * promise.
-   * @param {?CertificatesError} error
+   * @param {*} error Expects {?CertificatesError}.
    * @private
    */
   onRejected_: function(error) {
@@ -110,7 +87,7 @@ Polymer({
    */
   onEditTap_: function(event) {
     this.closePopupMenu_();
-    this.dispatchCertificateActionEvent_(settings.CertificateAction.EDIT);
+    this.dispatchCertificateActionEvent_(CertificateAction.EDIT);
   },
 
   /**
@@ -119,7 +96,7 @@ Polymer({
    */
   onDeleteTap_: function(event) {
     this.closePopupMenu_();
-    this.dispatchCertificateActionEvent_(settings.CertificateAction.DELETE);
+    this.dispatchCertificateActionEvent_(CertificateAction.DELETE);
   },
 
   /**
@@ -128,11 +105,11 @@ Polymer({
    */
   onExportTap_: function(event) {
     this.closePopupMenu_();
-    if (this.certificateType == settings.CertificateType.PERSONAL) {
+    if (this.certificateType == CertificateType.PERSONAL) {
       this.browserProxy_.exportPersonalCertificate(this.model.id).then(
           function() {
             this.dispatchCertificateActionEvent_(
-                settings.CertificateAction.EXPORT_PERSONAL);
+                CertificateAction.EXPORT_PERSONAL);
           }.bind(this),
           this.onRejected_.bind(this));
     } else {
@@ -141,23 +118,23 @@ Polymer({
   },
 
   /**
-   * @param {!settings.CertificateType} certificateType
+   * @param {!CertificateType} certificateType
    * @param {!CertificateSubnode} model
    * @return {boolean} Whether the certificate can be edited.
    * @private
    */
   canEdit_: function(certificateType, model) {
-    return certificateType == settings.CertificateType.CA && !model.policy;
+    return certificateType == CertificateType.CA && !model.policy;
   },
 
   /**
-   * @param {!settings.CertificateType} certificateType
+   * @param {!CertificateType} certificateType
    * @param {!CertificateSubnode} model
    * @return {boolean} Whether the certificate can be exported.
    * @private
    */
   canExport_: function(certificateType, model) {
-    if (certificateType == settings.CertificateType.PERSONAL) {
+    if (certificateType == CertificateType.PERSONAL) {
       return model.extractable;
     }
     return true;

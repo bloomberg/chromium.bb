@@ -12,6 +12,7 @@
         'appearance_page/compiled_resources2.gyp:*',
         'basic_page/compiled_resources2.gyp:*',
         'bluetooth_page/compiled_resources2.gyp:*',
+        'certificate_manager_page/compiled_resources2.gyp:*',
         'controls/compiled_resources2.gyp:*',
         'device_page/compiled_resources2.gyp:*',
         'internet_page/compiled_resources2.gyp:*',

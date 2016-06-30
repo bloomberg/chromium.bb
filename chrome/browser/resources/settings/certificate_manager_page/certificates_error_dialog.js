@@ -25,7 +25,7 @@ Polymer({
   },
 
   /**
-   * @param {{certificateName: string, error: string}} importError
+   * @param {{name: string, error: string}} importError
    * @return {string}
    * @private
    */

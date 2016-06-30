@@ -12,7 +12,7 @@ Polymer({
     /** @type {!Certificate} */
     model: Object,
 
-    /** @type {!settings.CertificateType} */
+    /** @type {!CertificateType} */
     certificateType: String,
   },
 
