@@ -12,8 +12,8 @@ FAIL After clearing timeline on paused animation it is still paused Animation is
 FAIL After clearing timeline on finished animation it is idle Animation is not defined
 FAIL After clearing timeline on running animation it is idle Animation is not defined
 FAIL After clearing timeline on idle animation it is still idle Animation is not defined
-PASS After clearing timeline on play-pending animation it is still pending 
-PASS After clearing and re-setting timeline on play-pending animation it begins to play 
+FAIL After clearing timeline on play-pending animation it is still pending Cannot assign to read only property 'timeline' of object '#<Animation>'
+FAIL After clearing and re-setting timeline on play-pending animation it begins to play Cannot assign to read only property 'timeline' of object '#<Animation>'
 FAIL After clearing timeline on a pause-pending animation it is still pending Animation is not defined
 FAIL After clearing and re-setting timeline on a pause-pending animation it becomes paused Animation is not defined
 FAIL After clearing and re-setting timeline on an animation in the middle of an aborted pause, it continues playing using the same start time Animation is not defined
