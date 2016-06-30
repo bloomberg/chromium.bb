@@ -25,7 +25,7 @@ class ThreadTimes(legacy_page_test.LegacyPageTest):
       self._timeline_controller.trace_categories = None
     else:
       self._timeline_controller.trace_categories = \
-          chrome_trace_category_filter.CreateNoOverheadFilter().filter_string
+          chrome_trace_category_filter.CreateLowOverheadFilter().filter_string
     self._timeline_controller.SetUp(page, tab)
 
   def DidNavigateToPage(self, page, tab):

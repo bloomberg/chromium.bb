@@ -18,7 +18,7 @@ class _TextSelection(perf_benchmark.PerfBenchmark):
   page_set = page_sets.TextSelectionSitesPageSet
 
   def CreateTimelineBasedMeasurementOptions(self):
-    cat_filter = chrome_trace_category_filter.CreateMinimalOverheadFilter()
+    cat_filter = chrome_trace_category_filter.ChromeTraceCategoryFilter()
     cat_filter.AddIncludedCategory(TEXT_SELECTION_CATEGORY)
     cat_filter.AddIncludedCategory(TIMELINE_REQUIRED_CATEGORY)
 

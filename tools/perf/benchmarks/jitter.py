@@ -21,7 +21,7 @@ class Jitter(perf_benchmark.PerfBenchmark):
   page_set = page_sets.JitterPageSet
 
   def CreateTimelineBasedMeasurementOptions(self):
-    cat_filter = chrome_trace_category_filter.CreateMinimalOverheadFilter()
+    cat_filter = chrome_trace_category_filter.ChromeTraceCategoryFilter()
     cat_filter.AddIncludedCategory(JITTER_CATEGORY)
     cat_filter.AddIncludedCategory(TIMELINE_REQUIRED_CATEGORY)
     options = timeline_based_measurement.Options(

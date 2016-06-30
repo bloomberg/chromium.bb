@@ -21,7 +21,7 @@ from telemetry.web_perf import timeline_based_measurement
 
 
 def CreateV8TimelineBasedMeasurementOptions():
-  category_filter = chrome_trace_category_filter.CreateMinimalOverheadFilter()
+  category_filter = chrome_trace_category_filter.ChromeTraceCategoryFilter()
   category_filter.AddIncludedCategory('v8')
   category_filter.AddIncludedCategory('blink.console')
   options = timeline_based_measurement.Options(category_filter)
