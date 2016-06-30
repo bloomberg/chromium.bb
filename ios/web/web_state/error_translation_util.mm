@@ -157,7 +157,11 @@ NSError* NetErrorFromError(NSError* error) {
     // corresponding net error codes.
     GetNetErrorFromIOSErrorCode(underlying_error.code, &net_error_code);
   }
+  return NetErrorFromError(error, net_error_code);
+}
 
+NSError* NetErrorFromError(NSError* error, NSInteger net_error_code) {
+  DCHECK(error);
   NSString* net_error_domain =
       [NSString stringWithUTF8String:net::kErrorDomain];
   NSError* net_error = [NSError errorWithDomain:net_error_domain

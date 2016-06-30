@@ -15,6 +15,9 @@ namespace web {
 // specific translation of the iOS error is found.
 NSError* NetErrorFromError(NSError* error);
 
+// Same as above but uses |net_error_code| for underlying error.
+NSError* NetErrorFromError(NSError* error, NSInteger net_error_code);
+
 }  // namespace web
 
 #endif  // IOS_WEB_WEB_STATE_ERROR_TRANSLATION_UTIL_H_

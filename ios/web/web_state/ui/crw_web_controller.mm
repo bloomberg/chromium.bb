@@ -1935,7 +1935,18 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 
   const GURL currentUrl = [self currentNavigationURL];
 
-  error = web::NetErrorFromError(error);
+  if (web::IsWKWebViewSSLCertError(error)) {
+    // This could happen only if certificate is absent or could not be parsed.
+    error = web::NetErrorFromError(error, net::ERR_SSL_SERVER_CERT_BAD_FORMAT);
+#if defined(DEBUG)
+    net::SSLInfo info;
+    web::GetSSLInfoFromWKWebViewSSLCertError(error, &info);
+    CHECK(!error.cert);
+#endif
+  } else {
+    error = web::NetErrorFromError(error);
+  }
+
   BOOL isPost = [self isCurrentNavigationItemPOST];
   [self setNativeController:[_nativeProvider controllerForURL:currentUrl
                                                     withError:error
@@ -4501,12 +4512,16 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   web::SSLStatus status;
   status.security_style = web::SECURITY_STYLE_AUTHENTICATION_BROKEN;
   status.cert_status = info.cert_status;
-  // |info.cert| can be null if certChain in NSError is empty or can not be
-  // parsed.
-  if (info.cert) {
-    status.cert_id = web::CertStore::GetInstance()->StoreCert(info.cert.get(),
-                                                              self.certGroupID);
+  if (!info.cert) {
+    // |info.cert| can be null if certChain in NSError is empty or can not be
+    // parsed, in this case do not ask delegate if error should be allowed, it
+    // should not be.
+    [self handleLoadError:error inMainFrame:YES];
+    return;
   }
+
+  status.cert_id = web::CertStore::GetInstance()->StoreCert(info.cert.get(),
+                                                            self.certGroupID);
 
   // Retrieve verification results from _certVerificationErrors cache to avoid
   // unnecessary recalculations. Verification results are cached for the leaf
