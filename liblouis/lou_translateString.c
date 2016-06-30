@@ -1891,13 +1891,13 @@ insertBrailleIndicators (int finish)
 	  if (!brailleIndicatorDefined (table->letterSign))
 	    {
 	      ok = 0;
-	      checkWhat = checkBeginMultCaps;
+	      checkWhat = checkNothing;
 	      break;
 	    }
 	  if (transOpcode == CTO_Contraction)
 	    {
 	      ok = 1;
-	      checkWhat = checkBeginMultCaps;
+	      checkWhat = checkNothing;
 	      break;
 	    }
 	    if ((checkAttr_safe (currentInput, src, CTC_Letter, 0)
@@ -1927,7 +1927,7 @@ insertBrailleIndicators (int finish)
 		      break;
 		    }
 	    }
-	  checkWhat = checkBeginMultCaps;
+	  checkWhat = checkNothing;
 	  break;
 	  
 	case checkBeginMultCaps:
