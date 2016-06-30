@@ -2401,37 +2401,6 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
 
     if options.squash:
       self._GerritCommitMsgHookCheck(offer_removal=not options.force)
-      if not self.GetIssue():
-        # TODO(tandrii): deperecate this after 2016Q2.  Backwards compatibility
-        # with shadow branch, which used to contain change-id for a given
-        # branch, using which we can fetch actual issue number and set it as the
-        # property of the branch, which is the new way.
-        message = RunGitSilent([
-            'show', '--format=%B', '-s',
-            'refs/heads/git_cl_uploads/%s' % self.GetBranch()])
-        if message:
-          change_ids = git_footers.get_footer_change_id(message.strip())
-          if change_ids and len(change_ids) == 1:
-            details = self._GetChangeDetail(issue=change_ids[0])
-            if details:
-              print('WARNING: found old upload in branch git_cl_uploads/%s '
-                    'corresponding to issue %s' %
-                    (self.GetBranch(), details['_number']))
-              self.SetIssue(details['_number'])
-          if not self.GetIssue():
-            DieWithError(
-                '\n'  # For readability of the blob below.
-                'Found old upload in branch git_cl_uploads/%s, '
-                'but failed to find corresponding Gerrit issue.\n'
-                'If you know the issue number, set it manually first:\n'
-                '    git cl issue 123456\n'
-                'If you intended to upload this CL as new issue, '
-                'just delete or rename the old upload branch:\n'
-                '    git rename-branch git_cl_uploads/%s old_upload-%s\n'
-                'After that, please run git cl upload again.' %
-                tuple([self.GetBranch()] * 3))
-        # End of backwards compatability.
-
       if self.GetIssue():
         # Try to get the message from a previous upload.
         message = self.GetDescription()

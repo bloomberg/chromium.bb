@@ -795,10 +795,6 @@ class TestGitCl(TestCase):
 
     # If issue is given, then description is fetched from Gerrit instead.
     if issue is None:
-      if squash:
-        calls += [
-          ((['git', 'show', '--format=%B', '-s',
-             'refs/heads/git_cl_uploads/master'],), '')]
       calls += [
           ((['git', 'log', '--pretty=format:%s\n\n%b',
                    'fake_ancestor_sha..HEAD'],),
