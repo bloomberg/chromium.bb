@@ -1167,9 +1167,6 @@ int
 weston_spring_done(struct weston_spring *spring);
 
 void
-weston_seat_set_keyboard_focus(struct weston_seat *seat,
-			       struct weston_surface *surface);
-void
 notify_motion(struct weston_seat *seat, uint32_t time,
 	      struct weston_pointer_motion_event *event);
 void
@@ -1716,6 +1713,10 @@ weston_seat_get_pointer(struct weston_seat *seat);
 
 struct weston_touch *
 weston_seat_get_touch(struct weston_seat *seat);
+
+void
+weston_seat_set_keyboard_focus(struct weston_seat *seat,
+			       struct weston_surface *surface);
 
 #ifdef  __cplusplus
 }

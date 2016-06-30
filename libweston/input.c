@@ -1297,21 +1297,6 @@ notify_motion_absolute(struct weston_seat *seat,
 }
 
 WL_EXPORT void
-weston_seat_set_keyboard_focus(struct weston_seat *seat,
-			       struct weston_surface *surface)
-{
-	struct weston_compositor *compositor = seat->compositor;
-	struct weston_keyboard *keyboard = weston_seat_get_keyboard(seat);
-
-	if (keyboard) {
-		weston_keyboard_set_focus(keyboard, surface);
-		wl_data_device_set_keyboard_focus(seat);
-	}
-
-	wl_signal_emit(&compositor->activate_signal, surface);
-}
-
-WL_EXPORT void
 notify_button(struct weston_seat *seat, uint32_t time, int32_t button,
 	      enum wl_pointer_button_state state)
 {
@@ -2762,4 +2747,23 @@ weston_seat_get_touch(struct weston_seat *seat)
 		return seat->touch_state;
 
 	return NULL;
+}
+
+/** Sets the keyboard focus to the given surface
+ *
+ * \param seat The seat to query
+ */
+WL_EXPORT void
+weston_seat_set_keyboard_focus(struct weston_seat *seat,
+			       struct weston_surface *surface)
+{
+	struct weston_compositor *compositor = seat->compositor;
+	struct weston_keyboard *keyboard = weston_seat_get_keyboard(seat);
+
+	if (keyboard) {
+		weston_keyboard_set_focus(keyboard, surface);
+		wl_data_device_set_keyboard_focus(seat);
+	}
+
+	wl_signal_emit(&compositor->activate_signal, surface);
 }
