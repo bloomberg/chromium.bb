@@ -62,9 +62,8 @@ int ChromeMain(int argc, const char** argv) {
   // function correctly.
   typedef void (__cdecl *DumpProcessFunction)();
   DumpProcessFunction DumpProcess = reinterpret_cast<DumpProcessFunction>(
-      ::GetProcAddress(::GetModuleHandle(chrome::kChromeElfDllName),
+      ::GetProcAddress(::GetModuleHandle(chrome::kBrowserProcessExecutableName),
           "DumpProcessWithoutCrash"));
-  CHECK(DumpProcess);
   base::debug::SetDumpWithoutCrashingFunction(DumpProcess);
 #else
   params.argc = argc;

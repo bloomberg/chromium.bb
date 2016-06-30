@@ -43,6 +43,7 @@
       ],
       'dependencies': [
         'blacklist',
+        'chrome_elf_breakpad',
         'chrome_elf_resources',
         '../chrome/chrome.gyp:install_static_util',
         '../components/components.gyp:crash_component',
@@ -147,6 +148,24 @@
       'sources': [
         'thunk_getter.cc',
         'thunk_getter.h',
+      ],
+    },
+    {
+      'target_name': 'chrome_elf_breakpad',
+      'type': 'static_library',
+      'include_dirs': [
+        '..',
+        '<(SHARED_INTERMEDIATE_DIR)',
+      ],
+      'sources': [
+        'breakpad.cc',
+        'breakpad.h',
+      ],
+      'dependencies': [
+        'chrome_elf_common',
+        '../breakpad/breakpad.gyp:breakpad_handler',
+        '../chrome/common_constants.gyp:version_header',
+        '../chrome/chrome.gyp:install_static_util',
       ],
     },
   ], # targets
