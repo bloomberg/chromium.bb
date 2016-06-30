@@ -23,6 +23,7 @@ import android.view.inputmethod.InputMethodManager;
 
 import org.chromium.base.Log;
 import org.chromium.chromoting.jni.Client;
+import org.chromium.chromoting.jni.Display;
 
 /**
  * The user interface for viewing and interacting with a specific remote host.
@@ -45,6 +46,8 @@ public class DesktopView extends SurfaceView implements DesktopViewInterface,
 
     /** The Client connection, used to inject input and fetch the video frames. */
     private Client mClient;
+
+    private Display mDisplay;
 
 
     // Flag to prevent multiple repaint requests from being backed up. Requests for repainting will
@@ -90,10 +93,14 @@ public class DesktopView extends SurfaceView implements DesktopViewInterface,
     public void init(Desktop desktop, Client client) {
         Preconditions.isNull(mDesktop);
         Preconditions.isNull(mClient);
+        Preconditions.isNull(mDisplay);
         Preconditions.notNull(desktop);
         Preconditions.notNull(client);
+        Preconditions.notNull(client.getDisplay());
+        Preconditions.isTrue(client.getDisplay() instanceof Display);
         mDesktop = desktop;
         mClient = client;
+        mDisplay = (Display) client.getDisplay();
         mInputHandler.init(desktop, new InputEventSender(client));
     }
 
@@ -121,7 +128,7 @@ public class DesktopView extends SurfaceView implements DesktopViewInterface,
             }
             mRepaintPending = true;
         }
-        mClient.getDisplay().redrawGraphics();
+        mDisplay.redrawGraphics();
     }
 
     /**
@@ -136,7 +143,7 @@ public class DesktopView extends SurfaceView implements DesktopViewInterface,
             Log.w(TAG, "Canvas being redrawn on UI thread");
         }
 
-        Bitmap image = mClient.getDisplay().getVideoFrame();
+        Bitmap image = mDisplay.getVideoFrame();
         if (image == null) {
             // This can happen if the client is connected, but a complete video frame has not yet
             // been decoded.
@@ -191,9 +198,9 @@ public class DesktopView extends SurfaceView implements DesktopViewInterface,
         mOnPaint.raise(new PaintEventParameter(cursorPosition, canvas, scaleFactor));
 
         if (drawCursor) {
-            Bitmap cursorBitmap = mClient.getDisplay().getCursorBitmap();
+            Bitmap cursorBitmap = mDisplay.getCursorBitmap();
             if (cursorBitmap != null) {
-                Point hotspot = mClient.getDisplay().getCursorHotspot();
+                Point hotspot = mDisplay.getCursorHotspot();
                 canvas.drawBitmap(cursorBitmap, cursorPosition.x - hotspot.x,
                         cursorPosition.y - hotspot.y, new Paint());
             }
@@ -243,7 +250,7 @@ public class DesktopView extends SurfaceView implements DesktopViewInterface,
     }
 
     public void attachRedrawCallback() {
-        mClient.getDisplay().provideRedrawCallback(new Runnable() {
+        mDisplay.provideRedrawCallback(new Runnable() {
             @Override
             public void run() {
                 paint();

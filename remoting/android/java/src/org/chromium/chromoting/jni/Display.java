@@ -51,8 +51,8 @@ public class Display {
     /** Bitmap holding the cursor shape. Accessed on the graphics thread. */
     private Bitmap mCursorBitmap;
 
-    public Display() {
-        mNativeJniDisplayHandler = nativeInit();
+    private Display(long nativeDisplayHandler) {
+        mNativeJniDisplayHandler = nativeDisplayHandler;
     }
 
     /**
@@ -74,16 +74,17 @@ public class Display {
     }
 
     /**
-     * Destroys its resources and the native counterpart. Called on the UI thread.
+     * Invalidates this object and disconnects from the native display handler. Called on the
+     * display thread by the native code.
      */
-    public void destroy() {
+    @CalledByNative
+    private void invalidate() {
         // Drop the reference to free the Bitmap for GC.
         synchronized (mFrameLock) {
             mFrameBitmap = null;
         }
 
         provideRedrawCallback(null);
-        nativeDestroy(mNativeJniDisplayHandler);
         mNativeJniDisplayHandler = 0;
     }
 
@@ -171,9 +172,10 @@ public class Display {
         return mCursorBitmap;
     }
 
-    private native long nativeInit();
-
-    private native void nativeDestroy(long nativeJniDisplayHandler);
+    @CalledByNative
+    private static Display createJavaDisplayObject(long nativeDisplayHandler) {
+        return new Display(nativeDisplayHandler);
+    }
 
     /** Schedules a redraw on the native graphics thread. */
     private native void nativeScheduleRedraw(long nativeJniDisplayHandler);

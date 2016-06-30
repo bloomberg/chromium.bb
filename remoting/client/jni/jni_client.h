@@ -80,7 +80,6 @@ class JniClient {
 
   void Connect(JNIEnv* env,
                const base::android::JavaParamRef<jobject>& caller,
-               jlong display_handler_ptr,
                const base::android::JavaParamRef<jstring>& username,
                const base::android::JavaParamRef<jstring>& authToken,
                const base::android::JavaParamRef<jstring>& hostJid,
@@ -157,6 +156,8 @@ class JniClient {
 
   // Reference to the Java client object.
   base::android::ScopedJavaGlobalRef<jobject> java_client_;
+
+  std::unique_ptr<DisplayUpdaterFactory> display_handler_;
 
   // Deleted on UI thread.
   std::unique_ptr<JniPairingSecretFetcher> secret_fetcher_;

@@ -70,6 +70,10 @@ void JniClient::DisconnectFromHost() {
     runtime_->network_task_runner()->DeleteSoon(FROM_HERE,
                                                 secret_fetcher_.release());
   }
+  if (display_handler_) {
+    runtime_->display_task_runner()->DeleteSoon(FROM_HERE,
+                                                display_handler_.release());
+  }
 }
 
 void JniClient::OnConnectionState(protocol::ConnectionToHost::State state,
@@ -147,7 +151,6 @@ bool JniClient::RegisterJni(JNIEnv* env) {
 void JniClient::Connect(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& caller,
-    jlong display_handler,
     const base::android::JavaParamRef<jstring>& username,
     const base::android::JavaParamRef<jstring>& authToken,
     const base::android::JavaParamRef<jstring>& hostJid,
@@ -157,11 +160,15 @@ void JniClient::Connect(
     const base::android::JavaParamRef<jstring>& pairSecret,
     const base::android::JavaParamRef<jstring>& capabilities,
     const base::android::JavaParamRef<jstring>& flags) {
-  // TODO(yuweih): Remove this line when JniClient owns JniDisplayHandler.
-  DisplayUpdaterFactory* factory_ptr = reinterpret_cast<JniDisplayHandler*>(
-              display_handler);
-  DCHECK(factory_ptr);
-  ConnectToHost(factory_ptr,
+#if defined(REMOTING_ANDROID_ENABLE_OPENGL_RENDERER)
+#error Feature not implemented.
+#else
+  JniDisplayHandler* raw_display_handler = new JniDisplayHandler(runtime_);
+#endif  // defined(REMOTING_ANDROID_ENABLE_OPENGL_RENDERER)
+  Java_Client_setDisplay(env, java_client_.obj(),
+                         raw_display_handler->GetJavaDisplay().obj());
+  display_handler_.reset(raw_display_handler);
+  ConnectToHost(raw_display_handler,
                 ConvertJavaStringToUTF8(env, username),
                 ConvertJavaStringToUTF8(env, authToken),
                 ConvertJavaStringToUTF8(env, hostJid),

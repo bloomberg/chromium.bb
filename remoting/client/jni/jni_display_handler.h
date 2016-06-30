@@ -25,11 +25,12 @@ class ChromotingJniRuntime;
 // unless otherwise noted.
 class JniDisplayHandler : public DisplayUpdaterFactory {
  public:
-  JniDisplayHandler(ChromotingJniRuntime* runtime,
-                    base::android::ScopedJavaGlobalRef<jobject> java_display);
+  explicit JniDisplayHandler(ChromotingJniRuntime* runtime);
 
   // Must be deleted on the display thread.
   ~JniDisplayHandler() override;
+
+  base::android::ScopedJavaLocalRef<jobject> GetJavaDisplay();
 
   void UpdateCursorShape(const protocol::CursorShapeInfo& cursor_shape);
 
@@ -50,10 +51,6 @@ class JniDisplayHandler : public DisplayUpdaterFactory {
   void RedrawCanvas();
 
   static bool RegisterJni(JNIEnv* env);
-
-  // Deletes this object on display thread. Can be called on any thread.
-  void Destroy(JNIEnv* env,
-               const base::android::JavaParamRef<jobject>& caller);
 
   // Schedule redraw. Can be called on any thread.
   void ScheduleRedraw(JNIEnv* env,

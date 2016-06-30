@@ -23,9 +23,8 @@ public class Client implements InputStub {
     // Pointer to the C++ object, cast to a |long|.
     private long mNativeJniClient;
 
-    // Reference has to be kept until the lifecycle of Client ends. Code are currently using
-    // getDisplay() without doing a null check.
-    private Display mDisplay;
+    // Implementation-dependent display object used by the desktop view.
+    private Object mDisplay;
 
     // The global Client instance (may be null). This needs to be a global singleton so that the
     // Client can be passed between Activities.
@@ -41,11 +40,20 @@ public class Client implements InputStub {
     }
 
     /**
-     * Returns the display object. It will be null before calling connectToHost() but won't be null
-     *          after calling disconnectFromHost().
+     * Sets the display object. Called by the native code when the connection starts.
+     * @param display the implementation-dependent object used by the desktop view.
+     */
+    @CalledByNative
+    private void setDisplay(Object display) {
+        mDisplay = display;
+    }
+
+    /**
+     * Returns the display object. It will be null before calling connectToHost() or after calling
+     * disconnectFromHost().
      * @return the display object.
      */
-    public Display getDisplay() {
+    public Object getDisplay() {
         return mDisplay;
     }
 
@@ -93,8 +101,7 @@ public class Client implements InputStub {
 
         mConnectionListener = listener;
         mAuthenticator = authenticator;
-        mDisplay = new Display();
-        nativeConnect(mNativeJniClient, mDisplay.getNativePointer(), username, authToken, hostJid,
+        nativeConnect(mNativeJniClient, username, authToken, hostJid,
                 hostId, hostPubkey, mAuthenticator.getPairingId(hostId),
                 mAuthenticator.getPairingSecret(hostId), mCapabilityManager.getLocalCapabilities(),
                 flags);
@@ -124,7 +131,7 @@ public class Client implements InputStub {
         mConnected = false;
         mCapabilityManager.onHostDisconnect();
 
-        mDisplay.destroy();
+        mDisplay = null;
     }
 
     /** Called whenever the connection status changes. */
@@ -296,7 +303,7 @@ public class Client implements InputStub {
     private native void nativeDestroy(long nativeJniClient);
 
     /** Performs the native portion of the connection. */
-    private native void nativeConnect(long nativeJniClient, long nativeJniDisplayHandler,
+    private native void nativeConnect(long nativeJniClient,
             String username, String authToken, String hostJid, String hostId, String hostPubkey,
             String pairId, String pairSecret, String capabilities, String flags);
 

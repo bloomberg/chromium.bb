@@ -52,15 +52,22 @@ void DisplayCursorShapeStub::SetCursorShape(
 }
 
 // JniDisplayHandler definitions.
-JniDisplayHandler::JniDisplayHandler(
-    ChromotingJniRuntime* runtime,
-    base::android::ScopedJavaGlobalRef<jobject> java_display)
+JniDisplayHandler::JniDisplayHandler(ChromotingJniRuntime* runtime)
     : runtime_(runtime),
-      java_display_(java_display),
-      weak_factory_(this) {}
+      weak_factory_(this) {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  java_display_.Reset(Java_Display_createJavaDisplayObject(
+      env, reinterpret_cast<intptr_t>(this)));
+}
 
 JniDisplayHandler::~JniDisplayHandler() {
   DCHECK(runtime_->display_task_runner()->BelongsToCurrentThread());
+  Java_Display_invalidate(base::android::AttachCurrentThread(),
+                          java_display_.obj());
+}
+
+base::android::ScopedJavaLocalRef<jobject> JniDisplayHandler::GetJavaDisplay() {
+  return base::android::ScopedJavaLocalRef<jobject>(java_display_);
 }
 
 void JniDisplayHandler::UpdateCursorShape(
@@ -124,28 +131,12 @@ bool JniDisplayHandler::RegisterJni(JNIEnv* env) {
   return RegisterNativesImpl(env);
 }
 
-void JniDisplayHandler::Destroy(
-    JNIEnv* env,
-    const base::android::JavaParamRef<jobject>& caller) {
-  if (runtime_->display_task_runner()->BelongsToCurrentThread()) {
-    delete this;
-  } else {
-    runtime_->display_task_runner()->DeleteSoon(FROM_HERE, this);
-  }
-}
-
 void JniDisplayHandler::ScheduleRedraw(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& caller) {
   runtime_->display_task_runner()->PostTask(
       FROM_HERE, base::Bind(&JniDisplayHandler::RedrawCanvas,
                             weak_factory_.GetWeakPtr()));
-}
-
-static jlong Init(JNIEnv* env, const JavaParamRef<jobject>& caller) {
-  return reinterpret_cast<intptr_t>(new JniDisplayHandler(
-      ChromotingJniRuntime::GetInstance(),
-      base::android::ScopedJavaGlobalRef<jobject>(env, caller)));
 }
 
 }  // namespace remoting
