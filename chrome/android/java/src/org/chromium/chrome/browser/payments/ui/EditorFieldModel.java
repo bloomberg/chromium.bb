@@ -168,17 +168,17 @@ public class EditorFieldModel {
 
     /**
      * Updates the value of this field. Does not trigger validation or update the last error
-     * message. Should be called only for text fields.
+     * message. Can be called on a dropdown to initialize it, but will not fire the dropdown
+     * callback.
      *
-     * @param value The new value that the user has typed in.
+     * @param value The new value that the user has typed in or the initial key for the dropdown.
      */
-    public void setValue(@Nullable CharSequence value) {
-        assert mInputTypeHint != INPUT_TYPE_HINT_DROPDOWN;
-        mValue = value;
+    public void setValue(@Nullable CharSequence userTypedValueOrInitialDropdownKey) {
+        mValue = userTypedValueOrInitialDropdownKey;
     }
 
     /**
-     * Updates the dropdown selection.
+     * Updates the dropdown selection and fires the dropdown callback.
      *
      * @param key      The new dropdown key.
      * @param callback The callback to invoke when the change has been processed.

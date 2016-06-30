@@ -123,10 +123,6 @@ public class AddressEditor extends EditorBase<AutofillAddress> {
                     AutofillProfileBridge.getSupportedCountries());
         }
 
-        // Country dropdown is cached, so the selected item needs to be updated for every new
-        // profile that's being edited.
-        mCountryField.setValue(AutofillAddress.getCountryCode(profile));
-
         // Changing the country will update which fields are in the model. The actual fields are not
         // discarded, so their contents are preserved.
         mCountryField.setDropdownCallback(new Callback<Pair<String, Runnable>>() {
@@ -143,6 +139,10 @@ public class AddressEditor extends EditorBase<AutofillAddress> {
                 mHandler.post(eventData.second);
             }
         });
+
+        // Country dropdown is cached, so the selected item needs to be updated for the new profile
+        // that's being edited. This will not fire the dropdown callback.
+        mCountryField.setValue(AutofillAddress.getCountryCode(profile));
         editor.addField(mCountryField);
 
         // There's a finite number of fields for address editing. Changing the country will re-order
