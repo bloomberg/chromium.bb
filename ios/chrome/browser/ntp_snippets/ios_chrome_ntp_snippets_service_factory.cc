@@ -26,6 +26,7 @@
 #include "ios/chrome/browser/signin/oauth2_token_service_factory.h"
 #include "ios/chrome/browser/signin/signin_manager_factory.h"
 #include "ios/chrome/browser/suggestions/image_fetcher_impl.h"
+#include "ios/chrome/browser/suggestions/ios_image_decoder_impl.h"
 #include "ios/chrome/browser/suggestions/suggestions_service_factory.h"
 #include "ios/chrome/browser/sync/ios_chrome_profile_sync_service_factory.h"
 #include "ios/chrome/common/channel_info.h"
@@ -34,6 +35,7 @@
 #include "net/url_request/url_request_context_getter.h"
 
 using suggestions::ImageFetcherImpl;
+using suggestions::IOSImageDecoderImpl;
 using suggestions::SuggestionsService;
 using suggestions::SuggestionsServiceFactory;
 
@@ -122,7 +124,7 @@ IOSChromeNTPSnippetsServiceFactory::BuildServiceInstanceFor(
                      GetChannel() == version_info::Channel::STABLE)),
       base::WrapUnique(new ImageFetcherImpl(request_context.get(),
                                             web::WebThread::GetBlockingPool())),
-      nullptr, /* image_decoder */
+      base::MakeUnique<IOSImageDecoderImpl>(),
       base::WrapUnique(
           new ntp_snippets::NTPSnippetsDatabase(database_dir, task_runner)),
       base::WrapUnique(new ntp_snippets::NTPSnippetsStatusService(

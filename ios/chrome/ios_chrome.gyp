@@ -545,6 +545,8 @@
         'browser/ssl/ios_ssl_blocking_page.mm',
         'browser/suggestions/image_fetcher_impl.h',
         'browser/suggestions/image_fetcher_impl.mm',
+        'browser/suggestions/ios_image_decoder_impl.h',
+        'browser/suggestions/ios_image_decoder_impl.mm',
         'browser/suggestions/suggestions_service_factory.h',
         'browser/suggestions/suggestions_service_factory.mm',
         'browser/sync/glue/sync_start_util.cc',

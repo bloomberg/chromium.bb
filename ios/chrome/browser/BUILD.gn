@@ -408,6 +408,8 @@ source_set("browser") {
     "ssl/ios_ssl_blocking_page.mm",
     "suggestions/image_fetcher_impl.h",
     "suggestions/image_fetcher_impl.mm",
+    "suggestions/ios_image_decoder_impl.h",
+    "suggestions/ios_image_decoder_impl.mm",
     "suggestions/suggestions_service_factory.h",
     "suggestions/suggestions_service_factory.mm",
     "sync/glue/sync_start_util.cc",

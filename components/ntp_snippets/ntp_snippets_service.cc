@@ -586,7 +586,7 @@ void NTPSnippetsService::OnSnippetImageFetchedFromDatabase(
     const std::string& snippet_id,
     const ImageFetchedCallback& callback,
     std::string data) {
-  // |image_decoder_| is null on iOS and in tests.
+  // |image_decoder_| is null in tests.
   if (image_decoder_ && !data.empty()) {
     image_decoder_->DecodeImage(
         std::move(data),
