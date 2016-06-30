@@ -12,7 +12,5 @@ async_test(function () {
         iframe.src = "/security/referrerPolicyHeader/resources/postmessage-referrer.html";
     else if (navigateTo === "cross-origin-no-downgrade")
         iframe.src = get_host_info().AUTHENTICATED_ORIGIN + "/security/referrerPolicyHeader/resources/postmessage-referrer.html";
-    else if (navigateTo === "no-referrer-on-redirect")
-        iframe.src = "/security/referrerPolicyHeader/resources/no-referrer-on-redirect.php";
     document.body.appendChild(iframe);
 }, "Referrer policy header - " + policy);

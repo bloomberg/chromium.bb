@@ -6,10 +6,7 @@
 
 namespace net {
 
-RedirectInfo::RedirectInfo()
-    : status_code(-1),
-      new_referrer_policy(
-          URLRequest::CLEAR_REFERRER_ON_TRANSITION_FROM_SECURE_TO_INSECURE) {}
+RedirectInfo::RedirectInfo() : status_code(-1) {}
 
 RedirectInfo::RedirectInfo(const RedirectInfo& other) = default;
 
