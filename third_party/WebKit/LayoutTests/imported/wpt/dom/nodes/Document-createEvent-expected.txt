@@ -345,6 +345,10 @@ PASS Should throw NOT_SUPPORTED_ERR for non-legacy event interface "OrientationE
 PASS Should throw NOT_SUPPORTED_ERR for pluralized non-legacy event interface "OrientationEvents" 
 PASS Should throw NOT_SUPPORTED_ERR for non-legacy event interface "PageTransition" 
 PASS Should throw NOT_SUPPORTED_ERR for pluralized non-legacy event interface "PageTransitions" 
+FAIL Should throw NOT_SUPPORTED_ERR for non-legacy event interface "PointerEvent" assert_throws: function "function () {
+        var evt = document.createEvent(eventInterface);
+      }" did not throw
+PASS Should throw NOT_SUPPORTED_ERR for pluralized non-legacy event interface "PointerEvents" 
 PASS Should throw NOT_SUPPORTED_ERR for non-legacy event interface "PopUpEvent" 
 PASS Should throw NOT_SUPPORTED_ERR for pluralized non-legacy event interface "PopUpEvents" 
 FAIL Should throw NOT_SUPPORTED_ERR for non-legacy event interface "PresentationConnectionAvailableEvent" assert_throws: function "function () {

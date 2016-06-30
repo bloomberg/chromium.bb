@@ -23,8 +23,8 @@ PASS ArrayBuffer elements of the blobParts array should be supported.
 PASS Passing typed arrays as elements of the blobParts array should work. 
 PASS Passing a Float64Array as element of the blobParts array should work. 
 PASS Passing an platform object that supports indexed properties as the blobParts array should work (select). 
-PASS Passing a platform array object as the blobParts array should work (MessagePort[]). 
-PASS Passing a platform array object as the blobParts array should work (Attr[]). 
+PASS Passing an platform object that supports indexed properties as the blobParts array should work (attributes). 
+PASS Passing a FrozenArray as the blobParts array should work (FrozenArray<MessagePort>). 
 PASS Array with two blobs 
 PASS Array with two buffers 
 PASS Array with two bufferviews 
