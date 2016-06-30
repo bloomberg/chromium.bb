@@ -36,12 +36,19 @@ pin-keyboard {
   position: absolute;
   top: 0;
   transform: scale3d(0.9, 0.9, 0.9);
+  width: 180px;
+  z-index: 0;
+}
+
+#account_picker.flying-pods .pod {
+  transition: all 180ms;
+}
+
+.pod.flying-pin-pod {
   transition: height 180ms ease-in-out,
               padding 180ms ease-in-out,
               top 180ms ease-in-out,
               width 180ms ease-in-out;
-  width: 180px;
-  z-index: 0;
 }
 
 .pod.pin-enabled {

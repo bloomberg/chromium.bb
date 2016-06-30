@@ -1124,6 +1124,10 @@ cr.define('login', function() {
       }
     },
 
+    toggleTransitions: function(enable) {
+      this.classList.toggle('flying-pin-pod', enable);
+    },
+
     setPinVisibility: function(visible) {
       var elements = [this, this.authElement, this.imageElement,
                       this.signInElement, this.pinContainer];
@@ -2549,6 +2553,11 @@ cr.define('login', function() {
       var userPod = this.createUserPod(user);
       this.appendChild(userPod);
       userPod.initialize();
+    },
+
+    togglePinTransitions: function(enable) {
+      for (var i = 0; i < this.pods.length; ++i)
+        this.pods[i].toggleTransitions(enable);
     },
 
     setFocusedPodPinVisibility: function(visible) {
