@@ -11,10 +11,12 @@
 #include "base/base64.h"
 #include "base/files/file_path.h"
 #include "base/json/json_reader.h"
+#include "base/metrics/field_trial.h"
 #include "base/rand_util.h"
 #include "base/sha1.h"
 #include "base/strings/string_piece.h"
 #include "base/test/histogram_tester.h"
+#include "base/test/mock_entropy_provider.h"
 #include "base/values.h"
 #include "crypto/openssl_util.h"
 #include "crypto/sha2.h"
@@ -1953,6 +1955,72 @@ TEST_F(TransportSecurityStateTest, RequireCTConsultsDelegate) {
     EXPECT_EQ(original_status,
               state.ShouldRequireCT("www.example.com", cert.get(), hashes));
   }
+}
+
+// Tests that Certificate Transparency is required for Symantec-issued
+// certificates, unless the certificate was issued prior to 1 June 2016
+// or the issuing CA is whitelisted as independently operated.
+TEST_F(TransportSecurityStateTest, RequireCTForSymantec) {
+  // Test certificates before and after the 1 June 2016 deadline.
+  scoped_refptr<X509Certificate> before_cert =
+      ImportCertFromFile(GetTestCertsDirectory(), "pre_june_2016.pem");
+  ASSERT_TRUE(before_cert);
+  scoped_refptr<X509Certificate> after_cert =
+      ImportCertFromFile(GetTestCertsDirectory(), "post_june_2016.pem");
+  ASSERT_TRUE(after_cert);
+
+  SHA256HashValue symantec_hash_value = {
+      {0xb2, 0xde, 0xf5, 0x36, 0x2a, 0xd3, 0xfa, 0xcd, 0x04, 0xbd, 0x29,
+       0x04, 0x7a, 0x43, 0x84, 0x4f, 0x76, 0x70, 0x34, 0xea, 0x48, 0x92,
+       0xf8, 0x0e, 0x56, 0xbe, 0xe6, 0x90, 0x24, 0x3e, 0x25, 0x02}};
+  SHA256HashValue google_hash_value = {
+      {0xec, 0x72, 0x29, 0x69, 0xcb, 0x64, 0x20, 0x0a, 0xb6, 0x63, 0x8f,
+       0x68, 0xac, 0x53, 0x8e, 0x40, 0xab, 0xab, 0x5b, 0x19, 0xa6, 0x48,
+       0x56, 0x61, 0x04, 0x2a, 0x10, 0x61, 0xc4, 0x61, 0x27, 0x76}};
+
+  TransportSecurityState state;
+
+  HashValueVector hashes;
+  hashes.push_back(HashValue(symantec_hash_value));
+
+  // Certificates issued by Symantec prior to 1 June 2016 should not
+  // be required to be disclosed via CT.
+  EXPECT_FALSE(
+      state.ShouldRequireCT("www.example.com", before_cert.get(), hashes));
+
+  // ... but certificates issued after 1 June 2016 are required to be...
+  EXPECT_TRUE(
+      state.ShouldRequireCT("www.example.com", after_cert.get(), hashes));
+
+  // ... unless they were issued by an excluded intermediate.
+  hashes.push_back(HashValue(google_hash_value));
+  EXPECT_FALSE(
+      state.ShouldRequireCT("www.example.com", before_cert.get(), hashes));
+  EXPECT_FALSE(
+      state.ShouldRequireCT("www.example.com", after_cert.get(), hashes));
+
+  // And other certificates should remain unaffected.
+  SHA256HashValue unrelated_hash_value = {{0x01, 0x02}};
+  HashValueVector unrelated_hashes;
+  unrelated_hashes.push_back(HashValue(unrelated_hash_value));
+
+  EXPECT_FALSE(state.ShouldRequireCT("www.example.com", before_cert.get(),
+                                     unrelated_hashes));
+  EXPECT_FALSE(state.ShouldRequireCT("www.example.com", after_cert.get(),
+                                     unrelated_hashes));
+
+  // And the emergency field trial should disable the requirement, if
+  // necessary.
+  hashes.clear();
+  hashes.push_back(HashValue(symantec_hash_value));
+  base::FieldTrialList field_trial_list(new base::MockEntropyProvider());
+  base::FieldTrialList::CreateFieldTrial("EnforceCTForProblematicRoots",
+                                         "disabled");
+
+  EXPECT_FALSE(
+      state.ShouldRequireCT("www.example.com", before_cert.get(), hashes));
+  EXPECT_FALSE(
+      state.ShouldRequireCT("www.example.com", after_cert.get(), hashes));
 }
 
 }  // namespace net

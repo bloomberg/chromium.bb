@@ -223,63 +223,63 @@ CA_COMMON_NAME="Test Root CA" \
 
 ## Validity too long unit test support.
 try openssl req -config ../scripts/ee.cnf \
-  -newkey rsa:2048 -text -out ../certificates/10_year_validity.req
+  -newkey rsa:2048 -text -out out/10_year_validity.req
 CA_COMMON_NAME="Test Root CA" \
   try openssl ca \
     -batch \
     -extensions user_cert \
     -startdate 081030000000Z \
     -enddate   181029000000Z \
-    -in ../certificates/10_year_validity.req \
+    -in out/10_year_validity.req \
     -out ../certificates/10_year_validity.pem \
     -config ca.cnf
 # 365 * 11 = 4015
 try openssl req -config ../scripts/ee.cnf \
-  -newkey rsa:2048 -text -out ../certificates/11_year_validity.req
+  -newkey rsa:2048 -text -out out/11_year_validity.req
 CA_COMMON_NAME="Test Root CA" \
   try openssl ca \
     -batch \
     -extensions user_cert \
     -startdate 141030000000Z \
     -days 4015 \
-    -in ../certificates/11_year_validity.req \
+    -in out/11_year_validity.req \
     -out ../certificates/11_year_validity.pem \
     -config ca.cnf
 try openssl req -config ../scripts/ee.cnf \
-  -newkey rsa:2048 -text -out ../certificates/39_months_after_2015_04.req
+  -newkey rsa:2048 -text -out out/39_months_after_2015_04.req
 CA_COMMON_NAME="Test Root CA" \
   try openssl ca \
     -batch \
     -extensions user_cert \
     -startdate 150402000000Z \
     -enddate   180702000000Z \
-    -in ../certificates/39_months_after_2015_04.req \
+    -in out/39_months_after_2015_04.req \
     -out ../certificates/39_months_after_2015_04.pem \
     -config ca.cnf
 try openssl req -config ../scripts/ee.cnf \
-  -newkey rsa:2048 -text -out ../certificates/40_months_after_2015_04.req
+  -newkey rsa:2048 -text -out out/40_months_after_2015_04.req
 CA_COMMON_NAME="Test Root CA" \
   try openssl ca \
     -batch \
     -extensions user_cert \
     -startdate 150402000000Z \
     -enddate   180801000000Z \
-    -in ../certificates/40_months_after_2015_04.req \
+    -in out/40_months_after_2015_04.req \
     -out ../certificates/40_months_after_2015_04.pem \
     -config ca.cnf
 try openssl req -config ../scripts/ee.cnf \
-  -newkey rsa:2048 -text -out ../certificates/60_months_after_2012_07.req
+  -newkey rsa:2048 -text -out out/60_months_after_2012_07.req
 CA_COMMON_NAME="Test Root CA" \
   try openssl ca \
     -batch \
     -extensions user_cert \
     -startdate 141030000000Z \
     -enddate   190930000000Z \
-    -in ../certificates/60_months_after_2012_07.req \
+    -in out/60_months_after_2012_07.req \
     -out ../certificates/60_months_after_2012_07.pem \
     -config ca.cnf
 try openssl req -config ../scripts/ee.cnf \
-  -newkey rsa:2048 -text -out ../certificates/61_months_after_2012_07.req
+  -newkey rsa:2048 -text -out out/61_months_after_2012_07.req
 # 30 * 61 = 1830
 CA_COMMON_NAME="Test Root CA" \
   try openssl ca \
@@ -287,65 +287,90 @@ CA_COMMON_NAME="Test Root CA" \
     -extensions user_cert \
     -startdate 141030000000Z \
     -days 1830 \
-    -in ../certificates/61_months_after_2012_07.req \
+    -in out/61_months_after_2012_07.req \
     -out ../certificates/61_months_after_2012_07.pem \
     -config ca.cnf
 # start date after expiry date
 try openssl req -config ../scripts/ee.cnf \
-  -newkey rsa:2048 -text -out ../certificates/start_after_expiry.req
+  -newkey rsa:2048 -text -out out/start_after_expiry.req
 CA_COMMON_NAME="Test Root CA" \
   try openssl ca \
     -batch \
     -extensions user_cert \
     -startdate 180901000000Z \
     -enddate   150402000000Z \
-    -in ../certificates/start_after_expiry.req \
+    -in out/start_after_expiry.req \
     -out ../certificates/start_after_expiry.pem \
     -config ca.cnf
 try openssl req -config ../scripts/ee.cnf \
-  -newkey rsa:2048 -text -out ../certificates/start_after_expiry.req
+  -newkey rsa:2048 -text -out out/start_after_expiry.req
 # Issued pre-BRs, lifetime < 120 months, expires before 2019-07-01
 try openssl req -config ../scripts/ee.cnf \
-  -newkey rsa:2048 -text -out ../certificates/pre_br_validity_ok.req
+  -newkey rsa:2048 -text -out out/pre_br_validity_ok.req
 CA_COMMON_NAME="Test Root CA" \
   try openssl ca \
     -batch \
     -extensions user_cert \
     -startdate 080101000000Z \
     -enddate   150101000000Z \
-    -in ../certificates/pre_br_validity_ok.req \
+    -in out/pre_br_validity_ok.req \
     -out ../certificates/pre_br_validity_ok.pem \
     -config ca.cnf
 try openssl req -config ../scripts/ee.cnf \
-  -newkey rsa:2048 -text -out ../certificates/pre_br_validity_ok.req
+  -newkey rsa:2048 -text -out out/pre_br_validity_ok.req
 # Issued pre-BRs, lifetime > 120 months, expires before 2019-07-01
 try openssl req -config ../scripts/ee.cnf \
-  -newkey rsa:2048 -text -out ../certificates/pre_br_validity_bad_121.req
+  -newkey rsa:2048 -text -out out/pre_br_validity_bad_121.req
 CA_COMMON_NAME="Test Root CA" \
   try openssl ca \
     -batch \
     -extensions user_cert \
     -startdate 080101000000Z \
     -enddate   180501000000Z \
-    -in ../certificates/pre_br_validity_bad_121.req \
+    -in out/pre_br_validity_bad_121.req \
     -out ../certificates/pre_br_validity_bad_121.pem \
     -config ca.cnf
 try openssl req -config ../scripts/ee.cnf \
-  -newkey rsa:2048 -text -out ../certificates/pre_br_validity_bad_121.req
+  -newkey rsa:2048 -text -out out/pre_br_validity_bad_121.req
 # Issued pre-BRs, lifetime < 120 months, expires after 2019-07-01
 try openssl req -config ../scripts/ee.cnf \
-  -newkey rsa:2048 -text -out ../certificates/pre_br_validity_bad_2020.req
+  -newkey rsa:2048 -text -out out/pre_br_validity_bad_2020.req
 CA_COMMON_NAME="Test Root CA" \
   try openssl ca \
     -batch \
     -extensions user_cert \
     -startdate 120501000000Z \
     -enddate   190703000000Z \
-    -in ../certificates/pre_br_validity_bad_2020.req \
+    -in out/pre_br_validity_bad_2020.req \
     -out ../certificates/pre_br_validity_bad_2020.pem \
     -config ca.cnf
+
+# Issued prior to 1 June 2016 (Symantec CT Enforcement Date)
 try openssl req -config ../scripts/ee.cnf \
-  -newkey rsa:2048 -text -out ../certificates/pre_br_validity_bad_2020.req
+  -newkey rsa:2048 -text -out out/pre_june_2016.req
+CA_COMMON_NAME="Test Root CA" \
+  try openssl ca \
+    -batch \
+    -extensions user_cert \
+    -startdate 160501000000Z \
+    -enddate   170703000000Z \
+    -in out/pre_june_2016.req \
+    -out ../certificates/pre_june_2016.pem \
+    -config ca.cnf
+
+# Issued after 1 June 2016 (Symantec CT Enforcement Date)
+try openssl req -config ../scripts/ee.cnf \
+  -newkey rsa:2048 -text -out out/post_june_2016.req
+CA_COMMON_NAME="Test Root CA" \
+  try openssl ca \
+    -batch \
+    -extensions user_cert \
+    -startdate 160601000000Z \
+    -enddate   170703000000Z \
+    -in out/post_june_2016.req \
+    -out ../certificates/post_june_2016.pem \
+    -config ca.cnf
+
 
 # Regenerate CRLSets
 ## Block a leaf cert directly by SPKI
