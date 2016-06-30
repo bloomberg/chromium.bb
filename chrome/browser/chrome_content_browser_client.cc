@@ -1168,6 +1168,28 @@ bool ChromeContentBrowserClient::ShouldAllowOpenURL(
   return true;
 }
 
+void ChromeContentBrowserClient::OverrideOpenURLParams(
+    content::SiteInstance* site_instance,
+    content::OpenURLParams* params) {
+  DCHECK(params);
+  // TODO(crbug.com/624410): Factor the predicate to identify a URL as an NTP
+  // to a shared library.
+  if (site_instance &&
+      site_instance->GetSiteURL().SchemeIs(chrome::kChromeSearchScheme) &&
+      (site_instance->GetSiteURL().host() ==
+           chrome::kChromeSearchRemoteNtpHost ||
+       site_instance->GetSiteURL().host() ==
+           chrome::kChromeSearchLocalNtpHost) &&
+      ui::PageTransitionCoreTypeIs(params->transition,
+                                   ui::PAGE_TRANSITION_LINK)) {
+    // Use AUTO_BOOKMARK for clicks on tiles of the new tab page, consistently
+    // with native implementations like Android's.
+    params->transition = ui::PAGE_TRANSITION_AUTO_BOOKMARK;
+    params->is_renderer_initiated = false;
+    params->referrer = content::Referrer();
+  }
+}
+
 bool ChromeContentBrowserClient::IsSuitableHost(
     content::RenderProcessHost* process_host,
     const GURL& site_url) {

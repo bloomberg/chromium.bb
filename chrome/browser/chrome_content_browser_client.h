@@ -92,6 +92,8 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
                        const GURL& origin) override;
   bool ShouldAllowOpenURL(content::SiteInstance* site_instance,
                           const GURL& url) override;
+  void OverrideOpenURLParams(content::SiteInstance* site_instance,
+                             content::OpenURLParams* params) override;
   bool IsSuitableHost(content::RenderProcessHost* process_host,
                       const GURL& site_url) override;
   bool MayReuseHost(content::RenderProcessHost* process_host) override;

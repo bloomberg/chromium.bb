@@ -244,6 +244,10 @@ class CONTENT_EXPORT ContentBrowserClient {
   // This also applies in cases where the new URL will open in another process.
   virtual bool ShouldAllowOpenURL(SiteInstance* site_instance, const GURL& url);
 
+  // Allows the embedder to override OpenURLParams.
+  virtual void OverrideOpenURLParams(SiteInstance* site_instance,
+                                     OpenURLParams* params) {}
+
   // Returns whether a new view for a given |site_url| can be launched in a
   // given |process_host|.
   virtual bool IsSuitableHost(RenderProcessHost* process_host,

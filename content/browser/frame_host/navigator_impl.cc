@@ -722,6 +722,9 @@ void NavigatorImpl::RequestOpenURL(
     params.is_renderer_initiated = false;
   }
 
+  GetContentClient()->browser()->OverrideOpenURLParams(current_site_instance,
+                                                       &params);
+
   if (delegate_)
     delegate_->RequestOpenURL(render_frame_host, params);
 }
