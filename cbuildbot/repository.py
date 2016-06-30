@@ -7,6 +7,7 @@
 from __future__ import print_function
 
 import constants
+import glob
 import os
 import re
 import shutil
@@ -83,8 +84,27 @@ def CloneGitRepo(working_dir, repo_url, reference=None, bare=False,
     cmd += ['--branch', branch]
   if single_branch:
     cmd += ['--single-branch']
-  git.RunGit(working_dir, cmd)
+  git.RunGit(working_dir, cmd, print_cmd=True)
 
+
+def CloneWorkingRepo(dest, url, reference, branch=None, single_branch=False):
+  """Clone a git repository with an existing local copy as a reference.
+
+  Also copy the hooks into the new repository.
+
+  Args:
+    dest: The directory to clone int.
+    url: The URL of the repository to clone.
+    reference: Local checkout to draw objects from.
+    branch: The branch to clone.
+    single_branch: Clone only one the requested branch.
+  """
+  CloneGitRepo(dest, url, reference=reference,
+               single_branch=single_branch, branch=branch)
+  for name in glob.glob(os.path.join(reference, '.git', 'hooks', '*')):
+    newname = os.path.join(dest, '.git', 'hooks', os.path.basename(name))
+    shutil.copyfile(name, newname)
+    shutil.copystat(name, newname)
 
 def UpdateGitRepo(working_dir, repo_url, **kwargs):
   """Update the given git repo, blowing away any local changes.

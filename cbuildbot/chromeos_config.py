@@ -1209,6 +1209,7 @@ def GetConfig():
       description='Build Config Updater',
       build_type=constants.CONFIG_UPDATER_TYPE,
       boards=[],
+      builder_class_name='config_builders.UpdateConfigBuilder',
   )
 
   # A base config for each board.

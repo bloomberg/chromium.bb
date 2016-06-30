@@ -6007,6 +6007,7 @@
     "config-updater": {
         "boards": [],
         "build_type": "config",
+        "builder_class_name": "config_builders.UpdateConfigBuilder",
         "description": "Build Config Updater",
         "hw_tests_override": [],
         "important": true,

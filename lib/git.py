@@ -1359,8 +1359,8 @@ def PushWithRetry(branch, git_repo, dryrun=False, retries=5,
         continue
       raise
 
-  logging.info('Successfully pushed %s to %s:%s',
-               git_repo, branch, reference)
+  logging.info('Successfully pushed %s to %s %s:%s',
+               git_repo, remote_ref.remote, branch, reference)
 
 
 def CleanAndDetachHead(git_repo):
