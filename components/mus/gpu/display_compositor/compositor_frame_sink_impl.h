@@ -42,7 +42,7 @@ class CompositorFrameSinkImpl : public cc::SurfaceFactoryClient,
  private:
   // SurfaceFactoryClient implementation.
   void ReturnResources(const cc::ReturnedResourceArray& resources) override;
-  void WillDrawSurface(cc::SurfaceId surface_id,
+  void WillDrawSurface(const cc::SurfaceId& surface_id,
                        const gfx::Rect& damage_rect) override;
   void SetBeginFrameSource(cc::BeginFrameSource* begin_frame_source) override;
 

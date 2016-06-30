@@ -43,12 +43,12 @@ bool CanvasSurfaceLayerBridge::createSurfaceLayer(int canvasWidth, int canvasHei
     return true;
 }
 
-void CanvasSurfaceLayerBridge::satisfyCallback(cc::SurfaceSequence sequence)
+void CanvasSurfaceLayerBridge::satisfyCallback(const cc::SurfaceSequence& sequence)
 {
     m_client->asyncSatisfy(sequence);
 }
 
-void CanvasSurfaceLayerBridge::requireCallback(cc::SurfaceId surfaceId, cc::SurfaceSequence sequence)
+void CanvasSurfaceLayerBridge::requireCallback(const cc::SurfaceId& surfaceId, const cc::SurfaceSequence& sequence)
 {
     m_client->asyncRequire(surfaceId, sequence);
 }

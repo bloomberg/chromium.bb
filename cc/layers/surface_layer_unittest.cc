@@ -51,14 +51,14 @@ class SurfaceLayerTest : public testing::Test {
   std::unique_ptr<FakeLayerTreeHost> layer_tree_host_;
 };
 
-void SatisfyCallback(SurfaceSequence* out, SurfaceSequence in) {
+void SatisfyCallback(SurfaceSequence* out, const SurfaceSequence& in) {
   *out = in;
 }
 
 void RequireCallback(SurfaceId* out_id,
                      std::set<SurfaceSequence>* out,
-                     SurfaceId in_id,
-                     SurfaceSequence in) {
+                     const SurfaceId& in_id,
+                     const SurfaceSequence& in) {
   *out_id = in_id;
   out->insert(in);
 }

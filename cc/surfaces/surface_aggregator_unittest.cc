@@ -51,7 +51,8 @@ class EmptySurfaceFactoryClient : public SurfaceFactoryClient {
  public:
   void ReturnResources(const ReturnedResourceArray& resources) override {}
 
-  void WillDrawSurface(SurfaceId id, const gfx::Rect& damage_rect) override {
+  void WillDrawSurface(const SurfaceId& id,
+                       const gfx::Rect& damage_rect) override {
     last_surface_id_ = id;
     last_damage_rect_ = damage_rect;
   }

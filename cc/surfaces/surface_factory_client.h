@@ -21,7 +21,7 @@ class CC_SURFACES_EXPORT SurfaceFactoryClient {
 
   virtual void ReturnResources(const ReturnedResourceArray& resources) = 0;
 
-  virtual void WillDrawSurface(SurfaceId surface_id,
+  virtual void WillDrawSurface(const SurfaceId& surface_id,
                                const gfx::Rect& damage_rect) {}
 
   // This allows the SurfaceFactory to pass a BeginFrameSource to use.

@@ -149,7 +149,7 @@ void ChildFrameCompositingHelper::ChildFrameGone() {
 void ChildFrameCompositingHelper::SatisfyCallback(
     scoped_refptr<ThreadSafeSender> sender,
     int host_routing_id,
-    cc::SurfaceSequence sequence) {
+    const cc::SurfaceSequence& sequence) {
   // This may be called on either the main or impl thread.
   sender->Send(new FrameHostMsg_SatisfySequence(host_routing_id, sequence));
 }
@@ -159,7 +159,7 @@ void ChildFrameCompositingHelper::SatisfyCallbackBrowserPlugin(
     scoped_refptr<ThreadSafeSender> sender,
     int host_routing_id,
     int browser_plugin_instance_id,
-    cc::SurfaceSequence sequence) {
+    const cc::SurfaceSequence& sequence) {
   sender->Send(new BrowserPluginHostMsg_SatisfySequence(
       host_routing_id, browser_plugin_instance_id, sequence));
 }
@@ -168,8 +168,8 @@ void ChildFrameCompositingHelper::SatisfyCallbackBrowserPlugin(
 void ChildFrameCompositingHelper::RequireCallback(
     scoped_refptr<ThreadSafeSender> sender,
     int host_routing_id,
-    cc::SurfaceId id,
-    cc::SurfaceSequence sequence) {
+    const cc::SurfaceId& id,
+    const cc::SurfaceSequence& sequence) {
   // This may be called on either the main or impl thread.
   sender->Send(new FrameHostMsg_RequireSequence(host_routing_id, id, sequence));
 }
@@ -178,8 +178,8 @@ void ChildFrameCompositingHelper::RequireCallbackBrowserPlugin(
     scoped_refptr<ThreadSafeSender> sender,
     int host_routing_id,
     int browser_plugin_instance_id,
-    cc::SurfaceId id,
-    cc::SurfaceSequence sequence) {
+    const cc::SurfaceId& id,
+    const cc::SurfaceSequence& sequence) {
   // This may be called on either the main or impl thread.
   sender->Send(new BrowserPluginHostMsg_RequireSequence(
       host_routing_id, browser_plugin_instance_id, id, sequence));

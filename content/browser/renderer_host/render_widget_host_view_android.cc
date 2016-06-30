@@ -96,15 +96,15 @@ namespace content {
 namespace {
 
 void SatisfyCallback(cc::SurfaceManager* manager,
-                     cc::SurfaceSequence sequence) {
+                     const cc::SurfaceSequence& sequence) {
   std::vector<uint32_t> sequences;
   sequences.push_back(sequence.sequence);
   manager->DidSatisfySequences(sequence.id_namespace, &sequences);
 }
 
 void RequireCallback(cc::SurfaceManager* manager,
-                     cc::SurfaceId id,
-                     cc::SurfaceSequence sequence) {
+                     const cc::SurfaceId& id,
+                     const cc::SurfaceSequence& sequence) {
   cc::Surface* surface = manager->GetSurfaceForId(id);
   if (!surface) {
     LOG(ERROR) << "Attempting to require callback on nonexistent surface";

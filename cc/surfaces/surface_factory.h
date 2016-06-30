@@ -85,7 +85,7 @@ class CC_SURFACES_EXPORT SurfaceFactory
 
   // SurfaceFactory's owner can call this when it finds out that SurfaceManager
   // is no longer alive during destruction.
-  void didDestroySurfaceManager() { manager_ = nullptr; }
+  void DidDestroySurfaceManager() { manager_ = nullptr; }
 
  private:
   SurfaceManager* manager_;

@@ -68,7 +68,8 @@ class SurfaceFactoryOwner : public base::RefCounted<SurfaceFactoryOwner>,
 
   // Overridden from cc::SurfaceFactoryClient:
   void ReturnResources(const cc::ReturnedResourceArray& resources) override;
-  void WillDrawSurface(cc::SurfaceId id, const gfx::Rect& damage_rect) override;
+  void WillDrawSurface(const cc::SurfaceId& id,
+                       const gfx::Rect& damage_rect) override;
   void SetBeginFrameSource(cc::BeginFrameSource* begin_frame_source) override;
 
  private:

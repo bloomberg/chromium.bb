@@ -93,22 +93,22 @@ class CONTENT_EXPORT ChildFrameCompositingHelper
                                          cc::Layer* layer);
   static void SatisfyCallback(scoped_refptr<ThreadSafeSender> sender,
                               int host_routing_id,
-                              cc::SurfaceSequence sequence);
+                              const cc::SurfaceSequence& sequence);
   static void SatisfyCallbackBrowserPlugin(
       scoped_refptr<ThreadSafeSender> sender,
       int host_routing_id,
       int browser_plugin_instance_id,
-      cc::SurfaceSequence sequence);
+      const cc::SurfaceSequence& sequence);
   static void RequireCallback(scoped_refptr<ThreadSafeSender> sender,
                               int host_routing_id,
-                              cc::SurfaceId id,
-                              cc::SurfaceSequence sequence);
+                              const cc::SurfaceId& id,
+                              const cc::SurfaceSequence& sequence);
   static void RequireCallbackBrowserPlugin(
       scoped_refptr<ThreadSafeSender> sender,
       int host_routing_id,
       int browser_plugin_instance_id,
-      cc::SurfaceId id,
-      cc::SurfaceSequence sequence);
+      const cc::SurfaceId& id,
+      const cc::SurfaceSequence& sequence);
   void UpdateWebLayer(blink::WebLayer* layer);
 
   int host_routing_id_;

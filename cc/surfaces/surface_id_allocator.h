@@ -37,7 +37,7 @@ class CC_SURFACES_EXPORT SurfaceIdAllocator {
 
   // SurfaceIdAllocator's owner can call this when it find out that
   // SurfaceManager is no longer alive during destruction.
-  void didDestroySurfaceManager() { manager_ = nullptr; }
+  void DidDestroySurfaceManager() { manager_ = nullptr; }
 
  private:
   const uint32_t id_namespace_;

@@ -29,12 +29,12 @@ void CanvasSurfaceLayerBridgeClientImpl::asyncRequestSurfaceCreation(const cc::S
     m_service->RequestSurfaceCreation(surfaceId);
 }
 
-void CanvasSurfaceLayerBridgeClientImpl::asyncRequire(cc::SurfaceId surfaceId, cc::SurfaceSequence sequence)
+void CanvasSurfaceLayerBridgeClientImpl::asyncRequire(const cc::SurfaceId& surfaceId, const cc::SurfaceSequence& sequence)
 {
     m_service->Require(surfaceId, sequence);
 }
 
-void CanvasSurfaceLayerBridgeClientImpl::asyncSatisfy(cc::SurfaceSequence sequence)
+void CanvasSurfaceLayerBridgeClientImpl::asyncSatisfy(const cc::SurfaceSequence& sequence)
 {
     m_service->Satisfy(sequence);
 }

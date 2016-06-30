@@ -29,9 +29,9 @@ OffscreenCanvasSurfaceImpl::~OffscreenCanvasSurfaceImpl() {
     // Inform both members that SurfaceManager's no longer alive to
     // avoid their destruction errors.
     if (surface_factory_)
-        surface_factory_->didDestroySurfaceManager();
+        surface_factory_->DidDestroySurfaceManager();
     if (id_allocator_)
-        id_allocator_->didDestroySurfaceManager();
+        id_allocator_->DidDestroySurfaceManager();
   }
   surface_factory_->Destroy(surface_id_);
 }
@@ -77,7 +77,7 @@ void OffscreenCanvasSurfaceImpl::Satisfy(const cc::SurfaceSequence& sequence) {
 void OffscreenCanvasSurfaceImpl::ReturnResources(
     const cc::ReturnedResourceArray& resources) {}
 
-void OffscreenCanvasSurfaceImpl::WillDrawSurface(cc::SurfaceId id,
+void OffscreenCanvasSurfaceImpl::WillDrawSurface(const cc::SurfaceId& id,
                                                  const gfx::Rect& damage_rect) {
 }
 

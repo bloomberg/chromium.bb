@@ -29,8 +29,8 @@ public:
     const cc::SurfaceId& getSurfaceId() const { return m_surfaceId; }
     CanvasSurfaceLayerBridgeClient* getClient() const { return m_client.get(); }
 
-    void satisfyCallback(cc::SurfaceSequence);
-    void requireCallback(cc::SurfaceId, cc::SurfaceSequence);
+    void satisfyCallback(const cc::SurfaceSequence&);
+    void requireCallback(const cc::SurfaceId&, const cc::SurfaceSequence&);
 
 private:
     scoped_refptr<cc::SurfaceLayer> m_surfaceLayer;

@@ -1511,9 +1511,9 @@ TEST_F(LayerWithDelegateTest, SetBoundsWhenInvisible) {
 
 namespace {
 
-void FakeSatisfyCallback(cc::SurfaceSequence) {}
+void FakeSatisfyCallback(const cc::SurfaceSequence&) {}
 
-void FakeRequireCallback(cc::SurfaceId, cc::SurfaceSequence) {}
+void FakeRequireCallback(const cc::SurfaceId&, const cc::SurfaceSequence&) {}
 
 }  // namespace
 

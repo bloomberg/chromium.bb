@@ -142,15 +142,15 @@ class CustomWindowTargeter : public aura::WindowTargeter {
 };
 
 void SatisfyCallback(cc::SurfaceManager* manager,
-                     cc::SurfaceSequence sequence) {
+                     const cc::SurfaceSequence& sequence) {
   std::vector<uint32_t> sequences;
   sequences.push_back(sequence.sequence);
   manager->DidSatisfySequences(sequence.id_namespace, &sequences);
 }
 
 void RequireCallback(cc::SurfaceManager* manager,
-                     cc::SurfaceId id,
-                     cc::SurfaceSequence sequence) {
+                     const cc::SurfaceId& id,
+                     const cc::SurfaceSequence& sequence) {
   cc::Surface* surface = manager->GetSurfaceForId(id);
   if (!surface) {
     LOG(ERROR) << "Attempting to require callback on nonexistent surface";
@@ -180,7 +180,7 @@ void SurfaceFactoryOwner::ReturnResources(
   }
 }
 
-void SurfaceFactoryOwner::WillDrawSurface(cc::SurfaceId id,
+void SurfaceFactoryOwner::WillDrawSurface(const cc::SurfaceId& id,
                                           const gfx::Rect& damage_rect) {
   if (surface_)
     surface_->WillDraw(id);

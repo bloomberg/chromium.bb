@@ -41,15 +41,15 @@ namespace content {
 namespace {
 
 void SatisfyCallback(cc::SurfaceManager* manager,
-                     cc::SurfaceSequence sequence) {
+                     const cc::SurfaceSequence& sequence) {
   std::vector<uint32_t> sequences;
   sequences.push_back(sequence.sequence);
   manager->DidSatisfySequences(sequence.id_namespace, &sequences);
 }
 
 void RequireCallback(cc::SurfaceManager* manager,
-                     cc::SurfaceId id,
-                     cc::SurfaceSequence sequence) {
+                     const cc::SurfaceId& id,
+                     const cc::SurfaceSequence& sequence) {
   cc::Surface* surface = manager->GetSurfaceForId(id);
   if (!surface) {
     LOG(ERROR) << "Attempting to require callback on nonexistent surface";
@@ -551,7 +551,7 @@ void DelegatedFrameHost::ReturnResources(
     SendReturnedDelegatedResources(last_output_surface_id_);
 }
 
-void DelegatedFrameHost::WillDrawSurface(cc::SurfaceId id,
+void DelegatedFrameHost::WillDrawSurface(const cc::SurfaceId& id,
                                          const gfx::Rect& damage_rect) {
   // Frame subscribers are only interested in changes to the target surface, so
   // do not attempt capture if |damage_rect| is empty.  This prevents the draws

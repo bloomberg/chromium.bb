@@ -22,8 +22,8 @@ public:
     virtual void asyncRequestSurfaceCreation(const cc::SurfaceId&) = 0;
 
     // Calls that ensure correct destruction order of surface.
-    virtual void asyncRequire(cc::SurfaceId, cc::SurfaceSequence) = 0;
-    virtual void asyncSatisfy(cc::SurfaceSequence) = 0;
+    virtual void asyncRequire(const cc::SurfaceId&, const cc::SurfaceSequence&) = 0;
+    virtual void asyncSatisfy(const cc::SurfaceSequence&) = 0;
 };
 
 } // namespace blink

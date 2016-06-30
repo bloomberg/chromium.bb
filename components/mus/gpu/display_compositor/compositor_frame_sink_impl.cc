@@ -80,7 +80,7 @@ void CompositorFrameSinkImpl::ReturnResources(
   client_->ReturnResources(mojo::Array<cc::ReturnedResource>::From(resources));
 }
 
-void CompositorFrameSinkImpl::WillDrawSurface(cc::SurfaceId surface_id,
+void CompositorFrameSinkImpl::WillDrawSurface(const cc::SurfaceId& surface_id,
                                               const gfx::Rect& damage_rect) {
   NOTIMPLEMENTED();
 }
