@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_SYSTEM_AUDIO_TRAY_AUDIO_DELEGATE_CHROMEOS_H_
-#define ASH_SYSTEM_AUDIO_TRAY_AUDIO_DELEGATE_CHROMEOS_H_
+#ifndef ASH_COMMON_SYSTEM_CHROMEOS_AUDIO_TRAY_AUDIO_DELEGATE_CHROMEOS_H_
+#define ASH_COMMON_SYSTEM_CHROMEOS_AUDIO_TRAY_AUDIO_DELEGATE_CHROMEOS_H_
 
 #include "ash/ash_export.h"
 #include "ash/common/system/audio/tray_audio_delegate.h"
@@ -32,4 +32,4 @@ class ASH_EXPORT TrayAudioDelegateChromeOs : public TrayAudioDelegate {
 }  // namespace system
 }  // namespace ash
 
-#endif  // ASH_SYSTEM_AUDIO_TRAY_AUDIO_DELEGATE_CHROMEOS_H_
+#endif  // ASH_COMMON_SYSTEM_CHROMEOS_AUDIO_TRAY_AUDIO_DELEGATE_CHROMEOS_H_

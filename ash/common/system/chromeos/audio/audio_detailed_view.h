@@ -2,8 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_SYSTEM_CHROMEOS_AUDIO_AUDIO_DETAILED_VIEW_H_
-#define ASH_SYSTEM_CHROMEOS_AUDIO_AUDIO_DETAILED_VIEW_H_
+#ifndef ASH_COMMON_SYSTEM_CHROMEOS_AUDIO_AUDIO_DETAILED_VIEW_H_
+#define ASH_COMMON_SYSTEM_CHROMEOS_AUDIO_AUDIO_DETAILED_VIEW_H_
+
+#include <map>
 
 #include "ash/common/system/tray/tray_details_view.h"
 #include "ash/common/system/tray/view_click_listener.h"
@@ -56,4 +58,4 @@ class AudioDetailedView : public TrayDetailsView, public ViewClickListener {
 }  // namespace tray
 }  // namespace ash
 
-#endif  // ASH_SYSTEM_CHROMEOS_AUDIO_AUDIO_DETAILED_VIEW_H_
+#endif  // ASH_COMMON_SYSTEM_CHROMEOS_AUDIO_AUDIO_DETAILED_VIEW_H_

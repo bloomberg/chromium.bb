@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/system/chromeos/audio/tray_audio_delegate_chromeos.h"
+#include "ash/common/system/chromeos/audio/tray_audio_delegate_chromeos.h"
 
 #include "chromeos/audio/cras_audio_handler.h"
 #include "grit/ash_resources.h"
