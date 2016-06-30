@@ -6,11 +6,14 @@
 
 #include <CoreFoundation/CoreFoundation.h>
 
+#include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/mac/foundation_util.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
+#include "base/synchronization/lock.h"
+#include "base/threading/thread_checker.h"
 #include "net/base/net_errors.h"
 #include "net/proxy/proxy_info.h"
 #include "net/proxy/proxy_resolver.h"
@@ -25,6 +28,21 @@
 namespace net {
 
 namespace {
+
+// A lock shared by all ProxyResolverMac instances. It is used to synchronize
+// the events of multiple CFNetworkExecuteProxyAutoConfigurationURL run loop
+// sources. These events are:
+// 1. Adding the source to the run loop.
+// 2. Handling the source result.
+// 3. Removing the source from the run loop.
+static base::LazyInstance<base::Lock>::Leaky g_cfnetwork_pac_runloop_lock =
+    LAZY_INSTANCE_INITIALIZER;
+
+// Forward declaration of the callback function used by the
+// SynchronizedRunLoopObserver class.
+void RunLoopObserverCallBackFunc(CFRunLoopObserverRef observer,
+                                 CFRunLoopActivity activity,
+                                 void* info);
 
 // Utility function to map a CFProxyType to a ProxyServer::Scheme.
 // If the type is unknown, returns ProxyServer::SCHEME_INVALID.
@@ -63,6 +81,106 @@ void ResultCallback(void* client, CFArrayRef proxies, CFErrorRef error) {
   CFRunLoopStop(CFRunLoopGetCurrent());
 }
 
+#pragma mark - SynchronizedRunLoopObserver
+// A run loop observer that guarantees that no two run loop sources protected
+// by the same lock will be fired concurrently in different threads.
+// The observer does not prevent the parallel execution of the sources but only
+// synchronizes the run loop events associated with the sources. In the context
+// of proxy resolver, the observer is used to synchronize the execution of the
+// callbacks function that handles the result of
+// CFNetworkExecuteProxyAutoConfigurationURL execution.
+class SynchronizedRunLoopObserver final {
+ public:
+  // Creates the instance of an observer that will synchronize the sources
+  // using a given |lock|.
+  SynchronizedRunLoopObserver(base::Lock& lock);
+  // Destructor.
+  ~SynchronizedRunLoopObserver();
+  // Adds the observer to the current run loop for a given run loop mode.
+  // This method should always be paired with |RemoveFromCurrentRunLoop|.
+  void AddToCurrentRunLoop(const CFStringRef mode);
+  // Removes the observer from the current run loop for a given run loop mode.
+  // This method should always be paired with |AddToCurrentRunLoop|.
+  void RemoveFromCurrentRunLoop(const CFStringRef mode);
+  // Callback function that is called when an observable run loop event occurs.
+  void RunLoopObserverCallBack(CFRunLoopObserverRef observer,
+                               CFRunLoopActivity activity);
+
+ private:
+  // Lock to use to synchronize the run loop sources.
+  base::Lock& lock_;
+  // Indicates whether the current observer holds the lock. It is used to
+  // avoid double locking and releasing.
+  bool lock_acquired_;
+  // The underlying CFRunLoopObserverRef structure wrapped by this instance.
+  base::ScopedCFTypeRef<CFRunLoopObserverRef> observer_;
+  // Validates that all methods of this class are executed on the same thread.
+  base::ThreadChecker thread_checker_;
+  DISALLOW_COPY_AND_ASSIGN(SynchronizedRunLoopObserver);
+};
+
+SynchronizedRunLoopObserver::SynchronizedRunLoopObserver(base::Lock& lock)
+    : lock_(lock), lock_acquired_(false) {
+  CFRunLoopObserverContext observer_context = {0, this, NULL, NULL, NULL};
+  observer_.reset(CFRunLoopObserverCreate(
+      kCFAllocatorDefault,
+      kCFRunLoopBeforeSources | kCFRunLoopBeforeWaiting | kCFRunLoopExit, true,
+      0, RunLoopObserverCallBackFunc, &observer_context));
+}
+
+SynchronizedRunLoopObserver::~SynchronizedRunLoopObserver() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(!lock_acquired_);
+}
+
+void SynchronizedRunLoopObserver::AddToCurrentRunLoop(const CFStringRef mode) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  CFRunLoopAddObserver(CFRunLoopGetCurrent(), observer_.get(), mode);
+}
+
+void SynchronizedRunLoopObserver::RemoveFromCurrentRunLoop(
+    const CFStringRef mode) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  CFRunLoopRemoveObserver(CFRunLoopGetCurrent(), observer_.get(), mode);
+}
+
+void SynchronizedRunLoopObserver::RunLoopObserverCallBack(
+    CFRunLoopObserverRef observer,
+    CFRunLoopActivity activity) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  // Acquire the lock when a source has been signaled and going to be fired.
+  // In the context of the proxy resolver that happens when the proxy for a
+  // given URL has been resolved and the callback function that handles the
+  // result is going to be fired.
+  // Release the lock when all source events have been handled.
+  switch (activity) {
+    case kCFRunLoopBeforeSources:
+      if (!lock_acquired_) {
+        lock_.Acquire();
+        lock_acquired_ = true;
+      }
+      break;
+    case kCFRunLoopBeforeWaiting:
+    case kCFRunLoopExit:
+      if (lock_acquired_) {
+        lock_acquired_ = false;
+        lock_.Release();
+      }
+      break;
+  }
+}
+
+void RunLoopObserverCallBackFunc(CFRunLoopObserverRef observer,
+                                 CFRunLoopActivity activity,
+                                 void* info) {
+  // Forward the call to the instance of SynchronizedRunLoopObserver
+  // that is associated with the current CF run loop observer.
+  SynchronizedRunLoopObserver* observerInstance =
+      (SynchronizedRunLoopObserver*)info;
+  observerInstance->RunLoopObserverCallBack(observer, activity);
+}
+
+#pragma mark - ProxyResolverMac
 class ProxyResolverMac : public ProxyResolver {
  public:
   explicit ProxyResolverMac(
@@ -140,10 +258,31 @@ int ProxyResolverMac::GetProxyForURL(const GURL& query_url,
   const CFStringRef private_runloop_mode =
       CFSTR("org.chromium.ProxyResolverMac");
 
-  CFRunLoopAddSource(CFRunLoopGetCurrent(), runloop_source.get(),
-                     private_runloop_mode);
+  // Add the run loop observer to synchronize events of
+  // CFNetworkExecuteProxyAutoConfigurationURL sources. See the definition of
+  // |g_cfnetwork_pac_runloop_lock|.
+  SynchronizedRunLoopObserver observer(g_cfnetwork_pac_runloop_lock.Get());
+  observer.AddToCurrentRunLoop(private_runloop_mode);
+
+  // Make sure that no CFNetworkExecuteProxyAutoConfigurationURL sources
+  // are added to the run loop concurrently.
+  {
+    base::AutoLock lock(g_cfnetwork_pac_runloop_lock.Get());
+    CFRunLoopAddSource(CFRunLoopGetCurrent(), runloop_source.get(),
+                       private_runloop_mode);
+  }
+
   CFRunLoopRunInMode(private_runloop_mode, DBL_MAX, false);
-  CFRunLoopSourceInvalidate(runloop_source.get());
+
+  // Make sure that no CFNetworkExecuteProxyAutoConfigurationURL sources
+  // are removed from the run loop concurrently.
+  {
+    base::AutoLock lock(g_cfnetwork_pac_runloop_lock.Get());
+    CFRunLoopRemoveSource(CFRunLoopGetCurrent(), runloop_source.get(),
+                          private_runloop_mode);
+  }
+  observer.RemoveFromCurrentRunLoop(private_runloop_mode);
+
   DCHECK(result != NULL);
 
   if (CFGetTypeID(result) == CFErrorGetTypeID()) {
