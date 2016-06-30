@@ -61,61 +61,29 @@ using testing::Eq;
 
 const int32_t kBufferSize = SpdyHttpStream::kRequestBodyBufferSize;
 
-enum SpdyNetworkTransactionTestSSLType {
-  // Request an https:// URL and use NPN (or ALPN) to negotiate SPDY during
-  // the TLS handshake.
-  HTTPS_SPDY_VIA_NPN,
-  // Request an https:// URL to a server that supports SPDY via Alternative
-  // Service.
-  // See: http://httpwg.org/http-extensions/alt-svc.html.
-  HTTPS_SPDY_VIA_ALT_SVC,
-};
-
 struct SpdyNetworkTransactionTestParams {
   SpdyNetworkTransactionTestParams()
       : protocol(kProtoSPDY31),
-        ssl_type(HTTPS_SPDY_VIA_NPN),
         priority_to_dependency(false) {}
 
   SpdyNetworkTransactionTestParams(NextProto protocol,
-                                   SpdyNetworkTransactionTestSSLType ssl_type,
                                    bool priority_to_dependency)
       : protocol(protocol),
-        ssl_type(ssl_type),
         priority_to_dependency(priority_to_dependency) {}
 
   friend std::ostream& operator<<(std::ostream& os,
                                   const SpdyNetworkTransactionTestParams& p) {
-    std::string type_str;
-    switch (p.ssl_type) {
-      case HTTPS_SPDY_VIA_ALT_SVC:
-        type_str = "HTTPS_SPDY_VIA_ALT_SVC";
-        break;
-      case HTTPS_SPDY_VIA_NPN:
-        type_str = "HTTPS_SPDY_VIA_NPN";
-        break;
-    }
     os << "{ protocol: " << SSLClientSocket::NextProtoToString(p.protocol)
-       << ", ssl_type: " << type_str
        << ", priority_to_dependency: " << p.priority_to_dependency << " }";
     return os;
   }
 
   NextProto protocol;
-  SpdyNetworkTransactionTestSSLType ssl_type;
   bool priority_to_dependency;
 };
 
 void UpdateSpdySessionDependencies(SpdyNetworkTransactionTestParams test_params,
                                    SpdySessionDependencies* session_deps) {
-  if (test_params.ssl_type == HTTPS_SPDY_VIA_ALT_SVC) {
-    base::Time expiration = base::Time::Now() + base::TimeDelta::FromDays(1);
-    session_deps->http_server_properties->SetAlternativeService(
-        url::SchemeHostPort(GURL(kDefaultUrl)),
-        AlternativeService(AlternateProtocolFromNextProto(test_params.protocol),
-                           "mail.example.org", 443),
-        expiration);
-  }
   session_deps->enable_priority_dependencies =
       test_params.priority_to_dependency;
 }
@@ -337,15 +305,6 @@ class SpdyNetworkTransactionTest
       ssl_vector_.push_back(std::move(ssl_provider));
 
       session_deps_->socket_factory->AddSocketDataProvider(data);
-      if (test_params_.ssl_type == HTTPS_SPDY_VIA_ALT_SVC) {
-        MockConnect hanging_connect(SYNCHRONOUS, ERR_IO_PENDING);
-        std::unique_ptr<StaticSocketDataProvider> hanging_non_alt_svc_socket(
-            base::WrapUnique(new StaticSocketDataProvider(NULL, 0, NULL, 0)));
-        hanging_non_alt_svc_socket->set_connect_data(hanging_connect);
-        session_deps_->socket_factory->AddSocketDataProvider(
-            hanging_non_alt_svc_socket.get());
-        alternate_vector_.push_back(std::move(hanging_non_alt_svc_socket));
-      }
     }
 
     void SetSession(std::unique_ptr<HttpNetworkSession> session) {
@@ -680,23 +639,10 @@ class SpdyNetworkTransactionTest
 INSTANTIATE_TEST_CASE_P(
     Spdy,
     SpdyNetworkTransactionTest,
-    ::testing::Values(
-        SpdyNetworkTransactionTestParams(kProtoSPDY31,
-                                         HTTPS_SPDY_VIA_NPN,
-                                         false),
-        SpdyNetworkTransactionTestParams(kProtoSPDY31,
-                                         HTTPS_SPDY_VIA_ALT_SVC,
-                                         false),
-        SpdyNetworkTransactionTestParams(kProtoHTTP2,
-                                         HTTPS_SPDY_VIA_NPN,
-                                         false),
-        SpdyNetworkTransactionTestParams(kProtoHTTP2, HTTPS_SPDY_VIA_NPN, true),
-        SpdyNetworkTransactionTestParams(kProtoHTTP2,
-                                         HTTPS_SPDY_VIA_ALT_SVC,
-                                         false),
-        SpdyNetworkTransactionTestParams(kProtoHTTP2,
-                                         HTTPS_SPDY_VIA_ALT_SVC,
-                                         true)));
+    ::testing::Values(SpdyNetworkTransactionTestParams(kProtoSPDY31, false),
+                      SpdyNetworkTransactionTestParams(kProtoSPDY31, true),
+                      SpdyNetworkTransactionTestParams(kProtoHTTP2, false),
+                      SpdyNetworkTransactionTestParams(kProtoHTTP2, true)));
 
 // Verify HttpNetworkTransaction constructor.
 TEST_P(SpdyNetworkTransactionTest, Constructor) {
@@ -2319,9 +2265,6 @@ TEST_P(SpdyNetworkTransactionTest, CancelledTransactionSendRst) {
 // to start another transaction on a session that is closing down. See
 // http://crbug.com/47455
 TEST_P(SpdyNetworkTransactionTest, StartTransactionOnReadCallback) {
-  if (GetParam().ssl_type != HTTPS_SPDY_VIA_NPN)
-    return;
-
   std::unique_ptr<SpdySerializedFrame> req(
       spdy_util_.ConstructSpdyGet(nullptr, 0, 1, LOWEST, true));
   MockWrite writes[] = {CreateMockWrite(*req)};
@@ -4510,10 +4453,6 @@ TEST_P(SpdyNetworkTransactionTest, HTTP11RequiredRetry) {
   // HTTP_1_1_REQUIRED is only supported by HTTP/2.
   if (spdy_util_.spdy_version() < HTTP2)
     return;
-  // HTTP_1_1_REQUIRED implementation relies on the assumption that HTTP/2 is
-  // only spoken over SSL.
-  if (GetParam().ssl_type != HTTPS_SPDY_VIA_NPN)
-    return;
 
   HttpRequestInfo request;
   request.method = "GET";
@@ -4596,10 +4535,6 @@ TEST_P(SpdyNetworkTransactionTest, HTTP11RequiredRetry) {
 TEST_P(SpdyNetworkTransactionTest, HTTP11RequiredProxyRetry) {
   // HTTP_1_1_REQUIRED is only supported by HTTP/2.
   if (spdy_util_.spdy_version() < HTTP2)
-    return;
-  // HTTP_1_1_REQUIRED implementation relies on the assumption that HTTP/2 is
-  // only spoken over SSL.
-  if (GetParam().ssl_type != HTTPS_SPDY_VIA_NPN)
     return;
 
   HttpRequestInfo request;
@@ -4899,8 +4834,6 @@ TEST_P(SpdyNetworkTransactionTest, DirectConnectProxyReconnect) {
 // This can happen when a server reboots without saying goodbye, or when
 // we're behind a NAT that masked the RST.
 TEST_P(SpdyNetworkTransactionTest, VerifyRetryOnConnectionReset) {
-  if (GetParam().ssl_type != HTTPS_SPDY_VIA_NPN)
-    return;
   std::unique_ptr<SpdySerializedFrame> resp(
       spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 1));
   std::unique_ptr<SpdySerializedFrame> body(
@@ -5612,10 +5545,6 @@ TEST_P(SpdyNetworkTransactionTest, SyncReplyDataAfterTrailers) {
 }
 
 TEST_P(SpdyNetworkTransactionTest, ServerPushCrossOriginCorrectness) {
-  // Running these tests via Alt-Svc is too complicated to be worthwhile.
-  if (GetParam().ssl_type != HTTPS_SPDY_VIA_NPN)
-    return;
-
   // In this test we want to verify that we can't accidentally push content
   // which can't be pushed by this content server.
   // This test assumes that:
@@ -5821,10 +5750,6 @@ TEST_P(SpdyNetworkTransactionTest, ServerPushValidCrossOrigin) {
 // Verify that push works cross origin, even if there is already a connection
 // open to origin of pushed resource.
 TEST_P(SpdyNetworkTransactionTest, ServerPushValidCrossOriginWithOpenSession) {
-  // Running this test via Alt-Svc is too complicated to be worthwhile.
-  if (GetParam().ssl_type != HTTPS_SPDY_VIA_NPN)
-    return;
-
   const char* url_to_fetch0 = "https://mail.example.org/foo";
   const char* url_to_fetch1 = "https://docs.example.org";
   const char* url_to_push = "https://mail.example.org/bar";
@@ -7161,17 +7086,10 @@ class SpdyNetworkTransactionNoTLSUsageCheckTest
   }
 };
 
-//-----------------------------------------------------------------------------
-// All tests are run with three different connection types: SPDY after NPN
-// negotiation, SPDY without SSL, and SPDY with SSL.
-//
-// TODO(akalin): Use ::testing::Combine() when we are able to use
-// <tr1/tuple>.
 INSTANTIATE_TEST_CASE_P(
     Spdy,
     SpdyNetworkTransactionNoTLSUsageCheckTest,
     ::testing::Values(SpdyNetworkTransactionTestParams(kProtoSPDY31,
-                                                       HTTPS_SPDY_VIA_NPN,
                                                        false)));
 
 TEST_P(SpdyNetworkTransactionNoTLSUsageCheckTest, TLSVersionTooOld) {
@@ -7216,12 +7134,8 @@ class SpdyNetworkTransactionTLSUsageCheckTest
 INSTANTIATE_TEST_CASE_P(
     Spdy,
     SpdyNetworkTransactionTLSUsageCheckTest,
-    ::testing::Values(SpdyNetworkTransactionTestParams(kProtoHTTP2,
-                                                       HTTPS_SPDY_VIA_NPN,
-                                                       false),
-                      SpdyNetworkTransactionTestParams(kProtoHTTP2,
-                                                       HTTPS_SPDY_VIA_NPN,
-                                                       true)));
+    ::testing::Values(SpdyNetworkTransactionTestParams(kProtoHTTP2, false),
+                      SpdyNetworkTransactionTestParams(kProtoHTTP2, true)));
 
 TEST_P(SpdyNetworkTransactionTLSUsageCheckTest, TLSVersionTooOld) {
   std::unique_ptr<SSLSocketDataProvider> ssl_provider(
