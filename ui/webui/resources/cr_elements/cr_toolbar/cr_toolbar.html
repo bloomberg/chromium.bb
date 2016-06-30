@@ -1,5 +1,6 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-media-query/iron-media-query.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_toolbar/cr_toolbar_search_field.html">
 
 <dom-module id="cr-toolbar">
@@ -18,10 +19,19 @@
       }
 
       #leftContent {
-        -webkit-padding-start: 24px;
         align-items: center;
         display: flex;
-        width: var(--side-bar-width, 0);
+      }
+
+      #leftContent paper-icon-button {
+        -webkit-margin-end: 6px;
+        -webkit-margin-start: 18px;
+        height: 32px;
+        margin-bottom: 6px;
+        margin-top: 6px;
+        min-width: 32px;
+        padding: 6px;
+        width: 32px;
       }
 
       #centeredContent {
@@ -40,7 +50,8 @@
       }
     </style>
     <div id="leftContent">
-      <content select="paper-icon-button"></content>
+      <paper-icon-button icon="cr:menu" on-tap="onMenuTap_">
+      </paper-icon-button>
       <h1>[[pageName]]</h1>
     </div>
 

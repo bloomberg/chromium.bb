@@ -19,7 +19,11 @@ Polymer({
 
   properties: {
     // The id of the currently selected page.
-    selectedPage_: String,
+    selectedPage_: {
+      type: String,
+      value: 'history-list',
+      observer: 'unselectAll'
+    },
 
     // Whether domain-grouped history is enabled.
     grouped_: {
@@ -63,6 +67,7 @@ Polymer({
 
   // TODO(calamity): Replace these event listeners with data bound properties.
   listeners: {
+    'cr-menu-tap': 'onMenuTap_',
     'history-checkbox-select': 'checkboxSelected',
     'unselect-all': 'unselectAll',
     'delete-selected': 'deleteSelected',
@@ -73,6 +78,11 @@ Polymer({
   /** @override */
   ready: function() {
     this.grouped_ = loadTimeData.getBoolean('groupByDomain');
+  },
+
+  /** @private */
+  onMenuTap_: function() {
+    this.$['side-bar'].toggle();
   },
 
   /**
@@ -88,6 +98,7 @@ Polymer({
   /**
    * Listens for call to cancel selection and loops through all items to set
    * checkbox to be unselected.
+   * @private
    */
   unselectAll: function() {
     var historyList =

@@ -35,5 +35,10 @@ Polymer({
   /** @return {!CrToolbarSearchFieldElement} */
   getSearchField: function() {
     return this.$.search;
+  },
+
+  /** @private */
+  onMenuTap_: function(e) {
+    this.fire('cr-menu-tap');
   }
 });

@@ -20,7 +20,6 @@
       :host {
         display: block;
         height: 100%;
-        min-width: 800px;
         overflow: hidden;
       }
 
@@ -38,10 +37,6 @@
       #content > * {
         height: 100%;
       }
-
-      #history-side-bar {
-        float: left;
-      }
     </style>
     <history-toolbar id="toolbar"
         spinner-active="[[shouldShowSpinner_(queryState_.querying,
@@ -55,8 +50,6 @@
     </history-toolbar>
 
     <div id="main-container">
-      <history-side-bar id="history-side-bar" selected-page="{{selectedPage_}}">
-      </history-side-bar>
       <iron-pages id="content" attr-for-selected="id"
           selected="[[getSelectedPage(selectedPage_, queryState_.range)]]">
         <history-list id="history-list" querying="[[queryState_.querying]]"
@@ -77,6 +70,9 @@
         </template>
       </iron-pages>
     </div>
+
+    <history-side-bar id="side-bar" selected-page="{{selectedPage_}}">
+    </history-side-bar>
   </template>
   <script src="chrome://history/app.js"></script>
 </dom-module>

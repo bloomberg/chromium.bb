@@ -9,17 +9,26 @@ Polymer({
     selectedPage: {
       type: String,
       notify: true
-    }
+    },
   },
 
-  /**
-   * Handles menu selection changes.
-   * @param {Event} e
-   * @private
-   */
-  onSelect_: function(e) {
-    this.fire('unselect-all');
-    this.selectedPage = e.detail.item.getAttribute('view-id');
+  toggle: function() {
+    this.$.drawer.toggle();
+  },
+
+  /** @private */
+  onDrawerFocus_: function() {
+    // The desired behavior is for the app-drawer to focus the currently
+    // selected menu item on opening. However, it will always focus the first
+    // focusable child. Therefore, we set tabindex=0 on the app-drawer so that
+    // it will focus itself and then immediately delegate focus to the selected
+    // item in this listener.
+    this.$.menu.selectedItem.focus();
+  },
+
+  /** @private */
+  onSelectorActivate_: function() {
+    this.$.drawer.close();
   },
 
   /**
