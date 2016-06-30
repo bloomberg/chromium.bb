@@ -2341,10 +2341,11 @@ TEST_F(BrowserAccessibilityTest, AccChildOnlyReturnsDescendants) {
 }
 
 TEST_F(BrowserAccessibilityTest, TestIAccessible2Relations) {
-  std::vector<int32_t> describedby_ids = {2, 3};
   ui::AXNodeData root;
   root.id = 1;
   root.role = ui::AX_ROLE_ROOT_WEB_AREA;
+  // Reflexive relations should be ignored.
+  std::vector<int32_t> describedby_ids = {1, 2, 3};
   root.AddIntListAttribute(ui::AX_ATTR_DESCRIBEDBY_IDS, describedby_ids);
 
   ui::AXNodeData child1;

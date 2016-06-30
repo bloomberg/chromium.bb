@@ -222,8 +222,8 @@ BrowserAccessibilityWin::BrowserAccessibilityWin()
 }
 
 BrowserAccessibilityWin::~BrowserAccessibilityWin() {
-  for (size_t i = 0; i < relations_.size(); ++i)
-    relations_[i]->Release();
+  for (BrowserAccessibilityRelation* relation : relations_)
+    relation->Release();
 }
 
 //
@@ -4454,6 +4454,10 @@ bool BrowserAccessibilityWin::IsListBoxOptionOrMenuListOption() {
 
 void BrowserAccessibilityWin::AddRelation(const base::string16& relation_type,
                                           int target_id) {
+  // Reflexive relations don't need to be exposed through IA2.
+  if (target_id == GetId())
+    return;
+
   CComObject<BrowserAccessibilityRelation>* relation;
   HRESULT hr =
       CComObject<BrowserAccessibilityRelation>::CreateInstance(&relation);
@@ -4471,6 +4475,16 @@ void BrowserAccessibilityWin::AddBidirectionalRelations(
   if (!HasIntListAttribute(attribute))
     return;
 
+  const std::vector<int32_t>& target_ids = GetIntListAttribute(attribute);
+  // Reflexive relations don't need to be exposed through IA2.
+  std::vector<int32_t> filtered_target_ids;
+  int32_t current_id = GetId();
+  std::copy_if(target_ids.begin(), target_ids.end(),
+               std::back_inserter(filtered_target_ids),
+               [current_id](int32_t id) { return id != current_id; });
+  if (filtered_target_ids.empty())
+    return;
+
   CComObject<BrowserAccessibilityRelation>* relation;
   HRESULT hr =
       CComObject<BrowserAccessibilityRelation>::CreateInstance(&relation);
@@ -4478,7 +4492,7 @@ void BrowserAccessibilityWin::AddBidirectionalRelations(
   relation->AddRef();
   relation->Initialize(this, relation_type);
 
-  for (int target_id : GetIntListAttribute(attribute)) {
+  for (int target_id : filtered_target_ids) {
     BrowserAccessibilityWin* target =
         GetFromID(static_cast<int32_t>(target_id));
     if (!target || !target->instance_active())
@@ -4527,10 +4541,11 @@ void BrowserAccessibilityWin::RemoveBidirectionalRelationsOfType(
             GetFromID(static_cast<int32_t>(target_id));
         if (!target || !target->instance_active())
           continue;
+        DCHECK_NE(target, this);
         target->RemoveTargetFromRelation(reverse_relation_type, GetId());
       }
-      relation->Release();
       iter = relations_.erase(iter);
+      relation->Release();
     } else {
       ++iter;
     }
@@ -4548,8 +4563,8 @@ void BrowserAccessibilityWin::RemoveTargetFromRelation(
       relation->RemoveTarget(target_id);
     }
     if (relation->get_target_ids().empty()) {
-      relation->Release();
       iter = relations_.erase(iter);
+      relation->Release();
     } else {
       ++iter;
     }
