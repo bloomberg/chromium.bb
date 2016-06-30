@@ -226,15 +226,6 @@ public:
     virtual void pageScaleFactorChanged() { }
 
 
-    // Visibility -----------------------------------------------------------
-
-    // Returns the current visibility of the WebView.
-    virtual WebPageVisibilityState visibilityState() const
-    {
-        return WebPageVisibilityStateVisible;
-    }
-
-
     // Content detection ----------------------------------------------------
 
     // Retrieves detectable content (e.g., email addresses, phone numbers)

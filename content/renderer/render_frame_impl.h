@@ -44,6 +44,7 @@
 #include "third_party/WebKit/public/platform/WebFocusType.h"
 #include "third_party/WebKit/public/platform/WebLoadingBehaviorFlag.h"
 #include "third_party/WebKit/public/platform/WebMediaPlayer.h"
+#include "third_party/WebKit/public/platform/WebPageVisibilityState.h"
 #include "third_party/WebKit/public/platform/modules/app_banner/WebAppBannerClient.h"
 #include "third_party/WebKit/public/web/WebAXObject.h"
 #include "third_party/WebKit/public/web/WebDataSource.h"
@@ -427,6 +428,7 @@ class CONTENT_EXPORT RenderFrameImpl
                            const std::string& message) override;
   bool IsUsingLoFi() const override;
   bool IsPasting() const override;
+  blink::WebPageVisibilityState GetVisibilityState() const override;
 
   // mojom::Frame implementation:
   void GetInterfaceProvider(
@@ -636,6 +638,7 @@ class CONTENT_EXPORT RenderFrameImpl
       const blink::WebSecurityOrigin& security_origin,
       blink::WebSetSinkIdCallbacks* web_callbacks) override;
   blink::ServiceRegistry* serviceRegistry() override;
+  blink::WebPageVisibilityState visibilityState() const override;
 
   // WebFrameSerializerClient implementation:
   void didSerializeDataForFrame(

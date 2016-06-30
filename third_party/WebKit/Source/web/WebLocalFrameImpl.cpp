@@ -1812,7 +1812,7 @@ WebLocalFrameImpl* WebLocalFrameImpl::localRoot()
     // when the WebLocalFrame exists but the core LocalFrame does not.
     // TODO(alexmos, dcheng): Clean this up to only calculate this in one place.
     WebLocalFrameImpl* localRoot = this;
-    while (!localRoot->frameWidget())
+    while (localRoot->parent() && localRoot->parent()->isWebLocalFrame())
         localRoot = toWebLocalFrameImpl(localRoot->parent());
     return localRoot;
 }

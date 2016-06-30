@@ -1768,7 +1768,8 @@ int RenderFrameHostManager::CreateRenderFrameProxy(SiteInstance* instance) {
   if (!render_view_host) {
     CHECK(frame_tree_node_->IsMainFrame());
     render_view_host = frame_tree_node_->frame_tree()->CreateRenderViewHost(
-        instance, MSG_ROUTING_NONE, MSG_ROUTING_NONE, true, true);
+        instance, MSG_ROUTING_NONE, MSG_ROUTING_NONE, true,
+        delegate_->IsHidden());
   }
 
   RenderFrameProxyHost* proxy = GetRenderFrameProxyHost(instance);

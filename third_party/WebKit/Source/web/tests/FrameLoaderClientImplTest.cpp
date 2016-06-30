@@ -63,7 +63,7 @@ protected:
         ON_CALL(m_webFrameClient, userAgentOverride()).WillByDefault(Return(WebString()));
 
         FrameTestHelpers::TestWebViewClient webViewClient;
-        m_webView = WebView::create(&webViewClient);
+        m_webView = WebView::create(&webViewClient, WebPageVisibilityStateVisible);
         // FIXME: http://crbug.com/363843. This needs to find a better way to
         // not create graphics layers.
         m_webView->settings()->setAcceleratedCompositingEnabled(false);

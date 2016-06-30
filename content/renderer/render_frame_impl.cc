@@ -920,9 +920,6 @@ RenderFrameImpl* RenderFrameImpl::CreateMainFrame(
   render_view->webview()->setMainFrame(web_frame);
   render_frame->render_widget_ = RenderWidget::CreateForFrame(
       widget_routing_id, hidden, screen_info, compositor_deps, web_frame);
-  // TODO(kenrb): Observing shouldn't be necessary when we sort out
-  // WasShown and WasHidden, separating page-level visibility from
-  // frame-level visibility.
   // TODO(avi): This DCHECK is to track cleanup for https://crbug.com/545684
   DCHECK_EQ(render_view->GetWidget(), render_frame->render_widget_)
       << "Main frame is no longer reusing the RenderView as its widget! "
@@ -999,12 +996,8 @@ void RenderFrameImpl::CreateFrame(
     // TODO(avi): The main frame re-uses the RenderViewImpl as its widget, so
     // avoid double-registering the frame as an observer.
     // https://crbug.com/545684
-    if (web_frame->parent()) {
-      // TODO(kenrb): Observing shouldn't be necessary when we sort out
-      // WasShown and WasHidden, separating page-level visibility from
-      // frame-level visibility.
+    if (web_frame->parent())
       render_frame->render_widget_->RegisterRenderFrame(render_frame);
-    }
   }
 
   render_frame->Initialize();
@@ -1688,14 +1681,6 @@ void RenderFrameImpl::OnSwapOut(
   // if one is created, that will replace this frame.
   if (!is_main_frame_)
     proxy->web_frame()->initializeFromFrame(frame_);
-
-  // Let WebKit know that this view is hidden so it can drop resources and
-  // stop compositing.
-  // TODO(creis): Support this for subframes as well.
-  if (is_main_frame_) {
-    render_view_->webview()->setVisibilityState(
-        blink::WebPageVisibilityStateHidden, false);
-  }
 
   RenderViewImpl* render_view = render_view_.get();
   bool is_main_frame = is_main_frame_;
@@ -4050,7 +4035,7 @@ void RenderFrameImpl::willSendRequest(
   int parent_routing_id = parent ? GetRoutingIdForFrameOrProxy(parent) : -1;
 
   RequestExtraData* extra_data = new RequestExtraData();
-  extra_data->set_visibility_state(render_view_->visibilityState());
+  extra_data->set_visibility_state(visibilityState());
   extra_data->set_custom_user_agent(custom_user_agent);
   extra_data->set_requested_with(requested_with);
   extra_data->set_render_frame_id(routing_id_);
@@ -4527,27 +4512,25 @@ void RenderFrameImpl::WasHidden() {
   for (auto* plugin : active_pepper_instances_)
     plugin->PageVisibilityChanged(false);
 #endif  // ENABLE_PLUGINS
+
+  if (GetWebFrame()->frameWidget()) {
+    static_cast<blink::WebFrameWidget*>(GetWebFrame()->frameWidget())
+        ->setVisibilityState(visibilityState());
+  }
 }
 
 void RenderFrameImpl::WasShown() {
-  // TODO(kenrb): Need to figure out how to do this better. Should
-  // VisibilityState remain a page-level concept or move to frames?
-  // The semantics of 'Show' might have to change here.
-  // TODO(avi): This DCHECK is to track cleanup for https://crbug.com/545684
-  DCHECK(!IsMainFrame() || render_widget_.get() == render_view_.get())
-      << "The main render frame is no longer reusing the RenderView as its "
-      << "RenderWidget!";
-  if (render_widget_ && render_widget_->webwidget() &&
-      render_view_.get() != render_widget_.get()) {
-    static_cast<blink::WebFrameWidget*>(render_widget_->webwidget())->
-        setVisibilityState(blink::WebPageVisibilityStateVisible, false);
-  }
   FOR_EACH_OBSERVER(RenderFrameObserver, observers_, WasShown());
 
 #if defined(ENABLE_PLUGINS)
   for (auto* plugin : active_pepper_instances_)
     plugin->PageVisibilityChanged(true);
 #endif  // ENABLE_PLUGINS
+
+  if (GetWebFrame()->frameWidget()) {
+    static_cast<blink::WebFrameWidget*>(GetWebFrame()->frameWidget())
+        ->setVisibilityState(visibilityState());
+  }
 }
 
 void RenderFrameImpl::WidgetWillClose() {
@@ -6210,6 +6193,24 @@ void RenderFrameImpl::checkIfAudioSinkExistsAndIsAuthorized(
 
 blink::ServiceRegistry* RenderFrameImpl::serviceRegistry() {
   return blink_service_registry_.get();
+}
+
+blink::WebPageVisibilityState RenderFrameImpl::visibilityState() const {
+  RenderFrameImpl* local_root =
+      RenderFrameImpl::FromWebFrame(frame_->localRoot());
+  blink::WebPageVisibilityState current_state =
+      local_root->render_widget_->is_hidden()
+          ? blink::WebPageVisibilityStateHidden
+          : blink::WebPageVisibilityStateVisible;
+  blink::WebPageVisibilityState override_state = current_state;
+  if (GetContentClient()->renderer()->ShouldOverridePageVisibilityState(
+          this, &override_state))
+    return override_state;
+  return current_state;
+}
+
+blink::WebPageVisibilityState RenderFrameImpl::GetVisibilityState() const {
+  return visibilityState();
 }
 
 blink::WebPlugin* RenderFrameImpl::GetWebPluginForFind() {

@@ -1291,6 +1291,8 @@ void WebContentsImpl::WasShown() {
     }
   }
 
+  SendPageMessage(new PageMsg_WasShown(MSG_ROUTING_NONE));
+
   last_active_time_ = base::TimeTicks::Now();
 
   // The resize rect might have changed while this was inactive -- send the new
@@ -1320,6 +1322,8 @@ void WebContentsImpl::WasHidden() {
       if (view)
         view->Hide();
     }
+
+    SendPageMessage(new PageMsg_WasHidden(MSG_ROUTING_NONE));
   }
 
   FOR_EACH_OBSERVER(WebContentsObserver, observers_, WasHidden());

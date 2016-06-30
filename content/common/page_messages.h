@@ -27,6 +27,12 @@ IPC_MESSAGE_ROUTED2(PageMsg_SetZoomLevel,
                     PageMsg_SetZoomLevel_Command /* command */,
                     double /* zoom_level */)
 
+// Informs the renderer that the page was hidden.
+IPC_MESSAGE_ROUTED0(PageMsg_WasHidden)
+
+// Informs the renderer that the page is no longer hidden.
+IPC_MESSAGE_ROUTED0(PageMsg_WasShown)
+
 // -----------------------------------------------------------------------------
 // Messages sent from the renderer to the browser.
 

@@ -14,7 +14,6 @@
 #include "content/common/content_export.h"
 #include "content/public/common/top_controls_state.h"
 #include "ipc/ipc_sender.h"
-#include "third_party/WebKit/public/platform/WebPageVisibilityState.h"
 #include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/native_widget_types.h"
 
@@ -108,9 +107,6 @@ class CONTENT_EXPORT RenderView : public IPC::Sender {
   // contents) should be sent to the browser immediately. This is normally
   // false, but set to true by some tests.
   virtual bool GetContentStateImmediately() const = 0;
-
-  // Returns the current visibility of the WebView.
-  virtual blink::WebPageVisibilityState GetVisibilityState() const = 0;
 
   // Used by plugins that load data in this RenderView to update the loading
   // notifications.

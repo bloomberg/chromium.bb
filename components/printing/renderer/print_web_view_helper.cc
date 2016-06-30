@@ -522,7 +522,8 @@ void PrintWebViewHelper::PrintHeaderAndFooter(
                            page_layout.margin_top + page_layout.margin_bottom +
                                page_layout.content_height);
 
-  blink::WebView* web_view = blink::WebView::create(NULL);
+  blink::WebView* web_view =
+      blink::WebView::create(nullptr, blink::WebPageVisibilityStateVisible);
   web_view->settings()->setJavaScriptEnabled(true);
 
   blink::WebLocalFrame* frame =
@@ -739,7 +740,8 @@ void PrepareFrameAndViewForPrint::CopySelection(
   WebPreferences prefs = preferences;
   prefs.javascript_enabled = false;
 
-  blink::WebView* web_view = blink::WebView::create(this);
+  blink::WebView* web_view =
+      blink::WebView::create(this, blink::WebPageVisibilityStateVisible);
   owns_web_view_ = true;
   content::RenderView::ApplyWebPreferences(prefs, web_view);
   web_view->setMainFrame(

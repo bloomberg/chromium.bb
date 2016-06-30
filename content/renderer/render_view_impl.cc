@@ -694,7 +694,9 @@ void RenderViewImpl::Initialize(const ViewMsg_New_Params& params,
   // Ensure we start with a valid next_page_id_ from the browser.
   DCHECK_GE(next_page_id_, 0);
 
-  webview_ = WebView::create(this);
+  webview_ =
+      WebView::create(this, is_hidden() ? blink::WebPageVisibilityStateHidden
+                                        : blink::WebPageVisibilityStateVisible);
   RenderWidget::DoInit(MSG_ROUTING_NONE, webview_->widget(), nullptr);
 
   g_view_map.Get().insert(std::make_pair(webview(), this));
@@ -1333,6 +1335,9 @@ bool RenderViewImpl::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(PageMsg_UpdateWindowScreenRect,
                         OnUpdateWindowScreenRect)
     IPC_MESSAGE_HANDLER(PageMsg_SetZoomLevel, OnSetZoomLevel)
+    IPC_MESSAGE_HANDLER(PageMsg_WasHidden, OnPageWasHidden)
+    IPC_MESSAGE_HANDLER(PageMsg_WasShown, OnPageWasShown)
+
 #if defined(OS_ANDROID)
     IPC_MESSAGE_HANDLER(ViewMsg_UpdateTopControlsState,
                         OnUpdateTopControlsState)
@@ -2251,10 +2256,6 @@ bool RenderViewImpl::GetContentStateImmediately() const {
   return send_content_state_immediately_;
 }
 
-blink::WebPageVisibilityState RenderViewImpl::GetVisibilityState() const {
-  return visibilityState();
-}
-
 void RenderViewImpl::DidStartLoading() {
   main_render_frame_->didStartLoading(true);
 }
@@ -2682,9 +2683,7 @@ void RenderViewImpl::Close() {
   RenderThread::Get()->Send(new ViewHostMsg_Close_ACK(GetRoutingID()));
 }
 
-void RenderViewImpl::OnWasHidden() {
-  RenderWidget::OnWasHidden();
-
+void RenderViewImpl::OnPageWasHidden() {
 #if defined(OS_ANDROID) && defined(ENABLE_WEBRTC)
   RenderThreadImpl::current()->video_capture_impl_manager()->
       SuspendDevices(true);
@@ -2692,21 +2691,30 @@ void RenderViewImpl::OnWasHidden() {
     speech_recognition_dispatcher_->AbortAllRecognitions();
 #endif
 
-  if (webview())
-    webview()->setVisibilityState(visibilityState(), false);
+  if (webview()) {
+    // TODO(lfg): It's not correct to defer the page visibility to the main
+    // frame. Currently, this is done because the main frame may override the
+    // visibility of the page when prerendering. In order to fix this,
+    // prerendering must be made aware of OOPIFs. https://crbug.com/440544
+    blink::WebPageVisibilityState visibilityState =
+        GetMainRenderFrame() ? GetMainRenderFrame()->visibilityState()
+                             : blink::WebPageVisibilityStateHidden;
+    webview()->setVisibilityState(visibilityState, false);
+  }
 }
 
-void RenderViewImpl::OnWasShown(bool needs_repainting,
-                                const ui::LatencyInfo& latency_info) {
-  RenderWidget::OnWasShown(needs_repainting, latency_info);
-
+void RenderViewImpl::OnPageWasShown() {
 #if defined(OS_ANDROID) && defined(ENABLE_WEBRTC)
   RenderThreadImpl::current()->video_capture_impl_manager()->
       SuspendDevices(false);
 #endif
 
-  if (webview())
-    webview()->setVisibilityState(visibilityState(), false);
+  if (webview()) {
+    blink::WebPageVisibilityState visibilityState =
+        GetMainRenderFrame() ? GetMainRenderFrame()->visibilityState()
+                             : blink::WebPageVisibilityStateVisible;
+    webview()->setVisibilityState(visibilityState, false);
+  }
 }
 
 GURL RenderViewImpl::GetURLForGraphicsContext3D() {
@@ -2955,19 +2963,6 @@ double RenderViewImpl::zoomLevelToZoomFactor(double zoom_level) const {
 
 double RenderViewImpl::zoomFactorToZoomLevel(double factor) const {
   return ZoomFactorToZoomLevel(factor);
-}
-
-blink::WebPageVisibilityState RenderViewImpl::visibilityState() const {
-  blink::WebPageVisibilityState current_state = is_hidden() ?
-      blink::WebPageVisibilityStateHidden :
-      blink::WebPageVisibilityStateVisible;
-  blink::WebPageVisibilityState override_state = current_state;
-  // TODO(jam): move this method to WebFrameClient.
-  if (GetContentClient()->renderer()->
-          ShouldOverridePageVisibilityState(main_render_frame_,
-                                            &override_state))
-    return override_state;
-  return current_state;
 }
 
 void RenderViewImpl::draggableRegionsChanged() {

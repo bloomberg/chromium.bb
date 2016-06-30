@@ -336,16 +336,16 @@ private:
 
 // WebView ----------------------------------------------------------------
 
-WebView* WebView::create(WebViewClient* client)
+WebView* WebView::create(WebViewClient* client, WebPageVisibilityState visibilityState)
 {
     // Pass the WebViewImpl's self-reference to the caller.
-    return WebViewImpl::create(client);
+    return WebViewImpl::create(client, visibilityState);
 }
 
-WebViewImpl* WebViewImpl::create(WebViewClient* client)
+WebViewImpl* WebViewImpl::create(WebViewClient* client, WebPageVisibilityState visibilityState)
 {
     // Pass the WebViewImpl's self-reference to the caller.
-    return adoptRef(new WebViewImpl(client)).leakRef();
+    return adoptRef(new WebViewImpl(client, visibilityState)).leakRef();
 }
 
 void WebView::setUseExternalPopupMenus(bool useExternalPopupMenus)
@@ -403,7 +403,7 @@ HashSet<WebViewImpl*>& WebViewImpl::allInstances()
     return allInstances;
 }
 
-WebViewImpl::WebViewImpl(WebViewClient* client)
+WebViewImpl::WebViewImpl(WebViewClient* client, WebPageVisibilityState visibilityState)
     : m_client(client)
     , m_spellCheckClient(nullptr)
     , m_chromeClientImpl(ChromeClientImpl::create(this))
@@ -453,6 +453,7 @@ WebViewImpl::WebViewImpl(WebViewClient* client)
     , m_mutator(nullptr)
     , m_scheduler(wrapUnique(Platform::current()->currentThread()->scheduler()->createWebViewScheduler(this).release()))
     , m_lastFrameTimeMonotonic(0)
+    , m_overrideCompositorVisibility(false)
 {
     Page::PageClients pageClients;
     pageClients.chromeClient = m_chromeClientImpl.get();
@@ -471,9 +472,7 @@ WebViewImpl::WebViewImpl(WebViewClient* client)
     provideDedicatedWorkerGlobalScopeProxyProviderTo(*m_page, DedicatedWorkerGlobalScopeProxyProviderImpl::create());
     StorageNamespaceController::provideStorageNamespaceTo(*m_page, &m_storageClientImpl);
 
-    if (m_client) {
-        setVisibilityState(m_client->visibilityState(), true);
-    }
+    setVisibilityState(visibilityState, true);
 
     initializeLayerTreeView();
 
@@ -4425,9 +4424,19 @@ void WebViewImpl::setVisibilityState(WebPageVisibilityState visibilityState,
         m_page->setVisibilityState(static_cast<PageVisibilityState>(static_cast<int>(visibilityState)), isInitialState);
 
     bool visible = visibilityState == WebPageVisibilityStateVisible;
-    if (m_layerTreeView)
+    if (m_layerTreeView && !m_overrideCompositorVisibility)
         m_layerTreeView->setVisible(visible);
     m_scheduler->setPageVisible(visible);
+}
+
+void WebViewImpl::setCompositorVisibility(bool isVisible)
+{
+    if (!isVisible)
+        m_overrideCompositorVisibility = true;
+    else
+        m_overrideCompositorVisibility = false;
+    if (m_layerTreeView)
+        m_layerTreeView->setVisible(isVisible);
 }
 
 void WebViewImpl::pointerLockMouseEvent(const WebInputEvent& event)

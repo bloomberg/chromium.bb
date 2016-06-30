@@ -15,6 +15,7 @@
 #include "content/public/common/console_message_level.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_sender.h"
+#include "third_party/WebKit/public/platform/WebPageVisibilityState.h"
 #include "third_party/WebKit/public/web/WebNavigationPolicy.h"
 
 class GURL;
@@ -213,6 +214,9 @@ class CONTENT_EXPORT RenderFrame : public IPC::Listener,
 
   // Whether or not this frame is currently pasting.
   virtual bool IsPasting() const = 0;
+
+  // Returns the current visibility of the frame.
+  virtual blink::WebPageVisibilityState GetVisibilityState() const = 0;
 
  protected:
   ~RenderFrame() override {}

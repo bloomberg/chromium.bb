@@ -200,7 +200,7 @@ WebViewImpl* WebViewHelper::initializeWithOpener(WebFrame* opener, bool enableJa
         webViewClient = defaultWebViewClient();
     if (!webWidgetClient)
         webWidgetClient = webViewClient->widgetClient();
-    m_webView = WebViewImpl::create(webViewClient);
+    m_webView = WebViewImpl::create(webViewClient, WebPageVisibilityStateVisible);
     m_webView->settings()->setJavaScriptEnabled(enableJavascript);
     m_webView->settings()->setPluginsEnabled(true);
     // Enable (mocked) network loads of image URLs, as this simplifies

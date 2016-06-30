@@ -87,7 +87,8 @@ class WebMediaPlayerImplTest : public testing::Test {
  public:
   WebMediaPlayerImplTest()
       : media_thread_("MediaThreadForTest"),
-        web_view_(blink::WebView::create(nullptr)),
+        web_view_(blink::WebView::create(nullptr,
+                                         blink::WebPageVisibilityStateVisible)),
         web_local_frame_(
             blink::WebLocalFrame::create(blink::WebTreeScopeType::Document,
                                          &web_frame_client_)),

@@ -118,7 +118,7 @@ public:
     void didLosePointerLock() override;
 
     // WebFrameWidget implementation.
-    void setVisibilityState(WebPageVisibilityState, bool) override;
+    void setVisibilityState(WebPageVisibilityState) override;
     bool isTransparent() const override;
     void setIsTransparent(bool) override;
     void setBaseBackgroundColor(WebColor) override;

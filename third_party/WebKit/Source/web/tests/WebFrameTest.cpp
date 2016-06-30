@@ -1599,7 +1599,7 @@ TEST_F(WebFrameTest, FrameOwnerPropertiesMargin)
 {
     FrameTestHelpers::TestWebViewClient viewClient;
     FrameTestHelpers::TestWebRemoteFrameClient remoteClient;
-    WebView* view = WebView::create(&viewClient);
+    WebView* view = WebView::create(&viewClient, WebPageVisibilityStateVisible);
     view->settings()->setJavaScriptEnabled(true);
     view->setMainFrame(remoteClient.frame());
     WebRemoteFrame* root = view->mainFrame()->toWebRemoteFrame();
@@ -1631,7 +1631,7 @@ TEST_F(WebFrameTest, FrameOwnerPropertiesScrolling)
 {
     FrameTestHelpers::TestWebViewClient viewClient;
     FrameTestHelpers::TestWebRemoteFrameClient remoteClient;
-    WebView* view = WebView::create(&viewClient);
+    WebView* view = WebView::create(&viewClient, WebPageVisibilityStateVisible);
     view->settings()->setJavaScriptEnabled(true);
     view->setMainFrame(remoteClient.frame());
     WebRemoteFrame* root = view->mainFrame()->toWebRemoteFrame();
@@ -7096,7 +7096,7 @@ TEST_P(ParameterizedWebFrameTest, EmbedderTriggeredDetachWithRemoteMainFrame)
     // write tests with a top-level remote frame.
     FrameTestHelpers::TestWebViewClient viewClient;
     FrameTestHelpers::TestWebRemoteFrameClient remoteClient;
-    WebView* view = WebView::create(&viewClient);
+    WebView* view = WebView::create(&viewClient, WebPageVisibilityStateVisible);
     view->setMainFrame(remoteClient.frame());
     WebLocalFrame* childFrame = FrameTestHelpers::createLocalChild(view->mainFrame()->toWebRemoteFrame());
 
@@ -7742,7 +7742,7 @@ TEST_F(WebFrameTest, WindowOpenRemoteClose)
     FrameTestHelpers::TestWebRemoteFrameClient frameClient;
     WebRemoteFrameImpl* webRemoteFrame = frameClient.frame();
 
-    WebView* view = WebView::create(&viewClient);
+    WebView* view = WebView::create(&viewClient, WebPageVisibilityStateVisible);
     view->setMainFrame(webRemoteFrame);
     view->mainFrame()->setOpener(mainWebView.webView()->mainFrame());
     webRemoteFrame->setReplicatedOrigin(WebSecurityOrigin::createFromString("http://127.0.0.1"));
@@ -7771,7 +7771,7 @@ TEST_F(WebFrameTest, NavigateRemoteToLocalWithOpener)
 
     // Create a popup with a remote frame and set its opener to the main frame.
     FrameTestHelpers::TestWebViewClient popupViewClient;
-    WebView* popupView = WebView::create(&popupViewClient);
+    WebView* popupView = WebView::create(&popupViewClient, WebPageVisibilityStateVisible);
     FrameTestHelpers::TestWebRemoteFrameClient popupRemoteClient;
     WebRemoteFrame* popupRemoteFrame = popupRemoteClient.frame();
     popupView->setMainFrame(popupRemoteFrame);
@@ -7795,7 +7795,7 @@ TEST_F(WebFrameTest, SwapWithOpenerCycle)
 {
     // First, create a remote main frame with itself as the opener.
     FrameTestHelpers::TestWebViewClient viewClient;
-    WebView* view = WebView::create(&viewClient);
+    WebView* view = WebView::create(&viewClient, WebPageVisibilityStateVisible);
     FrameTestHelpers::TestWebRemoteFrameClient remoteClient;
     WebRemoteFrame* remoteFrame = remoteClient.frame();
     view->setMainFrame(remoteFrame);
@@ -7834,7 +7834,7 @@ TEST_P(ParameterizedWebFrameTest, RemoteFrameInitialCommitType)
 {
     FrameTestHelpers::TestWebViewClient viewClient;
     FrameTestHelpers::TestWebRemoteFrameClient remoteClient;
-    WebView* view = WebView::create(&viewClient);
+    WebView* view = WebView::create(&viewClient, WebPageVisibilityStateVisible);
     view->setMainFrame(remoteClient.frame());
     remoteClient.frame()->setReplicatedOrigin(WebSecurityOrigin::createFromString(WebString::fromUTF8(m_baseURL)));
 
@@ -7860,7 +7860,7 @@ private:
 TEST_P(ParameterizedWebFrameTest, FrameWidgetTest)
 {
     FrameTestHelpers::TestWebViewClient viewClient;
-    WebView* view = WebView::create(&viewClient);
+    WebView* view = WebView::create(&viewClient, WebPageVisibilityStateVisible);
 
     FrameTestHelpers::TestWebRemoteFrameClient remoteClient;
     view->setMainFrame(remoteClient.frame());
@@ -7930,7 +7930,7 @@ TEST_P(ParameterizedWebFrameTest, DetachRemoteFrame)
 {
     FrameTestHelpers::TestWebViewClient viewClient;
     FrameTestHelpers::TestWebRemoteFrameClient remoteClient;
-    WebView* view = WebView::create(&viewClient);
+    WebView* view = WebView::create(&viewClient, WebPageVisibilityStateVisible);
     view->setMainFrame(remoteClient.frame());
     FrameTestHelpers::TestWebRemoteFrameClient childFrameClient;
     WebRemoteFrame* childFrame = FrameTestHelpers::createRemoteChild(view->mainFrame()->toWebRemoteFrame(), &childFrameClient);
@@ -8055,7 +8055,7 @@ TEST_P(ParameterizedWebFrameTest, CreateLocalChildWithPreviousSibling)
 {
     FrameTestHelpers::TestWebViewClient viewClient;
     FrameTestHelpers::TestWebRemoteFrameClient remoteClient;
-    WebView* view = WebView::create(&viewClient);
+    WebView* view = WebView::create(&viewClient, WebPageVisibilityStateVisible);
     view->setMainFrame(remoteClient.frame());
     WebRemoteFrame* parent = view->mainFrame()->toWebRemoteFrame();
 
@@ -8090,7 +8090,7 @@ TEST_P(ParameterizedWebFrameTest, SendBeaconFromChildWithRemoteMainFrame)
 {
     FrameTestHelpers::TestWebViewClient viewClient;
     FrameTestHelpers::TestWebRemoteFrameClient remoteClient;
-    WebView* view = WebView::create(&viewClient);
+    WebView* view = WebView::create(&viewClient, WebPageVisibilityStateVisible);
     view->settings()->setJavaScriptEnabled(true);
     view->setMainFrame(remoteClient.frame());
     WebRemoteFrame* root = view->mainFrame()->toWebRemoteFrame();
@@ -8111,7 +8111,7 @@ TEST_P(ParameterizedWebFrameTest, FirstPartyForCookiesFromChildWithRemoteMainFra
 {
     FrameTestHelpers::TestWebViewClient viewClient;
     FrameTestHelpers::TestWebRemoteFrameClient remoteClient;
-    WebView* view = WebView::create(&viewClient);
+    WebView* view = WebView::create(&viewClient, WebPageVisibilityStateVisible);
     view->setMainFrame(remoteClient.frame());
     WebRemoteFrame* root = view->mainFrame()->toWebRemoteFrame();
     root->setReplicatedOrigin(SecurityOrigin::create(toKURL(m_notBaseURL)));
@@ -8134,7 +8134,7 @@ TEST_P(ParameterizedWebFrameTest, RemoteToLocalSwapOnMainFrameInitializesCoreFra
 {
     FrameTestHelpers::TestWebViewClient viewClient;
     FrameTestHelpers::TestWebRemoteFrameClient remoteClient;
-    WebView* view = WebView::create(&viewClient);
+    WebView* view = WebView::create(&viewClient, WebPageVisibilityStateVisible);
     view->setMainFrame(remoteClient.frame());
     WebRemoteFrame* remoteRoot = view->mainFrame()->toWebRemoteFrame();
     remoteRoot->setReplicatedOrigin(SecurityOrigin::createUnique());

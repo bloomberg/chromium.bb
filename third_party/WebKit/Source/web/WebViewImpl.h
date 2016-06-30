@@ -100,7 +100,7 @@ class WEB_EXPORT WebViewImpl final : WTF_NON_EXPORTED_BASE(public WebView)
     , WTF_NON_EXPORTED_BASE(public WebGestureCurveTarget)
     , public PageWidgetEventHandler {
 public:
-    static WebViewImpl* create(WebViewClient*);
+    static WebViewImpl* create(WebViewClient*, WebPageVisibilityState);
     static HashSet<WebViewImpl*>& allInstances();
 
     // WebWidget methods:
@@ -539,7 +539,12 @@ private:
     void performResize();
     void resizeViewWhileAnchored(FrameView*, float topControlsHeight, bool topControlsShrinkLayout);
 
+    // Overrides the compositor visibility. See the description of
+    // m_overrideCompositorVisibility for more details.
+    void setCompositorVisibility(bool);
+
     friend class WebView;  // So WebView::Create can call our constructor
+    friend class WebViewFrameWidget;
     friend class WTF::RefCounted<WebViewImpl>;
     friend void setCurrentInputEventForTest(const WebInputEvent*);
 
@@ -548,7 +553,7 @@ private:
       DragOver
     };
 
-    explicit WebViewImpl(WebViewClient*);
+    explicit WebViewImpl(WebViewClient*, WebPageVisibilityState);
     ~WebViewImpl() override;
 
     int textInputFlags();
@@ -757,6 +762,12 @@ private:
     PaintArtifactCompositor m_paintArtifactCompositor;
 
     double m_lastFrameTimeMonotonic;
+
+    // TODO(lfg): This is used in order to disable compositor visibility while
+    // the page is still visible. This is needed until the WebView and WebWidget
+    // split is complete, since in out-of-process iframes the page can be
+    // visible, but the WebView should not be used as a widget.
+    bool m_overrideCompositorVisibility;
 };
 
 // We have no ways to check if the specified WebView is an instance of

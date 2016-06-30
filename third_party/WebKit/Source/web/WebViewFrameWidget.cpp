@@ -13,6 +13,7 @@ WebViewFrameWidget::WebViewFrameWidget(WebWidgetClient* client, WebViewImpl& web
     : m_client(client), m_webView(&webView), m_mainFrame(&mainFrame)
 {
     m_mainFrame->setFrameWidget(this);
+    m_webView->setCompositorVisibility(true);
 }
 
 WebViewFrameWidget::~WebViewFrameWidget()
@@ -25,6 +26,7 @@ void WebViewFrameWidget::close()
     // a frame swap, the swapped frame is detached *after* the frame tree is
     // updated. If the main frame is being swapped, then
     // m_webView()->mainFrameImpl() will no longer point to the original frame.
+    m_webView->setCompositorVisibility(false);
     m_mainFrame->setFrameWidget(nullptr);
     m_mainFrame = nullptr;
     m_webView = nullptr;
@@ -235,9 +237,9 @@ void WebViewFrameWidget::updateTopControlsState(WebTopControlsState constraints,
     return m_webView->updateTopControlsState(constraints, current, animate);
 }
 
-void WebViewFrameWidget::setVisibilityState(WebPageVisibilityState visibilityState, bool isInitialState)
+void WebViewFrameWidget::setVisibilityState(WebPageVisibilityState visibilityState)
 {
-    return m_webView->setVisibilityState(visibilityState, isInitialState);
+    return m_webView->setVisibilityState(visibilityState, false);
 }
 
 void WebViewFrameWidget::setIsTransparent(bool isTransparent)

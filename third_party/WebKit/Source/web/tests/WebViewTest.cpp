@@ -404,7 +404,7 @@ TEST_F(WebViewTest, SetBaseBackgroundColorBeforeMainFrame)
 {
     const WebColor kBlue = 0xFF0000FF;
     FrameTestHelpers::TestWebViewClient webViewClient;
-    WebViewImpl* webView = WebViewImpl::create(&webViewClient);
+    WebViewImpl* webView = WebViewImpl::create(&webViewClient, WebPageVisibilityStateVisible);
     EXPECT_NE(kBlue, webView->backgroundColor());
     // webView does not have a frame yet, but we should still be able to set the background color.
     webView->setBaseBackgroundColor(kBlue);
@@ -1462,7 +1462,7 @@ TEST_F(WebViewTest, ClientTapHandling)
 
 TEST_F(WebViewTest, ClientTapHandlingNullWebViewClient)
 {
-    WebViewImpl* webView = WebViewImpl::create(nullptr);
+    WebViewImpl* webView = WebViewImpl::create(nullptr, WebPageVisibilityStateVisible);
     WebLocalFrame* localFrame = WebLocalFrame::create(WebTreeScopeType::Document, nullptr);
     webView->setMainFrame(localFrame);
     WebGestureEvent event;

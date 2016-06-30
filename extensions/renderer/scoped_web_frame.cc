@@ -9,7 +9,7 @@
 namespace extensions {
 
 ScopedWebFrame::ScopedWebFrame() : view_(nullptr), frame_(nullptr) {
-  view_ = blink::WebView::create(nullptr);
+  view_ = blink::WebView::create(nullptr, blink::WebPageVisibilityStateVisible);
   frame_ = blink::WebLocalFrame::create(
       blink::WebTreeScopeType::Document, nullptr);
   view_->setMainFrame(frame_);

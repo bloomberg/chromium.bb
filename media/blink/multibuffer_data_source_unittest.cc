@@ -224,7 +224,7 @@ static const char kHttpDifferentOriginUrl[] = "http://127.0.0.1/foo.webm";
 class MultibufferDataSourceTest : public testing::Test {
  public:
   MultibufferDataSourceTest()
-      : view_(WebView::create(NULL)),
+      : view_(WebView::create(nullptr, blink::WebPageVisibilityStateVisible)),
         frame_(
             WebLocalFrame::create(blink::WebTreeScopeType::Document, &client_)),
         preload_(MultibufferDataSource::AUTO),

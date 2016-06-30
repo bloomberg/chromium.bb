@@ -1110,21 +1110,10 @@ void WebFrameWidgetImpl::detachCompositorAnimationTimeline(CompositorAnimationTi
         m_layerTreeView->detachCompositorAnimationTimeline(compositorTimeline->animationTimeline());
 }
 
-void WebFrameWidgetImpl::setVisibilityState(WebPageVisibilityState visibilityState, bool isInitialState)
+void WebFrameWidgetImpl::setVisibilityState(WebPageVisibilityState visibilityState)
 {
-    if (!page())
-        return;
-
-    // FIXME: This is not correct, since Show and Hide messages for a frame's Widget do not necessarily
-    // correspond to Page visibility, but is necessary until we properly sort out OOPIF visibility.
-    page()->setVisibilityState(static_cast<PageVisibilityState>(visibilityState), isInitialState);
-
-    m_localRoot->frame()->frameScheduler()->setPageVisible(visibilityState == WebPageVisibilityStateVisible);
-
-    if (m_layerTreeView) {
-        bool visible = visibilityState == WebPageVisibilityStateVisible;
-        m_layerTreeView->setVisible(visible);
-    }
+    if (m_layerTreeView)
+        m_layerTreeView->setVisible(visibilityState == WebPageVisibilityStateVisible);
 }
 
 HitTestResult WebFrameWidgetImpl::hitTestResultForRootFramePos(const IntPoint& posInRootFrame)

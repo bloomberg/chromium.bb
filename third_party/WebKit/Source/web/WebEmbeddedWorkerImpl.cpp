@@ -276,7 +276,7 @@ void WebEmbeddedWorkerImpl::prepareShadowPageForLoader()
     // This code, and probably most of the code in this class should be shared
     // with SharedWorker.
     DCHECK(!m_webView);
-    m_webView = WebView::create(0);
+    m_webView = WebView::create(nullptr, WebPageVisibilityStateVisible);
     WebSettings* settings = m_webView->settings();
     // FIXME: http://crbug.com/363843. This needs to find a better way to
     // not create graphics layers.

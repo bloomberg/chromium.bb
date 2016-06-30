@@ -66,7 +66,7 @@ static bool CorrectAcceptEncoding(const blink::WebURLRequest& request) {
 class ResourceMultiBufferDataProviderTest : public testing::Test {
  public:
   ResourceMultiBufferDataProviderTest()
-      : view_(WebView::create(nullptr)),
+      : view_(WebView::create(nullptr, blink::WebPageVisibilityStateVisible)),
         frame_(WebLocalFrame::create(blink::WebTreeScopeType::Document,
                                      &client_)) {
     view_->setMainFrame(frame_);

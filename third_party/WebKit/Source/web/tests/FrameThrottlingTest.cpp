@@ -426,7 +426,7 @@ TEST_F(FrameThrottlingTest, ThrottledFrameWithFocus)
 TEST(RemoteFrameThrottlingTest, ThrottledLocalRoot)
 {
     FrameTestHelpers::TestWebViewClient viewClient;
-    WebViewImpl* webView = WebViewImpl::create(&viewClient);
+    WebViewImpl* webView = WebViewImpl::create(&viewClient, WebPageVisibilityStateVisible);
     webView->resize(WebSize(640, 480));
 
     // Create a remote root frame with a local child frame.

@@ -127,7 +127,7 @@ void WebSharedWorkerImpl::initializeLoader()
     // loading requests from the worker context to the rest of WebKit and Chromium
     // infrastructure.
     DCHECK(!m_webView);
-    m_webView = WebView::create(0);
+    m_webView = WebView::create(nullptr, WebPageVisibilityStateVisible);
     // FIXME: http://crbug.com/363843. This needs to find a better way to
     // not create graphics layers.
     m_webView->settings()->setAcceleratedCompositingEnabled(false);

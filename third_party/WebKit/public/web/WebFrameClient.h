@@ -53,6 +53,7 @@
 #include "public/platform/WebFileSystemType.h"
 #include "public/platform/WebInsecureRequestPolicy.h"
 #include "public/platform/WebLoadingBehaviorFlag.h"
+#include "public/platform/WebPageVisibilityState.h"
 #include "public/platform/WebSecurityOrigin.h"
 #include "public/platform/WebSetSinkIdCallbacks.h"
 #include "public/platform/WebStorageQuotaCallbacks.h"
@@ -717,6 +718,14 @@ public:
 
     // Mojo ----------------------------------------------------------------
     virtual ServiceRegistry* serviceRegistry() { return nullptr; }
+
+    // Visibility ----------------------------------------------------------
+
+    // Returns the current visibility of the WebFrame.
+    virtual WebPageVisibilityState visibilityState() const
+    {
+        return WebPageVisibilityStateVisible;
+    }
 
 protected:
     virtual ~WebFrameClient() { }

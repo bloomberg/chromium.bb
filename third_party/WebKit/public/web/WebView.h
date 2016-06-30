@@ -126,8 +126,9 @@ public:
 
     // Creates a WebView that is NOT yet initialized. You will need to
     // call setMainFrame to finish the initialization. It is valid
-    // to pass a null client pointer.
-    BLINK_EXPORT static WebView* create(WebViewClient*);
+    // to pass a null client pointer. The WebPageVisibilityState defines the
+    // initial visibility of the page.
+    BLINK_EXPORT static WebView* create(WebViewClient*, WebPageVisibilityState);
 
     // After creating a WebView, you should immediately call this method.
     // You can optionally modify the settings before calling this method.

@@ -326,8 +326,8 @@ void Page::setVisibilityState(PageVisibilityState visibilityState, bool isInitia
     if (!isInitialState)
         notifyPageVisibilityChanged();
 
-    if (!isInitialState && m_mainFrame && m_mainFrame->isLocalFrame())
-        deprecatedLocalMainFrame()->didChangeVisibilityState();
+    if (!isInitialState && m_mainFrame)
+        m_mainFrame->didChangeVisibilityState();
 
     // Compress CompressibleStrings when 10 seconds have passed since the page
     // went to background.

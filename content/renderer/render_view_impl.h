@@ -45,7 +45,6 @@
 #include "content/renderer/render_widget_owner_delegate.h"
 #include "content/renderer/stats_collection_observer.h"
 #include "ipc/ipc_platform_file.h"
-#include "third_party/WebKit/public/platform/WebPageVisibilityState.h"
 #include "third_party/WebKit/public/platform/WebSecurityOrigin.h"
 #include "third_party/WebKit/public/web/WebAXObject.h"
 #include "third_party/WebKit/public/web/WebConsoleMessage.h"
@@ -382,7 +381,6 @@ class CONTENT_EXPORT RenderViewImpl
   void pageScaleFactorChanged() override;
   virtual double zoomLevelToZoomFactor(double zoom_level) const;
   virtual double zoomFactorToZoomLevel(double factor) const;
-  blink::WebPageVisibilityState visibilityState() const override;
   void draggableRegionsChanged() override;
   void pageImportanceSignalsChanged() override;
 
@@ -415,7 +413,6 @@ class CONTENT_EXPORT RenderViewImpl
   bool ShouldDisplayScrollbars(int width, int height) const override;
   int GetEnabledBindings() const override;
   bool GetContentStateImmediately() const override;
-  blink::WebPageVisibilityState GetVisibilityState() const override;
   void DidStartLoading() override;
   void DidStopLoading() override;
   void Repaint(const gfx::Size& size) override;
@@ -448,9 +445,6 @@ class CONTENT_EXPORT RenderViewImpl
   void Close() override;
   void OnResize(const ResizeParams& params) override;
   void OnSetFocus(bool enable) override;
-  void OnWasHidden() override;
-  void OnWasShown(bool needs_repainting,
-                  const ui::LatencyInfo& latency_info) override;
   GURL GetURLForGraphicsContext3D() override;
   void OnImeSetComposition(
       const base::string16& text,
@@ -672,6 +666,8 @@ class CONTENT_EXPORT RenderViewImpl
   // Page message handlers -----------------------------------------------------
   void OnUpdateWindowScreenRect(gfx::Rect window_screen_rect);
   void OnSetZoomLevel(PageMsg_SetZoomLevel_Command command, double zoom_level);
+  void OnPageWasHidden();
+  void OnPageWasShown();
 
   // Adding a new message handler? Please add it in alphabetical order above
   // and put it in the same position in the .cc file.

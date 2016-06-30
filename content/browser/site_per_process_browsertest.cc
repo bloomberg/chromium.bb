@@ -7450,4 +7450,43 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, FileChooserInSubframe) {
   EXPECT_EQ("bar", file_name);
 }
 
+// Tests that an out-of-process iframe receives the visibilitychange event.
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, VisibilityChange) {
+  GURL main_url(embedded_test_server()->GetURL(
+      "a.com", "/cross_site_iframe_factory.html?a(b)"));
+  NavigateToURL(shell(), main_url);
+
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()
+                            ->root();
+
+  EXPECT_EQ(
+      " Site A ------------ proxies for B\n"
+      "   +--Site B ------- proxies for A\n"
+      "Where A = http://a.com/\n"
+      "      B = http://b.com/",
+      DepictFrameTree(root));
+
+  EXPECT_TRUE(ExecuteScript(
+      root->child_at(0)->current_frame_host(),
+      "var event_fired = 0;\n"
+      "document.addEventListener('visibilitychange',\n"
+      "                          function() { event_fired++; });\n"));
+
+  shell()->web_contents()->WasHidden();
+
+  int event_fired = 0;
+  EXPECT_TRUE(ExecuteScriptAndExtractInt(
+      root->child_at(0)->current_frame_host(),
+      "window.domAutomationController.send(event_fired);", &event_fired));
+  EXPECT_EQ(1, event_fired);
+
+  shell()->web_contents()->WasShown();
+
+  EXPECT_TRUE(ExecuteScriptAndExtractInt(
+      root->child_at(0)->current_frame_host(),
+      "window.domAutomationController.send(event_fired);", &event_fired));
+  EXPECT_EQ(2, event_fired);
+}
+
 }  // namespace content
