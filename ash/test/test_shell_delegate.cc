@@ -9,15 +9,14 @@
 #include "ash/app_list/app_list_presenter_delegate.h"
 #include "ash/app_list/app_list_presenter_delegate_factory.h"
 #include "ash/common/default_accessibility_delegate.h"
+#include "ash/common/media_delegate.h"
 #include "ash/common/session/session_state_delegate.h"
 #include "ash/common/shell_window_ids.h"
 #include "ash/common/wm/window_state.h"
 #include "ash/common/wm_shell.h"
 #include "ash/gpu_support_stub.h"
-#include "ash/media_delegate.h"
 #include "ash/new_window_delegate.h"
 #include "ash/pointer_watcher_delegate_aura.h"
-#include "ash/shell.h"
 #include "ash/test/test_keyboard_ui.h"
 #include "ash/test/test_session_state_delegate.h"
 #include "ash/test/test_shelf_delegate.h"
@@ -228,7 +227,7 @@ gfx::Image TestShellDelegate::GetDeprecatedAcceleratorImage() const {
 
 void TestShellDelegate::SetMediaCaptureState(MediaCaptureState state) {
 #if defined(OS_CHROMEOS)
-  static_cast<MediaDelegateImpl*>(Shell::GetInstance()->media_delegate())
+  static_cast<MediaDelegateImpl*>(WmShell::Get()->media_delegate())
       ->set_media_capture_state(state);
   WmShell::Get()->system_tray_notifier()->NotifyMediaCaptureChanged();
 #endif

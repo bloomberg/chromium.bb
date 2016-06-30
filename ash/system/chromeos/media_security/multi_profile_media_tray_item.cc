@@ -5,13 +5,12 @@
 #include "ash/system/chromeos/media_security/multi_profile_media_tray_item.h"
 
 #include "ash/ash_view_ids.h"
+#include "ash/common/media_delegate.h"
 #include "ash/common/session/session_state_delegate.h"
 #include "ash/common/system/chromeos/media_security/media_capture_observer.h"
 #include "ash/common/system/tray/system_tray_notifier.h"
 #include "ash/common/system/tray/tray_item_view.h"
 #include "ash/common/wm_shell.h"
-#include "ash/media_delegate.h"
-#include "ash/shell.h"
 #include "grit/ash_resources.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/views/controls/image_view.h"
@@ -42,7 +41,7 @@ class MultiProfileMediaTrayView : public TrayItemView,
 
   // MediaCaptureObserver:
   void OnMediaCaptureChanged() override {
-    MediaDelegate* media_delegate = Shell::GetInstance()->media_delegate();
+    MediaDelegate* media_delegate = WmShell::Get()->media_delegate();
     SessionStateDelegate* session_state_delegate =
         WmShell::Get()->GetSessionStateDelegate();
     // The user at 0 is the current desktop user.

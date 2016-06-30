@@ -51,7 +51,6 @@
 #include "ash/keyboard_uma_event_filter.h"
 #include "ash/magnifier/magnification_controller.h"
 #include "ash/magnifier/partial_magnification_controller.h"
-#include "ash/media_delegate.h"
 #include "ash/new_window_delegate.h"
 #include "ash/pointer_watcher_delegate.h"
 #include "ash/root_window_controller.h"
@@ -784,7 +783,6 @@ Shell::~Shell() {
   screen_position_controller_.reset();
   accessibility_delegate_.reset();
   new_window_delegate_.reset();
-  media_delegate_.reset();
   pointer_watcher_delegate_.reset();
 
   keyboard::KeyboardController::ResetInstance(nullptr);
@@ -1028,16 +1026,15 @@ void Shell::Init(const ShellInitParams& init_params) {
   session_state_delegate_.reset(delegate_->CreateSessionStateDelegate());
   accessibility_delegate_.reset(delegate_->CreateAccessibilityDelegate());
   new_window_delegate_.reset(delegate_->CreateNewWindowDelegate());
-  media_delegate_.reset(delegate_->CreateMediaDelegate());
+  wm_shell_->SetMediaDelegate(
+      base::WrapUnique(delegate_->CreateMediaDelegate()));
   pointer_watcher_delegate_ = delegate_->CreatePointerWatcherDelegate();
 
   resize_shadow_controller_.reset(new ResizeShadowController());
   shadow_controller_.reset(new ::wm::ShadowController(activation_client_));
 
-  SystemTrayDelegate* system_tray_delegate =
-      delegate()->CreateSystemTrayDelegate();
-  DCHECK(system_tray_delegate);
-  wm_shell_->SetSystemTrayDelegate(base::WrapUnique(system_tray_delegate));
+  wm_shell_->SetSystemTrayDelegate(
+      base::WrapUnique(delegate()->CreateSystemTrayDelegate()));
 
   locale_notification_controller_.reset(new LocaleNotificationController);
 

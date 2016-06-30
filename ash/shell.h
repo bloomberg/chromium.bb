@@ -110,7 +110,6 @@ enum class LoginStatus;
 class MagnificationController;
 class MaximizeModeController;
 class MaximizeModeWindowManager;
-class MediaDelegate;
 class MouseCursorEventFilter;
 class MruWindowTracker;
 class NewWindowDelegate;
@@ -396,8 +395,6 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
     return new_window_delegate_.get();
   }
 
-  MediaDelegate* media_delegate() { return media_delegate_.get(); }
-
   HighContrastController* high_contrast_controller() {
     return high_contrast_controller_.get();
   }
@@ -618,7 +615,6 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
   std::unique_ptr<SessionStateDelegate> session_state_delegate_;
   std::unique_ptr<AccessibilityDelegate> accessibility_delegate_;
   std::unique_ptr<NewWindowDelegate> new_window_delegate_;
-  std::unique_ptr<MediaDelegate> media_delegate_;
   std::unique_ptr<PointerWatcherDelegate> pointer_watcher_delegate_;
   std::unique_ptr<ShelfDelegate> shelf_delegate_;
   std::unique_ptr<ShelfItemDelegateManager> shelf_item_delegate_manager_;

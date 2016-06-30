@@ -15,6 +15,7 @@
 #include "ash/common/accessibility_types.h"
 #include "ash/common/ash_switches.h"
 #include "ash/common/focus_cycler.h"
+#include "ash/common/media_delegate.h"
 #include "ash/common/session/session_state_delegate.h"
 #include "ash/common/shelf/shelf_model.h"
 #include "ash/common/shell_window_ids.h"
@@ -34,7 +35,6 @@
 #include "ash/ime_control_delegate.h"
 #include "ash/magnifier/magnification_controller.h"
 #include "ash/magnifier/partial_magnification_controller.h"
-#include "ash/media_delegate.h"
 #include "ash/multi_profile_uma.h"
 #include "ash/new_window_delegate.h"
 #include "ash/root_window_controller.h"
@@ -265,15 +265,15 @@ void HandleMagnifyScreen(int delta_index) {
 }
 
 void HandleMediaNextTrack() {
-  Shell::GetInstance()->media_delegate()->HandleMediaNextTrack();
+  WmShell::Get()->media_delegate()->HandleMediaNextTrack();
 }
 
 void HandleMediaPlayPause() {
-  Shell::GetInstance()->media_delegate()->HandleMediaPlayPause();
+  WmShell::Get()->media_delegate()->HandleMediaPlayPause();
 }
 
 void HandleMediaPrevTrack() {
-  Shell::GetInstance()->media_delegate()->HandleMediaPrevTrack();
+  WmShell::Get()->media_delegate()->HandleMediaPrevTrack();
 }
 
 bool CanHandleNewIncognitoWindow() {

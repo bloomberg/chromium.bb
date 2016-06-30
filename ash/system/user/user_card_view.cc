@@ -15,7 +15,6 @@
 #include "ash/common/system/tray/tray_utils.h"
 #include "ash/common/system/user/rounded_image_view.h"
 #include "ash/common/wm_shell.h"
-#include "ash/shell.h"
 #include "base/i18n/rtl.h"
 #include "base/memory/scoped_vector.h"
 #include "base/strings/string16.h"
@@ -41,8 +40,8 @@
 
 #if defined(OS_CHROMEOS)
 #include "ash/ash_view_ids.h"
+#include "ash/common/media_delegate.h"
 #include "ash/common/system/chromeos/media_security/media_capture_observer.h"
-#include "ash/media_delegate.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/layout/fill_layout.h"
 #endif
@@ -84,7 +83,7 @@ class MediaIndicator : public views::View, public MediaCaptureObserver {
   // MediaCaptureObserver:
   void OnMediaCaptureChanged() override {
     MediaCaptureState state =
-        Shell::GetInstance()->media_delegate()->GetMediaCaptureState(index_);
+        WmShell::Get()->media_delegate()->GetMediaCaptureState(index_);
     int res_id = 0;
     switch (state) {
       case MEDIA_CAPTURE_AUDIO_VIDEO:

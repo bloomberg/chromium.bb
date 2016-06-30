@@ -61,6 +61,10 @@ void WmShell::SetKeyboardUI(std::unique_ptr<KeyboardUI> keyboard_ui) {
   keyboard_ui_ = std::move(keyboard_ui);
 }
 
+void WmShell::SetMediaDelegate(std::unique_ptr<MediaDelegate> delegate) {
+  media_delegate_ = std::move(delegate);
+}
+
 void WmShell::SetSystemTrayDelegate(
     std::unique_ptr<SystemTrayDelegate> delegate) {
   DCHECK(delegate);

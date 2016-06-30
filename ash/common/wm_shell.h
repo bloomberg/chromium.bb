@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "ash/ash_export.h"
+#include "ash/common/media_delegate.h"
 #include "ash/common/metrics/user_metrics_action.h"
 
 namespace gfx {
@@ -60,6 +61,8 @@ class ASH_EXPORT WmShell {
   FocusCycler* focus_cycler() { return focus_cycler_.get(); }
 
   KeyboardUI* keyboard_ui() { return keyboard_ui_.get(); }
+
+  MediaDelegate* media_delegate() { return media_delegate_.get(); }
 
   SystemTrayNotifier* system_tray_notifier() {
     return system_tray_notifier_.get();
@@ -183,7 +186,9 @@ class ASH_EXPORT WmShell {
 
   void SetKeyboardUI(std::unique_ptr<KeyboardUI> keyboard_ui);
 
-  // Sets and initializes the |delegate|.
+  // Helpers to set (and initialize) or destroy various delegates.
+  // TODO(msw|jamescook): Remove these once ShellDelegate, etc. are ported.
+  void SetMediaDelegate(std::unique_ptr<MediaDelegate> delegate);
   void SetSystemTrayDelegate(std::unique_ptr<SystemTrayDelegate> delegate);
   void DeleteSystemTrayDelegate();
 
@@ -196,6 +201,7 @@ class ASH_EXPORT WmShell {
 
   std::unique_ptr<FocusCycler> focus_cycler_;
   std::unique_ptr<KeyboardUI> keyboard_ui_;
+  std::unique_ptr<MediaDelegate> media_delegate_;
   std::unique_ptr<SystemTrayNotifier> system_tray_notifier_;
   std::unique_ptr<SystemTrayDelegate> system_tray_delegate_;
   std::unique_ptr<WindowSelectorController> window_selector_controller_;
