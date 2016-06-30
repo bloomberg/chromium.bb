@@ -192,6 +192,8 @@
       'common/extensions/permissions/chrome_permission_message_rules.h',
       'common/extensions/sync_helper.cc',
       'common/extensions/sync_helper.h',
+      'common/extensions/webstore_install_result.cc',
+      'common/extensions/webstore_install_result.h',
     ],
     'chrome_common_printing_sources': [
       'common/chrome_utility_printing_messages.h',

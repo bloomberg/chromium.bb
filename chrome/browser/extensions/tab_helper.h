@@ -126,6 +126,8 @@ class TabHelper : public content::WebContentsObserver,
       WebstoreInlineInstallerFactory* factory);
 
  private:
+  class InlineInstallObserver;
+
   // Utility function to invoke member functions on all relevant
   // ContentRulesRegistries.
   template <class Func>
@@ -198,6 +200,7 @@ class TabHelper : public content::WebContentsObserver,
   // WebstoreStandaloneInstaller::Callback.
   void OnInlineInstallComplete(int install_id,
                                int return_route_id,
+                               const std::string& extension_id,
                                bool success,
                                const std::string& error,
                                webstore_install::Result result);
@@ -205,6 +208,7 @@ class TabHelper : public content::WebContentsObserver,
   // ExtensionReenabler::Callback.
   void OnReenableComplete(int install_id,
                           int return_route_id,
+                          const std::string& extension_id,
                           ExtensionReenabler::ReenableResult result);
 
   // content::NotificationObserver.
@@ -269,6 +273,14 @@ class TabHelper : public content::WebContentsObserver,
 
   ScopedObserver<ExtensionRegistry, ExtensionRegistryObserver>
       registry_observer_;
+
+  // Map of extension id -> InlineInstallObserver for inline installations that
+  // have progress listeners.
+  std::map<std::string, std::unique_ptr<InlineInstallObserver>>
+      install_observers_;
+
+  // The set of extension ids that are currently being installed.
+  std::set<std::string> pending_inline_installations_;
 
   // Vend weak pointers that can be invalidated to stop in-progress loads.
   base::WeakPtrFactory<TabHelper> image_loader_ptr_factory_;

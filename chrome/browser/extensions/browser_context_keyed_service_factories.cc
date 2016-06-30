@@ -42,7 +42,6 @@
 #include "chrome/browser/extensions/api/tabs/tabs_windows_api.h"
 #include "chrome/browser/extensions/api/web_navigation/web_navigation_api.h"
 #include "chrome/browser/extensions/api/webrtc_audio_private/webrtc_audio_private_api.h"
-#include "chrome/browser/extensions/api/webstore/webstore_api.h"
 #include "chrome/browser/extensions/extension_garbage_collector_factory.h"
 #include "chrome/browser/extensions/extension_gcm_app_handler.h"
 #include "chrome/browser/extensions/extension_storage_monitor_factory.h"
@@ -138,7 +137,6 @@ void EnsureBrowserContextKeyedServiceFactoriesBuilt() {
   extensions::WarningBadgeServiceFactory::GetInstance();
   extensions::WebNavigationAPI::GetFactoryInstance();
   extensions::WebrtcAudioPrivateEventService::GetFactoryInstance();
-  extensions::WebstoreAPI::GetFactoryInstance();
 #if defined(OS_CHROMEOS)
   file_manager::EventRouterFactory::GetInstance();
 #endif

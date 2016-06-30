@@ -309,6 +309,14 @@ IN_PROC_BROWSER_TEST_F(WebstoreInlineInstallerTest,
             ExtensionInstallPrompt::g_last_prompt_type_for_tests);
 }
 
+// Test calling chrome.webstore.install() twice without waiting for the first to
+// finish.
+IN_PROC_BROWSER_TEST_F(WebstoreInlineInstallerTest, DoubleInlineInstallTest) {
+  ui_test_utils::NavigateToURL(
+      browser(), GenerateTestServerUrl(kAppDomain, "double_install.html"));
+  RunTest("runTest");
+}
+
 class WebstoreInlineInstallerListenerTest : public WebstoreInlineInstallerTest {
  public:
   WebstoreInlineInstallerListenerTest() {}
@@ -335,6 +343,26 @@ IN_PROC_BROWSER_TEST_F(WebstoreInlineInstallerListenerTest,
 
 IN_PROC_BROWSER_TEST_F(WebstoreInlineInstallerListenerTest, BothListenersTest) {
   RunTest("both_listeners.html");
+  // The extension should be installed.
+  ExtensionRegistry* registry = ExtensionRegistry::Get(profile());
+  EXPECT_TRUE(registry->enabled_extensions().GetByID(kTestExtensionId));
+
+  // Rinse and repeat: uninstall the extension, open a new tab, and install it
+  // again. Regression test for crbug.com/613949.
+  extension_service()->UninstallExtension(
+      kTestExtensionId, UNINSTALL_REASON_FOR_TESTING,
+      base::Bind(&base::DoNothing), nullptr);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(registry->enabled_extensions().GetByID(kTestExtensionId));
+  int old_tab_index = browser()->tab_strip_model()->active_index();
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(), GenerateTestServerUrl(kAppDomain, "both_listeners.html"),
+      NEW_FOREGROUND_TAB, ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+  DCHECK_NE(old_tab_index, browser()->tab_strip_model()->active_index());
+  browser()->tab_strip_model()->CloseWebContentsAt(old_tab_index,
+                                                   TabStripModel::CLOSE_NONE);
+  WebstoreInstallerTest::RunTest("runTest");
+  EXPECT_TRUE(registry->enabled_extensions().GetByID(kTestExtensionId));
 }
 
 }  // namespace extensions

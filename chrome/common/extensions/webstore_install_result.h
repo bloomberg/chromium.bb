@@ -9,6 +9,14 @@ namespace extensions {
 
 namespace webstore_install {
 
+extern const char kInvalidWebstoreItemId[];
+extern const char kWebstoreRequestError[];
+extern const char kInvalidWebstoreResponseError[];
+extern const char kInvalidManifestError[];
+extern const char kUserCancelledError[];
+extern const char kExtensionIsBlacklisted[];
+extern const char kInstallInProgressError[];
+
 // Result codes returned by WebstoreStandaloneInstaller and its subclasses.
 enum Result {
   // Successful operation.
