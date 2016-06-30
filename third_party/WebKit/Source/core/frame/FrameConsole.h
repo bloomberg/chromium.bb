@@ -37,12 +37,9 @@
 namespace blink {
 
 class ConsoleMessage;
-class ConsoleMessageStorage;
 class DocumentLoader;
 class ResourceError;
 class ResourceResponse;
-class ScriptCallStack;
-class WorkerInspectorProxy;
 
 // FrameConsole takes per-frame console messages and routes them up through the FrameHost to the ChromeClient and Inspector.
 // It's meant as an abstraction around ChromeClient calls and the way that Blink core/ can add messages to the console.
@@ -54,14 +51,13 @@ public:
     }
 
     void addMessage(ConsoleMessage*);
+    bool addMessageToStorage(ConsoleMessage*);
+    void reportMessageToClient(ConsoleMessage*);
 
     void reportWorkerMessage(ConsoleMessage*);
     void adoptWorkerMessage(ConsoleMessage*);
 
     void reportResourceResponseReceived(DocumentLoader*, unsigned long requestIdentifier, const ResourceResponse&);
-
-    static void mute();
-    static void unmute();
 
     void clearMessages();
 
@@ -77,10 +73,6 @@ private:
         ASSERT(m_frame);
         return *m_frame;
     }
-
-    ConsoleMessageStorage* messageStorage();
-    bool addMessageToStorage(ConsoleMessage*);
-    void reportMessageToClient(ConsoleMessage*);
 
     Member<LocalFrame> m_frame;
 };

@@ -726,6 +726,78 @@
         ]
     },
     {
+        "domain": "Console",
+        "description": "Console domain defines methods and events for interaction with the JavaScript console. Console collects messages created by means of the <a href='http://getfirebug.com/wiki/index.php/Console_API'>JavaScript Console API</a>. One needs to enable this domain using <code>enable</code> command in order to start receiving the console messages. Browser collects messages issued while console domain is not enabled as well and reports them using <code>messageAdded</code> notification upon enabling.",
+        "dependencies": ["Runtime"],
+        "types": [
+            {
+                "id": "Timestamp",
+                "type": "number",
+                "description": "Number of seconds since epoch.",
+                "hidden": true
+            },
+            {
+                "id": "ConsoleMessage",
+                "type": "object",
+                "description": "Console message.",
+                "properties": [
+                    { "name": "source", "type": "string", "enum": ["xml", "javascript", "network", "console-api", "storage", "appcache", "rendering", "security", "other", "deprecation"], "description": "Message source." },
+                    { "name": "level", "type": "string", "enum": ["log", "warning", "error", "debug", "info", "revokedError"], "description": "Message severity." },
+                    { "name": "text", "type": "string", "description": "Message text." },
+                    { "name": "type", "type": "string", "optional": true, "enum": ["log", "dir", "dirxml", "table", "trace", "clear", "startGroup", "startGroupCollapsed", "endGroup", "assert", "profile", "profileEnd"], "description": "Console message type." },
+                    { "name": "scriptId", "type": "string", "optional": true, "description": "Script ID of the message origin." },
+                    { "name": "url", "type": "string", "optional": true, "description": "URL of the message origin." },
+                    { "name": "line", "type": "integer", "optional": true, "description": "Line number in the resource that generated this message." },
+                    { "name": "column", "type": "integer", "optional": true, "description": "Column number in the resource that generated this message." },
+                    { "name": "repeatCount", "type": "integer", "optional": true, "description": "Repeat count for repeated messages." },
+                    { "name": "parameters", "type": "array", "items": { "$ref": "Runtime.RemoteObject" }, "optional": true, "description": "Message parameters in case of the formatted message." },
+                    { "name": "stack", "$ref": "Runtime.StackTrace", "optional": true, "description": "JavaScript stack trace for assertions and error messages." },
+                    { "name": "networkRequestId", "type": "string", "optional": true, "description": "Identifier of the network request associated with this message." },
+                    { "name": "timestamp", "$ref": "Timestamp", "description": "Timestamp, when this message was fired.", "hidden": true },
+                    { "name": "executionContextId", "$ref": "Runtime.ExecutionContextId", "optional": true, "description": "Identifier of the context where this message was created", "hidden": true },
+                    { "name": "messageId", "type": "integer", "hidden": true, "optional": true, "description": "Message id." },
+                    { "name": "relatedMessageId", "type": "integer", "hidden": true, "optional": true, "description": "Related message id." }
+                ]
+            }
+        ],
+        "commands": [
+            {
+                "name": "enable",
+                "description": "Enables console domain, sends the messages collected so far to the client by means of the <code>messageAdded</code> notification."
+            },
+            {
+                "name": "disable",
+                "description": "Disables console domain, prevents further console messages from being reported to the client."
+            },
+            {
+                "name": "clearMessages",
+                "description": "Clears console messages collected in the browser."
+            }
+        ],
+        "events": [
+            {
+                "name": "messageAdded",
+                "parameters": [
+                    { "name": "message", "$ref": "ConsoleMessage", "description": "Console message that has been added." }
+                ],
+                "description": "Issued when new console message is added."
+            },
+            {
+                "name": "messageRepeatCountUpdated",
+                "parameters": [
+                    { "name": "count", "type": "integer", "description": "New repeat count value." },
+                    { "name": "timestamp", "$ref": "Timestamp", "description": "Timestamp of most recent message in batch.", "hidden": true }
+                ],
+                "description": "Is not issued. Will be gone in the future versions of the protocol.",
+                "deprecated": true
+            },
+            {
+                "name": "messagesCleared",
+                "description": "Issued when console is cleared. This happens either upon <code>clearMessages</code> command or after page navigation."
+            }
+        ]
+    },
+    {
         "domain": "Profiler",
         "dependencies": ["Runtime", "Debugger"],
         "hidden": true,

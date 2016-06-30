@@ -413,7 +413,7 @@ void InjectedScript::Scope::ignoreExceptionsAndMuteConsole()
 {
     DCHECK(!m_ignoreExceptionsAndMuteConsole);
     m_ignoreExceptionsAndMuteConsole = true;
-    m_debugger->client()->muteConsole();
+    m_debugger->muteConsole();
     m_previousPauseOnExceptionsState = setPauseOnExceptionsState(V8DebuggerImpl::DontPauseOnExceptions);
 }
 
@@ -447,7 +447,7 @@ InjectedScript::Scope::~Scope()
 {
     if (m_ignoreExceptionsAndMuteConsole) {
         setPauseOnExceptionsState(m_previousPauseOnExceptionsState);
-        m_debugger->client()->unmuteConsole();
+        m_debugger->unmuteConsole();
     }
     if (m_userGesture)
         m_debugger->client()->endUserGesture();

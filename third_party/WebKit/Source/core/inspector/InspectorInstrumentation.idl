@@ -296,19 +296,6 @@ class XMLHttpRequest;
     void windowCreated(LocalFrame* opener, LocalFrame* created);
 }
 
-interface InspectorConsoleInstrumentation {
-
-#include "core/inspector/ScriptArguments.h"
-
-class ConsoleMessage;
-
-    [Console]
-    void addMessageToConsole(ExecutionContext* context, ConsoleMessage* consoleMessage);
-
-    [Console]
-    void consoleMessagesCleared(ExecutionContext* context);
-}
-
 interface InspectorOverrides {
     [CSS]
     bool forcePseudoState([Keep] Element* element, CSSSelector::PseudoType pseudoState);

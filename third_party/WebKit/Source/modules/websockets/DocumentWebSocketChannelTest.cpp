@@ -11,7 +11,6 @@
 #include "modules/websockets/DocumentWebSocketChannel.h"
 #include "modules/websockets/WebSocketChannelClient.h"
 #include "platform/heap/Handle.h"
-#include "platform/v8_inspector/public/ConsoleTypes.h"
 #include "platform/weborigin/KURL.h"
 #include "public/platform/WebSecurityOrigin.h"
 #include "public/platform/WebString.h"

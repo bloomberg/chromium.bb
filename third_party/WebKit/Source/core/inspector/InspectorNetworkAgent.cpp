@@ -43,11 +43,11 @@
 #include "core/fetch/UniqueIdentifier.h"
 #include "core/fileapi/FileReaderLoader.h"
 #include "core/fileapi/FileReaderLoaderClient.h"
+#include "core/frame/FrameConsole.h"
 #include "core/frame/FrameHost.h"
 #include "core/frame/LocalFrame.h"
 #include "core/html/HTMLFrameOwnerElement.h"
 #include "core/inspector/ConsoleMessage.h"
-#include "core/inspector/ConsoleMessageStorage.h"
 #include "core/inspector/IdentifiersFactory.h"
 #include "core/inspector/InspectedFrames.h"
 #include "core/inspector/InspectorInstrumentation.h"
@@ -751,7 +751,7 @@ void InspectorNetworkAgent::didFinishXHRInternal(ExecutionContext* context, XMLH
     if (m_state->booleanProperty(NetworkAgentState::monitoringXHR, false)) {
         String message = (success ? "XHR finished loading: " : "XHR failed loading: ") + method + " \"" + url + "\".";
         ConsoleMessage* consoleMessage = ConsoleMessage::createForRequest(NetworkMessageSource, DebugMessageLevel, message, url, it->value);
-        m_inspectedFrames->root()->host()->consoleMessageStorage().reportMessage(context, consoleMessage);
+        m_inspectedFrames->root()->console().addMessageToStorage(consoleMessage);
     }
     m_knownRequestIdMap.remove(client);
 }
@@ -777,7 +777,7 @@ void InspectorNetworkAgent::didFinishFetch(ExecutionContext* context, Threadable
     if (m_state->booleanProperty(NetworkAgentState::monitoringXHR, false)) {
         String message = "Fetch complete: " + method + " \"" + url + "\".";
         ConsoleMessage* consoleMessage = ConsoleMessage::createForRequest(NetworkMessageSource, DebugMessageLevel, message, url, it->value);
-        m_inspectedFrames->root()->host()->consoleMessageStorage().reportMessage(context, consoleMessage);
+        m_inspectedFrames->root()->console().addMessageToStorage(consoleMessage);
     }
     m_knownRequestIdMap.remove(client);
 }

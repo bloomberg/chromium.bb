@@ -101,7 +101,6 @@
       '<(blink_core_output_dir)/XPathGrammar.cpp',
 
       # Additional .cpp files from the inspector:instrumentation_sources list.
-      '<(blink_core_output_dir)/InspectorConsoleInstrumentationInl.h',
       '<(blink_core_output_dir)/InspectorInstrumentationInl.h',
       '<(blink_core_output_dir)/InspectorOverridesInl.h',
       '<(blink_core_output_dir)/InstrumentingAgents.h',
@@ -112,7 +111,6 @@
       '<(blink_core_output_dir)/inspector/protocol/Animation.cpp',
       '<(blink_core_output_dir)/inspector/protocol/ApplicationCache.cpp',
       '<(blink_core_output_dir)/inspector/protocol/CacheStorage.cpp',
-      '<(blink_core_output_dir)/inspector/protocol/Console.cpp',
       '<(blink_core_output_dir)/inspector/protocol/CSS.cpp',
       '<(blink_core_output_dir)/inspector/protocol/Database.cpp',
       '<(blink_core_output_dir)/inspector/protocol/DeviceOrientation.cpp',

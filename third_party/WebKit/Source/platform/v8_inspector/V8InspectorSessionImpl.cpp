@@ -8,6 +8,7 @@
 #include "platform/v8_inspector/InjectedScript.h"
 #include "platform/v8_inspector/InspectedContext.h"
 #include "platform/v8_inspector/RemoteObjectId.h"
+#include "platform/v8_inspector/V8ConsoleAgentImpl.h"
 #include "platform/v8_inspector/V8DebuggerAgentImpl.h"
 #include "platform/v8_inspector/V8DebuggerImpl.h"
 #include "platform/v8_inspector/V8HeapProfilerAgentImpl.h"
@@ -23,7 +24,7 @@ const char V8InspectorSession::backtraceObjectGroup[] = "backtrace";
 // static
 bool V8InspectorSession::isV8ProtocolMethod(const String16& method)
 {
-    return method.startWith("Debugger.") || method.startWith("HeapProfiler.") || method.startWith("Profiler.") || method.startWith("Runtime.");
+    return method.startWith("Debugger.") || method.startWith("HeapProfiler.") || method.startWith("Profiler.") || method.startWith("Runtime.") || method.startWith("Console.");
 }
 
 std::unique_ptr<V8InspectorSessionImpl> V8InspectorSessionImpl::create(V8DebuggerImpl* debugger, int contextGroupId, protocol::FrontendChannel* channel, V8InspectorSessionClient* client, const String16* state)
@@ -43,6 +44,7 @@ V8InspectorSessionImpl::V8InspectorSessionImpl(V8DebuggerImpl* debugger, int con
     , m_debuggerAgent(nullptr)
     , m_heapProfilerAgent(nullptr)
     , m_profilerAgent(nullptr)
+    , m_consoleAgent(nullptr)
 {
     if (savedState) {
         std::unique_ptr<protocol::Value> state = protocol::parseJSON(*savedState);
@@ -66,17 +68,22 @@ V8InspectorSessionImpl::V8InspectorSessionImpl(V8DebuggerImpl* debugger, int con
     m_heapProfilerAgent = wrapUnique(new V8HeapProfilerAgentImpl(this, channel, agentState(protocol::HeapProfiler::Metainfo::domainName)));
     protocol::HeapProfiler::Dispatcher::wire(&m_dispatcher, m_heapProfilerAgent.get());
 
+    m_consoleAgent = wrapUnique(new V8ConsoleAgentImpl(this, channel, agentState(protocol::Console::Metainfo::domainName)));
+    protocol::Console::Dispatcher::wire(&m_dispatcher, m_consoleAgent.get());
+
     if (savedState) {
         m_runtimeAgent->restore();
         m_debuggerAgent->restore();
         m_heapProfilerAgent->restore();
         m_profilerAgent->restore();
+        m_consoleAgent->restore();
     }
 }
 
 V8InspectorSessionImpl::~V8InspectorSessionImpl()
 {
     ErrorString errorString;
+    m_consoleAgent->disable(&errorString);
     m_profilerAgent->disable(&errorString);
     m_heapProfilerAgent->disable(&errorString);
     m_debuggerAgent->disable(&errorString);
@@ -101,6 +108,7 @@ void V8InspectorSessionImpl::reset()
 {
     m_debuggerAgent->reset();
     m_runtimeAgent->reset();
+    m_consoleAgent->reset();
     discardInjectedScripts();
 }
 
@@ -201,7 +209,7 @@ v8::Local<v8::Value> V8InspectorSessionImpl::findObject(ErrorString* errorString
 std::unique_ptr<protocol::Runtime::RemoteObject> V8InspectorSessionImpl::wrapObject(v8::Local<v8::Context> context, v8::Local<v8::Value> value, const String16& groupName, bool generatePreview)
 {
     ErrorString errorString;
-    InjectedScript* injectedScript = findInjectedScript(&errorString, V8Debugger::contextId(context));
+    InjectedScript* injectedScript = findInjectedScript(&errorString, V8DebuggerImpl::contextId(context));
     if (!injectedScript)
         return nullptr;
     return injectedScript->wrapObject(&errorString, value, groupName, false, generatePreview);
@@ -210,7 +218,7 @@ std::unique_ptr<protocol::Runtime::RemoteObject> V8InspectorSessionImpl::wrapObj
 std::unique_ptr<protocol::Runtime::RemoteObject> V8InspectorSessionImpl::wrapTable(v8::Local<v8::Context> context, v8::Local<v8::Value> table, v8::Local<v8::Value> columns)
 {
     ErrorString errorString;
-    InjectedScript* injectedScript = findInjectedScript(&errorString, V8Debugger::contextId(context));
+    InjectedScript* injectedScript = findInjectedScript(&errorString, V8DebuggerImpl::contextId(context));
     if (!injectedScript)
         return nullptr;
     return injectedScript->wrapTable(table, columns);

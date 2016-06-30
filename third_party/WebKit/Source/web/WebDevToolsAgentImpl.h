@@ -125,6 +125,7 @@ private:
     void resumeStartup() override;
     void profilingStarted() override;
     void profilingStopped() override;
+    void consoleCleared() override;
 
     // WebThread::TaskObserver implementation.
     void willProcessTask() override;

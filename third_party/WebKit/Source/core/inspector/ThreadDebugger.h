@@ -49,7 +49,6 @@ public:
     void enableAsyncInstrumentation() override;
     void disableAsyncInstrumentation() override;
     void installAdditionalCommandLineAPI(v8::Local<v8::Context>, v8::Local<v8::Object>) override;
-    void reportMessageToConsole(v8::Local<v8::Context>, MessageType, MessageLevel, const String16& message, const v8::FunctionCallbackInfo<v8::Value>* arguments, unsigned skipArgumentCount) final;
     void consoleTime(const String16& title) override;
     void consoleTimeEnd(const String16& title) override;
     void consoleTimeStamp(const String16& title) override;
@@ -58,9 +57,9 @@ public:
 
     V8Debugger* debugger() const { return m_debugger.get(); }
     virtual bool isWorker() { return true; }
+
 protected:
     void createFunctionProperty(v8::Local<v8::Context>, v8::Local<v8::Object>, const char* name, v8::FunctionCallback, const char* description);
-    virtual void reportMessageToConsole(v8::Local<v8::Context>, ConsoleMessage*) = 0;
     void onTimer(Timer<ThreadDebugger>*);
 
     v8::Isolate* m_isolate;

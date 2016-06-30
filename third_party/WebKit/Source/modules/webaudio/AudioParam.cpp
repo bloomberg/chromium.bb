@@ -32,7 +32,6 @@
 #include "platform/FloatConversion.h"
 #include "platform/Histogram.h"
 #include "platform/audio/AudioUtilities.h"
-#include "platform/v8_inspector/public/ConsoleTypes.h"
 #include "wtf/MathExtras.h"
 
 namespace blink {

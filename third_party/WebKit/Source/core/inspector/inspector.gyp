@@ -27,7 +27,6 @@
             'InspectorInstrumentation.idl',
           ],
           'outputs': [
-            '<(blink_core_output_dir)/InspectorConsoleInstrumentationInl.h',
             '<(blink_core_output_dir)/InspectorInstrumentationInl.h',
             '<(blink_core_output_dir)/InspectorOverridesInl.h',
             '<(blink_core_output_dir)/InstrumentingAgents.h',
@@ -71,8 +70,6 @@
             '<(blink_core_output_dir)/inspector/protocol/ApplicationCache.h',
             '<(blink_core_output_dir)/inspector/protocol/CacheStorage.cpp',
             '<(blink_core_output_dir)/inspector/protocol/CacheStorage.h',
-            '<(blink_core_output_dir)/inspector/protocol/Console.cpp',
-            '<(blink_core_output_dir)/inspector/protocol/Console.h',
             '<(blink_core_output_dir)/inspector/protocol/CSS.cpp',
             '<(blink_core_output_dir)/inspector/protocol/CSS.h',
             '<(blink_core_output_dir)/inspector/protocol/Database.cpp',

@@ -28,13 +28,8 @@ std::unique_ptr<V8StackTrace> captureStackTrace(bool full)
     V8PerIsolateData* data = V8PerIsolateData::from(isolate);
     if (!data->threadDebugger() || !isolate->InContext())
         return nullptr;
-    size_t stackSize = full ? V8StackTrace::maxCallStackSizeToCapture : 1;
-    if (InspectorInstrumentation::hasFrontends()) {
-        if (InspectorInstrumentation::consoleAgentEnabled(currentExecutionContext(isolate)))
-            stackSize = V8StackTrace::maxCallStackSizeToCapture;
-    }
     ScriptForbiddenScope::AllowUserAgentScript allowScripting;
-    return data->threadDebugger()->debugger()->captureStackTrace(stackSize);
+    return data->threadDebugger()->debugger()->captureStackTrace(full);
 }
 
 }
@@ -158,6 +153,11 @@ void SourceLocation::toTracedValue(TracedValue* value, const char* name) const
     value->setInteger("columnNumber", m_stackTrace->topColumnNumber());
     value->endDictionary();
     value->endArray();
+}
+
+std::unique_ptr<V8StackTrace> SourceLocation::cloneStackTrace() const
+{
+    return m_stackTrace ? m_stackTrace->clone() : nullptr;
 }
 
 std::unique_ptr<SourceLocation> SourceLocation::clone() const

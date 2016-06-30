@@ -9,6 +9,7 @@
 #include "platform/v8_inspector/InjectedScript.h"
 #include "platform/v8_inspector/InspectedContext.h"
 #include "platform/v8_inspector/V8Compat.h"
+#include "platform/v8_inspector/V8ConsoleMessage.h"
 #include "platform/v8_inspector/V8DebuggerAgentImpl.h"
 #include "platform/v8_inspector/V8DebuggerImpl.h"
 #include "platform/v8_inspector/V8InspectorSessionImpl.h"
@@ -16,8 +17,6 @@
 #include "platform/v8_inspector/V8RuntimeAgentImpl.h"
 #include "platform/v8_inspector/V8StackTraceImpl.h"
 #include "platform/v8_inspector/V8StringUtil.h"
-#include "platform/v8_inspector/public/ConsoleAPITypes.h"
-#include "platform/v8_inspector/public/ConsoleTypes.h"
 #include "platform/v8_inspector/public/V8DebuggerClient.h"
 
 namespace blink {
@@ -77,26 +76,42 @@ public:
         return m_debuggerClient;
     }
 
+    void reportMessageToConsole(v8::Local<v8::Context> context, MessageType type, MessageLevel level, const String16& message, const v8::FunctionCallbackInfo<v8::Value>* arguments, unsigned skipArgumentCount)
+    {
+        InspectedContext* inspectedContext = ensureInspectedContext();
+        if (!inspectedContext)
+            return;
+        V8DebuggerImpl* debugger = inspectedContext->debugger();
+
+        std::unique_ptr<V8ConsoleMessage> consoleMessage = nullptr;
+        if (arguments) {
+            std::vector<v8::Local<v8::Value>> messageArguments;
+            for (int i = skipArgumentCount; i < arguments->Length(); ++i)
+                messageArguments.push_back((*arguments)[i]);
+            consoleMessage = V8ConsoleMessage::createForConsoleAPI(debugger->client()->currentTimeMS(), type, level, message, &messageArguments, debugger->captureStackTrace(false), inspectedContext);
+        } else {
+            consoleMessage = V8ConsoleMessage::createForConsoleAPI(debugger->client()->currentTimeMS(), type, level, message, nullptr, debugger->captureStackTrace(false), inspectedContext);
+        }
+        debugger->ensureConsoleMessageStorage(inspectedContext->contextGroupId())->addMessage(std::move(consoleMessage));
+    }
+
     void addMessage(MessageType type, MessageLevel level, String16 emptyText, int skipArgumentCount)
     {
         if (emptyText.isEmpty() && !m_info.Length())
             return;
-        if (V8DebuggerClient* debuggerClient = ensureDebuggerClient())
-            debuggerClient->reportMessageToConsole(m_context, type, level, m_info.Length() <= skipArgumentCount ? emptyText : String16(), &m_info, skipArgumentCount);
+        reportMessageToConsole(m_context, type, level, m_info.Length() <= skipArgumentCount ? emptyText : String16(), &m_info, skipArgumentCount);
     }
 
     void addMessage(MessageType type, MessageLevel level, const String16& message)
     {
-        if (V8DebuggerClient* debuggerClient = ensureDebuggerClient())
-            debuggerClient->reportMessageToConsole(m_context, type, level, message, nullptr, 0 /* skipArgumentsCount */);
+        reportMessageToConsole(m_context, type, level, message, nullptr, 0 /* skipArgumentsCount */);
     }
 
     void addDeprecationMessage(const char* id, const String16& message)
     {
         if (checkAndSetPrivateFlagOnConsole(id, false))
             return;
-        if (V8DebuggerClient* debuggerClient = ensureDebuggerClient())
-            debuggerClient->reportMessageToConsole(m_context, LogMessageType, WarningMessageLevel, message, nullptr, 0 /* skipArgumentsCount */);
+        reportMessageToConsole(m_context, LogMessageType, WarningMessageLevel, message, nullptr, 0 /* skipArgumentsCount */);
     }
 
     bool firstArgToBoolean(bool defaultValue)

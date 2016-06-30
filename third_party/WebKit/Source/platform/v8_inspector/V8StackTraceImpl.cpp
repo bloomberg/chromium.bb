@@ -17,6 +17,13 @@ namespace blink {
 
 namespace {
 
+static const v8::StackTrace::StackTraceOptions stackTraceOptions = static_cast<v8::StackTrace::StackTraceOptions>(
+    v8::StackTrace::kLineNumber |
+    v8::StackTrace::kColumnOffset |
+    v8::StackTrace::kScriptId |
+    v8::StackTrace::kScriptNameOrSourceURL |
+    v8::StackTrace::kFunctionName);
+
 V8StackTraceImpl::Frame toFrame(v8::Local<v8::StackFrame> frame)
 {
     String16 scriptId = String16::number(frame->GetScriptId());
@@ -89,6 +96,13 @@ V8StackTraceImpl::Frame V8StackTraceImpl::Frame::isolatedCopy() const
     return Frame(m_functionName.isolatedCopy(), m_scriptId.isolatedCopy(), m_scriptName.isolatedCopy(), m_lineNumber, m_columnNumber);
 }
 
+// static
+void V8StackTraceImpl::setCaptureStackTraceForUncaughtExceptions(v8::Isolate* isolate, bool capture)
+{
+    isolate->SetCaptureStackTraceForUncaughtExceptions(capture, V8StackTraceImpl::maxCallStackSizeToCapture, stackTraceOptions);
+}
+
+// static
 std::unique_ptr<V8StackTraceImpl> V8StackTraceImpl::create(V8DebuggerImpl* debugger, int contextGroupId, v8::Local<v8::StackTrace> stackTrace, size_t maxStackSize, const String16& description)
 {
     v8::Isolate* isolate = v8::Isolate::GetCurrent();
@@ -230,7 +244,7 @@ std::unique_ptr<protocol::Runtime::StackTrace> V8StackTraceImpl::buildInspectorO
 {
     v8::HandleScope handleScope(v8::Isolate::GetCurrent());
     // Next call collapses possible empty stack and ensures maxAsyncCallChainDepth.
-    std::unique_ptr<V8StackTraceImpl> fullChain = V8StackTraceImpl::create(debugger, m_contextGroupId, v8::Local<v8::StackTrace>(), V8StackTrace::maxCallStackSizeToCapture);
+    std::unique_ptr<V8StackTraceImpl> fullChain = V8StackTraceImpl::create(debugger, m_contextGroupId, v8::Local<v8::StackTrace>(), V8StackTraceImpl::maxCallStackSizeToCapture);
     if (!fullChain || !fullChain->m_parent)
         return nullptr;
     return fullChain->m_parent->buildInspectorObject();

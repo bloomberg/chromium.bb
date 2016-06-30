@@ -6,19 +6,17 @@ function print(text)
     output.appendChild(div);
 }
 
-function dumpConsoleMessageArgumentCounts()
+function dumpConsoleMessageCounts()
 {
-    var consoleMessageArgumentCounts = window.internals.consoleMessageArgumentCounts(document);
-    if (consoleMessageArgumentCounts.length === 3)
+    var consoleMessageCount = window.internals.numberOfConsoleMessages(document);
+    if (consoleMessageCount === 3)
         print("PASSED: found argument counts for 3 messages");
     else
-        print("FAILED: unexpected number of messages: " + consoleMessageArgumentCounts.length);
+        print("FAILED: unexpected number of messages: " + consoleMessageCount);
 
-    for (var i = 0; i < consoleMessageArgumentCounts.length; i++) {
-        var count = consoleMessageArgumentCounts[i];
-        if (count == 0)
-            print("PASSED: message #" + i + " has no arguments.");
-        else
-            print("FAILED: message #" + i + " has " + count + " arguments.");
-    }
+    var consoleMessageWithArgumentsCount = window.internals.numberOfConsoleMessagesWithArguments(document);
+    if (consoleMessageWithArgumentsCount === 0)
+        print("PASSED: no messages with arguments");
+    else
+        print("FAILED: unexpected number of messages with arguments: " + consoleMessageWithArgumentsCount);
 }

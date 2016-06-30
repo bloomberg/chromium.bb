@@ -21,6 +21,7 @@ namespace blink {
 
 class InjectedScript;
 class RemoteObjectIdBase;
+class V8ConsoleAgentImpl;
 class V8DebuggerAgentImpl;
 class V8DebuggerImpl;
 class V8HeapProfilerAgentImpl;
@@ -35,6 +36,7 @@ public:
 
     V8DebuggerImpl* debugger() const { return m_debugger; }
     V8InspectorSessionClient* client() const { return m_client; }
+    V8ConsoleAgentImpl* consoleAgent() { return m_consoleAgent.get(); }
     V8DebuggerAgentImpl* debuggerAgent() { return m_debuggerAgent.get(); }
     V8ProfilerAgentImpl* profilerAgent() { return m_profilerAgent.get(); }
     V8RuntimeAgentImpl* runtimeAgent() { return m_runtimeAgent.get(); }
@@ -84,6 +86,7 @@ private:
     std::unique_ptr<V8DebuggerAgentImpl> m_debuggerAgent;
     std::unique_ptr<V8HeapProfilerAgentImpl> m_heapProfilerAgent;
     std::unique_ptr<V8ProfilerAgentImpl> m_profilerAgent;
+    std::unique_ptr<V8ConsoleAgentImpl> m_consoleAgent;
     std::vector<std::unique_ptr<V8InspectorSession::Inspectable>> m_inspectedObjects;
 };
 

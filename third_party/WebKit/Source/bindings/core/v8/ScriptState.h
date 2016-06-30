@@ -89,7 +89,6 @@ public:
     LocalDOMWindow* domWindow() const;
     virtual ExecutionContext* getExecutionContext() const;
     virtual void setExecutionContext(ExecutionContext*);
-    int contextIdInDebugger();
 
     // This can return an empty handle if the v8::Context is gone.
     v8::Local<v8::Context> context() const { return m_context.newLocal(m_isolate); }

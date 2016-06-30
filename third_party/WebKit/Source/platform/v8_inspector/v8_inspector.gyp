@@ -83,6 +83,8 @@
             'js_protocol.json',
           ],
           'outputs': [
+            '<(blink_platform_output_dir)/v8_inspector/protocol/Console.cpp',
+            '<(blink_platform_output_dir)/v8_inspector/protocol/Console.h',
             '<(blink_platform_output_dir)/v8_inspector/protocol/Debugger.cpp',
             '<(blink_platform_output_dir)/v8_inspector/protocol/Debugger.h',
             '<(blink_platform_output_dir)/v8_inspector/protocol/HeapProfiler.cpp',

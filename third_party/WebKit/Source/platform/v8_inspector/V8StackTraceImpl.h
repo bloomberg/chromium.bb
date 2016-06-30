@@ -21,6 +21,8 @@ class V8DebuggerImpl;
 class V8StackTraceImpl final : public V8StackTrace {
     PROTOCOL_DISALLOW_COPY(V8StackTraceImpl);
 public:
+    static const size_t maxCallStackSizeToCapture = 200;
+
     class Frame  {
     public:
         Frame();
@@ -46,6 +48,7 @@ public:
         int m_columnNumber;
     };
 
+    static void setCaptureStackTraceForUncaughtExceptions(v8::Isolate*, bool capture);
     static std::unique_ptr<V8StackTraceImpl> create(V8DebuggerImpl*, int contextGroupId, v8::Local<v8::StackTrace>, size_t maxStackSize, const String16& description = String16());
     static std::unique_ptr<V8StackTraceImpl> capture(V8DebuggerImpl*, int contextGroupId, size_t maxStackSize, const String16& description = String16());
 

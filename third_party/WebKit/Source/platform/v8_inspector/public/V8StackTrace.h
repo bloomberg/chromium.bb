@@ -13,19 +13,9 @@
 
 namespace blink {
 
-class TracedValue;
-
-const v8::StackTrace::StackTraceOptions stackTraceOptions = static_cast<v8::StackTrace::StackTraceOptions>(
-    v8::StackTrace::kLineNumber |
-    v8::StackTrace::kColumnOffset |
-    v8::StackTrace::kScriptId |
-    v8::StackTrace::kScriptNameOrSourceURL |
-    v8::StackTrace::kFunctionName);
-
+// TODO(dgozman): migrate to V8SourceLocation.
 class V8StackTrace {
 public:
-    static const size_t maxCallStackSizeToCapture = 200;
-
     virtual bool isEmpty() const = 0;
     virtual String16 topSourceURL() const = 0;
     virtual int topLineNumber() const = 0;

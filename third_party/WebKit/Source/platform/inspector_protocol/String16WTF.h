@@ -82,6 +82,7 @@ public:
     void append(const UChar* c, size_t size) { m_impl.append(c, size); };
     void append(const char* characters, unsigned length) { m_impl.append(characters, length); }
     void appendNumber(int number) { m_impl.appendNumber(number); }
+    void appendNumber(double number) { m_impl.appendNumber(number); }
     String16 toString() { return m_impl.toString(); }
     void reserveCapacity(unsigned newCapacity) { m_impl.reserveCapacity(newCapacity); }
 

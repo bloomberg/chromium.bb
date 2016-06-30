@@ -53,7 +53,6 @@
 namespace blink {
 
 class ConsoleMessage;
-class ConsoleMessageStorage;
 class ExceptionState;
 class V8AbstractEventListener;
 class WorkerClients;
@@ -139,7 +138,6 @@ public:
     using SecurityContext::contentSecurityPolicy;
 
     void addConsoleMessage(ConsoleMessage*) final;
-    ConsoleMessageStorage* messageStorage();
 
     void exceptionUnhandled(const String& errorMessage, std::unique_ptr<SourceLocation>);
 
@@ -198,8 +196,6 @@ private:
     DOMTimerCoordinator m_timers;
 
     double m_timeOrigin;
-
-    Member<ConsoleMessageStorage> m_messageStorage;
 
     HeapListHashSet<Member<V8AbstractEventListener>> m_eventListeners;
 };

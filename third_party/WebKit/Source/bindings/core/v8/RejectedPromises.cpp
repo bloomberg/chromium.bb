@@ -8,11 +8,11 @@
 #include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/ScriptValue.h"
 #include "bindings/core/v8/V8Binding.h"
+#include "bindings/core/v8/V8PerIsolateData.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/events/EventTarget.h"
 #include "core/events/PromiseRejectionEvent.h"
-#include "core/inspector/ConsoleMessage.h"
-#include "core/inspector/ScriptArguments.h"
+#include "core/inspector/ThreadDebugger.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebScheduler.h"
 #include "public/platform/WebTaskRunner.h"
@@ -74,21 +74,9 @@ public:
         }
 
         if (m_shouldLogToConsole) {
-            const String errorMessage = "Uncaught (in promise)";
-            Vector<ScriptValue> args;
-            args.append(ScriptValue(m_scriptState, v8String(m_scriptState->isolate(), errorMessage)));
-            args.append(ScriptValue(m_scriptState, reason));
-            ScriptArguments* arguments = ScriptArguments::create(m_scriptState, args);
-
-            String embedderErrorMessage = m_errorMessage;
-            if (embedderErrorMessage.isEmpty())
-                embedderErrorMessage = errorMessage;
-            else if (embedderErrorMessage.startsWith("Uncaught "))
-                embedderErrorMessage.insert(" (in promise)", 8);
-
-            ConsoleMessage* consoleMessage = ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, embedderErrorMessage, std::move(m_location), arguments);
-            m_consoleMessageId = consoleMessage->assignMessageId();
-            executionContext->addConsoleMessage(consoleMessage);
+            V8PerIsolateData* data = V8PerIsolateData::from(m_scriptState->isolate());
+            if (data->threadDebugger())
+                m_promiseRejectionId = data->threadDebugger()->debugger()->promiseRejected(m_scriptState->context(), m_errorMessage, reason, m_location->url(), m_location->lineNumber(), m_location->columnNumber(), m_location->cloneStackTrace(), m_location->scriptId());
         }
 
         m_location.reset();
@@ -116,10 +104,10 @@ public:
             target->dispatchEvent(event);
         }
 
-        if (m_shouldLogToConsole) {
-            ConsoleMessage* consoleMessage = ConsoleMessage::create(JSMessageSource, RevokedErrorMessageLevel, "Handler added to rejected promise");
-            consoleMessage->setRelatedMessageId(m_consoleMessageId);
-            executionContext->addConsoleMessage(consoleMessage);
+        if (m_shouldLogToConsole && m_promiseRejectionId) {
+            V8PerIsolateData* data = V8PerIsolateData::from(m_scriptState->isolate());
+            if (data->threadDebugger())
+                data->threadDebugger()->debugger()->promiseRejectionRevoked(m_scriptState->context(), m_promiseRejectionId);
         }
     }
 
@@ -153,7 +141,7 @@ private:
         , m_errorMessage(errorMessage)
         , m_resourceName(location->url())
         , m_location(std::move(location))
-        , m_consoleMessageId(0)
+        , m_promiseRejectionId(0)
         , m_collected(false)
         , m_shouldLogToConsole(true)
         , m_corsStatus(corsStatus)
@@ -177,7 +165,7 @@ private:
     String m_errorMessage;
     String m_resourceName;
     std::unique_ptr<SourceLocation> m_location;
-    unsigned m_consoleMessageId;
+    unsigned m_promiseRejectionId;
     bool m_collected;
     bool m_shouldLogToConsole;
     AccessControlStatus m_corsStatus;

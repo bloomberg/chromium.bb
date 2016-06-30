@@ -50,6 +50,7 @@ using protocol::Maybe;
 
 struct ScriptBreakpoint;
 class InspectedContext;
+class V8ConsoleMessageStorage;
 class V8DebuggerAgentImpl;
 class V8InspectorSessionImpl;
 class V8RuntimeAgentImpl;
@@ -60,6 +61,8 @@ class V8DebuggerImpl : public V8Debugger {
 public:
     V8DebuggerImpl(v8::Isolate*, V8DebuggerClient*);
     ~V8DebuggerImpl() override;
+
+    static int contextId(v8::Local<v8::Context>);
 
     bool enabled() const;
 
@@ -113,6 +116,10 @@ public:
     v8::Local<v8::Script> compileInternalScript(v8::Local<v8::Context>, v8::Local<v8::String>, const String16& fileName);
     v8::Local<v8::Context> regexContext();
 
+    void enableStackCapturingIfNeeded();
+    void disableStackCapturingIfNeeded();
+    V8ConsoleMessageStorage* ensureConsoleMessageStorage(int contextGroupId);
+
     // V8Debugger implementation
     std::unique_ptr<V8InspectorSession> connect(int contextGroupId, protocol::FrontendChannel*, V8InspectorSessionClient*, const String16* state) override;
     void contextCreated(const V8ContextInfo&) override;
@@ -122,19 +129,27 @@ public:
     void didExecuteScript(v8::Local<v8::Context>) override;
     void idleStarted() override;
     void idleFinished() override;
+    bool addConsoleMessage(int contextGroupId, MessageSource, MessageLevel, const String16& message, const String16& url, unsigned lineNumber, unsigned columnNumber, std::unique_ptr<V8StackTrace>, int scriptId, const String16& requestIdentifier) override;
+    void logToConsole(v8::Local<v8::Context>, const String16& message, v8::Local<v8::Value> arg1, v8::Local<v8::Value> arg2) override;
+    unsigned promiseRejected(v8::Local<v8::Context>, const String16& errorMessage, v8::Local<v8::Value> reason, const String16& url, unsigned lineNumber, unsigned columnNumber, std::unique_ptr<V8StackTrace>, int scriptId) override;
+    void promiseRejectionRevoked(v8::Local<v8::Context>, unsigned promiseRejectionId) override;
+    void consoleMessagesCount(int contextGroupId, unsigned* total, unsigned* withArguments) override;
     std::unique_ptr<V8StackTrace> createStackTrace(v8::Local<v8::StackTrace>) override;
-    std::unique_ptr<V8StackTrace> captureStackTrace(size_t maxStackSize) override;
+    std::unique_ptr<V8StackTrace> captureStackTrace(bool fullStack) override;
     void asyncTaskScheduled(const String16& taskName, void* task, bool recurring) override;
     void asyncTaskCanceled(void* task) override;
     void asyncTaskStarted(void* task) override;
     void asyncTaskFinished(void* task) override;
     void allAsyncTasksCanceled() override;
+    void muteConsole() override { m_muteConsoleCount++; }
+    void unmuteConsole() override { m_muteConsoleCount--; }
 
     using ContextByIdMap = protocol::HashMap<int, std::unique_ptr<InspectedContext>>;
     void discardInspectedContext(int contextGroupId, int contextId);
     const ContextByIdMap* contextGroup(int contextGroupId);
     void disconnect(V8InspectorSessionImpl*);
     V8InspectorSessionImpl* sessionForContextGroup(int contextGroupId);
+    InspectedContext* getContext(int groupId, int contextId) const;
 
 private:
     void enable();
@@ -158,7 +173,6 @@ private:
     v8::Local<v8::String> v8InternalizedString(const char*) const;
 
     void handleV8AsyncTaskEvent(v8::Local<v8::Context>, v8::Local<v8::Object> executionState, v8::Local<v8::Object> eventData);
-    InspectedContext* getContext(int groupId, int contextId) const;
 
     using ContextsByGroupMap = protocol::HashMap<int, std::unique_ptr<ContextByIdMap>>;
 
@@ -169,6 +183,11 @@ private:
     ContextsByGroupMap m_contexts;
     using SessionMap = protocol::HashMap<int, V8InspectorSessionImpl*>;
     SessionMap m_sessions;
+    using ConsoleStorageMap = protocol::HashMap<int, std::unique_ptr<V8ConsoleMessageStorage>>;
+    ConsoleStorageMap m_consoleStorageMap;
+    int m_capturingStackTracesCount;
+    int m_muteConsoleCount;
+    unsigned m_lastConsoleMessageId;
     int m_enabledAgentsCount;
     bool m_breakpointsActivated;
     v8::Global<v8::Object> m_debuggerScript;

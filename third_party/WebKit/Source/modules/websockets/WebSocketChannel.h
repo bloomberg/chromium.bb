@@ -32,9 +32,9 @@
 #define WebSocketChannel_h
 
 #include "bindings/core/v8/SourceLocation.h"
+#include "core/inspector/ConsoleTypes.h"
 #include "modules/ModulesExport.h"
 #include "platform/heap/Handle.h"
-#include "platform/v8_inspector/public/ConsoleTypes.h"
 #include "wtf/Forward.h"
 #include "wtf/Noncopyable.h"
 #include <memory>

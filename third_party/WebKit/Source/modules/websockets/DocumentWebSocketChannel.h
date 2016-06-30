@@ -38,7 +38,6 @@
 #include "modules/ModulesExport.h"
 #include "modules/websockets/WebSocketChannel.h"
 #include "platform/heap/Handle.h"
-#include "platform/v8_inspector/public/ConsoleTypes.h"
 #include "platform/weborigin/KURL.h"
 #include "public/platform/modules/websockets/WebSocketHandle.h"
 #include "public/platform/modules/websockets/WebSocketHandleClient.h"

@@ -5206,7 +5206,7 @@ void Document::addConsoleMessage(ConsoleMessage* consoleMessage)
     if (!m_frame)
         return;
 
-    if (!consoleMessage->messageId() && !consoleMessage->relatedMessageId() && consoleMessage->location()->isUnknown()) {
+    if (consoleMessage->location()->isUnknown()) {
         // TODO(dgozman): capture correct location at call places instead.
         unsigned lineNumber = 0;
         if (!isInDocumentWrite() && scriptableDocumentParser()) {
@@ -5214,7 +5214,7 @@ void Document::addConsoleMessage(ConsoleMessage* consoleMessage)
             if (parser->isParsingAtLineNumber())
                 lineNumber = parser->lineNumber().oneBasedInt();
         }
-        consoleMessage = ConsoleMessage::create(consoleMessage->source(), consoleMessage->level(), consoleMessage->message(), SourceLocation::create(url().getString(), lineNumber, 0, nullptr), consoleMessage->scriptArguments());
+        consoleMessage = ConsoleMessage::create(consoleMessage->source(), consoleMessage->level(), consoleMessage->message(), SourceLocation::create(url().getString(), lineNumber, 0, nullptr));
     }
     m_frame->console().addMessage(consoleMessage);
 }

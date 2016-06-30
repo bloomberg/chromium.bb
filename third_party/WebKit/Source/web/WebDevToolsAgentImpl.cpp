@@ -55,7 +55,6 @@
 #include "core/inspector/InspectorWorkerAgent.h"
 #include "core/inspector/LayoutEditor.h"
 #include "core/inspector/MainThreadDebugger.h"
-#include "core/inspector/PageConsoleAgent.h"
 #include "core/layout/api/LayoutViewItem.h"
 #include "core/page/FocusController.h"
 #include "core/page/Page.h"
@@ -392,8 +391,6 @@ void WebDevToolsAgentImpl::initializeSession(int sessionId, const String& hostId
 
     m_session->append(InspectorIndexedDBAgent::create(m_inspectedFrames.get()));
 
-    m_session->append(new PageConsoleAgent(m_session->v8Session(), m_domAgent, m_inspectedFrames.get()));
-
     InspectorWorkerAgent* workerAgent = new InspectorWorkerAgent(m_inspectedFrames.get());
     m_session->append(workerAgent);
 
@@ -597,6 +594,12 @@ void WebDevToolsAgentImpl::profilingStopped()
 {
     if (m_overlay)
         m_overlay->resume();
+}
+
+void WebDevToolsAgentImpl::consoleCleared()
+{
+    if (m_domAgent)
+        m_domAgent->releaseDanglingNodes();
 }
 
 void WebDevToolsAgentImpl::pageLayoutInvalidated(bool resized)

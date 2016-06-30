@@ -44,6 +44,7 @@ public:
     unsigned columnNumber() const { return m_columnNumber; }
     int scriptId() const { return m_scriptId; }
 
+    std::unique_ptr<V8StackTrace> cloneStackTrace() const;
     std::unique_ptr<SourceLocation> clone() const;
     std::unique_ptr<SourceLocation> isolatedCopy() const; // Safe to pass between threads.
 

@@ -440,7 +440,6 @@ void Page::didCommitLoad(LocalFrame* frame)
 {
     notifyDidCommitLoad(frame);
     if (m_mainFrame == frame) {
-        frame->console().clearMessages();
         useCounter().didCommitLoad();
         deprecation().clearSuppression();
         frameHost().visualViewport().sendUMAMetrics();

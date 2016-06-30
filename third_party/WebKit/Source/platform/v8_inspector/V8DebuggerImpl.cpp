@@ -36,6 +36,8 @@
 #include "platform/v8_inspector/InspectedContext.h"
 #include "platform/v8_inspector/ScriptBreakpoint.h"
 #include "platform/v8_inspector/V8Compat.h"
+#include "platform/v8_inspector/V8ConsoleAgentImpl.h"
+#include "platform/v8_inspector/V8ConsoleMessage.h"
 #include "platform/v8_inspector/V8DebuggerAgentImpl.h"
 #include "platform/v8_inspector/V8InjectedScriptHost.h"
 #include "platform/v8_inspector/V8InspectorSessionImpl.h"
@@ -81,6 +83,9 @@ std::unique_ptr<V8Debugger> V8Debugger::create(v8::Isolate* isolate, V8DebuggerC
 V8DebuggerImpl::V8DebuggerImpl(v8::Isolate* isolate, V8DebuggerClient* client)
     : m_isolate(isolate)
     , m_client(client)
+    , m_capturingStackTracesCount(0)
+    , m_muteConsoleCount(0)
+    , m_lastConsoleMessageId(0)
     , m_enabledAgentsCount(0)
     , m_breakpointsActivated(true)
     , m_runningNestedMessageLoop(false)
@@ -116,7 +121,7 @@ bool V8DebuggerImpl::enabled() const
     return !m_debuggerScript.IsEmpty();
 }
 
-int V8Debugger::contextId(v8::Local<v8::Context> context)
+int V8DebuggerImpl::contextId(v8::Local<v8::Context> context)
 {
     v8::Local<v8::Value> data = context->GetEmbedderData(static_cast<int>(v8::Context::kDebugIdIndex));
     if (data.IsEmpty() || !data->IsString())
@@ -788,10 +793,31 @@ v8::Local<v8::Script> V8DebuggerImpl::compileInternalScript(v8::Local<v8::Contex
     return script;
 }
 
+void V8DebuggerImpl::enableStackCapturingIfNeeded()
+{
+    if (!m_capturingStackTracesCount)
+        V8StackTraceImpl::setCaptureStackTraceForUncaughtExceptions(m_isolate, true);
+    ++m_capturingStackTracesCount;
+}
+
+void V8DebuggerImpl::disableStackCapturingIfNeeded()
+{
+    if (!(--m_capturingStackTracesCount))
+        V8StackTraceImpl::setCaptureStackTraceForUncaughtExceptions(m_isolate, false);
+}
+
+V8ConsoleMessageStorage* V8DebuggerImpl::ensureConsoleMessageStorage(int contextGroupId)
+{
+    ConsoleStorageMap::iterator storageIt = m_consoleStorageMap.find(contextGroupId);
+    if (storageIt == m_consoleStorageMap.end())
+        storageIt = m_consoleStorageMap.insert(std::make_pair(contextGroupId, wrapUnique(new V8ConsoleMessageStorage(this, contextGroupId)))).first;
+    return storageIt->second.get();
+}
+
 std::unique_ptr<V8StackTrace> V8DebuggerImpl::createStackTrace(v8::Local<v8::StackTrace> stackTrace)
 {
     int contextGroupId = m_isolate->InContext() ? getGroupId(m_isolate->GetCurrentContext()) : 0;
-    return V8StackTraceImpl::create(this, contextGroupId, stackTrace, V8StackTrace::maxCallStackSizeToCapture);
+    return V8StackTraceImpl::create(this, contextGroupId, stackTrace, V8StackTraceImpl::maxCallStackSizeToCapture);
 }
 
 std::unique_ptr<V8InspectorSession> V8DebuggerImpl::connect(int contextGroupId, protocol::FrontendChannel* channel, V8InspectorSessionClient* client, const String16* state)
@@ -848,8 +874,13 @@ void V8DebuggerImpl::contextCreated(const V8ContextInfo& info)
 
 void V8DebuggerImpl::contextDestroyed(v8::Local<v8::Context> context)
 {
-    int contextId = V8Debugger::contextId(context);
+    int contextId = V8DebuggerImpl::contextId(context);
     int contextGroupId = getGroupId(context);
+
+    ConsoleStorageMap::iterator storageIt = m_consoleStorageMap.find(contextGroupId);
+    if (storageIt != m_consoleStorageMap.end())
+        storageIt->second->contextDestroyed(contextId);
+
     InspectedContext* inspectedContext = getContext(contextGroupId, contextId);
     if (!inspectedContext)
         return;
@@ -862,6 +893,7 @@ void V8DebuggerImpl::contextDestroyed(v8::Local<v8::Context> context)
 
 void V8DebuggerImpl::resetContextGroup(int contextGroupId)
 {
+    m_consoleStorageMap.erase(contextGroupId);
     SessionMap::iterator session = m_sessions.find(contextGroupId);
     if (session != m_sessions.end())
         session->second->reset();
@@ -900,7 +932,7 @@ void V8DebuggerImpl::asyncTaskScheduled(const String16& taskName, void* task, bo
         return;
     v8::HandleScope scope(m_isolate);
     int contextGroupId = m_isolate->InContext() ? getGroupId(m_isolate->GetCurrentContext()) : 0;
-    std::unique_ptr<V8StackTraceImpl> chain = V8StackTraceImpl::capture(this, contextGroupId, V8StackTrace::maxCallStackSizeToCapture, taskName);
+    std::unique_ptr<V8StackTraceImpl> chain = V8StackTraceImpl::capture(this, contextGroupId, V8StackTraceImpl::maxCallStackSizeToCapture, taskName);
     if (chain) {
         m_asyncTaskStacks[task] = std::move(chain);
         if (recurring)
@@ -983,10 +1015,102 @@ void V8DebuggerImpl::idleFinished()
     m_isolate->GetCpuProfiler()->SetIdle(false);
 }
 
-std::unique_ptr<V8StackTrace> V8DebuggerImpl::captureStackTrace(size_t maxStackSize)
+bool V8DebuggerImpl::addConsoleMessage(int contextGroupId, MessageSource source, MessageLevel level, const String16& message, const String16& url, unsigned lineNumber, unsigned columnNumber, std::unique_ptr<V8StackTrace> stackTrace, int scriptId, const String16& requestIdentifier)
 {
-    int contextGroupId = m_isolate->InContext() ? getGroupId(m_isolate->GetCurrentContext()) : 0;
-    return V8StackTraceImpl::capture(this, contextGroupId, maxStackSize);
+    if (m_muteConsoleCount)
+        return false;
+    ensureConsoleMessageStorage(contextGroupId)->addMessage(wrapUnique(new V8ConsoleMessage(m_client->currentTimeMS(), source, level, message, url, lineNumber, columnNumber, std::move(stackTrace), scriptId, requestIdentifier)));
+    return true;
+}
+
+void V8DebuggerImpl::logToConsole(v8::Local<v8::Context> context, const String16& message, v8::Local<v8::Value> arg1, v8::Local<v8::Value> arg2)
+{
+    int contextGroupId = getGroupId(context);
+    InspectedContext* inspectedContext = getContext(contextGroupId, contextId(context));
+    if (!inspectedContext)
+        return;
+    std::vector<v8::Local<v8::Value>> arguments;
+    if (!arg1.IsEmpty())
+        arguments.push_back(arg1);
+    if (!arg2.IsEmpty())
+        arguments.push_back(arg2);
+    ensureConsoleMessageStorage(contextGroupId)->addMessage(V8ConsoleMessage::createForConsoleAPI(m_client->currentTimeMS(), LogMessageType, LogMessageLevel, message, arguments.size() ? &arguments : nullptr, captureStackTrace(false), inspectedContext));
+}
+
+unsigned V8DebuggerImpl::promiseRejected(v8::Local<v8::Context> context, const String16& errorMessage, v8::Local<v8::Value> reason, const String16& url, unsigned lineNumber, unsigned columnNumber, std::unique_ptr<V8StackTrace> stackTrace, int scriptId)
+{
+    if (m_muteConsoleCount)
+        return 0;
+    int contextGroupId = getGroupId(context);
+    if (!contextGroupId)
+        return 0;
+
+    const String16 defaultMessage = "Uncaught (in promise)";
+    String16 message = errorMessage;
+    if (message.isEmpty())
+        message = defaultMessage;
+    else if (message.startWith("Uncaught "))
+        message = message.substring(0, 8) + " (in promise)" + message.substring(8);
+
+    m_client->messageAddedToConsole(contextGroupId, JSMessageSource, ErrorMessageLevel, message, url, lineNumber, columnNumber, stackTrace.get());
+    std::unique_ptr<V8ConsoleMessage> consoleMessage = wrapUnique(new V8ConsoleMessage(m_client->currentTimeMS(), JSMessageSource, ErrorMessageLevel, message, url, lineNumber, columnNumber, std::move(stackTrace), scriptId, String16()));
+    unsigned id = ++m_lastConsoleMessageId;
+    consoleMessage->assignId(id);
+
+    std::vector<v8::Local<v8::Value>> arguments;
+    arguments.push_back(toV8String(m_isolate, defaultMessage));
+    arguments.push_back(reason);
+    consoleMessage->addArguments(m_isolate, contextId(context), &arguments);
+
+    ensureConsoleMessageStorage(contextGroupId)->addMessage(std::move(consoleMessage));
+    return id;
+}
+
+void V8DebuggerImpl::promiseRejectionRevoked(v8::Local<v8::Context> context, unsigned promiseRejectionId)
+{
+    if (m_muteConsoleCount)
+        return;
+    int contextGroupId = getGroupId(context);
+    if (!contextGroupId)
+        return;
+
+    const String16 message = "Handler added to rejected promise";
+    m_client->messageAddedToConsole(contextGroupId, JSMessageSource, RevokedErrorMessageLevel, message, String16(), 0, 0, nullptr);
+    std::unique_ptr<V8ConsoleMessage> consoleMessage = wrapUnique(new V8ConsoleMessage(m_client->currentTimeMS(), JSMessageSource, RevokedErrorMessageLevel, message, String16(), 0, 0, nullptr, 0, String16()));
+    consoleMessage->assignRelatedId(promiseRejectionId);
+    ensureConsoleMessageStorage(contextGroupId)->addMessage(std::move(consoleMessage));
+}
+
+void V8DebuggerImpl::consoleMessagesCount(int contextGroupId, unsigned* total, unsigned* withArguments)
+{
+    *total = 0;
+    *withArguments = 0;
+    ConsoleStorageMap::iterator storageIt = m_consoleStorageMap.find(contextGroupId);
+    if (storageIt == m_consoleStorageMap.end())
+        return;
+    *total = storageIt->second->messages().size();
+    for (const auto& message : storageIt->second->messages()) {
+        if (message->argumentCount())
+            (*withArguments)++;
+    }
+}
+
+std::unique_ptr<V8StackTrace> V8DebuggerImpl::captureStackTrace(bool fullStack)
+{
+    if (!m_isolate->InContext())
+        return nullptr;
+
+    v8::HandleScope handles(m_isolate);
+    int contextGroupId = getGroupId(m_isolate->GetCurrentContext());
+    if (!contextGroupId)
+        return nullptr;
+
+    size_t stackSize = fullStack ? V8StackTraceImpl::maxCallStackSizeToCapture : 1;
+    SessionMap::iterator sessionIt = m_sessions.find(contextGroupId);
+    if (sessionIt != m_sessions.end() && sessionIt->second->consoleAgent()->enabled())
+        stackSize = V8StackTraceImpl::maxCallStackSizeToCapture;
+
+    return V8StackTraceImpl::capture(this, contextGroupId, stackSize);
 }
 
 v8::Local<v8::Context> V8DebuggerImpl::regexContext()

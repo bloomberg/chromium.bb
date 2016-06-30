@@ -34,7 +34,7 @@ async_test(function(t) {
     setTimeout(function() {
       if (window.internals) {
         t.step(function() {
-          assert_equals(internals.consoleMessageArgumentCounts(document).length, 0);
+          assert_equals(internals.numberOfConsoleMessages(document), 0);
         });
       }
       t.done();

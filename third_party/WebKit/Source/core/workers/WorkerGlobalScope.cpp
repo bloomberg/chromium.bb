@@ -48,9 +48,10 @@
 #include "core/frame/Deprecation.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "core/inspector/ConsoleMessage.h"
-#include "core/inspector/ConsoleMessageStorage.h"
-#include "core/inspector/InspectorConsoleInstrumentation.h"
+#include "core/inspector/IdentifiersFactory.h"
+#include "core/inspector/InspectorInstrumentation.h"
 #include "core/inspector/WorkerInspectorController.h"
+#include "core/inspector/WorkerThreadDebugger.h"
 #include "core/loader/WorkerThreadableLoader.h"
 #include "core/workers/WorkerClients.h"
 #include "core/workers/WorkerLoaderProxy.h"
@@ -81,7 +82,6 @@ WorkerGlobalScope::WorkerGlobalScope(const KURL& url, const String& userAgent, W
     , m_workerClients(workerClients)
     , m_timers(Platform::current()->currentThread()->scheduler()->timerTaskRunner()->adoptClone())
     , m_timeOrigin(timeOrigin)
-    , m_messageStorage(ConsoleMessageStorage::create())
 {
     setSecurityOrigin(SecurityOrigin::create(url));
     if (starterOriginPrivilageData)
@@ -287,7 +287,20 @@ void WorkerGlobalScope::addConsoleMessage(ConsoleMessage* consoleMessage)
 void WorkerGlobalScope::addMessageToWorkerConsole(ConsoleMessage* consoleMessage)
 {
     DCHECK(isContextThread());
-    m_messageStorage->reportMessage(this, consoleMessage);
+    WorkerThreadDebugger* debugger = WorkerThreadDebugger::from(thread()->isolate());
+    if (!debugger)
+        return;
+    debugger->debugger()->addConsoleMessage(
+        debugger->contextGroupId(),
+        consoleMessage->source(),
+        consoleMessage->level(),
+        consoleMessage->message(),
+        consoleMessage->location()->url(),
+        consoleMessage->location()->lineNumber(),
+        consoleMessage->location()->columnNumber(),
+        consoleMessage->location()->cloneStackTrace(),
+        consoleMessage->location()->scriptId(),
+        IdentifiersFactory::requestId(consoleMessage->requestIdentifier()));
 }
 
 bool WorkerGlobalScope::isContextThread() const
@@ -338,11 +351,6 @@ void WorkerGlobalScope::countDeprecation(UseCounter::Feature feature) const
         DCHECK(getExecutionContext());
         getExecutionContext()->addConsoleMessage(ConsoleMessage::create(DeprecationMessageSource, WarningMessageLevel, Deprecation::deprecationMessage(feature)));
     }
-}
-
-ConsoleMessageStorage* WorkerGlobalScope::messageStorage()
-{
-    return m_messageStorage.get();
 }
 
 void WorkerGlobalScope::exceptionUnhandled(const String& errorMessage, std::unique_ptr<SourceLocation> location)
@@ -397,7 +405,6 @@ DEFINE_TRACE(WorkerGlobalScope)
     visitor->trace(m_eventQueue);
     visitor->trace(m_workerClients);
     visitor->trace(m_timers);
-    visitor->trace(m_messageStorage);
     visitor->trace(m_eventListeners);
     ExecutionContext::trace(visitor);
     EventTargetWithInlineData::trace(visitor);

@@ -87,11 +87,13 @@ void V8RuntimeAgentImpl::evaluate(
     if (executionContextId.isJust()) {
         contextId = executionContextId.fromJust();
     } else {
-        contextId = m_debugger->client()->ensureDefaultContextInGroup(m_session->contextGroupId());
-        if (!contextId) {
+        v8::HandleScope handles(m_debugger->isolate());
+        v8::Local<v8::Context> defaultContext = m_debugger->client()->ensureDefaultContextInGroup(m_session->contextGroupId());
+        if (defaultContext.IsEmpty()) {
             *errorString = "Cannot find default execution context";
             return;
         }
+        contextId = V8DebuggerImpl::contextId(defaultContext);
     }
 
     InjectedScript::ContextScope scope(errorString, m_debugger, m_session->contextGroupId(), contextId);

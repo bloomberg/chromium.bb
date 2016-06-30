@@ -65,7 +65,6 @@
 #include "platform/network/ResourceError.h"
 #include "platform/network/ResourceRequest.h"
 #include "platform/network/ResourceResponse.h"
-#include "platform/v8_inspector/public/ConsoleTypes.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "wtf/PtrUtil.h"
 #include "wtf/StringExtras.h"

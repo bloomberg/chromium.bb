@@ -94,10 +94,9 @@
 #include "core/html/shadow/ShadowElementNames.h"
 #include "core/html/shadow/TextControlInnerElements.h"
 #include "core/input/EventHandler.h"
-#include "core/inspector/ConsoleMessageStorage.h"
-#include "core/inspector/InspectorConsoleAgent.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/inspector/InstanceCounters.h"
+#include "core/inspector/MainThreadDebugger.h"
 #include "core/layout/LayoutMenuList.h"
 #include "core/layout/LayoutObject.h"
 #include "core/layout/LayoutTreeAsText.h"
@@ -1589,17 +1588,28 @@ String Internals::dumpRefCountedInstanceCounts() const
     return WTF::dumpRefCountedInstanceCounts();
 }
 
-Vector<String> Internals::consoleMessageArgumentCounts(Document* document) const
+unsigned Internals::numberOfConsoleMessages(Document* document) const
 {
-    FrameHost* host = document->frameHost();
-    if (!host)
-        return Vector<String>();
+    if (!document->frame())
+        return 0;
 
-    Vector<unsigned> counts = host->consoleMessageStorage().argumentCounts();
-    Vector<String> result(counts.size());
-    for (size_t i = 0; i < counts.size(); i++)
-        result[i] = String::number(counts[i]);
-    return result;
+    MainThreadDebugger* debugger = MainThreadDebugger::instance();
+    unsigned total = 0;
+    unsigned withArguments = 0;
+    debugger->debugger()->consoleMessagesCount(debugger->contextGroupId(document->frame()), &total, &withArguments);
+    return total;
+}
+
+unsigned Internals::numberOfConsoleMessagesWithArguments(Document* document) const
+{
+    if (!document->frame())
+        return 0;
+
+    MainThreadDebugger* debugger = MainThreadDebugger::instance();
+    unsigned total = 0;
+    unsigned withArguments = 0;
+    debugger->debugger()->consoleMessagesCount(debugger->contextGroupId(document->frame()), &total, &withArguments);
+    return withArguments;
 }
 
 Vector<unsigned long> Internals::setMemoryCacheCapacities(unsigned long minDeadBytes, unsigned long maxDeadBytes, unsigned long totalBytes)

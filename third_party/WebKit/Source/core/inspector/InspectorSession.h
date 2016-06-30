@@ -37,6 +37,8 @@ public:
         virtual void resumeStartup() { }
         virtual void profilingStarted() { }
         virtual void profilingStopped() { }
+        virtual void consoleEnabled() { }
+        virtual void consoleCleared() { }
         virtual ~Client() {}
     };
 
@@ -71,6 +73,8 @@ private:
     bool canExecuteScripts() override;
     void profilingStarted() override;
     void profilingStopped() override;
+    void consoleEnabled() override;
+    void consoleCleared() override;
 
     void forceContextsInAllFrames();
     bool isInstrumenting();

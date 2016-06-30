@@ -4,24 +4,11 @@
 
 #include "core/inspector/ConsoleMessage.h"
 
-#include "bindings/core/v8/ScriptValue.h"
 #include "bindings/core/v8/SourceLocation.h"
-#include "core/inspector/ScriptArguments.h"
 #include "wtf/CurrentTime.h"
 #include <memory>
 
 namespace blink {
-
-unsigned nextMessageId()
-{
-    struct MessageId {
-        MessageId() : value(0) { }
-        unsigned value;
-    };
-
-    DEFINE_THREAD_SAFE_STATIC_LOCAL(WTF::ThreadSpecific<MessageId>, messageId, new WTF::ThreadSpecific<MessageId>);
-    return ++messageId->value;
-}
 
 // static
 ConsoleMessage* ConsoleMessage::createForRequest(MessageSource source, MessageLevel level, const String& message, const String& url, unsigned long requestIdentifier)
@@ -31,18 +18,9 @@ ConsoleMessage* ConsoleMessage::createForRequest(MessageSource source, MessageLe
     return consoleMessage;
 }
 
-// static
-ConsoleMessage* ConsoleMessage::createForConsoleAPI(MessageLevel level, MessageType type, const String& message, ScriptArguments* arguments)
+ConsoleMessage* ConsoleMessage::create(MessageSource source, MessageLevel level, const String& message, std::unique_ptr<SourceLocation> location)
 {
-    ConsoleMessage* consoleMessage = ConsoleMessage::create(ConsoleAPIMessageSource, level, message, SourceLocation::capture(), arguments);
-    consoleMessage->m_type = type;
-    return consoleMessage;
-}
-
-// static
-ConsoleMessage* ConsoleMessage::create(MessageSource source, MessageLevel level, const String& message, std::unique_ptr<SourceLocation> location, ScriptArguments* arguments)
-{
-    return new ConsoleMessage(source, level, message, std::move(location), arguments);
+    return new ConsoleMessage(source, level, message, std::move(location));
 }
 
 // static
@@ -54,18 +32,13 @@ ConsoleMessage* ConsoleMessage::create(MessageSource source, MessageLevel level,
 ConsoleMessage::ConsoleMessage(MessageSource source,
     MessageLevel level,
     const String& message,
-    std::unique_ptr<SourceLocation> location,
-    ScriptArguments* arguments)
+    std::unique_ptr<SourceLocation> location)
     : m_source(source)
     , m_level(level)
-    , m_type(LogMessageType)
     , m_message(message)
     , m_location(std::move(location))
-    , m_scriptArguments(arguments)
     , m_requestIdentifier(0)
     , m_timestamp(WTF::currentTime())
-    , m_messageId(0)
-    , m_relatedMessageId(0)
 {
 }
 
@@ -73,19 +46,9 @@ ConsoleMessage::~ConsoleMessage()
 {
 }
 
-MessageType ConsoleMessage::type() const
-{
-    return m_type;
-}
-
 SourceLocation* ConsoleMessage::location() const
 {
     return m_location.get();
-}
-
-ScriptArguments* ConsoleMessage::scriptArguments() const
-{
-    return m_scriptArguments;
 }
 
 unsigned long ConsoleMessage::requestIdentifier() const
@@ -96,13 +59,6 @@ unsigned long ConsoleMessage::requestIdentifier() const
 double ConsoleMessage::timestamp() const
 {
     return m_timestamp;
-}
-
-unsigned ConsoleMessage::assignMessageId()
-{
-    if (!m_messageId)
-        m_messageId = nextMessageId();
-    return m_messageId;
 }
 
 MessageSource ConsoleMessage::source() const
@@ -120,27 +76,8 @@ const String& ConsoleMessage::message() const
     return m_message;
 }
 
-void ConsoleMessage::frameWindowDiscarded(LocalDOMWindow* window)
-{
-    if (!m_scriptArguments)
-        return;
-    if (m_scriptArguments->getScriptState()->domWindow() != window)
-        return;
-    if (!m_message)
-        m_message = "<message collected>";
-    m_scriptArguments.clear();
-}
-
-unsigned ConsoleMessage::argumentCount()
-{
-    if (m_scriptArguments)
-        return m_scriptArguments->argumentCount();
-    return 0;
-}
-
 DEFINE_TRACE(ConsoleMessage)
 {
-    visitor->trace(m_scriptArguments);
 }
 
 } // namespace blink

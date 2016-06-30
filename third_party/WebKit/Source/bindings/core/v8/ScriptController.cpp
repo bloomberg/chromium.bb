@@ -270,11 +270,6 @@ void ScriptController::clearWindowProxy()
     MainThreadDebugger::instance()->didClearContextsForFrame(frame());
 }
 
-void ScriptController::setCaptureCallStackForUncaughtExceptions(v8::Isolate* isolate, bool value)
-{
-    isolate->SetCaptureStackTraceForUncaughtExceptions(value, V8StackTrace::maxCallStackSizeToCapture, stackTraceOptions);
-}
-
 void ScriptController::collectIsolatedContexts(Vector<std::pair<ScriptState*, SecurityOrigin*>>& result)
 {
     m_windowProxyManager->collectIsolatedContexts(result);

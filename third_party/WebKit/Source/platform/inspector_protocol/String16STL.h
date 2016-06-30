@@ -173,6 +173,11 @@ public:
         m_impl = m_impl + String16::number(i).impl();
     }
 
+    void appendNumber(double d)
+    {
+        m_impl = m_impl + String16::fromDoubleFixedPrecision(d, 6).impl();
+    }
+
     void append(const UChar* c, size_t length)
     {
         // presubmit: allow wstring

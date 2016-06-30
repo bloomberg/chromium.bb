@@ -198,7 +198,8 @@
     unsigned long numberOfLiveNodes();
     unsigned long numberOfLiveDocuments();
     DOMString dumpRefCountedInstanceCounts();
-    sequence<DOMString> consoleMessageArgumentCounts(Document document);
+    unsigned long numberOfConsoleMessages(Document document);
+    unsigned long numberOfConsoleMessagesWithArguments(Document document);
     unsigned long[] setMemoryCacheCapacities(unsigned long minDeadBytes, unsigned long maxDeadBytes, unsigned long totalBytes);
 
     DOMString counterValue(Element element);

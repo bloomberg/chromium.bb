@@ -31,8 +31,8 @@
 #include "bindings/core/v8/SourceLocation.h"
 #include "core/frame/FrameHost.h"
 #include "core/inspector/ConsoleMessage.h"
-#include "core/inspector/ConsoleMessageStorage.h"
-#include "core/inspector/InspectorConsoleInstrumentation.h"
+#include "core/inspector/IdentifiersFactory.h"
+#include "core/inspector/MainThreadDebugger.h"
 #include "core/page/ChromeClient.h"
 #include "core/page/Page.h"
 #include "platform/network/ResourceError.h"
@@ -41,12 +41,6 @@
 #include <memory>
 
 namespace blink {
-
-namespace {
-
-int muteCount = 0;
-
-}
 
 FrameConsole::FrameConsole(LocalFrame& frame)
     : m_frame(&frame)
@@ -61,18 +55,25 @@ void FrameConsole::addMessage(ConsoleMessage* consoleMessage)
 
 bool FrameConsole::addMessageToStorage(ConsoleMessage* consoleMessage)
 {
-    if (muteCount && consoleMessage->source() != ConsoleAPIMessageSource)
+    // TODO(dgozman): drop this check, it's left here to preserve tests output.
+    if (!m_frame->document())
         return false;
-    if (!m_frame->document() || !messageStorage())
-        return false;
-    messageStorage()->reportMessage(m_frame->document(), consoleMessage);
-    return true;
+    MainThreadDebugger* debugger = MainThreadDebugger::instance();
+    return debugger->debugger()->addConsoleMessage(
+        debugger->contextGroupId(m_frame),
+        consoleMessage->source(),
+        consoleMessage->level(),
+        consoleMessage->message(),
+        consoleMessage->location()->url(),
+        consoleMessage->location()->lineNumber(),
+        consoleMessage->location()->columnNumber(),
+        consoleMessage->location()->cloneStackTrace(),
+        consoleMessage->location()->scriptId(),
+        IdentifiersFactory::requestId(consoleMessage->requestIdentifier()));
 }
 
 void FrameConsole::reportMessageToClient(ConsoleMessage* consoleMessage)
 {
-    if (muteCount && consoleMessage->source() != ConsoleAPIMessageSource)
-        return;
     if (consoleMessage->source() == NetworkMessageSource)
         return;
 
@@ -117,37 +118,9 @@ void FrameConsole::reportResourceResponseReceived(DocumentLoader* loader, unsign
     addMessage(consoleMessage);
 }
 
-void FrameConsole::mute()
-{
-    muteCount++;
-}
-
-void FrameConsole::unmute()
-{
-    ASSERT(muteCount > 0);
-    muteCount--;
-}
-
-ConsoleMessageStorage* FrameConsole::messageStorage()
-{
-    if (!m_frame->host())
-        return nullptr;
-    return &m_frame->host()->consoleMessageStorage();
-}
-
-void FrameConsole::clearMessages()
-{
-    ConsoleMessageStorage* storage = messageStorage();
-    if (storage)
-        storage->clear(m_frame->document());
-}
-
 void FrameConsole::didFailLoading(unsigned long requestIdentifier, const ResourceError& error)
 {
     if (error.isCancellation()) // Report failures only.
-        return;
-    ConsoleMessageStorage* storage = messageStorage();
-    if (!storage)
         return;
     StringBuilder message;
     message.append("Failed to load resource");
@@ -155,8 +128,7 @@ void FrameConsole::didFailLoading(unsigned long requestIdentifier, const Resourc
         message.append(": ");
         message.append(error.localizedDescription());
     }
-    ConsoleMessage* consoleMessage = ConsoleMessage::createForRequest(NetworkMessageSource, ErrorMessageLevel, message.toString(), error.failingURL(), requestIdentifier);
-    storage->reportMessage(m_frame->document(), consoleMessage);
+    addMessageToStorage(ConsoleMessage::createForRequest(NetworkMessageSource, ErrorMessageLevel, message.toString(), error.failingURL(), requestIdentifier));
 }
 
 DEFINE_TRACE(FrameConsole)

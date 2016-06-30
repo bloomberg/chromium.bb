@@ -31,9 +31,7 @@
 #include "core/inspector/WorkerInspectorController.h"
 
 #include "core/InstrumentingAgents.h"
-#include "core/inspector/InspectorConsoleAgent.h"
 #include "core/inspector/InspectorInstrumentation.h"
-#include "core/inspector/WorkerConsoleAgent.h"
 #include "core/inspector/WorkerThreadDebugger.h"
 #include "core/workers/WorkerGlobalScope.h"
 #include "core/workers/WorkerReportingProxy.h"
@@ -68,7 +66,6 @@ void WorkerInspectorController::connectFrontend()
 
     // sessionId will be overwritten by WebDevToolsAgent::sendProtocolNotification call.
     m_session = new InspectorSession(this, nullptr, m_instrumentingAgents.get(), 0, true /* autoFlush */, m_debugger->debugger(), m_debugger->contextGroupId(), nullptr);
-    m_session->append(new WorkerConsoleAgent(m_session->v8Session(), m_workerGlobalScope));
 }
 
 void WorkerInspectorController::disconnectFrontend()
@@ -97,6 +94,11 @@ void WorkerInspectorController::dispose()
 void WorkerInspectorController::resumeStartup()
 {
     m_workerGlobalScope->thread()->stopRunningDebuggerTasksOnPauseOnWorkerThread();
+}
+
+void WorkerInspectorController::consoleEnabled()
+{
+    m_workerGlobalScope->thread()->workerReportingProxy().postWorkerConsoleAgentEnabled();
 }
 
 void WorkerInspectorController::sendProtocolMessage(int sessionId, int callId, const String& response, const String& state)

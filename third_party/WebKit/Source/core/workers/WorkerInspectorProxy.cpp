@@ -111,11 +111,6 @@ void WorkerInspectorProxy::workerConsoleAgentEnabled()
 
 void WorkerInspectorProxy::addConsoleMessageFromWorker(ConsoleMessage* consoleMessage)
 {
-    if (consoleMessage->type() == ClearMessageType) {
-        m_consoleMessages.clear();
-        return;
-    }
-
     if (!m_ignoreConsoleMessages) {
         DCHECK(m_consoleMessages.size() <= maxConsoleMessageCount);
         if (m_consoleMessages.size() == maxConsoleMessageCount)

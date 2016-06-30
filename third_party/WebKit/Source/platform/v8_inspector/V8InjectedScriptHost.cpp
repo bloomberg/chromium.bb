@@ -183,15 +183,17 @@ void V8InjectedScriptHost::suppressWarningsAndCallFunctionCallback(const v8::Fun
         }
     }
 
-    V8DebuggerClient* client = unwrapDebugger(info)->client();
-    client->muteWarningsAndDeprecations();
+    V8DebuggerImpl* debugger = unwrapDebugger(info);
+    debugger->client()->muteWarningsAndDeprecations();
+    debugger->muteConsole();
 
     v8::MicrotasksScope microtasks(isolate, v8::MicrotasksScope::kDoNotRunMicrotasks);
     v8::Local<v8::Value> result;
     if (function->Call(context, receiver, argc, argv.get()).ToLocal(&result))
         info.GetReturnValue().Set(result);
 
-    client->unmuteWarningsAndDeprecations();
+    debugger->unmuteConsole();
+    debugger->client()->unmuteWarningsAndDeprecations();
 }
 
 void V8InjectedScriptHost::bindCallback(const v8::FunctionCallbackInfo<v8::Value>& info)

@@ -50,7 +50,7 @@ public:
 
     const char* GetName(v8::Local<v8::Object> object) override
     {
-        int contextId = V8Debugger::contextId(object->CreationContext());
+        int contextId = V8DebuggerImpl::contextId(object->CreationContext());
         if (!contextId)
             return "";
         ErrorString errorString;

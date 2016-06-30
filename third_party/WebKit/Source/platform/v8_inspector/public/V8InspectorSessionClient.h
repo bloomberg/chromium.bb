@@ -22,6 +22,8 @@ public:
     virtual bool canExecuteScripts() = 0;
     virtual void profilingStarted() = 0;
     virtual void profilingStopped() = 0;
+    virtual void consoleEnabled() = 0;
+    virtual void consoleCleared() = 0;
 };
 
 } // namespace blink

@@ -33,6 +33,7 @@
 #include "bindings/core/v8/BindingSecurity.h"
 #include "bindings/core/v8/DOMWrapperWorld.h"
 #include "bindings/core/v8/ScriptController.h"
+#include "bindings/core/v8/SourceLocation.h"
 #include "bindings/core/v8/V8Node.h"
 #include "bindings/core/v8/V8Window.h"
 #include "core/dom/ContainerNode.h"
@@ -44,6 +45,7 @@
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/UseCounter.h"
+#include "core/inspector/ConsoleMessage.h"
 #include "core/inspector/IdentifiersFactory.h"
 #include "core/inspector/InspectedFrames.h"
 #include "core/inspector/InspectorTaskRunner.h"
@@ -167,24 +169,12 @@ void MainThreadDebugger::quitMessageLoopOnPause()
 
 void MainThreadDebugger::muteWarningsAndDeprecations()
 {
-    FrameConsole::mute();
     UseCounter::muteForInspector();
 }
 
 void MainThreadDebugger::unmuteWarningsAndDeprecations()
 {
-    FrameConsole::unmute();
     UseCounter::unmuteForInspector();
-}
-
-void MainThreadDebugger::muteConsole()
-{
-    FrameConsole::mute();
-}
-
-void MainThreadDebugger::unmuteConsole()
-{
-    FrameConsole::unmute();
 }
 
 bool MainThreadDebugger::callingContextCanAccessContext(v8::Local<v8::Context> calling, v8::Local<v8::Context> target)
@@ -192,37 +182,20 @@ bool MainThreadDebugger::callingContextCanAccessContext(v8::Local<v8::Context> c
     return BindingSecurity::shouldAllowAccessTo(m_isolate, calling, target, DoNotReportSecurityError);
 }
 
-int MainThreadDebugger::ensureDefaultContextInGroup(int contextGroupId)
+v8::Local<v8::Context> MainThreadDebugger::ensureDefaultContextInGroup(int contextGroupId)
+{
+    LocalFrame* frame = WeakIdentifierMap<LocalFrame>::lookup(contextGroupId);
+    ScriptState* scriptState = frame ? ScriptState::forMainWorld(frame) : nullptr;
+    return scriptState ? scriptState->context() : v8::Local<v8::Context>();
+}
+
+void MainThreadDebugger::messageAddedToConsole(int contextGroupId, MessageSource source, MessageLevel level, const String16& message, const String16& url, unsigned lineNumber, unsigned columnNumber, V8StackTrace* stackTrace)
 {
     LocalFrame* frame = WeakIdentifierMap<LocalFrame>::lookup(contextGroupId);
     if (!frame)
-        return 0;
-    ScriptState* scriptState = ScriptState::forMainWorld(frame);
-    if (!scriptState)
-        return 0;
-    v8::HandleScope scopes(scriptState->isolate());
-    return V8Debugger::contextId(scriptState->context());
-}
-
-void MainThreadDebugger::reportMessageToConsole(v8::Local<v8::Context> context, ConsoleMessage* consoleMessage)
-{
-    ExecutionContext* executionContext = toExecutionContext(context);
-    ASSERT(executionContext);
-    if (executionContext->isWorkletGlobalScope()) {
-        executionContext->addConsoleMessage(consoleMessage);
         return;
-    }
-
-    DOMWindow* window = toDOMWindow(context);
-    if (!window)
-        return;
-    LocalDOMWindow* localDomWindow = toLocalDOMWindow(window);
-    if (!localDomWindow)
-        return;
-    LocalFrame* frame = localDomWindow->frame();
-    if (!frame)
-        return;
-    frame->console().addMessage(consoleMessage);
+    ConsoleMessage* consoleMessage = ConsoleMessage::create(source, level, message, SourceLocation::create(url, lineNumber, columnNumber, stackTrace ? stackTrace->clone() : nullptr, 0));
+    frame->console().reportMessageToClient(consoleMessage);
 }
 
 v8::MaybeLocal<v8::Value> MainThreadDebugger::memoryInfo(v8::Isolate* isolate, v8::Local<v8::Context> context)

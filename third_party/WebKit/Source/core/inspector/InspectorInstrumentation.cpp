@@ -36,7 +36,6 @@
 #include "core/fetch/FetchInitiatorInfo.h"
 #include "core/frame/FrameHost.h"
 #include "core/inspector/InspectorCSSAgent.h"
-#include "core/inspector/InspectorConsoleAgent.h"
 #include "core/inspector/InspectorDOMDebuggerAgent.h"
 #include "core/inspector/InspectorNetworkAgent.h"
 #include "core/inspector/InspectorPageAgent.h"
@@ -191,18 +190,6 @@ void continueAfterXFrameOptionsDenied(LocalFrame* frame, DocumentLoader* loader,
 void continueWithPolicyIgnore(LocalFrame* frame, DocumentLoader* loader, unsigned long identifier, const ResourceResponse& r, Resource* resource)
 {
     didReceiveResourceResponseButCanceled(frame, loader, identifier, r, resource);
-}
-
-bool consoleAgentEnabled(ExecutionContext* executionContext)
-{
-    InstrumentingAgents* instrumentingAgents = instrumentingAgentsFor(executionContext);
-    if (!instrumentingAgents || !instrumentingAgents->hasInspectorConsoleAgents())
-        return false;
-    for (InspectorConsoleAgent* consoleAgent: instrumentingAgents->inspectorConsoleAgents()) {
-        if (consoleAgent->enabled())
-            return true;
-    }
-    return false;
 }
 
 InstrumentingAgents* instrumentingAgentsFor(WorkerGlobalScope* workerGlobalScope)

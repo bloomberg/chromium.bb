@@ -19,7 +19,6 @@
 #include "core/inspector/ConsoleMessage.h"
 #include "core/inspector/InspectorDOMDebuggerAgent.h"
 #include "core/inspector/InspectorTraceEvents.h"
-#include "core/inspector/ScriptArguments.h"
 #include "platform/ScriptForbiddenScope.h"
 #include "wtf/CurrentTime.h"
 #include "wtf/PtrUtil.h"
@@ -236,17 +235,7 @@ void ThreadDebugger::logCallback(const v8::FunctionCallbackInfo<v8::Value>& info
     Event* event = V8Event::toImplWithTypeCheck(info.GetIsolate(), info[0]);
     if (!event)
         return;
-
-    v8::Local<v8::Context> context = info.GetIsolate()->GetCurrentContext();
-    ScriptState* scriptState = ScriptState::from(context);
-    DCHECK(scriptState->contextIsValid());
-    Vector<ScriptValue> arguments = Vector<ScriptValue>({
-        ScriptValue(scriptState, v8String(info.GetIsolate(), event->type())),
-        ScriptValue(scriptState, info[0])
-    });
-
-    ConsoleMessage* consoleMessage = ConsoleMessage::createForConsoleAPI(LogMessageLevel, LogMessageType, event->type(), ScriptArguments::create(scriptState, arguments));
-    debugger->reportMessageToConsole(context, consoleMessage);
+    debugger->debugger()->logToConsole(info.GetIsolate()->GetCurrentContext(), event->type(), v8String(info.GetIsolate(), event->type()), info[0]);
 }
 
 v8::Local<v8::Function> ThreadDebugger::eventLogFunction()
@@ -309,7 +298,9 @@ void ThreadDebugger::getEventListenersCallback(const v8::FunctionCallbackInfo<v8
     V8EventListenerInfoList listenerInfo;
     // eventListeners call can produce message on ErrorEvent during lazy event listener compilation.
     debugger->muteWarningsAndDeprecations();
+    debugger->debugger()->muteConsole();
     InspectorDOMDebuggerAgent::eventListenersInfoForTarget(isolate, info[0], listenerInfo);
+    debugger->debugger()->unmuteConsole();
     debugger->unmuteWarningsAndDeprecations();
 
     v8::Local<v8::Object> result = v8::Object::New(isolate);
@@ -335,19 +326,6 @@ void ThreadDebugger::getEventListenersCallback(const v8::FunctionCallbackInfo<v8
         listeners->Set(outputIndex++, listenerObject);
     }
     info.GetReturnValue().Set(result);
-}
-
-void ThreadDebugger::reportMessageToConsole(v8::Local<v8::Context> context, MessageType type, MessageLevel level, const String16& message, const v8::FunctionCallbackInfo<v8::Value>* arguments, unsigned skipArgumentCount)
-{
-    ScriptState* scriptState = ScriptState::from(context);
-    ScriptArguments* scriptArguments = nullptr;
-    if (arguments && scriptState->contextIsValid())
-        scriptArguments = ScriptArguments::create(scriptState, *arguments, skipArgumentCount);
-    String messageText = message;
-    if (messageText.isEmpty() && scriptArguments)
-        scriptArguments->getFirstArgumentAsString(messageText);
-
-    reportMessageToConsole(context, ConsoleMessage::createForConsoleAPI(level, type, messageText, scriptArguments));
 }
 
 void ThreadDebugger::consoleTime(const String16& title)
