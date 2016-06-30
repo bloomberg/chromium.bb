@@ -412,136 +412,71 @@ TEST_F(AutofillFieldTest, FillSelectControlByContents) {
   EXPECT_EQ(ASCIIToUTF16("2"), field.value);  // Corresponds to "Miney".
 }
 
-TEST_F(AutofillFieldTest, FillSelectControlWithFullCountryNames) {
-  std::vector<const char*> kCountries = {"Albania", "Canada"};
-  AutofillField field;
-  test::CreateTestSelectField(kCountries, &field);
-  field.set_heuristic_type(ADDRESS_HOME_COUNTRY);
+TEST_F(AutofillFieldTest, FillSelectWithStates) {
+  typedef struct {
+    std::vector<const char*> select_values;
+    const char* input_value;
+    const char* expected_value;
+  } TestCase;
 
-  AutofillField::FillFormField(
-      field, ASCIIToUTF16("CA"), "en-US", "en-US", &field);
-  EXPECT_EQ(ASCIIToUTF16("Canada"), field.value);
-}
+  TestCase test_cases[] = {
+      // Filling the abbreviation.
+      {{"Alabama", "California"}, "CA", "California"},
+      // Attempting to fill the full name in a select full of abbreviations.
+      {{"AL", "CA"}, "California", "CA"},
+      // Different case and diacritics.
+      {{"QUÉBEC", "ALBERTA"}, "Quebec", "QUÉBEC"},
+      // Inexact state names.
+      {{"SC - South Carolina", "CA - California", "NC - North Carolina"},
+       "California",
+       "CA - California"},
+      // Don't accidentally match "Virginia" to "West Virginia".
+      {{"WV - West Virginia", "VA - Virginia", "NV - North Virginia"},
+       "Virginia",
+       "VA - Virginia"},
+      // Do accidentally match "Virginia" to "West Virginia".
+      // TODO(crbug.com/624770): This test should not pass, but it does because
+      // "Virginia" is a substring of "West Virginia".
+      {{"WV - West Virginia", "TX - Texas"}, "Virginia", "WV - West Virginia"},
+      // Tests that substring matches work for full state names (a full token
+      // match isn't required). Also tests that matches work for states with
+      // whitespace in the middle.
+      {{"California.", "North Carolina."}, "North Carolina", "North Carolina."},
+      {{"NC - North Carolina", "CA - California"}, "CA", "CA - California"},
+      // These are not states.
+      {{"NCNCA", "SCNCA"}, "NC", ""}};
 
-TEST_F(AutofillFieldTest, FillSelectControlWithAbbreviatedCountryNames) {
-  std::vector<const char*> kCountries = {"AL", "CA"};
-  AutofillField field;
-  test::CreateTestSelectField(kCountries, &field);
-  field.set_heuristic_type(ADDRESS_HOME_COUNTRY);
-
-  AutofillField::FillFormField(
-      field, ASCIIToUTF16("Canada"), "en-US", "en-US", &field);
-  EXPECT_EQ(ASCIIToUTF16("CA"), field.value);
-}
-
-TEST_F(AutofillFieldTest, FillSelectControlWithFullStateNames) {
-  std::vector<const char*> kStates = {"Alabama", "California"};
-  AutofillField field;
-  test::CreateTestSelectField(kStates, &field);
-  field.set_heuristic_type(ADDRESS_HOME_STATE);
-
-  AutofillField::FillFormField(
-      field, ASCIIToUTF16("CA"), "en-US", "en-US", &field);
-  EXPECT_EQ(ASCIIToUTF16("California"), field.value);
-}
-
-TEST_F(AutofillFieldTest, FillSelectControlWithAbbreviateStateNames) {
-  std::vector<const char*> kStates = {"AL", "CA"};
-  AutofillField field;
-  test::CreateTestSelectField(kStates, &field);
-  field.set_heuristic_type(ADDRESS_HOME_STATE);
-
-  AutofillField::FillFormField(
-      field, ASCIIToUTF16("California"), "en-US", "en-US", &field);
-  EXPECT_EQ(ASCIIToUTF16("CA"), field.value);
-}
-
-TEST_F(AutofillFieldTest, FillSelectControlWithInexactFullStateNames) {
-  {
-    std::vector<const char*> kStates = {
-        "SC - South Carolina", "CA - California", "NC - North Carolina",
-    };
+  for (TestCase test_case : test_cases) {
     AutofillField field;
-    test::CreateTestSelectField(kStates, &field);
+    test::CreateTestSelectField(test_case.select_values, &field);
     field.set_heuristic_type(ADDRESS_HOME_STATE);
 
-    AutofillField::FillFormField(
-        field, ASCIIToUTF16("California"), "en-US", "en-US", &field);
-    EXPECT_EQ(ASCIIToUTF16("CA - California"), field.value);
-  }
-
-  // Don't accidentally match "Virginia" to "West Virginia".
-  {
-    std::vector<const char*> kStates = {
-        "WV - West Virginia", "VA - Virginia", "NV - North Virginia",
-    };
-    AutofillField field;
-    test::CreateTestSelectField(kStates, &field);
-    field.set_heuristic_type(ADDRESS_HOME_STATE);
-
-    AutofillField::FillFormField(
-        field, ASCIIToUTF16("Virginia"), "en-US", "en-US", &field);
-    EXPECT_EQ(ASCIIToUTF16("VA - Virginia"), field.value);
-  }
-
-  // Do accidentally match "Virginia" to "West Virginia". NB: Ideally, Chrome
-  // would fail this test. It's here to document behavior rather than enforce
-  // it.
-  {
-    std::vector<const char*> kStates = {
-        "WV - West Virginia", "TX - Texas",
-    };
-    AutofillField field;
-    test::CreateTestSelectField(kStates, &field);
-    field.set_heuristic_type(ADDRESS_HOME_STATE);
-
-    AutofillField::FillFormField(
-        field, ASCIIToUTF16("Virginia"), "en-US", "en-US", &field);
-    EXPECT_EQ(ASCIIToUTF16("WV - West Virginia"), field.value);
-  }
-
-  // Tests that substring matches work for full state names (a full token
-  // match isn't required). Also tests that matches work for states with
-  // whitespace in the middle.
-  {
-    std::vector<const char*> kStates = {
-        "California.", "North Carolina.",
-    };
-    AutofillField field;
-    test::CreateTestSelectField(kStates, &field);
-    field.set_heuristic_type(ADDRESS_HOME_STATE);
-
-    AutofillField::FillFormField(
-        field, ASCIIToUTF16("North Carolina"), "en-US", "en-US", &field);
-    EXPECT_EQ(ASCIIToUTF16("North Carolina."), field.value);
+    AutofillField::FillFormField(field, UTF8ToUTF16(test_case.input_value),
+                                 "en-US", "en-US", &field);
+    EXPECT_EQ(UTF8ToUTF16(test_case.expected_value), field.value);
   }
 }
 
-TEST_F(AutofillFieldTest, FillSelectControlWithInexactAbbreviations) {
-  {
-    std::vector<const char*> kStates = {
-        "NC - North Carolina", "CA - California",
-    };
+TEST_F(AutofillFieldTest, FillSelectWithCountries) {
+  typedef struct {
+    std::vector<const char*> select_values;
+    const char* input_value;
+    const char* expected_value;
+  } TestCase;
+
+  TestCase test_cases[] = {// Full country names.
+                           {{"Albania", "Canada"}, "CA", "Canada"},
+                           // Abbreviations.
+                           {{"AL", "CA"}, "Canada", "CA"}};
+
+  for (TestCase test_case : test_cases) {
     AutofillField field;
-    test::CreateTestSelectField(kStates, &field);
-    field.set_heuristic_type(ADDRESS_HOME_STATE);
+    test::CreateTestSelectField(test_case.select_values, &field);
+    field.set_heuristic_type(ADDRESS_HOME_COUNTRY);
 
-    AutofillField::FillFormField(
-        field, ASCIIToUTF16("CA"), "en-US", "en-US", &field);
-    EXPECT_EQ(ASCIIToUTF16("CA - California"), field.value);
-  }
-
-  {
-    std::vector<const char*> kNotStates = {
-        "NCNCA", "SCNCA",
-    };
-    AutofillField field;
-    test::CreateTestSelectField(kNotStates, &field);
-    field.set_heuristic_type(ADDRESS_HOME_STATE);
-
-    AutofillField::FillFormField(
-        field, ASCIIToUTF16("NC"), "en-US", "en-US", &field);
-    EXPECT_EQ(base::string16(), field.value);
+    AutofillField::FillFormField(field, UTF8ToUTF16(test_case.input_value),
+                                 "en-US", "en-US", &field);
+    EXPECT_EQ(UTF8ToUTF16(test_case.expected_value), field.value);
   }
 }
 
