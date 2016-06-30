@@ -82,6 +82,7 @@ public class SiteSettingsPreferences extends PreferenceFragment
             category = getArguments().getString(SingleCategoryPreferences.EXTRA_CATEGORY, "");
             if (MEDIA_KEY.equals(category)) {
                 mMediaSubMenu = true;
+                getActivity().setTitle(findPreference(MEDIA_KEY).getTitle().toString());
             }
         }
 
