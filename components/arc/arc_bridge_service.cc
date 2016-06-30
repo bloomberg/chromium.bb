@@ -10,7 +10,6 @@
 #include "base/sequenced_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chromeos/chromeos_switches.h"
-#include "components/arc/arc_bridge_service_impl.h"
 
 namespace arc {
 

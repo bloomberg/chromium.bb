@@ -12,6 +12,7 @@
         '..',
       ],
       'dependencies': [
+        'arc_base',
         'arc_mojo_bindings',
         'components.gyp:exo',
         'components.gyp:onc_component',
@@ -34,18 +35,12 @@
       'sources': [
         'arc/arc_bridge_bootstrap.cc',
         'arc/arc_bridge_bootstrap.h',
-        'arc/arc_bridge_service.cc',
-        'arc/arc_bridge_service.h',
         'arc/arc_bridge_service_impl.cc',
         'arc/arc_bridge_service_impl.h',
-        'arc/arc_service.cc',
-        'arc/arc_service.h',
         'arc/arc_service_manager.cc',
         'arc/arc_service_manager.h',
         'arc/audio/arc_audio_bridge.cc',
         'arc/audio/arc_audio_bridge.h',
-        'arc/bitmap/bitmap_type_converters.cc',
-        'arc/bitmap/bitmap_type_converters.h',
         'arc/bluetooth/arc_bluetooth_bridge.cc',
         'arc/bluetooth/arc_bluetooth_bridge.h',
         'arc/bluetooth/bluetooth_type_converters.cc',
@@ -87,6 +82,39 @@
         'arc/user_data/arc_user_data_service.h',
         'arc/window_manager/arc_window_manager_bridge.cc',
         'arc/window_manager/arc_window_manager_bridge.h',
+      ],
+    },
+    {
+      # GN version: //components/arc:arc_base
+      'target_name': 'arc_base',
+      'type': 'static_library',
+      'include_dirs': [
+        '..',
+      ],
+      'dependencies': [
+        '../base/base.gyp:base',
+        '../chromeos/chromeos.gyp:chromeos',
+      ],
+      'sources': [
+        'arc/arc_bridge_service.cc',
+        'arc/arc_bridge_service.h',
+        'arc/arc_service.cc',
+        'arc/arc_service.h',
+      ],
+    },
+    {
+      # GN version: //components/arc:arc_bitmap
+      'target_name': 'arc_bitmap',
+      'type': 'static_library',
+      'include_dirs': [
+        '..',
+      ],
+      'dependencies': [
+        '../skia/skia.gyp:skia',
+      ],
+      'sources': [
+        'arc/bitmap/bitmap_type_converters.cc',
+        'arc/bitmap/bitmap_type_converters.h',
       ],
     },
     {

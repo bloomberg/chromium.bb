@@ -9,18 +9,12 @@ static_library("arc") {
   sources = [
     "arc_bridge_bootstrap.cc",
     "arc_bridge_bootstrap.h",
-    "arc_bridge_service.cc",
-    "arc_bridge_service.h",
     "arc_bridge_service_impl.cc",
     "arc_bridge_service_impl.h",
-    "arc_service.cc",
-    "arc_service.h",
     "arc_service_manager.cc",
     "arc_service_manager.h",
     "audio/arc_audio_bridge.cc",
     "audio/arc_audio_bridge.h",
-    "bitmap/bitmap_type_converters.cc",
-    "bitmap/bitmap_type_converters.h",
     "bluetooth/arc_bluetooth_bridge.cc",
     "bluetooth/arc_bluetooth_bridge.h",
     "bluetooth/bluetooth_type_converters.cc",
@@ -65,6 +59,7 @@ static_library("arc") {
   ]
 
   deps = [
+    ":arc_base",
     "//ash:ash",
     "//base",
     "//chromeos",
@@ -90,6 +85,39 @@ static_library("arc") {
     "//ui/events:dom_keycode_converter",
     "//ui/keyboard:keyboard",
     "//url:url",
+  ]
+
+  public_deps = [
+    ":arc_bindings",
+  ]
+}
+
+static_library("arc_base") {
+  sources = [
+    "arc_bridge_service.cc",
+    "arc_bridge_service.h",
+    "arc_service.cc",
+    "arc_service.h",
+  ]
+
+  deps = [
+    "//base",
+    "//chromeos",
+  ]
+
+  public_deps = [
+    ":arc_bindings",
+  ]
+}
+
+static_library("arc_bitmap") {
+  sources = [
+    "bitmap/bitmap_type_converters.cc",
+    "bitmap/bitmap_type_converters.h",
+  ]
+
+  deps = [
+    "//skia",
   ]
 
   public_deps = [
@@ -149,6 +177,7 @@ static_library("arc_test_support") {
 
   deps = [
     ":arc",
+    ":arc_base",
     ":arc_bindings",
     "//base",
     "//mojo/common:common_base",

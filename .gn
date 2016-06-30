@@ -126,6 +126,7 @@ check_targets = [
   "//ui/accessibility/*",
   "//ui/android/*",
   "//ui/app_list/*",
+  "//ui/arc/*",
   "//ui/aura/*",
   "//ui/aura_extra/*",
   "//ui/base/*",

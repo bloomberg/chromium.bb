@@ -59,6 +59,7 @@ class ArcNotificationItem {
   const AccountId& profile_id() const { return profile_id_; }
   const std::string& notification_key() const { return notification_key_; }
   const std::string& notification_id() const { return notification_id_; }
+  message_center::MessageCenter* message_center() { return message_center_; }
 
   message_center::Notification* pending_notification() {
     return notification_.get();
