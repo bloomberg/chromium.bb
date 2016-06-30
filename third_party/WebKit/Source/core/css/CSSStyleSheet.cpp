@@ -101,7 +101,7 @@ CSSStyleSheet* CSSStyleSheet::createInline(StyleSheetContents* sheet, Node* owne
 
 CSSStyleSheet* CSSStyleSheet::createInline(Node* ownerNode, const KURL& baseURL, const TextPosition& startPosition, const String& encoding)
 {
-    CSSParserContext parserContext(ownerNode->document(), 0, baseURL, encoding);
+    CSSParserContext parserContext(ownerNode->document(), nullptr, baseURL, encoding);
     StyleSheetContents* sheet = StyleSheetContents::create(baseURL.getString(), parserContext);
     return new CSSStyleSheet(sheet, ownerNode, true, startPosition);
 }

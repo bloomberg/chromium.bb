@@ -102,7 +102,7 @@ String createShorthandValue(Document* document, const String& shorthand, const S
 {
     StyleSheetContents* styleSheetContents = StyleSheetContents::create(strictCSSParserContext());
     String text = " div { " + shorthand  + ": " + oldText + "; }";
-    CSSParser::parseSheet(CSSParserContext(*document, 0), styleSheetContents, text);
+    CSSParser::parseSheet(CSSParserContext(*document, nullptr), styleSheetContents, text);
 
     CSSStyleSheet* styleSheet = CSSStyleSheet::create(styleSheetContents);
     CSSStyleRule* rule = toCSSStyleRule(styleSheet->item(0));

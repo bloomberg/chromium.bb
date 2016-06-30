@@ -20,7 +20,7 @@ protected:
         CSSParserMode parserMode = HTMLStandardMode;
         if (propertyID == CSSPropertyFloodColor)
             parserMode = SVGAttributeMode;
-        CSSValue* value = CSSParser::parseSingleValue(propertyID, string, CSSParserContext(parserMode, 0));
+        CSSValue* value = CSSParser::parseSingleValue(propertyID, string, CSSParserContext(parserMode, nullptr));
         ASSERT(value);
         return DeferredLegacyStyleInterpolation::interpolationRequiresStyleResolve(*value);
     }

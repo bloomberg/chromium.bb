@@ -222,7 +222,7 @@ protected:
 
     void applyViewportStyleOverride(FrameTestHelpers::WebViewHelper* webViewHelper)
     {
-        StyleSheetContents* styleSheet = StyleSheetContents::create(CSSParserContext(UASheetMode, 0));
+        StyleSheetContents* styleSheet = StyleSheetContents::create(CSSParserContext(UASheetMode, nullptr));
         styleSheet->parseString(loadResourceAsASCIIString("viewportAndroid.css"));
         RuleSet* ruleSet = RuleSet::create();
         ruleSet->addRulesFromSheet(styleSheet, MediaQueryEvaluator("screen"));

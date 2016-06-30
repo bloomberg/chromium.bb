@@ -69,7 +69,7 @@ using namespace blink;
 
 static CSSParserContext parserContextForDocument(Document *document)
 {
-    return document ? CSSParserContext(*document, 0) : strictCSSParserContext();
+    return document ? CSSParserContext(*document, nullptr) : strictCSSParserContext();
 }
 
 class StyleSheetHandler final : public CSSParserObserver {

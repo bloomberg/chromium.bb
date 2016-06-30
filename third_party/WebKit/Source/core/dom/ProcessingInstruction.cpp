@@ -199,7 +199,7 @@ void ProcessingInstruction::setCSSStyleSheet(const String& href, const KURL& bas
     }
 
     DCHECK(m_isCSS);
-    CSSParserContext parserContext(document(), 0, baseURL, charset);
+    CSSParserContext parserContext(document(), nullptr, baseURL, charset);
 
     StyleSheetContents* newSheet = StyleSheetContents::create(href, parserContext);
 

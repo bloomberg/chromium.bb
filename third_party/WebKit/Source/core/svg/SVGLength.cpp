@@ -133,7 +133,7 @@ SVGParsingError SVGLength::setValueAsString(const String& string)
         return SVGParseStatus::NoError;
     }
 
-    CSSParserContext svgParserContext(SVGAttributeMode, 0);
+    CSSParserContext svgParserContext(SVGAttributeMode, nullptr);
     CSSValue* parsed = CSSParser::parseSingleValue(CSSPropertyX, string, svgParserContext);
     if (!parsed || !parsed->isPrimitiveValue())
         return SVGParseStatus::ExpectedLength;

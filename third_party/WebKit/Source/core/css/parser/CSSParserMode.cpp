@@ -90,7 +90,7 @@ bool CSSParserContext::operator==(const CSSParserContext& other) const
 
 const CSSParserContext& strictCSSParserContext()
 {
-    DEFINE_STATIC_LOCAL(CSSParserContext, strictContext, (HTMLStandardMode, 0));
+    DEFINE_STATIC_LOCAL(CSSParserContext, strictContext, (HTMLStandardMode, nullptr));
     return strictContext;
 }
 

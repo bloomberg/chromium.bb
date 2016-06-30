@@ -151,7 +151,7 @@ const CSSValue* CSSVariableResolver::resolveVariableReferences(StyleResolverStat
 
     Vector<CSSParserToken> tokens;
     if (resolver.resolveTokenRange(value.variableDataValue()->tokens(), tokens)) {
-        CSSParserContext context(HTMLStandardMode, 0);
+        CSSParserContext context(HTMLStandardMode, nullptr);
 
         CSSValue* value = CSSPropertyParser::parseSingleValue(id, CSSParserTokenRange(tokens), context);
         if (value)

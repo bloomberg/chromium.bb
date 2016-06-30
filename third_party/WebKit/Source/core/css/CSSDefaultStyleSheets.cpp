@@ -63,7 +63,7 @@ static const MediaQueryEvaluator& printEval()
 
 static StyleSheetContents* parseUASheet(const String& str)
 {
-    StyleSheetContents* sheet = StyleSheetContents::create(CSSParserContext(UASheetMode, 0));
+    StyleSheetContents* sheet = StyleSheetContents::create(CSSParserContext(UASheetMode, nullptr));
     sheet->parseString(str);
     // User Agent stylesheets are parsed once for the lifetime of the renderer
     // process and are intentionally leaked.
