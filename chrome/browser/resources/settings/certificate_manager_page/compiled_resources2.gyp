@@ -51,6 +51,7 @@
     {
       'target_name': 'ca_trust_edit_dialog',
       'dependencies': [
+        '<(DEPTH)/ui/webui/resources/cr_elements/cr_dialog/compiled_resources2.gyp:cr_dialog',
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:cr',
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:load_time_data',
         'certificate_manager_types',
@@ -61,6 +62,7 @@
     {
       'target_name': 'certificate_delete_confirmation_dialog',
       'dependencies': [
+        '<(DEPTH)/ui/webui/resources/cr_elements/cr_dialog/compiled_resources2.gyp:cr_dialog',
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:cr',
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:load_time_data',
         'certificate_manager_types',
@@ -80,6 +82,7 @@
     {
       'target_name': 'certificate_password_decryption_dialog',
       'dependencies': [
+        '<(DEPTH)/ui/webui/resources/cr_elements/cr_dialog/compiled_resources2.gyp:cr_dialog',
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:cr',
         'certificate_manager_types',
         'certificates_browser_proxy',
@@ -89,6 +92,7 @@
     {
       'target_name': 'certificate_password_encryption_dialog',
       'dependencies': [
+        '<(DEPTH)/ui/webui/resources/cr_elements/cr_dialog/compiled_resources2.gyp:cr_dialog',
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:cr',
         'certificate_manager_types',
         'certificates_browser_proxy',
@@ -98,6 +102,7 @@
     {
       'target_name': 'certificates_error_dialog',
       'dependencies': [
+        '<(DEPTH)/ui/webui/resources/cr_elements/cr_dialog/compiled_resources2.gyp:cr_dialog',
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:cr',
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:load_time_data',
         'certificate_manager_types',

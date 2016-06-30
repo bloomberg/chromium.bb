@@ -27,12 +27,12 @@ Polymer({
 
   /** @override */
   attached: function() {
-    this.$.dialog.open();
+    /** @type {!CrDialogElement} */ (this.$.dialog).open();
   },
 
   /** @private */
   onCancelTap_: function() {
-    this.$.dialog.close();
+    /** @type {!CrDialogElement} */ (this.$.dialog).close();
   },
 
   /** @private */
@@ -40,11 +40,11 @@ Polymer({
     this.browserProxy_.importPersonalCertificatePasswordSelected(
         this.password_).then(
             function() {
-              this.$.dialog.close();
+              /** @type {!CrDialogElement} */ (this.$.dialog).close();
             }.bind(this),
             /** @param {!CertificatesError} error */
             function(error) {
-              this.$.dialog.close();
+              /** @type {!CrDialogElement} */ (this.$.dialog).close();
               this.fire('certificates-error', error);
             }.bind(this));
   },

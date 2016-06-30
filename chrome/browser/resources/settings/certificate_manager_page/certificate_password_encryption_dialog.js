@@ -36,12 +36,12 @@ Polymer({
 
   /** @override */
   attached: function() {
-    this.$.dialog.open();
+    /** @type {!CrDialogElement} */ (this.$.dialog).open();
   },
 
   /** @private */
   onCancelTap_: function() {
-    this.$.dialog.close();
+    /** @type {!CrDialogElement} */ (this.$.dialog).close();
   },
 
   /** @private */

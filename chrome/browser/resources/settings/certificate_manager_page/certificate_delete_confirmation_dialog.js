@@ -27,7 +27,7 @@ Polymer({
 
   /** @override */
   attached: function() {
-    this.$.dialog.open();
+    /** @type {!CrDialogElement} */ (this.$.dialog).open();
   },
 
   /**
@@ -77,18 +77,18 @@ Polymer({
 
   /** @private */
   onCancelTap_: function() {
-    this.$.dialog.close();
+    /** @type {!CrDialogElement} */ (this.$.dialog).close();
   },
 
   /** @private */
   onOkTap_: function() {
     this.browserProxy_.deleteCertificate(this.model.id).then(
         function() {
-          this.$.dialog.close();
+          /** @type {!CrDialogElement} */ (this.$.dialog).close();
         }.bind(this),
         /** @param {!CertificatesError} error */
         function(error) {
-          this.$.dialog.close();
+          /** @type {!CrDialogElement} */ (this.$.dialog).close();
           this.fire('certificates-error', error);
         }.bind(this));
   },
