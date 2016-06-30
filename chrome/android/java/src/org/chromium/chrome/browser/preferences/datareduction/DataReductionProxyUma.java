@@ -10,7 +10,7 @@ import org.chromium.base.metrics.RecordHistogram;
  * Centralizes UMA data collection for the Data Reduction Proxy.
  */
 public class DataReductionProxyUma {
-    // Represent the possible user actions in the promo and  settings menu. This must
+    // Represent the possible user actions in the promo and settings menu. This must
     // remain in sync with DataReductionProxy.UIAction in
     // tools/metrics/histograms/histograms.xml.
     public static final int ACTION_ENABLED = 0;
@@ -23,7 +23,9 @@ public class DataReductionProxyUma {
     public static final int ACTION_ON_TO_ON = 8;
     public static final int ACTION_FRE_ENABLED = 9;
     public static final int ACTION_FRE_DISABLED = 10;
-    public static final int ACTION_INDEX_BOUNDARY = 11;
+    public static final int ACTION_INFOBAR_ENABLED = 11;
+    public static final int ACTION_INFOBAR_DISMISSED = 12;
+    public static final int ACTION_INDEX_BOUNDARY = 13;
 
     // Represent the possible Lo-Fi user actions. This must remain in sync with
     // DataReductionProxy.UIAction.LoFi in tools/metrics/histograms/histograms.xml.

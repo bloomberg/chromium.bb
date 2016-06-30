@@ -7853,6 +7853,10 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     can disable the proxy via a switch on the card. The state of the proxy is
     sampled when the First Run Experience is completed and only reported if the
     Data Reduction Proxy card was shown.
+
+    The user interactions with the Infobar promo. On Android, there are two
+    actions that dismiss the promo (enable, dismiss). This is sampled when the
+    promo leaves view.
   </summary>
 </histogram>
 
@@ -70089,13 +70093,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </enum>
 
 <enum name="DataReductionProxyUIAction" type="int">
-  <int value="0" label="Enabled directly from the promo"/>
+  <int value="0" label="Enabled directly from the Second Run promo"/>
   <int value="1" label="Enabled then disabled from promo (iOS-only)"/>
   <int value="2"
-      label="Promo settings link clicked, then enabled from settings"/>
+      label="Second Run promo settings link clicked, then enabled from
+             settings"/>
   <int value="3"
-      label="Promo settings link clicked, but not enabled from settings"/>
-  <int value="4" label="Promo dismissed (no action performed)"/>
+      label="Second Run promo settings link clicked, but not enabled from
+             settings"/>
+  <int value="4" label="Second Run promo dismissed (proxy not enabled)"/>
   <int value="5"
       label="Arrived at settings menu by another path: entered off, exited
              off"/>
@@ -70107,6 +70113,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
       label="Arrived at settings menu by another path: entered on, exited on"/>
   <int value="9" label="Enabled directly from the First Run Experience"/>
   <int value="10" label="Disabled directly from the First Run Experience"/>
+  <int value="11" label="Enabled directly from the Infobar promo"/>
+  <int value="12" label="InfoBar promo dismissed (proxy not enabled)"/>
 </enum>
 
 <enum name="DataUsageReportSubmissionResult" type="int">
@@ -78991,6 +78999,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="60" label="CHROME_WINDOW_ERROR"/>
   <int value="61" label="CONFIRM_DANGEROUS_DOWNLOAD"/>
   <int value="62" label="WINDOWS_DESKTOP_SEARCH_INFOBAR_DELEGATE"/>
+  <int value="63" label="UPDATE_PASSWORD_INFOBAR_DELEGATE"/>
+  <int value="64" label="DATA_REDUCTION_PROMO_INFOBAR_DELEGATE_ANDROID"/>
 </enum>
 
 <enum name="InfoBarResponse" type="int">

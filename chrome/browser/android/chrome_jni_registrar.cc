@@ -108,6 +108,7 @@
 #include "chrome/browser/media/android/remote/remote_media_player_bridge.h"
 #include "chrome/browser/media/android/router/media_router_android.h"
 #include "chrome/browser/media/android/router/media_router_dialog_controller_android.h"
+#include "chrome/browser/net/spdyproxy/data_reduction_promo_infobar_delegate_android.h"
 #include "chrome/browser/net/spdyproxy/data_reduction_proxy_settings_android.h"
 #include "chrome/browser/notifications/notification_platform_bridge_android.h"
 #include "chrome/browser/password_manager/account_chooser_dialog_android.h"
@@ -260,6 +261,8 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
     {"CookiesFetcher", RegisterCookiesFetcher},
     {"Credential", RegisterCredential},
     {"CreditCardScanner", autofill::CreditCardScannerViewAndroid::Register},
+    {"DataReductionPromoInfoBarDelegate",
+     DataReductionPromoInfoBarDelegateAndroid::Register},
     {"DataReductionProxySettings", DataReductionProxySettingsAndroid::Register},
     {"DataUseTabUIManager", RegisterDataUseTabUIManager},
     {"DevToolsServer", RegisterDevToolsServer},

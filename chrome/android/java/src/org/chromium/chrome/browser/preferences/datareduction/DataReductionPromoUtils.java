@@ -57,8 +57,8 @@ public class DataReductionPromoUtils {
      * run promo screen has been displayed at the current time.
      */
     public static void saveFreOrSecondRunPromoDisplayed() {
-        AboutVersionStrings versionStrings =
-                PrefServiceBridge.getInstance().getAboutVersionStrings();
+        AboutVersionStrings versionStrings = PrefServiceBridge.getInstance()
+                .getAboutVersionStrings();
         ContextUtils.getAppSharedPreferences()
                 .edit()
                 .putBoolean(SHARED_PREF_DISPLAYED_FRE_OR_SECOND_RUN_PROMO, true)

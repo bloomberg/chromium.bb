@@ -1003,7 +1003,8 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
                     boolean isNavigationToDifferentPage, boolean isFragmentNavigation,
                     int statusCode) {
                 DataReductionPromoInfoBar.maybeLaunchPromoInfoBar(ChromeTabbedActivity.this,
-                        tab.getWebContents(), url, isFragmentNavigation, statusCode);
+                        tab.getWebContents(), url, tab.isShowingErrorPage(), isFragmentNavigation,
+                        statusCode);
             }
         };
 

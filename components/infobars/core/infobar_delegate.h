@@ -131,6 +131,7 @@ class InfoBarDelegate {
     CONFIRM_DANGEROUS_DOWNLOAD = 61,
     // Removed: DESKTOP_SEARCH_REDIRECTION_INFOBAR_DELEGATE = 62,
     UPDATE_PASSWORD_INFOBAR_DELEGATE = 63,
+    DATA_REDUCTION_PROMO_INFOBAR_DELEGATE_ANDROID = 64,
   };
 
   // Describes navigation events, used to decide whether infobars should be

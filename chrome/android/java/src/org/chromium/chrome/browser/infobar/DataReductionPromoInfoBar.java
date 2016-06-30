@@ -7,7 +7,11 @@ package org.chromium.chrome.browser.infobar;
 import android.content.Context;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager.NameNotFoundException;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 
+import org.chromium.base.CommandLine;
+import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.omaha.VersionNumberGetter;
@@ -22,20 +26,23 @@ import java.util.Calendar;
 import java.util.TimeZone;
 
 /**
- * Generates an infobar to promote the data reduction proxy. The infobar contains a message and a
- * button to enable the proxy.
+ * Generates an infobar to promote the data reduction proxy to non-users of it. The infobar contains
+ * a message and a button to enable the proxy. The infobar is displayed when it has not been shown
+ * previously, the page is HTTP pages, and certain milestone restrictions are met. Once the proxy is
+ * enabled from the infobar a confirmation toast message is shown.
  */
-public class DataReductionPromoInfoBar {
+public class DataReductionPromoInfoBar extends ConfirmInfoBar {
     private static final String M48_STABLE_RELEASE_DATE = "2016-01-26";
+    private static final String ENABLE_INFOBAR_SWITCH = "enable-data-reduction-promo-infobar";
     private static final int NO_INSTALL_TIME = 0;
 
+    private static Bitmap sIcon;
     private static String sTitle;
     private static String sText;
     private static String sPrimaryButtonText;
     private static String sSecondaryButtonText;
-
     /**
-     * Launch the data reduction infobar Promo, if it needs to be displayed.
+     * Launch the data reduction infobar promo, if it needs to be displayed.
      *
      * @param context An Android context.
      * @param webContents The WebContents of the tab on which the infobar should show.
@@ -43,12 +50,15 @@ public class DataReductionPromoInfoBar {
      * @param isFragmentNavigation Whether the main frame navigation did not cause changes to the
      *            document (for example scrolling to a named anchor PopState).
      * @param statusCode The HTTP status code of the navigation.
+     * @return boolean Whether the promo was launched.
      */
     public static boolean maybeLaunchPromoInfoBar(Context context,
-            WebContents webContents, String url, boolean isFragmentNavigation,
+            WebContents webContents, String url, boolean isErrorPage, boolean isFragmentNavigation,
             int statusCode) {
-        if (isFragmentNavigation) return false;
+        ThreadUtils.assertOnUiThread();
         if (webContents.isIncognito()) return false;
+        if (isErrorPage) return false;
+        if (isFragmentNavigation) return false;
         if (statusCode != HttpURLConnection.HTTP_OK) return false;
         if (!DataReductionPromoUtils.canShowPromos()) return false;
 
@@ -84,15 +94,17 @@ public class DataReductionPromoInfoBar {
         }
 
         // Only show the promo if the current version is at least two milestones after the last
-        // promo was displayed. If the last promo was shown before M51 then |freOrSecondRunVersion|
-        // will be empty and it is safe to show the infobar promo.
-        if (!freOrSecondRunVersion.isEmpty()
-                && currentMilestone < VersionNumberGetter.getMilestoneFromVersionNumber(
-                        freOrSecondRunVersion) + 2) {
+        // promo was displayed or the command line switch is on. If the last promo was shown before
+        // M51 then |freOrSecondRunVersion| will be empty and it is safe to show the infobar promo.
+        if (!CommandLine.getInstance().hasSwitch(ENABLE_INFOBAR_SWITCH)
+                && !freOrSecondRunVersion.isEmpty()
+                && currentMilestone < VersionNumberGetter
+                        .getMilestoneFromVersionNumber(freOrSecondRunVersion) + 2) {
             return false;
         }
 
         DataReductionPromoInfoBar.launch(webContents,
+                BitmapFactory.decodeResource(context.getResources(), R.mipmap.app_icon),
                 context.getString(R.string.data_reduction_promo_infobar_title),
                 context.getString(R.string.data_reduction_promo_infobar_text),
                 context.getString(R.string.data_reduction_promo_infobar_button),
@@ -124,11 +136,14 @@ public class DataReductionPromoInfoBar {
      * text. Clicking the link will open the specified settings page.
      *
      * @param webContents The {@link WebContents} in which to open the {@link InfoBar}.
-     * @param title The text to display in the {@link InfoBar}.
+     * @param icon Bitmap to use for the {@link InfoBar} icon.
+     * @param title The title to display in the {@link InfoBar}.
+     * @param text The text to display in the {@link InfoBar}.
      * @param primaryButtonText The text to display on the primary button.
      * @param secondaryButtonText The text to display on the secondary button.
      */
     private static void launch(WebContents webContents,
+            Bitmap icon,
             String title,
             String text,
             String primaryButtonText,
@@ -137,7 +152,19 @@ public class DataReductionPromoInfoBar {
         sText = text;
         sPrimaryButtonText = primaryButtonText;
         sSecondaryButtonText = secondaryButtonText;
-        // TODO(megjablon): Show infobar.
+        sIcon = icon;
+        DataReductionPromoInfoBarDelegate.launch(webContents);
         DataReductionPromoUtils.saveInfoBarPromoDisplayed();
+    }
+
+    DataReductionPromoInfoBar() {
+        super(0, sIcon, sTitle, null, sPrimaryButtonText, sSecondaryButtonText);
+    }
+
+    @Override
+    public void createContent(InfoBarLayout layout) {
+        super.createContent(layout);
+        InfoBarControlLayout control = layout.addControlLayout();
+        control.addDescription(sText);
     }
 }
