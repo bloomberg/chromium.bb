@@ -99,12 +99,6 @@ class AutofillProfile : public AutofillDataModel {
   bool operator==(const AutofillProfile& profile) const;
   virtual bool operator!=(const AutofillProfile& profile) const;
 
-  // Returns concatenation of first name, last name, address line 1 and city,
-  // with each part separated by a whitespace. This acts as the basis of
-  // comparison for new values that are submitted through forms to aid with
-  // correct aggregation of new data.
-  const base::string16 PrimaryValue(const std::string& app_locale) const;
-
   // Returns true if the data in this AutofillProfile is a subset of the data in
   // |profile|.
   bool IsSubsetOf(const AutofillProfile& profile,
@@ -115,11 +109,10 @@ class AutofillProfile : public AutofillDataModel {
                              const std::string& app_locale,
                              const ServerFieldTypeSet& types) const;
 
-  // Overwrites the field data in this Profile with the non-empty fields in
-  // |profile|. Returns |true| if at least one field was overwritten.
-  // The usage stats, the origin and the language code are always updated and
-  // have no effect on the return value.
-  bool OverwriteWith(const AutofillProfile& profile,
+  // Merges the data from |this| profile and the given |profile| into |this|
+  // profile. Expects that |this| and |profile| have already been deemed
+  // mergeable by an AutofillProfileComparator.
+  bool MergeDataFrom(const AutofillProfile& profile,
                      const std::string& app_locale);
 
   // Saves info from |profile| into |this|, provided |this| and |profile| do not
@@ -185,16 +178,6 @@ class AutofillProfile : public AutofillDataModel {
   // use.
   void RecordAndLogUse();
 
-  // TODO(crbug.com/574081): Move common profile methods to a utils file.
-  // Returns a standardized representation of the given string for comparison
-  // purposes. The resulting string will be lower-cased with all punctuation
-  // substituted by spaces. Whitespace will be converted to ASCII space, and
-  // multiple whitespace characters will be collapsed.
-  //
-  // This string is designed for comparison purposes only and isn't suitable
-  // for storing or displaying to the user.
-  static base::string16 CanonicalizeProfileString(const base::string16& str);
-
  private:
   typedef std::vector<const FormGroup*> FormGroupList;
 
@@ -219,12 +202,6 @@ class AutofillProfile : public AutofillDataModel {
   FormGroupList FormGroups() const;
   const FormGroup* FormGroupForType(const AutofillType& type) const;
   FormGroup* MutableFormGroupForType(const AutofillType& type);
-
-  // If |name| has the same full name representation as |name_|,
-  // this will keep the one that has more information (i.e.
-  // is not reconstructible via a heuristic parse of the full name string).
-  // Returns |true| is |name_| was overwritten.
-  bool OverwriteName(const NameInfo& name, const std::string& app_locale);
 
   // Same as operator==, but ignores differences in GUID.
   bool EqualsSansGuid(const AutofillProfile& profile) const;

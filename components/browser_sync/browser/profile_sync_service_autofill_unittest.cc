@@ -69,8 +69,10 @@ using autofill::AutofillProfileChange;
 using autofill::AutofillProfileSyncableService;
 using autofill::AutofillTable;
 using autofill::AutofillWebDataService;
+using autofill::NAME_FULL;
 using autofill::PersonalDataManager;
 using autofill::ServerFieldType;
+using base::ASCIIToUTF16;
 using base::Time;
 using base::TimeDelta;
 using base::WaitableEvent;
@@ -117,9 +119,8 @@ AutofillEntry MakeAutofillEntry(const char* name,
   Time date_last_used = date_created;
   if (time_shift1 >= 0)
     date_last_used = base_time + TimeDelta::FromSeconds(time_shift1);
-  return AutofillEntry(
-      AutofillKey(base::ASCIIToUTF16(name), base::ASCIIToUTF16(value)),
-      date_created, date_last_used);
+  return AutofillEntry(AutofillKey(ASCIIToUTF16(name), ASCIIToUTF16(value)),
+                       date_created, date_last_used);
 }
 
 AutofillEntry MakeAutofillEntry(const char* name,
@@ -1009,7 +1010,9 @@ TEST_F(
   native_profile->set_use_date(base::Time::FromTimeT(1234));
 
   AutofillProfile expected_profile(sync_profile);
-  expected_profile.OverwriteWith(*native_profile, "en-US");
+  expected_profile.SetRawInfo(NAME_FULL,
+                              ASCIIToUTF16("Billing Mitchell Morrison"));
+  expected_profile.set_use_count(2);
 
   std::vector<AutofillProfile*> native_profiles;
   native_profiles.push_back(native_profile);
@@ -1037,7 +1040,7 @@ TEST_F(
   // Check that key fields are the same.
   EXPECT_TRUE(new_sync_profiles[0].IsSubsetOf(sync_profile, "en-US"));
   // Make sure the additional information from the sync profile was kept.
-  EXPECT_EQ(base::ASCIIToUTF16("Fox"),
+  EXPECT_EQ(ASCIIToUTF16("Fox"),
             new_sync_profiles[0].GetRawInfo(ServerFieldType::COMPANY_NAME));
   // Check that the latest use date is saved.
   EXPECT_EQ(base::Time::FromTimeT(4321), new_sync_profiles[0].use_date());
@@ -1067,7 +1070,10 @@ TEST_F(ProfileSyncServiceAutofillTest,
   native_profile->set_use_date(base::Time::FromTimeT(4321));
 
   AutofillProfile expected_profile(sync_profile);
-  expected_profile.OverwriteWith(*native_profile, "en-US");
+  expected_profile.SetRawInfo(NAME_FULL,
+                              ASCIIToUTF16("Billing Mitchell Morrison"));
+  expected_profile.set_use_count(2);
+  expected_profile.set_use_date(native_profile->use_date());
 
   std::vector<AutofillProfile*> native_profiles;
   native_profiles.push_back(native_profile);
@@ -1095,7 +1101,7 @@ TEST_F(ProfileSyncServiceAutofillTest,
   // Check that key fields are the same.
   EXPECT_TRUE(new_sync_profiles[0].IsSubsetOf(sync_profile, "en-US"));
   // Make sure the additional information from the sync profile was kept.
-  EXPECT_EQ(base::ASCIIToUTF16("Fox"),
+  EXPECT_EQ(ASCIIToUTF16("Fox"),
             new_sync_profiles[0].GetRawInfo(ServerFieldType::COMPANY_NAME));
   // Check that the latest use date is saved.
   EXPECT_EQ(base::Time::FromTimeT(4321), new_sync_profiles[0].use_date());
@@ -1126,8 +1132,11 @@ TEST_F(ProfileSyncServiceAutofillTest,
       "unit 5", "Hollywood", "CA", "91601", "US", "12345678910");
   native_profile->set_use_date(base::Time::FromTimeT(1234));
 
-  AutofillProfile expected_profile(sync_profile);
-  expected_profile.OverwriteWith(*native_profile, "en-US");
+  AutofillProfile expected_profile(*native_profile);
+  expected_profile.SetRawInfo(NAME_FULL,
+                              ASCIIToUTF16("Billing Mitchell Morrison"));
+  expected_profile.set_use_date(sync_profile.use_date());
+  expected_profile.set_use_count(2);
 
   std::vector<AutofillProfile*> native_profiles;
   native_profiles.push_back(native_profile);
@@ -1156,7 +1165,7 @@ TEST_F(ProfileSyncServiceAutofillTest,
   EXPECT_TRUE(new_sync_profiles[0].IsSubsetOf(expected_profile, "en-US"));
   // Make sure the addtional information of the native profile was saved into
   // the sync profile.
-  EXPECT_EQ(base::ASCIIToUTF16("Fox"),
+  EXPECT_EQ(ASCIIToUTF16("Fox"),
             new_sync_profiles[0].GetRawInfo(ServerFieldType::COMPANY_NAME));
   // Check that the latest use date is saved.
   EXPECT_EQ(base::Time::FromTimeT(4321), new_sync_profiles[0].use_date());
@@ -1180,9 +1189,6 @@ TEST_F(ProfileSyncServiceAutofillTest, HasNativeHasSync_DifferentPrimaryInfo) {
       "Smith", "johnwayne@me.xyz", "Fox", "123 Zoo St.", "unit 5", "Hollywood",
       "CA", "91601", "US", "12345678910");
   native_profile->set_use_date(base::Time::FromTimeT(1234));
-
-  AutofillProfile expected_profile(sync_profile);
-  expected_profile.OverwriteWith(*native_profile, "en-US");
 
   std::vector<AutofillProfile*> native_profiles;
   native_profiles.push_back(native_profile);

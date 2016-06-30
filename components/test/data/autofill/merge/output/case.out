@@ -2,7 +2,7 @@
 NAME_FIRST: john
 NAME_MIDDLE: kilgore
 NAME_LAST: doe
-NAME_FULL: 
+NAME_FULL: john kilgore doe
 EMAIL_ADDRESS: john.doe@example.com
 COMPANY_NAME: testCo
 ADDRESS_HOME_STREET_ADDRESS: 1600 amphitheatre parkway

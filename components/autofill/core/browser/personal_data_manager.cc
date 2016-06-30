@@ -24,6 +24,7 @@
 #include "components/autofill/core/browser/autofill_experiments.h"
 #include "components/autofill/core/browser/autofill_field.h"
 #include "components/autofill/core/browser/autofill_metrics.h"
+#include "components/autofill/core/browser/autofill_profile_comparator.h"
 #include "components/autofill/core/browser/country_data.h"
 #include "components/autofill/core/browser/country_names.h"
 #include "components/autofill/core/browser/form_structure.h"
@@ -724,8 +725,9 @@ std::vector<Suggestion> PersonalDataManager::GetProfileSuggestions(
   if (IsInAutofillSuggestionsDisabledExperiment())
     return std::vector<Suggestion>();
 
+  AutofillProfileComparator comparator(app_locale_);
   base::string16 field_contents_canon =
-      AutofillProfile::CanonicalizeProfileString(field_contents);
+      comparator.NormalizeForComparison(field_contents);
 
   // Get the profiles to suggest, which are already sorted.
   std::vector<AutofillProfile*> profiles = GetProfilesToSuggest();
@@ -739,8 +741,7 @@ std::vector<Suggestion> PersonalDataManager::GetProfileSuggestions(
       continue;
 
     bool prefix_matched_suggestion;
-    base::string16 suggestion_canon =
-        AutofillProfile::CanonicalizeProfileString(value);
+    base::string16 suggestion_canon = comparator.NormalizeForComparison(value);
     if (IsValidSuggestionForFieldContents(
             suggestion_canon, field_contents_canon, type,
             /* is_masked_server_card= */ false, &prefix_matched_suggestion)) {
@@ -928,9 +929,10 @@ std::string PersonalDataManager::MergeProfile(
 
   // If we have already saved this address, merge in any missing values.
   // Only merge with the first match.
+  AutofillProfileComparator comparator(app_locale);
   for (AutofillProfile* existing_profile : existing_profiles) {
     if (!matching_profile_found &&
-        !new_profile.PrimaryValue(app_locale_).empty() &&
+        comparator.AreMergeable(new_profile, *existing_profile) &&
         existing_profile->SaveAdditionalInfo(new_profile, app_locale)) {
       // Unverified profiles should always be updated with the newer data,
       // whereas verified profiles should only ever be overwritten by verified
@@ -1636,6 +1638,8 @@ void PersonalDataManager::DedupeProfiles(
               return a->CompareFrecency(b, comparison_time);
             });
 
+  AutofillProfileComparator comparator(app_locale_);
+
   for (size_t i = 0; i < existing_profiles->size(); ++i) {
     AutofillProfile* profile_to_merge = (*existing_profiles)[i];
 
@@ -1652,33 +1656,34 @@ void PersonalDataManager::DedupeProfiles(
     // If we have not reached the last profile, try to merge |profile_to_merge|
     // with all the less relevant |existing_profiles|.
     for (size_t j = i + 1; j < existing_profiles->size(); ++j) {
-      // Don't try to merge a profile that was already set for deletion. Also
-      // don't try to merge with profiles with a different PrimaryValue
-      // because they are not similar.
       AutofillProfile* existing_profile = (*existing_profiles)[j];
-      if (!profiles_to_delete->count(existing_profile) &&
-          existing_profile->PrimaryValue(app_locale_) ==
-              profile_to_merge->PrimaryValue(app_locale_)) {
-        // If the profiles are found to be similar, |profile_to_merge|'s non
-        // empty data will overwrite the |existing_profile|'s data.
-        // |existing_profile| will have added the complementary data from
-        // |profile_to_merge| and will keep the most relevant syntax for data
-        // present in both profiles.
-        if (existing_profile->SaveAdditionalInfo(*profile_to_merge,
-                                                 app_locale_)) {
-          // Since |profile_to_merge| was a duplicate of |existing_profile|
-          // and was merged sucessfully, it can now be deleted.
-          profiles_to_delete->insert(profile_to_merge);
 
-          // Now try to merge the new resulting profile with the rest of the
-          // existing profiles.
-          profile_to_merge = existing_profile;
+      // Don't try to merge a profile that was already set for deletion.
+      if (profiles_to_delete->count(existing_profile))
+        continue;
 
-          // Verified profiles do not get merged. Save some time by not
-          // trying.
-          if (profile_to_merge->IsVerified())
-            break;
-        }
+      // Move on if the profiles are not mergeable.
+      if (!comparator.AreMergeable(*existing_profile, *profile_to_merge))
+        continue;
+
+      // The profiles are found to be mergeable. Attempt to update the existing
+      // profile. This returns true if the merge was successful, or if the
+      // merge would have been successful but the existing profile IsVerified()
+      // and will not accept updates from profile_to_merge.
+      if (existing_profile->SaveAdditionalInfo(*profile_to_merge,
+                                               app_locale_)) {
+        // Since |profile_to_merge| was a duplicate of |existing_profile|
+        // and was merged sucessfully, it can now be deleted.
+        profiles_to_delete->insert(profile_to_merge);
+
+        // Now try to merge the new resulting profile with the rest of the
+        // existing profiles.
+        profile_to_merge = existing_profile;
+
+        // Verified profiles do not get merged. Save some time by not
+        // trying.
+        if (profile_to_merge->IsVerified())
+          break;
       }
     }
   }

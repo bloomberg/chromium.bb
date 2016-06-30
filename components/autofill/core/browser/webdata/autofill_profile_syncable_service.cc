@@ -13,6 +13,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/browser/autofill_country.h"
 #include "components/autofill/core/browser/autofill_profile.h"
+#include "components/autofill/core/browser/autofill_profile_comparator.h"
 #include "components/autofill/core/browser/country_names.h"
 #include "components/autofill/core/browser/form_group.h"
 #include "components/autofill/core/browser/webdata/autofill_table.h"
@@ -522,6 +523,7 @@ AutofillProfileSyncableService::CreateOrUpdateProfile(
   // contents. (Ignores origin and language code in comparison.)
   //
   // Unverified profiles should never overwrite verified ones.
+  AutofillProfileComparator comparator(app_locale_);
   for (GUIDToProfileMap::iterator it = profile_map->begin();
        it != profile_map->end(); ++it) {
     AutofillProfile* local_profile = it->second;
@@ -542,19 +544,12 @@ AutofillProfileSyncableService::CreateOrUpdateProfile(
                << ". Profile to be deleted " << local_profile->guid();
       profile_map->erase(it);
       break;
-    } else {
-      if (!local_profile->IsVerified() && !new_profile->IsVerified()) {
-        base::string16 local_profile_primary_value(
-            local_profile->PrimaryValue(app_locale_));
-        if (!local_profile_primary_value.empty() &&
-            local_profile_primary_value ==
-                new_profile->PrimaryValue(app_locale_)) {
-          // Add it to candidates for merge - if there is no profile with this
-          // guid we will merge them.
-          bundle->candidates_to_merge.insert(
-              std::make_pair(local_profile->guid(), new_profile));
-        }
-      }
+    } else if (!local_profile->IsVerified() && !new_profile->IsVerified() &&
+               comparator.AreMergeable(*local_profile, *new_profile)) {
+      // Add it to candidates for merge - if there is no profile with this guid
+      // we will merge them.
+      bundle->candidates_to_merge.insert(
+          std::make_pair(local_profile->guid(), new_profile));
     }
   }
   profiles_.push_back(new_profile);
@@ -647,8 +642,7 @@ bool AutofillProfileSyncableService::MergeSimilarProfiles(
     AutofillProfile* merge_into,
     const std::string& app_locale) {
   const AutofillProfile old_merge_into = *merge_into;
-  // Overwrites all values. Does not overwrite GUID.
-  merge_into->OverwriteWith(merge_from, app_locale);
+  merge_into->MergeDataFrom(merge_from, app_locale);
   return !merge_into->EqualsForSyncPurposes(old_merge_into);
 }
 

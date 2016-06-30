@@ -402,6 +402,7 @@ TEST_F(AutofillProfileSyncableServiceTest, MergeSimilarProfiles) {
   // should never overwrite a verified one.
   AutofillProfile expected_profile(profile1);
   expected_profile.set_origin(origin_present1);
+  expected_profile.SetRawInfo(NAME_FULL, ASCIIToUTF16("John"));
   // Merging two profile adds their user count.
   expected_profile.set_use_count(2);
   syncer::SyncChangeList expected_change_list;

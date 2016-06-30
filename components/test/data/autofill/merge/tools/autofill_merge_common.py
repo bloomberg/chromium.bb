@@ -26,7 +26,7 @@ def SerializeProfiles(profiles):
       if field_type == "ignored":
         continue;
 
-      lines.append("%s: %s" % (field_type, value))
+      lines.append("%s:%s%s" % (field_type, (' ' if value else ''), value))
 
   return '\n'.join(lines)
 

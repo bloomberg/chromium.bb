@@ -289,6 +289,28 @@ TEST_F(AutofillProfileComparatorTest, NormalizeForComparison) {
   EXPECT_EQ(UTF8ToUTF16("timothe noel etienne perier"),
             comparator_.NormalizeForComparison(
                 UTF8ToUTF16("Timothé-Noël Étienne Périer")));
+  // NOP.
+  EXPECT_EQ(base::string16(),
+            comparator_.NormalizeForComparison(base::string16()));
+
+  // Simple punctuation removed.
+  EXPECT_EQ(UTF8ToUTF16("1600 amphitheatre pkwy"),
+            comparator_.NormalizeForComparison(
+                UTF8ToUTF16("1600 Amphitheatre, Pkwy.")));
+
+  // Unicode punctuation (hyphen and space), multiple spaces collapsed.
+  EXPECT_EQ(UTF8ToUTF16("mid island plaza"),
+            comparator_.NormalizeForComparison(
+                base::WideToUTF16(L"Mid\x2013Island\x2003 Plaza")));
+
+  // Newline character removed.
+  EXPECT_EQ(UTF8ToUTF16("1600 amphitheatre pkwy app 2"),
+            comparator_.NormalizeForComparison(
+                UTF8ToUTF16("1600 amphitheatre pkwy \n App. 2")));
+
+  // Diacritics removed.
+  EXPECT_EQ(UTF8ToUTF16("まeoa정"),
+            comparator_.NormalizeForComparison(UTF8ToUTF16("まéÖä정")));
 }
 
 TEST_F(AutofillProfileComparatorTest, GetNamePartVariants) {
@@ -511,19 +533,40 @@ TEST_F(AutofillProfileComparatorTest, HaveMergeableAddresses) {
   EXPECT_FALSE(comparator_.HaveMergeableAddresses(p1, differentAddress));
 }
 
-TEST_F(AutofillProfileComparatorTest, IsMergeable) {
-  AutofillProfile p1 = autofill::test::GetFullProfile();
-  AutofillProfile p1_mergeable = CopyAndModify(
-      p1, {{NAME_MIDDLE, "Herbert"},                   // Originally "H."
-           {ADDRESS_HOME_LINE1, "666 Erebus St W"}});  // Originally without W.
-  AutofillProfile p1_not_mergeable =
-      CopyAndModify(p1, {{NAME_FIRST, "Steven"}});  // Originally "John".
-  AutofillProfile p2 = autofill::test::GetFullProfile2();
+TEST_F(AutofillProfileComparatorTest, AreMergeable) {
+  AutofillProfile p(base::GenerateGUID(), "https://www.example.com/");
+  autofill::test::SetProfileInfo(&p, "Marion", "Mitchell", "Morrison",
+                                 "marion@me.xyz", "Fox", "123 Zoo St.",
+                                 "Unit 5", "Hollywood", "CA", "91601", "US",
+                                 "+1 (234) 567-8910");
 
-  EXPECT_TRUE(comparator_.AreMergeable(p1, p1));
-  EXPECT_TRUE(comparator_.AreMergeable(p1, p1_mergeable));
-  EXPECT_FALSE(comparator_.AreMergeable(p1, p1_not_mergeable));
-  EXPECT_FALSE(comparator_.AreMergeable(p1, p2));
+  AutofillProfile mergeable =
+      CopyAndModify(p, {{NAME_FIRST, "MÁRÍÕÑ"},
+                        {NAME_MIDDLE, "M."},
+                        {EMAIL_ADDRESS, "MARION@ME.XYZ"},
+                        {COMPANY_NAME, "Fox Industries Inc."},
+                        {ADDRESS_HOME_LINE1, "123 zoo st. w., #5"},
+                        {ADDRESS_HOME_LINE1, ""},
+                        {ADDRESS_HOME_STATE, "california"},
+                        {PHONE_HOME_WHOLE_NUMBER, "5678910 ext. 77"}});
+  AutofillProfile not_mergeable_by_name =
+      CopyAndModify(p, {{NAME_FIRST, "Steven"}});
+  AutofillProfile not_mergeable_by_email_address =
+      CopyAndModify(p, {{EMAIL_ADDRESS, "marion.morrision@me.xyz"}});
+  AutofillProfile not_mergeable_by_company_name =
+      CopyAndModify(p, {{COMPANY_NAME, "Hound Corp"}});
+  AutofillProfile not_mergeable_by_address =
+      CopyAndModify(p, {{ADDRESS_HOME_LINE2, "Unit 7"}});
+  AutofillProfile not_mergeable_by_phone_number =
+      CopyAndModify(p, {{PHONE_HOME_WHOLE_NUMBER, "555-1234"}});
+
+  EXPECT_TRUE(comparator_.AreMergeable(p, p));
+  EXPECT_TRUE(comparator_.AreMergeable(p, mergeable));
+  EXPECT_FALSE(comparator_.AreMergeable(p, not_mergeable_by_name));
+  EXPECT_FALSE(comparator_.AreMergeable(p, not_mergeable_by_email_address));
+  EXPECT_FALSE(comparator_.AreMergeable(p, not_mergeable_by_company_name));
+  EXPECT_FALSE(comparator_.AreMergeable(p, not_mergeable_by_address));
+  EXPECT_FALSE(comparator_.AreMergeable(p, not_mergeable_by_phone_number));
 }
 
 TEST_F(AutofillProfileComparatorTest, MergeNames) {

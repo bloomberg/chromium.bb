@@ -52,6 +52,13 @@ PhoneNumber& PhoneNumber::operator=(const PhoneNumber& number) {
   return *this;
 }
 
+bool PhoneNumber::operator==(const PhoneNumber& other) const {
+  if (this == &other)
+    return true;
+
+  return number_ == other.number_ && profile_ == other.profile_;
+}
+
 void PhoneNumber::GetSupportedTypes(ServerFieldTypeSet* supported_types) const {
   supported_types->insert(PHONE_HOME_WHOLE_NUMBER);
   supported_types->insert(PHONE_HOME_NUMBER);

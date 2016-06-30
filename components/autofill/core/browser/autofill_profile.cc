@@ -189,36 +189,6 @@ void GetFieldsForDistinguishingProfiles(
   }
 }
 
-// Collapse compound field types to their "full" type.  I.e. First name
-// collapses to full name, area code collapses to full phone, etc.
-void CollapseCompoundFieldTypes(ServerFieldTypeSet* type_set) {
-  ServerFieldTypeSet collapsed_set;
-  for (const auto& it : *type_set) {
-    switch (it) {
-      case NAME_FIRST:
-      case NAME_MIDDLE:
-      case NAME_LAST:
-      case NAME_MIDDLE_INITIAL:
-      case NAME_FULL:
-      case NAME_SUFFIX:
-        collapsed_set.insert(NAME_FULL);
-        break;
-
-      case PHONE_HOME_NUMBER:
-      case PHONE_HOME_CITY_CODE:
-      case PHONE_HOME_COUNTRY_CODE:
-      case PHONE_HOME_CITY_AND_NUMBER:
-      case PHONE_HOME_WHOLE_NUMBER:
-        collapsed_set.insert(PHONE_HOME_WHOLE_NUMBER);
-        break;
-
-      default:
-        collapsed_set.insert(it);
-    }
-  }
-  std::swap(*type_set, collapsed_set);
-}
-
 }  // namespace
 
 AutofillProfile::AutofillProfile(const std::string& guid,
@@ -415,17 +385,6 @@ bool AutofillProfile::operator!=(const AutofillProfile& profile) const {
   return !operator==(profile);
 }
 
-const base::string16 AutofillProfile::PrimaryValue(
-    const std::string& app_locale) const {
-  std::vector<base::string16> primary_values{
-      GetInfo(AutofillType(NAME_FIRST), app_locale),
-      GetInfo(AutofillType(NAME_LAST), app_locale),
-      GetInfo(AutofillType(ADDRESS_HOME_LINE1), app_locale),
-      GetInfo(AutofillType(ADDRESS_HOME_CITY), app_locale)};
-  return CanonicalizeProfileString(
-      base::JoinString(primary_values, base::UTF8ToUTF16(" ")));
-}
-
 bool AutofillProfile::IsSubsetOf(const AutofillProfile& profile,
                                  const std::string& app_locale) const {
   ServerFieldTypeSet types;
@@ -437,7 +396,7 @@ bool AutofillProfile::IsSubsetOfForFieldSet(
     const AutofillProfile& profile,
     const std::string& app_locale,
     const ServerFieldTypeSet& types) const {
-  std::unique_ptr<l10n::CaseInsensitiveCompare> compare;
+  AutofillProfileComparator comparator(app_locale);
 
   for (ServerFieldType type : types) {
     base::string16 value = GetRawInfo(type);
@@ -462,9 +421,11 @@ bool AutofillProfile::IsSubsetOfForFieldSet(
         return false;
       }
     } else {
-      if (!compare)
-        compare.reset(new l10n::CaseInsensitiveCompare());
-      if (!compare->StringsEqual(value, profile.GetRawInfo(type)))
+      const base::string16 this_value =
+          comparator.NormalizeForComparison(value);
+      const base::string16 that_value =
+          comparator.NormalizeForComparison(profile.GetRawInfo(type));
+      if (this_value != that_value)
         return false;
     }
   }
@@ -472,104 +433,72 @@ bool AutofillProfile::IsSubsetOfForFieldSet(
   return true;
 }
 
-bool AutofillProfile::OverwriteName(const NameInfo& imported_name,
-                                    const std::string& app_locale) {
-  // Check if the names parts are equal.
-  if (name_.ParsedNamesAreEqual(imported_name)) {
-    // If the current |name_| has an empty NAME_FULL but the the |imported_name|
-    // has not, overwrite only NAME_FULL.
-    if (name_.GetRawInfo(NAME_FULL).empty() &&
-        !imported_name.GetRawInfo(NAME_FULL).empty()) {
-      name_.SetRawInfo(NAME_FULL, imported_name.GetRawInfo(NAME_FULL));
-      return true;
-    }
-    return false;
-  }
-
-  l10n::CaseInsensitiveCompare compare;
-  AutofillType type = AutofillType(NAME_FULL);
-  base::string16 full_name = name_.GetInfo(type, app_locale);
-  // Always overwrite if the name parts are empty.
-  if (!name_.NamePartsAreEmpty() &&
-      compare.StringsEqual(full_name,
-                           imported_name.GetInfo(type, app_locale))) {
-    // The imported name has the same full name string as the name for this
-    // profile.  Because full names are _heuristically_ parsed into
-    // {first, middle, last} name components, it's possible that either the
-    // existing name or the imported name was misparsed.  Prefer to keep the
-    // name whose {first, middle, last} components do not match those computed
-    // by the heuristic parse, as this more likely represents the correct,
-    // user-input parse of the name.
-    NameInfo heuristically_parsed_name;
-    heuristically_parsed_name.SetInfo(type, full_name, app_locale);
-    if (imported_name.ParsedNamesAreEqual(heuristically_parsed_name))
-      return false;
-  }
-
-  name_.OverwriteName(imported_name);
-  return true;
-}
-
-bool AutofillProfile::OverwriteWith(const AutofillProfile& profile,
+bool AutofillProfile::MergeDataFrom(const AutofillProfile& profile,
                                     const std::string& app_locale) {
   // Verified profiles should never be overwritten with unverified data.
   DCHECK(!IsVerified() || profile.IsVerified());
+  AutofillProfileComparator comparator(app_locale);
+  DCHECK(comparator.AreMergeable(*this, profile));
+
+  NameInfo name;
+  EmailInfo email;
+  CompanyInfo company;
+  PhoneNumber phone_number(this);
+  Address address;
+
+  // The comparator's merge operations are biased to prefer the data in the
+  // first profile parameter when the data is the same modulo case. We pass the
+  // incoming profile in this position to prefer accepting updates instead of
+  // preserving the original data. I.e., passing the incoming profile first
+  // accepts case changes, the other ways does not.
+  if (!comparator.MergeNames(profile, *this, &name) ||
+      !comparator.MergeEmailAddresses(profile, *this, &email) ||
+      !comparator.MergeCompanyNames(profile, *this, &company) ||
+      !comparator.MergePhoneNumbers(profile, *this, &phone_number) ||
+      !comparator.MergeAddresses(profile, *this, &address)) {
+    NOTREACHED();
+    return false;
+  }
+
   set_origin(profile.origin());
   set_language_code(profile.language_code());
   set_use_count(profile.use_count() + use_count());
   if (profile.use_date() > use_date())
     set_use_date(profile.use_date());
 
-  // |types_to_overwrite| is initially populated with all types that have
-  //  non-empty data in the incoming |profile|. After adjustment, all data from
-  // |profile| corresponding to types in |types_to_overwrite| is overwritten in
-  // |this| profile.
-  ServerFieldTypeSet types_to_overwrite;
-  profile.GetNonEmptyTypes(app_locale, &types_to_overwrite);
+  // Now that the preferred values have been obtained, update the fields which
+  // need to be modified, if any. Note: that we're comparing the fields for
+  // representational equality below (i.e., are the values byte for byte the
+  // same).
 
-  // Only transfer "full" types (e.g. full name) and not fragments (e.g.
-  // first name, last name).
-  CollapseCompoundFieldTypes(&types_to_overwrite);
+  bool modified = false;
 
-  // Remove ADDRESS_HOME_STREET_ADDRESS to ensure a merge of the address line by
-  // line. See comment below.
-  types_to_overwrite.erase(ADDRESS_HOME_STREET_ADDRESS);
-
-  l10n::CaseInsensitiveCompare compare;
-
-  // Special case for addresses. With the whole address comparison, it is now
-  // necessary to make sure to keep the best address format: both lines used.
-  // This is because some sites might not have an address line 2 and the
-  // previous value should not be replaced with an empty string in that case.
-  if (compare.StringsEqual(
-          CanonicalizeProfileString(
-              profile.GetRawInfo(ADDRESS_HOME_STREET_ADDRESS)),
-          CanonicalizeProfileString(GetRawInfo(ADDRESS_HOME_STREET_ADDRESS))) &&
-      !GetRawInfo(ADDRESS_HOME_LINE2).empty() &&
-      profile.GetRawInfo(ADDRESS_HOME_LINE2).empty()) {
-    types_to_overwrite.erase(ADDRESS_HOME_LINE1);
-    types_to_overwrite.erase(ADDRESS_HOME_LINE2);
+  if (name_ != name) {
+    name_ = name;
+    modified = true;
   }
 
-  bool did_overwrite = false;
-
-  for (const ServerFieldType field_type : types_to_overwrite) {
-    // Special case for names.
-    if (AutofillType(field_type).group() == NAME) {
-      did_overwrite |= OverwriteName(profile.name_, app_locale);
-      continue;
-    }
-
-    base::string16 new_value = profile.GetRawInfo(field_type);
-    // Overwrite the data in |this| profile for the field type and set
-    // |did_overwrite| if the previous data was different than the |new_value|.
-    if (GetRawInfo(field_type) != new_value) {
-      SetRawInfo(field_type, new_value);
-      did_overwrite = true;
-    }
+  if (email_ != email) {
+    email_ = email;
+    modified = true;
   }
 
-  return did_overwrite;
+  if (company_ != company) {
+    company_ = company;
+    modified = true;
+  }
+
+  if (phone_number_ != phone_number) {
+    phone_number_ = phone_number;
+    modified = true;
+  }
+
+  if (address_ != address) {
+    address_ = address;
+    modified = true;
+  }
+
+  return modified;
 }
 
 bool AutofillProfile::SaveAdditionalInfo(const AutofillProfile& profile,
@@ -578,113 +507,17 @@ bool AutofillProfile::SaveAdditionalInfo(const AutofillProfile& profile,
   if (IsVerified() && profile.IsVerified())
     return false;
 
-  ServerFieldTypeSet field_types, other_field_types;
-  GetNonEmptyTypes(app_locale, &field_types);
-  profile.GetNonEmptyTypes(app_locale, &other_field_types);
+  AutofillProfileComparator comparator(app_locale);
 
-  // The address needs to be compared line by line to take into account the
-  // logic for empty fields implemented in the loop.
-  field_types.erase(ADDRESS_HOME_STREET_ADDRESS);
-  l10n::CaseInsensitiveCompare compare;
-  for (ServerFieldType field_type : field_types) {
-    if (other_field_types.count(field_type)) {
-      AutofillType type = AutofillType(field_type);
-      // Special cases for name and phone. If the whole/full value matches, skip
-      // the individual fields comparison.
-      if (type.group() == NAME &&
-          compare.StringsEqual(
-              profile.GetInfo(AutofillType(NAME_FULL), app_locale),
-              GetInfo(AutofillType(NAME_FULL), app_locale))) {
-        continue;
-      }
-      if (type.group() == PHONE_HOME &&
-          i18n::PhoneNumbersMatch(
-              GetRawInfo(PHONE_HOME_WHOLE_NUMBER),
-              profile.GetRawInfo(PHONE_HOME_WHOLE_NUMBER),
-              base::UTF16ToASCII(GetRawInfo(ADDRESS_HOME_COUNTRY)),
-              app_locale)) {
-        continue;
-      }
+  // SaveAdditionalInfo should not have been called if the profiles were not
+  // already deemed to be mergeable.
+  DCHECK(comparator.AreMergeable(*this, profile));
 
-      // Special case for postal codes, where postal codes with/without spaces
-      // in them are considered equivalent.
-      if (field_type == ADDRESS_HOME_ZIP) {
-        base::string16 profile_zip;
-        base::string16 current_zip;
-        base::RemoveChars(profile.GetRawInfo(field_type), ASCIIToUTF16(" "),
-                          &profile_zip);
-        base::RemoveChars(GetRawInfo(field_type), ASCIIToUTF16(" "),
-                          &current_zip);
-        if (!compare.StringsEqual(profile_zip, current_zip))
-          return false;
-        continue;
-      }
-
-      // Special case for the address because the comparison uses canonicalized
-      // values. Start by comparing the address line by line. If it fails, make
-      // sure that the address as a whole is different before returning false.
-      // It is possible that the user put the info from line 2 on line 1 because
-      // of a certain form for example.
-      if (field_type == ADDRESS_HOME_LINE1 ||
-          field_type == ADDRESS_HOME_LINE2) {
-        if (!compare.StringsEqual(
-                CanonicalizeProfileString(profile.GetRawInfo(field_type)),
-                CanonicalizeProfileString(GetRawInfo(field_type))) &&
-            !compare.StringsEqual(CanonicalizeProfileString(profile.GetRawInfo(
-                                      ADDRESS_HOME_STREET_ADDRESS)),
-                                  CanonicalizeProfileString(GetRawInfo(
-                                      ADDRESS_HOME_STREET_ADDRESS)))) {
-          return false;
-        }
-        continue;
-      }
-
-      // Special case for the state to support abbreviations. Currently only the
-      // US states are supported.
-      if (field_type == ADDRESS_HOME_STATE) {
-        base::string16 full;
-        base::string16 abbreviation;
-        state_names::GetNameAndAbbreviation(GetRawInfo(ADDRESS_HOME_STATE),
-                                            &full, &abbreviation);
-        if (compare.StringsEqual(profile.GetRawInfo(ADDRESS_HOME_STATE),
-                                 full) ||
-            compare.StringsEqual(profile.GetRawInfo(ADDRESS_HOME_STATE),
-                                 abbreviation))
-          continue;
-      }
-
-      // Special case for company names to support cannonicalized variations.
-      if (field_type == COMPANY_NAME) {
-        if (compare.StringsEqual(
-                CanonicalizeProfileString(profile.GetRawInfo(field_type)),
-                CanonicalizeProfileString(GetRawInfo(field_type)))) {
-          continue;
-        }
-      }
-
-      // Special case for middle name to support initials.
-      if (field_type == NAME_MIDDLE) {
-        base::string16 middle_name = GetRawInfo(NAME_MIDDLE);
-        base::string16 profile_middle_name = profile.GetRawInfo(NAME_MIDDLE);
-        DCHECK(!middle_name.empty());
-        DCHECK(!profile_middle_name.empty());
-        // If one of the two middle names is an initial that matches the first
-        // letter of the other middle name, they are considered equivalent.
-        if ((middle_name.size() == 1 || profile_middle_name.size() == 1) &&
-            middle_name[0] == profile_middle_name[0]) {
-          continue;
-        }
-      }
-
-      if (!compare.StringsEqual(profile.GetRawInfo(field_type),
-                                GetRawInfo(field_type))) {
-        return false;
-      }
-    }
-  }
-
+  // We don't replace verified profile data with unverified profile data. But,
+  // we can merge two verified profiles or merge verified profile data into an
+  // unverified profile.
   if (!IsVerified() || profile.IsVerified()) {
-    if (OverwriteWith(profile, app_locale)) {
+    if (MergeDataFrom(profile, app_locale)) {
       AutofillMetrics::LogProfileActionOnFormSubmitted(
           AutofillMetrics::EXISTING_PROFILE_UPDATED);
     } else {
@@ -858,14 +691,6 @@ void AutofillProfile::RecordAndLogUse() {
   UMA_HISTOGRAM_COUNTS_1000("Autofill.DaysSinceLastUse.Profile",
                             (base::Time::Now() - use_date()).InDays());
   RecordUse();
-}
-
-// static
-base::string16 AutofillProfile::CanonicalizeProfileString(
-    const base::string16& str) {
-  // The locale doesn't matter for general string canonicalization.
-  AutofillProfileComparator comparator("en-US");
-  return comparator.NormalizeForComparison(str);
 }
 
 void AutofillProfile::GetSupportedTypes(

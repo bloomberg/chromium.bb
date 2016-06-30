@@ -22,6 +22,8 @@ class Address : public FormGroup {
   ~Address() override;
 
   Address& operator=(const Address& address);
+  bool operator==(const Address& other) const;
+  bool operator!=(const Address& other) const { return !operator==(other); }
 
   // FormGroup:
   base::string16 GetRawInfo(ServerFieldType type) const override;

@@ -5,6 +5,7 @@
 #include "components/autofill/core/browser/form_group.h"
 
 #include "components/autofill/core/browser/autofill_profile.h"
+#include "components/autofill/core/browser/autofill_profile_comparator.h"
 #include "components/autofill/core/browser/autofill_type.h"
 #include "components/autofill/core/common/autofill_l10n_util.h"
 
@@ -18,20 +19,18 @@ void FormGroup::GetMatchingTypes(const base::string16& text,
     return;
   }
 
-  base::string16 canonicalized_text =
-      AutofillProfile::CanonicalizeProfileString(text);
+  AutofillProfileComparator comparator(app_locale);
+  base::string16 canonicalized_text = comparator.NormalizeForComparison(text);
+
   if (canonicalized_text.empty())
     return;
 
-  // TODO(crbug.com/574086): Investigate whether to use |app_locale| in case
-  // insensitive comparisons.
-  l10n::CaseInsensitiveCompare compare;
   ServerFieldTypeSet types;
   GetSupportedTypes(&types);
   for (const auto& type : types) {
-    if (compare.StringsEqual(canonicalized_text,
-                             AutofillProfile::CanonicalizeProfileString(
-                                 GetInfo(AutofillType(type), app_locale))))
+    base::string16 candidate_text = comparator.NormalizeForComparison(
+        GetInfo(AutofillType(type), app_locale));
+    if (canonicalized_text == candidate_text)
       matching_types->insert(type);
   }
 }

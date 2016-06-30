@@ -37,6 +37,13 @@ NameInfo& NameInfo::operator=(const NameInfo& info) {
   return *this;
 }
 
+bool NameInfo::operator==(const NameInfo& other) const {
+  if (this == &other)
+    return true;
+  return given_ == other.given_ && middle_ == other.middle_ &&
+         family_ == other.family_ && full_ == other.full_;
+}
+
 bool NameInfo::ParsedNamesAreEqual(const NameInfo& info) const {
   return given_ == info.given_ && middle_ == info.middle_ &&
          family_ == info.family_;
@@ -199,6 +206,10 @@ EmailInfo& EmailInfo::operator=(const EmailInfo& info) {
   return *this;
 }
 
+bool EmailInfo::operator==(const EmailInfo& other) const {
+  return this == &other || email_ == other.email_;
+}
+
 void EmailInfo::GetSupportedTypes(ServerFieldTypeSet* supported_types) const {
   supported_types->insert(EMAIL_ADDRESS);
 }
@@ -229,6 +240,10 @@ CompanyInfo& CompanyInfo::operator=(const CompanyInfo& info) {
 
   company_name_ = info.company_name_;
   return *this;
+}
+
+bool CompanyInfo::operator==(const CompanyInfo& other) const {
+  return this == &other || company_name_ == other.company_name_;
 }
 
 void CompanyInfo::GetSupportedTypes(ServerFieldTypeSet* supported_types) const {

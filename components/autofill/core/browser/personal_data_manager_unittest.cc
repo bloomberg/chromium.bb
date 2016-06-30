@@ -1743,8 +1743,9 @@ TEST_F(PersonalDataManagerTest, ImportAddressProfiles_SameProfileWithConflict) {
 
   const std::vector<AutofillProfile*>& results2 = personal_data_->GetProfiles();
 
-  // Phone formatting is updated.  Also, country gets added.
-  expected.SetRawInfo(PHONE_HOME_WHOLE_NUMBER, ASCIIToUTF16("650-555-6666"));
+  // Full name, phone formatting and country are updated.
+  expected.SetRawInfo(NAME_FULL, ASCIIToUTF16("George Washington"));
+  expected.SetRawInfo(PHONE_HOME_WHOLE_NUMBER, ASCIIToUTF16("+1 650-555-6666"));
   expected.SetRawInfo(ADDRESS_HOME_COUNTRY, ASCIIToUTF16("US"));
   ASSERT_EQ(1U, results2.size());
   EXPECT_EQ(0, expected.Compare(*results2[0]));
@@ -1822,6 +1823,7 @@ TEST_F(PersonalDataManagerTest, ImportAddressProfiles_MissingInfoInOld) {
   test::SetProfileInfo(&expected2, "George", NULL,
       "Washington", "theprez@gmail.com", NULL, "190 High Street", NULL,
       "Philadelphia", "Pennsylvania", "19106", NULL, NULL);
+  expected2.SetRawInfo(NAME_FULL, ASCIIToUTF16("George Washington"));
   ASSERT_EQ(1U, results2.size());
   EXPECT_EQ(0, expected2.Compare(*results2[0]));
 }
@@ -1901,7 +1903,8 @@ TEST_F(PersonalDataManagerTest, ImportAddressProfiles_MissingInfoInNew) {
 
   const std::vector<AutofillProfile*>& results2 = personal_data_->GetProfiles();
 
-  // Expect no change.
+  // The merge operation will populate the full name if it's empty.
+  expected.SetRawInfo(NAME_FULL, ASCIIToUTF16("George Washington"));
   ASSERT_EQ(1U, results2.size());
   EXPECT_EQ(0, expected.Compare(*results2[0]));
 }
@@ -2741,7 +2744,11 @@ TEST_F(PersonalDataManagerTest, SaveImportedProfileWithVerifiedData) {
   // The new profile should be merged into the existing one.
   const std::vector<AutofillProfile*>& results = personal_data_->GetProfiles();
   ASSERT_EQ(1U, results.size());
-  EXPECT_EQ(0, new_verified_profile.Compare(*results[0]));
+  AutofillProfile expected(new_verified_profile);
+  expected.SetRawInfo(NAME_FULL, ASCIIToUTF16("Marion Mitchell Morrison"));
+  expected.SetRawInfo(PHONE_HOME_WHOLE_NUMBER, ASCIIToUTF16("+1 234-567-8910"));
+  EXPECT_EQ(0, expected.Compare(*results[0]))
+      << "result = {" << *results[0] << "} | expected = {" << expected << "}";
 }
 
 // Ensure that verified credit cards can be saved via SaveImportedCreditCard.
@@ -4004,7 +4011,9 @@ TEST_F(PersonalDataManagerTest, SaveImportedProfile) {
       // Test that saving an identical profile except with the middle name
       // initial instead of the full middle name results in the profiles
       // getting merged and the full middle name being kept.
-      {ProfileFields(), {{NAME_MIDDLE, "M"}}, {{NAME_MIDDLE, "Mitchell"}}},
+      {ProfileFields(),
+       {{NAME_MIDDLE, "M"}},
+       {{NAME_MIDDLE, "Mitchell"}, {NAME_FULL, "Marion Mitchell Morrison"}}},
 
       // Test that saving an identical profile except with the full middle name
       // instead of the middle name initial results in the profiles getting
@@ -4167,42 +4176,42 @@ TEST_F(PersonalDataManagerTest, SaveImportedProfile) {
 
       // Tests that saving an identical profile except with less punctuation in
       // the fist address line, while the second is empty, results in a merge
-      // and that the original address gets overwritten.
+      // and that the longer address is retained.
       {{{ADDRESS_HOME_LINE2, ""}, {ADDRESS_HOME_LINE1, "123, Zoo St."}},
        {{ADDRESS_HOME_LINE2, ""}},
        {{ADDRESS_HOME_LINE1, "123 Zoo St"}}},
 
       // Tests that saving an identical profile except additional punctuation in
-      // the two address lines results in a merge and that the original address
-      // gets overwritten.
+      // the two address lines results in a merge and that the newer address
+      // is retained.
       {ProfileFields(),
        {{ADDRESS_HOME_LINE1, "123, Zoo St."}, {ADDRESS_HOME_LINE2, "unit. 5"}},
        {{ADDRESS_HOME_LINE1, "123, Zoo St."}, {ADDRESS_HOME_LINE2, "unit. 5"}}},
 
       // Tests that saving an identical profile except less punctuation in the
-      // two address lines results in a merge and that the original address gets
-      // overwritten.
+      // two address lines results in a merge and that the newer address is
+      // retained.
       {{{ADDRESS_HOME_LINE1, "123, Zoo St."}, {ADDRESS_HOME_LINE2, "unit. 5"}},
        ProfileFields(),
        {{ADDRESS_HOME_LINE1, "123 Zoo St"}, {ADDRESS_HOME_LINE2, "unit 5"}}},
 
       // Tests that saving an identical profile with accented characters in
-      // the two address lines results in a merge and that the original address
-      // gets overwritten.
+      // the two address lines results in a merge and that the newer address
+      // is retained.
       {ProfileFields(),
        {{ADDRESS_HOME_LINE1, "123 Zôö St"}, {ADDRESS_HOME_LINE2, "üñìt 5"}},
        {{ADDRESS_HOME_LINE1, "123 Zôö St"}, {ADDRESS_HOME_LINE2, "üñìt 5"}}},
 
       // Tests that saving an identical profile without accented characters in
-      // the two address lines results in a merge and that the original address
-      // gets overwritten.
+      // the two address lines results in a merge and that the newer address
+      // is retained.
       {{{ADDRESS_HOME_LINE1, "123 Zôö St"}, {ADDRESS_HOME_LINE2, "üñìt 5"}},
        ProfileFields(),
        {{ADDRESS_HOME_LINE1, "123 Zoo St"}, {ADDRESS_HOME_LINE2, "unit 5"}}},
 
       // Tests that saving an identical profile except that the address line 1
-      // is in the address line 2 results in a merge and that the original
-      // address lines do not get overwritten.
+      // is in the address line 2 results in a merge and that the multi-lne
+      // address is retained.
       {ProfileFields(),
        {{ADDRESS_HOME_LINE1, "123 Zoo St, unit 5"}, {ADDRESS_HOME_LINE2, ""}},
        {{ADDRESS_HOME_LINE1, "123 Zoo St"}, {ADDRESS_HOME_LINE2, "unit 5"}}},
@@ -4223,10 +4232,10 @@ TEST_F(PersonalDataManagerTest, SaveImportedProfile) {
 
       // Tests that saving an identical profile except that the state is the
       // full form instead of the abbreviation results in a merge and that the
-      // original state gets overwritten.
+      // abbreviated state is retained.
       {ProfileFields(),
        {{ADDRESS_HOME_STATE, "California"}},
-       {{ADDRESS_HOME_STATE, "California"}}},
+       {{ADDRESS_HOME_STATE, "CA"}}},
 
       // Tests that saving and identical profile except that the company name
       // has different punctuation and case results in a merge and that the
@@ -4238,7 +4247,6 @@ TEST_F(PersonalDataManagerTest, SaveImportedProfile) {
 
   for (TestCase test_case : test_cases) {
     SetupReferenceProfile();
-
     const std::vector<AutofillProfile*>& initial_profiles =
         personal_data_->GetProfiles();
 

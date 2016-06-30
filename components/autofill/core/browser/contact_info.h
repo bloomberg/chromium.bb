@@ -21,6 +21,8 @@ class NameInfo : public FormGroup {
   ~NameInfo() override;
 
   NameInfo& operator=(const NameInfo& info);
+  bool operator==(const NameInfo& other) const;
+  bool operator!=(const NameInfo& other) const { return !operator==(other); }
 
   // Compares |NameInfo| objects for |given_|, |middle_| and |family_| names.
   // The comparison is case sensitive.
@@ -71,6 +73,8 @@ class EmailInfo : public FormGroup {
   ~EmailInfo() override;
 
   EmailInfo& operator=(const EmailInfo& info);
+  bool operator==(const EmailInfo& other) const;
+  bool operator!=(const EmailInfo& other) const { return !operator==(other); }
 
   // FormGroup:
   base::string16 GetRawInfo(ServerFieldType type) const override;
@@ -90,6 +94,8 @@ class CompanyInfo : public FormGroup {
   ~CompanyInfo() override;
 
   CompanyInfo& operator=(const CompanyInfo& info);
+  bool operator==(const CompanyInfo& other) const;
+  bool operator!=(const CompanyInfo& other) const { return !operator==(other); }
 
   // FormGroup:
   base::string16 GetRawInfo(ServerFieldType type) const override;
