@@ -26,16 +26,6 @@ public class ChromeGoogleApiClientImpl implements ChromeGoogleApiClient {
     private final GoogleApiClient mClient;
 
     /**
-     * Temporary constructor until downstream has been updated to use the constructor below.
-     * @param context its application context will be exposed through
-     *            {@link #getApplicationContext()}.
-     * @param client will be exposed through {@link #getApiClient()}.
-     */
-    public ChromeGoogleApiClientImpl(Context context, GoogleApiClient client) {
-        this(context, client, false);
-    }
-
-    /**
      * @param context its application context will be exposed through
      *            {@link #getApplicationContext()}.
      * @param client will be exposed through {@link #getApiClient()}.
