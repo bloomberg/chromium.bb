@@ -7,10 +7,11 @@ AM_CPPFLAGS =					\
 	-I$(top_builddir)/gnulib		\
 	-I$(top_builddir)/tools
 
-LDADD =						\
-	$(top_builddir)/liblouis/liblouis.la	\
-	$(top_builddir)/gnulib/libgnu.la	\
-	$(top_builddir)/tools/libbrlcheck.la	\
+LDADD =							\
+	$(top_builddir)/liblouis/liblouis.la		\
+	$(top_builddir)/gnulib/libgnu.la		\
+	$(top_builddir)/tools/libbrlcheck.la		\
+	$(top_builddir)/tools/gnulib/libgnutools.la	\
 	$(LTLIBINTL)
 
 backtranslate_SOURCES = backtranslate.c
