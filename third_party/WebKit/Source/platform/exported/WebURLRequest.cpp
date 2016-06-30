@@ -343,12 +343,12 @@ void WebURLRequest::setUseStreamOnResponse(bool useStreamOnResponse)
     m_private->m_resourceRequest->setUseStreamOnResponse(useStreamOnResponse);
 }
 
-bool WebURLRequest::skipServiceWorker() const
+WebURLRequest::SkipServiceWorker WebURLRequest::skipServiceWorker() const
 {
     return m_private->m_resourceRequest->skipServiceWorker();
 }
 
-void WebURLRequest::setSkipServiceWorker(bool skipServiceWorker)
+void WebURLRequest::setSkipServiceWorker(WebURLRequest::SkipServiceWorker skipServiceWorker)
 {
     m_private->m_resourceRequest->setSkipServiceWorker(skipServiceWorker);
 }

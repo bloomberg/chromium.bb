@@ -97,7 +97,7 @@ private:
 
 // No-CORS requests are allowed for all these contexts, and plugin contexts with
 // private permission when we set skipServiceWorker flag in PepperURLLoaderHost.
-bool IsNoCORSAllowedContext(WebURLRequest::RequestContext context, bool skipServiceWorker)
+bool IsNoCORSAllowedContext(WebURLRequest::RequestContext context, WebURLRequest::SkipServiceWorker skipServiceWorker)
 {
     switch (context) {
     case WebURLRequest::RequestContextAudio:
@@ -108,7 +108,7 @@ bool IsNoCORSAllowedContext(WebURLRequest::RequestContext context, bool skipServ
     case WebURLRequest::RequestContextScript:
         return true;
     case WebURLRequest::RequestContextPlugin:
-        return skipServiceWorker;
+        return skipServiceWorker == WebURLRequest::SkipServiceWorker::All;
     default:
         return false;
     }
@@ -238,10 +238,17 @@ void DocumentThreadableLoader::start(const ResourceRequest& request)
 
     // We assume that ServiceWorker is skipped for sync requests and unsupported
     // protocol requests by content/ code.
-    if (m_async && !request.skipServiceWorker() && SchemeRegistry::shouldTreatURLSchemeAsAllowingServiceWorkers(request.url().protocol()) && m_document->fetcher()->isControlledByServiceWorker()) {
+    if (m_async && request.skipServiceWorker() == WebURLRequest::SkipServiceWorker::None && SchemeRegistry::shouldTreatURLSchemeAsAllowingServiceWorkers(request.url().protocol()) && m_document->fetcher()->isControlledByServiceWorker()) {
         if (newRequest.fetchRequestMode() == WebURLRequest::FetchRequestModeCORS || newRequest.fetchRequestMode() == WebURLRequest::FetchRequestModeCORSWithForcedPreflight) {
             m_fallbackRequestForServiceWorker = ResourceRequest(request);
-            m_fallbackRequestForServiceWorker.setSkipServiceWorker(true);
+            // m_fallbackRequestForServiceWorker is used when a regular controlling
+            // service worker doesn't handle a cross origin request. When this happens
+            // we still want to give foreign fetch a chance to handle the request, so
+            // only skip the controlling service worker for the fallback request.
+            // This is currently safe because of http://crbug.com/604084 the
+            // wasFallbackRequiredByServiceWorker flag is never set when foreign fetch
+            // handled a request.
+            m_fallbackRequestForServiceWorker.setSkipServiceWorker(WebURLRequest::SkipServiceWorker::Controlling);
         }
         loadRequest(newRequest, m_resourceLoaderOptions);
         // |this| may be dead here.
@@ -829,7 +836,7 @@ void DocumentThreadableLoader::loadActualRequest()
     // controlled by a SW when the preflight request was sent, a new SW may be
     // controlling the page now by calling clients.claim(). We should not send
     // the actual request to the SW. https://crbug.com/604583
-    actualRequest.setSkipServiceWorker(true);
+    actualRequest.setSkipServiceWorker(WebURLRequest::SkipServiceWorker::All);
 
     loadRequest(actualRequest, actualOptions);
     // |this| may be dead here in async mode.

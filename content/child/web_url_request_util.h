@@ -56,6 +56,8 @@ RequestContextFrameType GetRequestContextFrameTypeForWebURLRequest(
     const blink::WebURLRequest& request);
 RequestContextType GetRequestContextTypeForWebURLRequest(
     const blink::WebURLRequest& request);
+SkipServiceWorker GetSkipServiceWorkerForWebURLRequest(
+    const blink::WebURLRequest& request);
 
 // Generates a WebURLError based on |reason|.
 blink::WebURLError CreateWebURLError(const blink::WebURL& unreachable_url,

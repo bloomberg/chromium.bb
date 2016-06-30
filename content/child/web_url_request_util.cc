@@ -456,6 +456,18 @@ RequestContextType GetRequestContextTypeForWebURLRequest(
   return static_cast<RequestContextType>(request.getRequestContext());
 }
 
+STATIC_ASSERT_ENUM(SkipServiceWorker::NONE,
+                   WebURLRequest::SkipServiceWorker::None);
+STATIC_ASSERT_ENUM(SkipServiceWorker::CONTROLLING,
+                   WebURLRequest::SkipServiceWorker::Controlling);
+STATIC_ASSERT_ENUM(SkipServiceWorker::ALL,
+                   WebURLRequest::SkipServiceWorker::All);
+
+SkipServiceWorker GetSkipServiceWorkerForWebURLRequest(
+    const blink::WebURLRequest& request) {
+  return static_cast<SkipServiceWorker>(request.skipServiceWorker());
+}
+
 blink::WebURLError CreateWebURLError(const blink::WebURL& unreachable_url,
                                      bool stale_copy_in_cache,
                                      int reason) {

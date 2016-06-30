@@ -97,6 +97,19 @@ enum class FetchRedirectMode {
   LAST = MANUAL_MODE
 };
 
+// Indicates which types of ServiceWorkers should skip handling a request.
+enum class SkipServiceWorker {
+  // Request can be handled both by a controlling same-origin worker and
+  // a cross-origin foreign fetch service worker.
+  NONE,
+  // Request should not be handled by a same-origin controlling worker,
+  // but can be intercepted by a foreign fetch service worker.
+  CONTROLLING,
+  // Request should skip all possible service workers.
+  ALL,
+  LAST = ALL
+};
+
 // Indicates how the service worker handled a fetch event.
 enum ServiceWorkerFetchEventResult {
   // Browser should fallback to native fetch.

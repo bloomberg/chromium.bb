@@ -41,7 +41,7 @@ TEST(ResourceRequestTest, CrossThreadResourceRequestData)
     original.setReportUploadProgress(false);
     original.setHasUserGesture(false);
     original.setDownloadToFile(false);
-    original.setSkipServiceWorker(false);
+    original.setSkipServiceWorker(WebURLRequest::SkipServiceWorker::None);
     original.setFetchRequestMode(WebURLRequest::FetchRequestModeCORS);
     original.setFetchCredentialsMode(WebURLRequest::FetchCredentialsModeSameOrigin);
     original.setRequestorID(30);
@@ -65,7 +65,7 @@ TEST(ResourceRequestTest, CrossThreadResourceRequestData)
     EXPECT_FALSE(original.reportUploadProgress());
     EXPECT_FALSE(original.hasUserGesture());
     EXPECT_FALSE(original.downloadToFile());
-    EXPECT_FALSE(original.skipServiceWorker());
+    EXPECT_EQ(WebURLRequest::SkipServiceWorker::None, original.skipServiceWorker());
     EXPECT_EQ(WebURLRequest::FetchRequestModeCORS, original.fetchRequestMode());
     EXPECT_EQ(WebURLRequest::FetchCredentialsModeSameOrigin, original.fetchCredentialsMode());
     EXPECT_EQ(30, original.requestorID());
@@ -92,7 +92,7 @@ TEST(ResourceRequestTest, CrossThreadResourceRequestData)
     EXPECT_FALSE(copy1.reportUploadProgress());
     EXPECT_FALSE(copy1.hasUserGesture());
     EXPECT_FALSE(copy1.downloadToFile());
-    EXPECT_FALSE(copy1.skipServiceWorker());
+    EXPECT_EQ(WebURLRequest::SkipServiceWorker::None, copy1.skipServiceWorker());
     EXPECT_EQ(WebURLRequest::FetchRequestModeCORS, copy1.fetchRequestMode());
     EXPECT_EQ(WebURLRequest::FetchCredentialsModeSameOrigin, copy1.fetchCredentialsMode());
     EXPECT_EQ(30, copy1.requestorID());
@@ -107,7 +107,7 @@ TEST(ResourceRequestTest, CrossThreadResourceRequestData)
     copy1.setReportUploadProgress(true);
     copy1.setHasUserGesture(true);
     copy1.setDownloadToFile(true);
-    copy1.setSkipServiceWorker(true);
+    copy1.setSkipServiceWorker(WebURLRequest::SkipServiceWorker::All);
     copy1.setFetchRequestMode(WebURLRequest::FetchRequestModeNoCORS);
     copy1.setFetchCredentialsMode(WebURLRequest::FetchCredentialsModeInclude);
 
@@ -117,7 +117,7 @@ TEST(ResourceRequestTest, CrossThreadResourceRequestData)
     EXPECT_TRUE(copy2.reportUploadProgress());
     EXPECT_TRUE(copy2.hasUserGesture());
     EXPECT_TRUE(copy2.downloadToFile());
-    EXPECT_TRUE(copy2.skipServiceWorker());
+    EXPECT_EQ(WebURLRequest::SkipServiceWorker::All, copy2.skipServiceWorker());
     EXPECT_EQ(WebURLRequest::FetchRequestModeNoCORS, copy1.fetchRequestMode());
     EXPECT_EQ(WebURLRequest::FetchCredentialsModeInclude, copy1.fetchCredentialsMode());
 }

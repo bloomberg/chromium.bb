@@ -54,7 +54,7 @@ class CONTENT_EXPORT ForeignFetchRequestHandler
       storage::BlobStorageContext* blob_storage_context,
       int process_id,
       int provider_id,
-      bool skip_service_worker,
+      SkipServiceWorker skip_service_worker,
       FetchRequestMode request_mode,
       FetchCredentialsMode credentials_mode,
       FetchRedirectMode redirect_mode,

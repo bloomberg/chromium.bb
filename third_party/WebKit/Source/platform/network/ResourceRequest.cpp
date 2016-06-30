@@ -409,7 +409,7 @@ void ResourceRequest::initialize(const KURL& url)
     m_hasUserGesture = false;
     m_downloadToFile = false;
     m_useStreamOnResponse = false;
-    m_skipServiceWorker = false;
+    m_skipServiceWorker = WebURLRequest::SkipServiceWorker::None;
     m_shouldResetAppCache = false;
     m_priority = ResourceLoadPriorityLowest;
     m_intraPriorityValue = 0;

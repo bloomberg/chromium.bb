@@ -81,7 +81,7 @@ ResourceRequest createAccessControlPreflightRequest(const ResourceRequest& reque
     preflightRequest.setHTTPHeaderField(HTTPNames::Access_Control_Request_Method, AtomicString(request.httpMethod()));
     preflightRequest.setPriority(request.priority());
     preflightRequest.setRequestContext(request.requestContext());
-    preflightRequest.setSkipServiceWorker(true);
+    preflightRequest.setSkipServiceWorker(WebURLRequest::SkipServiceWorker::All);
 
     if (request.isExternalRequest())
         preflightRequest.setHTTPHeaderField(HTTPNames::Access_Control_Request_External, "true");

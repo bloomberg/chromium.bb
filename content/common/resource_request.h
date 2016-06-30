@@ -93,8 +93,8 @@ struct CONTENT_EXPORT ResourceRequest {
   // fetch() in the Service Worker script.
   bool originated_from_service_worker = false;
 
-  // True if the request should not be handled by the ServiceWorker.
-  bool skip_service_worker = false;
+  // Indicates which types of ServiceWorkers should skip handling this request.
+  SkipServiceWorker skip_service_worker = SkipServiceWorker::NONE;
 
   // The request mode passed to the ServiceWorker.
   FetchRequestMode fetch_request_mode = FETCH_REQUEST_MODE_SAME_ORIGIN;

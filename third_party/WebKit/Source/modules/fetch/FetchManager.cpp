@@ -588,7 +588,7 @@ void FetchManager::Loader::performHTTPFetch(bool corsFlag, bool corsPreflightFla
     // Note that generateReferrer generates |no-referrer| from |no-referrer|
     // referrer string (i.e. String()).
     request.setHTTPReferrer(SecurityPolicy::generateReferrer(referrerPolicy, m_request->url(), referrerString));
-    request.setSkipServiceWorker(m_isIsolatedWorld);
+    request.setSkipServiceWorker(m_isIsolatedWorld ? WebURLRequest::SkipServiceWorker::All : WebURLRequest::SkipServiceWorker::None);
 
     // "3. Append `Host`, ..."
     // FIXME: Implement this when the spec is fixed.

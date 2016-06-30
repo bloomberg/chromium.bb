@@ -51,7 +51,7 @@ void ForeignFetchRequestHandler::InitializeHandler(
     storage::BlobStorageContext* blob_storage_context,
     int process_id,
     int provider_id,
-    bool skip_service_worker,
+    SkipServiceWorker skip_service_worker,
     FetchRequestMode request_mode,
     FetchCredentialsMode credentials_mode,
     FetchRedirectMode redirect_mode,
@@ -60,9 +60,11 @@ void ForeignFetchRequestHandler::InitializeHandler(
     RequestContextFrameType frame_type,
     scoped_refptr<ResourceRequestBodyImpl> body,
     bool initiated_in_secure_context) {
-  if (!context_wrapper) {
+  if (!context_wrapper)
     return;
-  }
+
+  if (skip_service_worker == SkipServiceWorker::ALL)
+    return;
 
   if (!initiated_in_secure_context)
     return;

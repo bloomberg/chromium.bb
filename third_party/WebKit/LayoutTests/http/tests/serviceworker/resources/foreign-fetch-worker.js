@@ -35,13 +35,19 @@ function handle_meta(event) {
                      origin: event.origin});
 }
 
+function handle_script(event) {
+  event.respondWith({origin: event.origin, response:
+    new Response('self.DidLoad("Foreign Fetch");')});
+}
+
 self.addEventListener('foreignfetch', function(event) {
     var url = event.request.url;
     var handlers = [
       { pattern: '?basic', fn: handle_basic },
       { pattern: '?fallback', fn: handle_fallback },
       { pattern: '?onmessage', fn: handle_onmessage },
-      { pattern: '?meta', fn: handle_meta }
+      { pattern: '?meta', fn: handle_meta },
+      { pattern: '?script', fn: handle_script }
     ];
 
     var handler = null;
@@ -55,6 +61,7 @@ self.addEventListener('foreignfetch', function(event) {
     if (handler) {
       handler.fn(event);
     } else {
-      event.respondWith(new Response('unexpected request'));
+      event.respondWith({origin: event.origin,
+                         response: new Response('unexpected request')});
     }
   });

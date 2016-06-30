@@ -35,7 +35,8 @@ class ResourceFetcherImpl : public ResourceFetcher,
   void SetMethod(const std::string& method) override;
   void SetBody(const std::string& body) override;
   void SetHeader(const std::string& header, const std::string& value) override;
-  void SetSkipServiceWorker(bool skip_service_worker) override;
+  void SetSkipServiceWorker(
+      blink::WebURLRequest::SkipServiceWorker skip_service_worker) override;
   void SetCachePolicy(blink::WebCachePolicy policy) override;
   void SetLoaderOptions(const blink::WebURLLoaderOptions& options) override;
   void Start(blink::WebFrame* frame,

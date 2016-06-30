@@ -88,8 +88,8 @@ struct CONTENT_EXPORT RequestInfo {
   // True if the request was user initiated.
   bool has_user_gesture;
 
-  // True if the request should not be handled by the ServiceWorker.
-  bool skip_service_worker;
+  // Indicates which types of ServiceWorkers should skip handling this request.
+  SkipServiceWorker skip_service_worker;
 
   // True if corresponding AppCache group should be resetted.
   bool should_reset_appcache;

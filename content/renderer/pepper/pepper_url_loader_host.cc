@@ -264,7 +264,9 @@ int32_t PepperURLLoaderHost::InternalOnHostMsgOpen(
   // The requests from the plugins with private permission which can bypass same
   // origin must skip the ServiceWorker.
   web_request.setSkipServiceWorker(
-      host()->permissions().HasPermission(ppapi::PERMISSION_PRIVATE));
+      host()->permissions().HasPermission(ppapi::PERMISSION_PRIVATE)
+          ? blink::WebURLRequest::SkipServiceWorker::All
+          : blink::WebURLRequest::SkipServiceWorker::None);
 
   WebURLLoaderOptions options;
   if (has_universal_access_) {

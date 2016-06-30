@@ -4027,8 +4027,11 @@ void RenderFrameImpl::willSendRequest(
     provider_id = provider->provider_id();
     // Explicitly set the SkipServiceWorker flag here if the renderer process
     // hasn't received SetControllerServiceWorker message.
-    if (!provider->IsControlledByServiceWorker())
-      request.setSkipServiceWorker(true);
+    if (!provider->IsControlledByServiceWorker() &&
+        request.skipServiceWorker() !=
+            blink::WebURLRequest::SkipServiceWorker::All)
+      request.setSkipServiceWorker(
+          blink::WebURLRequest::SkipServiceWorker::Controlling);
   }
 
   WebFrame* parent = frame->parent();
@@ -5827,7 +5830,8 @@ void RenderFrameImpl::BeginNavigation(blink::WebURLRequest* request,
       BeginNavigationParams(GetWebURLRequestHeaders(*request),
                             GetLoadFlagsForWebURLRequest(*request),
                             request->hasUserGesture(),
-                            request->skipServiceWorker(),
+                            request->skipServiceWorker() !=
+                                blink::WebURLRequest::SkipServiceWorker::None,
                             GetRequestContextTypeForWebURLRequest(*request))));
 }
 

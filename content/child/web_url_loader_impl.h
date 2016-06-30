@@ -50,7 +50,7 @@ class CONTENT_EXPORT WebURLLoaderImpl
       const blink::WebURLRequest& request,
       const net::RedirectInfo& redirect_info,
       blink::WebReferrerPolicy referrer_policy,
-      bool skip_service_worker,
+      blink::WebURLRequest::SkipServiceWorker skip_service_worker,
       blink::WebURLRequest* new_request);
 
   // WebURLLoader methods:

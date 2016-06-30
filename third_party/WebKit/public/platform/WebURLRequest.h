@@ -141,6 +141,18 @@ public:
         LoFiOn, // Request a Lo-Fi version of the resource.
     };
 
+    // Indicates which types of ServiceWorkers should skip handling this request.
+    enum class SkipServiceWorker {
+        // Request can be handled both by a controlling same-origin worker and
+        // a cross-origin foreign fetch service worker.
+        None,
+        // Request should not be handled by a same-origin controlling worker,
+        // but can be intercepted by a foreign fetch service worker.
+        Controlling,
+        // Request should skip all possible service workers.
+        All
+    };
+
     class ExtraData {
     public:
         virtual ~ExtraData() { }
@@ -255,8 +267,8 @@ public:
     BLINK_PLATFORM_EXPORT void setUseStreamOnResponse(bool);
 
     // True if the request should not be handled by the ServiceWorker.
-    BLINK_PLATFORM_EXPORT bool skipServiceWorker() const;
-    BLINK_PLATFORM_EXPORT void setSkipServiceWorker(bool);
+    BLINK_PLATFORM_EXPORT SkipServiceWorker skipServiceWorker() const;
+    BLINK_PLATFORM_EXPORT void setSkipServiceWorker(SkipServiceWorker);
 
     // True if corresponding AppCache group should be resetted.
     BLINK_PLATFORM_EXPORT bool shouldResetAppCache() const;

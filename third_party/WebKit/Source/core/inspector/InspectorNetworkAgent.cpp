@@ -566,7 +566,7 @@ void InspectorNetworkAgent::willSendRequest(LocalFrame* frame, unsigned long ide
         request.setShouldResetAppCache(true);
     }
     if (m_state->booleanProperty(NetworkAgentState::bypassServiceWorker, false))
-        request.setSkipServiceWorker(true);
+        request.setSkipServiceWorker(WebURLRequest::SkipServiceWorker::All);
 
     willSendRequestInternal(frame, identifier, loader, request, redirectResponse, initiatorInfo);
 

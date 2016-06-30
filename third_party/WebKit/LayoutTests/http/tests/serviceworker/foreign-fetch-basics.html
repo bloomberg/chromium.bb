@@ -115,7 +115,7 @@ promise_test(t => {
     var ff_scope = 'foreign-fetch/scope/controlled?basic';
     var remote_url =
         host_info.HTTPS_REMOTE_ORIGIN + '/serviceworker/resources/' + ff_scope;
-    var scope = 'resources/simple.html';
+    var scope = 'resources/simple.html?fetch';
     var worker = 'resources/empty-worker.js';
     return install_cross_origin_worker(t, worker_for_scopes(['']), ff_scope)
       .then(() => service_worker_unregister_and_register(t, worker, scope))
@@ -129,7 +129,32 @@ promise_test(t => {
       .then(response_text => {
           assert_equals(response_text, 'Foreign Fetch');
         });
-  }, 'Foreign fetch can intercept requests from SW controlled pages.');
+  }, 'Foreign fetch can intercept fetch requests from SW controlled pages.');
+
+promise_test(t => {
+    var ff_scope = 'foreign-fetch/scope/controlled?script';
+    var remote_url =
+        host_info.HTTPS_REMOTE_ORIGIN + '/serviceworker/resources/' + ff_scope;
+    var scope = 'resources/simple.html?script';
+    var worker = 'resources/empty-worker.js';
+    return install_cross_origin_worker(t, worker_for_scopes(['']), ff_scope)
+      .then(() => service_worker_unregister_and_register(t, worker, scope))
+      .then(r => {
+          add_completion_callback(() => r.unregister());
+          return wait_for_state(t, r.installing, 'activated');
+        })
+      .then(() => with_iframe(scope))
+      .then(frame => new Promise(resolve => {
+          frame.contentWindow.DidLoad = resolve;
+          let script = frame.contentWindow.document.createElement('script');
+          script.setAttribute('src', remote_url);
+          script.setAttribute('crossorigin', 'use-credentials');
+          frame.contentWindow.document.head.appendChild(script);
+        }))
+      .then(response_text => {
+          assert_equals(response_text, 'Foreign Fetch');
+        });
+  }, 'Foreign fetch can intercept resource requests from SW controlled pages.');
 
 promise_test(t => {
     var scope = 'simple.txt?meta';
@@ -182,6 +207,16 @@ promise_test(t => {
       .then(response => assert_equals(response,
                                       'Error: TypeError: Failed to fetch'));
   }, 'Service Worker does not intercept fetches from an insecure context.');
+
+promise_test(t => {
+    var scope = 'fetch-access-control.php?basic&ACAOrigin=*&ACAMethods=SPECIAL';
+    var remote_url =
+        host_info.HTTPS_REMOTE_ORIGIN + '/serviceworker/resources/' + scope;
+    return install_cross_origin_worker(t, worker_for_scopes(['']), scope)
+      .then(() => fetch(remote_url, {method: 'SPECIAL'}))
+      .then(response => response.text())
+      .then(response_text => assert_true(response_text.startsWith('report(')));
+  }, 'Service Worker does not intercept fetches with CORS preflight');
 
 </script>
 </body>

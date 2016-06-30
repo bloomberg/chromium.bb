@@ -152,7 +152,7 @@ bool ResourceLoader::responseNeedsAccessControlCheck() const
 
 void ResourceLoader::didReceiveResponse(WebURLLoader*, const WebURLResponse& response, WebDataConsumerHandle* rawHandle)
 {
-    ASSERT(!response.isNull());
+    DCHECK(!response.isNull());
     // |rawHandle|'s ownership is transferred to the callee.
     std::unique_ptr<WebDataConsumerHandle> handle = wrapUnique(rawHandle);
     const ResourceResponse& resourceResponse = response.toResourceResponse();
@@ -162,10 +162,17 @@ void ResourceLoader::didReceiveResponse(WebURLLoader*, const WebURLResponse& res
             if (response.wasFallbackRequiredByServiceWorker()) {
                 m_loader.reset();
                 m_loader = wrapUnique(Platform::current()->createURLLoader());
-                ASSERT(m_loader);
+                DCHECK(m_loader);
                 ResourceRequest request = m_resource->lastResourceRequest();
-                ASSERT(!request.skipServiceWorker());
-                request.setSkipServiceWorker(true);
+                DCHECK_EQ(request.skipServiceWorker(), WebURLRequest::SkipServiceWorker::None);
+                // This code handles the case when a regular controlling service worker
+                // doesn't handle a cross origin request. When this happens we still
+                // want to give foreign fetch a chance to handle the request, so
+                // only skip the controlling service worker for the fallback request.
+                // This is currently safe because of http://crbug.com/604084 the
+                // wasFallbackRequiredByServiceWorker flag is never set when foreign fetch
+                // handled a request.
+                request.setSkipServiceWorker(WebURLRequest::SkipServiceWorker::Controlling);
                 m_loader->loadAsynchronously(WrappedResourceRequest(request), this);
                 return;
             }

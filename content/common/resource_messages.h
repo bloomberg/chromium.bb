@@ -129,6 +129,9 @@ IPC_ENUM_TRAITS_MAX_VALUE(content::FetchCredentialsMode,
 IPC_ENUM_TRAITS_MAX_VALUE(content::FetchRedirectMode,
                           content::FetchRedirectMode::LAST)
 
+IPC_ENUM_TRAITS_MAX_VALUE(content::SkipServiceWorker,
+                          content::SkipServiceWorker::LAST)
+
 IPC_ENUM_TRAITS_MAX_VALUE(
     net::NetworkQualityEstimator::EffectiveConnectionType,
     net::NetworkQualityEstimator::EFFECTIVE_CONNECTION_TYPE_LAST - 1)

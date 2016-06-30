@@ -91,8 +91,11 @@ class WebServiceWorkerNetworkProviderImpl
     // renderer process hasn't received SetControllerServiceWorker message.
     if (request.getRequestContext() !=
             blink::WebURLRequest::RequestContextSharedWorker &&
-        !provider->IsControlledByServiceWorker()) {
-      request.setSkipServiceWorker(true);
+        !provider->IsControlledByServiceWorker() &&
+        request.skipServiceWorker() !=
+            blink::WebURLRequest::SkipServiceWorker::All) {
+      request.setSkipServiceWorker(
+          blink::WebURLRequest::SkipServiceWorker::Controlling);
     }
   }
 

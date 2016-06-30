@@ -534,7 +534,8 @@ void WebURLLoaderImpl::Context::Start(const WebURLRequest& request,
   request_info.routing_id = request.requestorID();
   request_info.download_to_file = request.downloadToFile();
   request_info.has_user_gesture = request.hasUserGesture();
-  request_info.skip_service_worker = request.skipServiceWorker();
+  request_info.skip_service_worker =
+      GetSkipServiceWorkerForWebURLRequest(request);
   request_info.should_reset_appcache = request.shouldResetAppCache();
   request_info.fetch_request_mode =
       GetFetchRequestModeForWebURLRequest(request);
@@ -608,9 +609,12 @@ bool WebURLLoaderImpl::Context::OnReceivedRedirect(
 
   WebURLRequest new_request;
   new_request.initialize();
-  PopulateURLRequestForRedirect(request_, redirect_info, referrer_policy_,
-                                !info.was_fetched_via_service_worker,
-                                &new_request);
+  PopulateURLRequestForRedirect(
+      request_, redirect_info, referrer_policy_,
+      info.was_fetched_via_service_worker
+          ? blink::WebURLRequest::SkipServiceWorker::None
+          : blink::WebURLRequest::SkipServiceWorker::All,
+      &new_request);
 
   client_->willFollowRedirect(loader_, new_request, response);
   request_ = new_request;
@@ -1099,7 +1103,7 @@ void WebURLLoaderImpl::PopulateURLRequestForRedirect(
     const blink::WebURLRequest& request,
     const net::RedirectInfo& redirect_info,
     blink::WebReferrerPolicy referrer_policy,
-    bool skip_service_worker,
+    blink::WebURLRequest::SkipServiceWorker skip_service_worker,
     blink::WebURLRequest* new_request) {
   // TODO(darin): We lack sufficient information to construct the actual
   // request that resulted from the redirect.
