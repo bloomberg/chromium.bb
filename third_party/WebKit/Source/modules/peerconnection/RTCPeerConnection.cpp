@@ -46,6 +46,7 @@
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ExecutionContext.h"
+#include "core/frame/HostsUsingFeatures.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/UseCounter.h"
 #include "core/html/VoidCallback.h"
@@ -984,6 +985,8 @@ RTCDataChannel* RTCPeerConnection::createDataChannel(String label, const Diction
         // There was an early state transition.  Don't miss it!
         channel->didChangeReadyState(handlerState);
     }
+    m_hasDataChannels = true;
+
     return channel;
 }
 
@@ -1106,6 +1109,7 @@ void RTCPeerConnection::didAddRemoteDataChannel(WebRTCDataChannelHandler* handle
 
     RTCDataChannel* channel = RTCDataChannel::create(getExecutionContext(), wrapUnique(handler));
     scheduleDispatchEvent(RTCDataChannelEvent::create(EventTypeNames::datachannel, false, false, channel));
+    m_hasDataChannels = true;
 }
 
 void RTCPeerConnection::releasePeerConnectionHandler()
@@ -1170,6 +1174,9 @@ bool RTCPeerConnection::setIceConnectionState(ICEConnectionState iceConnectionSt
 {
     if (m_iceConnectionState != ICEConnectionStateClosed && m_iceConnectionState != iceConnectionState) {
         m_iceConnectionState = iceConnectionState;
+        if (m_iceConnectionState == ICEConnectionStateConnected)
+            recordRapporMetrics();
+
         return true;
     }
     return false;
@@ -1223,6 +1230,28 @@ void RTCPeerConnection::dispatchScheduledEvent()
     }
 
     events.clear();
+}
+
+void RTCPeerConnection::recordRapporMetrics()
+{
+    Document* document = toDocument(getExecutionContext());
+    for (const auto& stream : m_localStreams) {
+        if (stream->getAudioTracks().size() > 0)
+            HostsUsingFeatures::countAnyWorld(*document, HostsUsingFeatures::Feature::RTCPeerConnectionAudio);
+        if (stream->getVideoTracks().size() > 0)
+            HostsUsingFeatures::countAnyWorld(*document, HostsUsingFeatures::Feature::RTCPeerConnectionVideo);
+    }
+
+    for (const auto& stream : m_remoteStreams) {
+        if (stream->getAudioTracks().size() > 0)
+            HostsUsingFeatures::countAnyWorld(*document, HostsUsingFeatures::Feature::RTCPeerConnectionAudio);
+        if (stream->getVideoTracks().size() > 0)
+            HostsUsingFeatures::countAnyWorld(*document, HostsUsingFeatures::Feature::RTCPeerConnectionVideo);
+    }
+
+    if (m_hasDataChannels)
+        HostsUsingFeatures::countAnyWorld(*document, HostsUsingFeatures::Feature::RTCPeerConnectionDataChannel);
+
 }
 
 DEFINE_TRACE(RTCPeerConnection)

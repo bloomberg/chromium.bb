@@ -38,6 +38,9 @@ public:
         ElementAttachShadow,
         ApplicationCacheManifestSelectInsecureHost,
         ApplicationCacheAPIInsecureHost,
+        RTCPeerConnectionAudio,
+        RTCPeerConnectionVideo,
+        RTCPeerConnectionDataChannel,
 
         NumberOfFeatures // This must be the last item.
     };

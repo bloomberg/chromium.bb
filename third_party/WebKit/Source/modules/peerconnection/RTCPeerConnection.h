@@ -198,6 +198,8 @@ private:
 
     void closeInternal();
 
+    void recordRapporMetrics();
+
     SignalingState m_signalingState;
     ICEGatheringState m_iceGatheringState;
     ICEConnectionState m_iceConnectionState;
@@ -212,6 +214,8 @@ private:
 
     bool m_stopped;
     bool m_closed;
+
+    bool m_hasDataChannels; // For RAPPOR metrics
 };
 
 } // namespace blink

@@ -1650,6 +1650,36 @@ now we are only interested in H264, VP8 and VP9.
   </summary>
 </rappor-metric>
 
+<rappor-metric name="RTCPeerConnection.Audio" type="ETLD_PLUS_ONE">
+  <owner>guidou@chromium.org</owner>
+  <owner>hta@chromium.org</owner>
+  <owner>tommi@chromium.org</owner>
+  <summary>
+    The ETLD+1 of the URL with a WebRTC peer connection with at least one audio
+    track.
+  </summary>
+</rappor-metric>
+
+<rappor-metric name="RTCPeerConnection.DataChannel" type="ETLD_PLUS_ONE">
+  <owner>guidou@chromium.org</owner>
+  <owner>hta@chromium.org</owner>
+  <owner>tommi@chromium.org</owner>
+  <summary>
+    The ETLD+1 of the URL with a WebRTC peer connection with at least one data
+    channel.
+  </summary>
+</rappor-metric>
+
+<rappor-metric name="RTCPeerConnection.Video" type="ETLD_PLUS_ONE">
+  <owner>guidou@chromium.org</owner>
+  <owner>hta@chromium.org</owner>
+  <owner>tommi@chromium.org</owner>
+  <summary>
+    The ETLD+1 of the URL with a WebRTC peer connection with at least one video
+    track.
+  </summary>
+</rappor-metric>
+
 <rappor-metric name="ResourceReporter.Cpu" type="UMA_RAPPOR_TYPE">
   <owner>afakhry@chromium.org</owner>
   <summary>
