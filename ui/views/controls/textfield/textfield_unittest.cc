@@ -763,7 +763,7 @@ TEST_F(TextfieldTest, KeysWithModifiersTest) {
   SendKeyPress(ui::VKEY_T, shift);
   SendKeyPress(ui::VKEY_E, shift | altgr);
   SendKeyPress(ui::VKEY_X, 0);
-  SendKeyPress(ui::VKEY_T, ctrl);
+  SendKeyPress(ui::VKEY_T, ctrl);  // This causes transpose on Mac.
   SendKeyPress(ui::VKEY_1, alt);
   SendKeyPress(ui::VKEY_2, command);
   SendKeyPress(ui::VKEY_3, 0);
@@ -776,7 +776,7 @@ TEST_F(TextfieldTest, KeysWithModifiersTest) {
   if (TestingNativeCrOs())
     EXPECT_STR_EQ("TeTEx34", textfield_->text());
   else if (TestingNativeMac())
-    EXPECT_STR_EQ("TheTEx134", textfield_->text());
+    EXPECT_STR_EQ("TheTxE134", textfield_->text());
   else
     EXPECT_STR_EQ("TeTEx234", textfield_->text());
 }

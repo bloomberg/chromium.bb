@@ -977,6 +977,15 @@ ui::KeyEvent GetCharacterEventFromNSEvent(NSEvent* event) {
       : [self moveToEndOfLineAndModifySelection:sender];
 }
 
+// Graphical Element transposition
+
+- (void)transpose:(id)sender {
+  [self handleAction:ui::TextEditCommand::TRANSPOSE
+             keyCode:ui::VKEY_T
+             domCode:ui::DomCode::US_T
+          eventFlags:ui::EF_CONTROL_DOWN];
+}
+
 // Deletions.
 
 - (void)deleteForward:(id)sender {

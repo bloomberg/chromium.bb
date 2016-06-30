@@ -1488,6 +1488,9 @@ bool Textfield::IsTextEditCommandEnabled(ui::TextEditCommand command) const {
       return editable && !result.empty();
     case ui::TextEditCommand::SELECT_ALL:
       return !text().empty();
+    case ui::TextEditCommand::TRANSPOSE:
+      return editable && !model_->HasSelection() &&
+             !model_->HasCompositionText();
     case ui::TextEditCommand::MOVE_DOWN:
     case ui::TextEditCommand::MOVE_DOWN_AND_MODIFY_SELECTION:
     case ui::TextEditCommand::MOVE_PAGE_DOWN:
@@ -1680,6 +1683,9 @@ void Textfield::ExecuteTextEditCommand(ui::TextEditCommand command) {
       break;
     case ui::TextEditCommand::SELECT_ALL:
       SelectAll(false);
+      break;
+    case ui::TextEditCommand::TRANSPOSE:
+      text_changed = cursor_changed = model_->Transpose();
       break;
     case ui::TextEditCommand::MOVE_DOWN:
     case ui::TextEditCommand::MOVE_DOWN_AND_MODIFY_SELECTION:

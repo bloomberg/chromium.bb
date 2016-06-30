@@ -527,6 +527,36 @@ bool TextfieldModel::Paste() {
   return true;
 }
 
+bool TextfieldModel::Transpose() {
+  if (HasCompositionText() || HasSelection())
+    return false;
+
+  size_t cur = GetCursorPosition();
+  size_t next = render_text_->IndexOfAdjacentGrapheme(cur, gfx::CURSOR_FORWARD);
+  size_t prev =
+      render_text_->IndexOfAdjacentGrapheme(cur, gfx::CURSOR_BACKWARD);
+
+  // At the end of the line, the last two characters should be transposed.
+  if (cur == text().length()) {
+    DCHECK_EQ(cur, next);
+    cur = prev;
+    prev = render_text_->IndexOfAdjacentGrapheme(prev, gfx::CURSOR_BACKWARD);
+  }
+
+  // This happens at the beginning of the line or when the line has less than
+  // two graphemes.
+  if (gfx::UTF16IndexToOffset(text(), prev, next) != 2)
+    return false;
+
+  SelectRange(gfx::Range(prev, next));
+  base::string16 text = GetSelectedText();
+  base::string16 transposed_text =
+      text.substr(cur - prev) + text.substr(0, cur - prev);
+
+  InsertTextInternal(transposed_text, false);
+  return true;
+}
+
 bool TextfieldModel::HasSelection() const {
   return !render_text_->selection().is_empty();
 }

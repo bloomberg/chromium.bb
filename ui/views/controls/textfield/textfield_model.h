@@ -177,6 +177,11 @@ class VIEWS_EXPORT TextfieldModel {
   // if any text is pasted.
   bool Paste();
 
+  // Transposes the characters to either side of the insertion point and
+  // advances the insertion point past both of them. Returns true if text is
+  // changed.
+  bool Transpose();
+
   // Tells if any text is selected, even if the selection is in composition
   // text.
   bool HasSelection() const;

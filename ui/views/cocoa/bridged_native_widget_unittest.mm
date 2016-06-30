@@ -112,7 +112,8 @@ NSArray* const kDeleteActions = @[
   @"deleteToBeginningOfParagraph:", @"deleteToEndOfParagraph:"
 ];
 
-NSArray* const kMiscActions = @[ @"insertText:", @"cancelOperation:" ];
+NSArray* const kMiscActions =
+    @[ @"insertText:", @"cancelOperation:", @"transpose:" ];
 
 // Empty range shortcut for readibility.
 NSRange EmptyRange() {
@@ -1031,6 +1032,11 @@ TEST_F(BridgedNativeWidgetTest, NilTextInputClient) {
 
   for (NSString* selector in selectors)
     [ns_view_ doCommandBySelector:NSSelectorFromString(selector)];
+}
+
+// Test transpose command against expectations set by |dummy_text_view_|.
+TEST_F(BridgedNativeWidgetTest, TextInput_Transpose) {
+  TestEditingCommands(@[ @"transpose:" ]);
 }
 
 // Test firstRectForCharacterRange:actualRange for cases where query range is

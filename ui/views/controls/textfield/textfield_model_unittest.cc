@@ -1589,4 +1589,68 @@ TEST_F(TextfieldModelTest, Clipboard_WhiteSpaceStringTest) {
   EXPECT_STR_EQ("FOO BAR", model.text());
 }
 
+TEST_F(TextfieldModelTest, Transpose) {
+  const base::string16 ltr = base::ASCIIToUTF16("12");
+  const base::string16 rtl = base::WideToUTF16(L"\x0634\x0632");
+  const base::string16 ltr_transposed = base::ASCIIToUTF16("21");
+  const base::string16 rtl_transposed = base::WideToUTF16(L"\x0632\x0634");
+
+  // This is a string with an 'a' between two emojis.
+  const base::string16 surrogate_pairs({0xD83D, 0xDE07, 'a', 0xD83D, 0xDE0E});
+  const base::string16 test_strings[] = {ltr, rtl, surrogate_pairs};
+
+  struct TestCase {
+    gfx::Range range;
+    base::string16 expected_text;
+    gfx::Range expected_selection;
+  };
+
+  std::vector<TestCase> ltr_tests = {
+      {gfx::Range(0), ltr, gfx::Range(0)},
+      {gfx::Range(1), ltr_transposed, gfx::Range(2)},
+      {gfx::Range(2), ltr_transposed, gfx::Range(2)},
+      {gfx::Range(0, 2), ltr, gfx::Range(0, 2)}};
+
+  std::vector<TestCase> rtl_tests = {
+      {gfx::Range(0), rtl, gfx::Range(0)},
+      {gfx::Range(1), rtl_transposed, gfx::Range(2)},
+      {gfx::Range(2), rtl_transposed, gfx::Range(2)},
+      {gfx::Range(0, 1), rtl, gfx::Range(0, 1)}};
+
+  // Only test at valid grapheme boundaries.
+  std::vector<TestCase> surrogate_pairs_test = {
+      {gfx::Range(0), surrogate_pairs, gfx::Range(0)},
+      {gfx::Range(2), base::string16({'a', 0xD83D, 0xDE07, 0xD83D, 0xDE0E}),
+       gfx::Range(3)},
+      {gfx::Range(3), base::string16({0xD83D, 0xDE07, 0xD83D, 0xDE0E, 'a'}),
+       gfx::Range(5)},
+      {gfx::Range(5), base::string16({0xD83D, 0xDE07, 0xD83D, 0xDE0E, 'a'}),
+       gfx::Range(5)},
+      {gfx::Range(3, 5), surrogate_pairs, gfx::Range(3, 5)}};
+
+  std::vector<std::vector<TestCase>> all_tests = {ltr_tests, rtl_tests,
+                                                  surrogate_pairs_test};
+
+  TextfieldModel model(nullptr);
+
+  EXPECT_EQ(all_tests.size(), arraysize(test_strings));
+
+  for (size_t i = 0; i < arraysize(test_strings); i++) {
+    for (size_t j = 0; j < all_tests[i].size(); j++) {
+      SCOPED_TRACE(testing::Message() << "Testing case " << i << ", " << j
+                                      << " with string " << test_strings[i]);
+
+      const TestCase& test_case = all_tests[i][j];
+
+      model.SetText(test_strings[i]);
+      model.SelectRange(test_case.range);
+      EXPECT_EQ(test_case.range, model.render_text()->selection());
+      model.Transpose();
+
+      EXPECT_EQ(test_case.expected_text, model.text());
+      EXPECT_EQ(test_case.expected_selection, model.render_text()->selection());
+    }
+  }
+}
+
 }  // namespace views
