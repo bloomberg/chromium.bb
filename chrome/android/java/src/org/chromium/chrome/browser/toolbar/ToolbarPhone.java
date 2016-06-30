@@ -724,7 +724,17 @@ public class ToolbarPhone extends ToolbarLayout
     // NewTabPage.OnSearchBoxScrollListener
     @Override
     public void onNtpScrollChanged(float scrollPercentage) {
-        if (scrollPercentage == mNtpSearchBoxScrollPercent) return;
+        // TODO(peconn): Clear up the animation transition calculations so that the parts that
+        // depend on the absolute scroll value (such as the Toolbar location) are separate from the
+        // parts that depend on the fakebox transition percentage (such as the omnibox width and
+        // opacity).
+        // At the moment, we disable the check below because these two concepts are not
+        // separate and we want to still update the parts that depend on scroll value when the
+        // transition percentage is not changed.
+        if (scrollPercentage == mNtpSearchBoxScrollPercent
+                && !getToolbarDataProvider().getNewTabPageForCurrentTab().isCardsUiEnabled()) {
+            return;
+        }
 
         mNtpSearchBoxScrollPercent = scrollPercentage;
         updateUrlExpansionPercent();
@@ -873,7 +883,7 @@ public class ToolbarPhone extends ToolbarLayout
         mToolbarShadow.setAlpha(0f);
 
         float growthPercent = 0f;
-        if (mUrlExpansionPercent == 0f || mUrlExpansionPercent == 1f) {
+        if (ntp.isCardsUiEnabled() || mUrlExpansionPercent == 0f || mUrlExpansionPercent == 1f) {
             growthPercent = 1f - mUrlExpansionPercent;
         } else {
             // During the transition from search box to omnibox, keep the omnibox drawing

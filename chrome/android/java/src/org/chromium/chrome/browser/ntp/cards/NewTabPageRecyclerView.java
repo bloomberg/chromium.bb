@@ -32,10 +32,11 @@ public class NewTabPageRecyclerView extends RecyclerView {
     private static final int MIN_BOTTOM_SPACING = 0;
 
     /**
-     * Position in the adapter of the item we snap the scroll at, when switching between above and
-     * below the fold.
+     * Positions of key items in the RecyclerView.
      */
-    private static final int SNAP_ITEM_ADAPTER_POSITION = 1;
+    private static final int ABOVE_THE_FOLD_ITEM_POSITION = 0;
+    private static final int ARTICLES_HEADER_ITEM_POSITION = 1;
+    private static final int PEEKING_CARD_ITEM_POSITION = 2;
 
     private final GestureDetector mGestureDetector;
     private final LinearLayoutManager mLayoutManager;
@@ -159,13 +160,13 @@ public class NewTabPageRecyclerView extends RecyclerView {
         int firstVisiblePos = mLayoutManager.findFirstVisibleItemPosition();
 
         // We have enough items to fill the view, since the snap point item is not even visible.
-        if (firstVisiblePos > SNAP_ITEM_ADAPTER_POSITION) return MIN_BOTTOM_SPACING;
+        if (firstVisiblePos > ARTICLES_HEADER_ITEM_POSITION) return MIN_BOTTOM_SPACING;
 
         // The spacing item is the last item, the last content item is directly above that.
         int lastContentItemPosition = getAdapter().getItemCount() - 2;
 
         ViewHolder lastContentItem = findViewHolderForAdapterPosition(lastContentItemPosition);
-        ViewHolder snapItem = findViewHolderForAdapterPosition(SNAP_ITEM_ADAPTER_POSITION);
+        ViewHolder snapItem = findViewHolderForAdapterPosition(ARTICLES_HEADER_ITEM_POSITION);
 
         int bottomSpacing = getHeight() - mToolbarHeight;
         if (lastContentItem == null || snapItem == null) {
@@ -209,7 +210,7 @@ public class NewTabPageRecyclerView extends RecyclerView {
      * @return The viewholder for the first card or null if no card is available.
      */
     private CardViewHolder findFirstCard() {
-        int firstCardIndex = 2; // 0 => above-the-fold, 1 => header, 2 => card
+        int firstCardIndex = PEEKING_CARD_ITEM_POSITION;
         ViewHolder viewHolder = findViewHolderForAdapterPosition(firstCardIndex);
         if (!(viewHolder instanceof CardViewHolder)) return null;
 
@@ -239,7 +240,7 @@ public class NewTabPageRecyclerView extends RecyclerView {
      */
     private SnippetHeaderViewHolder findHeaderView() {
         // Get the snippet header view. It is always at position 1
-        ViewHolder viewHolder = findViewHolderForAdapterPosition(1);
+        ViewHolder viewHolder = findViewHolderForAdapterPosition(ARTICLES_HEADER_ITEM_POSITION);
         if (!(viewHolder instanceof SnippetHeaderViewHolder)) return null;
 
         return (SnippetHeaderViewHolder) viewHolder;
@@ -255,5 +256,69 @@ public class NewTabPageRecyclerView extends RecyclerView {
     void onItemDismissFinished(View itemView) {
         mCompensationHeight -= itemView.getHeight();
         assert mCompensationHeight >= 0;
+    }
+
+    /**
+     * If the RecyclerView is currently scrolled to between regionStart and regionEnd, smooth scroll
+     * out of the region. flipPoint is the threshold used to decide which bound of the region to
+     * scroll to. It returns whether the view was scrolled.
+     */
+    private boolean scrollOutOfRegion(int regionStart, int flipPoint, int regionEnd) {
+        // This function is only called when we are using the RecyclerView.
+        final int currentScroll = computeVerticalScrollOffset();
+
+        if (currentScroll < regionStart || currentScroll > regionEnd) return false;
+
+        if (currentScroll < flipPoint) {
+            smoothScrollBy(0, regionStart - currentScroll);
+        } else {
+            smoothScrollBy(0, regionEnd - currentScroll);
+        }
+        return true;
+    }
+
+    /**
+     * If the RecyclerView is currently scrolled to between regionStart and regionEnd, smooth scroll
+     * out of the region to the nearest edge.
+     */
+    private boolean scrollOutOfRegion(int regionStart, int regionEnd) {
+        return scrollOutOfRegion(regionStart, (regionStart + regionEnd) / 2, regionEnd);
+    }
+
+    /**
+     * Snaps the scroll point of the RecyclerView to prevent the user from scrolling to midway
+     * through a transition and to allow peeking card behaviour.
+     */
+    public void snapScroll(View fakeBox, int parentScrollY, int parentHeight) {
+        // Snap scroll to prevent resting in the middle of the omnibox transition.
+        final int searchBoxTransitionLength = getResources()
+                .getDimensionPixelSize(R.dimen.ntp_search_box_transition_length);
+        if (scrollOutOfRegion(fakeBox.getTop() - searchBoxTransitionLength, fakeBox.getTop())) {
+            // The snap scrolling regions should never overlap.
+            return;
+        }
+
+        // Snap scroll to prevent resting in the middle of the peeking card transition
+        // and to allow the peeking card to peek a bit before snapping back.
+        if (findFirstCard() != null && isFirstItemVisible()) {
+            View peekingCard = findFirstCard().itemView;
+            final int peekingHeight = getResources().getDimensionPixelSize(
+                    R.dimen.snippets_padding_and_peeking_card_height);
+
+            // |A + B| gives the offset of the peeking card relative to the Recycler View,
+            // so scrolling to this point would put the peeking card at the top of the
+            // screen.
+            // |A + B - C| will scroll us so that the peeking card is just off the bottom
+            // of the screen.
+            // Finally, we get |A + B - C + D| because the transition starts from the
+            // peeking card's resting point, which is |D| from the bottom of the screen.
+            int start = peekingCard.getTop()  // A.
+                    + parentScrollY  // B.
+                    - parentHeight  // C.
+                    + peekingHeight;  // D.
+            scrollOutOfRegion(start,
+                              start + peekingCard.getHeight() / 2,
+                              start + peekingCard.getHeight() / 2);
+        }
     }
 }

@@ -44,7 +44,6 @@ import org.chromium.chrome.browser.ntp.LogoBridge.Logo;
 import org.chromium.chrome.browser.ntp.LogoBridge.LogoObserver;
 import org.chromium.chrome.browser.ntp.MostVisitedItem.MostVisitedItemManager;
 import org.chromium.chrome.browser.ntp.NewTabPage.OnSearchBoxScrollListener;
-import org.chromium.chrome.browser.ntp.cards.CardsLayoutOperations;
 import org.chromium.chrome.browser.ntp.cards.NewTabPageAdapter;
 import org.chromium.chrome.browser.ntp.cards.NewTabPageListItem;
 import org.chromium.chrome.browser.ntp.cards.NewTabPageRecyclerView;
@@ -407,25 +406,36 @@ public class NewTabPageView extends FrameLayout
     private void updateSearchBoxOnScroll() {
         if (mDisableUrlFocusChangeAnimations) return;
 
-        float percentage;
+        float toolbarTransitionPercentage;
         // During startup the view may not be fully initialized, so we only calculate the current
         // percentage if some basic view properties are sane.
         if (getWrapperView().getHeight() == 0 || mSearchBoxView.getTop() == 0) {
-            percentage = 0f;
-        } else if (mUseCardsUi && !mRecyclerView.isFirstItemVisible()) {
-            // getVerticalScroll is valid only for the RecyclerView if the first item is visible.
-            // Luckily, if the first item is not visible, we know the toolbar transition should
-            // be 100%.
-            percentage = 1f;
+            toolbarTransitionPercentage = 0f;
+        } else if (!mUseCardsUi) {
+            toolbarTransitionPercentage =
+                    MathUtils.clamp(getVerticalScroll() / (float) mSearchBoxView.getTop(), 0f, 1f);
         } else {
-            percentage = MathUtils.clamp(getVerticalScroll() / (float) mSearchBoxView.getTop(),
-                    0f, 1f);
+            if (!mRecyclerView.isFirstItemVisible()) {
+                // getVerticalScroll is valid only for the RecyclerView if the first item is
+                // visible. Luckily, if the first item is not visible, we know the toolbar
+                // transition should be 100%.
+                toolbarTransitionPercentage = 1f;
+            } else {
+                final int scrollY = getVerticalScroll();
+                final int top = mSearchBoxView.getTop();  // Relative to mNewTabPageLayout.
+                final int transitionLength = getResources()
+                        .getDimensionPixelSize(R.dimen.ntp_search_box_transition_length);
+
+                // |scrollY - top| gives the distance the search bar is from the top of the screen.
+                toolbarTransitionPercentage = MathUtils.clamp(
+                        (scrollY - top + transitionLength) / (float) transitionLength, 0f, 1f);
+            }
         }
 
-        updateVisualsForToolbarTransition(percentage);
+        updateVisualsForToolbarTransition(toolbarTransitionPercentage);
 
         if (mSearchBoxScrollListener != null) {
-            mSearchBoxScrollListener.onNtpScrollChanged(percentage);
+            mSearchBoxScrollListener.onNtpScrollChanged(toolbarTransitionPercentage);
         }
     }
 
@@ -454,18 +464,13 @@ public class NewTabPageView extends FrameLayout
      * the RecyclerView.
      */
     private void initializeSearchBoxRecyclerViewScrollHandling() {
-        final NewTabPageUma.SnapStateObserver snapStateObserver =
-                new NewTabPageUma.SnapStateObserver();
-
         final Runnable mSnapScrollRunnable = new Runnable() {
             @Override
             public void run() {
                 assert mPendingSnapScroll;
                 mPendingSnapScroll = false;
-                NewTabPageUma.SnapState currentSnapState = CardsLayoutOperations.snapScroll(
-                        mRecyclerView, mNewTabPageLayout, mMostVisitedLayout, getVerticalScroll(),
-                        false);
-                snapStateObserver.updateSnapState(NewTabPageView.this, currentSnapState);
+
+                mRecyclerView.snapScroll(mSearchBoxView, getVerticalScroll(), getHeight());
             }
         };
 
@@ -690,7 +695,9 @@ public class NewTabPageView extends FrameLayout
         // Ensure there are no rounding issues when the animation percent is 0.
         if (transitionPercentage == 0f) searchUiAlpha = 1f;
 
-        mSearchProviderLogoView.setAlpha(searchUiAlpha);
+        if (!mUseCardsUi) {
+            mSearchProviderLogoView.setAlpha(searchUiAlpha);
+        }
         mSearchBoxView.setAlpha(searchUiAlpha);
     }
 
@@ -813,10 +820,8 @@ public class NewTabPageView extends FrameLayout
         if (mUseCardsUi) {
             mRecyclerView.updatePeekingCard();
             // The positioning of elements may have been changed (since the elements expand to fill
-            // the available vertical space), so adjust the scroll. We force snapping to Most Likely
-            // so the user's snap point doesn't change on rotation.
-            CardsLayoutOperations.snapScroll(mRecyclerView, mNewTabPageLayout, mMostVisitedLayout,
-                    getVerticalScroll(), true);
+            // the available vertical space), so adjust the scroll.
+            mRecyclerView.snapScroll(mSearchBoxView, getVerticalScroll(), getHeight());
         }
     }
 

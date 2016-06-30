@@ -638,6 +638,11 @@ public class NewTabPage
         return mNewTabPageView;
     }
 
+    /** @return whether the NTP is using the cards UI. */
+    public boolean isCardsUiEnabled() {
+        return SnippetsConfig.isEnabled();
+    }
+
     /**
      * Updates whether the NewTabPage should animate on URL focus changes.
      * @param disable Whether to disable the animations.

@@ -8991,6 +8991,7 @@ should be able to be added at any place in this file.
   <description>
     Android: User scrolled above the fold (not reading snippets cards).
   </description>
+  <obsolete>Deprecated as of 5/2016</obsolete>
 </action>
 
 <action name="MobileNTP.Snippets.ScrolledBelowTheFold">
@@ -8998,6 +8999,7 @@ should be able to be added at any place in this file.
   <description>
     Android: User scrolled to the snippet cards below the fold.
   </description>
+  <obsolete>Deprecated as of 5/2016</obsolete>
 </action>
 
 <action name="MobileNTP.Snippets.ShowLess">
