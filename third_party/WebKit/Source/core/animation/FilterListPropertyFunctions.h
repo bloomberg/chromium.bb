@@ -23,7 +23,7 @@ public:
     {
         switch (property) {
         default:
-            ASSERT_NOT_REACHED();
+            NOTREACHED();
             // Fall through.
         case CSSPropertyBackdropFilter:
             return style.backdropFilter();
@@ -42,7 +42,7 @@ public:
             style.setFilter(filterOperations);
             break;
         default:
-            ASSERT_NOT_REACHED();
+            NOTREACHED();
             break;
         }
     }

@@ -33,7 +33,7 @@ static double fontWeightToDouble(FontWeight fontWeight)
     case FontWeight900:
         return 900;
     default:
-        ASSERT_NOT_REACHED();
+        NOTREACHED();
         return 400;
     }
 }

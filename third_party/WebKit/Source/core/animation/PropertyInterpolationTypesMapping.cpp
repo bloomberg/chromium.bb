@@ -368,7 +368,7 @@ const InterpolationTypes& PropertyInterpolationTypesMapping::get(const PropertyH
             || attribute == SVGNames::yChannelSelectorAttr) {
             // Use default SVGValueInterpolationType.
         } else {
-            ASSERT_NOT_REACHED();
+            NOTREACHED();
         }
 
         applicableTypes->append(wrapUnique(new SVGValueInterpolationType(attribute)));

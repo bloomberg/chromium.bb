@@ -43,7 +43,7 @@ protected:
     static PassRefPtr<AnimatableNeutral> create() { return adoptRef(new AnimatableNeutral()); }
     PassRefPtr<AnimatableValue> interpolateTo(const AnimatableValue* value, double fraction) const override
     {
-        ASSERT_NOT_REACHED();
+        NOTREACHED();
         return nullptr;
     }
 
@@ -52,7 +52,7 @@ private:
     AnimatableType type() const override { return TypeNeutral; }
     bool equalTo(const AnimatableValue* value) const override
     {
-        ASSERT_NOT_REACHED();
+        NOTREACHED();
         return true;
     }
 };

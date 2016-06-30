@@ -327,7 +327,7 @@ void Animation::postCommit(double timelineTime)
         m_currentTimePending = false;
         break;
     default:
-        ASSERT_NOT_REACHED();
+        NOTREACHED();
     }
 }
 
@@ -484,7 +484,7 @@ const char* Animation::playStateString(AnimationPlayState playState)
     case Finished:
         return "finished";
     default:
-        ASSERT_NOT_REACHED();
+        NOTREACHED();
         return "";
     }
 }
@@ -1039,7 +1039,7 @@ Animation::PlayStateUpdateScope::~PlayStateUpdateScope()
     case DoNotSetCompositorPending:
         break;
     default:
-        ASSERT_NOT_REACHED();
+        NOTREACHED();
         break;
     }
     m_animation->endUpdatingState();

@@ -81,10 +81,10 @@ static PassRefPtr<AnimatableValue> createFromLengthWithZoom(const Length& length
     case ExtendToZoom: // Does not apply to elements.
     case DeviceWidth:
     case DeviceHeight:
-        ASSERT_NOT_REACHED();
+        NOTREACHED();
         return nullptr;
     }
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
     return nullptr;
 }
 
@@ -193,7 +193,7 @@ inline static PassRefPtr<AnimatableValue> createFromFillSize(const FillSize& fil
     case SizeNone:
         return AnimatableUnknown::create(CSSPrimitiveValue::create(fillSize.type));
     default:
-        ASSERT_NOT_REACHED();
+        NOTREACHED();
         return nullptr;
     }
 }
@@ -227,7 +227,7 @@ inline static PassRefPtr<AnimatableValue> createFromFillLayers(const FillLayer& 
                 break;
             values.append(createFromFillSize(fillLayer->size(), style));
         } else {
-            ASSERT_NOT_REACHED();
+            NOTREACHED();
         }
     }
     return AnimatableRepeatable::create(values);
@@ -292,7 +292,7 @@ static double fontWeightToDouble(FontWeight fontWeight)
         return 900;
     }
 
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
     return 400;
 }
 
@@ -599,7 +599,7 @@ PassRefPtr<AnimatableValue> CSSAnimatableValueFactory::create(CSSPropertyID prop
             return AnimatableUnknown::create(CSSValueAuto);
         return createFromDouble(style.zIndex());
     default:
-        ASSERT_NOT_REACHED();
+        NOTREACHED();
         return nullptr;
     }
 }

@@ -40,7 +40,7 @@ InterpolationValue CSSPositionAxisListInterpolationType::convertPositionAxisCSSV
     case CSSValueCenter:
         return CSSLengthInterpolationType::createInterpolablePercent(50);
     default:
-        ASSERT_NOT_REACHED();
+        NOTREACHED();
         return nullptr;
     }
 }

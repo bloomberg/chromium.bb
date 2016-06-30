@@ -57,7 +57,7 @@ PassRefPtr<AnimatableValue> AnimatableFilterOperations::interpolateTo(const Anim
         if (blendedOp)
             result.operations().append(blendedOp);
         else
-            ASSERT_NOT_REACHED();
+            NOTREACHED();
     }
     return AnimatableFilterOperations::create(result);
 }

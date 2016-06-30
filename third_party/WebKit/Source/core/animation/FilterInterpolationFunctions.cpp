@@ -59,7 +59,7 @@ double defaultParameter(FilterOperation::OperationType type)
         return 0;
 
     default:
-        ASSERT_NOT_REACHED();
+        NOTREACHED();
         return 0;
     }
 }
@@ -82,7 +82,7 @@ double clampParameter(double value, FilterOperation::OperationType type)
         return value;
 
     default:
-        ASSERT_NOT_REACHED();
+        NOTREACHED();
         return 0;
     }
 }
@@ -140,7 +140,7 @@ InterpolationValue FilterInterpolationFunctions::maybeConvertCSSFilter(const CSS
         return nullptr;
 
     default:
-        ASSERT_NOT_REACHED();
+        NOTREACHED();
         return nullptr;
     }
 
@@ -185,7 +185,7 @@ InterpolationValue FilterInterpolationFunctions::maybeConvertFilter(const Filter
         return nullptr;
 
     default:
-        ASSERT_NOT_REACHED();
+        NOTREACHED();
         return nullptr;
     }
 
@@ -218,7 +218,7 @@ std::unique_ptr<InterpolableValue> FilterInterpolationFunctions::createNoneValue
         return ShadowInterpolationFunctions::createNeutralInterpolableValue();
 
     default:
-        ASSERT_NOT_REACHED();
+        NOTREACHED();
         return nullptr;
     }
 }
@@ -262,7 +262,7 @@ FilterOperation* FilterInterpolationFunctions::createFilter(const InterpolableVa
     }
 
     default:
-        ASSERT_NOT_REACHED();
+        NOTREACHED();
         return nullptr;
     }
 }

@@ -68,7 +68,7 @@ static inline bool isActiveInParentPhase(AnimationEffect::Phase parentPhase, Tim
     case AnimationEffect::PhaseAfter:
         return fillMode == Timing::FillModeForwards || fillMode == Timing::FillModeBoth;
     default:
-        ASSERT_NOT_REACHED();
+        NOTREACHED();
         return false;
     }
 }
@@ -95,7 +95,7 @@ static inline double calculateActiveTime(double activeDuration, Timing::FillMode
         ASSERT(isNull(localTime));
         return nullValue();
     default:
-        ASSERT_NOT_REACHED();
+        NOTREACHED();
         return nullValue();
     }
 }

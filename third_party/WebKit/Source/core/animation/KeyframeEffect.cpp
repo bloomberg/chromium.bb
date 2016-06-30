@@ -265,7 +265,7 @@ double KeyframeEffect::calculateTimeToEffectChange(bool forwards, double localTi
             ? std::numeric_limits<double>::infinity()
             : localTime - afterTime;
     default:
-        ASSERT_NOT_REACHED();
+        NOTREACHED();
         return std::numeric_limits<double>::infinity();
     }
 }

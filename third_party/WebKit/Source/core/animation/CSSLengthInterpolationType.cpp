@@ -18,7 +18,7 @@ namespace blink {
 // while nullptr represents the absence of any percentages.
 class CSSLengthNonInterpolableValue : public NonInterpolableValue {
 public:
-    ~CSSLengthNonInterpolableValue() final { ASSERT_NOT_REACHED(); }
+    ~CSSLengthNonInterpolableValue() final { NOTREACHED(); }
     static PassRefPtr<CSSLengthNonInterpolableValue> create(bool hasPercentage)
     {
         DEFINE_STATIC_REF(CSSLengthNonInterpolableValue, singleton, adoptRef(new CSSLengthNonInterpolableValue()));

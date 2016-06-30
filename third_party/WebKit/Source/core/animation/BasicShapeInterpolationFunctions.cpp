@@ -42,7 +42,7 @@ public:
             return windRule() == other.windRule()
                 && size() == other.size();
         default:
-            ASSERT_NOT_REACHED();
+            NOTREACHED();
             return false;
         }
     }
@@ -449,7 +449,7 @@ InterpolationValue BasicShapeInterpolationFunctions::maybeConvertBasicShape(cons
     case BasicShape::BasicShapePolygonType:
         return PolygonFunctions::convertBasicShape(toBasicShapePolygon(*shape), zoom);
     default:
-        ASSERT_NOT_REACHED();
+        NOTREACHED();
         return nullptr;
     }
 }
@@ -467,7 +467,7 @@ std::unique_ptr<InterpolableValue> BasicShapeInterpolationFunctions::createNeutr
     case BasicShape::BasicShapePolygonType:
         return PolygonFunctions::createNeutralValue(nonInterpolableValue);
     default:
-        ASSERT_NOT_REACHED();
+        NOTREACHED();
         return nullptr;
     }
 }
@@ -490,7 +490,7 @@ PassRefPtr<BasicShape> BasicShapeInterpolationFunctions::createBasicShape(const 
     case BasicShape::BasicShapePolygonType:
         return PolygonFunctions::createBasicShape(interpolableValue, nonInterpolableValue, conversionData);
     default:
-        ASSERT_NOT_REACHED();
+        NOTREACHED();
         return nullptr;
     }
 }

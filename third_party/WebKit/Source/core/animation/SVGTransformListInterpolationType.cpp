@@ -143,9 +143,9 @@ std::unique_ptr<InterpolableValue> toInterpolableValue(SVGTransform* transform, 
         return skewYToInterpolableValue(transform);
     case SVG_TRANSFORM_MATRIX:
     case SVG_TRANSFORM_UNKNOWN:
-        ASSERT_NOT_REACHED();
+        NOTREACHED();
     }
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
     return nullptr;
 }
 
@@ -164,9 +164,9 @@ SVGTransform* fromInterpolableValue(const InterpolableValue& value, SVGTransform
         return skewYFromInterpolableValue(value);
     case SVG_TRANSFORM_MATRIX:
     case SVG_TRANSFORM_UNKNOWN:
-        ASSERT_NOT_REACHED();
+        NOTREACHED();
     }
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
     return nullptr;
 }
 

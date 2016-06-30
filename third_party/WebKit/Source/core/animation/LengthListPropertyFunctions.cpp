@@ -22,7 +22,7 @@ const FillLayer* getFillLayer(CSSPropertyID property, const ComputedStyle& style
     case CSSPropertyWebkitMaskSize:
         return &style.maskLayers();
     default:
-        ASSERT_NOT_REACHED();
+        NOTREACHED();
         return nullptr;
     }
 }
@@ -39,7 +39,7 @@ FillLayer* accessFillLayer(CSSPropertyID property, ComputedStyle& style)
     case CSSPropertyWebkitMaskSize:
         return &style.accessMaskLayers();
     default:
-        ASSERT_NOT_REACHED();
+        NOTREACHED();
         return nullptr;
     }
 }
@@ -76,7 +76,7 @@ struct FillLayerMethods {
             clear = &FillLayer::clearSize;
             break;
         default:
-            ASSERT_NOT_REACHED();
+            NOTREACHED();
             break;
         }
     }
@@ -113,7 +113,7 @@ ValueRange LengthListPropertyFunctions::getValueRange(CSSPropertyID property)
         return ValueRangeNonNegative;
 
     default:
-        ASSERT_NOT_REACHED();
+        NOTREACHED();
         return ValueRangeAll;
     }
 }
@@ -201,7 +201,7 @@ bool LengthListPropertyFunctions::getLengthList(CSSPropertyID property, const Co
     }
 
     default:
-        ASSERT_NOT_REACHED();
+        NOTREACHED();
         return false;
     }
 }
@@ -298,7 +298,7 @@ void LengthListPropertyFunctions::setLengthList(CSSPropertyID property, Computed
     }
 
     default:
-        ASSERT_NOT_REACHED();
+        NOTREACHED();
         break;
     }
 }

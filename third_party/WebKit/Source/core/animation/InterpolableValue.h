@@ -83,11 +83,11 @@ public:
 
     bool isBool() const final { return true; }
     bool value() const { return m_value; }
-    bool equals(const InterpolableValue&) const final { ASSERT_NOT_REACHED(); return false; }
+    bool equals(const InterpolableValue&) const final { NOTREACHED(); return false; }
     std::unique_ptr<InterpolableValue> clone() const final { return create(m_value); }
-    std::unique_ptr<InterpolableValue> cloneAndZero() const final { ASSERT_NOT_REACHED(); return nullptr; }
-    void scale(double scale) final { ASSERT_NOT_REACHED(); }
-    void scaleAndAdd(double scale, const InterpolableValue& other) final { ASSERT_NOT_REACHED(); }
+    std::unique_ptr<InterpolableValue> cloneAndZero() const final { NOTREACHED(); return nullptr; }
+    void scale(double scale) final { NOTREACHED(); }
+    void scaleAndAdd(double scale, const InterpolableValue& other) final { NOTREACHED(); }
 
 private:
     void interpolate(const InterpolableValue& to, const double progress, InterpolableValue& result) const final;
@@ -173,11 +173,11 @@ public:
 
     bool isAnimatableValue() const final { return true; }
     AnimatableValue* value() const { return m_value.get(); }
-    bool equals(const InterpolableValue&) const final { ASSERT_NOT_REACHED(); return false; }
+    bool equals(const InterpolableValue&) const final { NOTREACHED(); return false; }
     std::unique_ptr<InterpolableValue> clone() const final { return create(m_value); }
-    std::unique_ptr<InterpolableValue> cloneAndZero() const final { ASSERT_NOT_REACHED(); return nullptr; }
-    void scale(double scale) final { ASSERT_NOT_REACHED(); }
-    void scaleAndAdd(double scale, const InterpolableValue& other) final { ASSERT_NOT_REACHED(); }
+    std::unique_ptr<InterpolableValue> cloneAndZero() const final { NOTREACHED(); return nullptr; }
+    void scale(double scale) final { NOTREACHED(); }
+    void scaleAndAdd(double scale, const InterpolableValue& other) final { NOTREACHED(); }
 
 private:
     void interpolate(const InterpolableValue &to, const double progress, InterpolableValue& result) const final;

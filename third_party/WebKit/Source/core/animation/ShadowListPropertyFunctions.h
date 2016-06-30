@@ -21,7 +21,7 @@ public:
         case CSSPropertyTextShadow:
             return style.textShadow();
         default:
-            ASSERT_NOT_REACHED();
+            NOTREACHED();
             return nullptr;
         }
     }
@@ -35,7 +35,7 @@ public:
             style.setTextShadow(shadowList);
             return;
         default:
-            ASSERT_NOT_REACHED();
+            NOTREACHED();
         }
     }
 };

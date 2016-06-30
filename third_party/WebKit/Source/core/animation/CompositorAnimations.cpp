@@ -88,7 +88,7 @@ bool considerAnimationAsIncompatible(const Animation& animation, const Animation
     case Animation::Finished:
         return Animation::hasLowerPriority(&animationToAdd, &animation);
     default:
-        ASSERT_NOT_REACHED();
+        NOTREACHED();
         return true;
     }
 }
@@ -369,7 +369,7 @@ void CompositorAnimations::pauseAnimationForTestingOnCompositor(const Element& e
     DisableCompositingQueryAsserts disabler;
 
     if (!canStartAnimationOnCompositor(element)) {
-        ASSERT_NOT_REACHED();
+        NOTREACHED();
         return;
     }
     CompositorAnimationPlayer* compositorPlayer = animation.compositorPlayer();
@@ -596,7 +596,7 @@ void CompositorAnimations::getAnimationOnCompositor(const Timing& timing, int gr
             break;
         }
         default:
-            ASSERT_NOT_REACHED();
+            NOTREACHED();
             continue;
         }
         ASSERT(curve.get());
@@ -624,7 +624,7 @@ void CompositorAnimations::getAnimationOnCompositor(const Timing& timing, int gr
             animation->setDirection(CompositorAnimation::Direction::ALTERNATE_REVERSE);
             break;
         default:
-            ASSERT_NOT_REACHED();
+            NOTREACHED();
         }
         animation->setPlaybackRate(compositorTiming.playbackRate);
 
@@ -642,7 +642,7 @@ void CompositorAnimations::getAnimationOnCompositor(const Timing& timing, int gr
             animation->setFillMode(CompositorAnimation::FillMode::BOTH);
             break;
         default:
-            ASSERT_NOT_REACHED();
+            NOTREACHED();
         }
         animations.append(std::move(animation));
     }

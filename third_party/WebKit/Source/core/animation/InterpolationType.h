@@ -27,7 +27,7 @@ class InterpolationType {
     USING_FAST_MALLOC(InterpolationType);
     WTF_MAKE_NONCOPYABLE(InterpolationType);
 public:
-    virtual ~InterpolationType() { ASSERT_NOT_REACHED(); }
+    virtual ~InterpolationType() { NOTREACHED(); }
 
     PropertyHandle getProperty() const { return m_property; }
 

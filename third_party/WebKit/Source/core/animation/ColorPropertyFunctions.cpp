@@ -49,7 +49,7 @@ StyleColor ColorPropertyFunctions::getUnvisitedColor(CSSPropertyID property, con
     case CSSPropertyTextDecorationColor:
         return style.textDecorationColor();
     default:
-        ASSERT_NOT_REACHED();
+        NOTREACHED();
         return StyleColor::currentColor();
     }
 }
@@ -90,7 +90,7 @@ StyleColor ColorPropertyFunctions::getVisitedColor(CSSPropertyID property, const
     case CSSPropertyTextDecorationColor:
         return style.visitedLinkTextDecorationColor();
     default:
-        ASSERT_NOT_REACHED();
+        NOTREACHED();
         return StyleColor::currentColor();
     }
 }
@@ -138,7 +138,7 @@ void ColorPropertyFunctions::setUnvisitedColor(CSSPropertyID property, ComputedS
         style.setTextStrokeColor(color);
         return;
     default:
-        ASSERT_NOT_REACHED();
+        NOTREACHED();
         return;
     }
 }
@@ -186,7 +186,7 @@ void ColorPropertyFunctions::setVisitedColor(CSSPropertyID property, ComputedSty
         style.setVisitedLinkTextStrokeColor(color);
         return;
     default:
-        ASSERT_NOT_REACHED();
+        NOTREACHED();
         return;
     }
 }

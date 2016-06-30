@@ -20,7 +20,7 @@ String Timing::fillModeString(FillMode fillMode)
     case Timing::FillModeAuto:
         return "auto";
     }
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
     return "none";
 }
 
@@ -36,7 +36,7 @@ String Timing::playbackDirectionString(PlaybackDirection playbackDirection)
     case Timing::PlaybackDirectionAlternateReverse:
         return "alternate-reverse";
     }
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
     return "normal";
 }
 

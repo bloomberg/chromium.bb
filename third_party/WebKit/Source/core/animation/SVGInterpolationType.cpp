@@ -13,7 +13,7 @@ namespace blink {
 
 InterpolationValue SVGInterpolationType::maybeConvertNeutral(const InterpolationValue&, ConversionCheckers&) const
 {
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
     // This function must be overridden, unless maybeConvertSingle is overridden to no longer need it.
     return nullptr;
 }

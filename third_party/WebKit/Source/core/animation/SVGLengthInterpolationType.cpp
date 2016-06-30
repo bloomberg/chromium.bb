@@ -41,7 +41,7 @@ LengthInterpolatedUnit convertToInterpolatedUnit(CSSPrimitiveValue::UnitType uni
     switch (unitType) {
     case CSSPrimitiveValue::UnitType::Unknown:
     default:
-        ASSERT_NOT_REACHED();
+        NOTREACHED();
     case CSSPrimitiveValue::UnitType::Pixels:
     case CSSPrimitiveValue::UnitType::Number:
     case CSSPrimitiveValue::UnitType::UserUnits:
@@ -155,7 +155,7 @@ InterpolationValue SVGLengthInterpolationType::maybeConvertSVGValue(const SVGPro
 
 SVGPropertyBase* SVGLengthInterpolationType::appliedSVGValue(const InterpolableValue& interpolableValue, const NonInterpolableValue*) const
 {
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
     // This function is no longer called, because apply has been overridden.
     return nullptr;
 }

@@ -29,7 +29,7 @@ public:
     {
         switch (property) {
         default:
-            ASSERT_NOT_REACHED();
+            NOTREACHED();
             // Fall through.
         case CSSPropertyBorderImageSlice:
             return ImageSlice(style.borderImageSlices(), style.borderImageSlicesFill());
@@ -50,7 +50,7 @@ public:
             style.setMaskBoxImageSlicesFill(slice.fill);
             break;
         default:
-            ASSERT_NOT_REACHED();
+            NOTREACHED();
         }
     }
 };

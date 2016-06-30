@@ -62,7 +62,7 @@ void SVGLengthListInterpolationType::composite(UnderlyingValueOwner& underlyingV
 
 SVGPropertyBase* SVGLengthListInterpolationType::appliedSVGValue(const InterpolableValue& interpolableValue, const NonInterpolableValue*) const
 {
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
     // This function is no longer called, because apply has been overridden.
     return nullptr;
 }

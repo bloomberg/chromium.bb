@@ -40,7 +40,7 @@ public:
                 return nullptr;
             return toShapeClipPathOperation(style.clipPath())->basicShape();
         default:
-            ASSERT_NOT_REACHED();
+            NOTREACHED();
             return nullptr;
         }
     }
@@ -55,7 +55,7 @@ public:
             style.setClipPath(ShapeClipPathOperation::create(shape));
             break;
         default:
-            ASSERT_NOT_REACHED();
+            NOTREACHED();
         }
     }
 };

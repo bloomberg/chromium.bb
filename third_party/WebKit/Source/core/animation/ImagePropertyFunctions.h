@@ -24,7 +24,7 @@ public:
         case CSSPropertyWebkitMaskBoxImageSource:
             return style.maskBoxImageSource();
         default:
-            ASSERT_NOT_REACHED();
+            NOTREACHED();
             return nullptr;
         }
     }
@@ -42,7 +42,7 @@ public:
             style.setMaskBoxImageSource(image);
             break;
         default:
-            ASSERT_NOT_REACHED();
+            NOTREACHED();
         }
     }
 };

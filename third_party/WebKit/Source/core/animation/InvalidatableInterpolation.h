@@ -30,7 +30,7 @@ public:
     PropertyHandle getProperty() const final { return m_property; }
     virtual void interpolate(int iteration, double fraction);
     bool dependsOnUnderlyingValue() const final;
-    virtual void apply(InterpolationEnvironment&) const { ASSERT_NOT_REACHED(); }
+    virtual void apply(InterpolationEnvironment&) const { NOTREACHED(); }
     static void applyStack(const ActiveInterpolations&, InterpolationEnvironment&);
 
     virtual bool isInvalidatableInterpolation() const { return true; }

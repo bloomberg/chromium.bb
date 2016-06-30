@@ -32,7 +32,7 @@ unsigned PropertyHandle::hash() const
     case HandleSVGAttribute:
         return QualifiedNameHash::hash(*m_svgAttribute);
     default:
-        ASSERT_NOT_REACHED();
+        NOTREACHED();
         return 0;
     }
 }

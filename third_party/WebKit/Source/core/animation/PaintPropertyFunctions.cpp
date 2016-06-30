@@ -36,7 +36,7 @@ bool PaintPropertyFunctions::getColor(CSSPropertyID property, const ComputedStyl
     case CSSPropertyStroke:
         return getColorFromPaint(style.svgStyle().strokePaintType(), style.svgStyle().strokePaintColor(), result);
     default:
-        ASSERT_NOT_REACHED();
+        NOTREACHED();
         return false;
     }
 }
@@ -51,7 +51,7 @@ void PaintPropertyFunctions::setColor(CSSPropertyID property, ComputedStyle& sty
         style.accessSVGStyle().setStrokePaint(SVG_PAINTTYPE_RGBCOLOR, color, String(), true, true);
         break;
     default:
-        ASSERT_NOT_REACHED();
+        NOTREACHED();
     }
 }
 

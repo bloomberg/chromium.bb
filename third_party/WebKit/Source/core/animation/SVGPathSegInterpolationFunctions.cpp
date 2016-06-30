@@ -263,7 +263,7 @@ std::unique_ptr<InterpolableValue> SVGPathSegInterpolationFunctions::consumePath
 
     case PathSegUnknown:
     default:
-        ASSERT_NOT_REACHED();
+        NOTREACHED();
         return nullptr;
     }
 }
@@ -308,7 +308,7 @@ PathSegmentData SVGPathSegInterpolationFunctions::consumeInterpolablePathSeg(con
 
     case PathSegUnknown:
     default:
-        ASSERT_NOT_REACHED();
+        NOTREACHED();
         return PathSegmentData();
     }
 }

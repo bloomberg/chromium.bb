@@ -26,7 +26,7 @@ public:
         case CSSPropertyWebkitMaskBoxImageWidth:
             return style.maskBoxImageWidth();
         default:
-            ASSERT_NOT_REACHED();
+            NOTREACHED();
             return getInitialBorderImageLengthBox(CSSPropertyBorderImageOutset);
         }
     }
@@ -47,7 +47,7 @@ public:
             style.setMaskBoxImageWidth(box);
             break;
         default:
-            ASSERT_NOT_REACHED();
+            NOTREACHED();
             break;
         }
     }
