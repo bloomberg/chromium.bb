@@ -34,6 +34,8 @@
 
 namespace blink {
 
+namespace {
+
 class TestExtraData : public WebURLRequest::ExtraData {
 public:
     explicit TestExtraData(bool* alive)
@@ -47,6 +49,8 @@ public:
 private:
     bool* m_alive;
 };
+
+} // anonymous namespace
 
 TEST(WebURLRequestTest, ExtraData)
 {
