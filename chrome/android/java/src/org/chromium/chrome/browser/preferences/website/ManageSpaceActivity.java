@@ -23,6 +23,8 @@ import android.widget.TextView;
 
 import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
+import org.chromium.base.metrics.RecordHistogram;
+import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.init.BrowserParts;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
@@ -41,11 +43,16 @@ import java.util.Set;
  * The browser process must be started here because this Activity may be started explicitly from
  * Android settings, when Android is restoring ManageSpaceActivity after Chrome was killed, or for
  * tests.
- * TODO(dmurph): Add UMA metrics.
  */
 @TargetApi(Build.VERSION_CODES.KITKAT)
 public class ManageSpaceActivity extends AppCompatActivity implements View.OnClickListener {
     private static final String TAG = "ManageSpaceActivity";
+
+    // Do not change these constants except for the MAX entry, they are used with UMA histograms.
+    private static final int OPTION_CLEAR_UNIMPORTANT = 0;
+    private static final int OPTION_MANAGE_STORAGE = 1;
+    private static final int OPTION_CLEAR_APP_DATA = 2;
+    private static final int OPTION_MAX = 3;
 
     private TextView mUnimportantSiteDataSizeText;
     private TextView mSiteDataSizeText;
@@ -121,6 +128,7 @@ public class ManageSpaceActivity extends AppCompatActivity implements View.OnCli
         mIsNativeInitialized = true;
         mManageSiteDataButton.setEnabled(true);
         mClearUnimportantButton.setEnabled(true);
+        RecordUserAction.record("Android.ManageSpace");
         refreshStorageNumbers();
     }
 
@@ -172,6 +180,8 @@ public class ManageSpaceActivity extends AppCompatActivity implements View.OnCli
                     @Override
                     public void onClick(DialogInterface dialog, int id) {
                         mUnimportantDialog = null;
+                        RecordHistogram.recordEnumeratedHistogram("Android.ManageSpace.ActionTaken",
+                                OPTION_CLEAR_UNIMPORTANT, OPTION_MAX);
                         clearUnimportantData();
                     }
                 });
@@ -190,6 +200,8 @@ public class ManageSpaceActivity extends AppCompatActivity implements View.OnCli
             initialArguments.putString(SingleCategoryPreferences.EXTRA_TITLE,
                     getString(R.string.website_settings_storage));
             intent.putExtra(Preferences.EXTRA_SHOW_FRAGMENT_ARGUMENTS, initialArguments);
+            RecordHistogram.recordEnumeratedHistogram(
+                    "Android.ManageSpace.ActionTaken", OPTION_MANAGE_STORAGE, OPTION_MAX);
             startActivity(intent);
         } else if (view == mClearAllDataButton) {
             final ActivityManager activityManager =
@@ -198,6 +210,12 @@ public class ManageSpaceActivity extends AppCompatActivity implements View.OnCli
             builder.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialog, int id) {
+                    if (mIsNativeInitialized) {
+                        // This probably won't actually be uploaded, as android will probably kill
+                        // all processes & data before it gets sent to the network.
+                        RecordHistogram.recordEnumeratedHistogram("Android.ManageSpace.ActionTaken",
+                                OPTION_CLEAR_APP_DATA, OPTION_MAX);
+                    }
                     activityManager.clearApplicationUserData();
                 }
             });

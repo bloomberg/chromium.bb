@@ -28,6 +28,7 @@ import android.widget.Button;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.help.HelpAndFeedback;
 import org.chromium.chrome.browser.media.cdm.MediaDrmCredentialManager;
@@ -318,12 +319,13 @@ public class SingleCategoryPreferences extends PreferenceFragment
     /**
      * This clears all the storage for websites that are displayed to the user. This happens
      * asynchronously, and then we call {@link #getInfoForOrigins()} when we're done.
-     * TODO(dmurph): Add UMA metrics for button clicks and clears.
      */
     public void clearStorage() {
         if (mWebsites == null) {
             return;
         }
+        RecordUserAction.record("MobileSettingsStorageClearAll");
+
         // The goal is to refresh the info for origins again after we've cleared all of them, so we
         // wait until the last website is cleared to refresh the origin list.
         final int[] numLeft = new int[1];

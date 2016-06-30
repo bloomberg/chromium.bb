@@ -369,6 +369,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Android.ManageSpace.ActionTaken"
+    enum="AndroidManageSpaceButton">
+  <owner>dmurph@chromium.org</owner>
+  <summary>
+    Recorded when the user presses a button in the 'Manage Space' screen for
+    Chrome. Note: the 'Clear App Data' option is likely incorrect, as the result
+    of that button disables UMA recording (as we factory reset the app).
+  </summary>
+</histogram>
+
 <histogram name="Android.ModerateBindingCount" units="bindings">
   <owner>jaekyun@chromium.org</owner>
   <summary>
@@ -17662,6 +17672,46 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     Whether a notice about other forms of browsing history was shown in the
     footer of the Clear Browsing Data dialog. This is recorded every time the
     dialog is opened.
+  </summary>
+</histogram>
+
+<histogram name="History.ClearBrowsingData.ImportantDeselectedNum">
+  <owner>dmurph@chromium.org</owner>
+  <summary>
+    Recorded when the user presses the 'clear' button when presented with the
+    list of important sites they might want to exclude from clearing browsing
+    data. We record the number of sites the user deselected, or protected, from
+    clearing. The default has all sites selected.
+  </summary>
+</histogram>
+
+<histogram name="History.ClearBrowsingData.ImportantDeselectedPercent"
+    units="%/5">
+  <owner>dmurph@chromium.org</owner>
+  <summary>
+    Recorded when the user presses the 'clear' button when presented with the
+    list of important sites they might want to exclude from clearing browsing
+    data. We record the percent of sites the user deselected, or protected, from
+    clearing. The default has all sites selected, which is 0%. Note: To reduce
+    the number of empty buckets, the percent is divided by 5.
+  </summary>
+</histogram>
+
+<histogram name="History.ClearBrowsingData.ImportantDialogShown"
+    enum="BooleanShown">
+  <owner>dmurph@chromium.org</owner>
+  <summary>
+    Recorded when the user presses the 'clear' button in the clear browsing
+    dialog. We record 'true' if the important sites dialog is shown.
+  </summary>
+</histogram>
+
+<histogram name="History.ClearBrowsingData.NumImportant">
+  <owner>dmurph@chromium.org</owner>
+  <summary>
+    Recorded when we successfuly fetched important sites in the clear browsing
+    data screen. This is the number of sites that we think are important to the
+    user.
   </summary>
 </histogram>
 
@@ -65315,6 +65365,12 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="262144" label="4.0"/>
   <int value="262145" label="4.1"/>
   <int value="262154" label="4.10"/>
+</enum>
+
+<enum name="AndroidManageSpaceButton" type="int">
+  <int value="0" label="Clear Unimportant Storage"/>
+  <int value="1" label="Manage Site Storage"/>
+  <int value="2" label="Clear App Data"/>
 </enum>
 
 <enum name="AndroidMemoryNotificationBackground" type="int">

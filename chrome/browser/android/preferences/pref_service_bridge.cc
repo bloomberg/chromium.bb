@@ -71,6 +71,7 @@ using base::android::ScopedJavaGlobalRef;
 using content::BrowserThread;
 
 namespace {
+
 const size_t kMaxImportantSites = 5;
 
 Profile* GetOriginalProfile() {
@@ -683,6 +684,7 @@ static void FetchImportantSites(JNIEnv* env,
       env, java_callback.obj(), java_domains.obj(), java_origins.obj());
 }
 
+// This value should not change during a sessions, as it's used for UMA metrics.
 static jint GetMaxImportantSites(JNIEnv* env,
                                  const JavaParamRef<jclass>& clazz) {
   return kMaxImportantSites;

@@ -15,6 +15,7 @@ import android.widget.ListView;
 
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordHistogram;
+import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.BrowsingDataType;
 import org.chromium.chrome.browser.ChromeFeatureList;
@@ -146,6 +147,8 @@ public class ClearBrowsingDataPreferences extends PreferenceFragment
      */
     private static final int IMPORTANT_SITES_DIALOG_CODE = 1;
 
+    private static final int IMPORTANT_SITES_PERCENTAGE_BUCKET_COUNT = 20;
+
     /**
      * The various data types that can be cleared via this screen.
      */
@@ -213,6 +216,8 @@ public class ClearBrowsingDataPreferences extends PreferenceFragment
     private ProgressDialog mProgressDialog;
     private Item[] mItems;
 
+    // This is a constant on the C++ side.
+    private int mMaxImportantSites;
     // This is the sorted list of important registerable domains. If null, then we haven't finished
     // fetching them yet.
     private String[] mSortedImportantDomains;
@@ -344,11 +349,17 @@ public class ClearBrowsingDataPreferences extends PreferenceFragment
      * </ol>
      */
     private boolean shouldShowImportantSitesDialog() {
-        if (mSortedImportantDomains == null || mSortedImportantDomains.length == 0) return false;
+        if (!ChromeFeatureList.isEnabled(ChromeFeatureList.IMPORTANT_SITES_IN_CBD)) return false;
         EnumSet<DialogOption> selectedOptions = getSelectedOptions();
-        return ChromeFeatureList.isEnabled(ChromeFeatureList.IMPORTANT_SITES_IN_CBD)
-                && (selectedOptions.contains(DialogOption.CLEAR_CACHE)
-                           || selectedOptions.contains(DialogOption.CLEAR_COOKIES_AND_SITE_DATA));
+        if (!selectedOptions.contains(DialogOption.CLEAR_CACHE)
+                && !selectedOptions.contains(DialogOption.CLEAR_COOKIES_AND_SITE_DATA)) {
+            return false;
+        }
+        boolean haveImportantSites =
+                mSortedImportantDomains != null && mSortedImportantDomains.length != 0;
+        RecordHistogram.recordBooleanHistogram(
+                "History.ClearBrowsingData.ImportantDialogShown", haveImportantSites);
+        return haveImportantSites;
     }
 
     @Override
@@ -395,6 +406,8 @@ public class ClearBrowsingDataPreferences extends PreferenceFragment
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        RecordUserAction.record("ClearBrowsingData_DialogCreated");
+        mMaxImportantSites = PrefServiceBridge.getMaxImportantSites();
         PrefServiceBridge.getInstance().requestInfoAboutOtherFormsOfBrowsingHistory(this);
         getActivity().setTitle(R.string.clear_browsing_data_title);
         addPreferencesFromResource(R.xml.clear_browsing_data_preferences);
@@ -565,6 +578,10 @@ public class ClearBrowsingDataPreferences extends PreferenceFragment
 
     @Override
     public void onImportantRegisterableDomainsReady(String[] domains, String[] exampleOrigins) {
+        if (domains == null) return;
+        // mMaxImportantSites is a constant on the C++ side.
+        RecordHistogram.recordCustomCountHistogram("History.ClearBrowsingData.NumImportant",
+                domains.length, 0, mMaxImportantSites + 1, mMaxImportantSites + 1);
         mSortedImportantDomains = Arrays.copyOf(domains, domains.length);
         mSortedExampleOrigins = Arrays.copyOf(exampleOrigins, exampleOrigins.length);
     }
@@ -579,6 +596,20 @@ public class ClearBrowsingDataPreferences extends PreferenceFragment
             // Deselected means that the user is excluding the domain from being cleared.
             String[] deselectedDomains = data.getStringArrayExtra(
                     ConfirmImportantSitesDialogFragment.DESELECTED_DOMAINS_TAG);
+            if (deselectedDomains != null && mSortedImportantDomains != null) {
+                // mMaxImportantSites is a constant on the C++ side.
+                RecordHistogram.recordCustomCountHistogram(
+                        "History.ClearBrowsingData.ImportantDeselectedNum",
+                        deselectedDomains.length, 0, mMaxImportantSites + 1,
+                        mMaxImportantSites + 1);
+                // We put our max at 20 instead of 100 to reduce the number of empty buckets (as
+                // our maximum denominator is 5).
+                RecordHistogram.recordEnumeratedHistogram(
+                        "History.ClearBrowsingData.ImportantDeselectedPercent",
+                        deselectedDomains.length * IMPORTANT_SITES_PERCENTAGE_BUCKET_COUNT
+                                / mSortedImportantDomains.length,
+                        IMPORTANT_SITES_PERCENTAGE_BUCKET_COUNT + 1);
+            }
             clearBrowsingData(getSelectedOptions(), deselectedDomains);
         }
     }
