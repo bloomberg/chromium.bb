@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/common/session/session_state_delegate.h"
 #include "ash/common/system/system_notifier.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
+#include "ash/test/ash_test_helper.h"
 #include "ash/test/test_session_state_delegate.h"
 #include "ash/test/test_shell_delegate.h"
 #include "base/macros.h"
@@ -47,10 +47,7 @@ class MultiUserNotificationBlockerChromeOSTest
     shell_delegate->set_multi_profiles_enabled(true);
     chrome::MultiUserWindowManager::CreateInstance();
 
-    ash::test::TestSessionStateDelegate* session_state_delegate =
-        static_cast<ash::test::TestSessionStateDelegate*>(
-            ash::Shell::GetInstance()->session_state_delegate());
-    session_state_delegate->AddUser(
+    ash::test::AshTestHelper::GetTestSessionStateDelegate()->AddUser(
         AccountId::FromUserEmail("test2@example.com"));
 
     chromeos::WallpaperManager::Initialize();
@@ -82,8 +79,7 @@ class MultiUserNotificationBlockerChromeOSTest
   }
 
   const std::string GetDefaultUserId() {
-    return ash::Shell::GetInstance()
-        ->session_state_delegate()
+    return ash::test::AshTestHelper::GetTestSessionStateDelegate()
         ->GetUserInfo(0)
         ->GetAccountId()
         .GetUserEmail();
@@ -99,8 +95,8 @@ class MultiUserNotificationBlockerChromeOSTest
 
   void SwitchActiveUser(const std::string& name) {
     const AccountId account_id(AccountId::FromUserEmail(name));
-    ash::Shell::GetInstance()->session_state_delegate()->SwitchActiveUser(
-        account_id);
+    ash::test::AshTestHelper::GetTestSessionStateDelegate()
+        ->SwitchActiveUser(account_id);
     if (chrome::MultiUserWindowManager::GetMultiProfileMode() ==
         chrome::MultiUserWindowManager::MULTI_PROFILE_MODE_SEPARATED) {
       static_cast<chrome::MultiUserWindowManagerChromeOS*>(

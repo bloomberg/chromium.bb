@@ -77,8 +77,7 @@ void PowerEventObserver::BrightnessChanged(int level, bool user_initiated) {
 }
 
 void PowerEventObserver::SuspendImminent() {
-  Shell* shell = Shell::GetInstance();
-  SessionStateDelegate* delegate = shell->session_state_delegate();
+  SessionStateDelegate* delegate = WmShell::Get()->GetSessionStateDelegate();
 
   // This class is responsible for disabling all rendering requests at suspend
   // time and then enabling them at resume time.  When the
@@ -120,7 +119,7 @@ void PowerEventObserver::SuspendImminent() {
   }
 
   ui::UserActivityDetector::Get()->OnDisplayPowerChanging();
-  shell->display_configurator()->SuspendDisplays(base::Bind(
+  Shell::GetInstance()->display_configurator()->SuspendDisplays(base::Bind(
       &OnSuspendDisplaysCompleted, chromeos::DBusThreadManager::Get()
                                        ->GetPowerManagerClient()
                                        ->GetSuspendReadinessCallback()));

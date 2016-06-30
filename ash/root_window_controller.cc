@@ -297,7 +297,7 @@ class WorkspaceLayoutManagerDelegateImpl
   }
   void OnFullscreenStateChanged(bool is_fullscreen) override {
     if (shelf_) {
-      ash::Shell::GetInstance()->NotifyFullscreenStateChange(
+      Shell::GetInstance()->NotifyFullscreenStateChange(
           is_fullscreen, WmWindowAura::Get(root_window_));
     }
   }
@@ -421,7 +421,7 @@ bool RootWindowController::CanWindowReceiveEvents(aura::Window* window) {
   aura::Window* blocking_container = nullptr;
 
   int modal_container_id = 0;
-  if (Shell::GetInstance()->session_state_delegate()->IsUserSessionBlocked()) {
+  if (WmShell::Get()->GetSessionStateDelegate()->IsUserSessionBlocked()) {
     blocking_container =
         GetContainer(kShellWindowId_LockScreenContainersContainer);
     modal_container_id = kShellWindowId_LockSystemModalContainer;
@@ -467,7 +467,7 @@ RootWindowController::GetSystemModalLayoutManager(aura::Window* window) {
     }
   } else {
     int modal_window_id =
-        Shell::GetInstance()->session_state_delegate()->IsUserSessionBlocked()
+        WmShell::Get()->GetSessionStateDelegate()->IsUserSessionBlocked()
             ? kShellWindowId_LockSystemModalContainer
             : kShellWindowId_SystemModalContainer;
     modal_container = GetContainer(modal_window_id);
@@ -798,7 +798,7 @@ void RootWindowController::Init(RootWindowType root_window_type,
     ash_host_->AsWindowTreeHost()->Show();
 
     // Create a shelf if a user is already logged in.
-    if (shell->session_state_delegate()->NumberOfLoggedInUsers())
+    if (WmShell::Get()->GetSessionStateDelegate()->NumberOfLoggedInUsers())
       CreateShelf();
 
     // Notify shell observers about new root window.
@@ -860,8 +860,8 @@ void RootWindowController::InitLayoutManagers() {
   workspace_layout_manager_delegate->set_shelf(
       shelf_widget_->shelf_layout_manager());
 
-  if (!Shell::GetInstance()
-           ->session_state_delegate()
+  if (!WmShell::Get()
+           ->GetSessionStateDelegate()
            ->IsActiveUserSessionStarted()) {
     // This window exists only to be a event target on login screen.
     // It does not have to handle events, nor be visible.

@@ -148,7 +148,7 @@ class ShelfDragCallback {
   virtual ~ShelfDragCallback() {}
 
   void ProcessScroll(ui::EventType type, const gfx::Vector2dF& delta) {
-    if (GetShelfLayoutManager()->visibility_state() == ash::SHELF_HIDDEN)
+    if (GetShelfLayoutManager()->visibility_state() == SHELF_HIDDEN)
       return;
 
     if (type == ui::ET_GESTURE_SCROLL_BEGIN) {
@@ -318,7 +318,7 @@ class TestItem : public SystemTrayItem {
 
 }  // namespace
 
-class ShelfLayoutManagerTest : public ash::test::AshTestBase {
+class ShelfLayoutManagerTest : public test::AshTestBase {
  public:
   ShelfLayoutManagerTest() {}
 
@@ -371,14 +371,14 @@ class ShelfLayoutManagerTest : public ash::test::AshTestBase {
 
   // Turn on the lock screen.
   void LockScreen() {
-    Shell::GetInstance()->session_state_delegate()->LockScreen();
+    WmShell::Get()->GetSessionStateDelegate()->LockScreen();
     // The test session state delegate does not fire the lock state change.
     Shell::GetInstance()->OnLockStateChanged(true);
   }
 
   // Turn off the lock screen.
   void UnlockScreen() {
-    Shell::GetInstance()->session_state_delegate()->UnlockScreen();
+    WmShell::Get()->GetSessionStateDelegate()->UnlockScreen();
     // The test session state delegate does not fire the lock state change.
     Shell::GetInstance()->OnLockStateChanged(false);
   }
@@ -797,7 +797,7 @@ TEST_F(ShelfLayoutManagerTest, MAYBE_AutoHide) {
 
   Shelf* shelf = GetShelf();
   ShelfLayoutManager* layout_manager = GetShelfLayoutManager();
-  shelf->SetAutoHideBehavior(ash::SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
+  shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
   views::Widget* widget = new views::Widget;
   views::Widget::InitParams params(views::Widget::InitParams::TYPE_WINDOW);
   params.bounds = gfx::Rect(0, 0, 200, 200);
@@ -881,7 +881,7 @@ TEST_F(ShelfLayoutManagerTest, AutoHideShelfOnScreenBoundary) {
   ASSERT_EQ(root_windows[0],
             GetShelfWidget()->GetNativeWindow()->GetRootWindow());
 
-  shelf->SetAutoHideBehavior(ash::SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
+  shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
   EXPECT_EQ(SHELF_AUTO_HIDE, shelf->GetVisibilityState());
 
   int right_edge = root_windows[0]->GetBoundsInScreen().right() - 1;
@@ -967,7 +967,7 @@ TEST_F(ShelfLayoutManagerTest, VisibleWhenLockScreenShowing) {
 
   Shelf* shelf = GetShelf();
   ShelfLayoutManager* layout_manager = GetShelfLayoutManager();
-  shelf->SetAutoHideBehavior(ash::SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
+  shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
   views::Widget* widget = new views::Widget;
   views::Widget::InitParams params(views::Widget::InitParams::TYPE_WINDOW);
   params.bounds = gfx::Rect(0, 0, 200, 200);

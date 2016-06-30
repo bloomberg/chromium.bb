@@ -20,7 +20,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "ash/common/session/session_state_delegate.h"
-#include "ash/shell.h"
+#include "ash/common/wm_shell.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -160,7 +160,7 @@ void SystemMenuModelBuilder::AppendTeleportMenu(ui::SimpleMenuModel* model) {
 
   // To show the menu we need at least two logged in users.
   ash::SessionStateDelegate* delegate =
-      ash::Shell::GetInstance()->session_state_delegate();
+      ash::WmShell::Get()->GetSessionStateDelegate();
   int logged_in_users = delegate->NumberOfLoggedInUsers();
   if (logged_in_users <= 1)
     return;

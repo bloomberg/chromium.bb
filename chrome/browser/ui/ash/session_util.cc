@@ -5,8 +5,8 @@
 #include "chrome/browser/ui/ash/session_util.h"
 
 #include "ash/common/session/session_state_delegate.h"
+#include "ash/common/wm_shell.h"
 #include "ash/content/shell_content_state.h"
-#include "ash/shell.h"
 #include "build/build_config.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
@@ -27,7 +27,7 @@ bool CanShowWindowForUser(
     aura::Window* window,
     const GetActiveBrowserContextCallback& get_context_callback) {
   ash::SessionStateDelegate* delegate =
-      ash::Shell::GetInstance()->session_state_delegate();
+      ash::WmShell::Get()->GetSessionStateDelegate();
   if (delegate->NumberOfLoggedInUsers() > 1) {
     content::BrowserContext* active_browser_context =
         get_context_callback.Run();

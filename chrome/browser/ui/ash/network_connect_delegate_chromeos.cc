@@ -18,23 +18,22 @@
 namespace {
 
 bool IsUIAvailable() {
-  return ash::Shell::GetInstance() &&
-         !ash::Shell::GetInstance()->session_state_delegate()->IsScreenLocked();
+  return ash::WmShell::HasInstance() &&
+         !ash::WmShell::Get()->GetSessionStateDelegate()->IsScreenLocked();
 }
 
 gfx::NativeWindow GetNativeWindow() {
-  bool session_started = ash::Shell::GetInstance()
-                             ->session_state_delegate()
-                             ->IsActiveUserSessionStarted();
-  ash::LoginStatus login_status =
-      ash::WmShell::Get()->system_tray_delegate()->GetUserLoginStatus();
-  bool isUserAddingRunning = ash::Shell::GetInstance()
-                                 ->session_state_delegate()
-                                 ->IsInSecondaryLoginScreen();
+  ash::WmShell* wm_shell = ash::WmShell::Get();
+  const bool session_started =
+      wm_shell->GetSessionStateDelegate()->IsActiveUserSessionStarted();
+  const ash::LoginStatus login_status =
+      wm_shell->system_tray_delegate()->GetUserLoginStatus();
+  const bool is_in_secondary_login_screen =
+      wm_shell->GetSessionStateDelegate()->IsInSecondaryLoginScreen();
 
   int container_id =
       (!session_started || login_status == ash::LoginStatus::NOT_LOGGED_IN ||
-       login_status == ash::LoginStatus::LOCKED || isUserAddingRunning)
+       login_status == ash::LoginStatus::LOCKED || is_in_secondary_login_screen)
           ? ash::kShellWindowId_LockSystemModalContainer
           : ash::kShellWindowId_SystemModalContainer;
   return ash::Shell::GetContainer(ash::Shell::GetPrimaryRootWindow(),

@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "ash/common/session/session_state_delegate.h"
+#include "ash/common/wm_shell.h"
 #include "ash/shell.h"
 #include "ash/shell/example_factory.h"
 #include "ash/shell/toplevel_window.h"
@@ -112,7 +113,7 @@ class WindowTypeShelfItem : public app_list::AppListItem {
         break;
       }
       case LOCK_SCREEN: {
-        Shell::GetInstance()->session_state_delegate()->LockScreen();
+        WmShell::Get()->GetSessionStateDelegate()->LockScreen();
         break;
       }
       case WIDGETS_WINDOW: {
@@ -304,7 +305,7 @@ class ExampleAppListViewDelegate : public app_list::AppListViewDelegate {
   }
 
   void Dismiss() override {
-    DCHECK(ash::Shell::HasInstance());
+    DCHECK(Shell::HasInstance());
     Shell::GetInstance()->DismissAppList();
   }
 

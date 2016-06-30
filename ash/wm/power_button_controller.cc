@@ -7,6 +7,7 @@
 #include "ash/common/ash_switches.h"
 #include "ash/common/session/session_state_delegate.h"
 #include "ash/common/shell_window_ids.h"
+#include "ash/common/wm_shell.h"
 #include "ash/shell.h"
 #include "ash/wm/lock_state_controller.h"
 #include "ash/wm/maximize_mode/maximize_mode_controller.h"
@@ -71,12 +72,12 @@ void PowerButtonController::OnPowerButtonEvent(
           ->maximize_mode_controller()
           ->IsMaximizeModeWindowManagerEnabled()) {
     Shell::GetInstance()->accelerator_controller()->PerformActionIfEnabled(
-        ash::TAKE_SCREENSHOT);
+        TAKE_SCREENSHOT);
     return;
   }
 
   const SessionStateDelegate* session_state_delegate =
-      Shell::GetInstance()->session_state_delegate();
+      WmShell::Get()->GetSessionStateDelegate();
   if (has_legacy_power_button_) {
     // If power button releases won't get reported correctly because we're not
     // running on official hardware, just lock the screen or shut down
@@ -123,7 +124,7 @@ void PowerButtonController::OnLockButtonEvent(
   lock_button_down_ = down;
 
   const SessionStateDelegate* session_state_delegate =
-      Shell::GetInstance()->session_state_delegate();
+      WmShell::Get()->GetSessionStateDelegate();
   if (!session_state_delegate->CanLockScreen() ||
       session_state_delegate->IsScreenLocked() ||
       controller_->LockRequested() || controller_->ShutdownRequested()) {

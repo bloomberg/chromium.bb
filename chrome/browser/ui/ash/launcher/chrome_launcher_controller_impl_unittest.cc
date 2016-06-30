@@ -19,6 +19,7 @@
 #include "ash/common/shelf/shelf_model.h"
 #include "ash/common/shelf/shelf_model_observer.h"
 #include "ash/shell.h"
+#include "ash/test/ash_test_helper.h"
 #include "ash/test/shelf_item_delegate_manager_test_api.h"
 #include "ash/test/test_session_state_delegate.h"
 #include "ash/test/test_shell_delegate.h"
@@ -1034,7 +1035,8 @@ class MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerImplTest
     ChromeLauncherControllerImplTest::SetUp();
 
     // Get some base objects.
-    session_delegate()->set_logged_in_users(2);
+    ash::test::AshTestHelper::GetTestSessionStateDelegate()
+        ->set_logged_in_users(2);
     shell_delegate_ = static_cast<ash::test::TestShellDelegate*>(
         ash::Shell::GetInstance()->delegate());
     shell_delegate_->set_multi_profiles_enabled(true);
@@ -1060,11 +1062,11 @@ class MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerImplTest
   TestingProfile* CreateMultiUserProfile(const std::string& user_name) {
     const std::string email_string = user_name + "@example.com";
     const AccountId account_id(AccountId::FromUserEmail(email_string));
-    static_cast<ash::test::TestSessionStateDelegate*>(
-        ash::Shell::GetInstance()->session_state_delegate())
-        ->AddUser(account_id);
+    ash::test::AshTestHelper::GetTestSessionStateDelegate()->AddUser(
+        account_id);
     // Add a user to the fake user manager.
-    session_delegate()->AddUser(account_id);
+    ash::test::AshTestHelper::GetTestSessionStateDelegate()->AddUser(
+        account_id);
     GetFakeUserManager()->AddUser(account_id);
 
     GetFakeUserManager()->LoginUser(account_id);
@@ -1084,7 +1086,8 @@ class MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerImplTest
 
   // Switch to another user.
   void SwitchActiveUser(const AccountId& account_id) {
-    session_delegate()->SwitchActiveUser(account_id);
+    ash::test::AshTestHelper::GetTestSessionStateDelegate()->SwitchActiveUser(
+        account_id);
     GetFakeUserManager()->SwitchActiveUser(account_id);
     chrome::MultiUserWindowManagerChromeOS* manager =
         static_cast<chrome::MultiUserWindowManagerChromeOS*>(
@@ -1134,10 +1137,6 @@ class MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerImplTest
     return v1_app;
   }
 
-  ash::test::TestSessionStateDelegate* session_delegate() {
-    return static_cast<ash::test::TestSessionStateDelegate*>(
-        ash::Shell::GetInstance()->session_state_delegate());
-  }
   ash::test::TestShellDelegate* shell_delegate() { return shell_delegate_; }
 
   // Override BrowserWithTestWindowTest:

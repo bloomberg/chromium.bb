@@ -6,6 +6,7 @@
 
 #include "ash/common/session/session_state_delegate.h"
 #include "ash/common/shell_window_ids.h"
+#include "ash/common/wm_shell.h"
 #include "ash/shell.h"
 #include "ui/aura/window.h"
 #include "ui/keyboard/keyboard_util.h"
@@ -22,7 +23,7 @@ bool EventClientImpl::CanProcessEventsWithinSubtree(
   // remove this.
   const aura::Window* root_window = window ? window->GetRootWindow() : NULL;
   if (!root_window ||
-      !Shell::GetInstance()->session_state_delegate()->IsUserSessionBlocked()) {
+      !WmShell::Get()->GetSessionStateDelegate()->IsUserSessionBlocked()) {
     return true;
   }
 

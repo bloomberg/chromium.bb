@@ -137,7 +137,7 @@ void AshTestBase::SetUp() {
   // Move the mouse cursor to far away so that native events doesn't
   // interfere test expectations.
   Shell::GetPrimaryRootWindow()->MoveCursorTo(gfx::Point(-1000, -1000));
-  ash::Shell::GetInstance()->cursor_manager()->EnableMouseEvents();
+  Shell::GetInstance()->cursor_manager()->EnableMouseEvents();
 
   // Changing GestureConfiguration shouldn't make tests fail. These values
   // prevent unexpected events from being generated during tests. Such as
@@ -149,8 +149,8 @@ void AshTestBase::SetUp() {
   gesture_config->set_max_touch_move_in_pixels_for_click(5);
 
 #if defined(OS_WIN)
-  if (!command_line->HasSwitch(ash::switches::kForceAshToDesktop))
-    ash::WindowPositioner::SetMaximizeFirstWindow(true);
+  if (!command_line->HasSwitch(switches::kForceAshToDesktop))
+    WindowPositioner::SetMaximizeFirstWindow(true);
 #endif
 }
 
@@ -263,7 +263,7 @@ aura::Window* AshTestBase::CreateTestWindowInShellWithDelegateAndType(
   } else {
     display::Display display =
         display::Screen::GetScreen()->GetDisplayMatching(bounds);
-    aura::Window* root = ash::Shell::GetInstance()
+    aura::Window* root = Shell::GetInstance()
                              ->window_tree_host_manager()
                              ->GetRootWindowForDisplayId(display.id());
     gfx::Point origin = bounds.origin();
@@ -329,7 +329,7 @@ void AshTestBase::BlockUserSession(UserSessionBlockReason block_reason) {
     case BLOCKED_BY_LOCK_SCREEN:
       SetSessionStarted(true);
       SetUserAddingScreenRunning(false);
-      Shell::GetInstance()->session_state_delegate()->LockScreen();
+      WmShell::Get()->GetSessionStateDelegate()->LockScreen();
       Shell::GetInstance()->OnLockStateChanged(true);
       break;
     case BLOCKED_BY_LOGIN_SCREEN:
@@ -347,7 +347,7 @@ void AshTestBase::BlockUserSession(UserSessionBlockReason block_reason) {
 }
 
 void AshTestBase::UnblockUserSession() {
-  Shell::GetInstance()->session_state_delegate()->UnlockScreen();
+  WmShell::Get()->GetSessionStateDelegate()->UnlockScreen();
   SetSessionStarted(true);
   SetUserAddingScreenRunning(false);
 }

@@ -33,7 +33,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "ash/common/session/session_state_delegate.h"
-#include "ash/shell.h"
+#include "ash/common/wm_shell.h"
 #include "ui/native_theme/native_theme_dark_aura.h"
 #endif
 
@@ -255,7 +255,7 @@ void BrowserFrame::ShowContextMenuForView(views::View* source,
 ui::MenuModel* BrowserFrame::GetSystemMenuModel() {
 #if defined(OS_CHROMEOS)
   ash::SessionStateDelegate* delegate =
-      ash::Shell::GetInstance()->session_state_delegate();
+      ash::WmShell::Get()->GetSessionStateDelegate();
   if (delegate && delegate->NumberOfLoggedInUsers() > 1) {
     // In Multi user mode, the number of users as well as the order of users
     // can change. Coming here we have more then one user and since the menu

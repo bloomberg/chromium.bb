@@ -224,7 +224,7 @@ ShelfLayoutManager::ShelfLayoutManager(ShelfWidget* shelf_widget)
   }
   Shell::GetInstance()->lock_state_controller()->AddObserver(this);
   aura::client::GetActivationClient(root_window_)->AddObserver(this);
-  Shell::GetInstance()->session_state_delegate()->AddSessionStateObserver(this);
+  WmShell::Get()->GetSessionStateDelegate()->AddSessionStateObserver(this);
 }
 
 ShelfLayoutManager::~ShelfLayoutManager() {
@@ -235,7 +235,7 @@ ShelfLayoutManager::~ShelfLayoutManager() {
                     WillDeleteShelfLayoutManager());
   WmShell::Get()->RemoveShellObserver(this);
   Shell::GetInstance()->lock_state_controller()->RemoveObserver(this);
-  Shell::GetInstance()->session_state_delegate()->RemoveSessionStateObserver(
+  WmShell::Get()->GetSessionStateDelegate()->RemoveSessionStateObserver(
       this);
   if (root_window_controller_observer_) {
     WmWindowAura::Get(root_window_)
@@ -574,13 +574,10 @@ void ShelfLayoutManager::OnKeyboardBoundsChanging(const gfx::Rect& new_bounds) {
   keyboard_bounds_ = new_bounds;
   OnWindowResized();
 
-  SessionStateDelegate* session_state_delegate =
-      Shell::GetInstance()->session_state_delegate();
-
   // On login screen if keyboard has been just hidden, update bounds just once
   // but ignore target_bounds.work_area_insets since shelf overlaps with login
   // window.
-  if (session_state_delegate->IsUserSessionBlocked() &&
+  if (WmShell::Get()->GetSessionStateDelegate()->IsUserSessionBlocked() &&
       keyboard_is_about_to_hide) {
     Shell::GetInstance()->SetDisplayWorkAreaInsets(root_window_, gfx::Insets());
   }

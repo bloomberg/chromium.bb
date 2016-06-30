@@ -15,7 +15,7 @@ namespace ash {
 ShelfLockingManager::ShelfLockingManager(Shelf* shelf) : shelf_(shelf) {
   Shell* shell = Shell::GetInstance();
   shell->lock_state_controller()->AddObserver(this);
-  SessionStateDelegate* delegate = shell->session_state_delegate();
+  SessionStateDelegate* delegate = WmShell::Get()->GetSessionStateDelegate();
   session_locked_ =
       delegate->GetSessionState() != SessionStateDelegate::SESSION_STATE_ACTIVE;
   screen_locked_ = delegate->IsScreenLocked();
@@ -24,9 +24,8 @@ ShelfLockingManager::ShelfLockingManager(Shelf* shelf) : shelf_(shelf) {
 }
 
 ShelfLockingManager::~ShelfLockingManager() {
-  Shell* shell = Shell::GetInstance();
-  shell->lock_state_controller()->RemoveObserver(this);
-  shell->session_state_delegate()->RemoveSessionStateObserver(this);
+  Shell::GetInstance()->lock_state_controller()->RemoveObserver(this);
+  WmShell::Get()->GetSessionStateDelegate()->RemoveSessionStateObserver(this);
   WmShell::Get()->RemoveShellObserver(this);
 }
 

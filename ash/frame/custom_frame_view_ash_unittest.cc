@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "ash/common/ash_layout_constants.h"
+#include "ash/common/wm_shell.h"
 #include "ash/frame/caption_buttons/frame_caption_button.h"
 #include "ash/frame/caption_buttons/frame_caption_button_container_view.h"
 #include "ash/shell.h"
@@ -109,8 +110,8 @@ class CustomFrameViewAshTest : public test::AshTestBase {
   }
 
   test::TestSessionStateDelegate* GetTestSessionStateDelegate() {
-    return static_cast<ash::test::TestSessionStateDelegate*>(
-        Shell::GetInstance()->session_state_delegate());
+    return static_cast<test::TestSessionStateDelegate*>(
+        WmShell::Get()->GetSessionStateDelegate());
   }
 
  private:

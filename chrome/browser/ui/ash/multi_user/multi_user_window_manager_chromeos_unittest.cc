@@ -201,7 +201,7 @@ class MultiUserWindowManagerChromeOSTest : public AshTestBase {
   void MakeWindowSystemModal(aura::Window* window) {
     aura::Window* system_modal_container =
         window->GetRootWindow()->GetChildById(
-            ash::kShellWindowId_SystemModalContainer);
+            kShellWindowId_SystemModalContainer);
     system_modal_container->AddChild(window);
   }
 
@@ -243,14 +243,14 @@ class MultiUserWindowManagerChromeOSTest : public AshTestBase {
   }
 
   // Create a maximize mode window manager.
-  ash::MaximizeModeWindowManager* CreateMaximizeModeWindowManager() {
+  MaximizeModeWindowManager* CreateMaximizeModeWindowManager() {
     EXPECT_FALSE(maximize_mode_window_manager());
     Shell::GetInstance()->maximize_mode_controller()->
         EnableMaximizeModeWindowManager(true);
     return maximize_mode_window_manager();
   }
 
-  ash::MaximizeModeWindowManager* maximize_mode_window_manager() {
+  MaximizeModeWindowManager* maximize_mode_window_manager() {
     return Shell::GetInstance()->maximize_mode_controller()->
         maximize_mode_window_manager_.get();
   }
@@ -281,8 +281,7 @@ void MultiUserWindowManagerChromeOSTest::SetUp() {
   ash_test_helper()->set_test_shell_delegate(new TestShellDelegateChromeOS);
   ash_test_helper()->set_content_state(new ::TestShellContentState);
   AshTestBase::SetUp();
-  session_state_delegate_ = static_cast<TestSessionStateDelegate*>(
-      ash::Shell::GetInstance()->session_state_delegate());
+  session_state_delegate_ = AshTestHelper::GetTestSessionStateDelegate();
   profile_manager_.reset(
       new TestingProfileManager(TestingBrowserProcess::GetGlobal()));
   ASSERT_TRUE(profile_manager_.get()->SetUp());
@@ -841,7 +840,7 @@ TEST_F(MultiUserWindowManagerChromeOSTest, MaximizeModeInteraction) {
   EXPECT_FALSE(wm::GetWindowState(window(0))->IsMaximized());
   EXPECT_FALSE(wm::GetWindowState(window(1))->IsMaximized());
 
-  ash::MaximizeModeWindowManager* manager = CreateMaximizeModeWindowManager();
+  MaximizeModeWindowManager* manager = CreateMaximizeModeWindowManager();
   ASSERT_TRUE(manager);
 
   EXPECT_TRUE(wm::GetWindowState(window(0))->IsMaximized());
@@ -1065,7 +1064,7 @@ TEST_F(MultiUserWindowManagerChromeOSTest, AnimationStepsScreenCoverage) {
   EXPECT_TRUE(CoversScreen(window(1)));
   EXPECT_FALSE(CoversScreen(window(2)));
 
-  ash::wm::WMEvent event(ash::wm::WM_EVENT_FULLSCREEN);
+  wm::WMEvent event(wm::WM_EVENT_FULLSCREEN);
   wm::GetWindowState(window(2))->OnWMEvent(&event);
   EXPECT_TRUE(CoversScreen(window(2)));
 }
@@ -1305,7 +1304,7 @@ TEST_F(MultiUserWindowManagerChromeOSTest, TestBlackBarCover) {
   multi_user_window_manager()->SetAnimationSpeedForTest(
       chrome::MultiUserWindowManagerChromeOS::ANIMATION_SPEED_FAST);
   EXPECT_NE(SHELF_AUTO_HIDE_ALWAYS_HIDDEN, shelf->auto_hide_behavior());
-  ash::ShelfWidget* shelf_widget = shelf->shelf_widget();
+  ShelfWidget* shelf_widget = shelf->shelf_widget();
   EXPECT_FALSE(shelf_widget->IsShelfHiddenBehindBlackBar());
 
   // First test that with no maximized window we show/hide the shelf.
@@ -1497,8 +1496,8 @@ TEST_F(MultiUserWindowManagerChromeOSTest, WindowsOrderPreservedTests) {
   activation_client->ActivateWindow(window(0));
   EXPECT_EQ(wm::GetActiveWindow(), window(0));
 
-  aura::Window::Windows mru_list = ash::WmWindowAura::ToAuraWindows(
-      ash::Shell::GetInstance()->mru_window_tracker()->BuildMruWindowList());
+  aura::Window::Windows mru_list = WmWindowAura::ToAuraWindows(
+      Shell::GetInstance()->mru_window_tracker()->BuildMruWindowList());
   EXPECT_EQ(mru_list[0], window(0));
   EXPECT_EQ(mru_list[1], window(1));
   EXPECT_EQ(mru_list[2], window(2));
@@ -1513,8 +1512,8 @@ TEST_F(MultiUserWindowManagerChromeOSTest, WindowsOrderPreservedTests) {
   EXPECT_EQ("S[A], S[A], S[A]", GetStatus());
   EXPECT_EQ(wm::GetActiveWindow(), window(0));
 
-  mru_list = ash::WmWindowAura::ToAuraWindows(
-      ash::Shell::GetInstance()->mru_window_tracker()->BuildMruWindowList());
+  mru_list = WmWindowAura::ToAuraWindows(
+      Shell::GetInstance()->mru_window_tracker()->BuildMruWindowList());
   EXPECT_EQ(mru_list[0], window(0));
   EXPECT_EQ(mru_list[1], window(1));
   EXPECT_EQ(mru_list[2], window(2));

@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "ash/common/session/session_state_delegate.h"
+#include "ash/common/wm_shell.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/test_lock_state_controller_delegate.h"
@@ -33,7 +34,7 @@ namespace test {
 namespace {
 
 bool cursor_visible() {
-  return ash::Shell::GetInstance()->cursor_manager()->IsCursorVisible();
+  return Shell::GetInstance()->cursor_manager()->IsCursorVisible();
 }
 
 void CheckCalledCallback(bool* flag) {
@@ -67,10 +68,9 @@ class LockStateControllerTest : public AshTestBase {
     test_api_.reset(new LockStateController::TestApi(lock_state_controller_));
 
     power_button_controller_ = Shell::GetInstance()->power_button_controller();
-    session_state_delegate_ = Shell::GetInstance()->session_state_delegate();
 
-    shell_delegate_ = reinterpret_cast<TestShellDelegate*>(
-        ash::Shell::GetInstance()->delegate());
+    shell_delegate_ =
+        static_cast<TestShellDelegate*>(Shell::GetInstance()->delegate());
   }
 
  protected:
@@ -250,13 +250,13 @@ class LockStateControllerTest : public AshTestBase {
   void ExpectUnlockedState() {
     SCOPED_TRACE("Failure in ExpectUnlockedState");
     EXPECT_EQ(0u, test_animator_->GetAnimationCount());
-    EXPECT_FALSE(session_state_delegate_->IsScreenLocked());
+    EXPECT_FALSE(WmShell::Get()->GetSessionStateDelegate()->IsScreenLocked());
   }
 
   void ExpectLockedState() {
     SCOPED_TRACE("Failure in ExpectLockedState");
     EXPECT_EQ(0u, test_animator_->GetAnimationCount());
-    EXPECT_TRUE(session_state_delegate_->IsScreenLocked());
+    EXPECT_TRUE(WmShell::Get()->GetSessionStateDelegate()->IsScreenLocked());
   }
 
   void HideBackground() { test_animator_->HideBackground(); }
@@ -287,7 +287,7 @@ class LockStateControllerTest : public AshTestBase {
 
   void SystemLocks() {
     lock_state_controller_->OnLockStateChanged(true);
-    session_state_delegate_->LockScreen();
+    WmShell::Get()->GetSessionStateDelegate()->LockScreen();
   }
 
   void SuccessfulAuthentication(bool* call_flag) {
@@ -297,7 +297,7 @@ class LockStateControllerTest : public AshTestBase {
 
   void SystemUnlocks() {
     lock_state_controller_->OnLockStateChanged(false);
-    session_state_delegate_->UnlockScreen();
+    WmShell::Get()->GetSessionStateDelegate()->UnlockScreen();
   }
 
   void EnableMaximizeMode(bool enable) {
@@ -321,7 +321,6 @@ class LockStateControllerTest : public AshTestBase {
   TestLockStateControllerDelegate*
       lock_state_controller_delegate_;            // not owned
   TestSessionStateAnimator* test_animator_;       // not owned
-  SessionStateDelegate* session_state_delegate_;  // not owned
   std::unique_ptr<LockStateController::TestApi> test_api_;
   TestShellDelegate* shell_delegate_;  // not owned
 

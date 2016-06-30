@@ -205,14 +205,14 @@ TEST_F(WindowCycleControllerTest, HandleCycleWindow) {
   EXPECT_TRUE(wm::IsActiveWindow(window0.get()));
 
   // When the screen is locked, cycling window does not take effect.
-  Shell::GetInstance()->session_state_delegate()->LockScreen();
+  WmShell::Get()->GetSessionStateDelegate()->LockScreen();
   EXPECT_TRUE(wm::IsActiveWindow(window0.get()));
   controller->HandleCycleWindow(WindowCycleController::FORWARD);
   EXPECT_TRUE(wm::IsActiveWindow(window0.get()));
   controller->HandleCycleWindow(WindowCycleController::BACKWARD);
   EXPECT_TRUE(wm::IsActiveWindow(window0.get()));
 
-  Shell::GetInstance()->session_state_delegate()->UnlockScreen();
+  WmShell::Get()->GetSessionStateDelegate()->UnlockScreen();
   EXPECT_TRUE(wm::IsActiveWindow(window0.get()));
   controller->HandleCycleWindow(WindowCycleController::FORWARD);
   EXPECT_TRUE(wm::IsActiveWindow(window1.get()));
@@ -220,7 +220,7 @@ TEST_F(WindowCycleControllerTest, HandleCycleWindow) {
   EXPECT_TRUE(wm::IsActiveWindow(window2.get()));
 
   // When a modal window is active, cycling window does not take effect.
-  aura::Window* modal_container = ash::Shell::GetContainer(
+  aura::Window* modal_container = Shell::GetContainer(
       Shell::GetPrimaryRootWindow(), kShellWindowId_SystemModalContainer);
   std::unique_ptr<Window> modal_window(
       CreateTestWindowWithId(-2, modal_container));

@@ -74,7 +74,7 @@ void OverviewButtonTrayTest::SetUp() {
 
 void OverviewButtonTrayTest::NotifySessionStateChanged() {
   GetTray()->SessionStateChanged(
-      ash_test_helper()->GetTestSessionStateDelegate()->GetSessionState());
+      test::AshTestHelper::GetTestSessionStateDelegate()->GetSessionState());
 }
 
 // Ensures that creation doesn't cause any crashes and adds the image icon.

@@ -233,7 +233,7 @@ views::Widget* CreateDesktopBackground(aura::Window* root_window,
   // 4. From an empty background, guest user logged in.
   if (wallpaper_delegate->ShouldShowInitialAnimation() ||
       root_window_controller->animating_wallpaper_controller() ||
-      Shell::GetInstance()->session_state_delegate()->NumberOfLoggedInUsers()) {
+      WmShell::Get()->GetSessionStateDelegate()->NumberOfLoggedInUsers()) {
     ::wm::SetWindowVisibilityAnimationTransition(
         desktop_widget->GetNativeView(), ::wm::ANIMATE_SHOW);
     int duration_override = wallpaper_delegate->GetAnimationDurationOverride();

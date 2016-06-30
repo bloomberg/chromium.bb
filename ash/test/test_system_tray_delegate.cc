@@ -8,6 +8,7 @@
 
 #include "ash/common/login_status.h"
 #include "ash/common/session/session_state_delegate.h"
+#include "ash/common/wm_shell.h"
 #include "ash/shell.h"
 #include "base/message_loop/message_loop.h"
 #include "base/time/time.h"
@@ -63,8 +64,7 @@ LoginStatus TestSystemTrayDelegate::GetUserLoginStatus() const {
 
   // At new user image screen manager->IsUserLoggedIn() would return true
   // but there's no browser session available yet so use SessionStarted().
-  SessionStateDelegate* delegate =
-      Shell::GetInstance()->session_state_delegate();
+  SessionStateDelegate* delegate = WmShell::Get()->GetSessionStateDelegate();
 
   if (!delegate->IsActiveUserSessionStarted())
     return LoginStatus::NOT_LOGGED_IN;

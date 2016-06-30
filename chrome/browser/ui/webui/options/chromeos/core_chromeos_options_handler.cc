@@ -9,7 +9,7 @@
 #include <utility>
 
 #include "ash/common/session/session_state_delegate.h"
-#include "ash/shell.h"
+#include "ash/common/wm_shell.h"
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/macros.h"
@@ -296,7 +296,7 @@ base::Value* CoreChromeOSOptionsHandler::CreateValueForPref(
         user_prefs->FindPreference(prefs::kEnableAutoScreenLock);
 
     ash::SessionStateDelegate* delegate =
-        ash::Shell::GetInstance()->session_state_delegate();
+        ash::WmShell::Get()->GetSessionStateDelegate();
     if (pref && pref->IsUserModifiable() &&
         delegate->ShouldLockScreenBeforeSuspending()) {
       bool screen_lock = false;

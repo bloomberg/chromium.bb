@@ -8,6 +8,7 @@
 
 #include "ash/common/session/session_state_delegate.h"
 #include "ash/common/shell_window_ids.h"
+#include "ash/common/wm_shell.h"
 #include "ash/shell.h"
 #include "ash/wm/dim_window.h"
 #include "ash/wm/window_util.h"
@@ -56,7 +57,7 @@ void SystemModalContainerLayoutManager::OnWindowAddedToLayout(
          child->type() == ui::wm::WINDOW_TYPE_POPUP);
   DCHECK(
       container_->id() != kShellWindowId_LockSystemModalContainer ||
-      Shell::GetInstance()->session_state_delegate()->IsUserSessionBlocked());
+      WmShell::Get()->GetSessionStateDelegate()->IsUserSessionBlocked());
   // Since this is for SystemModal, there is no goodd reason to add
   // these window other than MODAL_TYPE_NONE or MODAL_TYPE_SYSTEM.
   // DCHECK to avoid simple mistake.

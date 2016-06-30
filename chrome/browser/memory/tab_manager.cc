@@ -54,8 +54,8 @@
 
 #if defined(OS_CHROMEOS)
 #include "ash/common/session/session_state_delegate.h"
+#include "ash/common/wm_shell.h"
 #include "ash/multi_profile_uma.h"
-#include "ash/shell.h"
 #include "chrome/browser/memory/tab_manager_delegate_chromeos.h"
 #endif
 
@@ -384,9 +384,9 @@ void TabManager::RecordDiscardStatistics() {
 #if defined(OS_CHROMEOS)
   // Record the discarded tab in relation to the amount of simultaneously
   // logged in users.
-  if (ash::Shell::HasInstance()) {
-    ash::MultiProfileUMA::RecordDiscardedTab(ash::Shell::GetInstance()
-                                                 ->session_state_delegate()
+  if (ash::WmShell::HasInstance()) {
+    ash::MultiProfileUMA::RecordDiscardedTab(ash::WmShell::Get()
+                                                 ->GetSessionStateDelegate()
                                                  ->NumberOfLoggedInUsers());
   }
 #endif

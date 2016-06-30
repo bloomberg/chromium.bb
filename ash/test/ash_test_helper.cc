@@ -8,6 +8,7 @@
 #include "ash/common/ash_switches.h"
 #include "ash/common/display/display_info.h"
 #include "ash/common/material_design/material_design_controller.h"
+#include "ash/common/wm_shell.h"
 #include "ash/shell.h"
 #include "ash/shell_init_params.h"
 #include "ash/test/ash_test_views_delegate.h"
@@ -130,7 +131,7 @@ void AshTestHelper::SetUp(bool start_session) {
   init_params.delegate = test_shell_delegate_;
   init_params.context_factory = context_factory;
   init_params.blocking_pool = content::BrowserThread::GetBlockingPool();
-  ash::Shell::CreateInstance(init_params);
+  Shell::CreateInstance(init_params);
   aura::test::EnvTestHelper(aura::Env::GetInstance())
       .SetInputStateLookup(std::unique_ptr<aura::InputStateLookup>());
 
@@ -193,9 +194,9 @@ void AshTestHelper::RunAllPendingInMessageLoop() {
 
 // static
 TestSessionStateDelegate* AshTestHelper::GetTestSessionStateDelegate() {
-  CHECK(Shell::HasInstance());
+  CHECK(WmShell::HasInstance());
   return static_cast<TestSessionStateDelegate*>(
-      Shell::GetInstance()->session_state_delegate());
+      WmShell::Get()->GetSessionStateDelegate());
 }
 
 aura::Window* AshTestHelper::CurrentContext() {

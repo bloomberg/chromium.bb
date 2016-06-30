@@ -9,6 +9,7 @@
 #include "ash/common/session/session_state_delegate.h"
 #include "ash/common/shell_window_ids.h"
 #include "ash/common/system/web_notification/web_notification_tray.h"
+#include "ash/common/wm_shell.h"
 #include "ash/content/shell_content_state.h"
 #include "ash/root_window_controller.h"
 #include "ash/shelf/shelf_widget.h"
@@ -291,7 +292,7 @@ void WindowTypeLauncher::ButtonPressed(views::Button* sender,
   } else if (sender == bubble_button_) {
     CreatePointyBubble(sender);
   } else if (sender == lock_button_) {
-    Shell::GetInstance()->session_state_delegate()->LockScreen();
+    WmShell::Get()->GetSessionStateDelegate()->LockScreen();
   } else if (sender == widgets_button_) {
     CreateWidgetsWindow();
   } else if (sender == system_modal_button_) {
@@ -301,8 +302,7 @@ void WindowTypeLauncher::ButtonPressed(views::Button* sender,
     ModalWindow::OpenModalWindow(GetWidget()->GetNativeView(),
                                  ui::MODAL_TYPE_WINDOW);
   } else if (sender == child_modal_button_) {
-    ash::test::CreateChildModalParent(
-        GetWidget()->GetNativeView()->GetRootWindow());
+    test::CreateChildModalParent(GetWidget()->GetNativeView()->GetRootWindow());
   } else if (sender == transient_button_) {
     NonModalTransient::OpenNonModalTransient(GetWidget()->GetNativeView());
   } else if (sender == show_hide_window_button_) {
@@ -318,7 +318,7 @@ void WindowTypeLauncher::ButtonPressed(views::Button* sender,
                                    "test-id"),
         message_center::RichNotificationData(), NULL /* delegate */));
 
-    ash::Shell::GetPrimaryRootWindowController()
+    Shell::GetPrimaryRootWindowController()
         ->shelf_widget()
         ->status_area_widget()
         ->web_notification_tray()

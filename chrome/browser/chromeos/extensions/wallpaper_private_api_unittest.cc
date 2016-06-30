@@ -7,9 +7,7 @@
 #include <memory>
 
 #include "ash/common/wm/window_state.h"
-#include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
-#include "ash/test/test_session_state_delegate.h"
 #include "ash/test/test_shell_delegate.h"
 #include "ash/wm/window_state_aura.h"
 #include "base/command_line.h"
@@ -171,9 +169,7 @@ TEST_F(WallpaperPrivateApiUnittest, HideAndManualUnminimizeWindows) {
 class WallpaperPrivateApiMultiUserUnittest
     : public WallpaperPrivateApiUnittest {
  public:
-  WallpaperPrivateApiMultiUserUnittest()
-      : multi_user_window_manager_(NULL),
-        session_state_delegate_(NULL) {}
+  WallpaperPrivateApiMultiUserUnittest(): multi_user_window_manager_(nullptr) {}
 
   void SetUp() override;
   void TearDown() override;
@@ -191,7 +187,6 @@ class WallpaperPrivateApiMultiUserUnittest
 
  private:
   chrome::MultiUserWindowManagerChromeOS* multi_user_window_manager_;
-  ash::test::TestSessionStateDelegate* session_state_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(WallpaperPrivateApiMultiUserUnittest);
 };
@@ -199,9 +194,6 @@ class WallpaperPrivateApiMultiUserUnittest
 void WallpaperPrivateApiMultiUserUnittest::SetUp() {
   AshTestBase::SetUp();
   WallpaperManager::Initialize();
-  session_state_delegate_ =
-      static_cast<ash::test::TestSessionStateDelegate*> (
-          ash::Shell::GetInstance()->session_state_delegate());
   fake_user_manager()->AddUser(test_account_id1_);
   fake_user_manager()->AddUser(test_account_id2_);
 }

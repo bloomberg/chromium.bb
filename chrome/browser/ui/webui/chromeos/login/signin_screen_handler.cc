@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "ash/common/system/chromeos/devicetype_utils.h"
+#include "ash/common/wm_shell.h"
 #include "ash/shell.h"
 #include "ash/wm/lock_state_controller.h"
 #include "base/bind.h"
@@ -1299,7 +1300,7 @@ void SigninScreenHandler::HandleFocusPod(const AccountId& account_id) {
       user_manager::UserManager::Get()->FindUser(account_id);
   // |user| may be nullptr in kiosk mode or unit tests.
   if (user && user->is_logged_in() && !user->is_active()) {
-    ash::Shell::GetInstance()->session_state_delegate()->SwitchActiveUser(
+    ash::WmShell::Get()->GetSessionStateDelegate()->SwitchActiveUser(
         account_id);
   } else {
     SetUserInputMethod(account_id.GetUserEmail(), ime_state_.get());

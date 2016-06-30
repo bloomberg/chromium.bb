@@ -747,12 +747,12 @@ TEST_F(WorkspaceLayoutManagerSoloTest, NotResizeWhenScreenIsLocked) {
       window_bounds.ToString());
 
   // The window size should not get touched while we are in lock screen.
-  Shell::GetInstance()->session_state_delegate()->LockScreen();
+  WmShell::Get()->GetSessionStateDelegate()->LockScreen();
   shelf_layout_manager->UpdateVisibilityState();
   EXPECT_EQ(window_bounds.ToString(), window->bounds().ToString());
 
   // Coming out of the lock screen the window size should still remain.
-  Shell::GetInstance()->session_state_delegate()->UnlockScreen();
+  WmShell::Get()->GetSessionStateDelegate()->UnlockScreen();
   shelf_layout_manager->UpdateVisibilityState();
   EXPECT_EQ(
       ScreenUtil::GetMaximizedWindowBoundsInParent(window.get()).ToString(),
@@ -791,10 +791,9 @@ class WorkspaceLayoutManagerBackdropTest : public test::AshTestBase {
 
   // Turn the top window back drop on / off.
   void ShowTopWindowBackdrop(bool show) {
-    std::unique_ptr<ash::WorkspaceLayoutManagerBackdropDelegate> backdrop;
-    if (show) {
-      backdrop.reset(new ash::WorkspaceBackdropDelegate(default_container_));
-    }
+    std::unique_ptr<WorkspaceLayoutManagerBackdropDelegate> backdrop;
+    if (show)
+      backdrop.reset(new WorkspaceBackdropDelegate(default_container_));
     GetWorkspaceLayoutManager(default_container_)
         ->SetMaximizeBackdropDelegate(std::move(backdrop));
     // Closing and / or opening can be a delayed operation.

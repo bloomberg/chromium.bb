@@ -4,6 +4,7 @@
 
 #include "ash/common/session/session_state_delegate.h"
 #include "ash/common/shell_window_ids.h"
+#include "ash/common/wm_shell.h"
 #include "ash/shell.h"
 #include "ash/shell/example_factory.h"
 #include "base/strings/utf_string_conversions.h"
@@ -17,8 +18,6 @@
 #include "ui/views/corewm/tooltip_controller.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
-
-using ash::Shell;
 
 namespace ash {
 namespace shell {
@@ -64,7 +63,7 @@ class LockView : public views::WidgetDelegateView,
 
   // Overridden from views::WidgetDelegateView:
   void WindowClosing() override {
-    Shell::GetInstance()->session_state_delegate()->UnlockScreen();
+    WmShell::Get()->GetSessionStateDelegate()->UnlockScreen();
   }
 
   // Overridden from views::ButtonListener:

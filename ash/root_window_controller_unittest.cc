@@ -125,7 +125,7 @@ class RootWindowControllerTest : public AshMDTestBase {
 
   aura::Window* GetModalContainer(aura::Window* root_window) {
     return Shell::GetContainer(root_window,
-                               ash::kShellWindowId_SystemModalContainer);
+                               kShellWindowId_SystemModalContainer);
   }
 };
 
@@ -209,7 +209,7 @@ TEST_P(RootWindowControllerTest, MoveWindows_Basic) {
             normal->GetNativeView()->GetBoundsInRootWindow().ToString());
 
   // Maximized area on primary display has 47px for non-md and 48px for md
-  // (defined in ash::SHELF_SIZE) inset at the bottom.
+  // (defined in SHELF_SIZE) inset at the bottom.
 
   // First clear fullscreen status, since both fullscreen and maximized windows
   // share the same desktop workspace, which cancels the shelf status.
@@ -302,8 +302,7 @@ TEST_P(RootWindowControllerTest, MoveWindows_LockWindowsInUnified) {
   const int kLockScreenWindowId = 1000;
   const int kLockBackgroundWindowId = 1001;
 
-  RootWindowController* controller =
-      Shell::GetInstance()->GetPrimaryRootWindowController();
+  RootWindowController* controller = Shell::GetPrimaryRootWindowController();
 
   aura::Window* lock_container =
       controller->GetContainer(kShellWindowId_LockScreenContainer);
@@ -329,7 +328,7 @@ TEST_P(RootWindowControllerTest, MoveWindows_LockWindowsInUnified) {
   UpdateDisplay("500x500,500x500");
 
   // In unified mode, RWC is created
-  controller = Shell::GetInstance()->GetPrimaryRootWindowController();
+  controller = Shell::GetPrimaryRootWindowController();
 
   ASSERT_EQ(lock_screen->GetNativeWindow(),
             controller->GetRootWindow()->GetChildById(kLockScreenWindowId));
@@ -342,7 +341,7 @@ TEST_P(RootWindowControllerTest, MoveWindows_LockWindowsInUnified) {
   display_manager->SetMirrorMode(true);
   EXPECT_TRUE(display_manager->IsInMirrorMode());
 
-  controller = Shell::GetInstance()->GetPrimaryRootWindowController();
+  controller = Shell::GetPrimaryRootWindowController();
   ASSERT_EQ(lock_screen->GetNativeWindow(),
             controller->GetRootWindow()->GetChildById(kLockScreenWindowId));
   ASSERT_EQ(lock_background->GetNativeWindow(),
@@ -353,7 +352,7 @@ TEST_P(RootWindowControllerTest, MoveWindows_LockWindowsInUnified) {
   display_manager->SetMirrorMode(false);
   EXPECT_TRUE(display_manager->IsInUnifiedMode());
 
-  controller = Shell::GetInstance()->GetPrimaryRootWindowController();
+  controller = Shell::GetPrimaryRootWindowController();
 
   ASSERT_EQ(lock_screen->GetNativeWindow(),
             controller->GetRootWindow()->GetChildById(kLockScreenWindowId));
@@ -366,7 +365,7 @@ TEST_P(RootWindowControllerTest, MoveWindows_LockWindowsInUnified) {
   EXPECT_FALSE(display_manager->IsInUnifiedMode());
   EXPECT_FALSE(display_manager->IsInMirrorMode());
 
-  controller = Shell::GetInstance()->GetPrimaryRootWindowController();
+  controller = Shell::GetPrimaryRootWindowController();
 
   ASSERT_EQ(lock_screen->GetNativeWindow(),
             controller->GetRootWindow()->GetChildById(kLockScreenWindowId));
@@ -377,9 +376,8 @@ TEST_P(RootWindowControllerTest, MoveWindows_LockWindowsInUnified) {
 
 TEST_P(RootWindowControllerTest, ModalContainer) {
   UpdateDisplay("600x600");
-  Shell* shell = Shell::GetInstance();
   WmShell* wm_shell = WmShell::Get();
-  RootWindowController* controller = shell->GetPrimaryRootWindowController();
+  RootWindowController* controller = Shell::GetPrimaryRootWindowController();
   EXPECT_EQ(LoginStatus::USER,
             wm_shell->system_tray_delegate()->GetUserLoginStatus());
   EXPECT_EQ(controller->GetContainer(kShellWindowId_SystemModalContainer)
@@ -393,7 +391,7 @@ TEST_P(RootWindowControllerTest, ModalContainer) {
             controller->GetSystemModalLayoutManager(
                 session_modal_widget->GetNativeView()));
 
-  shell->session_state_delegate()->LockScreen();
+  wm_shell->GetSessionStateDelegate()->LockScreen();
   EXPECT_EQ(LoginStatus::LOCKED,
             wm_shell->system_tray_delegate()->GetUserLoginStatus());
   EXPECT_EQ(controller->GetContainer(kShellWindowId_LockSystemModalContainer)
@@ -413,22 +411,22 @@ TEST_P(RootWindowControllerTest, ModalContainer) {
             controller->GetSystemModalLayoutManager(
                 session_modal_widget->GetNativeView()));
 
-  shell->session_state_delegate()->UnlockScreen();
+  wm_shell->GetSessionStateDelegate()->UnlockScreen();
 }
 
 TEST_P(RootWindowControllerTest, ModalContainerNotLoggedInLoggedIn) {
   UpdateDisplay("600x600");
-  Shell* shell = Shell::GetInstance();
-  WmShell* wm_shell = WmShell::Get();
 
   // Configure login screen environment.
+  SessionStateDelegate* session_state_delegate =
+      WmShell::Get()->GetSessionStateDelegate();
   SetUserLoggedIn(false);
   EXPECT_EQ(LoginStatus::NOT_LOGGED_IN,
-            wm_shell->system_tray_delegate()->GetUserLoginStatus());
-  EXPECT_EQ(0, shell->session_state_delegate()->NumberOfLoggedInUsers());
-  EXPECT_FALSE(shell->session_state_delegate()->IsActiveUserSessionStarted());
+            WmShell::Get()->system_tray_delegate()->GetUserLoginStatus());
+  EXPECT_EQ(0, session_state_delegate->NumberOfLoggedInUsers());
+  EXPECT_FALSE(session_state_delegate->IsActiveUserSessionStarted());
 
-  RootWindowController* controller = shell->GetPrimaryRootWindowController();
+  RootWindowController* controller = Shell::GetPrimaryRootWindowController();
   EXPECT_EQ(controller->GetContainer(kShellWindowId_LockSystemModalContainer)
                 ->layout_manager(),
             controller->GetSystemModalLayoutManager(NULL));
@@ -447,9 +445,9 @@ TEST_P(RootWindowControllerTest, ModalContainerNotLoggedInLoggedIn) {
   SetUserLoggedIn(true);
   SetSessionStarted(true);
   EXPECT_EQ(LoginStatus::USER,
-            wm_shell->system_tray_delegate()->GetUserLoginStatus());
-  EXPECT_EQ(1, shell->session_state_delegate()->NumberOfLoggedInUsers());
-  EXPECT_TRUE(shell->session_state_delegate()->IsActiveUserSessionStarted());
+            WmShell::Get()->system_tray_delegate()->GetUserLoginStatus());
+  EXPECT_EQ(1, session_state_delegate->NumberOfLoggedInUsers());
+  EXPECT_TRUE(session_state_delegate->IsActiveUserSessionStarted());
   EXPECT_EQ(controller->GetContainer(kShellWindowId_SystemModalContainer)
                 ->layout_manager(),
             controller->GetSystemModalLayoutManager(NULL));
@@ -507,8 +505,7 @@ TEST_P(RootWindowControllerTest, ModalContainerBlockedSession) {
 
 TEST_P(RootWindowControllerTest, GetWindowForFullscreenMode) {
   UpdateDisplay("600x600");
-  RootWindowController* controller =
-      Shell::GetInstance()->GetPrimaryRootWindowController();
+  RootWindowController* controller = Shell::GetPrimaryRootWindowController();
 
   Widget* w1 = CreateTestWidget(gfx::Rect(0, 0, 100, 100));
   w1->Maximize();
@@ -609,8 +606,7 @@ TEST_P(RootWindowControllerTest, GetRootWindowController) {
 // some overlapping UI.
 TEST_P(RootWindowControllerTest, FocusBlockedWindow) {
   UpdateDisplay("600x600");
-  RootWindowController* controller =
-      Shell::GetInstance()->GetPrimaryRootWindowController();
+  RootWindowController* controller = Shell::GetPrimaryRootWindowController();
   aura::Window* lock_container =
       controller->GetContainer(kShellWindowId_LockScreenContainer);
   aura::Window* lock_window =
@@ -685,7 +681,7 @@ TEST_P(RootWindowControllerTest, DontDeleteWindowsNotOwnedByParent) {
   window2->Init(ui::LAYER_NOT_DRAWN);
   Shell::GetInstance()->GetPrimaryRootWindow()->AddChild(window2);
 
-  Shell::GetInstance()->GetPrimaryRootWindowController()->CloseChildWindows();
+  Shell::GetPrimaryRootWindowController()->CloseChildWindows();
 
   ASSERT_FALSE(observer1.destroyed());
   delete window1;
@@ -827,7 +823,7 @@ TEST_F(VirtualKeyboardRootWindowControllerTest,
   aura::WindowTracker tracker;
   tracker.Add(keyboard_container);
   // Mock a login user profile change to reinitialize the keyboard.
-  ash::Shell::GetInstance()->OnLoginUserProfilePrepared();
+  Shell::GetInstance()->OnLoginUserProfilePrepared();
   // keyboard_container should no longer be present.
   EXPECT_FALSE(tracker.Contains(keyboard_container));
 }
@@ -861,7 +857,7 @@ TEST_F(VirtualKeyboardRootWindowControllerTest, RestoreWorkspaceAfterLogin) {
   }
 
   // Mock a login user profile change to reinitialize the keyboard.
-  ash::Shell::GetInstance()->OnLoginUserProfilePrepared();
+  Shell::GetInstance()->OnLoginUserProfilePrepared();
   EXPECT_EQ(display::Screen::GetScreen()->GetPrimaryDisplay().work_area(),
             before);
 }

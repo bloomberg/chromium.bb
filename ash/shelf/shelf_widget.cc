@@ -596,11 +596,8 @@ ShelfWidget::ShelfWidget(WmWindow* wm_shelf_container,
   status_area_widget_ =
       new StatusAreaWidget(wm_status_container, wm_shelf_aura);
   status_area_widget_->CreateTrayViews();
-  if (Shell::GetInstance()
-          ->session_state_delegate()
-          ->IsActiveUserSessionStarted()) {
+  if (WmShell::Get()->GetSessionStateDelegate()->IsActiveUserSessionStarted())
     status_area_widget_->Show();
-  }
   WmShell::Get()->focus_cycler()->AddWidget(status_area_widget_);
 
   aura::Window* status_container =
@@ -741,9 +738,8 @@ void ShelfWidget::CreateShelf(WmShelfAura* wm_shelf_aura) {
 }
 
 void ShelfWidget::PostCreateShelf() {
-  shelf_->SetVisible(Shell::GetInstance()
-                         ->session_state_delegate()
-                         ->IsActiveUserSessionStarted());
+  shelf_->SetVisible(
+      WmShell::Get()->GetSessionStateDelegate()->IsActiveUserSessionStarted());
   shelf_layout_manager_->LayoutShelf();
   shelf_layout_manager_->UpdateAutoHideState();
   Show();

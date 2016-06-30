@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "ash/common/session/session_state_delegate.h"
-#include "ash/shell.h"
+#include "ash/common/wm_shell.h"
 #include "base/command_line.h"
 #include "chrome/browser/chromeos/login/login_manager_test.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
@@ -40,19 +40,16 @@ class BrowserLoginTest : public chromeos::LoginManagerTest {
 IN_PROC_BROWSER_TEST_F(BrowserLoginTest, PRE_BrowserActive) {
   RegisterUser(kTestUser);
   EXPECT_EQ(ash::SessionStateDelegate::SESSION_STATE_LOGIN_PRIMARY,
-            ash::Shell::GetInstance()->session_state_delegate()->
-                GetSessionState());
+            ash::WmShell::Get()->GetSessionStateDelegate()->GetSessionState());
   chromeos::StartupUtils::MarkOobeCompleted();
 }
 
 IN_PROC_BROWSER_TEST_F(BrowserLoginTest, BrowserActive) {
   EXPECT_EQ(ash::SessionStateDelegate::SESSION_STATE_LOGIN_PRIMARY,
-            ash::Shell::GetInstance()->session_state_delegate()->
-                GetSessionState());
+            ash::WmShell::Get()->GetSessionStateDelegate()->GetSessionState());
   LoginUser(kTestUser);
   EXPECT_EQ(ash::SessionStateDelegate::SESSION_STATE_ACTIVE,
-            ash::Shell::GetInstance()->session_state_delegate()->
-                GetSessionState());
+            ash::WmShell::Get()->GetSessionStateDelegate()->GetSessionState());
 
   Browser* browser =
       chrome::FindAnyBrowser(ProfileManager::GetActiveUserProfile(), false);

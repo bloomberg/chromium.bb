@@ -5,6 +5,7 @@
 #include "ash/common/session/session_state_delegate.h"
 #include "ash/common/shell_window_ids.h"
 #include "ash/common/wm/window_state.h"
+#include "ash/common/wm_shell.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/ash_test_helper.h"
@@ -118,8 +119,6 @@ class LockScreenAshFocusRulesTest : public AshTestBase {
     return window;
   }
 
-  Shell* shell() const { return Shell::GetInstance(); }
-
  private:
   aura::Window* CreateWindowInContainer(int container_id) {
     aura::Window* root_window = Shell::GetPrimaryRootWindow();
@@ -169,7 +168,7 @@ TEST_F(LockScreenAshFocusRulesTest, RegainFocusAfterUnlock) {
 
   BlockUserSession(BLOCKED_BY_LOCK_SCREEN);
 
-  EXPECT_TRUE(shell()->session_state_delegate()->IsScreenLocked());
+  EXPECT_TRUE(WmShell::Get()->GetSessionStateDelegate()->IsScreenLocked());
   EXPECT_FALSE(normal_window->HasFocus());
   EXPECT_FALSE(always_on_top_window->HasFocus());
   EXPECT_FALSE(normal_window_state->IsMinimized());
@@ -179,7 +178,7 @@ TEST_F(LockScreenAshFocusRulesTest, RegainFocusAfterUnlock) {
 
   UnblockUserSession();
 
-  EXPECT_FALSE(shell()->session_state_delegate()->IsScreenLocked());
+  EXPECT_FALSE(WmShell::Get()->GetSessionStateDelegate()->IsScreenLocked());
   EXPECT_FALSE(normal_window_state->IsMinimized());
   EXPECT_FALSE(always_on_top_window_state->IsMinimized());
   EXPECT_TRUE(normal_window_state->CanActivate());
@@ -192,7 +191,7 @@ TEST_F(LockScreenAshFocusRulesTest, RegainFocusAfterUnlock) {
 // view doesn't get focused if the widget shows behind the lock screen.
 TEST_F(LockScreenAshFocusRulesTest, PreventFocusChangeWithLockScreenPresent) {
   BlockUserSession(BLOCKED_BY_LOCK_SCREEN);
-  EXPECT_TRUE(shell()->session_state_delegate()->IsScreenLocked());
+  EXPECT_TRUE(WmShell::Get()->GetSessionStateDelegate()->IsScreenLocked());
 
   views::test::TestInitialFocusWidgetDelegate delegate(CurrentContext());
   EXPECT_FALSE(delegate.view()->HasFocus());
@@ -201,7 +200,7 @@ TEST_F(LockScreenAshFocusRulesTest, PreventFocusChangeWithLockScreenPresent) {
   EXPECT_FALSE(delegate.view()->HasFocus());
 
   UnblockUserSession();
-  EXPECT_FALSE(shell()->session_state_delegate()->IsScreenLocked());
+  EXPECT_FALSE(WmShell::Get()->GetSessionStateDelegate()->IsScreenLocked());
   EXPECT_TRUE(delegate.GetWidget()->IsActive());
   EXPECT_TRUE(delegate.view()->HasFocus());
 }
