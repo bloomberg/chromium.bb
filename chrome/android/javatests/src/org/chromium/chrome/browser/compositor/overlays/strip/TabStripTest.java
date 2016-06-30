@@ -22,6 +22,10 @@ import org.chromium.chrome.test.util.ChromeRestriction;
 import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.chrome.test.util.TabStripUtils;
 import org.chromium.content.browser.test.util.CallbackHelper;
+import org.chromium.content.browser.test.util.Criteria;
+import org.chromium.content.browser.test.util.CriteriaHelper;
+import org.chromium.content.browser.test.util.DOMUtils;
+import org.chromium.ui.UiUtils;
 import org.chromium.ui.base.LocalizationUtils;
 
 import java.util.concurrent.TimeoutException;
@@ -657,6 +661,29 @@ public class TabStripTest extends ChromeTabbedActivityTestBase {
     }
 
     /**
+     * Tests that switching tabs hides keyboard.
+     */
+    @LargeTest
+    @Restriction(ChromeRestriction.RESTRICTION_TYPE_TABLET)
+    @Feature({"TabStrip", "IME"})
+    public void testSwitchingTabsHidesKeyboard() throws Throwable {
+        loadUrl("data:text/html;charset=utf-8,<html><head></head><body><form>"
+                + "<input type='text' id='input0'></form></body></html>");
+        DOMUtils.clickNode(this, getActivity().getActivityTab().getContentViewCore(), "input0");
+        assertWaitForKeyboardStatus(true);
+
+        getInstrumentation().waitForIdleSync();
+
+        ChromeTabUtils.clickNewTabButton(this, this);
+
+        getInstrumentation().waitForIdleSync();
+        assertEquals("Expected two tabs to exist",
+                getActivity().getTabModelSelector().getModel(false).getCount(), 2);
+
+        assertWaitForKeyboardStatus(false);
+    }
+
+    /**
      * Test that the draw positions for tabs match expectations at various scroll positions
      * when using the ScrollingStripStacker.
      */
@@ -1026,5 +1053,22 @@ public class TabStripTest extends ChromeTabbedActivityTestBase {
      */
     private void assertTabDrawX(float expectedDrawX, StripLayoutTab tabView) {
         assertEquals("Incorrect draw position for tab.", expectedDrawX, tabView.getDrawX());
+    }
+
+    /**
+     * Asserts that we get the keyboard status to be shown or hidden.
+     * @param expectsShown Whether shown status is expected.
+     * @throws InterruptedException
+     */
+    private void assertWaitForKeyboardStatus(final boolean expectsShown)
+            throws InterruptedException {
+        CriteriaHelper.pollInstrumentationThread(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                updateFailureReason("expectsShown: " + expectsShown);
+                return expectsShown == UiUtils.isKeyboardShowing(getActivity(),
+                        getActivity().getActivityTab().getView());
+            }
+        });
     }
 }

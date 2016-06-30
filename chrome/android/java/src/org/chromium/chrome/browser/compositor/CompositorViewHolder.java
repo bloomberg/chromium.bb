@@ -24,7 +24,6 @@ import android.view.SurfaceView;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.accessibility.AccessibilityEvent;
-import android.view.inputmethod.InputMethodManager;
 import android.widget.FrameLayout;
 
 import org.chromium.base.SysUtils;
@@ -818,14 +817,6 @@ public class CompositorViewHolder extends CoordinatorLayout
                 for (int i = 0; i < sCachedCVCList.size(); i++) {
                     ContentViewCore content = sCachedCVCList.get(i);
                     if (content.isAlive()) content.getContainerView().setVisibility(View.INVISIBLE);
-                }
-
-                if (hasFocus()) {
-                    InputMethodManager manager = (InputMethodManager) getContext().getSystemService(
-                            Context.INPUT_METHOD_SERVICE);
-                    if (manager.isActive(this)) {
-                        manager.hideSoftInputFromWindow(getWindowToken(), 0, null);
-                    }
                 }
                 removeView(mView);
             }
