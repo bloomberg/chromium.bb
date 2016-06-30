@@ -42,7 +42,6 @@ TEST(EncryptionHeaderParsersTest, ParseValidEncryptionHeaders) {
       "", "sixteencoolbytes", kDefaultRecordSize },
     { "rs=2048", "", "", 2048 },
     { "keyid=foo;someothervalue=1;rs=42", "foo", "", 42 },
-    { "keyid=foo;keyid=bar", "bar", "", kDefaultRecordSize },
   };
 
   for (size_t i = 0; i < arraysize(expected_results); i++) {
@@ -116,6 +115,10 @@ TEST(EncryptionHeaderParsersTest, ParseInvalidEncryptionHeaders) {
     "rs",
     "rs=",
 
+    // Supplying the same name multiple times in the same value is invalid.
+    "keyid=foo;keyid=bar",
+    "keyid=foo;bar=baz;keyid=qux",
+
     // The salt must be a URL-safe base64 decodable string.
     "salt=YmV/2ZXJ-sMDA",
     "salt=dHdlbHZlY29vbGJ5dGVz=====",
@@ -187,7 +190,6 @@ TEST(EncryptionHeaderParsersTest, ParseValidCryptoKeyHeaders) {
     { "dh=dHdlbHZlY29vbGJ5dGVz", "", "", "twelvecoolbytes" },
     { "keyid=foo;someothervalue=bar;aesgcm128=dHdlbHZlY29vbGJ5dGVz",
       "foo", "twelvecoolbytes", "" },
-    { "keyid=foo;keyid=bar", "bar", "", "" },
   };
 
   for (size_t i = 0; i < arraysize(expected_results); i++) {
@@ -261,6 +263,10 @@ TEST(EncryptionHeaderParsersTest, ParseInvalidCryptoKeyHeaders) {
     "aesgcm128=",
     "dh",
     "dh=",
+
+    // Supplying the same name multiple times in the same value is invalid.
+    "keyid=foo;keyid=bar",
+    "keyid=foo;bar=baz;keyid=qux",
 
     // The "aesgcm128" parameter must be a URL-safe base64 decodable string.
     "aesgcm128=123$xyz",

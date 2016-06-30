@@ -75,6 +75,10 @@ bool EncryptionHeaderIterator::GetNext() {
       net::HttpUtil::NameValuePairsIterator::Values::REQUIRED,
       net::HttpUtil::NameValuePairsIterator::Quotes::NOT_STRICT);
 
+  bool found_keyid = false;
+  bool found_salt = false;
+  bool found_rs = false;
+
   while (name_value_pairs.GetNext()) {
     const base::StringPiece name(name_value_pairs.name_begin(),
                                  name_value_pairs.name_end());
@@ -82,13 +86,18 @@ bool EncryptionHeaderIterator::GetNext() {
                                   name_value_pairs.value_end());
 
     if (base::LowerCaseEqualsASCII(name, "keyid")) {
+      if (found_keyid)
+        return false;
       value.CopyToString(&keyid_);
+      found_keyid = true;
     } else if (base::LowerCaseEqualsASCII(name, "salt")) {
-      if (!ValueToDecodedString(value, &salt_))
+      if (found_salt || !ValueToDecodedString(value, &salt_))
         return false;
+      found_salt = true;
     } else if (base::LowerCaseEqualsASCII(name, "rs")) {
-      if (!RecordSizeToInt(value, &rs_))
+      if (found_rs || !RecordSizeToInt(value, &rs_))
         return false;
+      found_rs = true;
     } else {
       // Silently ignore unknown directives for forward compatibility.
     }
@@ -117,6 +126,10 @@ bool CryptoKeyHeaderIterator::GetNext() {
       net::HttpUtil::NameValuePairsIterator::Values::REQUIRED,
       net::HttpUtil::NameValuePairsIterator::Quotes::NOT_STRICT);
 
+  bool found_keyid = false;
+  bool found_aesgcm128 = false;
+  bool found_dh = false;
+
   while (name_value_pairs.GetNext()) {
     const base::StringPiece name(name_value_pairs.name_begin(),
                                  name_value_pairs.name_end());
@@ -124,13 +137,18 @@ bool CryptoKeyHeaderIterator::GetNext() {
                                   name_value_pairs.value_end());
 
     if (base::LowerCaseEqualsASCII(name, "keyid")) {
+      if (found_keyid)
+        return false;
       value.CopyToString(&keyid_);
+      found_keyid = true;
     } else if (base::LowerCaseEqualsASCII(name, "aesgcm128")) {
-      if (!ValueToDecodedString(value, &aesgcm128_))
+      if (found_aesgcm128 || !ValueToDecodedString(value, &aesgcm128_))
         return false;
+      found_aesgcm128 = true;
     } else if (base::LowerCaseEqualsASCII(name, "dh")) {
-      if (!ValueToDecodedString(value, &dh_))
+      if (found_dh || !ValueToDecodedString(value, &dh_))
         return false;
+      found_dh = true;
     } else {
       // Silently ignore unknown directives for forward compatibility.
     }
