@@ -199,9 +199,18 @@ class PixelTestsStorySet(story_set_module.StorySet):
 
     self.AddStory(PixelTestsPage(
       url='file://../../data/gpu/pixel_canvas2d_webgl.html',
-      name=base_name + '.2DCanvasWebGL',
+      name=base_name + '.2DCanvasWebGL' + es3_suffix,
       test_rect=[0, 0, 300, 300],
       revision=2,
+      story_set=self,
+      shared_page_state_class=shared_page_state_class,
+      expectations=expectations))
+
+    self.AddStory(PixelTestsPage(
+      url='file://../../data/gpu/pixel_background.html',
+      name=base_name + '.SolidColorBackground' + es3_suffix,
+      test_rect=[500, 500, 100, 100],
+      revision=1,
       story_set=self,
       shared_page_state_class=shared_page_state_class,
       expectations=expectations))
