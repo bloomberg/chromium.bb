@@ -59,6 +59,10 @@ class ShellURLRequestContextGetter : public net::URLRequestContextGetter {
   virtual std::unique_ptr<net::ProxyConfigService> GetProxyConfigService();
   virtual std::unique_ptr<net::ProxyService> GetProxyService();
 
+  // TODO(estark): Remove this once the Referrer-Policy header is no
+  // longer an experimental feature. https://crbug.com/619228
+  virtual bool ShouldEnableReferrerPolicyHeader();
+
  private:
   bool ignore_certificate_errors_;
   base::FilePath base_path_;

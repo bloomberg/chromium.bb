@@ -81,6 +81,7 @@
 #include "content/public/browser/host_zoom_map.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/resource_context.h"
+#include "content/public/common/content_switches.h"
 #include "net/base/keygen_handler.h"
 #include "net/cert/cert_verifier.h"
 #include "net/cert/ct_log_verifier.h"
@@ -1037,6 +1038,11 @@ void ProfileIOData::Init(
   extensions_request_context_.reset(new net::URLRequestContext());
 
   main_request_context_->set_enable_brotli(io_thread_globals->enable_brotli);
+
+  // TODO(estark): Remove this once the Referrer-Policy header is no
+  // longer an experimental feature. https://crbug.com/619228
+  main_request_context_->set_enable_referrer_policy_header(
+      command_line.HasSwitch(switches::kEnableExperimentalWebPlatformFeatures));
 
   std::unique_ptr<ChromeNetworkDelegate> network_delegate(
       new ChromeNetworkDelegate(
