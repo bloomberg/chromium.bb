@@ -16,6 +16,7 @@
 #include "media/audio/audio_output_device.h"
 #include "media/base/audio_latency.h"
 #include "media/base/audio_renderer_mixer_input.h"
+#include "media/base/media_switches.h"
 #include "url/origin.h"
 
 namespace content {
@@ -69,9 +70,8 @@ bool IsMixable(AudioDeviceFactory::SourceType source_type) {
   if (source_type == AudioDeviceFactory::kSourceMediaElement)
     return true;  // Must ALWAYS go through mixer.
 
-  // TODO(olka): make a decision for the rest of the sources basing on OS
-  // type and configuration parameters.
-  return false;
+  // Mix everything if experiment is enabled; otherwise mix nothing else.
+  return base::FeatureList::IsEnabled(media::kNewAudioRenderingMixingStrategy);
 }
 
 scoped_refptr<media::SwitchableAudioRendererSink> NewMixableSink(
