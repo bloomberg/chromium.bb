@@ -62,8 +62,8 @@ public class Desktop
     /** The amount of time to wait to hide the ActionBar after user input is seen. */
     private static final int ACTIONBAR_AUTO_HIDE_DELAY_MS = 3000;
 
-    private final Event.Raisable<SoftInputMethodVisibilityChangedEventParameter>
-            mOnSoftInputMethodVisibilityChanged = new Event.Raisable<>();
+    private final Event.Raisable<SystemUiVisibilityChangedEventParameter>
+            mOnSystemUiVisibilityChanged = new Event.Raisable<>();
 
     private final Event.Raisable<InputModeChangedEventParameter> mOnInputModeChanged =
             new Event.Raisable<>();
@@ -253,9 +253,8 @@ public class Desktop
         return super.onCreateOptionsMenu(menu);
     }
 
-    public Event<SoftInputMethodVisibilityChangedEventParameter>
-            onSoftInputMethodVisibilityChanged() {
-        return mOnSoftInputMethodVisibilityChanged;
+    public Event<SystemUiVisibilityChangedEventParameter> onSystemUiVisibilityChanged() {
+        return mOnSystemUiVisibilityChanged;
     }
 
     public Event<InputModeChangedEventParameter> onInputModeChanged() {
@@ -370,6 +369,10 @@ public class Desktop
 
     private boolean isActionBarVisible() {
         return getSupportActionBar() != null && getSupportActionBar().isShowing();
+    }
+
+    private boolean isSystemUiVisible() {
+        return (getWindow().getDecorView().getSystemUiVisibility() & getFullscreenFlags()) == 0;
     }
 
     /** Called whenever the visibility of the system status bar or navigation bar changes. */
@@ -541,9 +544,8 @@ public class Desktop
                 // whenever they occur.
                 boolean oldSoftInputVisible = mSoftInputVisible;
                 mSoftInputVisible = (bottom < mMaxBottomValue);
-                mOnSoftInputMethodVisibilityChanged.raise(
-                        new SoftInputMethodVisibilityChangedEventParameter(
-                                mSoftInputVisible, left, top, right, bottom));
+                mOnSystemUiVisibilityChanged.raise(new SystemUiVisibilityChangedEventParameter(
+                        isSystemUiVisible(), mSoftInputVisible, left, top, right, bottom));
 
                 boolean softInputVisibilityChanged = oldSoftInputVisible != mSoftInputVisible;
                 if (!mSoftInputVisible && softInputVisibilityChanged && !isActionBarVisible()) {

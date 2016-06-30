@@ -4,7 +4,9 @@
 
 package org.chromium.chromoting;
 
+import android.graphics.Matrix;
 import android.graphics.PointF;
+import android.graphics.Rect;
 import android.graphics.RectF;
 
 /**
@@ -28,16 +30,9 @@ public class DesktopCanvas {
     private PointF mViewportPosition = new PointF();
 
     /**
-     * Represents the amount of vertical space in pixels used by the soft input device and
-     * accompanying system UI.
+     * Represents the amount of space, in pixels, used by system UI.
      */
-    private int mInputMethodOffsetY = 0;
-
-    /**
-     * Represents the amount of horizontal space in pixels used by the soft input device and
-     * accompanying system UI.
-     */
-    private int mInputMethodOffsetX = 0;
+    private Rect mSystemUiOffsetPixels = new Rect();
 
     public DesktopCanvas(DesktopViewInterface viewer, RenderData renderData) {
         mViewer = viewer;
@@ -45,50 +40,91 @@ public class DesktopCanvas {
     }
 
     /**
-     * Returns the desired center position of the viewport.  Note that this may not represent the
-     * true center of the viewport as other calculations are done to maximize the viewable area.
+     * Shifts the viewport by the passed in deltas (in image coordinates).
      *
-     * @return A point representing the desired position of the viewport.
+     * @param useScreenCenter Determines whether to use the desired viewport position or the actual
+     *                        center of the screen for positioning.
+     * @param deltaX The distance (in image coordinates) to move the viewport along the x-axis.
+     * @param deltaY The distance (in image coordinates) to move the viewport along the y-axis.
+     * @return A point representing the new center position of the viewport.
      */
-    public PointF getViewportPosition() {
-        return new PointF(mViewportPosition.x, mViewportPosition.y);
-    }
+    public PointF moveViewportCenter(boolean useScreenCenter, float deltaX, float deltaY) {
+        PointF viewportCenter;
+        synchronized (mRenderData) {
+            RectF bounds = new RectF(0, 0, mRenderData.imageWidth, mRenderData.imageHeight);
+            if (useScreenCenter) {
+                viewportCenter = getTrueViewportCenter();
+            } else {
+                viewportCenter = new PointF(mViewportPosition.x, mViewportPosition.y);
+            }
 
-    /**
-     * Sets the desired center position of the viewport.
-     *
-     * @param newX The new x coordinate value for the desired center position.
-     * @param newY The new y coordinate value for the desired center position.
-     */
-    public void setViewportPosition(float newX, float newY) {
-        mViewportPosition.set(newX, newY);
-    }
+            viewportCenter.offset(deltaX, deltaY);
+            if (viewportCenter.x < bounds.left) {
+                viewportCenter.x = bounds.left;
+            } else if (viewportCenter.x > bounds.right) {
+                viewportCenter.x = bounds.right;
+            }
 
-    /**
-     * Sets the offset values used to calculate the space used by the current soft input method.
-     *
-     * @param offsetX The space used by the soft input method UI on the right edge of the screen.
-     * @param offsetY The space used by the soft input method UI on the bottom edge of the screen.
-     */
-    public void setInputMethodOffsetValues(int offsetX, int offsetY) {
-        mInputMethodOffsetX = offsetX;
-        mInputMethodOffsetY = offsetY;
+            if (viewportCenter.y < bounds.top) {
+                viewportCenter.y = bounds.top;
+            } else if (viewportCenter.y > bounds.bottom) {
+                viewportCenter.y = bounds.bottom;
+            }
+
+            mViewportPosition.set(viewportCenter);
+        }
+
+        return viewportCenter;
     }
 
     /**
      * Returns the current size of the viewport.  This size includes the offset calculations for
-     * any visible Input Method UI.
+     * any visible system UI.
      *
      * @return A point representing the current size of the viewport.
      */
-    public PointF getViewportSize() {
+    private PointF getViewportSize() {
         float adjustedScreenWidth, adjustedScreenHeight;
         synchronized (mRenderData) {
-            adjustedScreenWidth = mRenderData.screenWidth - mInputMethodOffsetX;
-            adjustedScreenHeight = mRenderData.screenHeight - mInputMethodOffsetY;
+            adjustedScreenWidth = mRenderData.screenWidth - mSystemUiOffsetPixels.right;
+            adjustedScreenHeight = mRenderData.screenHeight - mSystemUiOffsetPixels.bottom;
         }
 
         return new PointF(adjustedScreenWidth, adjustedScreenHeight);
+    }
+
+    /**
+     * Returns the true center position of the viewport (in image coordinates).
+     *
+     * @return A point representing the true center position of the viewport.
+     */
+    private PointF getTrueViewportCenter() {
+        synchronized (mRenderData) {
+            PointF viewportSize = getViewportSize();
+
+            // Find the center point of the viewport on the screen.
+            float[] viewportPosition = {((float) viewportSize.x / 2), ((float) viewportSize.y / 2)};
+
+            // Convert the screen position to an image position.
+            Matrix screenToImage = new Matrix();
+            mRenderData.transform.invert(screenToImage);
+            screenToImage.mapPoints(viewportPosition);
+            return new PointF(viewportPosition[0], viewportPosition[1]);
+        }
+    }
+
+    /**
+     * Sets the offset values used to calculate the space used by system UI.
+     *
+     * @param left The space used by system UI on the left edge of the screen.
+     * @param top The space used by system UI on the top edge of the screen.
+     * @param right The space used by system UI on the right edge of the screen.
+     * @param bottom The space used by system UI on the bottom edge of the screen.
+     */
+    public void setSystemUiOffsetValues(int left, int top, int right, int bottom) {
+        synchronized (mRenderData) {
+            mSystemUiOffsetPixels.set(left, top, right, bottom);
+        }
     }
 
     /** Repositions the image by zooming it such that the image is displayed without borders. */
@@ -120,7 +156,7 @@ public class DesktopCanvas {
      *                       center position before being adjusted to fit the screen boundaries.
      */
     public void repositionImage(boolean centerViewport) {
-        PointF adjustedViewportSize = getViewportSize();
+        PointF viewportSize = getViewportSize();
         synchronized (mRenderData) {
             // The goal of the code below is to position the viewport as close to the desired center
             // position as possible whilst keeping as much of the desktop in view as possible.
@@ -133,8 +169,8 @@ public class DesktopCanvas {
 
                 // Translate so the viewport is displayed in the middle of the screen.
                 mRenderData.transform.postTranslate(
-                        (float) adjustedViewportSize.x / 2 - viewportPosition[0],
-                        (float) adjustedViewportSize.y / 2 - viewportPosition[1]);
+                        ((float) viewportSize.x / 2) - viewportPosition[0],
+                        ((float) viewportSize.y / 2) - viewportPosition[1]);
             }
 
             // Get the coordinates of the desktop rectangle (top-left/bottom-right corners) in
@@ -143,13 +179,15 @@ public class DesktopCanvas {
             mRenderData.transform.mapRect(rectScreen);
 
             float leftDelta = rectScreen.left;
-            float rightDelta = rectScreen.right - mRenderData.screenWidth + mInputMethodOffsetX;
+            float rightDelta =
+                    rectScreen.right - mRenderData.screenWidth + mSystemUiOffsetPixels.right;
             float topDelta = rectScreen.top;
-            float bottomDelta = rectScreen.bottom - mRenderData.screenHeight + mInputMethodOffsetY;
+            float bottomDelta =
+                    rectScreen.bottom - mRenderData.screenHeight + mSystemUiOffsetPixels.bottom;
             float xAdjust = 0;
             float yAdjust = 0;
 
-            if (rectScreen.right - rectScreen.left < adjustedViewportSize.x) {
+            if (rectScreen.right - rectScreen.left < viewportSize.x) {
                 // Image is narrower than the screen, so center it.
                 xAdjust = -(rightDelta + leftDelta) / 2;
             } else if (leftDelta > 0 && rightDelta > 0) {
@@ -161,7 +199,7 @@ public class DesktopCanvas {
             }
 
             // Apply similar logic for yAdjust.
-            if (rectScreen.bottom - rectScreen.top < adjustedViewportSize.y) {
+            if (rectScreen.bottom - rectScreen.top < viewportSize.y) {
                 yAdjust = -(bottomDelta + topDelta) / 2;
             } else if (topDelta > 0 && bottomDelta > 0) {
                 yAdjust = -Math.min(topDelta, bottomDelta);

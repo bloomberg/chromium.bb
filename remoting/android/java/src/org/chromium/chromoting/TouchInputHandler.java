@@ -109,7 +109,7 @@ public class TouchInputHandler {
                 canvasToImage.mapVectors(delta);
             }
 
-            moveViewportWithOffset(-delta[0], -delta[1]);
+            moveViewportByOffset(-delta[0], -delta[1]);
         }
     }
 
@@ -233,11 +233,11 @@ public class TouchInputHandler {
                     }
                 });
 
-        desktop.onSoftInputMethodVisibilityChanged().add(
-                new Event.ParameterRunnable<SoftInputMethodVisibilityChangedEventParameter>() {
+        desktop.onSystemUiVisibilityChanged().add(
+                new Event.ParameterRunnable<SystemUiVisibilityChangedEventParameter>() {
                     @Override
-                    public void run(SoftInputMethodVisibilityChangedEventParameter parameter) {
-                        handleSoftInputMethodVisibilityChanged(parameter);
+                    public void run(SystemUiVisibilityChangedEventParameter parameter) {
+                        handleSystemUiVisibilityChanged(parameter);
                     }
                 });
     }
@@ -297,15 +297,15 @@ public class TouchInputHandler {
         mViewer.cursorVisibilityChanged();
     }
 
-    private void handleSoftInputMethodVisibilityChanged(
-            SoftInputMethodVisibilityChangedEventParameter parameter) {
+    private void handleSystemUiVisibilityChanged(
+            SystemUiVisibilityChangedEventParameter parameter) {
         synchronized (mRenderData) {
-            if (parameter.visible) {
-                mDesktopCanvas.setInputMethodOffsetValues(
+            if (parameter.softInputMethodVisible) {
+                mDesktopCanvas.setSystemUiOffsetValues(parameter.left, parameter.top,
                         mRenderData.screenWidth - parameter.right,
                         mRenderData.screenHeight - parameter.bottom);
             } else {
-                mDesktopCanvas.setInputMethodOffsetValues(0, 0);
+                mDesktopCanvas.setSystemUiOffsetValues(0, 0, 0, 0);
             }
         }
 
@@ -374,62 +374,24 @@ public class TouchInputHandler {
     }
 
     /** Moves the desired center of the viewport using the specified deltas. */
-    private void moveViewportWithOffset(float deltaX, float deltaY) {
+    private void moveViewportByOffset(float deltaX, float deltaY) {
         // If we are in an indirect mode or are in the middle of a drag operation, then we want to
         // invert the direction of the operation (i.e. follow the motion of the finger).
-        if (mInputStrategy.isIndirectInputMode() || mIsDragging) {
+        boolean followCursor = (mInputStrategy.isIndirectInputMode() || mIsDragging);
+        if (followCursor) {
             deltaX = -deltaX;
             deltaY = -deltaY;
         }
-
         // Determine the center point from which to apply the delta.
         // For indirect input modes (i.e. trackpad), the view generally follows the cursor.
         // For direct input modes (i.e. touch) the should track the user's motion.
         // If the user is dragging, then the viewport should always follow the user's finger.
-        PointF viewportPoint;
-        if (mInputStrategy.isIndirectInputMode() || mIsDragging) {
-            viewportPoint = mDesktopCanvas.getViewportPosition();
-        } else {
-            PointF adjustedViewportSize = mDesktopCanvas.getViewportSize();
-            synchronized (mRenderData) {
-                float[] viewportPosition = new float[] {(float) adjustedViewportSize.x / 2,
-                                                        (float) adjustedViewportSize.y / 2};
-                Matrix inverted = new Matrix();
-                mRenderData.transform.invert(inverted);
-                inverted.mapPoints(viewportPosition);
-                viewportPoint = new PointF(viewportPosition[0], viewportPosition[1]);
-            }
-        }
-
-        // Constrain the coordinates to the image area.
-        float newX = viewportPoint.x + deltaX;
-        float newY = viewportPoint.y + deltaY;
-        synchronized (mRenderData) {
-            // Constrain viewport position to the image area.
-            if (newX < 0) {
-                newX = 0;
-            } else if (newX > mRenderData.imageWidth) {
-                newX = mRenderData.imageWidth;
-            }
-
-            if (newY < 0) {
-                newY = 0;
-            } else if (newY > mRenderData.imageHeight) {
-                newY = mRenderData.imageHeight;
-            }
-        }
-
-        moveViewport(newX, newY);
-    }
-
-    /** Moves the desired center of the viewport to the specified position. */
-    private void moveViewport(float newX, float newY) {
-        mDesktopCanvas.setViewportPosition(newX, newY);
+        PointF newPos = mDesktopCanvas.moveViewportCenter(!followCursor, deltaX, deltaY);
 
         // If we are in an indirect mode or are in the middle of a drag operation, then we want to
         // keep the cursor centered, if possible, as the viewport moves.
-        if (mInputStrategy.isIndirectInputMode() || mIsDragging) {
-            moveCursor((int) newX, (int) newY);
+        if (followCursor) {
+            moveCursor((int) newPos.x, (int) newPos.y);
         }
 
         mDesktopCanvas.repositionImage(true);
@@ -527,7 +489,7 @@ public class TouchInputHandler {
                 canvasToImage.mapVectors(delta);
             }
 
-            moveViewportWithOffset(delta[0], delta[1]);
+            moveViewportByOffset(delta[0], delta[1]);
             return true;
         }
 
