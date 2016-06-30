@@ -164,6 +164,15 @@ TEST(ReferrerUtilTest, PolicyForNavigation) {
         EXPECT_TRUE(policy == ReferrerPolicyDefault ||
                     policy == ReferrerPolicyNoReferrerWhenDowngrade);
         break;
+      case net::URLRequest::ORIGIN:
+        EXPECT_TRUE(policy == ReferrerPolicyOrigin);
+        break;
+      case net::URLRequest::NO_REFERRER:
+        EXPECT_TRUE(policy == ReferrerPolicyNever);
+        break;
+      case net::URLRequest::MAX_REFERRER_POLICY:
+        FAIL();
+        break;
     }
   }
 }

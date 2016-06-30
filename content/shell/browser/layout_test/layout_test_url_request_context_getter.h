@@ -48,6 +48,7 @@ class LayoutTestURLRequestContextGetter : public ShellURLRequestContextGetter {
   std::unique_ptr<net::NetworkDelegate> CreateNetworkDelegate() override;
   std::unique_ptr<net::ProxyConfigService> GetProxyConfigService() override;
   std::unique_ptr<net::ProxyService> GetProxyService() override;
+  bool ShouldEnableReferrerPolicyHeader() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(LayoutTestURLRequestContextGetter);
