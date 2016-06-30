@@ -47,18 +47,19 @@ ContentSettingImageView::ContentSettingImageView(
       suppress_mouse_released_action_(false) {
   if (ui::MaterialDesignController::IsModeMaterial()) {
     SetHasInkDrop(true);
+    SetFocusBehavior(FocusBehavior::ACCESSIBLE_ONLY);
   } else {
     static const int kBackgroundImages[] =
         IMAGE_GRID(IDR_OMNIBOX_CONTENT_SETTING_BUBBLE);
     SetBackgroundImageGrid(kBackgroundImages);
+    image()->set_interactive(true);
+    image()->SetFocusBehavior(FocusBehavior::ACCESSIBLE_ONLY);
   }
 
   image()->SetHorizontalAlignment(base::i18n::IsRTL()
                                       ? views::ImageView::TRAILING
                                       : views::ImageView::LEADING);
-  image()->set_interactive(true);
   image()->EnableCanvasFlippingForRTLUI(true);
-  image()->SetFocusBehavior(FocusBehavior::ACCESSIBLE_ONLY);
   label()->SetElideBehavior(gfx::NO_ELIDE);
   label()->SetVisible(false);
 
@@ -153,6 +154,10 @@ void ContentSettingImageView::OnNativeThemeChanged(
     UpdateImage();
 
   IconLabelBubbleView::OnNativeThemeChanged(native_theme);
+}
+
+bool ContentSettingImageView::ShouldShowInkDropForFocus() const {
+  return true;
 }
 
 SkColor ContentSettingImageView::GetTextColor() const {

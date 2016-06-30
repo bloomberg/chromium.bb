@@ -67,6 +67,7 @@ class ContentSettingImageView : public IconLabelBubbleView,
   void OnMouseReleased(const ui::MouseEvent& event) override;
   void OnGestureEvent(ui::GestureEvent* event) override;
   void OnNativeThemeChanged(const ui::NativeTheme* native_theme) override;
+  bool ShouldShowInkDropForFocus() const override;
   SkColor GetTextColor() const override;
   SkColor GetBorderColor() const override;
   bool ShouldShowBackground() const override;

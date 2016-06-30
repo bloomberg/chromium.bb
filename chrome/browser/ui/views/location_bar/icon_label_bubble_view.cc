@@ -207,8 +207,9 @@ void IconLabelBubbleView::RemoveInkDropLayer(ui::Layer* ink_drop_layer) {
 
 std::unique_ptr<views::InkDropHighlight>
 IconLabelBubbleView::CreateInkDropHighlight() const {
-  // Location bar views don't show hover effect.
-  return nullptr;
+  // Only show a highlight effect when the label is empty/invisible.
+  return label()->visible() ? nullptr
+                            : InkDropHostView::CreateInkDropHighlight();
 }
 
 SkColor IconLabelBubbleView::GetInkDropBaseColor() const {

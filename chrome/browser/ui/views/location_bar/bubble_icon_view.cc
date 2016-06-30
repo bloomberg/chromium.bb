@@ -145,12 +145,6 @@ void BubbleIconView::RemoveInkDropLayer(ui::Layer* ink_drop_layer) {
   image_->SetPaintToLayer(false);
 }
 
-std::unique_ptr<views::InkDropHighlight>
-BubbleIconView::CreateInkDropHighlight() const {
-  // BubbleIconView views don't show hover effect.
-  return HasFocus() ? InkDropHostView::CreateInkDropHighlight() : nullptr;
-}
-
 SkColor BubbleIconView::GetInkDropBaseColor() const {
   return color_utils::DeriveDefaultIconColor(GetNativeTheme()->GetSystemColor(
       ui::NativeTheme::kColorId_TextfieldDefaultColor));
