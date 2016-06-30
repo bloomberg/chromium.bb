@@ -376,10 +376,22 @@ base::ScopedCFTypeRef<CVPixelBufferRef> GLImageIOSurface::cv_pixel_buffer() {
   return cv_pixel_buffer_;
 }
 
+GLImage::Type GLImageIOSurface::GetType() const {
+  return Type::IOSURFACE;
+}
+
 // static
 unsigned GLImageIOSurface::GetInternalFormatForTesting(
     gfx::BufferFormat format) {
   DCHECK(ValidFormat(format));
   return TextureFormat(format);
 }
+
+// static
+GLImageIOSurface* GLImageIOSurface::FromGLImage(GLImage* image) {
+  if (!image || image->GetType() != Type::IOSURFACE)
+    return nullptr;
+  return static_cast<GLImageIOSurface*>(image);
+}
+
 }  // namespace gl

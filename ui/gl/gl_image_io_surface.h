@@ -71,10 +71,14 @@ class GL_EXPORT GLImageIOSurface : public GLImage {
 
   static unsigned GetInternalFormatForTesting(gfx::BufferFormat format);
 
+  // Downcasts from |image|. Returns |nullptr| on failure.
+  static GLImageIOSurface* FromGLImage(GLImage* image);
+
  protected:
   ~GLImageIOSurface() override;
 
  private:
+  Type GetType() const override;
   class RGBConverter;
 
   const gfx::Size size_;
