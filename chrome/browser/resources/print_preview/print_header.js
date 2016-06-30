@@ -222,8 +222,10 @@ cr.define('print_preview', function() {
           print_preview.Destination.GooglePromotedId.SAVE_AS_PDF) {
         this.getChildElement('button.print').classList.add('loading');
         this.getChildElement('button.cancel').classList.add('loading');
+        var isSaveLabel = (this.destinationStore_.selectedDestination.id ==
+             print_preview.Destination.GooglePromotedId.DOCS);
         this.getChildElement('.summary').innerHTML =
-            loadTimeData.getString('printing');
+            loadTimeData.getString(isSaveLabel ? 'saving' : 'printing');
       }
       cr.dispatchSimpleEvent(this, PrintHeader.EventType.PRINT_BUTTON_CLICK);
     },

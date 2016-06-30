@@ -172,6 +172,7 @@ content::WebUIDataSource* CreatePrintPreviewUISource() {
   source->AddLocalizedString("printButton", IDS_PRINT_PREVIEW_PRINT_BUTTON);
   source->AddLocalizedString("saveButton", IDS_PRINT_PREVIEW_SAVE_BUTTON);
   source->AddLocalizedString("printing", IDS_PRINT_PREVIEW_PRINTING);
+  source->AddLocalizedString("saving", IDS_PRINT_PREVIEW_SAVING);
   source->AddLocalizedString("printingToPDFInProgress",
                              IDS_PRINT_PREVIEW_PRINTING_TO_PDF_IN_PROGRESS);
 #if defined(OS_MACOSX)
