@@ -287,6 +287,12 @@ void GpuVideoDecoder::CompleteInitialization(int cdm_id, int surface_id) {
   DCheckGpuVideoAcceleratorFactoriesTaskRunnerIsCurrent();
   DCHECK(!init_cb_.is_null());
 
+  // It's possible for the vda to become null if NotifyError is called.
+  if (!vda_) {
+    base::ResetAndReturn(&init_cb_).Run(false);
+    return;
+  }
+
   VideoDecodeAccelerator::Config vda_config;
   vda_config.profile = config_.profile();
   vda_config.cdm_id = cdm_id;
