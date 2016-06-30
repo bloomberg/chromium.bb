@@ -42,9 +42,8 @@ public:
     void appendData(const String&);
     void replaceData(unsigned offset, unsigned count, const String&, ExceptionState&);
 
-    enum RecalcStyleBehavior { DoNotRecalcStyle, DeprecatedRecalcStyleImmediatlelyForEditing };
-    void insertData(unsigned offset, const String&, ExceptionState&, RecalcStyleBehavior = DoNotRecalcStyle);
-    void deleteData(unsigned offset, unsigned count, ExceptionState&, RecalcStyleBehavior = DoNotRecalcStyle);
+    void insertData(unsigned offset, const String&, ExceptionState&);
+    void deleteData(unsigned offset, unsigned count, ExceptionState&);
 
     bool containsOnlyWhitespace() const;
 
@@ -78,7 +77,7 @@ private:
     void setNodeValue(const String&) final;
     bool isCharacterDataNode() const final { return true; }
     int maxCharacterOffset() const final;
-    void setDataAndUpdate(const String&, unsigned offsetOfReplacedData, unsigned oldLength, unsigned newLength, UpdateSource = UpdateFromNonParser, RecalcStyleBehavior = DoNotRecalcStyle);
+    void setDataAndUpdate(const String&, unsigned offsetOfReplacedData, unsigned oldLength, unsigned newLength, UpdateSource = UpdateFromNonParser);
 
     bool isContainerNode() const = delete; // This will catch anyone doing an unnecessary check.
     bool isElementNode() const = delete; // This will catch anyone doing an unnecessary check.

@@ -422,16 +422,13 @@ static bool shouldUpdateLayoutByReattaching(const Text& textNode, LayoutText* te
     return false;
 }
 
-void Text::updateTextLayoutObject(unsigned offsetOfReplacedData, unsigned lengthOfReplacedData, RecalcStyleBehavior recalcStyleBehavior)
+void Text::updateTextLayoutObject(unsigned offsetOfReplacedData, unsigned lengthOfReplacedData)
 {
     if (!inActiveDocument())
         return;
     LayoutText* textLayoutObject = layoutObject();
     if (shouldUpdateLayoutByReattaching(*this, textLayoutObject)) {
         lazyReattachIfAttached();
-        // FIXME: Editing should be updated so this is not neccesary.
-        if (recalcStyleBehavior == DeprecatedRecalcStyleImmediatlelyForEditing)
-            document().updateStyleAndLayoutTree();
         return;
     }
     textLayoutObject->setTextWithOffset(dataImpl(), offsetOfReplacedData, lengthOfReplacedData);
