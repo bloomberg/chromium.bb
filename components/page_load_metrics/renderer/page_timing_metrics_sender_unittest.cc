@@ -6,30 +6,12 @@
 
 #include "base/time/time.h"
 #include "base/timer/mock_timer.h"
-#include "components/page_load_metrics/common/page_load_metrics_messages.h"
 #include "components/page_load_metrics/common/page_load_timing.h"
+#include "components/page_load_metrics/renderer/fake_page_timing_metrics_ipc_sender.h"
 #include "ipc/ipc_message.h"
-#include "ipc/ipc_message_macros.h"
-#include "ipc/ipc_sender.h"
-#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace page_load_metrics {
-
-class MockIPCSender : public IPC::Sender {
- public:
-  bool Send(IPC::Message* message) {
-    IPC_BEGIN_MESSAGE_MAP(MockIPCSender, *message)
-      IPC_MESSAGE_HANDLER(PageLoadMetricsMsg_TimingUpdated, OnTimingUpdated)
-      IPC_MESSAGE_UNHANDLED(ADD_FAILURE())
-    IPC_END_MESSAGE_MAP()
-
-    delete message;
-    return true;
-  }
-
-  MOCK_METHOD2(OnTimingUpdated, void(PageLoadTiming, PageLoadMetadata));
-};
 
 // Thin wrapper around PageTimingMetricsSender that provides access to the
 // MockTimer instance.
@@ -51,11 +33,12 @@ class TestPageTimingMetricsSender : public PageTimingMetricsSender {
 class PageTimingMetricsSenderTest : public testing::Test {
  public:
   PageTimingMetricsSenderTest()
-      : metrics_sender_(&mock_ipc_sender_, PageLoadTiming()) {}
+      : metrics_sender_(new TestPageTimingMetricsSender(&fake_ipc_sender_,
+                                                        PageLoadTiming())) {}
 
  protected:
-  testing::StrictMock<MockIPCSender> mock_ipc_sender_;
-  TestPageTimingMetricsSender metrics_sender_;
+  FakePageTimingMetricsIPCSender fake_ipc_sender_;
+  std::unique_ptr<TestPageTimingMetricsSender> metrics_sender_;
 };
 
 TEST_F(PageTimingMetricsSenderTest, Basic) {
@@ -66,21 +49,21 @@ TEST_F(PageTimingMetricsSenderTest, Basic) {
   timing.navigation_start = nav_start;
   timing.first_layout = first_layout;
 
-  metrics_sender_.Send(timing);
+  metrics_sender_->Send(timing);
 
   // Firing the timer should trigger sending of an OnTimingUpdated IPC.
-  EXPECT_CALL(mock_ipc_sender_, OnTimingUpdated(timing, PageLoadMetadata()));
-  ASSERT_TRUE(metrics_sender_.mock_timer()->IsRunning());
-  metrics_sender_.mock_timer()->Fire();
-  EXPECT_FALSE(metrics_sender_.mock_timer()->IsRunning());
+  fake_ipc_sender_.ExpectPageLoadTiming(timing);
+  ASSERT_TRUE(metrics_sender_->mock_timer()->IsRunning());
+  metrics_sender_->mock_timer()->Fire();
+  EXPECT_FALSE(metrics_sender_->mock_timer()->IsRunning());
 
   // At this point, we should have triggered the send of the PageLoadTiming IPC.
-  testing::Mock::VerifyAndClearExpectations(&mock_ipc_sender_);
+  fake_ipc_sender_.VerifyExpectedTimings();
 
   // Attempt to send the same timing instance again. The send should be
   // suppressed, since the timing instance hasn't changed since the last send.
-  metrics_sender_.Send(timing);
-  EXPECT_FALSE(metrics_sender_.mock_timer()->IsRunning());
+  metrics_sender_->Send(timing);
+  EXPECT_FALSE(metrics_sender_->mock_timer()->IsRunning());
 }
 
 TEST_F(PageTimingMetricsSenderTest, CoalesceMultipleIPCs) {
@@ -92,19 +75,19 @@ TEST_F(PageTimingMetricsSenderTest, CoalesceMultipleIPCs) {
   timing.navigation_start = nav_start;
   timing.first_layout = first_layout;
 
-  metrics_sender_.Send(timing);
-  ASSERT_TRUE(metrics_sender_.mock_timer()->IsRunning());
+  metrics_sender_->Send(timing);
+  ASSERT_TRUE(metrics_sender_->mock_timer()->IsRunning());
 
   // Send an updated PageLoadTiming before the timer has fired. When the timer
   // fires, the updated PageLoadTiming should be sent.
   timing.load_event_start = load_event;
-  metrics_sender_.Send(timing);
+  metrics_sender_->Send(timing);
 
   // Firing the timer should trigger sending of the OnTimingUpdated IPC with
   // the most recently provided PageLoadTiming instance.
-  EXPECT_CALL(mock_ipc_sender_, OnTimingUpdated(timing, PageLoadMetadata()));
-  metrics_sender_.mock_timer()->Fire();
-  EXPECT_FALSE(metrics_sender_.mock_timer()->IsRunning());
+  fake_ipc_sender_.ExpectPageLoadTiming(timing);
+  metrics_sender_->mock_timer()->Fire();
+  EXPECT_FALSE(metrics_sender_->mock_timer()->IsRunning());
 }
 
 TEST_F(PageTimingMetricsSenderTest, MultipleIPCs) {
@@ -116,21 +99,21 @@ TEST_F(PageTimingMetricsSenderTest, MultipleIPCs) {
   timing.navigation_start = nav_start;
   timing.first_layout = first_layout;
 
-  metrics_sender_.Send(timing);
-  ASSERT_TRUE(metrics_sender_.mock_timer()->IsRunning());
-  EXPECT_CALL(mock_ipc_sender_, OnTimingUpdated(timing, PageLoadMetadata()));
-  metrics_sender_.mock_timer()->Fire();
-  EXPECT_FALSE(metrics_sender_.mock_timer()->IsRunning());
-  testing::Mock::VerifyAndClearExpectations(&mock_ipc_sender_);
+  metrics_sender_->Send(timing);
+  ASSERT_TRUE(metrics_sender_->mock_timer()->IsRunning());
+  fake_ipc_sender_.ExpectPageLoadTiming(timing);
+  metrics_sender_->mock_timer()->Fire();
+  EXPECT_FALSE(metrics_sender_->mock_timer()->IsRunning());
+  fake_ipc_sender_.VerifyExpectedTimings();
 
   // Send an updated PageLoadTiming after the timer for the first send request
   // has fired, and verify that a second IPC is sent.
   timing.load_event_start = load_event;
-  metrics_sender_.Send(timing);
-  ASSERT_TRUE(metrics_sender_.mock_timer()->IsRunning());
-  EXPECT_CALL(mock_ipc_sender_, OnTimingUpdated(timing, PageLoadMetadata()));
-  metrics_sender_.mock_timer()->Fire();
-  EXPECT_FALSE(metrics_sender_.mock_timer()->IsRunning());
+  metrics_sender_->Send(timing);
+  ASSERT_TRUE(metrics_sender_->mock_timer()->IsRunning());
+  fake_ipc_sender_.ExpectPageLoadTiming(timing);
+  metrics_sender_->mock_timer()->Fire();
+  EXPECT_FALSE(metrics_sender_->mock_timer()->IsRunning());
 }
 
 TEST_F(PageTimingMetricsSenderTest, SendIPCOnDestructor) {
@@ -139,11 +122,14 @@ TEST_F(PageTimingMetricsSenderTest, SendIPCOnDestructor) {
   timing.first_layout = base::TimeDelta::FromMilliseconds(10);
 
   // This test wants to verify behavior in the PageTimingMetricsSender
-  // destructor, the EXPECT_CALL will be verified when the test tears down and
-  // |metrics_sender_| goes out of scope.
-  metrics_sender_.Send(timing);
-  EXPECT_CALL(mock_ipc_sender_, OnTimingUpdated(timing, PageLoadMetadata()));
-  ASSERT_TRUE(metrics_sender_.mock_timer()->IsRunning());
+  // destructor. The EXPECT_CALL will be satisfied when the |metrics_sender_|
+  // is destroyed below.
+  metrics_sender_->Send(timing);
+  fake_ipc_sender_.ExpectPageLoadTiming(timing);
+  ASSERT_TRUE(metrics_sender_->mock_timer()->IsRunning());
+
+  // Destroy |metrics_sender_|, in order to force its destructor to run.
+  metrics_sender_.reset();
 }
 
 }  // namespace page_load_metrics

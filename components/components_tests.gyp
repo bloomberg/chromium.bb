@@ -504,6 +504,8 @@
     ],
     'page_load_metrics_unittest_sources': [
       'page_load_metrics/browser/metrics_web_contents_observer_unittest.cc',
+      'page_load_metrics/renderer/fake_page_timing_metrics_ipc_sender.cc',
+      'page_load_metrics/renderer/fake_page_timing_metrics_ipc_sender.h',
       'page_load_metrics/renderer/metrics_render_frame_observer_unittest.cc',
       'page_load_metrics/renderer/page_timing_metrics_sender_unittest.cc',
     ],
