@@ -62,23 +62,13 @@ void BrotliHelloServer(const HttpRequestInfo* request,
 }
 
 const MockTransaction kGZip_Transaction = {
-    "http://www.google.com/gzyp",
-    "GET",
-    base::Time(),
-    "",
-    LOAD_NORMAL,
+    "http://www.google.com/gzyp", "GET", base::Time(), "", LOAD_NORMAL,
     "HTTP/1.1 200 OK",
     "Cache-Control: max-age=10000\n"
     "Content-Encoding: gzip\n"
     "Content-Length: 30\n",  // Intentionally wrong.
     base::Time(),
-    "",
-    TEST_MODE_NORMAL,
-    &GZipServer,
-    nullptr,
-    0,
-    0,
-    OK,
+    "", TEST_MODE_NORMAL, &GZipServer, nullptr, nullptr, 0, 0, OK,
 };
 
 const MockTransaction kGzip_Slow_Transaction = {
@@ -86,26 +76,17 @@ const MockTransaction kGzip_Slow_Transaction = {
     "HTTP/1.1 200 OK",
     "Cache-Control: max-age=10000\n"
     "Content-Encoding: gzip\n",
-    base::Time(), "", TEST_MODE_SLOW_READ, &GZipHelloServer, nullptr, 0, 0, OK,
+    base::Time(), "", TEST_MODE_SLOW_READ, &GZipHelloServer, nullptr, nullptr,
+    0, 0, OK,
 };
 
 const MockTransaction kRedirect_Transaction = {
-    "http://www.google.com/redirect",
-    "GET",
-    base::Time(),
-    "",
-    LOAD_NORMAL,
+    "http://www.google.com/redirect", "GET", base::Time(), "", LOAD_NORMAL,
     "HTTP/1.1 302 Found",
     "Cache-Control: max-age=10000\n"
     "Location: http://www.google.com/destination\n"
     "Content-Length: 5\n",
-    base::Time(),
-    "hello",
-    TEST_MODE_NORMAL,
-    nullptr,
-    nullptr,
-    0,
-    0,
+    base::Time(), "hello", TEST_MODE_NORMAL, nullptr, nullptr, nullptr, 0, 0,
     OK,
 };
 
@@ -122,6 +103,7 @@ const MockTransaction kEmptyBodyGzip_Transaction = {
     TEST_MODE_NORMAL,
     nullptr,
     nullptr,
+    nullptr,
     0,
     0,
     OK,
@@ -133,7 +115,7 @@ const MockTransaction kInvalidContentGZip_Transaction = {
     "Content-Encoding: gzip\n"
     "Content-Length: 21\n",
     base::Time(), "not a valid gzip body", TEST_MODE_NORMAL, nullptr, nullptr,
-    0, 0, OK,
+    nullptr, 0, 0, OK,
 };
 
 const MockTransaction kBrotli_Slow_Transaction = {
@@ -141,8 +123,8 @@ const MockTransaction kBrotli_Slow_Transaction = {
     "HTTP/1.1 200 OK",
     "Cache-Control: max-age=10000\n"
     "Content-Encoding: br\n",
-    base::Time(), "", TEST_MODE_SLOW_READ, &BrotliHelloServer, nullptr, 0, 0,
-    OK,
+    base::Time(), "", TEST_MODE_SLOW_READ, &BrotliHelloServer, nullptr, nullptr,
+    0, 0, OK,
 };
 
 }  // namespace
