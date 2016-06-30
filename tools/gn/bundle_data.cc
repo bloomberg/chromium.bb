@@ -14,32 +14,37 @@
 namespace {
 
 // Return directory of |path| without the trailing directory separator.
-base::StringPiece FindDirNoTrailingSeparator(const base::StringPiece& path) {
+base::StringPiece FindDirNoTrailingSeparator(base::StringPiece path) {
   base::StringPiece::size_type pos = path.find_last_of("/\\");
   if (pos == base::StringPiece::npos)
     return base::StringPiece();
   return base::StringPiece(path.data(), pos);
 }
 
-}  // namespace
-
-bool IsSourceFileFromAssetCatalog(const SourceFile& source,
-                                  SourceFile* asset_catalog) {
-  // Check that the file matches the following pattern:
+bool IsSourceFileFromAssetsCatalog(base::StringPiece source,
+                                   SourceFile* asset_catalog) {
+  // Check whether |source| matches one of the following pattern:
+  //    .*\.xcassets/Contents.json
+  //    .*\.xcassets/[^/]*\.appiconset/[^/]*
   //    .*\.xcassets/[^/]*\.imageset/[^/]*
-  base::StringPiece dir;
-  dir = FindDirNoTrailingSeparator(source.value());
-  if (!dir.ends_with(".imageset"))
-    return false;
-  dir = FindDirNoTrailingSeparator(dir);
-  if (!dir.ends_with(".xcassets"))
-    return false;
-  if (asset_catalog) {
+  //    .*\.xcassets/[^/]*\.launchimage/[^/]*
+  bool is_file_from_asset_catalog = false;
+  base::StringPiece dir = FindDirNoTrailingSeparator(source);
+  if (source.ends_with("/Contents.json") && dir.ends_with(".xcassets")) {
+    is_file_from_asset_catalog = true;
+  } else if (dir.ends_with(".appiconset") || dir.ends_with(".imageset") ||
+             dir.ends_with(".launchimage")) {
+    dir = FindDirNoTrailingSeparator(dir);
+    is_file_from_asset_catalog = dir.ends_with(".xcassets");
+  }
+  if (is_file_from_asset_catalog && asset_catalog) {
     std::string asset_catalog_path = dir.as_string();
     *asset_catalog = SourceFile(SourceFile::SWAP_IN, &asset_catalog_path);
   }
-  return true;
+  return is_file_from_asset_catalog;
 }
+
+}  // namespace
 
 BundleData::BundleData() {}
 
@@ -51,16 +56,21 @@ void BundleData::AddBundleData(const Target* target) {
 }
 
 void BundleData::OnTargetResolved(Target* owning_target) {
-  // Only initialize file_rules_ and asset_catalog_sources for "create_bundle"
+  // Only initialize file_rules_ and assets_catalog_sources for "create_bundle"
   // target (properties are only used by those targets).
   if (owning_target->output_type() != Target::CREATE_BUNDLE)
     return;
 
+  UniqueVector<const Target*> assets_catalog_deps;
+  UniqueVector<SourceFile> assets_catalog_sources;
+
   for (const Target* target : bundle_deps_) {
     SourceFiles file_rule_sources;
     for (const SourceFile& source_file : target->sources()) {
-      if (IsSourceFileFromAssetCatalog(source_file, nullptr)) {
-        asset_catalog_sources_.push_back(source_file);
+      SourceFile assets_catalog;
+      if (IsSourceFileFromAssetsCatalog(source_file.value(), &assets_catalog)) {
+        assets_catalog_sources.push_back(assets_catalog);
+        assets_catalog_deps.push_back(target);
       } else {
         file_rule_sources.push_back(source_file);
       }
@@ -68,10 +78,18 @@ void BundleData::OnTargetResolved(Target* owning_target) {
 
     if (!file_rule_sources.empty()) {
       DCHECK_EQ(target->action_values().outputs().list().size(), 1u);
-      file_rules_.push_back(BundleFileRule(
-          file_rule_sources, target->action_values().outputs().list()[0]));
+      file_rules_.push_back(
+          BundleFileRule(target, file_rule_sources,
+                         target->action_values().outputs().list()[0]));
     }
   }
+
+  assets_catalog_deps_.insert(assets_catalog_deps_.end(),
+                              assets_catalog_deps.begin(),
+                              assets_catalog_deps.end());
+  assets_catalog_sources_.insert(assets_catalog_sources_.end(),
+                                 assets_catalog_sources.begin(),
+                                 assets_catalog_sources.end());
 
   GetSourceFiles(&owning_target->sources());
 }
@@ -81,8 +99,8 @@ void BundleData::GetSourceFiles(SourceFiles* sources) const {
     sources->insert(sources->end(), file_rule.sources().begin(),
                     file_rule.sources().end());
   }
-  sources->insert(sources->end(), asset_catalog_sources_.begin(),
-                  asset_catalog_sources_.end());
+  sources->insert(sources->end(), assets_catalog_sources_.begin(),
+                  assets_catalog_sources_.end());
   if (!code_signing_script_.is_null()) {
     sources->insert(sources->end(), code_signing_sources_.begin(),
                     code_signing_sources_.end());
@@ -107,7 +125,7 @@ void BundleData::GetOutputsAsSourceFiles(
     }
   }
 
-  if (!asset_catalog_sources_.empty())
+  if (!assets_catalog_sources_.empty())
     outputs_as_source->push_back(GetCompiledAssetCatalogPath());
 
   if (!code_signing_script_.is_null()) {
@@ -124,7 +142,7 @@ void BundleData::GetOutputsAsSourceFiles(
 }
 
 SourceFile BundleData::GetCompiledAssetCatalogPath() const {
-  DCHECK(!asset_catalog_sources_.empty());
+  DCHECK(!assets_catalog_sources_.empty());
   std::string assets_car_path = resources_dir_.value() + "/Assets.car";
   return SourceFile(SourceFile::SWAP_IN, &assets_car_path);
 }

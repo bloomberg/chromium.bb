@@ -13,12 +13,14 @@
 class BundleData;
 class Settings;
 class SourceFile;
+class Target;
 class OutputFile;
 
 // BundleFileRule contains the information found in a "bundle_data" target.
 class BundleFileRule {
  public:
-  BundleFileRule(const std::vector<SourceFile> sources,
+  BundleFileRule(const Target* bundle_data_target,
+                 const std::vector<SourceFile> sources,
                  const SubstitutionPattern& pattern);
   BundleFileRule(const BundleFileRule& other);
   ~BundleFileRule();
@@ -33,10 +35,15 @@ class BundleFileRule {
       const BundleData& bundle_data,
       const SourceFile& source_file) const;
 
+  // Returns the associated target (of type Target::BUNDLE_DATA). May be
+  // null during testing.
+  const Target* target() const { return target_; }
+
   // Returns the list of SourceFiles.
   const std::vector<SourceFile>& sources() const { return sources_; }
 
  private:
+  const Target* target_;
   std::vector<SourceFile> sources_;
   SubstitutionPattern pattern_;
 };

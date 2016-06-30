@@ -19,19 +19,6 @@ class OutputFile;
 class Settings;
 class Target;
 
-// Returns true if |source| correspond to the path of a file in an asset
-// catalog. If defined |asset_catalog| is set to its path.
-//
-// An asset catalog is an OS X bundle with the ".xcassets" extension. It
-// contains one directory per assets each of them with the ".imageset"
-// extension.
-//
-// All asset catalogs are compiled by Xcode into single Assets.car file as
-// part of the creation of an application or framework bundle. BundleData
-// emulates this with the "compile_xcassets" tool.
-bool IsSourceFileFromAssetCatalog(const SourceFile& source,
-                                  SourceFile* asset_catalog);
-
 // BundleData holds the information required by "create_bundle" target.
 class BundleData {
  public:
@@ -64,7 +51,7 @@ class BundleData {
       SourceFiles* outputs_as_source) const;
 
   // Returns the path to the compiled asset catalog. Only valid if
-  // asset_catalog_sources() is not empty.
+  // assets_catalog_sources() is not empty.
   SourceFile GetCompiledAssetCatalogPath() const;
 
   // Returns the path to the top-level directory of the bundle. This is
@@ -83,9 +70,14 @@ class BundleData {
   SourceDir GetBundleRootDirOutputAsDir(const Settings* settings) const;
 
   // Returns the list of inputs for the compilation of the asset catalog.
-  SourceFiles& asset_catalog_sources() { return asset_catalog_sources_; }
-  const SourceFiles& asset_catalog_sources() const {
-    return asset_catalog_sources_;
+  SourceFiles& assets_catalog_sources() { return assets_catalog_sources_; }
+  const SourceFiles& assets_catalog_sources() const {
+    return assets_catalog_sources_;
+  }
+
+  // Returns the list of dependencies for the compilation of the asset catalog.
+  std::vector<const Target*> assets_catalog_deps() const {
+    return assets_catalog_deps_;
   }
 
   BundleFileRules& file_rules() { return file_rules_; }
@@ -132,7 +124,8 @@ class BundleData {
   const UniqueTargets& bundle_deps() const { return bundle_deps_; }
 
  private:
-  SourceFiles asset_catalog_sources_;
+  SourceFiles assets_catalog_sources_;
+  std::vector<const Target*> assets_catalog_deps_;
   BundleFileRules file_rules_;
   UniqueTargets bundle_deps_;
 

@@ -264,6 +264,7 @@
         'loader_unittest.cc',
         'ninja_action_target_writer_unittest.cc',
         'ninja_binary_target_writer_unittest.cc',
+        'ninja_bundle_data_target_writer_unittest.cc',
         'ninja_copy_target_writer_unittest.cc',
         'ninja_create_bundle_target_writer_unittest.cc',
         'ninja_group_target_writer_unittest.cc',

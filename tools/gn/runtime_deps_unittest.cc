@@ -284,6 +284,7 @@ TEST(RuntimeDeps, CreateBundle) {
   InitTargetWithType(setup, &module_data, Target::BUNDLE_DATA);
   module_data.private_deps().push_back(LabelTargetPair(&loadable_module));
   module_data.bundle_data().file_rules().push_back(BundleFileRule(
+      nullptr,
       std::vector<SourceFile>{SourceFile(build_dir + "loadable_module.so")},
       SubstitutionPattern::MakeForTest("{{bundle_resources_dir}}")));
   ASSERT_TRUE(module_data.OnResolved(&err));
@@ -305,7 +306,7 @@ TEST(RuntimeDeps, CreateBundle) {
   InitTargetWithType(setup, &dylib_data, Target::BUNDLE_DATA);
   dylib_data.private_deps().push_back(LabelTargetPair(&dylib));
   dylib_data.bundle_data().file_rules().push_back(BundleFileRule(
-      std::vector<SourceFile>{SourceFile(build_dir + "dylib")},
+      nullptr, std::vector<SourceFile>{SourceFile(build_dir + "dylib")},
       SubstitutionPattern::MakeForTest("{{bundle_executable_dir}}")));
   ASSERT_TRUE(dylib_data.OnResolved(&err));
 

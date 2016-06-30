@@ -8,6 +8,8 @@
 #include "base/macros.h"
 #include "tools/gn/ninja_target_writer.h"
 
+class BundleFileRule;
+
 // Writes a .ninja file for a bundle_data target type.
 class NinjaCreateBundleTargetWriter : public NinjaTargetWriter {
  public:
@@ -23,33 +25,37 @@ class NinjaCreateBundleTargetWriter : public NinjaTargetWriter {
   // defined, otherwise returns an empty string.
   std::string WriteCodeSigningRuleDefinition();
 
-  // Writes the rule to copy files into the bundle.
+  // Writes the steps to copy files into the bundle.
   //
-  // input_dep is a file expressing the shared dependencies. It will be a
-  // stamp file if there is more than one.
-  void WriteCopyBundleDataRules(const OutputFile& input_dep,
-                                std::vector<OutputFile>* output_files);
+  // The list of newly created files will be added to |output_files|.
+  void WriteCopyBundleDataSteps(std::vector<OutputFile>* output_files);
 
-  // Writes the rule to compile assets catalogs.
+  // Writes the step to copy files BundleFileRule into the bundle.
   //
-  // input_dep is a file expressing the shared dependencies. It will be a
-  // stamp file if there is more than one.
-  void WriteCompileAssetsCatalogRule(const OutputFile& input_dep,
-                                     std::vector<OutputFile>* output_files);
+  // The list of newly created files will be added to |output_files|.
+  void WriteCopyBundleFileRuleSteps(const BundleFileRule& file_rule,
+                                    std::vector<OutputFile>* output_files);
 
-  // Writes the code signing rule (if a script is defined).
+  // Writes the step to compile assets catalogs.
   //
-  // input_dep is a file expressing the shared dependencies. It will be a
-  // stamp file if there is more than one. As the code signing may include
-  // a manifest of the file, this will depends on all files in output_files
-  // too.
-  void WriteCodeSigningRules(const std::string& code_signing_rule_name,
-                             const OutputFile& input_dep,
-                             std::vector<OutputFile>* output_files);
+  // The list of newly created files will be added to |output_files|.
+  void WriteCompileAssetsCatalogStep(std::vector<OutputFile>* output_files);
+
+  // Writes the stamp file for the assets catalog compilation input
+  // dependencies.
+  OutputFile WriteCompileAssetsCatalogInputDepsStamp(
+      const std::vector<const Target*>& dependencies);
+
+  // Writes the code signing step (if a script is defined).
+  //
+  // The list of newly created files will be added to |output_files|. As the
+  // code signing may depends on the full bundle structure, this step will
+  // depends on all files generated via other rules.
+  void WriteCodeSigningStep(const std::string& code_signing_rule_name,
+                            std::vector<OutputFile>* output_files);
 
   // Writes the stamp file for the code signing input dependencies.
   OutputFile WriteCodeSigningInputDepsStamp(
-      const OutputFile& input_dep,
       std::vector<OutputFile>* output_files);
 
   DISALLOW_COPY_AND_ASSIGN(NinjaCreateBundleTargetWriter);

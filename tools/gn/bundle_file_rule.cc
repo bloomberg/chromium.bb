@@ -10,9 +10,13 @@
 #include "tools/gn/substitution_writer.h"
 #include "tools/gn/target.h"
 
-BundleFileRule::BundleFileRule(const std::vector<SourceFile> sources,
+BundleFileRule::BundleFileRule(const Target* bundle_data_target,
+                               const std::vector<SourceFile> sources,
                                const SubstitutionPattern& pattern)
-    : sources_(sources), pattern_(pattern) {}
+    : target_(bundle_data_target), sources_(sources), pattern_(pattern) {
+  // target_ may be null during testing.
+  DCHECK(!target_ || target_->output_type() == Target::BUNDLE_DATA);
+}
 
 BundleFileRule::BundleFileRule(const BundleFileRule& other) = default;
 
