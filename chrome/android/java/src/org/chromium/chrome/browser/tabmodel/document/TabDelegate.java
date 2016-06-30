@@ -78,12 +78,10 @@ public class TabDelegate extends TabCreator {
             int parentId) {
         Intent intent = createNewTabIntent(new AsyncTabCreationParams(loadUrlParams), parentId);
 
-        Class<?> targetActivity =
+        Class<? extends Activity> targetActivity =
                 MultiWindowUtils.getInstance().getOpenInOtherWindowActivity(activity);
         if (targetActivity == null) return;
-        intent.setClass(activity, targetActivity);
-
-        intent.addFlags(MultiWindowUtils.FLAG_ACTIVITY_LAUNCH_ADJACENT);
+        MultiWindowUtils.setOpenInOtherWindowIntentExtras(intent, activity, targetActivity);
         IntentHandler.addTrustedIntentExtras(intent, activity);
         activity.startActivity(intent);
     }
