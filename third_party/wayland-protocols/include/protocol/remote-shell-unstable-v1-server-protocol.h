@@ -204,26 +204,6 @@ enum zwp_remote_shell_v1_error {
 };
 #endif /* ZWP_REMOTE_SHELL_V1_ERROR_ENUM */
 
-#ifndef ZWP_REMOTE_SHELL_V1_LAYOUT_MODE_ENUM
-#define ZWP_REMOTE_SHELL_V1_LAYOUT_MODE_ENUM
-/**
- * @ingroup iface_zwp_remote_shell_v1
- * the layout mode
- *
- * Determine how a client should layout surfaces.
- */
-enum zwp_remote_shell_v1_layout_mode {
-	/**
-	 * mulitple windows
-	 */
-	ZWP_REMOTE_SHELL_V1_LAYOUT_MODE_WINDOWED = 1,
-	/**
-	 * restricted mode for table
-	 */
-	ZWP_REMOTE_SHELL_V1_LAYOUT_MODE_TABLET = 2,
-};
-#endif /* ZWP_REMOTE_SHELL_V1_LAYOUT_MODE_ENUM */
-
 /**
  * @ingroup iface_zwp_remote_shell_v1
  * @struct zwp_remote_shell_v1_interface
@@ -274,7 +254,6 @@ struct zwp_remote_shell_v1_interface {
 
 #define ZWP_REMOTE_SHELL_V1_CONFIGURE	0
 #define ZWP_REMOTE_SHELL_V1_ACTIVATED	1
-#define ZWP_REMOTE_SHELL_V1_LAYOUT_MODE_CHANGED	2
 
 /**
  * @ingroup iface_zwp_remote_shell_v1
@@ -284,10 +263,6 @@ struct zwp_remote_shell_v1_interface {
  * @ingroup iface_zwp_remote_shell_v1
  */
 #define ZWP_REMOTE_SHELL_V1_ACTIVATED_SINCE_VERSION	1
-/**
- * @ingroup iface_zwp_remote_shell_v1
- */
-#define ZWP_REMOTE_SHELL_V1_LAYOUT_MODE_CHANGED_SINCE_VERSION	8
 
 /**
  * @ingroup iface_zwp_remote_shell_v1
@@ -309,17 +284,6 @@ static inline void
 zwp_remote_shell_v1_send_activated(struct wl_resource *resource_, struct wl_resource *gained_active, struct wl_resource *lost_active)
 {
 	wl_resource_post_event(resource_, ZWP_REMOTE_SHELL_V1_ACTIVATED, gained_active, lost_active);
-}
-
-/**
- * @ingroup iface_zwp_remote_shell_v1
- * Sends an layout_mode_changed event to the client owning the resource.
- * @param resource_ The client's resource
- */
-static inline void
-zwp_remote_shell_v1_send_layout_mode_changed(struct wl_resource *resource_, uint32_t layout_mode)
-{
-	wl_resource_post_event(resource_, ZWP_REMOTE_SHELL_V1_LAYOUT_MODE_CHANGED, layout_mode);
 }
 
 /**
@@ -527,22 +491,6 @@ struct zwp_remote_surface_v1_interface {
 	void (*set_top_inset)(struct wl_client *client,
 			      struct wl_resource *resource,
 			      int32_t height);
-	/**
-	 * suggests a re-layout of remote shell input area
-	 *
-	 * Suggests a surface should become system modal.
-	 * @since 8
-	 */
-	void (*set_system_modal)(struct wl_client *client,
-				 struct wl_resource *resource);
-	/**
-	 * suggests a re-layout of remote shell input area
-	 *
-	 * Suggests a surface should become non system modal.
-	 * @since 8
-	 */
-	void (*unset_system_modal)(struct wl_client *client,
-				   struct wl_resource *resource);
 };
 
 #define ZWP_REMOTE_SURFACE_V1_SET_FULLSCREEN	0

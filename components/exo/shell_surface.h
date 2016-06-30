@@ -115,9 +115,6 @@ class ShellSurface : public SurfaceDelegate,
   // Set title for surface.
   void SetTitle(const base::string16& title);
 
-  // Sets the system modality.
-  void SetSystemModal(bool system_modal);
-
   // Sets the application ID for the window. The application ID identifies the
   // general class of applications to which the window belongs.
   static void SetApplicationId(aura::Window* window,

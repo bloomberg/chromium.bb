@@ -38,7 +38,7 @@
     reset.
   </description>
 
-  <interface name="zwp_remote_shell_v1" version="8">
+  <interface name="zwp_remote_shell_v1" version="7">
     <description summary="remote_shell">
       The global interface that allows clients to turn a wl_surface into a
       "real window" which is remotely managed but can be stacked, activated
@@ -69,14 +69,6 @@
       <entry name="role" value="0" summary="given wl_surface has another role"/>
       <entry name="invalid_notification_id" value="1"
        summary="invalid notification id"/>
-    </enum>
-
-    <enum name="layout_mode">
-      <description summary="the layout mode">
-	Determine how a client should layout surfaces.
-      </description>
-      <entry name="windowed" value="1" summary="multiple windows"/>
-      <entry name="tablet" value="2" summary="restricted mode for tablet"/>
     </enum>
 
     <request name="destroy" type="destructor">
@@ -136,21 +128,9 @@
       <arg name="surface" type="object" interface="wl_surface"/>
       <arg name="notification_id" type="string" />
     </request>
-
-    <!-- Version 8 additions -->
-
-    <event name="layout_mode_changed" since="8">
-      <description summary="layout mode changed">
-	The shell_mode_changed event is sent by the compositor when
-	the shell mode was changed.
-
-	This is an event to notify that the shell mode has switched.
-      </description>
-      <arg name="layout_mode" type="uint"/>
-    </event>
   </interface>
 
-  <interface name="zwp_remote_surface_v1" version="8">
+  <interface name="zwp_remote_surface_v1" version="7">
     <description summary="A desktop window">
       An interface that may be implemented by a wl_surface, for
       implementations that provide a desktop-style user interface
@@ -455,20 +435,6 @@
       </description>
       <arg name="state_type" type="uint"/>
     </event>
-
-    <!-- Version 8 additions -->
-
-    <request name="set_system_modal" since="8">
-      <description summary="suggests a re-layout of remote shell input area">
-	Suggests a surface should become system modal.
-      </description>
-    </request>
-
-    <request name="unset_system_modal" since="8">
-      <description summary="suggests a re-layout of remote shell input area">
-	Suggests a surface should become non system modal.
-      </description>
-    </request>
   </interface>
 
   <!-- Version 6 additions -->

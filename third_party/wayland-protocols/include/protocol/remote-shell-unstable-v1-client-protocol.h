@@ -201,26 +201,6 @@ enum zwp_remote_shell_v1_error {
 };
 #endif /* ZWP_REMOTE_SHELL_V1_ERROR_ENUM */
 
-#ifndef ZWP_REMOTE_SHELL_V1_LAYOUT_MODE_ENUM
-#define ZWP_REMOTE_SHELL_V1_LAYOUT_MODE_ENUM
-/**
- * @ingroup iface_zwp_remote_shell_v1
- * the layout mode
- *
- * Determine how a client should layout surfaces.
- */
-enum zwp_remote_shell_v1_layout_mode {
-	/**
-	 * mulitple windows
-	 */
-	ZWP_REMOTE_SHELL_V1_LAYOUT_MODE_WINDOWED = 1,
-	/**
-	 * restricted mode for table
-	 */
-	ZWP_REMOTE_SHELL_V1_LAYOUT_MODE_TABLET = 2,
-};
-#endif /* ZWP_REMOTE_SHELL_V1_LAYOUT_MODE_ENUM */
-
 /**
  * @ingroup iface_zwp_remote_shell_v1
  * @struct zwp_remote_shell_v1_listener
@@ -248,18 +228,6 @@ struct zwp_remote_shell_v1_listener {
 			  struct zwp_remote_shell_v1 *zwp_remote_shell_v1,
 			  struct wl_surface *gained_active,
 			  struct wl_surface *lost_active);
-	/**
-	 * dlayout mode changed
-	 *
-	 * The shell_mode_changed event is sent by the compositor when
-	 * the shell mode was changed.
-	 *
-	 * This is an event to notify that the shell mode has switched.
-	 * @since 8
-	 */
-	void (*layout_mode_changed)(void *data,
-				    struct zwp_remote_shell_v1 *zwp_remote_shell_v1,
-				    uint32_t layout_mode);
 };
 
 /**
@@ -527,8 +495,6 @@ zwp_remote_surface_v1_add_listener(struct zwp_remote_surface_v1 *zwp_remote_surf
 #define ZWP_REMOTE_SURFACE_V1_SET_RECTANGULAR_SHADOW	11
 #define ZWP_REMOTE_SURFACE_V1_SET_TITLE	12
 #define ZWP_REMOTE_SURFACE_V1_SET_TOP_INSET	13
-#define ZWP_REMOTE_SURFACE_V1_SET_SYSTEM_MODAL	14
-#define ZWP_REMOTE_SURFACE_V1_UNSET_SYSTEM_MODAL	15
 
 /**
  * @ingroup iface_zwp_remote_surface_v1
@@ -586,14 +552,6 @@ zwp_remote_surface_v1_add_listener(struct zwp_remote_surface_v1 *zwp_remote_surf
  * @ingroup iface_zwp_remote_surface_v1
  */
 #define ZWP_REMOTE_SURFACE_V1_SET_TOP_INSET_SINCE_VERSION	5
-/**
- * @ingroup iface_zwp_remote_surface_v1
- */
-#define ZWP_REMOTE_SURFACE_V1_SET_SYSTEM_MODAL_SINCE_VERSION	8
-/**
- * @ingroup iface_zwp_remote_surface_v1
- */
-#define ZWP_REMOTE_SURFACE_V1_UNSET_SYSTEM_MODAL_SINCE_VERSION	8
 
 /** @ingroup iface_zwp_remote_surface_v1 */
 static inline void
@@ -857,30 +815,6 @@ zwp_remote_surface_v1_set_top_inset(struct zwp_remote_surface_v1 *zwp_remote_sur
 {
 	wl_proxy_marshal((struct wl_proxy *) zwp_remote_surface_v1,
 			 ZWP_REMOTE_SURFACE_V1_SET_TOP_INSET, height);
-}
-
-/**
- * @ingroup iface_zwp_remote_surface_v1
- *
- * Suggests a surface should become system modal.
- */
-static inline void
-zwp_remote_surface_v1_set_system_modal(struct zwp_remote_surface_v1 *zwp_remote_surface_v1)
-{
-	wl_proxy_marshal((struct wl_proxy *) zwp_remote_surface_v1,
-			 ZWP_REMOTE_SURFACE_V1_SET_SYSTEM_MODAL);
-}
-
-/**
- * @ingroup iface_zwp_remote_surface_v1
- *
- * Suggests a surface should become non system modal.
- */
-static inline void
-zwp_remote_surface_v1_unset_system_modal(struct zwp_remote_surface_v1 *zwp_remote_surface_v1)
-{
-	wl_proxy_marshal((struct wl_proxy *) zwp_remote_surface_v1,
-			 ZWP_REMOTE_SURFACE_V1_UNSET_SYSTEM_MODAL);
 }
 
 #define ZWP_NOTIFICATION_SURFACE_V1_DESTROY	0

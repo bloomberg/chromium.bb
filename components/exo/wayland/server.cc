@@ -1497,15 +1497,6 @@ void remote_surface_set_top_inset(wl_client* client,
   GetUserDataAs<ShellSurface>(resource)->SetTopInset(height);
 }
 
-void remote_surface_set_system_modal(wl_client* client, wl_resource* resource) {
-  GetUserDataAs<ShellSurface>(resource)->SetSystemModal(true);
-}
-
-void remote_surface_unset_system_modal(wl_client* client,
-                                       wl_resource* resource) {
-  GetUserDataAs<ShellSurface>(resource)->SetSystemModal(false);
-}
-
 const struct zwp_remote_surface_v1_interface remote_surface_implementation = {
     remote_surface_destroy,
     remote_surface_set_app_id,
@@ -1520,9 +1511,7 @@ const struct zwp_remote_surface_v1_interface remote_surface_implementation = {
     remote_surface_unfullscreen,
     remote_surface_set_rectangular_shadow,
     remote_surface_set_title,
-    remote_surface_set_top_inset,
-    remote_surface_set_system_modal,
-    remote_surface_unset_system_modal};
+    remote_surface_set_top_inset};
 
 ////////////////////////////////////////////////////////////////////////////////
 // notification_surface_interface:
@@ -1584,12 +1573,6 @@ class WaylandRemoteShell : public ash::ShellObserver,
 
   // Overridden from ash::ShellObserver:
   void OnDisplayWorkAreaInsetsChanged() override { SendConfigure(); }
-  void OnMaximizeModeStarted() override {
-    SendLayoutModeChange(ZWP_REMOTE_SHELL_V1_LAYOUT_MODE_TABLET);
-  }
-  void OnMaximizeModeEnded() override {
-    SendLayoutModeChange(ZWP_REMOTE_SHELL_V1_LAYOUT_MODE_WINDOWED);
-  }
 
   // Overridden from aura::client::ActivationChangeObserver:
   void OnWindowActivated(
@@ -1609,13 +1592,6 @@ class WaylandRemoteShell : public ash::ShellObserver,
         remote_shell_resource_, display.size().width(), display.size().height(),
         work_area_insets.left(), work_area_insets.top(),
         work_area_insets.right(), work_area_insets.bottom());
-    wl_client_flush(wl_resource_get_client(remote_shell_resource_));
-  }
-
-  void SendLayoutModeChange(int mode) {
-    if (wl_resource_get_version(remote_shell_resource_) < 8)
-      return;
-    zwp_remote_shell_v1_send_layout_mode_changed(remote_shell_resource_, mode);
     wl_client_flush(wl_resource_get_client(remote_shell_resource_));
   }
 
@@ -1804,7 +1780,7 @@ const struct zwp_remote_shell_v1_interface remote_shell_implementation = {
     remote_shell_destroy, remote_shell_get_remote_surface,
     remote_shell_get_notification_surface};
 
-const uint32_t remote_shell_version = 8;
+const uint32_t remote_shell_version = 6;
 
 void bind_remote_shell(wl_client* client,
                        void* data,
