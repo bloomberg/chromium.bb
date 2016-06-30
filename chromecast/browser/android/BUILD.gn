@@ -15,10 +15,8 @@ jinja_template("cast_shell_manifest") {
 # GYP target: n/a
 android_resources("cast_shell_android_resources") {
   android_manifest = "$root_gen_dir/cast_shell_manifest/AndroidManifest.xml"
+  android_manifest_dep = ":cast_shell_manifest"
   resource_dirs = [ "//chromecast/browser/android/apk/res" ]
-  deps = [
-    ":cast_shell_manifest",
-  ]
 }
 
 # GYP target: chromecast.gyp:cast_shell_java
