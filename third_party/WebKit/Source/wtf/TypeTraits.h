@@ -63,7 +63,7 @@ class IsAssignable {
         char padding[8];
     };
 
-    template <typename T2, typename From2, typename = decltype(std::declval<T2>() = std::declval<From2>())>
+    template <typename T2, typename From2, typename = decltype(std::declval<T2&>() = std::declval<From2>())>
     static YesType checkAssignability(int);
     template <typename T2, typename From2>
     static NoType checkAssignability(...);

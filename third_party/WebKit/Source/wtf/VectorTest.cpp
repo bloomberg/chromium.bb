@@ -688,6 +688,14 @@ TEST(VectorTest, InitializerList)
     EXPECT_EQ(3, vector3[2]);
 }
 
+static_assert(VectorTraits<int>::canCopyWithMemcpy, "int should be copied with memcopy.");
+static_assert(VectorTraits<char>::canCopyWithMemcpy, "char should be copied with memcpy.");
+static_assert(VectorTraits<LChar>::canCopyWithMemcpy, "LChar should be copied with memcpy.");
+static_assert(VectorTraits<UChar>::canCopyWithMemcpy, "UChar should be copied with memcpy.");
+
+class UnknownType;
+static_assert(VectorTraits<UnknownType*>::canCopyWithMemcpy, "Pointers should be copied with memcpy.");
+
 } // anonymous namespace
 
 } // namespace WTF
