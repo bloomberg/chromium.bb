@@ -105,7 +105,7 @@ class InterfaceRegistry : public mojom::InterfaceProvider {
   void RemoveInterface(const std::string& name);
 
   // Temporarily prevent incoming interface requests from being bound. Incoming
-  // requests will be queued internally and dispatched once UnpauseBinding() is
+  // requests will be queued internally and dispatched once ResumeBinding() is
   // called.
   void PauseBinding();
 
