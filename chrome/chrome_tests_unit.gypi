@@ -1277,6 +1277,7 @@
       'browser/ui/cocoa/location_bar/manage_passwords_decoration_unittest.mm',
       'browser/ui/cocoa/location_bar/selected_keyword_decoration_unittest.mm',
       'browser/ui/cocoa/location_bar/zoom_decoration_unittest.mm',
+      'browser/ui/cocoa/media_picker/desktop_media_picker_controller_deprecated_unittest.mm',
       'browser/ui/cocoa/media_picker/desktop_media_picker_controller_unittest.mm',
       'browser/ui/cocoa/menu_button_unittest.mm',
       'browser/ui/cocoa/notifications/notification_builder_mac_unittest.mm',

@@ -1498,6 +1498,8 @@
       'browser/ui/cocoa/media_picker/desktop_media_picker_bridge.mm',
       'browser/ui/cocoa/media_picker/desktop_media_picker_cocoa.h',
       'browser/ui/cocoa/media_picker/desktop_media_picker_cocoa.mm',
+      'browser/ui/cocoa/media_picker/desktop_media_picker_controller_deprecated.h',
+      'browser/ui/cocoa/media_picker/desktop_media_picker_controller_deprecated.mm',      
       'browser/ui/cocoa/media_picker/desktop_media_picker_controller.h',
       'browser/ui/cocoa/media_picker/desktop_media_picker_controller.mm',
       'browser/ui/cocoa/media_picker/desktop_media_picker_item.h',

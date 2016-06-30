@@ -11,11 +11,14 @@
 
 // Protocol corresponding to |DesktopMediaListObserver|.
 @protocol DesktopMediaPickerObserver
-- (void)sourceAddedAtIndex:(int)index;
-- (void)sourceRemovedAtIndex:(int)index;
-- (void)sourceMovedFrom:(int)oldIndex to:(int)newIndex;
-- (void)sourceNameChangedAtIndex:(int)index;
-- (void)sourceThumbnailChangedAtIndex:(int)index;
+- (void)sourceAddedForList:(DesktopMediaList*)list atIndex:(int)index;
+- (void)sourceRemovedForList:(DesktopMediaList*)list atIndex:(int)index;
+- (void)sourceMovedForList:(DesktopMediaList*)list
+                      from:(int)oldIndex
+                        to:(int)newIndex;
+- (void)sourceNameChangedForList:(DesktopMediaList*)list atIndex:(int)index;
+- (void)sourceThumbnailChangedForList:(DesktopMediaList*)list
+                              atIndex:(int)index;
 @end
 
 // Provides a |DesktopMediaListObserver| implementation that forwards

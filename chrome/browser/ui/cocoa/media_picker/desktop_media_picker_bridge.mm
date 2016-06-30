@@ -14,26 +14,26 @@ DesktopMediaPickerBridge::~DesktopMediaPickerBridge() {
 
 void DesktopMediaPickerBridge::OnSourceAdded(DesktopMediaList* list,
                                              int index) {
-  [observer_ sourceAddedAtIndex:index];
+  [observer_ sourceAddedForList:list atIndex:index];
 }
 
 void DesktopMediaPickerBridge::OnSourceRemoved(DesktopMediaList* list,
                                                int index) {
-  [observer_ sourceRemovedAtIndex:index];
+  [observer_ sourceRemovedForList:list atIndex:index];
 }
 
 void DesktopMediaPickerBridge::OnSourceMoved(DesktopMediaList* list,
                                              int old_index,
                                              int new_index) {
-  [observer_ sourceMovedFrom:old_index to:new_index];
+  [observer_ sourceMovedForList:list from:old_index to:new_index];
 }
 
 void DesktopMediaPickerBridge::OnSourceNameChanged(DesktopMediaList* list,
                                                    int index) {
-  [observer_ sourceNameChangedAtIndex:index];
+  [observer_ sourceNameChangedForList:list atIndex:index];
 }
 
 void DesktopMediaPickerBridge::OnSourceThumbnailChanged(DesktopMediaList* list,
                                                         int index) {
-  [observer_ sourceThumbnailChangedAtIndex:index];
+  [observer_ sourceThumbnailChangedForList:list atIndex:index];
 }
