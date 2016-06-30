@@ -375,7 +375,9 @@ StoragePartitionImpl::StoragePartitionImpl(
     storage::SpecialStoragePolicy* special_storage_policy,
     HostZoomLevelContext* host_zoom_level_context,
     PlatformNotificationContextImpl* platform_notification_context,
-    BackgroundSyncContext* background_sync_context)
+    BackgroundSyncContext* background_sync_context,
+    scoped_refptr<webmessaging::BroadcastChannelProvider>
+        broadcast_channel_provider)
     : partition_path_(partition_path),
       quota_manager_(quota_manager),
       appcache_service_(appcache_service),
@@ -390,8 +392,8 @@ StoragePartitionImpl::StoragePartitionImpl(
       host_zoom_level_context_(host_zoom_level_context),
       platform_notification_context_(platform_notification_context),
       background_sync_context_(background_sync_context),
-      browser_context_(browser_context) {
-}
+      broadcast_channel_provider_(std::move(broadcast_channel_provider)),
+      browser_context_(browser_context) {}
 
 StoragePartitionImpl::~StoragePartitionImpl() {
   browser_context_ = nullptr;
@@ -517,6 +519,9 @@ StoragePartitionImpl* StoragePartitionImpl::Create(
       new BackgroundSyncContext();
   background_sync_context->Init(service_worker_context);
 
+  scoped_refptr<webmessaging::BroadcastChannelProvider>
+      broadcast_channel_provider = new webmessaging::BroadcastChannelProvider();
+
   StoragePartitionImpl* storage_partition = new StoragePartitionImpl(
       context, partition_path, quota_manager.get(), appcache_service.get(),
       filesystem_context.get(), database_tracker.get(),
@@ -524,7 +529,7 @@ StoragePartitionImpl* StoragePartitionImpl::Create(
       cache_storage_context.get(), service_worker_context.get(),
       webrtc_identity_store.get(), special_storage_policy.get(),
       host_zoom_level_context.get(), platform_notification_context.get(),
-      background_sync_context.get());
+      background_sync_context.get(), std::move(broadcast_channel_provider));
 
   service_worker_context->set_storage_partition(storage_partition);
 
@@ -597,6 +602,11 @@ StoragePartitionImpl::GetPlatformNotificationContext() {
 
 BackgroundSyncContext* StoragePartitionImpl::GetBackgroundSyncContext() {
   return background_sync_context_.get();
+}
+
+webmessaging::BroadcastChannelProvider*
+StoragePartitionImpl::GetBroadcastChannelProvider() {
+  return broadcast_channel_provider_.get();
 }
 
 void StoragePartitionImpl::OpenLocalStorage(

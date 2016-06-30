@@ -138,7 +138,7 @@ class BackgroundSyncManagerTest : public testing::Test {
     storage_partition_impl_.reset(new StoragePartitionImpl(
         helper_->browser_context(), base::FilePath(), nullptr, nullptr, nullptr,
         nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
-        nullptr, nullptr));
+        nullptr, nullptr, nullptr));
     helper_->context_wrapper()->set_storage_partition(
         storage_partition_impl_.get());
 

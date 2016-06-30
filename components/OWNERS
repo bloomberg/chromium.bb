@@ -249,6 +249,8 @@ per-file web_restrictions.gypi=file://components/web_restrictions/OWNERS
 per-file webdata.gypi=file://components/webdata/OWNERS
 per-file webdata_services.gypi=file://components/webdata_services/OWNERS
 
+per-file webmessaging.gypi=file://components/webmessaging/OWNERS
+
 per-file webp_transcode.gypi=file://components/webp_transcode/OWNERS
 
 per-file webusb.gypi=file://components/webusb/OWNERS

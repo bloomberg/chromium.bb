@@ -13,6 +13,7 @@
     '../components/mime_util/mime_util.gyp:mime_util',
     '../components/scheduler/scheduler.gyp:scheduler_common',
     '../components/url_formatter/url_formatter.gyp:url_formatter',
+    '../components/components.gyp:webmessaging',
     '../crypto/crypto.gyp:crypto',
     '../device/battery/battery.gyp:device_battery',
     '../device/battery/battery.gyp:device_battery_mojo_bindings',

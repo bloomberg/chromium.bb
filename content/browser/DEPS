@@ -13,6 +13,7 @@ include_rules = [
   "+components/scheduler/common",
   "+components/tracing",
   "+components/url_formatter",
+  "+components/webmessaging",
 
   "+content/app/strings/grit",  # For generated headers
   "+content/public/browser",

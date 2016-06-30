@@ -46,6 +46,7 @@
 #include "cc/base/switches.h"
 #include "components/scheduler/common/scheduler_switches.h"
 #include "components/tracing/common/tracing_switches.h"
+#include "components/webmessaging/broadcast_channel_provider.h"
 #include "content/browser/appcache/appcache_dispatcher_host.h"
 #include "content/browser/appcache/chrome_appcache_service.h"
 #include "content/browser/background_sync/background_sync_service_impl.h"
@@ -1061,6 +1062,11 @@ void RenderProcessHostImpl::RegisterMojoInterfaces() {
   GetInterfaceRegistry()->AddInterface(
       base::Bind(&RenderProcessHostImpl::CreateStoragePartitionService,
                  base::Unretained(this)));
+
+  GetInterfaceRegistry()->AddInterface(
+      base::Bind(&webmessaging::BroadcastChannelProvider::Connect,
+                 base::Unretained(
+                     storage_partition_impl_->GetBroadcastChannelProvider())));
 
   GetInterfaceRegistry()->AddInterface(
       base::Bind(&MimeRegistryImpl::Create),

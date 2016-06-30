@@ -11,6 +11,9 @@
 
 namespace blink {
 
+// Implementations of blink::ServiceRegistry should be thread safe. As such it
+// is okay to call |connectToRemoteService| from any thread, without the
+// thread hopping that would have been necesary with content::ServiceRegistry.
 class BLINK_PLATFORM_EXPORT ServiceRegistry {
 public:
     virtual void connectToRemoteService(const char* name, mojo::ScopedMessagePipeHandle) = 0;
