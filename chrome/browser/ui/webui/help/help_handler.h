@@ -21,6 +21,7 @@
 #if defined(OS_CHROMEOS)
 #include "base/task/cancelable_task_tracker.h"
 #include "chromeos/system/version_loader.h"
+#include "third_party/cros_system_api/dbus/update_engine/dbus-constants.h"
 #endif  // defined(OS_CHROMEOS)
 
 namespace base {
@@ -115,7 +116,7 @@ class HelpHandler : public content::WebUIMessageHandler,
   void OnRegulatoryLabelTextRead(const std::string& text);
 
   // Callback for setting the eol string text.
-  void OnEolStatus(const int status);
+  void OnEolStatus(update_engine::EndOfLifeStatus status);
 #endif
 
   // Specialized instance of the VersionUpdater used to update the browser.

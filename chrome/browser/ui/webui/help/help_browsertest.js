@@ -125,17 +125,23 @@ TEST_F('HelpPageWebUITest', 'testRequestUpdate', function() {
 
 // Test that the EndofLife String is shown and hidden properly.
 TEST_F('HelpPageWebUITest', 'testUpdateEolMessage', function() {
-  var container = $('update-status-container');
+   // Enable when failure is resolved.
+   // AX_TEXT_04: http://crbug.com/570563
+  this.accessibilityAuditConfig.ignoreSelectors(
+      'linkWithUnclearPurpose',
+      '#eol-learnMore > A');
+
+  var updateStatusContainer = $('update-status-container');
   var update = $('request-update');
-  var message = $('eol-message');
+  var eolStatusContainer = $('eol-status-container');
 
   help.HelpPage.updateEolMessage('device_supported', '');
-  expectTrue(message.hidden);
+  expectTrue(eolStatusContainer.hidden);
 
   help.HelpPage.updateEolMessage('device_endoflife', '');
-  expectFalse(message.hidden);
+  expectFalse(eolStatusContainer.hidden);
   expectTrue(update.disabled);
-  expectTrue(container.hidden);
+  expectTrue(updateStatusContainer.hidden);
 });
 
 GEN('#endif');

@@ -9,6 +9,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/profiles/profile.h"
+#include "third_party/cros_system_api/dbus/update_engine/dbus-constants.h"
 
 namespace message_center {
 class MessageCenter;
@@ -29,7 +30,7 @@ class EolNotification final {
 
  private:
   // Callback invoked when |GetEolStatus()| has finished.
-  void OnEolStatus(int status);
+  void OnEolStatus(update_engine::EndOfLifeStatus status);
 
   // Create or updates the notfication.
   void Update();
@@ -40,8 +41,8 @@ class EolNotification final {
   // Profile which is associated with the EndOfLife notification.
   Profile* const profile_;
 
-  // Device Eol status.
-  int status_;
+  // Device EndOfLife status.
+  update_engine::EndOfLifeStatus status_;
 
   // Factory of callbacks.
   base::WeakPtrFactory<EolNotification> weak_factory_;

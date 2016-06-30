@@ -45,6 +45,15 @@
         <div id="allowed-connection-types-message" hidden></div>
       </div>
     </div>
+<if expr="chromeos">
+    <div id="eol-status-container" hidden>
+      <div id="eol-status-icon" class="help-page-icon"></div>
+      <div id="eol-status-message-container">
+        <div id="eol-message"></div>
+        <div id="eol-learnMore" i18n-content="eolLearnMore"></div>
+      </div>
+    </div>
+</if>
     <div id="update-buttons-container">
       <div id="update-percentage" hidden></div>
 <if expr="is_macosx">
@@ -52,7 +61,6 @@
 </if>
       <button id="relaunch" i18n-content="relaunch" hidden></button>
 <if expr="chromeos">
-      <div id ="eol-message" hidden></div>
       <button id="relaunch-and-powerwash"
           i18n-content="relaunchAndPowerwash" hidden>
       </button>

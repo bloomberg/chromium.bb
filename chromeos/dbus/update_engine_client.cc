@@ -385,7 +385,7 @@ class UpdateEngineClientImpl : public UpdateEngineClient {
     }
 
     VLOG(1) << "Eol status received: " << status;
-    callback.Run(status);
+    callback.Run(static_cast<update_engine::EndOfLifeStatus>(status));
   }
 
   // Called when a status update signal is received.

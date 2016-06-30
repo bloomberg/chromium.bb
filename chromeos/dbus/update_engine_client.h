@@ -135,10 +135,11 @@ class CHROMEOS_EXPORT UpdateEngineClient : public DBusClient {
                           const GetChannelCallback& callback) = 0;
 
   // Called once GetEolStatus() is complete. Takes one parameter;
-  // - EolStatus: the eol status of the device.
-  typedef base::Callback<void(int status)> GetEolStatusCallback;
+  // - EndOfLife Status: the end of life status of the device.
+  typedef base::Callback<void(update_engine::EndOfLifeStatus status)>
+      GetEolStatusCallback;
 
-  // Get Eol status of the device and calls |callback| when completed.
+  // Get EndOfLife status of the device and calls |callback| when completed.
   virtual void GetEolStatus(const GetEolStatusCallback& callback) = 0;
 
   // Returns an empty UpdateCheckCallback that does nothing.

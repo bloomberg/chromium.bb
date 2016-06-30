@@ -33,6 +33,7 @@
 }
 
 #update-status-container {
+  margin-bottom: 12px;
   margin-top: 10px;
 }
 
@@ -96,7 +97,24 @@
   background-size: 18px;
 }
 
+#eol-status-icon {
+  background-image: url(../../../../ui/webui/resources/images/eol.svg);
+  background-size: 18px;
+}
+
+#eol-status-container {
+  margin-bottom: 12px;
+  margin-top: 10px;
+}
+
+#eol-status-message-container {
+  -webkit-margin-start: 12px;
+  display: inline-block;
+  vertical-align: middle;
+}
+
 #update-status-message-container {
+  -webkit-margin-start: 12px;
   display: inline-block;
   vertical-align: middle;
 }

@@ -1210,12 +1210,6 @@ void UserSessionManager::FinalizePrepareProfile(Profile* profile) {
   // resolved.
   if (delegate_)
     delegate_->OnProfilePrepared(profile, browser_launched);
-
-  // Check to see if this profile should show EndOfLife Notification and show
-  // the message accordingly.
-  if (!ShouldShowEolNotification(profile))
-    return;
-  CheckEolStatus(profile);
 }
 
 void UserSessionManager::ActivateWizard(const std::string& screen_name) {
@@ -1754,6 +1748,12 @@ void UserSessionManager::DoBrowserLaunchInternal(Profile* profile,
   user_manager::UserManager::Get()->SessionStarted();
   chromeos::BootTimesRecorder::Get()->LoginDone(
       user_manager::UserManager::Get()->IsCurrentUserNew());
+
+  // Check to see if this profile should show EndOfLife Notification and show
+  // the message accordingly.
+  if (!ShouldShowEolNotification(profile))
+    return;
+  CheckEolStatus(profile);
 }
 
 void UserSessionManager::RespectLocalePreferenceWrapper(
@@ -1873,8 +1873,8 @@ void UserSessionManager::CreateTokenUtilIfMissing() {
 }
 
 bool UserSessionManager::ShouldShowEolNotification(Profile* profile) {
-  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-          chromeos::switches::kEnableEolNotification)) {
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          chromeos::switches::kDisableEolNotification)) {
     return false;
   }
 

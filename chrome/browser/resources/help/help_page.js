@@ -84,6 +84,7 @@ cr.define('help', function() {
       if (cr.isChromeOS) {
         $('product-os-license').innerHTML =
             loadTimeData.getString('productOsLicense');
+        $('eol-learnMore').innerHTML = loadTimeData.getString('eolLearnMore');
       }
 
       var productTOS = $('product-tos');
@@ -398,10 +399,10 @@ cr.define('help', function() {
 
       // Show EndofLife Strings if applicable
       if (eolStatus == 'device_supported') {
-          $('eol-message').hidden = true;
+          $('eol-status-container').hidden = true;
       } else if (eolStatus == 'device_endoflife') {
           $('eol-message').innerHTML = eolMessage;
-          $('eol-message').hidden = false;
+          $('eol-status-container').hidden = false;
       }
 
 

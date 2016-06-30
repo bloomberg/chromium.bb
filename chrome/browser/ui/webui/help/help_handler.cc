@@ -74,7 +74,6 @@
 #include "chromeos/system/statistics_provider.h"
 #include "components/prefs/pref_service.h"
 #include "components/user_manager/user_manager.h"
-#include "third_party/cros_system_api/dbus/update_engine/dbus-constants.h"
 #endif
 
 using base::ListValue;
@@ -208,16 +207,12 @@ std::string ReadRegulatoryLabelText(const base::FilePath& path) {
 }
 
 // Returns messages that applys to this eol status
-base::string16 GetEolMessage(int status) {
+base::string16 GetEolMessage(update_engine::EndOfLifeStatus status) {
   if (status == update_engine::EndOfLifeStatus::kSecurityOnly) {
-    return l10n_util::GetStringFUTF16(
-        IDS_ABOUT_PAGE_EOL_SECURITY_ONLY,
-        base::ASCIIToUTF16(chrome::kEolNotificationURL));
+    return l10n_util::GetStringUTF16(IDS_ABOUT_PAGE_EOL_SECURITY_ONLY);
 
   } else {
-    return l10n_util::GetStringFUTF16(
-        IDS_ABOUT_PAGE_EOL_EOL,
-        base::ASCIIToUTF16(chrome::kEolNotificationURL));
+    return l10n_util::GetStringUTF16(IDS_ABOUT_PAGE_EOL_EOL);
   }
 }
 
@@ -372,6 +367,11 @@ void HelpHandler::GetLocalizedValues(base::DictionaryValue* localized_strings) {
           chromeos::switches::kDisableNewChannelSwitcherUI)) {
     localized_strings->SetBoolean("disableNewChannelSwitcherUI", true);
   }
+
+  localized_strings->SetString(
+      "eolLearnMore", l10n_util::GetStringFUTF16(
+                          IDS_ABOUT_PAGE_EOL_LEARN_MORE,
+                          base::ASCIIToUTF16(chrome::kEolNotificationURL)));
 #endif
 
   base::string16 tos = l10n_util::GetStringFUTF16(
@@ -532,8 +532,8 @@ void HelpHandler::OnPageLoaded(const base::ListValue* args) {
   version_updater_->GetChannel(false,
       base::Bind(&HelpHandler::OnTargetChannel, weak_factory_.GetWeakPtr()));
 
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          chromeos::switches::kEnableEolNotification)) {
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+          chromeos::switches::kDisableEolNotification)) {
     version_updater_->GetEolStatus(
         base::Bind(&HelpHandler::OnEolStatus, weak_factory_.GetWeakPtr()));
   }
@@ -764,7 +764,7 @@ void HelpHandler::OnRegulatoryLabelTextRead(const std::string& text) {
       base::StringValue(base::CollapseWhitespaceASCII(text, true)));
 }
 
-void HelpHandler::OnEolStatus(const int status) {
+void HelpHandler::OnEolStatus(update_engine::EndOfLifeStatus status) {
   if (status == update_engine::EndOfLifeStatus::kSupported ||
       IsEnterpriseManaged()) {
     return;

@@ -4,6 +4,9 @@
 
 #include "chromeos/dbus/fake_update_engine_client.h"
 
+#include "base/bind.h"
+#include "base/threading/thread_task_runner_handle.h"
+
 namespace chromeos {
 
 FakeUpdateEngineClient::FakeUpdateEngineClient()
@@ -12,8 +15,7 @@ FakeUpdateEngineClient::FakeUpdateEngineClient()
       reboot_after_update_call_count_(0),
       request_update_check_call_count_(0),
       rollback_call_count_(0),
-      can_rollback_call_count_(0) {
-}
+      can_rollback_call_count_(0) {}
 
 FakeUpdateEngineClient::~FakeUpdateEngineClient() {
 }
@@ -73,10 +75,16 @@ void FakeUpdateEngineClient::SetChannel(const std::string& target_channel,
 
 void FakeUpdateEngineClient::GetChannel(bool get_current_channel,
                                         const GetChannelCallback& callback) {
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::Bind(callback, std::string()));
 }
 
 void FakeUpdateEngineClient::GetEolStatus(
-    const GetEolStatusCallback& callback) {}
+    const GetEolStatusCallback& callback) {
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
+      base::Bind(callback, update_engine::EndOfLifeStatus::kSupported));
+}
 
 void FakeUpdateEngineClient::set_default_status(
     const UpdateEngineClient::Status& status) {

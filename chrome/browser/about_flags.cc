@@ -1953,9 +1953,9 @@ const FeatureEntry kFeatureEntries[] = {
      IDS_FLAGS_ENABLE_WEAK_MEMORYCACHE_DESCRIPTION, kOsAll,
      FEATURE_VALUE_TYPE(features::kWeakMemoryCache)},
 #if defined(OS_CHROMEOS)
-    {"enable-eol-notification", IDS_FLAGS_ENABLE_EOL_NOTIFICATION_NAME,
-     IDS_FLAGS_ENABLE_EOL_NOTIFICATION_DESCRIPTION, kOsCrOS,
-     SINGLE_VALUE_TYPE(chromeos::switches::kEnableEolNotification)},
+    {"disable-eol-notification", IDS_FLAGS_EOL_NOTIFICATION_NAME,
+     IDS_FLAGS_EOL_NOTIFICATION_DESCRIPTION, kOsCrOS,
+     SINGLE_DISABLE_VALUE_TYPE(chromeos::switches::kDisableEolNotification)},
 #endif  // defined(OS_CHROMEOS)
     {"fill-on-account-select", IDS_FILL_ON_ACCOUNT_SELECT_NAME,
      IDS_FILL_ON_ACCOUNT_SELECT_DESCRIPTION, kOsAll,
