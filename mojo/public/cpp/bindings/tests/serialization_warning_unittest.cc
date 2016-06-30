@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Serialization warnings are only recorded in debug build.
-#ifndef NDEBUG
+// Serialization warnings are only recorded when DLOG is enabled.
+#if !defined(NDEBUG) || defined(DCHECK_ALWAYS_ON)
 
 #include <stddef.h>
 #include <utility>
@@ -16,6 +16,7 @@
 #include "mojo/public/cpp/bindings/string.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 #include "mojo/public/interfaces/bindings/tests/serialization_test_structs.mojom.h"
+#include "mojo/public/interfaces/bindings/tests/test_unions.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace mojo {
@@ -45,27 +46,14 @@ class SerializationWarningTest : public testing::Test {
 
  protected:
   template <typename T>
-  void TestWarning(StructPtr<T> obj,
-                   mojo::internal::ValidationError expected_warning) {
-    TestStructWarningImpl<T>(std::move(obj), expected_warning);
-  }
-
-  template <typename T>
-  void TestWarning(InlinedStructPtr<T> obj,
-                   mojo::internal::ValidationError expected_warning) {
-    TestStructWarningImpl<T>(std::move(obj), expected_warning);
-  }
-
-  template <typename T, typename TPtr>
-  void TestStructWarningImpl(TPtr obj,
-                             mojo::internal::ValidationError expected_warning) {
+  void TestWarning(T obj, mojo::internal::ValidationError expected_warning) {
     warning_observer_.set_last_warning(mojo::internal::VALIDATION_ERROR_NONE);
 
     mojo::internal::SerializationContext context;
     mojo::internal::FixedBufferForTesting buf(
-        mojo::internal::PrepareToSerialize<TPtr>(obj, &context));
-    typename T::Data_* data;
-    mojo::internal::Serialize<TPtr>(obj, &buf, &data, &context);
+        mojo::internal::PrepareToSerialize<T>(obj, &context));
+    typename mojo::internal::MojomTypeTraits<T>::Data* data;
+    mojo::internal::Serialize<T>(obj, &buf, &data, &context);
 
     EXPECT_EQ(expected_warning, warning_observer_.last_warning());
   }
@@ -81,6 +69,20 @@ class SerializationWarningTest : public testing::Test {
         mojo::internal::PrepareToSerialize<T>(obj, &context));
     typename mojo::internal::MojomTypeTraits<T>::Data* data;
     mojo::internal::Serialize<T>(obj, &buf, &data, validate_params, &context);
+
+    EXPECT_EQ(expected_warning, warning_observer_.last_warning());
+  }
+
+  template <typename T>
+  void TestUnionWarning(T obj,
+                        mojo::internal::ValidationError expected_warning) {
+    warning_observer_.set_last_warning(mojo::internal::VALIDATION_ERROR_NONE);
+
+    mojo::internal::SerializationContext context;
+    mojo::internal::FixedBufferForTesting buf(
+        mojo::internal::PrepareToSerialize<T>(obj, false, &context));
+    typename mojo::internal::MojomTypeTraits<T>::Data* data;
+    mojo::internal::Serialize<T>(obj, &buf, &data, false, &context);
 
     EXPECT_EQ(expected_warning, warning_observer_.last_warning());
   }
@@ -227,6 +229,33 @@ TEST_F(SerializationWarningTest, ArrayOfStrings) {
   TestArrayWarning(std::move(test_array),
                    mojo::internal::VALIDATION_ERROR_UNEXPECTED_ARRAY_HEADER,
                    &validate_params_2);
+}
+
+TEST_F(SerializationWarningTest, StructInUnion) {
+  DummyStructPtr dummy(nullptr);
+  ObjectUnionPtr obj(ObjectUnion::New());
+  obj->set_f_dummy(std::move(dummy));
+
+  TestUnionWarning(std::move(obj),
+                   mojo::internal::VALIDATION_ERROR_UNEXPECTED_NULL_POINTER);
+}
+
+TEST_F(SerializationWarningTest, UnionInUnion) {
+  PodUnionPtr pod(nullptr);
+  ObjectUnionPtr obj(ObjectUnion::New());
+  obj->set_f_pod_union(std::move(pod));
+
+  TestUnionWarning(std::move(obj),
+                   mojo::internal::VALIDATION_ERROR_UNEXPECTED_NULL_POINTER);
+}
+
+TEST_F(SerializationWarningTest, HandleInUnion) {
+  ScopedMessagePipeHandle pipe;
+  HandleUnionPtr handle(HandleUnion::New());
+  handle->set_f_message_pipe(std::move(pipe));
+
+  TestUnionWarning(std::move(handle),
+                   mojo::internal::VALIDATION_ERROR_UNEXPECTED_INVALID_HANDLE);
 }
 
 }  // namespace

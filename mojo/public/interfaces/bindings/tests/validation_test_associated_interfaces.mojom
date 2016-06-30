@@ -13,5 +13,6 @@ interface AssociatedConformanceTestInterface {
   Method0(associated InterfaceX param0);
   Method1(associated InterfaceX& param0);
   Method2(associated InterfaceX? param0);
+  Method3(array<associated InterfaceX> param0);
 };
 

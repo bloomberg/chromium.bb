@@ -64,8 +64,8 @@
 {%-   set input_field = input_field_pattern|format(pf.field.name) %}
 {%-   set name = pf.field.name %}
 {%-   set kind = pf.field.kind %}
+{%-   set serializer_type = kind|unmapped_type_for_serializer %}
 {%-   if kind|is_object_kind %}
-{%-     set serializer_type = kind|unmapped_type_for_serializer %}
 {%-     set original_input_field = input_field_pattern|format(name) %}
 {%-     set input_field = "in_%s"|format(name) if input_may_be_temp
                                                else original_input_field %}
@@ -97,38 +97,25 @@
       mojo::internal::VALIDATION_ERROR_UNEXPECTED_NULL_POINTER,
       "null {{name}} in {{struct_display_name}}");
 {%-     endif %}
-{%-   elif kind|is_any_handle_kind or kind|is_interface_kind %}
-{%-     if kind|is_interface_kind %}
-  mojo::internal::InterfacePointerToData(
-      std::move({{input_field}}), &{{output}}->{{name}}, {{context}});
-{%-     elif kind|is_interface_request_kind %}
-  {{output}}->{{name}} = ({{context}})->handles.AddHandle(
-      {{input_field}}.PassMessagePipe().release());
-{%-     else %}
-  {{output}}->{{name}} =
-      ({{context}})->handles.AddHandle({{input_field}}.release());
-{%-     endif %}
+
+{%-   elif kind|is_any_handle_or_interface_kind %}
+  mojo::internal::Serialize<{{serializer_type}}>(
+      {{input_field}}, &{{output}}->{{name}}, {{context}});
 {%-     if not kind|is_nullable_kind %}
   MOJO_INTERNAL_DLOG_SERIALIZATION_WARNING(
-{%-       if kind|is_interface_kind %}
-      !{{output}}->{{name}}.handle.is_valid(),
+      !mojo::internal::IsHandleOrInterfaceValid({{output}}->{{name}}),
+{%-       if kind|is_associated_kind %}
+      mojo::internal::VALIDATION_ERROR_UNEXPECTED_INVALID_INTERFACE_ID,
 {%-       else %}
-      !{{output}}->{{name}}.is_valid(),
-{%-       endif %}
       mojo::internal::VALIDATION_ERROR_UNEXPECTED_INVALID_HANDLE,
+{%-       endif %}
       "invalid {{name}} in {{struct_display_name}}");
 {%-     endif %}
-{%-   elif kind|is_associated_kind %}
-  // TODO(yzshen): add some DCHECKs for non-nullable, is_local, correct router, etc.
-{%-     if kind|is_associated_interface_kind %}
-  mojo::internal::AssociatedInterfacePtrInfoToData(std::move({{input_field}}), &{{output}}->{{name}});
-{%-     else %}
-  {{output}}->{{name}} = {{input_field}}.PassHandle().release();
-{%-     endif %}
+
 {%-   elif kind|is_enum_kind %}
-{%-     set serializer_type = kind|unmapped_type_for_serializer %}
   mojo::internal::Serialize<{{serializer_type}}>(
       {{input_field}}, &{{output}}->{{name}});
+
 {%-   else %}
   {{output}}->{{name}} = {{input_field}};
 {%-   endif %}
@@ -154,11 +141,10 @@
 {%-     set output_field = output_field_pattern|format(pf.field.name) %}
 {%-     set name = pf.field.name %}
 {%-     set kind = pf.field.kind %}
-{%-     if kind|is_object_kind  or kind|is_enum_kind %}
+{%-     if kind|is_object_kind or kind|is_enum_kind %}
   if (!{{input}}.Read{{name|under_to_camel}}(&{{output_field}}))
     {{success}} = false;
-{%-     elif kind|is_interface_kind or kind|is_any_handle_kind or
-             kind|is_associated_kind %}
+{%-     elif kind|is_any_handle_or_interface_kind %}
   {{output_field}} = {{input}}.Take{{name|under_to_camel}}();
 {%-     else %}
   {{output_field}} = {{input}}.{{name}}();

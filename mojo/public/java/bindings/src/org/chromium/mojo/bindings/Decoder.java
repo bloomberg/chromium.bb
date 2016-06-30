@@ -682,6 +682,23 @@ public class Decoder {
     }
 
     /**
+     * Deserializes an array of associated interfaces at the given offset. Not yet supported.
+     */
+    public AssociatedInterfaceNotSupported[] readAssociatedServiceInterfaceNotSupporteds(
+            int offset, int arrayNullability, int expectedLength) {
+        return null;
+    }
+
+    /**
+     * Deserializes an array of associated interface requests at the given offset. Not yet
+     * supported.
+     */
+    public AssociatedInterfaceRequestNotSupported[] readAssociatedInterfaceRequestNotSupporteds(
+            int offset, int arrayNullability, int expectedLength) {
+        return null;
+    }
+
+    /**
      * Returns a view of this decoder at the offset |offset|.
      */
     private Decoder getDecoderAtPosition(int offset) {
