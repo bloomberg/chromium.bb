@@ -85,29 +85,29 @@ public class ItemChooserDialog {
      */
     public static class ItemChooserLabels {
         // The title at the top of the dialog.
-        public final CharSequence mTitle;
+        public final CharSequence title;
         // The message to show while there are no results.
-        public final CharSequence mSearching;
+        public final CharSequence searching;
         // The message to show when no results were produced.
-        public final CharSequence mNoneFound;
+        public final CharSequence noneFound;
         // A status message to show above the button row after discovery has
         // stopped and no devices have been found.
-        public final CharSequence mStatusIdleNoneFound;
+        public final CharSequence statusIdleNoneFound;
         // A status message to show above the button row after an item has
         // been added and discovery has stopped.
-        public final CharSequence mStatusIdleSomeFound;
+        public final CharSequence statusIdleSomeFound;
         // The label for the positive button (e.g. Select/Pair).
-        public final CharSequence mPositiveButton;
+        public final CharSequence positiveButton;
 
         public ItemChooserLabels(CharSequence title, CharSequence searching, CharSequence noneFound,
                 CharSequence statusIdleNoneFound, CharSequence statusIdleSomeFound,
                 CharSequence positiveButton) {
-            mTitle = title;
-            mSearching = searching;
-            mNoneFound = noneFound;
-            mStatusIdleNoneFound = statusIdleNoneFound;
-            mStatusIdleSomeFound = statusIdleSomeFound;
-            mPositiveButton = positiveButton;
+            this.title = title;
+            this.searching = searching;
+            this.noneFound = noneFound;
+            this.statusIdleNoneFound = statusIdleNoneFound;
+            this.statusIdleSomeFound = statusIdleSomeFound;
+            this.positiveButton = positiveButton;
         }
     }
 
@@ -286,14 +286,14 @@ public class ItemChooserDialog {
         mEmptyMessage =
                 (TextViewWithClickableSpans) dialogContainer.findViewById(R.id.not_found_message);
 
-        mTitle.setText(labels.mTitle);
+        mTitle.setText(labels.title);
         mTitle.setMovementMethod(LinkMovementMethod.getInstance());
 
         mEmptyMessage.setMovementMethod(LinkMovementMethod.getInstance());
         mStatus.setMovementMethod(LinkMovementMethod.getInstance());
 
         mConfirmButton = (Button) dialogContainer.findViewById(R.id.positive);
-        mConfirmButton.setText(labels.mPositiveButton);
+        mConfirmButton.setText(labels.positiveButton);
         mConfirmButton.setEnabled(false);
         mConfirmButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -423,7 +423,7 @@ public class ItemChooserDialog {
     private void setState(State state) {
         switch (state) {
             case STARTING:
-                mStatus.setText(mLabels.mSearching);
+                mStatus.setText(mLabels.searching);
                 mListView.setVisibility(View.GONE);
                 mProgressBar.setVisibility(View.VISIBLE);
                 mEmptyMessage.setVisibility(View.GONE);
@@ -431,8 +431,8 @@ public class ItemChooserDialog {
             case DISCOVERY_IDLE:
                 boolean showEmptyMessage = mItemAdapter.isEmpty();
                 mStatus.setText(showEmptyMessage
-                        ? mLabels.mStatusIdleNoneFound : mLabels.mStatusIdleSomeFound);
-                mEmptyMessage.setText(mLabels.mNoneFound);
+                        ? mLabels.statusIdleNoneFound : mLabels.statusIdleSomeFound);
+                mEmptyMessage.setText(mLabels.noneFound);
                 mEmptyMessage.setVisibility(showEmptyMessage ? View.VISIBLE : View.GONE);
                 break;
         }
