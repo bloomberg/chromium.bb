@@ -46,6 +46,9 @@ class RebaselineFromTryJobs(AbstractParallelRebaselineCommand):
         results_url = self._results_url(try_job.builder_name, try_job.master_name, try_job.build_number)
         builder = self._tool.buildbot.builder_with_name(try_job.builder_name, try_job.master_name)
         layout_test_results = builder.fetch_layout_test_results(results_url)
+        if layout_test_results is None:
+            _log.warning('Failed to request layout test results from "%s".', results_url)
+            return []
         return layout_test_results.unexpected_mismatch_results()
 
     def execute(self, options, args, tool):
