@@ -376,8 +376,8 @@ void SiteEngagementService::SetLastEngagementTime(
 }
 
 base::TimeDelta SiteEngagementService::GetMaxDecayPeriod() const {
-  return base::TimeDelta::FromDays(
-             SiteEngagementScore::GetDecayPeriodInDays()) *
+  return base::TimeDelta::FromHours(
+             SiteEngagementScore::GetDecayPeriodInHours()) *
          SiteEngagementScore::GetMaxDecaysPerScore();
 }
 
@@ -566,10 +566,10 @@ void SiteEngagementService::GetCountsAndLastVisitForOriginsComplete(
     // reduced value rather than being decayed once here, and then once again
     // when it is next accessed.
     int undecay = 0;
-    int days_since_engagement = (now - last_visit).InDays();
-    if (days_since_engagement > 0) {
+    int hours_since_engagement = (now - last_visit).InHours();
+    if (hours_since_engagement > 0) {
       int periods =
-          days_since_engagement / SiteEngagementScore::GetDecayPeriodInDays();
+          hours_since_engagement / SiteEngagementScore::GetDecayPeriodInHours();
       undecay = periods * SiteEngagementScore::GetDecayPoints();
     }
 

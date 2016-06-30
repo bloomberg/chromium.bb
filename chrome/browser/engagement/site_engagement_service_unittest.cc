@@ -721,7 +721,7 @@ TEST_F(SiteEngagementServiceTest, CleanupEngagementScores) {
   base::TimeDelta one_second = base::TimeDelta::FromSeconds(1);
   base::TimeDelta one_day = base::TimeDelta::FromDays(1);
   base::TimeDelta decay_period =
-      base::TimeDelta::FromDays(SiteEngagementScore::GetDecayPeriodInDays());
+      base::TimeDelta::FromHours(SiteEngagementScore::GetDecayPeriodInHours());
   base::TimeDelta shorter_than_decay_period = decay_period - one_second;
 
   base::Time max_decay_time = GetReferenceTime() - service->GetMaxDecayPeriod();
@@ -1306,8 +1306,9 @@ TEST_F(SiteEngagementServiceTest, ScoreDecayHistograms) {
                               0);
 
   // Check histograms after one decay period.
-  clock->SetNow(current_day + base::TimeDelta::FromDays(
-                                  SiteEngagementScore::GetDecayPeriodInDays()));
+  clock->SetNow(
+      current_day +
+      base::TimeDelta::FromHours(SiteEngagementScore::GetDecayPeriodInHours()));
 
   // Trigger decay and histogram hit.
   service->AddPoints(origin1, 0.01);
@@ -1321,8 +1322,8 @@ TEST_F(SiteEngagementServiceTest, ScoreDecayHistograms) {
 
   // Check histograms after another decay period.
   clock->SetNow(current_day +
-                base::TimeDelta::FromDays(
-                    2 * SiteEngagementScore::GetDecayPeriodInDays()));
+                base::TimeDelta::FromHours(
+                    2 * SiteEngagementScore::GetDecayPeriodInHours()));
   // Trigger decay and histogram hit.
   service->AddPoints(origin1, 0.01);
   histograms.ExpectTotalCount(SiteEngagementMetrics::kScoreDecayedFromHistogram,
@@ -1334,8 +1335,8 @@ TEST_F(SiteEngagementServiceTest, ScoreDecayHistograms) {
   // already). This will be 40 decays in total.
   for (int i = 3; i <= kMorePeriodsThanNeededToDecayMaxScore; ++i) {
     clock->SetNow(current_day +
-                  base::TimeDelta::FromDays(
-                      i * SiteEngagementScore::GetDecayPeriodInDays()));
+                  base::TimeDelta::FromHours(
+                      i * SiteEngagementScore::GetDecayPeriodInHours()));
     // Trigger decay and histogram hit.
     service->AddPoints(origin1, 0.01);
   }

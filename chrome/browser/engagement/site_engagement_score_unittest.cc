@@ -200,15 +200,15 @@ TEST_F(SiteEngagementScoreTest, ScoresDecayOverTime) {
   // The score should not have decayed before the first decay period has
   // elapsed.
   test_clock_.SetNow(current_day +
-                     base::TimeDelta::FromDays(
-                         SiteEngagementScore::GetDecayPeriodInDays() - 1));
+                     base::TimeDelta::FromHours(
+                         SiteEngagementScore::GetDecayPeriodInHours() - 1));
   EXPECT_EQ(SiteEngagementScore::kMaxPoints, score_.GetScore());
 
   // The score should have decayed by one chunk after one decay period has
   // elapsed.
   test_clock_.SetNow(
       current_day +
-      base::TimeDelta::FromDays(SiteEngagementScore::GetDecayPeriodInDays()));
+      base::TimeDelta::FromHours(SiteEngagementScore::GetDecayPeriodInHours()));
   EXPECT_EQ(
       SiteEngagementScore::kMaxPoints - SiteEngagementScore::GetDecayPoints(),
       score_.GetScore());
@@ -217,8 +217,8 @@ TEST_F(SiteEngagementScoreTest, ScoresDecayOverTime) {
   // decay periods have elapsed.
   test_clock_.SetNow(
       current_day +
-      base::TimeDelta::FromDays(kLessPeriodsThanNeededToDecayMaxScore *
-                                SiteEngagementScore::GetDecayPeriodInDays()));
+      base::TimeDelta::FromHours(kLessPeriodsThanNeededToDecayMaxScore *
+                                 SiteEngagementScore::GetDecayPeriodInHours()));
   EXPECT_EQ(SiteEngagementScore::kMaxPoints -
                 kLessPeriodsThanNeededToDecayMaxScore *
                     SiteEngagementScore::GetDecayPoints(),
@@ -227,8 +227,8 @@ TEST_F(SiteEngagementScoreTest, ScoresDecayOverTime) {
   // The score should not decay below zero.
   test_clock_.SetNow(
       current_day +
-      base::TimeDelta::FromDays(kMorePeriodsThanNeededToDecayMaxScore *
-                                SiteEngagementScore::GetDecayPeriodInDays()));
+      base::TimeDelta::FromHours(kMorePeriodsThanNeededToDecayMaxScore *
+                                 SiteEngagementScore::GetDecayPeriodInHours()));
   EXPECT_EQ(0, score_.GetScore());
 }
 
@@ -252,8 +252,8 @@ TEST_F(SiteEngagementScoreTest, DecaysAppliedBeforeAdd) {
   // Go forward a few decay periods.
   test_clock_.SetNow(
       current_day +
-      base::TimeDelta::FromDays(kLessPeriodsThanNeededToDecayMaxScore *
-                                SiteEngagementScore::GetDecayPeriodInDays()));
+      base::TimeDelta::FromHours(kLessPeriodsThanNeededToDecayMaxScore *
+                                 SiteEngagementScore::GetDecayPeriodInHours()));
 
   double decayed_score = initial_score -
                          kLessPeriodsThanNeededToDecayMaxScore *
@@ -386,8 +386,8 @@ TEST_F(SiteEngagementScoreTest, Reset) {
 
   // The decay should happen one decay period from the current time.
   test_clock_.SetNow(current_day +
-                     base::TimeDelta::FromDays(
-                         SiteEngagementScore::GetDecayPeriodInDays() + 1));
+                     base::TimeDelta::FromHours(
+                         SiteEngagementScore::GetDecayPeriodInHours() + 1));
   EXPECT_EQ(25.0 - SiteEngagementScore::GetDecayPoints(), score_.GetScore());
 
   // Ensure that manually setting a time works as expected.

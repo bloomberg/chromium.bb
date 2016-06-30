@@ -32,7 +32,7 @@ const int kMaxDaysSinceShortcutLaunch = 10;
 // SiteEngagementScore::Variation enum.
 const char* kVariationNames[] = {
     "max_points_per_day",
-    "decay_period_in_days",
+    "decay_period_in_hours",
     "decay_points",
     "navigation_points",
     "user_input_points",
@@ -73,20 +73,20 @@ std::unique_ptr<base::DictionaryValue> GetScoreDictForOrigin(
 
 const double SiteEngagementScore::kMaxPoints = 100;
 double SiteEngagementScore::param_values[] = {
-    5,     // MAX_POINTS_PER_DAY
-    7,     // DECAY_PERIOD_IN_DAYS
-    5,     // DECAY_POINTS
-    0.5,   // NAVIGATION_POINTS
-    0.2,   // USER_INPUT_POINTS
-    0.02,  // VISIBLE_MEDIA_POINTS
-    0.01,  // HIDDEN_MEDIA_POINTS
-    5,     // WEB_APP_INSTALLED_POINTS
-    0.5,   // FIRST_DAILY_ENGAGEMENT
-    8,     // BOOTSTRAP_POINTS
-    5,     // MEDIUM_ENGAGEMENT_BOUNDARY
-    50,    // HIGH_ENGAGEMENT_BOUNDARY
-    1,     // MAX_DECAYS_PER_SCORE
-    72,    // LAST_ENGAGEMENT_GRACE_PERIOD_IN_HOURS
+    5,       // MAX_POINTS_PER_DAY
+    7 * 24,  // DECAY_PERIOD_IN_HOURS
+    5,       // DECAY_POINTS
+    0.5,     // NAVIGATION_POINTS
+    0.2,     // USER_INPUT_POINTS
+    0.02,    // VISIBLE_MEDIA_POINTS
+    0.01,    // HIDDEN_MEDIA_POINTS
+    5,       // WEB_APP_INSTALLED_POINTS
+    0.5,     // FIRST_DAILY_ENGAGEMENT
+    8,       // BOOTSTRAP_POINTS
+    5,       // MEDIUM_ENGAGEMENT_BOUNDARY
+    50,      // HIGH_ENGAGEMENT_BOUNDARY
+    1,       // MAX_DECAYS_PER_SCORE
+    72,      // LAST_ENGAGEMENT_GRACE_PERIOD_IN_HOURS
 };
 
 const char* SiteEngagementScore::kRawScoreKey = "rawScore";
@@ -99,8 +99,8 @@ double SiteEngagementScore::GetMaxPointsPerDay() {
   return param_values[MAX_POINTS_PER_DAY];
 }
 
-double SiteEngagementScore::GetDecayPeriodInDays() {
-  return param_values[DECAY_PERIOD_IN_DAYS];
+double SiteEngagementScore::GetDecayPeriodInHours() {
+  return param_values[DECAY_PERIOD_IN_HOURS];
 }
 
 double SiteEngagementScore::GetDecayPoints() {
@@ -320,11 +320,12 @@ double SiteEngagementScore::DecayedScore() const {
   // time can go backwards. If that does happen and the system detects that the
   // current day is earlier than the last engagement, no decay (or growth) is
   // applied.
-  int days_since_engagement = (clock_->Now() - last_engagement_time_).InDays();
-  if (days_since_engagement < 0)
+  int hours_since_engagement =
+      (clock_->Now() - last_engagement_time_).InHours();
+  if (hours_since_engagement < 0)
     return raw_score_;
 
-  int periods = days_since_engagement / GetDecayPeriodInDays();
+  int periods = hours_since_engagement / GetDecayPeriodInHours();
   return std::max(0.0, raw_score_ - periods * GetDecayPoints());
 }
 
@@ -339,7 +340,7 @@ double SiteEngagementScore::BonusScore() const {
 
 void SiteEngagementScore::SetParamValuesForTesting() {
   param_values[MAX_POINTS_PER_DAY] = 5;
-  param_values[DECAY_PERIOD_IN_DAYS] = 7;
+  param_values[DECAY_PERIOD_IN_HOURS] = 7 * 24;
   param_values[DECAY_POINTS] = 5;
   param_values[NAVIGATION_POINTS] = 0.5;
   param_values[USER_INPUT_POINTS] = 0.05;

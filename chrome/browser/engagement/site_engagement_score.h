@@ -27,7 +27,7 @@ class SiteEngagementScore {
     MAX_POINTS_PER_DAY = 0,
 
     // The period over which site engagement decays.
-    DECAY_PERIOD_IN_DAYS,
+    DECAY_PERIOD_IN_HOURS,
 
     // The number of points to decay per period.
     DECAY_POINTS,
@@ -81,7 +81,7 @@ class SiteEngagementScore {
   static const double kMaxPoints;
 
   static double GetMaxPointsPerDay();
-  static double GetDecayPeriodInDays();
+  static double GetDecayPeriodInHours();
   static double GetDecayPoints();
   static double GetNavigationPoints();
   static double GetUserInputPoints();
