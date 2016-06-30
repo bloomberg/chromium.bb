@@ -16,6 +16,7 @@
 struct DevToolsMessageData;
 
 namespace base {
+class MessageLoop;
 class SingleThreadTaskRunner;
 }
 
@@ -55,6 +56,7 @@ class DevToolsAgentFilter : public IPC::MessageFilter {
   void AddEmbeddedWorkerRoute(int32_t routing_id);
   void RemoveEmbeddedWorkerRoute(int32_t routing_id);
 
+  base::MessageLoop* render_thread_loop_;
   scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
   int current_routing_id_;
 

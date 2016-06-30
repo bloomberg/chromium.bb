@@ -410,7 +410,7 @@ class AppCacheStorageImplTest : public testing::Test {
   }
 
   void SetUpTest() {
-    DCHECK(io_thread->task_runner()->BelongsToCurrentThread());
+    DCHECK(base::MessageLoop::current() == io_thread->message_loop());
     service_.reset(new AppCacheServiceImpl(NULL));
     service_->Initialize(base::FilePath(), db_thread->task_runner(), NULL);
     mock_quota_manager_proxy_ = new MockQuotaManagerProxy();
@@ -419,7 +419,7 @@ class AppCacheStorageImplTest : public testing::Test {
   }
 
   void TearDownTest() {
-    DCHECK(io_thread->task_runner()->BelongsToCurrentThread());
+    DCHECK(base::MessageLoop::current() == io_thread->message_loop());
     storage()->CancelDelegateCallbacks(delegate());
     group_ = NULL;
     cache_ = NULL;
@@ -433,7 +433,7 @@ class AppCacheStorageImplTest : public testing::Test {
   void TestFinished() {
     // We unwind the stack prior to finishing up to let stack
     // based objects get deleted.
-    DCHECK(io_thread->task_runner()->BelongsToCurrentThread());
+    DCHECK(base::MessageLoop::current() == io_thread->message_loop());
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::Bind(&AppCacheStorageImplTest::TestFinishedUnwound,
                               base::Unretained(this)));
@@ -449,7 +449,7 @@ class AppCacheStorageImplTest : public testing::Test {
   }
 
   void ScheduleNextTask() {
-    DCHECK(io_thread->task_runner()->BelongsToCurrentThread());
+    DCHECK(base::MessageLoop::current() == io_thread->message_loop());
     if (task_stack_.empty()) {
       return;
     }

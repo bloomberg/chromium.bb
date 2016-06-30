@@ -6,7 +6,6 @@
 
 #include "base/lazy_instance.h"
 #include "base/message_loop/message_loop.h"
-#include "base/single_thread_task_runner.h"
 #include "base/task_runner_util.h"
 #include "build/build_config.h"
 
@@ -34,10 +33,8 @@ JavaBridgeThread::~JavaBridgeThread() {
 
 // static
 bool JavaBridgeThread::CurrentlyOn() {
-  return g_background_thread.Get()
-      .message_loop()
-      ->task_runner()
-      ->BelongsToCurrentThread();
+  return base::MessageLoop::current() ==
+         g_background_thread.Get().message_loop();
 }
 
 // static
