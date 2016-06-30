@@ -60,6 +60,7 @@ test("components_unittests") {
     "//components/auto_login_parser:unit_tests",
     "//components/autofill/core/browser:unit_tests",
     "//components/autofill/core/common:unit_tests",
+    "//components/base32:unit_tests",
     "//components/bookmarks/browser:unit_tests",
     "//components/bookmarks/managed:unit_tests",
     "//components/browser_sync/browser:unit_tests",
@@ -275,11 +276,15 @@ test("components_unittests") {
   if (enable_rlz_support) {
     deps += [ "//components/rlz:unit_tests" ]
   }
+
   if (is_chromeos) {
     deps += [
       "//components/arc:unit_tests",
       "//components/ownership:unit_tests",
+      "//components/pairing:unit_tests",
+      "//components/timers:unit_tests",
       "//components/user_manager:unit_tests",
+      "//components/wifi_sync:unit_tests",
     ]
   }
 

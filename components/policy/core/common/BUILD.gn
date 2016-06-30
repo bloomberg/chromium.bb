@@ -252,7 +252,9 @@ if (enable_configuration_policy) {
       "schema_registry_unittest.cc",
       "schema_unittest.cc",
     ]
-    if (!is_chromeos) {
+    if (is_chromeos) {
+      sources += [ "proxy_policy_provider_unittest.cc" ]
+    } else {
       sources += [
         "cloud/user_cloud_policy_manager_unittest.cc",
         "cloud/user_cloud_policy_store_unittest.cc",

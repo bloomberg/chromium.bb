@@ -12,3 +12,17 @@ static_library("timers") {
     "//base",
   ]
 }
+
+source_set("unit_tests") {
+  testonly = true
+
+  sources = [
+    "alarm_timer_unittest.cc",
+  ]
+
+  deps = [
+    ":timers",
+    "//base",
+    "//testing/gtest",
+  ]
+}
