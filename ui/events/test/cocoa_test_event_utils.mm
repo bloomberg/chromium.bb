@@ -176,6 +176,12 @@ NSEvent* SynthesizeKeyEvent(NSWindow* window,
   // logic to support it.
   flags &= ~NSAlphaShiftKeyMask;
 
+  // Call sites may generate unicode character events with an undefined
+  // keycode. Since it's not feasible to determine the correct keycode for
+  // each unicode character, we use a dummy keycode corresponding to key 'A'.
+  if (dom_key.IsCharacter() && keycode == ui::VKEY_UNKNOWN)
+    keycode = ui::VKEY_A;
+
   unichar character;
   unichar shifted_character;
   int macKeycode = ui::MacKeyCodeForWindowsKeyCode(

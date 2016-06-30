@@ -147,6 +147,16 @@ bool MockInputMethod::OnUntranslatedIMEMessage(const base::NativeEvent& event,
 }
 
 void MockInputMethod::DispatchKeyEvent(ui::KeyEvent* key) {
+// On Mac, emulate InputMethodMac behavior for character events. Composition
+// still needs to be mocked, since it's not possible to generate test events
+// which trigger the appropriate NSResponder action messages for composition.
+#if defined(OS_MACOSX)
+  if (key->is_char()) {
+    ignore_result(DispatchKeyEventPostIME(key));
+    return;
+  }
+#endif
+
   // Checks whether the key event is from EventGenerator on Windows which will
   // generate key event for WM_CHAR.
   // The MockInputMethod will insert char on WM_KEYDOWN so ignore WM_CHAR here.
@@ -510,9 +520,15 @@ class TextfieldTest : public ViewsTestBase, public TextfieldController {
       SendKeyEvent(code);
     } else {
       // For unicode characters, assume they come from IME rather than the
-      // keyboard. So they are dispatched directly to the input method.
+      // keyboard. So they are dispatched directly to the input method. But on
+      // Mac, key events don't pass through InputMethod. Hence they are
+      // dispatched regularly.
       ui::KeyEvent event(ch, ui::VKEY_UNKNOWN, ui::EF_NONE);
+#if defined(OS_MACOSX)
+      event_generator_->Dispatch(&event);
+#else
       input_method_->DispatchKeyEvent(&event);
+#endif
     }
   }
 
