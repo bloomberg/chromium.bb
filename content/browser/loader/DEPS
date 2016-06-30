@@ -155,7 +155,6 @@ specific_include_rules = {
     "+content/public/browser/resource_request_details.h",
     "+content/public/browser/stream_handle.h",
     "+content/public/browser/stream_info.h",
-    "+content/public/browser/user_metrics.h",
     "+content/public/browser/web_contents_observer.h",
     "+content/public/common/browser_side_navigation_policy.h",
     "+content/public/common/content_features.h",
