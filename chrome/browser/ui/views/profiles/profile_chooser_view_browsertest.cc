@@ -182,8 +182,8 @@ class ProfileChooserViewExtensionsTest : public ExtensionBrowserTest {
     return ProfileChooserView::profile_bubble_;
   }
 
-  views::View* signin_current_profile_link() {
-    return ProfileChooserView::profile_bubble_->signin_current_profile_link_;
+  views::View* signin_current_profile_button() {
+    return ProfileChooserView::profile_bubble_->signin_current_profile_button_;
   }
 
   void ShowSigninView() {
@@ -221,7 +221,7 @@ IN_PROC_BROWSER_TEST_F(ProfileChooserViewExtensionsTest, SigninButtonHasFocus) {
   ASSERT_TRUE(profiles::IsMultipleProfilesEnabled());
   ASSERT_NO_FATAL_FAILURE(OpenProfileChooserView(browser()));
 
-  EXPECT_TRUE(signin_current_profile_link()->HasFocus());
+  EXPECT_TRUE(signin_current_profile_button()->HasFocus());
 }
 
 IN_PROC_BROWSER_TEST_F(ProfileChooserViewExtensionsTest, ContentAreaHasFocus) {

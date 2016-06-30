@@ -148,6 +148,9 @@ class ProfileChooserView : public content::WebContentsDelegate,
   views::View* CreateCurrentProfileView(
       const AvatarMenu::Item& avatar_item,
       bool is_guest);
+  views::View* CreateMaterialDesignCurrentProfileView(
+      const AvatarMenu::Item& avatar_item,
+      bool is_guest);
   views::View* CreateGuestProfileView();
   views::View* CreateOtherProfilesView(const Indexes& avatars_to_show);
   views::View* CreateOptionsView(bool display_lock, AvatarMenu* avatar_menu);
@@ -237,7 +240,7 @@ class ProfileChooserView : public content::WebContentsDelegate,
 
   // Links and buttons displayed in the active profile card.
   views::Link* manage_accounts_link_;
-  views::LabelButton* signin_current_profile_link_;
+  views::LabelButton* signin_current_profile_button_;
   views::LabelButton* auth_error_email_button_;
 
   // The profile name and photo in the active profile card. Owned by the
