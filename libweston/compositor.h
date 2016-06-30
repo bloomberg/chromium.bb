@@ -966,6 +966,8 @@ struct weston_view {
 
 	/* Per-surface Presentation feedback flags, controlled by backend. */
 	uint32_t psf_flags;
+
+	bool is_mapped;
 };
 
 struct weston_surface_state {
@@ -1084,6 +1086,8 @@ struct weston_surface {
 	const char *role_name;
 
 	struct weston_timeline_object timeline;
+
+	bool is_mapped;
 };
 
 struct weston_subsurface {

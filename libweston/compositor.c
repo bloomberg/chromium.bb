@@ -1736,6 +1736,7 @@ weston_view_unmap(struct weston_view *view)
 	weston_view_damage_below(view);
 	view->output = NULL;
 	view->plane = NULL;
+	view->is_mapped = false;
 	weston_layer_entry_remove(&view->layer_link);
 	wl_list_remove(&view->link);
 	wl_list_init(&view->link);
@@ -1765,6 +1766,7 @@ weston_surface_unmap(struct weston_surface *surface)
 {
 	struct weston_view *view;
 
+	surface->is_mapped = false;
 	wl_list_for_each(view, &surface->views, surface_link)
 		weston_view_unmap(view);
 	surface->output = NULL;
@@ -2129,6 +2131,7 @@ view_list_add_subsurface_view(struct weston_compositor *compositor,
 
 	view->parent_view = parent;
 	weston_view_update_transform(view);
+	view->is_mapped = true;
 
 	if (wl_list_empty(&sub->surface->subsurface_list)) {
 		wl_list_insert(compositor->view_list.prev, &view->link);
@@ -3242,7 +3245,6 @@ subsurface_get_label(struct weston_surface *surface, char *buf, size_t len)
 static void
 subsurface_configure(struct weston_surface *surface, int32_t dx, int32_t dy)
 {
-	struct weston_compositor *compositor = surface->compositor;
 	struct weston_view *view;
 
 	wl_list_for_each(view, &surface->views, surface_link)
@@ -3254,8 +3256,9 @@ subsurface_configure(struct weston_surface *surface, int32_t dx, int32_t dy)
 	 * mapped, parent is not in a visible layer, so this sub-surface
 	 * will not be drawn either.
 	 */
+
 	if (!weston_surface_is_mapped(surface)) {
-		struct weston_output *output;
+		surface->is_mapped = true;
 
 		/* Cannot call weston_view_update_transform(),
 		 * because that would call it also for the parent surface,
@@ -3263,17 +3266,11 @@ subsurface_configure(struct weston_surface *surface, int32_t dx, int32_t dy)
 		 * inconsistent state, where the window could never be
 		 * mapped.
 		 *
-		 * Instead just assign any output, to make
+		 * Instead just force the is_mapped flag on, to make
 		 * weston_surface_is_mapped() return true, so that when the
 		 * parent surface does get mapped, this one will get
 		 * included, too. See view_list_add().
 		 */
-		assert(!wl_list_empty(&compositor->output_list));
-		output = container_of(compositor->output_list.next,
-				      struct weston_output, link);
-
-		surface->output = output;
-		weston_surface_update_output_mask(surface, 1u << output->id);
 	}
 }
 

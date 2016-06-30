@@ -421,6 +421,8 @@ drag_surface_configure(struct weston_drag *drag,
 		weston_layer_entry_insert(list, &drag->icon->layer_link);
 		weston_view_update_transform(drag->icon);
 		pixman_region32_clear(&es->pending.input);
+		es->is_mapped = true;
+		drag->icon->is_mapped = true;
 	}
 
 	drag->dx += sx;
