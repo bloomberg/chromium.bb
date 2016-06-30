@@ -18,6 +18,7 @@
 #include "base/memory/singleton.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/notifications/notification.h"
+#include "chrome/browser/notifications/notification_common.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/features.h"
 #include "content/public/browser/platform_notification_service.h"
@@ -42,13 +43,6 @@ class PushMessagingBrowserTest;
 class PlatformNotificationServiceImpl
     : public content::PlatformNotificationService {
  public:
-  // Things you can do to a notification.
-  enum NotificationOperation {
-    NOTIFICATION_CLICK,
-    NOTIFICATION_CLOSE,
-    NOTIFICATION_SETTINGS
-  };
-
   // Returns the active instance of the service in the browser process. Safe to
   // be called from any thread.
   static PlatformNotificationServiceImpl* GetInstance();
@@ -56,7 +50,7 @@ class PlatformNotificationServiceImpl
   // Load the profile corresponding to |profile_id| and perform the
   // |operation| on the given notification once it has been loaded.
   void ProcessPersistentNotificationOperation(
-      NotificationOperation operation,
+      NotificationCommon::Operation operation,
       const std::string& profile_id,
       bool incognito,
       const GURL& origin,
@@ -80,10 +74,6 @@ class PlatformNotificationServiceImpl
                                      int64_t persistent_notification_id,
                                      const GURL& origin,
                                      bool by_user);
-
-
-  // Open the Notification settings screen when clicking the right button.
-  void OpenNotificationSettings(content::BrowserContext* browser_context);
 
   // content::PlatformNotificationService implementation.
   blink::mojom::PermissionStatus CheckPermissionOnUIThread(

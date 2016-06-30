@@ -8,6 +8,7 @@
 
 #include "base/guid.h"
 #include "base/logging.h"
+#include "chrome/browser/notifications/notification_common.h"
 #include "chrome/browser/notifications/platform_notification_service_impl.h"
 #include "content/public/browser/desktop_notification_delegate.h"
 
@@ -42,13 +43,11 @@ void NotificationObjectProxy::Click() {
 void NotificationObjectProxy::ButtonClick(int button_index) {
   // Notification buttons not are supported for non persistent notifications.
   DCHECK_EQ(button_index, 0);
-  PlatformNotificationServiceImpl::GetInstance()->OpenNotificationSettings(
-      browser_context_);
+  NotificationCommon::OpenNotificationSettings(browser_context_);
 }
 
 void NotificationObjectProxy::SettingsClick() {
-  PlatformNotificationServiceImpl::GetInstance()->OpenNotificationSettings(
-      browser_context_);
+  NotificationCommon::OpenNotificationSettings(browser_context_);
   return;
 }
 

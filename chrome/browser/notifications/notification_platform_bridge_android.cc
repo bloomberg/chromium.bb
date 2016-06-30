@@ -15,6 +15,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/notifications/notification.h"
+#include "chrome/browser/notifications/notification_common.h"
 #include "chrome/browser/notifications/persistent_notification_delegate.h"
 #include "chrome/browser/notifications/platform_notification_service_impl.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -105,8 +106,8 @@ void NotificationPlatformBridgeAndroid::OnNotificationClicked(
 
   PlatformNotificationServiceImpl::GetInstance()
       ->ProcessPersistentNotificationOperation(
-          PlatformNotificationServiceImpl::NOTIFICATION_CLICK, profile_id,
-          incognito, origin, persistent_notification_id, action_index);
+          NotificationCommon::CLICK, profile_id, incognito, origin,
+          persistent_notification_id, action_index);
 }
 
 void NotificationPlatformBridgeAndroid::OnNotificationClosed(
@@ -126,8 +127,8 @@ void NotificationPlatformBridgeAndroid::OnNotificationClosed(
   regenerated_notification_infos_.erase(persistent_notification_id);
   PlatformNotificationServiceImpl::GetInstance()
       ->ProcessPersistentNotificationOperation(
-          PlatformNotificationServiceImpl::NOTIFICATION_CLOSE, profile_id,
-          incognito, origin, persistent_notification_id, -1);
+          NotificationCommon::CLOSE, profile_id, incognito, origin,
+          persistent_notification_id, -1);
 }
 
 void NotificationPlatformBridgeAndroid::Display(

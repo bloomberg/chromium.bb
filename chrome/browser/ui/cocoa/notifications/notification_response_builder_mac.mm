@@ -10,7 +10,7 @@
 namespace {
 
 // Make sure this Obj-C enum is kept in sync with the
-// PlatformNotificationServiceImpl NotificationOperation enum.
+// NotificationCommon::Operation enum.
 // The latter cannot be reused because the XPC service is not aware of
 // PlatformNotificationCenter.
 enum NotificationOperation {

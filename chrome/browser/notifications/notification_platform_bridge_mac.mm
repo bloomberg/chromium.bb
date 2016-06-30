@@ -12,6 +12,7 @@
 #include "base/strings/sys_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/notifications/notification.h"
+#include "chrome/browser/notifications/notification_common.h"
 #include "chrome/browser/notifications/notification_display_service_factory.h"
 #include "chrome/browser/notifications/persistent_notification_delegate.h"
 #include "chrome/browser/notifications/platform_notification_service_impl.h"
@@ -217,8 +218,7 @@ bool NotificationPlatformBridgeMac::SupportsNotificationCenter() const {
 
   PlatformNotificationServiceImpl::GetInstance()
       ->ProcessPersistentNotificationOperation(
-          static_cast<PlatformNotificationServiceImpl::NotificationOperation>(
-              operation.intValue),
+          static_cast<NotificationCommon::Operation>(operation.intValue),
           profileId, [isIncognito boolValue], origin, persistentId,
           buttonIndex.intValue);
 }

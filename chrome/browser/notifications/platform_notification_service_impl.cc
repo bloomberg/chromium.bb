@@ -25,8 +25,6 @@
 #include "chrome/browser/profiles/profile_io_data.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/chrome_pages.h"
-#include "chrome/browser/ui/scoped_tabbed_browser_displayer.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
@@ -88,12 +86,11 @@ void OnCloseNonPersistentNotificationProfileLoaded(
 
 // Callback to run once the profile has been loaded in order to perform a
 // given |operation| in a notification.
-void ProfileLoadedCallback(
-    PlatformNotificationServiceImpl::NotificationOperation operation,
-    const GURL& origin,
-    int64_t persistent_notification_id,
-    int action_index,
-    Profile* profile) {
+void ProfileLoadedCallback(NotificationCommon::Operation operation,
+                           const GURL& origin,
+                           int64_t persistent_notification_id,
+                           int action_index,
+                           Profile* profile) {
   if (!profile) {
     // TODO(miguelg): Add UMA for this condition.
     // Perhaps propagate this through PersistentNotificationStatus.
@@ -102,19 +99,18 @@ void ProfileLoadedCallback(
   }
 
   switch (operation) {
-    case PlatformNotificationServiceImpl::NOTIFICATION_CLICK:
+    case NotificationCommon::CLICK:
       PlatformNotificationServiceImpl::GetInstance()
           ->OnPersistentNotificationClick(profile, persistent_notification_id,
                                           origin, action_index);
       break;
-    case PlatformNotificationServiceImpl::NOTIFICATION_CLOSE:
+    case NotificationCommon::CLOSE:
       PlatformNotificationServiceImpl::GetInstance()
           ->OnPersistentNotificationClose(profile, persistent_notification_id,
                                           origin, true);
       break;
-    case PlatformNotificationServiceImpl::NOTIFICATION_SETTINGS:
-      PlatformNotificationServiceImpl::GetInstance()->OpenNotificationSettings(
-          profile);
+    case NotificationCommon::SETTINGS:
+      NotificationCommon::OpenNotificationSettings(profile);
       break;
   }
 }
@@ -149,7 +145,7 @@ PlatformNotificationServiceImpl::PlatformNotificationServiceImpl()
 PlatformNotificationServiceImpl::~PlatformNotificationServiceImpl() {}
 
 void PlatformNotificationServiceImpl::ProcessPersistentNotificationOperation(
-    NotificationOperation operation,
+    NotificationCommon::Operation operation,
     const std::string& profile_id,
     bool incognito,
     const GURL& origin,
@@ -525,27 +521,6 @@ PlatformNotificationServiceImpl::GetNotificationDisplayService(
   if (test_display_service_ != nullptr)
     return test_display_service_;
   return NotificationDisplayServiceFactory::GetForProfile(profile);
-}
-
-void PlatformNotificationServiceImpl::OpenNotificationSettings(
-    BrowserContext* browser_context) {
-#if defined(OS_ANDROID)
-  NOTIMPLEMENTED();
-#else
-
-  Profile* profile = Profile::FromBrowserContext(browser_context);
-  DCHECK(profile);
-
-  if (switches::SettingsWindowEnabled()) {
-    chrome::ShowContentSettingsExceptionsInWindow(
-        profile, CONTENT_SETTINGS_TYPE_NOTIFICATIONS);
-  } else {
-    chrome::ScopedTabbedBrowserDisplayer browser_displayer(profile);
-    chrome::ShowContentSettingsExceptions(browser_displayer.browser(),
-                                          CONTENT_SETTINGS_TYPE_NOTIFICATIONS);
-  }
-
-#endif  // defined(OS_ANDROID)
 }
 
 base::string16 PlatformNotificationServiceImpl::DisplayNameForContextMessage(

@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/guid.h"
+#include "chrome/browser/notifications/notification_common.h"
 #include "chrome/browser/notifications/platform_notification_service_impl.h"
 #include "content/public/common/persistent_notification_status.h"
 
@@ -43,8 +44,7 @@ void PersistentNotificationDelegate::Click() {
 void PersistentNotificationDelegate::ButtonClick(int button_index) {
   DCHECK_GE(button_index, 0);
   if (button_index == notification_settings_index_) {
-    PlatformNotificationServiceImpl::GetInstance()->OpenNotificationSettings(
-        browser_context_);
+    NotificationCommon::OpenNotificationSettings(browser_context_);
     return;
   }
 
@@ -56,8 +56,7 @@ void PersistentNotificationDelegate::ButtonClick(int button_index) {
 }
 
 void PersistentNotificationDelegate::SettingsClick() {
-  PlatformNotificationServiceImpl::GetInstance()->OpenNotificationSettings(
-      browser_context_);
+  NotificationCommon::OpenNotificationSettings(browser_context_);
   return;
 }
 

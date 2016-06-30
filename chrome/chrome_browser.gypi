@@ -2210,6 +2210,8 @@
       'browser/notifications/native_notification_display_service.h',
       'browser/notifications/notification.cc',
       'browser/notifications/notification.h',
+      'browser/notifications/notification_common.cc',
+      'browser/notifications/notification_common.h',
       'browser/notifications/notification_delegate.h',
       'browser/notifications/notification_display_service.h',
       'browser/notifications/notification_display_service_factory.cc',
