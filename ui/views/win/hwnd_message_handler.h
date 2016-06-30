@@ -211,6 +211,7 @@ class VIEWS_EXPORT HWNDMessageHandler :
 
  private:
   typedef std::set<DWORD> TouchIDs;
+  enum class DwmFrameState { OFF, ON };
 
   // Overridden from WindowImpl:
   HICON GetDefaultWindowIcon() const override;
@@ -313,6 +314,10 @@ class VIEWS_EXPORT HWNDMessageHandler :
   void ForceRedrawWindow(int attempts);
 
   bool HasSystemFrame() const;
+
+  // Adds or removes the frame extension into client area with
+  // DwmExtendFrameIntoClientArea.
+  void SetDwmFrameExtension(DwmFrameState state);
 
   // Message Handlers ----------------------------------------------------------
 

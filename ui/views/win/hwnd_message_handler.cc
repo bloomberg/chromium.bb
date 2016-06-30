@@ -523,6 +523,16 @@ void HWNDMessageHandler::SetBounds(const gfx::Rect& bounds_in_pixels,
   SetBoundsInternal(bounds_in_pixels, force_size_changed);
 }
 
+void HWNDMessageHandler::SetDwmFrameExtension(DwmFrameState state) {
+  if (!delegate_->HasFrame() && ui::win::IsAeroGlassEnabled() &&
+      (window_ex_style() & WS_EX_COMPOSITED) == 0) {
+    MARGINS m = {0, 0, 0, 0};
+    if (state == DwmFrameState::ON)
+      m = {0, 0, 1, 0};
+    DwmExtendFrameIntoClientArea(hwnd(), &m);
+  }
+}
+
 void HWNDMessageHandler::SetSize(const gfx::Size& size) {
   SetWindowPos(hwnd(), NULL, 0, 0, size.width(), size.height(),
                SWP_NOACTIVATE | SWP_NOZORDER | SWP_NOMOVE);
@@ -2361,8 +2371,10 @@ void HWNDMessageHandler::OnWindowPosChanging(WINDOWPOS* window_pos) {
 
   if (window_pos->flags & SWP_SHOWWINDOW)
     delegate_->HandleVisibilityChanging(true);
-  else if (window_pos->flags & SWP_HIDEWINDOW)
+  else if (window_pos->flags & SWP_HIDEWINDOW) {
+    SetDwmFrameExtension(DwmFrameState::OFF);
     delegate_->HandleVisibilityChanging(false);
+  }
 
   SetMsgHandled(FALSE);
 }
@@ -2370,16 +2382,13 @@ void HWNDMessageHandler::OnWindowPosChanging(WINDOWPOS* window_pos) {
 void HWNDMessageHandler::OnWindowPosChanged(WINDOWPOS* window_pos) {
   if (DidClientAreaSizeChange(window_pos))
     ClientAreaSizeChanged();
-  if (!delegate_->HasFrame() && window_pos->flags & SWP_FRAMECHANGED &&
-      ui::win::IsAeroGlassEnabled() &&
-      (window_ex_style() & WS_EX_COMPOSITED) == 0) {
-    MARGINS m = {10, 10, 10, 10};
-    DwmExtendFrameIntoClientArea(hwnd(), &m);
-  }
+  if (window_pos->flags & SWP_FRAMECHANGED)
+    SetDwmFrameExtension(DwmFrameState::ON);
   if (window_pos->flags & SWP_SHOWWINDOW) {
     delegate_->HandleVisibilityChanged(true);
     if (direct_manipulation_helper_)
       direct_manipulation_helper_->Activate(hwnd());
+    SetDwmFrameExtension(DwmFrameState::ON);
   } else if (window_pos->flags & SWP_HIDEWINDOW) {
     delegate_->HandleVisibilityChanged(false);
     if (direct_manipulation_helper_)
