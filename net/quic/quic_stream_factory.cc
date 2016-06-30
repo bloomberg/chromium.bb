@@ -596,6 +596,7 @@ QuicStreamRequest::CreateBidirectionalStreamImpl() {
 QuicStreamFactory::QuicStreamFactory(
     NetLog* net_log,
     HostResolver* host_resolver,
+    SSLConfigService* ssl_config_service,
     ClientSocketFactory* client_socket_factory,
     HttpServerProperties* http_server_properties,
     CertVerifier* cert_verifier,
@@ -690,7 +691,10 @@ QuicStreamFactory::QuicStreamFactory(
       num_push_streams_created_(0),
       status_(OPEN),
       task_runner_(nullptr),
+      ssl_config_service_(ssl_config_service),
       weak_factory_(this) {
+  if (ssl_config_service_.get())
+    ssl_config_service_->AddObserver(this);
   if (disable_quic_on_timeout_with_open_streams)
     threshold_timeouts_with_open_streams_ = 1;
   DCHECK(transport_security_state_);
@@ -748,6 +752,8 @@ QuicStreamFactory::~QuicStreamFactory() {
     STLDeleteElements(&(active_jobs_[server_id]));
     active_jobs_.erase(server_id);
   }
+  if (ssl_config_service_.get())
+    ssl_config_service_->RemoveObserver(this);
   if (migrate_sessions_on_network_change_) {
     NetworkChangeNotifier::RemoveNetworkObserver(this);
   } else if (close_sessions_on_ip_change_) {

@@ -150,6 +150,7 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
   QuicStreamFactory(
       NetLog* net_log,
       HostResolver* host_resolver,
+      SSLConfigService* ssl_config_service,
       ClientSocketFactory* client_socket_factory,
       HttpServerProperties* http_server_properties,
       CertVerifier* cert_verifier,
@@ -583,6 +584,8 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
   FactoryStatus status_;
 
   base::TaskRunner* task_runner_;
+
+  const scoped_refptr<SSLConfigService> ssl_config_service_;
 
   base::WeakPtrFactory<QuicStreamFactory> weak_factory_;
 

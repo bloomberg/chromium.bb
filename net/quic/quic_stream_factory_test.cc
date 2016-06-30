@@ -50,6 +50,22 @@ using std::vector;
 
 namespace net {
 
+namespace {
+
+class MockSSLConfigService : public SSLConfigService {
+ public:
+  MockSSLConfigService() {}
+
+  void GetSSLConfig(SSLConfig* config) override { *config = config_; }
+
+ private:
+  ~MockSSLConfigService() override {}
+
+  SSLConfig config_;
+};
+
+}  // namespace
+
 namespace test {
 
 namespace {
@@ -252,7 +268,8 @@ class ScopedMockNetworkChangeNotifier {
 class QuicStreamFactoryTestBase {
  protected:
   QuicStreamFactoryTestBase(QuicVersion version, bool enable_connection_racing)
-      : random_generator_(0),
+      : ssl_config_service_(new MockSSLConfigService),
+        random_generator_(0),
         clock_(new MockClock()),
         runner_(new TestTaskRunner(clock_)),
         version_(version),
@@ -313,10 +330,10 @@ class QuicStreamFactoryTestBase {
   void Initialize() {
     DCHECK(!factory_);
     factory_.reset(new QuicStreamFactory(
-        net_log_.net_log(), &host_resolver_, &socket_factory_,
-        &http_server_properties_, cert_verifier_.get(), &ct_policy_enforcer_,
-        channel_id_service_.get(), &transport_security_state_,
-        cert_transparency_verifier_.get(),
+        net_log_.net_log(), &host_resolver_, ssl_config_service_.get(),
+        &socket_factory_, &http_server_properties_, cert_verifier_.get(),
+        &ct_policy_enforcer_, channel_id_service_.get(),
+        &transport_security_state_, cert_transparency_verifier_.get(),
         /*SocketPerformanceWatcherFactory*/ nullptr,
         &crypto_client_stream_factory_, &random_generator_, clock_,
         kDefaultMaxPacketSize, string(), SupportedVersions(version_),
@@ -474,6 +491,7 @@ class QuicStreamFactoryTestBase {
   }
 
   MockHostResolver host_resolver_;
+  scoped_refptr<SSLConfigService> ssl_config_service_;
   MockClientSocketFactory socket_factory_;
   MockCryptoClientStreamFactory crypto_client_stream_factory_;
   MockRandom random_generator_;
@@ -2402,7 +2420,7 @@ TEST_P(QuicStreamFactoryTest, OnSSLConfigChanged) {
   EXPECT_EQ(OK, stream->InitializeStream(&request_info, DEFAULT_PRIORITY,
                                          net_log_, CompletionCallback()));
 
-  factory_->OnSSLConfigChanged();
+  ssl_config_service_->NotifySSLConfigChange();
   EXPECT_EQ(ERR_CERT_DATABASE_CHANGED,
             stream->ReadResponseHeaders(callback_.callback()));
   EXPECT_FALSE(factory_->require_confirmation());

@@ -150,6 +150,7 @@ HttpNetworkSession::HttpNetworkSession(const Params& params)
       quic_stream_factory_(
           params.net_log,
           params.host_resolver,
+          params.ssl_config_service,
           params.client_socket_factory
               ? params.client_socket_factory
               : ClientSocketFactory::GetDefaultFactory(),
