@@ -46,8 +46,7 @@
           <div class="list-item two-line">
             <div class="start">
               <span id="addressSummary">[[address_(item)]]</span>
-              <span class="payments-label"
-                  hidden$="[[item.metadata.isLocal]]">
+              <span class="payments-label" hidden$="[[item.metadata.isLocal]]">
                 $i18n{googlePayments}
               </span>
             </div>
@@ -80,9 +79,13 @@
           <div class="list-item two-line">
             <div class="type-column">
               <span id="creditCardLabel">[[item.metadata.summaryLabel]]</span>
-              <span class="payments-label"
-                  hidden$="[[item.metadata.isLocal]]">
-                $i18n{googlePayments}
+              <span class="payments-label" hidden$="[[item.metadata.isLocal]]">
+                <span hidden$="[[item.metadata.isCached]]">
+                  $i18n{googlePayments}
+                </span>
+                <span hidden$="[[!item.metadata.isCached]]">
+                  $i18n{googlePaymentsCached}
+                </span>
               </span>
             </div>
             <div class="expiration-column">

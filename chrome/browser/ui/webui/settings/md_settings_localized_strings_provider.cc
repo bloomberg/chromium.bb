@@ -697,6 +697,7 @@ void AddPasswordsAndFormsStrings(content::WebUIDataSource* html_source) {
        IDS_SETTINGS_PASSWORDS_AND_AUTOFILL_PAGE_TITLE},
       {"autofill", IDS_SETTINGS_AUTOFILL},
       {"googlePayments", IDS_SETTINGS_GOOGLE_PAYMENTS},
+      {"googlePaymentsCached", IDS_SETTINGS_GOOGLE_PAYMENTS_CACHED},
       {"addresses", IDS_SETTINGS_AUTOFILL_ADDRESSES_HEADING},
       {"addAddress", IDS_SETTINGS_AUTOFILL_ADD_ADDRESS_BUTTON},
       {"editAddress", IDS_SETTINGS_ADDRESS_EDIT},
