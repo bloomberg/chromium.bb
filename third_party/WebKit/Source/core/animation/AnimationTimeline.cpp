@@ -347,6 +347,12 @@ double AnimationTimeline::playbackRate() const
     return m_playbackRate;
 }
 
+void AnimationTimeline::invalidateKeyframeEffects()
+{
+    for (const auto& animation : m_animations)
+        animation->invalidateKeyframeEffect();
+}
+
 DEFINE_TRACE(AnimationTimeline)
 {
     visitor->trace(m_document);

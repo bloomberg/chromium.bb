@@ -32,6 +32,7 @@
 #include "core/dom/Document.h"
 #include "core/dom/ElementTraversal.h"
 #include "core/dom/StyleChangeReason.h"
+#include "core/dom/StyleEngine.h"
 #include "core/dom/TreeScope.h"
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/html/HTMLStyleElement.h"
@@ -77,7 +78,7 @@ static bool determineSelectorScopes(const CSSSelectorList& selectorList, HashSet
 
 static bool ruleAdditionMightRequireDocumentStyleRecalc(StyleRuleBase* rule)
 {
-    // This funciton is conservative. We only return false when we know that
+    // This function is conservative. We only return false when we know that
     // the added @rule can't require style recalcs.
     switch (rule->type()) {
     case StyleRule::Import: // Whatever we import should do its own analysis, we don't need to invalidate the document here!
@@ -88,7 +89,6 @@ static bool ruleAdditionMightRequireDocumentStyleRecalc(StyleRuleBase* rule)
     case StyleRule::FontFace: // If the fonts aren't in use, we could avoid recalc.
     case StyleRule::Supports: // If we evaluated the supports-clause we could avoid recalc.
     case StyleRule::Viewport: // If the viewport doesn't match, we could avoid recalcing.
-    case StyleRule::Keyframes: // If the animation doesn't match an element, we could avoid recalc.
         return true;
 
     // These should all be impossible to reach:
@@ -96,6 +96,7 @@ static bool ruleAdditionMightRequireDocumentStyleRecalc(StyleRuleBase* rule)
     case StyleRule::Keyframe:
     case StyleRule::Namespace:
     case StyleRule::Style:
+    case StyleRule::Keyframes:
         break;
     }
     ASSERT_NOT_REACHED();
@@ -128,6 +129,10 @@ void StyleSheetInvalidationAnalysis::analyzeStyleSheet(StyleSheetContents* style
     for (unsigned i = 0; i < rules.size(); i++) {
         StyleRuleBase* rule = rules[i].get();
         if (!rule->isStyleRule()) {
+            if (rule->type() == StyleRule::Keyframes) {
+                m_addsKeyframes = true;
+                continue;
+            }
             if (ruleAdditionMightRequireDocumentStyleRecalc(rule)) {
                 m_dirtiesAllStyle = true;
                 return;
@@ -159,6 +164,9 @@ static bool elementMatchesSelectorScopes(const Element* element, const HashSet<S
 void StyleSheetInvalidationAnalysis::invalidateStyle()
 {
     ASSERT(!m_dirtiesAllStyle);
+
+    if (m_addsKeyframes)
+        m_treeScope->document().styleEngine().keyframesRulesAdded();
 
     if (m_treeScope->rootNode().isShadowRoot()) {
         ContainerNode& shadowHost = toShadowRoot(m_treeScope->rootNode()).host();

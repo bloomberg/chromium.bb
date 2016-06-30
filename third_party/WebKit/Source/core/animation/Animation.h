@@ -181,6 +181,8 @@ public:
     bool effectSuppressed() const { return m_effectSuppressed; }
     void setEffectSuppressed(bool);
 
+    void invalidateKeyframeEffect();
+
     DECLARE_VIRTUAL_TRACE();
 
 protected:

@@ -295,8 +295,10 @@ void CSSAnimations::calculateAnimationUpdate(CSSAnimationUpdate& update, const E
             timing.timingFunction = Timing::defaults().timingFunction;
 
             StyleRuleKeyframes* keyframesRule = resolver->findKeyframesRule(elementForScoping, name);
-            if (!keyframesRule)
+            if (!keyframesRule) {
+                element.document().styleEngine().setHasUnresolvedKeyframesRule();
                 continue; // Cancel the animation if there's no style rule for it.
+            }
 
             const RunningAnimation* existingAnimation = nullptr;
             size_t existingAnimationIndex = 0;

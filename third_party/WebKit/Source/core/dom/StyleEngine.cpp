@@ -28,6 +28,7 @@
 #include "core/dom/StyleEngine.h"
 
 #include "core/HTMLNames.h"
+#include "core/animation/AnimationTimeline.h"
 #include "core/css/CSSDefaultStyleSheets.h"
 #include "core/css/CSSFontSelector.h"
 #include "core/css/CSSStyleSheet.h"
@@ -795,6 +796,17 @@ void StyleEngine::ensureFullscreenUAStyle()
         return;
     if (!m_resolver->hasFullscreenUAStyle())
         m_resolver->resetRuleFeatures();
+}
+
+void StyleEngine::keyframesRulesAdded()
+{
+    if (m_hasUnresolvedKeyframesRule) {
+        m_hasUnresolvedKeyframesRule = false;
+        document().setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::StyleSheetChange));
+        return;
+    }
+
+    document().timeline().invalidateKeyframeEffects();
 }
 
 DEFINE_TRACE(StyleEngine)

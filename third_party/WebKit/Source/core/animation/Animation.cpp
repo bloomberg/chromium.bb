@@ -35,6 +35,7 @@
 #include "core/animation/KeyframeEffect.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
+#include "core/dom/StyleChangeReason.h"
 #include "core/events/AnimationPlayerEvent.h"
 #include "core/frame/UseCounter.h"
 #include "core/inspector/InspectorInstrumentation.h"
@@ -1076,6 +1077,14 @@ void Animation::disableCompositedAnimationForTesting()
 {
     m_isCompositedAnimationDisabledForTesting = true;
     cancelAnimationOnCompositor();
+}
+
+void Animation::invalidateKeyframeEffect()
+{
+    if (!m_content || !m_content->isKeyframeEffect())
+        return;
+
+    toKeyframeEffect(m_content.get())->target()->setNeedsStyleRecalc(LocalStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::StyleSheetChange));
 }
 
 DEFINE_TRACE(Animation)
