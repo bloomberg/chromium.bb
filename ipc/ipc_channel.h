@@ -223,6 +223,17 @@ class IPC_EXPORT Channel : public Endpoint {
   static std::string GenerateVerifiedChannelID(const std::string& prefix);
 #endif
 
+  // Generates a pair of channel handles that can be used as the client and
+  // server ends of a ChannelMojo. |name_postfix| is appended to the end of the
+  // handle name to help identify the handles.
+  //
+  // Note, when using ChannelMojo, |ChannelHandle::name| serves no functional
+  // purpose other than to identify the channel in logging.
+  static void GenerateMojoChannelHandlePair(
+      const std::string& name_postfix,
+      IPC::ChannelHandle* handle0,
+      IPC::ChannelHandle* handle1);
+
 #if defined(OS_LINUX)
   // Sandboxed processes live in a PID namespace, so when sending the IPC hello
   // message from client to server we need to send the PID from the global
