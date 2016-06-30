@@ -25,7 +25,6 @@
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/safe_browsing/ping_manager.h"
@@ -362,13 +361,11 @@ void SafeBrowsingService::ShutDown() {
   url_request_context_getter_ = nullptr;
 }
 
-// Binhash verification is only enabled for UMA users for now.
 bool SafeBrowsingService::DownloadBinHashNeeded() const {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
 #if defined(FULL_SAFE_BROWSING)
-  return (database_manager_->IsDownloadProtectionEnabled() &&
-          ChromeMetricsServiceAccessor::IsMetricsAndCrashReportingEnabled()) ||
+  return database_manager_->IsDownloadProtectionEnabled() ||
          (download_protection_service() &&
           download_protection_service()->enabled());
 #else

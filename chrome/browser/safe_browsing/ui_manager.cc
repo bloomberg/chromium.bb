@@ -244,9 +244,8 @@ void SafeBrowsingUIManager::MaybeReportSafeBrowsingHit(
     const HitReport& hit_report) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  // Decide if we should send this report.
-  if (hit_report.is_metrics_reporting_active ||
-      hit_report.is_extended_reporting) {
+  // Send report if user opted-in extended reporting.
+  if (hit_report.is_extended_reporting) {
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
         base::Bind(&SafeBrowsingUIManager::ReportSafeBrowsingHitOnIOThread,
