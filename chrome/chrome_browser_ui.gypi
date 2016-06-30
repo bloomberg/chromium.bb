@@ -733,6 +733,8 @@
       'browser/ui/input_method/input_method_engine_base.h',
       'browser/ui/views/apps/chrome_native_app_window_views_aura_ash.cc',
       'browser/ui/views/apps/chrome_native_app_window_views_aura_ash.h',
+      'browser/ui/views/intent_picker_bubble_view.cc',
+      'browser/ui/views/intent_picker_bubble_view.h',
       # On chromeos, file manager extension handles the file open/save dialog.
       'browser/ui/views/select_file_dialog_extension.cc',
       'browser/ui/views/select_file_dialog_extension.h',
