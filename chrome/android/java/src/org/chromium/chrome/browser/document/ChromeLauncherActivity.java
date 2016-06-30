@@ -48,6 +48,7 @@ import org.chromium.chrome.browser.upgrade.UpgradeActivity;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.chrome.browser.util.UrlUtilities;
+import org.chromium.chrome.browser.webapps.ActivityAssigner;
 import org.chromium.chrome.browser.webapps.WebappLauncherActivity;
 
 import java.lang.ref.WeakReference;
@@ -335,25 +336,27 @@ public class ChromeLauncherActivity extends Activity
                 FeatureUtilities.getHerbFlavor(), ChromeSwitches.HERB_FLAVOR_ELDERBERRY)
                 && (newIntent.getFlags() & Intent.FLAG_ACTIVITY_NEW_TASK) != 0
                         || (newIntent.getFlags() & Intent.FLAG_ACTIVITY_NEW_DOCUMENT) != 0) {
-            newIntent.setClassName(context, SeparateTaskCustomTabActivity.class.getName());
+            String uuid = UUID.randomUUID().toString();
             newIntent.addFlags(Intent.FLAG_ACTIVITY_MULTIPLE_TASK);
+            newIntent.setFlags(
+                    newIntent.getFlags() & ~Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS);
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                // Pre-L, the exclude from recents flag on the launcher does not apply to the
-                // launched separate task activity (and provides the desired user behavior).  On L+,
-                // the flag needs to be cleared otherwise it is hidden immediately upon exiting.
-                newIntent.setFlags(
-                        newIntent.getFlags() & ~Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS);
-
                 // Force a new document L+ to ensure the proper task/stack creation.
                 newIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_DOCUMENT);
+                newIntent.setClassName(context, SeparateTaskCustomTabActivity.class.getName());
+            } else {
+                int activityIndex =
+                        ActivityAssigner.instance(ActivityAssigner.SEPARATE_TASK_CCT_NAMESPACE)
+                        .assign(uuid);
+                String className = SeparateTaskCustomTabActivity.class.getName() + activityIndex;
+                newIntent.setClassName(context, className);
             }
+
             String url = IntentHandler.getUrlFromIntent(newIntent);
             assert url != null;
-
             newIntent.setData(new Uri.Builder().scheme(UrlConstants.CUSTOM_TAB_SCHEME)
-                    .authority(UUID.randomUUID().toString())
-                    .query(url).build());
+                    .authority(uuid).query(url).build());
         }
 
         newIntent.putExtra(CustomTabsIntent.EXTRA_DEFAULT_SHARE_MENU_ITEM, true);

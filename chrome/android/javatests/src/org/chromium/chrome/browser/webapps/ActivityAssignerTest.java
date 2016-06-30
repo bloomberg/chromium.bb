@@ -12,7 +12,6 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.test.util.AdvancedMockContext;
 import org.chromium.base.test.util.Feature;
-import org.chromium.webapk.lib.common.WebApkConstants;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -28,13 +27,14 @@ public class ActivityAssignerTest extends InstrumentationTestCase {
     private AdvancedMockContext mContext;
     private HashMap<String, Object>[] mPreferences;
 
+    @SuppressWarnings("unchecked")
     @Override
     protected void setUp() throws Exception {
         super.setUp();
         RecordHistogram.disableForTests();
         mContext = new AdvancedMockContext(ContextUtils.getApplicationContext());
-        mPreferences = new HashMap[ActivityAssigner.ACTIVITY_TYPE_COUNT];
-        for (int i = 0; i < ActivityAssigner.ACTIVITY_TYPE_COUNT; ++i) {
+        mPreferences = new HashMap[ActivityAssigner.NAMESPACE_COUNT];
+        for (int i = 0; i < ActivityAssigner.NAMESPACE_COUNT; ++i) {
             mPreferences[i] = new HashMap<String, Object>();
             mContext.addSharedPreferences(ActivityAssigner.PREF_PACKAGE[i], mPreferences[i]);
         }
@@ -45,11 +45,10 @@ public class ActivityAssignerTest extends InstrumentationTestCase {
     @SmallTest
     @Feature({"Webapps"})
     public void testEntriesCreated() {
-        String webappId = BASE_WEBAPP_ID;
-        ActivityAssigner assigner = ActivityAssigner.instance(webappId);
+        ActivityAssigner assigner = ActivityAssigner.instance(ActivityAssigner.WEBAPP_NAMESPACE);
 
         // Make sure that no webapps have been assigned to any Activities for a fresh install.
-        checkState(assigner);
+        checkState(assigner, ActivityAssigner.WEBAPP_NAMESPACE);
         List<ActivityAssigner.ActivityEntry> entries = assigner.getEntries();
         assertEquals(ActivityAssigner.NUM_WEBAPP_ACTIVITIES, entries.size());
         for (ActivityAssigner.ActivityEntry entry : entries) {
@@ -67,13 +66,10 @@ public class ActivityAssignerTest extends InstrumentationTestCase {
     public void testEntriesDownsized() {
         // Store preferences indicating that more Activities existed previously than there are now.
         int numSavedEntries = ActivityAssigner.NUM_WEBAPP_ACTIVITIES + 1;
-        String webappId = BASE_WEBAPP_ID;
-        int index = ActivityAssigner.getIndex(webappId);
-        createPreferences(numSavedEntries, index);
+        createPreferences(numSavedEntries, ActivityAssigner.WEBAPP_NAMESPACE);
 
-        ActivityAssigner assigner = ActivityAssigner.instance(webappId);
-        assertEquals(index, assigner.getActivityTypeIndex());
-        checkState(assigner);
+        ActivityAssigner assigner = ActivityAssigner.instance(ActivityAssigner.WEBAPP_NAMESPACE);
+        checkState(assigner, ActivityAssigner.WEBAPP_NAMESPACE);
     }
 
     /**
@@ -84,25 +80,21 @@ public class ActivityAssignerTest extends InstrumentationTestCase {
     @Feature({"Webapps"})
     public void testCorruptedPreferences() {
         String wrongVariableType = "omgwtfbbq";
-        String webappId = BASE_WEBAPP_ID;
-        int index = ActivityAssigner.getIndex(BASE_WEBAPP_ID);
+        int index = ActivityAssigner.WEBAPP_NAMESPACE;
         mPreferences[index].clear();
         mPreferences[index].put(ActivityAssigner.PREF_NUM_SAVED_ENTRIES[index], wrongVariableType);
 
-        ActivityAssigner assigner = ActivityAssigner.instance(webappId);
-        assertEquals(index, assigner.getActivityTypeIndex());
-        checkState(assigner);
+        ActivityAssigner assigner = ActivityAssigner.instance(ActivityAssigner.WEBAPP_NAMESPACE);
+        checkState(assigner, ActivityAssigner.WEBAPP_NAMESPACE);
     }
 
     @UiThreadTest
     @SmallTest
     @Feature({"Webapps"})
     public void testAssignment() {
-        String webappId = BASE_WEBAPP_ID;
-        ActivityAssigner assigner = ActivityAssigner.instance(webappId);
-        int index = assigner.getActivityTypeIndex();
+        ActivityAssigner assigner = ActivityAssigner.instance(ActivityAssigner.WEBAPP_NAMESPACE);
 
-        checkState(assigner);
+        checkState(assigner, ActivityAssigner.WEBAPP_NAMESPACE);
 
         // Assign all of the Activities to webapps.
         // Go backwards to make sure ordering doesn't matter.
@@ -131,7 +123,6 @@ public class ActivityAssignerTest extends InstrumentationTestCase {
 
         // Make sure that the least recently used Activity is repurposed when we run out.
         String overflowWebappId = "OVERFLOW_ID";
-        assertEquals(index, ActivityAssigner.getIndex(overflowWebappId));
         int overflowActivityIndex = assigner.assign(overflowWebappId);
 
         String lastAssignedWebappId = BASE_WEBAPP_ID + (ActivityAssigner.NUM_WEBAPP_ACTIVITIES - 1);
@@ -143,18 +134,16 @@ public class ActivityAssignerTest extends InstrumentationTestCase {
         assertNotSame("Webapp did not get reassigned to a new Activity.",
                 lastAssignedPreviousActivityIndex, lastAssignedCurrentActivityIndex);
 
-        checkState(assigner);
+        checkState(assigner, ActivityAssigner.WEBAPP_NAMESPACE);
     }
 
     @UiThreadTest
     @SmallTest
     @Feature({"WebApk"})
-    public void testGetIndex() {
-        String webappId = BASE_WEBAPP_ID;
-        assertEquals(ActivityAssigner.WEBAPP_ACTIVITY_INDEX, ActivityAssigner.getIndex(webappId));
-
-        String webApkId = WebApkConstants.WEBAPK_ID_PREFIX + "id";
-        assertEquals(ActivityAssigner.WEBAPK_ACTIVITY_INDEX, ActivityAssigner.getIndex(webApkId));
+    public void testInstance() {
+        assertNotSame(
+                ActivityAssigner.instance(ActivityAssigner.WEBAPP_NAMESPACE),
+                ActivityAssigner.instance(ActivityAssigner.WEBAPK_NAMESPACE));
     }
 
     /** Saves state indicating that a number of WebappActivities have already been saved out. */
@@ -167,22 +156,21 @@ public class ActivityAssignerTest extends InstrumentationTestCase {
                     ActivityAssigner.PREF_ACTIVITY_INDEX[activityTypeIndex] + i;
             mPreferences[activityTypeIndex].put(activityIndexKey, i);
 
-            String webappIdKey = ActivityAssigner.PREF_WEBAPP_ID[activityTypeIndex] + i;
+            String webappIdKey = ActivityAssigner.PREF_ACTIVITY_ID[activityTypeIndex] + i;
             String webappIdValue = BASE_WEBAPP_ID + i;
             mPreferences[activityTypeIndex].put(webappIdKey, webappIdValue);
         }
     }
 
     /** Checks the saved state to make sure it makes sense. */
-    private void checkState(ActivityAssigner assigner) {
+    private void checkState(ActivityAssigner assigner, int namespace) {
         List<ActivityAssigner.ActivityEntry> entries = assigner.getEntries();
-        int activityTypeIndex = assigner.getActivityTypeIndex();
 
         // Confirm that the right number of entries in memory and in the preferences.
         assertEquals(ActivityAssigner.NUM_WEBAPP_ACTIVITIES, entries.size());
         assertEquals(ActivityAssigner.NUM_WEBAPP_ACTIVITIES,
-                (int) (Integer) mPreferences[activityTypeIndex].get(
-                        ActivityAssigner.PREF_NUM_SAVED_ENTRIES[activityTypeIndex]));
+                (int) (Integer) mPreferences[namespace].get(
+                        assigner.getPreferenceNumberOfSavedEntries()));
 
         // Confirm that the Activity indices go from 0 to NUM_WEBAPP_ACTIVITIES - 1.
         HashSet<Integer> assignedActivities = new HashSet<Integer>();

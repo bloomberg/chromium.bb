@@ -7,14 +7,16 @@ package org.chromium.chrome.browser.webapps;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.SystemClock;
+import android.support.annotation.IntDef;
 import android.util.Log;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordHistogram;
-import org.chromium.webapk.lib.common.WebApkConstants;
 
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -69,36 +71,59 @@ public class ActivityAssigner {
 
     // Don't ever change the package.  Left for backwards compatibility.
     @VisibleForTesting
-    static final String PREF_PACKAGE[] = {"com.google.android.apps.chrome.webapps",
-        "com.google.android.apps.chrome.webapps.webapk"};
+    static final String PREF_PACKAGE[] = {
+        "com.google.android.apps.chrome.webapps",
+        "com.google.android.apps.chrome.webapps.webapk",
+        "com.google.android.apps.chrome.cct"
+    };
 
-    static final String PREF_NUM_SAVED_ENTRIES[] = {"ActivityAssigner.numSavedEntries",
-        "ActivityAssigner.numSavedEntries.webapk"};
-    static final String PREF_ACTIVITY_INDEX[] = {"ActivityAssigner.activityIndex",
-        "ActivityAssigner.activityIndex.webapk"};
-    static final String PREF_WEBAPP_ID[] = {"ActivityAssigner.webappId",
-        "ActivityAssigner.webappId.webapk"};
+    static final String PREF_NUM_SAVED_ENTRIES[] = {
+        "ActivityAssigner.numSavedEntries",
+        "ActivityAssigner.numSavedEntries.webapk",
+        "ActivityAssigner.numSavedEntries.cct"
+    };
+    static final String PREF_ACTIVITY_INDEX[] = {
+        "ActivityAssigner.activityIndex",
+        "ActivityAssigner.activityIndex.webapk",
+        "ActivityAssigner.activityIndex.cct"
+    };
+    static final String PREF_ACTIVITY_ID[] = {
+        "ActivityAssigner.webappId",
+        "ActivityAssigner.webappId.webapk",
+        "ActivityAssigner.cctId"
+    };
 
     static final int INVALID_ACTIVITY_INDEX = -1;
-    static final int WEBAPP_ACTIVITY_INDEX = 0;
-    static final int WEBAPK_ACTIVITY_INDEX = 1;
-    static final int ACTIVITY_TYPE_COUNT = 2;
+
+    @Retention(RetentionPolicy.SOURCE)
+    @IntDef({
+        WEBAPP_NAMESPACE,
+        WEBAPK_NAMESPACE,
+        SEPARATE_TASK_CCT_NAMESPACE
+    })
+    private @interface ActivityAssignerNamespace {}
+    public static final int WEBAPP_NAMESPACE = 0;
+    public static final int WEBAPK_NAMESPACE = 1;
+    public static final int SEPARATE_TASK_CCT_NAMESPACE = 2;
+    static final int NAMESPACE_COUNT = 3;
 
     private static final Object LOCK = new Object();
     private static List<ActivityAssigner> sInstances;
 
     private final Context mContext;
     private final List<ActivityEntry> mActivityList;
-    // The type index of the Activities managed. Either {@link WEBAPP_ACTIVITY_INDEX} or
-    // {@link WEBAPK_ACTIVITY_INDEX}.
-    private final int mActivityTypeIndex;
+
+    private final String mPrefPackage;
+    private final String mPrefNumSavedEntries;
+    private final String mPrefActivityIndex;
+    private final String mPrefActivityId;
 
     /**
      * Pre-load shared prefs to avoid being blocked on the
      * disk access async task in the future.
      */
     public static void warmUpSharedPrefs(Context context) {
-        for (int i = 0; i < ACTIVITY_TYPE_COUNT; ++i) {
+        for (int i = 0; i < NAMESPACE_COUNT; ++i) {
             context.getSharedPreferences(PREF_PACKAGE[i], Context.MODE_PRIVATE);
         }
     }
@@ -115,26 +140,36 @@ public class ActivityAssigner {
 
     /**
      * Returns the singleton instance, creating it if necessary.
-     * @param webappId The app ID.
+     * @param namespace The namespace of the Activities being assigned.
      */
-    public static ActivityAssigner instance(String webappId) {
+    public static ActivityAssigner instance(@ActivityAssignerNamespace int namespace) {
         ThreadUtils.assertOnUiThread();
         synchronized (LOCK) {
             if (sInstances == null) {
-                sInstances = new ArrayList<ActivityAssigner>(ACTIVITY_TYPE_COUNT);
-                for (int i = 0; i < ACTIVITY_TYPE_COUNT; ++i) {
+                sInstances = new ArrayList<ActivityAssigner>(NAMESPACE_COUNT);
+                for (int i = 0; i < NAMESPACE_COUNT; ++i) {
                     sInstances.add(new ActivityAssigner(i));
                 }
             }
         }
-        return sInstances.get(ActivityAssigner.getIndex(webappId));
+        return sInstances.get(namespace);
     }
 
     private ActivityAssigner(int activityTypeIndex) {
         mContext = ContextUtils.getApplicationContext();
-        mActivityTypeIndex = activityTypeIndex;
+
+        mPrefPackage = PREF_PACKAGE[activityTypeIndex];
+        mPrefNumSavedEntries = PREF_NUM_SAVED_ENTRIES[activityTypeIndex];
+        mPrefActivityIndex = PREF_ACTIVITY_INDEX[activityTypeIndex];
+        mPrefActivityId = PREF_ACTIVITY_ID[activityTypeIndex];
+
         mActivityList = new ArrayList<ActivityEntry>();
         restoreActivityList();
+    }
+
+    @VisibleForTesting
+    String getPreferenceNumberOfSavedEntries() {
+        return mPrefNumSavedEntries;
     }
 
     /**
@@ -144,7 +179,7 @@ public class ActivityAssigner {
      * @param webappId ID of the webapp.
      * @return Index of the Activity to use for the webapp.
      */
-    int assign(String webappId) {
+    public int assign(String webappId) {
         // Reuse a running Activity with the same ID, if it exists.
         int activityIndex = checkIfAssigned(webappId);
 
@@ -157,15 +192,6 @@ public class ActivityAssigner {
 
         markActivityUsed(activityIndex, webappId);
         return activityIndex;
-    }
-
-    /**
-     * Returns {@link WEBAPP_ACTIVITY_INDEX} for WebappActivity, {@link WEBAPK_ACTIVITY_INDEX} for
-     * WebApkActivity whose webappId starts with "webapk:".
-     */
-    static int getIndex(String webappId) {
-        return webappId.startsWith(WebApkConstants.WEBAPK_ID_PREFIX) ? WEBAPK_ACTIVITY_INDEX
-                : WEBAPP_ACTIVITY_INDEX;
     }
 
     /**
@@ -193,7 +219,7 @@ public class ActivityAssigner {
      * @param activityIndex Index of the Activity in the LRU buffer.
      * @param webappId The ID of the app being shown in the Activity.
      */
-    void markActivityUsed(int activityIndex, String webappId) {
+    public void markActivityUsed(int activityIndex, String webappId) {
         // Find the entry corresponding to the Activity.
         int elementIndex = findActivityElement(activityIndex);
 
@@ -232,14 +258,6 @@ public class ActivityAssigner {
     }
 
     /**
-     * Returns the type index of the Activities managed.
-     */
-    @VisibleForTesting
-    int getActivityTypeIndex() {
-        return mActivityTypeIndex;
-    }
-
-    /**
      * Restores/creates the mapping between apps and activities.
      * The logic is slightly complicated to future-proof against situations where the number of
      * Activity is changed.
@@ -258,11 +276,10 @@ public class ActivityAssigner {
 
         // Restore any entries that were previously saved.  If it seems that the preferences have
         // been corrupted somehow, just discard the whole map.
-        SharedPreferences prefs = mContext.getSharedPreferences(PREF_PACKAGE[mActivityTypeIndex],
-                Context.MODE_PRIVATE);
+        SharedPreferences prefs = mContext.getSharedPreferences(mPrefPackage, Context.MODE_PRIVATE);
         try {
             long time = SystemClock.elapsedRealtime();
-            final int numSavedEntries = prefs.getInt(PREF_NUM_SAVED_ENTRIES[mActivityTypeIndex], 0);
+            final int numSavedEntries = prefs.getInt(mPrefNumSavedEntries, 0);
             try {
                 RecordHistogram.recordTimesHistogram("Android.StrictMode.WebappSharedPrefs",
                         SystemClock.elapsedRealtime() - time, TimeUnit.MILLISECONDS);
@@ -271,8 +288,8 @@ public class ActivityAssigner {
             }
             if (numSavedEntries <= NUM_WEBAPP_ACTIVITIES) {
                 for (int i = 0; i < numSavedEntries; ++i) {
-                    String currentActivityIndexPref = PREF_ACTIVITY_INDEX[mActivityTypeIndex] + i;
-                    String currentWebappIdPref = PREF_WEBAPP_ID[mActivityTypeIndex] + i;
+                    String currentActivityIndexPref = mPrefActivityIndex + i;
+                    String currentWebappIdPref = mPrefActivityId + i;
 
                     int activityIndex = prefs.getInt(currentActivityIndexPref, i);
                     String webappId = prefs.getString(currentWebappIdPref, null);
@@ -313,14 +330,13 @@ public class ActivityAssigner {
      * Saves the mapping between apps and Activities.
      */
     private void storeActivityList() {
-        SharedPreferences prefs = mContext.getSharedPreferences(PREF_PACKAGE[mActivityTypeIndex],
-                Context.MODE_PRIVATE);
+        SharedPreferences prefs = mContext.getSharedPreferences(mPrefPackage, Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = prefs.edit();
         editor.clear();
-        editor.putInt(PREF_NUM_SAVED_ENTRIES[mActivityTypeIndex], mActivityList.size());
+        editor.putInt(mPrefNumSavedEntries, mActivityList.size());
         for (int i = 0; i < mActivityList.size(); ++i) {
-            String currentActivityIndexPref = PREF_ACTIVITY_INDEX[mActivityTypeIndex] + i;
-            String currentWebappIdPref = PREF_WEBAPP_ID[mActivityTypeIndex] + i;
+            String currentActivityIndexPref = mPrefActivityIndex + i;
+            String currentWebappIdPref = mPrefActivityId + i;
             editor.putInt(currentActivityIndexPref, mActivityList.get(i).mActivityIndex);
             editor.putString(currentWebappIdPref, mActivityList.get(i).mWebappId);
         }

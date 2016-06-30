@@ -33,8 +33,8 @@ public abstract class WebApkManagedActivity extends WebApkActivity {
      * Marks that this WebApkActivity is recently used to prevent other webapps from using it.
      */
     private void markActivityUsed() {
-        ActivityAssigner.instance(getWebappInfo().id()).markActivityUsed(
-                mActivityIndex, getWebappInfo().id());
+        ActivityAssigner.instance(ActivityAssigner.WEBAPK_NAMESPACE)
+                .markActivityUsed(mActivityIndex, getWebappInfo().id());
     }
 
     /**

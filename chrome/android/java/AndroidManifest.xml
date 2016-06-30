@@ -280,6 +280,18 @@ by a child template that "extends" this file.
             android:configChanges="orientation|keyboardHidden|keyboard|screenSize|mcc|mnc|screenLayout|smallestScreenSize"
             android:hardwareAccelerated="false">
         </activity>
+        {% for i in range(10) %}
+        <activity android:name="org.chromium.chrome.browser.customtabs.SeparateTaskCustomTabActivity{{ i }}"
+            android:theme="@style/MainTheme"
+            android:exported="false"
+            android:launchMode="singleTask"
+            android:windowSoftInputMode="adjustResize"
+            android:persistableMode="persistNever"
+            android:taskAffinity=""
+            android:configChanges="orientation|keyboardHidden|keyboard|screenSize|mcc|mnc|screenLayout|smallestScreenSize"
+            android:hardwareAccelerated="false">
+        </activity>
+        {% endfor %}
 
         <!-- ChromeTabbedActivity related -->
         <activity android:name="org.chromium.chrome.browser.ChromeTabbedActivity"
