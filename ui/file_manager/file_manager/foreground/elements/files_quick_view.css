@@ -21,6 +21,10 @@ paper-dialog {
   max-width: 100%;
 }
 
+video {
+  min-width: 192px;
+}
+
 #video-poster {
   max-height: 100%;
   max-width: 100%;
