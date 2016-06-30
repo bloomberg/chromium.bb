@@ -103,6 +103,9 @@ test_surface_configure(struct weston_surface *surface, int32_t sx, int32_t sy)
 				 test_surface->x, test_surface->y);
 
 	weston_view_update_transform(test_surface->view);
+
+	test_surface->surface->is_mapped = true;
+	test_surface->view->is_mapped = true;
 }
 
 static void
