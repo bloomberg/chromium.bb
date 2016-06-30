@@ -153,7 +153,14 @@ ServiceWorkerClientInfo FocusOnUI(int render_process_id,
 void DidOpenURLOnUI(const OpenURLCallback& callback,
                     WebContents* web_contents) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  DCHECK(web_contents);
+
+  if (!web_contents) {
+    BrowserThread::PostTask(
+        BrowserThread::IO, FROM_HERE,
+        base::Bind(callback, ChildProcessHost::kInvalidUniqueID,
+                   MSG_ROUTING_NONE));
+    return;
+  }
 
   RenderFrameHostImpl* rfhi =
       static_cast<RenderFrameHostImpl*>(web_contents->GetMainFrame());
