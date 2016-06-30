@@ -430,6 +430,9 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('deqp/functional/gles3/texturefiltering/2d_combinations_01.html',
         ['mac', 'intel'], bug=606074)
     self.Fail('deqp/functional/gles3/texturefiltering/' +
+        'cube_combinations_01.html',
+        ['mac', 'intel'], bug=606074)
+    self.Fail('deqp/functional/gles3/texturefiltering/' +
         '2d_array_combinations_01.html',
         ['mac', 'intel'], bug=606074)
     self.Fail('deqp/functional/gles3/texturefiltering/3d_combinations_06.html',
@@ -467,18 +470,12 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('deqp/functional/gles3/shadertexturefunction/' +
         'texturesize.html',
         ['mac', 'intel'], bug=483282)
+
+    self.Fail('deqp/functional/gles3/textureformat/sized_color_cube_*.html',
+        ['mac', 'intel'], bug=612205)
+
     self.Fail('conformance2/reading/read-pixels-from-fbo-test.html',
         ['mac', 'intel'], bug=483282)
-
-    self.Fail('deqp/functional/gles3/textureshadow/cube*.html',
-        ['mac', 'intel'], bug=483282)
-
-    self.Fail('deqp/functional/gles3/texturefiltering/cube_formats_*',
-        ['mac', 'intel'], bug=606074)
-    self.Fail('deqp/functional/gles3/texturefiltering/cube_sizes_*',
-        ['mac', 'intel'], bug=606074)
-    self.Fail('deqp/functional/gles3/texturefiltering/cube_combinations_*',
-        ['mac', 'intel'], bug=606074)
 
     # Linux only.
     self.Fail('deqp/data/gles3/shaders/functions.html',

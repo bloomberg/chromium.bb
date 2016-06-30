@@ -19,7 +19,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
 {
   "name": "gpu driver bug list",
   // Please update the version number whenever you change this file.
-  "version": "8.74",
+  "version": "8.75",
   "entries": [
     {
       "id": 1,
@@ -1611,19 +1611,6 @@ LONG_STRING_CONST(
       "gl_renderer": "Vivante GC1000",
       "features": [
         "disable_multisampled_render_to_texture"
-      ]
-    },
-    {
-      "id": 155,
-      "cr_bugs": [597794],
-      "description": "Seamless cubemap does not work for Mac Intel",
-      "os": {
-        "type": "macosx"
-      },
-      "vendor_id": "0x8086",
-      "multi_gpu_category": "primary",
-      "features": [
-        "disable_texture_cube_map_seamless"
       ]
     },
     {
