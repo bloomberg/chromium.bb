@@ -92,7 +92,7 @@ CronetDataReductionProxy::CronetDataReductionProxy(
       data_reduction_proxy::Client::CRONET_ANDROID,
       data_reduction_proxy::DataReductionProxyParams::kAllowed |
           data_reduction_proxy::DataReductionProxyParams::kFallbackAllowed,
-      net_log, task_runner, task_runner, false, user_agent));
+      net_log, task_runner, task_runner, false, user_agent, std::string()));
   io_data_->request_options()->SetKeyOnIO(key);
 }
 

@@ -10,6 +10,7 @@
 #include "base/memory/ptr_util.h"
 #include "build/build_config.h"
 #include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings.h"
+#include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_content_client.h"
 #include "chrome/common/pref_names.h"
 #include "components/data_reduction_proxy/content/browser/content_lofi_decider.h"
@@ -17,6 +18,7 @@
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_io_data.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
 #include "components/prefs/pref_service.h"
+#include "components/version_info/version_info.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
 
@@ -78,7 +80,8 @@ CreateDataReductionProxyChromeIOData(
       data_reduction_proxy_io_data(
           new data_reduction_proxy::DataReductionProxyIOData(
               DataReductionProxyChromeSettings::GetClient(), flags, net_log,
-              io_task_runner, ui_task_runner, enabled, GetUserAgent()));
+              io_task_runner, ui_task_runner, enabled, GetUserAgent(),
+              version_info::GetChannelString(chrome::GetChannel())));
 
   data_reduction_proxy_io_data->set_lofi_decider(
       base::WrapUnique(new data_reduction_proxy::ContentLoFiDecider()));

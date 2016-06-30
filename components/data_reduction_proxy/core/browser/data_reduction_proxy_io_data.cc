@@ -96,7 +96,8 @@ DataReductionProxyIOData::DataReductionProxyIOData(
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
     bool enabled,
-    const std::string& user_agent)
+    const std::string& user_agent,
+    const std::string& channel)
     : client_(client),
       net_log_(net_log),
       io_task_runner_(io_task_runner),
@@ -105,6 +106,7 @@ DataReductionProxyIOData::DataReductionProxyIOData(
       url_request_context_getter_(nullptr),
       basic_url_request_context_getter_(
           new BasicHTTPURLRequestContextGetter(user_agent, io_task_runner)),
+      channel_(channel),
       weak_factory_(this) {
   DCHECK(net_log);
   DCHECK(io_task_runner_);

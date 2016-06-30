@@ -102,7 +102,7 @@ TEST_F(DataReductionProxyIODataTest, TestConstruction) {
       new DataReductionProxyIOData(
           Client::UNKNOWN, DataReductionProxyParams::kAllowed, net_log(),
           task_runner(), task_runner(), false /* enabled */,
-          std::string() /* user_agent */));
+          std::string() /* user_agent */, std::string() /* channel */));
 
   // Check that the SimpleURLRequestContextGetter uses vanilla HTTP.
   net::URLRequestContext* request_context =

@@ -370,6 +370,15 @@ void DataReductionProxyConfigServiceClient::RetrieveRemoteConfig() {
   const std::string& session_key = request_options_->GetSecureSession();
   if (!session_key.empty())
     request.set_session_key(request_options_->GetSecureSession());
+  data_reduction_proxy::VersionInfo* version_info =
+      request.mutable_version_info();
+  uint32_t build;
+  uint32_t patch;
+  util::GetChromiumBuildAndPatchAsInts(util::ChromiumVersion(), &build, &patch);
+  version_info->set_client(util::GetStringForClient(io_data_->client()));
+  version_info->set_build(build);
+  version_info->set_patch(patch);
+  version_info->set_channel(io_data_->channel());
   request.SerializeToString(&serialized_request);
   std::unique_ptr<net::URLFetcher> fetcher =
       GetURLFetcherForConfig(config_service_url_, serialized_request);

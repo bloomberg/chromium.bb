@@ -109,4 +109,24 @@ message ProxyServer {
 message CreateClientConfigRequest {
   // A previous per-session key that was assigned by the service.
   optional string session_key = 1;
+
+  // Build version information.
+  optional VersionInfo version_info = 2;
+}
+
+// Build version information.
+message VersionInfo {
+  // The client's platform type. See
+  // components/data_reduction_proxy/core/common/data_reduction_proxy_util.h for
+  // allowed strings in CLIENT_ENUMS_LIST.
+  optional string client = 1;
+
+  // The build number, e.g. 2171
+  optional int32 build = 2;
+
+  // The patch number of the chromium client: always a non-negative integer.
+  optional int32 patch = 3;
+
+  // The production channel, e.g. "canary", "dev", "beta", "stable".
+  optional string channel = 4;
 }
