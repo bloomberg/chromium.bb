@@ -1544,22 +1544,35 @@ weston_view_set_mask_infinite(struct weston_view *view)
 	weston_view_schedule_repaint(view);
 }
 
+/* Check if view should be displayed
+ *
+ * The indicator is set manually when assigning
+ * a view to a surface.
+ *
+ * This needs reworking. See the thread starting at:
+ *
+ * https://lists.freedesktop.org/archives/wayland-devel/2016-June/029656.html
+ */
 WL_EXPORT bool
 weston_view_is_mapped(struct weston_view *view)
 {
-	if (view->output)
-		return true;
-	else
-		return false;
+	return view->is_mapped;
 }
 
+/* Check if a surface has a view assigned to it
+ *
+ * The indicator is set manually when mapping
+ * a surface and creating a view for it.
+ *
+ * This needs to go. See the thread starting at:
+ *
+ * https://lists.freedesktop.org/archives/wayland-devel/2016-June/029656.html
+ *
+ */
 WL_EXPORT bool
 weston_surface_is_mapped(struct weston_surface *surface)
 {
-	if (surface->output)
-		return true;
-	else
-		return false;
+	return surface->is_mapped;
 }
 
 static void
