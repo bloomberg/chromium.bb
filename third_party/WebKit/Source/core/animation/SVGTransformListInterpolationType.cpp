@@ -210,6 +210,13 @@ private:
 
 } // namespace
 
+InterpolationValue SVGTransformListInterpolationType::maybeConvertNeutral(const InterpolationValue&, ConversionCheckers&) const
+{
+    NOTREACHED();
+    // This function is no longer called, because maybeConvertSingle has been overridden.
+    return nullptr;
+}
+
 InterpolationValue SVGTransformListInterpolationType::maybeConvertSVGValue(const SVGPropertyBase& svgValue) const
 {
     if (svgValue.type() != AnimatedTransformList)

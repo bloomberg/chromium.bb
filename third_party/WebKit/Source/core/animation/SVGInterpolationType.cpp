@@ -11,13 +11,6 @@
 
 namespace blink {
 
-InterpolationValue SVGInterpolationType::maybeConvertNeutral(const InterpolationValue&, ConversionCheckers&) const
-{
-    NOTREACHED();
-    // This function must be overridden, unless maybeConvertSingle is overridden to no longer need it.
-    return nullptr;
-}
-
 InterpolationValue SVGInterpolationType::maybeConvertSingle(const PropertySpecificKeyframe& keyframe, const InterpolationEnvironment& environment, const InterpolationValue& underlying, ConversionCheckers& conversionCheckers) const
 {
     if (keyframe.isNeutral())

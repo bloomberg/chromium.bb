@@ -19,7 +19,7 @@ protected:
 
     const QualifiedName& attribute() const { return getProperty().svgAttribute(); }
 
-    virtual InterpolationValue maybeConvertNeutral(const InterpolationValue& underlying, ConversionCheckers&) const;
+    virtual InterpolationValue maybeConvertNeutral(const InterpolationValue& underlying, ConversionCheckers&) const = 0;
     virtual InterpolationValue maybeConvertSVGValue(const SVGPropertyBase&) const = 0;
     virtual SVGPropertyBase* appliedSVGValue(const InterpolableValue&, const NonInterpolableValue*) const = 0;
 

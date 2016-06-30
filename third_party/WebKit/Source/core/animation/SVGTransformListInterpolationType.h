@@ -17,6 +17,7 @@ public:
     { }
 
 private:
+    InterpolationValue maybeConvertNeutral(const InterpolationValue&, ConversionCheckers&) const final;
     InterpolationValue maybeConvertSVGValue(const SVGPropertyBase& svgValue) const final;
     InterpolationValue maybeConvertSingle(const PropertySpecificKeyframe&, const InterpolationEnvironment&, const InterpolationValue& underlying, ConversionCheckers&) const final;
     SVGPropertyBase* appliedSVGValue(const InterpolableValue&, const NonInterpolableValue*) const final;
