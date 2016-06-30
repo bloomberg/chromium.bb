@@ -13,60 +13,56 @@ group("resources") {
   public_deps = [
     ":copy_locales",
     ":strings",
-
-    #":verify_resources",  TODO(GYP) enable this.
+    ":verify_resources",
   ]
 }
 
 # TODO(GYP) enable verify_resources. The bots are complaining about
 # gen/main.html not being found but this doesn't seems to reproduce locally.
-if (false) {
-  action("verify_resources") {
-    script = "//remoting/tools/verify_resources.py"
 
-    sources_to_verify = [
-      "$root_gen_dir/main.html",
-      "../base/resources_unittest.cc",
-      "../host/continue_window_mac.mm",
-      "../host/disconnect_window_mac.mm",
-      "../host/installer/mac/uninstaller/remoting_uninstaller-InfoPlist.strings.jinja2",
-      "../host/mac/me2me_preference_pane-InfoPlist.strings.jinja2",
-      "../host/win/core.rc.jinja2",
-      "../host/win/host_messages.mc.jinja2",
-      "../host/win/version.rc.jinja2",
-      "../resources/play_store_resources.cc",
-      "../webapp/background/background.js",
-      "../webapp/butter_bar.js",
-      "../webapp/client_screen.js",
-      "../webapp/error.js",
-      "../webapp/host_list.js",
-      "../webapp/host_setup_dialog.js",
-      "../webapp/host_table_entry.js",
-      "../webapp/manifest.json.jinja2",
-      "../webapp/paired_client_manager.js",
-      "../webapp/remoting.js",
-      "../webapp/window_frame.js",
-    ]
+action("verify_resources") {
+  script = "//remoting/tools/verify_resources.py"
 
-    inputs = [ "remoting_strings.grd" ] + sources_to_verify
+  sources_to_verify = [
+    #    "$root_gen_dir/main.html",
+    "../host/continue_window_mac.mm",
+    "../host/disconnect_window_mac.mm",
+    "../host/installer/mac/uninstaller/remoting_uninstaller-InfoPlist.strings.jinja2",
+    "../host/mac/me2me_preference_pane-InfoPlist.strings.jinja2",
+    "../host/win/core.rc.jinja2",
+    "../host/win/host_messages.mc.jinja2",
+    "../host/win/version.rc.jinja2",
+    "../resources/play_store_resources.cc",
+    "../webapp/crd/js/background.js",
+    "../webapp/crd/js/butter_bar.js",
+    "../webapp/base/js/error.js",
+    "../webapp/crd/js/host_list.js",
+    "../webapp/crd/js/host_setup_dialog.js",
+    "../webapp/crd/js/host_table_entry.js",
+    "../webapp/crd/manifest.json.jinja2",
+    "../webapp/crd/js/paired_client_manager.js",
+    "../webapp/crd/js/desktop_remoting.js",
+    "../webapp/crd/js/window_frame.js",
+  ]
 
-    stampfile = "$root_build_dir/remoting_resources_verified_stamp"
-    outputs = [
-      stampfile,
-    ]
+  inputs = [ "remoting_strings.grd" ] + sources_to_verify
 
-    args = [
-             "-t",
-             rebase_path(stampfile, root_build_dir),
-             "-r",
-             rebase_path("remoting_strings.grd", root_build_dir),
-           ] + rebase_path(sources_to_verify, root_build_dir)
+  stampfile = "$root_build_dir/remoting_resources_verified_stamp"
+  outputs = [
+    stampfile,
+  ]
 
-    deps = [
-      "//remoting/webapp:main_html",
-    ]  # Generates main.html.
-  }
-}  # if false
+  args = [
+           "-t",
+           rebase_path(stampfile, root_build_dir),
+           "-r",
+           rebase_path("remoting_strings.grd", root_build_dir),
+         ] + rebase_path(sources_to_verify, root_build_dir)
+
+  deps = [
+    #    "//remoting/webapp:webapp",
+  ]  # Generates main.html.
+}
 
 if (is_android) {
   android_string_outputs =

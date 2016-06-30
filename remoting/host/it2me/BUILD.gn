@@ -9,6 +9,9 @@ import("//remoting/remoting_srcs.gni")
 if (is_win) {
   import("//remoting/host/predefines_win.gni")
 }
+if (is_mac) {
+  import("//build/config/mac/rules.gni")
+}
 
 source_set("common") {
   sources = rebase_path(
@@ -71,16 +74,30 @@ if (!is_chromeos && !is_android && enable_remoting_host) {
       ]
     }
   } else {
-    executable("remote_assistance_host") {
+    if (is_mac) {
+      app_target_type = "mac_app_bundle"
+    } else {
+      app_target_type = "executable"
+    }
+
+    target(app_target_type, "remote_assistance_host") {
+      if (is_mac) {
+        info_plist = "remote_assistance_host-Info.plist"
+        extra_configs = [
+          "//build/config/compiler:wexit_time_destructors",
+          "//remoting:version",
+        ]
+      } else {
+        configs += [
+          "//build/config/compiler:wexit_time_destructors",
+          "//remoting:version",
+        ]
+      }
+
       sources = [
         "it2me_native_messaging_host_entry_point.cc",
         "it2me_native_messaging_host_main.cc",
         "it2me_native_messaging_host_main.h",
-      ]
-
-      configs += [
-        "//build/config/compiler:wexit_time_destructors",
-        "//remoting:version",
       ]
 
       deps = [
