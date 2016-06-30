@@ -31,7 +31,7 @@ TEST(PersistentTest, BindCancellation)
 {
     Receiver* receiver = new Receiver;
     int counter = 0;
-    std::unique_ptr<SameThreadClosure> function = WTF::bind(&Receiver::increment, wrapWeakPersistent(receiver), WTF::unretained(&counter));
+    std::unique_ptr<WTF::Closure> function = WTF::bind(&Receiver::increment, wrapWeakPersistent(receiver), WTF::unretained(&counter));
 
     (*function)();
     EXPECT_EQ(1, counter);

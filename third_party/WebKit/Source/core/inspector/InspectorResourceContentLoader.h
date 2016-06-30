@@ -30,7 +30,7 @@ public:
     DECLARE_TRACE();
 
     int createClientId();
-    void ensureResourcesContentLoaded(int clientId, std::unique_ptr<SameThreadClosure> callback);
+    void ensureResourcesContentLoaded(int clientId, std::unique_ptr<WTF::Closure> callback);
     void cancel(int clientId);
     void didCommitLoadForLocalFrame(LocalFrame*);
 
@@ -44,7 +44,7 @@ private:
     void stop();
     bool hasFinished();
 
-    using Callbacks = Vector<std::unique_ptr<SameThreadClosure>>;
+    using Callbacks = Vector<std::unique_ptr<WTF::Closure>>;
     HashMap<int, Callbacks> m_callbacks;
     bool m_allRequestsStarted;
     bool m_started;

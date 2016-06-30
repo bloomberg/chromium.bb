@@ -576,7 +576,7 @@ TEST(FunctionalTest, WeakPtr)
 {
     HasWeakPtrSupport obj;
     int counter = 0;
-    std::unique_ptr<WTF::SameThreadClosure> bound = WTF::bind(&HasWeakPtrSupport::increment, obj.createWeakPtr(), WTF::unretained(&counter));
+    std::unique_ptr<WTF::Closure> bound = WTF::bind(&HasWeakPtrSupport::increment, obj.createWeakPtr(), WTF::unretained(&counter));
 
     (*bound)();
     EXPECT_EQ(1, counter);

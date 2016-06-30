@@ -32,12 +32,12 @@ public:
     static std::unique_ptr<WebThreadSupportingGC> createForThread(WebThread*, bool perThreadHeapEnabled = false);
     ~WebThreadSupportingGC();
 
-    void postTask(const WebTraceLocation& location, std::unique_ptr<SameThreadClosure> task)
+    void postTask(const WebTraceLocation& location, std::unique_ptr<WTF::Closure> task)
     {
         m_thread->getWebTaskRunner()->postTask(location, std::move(task));
     }
 
-    void postDelayedTask(const WebTraceLocation& location, std::unique_ptr<SameThreadClosure> task, long long delayMs)
+    void postDelayedTask(const WebTraceLocation& location, std::unique_ptr<WTF::Closure> task, long long delayMs)
     {
         m_thread->getWebTaskRunner()->postDelayedTask(location, std::move(task), delayMs);
     }

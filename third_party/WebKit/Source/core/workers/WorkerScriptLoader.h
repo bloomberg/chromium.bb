@@ -63,7 +63,7 @@ public:
     // used from worker context and the worker shuts down in the middle of an
     // operation. This will cause leaks when we support nested workers.
     // Note that callbacks could be invoked before loadAsynchronously() returns.
-    void loadAsynchronously(ExecutionContext&, const KURL&, CrossOriginRequestPolicy, WebAddressSpace, std::unique_ptr<SameThreadClosure> responseCallback, std::unique_ptr<SameThreadClosure> finishedCallback);
+    void loadAsynchronously(ExecutionContext&, const KURL&, CrossOriginRequestPolicy, WebAddressSpace, std::unique_ptr<WTF::Closure> responseCallback, std::unique_ptr<WTF::Closure> finishedCallback);
 
     // This will immediately invoke |finishedCallback| if loadAsynchronously()
     // is in progress.
@@ -111,8 +111,8 @@ private:
     void processContentSecurityPolicy(const ResourceResponse&);
 
     // Callbacks for loadAsynchronously().
-    std::unique_ptr<SameThreadClosure> m_responseCallback;
-    std::unique_ptr<SameThreadClosure> m_finishedCallback;
+    std::unique_ptr<WTF::Closure> m_responseCallback;
+    std::unique_ptr<WTF::Closure> m_finishedCallback;
 
     std::unique_ptr<ThreadableLoader> m_threadableLoader;
     String m_responseEncoding;

@@ -44,11 +44,11 @@ void Microtask::performCheckpoint(v8::Isolate* isolate)
 
 static void microtaskFunctionCallback(void* data)
 {
-    std::unique_ptr<SameThreadClosure> task = wrapUnique(static_cast<SameThreadClosure*>(data));
+    std::unique_ptr<WTF::Closure> task = wrapUnique(static_cast<WTF::Closure*>(data));
     (*task)();
 }
 
-void Microtask::enqueueMicrotask(std::unique_ptr<SameThreadClosure> callback)
+void Microtask::enqueueMicrotask(std::unique_ptr<WTF::Closure> callback)
 {
     v8::Isolate* isolate = v8::Isolate::GetCurrent();
     isolate->EnqueueMicrotask(&microtaskFunctionCallback, static_cast<void*>(callback.release()));

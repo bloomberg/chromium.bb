@@ -52,7 +52,7 @@ protected:
     virtual void scheduleInitiateJpegEncoding(const double&);
     virtual void idleEncodeRowsPng(double deadlineSeconds);
     virtual void idleEncodeRowsJpeg(double deadlineSeconds);
-    virtual void postDelayedTaskToMainThread(const WebTraceLocation&, std::unique_ptr<SameThreadClosure>, double delayMs);
+    virtual void postDelayedTaskToMainThread(const WebTraceLocation&, std::unique_ptr<WTF::Closure>, double delayMs);
     virtual void signalAlternativeCodePathFinishedForTesting() { }
     virtual void createBlobAndInvokeCallback();
     virtual void createNullAndInvokeCallback();

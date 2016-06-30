@@ -34,7 +34,7 @@ protected:
     void createBlobAndInvokeCallback() override { };
     void createNullAndInvokeCallback() override { };
     void signalAlternativeCodePathFinishedForTesting() override;
-    void postDelayedTaskToMainThread(const WebTraceLocation&, std::unique_ptr<SameThreadClosure>, double delayMs) override;
+    void postDelayedTaskToMainThread(const WebTraceLocation&, std::unique_ptr<WTF::Closure>, double delayMs) override;
 };
 
 void MockCanvasAsyncBlobCreator::signalAlternativeCodePathFinishedForTesting()
@@ -42,7 +42,7 @@ void MockCanvasAsyncBlobCreator::signalAlternativeCodePathFinishedForTesting()
     testing::exitRunLoop();
 }
 
-void MockCanvasAsyncBlobCreator::postDelayedTaskToMainThread(const WebTraceLocation& location, std::unique_ptr<SameThreadClosure> task, double delayMs)
+void MockCanvasAsyncBlobCreator::postDelayedTaskToMainThread(const WebTraceLocation& location, std::unique_ptr<WTF::Closure> task, double delayMs)
 {
     DCHECK(isMainThread());
     Platform::current()->mainThread()->getWebTaskRunner()->postTask(location, std::move(task));

@@ -77,7 +77,7 @@ private:
     WebFileSystem* getFileSystem() const;
     void fileSystemNotAvailable(ExecutionContext*, CallbackWrapper*);
 
-    void requestFileSystemAccessInternal(ExecutionContext*, std::unique_ptr<SameThreadClosure> allowed, std::unique_ptr<SameThreadClosure> denied);
+    void requestFileSystemAccessInternal(ExecutionContext*, std::unique_ptr<WTF::Closure> allowed, std::unique_ptr<WTF::Closure> denied);
     void fileSystemNotAllowedInternal(ExecutionContext*, CallbackWrapper*);
     void fileSystemAllowedInternal(ExecutionContext*, FileSystemType, CallbackWrapper*);
     void resolveURLInternal(ExecutionContext*, const KURL&, CallbackWrapper*);

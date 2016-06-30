@@ -153,7 +153,7 @@ int InspectorResourceContentLoader::createClientId()
     return ++m_lastClientId;
 }
 
-void InspectorResourceContentLoader::ensureResourcesContentLoaded(int clientId, std::unique_ptr<SameThreadClosure> callback)
+void InspectorResourceContentLoader::ensureResourcesContentLoaded(int clientId, std::unique_ptr<WTF::Closure> callback)
 {
     if (!m_started)
         start();

@@ -59,7 +59,7 @@ namespace WTF {
 
 // Thread Safety:
 //
-// WTF::bind() and SameThreadClosure should be used for same-thread closures
+// WTF::bind() and WTF::Closure should be used for same-thread closures
 // only, i.e. the closures must be created, executed and destructed on
 // the same thread.
 // Use crossThreadBind() and CrossThreadClosure if the function/task is called
@@ -262,7 +262,7 @@ std::unique_ptr<Function<base::MakeUnboundRunType<FunctionType, BoundParameters.
     return bindInternal<SameThreadAffinity>(function, std::forward<BoundParameters>(boundParameters)...);
 }
 
-typedef Function<void(), SameThreadAffinity> SameThreadClosure;
+typedef Function<void(), SameThreadAffinity> Closure;
 typedef Function<void(), CrossThreadAffinity> CrossThreadClosure;
 
 } // namespace WTF
@@ -272,7 +272,6 @@ using WTF::unretained;
 using WTF::crossThreadUnretained;
 
 using WTF::Function;
-using WTF::SameThreadClosure;
 using WTF::CrossThreadClosure;
 
 #endif // WTF_Functional_h

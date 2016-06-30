@@ -217,7 +217,7 @@ public:
 
     void restoreTextureBindings();
 
-    void addNewMailboxCallback(std::unique_ptr<SameThreadClosure> closure) { m_newMailboxCallback = std::move(closure); }
+    void addNewMailboxCallback(std::unique_ptr<WTF::Closure> closure) { m_newMailboxCallback = std::move(closure); }
 
 protected: // For unittests
     DrawingBuffer(
@@ -382,7 +382,7 @@ private:
     };
     FrontBufferInfo m_frontColorBuffer;
 
-    std::unique_ptr<SameThreadClosure> m_newMailboxCallback;
+    std::unique_ptr<WTF::Closure> m_newMailboxCallback;
 
     // This is used when the user requests either a depth or stencil buffer.
     GLuint m_depthStencilBuffer = 0;

@@ -10,7 +10,7 @@ class SameThreadTask : public WebTaskRunner::Task {
     USING_FAST_MALLOC(SameThreadTask);
     WTF_MAKE_NONCOPYABLE(SameThreadTask);
 public:
-    explicit SameThreadTask(std::unique_ptr<SameThreadClosure> closure)
+    explicit SameThreadTask(std::unique_ptr<WTF::Closure> closure)
         : m_closure(std::move(closure))
     {
     }
@@ -21,7 +21,7 @@ public:
     }
 
 private:
-    std::unique_ptr<SameThreadClosure> m_closure;
+    std::unique_ptr<WTF::Closure> m_closure;
 };
 
 class CrossThreadTask : public WebTaskRunner::Task {
@@ -52,12 +52,12 @@ void WebTaskRunner::postDelayedTask(const WebTraceLocation& location, std::uniqu
     postDelayedTask(location, new CrossThreadTask(std::move(task)), delayMs);
 }
 
-void WebTaskRunner::postTask(const WebTraceLocation& location, std::unique_ptr<SameThreadClosure> task)
+void WebTaskRunner::postTask(const WebTraceLocation& location, std::unique_ptr<WTF::Closure> task)
 {
     postTask(location, new SameThreadTask(std::move(task)));
 }
 
-void WebTaskRunner::postDelayedTask(const WebTraceLocation& location, std::unique_ptr<SameThreadClosure> task, long long delayMs)
+void WebTaskRunner::postDelayedTask(const WebTraceLocation& location, std::unique_ptr<WTF::Closure> task, long long delayMs)
 {
     postDelayedTask(location, new SameThreadTask(std::move(task)), delayMs);
 }
