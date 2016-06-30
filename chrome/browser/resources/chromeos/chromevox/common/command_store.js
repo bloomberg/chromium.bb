@@ -363,7 +363,6 @@ cvox.CommandStore.CMD_WHITELIST = {
                          'disallowOOBE': true,
                          category: 'help_commands'},
 
-
   'showFormsList': {announce: false,
                     disallowContinuation: true,
                     nodeList: 'formField',

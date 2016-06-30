@@ -2444,6 +2444,98 @@
       <message desc="Spoken when switching to the new beta experience." name="IDS_CHROMEVOX_SWITCH_TO_NEXT">
         Switched to ChromeVox Next
       </message>
+
+      <message desc="Description of button that closes the ChromeVox Tutorial" name="IDS_CHROMEVOX_CLOSE_TUTORIAL">
+        Close ChromeVox Tutorial
+      </message>
+      <message desc="Button that goes to the previous page in the ChromeVox Tutorial" name="IDS_CHROMEVOX_TUTORIAL_PREVIOUS">
+        Previous
+      </message>
+      <message desc="Button that goes to the next page in the ChromeVox Tutorial" name="IDS_CHROMEVOX_TUTORIAL_NEXT">
+        Next
+      </message>
+      <message desc="Heading that welcomes users to the ChromeVox Next tutorial" name="IDS_CHROMEVOX_TUTORIAL_WELCOME_HEADING">
+        Welcome to ChromeVox Next!
+      </message>
+      <message desc="Introductory text for the 'ChromeVox Next' tutorial" name="IDS_CHROMEVOX_TUTORIAL_WELCOME_TEXT">
+        Are you using ChromeVox Next spoken feedback for the first time? This quick tutorial explains the essentials for getting started with ChromeVox Next.
+      </message>
+      <message desc="Text that tells users to press the enter key to move to the next page in the tutorial" name="IDS_CHROMEVOX_TUTORIAL_ENTER_TO_ADVANCE">
+        To advance, press Enter.
+      </message>
+      <message desc="Heading that talks about turning ChromeVox on, off, and stopping it from speaking" name="IDS_CHROMEVOX_TUTORIAL_ON_OFF_HEADING">
+        On, Off, and Stop
+      </message>
+      <message desc="Part of ChromeVox tutorial, explains that pressing Control on the keyboard stops it from speaking" name="IDS_CHROMEVOX_TUTORIAL_CONTROL">
+        To temporarily stop ChromeVox from speaking, press the Control key.
+      </message>
+      <message desc="Part of ChromeVox tutorial, explains that you can turn ChromeVox on or turn it off, by pressing Control+Alt+Z on the keyboard" name="IDS_CHROMEVOX_TUTORIAL_ON_OFF">
+        To turn ChromeVox on or off, use Control+Alt+Z.
+      </message>
+      <message desc="Heading for a section of the ChromeVox tutorial talking about the ChromeVox modifier key" name="IDS_CHROMEVOX_TUTORIAL_MODIFIER_HEADING">
+        The ChromeVox modifier key
+      </message>
+      <message desc="Text explaining that the Search key on the keyboard will be held down for most ChromeVox shortcuts" name="IDS_CHROMEVOX_TUTORIAL_MODIFIER">
+        In ChromeVox Next, the Search key is the modifier key. Most ChromeVox shortcuts start with the Search key. You’ll also use the arrow keys for navigation.
+      </message>
+      <message desc="Text explaining where to find the Search key on a Chromebook keyboard" name="IDS_CHROMEVOX_TUTORIAL_CHROMEBOOK_SEARCH">
+        On the Chromebook, the Search key is immediately above the left Shift key.
+      </message>
+      <message desc="Text explaining that while the ChromeVox tutorial is open, users can press any key to hear the key's name" name="IDS_CHROMEVOX_TUTORIAL_ANY_KEY">
+        During this tutorial, press any key to hear its name.
+      </message>
+      <message desc="Heading as part of the ChromeVox tutorial for a section on how to navigate within a webpage" name="IDS_CHROMEVOX_TUTORIAL_BASIC_NAVIGATION_HEADING">
+        Basic Navigation
+      </message>
+      <message desc="Part of the ChromeVox tutorial, explanation of keystrokes to navigate a webpage." name="IDS_CHROMEVOX_TUTORIAL_BASIC_NAVIGATION">
+        To move forward between items on a page, press Search + Right Arrow, or Search + Left Arrow to jump back. To go to the next line, press Search + Down Arrow. To get to the previous line, use Search + Up Arrow. If you reach an item you want to click, press Search + Space.
+      </message>
+      <message desc="Part of the ChromeVox tutorial, instructs the user to use key combinations to find and click a button titled 'Next' on the page and click it." name="IDS_CHROMEVOX_TUTORIAL_CLICK_NEXT">
+        Try using Search + Right Arrow now to find the Next button, then press Search + Space to click it.
+      </message>
+      <message desc="Heading for a section of the ChromeVox tutorial on commands to jump" name="IDS_CHROMEVOX_TUTORIAL_JUMP_HEADING">
+        Jump Commands
+      </message>
+      <message desc="Part of the ChromeVox tutorial, explains two keystrokes to jump to the next or previous heading." name="IDS_CHROMEVOX_TUTORIAL_JUMP">
+        Use jump commands to skip to specific types of elements. To jump forward between headings, press Search + H, or to jump backward, press Search + Shift + H.
+      </message>
+      <message desc="Heading for a section of the ChromeVox tutorial on menus of ChromeVox commands to press" name="IDS_CHROMEVOX_TUTORIAL_MENUS_HEADING">
+        Command Menus
+      </message>
+      <message desc="Part of the ChromeVox tutorial, explains the keystrokes to press to open and use a menu of commands." name="IDS_CHROMEVOX_TUTORIAL_MENUS">
+        To explore all ChromeVox commands and shortcuts, press Search + Period, then use the Arrow keys to navigate the menus, and Enter to activate a command.
+      </message>
+      <message desc="Heading for a section of the ChromeVox tutorial on Chrome shortcuts" name="IDS_CHROMEVOX_TUTORIAL_CHROME_SHORTCUTS_HEADING">
+        Helpful Chrome Shortcuts
+      </message>
+      <message desc="Part of the ChromeVox tutorial, explains some common Chrome keyboard shortcuts" name="IDS_CHROMEVOX_TUTORIAL_CHROME_SHORTCUTS">
+        The next few shortcuts aren’t ChromeVox commands, but they’re still very useful for getting the most out of Chrome.
+To navigate forward through actionable items like buttons and links, press the Tab key. To navigate backwards, press Shift+Tab. 
+To enter the Chrome browser address box, also called the omnibox, press Control + L. 
+To open and go to a new tab automatically, press Control+T. Your cursor will be in the omnibox. 
+To close a tab, press Control+W. 
+To move forward between open tabs, use Control+Tab. 
+To open the Chrome browser menu, press Alt+F.
+      </message>
+      <message desc="Part of the ChromeVox tutorial, explains a keyboard shortcut to press on Chromebook keyboards" name="IDS_CHROMEVOX_TUTORIAL_CHROMEBOOK_CTRL_FORWARD">
+        To jump to other parts of the screen, like toolbars or the system tray, press Control+Forward. On a Chromebook, the Forward key is immediately above the number 2 key.
+      </message>
+      <message desc="Heading for a section of the ChromeVox tutorial where the user can learn more" name="IDS_CHROMEVOX_TUTORIAL_LEARN_MORE_HEADING">
+        Learn More
+      </message>
+      <message desc="Part of the ChromeVox tutorial, explaining that this is the end of the tutorial and that there are links to more information." name="IDS_CHROMEVOX_TUTORIAL_LEARN_MORE">
+        Congratulations! You’ve learned the essentials to use ChromeVox Next (beta) successfully. Remember that you can open the ChromeVox command menu at any time by pressing Search+Period. To learn even more about ChromeVox and Chrome OS, visit the following articles.
+If you're done with the tutorial, use ChromeVox to navigate to the Close button and click it.
+      </message>
+      <message desc="Title of an article on the command reference for 'ChromeVox Next'" name="IDS_CHROMEVOX_NEXT_COMMAND_REFERENCE">
+        ChromeVox Next Command Reference
+      </message>
+      <message desc="Title of an article on keyboard shortcuts for Chromebooks" name="IDS_CHROMEVOX_CHROME_KEYBOARD_SHORTCUTS">
+        Chromebook keyboard shortcuts
+      </message>
+      <message desc="Title of an article on how to use accessibility features of the Chromebook touch screen" name="IDS_CHROMEVOX_TOUCHSCREEN_ACCESSIBILITY">
+        Use Chromebook touch screen accessibility features
+      </message>
     </messages>
   </release>
 </grit>

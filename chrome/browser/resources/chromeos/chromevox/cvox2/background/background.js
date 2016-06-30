@@ -407,8 +407,7 @@ Background.prototype = {
           this.navigateToRange(this.currentRange_);
         break;
       case 'showNextUpdatePage':
-        var nextUpdatePage = {url: 'cvox2/background/next_update.html'};
-        chrome.tabs.create(nextUpdatePage);
+        (new PanelCommand(PanelCommandType.TUTORIAL)).send();
         return false;
       default:
         break;

@@ -9,6 +9,7 @@
       'images/chromevox-16.png',
       'images/chromevox-19.png',
       'images/chromevox-48.png',
+      'images/chromevox.svg',
       'images/close-19.png',
       'images/close-hover-19.png',
       'images/options-19.png',

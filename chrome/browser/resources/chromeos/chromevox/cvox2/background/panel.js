@@ -13,6 +13,7 @@ goog.require('Msgs');
 goog.require('PanelCommand');
 goog.require('PanelMenu');
 goog.require('PanelMenuItem');
+goog.require('Tutorial');
 goog.require('cvox.ChromeVoxKbHandler');
 goog.require('cvox.CommandStore');
 
@@ -86,6 +87,12 @@ Panel.init = function() {
    */
   this.searching_ = false;
 
+  /**
+   * @type {Tutorial}
+   * @private
+   */
+  this.tutorial_ = new Tutorial();
+
   Panel.updateFromPrefs();
 
   Msgs.addTranslatedMessagesToDom(document);
@@ -104,6 +111,11 @@ Panel.init = function() {
   $('menus_button').addEventListener('mousedown', Panel.onOpenMenus, false);
   $('options').addEventListener('click', Panel.onOptions, false);
   $('close').addEventListener('click', Panel.onClose, false);
+
+  $('tutorial_next').addEventListener('click', Panel.onTutorialNext, false);
+  $('tutorial_previous').addEventListener(
+      'click', Panel.onTutorialPrevious, false);
+  $('close_tutorial').addEventListener('click', Panel.onCloseTutorial, false);
 
   document.addEventListener('keydown', Panel.onKeyDown, false);
   document.addEventListener('mouseup', Panel.onMouseUp, false);
@@ -189,6 +201,9 @@ Panel.exec = function(command) {
       break;
     case PanelCommandType.SEARCH:
       Panel.onSearch();
+      break;
+    case PanelCommandType.TUTORIAL:
+      Panel.onTutorial();
       break;
   }
 };
@@ -470,11 +485,13 @@ Panel.advanceItemBy = function(delta) {
  * @param {Event} event The mouse event.
  */
 Panel.onMouseUp = function(event) {
+  if (!Panel.activeMenu_)
+    return;
+
   var target = event.target;
   while (target && !target.classList.contains('menu-item')) {
     // Allow the user to click and release on the menu button and leave
-    // the menu button. Otherwise releasing the mouse anywhere else will
-    // close the menu.
+    // the menu button.
     if (target.id == 'menus_button')
       return;
 
@@ -492,6 +509,9 @@ Panel.onMouseUp = function(event) {
  * @param {Event} event The key event.
  */
 Panel.onKeyDown = function(event) {
+  if (!Panel.activeMenu_)
+    return;
+
   if (event.altKey || event.ctrlKey || event.metaKey || event.shiftKey)
     return;
 
@@ -575,9 +595,53 @@ Panel.closeMenusAndRestoreFocus = function() {
   // Make sure we're not in full-screen mode.
   window.location = '#';
 
+  this.activeMenu_ = null;
+
   var bkgnd =
       chrome.extension.getBackgroundPage()['ChromeVoxState']['instance'];
   bkgnd['endExcursion'](Panel.pendingCallback_);
+};
+
+/**
+ * Open the tutorial.
+ */
+Panel.onTutorial = function() {
+  var bkgnd =
+      chrome.extension.getBackgroundPage()['ChromeVoxState']['instance'];
+  bkgnd['startExcursion']();
+
+  // Change the url fragment to 'fullscreen', which signals the native
+  // host code to make the window fullscreen, revealing the menus.
+  window.location = '#fullscreen';
+
+  $('main').style.display = 'none';
+  $('menus_background').style.display = 'none';
+  $('tutorial').style.display = 'block';
+
+  Panel.tutorial_.firstPage();
+};
+
+/**
+ * Move to the next page in the tutorial.
+ */
+Panel.onTutorialNext = function() {
+  Panel.tutorial_.nextPage();
+};
+
+/**
+ * Move to the previous page in the tutorial.
+ */
+Panel.onTutorialPrevious = function() {
+  Panel.tutorial_.previousPage();
+};
+
+/**
+ * Close the tutorial.
+ */
+Panel.onCloseTutorial = function() {
+  $('main').style.display = 'block';
+  $('tutorial').style.display = 'none';
+  Panel.closeMenusAndRestoreFocus();
 };
 
 window.addEventListener('load', function() {

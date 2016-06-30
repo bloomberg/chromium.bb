@@ -8,6 +8,8 @@
 
 goog.provide('Notifications');
 
+goog.require('PanelCommand');
+
 /**
  * ChromeVox update notification.
  * @constructor
@@ -44,8 +46,7 @@ UpdateNotification.prototype = {
    * @param {string} notificationId
    */
   onClicked: function(notificationId) {
-    var nextUpdatePage = {url: 'cvox2/background/next_update.html'};
-    chrome.tabs.create(nextUpdatePage);
+    (new PanelCommand(PanelCommandType.TUTORIAL)).send();
   },
 
   /**
