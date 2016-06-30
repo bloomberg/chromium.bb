@@ -59,20 +59,36 @@ Polymer({
     },
   },
 
+  created: function() {
+    /** @private {!PromiseResolver} */
+    this.resolver_ = new PromiseResolver;
+    settings.main.rendered = this.resolver_.promise;
+  },
+
   attached: function() {
     document.addEventListener('toggle-advanced-page', function(e) {
       this.showAdvancedPage_ = e.detail;
       this.isAdvancedMenuOpen_ = e.detail;
       if (this.showAdvancedPage_) {
-        scrollWhenReady(
+        doWhenReady(
             function() {
-              return this.$$('settings-advanced-page');
+              var advancedPage = this.$$('settings-advanced-page');
+              return !!advancedPage && advancedPage.scrollHeight > 0;
             }.bind(this),
             function() {
-              return this.$$('#toggleContainer');
+              this.$$('#toggleContainer').scrollIntoView();
             }.bind(this));
       }
     }.bind(this));
+
+    doWhenReady(
+        function() {
+          var basicPage = this.$$('settings-basic-page');
+          return !!basicPage && basicPage.scrollHeight > 0;
+        }.bind(this),
+        function() {
+          this.resolver_.resolve();
+        }.bind(this));
   },
 
   /**

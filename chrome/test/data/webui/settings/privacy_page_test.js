@@ -70,6 +70,10 @@ cr.define('settings_privacy_page', function() {
       /** @type {SettingsPrivacyPageElement} */
       var page;
 
+      suiteSetup(function() {
+        settings.main.rendered = Promise.resolve();
+      });
+
       setup(function() {
         testBrowserProxy = new TestPrivacyPageBrowserProxy();
         settings.PrivacyPageBrowserProxyImpl.instance_ = testBrowserProxy;
