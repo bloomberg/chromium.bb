@@ -20,10 +20,10 @@ screenreader for Linux. It has, however, gone far beyond these
 routines. In Linux and Mac OSX it is a shared library, and in Windows
 it is a DLL.
 
-Liblouis is free software licensed under the [GNU Lesser GPL, version 2.1][] (see
+Liblouis is free software licensed under the [GNU LGPLv2.1+][] (see
 the file COPYING.LESSER).
 
-The command line tools, are licensed under the [GNU GPL][] (see the
+The command line tools, are licensed under the [GNU GPLv3+][] (see the
 file COPYING).
 
 # Documentation
