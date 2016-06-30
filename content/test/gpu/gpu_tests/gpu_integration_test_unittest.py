@@ -75,8 +75,6 @@ class SimpleIntegrationUnittest(gpu_integration_test.GpuIntegrationTest):
 
 class GpuIntegrationTestUnittest(unittest.TestCase):
   @mock.patch('telemetry.internal.util.binary_manager.InitDependencyManager')
-  # https://crbug.com/352807
-  @unittest.skip("Temporarily skip until Catapult rolls forward")
   def testSimpleIntegrationUnittest(self, mockInitDependencyManager):
     options = browser_test_runner.TestRunOptions()
     # Suppress printing out information for passing tests.
@@ -92,14 +90,12 @@ class GpuIntegrationTestUnittest(unittest.TestCase):
            '--write-abbreviated-json-results-to=%s' % temp_file_name])
       with open(temp_file_name) as f:
         test_result = json.load(f)
-      prefix = 'gpu_tests.gpu_integration_test_unittest.' + \
-               'SimpleIntegrationUnittest.'
       self.assertEquals(test_result['failures'], [
-          prefix + 'unexpected_error',
-          prefix + 'unexpected_failure'])
+          'unexpected_error',
+          'unexpected_failure'])
       self.assertEquals(test_result['successes'], [
-          prefix + 'expected_failure',
-          prefix + 'expected_flaky'])
+          'expected_failure',
+          'expected_flaky'])
       self.assertEquals(test_result['valid'], True)
       # It might be nice to be more precise about the order of operations
       # with these browser restarts, but this is at least a start.
