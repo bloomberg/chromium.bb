@@ -875,6 +875,7 @@ TEST_F(TransportSecurityStateTest, Preloaded) {
   EXPECT_TRUE(StaticShouldRedirect("www.googlemail.com"));
   EXPECT_TRUE(StaticShouldRedirect("googleplex.com"));
   EXPECT_TRUE(StaticShouldRedirect("www.googleplex.com"));
+  EXPECT_TRUE(StaticShouldRedirect("www.google-analytics.com"));
 
   // These domains used to be only HSTS when SNI was available.
   EXPECT_TRUE(state.GetStaticDomainState("gmail.com", &sts_state, &pkp_state));
@@ -1054,7 +1055,6 @@ TEST_F(TransportSecurityStateTest, PreloadedPins) {
   EXPECT_TRUE(OnlyPinningInStaticState("ytimg.com"));
   EXPECT_TRUE(OnlyPinningInStaticState("googleusercontent.com"));
   EXPECT_TRUE(OnlyPinningInStaticState("www.googleusercontent.com"));
-  EXPECT_TRUE(OnlyPinningInStaticState("www.google-analytics.com"));
   EXPECT_TRUE(OnlyPinningInStaticState("googleapis.com"));
   EXPECT_TRUE(OnlyPinningInStaticState("googleadservices.com"));
   EXPECT_TRUE(OnlyPinningInStaticState("googlecode.com"));
@@ -1153,6 +1153,7 @@ TEST_F(TransportSecurityStateTest, BuiltinCertPins) {
   EXPECT_TRUE(HasStaticPublicKeyPins("plus.google.com"));
   EXPECT_TRUE(HasStaticPublicKeyPins("groups.google.com"));
   EXPECT_TRUE(HasStaticPublicKeyPins("apis.google.com"));
+  EXPECT_TRUE(HasStaticPublicKeyPins("www.google-analytics.com"));
 
   EXPECT_TRUE(HasStaticPublicKeyPins("ssl.gstatic.com"));
   EXPECT_TRUE(HasStaticPublicKeyPins("gstatic.com"));
@@ -1210,9 +1211,6 @@ TEST_F(TransportSecurityStateTest, OptionalHSTSCertPins) {
   TransportSecurityState state;
   EnableStaticPins(&state);
 
-  EXPECT_FALSE(StaticShouldRedirect("www.google-analytics.com"));
-
-  EXPECT_TRUE(HasStaticPublicKeyPins("www.google-analytics.com"));
   EXPECT_TRUE(HasStaticPublicKeyPins("google.com"));
   EXPECT_TRUE(HasStaticPublicKeyPins("www.google.com"));
   EXPECT_TRUE(HasStaticPublicKeyPins("mail-attachment.googleusercontent.com"));
