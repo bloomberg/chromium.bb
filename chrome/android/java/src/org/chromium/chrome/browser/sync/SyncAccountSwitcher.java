@@ -12,10 +12,11 @@ import android.text.TextUtils;
 import org.chromium.base.Callback;
 import org.chromium.base.Promise;
 import org.chromium.chrome.browser.preferences.SyncedAccountPreference;
+import org.chromium.chrome.browser.signin.ConfirmImportSyncDataDialog;
+import org.chromium.chrome.browser.signin.ConfirmImportSyncDataDialog.ImportSyncType;
+import org.chromium.chrome.browser.signin.ConfirmSyncDataStateMachine;
 import org.chromium.chrome.browser.signin.SigninManager;
 import org.chromium.chrome.browser.signin.SigninManager.SignInCallback;
-import org.chromium.chrome.browser.sync.ui.ConfirmImportSyncDataDialog;
-import org.chromium.chrome.browser.sync.ui.ConfirmImportSyncDataDialog.ImportSyncType;
 
 /**
  * A class that encapsulates the control flow of listeners and callbacks when switching sync
@@ -56,8 +57,10 @@ public class SyncAccountSwitcher
 
         if (TextUtils.equals(mNewAccountName, currentAccount)) return false;
 
-        ConfirmImportSyncDataDialog.showNewInstance(currentAccount, mNewAccountName,
-                ImportSyncType.SWITCHING_SYNC_ACCOUNTS, mActivity.getFragmentManager(), this);
+        ConfirmSyncDataStateMachine.run(currentAccount, mNewAccountName,
+                ImportSyncType.SWITCHING_SYNC_ACCOUNTS, mActivity.getFragmentManager(),
+                mActivity, this);
+
 
         // Don't update the selected account in the preference. It will be updated by
         // the call to mSyncAccountListPreference.update() if everything succeeds.

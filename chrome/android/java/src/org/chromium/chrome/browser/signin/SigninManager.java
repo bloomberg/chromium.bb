@@ -6,7 +6,6 @@ package org.chromium.chrome.browser.signin;
 
 import android.accounts.Account;
 import android.app.Activity;
-import android.app.DialogFragment;
 import android.content.Context;
 import android.os.Handler;
 
@@ -18,7 +17,6 @@ import org.chromium.base.Log;
 import org.chromium.base.ObserverList;
 import org.chromium.base.Promise;
 import org.chromium.base.ThreadUtils;
-import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
@@ -42,12 +40,6 @@ import javax.annotation.Nullable;
  */
 public class SigninManager implements AccountTrackerService.OnSystemAccountsSeededListener {
     private static final String TAG = "SigninManager";
-
-    private static final String CONFIRM_ACCOUNT_CHANGED_DIALOG_TAG =
-            "confirm_account_changed_dialog_tag";
-    @VisibleForTesting
-    public static final String CONFIRM_MANAGED_SIGNIN_DIALOG_TAG =
-            "confirm_managed_signin_dialog_tag";
 
     private static SigninManager sSigninManager;
     private static int sSignInAccessPoint = SigninAccessPoint.UNKNOWN;
@@ -144,11 +136,6 @@ public class SigninManager implements AccountTrackerService.OnSystemAccountsSeed
         public final Account account;
         public final Activity activity;
         public final SignInCallback callback;
-
-        /**
-         * The dialog currently being displayed to the user, if any.
-         */
-        public DialogFragment displayedDialog = null;
 
         /**
          * If the system accounts need to be seeded, the sign in flow will block for that to occur.
@@ -426,30 +413,7 @@ public class SigninManager implements AccountTrackerService.OnSystemAccountsSeed
             return;
         }
 
-        if (!mSignInState.isInteractive()) {
-            // If this is a forced sign-in then don't show the confirmation dialog.
-            // This will call back to onPolicyFetchedBeforeSignIn.
-            nativeFetchPolicyBeforeSignIn(mNativeSigninManagerAndroid);
-            return;
-        }
-
-        // TODO(peconn): Move this and other UI interactions into AccountSigninView.
-        Log.d(TAG, "Account has policy management");
-        mSignInState.displayedDialog = ConfirmManagedSigninFragment.newInstance(managementDomain);
-        mSignInState.displayedDialog.show(
-                mSignInState.activity.getFragmentManager(), CONFIRM_MANAGED_SIGNIN_DIALOG_TAG);
-    }
-
-    /**
-     * Called from ConfirmManagedSigninFragment if the managed account was confirmed.
-     */
-    void progressInteractiveSignInFlowManagedConfirmed() {
-        if (mSignInState == null || mSignInState.displayedDialog == null) {
-            // Stop if sign-in was cancelled or this is a duplicate click event.
-            return;
-        }
-        mSignInState.displayedDialog = null;
-
+        // The user has already been notified that they are signing into a managed account.
         // This will call back to onPolicyFetchedBeforeSignIn.
         nativeFetchPolicyBeforeSignIn(mNativeSigninManagerAndroid);
     }
@@ -586,10 +550,6 @@ public class SigninManager implements AccountTrackerService.OnSystemAccountsSeed
         assert signInState != null;
         mSignInState = null;
 
-        if (signInState.displayedDialog != null) {
-            signInState.displayedDialog.dismiss();
-        }
-
         if (signInState.callback != null) {
             signInState.callback.onSignInAborted();
         }
@@ -671,10 +631,37 @@ public class SigninManager implements AccountTrackerService.OnSystemAccountsSeed
         notifySignInAllowedChanged();
     }
 
+    /**
+     * Performs an asynchronous check to see if the user is a managed user.
+     * @param callback A callback to be called with true if the user is a managed user and false
+     *         otherwise.
+     */
+    public static void isUserManaged(String email, final Callback<Boolean> callback) {
+        if (nativeShouldLoadPolicyForUser(email)) {
+            nativeIsUserManaged(email, callback);
+        } else {
+            // Although we know the result immediately, the caller may not be able to handle the
+            // callback being executed during this method call. So we post the callback on the
+            // looper.
+            ThreadUtils.postOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    callback.onResult(false);
+                }
+            });
+        }
+    }
+
+    public static String extractDomainName(String email) {
+        return nativeExtractDomainName(email);
+    }
+
     // Native methods.
+    private static native String nativeExtractDomainName(String email);
+    private static native boolean nativeShouldLoadPolicyForUser(String username);
+    private static native void nativeIsUserManaged(String username, Callback<Boolean> callback);
     private native long nativeInit();
     private native boolean nativeIsSigninAllowedByPolicy(long nativeSigninManagerAndroid);
-    private native boolean nativeShouldLoadPolicyForUser(String username);
     private native void nativeCheckPolicyBeforeSignIn(
             long nativeSigninManagerAndroid, String username);
     private native void nativeFetchPolicyBeforeSignIn(long nativeSigninManagerAndroid);

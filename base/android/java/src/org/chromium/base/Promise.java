@@ -126,6 +126,18 @@ public class Promise<T> {
         exceptInner(onReject);
     }
 
+    /**
+     * A convenience method that returns a Callback that fulfills this Promise with its result.
+     */
+    public Callback<T> fulfillmentCallback() {
+        return new Callback<T>() {
+            @Override
+            public void onResult(T result) {
+                fulfill(result);
+            }
+        };
+    }
+
     private void thenInner(Callback<T> onFulfill) {
         if (mState == FULFILLED) {
             postCallbackToLooper(onFulfill, mResult);

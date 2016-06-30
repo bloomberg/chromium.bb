@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.sync.ui;
+package org.chromium.chrome.browser.signin;
 
 import android.app.Dialog;
 import android.app.DialogFragment;
@@ -19,7 +19,6 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.preferences.ManagedPreferencesUtils;
-import org.chromium.chrome.browser.signin.SigninManager;
 import org.chromium.chrome.browser.widget.RadioButtonWithDescription;
 
 import java.util.Arrays;

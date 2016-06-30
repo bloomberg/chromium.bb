@@ -70,7 +70,8 @@ import java.util.HashMap;
  */
 public class AccountManagementFragment extends PreferenceFragment
         implements SignOutDialogListener, ProfileDownloader.Observer,
-                SyncStateChangedListener, SignInStateObserver {
+                SyncStateChangedListener, SignInStateObserver,
+                ConfirmManagedSyncDataDialog.Listener {
     public static final String SIGN_OUT_DIALOG_TAG = "sign_out_dialog_tag";
     private static final String CLEAR_DATA_PROGRESS_DIALOG_TAG = "clear_data_progress";
 
@@ -250,13 +251,24 @@ public class AccountManagementFragment extends PreferenceFragment
                                 ProfileAccountManagementMetrics.TOGGLE_SIGNOUT,
                                 mGaiaServiceType);
 
-                        SignOutDialogFragment signOutFragment = new SignOutDialogFragment();
-                        Bundle args = new Bundle();
-                        args.putInt(SHOW_GAIA_SERVICE_TYPE_EXTRA, mGaiaServiceType);
-                        signOutFragment.setArguments(args);
+                        String managementDomain =
+                                SigninManager.get(getActivity()).getManagementDomain();
+                        if (managementDomain != null) {
+                            // Show the 'You are signing out of a managed account' dialog.
+                            ConfirmManagedSyncDataDialog.showSignOutFromManagedAccountDialog(
+                                    AccountManagementFragment.this, getFragmentManager(),
+                                    getResources(), managementDomain);
+                        } else {
+                            // Show the 'You are signing out' dialog.
+                            SignOutDialogFragment signOutFragment = new SignOutDialogFragment();
+                            Bundle args = new Bundle();
+                            args.putInt(SHOW_GAIA_SERVICE_TYPE_EXTRA, mGaiaServiceType);
+                            signOutFragment.setArguments(args);
 
-                        signOutFragment.setTargetFragment(AccountManagementFragment.this, 0);
-                        signOutFragment.show(getFragmentManager(), SIGN_OUT_DIALOG_TAG);
+                            signOutFragment.setTargetFragment(AccountManagementFragment.this, 0);
+                            signOutFragment.show(getFragmentManager(), SIGN_OUT_DIALOG_TAG);
+                        }
+
                         return true;
                     }
 
@@ -500,6 +512,17 @@ public class AccountManagementFragment extends PreferenceFragment
                     ProfileAccountManagementMetrics.SIGNOUT_CANCEL,
                     mGaiaServiceType);
         }
+    }
+
+    // ConfirmManagedSyncDataDialog.Listener implementation
+    @Override
+    public void onConfirm() {
+        onSignOutClicked();
+    }
+
+    @Override
+    public void onCancel() {
+        onSignOutDialogDismissed(false);
     }
 
     // ProfileSyncServiceListener implementation:

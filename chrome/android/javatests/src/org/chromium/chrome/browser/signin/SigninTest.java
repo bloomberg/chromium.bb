@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.signin;
 
-import android.accounts.Account;
 import android.app.Activity;
 import android.app.DialogFragment;
 import android.app.Fragment;
@@ -286,11 +285,8 @@ public class SigninTest extends ChromeTabbedActivityTestBase {
 
     @MediumTest
     public void testConsumerSignin() throws InterruptedException {
-        Account testAccount = SigninTestUtil.addTestAccount();
-
-        // Sign in to that account.
-        boolean isManaged = false;
-        signInToSingleAccount(testAccount.name, isManaged);
+        SigninTestUtil.addTestAccount();
+        signInToSingleAccount();
 
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
@@ -328,8 +324,7 @@ public class SigninTest extends ChromeTabbedActivityTestBase {
         });
     }
 
-    private void signInToSingleAccount(String accountName, boolean isManaged)
-            throws InterruptedException {
+    private void signInToSingleAccount() {
         // Verify that we aren't signed in yet.
         assertFalse(ChromeSigninController.get(mContext).isSignedIn());
 
@@ -355,14 +350,9 @@ public class SigninTest extends ChromeTabbedActivityTestBase {
         Button positiveButton = (Button) signinActivity.findViewById(R.id.positive_button);
         // Press 'sign in'.
         TestTouchUtils.performClickOnMainSync(getInstrumentation(), positiveButton);
+        getInstrumentation().waitForIdleSync();
         // Press 'ok, got it' (the same button is reused).
         TestTouchUtils.performClickOnMainSync(getInstrumentation(), positiveButton);
-
-        if (isManaged) {
-            // If the account is managed then there is going to be a second dialog.
-            assertFalse(ChromeSigninController.get(mContext).isSignedIn());
-            acceptAlertDialogWithTag(prefActivity, SigninManager.CONFIRM_MANAGED_SIGNIN_DIALOG_TAG);
-        }
 
         // Sync doesn't actually start up until we finish the sync setup. This usually happens
         // in the resume of the Main activity, but we forcefully do this here.
