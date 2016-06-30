@@ -85,7 +85,8 @@ class CleanUpStage(generic_stages.BuilderStage):
 
   def _BuildRootGitCleanup(self):
     logging.info('Cleaning up buildroot git repositories.')
-    commands.BuildRootGitCleanup(self._build_root)
+    # Run git gc --auto --prune=all on all repos in CleanUpStage
+    commands.BuildRootGitCleanup(self._build_root, prune_all=True)
 
   def _DeleteAutotestSitePackages(self):
     """Clears any previously downloaded site-packages."""

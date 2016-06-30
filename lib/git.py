@@ -1423,11 +1423,15 @@ def GetChromiteTrackingBranch():
   return 'master'
 
 
-def GarbageCollection(git_repo):
+def GarbageCollection(git_repo, prune_all=False):
   """Cleanup unnecessary files and optimize the local repository.
 
   Args:
     git_repo: Directory of git repository.
+    prune_all: If True, prune all loose objects regardless of gc.pruneExpire.
   """
   # Use --auto so it only runs if housekeeping is necessary.
-  RunGit(git_repo, ['gc', '--auto'])
+  cmd = ['gc', '--auto']
+  if prune_all:
+    cmd.append('--prune=all')
+  RunGit(git_repo, cmd)

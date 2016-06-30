@@ -162,11 +162,12 @@ def ValidateClobber(buildroot):
 # =========================== Main Commands ===================================
 
 
-def BuildRootGitCleanup(buildroot):
+def BuildRootGitCleanup(buildroot, prune_all=False):
   """Put buildroot onto manifest branch. Delete branches created on last run.
 
   Args:
     buildroot: buildroot to clean up.
+    prune_all: If True, prune all loose objects regardless of gc.pruneExpire.
   """
   lock_path = os.path.join(buildroot, '.clean_lock')
   deleted_objdirs = multiprocessing.Event()
@@ -185,7 +186,7 @@ def BuildRootGitCleanup(buildroot):
           git.CleanAndDetachHead(cwd)
 
         if os.path.isdir(repo_git_store):
-          git.GarbageCollection(repo_git_store)
+          git.GarbageCollection(repo_git_store, prune_all=prune_all)
       except cros_build_lib.RunCommandError as e:
         result = e.result
         logging.PrintBuildbotStepWarnings()
