@@ -1103,6 +1103,7 @@
       'sources': [
         'base/android/access_unit_queue_unittest.cc',
         'base/android/media_codec_decoder_unittest.cc',
+        'base/android/media_codec_loop_unittest.cc',
         'base/android/media_drm_bridge_unittest.cc',
         'base/android/media_player_bridge_unittest.cc',
         'base/android/media_source_player_unittest.cc',
@@ -1833,6 +1834,8 @@
             'base/android/media_codec_bridge.h',
             'base/android/media_codec_decoder.cc',
             'base/android/media_codec_decoder.h',
+            'base/android/media_codec_loop.cc',
+            'base/android/media_codec_loop.h',
             'base/android/media_codec_player.cc',
             'base/android/media_codec_player.h',
             'base/android/media_codec_util.cc',
