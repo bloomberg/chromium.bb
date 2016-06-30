@@ -19,34 +19,39 @@ License along with liblouis. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
+/**
+ * @file
+ * @brief Find translation tables
+ */
+
 #ifndef __FINDTABLE_H_
 #define __FINDTABLE_H_
 
 #ifdef __cplusplus
-extern "C"
-{
-#endif				/* __cplusplus */
+extern "C" {
+#endif /* __cplusplus */
 
-  typedef enum { noEncoding, bigEndian, littleEndian, ascii8 } EncodingType;
+typedef enum { noEncoding, bigEndian, littleEndian, ascii8 } EncodingType;
 
-  typedef struct
-  {
-    const char *fileName;
-    FILE *in;
-    int lineNumber;
-    EncodingType encoding;
-    int status;
-    int linelen;
-    int linepos;
-    int checkencoding[2];
-    widechar line[MAXSTRING];
-  } FileInfo;
+typedef struct {
+  const char *fileName;
+  FILE *in;
+  int lineNumber;
+  EncodingType encoding;
+  int status;
+  int linelen;
+  int linepos;
+  int checkencoding[2];
+  widechar line[MAXSTRING];
+} FileInfo;
 
-  /* Read a line of widechar's from an input file */
-  int getALine (FileInfo * info);
+/**
+ * Read a line of widechar's from an input file
+ */
+int getALine(FileInfo *info);
 
 #ifdef __cplusplus
 }
-#endif				/* __cplusplus */
+#endif /* __cplusplus */
 
-#endif				/* __LOUIS_H */
+#endif /* __FINDTABLE_H_ */

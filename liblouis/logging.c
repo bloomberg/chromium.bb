@@ -20,6 +20,11 @@ License along with liblouis. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
+/**
+ * @file
+ * @brief Logging
+ */
+
 #include <stddef.h>
 #include <stdlib.h>
 #include <stdio.h>

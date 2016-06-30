@@ -19,6 +19,11 @@ License along with liblouis. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
+/**
+ * @file
+ * @brief Find translation tables
+ */
+
 #include <config.h>
 #include <stdlib.h>
 #include <string.h>
@@ -37,7 +42,7 @@ typedef struct List
   struct List * tail;
 } List;
 
-/*
+/**
  * Returns a list with the element `x' added to `list'. Returns a sorted list
  * if `cmp' is not NULL and if `list' is also sorted. New elements replace
  * existing ones if they are equal according to `cmp'. If `cmp' is NULL,
@@ -102,7 +107,7 @@ list_conj(List * list,
     }
 }
 
-/*
+/**
  * Free an instance of type List.
  */
 static void
@@ -117,7 +122,7 @@ list_free(List * list)
     }
 }
 
-/*
+/**
  * Sort a list based on a comparison function.
  */
 static List *
@@ -134,7 +139,7 @@ list_sort(List * list, int (* cmp)(void *, void *))
   return newList;
 }
 
-/*
+/**
  * Get the size of a list.
  */
 static int
@@ -147,7 +152,7 @@ list_size(List * list)
   return len;
 }
 
-/*
+/**
  * Convert a list into a NULL terminated array.
  */
 static void **
@@ -184,9 +189,10 @@ typedef struct
   List * features;
 } TableMeta;
 
-/*
- * Create an instance of type Feature. The `key' and `val' strings are
- * duplicated. Leaving out the `val' argument results in a value of "yes".
+/**
+ * Create an instance of type Feature.
+ * The `key' and `val' strings are duplicated. Leaving out the `val'
+ * argument results in a value of "yes".
  */
 static Feature
 feature_new(const char * key, const char * val)
@@ -198,7 +204,7 @@ feature_new(const char * key, const char * val)
   return f;
 }
 
-/*
+/**
  * Free an instance of type Feature
  */
 static void
@@ -214,7 +220,7 @@ feature_free(Feature * f)
 
 /* ======================================================================== */
 
-/*
+/**
  * Sort features based on their keys.
  */
 static int
@@ -223,16 +229,17 @@ cmpKeys(Feature * f1, Feature * f2)
   return strcmp(f1->key, f2->key);
 }
 
-/*
- * Compute the match quotient of the features in a query against the features
- * in a table's metadata. The features are assumed to be sorted and to have no
- * duplicate keys. The query's features must be of type
- * FeatureWithImportance. How a feature contributes to the match quotient
- * depends on its importance, on whether the feature is undefined, defined
- * with the same value (positive match), or defined with a different value
- * (negative match), and on the `fuzzy' argument. If the `fuzzy' argument
- * evaluates to true, negative matches and undefined features get a lower
- * penalty.
+/**
+ * Compute the match quotient of the features in a query against the features in a table's metadata.
+ *
+ * The features are assumed to be sorted and to have no duplicate
+ * keys. The query's features must be of type FeatureWithImportance.
+ * How a feature contributes to the match quotient depends on its
+ * importance, on whether the feature is undefined, defined with the
+ * same value (positive match), or defined with a different value
+ * (negative match), and on the `fuzzy' argument. If the `fuzzy'
+ * argument evaluates to true, negative matches and undefined features
+ * get a lower penalty.
  */
 static int
 matchFeatureLists(const List * query, const List * tableFeatures, int fuzzy)
@@ -304,7 +311,7 @@ matchFeatureLists(const List * query, const List * tableFeatures, int fuzzy)
   return quotient;
 }
 
-/*
+/**
  * Return true if a character matches [0-9A-Za-z_-]
  */
 static int
@@ -317,7 +324,7 @@ isIdentChar(char c)
       || c == '_';
 }
 
-/*
+/**
  * Parse a table query into a list of features. Features defined first get a
  * higher importance.
  */
@@ -397,7 +404,7 @@ parseQuery(const char * query)
   return NULL;
 }
 
-/*
+/**
  * Convert a widechar string to a normal string.
  */
 static char *
@@ -411,7 +418,7 @@ widestrToStr(const widechar * str, size_t n)
   return result;
 }
 
-/*
+/**
  * Extract a list of features from a table.
  */
 static List *
@@ -552,7 +559,7 @@ lou_indexTables(const char ** tables)
 #define DIR_SEP '/'
 #endif
 
-/*
+/**
  * Returns the list of files found on searchPath, where searchPath is a
  * comma-separated list of directories.
  */
