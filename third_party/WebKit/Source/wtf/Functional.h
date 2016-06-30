@@ -267,8 +267,6 @@ typedef Function<void(), CrossThreadAffinity> CrossThreadClosure;
 
 } // namespace WTF
 
-using WTF::bind;
-
 using WTF::passed;
 using WTF::unretained;
 using WTF::crossThreadUnretained;

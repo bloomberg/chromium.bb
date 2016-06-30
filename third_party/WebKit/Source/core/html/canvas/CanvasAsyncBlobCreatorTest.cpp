@@ -78,7 +78,7 @@ public:
 protected:
     void scheduleInitiatePngEncoding() override
     {
-        Platform::current()->mainThread()->getWebTaskRunner()->postTask(BLINK_FROM_HERE, bind(&MockCanvasAsyncBlobCreatorWithoutCompletePng::initiatePngEncoding, wrapPersistent(this), std::numeric_limits<double>::max()));
+        Platform::current()->mainThread()->getWebTaskRunner()->postTask(BLINK_FROM_HERE, WTF::bind(&MockCanvasAsyncBlobCreatorWithoutCompletePng::initiatePngEncoding, wrapPersistent(this), std::numeric_limits<double>::max()));
     }
 
     void idleEncodeRowsPng(double deadlineSeconds) override
@@ -117,7 +117,7 @@ public:
 protected:
     void scheduleInitiateJpegEncoding(const double& quality) override
     {
-        Platform::current()->mainThread()->getWebTaskRunner()->postTask(BLINK_FROM_HERE, bind(&MockCanvasAsyncBlobCreatorWithoutCompleteJpeg::initiateJpegEncoding, wrapPersistent(this), quality, std::numeric_limits<double>::max()));
+        Platform::current()->mainThread()->getWebTaskRunner()->postTask(BLINK_FROM_HERE, WTF::bind(&MockCanvasAsyncBlobCreatorWithoutCompleteJpeg::initiateJpegEncoding, wrapPersistent(this), quality, std::numeric_limits<double>::max()));
     }
 
     void idleEncodeRowsJpeg(double deadlineSeconds) override

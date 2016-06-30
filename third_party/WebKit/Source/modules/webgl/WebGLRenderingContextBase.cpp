@@ -1039,13 +1039,13 @@ void WebGLRenderingContextBase::initializeNewContext()
     contextGL()->Scissor(0, 0, drawingBufferWidth(), drawingBufferHeight());
 
     drawingBuffer()->contextProvider()->setLostContextCallback(
-        WebClosure(bind(
+        WebClosure(WTF::bind(
             &WebGLRenderingContextBase::forceLostContext,
             wrapWeakPersistent(this),
             WebGLRenderingContextBase::RealLostContext,
             WebGLRenderingContextBase::Auto)));
     drawingBuffer()->contextProvider()->setErrorMessageCallback(
-        WebFunction<void(const char*, int32_t)>(bind(
+        WebFunction<void(const char*, int32_t)>(WTF::bind(
             &WebGLRenderingContextBase::onErrorMessage,
             wrapWeakPersistent(this))));
 

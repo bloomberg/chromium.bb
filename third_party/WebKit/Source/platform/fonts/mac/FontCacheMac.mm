@@ -59,7 +59,7 @@ const char* kColorEmojiFontMac = "Apple Color Emoji";
 static void invalidateFontCache()
 {
     if (!isMainThread()) {
-        Platform::current()->mainThread()->getWebTaskRunner()->postTask(BLINK_FROM_HERE, bind(&invalidateFontCache));
+        Platform::current()->mainThread()->getWebTaskRunner()->postTask(BLINK_FROM_HERE, WTF::bind(&invalidateFontCache));
         return;
     }
     FontCache::fontCache()->invalidate();

@@ -242,7 +242,7 @@ public:
     void notifyLater()
     {
         ASSERT(m_client);
-        Platform::current()->currentThread()->getWebTaskRunner()->postTask(BLINK_FROM_HERE, bind(&ReadingContext::notify, PassRefPtr<ReadingContext>(this)));
+        Platform::current()->currentThread()->getWebTaskRunner()->postTask(BLINK_FROM_HERE, WTF::bind(&ReadingContext::notify, PassRefPtr<ReadingContext>(this)));
     }
 
 private:

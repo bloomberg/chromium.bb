@@ -113,7 +113,7 @@ bool throwExceptionIfSignalingStateClosed(RTCPeerConnection::SignalingState stat
 void asyncCallErrorCallback(RTCPeerConnectionErrorCallback* errorCallback, DOMException* exception)
 {
     DCHECK(errorCallback);
-    Microtask::enqueueMicrotask(bind(&RTCPeerConnectionErrorCallback::handleEvent, wrapPersistent(errorCallback), wrapPersistent(exception)));
+    Microtask::enqueueMicrotask(WTF::bind(&RTCPeerConnectionErrorCallback::handleEvent, wrapPersistent(errorCallback), wrapPersistent(exception)));
 }
 
 bool callErrorCallbackIfSignalingStateClosed(RTCPeerConnection::SignalingState state, RTCPeerConnectionErrorCallback* errorCallback)

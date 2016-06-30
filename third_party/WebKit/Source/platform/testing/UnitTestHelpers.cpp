@@ -46,7 +46,7 @@ namespace testing {
 
 void runPendingTasks()
 {
-    Platform::current()->currentThread()->getWebTaskRunner()->postTask(BLINK_FROM_HERE, bind(&exitRunLoop));
+    Platform::current()->currentThread()->getWebTaskRunner()->postTask(BLINK_FROM_HERE, WTF::bind(&exitRunLoop));
 
     // We forbid GC in the tasks. Otherwise the registered GCTaskObserver tries
     // to run GC with NoHeapPointerOnStack.
@@ -57,7 +57,7 @@ void runPendingTasks()
 
 void runDelayedTasks(double delayMs)
 {
-    Platform::current()->currentThread()->getWebTaskRunner()->postDelayedTask(BLINK_FROM_HERE, bind(&exitRunLoop), delayMs);
+    Platform::current()->currentThread()->getWebTaskRunner()->postDelayedTask(BLINK_FROM_HERE, WTF::bind(&exitRunLoop), delayMs);
     enterRunLoop();
 }
 

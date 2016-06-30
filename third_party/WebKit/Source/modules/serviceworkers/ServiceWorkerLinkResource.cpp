@@ -26,12 +26,12 @@ public:
 
     void onSuccess(std::unique_ptr<WebServiceWorkerRegistration::Handle> handle) override
     {
-        Platform::current()->currentThread()->scheduler()->timerTaskRunner()->postTask(BLINK_FROM_HERE, bind(&LinkLoaderClient::linkLoaded, m_client));
+        Platform::current()->currentThread()->scheduler()->timerTaskRunner()->postTask(BLINK_FROM_HERE, WTF::bind(&LinkLoaderClient::linkLoaded, m_client));
     }
 
     void onError(const WebServiceWorkerError& error) override
     {
-        Platform::current()->currentThread()->scheduler()->timerTaskRunner()->postTask(BLINK_FROM_HERE, bind(&LinkLoaderClient::linkLoadingErrored, m_client));
+        Platform::current()->currentThread()->scheduler()->timerTaskRunner()->postTask(BLINK_FROM_HERE, WTF::bind(&LinkLoaderClient::linkLoadingErrored, m_client));
     }
 
 private:
