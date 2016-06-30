@@ -818,7 +818,6 @@ ImageDecodeControllerKey ImageDecodeControllerKey::FromDrawImage(
   if (quality == kMedium_SkFilterQuality && !target_size.IsEmpty()) {
     SkSize mip_target_size =
         MipMapUtil::GetScaleAdjustmentForSize(src_rect.size(), target_size);
-    DCHECK(mip_target_size.width() != -1.f && mip_target_size.height() != -1.f);
     target_size.set_width(src_rect.width() * mip_target_size.width());
     target_size.set_height(src_rect.height() * mip_target_size.height());
   }

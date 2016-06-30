@@ -22,10 +22,10 @@ int MipMapUtil::GetLevelForSize(const gfx::Size& src_size,
   int src_width = src_size.width();
   int target_height = target_size.height();
   int target_width = target_size.width();
-  bool target_invalid = target_height == 0 || target_width == 0;
-  bool src_invalid = src_height == 0 || src_width == 0;
-  if (target_invalid || src_invalid)
-    return -1;
+  DCHECK_GT(target_height, 0);
+  DCHECK_GT(target_width, 0);
+  DCHECK_GT(src_width, 0);
+  DCHECK_GT(src_height, 0);
 
   int next_mip_height = src_height;
   int next_mip_width = src_width;
@@ -52,8 +52,9 @@ int MipMapUtil::GetLevelForSize(const gfx::Size& src_size,
 
 SkSize MipMapUtil::GetScaleAdjustmentForLevel(const gfx::Size& src_size,
                                               int mip_level) {
-  if (src_size.width() == 0 || src_size.height() == 0 || mip_level == -1)
-    return SkSize::Make(-1, -1);
+  DCHECK_GT(src_size.width(), 0);
+  DCHECK_GT(src_size.height(), 0);
+  DCHECK_GE(mip_level, 0);
 
   gfx::Size target_size = GetSizeForLevel(src_size, mip_level);
 
@@ -64,8 +65,9 @@ SkSize MipMapUtil::GetScaleAdjustmentForLevel(const gfx::Size& src_size,
 
 gfx::Size MipMapUtil::GetSizeForLevel(const gfx::Size& src_size,
                                       int mip_level) {
-  if (src_size.width() == 0 || src_size.height() == 0 || mip_level == -1)
-    return gfx::Size(-1, -1);
+  DCHECK_GT(src_size.width(), 0);
+  DCHECK_GT(src_size.height(), 0);
+  DCHECK_GE(mip_level, 0);
 
   return gfx::Size(ScaleAxisToMipLevel(src_size.width(), mip_level),
                    ScaleAxisToMipLevel(src_size.height(), mip_level));

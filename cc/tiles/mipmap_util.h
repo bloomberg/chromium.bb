@@ -16,25 +16,25 @@ class CC_EXPORT MipMapUtil {
   // Determine the smallest mip level that is larger than |target_size|. Each
   // mip level corresponds to a power of two scale of the image - for instance,
   // level 0 is original size, level 1 is 2x smaller, level 2 is 4x smaller,
-  // etc...
-  // Returns -1 if |src_size| or |target_size| is invalid (any dimension is 0).
+  // etc... This function does not do error checking and must be called with a
+  // valid src_size (width/height > 0) and mip_level (>= 0).
   static int GetLevelForSize(const gfx::Size& src_size,
                              const gfx::Size& target_size);
 
-  // Determines the scale factor for the given |mip_level|. Returns (-1, -1) if
-  // |src_size| is invalid (width/height <= 0), or if mip_level is invalid (==
-  // -1).
+  // Determines the scale factor for the given |mip_level|. This function does
+  // not do error checking and must be called with a valid src_size
+  // (width/height > 0) and mip_level (>= 0).
   static SkSize GetScaleAdjustmentForLevel(const gfx::Size& src_size,
                                            int mip_level);
 
-  // Determine the size of the given |mip_level|. Returns (-1, -1) if
-  // |src_size| is invalid (width/height <= 0) or if mip-level is invalid (==
-  // -1).
+  // Determine the size of the given |mip_level|. This function does not do
+  // error checking and must be called with a valid src_size (width/height > 0)
+  // and mip_level (>= 0).
   static gfx::Size GetSizeForLevel(const gfx::Size& src_size, int mip_level);
 
   // Determines the scale factor for the smallest mip level that is larger than
-  // |target_size|. Returns (-1, -1) if |src_size| or |target_size| is invalid
-  // (width/height <= 0).
+  // |target_size|. This function does not do error checking and must be called
+  // with a valid src_size (width/height > 0) and mip_level (>= 0).
   static SkSize GetScaleAdjustmentForSize(const gfx::Size& src_size,
                                           const gfx::Size& target_size);
 };

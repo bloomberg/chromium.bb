@@ -116,34 +116,5 @@ TEST(MipMapUtilTest, Rounding) {
       MipMapUtil::GetScaleAdjustmentForSize(src_size, target_size_smaller));
 }
 
-// Ensures that we return invalid values correctly.
-TEST(MipMapUtilTest, Invalid) {
-  const gfx::Size valid_size(1024, 1024);
-  const gfx::Size invalid_size(0, 1024);
-  const gfx::Size invalid_result_size(-1, -1);
-  const SkSize invalid_float_result_size = SkSize::Make(-1, -1);
-  const int invalid_result_level = -1;
-
-  EXPECT_EQ(invalid_result_level,
-            MipMapUtil::GetLevelForSize(valid_size, invalid_size));
-  EXPECT_EQ(invalid_result_level,
-            MipMapUtil::GetLevelForSize(invalid_size, valid_size));
-  EXPECT_FLOAT_SIZE_EQ(
-      invalid_float_result_size,
-      MipMapUtil::GetScaleAdjustmentForSize(valid_size, invalid_size));
-  EXPECT_FLOAT_SIZE_EQ(
-      invalid_float_result_size,
-      MipMapUtil::GetScaleAdjustmentForSize(invalid_size, valid_size));
-  EXPECT_SIZE_EQ(invalid_result_size,
-                 MipMapUtil::GetSizeForLevel(valid_size, invalid_result_level));
-  EXPECT_SIZE_EQ(invalid_result_size,
-                 MipMapUtil::GetSizeForLevel(invalid_size, 0));
-  EXPECT_FLOAT_SIZE_EQ(invalid_float_result_size,
-                       MipMapUtil::GetScaleAdjustmentForLevel(invalid_size, 0));
-  EXPECT_FLOAT_SIZE_EQ(
-      invalid_float_result_size,
-      MipMapUtil::GetScaleAdjustmentForLevel(valid_size, invalid_result_level));
-}
-
 }  // namespace
 }  // namespace cc
