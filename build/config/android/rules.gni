@@ -1694,6 +1694,28 @@ if (enable_java_templates) {
       if (defined(invoker.enable_chromium_linker_tests)) {
         _enable_chromium_linker_tests = invoker.enable_chromium_linker_tests
       }
+      _ordered_libraries_json =
+          "$target_gen_dir/$target_name.ordered_libararies.json"
+      _rebased_ordered_libraries_json =
+          rebase_path(_ordered_libraries_json, root_build_dir)
+      _ordered_libraries_target = "${_template_name}__write_ordered_libraries"
+
+      # TODO(agrieve): Make GN write runtime deps in dependency order so as to
+      # not need this manual sorting step.
+      action(_ordered_libraries_target) {
+        script = "//build/android/gyp/write_ordered_libraries.py"
+        deps = _native_libs_deps + [ ":$build_config_target" ]
+        outputs = [
+          _ordered_libraries_json,
+        ]
+        _rebased_android_readelf = rebase_path(android_readelf, root_build_dir)
+        args = [
+          "--readelf=$_rebased_android_readelf",
+          "--output=$_rebased_ordered_libraries_json",
+          "--libraries-dir=.",
+          "--input-libraries=@FileArg($_rebased_build_config:native:libraries)",
+        ]
+      }
 
       java_cpp_template("${_template_name}__native_libraries_java") {
         package_name = "org/chromium/base/library_loader"
@@ -1701,10 +1723,10 @@ if (enable_java_templates) {
           "//base/android/java/templates/NativeLibraries.template",
         ]
         inputs = [
-          _build_config,
+          _ordered_libraries_json,
         ]
         deps = [
-          ":$build_config_target",
+          ":${_ordered_libraries_target}",
         ]
         if (_native_lib_version_rule != "") {
           deps += [ _native_lib_version_rule ]
@@ -1712,7 +1734,7 @@ if (enable_java_templates) {
 
         defines = [
           "NATIVE_LIBRARIES_LIST=" +
-              "@FileArg($_rebased_build_config:native:java_libraries_list)",
+              "@FileArg($_rebased_ordered_libraries_json:java_libraries_list)",
           "NATIVE_LIBRARIES_VERSION_NUMBER=$_native_lib_version_arg",
         ]
         if (_use_chromium_linker) {
