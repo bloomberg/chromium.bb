@@ -312,7 +312,6 @@ source_set("chrome_extensions_browsertests") {
     "//third_party/leveldatabase",
     "//third_party/libaddressinput",
     "//third_party/libjingle",
-    "//third_party/safe_browsing:test_support",
     "//third_party/webrtc/modules/desktop_capture",
     "//third_party/widevine/cdm:version_h",
     "//ui/accessibility:test_support",

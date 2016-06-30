@@ -69,7 +69,6 @@
           '../third_party/mocha/mocha.js',
           '../third_party/pyftpdlib/',
           '../third_party/pywebsocket/',
-          '../third_party/safe_browsing/',
           '../third_party/simplejson/',
           '../third_party/tlslite/',
           '../ui/webui/resources/js/',

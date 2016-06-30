@@ -884,10 +884,8 @@
       'browser/speech/speech_recognition_browsertest.cc',
     ],
     'chrome_browser_tests_full_safe_browsing_sources': [
-      'browser/safe_browsing/local_safebrowsing_test_server.cc',
       'browser/safe_browsing/safe_browsing_blocking_page_test.cc',
       'browser/safe_browsing/safe_browsing_service_browsertest.cc',
-      'browser/safe_browsing/safe_browsing_test.cc',
       'renderer/safe_browsing/phishing_classifier_browsertest.cc',
       'renderer/safe_browsing/phishing_classifier_delegate_browsertest.cc',
       'renderer/safe_browsing/phishing_dom_feature_extractor_browsertest.cc',
@@ -2214,7 +2212,6 @@
         '../third_party/icu/icu.gyp:icuuc',
         '../third_party/leveldatabase/leveldatabase.gyp:leveldatabase',
         '../third_party/libaddressinput/libaddressinput.gyp:libaddressinput',
-        '../third_party/safe_browsing/safe_browsing.gyp:safe_browsing',
         '../third_party/webrtc/modules/modules.gyp:desktop_capture',
         '../third_party/widevine/cdm/widevine_cdm.gyp:widevine_cdm_version_h',
         '../ui/accessibility/accessibility.gyp:accessibility_test_support',

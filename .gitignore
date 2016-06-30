@@ -414,7 +414,6 @@ vs-chromium-project.txt
 /third_party/re2/src
 /third_party/requests/src
 /third_party/robolectric/lib
-/third_party/safe_browsing/testing
 /third_party/scons-2.0.1
 /third_party/sfntly/src
 /third_party/shaderc/src
