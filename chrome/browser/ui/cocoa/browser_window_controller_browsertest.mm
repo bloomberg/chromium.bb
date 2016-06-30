@@ -33,7 +33,7 @@
 #import "chrome/browser/ui/cocoa/infobars/infobar_container_controller.h"
 #import "chrome/browser/ui/cocoa/infobars/infobar_controller.h"
 #import "chrome/browser/ui/cocoa/location_bar/location_bar_view_mac.h"
-#import "chrome/browser/ui/cocoa/presentation_mode_controller.h"
+#import "chrome/browser/ui/cocoa/fullscreen_toolbar_controller.h"
 #import "chrome/browser/ui/cocoa/profiles/avatar_base_controller.h"
 #import "chrome/browser/ui/cocoa/tab_contents/overlayable_contents_controller.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_strip_view.h"
@@ -185,9 +185,9 @@ class ViewExposedChecker {
 
 }  // namespace
 
-// Mock PresentationModeController used to test if the toolbar reveal animation
+// Mock FullscreenToolbarController used to test if the toolbar reveal animation
 // is called correctly.
-@interface MockPresentationModeController : PresentationModeController
+@interface MockFullscreenToolbarController : FullscreenToolbarController
 
 // True if revealToolbarForTabStripChanges was called.
 @property(nonatomic, assign) BOOL isRevealingToolbarForTabstrip;
@@ -203,11 +203,11 @@ class ViewExposedChecker {
 
 // Overridden so that we don't have to deal with the DCHECKs when the
 // BWC exits fullscreen.
-- (void)exitPresentationMode;
+- (void)exitFullscreenMode;
 
 @end
 
-@implementation MockPresentationModeController
+@implementation MockFullscreenToolbarController
 
 @synthesize isRevealingToolbarForTabstrip = isRevealingToolbarForTabstrip_;
 
@@ -228,7 +228,7 @@ class ViewExposedChecker {
   isRevealingToolbarForTabstrip_ = YES;
 }
 
-- (void)exitPresentationMode {
+- (void)exitFullscreenMode {
 }
 
 @end
@@ -372,7 +372,7 @@ class BrowserWindowControllerTest : public InProcessBrowserTest {
   }
 
   void VerifyFullscreenToolbarVisibility(fullscreen_mac::SlidingStyle style) {
-    EXPECT_EQ([[controller() presentationModeController] slidingStyle], style);
+    EXPECT_EQ([[controller() fullscreenToolbarController] slidingStyle], style);
 
     NSRect toolbarFrame = [[[controller() toolbarController] view] frame];
     NSRect screenFrame = [[[controller() window] screen] frame];
@@ -761,8 +761,8 @@ IN_PROC_BROWSER_TEST_F(BrowserWindowControllerTest,
 
   // Toggle the visibility of the fullscreen toolbar. Verify that the toolbar
   // is hidden and the preference is correctly updated.
-  [[controller() presentationModeController] setToolbarFraction:0.0];
-  [[controller() presentationModeController] setMenuBarRevealProgress:0.0];
+  [[controller() fullscreenToolbarController] setToolbarFraction:0.0];
+  [[controller() fullscreenToolbarController] setMenuBarRevealProgress:0.0];
   chrome::ExecuteCommand(browser(), IDC_TOGGLE_FULLSCREEN_TOOLBAR);
   EXPECT_FALSE(prefs->GetBoolean(prefs::kShowFullscreenToolbar));
   VerifyFullscreenToolbarVisibility(fullscreen_mac::OMNIBOX_TABS_HIDDEN);
@@ -771,7 +771,7 @@ IN_PROC_BROWSER_TEST_F(BrowserWindowControllerTest,
   // hidden.
   ToggleFullscreenAndWaitForNotification();
   ToggleFullscreenAndWaitForNotification();
-  [[controller() presentationModeController] setMenuBarRevealProgress:0.0];
+  [[controller() fullscreenToolbarController] setMenuBarRevealProgress:0.0];
   VerifyFullscreenToolbarVisibility(fullscreen_mac::OMNIBOX_TABS_HIDDEN);
 
   chrome::ExecuteCommand(browser(), IDC_TOGGLE_FULLSCREEN_TOOLBAR);
@@ -783,41 +783,42 @@ IN_PROC_BROWSER_TEST_F(BrowserWindowControllerTest,
 // if the current tab is a NTP, since the location bar would be focused.
 IN_PROC_BROWSER_TEST_F(BrowserWindowControllerTest,
                        FullscreenToolbarExposedForTabstripChanges) {
-  base::scoped_nsobject<MockPresentationModeController>
-      presentationModeController([[MockPresentationModeController alloc]
+  base::scoped_nsobject<MockFullscreenToolbarController>
+      fullscreenToolbarController([[MockFullscreenToolbarController alloc]
           initWithBrowserController:controller()]);
-  [controller() setPresentationModeController:presentationModeController.get()];
+  [controller()
+      setFullscreenToolbarController:fullscreenToolbarController.get()];
 
   ToggleFullscreenAndWaitForNotification();
 
   // Insert a non-NTP new tab in the foreground.
   AddTabAtIndex(0, GURL("http://google.com"), ui::PAGE_TRANSITION_LINK);
   ASSERT_FALSE([[controller() toolbarController] isLocationBarFocused]);
-  EXPECT_TRUE([presentationModeController isRevealingToolbarForTabstrip]);
-  [presentationModeController resetToolbarFlag];
+  EXPECT_TRUE([fullscreenToolbarController isRevealingToolbarForTabstrip]);
+  [fullscreenToolbarController resetToolbarFlag];
 
   // Insert a new tab in the background.
   AddTabAtBackground(0, GURL("about:blank"));
-  EXPECT_TRUE([presentationModeController isRevealingToolbarForTabstrip]);
-  [presentationModeController resetToolbarFlag];
+  EXPECT_TRUE([fullscreenToolbarController isRevealingToolbarForTabstrip]);
+  [fullscreenToolbarController resetToolbarFlag];
 
   // Insert a NTP new tab in the foreground.
   AddTabAtIndex(0, GURL("about:blank"), ui::PAGE_TRANSITION_LINK);
   ASSERT_TRUE([[controller() toolbarController] isLocationBarFocused]);
-  EXPECT_FALSE([presentationModeController isRevealingToolbarForTabstrip]);
-  [presentationModeController resetToolbarFlag];
+  EXPECT_FALSE([fullscreenToolbarController isRevealingToolbarForTabstrip]);
+  [fullscreenToolbarController resetToolbarFlag];
 
   // Insert a new tab in the background. The animation should not be triggered
   // since the location bar should still be focused.
   AddTabAtBackground(1, GURL("http://google.com"));
   ASSERT_TRUE([[controller() toolbarController] isLocationBarFocused]);
-  EXPECT_FALSE([presentationModeController isRevealingToolbarForTabstrip]);
-  [presentationModeController resetToolbarFlag];
+  EXPECT_FALSE([fullscreenToolbarController isRevealingToolbarForTabstrip]);
+  [fullscreenToolbarController resetToolbarFlag];
 
   // Switch to a non-NTP tab.
   TabStripModel* model = browser()->tab_strip_model();
   model->ActivateTabAt(1, true);
   ASSERT_FALSE([[controller() toolbarController] isLocationBarFocused]);
-  EXPECT_TRUE([presentationModeController isRevealingToolbarForTabstrip]);
-  [presentationModeController resetToolbarFlag];
+  EXPECT_TRUE([fullscreenToolbarController isRevealingToolbarForTabstrip]);
+  [fullscreenToolbarController resetToolbarFlag];
 }

@@ -214,21 +214,6 @@ const CGFloat kWindowGradientHeight = 24.0;
   return [super constrainFrameRect:frame toScreen:screen];
 }
 
-// This method is overridden in order to send the toggle fullscreen message
-// through the cross-platform browser framework before going fullscreen.  The
-// message will eventually come back as a call to |-toggleSystemFullScreen|,
-// which in turn calls AppKit's |NSWindow -toggleFullScreen:|.
-- (void)toggleFullScreen:(id)sender {
-  id delegate = [self delegate];
-  if ([delegate respondsToSelector:@selector(handleLionToggleFullscreen)])
-    [delegate handleLionToggleFullscreen];
-}
-
-- (void)toggleSystemFullScreen {
-  if ([super respondsToSelector:@selector(toggleFullScreen:)])
-    [super toggleFullScreen:nil];
-}
-
 - (NSPoint)fullScreenButtonOriginAdjustment {
   if (!hasTabStrip_)
     return NSZeroPoint;

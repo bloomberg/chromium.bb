@@ -59,7 +59,7 @@
 #import "chrome/browser/ui/cocoa/infobars/infobar_container_controller.h"
 #include "chrome/browser/ui/cocoa/last_active_browser_cocoa.h"
 #import "chrome/browser/ui/cocoa/location_bar/autocomplete_text_field_editor.h"
-#import "chrome/browser/ui/cocoa/presentation_mode_controller.h"
+#import "chrome/browser/ui/cocoa/fullscreen_toolbar_controller.h"
 #import "chrome/browser/ui/cocoa/profiles/avatar_base_controller.h"
 #import "chrome/browser/ui/cocoa/profiles/avatar_button_controller.h"
 #import "chrome/browser/ui/cocoa/profiles/avatar_icon_controller.h"
@@ -416,11 +416,11 @@ bool IsTabDetachingInFullscreenEnabled() {
 - (void)dealloc {
   browser_->tab_strip_model()->CloseAllTabs();
 
-  // Explicitly release |presentationModeController_| here, as it may call back
-  // to this BWC in |-dealloc|.  We are required to call |-exitPresentationMode|
+  // Explicitly release |fullscreenToolbarController_| here, as it may call back
+  // to this BWC in |-dealloc|.  We are required to call |-exitFullscreenMode|
   // before releasing the controller.
-  [presentationModeController_ exitPresentationMode];
-  presentationModeController_.reset();
+  [fullscreenToolbarController_ exitFullscreenMode];
+  fullscreenToolbarController_.reset();
 
   // Explicitly release |fullscreenTransition_| here since it may call back to
   // this BWC in |-dealloc|. Reset the fullscreen variables.
@@ -1034,7 +1034,7 @@ bool IsTabDetachingInFullscreenEnabled() {
   bool willFocusLocationBar =
       newContents && newContents->FocusLocationBarByDefault();
   if ([self isInAnyFullscreenMode] && !willFocusLocationBar)
-    [[self presentationModeController] revealToolbarForTabStripChanges];
+    [[self fullscreenToolbarController] revealToolbarForTabStripChanges];
 }
 
 - (void)zoomChangedForActiveTab:(BOOL)canShowBubble {
@@ -1486,7 +1486,7 @@ bool IsTabDetachingInFullscreenEnabled() {
 - (void)onTabInsertedInForeground:(BOOL)inForeground {
   if ([self isInAnyFullscreenMode] && !inForeground &&
       ![toolbarController_ isLocationBarFocused]) {
-    [[self presentationModeController] revealToolbarForTabStripChanges];
+    [[self fullscreenToolbarController] revealToolbarForTabStripChanges];
   }
 }
 
@@ -1834,12 +1834,13 @@ willAnimateFromState:(BookmarkBar::State)oldState
   [sheet orderOut:self];
 }
 
-- (PresentationModeController*)presentationModeController {
-  return presentationModeController_.get();
+- (FullscreenToolbarController*)fullscreenToolbarController {
+  return fullscreenToolbarController_.get();
 }
 
-- (void)setPresentationModeController:(PresentationModeController*)controller {
-  presentationModeController_.reset([controller retain]);
+- (void)setFullscreenToolbarController:
+    (FullscreenToolbarController*)controller {
+  fullscreenToolbarController_.reset([controller retain]);
 }
 
 - (void)executeExtensionCommand:(const std::string&)extension_id
@@ -1863,10 +1864,6 @@ willAnimateFromState:(BookmarkBar::State)oldState
 @end  // @implementation BrowserWindowController
 
 @implementation BrowserWindowController(Fullscreen)
-
-- (void)handleLionToggleFullscreen {
-  chrome::ExecuteCommand(browser_.get(), IDC_FULLSCREEN);
-}
 
 - (void)enterBrowserFullscreen {
   [self enterAppKitFullscreen];
@@ -1904,7 +1901,7 @@ willAnimateFromState:(BookmarkBar::State)oldState
   if (shouldShowFullscreenToolbar_ == visible)
     return;
 
-  [presentationModeController_ setToolbarFraction:0.0];
+  [fullscreenToolbarController_ setToolbarFraction:0.0];
   shouldShowFullscreenToolbar_ = visible;
   [self adjustUIForSlidingFullscreenStyle:
             shouldShowFullscreenToolbar_ ? fullscreen_mac::OMNIBOX_TABS_PRESENT
@@ -1927,7 +1924,7 @@ willAnimateFromState:(BookmarkBar::State)oldState
 }
 
 - (CGFloat)menubarOffset {
-  return [presentationModeController_ menubarOffset];
+  return [fullscreenToolbarController_ menubarOffset];
 }
 
 - (NSView*)avatarView {
@@ -1990,10 +1987,11 @@ willAnimateFromState:(BookmarkBar::State)oldState
   if (![self isBarVisibilityLockedForOwner:owner]) {
     [barVisibilityLocks_ addObject:owner];
 
-    // If enabled, show the overlay if necessary (and if in presentation mode).
+    // If enabled, show the overlay if necessary (and if the fullscreen
+    // toolbar is hidden).
     if (barVisibilityUpdatesEnabled_) {
-      [presentationModeController_ ensureOverlayShownWithAnimation:animate
-                                                             delay:delay];
+      [fullscreenToolbarController_ ensureOverlayShownWithAnimation:animate
+                                                              delay:delay];
     }
   }
 }
@@ -2004,11 +2002,12 @@ willAnimateFromState:(BookmarkBar::State)oldState
   if ([self isBarVisibilityLockedForOwner:owner]) {
     [barVisibilityLocks_ removeObject:owner];
 
-    // If enabled, hide the overlay if necessary (and if in presentation mode).
+    // If enabled, hide the overlay if necessary (and if the fullscreen
+    // toolbar is hidden).
     if (barVisibilityUpdatesEnabled_ &&
         ![barVisibilityLocks_ count]) {
-      [presentationModeController_ ensureOverlayHiddenWithAnimation:animate
-                                                              delay:delay];
+      [fullscreenToolbarController_ ensureOverlayHiddenWithAnimation:animate
+                                                               delay:delay];
     }
   }
 }

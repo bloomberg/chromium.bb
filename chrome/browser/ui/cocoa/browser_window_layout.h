@@ -7,7 +7,7 @@
 
 #import <Cocoa/Cocoa.h>
 
-#import "chrome/browser/ui/cocoa/presentation_mode_controller.h"
+#import "chrome/browser/ui/cocoa/fullscreen_toolbar_controller.h"
 
 namespace chrome {
 
@@ -25,7 +25,7 @@ struct LayoutParameters {
   // Whether the controller is in any fullscreen mode. This parameter should be
   // NO if the controller is in the process of entering fullscreen.
   BOOL inAnyFullscreen;
-  // The fullscreen sliding style. See presentation_mode_controller.h for more
+  // The fullscreen sliding style. See fullscreen_toolbar_controller.h for more
   // details.
   fullscreen_mac::SlidingStyle slidingStyle;
   // The minY of the AppKit Menu Bar, relative to the top of the screen. Ranges

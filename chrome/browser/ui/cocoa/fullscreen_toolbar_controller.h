@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_COCOA_PRESENTATION_MODE_CONTROLLER_H_
-#define CHROME_BROWSER_UI_COCOA_PRESENTATION_MODE_CONTROLLER_H_
+#ifndef CHROME_BROWSER_UI_COCOA_FULLSCREEN_TOOLBAR_CONTROLLER_H_
+#define CHROME_BROWSER_UI_COCOA_FULLSCREEN_TOOLBAR_CONTROLLER_H_
 
 #include <Carbon/Carbon.h>
 #import <Cocoa/Cocoa.h>
@@ -12,6 +12,7 @@
 #include "chrome/browser/ui/cocoa/location_bar/location_bar_view_mac.h"
 
 @class BrowserWindowController;
+@class CrTrackingArea;
 @class DropdownAnimation;
 
 namespace fullscreen_mac {
@@ -23,10 +24,7 @@ enum SlidingStyle {
 };
 }  // namespace fullscreen_mac
 
-// TODO(erikchen): This controller is misnamed. It manages the sliding tab
-// strip and omnibox in all fullscreen modes.
-
-// Provides a controller to manage presentation mode for a single browser
+// Provides a controller to fullscreen toolbar for a single browser
 // window.  This class handles running animations, showing and hiding the
 // floating dropdown bar, and managing the tracking area associated with the
 // dropdown.  This class does not directly manage any views -- the
@@ -38,7 +36,7 @@ enum SlidingStyle {
 // when the animation finishes.  This is largely done for ease of
 // implementation; it is easier to check the mouse location at each animation
 // step than it is to manage a constantly-changing tracking area.
-@interface PresentationModeController : NSObject<NSAnimationDelegate> {
+@interface FullscreenToolbarController : NSObject<NSAnimationDelegate> {
  @private
   // Our parent controller.
   BrowserWindowController* browserController_;  // weak
@@ -47,18 +45,18 @@ enum SlidingStyle {
   // mode.
   NSView* contentView_;  // weak
 
-  // YES while this controller is in the process of entering presentation mode.
-  BOOL enteringPresentationMode_;
+  // YES while this controller is in the process of setting up for fullscreen.
+  BOOL settingUp_;
 
-  // Whether or not we are in presentation mode.
-  BOOL inPresentationMode_;
+  // Whether or not we are in fullscreen mode.
+  BOOL inFullscreenMode_;
 
   // The tracking area associated with the floating dropdown bar.  This tracking
   // area is attached to |contentView_|, because when the dropdown is completely
   // hidden, we still need to keep a 1px tall tracking area visible.  Attaching
   // to the content view allows us to do this.  |trackingArea_| can be nil if
   // not in presentation mode or during animations.
-  base::scoped_nsobject<NSTrackingArea> trackingArea_;
+  base::scoped_nsobject<CrTrackingArea> trackingArea_;
 
   // Pointer to the currently running animation.  Is nil if no animation is
   // running.
@@ -103,7 +101,6 @@ enum SlidingStyle {
   BOOL revealToolbarForTabStripChanges_;
 }
 
-@property(readonly, nonatomic) BOOL inPresentationMode;
 @property(nonatomic, assign) fullscreen_mac::SlidingStyle slidingStyle;
 @property(nonatomic, assign) CGFloat toolbarFraction;
 
@@ -112,15 +109,15 @@ enum SlidingStyle {
                           style:(fullscreen_mac::SlidingStyle)style;
 
 // Informs the controller that the browser has entered or exited presentation
-// mode. |-enterPresentationModeForContentView:showDropdown:| should be called
-// after the window is setup, just before it is shown. |-exitPresentationMode|
+// mode. |-setupFullscreenToolbarForContentView:showDropdown:| should be called
+// after the window is setup, just before it is shown. |-exitFullscreenMode|
 // should be called before any views are moved back to the non-fullscreen
-// window.  If |-enterPresentationModeForContentView:showDropdown:| is called,
-// it must be balanced with a call to |-exitPresentationMode| before the
+// window.  If |-setupFullscreenToolbarForContentView:showDropdown:| is called,
+// it must be balanced with a call to |-exitFullscreenMode| before the
 // controller is released.
-- (void)enterPresentationModeForContentView:(NSView*)contentView
-                               showDropdown:(BOOL)showDropdown;
-- (void)exitPresentationMode;
+- (void)setupFullscreenToolbarForContentView:(NSView*)contentView
+                                showDropdown:(BOOL)showDropdown;
+- (void)exitFullscreenMode;
 
 // Returns the amount by which the floating bar should be offset downwards (to
 // avoid the menu) and by which the overlay view should be enlarged vertically.
@@ -158,7 +155,7 @@ enum SlidingStyle {
 @end
 
 // Private methods exposed for testing.
-@interface PresentationModeController (ExposedForTesting)
+@interface FullscreenToolbarController (ExposedForTesting)
 // Adjusts the AppKit Fullscreen options of the application.
 - (void)setSystemFullscreenModeTo:(base::mac::FullScreenMode)mode;
 
@@ -172,8 +169,4 @@ enum SlidingStyle {
 
 @end
 
-// Notification posted when we're about to enter or leave fullscreen.
-extern NSString* const kWillEnterFullscreenNotification;
-extern NSString* const kWillLeaveFullscreenNotification;
-
-#endif  // CHROME_BROWSER_UI_COCOA_PRESENTATION_MODE_CONTROLLER_H_
+#endif  // CHROME_BROWSER_UI_COCOA_FULLSCREEN_TOOLBAR_CONTROLLER_H_

@@ -62,9 +62,6 @@ const CGFloat kBrowserFrameViewPaintHeight = 60.0;
 // Returns the desired spacing between window control views.
 - (CGFloat)windowButtonsInterButtonSpacing;
 
-// Calls the superclass's implementation of |-toggleFullScreen:|.
-- (void)toggleSystemFullScreen;
-
 // Called by CustomFrameView to determine a custom location for the Lion
 // fullscreen button. Returns NSZeroPoint to use the Lion default.
 - (NSPoint)fullScreenButtonOriginAdjustment;

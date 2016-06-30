@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "chrome/browser/ui/cocoa/presentation_mode_controller.h"
+#import "chrome/browser/ui/cocoa/fullscreen_toolbar_controller.h"
 
 #include <algorithm>
 
@@ -13,11 +13,7 @@
 #include "chrome/common/chrome_switches.h"
 #import "third_party/google_toolbox_for_mac/src/AppKit/GTMNSAnimation+Duration.h"
 #import "ui/base/cocoa/nsview_additions.h"
-
-NSString* const kWillEnterFullscreenNotification =
-    @"WillEnterFullscreenNotification";
-NSString* const kWillLeaveFullscreenNotification =
-    @"WillLeaveFullscreenNotification";
+#import "ui/base/cocoa/tracking_area.h"
 
 namespace {
 
@@ -37,15 +33,15 @@ const NSTimeInterval kDropdownForTabStripChangesDuration = 0.75;
 const CGFloat kMenuBarRevealEventKind = 2004;
 
 // The amount by which the floating bar is offset downwards (to avoid the menu)
-// in presentation mode. (We can't use |-[NSMenu menuBarHeight]| since it
+// when the toolbar is hidden. (We can't use |-[NSMenu menuBarHeight]| since it
 // returns 0 when the menu bar is hidden.)
 const CGFloat kFloatingBarVerticalOffset = 22;
 
 OSStatus MenuBarRevealHandler(EventHandlerCallRef handler,
                               EventRef event,
                               void* context) {
-  PresentationModeController* self =
-      static_cast<PresentationModeController*>(context);
+  FullscreenToolbarController* self =
+      static_cast<FullscreenToolbarController*>(context);
 
   // If Chrome has multiple fullscreen windows in their own space, the Handler
   // becomes flaky and might start receiving kMenuBarRevealEventKind events
@@ -74,11 +70,11 @@ OSStatus MenuBarRevealHandler(EventHandlerCallRef handler,
 }  // end namespace
 
 // Helper class to manage animations for the dropdown bar.  Calls
-// [PresentationModeController changeToolbarFraction] once per
+// [FullscreenToolbarController changeToolbarFraction] once per
 // animation step.
 @interface DropdownAnimation : NSAnimation {
  @private
-  PresentationModeController* controller_;
+  FullscreenToolbarController* controller_;
   CGFloat startFraction_;
   CGFloat endFraction_;
 }
@@ -92,7 +88,7 @@ OSStatus MenuBarRevealHandler(EventHandlerCallRef handler,
 - (id)initWithFraction:(CGFloat)fromFraction
           fullDuration:(CGFloat)fullDuration
         animationCurve:(NSAnimationCurve)animationCurve
-            controller:(PresentationModeController*)controller;
+            controller:(FullscreenToolbarController*)controller;
 
 @end
 
@@ -104,7 +100,7 @@ OSStatus MenuBarRevealHandler(EventHandlerCallRef handler,
 - (id)initWithFraction:(CGFloat)toFraction
           fullDuration:(CGFloat)fullDuration
         animationCurve:(NSAnimationCurve)animationCurve
-            controller:(PresentationModeController*)controller {
+            controller:(FullscreenToolbarController*)controller {
   // Calculate the effective duration, based on the current shown fraction.
   DCHECK(controller);
   CGFloat fromFraction = controller.toolbarFraction;
@@ -130,8 +126,7 @@ OSStatus MenuBarRevealHandler(EventHandlerCallRef handler,
 
 @end
 
-
-@interface PresentationModeController (PrivateMethods)
+@interface FullscreenToolbarController (PrivateMethods)
 
 // Updates the visibility of the menu bar and the dock.
 - (void)updateMenuBarAndDockVisibility;
@@ -150,8 +145,7 @@ OSStatus MenuBarRevealHandler(EventHandlerCallRef handler,
 // Change the overlay to the given fraction, with or without animation. Only
 // guaranteed to work properly with |fraction == 0| or |fraction == 1|. This
 // performs the show/hide (animation) immediately. It does not touch the timers.
-- (void)changeOverlayToFraction:(CGFloat)fraction
-                  withAnimation:(BOOL)animate;
+- (void)changeOverlayToFraction:(CGFloat)fraction withAnimation:(BOOL)animate;
 
 // Schedule the floating bar to be shown/hidden because of mouse position.
 - (void)scheduleShowForMouse;
@@ -204,9 +198,8 @@ OSStatus MenuBarRevealHandler(EventHandlerCallRef handler,
 
 @end
 
-@implementation PresentationModeController
+@implementation FullscreenToolbarController
 
-@synthesize inPresentationMode = inPresentationMode_;
 @synthesize slidingStyle = slidingStyle_;
 @synthesize toolbarFraction = toolbarFraction_;
 
@@ -217,11 +210,6 @@ OSStatus MenuBarRevealHandler(EventHandlerCallRef handler,
     systemFullscreenMode_ = base::mac::kFullScreenModeNormal;
     slidingStyle_ = style;
   }
-
-  // Let the world know what we're up to.
-  [[NSNotificationCenter defaultCenter]
-    postNotificationName:kWillEnterFullscreenNotification
-                  object:nil];
 
   // Install the Carbon event handler for the menubar show, hide and
   // undocumented reveal event.
@@ -244,16 +232,16 @@ OSStatus MenuBarRevealHandler(EventHandlerCallRef handler,
 
 - (void)dealloc {
   RemoveEventHandler(menuBarTrackingHandler_);
-  DCHECK(!inPresentationMode_);
+  DCHECK(!inFullscreenMode_);
   DCHECK(!trackingArea_);
   [super dealloc];
 }
 
-- (void)enterPresentationModeForContentView:(NSView*)contentView
-                               showDropdown:(BOOL)showDropdown {
-  DCHECK(!inPresentationMode_);
-  enteringPresentationMode_ = YES;
-  inPresentationMode_ = YES;
+- (void)setupFullscreenToolbarForContentView:(NSView*)contentView
+                                showDropdown:(BOOL)showDropdown {
+  DCHECK(!inFullscreenMode_);
+  settingUp_ = YES;
+  inFullscreenMode_ = YES;
   contentView_ = contentView;
   [self changeToolbarFraction:(showDropdown ? 1 : 0)];
   [self updateMenuBarAndDockVisibility];
@@ -272,15 +260,12 @@ OSStatus MenuBarRevealHandler(EventHandlerCallRef handler,
              name:NSWindowDidResignMainNotification
            object:window];
 
-  enteringPresentationMode_ = NO;
+  settingUp_ = NO;
 }
 
-- (void)exitPresentationMode {
-  [[NSNotificationCenter defaultCenter]
-    postNotificationName:kWillLeaveFullscreenNotification
-                  object:nil];
-  DCHECK(inPresentationMode_);
-  inPresentationMode_ = NO;
+- (void)exitFullscreenMode {
+  DCHECK(inFullscreenMode_);
+  inFullscreenMode_ = NO;
 
   [self cleanup];
 }
@@ -307,7 +292,7 @@ OSStatus MenuBarRevealHandler(EventHandlerCallRef handler,
 }
 
 - (void)overlayFrameChanged:(NSRect)frame {
-  if (!inPresentationMode_)
+  if (!inFullscreenMode_)
     return;
 
   // Make sure |trackingAreaBounds_| always reflects either the tracking area or
@@ -328,7 +313,7 @@ OSStatus MenuBarRevealHandler(EventHandlerCallRef handler,
 
   // If this is part of the initial setup, lock bar visibility if the mouse is
   // within the tracking area bounds.
-  if (enteringPresentationMode_ && [self mouseInsideTrackingRect])
+  if (settingUp_ && [self mouseInsideTrackingRect])
     [browserController_ lockBarVisibilityForOwner:self
                                     withAnimation:NO
                                             delay:NO];
@@ -336,7 +321,7 @@ OSStatus MenuBarRevealHandler(EventHandlerCallRef handler,
 }
 
 - (void)ensureOverlayShownWithAnimation:(BOOL)animate delay:(BOOL)delay {
-  if (!inPresentationMode_)
+  if (!inFullscreenMode_)
     return;
 
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kKioskMode))
@@ -360,7 +345,7 @@ OSStatus MenuBarRevealHandler(EventHandlerCallRef handler,
 }
 
 - (void)ensureOverlayHiddenWithAnimation:(BOOL)animate delay:(BOOL)delay {
-  if (!inPresentationMode_)
+  if (!inFullscreenMode_)
     return;
 
   if (self.slidingStyle == fullscreen_mac::OMNIBOX_TABS_PRESENT)
@@ -446,15 +431,14 @@ OSStatus MenuBarRevealHandler(EventHandlerCallRef handler,
   return [browserController_ window].isMainWindow;
 }
 
-// Used to activate the floating bar in presentation mode.
+// Used to activate the floating bar if the toolbar is hidden.
 - (void)mouseEntered:(NSEvent*)event {
-  DCHECK(inPresentationMode_);
+  DCHECK(inFullscreenMode_);
 
   // Having gotten a mouse entered, we no longer need to do exit checks.
   [self cancelMouseExitCheck];
 
-  NSTrackingArea* trackingArea = [event trackingArea];
-  if (trackingArea == trackingArea_) {
+  if ([event trackingArea] == trackingArea_.get()) {
     // The tracking area shouldn't be active during animation.
     DCHECK(!currentAnimation_);
 
@@ -464,12 +448,11 @@ OSStatus MenuBarRevealHandler(EventHandlerCallRef handler,
   }
 }
 
-// Used to deactivate the floating bar in presentation mode.
+// Used to deactivate the floating bar if the toolbar is hidden.
 - (void)mouseExited:(NSEvent*)event {
-  DCHECK(inPresentationMode_);
+  DCHECK(inFullscreenMode_);
 
-  NSTrackingArea* trackingArea = [event trackingArea];
-  if (trackingArea == trackingArea_) {
+  if ([event trackingArea] == trackingArea_.get()) {
     // The tracking area shouldn't be active during animation.
     DCHECK(!currentAnimation_);
 
@@ -542,8 +525,7 @@ OSStatus MenuBarRevealHandler(EventHandlerCallRef handler,
 
 @end
 
-
-@implementation PresentationModeController (PrivateMethods)
+@implementation FullscreenToolbarController (PrivateMethods)
 
 - (void)updateMenuBarAndDockVisibility {
   if (![self isMainWindow] || ![browserController_ isInImmersiveFullscreen]) {
@@ -581,8 +563,7 @@ OSStatus MenuBarRevealHandler(EventHandlerCallRef handler,
   return base::mac::kFullScreenModeHideAll;
 }
 
-- (void)changeOverlayToFraction:(CGFloat)fraction
-                  withAnimation:(BOOL)animate {
+- (void)changeOverlayToFraction:(CGFloat)fraction withAnimation:(BOOL)animate {
   // The non-animated case is really simple, so do it and return.
   if (!animate) {
     [currentAnimation_ stopAnimation];
@@ -600,11 +581,11 @@ OSStatus MenuBarRevealHandler(EventHandlerCallRef handler,
   [currentAnimation_ stopAnimation];
 
   // Create the animation and set it up.
-  currentAnimation_.reset(
-      [[DropdownAnimation alloc] initWithFraction:fraction
-                                     fullDuration:kDropdownAnimationDuration
-                                   animationCurve:NSAnimationEaseOut
-                                       controller:self]);
+  currentAnimation_.reset([[DropdownAnimation alloc]
+      initWithFraction:fraction
+          fullDuration:kDropdownAnimationDuration
+        animationCurve:NSAnimationEaseOut
+            controller:self]);
   DCHECK(currentAnimation_);
   [currentAnimation_ setAnimationBlockingMode:NSAnimationNonblocking];
   [currentAnimation_ setDelegate:self];
@@ -640,12 +621,11 @@ OSStatus MenuBarRevealHandler(EventHandlerCallRef handler,
   }
 
   // Create and add a new tracking area for |frame|.
-  trackingArea_.reset(
-      [[NSTrackingArea alloc] initWithRect:trackingAreaBounds_
-                                   options:NSTrackingMouseEnteredAndExited |
-                                           NSTrackingActiveInKeyWindow
-                                     owner:self
-                                  userInfo:nil]);
+  trackingArea_.reset([[CrTrackingArea alloc]
+      initWithRect:trackingAreaBounds_
+           options:NSTrackingMouseEnteredAndExited | NSTrackingActiveInKeyWindow
+             owner:self
+          userInfo:nil]);
   DCHECK(contentView_);
   [contentView_ addTrackingArea:trackingArea_];
 }
@@ -673,7 +653,8 @@ OSStatus MenuBarRevealHandler(EventHandlerCallRef handler,
 
 - (void)cancelMouseExitCheck {
   [NSObject cancelPreviousPerformRequestsWithTarget:self
-      selector:@selector(checkForMouseExit) object:nil];
+                                           selector:@selector(checkForMouseExit)
+                                             object:nil];
 }
 
 - (void)checkForMouseExit {
@@ -758,7 +739,7 @@ OSStatus MenuBarRevealHandler(EventHandlerCallRef handler,
   [self removeTrackingAreaIfNecessary];
   contentView_ = nil;
 
-  // This isn't tracked when not in presentation mode.
+  // This isn't tracked when not in fullscreen mode.
   [browserController_ releaseBarVisibilityForOwner:self
                                      withAnimation:NO
                                              delay:NO];

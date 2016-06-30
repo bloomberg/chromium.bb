@@ -34,7 +34,7 @@
 #import "chrome/browser/ui/cocoa/fullscreen_window.h"
 #import "chrome/browser/ui/cocoa/infobars/infobar_container_controller.h"
 #include "chrome/browser/ui/cocoa/last_active_browser_cocoa.h"
-#import "chrome/browser/ui/cocoa/presentation_mode_controller.h"
+#import "chrome/browser/ui/cocoa/fullscreen_toolbar_controller.h"
 #import "chrome/browser/ui/cocoa/profiles/avatar_button_controller.h"
 #import "chrome/browser/ui/cocoa/profiles/avatar_icon_controller.h"
 #import "chrome/browser/ui/cocoa/status_bubble_mac.h"
@@ -350,7 +350,7 @@ willPositionSheet:(NSWindow*)sheet
   [self layoutSubviews];
 }
 
-// Fullscreen and presentation mode methods
+// Fullscreen methods
 
 - (void)moveViewsForImmersiveFullscreen:(BOOL)fullscreen
                           regularWindow:(NSWindow*)regularWindow
@@ -461,7 +461,7 @@ willPositionSheet:(NSWindow*)sheet
                                delay:YES];
 }
 
-- (void)configurePresentationModeController {
+- (void)configureFullscreenToolbarController {
   BOOL fullscreenForTab = [self isFullscreenForTabContentOrExtension];
   BOOL kioskMode =
       base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kKioskMode);
@@ -486,14 +486,14 @@ willPositionSheet:(NSWindow*)sheet
   }
 
   NSView* contentView = [[self window] contentView];
-  [presentationModeController_
-      enterPresentationModeForContentView:contentView
-                             showDropdown:showDropdown];
+  [fullscreenToolbarController_
+      setupFullscreenToolbarForContentView:contentView
+                              showDropdown:showDropdown];
 }
 
 - (void)adjustUIForExitingFullscreenAndStopOmniboxSliding {
-  [presentationModeController_ exitPresentationMode];
-  presentationModeController_.reset();
+  [fullscreenToolbarController_ exitFullscreenMode];
+  fullscreenToolbarController_.reset();
 
   // Force the bookmark bar z-order to update.
   [[bookmarkBarController_ view] removeFromSuperview];
@@ -501,12 +501,12 @@ willPositionSheet:(NSWindow*)sheet
 }
 
 - (void)adjustUIForSlidingFullscreenStyle:(fullscreen_mac::SlidingStyle)style {
-  if (!presentationModeController_) {
-    presentationModeController_.reset(
-        [self newPresentationModeControllerWithStyle:style]);
-    [self configurePresentationModeController];
+  if (!fullscreenToolbarController_) {
+    fullscreenToolbarController_.reset(
+        [self newFullscreenToolbarControllerWithStyle:style]);
+    [self configureFullscreenToolbarController];
   } else {
-    presentationModeController_.get().slidingStyle = style;
+    fullscreenToolbarController_.get().slidingStyle = style;
   }
 
   if (!floatingBarBackingView_.get() &&
@@ -522,10 +522,10 @@ willPositionSheet:(NSWindow*)sheet
   [self layoutSubviews];
 }
 
-- (PresentationModeController*)newPresentationModeControllerWithStyle:
+- (FullscreenToolbarController*)newFullscreenToolbarControllerWithStyle:
     (fullscreen_mac::SlidingStyle)style {
-  return [[PresentationModeController alloc] initWithBrowserController:self
-                                                                 style:style];
+  return [[FullscreenToolbarController alloc] initWithBrowserController:self
+                                                                  style:style];
 }
 
 - (void)enterImmersiveFullscreen {
@@ -880,9 +880,9 @@ willPositionSheet:(NSWindow*)sheet
   barVisibilityUpdatesEnabled_ = YES;
 
   if ([barVisibilityLocks_ count])
-    [presentationModeController_ ensureOverlayShownWithAnimation:NO delay:NO];
+    [fullscreenToolbarController_ ensureOverlayShownWithAnimation:NO delay:NO];
   else
-    [presentationModeController_ ensureOverlayHiddenWithAnimation:NO delay:NO];
+    [fullscreenToolbarController_ ensureOverlayHiddenWithAnimation:NO delay:NO];
 }
 
 - (void)disableBarVisibilityUpdates {
@@ -891,14 +891,14 @@ willPositionSheet:(NSWindow*)sheet
     return;
 
   barVisibilityUpdatesEnabled_ = NO;
-  [presentationModeController_ cancelAnimationAndTimers];
+  [fullscreenToolbarController_ cancelAnimationAndTimers];
 }
 
 - (void)hideOverlayIfPossibleWithAnimation:(BOOL)animation delay:(BOOL)delay {
   if (!barVisibilityUpdatesEnabled_ || [barVisibilityLocks_ count])
     return;
-  [presentationModeController_ ensureOverlayHiddenWithAnimation:animation
-                                                          delay:delay];
+  [fullscreenToolbarController_ ensureOverlayHiddenWithAnimation:animation
+                                                           delay:delay];
 }
 
 - (CGFloat)toolbarDividerOpacity {
@@ -925,26 +925,19 @@ willPositionSheet:(NSWindow*)sheet
 }
 
 - (void)enterAppKitFullscreen {
-  if (FramedBrowserWindow* framedBrowserWindow =
-          base::mac::ObjCCast<FramedBrowserWindow>([self window])) {
-    [framedBrowserWindow toggleSystemFullScreen];
-  }
+  [[self window] toggleFullScreen:nil];
 }
 
 - (void)exitAppKitFullscreen {
-  if (FramedBrowserWindow* framedBrowserWindow =
-          base::mac::ObjCCast<FramedBrowserWindow>([self window])) {
-
-    // If we're in the process of entering fullscreen, toggleSystemFullscreen
-    // will get ignored. Set |shouldExitAfterEnteringFullscreen_| to true so
-    // the browser will exit fullscreen immediately after it enters it.
-    if (enteringAppKitFullscreen_) {
-      shouldExitAfterEnteringFullscreen_ = YES;
-      return;
-    }
-
-    [framedBrowserWindow toggleSystemFullScreen];
+  // If we're in the process of entering fullscreen, toggleSystemFullscreen
+  // will get ignored. Set |shouldExitAfterEnteringFullscreen_| to true so
+  // the browser will exit fullscreen immediately after it enters it.
+  if (enteringAppKitFullscreen_) {
+    shouldExitAfterEnteringFullscreen_ = YES;
+    return;
   }
+
+  [[self window] toggleFullScreen:nil];
 }
 
 - (NSRect)fullscreenButtonFrame {
@@ -975,12 +968,12 @@ willPositionSheet:(NSWindow*)sheet
   [layout setWindowSize:windowSize];
 
   [layout setInAnyFullscreen:[self isInAnyFullscreenMode]];
-  [layout setFullscreenSlidingStyle:
-      presentationModeController_.get().slidingStyle];
-  [layout setFullscreenMenubarOffset:
-      [presentationModeController_ menubarOffset]];
-  [layout setFullscreenToolbarFraction:
-      [presentationModeController_ toolbarFraction]];
+  [layout setFullscreenSlidingStyle:fullscreenToolbarController_.get()
+                                        .slidingStyle];
+  [layout
+      setFullscreenMenubarOffset:[fullscreenToolbarController_ menubarOffset]];
+  [layout setFullscreenToolbarFraction:[fullscreenToolbarController_
+                                           toolbarFraction]];
 
   [layout setHasTabStrip:[self hasTabStrip]];
   [layout setFullscreenButtonFrame:[self fullscreenButtonFrame]];
@@ -1045,7 +1038,7 @@ willPositionSheet:(NSWindow*)sheet
 
   if (!NSIsEmptyRect(output.fullscreenBackingBarFrame)) {
     [floatingBarBackingView_ setFrame:output.fullscreenBackingBarFrame];
-    [presentationModeController_
+    [fullscreenToolbarController_
         overlayFrameChanged:output.fullscreenBackingBarFrame];
   }
 
