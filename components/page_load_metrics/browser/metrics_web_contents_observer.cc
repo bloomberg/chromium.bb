@@ -46,6 +46,8 @@ const char kAbortChainSizeSameURL[] =
     "PageLoad.Internal.ProvisionalAbortChainSize.SameURL";
 const char kAbortChainSizeNoCommit[] =
     "PageLoad.Internal.ProvisionalAbortChainSize.NoCommit";
+const char kClientRedirectDelayAfterPaint[] =
+    "PageLoad.Internal.ClientRedirectDelayAfterPaint";
 
 }  // namespace internal
 
@@ -385,6 +387,19 @@ void PageLoadTracker::OnInputEvent(const blink::WebInputEvent& event) {
   }
 }
 
+void PageLoadTracker::NotifyClientRedirectTo(
+    const PageLoadTracker& destination) {
+  base::TimeDelta redirect_delay_after_paint;
+  if (!timing_.first_paint.is_zero()) {
+    base::TimeTicks first_paint_time = navigation_start() + timing_.first_paint;
+    if (destination.navigation_start() > first_paint_time)
+      redirect_delay_after_paint =
+          destination.navigation_start() - first_paint_time;
+  }
+  PAGE_LOAD_HISTOGRAM(internal::kClientRedirectDelayAfterPaint,
+                      redirect_delay_after_paint);
+}
+
 bool PageLoadTracker::UpdateTiming(const PageLoadTiming& new_timing,
                                    const PageLoadMetadata& new_metadata) {
   // Throw away IPCs that are not relevant to the current navigation.
@@ -719,6 +734,12 @@ void MetricsWebContentsObserver::DidFinishNavigation(
   // Don't treat a same-page nav as a new page load.
   if (navigation_handle->IsSamePage())
     return;
+
+  if (!navigation_handle->HasUserGesture() &&
+      (navigation_handle->GetPageTransition() &
+       ui::PAGE_TRANSITION_CLIENT_REDIRECT) != 0 &&
+      committed_load_)
+    committed_load_->NotifyClientRedirectTo(*finished_nav);
 
   // Notify other loads that they may have been aborted by this committed load.
   // Note that by using the committed navigation start as the abort cause, we

@@ -37089,6 +37089,17 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="PageLoad.Internal.ClientRedirectDelayAfterPaint" units="ms">
+  <owner>bmcquade@chromium.org</owner>
+  <summary>
+    The delay between first paint and a client-side redirection. This metric is
+    only intended to help in choosing a heuristic delay to distinguish between
+    client-side redirects and other client initiated navigations, and will be
+    deprecated in M54. Please contact bmcquade@chromium.org before using this
+    metric.
+  </summary>
+</histogram>
+
 <histogram name="PageLoad.Internal.ProvisionalAbortChainSize.ForwardBack"
     units="length">
   <owner>csharrison@chromium.org</owner>

@@ -135,6 +135,8 @@ class PageLoadTracker {
 
   void OnInputEvent(const blink::WebInputEvent& event);
 
+  void NotifyClientRedirectTo(const PageLoadTracker& destination);
+
   // Returns true if the timing was successfully updated.
   bool UpdateTiming(const PageLoadTiming& timing,
                     const PageLoadMetadata& metadata);
@@ -180,6 +182,8 @@ class PageLoadTracker {
     DCHECK(!commit_time_.is_null());
     return url_;
   }
+
+  base::TimeTicks navigation_start() const { return navigation_start_; }
 
   PageLoadExtraInfo ComputePageLoadExtraInfo();
 
