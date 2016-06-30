@@ -34,6 +34,7 @@
 #include "core/css/MediaValuesCached.h"
 #include "core/css/parser/SizesAttributeParser.h"
 #include "core/dom/Document.h"
+#include "core/dom/ScriptLoader.h"
 #include "core/fetch/IntegrityMetadata.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
@@ -221,7 +222,6 @@ public:
             }
         }
 
-
         TextPosition position = TextPosition(source.currentLine(), source.currentColumn());
         FetchRequest::ResourceWidth resourceWidth;
         float sourceSize = m_sourceSize;
@@ -272,6 +272,10 @@ private:
         // explanation.
         else if (match(attributeName, integrityAttr))
             SubresourceIntegrity::parseIntegrityAttribute(attributeValue, m_integrityMetadata);
+        else if (match(attributeName, typeAttr))
+            m_typeAttributeValue = attributeValue;
+        else if (match(attributeName, languageAttr))
+            m_languageAttributeValue = attributeValue;
     }
 
     template<typename NameType>
@@ -440,6 +444,8 @@ private:
             return false;
         if (match(m_tagImpl, inputTag) && !m_inputIsImage)
             return false;
+        if (match(m_tagImpl, scriptTag) && !ScriptLoader::isValidScriptTypeAndLanguage(m_typeAttributeValue, m_languageAttributeValue, ScriptLoader::AllowLegacyTypeInTypeAttribute))
+            return false;
         return true;
     }
 
@@ -471,6 +477,8 @@ private:
     String m_imgSrcUrl;
     String m_srcsetAttributeValue;
     String m_asAttributeValue;
+    String m_typeAttributeValue;
+    String m_languageAttributeValue;
     float m_sourceSize;
     bool m_sourceSizeSet;
     FetchRequest::DeferOption m_defer;
