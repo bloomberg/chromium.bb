@@ -34,7 +34,6 @@
 #include <shlobj.h>
 #include <tchar.h>
 #include <winioctl.h>
-#include "base/environment.h"
 #include "base/win/scoped_handle.h"
 #include "base/win/windows_version.h"
 #endif
@@ -1407,7 +1406,7 @@ TEST_F(FileUtilTest, CopyDirectoryWithTrailingSeparators) {
 #if defined(OS_WIN)
   FilePath from_path =
       temp_dir_.path().Append(FILE_PATH_LITERAL("Copy_From_Subdir\\\\\\"));
-#elif defined (OS_POSIX)
+#elif defined(OS_POSIX)
   FilePath from_path =
       temp_dir_.path().Append(FILE_PATH_LITERAL("Copy_From_Subdir///"));
 #endif
@@ -1725,9 +1724,7 @@ TEST_F(FileUtilTest, IsOnNetworkDrive) {
     EXPECT_EQ(test_case.expected, observed) << " input: " << input.value();
   }
 
-  Environment* env = Environment::Create();
-  ASSERT_TRUE(!!env);
-
+  std::unique_ptr<Environment> env(Environment::Create());
   // To test IsOnNetworkDrive() for remote cases, set up a file server
   // and place a file called file.txt on the server e.g.
   // \\DC01\TESTSHARE\file.txt

@@ -21,7 +21,7 @@ namespace sandbox {
 class AddressSanitizerTests : public ::testing::Test {
  public:
   void SetUp() override {
-    env_.reset(base::Environment::Create());
+    env_ = base::Environment::Create();
     had_asan_options_ = env_->GetVar("ASAN_OPTIONS", &old_asan_options_);
   }
 
@@ -42,7 +42,7 @@ SBOX_TESTS_COMMAND int AddressSanitizerTests_Report(int argc, wchar_t** argv) {
   // AddressSanitizer should detect an out of bounds write (heap buffer
   // overflow) in this code.
   volatile int idx = 42;
-  int *volatile blah = new int[42];
+  int* volatile blah = new int[42];
   blah[idx] = 42;
   delete [] blah;
   return SBOX_TEST_FAILED;
@@ -79,7 +79,7 @@ TEST_F(AddressSanitizerTests, TestAddressSanitizer) {
   base::FilePath exe;
   ASSERT_TRUE(PathService::Get(base::FILE_EXE, &exe));
   base::FilePath pdb_path = exe.DirName().Append(L"*.pdb");
-  ASSERT_TRUE(runner.AddFsRule(sandbox::TargetPolicy::FILES_ALLOW_READONLY,
+  ASSERT_TRUE(runner.AddFsRule(TargetPolicy::FILES_ALLOW_READONLY,
                                pdb_path.value().c_str()));
 
   env_->SetVar("ASAN_OPTIONS", "exitcode=123");
@@ -105,4 +105,4 @@ TEST_F(AddressSanitizerTests, TestAddressSanitizer) {
   }
 }
 
-}
+}  // namespace sandbox

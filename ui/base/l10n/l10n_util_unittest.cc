@@ -136,7 +136,7 @@ TEST_F(L10nUtilTest, GetAppLocale) {
   const std::string original_locale = base::i18n::GetConfiguredLocale();
 
   if (kPlatformHasDefaultLocale && kUseLocaleFromEnvironment) {
-    env.reset(base::Environment::Create());
+    env = base::Environment::Create();
 
     // Test the support of LANGUAGE environment variable.
     base::i18n::SetICUDefaultLocale("en-US");

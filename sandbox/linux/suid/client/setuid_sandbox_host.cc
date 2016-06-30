@@ -29,13 +29,15 @@
 #include "sandbox/linux/suid/common/sandbox.h"
 #include "sandbox/linux/suid/common/suid_unsafe_environment_variables.h"
 
+namespace sandbox {
+
 namespace {
 
 // Set an environment variable that reflects the API version we expect from the
 // setuid sandbox. Old versions of the sandbox will ignore this.
 void SetSandboxAPIEnvironmentVariable(base::Environment* env) {
-  env->SetVar(sandbox::kSandboxEnvironmentApiRequest,
-              base::IntToString(sandbox::kSUIDSandboxApiNumber));
+  env->SetVar(kSandboxEnvironmentApiRequest,
+              base::IntToString(kSUIDSandboxApiNumber));
 }
 
 // Unset environment variables that are expected to be set by the setuid
@@ -44,11 +46,9 @@ void SetSandboxAPIEnvironmentVariable(base::Environment* env) {
 void UnsetExpectedEnvironmentVariables(base::EnvironmentMap* env_map) {
   DCHECK(env_map);
   const base::NativeEnvironmentString environment_vars[] = {
-      sandbox::kSandboxDescriptorEnvironmentVarName,
-      sandbox::kSandboxHelperPidEnvironmentVarName,
-      sandbox::kSandboxEnvironmentApiProvides,
-      sandbox::kSandboxPIDNSEnvironmentVarName,
-      sandbox::kSandboxNETNSEnvironmentVarName,
+      kSandboxDescriptorEnvironmentVarName, kSandboxHelperPidEnvironmentVarName,
+      kSandboxEnvironmentApiProvides,       kSandboxPIDNSEnvironmentVarName,
+      kSandboxNETNSEnvironmentVarName,
   };
 
   for (size_t i = 0; i < arraysize(environment_vars); ++i) {
@@ -64,7 +64,7 @@ void UnsetExpectedEnvironmentVariables(base::EnvironmentMap* env_map) {
 std::string* CreateSavedVariableName(const char* env_var) {
   char* const saved_env_var = SandboxSavedEnvironmentVariable(env_var);
   if (!saved_env_var)
-    return NULL;
+    return nullptr;
   std::string* saved_env_var_copy = new std::string(saved_env_var);
   // SandboxSavedEnvironmentVariable is the C function that we wrap and uses
   // malloc() to allocate memory.
@@ -81,7 +81,7 @@ void SaveSUIDUnsafeEnvironmentVariables(base::Environment* env) {
     // Get the saved environment variable corresponding to envvar.
     std::unique_ptr<std::string> saved_env_var(
         CreateSavedVariableName(env_var));
-    if (saved_env_var == NULL)
+    if (!saved_env_var)
       continue;
 
     std::string value;
@@ -98,15 +98,13 @@ const char* GetDevelSandboxPath() {
 
 }  // namespace
 
-namespace sandbox {
-
 SetuidSandboxHost* SetuidSandboxHost::Create() {
-  base::Environment* environment(base::Environment::Create());
-  CHECK(environment);
-  return new SetuidSandboxHost(environment);
+  return new SetuidSandboxHost(base::Environment::Create());
 }
 
-SetuidSandboxHost::SetuidSandboxHost(base::Environment* env) : env_(env) {
+SetuidSandboxHost::SetuidSandboxHost(std::unique_ptr<base::Environment> env)
+    : env_(std::move(env)) {
+  DCHECK(env_);
 }
 
 SetuidSandboxHost::~SetuidSandboxHost() {
@@ -116,10 +114,7 @@ SetuidSandboxHost::~SetuidSandboxHost() {
 // the setuid sandbox. TODO(jln): fix this (crbug.com/245376).
 bool SetuidSandboxHost::IsDisabledViaEnvironment() {
   const char* devel_sandbox_path = GetDevelSandboxPath();
-  if (devel_sandbox_path && '\0' == *devel_sandbox_path) {
-    return true;
-  }
-  return false;
+  return devel_sandbox_path && (*devel_sandbox_path == '\0');
 }
 
 base::FilePath SetuidSandboxHost::GetSandboxBinaryPath() {

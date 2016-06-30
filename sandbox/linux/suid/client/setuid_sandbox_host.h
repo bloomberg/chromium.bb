@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SANDBOX_LINUX_SUID_SETUID_SANDBOX_HOST_H_
-#define SANDBOX_LINUX_SUID_SETUID_SANDBOX_HOST_H_
+#ifndef SANDBOX_LINUX_SUID_CLIENT_SETUID_SANDBOX_HOST_H_
+#define SANDBOX_LINUX_SUID_CLIENT_SETUID_SANDBOX_HOST_H_
 
 #include <memory>
 
@@ -38,13 +38,16 @@ class SANDBOX_EXPORT SetuidSandboxHost {
   // The setuid sandbox may still be disabled via the environment.
   // This is tracked in crbug.com/245376.
   bool IsDisabledViaEnvironment();
+
   // Get the sandbox binary path. This method knows about the
   // CHROME_DEVEL_SANDBOX environment variable used for user-managed builds. If
   // the sandbox binary cannot be found, it will return an empty FilePath.
   base::FilePath GetSandboxBinaryPath();
+
   // Modify |cmd_line| to launch via the setuid sandbox. Crash if the setuid
   // sandbox binary cannot be found.  |cmd_line| must not be NULL.
   void PrependWrapper(base::CommandLine* cmd_line);
+
   // Set-up the launch options for launching via the setuid sandbox.  Caller is
   // responsible for keeping |dummy_fd| alive until LaunchProcess() completes.
   // |options| and |fds_to_remap| must not be NULL.
@@ -53,12 +56,13 @@ class SANDBOX_EXPORT SetuidSandboxHost {
   void SetupLaunchOptions(base::LaunchOptions* options,
                           base::FileHandleMappingVector* fds_to_remap,
                           base::ScopedFD* dummy_fd);
+
   // Set-up the environment. This should be done prior to launching the setuid
   // helper.
   void SetupLaunchEnvironment();
 
  private:
-  explicit SetuidSandboxHost(base::Environment* env);
+  explicit SetuidSandboxHost(std::unique_ptr<base::Environment> env);
 
   // Holds the environment. Will never be NULL.
   std::unique_ptr<base::Environment> env_;
@@ -68,4 +72,4 @@ class SANDBOX_EXPORT SetuidSandboxHost {
 
 }  // namespace sandbox
 
-#endif  // SANDBOX_LINUX_SUID_SETUID_SANDBOX_HOST_H_
+#endif  // SANDBOX_LINUX_SUID_CLIENT_SETUID_SANDBOX_HOST_H_

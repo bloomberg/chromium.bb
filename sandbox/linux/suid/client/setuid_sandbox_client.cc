@@ -10,6 +10,7 @@
 #include <unistd.h>
 
 #include <string>
+#include <utility>
 
 #include "base/environment.h"
 #include "base/files/scoped_file.h"
@@ -62,13 +63,12 @@ int GetIPCDescriptor(base::Environment* env) {
 namespace sandbox {
 
 SetuidSandboxClient* SetuidSandboxClient::Create() {
-  base::Environment* environment(base::Environment::Create());
-  CHECK(environment);
-  return new SetuidSandboxClient(environment);
+  return new SetuidSandboxClient(base::Environment::Create());
 }
 
-SetuidSandboxClient::SetuidSandboxClient(base::Environment* env)
-    : env_(env), sandboxed_(false) {
+SetuidSandboxClient::SetuidSandboxClient(std::unique_ptr<base::Environment> env)
+    : env_(std::move(env)), sandboxed_(false) {
+  DCHECK(env_);
 }
 
 SetuidSandboxClient::~SetuidSandboxClient() {

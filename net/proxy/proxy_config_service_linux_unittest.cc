@@ -35,13 +35,19 @@ namespace {
 struct EnvVarValues {
   // The strange capitalization is so that the field matches the
   // environment variable name exactly.
-  const char *DESKTOP_SESSION, *HOME,
-      *KDEHOME, *KDE_SESSION_VERSION,
-      *XDG_CURRENT_DESKTOP,
-      *auto_proxy, *all_proxy,
-      *http_proxy, *https_proxy, *ftp_proxy,
-      *SOCKS_SERVER, *SOCKS_VERSION,
-      *no_proxy;
+  const char* DESKTOP_SESSION;
+  const char* HOME;
+  const char* KDEHOME;
+  const char* KDE_SESSION_VERSION;
+  const char* XDG_CURRENT_DESKTOP;
+  const char* auto_proxy;
+  const char* all_proxy;
+  const char* http_proxy;
+  const char* https_proxy;
+  const char* ftp_proxy;
+  const char* SOCKS_SERVER;
+  const char* SOCKS_VERSION;
+  const char* no_proxy;
 };
 
 // Undo macro pollution from GDK includes (from message_loop.h).
@@ -57,12 +63,21 @@ enum BoolSettingValue {
 // Set of values for all gconf settings that we might query.
 struct GConfValues {
   // strings
-  const char *mode, *autoconfig_url,
-      *http_host, *secure_host, *ftp_host, *socks_host;
+  const char* mode;
+  const char* autoconfig_url;
+  const char* http_host;
+  const char* secure_host;
+  const char* ftp_host;
+  const char* socks_host;
   // integers
-  int http_port, secure_port, ftp_port, socks_port;
+  int http_port;
+  int secure_port;
+  int ftp_port;
+  int socks_port;
   // booleans
-  BoolSettingValue use_proxy, same_proxy, use_auth;
+  BoolSettingValue use_proxy;
+  BoolSettingValue same_proxy;
+  BoolSettingValue use_auth;
   // string list
   std::vector<std::string> ignore_hosts;
 };
@@ -75,7 +90,7 @@ struct SettingsTable {
 
   // Gets the value from its location
   value_type Get(key_type key) {
-    typename map_type::const_iterator it = settings.find(key);
+    auto it = settings.find(key);
     // In case there's a typo or the unittest becomes out of sync.
     CHECK(it != settings.end()) << "key " << key << " not found";
     value_type* value_ptr = it->second;
@@ -88,7 +103,7 @@ struct SettingsTable {
 class MockEnvironment : public base::Environment {
  public:
   MockEnvironment() {
-#define ENTRY(x) table[#x] = &values.x
+#define ENTRY(x) table_[#x] = &values.x
     ENTRY(DESKTOP_SESSION);
     ENTRY(HOME);
     ENTRY(KDEHOME);
@@ -113,24 +128,23 @@ class MockEnvironment : public base::Environment {
   }
 
   // Begin base::Environment implementation.
-  bool GetVar(const char* variable_name, std::string* result) override {
-    std::map<std::string, const char**>::iterator it =
-        table.find(variable_name);
-    if (it != table.end() && *(it->second) != NULL) {
-      // Note that the variable may be defined but empty.
-      *result = *(it->second);
-      return true;
-    }
-    return false;
+  bool GetVar(base::StringPiece variable_name, std::string* result) override {
+    auto it = table_.find(variable_name);
+    if (it == table_.end() || !*it->second)
+      return false;
+
+    // Note that the variable may be defined but empty.
+    *result = *(it->second);
+    return true;
   }
 
-  bool SetVar(const char* variable_name,
+  bool SetVar(base::StringPiece variable_name,
               const std::string& new_value) override {
     ADD_FAILURE();
     return false;
   }
 
-  bool UnSetVar(const char* variable_name) override {
+  bool UnSetVar(base::StringPiece variable_name) override {
     ADD_FAILURE();
     return false;
   }
@@ -140,7 +154,7 @@ class MockEnvironment : public base::Environment {
   EnvVarValues values;
 
  private:
-  std::map<std::string, const char**> table;
+  std::map<base::StringPiece, const char**> table_;
 };
 
 class MockSettingGetter
@@ -688,10 +702,10 @@ TEST_F(ProxyConfigServiceLinuxTest, BasicGConfTest) {
   for (size_t i = 0; i < arraysize(tests); ++i) {
     SCOPED_TRACE(base::StringPrintf("Test[%" PRIuS "] %s", i,
                                     tests[i].description.c_str()));
-    MockEnvironment* env = new MockEnvironment;
+    std::unique_ptr<MockEnvironment> env(new MockEnvironment);
     MockSettingGetter* setting_getter = new MockSettingGetter;
     SynchConfigGetter sync_config_getter(
-        new ProxyConfigServiceLinux(env, setting_getter));
+        new ProxyConfigServiceLinux(std::move(env), setting_getter));
     ProxyConfig config;
     setting_getter->values = tests[i].values;
     sync_config_getter.SetupAndInitialFetch();
@@ -722,298 +736,307 @@ TEST_F(ProxyConfigServiceLinuxTest, BasicEnvTest) {
     GURL pac_url;
     ProxyRulesExpectation proxy_rules;
   } tests[] = {
-    {
-      TEST_DESC("No proxying"),
-      { // Input.
-        NULL,  // DESKTOP_SESSION
-        NULL,  // HOME
-        NULL,  // KDEHOME
-        NULL,  // KDE_SESSION_VERSION
-        NULL,  // XDG_CURRENT_DESKTOP
-        NULL,  // auto_proxy
-        NULL,  // all_proxy
-        NULL, NULL, NULL,  // per-proto proxies
-        NULL, NULL,  // SOCKS
-        "*",  // no_proxy
+      {
+          TEST_DESC("No proxying"),
+          {
+              // Input.
+              nullptr,                    // DESKTOP_SESSION
+              nullptr,                    // HOME
+              nullptr,                    // KDEHOME
+              nullptr,                    // KDE_SESSION_VERSION
+              nullptr,                    // XDG_CURRENT_DESKTOP
+              nullptr,                    // auto_proxy
+              nullptr,                    // all_proxy
+              nullptr, nullptr, nullptr,  // per-proto proxies
+              nullptr, nullptr,           // SOCKS
+              "*",                        // no_proxy
+          },
+
+          // Expected result.
+          ProxyConfigService::CONFIG_VALID,
+          false,   // auto_detect
+          GURL(),  // pac_url
+          ProxyRulesExpectation::Empty(),
       },
 
-      // Expected result.
-      ProxyConfigService::CONFIG_VALID,
-      false,                      // auto_detect
-      GURL(),                     // pac_url
-      ProxyRulesExpectation::Empty(),
-    },
+      {
+          TEST_DESC("Auto detect"),
+          {
+              // Input.
+              nullptr,                    // DESKTOP_SESSION
+              nullptr,                    // HOME
+              nullptr,                    // KDEHOME
+              nullptr,                    // KDE_SESSION_VERSION
+              nullptr,                    // XDG_CURRENT_DESKTOP
+              "",                         // auto_proxy
+              nullptr,                    // all_proxy
+              nullptr, nullptr, nullptr,  // per-proto proxies
+              nullptr, nullptr,           // SOCKS
+              nullptr,                    // no_proxy
+          },
 
-    {
-      TEST_DESC("Auto detect"),
-      { // Input.
-        NULL,  // DESKTOP_SESSION
-        NULL,  // HOME
-        NULL,  // KDEHOME
-        NULL,  // KDE_SESSION_VERSION
-        NULL,  // XDG_CURRENT_DESKTOP
-        "",    // auto_proxy
-        NULL,  // all_proxy
-        NULL, NULL, NULL,  // per-proto proxies
-        NULL, NULL,  // SOCKS
-        NULL,  // no_proxy
+          // Expected result.
+          ProxyConfigService::CONFIG_VALID,
+          true,    // auto_detect
+          GURL(),  // pac_url
+          ProxyRulesExpectation::Empty(),
       },
 
-      // Expected result.
-      ProxyConfigService::CONFIG_VALID,
-      true,                       // auto_detect
-      GURL(),                     // pac_url
-      ProxyRulesExpectation::Empty(),
-    },
+      {
+          TEST_DESC("Valid PAC URL"),
+          {
+              // Input.
+              nullptr,                    // DESKTOP_SESSION
+              nullptr,                    // HOME
+              nullptr,                    // KDEHOME
+              nullptr,                    // KDE_SESSION_VERSION
+              nullptr,                    // XDG_CURRENT_DESKTOP
+              "http://wpad/wpad.dat",     // auto_proxy
+              nullptr,                    // all_proxy
+              nullptr, nullptr, nullptr,  // per-proto proxies
+              nullptr, nullptr,           // SOCKS
+              nullptr,                    // no_proxy
+          },
 
-    {
-      TEST_DESC("Valid PAC URL"),
-      { // Input.
-        NULL,  // DESKTOP_SESSION
-        NULL,  // HOME
-        NULL,  // KDEHOME
-        NULL,  // KDE_SESSION_VERSION
-        NULL,  // XDG_CURRENT_DESKTOP
-        "http://wpad/wpad.dat",  // auto_proxy
-        NULL,  // all_proxy
-        NULL, NULL, NULL,  // per-proto proxies
-        NULL, NULL,  // SOCKS
-        NULL,  // no_proxy
+          // Expected result.
+          ProxyConfigService::CONFIG_VALID,
+          false,                         // auto_detect
+          GURL("http://wpad/wpad.dat"),  // pac_url
+          ProxyRulesExpectation::Empty(),
       },
 
-      // Expected result.
-      ProxyConfigService::CONFIG_VALID,
-      false,                         // auto_detect
-      GURL("http://wpad/wpad.dat"),  // pac_url
-      ProxyRulesExpectation::Empty(),
-    },
+      {
+          TEST_DESC("Invalid PAC URL"),
+          {
+              // Input.
+              nullptr,                    // DESKTOP_SESSION
+              nullptr,                    // HOME
+              nullptr,                    // KDEHOME
+              nullptr,                    // KDE_SESSION_VERSION
+              nullptr,                    // XDG_CURRENT_DESKTOP
+              "wpad.dat",                 // auto_proxy
+              nullptr,                    // all_proxy
+              nullptr, nullptr, nullptr,  // per-proto proxies
+              nullptr, nullptr,           // SOCKS
+              nullptr,                    // no_proxy
+          },
 
-    {
-      TEST_DESC("Invalid PAC URL"),
-      { // Input.
-        NULL,  // DESKTOP_SESSION
-        NULL,  // HOME
-        NULL,  // KDEHOME
-        NULL,  // KDE_SESSION_VERSION
-        NULL,  // XDG_CURRENT_DESKTOP
-        "wpad.dat",  // auto_proxy
-        NULL,  // all_proxy
-        NULL, NULL, NULL,  // per-proto proxies
-        NULL, NULL,  // SOCKS
-        NULL,  // no_proxy
+          // Expected result.
+          ProxyConfigService::CONFIG_VALID,
+          false,   // auto_detect
+          GURL(),  // pac_url
+          ProxyRulesExpectation::Empty(),
       },
 
-      // Expected result.
-      ProxyConfigService::CONFIG_VALID,
-      false,                       // auto_detect
-      GURL(),                     // pac_url
-      ProxyRulesExpectation::Empty(),
-    },
+      {
+          TEST_DESC("Single-host in proxy list"),
+          {
+              // Input.
+              nullptr,                    // DESKTOP_SESSION
+              nullptr,                    // HOME
+              nullptr,                    // KDEHOME
+              nullptr,                    // KDE_SESSION_VERSION
+              nullptr,                    // XDG_CURRENT_DESKTOP
+              nullptr,                    // auto_proxy
+              "www.google.com",           // all_proxy
+              nullptr, nullptr, nullptr,  // per-proto proxies
+              nullptr, nullptr,           // SOCKS
+              nullptr,                    // no_proxy
+          },
 
-    {
-      TEST_DESC("Single-host in proxy list"),
-      { // Input.
-        NULL,  // DESKTOP_SESSION
-        NULL,  // HOME
-        NULL,  // KDEHOME
-        NULL,  // KDE_SESSION_VERSION
-        NULL,  // XDG_CURRENT_DESKTOP
-        NULL,  // auto_proxy
-        "www.google.com",  // all_proxy
-        NULL, NULL, NULL,  // per-proto proxies
-        NULL, NULL,  // SOCKS
-        NULL,  // no_proxy
+          // Expected result.
+          ProxyConfigService::CONFIG_VALID,
+          false,                                              // auto_detect
+          GURL(),                                             // pac_url
+          ProxyRulesExpectation::Single("www.google.com:80",  // single proxy
+                                        ""),                  // bypass rules
       },
 
-      // Expected result.
-      ProxyConfigService::CONFIG_VALID,
-      false,                                   // auto_detect
-      GURL(),                                  // pac_url
-      ProxyRulesExpectation::Single(
-          "www.google.com:80",  // single proxy
-          ""),                  // bypass rules
-    },
+      {
+          TEST_DESC("Single-host, different port"),
+          {
+              // Input.
+              nullptr,                    // DESKTOP_SESSION
+              nullptr,                    // HOME
+              nullptr,                    // KDEHOME
+              nullptr,                    // KDE_SESSION_VERSION
+              nullptr,                    // XDG_CURRENT_DESKTOP
+              nullptr,                    // auto_proxy
+              "www.google.com:99",        // all_proxy
+              nullptr, nullptr, nullptr,  // per-proto proxies
+              nullptr, nullptr,           // SOCKS
+              nullptr,                    // no_proxy
+          },
 
-    {
-      TEST_DESC("Single-host, different port"),
-      { // Input.
-        NULL,  // DESKTOP_SESSION
-        NULL,  // HOME
-        NULL,  // KDEHOME
-        NULL,  // KDE_SESSION_VERSION
-        NULL,  // XDG_CURRENT_DESKTOP
-        NULL,  // auto_proxy
-        "www.google.com:99",  // all_proxy
-        NULL, NULL, NULL,  // per-proto proxies
-        NULL, NULL,  // SOCKS
-        NULL,  // no_proxy
+          // Expected result.
+          ProxyConfigService::CONFIG_VALID,
+          false,                                              // auto_detect
+          GURL(),                                             // pac_url
+          ProxyRulesExpectation::Single("www.google.com:99",  // single
+                                        ""),                  // bypass rules
       },
 
-      // Expected result.
-      ProxyConfigService::CONFIG_VALID,
-      false,                                   // auto_detect
-      GURL(),                                  // pac_url
-      ProxyRulesExpectation::Single(
-          "www.google.com:99",  // single
-          ""),                  // bypass rules
-    },
+      {
+          TEST_DESC("Tolerate a scheme"),
+          {
+              // Input.
+              nullptr,                     // DESKTOP_SESSION
+              nullptr,                     // HOME
+              nullptr,                     // KDEHOME
+              nullptr,                     // KDE_SESSION_VERSION
+              nullptr,                     // XDG_CURRENT_DESKTOP
+              nullptr,                     // auto_proxy
+              "http://www.google.com:99",  // all_proxy
+              nullptr, nullptr, nullptr,   // per-proto proxies
+              nullptr, nullptr,            // SOCKS
+              nullptr,                     // no_proxy
+          },
 
-    {
-      TEST_DESC("Tolerate a scheme"),
-      { // Input.
-        NULL,  // DESKTOP_SESSION
-        NULL,  // HOME
-        NULL,  // KDEHOME
-        NULL,  // KDE_SESSION_VERSION
-        NULL,  // XDG_CURRENT_DESKTOP
-        NULL,  // auto_proxy
-        "http://www.google.com:99",  // all_proxy
-        NULL, NULL, NULL,  // per-proto proxies
-        NULL, NULL,  // SOCKS
-        NULL,  // no_proxy
+          // Expected result.
+          ProxyConfigService::CONFIG_VALID,
+          false,                                              // auto_detect
+          GURL(),                                             // pac_url
+          ProxyRulesExpectation::Single("www.google.com:99",  // single proxy
+                                        ""),                  // bypass rules
       },
 
-      // Expected result.
-      ProxyConfigService::CONFIG_VALID,
-      false,                                   // auto_detect
-      GURL(),                                  // pac_url
-      ProxyRulesExpectation::Single(
-          "www.google.com:99",  // single proxy
-          ""),                  // bypass rules
-    },
+      {
+          TEST_DESC("Per-scheme proxy rules"),
+          {
+              // Input.
+              nullptr,  // DESKTOP_SESSION
+              nullptr,  // HOME
+              nullptr,  // KDEHOME
+              nullptr,  // KDE_SESSION_VERSION
+              nullptr,  // XDG_CURRENT_DESKTOP
+              nullptr,  // auto_proxy
+              nullptr,  // all_proxy
+              "www.google.com:80", "www.foo.com:110",
+              "ftp.foo.com:121",  // per-proto
+              nullptr, nullptr,   // SOCKS
+              nullptr,            // no_proxy
+          },
 
-    {
-      TEST_DESC("Per-scheme proxy rules"),
-      { // Input.
-        NULL,  // DESKTOP_SESSION
-        NULL,  // HOME
-        NULL,  // KDEHOME
-        NULL,  // KDE_SESSION_VERSION
-        NULL,  // XDG_CURRENT_DESKTOP
-        NULL,  // auto_proxy
-        NULL,  // all_proxy
-        "www.google.com:80", "www.foo.com:110", "ftp.foo.com:121",  // per-proto
-        NULL, NULL,  // SOCKS
-        NULL,  // no_proxy
+          // Expected result.
+          ProxyConfigService::CONFIG_VALID,
+          false,                                                 // auto_detect
+          GURL(),                                                // pac_url
+          ProxyRulesExpectation::PerScheme("www.google.com:80",  // http
+                                           "www.foo.com:110",    // https
+                                           "ftp.foo.com:121",    // ftp
+                                           ""),                  // bypass rules
       },
 
-      // Expected result.
-      ProxyConfigService::CONFIG_VALID,
-      false,                                   // auto_detect
-      GURL(),                                  // pac_url
-      ProxyRulesExpectation::PerScheme(
-          "www.google.com:80",  // http
-          "www.foo.com:110",    // https
-          "ftp.foo.com:121",    // ftp
-          ""),                  // bypass rules
-    },
+      {
+          TEST_DESC("socks"),
+          {
+              // Input.
+              nullptr,                    // DESKTOP_SESSION
+              nullptr,                    // HOME
+              nullptr,                    // KDEHOME
+              nullptr,                    // KDE_SESSION_VERSION
+              nullptr,                    // XDG_CURRENT_DESKTOP
+              nullptr,                    // auto_proxy
+              "",                         // all_proxy
+              nullptr, nullptr, nullptr,  // per-proto proxies
+              "socks.com:888", nullptr,   // SOCKS
+              nullptr,                    // no_proxy
+          },
 
-    {
-      TEST_DESC("socks"),
-      { // Input.
-        NULL,  // DESKTOP_SESSION
-        NULL,  // HOME
-        NULL,  // KDEHOME
-        NULL,  // KDE_SESSION_VERSION
-        NULL,  // XDG_CURRENT_DESKTOP
-        NULL,  // auto_proxy
-        "",  // all_proxy
-        NULL, NULL, NULL,  // per-proto proxies
-        "socks.com:888", NULL,  // SOCKS
-        NULL,  // no_proxy
+          // Expected result.
+          ProxyConfigService::CONFIG_VALID,
+          false,   // auto_detect
+          GURL(),  // pac_url
+          ProxyRulesExpectation::Single(
+              "socks5://socks.com:888",  // single proxy
+              ""),                       // bypass rules
       },
 
-      // Expected result.
-      ProxyConfigService::CONFIG_VALID,
-      false,                                   // auto_detect
-      GURL(),                                  // pac_url
-      ProxyRulesExpectation::Single(
-          "socks5://socks.com:888",  // single proxy
-          ""),                       // bypass rules
-    },
+      {
+          TEST_DESC("socks4"),
+          {
+              // Input.
+              nullptr,                    // DESKTOP_SESSION
+              nullptr,                    // HOME
+              nullptr,                    // KDEHOME
+              nullptr,                    // KDE_SESSION_VERSION
+              nullptr,                    // XDG_CURRENT_DESKTOP
+              nullptr,                    // auto_proxy
+              "",                         // all_proxy
+              nullptr, nullptr, nullptr,  // per-proto proxies
+              "socks.com:888", "4",       // SOCKS
+              nullptr,                    // no_proxy
+          },
 
-    {
-      TEST_DESC("socks4"),
-      { // Input.
-        NULL,  // DESKTOP_SESSION
-        NULL,  // HOME
-        NULL,  // KDEHOME
-        NULL,  // KDE_SESSION_VERSION
-        NULL,  // XDG_CURRENT_DESKTOP
-        NULL,  // auto_proxy
-        "",  // all_proxy
-        NULL, NULL, NULL,  // per-proto proxies
-        "socks.com:888", "4",  // SOCKS
-        NULL,  // no_proxy
+          // Expected result.
+          ProxyConfigService::CONFIG_VALID,
+          false,   // auto_detect
+          GURL(),  // pac_url
+          ProxyRulesExpectation::Single(
+              "socks4://socks.com:888",  // single proxy
+              ""),                       // bypass rules
       },
 
-      // Expected result.
-      ProxyConfigService::CONFIG_VALID,
-      false,                                   // auto_detect
-      GURL(),                                  // pac_url
-      ProxyRulesExpectation::Single(
-          "socks4://socks.com:888",  // single proxy
-          ""),                       // bypass rules
-    },
+      {
+          TEST_DESC("socks default port"),
+          {
+              // Input.
+              nullptr,                    // DESKTOP_SESSION
+              nullptr,                    // HOME
+              nullptr,                    // KDEHOME
+              nullptr,                    // KDE_SESSION_VERSION
+              nullptr,                    // XDG_CURRENT_DESKTOP
+              nullptr,                    // auto_proxy
+              "",                         // all_proxy
+              nullptr, nullptr, nullptr,  // per-proto proxies
+              "socks.com", nullptr,       // SOCKS
+              nullptr,                    // no_proxy
+          },
 
-    {
-      TEST_DESC("socks default port"),
-      { // Input.
-        NULL,  // DESKTOP_SESSION
-        NULL,  // HOME
-        NULL,  // KDEHOME
-        NULL,  // KDE_SESSION_VERSION
-        NULL,  // XDG_CURRENT_DESKTOP
-        NULL,  // auto_proxy
-        "",  // all_proxy
-        NULL, NULL, NULL,  // per-proto proxies
-        "socks.com", NULL,  // SOCKS
-        NULL,  // no_proxy
+          // Expected result.
+          ProxyConfigService::CONFIG_VALID,
+          false,   // auto_detect
+          GURL(),  // pac_url
+          ProxyRulesExpectation::Single(
+              "socks5://socks.com:1080",  // single proxy
+              ""),                        // bypass rules
       },
 
-      // Expected result.
-      ProxyConfigService::CONFIG_VALID,
-      false,                                   // auto_detect
-      GURL(),                                  // pac_url
-      ProxyRulesExpectation::Single(
-          "socks5://socks.com:1080",  // single proxy
-          ""),                        // bypass rules
-    },
+      {
+          TEST_DESC("bypass"),
+          {
+              // Input.
+              nullptr,                    // DESKTOP_SESSION
+              nullptr,                    // HOME
+              nullptr,                    // KDEHOME
+              nullptr,                    // KDE_SESSION_VERSION
+              nullptr,                    // XDG_CURRENT_DESKTOP
+              nullptr,                    // auto_proxy
+              "www.google.com",           // all_proxy
+              nullptr, nullptr, nullptr,  // per-proto
+              nullptr, nullptr,           // SOCKS
+              ".google.com, foo.com:99, 1.2.3.4:22, 127.0.0.1/8",  // no_proxy
+          },
 
-    {
-      TEST_DESC("bypass"),
-      { // Input.
-        NULL,  // DESKTOP_SESSION
-        NULL,  // HOME
-        NULL,  // KDEHOME
-        NULL,  // KDE_SESSION_VERSION
-        NULL,  // XDG_CURRENT_DESKTOP
-        NULL,  // auto_proxy
-        "www.google.com",  // all_proxy
-        NULL, NULL, NULL,  // per-proto
-        NULL, NULL,  // SOCKS
-        ".google.com, foo.com:99, 1.2.3.4:22, 127.0.0.1/8",  // no_proxy
+          // Expected result.
+          ProxyConfigService::CONFIG_VALID,
+          false,   // auto_detect
+          GURL(),  // pac_url
+          ProxyRulesExpectation::Single(
+              "www.google.com:80",
+              "*.google.com,*foo.com:99,1.2.3.4:22,127.0.0.1/8"),
       },
-
-      // Expected result.
-      ProxyConfigService::CONFIG_VALID,
-      false,                      // auto_detect
-      GURL(),                     // pac_url
-      ProxyRulesExpectation::Single(
-          "www.google.com:80",
-          "*.google.com,*foo.com:99,1.2.3.4:22,127.0.0.1/8"),
-    },
   };
 
   for (size_t i = 0; i < arraysize(tests); ++i) {
     SCOPED_TRACE(base::StringPrintf("Test[%" PRIuS "] %s", i,
                                     tests[i].description.c_str()));
-    MockEnvironment* env = new MockEnvironment;
+    std::unique_ptr<MockEnvironment> env(new MockEnvironment);
+    env->values = tests[i].values;
     MockSettingGetter* setting_getter = new MockSettingGetter;
     SynchConfigGetter sync_config_getter(
-        new ProxyConfigServiceLinux(env, setting_getter));
+        new ProxyConfigServiceLinux(std::move(env), setting_getter));
     ProxyConfig config;
-    env->values = tests[i].values;
     sync_config_getter.SetupAndInitialFetch();
     ProxyConfigService::ConfigAvailability availability =
         sync_config_getter.SyncGetLatestProxyConfig(&config);
@@ -1028,10 +1051,10 @@ TEST_F(ProxyConfigServiceLinuxTest, BasicEnvTest) {
 }
 
 TEST_F(ProxyConfigServiceLinuxTest, GconfNotification) {
-  MockEnvironment* env = new MockEnvironment;
+  std::unique_ptr<MockEnvironment> env(new MockEnvironment);
   MockSettingGetter* setting_getter = new MockSettingGetter;
   ProxyConfigServiceLinux* service =
-      new ProxyConfigServiceLinux(env, setting_getter);
+      new ProxyConfigServiceLinux(std::move(env), setting_getter);
   SynchConfigGetter sync_config_getter(service);
   ProxyConfig config;
 
@@ -1074,452 +1097,442 @@ TEST_F(ProxyConfigServiceLinuxTest, KDEConfigParser) {
     GURL pac_url;
     ProxyRulesExpectation proxy_rules;
   } tests[] = {
-    {
-      TEST_DESC("No proxying"),
-
-      // Input.
-      "[Proxy Settings]\nProxyType=0\n",
-      {},                                      // env_values
-
-      // Expected result.
-      ProxyConfigService::CONFIG_VALID,
-      false,                      // auto_detect
-      GURL(),                     // pac_url
-      ProxyRulesExpectation::Empty(),
-    },
-
-    {
-      TEST_DESC("Auto detect"),
-
-      // Input.
-      "[Proxy Settings]\nProxyType=3\n",
-      {},                                      // env_values
-
-      // Expected result.
-      ProxyConfigService::CONFIG_VALID,
-      true,                       // auto_detect
-      GURL(),                     // pac_url
-      ProxyRulesExpectation::Empty(),
-    },
-
-    {
-      TEST_DESC("Valid PAC URL"),
-
-      // Input.
-      "[Proxy Settings]\nProxyType=2\n"
-          "Proxy Config Script=http://wpad/wpad.dat\n",
-      {},                                      // env_values
-
-      // Expected result.
-      ProxyConfigService::CONFIG_VALID,
-      false,                         // auto_detect
-      GURL("http://wpad/wpad.dat"),  // pac_url
-      ProxyRulesExpectation::Empty(),
-    },
-
-    {
-      TEST_DESC("Valid PAC file without file://"),
-
-      // Input.
-      "[Proxy Settings]\nProxyType=2\n"
-          "Proxy Config Script=/wpad/wpad.dat\n",
-      {},                                      // env_values
-
-      // Expected result.
-      ProxyConfigService::CONFIG_VALID,
-      false,                         // auto_detect
-      GURL("file:///wpad/wpad.dat"),  // pac_url
-      ProxyRulesExpectation::Empty(),
-    },
-
-    {
-      TEST_DESC("Per-scheme proxy rules"),
-
-      // Input.
-      "[Proxy Settings]\nProxyType=1\nhttpProxy=www.google.com\n"
-          "httpsProxy=www.foo.com\nftpProxy=ftp.foo.com\n",
-      {},                                      // env_values
-
-      // Expected result.
-      ProxyConfigService::CONFIG_VALID,
-      false,                                   // auto_detect
-      GURL(),                                  // pac_url
-      ProxyRulesExpectation::PerScheme(
-          "www.google.com:80",  // http
-          "www.foo.com:80",     // https
-          "ftp.foo.com:80",     // http
-          ""),                  // bypass rules
-    },
-
-    {
-      TEST_DESC("Only HTTP proxy specified"),
-
-      // Input.
-      "[Proxy Settings]\nProxyType=1\n"
-          "httpProxy=www.google.com\n",
-      {},                                      // env_values
-
-      // Expected result.
-      ProxyConfigService::CONFIG_VALID,
-      false,                                   // auto_detect
-      GURL(),                                  // pac_url
-      ProxyRulesExpectation::PerScheme(
-          "www.google.com:80",  // http
-          "",                   // https
-          "",                   // ftp
-          ""),                  // bypass rules
-    },
-
-    {
-      TEST_DESC("Only HTTP proxy specified, different port"),
-
-      // Input.
-      "[Proxy Settings]\nProxyType=1\n"
-          "httpProxy=www.google.com:88\n",
-      {},                                      // env_values
-
-      // Expected result.
-      ProxyConfigService::CONFIG_VALID,
-      false,                                   // auto_detect
-      GURL(),                                  // pac_url
-      ProxyRulesExpectation::PerScheme(
-          "www.google.com:88",  // http
-          "",                   // https
-          "",                   // ftp
-          ""),                  // bypass rules
-    },
-
-    {
-      TEST_DESC("Only HTTP proxy specified, different port, space-delimited"),
-
-      // Input.
-      "[Proxy Settings]\nProxyType=1\n"
-          "httpProxy=www.google.com 88\n",
-      {},                                      // env_values
-
-      // Expected result.
-      ProxyConfigService::CONFIG_VALID,
-      false,                                   // auto_detect
-      GURL(),                                  // pac_url
-      ProxyRulesExpectation::PerScheme(
-          "www.google.com:88",  // http
-          "",                   // https
-          "",                   // ftp
-          ""),                  // bypass rules
-    },
-
-    {
-      TEST_DESC("Bypass *.google.com"),
-
-      // Input.
-      "[Proxy Settings]\nProxyType=1\nhttpProxy=www.google.com\n"
-          "NoProxyFor=.google.com\n",
-      {},                                      // env_values
-
-      // Expected result.
-      ProxyConfigService::CONFIG_VALID,
-      false,                                   // auto_detect
-      GURL(),                                  // pac_url
-      ProxyRulesExpectation::PerScheme(
-          "www.google.com:80",  // http
-          "",                   // https
-          "",                   // ftp
-          "*.google.com"),      // bypass rules
-    },
-
-    {
-      TEST_DESC("Bypass *.google.com and *.kde.org"),
-
-      // Input.
-      "[Proxy Settings]\nProxyType=1\nhttpProxy=www.google.com\n"
-          "NoProxyFor=.google.com,.kde.org\n",
-      {},                                      // env_values
-
-      // Expected result.
-      ProxyConfigService::CONFIG_VALID,
-      false,                                   // auto_detect
-      GURL(),                                  // pac_url
-      ProxyRulesExpectation::PerScheme(
-          "www.google.com:80",           // http
-          "",                            // https
-          "",                            // ftp
-          "*.google.com,*.kde.org"),     // bypass rules
-    },
-
-    {
-      TEST_DESC("Correctly parse bypass list with ReversedException"),
-
-      // Input.
-      "[Proxy Settings]\nProxyType=1\nhttpProxy=www.google.com\n"
-          "NoProxyFor=.google.com\nReversedException=true\n",
-      {},                                      // env_values
-
-      // Expected result.
-      ProxyConfigService::CONFIG_VALID,
-      false,                                   // auto_detect
-      GURL(),                                  // pac_url
-      ProxyRulesExpectation::PerSchemeWithBypassReversed(
-          "www.google.com:80",  // http
-          "",                   // https
-          "",                   // ftp
-          "*.google.com"),      // bypass rules
-    },
-
-    {
-      TEST_DESC("socks"),
-
-      // Input.
-      "[Proxy Settings]\nProxyType=1\nsocksProxy=socks.com 888\n",
-      {},                                      // env_values
-
-      // Expected result.
-      ProxyConfigService::CONFIG_VALID,
-      false,                                   // auto_detect
-      GURL(),                                  // pac_url
-      ProxyRulesExpectation::Single(
-          "socks5://socks.com:888",  // single proxy
-          ""),                       // bypass rules
-    },
-
-    {
-      TEST_DESC("socks4"),
-
-      // Input.
-      "[Proxy Settings]\nProxyType=1\nsocksProxy=socks4://socks.com 888\n",
-      {},                                      // env_values
-
-      // Expected result.
-      ProxyConfigService::CONFIG_VALID,
-      false,                                   // auto_detect
-      GURL(),                                  // pac_url
-      ProxyRulesExpectation::Single(
-          "socks4://socks.com:888",  // single proxy
-          ""),                       // bypass rules
-    },
-
-    {
-      TEST_DESC("Treat all hostname patterns as wildcard patterns"),
-
-      // Input.
-      "[Proxy Settings]\nProxyType=1\nhttpProxy=www.google.com\n"
-          "NoProxyFor=google.com,kde.org,<local>\n",
-      {},                                      // env_values
-
-      // Expected result.
-      ProxyConfigService::CONFIG_VALID,
-      false,                                   // auto_detect
-      GURL(),                                  // pac_url
-      ProxyRulesExpectation::PerScheme(
-          "www.google.com:80",              // http
-          "",                               // https
-          "",                               // ftp
-          "*google.com,*kde.org,<local>"),  // bypass rules
-    },
-
-    {
-      TEST_DESC("Allow trailing whitespace after boolean value"),
-
-      // Input.
-      "[Proxy Settings]\nProxyType=1\nhttpProxy=www.google.com\n"
-          "NoProxyFor=.google.com\nReversedException=true  \n",
-      {},                                      // env_values
-
-      // Expected result.
-      ProxyConfigService::CONFIG_VALID,
-      false,                                   // auto_detect
-      GURL(),                                  // pac_url
-      ProxyRulesExpectation::PerSchemeWithBypassReversed(
-          "www.google.com:80",  // http
-          "",                   // https
-          "",                   // ftp
-          "*.google.com"),      // bypass rules
-    },
-
-    {
-      TEST_DESC("Ignore settings outside [Proxy Settings]"),
-
-      // Input.
-      "httpsProxy=www.foo.com\n[Proxy Settings]\nProxyType=1\n"
-          "httpProxy=www.google.com\n[Other Section]\nftpProxy=ftp.foo.com\n",
-      {},                                      // env_values
-
-      // Expected result.
-      ProxyConfigService::CONFIG_VALID,
-      false,                                   // auto_detect
-      GURL(),                                  // pac_url
-      ProxyRulesExpectation::PerScheme(
-          "www.google.com:80",  // http
-          "",                   // https
-          "",                   // ftp
-          ""),                  // bypass rules
-    },
-
-    {
-      TEST_DESC("Handle CRLF line endings"),
-
-      // Input.
-      "[Proxy Settings]\r\nProxyType=1\r\nhttpProxy=www.google.com\r\n",
-      {},                                      // env_values
-
-      // Expected result.
-      ProxyConfigService::CONFIG_VALID,
-      false,                                   // auto_detect
-      GURL(),                                  // pac_url
-      ProxyRulesExpectation::PerScheme(
-          "www.google.com:80",  // http
-          "",                   // https
-          "",                   // ftp
-          ""),                  // bypass rules
-    },
-
-    {
-      TEST_DESC("Handle blank lines and mixed line endings"),
-
-      // Input.
-      "[Proxy Settings]\r\n\nProxyType=1\n\r\nhttpProxy=www.google.com\n\n",
-      {},                                      // env_values
-
-      // Expected result.
-      ProxyConfigService::CONFIG_VALID,
-      false,                                   // auto_detect
-      GURL(),                                  // pac_url
-      ProxyRulesExpectation::PerScheme(
-          "www.google.com:80",  // http
-          "",                   // https
-          "",                   // ftp
-          ""),                  // bypass rules
-    },
-
-    {
-      TEST_DESC("Handle localized settings"),
-
-      // Input.
-      "[Proxy Settings]\nProxyType[$e]=1\nhttpProxy[$e]=www.google.com\n",
-      {},                                      // env_values
-
-      // Expected result.
-      ProxyConfigService::CONFIG_VALID,
-      false,                                   // auto_detect
-      GURL(),                                  // pac_url
-      ProxyRulesExpectation::PerScheme(
-          "www.google.com:80",  // http
-          "",                   // https
-          "",                   // ftp
-          ""),                  // bypass rules
-    },
-
-    {
-      TEST_DESC("Ignore malformed localized settings"),
-
-      // Input.
-      "[Proxy Settings]\nProxyType=1\nhttpProxy=www.google.com\n"
-          "httpsProxy$e]=www.foo.com\nftpProxy=ftp.foo.com\n",
-      {},                                      // env_values
-
-      // Expected result.
-      ProxyConfigService::CONFIG_VALID,
-      false,                                   // auto_detect
-      GURL(),                                  // pac_url
-      ProxyRulesExpectation::PerScheme(
-          "www.google.com:80",  // http
-          "",                   // https
-          "ftp.foo.com:80",     // ftp
-          ""),                  // bypass rules
-    },
-
-    {
-      TEST_DESC("Handle strange whitespace"),
-
-      // Input.
-      "[Proxy Settings]\nProxyType [$e] =2\n"
-          "  Proxy Config Script =  http:// foo\n",
-      {},                                      // env_values
-
-      // Expected result.
-      ProxyConfigService::CONFIG_VALID,
-      false,                                   // auto_detect
-      GURL("http:// foo"),                     // pac_url
-      ProxyRulesExpectation::Empty(),
-    },
-
-    {
-      TEST_DESC("Ignore all of a line which is too long"),
-
-      // Input.
-      std::string("[Proxy Settings]\nProxyType=1\nftpProxy=ftp.foo.com\n") +
-          long_line + "httpsProxy=www.foo.com\nhttpProxy=www.google.com\n",
-      {},                                          // env_values
-
-      // Expected result.
-      ProxyConfigService::CONFIG_VALID,
-      false,                                       // auto_detect
-      GURL(),                                      // pac_url
-      ProxyRulesExpectation::PerScheme(
-          "www.google.com:80",  // http
-          "",                   // https
-          "ftp.foo.com:80",     // ftp
-          ""),                  // bypass rules
-    },
-
-    {
-      TEST_DESC("Indirect Proxy - no env vars set"),
-
-      // Input.
-      "[Proxy Settings]\nProxyType=4\nhttpProxy=http_proxy\n"
-          "httpsProxy=https_proxy\nftpProxy=ftp_proxy\nNoProxyFor=no_proxy\n",
-      {},                                      // env_values
-
-      // Expected result.
-      ProxyConfigService::CONFIG_VALID,
-      false,                                   // auto_detect
-      GURL(),                                  // pac_url
-      ProxyRulesExpectation::Empty(),
-    },
-
-    {
-      TEST_DESC("Indirect Proxy - with env vars set"),
-
-      // Input.
-      "[Proxy Settings]\nProxyType=4\nhttpProxy=http_proxy\n"
-          "httpsProxy=https_proxy\nftpProxy=ftp_proxy\nNoProxyFor=no_proxy\n",
-      {  // env_values
-        NULL,  // DESKTOP_SESSION
-        NULL,  // HOME
-        NULL,  // KDEHOME
-        NULL,  // KDE_SESSION_VERSION
-        NULL,  // XDG_CURRENT_DESKTOP
-        NULL,  // auto_proxy
-        NULL,  // all_proxy
-        "www.normal.com",  // http_proxy
-        "www.secure.com",  // https_proxy
-        "ftp.foo.com",  // ftp_proxy
-        NULL, NULL,  // SOCKS
-        ".google.com, .kde.org",  // no_proxy
+      {
+          TEST_DESC("No proxying"),
+
+          // Input.
+          "[Proxy Settings]\nProxyType=0\n",
+          {},  // env_values
+
+          // Expected result.
+          ProxyConfigService::CONFIG_VALID,
+          false,   // auto_detect
+          GURL(),  // pac_url
+          ProxyRulesExpectation::Empty(),
       },
 
-      // Expected result.
-      ProxyConfigService::CONFIG_VALID,
-      false,                                   // auto_detect
-      GURL(),                                  // pac_url
-      ProxyRulesExpectation::PerScheme(
-          "www.normal.com:80",           // http
-          "www.secure.com:80",           // https
-          "ftp.foo.com:80",              // ftp
-          "*.google.com,*.kde.org"),     // bypass rules
-    },
+      {
+          TEST_DESC("Auto detect"),
 
+          // Input.
+          "[Proxy Settings]\nProxyType=3\n",
+          {},  // env_values
+
+          // Expected result.
+          ProxyConfigService::CONFIG_VALID,
+          true,    // auto_detect
+          GURL(),  // pac_url
+          ProxyRulesExpectation::Empty(),
+      },
+
+      {
+          TEST_DESC("Valid PAC URL"),
+
+          // Input.
+          "[Proxy Settings]\nProxyType=2\n"
+          "Proxy Config Script=http://wpad/wpad.dat\n",
+          {},  // env_values
+
+          // Expected result.
+          ProxyConfigService::CONFIG_VALID,
+          false,                         // auto_detect
+          GURL("http://wpad/wpad.dat"),  // pac_url
+          ProxyRulesExpectation::Empty(),
+      },
+
+      {
+          TEST_DESC("Valid PAC file without file://"),
+
+          // Input.
+          "[Proxy Settings]\nProxyType=2\n"
+          "Proxy Config Script=/wpad/wpad.dat\n",
+          {},  // env_values
+
+          // Expected result.
+          ProxyConfigService::CONFIG_VALID,
+          false,                          // auto_detect
+          GURL("file:///wpad/wpad.dat"),  // pac_url
+          ProxyRulesExpectation::Empty(),
+      },
+
+      {
+          TEST_DESC("Per-scheme proxy rules"),
+
+          // Input.
+          "[Proxy Settings]\nProxyType=1\nhttpProxy=www.google.com\n"
+          "httpsProxy=www.foo.com\nftpProxy=ftp.foo.com\n",
+          {},  // env_values
+
+          // Expected result.
+          ProxyConfigService::CONFIG_VALID,
+          false,                                                 // auto_detect
+          GURL(),                                                // pac_url
+          ProxyRulesExpectation::PerScheme("www.google.com:80",  // http
+                                           "www.foo.com:80",     // https
+                                           "ftp.foo.com:80",     // http
+                                           ""),                  // bypass rules
+      },
+
+      {
+          TEST_DESC("Only HTTP proxy specified"),
+
+          // Input.
+          "[Proxy Settings]\nProxyType=1\n"
+          "httpProxy=www.google.com\n",
+          {},  // env_values
+
+          // Expected result.
+          ProxyConfigService::CONFIG_VALID,
+          false,                                                 // auto_detect
+          GURL(),                                                // pac_url
+          ProxyRulesExpectation::PerScheme("www.google.com:80",  // http
+                                           "",                   // https
+                                           "",                   // ftp
+                                           ""),                  // bypass rules
+      },
+
+      {
+          TEST_DESC("Only HTTP proxy specified, different port"),
+
+          // Input.
+          "[Proxy Settings]\nProxyType=1\n"
+          "httpProxy=www.google.com:88\n",
+          {},  // env_values
+
+          // Expected result.
+          ProxyConfigService::CONFIG_VALID,
+          false,                                                 // auto_detect
+          GURL(),                                                // pac_url
+          ProxyRulesExpectation::PerScheme("www.google.com:88",  // http
+                                           "",                   // https
+                                           "",                   // ftp
+                                           ""),                  // bypass rules
+      },
+
+      {
+          TEST_DESC(
+              "Only HTTP proxy specified, different port, space-delimited"),
+
+          // Input.
+          "[Proxy Settings]\nProxyType=1\n"
+          "httpProxy=www.google.com 88\n",
+          {},  // env_values
+
+          // Expected result.
+          ProxyConfigService::CONFIG_VALID,
+          false,                                                 // auto_detect
+          GURL(),                                                // pac_url
+          ProxyRulesExpectation::PerScheme("www.google.com:88",  // http
+                                           "",                   // https
+                                           "",                   // ftp
+                                           ""),                  // bypass rules
+      },
+
+      {
+          TEST_DESC("Bypass *.google.com"),
+
+          // Input.
+          "[Proxy Settings]\nProxyType=1\nhttpProxy=www.google.com\n"
+          "NoProxyFor=.google.com\n",
+          {},  // env_values
+
+          // Expected result.
+          ProxyConfigService::CONFIG_VALID,
+          false,                                                 // auto_detect
+          GURL(),                                                // pac_url
+          ProxyRulesExpectation::PerScheme("www.google.com:80",  // http
+                                           "",                   // https
+                                           "",                   // ftp
+                                           "*.google.com"),      // bypass rules
+      },
+
+      {
+          TEST_DESC("Bypass *.google.com and *.kde.org"),
+
+          // Input.
+          "[Proxy Settings]\nProxyType=1\nhttpProxy=www.google.com\n"
+          "NoProxyFor=.google.com,.kde.org\n",
+          {},  // env_values
+
+          // Expected result.
+          ProxyConfigService::CONFIG_VALID,
+          false,   // auto_detect
+          GURL(),  // pac_url
+          ProxyRulesExpectation::PerScheme(
+              "www.google.com:80",        // http
+              "",                         // https
+              "",                         // ftp
+              "*.google.com,*.kde.org"),  // bypass rules
+      },
+
+      {
+          TEST_DESC("Correctly parse bypass list with ReversedException"),
+
+          // Input.
+          "[Proxy Settings]\nProxyType=1\nhttpProxy=www.google.com\n"
+          "NoProxyFor=.google.com\nReversedException=true\n",
+          {},  // env_values
+
+          // Expected result.
+          ProxyConfigService::CONFIG_VALID,
+          false,   // auto_detect
+          GURL(),  // pac_url
+          ProxyRulesExpectation::PerSchemeWithBypassReversed(
+              "www.google.com:80",  // http
+              "",                   // https
+              "",                   // ftp
+              "*.google.com"),      // bypass rules
+      },
+
+      {
+          TEST_DESC("socks"),
+
+          // Input.
+          "[Proxy Settings]\nProxyType=1\nsocksProxy=socks.com 888\n",
+          {},  // env_values
+
+          // Expected result.
+          ProxyConfigService::CONFIG_VALID,
+          false,   // auto_detect
+          GURL(),  // pac_url
+          ProxyRulesExpectation::Single(
+              "socks5://socks.com:888",  // single proxy
+              ""),                       // bypass rules
+      },
+
+      {
+          TEST_DESC("socks4"),
+
+          // Input.
+          "[Proxy Settings]\nProxyType=1\nsocksProxy=socks4://socks.com 888\n",
+          {},  // env_values
+
+          // Expected result.
+          ProxyConfigService::CONFIG_VALID,
+          false,   // auto_detect
+          GURL(),  // pac_url
+          ProxyRulesExpectation::Single(
+              "socks4://socks.com:888",  // single proxy
+              ""),                       // bypass rules
+      },
+
+      {
+          TEST_DESC("Treat all hostname patterns as wildcard patterns"),
+
+          // Input.
+          "[Proxy Settings]\nProxyType=1\nhttpProxy=www.google.com\n"
+          "NoProxyFor=google.com,kde.org,<local>\n",
+          {},  // env_values
+
+          // Expected result.
+          ProxyConfigService::CONFIG_VALID,
+          false,   // auto_detect
+          GURL(),  // pac_url
+          ProxyRulesExpectation::PerScheme(
+              "www.google.com:80",              // http
+              "",                               // https
+              "",                               // ftp
+              "*google.com,*kde.org,<local>"),  // bypass rules
+      },
+
+      {
+          TEST_DESC("Allow trailing whitespace after boolean value"),
+
+          // Input.
+          "[Proxy Settings]\nProxyType=1\nhttpProxy=www.google.com\n"
+          "NoProxyFor=.google.com\nReversedException=true  \n",
+          {},  // env_values
+
+          // Expected result.
+          ProxyConfigService::CONFIG_VALID,
+          false,   // auto_detect
+          GURL(),  // pac_url
+          ProxyRulesExpectation::PerSchemeWithBypassReversed(
+              "www.google.com:80",  // http
+              "",                   // https
+              "",                   // ftp
+              "*.google.com"),      // bypass rules
+      },
+
+      {
+          TEST_DESC("Ignore settings outside [Proxy Settings]"),
+
+          // Input.
+          "httpsProxy=www.foo.com\n[Proxy Settings]\nProxyType=1\n"
+          "httpProxy=www.google.com\n[Other Section]\nftpProxy=ftp.foo.com\n",
+          {},  // env_values
+
+          // Expected result.
+          ProxyConfigService::CONFIG_VALID,
+          false,                                                 // auto_detect
+          GURL(),                                                // pac_url
+          ProxyRulesExpectation::PerScheme("www.google.com:80",  // http
+                                           "",                   // https
+                                           "",                   // ftp
+                                           ""),                  // bypass rules
+      },
+
+      {
+          TEST_DESC("Handle CRLF line endings"),
+
+          // Input.
+          "[Proxy Settings]\r\nProxyType=1\r\nhttpProxy=www.google.com\r\n",
+          {},  // env_values
+
+          // Expected result.
+          ProxyConfigService::CONFIG_VALID,
+          false,                                                 // auto_detect
+          GURL(),                                                // pac_url
+          ProxyRulesExpectation::PerScheme("www.google.com:80",  // http
+                                           "",                   // https
+                                           "",                   // ftp
+                                           ""),                  // bypass rules
+      },
+
+      {
+          TEST_DESC("Handle blank lines and mixed line endings"),
+
+          // Input.
+          "[Proxy Settings]\r\n\nProxyType=1\n\r\nhttpProxy=www.google.com\n\n",
+          {},  // env_values
+
+          // Expected result.
+          ProxyConfigService::CONFIG_VALID,
+          false,                                                 // auto_detect
+          GURL(),                                                // pac_url
+          ProxyRulesExpectation::PerScheme("www.google.com:80",  // http
+                                           "",                   // https
+                                           "",                   // ftp
+                                           ""),                  // bypass rules
+      },
+
+      {
+          TEST_DESC("Handle localized settings"),
+
+          // Input.
+          "[Proxy Settings]\nProxyType[$e]=1\nhttpProxy[$e]=www.google.com\n",
+          {},  // env_values
+
+          // Expected result.
+          ProxyConfigService::CONFIG_VALID,
+          false,                                                 // auto_detect
+          GURL(),                                                // pac_url
+          ProxyRulesExpectation::PerScheme("www.google.com:80",  // http
+                                           "",                   // https
+                                           "",                   // ftp
+                                           ""),                  // bypass rules
+      },
+
+      {
+          TEST_DESC("Ignore malformed localized settings"),
+
+          // Input.
+          "[Proxy Settings]\nProxyType=1\nhttpProxy=www.google.com\n"
+          "httpsProxy$e]=www.foo.com\nftpProxy=ftp.foo.com\n",
+          {},  // env_values
+
+          // Expected result.
+          ProxyConfigService::CONFIG_VALID,
+          false,                                                 // auto_detect
+          GURL(),                                                // pac_url
+          ProxyRulesExpectation::PerScheme("www.google.com:80",  // http
+                                           "",                   // https
+                                           "ftp.foo.com:80",     // ftp
+                                           ""),                  // bypass rules
+      },
+
+      {
+          TEST_DESC("Handle strange whitespace"),
+
+          // Input.
+          "[Proxy Settings]\nProxyType [$e] =2\n"
+          "  Proxy Config Script =  http:// foo\n",
+          {},  // env_values
+
+          // Expected result.
+          ProxyConfigService::CONFIG_VALID,
+          false,                // auto_detect
+          GURL("http:// foo"),  // pac_url
+          ProxyRulesExpectation::Empty(),
+      },
+
+      {
+          TEST_DESC("Ignore all of a line which is too long"),
+
+          // Input.
+          std::string("[Proxy Settings]\nProxyType=1\nftpProxy=ftp.foo.com\n") +
+              long_line + "httpsProxy=www.foo.com\nhttpProxy=www.google.com\n",
+          {},  // env_values
+
+          // Expected result.
+          ProxyConfigService::CONFIG_VALID,
+          false,                                                 // auto_detect
+          GURL(),                                                // pac_url
+          ProxyRulesExpectation::PerScheme("www.google.com:80",  // http
+                                           "",                   // https
+                                           "ftp.foo.com:80",     // ftp
+                                           ""),                  // bypass rules
+      },
+
+      {
+          TEST_DESC("Indirect Proxy - no env vars set"),
+
+          // Input.
+          "[Proxy Settings]\nProxyType=4\nhttpProxy=http_proxy\n"
+          "httpsProxy=https_proxy\nftpProxy=ftp_proxy\nNoProxyFor=no_proxy\n",
+          {},  // env_values
+
+          // Expected result.
+          ProxyConfigService::CONFIG_VALID,
+          false,   // auto_detect
+          GURL(),  // pac_url
+          ProxyRulesExpectation::Empty(),
+      },
+
+      {
+          TEST_DESC("Indirect Proxy - with env vars set"),
+
+          // Input.
+          "[Proxy Settings]\nProxyType=4\nhttpProxy=http_proxy\n"
+          "httpsProxy=https_proxy\nftpProxy=ftp_proxy\nNoProxyFor=no_proxy\n",
+          {
+              // env_values
+              nullptr,                  // DESKTOP_SESSION
+              nullptr,                  // HOME
+              nullptr,                  // KDEHOME
+              nullptr,                  // KDE_SESSION_VERSION
+              nullptr,                  // XDG_CURRENT_DESKTOP
+              nullptr,                  // auto_proxy
+              nullptr,                  // all_proxy
+              "www.normal.com",         // http_proxy
+              "www.secure.com",         // https_proxy
+              "ftp.foo.com",            // ftp_proxy
+              nullptr, nullptr,         // SOCKS
+              ".google.com, .kde.org",  // no_proxy
+          },
+
+          // Expected result.
+          ProxyConfigService::CONFIG_VALID,
+          false,   // auto_detect
+          GURL(),  // pac_url
+          ProxyRulesExpectation::PerScheme(
+              "www.normal.com:80",        // http
+              "www.secure.com:80",        // https
+              "ftp.foo.com:80",           // ftp
+              "*.google.com,*.kde.org"),  // bypass rules
+      },
   };
 
   for (size_t i = 0; i < arraysize(tests); ++i) {
     SCOPED_TRACE(base::StringPrintf("Test[%" PRIuS "] %s", i,
                                     tests[i].description.c_str()));
-    MockEnvironment* env = new MockEnvironment;
+    std::unique_ptr<MockEnvironment> env(new MockEnvironment);
     env->values = tests[i].env_values;
     // Force the KDE getter to be used and tell it where the test is.
     env->values.DESKTOP_SESSION = "kde4";
     env->values.KDEHOME = kde_home_.value().c_str();
     SynchConfigGetter sync_config_getter(
-        new ProxyConfigServiceLinux(env));
+        new ProxyConfigServiceLinux(std::move(env)));
     ProxyConfig config;
     // Overwrite the kioslaverc file.
     base::WriteFile(kioslaverc_, tests[i].kioslaverc.c_str(),
@@ -1561,11 +1574,11 @@ TEST_F(ProxyConfigServiceLinuxTest, KDEHomePicker) {
   CHECK(!base::DirectoryExists(kde4_home_));
 
   { SCOPED_TRACE("KDE4, no .kde4 directory, verify fallback");
-    MockEnvironment* env = new MockEnvironment;
+    std::unique_ptr<MockEnvironment> env(new MockEnvironment);
     env->values.DESKTOP_SESSION = "kde4";
     env->values.HOME = user_home_.value().c_str();
     SynchConfigGetter sync_config_getter(
-        new ProxyConfigServiceLinux(env));
+        new ProxyConfigServiceLinux(std::move(env)));
     ProxyConfig config;
     sync_config_getter.SetupAndInitialFetch();
     EXPECT_EQ(ProxyConfigService::CONFIG_VALID,
@@ -1581,11 +1594,11 @@ TEST_F(ProxyConfigServiceLinuxTest, KDEHomePicker) {
   CHECK(base::PathExists(kioslaverc4_));
 
   { SCOPED_TRACE("KDE4, .kde4 directory present, use it");
-    MockEnvironment* env = new MockEnvironment;
+    std::unique_ptr<MockEnvironment> env(new MockEnvironment);
     env->values.DESKTOP_SESSION = "kde4";
     env->values.HOME = user_home_.value().c_str();
     SynchConfigGetter sync_config_getter(
-        new ProxyConfigServiceLinux(env));
+        new ProxyConfigServiceLinux(std::move(env)));
     ProxyConfig config;
     sync_config_getter.SetupAndInitialFetch();
     EXPECT_EQ(ProxyConfigService::CONFIG_VALID,
@@ -1595,11 +1608,11 @@ TEST_F(ProxyConfigServiceLinuxTest, KDEHomePicker) {
   }
 
   { SCOPED_TRACE("KDE3, .kde4 directory present, ignore it");
-    MockEnvironment* env = new MockEnvironment;
+    std::unique_ptr<MockEnvironment> env(new MockEnvironment);
     env->values.DESKTOP_SESSION = "kde";
     env->values.HOME = user_home_.value().c_str();
     SynchConfigGetter sync_config_getter(
-        new ProxyConfigServiceLinux(env));
+        new ProxyConfigServiceLinux(std::move(env)));
     ProxyConfig config;
     sync_config_getter.SetupAndInitialFetch();
     EXPECT_EQ(ProxyConfigService::CONFIG_VALID,
@@ -1609,12 +1622,12 @@ TEST_F(ProxyConfigServiceLinuxTest, KDEHomePicker) {
   }
 
   { SCOPED_TRACE("KDE4, .kde4 directory present, KDEHOME set to .kde");
-    MockEnvironment* env = new MockEnvironment;
+    std::unique_ptr<MockEnvironment> env(new MockEnvironment);
     env->values.DESKTOP_SESSION = "kde4";
     env->values.HOME = user_home_.value().c_str();
     env->values.KDEHOME = kde_home_.value().c_str();
     SynchConfigGetter sync_config_getter(
-        new ProxyConfigServiceLinux(env));
+        new ProxyConfigServiceLinux(std::move(env)));
     ProxyConfig config;
     sync_config_getter.SetupAndInitialFetch();
     EXPECT_EQ(ProxyConfigService::CONFIG_VALID,
@@ -1628,11 +1641,11 @@ TEST_F(ProxyConfigServiceLinuxTest, KDEHomePicker) {
   base::TouchFile(kde4_config_, base::Time(), base::Time());
 
   { SCOPED_TRACE("KDE4, very old .kde4 directory present, use .kde");
-    MockEnvironment* env = new MockEnvironment;
+    std::unique_ptr<MockEnvironment> env(new MockEnvironment);
     env->values.DESKTOP_SESSION = "kde4";
     env->values.HOME = user_home_.value().c_str();
     SynchConfigGetter sync_config_getter(
-        new ProxyConfigServiceLinux(env));
+        new ProxyConfigServiceLinux(std::move(env)));
     ProxyConfig config;
     sync_config_getter.SetupAndInitialFetch();
     EXPECT_EQ(ProxyConfigService::CONFIG_VALID,
@@ -1648,11 +1661,12 @@ TEST_F(ProxyConfigServiceLinuxTest, KDEHomePicker) {
 
   {
     SCOPED_TRACE("KDE5, .kde and .kde4 present, use .config");
-    MockEnvironment* env = new MockEnvironment;
+    std::unique_ptr<MockEnvironment> env(new MockEnvironment);
     env->values.XDG_CURRENT_DESKTOP = "KDE";
     env->values.KDE_SESSION_VERSION = "5";
     env->values.HOME = user_home_.value().c_str();
-    SynchConfigGetter sync_config_getter(new ProxyConfigServiceLinux(env));
+    SynchConfigGetter sync_config_getter(
+        new ProxyConfigServiceLinux(std::move(env)));
     ProxyConfig config;
     sync_config_getter.SetupAndInitialFetch();
     EXPECT_EQ(ProxyConfigService::CONFIG_VALID,

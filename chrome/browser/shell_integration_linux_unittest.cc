@@ -41,26 +41,26 @@ class MockEnvironment : public base::Environment {
  public:
   MockEnvironment() {}
 
-  void Set(const std::string& name, const std::string& value) {
-    variables_[name] = value;
+  void Set(base::StringPiece name, const std::string& value) {
+    variables_[name.as_string()] = value;
   }
 
-  bool GetVar(const char* variable_name, std::string* result) override {
-    if (ContainsKey(variables_, variable_name)) {
-      *result = variables_[variable_name];
+  bool GetVar(base::StringPiece variable_name, std::string* result) override {
+    if (ContainsKey(variables_, variable_name.as_string())) {
+      *result = variables_[variable_name.as_string()];
       return true;
     }
 
     return false;
   }
 
-  bool SetVar(const char* variable_name,
+  bool SetVar(base::StringPiece variable_name,
               const std::string& new_value) override {
     ADD_FAILURE();
     return false;
   }
 
-  bool UnSetVar(const char* variable_name) override {
+  bool UnSetVar(base::StringPiece variable_name) override {
     ADD_FAILURE();
     return false;
   }
