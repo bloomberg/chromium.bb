@@ -633,16 +633,20 @@ void ChromotingInstance::HandleConnect(const base::DictionaryValue& data) {
 
   // Try initializing 3D video renderer.
   video_renderer_.reset(new PepperVideoRenderer3D());
-  if (!video_renderer_->Initialize(this, context_, this, &perf_tracker_))
+  video_renderer_->SetPepperContext(this, this);
+  if (!video_renderer_->Initialize(context_, &perf_tracker_)) {
     video_renderer_.reset();
+  }
 
   // If we didn't initialize 3D renderer then use the 2D renderer.
   if (!video_renderer_) {
     LOG(WARNING)
         << "Failed to initialize 3D renderer. Using 2D renderer instead.";
     video_renderer_.reset(new PepperVideoRenderer2D());
-    if (!video_renderer_->Initialize(this, context_, this, &perf_tracker_))
+    video_renderer_->SetPepperContext(this, this);
+    if (!video_renderer_->Initialize(context_, &perf_tracker_)) {
       video_renderer_.reset();
+    }
   }
 
   CHECK(video_renderer_);

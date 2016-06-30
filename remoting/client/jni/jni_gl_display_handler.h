@@ -26,7 +26,7 @@ class JniGlDisplayHandler : public DisplayUpdaterFactory {
 
   // DisplayUpdaterFactory overrides.
   std::unique_ptr<protocol::CursorShapeStub> CreateCursorShapeStub() override;
-  std::unique_ptr<JniVideoRenderer> CreateVideoRenderer() override;
+  std::unique_ptr<protocol::VideoRenderer> CreateVideoRenderer() override;
 
   static bool RegisterJni(JNIEnv* env);
 

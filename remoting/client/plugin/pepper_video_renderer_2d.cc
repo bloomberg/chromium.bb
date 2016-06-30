@@ -21,7 +21,6 @@
 #include "ppapi/cpp/size.h"
 #include "remoting/base/util.h"
 #include "remoting/client/client_context.h"
-#include "remoting/client/software_video_renderer.h"
 #include "remoting/proto/video.pb.h"
 #include "remoting/protocol/performance_tracker.h"
 #include "third_party/libyuv/include/libyuv/scale_argb.h"
@@ -55,16 +54,15 @@ class PepperDesktopFrame : public webrtc::DesktopFrame {
 }  // namespace
 
 PepperVideoRenderer2D::PepperVideoRenderer2D()
-    : callback_factory_(this),
+    : software_video_renderer_(this),
+      callback_factory_(this),
       weak_factory_(this) {}
 
 PepperVideoRenderer2D::~PepperVideoRenderer2D() {}
 
-bool PepperVideoRenderer2D::Initialize(
+void PepperVideoRenderer2D::SetPepperContext(
     pp::Instance* instance,
-    const ClientContext& context,
-    EventHandler* event_handler,
-    protocol::PerformanceTracker* perf_tracker) {
+    EventHandler* event_handler) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!instance_);
   DCHECK(!event_handler_);
@@ -73,10 +71,6 @@ bool PepperVideoRenderer2D::Initialize(
 
   instance_ = instance;
   event_handler_ = event_handler;
-  software_video_renderer_.reset(new SoftwareVideoRenderer(
-      context.decode_task_runner(), this, perf_tracker));
-
-  return true;
 }
 
 void PepperVideoRenderer2D::OnViewChanged(const pp::View& view) {
@@ -102,23 +96,31 @@ void PepperVideoRenderer2D::EnableDebugDirtyRegion(bool enable) {
   debug_dirty_region_ = enable;
 }
 
+bool PepperVideoRenderer2D::Initialize(
+    const ClientContext& client_context,
+    protocol::PerformanceTracker* perf_tracker) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  return software_video_renderer_.Initialize(client_context, perf_tracker);
+}
+
 void PepperVideoRenderer2D::OnSessionConfig(
     const protocol::SessionConfig& config) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  software_video_renderer_->OnSessionConfig(config);
+  software_video_renderer_.OnSessionConfig(config);
 }
 
 protocol::VideoStub* PepperVideoRenderer2D::GetVideoStub() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  return software_video_renderer_->GetVideoStub();
+  return software_video_renderer_.GetVideoStub();
 }
 
 protocol::FrameConsumer* PepperVideoRenderer2D::GetFrameConsumer() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  return software_video_renderer_->GetFrameConsumer();
+  return software_video_renderer_.GetFrameConsumer();
 }
 
 std::unique_ptr<webrtc::DesktopFrame> PepperVideoRenderer2D::AllocateFrame(

@@ -149,6 +149,10 @@ class ProtocolPerfTest
   }
 
   // VideoRenderer interface.
+  bool Initialize(const ClientContext& client_context,
+                  protocol::PerformanceTracker* perf_tracker) override {
+    return true;
+  }
   void OnSessionConfig(const protocol::SessionConfig& config) override {}
   protocol::VideoStub* GetVideoStub() override { return this; }
   protocol::FrameConsumer* GetFrameConsumer() override { return this; }

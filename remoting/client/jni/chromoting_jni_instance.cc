@@ -31,6 +31,7 @@
 #include "remoting/protocol/network_settings.h"
 #include "remoting/protocol/performance_tracker.h"
 #include "remoting/protocol/transport_context.h"
+#include "remoting/protocol/video_renderer.h"
 #include "remoting/signaling/server_log_entry.h"
 #include "ui/events/keycodes/dom/keycode_converter.h"
 
@@ -53,7 +54,7 @@ ChromotingJniInstance::ChromotingJniInstance(
     base::WeakPtr<JniClient> jni_client,
     base::WeakPtr<JniPairingSecretFetcher> secret_fetcher,
     std::unique_ptr<protocol::CursorShapeStub> cursor_shape_stub,
-    std::unique_ptr<JniVideoRenderer> video_renderer,
+    std::unique_ptr<protocol::VideoRenderer> video_renderer,
     const std::string& username,
     const std::string& auth_token,
     const std::string& host_jid,
@@ -381,7 +382,7 @@ void ChromotingJniInstance::ConnectToHostOnNetworkThread() {
 
   perf_tracker_.reset(new protocol::PerformanceTracker());
 
-  video_renderer_->Initialize(client_context_->decode_task_runner(),
+  video_renderer_->Initialize(*client_context_,
                               perf_tracker_.get());
 
   if (!audio_player_) {

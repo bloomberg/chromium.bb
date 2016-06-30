@@ -19,6 +19,7 @@
 #include "ppapi/cpp/view.h"
 #include "ppapi/utility/completion_callback_factory.h"
 #include "remoting/client/plugin/pepper_video_renderer.h"
+#include "remoting/client/software_video_renderer.h"
 #include "remoting/protocol/frame_consumer.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_geometry.h"
 
@@ -44,14 +45,14 @@ class PepperVideoRenderer2D : public PepperVideoRenderer,
   ~PepperVideoRenderer2D() override;
 
   // PepperVideoRenderer interface.
-  bool Initialize(pp::Instance* instance,
-                  const ClientContext& context,
-                  EventHandler* event_handler,
-                  protocol::PerformanceTracker* perf_tracker) override;
+  void SetPepperContext(pp::Instance* instance,
+                        EventHandler* event_handler) override;
   void OnViewChanged(const pp::View& view) override;
   void EnableDebugDirtyRegion(bool enable) override;
 
   // VideoRenderer interface.
+  bool Initialize(const ClientContext& client_context,
+                  protocol::PerformanceTracker* perf_tracker) override;
   void OnSessionConfig(const protocol::SessionConfig& config) override;
   protocol::VideoStub* GetVideoStub() override;
   protocol::FrameConsumer* GetFrameConsumer() override;
@@ -74,7 +75,7 @@ class PepperVideoRenderer2D : public PepperVideoRenderer,
 
   pp::Graphics2D graphics2d_;
 
-  std::unique_ptr<SoftwareVideoRenderer> software_video_renderer_;
+  SoftwareVideoRenderer software_video_renderer_;
 
   // View size in output pixels.
   webrtc::DesktopSize view_size_;

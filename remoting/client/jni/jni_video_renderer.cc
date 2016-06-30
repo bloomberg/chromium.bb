@@ -1,8 +1,8 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "remoting/client/jni/jni_frame_consumer.h"
+#include "remoting/client/jni/jni_video_renderer.h"
 
 #include <stdint.h>
 
@@ -15,14 +15,13 @@
 #include "remoting/client/jni/chromoting_jni_runtime.h"
 #include "remoting/client/jni/jni_client.h"
 #include "remoting/client/jni/jni_display_handler.h"
-#include "remoting/client/software_video_renderer.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_frame.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_region.h"
 #include "ui/gfx/android/java_bitmap.h"
 
 namespace remoting {
 
-class JniFrameConsumer::Renderer {
+class JniVideoRenderer::Renderer {
  public:
   Renderer(ChromotingJniRuntime* jni_runtime,
            base::WeakPtr<JniDisplayHandler> display)
@@ -51,7 +50,7 @@ class JniFrameConsumer::Renderer {
 };
 
 // Function called on the display thread to render the frame.
-void JniFrameConsumer::Renderer::RenderFrame(
+void JniVideoRenderer::Renderer::RenderFrame(
     std::unique_ptr<webrtc::DesktopFrame> frame) {
   DCHECK(jni_runtime_->display_task_runner()->BelongsToCurrentThread());
   if (!display_handler_) {
@@ -92,24 +91,25 @@ void JniFrameConsumer::Renderer::RenderFrame(
   display_handler_->RedrawCanvas();
 }
 
-JniFrameConsumer::JniFrameConsumer(
+JniVideoRenderer::JniVideoRenderer(
     ChromotingJniRuntime* jni_runtime,
     base::WeakPtr<JniDisplayHandler> display)
     : jni_runtime_(jni_runtime),
+      software_video_renderer_(this),
       renderer_(new Renderer(jni_runtime, display)),
       weak_factory_(this) {}
 
-JniFrameConsumer::~JniFrameConsumer() {
+JniVideoRenderer::~JniVideoRenderer() {
   jni_runtime_->display_task_runner()->DeleteSoon(FROM_HERE,
                                                   renderer_.release());
 }
 
-std::unique_ptr<webrtc::DesktopFrame> JniFrameConsumer::AllocateFrame(
+std::unique_ptr<webrtc::DesktopFrame> JniVideoRenderer::AllocateFrame(
     const webrtc::DesktopSize& size) {
   return base::WrapUnique(new webrtc::BasicDesktopFrame(size));
 }
 
-void JniFrameConsumer::DrawFrame(std::unique_ptr<webrtc::DesktopFrame> frame,
+void JniVideoRenderer::DrawFrame(std::unique_ptr<webrtc::DesktopFrame> frame,
                                  const base::Closure& done) {
   DCHECK(jni_runtime_->network_task_runner()->BelongsToCurrentThread());
 
@@ -117,41 +117,36 @@ void JniFrameConsumer::DrawFrame(std::unique_ptr<webrtc::DesktopFrame> frame,
       FROM_HERE,
       base::Bind(&Renderer::RenderFrame, base::Unretained(renderer_.get()),
                  base::Passed(&frame)),
-      base::Bind(&JniFrameConsumer::OnFrameRendered, weak_factory_.GetWeakPtr(),
+      base::Bind(&JniVideoRenderer::OnFrameRendered, weak_factory_.GetWeakPtr(),
                  done));
 }
 
-void JniFrameConsumer::OnFrameRendered(const base::Closure& done) {
+void JniVideoRenderer::OnFrameRendered(const base::Closure& done) {
   DCHECK(jni_runtime_->network_task_runner()->BelongsToCurrentThread());
 
   if (!done.is_null())
     done.Run();
 }
 
-protocol::FrameConsumer::PixelFormat JniFrameConsumer::GetPixelFormat() {
+protocol::FrameConsumer::PixelFormat JniVideoRenderer::GetPixelFormat() {
   return FORMAT_RGBA;
 }
 
-void JniFrameConsumer::OnSessionConfig(const protocol::SessionConfig& config) {
-  DCHECK(video_renderer_);
-  return video_renderer_->OnSessionConfig(config);
+void JniVideoRenderer::OnSessionConfig(const protocol::SessionConfig& config) {
+  return software_video_renderer_.OnSessionConfig(config);
 }
 
-protocol::VideoStub* JniFrameConsumer::GetVideoStub() {
-  DCHECK(video_renderer_);
-  return video_renderer_->GetVideoStub();
+protocol::VideoStub* JniVideoRenderer::GetVideoStub() {
+  return software_video_renderer_.GetVideoStub();
 }
 
-protocol::FrameConsumer* JniFrameConsumer::GetFrameConsumer() {
-  DCHECK(video_renderer_);
-  return video_renderer_->GetFrameConsumer();
+protocol::FrameConsumer* JniVideoRenderer::GetFrameConsumer() {
+  return software_video_renderer_.GetFrameConsumer();
 }
 
-void JniFrameConsumer::Initialize(
-    scoped_refptr<base::SingleThreadTaskRunner> decode_task_runner,
-    protocol::PerformanceTracker* perf_tracker) {
-  video_renderer_.reset(new SoftwareVideoRenderer(decode_task_runner, this,
-                                                  perf_tracker));
+bool JniVideoRenderer::Initialize(const ClientContext& context,
+                                  protocol::PerformanceTracker* perf_tracker) {
+  return software_video_renderer_.Initialize(context, perf_tracker);
 }
 
 }  // namespace remoting

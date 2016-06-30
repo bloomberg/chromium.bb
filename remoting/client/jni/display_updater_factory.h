@@ -12,12 +12,9 @@
 namespace remoting {
 
 namespace protocol {
-
 class CursorShapeStub;
-
+class VideoRenderer;
 }  // namespace protocol
-
-class JniVideoRenderer;
 
 // Interface for creating objects to update image (desktop frame or cursor
 // shape) to display. Factory functions can be called on any thread but the
@@ -28,7 +25,7 @@ class DisplayUpdaterFactory {
 
   virtual std::unique_ptr<protocol::CursorShapeStub>
   CreateCursorShapeStub() = 0;
-  virtual std::unique_ptr<JniVideoRenderer> CreateVideoRenderer() = 0;
+  virtual std::unique_ptr<protocol::VideoRenderer> CreateVideoRenderer() = 0;
 
  protected:
   DisplayUpdaterFactory() {}

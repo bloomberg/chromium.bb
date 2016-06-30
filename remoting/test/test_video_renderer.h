@@ -40,6 +40,8 @@ class TestVideoRenderer : public protocol::VideoRenderer,
   ~TestVideoRenderer() override;
 
   // VideoRenderer interface.
+  bool Initialize(const ClientContext& client_context,
+                  protocol::PerformanceTracker* perf_tracker) override;
   void OnSessionConfig(const protocol::SessionConfig& config) override;
   protocol::VideoStub* GetVideoStub() override;
   protocol::FrameConsumer* GetFrameConsumer() override;

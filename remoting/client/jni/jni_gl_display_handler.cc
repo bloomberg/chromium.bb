@@ -20,10 +20,10 @@ JniGlDisplayHandler::CreateCursorShapeStub() {
   return std::unique_ptr<protocol::CursorShapeStub>();
 }
 
-std::unique_ptr<JniVideoRenderer>
+std::unique_ptr<protocol::VideoRenderer>
 JniGlDisplayHandler::CreateVideoRenderer() {
   NOTIMPLEMENTED();
-  return std::unique_ptr<JniVideoRenderer>();
+  return std::unique_ptr<protocol::VideoRenderer>();
 }
 
 // static

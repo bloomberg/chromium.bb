@@ -6,9 +6,13 @@
 #define REMOTING_CLIENT_VIDEO_RENDERER_H_
 
 namespace remoting {
+
+class ClientContext;
+
 namespace protocol {
 
 class FrameConsumer;
+class PerformanceTracker;
 class SessionConfig;
 class VideoStub;
 
@@ -21,6 +25,14 @@ class VideoStub;
 class VideoRenderer {
  public:
   virtual ~VideoRenderer() {}
+
+  // Initializes the video renderer. This allows the renderer to be initialized
+  // after it is constructed. Returns true if initialization succeeds and false
+  // otherwise. An implementation that doesn't use this function to initialize
+  // should always return true.
+  // |perf_tracker| must outlive the renderer.
+  virtual bool Initialize(const ClientContext& client_context,
+                          protocol::PerformanceTracker* perf_tracker) = 0;
 
   // Configures the renderer with the supplied |config|. This must be called
   // exactly once before video data is supplied to the renderer.

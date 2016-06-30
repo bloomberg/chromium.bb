@@ -15,6 +15,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/task_runner_util.h"
 #include "remoting/base/util.h"
+#include "remoting/client/client_context.h"
 #include "remoting/codec/video_decoder.h"
 #include "remoting/codec/video_decoder_verbatim.h"
 #include "remoting/codec/video_decoder_vpx.h"
@@ -44,6 +45,12 @@ std::unique_ptr<webrtc::DesktopFrame> DoDecodeFrame(
 
 }  // namespace
 
+SoftwareVideoRenderer::SoftwareVideoRenderer(protocol::FrameConsumer* consumer)
+    : consumer_(consumer),
+      weak_factory_(this) {
+  thread_checker_.DetachFromThread();
+}
+
 SoftwareVideoRenderer::SoftwareVideoRenderer(
     scoped_refptr<base::SingleThreadTaskRunner> decode_task_runner,
     protocol::FrameConsumer* consumer,
@@ -56,6 +63,15 @@ SoftwareVideoRenderer::SoftwareVideoRenderer(
 SoftwareVideoRenderer::~SoftwareVideoRenderer() {
   if (decoder_)
     decode_task_runner_->DeleteSoon(FROM_HERE, decoder_.release());
+}
+
+bool SoftwareVideoRenderer::Initialize(
+    const ClientContext& client_context,
+    protocol::PerformanceTracker* perf_tracker) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  decode_task_runner_ = client_context.decode_task_runner();
+  perf_tracker_ = perf_tracker;
+  return true;
 }
 
 void SoftwareVideoRenderer::OnSessionConfig(

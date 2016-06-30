@@ -28,12 +28,12 @@ class ClipboardEvent;
 class CursorShapeInfo;
 class PerformanceTracker;
 class FrameConsumer;
+class VideoRenderer;
 }  // namespace protocol
 
 class AudioPlayerAndroid;
 class ChromotingJniRuntime;
 class JniClient;
-class JniVideoRenderer;
 class DisplayHandler;
 class JniPairingSecretFetcher;
 
@@ -52,7 +52,7 @@ class ChromotingJniInstance
                         base::WeakPtr<JniClient> jni_client,
                         base::WeakPtr<JniPairingSecretFetcher> secret_fetcher,
                         std::unique_ptr<protocol::CursorShapeStub> cursor_stub,
-                        std::unique_ptr<JniVideoRenderer> video_renderer,
+                        std::unique_ptr<protocol::VideoRenderer> video_renderer,
                         const std::string& username,
                         const std::string& auth_token,
                         const std::string& host_jid,
@@ -169,7 +169,7 @@ class ChromotingJniInstance
   std::unique_ptr<ClientContext> client_context_;
   std::unique_ptr<protocol::PerformanceTracker> perf_tracker_;
   std::unique_ptr<protocol::CursorShapeStub> cursor_shape_stub_;
-  std::unique_ptr<JniVideoRenderer> video_renderer_;
+  std::unique_ptr<protocol::VideoRenderer> video_renderer_;
   std::unique_ptr<ChromotingClient> client_;
   XmppSignalStrategy::XmppServerConfig xmpp_config_;
   std::unique_ptr<XmppSignalStrategy> signaling_;  // Must outlive client_

@@ -78,15 +78,33 @@ PepperVideoRenderer3D::~PepperVideoRenderer3D() {
     gles2_if_->DeleteProgram(graphics_.pp_resource(), shader_program_);
 }
 
-bool PepperVideoRenderer3D::Initialize(
+void PepperVideoRenderer3D::SetPepperContext(
     pp::Instance* instance,
-    const ClientContext& context,
-    EventHandler* event_handler,
-    protocol::PerformanceTracker* perf_tracker) {
+    EventHandler* event_handler) {
   DCHECK(event_handler);
   DCHECK(!event_handler_);
 
   event_handler_ = event_handler;
+  pp_instance_ = instance;
+}
+
+void PepperVideoRenderer3D::OnViewChanged(const pp::View& view) {
+  pp::Size size = view.GetRect().size();
+  float scale = view.GetDeviceScale();
+  view_size_.set(ceilf(size.width() * scale), ceilf(size.height() * scale));
+  graphics_.ResizeBuffers(view_size_.width(), view_size_.height());
+
+  force_repaint_ = true;
+  PaintIfNeeded();
+}
+
+void PepperVideoRenderer3D::EnableDebugDirtyRegion(bool enable) {
+  debug_dirty_region_ = enable;
+}
+
+bool PepperVideoRenderer3D::Initialize(
+    const ClientContext& context,
+    protocol::PerformanceTracker* perf_tracker) {
   perf_tracker_ = perf_tracker;
 
   const int32_t context_attributes[] = {
@@ -102,13 +120,13 @@ bool PepperVideoRenderer3D::Initialize(
       PP_GRAPHICS3DATTRIB_HEIGHT,         480,
       PP_GRAPHICS3DATTRIB_NONE,
   };
-  graphics_ = pp::Graphics3D(instance, context_attributes);
+  graphics_ = pp::Graphics3D(pp_instance_, context_attributes);
 
   if (graphics_.is_null()) {
     LOG(WARNING) << "Graphics3D interface is not available.";
     return false;
   }
-  if (!instance->BindGraphics(graphics_)) {
+  if (!pp_instance_->BindGraphics(graphics_)) {
     LOG(WARNING) << "Failed to bind Graphics3D.";
     return false;
   }
@@ -118,7 +136,7 @@ bool PepperVideoRenderer3D::Initialize(
       pp::Module::Get()->GetBrowserInterface(PPB_OPENGLES2_INTERFACE));
   CHECK(gles2_if_);
 
-  video_decoder_ = pp::VideoDecoder(instance);
+  video_decoder_ = pp::VideoDecoder(pp_instance_);
   if (video_decoder_.is_null()) {
     LOG(WARNING) << "VideoDecoder interface is not available.";
     return false;
@@ -145,20 +163,6 @@ bool PepperVideoRenderer3D::Initialize(
   CheckGLError();
 
   return true;
-}
-
-void PepperVideoRenderer3D::OnViewChanged(const pp::View& view) {
-  pp::Size size = view.GetRect().size();
-  float scale = view.GetDeviceScale();
-  view_size_.set(ceilf(size.width() * scale), ceilf(size.height() * scale));
-  graphics_.ResizeBuffers(view_size_.width(), view_size_.height());
-
-  force_repaint_ = true;
-  PaintIfNeeded();
-}
-
-void PepperVideoRenderer3D::EnableDebugDirtyRegion(bool enable) {
-  debug_dirty_region_ = enable;
 }
 
 void PepperVideoRenderer3D::OnSessionConfig(

@@ -66,6 +66,11 @@ FrameConsumer::PixelFormat FakeFrameConsumer::GetPixelFormat() {
 FakeVideoRenderer::FakeVideoRenderer() {}
 FakeVideoRenderer::~FakeVideoRenderer() {}
 
+bool FakeVideoRenderer::Initialize(const ClientContext& client_context,
+                                   protocol::PerformanceTracker* perf_tracker) {
+  return true;
+}
+
 void FakeVideoRenderer::OnSessionConfig(const SessionConfig& config) {}
 
 FakeVideoStub* FakeVideoRenderer::GetVideoStub() {

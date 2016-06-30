@@ -46,12 +46,10 @@ class PepperVideoRenderer : public protocol::VideoRenderer {
         const webrtc::DesktopRegion& dirty_region) = 0;
   };
 
-  // Initializes the renderer. |instance| and |event_handler| must outlive the
-  // renderer. Returns false if the renderer cannot be initialized.
-  virtual bool Initialize(pp::Instance* instance,
-                          const ClientContext& context,
-                          EventHandler* event_handler,
-                          protocol::PerformanceTracker* perf_tracker) = 0;
+  // Sets pepper context. Must be called before Initialize(). |instance| and
+  // |event_handler| must outlive the renderer.
+  virtual void SetPepperContext(pp::Instance* instance,
+                                EventHandler* event_handler) = 0;
 
   // Must be called whenever the plugin view changes.
   virtual void OnViewChanged(const pp::View& view) = 0;

@@ -12,7 +12,6 @@
 #include "jni/Display_jni.h"
 #include "remoting/client/jni/chromoting_jni_runtime.h"
 #include "remoting/client/jni/jni_client.h"
-#include "remoting/client/jni/jni_frame_consumer.h"
 #include "remoting/client/jni/jni_video_renderer.h"
 
 using base::android::JavaParamRef;
@@ -88,12 +87,13 @@ std::unique_ptr<protocol::CursorShapeStub>
 JniDisplayHandler::CreateCursorShapeStub() {
   return base::WrapUnique(
       new DisplayCursorShapeStub(weak_factory_.GetWeakPtr(),
-                                    runtime_->display_task_runner()));
+                                 runtime_->display_task_runner()));
 }
 
-std::unique_ptr<JniVideoRenderer> JniDisplayHandler::CreateVideoRenderer() {
+std::unique_ptr<protocol::VideoRenderer>
+JniDisplayHandler::CreateVideoRenderer() {
   return base::WrapUnique(
-      new JniFrameConsumer(runtime_, weak_factory_.GetWeakPtr()));
+      new JniVideoRenderer(runtime_, weak_factory_.GetWeakPtr()));
 }
 
 // static

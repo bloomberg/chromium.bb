@@ -16,10 +16,10 @@ namespace remoting {
 
 namespace protocol {
 class CursorShapeInfo;
+class VideoRenderer;
 }  // namespace protocol
 
 class ChromotingJniRuntime;
-class JniVideoRenderer;
 
 // Handles display operations. Must be called and deleted on the display thread
 // unless otherwise noted.
@@ -35,7 +35,7 @@ class JniDisplayHandler : public DisplayUpdaterFactory {
 
   // DisplayUpdaterFactory overrides (functions can be called on any thread).
   std::unique_ptr<protocol::CursorShapeStub> CreateCursorShapeStub() override;
-  std::unique_ptr<JniVideoRenderer> CreateVideoRenderer() override;
+  std::unique_ptr<protocol::VideoRenderer> CreateVideoRenderer() override;
 
   // Creates a new Bitmap object to store a video frame. Can be called on any
   // thread.

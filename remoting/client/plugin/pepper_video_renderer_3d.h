@@ -34,14 +34,14 @@ class PepperVideoRenderer3D : public PepperVideoRenderer,
   ~PepperVideoRenderer3D() override;
 
   // PepperVideoRenderer interface.
-  bool Initialize(pp::Instance* instance,
-                  const ClientContext& context,
-                  EventHandler* event_handler,
-                  protocol::PerformanceTracker* perf_tracker) override;
+  void SetPepperContext(pp::Instance* instance,
+                        EventHandler* event_handler) override;
   void OnViewChanged(const pp::View& view) override;
   void EnableDebugDirtyRegion(bool enable) override;
 
   // VideoRenderer interface.
+  bool Initialize(const ClientContext& client_context,
+                  protocol::PerformanceTracker* perf_tracker) override;
   void OnSessionConfig(const protocol::SessionConfig& config) override;
   protocol::VideoStub* GetVideoStub() override;
   protocol::FrameConsumer* GetFrameConsumer() override;
@@ -91,6 +91,7 @@ class PepperVideoRenderer3D : public PepperVideoRenderer,
   // CHECKs that the last OpenGL call has completed successfully.
   void CheckGLError();
 
+  pp::Instance* pp_instance_ = nullptr;
   EventHandler* event_handler_ = nullptr;
   protocol::PerformanceTracker* perf_tracker_ = nullptr;
 

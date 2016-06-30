@@ -294,6 +294,11 @@ TestVideoRenderer::~TestVideoRenderer() {
   video_decode_thread_->Stop();
 }
 
+bool TestVideoRenderer::Initialize(const ClientContext& client_context,
+                                   protocol::PerformanceTracker* perf_tracker) {
+  return true;
+}
+
 void TestVideoRenderer::OnSessionConfig(const protocol::SessionConfig& config) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
