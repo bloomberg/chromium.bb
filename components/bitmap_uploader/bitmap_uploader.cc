@@ -46,7 +46,7 @@ void BitmapUploader::Init(shell::Connector* connector) {
 
   gles2_context_ = mus::GLES2Context::CreateOffscreenContext(
       std::vector<int32_t>(), connector);
-  DCHECK(gles2_context_);
+  // CreateOffscreenContext() may return null.
 }
 
 // Sets the color which is RGBA.
@@ -72,6 +72,9 @@ void BitmapUploader::SetBitmap(int width,
 }
 
 void BitmapUploader::Upload() {
+  if (!gles2_context_)
+    return;
+
   const gfx::Rect bounds(window_->bounds().size());
 
   cc::CompositorFrame frame;

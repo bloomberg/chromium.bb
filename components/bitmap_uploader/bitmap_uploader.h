@@ -73,6 +73,8 @@ class BITMAP_UPLOADER_EXPORT BitmapUploader
 
   mus::Window* window_;
   std::unique_ptr<mus::WindowSurface> surface_;
+  // This may be null if there is an error contacting mus/initializing. We
+  // assume we'll be shutting down soon and do nothing in this case.
   std::unique_ptr<mus::GLES2Context> gles2_context_;
 
   uint32_t color_;
