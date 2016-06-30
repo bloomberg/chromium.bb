@@ -284,6 +284,7 @@ vs-chromium-project.txt
 /tools/luci-go/win64/isolate.exe
 /third_party/__START__
 /third_party/accessibility-developer-tools/
+/third_party/accessibility_test_framework/lib/*.jar
 /third_party/adobe/flash/binaries
 /third_party/adobe/flash/symbols
 /third_party/amd/
