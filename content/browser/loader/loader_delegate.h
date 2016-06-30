@@ -7,20 +7,25 @@
 
 #include <inttypes.h>
 
+#include <memory>
+
+#include "content/common/content_export.h"
+#include "content/public/browser/resource_request_details.h"
 #include "net/base/load_states.h"
 
 class GURL;
 
 namespace content {
 
-// Delegate from loader to the rest of content. Lives on the IO thread.
+// Delegate from loader to the rest of content. Should be interacted with on the
+// IO thread.
 //
 // This is used for breaking dependencies between content at-large and
 // content/browser/loader which will eventually be moved to a separate
 // networking service. All methods in this interface should be asynchronous,
 // since eventually this will be a Mojo interface. See https://crbug.com/622050
 // and https://crbug.com/598073.
-class LoaderDelegate {
+class CONTENT_EXPORT LoaderDelegate {
  public:
   virtual ~LoaderDelegate() {}
 
@@ -32,6 +37,18 @@ class LoaderDelegate {
                                 const net::LoadStateWithParam& load_state,
                                 uint64_t upload_position,
                                 uint64_t upload_size) = 0;
+
+  // Notification that a response has been received for a resource request.
+  virtual void DidGetResourceResponseStart(
+      int render_process_id,
+      int render_frame_host,
+      std::unique_ptr<ResourceRequestDetails> details) = 0;
+
+  // Notification that a redirect was received while requesting a resource.
+  virtual void DidGetRedirectForResourceRequest(
+      int render_process_id,
+      int render_frame_host,
+      std::unique_ptr<ResourceRedirectDetails> details) = 0;
 };
 
 }  // namespace content

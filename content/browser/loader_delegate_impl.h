@@ -6,27 +6,29 @@
 #define CONTENT_BROWSER_LOADER_DELEGATE_IMPL_H_
 
 #include "content/browser/loader/loader_delegate.h"
+#include "content/common/content_export.h"
 
 namespace content {
 
-class LoaderDelegateImpl : public LoaderDelegate {
+class CONTENT_EXPORT LoaderDelegateImpl : public LoaderDelegate {
  public:
   ~LoaderDelegateImpl() override;
 
+  // LoaderDelegate implementation:
   void LoadStateChanged(int child_id,
                         int route_id,
                         const GURL& url,
                         const net::LoadStateWithParam& load_state,
                         uint64_t upload_position,
                         uint64_t upload_size) override;
-
- private:
-  void NotifyLoadStateChangedOnUI(int child_id,
-                                  int route_id,
-                                  const GURL& url,
-                                  const net::LoadStateWithParam& load_state,
-                                  uint64_t upload_position,
-                                  uint64_t upload_size);
+  void DidGetResourceResponseStart(
+      int render_process_id,
+      int render_frame_host,
+      std::unique_ptr<ResourceRequestDetails> details) override;
+  void DidGetRedirectForResourceRequest(
+      int render_process_id,
+      int render_frame_host,
+      std::unique_ptr<ResourceRedirectDetails> details) override;
 };
 
 }  // namespace content

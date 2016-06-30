@@ -19,6 +19,7 @@
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/browser/loader/resource_message_filter.h"
+#include "content/browser/loader_delegate_impl.h"
 #include "content/common/child_process_host_impl.h"
 #include "content/common/resource_messages.h"
 #include "content/common/resource_request.h"
@@ -270,6 +271,7 @@ class AsyncRevalidationManagerTest : public ::testing::Test {
       std::unique_ptr<net::TestNetworkDelegate> network_delegate)
       : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP),
         network_delegate_(std::move(network_delegate)) {
+    host_.SetLoaderDelegate(&loader_delegate_);
     browser_context_.reset(new TestBrowserContext());
     BrowserContext::EnsureResourceContextInitialized(browser_context_.get());
     base::RunLoop().RunUntilIdle();
@@ -321,6 +323,7 @@ class AsyncRevalidationManagerTest : public ::testing::Test {
   std::unique_ptr<TestURLRequestJobFactory> job_factory_;
   scoped_refptr<BlackholeFilter> filter_;
   std::unique_ptr<net::TestNetworkDelegate> network_delegate_;
+  LoaderDelegateImpl loader_delegate_;
   ResourceDispatcherHostImpl host_;
 };
 

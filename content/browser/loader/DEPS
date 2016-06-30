@@ -145,7 +145,6 @@ specific_include_rules = {
     "+content/browser/streams/stream.h",
     "+content/browser/streams/stream_context.h",
     "+content/browser/streams/stream_registry.h",
-    "+content/browser/web_contents/web_contents_impl.h",
     "+content/common/content_export.h",
     "+content/common/navigation_params.h",
     "+content/common/net/url_request_service_worker_data.h",

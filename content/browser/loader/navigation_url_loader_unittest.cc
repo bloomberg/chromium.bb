@@ -13,6 +13,7 @@
 #include "content/browser/frame_host/navigation_request_info.h"
 #include "content/browser/loader/navigation_url_loader_impl.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
+#include "content/browser/loader_delegate_impl.h"
 #include "content/browser/streams/stream.h"
 #include "content/browser/streams/stream_context.h"
 #include "content/browser/streams/stream_registry.h"
@@ -83,6 +84,7 @@ class NavigationURLLoaderTest : public testing::Test {
   NavigationURLLoaderTest()
       : thread_bundle_(TestBrowserThreadBundle::IO_MAINLOOP),
         browser_context_(new TestBrowserContext) {
+    host_.SetLoaderDelegate(&loader_delegate_);
     BrowserContext::EnsureResourceContextInitialized(browser_context_.get());
     base::RunLoop().RunUntilIdle();
     net::URLRequestContext* request_context =
@@ -135,6 +137,7 @@ class NavigationURLLoaderTest : public testing::Test {
   TestBrowserThreadBundle thread_bundle_;
   net::URLRequestJobFactoryImpl job_factory_;
   std::unique_ptr<TestBrowserContext> browser_context_;
+  LoaderDelegateImpl loader_delegate_;
   ResourceDispatcherHostImpl host_;
 };
 

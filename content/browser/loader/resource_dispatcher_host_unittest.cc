@@ -33,6 +33,7 @@
 #include "content/browser/loader/resource_loader.h"
 #include "content/browser/loader/resource_message_filter.h"
 #include "content/browser/loader/resource_request_info_impl.h"
+#include "content/browser/loader_delegate_impl.h"
 #include "content/common/appcache_interfaces.h"
 #include "content/common/child_process_host_impl.h"
 #include "content/common/navigation_params.h"
@@ -898,6 +899,7 @@ class ResourceDispatcherHostTest : public testing::TestWithParam<TestConfig>,
         use_test_ssl_certificate_(false),
         send_data_received_acks_(false),
         auto_advance_(false) {
+    host_.SetLoaderDelegate(&loader_delegate_);
     browser_context_.reset(new TestBrowserContext());
     BrowserContext::EnsureResourceContextInitialized(browser_context_.get());
     base::RunLoop().RunUntilIdle();
@@ -1187,6 +1189,7 @@ class ResourceDispatcherHostTest : public testing::TestWithParam<TestConfig>,
   scoped_refptr<ForwardingFilter> filter_;
   scoped_refptr<TestFilterSpecifyingChild> web_contents_filter_;
   net::TestNetworkDelegate network_delegate_;
+  LoaderDelegateImpl loader_delegate_;
   ResourceDispatcherHostImpl host_;
   ResourceIPCAccumulator accum_;
   std::string response_headers_;

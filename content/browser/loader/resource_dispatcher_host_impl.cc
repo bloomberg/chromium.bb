@@ -69,7 +69,6 @@
 #include "content/browser/streams/stream.h"
 #include "content/browser/streams/stream_context.h"
 #include "content/browser/streams/stream_registry.h"
-#include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/navigation_params.h"
 #include "content/common/net/url_request_service_worker_data.h"
 #include "content/common/resource_messages.h"
@@ -361,30 +360,6 @@ int GetCertID(CertStore* cert_store, net::URLRequest* request, int child_id) {
   if (request->ssl_info().cert.get())
     return cert_store->StoreCert(request->ssl_info().cert.get(), child_id);
   return 0;
-}
-
-void NotifyRedirectOnUI(int render_process_id,
-                        int render_frame_host,
-                        std::unique_ptr<ResourceRedirectDetails> details) {
-  RenderFrameHostImpl* host =
-      RenderFrameHostImpl::FromID(render_process_id, render_frame_host);
-  WebContentsImpl* web_contents =
-      static_cast<WebContentsImpl*>(WebContents::FromRenderFrameHost(host));
-  if (!web_contents)
-    return;
-  web_contents->DidGetRedirectForResourceRequest(host, *details.get());
-}
-
-void NotifyResponseOnUI(int render_process_id,
-                        int render_frame_host,
-                        std::unique_ptr<ResourceRequestDetails> details) {
-  RenderFrameHostImpl* host =
-      RenderFrameHostImpl::FromID(render_process_id, render_frame_host);
-  WebContentsImpl* web_contents =
-      static_cast<WebContentsImpl*>(WebContents::FromRenderFrameHost(host));
-  if (!web_contents)
-    return;
-  web_contents->DidGetResourceResponseStart(*details.get());
 }
 
 bool IsValidatedSCT(
@@ -943,11 +918,8 @@ void ResourceDispatcherHostImpl::DidReceiveRedirect(ResourceLoader* loader,
       loader->request(),
       GetCertID(GetCertStore(), loader->request(), info->GetChildID()),
       new_url));
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      base::Bind(
-          &NotifyRedirectOnUI,
-          render_process_id, render_frame_host, base::Passed(&detail)));
+  loader_delegate_->DidGetRedirectForResourceRequest(
+      render_process_id, render_frame_host, std::move(detail));
 }
 
 void ResourceDispatcherHostImpl::DidReceiveResponse(ResourceLoader* loader) {
@@ -981,11 +953,8 @@ void ResourceDispatcherHostImpl::DidReceiveResponse(ResourceLoader* loader) {
   // Notify the observers on the UI thread.
   std::unique_ptr<ResourceRequestDetails> detail(new ResourceRequestDetails(
       request, GetCertID(GetCertStore(), request, info->GetChildID())));
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      base::Bind(
-          &NotifyResponseOnUI,
-          render_process_id, render_frame_host, base::Passed(&detail)));
+  loader_delegate_->DidGetResourceResponseStart(
+      render_process_id, render_frame_host, std::move(detail));
 }
 
 void ResourceDispatcherHostImpl::DidFinishLoading(ResourceLoader* loader) {
@@ -2394,7 +2363,7 @@ void ResourceDispatcherHostImpl::StartLoading(
   loader_ptr->StartRequest();
 }
 
-void ResourceDispatcherHostImpl::OnUserGesture(WebContentsImpl* contents) {
+void ResourceDispatcherHostImpl::OnUserGesture() {
   last_user_gesture_time_ = TimeTicks::Now();
 }
 

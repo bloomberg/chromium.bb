@@ -4580,7 +4580,7 @@ void WebContentsImpl::OnUserInteraction(
   // Exclude scroll events as user gestures for resource load dispatches.
   // rdh is NULL in unittests.
   if (rdh && type != blink::WebInputEvent::MouseWheel)
-    rdh->OnUserGesture(this);
+    rdh->OnUserGesture();
 }
 
 void WebContentsImpl::OnIgnoredUIEvent() {

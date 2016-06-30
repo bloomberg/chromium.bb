@@ -69,7 +69,6 @@ class ResourceMessageFilter;
 class ResourceRequestInfoImpl;
 class SaveFileManager;
 class ServiceWorkerNavigationHandleCore;
-class WebContentsImpl;
 struct CommonNavigationParams;
 struct DownloadSaveInfo;
 struct NavigationRequestInfo;
@@ -216,7 +215,7 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
   // Force cancels any pending requests for the given process.
   void CancelRequestsForProcess(int child_id);
 
-  void OnUserGesture(WebContentsImpl* contents);
+  void OnUserGesture();
 
   // Retrieves a net::URLRequest.  Must be called from the IO thread.
   net::URLRequest* GetURLRequest(const GlobalRequestID& request_id);
@@ -304,6 +303,8 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
   // or experiment status. For unit tests only.
   void EnableStaleWhileRevalidateForTesting();
 
+  // Sets the LoaderDelegate, which must outlive this object. Ownership is not
+  // transferred. The LoaderDelegate should be interacted with on the IO thread.
   void SetLoaderDelegate(LoaderDelegate* loader_delegate);
 
  private:
