@@ -1,82 +1,45 @@
-<html>
-<head>
-    <title>Test rendering of video control after exiting fullscreen</title>
-    <script src=media-file.js></script>
-    <script src=media-controls.js></script>
-    <!-- TODO(foolip): Convert test to testharness.js. crbug.com/588956
-         (Please avoid writing new tests using video-test.js) -->
-    <script src=video-test.js></script>
-    <script src=../fullscreen/full-screen-test.js></script>
-    <script>
-        var panel;
-        var playButtonCoordinates;
-        var count = 0;
+<!DOCTYPE html>
+<title>Tests that video controls are shown after exiting fullscreen.</title>
+<script src="../fullscreen/full-screen-test.js"></script>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script src="media-file.js"></script>
+<script src="media-controls.js"></script>
+<video controls></video>
+<script>
+async_test(function(t) {
+    var count = 0;
+    var video = document.querySelector("video");
 
-        function init()
-        {
-            findMediaElement();
-            waitForEvent(video, 'canplaythrough', oncanplaythrough);
-            video.src = findMediaFile('video', 'content/test');
-        }
+    video.oncanplaythrough = t.step_func(function() {
 
-        function oncanplaythrough()
-        {
-            waitForEvent(video, 'webkitfullscreenchange', onfullscreenchange);
-
-            panel = mediaControlsButton(video, "panel");
-            if (window.eventSender) {
-                try {
-                    playButtonCoordinates = mediaControlsButtonCoordinates(video, "play-button");
-                } catch (exception) {
-                    testRunner.notifyDone();
-                    return;
-                }
-                var x = playButtonCoordinates[0];
-                var y = playButtonCoordinates[1];
-
-                consoleWrite("** Move mouse to the play button and start playing the video **");
-                eventSender.mouseMoveTo(x, y);
-                eventSender.mouseDown();
-                eventSender.mouseUp();
-                consoleWrite("");
-            }
-
-            consoleWrite("** Test that controls are shown when controls attribute is present **");
-            var opacity = getComputedStyle(panel).opacity;
-            if (opacity < 1)
-                failTest("Media control is not opaque.");
-            else
-                runWithKeyDown(function(){ video.webkitRequestFullscreen(); });
-        }
-
-        function onfullscreenchange()
-        {
+        var panel = mediaControlsButton(video, "panel");
+        video.onwebkitfullscreenchange = t.step_func(function() {
             switch (count) {
-                case 0:
-                    runAfterHideMediaControlsTimerFired(continueTest, video);
-                    break;
-                case 1:
-                    consoleWrite("");
-                    consoleWrite("** The controls should be shown after exiting the fullscreen");
-                    var opacity = getComputedStyle(panel).opacity;
-                    if (opacity < 1)
-                        failTest("Media control is not opaque.");
-                    else
-                        endTest();
+            case 0:
+                runAfterHideMediaControlsTimerFired(function() {
+                    document.webkitExitFullscreen();
+                }, video);
+                break;
+            case 1:
+                // The controls should be shown after exiting fullscreen.
+                assert_equals(getComputedStyle(panel).opacity, "1");
+                t.done();
             }
             count++;
-        }
+        });
 
-        function continueTest()
-        {
-            consoleWrite("");
-            run("document.webkitExitFullscreen()");
-        }
+        var playButtonCoordinates = mediaControlsButtonCoordinates(video, "play-button");
+        // Move mouse to the play button and start playing the video.
+        eventSender.mouseMoveTo(playButtonCoordinates[0], playButtonCoordinates[1]);
+        eventSender.mouseDown();
+        eventSender.mouseUp();
 
-    </script>
-</head>
-<body onload="init()">
-    Tests that video controls are shwon after exiting fullscreen<br>
-    <video controls></video>
-</body>
-</html>
+        // Test that controls are shown when controls attribute is present.
+        assert_equals(getComputedStyle(panel).opacity, "1");
+        runWithKeyDown(function() { video.webkitRequestFullscreen(); });
+    });
+
+    video.src = findMediaFile("video", "content/test");
+});
+</script>
