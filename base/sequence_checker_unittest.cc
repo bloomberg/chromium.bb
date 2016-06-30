@@ -95,9 +95,8 @@ class SequenceCheckerTest : public testing::Test {
 
   void PostDeleteToOtherThread(
       std::unique_ptr<SequenceCheckedObject> sequence_checked_object) {
-    other_thread()->message_loop()->DeleteSoon(
-        FROM_HERE,
-        sequence_checked_object.release());
+    other_thread()->message_loop()->task_runner()->DeleteSoon(
+        FROM_HERE, sequence_checked_object.release());
   }
 
   // Destroys the SequencedWorkerPool instance, blocking until it is fully shut

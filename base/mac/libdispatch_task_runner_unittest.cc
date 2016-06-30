@@ -10,6 +10,8 @@
 #include "base/mac/bind_objc_block.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/stringprintf.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -24,10 +26,10 @@ class LibDispatchTaskRunnerTest : public testing::Test {
   // all non-delayed tasks are run on the LibDispatchTaskRunner.
   void DispatchLastTask() {
     dispatch_async(task_runner_->GetDispatchQueue(), ^{
-        message_loop_.PostTask(FROM_HERE,
-                               base::MessageLoop::QuitWhenIdleClosure());
+      message_loop_.task_runner()->PostTask(
+          FROM_HERE, base::MessageLoop::QuitWhenIdleClosure());
     });
-    message_loop_.Run();
+    base::RunLoop().Run();
     task_runner_->Shutdown();
   }
 
@@ -160,11 +162,11 @@ TEST_F(LibDispatchTaskRunnerTest, NonNestable) {
       TaskOrderMarker marker(this, "First");
       task_runner_->PostNonNestableTask(FROM_HERE, base::BindBlock(^{
           TaskOrderMarker marker(this, "Second NonNestable");
-          message_loop_.PostTask(FROM_HERE,
-                                 base::MessageLoop::QuitWhenIdleClosure());
+          message_loop_.task_runner()->PostTask(
+              FROM_HERE, base::MessageLoop::QuitWhenIdleClosure());
       }));
   }));
-  message_loop_.Run();
+  base::RunLoop().Run();
   task_runner_->Shutdown();
 
   const char* const expectations[] = {
@@ -186,11 +188,11 @@ TEST_F(LibDispatchTaskRunnerTest, PostDelayed) {
   task_runner_->PostDelayedTask(FROM_HERE, base::BindBlock(^{
       TaskOrderMarker marker(this, "Timed");
       run_time = base::TimeTicks::Now();
-      message_loop_.PostTask(FROM_HERE,
-                             base::MessageLoop::QuitWhenIdleClosure());
+      message_loop_.task_runner()->PostTask(
+          FROM_HERE, base::MessageLoop::QuitWhenIdleClosure());
   }), delta);
   task_runner_->PostTask(FROM_HERE, BoundRecordTaskOrder(this, "Second"));
-  message_loop_.Run();
+  base::RunLoop().Run();
   task_runner_->Shutdown();
 
   const char* const expectations[] = {

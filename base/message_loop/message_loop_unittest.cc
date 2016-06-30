@@ -18,6 +18,7 @@
 #include "base/pending_task.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/run_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/threading/platform_thread.h"
@@ -416,9 +417,8 @@ void RunTest_RecursiveSupport2(MessageLoop::Type message_loop_type) {
 
 void PostNTasksThenQuit(int posts_remaining) {
   if (posts_remaining > 1) {
-    MessageLoop::current()->PostTask(
-        FROM_HERE,
-        Bind(&PostNTasksThenQuit, posts_remaining - 1));
+    MessageLoop::current()->task_runner()->PostTask(
+        FROM_HERE, Bind(&PostNTasksThenQuit, posts_remaining - 1));
   } else {
     MessageLoop::current()->QuitWhenIdle();
   }
@@ -639,8 +639,8 @@ TEST(MessageLoopTest, TaskObserver) {
 
   MessageLoop loop;
   loop.AddTaskObserver(&observer);
-  loop.PostTask(FROM_HERE, Bind(&PostNTasksThenQuit, kNumPosts));
-  loop.Run();
+  loop.task_runner()->PostTask(FROM_HERE, Bind(&PostNTasksThenQuit, kNumPosts));
+  RunLoop().Run();
   loop.RemoveTaskObserver(&observer);
 
   EXPECT_EQ(kNumPosts, observer.num_tasks_started());
@@ -815,11 +815,10 @@ TEST(MessageLoopTest, DestructionObserverTest) {
 
   MLDestructionObserver observer(&task_destroyed, &destruction_observer_called);
   loop->AddDestructionObserver(&observer);
-  loop->PostDelayedTask(
-      FROM_HERE,
-      Bind(&DestructionObserverProbe::Run,
-                 new DestructionObserverProbe(&task_destroyed,
-                                              &destruction_observer_called)),
+  loop->task_runner()->PostDelayedTask(
+      FROM_HERE, Bind(&DestructionObserverProbe::Run,
+                      new DestructionObserverProbe(
+                          &task_destroyed, &destruction_observer_called)),
       kDelay);
   delete loop;
   EXPECT_TRUE(observer.task_destroyed_before_message_loop());
@@ -840,12 +839,12 @@ TEST(MessageLoopTest, ThreadMainTaskRunner) {
       &Foo::Test1ConstRef, foo.get(), a));
 
   // Post quit task;
-  MessageLoop::current()->PostTask(
+  MessageLoop::current()->task_runner()->PostTask(
       FROM_HERE,
       Bind(&MessageLoop::QuitWhenIdle, Unretained(MessageLoop::current())));
 
   // Now kick things off
-  MessageLoop::current()->Run();
+  RunLoop().Run();
 
   EXPECT_EQ(foo->test_count(), 1);
   EXPECT_EQ(foo->result(), "a");
@@ -964,7 +963,7 @@ TEST(MessageLoopTest, OriginalRunnerWorks) {
   scoped_refptr<Foo> foo(new Foo());
   original_runner->PostTask(FROM_HERE,
                             Bind(&Foo::Test1ConstRef, foo.get(), "a"));
-  loop.RunUntilIdle();
+  RunLoop().RunUntilIdle();
   EXPECT_EQ(1, foo->test_count());
 }
 

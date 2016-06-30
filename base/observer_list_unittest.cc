@@ -111,7 +111,7 @@ class AddRemoveThread : public PlatformThread::Delegate,
     loop_->task_runner()->PostTask(
         FROM_HERE,
         base::Bind(&AddRemoveThread::AddTask, weak_factory_.GetWeakPtr()));
-    loop_->Run();
+    RunLoop().Run();
     //LOG(ERROR) << "Loop 0x" << std::hex << loop_ << " done. " <<
     //    count_observes_ << ", " << count_addtask_;
     delete loop_;

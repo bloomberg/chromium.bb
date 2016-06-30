@@ -9,6 +9,7 @@
 #include "base/format_macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/scoped_vector.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/condition_variable.h"
 #include "base/synchronization/lock.h"
@@ -63,10 +64,9 @@ class ScheduleWorkTest : public testing::Test {
           base::ThreadTicks::Now() - thread_start;
     min_batch_times_[index] = minimum;
     max_batch_times_[index] = maximum;
-    target_message_loop()->PostTask(FROM_HERE,
-                                    base::Bind(&ScheduleWorkTest::Increment,
-                                               base::Unretained(this),
-                                               schedule_calls));
+    target_message_loop()->task_runner()->PostTask(
+        FROM_HERE, base::Bind(&ScheduleWorkTest::Increment,
+                              base::Unretained(this), schedule_calls));
   }
 
   void ScheduleWork(MessageLoop::Type target_type, int num_scheduling_threads) {
@@ -101,7 +101,7 @@ class ScheduleWorkTest : public testing::Test {
     }
 
     for (int i = 0; i < num_scheduling_threads; ++i) {
-      scheduling_threads[i]->message_loop()->PostTask(
+      scheduling_threads[i]->message_loop()->task_runner()->PostTask(
           FROM_HERE,
           base::Bind(&ScheduleWorkTest::Schedule, base::Unretained(this), i));
     }

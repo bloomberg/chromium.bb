@@ -22,6 +22,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/process/kill.h"
 #include "base/process/launch.h"
+#include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/pattern.h"
 #include "base/strings/string_number_conversions.h"
@@ -535,7 +536,7 @@ bool TestLauncher::Run() {
   ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, Bind(&TestLauncher::RunTestIteration, Unretained(this)));
 
-  MessageLoop::current()->Run();
+  RunLoop().Run();
 
   if (requested_cycles != 1)
     results_tracker_.PrintSummaryOfAllIterations();

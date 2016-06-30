@@ -8,6 +8,7 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/weak_ptr.h"
+#include "base/run_loop.h"
 #include "base/threading/thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -67,7 +68,7 @@ TEST_F(FileUtilProxyTest, GetFileInfo_File) {
       file_task_runner(),
       test_path(),
       Bind(&FileUtilProxyTest::DidGetFileInfo, weak_factory_.GetWeakPtr()));
-  MessageLoop::current()->Run();
+  RunLoop().Run();
 
   // Verify.
   EXPECT_EQ(File::FILE_OK, error_);
@@ -90,7 +91,7 @@ TEST_F(FileUtilProxyTest, GetFileInfo_Directory) {
       file_task_runner(),
       test_path(),
       Bind(&FileUtilProxyTest::DidGetFileInfo, weak_factory_.GetWeakPtr()));
-  MessageLoop::current()->Run();
+  RunLoop().Run();
 
   // Verify.
   EXPECT_EQ(File::FILE_OK, error_);
@@ -113,7 +114,7 @@ TEST_F(FileUtilProxyTest, Touch) {
       last_accessed_time,
       last_modified_time,
       Bind(&FileUtilProxyTest::DidFinish, weak_factory_.GetWeakPtr()));
-  MessageLoop::current()->Run();
+  RunLoop().Run();
   EXPECT_EQ(File::FILE_OK, error_);
 
   File::Info info;

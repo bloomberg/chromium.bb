@@ -59,7 +59,7 @@ void RunTest_BasicSignal(MessageLoop::Type message_loop_type) {
 
   event.Signal();
 
-  MessageLoop::current()->Run();
+  RunLoop().Run();
 
   EXPECT_TRUE(watcher.GetWatchedEvent() == NULL);
 }

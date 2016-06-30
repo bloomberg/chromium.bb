@@ -15,6 +15,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/run_loop.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
@@ -80,7 +81,7 @@ class FileProxyTest : public testing::Test {
     proxy->CreateOrOpen(
         test_path(), flags,
         Bind(&FileProxyTest::DidCreateOrOpen, weak_factory_.GetWeakPtr()));
-    MessageLoop::current()->Run();
+    RunLoop().Run();
     EXPECT_TRUE(proxy->IsValid());
   }
 
@@ -108,7 +109,7 @@ TEST_F(FileProxyTest, CreateOrOpen_Create) {
       test_path(),
       File::FLAG_CREATE | File::FLAG_READ,
       Bind(&FileProxyTest::DidCreateOrOpen, weak_factory_.GetWeakPtr()));
-  MessageLoop::current()->Run();
+  RunLoop().Run();
 
   EXPECT_EQ(File::FILE_OK, error_);
   EXPECT_TRUE(proxy.IsValid());
@@ -127,7 +128,7 @@ TEST_F(FileProxyTest, CreateOrOpen_Open) {
       test_path(),
       File::FLAG_OPEN | File::FLAG_READ,
       Bind(&FileProxyTest::DidCreateOrOpen, weak_factory_.GetWeakPtr()));
-  MessageLoop::current()->Run();
+  RunLoop().Run();
 
   EXPECT_EQ(File::FILE_OK, error_);
   EXPECT_TRUE(proxy.IsValid());
@@ -140,7 +141,7 @@ TEST_F(FileProxyTest, CreateOrOpen_OpenNonExistent) {
       test_path(),
       File::FLAG_OPEN | File::FLAG_READ,
       Bind(&FileProxyTest::DidCreateOrOpen, weak_factory_.GetWeakPtr()));
-  MessageLoop::current()->Run();
+  RunLoop().Run();
   EXPECT_EQ(File::FILE_ERROR_NOT_FOUND, error_);
   EXPECT_FALSE(proxy.IsValid());
   EXPECT_FALSE(proxy.created());
@@ -156,7 +157,7 @@ TEST_F(FileProxyTest, CreateOrOpen_AbandonedCreate) {
         File::FLAG_CREATE | File::FLAG_READ,
         Bind(&FileProxyTest::DidCreateOrOpen, weak_factory_.GetWeakPtr()));
   }
-  MessageLoop::current()->Run();
+  RunLoop().Run();
   ThreadRestrictions::SetIOAllowed(prev);
 
   EXPECT_TRUE(PathExists(test_path()));
@@ -173,7 +174,7 @@ TEST_F(FileProxyTest, Close) {
 #endif
 
   proxy.Close(Bind(&FileProxyTest::DidFinish, weak_factory_.GetWeakPtr()));
-  MessageLoop::current()->Run();
+  RunLoop().Run();
   EXPECT_EQ(File::FILE_OK, error_);
   EXPECT_FALSE(proxy.IsValid());
 
@@ -187,7 +188,7 @@ TEST_F(FileProxyTest, CreateTemporary) {
     proxy.CreateTemporary(
         0 /* additional_file_flags */,
         Bind(&FileProxyTest::DidCreateTemporary, weak_factory_.GetWeakPtr()));
-    MessageLoop::current()->Run();
+    RunLoop().Run();
 
     EXPECT_TRUE(proxy.IsValid());
     EXPECT_EQ(File::FILE_OK, error_);
@@ -196,7 +197,7 @@ TEST_F(FileProxyTest, CreateTemporary) {
     // The file should be writable.
     proxy.Write(0, "test", 4,
                 Bind(&FileProxyTest::DidWrite, weak_factory_.GetWeakPtr()));
-    MessageLoop::current()->Run();
+    RunLoop().Run();
     EXPECT_EQ(File::FILE_OK, error_);
     EXPECT_EQ(4, bytes_written_);
   }
@@ -235,7 +236,7 @@ TEST_F(FileProxyTest, GetInfo) {
   CreateProxy(File::FLAG_OPEN | File::FLAG_READ, &proxy);
   proxy.GetInfo(
       Bind(&FileProxyTest::DidGetFileInfo, weak_factory_.GetWeakPtr()));
-  MessageLoop::current()->Run();
+  RunLoop().Run();
 
   // Verify.
   EXPECT_EQ(File::FILE_OK, error_);
@@ -258,7 +259,7 @@ TEST_F(FileProxyTest, Read) {
   CreateProxy(File::FLAG_OPEN | File::FLAG_READ, &proxy);
 
   proxy.Read(0, 128, Bind(&FileProxyTest::DidRead, weak_factory_.GetWeakPtr()));
-  MessageLoop::current()->Run();
+  RunLoop().Run();
 
   // Verify.
   EXPECT_EQ(File::FILE_OK, error_);
@@ -276,14 +277,14 @@ TEST_F(FileProxyTest, WriteAndFlush) {
   int data_bytes = arraysize(data);
   proxy.Write(0, data, data_bytes,
               Bind(&FileProxyTest::DidWrite, weak_factory_.GetWeakPtr()));
-  MessageLoop::current()->Run();
+  RunLoop().Run();
   EXPECT_EQ(File::FILE_OK, error_);
   EXPECT_EQ(data_bytes, bytes_written_);
 
   // Flush the written data.  (So that the following read should always
   // succeed.  On some platforms it may work with or without this flush.)
   proxy.Flush(Bind(&FileProxyTest::DidFinish, weak_factory_.GetWeakPtr()));
-  MessageLoop::current()->Run();
+  RunLoop().Run();
   EXPECT_EQ(File::FILE_OK, error_);
 
   // Verify the written data.
@@ -311,7 +312,7 @@ TEST_F(FileProxyTest, MAYBE_SetTimes) {
 
   proxy.SetTimes(last_accessed_time, last_modified_time,
                  Bind(&FileProxyTest::DidFinish, weak_factory_.GetWeakPtr()));
-  MessageLoop::current()->Run();
+  RunLoop().Run();
   EXPECT_EQ(File::FILE_OK, error_);
 
   File::Info info;
@@ -338,7 +339,7 @@ TEST_F(FileProxyTest, SetLength_Shrink) {
   CreateProxy(File::FLAG_OPEN | File::FLAG_WRITE, &proxy);
   proxy.SetLength(7,
                   Bind(&FileProxyTest::DidFinish, weak_factory_.GetWeakPtr()));
-  MessageLoop::current()->Run();
+  RunLoop().Run();
 
   // Verify.
   GetFileInfo(test_path(), &info);
@@ -364,7 +365,7 @@ TEST_F(FileProxyTest, SetLength_Expand) {
   CreateProxy(File::FLAG_OPEN | File::FLAG_WRITE, &proxy);
   proxy.SetLength(53,
                   Bind(&FileProxyTest::DidFinish, weak_factory_.GetWeakPtr()));
-  MessageLoop::current()->Run();
+  RunLoop().Run();
 
   // Verify.
   GetFileInfo(test_path(), &info);
