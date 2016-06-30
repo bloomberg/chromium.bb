@@ -598,8 +598,11 @@ void GraphicsLayer::trackPaintInvalidation(const DisplayItemClient& client, cons
         return;
 
     PaintInvalidationTracking& tracking = paintInvalidationTrackingMap().add(this, PaintInvalidationTracking()).storedValue->value;
-    PaintInvalidationInfo info = { &client, client.debugName(), rect, reason };
-    tracking.trackedPaintInvalidations.append(info);
+
+    if (m_isTrackingPaintInvalidations) {
+        PaintInvalidationInfo info = { &client, client.debugName(), rect, reason };
+        tracking.trackedPaintInvalidations.append(info);
+    }
 
 #if DCHECK_IS_ON()
     if (RuntimeEnabledFeatures::slimmingPaintUnderInvalidationCheckingEnabled()) {
