@@ -24,7 +24,7 @@ namespace content {
 AudioDeviceFactory* AudioDeviceFactory::factory_ = NULL;
 
 namespace {
-const int64_t kMaxAuthorizationTimeoutMs = 900;
+const int64_t kMaxAuthorizationTimeoutMs = 4000;
 
 media::AudioLatency::LatencyType GetSourceLatencyType(
     AudioDeviceFactory::SourceType source) {
