@@ -109,6 +109,24 @@ void QuicChromiumClientStream::OnPromiseHeadersComplete(
   session_->HandlePromised(id(), promised_id, headers);
 }
 
+void QuicChromiumClientStream::OnPromiseHeaderList(
+    QuicStreamId promised_id,
+    size_t frame_len,
+    const QuicHeaderList& header_list) {
+  SpdyHeaderBlock promise_headers;
+  int64_t content_length = -1;
+  if (!SpdyUtils::CopyAndValidateHeaders(header_list, &content_length,
+                                         &promise_headers)) {
+    DLOG(ERROR) << "Failed to parse header list: " << header_list.DebugString();
+    ConsumeHeaderList();
+    Reset(QUIC_BAD_APPLICATION_PAYLOAD);
+    return;
+  }
+  ConsumeHeaderList();
+
+  session_->HandlePromised(id(), promised_id, promise_headers);
+}
+
 void QuicChromiumClientStream::OnDataAvailable() {
   if (!FinishedReadingHeaders() || !headers_delivered_) {
     // Buffer the data in the sequencer until the headers have been read.

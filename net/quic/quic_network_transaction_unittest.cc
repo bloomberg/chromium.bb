@@ -333,6 +333,16 @@ class QuicNetworkTransactionTest
                                        least_unacked, true);
   }
 
+  std::unique_ptr<QuicEncryptedPacket> ConstructClientAckPacket(
+      QuicPacketNumber packet_number,
+      QuicPacketNumber largest_received,
+      QuicPacketNumber ack_least_unacked,
+      QuicPacketNumber stop_least_unacked) {
+    return client_maker_.MakeAckPacket(packet_number, largest_received,
+                                       ack_least_unacked, stop_least_unacked,
+                                       true);
+  }
+
   std::unique_ptr<QuicEncryptedPacket>
   ConstructClientAckAndConnectionClosePacket(
       QuicPacketNumber packet_number,
@@ -451,6 +461,19 @@ class QuicNetworkTransactionTest
     return ConstructClientRequestHeadersPacket(
         packet_number, stream_id, should_include_version, fin,
         std::move(headers), nullptr, maker);
+  }
+
+  std::unique_ptr<QuicEncryptedPacket> ConstructServerPushPromisePacket(
+      QuicPacketNumber packet_number,
+      QuicStreamId stream_id,
+      QuicStreamId promised_stream_id,
+      bool should_include_version,
+      SpdyHeaderBlock headers,
+      QuicStreamOffset* offset,
+      QuicTestPacketMaker* maker) {
+    return maker->MakePushPromisePacket(
+        packet_number, stream_id, promised_stream_id, should_include_version,
+        false, std::move(headers), nullptr, offset);
   }
 
   std::unique_ptr<QuicEncryptedPacket> ConstructServerResponseHeadersPacket(
@@ -2244,6 +2267,62 @@ TEST_P(QuicNetworkTransactionTest, QuicUpload) {
   int rv = trans->Start(&request_, callback.callback(), net_log_.bound());
   EXPECT_EQ(ERR_IO_PENDING, rv);
   EXPECT_NE(OK, callback.WaitForResult());
+}
+
+// Adds coverage to catch regression such as https://crbug.com/622043
+TEST_P(QuicNetworkTransactionTest, QuicServerPush) {
+  params_.origins_to_force_quic_on.insert(
+      HostPortPair::FromString("mail.example.org:443"));
+
+  MockQuicData mock_quic_data;
+  mock_quic_data.AddWrite(ConstructClientRequestHeadersPacket(
+      1, kClientDataStreamId1, true, true,
+      GetRequestHeaders("GET", "https", "/")));
+  QuicStreamOffset server_header_offset = 0;
+  mock_quic_data.AddRead(ConstructServerPushPromisePacket(
+      1, kClientDataStreamId1, kServerDataStreamId1, false,
+      GetRequestHeaders("GET", "https", "/pushed.jpg"), &server_header_offset,
+      &server_maker_));
+  mock_quic_data.AddRead(ConstructServerResponseHeadersPacket(
+      2, kClientDataStreamId1, false, false, GetResponseHeaders("200 OK"),
+      &server_header_offset));
+  mock_quic_data.AddWrite(ConstructClientAckPacket(2, 2, 1, 1));
+  mock_quic_data.AddRead(ConstructServerResponseHeadersPacket(
+      3, kServerDataStreamId1, false, false, GetResponseHeaders("200 OK"),
+      &server_header_offset));
+  mock_quic_data.AddRead(ConstructServerDataPacket(4, kClientDataStreamId1,
+                                                   false, true, 0, "hello!"));
+  mock_quic_data.AddWrite(ConstructClientAckPacket(3, 4, 3, 1));
+  mock_quic_data.AddRead(ConstructServerDataPacket(
+      5, kServerDataStreamId1, false, true, 0, "and hello!"));
+  mock_quic_data.AddWrite(
+      ConstructClientAckAndRstPacket(4, 4, QUIC_RST_ACKNOWLEDGEMENT, 5, 5, 1));
+  mock_quic_data.AddRead(ASYNC, ERR_IO_PENDING);  // No more data to read
+  mock_quic_data.AddRead(ASYNC, 0);               // EOF
+  mock_quic_data.AddSocketDataToFactory(&socket_factory_);
+
+  // The non-alternate protocol job needs to hang in order to guarantee that
+  // the alternate-protocol job will "win".
+  AddHangingNonAlternateProtocolSocketData();
+
+  CreateSession();
+
+  // PUSH_PROMISE handling in the http layer gets exercised here.
+  SendRequestAndExpectQuicResponse("hello!");
+
+  request_.url = GURL("https://mail.example.org/pushed.jpg");
+  SendRequestAndExpectQuicResponse("and hello!");
+
+  // Check that the NetLog was filled reasonably.
+  TestNetLogEntry::List entries;
+  net_log_.GetEntries(&entries);
+  EXPECT_LT(0u, entries.size());
+
+  // Check that we logged a QUIC_HTTP_STREAM_ADOPTED_PUSH_STREAM
+  int pos = ExpectLogContainsSomewhere(
+      entries, 0, NetLog::TYPE_QUIC_HTTP_STREAM_ADOPTED_PUSH_STREAM,
+      NetLog::PHASE_NONE);
+  EXPECT_LT(0, pos);
 }
 
 class QuicNetworkTransactionWithDestinationTest
