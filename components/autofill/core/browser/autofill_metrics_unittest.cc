@@ -1752,6 +1752,120 @@ TEST_F(AutofillMetricsTest, ProfileCheckoutFlowUserActions) {
   }
 }
 
+// Tests that the Autofill_PolledCreditCardSuggestions user action is only
+// logged once if the field is queried repeatedly.
+TEST_F(AutofillMetricsTest, PolledCreditCardSuggestions_DebounceLogs) {
+  personal_data_->RecreateCreditCards(
+      true /* include_local_credit_card */,
+      false /* include_masked_server_credit_card */,
+      false /* include_full_server_credit_card */);
+
+  // Set up the form data.
+  FormData form;
+  form.name = ASCIIToUTF16("TestForm");
+  form.origin = GURL("http://example.com/form.html");
+  form.action = GURL("http://example.com/submit.html");
+
+  FormFieldData field;
+  std::vector<ServerFieldType> field_types;
+  test::CreateTestFormField("Name on card", "cc-name", "", "text", &field);
+  form.fields.push_back(field);
+  field_types.push_back(CREDIT_CARD_NAME_FULL);
+  test::CreateTestFormField("Credit card", "card", "", "text", &field);
+  form.fields.push_back(field);
+  field_types.push_back(CREDIT_CARD_NUMBER);
+  test::CreateTestFormField("Month", "card_month", "", "text", &field);
+  form.fields.push_back(field);
+  field_types.push_back(CREDIT_CARD_EXP_MONTH);
+
+  // Simulate having seen this form on page load.
+  // |form_structure| will be owned by |autofill_manager_|.
+  autofill_manager_->AddSeenForm(form, field_types, field_types);
+
+  // Simulate an Autofill query on a credit card field. A poll should be logged.
+  base::UserActionTester user_action_tester;
+  autofill_manager_->OnQueryFormFieldAutofill(0, form, form.fields[0],
+                                              gfx::RectF());
+  EXPECT_EQ(1, user_action_tester.GetActionCount(
+                   "Autofill_PolledCreditCardSuggestions"));
+
+  // Simulate a second query on the same field. There should still only be one
+  // logged poll.
+  autofill_manager_->OnQueryFormFieldAutofill(0, form, form.fields[0],
+                                              gfx::RectF());
+  EXPECT_EQ(1, user_action_tester.GetActionCount(
+                   "Autofill_PolledCreditCardSuggestions"));
+
+  // Simulate a query to another field. There should be a second poll logged.
+  autofill_manager_->OnQueryFormFieldAutofill(0, form, form.fields[1],
+                                              gfx::RectF());
+  EXPECT_EQ(2, user_action_tester.GetActionCount(
+                   "Autofill_PolledCreditCardSuggestions"));
+
+  // Simulate a query back to the initial field. There should be a third poll
+  // logged.
+  autofill_manager_->OnQueryFormFieldAutofill(0, form, form.fields[0],
+                                              gfx::RectF());
+  EXPECT_EQ(3, user_action_tester.GetActionCount(
+                   "Autofill_PolledCreditCardSuggestions"));
+}
+
+// Tests that the Autofill_PolledProfileSuggestions user action is only logged
+// once if the field is queried repeatedly.
+TEST_F(AutofillMetricsTest, PolledProfileSuggestions_DebounceLogs) {
+  personal_data_->RecreateProfiles(true /* include_local_profile */,
+                                   false /* include_server_profile */);
+
+  // Set up the form data.
+  FormData form;
+  form.name = ASCIIToUTF16("TestForm");
+  form.origin = GURL("http://example.com/form.html");
+  form.action = GURL("http://example.com/submit.html");
+
+  FormFieldData field;
+  std::vector<ServerFieldType> field_types;
+  test::CreateTestFormField("State", "state", "", "text", &field);
+  form.fields.push_back(field);
+  field_types.push_back(ADDRESS_HOME_STATE);
+  test::CreateTestFormField("City", "city", "", "text", &field);
+  form.fields.push_back(field);
+  field_types.push_back(ADDRESS_HOME_CITY);
+  test::CreateTestFormField("Street", "street", "", "text", &field);
+  form.fields.push_back(field);
+  field_types.push_back(ADDRESS_HOME_STREET_ADDRESS);
+
+  // Simulate having seen this form on page load.
+  // |form_structure| will be owned by |autofill_manager_|.
+  autofill_manager_->AddSeenForm(form, field_types, field_types);
+
+  // Simulate an Autofill query on a profile field. A poll should be logged.
+  base::UserActionTester user_action_tester;
+  autofill_manager_->OnQueryFormFieldAutofill(0, form, form.fields[0],
+                                              gfx::RectF());
+  EXPECT_EQ(1, user_action_tester.GetActionCount(
+                   "Autofill_PolledProfileSuggestions"));
+
+  // Simulate a second query on the same field. There should still only be poll
+  // logged.
+  autofill_manager_->OnQueryFormFieldAutofill(0, form, form.fields[0],
+                                              gfx::RectF());
+  EXPECT_EQ(1, user_action_tester.GetActionCount(
+                   "Autofill_PolledProfileSuggestions"));
+
+  // Simulate a query to another field. There should be a second poll logged.
+  autofill_manager_->OnQueryFormFieldAutofill(0, form, form.fields[1],
+                                              gfx::RectF());
+  EXPECT_EQ(2, user_action_tester.GetActionCount(
+                   "Autofill_PolledProfileSuggestions"));
+
+  // Simulate a query back to the initial field. There should be a third poll
+  // logged.
+  autofill_manager_->OnQueryFormFieldAutofill(0, form, form.fields[0],
+                                              gfx::RectF());
+  EXPECT_EQ(3, user_action_tester.GetActionCount(
+                   "Autofill_PolledProfileSuggestions"));
+}
+
 // Test that we log interacted form event for credit cards related.
 TEST_F(AutofillMetricsTest, CreditCardInteractedFormEvents) {
   // Set up our form data.

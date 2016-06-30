@@ -13,6 +13,7 @@
 #include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill/core/browser/field_types.h"
+#include "components/autofill/core/common/form_field_data.h"
 
 namespace base {
 class TimeDelta;
@@ -661,7 +662,7 @@ class AutofillMetrics {
 
     void OnDidInteractWithAutofillableForm();
 
-    void OnDidPollSuggestions();
+    void OnDidPollSuggestions(const FormFieldData& field);
 
     void OnDidShowSuggestions();
 
@@ -691,6 +692,9 @@ class AutofillMetrics {
     bool has_logged_submitted_;
     bool logged_suggestion_filled_was_server_data_;
     bool logged_suggestion_filled_was_masked_server_card_;
+
+    // The last field that was polled for suggestions.
+    FormFieldData last_polled_field_;
   };
 
  private:

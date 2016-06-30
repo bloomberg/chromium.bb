@@ -631,13 +631,22 @@ void AutofillMetrics::FormEventLogger::OnDidInteractWithAutofillableForm() {
   }
 }
 
-void AutofillMetrics::FormEventLogger::OnDidPollSuggestions() {
-  if (is_for_credit_card_) {
-    base::RecordAction(
-        base::UserMetricsAction("Autofill_PolledCreditCardSuggestions"));
-  } else {
-    base::RecordAction(
-        base::UserMetricsAction("Autofill_PolledProfileSuggestions"));
+void AutofillMetrics::FormEventLogger::OnDidPollSuggestions(
+    const FormFieldData& field) {
+  // Record only one poll user action for consecutive polls of the same field.
+  // This is to avoid recording too many poll actions (for example when a user
+  // types in a field, triggering multiple queries) to make the analysis more
+  // simple.
+  if (!field.SameFieldAs(last_polled_field_)) {
+    if (is_for_credit_card_) {
+      base::RecordAction(
+          base::UserMetricsAction("Autofill_PolledCreditCardSuggestions"));
+    } else {
+      base::RecordAction(
+          base::UserMetricsAction("Autofill_PolledProfileSuggestions"));
+    }
+
+    last_polled_field_ = field;
   }
 }
 

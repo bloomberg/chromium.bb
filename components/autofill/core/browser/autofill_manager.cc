@@ -1660,7 +1660,7 @@ std::vector<Suggestion> AutofillManager::GetProfileSuggestions(
     const FormStructure& form,
     const FormFieldData& field,
     const AutofillField& autofill_field) const {
-  address_form_event_logger_->OnDidPollSuggestions();
+  address_form_event_logger_->OnDidPollSuggestions(field);
 
   std::vector<ServerFieldType> field_types(form.field_count());
   for (size_t i = 0; i < form.field_count(); ++i) {
@@ -1688,7 +1688,7 @@ std::vector<Suggestion> AutofillManager::GetProfileSuggestions(
 std::vector<Suggestion> AutofillManager::GetCreditCardSuggestions(
     const FormFieldData& field,
     const AutofillType& type) const {
-  credit_card_form_event_logger_->OnDidPollSuggestions();
+  credit_card_form_event_logger_->OnDidPollSuggestions(field);
 
   // The field value is sanitized before attempting to match it to the user's
   // data.
