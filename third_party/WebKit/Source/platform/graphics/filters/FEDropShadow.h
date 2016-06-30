@@ -32,6 +32,9 @@ public:
 
     FloatRect mapRect(const FloatRect&, bool forward = true) const final;
 
+    void setShadowColor(const Color& color) { m_shadowColor = color; }
+    void setShadowOpacity(float opacity) { m_shadowOpacity = opacity; }
+
     TextStream& externalRepresentation(TextStream&, int indention) const override;
     sk_sp<SkImageFilter> createImageFilter() override;
 

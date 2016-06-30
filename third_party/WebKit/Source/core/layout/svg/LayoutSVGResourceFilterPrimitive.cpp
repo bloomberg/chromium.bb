@@ -36,14 +36,12 @@ void LayoutSVGResourceFilterPrimitive::styleDidChange(StyleDifference diff, cons
     LayoutObject* filter = parent();
     if (!filter)
         return;
-    ASSERT(filter->isSVGResourceFilter());
-
+    DCHECK(filter->isSVGResourceFilter());
     if (!oldStyle)
         return;
-
-    const SVGComputedStyle& newStyle = this->style()->svgStyle();
-    ASSERT(element());
-    if (isSVGFEFloodElement(*element())) {
+    const SVGComputedStyle& newStyle = this->styleRef().svgStyle();
+    DCHECK(element());
+    if (isSVGFEFloodElement(*element()) || isSVGFEDropShadowElement(*element())) {
         if (newStyle.floodColor() != oldStyle->svgStyle().floodColor())
             toLayoutSVGResourceFilter(filter)->primitiveAttributeChanged(this, SVGNames::flood_colorAttr);
         if (newStyle.floodOpacity() != oldStyle->svgStyle().floodOpacity())

@@ -59,6 +59,25 @@ void SVGFEDropShadowElement::setStdDeviation(float x, float y)
     invalidate();
 }
 
+bool SVGFEDropShadowElement::setFilterEffectAttribute(FilterEffect* effect, const QualifiedName& attrName)
+{
+    DCHECK(layoutObject());
+    FEDropShadow* dropShadow = static_cast<FEDropShadow*>(effect);
+
+    const SVGComputedStyle& svgStyle = layoutObject()->styleRef().svgStyle();
+    if (attrName == SVGNames::flood_colorAttr) {
+        dropShadow->setShadowColor(svgStyle.floodColor());
+        return true;
+    }
+    if (attrName == SVGNames::flood_opacityAttr) {
+        dropShadow->setShadowOpacity(svgStyle.floodOpacity());
+        return true;
+    }
+
+    NOTREACHED();
+    return false;
+}
+
 void SVGFEDropShadowElement::svgAttributeChanged(const QualifiedName& attrName)
 {
     if (attrName == SVGNames::inAttr
