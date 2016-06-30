@@ -1385,6 +1385,8 @@ crbug.com/622672 [ Mac ] virtual/threaded/fast/scroll-behavior/overflow-interrup
 crbug.com/624023 virtual/threaded/fast/compositorworker/basic-plumbing-worker-to-main.html [ Pass Timeout ]
 crbug.com/624023 virtual/threaded/fast/compositorworker/basic-plumbing-main-to-worker.html [ Pass Timeout ]
 
+crbug.com/624269 transforms/2d/zoom-menulist.html [ NeedsRebaseline ]
+
 crbug.com/624430 [ Win10 ] fast/text/font-features/caps-casemapping.html [ Failure ]
 
 crbug.com/624709 [ Win ] virtual/gpu-rasterization/fast/images/png-with-color-profile.html [ Failure ]

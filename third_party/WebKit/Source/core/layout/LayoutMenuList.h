@@ -80,6 +80,7 @@ private:
     void adjustInnerStyle();
     void setText(const String&);
     void setTextFromOption(int optionIndex);
+    void updateInnerBlockHeight();
     void updateOptionsWidth() const;
     float computeTextWidth(const TextRun&, const ComputedStyle&) const;
     void setIndexToSelectOnCancel(int listIndex);

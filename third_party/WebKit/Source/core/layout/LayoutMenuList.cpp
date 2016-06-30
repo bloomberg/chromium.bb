@@ -80,8 +80,6 @@ void LayoutMenuList::createInnerBlock()
 
     adjustInnerStyle();
     LayoutFlexibleBox::addChild(m_innerBlock);
-
-    m_innerBlockHeight = style()->getFontMetrics().height() + m_innerBlock->borderAndPaddingHeight();
 }
 
 void LayoutMenuList::adjustInnerStyle()
@@ -147,6 +145,12 @@ void LayoutMenuList::styleDidChange(StyleDifference diff, const ComputedStyle* o
 
     m_buttonText->setStyle(mutableStyle());
     adjustInnerStyle();
+    updateInnerBlockHeight();
+}
+
+void LayoutMenuList::updateInnerBlockHeight()
+{
+    m_innerBlockHeight = style()->getFontMetrics().height() + m_innerBlock->borderAndPaddingHeight();
 }
 
 void LayoutMenuList::updateOptionsWidth() const
