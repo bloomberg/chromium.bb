@@ -169,10 +169,9 @@ class PictureLayerImplTest : public TestLayerTreeHostBase {
     layer->draw_properties().screen_space_transform = scale_transform;
     layer->set_is_drawn_render_surface_layer_list_member(true);
     DCHECK_EQ(layer->GetIdealContentsScale(), ideal_contents_scale);
-    layer->draw_properties().maximum_animation_contents_scale =
-        maximum_animation_contents_scale;
-    layer->draw_properties().starting_animation_contents_scale =
-        starting_animation_contents_scale;
+    layer->layer_tree_impl()->property_trees()->SetAnimationScalesForTesting(
+        layer->transform_tree_index(), maximum_animation_contents_scale,
+        starting_animation_contents_scale);
     layer->draw_properties().screen_space_transform_is_animating =
         animating_transform_to_screen;
   }

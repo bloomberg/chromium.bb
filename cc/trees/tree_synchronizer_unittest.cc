@@ -657,5 +657,51 @@ TEST_F(TreeSynchronizerTest, SynchronizeScrollTreeScrollOffsetMap) {
   EXPECT_TRUE(is_equal(scroll_offset_map, scroll_tree.scroll_offset_map()));
 }
 
+TEST_F(TreeSynchronizerTest, RefreshPropertyTreesCachedData) {
+  host_->InitializeSingleThreaded(&client_, base::ThreadTaskRunnerHandle::Get(),
+                                  nullptr);
+  LayerTreeSettings settings;
+  FakeLayerTreeHostImplClient client;
+  FakeImplTaskRunnerProvider task_runner_provider;
+  FakeRenderingStatsInstrumentation stats_instrumentation;
+  TestSharedBitmapManager shared_bitmap_manager;
+  TestTaskGraphRunner task_graph_runner;
+  FakeLayerTreeHostImpl* host_impl = host_->host_impl();
+  host_impl->CreatePendingTree();
+
+  scoped_refptr<Layer> layer_tree_root = Layer::Create();
+  scoped_refptr<Layer> transform_layer = Layer::Create();
+
+  gfx::Transform scale_transform;
+  scale_transform.Scale3d(2.f, 2.f, 2.f);
+  // Force adding a transform node for the layer.
+  transform_layer->SetTransform(scale_transform);
+
+  layer_tree_root->AddChild(transform_layer);
+
+  host_->SetRootLayer(layer_tree_root);
+  host_->BuildPropertyTreesForTesting();
+  host_->CommitAndCreatePendingTree();
+  host_impl->ActivateSyncTree();
+
+  // This arbitrarily set the animation scale for transform_layer and see if it
+  // is
+  // refreshed when pushing layer trees.
+  host_impl->active_tree()->property_trees()->SetAnimationScalesForTesting(
+      transform_layer->transform_tree_index(), 10.f, 10.f);
+  EXPECT_EQ(
+      CombinedAnimationScale(10.f, 10.f),
+      host_impl->active_tree()->property_trees()->GetAnimationScales(
+          transform_layer->transform_tree_index(), host_impl->active_tree()));
+
+  host_impl->CreatePendingTree();
+  host_->CommitAndCreatePendingTree();
+  host_impl->ActivateSyncTree();
+  EXPECT_EQ(
+      CombinedAnimationScale(0.f, 0.f),
+      host_impl->active_tree()->property_trees()->GetAnimationScales(
+          transform_layer->transform_tree_index(), host_impl->active_tree()));
+}
+
 }  // namespace
 }  // namespace cc

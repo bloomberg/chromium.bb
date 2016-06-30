@@ -1209,17 +1209,6 @@ void ComputeLayerDrawProperties(LayerImpl* layer,
   }
   layer->draw_properties().screen_space_transform_is_animating =
       transform_node->data.to_screen_is_potentially_animated;
-  if (layer->layer_tree_impl()
-          ->settings()
-          .layer_transforms_should_scale_layer_contents) {
-    layer->draw_properties().maximum_animation_contents_scale =
-        transform_node->data.combined_maximum_animation_target_scale;
-    layer->draw_properties().starting_animation_contents_scale =
-        transform_node->data.combined_starting_animation_scale;
-  } else {
-    layer->draw_properties().maximum_animation_contents_scale = 0.f;
-    layer->draw_properties().starting_animation_contents_scale = 0.f;
-  }
 
   layer->draw_properties().opacity =
       LayerDrawOpacity(layer, property_trees->effect_tree);

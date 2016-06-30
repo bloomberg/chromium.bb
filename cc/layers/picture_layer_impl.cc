@@ -1025,8 +1025,11 @@ void PictureLayerImpl::RecalculateRasterScales() {
       !ShouldAdjustRasterScaleDuringScaleAnimations()) {
     bool can_raster_at_maximum_scale = false;
     bool should_raster_at_starting_scale = false;
-    float maximum_scale = draw_properties().maximum_animation_contents_scale;
-    float starting_scale = draw_properties().starting_animation_contents_scale;
+    CombinedAnimationScale animation_scales =
+        layer_tree_impl()->property_trees()->GetAnimationScales(
+            transform_tree_index(), layer_tree_impl());
+    float maximum_scale = animation_scales.maximum_animation_scale;
+    float starting_scale = animation_scales.starting_animation_scale;
     if (maximum_scale) {
       gfx::Size bounds_at_maximum_scale =
           gfx::ScaleToCeiledSize(raster_source_->GetSize(), maximum_scale);

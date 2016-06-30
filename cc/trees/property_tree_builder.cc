@@ -558,17 +558,6 @@ bool AddTransformNodeIfNeeded(
   node->data.has_potential_animation = has_potentially_animated_transform;
   node->data.is_currently_animating = layer->TransformIsAnimating();
   if (has_potentially_animated_transform) {
-    float maximum_animation_target_scale = 0.f;
-    if (layer->MaximumTargetScale(&maximum_animation_target_scale)) {
-      node->data.local_maximum_animation_target_scale =
-          maximum_animation_target_scale;
-    }
-
-    float starting_animation_scale = 0.f;
-    if (layer->AnimationStartScale(&starting_animation_scale)) {
-      node->data.local_starting_animation_scale = starting_animation_scale;
-    }
-
     node->data.has_only_translation_animations =
         layer->HasOnlyTranslationTransforms();
   }
@@ -1393,6 +1382,7 @@ void PropertyTreeBuilder::BuildPropertyTrees(
       outer_viewport_scroll_layer, overscroll_elasticity_layer,
       elastic_overscroll, page_scale_factor, device_scale_factor, viewport,
       device_transform, property_trees, color);
+  property_trees->ResetCachedData();
 }
 
 }  // namespace cc

@@ -539,21 +539,9 @@ void LayerImpl::UpdatePropertyTreeTransformIsAnimated(bool is_animated) {
     if (node->data.has_potential_animation != is_animated) {
       node->data.has_potential_animation = is_animated;
       if (is_animated) {
-        float maximum_target_scale = 0.f;
-        node->data.local_maximum_animation_target_scale =
-            MaximumTargetScale(&maximum_target_scale) ? maximum_target_scale
-                                                      : 0.f;
-
-        float animation_start_scale = 0.f;
-        node->data.local_starting_animation_scale =
-            AnimationStartScale(&animation_start_scale) ? animation_start_scale
-                                                        : 0.f;
-
         node->data.has_only_translation_animations =
             HasOnlyTranslationTransforms();
       } else {
-        node->data.local_maximum_animation_target_scale = 0.f;
-        node->data.local_starting_animation_scale = 0.f;
         node->data.has_only_translation_animations = true;
       }
 

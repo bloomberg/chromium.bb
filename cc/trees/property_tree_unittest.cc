@@ -26,7 +26,6 @@ TEST(PropertyTreeSerializationTest, TransformNodeDataSerialization) {
   original.has_potential_animation = false;
   original.to_screen_is_potentially_animated = false;
   original.has_only_translation_animations = false;
-  original.to_screen_has_scale_animation = false;
   original.flattens_inherited_transform = false;
   original.node_and_ancestors_are_flat = false;
   original.node_and_ancestors_have_only_integer_translation = false;
@@ -38,10 +37,6 @@ TEST(PropertyTreeSerializationTest, TransformNodeDataSerialization) {
   original.affected_by_outer_viewport_bounds_delta_y = false;
   original.in_subtree_of_page_scale_layer = false;
   original.post_local_scale_factor = 0.5f;
-  original.local_maximum_animation_target_scale = 0.6f;
-  original.local_starting_animation_scale = 0.7f;
-  original.combined_maximum_animation_target_scale = 0.8f;
-  original.combined_starting_animation_scale = 0.9f;
   original.sublayer_scale = gfx::Vector2dF(0.5f, 0.5f);
   original.scroll_offset = gfx::ScrollOffset(1.5f, 1.5f);
   original.scroll_snap = gfx::Vector2dF(0.4f, 0.4f);
@@ -71,7 +66,8 @@ TEST(PropertyTreeSerializationTest, TransformNodeSerialization) {
 }
 
 TEST(PropertyTreeSerializationTest, TransformTreeSerialization) {
-  TransformTree original;
+  PropertyTrees property_trees;
+  TransformTree& original = property_trees.transform_tree;
   TransformNode& root = *original.Node(0);
   root.id = 0;
   root.owner_id = 1;

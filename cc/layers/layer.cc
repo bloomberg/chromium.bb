@@ -1715,23 +1715,11 @@ void Layer::OnTransformIsPotentiallyAnimatingChanged(
 
   node->data.has_potential_animation = has_potential_animation;
   if (has_potential_animation) {
-    float maximum_target_scale = 0.f;
-    node->data.local_maximum_animation_target_scale =
-        MaximumTargetScale(&maximum_target_scale) ? maximum_target_scale : 0.f;
-
-    float animation_start_scale = 0.f;
-    node->data.local_starting_animation_scale =
-        AnimationStartScale(&animation_start_scale) ? animation_start_scale
-                                                    : 0.f;
-
     node->data.has_only_translation_animations = HasOnlyTranslationTransforms();
-
-    } else {
-      node->data.local_maximum_animation_target_scale = 0.f;
-      node->data.local_starting_animation_scale = 0.f;
-      node->data.has_only_translation_animations = true;
-    }
-    property_trees->transform_tree.set_needs_update(true);
+  } else {
+    node->data.has_only_translation_animations = true;
+  }
+  property_trees->transform_tree.set_needs_update(true);
 }
 
 void Layer::OnOpacityIsCurrentlyAnimatingChanged(bool is_currently_animating) {

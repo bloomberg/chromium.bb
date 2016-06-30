@@ -120,7 +120,6 @@ struct CC_EXPORT TransformNodeData {
   bool is_currently_animating : 1;
   bool to_screen_is_potentially_animated : 1;
   bool has_only_translation_animations : 1;
-  bool to_screen_has_scale_animation : 1;
 
   // Flattening, when needed, is only applied to a node's inherited transform,
   // never to its local transform.
@@ -156,24 +155,6 @@ struct CC_EXPORT TransformNodeData {
   // TODO(vollick): will be moved when accelerated effects are implemented.
   float post_local_scale_factor;
 
-  // The maximum scale that that node's |local| transform will have during
-  // current animations, considering only scales at keyframes not including the
-  // starting keyframe of each animation.
-  float local_maximum_animation_target_scale;
-
-  // The maximum scale that this node's |local| transform will have during
-  // current animatons, considering only the starting scale of each animation.
-  float local_starting_animation_scale;
-
-  // The maximum scale that this node's |to_target| transform will have during
-  // current animations, considering only scales at keyframes not incuding the
-  // starting keyframe of each animation.
-  float combined_maximum_animation_target_scale;
-
-  // The maximum scale that this node's |to_target| transform will have during
-  // current animations, considering only the starting scale of each animation.
-  float combined_starting_animation_scale;
-
   gfx::Vector2dF sublayer_scale;
 
   // TODO(vollick): will be moved when accelerated effects are implemented.
@@ -205,6 +186,7 @@ struct CC_EXPORT TransformNodeData {
   void AsValueInto(base::trace_event::TracedValue* value) const;
 };
 
+// TODO(sunxd): move this into PropertyTrees::cached_data_.
 struct CC_EXPORT TransformCachedNodeData {
   TransformCachedNodeData();
   TransformCachedNodeData(const TransformCachedNodeData& other);
@@ -727,6 +709,60 @@ class CC_EXPORT ScrollTree final : public PropertyTree<ScrollNode> {
                                   LayerTreeImpl* layer_tree_impl);
 };
 
+struct AnimationScaleData {
+  // Variable used to invalidate cached animation scale data when transform tree
+  // updates.
+  int update_number;
+
+  // Current animations, considering only scales at keyframes not including the
+  // starting keyframe of each animation.
+  float local_maximum_animation_target_scale;
+
+  // The maximum scale that this node's |local| transform will have during
+  // current animatons, considering only the starting scale of each animation.
+  float local_starting_animation_scale;
+
+  // The maximum scale that this node's |to_target| transform will have during
+  // current animations, considering only scales at keyframes not incuding the
+  // starting keyframe of each animation.
+  float combined_maximum_animation_target_scale;
+
+  // The maximum scale that this node's |to_target| transform will have during
+  // current animations, considering only the starting scale of each animation.
+  float combined_starting_animation_scale;
+
+  bool to_screen_has_scale_animation;
+
+  AnimationScaleData() {
+    update_number = -1;
+    local_maximum_animation_target_scale = 0.f;
+    local_starting_animation_scale = 0.f;
+    combined_maximum_animation_target_scale = 0.f;
+    combined_starting_animation_scale = 0.f;
+    to_screen_has_scale_animation = false;
+  }
+};
+
+struct CombinedAnimationScale {
+  float maximum_animation_scale;
+  float starting_animation_scale;
+
+  CombinedAnimationScale(float maximum, float starting)
+      : maximum_animation_scale(maximum), starting_animation_scale(starting) {}
+  bool operator==(const CombinedAnimationScale& other) const {
+    return maximum_animation_scale == other.maximum_animation_scale &&
+           starting_animation_scale == other.starting_animation_scale;
+  }
+};
+
+struct PropertyTreesCachedData {
+  int property_tree_update_number;
+  std::vector<AnimationScaleData> animation_scales;
+
+  PropertyTreesCachedData();
+  ~PropertyTreesCachedData();
+};
+
 class CC_EXPORT PropertyTrees final {
  public:
   PropertyTrees();
@@ -791,10 +827,20 @@ class CC_EXPORT PropertyTrees final {
 
   std::unique_ptr<base::trace_event::TracedValue> AsTracedValue() const;
 
+  CombinedAnimationScale GetAnimationScales(int transform_node_id,
+                                            LayerTreeImpl* layer_tree_impl);
+  void SetAnimationScalesForTesting(int transform_id,
+                                    float maximum_animation_scale,
+                                    float starting_animation_scale);
+  void ResetCachedData();
+  void UpdateCachedNumber();
+
  private:
   gfx::Vector2dF inner_viewport_container_bounds_delta_;
   gfx::Vector2dF outer_viewport_container_bounds_delta_;
   gfx::Vector2dF inner_viewport_scroll_bounds_delta_;
+
+  PropertyTreesCachedData cached_data_;
 };
 
 }  // namespace cc

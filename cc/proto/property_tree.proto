@@ -36,7 +36,6 @@ message TranformNodeData {
   optional bool is_currently_animating = 42;
   optional bool to_screen_is_potentially_animated = 16;
   optional bool has_only_translation_animations = 17;
-  optional bool to_screen_has_scale_animation = 18;
   optional bool flattens_inherited_transform = 19;
   optional bool node_and_ancestors_are_flat = 20;
   optional bool node_and_ancestors_have_only_integer_translation = 21;
@@ -49,10 +48,6 @@ message TranformNodeData {
   optional bool in_subtree_of_page_scale_layer = 28;
   optional bool transform_changed = 40;
   optional float post_local_scale_factor = 29;
-  optional float local_maximum_animation_target_scale = 30;
-  optional float local_starting_animation_scale = 31;
-  optional float combined_maximum_animation_target_scale = 32;
-  optional float combined_starting_animation_scale = 33;
 
   optional Vector2dF sublayer_scale = 34;
   optional ScrollOffset scroll_offset = 35;

@@ -142,6 +142,22 @@ class LayerTreeHostCommonTest : public LayerTreeHostCommonTestBase,
       layer_impl->layer_tree_impl()->DidUpdateScrollOffset(
           layer_impl->id(), layer_impl->transform_tree_index());
   }
+
+  static float GetMaximumAnimationScale(LayerImpl* layer_impl) {
+    return layer_impl->layer_tree_impl()
+        ->property_trees()
+        ->GetAnimationScales(layer_impl->transform_tree_index(),
+                             layer_impl->layer_tree_impl())
+        .maximum_animation_scale;
+  }
+
+  static float GetStartingAnimationScale(LayerImpl* layer_impl) {
+    return layer_impl->layer_tree_impl()
+        ->property_trees()
+        ->GetAnimationScales(layer_impl->transform_tree_index(),
+                             layer_impl->layer_tree_impl())
+        .starting_animation_scale;
+  }
 };
 
 }  // namespace cc
