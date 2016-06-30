@@ -424,8 +424,11 @@ void DownloadController::DangerousDownloadValidated(
   DownloadItem* item = dlm->GetDownloadByGuid(download_guid);
   if (!item)
     return;
-  if (accept)
+  if (accept) {
     item->ValidateDangerousDownload();
-  else
+  } else {
+    DownloadController::RecordDownloadCancelReason(
+        DownloadController::CANCEL_REASON_DANGEROUS_DOWNLOAD_INFOBAR_DISMISSED);
     item->Remove();
+  }
 }

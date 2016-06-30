@@ -82706,6 +82706,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="2" label="Notification dismissed"/>
   <int value="3" label="Overwrite infobar dismissed"/>
   <int value="4" label="No storage permission"/>
+  <int value="5" label="Dangerous download infobar dismissed"/>
 </enum>
 
 <enum name="MobileDownloadInterceptFailureReason" type="int">

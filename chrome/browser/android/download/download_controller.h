@@ -59,6 +59,7 @@ class DownloadController : public DownloadControllerBase {
     CANCEL_REASON_NOTIFICATION_DISMISSED,
     CANCEL_REASON_OVERWRITE_INFOBAR_DISMISSED,
     CANCEL_REASON_NO_STORAGE_PERMISSION,
+    CANCEL_REASON_DANGEROUS_DOWNLOAD_INFOBAR_DISMISSED,
     CANCEL_REASON_MAX
   };
   static void RecordDownloadCancelReason(DownloadCancelReason reason);
