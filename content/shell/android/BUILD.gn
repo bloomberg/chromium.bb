@@ -73,9 +73,9 @@ android_resources("content_shell_apk_resources") {
   resource_dirs = [ "shell_apk/res" ]
   deps = [
     ":content_shell_java_resources",
+    ":content_shell_manifest",
   ]
   android_manifest = content_shell_manifest
-  android_manifest_dep = ":content_shell_manifest"
 }
 
 android_library("content_shell_apk_java") {
@@ -176,7 +176,9 @@ if (current_cpu != "x64") {
     testonly = true
     resource_dirs = [ "linker_test_apk/res" ]
     android_manifest = chromium_linker_test_manifest
-    android_manifest_dep = ":chromium_linker_test_manifest"
+    deps = [
+      ":chromium_linker_test_manifest",
+    ]
   }
 
   # GYP: //content/content_tests.gypi:chromium_linker_test_apk
