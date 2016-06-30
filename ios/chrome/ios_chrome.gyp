@@ -543,6 +543,8 @@
         'browser/ssl/ios_chrome_security_state_model_client.mm',
         'browser/ssl/ios_ssl_blocking_page.h',
         'browser/ssl/ios_ssl_blocking_page.mm',
+        'browser/ssl/ios_ssl_error_handler.h',
+        'browser/ssl/ios_ssl_error_handler.mm',
         'browser/suggestions/image_fetcher_impl.h',
         'browser/suggestions/image_fetcher_impl.mm',
         'browser/suggestions/ios_image_decoder_impl.h',

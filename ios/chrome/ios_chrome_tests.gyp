@@ -69,6 +69,7 @@
         'browser/snapshots/lru_cache_unittest.mm',
         'browser/snapshots/snapshot_cache_unittest.mm',
         'browser/snapshots/snapshots_util_unittest.mm',
+        'browser/ssl/ios_ssl_error_handler_unittest.mm',
         'browser/translate/translate_service_ios_unittest.cc',
         'browser/ui/commands/set_up_for_testing_command_unittest.mm',
         'browser/ui/context_menu/context_menu_coordinator_unittest.mm',
@@ -86,6 +87,7 @@
           'action_name': 'copy_ios_chrome_test_data',
           'variables': {
             'test_data_files': [
+              '../../net/data/ssl/certificates/',
               'test/data/webdata/bookmarkimages',
             ],
             'test_data_prefix': 'ios/chrome',

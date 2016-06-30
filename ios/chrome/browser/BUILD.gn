@@ -406,6 +406,8 @@ source_set("browser") {
     "ssl/ios_chrome_security_state_model_client.mm",
     "ssl/ios_ssl_blocking_page.h",
     "ssl/ios_ssl_blocking_page.mm",
+    "ssl/ios_ssl_error_handler.h",
+    "ssl/ios_ssl_error_handler.mm",
     "suggestions/image_fetcher_impl.h",
     "suggestions/image_fetcher_impl.mm",
     "suggestions/ios_image_decoder_impl.h",
