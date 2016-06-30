@@ -329,7 +329,7 @@ WebInputEventResult EventHandler::handleMousePressEvent(const MouseEventWithHitT
 
     bool singleClick = event.event().clickCount() <= 1;
 
-    m_mouseDownMayStartDrag = singleClick && !isLinkSelection(event);
+    m_mouseDownMayStartDrag = singleClick && !isLinkSelection(event) && !isExtendingSelection(event);
 
     selectionController().handleMousePressEvent(event);
 

@@ -128,8 +128,8 @@ bool SelectionController::handleMousePressEventSingleClick(const MouseEventWithH
     if (!(innerNode && innerNode->layoutObject() && m_mouseDownMayStartSelect))
         return false;
 
-    // Extend the selection if the Shift key is down, unless the click is in a link.
-    bool extendSelection = event.event().shiftKey() && !event.isOverLink();
+    // Extend the selection if the Shift key is down, unless the click is in a link or image.
+    bool extendSelection = isExtendingSelection(event);
 
     // Don't restart the selection when the mouse is pressed on an
     // existing selection so we can allow for text dragging.
@@ -668,6 +668,12 @@ FrameSelection& SelectionController::selection() const
 bool isLinkSelection(const MouseEventWithHitTestResults& event)
 {
     return event.event().altKey() && event.isOverLink();
+}
+
+bool isExtendingSelection(const MouseEventWithHitTestResults& event)
+{
+    bool isMouseDownOnLinkOrImage = event.isOverLink() || event.hitTestResult().image();
+    return event.event().shiftKey() && !isMouseDownOnLinkOrImage;
 }
 
 } // namespace blink

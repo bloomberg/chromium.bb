@@ -90,6 +90,7 @@ private:
 };
 
 bool isLinkSelection(const MouseEventWithHitTestResults&);
+bool isExtendingSelection(const MouseEventWithHitTestResults&);
 
 } // namespace blink
 
