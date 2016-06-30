@@ -26,6 +26,10 @@ namespace mojo {
 // followed by payload.
 class Message {
  public:
+  static const uint32_t kFlagExpectsResponse = 1 << 0;
+  static const uint32_t kFlagIsResponse = 1 << 1;
+  static const uint32_t kFlagIsSync = 1 << 2;
+
   Message();
   ~Message();
 

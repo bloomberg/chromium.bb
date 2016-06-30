@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MOJO_PUBLIC_CPP_BINDINGS_LIB_PIPE_CONTROL_MESSAGE_PROXY_H_
-#define MOJO_PUBLIC_CPP_BINDINGS_LIB_PIPE_CONTROL_MESSAGE_PROXY_H_
+#ifndef MOJO_PUBLIC_CPP_BINDINGS_PIPE_CONTROL_MESSAGE_PROXY_H_
+#define MOJO_PUBLIC_CPP_BINDINGS_PIPE_CONTROL_MESSAGE_PROXY_H_
 
 #include "base/macros.h"
 #include "mojo/public/cpp/bindings/interface_id.h"
@@ -12,8 +12,6 @@
 namespace mojo {
 
 class MessageReceiver;
-
-namespace internal {
 
 // Proxy for request messages defined in pipe_control_messages.mojom.
 class PipeControlMessageProxy {
@@ -27,12 +25,11 @@ class PipeControlMessageProxy {
  private:
   // Not owned.
   MessageReceiver* receiver_;
-  SerializationContext context_;
+  internal::SerializationContext context_;
 
   DISALLOW_COPY_AND_ASSIGN(PipeControlMessageProxy);
 };
 
-}  // namespace internal
 }  // namespace mojo
 
-#endif  // MOJO_PUBLIC_CPP_BINDINGS_LIB_PIPE_CONTROL_MESSAGE_PROXY_H_
+#endif  // MOJO_PUBLIC_CPP_BINDINGS_PIPE_CONTROL_MESSAGE_PROXY_H_

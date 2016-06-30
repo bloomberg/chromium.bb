@@ -22,9 +22,9 @@
 #include "mojo/public/cpp/bindings/interface_ptr_info.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/public/cpp/bindings/lib/filter_chain.h"
-#include "mojo/public/cpp/bindings/lib/message_header_validator.h"
 #include "mojo/public/cpp/bindings/lib/multiplex_router.h"
 #include "mojo/public/cpp/bindings/lib/router.h"
+#include "mojo/public/cpp/bindings/message_header_validator.h"
 #include "mojo/public/cpp/bindings/scoped_interface_endpoint_handle.h"
 #include "mojo/public/cpp/system/core.h"
 
@@ -51,7 +51,7 @@ class BindingState<Interface, false> {
             scoped_refptr<base::SingleThreadTaskRunner> runner) {
     DCHECK(!router_);
     internal::FilterChain filters;
-    filters.Append<internal::MessageHeaderValidator>(Interface::Name_);
+    filters.Append<MessageHeaderValidator>(Interface::Name_);
     filters.Append<typename Interface::RequestValidator_>();
 
     router_ =

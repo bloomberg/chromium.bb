@@ -2,14 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MOJO_PUBLIC_CPP_BINDINGS_LIB_MESSAGE_HEADER_VALIDATOR_H_
-#define MOJO_PUBLIC_CPP_BINDINGS_LIB_MESSAGE_HEADER_VALIDATOR_H_
+#ifndef MOJO_PUBLIC_CPP_BINDINGS_MESSAGE_HEADER_VALIDATOR_H_
+#define MOJO_PUBLIC_CPP_BINDINGS_MESSAGE_HEADER_VALIDATOR_H_
 
 #include "mojo/public/cpp/bindings/message.h"
 #include "mojo/public/cpp/bindings/message_filter.h"
 
 namespace mojo {
-namespace internal {
 
 class MessageHeaderValidator : public MessageFilter {
  public:
@@ -27,7 +26,6 @@ class MessageHeaderValidator : public MessageFilter {
   std::string description_;
 };
 
-}  // namespace internal
 }  // namespace mojo
 
-#endif  // MOJO_PUBLIC_CPP_BINDINGS_LIB_MESSAGE_HEADER_VALIDATOR_H_
+#endif  // MOJO_PUBLIC_CPP_BINDINGS_MESSAGE_HEADER_VALIDATOR_H_

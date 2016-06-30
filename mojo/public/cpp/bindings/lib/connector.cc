@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/public/cpp/bindings/lib/connector.h"
+#include "mojo/public/cpp/bindings/connector.h"
 
 #include <stdint.h>
 #include <utility>
@@ -12,10 +12,9 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/synchronization/lock.h"
-#include "mojo/public/cpp/bindings/lib/sync_handle_watcher.h"
+#include "mojo/public/cpp/bindings/sync_handle_watcher.h"
 
 namespace mojo {
-namespace internal {
 
 namespace {
 
@@ -353,5 +352,4 @@ void Connector::EnsureSyncWatcherExists() {
                  base::Unretained(this))));
 }
 
-}  // namespace internal
 }  // namespace mojo

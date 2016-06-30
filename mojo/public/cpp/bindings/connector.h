@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MOJO_PUBLIC_CPP_BINDINGS_LIB_CONNECTOR_H_
-#define MOJO_PUBLIC_CPP_BINDINGS_LIB_CONNECTOR_H_
+#ifndef MOJO_PUBLIC_CPP_BINDINGS_CONNECTOR_H_
+#define MOJO_PUBLIC_CPP_BINDINGS_CONNECTOR_H_
 
 #include <memory>
 
@@ -12,8 +12,8 @@
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_checker.h"
-#include "mojo/public/cpp/bindings/lib/sync_handle_watcher.h"
 #include "mojo/public/cpp/bindings/message.h"
+#include "mojo/public/cpp/bindings/sync_handle_watcher.h"
 #include "mojo/public/cpp/system/core.h"
 #include "mojo/public/cpp/system/watcher.h"
 
@@ -22,7 +22,6 @@ class Lock;
 }
 
 namespace mojo {
-namespace internal {
 
 // The Connector class is responsible for performing read/write operations on a
 // MessagePipe. It writes messages it receives through the MessageReceiver
@@ -207,7 +206,6 @@ class Connector : public MessageReceiver {
   DISALLOW_COPY_AND_ASSIGN(Connector);
 };
 
-}  // namespace internal
 }  // namespace mojo
 
-#endif  // MOJO_PUBLIC_CPP_BINDINGS_LIB_CONNECTOR_H_
+#endif  // MOJO_PUBLIC_CPP_BINDINGS_CONNECTOR_H_

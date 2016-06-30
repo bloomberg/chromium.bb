@@ -14,12 +14,6 @@ namespace internal {
 
 #pragma pack(push, 1)
 
-enum {
-  kMessageExpectsResponse = 1 << 0,
-  kMessageIsResponse = 1 << 1,
-  kMessageIsSync = 1 << 2
-};
-
 struct MessageHeader : internal::StructHeader {
   // Interface ID for identifying multiple interfaces running on the same
   // message pipe.
@@ -34,7 +28,7 @@ struct MessageHeader : internal::StructHeader {
 static_assert(sizeof(MessageHeader) == 24, "Bad sizeof(MessageHeader)");
 
 struct MessageHeaderWithRequestID : MessageHeader {
-  // Only used if either kMessageExpectsResponse or kMessageIsResponse is set in
+  // Only used if either kFlagExpectsResponse or kFlagIsResponse is set in
   // order to match responses with corresponding requests.
   uint64_t request_id;
 };

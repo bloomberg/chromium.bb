@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MOJO_PUBLIC_CPP_BINDINGS_LIB_SYNC_HANDLE_WATCHER_H_
-#define MOJO_PUBLIC_CPP_BINDINGS_LIB_SYNC_HANDLE_WATCHER_H_
+#ifndef MOJO_PUBLIC_CPP_BINDINGS_SYNC_HANDLE_WATCHER_H_
+#define MOJO_PUBLIC_CPP_BINDINGS_SYNC_HANDLE_WATCHER_H_
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -12,7 +12,6 @@
 #include "mojo/public/cpp/system/core.h"
 
 namespace mojo {
-namespace internal {
 
 // SyncHandleWatcher supports watching a handle synchronously. It also supports
 // registering the handle with a thread-local storage (SyncHandleRegistry), so
@@ -70,7 +69,6 @@ class SyncHandleWatcher {
   DISALLOW_COPY_AND_ASSIGN(SyncHandleWatcher);
 };
 
-}  // namespace internal
 }  // namespace mojo
 
-#endif  // MOJO_PUBLIC_CPP_BINDINGS_LIB_SYNC_HANDLE_WATCHER_H_
+#endif  // MOJO_PUBLIC_CPP_BINDINGS_SYNC_HANDLE_WATCHER_H_

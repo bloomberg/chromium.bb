@@ -2,12 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/public/cpp/bindings/lib/sync_handle_watcher.h"
+#include "mojo/public/cpp/bindings/sync_handle_watcher.h"
 
 #include "base/logging.h"
 
 namespace mojo {
-namespace internal {
 
 SyncHandleWatcher::SyncHandleWatcher(
     const Handle& handle,
@@ -74,5 +73,4 @@ void SyncHandleWatcher::DecrementRegisterCount() {
   }
 }
 
-}  // namespace internal
 }  // namespace mojo

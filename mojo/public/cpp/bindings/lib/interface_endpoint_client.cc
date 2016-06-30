@@ -70,7 +70,7 @@ class ResponderThunk : public MessageReceiverWithStatus {
   bool Accept(Message* message) override {
     DCHECK(task_runner_->RunsTasksOnCurrentThread());
     accept_was_invoked_ = true;
-    DCHECK(message->has_flag(internal::kMessageIsResponse));
+    DCHECK(message->has_flag(Message::kFlagIsResponse));
 
     bool result = false;
 
@@ -195,7 +195,7 @@ void InterfaceEndpointClient::RaiseError() {
 bool InterfaceEndpointClient::Accept(Message* message) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(controller_);
-  DCHECK(!message->has_flag(internal::kMessageExpectsResponse));
+  DCHECK(!message->has_flag(Message::kFlagExpectsResponse));
 
   if (encountered_error_)
     return false;
@@ -207,7 +207,7 @@ bool InterfaceEndpointClient::AcceptWithResponder(Message* message,
                                                   MessageReceiver* responder) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(controller_);
-  DCHECK(message->has_flag(internal::kMessageExpectsResponse));
+  DCHECK(message->has_flag(Message::kFlagExpectsResponse));
 
   if (encountered_error_)
     return false;
@@ -219,7 +219,7 @@ bool InterfaceEndpointClient::AcceptWithResponder(Message* message,
 
   message->set_request_id(request_id);
 
-  bool is_sync = message->has_flag(internal::kMessageIsSync);
+  bool is_sync = message->has_flag(Message::kFlagIsSync);
   if (!controller_->SendMessage(message))
     return false;
 
@@ -274,7 +274,7 @@ void InterfaceEndpointClient::NotifyError() {
 bool InterfaceEndpointClient::HandleValidatedMessage(Message* message) {
   DCHECK_EQ(handle_.id(), message->interface_id());
 
-  if (message->has_flag(internal::kMessageExpectsResponse)) {
+  if (message->has_flag(Message::kFlagExpectsResponse)) {
     if (!incoming_receiver_)
       return false;
 
@@ -284,10 +284,10 @@ bool InterfaceEndpointClient::HandleValidatedMessage(Message* message) {
     if (!ok)
       delete responder;
     return ok;
-  } else if (message->has_flag(internal::kMessageIsResponse)) {
+  } else if (message->has_flag(Message::kFlagIsResponse)) {
     uint64_t request_id = message->request_id();
 
-    if (message->has_flag(internal::kMessageIsSync)) {
+    if (message->has_flag(Message::kFlagIsSync)) {
       auto it = sync_responses_.find(request_id);
       if (it == sync_responses_.end())
         return false;

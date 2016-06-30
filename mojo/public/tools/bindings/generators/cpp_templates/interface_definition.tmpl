@@ -165,7 +165,7 @@ bool {{proxy_name}}::{{method.name}}(
                                       "&serialization_context_")}}
 
   mojo::internal::RequestMessageBuilder builder({{message_name}}, size,
-                                                mojo::internal::kMessageIsSync);
+                                                mojo::Message::kFlagIsSync);
 
   {{build_message(params_struct, "param_%s", params_description,
                   "&serialization_context_")}}
@@ -286,7 +286,7 @@ void {{class_name}}_{{method.name}}_ProxyToResponder::Run(
                                       "&serialization_context_")}}
   mojo::internal::ResponseMessageBuilder builder(
       {{message_name}}, size, request_id_,
-      is_sync_ ? mojo::internal::kMessageIsSync : 0);
+      is_sync_ ? mojo::Message::kFlagIsSync : 0);
   {{build_message(response_params_struct, "in_%s", params_description,
                   "&serialization_context_")}}
   bool ok = responder_->Accept(builder.message());
@@ -358,7 +358,7 @@ bool {{class_name}}Stub::AcceptWithResponder(
       {{class_name}}::{{method.name}}Callback callback =
           {{class_name}}_{{method.name}}_ProxyToResponder::CreateCallback(
               message->request_id(),
-              message->has_flag(mojo::internal::kMessageIsSync),
+              message->has_flag(mojo::Message::kFlagIsSync),
               responder,
               serialization_context_.group_controller);
       // A null |sink_| means no implementation was bound.

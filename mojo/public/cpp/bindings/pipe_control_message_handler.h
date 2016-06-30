@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MOJO_PUBLIC_CPP_BINDINGS_LIB_PIPE_CONTROL_MESSAGE_HANDLER_H_
-#define MOJO_PUBLIC_CPP_BINDINGS_LIB_PIPE_CONTROL_MESSAGE_HANDLER_H_
+#ifndef MOJO_PUBLIC_CPP_BINDINGS_PIPE_CONTROL_MESSAGE_HANDLER_H_
+#define MOJO_PUBLIC_CPP_BINDINGS_PIPE_CONTROL_MESSAGE_HANDLER_H_
 
 #include "base/macros.h"
 #include "mojo/public/cpp/bindings/interface_id.h"
@@ -11,7 +11,6 @@
 #include "mojo/public/cpp/bindings/message.h"
 
 namespace mojo {
-namespace internal {
 
 class PipeControlMessageHandlerDelegate;
 
@@ -44,12 +43,11 @@ class PipeControlMessageHandler : public MessageReceiver {
 
   std::string description_;
   PipeControlMessageHandlerDelegate* const delegate_;
-  SerializationContext context_;
+  internal::SerializationContext context_;
 
   DISALLOW_COPY_AND_ASSIGN(PipeControlMessageHandler);
 };
 
-}  // namespace internal
 }  // namespace mojo
 
-#endif  // MOJO_PUBLIC_CPP_BINDINGS_LIB_PIPE_CONTROL_MESSAGE_HANDLER_H_
+#endif  // MOJO_PUBLIC_CPP_BINDINGS_PIPE_CONTROL_MESSAGE_HANDLER_H_

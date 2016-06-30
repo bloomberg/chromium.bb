@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/public/cpp/bindings/lib/pipe_control_message_proxy.h"
+#include "mojo/public/cpp/bindings/pipe_control_message_proxy.h"
 
 #include <stddef.h>
 #include <utility>
@@ -15,23 +15,23 @@
 #include "mojo/public/interfaces/bindings/pipe_control_messages.mojom.h"
 
 namespace mojo {
-namespace internal {
 namespace {
 
 void SendRunOrClosePipeMessage(MessageReceiver* receiver,
                                pipe_control::RunOrClosePipeInputPtr input,
-                               SerializationContext* context) {
+                               internal::SerializationContext* context) {
   pipe_control::RunOrClosePipeMessageParamsPtr params_ptr(
       pipe_control::RunOrClosePipeMessageParams::New());
   params_ptr->input = std::move(input);
 
   size_t size =
-      PrepareToSerialize<pipe_control::RunOrClosePipeMessageParamsPtr>(
-          params_ptr, context);
-  MessageBuilder builder(pipe_control::kRunOrClosePipeMessageId, size);
+      internal::PrepareToSerialize<
+          pipe_control::RunOrClosePipeMessageParamsPtr>(params_ptr, context);
+  internal::MessageBuilder builder(pipe_control::kRunOrClosePipeMessageId,
+                                   size);
 
   pipe_control::internal::RunOrClosePipeMessageParams_Data* params = nullptr;
-  Serialize<pipe_control::RunOrClosePipeMessageParamsPtr>(
+  internal::Serialize<pipe_control::RunOrClosePipeMessageParamsPtr>(
       params_ptr, builder.buffer(), &params, context);
   params->EncodePointers();
   builder.message()->set_interface_id(kInvalidInterfaceId);
@@ -72,5 +72,4 @@ void PipeControlMessageProxy::NotifyEndpointClosedBeforeSent(InterfaceId id) {
   SendRunOrClosePipeMessage(receiver_, std::move(input), &context_);
 }
 
-}  // namespace internal
 }  // namespace mojo

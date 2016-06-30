@@ -18,7 +18,7 @@
 #include "mojo/public/cpp/bindings/associated_group.h"
 #include "mojo/public/cpp/bindings/interface_endpoint_client.h"
 #include "mojo/public/cpp/bindings/interface_endpoint_controller.h"
-#include "mojo/public/cpp/bindings/lib/sync_handle_watcher.h"
+#include "mojo/public/cpp/bindings/sync_handle_watcher.h"
 
 namespace mojo {
 namespace internal {
@@ -497,7 +497,7 @@ bool MultiplexRouter::Accept(Message* message) {
     tasks_.push_back(Task::CreateMessageTask(message));
     Task* task = tasks_.back().get();
 
-    if (task->message->has_flag(kMessageIsSync)) {
+    if (task->message->has_flag(Message::kFlagIsSync)) {
       InterfaceId id = task->message->interface_id();
       sync_message_tasks_[id].push_back(task);
       auto iter = endpoints_.find(id);
@@ -596,7 +596,7 @@ void MultiplexRouter::ProcessTasks(
 
     InterfaceId id = kInvalidInterfaceId;
     bool sync_message = task->IsMessageTask() && task->message &&
-                        task->message->has_flag(kMessageIsSync);
+                        task->message->has_flag(Message::kFlagIsSync);
     if (sync_message) {
       id = task->message->interface_id();
       auto& sync_message_queue = sync_message_tasks_[id];
@@ -744,7 +744,7 @@ bool MultiplexRouter::ProcessIncomingMessage(
   }
 
   bool can_direct_call;
-  if (message->has_flag(kMessageIsSync)) {
+  if (message->has_flag(Message::kFlagIsSync)) {
     can_direct_call = client_call_behavior != NO_DIRECT_CLIENT_CALLS &&
                       endpoint->task_runner()->BelongsToCurrentThread();
   } else {

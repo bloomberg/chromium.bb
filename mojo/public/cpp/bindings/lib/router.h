@@ -17,7 +17,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_checker.h"
-#include "mojo/public/cpp/bindings/lib/connector.h"
+#include "mojo/public/cpp/bindings/connector.h"
 #include "mojo/public/cpp/bindings/lib/filter_chain.h"
 
 namespace mojo {
@@ -34,7 +34,7 @@ class Router : public MessageReceiverWithResponder {
   ~Router() override;
 
   // Sets the receiver to handle messages read from the message pipe that do
-  // not have the kMessageIsResponse flag set.
+  // not have the Message::kFlagIsResponse flag set.
   void set_incoming_receiver(MessageReceiverWithResponderStatus* receiver) {
     incoming_receiver_ = receiver;
   }

@@ -2,13 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MOJO_PUBLIC_CPP_BINDINGS_LIB_PIPE_CONTROL_MESSAGE_HANDLER_DELEGATE_H_
-#define MOJO_PUBLIC_CPP_BINDINGS_LIB_PIPE_CONTROL_MESSAGE_HANDLER_DELEGATE_H_
+#ifndef MOJO_PUBLIC_CPP_BINDINGS_PIPE_CONTROL_MESSAGE_HANDLER_DELEGATE_H_
+#define MOJO_PUBLIC_CPP_BINDINGS_PIPE_CONTROL_MESSAGE_HANDLER_DELEGATE_H_
 
 #include "mojo/public/cpp/bindings/interface_id.h"
 
 namespace mojo {
-namespace internal {
 
 class PipeControlMessageHandlerDelegate {
  public:
@@ -22,7 +21,6 @@ class PipeControlMessageHandlerDelegate {
   virtual ~PipeControlMessageHandlerDelegate() {}
 };
 
-}  // namespace internal
 }  // namespace mojo
 
-#endif  // MOJO_PUBLIC_CPP_BINDINGS_LIB_PIPE_CONTROL_MESSAGE_HANDLER_DELEGATE_H_
+#endif  // MOJO_PUBLIC_CPP_BINDINGS_PIPE_CONTROL_MESSAGE_HANDLER_DELEGATE_H_

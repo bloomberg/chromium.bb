@@ -58,7 +58,7 @@ bool ResponseGenerator::Accept(Message* message) {
 bool ResponseGenerator::AcceptWithResponder(
     Message* message,
     MessageReceiverWithStatus* responder) {
-  EXPECT_TRUE(message->has_flag(internal::kMessageExpectsResponse));
+  EXPECT_TRUE(message->has_flag(Message::kFlagExpectsResponse));
 
   bool result = SendResponse(message->name(), message->request_id(),
                              reinterpret_cast<const char*>(message->payload()),

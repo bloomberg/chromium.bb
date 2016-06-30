@@ -81,8 +81,8 @@ bool ValidateUnionHeaderAndClaimMemory(const void* data,
 bool ValidateMessageIsRequestWithoutResponse(
     const Message* message,
     ValidationContext* validation_context) {
-  if (message->has_flag(kMessageIsResponse) ||
-      message->has_flag(kMessageExpectsResponse)) {
+  if (message->has_flag(Message::kFlagIsResponse) ||
+      message->has_flag(Message::kFlagExpectsResponse)) {
     ReportValidationError(validation_context,
                           VALIDATION_ERROR_MESSAGE_HEADER_INVALID_FLAGS);
     return false;
@@ -93,8 +93,8 @@ bool ValidateMessageIsRequestWithoutResponse(
 bool ValidateMessageIsRequestExpectingResponse(
     const Message* message,
     ValidationContext* validation_context) {
-  if (message->has_flag(kMessageIsResponse) ||
-      !message->has_flag(kMessageExpectsResponse)) {
+  if (message->has_flag(Message::kFlagIsResponse) ||
+      !message->has_flag(Message::kFlagExpectsResponse)) {
     ReportValidationError(validation_context,
                           VALIDATION_ERROR_MESSAGE_HEADER_INVALID_FLAGS);
     return false;
@@ -104,8 +104,8 @@ bool ValidateMessageIsRequestExpectingResponse(
 
 bool ValidateMessageIsResponse(const Message* message,
                                ValidationContext* validation_context) {
-  if (message->has_flag(kMessageExpectsResponse) ||
-      !message->has_flag(kMessageIsResponse)) {
+  if (message->has_flag(Message::kFlagExpectsResponse) ||
+      !message->has_flag(Message::kFlagIsResponse)) {
     ReportValidationError(validation_context,
                           VALIDATION_ERROR_MESSAGE_HEADER_INVALID_FLAGS);
     return false;
