@@ -87,7 +87,7 @@
 #include "ui/base/touch/touch_enabled.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/gfx/animation/animation.h"
-#include "ui/gfx/color_profile.h"
+#include "ui/gfx/color_space.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/native_theme/native_theme_switches.h"
@@ -371,7 +371,7 @@ bool RenderViewHostImpl::CreateRenderView(
   params.max_size = GetWidget()->max_size_for_auto_resize();
   params.page_zoom_level = delegate_->GetPendingPageZoomLevel();
   params.image_decode_color_profile =
-      gfx::ColorProfile::GetFromBestMonitor().profile();
+      gfx::ColorSpace::FromBestMonitor().GetICCProfile();
   GetWidget()->GetResizeParams(&params.initial_size);
 
   if (!Send(new ViewMsg_New(params)))

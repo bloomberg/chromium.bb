@@ -103,7 +103,6 @@
 #include "third_party/WebKit/public/platform/mime_registry.mojom.h"
 #include "third_party/WebKit/public/platform/modules/device_orientation/WebDeviceMotionListener.h"
 #include "third_party/WebKit/public/platform/modules/device_orientation/WebDeviceOrientationListener.h"
-#include "ui/gfx/color_profile.h"
 #include "url/gurl.h"
 
 #if defined(OS_MACOSX)

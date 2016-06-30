@@ -76,7 +76,7 @@
 #include "third_party/WebKit/public/web/WebCompositionUnderline.h"
 #include "ui/events/event.h"
 #include "ui/events/keycodes/keyboard_codes.h"
-#include "ui/gfx/color_profile.h"
+#include "ui/gfx/color_space.h"
 #include "ui/gfx/geometry/size_conversions.h"
 #include "ui/gfx/geometry/vector2d_conversions.h"
 #include "ui/gfx/skbitmap_operations.h"
@@ -221,10 +221,10 @@ RenderWidgetHostImpl::RenderWidgetHostImpl(RenderWidgetHostDelegate* delegate,
 #if defined(OS_WIN)
   // Update the display color profile cache so that it is likely to be up to
   // date when the renderer process requests the color profile.
-  if (gfx::ColorProfile::CachedProfilesNeedUpdate()) {
+  if (gfx::ColorSpace::CachedProfilesNeedUpdate()) {
     BrowserThread::PostBlockingPoolTask(
         FROM_HERE,
-        base::Bind(&gfx::ColorProfile::UpdateCachedProfilesOnBackgroundThread));
+        base::Bind(&gfx::ColorSpace::UpdateCachedProfilesOnBackgroundThread));
   }
 #endif
 

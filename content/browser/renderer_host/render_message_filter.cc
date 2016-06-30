@@ -70,7 +70,6 @@
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "ppapi/shared_impl/file_type_conversion.h"
-#include "ui/gfx/color_profile.h"
 #include "url/gurl.h"
 
 #if defined(OS_MACOSX)
