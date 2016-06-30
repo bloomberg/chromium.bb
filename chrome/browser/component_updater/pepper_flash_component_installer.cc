@@ -105,6 +105,14 @@ bool IsPepperFlash(const content::WebPluginInfo& plugin) {
          (plugin.pepper_permissions & ppapi::PERMISSION_FLASH);
 }
 
+void NotifyPathServiceAndChrome(const base::FilePath& path,
+                                const Version& version) {
+  PathService::Override(chrome::DIR_PEPPER_FLASH_PLUGIN, path);
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::Bind(&RegisterPepperFlashWithChrome, path, version));
+}
+
 void RegisterPepperFlashWithChrome(const base::FilePath& path,
                                    const Version& version) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -226,9 +234,8 @@ void FlashComponentInstallerTraits::ComponentReady(
   // Installation is done. Now tell the rest of chrome. Both the path service
   // and to the plugin service. On Linux, a restart is required to use the new
   // Flash version, so we do not do this.
-  PathService::Override(chrome::DIR_PEPPER_FLASH_PLUGIN, path);
-  RegisterPepperFlashWithChrome(path.Append(chrome::kPepperFlashPluginFilename),
-                                version);
+  BrowserThread::GetBlockingPool()->PostTask(
+      FROM_HERE, base::Bind(&NotifyPathServiceAndChrome, path, version));
 #endif  // !defined(OS_LINUX)
 }
 
