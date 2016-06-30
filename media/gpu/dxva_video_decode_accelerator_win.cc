@@ -836,6 +836,14 @@ bool DXVAVideoDecodeAccelerator::CreateDX11DevManager() {
   if (!options.ExtendedResourceSharing)
     copy_nv12_textures_ = false;
 
+  UINT nv12_format_support = 0;
+  hr =
+      d3d11_device_->CheckFormatSupport(DXGI_FORMAT_NV12, &nv12_format_support);
+  RETURN_ON_HR_FAILURE(hr, "Failed to check NV12 format support", false);
+
+  if (!(nv12_format_support & D3D11_FORMAT_SUPPORT_VIDEO_PROCESSOR_OUTPUT))
+    copy_nv12_textures_ = false;
+
   // Enable multithreaded mode on the device. This ensures that accesses to
   // context are synchronized across threads. We have multiple threads
   // accessing the context, the media foundation decoder threads and the
