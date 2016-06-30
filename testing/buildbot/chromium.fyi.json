@@ -10399,6 +10399,61 @@
       }
     ]
   },
+  "Mojo ChromiumOS": {
+    "additional_compile_targets": [
+      "mash:all"
+    ],
+    "gtest_tests": [
+      {
+        "args": [
+          "--override-use-gl-with-osmesa-for-tests",
+          "--run-in-mash",
+          "--test-launcher-filter-file=src/testing/buildbot/filters/mojo.fyi.browser_tests.filter",
+          "--use-test-config"
+        ],
+        "test": "browser_tests"
+      },
+      {
+        "test": "media_mojo_shell_unittests"
+      },
+      {
+        "test": "mus_ws_unittests"
+      },
+      {
+        "test": "views_mus_interactive_ui_tests"
+      },
+      {
+        "test": "views_mus_unittests"
+      }
+    ]
+  },
+  "Mojo Windows": {
+    "additional_compile_targets": [
+      "mash:all"
+    ],
+    "gtest_tests": [
+      {
+        "args": [
+          "--override-use-gl-with-osmesa-for-tests",
+          "--run-in-mash",
+          "--test-launcher-filter-file=src/testing/buildbot/filters/mojo.fyi.browser_tests.filter"
+        ],
+        "test": "browser_tests"
+      },
+      {
+        "test": "media_mojo_shell_unittests"
+      },
+      {
+        "test": "mus_ws_unittests"
+      },
+      {
+        "test": "views_mus_interactive_ui_tests"
+      },
+      {
+        "test": "views_mus_unittests"
+      }
+    ]
+  },
   "Site Isolation Linux": {
     "gtest_tests": [
       {
