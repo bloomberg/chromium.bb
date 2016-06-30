@@ -35,10 +35,8 @@ UpdateNotification.prototype = {
     if (!this.shouldShow())
       return;
     chrome.notifications.create('update', this.data);
-    chrome.notifications.onClicked.addListener(
-        this.onClicked.bind(this));
-    chrome.notifications.onClosed.addListener(
-        this.onClosed.bind(this));
+    chrome.notifications.onClicked.addListener(this.onClicked);
+    chrome.notifications.onClosed.addListener(this.onClosed);
   },
 
   /**
@@ -55,24 +53,42 @@ UpdateNotification.prototype = {
    */
   onClosed: function(id) {
     localStorage['notifications_update_notification_shown'] = true;
+  },
+
+  /**
+   * Removes all listeners added by this object.
+   */
+  removeAllListeners: function() {
+    chrome.notifications.onClicked.removeListener(this.onClicked);
+    chrome.notifications.onClosed.removeListener(this.onClosed);
   }
 };
+
+/**
+ * Set after an update is shown.
+ * @type {UpdateNotification}
+ */
+Notifications.currentUpdate;
 
 /**
  * Runs notifications that should be shown for startup.
  */
 Notifications.onStartup = function() {
+  return;
   // Only run on background page.
   if (document.location.href.indexOf('background.html') == -1)
     return;
 
-  new UpdateNotification().show();
+  Notifications.reset();
+  Notifications.currentUpdate = new UpdateNotification();
+  Notifications.currentUpdate.show();
 };
 
 /**
  * Runs notifications that should be shown for mode changes.
  */
 Notifications.onModeChange = function() {
+  return;
   // Only run on background page.
   if (document.location.href.indexOf('background.html') == -1)
     return;
@@ -80,5 +96,16 @@ Notifications.onModeChange = function() {
   if (ChromeVoxState.instance.mode !== ChromeVoxMode.FORCE_NEXT)
     return;
 
-  new UpdateNotification().show();
+  Notifications.reset();
+  Notifications.currentUpdate = new UpdateNotification();
+  Notifications.currentUpdate.show();
+};
+
+/**
+ * Resets to a clean state. Future events will trigger update notifications.
+ */
+Notifications.reset = function() {
+  if (Notifications.currentUpdate)
+    Notifications.currentUpdate.removeAllListeners();
+  delete localStorage['notifications_update_notification_shown'];
 };

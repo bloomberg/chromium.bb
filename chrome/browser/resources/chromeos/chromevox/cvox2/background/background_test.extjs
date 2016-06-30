@@ -25,6 +25,9 @@ BackgroundTest.prototype = {
     ChromeVoxState.instance.toggleNext(true);
     window.RoleType = chrome.automation.RoleType;
     window.doCmd = this.doCmd;
+
+    // Reset notifications so only explicit mode changes can cause them to trigger.
+    Notifications.reset();
   },
 
   /**
