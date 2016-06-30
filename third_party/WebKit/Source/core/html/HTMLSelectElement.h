@@ -90,7 +90,6 @@ public:
 
     void optionElementChildrenChanged(const HTMLOptionElement&);
 
-    void setRecalcListItems();
     void invalidateSelectedItems();
 
     using ListItems = HeapVector<Member<HTMLElement>>;
@@ -122,11 +121,11 @@ public:
     // For use in the implementation of HTMLOptionElement.
     void optionSelectionStateChanged(HTMLOptionElement*, bool optionIsSelected);
     void optionInserted(HTMLOptionElement&, bool optionIsSelected);
-    void optionRemoved(const HTMLOptionElement&);
+    void optionRemoved(HTMLOptionElement&);
     bool anonymousIndexedSetter(unsigned, HTMLOptionElement*, ExceptionState&);
 
-    void optGroupInsertedOrRemoved(const HTMLOptGroupElement&);
-    void hrInsertedOrRemoved(const HTMLHRElement&);
+    void optGroupInsertedOrRemoved(HTMLOptGroupElement&);
+    void hrInsertedOrRemoved(HTMLHRElement&);
 
     void updateListOnLayoutObject();
 
@@ -197,6 +196,8 @@ private:
 
     void dispatchInputAndChangeEventForMenuList();
 
+    // |subject| is an element which was inserted or removed.
+    void setRecalcListItems(HTMLElement& subject);
     void recalcListItems() const;
     enum ResetReason {
         ResetReasonSelectedOptionRemoved,

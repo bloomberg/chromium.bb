@@ -52,6 +52,7 @@
 #include "core/frame/LocalFrame.h"
 #include "core/html/FormData.h"
 #include "core/html/HTMLFormElement.h"
+#include "core/html/HTMLHRElement.h"
 #include "core/html/HTMLOptGroupElement.h"
 #include "core/html/HTMLOptionElement.h"
 #include "core/html/forms/FormController.h"
@@ -776,12 +777,48 @@ void HTMLSelectElement::invalidateSelectedItems()
         collection->invalidateCache();
 }
 
-void HTMLSelectElement::setRecalcListItems()
+void HTMLSelectElement::setRecalcListItems(HTMLElement& subject)
 {
     // FIXME: This function does a bunch of confusing things depending on if it
     // is in the document or not.
 
-    m_shouldRecalcListItems = true;
+    bool shouldRecalc = true;
+    if (!m_shouldRecalcListItems && !isHTMLOptGroupElement(subject)) {
+        if (firstChild() == &subject) {
+            // The subject was prepended. This doesn't handle elements in an
+            // OPTGROUP.
+            DCHECK(m_listItems.size() == 0 || m_listItems[0] != &subject);
+            m_listItems.prepend(&subject);
+            shouldRecalc = false;
+        } else if (lastChild() == &subject) {
+            // The subject was appended. This doesn't handle elements in an
+            // OPTGROUP.
+            DCHECK(m_listItems.size() == 0 || m_listItems.last() != &subject);
+            m_listItems.append(&subject);
+            shouldRecalc = false;
+        } else if (!subject.isDescendantOf(this)) {
+            // |subject| was removed from this. This logic works well with
+            // SELECT children and OPTGROUP children.
+            // TODO(tkent): m_listItems.size() is 0 in OOBE-related tests.  It
+            // should not happen.
+            if (m_listItems.size() > 0) {
+                size_t index;
+                // Avoid Vector::find() in typical cases.
+                if (m_listItems.first() == &subject) {
+                    index = 0;
+                } else if (m_listItems.last() == &subject) {
+                    index = m_listItems.size() - 1;
+                } else {
+                    index = m_listItems.find(&subject);
+                    DCHECK_NE(index, WTF::kNotFound);
+                }
+                m_listItems.remove(index);
+                shouldRecalc = false;
+            }
+        }
+    }
+    m_shouldRecalcListItems = shouldRecalc;
+
     setOptionsChangedOnLayoutObject();
     if (!inShadowIncludingDocument()) {
         if (HTMLOptionsCollection* collection = cachedCollection<HTMLOptionsCollection>(SelectOptions))
@@ -975,7 +1012,7 @@ void HTMLSelectElement::optionSelectionStateChanged(HTMLOptionElement* option, b
 void HTMLSelectElement::optionInserted(HTMLOptionElement& option, bool optionIsSelected)
 {
     ASSERT(option.ownerSelectElement() == this);
-    setRecalcListItems();
+    setRecalcListItems(option);
     if (optionIsSelected) {
         selectOption(&option, multiple() ? 0 : DeselectOtherOptions);
     } else {
@@ -987,9 +1024,9 @@ void HTMLSelectElement::optionInserted(HTMLOptionElement& option, bool optionIsS
     m_lastOnChangeSelection.clear();
 }
 
-void HTMLSelectElement::optionRemoved(const HTMLOptionElement& option)
+void HTMLSelectElement::optionRemoved(HTMLOptionElement& option)
 {
-    setRecalcListItems();
+    setRecalcListItems(option);
     if (option.selected())
         resetToDefaultSelection(ResetReasonSelectedOptionRemoved);
     else if (!m_lastOnChangeOption)
@@ -1008,16 +1045,16 @@ void HTMLSelectElement::optionRemoved(const HTMLOptionElement& option)
     m_lastOnChangeSelection.clear();
 }
 
-void HTMLSelectElement::optGroupInsertedOrRemoved(const HTMLOptGroupElement&)
+void HTMLSelectElement::optGroupInsertedOrRemoved(HTMLOptGroupElement& optgroup)
 {
-    setRecalcListItems();
+    setRecalcListItems(optgroup);
     setNeedsValidityCheck();
     m_lastOnChangeSelection.clear();
 }
 
-void HTMLSelectElement::hrInsertedOrRemoved(const HTMLHRElement&)
+void HTMLSelectElement::hrInsertedOrRemoved(HTMLHRElement& hr)
 {
-    setRecalcListItems();
+    setRecalcListItems(hr);
     m_lastOnChangeSelection.clear();
 }
 
