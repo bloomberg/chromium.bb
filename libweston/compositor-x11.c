@@ -519,6 +519,8 @@ x11_output_destroy(struct weston_output *output_base)
 
 	xcb_destroy_window(backend->conn, output->window);
 
+	xcb_flush(backend->conn);
+
 	weston_output_destroy(&output->base);
 
 	free(output);
@@ -981,8 +983,6 @@ x11_backend_delete_window(struct x11_backend *b, xcb_window_t window)
 	output = x11_backend_find_output(b, window);
 	if (output)
 		x11_output_destroy(&output->base);
-
-	xcb_flush(b->conn);
 
 	if (wl_list_empty(&b->compositor->output_list))
 		weston_compositor_exit(b->compositor);
