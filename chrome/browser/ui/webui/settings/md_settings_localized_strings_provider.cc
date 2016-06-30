@@ -792,12 +792,15 @@ void AddPeopleStrings(content::WebUIDataSource* html_source) {
     {"photoDiscardAccessibleText", IDS_SETTINGS_PHOTO_DISCARD_ACCESSIBLE_TEXT},
 #else   // !defined(OS_CHROMEOS)
     {"domainManagedProfile", IDS_SETTINGS_PEOPLE_DOMAIN_MANAGED_PROFILE},
+    {"syncDisconnectManagedProfileExplanation",
+     IDS_SETTINGS_SYNC_DISCONNECT_MANAGED_PROFILE_EXPLANATION},
     {"editPerson", IDS_SETTINGS_EDIT_PERSON},
 #endif  // defined(OS_CHROMEOS)
     {"syncOverview", IDS_SETTINGS_SYNC_OVERVIEW},
     {"syncSignin", IDS_SETTINGS_SYNC_SIGNIN},
     {"syncDisconnect", IDS_SETTINGS_SYNC_DISCONNECT},
     {"syncDisconnectTitle", IDS_SETTINGS_SYNC_DISCONNECT_TITLE},
+    {"syncDisconnectExplanation", IDS_SETTINGS_SYNC_DISCONNECT_EXPLANATION},
     {"syncDisconnectDeleteProfile",
      IDS_SETTINGS_SYNC_DISCONNECT_DELETE_PROFILE},
     {"syncDisconnectConfirm", IDS_SETTINGS_SYNC_DISCONNECT_CONFIRM},
@@ -856,10 +859,6 @@ void AddPeopleStrings(content::WebUIDataSource* html_source) {
           g_browser_process->GetApplicationLocale())
           .spec();
   html_source->AddString("syncDashboardUrl", sync_dashboard_url);
-  html_source->AddString(
-      "syncDisconnectExplanation",
-      l10n_util::GetStringFUTF16(IDS_SETTINGS_SYNC_DISCONNECT_EXPLANATION,
-                                 base::ASCIIToUTF16(sync_dashboard_url)));
   html_source->AddString(
       "activityControlsUrl",
       base::ASCIIToUTF16(chrome::kGoogleAccountActivityControlsURL));

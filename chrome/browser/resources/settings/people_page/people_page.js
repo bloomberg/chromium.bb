@@ -213,11 +213,17 @@ Polymer({
   },
 
   /** @private */
+  onDisconnectCancel_: function() {
+    this.$.disconnectDialog.close();
+  },
+
+  /** @private */
   onDisconnectConfirm_: function() {
-    var deleteProfile = this.$.deleteProfile && this.$.deleteProfile.checked;
+    var deleteProfile = !!this.syncStatus.domain ||
+        (this.$.deleteProfile && this.$.deleteProfile.checked);
     this.syncBrowserProxy_.signOut(deleteProfile);
 
-    // Dialog automatically closed because button has dialog-confirm attribute.
+    this.$.disconnectDialog.close();
   },
 
   /** @private */
@@ -275,6 +281,22 @@ Polymer({
     return loadTimeData.getStringF('domainManagedProfile', innerSpan);
   },
 </if>
+
+  /**
+   * @private
+   * @param {string} domain
+   * @return {string}
+   */
+  getDisconnectExplanationHtml_: function(domain) {
+<if expr="not chromeos">
+    if (domain) {
+      return loadTimeData.getStringF(
+          'syncDisconnectManagedProfileExplanation',
+          '<span id="managed-by-domain-name">' + domain + '</span>');
+    }
+</if>
+    return loadTimeData.getString('syncDisconnectExplanation');
+  },
 
   /**
    * @private

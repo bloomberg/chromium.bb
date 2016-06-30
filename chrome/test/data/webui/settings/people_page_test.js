@@ -13,15 +13,15 @@ cr.define('settings_people_page', function() {
       'getProfileInfo',
       'getProfileManagesSupervisedUsers',
     ]);
+
+    this.fakeProfileInfo = {
+      name: 'fakeName',
+      iconUrl: 'http://fake-icon-url.com/',
+    };
   };
 
   TestProfileInfoBrowserProxy.prototype = {
     __proto__: settings.TestBrowserProxy.prototype,
-
-    fakeProfileInfo: {
-      name: 'fakeName',
-      iconUrl: 'http://fake-icon-url.com/',
-    },
 
     /** @override */
     getProfileInfo: function() {
@@ -34,6 +34,35 @@ cr.define('settings_people_page', function() {
       this.methodCalled('getProfileManagesSupervisedUsers');
       return Promise.resolve(false);
     }
+  };
+
+  /**
+   * @constructor
+   * @implements {settings.SyncBrowserProxy}
+   * @extends {settings.TestBrowserProxy}
+   */
+  var TestSyncBrowserProxy = function() {
+    settings.TestBrowserProxy.call(this, [
+      'getSyncStatus',
+      'signOut',
+    ]);
+  };
+
+  TestSyncBrowserProxy.prototype = {
+    __proto__: settings.TestBrowserProxy.prototype,
+
+    /** @override */
+    getSyncStatus: function() {
+      this.methodCalled('getSyncStatus');
+      return Promise.resolve({
+        signedIn: true,
+      });
+    },
+
+    /** @override */
+    signOut: function(deleteProfile) {
+      this.methodCalled('signOut', deleteProfile);
+    },
   };
 
   function registerProfileInfoTests() {
@@ -96,9 +125,88 @@ cr.define('settings_people_page', function() {
     });
   }
 
+  function registerSyncStatusTests() {
+    suite('SyncStatusTests', function() {
+      var peoplePage = null;
+      var browserProxy = null;
+
+      suiteSetup(function() {
+        // Force easy unlock off. Those have their own ChromeOS-only tests.
+        loadTimeData.overrideValues({
+          easyUnlockAllowed: false,
+        });
+      });
+
+      setup(function() {
+        browserProxy = new TestSyncBrowserProxy();
+        settings.SyncBrowserProxyImpl.instance_ = browserProxy;
+
+        PolymerTest.clearBody();
+        peoplePage = document.createElement('settings-people-page');
+        document.body.appendChild(peoplePage);
+      });
+
+      teardown(function() { peoplePage.remove(); });
+
+      test('GetProfileInfo', function() {
+        return browserProxy.whenCalled('getSyncStatus').then(function() {
+          Polymer.dom.flush();
+          var disconnectButton = peoplePage.$$('#disconnectButton');
+          assertTrue(!!disconnectButton);
+
+          MockInteractions.tap(disconnectButton);
+          Polymer.dom.flush();
+
+          assertTrue(peoplePage.$.disconnectDialog.opened);
+          assertFalse(peoplePage.$.deleteProfile.hidden);
+
+          var disconnectConfirm = peoplePage.$.disconnectConfirm;
+          assertTrue(!!disconnectConfirm);
+          assertFalse(disconnectConfirm.hidden);
+          MockInteractions.tap(disconnectConfirm);
+
+          return browserProxy.whenCalled('signOut').then(
+              function(deleteProfile) {
+                Polymer.dom.flush();
+
+                assertFalse(deleteProfile);
+
+                cr.webUIListenerCallback('sync-status-changed', {
+                  signedIn: true,
+                  domain: 'example.com',
+                });
+                Polymer.dom.flush();
+
+                assertFalse(peoplePage.$.disconnectDialog.opened);
+                MockInteractions.tap(disconnectButton);
+                Polymer.dom.flush();
+
+                assertTrue(peoplePage.$.disconnectDialog.opened);
+                assertTrue(peoplePage.$.deleteProfile.hidden);
+
+                var disconnectManagedProfileConfirm =
+                    peoplePage.$.disconnectManagedProfileConfirm;
+                assertTrue(!!disconnectManagedProfileConfirm);
+                assertFalse(disconnectManagedProfileConfirm.hidden);
+
+                browserProxy.resetResolver('signOut');
+                MockInteractions.tap(disconnectManagedProfileConfirm);
+
+                return browserProxy.whenCalled('signOut').then(
+                    function(deleteProfile) {
+                      assertTrue(deleteProfile);
+                    });
+              });
+        });
+      });
+    });
+  }
+
   return {
     registerTests: function() {
       registerProfileInfoTests();
+      if (!cr.isChromeOS)
+        registerSyncStatusTests();
     },
   };
 });

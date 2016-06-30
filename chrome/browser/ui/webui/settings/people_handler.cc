@@ -514,19 +514,21 @@ void PeopleHandler::HandleStartSignin(const base::ListValue* args) {
 }
 
 void PeopleHandler::HandleStopSyncing(const base::ListValue* args) {
-  if (GetSyncService())
-    ProfileSyncService::SyncEvent(ProfileSyncService::STOP_FROM_OPTIONS);
-
   bool delete_profile = false;
   args->GetBoolean(0, &delete_profile);
-  signin_metrics::SignoutDelete delete_metric =
-      delete_profile ? signin_metrics::SignoutDelete::DELETED
-                     : signin_metrics::SignoutDelete::KEEPING;
-  SigninManagerFactory::GetForProfile(profile_)
-      ->SignOut(signin_metrics::USER_CLICKED_SIGNOUT_SETTINGS, delete_metric);
+
+  if (!SigninManagerFactory::GetForProfile(profile_)->IsSignoutProhibited()) {
+    if (GetSyncService())
+      ProfileSyncService::SyncEvent(ProfileSyncService::STOP_FROM_OPTIONS);
+
+    signin_metrics::SignoutDelete delete_metric =
+        delete_profile ? signin_metrics::SignoutDelete::DELETED
+                       : signin_metrics::SignoutDelete::KEEPING;
+    SigninManagerFactory::GetForProfile(profile_)
+        ->SignOut(signin_metrics::USER_CLICKED_SIGNOUT_SETTINGS, delete_metric);
+  }
 
   if (delete_profile) {
-    // Do as BrowserOptionsHandler::DeleteProfile().
     webui::DeleteProfileAtPath(profile_->GetPath(),
                                web_ui(),
                                ProfileMetrics::DELETE_PROFILE_SETTINGS);

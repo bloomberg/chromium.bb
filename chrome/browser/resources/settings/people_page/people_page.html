@@ -4,7 +4,7 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/neon-animation/neon-animatable.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-checkbox/paper-checkbox.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-dialog/paper-dialog.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_dialog/cr_dialog.html">
 <link rel="import" href="/controls/settings_checkbox.html">
 <link rel="import" href="/people_page/sync_page.html">
 <link rel="import" href="/people_page/profile_info_browser_proxy.html">
@@ -99,7 +99,8 @@
           </template>
           <template is="dom-if" if="[[syncStatus.signedIn]]">
             <span class="secondary-action">
-              <paper-button class="secondary-button" on-tap="onDisconnectTap_"
+              <paper-button id="disconnectButton" class="secondary-button"
+                  on-tap="onDisconnectTap_"
                   disabled="[[syncStatus.setupInProgress]]">
                 $i18n{syncDisconnect}
               </paper-button>
@@ -268,22 +269,29 @@
 </if>
     </settings-animated-pages>
 
-    <paper-dialog modal id="disconnectDialog">
-      <h2>$i18n{syncDisconnectTitle}</h2>
-      <div>$i18nRaw{syncDisconnectExplanation}</div>
-<if expr="(not chromeos and is_posix) or is_win or is_macosx">
-      <paper-checkbox id="deleteProfile">
-        $i18n{syncDisconnectDeleteProfile}
-      </paper-checkbox>
-</if>
-      <div class="button-strip">
-        <paper-button dialog-dismiss>$i18n{cancel}</paper-button>
-        <paper-button dialog-confirm class="action-button"
-            on-tap="onDisconnectConfirm_">
+    <cr-dialog id="disconnectDialog">
+      <div class="title">$i18n{syncDisconnectTitle}</div>
+      <div class="body">
+        <div inner-h-t-m-l="[[getDisconnectExplanationHtml_(syncStatus.domain)]]">
+        </div>
+  <if expr="(not chromeos and is_posix) or is_win or is_macosx">
+        <paper-checkbox id="deleteProfile" hidden=[[syncStatus.domain]]>
+          $i18n{syncDisconnectDeleteProfile}
+        </paper-checkbox>
+  </if>
+      </div>
+      <div class="button-container">
+        <paper-button on-tap="onDisconnectCancel_">$i18n{cancel}</paper-button>
+        <paper-button id="disconnectConfirm" class="action-button"
+            hidden=[[syncStatus.domain]] on-tap="onDisconnectConfirm_">
+          $i18n{syncDisconnect}
+        </paper-button>
+        <paper-button id="disconnectManagedProfileConfirm" class="action-button"
+            hidden=[[!syncStatus.domain]] on-tap="onDisconnectConfirm_">
           $i18n{syncDisconnectConfirm}
         </paper-button>
       </div>
-    </paper-dialog>
+    </cr-dialog>
 
 <if expr="chromeos">
     <template is="dom-if" if="[[easyUnlockEnabled_]]">
