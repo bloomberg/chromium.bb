@@ -5,6 +5,7 @@
 #include "core/dom/ElementFullscreen.h"
 
 #include "core/dom/Fullscreen.h"
+#include "core/frame/UseCounter.h"
 
 namespace blink {
 
@@ -15,6 +16,8 @@ void ElementFullscreen::requestFullscreen(Element& element)
 
 void ElementFullscreen::webkitRequestFullscreen(Element& element)
 {
+    if (element.isInShadowTree())
+        UseCounter::count(element.document(), UseCounter::PrefixedElementRequestFullscreenInShadow);
     Fullscreen::from(element.document()).requestFullscreen(element, Fullscreen::PrefixedRequest);
 }
 

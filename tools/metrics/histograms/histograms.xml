@@ -76102,6 +76102,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="1424" label="TextAreaMaxLength"/>
   <int value="1425" label="TextAreaMinLength"/>
   <int value="1426" label="TopNavigationFromSubFrame"/>
+  <int value="1427" label="PrefixedElementRequestFullscreenInShadow"/>
 </enum>
 
 <enum name="FetchRequestMode" type="int">

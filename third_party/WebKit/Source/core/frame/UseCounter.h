@@ -1230,6 +1230,7 @@ public:
         TextAreaMaxLength = 1424,
         TextAreaMinLength = 1425,
         TopNavigationFromSubFrame = 1426,
+        PrefixedElementRequestFullscreenInShadow = 1427,
 
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.
