@@ -88,8 +88,6 @@ public:
 private:
     explicit MemoryCacheEntry(Resource*);
 
-    void clearResourceWeak(Visitor*);
-
     // Only one of |m_resource| or |m_resourceWeak| is used, based on
     // RuntimeEnabledFeatures::weakMemoryCacheEnabled().
     // TODO(hiroshige): this switching mechanism is added for a field trial
