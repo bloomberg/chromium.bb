@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/i18n/case_conversion.h"
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/single_thread_task_runner.h"
@@ -175,6 +176,12 @@ void ExclusiveAccessBubbleViews::UpdateViewContent(
       link_visible = false;
     }
   }
+#if defined(OS_MACOSX)
+  // Mac keyboards use lowercase for everything except function keys, which are
+  // typically reserved for system use. Since |accelerator| is placed in a box
+  // to make it look like a keyboard key it looks weird to not follow suit.
+  accelerator = base::i18n::ToLower(accelerator);
+#endif
   base::string16 link_text;
   base::string16 exit_instruction_text;
   if (link_visible) {
