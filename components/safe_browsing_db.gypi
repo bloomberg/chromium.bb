@@ -113,6 +113,9 @@
       # storing hash-prefixes on disk.
       'target_name': 'v4_store_proto',
       'type': 'static_library',
+      'dependencies': [
+        ':safebrowsing_proto',
+      ],
       'sources': [ 'safe_browsing_db/v4_store.proto' ],
       'variables': {
         'proto_in_dir': 'safe_browsing_db',
