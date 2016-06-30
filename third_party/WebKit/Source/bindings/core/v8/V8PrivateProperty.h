@@ -31,6 +31,8 @@ class ScriptWrappable;
     X(MutationObserver, Callback)         \
     X(PerformanceObserver, Callback)      \
     X(PrivateScriptRunner, IsInitialized) \
+    X(SameObject, NotificationActions) \
+    X(SameObject, NotificationVibrate) \
     X(V8NodeFilterCondition, Filter)
 
 // The getter's name for a private property.

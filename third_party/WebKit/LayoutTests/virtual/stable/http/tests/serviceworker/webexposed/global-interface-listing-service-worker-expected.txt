@@ -415,6 +415,7 @@ interface MessagePort : EventTarget
 interface Notification : EventTarget
     static getter maxActions
     static getter permission
+    getter actions
     getter body
     getter data
     getter dir
@@ -430,6 +431,7 @@ interface Notification : EventTarget
     getter tag
     getter timestamp
     getter title
+    getter vibrate
     method close
     method constructor
     setter onclick

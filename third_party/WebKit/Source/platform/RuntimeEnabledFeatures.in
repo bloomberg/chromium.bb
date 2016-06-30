@@ -136,7 +136,6 @@ NetworkInformation status=stable
 NetInfoDownlinkMax status=stable
 NewMediaPlaybackUi
 NotificationConstructor status=stable
-NotificationExperimental status=test
 NotificationBadge status=experimental
 NotificationInlineReplies status=experimental
 Notifications status=stable

@@ -33,6 +33,7 @@
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/SerializedScriptValueFactory.h"
+#include "bindings/modules/v8/V8NotificationAction.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/dom/ExecutionContextTask.h"
@@ -263,13 +264,10 @@ String Notification::badge() const
     return m_data.badge.string();
 }
 
-NavigatorVibration::VibrationPattern Notification::vibrate(bool& isNull) const
+NavigatorVibration::VibrationPattern Notification::vibrate() const
 {
     NavigatorVibration::VibrationPattern pattern;
     pattern.appendRange(m_data.vibrate.begin(), m_data.vibrate.end());
-
-    if (!pattern.size())
-        isNull = true;
 
     return pattern;
 }
@@ -305,26 +303,33 @@ ScriptValue Notification::data(ScriptState* scriptState)
     return m_developerData;
 }
 
-HeapVector<NotificationAction> Notification::actions() const
+Vector<v8::Local<v8::Value>> Notification::actions(ScriptState* scriptState) const
 {
-    HeapVector<NotificationAction> actions;
+    Vector<v8::Local<v8::Value>> actions;
     actions.grow(m_data.actions.size());
 
     for (size_t i = 0; i < m_data.actions.size(); ++i) {
+        NotificationAction action;
+
         switch (m_data.actions[i].type) {
         case WebNotificationAction::Button:
-            actions[i].setType("button");
+            action.setType("button");
             break;
         case WebNotificationAction::Text:
-            actions[i].setType("text");
+            action.setType("text");
             break;
         default:
             NOTREACHED() << "Unknown action type: " << m_data.actions[i].type;
         }
-        actions[i].setAction(m_data.actions[i].action);
-        actions[i].setTitle(m_data.actions[i].title);
-        actions[i].setIcon(m_data.actions[i].icon.string());
-        actions[i].setPlaceholder(m_data.actions[i].placeholder);
+
+        action.setAction(m_data.actions[i].action);
+        action.setTitle(m_data.actions[i].title);
+        action.setIcon(m_data.actions[i].icon.string());
+        action.setPlaceholder(m_data.actions[i].placeholder);
+
+        // Not just the sequence of actions itself, but also the actions contained within the
+        // sequence should be frozen per the Web Notification specification.
+        actions[i] = freezeV8Object(toV8(action, scriptState), scriptState->isolate());
     }
 
     return actions;

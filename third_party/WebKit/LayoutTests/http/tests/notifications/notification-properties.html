@@ -45,6 +45,12 @@
             assert_equals(notification.data, options.data);
             assert_array_equals(notification.actions, options.actions);
 
+            // The `actions` field should be immutable.
+            assert_throws(null, () => notification.actions.push(null));
+
+            notification.actions.foo = 'bar';
+            assert_false(notification.actions.hasOwnProperty('foo'));
+
             var emptyNotification = new Notification("My Notification");
 
             assert_equals(emptyNotification.title, "My Notification");
@@ -54,7 +60,7 @@
             assert_equals(emptyNotification.tag, "");
             assert_equals(emptyNotification.icon, "");
             assert_equals(emptyNotification.badge, "");
-            assert_equals(notification.vibrate, null);
+            assert_array_equals(emptyNotification.vibrate, []);
             assert_false(emptyNotification.silent);
             assert_false(emptyNotification.requireInteraction);
             assert_equals(emptyNotification.data, null);
@@ -69,10 +75,8 @@
             });
 
             // Test equality of the object attributes.
-            assert_true(equalNotification.data === equalNotification.data, '`data` object equality');
-
-            // TODO(peter): This should pass before shipping Notification.vibrate.
-            //assert_true(equalNotification.vibrate === equalNotification.vibrate, '`vibrate` object equality');
+            assert_equals(equalNotification.data, equalNotification.data, '`data` object equality');
+            assert_equals(equalNotification.vibrate, equalNotification.vibrate, '`vibrate` object equality');
 
             var serializedUrlNotification = new Notification("My Notification", {
                 icon: "https://example.com/icon.png",
@@ -95,6 +99,12 @@
 
             // vibrate pattern should be returned in serialized form.
             assert_array_equals(vibrateNotification.vibrate, [1000]);
+
+            // The `vibrate` property should be immutable.
+            assert_throws(null, () => vibrateNotification.vibrate.push(1000));
+
+            vibrateNotification.vibrate[0] = 2000;
+            assert_equals(vibrateNotification.vibrate[0], 1000);
 
             // Tests that it must be a valid vibration sequence.
             var pattern = new Array(100, 200, 300);

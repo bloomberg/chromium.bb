@@ -68,17 +68,13 @@ enum NotificationPermission {
     readonly attribute USVString icon;
     [RuntimeEnabled=NotificationBadge] readonly attribute USVString badge;
 
-    [RuntimeEnabled=NotificationExperimental] readonly attribute sequence<unsigned long>? vibrate;
+    [SameObject, SaveSameObject] readonly attribute FrozenArray<unsigned long> vibrate;
     readonly attribute DOMTimeStamp timestamp;
     readonly attribute boolean renotify;
     readonly attribute boolean silent;
     readonly attribute boolean requireInteraction;
     [CallWith=ScriptState, SameObject] readonly attribute any data;
-
-    // TODO(johnme): Ship once Blink supports FrozenArray (https://crbug.com/515920)
-    // and we've implemented the additional Object.freeze described in
-    // https://notifications.spec.whatwg.org/#dom-notification-actions
-    [RuntimeEnabled=NotificationExperimental] readonly attribute sequence<NotificationAction> actions;
+    [CallWith=ScriptState, SameObject, SaveSameObject] readonly attribute FrozenArray<NotificationAction> actions;
 
     [MeasureAs=NotificationClosed] void close();
 };

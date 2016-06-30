@@ -96,15 +96,18 @@
               assert_object_is_superset(notifications[0], options, 'The Notification object properties must be the same in getNotifications.');
 
               notifications[0].actions.foo = 'bar';
-              notifications[0].actions.push({ title: 'Foo' });
+              assert_throws(null, () => notifications[0].actions.push({ title: 'Foo' }));
+
               if (notifications[0].actions.length) {
                   notifications[0].actions[0].title = 'Changed';
                   notifications[0].actions[0].foo = 'bar';
               }
+
               assert_object_equals(notifications[0].actions, options.actions, 'The actions field should be immutable.');
 
-              // TODO(johnme): This should pass before shipping Notification.actions; this is blocked on https://crbug.com/515920.
-              //assert_equals(notifications[0].actions, notifications[0].actions, 'The actions field should === itself.');
+              assert_equals(notifications[0].actions, notifications[0].actions, '`actions` attribute equality');
+              assert_equals(notifications[0].data, notifications[0].data, '`data` attribute equality');
+              assert_equals(notifications[0].vibrate, notifications[0].vibrate, '`vibrate` attribute equality');
 
               test.done();
           }).catch(unreached_rejection(test));
