@@ -126,6 +126,7 @@ MediaGetSettings status=test
 MediaRecorder status=stable
 MediaSession
 MediaSourceExperimental status=experimental
+MediaSourceNewAbortAndDuration status=experimental
 MediaStreamSpeech status=experimental
 MemoryInfoInWorkers status=experimental
 MobileLayoutTheme

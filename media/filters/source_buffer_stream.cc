@@ -1401,6 +1401,15 @@ Ranges<base::TimeDelta> SourceBufferStream::GetBufferedTime() const {
   return ranges;
 }
 
+base::TimeDelta SourceBufferStream::GetHighestPresentationTimestamp() const {
+  if (ranges_.empty())
+    return base::TimeDelta();
+
+  // TODO(wolenetz): Report actual highest PTS here, not DTS cast to PTS. See
+  // https://crbug.com/398130.
+  return ranges_.back()->GetEndTimestamp().ToPresentationTime();
+}
+
 base::TimeDelta SourceBufferStream::GetBufferedDuration() const {
   if (ranges_.empty())
     return base::TimeDelta();

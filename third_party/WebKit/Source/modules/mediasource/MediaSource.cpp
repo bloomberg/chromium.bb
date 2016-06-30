@@ -36,6 +36,8 @@
 #include "core/dom/ExceptionCode.h"
 #include "core/events/Event.h"
 #include "core/events/GenericEventQueue.h"
+#include "core/frame/Deprecation.h"
+#include "core/frame/UseCounter.h"
 #include "core/html/HTMLMediaElement.h"
 #include "modules/mediasource/MediaSourceRegistry.h"
 #include "platform/ContentType.h"
@@ -426,27 +428,49 @@ void MediaSource::setDuration(double duration, ExceptionState& exceptionState)
 
     // 4. Run the duration change algorithm with new duration set to the value being
     // assigned to this attribute.
-    durationChangeAlgorithm(duration);
+    durationChangeAlgorithm(duration, exceptionState);
 }
 
-void MediaSource::durationChangeAlgorithm(double newDuration)
+void MediaSource::durationChangeAlgorithm(double newDuration, ExceptionState& exceptionState)
 {
-    // Section 2.6.4 Duration change
-    // https://dvcs.w3.org/hg/html-media/raw-file/default/media-source/media-source.html#duration-change-algorithm
+    // http://w3c.github.io/media-source/#duration-change-algorithm
     // 1. If the current value of duration is equal to new duration, then return.
     if (newDuration == duration())
         return;
 
-    // 2. Set old duration to the current value of duration.
+    // 2. If new duration is less than the highest starting presentation
+    // timestamp of any buffered coded frames for all SourceBuffer objects in
+    // sourceBuffers, then throw an InvalidStateError exception and abort these
+    // steps. Note: duration reductions that would truncate currently buffered
+    // media are disallowed. When truncation is necessary, use remove() to
+    // reduce the buffered range before updating duration.
+    double highestBufferedPresentationTimestamp = 0;
+    for (size_t i = 0; i < m_sourceBuffers->length(); ++i) {
+        highestBufferedPresentationTimestamp = std::max(highestBufferedPresentationTimestamp, m_sourceBuffers->item(i)->highestPresentationTimestamp());
+    }
+
+    if (newDuration < highestBufferedPresentationTimestamp) {
+        if (RuntimeEnabledFeatures::mediaSourceNewAbortAndDurationEnabled()) {
+            logAndThrowDOMException(exceptionState, InvalidStateError, "Setting duration below highest presentation timestamp of any buffered coded frames is disallowed. Instead, first do asynchronous remove(newDuration, oldDuration) on all sourceBuffers, where newDuration < oldDuration.");
+            return;
+        }
+
+        Deprecation::countDeprecation(m_attachedElement->document(), UseCounter::MediaSourceDurationTruncatingBuffered);
+        // See also deprecated remove(new duration, old duration) behavior below.
+    }
+
+    // 3. Set old duration to the current value of duration.
     double oldDuration = duration();
+    DCHECK_LE(highestBufferedPresentationTimestamp, std::isnan(oldDuration) ? 0 : oldDuration);
 
+    // 4. Update duration to new duration.
     bool requestSeek = m_attachedElement->currentTime() > newDuration;
-
-    // 3. Update duration to new duration.
     m_webMediaSource->setDuration(newDuration);
 
-    // 4. If the new duration is less than old duration, then call remove(new duration, old duration) on all all objects in sourceBuffers.
-    if (newDuration < oldDuration) {
+    if (!RuntimeEnabledFeatures::mediaSourceNewAbortAndDurationEnabled() && newDuration < oldDuration) {
+        // Deprecated behavior: if the new duration is less than old duration,
+        // then call remove(new duration, old duration) on all all objects in
+        // sourceBuffers.
         for (size_t i = 0; i < m_sourceBuffers->length(); ++i)
             m_sourceBuffers->item(i)->remove(newDuration, oldDuration, ASSERT_NO_EXCEPTION);
     }

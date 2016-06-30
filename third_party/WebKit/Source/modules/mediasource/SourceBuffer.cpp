@@ -39,6 +39,8 @@
 #include "core/events/Event.h"
 #include "core/events/GenericEventQueue.h"
 #include "core/fileapi/FileReaderLoader.h"
+#include "core/frame/Deprecation.h"
+#include "core/frame/UseCounter.h"
 #include "core/html/HTMLMediaElement.h"
 #include "core/html/MediaError.h"
 #include "core/html/TimeRanges.h"
@@ -50,6 +52,7 @@
 #include "modules/mediasource/MediaSource.h"
 #include "modules/mediasource/SourceBufferTrackBaseSupplement.h"
 #include "platform/Logging.h"
+#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/TraceEvent.h"
 #include "public/platform/WebSourceBuffer.h"
 #include "wtf/MathExtras.h"
@@ -346,8 +349,7 @@ void SourceBuffer::appendStream(Stream* stream, unsigned long long maxSize, Exce
 void SourceBuffer::abort(ExceptionState& exceptionState)
 {
     SBLOG << __FUNCTION__ << " this=" << this;
-    // Section 3.2 abort() method steps.
-    // https://dvcs.w3.org/hg/html-media/raw-file/default/media-source/media-source.html#widl-SourceBuffer-abort-void
+    // http://w3c.github.io/media-source/#widl-SourceBuffer-abort-void
     // 1. If this object has been removed from the sourceBuffers attribute of the parent media source
     //    then throw an InvalidStateError exception and abort these steps.
     // 2. If the readyState attribute of the parent media source is not in the "open" state
@@ -361,16 +363,32 @@ void SourceBuffer::abort(ExceptionState& exceptionState)
         return;
     }
 
-    // 3. If the sourceBuffer.updating attribute equals true, then run the following steps: ...
+    // 3. If the range removal algorithm is running, then throw an
+    //    InvalidStateError exception and abort these steps.
+    if (m_pendingRemoveStart != -1) {
+        DCHECK(m_updating);
+        // Throwing the exception and aborting these steps is new behavior that
+        // is implemented behind the MediaSourceNewAbortAndDuration
+        // RuntimeEnabledFeature.
+        if (RuntimeEnabledFeatures::mediaSourceNewAbortAndDurationEnabled()) {
+            MediaSource::logAndThrowDOMException(exceptionState, InvalidStateError, "Aborting asynchronous remove() operation is disallowed.");
+            return;
+        }
+
+        Deprecation::countDeprecation(m_source->mediaElement()->document(), UseCounter::MediaSourceAbortRemove);
+        cancelRemove();
+    }
+
+    // 4. If the sourceBuffer.updating attribute equals true, then run the following steps: ...
     abortIfUpdating();
 
-    // 4. Run the reset parser state algorithm.
+    // 5. Run the reset parser state algorithm.
     m_webSourceBuffer->resetParserState();
 
-    // 5. Set appendWindowStart to 0.
+    // 6. Set appendWindowStart to 0.
     setAppendWindowStart(0, exceptionState);
 
-    // 6. Set appendWindowEnd to positive Infinity.
+    // 7. Set appendWindowEnd to positive Infinity.
     setAppendWindowEnd(std::numeric_limits<double>::infinity(), exceptionState);
 }
 
@@ -435,44 +453,57 @@ void SourceBuffer::setTrackDefaults(TrackDefaultList* trackDefaults, ExceptionSt
     m_trackDefaults = trackDefaults;
 }
 
+void SourceBuffer::cancelRemove()
+{
+    DCHECK(m_updating);
+    DCHECK_NE(m_pendingRemoveStart, -1);
+    m_removeAsyncPartRunner->stop();
+    m_pendingRemoveStart = -1;
+    m_pendingRemoveEnd = -1;
+    m_updating = false;
+
+    if (!RuntimeEnabledFeatures::mediaSourceNewAbortAndDurationEnabled()) {
+        scheduleEvent(EventTypeNames::abort);
+        scheduleEvent(EventTypeNames::updateend);
+    }
+
+    TRACE_EVENT_ASYNC_END0("media", "SourceBuffer::remove", this);
+}
+
 void SourceBuffer::abortIfUpdating()
 {
-    // Section 3.2 abort() method step 3 substeps.
-    // https://dvcs.w3.org/hg/html-media/raw-file/default/media-source/media-source.html#widl-SourceBuffer-abort-void
+    // Section 3.2 abort() method step 4 substeps.
+    // http://w3c.github.io/media-source/#widl-SourceBuffer-abort-void
 
     if (!m_updating)
         return;
+
+    DCHECK_EQ(m_pendingRemoveStart, -1);
 
     const char* traceEventName = 0;
     if (!m_pendingAppendData.isEmpty()) {
         traceEventName = "SourceBuffer::appendBuffer";
     } else if (m_stream) {
         traceEventName = "SourceBuffer::appendStream";
-    } else if (m_pendingRemoveStart != -1) {
-        traceEventName = "SourceBuffer::remove";
     } else {
         NOTREACHED();
     }
 
-    // 3.1. Abort the buffer append and stream append loop algorithms if they are running.
+    // 4.1. Abort the buffer append and stream append loop algorithms if they are running.
     m_appendBufferAsyncPartRunner->stop();
     m_pendingAppendData.clear();
     m_pendingAppendDataOffset = 0;
 
-    m_removeAsyncPartRunner->stop();
-    m_pendingRemoveStart = -1;
-    m_pendingRemoveEnd = -1;
-
     m_appendStreamAsyncPartRunner->stop();
     clearAppendStreamState();
 
-    // 3.2. Set the updating attribute to false.
+    // 4.2. Set the updating attribute to false.
     m_updating = false;
 
-    // 3.3. Queue a task to fire a simple event named abort at this SourceBuffer object.
+    // 4.3. Queue a task to fire a simple event named abort at this SourceBuffer object.
     scheduleEvent(EventTypeNames::abort);
 
-    // 3.4. Queue a task to fire a simple event named updateend at this SourceBuffer object.
+    // 4.4. Queue a task to fire a simple event named updateend at this SourceBuffer object.
     scheduleEvent(EventTypeNames::updateend);
 
     TRACE_EVENT_ASYNC_END0("media", traceEventName, this);
@@ -484,7 +515,11 @@ void SourceBuffer::removedFromMediaSource()
         return;
 
     SBLOG << __FUNCTION__ << " this=" << this;
-    abortIfUpdating();
+    if (m_pendingRemoveStart != -1) {
+        cancelRemove();
+    } else {
+        abortIfUpdating();
+    }
 
     if (RuntimeEnabledFeatures::audioVideoTracksEnabled()) {
         DCHECK(m_source);
@@ -498,6 +533,15 @@ void SourceBuffer::removedFromMediaSource()
     m_webSourceBuffer.reset();
     m_source = nullptr;
     m_asyncEventQueue = nullptr;
+}
+
+double SourceBuffer::highestPresentationTimestamp()
+{
+    DCHECK(!isRemoved());
+
+    double pts = m_webSourceBuffer->highestPresentationTimestamp();
+    SBLOG << __FUNCTION__ << " this=" << this << ", pts=" << pts;
+    return pts;
 }
 
 void SourceBuffer::removeMediaTracks()

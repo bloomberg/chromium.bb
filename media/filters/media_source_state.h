@@ -89,6 +89,10 @@ class MEDIA_EXPORT MediaSourceState {
   // end of stream range logic needs to be executed.
   Ranges<TimeDelta> GetBufferedRanges(TimeDelta duration, bool ended) const;
 
+  // Returns the highest PTS of currently buffered frames in this source, or
+  // base::TimeDelta() if none of the streams contain buffered data.
+  TimeDelta GetHighestPresentationTimestamp() const;
+
   // Returns the highest buffered duration across all streams managed
   // by this object.
   // Returns TimeDelta() if none of the streams contain buffered data.

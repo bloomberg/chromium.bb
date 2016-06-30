@@ -91,6 +91,10 @@ blink::WebTimeRanges WebSourceBufferImpl::buffered() {
   return result;
 }
 
+double WebSourceBufferImpl::highestPresentationTimestamp() {
+  return demuxer_->GetHighestPresentationTimestamp(id_).InSecondsF();
+}
+
 bool WebSourceBufferImpl::evictCodedFrames(double currentPlaybackTime,
                                            size_t newDataSize) {
   return demuxer_->EvictCodedFrames(

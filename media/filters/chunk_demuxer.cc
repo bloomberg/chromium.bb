@@ -157,6 +157,10 @@ Ranges<TimeDelta> ChunkDemuxerStream::GetBufferedRanges(
   return range.IntersectionWith(valid_time_range);
 }
 
+TimeDelta ChunkDemuxerStream::GetHighestPresentationTimestamp() const {
+  return stream_->GetHighestPresentationTimestamp();
+}
+
 TimeDelta ChunkDemuxerStream::GetBufferedDuration() const {
   return stream_->GetBufferedDuration();
 }
@@ -591,6 +595,17 @@ Ranges<TimeDelta> ChunkDemuxer::GetBufferedRanges(const std::string& id) const {
 
   DCHECK(itr != source_state_map_.end());
   return itr->second->GetBufferedRanges(duration_, state_ == ENDED);
+}
+
+base::TimeDelta ChunkDemuxer::GetHighestPresentationTimestamp(
+    const std::string& id) const {
+  base::AutoLock auto_lock(lock_);
+  DCHECK(!id.empty());
+
+  MediaSourceStateMap::const_iterator itr = source_state_map_.find(id);
+
+  DCHECK(itr != source_state_map_.end());
+  return itr->second->GetHighestPresentationTimestamp();
 }
 
 bool ChunkDemuxer::EvictCodedFrames(const std::string& id,

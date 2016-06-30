@@ -1231,6 +1231,8 @@ public:
         TextAreaMinLength = 1425,
         TopNavigationFromSubFrame = 1426,
         PrefixedElementRequestFullscreenInShadow = 1427,
+        MediaSourceAbortRemove = 1428,
+        MediaSourceDurationTruncatingBuffered = 1429,
 
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.

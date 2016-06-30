@@ -75,6 +75,10 @@ class MEDIA_EXPORT ChunkDemuxerStream : public DemuxerStream {
   // Returns the range of buffered data in this stream, capped at |duration|.
   Ranges<base::TimeDelta> GetBufferedRanges(base::TimeDelta duration) const;
 
+  // Returns the highest PTS of the buffered data.
+  // Returns base::TimeDelta() if the stream has no buffered data.
+  base::TimeDelta GetHighestPresentationTimestamp() const;
+
   // Returns the duration of the buffered data.
   // Returns base::TimeDelta() if the stream has no buffered data.
   base::TimeDelta GetBufferedDuration() const;
@@ -221,6 +225,10 @@ class MEDIA_EXPORT ChunkDemuxer : public Demuxer {
 
   // Gets the currently buffered ranges for the specified ID.
   Ranges<base::TimeDelta> GetBufferedRanges(const std::string& id) const;
+
+  // Gets the highest buffered PTS for the specified |id|. If there is nothing
+  // buffered, returns base::TimeDelta().
+  base::TimeDelta GetHighestPresentationTimestamp(const std::string& id) const;
 
   // Appends media data to the source buffer associated with |id|, applying
   // and possibly updating |*timestamp_offset| during coded frame processing.

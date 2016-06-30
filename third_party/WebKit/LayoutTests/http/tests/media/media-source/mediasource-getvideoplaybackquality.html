@@ -49,8 +49,8 @@
                   test.expectEvent(sourceBuffer, "update");
                   test.expectEvent(sourceBuffer, "updateend");
 
-                  mediaSource.duration = 1;
-
+                  // Truncate the buffered media to about 1 second duration.
+                  sourceBuffer.remove(1, +Infinity);
                   assert_true(sourceBuffer.updating, "sourceBuffer.updating");
               });
 

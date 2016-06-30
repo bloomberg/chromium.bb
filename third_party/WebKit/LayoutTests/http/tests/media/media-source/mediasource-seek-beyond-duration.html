@@ -64,10 +64,16 @@
                     assert_greater_than_equal(mediaElement.duration, 2.0, 'Duration is >2.0s.');
                     test.waitForCurrentTimeChange(mediaElement, function()
                     {
-                        // Update duration.
-                        mediaSource.duration = 1.5;
-                        seekToSpecifiedTimeSetEOSAndVerifyDone(test, mediaElement, mediaSource, 1.8);
+                        // Reduce duration after removing media beyond the new duration.
+                        test.expectEvent(sourceBuffer, 'updateend', 'remove end');
+                        sourceBuffer.remove(1.5, +Infinity);
+                        test.waitForExpectedEvents(function()
+                        {
+                            mediaSource.duration = 1.5;
+                            seekToSpecifiedTimeSetEOSAndVerifyDone(test, mediaElement, mediaSource, 1.8);
+                        });
                     });
+
                 });
             }, 'Test seeking beyond updated media duration.');
 
@@ -85,7 +91,7 @@
                 {
                     test.waitForCurrentTimeChange(mediaElement, function()
                     {
-                        seekToSpecifiedTimeSetEOSAndVerifyDone(test, mediaElement, mediaSource, mediaSource.duration, mediaSource.duration + 0.1);
+                        seekToSpecifiedTimeSetEOSAndVerifyDone(test, mediaElement, mediaSource, mediaSource.duration + 0.1);
                     });
                 });
 

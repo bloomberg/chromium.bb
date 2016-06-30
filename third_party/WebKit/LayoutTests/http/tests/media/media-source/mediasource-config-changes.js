@@ -64,14 +64,25 @@ function mediaSourceConfigChangeTest(directory, idA, idB, description)
                 test.waitForExpectedEvents(function()
                 {
                     // Truncate the presentation to a duration of 2 seconds.
-                    assert_false(sourceBuffer.updating, "sourceBuffer.updating");
+                    // First, explicitly remove the media beyond 2 seconds.
+                    assert_false(sourceBuffer.updating, "sourceBuffer.updating before range removal");
+                    sourceBuffer.remove(2, mediaSource.duration);
 
-                    mediaSource.duration = 2;
-
-                    assert_true(sourceBuffer.updating, "sourceBuffer.updating");
+                    assert_true(sourceBuffer.updating, "sourceBuffer.updating during range removal");
                     test.expectEvent(sourceBuffer, "updatestart");
                     test.expectEvent(sourceBuffer, "update");
                     test.expectEvent(sourceBuffer, "updateend");
+                });
+
+                test.waitForExpectedEvents(function()
+                {
+                    // Complete the truncation of presentation to 2 second
+                    // duration.
+                    assert_false(sourceBuffer.updating, "sourceBuffer.updating prior to duration reduction");
+                    mediaSource.duration = 2;
+                    assert_false(sourceBuffer.updating, "sourceBuffer.updating synchronously after duration reduction");
+
+                    test.expectEvent(mediaElement, "durationchange");
                 });
 
                 test.waitForExpectedEvents(function()

@@ -132,8 +132,8 @@ private:
     void endOfStreamInternal(const WebMediaSource::EndOfStreamStatus, ExceptionState&);
 
     // Implements the duration change algorithm.
-    // https://dvcs.w3.org/hg/html-media/raw-file/default/media-source/media-source.html#duration-change-algorithm
-    void durationChangeAlgorithm(double newDuration);
+    // http://w3c.github.io/media-source/#duration-change-algorithm
+    void durationChangeAlgorithm(double newDuration, ExceptionState&);
 
     std::unique_ptr<WebMediaSource> m_webMediaSource;
     AtomicString m_readyState;

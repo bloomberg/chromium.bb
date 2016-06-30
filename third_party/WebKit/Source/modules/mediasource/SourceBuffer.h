@@ -100,8 +100,8 @@ public:
     AudioTrackList& audioTracks();
     VideoTrackList& videoTracks();
 
-    void abortIfUpdating();
     void removedFromMediaSource();
+    double highestPresentationTimestamp();
 
     // ActiveScriptWrappable
     bool hasPendingActivity() const final;
@@ -150,6 +150,9 @@ private:
     void appendStreamAsyncPart();
     void appendStreamDone(AppendStreamDoneAction);
     void clearAppendStreamState();
+
+    void cancelRemove();
+    void abortIfUpdating();
 
     void removeMediaTracks();
 

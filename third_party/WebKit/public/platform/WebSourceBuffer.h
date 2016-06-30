@@ -56,6 +56,10 @@ public:
     virtual bool setMode(AppendMode) = 0;
     virtual WebTimeRanges buffered() = 0;
 
+    // Returns the highest buffered presentation timestamp of all buffered coded
+    // frames, or 0 if nothing is buffered.
+    virtual double highestPresentationTimestamp() = 0;
+
     // Run coded frame eviction/garbage collection algorithm.
     // |currentPlaybackTime| is HTMLMediaElement::currentTime. The algorithm
     // will try to preserve data around current playback position.

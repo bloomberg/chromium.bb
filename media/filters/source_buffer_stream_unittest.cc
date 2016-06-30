@@ -4795,6 +4795,31 @@ TEST_F(SourceBufferStreamTest,
   CheckNoNextBuffer();
 }
 
+TEST_F(SourceBufferStreamTest, GetHighestPresentationTimestamp) {
+  // TODO(wolenetz): Add coverage for when DTS != PTS once
+  // https://crbug.com/398130 is fixed.
+
+  EXPECT_EQ(base::TimeDelta(), stream_->GetHighestPresentationTimestamp());
+
+  NewCodedFrameGroupAppend("0K 10K");
+  EXPECT_EQ(base::TimeDelta::FromMilliseconds(10),
+            stream_->GetHighestPresentationTimestamp());
+
+  RemoveInMs(0, 10, 20);
+  EXPECT_EQ(base::TimeDelta::FromMilliseconds(10),
+            stream_->GetHighestPresentationTimestamp());
+
+  RemoveInMs(10, 20, 20);
+  EXPECT_EQ(base::TimeDelta(), stream_->GetHighestPresentationTimestamp());
+
+  NewCodedFrameGroupAppend("0K 10K");
+  EXPECT_EQ(base::TimeDelta::FromMilliseconds(10),
+            stream_->GetHighestPresentationTimestamp());
+
+  RemoveInMs(10, 20, 20);
+  EXPECT_EQ(base::TimeDelta(), stream_->GetHighestPresentationTimestamp());
+}
+
 // TODO(vrk): Add unit tests where keyframes are unaligned between streams.
 // (crbug.com/133557)
 

@@ -28,6 +28,7 @@ class WebSourceBufferImpl : public blink::WebSourceBuffer {
   void setClient(blink::WebSourceBufferClient* client) override;
   bool setMode(AppendMode mode) override;
   blink::WebTimeRanges buffered() override;
+  double highestPresentationTimestamp() override;
   bool evictCodedFrames(double currentPlaybackTime,
                         size_t newDataSize) override;
   bool append(const unsigned char* data,

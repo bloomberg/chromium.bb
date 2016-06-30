@@ -311,6 +311,23 @@ Ranges<TimeDelta> MediaSourceState::GetBufferedRanges(TimeDelta duration,
   return ComputeRangesIntersection(ranges_list, ended);
 }
 
+TimeDelta MediaSourceState::GetHighestPresentationTimestamp() const {
+  TimeDelta max_pts;
+
+  if (audio_)
+    max_pts = std::max(max_pts, audio_->GetHighestPresentationTimestamp());
+
+  if (video_)
+    max_pts = std::max(max_pts, video_->GetHighestPresentationTimestamp());
+
+  for (TextStreamMap::const_iterator itr = text_stream_map_.begin();
+       itr != text_stream_map_.end(); ++itr) {
+    max_pts = std::max(max_pts, itr->second->GetHighestPresentationTimestamp());
+  }
+
+  return max_pts;
+}
+
 TimeDelta MediaSourceState::GetMaxBufferedDuration() const {
   TimeDelta max_duration;
 
