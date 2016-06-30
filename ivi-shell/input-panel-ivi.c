@@ -86,6 +86,8 @@ show_input_panel_surface(struct input_panel_surface *ipsurf)
 	                          &ipsurf->view->layer_link);
 	weston_view_geometry_dirty(ipsurf->view);
 	weston_view_update_transform(ipsurf->view);
+	ipsurf->surface->is_mapped = true;
+	ipsurf->view->is_mapped = true;
 	weston_surface_damage(ipsurf->surface);
 
 	if (ipsurf->anim)

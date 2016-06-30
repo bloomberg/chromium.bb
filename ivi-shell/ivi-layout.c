@@ -891,6 +891,8 @@ commit_screen_list(struct ivi_layout *layout)
 							  &ivi_view->view->layer_link);
 
 				ivi_view->view->output = iviscrn->output;
+				ivi_view->ivisurf->surface->is_mapped = true;
+				ivi_view->view->is_mapped = true;
 			}
 		}
 	}
