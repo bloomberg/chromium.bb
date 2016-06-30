@@ -40,7 +40,15 @@ const char kInvalidEncryptionHeader[] = "keyid";
 const char kValidCryptoKeyHeader[] =
     "keyid=foo;dh=BL_UGhfudEkXMUd4U4-D4nP5KHxKjQHsW6j88ybbehXM7fqi1OMFefDUEi0eJ"
     "vsKfyVBWYkQjH-lSPJKxjAyslg";
+const char kValidThreeValueCryptoKeyHeader[] =
+    "keyid=foo,keyid=bar,keyid=baz;dh=BL_UGhfudEkXMUd4U4-D4nP5KHxKjQHsW6j88ybbe"
+    "hXM7fqi1OMFefDUEi0eJvsKfyVBWYkQjH-lSPJKxjAyslg";
+
 const char kInvalidCryptoKeyHeader[] = "keyid";
+const char kInvalidThreeValueCryptoKeyHeader[] =
+    "keyid=foo,dh=BL_UGhfudEkXMUd4U4-D4nP5KHxKjQHsW6j88ybbehXM7fqi1OMFefDUEi0eJ"
+    "vsKfyVBWYkQjH-lSPJKxjAyslg,keyid=baz,dh=BL_UGhfudEkXMUd4U4-D4nP5KHxKjQHsW6"
+    "j88ybbehXM7fqi1OMFefDUEi0eJvsKfyVBWYkQjH-lSPJKxjAyslg";
 
 }  // namespace
 
@@ -204,7 +212,7 @@ TEST_F(GCMEncryptionProviderTest, VerifiesEncryptionHeaderParsing) {
 }
 
 TEST_F(GCMEncryptionProviderTest, VerifiesCryptoKeyHeaderParsing) {
-  // The Encryption-Key header must be parsable and contain valid values.
+  // The Crypto-Key header must be parsable and contain valid values.
   // Note that this is more extensively tested in EncryptionHeaderParsersTest.
 
   IncomingMessage invalid_message;
@@ -217,12 +225,40 @@ TEST_F(GCMEncryptionProviderTest, VerifiesCryptoKeyHeaderParsing) {
             decryption_result());
 
   IncomingMessage valid_message;
-  valid_message.data["encryption"] = kInvalidEncryptionHeader;
+  valid_message.data["encryption"] = kValidEncryptionHeader;
   valid_message.data["crypto-key"] = kValidCryptoKeyHeader;
   valid_message.raw_data = "foo";
 
   ASSERT_NO_FATAL_FAILURE(Decrypt(valid_message));
   EXPECT_NE(GCMEncryptionProvider::DECRYPTION_RESULT_INVALID_CRYPTO_KEY_HEADER,
+            decryption_result());
+}
+
+TEST_F(GCMEncryptionProviderTest, VerifiesCryptoKeyHeaderParsingThirdValue) {
+  // The Crypto-Key header must be parsable and contain valid values, in which
+  // values will be ignored unless they contain a "dh" property.
+
+  IncomingMessage valid_message;
+  valid_message.data["encryption"] = kValidEncryptionHeader;
+  valid_message.data["crypto-key"] = kValidThreeValueCryptoKeyHeader;
+  valid_message.raw_data = "foo";
+
+  ASSERT_NO_FATAL_FAILURE(Decrypt(valid_message));
+  EXPECT_NE(GCMEncryptionProvider::DECRYPTION_RESULT_INVALID_CRYPTO_KEY_HEADER,
+            decryption_result());
+}
+
+TEST_F(GCMEncryptionProviderTest, VerifiesCryptoKeyHeaderSingleDhEntry) {
+  // The Crypto-Key header must include at most one value that contains the
+  // "dh" property. Having more than once occurrence is forbidden.
+
+  IncomingMessage valid_message;
+  valid_message.data["encryption"] = kValidEncryptionHeader;
+  valid_message.data["crypto-key"] = kInvalidThreeValueCryptoKeyHeader;
+  valid_message.raw_data = "foo";
+
+  ASSERT_NO_FATAL_FAILURE(Decrypt(valid_message));
+  EXPECT_EQ(GCMEncryptionProvider::DECRYPTION_RESULT_INVALID_CRYPTO_KEY_HEADER,
             decryption_result());
 }
 

@@ -150,7 +150,29 @@ void GCMEncryptionProvider::DecryptMessage(
     return;
   }
 
-  if (crypto_key_header_iterator.dh().empty()) {
+  // Ignore values that don't include the "dh" property. When using VAPID, it is
+  // valid for the application server to supply multiple values.
+  while (crypto_key_header_iterator.dh().empty() &&
+         crypto_key_header_iterator.GetNext()) {}
+
+  bool valid_crypto_key_header = false;
+  std::string dh;
+
+  if (!crypto_key_header_iterator.dh().empty()) {
+    dh = crypto_key_header_iterator.dh();
+    valid_crypto_key_header = true;
+
+    // Guard against the "dh" property being included more than once.
+    while (crypto_key_header_iterator.GetNext()) {
+      if (crypto_key_header_iterator.dh().empty())
+        continue;
+
+      valid_crypto_key_header = false;
+      break;
+    }
+  }
+
+  if (!valid_crypto_key_header) {
     DLOG(ERROR) << "Invalid values supplied in the Crypto-Key header";
     callback.Run(DECRYPTION_RESULT_INVALID_CRYPTO_KEY_HEADER,
                  IncomingMessage());
@@ -164,8 +186,7 @@ void GCMEncryptionProvider::DecryptMessage(
                       base::Bind(&GCMEncryptionProvider::DecryptMessageWithKey,
                                  weak_ptr_factory_.GetWeakPtr(), message,
                                  callback, encryption_header_iterator.salt(),
-                                 crypto_key_header_iterator.dh(),
-                                 encryption_header_iterator.rs()));
+                                 dh, encryption_header_iterator.rs()));
 }
 
 void GCMEncryptionProvider::DidGetEncryptionInfo(
