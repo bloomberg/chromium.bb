@@ -1088,11 +1088,13 @@ void AndroidVideoDecodeAccelerator::ConfigureMediaCodecAsynchronously() {
   // might access that surface while the main thread is drawing.  Telling the
   // strategy to forget the codec avoids this.
   if (media_codec_) {
-    media_codec_.reset();
+    ReleaseMediaCodec();
     strategy_->CodecChanged(nullptr);
   }
 
-  // Choose whether to autodetect the codec type.
+  // Choose whether to autodetect the codec type.  Note that we do this after
+  // releasing any outgoing codec, so that |codec_config_| still matches the
+  // outgoing codec for ReleaseMediaCodec().
   codec_config_->allow_autodetection_ =
       g_avda_timer.Pointer()->IsCodecAutodetectionProbablySafe();
   codec_config_->notify_completion_ = codec_config_->allow_autodetection_;
@@ -1126,6 +1128,7 @@ bool AndroidVideoDecodeAccelerator::ConfigureMediaCodecSynchronously() {
       g_avda_timer.Pointer()->IsCodecAutodetectionProbablySafe();
   codec_config_->notify_completion_ = false;
 
+  ReleaseMediaCodec();
   std::unique_ptr<VideoCodecBridge> media_codec =
       ConfigureMediaCodecOnAnyThread(codec_config_);
   OnCodecConfigured(std::move(media_codec));
@@ -1183,6 +1186,7 @@ void AndroidVideoDecodeAccelerator::OnCodecConfigured(
   if (state_ == SURFACE_DESTROYED)
     return;
 
+  DCHECK(!media_codec_);
   media_codec_ = std::move(media_codec);
   strategy_->CodecChanged(media_codec_.get());
   if (!media_codec_) {
@@ -1412,20 +1416,7 @@ void AndroidVideoDecodeAccelerator::ActualDestroy() {
   weak_this_factory_.InvalidateWeakPtrs();
   if (media_codec_) {
     manager->StopTimer(this);
-    // If codec construction is broken, then we can't release this codec if it's
-    // backed by hardware, else it may hang too.  Post it to the construction
-    // thread, and it'll get freed if things start working.  If things are
-    // already working, then it'll be freed soon.
-    //
-    // We require software codecs when |allow_autodetection_| is false, so use
-    // the stored value as a proxy for whether the MediaCodec is software backed
-    // or not.
-    if (!codec_config_->allow_autodetection_) {
-      media_codec_.reset();
-    } else {
-      manager->ConstructionTaskRunner()->DeleteSoon(FROM_HERE,
-                                                    media_codec_.release());
-    }
+    ReleaseMediaCodec();
   }
   delete this;
 }
@@ -1513,7 +1504,7 @@ void AndroidVideoDecodeAccelerator::OnDestroyingSurface(int surface_id) {
   // SURFACE_DESTROYED.
   state_ = SURFACE_DESTROYED;
   if (media_codec_) {
-    media_codec_.reset();
+    ReleaseMediaCodec();
     strategy_->CodecChanged(media_codec_.get());
   }
   // If we're draining, signal completion now because the drain can no longer
@@ -1667,6 +1658,26 @@ void AndroidVideoDecodeAccelerator::ManageTimer(bool did_work) {
     g_avda_timer.Pointer()->StartTimer(this);
   else
     g_avda_timer.Pointer()->StopTimer(this);
+}
+
+void AndroidVideoDecodeAccelerator::ReleaseMediaCodec() {
+  if (!media_codec_)
+    return;
+
+  // If codec construction is broken, then we can't release this codec if it's
+  // backed by hardware, else it may hang too.  Post it to the construction
+  // thread, and it'll get freed if things start working.  If things are
+  // already working, then it'll be freed soon.
+  //
+  // We require software codecs when |allow_autodetection_| is false, so use
+  // the stored value as a proxy for whether the MediaCodec is software backed
+  // or not.
+  if (!codec_config_->allow_autodetection_) {
+    media_codec_.reset();
+  } else {
+    g_avda_timer.Pointer()->ConstructionTaskRunner()->DeleteSoon(
+        FROM_HERE, media_codec_.release());
+  }
 }
 
 // static
