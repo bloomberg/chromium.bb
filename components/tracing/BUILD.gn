@@ -14,6 +14,8 @@ component("tracing") {
     "common/process_metrics_memory_dump_provider.h",
     "common/tracing_messages.cc",
     "common/tracing_messages.h",
+    "core/trace_ring_buffer.cc",
+    "core/trace_ring_buffer.h",
     "tracing_export.h",
   ]
 
@@ -54,6 +56,7 @@ source_set("unit_tests") {
     "child/child_trace_message_filter_unittest.cc",
     "common/graphics_memory_dump_provider_android_unittest.cc",
     "common/process_metrics_memory_dump_provider_unittest.cc",
+    "core/trace_ring_buffer_unittest.cc",
   ]
 
   deps = [
