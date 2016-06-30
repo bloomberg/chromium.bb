@@ -29,3 +29,6 @@
 # crbug.com/603261: WebrtcEventLogApiTest tests failing on Site Isolation FYI bot
 -WebrtcEventLogApiTest.TestStartTimedWebRtcEventLogging
 -WebrtcEventLogApiTest.TestStartStopWebRtcEventLogging
+
+# crbug.com/624958: InputImeApiTest.SendKeyEvntsOnNormalPage failing
+-InputImeApiTest.SendKeyEvntsOnNormalPage
