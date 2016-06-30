@@ -377,6 +377,23 @@ void ShellSurface::SetTitle(const base::string16& title) {
     widget_->UpdateWindowTitle();
 }
 
+void ShellSurface::SetSystemModal(bool system_modal) {
+  // System modal container is used by clients to implement client side
+  // managed system modal dialogs using a single ShellSurface instance.
+  // Hit-test region will be non-empty when at least one dialog exists on
+  // the client side. Here we detect the transition between no client side
+  // dialog and at least one dialog so activatable state is properly
+  // updated.
+  if (container_ != ash::kShellWindowId_SystemModalContainer) {
+    LOG(ERROR)
+        << "Only a window in SystemModalContainer can change the modality";
+    return;
+  }
+  widget_->GetNativeWindow()->SetProperty(
+      aura::client::kModalKey,
+      system_modal ? ui::MODAL_TYPE_SYSTEM : ui::MODAL_TYPE_NONE);
+}
+
 // static
 void ShellSurface::SetApplicationId(aura::Window* window,
                                     std::string* application_id) {
@@ -428,7 +445,7 @@ void ShellSurface::SetGeometry(const gfx::Rect& geometry) {
 }
 
 void ShellSurface::SetRectangularShadow(const gfx::Rect& content_bounds) {
-  TRACE_EVENT1("exo", "ShellSurface::SetRectangularRect", "content_bounds",
+  TRACE_EVENT1("exo", "ShellSurface::SetRectangularShadow", "content_bounds",
                content_bounds.ToString());
 
   shadow_content_bounds_ = content_bounds;
@@ -504,12 +521,10 @@ void ShellSurface::OnSurfaceCommit() {
 
     gfx::Point surface_origin = GetSurfaceOrigin();
 
-    // System modal container is used by clients to implement client side
-    // managed system modal dialogs using a single ShellSurface instance.
-    // Hit-test region will be non-empty when at least one dialog exists on
-    // the client side. Here we detect the transition between no client side
-    // dialog and at least one dialog so activatable state is properly
-    // updated.
+    // System modal container is used by clients to implement overlay
+    // windows using a single ShellSurface instance.  If hit-test
+    // region is empty, then it is non interactive window and won't be
+    // activated.
     if (container_ == ash::kShellWindowId_SystemModalContainer) {
       gfx::Rect hit_test_bounds =
           surface_->GetHitTestBounds() + surface_origin.OffsetFromOrigin();
@@ -518,10 +533,6 @@ void ShellSurface::OnSurfaceCommit() {
       bool activatable = activatable_ && !hit_test_bounds.IsEmpty();
       if (activatable != CanActivate()) {
         set_can_activate(activatable);
-        widget_->GetNativeWindow()->SetProperty(
-            aura::client::kModalKey,
-            activatable ? ui::MODAL_TYPE_SYSTEM : ui::MODAL_TYPE_NONE);
-
         // Activate or deactivate window if activation state changed.
         if (activatable)
           wm::ActivateWindow(widget_->GetNativeWindow());
@@ -1127,6 +1138,8 @@ void ShellSurface::UpdateShadow() {
   if (shadow) {
     if (shadow_content_bounds_.IsEmpty()) {
       wm::SetShadowType(window, wm::SHADOW_TYPE_NONE);
+      if (shadow_underlay_)
+        shadow_underlay_->Hide();
     } else {
       if (!shadow_overlay_) {
         shadow_overlay_ = new aura::Window(nullptr);
@@ -1150,8 +1163,8 @@ void ShellSurface::UpdateShadow() {
         DCHECK(shadow_underlay_->layer()->fills_bounds_opaquely());
         window->AddChild(shadow_underlay_);
         window->StackChildAtBottom(shadow_underlay_);
-        shadow_underlay_->Show();
       }
+      shadow_underlay_->Show();
       gfx::Rect shadow_bounds(shadow_content_bounds_);
       aura::Window::ConvertRectToTarget(window->parent(), window,
                                         &shadow_bounds);

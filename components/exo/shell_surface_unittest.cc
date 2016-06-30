@@ -407,21 +407,23 @@ TEST_F(ShellSurfaceTest, ModalWindow) {
   surface->Commit();
   EXPECT_FALSE(ash::WmShell::Get()->IsSystemModalWindowOpen());
 
-  // Makeing the surface opaque shouldn't make it modal either.
+  // Making the surface opaque shouldn't make it modal either.
   child->SetBlendMode(SkXfermode::kSrc_Mode);
   child->Commit();
   surface->Commit();
   EXPECT_FALSE(ash::WmShell::Get()->IsSystemModalWindowOpen());
 
-  // Only surface with input regions should be modal.
+  // Setting input regions won't make it modal either.
   surface->SetInputRegion(
       SkRegion(gfx::RectToSkIRect(gfx::Rect(10, 10, 100, 100))));
   surface->Commit();
+  EXPECT_FALSE(ash::WmShell::Get()->IsSystemModalWindowOpen());
+
+  // Only SetSystemModal changes modality.
+  shell_surface->SetSystemModal(true);
   EXPECT_TRUE(ash::WmShell::Get()->IsSystemModalWindowOpen());
 
-  // Removing input resion should make it non system modal.
-  surface->SetInputRegion(SkRegion());
-  surface->Commit();
+  shell_surface->SetSystemModal(false);
   EXPECT_FALSE(ash::WmShell::Get()->IsSystemModalWindowOpen());
 }
 

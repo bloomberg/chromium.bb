@@ -57,12 +57,13 @@ static const struct wl_message zwp_remote_shell_v1_requests[] = {
 static const struct wl_message zwp_remote_shell_v1_events[] = {
 	{ "configure", "iiiiii", types + 0 },
 	{ "activated", "?o?o", types + 12 },
+	{ "layout_mode_changed", "8u", types + 0 },
 };
 
 WL_EXPORT const struct wl_interface zwp_remote_shell_v1_interface = {
-	"zwp_remote_shell_v1", 7,
+	"zwp_remote_shell_v1", 8,
 	3, zwp_remote_shell_v1_requests,
-	2, zwp_remote_shell_v1_events,
+	3, zwp_remote_shell_v1_events,
 };
 
 static const struct wl_message zwp_remote_surface_v1_requests[] = {
@@ -80,6 +81,8 @@ static const struct wl_message zwp_remote_surface_v1_requests[] = {
 	{ "set_rectangular_shadow", "4iiii", types + 0 },
 	{ "set_title", "5s", types + 0 },
 	{ "set_top_inset", "5i", types + 0 },
+	{ "set_system_modal", "8", types + 0 },
+	{ "unset_system_modal", "8", types + 0 },
 };
 
 static const struct wl_message zwp_remote_surface_v1_events[] = {
@@ -96,8 +99,8 @@ static const struct wl_message zwp_remote_surface_v1_events[] = {
 };
 
 WL_EXPORT const struct wl_interface zwp_remote_surface_v1_interface = {
-	"zwp_remote_surface_v1", 7,
-	14, zwp_remote_surface_v1_requests,
+	"zwp_remote_surface_v1", 8,
+	16, zwp_remote_surface_v1_requests,
 	10, zwp_remote_surface_v1_events,
 };
 
