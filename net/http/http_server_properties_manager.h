@@ -246,6 +246,8 @@ class NET_EXPORT HttpServerPropertiesManager : public HttpServerProperties {
   FRIEND_TEST_ALL_PREFIXES(HttpServerPropertiesManagerTest,
                            AddToAlternativeServiceMap);
   FRIEND_TEST_ALL_PREFIXES(HttpServerPropertiesManagerTest,
+                           DoNotLoadAltSvcForInsecureOrigins);
+  FRIEND_TEST_ALL_PREFIXES(HttpServerPropertiesManagerTest,
                            DoNotLoadExpiredAlternativeService);
   void OnHttpServerPropertiesChanged();
 

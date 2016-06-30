@@ -697,6 +697,9 @@ bool HttpServerPropertiesManager::AddToAlternativeServiceMap(
           kAlternativeServiceKey, &alternative_service_list)) {
     return true;
   }
+  if (server.scheme() != "https") {
+    return false;
+  }
 
   AlternativeServiceInfoVector alternative_service_info_vector;
   for (const auto& alternative_service_list_item : *alternative_service_list) {
