@@ -369,7 +369,9 @@ void InputMethodEngineBase::ProcessKeyEvent(const ui::KeyEvent& key_event,
   if (&key_event == sent_key_event_)
     ext_event.extension_id = extension_id_;
 
-  observer_->OnKeyEvent(active_component_id_, ext_event, callback);
+  // Should not pass key event in password field.
+  if (current_input_type_ != ui::TEXT_INPUT_TYPE_PASSWORD)
+    observer_->OnKeyEvent(active_component_id_, ext_event, callback);
 }
 
 void InputMethodEngineBase::SetSurroundingText(const std::string& text,

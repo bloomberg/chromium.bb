@@ -5,6 +5,7 @@
 #include "ui/base/ime/chromeos/mock_ime_input_context_handler.h"
 
 #include "ui/base/ime/composition_text.h"
+#include "ui/base/ime/input_method.h"
 
 namespace chromeos {
 
@@ -48,4 +49,7 @@ void MockIMEInputContextHandler::Reset() {
 
 void MockIMEInputContextHandler::SendKeyEvent(ui::KeyEvent* event) {}
 
+ui::InputMethod* MockIMEInputContextHandler::GetInputMethod() {
+  return nullptr;
+}
 }  // namespace chromeos

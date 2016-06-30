@@ -4,11 +4,21 @@
 
 #include "chrome/browser/ui/input_method/input_method_engine.h"
 
+#include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/common/url_constants.h"
+#include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/render_frame_host.h"
+#include "content/public/common/url_constants.h"
+#include "extensions/common/constants.h"
+#include "ui/aura/window.h"
+#include "ui/aura/window_tree_host.h"
 #include "ui/base/ime/composition_text.h"
 #include "ui/base/ime/ime_bridge.h"
 #include "ui/base/ime/ime_input_context_handler_interface.h"
 #include "ui/events/keycodes/keyboard_code_conversion.h"
+#include "url/gurl.h"
 
 namespace {
 
@@ -185,6 +195,11 @@ ui::ImeWindow* InputMethodEngine::FindWindowById(int window_id) const {
 bool InputMethodEngine::SendKeyEvent(ui::KeyEvent* event,
                                      const std::string& code) {
   DCHECK(event);
+
+  // input.ime.sendKeyEvents API is only allowed to work on text fields.
+  if (current_input_type_ == ui::TEXT_INPUT_TYPE_NONE)
+    return false;
+
   if (event->key_code() == ui::VKEY_UNKNOWN)
     event->set_key_code(ui::DomCodeToUsLayoutKeyboardCode(event->code()));
 
@@ -192,9 +207,73 @@ bool InputMethodEngine::SendKeyEvent(ui::KeyEvent* event,
       ui::IMEBridge::Get()->GetInputContextHandler();
   if (!input_context)
     return false;
-  input_context->SendKeyEvent(event);
 
+  // ENTER et al. keys are allowed to work only on http:, https: etc.
+  if (!IsValidKeyForAllPages(event)) {
+    if (IsSpecialPage(input_context->GetInputMethod()))
+      return false;
+  }
+
+  input_context->SendKeyEvent(event);
   return true;
+}
+
+bool InputMethodEngine::IsSpecialPage(ui::InputMethod* input_method) {
+  Browser* browser = chrome::FindLastActive();
+  DCHECK(browser);
+
+  content::WebContents* web_contents =
+      browser->tab_strip_model()->GetActiveWebContents();
+  if (!web_contents)
+    return true;
+
+  // If the input method get from last active browser is different from the
+  // input method get from input context, it means we can't get the real url of
+  // the input view, treats |url| as special page anyway for security concerns.
+  if (browser->window()->GetNativeWindow()->GetHost()->GetInputMethod() !=
+      input_method)
+    return true;
+
+  GURL url = web_contents->GetLastCommittedURL();
+  // If we can't determine the last committed url, treat it as special.
+  if (!url.is_valid())
+    return true;
+
+  // Checks if the last committed url has the whitelisted sheme.
+  std::vector<const char*> whitelist_schemes{url::kFtpScheme, url::kHttpScheme,
+                                             url::kHttpsScheme};
+  for (auto scheme : whitelist_schemes) {
+    if (url.SchemeIs(scheme))
+      return false;
+  }
+
+  // Checks if the last committed url is whitelisted url.
+  url::Origin origin(url);
+  std::vector<GURL> whitelist_urls{GURL(url::kAboutBlankURL),
+                                   GURL(chrome::kChromeUINewTabURL)};
+  for (const GURL& whitelist_url : whitelist_urls) {
+    if (url::Origin(whitelist_url).IsSameOriginWith(origin))
+      return false;
+  }
+  return true;
+}
+
+bool InputMethodEngine::IsValidKeyForAllPages(ui::KeyEvent* ui_event) {
+  // Whitelists all character keys except for Enter and Tab keys.
+  std::vector<ui::KeyboardCode> invalid_character_keycodes{ui::VKEY_TAB,
+                                                           ui::VKEY_RETURN};
+  if (ui_event->GetDomKey().IsCharacter() && !ui_event->IsControlDown() &&
+      !ui_event->IsCommandDown()) {
+    return std::find(invalid_character_keycodes.begin(),
+                     invalid_character_keycodes.end(),
+                     ui_event->key_code()) == invalid_character_keycodes.end();
+  }
+
+  // Whitelists Backspace key and arrow keys.
+  std::vector<ui::KeyboardCode> whitelist_keycodes{
+      ui::VKEY_BACK, ui::VKEY_LEFT, ui::VKEY_RIGHT, ui::VKEY_UP, ui::VKEY_DOWN};
+  return std::find(whitelist_keycodes.begin(), whitelist_keycodes.end(),
+                   ui_event->key_code()) != whitelist_keycodes.end();
 }
 
 }  // namespace input_method

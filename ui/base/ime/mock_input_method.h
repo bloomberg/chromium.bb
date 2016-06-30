@@ -54,9 +54,15 @@ class UI_BASE_IME_EXPORT MockInputMethod
   void RemoveObserver(InputMethodObserver* observer) override;
 
  private:
+  // InputMethod:
+  const std::vector<std::unique_ptr<ui::KeyEvent>>& GetKeyEventsForTesting()
+      override;
+
   TextInputClient* text_input_client_;
   base::ObserverList<InputMethodObserver> observer_list_;
   internal::InputMethodDelegate* delegate_;
+
+  std::vector<std::unique_ptr<ui::KeyEvent>> key_events_for_testing_;
 
   DISALLOW_COPY_AND_ASSIGN(MockInputMethod);
 };

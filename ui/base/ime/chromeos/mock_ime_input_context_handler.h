@@ -11,6 +11,10 @@
 #include "ui/base/ime/ime_input_context_handler_interface.h"
 #include "ui/base/ime/ui_base_ime_export.h"
 
+namespace ui {
+class InputMethod;
+}  // ui
+
 namespace chromeos {
 
 class UI_BASE_IME_EXPORT MockIMEInputContextHandler
@@ -36,6 +40,7 @@ class UI_BASE_IME_EXPORT MockIMEInputContextHandler
                              bool visible) override;
   void DeleteSurroundingText(int32_t offset, uint32_t length) override;
   void SendKeyEvent(ui::KeyEvent* event) override;
+  ui::InputMethod* GetInputMethod() override;
 
   int commit_text_call_count() const { return commit_text_call_count_; }
 

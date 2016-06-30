@@ -199,8 +199,21 @@ void InputMethodBase::DeleteSurroundingText(int32_t offset, uint32_t length) {}
 
 void InputMethodBase::SendKeyEvent(KeyEvent* event) {
   sending_key_event_ = true;
+  if (track_key_events_for_testing_) {
+    key_events_for_testing_.push_back(
+        std::unique_ptr<ui::KeyEvent>(new KeyEvent(*event)));
+  }
   DispatchKeyEvent(event);
   sending_key_event_ = false;
+}
+
+InputMethod* InputMethodBase::GetInputMethod() {
+  return this;
+}
+
+const std::vector<std::unique_ptr<ui::KeyEvent>>&
+InputMethodBase::GetKeyEventsForTesting() {
+  return key_events_for_testing_;
 }
 
 }  // namespace ui

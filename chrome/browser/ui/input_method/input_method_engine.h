@@ -57,6 +57,12 @@ class InputMethodEngine : public InputMethodEngineBase,
 
   ui::ImeWindow* FindWindowById(int window_id) const;
 
+  // Checks if the page is special page that we want to disable some key events.
+  bool IsSpecialPage(ui::InputMethod* method);
+
+  // Checks if the key event are whitelisted key for all pages.
+  bool IsValidKeyForAllPages(ui::KeyEvent* ui_event);
+
   // Holds the IME window instances for properly closing in the destructor.
   // The follow-cursor window is singleton.
   // The normal windows cannot exceed the max count.
