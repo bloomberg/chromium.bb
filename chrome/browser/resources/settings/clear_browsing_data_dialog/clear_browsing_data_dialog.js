@@ -51,6 +51,12 @@ Polymer({
 
     /** @private */
     clearingInProgress_: Boolean,
+
+    /** @private */
+    showHistoryDeletionDialog_: {
+      type: Boolean,
+      value: false,
+    },
   },
 
   /** @private {!settings.ClearBrowsingDataBrowserProxy} */
@@ -120,12 +126,32 @@ Polymer({
     this.$.dialog.open();
   },
 
-  /** @private */
+  /**
+   * Handles the tap on the Clear Data button.
+   * @private
+   */
   onClearBrowsingDataTap_: function() {
     this.clearingInProgress_ = true;
-    this.browserProxy_.clearBrowsingData().then(function() {
-      this.clearingInProgress_ = false;
-      this.$.dialog.close();
-    }.bind(this));
+    this.browserProxy_.clearBrowsingData().then(
+      /**
+       * @param {boolean} shouldShowNotice Whether we should show the notice
+       *     about other forms of browsing history before closing the dialog.
+       */
+      function(shouldShowNotice) {
+        this.clearingInProgress_ = false;
+        this.showHistoryDeletionDialog_ = shouldShowNotice;
+
+        if (!shouldShowNotice)
+          this.$.dialog.close();
+      }.bind(this));
   },
+
+  /**
+   * Handles the closing of the notice about other forms of browsing history.
+   * @private
+   */
+  onHistoryDeletionDialogClose_: function() {
+    this.showHistoryDeletionDialog_ = false;
+    this.$.dialog.close();
+  }
 });

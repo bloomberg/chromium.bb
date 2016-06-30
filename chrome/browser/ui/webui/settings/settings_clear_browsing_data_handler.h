@@ -66,6 +66,11 @@ class ClearBrowsingDataHandler : public SettingsPageUIHandler,
   // hides the footer about other forms of history stored in user's account.
   void UpdateHistoryNotice(bool show);
 
+  // Called as an asynchronous response to |RefreshHistoryNotice()|. Enables or
+  // disables the dialog about other forms of history stored in user's account
+  // that is shown when the history deletion is finished.
+  void UpdateHistoryDeletionDialog(bool show);
+
   // Adds a browsing data |counter|.
   void AddCounter(std::unique_ptr<BrowsingDataCounter> counter);
 
@@ -96,7 +101,11 @@ class ClearBrowsingDataHandler : public SettingsPageUIHandler,
   // Whether the sentence about other forms of history stored in user's account
   // should be displayed in the footer. This value is retrieved asynchronously,
   // so we cache it here.
-  bool should_show_history_footer_;
+  bool show_history_footer_;
+
+  // Whether we should show a dialog informing the user about other forms of
+  // history stored in their account after the history deletion is finished.
+  bool show_history_deletion_dialog_;
 
   // A weak pointer factory for asynchronous calls referencing this class.
   base::WeakPtrFactory<ClearBrowsingDataHandler> weak_ptr_factory_;

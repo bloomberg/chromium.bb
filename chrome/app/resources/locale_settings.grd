@@ -317,6 +317,10 @@
         https://history.google.com/history/?utm_source=chrome_cbd
       </message>
 
+      <message name="IDS_SETTINGS_CLEAR_DATA_WEB_HISTORY_URL_IN_DIALOG" translateable="false">
+        https://history.google.com/history/?utm_source=chrome_n
+      </message>
+
     </messages>
   </release>
 </grit>

@@ -357,6 +357,10 @@ void AddClearBrowsingDataStrings(content::WebUIDataSource* html_source) {
       {"warnAboutNonClearedData", IDS_SETTINGS_CLEAR_DATA_SOME_STUFF_REMAINS},
       {"clearsSyncedData", IDS_SETTINGS_CLEAR_DATA_CLEARS_SYNCED_DATA},
       {"clearBrowsingDataLearnMoreUrl", IDS_SETTINGS_CLEAR_DATA_LEARN_MORE_URL},
+      {"historyDeletionDialogTitle",
+       IDS_CLEAR_BROWSING_DATA_HISTORY_NOTICE_TITLE},
+      {"historyDeletionDialogOK",
+       IDS_CLEAR_BROWSING_DATA_HISTORY_NOTICE_OK},
   };
 
   html_source->AddString(
@@ -365,6 +369,12 @@ void AddClearBrowsingDataStrings(content::WebUIDataSource* html_source) {
           IDS_CLEAR_BROWSING_DATA_HISTORY_FOOTER,
           l10n_util::GetStringUTF16(
               IDS_SETTINGS_CLEAR_DATA_WEB_HISTORY_URL_IN_FOOTER)));
+  html_source->AddString(
+      "historyDeletionDialogBody",
+      l10n_util::GetStringFUTF16(
+          IDS_CLEAR_BROWSING_DATA_HISTORY_NOTICE,
+          l10n_util::GetStringUTF16(
+              IDS_SETTINGS_CLEAR_DATA_WEB_HISTORY_URL_IN_DIALOG)));
 
   AddLocalizedStringsBulk(html_source, localized_strings,
                           arraysize(localized_strings));

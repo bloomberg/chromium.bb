@@ -145,6 +145,49 @@ cr.define('settings_privacy_page', function() {
               assertFalse(cancelButton.disabled);
               assertFalse(actionButton.disabled);
               assertFalse(spinner.active);
+              assertFalse(!!element.$$('#notice'));
+            });
+      });
+
+      test('showHistoryDeletionDialog', function() {
+        assertTrue(element.$.dialog.opened);
+        var actionButton = element.$$('.action-button');
+        assertTrue(!!actionButton);
+
+        var promiseResolver = new PromiseResolver();
+        testBrowserProxy.setClearBrowsingDataPromise(promiseResolver.promise);
+        MockInteractions.tap(actionButton);
+
+        return testBrowserProxy.whenCalled('clearBrowsingData').then(
+            function() {
+              // Passing showNotice = true should trigger the notice about other
+              // forms of browsing history to open, and the dialog to stay open.
+              promiseResolver.resolve(true /* showNotice */);
+
+              // Yields to the message loop to allow the callback chain of the
+              // Promise that was just resolved to execute before the
+              // assertions.
+            }).then(function() {
+              Polymer.dom.flush();
+              var notice = element.$$('#notice');
+              assertTrue(!!notice);
+              var noticeActionButton = notice.$$('.action-button');
+              assertTrue(!!noticeActionButton);
+
+              assertTrue(element.$.dialog.opened);
+              assertTrue(notice.$.dialog.opened);
+
+              MockInteractions.tap(noticeActionButton);
+
+              // Tapping the action button will close the notice. Move to the
+              // end of the message loop to allow the closing event to propagate
+              // to the parent dialog. The parent dialog should subsequently
+              // close as well.
+              setTimeout(function() {
+                var notice = element.$$('#notice');
+                assertFalse(!!notice);
+                assertFalse(element.$.dialog.opened);
+              }, 0);
             });
       });
 
