@@ -497,7 +497,8 @@ TEST(LocalPersistentMemoryAllocatorTest, CreationTest) {
 //----- SharedPersistentMemoryAllocator ----------------------------------------
 
 TEST(SharedPersistentMemoryAllocatorTest, CreationTest) {
-  SharedMemoryHandle shared_handle;
+  SharedMemoryHandle shared_handle_1;
+  SharedMemoryHandle shared_handle_2;
 
   PersistentMemoryAllocator::MemoryInfo meminfo1;
   Reference r123, r456, r789;
@@ -517,13 +518,14 @@ TEST(SharedPersistentMemoryAllocatorTest, CreationTest) {
     EXPECT_FALSE(local.IsFull());
     EXPECT_FALSE(local.IsCorrupt());
 
-    ASSERT_TRUE(local.shared_memory()->ShareToProcess(
-                    GetCurrentProcessHandle(),
-                    &shared_handle));
+    ASSERT_TRUE(local.shared_memory()->ShareToProcess(GetCurrentProcessHandle(),
+                                                      &shared_handle_1));
+    ASSERT_TRUE(local.shared_memory()->ShareToProcess(GetCurrentProcessHandle(),
+                                                      &shared_handle_2));
   }
 
   // Read-only test.
-  std::unique_ptr<SharedMemory> shmem2(new SharedMemory(shared_handle,
+  std::unique_ptr<SharedMemory> shmem2(new SharedMemory(shared_handle_1,
                                                         /*readonly=*/true));
   ASSERT_TRUE(shmem2->Map(TEST_MEMORY_SIZE));
 
@@ -549,7 +551,7 @@ TEST(SharedPersistentMemoryAllocatorTest, CreationTest) {
   EXPECT_EQ(meminfo1.free, meminfo2.free);
 
   // Read/write test.
-  std::unique_ptr<SharedMemory> shmem3(new SharedMemory(shared_handle,
+  std::unique_ptr<SharedMemory> shmem3(new SharedMemory(shared_handle_2,
                                                         /*readonly=*/false));
   ASSERT_TRUE(shmem3->Map(TEST_MEMORY_SIZE));
 
