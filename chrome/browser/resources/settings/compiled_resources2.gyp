@@ -24,6 +24,7 @@
         'privacy_page/compiled_resources2.gyp:*',
         'reset_page/compiled_resources2.gyp:*',
         'settings_main/compiled_resources2.gyp:*',
+        'settings_menu/compiled_resources2.gyp:*',
         'settings_page/compiled_resources2.gyp:*',
         'site_settings/compiled_resources2.gyp:*',
         'site_settings_page/compiled_resources2.gyp:*',
