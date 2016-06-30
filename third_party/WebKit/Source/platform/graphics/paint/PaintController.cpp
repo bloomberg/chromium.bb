@@ -492,7 +492,7 @@ void PaintController::checkCachedDisplayItemIsUnchanged(const char* messagePrefi
 
 #ifndef NDEBUG
 
-WTF::String PaintController::displayItemListAsDebugString(const DisplayItemList& list) const
+String PaintController::displayItemListAsDebugString(const DisplayItemList& list) const
 {
     StringBuilder stringBuilder;
     size_t i = 0;
@@ -506,6 +506,10 @@ WTF::String PaintController::displayItemListAsDebugString(const DisplayItemList&
             stringBuilder.append(", cacheIsValid: ");
             stringBuilder.append(clientCacheIsValid(displayItem.client()) ? "true" : "false");
         }
+        IntRect visualRect = list.visualRect(i);
+        stringBuilder.append(String::format(", visualRect: [%d,%d %dx%d]",
+            visualRect.x(), visualRect.y(),
+            visualRect.width(), visualRect.height()));
         stringBuilder.append('}');
     }
     return stringBuilder.toString();
