@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_MEDIA_RTC_VIDEO_DECODER_H_
-#define CONTENT_RENDERER_MEDIA_RTC_VIDEO_DECODER_H_
+#ifndef CONTENT_RENDERER_MEDIA_GPU_RTC_VIDEO_DECODER_H_
+#define CONTENT_RENDERER_MEDIA_GPU_RTC_VIDEO_DECODER_H_
 
 #include <stddef.h>
 #include <stdint.h>
@@ -306,4 +306,4 @@ class CONTENT_EXPORT RTCVideoDecoder
 
 }  // namespace content
 
-#endif  // CONTENT_RENDERER_MEDIA_RTC_VIDEO_DECODER_H_
+#endif  // CONTENT_RENDERER_MEDIA_GPU_RTC_VIDEO_DECODER_H_

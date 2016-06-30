@@ -11,7 +11,7 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "content/renderer/media/rtc_video_decoder.h"
+#include "content/renderer/media/gpu/rtc_video_decoder.h"
 #include "media/base/gmock_callback_support.h"
 #include "media/renderers/mock_gpu_video_accelerator_factories.h"
 #include "media/video/mock_video_decode_accelerator.h"

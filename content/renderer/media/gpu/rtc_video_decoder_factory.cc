@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/media/rtc_video_decoder_factory.h"
+#include "content/renderer/media/gpu/rtc_video_decoder_factory.h"
 
 #include <memory>
 
-#include "content/renderer/media/rtc_video_decoder.h"
+#include "content/renderer/media/gpu/rtc_video_decoder.h"
 #include "media/renderers/gpu_video_accelerator_factories.h"
 
 namespace content {

@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/media/rtc_video_encoder_factory.h"
+#include "content/renderer/media/gpu/rtc_video_encoder_factory.h"
 
 #include "base/command_line.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/feature_h264_with_openh264_ffmpeg.h"
-#include "content/renderer/media/rtc_video_encoder.h"
+#include "content/renderer/media/gpu/rtc_video_encoder.h"
 #include "media/gpu/ipc/client/gpu_video_encode_accelerator_host.h"
 #include "media/renderers/gpu_video_accelerator_factories.h"
 #include "media/video/video_encode_accelerator.h"
