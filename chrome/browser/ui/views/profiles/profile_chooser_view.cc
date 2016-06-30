@@ -1545,7 +1545,7 @@ views::View* ProfileChooserView::CreateOptionsView(bool display_lock,
       if (service->GetBoolean(prefs::kBrowserGuestModeEnabled)) {
         guest_profile_button_ = new BackgroundColorHoverButton(
             this, l10n_util::GetStringUTF16(IDS_GUEST_PROFILE_NAME),
-            gfx::CreateVectorIcon(gfx::VectorIconId::ACCOUNT_BOX, kIconSize,
+            gfx::CreateVectorIcon(gfx::VectorIconId::ACCOUNT_CIRCLE, kIconSize,
                                   gfx::kChromeIconGrey));
         layout->StartRow(1, 0);
         layout->AddView(guest_profile_button_);
@@ -1606,7 +1606,7 @@ views::View* ProfileChooserView::CreateOptionsView(bool display_lock,
       close_all_windows_button_ = new BackgroundColorHoverButton(
           this,
           l10n_util::GetStringUTF16(IDS_PROFILES_CLOSE_ALL_WINDOWS_BUTTON),
-          gfx::CreateVectorIcon(gfx::VectorIconId::LOCK, kIconSize,
+          gfx::CreateVectorIcon(gfx::VectorIconId::CLOSE_ALL, kIconSize,
                                 gfx::kChromeIconGrey));
       layout->StartRow(1, 0);
       layout->AddView(close_all_windows_button_);

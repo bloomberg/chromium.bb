@@ -417,6 +417,7 @@ action("aggregate_vector_icons") {
   sources = [
     "vector_icons/account_box.icon",
     "vector_icons/account_child_invert.icon",
+    "vector_icons/account_circle.icon",
     "vector_icons/apps.icon",
     "vector_icons/autologin.icon",
     "vector_icons/bar_close.1x.icon",
@@ -435,6 +436,7 @@ action("aggregate_vector_icons") {
     "vector_icons/checkbox_active.icon",
     "vector_icons/checkbox_normal.icon",
     "vector_icons/chrome_product.icon",
+    "vector_icons/close_all.icon",
     "vector_icons/code.icon",
     "vector_icons/combobox_arrow_mac_disabled.icon",
     "vector_icons/combobox_arrow_mac_enabled.icon",
