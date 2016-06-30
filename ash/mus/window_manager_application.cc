@@ -90,8 +90,7 @@ void WindowManagerApplication::Create(
   if (!window_manager_->GetRootWindowControllers().empty()) {
     shelf_layout_bindings_.AddBinding(shelf_layout_.get(), std::move(request));
   } else {
-    shelf_layout_requests_.push_back(base::WrapUnique(
-        new mojo::InterfaceRequest<mojom::ShelfLayout>(std::move(request))));
+    shelf_layout_requests_.push_back(std::move(request));
   }
 }
 
@@ -102,9 +101,7 @@ void WindowManagerApplication::Create(
     user_window_controller_bindings_.AddBinding(user_window_controller_.get(),
                                                 std::move(request));
   } else {
-    user_window_controller_requests_.push_back(base::WrapUnique(
-        new mojo::InterfaceRequest<mojom::UserWindowController>(
-            std::move(request))));
+    user_window_controller_requests_.push_back(std::move(request));
   }
 }
 
@@ -149,13 +146,13 @@ void WindowManagerApplication::OnRootWindowControllerAdded(
   user_window_controller_->Initialize(controller);
   for (auto& request : user_window_controller_requests_)
     user_window_controller_bindings_.AddBinding(user_window_controller_.get(),
-                                                std::move(*request));
+                                                std::move(request));
   user_window_controller_requests_.clear();
 
   // TODO(msw): figure out if this should be per display, or global.
   shelf_layout_->Initialize(controller);
   for (auto& request : shelf_layout_requests_)
-    shelf_layout_bindings_.AddBinding(shelf_layout_.get(), std::move(*request));
+    shelf_layout_bindings_.AddBinding(shelf_layout_.get(), std::move(request));
   shelf_layout_requests_.clear();
 }
 

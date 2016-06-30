@@ -106,7 +106,7 @@ class WindowManagerApplication
   // time |shelf_layout_requests_| stores pending interface requests.
   std::unique_ptr<ShelfLayoutImpl> shelf_layout_;
   mojo::BindingSet<mojom::ShelfLayout> shelf_layout_bindings_;
-  std::vector<std::unique_ptr<mojo::InterfaceRequest<mojom::ShelfLayout>>>
+  std::vector<mojo::InterfaceRequest<mojom::ShelfLayout>>
       shelf_layout_requests_;
 
   // |user_window_controller_| is created once OnEmbed() is called. Until that
@@ -114,8 +114,7 @@ class WindowManagerApplication
   std::unique_ptr<UserWindowControllerImpl> user_window_controller_;
   mojo::BindingSet<mojom::UserWindowController>
       user_window_controller_bindings_;
-  std::vector<
-      std::unique_ptr<mojo::InterfaceRequest<mojom::UserWindowController>>>
+  std::vector<mojo::InterfaceRequest<mojom::UserWindowController>>
       user_window_controller_requests_;
 
   std::unique_ptr<WindowManager> window_manager_;
