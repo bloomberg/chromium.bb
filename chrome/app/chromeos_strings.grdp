@@ -6669,7 +6669,7 @@ All users must sign out to continue.
     Cancel
   </message>
   <message name="IDS_ARC_OPT_IN_DIALOG_BUTTON_RETRY" desc="Retry button of the opt-in dialog for Android apps.">
-    Retry
+    Try again
   </message>
   <message name="IDS_ARC_OPT_IN_DIALOG_BUTTON_SEND_FEEDBACK" desc="Send feedback button of the opt-in dialog for Android apps.">
     Send feedback
@@ -6724,7 +6724,7 @@ All users must sign out to continue.
     Network error
   </message>
   <message name="IDS_ARC_SIGN_IN_SERVICE_UNAVAILABLE_ERROR" desc="Android sign-in error because of service is unavailable">
-    Service unavailable
+    Couldn't reach Google Play. Try again now.
   </message>
   <message name="IDS_ARC_SIGN_IN_BAD_AUTHENTICATION_ERROR" desc="Android sign-in error because of bad authentification">
     Bad authentication
