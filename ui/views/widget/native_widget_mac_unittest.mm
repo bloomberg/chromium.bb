@@ -384,6 +384,55 @@ class PaintCountView : public View {
   DISALLOW_COPY_AND_ASSIGN(PaintCountView);
 };
 
+// Test for correct child window restore when parent window is minimized
+// and restored using -makeKeyAndOrderFront:.
+// Parent-child window relationships in AppKit are not supported when window
+// visibility changes.
+// Disabled because it relies on cocoa occlusion APIs
+// and state changes that are unavoidably flaky.
+TEST_F(NativeWidgetMacTest, DISABLED_OrderFrontAfterMiniaturize) {
+  Widget* widget = CreateTopLevelPlatformWidget();
+  NSWindow* ns_window = widget->GetNativeWindow();
+
+  Widget* child_widget = CreateChildPlatformWidget(widget->GetNativeView());
+  NSWindow* child_ns_window = child_widget->GetNativeWindow();
+
+  // Set parent bounds that overlap child.
+  widget->SetBounds(gfx::Rect(100, 100, 300, 300));
+  child_widget->SetBounds(gfx::Rect(110, 110, 100, 100));
+
+  widget->Show();
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_FALSE(widget->IsMinimized());
+
+  // Minimize parent.
+  [ns_window performMiniaturize:nil];
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_TRUE(widget->IsMinimized());
+  EXPECT_FALSE(widget->IsVisible());
+  EXPECT_FALSE(child_widget->IsVisible());
+
+  // Restore parent window as AppController does.
+  [ns_window makeKeyAndOrderFront:nil];
+
+  // Wait and check that child is really visible.
+  // TODO(kirr): remove the fixed delay.
+  base::MessageLoop::current()->PostDelayedTask(
+      FROM_HERE, base::MessageLoop::QuitWhenIdleClosure(),
+      base::TimeDelta::FromSeconds(2));
+  base::MessageLoop::current()->Run();
+
+  EXPECT_FALSE(widget->IsMinimized());
+  EXPECT_TRUE(widget->IsVisible());
+  EXPECT_TRUE(child_widget->IsVisible());
+  // Check that child window is visible.
+  EXPECT_TRUE([child_ns_window occlusionState] & NSWindowOcclusionStateVisible);
+  EXPECT_TRUE(IsWindowStackedAbove(child_widget, widget));
+  widget->Close();
+}
+
 // Test minimized states triggered externally, implied visibility and restored
 // bounds whilst minimized.
 TEST_F(NativeWidgetMacTest, MiniaturizeExternally) {
@@ -972,8 +1021,6 @@ TEST_F(NativeWidgetMacTest, WindowModalSheet) {
                    queue:nil
               usingBlock:^(NSNotification* note) {
                 EXPECT_TRUE([sheet_window delegate]);
-                EXPECT_FALSE(sheet_widget->IsVisible());
-                EXPECT_FALSE(sheet_widget->GetLayer()->IsDrawn());
                 *did_observe_ptr = true;
               }];
 

@@ -784,14 +784,11 @@ void BridgedNativeWidget::OnPositionChanged() {
 }
 
 void BridgedNativeWidget::OnVisibilityChanged() {
-  OnVisibilityChangedTo([window_ isVisible]);
-}
-
-void BridgedNativeWidget::OnVisibilityChangedTo(bool new_visibility) {
-  if (window_visible_ == new_visibility)
+  const bool window_visible = [window_ isVisible];
+  if (window_visible_ == window_visible)
     return;
 
-  window_visible_ = new_visibility;
+  window_visible_ = window_visible;
 
   // If arriving via SetVisible(), |wants_to_be_visible_| should already be set.
   // If made visible externally (e.g. Cmd+H), just roll with it. Don't try (yet)

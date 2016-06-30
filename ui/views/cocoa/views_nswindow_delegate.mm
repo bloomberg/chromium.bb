@@ -35,16 +35,8 @@
   [parent_->ns_window() resetCursorRects];
 }
 
-- (void)onWindowOrderWillChange:(NSWindowOrderingMode)orderingMode {
-  parent_->OnVisibilityChangedTo(orderingMode != NSWindowOut);
-}
-
 - (void)onWindowOrderChanged:(NSNotification*)notification {
   parent_->OnVisibilityChanged();
-}
-
-- (void)onWindowWillDisplay {
-  parent_->OnVisibilityChangedTo(true);
 }
 
 - (void)sheetDidEnd:(NSWindow*)sheet

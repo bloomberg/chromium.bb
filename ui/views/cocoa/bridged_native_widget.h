@@ -142,10 +142,6 @@ class VIEWS_EXPORT BridgedNativeWidget
   // being reordered in (or out of) the screen list.
   void OnVisibilityChanged();
 
-  // Explicitly set the visibility. This is called when Cocoa requests a draw,
-  // but hasn't updated the value of -[NSWindow isVisible] yet.
-  void OnVisibilityChangedTo(bool new_visibility);
-
   // Called by the NSWindowDelegate on a scale factor or color space change.
   void OnBackingPropertiesChanged();
 
