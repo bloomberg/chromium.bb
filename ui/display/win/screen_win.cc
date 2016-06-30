@@ -295,6 +295,23 @@ gfx::Size ScreenWin::DIPToScreenSize(HWND hwnd, const gfx::Size& dip_size) {
   return ScaleToCeiledSize(dip_size, scale_factor);
 }
 
+// static
+int ScreenWin::GetSystemMetricsForHwnd(HWND hwnd, int metric) {
+  // GetSystemMetrics returns screen values based off of the primary monitor's
+  // DPI. This will further scale based off of the DPI for |hwnd|.
+  if (!g_screen_win_instance)
+    return ::GetSystemMetrics(metric);
+
+  Display primary_display(g_screen_win_instance->GetPrimaryDisplay());
+  int system_metrics_result = g_screen_win_instance->GetSystemMetrics(metric);
+
+  float metrics_relative_scale_factor = hwnd
+      ? GetScaleFactorForHWND(hwnd) / primary_display.device_scale_factor()
+      : 1.0f;
+  return static_cast<int>(std::round(
+      system_metrics_result * metrics_relative_scale_factor));
+}
+
 HWND ScreenWin::GetHWNDFromNativeView(gfx::NativeView window) const {
   NOTREACHED();
   return nullptr;
@@ -417,6 +434,10 @@ MONITORINFOEX ScreenWin::MonitorInfoFromWindow(HWND hwnd,
 
 HWND ScreenWin::GetRootWindow(HWND hwnd) const {
   return ::GetAncestor(hwnd, GA_ROOT);
+}
+
+int ScreenWin::GetSystemMetrics(int metric) const {
+  return ::GetSystemMetrics(metric);
 }
 
 void ScreenWin::OnWndProc(HWND hwnd,

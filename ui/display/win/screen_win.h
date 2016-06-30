@@ -89,6 +89,9 @@ class DISPLAY_EXPORT ScreenWin : public display::Screen {
   // The DPI scale is performed relative to the display nearest to |hwnd|.
   static gfx::Size DIPToScreenSize(HWND hwnd, const gfx::Size& dip_size);
 
+  // Returns the result of GetSystemMetrics for |metric| scaled to |hwnd|'s DPI.
+  static int GetSystemMetricsForHwnd(HWND hwnd, int metric);
+
   // Returns the HWND associated with the NativeView.
   virtual HWND GetHWNDFromNativeView(gfx::NativeView window) const;
 
@@ -127,6 +130,7 @@ class DISPLAY_EXPORT ScreenWin : public display::Screen {
   virtual MONITORINFOEX MonitorInfoFromWindow(HWND hwnd, DWORD default_options)
       const;
   virtual HWND GetRootWindow(HWND hwnd) const;
+  virtual int GetSystemMetrics(int metric) const;
 
  private:
   void OnWndProc(HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam);
