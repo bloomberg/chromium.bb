@@ -36,10 +36,7 @@ namespace {
 const GURL kTestPageUrl("http://test.org/page1");
 const ClientId kTestClientId = ClientId(kBookmarkNamespace, "1234");
 const int64_t kTestFileSize = 876543LL;
-const char kBadNetworkHistogram[] = "OfflinePages.ShowOfflinePageOnBadNetwork";
-const char kRedirectToOfflineHistogram[] =
-    "OfflinePages.RedirectToOfflineCount";
-const char kRedirectToOnlineHistogram[] = "OfflinePages.RedirectToOnlineCount";
+const char kRedirectResultHistogram[] = "OfflinePages.RedirectResult";
 const char kTabId[] = "42";
 
 class TestNetworkChangeNotifier : public net::NetworkChangeNotifier {
@@ -227,9 +224,11 @@ TEST_F(OfflinePageTabHelperTest, SwitchToOnlineFromOfflineOnNetwork) {
   RunUntilIdle();
   // Redirection will be done immediately on navigation start.
   EXPECT_EQ(online_url(), controller().GetPendingEntry()->GetURL());
-  histograms().ExpectTotalCount(kBadNetworkHistogram, 0);
-  histograms().ExpectTotalCount(kRedirectToOfflineHistogram, 0);
-  histograms().ExpectTotalCount(kRedirectToOnlineHistogram, 1);
+  histograms().ExpectUniqueSample(
+      kRedirectResultHistogram,
+      static_cast<int>(OfflinePageTabHelper::RedirectResult::
+          REDIRECTED_ON_CONNECTED_NETWORK),
+      1);
 }
 
 TEST_F(OfflinePageTabHelperTest, SwitchToOfflineFromOnlineOnNoNetwork) {
@@ -240,9 +239,11 @@ TEST_F(OfflinePageTabHelperTest, SwitchToOfflineFromOnlineOnNoNetwork) {
   RunUntilIdle();
   // Redirection will be done immediately on navigation start.
   EXPECT_EQ(offline_url(), controller().GetPendingEntry()->GetURL());
-  histograms().ExpectTotalCount(kBadNetworkHistogram, 0);
-  histograms().ExpectTotalCount(kRedirectToOfflineHistogram, 1);
-  histograms().ExpectTotalCount(kRedirectToOnlineHistogram, 0);
+  histograms().ExpectUniqueSample(
+      kRedirectResultHistogram,
+      static_cast<int>(OfflinePageTabHelper::RedirectResult::
+          REDIRECTED_ON_DISCONNECTED_NETWORK),
+      1);
 }
 
 TEST_F(OfflinePageTabHelperTest, TestCurrentOfflinePage) {
@@ -275,10 +276,11 @@ TEST_F(OfflinePageTabHelperTest, SwitchToOfflineFromOnlineOnError) {
   FailLoad(online_url());
   EXPECT_EQ(offline_url(), controller().GetPendingEntry()->GetURL());
 
-  histograms().ExpectBucketCount(kBadNetworkHistogram, false, 0);
-  histograms().ExpectBucketCount(kBadNetworkHistogram, true, 1);
-  histograms().ExpectTotalCount(kRedirectToOfflineHistogram, 1);
-  histograms().ExpectTotalCount(kRedirectToOnlineHistogram, 0);
+  histograms().ExpectUniqueSample(
+      kRedirectResultHistogram,
+      static_cast<int>(OfflinePageTabHelper::RedirectResult::
+          REDIRECTED_ON_FLAKY_NETWORK),
+      1);
 }
 
 TEST_F(OfflinePageTabHelperTest, NewNavigationCancelsPendingRedirects) {
@@ -301,9 +303,12 @@ TEST_F(OfflinePageTabHelperTest, NewNavigationCancelsPendingRedirects) {
   // |unsaved_url|.
   EXPECT_EQ(unsaved_url, controller().GetPendingEntry()->GetURL());
 
-  histograms().ExpectTotalCount(kBadNetworkHistogram, 0);
-  histograms().ExpectTotalCount(kRedirectToOfflineHistogram, 0);
-  histograms().ExpectTotalCount(kRedirectToOnlineHistogram, 0);
+  // Should report attempt of redirect, but the page not found.
+  histograms().ExpectUniqueSample(
+      kRedirectResultHistogram,
+      static_cast<int>(OfflinePageTabHelper::RedirectResult::
+          PAGE_NOT_FOUND_ON_DISCONNECTED_NETWORK),
+      1);
 }
 
 // This test saves 3 pages (one in setup and 2 in test). The most appropriate

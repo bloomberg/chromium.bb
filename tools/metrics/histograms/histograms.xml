@@ -35901,7 +35901,19 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>Size of the saved copy of an offline page.</summary>
 </histogram>
 
+<histogram name="OfflinePages.RedirectResult" enum="OfflinePagesRedirectResult">
+  <owner>dimich@chromium.org</owner>
+  <summary>
+    Result of automatic redirect to offline version of the page or back. Emitted
+    exactly once when offline-to-online or online-to-offline redirect is
+    determined to be needed and conveys the outcome of redirect.
+  </summary>
+</histogram>
+
 <histogram name="OfflinePages.RedirectToOfflineCount" units="count">
+  <obsolete>
+    Deprecated 6/2016. Refactored into OfflinePages.RedirectResult.
+  </obsolete>
   <owner>jianli@chromium.org</owner>
   <summary>
     Number of times an offline copy was loaded instead when the user is trying
@@ -35911,6 +35923,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="OfflinePages.RedirectToOnlineCount" units="count">
+  <obsolete>
+    Deprecated 6/2016. Refactored into OfflinePages.RedirectResult.
+  </obsolete>
   <owner>jianli@chromium.org</owner>
   <summary>
     Number of times an online version was loaded instead when the user is trying
@@ -35967,6 +35982,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="OfflinePages.ShowOfflinePageOnBadNetwork" enum="Boolean">
+  <obsolete>
+    Deprecated 6/2016. Refactored into OfflinePages.RedirectResult.
+  </obsolete>
   <owner>jianli@chromium.org</owner>
   <summary>
     Whether an offline page is shown, instead of error page, when the network is
@@ -83980,6 +83998,19 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="1" label="Store init failed"/>
   <int value="2" label="Store load failed"/>
   <int value="3" label="Data parsing failed"/>
+</enum>
+
+<enum name="OfflinePagesRedirectResult" type="int">
+  <int value="0" label="Redirected on disconnected network"/>
+  <int value="1" label="Page not found on disconnected network"/>
+  <int value="2" label="Redirected on flaky network"/>
+  <int value="3" label="Page not found on flaky network"/>
+  <int value="4" label="Ignored flaky network forward/back"/>
+  <int value="5" label="Redirected on connected network"/>
+  <int value="6" label="Android Tab does not have persistent ID"/>
+  <int value="7" label="Unknown net error, showing error page"/>
+  <int value="8" label="Redirect loop offline"/>
+  <int value="9" label="Redirect loop online"/>
 </enum>
 
 <enum name="OfflinePagesSavePageResult" type="int">

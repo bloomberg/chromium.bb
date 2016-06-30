@@ -86,6 +86,7 @@ void OfflinePageTabHelper::DidStartNavigation(
 
   // Ignore navigations that are forward or back transitions in the nav stack
   // which are not at the head of the stack.
+  // TODO(dimich): Not sure this is needed. Clarify and remove. Bug 624216.
   const content::NavigationController& controller =
       web_contents()->GetController();
   if (controller.GetEntryCount() > 0 &&
@@ -96,8 +97,8 @@ void OfflinePageTabHelper::DidStartNavigation(
 
   content::BrowserContext* context = web_contents()->GetBrowserContext();
   if (net::NetworkChangeNotifier::IsOffline()) {
-    GetPagesForRedirectToOffline(navigated_url,
-                                 RedirectReason::DISCONNECTED_NETWORK);
+    GetPagesForRedirectToOffline(
+        RedirectResult::REDIRECTED_ON_DISCONNECTED_NETWORK, navigated_url);
     return;
   }
 
@@ -141,36 +142,34 @@ void OfflinePageTabHelper::DidFinishNavigation(
       error_code != net::ERR_NAME_NOT_RESOLVED &&
       error_code != net::ERR_ADDRESS_UNREACHABLE &&
       error_code != net::ERR_PROXY_CONNECTION_FAILED) {
+    ReportRedirectResultUMA(RedirectResult::SHOW_NET_ERROR_PAGE);
     return;
   }
 
-  // Otherwise, get the offline URL for this url, and attempt a redirect if
-  // necessary.
-  RedirectReason reason =
-      ui::PageTransitionTypeIncludingQualifiersIs(
+  // Don't actually want to redirect on a forward/back nav.
+  // TODO(dimich): Clarify and possibly redirect as well. Bug 624216.
+  if (ui::PageTransitionTypeIncludingQualifiersIs(
           navigation_handle->GetPageTransition(),
-          ui::PAGE_TRANSITION_FORWARD_BACK)
-          ? RedirectReason::FLAKY_NETWORK_FORWARD_BACK
-          : RedirectReason::FLAKY_NETWORK;
-  GetPagesForRedirectToOffline(navigated_url, reason);
+          ui::PAGE_TRANSITION_FORWARD_BACK)) {
+    ReportRedirectResultUMA(RedirectResult::IGNORED_FLAKY_NETWORK_FORWARD_BACK);
+    return;
+  }
+
+  GetPagesForRedirectToOffline(
+      RedirectResult::REDIRECTED_ON_FLAKY_NETWORK, navigated_url);
 }
 
 void OfflinePageTabHelper::RedirectToOnline(
     const GURL& navigated_url,
     const OfflinePageItem* offline_page) {
-  // Bails out if no redirection is needed.
+  // Bails out if no redirection is needed. No UMA reporting since all regular
+  // navigations will be here and it'll dwarf the useful reporting.
   if (!offline_page)
     return;
 
   GURL redirect_url = offline_page->url;
-
-  const content::NavigationController& controller =
-      web_contents()->GetController();
-
-  // Avoids looping between online and offline redirections.
-  content::NavigationEntry* entry = controller.GetPendingEntry();
-  if (entry && !entry->GetRedirectChain().empty() &&
-      entry->GetRedirectChain().back() == redirect_url) {
+  if (IsInRedirectLoop(redirect_url)) {
+    ReportRedirectResultUMA(RedirectResult::REDIRECT_LOOP_ONLINE);
     return;
   }
 
@@ -178,11 +177,11 @@ void OfflinePageTabHelper::RedirectToOnline(
   // Clear the offline page since we are redirecting to online.
   offline_page_ = nullptr;
 
-  UMA_HISTOGRAM_COUNTS("OfflinePages.RedirectToOnlineCount", 1);
+  ReportRedirectResultUMA(RedirectResult::REDIRECTED_ON_CONNECTED_NETWORK);
 }
 
-void OfflinePageTabHelper::GetPagesForRedirectToOffline(const GURL& online_url,
-                                                        RedirectReason reason) {
+void OfflinePageTabHelper::GetPagesForRedirectToOffline(
+    RedirectResult result, const GURL& online_url) {
   OfflinePageModel* offline_page_model =
       OfflinePageModelFactory::GetForBrowserContext(
           web_contents()->GetBrowserContext());
@@ -192,18 +191,23 @@ void OfflinePageTabHelper::GetPagesForRedirectToOffline(const GURL& online_url,
   offline_page_model->GetPagesByOnlineURL(
       online_url,
       base::Bind(&OfflinePageTabHelper::SelectBestPageForRedirectToOffline,
-                 weak_ptr_factory_.GetWeakPtr(), online_url, reason));
+                 weak_ptr_factory_.GetWeakPtr(), result, online_url));
 }
 
 void OfflinePageTabHelper::SelectBestPageForRedirectToOffline(
+    RedirectResult result,
     const GURL& online_url,
-    RedirectReason reason,
     const MultipleOfflinePageItemResult& pages) {
+  DCHECK(result == RedirectResult::REDIRECTED_ON_FLAKY_NETWORK ||
+         result == RedirectResult::REDIRECTED_ON_DISCONNECTED_NETWORK);
+
   // When there is no valid tab android there is nowhere to show the offline
   // page, so we can leave.
   std::string tab_id;
-  if (!delegate_->GetTabId(web_contents(), &tab_id))
+  if (!delegate_->GetTabId(web_contents(), &tab_id)) {
+    ReportRedirectResultUMA(RedirectResult::NO_TAB_ID);
     return;
+  }
 
   const OfflinePageItem* selected_page = nullptr;
   for (const auto& offline_page : pages) {
@@ -217,42 +221,33 @@ void OfflinePageTabHelper::SelectBestPageForRedirectToOffline(
     }
   }
 
-  if (!selected_page)
+  if (!selected_page) {
+    ReportRedirectResultUMA(
+        result == RedirectResult::REDIRECTED_ON_FLAKY_NETWORK ?
+        RedirectResult::PAGE_NOT_FOUND_ON_FLAKY_NETWORK :
+        RedirectResult::PAGE_NOT_FOUND_ON_DISCONNECTED_NETWORK);
     return;
+  }
 
-  TryRedirectToOffline(reason, online_url, *selected_page);
+  TryRedirectToOffline(result, online_url, *selected_page);
 }
 
 void OfflinePageTabHelper::TryRedirectToOffline(
-    RedirectReason redirect_reason,
+    RedirectResult result,
     const GURL& from_url,
     const OfflinePageItem& offline_page) {
   GURL redirect_url = offline_page.GetOfflineURL();
   if (!redirect_url.is_valid())
     return;
 
-  if (redirect_reason == RedirectReason::FLAKY_NETWORK ||
-      redirect_reason == RedirectReason::FLAKY_NETWORK_FORWARD_BACK) {
-    UMA_HISTOGRAM_BOOLEAN("OfflinePages.ShowOfflinePageOnBadNetwork",
-                          redirect_reason == RedirectReason::FLAKY_NETWORK);
-    // Don't actually want to redirect on a forward/back nav.
-    if (redirect_reason == RedirectReason::FLAKY_NETWORK_FORWARD_BACK)
-      return;
-  } else {
-    const content::NavigationController& controller =
-        web_contents()->GetController();
-
-    // Avoids looping between online and offline redirections.
-    content::NavigationEntry* entry = controller.GetPendingEntry();
-    if (entry && !entry->GetRedirectChain().empty() &&
-        entry->GetRedirectChain().back() == redirect_url) {
-      return;
-    }
+  if (IsInRedirectLoop(redirect_url)) {
+    ReportRedirectResultUMA(RedirectResult::REDIRECT_LOOP_OFFLINE);
+    return;
   }
 
   Redirect(from_url, redirect_url);
   offline_page_ = base::MakeUnique<OfflinePageItem>(offline_page);
-  UMA_HISTOGRAM_COUNTS("OfflinePages.RedirectToOfflineCount", 1);
+  ReportRedirectResultUMA(result);
 }
 
 void OfflinePageTabHelper::Redirect(const GURL& from_url, const GURL& to_url) {
@@ -262,4 +257,19 @@ void OfflinePageTabHelper::Redirect(const GURL& from_url, const GURL& to_url) {
   web_contents()->GetController().LoadURLWithParams(load_params);
 }
 
+bool OfflinePageTabHelper::IsInRedirectLoop(const GURL& to_url) const {
+  // Detects looping between online and offline redirections.
+  const content::NavigationController& controller =
+      web_contents()->GetController();
+  content::NavigationEntry* entry = controller.GetPendingEntry();
+  return entry &&
+         !entry->GetRedirectChain().empty() &&
+         entry->GetRedirectChain().back() == to_url;
+}
+
+void OfflinePageTabHelper::ReportRedirectResultUMA(RedirectResult result) {
+  UMA_HISTOGRAM_ENUMERATION("OfflinePages.RedirectResult",
+      static_cast<int>(result),
+      static_cast<int>(RedirectResult::REDIRECT_RESULT_MAX));
+}
 }  // namespace offline_pages

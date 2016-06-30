@@ -34,17 +34,34 @@ class OfflinePageTabHelper :
                           std::string* tab_id) const = 0;
   };
 
+  // This enum is used for UMA reporting. It contains all possible outcomes of
+  // redirect intent and result. Generally one of these outcomes will happen.
+  // The fringe errors (like no OfflinePageModel, etc.) are not reported due
+  // to their low probability.
+  // NOTE: because this is used for UMA reporting, these values should not be
+  // changed or reused; new values should be ended immediately before the MAX
+  // value. Make sure to update the histogram enum
+  // (OfflinePagesRedirectResult in histograms.xml) accordingly.
+  // Public for testing.
+  enum class RedirectResult {
+    REDIRECTED_ON_DISCONNECTED_NETWORK = 0,
+    PAGE_NOT_FOUND_ON_DISCONNECTED_NETWORK = 1,
+    REDIRECTED_ON_FLAKY_NETWORK = 2,
+    PAGE_NOT_FOUND_ON_FLAKY_NETWORK = 3,
+    IGNORED_FLAKY_NETWORK_FORWARD_BACK = 4,
+    REDIRECTED_ON_CONNECTED_NETWORK = 5,
+    NO_TAB_ID = 6,
+    SHOW_NET_ERROR_PAGE = 7,
+    REDIRECT_LOOP_OFFLINE = 8,
+    REDIRECT_LOOP_ONLINE = 9,
+    REDIRECT_RESULT_MAX,
+  };
+
   ~OfflinePageTabHelper() override;
 
   const OfflinePageItem* offline_page() { return offline_page_.get(); }
 
  private:
-  enum class RedirectReason {
-    DISCONNECTED_NETWORK,
-    FLAKY_NETWORK,
-    FLAKY_NETWORK_FORWARD_BACK
-  };
-
   friend class content::WebContentsUserData<OfflinePageTabHelper>;
   friend class OfflinePageTabHelperTest;
   FRIEND_TEST_ALL_PREFIXES(OfflinePageTabHelperTest,
@@ -66,17 +83,24 @@ class OfflinePageTabHelper :
   // 3 step redirection to the offline page. First getting all the pages, then
   // selecting appropriate page to redirect to and finally attempting to
   // redirect to that offline page, and caching metadata of that page locally.
-  void GetPagesForRedirectToOffline(const GURL& online_url,
-                                    RedirectReason reason);
+  // RedirectResult is accumulated along the codepath to reflect the overall
+  // result of redirection - and be reported to UMA at the end.
+  void GetPagesForRedirectToOffline(RedirectResult result,
+                                    const GURL& online_url);
   void SelectBestPageForRedirectToOffline(
+      RedirectResult result,
       const GURL& online_url,
-      RedirectReason reason,
       const MultipleOfflinePageItemResult& pages);
-  void TryRedirectToOffline(RedirectReason redirect_reason,
+  void TryRedirectToOffline(RedirectResult result,
                             const GURL& from_url,
                             const OfflinePageItem& offline_page);
 
   void Redirect(const GURL& from_url, const GURL& to_url);
+
+  // Returns true if a given URL is in redirect chain already.
+  bool IsInRedirectLoop(const GURL& to_url) const;
+
+  void ReportRedirectResultUMA(RedirectResult result);
 
   // Iff the tab we are associated with is redirected to an offline page,
   // |offline_page_| will be non-null.  This can be used to synchronously ask
