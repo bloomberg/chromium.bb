@@ -57,7 +57,8 @@ class GnubbyAuthHandlerLinuxTest : public testing::Test {
     send_message_callback_ =
         base::Bind(&GnubbyAuthHandlerLinuxTest::SendMessageToClient,
                    base::Unretained(this));
-    auth_handler_ = remoting::GnubbyAuthHandler::Create(send_message_callback_);
+    auth_handler_ =
+        remoting::GnubbyAuthHandler::Create(nullptr, send_message_callback_);
   }
 
   void WaitForSendMessageToClient() {

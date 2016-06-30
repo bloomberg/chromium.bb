@@ -4,6 +4,7 @@
 
 #include "remoting/host/security_key/remote_security_key_ipc_server.h"
 
+#include <cstdint>
 #include <memory>
 #include <string>
 
@@ -34,16 +35,18 @@ void RemoteSecurityKeyIpcServer::SetFactoryForTest(
 
 std::unique_ptr<RemoteSecurityKeyIpcServer> RemoteSecurityKeyIpcServer::Create(
     int connection_id,
+    uint32_t peer_session_id,
     base::TimeDelta initial_connect_timeout,
     const GnubbyAuthHandler::SendMessageCallback& message_callback,
     const base::Closure& done_callback) {
   std::unique_ptr<RemoteSecurityKeyIpcServer> ipc_server =
       g_factory
-          ? g_factory->Create(connection_id, initial_connect_timeout,
-                              message_callback, done_callback)
+          ? g_factory->Create(connection_id, peer_session_id,
+                              initial_connect_timeout, message_callback,
+                              done_callback)
           : base::WrapUnique(new RemoteSecurityKeyIpcServerImpl(
-                connection_id, initial_connect_timeout, message_callback,
-                done_callback));
+                connection_id, peer_session_id, initial_connect_timeout,
+                message_callback, done_callback));
 
   return ipc_server;
 }

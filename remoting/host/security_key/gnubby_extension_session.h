@@ -19,6 +19,7 @@ class DictionaryValue;
 
 namespace remoting {
 
+class ClientSessionDetails;
 class GnubbyAuthHandler;
 
 namespace protocol {
@@ -28,7 +29,8 @@ class ClientStub;
 // A HostExtensionSession implementation that enables Security Key support.
 class GnubbyExtensionSession : public HostExtensionSession {
  public:
-  explicit GnubbyExtensionSession(protocol::ClientStub* client_stub);
+  GnubbyExtensionSession(ClientSessionDetails* client_session_details,
+                         protocol::ClientStub* client_stub);
   ~GnubbyExtensionSession() override;
 
   // HostExtensionSession interface.

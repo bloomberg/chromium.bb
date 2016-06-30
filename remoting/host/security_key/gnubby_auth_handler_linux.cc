@@ -113,9 +113,10 @@ class GnubbyAuthHandlerLinux : public GnubbyAuthHandler {
 };
 
 std::unique_ptr<GnubbyAuthHandler> GnubbyAuthHandler::Create(
-    const SendMessageCallback& callback) {
+    ClientSessionDetails* client_session_details,
+    const SendMessageCallback& send_message_callback) {
   std::unique_ptr<GnubbyAuthHandler> auth_handler(new GnubbyAuthHandlerLinux());
-  auth_handler->SetSendMessageCallback(callback);
+  auth_handler->SetSendMessageCallback(send_message_callback);
   return auth_handler;
 }
 

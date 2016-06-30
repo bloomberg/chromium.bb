@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
@@ -35,6 +36,9 @@ class RemoteSecurityKeyIpcServerTest : public testing::Test {
   // completion of an IPC channel state change or reception of an IPC message.
   void OperationComplete();
 
+  // Used as a callback to signal receipt of a security key request message.
+  void SendRequestToClient(int connection_id, const std::string& data);
+
  protected:
   // Returns a unique IPC channel name which prevents conflicts when running
   // tests concurrently.
@@ -42,9 +46,6 @@ class RemoteSecurityKeyIpcServerTest : public testing::Test {
 
   // Waits until the current |run_loop_| instance is signaled, then resets it.
   void WaitForOperationComplete();
-
-  // Used as a callback to signal receipt of a security key request message.
-  void SendRequestToClient(int connection_id, const std::string& data);
 
   // IPC tests require a valid MessageLoop to run.
   base::MessageLoopForIO message_loop_;
@@ -69,9 +70,15 @@ class RemoteSecurityKeyIpcServerTest : public testing::Test {
 
 RemoteSecurityKeyIpcServerTest::RemoteSecurityKeyIpcServerTest()
     : run_loop_(new base::RunLoop()) {
+  uint32_t peer_session_id = UINT32_MAX;
+#if defined(OS_WIN)
+  EXPECT_TRUE(ProcessIdToSessionId(GetCurrentProcessId(),
+                                   reinterpret_cast<DWORD*>(&peer_session_id)));
+#endif  // defined(OS_WIN)
+
   remote_security_key_ipc_server_ =
       remoting::RemoteSecurityKeyIpcServer::Create(
-          kTestConnectionId,
+          kTestConnectionId, peer_session_id,
           base::TimeDelta::FromMilliseconds(kInitialConnectTimeoutMs),
           base::Bind(&RemoteSecurityKeyIpcServerTest::SendRequestToClient,
                      base::Unretained(this)),
@@ -116,6 +123,8 @@ TEST_F(RemoteSecurityKeyIpcServerTest, HandleSingleGnubbyRequest) {
   ASSERT_TRUE(fake_ipc_client.ConnectViaIpc(channel_name));
   WaitForOperationComplete();
 
+  ASSERT_TRUE(fake_ipc_client.ipc_channel_connected());
+
   // Send a request from the IPC client to the IPC server.
   std::string request_data("Blergh!");
   fake_ipc_client.SendSecurityKeyRequestViaIpc(request_data);
@@ -149,6 +158,8 @@ TEST_F(RemoteSecurityKeyIpcServerTest, HandleLargeGnubbyRequest) {
                  base::Unretained(this)));
   ASSERT_TRUE(fake_ipc_client.ConnectViaIpc(channel_name));
   WaitForOperationComplete();
+
+  ASSERT_TRUE(fake_ipc_client.ipc_channel_connected());
 
   // Send a request from the IPC client to the IPC server.
   std::string request_data(kLargeMessageSizeBytes, 'Y');
@@ -184,6 +195,8 @@ TEST_F(RemoteSecurityKeyIpcServerTest, HandleReallyLargeGnubbyRequest) {
   ASSERT_TRUE(fake_ipc_client.ConnectViaIpc(channel_name));
   WaitForOperationComplete();
 
+  ASSERT_TRUE(fake_ipc_client.ipc_channel_connected());
+
   // Send a request from the IPC client to the IPC server.
   std::string request_data(kLargeMessageSizeBytes * 2, 'Y');
   fake_ipc_client.SendSecurityKeyRequestViaIpc(request_data);
@@ -217,6 +230,8 @@ TEST_F(RemoteSecurityKeyIpcServerTest, HandleMultipleGnubbyRequests) {
                  base::Unretained(this)));
   ASSERT_TRUE(fake_ipc_client.ConnectViaIpc(channel_name));
   WaitForOperationComplete();
+
+  ASSERT_TRUE(fake_ipc_client.ipc_channel_connected());
 
   // Send a request from the IPC client to the IPC server.
   std::string request_data_1("Blergh!");
@@ -288,6 +303,8 @@ TEST_F(RemoteSecurityKeyIpcServerTest, NoGnubbyRequestTimeout) {
   ASSERT_TRUE(fake_ipc_client.ConnectViaIpc(channel_name));
   WaitForOperationComplete();
 
+  ASSERT_TRUE(fake_ipc_client.ipc_channel_connected());
+
   // Now that a connection has been established, we wait for the timeout.
   base::Time start_time(base::Time::NowFromSystemTime());
   WaitForOperationComplete();
@@ -311,6 +328,8 @@ TEST_F(RemoteSecurityKeyIpcServerTest, GnubbyResponseTimeout) {
                  base::Unretained(this)));
   ASSERT_TRUE(fake_ipc_client.ConnectViaIpc(channel_name));
   WaitForOperationComplete();
+
+  ASSERT_TRUE(fake_ipc_client.ipc_channel_connected());
 
   // Now that a connection has been established, we issue a request and
   // then wait for the timeout.
@@ -343,6 +362,8 @@ TEST_F(RemoteSecurityKeyIpcServerTest, SendResponseTimeout) {
   ASSERT_TRUE(fake_ipc_client.ConnectViaIpc(channel_name));
   WaitForOperationComplete();
 
+  ASSERT_TRUE(fake_ipc_client.ipc_channel_connected());
+
   // Issue a request.
   std::string request_data("Auth me yo!");
   fake_ipc_client.SendSecurityKeyRequestViaIpc(request_data);
@@ -361,5 +382,39 @@ TEST_F(RemoteSecurityKeyIpcServerTest, SendResponseTimeout) {
   ASSERT_NEAR(elapsed_time.InMilliseconds(), request_timeout.InMilliseconds(),
               kConnectionTimeoutErrorDeltaMs);
 }
+
+#if defined(OS_WIN)
+TEST_F(RemoteSecurityKeyIpcServerTest, IpcConnectionFailsFromInvalidSession) {
+  uint32_t peer_session_id = UINT32_MAX;
+  ASSERT_TRUE(ProcessIdToSessionId(GetCurrentProcessId(),
+                                   reinterpret_cast<DWORD*>(&peer_session_id)));
+  peer_session_id++;
+
+  // Reinitialize the object under test.
+  remote_security_key_ipc_server_ =
+      remoting::RemoteSecurityKeyIpcServer::Create(
+          kTestConnectionId, peer_session_id,
+          base::TimeDelta::FromMilliseconds(kInitialConnectTimeoutMs),
+          base::Bind(&RemoteSecurityKeyIpcServerTest::SendRequestToClient,
+                     base::Unretained(this)),
+          base::Bind(&base::DoNothing));
+
+  base::TimeDelta request_timeout(base::TimeDelta::FromMilliseconds(500));
+  std::string channel_name(GetUniqueTestChannelName());
+  ASSERT_TRUE(remote_security_key_ipc_server_->CreateChannel(channel_name,
+                                                             request_timeout));
+
+  // Create a fake client and attempt to connect to the IPC server channel.
+  FakeRemoteSecurityKeyIpcClient fake_ipc_client(
+      base::Bind(&RemoteSecurityKeyIpcServerTest::OperationComplete,
+                 base::Unretained(this)));
+  ASSERT_TRUE(fake_ipc_client.ConnectViaIpc(channel_name));
+  WaitForOperationComplete();
+  WaitForOperationComplete();
+
+  // Verify the connection failed.
+  ASSERT_FALSE(fake_ipc_client.ipc_channel_connected());
+}
+#endif  // defined(OS_WIN)
 
 }  // namespace remoting

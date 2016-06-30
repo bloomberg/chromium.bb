@@ -102,6 +102,7 @@ RemoteSecurityKeyIpcClientTest::RemoteSecurityKeyIpcClientTest()
     : run_loop_(new base::RunLoop()),
       fake_ipc_server_(
           kTestConnectionId,
+          /*peer_session_id=*/UINT32_MAX,
           /*initial_connect_timeout=*/base::TimeDelta::FromMilliseconds(500),
           base::Bind(&RemoteSecurityKeyIpcClientTest::SendMessageToClient,
                      base::Unretained(this)),

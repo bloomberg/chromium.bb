@@ -5,6 +5,7 @@
 #ifndef REMOTING_HOST_SECURITY_KEY_REMOTE_SECURITY_KEY_IPC_SERVER_H_
 #define REMOTING_HOST_SECURITY_KEY_REMOTE_SECURITY_KEY_IPC_SERVER_H_
 
+#include <cstdint>
 #include <memory>
 #include <string>
 
@@ -25,6 +26,7 @@ class RemoteSecurityKeyIpcServer {
   // Creates a new RemoteSecurityKeyIpcServer instance.
   static std::unique_ptr<RemoteSecurityKeyIpcServer> Create(
       int connection_id,
+      uint32_t peer_session_id,
       base::TimeDelta initial_connect_timeout,
       const GnubbyAuthHandler::SendMessageCallback& message_callback,
       const base::Closure& done_callback);
@@ -48,6 +50,7 @@ class RemoteSecurityKeyIpcServerFactory {
 
   virtual std::unique_ptr<RemoteSecurityKeyIpcServer> Create(
       int connection_id,
+      uint32_t peer_session_id,
       base::TimeDelta connect_timeout,
       const GnubbyAuthHandler::SendMessageCallback& message_callback,
       const base::Closure& done_callback) = 0;

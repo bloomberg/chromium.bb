@@ -5,14 +5,9 @@
 #ifndef REMOTING_HOST_HOST_EXTENSION_SESSION_H_
 #define REMOTING_HOST_HOST_EXTENSION_SESSION_H_
 
-namespace webrtc {
-class DesktopCapturer;
-}
-
 namespace remoting {
 
 class ClientSessionDetails;
-class VideoEncoder;
 
 namespace protocol {
 class ExtensionMessage;

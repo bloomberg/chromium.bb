@@ -4,6 +4,7 @@
 
 #include "remoting/host/security_key/gnubby_auth_handler.h"
 
+#include <cstdint>
 #include <memory>
 #include <string>
 
@@ -16,9 +17,11 @@
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_message_macros.h"
+#include "remoting/host/host_mock_objects.h"
 #include "remoting/host/security_key/fake_remote_security_key_ipc_client.h"
 #include "remoting/host/security_key/fake_remote_security_key_ipc_server.h"
 #include "remoting/host/security_key/remote_security_key_ipc_constants.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -47,6 +50,9 @@ class GnubbyAuthHandlerWinTest : public testing::Test {
 
   // Creates a new gnubby connection on the object under test.
   void CreateGnubbyConnection(const std::string& channel_name);
+
+  // Sets |desktop_session_id_| to the id for the current Windows session.
+  void InitializeDesktopSessionId();
 
   // Uses |fake_ipc_client| to connect to the initial IPC server channel, it
   // then validates internal state of the object under test and closes the
@@ -92,24 +98,32 @@ class GnubbyAuthHandlerWinTest : public testing::Test {
 
   // Set as the default factory to create RemoteSecurityKeyIpcServerFactory
   // instances, this class will track each objects creation and allow the tests
-  // to access it and use it for driving tests and validate state.
+  // to access it and use it for driving tests and validating state.
   FakeRemoteSecurityKeyIpcServerFactory ipc_server_factory_;
 
   // Used to validate the object under test uses the correct ID when
   // communicating over the IPC channel.
   int last_connection_id_received_ = -1;
 
+  // Used to validate that IPC connections are only allowed from a specific
+  // Windows session.
+  DWORD desktop_session_id_ = UINT32_MAX;
+
   // Stores the contents of the last IPC message received for validation.
   std::string last_message_received_;
 
  private:
+  testing::NiceMock<MockClientSessionDetails> mock_client_session_details_;
+
   DISALLOW_COPY_AND_ASSIGN(GnubbyAuthHandlerWinTest);
 };
 
 GnubbyAuthHandlerWinTest::GnubbyAuthHandlerWinTest()
     : run_loop_(new base::RunLoop()) {
-  auth_handler_ = remoting::GnubbyAuthHandler::Create(base::Bind(
-      &GnubbyAuthHandlerWinTest::SendMessageToClient, base::Unretained(this)));
+  auth_handler_ = remoting::GnubbyAuthHandler::Create(
+      &mock_client_session_details_,
+      base::Bind(&GnubbyAuthHandlerWinTest::SendMessageToClient,
+                 base::Unretained(this)));
 }
 
 GnubbyAuthHandlerWinTest::~GnubbyAuthHandlerWinTest() {}
@@ -139,6 +153,16 @@ void GnubbyAuthHandlerWinTest::CreateGnubbyConnection(
   // Create a new Gnubby IPC Server connection.
   auth_handler_->CreateGnubbyConnection();
   ASSERT_TRUE(IPC::Channel::IsNamedServerInitialized(channel_name));
+
+  InitializeDesktopSessionId();
+}
+
+void GnubbyAuthHandlerWinTest::InitializeDesktopSessionId() {
+  ASSERT_TRUE(
+      ProcessIdToSessionId(GetCurrentProcessId(), &desktop_session_id_));
+
+  ON_CALL(mock_client_session_details_, desktop_session_id())
+      .WillByDefault(testing::Return(desktop_session_id_));
 }
 
 void GnubbyAuthHandlerWinTest::EstablishInitialIpcConnection(
@@ -487,6 +511,25 @@ TEST_F(GnubbyAuthHandlerWinTest, HandleGnubbyErrorResponse) {
   // Attempt to connect again after the error.
   EstablishInitialIpcConnection(&fake_ipc_client, kConnectionId2, channel_name,
                                 /*close_connection=*/true);
+}
+
+TEST_F(GnubbyAuthHandlerWinTest, IpcConnectionFailsFromInvalidSession) {
+  std::string channel_name(GetUniqueTestChannelName());
+  CreateGnubbyConnection(channel_name);
+
+  // Set the current session id to a 'different' session.
+  desktop_session_id_ += 1;
+
+  // Create a fake client and connect to the IPC server channel.
+  FakeRemoteSecurityKeyIpcClient fake_ipc_client(base::Bind(
+      &GnubbyAuthHandlerWinTest::OperationComplete, base::Unretained(this)));
+  ASSERT_TRUE(fake_ipc_client.ConnectViaIpc(channel_name));
+  // Wait for the error callback to be signaled.
+  WaitForOperationComplete();
+
+  // Verify the connection was not set up.
+  ASSERT_FALSE(auth_handler_->IsValidConnectionId(kConnectionId1));
+  ASSERT_EQ(0u, auth_handler_->GetActiveConnectionCountForTest());
 }
 
 }  // namespace remoting

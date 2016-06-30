@@ -4,15 +4,19 @@
 
 #include "remoting/host/security_key/gnubby_auth_handler.h"
 
+#include <cstdint>
 #include <map>
 #include <memory>
 #include <string>
 
 #include "base/bind.h"
+#include "base/location.h"
 #include "base/logging.h"
+#include "base/memory/weak_ptr.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_checker.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "base/win/win_util.h"
@@ -22,6 +26,7 @@
 #include "ipc/ipc_message_macros.h"
 #include "remoting/base/logging.h"
 #include "remoting/host/chromoting_messages.h"
+#include "remoting/host/client_session_details.h"
 #include "remoting/host/ipc_util.h"
 #include "remoting/host/security_key/remote_security_key_ipc_constants.h"
 #include "remoting/host/security_key/remote_security_key_ipc_server.h"
@@ -55,7 +60,7 @@ namespace remoting {
 //               instead of the thread it was created on: crbug.com/591739
 class GnubbyAuthHandlerWin : public GnubbyAuthHandler, public IPC::Listener {
  public:
-  GnubbyAuthHandlerWin();
+  explicit GnubbyAuthHandlerWin(ClientSessionDetails* client_session_details);
   ~GnubbyAuthHandlerWin() override;
 
  private:
@@ -100,6 +105,9 @@ class GnubbyAuthHandlerWin : public GnubbyAuthHandler, public IPC::Listener {
   // Sends a gnubby extension messages to the remote client when called.
   SendMessageCallback send_message_callback_;
 
+  // Interface which provides details about the client session.
+  ClientSessionDetails* client_session_details_ = nullptr;
+
   // Tracks the IPC channel created for each security key forwarding session.
   ActiveChannels active_channels_;
 
@@ -117,19 +125,28 @@ class GnubbyAuthHandlerWin : public GnubbyAuthHandler, public IPC::Listener {
   // Ensures GnubbyAuthHandlerWin methods are called on the same thread.
   base::ThreadChecker thread_checker_;
 
+  base::WeakPtrFactory<GnubbyAuthHandlerWin> weak_factory_;
+
   DISALLOW_COPY_AND_ASSIGN(GnubbyAuthHandlerWin);
 };
 
 std::unique_ptr<GnubbyAuthHandler> GnubbyAuthHandler::Create(
-    const SendMessageCallback& callback) {
-  std::unique_ptr<GnubbyAuthHandler> auth_handler(new GnubbyAuthHandlerWin());
-  auth_handler->SetSendMessageCallback(callback);
+    ClientSessionDetails* client_session_details,
+    const SendMessageCallback& send_message_callback) {
+  std::unique_ptr<GnubbyAuthHandler> auth_handler(
+      new GnubbyAuthHandlerWin(client_session_details));
+  auth_handler->SetSendMessageCallback(send_message_callback);
   return auth_handler;
 }
 
-GnubbyAuthHandlerWin::GnubbyAuthHandlerWin()
-    : disconnect_timeout_(
-          base::TimeDelta::FromSeconds(kInitialRequestTimeoutSeconds)) {}
+GnubbyAuthHandlerWin::GnubbyAuthHandlerWin(
+    ClientSessionDetails* client_session_details)
+    : client_session_details_(client_session_details),
+      disconnect_timeout_(
+          base::TimeDelta::FromSeconds(kInitialRequestTimeoutSeconds)),
+      weak_factory_(this) {
+  DCHECK(client_session_details_);
+}
 
 GnubbyAuthHandlerWin::~GnubbyAuthHandlerWin() {}
 
@@ -239,14 +256,30 @@ void GnubbyAuthHandlerWin::OnChannelConnected(int32_t peer_pid) {
                base::Bind(&GnubbyAuthHandlerWin::OnChannelError,
                           base::Unretained(this)));
 
-  // TODO(joedow): Use |peer_pid| to determine the originating session
-  // using ProcessIdToSessionId() and verify it is the one we created.
-  // Tracked via crbug.com/591746
+  // Verify the IPC connection attempt originated from the session we are
+  // currently remoting.  We don't want to service requests from arbitrary
+  // Windows sessions.
+  bool close_connection = false;
+  DWORD peer_session_id;
+  if (!ProcessIdToSessionId(peer_pid, &peer_session_id)) {
+    PLOG(ERROR) << "ProcessIdToSessionId() failed";
+    close_connection = true;
+  } else if (peer_session_id != client_session_details_->desktop_session_id()) {
+    LOG(INFO) << "Ignoring connection attempt from outside remoted session.";
+    close_connection = true;
+  }
+  if (close_connection) {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::Bind(&GnubbyAuthHandlerWin::OnChannelError,
+                              weak_factory_.GetWeakPtr()));
+    return;
+  }
 
   int new_connection_id = ++last_connection_id_;
   std::unique_ptr<RemoteSecurityKeyIpcServer> ipc_server(
       RemoteSecurityKeyIpcServer::Create(
-          new_connection_id, disconnect_timeout_, send_message_callback_,
+          new_connection_id, peer_session_id, disconnect_timeout_,
+          send_message_callback_,
           base::Bind(&GnubbyAuthHandlerWin::CloseSecurityKeyRequestIpcChannel,
                      base::Unretained(this), new_connection_id)));
 

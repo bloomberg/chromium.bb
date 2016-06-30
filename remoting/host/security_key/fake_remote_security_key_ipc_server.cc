@@ -4,7 +4,9 @@
 
 #include "remoting/host/security_key/fake_remote_security_key_ipc_server.h"
 
+#include <cstdint>
 #include <memory>
+#include <string>
 
 #include "base/callback.h"
 #include "base/macros.h"
@@ -20,6 +22,7 @@ namespace remoting {
 
 FakeRemoteSecurityKeyIpcServer::FakeRemoteSecurityKeyIpcServer(
     int connection_id,
+    uint32_t peer_session_id,
     base::TimeDelta initial_connect_timeout,
     const GnubbyAuthHandler::SendMessageCallback& send_message_callback,
     const base::Closure& channel_closed_callback)
@@ -102,11 +105,13 @@ FakeRemoteSecurityKeyIpcServerFactory::
 std::unique_ptr<RemoteSecurityKeyIpcServer>
 FakeRemoteSecurityKeyIpcServerFactory::Create(
     int connection_id,
+    uint32_t peer_session_id,
     base::TimeDelta initial_connect_timeout,
     const GnubbyAuthHandler::SendMessageCallback& send_message_callback,
     const base::Closure& done_callback) {
   std::unique_ptr<FakeRemoteSecurityKeyIpcServer> fake_ipc_server(
-      new FakeRemoteSecurityKeyIpcServer(connection_id, initial_connect_timeout,
+      new FakeRemoteSecurityKeyIpcServer(connection_id, peer_session_id,
+                                         initial_connect_timeout,
                                          send_message_callback, done_callback));
 
   ipc_server_map_[connection_id] = fake_ipc_server->AsWeakPtr();

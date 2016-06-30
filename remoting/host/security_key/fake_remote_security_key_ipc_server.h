@@ -7,6 +7,7 @@
 
 #include "remoting/host/security_key/remote_security_key_ipc_server.h"
 
+#include <cstdint>
 #include <map>
 #include <memory>
 #include <string>
@@ -31,6 +32,7 @@ class FakeRemoteSecurityKeyIpcServer : public RemoteSecurityKeyIpcServer,
  public:
   FakeRemoteSecurityKeyIpcServer(
       int connection_id,
+      uint32_t peer_session_id,
       base::TimeDelta initial_connect_timeout,
       const GnubbyAuthHandler::SendMessageCallback& send_message_callback,
       const base::Closure& channel_closed_callback);
@@ -111,6 +113,7 @@ class FakeRemoteSecurityKeyIpcServerFactory
   // RemoteSecurityKeyIpcServerFactory implementation.
   std::unique_ptr<RemoteSecurityKeyIpcServer> Create(
       int connection_id,
+      uint32_t peer_session_id,
       base::TimeDelta initial_connect_timeout,
       const GnubbyAuthHandler::SendMessageCallback& message_callback,
       const base::Closure& done_callback) override;

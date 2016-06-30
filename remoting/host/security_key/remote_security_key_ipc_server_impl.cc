@@ -4,12 +4,15 @@
 
 #include "remoting/host/security_key/remote_security_key_ipc_server_impl.h"
 
+#include <cstdint>
 #include <memory>
 #include <string>
 
 #include "base/callback.h"
 #include "base/callback_helpers.h"
+#include "base/location.h"
 #include "base/threading/thread_checker.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/timer/timer.h"
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_message.h"
@@ -38,13 +41,16 @@ namespace remoting {
 
 RemoteSecurityKeyIpcServerImpl::RemoteSecurityKeyIpcServerImpl(
     int connection_id,
+    uint32_t peer_session_id,
     base::TimeDelta initial_connect_timeout,
     const GnubbyAuthHandler::SendMessageCallback& message_callback,
     const base::Closure& done_callback)
     : connection_id_(connection_id),
+      peer_session_id_(peer_session_id),
       initial_connect_timeout_(initial_connect_timeout),
       done_callback_(done_callback),
-      message_callback_(message_callback) {
+      message_callback_(message_callback),
+      weak_factory_(this) {
   DCHECK_GT(connection_id_, 0);
   DCHECK(!done_callback_.is_null());
   DCHECK(!message_callback_.is_null());
@@ -115,6 +121,11 @@ bool RemoteSecurityKeyIpcServerImpl::OnMessageReceived(
     const IPC::Message& message) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
+  if (connection_close_pending_) {
+    LOG(WARNING) << "IPC Message ignored because channel is being closed.";
+    return false;
+  }
+
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(RemoteSecurityKeyIpcServerImpl, message)
     IPC_MESSAGE_HANDLER(ChromotingRemoteSecurityKeyToNetworkMsg_Request,
@@ -128,6 +139,26 @@ bool RemoteSecurityKeyIpcServerImpl::OnMessageReceived(
 
 void RemoteSecurityKeyIpcServerImpl::OnChannelConnected(int32_t peer_pid) {
   DCHECK(thread_checker_.CalledOnValidThread());
+
+#if defined(OS_WIN)
+  DWORD peer_session_id;
+  if (!ProcessIdToSessionId(peer_pid, &peer_session_id)) {
+    PLOG(ERROR) << "ProcessIdToSessionId() failed";
+    connection_close_pending_ = true;
+  } else if (peer_session_id != peer_session_id_) {
+    LOG(ERROR) << "Ignoring connection attempt from outside remoted session.";
+    connection_close_pending_ = true;
+  }
+  if (connection_close_pending_) {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::Bind(&RemoteSecurityKeyIpcServerImpl::OnChannelError,
+                              weak_factory_.GetWeakPtr()));
+    return;
+  }
+#else   // !defined(OS_WIN)
+  CHECK_EQ(peer_session_id_, UINT32_MAX);
+#endif  // !defined(OS_WIN)
+
   // Reset the timer to give the client a chance to send the request.
   timer_.Start(FROM_HERE, initial_connect_timeout_,
                base::Bind(&RemoteSecurityKeyIpcServerImpl::OnChannelError,
@@ -136,6 +167,10 @@ void RemoteSecurityKeyIpcServerImpl::OnChannelConnected(int32_t peer_pid) {
 
 void RemoteSecurityKeyIpcServerImpl::OnChannelError() {
   DCHECK(thread_checker_.CalledOnValidThread());
+  if (ipc_channel_) {
+    ipc_channel_->Close();
+    connection_close_pending_ = false;
+  }
 
   if (!done_callback_.is_null()) {
     // Note: This callback may result in this object being torn down.

@@ -22,6 +22,7 @@
 #include "remoting/host/screen_resolution.h"
 #include "remoting/host/security_key/gnubby_auth_handler.h"
 #include "remoting/proto/control.pb.h"
+#include "remoting/proto/event.pb.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_frame.h"
 #include "third_party/webrtc/modules/desktop_capture/mouse_cursor_monitor.h"

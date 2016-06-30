@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/values.h"
 #include "remoting/base/logging.h"
+#include "remoting/host/client_session_details.h"
 #include "remoting/host/security_key/gnubby_auth_handler.h"
 #include "remoting/proto/control.pb.h"
 #include "remoting/protocol/client_stub.h"
@@ -60,12 +61,15 @@ bool ConvertListValueToString(base::ListValue* bytes, std::string* out) {
 namespace remoting {
 
 GnubbyExtensionSession::GnubbyExtensionSession(
+    ClientSessionDetails* client_session_details,
     protocol::ClientStub* client_stub)
     : client_stub_(client_stub) {
   DCHECK(client_stub_);
 
-  gnubby_auth_handler_ = remoting::GnubbyAuthHandler::Create(base::Bind(
-      &GnubbyExtensionSession::SendMessageToClient, base::Unretained(this)));
+  gnubby_auth_handler_ = remoting::GnubbyAuthHandler::Create(
+      client_session_details,
+      base::Bind(&GnubbyExtensionSession::SendMessageToClient,
+                 base::Unretained(this)));
 }
 
 GnubbyExtensionSession::~GnubbyExtensionSession() {}

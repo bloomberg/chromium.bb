@@ -106,10 +106,12 @@ bool FakeRemoteSecurityKeyIpcClient::OnMessageReceived(
 }
 
 void FakeRemoteSecurityKeyIpcClient::OnChannelConnected(int32_t peer_pid) {
+  ipc_channel_connected_ = true;
   channel_event_callback_.Run();
 }
 
 void FakeRemoteSecurityKeyIpcClient::OnChannelError() {
+  ipc_channel_connected_ = false;
   channel_event_callback_.Run();
 }
 

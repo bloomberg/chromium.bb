@@ -21,6 +21,7 @@
 #include "net/base/net_errors.h"
 #include "net/base/test_completion_callback.h"
 #include "net/socket/unix_domain_client_socket_posix.h"
+#include "remoting/host/client_session_details.h"
 #include "remoting/host/host_mock_objects.h"
 #include "remoting/host/security_key/gnubby_auth_handler.h"
 #include "remoting/proto/internal.pb.h"
@@ -53,45 +54,25 @@ const unsigned char kRequestData[] = {
 
 class TestClientStub : public protocol::ClientStub {
  public:
-  TestClientStub() : run_loop_(new base::RunLoop) {}
-  ~TestClientStub() override {}
+  TestClientStub();
+  ~TestClientStub() override;
 
   // protocol::ClientStub implementation.
-  void SetCapabilities(const protocol::Capabilities& capabilities) override {}
-
+  void SetCapabilities(const protocol::Capabilities& capabilities) override;
   void SetPairingResponse(
-      const protocol::PairingResponse& pairing_response) override {}
-
-  void DeliverHostMessage(const protocol::ExtensionMessage& message) override {
-    message_ = message;
-    run_loop_->Quit();
-  }
-
-  void SetVideoLayout(const protocol::VideoLayout& layout) override {}
+      const protocol::PairingResponse& pairing_response) override;
+  void DeliverHostMessage(const protocol::ExtensionMessage& message) override;
+  void SetVideoLayout(const protocol::VideoLayout& layout) override;
 
   // protocol::ClipboardStub implementation.
-  void InjectClipboardEvent(const protocol::ClipboardEvent& event) override {}
+  void InjectClipboardEvent(const protocol::ClipboardEvent& event) override;
 
   // protocol::CursorShapeStub implementation.
-  void SetCursorShape(const protocol::CursorShapeInfo& cursor_shape) override {}
+  void SetCursorShape(const protocol::CursorShapeInfo& cursor_shape) override;
 
-  void WaitForDeliverHostMessage(base::TimeDelta max_timeout) {
-    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-        FROM_HERE, run_loop_->QuitClosure(), max_timeout);
-    run_loop_->Run();
-    run_loop_.reset(new base::RunLoop);
-  }
+  void WaitForDeliverHostMessage(base::TimeDelta max_timeout);
 
-  void CheckHostDataMessage(int id, const std::string& data) {
-    std::string connection_id = base::StringPrintf("\"connectionId\":%d", id);
-    std::string data_message = base::StringPrintf("\"data\":%s", data.c_str());
-
-    ASSERT_TRUE(message_.type() == "gnubby-auth" ||
-                message_.type() == "auth-v1");
-    ASSERT_NE(message_.data().find("\"type\":\"data\""), std::string::npos);
-    ASSERT_NE(message_.data().find(connection_id), std::string::npos);
-    ASSERT_NE(message_.data().find(data_message), std::string::npos);
-  }
+  void CheckHostDataMessage(int id, const std::string& data);
 
  private:
   protocol::ExtensionMessage message_;
@@ -100,43 +81,76 @@ class TestClientStub : public protocol::ClientStub {
   DISALLOW_COPY_AND_ASSIGN(TestClientStub);
 };
 
+TestClientStub::TestClientStub() : run_loop_(new base::RunLoop) {}
+
+TestClientStub::~TestClientStub() {}
+
+void TestClientStub::SetCapabilities(
+    const protocol::Capabilities& capabilities) {}
+
+void TestClientStub::SetPairingResponse(
+    const protocol::PairingResponse& pairing_response) {}
+
+void TestClientStub::DeliverHostMessage(
+    const protocol::ExtensionMessage& message) {
+  message_ = message;
+  run_loop_->Quit();
+}
+
+void TestClientStub::SetVideoLayout(const protocol::VideoLayout& layout) {}
+
+void TestClientStub::InjectClipboardEvent(
+    const protocol::ClipboardEvent& event) {}
+
+void TestClientStub::SetCursorShape(
+    const protocol::CursorShapeInfo& cursor_shape) {}
+
+void TestClientStub::WaitForDeliverHostMessage(base::TimeDelta max_timeout) {
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE, run_loop_->QuitClosure(), max_timeout);
+  run_loop_->Run();
+  run_loop_.reset(new base::RunLoop);
+}
+
+void TestClientStub::CheckHostDataMessage(int id, const std::string& data) {
+  std::string connection_id = base::StringPrintf("\"connectionId\":%d", id);
+  std::string data_message = base::StringPrintf("\"data\":%s", data.c_str());
+
+  ASSERT_TRUE(message_.type() == "gnubby-auth" || message_.type() == "auth-v1");
+  ASSERT_NE(message_.data().find("\"type\":\"data\""), std::string::npos);
+  ASSERT_NE(message_.data().find(connection_id), std::string::npos);
+  ASSERT_NE(message_.data().find(data_message), std::string::npos);
+}
+
+class TestClientSessionDetails : public ClientSessionDetails {
+ public:
+  TestClientSessionDetails();
+  ~TestClientSessionDetails() override;
+
+  // ClientSessionDetails interface.
+  uint32_t desktop_session_id() const override { return desktop_session_id_; }
+  ClientSessionControl* session_control() override { return nullptr; }
+
+  void set_desktop_session_id(uint32_t new_id) { desktop_session_id_ = new_id; }
+
+ private:
+  uint32_t desktop_session_id_ = UINT32_MAX;
+
+  DISALLOW_COPY_AND_ASSIGN(TestClientSessionDetails);
+};
+
+TestClientSessionDetails::TestClientSessionDetails() {}
+
+TestClientSessionDetails::~TestClientSessionDetails() {}
+
 class GnubbyExtensionSessionTest : public testing::Test {
  public:
-  GnubbyExtensionSessionTest()
-      : gnubby_extension_session_(new GnubbyExtensionSession(&client_stub_)) {
-    // We want to retain ownership of mock object so we can use it to inject
-    // events into the extension session.  The mock object should not be used
-    // once |gnubby_extension_session_| is destroyed.
-    mock_gnubby_auth_handler_ = new MockGnubbyAuthHandler();
-    gnubby_extension_session_->SetGnubbyAuthHandlerForTesting(
-        base::WrapUnique(mock_gnubby_auth_handler_));
-  }
+  GnubbyExtensionSessionTest();
+  ~GnubbyExtensionSessionTest() override;
 
-  void WaitForAndVerifyHostMessage() {
-    client_stub_.WaitForDeliverHostMessage(
-        base::TimeDelta::FromMilliseconds(500));
-    base::ListValue expected_data;
+  void WaitForAndVerifyHostMessage();
 
-    // Skip first four bytes.
-    for (size_t i = 4; i < sizeof(kRequestData); ++i) {
-      expected_data.AppendInteger(kRequestData[i]);
-    }
-
-    std::string expected_data_json;
-    base::JSONWriter::Write(expected_data, &expected_data_json);
-    client_stub_.CheckHostDataMessage(1, expected_data_json);
-  }
-
-  void CreateGnubbyConnection() {
-    EXPECT_CALL(*mock_gnubby_auth_handler_, CreateGnubbyConnection()).Times(1);
-
-    protocol::ExtensionMessage message;
-    message.set_type("gnubby-auth");
-    message.set_data("{\"type\":\"control\",\"option\":\"auth-v1\"}");
-
-    ASSERT_TRUE(gnubby_extension_session_->OnExtensionMessage(nullptr, nullptr,
-                                                              message));
-  }
+  void CreateGnubbyConnection();
 
  protected:
   base::MessageLoopForIO message_loop_;
@@ -147,10 +161,50 @@ class GnubbyExtensionSessionTest : public testing::Test {
   MockGnubbyAuthHandler* mock_gnubby_auth_handler_ = nullptr;
 
   TestClientStub client_stub_;
+  TestClientSessionDetails client_details_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(GnubbyExtensionSessionTest);
 };
+
+GnubbyExtensionSessionTest::GnubbyExtensionSessionTest()
+    : gnubby_extension_session_(
+          new GnubbyExtensionSession(&client_details_, &client_stub_)) {
+  // We want to retain ownership of mock object so we can use it to inject
+  // events into the extension session.  The mock object should not be used
+  // once |gnubby_extension_session_| is destroyed.
+  mock_gnubby_auth_handler_ = new MockGnubbyAuthHandler();
+  gnubby_extension_session_->SetGnubbyAuthHandlerForTesting(
+      base::WrapUnique(mock_gnubby_auth_handler_));
+}
+
+GnubbyExtensionSessionTest::~GnubbyExtensionSessionTest() {}
+
+void GnubbyExtensionSessionTest::WaitForAndVerifyHostMessage() {
+  client_stub_.WaitForDeliverHostMessage(
+      base::TimeDelta::FromMilliseconds(500));
+  base::ListValue expected_data;
+
+  // Skip first four bytes.
+  for (size_t i = 4; i < sizeof(kRequestData); ++i) {
+    expected_data.AppendInteger(kRequestData[i]);
+  }
+
+  std::string expected_data_json;
+  base::JSONWriter::Write(expected_data, &expected_data_json);
+  client_stub_.CheckHostDataMessage(1, expected_data_json);
+}
+
+void GnubbyExtensionSessionTest::CreateGnubbyConnection() {
+  EXPECT_CALL(*mock_gnubby_auth_handler_, CreateGnubbyConnection()).Times(1);
+
+  protocol::ExtensionMessage message;
+  message.set_type("gnubby-auth");
+  message.set_data("{\"type\":\"control\",\"option\":\"auth-v1\"}");
+
+  ASSERT_TRUE(
+      gnubby_extension_session_->OnExtensionMessage(nullptr, nullptr, message));
+}
 
 TEST_F(GnubbyExtensionSessionTest, GnubbyConnectionCreated_ValidMessage) {
   CreateGnubbyConnection();

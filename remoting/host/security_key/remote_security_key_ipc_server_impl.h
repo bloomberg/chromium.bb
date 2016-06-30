@@ -7,10 +7,12 @@
 
 #include "remoting/host/security_key/remote_security_key_ipc_server.h"
 
+#include <cstdint>
 #include <memory>
 #include <string>
 
 #include "base/callback.h"
+#include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
@@ -34,6 +36,7 @@ class RemoteSecurityKeyIpcServerImpl : public RemoteSecurityKeyIpcServer,
  public:
   RemoteSecurityKeyIpcServerImpl(
       int connection_id,
+      uint32_t peer_session_id,
       base::TimeDelta initial_connect_timeout,
       const GnubbyAuthHandler::SendMessageCallback& message_callback,
       const base::Closure& done_callback);
@@ -55,6 +58,12 @@ class RemoteSecurityKeyIpcServerImpl : public RemoteSecurityKeyIpcServer,
 
   // The value assigned to identify the current IPC channel.
   int connection_id_;
+
+  // The expected session id of the process connecting to the IPC channel.
+  uint32_t peer_session_id_;
+
+  // Tracks whether the connection is in the process of being closed.
+  bool connection_close_pending_ = false;
 
   // Timeout for disconnecting the IPC channel if there is no client activity.
   base::TimeDelta initial_connect_timeout_;
@@ -78,6 +87,8 @@ class RemoteSecurityKeyIpcServerImpl : public RemoteSecurityKeyIpcServer,
   // Ensures RemoteSecurityKeyIpcServerImpl methods are called on the same
   // thread.
   base::ThreadChecker thread_checker_;
+
+  base::WeakPtrFactory<RemoteSecurityKeyIpcServerImpl> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(RemoteSecurityKeyIpcServerImpl);
 };

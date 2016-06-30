@@ -52,6 +52,8 @@ class FakeRemoteSecurityKeyIpcClient : public RemoteSecurityKeyIpcClient {
     return last_message_received_;
   }
 
+  bool ipc_channel_connected() { return ipc_channel_connected_; }
+
   void set_wait_for_ipc_channel_return_value(bool return_value) {
     wait_for_ipc_channel_return_value_ = return_value;
   }
@@ -98,6 +100,9 @@ class FakeRemoteSecurityKeyIpcClient : public RemoteSecurityKeyIpcClient {
 
   // Value returned by WaitForSecurityKeyIpcServerChannel() method.
   bool wait_for_ipc_channel_return_value_ = true;
+
+  // Stores whether a connection to the server IPC channel is active.
+  bool ipc_channel_connected_ = false;
 
   // Value returned by SendSecurityKeyRequest() method.
   std::string security_key_response_payload_;

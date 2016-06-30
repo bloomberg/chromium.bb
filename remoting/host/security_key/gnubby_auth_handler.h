@@ -17,6 +17,8 @@ class FilePath;
 
 namespace remoting {
 
+class ClientSessionDetails;
+
 // Class responsible for proxying authentication data between a local gnubbyd
 // and the client.
 class GnubbyAuthHandler {
@@ -28,11 +30,13 @@ class GnubbyAuthHandler {
       SendMessageCallback;
 
   // Creates a platform-specific GnubbyAuthHandler.
-  // All invocations of |callback| are guaranteed to occur before the underlying
-  // GnubbyAuthHandler object is destroyed.  It is not safe to destroy the
-  // GnubbyAuthHandler object within the callback.
+  // All invocations of |send_message_callback| are guaranteed to occur before
+  // the underlying GnubbyAuthHandler object is destroyed.  It is not safe to
+  // destroy the GnubbyAuthHandler object within the callback.
+  // |client_session_details| will be valid until this instance is destroyed.
   static std::unique_ptr<GnubbyAuthHandler> Create(
-      const SendMessageCallback& callback);
+      ClientSessionDetails* client_session_details,
+      const SendMessageCallback& send_message_callback);
 
 #if defined(OS_LINUX)
   // Specify the name of the socket to listen to gnubby requests on.
