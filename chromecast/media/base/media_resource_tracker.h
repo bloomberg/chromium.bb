@@ -27,33 +27,14 @@ namespace media {
 // * This class interacts on both UI and media threads (task runners required
 //   by ctor to perform thread hopping and checks). See function-level comments
 //   on which thread to use for which operations.
-// * All interaction with delegate is performed on UI thread.
 // * The application should instantiate a single MediaResourceTracker instance.
 //   Destruction should be performed by calling FinalizeAndDestroy from the UI
 //   thread.
 class MediaResourceTracker {
  public:
-  class Delegate {
-   public:
-    // Called on UI thread when media usage starts (i.e. count steps 0->1).
-    // Does not mean Initialize has happened.
-    virtual void OnStartUsingMedia() = 0;
-
-    // Called on UI thread when media usage stops (i.e. count steps 1->0).
-    // Does not mean Finalize has happened.
-    virtual void OnStopUsingMedia() = 0;
-
-   protected:
-    virtual ~Delegate() {}
-  };
-
   MediaResourceTracker(
       const scoped_refptr<base::SingleThreadTaskRunner>& ui_task_runner,
       const scoped_refptr<base::SingleThreadTaskRunner>& media_task_runner);
-
-  // Sets the delegate to receive start/stop media usage notifications.  Must
-  // call on UI thread.  Set to nullptr to clear existing delegate.
-  void SetDelegate(Delegate* delegate);
 
   // Media resource acquire implementation. Must call on ui thread; runs
   // CastMediaShlib::Initialize on media thread.  Safe to call even if media lib
@@ -73,7 +54,7 @@ class MediaResourceTracker {
   // (2) Calls CastMediaShlib::Finalize on media thread
   // (3) Deletes this object
   // Must be called on UI thread. No further calls should be made on UI thread
-  // after this. Delegate is implicitly cleared.
+  // after this.
   void FinalizeAndDestroy();
 
   // Users of media resource (e.g. CMA pipeline) should call these when they
@@ -86,10 +67,6 @@ class MediaResourceTracker {
   friend class TestMediaResourceTracker;
   virtual ~MediaResourceTracker();
 
-  // Tasks posted to UI thread
-  void CallDelegateStartOnUiThread();
-  void CallDelegateStopOnUiThread();
-
   // Tasks posted to media thread
   void CallInitializeOnMediaThread();
   void MaybeCallFinalizeOnMediaThread(const base::Closure& completion_cb);
@@ -99,9 +76,6 @@ class MediaResourceTracker {
   // Hooks for testing
   virtual void DoInitializeMediaLib();
   virtual void DoFinalizeMediaLib();
-
-  // Accessed on UI thread
-  Delegate* delegate_;
 
   // Accessed on media thread + ctor
   size_t media_use_count_;

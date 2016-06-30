@@ -15,8 +15,7 @@ namespace media {
 MediaResourceTracker::MediaResourceTracker(
     const scoped_refptr<base::SingleThreadTaskRunner>& ui_task_runner,
     const scoped_refptr<base::SingleThreadTaskRunner>& media_task_runner)
-    : delegate_(nullptr),
-      media_use_count_(0),
+    : media_use_count_(0),
       media_lib_initialized_(false),
       delete_on_finalize_(false),
       ui_task_runner_(ui_task_runner),
@@ -27,11 +26,6 @@ MediaResourceTracker::MediaResourceTracker(
 }
 
 MediaResourceTracker::~MediaResourceTracker() {}
-
-void MediaResourceTracker::SetDelegate(Delegate* delegate) {
-  DCHECK(ui_task_runner_->BelongsToCurrentThread());
-  delegate_ = delegate;
-}
 
 void MediaResourceTracker::InitializeMediaLib() {
   DCHECK(ui_task_runner_->BelongsToCurrentThread());
@@ -53,7 +47,6 @@ void MediaResourceTracker::FinalizeMediaLib(
 
 void MediaResourceTracker::FinalizeAndDestroy() {
   DCHECK(ui_task_runner_->BelongsToCurrentThread());
-  delegate_ = nullptr;
 
   media_task_runner_->PostTask(
       FROM_HERE,
@@ -67,39 +60,16 @@ void MediaResourceTracker::IncrementUsageCount() {
   DCHECK(media_lib_initialized_);
   DCHECK(finalize_completion_cb_.is_null());
   media_use_count_++;
-
-  if (media_use_count_ == 1) {
-    ui_task_runner_->PostTask(
-        FROM_HERE,
-        base::Bind(&MediaResourceTracker::CallDelegateStartOnUiThread,
-                   base::Unretained(this)));
-  }
 }
 
 void MediaResourceTracker::DecrementUsageCount() {
   DCHECK(media_task_runner_->BelongsToCurrentThread());
   media_use_count_--;
 
-  if (media_use_count_ == 0) {
-    ui_task_runner_->PostTask(
-        FROM_HERE, base::Bind(&MediaResourceTracker::CallDelegateStopOnUiThread,
-                              base::Unretained(this)));
-
-    if (delete_on_finalize_ || !finalize_completion_cb_.is_null())
+  if (media_use_count_ == 0 &&
+      (delete_on_finalize_ || !finalize_completion_cb_.is_null())) {
       CallFinalizeOnMediaThread();
   }
-}
-
-void MediaResourceTracker::CallDelegateStartOnUiThread() {
-  DCHECK(ui_task_runner_->BelongsToCurrentThread());
-  if (delegate_)
-    delegate_->OnStartUsingMedia();
-}
-
-void MediaResourceTracker::CallDelegateStopOnUiThread() {
-  DCHECK(ui_task_runner_->BelongsToCurrentThread());
-  if (delegate_)
-    delegate_->OnStopUsingMedia();
 }
 
 void MediaResourceTracker::CallInitializeOnMediaThread() {

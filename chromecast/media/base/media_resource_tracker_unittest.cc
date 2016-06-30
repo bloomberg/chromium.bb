@@ -30,16 +30,12 @@ void RunUntilIdle(base::TaskRunner* task_runner) {
 }
 
 // Collection of mocks to verify MediaResourceTracker takes the correct actions.
-class MediaResourceTrackerTestMocks : public MediaResourceTracker::Delegate {
+class MediaResourceTrackerTestMocks {
  public:
   MOCK_METHOD0(Initialize, void());  // CastMediaShlib::Initialize
   MOCK_METHOD0(Finalize, void());  // CastMediaShlib::Finalize
   MOCK_METHOD0(Destroyed, void());  // ~CastMediaResourceTracker
   MOCK_METHOD0(FinalizeCallback, void());  // callback to Finalize
-
-  // MediaResourceTracker::Delegate implementation:
-  MOCK_METHOD0(OnStartUsingMedia, void());
-  MOCK_METHOD0(OnStopUsingMedia, void());
 };
 
 class TestMediaResourceTracker : public MediaResourceTracker {
@@ -85,7 +81,6 @@ class MediaResourceTrackerTest : public ::testing::Test {
     resource_tracker_ = new TestMediaResourceTracker(
         test_mocks_.get(), message_loop_->task_runner(),
         media_task_runner_);
-    resource_tracker_->SetDelegate(test_mocks_.get());
   }
 
   void TearDown() override { media_thread_.reset(); }
@@ -175,7 +170,6 @@ TEST_F(MediaResourceTrackerTest, FinalizeResourceInUse) {
   resource_tracker_->InitializeMediaLib();
 
   IncrementMediaUsageCount();
-  EXPECT_CALL(*test_mocks_, OnStartUsingMedia()).Times(1);
   RunUntilIdle(media_task_runner_.get());
   base::RunLoop().RunUntilIdle();
 
@@ -190,7 +184,6 @@ TEST_F(MediaResourceTrackerTest, FinalizeResourceInUse) {
   DecrementMediaUsageCount();
 
   EXPECT_CALL(*test_mocks_, FinalizeCallback()).Times(1);
-  EXPECT_CALL(*test_mocks_, OnStopUsingMedia()).Times(1);
   RunUntilIdle(media_task_runner_.get());
   base::RunLoop().RunUntilIdle();
 
@@ -207,7 +200,6 @@ TEST_F(MediaResourceTrackerTest, DestroyWaitForNoUsers) {
   resource_tracker_->InitializeMediaLib();
 
   IncrementMediaUsageCount();
-  EXPECT_CALL(*test_mocks_, OnStartUsingMedia()).Times(1);
   RunUntilIdle(media_task_runner_.get());
   base::RunLoop().RunUntilIdle();
 
@@ -216,8 +208,6 @@ TEST_F(MediaResourceTrackerTest, DestroyWaitForNoUsers) {
   resource_tracker_->FinalizeAndDestroy();
   RunUntilIdle(media_task_runner_.get());
 
-  // Note, OnStop delegate call should not be made during shutdown
-  EXPECT_CALL(*test_mocks_, OnStopUsingMedia()).Times(0);
   EXPECT_CALL(*test_mocks_, Finalize()).Times(1);
   EXPECT_CALL(*test_mocks_, Destroyed()).Times(1);
   DecrementMediaUsageCount();
@@ -233,7 +223,6 @@ TEST_F(MediaResourceTrackerTest, DestroyWithPendingFinalize) {
   resource_tracker_->InitializeMediaLib();
 
   IncrementMediaUsageCount();
-  EXPECT_CALL(*test_mocks_, OnStartUsingMedia()).Times(1);
   RunUntilIdle(media_task_runner_.get());
   base::RunLoop().RunUntilIdle();
 
@@ -248,7 +237,6 @@ TEST_F(MediaResourceTrackerTest, DestroyWithPendingFinalize) {
   EXPECT_CALL(*test_mocks_, Finalize()).Times(1);
   EXPECT_CALL(*test_mocks_, Destroyed()).Times(1);
   EXPECT_CALL(*test_mocks_, FinalizeCallback()).Times(1);
-  EXPECT_CALL(*test_mocks_, OnStopUsingMedia()).Times(0);
 
   DecrementMediaUsageCount();
 
