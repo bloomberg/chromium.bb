@@ -2,13 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MOJO_PUBLIC_CPP_BINDINGS_LIB_INTERFACE_ID_H_
-#define MOJO_PUBLIC_CPP_BINDINGS_LIB_INTERFACE_ID_H_
+#ifndef MOJO_PUBLIC_CPP_BINDINGS_INTERFACE_ID_H_
+#define MOJO_PUBLIC_CPP_BINDINGS_INTERFACE_ID_H_
 
 #include <stdint.h>
 
 namespace mojo {
-namespace internal {
 
 // The size of the type matters because it is directly used in messages.
 using InterfaceId = uint32_t;
@@ -31,7 +30,6 @@ inline bool IsValidInterfaceId(InterfaceId id) {
   return id != kInvalidInterfaceId;
 }
 
-}  // namespace internal
 }  // namespace mojo
 
-#endif  // MOJO_PUBLIC_CPP_BINDINGS_LIB_INTERFACE_ID_H_
+#endif  // MOJO_PUBLIC_CPP_BINDINGS_INTERFACE_ID_H_

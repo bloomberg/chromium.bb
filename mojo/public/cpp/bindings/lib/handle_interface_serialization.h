@@ -5,12 +5,12 @@
 #ifndef MOJO_PUBLIC_CPP_BINDINGS_LIB_HANDLE_INTERFACE_SERIALIZATION_H_
 #define MOJO_PUBLIC_CPP_BINDINGS_LIB_HANDLE_INTERFACE_SERIALIZATION_H_
 
+#include "mojo/public/cpp/bindings/associated_group_controller.h"
 #include "mojo/public/cpp/bindings/associated_interface_ptr_info.h"
 #include "mojo/public/cpp/bindings/associated_interface_request.h"
 #include "mojo/public/cpp/bindings/interface_ptr.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/public/cpp/bindings/lib/bindings_internal.h"
-#include "mojo/public/cpp/bindings/lib/multiplex_router.h"
 #include "mojo/public/cpp/bindings/lib/serialization_context.h"
 #include "mojo/public/cpp/bindings/lib/serialization_forward.h"
 #include "mojo/public/cpp/system/handle.h"
@@ -25,7 +25,8 @@ struct Serializer<AssociatedInterfacePtrInfo<T>,
                         AssociatedInterface_Data* output,
                         SerializationContext* context) {
     DCHECK(!input.handle().is_valid() || !input.handle().is_local());
-    DCHECK_EQ(input.handle().router(), context->router.get());
+    DCHECK_EQ(input.handle().group_controller(),
+              context->group_controller.get());
     output->version = input.version();
     output->interface_id = input.PassHandle().release();
   }
@@ -33,7 +34,7 @@ struct Serializer<AssociatedInterfacePtrInfo<T>,
   static bool Deserialize(AssociatedInterface_Data* input,
                           AssociatedInterfacePtrInfo<T>* output,
                           SerializationContext* context) {
-    output->set_handle(context->router->CreateLocalEndpointHandle(
+    output->set_handle(context->group_controller->CreateLocalEndpointHandle(
         FetchAndReset(&input->interface_id)));
     output->set_version(input->version);
     return true;
@@ -47,14 +48,15 @@ struct Serializer<AssociatedInterfaceRequest<T>,
                         AssociatedInterfaceRequest_Data* output,
                         SerializationContext* context) {
     DCHECK(!input.handle().is_valid() || !input.handle().is_local());
-    DCHECK_EQ(input.handle().router(), context->router.get());
+    DCHECK_EQ(input.handle().group_controller(),
+              context->group_controller.get());
     output->interface_id = input.PassHandle().release();
   }
 
   static bool Deserialize(AssociatedInterfaceRequest_Data* input,
                           AssociatedInterfaceRequest<T>* output,
                           SerializationContext* context) {
-    output->Bind(context->router->CreateLocalEndpointHandle(
+    output->Bind(context->group_controller->CreateLocalEndpointHandle(
         FetchAndReset(&input->interface_id)));
     return true;
   }

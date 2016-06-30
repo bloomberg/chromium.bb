@@ -18,11 +18,11 @@
 #include "base/memory/ref_counted.h"
 #include "base/single_thread_task_runner.h"
 #include "mojo/public/cpp/bindings/associated_group.h"
+#include "mojo/public/cpp/bindings/associated_group_controller.h"
 #include "mojo/public/cpp/bindings/associated_interface_ptr_info.h"
+#include "mojo/public/cpp/bindings/interface_endpoint_client.h"
+#include "mojo/public/cpp/bindings/interface_id.h"
 #include "mojo/public/cpp/bindings/lib/control_message_proxy.h"
-#include "mojo/public/cpp/bindings/lib/interface_endpoint_client.h"
-#include "mojo/public/cpp/bindings/lib/interface_id.h"
-#include "mojo/public/cpp/bindings/lib/multiplex_router.h"
 #include "mojo/public/cpp/bindings/scoped_interface_endpoint_handle.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 
@@ -90,7 +90,8 @@ class AssociatedInterfacePtrState {
         base::WrapUnique(new typename Interface::ResponseValidator_()), false,
         std::move(runner)));
     proxy_.reset(new Proxy(endpoint_client_.get()));
-    proxy_->serialization_context()->router = endpoint_client_->router();
+    proxy_->serialization_context()->group_controller =
+        endpoint_client_->group_controller();
   }
 
   // After this method is called, the object is in an invalid state and

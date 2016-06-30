@@ -19,11 +19,11 @@
 #include "base/memory/ref_counted.h"
 #include "base/single_thread_task_runner.h"
 #include "mojo/public/cpp/bindings/associated_group.h"
+#include "mojo/public/cpp/bindings/interface_endpoint_client.h"
+#include "mojo/public/cpp/bindings/interface_id.h"
 #include "mojo/public/cpp/bindings/interface_ptr_info.h"
 #include "mojo/public/cpp/bindings/lib/control_message_proxy.h"
 #include "mojo/public/cpp/bindings/lib/filter_chain.h"
-#include "mojo/public/cpp/bindings/lib/interface_endpoint_client.h"
-#include "mojo/public/cpp/bindings/lib/interface_id.h"
 #include "mojo/public/cpp/bindings/lib/message_header_validator.h"
 #include "mojo/public/cpp/bindings/lib/multiplex_router.h"
 #include "mojo/public/cpp/bindings/lib/router.h"
@@ -330,7 +330,8 @@ class InterfacePtrState<Interface, true> {
         base::WrapUnique(new typename Interface::ResponseValidator_()), false,
         std::move(runner_)));
     proxy_.reset(new Proxy(endpoint_client_.get()));
-    proxy_->serialization_context()->router = endpoint_client_->router();
+    proxy_->serialization_context()->group_controller =
+        endpoint_client_->group_controller();
   }
 
   void OnQueryVersion(const base::Callback<void(uint32_t)>& callback,

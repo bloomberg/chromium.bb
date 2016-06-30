@@ -16,9 +16,9 @@
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "mojo/public/cpp/bindings/associated_group.h"
+#include "mojo/public/cpp/bindings/associated_group_controller.h"
 #include "mojo/public/cpp/bindings/associated_interface_request.h"
-#include "mojo/public/cpp/bindings/lib/interface_endpoint_client.h"
-#include "mojo/public/cpp/bindings/lib/multiplex_router.h"
+#include "mojo/public/cpp/bindings/interface_endpoint_client.h"
 #include "mojo/public/cpp/bindings/scoped_interface_endpoint_handle.h"
 
 namespace mojo {
@@ -98,7 +98,7 @@ class AssociatedBinding {
       return;
     }
 
-    endpoint_client_.reset(new internal::InterfaceEndpointClient(
+    endpoint_client_.reset(new InterfaceEndpointClient(
         std::move(handle), &stub_,
         base::WrapUnique(new typename Interface::RequestValidator_()),
         Interface::HasSyncMethods_, std::move(runner)));
@@ -106,7 +106,8 @@ class AssociatedBinding {
         base::Bind(&AssociatedBinding::RunConnectionErrorHandler,
                    base::Unretained(this)));
 
-    stub_.serialization_context()->router = endpoint_client_->router();
+    stub_.serialization_context()->group_controller =
+        endpoint_client_->group_controller();
   }
 
   // Closes the associated interface. Puts this object into a state where it can
@@ -160,7 +161,7 @@ class AssociatedBinding {
       connection_error_handler_.Run();
   }
 
-  std::unique_ptr<internal::InterfaceEndpointClient> endpoint_client_;
+  std::unique_ptr<InterfaceEndpointClient> endpoint_client_;
 
   typename Interface::Stub_ stub_;
   Interface* impl_;

@@ -16,12 +16,12 @@
 #include "base/memory/ref_counted.h"
 #include "base/single_thread_task_runner.h"
 #include "mojo/public/cpp/bindings/associated_group.h"
+#include "mojo/public/cpp/bindings/interface_endpoint_client.h"
+#include "mojo/public/cpp/bindings/interface_id.h"
 #include "mojo/public/cpp/bindings/interface_ptr.h"
 #include "mojo/public/cpp/bindings/interface_ptr_info.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/public/cpp/bindings/lib/filter_chain.h"
-#include "mojo/public/cpp/bindings/lib/interface_endpoint_client.h"
-#include "mojo/public/cpp/bindings/lib/interface_id.h"
 #include "mojo/public/cpp/bindings/lib/message_header_validator.h"
 #include "mojo/public/cpp/bindings/lib/multiplex_router.h"
 #include "mojo/public/cpp/bindings/lib/router.h"
@@ -154,10 +154,10 @@ class BindingState<Interface, true> {
 
     router_ = new internal::MultiplexRouter(false, std::move(handle), runner);
     router_->SetMasterInterfaceName(Interface::Name_);
-    stub_.serialization_context()->router = router_;
+    stub_.serialization_context()->group_controller = router_;
 
-    endpoint_client_.reset(new internal::InterfaceEndpointClient(
-        router_->CreateLocalEndpointHandle(internal::kMasterInterfaceId),
+    endpoint_client_.reset(new InterfaceEndpointClient(
+        router_->CreateLocalEndpointHandle(kMasterInterfaceId),
         &stub_, base::WrapUnique(new typename Interface::RequestValidator_()),
         Interface::HasSyncMethods_, std::move(runner)));
 
@@ -234,7 +234,7 @@ class BindingState<Interface, true> {
   }
 
   scoped_refptr<internal::MultiplexRouter> router_;
-  std::unique_ptr<internal::InterfaceEndpointClient> endpoint_client_;
+  std::unique_ptr<InterfaceEndpointClient> endpoint_client_;
 
   typename Interface::Stub_ stub_;
   Interface* impl_;

@@ -17,9 +17,10 @@
 #include "mojo/public/cpp/system/handle.h"
 
 namespace mojo {
-namespace internal {
 
-class MultiplexRouter;
+class AssociatedGroupController;
+
+namespace internal {
 
 // A container for handles during serialization/deserialization.
 class SerializedHandleVector {
@@ -55,12 +56,13 @@ class SerializedHandleVector {
 // Context information for serialization/deserialization routines.
 struct SerializationContext {
   SerializationContext();
-  explicit SerializationContext(scoped_refptr<MultiplexRouter> in_router);
+  explicit SerializationContext(
+      scoped_refptr<AssociatedGroupController> in_group_controller);
 
   ~SerializationContext();
 
   // Used to serialize/deserialize associated interface pointers and requests.
-  scoped_refptr<MultiplexRouter> router;
+  scoped_refptr<AssociatedGroupController> group_controller;
 
   // Opaque context pointers returned by StringTraits::SetUpContext().
   std::unique_ptr<std::queue<void*>> custom_contexts;

@@ -14,9 +14,7 @@
 
 namespace mojo {
 
-namespace internal {
-class MultiplexRouter;
-}
+class AssociatedGroupController;
 
 // AssociatedGroup refers to all the interface endpoints running at one end of a
 // message pipe. It is used to create associated interfaces for that message
@@ -78,13 +76,13 @@ class AssociatedGroup {
   }
 
  private:
-  friend class internal::MultiplexRouter;
+  friend class AssociatedGroupController;
 
   void CreateEndpointHandlePair(
       ScopedInterfaceEndpointHandle* local_endpoint,
       ScopedInterfaceEndpointHandle* remote_endpoint);
 
-  scoped_refptr<internal::MultiplexRouter> router_;
+  scoped_refptr<AssociatedGroupController> controller_;
 };
 
 }  // namespace mojo

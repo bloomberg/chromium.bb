@@ -12,7 +12,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "mojo/public/cpp/bindings/lib/interface_endpoint_client.h"
+#include "mojo/public/cpp/bindings/interface_endpoint_client.h"
 #include "mojo/public/cpp/bindings/message.h"
 #include "mojo/public/cpp/bindings/message_filter.h"
 #include "mojo/public/cpp/bindings/scoped_interface_endpoint_handle.h"
@@ -24,7 +24,6 @@ namespace mojo {
 namespace test {
 namespace {
 
-using mojo::internal::InterfaceEndpointClient;
 using mojo::internal::MultiplexRouter;
 
 class MultiplexRouterTest : public testing::Test {

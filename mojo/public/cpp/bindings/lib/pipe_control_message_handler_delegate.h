@@ -5,7 +5,7 @@
 #ifndef MOJO_PUBLIC_CPP_BINDINGS_LIB_PIPE_CONTROL_MESSAGE_HANDLER_DELEGATE_H_
 #define MOJO_PUBLIC_CPP_BINDINGS_LIB_PIPE_CONTROL_MESSAGE_HANDLER_DELEGATE_H_
 
-#include "mojo/public/cpp/bindings/lib/interface_id.h"
+#include "mojo/public/cpp/bindings/interface_id.h"
 
 namespace mojo {
 namespace internal {

@@ -5,27 +5,18 @@
 #include "mojo/public/cpp/bindings/scoped_interface_endpoint_handle.h"
 
 #include "base/logging.h"
-#include "mojo/public/cpp/bindings/lib/multiplex_router.h"
+#include "mojo/public/cpp/bindings/associated_group_controller.h"
 
 namespace mojo {
 
 ScopedInterfaceEndpointHandle::ScopedInterfaceEndpointHandle()
-    : ScopedInterfaceEndpointHandle(internal::kInvalidInterfaceId, true,
-                                    nullptr) {}
-
-ScopedInterfaceEndpointHandle::ScopedInterfaceEndpointHandle(
-    internal::InterfaceId id,
-    bool is_local,
-    scoped_refptr<internal::MultiplexRouter> router)
-    : id_(id), is_local_(is_local), router_(std::move(router)) {
-  DCHECK(!internal::IsValidInterfaceId(id) || router_);
-}
+    : ScopedInterfaceEndpointHandle(kInvalidInterfaceId, true, nullptr) {}
 
 ScopedInterfaceEndpointHandle::ScopedInterfaceEndpointHandle(
     ScopedInterfaceEndpointHandle&& other)
     : id_(other.id_), is_local_(other.is_local_) {
-  router_.swap(other.router_);
-  other.id_ = internal::kInvalidInterfaceId;
+  group_controller_.swap(other.group_controller_);
+  other.id_ = kInvalidInterfaceId;
 }
 
 ScopedInterfaceEndpointHandle::~ScopedInterfaceEndpointHandle() {
@@ -41,31 +32,41 @@ ScopedInterfaceEndpointHandle& ScopedInterfaceEndpointHandle::operator=(
 }
 
 void ScopedInterfaceEndpointHandle::reset() {
-  if (!internal::IsValidInterfaceId(id_))
+  if (!IsValidInterfaceId(id_))
     return;
 
-  router_->CloseEndpointHandle(id_, is_local_);
+  group_controller_->CloseEndpointHandle(id_, is_local_);
 
-  id_ = internal::kInvalidInterfaceId;
+  id_ = kInvalidInterfaceId;
   is_local_ = true;
-  router_ = nullptr;
+  group_controller_ = nullptr;
 }
 
 void ScopedInterfaceEndpointHandle::swap(ScopedInterfaceEndpointHandle& other) {
   using std::swap;
   swap(other.id_, id_);
   swap(other.is_local_, is_local_);
-  swap(other.router_, router_);
+  swap(other.group_controller_, group_controller_);
 }
 
-internal::InterfaceId ScopedInterfaceEndpointHandle::release() {
-  internal::InterfaceId result = id_;
+InterfaceId ScopedInterfaceEndpointHandle::release() {
+  InterfaceId result = id_;
 
-  id_ = internal::kInvalidInterfaceId;
+  id_ = kInvalidInterfaceId;
   is_local_ = true;
-  router_ = nullptr;
+  group_controller_ = nullptr;
 
   return result;
+}
+
+ScopedInterfaceEndpointHandle::ScopedInterfaceEndpointHandle(
+    InterfaceId id,
+    bool is_local,
+    scoped_refptr<AssociatedGroupController> group_controller)
+    : id_(id),
+      is_local_(is_local),
+      group_controller_(std::move(group_controller)) {
+  DCHECK(!IsValidInterfaceId(id) || group_controller_);
 }
 
 }  // namespace mojo

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/public/cpp/bindings/lib/interface_endpoint_client.h"
+#include "mojo/public/cpp/bindings/interface_endpoint_client.h"
 
 #include <stdint.h>
 
@@ -15,12 +15,11 @@
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "mojo/public/cpp/bindings/associated_group.h"
-#include "mojo/public/cpp/bindings/lib/interface_endpoint_controller.h"
-#include "mojo/public/cpp/bindings/lib/multiplex_router.h"
+#include "mojo/public/cpp/bindings/associated_group_controller.h"
+#include "mojo/public/cpp/bindings/interface_endpoint_controller.h"
 #include "mojo/public/cpp/bindings/sync_call_restrictions.h"
 
 namespace mojo {
-namespace internal {
 
 // ----------------------------------------------------------------------------
 
@@ -71,7 +70,7 @@ class ResponderThunk : public MessageReceiverWithStatus {
   bool Accept(Message* message) override {
     DCHECK(task_runner_->RunsTasksOnCurrentThread());
     accept_was_invoked_ = true;
-    DCHECK(message->has_flag(kMessageIsResponse));
+    DCHECK(message->has_flag(internal::kMessageIsResponse));
 
     bool result = false;
 
@@ -151,8 +150,8 @@ InterfaceEndpointClient::InterfaceEndpointClient(
   // directly is a little awkward.
   payload_validator_->set_sink(&thunk_);
 
-  controller_ =
-      handle_.router()->AttachEndpointClient(handle_, this, task_runner_);
+  controller_ = handle_.group_controller()->AttachEndpointClient(
+      handle_, this, task_runner_);
   if (expect_sync_requests)
     controller_->AllowWokenUpBySyncWatchOnSameThread();
 }
@@ -160,12 +159,12 @@ InterfaceEndpointClient::InterfaceEndpointClient(
 InterfaceEndpointClient::~InterfaceEndpointClient() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  handle_.router()->DetachEndpointClient(handle_);
+  handle_.group_controller()->DetachEndpointClient(handle_);
 }
 
 AssociatedGroup* InterfaceEndpointClient::associated_group() {
   if (!associated_group_)
-    associated_group_ = handle_.router()->CreateAssociatedGroup();
+    associated_group_ = handle_.group_controller()->CreateAssociatedGroup();
   return associated_group_.get();
 }
 
@@ -182,7 +181,7 @@ ScopedInterfaceEndpointHandle InterfaceEndpointClient::PassHandle() {
     return ScopedInterfaceEndpointHandle();
 
   controller_ = nullptr;
-  handle_.router()->DetachEndpointClient(handle_);
+  handle_.group_controller()->DetachEndpointClient(handle_);
 
   return std::move(handle_);
 }
@@ -190,13 +189,13 @@ ScopedInterfaceEndpointHandle InterfaceEndpointClient::PassHandle() {
 void InterfaceEndpointClient::RaiseError() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  handle_.router()->RaiseError();
+  handle_.group_controller()->RaiseError();
 }
 
 bool InterfaceEndpointClient::Accept(Message* message) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(controller_);
-  DCHECK(!message->has_flag(kMessageExpectsResponse));
+  DCHECK(!message->has_flag(internal::kMessageExpectsResponse));
 
   if (encountered_error_)
     return false;
@@ -208,7 +207,7 @@ bool InterfaceEndpointClient::AcceptWithResponder(Message* message,
                                                   MessageReceiver* responder) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(controller_);
-  DCHECK(message->has_flag(kMessageExpectsResponse));
+  DCHECK(message->has_flag(internal::kMessageExpectsResponse));
 
   if (encountered_error_)
     return false;
@@ -220,7 +219,7 @@ bool InterfaceEndpointClient::AcceptWithResponder(Message* message,
 
   message->set_request_id(request_id);
 
-  bool is_sync = message->has_flag(kMessageIsSync);
+  bool is_sync = message->has_flag(internal::kMessageIsSync);
   if (!controller_->SendMessage(message))
     return false;
 
@@ -275,7 +274,7 @@ void InterfaceEndpointClient::NotifyError() {
 bool InterfaceEndpointClient::HandleValidatedMessage(Message* message) {
   DCHECK_EQ(handle_.id(), message->interface_id());
 
-  if (message->has_flag(kMessageExpectsResponse)) {
+  if (message->has_flag(internal::kMessageExpectsResponse)) {
     if (!incoming_receiver_)
       return false;
 
@@ -285,10 +284,10 @@ bool InterfaceEndpointClient::HandleValidatedMessage(Message* message) {
     if (!ok)
       delete responder;
     return ok;
-  } else if (message->has_flag(kMessageIsResponse)) {
+  } else if (message->has_flag(internal::kMessageIsResponse)) {
     uint64_t request_id = message->request_id();
 
-    if (message->has_flag(kMessageIsSync)) {
+    if (message->has_flag(internal::kMessageIsSync)) {
       auto it = sync_responses_.find(request_id);
       if (it == sync_responses_.end())
         return false;
@@ -312,5 +311,4 @@ bool InterfaceEndpointClient::HandleValidatedMessage(Message* message) {
   }
 }
 
-}  // namespace internal
 }  // namespace mojo

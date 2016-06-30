@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MOJO_PUBLIC_CPP_BINDINGS_LIB_INTERFACE_ENDPOINT_CLIENT_H_
-#define MOJO_PUBLIC_CPP_BINDINGS_LIB_INTERFACE_ENDPOINT_CLIENT_H_
+#ifndef MOJO_PUBLIC_CPP_BINDINGS_INTERFACE_ENDPOINT_CLIENT_H_
+#define MOJO_PUBLIC_CPP_BINDINGS_INTERFACE_ENDPOINT_CLIENT_H_
 
 #include <stdint.h>
 
@@ -24,10 +24,7 @@
 namespace mojo {
 
 class AssociatedGroup;
-
-namespace internal {
-
-class MultiplexRouter;
+class AssociatedGroupController;
 class InterfaceEndpointController;
 
 // InterfaceEndpointClient handles message sending and receiving of an interface
@@ -63,7 +60,9 @@ class InterfaceEndpointClient : public MessageReceiverWithResponder {
     return !async_responders_.empty() || !sync_responses_.empty();
   }
 
-  MultiplexRouter* router() const { return handle_.router(); }
+  AssociatedGroupController* group_controller() const {
+    return handle_.group_controller();
+  }
   AssociatedGroup* associated_group();
   uint32_t interface_id() const;
 
@@ -151,7 +150,6 @@ class InterfaceEndpointClient : public MessageReceiverWithResponder {
   DISALLOW_COPY_AND_ASSIGN(InterfaceEndpointClient);
 };
 
-}  // namespace internal
 }  // namespace mojo
 
-#endif  // MOJO_PUBLIC_CPP_BINDINGS_LIB_INTERFACE_ENDPOINT_CLIENT_H_
+#endif  // MOJO_PUBLIC_CPP_BINDINGS_INTERFACE_ENDPOINT_CLIENT_H_

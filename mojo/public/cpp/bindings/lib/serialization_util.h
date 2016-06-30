@@ -19,9 +19,10 @@
 #include "mojo/public/cpp/system/handle.h"
 
 namespace mojo {
-namespace internal {
 
-class MultiplexRouter;
+class AssociatedGroupController;
+
+namespace internal {
 
 size_t Align(size_t size);
 char* AlignPointer(char* ptr);
@@ -76,9 +77,9 @@ template <typename T>
 inline void AssociatedInterfaceDataToPtrInfo(
     AssociatedInterface_Data* input,
     AssociatedInterfacePtrInfo<T>* output,
-    MultiplexRouter* router) {
-  output->set_handle(
-      router->CreateLocalEndpointHandle(FetchAndReset(&input->interface_id)));
+    AssociatedGroupController* group_controller) {
+  output->set_handle(group_controller->CreateLocalEndpointHandle(
+      FetchAndReset(&input->interface_id)));
   output->set_version(input->version);
 }
 

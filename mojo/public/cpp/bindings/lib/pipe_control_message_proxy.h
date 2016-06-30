@@ -6,7 +6,7 @@
 #define MOJO_PUBLIC_CPP_BINDINGS_LIB_PIPE_CONTROL_MESSAGE_PROXY_H_
 
 #include "base/macros.h"
-#include "mojo/public/cpp/bindings/lib/interface_id.h"
+#include "mojo/public/cpp/bindings/interface_id.h"
 #include "mojo/public/cpp/bindings/lib/serialization_context.h"
 
 namespace mojo {

@@ -2,16 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MOJO_PUBLIC_CPP_BINDINGS_LIB_INTERFACE_ENDPOINT_CONTROLLER_H_
-#define MOJO_PUBLIC_CPP_BINDINGS_LIB_INTERFACE_ENDPOINT_CONTROLLER_H_
+#ifndef MOJO_PUBLIC_CPP_BINDINGS_INTERFACE_ENDPOINT_CONTROLLER_H_
+#define MOJO_PUBLIC_CPP_BINDINGS_INTERFACE_ENDPOINT_CONTROLLER_H_
 
 namespace mojo {
 
 class Message;
 
-namespace internal {
-
-// A control interface exposed by MultiplexRouter for interface endpoints.
+// A control interface exposed by AssociatedGroupController for interface
+// endpoints.
 class InterfaceEndpointController {
  public:
   virtual ~InterfaceEndpointController() {}
@@ -33,7 +32,6 @@ class InterfaceEndpointController {
   virtual bool SyncWatch(const bool* should_stop) = 0;
 };
 
-}  // namespace internal
 }  // namespace mojo
 
-#endif  // MOJO_PUBLIC_CPP_BINDINGS_LIB_INTERFACE_ENDPOINT_CONTROLLER_H_
+#endif  // MOJO_PUBLIC_CPP_BINDINGS_INTERFACE_ENDPOINT_CONTROLLER_H_

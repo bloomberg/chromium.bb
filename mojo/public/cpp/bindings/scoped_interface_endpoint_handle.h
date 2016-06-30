@@ -7,13 +7,11 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "mojo/public/cpp/bindings/lib/interface_id.h"
+#include "mojo/public/cpp/bindings/interface_id.h"
 
 namespace mojo {
 
-namespace internal {
-class MultiplexRouter;
-}
+class AssociatedGroupController;
 
 // ScopedInterfaceEndpointHandle refers to one end of an interface, either the
 // implementation side or the client side.
@@ -29,7 +27,7 @@ class ScopedInterfaceEndpointHandle {
   ScopedInterfaceEndpointHandle& operator=(
       ScopedInterfaceEndpointHandle&& other);
 
-  bool is_valid() const { return internal::IsValidInterfaceId(id_); }
+  bool is_valid() const { return IsValidInterfaceId(id_); }
 
   bool is_local() const { return is_local_; }
 
@@ -38,28 +36,30 @@ class ScopedInterfaceEndpointHandle {
 
   // DO NOT USE METHODS BELOW THIS LINE. These are for internal use and testing.
 
-  internal::InterfaceId id() const { return id_; }
+  InterfaceId id() const { return id_; }
 
-  internal::MultiplexRouter* router() const { return router_.get(); }
+  AssociatedGroupController* group_controller() const {
+    return group_controller_.get();
+  }
 
   // Releases the handle without closing it.
-  internal::InterfaceId release();
+  InterfaceId release();
 
  private:
-  friend class internal::MultiplexRouter;
+  friend class AssociatedGroupController;
 
-  // This is supposed to be used by MultiplexRouter only.
+  // This is supposed to be used by AssociatedGroupController only.
   // |id| is the corresponding interface ID.
-  // If |is_local| is false, this handle is meant to be passed over |router| to
-  // the remote side.
+  // If |is_local| is false, this handle is meant to be passed over a message
+  // pipe the remote side of the associated group.
   ScopedInterfaceEndpointHandle(
-      internal::InterfaceId id,
+      InterfaceId id,
       bool is_local,
-      scoped_refptr<internal::MultiplexRouter> router);
+      scoped_refptr<AssociatedGroupController> group_controller);
 
-  internal::InterfaceId id_;
+  InterfaceId id_;
   bool is_local_;
-  scoped_refptr<internal::MultiplexRouter> router_;
+  scoped_refptr<AssociatedGroupController> group_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(ScopedInterfaceEndpointHandle);
 };

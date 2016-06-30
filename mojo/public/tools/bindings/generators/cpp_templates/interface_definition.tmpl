@@ -77,11 +77,12 @@ class {{class_name}}_{{method.name}}_HandleSyncResponse
     : public mojo::MessageReceiver {
  public:
   {{class_name}}_{{method.name}}_HandleSyncResponse(
-      scoped_refptr<mojo::internal::MultiplexRouter> router, bool* result
+      scoped_refptr<mojo::AssociatedGroupController> group_controller,
+      bool* result
 {%-       for param in method.response_parameters -%}
       , {{param.kind|cpp_wrapper_type}}* out_{{param.name}}
 {%-       endfor %})
-      : serialization_context_(std::move(router)), result_(result)
+      : serialization_context_(std::move(group_controller)), result_(result)
 {%-       for param in method.response_parameters -%}
         , out_{{param.name}}_(out_{{param.name}})
 {%-       endfor %} {
@@ -119,8 +120,9 @@ class {{class_name}}_{{method.name}}_ForwardToCallback
  public:
   {{class_name}}_{{method.name}}_ForwardToCallback(
       const {{class_name}}::{{method.name}}Callback& callback,
-      scoped_refptr<mojo::internal::MultiplexRouter> router)
-      : callback_(callback), serialization_context_(std::move(router)) {
+      scoped_refptr<mojo::AssociatedGroupController> group_controller)
+      : callback_(callback),
+        serialization_context_(std::move(group_controller)) {
   }
   bool Accept(mojo::Message* message) override;
  private:
@@ -171,7 +173,7 @@ bool {{proxy_name}}::{{method.name}}(
   bool result = false;
   mojo::MessageReceiver* responder =
       new {{class_name}}_{{method.name}}_HandleSyncResponse(
-          serialization_context_.router, &result
+          serialization_context_.group_controller, &result
 {%-     for param in method.response_parameters -%}
           , param_{{param.name}}
 {%-     endfor %});
@@ -197,7 +199,8 @@ void {{proxy_name}}::{{method.name}}(
 
 {%- if method.response_parameters != None %}
   mojo::MessageReceiver* responder =
-      new {{class_name}}_{{method.name}}_ForwardToCallback(callback, serialization_context_.router);
+      new {{class_name}}_{{method.name}}_ForwardToCallback(
+          callback, serialization_context_.group_controller);
   if (!receiver_->AcceptWithResponder(builder.message(), responder))
     delete responder;
 {%- else %}
@@ -225,10 +228,11 @@ class {{class_name}}_{{method.name}}_ProxyToResponder
       uint64_t request_id,
       bool is_sync,
       mojo::MessageReceiverWithStatus* responder,
-      scoped_refptr<mojo::internal::MultiplexRouter> router) {
+      scoped_refptr<mojo::AssociatedGroupController>
+          group_controller) {
     scoped_refptr<{{class_name}}_{{method.name}}_ProxyToResponder> proxy
         = new {{class_name}}_{{method.name}}_ProxyToResponder(
-            request_id, is_sync, responder, router);
+            request_id, is_sync, responder, group_controller);
     return base::Bind(&{{class_name}}_{{method.name}}_ProxyToResponder::Run,
                       proxy);
   }
@@ -241,11 +245,11 @@ class {{class_name}}_{{method.name}}_ProxyToResponder
       uint64_t request_id,
       bool is_sync,
       mojo::MessageReceiverWithStatus* responder,
-      scoped_refptr<mojo::internal::MultiplexRouter> router)
+      scoped_refptr<mojo::AssociatedGroupController> group_controller)
       : request_id_(request_id),
         is_sync_(is_sync),
         responder_(responder),
-        serialization_context_(std::move(router)) {
+        serialization_context_(std::move(group_controller)) {
   }
 
   ~{{class_name}}_{{method.name}}_ProxyToResponder() {
@@ -356,7 +360,7 @@ bool {{class_name}}Stub::AcceptWithResponder(
               message->request_id(),
               message->has_flag(mojo::internal::kMessageIsSync),
               responder,
-              serialization_context_.router);
+              serialization_context_.group_controller);
       // A null |sink_| means no implementation was bound.
       assert(sink_);
       TRACE_EVENT0("mojom", "{{class_name}}::{{method.name}}");

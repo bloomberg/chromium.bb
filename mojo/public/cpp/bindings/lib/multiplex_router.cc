@@ -16,8 +16,8 @@
 #include "base/stl_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "mojo/public/cpp/bindings/associated_group.h"
-#include "mojo/public/cpp/bindings/lib/interface_endpoint_client.h"
-#include "mojo/public/cpp/bindings/lib/interface_endpoint_controller.h"
+#include "mojo/public/cpp/bindings/interface_endpoint_client.h"
+#include "mojo/public/cpp/bindings/interface_endpoint_controller.h"
 #include "mojo/public/cpp/bindings/lib/sync_handle_watcher.h"
 
 namespace mojo {
@@ -285,7 +285,7 @@ MultiplexRouter::MultiplexRouter(
     bool set_interface_id_namesapce_bit,
     ScopedMessagePipeHandle message_pipe,
     scoped_refptr<base::SingleThreadTaskRunner> runner)
-    : RefCountedDeleteOnMessageLoop(base::ThreadTaskRunnerHandle::Get()),
+    : AssociatedGroupController(base::ThreadTaskRunnerHandle::Get()),
       set_interface_id_namespace_bit_(set_interface_id_namesapce_bit),
       header_validator_(this),
       connector_(std::move(message_pipe),
@@ -351,8 +351,8 @@ void MultiplexRouter::CreateEndpointHandlePair(
   if (encountered_error_)
     UpdateEndpointStateMayRemove(endpoint, PEER_ENDPOINT_CLOSED);
 
-  *local_endpoint = ScopedInterfaceEndpointHandle(id, true, this);
-  *remote_endpoint = ScopedInterfaceEndpointHandle(id, false, this);
+  *local_endpoint = CreateScopedInterfaceEndpointHandle(id, true);
+  *remote_endpoint = CreateScopedInterfaceEndpointHandle(id, false);
 }
 
 ScopedInterfaceEndpointHandle MultiplexRouter::CreateLocalEndpointHandle(
@@ -372,7 +372,7 @@ ScopedInterfaceEndpointHandle MultiplexRouter::CreateLocalEndpointHandle(
     CHECK(!endpoint->closed());
     CHECK(endpoint->peer_closed());
   }
-  return ScopedInterfaceEndpointHandle(id, true, this);
+  return CreateScopedInterfaceEndpointHandle(id, true);
 }
 
 void MultiplexRouter::CloseEndpointHandle(InterfaceId id, bool is_local) {
@@ -445,17 +445,6 @@ void MultiplexRouter::RaiseError() {
     task_runner_->PostTask(FROM_HERE,
                            base::Bind(&MultiplexRouter::RaiseError, this));
   }
-}
-
-std::unique_ptr<AssociatedGroup> MultiplexRouter::CreateAssociatedGroup() {
-  std::unique_ptr<AssociatedGroup> group(new AssociatedGroup);
-  group->router_ = this;
-  return group;
-}
-
-// static
-MultiplexRouter* MultiplexRouter::GetRouter(AssociatedGroup* associated_group) {
-  return associated_group->router_.get();
 }
 
 void MultiplexRouter::CloseMessagePipe() {

@@ -4,14 +4,14 @@
 
 #include "mojo/public/cpp/bindings/associated_group.h"
 
-#include "mojo/public/cpp/bindings/lib/multiplex_router.h"
+#include "mojo/public/cpp/bindings/associated_group_controller.h"
 
 namespace mojo {
 
 AssociatedGroup::AssociatedGroup() {}
 
 AssociatedGroup::AssociatedGroup(const AssociatedGroup& other)
-    : router_(other.router_) {}
+    : controller_(other.controller_) {}
 
 AssociatedGroup::~AssociatedGroup() {}
 
@@ -19,17 +19,17 @@ AssociatedGroup& AssociatedGroup::operator=(const AssociatedGroup& other) {
   if (this == &other)
     return *this;
 
-  router_ = other.router_;
+  controller_ = other.controller_;
   return *this;
 }
 
 void AssociatedGroup::CreateEndpointHandlePair(
     ScopedInterfaceEndpointHandle* local_endpoint,
     ScopedInterfaceEndpointHandle* remote_endpoint) {
-  if (!router_)
+  if (!controller_)
     return;
 
-  router_->CreateEndpointHandlePair(local_endpoint, remote_endpoint);
+  controller_->CreateEndpointHandlePair(local_endpoint, remote_endpoint);
 }
 
 }  // namespace mojo
