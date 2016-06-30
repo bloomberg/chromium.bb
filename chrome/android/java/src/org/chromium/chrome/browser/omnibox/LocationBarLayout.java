@@ -329,6 +329,7 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
         private void findMatchAndLoadUrl(String urlText) {
             int suggestionMatchPosition;
             OmniboxSuggestion suggestionMatch;
+            boolean skipOutOfBoundsCheck = false;
 
             if (mSuggestionList != null
                     && mSuggestionList.isShown()
@@ -352,13 +353,16 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
                 // from the autocomplete controller.
                 suggestionMatch = mAutocomplete.classify(urlText);
                 suggestionMatchPosition = 0;
+                // Classify matches don't propagate to java, so skip the OOB check.
+                skipOutOfBoundsCheck = true;
 
                 // If urlText couldn't be classified, bail.
                 if (suggestionMatch == null) return;
             }
 
             String suggestionMatchUrl = updateSuggestionUrlIfNeeded(suggestionMatch,
-                    suggestionMatchPosition);
+                        suggestionMatchPosition, skipOutOfBoundsCheck);
+
 
             // It's important to use the page transition from the suggestion or we might end
             // up saving generated URLs as typed URLs, which would then pollute the subsequent
@@ -1498,7 +1502,8 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
             @Override
             public void onSelection(OmniboxSuggestion suggestion, int position) {
                 mSuggestionSelectionInProgress = true;
-                String suggestionMatchUrl = updateSuggestionUrlIfNeeded(suggestion, position);
+                String suggestionMatchUrl = updateSuggestionUrlIfNeeded(
+                        suggestion, position, false);
                 loadUrlFromOmniboxMatch(suggestionMatchUrl, suggestion.getTransition(), position,
                         suggestion.getType());
                 hideSuggestions();
@@ -1608,9 +1613,11 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
      *
      * @param suggestion The chosen omnibox suggestion.
      * @param selectedIndex The index of the chosen omnibox suggestion.
+     * @param skipCheck Whether to skip an out of bounds check.
      * @return The url to navigate to.
      */
-    private String updateSuggestionUrlIfNeeded(OmniboxSuggestion suggestion, int selectedIndex) {
+    private String updateSuggestionUrlIfNeeded(OmniboxSuggestion suggestion, int selectedIndex,
+            boolean skipCheck) {
         // Only called once we have suggestions, and don't have a listener though which we can
         // receive suggestions until the native side is ready, so this is safe
         assert mNativeInitialized
@@ -1618,7 +1625,7 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
 
         String updatedUrl = null;
         if (suggestion.getType() != OmniboxSuggestionType.VOICE_SUGGEST) {
-            if (selectedIndex >= mSuggestionItems.size()) {
+            if (!skipCheck && selectedIndex >= mSuggestionItems.size()) {
                 // Adding to track down the source of the crash in crbug.com/595395.
                 throw new IllegalStateException("Selected index out of bounds");
             }
