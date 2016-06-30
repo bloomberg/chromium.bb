@@ -402,6 +402,8 @@ void ResourceMultiBufferDataProvider::didFinishLoading(
 
   // If we didn't know the |instance_size_| we do now.
   int64_t size = byte_pos();
+  if (!fifo_.empty())
+    size += fifo_.back()->data_size();
 
   // This request reports something smaller than what we've seen in the past,
   // Maybe it's transient error?
