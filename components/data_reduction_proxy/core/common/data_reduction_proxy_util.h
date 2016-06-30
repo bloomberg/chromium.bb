@@ -25,7 +25,35 @@ class ProxyInfo;
 
 namespace data_reduction_proxy {
 
+enum class Client {
+  UNKNOWN,
+  CRONET_ANDROID,
+  WEBVIEW_ANDROID,
+  CHROME_ANDROID,
+  CHROME_IOS,
+  CHROME_MAC,
+  CHROME_CHROMEOS,
+  CHROME_LINUX,
+  CHROME_WINDOWS,
+  CHROME_FREEBSD,
+  CHROME_OPENBSD,
+  CHROME_SOLARIS,
+  CHROME_QNX,
+};
+
 namespace util {
+
+// Returns the version of Chromium that is being used, e.g. "1.2.3.4".
+const char* ChromiumVersion();
+
+// Returns the build and patch numbers of |version_string|. |version_string|
+// must be a properly formed Chromium version number, e.g. "1.2.3.4".
+void GetChromiumBuildAndPatch(const std::string& version_string,
+                              std::string* build,
+                              std::string* patch);
+
+// Get the human-readable version of |client|.
+const char* GetStringForClient(Client client);
 
 // Returns true if the request method is idempotent.
 bool IsMethodIdempotent(const std::string& method);

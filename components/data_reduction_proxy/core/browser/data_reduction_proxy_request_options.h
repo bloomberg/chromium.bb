@@ -17,6 +17,7 @@
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
+#include "components/data_reduction_proxy/core/common/data_reduction_proxy_util.h"
 
 namespace net {
 class HostPortPair;
@@ -39,27 +40,6 @@ extern const char kExperimentsOption[];
 #if defined(OS_ANDROID)
 extern const char kAndroidWebViewProtocolVersion[];
 #endif
-
-#define CLIENT_ENUMS_LIST                  \
-  CLIENT_ENUM(UNKNOWN, "")                 \
-  CLIENT_ENUM(CRONET_ANDROID, "cronet")    \
-  CLIENT_ENUM(WEBVIEW_ANDROID, "webview")  \
-  CLIENT_ENUM(CHROME_ANDROID, "android")   \
-  CLIENT_ENUM(CHROME_IOS, "ios")           \
-  CLIENT_ENUM(CHROME_MAC, "mac")           \
-  CLIENT_ENUM(CHROME_CHROMEOS, "chromeos") \
-  CLIENT_ENUM(CHROME_LINUX, "linux")       \
-  CLIENT_ENUM(CHROME_WINDOWS, "win")       \
-  CLIENT_ENUM(CHROME_FREEBSD, "freebsd")   \
-  CLIENT_ENUM(CHROME_OPENBSD, "openbsd")   \
-  CLIENT_ENUM(CHROME_SOLARIS, "solaris")   \
-  CLIENT_ENUM(CHROME_QNX, "qnx")
-
-#define CLIENT_ENUM(name, str_value) name,
-typedef enum {
-  CLIENT_ENUMS_LIST
-} Client;
-#undef CLIENT_ENUM
 
 class DataReductionProxyConfig;
 

@@ -7,7 +7,6 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/single_thread_task_runner.h"
-#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_tokenizer.h"
@@ -15,13 +14,11 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
-#include "base/version.h"
 #include "build/build_config.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_headers.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_switches.h"
-#include "components/data_reduction_proxy/core/common/version.h"
 #include "components/variations/variations_associated_data.h"
 #include "crypto/random.h"
 #include "net/base/host_port_pair.h"
@@ -39,46 +36,6 @@ namespace {
 std::string FormatOption(const std::string& name, const std::string& value) {
   return name + "=" + value;
 }
-
-// Returns the version of Chromium that is being used, e.g. "1.2.3.4".
-const char* ChromiumVersion() {
-  // Assert at compile time that the Chromium version is at least somewhat
-  // properly formed, e.g. the version string is at least as long as "0.0.0.0",
-  // and starts and ends with numeric digits. This is to prevent another
-  // regression like http://crbug.com/595471.
-  static_assert(arraysize(PRODUCT_VERSION) >= arraysize("0.0.0.0") &&
-                    '0' <= PRODUCT_VERSION[0] && PRODUCT_VERSION[0] <= '9' &&
-                    '0' <= PRODUCT_VERSION[arraysize(PRODUCT_VERSION) - 2] &&
-                    PRODUCT_VERSION[arraysize(PRODUCT_VERSION) - 2] <= '9',
-                "PRODUCT_VERSION must be a string of the form "
-                "'MAJOR.MINOR.BUILD.PATCH', e.g. '1.2.3.4'. "
-                "PRODUCT_VERSION='" PRODUCT_VERSION "' is badly formed.");
-
-  return PRODUCT_VERSION;
-}
-
-// Returns the build and patch numbers of |version_string|. |version_string|
-// must be a properly formed Chromium version number, e.g. "1.2.3.4".
-void GetChromiumBuildAndPatch(const std::string& version_string,
-                              std::string* build,
-                              std::string* patch) {
-  base::Version version(version_string);
-  DCHECK(version.IsValid());
-  DCHECK_EQ(4U, version.components().size());
-
-  *build = base::Uint64ToString(version.components()[2]);
-  *patch = base::Uint64ToString(version.components()[3]);
-}
-
-#define CLIENT_ENUM(name, str_value) \
-  case name:                         \
-    return str_value;
-const char* GetString(Client client) {
-  switch (client) { CLIENT_ENUMS_LIST }
-  NOTREACHED();
-  return "";
-}
-#undef CLIENT_ENUM
 
 }  // namespace
 
@@ -107,17 +64,19 @@ bool DataReductionProxyRequestOptions::IsKeySetOnCommandLine() {
 DataReductionProxyRequestOptions::DataReductionProxyRequestOptions(
     Client client,
     DataReductionProxyConfig* config)
-    : DataReductionProxyRequestOptions(client, ChromiumVersion(), config) {}
+    : DataReductionProxyRequestOptions(client,
+                                       util::ChromiumVersion(),
+                                       config) {}
 
 DataReductionProxyRequestOptions::DataReductionProxyRequestOptions(
     Client client,
     const std::string& version,
     DataReductionProxyConfig* config)
-    : client_(GetString(client)),
+    : client_(util::GetStringForClient(client)),
       use_assigned_credentials_(false),
       data_reduction_proxy_config_(config) {
   DCHECK(data_reduction_proxy_config_);
-  GetChromiumBuildAndPatch(version, &build_, &patch_);
+  util::GetChromiumBuildAndPatch(version, &build_, &patch_);
   // Constructed on the UI thread, but should be checked on the IO thread.
   thread_checker_.DetachFromThread();
 }

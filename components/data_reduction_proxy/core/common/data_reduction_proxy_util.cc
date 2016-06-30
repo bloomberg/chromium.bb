@@ -4,7 +4,10 @@
 
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_util.h"
 
+#include "base/strings/string_number_conversions.h"
 #include "base/time/time.h"
+#include "base/version.h"
+#include "components/data_reduction_proxy/core/common/version.h"
 #include "net/base/url_util.h"
 #include "net/proxy/proxy_config.h"
 #include "net/proxy/proxy_info.h"
@@ -24,6 +27,67 @@ const char kApiKeyName[] = "key";
 }  // namespace
 
 namespace util {
+
+const char* ChromiumVersion() {
+  // Assert at compile time that the Chromium version is at least somewhat
+  // properly formed, e.g. the version string is at least as long as "0.0.0.0",
+  // and starts and ends with numeric digits. This is to prevent another
+  // regression like http://crbug.com/595471.
+  static_assert(arraysize(PRODUCT_VERSION) >= arraysize("0.0.0.0") &&
+                    '0' <= PRODUCT_VERSION[0] && PRODUCT_VERSION[0] <= '9' &&
+                    '0' <= PRODUCT_VERSION[arraysize(PRODUCT_VERSION) - 2] &&
+                    PRODUCT_VERSION[arraysize(PRODUCT_VERSION) - 2] <= '9',
+                "PRODUCT_VERSION must be a string of the form "
+                "'MAJOR.MINOR.BUILD.PATCH', e.g. '1.2.3.4'. "
+                "PRODUCT_VERSION='" PRODUCT_VERSION "' is badly formed.");
+
+  return PRODUCT_VERSION;
+}
+
+void GetChromiumBuildAndPatch(const std::string& version_string,
+                              std::string* build,
+                              std::string* patch) {
+  base::Version version(version_string);
+  DCHECK(version.IsValid());
+  DCHECK_EQ(4U, version.components().size());
+
+  *build = base::Uint64ToString(version.components()[2]);
+  *patch = base::Uint64ToString(version.components()[3]);
+}
+
+const char* GetStringForClient(Client client) {
+  switch (client) {
+    case Client::UNKNOWN:
+      return "";
+    case Client::CRONET_ANDROID:
+      return "cronet";
+    case Client::WEBVIEW_ANDROID:
+      return "webview";
+    case Client::CHROME_ANDROID:
+      return "android";
+    case Client::CHROME_IOS:
+      return "ios";
+    case Client::CHROME_MAC:
+      return "mac";
+    case Client::CHROME_CHROMEOS:
+      return "chromeos";
+    case Client::CHROME_LINUX:
+      return "linux";
+    case Client::CHROME_WINDOWS:
+      return "win";
+    case Client::CHROME_FREEBSD:
+      return "freebsd";
+    case Client::CHROME_OPENBSD:
+      return "openbsd";
+    case Client::CHROME_SOLARIS:
+      return "solaris";
+    case Client::CHROME_QNX:
+      return "qnx";
+    default:
+      NOTREACHED();
+      return "";
+  }
+}
 
 bool IsMethodIdempotent(const std::string& method) {
   return method == "GET" || method == "OPTIONS" || method == "HEAD" ||

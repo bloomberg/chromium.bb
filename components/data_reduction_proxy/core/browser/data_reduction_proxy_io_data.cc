@@ -90,7 +90,7 @@ BasicHTTPURLRequestContextGetter::~BasicHTTPURLRequestContextGetter() {
 }
 
 DataReductionProxyIOData::DataReductionProxyIOData(
-    const Client& client,
+    Client client,
     int param_flags,
     net::NetLog* net_log,
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
@@ -115,7 +115,7 @@ DataReductionProxyIOData::DataReductionProxyIOData(
   configurator_.reset(
       new DataReductionProxyConfigurator(net_log, event_creator_.get()));
   bool use_config_client =
-      params::IsConfigClientEnabled() && client_ != CRONET_ANDROID;
+      params::IsConfigClientEnabled() && client_ != Client::CRONET_ANDROID;
   DataReductionProxyMutableConfigValues* raw_mutable_config = nullptr;
   if (use_config_client) {
     std::unique_ptr<DataReductionProxyMutableConfigValues> mutable_config =
