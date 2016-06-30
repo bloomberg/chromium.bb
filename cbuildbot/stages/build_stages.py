@@ -427,6 +427,14 @@ class BuildImageStage(BuildPackagesStage):
         else:
           logging.warning('Missing image file skipped: %s', image_bin)
 
+  def _UpdateBuildImageMetadata(self):
+    fp_file = 'cheets-fingerprint.txt'
+    fp_path = os.path.join(self.GetImageDirSymlink('latest'), fp_file)
+    if os.path.isfile(fp_path):
+      self._run.attrs.metadata.UpdateBoardDictWithDict(self._current_board, {
+          'fingerprints': osutils.ReadFile(fp_path).splitlines(),
+      })
+
   def _HandleStageException(self, exc_info):
     """Tell other stages to not wait on us if we die for some reason."""
     self.board_runattrs.SetParallelDefault('images_generated', False)
@@ -434,6 +442,7 @@ class BuildImageStage(BuildPackagesStage):
 
   def PerformStage(self):
     self._BuildImages()
+    self._UpdateBuildImageMetadata()
 
 
 class UprevStage(generic_stages.BuilderStage):
