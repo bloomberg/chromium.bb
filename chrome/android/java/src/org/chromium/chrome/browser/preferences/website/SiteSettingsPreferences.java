@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.preferences.website;
 
+import android.graphics.PorterDuff;
 import android.os.Build;
 import android.os.Bundle;
 import android.preference.Preference;
@@ -217,8 +218,8 @@ public class SiteSettingsPreferences extends PreferenceFragment
                     && DataReductionProxySettings.getInstance().isDataReductionProxyEnabled()) {
                 p.setSummary(ContentSettingsResources.getAutoplayDisabledByDataSaverSummary());
                 p.setEnabled(false);
-                p.getIcon().setTintList(ApiCompatibilityUtils.getColorStateList(getResources(),
-                        R.color.primary_text_disabled_material_light));
+                p.getIcon().setColorFilter(ApiCompatibilityUtils.getColor(getResources(),
+                        R.color.primary_text_disabled_material_light), PorterDuff.Mode.SRC_IN);
             } else if (COOKIES_KEY.equals(prefName) && checked
                     && prefServiceBridge.isBlockThirdPartyCookiesEnabled()) {
                 p.setSummary(ContentSettingsResources.getCookieAllowedExceptThirdPartySummary());
