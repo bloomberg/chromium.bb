@@ -20,7 +20,7 @@
 #include "build/build_config.h"
 #include "media/base/audio_buffer.h"
 #include "media/base/audio_buffer_converter.h"
-#include "media/base/audio_hardware_config.h"
+#include "media/base/audio_latency.h"
 #include "media/base/audio_splicer.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/demuxer_stream.h"
@@ -442,7 +442,7 @@ void AudioRendererImpl::Initialize(DemuxerStream* stream,
 
     audio_parameters_.Reset(hw_params.format(), renderer_channel_layout,
                             sample_rate, hw_params.bits_per_sample(),
-                            AudioHardwareConfig::GetHighLatencyBufferSize(
+                            media::AudioLatency::GetHighLatencyBufferSize(
                                 sample_rate, preferred_buffer_size));
   }
 

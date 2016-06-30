@@ -22,6 +22,7 @@
 #include "base/macros.h"
 #include "base/synchronization/lock.h"
 #include "media/base/audio_converter.h"
+#include "media/base/audio_latency.h"
 #include "media/base/audio_renderer_sink.h"
 #include "url/origin.h"
 
@@ -37,7 +38,8 @@ class MEDIA_EXPORT AudioRendererMixerInput
   AudioRendererMixerInput(AudioRendererMixerPool* mixer_pool,
                           int owner_id,
                           const std::string& device_id,
-                          const url::Origin& security_origin);
+                          const url::Origin& security_origin,
+                          AudioLatency::LatencyType latency);
 
   // SwitchableAudioRendererSink implementation.
   void Start() override;
@@ -86,6 +88,7 @@ class MEDIA_EXPORT AudioRendererMixerInput
   const int owner_id_;
   std::string device_id_;  // ID of hardware device to use
   url::Origin security_origin_;
+  const AudioLatency::LatencyType latency_;
 
   // AudioRendererMixer obtained from mixer pool during Initialize(),
   // guaranteed to live (at least) until it is returned to the pool.

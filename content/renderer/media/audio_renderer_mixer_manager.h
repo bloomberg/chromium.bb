@@ -5,6 +5,7 @@
 #ifndef CONTENT_RENDERER_MEDIA_AUDIO_RENDERER_MIXER_MANAGER_H_
 #define CONTENT_RENDERER_MEDIA_AUDIO_RENDERER_MIXER_MANAGER_H_
 
+#include <bitset>
 #include <map>
 #include <memory>
 #include <string>
@@ -13,6 +14,7 @@
 #include "base/synchronization/lock.h"
 #include "content/common/content_export.h"
 #include "media/audio/audio_device_description.h"
+#include "media/base/audio_latency.h"
 #include "media/base/audio_parameters.h"
 #include "media/base/audio_renderer_mixer_pool.h"
 #include "media/base/output_device_info.h"
@@ -61,21 +63,20 @@ class CONTENT_EXPORT AudioRendererMixerManager
       int source_render_frame_id,
       int session_id,
       const std::string& device_id,
-      const url::Origin& security_origin);
+      const url::Origin& security_origin,
+      media::AudioLatency::LatencyType latency);
 
   // AudioRendererMixerPool implementation.
 
   media::AudioRendererMixer* GetMixer(
       int source_render_frame_id,
-      const media::AudioParameters& params,
+      const media::AudioParameters& input_params,
+      media::AudioLatency::LatencyType latency,
       const std::string& device_id,
       const url::Origin& security_origin,
       media::OutputDeviceStatus* device_status) final;
 
-  void ReturnMixer(int source_render_frame_id,
-                   const media::AudioParameters& params,
-                   const std::string& device_id,
-                   const url::Origin& security_origin) final;
+  void ReturnMixer(media::AudioRendererMixer* mixer) final;
 
   media::OutputDeviceInfo GetOutputDeviceInfo(
       int source_render_frame_id,
@@ -95,11 +96,13 @@ class CONTENT_EXPORT AudioRendererMixerManager
   struct MixerKey {
     MixerKey(int source_render_frame_id,
              const media::AudioParameters& params,
+             media::AudioLatency::LatencyType latency,
              const std::string& device_id,
              const url::Origin& security_origin);
     MixerKey(const MixerKey& other);
     int source_render_frame_id;
     media::AudioParameters params;
+    media::AudioLatency::LatencyType latency;
     std::string device_id;
     url::Origin security_origin;
   };
@@ -112,6 +115,13 @@ class CONTENT_EXPORT AudioRendererMixerManager
         return a.source_render_frame_id < b.source_render_frame_id;
       if (a.params.channels() != b.params.channels())
         return a.params.channels() < b.params.channels();
+
+      if (a.latency != b.latency)
+        return a.latency < b.latency;
+
+      // TODO(olka) add buffer duration comparison for LATENCY_EXACT_MS when
+      // adding support for it.
+      DCHECK_NE(media::AudioLatency::LATENCY_EXACT_MS, a.latency);
 
       // Ignore effects(), bits_per_sample(), format(), and frames_per_buffer(),
       // these parameters do not affect mixer reuse.  All AudioRendererMixer
@@ -153,6 +163,10 @@ class CONTENT_EXPORT AudioRendererMixerManager
 
   // Mixer sink cache.
   const std::unique_ptr<AudioRendererSinkCache> sink_cache_;
+
+  // Map of the output latencies encountered throughout mixer manager lifetime.
+  // Used for UMA histogram logging.
+  std::bitset<media::AudioLatency::LATENCY_COUNT> latency_map_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioRendererMixerManager);
 };

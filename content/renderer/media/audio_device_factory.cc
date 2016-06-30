@@ -14,6 +14,7 @@
 #include "content/renderer/render_thread_impl.h"
 #include "media/audio/audio_input_device.h"
 #include "media/audio/audio_output_device.h"
+#include "media/base/audio_latency.h"
 #include "media/base/audio_renderer_mixer_input.h"
 #include "url/origin.h"
 
@@ -24,6 +25,26 @@ AudioDeviceFactory* AudioDeviceFactory::factory_ = NULL;
 
 namespace {
 const int64_t kMaxAuthorizationTimeoutMs = 900;
+
+media::AudioLatency::LatencyType GetSourceLatencyType(
+    AudioDeviceFactory::SourceType source) {
+  switch (source) {
+    case AudioDeviceFactory::kSourceWebAudioInteractive:
+      return media::AudioLatency::LATENCY_INTERACTIVE;
+    case AudioDeviceFactory::kSourceNone:
+    case AudioDeviceFactory::kSourceWebRtc:
+    case AudioDeviceFactory::kSourceNonRtcAudioTrack:
+    case AudioDeviceFactory::kSourceWebAudioBalanced:
+      return media::AudioLatency::LATENCY_RTC;
+    case AudioDeviceFactory::kSourceMediaElement:
+    case AudioDeviceFactory::kSourceWebAudioPlayback:
+      return media::AudioLatency::LATENCY_PLAYBACK;
+    case AudioDeviceFactory::kSourceWebAudioExact:
+      return media::AudioLatency::LATENCY_EXACT_MS;
+  }
+  NOTREACHED();
+  return media::AudioLatency::LATENCY_INTERACTIVE;
+}
 
 scoped_refptr<media::AudioOutputDevice> NewOutputDevice(
     int render_frame_id,
@@ -54,6 +75,7 @@ bool IsMixable(AudioDeviceFactory::SourceType source_type) {
 }
 
 scoped_refptr<media::SwitchableAudioRendererSink> NewMixableSink(
+    AudioDeviceFactory::SourceType source_type,
     int render_frame_id,
     int session_id,
     const std::string& device_id,
@@ -61,7 +83,8 @@ scoped_refptr<media::SwitchableAudioRendererSink> NewMixableSink(
   RenderThreadImpl* render_thread = RenderThreadImpl::current();
   return scoped_refptr<media::AudioRendererMixerInput>(
       render_thread->GetAudioRendererMixerManager()->CreateInput(
-          render_frame_id, session_id, device_id, security_origin));
+          render_frame_id, session_id, device_id, security_origin,
+          GetSourceLatencyType(source_type)));
 }
 
 }  // namespace
@@ -93,7 +116,7 @@ AudioDeviceFactory::NewAudioRendererSink(SourceType source_type,
   }
 
   if (IsMixable(source_type))
-    return NewMixableSink(render_frame_id, session_id, device_id,
+    return NewMixableSink(source_type, render_frame_id, session_id, device_id,
                           security_origin);
 
   return NewFinalAudioRendererSink(render_frame_id, session_id, device_id,
@@ -118,7 +141,7 @@ AudioDeviceFactory::NewSwitchableAudioRendererSink(
   }
 
   if (IsMixable(source_type))
-    return NewMixableSink(render_frame_id, session_id, device_id,
+    return NewMixableSink(source_type, render_frame_id, session_id, device_id,
                           security_origin);
 
   // AudioOutputDevice is not RestartableAudioRendererSink, so we can't return

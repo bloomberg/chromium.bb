@@ -73,10 +73,6 @@ class CONTENT_EXPORT WebRtcAudioRenderer
     float volume_;
   };
 
-
-  // Returns platform specific optimal buffer size for rendering audio.
-  static int GetOptimalBufferSize(int sample_rate, int hardware_buffer_size);
-
   WebRtcAudioRenderer(
       const scoped_refptr<base::SingleThreadTaskRunner>& signaling_thread,
       const blink::WebMediaStream& media_stream,

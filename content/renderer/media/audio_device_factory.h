@@ -32,14 +32,20 @@ namespace content {
 // AudioCapturerSourceFactory.
 class CONTENT_EXPORT AudioDeviceFactory {
  public:
-  // Types of audio sources.
+  // Types of audio sources. Each source can have individual mixing and/or
+  // latency requirements for output. The source is specified by the client when
+  // requesting output sink from the factory, and the factory creates the output
+  // sink basing on those requirements.
   enum SourceType {
     kSourceNone = 0,
     kSourceMediaElement,
     kSourceWebRtc,
     kSourceNonRtcAudioTrack,
-    kSourceWebAudio,
-    kSourceLast = kSourceWebAudio  // Only used for validation of format.
+    kSourceWebAudioInteractive,
+    kSourceWebAudioBalanced,
+    kSourceWebAudioPlayback,
+    kSourceWebAudioExact,
+    kSourceLast = kSourceWebAudioExact  // Only used for validation of format.
   };
 
   // Creates a sink for AudioRendererMixer.

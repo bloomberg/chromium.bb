@@ -21084,6 +21084,65 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Media.Audio.Render.AudioInputsPerMixer.LatencyExact"
+    units="inputs">
+  <owner>olka@chromium.org</owner>
+  <summary>
+    Number of simultaneous inputs coming to the AudioRendererMixer which renders
+    audio with user specified latency. The value is logged each time it reaches
+    a new maximum for the mixer. It is useful for evaluating how mixing audio in
+    renderer reduces the number of output audio streams going from the renderer
+    to the browser.
+  </summary>
+</histogram>
+
+<histogram name="Media.Audio.Render.AudioInputsPerMixer.LatencyInteractive"
+    units="inputs">
+  <owner>olka@chromium.org</owner>
+  <summary>
+    Number of simultaneous inputs coming to the AudioRendererMixer which renders
+    audio with interactive latency. The value is logged each time it reaches a
+    new maximum for the mixer. It is useful for evaluating how mixing audio in
+    renderer reduces the number of output audio streams going from the renderer
+    to the browser.
+  </summary>
+</histogram>
+
+<histogram name="Media.Audio.Render.AudioInputsPerMixer.LatencyPlayback"
+    units="inputs">
+  <owner>olka@chromium.org</owner>
+  <summary>
+    Number of simultaneous inputs coming to the AudioRendererMixer which renders
+    audio with playback latency. The value is logged each time it reaches a new
+    maximum for the mixer. It is useful for evaluating how mixing audio in
+    renderer reduces the number of output audio streams going from the renderer
+    to the browser.
+  </summary>
+</histogram>
+
+<histogram name="Media.Audio.Render.AudioInputsPerMixer.LatencyRtc"
+    units="inputs">
+  <owner>olka@chromium.org</owner>
+  <summary>
+    Number of simultaneous inputs coming to the AudioRendererMixer which renders
+    audio with real time latency. The value is logged each time it reaches a new
+    maximum for the mixer. It is useful for evaluating how mixing audio in
+    renderer reduces the number of output audio streams going from the renderer
+    to the browser.
+  </summary>
+</histogram>
+
+<histogram name="Media.Audio.Render.AudioMixing.LatencyMap" units="subsets">
+  <owner>olka@chromium.org</owner>
+  <summary>
+    Subset of audio output latencies encountered by the renderer so far. Logged
+    each time an audio output with a new latency starts playing. The values are
+    bitsets where each bit represents corresponding latency according to
+    AudioLatency::LatencyType. Useful for understanding usecases for audio
+    output mixing in renderer.
+  </summary>
+</histogram>
+
 <histogram name="Media.Audio.Render.FramesRequested" units="frames">
   <owner>tommi@chromium.org</owner>
   <summary>

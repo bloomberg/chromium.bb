@@ -20,6 +20,7 @@
 #include "content/renderer/media/webrtc_logging.h"
 #include "media/audio/sample_rates.h"
 #include "media/base/audio_capturer_source.h"
+#include "media/base/audio_latency.h"
 #include "media/base/audio_parameters.h"
 #include "third_party/WebKit/public/platform/WebMediaStreamTrack.h"
 #include "third_party/webrtc/api/mediastreaminterface.h"
@@ -151,39 +152,6 @@ class SharedAudioRenderer : public MediaStreamAudioRenderer {
 };
 
 }  // namespace
-
-int WebRtcAudioRenderer::GetOptimalBufferSize(int sample_rate,
-                                              int hardware_buffer_size) {
-  // Use native hardware buffer size as default. On Windows, we strive to open
-  // up using this native hardware buffer size to achieve best
-  // possible performance and to ensure that no FIFO is needed on the browser
-  // side to match the client request. That is why there is no #if case for
-  // Windows below.
-  int frames_per_buffer = hardware_buffer_size;
-
-#if defined(OS_LINUX) || defined(OS_MACOSX)
-  // On Linux and MacOS, the low level IO implementations on the browser side
-  // supports all buffer size the clients want. We use the native peer
-  // connection buffer size (10ms) to achieve best possible performance.
-  frames_per_buffer = sample_rate / 100;
-#elif defined(OS_ANDROID)
-  // TODO(henrika): Keep tuning this scheme and espcicially for low-latency
-  // cases. Might not be possible to come up with the perfect solution using
-  // the render side only.
-  int frames_per_10ms = sample_rate / 100;
-  if (frames_per_buffer < 2 * frames_per_10ms) {
-    // Examples of low-latency frame sizes and the resulting |buffer_size|:
-    //  Nexus 7     : 240 audio frames => 2*480 = 960
-    //  Nexus 10    : 256              => 2*441 = 882
-    //  Galaxy Nexus: 144              => 2*441 = 882
-    frames_per_buffer = 2 * frames_per_10ms;
-    DVLOG(1) << "Low-latency output detected on Android";
-  }
-#endif
-
-  DVLOG(1) << "Using sink output buffer size: " << frames_per_buffer;
-  return frames_per_buffer;
-}
 
 WebRtcAudioRenderer::WebRtcAudioRenderer(
     const scoped_refptr<base::SingleThreadTaskRunner>& signaling_thread,
@@ -655,7 +623,7 @@ void WebRtcAudioRenderer::PrepareSink() {
   DVLOG(1) << "Using WebRTC output buffer size: " << source_frames_per_buffer;
 
   // Setup sink parameters.
-  const int sink_frames_per_buffer = GetOptimalBufferSize(
+  const int sink_frames_per_buffer = media::AudioLatency::GetRtcBufferSize(
       sample_rate, device_info.output_params().frames_per_buffer());
   new_sink_params.set_sample_rate(sample_rate);
   new_sink_params.set_frames_per_buffer(sink_frames_per_buffer);

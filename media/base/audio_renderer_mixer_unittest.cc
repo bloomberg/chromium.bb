@@ -25,6 +25,10 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+namespace {
+void LogUma(int value) {}
+}
+
 namespace media {
 
 // Parameters which control the many input case tests.
@@ -74,7 +78,8 @@ class AudioRendererMixerTest
     EXPECT_CALL(*sink_.get(), Start());
     EXPECT_CALL(*sink_.get(), Stop());
 
-    mixer_.reset(new AudioRendererMixer(output_parameters_, sink_));
+    mixer_.reset(
+        new AudioRendererMixer(output_parameters_, sink_, base::Bind(&LogUma)));
     mixer_callback_ = sink_->callback();
 
     audio_bus_ = AudioBus::Create(output_parameters_);
@@ -88,17 +93,14 @@ class AudioRendererMixerTest
 
   AudioRendererMixer* GetMixer(int owner_id,
                                const AudioParameters& params,
+                               AudioLatency::LatencyType latency,
                                const std::string& device_id,
                                const url::Origin& security_origin,
                                OutputDeviceStatus* device_status) final {
     return mixer_.get();
   };
 
-  MOCK_METHOD4(ReturnMixer,
-               void(int,
-                    const AudioParameters&,
-                    const std::string&,
-                    const url::Origin&));
+  MOCK_METHOD1(ReturnMixer, void(AudioRendererMixer*));
 
   MOCK_METHOD4(
       GetOutputDeviceInfo,
@@ -333,7 +335,7 @@ class AudioRendererMixerTest
     return new AudioRendererMixerInput(
         this,
         // Zero frame id, default device ID and security origin.
-        0, std::string(), url::Origin());
+        0, std::string(), url::Origin(), AudioLatency::LATENCY_PLAYBACK);
   }
 
  protected:

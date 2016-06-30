@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "media/base/audio_latency.h"
 #include "media/base/output_device_info.h"
 
 namespace url {
@@ -29,16 +30,14 @@ class MEDIA_EXPORT AudioRendererMixerPool {
   // ReturnMixer().
   virtual AudioRendererMixer* GetMixer(int owner_id,
                                        const AudioParameters& params,
+                                       AudioLatency::LatencyType latency,
                                        const std::string& device_id,
                                        const url::Origin& security_origin,
                                        OutputDeviceStatus* device_status) = 0;
 
   // Returns mixer back to the pool, must be called when the mixer is not needed
   // any more to avoid memory leakage.
-  virtual void ReturnMixer(int owner_id,
-                           const AudioParameters& params,
-                           const std::string& device_id,
-                           const url::Origin& security_origin) = 0;
+  virtual void ReturnMixer(AudioRendererMixer* mixer) = 0;
 
   // Returns output device information
   virtual OutputDeviceInfo GetOutputDeviceInfo(

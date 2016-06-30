@@ -4,17 +4,108 @@
 
 #include "content/renderer/media/audio_renderer_mixer_manager.h"
 
+#include <algorithm>
 #include <string>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/memory/ptr_util.h"
+#include "base/metrics/histogram_macros.h"
+#include "base/metrics/sparse_histogram.h"
 #include "build/build_config.h"
 #include "content/renderer/media/audio_renderer_sink_cache.h"
 #include "media/audio/audio_device_description.h"
 #include "media/base/audio_hardware_config.h"
 #include "media/base/audio_renderer_mixer.h"
 #include "media/base/audio_renderer_mixer_input.h"
+
+namespace {
+// Calculate mixer output parameters based on mixer input parameters and
+// hardware parameters for audio output.
+media::AudioParameters GetMixerOutputParams(
+    const media::AudioParameters& input_params,
+    const media::AudioParameters& hardware_params,
+    media::AudioLatency::LatencyType latency) {
+  int output_sample_rate = input_params.sample_rate();
+  bool valid_not_fake_hardware_params =
+      hardware_params.format() != media::AudioParameters::AUDIO_FAKE &&
+      hardware_params.IsValid();
+  int preferred_high_latency_output_buffer_size = 0;
+
+#if !defined(OS_CHROMEOS)
+  // On ChromeOS as well as when a fake device is used, we can rely on the
+  // playback device to handle resampling, so don't waste cycles on it here.
+  // On other systems if hardware parameters are valid and the device is not
+  // fake, resample to hardware sample rate. Otherwise, pass the input one and
+  // let the browser side handle automatic fallback.
+  if (valid_not_fake_hardware_params) {
+    output_sample_rate = hardware_params.sample_rate();
+    preferred_high_latency_output_buffer_size =
+        hardware_params.frames_per_buffer();
+  }
+#endif
+
+  int output_buffer_size = 0;
+
+  // Adjust output buffer size according to the latency requirement.
+  switch (latency) {
+    case media::AudioLatency::LATENCY_INTERACTIVE:
+      output_buffer_size = media::AudioLatency::GetInteractiveBufferSize(
+          hardware_params.frames_per_buffer());
+      break;
+    case media::AudioLatency::LATENCY_RTC:
+      output_buffer_size = media::AudioLatency::GetRtcBufferSize(
+          output_sample_rate, valid_not_fake_hardware_params
+                                  ? hardware_params.frames_per_buffer()
+                                  : 0);
+      break;
+    case media::AudioLatency::LATENCY_PLAYBACK:
+      output_buffer_size = media::AudioLatency::GetHighLatencyBufferSize(
+          output_sample_rate, preferred_high_latency_output_buffer_size);
+      break;
+    case media::AudioLatency::LATENCY_EXACT_MS:
+    // TODO(olka): add support when WebAudio requires it.
+    default:
+      NOTREACHED();
+  }
+
+  DCHECK_NE(output_buffer_size, 0);
+
+  // Force to 16-bit output for now since we know that works everywhere;
+  // ChromeOS does not support other bit depths.
+  return media::AudioParameters(input_params.format(),
+                                input_params.channel_layout(),
+                                output_sample_rate, 16, output_buffer_size);
+}
+
+void LogMixerUmaHistogram(media::AudioLatency::LatencyType latency, int value) {
+  switch (latency) {
+    case media::AudioLatency::LATENCY_EXACT_MS:
+      UMA_HISTOGRAM_CUSTOM_COUNTS(
+          "Media.Audio.Render.AudioInputsPerMixer.LatencyExact", value, 1, 20,
+          21);
+      return;
+    case media::AudioLatency::LATENCY_INTERACTIVE:
+      UMA_HISTOGRAM_CUSTOM_COUNTS(
+          "Media.Audio.Render.AudioInputsPerMixer.LatencyInteractive", value, 1,
+          20, 21);
+      return;
+    case media::AudioLatency::LATENCY_RTC:
+      UMA_HISTOGRAM_CUSTOM_COUNTS(
+          "Media.Audio.Render.AudioInputsPerMixer.LatencyRtc", value, 1, 20,
+          21);
+      return;
+    case media::AudioLatency::LATENCY_PLAYBACK:
+      UMA_HISTOGRAM_CUSTOM_COUNTS(
+          "Media.Audio.Render.AudioInputsPerMixer.LatencyPlayback", value, 1,
+          20, 21);
+      return;
+    default:
+      NOTREACHED();
+  }
+}
+
+}  // namespace
 
 namespace content {
 
@@ -40,7 +131,8 @@ media::AudioRendererMixerInput* AudioRendererMixerManager::CreateInput(
     int source_render_frame_id,
     int session_id,
     const std::string& device_id,
-    const url::Origin& security_origin) {
+    const url::Origin& security_origin,
+    media::AudioLatency::LatencyType latency) {
   // AudioRendererMixerManager lives on the renderer thread and is destroyed on
   // renderer thread destruction, so it's safe to pass its pointer to a mixer
   // input.
@@ -52,21 +144,35 @@ media::AudioRendererMixerInput* AudioRendererMixerManager::CreateInput(
                                 security_origin)
                 .device_id()
           : device_id,
-      security_origin);
+      security_origin, latency);
 }
 
 media::AudioRendererMixer* AudioRendererMixerManager::GetMixer(
     int source_render_frame_id,
-    const media::AudioParameters& params,
+    const media::AudioParameters& input_params,
+    media::AudioLatency::LatencyType latency,
     const std::string& device_id,
     const url::Origin& security_origin,
     media::OutputDeviceStatus* device_status) {
   // Effects are not passed through to output creation, so ensure none are set.
-  DCHECK_EQ(params.effects(), media::AudioParameters::NO_EFFECTS);
+  DCHECK_EQ(input_params.effects(), media::AudioParameters::NO_EFFECTS);
 
-  const MixerKey key(source_render_frame_id, params, device_id,
+  const MixerKey key(source_render_frame_id, input_params, latency, device_id,
                      security_origin);
   base::AutoLock auto_lock(mixers_lock_);
+
+  // Update latency map when the mixer is requested, i.e. there is an attempt to
+  // mix and output audio with a given latency. This is opposite to
+  // CreateInput() which creates a sink which is probably never used for output.
+  if (!latency_map_[latency]) {
+    latency_map_[latency] = 1;
+    // Log the updated latency map. This can't be done once in the end of the
+    // renderer lifetime, because the destructor is usually not called. So,
+    // we'll have a sort of exponential scale here, with a smaller subset
+    // logged both on its own and as a part of any larger subset.
+    UMA_HISTOGRAM_SPARSE_SLOWLY("Media.Audio.Render.AudioMixing.LatencyMap",
+                                latency_map_.to_ulong());
+  }
 
   AudioRendererMixerMap::iterator it = mixers_.find(key);
   if (it != mixers_.end()) {
@@ -74,6 +180,7 @@ media::AudioRendererMixer* AudioRendererMixerManager::GetMixer(
       *device_status = media::OUTPUT_DEVICE_STATUS_OK;
 
     it->second.ref_count++;
+    DVLOG(1) << "Reusing mixer: " << it->second.mixer;
     return it->second.mixer;
   }
 
@@ -89,50 +196,25 @@ media::AudioRendererMixer* AudioRendererMixerManager::GetMixer(
     return nullptr;
   }
 
-  // On ChromeOS as well as when a fake device is used, we can rely on the
-  // playback device to handle resampling, so don't waste cycles on it here.
-  int sample_rate = params.sample_rate();
-  int buffer_size =
-      media::AudioHardwareConfig::GetHighLatencyBufferSize(sample_rate, 0);
-
-#if !defined(OS_CHROMEOS)
-  const media::AudioParameters& hardware_params = device_info.output_params();
-
-  // If we have valid, non-fake hardware parameters, use them.  Otherwise, pass
-  // on the input params and let the browser side handle automatic fallback.
-  if (hardware_params.format() != media::AudioParameters::AUDIO_FAKE &&
-      hardware_params.IsValid()) {
-    sample_rate = hardware_params.sample_rate();
-    buffer_size = media::AudioHardwareConfig::GetHighLatencyBufferSize(
-        sample_rate, hardware_params.frames_per_buffer());
-  }
-#endif
-
-  // Create output parameters based on the audio hardware configuration for
-  // passing on to the output sink.  Force to 16-bit output for now since we
-  // know that works everywhere; ChromeOS does not support other bit depths.
-  media::AudioParameters output_params(
-      media::AudioParameters::AUDIO_PCM_LOW_LATENCY, params.channel_layout(),
-      sample_rate, 16, buffer_size);
-  DCHECK(output_params.IsValid());
-
-  media::AudioRendererMixer* mixer =
-      new media::AudioRendererMixer(output_params, sink);
+  const media::AudioParameters& mixer_output_params =
+      GetMixerOutputParams(input_params, device_info.output_params(), latency);
+  media::AudioRendererMixer* mixer = new media::AudioRendererMixer(
+      mixer_output_params, sink, base::Bind(LogMixerUmaHistogram, latency));
   AudioRendererMixerReference mixer_reference = {mixer, 1, sink.get()};
   mixers_[key] = mixer_reference;
+  DVLOG(1) << __FUNCTION__ << " mixer: " << mixer << " latency: " << latency
+           << "\n input: " << input_params.AsHumanReadableString()
+           << "\noutput: " << mixer_output_params.AsHumanReadableString();
   return mixer;
 }
 
-void AudioRendererMixerManager::ReturnMixer(
-    int source_render_frame_id,
-    const media::AudioParameters& params,
-    const std::string& device_id,
-    const url::Origin& security_origin) {
-  const MixerKey key(source_render_frame_id, params, device_id,
-                     security_origin);
+void AudioRendererMixerManager::ReturnMixer(media::AudioRendererMixer* mixer) {
   base::AutoLock auto_lock(mixers_lock_);
-
-  AudioRendererMixerMap::iterator it = mixers_.find(key);
+  AudioRendererMixerMap::iterator it = std::find_if(
+      mixers_.begin(), mixers_.end(),
+      [mixer](const std::pair<MixerKey, AudioRendererMixerReference>& val) {
+        return val.second.mixer == mixer;
+      });
   DCHECK(it != mixers_.end());
 
   // Only remove the mixer if AudioRendererMixerManager is the last owner.
@@ -157,10 +239,12 @@ media::OutputDeviceInfo AudioRendererMixerManager::GetOutputDeviceInfo(
 AudioRendererMixerManager::MixerKey::MixerKey(
     int source_render_frame_id,
     const media::AudioParameters& params,
+    media::AudioLatency::LatencyType latency,
     const std::string& device_id,
     const url::Origin& security_origin)
     : source_render_frame_id(source_render_frame_id),
       params(params),
+      latency(latency),
       device_id(device_id),
       security_origin(security_origin) {}
 

@@ -17,7 +17,8 @@ AudioRendererMixerInput::AudioRendererMixerInput(
     AudioRendererMixerPool* mixer_pool,
     int owner_id,
     const std::string& device_id,
-    const url::Origin& security_origin)
+    const url::Origin& security_origin,
+    AudioLatency::LatencyType latency)
     : mixer_pool_(mixer_pool),
       started_(false),
       playing_(false),
@@ -25,6 +26,7 @@ AudioRendererMixerInput::AudioRendererMixerInput(
       owner_id_(owner_id),
       device_id_(device_id),
       security_origin_(security_origin),
+      latency_(latency),
       mixer_(nullptr),
       callback_(nullptr),
       error_cb_(base::Bind(&AudioRendererMixerInput::OnRenderError,
@@ -54,7 +56,7 @@ void AudioRendererMixerInput::Start() {
   DCHECK(callback_);  // Initialized.
 
   started_ = true;
-  mixer_ = mixer_pool_->GetMixer(owner_id_, params_, device_id_,
+  mixer_ = mixer_pool_->GetMixer(owner_id_, params_, latency_, device_id_,
                                  security_origin_, nullptr);
   if (!mixer_) {
     callback_->OnRenderError();
@@ -81,7 +83,7 @@ void AudioRendererMixerInput::Stop() {
     // Stop() by an error event since it may outlive this ref-counted object. We
     // should instead have sane ownership semantics: http://crbug.com/151051
     mixer_->RemoveErrorCallback(error_cb_);
-    mixer_pool_->ReturnMixer(owner_id_, params_, device_id_, security_origin_);
+    mixer_pool_->ReturnMixer(mixer_);
     mixer_ = nullptr;
   }
 
@@ -149,8 +151,9 @@ void AudioRendererMixerInput::SwitchOutputDevice(
   }
 
   OutputDeviceStatus new_mixer_status = OUTPUT_DEVICE_STATUS_ERROR_INTERNAL;
-  AudioRendererMixer* new_mixer = mixer_pool_->GetMixer(
-      owner_id_, params_, device_id, security_origin, &new_mixer_status);
+  AudioRendererMixer* new_mixer =
+      mixer_pool_->GetMixer(owner_id_, params_, latency_, device_id,
+                            security_origin, &new_mixer_status);
   if (new_mixer_status != OUTPUT_DEVICE_STATUS_OK) {
     callback.Run(new_mixer_status);
     return;

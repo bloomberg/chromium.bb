@@ -88,42 +88,4 @@ TEST(AudioHardwareConfig, Setters) {
   EXPECT_EQ(kNewInputChannelLayout, fake_config.GetInputChannelLayout());
 }
 
-TEST(AudioHardwareConfig, HighLatencyBufferSizes) {
-  AudioParameters input_params(AudioParameters::AUDIO_PCM_LOW_LATENCY,
-                               kInputChannelLayout,
-                               kInputSampleRate,
-                               16,
-                               kOutputBufferSize);
-  AudioParameters output_params(AudioParameters::AUDIO_PCM_LOW_LATENCY,
-                                kOutputChannelLayout,
-                                3200,
-                                16,
-                                32);
-  AudioHardwareConfig fake_config(input_params, output_params);
-
-#if defined(OS_WIN)
-  for (int i = 6400; i <= 204800; i *= 2) {
-    fake_config.UpdateOutputConfig(
-        AudioParameters(AudioParameters::AUDIO_PCM_LOW_LATENCY,
-                        kOutputChannelLayout,
-                        i,
-                        16,
-                        i / 100));
-    EXPECT_EQ(2 * (i / 100), fake_config.GetHighLatencyBufferSize());
-  }
-#else
-  EXPECT_EQ(64, fake_config.GetHighLatencyBufferSize());
-
-  for (int i = 6400; i <= 204800; i *= 2) {
-    fake_config.UpdateOutputConfig(
-        AudioParameters(AudioParameters::AUDIO_PCM_LOW_LATENCY,
-                        kOutputChannelLayout,
-                        i,
-                        16,
-                        32));
-    EXPECT_EQ(2 * (i / 100), fake_config.GetHighLatencyBufferSize());
-  }
-#endif  // defined(OS_WIN)
-}
-
 }  // namespace content

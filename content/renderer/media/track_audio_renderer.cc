@@ -12,8 +12,8 @@
 #include "base/trace_event/trace_event.h"
 #include "content/renderer/media/audio_device_factory.h"
 #include "content/renderer/media/media_stream_audio_track.h"
-#include "content/renderer/media/webrtc_audio_renderer.h"
 #include "media/base/audio_bus.h"
+#include "media/base/audio_latency.h"
 #include "media/base/audio_shifter.h"
 
 namespace content {
@@ -311,7 +311,7 @@ void TrackAudioRenderer::MaybeStartSink() {
   media::AudioParameters sink_params(
       hardware_params.format(), source_params_.channel_layout(),
       source_params_.sample_rate(), source_params_.bits_per_sample(),
-      WebRtcAudioRenderer::GetOptimalBufferSize(
+      media::AudioLatency::GetRtcBufferSize(
           source_params_.sample_rate(), hardware_params.frames_per_buffer()));
   DVLOG(1) << ("TrackAudioRenderer::MaybeStartSink() -- Starting sink.  "
                "source_params_={")

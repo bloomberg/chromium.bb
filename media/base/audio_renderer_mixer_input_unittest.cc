@@ -9,6 +9,7 @@
 #include "base/bind_helpers.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
+#include "media/base/audio_latency.h"
 #include "media/base/audio_renderer_mixer.h"
 #include "media/base/audio_renderer_mixer_input.h"
 #include "media/base/audio_renderer_mixer_pool.h"
@@ -16,6 +17,10 @@
 #include "media/base/mock_audio_renderer_sink.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+namespace {
+void LogUma(int value) {}
+}
 
 namespace media {
 
@@ -44,11 +49,13 @@ class AudioRendererMixerInputTest : public testing::Test,
 
   void CreateMixerInput(const std::string& device_id) {
     mixer_input_ = new AudioRendererMixerInput(this, kRenderFrameId, device_id,
-                                               url::Origin());
+                                               url::Origin(),
+                                               AudioLatency::LATENCY_PLAYBACK);
   }
 
   AudioRendererMixer* GetMixer(int owner_id,
                                const AudioParameters& params,
+                               AudioLatency::LatencyType latency,
                                const std::string& device_id,
                                const url::Origin& security_origin,
                                OutputDeviceStatus* device_status) {
@@ -71,11 +78,10 @@ class AudioRendererMixerInputTest : public testing::Test,
       EXPECT_CALL(*(sinks_[idx].get()), Start());
       EXPECT_CALL(*(sinks_[idx].get()), Stop());
 
-      mixers_[idx].reset(
-          new AudioRendererMixer(audio_parameters_, sinks_[idx].get()));
+      mixers_[idx].reset(new AudioRendererMixer(
+          audio_parameters_, sinks_[idx].get(), base::Bind(&LogUma)));
     }
-    EXPECT_CALL(*this,
-                ReturnMixer(kRenderFrameId, testing::_, device_id, testing::_));
+    EXPECT_CALL(*this, ReturnMixer(mixers_[idx].get()));
 
     if (device_status)
       *device_status = OUTPUT_DEVICE_STATUS_OK;
@@ -86,11 +92,7 @@ class AudioRendererMixerInputTest : public testing::Test,
     return mixer_input_->ProvideInput(audio_bus_.get(), 0);
   }
 
-  MOCK_METHOD4(ReturnMixer,
-               void(int,
-                    const AudioParameters&,
-                    const std::string&,
-                    const url::Origin&));
+  MOCK_METHOD1(ReturnMixer, void(AudioRendererMixer*));
 
   MOCK_METHOD4(
       GetOutputDeviceInfo,
