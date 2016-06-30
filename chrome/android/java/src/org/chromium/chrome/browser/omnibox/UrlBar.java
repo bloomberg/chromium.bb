@@ -23,6 +23,7 @@ import android.view.GestureDetector;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.View.OnKeyListener;
 import android.view.accessibility.AccessibilityEvent;
 import android.view.accessibility.AccessibilityManager;
 import android.view.accessibility.AccessibilityNodeInfo;
@@ -51,7 +52,7 @@ import java.net.URL;
 /**
  * The URL text entry view for the Omnibox.
  */
-public class UrlBar extends VerticallyFixedEditText {
+public class UrlBar extends VerticallyFixedEditText implements OnKeyListener {
     private static final String TAG = "UrlBar";
 
     // TextView becomes very slow on long strings, so we limit maximum length
@@ -224,6 +225,7 @@ public class UrlBar extends VerticallyFixedEditText {
 
         mAccessibilityManager =
                 (AccessibilityManager) context.getSystemService(Context.ACCESSIBILITY_SERVICE);
+        setOnKeyListener(this);
     }
 
     /**
@@ -507,10 +509,9 @@ public class UrlBar extends VerticallyFixedEditText {
     }
 
     @Override
-    public boolean onKeyPreIme(int keyCode, KeyEvent event) {
+    public boolean onKey(View v, int keyCode, KeyEvent event) {
         if (keyCode == KeyEvent.KEYCODE_BACK) {
-            if (event.getAction() == KeyEvent.ACTION_DOWN
-                    && event.getRepeatCount() == 0) {
+            if (event.getAction() == KeyEvent.ACTION_DOWN && event.getRepeatCount() == 0) {
                 // Tell the framework to start tracking this event.
                 getKeyDispatcherState().startTracking(event, this);
                 return true;
@@ -522,7 +523,7 @@ public class UrlBar extends VerticallyFixedEditText {
                 }
             }
         }
-        return super.onKeyPreIme(keyCode, event);
+        return false;
     }
 
     @Override
