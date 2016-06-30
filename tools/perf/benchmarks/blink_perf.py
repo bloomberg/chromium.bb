@@ -199,7 +199,6 @@ class BlinkPerfCanvas(perf_benchmark.PerfBenchmark):
     return story_set
 
 
-@benchmark.Disabled('win', 'mac', 'linux')  # http://crbug.com/601666
 class BlinkPerfDOM(perf_benchmark.PerfBenchmark):
   tag = 'dom'
   test = _BlinkPerfMeasurement
