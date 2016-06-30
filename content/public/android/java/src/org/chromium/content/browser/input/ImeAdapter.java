@@ -396,12 +396,34 @@ public class ImeAdapter {
     }
 
     /**
+     * Call this when window's focus has changed.
+     * @param gainFocus True if we're gaining focus.
+     */
+    public void onWindowFocusChanged(boolean gainFocus) {
+        if (mInputConnectionFactory != null) {
+            mInputConnectionFactory.onWindowFocusChanged(gainFocus);
+        }
+    }
+
+    /**
+     * Call this when view is detached from window
+     */
+    public void onViewDetachedFromWindow() {
+        if (mInputConnectionFactory != null) {
+            mInputConnectionFactory.onViewDetachedFromWindow();
+        }
+    }
+
+    /**
      * Call this when view's focus has changed.
      * @param gainFocus True if we're gaining focus.
      */
     public void onViewFocusChanged(boolean gainFocus) {
         if (DEBUG_LOGS) Log.w(TAG, "onViewFocusChanged: gainFocus [%b]", gainFocus);
         if (!gainFocus) resetAndHideKeyboard();
+        if (mInputConnectionFactory != null) {
+            mInputConnectionFactory.onViewFocusChanged(gainFocus);
+        }
     }
 
     /**

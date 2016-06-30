@@ -1681,5 +1681,20 @@ public class ImeTest extends ContentShellTestBase {
         public EditorInfo getOutAttrs() {
             return mOutAttrs;
         }
+
+        @Override
+        public void onWindowFocusChanged(boolean gainFocus) {
+            mFactory.onWindowFocusChanged(gainFocus);
+        }
+
+        @Override
+        public void onViewFocusChanged(boolean gainFocus) {
+            mFactory.onViewFocusChanged(gainFocus);
+        }
+
+        @Override
+        public void onViewDetachedFromWindow() {
+            mFactory.onViewDetachedFromWindow();
+        }
     }
 }
