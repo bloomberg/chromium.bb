@@ -1278,6 +1278,7 @@
         '../ui/views/views.gyp:views_test_support',
         '../ui/web_dialogs/web_dialogs.gyp:web_dialogs_test_support',
         '../ui/wm/wm.gyp:wm',
+        '../ui/wm/wm.gyp:wm_test_support',
         '../url/url.gyp:url_lib',
         'ash',
         'ash_resources.gyp:ash_resources',

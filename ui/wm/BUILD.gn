@@ -93,6 +93,8 @@ component("wm") {
 static_library("test_support") {
   testonly = true
   sources = [
+    "test/testing_cursor_client_observer.cc",
+    "test/testing_cursor_client_observer.h",
     "test/wm_test_helper.cc",
     "test/wm_test_helper.h",
   ]

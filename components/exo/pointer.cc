@@ -19,6 +19,8 @@
 namespace exo {
 namespace {
 
+static constexpr float kLargeCursorScale = 2.8;
+
 // Synthesized events typically lack floating point precision so to avoid
 // generating mouse event jitter we consider the location of these events
 // to be the same as |location| if floored values match.
@@ -34,8 +36,17 @@ bool SameLocation(const ui::LocatedEvent* event, const gfx::PointF& location) {
 ////////////////////////////////////////////////////////////////////////////////
 // Pointer, public:
 
-Pointer::Pointer(PointerDelegate* delegate) : delegate_(delegate) {
-  ash::Shell::GetInstance()->AddPreTargetHandler(this);
+Pointer::Pointer(PointerDelegate* delegate)
+    : delegate_(delegate),
+      surface_(nullptr),
+      focus_(nullptr),
+      cursor_scale_(1.0f) {
+  ash::Shell* ash_shell = ash::Shell::GetInstance();
+  ash_shell->AddPreTargetHandler(this);
+
+  wm::CursorManager* cursor_manager = ash_shell->cursor_manager();
+  DCHECK(cursor_manager);
+  cursor_manager->AddObserver(this);
 }
 
 Pointer::~Pointer() {
@@ -48,7 +59,11 @@ Pointer::~Pointer() {
   }
   if (widget_)
     widget_->CloseNow();
-  ash::Shell::GetInstance()->RemovePreTargetHandler(this);
+
+  ash::Shell* ash_shell = ash::Shell::GetInstance();
+  DCHECK(ash_shell->cursor_manager());
+  ash_shell->cursor_manager()->RemoveObserver(this);
+  ash_shell->RemovePreTargetHandler(this);
 }
 
 void Pointer::SetCursor(Surface* surface, const gfx::Point& hotspot) {
@@ -207,21 +222,7 @@ void Pointer::OnMouseEvent(ui::MouseEvent* event) {
       widget_->GetNativeWindow()->SetBounds(bounds);
     }
 
-    // Update cursor scale if the effective UI scale has changed since last
-    // mouse event.
-    display::Display display =
-        display::Screen::GetScreen()->GetDisplayNearestWindow(
-            widget_->GetNativeWindow());
-    float ui_scale = ash::Shell::GetInstance()
-                         ->display_manager()
-                         ->GetDisplayInfo(display.id())
-                         .GetEffectiveUIScale();
-    if (ui_scale != cursor_scale_) {
-      gfx::Transform transform;
-      transform.Scale(ui_scale, ui_scale);
-      widget_->GetNativeWindow()->SetTransform(transform);
-      cursor_scale_ = ui_scale;
-    }
+    UpdateCursorScale();
   } else {
     if (widget_ && widget_->IsVisible())
       widget_->Hide();
@@ -230,6 +231,10 @@ void Pointer::OnMouseEvent(ui::MouseEvent* event) {
 
 void Pointer::OnScrollEvent(ui::ScrollEvent* event) {
   OnMouseEvent(event);
+}
+
+void Pointer::OnCursorSetChanged(ui::CursorSetType cursor_set) {
+  UpdateCursorScale();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -288,6 +293,31 @@ Surface* Pointer::GetEffectiveTargetForEvent(ui::Event* event) const {
     return nullptr;
 
   return delegate_->CanAcceptPointerEventsForSurface(target) ? target : nullptr;
+}
+
+void Pointer::UpdateCursorScale() {
+  if (!focus_)
+    return;
+
+  // Update cursor scale if the effective UI scale has changed.
+  display::Display display =
+      display::Screen::GetScreen()->GetDisplayNearestWindow(
+          widget_->GetNativeWindow());
+  float ui_scale = ash::Shell::GetInstance()
+                       ->display_manager()
+                       ->GetDisplayInfo(display.id())
+                       .GetEffectiveUIScale();
+
+  ash::Shell* ash_shell = ash::Shell::GetInstance();
+  if (ash_shell->cursor_manager()->GetCursorSet() == ui::CURSOR_SET_LARGE)
+    ui_scale *= kLargeCursorScale;
+
+  if (ui_scale != cursor_scale_) {
+    gfx::Transform transform;
+    transform.Scale(ui_scale, ui_scale);
+    widget_->GetNativeWindow()->SetTransform(transform);
+    cursor_scale_ = ui_scale;
+  }
 }
 
 }  // namespace exo

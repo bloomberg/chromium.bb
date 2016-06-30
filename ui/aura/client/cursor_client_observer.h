@@ -6,13 +6,15 @@
 #define UI_AURA_CLIENT_CURSOR_CLIENT_OBSERVER_H_
 
 #include "ui/aura/aura_export.h"
+#include "ui/base/cursor/cursor.h"
 
 namespace aura {
 namespace client {
 
 class AURA_EXPORT CursorClientObserver {
  public:
-  virtual void OnCursorVisibilityChanged(bool is_visible) = 0;
+  virtual void OnCursorVisibilityChanged(bool is_visible) {}
+  virtual void OnCursorSetChanged(ui::CursorSetType cursor_set) {}
 
  protected:
   virtual ~CursorClientObserver() {}

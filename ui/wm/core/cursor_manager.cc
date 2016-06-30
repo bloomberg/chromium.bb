@@ -132,8 +132,11 @@ bool CursorManager::IsCursorVisible() const {
 
 void CursorManager::SetCursorSet(ui::CursorSetType cursor_set) {
   state_on_unlock_->set_cursor_set(cursor_set);
-  if (GetCursorSet() != state_on_unlock_->cursor_set())
+  if (GetCursorSet() != state_on_unlock_->cursor_set()) {
     delegate_->SetCursorSet(state_on_unlock_->cursor_set(), this);
+    FOR_EACH_OBSERVER(aura::client::CursorClientObserver, observers_,
+                      OnCursorSetChanged(cursor_set));
+  }
 }
 
 ui::CursorSetType CursorManager::GetCursorSet() const {

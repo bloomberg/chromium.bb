@@ -386,6 +386,7 @@ test("ash_unittests") {
     "//ui/views/controls/webview:test_support",
     "//ui/web_dialogs:test_support",
     "//ui/wm",
+    "//ui/wm:test_support",
     "//url",
   ]
 

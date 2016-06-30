@@ -108,6 +108,8 @@
         '../events/events.gyp:events_base',
       ],
       'sources': [
+        'test/testing_cursor_client_observer.cc',
+        'test/testing_cursor_client_observer.h',
         'test/wm_test_helper.cc',
         'test/wm_test_helper.h',
       ],

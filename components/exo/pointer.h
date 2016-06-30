@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "components/exo/surface_delegate.h"
 #include "components/exo/surface_observer.h"
+#include "ui/aura/client/cursor_client_observer.h"
 #include "ui/events/event_handler.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/point_f.h"
@@ -31,6 +32,7 @@ class Surface;
 // This class implements a client pointer that represents one or more input
 // devices, such as mice, which control the pointer location and pointer focus.
 class Pointer : public ui::EventHandler,
+                public aura::client::CursorClientObserver,
                 public SurfaceDelegate,
                 public SurfaceObserver {
  public:
@@ -48,6 +50,9 @@ class Pointer : public ui::EventHandler,
   void OnMouseEvent(ui::MouseEvent* event) override;
   void OnScrollEvent(ui::ScrollEvent* event) override;
 
+  // Overridden from aura::client::CursorClientObserver:
+  void OnCursorSetChanged(ui::CursorSetType cursor_set) override;
+
   // Overridden from SurfaceDelegate:
   void OnSurfaceCommit() override;
   bool IsSurfaceSynchronized() const override;
@@ -58,6 +63,9 @@ class Pointer : public ui::EventHandler,
  private:
   // Creates the |widget_| for pointer.
   void CreatePointerWidget();
+
+  // Updates the scale of the cursor with the latest state.
+  void UpdateCursorScale();
 
   // Returns the effective target for |event|.
   Surface* GetEffectiveTargetForEvent(ui::Event* event) const;

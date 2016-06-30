@@ -24,29 +24,9 @@
 #include "ui/wm/core/compound_event_filter.h"
 #include "ui/wm/public/activation_client.h"
 #include "ui/wm/public/activation_delegate.h"
+#include "ui/wm/test/testing_cursor_client_observer.h"
 
 namespace {
-
-class TestingCursorClientObserver : public aura::client::CursorClientObserver {
- public:
-  TestingCursorClientObserver()
-      : cursor_visibility_(false), did_visibility_change_(false) {}
-  void reset() { cursor_visibility_ = did_visibility_change_ = false; }
-  bool is_cursor_visible() const { return cursor_visibility_; }
-  bool did_visibility_change() const { return did_visibility_change_; }
-
-  // Overridden from aura::client::CursorClientObserver:
-  void OnCursorVisibilityChanged(bool is_visible) override {
-    cursor_visibility_ = is_visible;
-    did_visibility_change_ = true;
-  }
-
- private:
-  bool cursor_visibility_;
-  bool did_visibility_change_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestingCursorClientObserver);
-};
 
 base::TimeTicks getTime() {
   return ui::EventTimeForNow();
@@ -797,8 +777,8 @@ TEST_F(WindowManagerTest, TestCursorClientObserver) {
 
   // Add two observers. Both should have OnCursorVisibilityChanged()
   // invoked when an event changes the visibility of the cursor.
-  TestingCursorClientObserver observer_a;
-  TestingCursorClientObserver observer_b;
+  ::wm::TestingCursorClientObserver observer_a;
+  ::wm::TestingCursorClientObserver observer_b;
   cursor_manager->AddObserver(&observer_a);
   cursor_manager->AddObserver(&observer_b);
 
@@ -809,6 +789,8 @@ TEST_F(WindowManagerTest, TestCursorClientObserver) {
   EXPECT_FALSE(observer_b.did_visibility_change());
   EXPECT_FALSE(observer_a.is_cursor_visible());
   EXPECT_FALSE(observer_b.is_cursor_visible());
+  EXPECT_FALSE(observer_a.did_cursor_set_change());
+  EXPECT_FALSE(observer_b.did_cursor_set_change());
 
   // Keypress should hide the cursor.
   generator.PressKey(ui::VKEY_A, ui::EF_NONE);
@@ -816,6 +798,13 @@ TEST_F(WindowManagerTest, TestCursorClientObserver) {
   EXPECT_TRUE(observer_b.did_visibility_change());
   EXPECT_FALSE(observer_a.is_cursor_visible());
   EXPECT_FALSE(observer_b.is_cursor_visible());
+
+  // Set cursor set.
+  cursor_manager->SetCursorSet(ui::CURSOR_SET_LARGE);
+  EXPECT_TRUE(observer_a.did_cursor_set_change());
+  EXPECT_EQ(ui::CURSOR_SET_LARGE, observer_a.cursor_set());
+  EXPECT_TRUE(observer_b.did_cursor_set_change());
+  EXPECT_EQ(ui::CURSOR_SET_LARGE, observer_b.cursor_set());
 
   // Mouse move should show the cursor.
   observer_a.reset();
@@ -837,6 +826,12 @@ TEST_F(WindowManagerTest, TestCursorClientObserver) {
   EXPECT_TRUE(observer_a.did_visibility_change());
   EXPECT_FALSE(observer_b.did_visibility_change());
   EXPECT_FALSE(observer_a.is_cursor_visible());
+
+  // Set back cursor set to normal.
+  cursor_manager->SetCursorSet(ui::CURSOR_SET_NORMAL);
+  EXPECT_TRUE(observer_a.did_cursor_set_change());
+  EXPECT_EQ(ui::CURSOR_SET_NORMAL, observer_a.cursor_set());
+  EXPECT_FALSE(observer_b.did_cursor_set_change());
 
   // Mouse move should show the cursor.
   observer_a.reset();
