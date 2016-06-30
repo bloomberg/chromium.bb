@@ -62,6 +62,8 @@ class CHROMEOS_EXPORT CryptohomeClient : public DBusClient {
   typedef base::Callback<void(DBusMethodCallStatus call_status,
                               const std::vector<uint8_t>& system_salt)>
       GetSystemSaltCallback;
+  // A callback to handle LowDiskSpace signals.
+  typedef base::Callback<void(uint64_t disk_free_bytes)> LowDiskSpaceHandler;
   // A callback for WaitForServiceToBeAvailable().
   typedef base::Callback<void(bool service_is_ready)>
       WaitForServiceToBeAvailableCallback;
@@ -109,6 +111,10 @@ class CHROMEOS_EXPORT CryptohomeClient : public DBusClient {
 
   // Resets AsyncCallStatus signal handlers.
   virtual void ResetAsyncCallStatusHandlers() = 0;
+
+  // Sets LowDiskSpace signal handler.  |handler| is called when the cryptohome
+  // partition is running out of disk space.
+  virtual void SetLowDiskSpaceHandler(const LowDiskSpaceHandler& handler) = 0;
 
   // Runs the callback as soon as the service becomes available.
   virtual void WaitForServiceToBeAvailable(

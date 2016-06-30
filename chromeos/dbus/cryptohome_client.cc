@@ -63,6 +63,11 @@ class CryptohomeClientImpl : public CryptohomeClient {
   }
 
   // CryptohomeClient override.
+  void SetLowDiskSpaceHandler(const LowDiskSpaceHandler& handler) override {
+    low_disk_space_handler_ = handler;
+  }
+
+  // CryptohomeClient override.
   void WaitForServiceToBeAvailable(
       const WaitForServiceToBeAvailableCallback& callback) override {
     proxy_->WaitForServiceToBeAvailable(callback);
@@ -928,6 +933,12 @@ class CryptohomeClientImpl : public CryptohomeClient {
                    weak_ptr_factory_.GetWeakPtr()),
         base::Bind(&CryptohomeClientImpl::OnSignalConnected,
                    weak_ptr_factory_.GetWeakPtr()));
+    proxy_->ConnectToSignal(cryptohome::kCryptohomeInterface,
+                            cryptohome::kSignalLowDiskSpace,
+                            base::Bind(&CryptohomeClientImpl::OnLowDiskSpace,
+                                       weak_ptr_factory_.GetWeakPtr()),
+                            base::Bind(&CryptohomeClientImpl::OnSignalConnected,
+                                       weak_ptr_factory_.GetWeakPtr()));
   }
 
  private:
@@ -1149,6 +1160,18 @@ class CryptohomeClientImpl : public CryptohomeClient {
     }
   }
 
+  // Handles LowDiskSpace signal.
+  void OnLowDiskSpace(dbus::Signal* signal) {
+    dbus::MessageReader reader(signal);
+    uint64_t disk_free_bytes = 0;
+    if (!reader.PopUint64(&disk_free_bytes)) {
+      LOG(ERROR) << "Invalid signal: " << signal->ToString();
+      return;
+    }
+    if (!low_disk_space_handler_.is_null())
+      low_disk_space_handler_.Run(disk_free_bytes);
+  }
+
   // Handles the result of signal connection setup.
   void OnSignalConnected(const std::string& interface,
                          const std::string& signal,
@@ -1161,6 +1184,7 @@ class CryptohomeClientImpl : public CryptohomeClient {
   std::unique_ptr<BlockingMethodCaller> blocking_method_caller_;
   AsyncCallStatusHandler async_call_status_handler_;
   AsyncCallStatusWithDataHandler async_call_status_data_handler_;
+  LowDiskSpaceHandler low_disk_space_handler_;
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.

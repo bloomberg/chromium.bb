@@ -26,6 +26,8 @@ class MockCryptohomeClient : public CryptohomeClient {
                void(const AsyncCallStatusHandler& handler,
                     const AsyncCallStatusWithDataHandler& data_handler));
   MOCK_METHOD0(ResetAsyncCallStatusHandlers, void());
+  MOCK_METHOD1(SetLowDiskSpaceHandler,
+               void(const LowDiskSpaceHandler& handler));
   MOCK_METHOD1(WaitForServiceToBeAvailable,
                void(const WaitForServiceToBeAvailableCallback& callback));
   MOCK_METHOD1(IsMounted, void(const BoolDBusMethodCallback& callback));

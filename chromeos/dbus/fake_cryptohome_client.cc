@@ -52,6 +52,9 @@ void FakeCryptohomeClient::ResetAsyncCallStatusHandlers() {
   async_call_status_data_handler_.Reset();
 }
 
+void FakeCryptohomeClient::SetLowDiskSpaceHandler(
+    const LowDiskSpaceHandler& handler) {}
+
 void FakeCryptohomeClient::WaitForServiceToBeAvailable(
     const WaitForServiceToBeAvailableCallback& callback) {
   if (service_is_available_) {
