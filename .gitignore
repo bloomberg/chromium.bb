@@ -351,6 +351,7 @@ vs-chromium-project.txt
 /third_party/httpcomponents-core
 /third_party/hunspell_dictionaries
 /third_party/icu
+/third_party/icu4j/lib/*.jar
 /third_party/jarjar
 /third_party/javax_inject/lib/*.jar
 /third_party/jsoncpp/source
