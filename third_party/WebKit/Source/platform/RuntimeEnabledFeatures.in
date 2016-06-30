@@ -136,7 +136,7 @@ NetworkInformation status=stable
 NetInfoDownlinkMax status=stable
 NewMediaPlaybackUi
 NotificationConstructor status=stable
-NotificationBadge status=experimental
+NotificationBadge status=stable
 NotificationInlineReplies status=experimental
 Notifications status=stable
 OnDeviceChange status=experimental
