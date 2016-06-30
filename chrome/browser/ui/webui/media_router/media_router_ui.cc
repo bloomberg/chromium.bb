@@ -205,9 +205,19 @@ MediaRouterUI::~MediaRouterUI() {
   // If |create_session_request_| still exists, then it means presentation route
   // request was never attempted.
   if (create_session_request_) {
-    create_session_request_->InvokeErrorCallback(content::PresentationError(
-        content::PRESENTATION_ERROR_SESSION_REQUEST_CANCELLED,
-        "Dialog closed."));
+    bool presentation_sinks_available = std::any_of(
+        sinks_.begin(), sinks_.end(), [](const MediaSinkWithCastModes& sink) {
+          return ContainsValue(sink.cast_modes, MediaCastMode::DEFAULT);
+        });
+    if (presentation_sinks_available) {
+      create_session_request_->InvokeErrorCallback(content::PresentationError(
+          content::PRESENTATION_ERROR_SESSION_REQUEST_CANCELLED,
+          "Dialog closed."));
+    } else {
+      create_session_request_->InvokeErrorCallback(content::PresentationError(
+          content::PRESENTATION_ERROR_NO_AVAILABLE_SCREENS,
+          "No screens found."));
+    }
   }
 }
 
@@ -286,12 +296,20 @@ void MediaRouterUI::InitCommon(content::WebContents* initiator) {
   UpdateCastModes();
 }
 
-void MediaRouterUI::InitForTest(MediaRouter* router,
-                                content::WebContents* initiator,
-                                MediaRouterWebUIMessageHandler* handler) {
+void MediaRouterUI::InitForTest(
+    MediaRouter* router,
+    content::WebContents* initiator,
+    MediaRouterWebUIMessageHandler* handler,
+    std::unique_ptr<CreatePresentationConnectionRequest>
+        create_session_request) {
   router_ = router;
   handler_ = handler;
+  create_session_request_ = std::move(create_session_request);
   InitCommon(initiator);
+  if (create_session_request_) {
+    OnDefaultPresentationChanged(
+        create_session_request_->presentation_request());
+  }
 }
 
 void MediaRouterUI::OnDefaultPresentationChanged(

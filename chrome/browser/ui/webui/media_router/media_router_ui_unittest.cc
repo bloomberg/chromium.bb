@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/media/router/create_presentation_connection_request.h"
 #include "chrome/browser/media/router/media_route.h"
 #include "chrome/browser/media/router/media_source_helper.h"
 #include "chrome/browser/media/router/mock_media_router.h"
@@ -29,10 +30,29 @@
 
 using testing::_;
 using testing::AnyNumber;
+using testing::Invoke;
 using testing::SaveArg;
 using testing::Return;
 
 namespace media_router {
+
+class PresentationRequestCallbacks {
+public:
+  explicit PresentationRequestCallbacks(
+      const content::PresentationError& expected_error)
+      : expected_error_(expected_error) {}
+
+  void Success(const content::PresentationSessionInfo&, const MediaRoute::Id&) {
+  }
+
+  void Error(const content::PresentationError& error) {
+    EXPECT_EQ(expected_error_.error_type, error.error_type);
+    EXPECT_EQ(expected_error_.message, error.message);
+  }
+
+private:
+  content::PresentationError expected_error_;
+};
 
 class MockRoutesUpdatedCallback {
  public:
@@ -61,11 +81,15 @@ class MediaRouterUITest : public ::testing::Test {
     message_handler_.reset(
         new MediaRouterWebUIMessageHandler(media_router_ui_.get()));
     EXPECT_CALL(mock_router_, RegisterMediaSinksObserver(_))
-        .WillRepeatedly(Return(true));
+        .WillRepeatedly(Invoke([this](MediaSinksObserver* observer) {
+          this->media_sinks_observers_.push_back(observer);
+          return true;
+        }));
     EXPECT_CALL(mock_router_, RegisterMediaRoutesObserver(_))
         .Times(AnyNumber());
     media_router_ui_->InitForTest(&mock_router_, initiator_.get(),
-                                  message_handler_.get());
+                                  message_handler_.get(),
+                                  std::move(create_session_request_));
     message_handler_->SetWebUIForTest(&web_ui_);
   }
 
@@ -76,8 +100,10 @@ class MediaRouterUITest : public ::testing::Test {
   std::unique_ptr<content::WebContents> initiator_;
   content::TestWebUI web_ui_;
   std::unique_ptr<content::WebContents> web_contents_;
+  std::unique_ptr<CreatePresentationConnectionRequest> create_session_request_;
   std::unique_ptr<MediaRouterUI> media_router_ui_;
   std::unique_ptr<MediaRouterWebUIMessageHandler> message_handler_;
+  std::vector<MediaSinksObserver*> media_sinks_observers_;
 };
 
 TEST_F(MediaRouterUITest, RouteCreationTimeoutForTab) {
@@ -405,5 +431,82 @@ TEST_F(MediaRouterUITest, GetExtensionNameEmptyWhenNotExtensionURL) {
       base::WrapUnique(new extensions::ExtensionRegistry(nullptr));
 
   EXPECT_EQ("", MediaRouterUI::GetExtensionName(url, registry.get()));
+}
+
+TEST_F(MediaRouterUITest, NotFoundErrorOnCloseWithNoSinks) {
+  content::PresentationError expected_error(
+      content::PresentationErrorType::PRESENTATION_ERROR_NO_AVAILABLE_SCREENS,
+      "No screens found.");
+  PresentationRequestCallbacks request_callbacks(expected_error);
+  create_session_request_.reset(new CreatePresentationConnectionRequest(
+      RenderFrameHostId(0, 0), std::string("http://google.com/presentation"),
+      GURL("http://google.com"),
+      base::Bind(&PresentationRequestCallbacks::Success,
+                 base::Unretained(&request_callbacks)),
+      base::Bind(&PresentationRequestCallbacks::Error,
+                 base::Unretained(&request_callbacks))));
+  CreateMediaRouterUI(&profile_);
+  // Destroying the UI should return the expected error from above to the error
+  // callback.
+  media_router_ui_.reset();
+}
+
+TEST_F(MediaRouterUITest, NotFoundErrorOnCloseWithNoCompatibleSinks) {
+  content::PresentationError expected_error(
+      content::PresentationErrorType::PRESENTATION_ERROR_NO_AVAILABLE_SCREENS,
+      "No screens found.");
+  PresentationRequestCallbacks request_callbacks(expected_error);
+  std::string presentation_url("http://google.com/presentation");
+  create_session_request_.reset(new CreatePresentationConnectionRequest(
+      RenderFrameHostId(0, 0), presentation_url, GURL("http://google.com"),
+      base::Bind(&PresentationRequestCallbacks::Success,
+                 base::Unretained(&request_callbacks)),
+      base::Bind(&PresentationRequestCallbacks::Error,
+                 base::Unretained(&request_callbacks))));
+  CreateMediaRouterUI(&profile_);
+
+  // Send a sink to the UI that is compatible with sources other than the
+  // presentation url to cause a NotFoundError.
+  std::vector<MediaSink> sinks;
+  sinks.emplace_back("sink id", "sink name", MediaSink::GENERIC);
+  std::vector<GURL> origins;
+  for (auto& observer : media_sinks_observers_) {
+    if (observer->source().id() != presentation_url) {
+      observer->OnSinksUpdated(sinks, origins);
+    }
+  }
+  // Destroying the UI should return the expected error from above to the error
+  // callback.
+  media_router_ui_.reset();
+}
+
+TEST_F(MediaRouterUITest, AbortErrorOnClose) {
+  content::PresentationError expected_error(
+      content::PresentationErrorType::
+          PRESENTATION_ERROR_SESSION_REQUEST_CANCELLED,
+      "Dialog closed.");
+  PresentationRequestCallbacks request_callbacks(expected_error);
+  std::string presentation_url("http://google.com/presentation");
+  create_session_request_.reset(new CreatePresentationConnectionRequest(
+      RenderFrameHostId(0, 0), presentation_url, GURL("http://google.com"),
+      base::Bind(&PresentationRequestCallbacks::Success,
+                 base::Unretained(&request_callbacks)),
+      base::Bind(&PresentationRequestCallbacks::Error,
+                 base::Unretained(&request_callbacks))));
+  CreateMediaRouterUI(&profile_);
+
+  // Send a sink to the UI that is compatible with the presentation url to avoid
+  // a NotFoundError.
+  std::vector<MediaSink> sinks;
+  sinks.emplace_back("sink id", "sink name", MediaSink::GENERIC);
+  std::vector<GURL> origins;
+  for (auto& observer : media_sinks_observers_) {
+    if (observer->source().id() == presentation_url) {
+      observer->OnSinksUpdated(sinks, origins);
+    }
+  }
+  // Destroying the UI should return the expected error from above to the error
+  // callback.
+  media_router_ui_.reset();
 }
 }  // namespace media_router

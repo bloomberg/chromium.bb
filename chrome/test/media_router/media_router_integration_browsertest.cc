@@ -568,4 +568,39 @@ IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationBrowserTest,
   CheckStartFailed(web_contents, "AbortError", "Dialog closed.");
 }
 
+IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationBrowserTest,
+                       MANUAL_Fail_StartCancelledNoSinks) {
+  SetTestData(FILE_PATH_LITERAL("no_sinks.json"));
+  OpenTestPage(FILE_PATH_LITERAL("basic_test.html"));
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  ASSERT_TRUE(web_contents);
+  content::TestNavigationObserver test_navigation_observer(web_contents, 1);
+  StartSession(web_contents);
+
+  MediaRouterDialogControllerImpl* controller =
+      MediaRouterDialogControllerImpl::GetOrCreateForWebContents(web_contents);
+  EXPECT_TRUE(controller->IsShowingMediaRouterDialog());
+  controller->HideMediaRouterDialog();
+  CheckStartFailed(web_contents, "NotFoundError", "No screens found.");
+}
+
+IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationBrowserTest,
+                       MANUAL_Fail_StartCancelledNoSupportedSinks) {
+  SetTestData(FILE_PATH_LITERAL("no_supported_sinks.json"));
+  OpenTestPage(FILE_PATH_LITERAL("basic_test.html"));
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  ASSERT_TRUE(web_contents);
+  content::TestNavigationObserver test_navigation_observer(web_contents, 1);
+  StartSession(web_contents);
+
+  MediaRouterDialogControllerImpl* controller =
+      MediaRouterDialogControllerImpl::GetOrCreateForWebContents(web_contents);
+  EXPECT_TRUE(controller->IsShowingMediaRouterDialog());
+  WaitUntilSinkDiscoveredOnUI();
+  controller->HideMediaRouterDialog();
+  CheckStartFailed(web_contents, "NotFoundError", "No screens found.");
+}
+
 }  // namespace media_router

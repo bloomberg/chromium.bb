@@ -6,11 +6,16 @@ The test data is a JSON string and here is full example with description:
 {
   // Define the return value for getAvailableSinks API defined in
   // TestProvider.js.
-  // The return value is a list as following. Default value is:
+  // The value is a map from source urn to a list of sinks as following. Default
+  // value is for test source urn only and is:
   // [{"id": "id1", "friendlyName": "test-sink-1"},
   //  {"id": "id2", "friendlyName": "test-sink-2"}]
-  "getAvailableSinks": [{"id": "id1", "friendlyName": "test-device-1"},
-                        {"id": "id2", "friendlyName": "test-device-2"}],
+  "getAvailableSinks": {
+    "http://www.google.com/": [
+      {"id": "id1", "friendlyName": "test-device-1"},
+      {"id": "id2", "friendlyName": "test-device-2"}
+    ]
+  },
 
   // Define the return value for canRoute API, the return value should be
   // either 'true' or 'false'. The default value is 'true'.

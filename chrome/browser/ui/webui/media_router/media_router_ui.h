@@ -155,7 +155,9 @@ class MediaRouterUI : public ConstrainedWebDialogUI,
 
   void InitForTest(MediaRouter* router,
                    content::WebContents* initiator,
-                   MediaRouterWebUIMessageHandler* handler);
+                   MediaRouterWebUIMessageHandler* handler,
+                   std::unique_ptr<CreatePresentationConnectionRequest>
+                       create_session_request);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(MediaRouterUITest, SortedSinks);

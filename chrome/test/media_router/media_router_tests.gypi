@@ -12,6 +12,8 @@
       'resources/fail_reconnect_session.html',
       'resources/fail_reconnect_session.json',
       'resources/no_provider.json',
+      'resources/no_sinks.json',
+      'resources/no_supported_sinks.json',
       'resources/route_creation_timed_out.json',
     ],
     'media_router_test_extension_resources': [
