@@ -1,40 +1,24 @@
 <!doctype html>
-<html>
-    <head>
-        <title>Test that the controls attribute is not affected by fullscreen</title>
-        <script src="media-file.js"></script>
-        <!-- TODO(foolip): Convert test to testharness.js. crbug.com/588956
-             (Please avoid writing new tests using video-test.js) -->
-        <script src="video-test.js"></script>
-        <script>
-            function start()
-            {
-                findMediaElement();
-                video.src = findMediaFile("video", "content/test");
-                waitForEvent("loadeddata", loadeddata);
-            }
+<title>Test that the controls attribute is not affected by fullscreen</title>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script src="media-file.js"></script>
+<video></video>
+<script>
+async_test(function(t) {
+    var video = document.querySelector("video");
+    video.src = findMediaFile("video", "content/test");
+    video.onloadeddata = t.step_func(function() {
+        assert_false(video.controls);
+        video.onwebkitfullscreenchange = t.step_func_done(function() {
+            assert_false(video.controls);
+        });
 
-            function loadeddata()
-            {
-                testExpected("video.controls", false);
-                waitForEventOnce("webkitfullscreenchange", fullscreenchange);
-                document.addEventListener("click", function()
-                {
-                    run("video.webkitRequestFullscreen()");
-                });
-                eventSender.mouseDown();
-                eventSender.mouseUp();
-            }
-
-            function fullscreenchange()
-            {
-                testExpected("video.controls", false);
-                endTest();
-            }
-        </script>
-    </head>
-    <body onload="start()">
-        <p>Test that the controls attribute is not affected by fullscreen</p>
-        <video></video>
-    </body>
-</html>
+        document.onclick = t.step_func(function() {
+            video.webkitRequestFullscreen();
+        });
+        eventSender.mouseDown();
+        eventSender.mouseUp();
+    });
+});
+</script>
