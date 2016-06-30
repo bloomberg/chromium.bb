@@ -22,7 +22,7 @@
 
    */
 
-# include <config.h>
+#include <config.h>
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -30,6 +30,7 @@
 #include "liblouis.h"
 #include "louis.h"
 #include "progname.h"
+#include "unistr.h"
 #include "version-etc.h"
 
 #define BUFSIZE MAXSTRING - 4
@@ -58,6 +59,7 @@ translate_input (int forward_translation, char *table_name)
 {
   char charbuf[BUFSIZE];
   char *outputbuf;
+  int outlen;
   widechar inbuf[BUFSIZE];
   widechar transbuf[BUFSIZE];
   int inlen;
@@ -83,10 +85,13 @@ translate_input (int forward_translation, char *table_name)
 					  transbuf, &translen, NULL, NULL, 0);
       if (!result)
 	break;
-      outputbuf = showString (transbuf, translen);
-      k = strlen (outputbuf) - 1;
-      outputbuf[k] = 0;
-      printf ("%s\n", &outputbuf[1]);
+#ifdef WIDECHARS_ARE_UCS4
+      outputbuf = u32_to_u8(transbuf, translen, NULL, &outlen);
+#else
+      outputbuf = u16_to_u8(transbuf, translen, NULL, &outlen);
+#endif
+      printf ("%.*s\n", outlen, outputbuf);
+      free(outputbuf);
     }
   lou_free ();
 }

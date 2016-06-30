@@ -30,6 +30,7 @@
 #include "louis.h"
 #include <getopt.h>
 #include "progname.h"
+#include "unistr.h"
 #include "version-etc.h"
 
 static const struct option longopts[] =
@@ -263,6 +264,7 @@ int
 main (int argc, char **argv)
 {
   char *charbuf;
+  int charlen;
   widechar inbuf[BUFSIZE];
   widechar transbuf[BUFSIZE];
   widechar outbuf[BUFSIZE];
@@ -331,20 +333,26 @@ main (int argc, char **argv)
 	      break;
 	    transbuf[translen] = 0;
 	    printf ("Translation:\n");
-	    charbuf = showString (transbuf, translen);
-	    k = strlen (charbuf) - 1;
-	    charbuf[k] = 0;
-	    printf ("%s\n", &charbuf[1]);
+#ifdef WIDECHARS_ARE_UCS4
+	    charbuf = u32_to_u8(transbuf, translen, NULL, &charlen);
+#else
+	    charbuf = u16_to_u8(transbuf, translen, NULL, &charlen);
+#endif
+	    printf ("%.*s\n", charlen, charbuf);
+	    free(charbuf);
 	    if (showSizes)
 	      printf ("input length = %d; output length = %d\n", inlen,
 		      translen);
 	    lou_backTranslateString (table, transbuf, &translen, outbuf,
 				     &outlen, NULL, NULL, 0);
 	    printf ("Back-translation:\n");
-	    charbuf = showString (outbuf, outlen);
-	    k = strlen (charbuf) - 1;
-	    charbuf[k] = 0;
-	    printf ("%s\n", &charbuf[1]);
+#ifdef WIDECHARS_ARE_UCS4
+	    charbuf = u32_to_u8(outbuf, outlen, NULL, &charlen);
+#else
+	    charbuf = u16_to_u8(outbuf, outlen, NULL, &charlen);
+#endif
+	    printf ("%.*s\n", charlen, charbuf);
+	    free(charbuf);
 	    if (showSizes)
 	      printf ("input length = %d; output length = %d.\n", translen,
 		      outlen);
@@ -396,10 +404,13 @@ main (int argc, char **argv)
 		else
 		  {
 		    printf ("Translation:\n");
-		    charbuf = showString (transbuf, translen);
-		    k = strlen (charbuf) - 1;
-		    charbuf[k] = 0;
-		    printf ("%s\n", &charbuf[1]);
+#ifdef WIDECHARS_ARE_UCS4
+		    charbuf = u32_to_u8(transbuf, translen, NULL, &charlen);
+#else
+		    charbuf = u16_to_u8(transbuf, translen, NULL, &charlen);
+#endif
+		    printf ("%.*s\n", charlen, charbuf);
+		    free(charbuf);
 		    if (showSizes)
 		      printf ("input length = %d; output length = %d\n",
 			      inlen, translen);
@@ -428,10 +439,13 @@ main (int argc, char **argv)
 					&inputPos[0], &cursorPos, mode))
 		  break;
 		printf ("Back-translation:\n");
-		charbuf = showString (outbuf, outlen);		k = 
-		strlen (charbuf) - 1;
-		charbuf[k] = 0;
-		printf ("%s\n", &charbuf[1]);
+#ifdef WIDECHARS_ARE_UCS4
+		charbuf = u32_to_u8(outbuf, outlen, NULL, &charlen);
+#else
+		charbuf = u16_to_u8(outbuf, outlen, NULL, &charlen);
+#endif
+		printf ("%.*s\n", charlen, charbuf);
+		free(charbuf);
 		if (showSizes)
 		  printf ("input length = %d; output length = %d\n",
 			  translen, outlen);
