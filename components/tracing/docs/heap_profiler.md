@@ -33,6 +33,60 @@ intergrated with the chrome://tracing ecosystem.
 [m-purple]:        https://storage.googleapis.com/chromium-docs.appspot.com/d7bdf4d16204c293688be2e5a0bcb2bf463dbbc3
 [cells-heap-dump]: https://storage.googleapis.com/chromium-docs.appspot.com/a24d80d6a08da088e2e9c8b2b64daa215be4dacb
 
+### Native stack traces
+
+By default heap profiling collects pseudo allocation traces, which are based
+on trace events. I.e. frames in allocation traces correspond to trace events
+that were active at the time of allocations, and are not real function names.
+However, you can build a special Linux / Android build that will collect
+real C/C++ stack traces.
+
+ 1. Build with the following GN flags:
+
+	Linux
+
+        enable_profiling = true
+
+
+	Android
+
+        arm_use_thumb = false
+        enable_profiling = true
+
+ 2. Start Chrome with `--enable-heap-profiling=native` switch (notice
+ 	`=native` part).
+
+ 	On Android use the command line tool before starting the app:
+
+        build/android/adb_chrome_public_command_line --enable-heap-profiling=native
+
+ 	(run the tool with an empty argument `''` to clear the command line)
+
+ 3. Grab a [MemoryInfra][memory-infra] trace. You don't need any other
+ 	categories besides `memory-infra`.
+
+ 4. Save the grabbed trace file. This step is needed because freshly
+ 	taken trace file contains raw addresses (which look like `pc:dcf5dbf8`)
+ 	instead of function names, and needs to be symbolized.
+
+ 4. Symbolize the trace file. During symbolization addresses are resolved to
+ 	the corresponding function names and trace file is rewritten (but a backup
+ 	is saved with `.BACKUP` extension).
+
+	Linux
+
+        third_party/catapult/tracing/bin/symbolize_trace <trace file>
+
+	Android
+
+        third_party/catapult/tracing/bin/symbolize_trace --output-directory out/Release <trace file>
+
+	(note `--output-directory` and make sure it's right for your setup)
+
+ 5. Load the trace file in `chrome://tracing`. Locate a purple ![M][m-purple]
+ 	dot, and continue from step *3* from the instructions above. Native stack
+ 	traces will be shown in the _Heap Details_ pane.
+
 ## Heap Details
 
 The heap details view contains a tree that represents the heap. The size of the
