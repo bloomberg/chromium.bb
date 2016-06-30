@@ -26,8 +26,8 @@ class ProgressAnimationSmooth implements ToolbarProgressBar.AnimationLogic {
     private float mVelocity;
 
     @Override
-    public void reset() {
-        mProgress = 0.0f;
+    public void reset(float startProgress) {
+        mProgress = startProgress;
         mVelocity = 0.0f;
     }
 
