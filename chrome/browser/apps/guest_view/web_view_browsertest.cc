@@ -3405,16 +3405,13 @@ IN_PROC_BROWSER_TEST_P(WebViewGuestScrollTouchTest,
   // Perform a scroll gesture of the same magnitude, but in the opposite
   // direction and centered over the GuestView this time.
   guest_rect = guest_contents->GetContainerBounds();
-  embedder_rect = embedder_contents->GetContainerBounds();
-  guest_rect.set_x(guest_rect.x() - embedder_rect.x());
-  guest_rect.set_y(guest_rect.y() - embedder_rect.y());
   {
-    gfx::Point guest_scroll_location(guest_rect.x() + guest_rect.width() / 2,
-                                     guest_rect.y());
+    gfx::Point guest_scroll_location(guest_rect.width() / 2,
+                                     guest_rect.height() / 2);
 
     ScrollWaiter waiter(embedder_host_view);
 
-    content::SimulateGestureScrollSequence(embedder_contents,
+    content::SimulateGestureScrollSequence(guest_contents,
                                            guest_scroll_location,
                                            gfx::Vector2dF(0, gesture_distance));
 
@@ -3462,8 +3459,7 @@ IN_PROC_BROWSER_TEST_P(WebViewScrollGuestContentTest, ScrollGuestContent) {
   EXPECT_EQ(gfx::Vector2dF(), guest_host_view->GetLastScrollOffset());
   EXPECT_EQ(gfx::Vector2dF(), embedder_host_view->GetLastScrollOffset());
 
-  gfx::Point guest_scroll_location(guest_rect.x() + guest_rect.width() / 2,
-                                   guest_rect.y());
+  gfx::Point guest_scroll_location(guest_rect.width() / 2, 0);
 
   float gesture_distance = 15.f;
   {
@@ -3472,7 +3468,7 @@ IN_PROC_BROWSER_TEST_P(WebViewScrollGuestContentTest, ScrollGuestContent) {
     ScrollWaiter waiter(guest_host_view);
 
     content::SimulateGestureScrollSequence(
-        embedder_contents, guest_scroll_location,
+        guest_contents, guest_scroll_location,
         gfx::Vector2dF(0, -gesture_distance));
 
     waiter.WaitForScrollChange(expected_offset);
@@ -3486,7 +3482,7 @@ IN_PROC_BROWSER_TEST_P(WebViewScrollGuestContentTest, ScrollGuestContent) {
     ScrollWaiter waiter(guest_host_view);
 
     content::SimulateGestureFlingSequence(
-        embedder_contents, guest_scroll_location,
+        guest_contents, guest_scroll_location,
         gfx::Vector2dF(0, fling_velocity));
 
     waiter.WaitForScrollChange(gfx::Vector2dF());

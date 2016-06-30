@@ -175,6 +175,34 @@ void RenderWidgetHostViewGuest::ProcessTouchEvent(
         guest_->GetOwnerRenderWidgetHostView()->GetRenderWidgetHost());
     if (!embedder->GetView()->HasFocus())
       embedder->GetView()->Focus();
+
+    // Since we now route GestureEvents directly to the guest renderer, we need
+    // a way to make sure that the BrowserPlugin in the embedder gets focused so
+    // that keyboard input (which still travels via BrowserPlugin) is routed to
+    // the plugin and thus onwards to the guest.
+    // TODO(wjmaclean): When we remove BrowserPlugin, delete this code.
+    // http://crbug.com/533069
+    if (!HasFocus()) {
+      // We need to a account for the position of the guest view within the
+      // embedder, as well as the fact that the embedder's host will add its
+      // offset in screen coordinates before sending the event (with the latter
+      // component just serving to confuse the renderer, hence why it should be
+      // removed).
+      gfx::Vector2d offset = GetViewBounds().origin() -
+          GetOwnerRenderWidgetHostView()->GetBoundsInRootWindow().origin();
+      blink::WebGestureEvent gesture_tap_event;
+      gesture_tap_event.sourceDevice = blink::WebGestureDeviceTouchscreen;
+      gesture_tap_event.type = blink::WebGestureEvent::GestureTapDown;
+      gesture_tap_event.x = event.touches[0].position.x + offset.x();
+      gesture_tap_event.y = event.touches[0].position.y + offset.y();
+      gesture_tap_event.globalX = event.touches[0].screenPosition.x;
+      gesture_tap_event.globalY = event.touches[0].screenPosition.y;
+      GetOwnerRenderWidgetHostView()->ProcessGestureEvent(gesture_tap_event,
+                                                          ui::LatencyInfo());
+      gesture_tap_event.type = blink::WebGestureEvent::GestureTapCancel;
+      GetOwnerRenderWidgetHostView()->ProcessGestureEvent(gesture_tap_event,
+                                                          ui::LatencyInfo());
+    }
   }
 
   host_->ForwardTouchEventWithLatencyInfo(event, latency);

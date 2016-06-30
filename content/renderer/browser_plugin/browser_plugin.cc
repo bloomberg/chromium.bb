@@ -429,8 +429,14 @@ blink::WebInputEventResult BrowserPlugin::handleInputEvent(
 
   if (blink::WebInputEvent::isGestureEventType(event.type)) {
     auto gesture_event = static_cast<const blink::WebGestureEvent&>(event);
-    if (gesture_event.resendingPluginId == browser_plugin_instance_id_)
-      return blink::WebInputEventResult::NotHandled;
+    DCHECK(blink::WebInputEvent::GestureTapDown == event.type ||
+           gesture_event.resendingPluginId == browser_plugin_instance_id_);
+
+    // We shouldn't be forwarding GestureEvents to the Guest anymore. Indicate
+    // we handled this only if it's a non-resent event.
+    return gesture_event.resendingPluginId == browser_plugin_instance_id_
+               ? blink::WebInputEventResult::NotHandled
+               : blink::WebInputEventResult::HandledApplication;
   }
 
   if (event.type == blink::WebInputEvent::ContextMenu)
