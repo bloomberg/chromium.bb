@@ -45,11 +45,12 @@
 
 namespace blink {
 
+class ClipPathOperation;
 class RotateTransformOperation;
-class TextSizeAdjust;
-class TranslateTransformOperation;
 class ScaleTransformOperation;
 class StylePath;
+class TextSizeAdjust;
+class TranslateTransformOperation;
 
 // Note that we assume the parser only allows valid CSSValue types.
 class StyleBuilderConverter {
@@ -60,6 +61,7 @@ public:
     static Color convertColor(StyleResolverState&, const CSSValue&, bool forVisitedLink = false);
     template <typename T> static T convertComputedLength(StyleResolverState&, const CSSValue&);
     static LengthBox convertClip(StyleResolverState&, const CSSValue&);
+    static PassRefPtr<ClipPathOperation> convertClipPath(StyleResolverState&, const CSSValue&);
     static FilterOperations convertFilterOperations(StyleResolverState&, const CSSValue&);
     template <typename T> static T convertFlags(StyleResolverState&, const CSSValue&);
     static FontDescription::FamilyDescription convertFontFamily(StyleResolverState&, const CSSValue&);

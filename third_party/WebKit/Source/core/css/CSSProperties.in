@@ -355,7 +355,7 @@ y interpolable, svg, converter=convertLength
 -webkit-box-orient
 -webkit-box-pack
 -webkit-box-reflect converter=convertBoxReflect
--webkit-clip-path interpolable, custom_value
+-webkit-clip-path interpolable, converter=convertClipPath
 column-count interpolable, type_name=unsigned short, custom_all
 column-gap interpolable, converter=convertComputedLength<float>, custom_all
 column-rule-color interpolable, custom_all

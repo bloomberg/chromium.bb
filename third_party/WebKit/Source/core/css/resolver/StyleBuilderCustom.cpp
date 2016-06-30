@@ -40,22 +40,16 @@
 #include "core/CSSValueKeywords.h"
 #include "core/StyleBuilderFunctions.h"
 #include "core/StylePropertyShorthand.h"
-#include "core/css/BasicShapeFunctions.h"
-#include "core/css/CSSBasicShapeValues.h"
 #include "core/css/CSSCounterValue.h"
 #include "core/css/CSSCursorImageValue.h"
 #include "core/css/CSSCustomPropertyDeclaration.h"
 #include "core/css/CSSFunctionValue.h"
-#include "core/css/CSSGradientValue.h"
 #include "core/css/CSSGridTemplateAreasValue.h"
 #include "core/css/CSSHelper.h"
 #include "core/css/CSSImageSetValue.h"
-#include "core/css/CSSPathValue.h"
 #include "core/css/CSSPendingSubstitutionValue.h"
 #include "core/css/CSSPrimitiveValueMappings.h"
 #include "core/css/CSSPropertyMetadata.h"
-#include "core/css/CSSURIValue.h"
-#include "core/css/CSSValuePair.h"
 #include "core/css/CSSVariableReferenceValue.h"
 #include "core/css/StylePropertySet.h"
 #include "core/css/StyleRule.h"
@@ -574,22 +568,6 @@ void StyleBuilderFunctions::applyValueCSSPropertyWebkitBorderImage(StyleResolver
     NinePieceImage image;
     CSSToStyleMap::mapNinePieceImage(state, CSSPropertyWebkitBorderImage, value, image);
     state.style()->setBorderImage(image);
-}
-
-void StyleBuilderFunctions::applyValueCSSPropertyWebkitClipPath(StyleResolverState& state, const CSSValue& value)
-{
-    if (value.isBasicShapeValue()) {
-        state.style()->setClipPath(ShapeClipPathOperation::create(basicShapeForValue(state, value)));
-    }
-    if (value.isPrimitiveValue() && toCSSPrimitiveValue(value).getValueID() == CSSValueNone) {
-        state.style()->setClipPath(nullptr);
-    }
-    if (value.isURIValue()) {
-        String cssURLValue = toCSSURIValue(value).value();
-        KURL url = state.document().completeURL(cssURLValue);
-        // FIXME: It doesn't work with forward or external SVG references (see https://bugs.webkit.org/show_bug.cgi?id=90405)
-        state.style()->setClipPath(ReferenceClipPathOperation::create(cssURLValue, AtomicString(url.fragmentIdentifier())));
-    }
 }
 
 void StyleBuilderFunctions::applyInitialCSSPropertyWebkitTextEmphasisStyle(StyleResolverState& state)
