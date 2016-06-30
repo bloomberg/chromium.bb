@@ -1595,7 +1595,8 @@ class _RietveldChangelistImpl(_ChangelistCodereviewBase):
   def __init__(self, changelist, auth_config=None, rietveld_server=None):
     super(_RietveldChangelistImpl, self).__init__(changelist)
     assert settings, 'must be initialized in _ChangelistCodereviewBase'
-    settings.GetDefaultServerUrl()
+    if not rietveld_server:
+      settings.GetDefaultServerUrl()
 
     self._rietveld_server = rietveld_server
     self._auth_config = auth_config
@@ -3448,17 +3449,23 @@ def CMDdescription(parser, args):
 
   target_issue = None
   if len(args) > 0:
-    issue_arg = ParseIssueNumberArgument(args[0])
-    if not issue_arg.valid:
+    target_issue = ParseIssueNumberArgument(args[0])
+    if not target_issue.valid:
       parser.print_help()
       return 1
-    target_issue = issue_arg.issue
 
   auth_config = auth.extract_auth_config_from_options(options)
 
-  cl = Changelist(
-      auth_config=auth_config, issue=target_issue,
-      codereview=options.forced_codereview)
+  kwargs = {
+      'auth_config': auth_config,
+      'codereview': options.forced_codereview,
+  }
+  if target_issue:
+    kwargs['issue'] = target_issue.issue
+    if options.forced_codereview == 'rietveld':
+      kwargs['rietveld_server'] = target_issue.hostname
+
+  cl = Changelist(**kwargs)
 
   if not cl.GetIssue():
     DieWithError('This branch has no associated changelist.')
