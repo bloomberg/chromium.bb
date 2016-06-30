@@ -32,10 +32,16 @@ RemoteCommandsService::~RemoteCommandsService() {
 }
 
 bool RemoteCommandsService::FetchRemoteCommands() {
-  if (!client_->is_registered())
+  // TODO(hunyadym): Remove after crbug.com/582506 is fixed.
+  CHROMEOS_SYSLOG(WARNING) << "Fetching remote commands.";
+  if (!client_->is_registered()) {
+    CHROMEOS_SYSLOG(WARNING) << "Client is not registered.";
     return false;
+  }
 
   if (command_fetch_in_progress_) {
+    // TODO(hunyadym): Remove after crbug.com/582506 is fixed.
+    CHROMEOS_SYSLOG(WARNING) << "Command fetch is already in progress.";
     has_enqueued_fetch_request_ = true;
     return false;
   }
@@ -151,6 +157,8 @@ void RemoteCommandsService::OnRemoteCommandsFetched(
     DeviceManagementStatus status,
     const std::vector<enterprise_management::RemoteCommand>& commands) {
   DCHECK(command_fetch_in_progress_);
+  // TODO(hunyadym): Remove after crbug.com/582506 is fixed.
+  CHROMEOS_SYSLOG(WARNING) << "Remote commands fetched.";
   command_fetch_in_progress_ = false;
 
   // TODO(binjin): Add retrying on errors. See http://crbug.com/466572.
