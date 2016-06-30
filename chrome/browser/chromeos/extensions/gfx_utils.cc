@@ -5,9 +5,11 @@
 #include "chrome/browser/chromeos/extensions/gfx_utils.h"
 
 #include "chrome/browser/chromeos/arc/arc_auth_service.h"
+#include "chrome/browser/chromeos/arc/arc_support_host.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
+#include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "extensions/browser/extension_registry.h"
@@ -19,7 +21,7 @@
 namespace extensions {
 namespace util {
 
-bool MaybeApplyChromeBadge(content::BrowserContext* context,
+void MaybeApplyChromeBadge(content::BrowserContext* context,
                            const std::string& extension_id,
                            gfx::ImageSkia* icon_out) {
   DCHECK(context);
@@ -29,22 +31,31 @@ bool MaybeApplyChromeBadge(content::BrowserContext* context,
   // Only apply Chrome badge for the primary profile.
   if (!chromeos::ProfileHelper::IsPrimaryProfile(profile) ||
       !multi_user_util::IsProfileFromActiveUser(profile)) {
-    return false;
+    return;
   }
 
   arc::ArcAuthService* arc_auth_service = arc::ArcAuthService::Get();
+  // Only apply Chrome badge when ARC service is enabled.
   if (!arc_auth_service ||
       arc_auth_service->state() != arc::ArcAuthService::State::ACTIVE) {
-    return false;
+    return;
+  }
+
+  // No badge on Chrome browser or the Play store app.
+  if (extension_id == extension_misc::kChromeAppId ||
+      extension_id == ArcSupportHost::kHostAppId) {
+    return;
   }
 
   const ExtensionRegistry* registry = ExtensionRegistry::Get(context);
   if (!registry)
-    return false;
+    return;
 
   const Extension* extension = registry->GetInstalledExtension(extension_id);
-  if (!extension || !extension->is_hosted_app())
-    return false;
+  // Only badge Chrome apps that can open in a tab. Platform apps can only be
+  // opened in a window.
+  if (!extension || extension->is_platform_app())
+    return;
 
   const gfx::ImageSkia* badge_image =
       ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
@@ -58,7 +69,7 @@ bool MaybeApplyChromeBadge(content::BrowserContext* context,
   }
   *icon_out = gfx::ImageSkiaOperations::CreateSuperimposedImage(
       *icon_out, resized_badge_image);
-  return true;
+  return;
 }
 
 }  // namespace util

@@ -827,20 +827,6 @@ ChromeLauncherControllerImpl::GetBrowserShortcutLauncherItemController() {
   return nullptr;
 }
 
-void ChromeLauncherControllerImpl::MayUpdateBrowserShortcutItem() {
-  for (size_t index = 0; index < model_->items().size(); index++) {
-    ash::ShelfItem item = model_->items()[index];
-    if (item.type == ash::TYPE_BROWSER_SHORTCUT) {
-      ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-      item.image = *rb.GetImageSkiaNamed(IDR_PRODUCT_LOGO_32);
-      extensions::util::MaybeApplyChromeBadge(
-          profile_, extension_misc::kChromeAppId, &item.image);
-      model_->Set(index, item);
-      break;
-    }
-  }
-}
-
 LauncherItemController* ChromeLauncherControllerImpl::GetLauncherItemController(
     const ash::ShelfID id) {
   if (!HasShelfIDToAppIDMapping(id))
@@ -991,11 +977,6 @@ void ChromeLauncherControllerImpl::OnAppInstalled(
 void ChromeLauncherControllerImpl::OnAppUpdated(
     content::BrowserContext* browser_context,
     const std::string& app_id) {
-  if (app_id == extension_misc::kChromeAppId) {
-    MayUpdateBrowserShortcutItem();
-    return;
-  }
-
   AppIconLoader* app_icon_loader = GetAppIconLoaderForApp(app_id);
   if (app_icon_loader)
     app_icon_loader->UpdateImage(app_id);

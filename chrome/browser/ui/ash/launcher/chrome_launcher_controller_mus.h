@@ -77,7 +77,6 @@ class ChromeLauncherControllerMus : public ChromeLauncherController {
       content::WebContents* web_contents) const override;
   BrowserShortcutLauncherItemController*
   GetBrowserShortcutLauncherItemController() override;
-  void MayUpdateBrowserShortcutItem() override;
   LauncherItemController* GetLauncherItemController(
       const ash::ShelfID id) override;
   bool ShelfBoundsChangesProbablyWithUser(

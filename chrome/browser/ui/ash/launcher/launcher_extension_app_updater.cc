@@ -6,7 +6,6 @@
 
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/common/extensions/extension_constants.h"
 #include "extensions/browser/extension_registry.h"
 
 LauncherExtensionAppUpdater::LauncherExtensionAppUpdater(
@@ -87,7 +86,6 @@ void LauncherExtensionAppUpdater::UpdateHostedApps() {
   UpdateHostedApps(extension_registry_->enabled_extensions());
   UpdateHostedApps(extension_registry_->disabled_extensions());
   UpdateHostedApps(extension_registry_->terminated_extensions());
-  UpdateHostedApp(extension_misc::kChromeAppId);
 }
 
 void LauncherExtensionAppUpdater::UpdateHostedApps(

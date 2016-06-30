@@ -226,9 +226,6 @@ class ChromeLauncherController {
   virtual BrowserShortcutLauncherItemController*
   GetBrowserShortcutLauncherItemController() = 0;
 
-  // Apply the Chrome badge to the browser short cut icon if applicable.
-  virtual void MayUpdateBrowserShortcutItem() = 0;
-
   virtual LauncherItemController* GetLauncherItemController(
       const ash::ShelfID id) = 0;
 

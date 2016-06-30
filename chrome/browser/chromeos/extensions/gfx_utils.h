@@ -20,7 +20,7 @@ namespace util {
 
 // May apply additional badge in order to distinguish dual apps from Chrome and
 // Android side.
-bool MaybeApplyChromeBadge(content::BrowserContext* context,
+void MaybeApplyChromeBadge(content::BrowserContext* context,
                            const std::string& extension_id,
                            gfx::ImageSkia* icon_out);
 
