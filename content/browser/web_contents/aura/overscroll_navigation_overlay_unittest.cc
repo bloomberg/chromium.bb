@@ -31,6 +31,29 @@
 
 namespace content {
 
+// Forces web contents to complete web page load as soon as navigation starts.
+class ImmediateLoadObserver : WebContentsObserver {
+ public:
+  explicit ImmediateLoadObserver(TestWebContents* contents)
+      : contents_(contents) {
+    Observe(contents);
+  }
+  ~ImmediateLoadObserver() override {}
+
+  void DidStartNavigationToPendingEntry(
+      const GURL& url,
+      NavigationController::ReloadType reload_type) override {
+    // Simulate immediate web page load.
+    contents_->TestSetIsLoading(false);
+    Observe(nullptr);
+  }
+
+ private:
+  TestWebContents* contents_;
+
+  DISALLOW_COPY_AND_ASSIGN(ImmediateLoadObserver);
+};
+
 // A subclass of TestWebContents that offers a fake content window.
 class OverscrollTestWebContents : public TestWebContents {
  public:
@@ -331,6 +354,18 @@ TEST_F(OverscrollNavigationOverlayTest, CloseDuringAnimation) {
   // Ensure a clean close.
 }
 
+// Tests that we can handle the case when the load completes as soon as the
+// navigation is started.
+TEST_F(OverscrollNavigationOverlayTest, ImmediateLoadOnNavigate) {
+  PerformBackNavigationViaSliderCallbacks();
+  // This observer will force the page load to complete as soon as the
+  // navigation starts.
+  ImmediateLoadObserver immediate_nav(contents());
+  GetOverlay()->owa_->OnOverscrollModeChange(OVERSCROLL_NONE, OVERSCROLL_EAST);
+  // This will start and immediately complete the navigation.
+  GetOverlay()->owa_->OnOverscrollComplete(OVERSCROLL_EAST);
+  EXPECT_FALSE(GetOverlay()->window_.get());
+}
 
 // Tests that swapping the overlay window at the end of a gesture caused by the
 // start of a new overscroll does not crash and the events still reach the new

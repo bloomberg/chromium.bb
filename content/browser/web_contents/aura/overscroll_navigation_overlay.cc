@@ -223,6 +223,14 @@ void OverscrollNavigationOverlay::OnOverscrollCompleted(
     return;
   }
 
+  main_window->SetTransform(gfx::Transform());
+  window_ = std::move(window);
+  // Make sure the window is in its default position.
+  window_->SetBounds(gfx::Rect(web_contents_window_->bounds().size()));
+  window_->SetTransform(gfx::Transform());
+  // Make sure the overlay window is on top.
+  web_contents_window_->StackChildAtTop(window_.get());
+
   // Make sure we can navigate first, as other factors can trigger a navigation
   // during an overscroll gesture and navigating without history produces a
   // crash.
@@ -247,13 +255,6 @@ void OverscrollNavigationOverlay::OnOverscrollCompleted(
     StartObserving();
   }
 
-  main_window->SetTransform(gfx::Transform());
-  window_ = std::move(window);
-  // Make sure the window is in its default position.
-  window_->SetBounds(gfx::Rect(web_contents_window_->bounds().size()));
-  window_->SetTransform(gfx::Transform());
-  // Make sure the overlay window is on top.
-  web_contents_window_->StackChildAtTop(window_.get());
   direction_ = NONE;
   StopObservingIfDone();
 }
