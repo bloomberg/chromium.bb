@@ -692,6 +692,30 @@ TEST_F(CredentialManagerImplTest,
 }
 
 TEST_F(CredentialManagerImplTest,
+       CredentialManagerOnRequestCredentialWithEmptyUsernames) {
+  form_.username_value.clear();
+  store_->AddLogin(form_);
+  EXPECT_CALL(*client_, PromptUserToChooseCredentialsPtr(_, _, _, _))
+      .Times(testing::Exactly(0));
+  EXPECT_CALL(*client_, NotifyUserAutoSigninPtr(_)).Times(testing::Exactly(0));
+
+  std::vector<GURL> federations;
+  ExpectCredentialType(false, true, federations, mojom::CredentialType::EMPTY);
+}
+
+TEST_F(CredentialManagerImplTest,
+       CredentialManagerOnRequestCredentialWithEmptyAndNonUsernames) {
+  store_->AddLogin(form_);
+  autofill::PasswordForm empty = form_;
+  empty.username_value.clear();
+  store_->AddLogin(empty);
+
+  std::vector<GURL> federations;
+  ExpectZeroClickSignInSuccess(false, true, federations,
+                               mojom::CredentialType::PASSWORD);
+}
+
+TEST_F(CredentialManagerImplTest,
        CredentialManagerOnRequestCredentialWithCrossOriginPasswordStore) {
   store_->AddLogin(cross_origin_form_);
 
