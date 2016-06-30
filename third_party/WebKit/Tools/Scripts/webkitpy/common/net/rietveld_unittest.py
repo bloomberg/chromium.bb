@@ -25,14 +25,14 @@ class RietveldTest(unittest.TestCase):
             'https://codereview.chromium.org/api/11112222/2': json.dumps({
                 'try_job_results': [
                     {
-                        'builder': 'some builder',
-                        'master': 'some master',
+                        'builder': 'foo-builder',
+                        'master': 'master.tryserver.foo',
                         'buildnumber': 10,
                         'result': -1
                     },
                     {
-                        'builder': 'my builder',
-                        'master': 'my master',
+                        'builder': 'bar-builder',
+                        'master': 'master.tryserver.bar',
                         'buildnumber': 50,
                         'results': 0
                     },
@@ -41,26 +41,26 @@ class RietveldTest(unittest.TestCase):
             'https://codereview.chromium.org/api/11112222/3': json.dumps({
                 'try_job_results': [
                     {
-                        'builder': 'some builder',
-                        'master': 'some master',
+                        'builder': 'foo-builder',
+                        'master': 'master.tryserver.foo',
                         'buildnumber': 20,
                         'result': 1
                     },
                     {
-                        'builder': 'my builder',
-                        'master': 'my master',
+                        'builder': 'bar-builder',
+                        'master': 'master.tryserver.bar',
                         'buildnumber': 60,
                         'result': 0
                     },
                 ],
             }),
-            'https://codereview.chromium.org/api/11113333': 'my non-json contents',
+            'https://codereview.chromium.org/api/11113333': 'my non-JSON contents',
         })
 
     def test_latest_try_jobs(self):
         self.assertEqual(
-            latest_try_jobs(11112222, ('my builder', 'my other builder'), self.web),
-            [TryJob('my builder', 'my master', 60)])
+            latest_try_jobs(11112222, ('bar-builder', 'other-builder'), self.web),
+            [TryJob('bar-builder', 'tryserver.bar', 60)])
 
     def test_latest_try_jobs_http_error(self):
         def raise_error(_):
@@ -69,7 +69,7 @@ class RietveldTest(unittest.TestCase):
         oc = OutputCapture()
         try:
             oc.capture_output()
-            self.assertEqual(latest_try_jobs(11112222, ('my builder',), self.web), [])
+            self.assertEqual(latest_try_jobs(11112222, ('bar-builder',), self.web), [])
         finally:
             _, _, logs = oc.restore_output()
         self.assertEqual(logs, 'Request failed to URL: https://codereview.chromium.org/api/11112222\n')
@@ -78,18 +78,18 @@ class RietveldTest(unittest.TestCase):
         oc = OutputCapture()
         try:
             oc.capture_output()
-            self.assertEqual(latest_try_jobs(11113333, ('my builder',), self.web), [])
+            self.assertEqual(latest_try_jobs(11113333, ('bar-builder',), self.web), [])
         finally:
             _, _, logs = oc.restore_output()
-        self.assertEqual(logs, 'Invalid JSON: my non-json contents\n')
+        self.assertEqual(logs, 'Invalid JSON: my non-JSON contents\n')
 
     def test_latest_try_jobs_with_patchset(self):
         self.assertEqual(
-            latest_try_jobs(11112222, ('my builder', 'my other builder'), self.web, patchset_number=2),
-            [TryJob('my builder', 'my master', 50)])
+            latest_try_jobs(11112222, ('bar-builder', 'other-builder'), self.web, patchset_number=2),
+            [TryJob('bar-builder', 'tryserver.bar', 50)])
 
     def test_latest_try_jobs_no_relevant_builders(self):
         self.assertEqual(latest_try_jobs(11112222, ('foo', 'bar'), self.web), [])
 
     def test_get_latest_try_job_results(self):
-        self.assertEqual(get_latest_try_job_results(11112222, self.web), {'some builder': 1, 'my builder': 0})
+        self.assertEqual(get_latest_try_job_results(11112222, self.web), {'foo-builder': 1, 'bar-builder': 0})
