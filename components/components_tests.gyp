@@ -115,6 +115,7 @@
       'certificate_reporting/error_reporter_unittest.cc',
     ],
     'certificate_transparency_unittest_sources': [
+      'certificate_transparency/ct_policy_manager_unittest.cc',
       'certificate_transparency/log_proof_fetcher_unittest.cc',
       'certificate_transparency/single_tree_tracker_unittest.cc',
     ],

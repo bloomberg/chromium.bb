@@ -1864,6 +1864,14 @@
   "SSLVersionFallbackMin": {
   },
 
+  "CertificateTransparencyEnforcementDisabledForUrls": {
+    "os": ["win", "linux", "mac", "chromeos", "android"],
+    "test_policy": { "CertificateTransparencyEnforcementDisabledForUrls": ["example.com"] },
+    "pref_mappings": [
+      { "pref": "certificate_transparency.excluded_hosts" }
+    ]
+  },
+
   "RC4Enabled": {
   },
 

@@ -54,6 +54,7 @@ class ResourcePrefetchPredictorObserver;
 }
 
 namespace certificate_transparency {
+class CTPolicyManager;
 class TreeStateTracker;
 }
 
@@ -581,9 +582,12 @@ class ProfileIOData {
   mutable std::unique_ptr<chromeos::CertificateProvider> certificate_provider_;
 #endif
 
+  // Pointed to by the TransportSecurityState.
   mutable std::unique_ptr<net::TransportSecurityPersister>
       transport_security_persister_;
   mutable std::unique_ptr<net::ReportSender> certificate_report_sender_;
+  mutable std::unique_ptr<certificate_transparency::CTPolicyManager>
+      ct_policy_manager_;
 
   // These are only valid in between LazyInitialize() and their accessor being
   // called.

@@ -4,8 +4,12 @@
 
 source_set("certificate_transparency") {
   sources = [
+    "ct_policy_manager.cc",
+    "ct_policy_manager.h",
     "log_proof_fetcher.cc",
     "log_proof_fetcher.h",
+    "pref_names.cc",
+    "pref_names.h",
     "single_tree_tracker.cc",
     "single_tree_tracker.h",
     "tree_state_tracker.cc",
@@ -14,7 +18,10 @@ source_set("certificate_transparency") {
 
   deps = [
     "//base",
+    "//components/prefs",
     "//components/safe_json",
+    "//components/url_formatter",
+    "//components/url_matcher",
     "//net",
     "//url",
   ]
@@ -23,6 +30,7 @@ source_set("certificate_transparency") {
 source_set("unit_tests") {
   testonly = true
   sources = [
+    "ct_policy_manager_unittest.cc",
     "log_proof_fetcher_unittest.cc",
     "single_tree_tracker_unittest.cc",
   ]
@@ -30,6 +38,7 @@ source_set("unit_tests") {
   deps = [
     ":certificate_transparency",
     "//base/test:test_support",
+    "//components/prefs:test_support",
     "//components/safe_json:test_support",
     "//net:test_support",
     "//testing/gtest",

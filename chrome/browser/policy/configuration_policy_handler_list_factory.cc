@@ -26,6 +26,7 @@
 #include "chrome/common/features.h"
 #include "chrome/common/pref_names.h"
 #include "components/bookmarks/common/bookmark_pref_names.h"
+#include "components/certificate_transparency/pref_names.h"
 #include "components/content_settings/core/common/pref_names.h"
 #include "components/metrics/metrics_pref_names.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
@@ -661,6 +662,12 @@ std::unique_ptr<ConfigurationPolicyHandlerList> BuildHandlerList(
       base::WrapUnique(new ManagedBookmarksPolicyHandler(chrome_schema)));
   handlers->AddHandler(base::WrapUnique(new ProxyPolicyHandler()));
   handlers->AddHandler(base::WrapUnique(new URLBlacklistPolicyHandler()));
+
+  handlers->AddHandler(base::WrapUnique(new SimpleSchemaValidatingPolicyHandler(
+      key::kCertificateTransparencyEnforcementDisabledForUrls,
+      certificate_transparency::prefs::kCTExcludedHosts, chrome_schema,
+      SCHEMA_STRICT, SimpleSchemaValidatingPolicyHandler::RECOMMENDED_ALLOWED,
+      SimpleSchemaValidatingPolicyHandler::MANDATORY_ALLOWED)));
 
 #if BUILDFLAG(ANDROID_JAVA_UI)
   handlers->AddHandler(

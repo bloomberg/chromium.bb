@@ -58,6 +58,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "components/about_handler/about_protocol_handler.h"
+#include "components/certificate_transparency/ct_policy_manager.h"
 #include "components/certificate_transparency/tree_state_tracker.h"
 #include "components/content_settings/core/browser/content_settings_provider.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
@@ -528,6 +529,11 @@ void ProfileIOData::InitializeOnUIThread(Profile* profile) {
       pref_service, background_task_runner, io_task_runner, callback,
       base::Bind(policy::OverrideBlacklistForURL)));
 
+  // The CTPolicyManager shares the same constraints of needing to be cleaned
+  // up on the UI thread.
+  ct_policy_manager_.reset(new certificate_transparency::CTPolicyManager(
+      pref_service, io_task_runner));
+
   if (!IsOffTheRecord()) {
     // Add policy headers for non-incognito requests.
     policy::PolicyHeaderService* policy_header_service =
@@ -673,6 +679,9 @@ ProfileIOData::~ProfileIOData() {
   if (transport_security_state_)
     transport_security_state_->SetExpectCTReporter(nullptr);
   expect_ct_reporter_.reset();
+
+  if (transport_security_state_)
+    transport_security_state_->SetRequireCTDelegate(nullptr);
 
   // TODO(ajwong): These AssertNoURLRequests() calls are unnecessary since they
   // are already done in the URLRequestContext destructor.
@@ -1085,6 +1094,9 @@ void ProfileIOData::Init(
       new ChromeExpectCTReporter(main_request_context_.get()));
   transport_security_state_->SetExpectCTReporter(expect_ct_reporter_.get());
 
+  transport_security_state_->SetRequireCTDelegate(
+      ct_policy_manager_->GetDelegate());
+
   // Take ownership over these parameters.
   cookie_settings_ = profile_params_->cookie_settings;
   host_content_settings_map_ = profile_params_->host_content_settings_map;
@@ -1279,6 +1291,8 @@ void ProfileIOData::ShutdownOnUIThread(
   session_startup_pref_.Destroy();
   if (url_blacklist_manager_)
     url_blacklist_manager_->ShutdownOnUIThread();
+  if (ct_policy_manager_)
+    ct_policy_manager_->Shutdown();
   if (chrome_http_user_agent_settings_)
     chrome_http_user_agent_settings_->CleanupOnUIThread();
   incognito_availibility_pref_.Destroy();

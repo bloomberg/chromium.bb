@@ -41,6 +41,12 @@ const size_t kMaxHPKPReportCacheEntries = 50;
 const int kTimeToRememberHPKPReportsMins = 60;
 const size_t kReportCacheKeyLength = 16;
 
+// Override for ShouldRequireCT() for unit tests. Possible values:
+//  -1: Unless a delegate says otherwise, do not require CT.
+//   0: Use the default implementation (e.g. production)
+//   1: Unless a delegate says otherwise, require CT.
+int g_ct_required_for_testing = 0;
+
 void RecordUMAForHPKPReportFailure(const GURL& report_uri, int net_error) {
   UMA_HISTOGRAM_SPARSE_SLOWLY("Net.PublicKeyPinReportSendingFailure",
                               net_error);
@@ -712,6 +718,10 @@ bool TransportSecurityState::ShouldRequireCT(
   if (ct_required != CTRequirementLevel::DEFAULT)
     return ct_required == CTRequirementLevel::REQUIRED;
 
+  // Allow unittests to override the default result.
+  if (g_ct_required_for_testing)
+    return g_ct_required_for_testing == 1;
+
   return false;
 }
 
@@ -1132,6 +1142,15 @@ void TransportSecurityState::ReportUMAOnPinFailure(const std::string& host) {
 
   UMA_HISTOGRAM_SPARSE_SLOWLY(
       "Net.PublicKeyPinFailureDomain", result.domain_id);
+}
+
+// static
+void TransportSecurityState::SetShouldRequireCTForTesting(bool* required) {
+  if (!required) {
+    g_ct_required_for_testing = 0;
+    return;
+  }
+  g_ct_required_for_testing = *required ? 1 : -1;
 }
 
 // static

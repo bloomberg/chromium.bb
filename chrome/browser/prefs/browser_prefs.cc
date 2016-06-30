@@ -70,6 +70,7 @@
 #include "chrome/common/features.h"
 #include "chrome/common/pref_names.h"
 #include "components/autofill/core/browser/autofill_manager.h"
+#include "components/certificate_transparency/ct_policy_manager.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/dom_distiller/core/distilled_page_prefs.h"
 #include "components/flags_ui/pref_service_flags_storage.h"
@@ -464,6 +465,7 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
 #endif
 
   policy::URLBlacklistManager::RegisterProfilePrefs(registry);
+  certificate_transparency::CTPolicyManager::RegisterPrefs(registry);
 
 #if defined(ENABLE_EXTENSIONS)
   EasyUnlockService::RegisterProfilePrefs(registry);

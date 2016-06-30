@@ -441,6 +441,11 @@ class NET_EXPORT TransportSecurityState
                              const HostPortPair& host_port_pair,
                              const SSLInfo& ssl_info);
 
+  // For unit tests only; causes ShouldRequireCT() to return |*required|
+  // by default (that is, unless a RequireCTDelegate overrides). Set to
+  // nullptr to reset.
+  static void SetShouldRequireCTForTesting(bool* required);
+
  private:
   friend class TransportSecurityStateTest;
   FRIEND_TEST_ALL_PREFIXES(HttpSecurityHeadersTest, UpdateDynamicPKPOnly);

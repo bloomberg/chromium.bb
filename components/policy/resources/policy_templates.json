@@ -137,7 +137,7 @@
 #   persistent IDs for all fields (but not for groups!) are needed. These are
 #   specified by the 'id' keys of each policy. NEVER CHANGE EXISTING IDs,
 #   because doing so would break the deployed wire format!
-#   For your editing convenience: highest ID currently used: 334
+#   For your editing convenience: highest ID currently used: 335
 #
 # Placeholders:
 #   The following placeholder strings are automatically substituted:
@@ -7927,6 +7927,34 @@
       If this policy is not configured or if it is set to "tls1.2" then <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> no longer performs this fallback. Note this does not disable support for older TLS versions, only whether <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will work around buggy servers which cannot negotiate versions correctly.
 
       Otherwise, if compatibility with a buggy server must be maintained, this policy may be set to "tls1.1". This is a stopgap measure and the server should be rapidly fixed.''',
+    },
+    {
+      'name': 'CertificateTransparencyEnforcementDisabledForUrls',
+      'type': 'list',
+      'schema': {
+        'type': 'array',
+        'items': { 'type': 'string' },
+      },
+      'supported_on': [
+        'chrome.*:53-',
+        'chrome_os:53-',
+        'android:53-',
+      ],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': False,
+      },
+      'example_value': ['example.com', '.example.com'],
+      'id': 335,
+      'caption': '''Disable Certificate Transparency enforcement for a list of URLs''',
+      'tags': ['system-security'],
+      'desc': '''Disables enforcing Certificate Transparency requirements to the listed URLs.
+
+      This policy allows certificates for the hostnames in the specified URLs to not be disclosed via Certificate Transparency. This allows certificates that would otherwise be untrusted, because they were not properly publicly disclosed, to continue to be used, but makes it harder to detect misissued certificates for those hosts.
+
+      A URL pattern is formatted according to https://www.chromium.org/administrators/url-blacklist-filter-format. However, because certificates are valid for a given hostname independent of the scheme, port, or path, only the hostname portion of the URL is considered. Wildcard hosts are not supported.
+
+      If this policy is not set, any certificate that is required to be disclosed via Certificate Transparency will be treated as untrusted if it is not disclosed according to the Certificate Transparency policy.''',
     },
     {
       'name': 'RC4Enabled',
