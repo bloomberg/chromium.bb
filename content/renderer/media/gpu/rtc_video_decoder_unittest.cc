@@ -282,7 +282,8 @@ TEST_F(RTCVideoDecoderTest, IsFirstBufferAfterReset) {
       rtc_decoder_->IsFirstBufferAfterReset(1, RTCVideoDecoder::ID_LAST));
 }
 
-
+// Tests/Verifies that |rtc_encoder_| drops incoming frames and its error
+// counter is increased when in an error condition.
 TEST_P(RTCVideoDecoderTest, GetVDAErrorCounterForTesting) {
   const webrtc::VideoCodecType codec_type = GetParam();
   CreateDecoder(codec_type);
@@ -293,6 +294,7 @@ TEST_P(RTCVideoDecoderTest, GetVDAErrorCounterForTesting) {
   input_image._encodedWidth = kMinResolutionWidth;
   input_image._encodedHeight = kMaxResolutionHeight;
   input_image._frameType = webrtc::kVideoFrameDelta;
+  input_image._length = kMinResolutionWidth * kMaxResolutionHeight;
   EXPECT_EQ(WEBRTC_VIDEO_CODEC_ERROR,
             rtc_decoder_->Decode(input_image, false, nullptr, nullptr, 0));
   RunUntilIdle();
@@ -308,16 +310,11 @@ TEST_P(RTCVideoDecoderTest, GetVDAErrorCounterForTesting) {
             rtc_decoder_->Decode(input_image, false, nullptr, nullptr, 0));
   EXPECT_EQ(1, rtc_decoder_->GetVDAErrorCounterForTesting());
 
-  // Decoder expects a keyframe after reset, so drops any other frames.
+  // Decoder expects a keyframe after reset, so drops any other frames. However,
+  // we should still increment the error counter.
   EXPECT_EQ(WEBRTC_VIDEO_CODEC_ERROR,
             rtc_decoder_->Decode(input_image, false, nullptr, nullptr, 0));
-  EXPECT_EQ(1, rtc_decoder_->GetVDAErrorCounterForTesting());
-
-  // Decoder resets error counter after a successfull decode.
-  input_image._frameType = webrtc::kVideoFrameKey;
-  EXPECT_EQ(WEBRTC_VIDEO_CODEC_OK,
-            rtc_decoder_->Decode(input_image, false, nullptr, nullptr, 10));
-  EXPECT_EQ(0, rtc_decoder_->GetVDAErrorCounterForTesting());
+  EXPECT_EQ(2, rtc_decoder_->GetVDAErrorCounterForTesting());
 }
 
 INSTANTIATE_TEST_CASE_P(CodecProfiles,

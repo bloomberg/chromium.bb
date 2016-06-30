@@ -201,9 +201,6 @@ class CONTENT_EXPORT RTCVideoDecoder
   // Clears the pending_buffers_ queue, freeing memory.
   void ClearPendingBuffers();
 
-  // Resets |vda_error_counter_| after a successfull run of decode.
-  void TryResetVDAErrorCounter_Locked();
-
   enum State {
     UNINITIALIZED,  // The decoder has not initialized.
     INITIALIZED,    // The decoder has initialized.

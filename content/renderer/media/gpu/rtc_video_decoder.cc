@@ -236,6 +236,10 @@ int32_t RTCVideoDecoder::Decode(
                                      reset_bitstream_buffer_id_)) {
     // TODO(wuchengli): VDA should handle it. Remove this when
     // http://crosbug.com/p/21913 is fixed.
+
+    // If we're are in an error condition, increase the counter.
+    vda_error_counter_ += vda_error_counter_ ? 1 : 0;
+
     DVLOG(1) << "The first frame should be a key frame. Drop this.";
     return WEBRTC_VIDEO_CODEC_ERROR;
   }
@@ -269,8 +273,6 @@ int32_t RTCVideoDecoder::Decode(
       base::AutoUnlock auto_unlock(lock_);
       Release();
     }
-
-    TryResetVDAErrorCounter_Locked();
     return WEBRTC_VIDEO_CODEC_OK;
   }
 
@@ -279,7 +281,6 @@ int32_t RTCVideoDecoder::Decode(
       FROM_HERE,
       base::Bind(&RTCVideoDecoder::RequestBufferDecode,
                  weak_factory_.GetWeakPtr()));
-  TryResetVDAErrorCounter_Locked();
   return WEBRTC_VIDEO_CODEC_OK;
 }
 
@@ -443,6 +444,8 @@ void RTCVideoDecoder::PictureReady(const media::Picture& picture) {
                            reset_bitstream_buffer_id_)) {
       decode_complete_callback_->Decoded(decoded_image);
     }
+    // Reset error counter as we successfully decoded a frame.
+    vda_error_counter_ = 0;
   }
 }
 
@@ -887,14 +890,6 @@ void RTCVideoDecoder::ClearPendingBuffers() {
   for (const auto& pending_buffer : pending_buffers_)
     delete[] pending_buffer.first._buffer;
   pending_buffers_.clear();
-}
-
-void RTCVideoDecoder::TryResetVDAErrorCounter_Locked() {
-  lock_.AssertAcquired();
-
-  if (vda_error_counter_ == 0)
-    return;
-  vda_error_counter_ = 0;
 }
 
 }  // namespace content
