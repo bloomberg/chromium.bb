@@ -45332,6 +45332,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Renderer4.PartialRasterPercentageSaved" units="%">
+  <owner>ericrk@chromium.org</owner>
+  <summary>
+    Percentage of pixels which would have been rastered, but were skipped due to
+    the partial raster optimization. Logged for each raster task. The histogram
+    is suffixed by the RasterBufferProvider which is in use.
+  </summary>
+</histogram>
+
 <histogram name="Renderer4.pixelCountCulled_Draw" units="NormalizedPixels">
   <owner>wiltzius@chromium.org</owner>
   <summary>
@@ -98736,6 +98745,12 @@ To add a new entry, add it with any value and run test to compute valid value.
       label="Verification time for a server when server config from cache is
              used."/>
   <affected-histogram name="Net.QuicSession.VerifyProofTime"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="RasterBufferProvider" separator=".">
+  <suffix name="Gpu" label="The GpuRasterBufferProvider was in use."/>
+  <suffix name="OneCopy" label="The OneCopyRasterBufferProvider was in use."/>
+  <affected-histogram name="Renderer4.PartialRasterPercentageSaved"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="RemoteProcessWarmStartFast" separator="">

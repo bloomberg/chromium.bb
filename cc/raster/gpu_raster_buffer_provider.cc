@@ -10,6 +10,7 @@
 
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/trace_event/trace_event.h"
 #include "cc/playback/raster_source.h"
 #include "cc/raster/scoped_gpu_raster.h"
@@ -40,6 +41,18 @@ static sk_sp<SkPicture> PlaybackToPicture(
   }
   DCHECK(!playback_rect.IsEmpty())
       << "Why are we rastering a tile that's not dirty?";
+
+  // Log a histogram of the percentage of pixels that were saved due to
+  // partial raster.
+  float full_rect_size = raster_full_rect.size().GetArea();
+  if (full_rect_size > 0) {
+    float fraction_partial_rastered =
+        static_cast<float>(playback_rect.size().GetArea()) / full_rect_size;
+    float fraction_saved = 1.0f - fraction_partial_rastered;
+
+    UMA_HISTOGRAM_PERCENTAGE("Renderer4.PartialRasterPercentageSaved.Gpu",
+                             100.0f * fraction_saved);
+  }
 
   // Play back raster_source into temp SkPicture.
   SkPictureRecorder recorder;

@@ -11,6 +11,7 @@
 #include <utility>
 
 #include "base/macros.h"
+#include "base/metrics/histogram_macros.h"
 #include "cc/base/math_util.h"
 #include "cc/resources/platform_color.h"
 #include "cc/resources/resource_format.h"
@@ -222,6 +223,18 @@ void OneCopyRasterBufferProvider::PlaybackToStagingBuffer(
     // buffer matches the prevous content id.
     if (previous_content_id == staging_buffer->content_id)
       playback_rect.Intersect(raster_dirty_rect);
+  }
+
+  // Log a histogram of the percentage of pixels that were saved due to
+  // partial raster.
+  float full_rect_size = raster_full_rect.size().GetArea();
+  if (full_rect_size > 0) {
+    float fraction_partial_rastered =
+        static_cast<float>(playback_rect.size().GetArea()) / full_rect_size;
+    float fraction_saved = 1.0f - fraction_partial_rastered;
+
+    UMA_HISTOGRAM_PERCENTAGE("Renderer4.PartialRasterPercentageSaved.OneCopy",
+                             100.0f * fraction_saved);
   }
 
   if (staging_buffer->gpu_memory_buffer) {
