@@ -129,6 +129,8 @@ NSTextField* FederationLabel(const base::string16& text) {
         setHoverImage:bundle.GetImageNamed(IDR_CLOSE_2_H).ToNSImage()];
     [deleteButton_
         setPressedImage:bundle.GetImageNamed(IDR_CLOSE_2_P).ToNSImage()];
+    NSString* deleteTitle = l10n_util::GetNSString(IDS_MANAGE_PASSWORDS_DELETE);
+    [deleteButton_ setAccessibilityTitle:deleteTitle];
     [deleteButton_ setTarget:target];
     [deleteButton_ setAction:action];
     [self addSubview:deleteButton_];
