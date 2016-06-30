@@ -21,14 +21,6 @@ group("android_tools") {
   ]
 }
 
-# GYP: //tools/android/android_tools.gyp:heap_profiler
-group("heap_profiler") {
-  deps = [
-    "//tools/android/heap_profiler:heap_dump",
-    "//tools/android/heap_profiler:heap_profiler",
-  ]
-}
-
 # GYP: //tools/android/android_tools.gyp:memdump
 group("memdump") {
   deps = [

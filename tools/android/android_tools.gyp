@@ -21,15 +21,6 @@
       ],
     },
     {
-      # GN: //tools/android:heap_profiler
-      'target_name': 'heap_profiler',
-      'type': 'none',
-      'dependencies': [
-        'heap_profiler/heap_profiler.gyp:heap_dump',
-        'heap_profiler/heap_profiler.gyp:heap_profiler',
-      ],
-    },
-    {
       # GN: //tools/android:memdump
       'target_name': 'memdump',
       'type': 'none',

@@ -827,7 +827,6 @@
             '../skia/skia_tests.gyp:skia_unittests_apk',
             '../sql/sql.gyp:sql_unittests_apk',
             '../sync/sync.gyp:sync_unit_tests_apk',
-            '../tools/android/heap_profiler/heap_profiler.gyp:heap_profiler_unittests_apk',
             '../ui/android/ui_android.gyp:ui_android_unittests_apk',
             '../ui/android/ui_android.gyp:ui_junit_tests',
             '../ui/base/ui_base_tests.gyp:ui_base_unittests_apk',

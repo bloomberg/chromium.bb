@@ -377,7 +377,6 @@ group("both_gn_and_gyp") {
       "//tools/android:push_apps_to_background",
       "//tools/android/audio_focus_grabber:audio_focus_grabber_apk",
       "//tools/android/customtabs_benchmark:customtabs_benchmark_apk",
-      "//tools/android/heap_profiler:heap_profiler_unittests",
       "//tools/android/kerberos/SpnegoAuthenticator:spnego_authenticator_apk",
       "//tools/cygprofile:cygprofile_unittests",
       "//ui/android:ui_junit_tests",
