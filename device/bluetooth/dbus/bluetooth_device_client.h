@@ -17,6 +17,7 @@
 #include "dbus/object_path.h"
 #include "dbus/property.h"
 #include "device/bluetooth/bluetooth_export.h"
+#include "device/bluetooth/bluez/bluetooth_service_record_bluez.h"
 #include "device/bluetooth/dbus/bluez_dbus_client.h"
 
 namespace bluez {
@@ -25,6 +26,23 @@ namespace bluez {
 // remote Bluetooth Devices.
 class DEVICE_BLUETOOTH_EXPORT BluetoothDeviceClient : public BluezDBusClient {
  public:
+  using ServiceRecordList = std::vector<BluetoothServiceRecordBlueZ>;
+
+  // This callback invoked for a successful GetConnInfo API call with the
+  // RSSI, TX power, and maximum TX power of the current connection.
+  using ConnInfoCallback = base::Callback<
+      void(int16_t rssi, int16_t transmit_power, int16_t max_transmit_power)>;
+
+  // This callback invoked for a successful GetServiceRecords API call with the
+  // currently discovered service records.
+  using ServiceRecordsCallback = base::Callback<void(const ServiceRecordList&)>;
+
+  // The ErrorCallback is used by device methods to indicate failure.
+  // It receives two arguments: the name of the error in |error_name| and
+  // an optional message in |error_message|.
+  using ErrorCallback = base::Callback<void(const std::string& error_name,
+                                            const std::string& error_message)>;
+
   // Structure of properties associated with bluetooth devices.
   struct Properties : public dbus::PropertySet {
     // The Bluetooth device address of the device. Read-only.
@@ -135,12 +153,6 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDeviceClient : public BluezDBusClient {
   // any values should be copied if needed.
   virtual Properties* GetProperties(const dbus::ObjectPath& object_path) = 0;
 
-  // The ErrorCallback is used by device methods to indicate failure.
-  // It receives two arguments: the name of the error in |error_name| and
-  // an optional message in |error_message|.
-  typedef base::Callback<void(const std::string& error_name,
-                              const std::string& error_message)> ErrorCallback;
-
   // Connects to the device with object path |object_path|, connecting any
   // profiles that can be connected to and have been flagged as auto-connected;
   // may be used to connect additional profiles for an already connected device,
@@ -183,18 +195,19 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDeviceClient : public BluezDBusClient {
                              const base::Closure& callback,
                              const ErrorCallback& error_callback) = 0;
 
-  // The callback invoked for a successful GetConnInfo API call with the
-  // RSSI, TX power, and maximum TX power of the current connection.
-  typedef base::Callback<void(int16_t rssi,
-                              int16_t transmit_power,
-                              int16_t max_transmit_power)> ConnInfoCallback;
-
   // Returns the RSSI, TX power, and maximum TX power of a connection to the
   // device with object path |object_path|. If the device is not connected, then
   // an error will be returned.
   virtual void GetConnInfo(const dbus::ObjectPath& object_path,
                            const ConnInfoCallback& callback,
                            const ErrorCallback& error_callback) = 0;
+
+  // Returns the currently discovered service records for the device with
+  // object path |object_path|. If the device is not connected, then an error
+  // will be returned.
+  virtual void GetServiceRecords(const dbus::ObjectPath& object_path,
+                                 const ServiceRecordsCallback& callback,
+                                 const ErrorCallback& error_callback) = 0;
 
   // Creates the instance.
   static BluetoothDeviceClient* Create();

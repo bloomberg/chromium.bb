@@ -32,9 +32,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothServiceRecordBlueZ {
     UNKNOWN
   };
 
-  explicit BluetoothServiceRecordBlueZ(
-      const std::map<uint16_t, BluetoothServiceAttributeValueBlueZ>&
-          attributes);
+  BluetoothServiceRecordBlueZ();
   BluetoothServiceRecordBlueZ(const BluetoothServiceRecordBlueZ& record);
   ~BluetoothServiceRecordBlueZ();
 
@@ -43,6 +41,11 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothServiceRecordBlueZ {
   // Returns the value associated with a given attribute ID in |value|.
   const BluetoothServiceAttributeValueBlueZ& GetAttributeValue(
       uint16_t attribute_id) const;
+
+  // Add an an entry to this service record. If a record with the given ID
+  // already exists, it is replaced.
+  void AddRecordEntry(uint16_t id,
+                      const BluetoothServiceAttributeValueBlueZ& value);
 
  private:
   std::map<uint16_t, BluetoothServiceAttributeValueBlueZ> attributes_;

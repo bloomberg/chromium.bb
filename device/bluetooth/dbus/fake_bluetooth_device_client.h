@@ -5,8 +5,7 @@
 #ifndef DEVICE_BLUETOOTH_DBUS_FAKE_BLUETOOTH_DEVICE_CLIENT_H_
 #define DEVICE_BLUETOOTH_DBUS_FAKE_BLUETOOTH_DEVICE_CLIENT_H_
 
-#include <stdint.h>
-
+#include <cstdint>
 #include <map>
 #include <memory>
 #include <vector>
@@ -102,6 +101,9 @@ class DEVICE_BLUETOOTH_EXPORT FakeBluetoothDeviceClient
   void GetConnInfo(const dbus::ObjectPath& object_path,
                    const ConnInfoCallback& callback,
                    const ErrorCallback& error_callback) override;
+  void GetServiceRecords(const dbus::ObjectPath& object_path,
+                         const ServiceRecordsCallback& callback,
+                         const ErrorCallback& error_callback) override;
 
   void SetSimulationIntervalMs(int interval_ms);
 

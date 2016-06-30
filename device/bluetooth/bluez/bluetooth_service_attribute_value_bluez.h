@@ -26,7 +26,7 @@ namespace bluez {
 //        will be an array of other attributes.
 class DEVICE_BLUETOOTH_EXPORT BluetoothServiceAttributeValueBlueZ {
  public:
-  enum Type { NULLTYPE, UINT, INT, UUID, STRING, BOOL, SEQUENCE, URL };
+  enum Type { NULLTYPE = 0, UINT, INT, UUID, STRING, BOOL, SEQUENCE, URL };
 
   using Sequence = std::vector<BluetoothServiceAttributeValueBlueZ>;
 

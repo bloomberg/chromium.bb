@@ -18,6 +18,7 @@
 #include "device/bluetooth/bluetooth_common.h"
 #include "device/bluetooth/bluetooth_device.h"
 #include "device/bluetooth/bluetooth_export.h"
+#include "device/bluetooth/bluez/bluetooth_service_record_bluez.h"
 #include "device/bluetooth/dbus/bluetooth_device_client.h"
 #include "device/bluetooth/dbus/bluetooth_gatt_service_client.h"
 
@@ -29,7 +30,6 @@ namespace bluez {
 
 class BluetoothAdapterBlueZ;
 class BluetoothPairingBlueZ;
-class BluetoothServiceRecordBlueZ;
 
 // The BluetoothDeviceBlueZ class implements BluetoothDevice for platforms using
 // BlueZ.
@@ -43,6 +43,11 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDeviceBlueZ
       public bluez::BluetoothDeviceClient::Observer,
       public bluez::BluetoothGattServiceClient::Observer {
  public:
+  using GetServiceRecordsCallback =
+      base::Callback<void(const std::vector<BluetoothServiceRecordBlueZ>&)>;
+  using GetServiceRecordsErrorCallback =
+      base::Callback<void(BluetoothServiceRecordBlueZ::ErrorCode)>;
+
   // BluetoothDevice override
   uint32_t GetBluetoothClass() const override;
   device::BluetoothTransport GetType() const override;
@@ -96,7 +101,8 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDeviceBlueZ
   // Returns the complete list of service records discovered for on this
   // device via SDP. If called before discovery is complete, it may return
   // an incomplete list and/or stale cached records.
-  std::vector<BluetoothServiceRecordBlueZ*> GetServiceRecords();
+  void GetServiceRecords(const GetServiceRecordsCallback& callback,
+                         const GetServiceRecordsErrorCallback& error_callback);
 
   // Creates a pairing object with the given delegate |pairing_delegate| and
   // establishes it as the pairing context for this device. All pairing-related
@@ -155,6 +161,12 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDeviceBlueZ
   void OnGetConnInfoError(const ConnectionInfoCallback& callback,
                           const std::string& error_name,
                           const std::string& error_message);
+
+  // Called by dbus:: in case of an error during the GetServiceRecords API call.
+  void OnGetServiceRecordsError(
+      const GetServiceRecordsErrorCallback& error_callback,
+      const std::string& error_name,
+      const std::string& error_message);
 
   // Internal method to initiate a connection to this device, and methods called
   // by dbus:: on completion of the D-Bus method call.

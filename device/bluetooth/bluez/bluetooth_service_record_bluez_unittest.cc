@@ -14,7 +14,10 @@
 #include "base/run_loop.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
 #include "device/bluetooth/bluez/bluetooth_adapter_bluez.h"
+#include "device/bluetooth/bluez/bluetooth_device_bluez.h"
 #include "device/bluetooth/dbus/bluez_dbus_manager.h"
+#include "device/bluetooth/dbus/fake_bluetooth_device_client.h"
+#include "device/bluetooth/test/bluetooth_test_bluez.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace bluez {
@@ -29,28 +32,18 @@ constexpr char kServiceUuid3[] = "00001801-0000-1000-3000-00805f9b34fb";
 
 }  // namespace
 
-class BluetoothServiceRecordBlueZTest : public testing::Test {
+class BluetoothServiceRecordBlueZTest : public device::BluetoothTestBlueZ {
  public:
   BluetoothServiceRecordBlueZTest()
       : adapter_bluez_(nullptr),
         success_callbacks_(0),
         error_callbacks_(0),
-        run_loop_(nullptr),
         last_seen_handle_(0) {}
 
   void SetUp() override {
-    std::unique_ptr<bluez::BluezDBusManagerSetter> dbus_setter =
-        bluez::BluezDBusManager::GetSetterForTesting();
-
-    device::BluetoothAdapterFactory::GetAdapter(
-        base::Bind(&BluetoothServiceRecordBlueZTest::AdapterCallback,
-                   base::Unretained(this)));
-    RunRunLoop();
-  }
-
-  void TearDown() override {
-    device::BluetoothAdapterFactory::Shutdown();
-    bluez::BluezDBusManager::Shutdown();
+    BluetoothTestBlueZ::SetUp();
+    InitWithFakeAdapter();
+    adapter_bluez_ = static_cast<bluez::BluetoothAdapterBlueZ*>(adapter_.get());
   }
 
   uint32_t CreateServiceRecordWithCallbacks(
@@ -89,39 +82,63 @@ class BluetoothServiceRecordBlueZTest : public testing::Test {
     EXPECT_EQ(old_error_callbacks + 1 - success, error_callbacks_);
   }
 
- protected:
-  BluetoothServiceRecordBlueZ CreateaServiceRecord(const std::string uuid) {
-    std::map<uint16_t, BluetoothServiceAttributeValueBlueZ> attributes;
-    attributes.insert(std::pair<uint16_t, BluetoothServiceAttributeValueBlueZ>(
-        kServiceUuidAttributeId,
-        BluetoothServiceAttributeValueBlueZ(
-            BluetoothServiceAttributeValueBlueZ::UUID, 16,
-            base::MakeUnique<base::StringValue>(uuid))));
-    return BluetoothServiceRecordBlueZ(attributes);
+  void GetServiceRecords(BluetoothDeviceBlueZ* device, bool expect_success) {
+    const size_t old_success_callbacks = success_callbacks_;
+    const size_t old_error_callbacks = error_callbacks_;
+    records_.clear();
+    device->GetServiceRecords(
+        base::Bind(&BluetoothServiceRecordBlueZTest::GetServiceRecordsCallback,
+                   base::Unretained(this)),
+        base::Bind(&BluetoothServiceRecordBlueZTest::ErrorCallback,
+                   base::Unretained(this)));
+    size_t success = expect_success ? 1 : 0;
+    EXPECT_EQ(old_success_callbacks + success, success_callbacks_);
+    EXPECT_EQ(old_error_callbacks + 1 - success, error_callbacks_);
   }
 
-  scoped_refptr<device::BluetoothAdapter> adapter_;
+  void VerifyRecords() {
+    EXPECT_EQ(2u, records_.size());
+
+    std::vector<uint16_t> ids0 = records_[0].GetAttributeIds();
+    EXPECT_EQ(2u, ids0.size());
+
+    BluetoothServiceAttributeValueBlueZ service_handle0 =
+        records_[0].GetAttributeValue(ids0[0]);
+    int32_t int_value;
+    EXPECT_TRUE(service_handle0.value().GetAsInteger(&int_value));
+    EXPECT_EQ(0x1337, int_value);
+
+    BluetoothServiceAttributeValueBlueZ service_class_list =
+        records_[0].GetAttributeValue(ids0[1]);
+    std::string str_value;
+    EXPECT_TRUE(
+        service_class_list.sequence()[0].value().GetAsString(&str_value));
+    EXPECT_EQ("1802", str_value);
+
+    std::vector<uint16_t> ids1 = records_[1].GetAttributeIds();
+    EXPECT_EQ(1u, ids1.size());
+
+    BluetoothServiceAttributeValueBlueZ service_handle1 =
+        records_[1].GetAttributeValue(ids1[0]);
+    EXPECT_TRUE(service_handle1.value().GetAsInteger(&int_value));
+    EXPECT_EQ(0xffffffff, static_cast<uint32_t>(int_value));
+  }
+
+ protected:
+  BluetoothServiceRecordBlueZ CreateaServiceRecord(const std::string uuid) {
+    BluetoothServiceRecordBlueZ record;
+    record.AddRecordEntry(kServiceUuidAttributeId,
+                          BluetoothServiceAttributeValueBlueZ(
+                              BluetoothServiceAttributeValueBlueZ::UUID, 16,
+                              base::MakeUnique<base::StringValue>(uuid)));
+    return record;
+  }
+
   BluetoothAdapterBlueZ* adapter_bluez_;
   size_t success_callbacks_;
   size_t error_callbacks_;
 
  private:
-  void RunRunLoop() {
-    run_loop_ = base::MakeUnique<base::RunLoop>();
-    run_loop_->Run();
-  }
-
-  void QuitRunLoop() {
-    if (run_loop_)
-      run_loop_->Quit();
-  }
-
-  void AdapterCallback(scoped_refptr<device::BluetoothAdapter> adapter) {
-    adapter_ = adapter;
-    adapter_bluez_ = static_cast<BluetoothAdapterBlueZ*>(adapter_.get());
-    QuitRunLoop();
-  }
-
   void CreateServiceSuccessCallback(uint32_t handle) {
     last_seen_handle_ = handle;
     ++success_callbacks_;
@@ -133,9 +150,14 @@ class BluetoothServiceRecordBlueZTest : public testing::Test {
     ++error_callbacks_;
   }
 
-  base::MessageLoop message_loop_;
-  std::unique_ptr<base::RunLoop> run_loop_;
+  void GetServiceRecordsCallback(
+      const std::vector<BluetoothServiceRecordBlueZ>& records) {
+    records_ = records;
+    ++success_callbacks_;
+  }
+
   uint32_t last_seen_handle_;
+  std::vector<BluetoothServiceRecordBlueZ> records_;
 
   DISALLOW_COPY_AND_ASSIGN(BluetoothServiceRecordBlueZTest);
 };
@@ -155,6 +177,17 @@ TEST_F(BluetoothServiceRecordBlueZTest, CreateAndRemove) {
   RemoveServiceRecordWithCallbacks(handle1, false);
   RemoveServiceRecordWithCallbacks(handle4, true);
   RemoveServiceRecordWithCallbacks(handle2, true);
+}
+
+TEST_F(BluetoothServiceRecordBlueZTest, GetServiceRecords) {
+  BluetoothDeviceBlueZ* device =
+      static_cast<BluetoothDeviceBlueZ*>(adapter_->GetDevice(
+          bluez::FakeBluetoothDeviceClient::kPairedDeviceAddress));
+  GetServiceRecords(device, false);
+  device->Connect(nullptr, GetCallback(Call::EXPECTED),
+                  GetConnectErrorCallback(Call::NOT_EXPECTED));
+  GetServiceRecords(device, true);
+  VerifyRecords();
 }
 
 }  // namespace bluez

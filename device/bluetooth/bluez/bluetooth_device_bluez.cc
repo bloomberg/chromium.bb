@@ -554,10 +554,13 @@ void BluetoothDeviceBlueZ::CreateGattConnection(
           error_callback);
 }
 
-std::vector<BluetoothServiceRecordBlueZ*>
-BluetoothDeviceBlueZ::GetServiceRecords() {
-  // TODO(rkc): Implement this.
-  return std::vector<BluetoothServiceRecordBlueZ*>();
+void BluetoothDeviceBlueZ::GetServiceRecords(
+    const GetServiceRecordsCallback& callback,
+    const GetServiceRecordsErrorCallback& error_callback) {
+  bluez::BluezDBusManager::Get()->GetBluetoothDeviceClient()->GetServiceRecords(
+      object_path_, callback,
+      base::Bind(&BluetoothDeviceBlueZ::OnGetServiceRecordsError,
+                 weak_ptr_factory_.GetWeakPtr(), error_callback));
 }
 
 BluetoothPairingBlueZ* BluetoothDeviceBlueZ::BeginPairing(
@@ -702,6 +705,21 @@ void BluetoothDeviceBlueZ::OnGetConnInfoError(
                << ": Failed to get connection info: " << error_name << ": "
                << error_message;
   callback.Run(ConnectionInfo());
+}
+
+void BluetoothDeviceBlueZ::OnGetServiceRecordsError(
+    const GetServiceRecordsErrorCallback& error_callback,
+    const std::string& error_name,
+    const std::string& error_message) {
+  VLOG(1) << object_path_.value()
+          << ": Failed to get service records: " << error_name << ": "
+          << error_message;
+  BluetoothServiceRecordBlueZ::ErrorCode code =
+      BluetoothServiceRecordBlueZ::ErrorCode::UNKNOWN;
+  if (error_name == bluetooth_device::kErrorNotConnected) {
+    code = BluetoothServiceRecordBlueZ::ErrorCode::ERROR_DEVICE_DISCONNECTED;
+  }
+  error_callback.Run(code);
 }
 
 void BluetoothDeviceBlueZ::ConnectInternal(

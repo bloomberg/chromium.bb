@@ -67,11 +67,6 @@ void BluetoothTestBlueZ::SetUp() {
   std::unique_ptr<bluez::BluezDBusManagerSetter> dbus_setter =
       bluez::BluezDBusManager::GetSetterForTesting();
   fake_bluetooth_device_client_ = new bluez::FakeBluetoothDeviceClient;
-  // TODO(rkc): This is a big hacky. Creating a device client creates three
-  // devices by default. For now, the easiest path is to just clear them, but
-  // a better way will be to only create them as needed. This will require
-  // looking at a lot of tests but should be done eventually.
-  fake_bluetooth_device_client_->RemoveAllDevices();
   dbus_setter->SetBluetoothDeviceClient(
       std::unique_ptr<bluez::BluetoothDeviceClient>(
           fake_bluetooth_device_client_));

@@ -7,11 +7,13 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"
 #include "dbus/object_manager.h"
 #include "dbus/object_proxy.h"
+#include "device/bluetooth/bluez/bluetooth_service_attribute_value_bluez.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
 namespace bluez {
@@ -20,6 +22,149 @@ namespace {
 
 // Value returned for the the RSSI or TX power if it cannot be read.
 const int kUnknownPower = 127;
+
+std::unique_ptr<BluetoothServiceAttributeValueBlueZ> ReadAttributeValue(
+    dbus::MessageReader* struct_reader) {
+  uint8_t type_val;
+  if (!struct_reader->PopByte(&type_val))
+    return nullptr;
+  BluetoothServiceAttributeValueBlueZ::Type type =
+      static_cast<BluetoothServiceAttributeValueBlueZ::Type>(type_val);
+
+  uint32_t size;
+  if (!struct_reader->PopUint32(&size))
+    return nullptr;
+
+  std::unique_ptr<base::Value> value = nullptr;
+  switch (type) {
+    case bluez::BluetoothServiceAttributeValueBlueZ::NULLTYPE: {
+      break;
+    }
+    case bluez::BluetoothServiceAttributeValueBlueZ::UINT:
+    // Fall through.
+    case bluez::BluetoothServiceAttributeValueBlueZ::INT: {
+      switch (size) {
+        // It doesn't matter what 'sign' the number is, only size.
+        // Whenever we unpack this value, we will take the raw bits and
+        // cast it back to the correct sign anyway.
+        case 1:
+          uint8_t byte;
+          if (!struct_reader->PopVariantOfByte(&byte))
+            return nullptr;
+          value = base::MakeUnique<base::FundamentalValue>(byte);
+          break;
+        case 2:
+          uint16_t short_val;
+          if (!struct_reader->PopVariantOfUint16(&short_val))
+            return nullptr;
+          value = base::MakeUnique<base::FundamentalValue>(short_val);
+          break;
+        case 4:
+          uint32_t val;
+          if (!struct_reader->PopVariantOfUint32(&val))
+            return nullptr;
+          value = base::MakeUnique<base::FundamentalValue>(
+              static_cast<int32_t>(val));
+          break;
+        case 8:
+        // Fall through.
+        // BlueZ should never be sending us this size at the moment since
+        // the Android SDP records we will create from these raw records
+        // don't have any fields which use this size. If we ever decide to
+        // change this, this needs to get fixed.
+        default:
+          NOTREACHED();
+      }
+      break;
+    }
+    case bluez::BluetoothServiceAttributeValueBlueZ::UUID:
+    // Fall through.
+    case bluez::BluetoothServiceAttributeValueBlueZ::STRING:
+    // Fall through.
+    case bluez::BluetoothServiceAttributeValueBlueZ::URL: {
+      std::string str;
+      if (!struct_reader->PopVariantOfString(&str))
+        return nullptr;
+      value = base::MakeUnique<base::StringValue>(str);
+      break;
+    }
+    case bluez::BluetoothServiceAttributeValueBlueZ::BOOL: {
+      bool b;
+      if (!struct_reader->PopVariantOfBool(&b))
+        return nullptr;
+      value = base::MakeUnique<base::FundamentalValue>(b);
+      break;
+    }
+    case bluez::BluetoothServiceAttributeValueBlueZ::SEQUENCE: {
+      dbus::MessageReader variant_reader(nullptr);
+      if (!struct_reader->PopVariant(&variant_reader))
+        return nullptr;
+      dbus::MessageReader array_reader(nullptr);
+      if (!variant_reader.PopArray(&array_reader))
+        return nullptr;
+      std::unique_ptr<BluetoothServiceAttributeValueBlueZ::Sequence> sequence =
+          base::MakeUnique<BluetoothServiceAttributeValueBlueZ::Sequence>();
+      while (array_reader.HasMoreData()) {
+        dbus::MessageReader sequence_element_struct_reader(nullptr);
+        if (!array_reader.PopStruct(&sequence_element_struct_reader))
+          return nullptr;
+        std::unique_ptr<BluetoothServiceAttributeValueBlueZ> attribute_value =
+            ReadAttributeValue(&sequence_element_struct_reader);
+        if (!attribute_value)
+          return nullptr;
+        sequence->emplace_back(*attribute_value);
+      }
+      return base::MakeUnique<BluetoothServiceAttributeValueBlueZ>(
+          std::move(sequence));
+    }
+  }
+  return base::MakeUnique<BluetoothServiceAttributeValueBlueZ>(
+      type, size, std::move(value));
+}
+
+std::unique_ptr<BluetoothServiceRecordBlueZ> ReadRecord(
+    dbus::MessageReader* array_reader) {
+  std::unique_ptr<BluetoothServiceRecordBlueZ> record =
+      base::MakeUnique<BluetoothServiceRecordBlueZ>();
+  while (array_reader->HasMoreData()) {
+    dbus::MessageReader dict_entry_reader(nullptr);
+    if (!array_reader->PopDictEntry(&dict_entry_reader))
+      return nullptr;
+    uint16_t id;
+    if (!dict_entry_reader.PopUint16(&id))
+      return nullptr;
+    dbus::MessageReader struct_reader(nullptr);
+    if (!dict_entry_reader.PopStruct(&struct_reader))
+      return nullptr;
+    std::unique_ptr<BluetoothServiceAttributeValueBlueZ> attribute_value =
+        ReadAttributeValue(&struct_reader);
+    if (!attribute_value)
+      return nullptr;
+    record->AddRecordEntry(id, *attribute_value);
+  }
+  //  return std::move(record);
+  return record;
+}
+
+bool ReadRecordsFromMessage(dbus::MessageReader* reader,
+                            BluetoothDeviceClient::ServiceRecordList* records) {
+  dbus::MessageReader array_reader(nullptr);
+  if (!reader->PopArray(&array_reader)) {
+    return false;
+    LOG(ERROR) << "Arguments for GetConnInfo invalid.";
+  }
+  while (array_reader.HasMoreData()) {
+    dbus::MessageReader nested_array_reader(nullptr);
+    if (!array_reader.PopArray(&nested_array_reader))
+      return false;
+    std::unique_ptr<BluetoothServiceRecordBlueZ> record =
+        ReadRecord(&nested_array_reader);
+    if (!record)
+      return false;
+    records->emplace_back(*record);
+  }
+  return true;
+}
 
 }  // namespace
 
@@ -281,6 +426,26 @@ class BluetoothDeviceClientImpl : public BluetoothDeviceClient,
                    weak_ptr_factory_.GetWeakPtr(), error_callback));
   }
 
+  void GetServiceRecords(const dbus::ObjectPath& object_path,
+                         const ServiceRecordsCallback& callback,
+                         const ErrorCallback& error_callback) override {
+    dbus::MethodCall method_call(bluetooth_device::kBluetoothDeviceInterface,
+                                 bluetooth_device::kGetServiceRecords);
+
+    dbus::ObjectProxy* object_proxy =
+        object_manager_->GetObjectProxy(object_path);
+    if (!object_proxy) {
+      error_callback.Run(kUnknownDeviceError, "");
+      return;
+    }
+    object_proxy->CallMethodWithErrorCallback(
+        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        base::Bind(&BluetoothDeviceClientImpl::OnGetServiceRecordsSuccess,
+                   weak_ptr_factory_.GetWeakPtr(), callback),
+        base::Bind(&BluetoothDeviceClientImpl::OnError,
+                   weak_ptr_factory_.GetWeakPtr(), error_callback));
+  }
+
  protected:
   void Init(dbus::Bus* bus) override {
     object_manager_ = bus->GetObjectManager(
@@ -342,6 +507,23 @@ class BluetoothDeviceClientImpl : public BluetoothDeviceClient,
       LOG(ERROR) << "Arguments for GetConnInfo invalid.";
     }
     callback.Run(rssi, transmit_power, max_transmit_power);
+  }
+
+  void OnGetServiceRecordsSuccess(const ServiceRecordsCallback& callback,
+                                  dbus::Response* response) {
+    ServiceRecordList records;
+    if (!response) {
+      LOG(ERROR) << "GetServiceRecords succeeded, but no response received.";
+      callback.Run(records);
+      return;
+    }
+
+    dbus::MessageReader reader(response);
+    if (!ReadRecordsFromMessage(&reader, &records)) {
+      callback.Run(ServiceRecordList());
+    }
+
+    callback.Run(records);
   }
 
   // Called when a response for a failed method call is received.

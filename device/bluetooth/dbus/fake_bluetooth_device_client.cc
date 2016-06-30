@@ -15,8 +15,11 @@
 #include <string>
 #include <utility>
 
+#include "base/bind_helpers.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
+#include "base/memory/ref_counted.h"
 #include "base/rand_util.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
@@ -24,6 +27,7 @@
 #include "base/threading/worker_pool.h"
 #include "base/time/time.h"
 #include "dbus/file_descriptor.h"
+#include "device/bluetooth/bluez/bluetooth_service_attribute_value_bluez.h"
 #include "device/bluetooth/dbus/bluez_dbus_manager.h"
 #include "device/bluetooth/dbus/fake_bluetooth_adapter_client.h"
 #include "device/bluetooth/dbus/fake_bluetooth_agent_manager_client.h"
@@ -33,6 +37,8 @@
 #include "device/bluetooth/dbus/fake_bluetooth_profile_manager_client.h"
 #include "device/bluetooth/dbus/fake_bluetooth_profile_service_provider.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
+
+namespace bluez {
 
 namespace {
 
@@ -93,9 +99,38 @@ void SimpleErrorCallback(const std::string& error_name,
   VLOG(1) << "Bluetooth Error: " << error_name << ": " << error_message;
 }
 
-}  // namespace
+BluetoothDeviceClient::ServiceRecordList CreateFakeServiceRecords() {
+  BluetoothDeviceClient::ServiceRecordList records;
 
-namespace bluez {
+  std::unique_ptr<BluetoothServiceRecordBlueZ> record1 =
+      base::MakeUnique<BluetoothServiceRecordBlueZ>();
+  // ID 0 = handle.
+  record1->AddRecordEntry(0x0, BluetoothServiceAttributeValueBlueZ(
+                                   BluetoothServiceAttributeValueBlueZ::UINT, 4,
+                                   base::MakeUnique<base::FundamentalValue>(
+                                       static_cast<int32_t>(0x1337))));
+  // ID 1 = service class id list.
+  std::unique_ptr<BluetoothServiceAttributeValueBlueZ::Sequence> class_id_list =
+      base::MakeUnique<BluetoothServiceAttributeValueBlueZ::Sequence>();
+  class_id_list->emplace_back(BluetoothServiceAttributeValueBlueZ::UUID, 4,
+                              base::MakeUnique<base::StringValue>("1802"));
+  record1->AddRecordEntry(
+      0x1, BluetoothServiceAttributeValueBlueZ(std::move(class_id_list)));
+  records.emplace_back(*record1);
+
+  std::unique_ptr<BluetoothServiceRecordBlueZ> record2 =
+      base::MakeUnique<BluetoothServiceRecordBlueZ>();
+  // ID 0 = handle.
+  record2->AddRecordEntry(0x0, BluetoothServiceAttributeValueBlueZ(
+                                   BluetoothServiceAttributeValueBlueZ::UINT, 4,
+                                   base::MakeUnique<base::FundamentalValue>(
+                                       static_cast<int32_t>(0xffffffff))));
+  records.emplace_back(*record2);
+
+  return records;
+}
+
+}  // namespace
 
 const char FakeBluetoothDeviceClient::kTestPinCode[] = "123456";
 const int FakeBluetoothDeviceClient::kTestPassKey = 123456;
@@ -413,7 +448,7 @@ void FakeBluetoothDeviceClient::Disconnect(
   Properties* properties = GetProperties(object_path);
 
   if (!properties->connected.value()) {
-    error_callback.Run("org.bluez.Error.NotConnected", "Not Connected");
+    error_callback.Run(bluetooth_device::kErrorNotConnected, "Not Connected");
     return;
   }
 
@@ -545,11 +580,23 @@ void FakeBluetoothDeviceClient::GetConnInfo(
     const ErrorCallback& error_callback) {
   Properties* properties = GetProperties(object_path);
   if (!properties->connected.value()) {
-    error_callback.Run("org.bluez.Error.NotConnected", "Not Connected");
+    error_callback.Run(bluetooth_device::kErrorNotConnected, "Not Connected");
     return;
   }
 
   callback.Run(connection_rssi_, transmit_power_, max_transmit_power_);
+}
+
+void FakeBluetoothDeviceClient::GetServiceRecords(
+    const dbus::ObjectPath& object_path,
+    const ServiceRecordsCallback& callback,
+    const ErrorCallback& error_callback) {
+  Properties* properties = GetProperties(object_path);
+  if (!properties->connected.value()) {
+    error_callback.Run(bluetooth_device::kErrorNotConnected, "Not Connected");
+    return;
+  }
+  callback.Run(CreateFakeServiceRecords());
 }
 
 void FakeBluetoothDeviceClient::BeginDiscoverySimulation(
