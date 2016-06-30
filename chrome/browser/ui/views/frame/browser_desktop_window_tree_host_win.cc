@@ -94,7 +94,9 @@ bool BrowserDesktopWindowTreeHostWin::GetClientAreaInsets(
     // In fullscreen mode there is no frame.
     *insets = gfx::Insets();
   } else {
-    const int frame_thickness = GetSystemMetrics(SM_CXSIZEFRAME);
+    const int frame_thickness =
+        display::win::ScreenWin::GetSystemMetricsForHwnd(
+            GetHWND(), SM_CXSIZEFRAME);
     // Reduce the Windows non-client border size because we extend the border
     // into our client area in UpdateDWMFrame().
     *insets = gfx::Insets(0, frame_thickness, frame_thickness,
