@@ -2,13 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.webapk.lib.common;
+package org.chromium.webapk.shell_apk;
 
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
 import android.os.IBinder;
 import android.util.Log;
+
+import org.chromium.webapk.lib.common.WebApkUtils;
 
 import java.lang.reflect.Method;
 

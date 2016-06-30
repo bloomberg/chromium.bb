@@ -72,6 +72,10 @@ android_apk("webapk") {
   apk_name = "WebApk.$webapk_manifest_package_origin"
   java_files = [
     "src/org/chromium/webapk/shell_apk/MainActivity.java",
+    "src/org/chromium/webapk/shell_apk/WebApkSandboxedProcessService.java",
+    "src/org/chromium/webapk/shell_apk/WebApkSandboxedProcessService0.java",
+    "src/org/chromium/webapk/shell_apk/WebApkSandboxedProcessService1.java",
+    "src/org/chromium/webapk/shell_apk/WebApkSandboxedProcessService2.java",
     "src/org/chromium/webapk/shell_apk/WebApkServiceFactory.java",
   ]
   deps = [

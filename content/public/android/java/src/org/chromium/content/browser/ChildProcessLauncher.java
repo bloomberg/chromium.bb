@@ -5,7 +5,7 @@
 package org.chromium.content.browser;
 
 import android.annotation.SuppressLint;
-import android.app.Service;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ApplicationInfo;
@@ -65,20 +65,20 @@ public class ChildProcessLauncher {
         private final ArrayList<Integer> mFreeConnectionIndices;
         private final Object mConnectionLock = new Object();
 
-        private final Class<? extends Service> mChildClass;
+        private final String mChildClassName;
         private final boolean mInSandbox;
         // Each Allocator keeps a queue for the pending spawn data. Once a connection is free, we
         // dequeue the pending spawn data from the same allocator as the connection.
         private final PendingSpawnQueue mPendingSpawnQueue = new PendingSpawnQueue();
 
         public ChildConnectionAllocator(boolean inSandbox, int numChildServices,
-                Class<? extends Service> serviceClass) {
+                String serviceClassName) {
             mChildProcessConnections = new ChildProcessConnectionImpl[numChildServices];
             mFreeConnectionIndices = new ArrayList<Integer>(numChildServices);
             for (int i = 0; i < numChildServices; i++) {
                 mFreeConnectionIndices.add(i);
             }
-            mChildClass = serviceClass;
+            mChildClassName = serviceClassName;
             mInSandbox = inSandbox;
         }
 
@@ -95,7 +95,7 @@ public class ChildProcessLauncher {
                 int slot = mFreeConnectionIndices.remove(0);
                 assert mChildProcessConnections[slot] == null;
                 mChildProcessConnections[slot] = new ChildProcessConnectionImpl(context, slot,
-                        mInSandbox, deathCallback, mChildClass, chromiumLinkerParams,
+                        mInSandbox, deathCallback, mChildClassName, chromiumLinkerParams,
                         alwaysInForeground, creationParams);
                 Log.d(TAG, "Allocator allocated a connection, sandbox: %b, slot: %d", mInSandbox,
                         slot);
@@ -277,38 +277,42 @@ public class ChildProcessLauncher {
         return numServices;
     }
 
-    private static Class<? extends Service> getClassOfService(Context context, boolean inSandbox,
+    private static String getClassNameOfService(Context context, boolean inSandbox,
             String packageName) {
         if (!inSandbox) {
-            return PrivilegedProcessService.class;
+            return PrivilegedProcessService.class.getName();
         }
-        String serviceName = null;
         if (CommandLine.getInstance().hasSwitch(SWITCH_SANDBOXED_SERVICES_NAME_FOR_TESTING)) {
-            serviceName = CommandLine.getInstance().getSwitchValue(
+            return CommandLine.getInstance().getSwitchValue(
                     SWITCH_SANDBOXED_SERVICES_NAME_FOR_TESTING);
-        } else {
+        }
+
+        String serviceName = null;
+        try {
+            PackageManager packageManager = context.getPackageManager();
+            ApplicationInfo appInfo =
+                    packageManager.getApplicationInfo(packageName, PackageManager.GET_META_DATA);
+            if (appInfo.metaData != null) {
+                serviceName = appInfo.metaData.getString(SANDBOXED_SERVICES_NAME_KEY);
+            }
+        } catch (PackageManager.NameNotFoundException e) {
+            throw new RuntimeException("Could not get application info.");
+        }
+
+        if (serviceName != null) {
+            // Check that the service exists.
             try {
                 PackageManager packageManager = context.getPackageManager();
-                ApplicationInfo appInfo = packageManager.getApplicationInfo(packageName,
-                        PackageManager.GET_META_DATA);
-                if (appInfo.metaData != null) {
-                    serviceName = appInfo.metaData.getString(SANDBOXED_SERVICES_NAME_KEY);
-                }
+                // PackageManager#getServiceInfo() throws an exception if the service does not
+                // exist.
+                packageManager.getServiceInfo(new ComponentName(packageName, serviceName + "0"), 0);
+                return serviceName;
             } catch (PackageManager.NameNotFoundException e) {
-                throw new RuntimeException("Could not get application info.");
-            }
-        }
-        if (serviceName != null) {
-            try {
-                Class<? extends Service> service =
-                        (Class<? extends Service>) Class.forName(serviceName);
-                return service;
-            } catch (ClassNotFoundException e) {
                 throw new RuntimeException(
-                        "Illegal meta data value: the child service class doesn't exist");
+                        "Illegal meta data value: the child service doesn't exist");
             }
         }
-        return SandboxedProcessService.class;
+        return SandboxedProcessService.class.getName();
     }
 
     private static void initConnectionAllocatorsIfNecessary(
@@ -327,12 +331,12 @@ public class ChildProcessLauncher {
                     sSandboxedChildConnectionAllocatorMap.put(packageName,
                             new ChildConnectionAllocator(true,
                                     getNumberOfServices(context, true, packageName),
-                                    getClassOfService(context, true, packageName)));
+                                    getClassNameOfService(context, true, packageName)));
                 }
             } else if (sPrivilegedChildConnectionAllocator == null) {
-                sPrivilegedChildConnectionAllocator = new ChildConnectionAllocator(
-                        false, getNumberOfServices(context, false, packageName),
-                        getClassOfService(context, false, packageName));
+                sPrivilegedChildConnectionAllocator = new ChildConnectionAllocator(false,
+                        getNumberOfServices(context, false, packageName),
+                        getClassNameOfService(context, false, packageName));
             }
             // TODO(pkotwicz|hanxi): Figure out when old allocators should be removed from
             // {@code sSandboxedChildConnectionAllocatorMap}.
