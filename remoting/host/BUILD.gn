@@ -682,6 +682,19 @@ if (is_win) {
       "//build/win:default_exe_manifest",
     ]
 
+    if (is_mac) {
+      foreach(locale, remoting_locales_with_underscores) {
+        deps += [
+          ":native_messaging_host_strings_${locale}_bundle_data",
+          ":remoting_host_locale_${locale}_bundle_data",
+        ]
+      }
+      deps += [
+        ":remoting_infoplist_strings",
+        "//remoting/resources:copy_locales",
+      ]
+    }
+
     sources = [
       "$root_gen_dir/remoting/version.rc",
       "setup/me2me_native_messaging_host_entry_point.cc",
@@ -797,6 +810,22 @@ if (enable_remoting_host && !is_android) {
       "remoting/{{source_name_part}}",
       "en",
     ]
+  }
+
+  if (is_mac) {
+    foreach(locale, remoting_locales_with_underscores) {
+      bundle_data("remoting_host_locale_${locale}_bundle_data") {
+        sources = [
+          "$root_build_dir/remoting/resources/$locale.lproj/locale.pak",
+        ]
+        outputs = [
+          "{{bundle_resources_dir}}/$locale.lproj/{{source_file_part}}",
+        ]
+        deps = [
+          "//remoting/resources:copy_locales",
+        ]
+      }
+    }
   }
 
   action_foreach("remoting_infoplist_strings") {
@@ -920,6 +949,23 @@ if (enable_me2me_host) {
       app_target_type = "executable"
     }
 
+    if (is_mac) {
+      # remoting_me2me_host-InfoPlist.strings
+      foreach(locale, remoting_locales_with_underscores) {
+        bundle_data("remoting_me2me_host_strings_${locale}_bundle_data") {
+          sources = [
+            "$root_gen_dir/remoting/host/remoting_me2me_host-InfoPlist.strings/$locale.lproj/InfoPlist.strings",
+          ]
+          outputs = [
+            "{{bundle_resources_dir}}/$locale.lproj/{{source_file_part}}",
+          ]
+          deps = [
+            ":remoting_infoplist_strings",
+          ]
+        }
+      }
+    }
+
     target(app_target_type, "remoting_me2me_host") {
       if (is_mac) {
         extra_configs = [ "//remoting:version" ]
@@ -943,6 +989,18 @@ if (enable_me2me_host) {
         "//build/config/sanitizers:deps",
         "//remoting/resources",
       ]
+      if (is_mac) {
+        foreach(locale, remoting_locales_with_underscores) {
+          deps += [
+            ":remoting_host_locale_${locale}_bundle_data",
+            ":remoting_me2me_host_strings_${locale}_bundle_data",
+          ]
+        }
+        deps += [
+          ":remoting_infoplist_strings",
+          "//remoting/resources:copy_locales",
+        ]
+      }
     }
 
     if (is_linux) {
@@ -974,6 +1032,23 @@ if (enable_me2me_host) {
       }
     }
 
+    if (is_mac) {
+      # native_messaging_host-InfoPlist.strings
+      foreach(locale, remoting_locales_with_underscores) {
+        bundle_data("native_messaging_host_strings_${locale}_bundle_data") {
+          sources = [
+            "$root_gen_dir/remoting/host/native_messaging_host-InfoPlist.strings/$locale.lproj/InfoPlist.strings",
+          ]
+          outputs = [
+            "{{bundle_resources_dir}}/$locale.lproj/{{source_file_part}}",
+          ]
+          deps = [
+            ":remoting_infoplist_strings",
+          ]
+        }
+      }
+    }
+
     target(app_target_type, "native_messaging_host") {
       if (is_mac) {
         info_plist = "setup/native_messaging_host-Info.plist"
@@ -996,6 +1071,16 @@ if (enable_me2me_host) {
         "//remoting/host/native_messaging",
         "//remoting/host/setup",
       ]
+
+      if (is_mac) {
+        foreach(locale, remoting_locales_with_underscores) {
+          deps += [
+            ":native_messaging_host_strings_${locale}_bundle_data",
+            ":remoting_host_locale_${locale}_bundle_data",
+          ]
+        }
+        deps += [ "//remoting/resources:copy_locales" ]
+      }
 
       # The |major|, |build| and |patch| versions are inherited from Chrome.
       # Since Chrome's |minor| version is always '0', we replace it with a
@@ -1284,6 +1369,21 @@ if (enable_me2me_host) {
     _uninstaller_plist =
         "installer/mac/uninstaller/remoting_uninstaller-Info.plist"
 
+    # remoting_uninstaller-InfoPlist.strings
+    foreach(locale, remoting_locales_with_underscores) {
+      bundle_data("remoting_uninstaller_strings_${locale}_bundle_data") {
+        sources = [
+          "$root_gen_dir/remoting/host/remoting_uninstaller-InfoPlist.strings/$locale.lproj/InfoPlist.strings",
+        ]
+        outputs = [
+          "{{bundle_resources_dir}}/$locale.lproj/{{source_file_part}}",
+        ]
+        deps = [
+          ":remoting_infoplist_strings",
+        ]
+      }
+    }
+
     mac_app_bundle("remoting_host_uninstaller") {
       info_plist = _uninstaller_plist
 
@@ -1312,6 +1412,9 @@ if (enable_me2me_host) {
         ":remoting_infoplist_strings",
         "//base",
       ]
+      foreach(locale, remoting_locales_with_underscores) {
+        deps += [ ":remoting_uninstaller_strings_${locale}_bundle_data" ]
+      }
     }
 
     mac_xib_bundle_data("remoting_host_uninstaller_xibs") {
@@ -1377,8 +1480,12 @@ if (enable_me2me_host) {
         ":remoting_host_prefpane_xibs",
         ":remoting_infoplist_strings",
         "//remoting/base",
+        "//remoting/resources:copy_locales",
         "//third_party/jsoncpp",
       ]
+      foreach(locale, remoting_locales_with_underscores) {
+        deps += [ ":remoting_host_prefpane_strings_${locale}_bundle_data" ]
+      }
     }
 
     bundle_data("remoting_host_prefpane_plist") {
