@@ -78,6 +78,7 @@ IPC_STRUCT_TRAITS_BEGIN(gpu::GpuPreferences)
 #if defined(OS_WIN)
   IPC_STRUCT_TRAITS_MEMBER(enable_accelerated_vpx_decode)
   IPC_STRUCT_TRAITS_MEMBER(enable_zero_copy_dxgi_video)
+  IPC_STRUCT_TRAITS_MEMBER(enable_nv12_dxgi_video)
 #endif
   IPC_STRUCT_TRAITS_MEMBER(compile_shader_always_succeeds)
   IPC_STRUCT_TRAITS_MEMBER(disable_gl_error_limit)

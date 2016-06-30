@@ -52,6 +52,8 @@ const gpu::GpuPreferences GetGpuPreferencesFromCommandLine() {
       command_line->HasSwitch(switches::kEnableAcceleratedVpxDecode);
   gpu_preferences.enable_zero_copy_dxgi_video =
       command_line->HasSwitch(switches::kEnableZeroCopyDxgiVideo);
+  gpu_preferences.enable_nv12_dxgi_video =
+      command_line->HasSwitch(switches::kEnableNv12DxgiVideo);
 #endif
   gpu_preferences.compile_shader_always_succeeds =
       command_line->HasSwitch(switches::kCompileShaderAlwaysSucceeds);

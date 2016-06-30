@@ -46,6 +46,14 @@ linked_ptr<DXVAPictureBuffer> DXVAPictureBuffer::Create(
 
     return picture_buffer;
   }
+  if (decoder.copy_nv12_textures_) {
+    linked_ptr<EGLStreamCopyPictureBuffer> picture_buffer(
+        new EGLStreamCopyPictureBuffer(buffer));
+    if (!picture_buffer->Initialize(decoder))
+      return linked_ptr<DXVAPictureBuffer>(nullptr);
+
+    return picture_buffer;
+  }
   linked_ptr<PbufferPictureBuffer> picture_buffer(
       new PbufferPictureBuffer(buffer));
 
@@ -420,6 +428,156 @@ bool EGLStreamPictureBuffer::BindSampleToTexture(
   RETURN_ON_FAILURE(result, "Could not post texture", false);
   result = eglStreamConsumerAcquireKHR(egl_display, stream_);
   RETURN_ON_FAILURE(result, "Could not post acquire stream", false);
+  return true;
+}
+
+EGLStreamCopyPictureBuffer::EGLStreamCopyPictureBuffer(
+    const PictureBuffer& buffer)
+    : DXVAPictureBuffer(buffer), stream_(nullptr) {}
+
+EGLStreamCopyPictureBuffer::~EGLStreamCopyPictureBuffer() {
+  if (stream_) {
+    EGLDisplay egl_display = gl::GLSurfaceEGL::GetHardwareDisplay();
+    eglDestroyStreamKHR(egl_display, stream_);
+    stream_ = nullptr;
+  }
+}
+
+bool EGLStreamCopyPictureBuffer::Initialize(
+    const DXVAVideoDecodeAccelerator& decoder) {
+  EGLDisplay egl_display = gl::GLSurfaceEGL::GetHardwareDisplay();
+  const EGLint stream_attributes[] = {
+      EGL_CONSUMER_LATENCY_USEC_KHR,
+      0,
+      EGL_CONSUMER_ACQUIRE_TIMEOUT_USEC_KHR,
+      0,
+      EGL_NONE,
+  };
+  stream_ = eglCreateStreamKHR(egl_display, stream_attributes);
+  RETURN_ON_FAILURE(!!stream_, "Could not create stream", false);
+  gl::ScopedActiveTexture texture0(GL_TEXTURE0);
+  gl::ScopedTextureBinder texture0_binder(GL_TEXTURE_EXTERNAL_OES,
+                                          picture_buffer_.texture_ids()[0]);
+  gl::ScopedActiveTexture texture1(GL_TEXTURE1);
+  gl::ScopedTextureBinder texture1_binder(GL_TEXTURE_EXTERNAL_OES,
+                                          picture_buffer_.texture_ids()[1]);
+
+  EGLAttrib consumer_attributes[] = {
+      EGL_COLOR_BUFFER_TYPE,
+      EGL_YUV_BUFFER_EXT,
+      EGL_YUV_NUMBER_OF_PLANES_EXT,
+      2,
+      EGL_YUV_PLANE0_TEXTURE_UNIT_NV,
+      0,
+      EGL_YUV_PLANE1_TEXTURE_UNIT_NV,
+      1,
+      EGL_NONE,
+  };
+  EGLBoolean result = eglStreamConsumerGLTextureExternalAttribsNV(
+      egl_display, stream_, consumer_attributes);
+  RETURN_ON_FAILURE(result, "Could not set stream consumer", false);
+
+  EGLAttrib producer_attributes[] = {
+      EGL_NONE,
+  };
+
+  result = eglCreateStreamProducerD3DTextureNV12ANGLE(egl_display, stream_,
+                                                      producer_attributes);
+  RETURN_ON_FAILURE(result, "Could not create stream producer", false);
+
+  DCHECK(decoder.use_keyed_mutex_);
+  D3D11_TEXTURE2D_DESC desc;
+  desc.Width = picture_buffer_.size().width();
+  desc.Height = picture_buffer_.size().height();
+  desc.MipLevels = 1;
+  desc.ArraySize = 1;
+  desc.Format = DXGI_FORMAT_NV12;
+  desc.SampleDesc.Count = 1;
+  desc.SampleDesc.Quality = 0;
+  desc.Usage = D3D11_USAGE_DEFAULT;
+  desc.BindFlags = D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET;
+  desc.CPUAccessFlags = 0;
+  desc.MiscFlags = D3D11_RESOURCE_MISC_SHARED_KEYEDMUTEX;
+
+  HRESULT hr = decoder.d3d11_device_->CreateTexture2D(
+      &desc, nullptr, decoder_copy_texture_.Receive());
+  RETURN_ON_HR_FAILURE(hr, "Failed to create texture", false);
+  DCHECK(decoder.use_keyed_mutex_);
+  hr = dx11_keyed_mutex_.QueryFrom(decoder_copy_texture_.get());
+  RETURN_ON_HR_FAILURE(hr, "Failed to get keyed mutex", false);
+
+  base::win::ScopedComPtr<IDXGIResource> resource;
+  hr = resource.QueryFrom(decoder_copy_texture_.get());
+  DCHECK(SUCCEEDED(hr));
+  hr = resource->GetSharedHandle(&texture_share_handle_);
+  RETURN_ON_FAILURE(SUCCEEDED(hr) && texture_share_handle_,
+                    "Failed to query shared handle", false);
+
+  hr = decoder.angle_device_->OpenSharedResource(
+      texture_share_handle_, IID_PPV_ARGS(angle_copy_texture_.Receive()));
+  RETURN_ON_HR_FAILURE(hr, "Failed to open shared resource", false);
+  hr = egl_keyed_mutex_.QueryFrom(angle_copy_texture_.get());
+  RETURN_ON_HR_FAILURE(hr, "Failed to get ANGLE mutex", false);
+  return true;
+}
+
+bool EGLStreamCopyPictureBuffer::CopyOutputSampleDataToPictureBuffer(
+    DXVAVideoDecodeAccelerator* decoder,
+    IDirect3DSurface9* dest_surface,
+    ID3D11Texture2D* dx11_texture,
+    int input_buffer_id) {
+  DCHECK(dx11_texture);
+  // Grab a reference on the decoder texture. This reference will be released
+  // when we receive a notification that the copy was completed or when the
+  // DXVAPictureBuffer instance is destroyed.
+  dx11_decoding_texture_ = dx11_texture;
+  decoder->CopyTexture(dx11_texture, decoder_copy_texture_.get(),
+                       dx11_keyed_mutex_, keyed_mutex_value_, id(),
+                       input_buffer_id);
+  return true;
+}
+
+bool EGLStreamCopyPictureBuffer::CopySurfaceComplete(
+    IDirect3DSurface9* src_surface,
+    IDirect3DSurface9* dest_surface) {
+  DCHECK(!available());
+  DCHECK(!src_surface);
+  DCHECK(!dest_surface);
+
+  dx11_decoding_texture_.Release();
+
+  keyed_mutex_value_++;
+  HRESULT hr =
+      egl_keyed_mutex_->AcquireSync(keyed_mutex_value_, kAcquireSyncWaitMs);
+  RETURN_ON_FAILURE(hr == S_OK, "Could not acquire sync mutex", false);
+
+  EGLAttrib frame_attributes[] = {
+      EGL_D3D_TEXTURE_SUBRESOURCE_ID_ANGLE, 0, EGL_NONE,
+  };
+
+  EGLDisplay egl_display = gl::GLSurfaceEGL::GetHardwareDisplay();
+
+  EGLBoolean result = eglStreamPostD3DTextureNV12ANGLE(
+      egl_display, stream_, static_cast<void*>(angle_copy_texture_.get()),
+      frame_attributes);
+  RETURN_ON_FAILURE(result, "Could not post stream", false);
+  result = eglStreamConsumerAcquireKHR(egl_display, stream_);
+  RETURN_ON_FAILURE(result, "Could not post acquire stream", false);
+
+  return true;
+}
+
+bool EGLStreamCopyPictureBuffer::ReusePictureBuffer() {
+  EGLDisplay egl_display = gl::GLSurfaceEGL::GetHardwareDisplay();
+
+  HRESULT hr = egl_keyed_mutex_->ReleaseSync(++keyed_mutex_value_);
+  RETURN_ON_FAILURE(hr == S_OK, "Could not release sync mutex", false);
+
+  if (stream_) {
+    EGLBoolean result = eglStreamConsumerReleaseKHR(egl_display, stream_);
+    RETURN_ON_FAILURE(result, "Could not release stream", false);
+  }
+  set_available(true);
   return true;
 }
 

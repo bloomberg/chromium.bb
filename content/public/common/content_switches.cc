@@ -409,6 +409,9 @@ const char kEnableMemoryBenchmarking[]      = "enable-memory-benchmarking";
 // Enables the network information API.
 const char kEnableNetworkInformation[]      = "enable-network-information";
 
+// Enable the video decoder to draw to an NV12 textures instead of ARGB.
+const char kEnableNv12DxgiVideo[] = "enable-nv12-dxgi-video";
+
 // Enables compositor-accelerated touch-screen pinch gestures.
 const char kEnablePinch[]                   = "enable-pinch";
 

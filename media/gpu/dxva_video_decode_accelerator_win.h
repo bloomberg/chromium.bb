@@ -54,6 +54,7 @@ typedef HRESULT(WINAPI* CreateDXGIDeviceManager)(
 
 namespace media {
 class DXVAPictureBuffer;
+class EGLStreamCopyPictureBuffer;
 class EGLStreamPictureBuffer;
 class PbufferPictureBuffer;
 
@@ -136,6 +137,7 @@ class MEDIA_GPU_EXPORT DXVAVideoDecodeAccelerator
 
  private:
   friend class DXVAPictureBuffer;
+  friend class EGLStreamCopyPictureBuffer;
   friend class EGLStreamPictureBuffer;
   friend class PbufferPictureBuffer;
   typedef void* EGLConfig;
@@ -361,6 +363,7 @@ class MEDIA_GPU_EXPORT DXVAVideoDecodeAccelerator
   base::win::ScopedComPtr<IDirect3DQuery9> query_;
 
   base::win::ScopedComPtr<ID3D11Device> d3d11_device_;
+  base::win::ScopedComPtr<ID3D11Device> angle_device_;
   base::win::ScopedComPtr<IMFDXGIDeviceManager> d3d11_device_manager_;
   base::win::ScopedComPtr<ID3D10Multithread> multi_threaded_;
   base::win::ScopedComPtr<ID3D11DeviceContext> d3d11_device_context_;
@@ -465,6 +468,9 @@ class MEDIA_GPU_EXPORT DXVAVideoDecodeAccelerator
   bool pending_flush_;
 
   bool share_nv12_textures_;
+
+  // Copy NV12 texture to another NV12 texture.
+  bool copy_nv12_textures_;
 
   // Defaults to false. Indicates if we should use D3D or DX11 interfaces for
   // H/W decoding.

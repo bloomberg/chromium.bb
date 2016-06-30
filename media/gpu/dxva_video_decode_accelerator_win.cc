@@ -589,6 +589,7 @@ DXVAVideoDecodeAccelerator::DXVAVideoDecodeAccelerator(
       pending_flush_(false),
       share_nv12_textures_(gpu_preferences.enable_zero_copy_dxgi_video &&
                            !workarounds.disable_dxgi_zero_copy_video),
+      copy_nv12_textures_(gpu_preferences.enable_nv12_dxgi_video),
       use_dx11_(false),
       use_keyed_mutex_(false),
       dx11_video_format_converter_media_type_needs_init_(true),
@@ -628,8 +629,10 @@ bool DXVAVideoDecodeAccelerator::Initialize(const Config& config,
   main_thread_task_runner_ = base::ThreadTaskRunnerHandle::Get();
 
   if (!config.supported_output_formats.empty() &&
-      !ContainsValue(config.supported_output_formats, PIXEL_FORMAT_NV12))
+      !ContainsValue(config.supported_output_formats, PIXEL_FORMAT_NV12)) {
     share_nv12_textures_ = false;
+    copy_nv12_textures_ = false;
+  }
 
   bool profile_supported = false;
   for (const auto& supported_profile : kSupportedProfiles) {
@@ -790,13 +793,16 @@ bool DXVAVideoDecodeAccelerator::CreateDX11DevManager() {
   HRESULT hr = create_dxgi_device_manager_(&dx11_dev_manager_reset_token_,
                                            d3d11_device_manager_.Receive());
   RETURN_ON_HR_FAILURE(hr, "MFCreateDXGIDeviceManager failed", false);
+
+  angle_device_ =
+      QueryDeviceObjectFromANGLE<ID3D11Device>(EGL_D3D11_DEVICE_ANGLE);
+  if (!angle_device_)
+    copy_nv12_textures_ = false;
   if (share_nv12_textures_) {
-    base::win::ScopedComPtr<ID3D11Device> angle_device =
-        QueryDeviceObjectFromANGLE<ID3D11Device>(EGL_D3D11_DEVICE_ANGLE);
-    RETURN_ON_FAILURE(angle_device.get(), "Failed to get d3d11 device", false);
+    RETURN_ON_FAILURE(angle_device_.get(), "Failed to get d3d11 device", false);
 
     using_angle_device_ = true;
-    d3d11_device_ = angle_device;
+    d3d11_device_ = angle_device_;
   } else {
     // This array defines the set of DirectX hardware feature levels we support.
     // The ordering MUST be preserved. All applications are assumed to support
@@ -819,6 +825,16 @@ bool DXVAVideoDecodeAccelerator::CreateDX11DevManager() {
                            &feature_level_out, d3d11_device_context_.Receive());
     RETURN_ON_HR_FAILURE(hr, "Failed to create DX11 device", false);
   }
+
+  D3D11_FEATURE_DATA_D3D11_OPTIONS options;
+  hr = d3d11_device_->CheckFeatureSupport(D3D11_FEATURE_D3D11_OPTIONS, &options,
+                                          sizeof(options));
+  RETURN_ON_HR_FAILURE(hr, "Failed to retrieve D3D11 options", false);
+
+  // Need extended resource sharing so we can share the NV12 texture between
+  // ANGLE and the decoder context.
+  if (!options.ExtendedResourceSharing)
+    copy_nv12_textures_ = false;
 
   // Enable multithreaded mode on the device. This ensures that accesses to
   // context are synchronized across threads. We have multiple threads
@@ -1517,6 +1533,7 @@ bool DXVAVideoDecodeAccelerator::CheckDecoderDxvaSupport() {
       !gl::g_driver_egl.ext.b_EGL_KHR_stream_consumer_gltexture ||
       !gl::g_driver_egl.ext.b_EGL_NV_stream_consumer_gltexture_yuv) {
     share_nv12_textures_ = false;
+    copy_nv12_textures_ = false;
   }
 
   return true;
@@ -1909,11 +1926,12 @@ void DXVAVideoDecodeAccelerator::RequestPictureBuffers(int width, int height) {
     // per picture buffer, 1 for the Y channel and 1 for the UV channels.
     // They're shared to ANGLE using EGL_NV_stream_consumer_gltexture_yuv, so
     // they need to be GL_TEXTURE_EXTERNAL_OES.
+    bool provide_nv12_textures = share_nv12_textures_ || copy_nv12_textures_;
     client_->ProvidePictureBuffers(
         kNumPictureBuffers,
-        share_nv12_textures_ ? PIXEL_FORMAT_NV12 : PIXEL_FORMAT_UNKNOWN,
-        share_nv12_textures_ ? 2 : 1, gfx::Size(width, height),
-        share_nv12_textures_ ? GL_TEXTURE_EXTERNAL_OES : GL_TEXTURE_2D);
+        provide_nv12_textures ? PIXEL_FORMAT_NV12 : PIXEL_FORMAT_UNKNOWN,
+        provide_nv12_textures ? 2 : 1, gfx::Size(width, height),
+        provide_nv12_textures ? GL_TEXTURE_EXTERNAL_OES : GL_TEXTURE_2D);
   }
 }
 
@@ -2594,8 +2612,20 @@ bool DXVAVideoDecodeAccelerator::InitializeDX11VideoFormatConverterMediaType(
   // It appears that we fail to set MFVideoFormat_ARGB32 as the output media
   // type in certain configurations. Try to fallback to MFVideoFormat_RGB32
   // in such cases. If both fail, then bail.
-  bool media_type_set = SetTransformOutputType(
-      video_format_converter_mft_.get(), MFVideoFormat_ARGB32, width, height);
+
+  bool media_type_set = false;
+  if (copy_nv12_textures_) {
+    media_type_set = SetTransformOutputType(video_format_converter_mft_.get(),
+                                            MFVideoFormat_NV12, width, height);
+    RETURN_AND_NOTIFY_ON_FAILURE(media_type_set,
+                                 "Failed to set NV12 converter output type",
+                                 PLATFORM_FAILURE, false);
+  }
+
+  if (!media_type_set) {
+    media_type_set = SetTransformOutputType(
+        video_format_converter_mft_.get(), MFVideoFormat_ARGB32, width, height);
+  }
   if (!media_type_set) {
     media_type_set = SetTransformOutputType(video_format_converter_mft_.get(),
                                             MFVideoFormat_RGB32, width, height);
