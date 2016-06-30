@@ -77,6 +77,7 @@
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
 #include "chrome/browser/chromeos/status/data_promo_notification.h"
 #include "chrome/browser/chromeos/system/input_device_settings.h"
+#include "chrome/browser/chromeos/ui/low_disk_notification.h"
 #include "chrome/browser/chromeos/upgrade_detector_chromeos.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
@@ -685,6 +686,9 @@ void ChromeBrowserMainPartsChromeos::PostProfileInit() {
     arc::ArcServiceManager::Get()->OnAshStarted();
   }
 
+  // Start watching for low disk space events to notify the user.
+  low_disk_notification_.reset(new LowDiskNotification());
+
   ChromeBrowserMainPartsLinux::PostProfileInit();
 }
 
@@ -793,6 +797,7 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
   wake_on_wifi_manager_.reset();
   ScreenLocker::ShutDownClass();
   keyboard_event_rewriters_.reset();
+  low_disk_notification_.reset();
 #if defined(USE_X11)
   // The XInput2 event listener needs to be shut down earlier than when
   // Singletons are finally destroyed in AtExitManager.

@@ -27,6 +27,7 @@ class DataPromoNotification;
 class EventRewriter;
 class EventRewriterController;
 class IdleActionWarningObserver;
+class LowDiskNotification;
 class MagnificationManager;
 class PeripheralBatteryObserver;
 class PowerButtonObserver;
@@ -84,6 +85,8 @@ class ChromeBrowserMainPartsChromeos : public ChromeBrowserMainPartsLinux {
   scoped_refptr<chromeos::ExternalMetrics> external_metrics_;
 
   std::unique_ptr<arc::ArcServiceLauncher> arc_service_launcher_;
+
+  std::unique_ptr<LowDiskNotification> low_disk_notification_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeBrowserMainPartsChromeos);
 };

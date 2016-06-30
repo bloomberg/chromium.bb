@@ -1074,6 +1074,8 @@
         'browser/chromeos/ui/idle_app_name_notification_view.h',
         'browser/chromeos/ui/kiosk_external_update_notification.cc',
         'browser/chromeos/ui/kiosk_external_update_notification.h',
+        'browser/chromeos/ui/low_disk_notification.cc',
+        'browser/chromeos/ui/low_disk_notification.h',
         'browser/chromeos/ui/mobile_config_ui.cc',
         'browser/chromeos/ui/mobile_config_ui.h',
         'browser/chromeos/ui/screen_capture_notification_ui_chromeos.cc',
