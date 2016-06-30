@@ -92,7 +92,7 @@ class SpdyFramerTestUtil {
 
     void OnHeaderFrameEnd(SpdyStreamId stream_id, bool end_headers) override {
       CHECK(!finished_);
-      frame_->set_header_block(headers_handler_->decoded_block());
+      frame_->set_header_block(headers_handler_->decoded_block().Clone());
       finished_ = true;
       if (end_headers) {
         headers_handler_.reset();
@@ -494,7 +494,7 @@ class TestSpdyVisitor : public SpdyFramerVisitorInterface,
 
   void OnHeaderFrameEnd(SpdyStreamId stream_id, bool end_headers) override {
     CHECK(headers_handler_ != nullptr);
-    headers_ = headers_handler_->decoded_block();
+    headers_ = headers_handler_->decoded_block().Clone();
     header_bytes_received_ = headers_handler_->header_bytes_parsed();
     if (end_headers) {
       headers_handler_.reset();
@@ -1958,7 +1958,7 @@ TEST_P(SpdyFramerTest, HeaderCompression) {
   SpdyHeaderBlock block;
   block[kHeader1] = kValue1;
   block[kHeader2] = kValue2;
-  SpdySynStreamIR syn_ir_1(1, block);
+  SpdySynStreamIR syn_ir_1(1, block.Clone());
   SpdySerializedFrame syn_frame_1(send_framer.SerializeFrame(syn_ir_1));
 
   // SYN_STREAM #2
@@ -3969,7 +3969,6 @@ TEST_P(SpdyFramerTest, ReadCompressedSynStreamHeaderBlock) {
   syn_stream.set_priority(1);
   syn_stream.SetHeader("aa", "vv");
   syn_stream.SetHeader("bb", "ww");
-  SpdyHeaderBlock headers = syn_stream.header_block();
   SpdySerializedFrame control_frame(framer.SerializeSynStream(syn_stream));
   TestSpdyVisitor visitor(spdy_version_);
   visitor.use_compression_ = true;
@@ -3977,7 +3976,7 @@ TEST_P(SpdyFramerTest, ReadCompressedSynStreamHeaderBlock) {
       reinterpret_cast<unsigned char*>(control_frame.data()),
       control_frame.size());
   EXPECT_EQ(1, visitor.syn_frame_count_);
-  EXPECT_EQ(headers, visitor.headers_);
+  EXPECT_EQ(syn_stream.header_block(), visitor.headers_);
 }
 
 TEST_P(SpdyFramerTest, ReadCompressedSynReplyHeaderBlock) {
@@ -3989,7 +3988,6 @@ TEST_P(SpdyFramerTest, ReadCompressedSynReplyHeaderBlock) {
   SpdySynReplyIR syn_reply(1);
   syn_reply.SetHeader("alpha", "beta");
   syn_reply.SetHeader("gamma", "delta");
-  SpdyHeaderBlock headers = syn_reply.header_block();
   SpdySerializedFrame control_frame(framer.SerializeSynReply(syn_reply));
   TestSpdyVisitor visitor(spdy_version_);
   visitor.use_compression_ = true;
@@ -3998,7 +3996,7 @@ TEST_P(SpdyFramerTest, ReadCompressedSynReplyHeaderBlock) {
       control_frame.size());
   EXPECT_EQ(1, visitor.syn_reply_frame_count_);
   EXPECT_EQ(0, visitor.headers_frame_count_);
-  EXPECT_EQ(headers, visitor.headers_);
+  EXPECT_EQ(syn_reply.header_block(), visitor.headers_);
 }
 
 TEST_P(SpdyFramerTest, ReadCompressedHeadersHeaderBlock) {
@@ -4006,7 +4004,6 @@ TEST_P(SpdyFramerTest, ReadCompressedHeadersHeaderBlock) {
   SpdyHeadersIR headers_ir(1);
   headers_ir.SetHeader("alpha", "beta");
   headers_ir.SetHeader("gamma", "delta");
-  SpdyHeaderBlock headers = headers_ir.header_block();
   SpdySerializedFrame control_frame(framer.SerializeHeaders(headers_ir));
   TestSpdyVisitor visitor(spdy_version_);
   visitor.use_compression_ = true;
@@ -4017,7 +4014,7 @@ TEST_P(SpdyFramerTest, ReadCompressedHeadersHeaderBlock) {
   EXPECT_EQ(0, visitor.control_frame_header_data_count_);
   EXPECT_EQ(0, visitor.zero_length_control_frame_header_data_count_);
   EXPECT_EQ(0, visitor.end_of_stream_count_);
-  EXPECT_EQ(headers, visitor.headers_);
+  EXPECT_EQ(headers_ir.header_block(), visitor.headers_);
 }
 
 TEST_P(SpdyFramerTest, ReadCompressedHeadersHeaderBlockWithHalfClose) {
@@ -4026,7 +4023,6 @@ TEST_P(SpdyFramerTest, ReadCompressedHeadersHeaderBlockWithHalfClose) {
   headers_ir.set_fin(true);
   headers_ir.SetHeader("alpha", "beta");
   headers_ir.SetHeader("gamma", "delta");
-  SpdyHeaderBlock headers = headers_ir.header_block();
   SpdySerializedFrame control_frame(framer.SerializeHeaders(headers_ir));
   TestSpdyVisitor visitor(spdy_version_);
   visitor.use_compression_ = true;
@@ -4037,7 +4033,7 @@ TEST_P(SpdyFramerTest, ReadCompressedHeadersHeaderBlockWithHalfClose) {
   EXPECT_EQ(0, visitor.control_frame_header_data_count_);
   EXPECT_EQ(0, visitor.zero_length_control_frame_header_data_count_);
   EXPECT_EQ(1, visitor.end_of_stream_count_);
-  EXPECT_EQ(headers, visitor.headers_);
+  EXPECT_EQ(headers_ir.header_block(), visitor.headers_);
 }
 
 TEST_P(SpdyFramerTest, ControlFrameAtMaxSizeLimit) {
@@ -4620,7 +4616,6 @@ TEST_P(SpdyFramerTest, ReadCompressedPushPromise) {
   SpdyPushPromiseIR push_promise(42, 57);
   push_promise.SetHeader("foo", "bar");
   push_promise.SetHeader("bar", "foofoo");
-  SpdyHeaderBlock headers = push_promise.header_block();
   SpdySerializedFrame frame(framer.SerializePushPromise(push_promise));
   TestSpdyVisitor visitor(spdy_version_);
   visitor.use_compression_ = true;
@@ -4628,7 +4623,7 @@ TEST_P(SpdyFramerTest, ReadCompressedPushPromise) {
                            frame.size());
   EXPECT_EQ(42u, visitor.last_push_promise_stream_);
   EXPECT_EQ(57u, visitor.last_push_promise_promised_stream_);
-  EXPECT_EQ(headers, visitor.headers_);
+  EXPECT_EQ(push_promise.header_block(), visitor.headers_);
 }
 
 TEST_P(SpdyFramerTest, ReadHeadersWithContinuation) {

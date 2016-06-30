@@ -226,7 +226,7 @@ class StreamDelegateWithTrailers : public test::StreamDelegateWithBody {
   ~StreamDelegateWithTrailers() override {}
 
   void OnTrailers(const SpdyHeaderBlock& trailers) override {
-    trailers_ = trailers;
+    trailers_ = trailers.Clone();
   }
 
   const SpdyHeaderBlock& trailers() const { return trailers_; }

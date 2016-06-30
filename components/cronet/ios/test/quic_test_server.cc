@@ -4,6 +4,8 @@
 
 #include "components/cronet/ios/test/quic_test_server.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
@@ -53,7 +55,8 @@ void SetupQuicInMemoryCache() {
   net::SpdyHeaderBlock trailers;
   trailers.ReplaceOrAppendHeader(kHelloTrailerName, kHelloTrailerValue);
   net::QuicInMemoryCache::GetInstance()->AddResponse(
-      kTestServerHost, kHelloPath, headers, kHelloBodyValue, trailers);
+      kTestServerHost, kHelloPath, std::move(headers), kHelloBodyValue,
+      std::move(trailers));
 }
 
 void StartQuicServerOnServerThread(const base::FilePath& test_files_root,

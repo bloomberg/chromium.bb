@@ -779,7 +779,7 @@ class TestBidirectionalDelegate : public BidirectionalStreamImpl::Delegate {
  private:
   void OnStreamReady(bool request_headers_sent) override {}
   void OnHeadersReceived(const SpdyHeaderBlock& response_headers) override {
-    response_headers_ = response_headers;
+    response_headers_ = response_headers.Clone();
     loop_.Quit();
   }
   void OnDataRead(int bytes_read) override { NOTREACHED(); }

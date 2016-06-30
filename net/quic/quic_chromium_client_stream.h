@@ -124,7 +124,7 @@ class NET_EXPORT_PRIVATE QuicChromiumClientStream : public QuicSpdyStream {
   using QuicSpdyStream::HasBufferedData;
 
  private:
-  void NotifyDelegateOfHeadersCompleteLater(const SpdyHeaderBlock& headers,
+  void NotifyDelegateOfHeadersCompleteLater(SpdyHeaderBlock headers,
                                             size_t frame_len);
   void NotifyDelegateOfHeadersComplete(SpdyHeaderBlock headers,
                                        size_t frame_len);

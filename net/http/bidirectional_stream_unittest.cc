@@ -76,7 +76,7 @@ class TestDelegateBase : public BidirectionalStream::Delegate {
   void OnHeadersReceived(const SpdyHeaderBlock& response_headers) override {
     CHECK(!not_expect_callback_);
 
-    response_headers_ = response_headers;
+    response_headers_ = response_headers.Clone();
     if (!do_not_start_read_)
       StartOrContinueReading();
   }
@@ -100,7 +100,7 @@ class TestDelegateBase : public BidirectionalStream::Delegate {
   void OnTrailersReceived(const SpdyHeaderBlock& trailers) override {
     CHECK(!not_expect_callback_);
 
-    trailers_ = trailers;
+    trailers_ = trailers.Clone();
     if (run_until_completion_)
       loop_->Quit();
   }
@@ -490,7 +490,7 @@ TEST_F(BidirectionalStreamTest, TestReadDataAfterClose) {
   rv = delegate->ReadData();
   EXPECT_EQ(OK, rv);  // EOF.
 
-  const SpdyHeaderBlock response_headers = delegate->response_headers();
+  const SpdyHeaderBlock& response_headers = delegate->response_headers();
   EXPECT_EQ("200", response_headers.find(":status")->second);
   EXPECT_EQ("header-value", response_headers.find("header-name")->second);
   EXPECT_EQ(1, delegate->on_data_read_count());
@@ -981,7 +981,7 @@ TEST_F(BidirectionalStreamTest, TestBuffering) {
   EXPECT_EQ(kUploadDataSize * 3,
             static_cast<int>(delegate->data_received().size()));
 
-  const SpdyHeaderBlock response_headers = delegate->response_headers();
+  const SpdyHeaderBlock& response_headers = delegate->response_headers();
   EXPECT_EQ("200", response_headers.find(":status")->second);
   EXPECT_EQ("header-value", response_headers.find("header-name")->second);
   EXPECT_EQ(0, delegate->on_data_sent_count());
@@ -1063,7 +1063,7 @@ TEST_F(BidirectionalStreamTest, TestBufferingWithTrailers) {
   EXPECT_EQ(1, delegate->on_data_read_count());
   EXPECT_EQ(kUploadDataSize * 3,
             static_cast<int>(delegate->data_received().size()));
-  const SpdyHeaderBlock response_headers = delegate->response_headers();
+  const SpdyHeaderBlock& response_headers = delegate->response_headers();
   EXPECT_EQ("200", response_headers.find(":status")->second);
   EXPECT_EQ("header-value", response_headers.find("header-name")->second);
   EXPECT_EQ("bar", delegate->trailers().find("foo")->second);
@@ -1324,7 +1324,7 @@ TEST_P(BidirectionalStreamTest, CancelOrDeleteStreamDuringOnHeadersReceived) {
   delegate->Start(std::move(request_info), http_session_.get());
   // Makes sure delegate does not get called.
   base::RunLoop().RunUntilIdle();
-  const SpdyHeaderBlock response_headers = delegate->response_headers();
+  const SpdyHeaderBlock& response_headers = delegate->response_headers();
   EXPECT_EQ("200", response_headers.find(":status")->second);
   EXPECT_EQ("header-value", response_headers.find("header-name")->second);
   EXPECT_EQ(0u, delegate->data_received().size());
@@ -1383,7 +1383,7 @@ TEST_P(BidirectionalStreamTest, CancelOrDeleteStreamDuringOnDataRead) {
   delegate->Start(std::move(request_info), http_session_.get());
   // Makes sure delegate does not get called.
   base::RunLoop().RunUntilIdle();
-  const SpdyHeaderBlock response_headers = delegate->response_headers();
+  const SpdyHeaderBlock& response_headers = delegate->response_headers();
   EXPECT_EQ("200", response_headers.find(":status")->second);
   EXPECT_EQ("header-value", response_headers.find("header-name")->second);
   EXPECT_EQ(kUploadDataSize * 1,
@@ -1448,7 +1448,7 @@ TEST_P(BidirectionalStreamTest, CancelOrDeleteStreamDuringOnTrailersReceived) {
   delegate->Start(std::move(request_info), http_session_.get());
   // Makes sure delegate does not get called.
   base::RunLoop().RunUntilIdle();
-  const SpdyHeaderBlock response_headers = delegate->response_headers();
+  const SpdyHeaderBlock& response_headers = delegate->response_headers();
   EXPECT_EQ("200", response_headers.find(":status")->second);
   EXPECT_EQ("header-value", response_headers.find("header-name")->second);
   EXPECT_EQ("bar", delegate->trailers().find("foo")->second);
@@ -1565,7 +1565,7 @@ TEST_F(BidirectionalStreamTest, TestHonorAlternativeServiceHeader) {
   delegate->SetRunUntilCompletion(true);
   delegate->Start(std::move(request_info), http_session_.get());
 
-  const SpdyHeaderBlock response_headers = delegate->response_headers();
+  const SpdyHeaderBlock& response_headers = delegate->response_headers();
   EXPECT_EQ("200", response_headers.find(":status")->second);
   EXPECT_EQ(alt_svc_header_value, response_headers.find("alt-svc")->second);
   EXPECT_EQ(0, delegate->on_data_sent_count());

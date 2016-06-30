@@ -127,7 +127,7 @@ void QuicSimpleServerStream::PushResponse(
     return;
   }
   // Change the stream state to emulate a client request.
-  request_headers_ = push_request_headers;
+  request_headers_ = std::move(push_request_headers);
   content_length_ = 0;
   DVLOG(1) << "Stream " << id() << ": Ready to receive server push response.";
 
@@ -203,8 +203,8 @@ void QuicSimpleServerStream::SendResponse() {
   }
 
   DVLOG(1) << "Sending response for stream " << id();
-  SendHeadersAndBodyAndTrailers(response->headers(), response->body(),
-                                response->trailers());
+  SendHeadersAndBodyAndTrailers(response->headers().Clone(), response->body(),
+                                response->trailers().Clone());
 }
 
 void QuicSimpleServerStream::SendNotFoundResponse() {

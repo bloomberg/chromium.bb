@@ -412,7 +412,8 @@ TEST_P(SpdySessionTest, GoAwayWithActiveStreams) {
 
   std::unique_ptr<SpdyHeaderBlock> headers(
       new SpdyHeaderBlock(spdy_util_.ConstructGetHeaderBlock(kDefaultUrl)));
-  std::unique_ptr<SpdyHeaderBlock> headers2(new SpdyHeaderBlock(*headers));
+  std::unique_ptr<SpdyHeaderBlock> headers2(
+      new SpdyHeaderBlock(headers->Clone()));
 
   spdy_stream1->SendRequestHeaders(std::move(headers), NO_MORE_DATA_TO_SEND);
   EXPECT_TRUE(spdy_stream1->HasUrlFromHeaders());
@@ -551,7 +552,8 @@ TEST_P(SpdySessionTest, GoAwayTwice) {
 
   std::unique_ptr<SpdyHeaderBlock> headers(
       new SpdyHeaderBlock(spdy_util_.ConstructGetHeaderBlock(kDefaultUrl)));
-  std::unique_ptr<SpdyHeaderBlock> headers2(new SpdyHeaderBlock(*headers));
+  std::unique_ptr<SpdyHeaderBlock> headers2(
+      new SpdyHeaderBlock(headers->Clone()));
 
   spdy_stream1->SendRequestHeaders(std::move(headers), NO_MORE_DATA_TO_SEND);
   EXPECT_TRUE(spdy_stream1->HasUrlFromHeaders());
@@ -625,7 +627,8 @@ TEST_P(SpdySessionTest, GoAwayWithActiveStreamsThenClose) {
 
   std::unique_ptr<SpdyHeaderBlock> headers(
       new SpdyHeaderBlock(spdy_util_.ConstructGetHeaderBlock(kDefaultUrl)));
-  std::unique_ptr<SpdyHeaderBlock> headers2(new SpdyHeaderBlock(*headers));
+  std::unique_ptr<SpdyHeaderBlock> headers2(
+      new SpdyHeaderBlock(headers->Clone()));
 
   spdy_stream1->SendRequestHeaders(std::move(headers), NO_MORE_DATA_TO_SEND);
   EXPECT_TRUE(spdy_stream1->HasUrlFromHeaders());

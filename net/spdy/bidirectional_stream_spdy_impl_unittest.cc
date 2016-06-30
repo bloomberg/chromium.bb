@@ -63,7 +63,7 @@ class TestDelegateBase : public BidirectionalStreamImpl::Delegate {
   void OnHeadersReceived(const SpdyHeaderBlock& response_headers) override {
     CHECK(!on_failed_called_);
     CHECK(!not_expect_callback_);
-    response_headers_ = response_headers;
+    response_headers_ = response_headers.Clone();
     if (!do_not_start_read_)
       StartOrContinueReading();
   }
@@ -87,7 +87,7 @@ class TestDelegateBase : public BidirectionalStreamImpl::Delegate {
 
   void OnTrailersReceived(const SpdyHeaderBlock& trailers) override {
     CHECK(!on_failed_called_);
-    trailers_ = trailers;
+    trailers_ = trailers.Clone();
     if (run_until_completion_)
       loop_->Quit();
   }
@@ -163,8 +163,8 @@ class TestDelegateBase : public BidirectionalStreamImpl::Delegate {
   const std::string& data_received() const { return data_received_; }
   int bytes_read() const { return bytes_read_; }
   int error() const { return error_; }
-  const SpdyHeaderBlock response_headers() const { return response_headers_; }
-  const SpdyHeaderBlock trailers() const { return trailers_; }
+  const SpdyHeaderBlock& response_headers() const { return response_headers_; }
+  const SpdyHeaderBlock& trailers() const { return trailers_; }
   int on_data_read_count() const { return on_data_read_count_; }
   int on_data_sent_count() const { return on_data_sent_count_; }
   bool on_failed_called() const { return on_failed_called_; }

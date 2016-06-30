@@ -423,7 +423,7 @@ class QuicNetworkTransactionTest
         ConvertRequestPriorityToQuicPriority(DEFAULT_PRIORITY);
     return client_maker_.MakeRequestHeadersPacketWithOffsetTracking(
         packet_number, stream_id, should_include_version, fin, priority,
-        headers, offset);
+        std::move(headers), offset);
   }
 
   std::unique_ptr<QuicEncryptedPacket> ConstructClientRequestHeadersPacket(
@@ -438,7 +438,7 @@ class QuicNetworkTransactionTest
         ConvertRequestPriorityToQuicPriority(DEFAULT_PRIORITY);
     return client_maker_.MakeRequestHeadersPacketWithOffsetTracking(
         packet_number, stream_id, should_include_version, fin, priority,
-        headers, offset);
+        std::move(headers), offset);
   }
 
   std::unique_ptr<QuicEncryptedPacket> ConstructClientRequestHeadersPacket(
@@ -507,7 +507,8 @@ class QuicNetworkTransactionTest
       SpdyHeaderBlock headers,
       QuicStreamOffset* offset) {
     return server_maker_.MakeResponseHeadersPacketWithOffsetTracking(
-        packet_number, stream_id, should_include_version, fin, headers, offset);
+        packet_number, stream_id, should_include_version, fin,
+        std::move(headers), offset);
   }
 
   std::unique_ptr<QuicEncryptedPacket> ConstructServerResponseHeadersPacket(
@@ -519,7 +520,8 @@ class QuicNetworkTransactionTest
       QuicStreamOffset* offset,
       QuicTestPacketMaker* maker) {
     return server_maker_.MakeResponseHeadersPacketWithOffsetTracking(
-        packet_number, stream_id, should_include_version, fin, headers, offset);
+        packet_number, stream_id, should_include_version, fin,
+        std::move(headers), offset);
   }
 
   void CreateSession() {

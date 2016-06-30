@@ -90,7 +90,7 @@ class TestDelegateBase : public BidirectionalStreamImpl::Delegate {
     CHECK(!on_failed_called_);
     CHECK(!not_expect_callback_);
 
-    response_headers_ = response_headers;
+    response_headers_ = response_headers.Clone();
     loop_->Quit();
   }
 
@@ -117,7 +117,7 @@ class TestDelegateBase : public BidirectionalStreamImpl::Delegate {
     CHECK(!on_failed_called_);
     CHECK(!not_expect_callback_);
 
-    trailers_ = trailers;
+    trailers_ = trailers.Clone();
     loop_->Quit();
   }
 
@@ -493,11 +493,11 @@ class BidirectionalStreamQuicImplTest
   std::unique_ptr<QuicReceivedPacket> ConstructResponseTrailersPacket(
       QuicPacketNumber packet_number,
       bool fin,
-      const SpdyHeaderBlock& trailers,
+      SpdyHeaderBlock trailers,
       size_t* spdy_headers_frame_length,
       QuicStreamOffset* offset) {
     return server_maker_.MakeResponseHeadersPacket(
-        packet_number, stream_id_, !kIncludeVersion, fin, trailers,
+        packet_number, stream_id_, !kIncludeVersion, fin, std::move(trailers),
         spdy_headers_frame_length, offset);
   }
 
@@ -659,7 +659,7 @@ TEST_P(BidirectionalStreamQuicImplTest, GetRequest) {
   trailers[kFinalOffsetHeaderKey] = base::IntToString(strlen(kResponseBody));
   // Server sends trailers.
   ProcessPacket(ConstructResponseTrailersPacket(
-      4, kFin, trailers, &spdy_trailers_frame_length, &offset));
+      4, kFin, trailers.Clone(), &spdy_trailers_frame_length, &offset));
 
   delegate->WaitUntilNextCallback();  // OnTrailersReceived
   EXPECT_EQ(OK, cb2.WaitForResult());
@@ -783,7 +783,7 @@ TEST_P(BidirectionalStreamQuicImplTest, CoalesceDataBuffersNotHeadersFrame) {
   trailers[kFinalOffsetHeaderKey] = base::IntToString(strlen(kResponseBody));
   // Server sends trailers.
   ProcessPacket(ConstructResponseTrailersPacket(
-      4, kFin, trailers, &spdy_trailers_frame_length, &offset));
+      4, kFin, trailers.Clone(), &spdy_trailers_frame_length, &offset));
 
   delegate->WaitUntilNextCallback();  // OnTrailersReceived
   trailers.erase(kFinalOffsetHeaderKey);
@@ -879,7 +879,7 @@ TEST_P(BidirectionalStreamQuicImplTest,
   trailers[kFinalOffsetHeaderKey] = base::IntToString(strlen(kResponseBody));
   // Server sends trailers.
   ProcessPacket(ConstructResponseTrailersPacket(
-      4, kFin, trailers, &spdy_trailers_frame_length, &offset));
+      4, kFin, trailers.Clone(), &spdy_trailers_frame_length, &offset));
 
   delegate->WaitUntilNextCallback();  // OnTrailersReceived
   trailers.erase(kFinalOffsetHeaderKey);
@@ -982,7 +982,7 @@ TEST_P(BidirectionalStreamQuicImplTest,
   trailers[kFinalOffsetHeaderKey] = base::IntToString(strlen(kResponseBody));
   // Server sends trailers.
   ProcessPacket(ConstructResponseTrailersPacket(
-      4, kFin, trailers, &spdy_trailers_frame_length, &offset));
+      4, kFin, trailers.Clone(), &spdy_trailers_frame_length, &offset));
 
   delegate->WaitUntilNextCallback();  // OnTrailersReceived
   trailers.erase(kFinalOffsetHeaderKey);
@@ -1062,7 +1062,7 @@ TEST_P(BidirectionalStreamQuicImplTest, PostRequest) {
   trailers[kFinalOffsetHeaderKey] = base::IntToString(strlen(kResponseBody));
   // Server sends trailers.
   ProcessPacket(ConstructResponseTrailersPacket(
-      4, kFin, trailers, &spdy_trailers_frame_length, &offset));
+      4, kFin, trailers.Clone(), &spdy_trailers_frame_length, &offset));
 
   delegate->WaitUntilNextCallback();  // OnTrailersReceived
   trailers.erase(kFinalOffsetHeaderKey);
@@ -1139,7 +1139,7 @@ TEST_P(BidirectionalStreamQuicImplTest, PutRequest) {
   trailers[kFinalOffsetHeaderKey] = base::IntToString(strlen(kResponseBody));
   // Server sends trailers.
   ProcessPacket(ConstructResponseTrailersPacket(
-      4, kFin, trailers, &spdy_trailers_frame_length, &offset));
+      4, kFin, trailers.Clone(), &spdy_trailers_frame_length, &offset));
 
   delegate->WaitUntilNextCallback();  // OnTrailersReceived
   trailers.erase(kFinalOffsetHeaderKey);
@@ -1658,7 +1658,7 @@ TEST_P(BidirectionalStreamQuicImplTest, DeleteStreamDuringOnTrailersReceived) {
   trailers[kFinalOffsetHeaderKey] = base::IntToString(strlen(kResponseBody));
   // Server sends trailers.
   ProcessPacket(ConstructResponseTrailersPacket(
-      4, kFin, trailers, &spdy_trailers_frame_length, &offset));
+      4, kFin, trailers.Clone(), &spdy_trailers_frame_length, &offset));
 
   delegate->WaitUntilNextCallback();  // OnTrailersReceived
   trailers.erase(kFinalOffsetHeaderKey);

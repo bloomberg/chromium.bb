@@ -5017,7 +5017,7 @@ TEST_P(HttpNetworkTransactionTest,
     connect2_block[spdy_util_.GetPathKey()] = "mail.example.org:443";
   }
   std::unique_ptr<SpdySerializedFrame> connect2(
-      spdy_util_.ConstructSpdySyn(3, connect2_block, LOWEST, false));
+      spdy_util_.ConstructSpdySyn(3, std::move(connect2_block), LOWEST, false));
 
   std::unique_ptr<SpdySerializedFrame> conn_resp2(
       spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 3));
@@ -13697,7 +13697,7 @@ TEST_P(HttpNetworkTransactionTest, DoNotUseSpdySessionForHttpOverTunnel) {
   req2_block[spdy_util_.GetSchemeKey()] = "http";
   req2_block[spdy_util_.GetPathKey()] = "/";
   std::unique_ptr<SpdySerializedFrame> req2(
-      spdy_util_.ConstructSpdySyn(3, req2_block, MEDIUM, true));
+      spdy_util_.ConstructSpdySyn(3, std::move(req2_block), MEDIUM, true));
 
   MockWrite writes1[] = {
       CreateMockWrite(*connect, 0), CreateMockWrite(*wrapped_req1, 2),

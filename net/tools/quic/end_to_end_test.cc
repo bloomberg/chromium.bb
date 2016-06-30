@@ -8,6 +8,7 @@
 #include <list>
 #include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/memory/singleton.h"
@@ -2110,7 +2111,7 @@ class ServerStreamWithErrorResponseBody : public QuicSimpleServerStream {
     // This method must call CloseReadSide to cause the test case, StopReading
     // is not sufficient.
     ReliableQuicStreamPeer::CloseReadSide(this);
-    SendHeadersAndBody(headers, response_body_);
+    SendHeadersAndBody(std::move(headers), response_body_);
   }
 
   string response_body_;
@@ -2197,8 +2198,8 @@ class ServerStreamThatSendsHugeResponse : public QuicSimpleServerStream {
     string body;
     test::GenerateBody(&body, body_bytes_);
     response.set_body(body);
-    SendHeadersAndBodyAndTrailers(response.headers(), response.body(),
-                                  response.trailers());
+    SendHeadersAndBodyAndTrailers(response.headers().Clone(), response.body(),
+                                  response.trailers().Clone());
   }
 
  private:
@@ -2448,7 +2449,8 @@ TEST_P(EndToEndTest, Trailers) {
   trailers["some-trailing-header"] = "trailing-header-value";
 
   QuicInMemoryCache::GetInstance()->AddResponse(
-      "www.google.com", "/trailer_url", headers, kBody, trailers);
+      "www.google.com", "/trailer_url", std::move(headers), kBody,
+      trailers.Clone());
 
   EXPECT_EQ(kBody, client_->SendSynchronousRequest("/trailer_url"));
   EXPECT_EQ(200u, client_->response_headers()->parsed_response_code());
@@ -2498,7 +2500,7 @@ class EndToEndTestServerPush : public EndToEndTest {
       response_headers[":status"] = "200";
       response_headers["content-length"] = IntToString(body.size());
       push_resources.push_back(QuicInMemoryCache::ServerPushInfo(
-          resource_url, response_headers, kV3LowestPriority, body));
+          resource_url, std::move(response_headers), kV3LowestPriority, body));
     }
 
     QuicInMemoryCache::GetInstance()->AddSimpleResponseWithServerPushResources(

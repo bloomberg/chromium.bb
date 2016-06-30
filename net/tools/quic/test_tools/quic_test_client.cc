@@ -582,7 +582,7 @@ void QuicTestClient::OnClose(QuicSpdyStream* stream) {
   response_headers_complete_ = stream_->headers_decompressed();
   SpdyBalsaUtils::SpdyHeadersToResponseHeaders(stream_->response_headers(),
                                                &response_headers_);
-  response_trailers_ = stream_->received_trailers();
+  response_trailers_ = stream_->received_trailers().Clone();
   stream_error_ = stream_->stream_error();
   bytes_read_ = stream_->stream_bytes_read() + stream_->header_bytes_read();
   bytes_written_ =

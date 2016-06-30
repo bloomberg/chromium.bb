@@ -61,7 +61,7 @@ void StreamDelegateBase::OnRequestHeadersSent() {
 SpdyResponseHeadersStatus StreamDelegateBase::OnResponseHeadersUpdated(
     const SpdyHeaderBlock& response_headers) {
   EXPECT_EQ(stream_->type() != SPDY_PUSH_STREAM, send_headers_completed_);
-  response_headers_ = response_headers;
+  response_headers_ = response_headers.Clone();
   return RESPONSE_HEADERS_ARE_COMPLETE;
 }
 

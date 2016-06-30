@@ -101,7 +101,7 @@ class QuicClientPromisedInfoTest : public ::testing::Test {
     serialized_push_promise_ =
         SpdyUtils::SerializeUncompressedHeaders(push_promise_);
 
-    client_request_ = SpdyHeaderBlock(push_promise_);
+    client_request_ = push_promise_.Clone();
   }
 
   class StreamVisitor : public QuicSpdyClientStream::Visitor {

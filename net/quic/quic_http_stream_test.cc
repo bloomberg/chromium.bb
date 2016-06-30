@@ -1368,7 +1368,7 @@ TEST_P(QuicHttpStreamTest, ServerPushGetRequest) {
                                                    callback_.callback()));
 
   // Receive the promised response headers.
-  response_headers_ = promised_response_;
+  response_headers_ = promised_response_.Clone();
   size_t spdy_response_headers_frame_length;
   ProcessPacket(InnerConstructResponseHeadersPacket(
       1, promise_id_, false, &spdy_response_headers_frame_length));
@@ -1438,7 +1438,7 @@ TEST_P(QuicHttpStreamTest, ServerPushGetRequestSlowResponse) {
                                 headers_, &response_, callback_.callback()));
 
   // Receive the promised response headers.
-  response_headers_ = promised_response_;
+  response_headers_ = promised_response_.Clone();
   size_t spdy_response_headers_frame_length;
   ProcessPacket(InnerConstructResponseHeadersPacket(
       1, promise_id_, false, &spdy_response_headers_frame_length));
@@ -1511,7 +1511,7 @@ TEST_P(QuicHttpStreamTest, ServerPushCrossOriginOK) {
                                                    callback_.callback()));
 
   // Receive the promised response headers.
-  response_headers_ = promised_response_;
+  response_headers_ = promised_response_.Clone();
   size_t spdy_response_headers_frame_length;
   ProcessPacket(InnerConstructResponseHeadersPacket(
       1, promise_id_, false, &spdy_response_headers_frame_length));
@@ -1613,7 +1613,7 @@ TEST_P(QuicHttpStreamTest, ServerPushVaryCheckOK) {
 
   // Receive the promised response headers.
   promised_response_["vary"] = "accept-encoding";
-  response_headers_ = promised_response_;
+  response_headers_ = promised_response_.Clone();
   size_t spdy_response_headers_frame_length;
   ProcessPacket(InnerConstructResponseHeadersPacket(
       1, promise_id_, false, &spdy_response_headers_frame_length));
@@ -1703,7 +1703,7 @@ TEST_P(QuicHttpStreamTest, ServerPushVaryCheckFail) {
 
   // Receive the promised response headers.
   promised_response_["vary"] = "accept-encoding";
-  response_headers_ = promised_response_;
+  response_headers_ = promised_response_.Clone();
   size_t spdy_response_headers_frame_length;
   ProcessPacket(InnerConstructResponseHeadersPacket(
       1, promise_id_, false, &spdy_response_headers_frame_length));

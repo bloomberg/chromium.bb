@@ -310,14 +310,14 @@ TEST_P(HpackDecoderTest, DecodeNextNameInvalidIndex) {
 // Decoding indexed static table field should work.
 TEST_P(HpackDecoderTest, IndexedHeaderStatic) {
   // Reference static table entries #2 and #5.
-  SpdyHeaderBlock header_set1 = DecodeBlockExpectingSuccess("\x82\x85");
+  const SpdyHeaderBlock& header_set1 = DecodeBlockExpectingSuccess("\x82\x85");
   SpdyHeaderBlock expected_header_set1;
   expected_header_set1[":method"] = "GET";
   expected_header_set1[":path"] = "/index.html";
   EXPECT_EQ(expected_header_set1, header_set1);
 
   // Reference static table entry #2.
-  SpdyHeaderBlock header_set2 = DecodeBlockExpectingSuccess("\x82");
+  const SpdyHeaderBlock& header_set2 = DecodeBlockExpectingSuccess("\x82");
   SpdyHeaderBlock expected_header_set2;
   expected_header_set2[":method"] = "GET";
   EXPECT_EQ(expected_header_set2, header_set2);
@@ -325,7 +325,7 @@ TEST_P(HpackDecoderTest, IndexedHeaderStatic) {
 
 TEST_P(HpackDecoderTest, IndexedHeaderDynamic) {
   // First header block: add an entry to header table.
-  SpdyHeaderBlock header_set1 = DecodeBlockExpectingSuccess(
+  const SpdyHeaderBlock& header_set1 = DecodeBlockExpectingSuccess(
       "\x40\x03"
       "foo"
       "\x03"
@@ -335,7 +335,7 @@ TEST_P(HpackDecoderTest, IndexedHeaderDynamic) {
   EXPECT_EQ(expected_header_set1, header_set1);
 
   // Second header block: add another entry to header table.
-  SpdyHeaderBlock header_set2 = DecodeBlockExpectingSuccess(
+  const SpdyHeaderBlock& header_set2 = DecodeBlockExpectingSuccess(
       "\xbe\x40\x04"
       "spam"
       "\x04"
@@ -346,7 +346,7 @@ TEST_P(HpackDecoderTest, IndexedHeaderDynamic) {
   EXPECT_EQ(expected_header_set2, header_set2);
 
   // Third header block: refer to most recently added entry.
-  SpdyHeaderBlock header_set3 = DecodeBlockExpectingSuccess("\xbe");
+  const SpdyHeaderBlock& header_set3 = DecodeBlockExpectingSuccess("\xbe");
   SpdyHeaderBlock expected_header_set3;
   expected_header_set3["spam"] = "eggs";
   EXPECT_EQ(expected_header_set3, header_set3);
@@ -484,7 +484,7 @@ TEST_P(HpackDecoderTest, LiteralHeaderNoIndexing) {
   // First header with indexed name, second header with string literal
   // name.
   const char input[] = "\x04\x0c/sample/path\x00\x06:path2\x0e/sample/path/2";
-  SpdyHeaderBlock header_set =
+  const SpdyHeaderBlock& header_set =
       DecodeBlockExpectingSuccess(StringPiece(input, arraysize(input) - 1));
 
   SpdyHeaderBlock expected_header_set;
@@ -497,7 +497,7 @@ TEST_P(HpackDecoderTest, LiteralHeaderNoIndexing) {
 // indexing and string literal names should work.
 TEST_P(HpackDecoderTest, LiteralHeaderIncrementalIndexing) {
   const char input[] = "\x44\x0c/sample/path\x40\x06:path2\x0e/sample/path/2";
-  SpdyHeaderBlock header_set =
+  const SpdyHeaderBlock& header_set =
       DecodeBlockExpectingSuccess(StringPiece(input, arraysize(input) - 1));
 
   SpdyHeaderBlock expected_header_set;
@@ -572,8 +572,6 @@ TEST_P(HpackDecoderTest, BasicE21) {
 }
 
 TEST_P(HpackDecoderTest, SectionD4RequestHuffmanExamples) {
-  SpdyHeaderBlock header_set;
-
   // 82                                      | == Indexed - Add ==
   //                                         |   idx = 2
   //                                         | -> :method: GET
@@ -592,13 +590,11 @@ TEST_P(HpackDecoderTest, SectionD4RequestHuffmanExamples) {
   //                                         |     Decoded:
   //                                         | www.example.com
   //                                         | -> :authority: www.example.com
-  string first = a2b_hex(
-      "828684418cf1e3c2e5f23a6ba0ab90f4"
-      "ff");
-  header_set = DecodeBlockExpectingSuccess(first);
+  string first = a2b_hex("828684418cf1e3c2e5f23a6ba0ab90f4ff");
+  const SpdyHeaderBlock& first_header_set = DecodeBlockExpectingSuccess(first);
 
   EXPECT_THAT(
-      header_set,
+      first_header_set,
       ElementsAre(Pair(":method", "GET"), Pair(":scheme", "http"),
                   Pair(":path", "/"), Pair(":authority", "www.example.com")));
 
@@ -628,10 +624,11 @@ TEST_P(HpackDecoderTest, SectionD4RequestHuffmanExamples) {
   //                                         | -> cache-control: no-cache
 
   string second = a2b_hex("828684be5886a8eb10649cbf");
-  header_set = DecodeBlockExpectingSuccess(second);
+  const SpdyHeaderBlock& second_header_set =
+      DecodeBlockExpectingSuccess(second);
 
   EXPECT_THAT(
-      header_set,
+      second_header_set,
       ElementsAre(Pair(":method", "GET"), Pair(":scheme", "http"),
                   Pair(":path", "/"), Pair(":authority", "www.example.com"),
                   Pair("cache-control", "no-cache")));
@@ -667,9 +664,9 @@ TEST_P(HpackDecoderTest, SectionD4RequestHuffmanExamples) {
   string third = a2b_hex(
       "828785bf408825a849e95ba97d7f89"
       "25a849e95bb8e8b4bf");
-  header_set = DecodeBlockExpectingSuccess(third);
+  const SpdyHeaderBlock& third_header_set = DecodeBlockExpectingSuccess(third);
 
-  EXPECT_THAT(header_set,
+  EXPECT_THAT(third_header_set,
               ElementsAre(Pair(":method", "GET"), Pair(":scheme", "https"),
                           Pair(":path", "/index.html"),
                           Pair(":authority", "www.example.com"),
@@ -682,7 +679,6 @@ TEST_P(HpackDecoderTest, SectionD4RequestHuffmanExamples) {
 }
 
 TEST_P(HpackDecoderTest, SectionD6ResponseHuffmanExamples) {
-  SpdyHeaderBlock header_set;
   decoder_.ApplyHeaderTableSizeSetting(256);
 
   // 48                                      | == Literal indexed ==
@@ -732,10 +728,10 @@ TEST_P(HpackDecoderTest, SectionD6ResponseHuffmanExamples) {
       "941054d444a8200595040b8166e082a6"
       "2d1bff6e919d29ad171863c78f0b97c8"
       "e9ae82ae43d3");
-  header_set = DecodeBlockExpectingSuccess(first);
+  const SpdyHeaderBlock& first_header_set = DecodeBlockExpectingSuccess(first);
 
   EXPECT_THAT(
-      header_set,
+      first_header_set,
       ElementsAre(Pair(":status", "302"), Pair("cache-control", "private"),
                   Pair("date", "Mon, 21 Oct 2013 20:13:21 GMT"),
                   Pair("location", "https://www.example.com")));
@@ -768,10 +764,11 @@ TEST_P(HpackDecoderTest, SectionD6ResponseHuffmanExamples) {
   //                                         | -> location:
   //                                         |   https://www.example.com
   string second = a2b_hex("4883640effc1c0bf");
-  header_set = DecodeBlockExpectingSuccess(second);
+  const SpdyHeaderBlock& second_header_set =
+      DecodeBlockExpectingSuccess(second);
 
   EXPECT_THAT(
-      header_set,
+      second_header_set,
       ElementsAre(Pair(":status", "307"), Pair("cache-control", "private"),
                   Pair("date", "Mon, 21 Oct 2013 20:13:21 GMT"),
                   Pair("location", "https://www.example.com")));
@@ -841,10 +838,10 @@ TEST_P(HpackDecoderTest, SectionD6ResponseHuffmanExamples) {
       "77ad94e7821dd7f2e6c7b335dfdfcd5b"
       "3960d5af27087f3672c1ab270fb5291f"
       "9587316065c003ed4ee5b1063d5007");
-  header_set = DecodeBlockExpectingSuccess(third);
+  const SpdyHeaderBlock& third_header_set = DecodeBlockExpectingSuccess(third);
 
   EXPECT_THAT(
-      header_set,
+      third_header_set,
       ElementsAre(Pair(":status", "200"), Pair("cache-control", "private"),
                   Pair("date", "Mon, 21 Oct 2013 20:13:22 GMT"),
                   Pair("location", "https://www.example.com"),

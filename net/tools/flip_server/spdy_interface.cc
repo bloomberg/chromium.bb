@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <string>
+#include <utility>
 
 #include "net/spdy/spdy_framer.h"
 #include "net/spdy/spdy_protocol.h"
@@ -472,7 +473,7 @@ size_t SpdySM::SendSynStreamImpl(uint32_t stream_id,
 
   DCHECK(buffered_spdy_framer_);
   SpdySerializedFrame* fsrcf = buffered_spdy_framer_->CreateSynStream(
-      stream_id, 0, 0, CONTROL_FLAG_NONE, block);
+      stream_id, 0, 0, CONTROL_FLAG_NONE, std::move(block));
   size_t df_size = fsrcf->size();
   EnqueueDataFrame(new SpdyFrameDataFrame(fsrcf));
 
@@ -491,7 +492,7 @@ size_t SpdySM::SendSynReplyImpl(uint32_t stream_id,
 
   DCHECK(buffered_spdy_framer_);
   SpdySerializedFrame* fsrcf = buffered_spdy_framer_->CreateSynReply(
-      stream_id, CONTROL_FLAG_NONE, block);
+      stream_id, CONTROL_FLAG_NONE, std::move(block));
   size_t df_size = fsrcf->size();
   EnqueueDataFrame(new SpdyFrameDataFrame(fsrcf));
 

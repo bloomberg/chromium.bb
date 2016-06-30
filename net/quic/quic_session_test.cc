@@ -5,6 +5,7 @@
 #include "net/quic/quic_session.h"
 
 #include <set>
+#include <utility>
 
 #include "base/rand_util.h"
 #include "base/stl_util.h"
@@ -815,12 +816,12 @@ TEST_P(QuicSessionTestServer,
     headers["header"] = base::Uint64ToString(base::RandUint64()) +
                         base::Uint64ToString(base::RandUint64()) +
                         base::Uint64ToString(base::RandUint64());
-    headers_stream->WriteHeaders(stream_id, headers, true, 0, nullptr);
+    headers_stream->WriteHeaders(stream_id, headers.Clone(), true, 0, nullptr);
     stream_id += 2;
   }
   // Write once more to ensure that the headers stream has buffered data. The
   // random headers may have exactly filled the flow control window.
-  headers_stream->WriteHeaders(stream_id, headers, true, 0, nullptr);
+  headers_stream->WriteHeaders(stream_id, std::move(headers), true, 0, nullptr);
   EXPECT_TRUE(headers_stream->HasBufferedData());
 
   EXPECT_TRUE(headers_stream->flow_controller()->IsBlocked());

@@ -96,17 +96,15 @@ TEST(SpdyHeaderBlockTest, AddHeaders) {
   EXPECT_EQ("", block1.GetHeader("key"));
 }
 
-// This test verifies that SpdyHeaderBlock can be copied.
+// This test verifies that SpdyHeaderBlock can be copied using Clone().
 TEST(SpdyHeaderBlockTest, CopyBlocks) {
   SpdyHeaderBlock block1;
   block1["foo"] = string(300, 'x');
   block1["bar"] = "baz";
   block1.ReplaceOrAppendHeader("qux", "qux1");
 
-  SpdyHeaderBlock block2;
-  block2 = block1;
-
-  SpdyHeaderBlock block3(block1);
+  SpdyHeaderBlock block2 = block1.Clone();
+  SpdyHeaderBlock block3(block1.Clone());
 
   EXPECT_EQ(block1, block2);
   EXPECT_EQ(block1, block3);

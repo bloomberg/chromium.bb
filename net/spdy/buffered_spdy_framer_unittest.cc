@@ -50,7 +50,7 @@ class TestBufferedSpdyVisitor : public BufferedSpdyFramerVisitorInterface {
     header_stream_id_ = stream_id;
     EXPECT_NE(header_stream_id_, SpdyFramer::kInvalidStream);
     syn_frame_count_++;
-    headers_ = headers;
+    headers_ = headers.Clone();
   }
 
   void OnSynReply(SpdyStreamId stream_id,
@@ -59,7 +59,7 @@ class TestBufferedSpdyVisitor : public BufferedSpdyFramerVisitorInterface {
     header_stream_id_ = stream_id;
     EXPECT_NE(header_stream_id_, SpdyFramer::kInvalidStream);
     syn_reply_frame_count_++;
-    headers_ = headers;
+    headers_ = headers.Clone();
   }
 
   void OnHeaders(SpdyStreamId stream_id,
@@ -72,7 +72,7 @@ class TestBufferedSpdyVisitor : public BufferedSpdyFramerVisitorInterface {
     header_stream_id_ = stream_id;
     EXPECT_NE(header_stream_id_, SpdyFramer::kInvalidStream);
     headers_frame_count_++;
-    headers_ = headers;
+    headers_ = headers.Clone();
   }
 
   void OnDataFrameHeader(SpdyStreamId stream_id,
@@ -132,7 +132,7 @@ class TestBufferedSpdyVisitor : public BufferedSpdyFramerVisitorInterface {
     push_promise_frame_count_++;
     promised_stream_id_ = promised_stream_id;
     EXPECT_NE(promised_stream_id_, SpdyFramer::kInvalidStream);
-    headers_ = headers;
+    headers_ = headers.Clone();
   }
 
   void OnAltSvc(SpdyStreamId stream_id,
@@ -244,7 +244,7 @@ TEST_P(BufferedSpdyFramerTest, ReadSynStreamHeaderBlock) {
       framer.CreateSynStream(1,  // stream_id
                              0,  // associated_stream_id
                              1,  // priority
-                             CONTROL_FLAG_NONE, headers));
+                             CONTROL_FLAG_NONE, headers.Clone()));
   EXPECT_TRUE(control_frame.get() != NULL);
 
   TestBufferedSpdyVisitor visitor(spdy_version());
@@ -295,7 +295,7 @@ TEST_P(BufferedSpdyFramerTest, ReadSynReplyHeaderBlock) {
   BufferedSpdyFramer framer(spdy_version());
   std::unique_ptr<SpdySerializedFrame> control_frame(
       framer.CreateSynReply(1,  // stream_id
-                            CONTROL_FLAG_NONE, headers));
+                            CONTROL_FLAG_NONE, headers.Clone()));
   EXPECT_TRUE(control_frame.get() != NULL);
 
   TestBufferedSpdyVisitor visitor(spdy_version());
@@ -324,7 +324,7 @@ TEST_P(BufferedSpdyFramerTest, ReadHeadersHeaderBlock) {
       framer.CreateHeaders(1,  // stream_id
                            CONTROL_FLAG_NONE,
                            255,  // weight
-                           headers));
+                           headers.Clone()));
   EXPECT_TRUE(control_frame.get() != NULL);
 
   TestBufferedSpdyVisitor visitor(spdy_version());
@@ -347,7 +347,7 @@ TEST_P(BufferedSpdyFramerTest, ReadPushPromiseHeaderBlock) {
   headers["gamma"] = "delta";
   BufferedSpdyFramer framer(spdy_version());
   std::unique_ptr<SpdySerializedFrame> control_frame(
-      framer.CreatePushPromise(1, 2, headers));
+      framer.CreatePushPromise(1, 2, headers.Clone()));
   EXPECT_TRUE(control_frame.get() != NULL);
 
   TestBufferedSpdyVisitor visitor(spdy_version());
