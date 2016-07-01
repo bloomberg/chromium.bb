@@ -177,22 +177,15 @@ gfx::Point InkDropHostView::GetInkDropCenterBasedOnLastEvent() const {
 void InkDropHostView::AnimateInkDrop(InkDropState state,
                                      const ui::LocatedEvent* event) {
 #if defined(OS_WIN)
-  // On Windows, don't initiate ink-drops. Additionally, certain event states
-  // should dismiss existing ink-drop animations.
-  if (event && event->IsGestureEvent()) {
-    // Don't transition the ink-drop to a "pending" state from a touch event.
-    if (state == InkDropState::ACTION_PENDING ||
-        state == InkDropState::ALTERNATE_ACTION_PENDING)
-      return;
-    // If the state is already pending, presumably from a mouse or keyboard
-    // event, then a "triggered" action state should be allowed. Conversely,
-    // if the state had already transitioned to hidden, then the touch event
-    // is ignored.
-    if ((state == InkDropState::ACTION_TRIGGERED ||
-         state == InkDropState::ALTERNATE_ACTION_TRIGGERED) &&
-        ink_drop_->GetTargetInkDropState() == InkDropState::HIDDEN)
-      return;
-  }
+  // On Windows, don't initiate ink-drops for touch/gesture events.
+  // Additionally, certain event states should dismiss existing ink-drop
+  // animations. If the state is already other than HIDDEN, presumably from
+  // a mouse or keyboard event, then the state should be allowed. Conversely,
+  // if the requested state is ACTIVATED, then it should always be allowed.
+  if (event && (event->IsTouchEvent() || event->IsGestureEvent()) &&
+      ink_drop_->GetTargetInkDropState() == InkDropState::HIDDEN &&
+      state != InkDropState::ACTIVATED)
+    return;
 #endif
   last_ripple_triggering_event_.reset(
       event ? ui::Event::Clone(*event).release()->AsLocatedEvent() : nullptr);
