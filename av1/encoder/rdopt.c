@@ -3009,6 +3009,15 @@ static int64_t handle_inter_mode(
         joint_motion_search(cpi, x, bsize, frame_mv, mi_row, mi_col,
                             single_newmv, &rate_mv, 0);
       } else {
+#if CONFIG_REF_MV
+        for (i = 0; i < 2; ++i) {
+          if (!av1_use_mv_hp(&x->mbmi_ext->ref_mvs[refs[i]][0].as_mv)) {
+            MV *this_mv = &frame_mv[refs[i]].as_mv;
+            if (this_mv->row & 1) this_mv->row += (this_mv->row > 0 ? -1 : 1);
+            if (this_mv->col & 1) this_mv->col += (this_mv->col > 0 ? -1 : 1);
+          }
+        }
+#endif
         rate_mv = av1_mv_bit_cost(&frame_mv[refs[0]].as_mv,
                                   &x->mbmi_ext->ref_mvs[refs[0]][0].as_mv,
                                   x->nmvjointcost, x->mvcost, MV_COST_WEIGHT);
