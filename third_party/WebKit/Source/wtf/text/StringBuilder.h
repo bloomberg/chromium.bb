@@ -115,7 +115,7 @@ public:
             append(static_cast<LChar>(c));
             return;
         }
-        ensureBuffer16();
+        ensureBuffer16(1);
         m_string = String();
         m_buffer16->append(c);
         ++m_length;
@@ -127,7 +127,7 @@ public:
             append(static_cast<UChar>(c));
             return;
         }
-        ensureBuffer8();
+        ensureBuffer8(1);
         m_string = String();
         m_buffer8->append(c);
         ++m_length;
@@ -205,24 +205,27 @@ public:
     void swap(StringBuilder&);
 
 private:
-    typedef Vector<LChar, 16> Buffer8;
-    typedef Vector<UChar, 16> Buffer16;
+    static const unsigned kInlineBufferSize = 16;
+    static unsigned initialBufferSize() { return kInlineBufferSize; }
 
-    void ensureBuffer8()
+    typedef Vector<LChar, kInlineBufferSize> Buffer8;
+    typedef Vector<UChar, kInlineBufferSize> Buffer16;
+
+    void ensureBuffer8(unsigned addedSize)
     {
         DCHECK(m_is8Bit);
         if (!hasBuffer())
-            createBuffer8();
+            createBuffer8(addedSize);
     }
 
-    void ensureBuffer16()
+    void ensureBuffer16(unsigned addedSize)
     {
         if (m_is8Bit || !hasBuffer())
-            createBuffer16();
+            createBuffer16(addedSize);
     }
 
-    void createBuffer8();
-    void createBuffer16();
+    void createBuffer8(unsigned addedSize);
+    void createBuffer16(unsigned addedSize);
 
     bool hasBuffer() const { return m_buffer; }
 

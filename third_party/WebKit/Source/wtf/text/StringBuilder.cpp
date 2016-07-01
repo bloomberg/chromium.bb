@@ -102,13 +102,10 @@ unsigned StringBuilder::capacity() const
 
 void StringBuilder::reserveCapacity(unsigned newCapacity)
 {
-    if (m_is8Bit) {
-        ensureBuffer8();
-        m_buffer8->reserveCapacity(newCapacity);
-    } else {
-        ensureBuffer16();
-        m_buffer16->reserveCapacity(newCapacity);
-    }
+    if (m_is8Bit)
+        ensureBuffer8(newCapacity);
+    else
+        ensureBuffer16(newCapacity);
 }
 
 void StringBuilder::resize(unsigned newSize)
@@ -124,18 +121,28 @@ void StringBuilder::resize(unsigned newSize)
         m_buffer16->resize(newSize);
 }
 
-void StringBuilder::createBuffer8()
+void StringBuilder::createBuffer8(unsigned addedSize)
 {
     DCHECK(!hasBuffer());
     DCHECK(m_is8Bit);
     m_buffer8 = new Buffer8;
+    // createBuffer is called right before appending addedSize more bytes. We
+    // want to ensure we have enough space to fit m_string plus the added
+    // size.
+    //
+    // We also ensure that we have at least the initialBufferSize of extra space
+    // for appending new bytes to avoid future mallocs for appending short
+    // strings or single characters. This is a no-op if m_length == 0 since
+    // initialBufferSize() is the same as the inline capacity of the vector.
+    // This allows doing append(string); append('\0') without extra mallocs.
+    m_buffer8->reserveInitialCapacity(m_length + std::max(addedSize, initialBufferSize()));
     m_length = 0;
     // Must keep a ref to the string since append will clear it.
     String string(m_string);
     append(string);
 }
 
-void StringBuilder::createBuffer16()
+void StringBuilder::createBuffer16(unsigned addedSize)
 {
     DCHECK(m_is8Bit || !hasBuffer());
     Buffer8 buffer8;
@@ -145,6 +152,8 @@ void StringBuilder::createBuffer16()
         delete m_buffer8;
     }
     m_buffer16 = new Buffer16;
+    // See createBuffer8's call to reserveInitialCapacity for why we do this.
+    m_buffer16->reserveInitialCapacity(m_length + std::max(addedSize, initialBufferSize()));
     m_is8Bit = false;
     m_length = 0;
     if (!buffer8.isEmpty()) {
@@ -169,7 +178,7 @@ void StringBuilder::append(const UChar* characters, unsigned length)
         return;
     }
 
-    ensureBuffer16();
+    ensureBuffer16(length);
     m_string = String();
     m_buffer16->append(characters, length);
     m_length += length;
@@ -182,14 +191,14 @@ void StringBuilder::append(const LChar* characters, unsigned length)
     DCHECK(characters);
 
     if (m_is8Bit) {
-        ensureBuffer8();
+        ensureBuffer8(length);
         m_string = String();
         m_buffer8->append(characters, length);
         m_length += length;
         return;
     }
 
-    ensureBuffer16();
+    ensureBuffer16(length);
     m_string = String();
     m_buffer16->reserveCapacity(m_buffer16->size() + length);
     for (size_t i = 0; i < length; ++i)
