@@ -50,6 +50,8 @@ content::WebUIDataSource* CreateMdHistoryUIHTMLSource(Profile* profile) {
                              IDS_MD_HISTORY_HISTORY_MENU_ITEM);
   source->AddLocalizedString("itemsSelected", IDS_MD_HISTORY_ITEMS_SELECTED);
   source->AddLocalizedString("loading", IDS_HISTORY_LOADING);
+  source->AddLocalizedString("moreActionsButton",
+                             IDS_HISTORY_ACTION_MENU_DESCRIPTION);
   source->AddLocalizedString("moreFromSite", IDS_HISTORY_MORE_FROM_SITE);
   source->AddLocalizedString("openAll", IDS_HISTORY_OTHER_SESSIONS_OPEN_ALL);
   source->AddLocalizedString("openTabsMenuItem",
