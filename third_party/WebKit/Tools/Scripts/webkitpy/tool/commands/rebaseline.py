@@ -494,6 +494,22 @@ class AbstractParallelRebaselineCommand(AbstractRebaseliningCommand):
         return lines_to_remove
 
     def _rebaseline(self, options, test_prefix_list):
+        """Downloads new baselines in parallel, then updates expectations files
+        and optimizes baselines.
+
+        Args:
+            options: An object with the options passed to the current command.
+            test_prefix_list: A map of test names to builder names to baseline
+                suffixes to rebaseline. For example:
+                {
+                    "some/test.html": {"builder-1": ["txt"], "builder-2": ["txt"]},
+                    "some/other.html": {"builder-1": ["txt"]}
+                }
+                This would mean that new text baselines should be downloaded for
+                "some/test.html" on both builder-1 and builder-2, and new text
+                baselines should be downloaded for "some/other.html" but only
+                from builder-1.
+        """
         for test, builders_to_check in sorted(test_prefix_list.items()):
             _log.info("Rebaselining %s" % test)
             for builder, suffixes in sorted(builders_to_check.items()):
