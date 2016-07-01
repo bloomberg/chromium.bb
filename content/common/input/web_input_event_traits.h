@@ -23,10 +23,6 @@ class CONTENT_EXPORT WebInputEventTraits {
   static size_t GetSize(blink::WebInputEvent::Type type);
   static ScopedWebInputEvent Clone(const blink::WebInputEvent& event);
   static void Delete(blink::WebInputEvent* event);
-  static bool CanCoalesce(const blink::WebInputEvent& event_to_coalesce,
-                          const blink::WebInputEvent& event);
-  static void Coalesce(const blink::WebInputEvent& event_to_coalesce,
-                       blink::WebInputEvent* event);
   static bool ShouldBlockEventStream(const blink::WebInputEvent& event);
 
   static bool CanCauseScroll(const blink::WebMouseWheelEvent& event);

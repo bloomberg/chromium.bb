@@ -7,6 +7,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
 #include "base/trace_event/trace_event.h"
+#include "content/common/input/web_input_event_traits.h"
 
 using blink::WebGestureEvent;
 using blink::WebInputEvent;

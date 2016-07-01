@@ -22,6 +22,7 @@
 #include "content/common/edit_command.h"
 #include "content/common/input/input_event_ack_state.h"
 #include "content/common/input/touch_action.h"
+#include "content/common/input/web_input_event_traits.h"
 #include "content/common/input/web_touch_event_traits.h"
 #include "content/common/input_messages.h"
 #include "content/common/view_messages.h"

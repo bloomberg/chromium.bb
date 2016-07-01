@@ -11,6 +11,7 @@
 #include "content/common/input/input_event_ack_state.h"
 #include "content/common/input/input_event_dispatch_type.h"
 #include "content/common/input/web_input_event_queue.h"
+#include "content/common/input/web_input_event_traits.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 #include "ui/events/latency_info.h"
 

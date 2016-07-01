@@ -7,6 +7,7 @@
 #include "base/trace_event/trace_event.h"
 #include "content/browser/renderer_host/input/touchpad_tap_suppression_controller.h"
 #include "content/browser/renderer_host/input/touchscreen_tap_suppression_controller.h"
+#include "content/common/input/web_input_event_traits.h"
 
 using blink::WebGestureEvent;
 using blink::WebInputEvent;

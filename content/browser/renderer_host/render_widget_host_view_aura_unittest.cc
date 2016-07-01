@@ -46,6 +46,7 @@
 #include "content/browser/web_contents/web_contents_view_aura.h"
 #include "content/common/host_shared_bitmap_manager.h"
 #include "content/common/input/synthetic_web_input_event_builders.h"
+#include "content/common/input/web_input_event_traits.h"
 #include "content/common/input_messages.h"
 #include "content/common/text_input_state.h"
 #include "content/common/view_messages.h"

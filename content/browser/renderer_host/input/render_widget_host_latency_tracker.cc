@@ -10,6 +10,7 @@
 #include "base/metrics/histogram.h"
 #include "build/build_config.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
+#include "content/common/input/web_input_event_traits.h"
 
 using blink::WebGestureEvent;
 using blink::WebInputEvent;
