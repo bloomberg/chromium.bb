@@ -462,8 +462,6 @@ class Serializer {
    * @param {!HTMLDocument} document
    */
   serialize(document) {
-    if (this.selection_.isNone)
-      return document.body.firstChild.outerHTML;
     this.serializeChildren(document.body);
     return this.strings_.join('');
   }
@@ -534,7 +532,7 @@ class Sample {
   load(sampleText) {
     const anchorMarker = sampleText.indexOf('^');
     const focusMarker = sampleText.indexOf('|');
-    if (focusMarker < 0) {
+    if (focusMarker < 0 && anchorMarker >= 0) {
       throw new Error(`You should specify caret position in "${sampleText}".`);
     }
     if (focusMarker != sampleText.lastIndexOf('|')) {

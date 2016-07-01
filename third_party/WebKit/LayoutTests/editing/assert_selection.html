@@ -14,6 +14,7 @@ function checked_assert_selection(input, command, output) {
 }
 
 test(() => {
+    assert_selection('foo', 'noop', 'foo');
     assert_selection('|foo', 'noop', '|foo');
     assert_selection('f|oo', 'noop', 'f|oo');
     assert_selection('foo|', 'noop', 'foo|');
@@ -59,11 +60,6 @@ test(() => {
         '|<table><tr><td>foo</td></tr></table>^', 'noop',
         '|<table><tbody><tr><td>foo</td></tr></tbody></table>^');
 }, 'markers around table');
-
-test(() => {
-    assert_equals(checked_assert_selection('foo', 'noop', 'baz'),
-        'You should specify caret position in "foo".');
-}, 'no marker in input');
 
 test(() => {
     assert_equals(checked_assert_selection('fo|o', 'noop', 'fo|o'),
