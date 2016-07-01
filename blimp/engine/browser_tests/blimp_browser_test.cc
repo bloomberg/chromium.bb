@@ -85,8 +85,12 @@ void BlimpBrowserTest::SetUpCommandLine(base::CommandLine* command_line) {
   // Engine switches.
   blimp::engine::SetCommandLineDefaults(command_line);
 
-  // Use dynamically allocated port for browser test.
-  command_line->AppendSwitchASCII(blimp::engine::kEnginePort, "0");
+  // Pass through the engine port if it is passed to the test.
+  // Otherwise, use a dynamic port.
+  if (!command_line->HasSwitch(blimp::engine::kEnginePort)) {
+    command_line->AppendSwitchASCII(blimp::engine::kEnginePort, "0");
+  }
+
   base::FilePath src_root;
   PathService::Get(base::DIR_SOURCE_ROOT, &src_root);
   command_line->AppendSwitchASCII(kClientTokenPath,

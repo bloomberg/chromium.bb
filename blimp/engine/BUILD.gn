@@ -679,7 +679,7 @@ source_set("browser_tests") {
   ]
 
   data = [
-    "data/",
+    "//blimp/test/data/",
     "$root_out_dir/blimp_engine.pak",
   ]
 }
