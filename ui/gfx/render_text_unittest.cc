@@ -1763,7 +1763,13 @@ TEST_F(RenderTextTest, SetFontList) {
   EXPECT_EQ(13, render_text->font_list().GetFontSize());
 }
 
-TEST_F(RenderTextTest, StringSizeBoldWidth) {
+// http://crbug/624513
+#if defined(OS_WIN)
+#define MAYBE_StringSizeBoldWidth DISABLED_StringSizeBoldWidth
+#else
+#define MAYBE_StringSizeBoldWidth StringSizeBoldWidth
+#endif
+TEST_F(RenderTextTest, MAYBE_StringSizeBoldWidth) {
   // TODO(mboc): Add some unittests for other weights (currently not
   // implemented because of test system font configuration).
   std::unique_ptr<RenderText> render_text(RenderText::CreateInstance());
@@ -3155,9 +3161,15 @@ TEST_F(RenderTextTest, HarfBuzz_UnicodeFallback) {
 }
 #endif  // !defined(OS_LINUX)
 
+// http://crbug/624513
+#if defined(OS_WIN)
+#define MAYBE_TextDoesntClip DISABLED_TextDoesntClip
+#else
+#define MAYBE_TextDoesntClip TextDoesntClip
+#endif
 // Ensure that the width reported by RenderText is sufficient for drawing. Draws
 // to a canvas and checks if any pixel beyond the bounding rectangle is colored.
-TEST_F(RenderTextTest, TextDoesntClip) {
+TEST_F(RenderTextTest, MAYBE_TextDoesntClip) {
   const wchar_t* kTestStrings[] = {
       L"            ",
       // TODO(dschuyler): Underscores draw outside GetStringSize;
