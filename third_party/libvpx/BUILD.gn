@@ -114,7 +114,13 @@ if (current_cpu == "x86" || current_cpu == "x64") {
 }
 
 if (current_cpu == "x86" || current_cpu == "x64") {
-  static_library("libvpx_intrinsics_mmx") {
+  # The following targets are deliberately source_set rather than
+  # static_library. The :libvpx target exposes these intrinsic implementations
+  # via global function pointer symbols, which hides the object dependency at
+  # link time. On Mac, this results in undefined references to the intrinsic
+  # symbols.
+
+  source_set("libvpx_intrinsics_mmx") {
     configs += [ ":libvpx_config" ]
     configs -= [ "//build/config/compiler:chromium_code" ]
     configs += [ "//build/config/compiler:no_chromium_code" ]
@@ -129,7 +135,7 @@ if (current_cpu == "x86" || current_cpu == "x64") {
     }
   }
 
-  static_library("libvpx_intrinsics_sse2") {
+  source_set("libvpx_intrinsics_sse2") {
     configs += [ ":libvpx_config" ]
     configs -= [ "//build/config/compiler:chromium_code" ]
     configs += [ "//build/config/compiler:no_chromium_code" ]
@@ -144,7 +150,7 @@ if (current_cpu == "x86" || current_cpu == "x64") {
     }
   }
 
-  static_library("libvpx_intrinsics_ssse3") {
+  source_set("libvpx_intrinsics_ssse3") {
     configs += [ ":libvpx_config" ]
     configs -= [ "//build/config/compiler:chromium_code" ]
     configs += [ "//build/config/compiler:no_chromium_code" ]
@@ -159,7 +165,7 @@ if (current_cpu == "x86" || current_cpu == "x64") {
     }
   }
 
-  static_library("libvpx_intrinsics_sse4_1") {
+  source_set("libvpx_intrinsics_sse4_1") {
     configs += [ ":libvpx_config" ]
     configs -= [ "//build/config/compiler:chromium_code" ]
     configs += [ "//build/config/compiler:no_chromium_code" ]
@@ -174,7 +180,7 @@ if (current_cpu == "x86" || current_cpu == "x64") {
     }
   }
 
-  static_library("libvpx_intrinsics_avx") {
+  source_set("libvpx_intrinsics_avx") {
     configs += [ ":libvpx_config" ]
     configs -= [ "//build/config/compiler:chromium_code" ]
     configs += [ "//build/config/compiler:no_chromium_code" ]
@@ -191,7 +197,7 @@ if (current_cpu == "x86" || current_cpu == "x64") {
     }
   }
 
-  static_library("libvpx_intrinsics_avx2") {
+  source_set("libvpx_intrinsics_avx2") {
     configs += [ ":libvpx_config" ]
     configs -= [ "//build/config/compiler:chromium_code" ]
     configs += [ "//build/config/compiler:no_chromium_code" ]
