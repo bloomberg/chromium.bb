@@ -6,11 +6,7 @@
 
 #include "base/mac/bundle_locations.h"
 #include "base/mac/scoped_nsobject.h"
-
-@interface NSNib (MountainLionSDK)
-- (BOOL)instantiateWithOwner:(nullable id)owner
-             topLevelObjects:(NSArray* __nonnull* __nullable)topLevelObjects;
-@end
+#include "base/mac/sdk_forward_declarations.h"
 
 namespace ui {
 

@@ -13,6 +13,7 @@
 #import "base/mac/foundation_util.h"
 #include "base/mac/mac_util.h"
 #include "base/mac/scoped_nsobject.h"
+#include "base/mac/sdk_forward_declarations.h"
 #include "base/path_service.h"
 #include "base/threading/thread_task_runner_handle.h"
 #import "chrome/browser/app_controller_mac.h"
@@ -149,7 +150,10 @@ void ChromeBrowserMainPartsMac::PreMainMessageLoopStart() {
                                bundle:base::mac::FrameworkBundle()]);
   // TODO(viettrungluu): crbug.com/20504 - This currently leaks, so if you
   // change this, you'll probably need to change the Valgrind suppression.
-  [nib instantiateNibWithOwner:NSApp topLevelObjects:nil];
+  NSArray* top_level_objects = nil;
+  [nib instantiateWithOwner:NSApp topLevelObjects:&top_level_objects];
+  for (NSObject* object : top_level_objects)
+    [object retain];
   // Make sure the app controller has been created.
   DCHECK([NSApp delegate]);
 }
