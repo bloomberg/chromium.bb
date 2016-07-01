@@ -73,7 +73,7 @@ public final class QuicTestServer {
     }
 
     public static long createMockCertVerifier() {
-        return MockCertVerifier.createMockCertVerifier(CERTS_USED);
+        return MockCertVerifier.createMockCertVerifier(CERTS_USED, true);
     }
 
     @CalledByNative

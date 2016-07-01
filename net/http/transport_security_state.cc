@@ -643,6 +643,7 @@ TransportSecurityState::TransportSecurityState()
     : enable_static_pins_(true),
       enable_static_expect_ct_(true),
       enable_static_expect_staple_(false),
+      enable_pkp_bypass_for_local_trust_anchors_(true),
       sent_reports_cache_(kMaxHPKPReportCacheEntries) {
 // Static pinning is only enabled for official builds to make sure that
 // others don't end up with pins that cannot be easily updated.
@@ -863,6 +864,11 @@ void TransportSecurityState::AddHPKPInternal(const std::string& host,
   EnablePKPHost(host, pkp_state);
 }
 
+void TransportSecurityState::
+    SetEnablePublicKeyPinningBypassForLocalTrustAnchors(bool value) {
+  enable_pkp_bypass_for_local_trust_anchors_ = value;
+}
+
 void TransportSecurityState::EnableSTSHost(const std::string& host,
                                            const STSState& state) {
   DCHECK(CalledOnValidThread());
@@ -927,7 +933,7 @@ TransportSecurityState::CheckPinsAndMaybeSendReport(
     return PKPStatus::OK;
 
   // Don't report violations for certificates that chain to local roots.
-  if (!is_issued_by_known_root)
+  if (!is_issued_by_known_root && enable_pkp_bypass_for_local_trust_anchors_)
     return PKPStatus::BYPASSED;
 
   if (!report_sender_ ||

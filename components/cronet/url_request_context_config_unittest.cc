@@ -59,7 +59,9 @@ TEST(URLRequestContextConfigTest, SetQuicExperimentalOptions) {
       // MockCertVerifier to use for testing purposes.
       std::unique_ptr<net::CertVerifier>(),
       // Enable network quality estimator.
-      false);
+      false,
+      // Enable Public Key Pinning bypass for local trust anchors.
+      true);
 
   net::URLRequestContextBuilder builder;
   net::NetLog net_log;
@@ -138,7 +140,9 @@ TEST(URLRequestContextConfigTest, SetQuicConnectionMigrationOptions) {
       // MockCertVerifier to use for testing purposes.
       std::unique_ptr<net::CertVerifier>(),
       // Enable network quality estimator.
-      false);
+      false,
+      // Enable Public Key Pinning bypass for local trust anchors.
+      true);
 
   net::URLRequestContextBuilder builder;
   net::NetLog net_log;
