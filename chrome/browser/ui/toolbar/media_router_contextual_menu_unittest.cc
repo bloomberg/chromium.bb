@@ -18,8 +18,8 @@ class MediaRouterContextualMenuUnitTest : public BrowserWithTestWindowTest {
 
   void SetUp() override {
     BrowserWithTestWindowTest::SetUp();
-    signin_manager_ = static_cast<FakeSigninManagerForTesting*>(
-        SigninManagerFactory::GetInstance()->GetForProfile(profile()));
+    signin_manager_ =
+        SigninManagerFactory::GetInstance()->GetForProfile(profile());
     browser_action_test_util_.reset(
         new BrowserActionTestUtil(browser(), false));
     action_.reset(new MediaRouterAction(browser(),
@@ -33,13 +33,13 @@ class MediaRouterContextualMenuUnitTest : public BrowserWithTestWindowTest {
     BrowserWithTestWindowTest::TearDown();
   }
 
-  FakeSigninManagerForTesting* signin_manager() { return signin_manager_; }
+  SigninManagerBase* signin_manager() { return signin_manager_; }
   ui::SimpleMenuModel* model() { return model_; }
 
  private:
   std::unique_ptr<BrowserActionTestUtil> browser_action_test_util_;
   std::unique_ptr<MediaRouterAction> action_;
-  FakeSigninManagerForTesting* signin_manager_;
+  SigninManagerBase* signin_manager_;
   ui::SimpleMenuModel* model_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaRouterContextualMenuUnitTest);
