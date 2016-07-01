@@ -135,14 +135,6 @@ _ANDROID_NEGATIVE_FILTER['chrome'] = (
         # Page cannot be loaded from file:// URI in Android unless it
         # is stored in device.
         'ChromeDriverTest.testCanClickAlertInIframes',
-        # Network emulation is only supported on desktop.
-        'ChromeDriverTest.testEmulateNetworkConnection',
-        'ChromeDriverTest.testWifiEmulation',
-        'ChromeDriverTest.testAirplaneModeEmulation',
-        'ChromeDriverTest.testWifiAndAirplaneModeEmulation',
-        'ChromeDriverTest.testNetworkConnectionTypeIsAppliedToAllTabsImmediately',
-        'ChromeDriverTest.testNetworkConnectionTypeIsAppliedToAllTabs',
-
     ]
 )
 _ANDROID_NEGATIVE_FILTER['chrome_stable'] = (
@@ -889,167 +881,10 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
     self.assertRaises(chromedriver.UnknownError,
                       self._driver.GetNetworkConditions)
 
-  def testEmulateNetworkConnection(self):
-    # Network conditions must be set before it can be retrieved.
-    self.assertRaises(chromedriver.UnknownError,
-                      self._driver.GetNetworkConditions)
-
-    # Test 4G connection.
-    connection_type = 0x8
-    self._driver.SetNetworkConnection(connection_type)
-    network = self._driver.GetNetworkConditions()
-    self.assertEquals(network['latency'], 20)
-    self.assertEquals(network['upload_throughput'], 4096 * 1024)
-    self.assertEquals(network['upload_throughput'], 4096 * 1024)
-    self.assertEquals(network['offline'], False)
-
-    # Test 3G connection.
-    connection_type = 0x10
-    self._driver.SetNetworkConnection(connection_type)
-    network = self._driver.GetNetworkConditions()
-    self.assertEquals(network['latency'], 100)
-    self.assertEquals(network['upload_throughput'], 750 * 1024)
-    self.assertEquals(network['upload_throughput'], 750 * 1024)
-    self.assertEquals(network['offline'], False)
-
-    # Test 2G connection.
-    connection_type = 0x20
-    self._driver.SetNetworkConnection(connection_type)
-    network = self._driver.GetNetworkConditions()
-    self.assertEquals(network['latency'], 300)
-    self.assertEquals(network['upload_throughput'], 250 * 1024)
-    self.assertEquals(network['upload_throughput'], 250 * 1024)
-    self.assertEquals(network['offline'], False)
-
-    # Connection with 4G, 3G, and 2G bits on.
-    # Tests that 4G takes precedence.
-    connection_type = 0x38
-    self._driver.SetNetworkConnection(connection_type)
-    network = self._driver.GetNetworkConditions()
-    self.assertEquals(network['latency'], 20)
-    self.assertEquals(network['upload_throughput'], 4096 * 1024)
-    self.assertEquals(network['upload_throughput'], 4096 * 1024)
-    self.assertEquals(network['offline'], False)
-
-    # Network Conditions again cannot be retrieved after they've been deleted.
-    self._driver.DeleteNetworkConditions()
-    self.assertRaises(chromedriver.UnknownError,
-                      self._driver.GetNetworkConditions)
-
-  def testWifiEmulation(self):
-    connection_type = 0x2
-    self._driver.SetNetworkConnection(connection_type)
-    network = self._driver.GetNetworkConditions()
-    self.assertEquals(network['latency'], 2)
-    self.assertEquals(network['upload_throughput'], 30720 * 1024)
-    self.assertEquals(network['download_throughput'], 30720 * 1024)
-    self.assertEquals(network['offline'], False)
-
-  def testAirplaneModeEmulation(self):
-    connection_type = 0x1
-    self._driver.SetNetworkConnection(connection_type)
-    network = self._driver.GetNetworkConditions()
-    self.assertEquals(network['latency'], 0)
-    self.assertEquals(network['upload_throughput'], 0)
-    self.assertEquals(network['download_throughput'], 0)
-    self.assertEquals(network['offline'], True)
-
-  def testWifiAndAirplaneModeEmulation(self):
-    # Connection with both Wifi and Airplane Mode on.
-    # Tests that Wifi takes precedence over Airplane Mode.
-    connection_type = 0x3
-    self._driver.SetNetworkConnection(connection_type)
-    network = self._driver.GetNetworkConditions()
-    self.assertEquals(network['latency'], 2)
-    self.assertEquals(network['upload_throughput'], 30720 * 1024)
-    self.assertEquals(network['download_throughput'], 30720 * 1024)
-    self.assertEquals(network['offline'], False)
-
-  def testNetworkConnectionTypeIsAppliedToAllTabsImmediately(self):
-    def respondWithString(request):
-      return {}, """
-        <html>
-        <body>%s</body>
-        </html>""" % "hello world!"
-
-    self._http_server.SetCallbackForPath(
-      '/helloworld', respondWithString)
-
-    # Set network to online
-    connection_type = 0x10
-    self._driver.SetNetworkConnection(connection_type)
-    network = self._driver.GetNetworkConditions()
-    self.assertEquals(network['offline'], False)
-
-    # Open a window with two divs counting successful + unsuccessful
-    # attempts to complete XML task
-    self._driver.Load(
-        self.GetHttpUrlForFile('/chromedriver/xmlrequest_test.html'))
-    window1_handle = self._driver.GetCurrentWindowHandle()
-    old_handles = self._driver.GetWindowHandles()
-    self._driver.FindElement('id', 'requestButton').Click()
-
-    self._driver.FindElement('id', 'link').Click()
-    new_window_handle = self.WaitForNewWindow(self._driver, old_handles)
-    self.assertNotEqual(None, new_window_handle)
-    self._driver.SwitchToWindow(new_window_handle)
-    self.assertEquals(new_window_handle, self._driver.GetCurrentWindowHandle())
-
-    # Set network to offline to determine whether the XML task continues to
-    # run in the background, indicating that the conditions are only applied
-    # to the current WebView
-    connection_type = 0x1
-    self._driver.SetNetworkConnection(connection_type)
-    network = self._driver.GetNetworkConditions()
-    self.assertEquals(network['offline'], True)
-
-    self._driver.SwitchToWindow(window1_handle)
-    connection_type = 0x1
-    self._driver.SetNetworkConnection(connection_type)
-    self.assertEquals(network['offline'], True)
-
-  def testNetworkConnectionTypeIsAppliedToAllTabs(self):
-
-    self.assertRaises(chromedriver.UnknownError,
-                      self._driver.GetNetworkConditions)
-
-    self._driver.Load(self.GetHttpUrlForFile('/chromedriver/page_test.html'))
-    window1_handle = self._driver.GetCurrentWindowHandle()
-    old_handles = self._driver.GetWindowHandles()
-
-    # Test connection is offline.
-    connection_type = 0x1;
-    self._driver.SetNetworkConnection(connection_type)
-    network = self._driver.GetNetworkConditions()
-    self.assertEquals(network['latency'], 0)
-    self.assertEquals(network['offline'], True)
-
-    # Navigate to another window.
-    self._driver.FindElement('id', 'link').Click()
-    new_window_handle = self.WaitForNewWindow(self._driver, old_handles)
-    self.assertNotEqual(None, new_window_handle)
-    self._driver.SwitchToWindow(new_window_handle)
-    self.assertEquals(new_window_handle, self._driver.GetCurrentWindowHandle())
-    self.assertRaises(
-        chromedriver.NoSuchElement, self._driver.FindElement, 'id', 'link')
-
-    # Set connection to 3G in second window.
-    connection_type = 0x10;
-    self._driver.SetNetworkConnection(connection_type)
-    network = self._driver.GetNetworkConditions()
-    self.assertEquals(network['offline'], False)
-
-    self._driver.SwitchToWindow(window1_handle)
-    self.assertEquals(window1_handle, self._driver.GetCurrentWindowHandle())
-
-    # Test whether first window has old or new network conditions.
-    network = self._driver.GetNetworkConditions()
-    self.assertEquals(network['latency'], 100)
-
   def testEmulateNetworkConditionsName(self):
     # DSL: 2Mbps throughput, 5ms RTT
-    #latency = 5
-    #throughput = 2048 * 1024
+    # latency = 5
+    # throughput = 2048 * 1024
     self._driver.SetNetworkConditionsName('DSL')
 
     network = self._driver.GetNetworkConditions()
@@ -1868,6 +1703,134 @@ class MobileEmulationCapabilityTest(ChromeDriverBaseTest):
         mobile_emulation = {'deviceName': 'Google Nexus 5'})
     self.assertIn('hasTouchScreen', driver.capabilities)
     self.assertTrue(driver.capabilities['hasTouchScreen'])
+
+  def testNetworkConnectionDisabledByDefault(self):
+    driver = self.CreateDriver()
+    self.assertFalse(driver.capabilities['networkConnectionEnabled'])
+
+  def testNetworkConnectionUnsupported(self):
+    driver = self.CreateDriver()
+    # Network connection capability must be enabled to set/retrieve
+    self.assertRaises(chromedriver.UnknownError,
+                      driver.GetNetworkConnection)
+
+    self.assertRaises(chromedriver.UnknownError,
+                      driver.SetNetworkConnection, 0x1)
+
+  def testNetworkConnectionEnabled(self):
+    # mobileEmulation must be enabled for networkConnection to be enabled
+    driver = self.CreateDriver(
+        mobile_emulation={'deviceName': 'Google Nexus 5'},
+        network_connection=True)
+    self.assertTrue(driver.capabilities['mobileEmulationEnabled'])
+    self.assertTrue(driver.capabilities['networkConnectionEnabled'])
+
+  def testEmulateNetworkConnection4g(self):
+    driver = self.CreateDriver(
+        mobile_emulation={'deviceName': 'Google Nexus 5'},
+        network_connection=True)
+    # Test 4G connection.
+    connection_type = 0x8
+    driver.SetNetworkConnection(connection_type)
+    network = driver.GetNetworkConnection()
+    self.assertEquals(network['connection_type'], connection_type)
+
+  def testEmulateNetworkConnectionMultipleBits(self):
+    driver = self.CreateDriver(
+        mobile_emulation={'deviceName': 'Google Nexus 5'},
+        network_connection=True)
+    # Connection with 4G, 3G, and 2G bits on.
+    # Tests that 4G takes precedence.
+    connection_type = 0x38
+    driver.SetNetworkConnection(connection_type)
+    network = driver.GetNetworkConnection()
+    self.assertEquals(network['connection_type'], connection_type)
+
+  def testWifiAndAirplaneModeEmulation(self):
+    driver = self.CreateDriver(
+        mobile_emulation={'deviceName': 'Google Nexus 5'},
+        network_connection=True)
+    # Connection with both Wifi and Airplane Mode on.
+    # Tests that Wifi takes precedence over Airplane Mode.
+    connection_type = 0x3
+    driver.SetNetworkConnection(connection_type)
+    network = driver.GetNetworkConnection()
+    self.assertEquals(network['connection_type'], connection_type)
+
+  def testNetworkConnectionTypeIsAppliedToAllTabsImmediately(self):
+    def respondWithString(request):
+      return {}, """
+        <html>
+        <body>%s</body>
+        </html>""" % "hello world!"
+
+    self._http_server.SetCallbackForPath(
+      '/helloworld', respondWithString)
+
+    driver = self.CreateDriver(
+        mobile_emulation={'deviceName': 'Google Nexus 5'},
+        network_connection=True)
+
+    # Set network to online
+    connection_type = 0x10
+    driver.SetNetworkConnection(connection_type)
+
+    # Open a window with two divs counting successful + unsuccessful
+    # attempts to complete XML task
+    driver.Load(
+        self._http_server.GetUrl() +'/chromedriver/xmlrequest_test.html')
+    window1_handle = driver.GetCurrentWindowHandle()
+    old_handles = driver.GetWindowHandles()
+    driver.FindElement('id', 'requestButton').Click()
+
+    driver.FindElement('id', 'link').Click()
+    new_window_handle = self.WaitForNewWindow(driver, old_handles)
+    self.assertNotEqual(None, new_window_handle)
+    driver.SwitchToWindow(new_window_handle)
+    self.assertEquals(new_window_handle, driver.GetCurrentWindowHandle())
+
+    # Set network to offline to determine whether the XML task continues to
+    # run in the background, indicating that the conditions are only applied
+    # to the current WebView
+    connection_type = 0x1
+    driver.SetNetworkConnection(connection_type)
+
+    driver.SwitchToWindow(window1_handle)
+    connection_type = 0x1
+
+  def testNetworkConnectionTypeIsAppliedToAllTabs(self):
+    driver = self.CreateDriver(
+        mobile_emulation={'deviceName': 'Google Nexus 5'},
+        network_connection=True)
+    driver.Load(self._http_server.GetUrl() +'/chromedriver/page_test.html')
+    window1_handle = driver.GetCurrentWindowHandle()
+    old_handles = driver.GetWindowHandles()
+
+    # Test connection is offline.
+    connection_type = 0x1;
+    driver.SetNetworkConnection(connection_type)
+    network = driver.GetNetworkConnection()
+    self.assertEquals(network['connection_type'], connection_type)
+
+    # Navigate to another window.
+    driver.FindElement('id', 'link').Click()
+    new_window_handle = self.WaitForNewWindow(driver, old_handles)
+    self.assertNotEqual(None, new_window_handle)
+    driver.SwitchToWindow(new_window_handle)
+    self.assertEquals(new_window_handle, driver.GetCurrentWindowHandle())
+    self.assertRaises(
+        chromedriver.NoSuchElement, driver.FindElement, 'id', 'link')
+
+    # Set connection to 3G in second window.
+    connection_type = 0x10;
+    driver.SetNetworkConnection(connection_type)
+
+    driver.SwitchToWindow(window1_handle)
+    self.assertEquals(window1_handle, driver.GetCurrentWindowHandle())
+
+    # Test whether first window has old or new network conditions.
+    network = driver.GetNetworkConnection()
+    self.assertEquals(network['connection_type'], connection_type)
 
 
 class ChromeDriverLogTest(ChromeDriverBaseTest):

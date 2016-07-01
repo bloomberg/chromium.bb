@@ -32,6 +32,9 @@
 
 namespace {
 
+// Enables wifi and data only, not airplane mode.
+const int kDefaultConnectionType = 6;
+
 bool KillProcess(const base::Process& process, bool kill_gracefully) {
 #if defined(OS_POSIX)
   if (!kill_gracefully) {
@@ -74,13 +77,16 @@ ChromeDesktopImpl::ChromeDesktopImpl(
     base::Process process,
     const base::CommandLine& command,
     base::ScopedTempDir* user_data_dir,
-    base::ScopedTempDir* extension_dir)
+    base::ScopedTempDir* extension_dir,
+    bool network_emulation_enabled)
     : ChromeImpl(std::move(http_client),
                  std::move(websocket_client),
                  devtools_event_listeners,
                  std::move(port_reservation)),
       process_(std::move(process)),
-      command_(command) {
+      command_(command),
+      network_connection_enabled_(network_emulation_enabled),
+      network_connection_(kDefaultConnectionType) {
   if (user_data_dir->IsValid())
     CHECK(user_data_dir_.Set(user_data_dir->Take()));
   if (extension_dir->IsValid())
@@ -185,6 +191,10 @@ bool ChromeDesktopImpl::IsMobileEmulationEnabled() const {
 
 bool ChromeDesktopImpl::HasTouchScreen() const {
   return IsMobileEmulationEnabled();
+}
+
+bool ChromeDesktopImpl::IsNetworkConnectionEnabled() const {
+  return network_connection_enabled_;
 }
 
 Status ChromeDesktopImpl::QuitImpl() {

@@ -117,6 +117,8 @@ std::unique_ptr<base::DictionaryValue> CreateCapabilities(Chrome* chrome) {
   if (status.IsOk()) {
     caps->SetString("chrome.userDataDir",
                     desktop->command().GetSwitchValueNative("user-data-dir"));
+    caps->SetBoolean("networkConnectionEnabled",
+                     desktop->IsNetworkConnectionEnabled());
   }
 
   return caps;
@@ -499,6 +501,25 @@ Status ExecuteGetLocation(Session* session,
   return Status(kOk);
 }
 
+Status ExecuteGetNetworkConnection(Session* session,
+                                   const base::DictionaryValue& params,
+                                   std::unique_ptr<base::Value>* value) {
+  ChromeDesktopImpl* desktop = nullptr;
+  Status status = session->chrome->GetAsDesktop(&desktop);
+  if (status.IsError())
+    return status;
+  if (!desktop->IsNetworkConnectionEnabled())
+    return Status(kUnknownError, "network connection must be enabled");
+
+  int connection_type = 0;
+  connection_type = desktop->GetNetworkConnection();
+
+  base::DictionaryValue connection;
+  connection.SetInteger("connection_type", connection_type);
+  value->reset(connection.DeepCopy());
+  return Status(kOk);
+}
+
 Status ExecuteGetNetworkConditions(Session* session,
                                    const base::DictionaryValue& params,
                                    std::unique_ptr<base::Value>* value) {
@@ -524,14 +545,16 @@ Status ExecuteGetNetworkConditions(Session* session,
 Status ExecuteSetNetworkConnection(Session* session,
                                    const base::DictionaryValue& params,
                                    std::unique_ptr<base::Value>* value) {
-  int connection_type;
-  if (!params.GetInteger("parameters.type", &connection_type))
-    return Status(kUnknownError, "invalid connection_type");
-
   ChromeDesktopImpl* desktop = nullptr;
   Status status = session->chrome->GetAsDesktop(&desktop);
   if (status.IsError())
     return status;
+  if (!desktop->IsNetworkConnectionEnabled())
+    return Status(kUnknownError, "network connection must be enabled");
+
+  int connection_type;
+  if (!params.GetInteger("parameters.type", &connection_type))
+    return Status(kUnknownError, "invalid connection_type");
 
   desktop->SetNetworkConnection(connection_type);
 

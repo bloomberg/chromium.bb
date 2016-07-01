@@ -388,6 +388,11 @@ HttpHandler::HttpHandler(
                         base::Bind(&ExecuteSetNetworkConnection))),
       CommandMapping(
           kGet,
+          "session/:sessionId/network_connection",
+          WrapToCommand("GetNetworkConnection",
+                        base::Bind(&ExecuteGetNetworkConnection))),
+      CommandMapping(
+          kGet,
           "session/:sessionId/chromium/network_conditions",
           WrapToCommand("GetNetworkConditions",
                         base::Bind(&ExecuteGetNetworkConditions))),

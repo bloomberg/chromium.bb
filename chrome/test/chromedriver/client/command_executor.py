@@ -95,6 +95,8 @@ class Command(object):
   EXECUTE_SQL = (_Method.POST, '/session/:sessionId/execute_sql')
   GET_LOCATION = (_Method.GET, '/session/:sessionId/location')
   SET_LOCATION = (_Method.POST, '/session/:sessionId/location')
+  GET_NETWORK_CONNECTION = (
+     _Method.GET, '/session/:sessionId/network_connection')
   GET_NETWORK_CONDITIONS = (
       _Method.GET, '/session/:sessionId/chromium/network_conditions')
   SET_NETWORK_CONDITIONS = (

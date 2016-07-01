@@ -72,7 +72,7 @@ class ChromeDriver(object):
                chrome_extensions=None, chrome_log_path=None,
                debugger_address=None, logging_prefs=None,
                mobile_emulation=None, experimental_options=None,
-               download_dir=None):
+               download_dir=None, network_connection=None):
     self._executor = command_executor.CommandExecutor(server_url)
 
     options = {}
@@ -143,6 +143,10 @@ class ChromeDriver(object):
         'loggingPrefs': logging_prefs
       }
     }
+
+    if network_connection:
+      params['desiredCapabilities']['networkConnectionEnabled'] = (
+          network_connection)
 
     response = self._ExecuteCommand(Command.NEW_SESSION, params)
     self._session_id = response['sessionId']
@@ -406,6 +410,9 @@ class ChromeDriver(object):
         'upload_throughput': conditions['upload_throughput'],
         'offline': conditions['offline']
     }
+
+  def GetNetworkConnection(self):
+    return self.ExecuteCommand(Command.GET_NETWORK_CONNECTION)
 
   def DeleteNetworkConditions(self):
     self.ExecuteCommand(Command.DELETE_NETWORK_CONDITIONS)

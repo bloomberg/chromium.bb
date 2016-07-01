@@ -106,6 +106,10 @@ Status ExecuteGetLocation(Session* session,
                           const base::DictionaryValue& params,
                           std::unique_ptr<base::Value>* value);
 
+Status ExecuteGetNetworkConnection(Session* session,
+                                   const base::DictionaryValue& params,
+                                   std::unique_ptr<base::Value>* value);
+
 Status ExecuteGetNetworkConditions(Session* session,
                                    const base::DictionaryValue& params,
                                    std::unique_ptr<base::Value>* value);

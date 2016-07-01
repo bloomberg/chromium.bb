@@ -34,7 +34,8 @@ class ChromeDesktopImpl : public ChromeImpl {
       base::Process process,
       const base::CommandLine& command,
       base::ScopedTempDir* user_data_dir,
-      base::ScopedTempDir* extension_dir);
+      base::ScopedTempDir* extension_dir,
+      bool network_emulation_enabled);
   ~ChromeDesktopImpl() override;
 
   // Waits for a page with the given URL to appear and finish loading.
@@ -56,6 +57,7 @@ class ChromeDesktopImpl : public ChromeImpl {
   Status QuitImpl() override;
 
   const base::CommandLine& command() const;
+  bool IsNetworkConnectionEnabled() const;
 
   int GetNetworkConnection() const;
   void SetNetworkConnection(int network_connection);
@@ -65,6 +67,7 @@ class ChromeDesktopImpl : public ChromeImpl {
   base::CommandLine command_;
   base::ScopedTempDir user_data_dir_;
   base::ScopedTempDir extension_dir_;
+  bool network_connection_enabled_;
   int network_connection_;
 
   // Lazily initialized, may be null.

@@ -586,7 +586,8 @@ PerfLoggingPrefs::~PerfLoggingPrefs() {}
 Capabilities::Capabilities()
     : android_use_running_app(false),
       detach(false),
-      force_devtools_screenshot(false) {}
+      force_devtools_screenshot(false),
+      network_emulation_enabled(false) {}
 
 Capabilities::~Capabilities() {}
 
@@ -603,6 +604,12 @@ Status Capabilities::Parse(const base::DictionaryValue& desired_caps) {
   parser_map["chromeOptions"] = base::Bind(&ParseChromeOptions);
   parser_map["loggingPrefs"] = base::Bind(&ParseLoggingPrefs);
   parser_map["proxy"] = base::Bind(&ParseProxy);
+  // Network emulation requires device mode, which is only enabled when
+  // mobile emulation is on.
+  if (desired_caps.GetDictionary("chromeOptions.mobileEmulation", nullptr)) {
+    parser_map["networkConnectionEnabled"] =
+        base::Bind(&ParseBoolean, &network_emulation_enabled);
+  }
   for (std::map<std::string, Parser>::iterator it = parser_map.begin();
        it != parser_map.end(); ++it) {
     const base::Value* capability = NULL;
