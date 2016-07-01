@@ -12,7 +12,7 @@
 #include "base/memory/weak_ptr.h"
 #include "components/sync_driver/protocol_event_observer.h"
 #include "components/sync_driver/sync_service_observer.h"
-#include "ios/public/provider/web/web_ui_ios_message_handler.h"
+#include "ios/web/public/webui/web_ui_ios_message_handler.h"
 #include "sync/internal_api/public/sessions/type_debug_info_observer.h"
 #include "sync/js/js_controller.h"
 #include "sync/js/js_event_handler.h"

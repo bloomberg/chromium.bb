@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ios/public/provider/web/web_ui_ios_controller.h"
+#include "ios/web/public/webui/web_ui_ios_controller.h"
 
 namespace web {
 

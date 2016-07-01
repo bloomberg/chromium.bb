@@ -6,7 +6,7 @@
 #define IOS_CHROME_BROWSER_UI_WEBUI_SYNC_INTERNALS_SYNC_INTERNALS_UI_H_
 
 #include "base/macros.h"
-#include "ios/public/provider/web/web_ui_ios_controller.h"
+#include "ios/web/public/webui/web_ui_ios_controller.h"
 
 namespace web {
 class WebUIIOS;

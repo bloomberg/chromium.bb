@@ -11,7 +11,7 @@
 #include "base/metrics/user_metrics.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
-#include "ios/public/provider/web/web_ui_ios.h"
+#include "ios/web/public/webui/web_ui_ios.h"
 
 using base::ListValue;
 using base::UserMetricsAction;

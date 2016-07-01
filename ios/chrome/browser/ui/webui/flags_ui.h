@@ -7,7 +7,7 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "ios/public/provider/web/web_ui_ios_controller.h"
+#include "ios/web/public/webui/web_ui_ios_controller.h"
 #include "ui/base/layout.h"
 
 namespace base {

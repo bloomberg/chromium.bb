@@ -7,7 +7,7 @@
 
 #include "base/macros.h"
 #include "base/memory/singleton.h"
-#include "ios/public/provider/web/web_ui_ios_controller_factory.h"
+#include "ios/web/public/webui/web_ui_ios_controller_factory.h"
 
 namespace web {
 

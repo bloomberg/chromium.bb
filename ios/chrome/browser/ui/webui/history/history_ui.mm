@@ -23,9 +23,9 @@
 #include "ios/chrome/browser/ui/webui/history/browsing_history_handler.h"
 #include "ios/chrome/browser/ui/webui/history/metrics_handler.h"
 #include "ios/chrome/grit/ios_resources.h"
-#include "ios/public/provider/web/web_ui_ios.h"
 #include "ios/web/public/web_state/web_state.h"
 #include "ios/web/public/web_ui_ios_data_source.h"
+#include "ios/web/public/webui/web_ui_ios.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 

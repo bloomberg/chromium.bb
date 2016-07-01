@@ -6,7 +6,7 @@
 #define IOS_CHROME_BROWSER_UI_WEBUI_NET_EXPORT_NET_EXPORT_UI_H_
 
 #include "base/macros.h"
-#include "ios/public/provider/web/web_ui_ios_controller.h"
+#include "ios/web/public/webui/web_ui_ios_controller.h"
 
 // The C++ back-end for the chrome://net-export webui page.
 class NetExportUI : public web::WebUIIOSController {

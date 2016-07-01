@@ -6,7 +6,7 @@
 #define IOS_CHROME_BROWSER_UI_WEBUI_HISTORY_HISTORY_UI_H_
 
 #include "base/macros.h"
-#include "ios/public/provider/web/web_ui_ios_controller.h"
+#include "ios/web/public/webui/web_ui_ios_controller.h"
 #include "ui/base/layout.h"
 
 namespace base {

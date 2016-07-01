@@ -22,10 +22,10 @@
 #include "ios/chrome/browser/chrome_url_constants.h"
 #include "ios/chrome/browser/ui/show_mail_composer_util.h"
 #include "ios/chrome/grit/ios_strings.h"
-#include "ios/public/provider/web/web_ui_ios.h"
-#include "ios/public/provider/web/web_ui_ios_message_handler.h"
 #include "ios/web/public/web_thread.h"
 #include "ios/web/public/web_ui_ios_data_source.h"
+#include "ios/web/public/webui/web_ui_ios.h"
+#include "ios/web/public/webui/web_ui_ios_message_handler.h"
 
 namespace {
 

@@ -7,7 +7,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "ios/public/provider/web/web_ui_ios_message_handler.h"
+#include "ios/web/public/webui/web_ui_ios_message_handler.h"
 
 ///////////////////////////////////////////////////////////////////////////////
 // MetricsHandler

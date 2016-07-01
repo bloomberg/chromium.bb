@@ -10,9 +10,9 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
-#include "ios/public/provider/web/web_ui_ios_controller.h"
-#include "ios/public/provider/web/web_ui_ios_controller_factory.h"
-#include "ios/public/provider/web/web_ui_ios_message_handler.h"
+#include "ios/web/public/webui/web_ui_ios_controller.h"
+#include "ios/web/public/webui/web_ui_ios_controller_factory.h"
+#include "ios/web/public/webui/web_ui_ios_message_handler.h"
 #include "ios/web/web_state/web_state_impl.h"
 
 using web::WebUIIOSController;

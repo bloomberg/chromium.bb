@@ -20,7 +20,7 @@
 #include "components/history/core/browser/history_service_observer.h"
 #include "components/history/core/browser/url_row.h"
 #include "components/history/core/browser/web_history_service.h"
-#include "ios/public/provider/web/web_ui_ios_message_handler.h"
+#include "ios/web/public/webui/web_ui_ios_message_handler.h"
 #include "url/gurl.h"
 
 class ProfileSyncService;

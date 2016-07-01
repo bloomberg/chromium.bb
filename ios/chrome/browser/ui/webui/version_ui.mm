@@ -22,9 +22,9 @@
 #include "ios/chrome/grit/ios_chromium_strings.h"
 #include "ios/chrome/grit/ios_google_chrome_strings.h"
 #include "ios/chrome/grit/ios_strings.h"
-#include "ios/public/provider/web/web_ui_ios.h"
 #include "ios/web/public/web_client.h"
 #include "ios/web/public/web_ui_ios_data_source.h"
+#include "ios/web/public/webui/web_ui_ios.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace {

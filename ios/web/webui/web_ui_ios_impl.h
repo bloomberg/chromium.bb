@@ -12,7 +12,7 @@
 #include "base/macros.h"
 #include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
-#include "ios/public/provider/web/web_ui_ios.h"
+#include "ios/web/public/webui/web_ui_ios.h"
 
 namespace web {
 class WebStateImpl;

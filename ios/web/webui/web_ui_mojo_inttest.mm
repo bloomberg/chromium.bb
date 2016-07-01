@@ -6,10 +6,10 @@
 
 #include "base/run_loop.h"
 #import "base/test/ios/wait_util.h"
-#include "ios/public/provider/web/web_ui_ios_controller.h"
-#include "ios/public/provider/web/web_ui_ios_controller_factory.h"
 #import "ios/web/public/navigation_manager.h"
 #include "ios/web/public/web_ui_ios_data_source.h"
+#include "ios/web/public/webui/web_ui_ios_controller.h"
+#include "ios/web/public/webui/web_ui_ios_controller_factory.h"
 #include "ios/web/test/grit/test_resources.h"
 #include "ios/web/test/mojo_test.mojom.h"
 #include "ios/web/test/test_url_constants.h"
