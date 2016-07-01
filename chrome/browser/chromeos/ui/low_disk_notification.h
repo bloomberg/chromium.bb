@@ -61,7 +61,7 @@ class LowDiskNotification {
   void SetNotificationIntervalForTest(base::TimeDelta interval);
 
   base::Time last_notification_time_;
-  Severity last_notification_severity_;
+  Severity last_notification_severity_ = NONE;
   message_center::MessageCenter* message_center_;
   base::TimeDelta notification_interval_;
   base::ThreadChecker thread_checker_;
