@@ -38,7 +38,8 @@ struct CastCodecSpecificParams {
 // Defines the basic properties of a payload supported by cast transport.
 struct CastRtpPayloadParams {
   // RTP specific field that identifies the content type.
-  int payload_type = media::cast::kDefaultRtpVideoPayloadType;
+  media::cast::RtpPayloadType payload_type =
+      media::cast::RtpPayloadType::VIDEO_VP8;
 
   // Maximum latency in milliseconds. Implemetation tries to keep latency
   // under this threshold.

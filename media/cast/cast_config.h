@@ -44,10 +44,6 @@ enum SuggestedDefaults {
   // http://crbug.com/530839
   kDefaultRtpMaxDelayMs = 100,
 
-  // RTP payload types that identify an RTP stream as audio or video.
-  kDefaultRtpAudioPayloadType = 127,
-  kDefaultRtpVideoPayloadType = 96,
-
   // Suggested minimum and maximum video bitrates for general-purpose use (up to
   // 1080p, 30 FPS).
   kDefaultMinVideoKbps = 300,
@@ -81,7 +77,7 @@ struct AudioSenderConfig {
   base::TimeDelta animated_playout_delay;
 
   // RTP payload type enum: Specifies the type/encoding of frame data.
-  int rtp_payload_type;
+  RtpPayloadType rtp_payload_type;
 
   bool use_external_encoder;
   int frequency;
@@ -120,7 +116,7 @@ struct VideoSenderConfig {
   base::TimeDelta animated_playout_delay;
 
   // RTP payload type enum: Specifies the type/encoding of frame data.
-  int rtp_payload_type;
+  RtpPayloadType rtp_payload_type;
 
   bool use_external_encoder;
 
@@ -183,7 +179,7 @@ struct FrameReceiverConfig {
   int rtp_max_delay_ms;  // TODO(miu): Change to TimeDelta target_playout_delay.
 
   // RTP payload type enum: Specifies the type/encoding of frame data.
-  int rtp_payload_type;
+  RtpPayloadType rtp_payload_type;
 
   // RTP timebase: The number of RTP units advanced per one second.  For audio,
   // this is the sampling rate.  For video, by convention, this is 90 kHz.

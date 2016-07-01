@@ -96,7 +96,6 @@ bool HexDecode(const std::string& input, std::string* output) {
 bool ToCastRtpPayloadParamsOrThrow(v8::Isolate* isolate,
                                    const RtpPayloadParams& ext_params,
                                    CastRtpPayloadParams* cast_params) {
-  cast_params->payload_type = ext_params.payload_type;
   cast_params->max_latency_ms = ext_params.max_latency;
   cast_params->min_latency_ms =
       ext_params.min_latency ? *ext_params.min_latency : ext_params.max_latency;
@@ -104,6 +103,17 @@ bool ToCastRtpPayloadParamsOrThrow(v8::Isolate* isolate,
                                          ? *ext_params.animated_latency
                                          : ext_params.max_latency;
   cast_params->codec_name = ext_params.codec_name;
+  if (cast_params->codec_name == "OPUS") {
+    cast_params->payload_type = media::cast::RtpPayloadType::AUDIO_OPUS;
+  } else if (cast_params->codec_name == "PCM16") {
+    cast_params->payload_type = media::cast::RtpPayloadType::AUDIO_PCM16;
+  } else if (cast_params->codec_name == "AAC") {
+    cast_params->payload_type = media::cast::RtpPayloadType::AUDIO_AAC;
+  } else if (cast_params->codec_name == "VP8") {
+    cast_params->payload_type = media::cast::RtpPayloadType::VIDEO_VP8;
+  } else if (cast_params->codec_name == "H264") {
+    cast_params->payload_type = media::cast::RtpPayloadType::VIDEO_H264;
+  }
   cast_params->ssrc = ext_params.ssrc;
   cast_params->feedback_ssrc = ext_params.feedback_ssrc;
   cast_params->clock_rate = ext_params.clock_rate ? *ext_params.clock_rate : 0;
@@ -137,7 +147,7 @@ bool ToCastRtpPayloadParamsOrThrow(v8::Isolate* isolate,
 
 void FromCastRtpPayloadParams(const CastRtpPayloadParams& cast_params,
                               RtpPayloadParams* ext_params) {
-  ext_params->payload_type = cast_params.payload_type;
+  ext_params->payload_type = static_cast<int>(cast_params.payload_type);
   ext_params->max_latency = cast_params.max_latency_ms;
   ext_params->min_latency.reset(new int(cast_params.min_latency_ms));
   ext_params->animated_latency.reset(new int(cast_params.animated_latency_ms));
@@ -676,23 +686,23 @@ bool CastStreamingNativeHandler::FrameReceiverConfigFromArg(
   if (params->codec_name == "OPUS") {
     config->codec = media::cast::CODEC_AUDIO_OPUS;
     config->rtp_timebase = 48000;
-    config->rtp_payload_type = media::cast::kDefaultRtpAudioPayloadType;
+    config->rtp_payload_type = media::cast::RtpPayloadType::AUDIO_OPUS;
   } else if (params->codec_name == "PCM16") {
     config->codec = media::cast::CODEC_AUDIO_PCM16;
     config->rtp_timebase = 48000;
-    config->rtp_payload_type = media::cast::kDefaultRtpAudioPayloadType;
+    config->rtp_payload_type = media::cast::RtpPayloadType::AUDIO_PCM16;
   } else if (params->codec_name == "AAC") {
     config->codec = media::cast::CODEC_AUDIO_AAC;
     config->rtp_timebase = 48000;
-    config->rtp_payload_type = media::cast::kDefaultRtpAudioPayloadType;
+    config->rtp_payload_type = media::cast::RtpPayloadType::AUDIO_AAC;
   } else if (params->codec_name == "VP8") {
     config->codec = media::cast::CODEC_VIDEO_VP8;
     config->rtp_timebase = 90000;
-    config->rtp_payload_type = media::cast::kDefaultRtpVideoPayloadType;
+    config->rtp_payload_type = media::cast::RtpPayloadType::VIDEO_VP8;
   } else if (params->codec_name == "H264") {
     config->codec = media::cast::CODEC_VIDEO_H264;
     config->rtp_timebase = 90000;
-    config->rtp_payload_type = media::cast::kDefaultRtpVideoPayloadType;
+    config->rtp_payload_type = media::cast::RtpPayloadType::VIDEO_H264;
   }
   if (params->rtp_timebase) {
     config->rtp_timebase = *params->rtp_timebase;

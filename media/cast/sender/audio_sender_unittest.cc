@@ -106,7 +106,7 @@ class AudioSenderTest : public ::testing::Test {
     audio_config_.frequency = kDefaultAudioSamplingRate;
     audio_config_.channels = 2;
     audio_config_.bitrate = kDefaultAudioEncoderBitrate;
-    audio_config_.rtp_payload_type = 127;
+    audio_config_.rtp_payload_type = RtpPayloadType::AUDIO_OPUS;
 
     transport_ = new TestPacketSender();
     transport_sender_.reset(

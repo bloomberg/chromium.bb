@@ -436,7 +436,7 @@ class End2EndTest : public ::testing::Test {
     audio_sender_config_.receiver_ssrc = 2;
     audio_sender_config_.max_playout_delay =
         base::TimeDelta::FromMilliseconds(kTargetPlayoutDelayMs);
-    audio_sender_config_.rtp_payload_type = 96;
+    audio_sender_config_.rtp_payload_type = RtpPayloadType::AUDIO_OPUS;
     audio_sender_config_.use_external_encoder = false;
     audio_sender_config_.frequency = kDefaultAudioSamplingRate;
     audio_sender_config_.channels = kAudioChannels;
@@ -467,7 +467,7 @@ class End2EndTest : public ::testing::Test {
     video_sender_config_.receiver_ssrc = 4;
     video_sender_config_.max_playout_delay =
         base::TimeDelta::FromMilliseconds(kTargetPlayoutDelayMs);
-    video_sender_config_.rtp_payload_type = 97;
+    video_sender_config_.rtp_payload_type = RtpPayloadType::VIDEO_VP8;
     video_sender_config_.use_external_encoder = false;
     video_sender_config_.max_bitrate = 50000;
     video_sender_config_.min_bitrate = 10000;

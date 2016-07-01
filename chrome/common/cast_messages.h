@@ -61,6 +61,9 @@ IPC_ENUM_TRAITS_MAX_VALUE(media::cast::CastLoggingEvent,
                           media::cast::kNumOfLoggingEvents)
 IPC_ENUM_TRAITS_MAX_VALUE(media::cast::EventMediaType,
                           media::cast::EVENT_MEDIA_TYPE_LAST)
+IPC_ENUM_TRAITS_MIN_MAX_VALUE(media::cast::RtpPayloadType,
+                              media::cast::RtpPayloadType::FIRST,
+                              media::cast::RtpPayloadType::LAST)
 
 IPC_STRUCT_TRAITS_BEGIN(media::cast::EncodedFrame)
   IPC_STRUCT_TRAITS_MEMBER(dependency)

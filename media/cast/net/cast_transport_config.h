@@ -30,6 +30,35 @@ enum Codec {
   CODEC_LAST = CODEC_VIDEO_H264
 };
 
+// Describes the content being transported over RTP streams.
+enum class RtpPayloadType {
+  UNKNOWN = -1,
+
+  // Cast Streaming will encode raw audio frames using one of its available
+  // codec implementations, and transport encoded data in the RTP stream.
+  FIRST = 96,
+  AUDIO_OPUS = 96,
+  AUDIO_AAC = 97,
+  AUDIO_PCM16 = 98,
+
+  // Audio frame data is not modified, and should be transported reliably and
+  // in-sequence. No assumptions about the data can be made.
+  REMOTE_AUDIO = 99,
+
+  AUDIO_LAST = REMOTE_AUDIO,
+
+  // Cast Streaming will encode raw video frames using one of its available
+  // codec implementations, and transport encoded data in the RTP stream.
+  VIDEO_VP8 = 100,
+  VIDEO_H264 = 101,
+
+  // Video frame data is not modified, and should be transported reliably and
+  // in-sequence. No assumptions about the data can be made.
+  REMOTE_VIDEO = 102,
+
+  LAST = REMOTE_VIDEO
+};
+
 struct CastTransportRtpConfig {
   CastTransportRtpConfig();
   ~CastTransportRtpConfig();
@@ -41,7 +70,7 @@ struct CastTransportRtpConfig {
   uint32_t feedback_ssrc;
 
   // RTP payload type enum: Specifies the type/encoding of frame data.
-  int rtp_payload_type;
+  RtpPayloadType rtp_payload_type;
 
   // The AES crypto key and initialization vector.  Each of these strings
   // contains the data in binary form, of size kAesKeySize.  If they are empty

@@ -60,10 +60,8 @@ namespace cast {
 #define DEFAULT_SEND_IP "0.0.0.0"
 #define DEFAULT_AUDIO_FEEDBACK_SSRC "2"
 #define DEFAULT_AUDIO_INCOMING_SSRC "1"
-#define DEFAULT_AUDIO_PAYLOAD_TYPE "127"
 #define DEFAULT_VIDEO_FEEDBACK_SSRC "12"
 #define DEFAULT_VIDEO_INCOMING_SSRC "11"
-#define DEFAULT_VIDEO_PAYLOAD_TYPE "96"
 
 #if defined(USE_X11)
 const char* kVideoWindowWidth = "1280";
@@ -125,11 +123,13 @@ void GetWindowSize(int* width, int* height) {
 #endif  // defined(USE_X11)
 
 void GetAudioPayloadtype(FrameReceiverConfig* audio_config) {
-  test::InputBuilder input("Choose audio receiver payload type.",
-                           DEFAULT_AUDIO_PAYLOAD_TYPE,
-                           kDefaultRtpVideoPayloadType  /* low_range */,
-                           kDefaultRtpAudioPayloadType  /* high_range */);
-  audio_config->rtp_payload_type = input.GetIntInput();
+  test::InputBuilder input(
+      "Choose audio receiver payload type.",
+      std::to_string(static_cast<int>(RtpPayloadType::AUDIO_OPUS)),
+      static_cast<int>(RtpPayloadType::AUDIO_OPUS) /* low_range */,
+      static_cast<int>(RtpPayloadType::AUDIO_LAST) /* high_range */);
+  audio_config->rtp_payload_type =
+      static_cast<RtpPayloadType>(input.GetIntInput());
 }
 
 FrameReceiverConfig GetAudioReceiverConfig() {
@@ -141,11 +141,13 @@ FrameReceiverConfig GetAudioReceiverConfig() {
 }
 
 void GetVideoPayloadtype(FrameReceiverConfig* video_config) {
-  test::InputBuilder input("Choose video receiver payload type.",
-                           DEFAULT_VIDEO_PAYLOAD_TYPE,
-                           kDefaultRtpVideoPayloadType  /* low_range */,
-                           kDefaultRtpAudioPayloadType  /* high_range */);
-  video_config->rtp_payload_type = input.GetIntInput();
+  test::InputBuilder input(
+      "Choose video receiver payload type.",
+      std::to_string(static_cast<int>(RtpPayloadType::VIDEO_VP8)),
+      static_cast<int>(RtpPayloadType::VIDEO_VP8) /* low_range */,
+      static_cast<int>(RtpPayloadType::LAST) /* high_range */);
+  video_config->rtp_payload_type =
+      static_cast<RtpPayloadType>(input.GetIntInput());
 }
 
 FrameReceiverConfig GetVideoReceiverConfig() {

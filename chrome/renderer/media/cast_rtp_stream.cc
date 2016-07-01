@@ -66,7 +66,7 @@ const int kMaxConsecutiveRefreshFrames = 60;
 
 CastRtpPayloadParams DefaultOpusPayload() {
   CastRtpPayloadParams payload;
-  payload.payload_type = media::cast::kDefaultRtpAudioPayloadType;
+  payload.payload_type = media::cast::RtpPayloadType::AUDIO_OPUS;
   payload.max_latency_ms = media::cast::kDefaultRtpMaxDelayMs;
   payload.ssrc = 1;
   payload.feedback_ssrc = 2;
@@ -82,7 +82,7 @@ CastRtpPayloadParams DefaultOpusPayload() {
 
 CastRtpPayloadParams DefaultVp8Payload() {
   CastRtpPayloadParams payload;
-  payload.payload_type = media::cast::kDefaultRtpVideoPayloadType;
+  payload.payload_type = media::cast::RtpPayloadType::VIDEO_VP8;
   payload.max_latency_ms = media::cast::kDefaultRtpMaxDelayMs;
   payload.ssrc = 11;
   payload.feedback_ssrc = 12;
@@ -97,7 +97,7 @@ CastRtpPayloadParams DefaultVp8Payload() {
 
 CastRtpPayloadParams DefaultH264Payload() {
   CastRtpPayloadParams payload;
-  payload.payload_type = 96;
+  payload.payload_type = media::cast::RtpPayloadType::VIDEO_H264;
   payload.max_latency_ms = media::cast::kDefaultRtpMaxDelayMs;
   payload.ssrc = 11;
   payload.feedback_ssrc = 12;
@@ -603,7 +603,7 @@ CastCodecSpecificParams::CastCodecSpecificParams() {}
 CastCodecSpecificParams::~CastCodecSpecificParams() {}
 
 CastRtpPayloadParams::CastRtpPayloadParams()
-    : payload_type(0),
+    : payload_type(media::cast::RtpPayloadType::UNKNOWN),
       max_latency_ms(0),
       min_latency_ms(0),
       ssrc(0),
@@ -612,8 +612,7 @@ CastRtpPayloadParams::CastRtpPayloadParams()
       max_bitrate(0),
       min_bitrate(0),
       channels(0),
-      max_frame_rate(0.0) {
-}
+      max_frame_rate(0.0) {}
 
 CastRtpPayloadParams::CastRtpPayloadParams(const CastRtpPayloadParams& other) =
     default;

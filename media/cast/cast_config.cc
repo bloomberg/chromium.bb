@@ -44,7 +44,7 @@ VideoSenderConfig::VideoSenderConfig()
       receiver_ssrc(0),
       max_playout_delay(
           base::TimeDelta::FromMilliseconds(kDefaultRtpMaxDelayMs)),
-      rtp_payload_type(0),
+      rtp_payload_type(RtpPayloadType::UNKNOWN),
       use_external_encoder(false),
       congestion_control_back_off(kDefaultCongestionControlBackOff),
       max_bitrate(kDefaultMaxVideoKbps * 1000),
@@ -67,7 +67,7 @@ AudioSenderConfig::AudioSenderConfig()
       receiver_ssrc(0),
       max_playout_delay(
           base::TimeDelta::FromMilliseconds(kDefaultRtpMaxDelayMs)),
-      rtp_payload_type(0),
+      rtp_payload_type(RtpPayloadType::UNKNOWN),
       use_external_encoder(false),
       frequency(0),
       channels(0),
@@ -82,7 +82,7 @@ FrameReceiverConfig::FrameReceiverConfig()
     : receiver_ssrc(0),
       sender_ssrc(0),
       rtp_max_delay_ms(kDefaultRtpMaxDelayMs),
-      rtp_payload_type(0),
+      rtp_payload_type(RtpPayloadType::UNKNOWN),
       rtp_timebase(0),
       channels(0),
       target_frame_rate(0),

@@ -34,7 +34,7 @@ FrameReceiverConfig GetDefaultAudioReceiverConfig() {
   config.receiver_ssrc = 2;
   config.sender_ssrc = 1;
   config.rtp_max_delay_ms = kDefaultRtpMaxDelayMs;
-  config.rtp_payload_type = kDefaultRtpAudioPayloadType;
+  config.rtp_payload_type = RtpPayloadType::AUDIO_OPUS;
   config.rtp_timebase = 48000;
   config.channels = 2;
   config.target_frame_rate = 100;  // 10ms of signal per frame
@@ -47,7 +47,7 @@ FrameReceiverConfig GetDefaultVideoReceiverConfig() {
   config.receiver_ssrc = 12;
   config.sender_ssrc = 11;
   config.rtp_max_delay_ms = kDefaultRtpMaxDelayMs;
-  config.rtp_payload_type = kDefaultRtpVideoPayloadType;
+  config.rtp_payload_type = RtpPayloadType::VIDEO_VP8;
   config.rtp_timebase = kVideoFrequency;
   config.channels = 1;
   config.target_frame_rate = kDefaultMaxFrameRate;
