@@ -342,6 +342,13 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
       &success));
   EXPECT_TRUE(success);
 
+  // Wait for the cross-site transition in the new tab to finish.
+  WaitForLoadStop(new_shell->web_contents());
+  WebContentsImpl* web_contents =
+      static_cast<WebContentsImpl*>(new_shell->web_contents());
+  EXPECT_FALSE(
+      web_contents->GetRenderManagerForTesting()->pending_render_view_host());
+
   // Check that the referrer is set correctly.
   std::string expected_referrer =
       embedded_test_server()->GetURL("/click-noreferrer-links.html").spec();
@@ -351,13 +358,6 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
                      expected_referrer + "');",
       &success));
   EXPECT_TRUE(success);
-
-  // Wait for the cross-site transition in the new tab to finish.
-  WaitForLoadStop(new_shell->web_contents());
-  WebContentsImpl* web_contents =
-      static_cast<WebContentsImpl*>(new_shell->web_contents());
-  EXPECT_FALSE(
-      web_contents->GetRenderManagerForTesting()->pending_render_view_host());
 
   // Should have a new SiteInstance.
   scoped_refptr<SiteInstance> noopener_blank_site_instance(
