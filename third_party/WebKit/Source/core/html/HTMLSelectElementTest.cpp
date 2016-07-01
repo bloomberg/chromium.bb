@@ -341,4 +341,13 @@ TEST_F(HTMLSelectElementTest, DefaultToolTip)
     EXPECT_EQ(String(), optgroup->defaultToolTip());
 }
 
+TEST_F(HTMLSelectElementTest, SetRecalcListItemsByOptgroupRemoval)
+{
+    document().documentElement()->setInnerHTML("<select><optgroup><option>sub1</option><option>sub2</option></optgroup></select>", ASSERT_NO_EXCEPTION);
+    document().view()->updateAllLifecyclePhases();
+    HTMLSelectElement* select = toHTMLSelectElement(document().body()->firstChild());
+    select->setInnerHTML("", ASSERT_NO_EXCEPTION);
+    // PASS if setInnerHTML didn't have a check failure.
+}
+
 } // namespace blink

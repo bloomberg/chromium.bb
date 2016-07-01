@@ -799,21 +799,28 @@ void HTMLSelectElement::setRecalcListItems(HTMLElement& subject)
         } else if (!subject.isDescendantOf(this)) {
             // |subject| was removed from this. This logic works well with
             // SELECT children and OPTGROUP children.
-            // TODO(tkent): m_listItems.size() is 0 in OOBE-related tests.  It
-            // should not happen.
+
+            // m_listItems might be empty, or might not have the OPTION.
+            //   1. Remove an OPTGROUP with OPTION children from a SELECT.
+            //   2. This function is called for the OPTGROUP removal.
+            //   3. m_shouldRecalcListItems becomes true.
+            //   4. recalcListItems() happens.  m_listItems has no OPTGROUP and
+            //      no its children.  m_shouldRecalcListItems becomes false.
+            //   5. This function is called for the removal of an OPTION child
+            //      of the OPTGROUP.
             if (m_listItems.size() > 0) {
                 size_t index;
                 // Avoid Vector::find() in typical cases.
-                if (m_listItems.first() == &subject) {
+                if (m_listItems.first() == &subject)
                     index = 0;
-                } else if (m_listItems.last() == &subject) {
+                else if (m_listItems.last() == &subject)
                     index = m_listItems.size() - 1;
-                } else {
+                else
                     index = m_listItems.find(&subject);
-                    DCHECK_NE(index, WTF::kNotFound);
+                if (index != WTF::kNotFound) {
+                    m_listItems.remove(index);
+                    shouldRecalc = false;
                 }
-                m_listItems.remove(index);
-                shouldRecalc = false;
             }
         }
     }
