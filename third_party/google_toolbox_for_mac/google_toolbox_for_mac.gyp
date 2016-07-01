@@ -28,6 +28,8 @@
         'src/AppKit/GTMCarbonEvent.m',
         'src/AppKit/GTMFadeTruncatingTextFieldCell.h',
         'src/AppKit/GTMFadeTruncatingTextFieldCell.m',
+        'src/AppKit/GTMIBArray.h',
+        'src/AppKit/GTMIBArray.m',
         'src/AppKit/GTMKeyValueAnimation.h',
         'src/AppKit/GTMKeyValueAnimation.m',
         'src/AppKit/GTMNSAnimation+Duration.h',
