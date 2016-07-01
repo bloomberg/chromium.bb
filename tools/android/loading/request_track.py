@@ -695,10 +695,12 @@ class RequestTrack(devtools_monitor.Track):
     # Several "requestWillBeSent" events can be dispatched in a row in the case
     # of redirects.
     redirect_initiator = None
+    if request_id in self._completed_requests_by_id:
+      assert request_id not in self._requests_in_flight
+      return
     if request_id in self._requests_in_flight:
       redirect_initiator = self._HandleRedirect(request_id, params)
-    assert (request_id not in self._requests_in_flight
-            and request_id not in self._completed_requests_by_id)
+    assert (request_id not in self._requests_in_flight)
     r = Request()
     r.request_id = request_id
     _CopyFromDictToObject(
@@ -759,6 +761,9 @@ class RequestTrack(devtools_monitor.Track):
     request.served_from_cache = True
 
   def _ResponseReceived(self, request_id, params):
+    if request_id in self._completed_requests_by_id:
+      assert request_id not in self._requests_in_flight
+      return
     assert request_id in self._requests_in_flight
     (r, status) = self._requests_in_flight[request_id]
     if status == RequestTrack._STATUS_RESPONSE:
@@ -771,7 +776,8 @@ class RequestTrack(devtools_monitor.Track):
       self.duplicates_count += 1
       return
     assert status == RequestTrack._STATUS_SENT
-    assert r.frame_id == params['frameId']
+    assert (r.frame_id == params['frameId'] or
+            params['response']['protocol'] == 'data')
     assert r.timestamp <= params['timestamp']
     if r.resource_type == 'Other':
       r.resource_type = params.get('type', 'Other')
@@ -816,7 +822,7 @@ class RequestTrack(devtools_monitor.Track):
     assert (status == RequestTrack._STATUS_RESPONSE
             or status == RequestTrack._STATUS_DATA)
     r.encoded_data_length = params['encodedDataLength']
-    assert (r.encoded_data_length > 0 or r.protocol == 'about' or
+    assert (r.encoded_data_length > 0 or r.protocol in {'about', 'data'} or
             r.from_disk_cache or r.served_from_cache)
     r.timing.loading_finished = r._TimestampOffsetFromStartMs(
         params['timestamp'])
@@ -834,8 +840,6 @@ class RequestTrack(devtools_monitor.Track):
     self._FinalizeRequest(request_id)
 
   def _FinalizeRequest(self, request_id):
-    if request_id not in self._requests_in_flight:
-      return
     (request, status) = self._requests_in_flight[request_id]
     assert status == RequestTrack._STATUS_FINISHED
     del self._requests_in_flight[request_id]

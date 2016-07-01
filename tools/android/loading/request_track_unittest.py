@@ -492,6 +492,17 @@ class RequestTrackTestCase(unittest.TestCase):
     with self.assertRaises(AssertionError):
       self.request_track.Handle('Network.requestWillBeSent', msg)
 
+  def testIgnoreCompletedDuplicates(self):
+    self.request_track.Handle('Network.requestWillBeSent',
+                              RequestTrackTestCase._REQUEST_WILL_BE_SENT)
+    self.request_track.Handle('Network.responseReceived',
+                              RequestTrackTestCase._RESPONSE_RECEIVED)
+    self.request_track.Handle('Network.loadingFinished',
+                              RequestTrackTestCase._LOADING_FINISHED)
+    # Should not raise an AssertionError.
+    self.request_track.Handle('Network.requestWillBeSent',
+                              RequestTrackTestCase._REQUEST_WILL_BE_SENT)
+
   def testSequenceOfGeneratedResponse(self):
     self.request_track.Handle('Network.requestServedFromCache',
                               RequestTrackTestCase._SERVED_FROM_CACHE)
