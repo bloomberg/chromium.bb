@@ -42,7 +42,7 @@ class TestWM : public shell::ShellClient,
     // OnEmbed().
     NOTREACHED();
   }
-  void OnWindowTreeClientDestroyed(mus::WindowTreeClient* client) override {
+  void OnDidDestroyClient(mus::WindowTreeClient* client) override {
     window_tree_client_ = nullptr;
   }
   void OnEventObserved(const ui::Event& event, mus::Window* target) override {

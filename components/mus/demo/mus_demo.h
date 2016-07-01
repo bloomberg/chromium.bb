@@ -43,7 +43,7 @@ class MusDemo : public shell::ShellClient,
 
   // WindowTreeClientDelegate:
   void OnEmbed(mus::Window* root) override;
-  void OnWindowTreeClientDestroyed(mus::WindowTreeClient* client) override;
+  void OnDidDestroyClient(mus::WindowTreeClient* client) override;
   void OnEventObserved(const ui::Event& event, mus::Window* target) override;
 
   // WindowManagerDelegate:

@@ -81,7 +81,7 @@ void MusDemo::OnEmbed(mus::Window* window) {
   NOTREACHED();
 }
 
-void MusDemo::OnWindowTreeClientDestroyed(mus::WindowTreeClient* client) {
+void MusDemo::OnDidDestroyClient(mus::WindowTreeClient* client) {
   window_tree_client_ = nullptr;
   timer_.Stop();
 }

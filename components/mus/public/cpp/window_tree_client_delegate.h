@@ -37,7 +37,7 @@ class WindowTreeClientDelegate {
 
   // Called from the destructor of WindowTreeClient after all the Windows have
   // been destroyed. |client| is no longer valid after this call.
-  virtual void OnWindowTreeClientDestroyed(WindowTreeClient* client) = 0;
+  virtual void OnDidDestroyClient(WindowTreeClient* client) = 0;
 
   // Called when the WindowTreeClient receives an input event observed via
   // SetEventObserver(). |target| may be null for events that were sent to

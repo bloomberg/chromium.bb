@@ -947,7 +947,7 @@ class DestroyedChangedObserver : public WindowObserver {
     window_ = nullptr;
 
     // We should always get OnWindowDestroyed() before
-    // OnWindowTreeClientDestroyed().
+    // OnDidDestroyClient().
     EXPECT_FALSE(test_->window_tree_client_destroyed());
   }
 

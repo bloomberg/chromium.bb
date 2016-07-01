@@ -56,7 +56,7 @@ enum class ChangeType;
 //
 // When WindowTreeClient is deleted all windows are deleted (and observers
 // notified). This is followed by calling
-// WindowTreeClientDelegate::OnWindowTreeClientDestroyed().
+// WindowTreeClientDelegate::OnDidDestroyClient().
 class WindowTreeClient : public mojom::WindowTreeClient,
                          public mojom::WindowManager,
                          public WindowManagerClient {

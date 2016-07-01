@@ -328,7 +328,7 @@ void WmShellMus::OnWindowTreeFocusChanged(::mus::Window* gained_focus,
                     OnWindowActivated(gained_active, lost_active));
 }
 
-void WmShellMus::OnWillDestroyClient(::mus::WindowTreeClient* client) {
+void WmShellMus::OnDidDestroyClient(::mus::WindowTreeClient* client) {
   DCHECK_EQ(client, client_);
   RemoveClientObserver();
 }

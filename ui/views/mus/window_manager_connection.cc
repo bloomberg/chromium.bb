@@ -144,7 +144,7 @@ bool WindowManagerConnection::HasPointerWatcher() {
 
 void WindowManagerConnection::OnEmbed(mus::Window* root) {}
 
-void WindowManagerConnection::OnWindowTreeClientDestroyed(
+void WindowManagerConnection::OnDidDestroyClient(
     mus::WindowTreeClient* client) {
   if (client_.get() == client) {
     client_.release();

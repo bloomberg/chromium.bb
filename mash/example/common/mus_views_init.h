@@ -40,7 +40,7 @@ class MUSViewsInit : public views::ViewsDelegate,
 
   // mus::WindowTreeClientDelegate:
   void OnEmbed(mus::Window* root) override;
-  void OnWindowTreeClientDestroyed(mus::WindowTreeClient* client) override;
+  void OnDidDestroyClient(mus::WindowTreeClient* client) override;
 #if defined(OS_WIN)
   HICON GetSmallWindowIcon() const override;
 #endif

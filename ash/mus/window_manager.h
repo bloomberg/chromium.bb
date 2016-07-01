@@ -84,7 +84,7 @@ class WindowManager : public ::mus::WindowManagerDelegate,
 
   // WindowTreeClientDelegate:
   void OnEmbed(::mus::Window* root) override;
-  void OnWindowTreeClientDestroyed(::mus::WindowTreeClient* client) override;
+  void OnDidDestroyClient(::mus::WindowTreeClient* client) override;
   void OnEventObserved(const ui::Event& event, ::mus::Window* target) override;
 
   // WindowManagerDelegate:

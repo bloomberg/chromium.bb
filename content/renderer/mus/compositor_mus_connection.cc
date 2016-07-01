@@ -96,7 +96,7 @@ void CompositorMusConnection::OnWindowInputEventAckOnMainThread(
   compositor_task_runner_->PostTask(FROM_HERE, base::Bind(ack, result));
 }
 
-void CompositorMusConnection::OnWindowTreeClientDestroyed(
+void CompositorMusConnection::OnDidDestroyClient(
     mus::WindowTreeClient* client) {
   DCHECK(compositor_task_runner_->BelongsToCurrentThread());
   main_task_runner_->PostTask(

@@ -30,7 +30,7 @@ class WindowServerTestBase
   WindowServerTestBase();
   ~WindowServerTestBase() override;
 
-  // True if WindowTreeClientDelegate::OnWindowTreeClientDestroyed() was called.
+  // True if WindowTreeClientDelegate::OnDidDestroyClient() was called.
   bool window_tree_client_destroyed() const {
     return window_tree_client_destroyed_;
   }
@@ -67,7 +67,7 @@ class WindowServerTestBase
 
   // WindowTreeClientDelegate:
   void OnEmbed(Window* root) override;
-  void OnWindowTreeClientDestroyed(WindowTreeClient* client) override;
+  void OnDidDestroyClient(WindowTreeClient* client) override;
   void OnEventObserved(const ui::Event& event, Window* target) override;
 
   // WindowManagerDelegate:

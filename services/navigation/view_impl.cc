@@ -278,7 +278,7 @@ void ViewImpl::OnEmbed(mus::Window* root) {
   widget_->Show();
 }
 
-void ViewImpl::OnWindowTreeClientDestroyed(mus::WindowTreeClient* client) {}
+void ViewImpl::OnDidDestroyClient(mus::WindowTreeClient* client) {}
 void ViewImpl::OnEventObserved(const ui::Event& event, mus::Window* target) {}
 
 views::View* ViewImpl::GetContentsView() {

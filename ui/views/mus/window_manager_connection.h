@@ -78,7 +78,7 @@ class VIEWS_MUS_EXPORT WindowManagerConnection
 
   // mus::WindowTreeClientDelegate:
   void OnEmbed(mus::Window* root) override;
-  void OnWindowTreeClientDestroyed(mus::WindowTreeClient* client) override;
+  void OnDidDestroyClient(mus::WindowTreeClient* client) override;
   void OnEventObserved(const ui::Event& event, mus::Window* target) override;
 
   // ScreenMusDelegate:

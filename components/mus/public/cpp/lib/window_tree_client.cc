@@ -111,6 +111,9 @@ WindowTreeClient::WindowTreeClient(
 WindowTreeClient::~WindowTreeClient() {
   in_destructor_ = true;
 
+  FOR_EACH_OBSERVER(WindowTreeClientObserver, observers_,
+                    OnWillDestroyClient(this));
+
   std::vector<Window*> non_owned;
   WindowTracker tracker;
   while (!windows_.empty()) {
@@ -131,9 +134,9 @@ WindowTreeClient::~WindowTreeClient() {
     delete tracker.windows().front();
 
   FOR_EACH_OBSERVER(WindowTreeClientObserver, observers_,
-                    OnWillDestroyClient(this));
+                    OnDidDestroyClient(this));
 
-  delegate_->OnWindowTreeClientDestroyed(this);
+  delegate_->OnDidDestroyClient(this);
 }
 
 void WindowTreeClient::ConnectViaWindowTreeFactory(

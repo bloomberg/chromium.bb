@@ -50,7 +50,7 @@ void TestWindowTreeClientSetup::CommonInit(
       ->AddObserver(this);
 }
 
-void TestWindowTreeClientSetup::OnWillDestroyClient(
+void TestWindowTreeClientSetup::OnDidDestroyClient(
     mus::WindowTreeClient* client) {
   // See comment in header as to why we do this.
   window_tree_client_.release();

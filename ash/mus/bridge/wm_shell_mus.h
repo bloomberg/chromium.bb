@@ -88,7 +88,7 @@ class WmShellMus : public WmShell, public ::mus::WindowTreeClientObserver {
   // ::mus::WindowTreeClientObserver:
   void OnWindowTreeFocusChanged(::mus::Window* gained_focus,
                                 ::mus::Window* lost_focus) override;
-  void OnWillDestroyClient(::mus::WindowTreeClient* client) override;
+  void OnDidDestroyClient(::mus::WindowTreeClient* client) override;
 
   ::mus::WindowTreeClient* client_;
 

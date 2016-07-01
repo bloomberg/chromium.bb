@@ -45,7 +45,7 @@ class TestWindowTreeClientSetup : public mus::WindowTreeClientObserver {
                   WindowManagerDelegate* window_manager_delegate);
 
   // mus::WindowTreeClientObserver:
-  void OnWillDestroyClient(mus::WindowTreeClient* client) override;
+  void OnDidDestroyClient(mus::WindowTreeClient* client) override;
 
   std::unique_ptr<TestWindowTree> window_tree_;
 

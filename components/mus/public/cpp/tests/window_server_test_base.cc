@@ -85,8 +85,7 @@ void WindowServerTestBase::OnEmbed(Window* root) {
   window_manager_client_->AddActivationParent(root);
 }
 
-void WindowServerTestBase::OnWindowTreeClientDestroyed(
-    WindowTreeClient* client) {
+void WindowServerTestBase::OnDidDestroyClient(WindowTreeClient* client) {
   window_tree_client_destroyed_ = true;
 }
 

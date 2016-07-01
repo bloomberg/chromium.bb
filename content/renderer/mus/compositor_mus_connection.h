@@ -66,7 +66,7 @@ class CONTENT_EXPORT CompositorMusConnection
       mus::mojom::EventResult result);
 
   // WindowTreeClientDelegate implementation:
-  void OnWindowTreeClientDestroyed(mus::WindowTreeClient* client) override;
+  void OnDidDestroyClient(mus::WindowTreeClient* client) override;
   void OnEmbed(mus::Window* root) override;
   void OnEventObserved(const ui::Event& event, mus::Window* target) override;
 

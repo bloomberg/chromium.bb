@@ -58,7 +58,7 @@ class TestWindowTreeClientDelegate : public WindowTreeClientDelegate {
 
   // WindowTreeClientDelegate:
   void OnEmbed(Window* root) override {}
-  void OnWindowTreeClientDestroyed(WindowTreeClient* client) override {}
+  void OnDidDestroyClient(WindowTreeClient* client) override {}
   void OnEventObserved(const ui::Event& event, Window* target) override {
     last_event_observed_ = ui::Event::Clone(event);
   }

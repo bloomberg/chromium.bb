@@ -166,8 +166,7 @@ void WindowManager::OnEmbed(::mus::Window* root) {
   NOTREACHED();
 }
 
-void WindowManager::OnWindowTreeClientDestroyed(
-    ::mus::WindowTreeClient* client) {
+void WindowManager::OnDidDestroyClient(::mus::WindowTreeClient* client) {
   // Destroying the roots should result in removal from
   // |root_window_controllers_|.
   DCHECK(root_window_controllers_.empty());
