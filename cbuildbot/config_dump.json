@@ -821,7 +821,8 @@
             "image_test": true,
             "images": [
                 "base",
-                "test"
+                "test",
+                "recovery"
             ],
             "internal": true,
             "latest_toolchain": true,
@@ -829,7 +830,7 @@
             "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
             "manifest_version": true,
             "overlays": "both",
-            "paygen": false,
+            "paygen": true,
             "prebuilts": false,
             "push_image": true,
             "run_gce_tests": false,
@@ -923,14 +924,15 @@
             "image_test": true,
             "images": [
                 "base",
-                "test"
+                "test",
+                "recovery"
             ],
             "internal": true,
             "manifest": "official.xml",
             "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
             "manifest_version": true,
             "overlays": "both",
-            "paygen": false,
+            "paygen": true,
             "profile": "llvm",
             "push_image": true,
             "run_gce_tests": false,

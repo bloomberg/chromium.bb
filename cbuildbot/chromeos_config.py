@@ -2225,9 +2225,8 @@ def GetConfig():
       profile='llvm',
       hw_tests=HWTestList.ToolchainTest(),
       hw_tests_override=HWTestList.ToolchainTest(),
-      images=['base', 'test'],
+      images=['base', 'test', 'recovery'],
       description='Full release build with LLVM toolchain',
-      paygen=False,
       signer_tests=False,
       # This config is only for toolchain use. No need to list with general
       # configs.
@@ -2295,9 +2294,8 @@ def GetConfig():
       no_vmtest_builder,
       hw_tests=HWTestList.ToolchainTest(),
       hw_tests_override=HWTestList.ToolchainTest(),
-      images=['base', 'test'],
+      images=['base', 'test', 'recovery'],
       description='Full release build with next minor GCC toolchain revision.',
-      paygen=False,
       signer_tests=False,
       # This config is only for toolchain use. No need to list with general
       # configs.
