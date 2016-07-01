@@ -28,6 +28,7 @@ OpenSLESOutputStream::OpenSLESOutputStream(AudioManagerAndroid* manager,
       callback_(NULL),
       player_(NULL),
       simple_buffer_queue_(NULL),
+      audio_data_(),
       active_buffer_index_(0),
       bytes_per_frame_(params.GetBytesPerFrame()),
       buffer_size_bytes_(params.GetBytesPerBuffer()),
@@ -46,8 +47,6 @@ OpenSLESOutputStream::OpenSLESOutputStream(AudioManagerAndroid* manager,
   format_.endianness = SL_BYTEORDER_LITTLEENDIAN;
   format_.channelMask = ChannelCountToSLESChannelMask(params.channels());
   audio_bus_ = AudioBus::Create(params);
-
-  memset(&audio_data_, 0, sizeof(audio_data_));
 }
 
 OpenSLESOutputStream::~OpenSLESOutputStream() {
@@ -86,13 +85,20 @@ void OpenSLESOutputStream::Start(AudioSourceCallback* callback) {
     return;
 
   base::AutoLock lock(lock_);
-  DCHECK(callback_ == NULL || callback_ == callback);
+  DCHECK(!callback_);
   callback_ = callback;
   delay_calculator_.SetBaseTimestamp(base::TimeDelta());
 
-  // Avoid start-up glitches by filling up one buffer queue before starting
-  // the stream.
-  FillBufferQueueNoLock();
+  // Fill audio data with silence to avoid start-up glitches. Don't use
+  // FillBufferQueueNoLock() since it can trigger recursive entry if an error
+  // occurs while writing into the stream. See http://crbug.com/624877.
+  memset(audio_data_[active_buffer_index_], 0, buffer_size_bytes_);
+  delay_calculator_.AddFrames(audio_bus_->frames());
+  LOG_ON_FAILURE_AND_RETURN((*simple_buffer_queue_)
+                                ->Enqueue(simple_buffer_queue_,
+                                          audio_data_[active_buffer_index_],
+                                          buffer_size_bytes_));
+  active_buffer_index_ = (active_buffer_index_ + 1) % kMaxNumOfBuffersInQueue;
 
   // Start streaming data by setting the play state to SL_PLAYSTATE_PLAYING.
   // For a player object, when the object is in the SL_PLAYSTATE_PLAYING

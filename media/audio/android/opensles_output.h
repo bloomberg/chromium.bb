@@ -102,8 +102,8 @@ class OpenSLESOutputStream : public AudioOutputStream {
 
   SLDataFormat_PCM format_;
 
-  // Audio buffers that are allocated in the constructor based on
-  // info from audio parameters.
+  // Audio buffers that are allocated during Open() based on parameters given
+  // during construction.
   uint8_t* audio_data_[kMaxNumOfBuffersInQueue];
 
   int active_buffer_index_;
