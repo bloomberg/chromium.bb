@@ -1416,6 +1416,15 @@ Press any key to continue exploring.
   <message name="IDS_EULA_SCREEN_TITLE" desc="Title of the OOBE EULA screen">
     The small print
   </message>
+  <message name="IDS_PROXY_SETTINGS_MENU_NAME" desc="OOBE 'Available Networks' list menu entry that opens proxy settings dialog">
+    Proxy settings
+  </message>
+  <message name="IDS_ADD_WI_FI_NETWORK_MENU_NAME" desc="OOBE 'Available Networks' list menu entry that opens 'Add New WiFi Network' dialog">
+    Add other WiFi network
+  </message>
+  <message name="IDS_ADD_MOBILE_NETWORK_MENU_NAME" desc="OOBE 'Available Networks' list menu entry that opens 'Add New Mobile Network' dialog">
+    Add other mobile network
+  </message>
   <message name="IDS_AUTOSTART_WARNING_TITLE" desc="Title of the kiosk autostart screen">
     Auto-launch permission requested
   </message>
@@ -1550,6 +1559,12 @@ Press any key to continue exploring.
   </message>
   <message name="IDS_NETWORK_ENABLE_DEV_FEATURES_LINK" desc="Text shown on continue button" meaning="Link shown on OOBE screens that opens enable debugging features dialog">
     Enable debugging features
+  </message>
+  <message name="IDS_NETWORK_SECTION_TITE" desc="Tile of newtork selection screen" meaning="A title of the dialog where user should select network to connect to Internet">
+    Connect to network
+  </message>
+  <message name="IDS_NETWORK_SECTION_HINT" desc="Under-title line on the network selection screen" meaning="A hint to the user why device should be connected to the network">
+    To restore your data, you need an Internet connection.
   </message>
   <message name="IDS_NETWORK_SELECTION_ERROR" desc="Error shown when connection to network failed or timed out.">
     <ph name="PRODUCT_NAME">$1<ex>Chrome OS</ex></ph> was unable to connect to <ph name="NETWORK_ID">$2<ex>Public Wifi</ex></ph>. Please select another network or try again.
