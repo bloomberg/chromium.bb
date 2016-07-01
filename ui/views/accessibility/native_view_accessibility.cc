@@ -63,6 +63,8 @@ const ui::AXNodeData& NativeViewAccessibility::GetData() {
                            base::UTF16ToUTF8(state.default_action));
   data_.AddStringAttribute(ui::AX_ATTR_SHORTCUT,
                            base::UTF16ToUTF8(state.keyboard_shortcut));
+  data_.AddStringAttribute(ui::AX_ATTR_PLACEHOLDER,
+                           base::UTF16ToUTF8(state.placeholder));
   data_.AddIntAttribute(ui::AX_ATTR_TEXT_SEL_START, state.selection_start);
   data_.AddIntAttribute(ui::AX_ATTR_TEXT_SEL_END, state.selection_end);
 

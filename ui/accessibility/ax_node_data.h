@@ -104,10 +104,10 @@ struct AX_EXPORT AXNodeData {
   int32_t id;
   AXRole role;
   uint32_t state;
-  std::vector<std::pair<AXStringAttribute, std::string> > string_attributes;
+  std::vector<std::pair<AXStringAttribute, std::string>> string_attributes;
   std::vector<std::pair<AXIntAttribute, int32_t>> int_attributes;
-  std::vector<std::pair<AXFloatAttribute, float> > float_attributes;
-  std::vector<std::pair<AXBoolAttribute, bool> > bool_attributes;
+  std::vector<std::pair<AXFloatAttribute, float>> float_attributes;
+  std::vector<std::pair<AXBoolAttribute, bool>> bool_attributes;
   std::vector<std::pair<AXIntListAttribute, std::vector<int32_t>>>
       intlist_attributes;
   base::StringPairs html_attributes;

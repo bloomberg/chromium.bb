@@ -46,6 +46,7 @@ AX_EXPORT
 
 + (NSString*)nativeRoleFromAXRole:(ui::AXRole)role;
 + (NSString*)nativeSubroleFromAXRole:(ui::AXRole)role;
++ (NSString*)nativeNotificationFromAXEvent:(ui::AXEvent)event;
 
 - (instancetype)initWithNode:(ui::AXPlatformNodeBase*)node;
 - (void)detach;

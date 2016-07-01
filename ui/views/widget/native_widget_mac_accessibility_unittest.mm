@@ -27,6 +27,7 @@ namespace views {
 
 namespace {
 
+NSString* const kTestPlaceholderText = @"Test placeholder text";
 NSString* const kTestStringValue = @"Test string value";
 NSString* const kTestTitle = @"Test textfield";
 
@@ -170,8 +171,23 @@ TEST_F(NativeWidgetMacAccessibilityTest, PositionAttribute) {
 // Tests for accessibility attributes on a views::Textfield.
 // TODO(patricialor): Test against Cocoa-provided attributes as well to ensure
 // consistency between Cocoa and toolkit-views.
-TEST_F(NativeWidgetMacAccessibilityTest, TextfieldAccessibility) {
+TEST_F(NativeWidgetMacAccessibilityTest, TextfieldGenericAttributes) {
   Textfield* textfield = AddChildTextfield(GetWidgetBounds().size());
+
+  // NSAccessibilityEnabledAttribute.
+  textfield->SetEnabled(false);
+  EXPECT_EQ(NO, [AttributeValueAtMidpoint(NSAccessibilityEnabledAttribute)
+                    boolValue]);
+  textfield->SetEnabled(true);
+  EXPECT_EQ(YES, [AttributeValueAtMidpoint(NSAccessibilityEnabledAttribute)
+                     boolValue]);
+
+  // NSAccessibilityFocusedAttribute.
+  EXPECT_EQ(NO, [AttributeValueAtMidpoint(NSAccessibilityFocusedAttribute)
+                    boolValue]);
+  textfield->RequestFocus();
+  EXPECT_EQ(YES, [AttributeValueAtMidpoint(NSAccessibilityFocusedAttribute)
+                     boolValue]);
 
   // NSAccessibilityTitleAttribute.
   EXPECT_NSEQ(kTestTitle,
@@ -214,6 +230,50 @@ TEST_F(NativeWidgetMacAccessibilityTest, TextfieldAccessibility) {
   widget()->SetSize(new_size);
   EXPECT_EQ(new_size, gfx::Size([AttributeValueAtMidpoint(
                           NSAccessibilitySizeAttribute) sizeValue]));
+}
+
+TEST_F(NativeWidgetMacAccessibilityTest, TextfieldEditableAttributes) {
+  Textfield* textfield = AddChildTextfield(GetWidgetBounds().size());
+  textfield->set_placeholder_text(
+      base::SysNSStringToUTF16(kTestPlaceholderText));
+
+  // NSAccessibilityInsertionPointLineNumberAttribute.
+  EXPECT_EQ(0, [AttributeValueAtMidpoint(
+                   NSAccessibilityInsertionPointLineNumberAttribute) intValue]);
+
+  // NSAccessibilityNumberOfCharactersAttribute.
+  EXPECT_EQ(
+      kTestStringValue.length,
+      [AttributeValueAtMidpoint(NSAccessibilityNumberOfCharactersAttribute)
+          unsignedIntegerValue]);
+
+  // NSAccessibilityPlaceholderAttribute.
+  EXPECT_NSEQ(
+      kTestPlaceholderText,
+      AttributeValueAtMidpoint(NSAccessibilityPlaceholderValueAttribute));
+
+  // NSAccessibilitySelectedTextAttribute and
+  // NSAccessibilitySelectedTextRangeAttribute.
+  EXPECT_NSEQ(@"",
+              AttributeValueAtMidpoint(NSAccessibilitySelectedTextAttribute));
+  // The cursor will be at the end of the textfield, so the selection range will
+  // span 0 characters and be located at the index after the last character.
+  EXPECT_EQ(gfx::Range(kTestStringValue.length, kTestStringValue.length),
+            gfx::Range([AttributeValueAtMidpoint(
+                NSAccessibilitySelectedTextRangeAttribute) rangeValue]));
+  // Select some text in the middle of the textfield.
+  gfx::Range selection_range(2, 6);
+  textfield->SelectRange(selection_range);
+  EXPECT_NSEQ([kTestStringValue substringWithRange:selection_range.ToNSRange()],
+              AttributeValueAtMidpoint(NSAccessibilitySelectedTextAttribute));
+  EXPECT_EQ(selection_range,
+            gfx::Range([AttributeValueAtMidpoint(
+                NSAccessibilitySelectedTextRangeAttribute) rangeValue]));
+
+  // NSAccessibilityVisibleCharacterRangeAttribute.
+  EXPECT_EQ(gfx::Range(0, kTestStringValue.length),
+            gfx::Range([AttributeValueAtMidpoint(
+                NSAccessibilityVisibleCharacterRangeAttribute) rangeValue]));
 }
 
 }  // namespace views

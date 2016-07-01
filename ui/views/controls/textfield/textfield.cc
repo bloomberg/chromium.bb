@@ -913,6 +913,8 @@ void Textfield::GetAccessibleState(ui::AXViewState* state) {
   } else {
     state->value = text();
   }
+  state->placeholder = GetPlaceholderText();
+
   const gfx::Range range = GetSelectedRange();
   state->selection_start = range.start();
   state->selection_end = range.end();

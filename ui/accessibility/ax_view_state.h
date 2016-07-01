@@ -54,6 +54,9 @@ struct AX_EXPORT AXViewState {
   // The keyboard shortcut to activate this view, if any.
   base::string16 keyboard_shortcut;
 
+  // The view's placeholder value, used only for views with editable text.
+  base::string16 placeholder;
+
   // The selection start and end. Only applies to views with text content,
   // such as a text box or combo box; start and end should be -1 otherwise.
   int selection_start;
