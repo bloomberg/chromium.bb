@@ -73,7 +73,7 @@ enum NotificationPermission {
     readonly attribute boolean renotify;
     readonly attribute boolean silent;
     readonly attribute boolean requireInteraction;
-    [CallWith=ScriptState, SameObject] readonly attribute any data;
+    [CallWith=ScriptState, SameObject, SaveSameObject] readonly attribute any data;
     [CallWith=ScriptState, SameObject, SaveSameObject] readonly attribute FrozenArray<NotificationAction> actions;
 
     [MeasureAs=NotificationClosed] void close();

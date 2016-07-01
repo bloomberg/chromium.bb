@@ -32,6 +32,7 @@ class ScriptWrappable;
     X(PerformanceObserver, Callback)      \
     X(PrivateScriptRunner, IsInitialized) \
     X(SameObject, NotificationActions) \
+    X(SameObject, NotificationData) \
     X(SameObject, NotificationVibrate) \
     X(V8NodeFilterCondition, Filter)
 

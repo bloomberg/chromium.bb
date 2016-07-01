@@ -294,13 +294,10 @@ bool Notification::requireInteraction() const
 
 ScriptValue Notification::data(ScriptState* scriptState)
 {
-    if (m_developerData.isEmpty()) {
-        const WebVector<char>& serializedData = m_data.data;
-        RefPtr<SerializedScriptValue> serializedValue = SerializedScriptValue::create(serializedData.data(), serializedData.size());
-        m_developerData = ScriptValue(scriptState, serializedValue->deserialize(scriptState->isolate()));
-    }
+    const WebVector<char>& serializedData = m_data.data;
+    RefPtr<SerializedScriptValue> serializedValue = SerializedScriptValue::create(serializedData.data(), serializedData.size());
 
-    return m_developerData;
+    return ScriptValue(scriptState, serializedValue->deserialize(scriptState->isolate()));
 }
 
 Vector<v8::Local<v8::Value>> Notification::actions(ScriptState* scriptState) const
