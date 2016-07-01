@@ -250,6 +250,8 @@ static_library("headless_lib") {
     "public/internal/value_conversions.h",
     "public/util/error_reporter.cc",
     "public/util/error_reporter.h",
+    "public/util/user_agent.cc",
+    "public/util/user_agent.h",
   ]
 
   deps = [
