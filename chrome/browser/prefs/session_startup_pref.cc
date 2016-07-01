@@ -44,12 +44,15 @@ void URLListToPref(const base::ListValue* url_list, SessionStartupPref* pref) {
 // static
 void SessionStartupPref::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
-  registry->RegisterIntegerPref(
-      prefs::kRestoreOnStartup,
-      TypeToPrefValue(GetDefaultStartupType()),
-      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
-  registry->RegisterListPref(prefs::kURLsToRestoreOnStartup,
-                             user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
+#if defined(OS_IOS) || defined(OS_ANDROID)
+  uint32_t flags = PrefRegistry::NO_REGISTRATION_FLAGS;
+#else
+  uint32_t flags = user_prefs::PrefRegistrySyncable::SYNCABLE_PREF;
+#endif
+  registry->RegisterIntegerPref(prefs::kRestoreOnStartup,
+                                TypeToPrefValue(GetDefaultStartupType()),
+                                flags);
+  registry->RegisterListPref(prefs::kURLsToRestoreOnStartup, flags);
 }
 
 // static
