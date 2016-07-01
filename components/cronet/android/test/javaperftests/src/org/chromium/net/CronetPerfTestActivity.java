@@ -194,7 +194,7 @@ public class CronetPerfTestActivity extends Activity {
                 cronetEngineBuilder.addQuicHint(host, port, port);
                 cronetEngineBuilder.setMockCertVerifierForTesting(
                         MockCertVerifier.createMockCertVerifier(
-                                new String[] {getConfigString("QUIC_CERT_FILE")}));
+                                new String[] {getConfigString("QUIC_CERT_FILE")}, true));
             }
 
             try {

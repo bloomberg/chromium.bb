@@ -250,7 +250,8 @@ URLRequestContextConfig::URLRequestContextConfig(
     const std::string& data_reduction_fallback_proxy,
     const std::string& data_reduction_secure_proxy_check_url,
     std::unique_ptr<net::CertVerifier> mock_cert_verifier,
-    bool enable_network_quality_estimator)
+    bool enable_network_quality_estimator,
+    bool bypass_public_key_pinning_for_local_trust_anchors)
     : enable_quic(enable_quic),
       quic_user_agent_id(quic_user_agent_id),
       enable_spdy(enable_spdy),
@@ -267,7 +268,9 @@ URLRequestContextConfig::URLRequestContextConfig(
       data_reduction_secure_proxy_check_url(
           data_reduction_secure_proxy_check_url),
       mock_cert_verifier(std::move(mock_cert_verifier)),
-      enable_network_quality_estimator(enable_network_quality_estimator) {}
+      enable_network_quality_estimator(enable_network_quality_estimator),
+      bypass_public_key_pinning_for_local_trust_anchors(
+          bypass_public_key_pinning_for_local_trust_anchors) {}
 
 URLRequestContextConfig::~URLRequestContextConfig() {}
 

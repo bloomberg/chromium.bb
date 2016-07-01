@@ -102,7 +102,8 @@ public abstract class CronetEngine {
         // See setters below for verbose descriptions.
         private final Context mContext;
         private final List<QuicHint> mQuicHints = new LinkedList<QuicHint>();
-        private final List<Pkp> mPkps = new LinkedList<Pkp>();
+        private final List<Pkp> mPkps = new LinkedList<>();
+        private boolean mPublicKeyPinningBypassForLocalTrustAnchorsEnabled;
         private String mUserAgent;
         private String mStoragePath;
         private boolean mLegacyModeEnabled;
@@ -135,6 +136,7 @@ public abstract class CronetEngine {
             enableSDCH(false);
             enableHttpCache(HTTP_CACHE_DISABLED, 0);
             enableNetworkQualityEstimator(false);
+            enablePublicKeyPinningBypassForLocalTrustAnchors(true);
         }
 
         /**
@@ -541,6 +543,28 @@ public abstract class CronetEngine {
          */
         List<Pkp> publicKeyPins() {
             return mPkps;
+        }
+
+        /**
+         * Enables or disables public key pinning bypass for local trust anchors. Disabling the
+         * bypass for local trust anchors is highly discouraged since it may prohibit the app
+         * from communicating with the pinned hosts. E.g., a user may want to send all traffic
+         * through an SSL enabled proxy by changing the device proxy settings and adding the
+         * proxy certificate to the list of local trust anchor. Disabling the bypass will most
+         * likly prevent the app from sending any traffic to the pinned hosts. For more
+         * information see 'How does key pinning interact with local proxies and filters?' at
+         * https://www.chromium.org/Home/chromium-security/security-faq
+         *
+         * @param value {@code true} to enable the bypass, {@code false} to disable.
+         * @return the builder to facilitate chaining.
+         */
+        public Builder enablePublicKeyPinningBypassForLocalTrustAnchors(boolean value) {
+            mPublicKeyPinningBypassForLocalTrustAnchorsEnabled = value;
+            return this;
+        }
+
+        boolean publicKeyPinningBypassForLocalTrustAnchorsEnabled() {
+            return mPublicKeyPinningBypassForLocalTrustAnchorsEnabled;
         }
 
         /**

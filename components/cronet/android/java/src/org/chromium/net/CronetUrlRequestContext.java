@@ -118,7 +118,8 @@ class CronetUrlRequestContext extends CronetEngine {
                 builder.dataReductionProxyPrimaryProxy(), builder.dataReductionProxyFallbackProxy(),
                 builder.dataReductionProxySecureProxyCheckUrl(), builder.cacheDisabled(),
                 builder.httpCacheMode(), builder.httpCacheMaxSize(), builder.experimentalOptions(),
-                builder.mockCertVerifier(), builder.networkQualityEstimatorEnabled());
+                builder.mockCertVerifier(), builder.networkQualityEstimatorEnabled(),
+                builder.publicKeyPinningBypassForLocalTrustAnchorsEnabled());
         for (Builder.QuicHint quicHint : builder.quicHints()) {
             nativeAddQuicHint(urlRequestContextConfig, quicHint.mHost, quicHint.mPort,
                     quicHint.mAlternatePort);
@@ -542,7 +543,8 @@ class CronetUrlRequestContext extends CronetEngine {
             String dataReductionProxyPrimaryProxy, String dataReductionProxyFallbackProxy,
             String dataReductionProxySecureProxyCheckUrl, boolean disableCache, int httpCacheMode,
             long httpCacheMaxSize, String experimentalOptions, long mockCertVerifier,
-            boolean enableNetworkQualityEstimator);
+            boolean enableNetworkQualityEstimator,
+            boolean bypassPublicKeyPinningForLocalTrustAnchors);
 
     private static native void nativeAddQuicHint(
             long urlRequestContextConfig, String host, int port, int alternatePort);
