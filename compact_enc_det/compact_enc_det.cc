@@ -132,9 +132,15 @@ DEFINE_bool(enc_detect_detail2, false,
 DEFINE_bool(enc_detect_source, false, "Include source text in detail");
 // Encoding name must exactly match FIRST column of kI18NInfoByEncoding in
 // lang_enc.cc
-DEFINE_string(enc_detect_watch1, "", "Do detail2 about this encoding name.");
-DEFINE_string(enc_detect_watch2, "", "Do detail2 about this encoding name.");
 
+// Following flags are not in use. Replace them with constants to
+// avoid static initialization.
+
+//DEFINE_string(enc_detect_watch1, "", "Do detail2 about this encoding name.");
+//DEFINE_string(enc_detect_watch2, "", "Do detail2 about this encoding name.");
+
+static const char* const FLAGS_enc_detect_watch1 = "";
+static const char* const FLAGS_enc_detect_watch2 = "";
 
 // Only for experiments. Delete soon.
 DEFINE_bool(force127, false, "Force Latin1, Latin2, Latin7 based on trigrams");
@@ -2141,11 +2147,11 @@ void ApplyHints(const char* url_hint,
       // Add a line showing the watched encoding(s)
       if (watch1_rankedenc >= 0) {
         SetDetailsEncProb(destatep, 0,
-                          watch1_rankedenc, FLAGS_enc_detect_watch1.c_str());
+                          watch1_rankedenc, FLAGS_enc_detect_watch1);
       }
       if (watch2_rankedenc >= 0) {
         SetDetailsEncProb(destatep, 0,
-                          watch2_rankedenc, FLAGS_enc_detect_watch2.c_str());
+                          watch2_rankedenc, FLAGS_enc_detect_watch2);
       }
     }     // End detail2
   }
