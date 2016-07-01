@@ -1,3 +1,8 @@
+<!DOCTYPE html>
+<title>EventHandlers on SVGAnimationElement test</title>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script>
 function getObject(interface) {
     switch(interface) {
         case "SVGAnimateElement":
@@ -71,3 +76,25 @@ function testEnumerate(interface, attribute) {
         assert_true(enumerableCache[interface][attribute]);
     }, "Enumerate " + interface + "." + attribute);
 }
+
+var attributeToEventMap = {
+    "onbegin" : "beginEvent",
+    "onend" : "endEvent",
+    "onrepeat" : "repeatEvent"
+};
+
+for (var attribute in attributeToEventMap) {
+    [
+        "SVGAnimateElement",
+        "SVGAnimateMotionElement",
+        "SVGAnimateTransformElement",
+        "SVGSetElement"
+    ].forEach(function(interface) {
+        testSet(interface, attribute);
+        testEnumerate(interface, attribute);
+        testReflect(interface, attribute);
+    });
+
+    testEventHandlerMapping(attribute, attributeToEventMap[attribute]);
+}
+</script>
