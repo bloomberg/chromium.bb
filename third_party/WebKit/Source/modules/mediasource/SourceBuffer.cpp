@@ -790,7 +790,7 @@ bool SourceBuffer::initializationSegmentReceived(const WebVector<MediaTrackInfo>
             const auto& kind = trackInfo.kind;
             // 5.2.7 TODO(servolk): Implement track kind processing.
             // 5.2.8.2 Let new audio track be a new AudioTrack object.
-            AudioTrack* audioTrack = AudioTrack::create(byteStreamTrackID, kind, label, language, false);
+            AudioTrack* audioTrack = AudioTrack::create(trackInfo.id, kind, label, language, false);
             SourceBufferTrackBaseSupplement::setSourceBuffer(*audioTrack, this);
             // 5.2.8.7 If audioTracks.length equals 0, then run the following steps:
             if (audioTracks().length() == 0) {
@@ -827,7 +827,7 @@ bool SourceBuffer::initializationSegmentReceived(const WebVector<MediaTrackInfo>
             const auto& kind = trackInfo.kind;
             // 5.3.7 TODO(servolk): Implement track kind processing.
             // 5.3.8.2 Let new video track be a new VideoTrack object.
-            VideoTrack* videoTrack = VideoTrack::create(byteStreamTrackID, kind, label, language, false);
+            VideoTrack* videoTrack = VideoTrack::create(trackInfo.id, kind, label, language, false);
             SourceBufferTrackBaseSupplement::setSourceBuffer(*videoTrack, this);
             // 5.3.8.7 If videoTracks.length equals 0, then run the following steps:
             if (videoTracks().length() == 0) {
