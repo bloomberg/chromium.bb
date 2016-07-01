@@ -84,9 +84,7 @@ IN_PROC_BROWSER_TEST_F(UtilityProcessMojoClientBrowserTest, CallService) {
 
 // Call the Mojo service but the utility process terminates before getting
 // the result back.
-// TODO(pmonette): Re-enable when crbug.com/618206 is fixed.
-IN_PROC_BROWSER_TEST_F(UtilityProcessMojoClientBrowserTest,
-                       DISABLED_ConnectionError) {
+IN_PROC_BROWSER_TEST_F(UtilityProcessMojoClientBrowserTest, ConnectionError) {
   base::RunLoop run_loop;
   done_closure_ = run_loop.QuitClosure();
 
