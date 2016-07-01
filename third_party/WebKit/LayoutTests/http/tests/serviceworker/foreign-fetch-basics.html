@@ -189,7 +189,7 @@ function fetch_from_iframe(origin, url) {
         var channel = new MessageChannel();
         frame.contentWindow.postMessage({url: url,
                                          port: channel.port1},
-                                         '*', [channel.port1]);
+                                        '*', [channel.port1]);
         channel.port2.onmessage = reply => resolve(reply.data);
       }));
 }

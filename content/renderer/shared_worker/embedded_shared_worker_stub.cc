@@ -18,6 +18,7 @@
 #include "content/child/shared_worker_devtools_agent.h"
 #include "content/child/webmessageportchannel_impl.h"
 #include "content/common/worker_messages.h"
+#include "content/public/common/origin_util.h"
 #include "content/renderer/devtools/devtools_agent.h"
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/shared_worker/embedded_shared_worker_content_settings_client_proxy.h"
@@ -72,6 +73,7 @@ class DataSourceExtraData
  public:
   DataSourceExtraData() {}
   ~DataSourceExtraData() override {}
+  bool is_secure_context = false;
 };
 
 // Called on the main thread only and blink owns it.
@@ -86,6 +88,9 @@ class WebServiceWorkerNetworkProviderImpl
         GetNetworkProviderFromDataSource(data_source);
     std::unique_ptr<RequestExtraData> extra_data(new RequestExtraData);
     extra_data->set_service_worker_provider_id(provider->provider_id());
+    extra_data->set_initiated_in_secure_context(
+        static_cast<DataSourceExtraData*>(data_source->getExtraData())
+            ->is_secure_context);
     request.setExtraData(extra_data.release());
     // Explicitly set the SkipServiceWorker flag for subresources here if the
     // renderer process hasn't received SetControllerServiceWorker message.
@@ -251,6 +256,7 @@ EmbeddedSharedWorkerStub::createServiceWorkerNetworkProvider(
   // The provider is kept around for the lifetime of the DataSource
   // and ownership is transferred to the DataSource.
   DataSourceExtraData* extra_data = new DataSourceExtraData();
+  extra_data->is_secure_context = IsOriginSecure(url_);
   data_source->setExtraData(extra_data);
   ServiceWorkerNetworkProvider::AttachToDocumentState(extra_data,
                                                       std::move(provider));

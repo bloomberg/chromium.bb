@@ -69,16 +69,16 @@ void ForeignFetchRequestHandler::InitializeHandler(
   if (!initiated_in_secure_context)
     return;
 
-  if (!context_wrapper->OriginHasForeignFetchRegistrations(
-          request->url().GetOrigin())) {
+  if (ServiceWorkerUtils::IsMainResourceType(resource_type))
     return;
-  }
 
   if (request->initiator().IsSameOriginWith(url::Origin(request->url())))
     return;
 
-  if (ServiceWorkerUtils::IsMainResourceType(resource_type))
+  if (!context_wrapper->OriginHasForeignFetchRegistrations(
+          request->url().GetOrigin())) {
     return;
+  }
 
   // Any more precise checks to see if the request should be intercepted are
   // asynchronous, so just create our handler in all cases.
