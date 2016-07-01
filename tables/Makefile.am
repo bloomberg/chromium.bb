@@ -196,6 +196,8 @@ table_files = \
 	nl-chardefs.uti \
 	nl-g0.utb \
 	nl-NL-g0.utb \
+	nl-NL-old-g0.utb \
+	nl-old-g0.utb \
 	no-no.ctb \
 	no-no.dis \
 	no-no-g0.utb \

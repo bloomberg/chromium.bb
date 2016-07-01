@@ -260,7 +260,6 @@
     "output": "⠘⠑⠲⠞⠲⠁⠲"
   },
   {
-    "xfail": "Fails because advanced handling of capitals is not yet implemented",
     "input": "Zie refertes D-NE004W, D-NB007B en D-NB007BDK.",
     "output": "⠨⠵⠊⠑ ⠗⠑⠋⠑⠗⠞⠑⠎ ⠘⠙⠤⠝⠑⠼⠚⠚⠙⠺⠂ ⠘⠙⠤⠝⠃⠼⠚⠚⠛⠨⠃ ⠑⠝ ⠘⠙⠤⠝⠃⠼⠚⠚⠛⠘⠃⠙⠅⠲"
   },
@@ -277,7 +276,6 @@
     "output": "⠘⠙⠗⠊⠑ ⠘⠺⠕⠕⠗⠙⠑⠝ ⠘⠊⠝ ⠓⠕⠕⠋⠙⠇⠑⠞⠞⠑⠗⠎"
   },
   {
-    "xfail": "Fails because special handling of more than three capitalized words is not supported by liblouis",
     "input": "MEER DAN DRIE WOORDEN in hoofdletters",
     "output": "⠘⠘⠍⠑⠑⠗ ⠙⠁⠝ ⠙⠗⠊⠑ ⠘⠺⠕⠕⠗⠙⠑⠝ ⠊⠝ ⠓⠕⠕⠋⠙⠇⠑⠞⠞⠑⠗⠎"
   },
@@ -326,7 +324,6 @@
     "output": "⠼⠋⠑⠐⠖⠄⠑⠗"
   },
   {
-    "xfail": "Fails because special handling of more than three capitalized words is not supported by liblouis",
     "input": "SLAAT DE VLAM IN DE PAN, DEK DE VUURHAARD DAN AF MET EEN BRANDWERENDE DEKEN OF EEN VOCHTIGE DOEK.",
     "output": "⠘⠘⠎⠇⠁⠁⠞ ⠙⠑ ⠧⠇⠁⠍ ⠊⠝ ⠙⠑ ⠏⠁⠝⠂ ⠙⠑⠅ ⠙⠑ ⠧⠥⠥⠗⠓⠁⠁⠗⠙ ⠙⠁⠝ ⠁⠋ ⠍⠑⠞ ⠑⠑⠝ ⠃⠗⠁⠝⠙⠺⠑⠗⠑⠝⠙⠑ ⠙⠑⠅⠑⠝ ⠕⠋ ⠑⠑⠝ ⠧⠕⠉⠓⠞⠊⠛⠑ ⠘⠙⠕⠑⠅⠲"
   },
@@ -440,7 +437,6 @@
     "output": "⠭⠸⠼⠁ ⠶ ⠼⠚"
   },
   {
-    "xfail": "Fails because handling of emphasis is broken in liblouis",
     "input":    "Landt je vader op Schiphol?",
     "typeform": "000040000000000000000000000",
     "output": "⠨⠇⠁⠝⠙⠸⠞ ⠚⠑ ⠧⠁⠙⠑⠗ ⠕⠏ ⠨⠎⠉⠓⠊⠏⠓⠕⠇⠢"
@@ -456,13 +452,11 @@
     "output": "⠨⠓⠑⠃ ⠚⠑ ⠸⠸⠨⠧⠇⠥⠉⠓⠞ ⠇⠁⠝⠛⠎ ⠙⠑ ⠸⠨⠁⠝⠁⠏⠕⠑⠗ ⠁⠇ ⠛⠑⠇⠑⠵⠑⠝⠢"
   },
   {
-    "xfail": "Fails because handling of emphasis is broken in liblouis",
     "input":    "'t Is tijd om naar huis te gaan.",
     "typeform": "44444444444444444444444444444444",
     "output": "⠸⠸⠄⠞ ⠨⠊⠎ ⠞⠊⠚⠙ ⠕⠍ ⠝⠁⠁⠗ ⠓⠥⠊⠎ ⠞⠑ ⠸⠛⠁⠁⠝⠲"
   },
   {
-    "xfail": "Fails because handling of emphasis is broken in liblouis",
     "input":    "ZUID-AFRIKA was zijn droom.",
     "typeform": "4444444444400000000000000000",
     "output": "⠸⠘⠵⠥⠊⠙⠤⠁⠋⠗⠊⠅⠁ ⠺⠁⠎ ⠵⠊⠚⠝ ⠙⠗⠕⠕⠍⠲"
@@ -473,7 +467,6 @@
     "output": "⠸⠘⠃⠞⠺⠤⠠⠞⠁⠗⠊⠑⠧⠑⠝"
   },
   {
-    "xfail": "Fails because handling of emphasis is broken in liblouis",
     "input":    "3de",
     "typeform": "044",
     "output": "⠼⠉⠸⠙⠑"
