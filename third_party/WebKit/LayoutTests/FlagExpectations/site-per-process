@@ -41,9 +41,6 @@ http/tests/security/mixedContent/active-subresource-in-http-iframe-not-blocked.h
 http/tests/security/mixedContent/insecure-iframe-in-iframe.html [ Failure ]
 http/tests/security/mixedContent/insecure-iframe-in-main-frame-allowed.html [ Failure ]
 
-# https://crbug.com/585171 - iframe restored from history should be excluded from performance entries.
-http/tests/misc/resource-timing-iframe-restored-from-history.html [ Failure Timeout ]
-
 # https://crbug.com/585194 - back/forward lists look different with --site-per-process
 http/tests/navigation/back-to-dynamic-iframe.html [ Failure Timeout ]
 http/tests/navigation/back-to-redirect-with-frame.php [ Failure ]

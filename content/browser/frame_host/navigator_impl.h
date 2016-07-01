@@ -112,6 +112,7 @@ class CONTENT_EXPORT NavigatorImpl : public Navigator {
                        const NavigationEntryImpl& entry,
                        NavigationController::ReloadType reload_type,
                        bool is_same_document_history_load,
+                       bool is_history_navigation_in_new_child,
                        bool is_pending_entry,
                        const scoped_refptr<ResourceRequestBodyImpl>& post_body);
 
@@ -128,6 +129,7 @@ class CONTENT_EXPORT NavigatorImpl : public Navigator {
                          NavigationController::ReloadType reload_type,
                          LoFiState lofi_state,
                          bool is_same_document_history_load,
+                         bool is_history_navigation_in_new_child,
                          base::TimeTicks navigation_start);
 
   void RecordNavigationMetrics(

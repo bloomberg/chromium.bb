@@ -441,7 +441,8 @@ class RenderFrameHostManagerTest : public RenderViewHostImplTestHarness {
           NavigationRequest::CreateBrowserInitiated(
               manager->frame_tree_node_, frame_entry->url(),
               frame_entry->referrer(), *frame_entry, entry, navigate_type,
-              LOFI_UNSPECIFIED, false, base::TimeTicks::Now(), controller);
+              LOFI_UNSPECIFIED, false, false, base::TimeTicks::Now(),
+              controller);
 
       // Simulates request creation that triggers the 1st internal call to
       // GetFrameHostForNavigation.
@@ -2849,7 +2850,7 @@ TEST_F(RenderFrameHostManagerTestWithBrowserSideNavigation,
       NavigationRequest::CreateBrowserInitiated(
           contents()->GetFrameTree()->root(), frame_entry->url(),
           frame_entry->referrer(), *frame_entry, entry,
-          FrameMsg_Navigate_Type::NORMAL, LOFI_UNSPECIFIED, false,
+          FrameMsg_Navigate_Type::NORMAL, LOFI_UNSPECIFIED, false, false,
           base::TimeTicks::Now(),
           static_cast<NavigationControllerImpl*>(&controller()));
   manager->DidCreateNavigationRequest(navigation_request.get());
@@ -2910,7 +2911,7 @@ TEST_F(RenderFrameHostManagerTestWithBrowserSideNavigation,
       NavigationRequest::CreateBrowserInitiated(
           contents()->GetFrameTree()->root(), frame_entry->url(),
           frame_entry->referrer(), *frame_entry, entry,
-          FrameMsg_Navigate_Type::NORMAL, LOFI_UNSPECIFIED, false,
+          FrameMsg_Navigate_Type::NORMAL, LOFI_UNSPECIFIED, false, false,
           base::TimeTicks::Now(),
           static_cast<NavigationControllerImpl*>(&controller()));
   manager->DidCreateNavigationRequest(navigation_request.get());
@@ -2968,7 +2969,7 @@ TEST_F(RenderFrameHostManagerTestWithBrowserSideNavigation,
       NavigationRequest::CreateBrowserInitiated(
           contents()->GetFrameTree()->root(), frame_entry->url(),
           frame_entry->referrer(), *frame_entry, entry,
-          FrameMsg_Navigate_Type::NORMAL, LOFI_UNSPECIFIED, false,
+          FrameMsg_Navigate_Type::NORMAL, LOFI_UNSPECIFIED, false, false,
           base::TimeTicks::Now(),
           static_cast<NavigationControllerImpl*>(&controller()));
   manager->DidCreateNavigationRequest(navigation_request.get());

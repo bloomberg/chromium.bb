@@ -217,6 +217,7 @@ struct CONTENT_EXPORT RequestNavigationParams {
                           int32_t page_id,
                           int nav_entry_id,
                           bool is_same_document_history_load,
+                          bool is_history_navigation_in_new_child,
                           bool has_committed_real_load,
                           bool intended_as_new_entry,
                           int pending_history_list_offset,
@@ -261,6 +262,11 @@ struct CONTENT_EXPORT RequestNavigationParams {
   // For history navigations, this indicates whether the load will stay within
   // the same document.  Defaults to false.
   bool is_same_document_history_load;
+
+  // Whether this is a history navigation in a newly created child frame, in
+  // which case the browser process is instructing the renderer process to load
+  // a URL from a session history item.  Defaults to false.
+  bool is_history_navigation_in_new_child;
 
   // Whether the frame being navigated has already committed a real page, which
   // affects how new navigations are classified in the renderer process.

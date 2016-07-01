@@ -5542,10 +5542,9 @@ void RenderFrameImpl::NavigateInternal(
         history_load_type = request_params.is_same_document_history_load
                                 ? blink::WebHistorySameDocumentLoad
                                 : blink::WebHistoryDifferentDocumentLoad;
-
-        // TODO(creis): Use InitialHistoryLoad rather than BackForward for a
-        // history navigation in a newly created subframe.
-        load_type = blink::WebFrameLoadType::BackForward;
+        load_type = request_params.is_history_navigation_in_new_child
+                        ? blink::WebFrameLoadType::InitialHistoryLoad
+                        : blink::WebFrameLoadType::BackForward;
         should_load_request = true;
 
         // Generate the request for the load from the HistoryItem.

@@ -80,6 +80,7 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate {
       FrameMsg_Navigate_Type::Value navigation_type,
       LoFiState lofi_state,
       bool is_same_document_history_load,
+      bool is_history_navigation_in_new_child,
       const base::TimeTicks& navigation_start,
       NavigationControllerImpl* controller);
 

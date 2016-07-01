@@ -271,6 +271,7 @@ bool NavigatorImpl::NavigateToEntry(
     const NavigationEntryImpl& entry,
     NavigationController::ReloadType reload_type,
     bool is_same_document_history_load,
+    bool is_history_navigation_in_new_child,
     bool is_pending_entry,
     const scoped_refptr<ResourceRequestBodyImpl>& post_body) {
   TRACE_EVENT0("browser,navigation", "NavigatorImpl::NavigateToEntry");
@@ -332,7 +333,8 @@ bool NavigatorImpl::NavigateToEntry(
                                                      entry.restore_type()));
     RequestNavigation(frame_tree_node, dest_url, dest_referrer, frame_entry,
                       entry, reload_type, lofi_state,
-                      is_same_document_history_load, navigation_start);
+                      is_same_document_history_load,
+                      is_history_navigation_in_new_child, navigation_start);
     if (frame_tree_node->IsMainFrame() &&
         frame_tree_node->navigation_request()) {
       // TODO(carlosk): extend these traces to support subframes and
@@ -397,6 +399,7 @@ bool NavigatorImpl::NavigateToEntry(
           entry.ConstructStartNavigationParams(),
           entry.ConstructRequestNavigationParams(
               frame_entry, is_same_document_history_load,
+              is_history_navigation_in_new_child,
               frame_tree_node->has_committed_real_load(),
               controller_->GetPendingEntryIndex() == -1,
               controller_->GetIndexOfEntry(&entry),
@@ -440,7 +443,7 @@ bool NavigatorImpl::NavigateToPendingEntry(
     bool is_same_document_history_load) {
   return NavigateToEntry(frame_tree_node, frame_entry,
                          *controller_->GetPendingEntry(), reload_type,
-                         is_same_document_history_load, true, nullptr);
+                         is_same_document_history_load, false, true, nullptr);
 }
 
 bool NavigatorImpl::NavigateNewChildFrame(
@@ -461,7 +464,7 @@ bool NavigatorImpl::NavigateNewChildFrame(
 
   return NavigateToEntry(render_frame_host->frame_tree_node(), *frame_entry,
                          *entry, NavigationControllerImpl::NO_RELOAD, false,
-                         false, nullptr);
+                         true, false, nullptr);
 }
 
 void NavigatorImpl::DidNavigate(
@@ -848,7 +851,8 @@ void NavigatorImpl::RequestTransferURL(
         referrer_to_use, method, -1);
   }
   NavigateToEntry(node, *frame_entry, *entry.get(),
-                  NavigationController::NO_RELOAD, false, false, post_body);
+                  NavigationController::NO_RELOAD, false, false, false,
+                  post_body);
 }
 
 // PlzNavigate
@@ -1005,6 +1009,7 @@ void NavigatorImpl::RequestNavigation(
     NavigationController::ReloadType reload_type,
     LoFiState lofi_state,
     bool is_same_document_history_load,
+    bool is_history_navigation_in_new_child,
     base::TimeTicks navigation_start) {
   CHECK(IsBrowserSideNavigationEnabled());
   DCHECK(frame_tree_node);
@@ -1019,7 +1024,7 @@ void NavigatorImpl::RequestNavigation(
       NavigationRequest::CreateBrowserInitiated(
           frame_tree_node, dest_url, dest_referrer, frame_entry, entry,
           navigation_type, lofi_state, is_same_document_history_load,
-          navigation_start, controller_);
+          is_history_navigation_in_new_child, navigation_start, controller_);
   NavigationRequest* navigation_request = scoped_request.get();
 
   // For Javascript navigations, do not assign the NavigationRequest to the

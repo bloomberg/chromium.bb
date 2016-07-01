@@ -8,9 +8,6 @@ http/tests/navigation/back-to-redirect-with-frame.php [ Failure ]
 # https://crbug.com/582522 - extra mixedContent checks reported
 http/tests/security/mixedContent/insecure-iframe-in-main-frame.html [ Failure ]
 
-# https://crbug.com/585171 - iframe restored from history should be excluded from performance entries.
-http/tests/misc/resource-timing-iframe-restored-from-history.html [ Failure Timeout ]
-
 # TODO(alexmos,lukasza): Triage these failures and assign more specific bugs.
 fast/history/same-document-iframes-changing-fragment.html [ Failure ]
 fast/history/same-document-iframes-changing-pushstate.html [ Failure ]

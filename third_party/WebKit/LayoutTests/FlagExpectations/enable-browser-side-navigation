@@ -68,7 +68,6 @@
   inspector-protocol/runtime/runtime-execution-contexts-events.html [ Crash Timeout ]
 
 # https://crbug.com/576272: PlzNavigate: Navigation Timing API support
-  http/tests/misc/resource-timing-iframe-restored-from-history.html [ Failure ]
   http/tests/misc/timer-vs-loading.html [ Crash ]
   http/tests/misc/webtiming-cross-origin-and-back.html [ Failure ]
   http/tests/misc/webtiming-one-redirect.php [ Failure ]
