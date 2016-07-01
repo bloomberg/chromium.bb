@@ -37,6 +37,7 @@
 #include "chrome/browser/ui/webui/invalidations_ui.h"
 #include "chrome/browser/ui/webui/local_state/local_state_ui.h"
 #include "chrome/browser/ui/webui/log_web_ui_url.h"
+#include "chrome/browser/ui/webui/net_export_ui.h"
 #include "chrome/browser/ui/webui/net_internals/net_internals_ui.h"
 #include "chrome/browser/ui/webui/omnibox/omnibox_ui.h"
 #include "chrome/browser/ui/webui/options/options_ui.h"
@@ -102,7 +103,6 @@
 #endif
 
 #if defined(OS_ANDROID)
-#include "chrome/browser/ui/webui/net_export_ui.h"
 #include "chrome/browser/ui/webui/offline_internals_ui.h"
 #include "chrome/browser/ui/webui/popular_sites_internals_ui.h"
 #include "chrome/browser/ui/webui/snippets_internals_ui.h"
@@ -351,6 +351,8 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
     return &NewWebUI<InvalidationsUI>;
   if (url.host() == chrome::kChromeUILocalStateHost)
     return &NewWebUI<LocalStateUI>;
+  if (url.host() == chrome::kChromeUINetExportHost)
+    return &NewWebUI<NetExportUI>;
   if (url.host() == chrome::kChromeUINetInternalsHost)
     return &NewWebUI<NetInternalsUI>;
   if (url.host() == chrome::kChromeUIOmniboxHost)
@@ -505,8 +507,6 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
 #endif  // !defined(GOOGLE_CHROME_BUILD) && !defined(NDEBUG)
 #endif  // defined(OS_CHROMEOS)
 #if defined(OS_ANDROID)
-  if (url.host() == chrome::kChromeUINetExportHost)
-    return &NewWebUI<NetExportUI>;
   if (url.host() == chrome::kChromeUIOfflineInternalsHost)
     return &NewWebUI<OfflineInternalsUI>;
   if (url.host() == chrome::kChromeUIPopularSitesInternalsHost)

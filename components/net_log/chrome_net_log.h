@@ -24,7 +24,7 @@ class TraceNetLogObserver;
 
 namespace net_log {
 
-class NetLogTempFile;
+class NetLogFileWriter;
 
 // ChromeNetLog is an implementation of NetLog that adds file loggers
 // as its observers.
@@ -40,7 +40,7 @@ class ChromeNetLog : public net::NetLog {
                const std::string& channel_string);
   ~ChromeNetLog() override;
 
-  NetLogTempFile* net_log_temp_file() { return net_log_temp_file_.get(); }
+  NetLogFileWriter* net_log_file_writer() { return net_log_file_writer_.get(); }
 
   // Returns a Value containing constants needed to load a log file.
   // Safe to call on any thread.  Caller takes ownership of the returned Value.
@@ -50,7 +50,7 @@ class ChromeNetLog : public net::NetLog {
 
  private:
   std::unique_ptr<net::WriteToFileNetLogObserver> write_to_file_observer_;
-  std::unique_ptr<NetLogTempFile> net_log_temp_file_;
+  std::unique_ptr<NetLogFileWriter> net_log_file_writer_;
   std::unique_ptr<net::TraceNetLogObserver> trace_net_log_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeNetLog);

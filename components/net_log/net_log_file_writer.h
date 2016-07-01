@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_NET_LOG_NET_LOG_TEMP_FILE_H_
-#define COMPONENTS_NET_LOG_NET_LOG_TEMP_FILE_H_
+#ifndef COMPONENTS_NET_LOG_NET_LOG_FILE_WRITER_H_
+#define COMPONENTS_NET_LOG_NET_LOG_FILE_WRITER_H_
 
 #include <memory>
 #include <string>
@@ -27,11 +27,10 @@ namespace net_log {
 
 class ChromeNetLog;
 
-// NetLogTempFile logs all the NetLog entries into a temporary file
-// "chrome-net-export-log.json" created in base::GetTempDir() directory.
+// NetLogFileWriter logs all the NetLog entries into a specified file.
 //
-// NetLogTempFile maintains the current logging state (state_) and log file type
-// (log_type_) of the logging into a chrome-net-export-log.json file.
+// NetLogFileWriter maintains the current logging state (state_) and log file
+// type (log_type_) of the logging into a chrome-net-export-log.json file.
 //
 // The following are the possible states
 // a) Only Start is allowed (STATE_NOT_LOGGING, LOG_TYPE_NONE).
@@ -43,7 +42,7 @@ class ChromeNetLog;
 // occur on a background thread.
 //
 // This relies on the UI thread outlasting all other threads for thread safety.
-class NetLogTempFile {
+class NetLogFileWriter {
  public:
   // This enum lists the UI button commands it could receive.
   enum Command {
@@ -53,26 +52,29 @@ class NetLogTempFile {
     DO_STOP,                      // Call StopNetLog.
   };
 
-  virtual ~NetLogTempFile();
+  virtual ~NetLogFileWriter();
 
   // Accepts the button command and executes it.
   void ProcessCommand(Command command);
 
-  // Returns true and the path to the temporary file. If there is no file to
+  // Returns true and the path to the file. If there is no file to
   // send, then it returns false. It also returns false when actively logging to
   // the file.
   bool GetFilePath(base::FilePath* path);
 
-  // Creates a Value summary of the state of the NetLogTempFile. The caller is
+  // Creates a Value summary of the state of the NetLogFileWriter. The caller is
   // responsible for deleting the returned value.
   base::DictionaryValue* GetState();
 
+  // Updates |log_path_| to the |custom_path|.
+  void SetUpNetExportLogPath(const base::FilePath& custom_path);
+
  protected:
-  // Constructs a NetLogTempFile. Only one instance is created in browser
+  // Constructs a NetLogFileWriter. Only one instance is created in browser
   // process.
-  NetLogTempFile(ChromeNetLog* chrome_net_log,
-                 const base::CommandLine::StringType& command_line_string,
-                 const std::string& channel_string);
+  NetLogFileWriter(ChromeNetLog* chrome_net_log,
+                   const base::CommandLine::StringType& command_line_string,
+                   const std::string& channel_string);
 
   // Returns path name to base::GetTempDir() directory. Returns false if
   // base::GetTempDir() fails.
@@ -80,17 +82,18 @@ class NetLogTempFile {
 
  private:
   friend class ChromeNetLog;
-  friend class NetLogTempFileTest;
+  friend class NetLogFileWriterTest;
 
   // Allow tests to access our innards for testing purposes.
-  FRIEND_TEST_ALL_PREFIXES(NetLogTempFileTest, EnsureInitFailure);
-  FRIEND_TEST_ALL_PREFIXES(NetLogTempFileTest, EnsureInitAllowStart);
-  FRIEND_TEST_ALL_PREFIXES(NetLogTempFileTest, EnsureInitAllowStartOrSend);
-  FRIEND_TEST_ALL_PREFIXES(NetLogTempFileTest, ProcessCommandDoStartAndStop);
-  FRIEND_TEST_ALL_PREFIXES(NetLogTempFileTest, DoStartClearsFile);
-  FRIEND_TEST_ALL_PREFIXES(NetLogTempFileTest, CheckAddEvent);
+  FRIEND_TEST_ALL_PREFIXES(NetLogFileWriterTest, EnsureInitFailure);
+  FRIEND_TEST_ALL_PREFIXES(NetLogFileWriterTest, EnsureInitAllowStart);
+  FRIEND_TEST_ALL_PREFIXES(NetLogFileWriterTest, EnsureInitAllowStartOrSend);
+  FRIEND_TEST_ALL_PREFIXES(NetLogFileWriterTest, ProcessCommandDoStartAndStop);
+  FRIEND_TEST_ALL_PREFIXES(NetLogFileWriterTest, DoStartClearsFile);
+  FRIEND_TEST_ALL_PREFIXES(NetLogFileWriterTest, CheckAddEvent);
+  FRIEND_TEST_ALL_PREFIXES(NetLogFileWriterTest, CheckAddEventWithCustomPath);
 
-  // This enum lists the possible state NetLogTempFile could be in. It is used
+  // This enum lists the possible state NetLogFileWriter could be in. It is used
   // to enable/disable "Start", "Stop" and "Send" (email) UI actions.
   enum State {
     STATE_UNINITIALIZED,
@@ -119,27 +122,27 @@ class NetLogTempFile {
   static net::NetLogCaptureMode GetCaptureModeForLogType(LogType log_type);
 
   // Initializes the |state_| to STATE_NOT_LOGGING and |log_type_| to
-  // LOG_TYPE_NONE (if there is no temporary file from earlier run) or
-  // LOG_TYPE_UNKNOWN (if there is a temporary file from earlier run). Returns
+  // LOG_TYPE_NONE (if there is no file from earlier run) or
+  // LOG_TYPE_UNKNOWN (if there is a file from earlier run). Returns
   // false if initialization of |log_path_| fails.
   bool EnsureInit();
 
   // Start collecting NetLog data into chrome-net-export-log.json file in
-  // base::GetTempDir() directory, using the specified capture mode. It is a
-  // no-op if we are already collecting data into a file, and |capture_mode| is
+  // a directory, using the specified capture mode. It is a no-op if we are
+  // already collecting data into a file, and |capture_mode| is ignored.
   // ignored.
   // TODO(mmenke):  That's rather weird behavior, think about improving it.
   void StartNetLog(LogType log_type);
 
-  // Stop collecting NetLog data into the temporary file. It is a no-op if we
+  // Stop collecting NetLog data into the file. It is a no-op if we
   // are not collecting data into a file.
   void StopNetLog();
 
   // Updates |log_path_| to be the base::FilePath to use for log files, which
   // will be inside the base::GetTempDir() directory. Returns false if
   // base::GetTempDir() fails, or unable to create a subdirectory for logging
-  // withinh that directory.
-  bool SetUpNetExportLogPath();
+  // within that directory.
+  bool SetUpDefaultNetExportLogPath();
 
   // Returns true if a file exists at |log_path_|.
   bool NetExportLogExists() const;
@@ -150,10 +153,10 @@ class NetLogTempFile {
   State state() const { return state_; }
   LogType log_type() const { return log_type_; }
 
-  State state_;       // Current state of NetLogTempFile.
+  State state_;       // Current state of NetLogFileWriter.
   LogType log_type_;  // Type of current log file on disk.
 
-  base::FilePath log_path_;  // base::FilePath to the temporary file.
+  base::FilePath log_path_;  // base::FilePath to the NetLog file.
 
   // |write_to_file_observer_| watches the NetLog event stream, and
   // sends all entries to the file created in StartNetLog().
@@ -166,9 +169,9 @@ class NetLogTempFile {
   const base::CommandLine::StringType command_line_string_;
   const std::string channel_string_;
 
-  DISALLOW_COPY_AND_ASSIGN(NetLogTempFile);
+  DISALLOW_COPY_AND_ASSIGN(NetLogFileWriter);
 };
 
 }  // namespace net_log
 
-#endif  // COMPONENTS_NET_LOG_NET_LOG_TEMP_FILE_H_
+#endif  // COMPONENTS_NET_LOG_NET_LOG_FILE_WRITER_H_

@@ -1111,7 +1111,7 @@
         '<@(variations_unittest_sources)',
         '<@(web_resource_unittest_sources)',
         '<@(webdata_unittest_sources)',
-        'net_log/net_log_temp_file_unittest.cc',
+        'net_log/net_log_file_writer_unittest.cc',
       ],
       'include_dirs': [
         '..',

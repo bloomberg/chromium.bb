@@ -70,6 +70,13 @@ var NetExportView = (function() {
      * the file where NetLog data is collected.
      */
     onExportNetLogInfoChanged: function(exportNetLogInfo) {
+      if (!exportNetLogInfo.useMobileUI) {
+        document.getElementById('export-view-send-data').style.display =
+          "none";
+        document.getElementById('export-view-deletes-log-text').style.display =
+          "none";
+      }
+
       if (exportNetLogInfo.file) {
         var message = '';
         if (exportNetLogInfo.state == 'LOGGING')

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/net_log/net_log_temp_file.h"
+#include "components/net_log/net_log_file_writer.h"
 
 #include <utility>
 
@@ -16,8 +16,10 @@
 
 namespace net_log {
 
-// Path of logs relative to base::GetTempDir(). Must be kept in sync
-// with chrome/android/java/res/xml/file_paths.xml
+// Path of logs if relative to default temporary directory of
+// base::GetTempDir(). Must be kept in sync with
+// chrome/android/java/res/xml/file_paths.xml. Only used if
+// not saving log file to a custom path.
 base::FilePath::CharType kLogRelativePath[] =
     FILE_PATH_LITERAL("net-export/chrome-net-export-log.json");
 
@@ -26,12 +28,12 @@ base::FilePath::CharType kLogRelativePath[] =
 base::FilePath::CharType kOldLogRelativePath[] =
     FILE_PATH_LITERAL("chrome-net-export-log.json");
 
-NetLogTempFile::~NetLogTempFile() {
+NetLogFileWriter::~NetLogFileWriter() {
   if (write_to_file_observer_)
     write_to_file_observer_->StopObserving(nullptr);
 }
 
-void NetLogTempFile::ProcessCommand(Command command) {
+void NetLogFileWriter::ProcessCommand(Command command) {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (!EnsureInit())
     return;
@@ -55,7 +57,7 @@ void NetLogTempFile::ProcessCommand(Command command) {
   }
 }
 
-bool NetLogTempFile::GetFilePath(base::FilePath* path) {
+bool NetLogFileWriter::GetFilePath(base::FilePath* path) {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (log_type_ == LOG_TYPE_NONE || state_ == STATE_LOGGING)
     return false;
@@ -74,7 +76,7 @@ bool NetLogTempFile::GetFilePath(base::FilePath* path) {
   return true;
 }
 
-base::DictionaryValue* NetLogTempFile::GetState() {
+base::DictionaryValue* NetLogFileWriter::GetState() {
   DCHECK(thread_checker_.CalledOnValidThread());
   base::DictionaryValue* dict = new base::DictionaryValue;
 
@@ -117,7 +119,7 @@ base::DictionaryValue* NetLogTempFile::GetState() {
   return dict;
 }
 
-NetLogTempFile::NetLogTempFile(
+NetLogFileWriter::NetLogFileWriter(
     ChromeNetLog* chrome_net_log,
     const base::CommandLine::StringType& command_line_string,
     const std::string& channel_string)
@@ -126,16 +128,17 @@ NetLogTempFile::NetLogTempFile(
       chrome_net_log_(chrome_net_log),
       command_line_string_(command_line_string),
       channel_string_(channel_string) {
-  // NetLogTempFile can be created on one thread and used on another.
+  // NetLogFileWriter can be created on one thread and used on another.
   thread_checker_.DetachFromThread();
 }
 
-bool NetLogTempFile::GetNetExportLogBaseDirectory(base::FilePath* path) const {
+bool NetLogFileWriter::GetNetExportLogBaseDirectory(
+    base::FilePath* path) const {
   DCHECK(thread_checker_.CalledOnValidThread());
   return base::GetTempDir(path);
 }
 
-net::NetLogCaptureMode NetLogTempFile::GetCaptureModeForLogType(
+net::NetLogCaptureMode NetLogFileWriter::GetCaptureModeForLogType(
     LogType log_type) {
   switch (log_type) {
     case LOG_TYPE_LOG_BYTES:
@@ -151,12 +154,12 @@ net::NetLogCaptureMode NetLogTempFile::GetCaptureModeForLogType(
   return net::NetLogCaptureMode::Default();
 }
 
-bool NetLogTempFile::EnsureInit() {
+bool NetLogFileWriter::EnsureInit() {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (state_ != STATE_UNINITIALIZED)
     return true;
 
-  if (!SetUpNetExportLogPath())
+  if (log_path_.empty() && !SetUpDefaultNetExportLogPath())
     return false;
 
   state_ = STATE_NOT_LOGGING;
@@ -168,7 +171,7 @@ bool NetLogTempFile::EnsureInit() {
   return true;
 }
 
-void NetLogTempFile::StartNetLog(LogType log_type) {
+void NetLogFileWriter::StartNetLog(LogType log_type) {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (state_ == STATE_LOGGING)
     return;
@@ -194,7 +197,7 @@ void NetLogTempFile::StartNetLog(LogType log_type) {
                                           constants.get(), nullptr);
 }
 
-void NetLogTempFile::StopNetLog() {
+void NetLogFileWriter::StopNetLog() {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (state_ != STATE_LOGGING)
     return;
@@ -204,7 +207,18 @@ void NetLogTempFile::StopNetLog() {
   state_ = STATE_NOT_LOGGING;
 }
 
-bool NetLogTempFile::SetUpNetExportLogPath() {
+void NetLogFileWriter::SetUpNetExportLogPath(
+    const base::FilePath& custom_path) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  // The directory should always exist because the custom path
+  // is taken from a file selector dialog window.
+  DCHECK(base::PathExists(custom_path.DirName()));
+
+  log_path_ = custom_path;
+}
+
+bool NetLogFileWriter::SetUpDefaultNetExportLogPath() {
   DCHECK(thread_checker_.CalledOnValidThread());
   base::FilePath temp_dir;
   if (!GetNetExportLogBaseDirectory(&temp_dir))
@@ -223,7 +237,7 @@ bool NetLogTempFile::SetUpNetExportLogPath() {
   return true;
 }
 
-bool NetLogTempFile::NetExportLogExists() const {
+bool NetLogFileWriter::NetExportLogExists() const {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!log_path_.empty());
   return base::PathExists(log_path_);

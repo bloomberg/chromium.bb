@@ -8,8 +8,8 @@ source_set("net_log") {
     "chrome_net_log.h",
     "net_export_ui_constants.cc",
     "net_export_ui_constants.h",
-    "net_log_temp_file.cc",
-    "net_log_temp_file.h",
+    "net_log_file_writer.cc",
+    "net_log_file_writer.h",
   ]
 
   deps = [
@@ -23,7 +23,7 @@ source_set("net_log") {
 source_set("unit_tests") {
   testonly = true
   sources = [
-    "net_log_temp_file_unittest.cc",
+    "net_log_file_writer_unittest.cc",
   ]
   deps = [
     ":net_log",
