@@ -1836,7 +1836,6 @@ bool HTMLInputElement::setupDateTimeChooserParameters(DateTimeChooserParameters&
         parameters.stepBase = 0;
     }
 
-    parameters.anchorRectInRootFrame = document().view()->contentsToRootFrame(pixelSnappedBoundingBox());
     parameters.anchorRectInScreen = document().view()->contentsToScreen(pixelSnappedBoundingBox());
     parameters.currentValue = value();
     parameters.doubleValue = m_inputType->valueAsDouble();

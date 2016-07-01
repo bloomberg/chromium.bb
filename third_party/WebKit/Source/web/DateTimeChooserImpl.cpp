@@ -161,7 +161,7 @@ void DateTimeChooserImpl::writeDocument(SharedBuffer* data)
         addProperty("suggestionValues", suggestionValues, data);
         addProperty("localizedSuggestionValues", localizedSuggestionValues, data);
         addProperty("suggestionLabels", suggestionLabels, data);
-        addProperty("inputWidth", static_cast<unsigned>(m_parameters.anchorRectInRootFrame.width()), data);
+        addProperty("inputWidth", static_cast<unsigned>(m_parameters.anchorRectInScreen.width()), data);
         addProperty("showOtherDateEntry", LayoutTheme::theme().supportsCalendarPicker(m_parameters.type), data);
         addProperty("otherDateLabel", otherDateLabelString, data);
         addProperty("suggestionHighlightColor", LayoutTheme::theme().activeListBoxSelectionBackgroundColor().serialized(), data);

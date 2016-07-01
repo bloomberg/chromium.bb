@@ -51,7 +51,6 @@ struct DateTimeSuggestion {
 struct DateTimeChooserParameters {
     DISALLOW_NEW();
     AtomicString type;
-    IntRect anchorRectInRootFrame;
     IntRect anchorRectInScreen;
     // Locale name for which the chooser should be localized. This
     // might be an invalid name because it comes from HTML lang

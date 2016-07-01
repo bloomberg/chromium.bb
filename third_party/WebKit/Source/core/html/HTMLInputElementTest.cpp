@@ -5,9 +5,13 @@
 #include "core/html/HTMLInputElement.h"
 
 #include "core/dom/Document.h"
+#include "core/frame/FrameHost.h"
+#include "core/frame/FrameView.h"
+#include "core/frame/VisualViewport.h"
 #include "core/html/HTMLBodyElement.h"
 #include "core/html/HTMLFormElement.h"
 #include "core/html/HTMLHtmlElement.h"
+#include "core/html/forms/DateTimeChooser.h"
 #include "core/testing/DummyPageHolder.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include <memory>
@@ -82,6 +86,22 @@ TEST(HTMLInputElementTest, ImageTypeCrash)
     // |value| doesn't crash.
     input->ensurePrimaryContent();
     input->setAttribute(HTMLNames::valueAttr, "aaa");
+}
+
+TEST(HTMLInputElementTest, DateTimeChooserSizeParamRespectsScale)
+{
+    std::unique_ptr<DummyPageHolder> pageHolder = DummyPageHolder::create();
+    Document* document = &(pageHolder->document());
+    document->view()->frame().host()->visualViewport().setScale(2.f);
+    document->body()->setInnerHTML("<input type='date' style='width:200px;height:50px' />", ASSERT_NO_EXCEPTION);
+    document->view()->updateAllLifecyclePhases();
+    HTMLInputElement* input = toHTMLInputElement(document->body()->firstChild());
+
+    DateTimeChooserParameters params;
+    bool success = input->setupDateTimeChooserParameters(params);
+    EXPECT_TRUE(success);
+    EXPECT_EQ("date", params.type);
+    EXPECT_EQ(IntRect(16, 16, 400, 100), params.anchorRectInScreen);
 }
 
 } // namespace blink
