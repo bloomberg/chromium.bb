@@ -289,6 +289,7 @@ TEST(PictureLayerTest, InvalidateRasterAfterUpdate) {
   host_impl.CreatePendingTree();
   host_impl.pending_tree()->SetRootLayerForTesting(
       FakePictureLayerImpl::Create(host_impl.pending_tree(), 1));
+  host_impl.pending_tree()->BuildLayerListForTesting();
   FakePictureLayerImpl* layer_impl = static_cast<FakePictureLayerImpl*>(
       host_impl.pending_tree()->root_layer_for_testing());
   layer->PushPropertiesTo(layer_impl);
@@ -331,6 +332,7 @@ TEST(PictureLayerTest, InvalidateRasterWithoutUpdate) {
   host_impl.CreatePendingTree();
   host_impl.pending_tree()->SetRootLayerForTesting(
       FakePictureLayerImpl::Create(host_impl.pending_tree(), 1));
+  host_impl.pending_tree()->BuildLayerListForTesting();
   FakePictureLayerImpl* layer_impl = static_cast<FakePictureLayerImpl*>(
       host_impl.pending_tree()->root_layer_for_testing());
   layer->PushPropertiesTo(layer_impl);

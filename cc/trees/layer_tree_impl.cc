@@ -100,6 +100,17 @@ void LayerTreeImpl::Shutdown() {
 }
 
 void LayerTreeImpl::ReleaseResources() {
+#if DCHECK_IS_ON()
+  // These DCHECKs catch tests that add layers to the tree but fail to build the
+  // layer list afterward.
+  LayerListIterator<LayerImpl> it(root_layer_for_testing_);
+  size_t i = 0;
+  for (; it != LayerListIterator<LayerImpl>(nullptr); ++it, ++i) {
+    DCHECK_LT(i, layer_list_.size());
+    DCHECK_EQ(layer_list_[i], *it);
+  }
+#endif
+
   if (!LayerListIsEmpty()) {
     LayerTreeHostCommon::CallFunctionForEveryLayer(
         this, [](LayerImpl* layer) { layer->ReleaseResources(); });

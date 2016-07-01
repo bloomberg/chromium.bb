@@ -62,7 +62,9 @@ FakeLayerTreeHostImpl::FakeLayerTreeHostImpl(
       CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, time_ticks));
 }
 
-FakeLayerTreeHostImpl::~FakeLayerTreeHostImpl() {}
+FakeLayerTreeHostImpl::~FakeLayerTreeHostImpl() {
+  ReleaseOutputSurface();
+}
 
 void FakeLayerTreeHostImpl::CreatePendingTree() {
   LayerTreeHostImpl::CreatePendingTree();

@@ -120,7 +120,10 @@ class LayerTreeHostImplTest : public testing::Test,
     CreateHostImpl(DefaultSettings(), CreateOutputSurface());
   }
 
-  void TearDown() override {}
+  void TearDown() override {
+    if (host_impl_)
+      host_impl_->ReleaseOutputSurface();
+  }
 
   void UpdateRendererCapabilitiesOnImplThread() override {}
   void DidLoseOutputSurfaceOnImplThread() override {}
@@ -192,6 +195,8 @@ class LayerTreeHostImplTest : public testing::Test,
       const LayerTreeSettings& settings,
       std::unique_ptr<OutputSurface> output_surface,
       TaskRunnerProvider* task_runner_provider) {
+    if (host_impl_)
+      host_impl_->ReleaseOutputSurface();
     host_impl_ = LayerTreeHostImpl::Create(
         settings, this, task_runner_provider, &stats_instrumentation_,
         &shared_bitmap_manager_, &gpu_memory_buffer_manager_,
@@ -1350,7 +1355,7 @@ TEST_F(LayerTreeHostImplTest, AnimationSchedulingActiveTree) {
   child->SetBounds(gfx::Size(10, 10));
   child->draw_properties().visible_layer_rect = gfx::Rect(10, 10);
   child->SetDrawsContent(true);
-
+  host_impl_->active_tree()->BuildPropertyTreesForTesting();
   host_impl_->active_tree()->SetElementIdsForTesting();
 
   // Add a translate from 6,7 to 8,9.
@@ -1443,6 +1448,7 @@ TEST_F(LayerTreeHostImplTest, AnimationSchedulingCommitToActiveTree) {
   EXPECT_FALSE(did_request_commit_);
 
   // Delete the LayerTreeHostImpl before the TaskRunnerProvider goes away.
+  host_impl_->ReleaseOutputSurface();
   host_impl_ = nullptr;
 }
 
@@ -1461,6 +1467,7 @@ TEST_F(LayerTreeHostImplTest, AnimationSchedulingOnLayerDestruction) {
   child->draw_properties().visible_layer_rect = gfx::Rect(10, 10);
   child->SetDrawsContent(true);
 
+  host_impl_->active_tree()->BuildPropertyTreesForTesting();
   host_impl_->active_tree()->SetElementIdsForTesting();
 
   // Add a translate animation.
@@ -2710,6 +2717,9 @@ class LayerTreeHostImplOverridePhysicalTime : public LayerTreeHostImpl {
 class LayerTreeHostImplTestScrollbarAnimation : public LayerTreeHostImplTest {
  protected:
   void SetupLayers(LayerTreeSettings settings) {
+    host_impl_->ReleaseOutputSurface();
+    host_impl_ = nullptr;
+
     gfx::Size content_size(100, 100);
 
     LayerTreeHostImplOverridePhysicalTime* host_impl_override_time =
@@ -5885,7 +5895,8 @@ TEST_F(LayerTreeHostImplTest, RootLayerScrollOffsetDelegation) {
   EXPECT_EQ(gfx::SizeF(new_size), scroll_watcher.scrollable_size());
 
   // Tear down the LayerTreeHostImpl before the InputHandlerClient.
-  host_impl_.reset();
+  host_impl_->ReleaseOutputSurface();
+  host_impl_ = nullptr;
 }
 
 void CheckLayerScrollDelta(LayerImpl* layer, gfx::Vector2dF scroll_delta) {
@@ -7059,6 +7070,8 @@ TEST_F(LayerTreeHostImplTest, PartialSwapReceivesDamageRect) {
   expected_swap_rect = gfx::Rect(0, 0, 10, 10);
   EXPECT_EQ(expected_swap_rect.ToString(),
             fake_output_surface->last_swap_rect().ToString());
+
+  layer_tree_host_impl->ReleaseOutputSurface();
 }
 
 TEST_F(LayerTreeHostImplTest, RootLayerDoesntCreateExtraSurface) {
@@ -7381,6 +7394,7 @@ TEST_F(LayerTreeHostImplTest, ContributingLayerEmptyScissorPartialSwap) {
     my_host_impl->DrawLayers(&frame);
     my_host_impl->DidDrawAllLayers(frame);
   }
+  my_host_impl->ReleaseOutputSurface();
 }
 
 TEST_F(LayerTreeHostImplTest, ContributingLayerEmptyScissorNoPartialSwap) {
@@ -7411,6 +7425,7 @@ TEST_F(LayerTreeHostImplTest, ContributingLayerEmptyScissorNoPartialSwap) {
     my_host_impl->DrawLayers(&frame);
     my_host_impl->DidDrawAllLayers(frame);
   }
+  my_host_impl->ReleaseOutputSurface();
 }
 
 TEST_F(LayerTreeHostImplTest, LayersFreeTextures) {
@@ -7787,6 +7802,9 @@ TEST_F(LayerTreeHostImplTest,
 // Checks that we have a non-0 default allocation if we pass a context that
 // doesn't support memory management extensions.
 TEST_F(LayerTreeHostImplTest, DefaultMemoryAllocation) {
+  host_impl_->ReleaseOutputSurface();
+  host_impl_ = nullptr;
+
   LayerTreeSettings settings = DefaultSettings();
   host_impl_ = LayerTreeHostImpl::Create(
       settings, this, &task_runner_provider_, &stats_instrumentation_,
@@ -7970,6 +7988,7 @@ TEST_F(LayerTreeHostImplTest, ShutdownReleasesContext) {
   EXPECT_FALSE(context_provider->HasOneRef());
   EXPECT_EQ(1u, context_provider->TestContext3d()->NumTextures());
 
+  host_impl_->ReleaseOutputSurface();
   host_impl_ = nullptr;
 
   // The CopyOutputResult's callback was cancelled, the CopyOutputResult
@@ -10933,6 +10952,9 @@ TEST_F(LayerTreeHostImplTest, JitterTest) {
 // with a software OutputSurface, LayerTreeHostImpl correctly re-computes GPU
 // rasterization status.
 TEST_F(LayerTreeHostImplTest, RecomputeGpuRasterOnOutputSurfaceChange) {
+  host_impl_->ReleaseOutputSurface();
+  host_impl_ = nullptr;
+
   LayerTreeSettings settings = DefaultSettings();
   settings.gpu_rasterization_forced = true;
 

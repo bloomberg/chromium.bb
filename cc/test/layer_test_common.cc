@@ -144,6 +144,7 @@ LayerTestCommon::LayerImplTest::LayerImplTest(const LayerTreeSettings& settings)
 LayerTestCommon::LayerImplTest::~LayerImplTest() {
   host_->animation_host()->RemoveAnimationTimeline(timeline_);
   timeline_ = nullptr;
+  host_->host_impl()->ReleaseOutputSurface();
 }
 
 void LayerTestCommon::LayerImplTest::CalcDrawProps(

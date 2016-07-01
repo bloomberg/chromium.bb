@@ -274,6 +274,9 @@ LayerTreeHostImpl::~LayerTreeHostImpl() {
   TRACE_EVENT_OBJECT_DELETED_WITH_ID(
       TRACE_DISABLED_BY_DEFAULT("cc.debug"), "cc::LayerTreeHostImpl", id_);
 
+  // It is released before shutdown.
+  DCHECK(!output_surface_);
+
   if (input_handler_client_) {
     input_handler_client_->WillShutdown();
     input_handler_client_ = NULL;
@@ -299,11 +302,6 @@ LayerTreeHostImpl::~LayerTreeHostImpl() {
   CleanUpTileManagerAndUIResources();
   renderer_ = nullptr;
   resource_provider_ = nullptr;
-
-  if (output_surface_) {
-    output_surface_->DetachFromClient();
-    output_surface_ = nullptr;
-  }
 }
 
 void LayerTreeHostImpl::BeginMainFrameAborted(CommitEarlyOutReason reason) {
