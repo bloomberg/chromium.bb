@@ -135,3 +135,7 @@ class Kraken(perf_benchmark.PerfBenchmark):
         'http://krakenbenchmark.mozilla.org/kraken-1.1/driver.html',
         ps, ps.base_dir))
     return ps
+
+  @classmethod
+  def ShouldDisable(cls, possible_browser):
+    return cls.IsSvelte(possible_browser)  # http://crbug.com/624411
