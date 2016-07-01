@@ -1244,6 +1244,7 @@ def main(argv):
                 return_value=mock_statuses)
 
     _SetupConnections(options, build_config)
+    stack.Add(ts_mon_config.TsMonFlusher)
     retry_stats.SetupStats()
 
     timeout_display_message = None

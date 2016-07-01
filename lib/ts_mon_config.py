@@ -12,10 +12,14 @@ from chromite.lib import cros_logging as logging
 
 try:
   from infra_libs.ts_mon import config
+  from infra_libs.ts_mon.common import interface
   import googleapiclient.discovery
 except (ImportError, RuntimeError) as e:
   config = None
   logging.warning('Failed to import ts_mon, monitoring is disabled: %s', e)
+
+
+_WasSetup = False
 
 
 def SetupTsMonGlobalState(service_name):
@@ -37,6 +41,18 @@ def SetupTsMonGlobalState(service_name):
         '--ts-mon-task-service-name', service_name,
         '--ts-mon-task-job-name', service_name,
     ]))
+    _WasSetup = True
   except Exception as e:
     logging.warning('Failed to configure ts_mon, monitoring is disabled: %s', e,
                     exc_info=True)
+
+
+class TsMonFlusher(object):
+  """Context manager to flush ts_mon metrics prior to exit."""
+
+  def __enter__(self):
+    pass
+
+  def __exit__(self, _type, _value, _traceback):
+    if interface and _WasSetup:
+      interface.flush()
