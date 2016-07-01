@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/system/chromeos/bluetooth/tray_bluetooth.h"
+#include "ash/common/system/chromeos/bluetooth/tray_bluetooth.h"
 
 #include "ash/common/session/session_state_delegate.h"
 #include "ash/common/system/tray/fixed_sized_scroll_view.h"

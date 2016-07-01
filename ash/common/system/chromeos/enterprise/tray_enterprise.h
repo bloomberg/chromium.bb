@@ -2,17 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_SYSTEM_CHROMEOS_ENTERPRISE_TRAY_ENTERPRISE_H
-#define ASH_SYSTEM_CHROMEOS_ENTERPRISE_TRAY_ENTERPRISE_H
+#ifndef ASH_COMMON_SYSTEM_CHROMEOS_ENTERPRISE_TRAY_ENTERPRISE_H_
+#define ASH_COMMON_SYSTEM_CHROMEOS_ENTERPRISE_TRAY_ENTERPRISE_H_
 
 #include "ash/common/system/chromeos/enterprise/enterprise_domain_observer.h"
 #include "ash/common/system/tray/system_tray_item.h"
 #include "ash/common/system/tray/view_click_listener.h"
 #include "base/macros.h"
-
-namespace views {
-class View;
-}
 
 namespace ash {
 class LabelTrayView;
@@ -47,4 +43,4 @@ class TrayEnterprise : public SystemTrayItem,
 
 }  // namespace ash
 
-#endif  // ASH_SYSTEM_CHROMEOS_ENTERPRISE_TRAY_ENTERPRISE_H
+#endif  // ASH_COMMON_SYSTEM_CHROMEOS_ENTERPRISE_TRAY_ENTERPRISE_H_

@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_SYSTEM_CHROMEOS_SUPERVISED_TRAY_SUPERVISED_USER_H
-#define ASH_SYSTEM_CHROMEOS_SUPERVISED_TRAY_SUPERVISED_USER_H
+#ifndef ASH_COMMON_SYSTEM_CHROMEOS_SUPERVISED_TRAY_SUPERVISED_USER_H_
+#define ASH_COMMON_SYSTEM_CHROMEOS_SUPERVISED_TRAY_SUPERVISED_USER_H_
 
 #include "ash/ash_export.h"
+#include "ash/common/system/chromeos/supervised/custodian_info_tray_observer.h"
 #include "ash/common/system/tray/system_tray_item.h"
 #include "ash/common/system/tray/view_click_listener.h"
-#include "ash/system/chromeos/supervised/custodian_info_tray_observer.h"
 #include "base/macros.h"
 #include "base/strings/string16.h"
 
@@ -62,4 +62,4 @@ class ASH_EXPORT TraySupervisedUser : public SystemTrayItem,
 
 }  // namespace ash
 
-#endif  // ASH_SYSTEM_CHROMEOS_SUPERVISED_TRAY_SUPERVISED_USER_H
+#endif  // ASH_COMMON_SYSTEM_CHROMEOS_SUPERVISED_TRAY_SUPERVISED_USER_H_

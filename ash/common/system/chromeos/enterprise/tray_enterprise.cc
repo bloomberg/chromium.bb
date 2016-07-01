@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/system/chromeos/enterprise/tray_enterprise.h"
+#include "ash/common/system/chromeos/enterprise/tray_enterprise.h"
 
 #include "ash/common/login_status.h"
 #include "ash/common/system/tray/label_tray_view.h"

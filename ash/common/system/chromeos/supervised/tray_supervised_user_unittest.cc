@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/system/chromeos/supervised/tray_supervised_user.h"
+#include "ash/common/system/chromeos/supervised/tray_supervised_user.h"
 
 #include "ash/common/login_status.h"
 #include "ash/test/ash_test_base.h"

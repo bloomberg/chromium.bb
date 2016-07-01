@@ -45,6 +45,8 @@
 
 #if defined(OS_CHROMEOS)
 #include "ash/common/system/chromeos/audio/tray_audio_chromeos.h"
+#include "ash/common/system/chromeos/bluetooth/tray_bluetooth.h"
+#include "ash/common/system/chromeos/enterprise/tray_enterprise.h"
 #include "ash/common/system/chromeos/network/tray_network.h"
 #include "ash/common/system/chromeos/network/tray_sms.h"
 #include "ash/common/system/chromeos/network/tray_vpn.h"
@@ -54,15 +56,13 @@
 #include "ash/common/system/chromeos/screen_security/screen_share_tray_item.h"
 #include "ash/common/system/chromeos/session/tray_session_length_limit.h"
 #include "ash/common/system/chromeos/settings/tray_settings.h"
+#include "ash/common/system/chromeos/supervised/tray_supervised_user.h"
+#include "ash/common/system/chromeos/tray_caps_lock.h"
 #include "ash/common/system/chromeos/tray_tracing.h"
 #include "ash/common/system/ime/tray_ime_chromeos.h"
-#include "ash/system/chromeos/bluetooth/tray_bluetooth.h"
 #include "ash/system/chromeos/brightness/tray_brightness.h"
-#include "ash/system/chromeos/enterprise/tray_enterprise.h"
 #include "ash/system/chromeos/media_security/multi_profile_media_tray_item.h"
 #include "ash/system/chromeos/rotation/tray_rotation_lock.h"
-#include "ash/system/chromeos/supervised/tray_supervised_user.h"
-#include "ash/system/chromeos/tray_caps_lock.h"
 #include "ash/system/chromeos/tray_display.h"
 #include "ui/message_center/message_center.h"
 #endif

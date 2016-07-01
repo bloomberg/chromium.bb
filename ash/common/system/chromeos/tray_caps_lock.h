@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_SYSTEM_CHROMEOS_TRAY_CAPS_LOCK_H_
-#define ASH_SYSTEM_CHROMEOS_TRAY_CAPS_LOCK_H_
+#ifndef ASH_COMMON_SYSTEM_CHROMEOS_TRAY_CAPS_LOCK_H_
+#define ASH_COMMON_SYSTEM_CHROMEOS_TRAY_CAPS_LOCK_H_
 
 #include "ash/common/system/tray/tray_image_item.h"
 #include "base/macros.h"
@@ -46,4 +46,4 @@ class TrayCapsLock : public TrayImageItem,
 
 }  // namespace ash
 
-#endif  // ASH_SYSTEM_CHROMEOS_TRAY_CAPS_LOCK_H_
+#endif  // ASH_COMMON_SYSTEM_CHROMEOS_TRAY_CAPS_LOCK_H_
