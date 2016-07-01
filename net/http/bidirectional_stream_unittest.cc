@@ -614,11 +614,22 @@ TEST_F(BidirectionalStreamTest, TestNetLogContainEntries) {
   ExpectLogContainsSomewhere(entries, index,
                              NetLog::TYPE_BIDIRECTIONAL_STREAM_RECV_TRAILERS,
                              NetLog::PHASE_NONE);
+  index = ExpectLogContainsSomewhere(
+      entries, index, NetLog::TYPE_BIDIRECTIONAL_STREAM_SEND_DATA,
+      NetLog::PHASE_NONE);
+  index = ExpectLogContainsSomewhere(
+      entries, index, NetLog::TYPE_BIDIRECTIONAL_STREAM_READ_DATA,
+      NetLog::PHASE_NONE);
+  TestNetLogEntry entry = entries[index];
+  int read_result = 0;
+  EXPECT_TRUE(entry.params->GetInteger("rv", &read_result));
+  EXPECT_EQ(ERR_IO_PENDING, read_result);
+
   // Sent bytes. Sending data is always asynchronous.
   index = ExpectLogContainsSomewhere(
       entries, index, NetLog::TYPE_BIDIRECTIONAL_STREAM_BYTES_SENT,
       NetLog::PHASE_NONE);
-  TestNetLogEntry entry = entries[index];
+  entry = entries[index];
   EXPECT_EQ(NetLog::SOURCE_BIDIRECTIONAL_STREAM, entry.source.type);
   // Received bytes for asynchronous read.
   index = ExpectLogContainsSomewhere(
@@ -808,9 +819,17 @@ TEST_F(BidirectionalStreamTest, TestCoalesceSmallDataBuffers) {
   TestNetLogEntry::List entries;
   net_log_.GetEntries(&entries);
   size_t index = ExpectLogContainsSomewhere(
-      entries, 0, NetLog::TYPE_BIDIRECTIONAL_STREAM_BYTES_SENT_COALESCED,
-      NetLog::PHASE_BEGIN);
+      entries, 0, NetLog::TYPE_BIDIRECTIONAL_STREAM_SENDV_DATA,
+      NetLog::PHASE_NONE);
   TestNetLogEntry entry = entries[index];
+  int num_buffers = 0;
+  EXPECT_TRUE(entry.params->GetInteger("num_buffers", &num_buffers));
+  EXPECT_EQ(2, num_buffers);
+
+  index = ExpectLogContainsSomewhereAfter(
+      entries, index, NetLog::TYPE_BIDIRECTIONAL_STREAM_BYTES_SENT_COALESCED,
+      NetLog::PHASE_BEGIN);
+  entry = entries[index];
   int num_buffers_coalesced = 0;
   EXPECT_TRUE(entry.params->GetInteger("num_buffers_coalesced",
                                        &num_buffers_coalesced));

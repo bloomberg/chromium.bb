@@ -151,6 +151,10 @@ int BidirectionalStream::ReadData(IOBuffer* buf, int buf_len) {
     read_buffer_ = buf;
     // Bytes will be logged in OnDataRead().
   }
+  if (net_log_.IsCapturing()) {
+    net_log_.AddEvent(NetLog::TYPE_BIDIRECTIONAL_STREAM_READ_DATA,
+                      NetLog::IntCallback("rv", rv));
+  }
   return rv;
 }
 
@@ -161,6 +165,9 @@ void BidirectionalStream::SendData(const scoped_refptr<IOBuffer>& data,
   DCHECK(write_buffer_list_.empty());
   DCHECK(write_buffer_len_list_.empty());
 
+  if (net_log_.IsCapturing()) {
+    net_log_.AddEvent(NetLog::TYPE_BIDIRECTIONAL_STREAM_SEND_DATA);
+  }
   stream_impl_->SendData(data, length, end_stream);
   write_buffer_list_.push_back(data);
   write_buffer_len_list_.push_back(length);
@@ -175,6 +182,10 @@ void BidirectionalStream::SendvData(
   DCHECK(write_buffer_list_.empty());
   DCHECK(write_buffer_len_list_.empty());
 
+  if (net_log_.IsCapturing()) {
+    net_log_.AddEvent(NetLog::TYPE_BIDIRECTIONAL_STREAM_SENDV_DATA,
+                      NetLog::IntCallback("num_buffers", buffers.size()));
+  }
   stream_impl_->SendvData(buffers, lengths, end_stream);
   for (size_t i = 0; i < buffers.size(); ++i) {
     write_buffer_list_.push_back(buffers[i]);
