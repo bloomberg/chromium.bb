@@ -23,6 +23,7 @@
 
 namespace ui {
 class CALayerTreeCoordinator;
+struct CARendererLayerParams;
 }
 
 namespace gl {
@@ -55,17 +56,7 @@ class ImageTransportSurfaceOverlayMac : public gl::GLSurface,
                             gl::GLImage* image,
                             const gfx::Rect& bounds_rect,
                             const gfx::RectF& crop_rect) override;
-  bool ScheduleCALayer(gl::GLImage* contents_image,
-                       const gfx::RectF& contents_rect,
-                       float opacity,
-                       unsigned background_color,
-                       unsigned edge_aa_mask,
-                       const gfx::RectF& rect,
-                       bool is_clipped,
-                       const gfx::RectF& clip_rect,
-                       const gfx::Transform& transform,
-                       int sorting_context_id,
-                       unsigned filter) override;
+  bool ScheduleCALayer(const ui::CARendererLayerParams& params) override;
   void ScheduleCALayerInUseQuery(
       std::vector<CALayerInUseQuery> queries) override;
   bool IsSurfaceless() const override;

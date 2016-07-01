@@ -22,7 +22,6 @@ typedef void* GLeglImageOES;
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/mac/scoped_cftyperef.h"
 #include "base/trace_event/trace_event.h"
 #include "gpu/ipc/common/gpu_messages.h"
 #include "gpu/ipc/service/gpu_channel_manager.h"
@@ -34,6 +33,7 @@ typedef void* GLeglImageOES;
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/swap_result.h"
 #include "ui/gfx/transform.h"
+#include "ui/gl/ca_renderer_layer_params.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_fence.h"
 #include "ui/gl/gl_image_io_surface.h"
@@ -331,35 +331,15 @@ bool ImageTransportSurfaceOverlayMac::ScheduleOverlayPlane(
 }
 
 bool ImageTransportSurfaceOverlayMac::ScheduleCALayer(
-    gl::GLImage* contents_image,
-    const gfx::RectF& contents_rect,
-    float opacity,
-    unsigned background_color,
-    unsigned edge_aa_mask,
-    const gfx::RectF& rect,
-    bool is_clipped,
-    const gfx::RectF& clip_rect,
-    const gfx::Transform& transform,
-    int sorting_context_id,
-    unsigned filter) {
-  base::ScopedCFTypeRef<IOSurfaceRef> io_surface;
-  base::ScopedCFTypeRef<CVPixelBufferRef> cv_pixel_buffer;
-  if (contents_image) {
-    gl::GLImageIOSurface* io_surface_image =
-        gl::GLImageIOSurface::FromGLImage(contents_image);
-    if (!io_surface_image) {
-      DLOG(ERROR) << "Cannot schedule CALayer with non-IOSurface GLImage";
-      return false;
-    }
-    io_surface = io_surface_image->io_surface();
-    cv_pixel_buffer = io_surface_image->cv_pixel_buffer();
+    const ui::CARendererLayerParams& params) {
+  gl::GLImageIOSurface* io_surface_image =
+      gl::GLImageIOSurface::FromGLImage(params.image);
+  if (!io_surface_image) {
+    DLOG(ERROR) << "Cannot schedule CALayer with non-IOSurface GLImage";
+    return false;
   }
   return ca_layer_tree_coordinator_->GetPendingCARendererLayerTree()
-      ->ScheduleCALayer(is_clipped, gfx::ToEnclosingRect(clip_rect),
-                        sorting_context_id, transform, io_surface,
-                        cv_pixel_buffer, contents_rect,
-                        gfx::ToEnclosingRect(rect), background_color,
-                        edge_aa_mask, opacity, filter);
+      ->ScheduleCALayer(params);
 }
 
 void ImageTransportSurfaceOverlayMac::ScheduleCALayerInUseQuery(

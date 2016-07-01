@@ -24,6 +24,8 @@
 
 namespace ui {
 
+struct CARendererLayerParams;
+
 // The CARendererLayerTree will construct a hierarchy of CALayers from a linear
 // list provided by the CoreAnimation renderer using the algorithm and structure
 // referenced described in
@@ -38,18 +40,7 @@ class ACCELERATED_WIDGET_MAC_EXPORT CARendererLayerTree {
   // Append the description of a new CALayer to the tree. This will not
   // create any new CALayers until CommitScheduledCALayers is called. This
   // cannot be called anymore after CommitScheduledCALayers has been called.
-  bool ScheduleCALayer(bool is_clipped,
-                       const gfx::Rect& clip_rect,
-                       unsigned sorting_context_id,
-                       const gfx::Transform& transform,
-                       base::ScopedCFTypeRef<IOSurfaceRef> io_surface,
-                       base::ScopedCFTypeRef<CVPixelBufferRef> cv_pixel_buffer,
-                       const gfx::RectF& contents_rect,
-                       const gfx::Rect& rect,
-                       unsigned background_color,
-                       unsigned edge_aa_mask,
-                       float opacity,
-                       unsigned filter);
+  bool ScheduleCALayer(const CARendererLayerParams& params);
 
   // Create a CALayer tree for the scheduled layers, and set |superlayer| to
   // have only this tree as its sublayers. If |old_tree| is non-null, then try
@@ -82,19 +73,7 @@ class ACCELERATED_WIDGET_MAC_EXPORT CARendererLayerTree {
 
     // Append a new content layer, without modifying the actual CALayer
     // structure.
-    bool AddContentLayer(
-        bool is_clipped,
-        const gfx::Rect& clip_rect,
-        unsigned sorting_context_id,
-        const gfx::Transform& transform,
-        base::ScopedCFTypeRef<IOSurfaceRef> io_surface,
-        base::ScopedCFTypeRef<CVPixelBufferRef> cv_pixel_buffer,
-        const gfx::RectF& contents_rect,
-        const gfx::Rect& rect,
-        unsigned background_color,
-        unsigned edge_aa_mask,
-        float opacity,
-        unsigned filter);
+    bool AddContentLayer(const CARendererLayerParams& params);
 
     // Allocate CALayers for this layer and its children, and set their
     // properties appropriately. Re-use the CALayers from |old_layer| if
@@ -120,16 +99,7 @@ class ACCELERATED_WIDGET_MAC_EXPORT CARendererLayerTree {
     // See the behavior of RootLayer for the effects of these functions on the
     // |ca_layer| member and |old_layer| argument.
     ~ClipAndSortingLayer();
-    void AddContentLayer(
-        const gfx::Transform& transform,
-        base::ScopedCFTypeRef<IOSurfaceRef> io_surface,
-        base::ScopedCFTypeRef<CVPixelBufferRef> cv_pixel_buffer,
-        const gfx::RectF& contents_rect,
-        const gfx::Rect& rect,
-        unsigned background_color,
-        unsigned edge_aa_mask,
-        float opacity,
-        unsigned filter);
+    void AddContentLayer(const CARendererLayerParams& params);
     void CommitToCA(CALayer* superlayer,
                     ClipAndSortingLayer* old_layer,
                     float scale_factor);
@@ -151,15 +121,7 @@ class ACCELERATED_WIDGET_MAC_EXPORT CARendererLayerTree {
     // See the behavior of RootLayer for the effects of these functions on the
     // |ca_layer| member and |old_layer| argument.
     ~TransformLayer();
-    void AddContentLayer(
-        base::ScopedCFTypeRef<IOSurfaceRef> io_surface,
-        base::ScopedCFTypeRef<CVPixelBufferRef> cv_pixel_buffer,
-        const gfx::RectF& contents_rect,
-        const gfx::Rect& rect,
-        unsigned background_color,
-        unsigned edge_aa_mask,
-        float opacity,
-        unsigned filter);
+    void AddContentLayer(const CARendererLayerParams& params);
     void CommitToCA(CALayer* superlayer,
                     TransformLayer* old_layer,
                     float scale_factor);

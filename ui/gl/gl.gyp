@@ -41,6 +41,8 @@
         'android/surface_texture.h',
         'android/surface_texture_listener.cc',
         'android/surface_texture_listener.h',
+        'ca_renderer_layer_params.cc',
+        'ca_renderer_layer_params.h',
         'gl_bindings.cc',
         'gl_bindings.h',
         'gl_bindings_autogen_gl.cc',

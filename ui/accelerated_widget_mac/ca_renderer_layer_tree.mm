@@ -16,6 +16,8 @@
 #include "ui/base/cocoa/animation_utils.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/gfx/geometry/dip_util.h"
+#include "ui/gl/ca_renderer_layer_params.h"
+#include "ui/gl/gl_image_io_surface.h"
 
 #if !defined(MAC_OS_X_VERSION_10_8) || \
     MAC_OS_X_VERSION_MIN_REQUIRED < MAC_OS_X_VERSION_10_8
@@ -130,29 +132,14 @@ bool AVSampleBufferDisplayLayerEnqueueIOSurface(
 CARendererLayerTree::CARendererLayerTree() {}
 CARendererLayerTree::~CARendererLayerTree() {}
 
-bool CARendererLayerTree::ScheduleCALayer(
-    bool is_clipped,
-    const gfx::Rect& clip_rect,
-    unsigned sorting_context_id,
-    const gfx::Transform& transform,
-    base::ScopedCFTypeRef<IOSurfaceRef> io_surface,
-    base::ScopedCFTypeRef<CVPixelBufferRef> cv_pixel_buffer,
-    const gfx::RectF& contents_rect,
-    const gfx::Rect& rect,
-    unsigned background_color,
-    unsigned edge_aa_mask,
-    float opacity,
-    unsigned filter) {
+bool CARendererLayerTree::ScheduleCALayer(const CARendererLayerParams& params) {
   // Excessive logging to debug white screens (crbug.com/583805).
   // TODO(ccameron): change this back to a DLOG.
   if (has_committed_) {
     LOG(ERROR) << "ScheduleCALayer called after CommitScheduledCALayers.";
     return false;
   }
-  return root_layer_.AddContentLayer(is_clipped, clip_rect, sorting_context_id,
-                                     transform, io_surface, cv_pixel_buffer,
-                                     contents_rect, rect, background_color,
-                                     edge_aa_mask, opacity, filter);
+  return root_layer_.AddContentLayer(params);
 }
 
 void CARendererLayerTree::CommitScheduledCALayers(
@@ -352,18 +339,7 @@ CARendererLayerTree::ContentLayer::~ContentLayer() {
 }
 
 bool CARendererLayerTree::RootLayer::AddContentLayer(
-    bool is_clipped,
-    const gfx::Rect& clip_rect,
-    unsigned sorting_context_id,
-    const gfx::Transform& transform,
-    base::ScopedCFTypeRef<IOSurfaceRef> io_surface,
-    base::ScopedCFTypeRef<CVPixelBufferRef> cv_pixel_buffer,
-    const gfx::RectF& contents_rect,
-    const gfx::Rect& rect,
-    unsigned background_color,
-    unsigned edge_aa_mask,
-    float opacity,
-    unsigned filter) {
+    const CARendererLayerParams& params) {
   bool needs_new_clip_and_sorting_layer = true;
 
   // In sorting_context_id 0, all quads are listed in back-to-front order.
@@ -371,16 +347,16 @@ bool CARendererLayerTree::RootLayer::AddContentLayer(
   // If a quad has a 3D transform, it is necessary to put it in its own sorting
   // context, so that it will not intersect with quads before and after it.
   bool is_singleton_sorting_context =
-      !sorting_context_id && !transform.IsFlat();
+      !params.sorting_context_id && !params.transform.IsFlat();
 
   if (!clip_and_sorting_layers.empty()) {
     ClipAndSortingLayer& current_layer = clip_and_sorting_layers.back();
     // It is in error to change the clipping settings within a non-zero sorting
     // context. The result will be incorrect layering and intersection.
-    if (sorting_context_id &&
-        current_layer.sorting_context_id == sorting_context_id &&
-        (current_layer.is_clipped != is_clipped ||
-         current_layer.clip_rect != clip_rect)) {
+    if (params.sorting_context_id &&
+        current_layer.sorting_context_id == params.sorting_context_id &&
+        (current_layer.is_clipped != params.is_clipped ||
+         current_layer.clip_rect != params.clip_rect)) {
       // Excessive logging to debug white screens (crbug.com/583805).
       // TODO(ccameron): change this back to a DLOG.
       LOG(ERROR) << "CALayer changed clip inside non-zero sorting context.";
@@ -388,58 +364,48 @@ bool CARendererLayerTree::RootLayer::AddContentLayer(
     }
     if (!is_singleton_sorting_context &&
         !current_layer.is_singleton_sorting_context &&
-        current_layer.is_clipped == is_clipped &&
-        current_layer.clip_rect == clip_rect &&
-        current_layer.sorting_context_id == sorting_context_id) {
+        current_layer.is_clipped == params.is_clipped &&
+        current_layer.clip_rect == params.clip_rect &&
+        current_layer.sorting_context_id == params.sorting_context_id) {
       needs_new_clip_and_sorting_layer = false;
     }
   }
   if (needs_new_clip_and_sorting_layer) {
-    clip_and_sorting_layers.push_back(
-        ClipAndSortingLayer(is_clipped, clip_rect, sorting_context_id,
-                            is_singleton_sorting_context));
+    clip_and_sorting_layers.push_back(ClipAndSortingLayer(
+        params.is_clipped, params.clip_rect, params.sorting_context_id,
+        is_singleton_sorting_context));
   }
-  clip_and_sorting_layers.back().AddContentLayer(
-      transform, io_surface, cv_pixel_buffer, contents_rect, rect,
-      background_color, edge_aa_mask, opacity, filter);
+  clip_and_sorting_layers.back().AddContentLayer(params);
   return true;
 }
 
 void CARendererLayerTree::ClipAndSortingLayer::AddContentLayer(
-    const gfx::Transform& transform,
-    base::ScopedCFTypeRef<IOSurfaceRef> io_surface,
-    base::ScopedCFTypeRef<CVPixelBufferRef> cv_pixel_buffer,
-    const gfx::RectF& contents_rect,
-    const gfx::Rect& rect,
-    unsigned background_color,
-    unsigned edge_aa_mask,
-    float opacity,
-    unsigned filter) {
+    const CARendererLayerParams& params) {
   bool needs_new_transform_layer = true;
   if (!transform_layers.empty()) {
     const TransformLayer& current_layer = transform_layers.back();
-    if (current_layer.transform == transform)
+    if (current_layer.transform == params.transform)
       needs_new_transform_layer = false;
   }
   if (needs_new_transform_layer)
-    transform_layers.push_back(TransformLayer(transform));
-  transform_layers.back().AddContentLayer(io_surface, cv_pixel_buffer,
-                                          contents_rect, rect, background_color,
-                                          edge_aa_mask, opacity, filter);
+    transform_layers.push_back(TransformLayer(params.transform));
+  transform_layers.back().AddContentLayer(params);
 }
 
 void CARendererLayerTree::TransformLayer::AddContentLayer(
-    base::ScopedCFTypeRef<IOSurfaceRef> io_surface,
-    base::ScopedCFTypeRef<CVPixelBufferRef> cv_pixel_buffer,
-    const gfx::RectF& contents_rect,
-    const gfx::Rect& rect,
-    unsigned background_color,
-    unsigned edge_aa_mask,
-    float opacity,
-    unsigned filter) {
-  content_layers.push_back(ContentLayer(io_surface, cv_pixel_buffer,
-                                        contents_rect, rect, background_color,
-                                        edge_aa_mask, opacity, filter));
+    const CARendererLayerParams& params) {
+  gl::GLImageIOSurface* io_surface_image =
+      gl::GLImageIOSurface::FromGLImage(params.image);
+  DCHECK(io_surface_image);
+  base::ScopedCFTypeRef<IOSurfaceRef> io_surface =
+      io_surface_image->io_surface();
+  base::ScopedCFTypeRef<CVPixelBufferRef> cv_pixel_buffer =
+      io_surface_image->cv_pixel_buffer();
+
+  content_layers.push_back(
+      ContentLayer(io_surface, cv_pixel_buffer, params.contents_rect,
+                   params.rect, params.background_color, params.edge_aa_mask,
+                   params.opacity, params.filter));
 }
 
 void CARendererLayerTree::RootLayer::CommitToCA(CALayer* superlayer,

@@ -68,10 +68,12 @@
 #include "ui/gfx/buffer_types.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/gpu_memory_buffer.h"
 #include "ui/gfx/overlay_transform.h"
 #include "ui/gfx/transform.h"
+#include "ui/gl/ca_renderer_layer_params.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_fence.h"
@@ -10706,10 +10708,13 @@ error::Error GLES2DecoderImpl::HandleScheduleCALayerCHROMIUM(
                            mem[13], mem[17], mem[21], mem[25],
                            mem[14], mem[18], mem[22], mem[26],
                            mem[15], mem[19], mem[23], mem[27]);
-  if (!surface_->ScheduleCALayer(
-          image, contents_rect, c.opacity, c.background_color, c.edge_aa_mask,
-          bounds_rect, c.is_clipped ? true : false, clip_rect, transform,
-          c.sorting_context_id, filter)) {
+
+  ui::CARendererLayerParams params = ui::CARendererLayerParams(
+      c.is_clipped ? true : false, gfx::ToEnclosingRect(clip_rect),
+      c.sorting_context_id, transform, image, contents_rect,
+      gfx::ToEnclosingRect(bounds_rect), c.background_color, c.edge_aa_mask,
+      c.opacity, filter);
+  if (!surface_->ScheduleCALayer(params)) {
     LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glScheduleCALayerCHROMIUM",
                        "failed to schedule CALayer");
   }

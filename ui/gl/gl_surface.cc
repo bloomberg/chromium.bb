@@ -137,17 +137,7 @@ bool GLSurface::ScheduleOverlayPlane(int z_order,
   return false;
 }
 
-bool GLSurface::ScheduleCALayer(GLImage* contents_image,
-                                const gfx::RectF& contents_rect,
-                                float opacity,
-                                unsigned background_color,
-                                unsigned edge_aa_mask,
-                                const gfx::RectF& rect,
-                                bool is_clipped,
-                                const gfx::RectF& clip_rect,
-                                const gfx::Transform& transform,
-                                int sorting_content_id,
-                                unsigned filter) {
+bool GLSurface::ScheduleCALayer(const ui::CARendererLayerParams& params) {
   NOTIMPLEMENTED();
   return false;
 }
