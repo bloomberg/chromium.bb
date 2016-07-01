@@ -216,7 +216,7 @@ Polymer({
     },
 </if>
     {
-      url: '/advanced',
+      url: '/privacy',
       page: 'advanced',
       section: 'privacy',
       subpage: [],

@@ -613,6 +613,10 @@ TEST_F('CrSettingsLanguagesPageTest', 'LanguagesPage', function() {
   mocha.run();
 });
 
+/**
+ * @constructor
+ * @extends {CrSettingsBrowserTest}
+ */
 function CrSettingsRadioGroupTest() {}
 
 CrSettingsRadioGroupTest.prototype = {
@@ -628,5 +632,26 @@ CrSettingsRadioGroupTest.prototype = {
 };
 
 TEST_F('CrSettingsRadioGroupTest', 'All', function() {
+  mocha.run();
+});
+
+/**
+ * @constructor
+ * @extends {CrSettingsBrowserTest}
+ */
+function CrSettingsRouterTest() {}
+
+CrSettingsRouterTest.prototype = {
+  __proto__: CrSettingsBrowserTest.prototype,
+
+  /** @override */
+  browsePreload: 'chrome://md-settings/settings_page/settings_router.html',
+
+  extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
+    'router_tests.js',
+  ]),
+};
+
+TEST_F('CrSettingsRouterTest', 'All', function() {
   mocha.run();
 });
