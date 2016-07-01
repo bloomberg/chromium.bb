@@ -152,14 +152,6 @@ void ChromeBrowserMainPartsMac::PreMainMessageLoopStart() {
   [nib instantiateNibWithOwner:NSApp topLevelObjects:nil];
   // Make sure the app controller has been created.
   DCHECK([NSApp delegate]);
-
-  [[NSUserDefaults standardUserDefaults] registerDefaults:@{
-      // Prevent Cocoa from turning command-line arguments into
-      // |-application:openFiles:|, since we already handle them directly.
-      // @"NO" looks like a mistake, but the value really is supposed to be a
-      // string.
-      @"NSTreatUnknownArgumentsAsOpen": @"NO"
-  }];
 }
 
 void ChromeBrowserMainPartsMac::PostMainMessageLoopStart() {
