@@ -14,10 +14,11 @@
 
 #include "base/at_exit.h"
 #include "base/bind.h"
+#include "base/bits.h"
 #include "base/command_line.h"
 #include "base/files/file_util.h"
-#include "base/files/memory_mapped_file.h"
 #include "base/macros.h"
+#include "base/memory/aligned_memory.h"
 #include "base/memory/scoped_vector.h"
 #include "base/message_loop/message_loop.h"
 #include "base/numerics/safe_conversions.h"
@@ -147,6 +148,37 @@ VideoEncodeAcceleratorTestEnvironment* g_env;
 // "--num_frames_to_encode". Ignored if 0.
 int g_num_frames_to_encode = 0;
 
+// An aligned STL allocator.
+template <typename T, size_t ByteAlignment>
+class AlignedAllocator : public std::allocator<T> {
+ public:
+  typedef size_t size_type;
+  typedef T* pointer;
+
+  template <class T1>
+  struct rebind {
+    typedef AlignedAllocator<T1, ByteAlignment> other;
+  };
+
+  AlignedAllocator() {}
+  explicit AlignedAllocator(const AlignedAllocator&) {}
+  template <class T1>
+  explicit AlignedAllocator(const AlignedAllocator<T1, ByteAlignment>&) {}
+  ~AlignedAllocator() {}
+
+  pointer allocate(size_type n, const void* = 0) {
+    return static_cast<pointer>(base::AlignedAlloc(n, ByteAlignment));
+  }
+
+  void deallocate(pointer p, size_type n) {
+    base::AlignedFree(static_cast<void*>(p));
+  }
+
+  size_type max_size() const {
+    return std::numeric_limits<size_t>::max() / sizeof(T);
+  }
+};
+
 struct TestStream {
   TestStream()
       : num_frames(0),
@@ -167,7 +199,7 @@ struct TestStream {
 
   // A vector used to prepare aligned input buffers of |in_filename|. This
   // makes sure starting address of YUV planes are 64 bytes-aligned.
-  std::vector<char> aligned_in_file_data;
+  std::vector<char, AlignedAllocator<char, 64>> aligned_in_file_data;
 
   // Byte size of a frame of |aligned_in_file_data|.
   size_t aligned_buffer_size;
@@ -184,7 +216,7 @@ struct TestStream {
 };
 
 inline static size_t Align64Bytes(size_t value) {
-  return (value + 63) & ~63;
+  return base::bits::Align(value, 64);
 }
 
 // Return the |percentile| from a sorted vector.
