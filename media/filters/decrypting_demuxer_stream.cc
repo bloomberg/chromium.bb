@@ -152,6 +152,20 @@ VideoRotation DecryptingDemuxerStream::video_rotation() {
   return demuxer_stream_->video_rotation();
 }
 
+bool DecryptingDemuxerStream::enabled() const {
+  return demuxer_stream_->enabled();
+}
+
+void DecryptingDemuxerStream::set_enabled(bool enabled,
+                                          base::TimeDelta timestamp) {
+  demuxer_stream_->set_enabled(enabled, timestamp);
+}
+
+void DecryptingDemuxerStream::SetStreamRestartedCB(
+    const StreamRestartedCB& cb) {
+  demuxer_stream_->SetStreamRestartedCB(cb);
+}
+
 DecryptingDemuxerStream::~DecryptingDemuxerStream() {
   DVLOG(2) << __FUNCTION__ << " : state_ = " << state_;
   DCHECK(task_runner_->BelongsToCurrentThread());

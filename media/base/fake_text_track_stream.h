@@ -29,6 +29,9 @@ class FakeTextTrackStream : public DemuxerStream {
   MOCK_METHOD0(EnableBitstreamConverter, void());
   bool SupportsConfigChanges() override;
   VideoRotation video_rotation() override;
+  bool enabled() const override;
+  void set_enabled(bool enabled, base::TimeDelta timestamp) override;
+  void SetStreamRestartedCB(const StreamRestartedCB& cb) override;
 
   void SatisfyPendingRead(const base::TimeDelta& start,
                           const base::TimeDelta& duration,

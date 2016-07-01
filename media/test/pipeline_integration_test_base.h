@@ -109,6 +109,10 @@ class PipelineIntegrationTestBase : public Pipeline::Client {
   // enabled.
   std::string GetAudioHash();
 
+  // Reset video hash to restart hashing from scratch (e.g. after a seek or
+  // after disabling a media track).
+  void ResetVideoHash();
+
   // Returns the time taken to render the complete audio file.
   // Pipeline must have been started with clockless playback enabled.
   base::TimeDelta GetAudioTime();

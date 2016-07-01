@@ -46,6 +46,18 @@ VideoRotation FakeTextTrackStream::video_rotation() {
   return VIDEO_ROTATION_0;
 }
 
+bool FakeTextTrackStream::enabled() const {
+  return true;
+}
+
+void FakeTextTrackStream::set_enabled(bool enabled, base::TimeDelta timestamp) {
+  NOTIMPLEMENTED();
+}
+
+void FakeTextTrackStream::SetStreamRestartedCB(const StreamRestartedCB& cb) {
+  NOTIMPLEMENTED();
+}
+
 void FakeTextTrackStream::SatisfyPendingRead(
     const base::TimeDelta& start,
     const base::TimeDelta& duration,

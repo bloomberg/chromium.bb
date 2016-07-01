@@ -111,6 +111,9 @@ class MEDIA_EXPORT ChunkDemuxerStream : public DemuxerStream {
   VideoDecoderConfig video_decoder_config() override;
   bool SupportsConfigChanges() override;
   VideoRotation video_rotation() override;
+  bool enabled() const override;
+  void set_enabled(bool enabled, base::TimeDelta timestamp) override;
+  void SetStreamRestartedCB(const StreamRestartedCB& cb) override;
 
   // Returns the text track configuration.  It is an error to call this method
   // if type() != TEXT.
@@ -154,6 +157,8 @@ class MEDIA_EXPORT ChunkDemuxerStream : public DemuxerStream {
   ReadCB read_cb_;
   bool splice_frames_enabled_;
   bool partial_append_window_trimming_enabled_;
+  bool is_enabled_;
+  StreamRestartedCB stream_restarted_cb_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(ChunkDemuxerStream);
 };
@@ -229,6 +234,12 @@ class MEDIA_EXPORT ChunkDemuxer : public Demuxer {
   // Gets the highest buffered PTS for the specified |id|. If there is nothing
   // buffered, returns base::TimeDelta().
   base::TimeDelta GetHighestPresentationTimestamp(const std::string& id) const;
+
+  void OnEnabledAudioTracksChanged(const std::vector<MediaTrack::Id>& track_ids,
+                                   base::TimeDelta currTime) override;
+  // |track_ids| is either empty or contains a single video track id.
+  void OnSelectedVideoTrackChanged(const std::vector<MediaTrack::Id>& track_ids,
+                                   base::TimeDelta currTime) override;
 
   // Appends media data to the source buffer associated with |id|, applying
   // and possibly updating |*timestamp_offset| during coded frame processing.
@@ -432,6 +443,8 @@ class MEDIA_EXPORT ChunkDemuxer : public Demuxer {
   int detected_audio_track_count_;
   int detected_video_track_count_;
   int detected_text_track_count_;
+
+  std::map<MediaTrack::Id, const DemuxerStream*> track_id_to_demux_stream_map_;
 
   DISALLOW_COPY_AND_ASSIGN(ChunkDemuxer);
 };

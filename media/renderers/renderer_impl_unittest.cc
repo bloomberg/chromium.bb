@@ -87,6 +87,7 @@ class RendererImplTest : public ::testing::Test {
       DemuxerStream::Type type) {
     std::unique_ptr<StrictMock<MockDemuxerStream>> stream(
         new StrictMock<MockDemuxerStream>(type));
+    EXPECT_CALL(*stream, SetStreamRestartedCB(_)).Times(testing::AnyNumber());
     return stream;
   }
 
@@ -503,6 +504,7 @@ TEST_F(RendererImplTest, VideoStreamEnded) {
 
   EXPECT_CALL(time_source_, StopTicking());
   EXPECT_CALL(callbacks_, OnEnded());
+  EXPECT_CALL(*video_renderer_, OnTimeStateChanged(false));
 
   video_renderer_client_->OnEnded();
   base::RunLoop().RunUntilIdle();
@@ -518,6 +520,7 @@ TEST_F(RendererImplTest, AudioVideoStreamsEnded) {
 
   EXPECT_CALL(time_source_, StopTicking());
   EXPECT_CALL(callbacks_, OnEnded());
+  EXPECT_CALL(*video_renderer_, OnTimeStateChanged(false));
 
   video_renderer_client_->OnEnded();
   base::RunLoop().RunUntilIdle();

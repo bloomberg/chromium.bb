@@ -12,6 +12,7 @@
 #include "media/base/buffering_state.h"
 #include "media/base/cdm_context.h"
 #include "media/base/media_export.h"
+#include "media/base/media_track.h"
 #include "media/base/pipeline_metadata.h"
 #include "media/base/pipeline_status.h"
 #include "media/base/ranges.h"
@@ -74,6 +75,15 @@ class MEDIA_EXPORT Pipeline {
                      std::unique_ptr<Renderer> renderer,
                      Client* client,
                      const PipelineStatusCB& seek_cb) = 0;
+
+  // |enabledTrackIds| contains track ids of enabled audio tracks.
+  virtual void OnEnabledAudioTracksChanged(
+      const std::vector<MediaTrack::Id>& enabledTrackIds) = 0;
+
+  // |trackId| either empty, which means no video track is selected, or contain
+  // one element - the selected video track id.
+  virtual void OnSelectedVideoTrackChanged(
+      const std::vector<MediaTrack::Id>& selectedTrackId) = 0;
 
   // Stops the pipeline. This is a blocking function.
   // If the pipeline is started, it must be stopped before destroying it.

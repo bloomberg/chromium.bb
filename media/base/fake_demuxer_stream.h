@@ -35,6 +35,9 @@ class FakeDemuxerStream : public DemuxerStream {
   Type type() const override;
   bool SupportsConfigChanges() override;
   VideoRotation video_rotation() override;
+  bool enabled() const override;
+  void set_enabled(bool enabled, base::TimeDelta timestamp) override;
+  void SetStreamRestartedCB(const StreamRestartedCB& cb) override;
 
   void Initialize();
 

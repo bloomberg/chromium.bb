@@ -7,6 +7,7 @@
 
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
+#include "base/time/time.h"
 #include "media/base/media_export.h"
 #include "media/base/video_rotation.h"
 
@@ -90,6 +91,20 @@ class MEDIA_EXPORT DemuxerStream {
   virtual bool SupportsConfigChanges() = 0;
 
   virtual VideoRotation video_rotation() = 0;
+
+  // Indicates whether a DemuxerStream is currently enabled (i.e. should be
+  // decoded and rendered) or not.
+  virtual bool enabled() const = 0;
+
+  // Disables and re-enables the stream. Reading from a disabled stream will
+  // return an end-of-stream (EOS) buffer. When a stream is re-enabled, it needs
+  // to know the current playback position |timestamp| in order to resume
+  // reading data from a key frame preceeding the |timestamp|.
+  virtual void set_enabled(bool enabled, base::TimeDelta timestamp) = 0;
+
+  using StreamRestartedCB =
+      base::Callback<void(DemuxerStream*, base::TimeDelta)>;
+  virtual void SetStreamRestartedCB(const StreamRestartedCB& cb) = 0;
 
  protected:
   // Only allow concrete implementations to get deleted.

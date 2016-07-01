@@ -567,6 +567,37 @@ bool WebMediaPlayerImpl::hasAudio() const {
   return pipeline_metadata_.has_audio;
 }
 
+void WebMediaPlayerImpl::enabledAudioTracksChanged(
+    const blink::WebVector<blink::WebMediaPlayer::TrackId>& enabledTrackIds) {
+  DCHECK(main_task_runner_->BelongsToCurrentThread());
+
+  std::ostringstream logstr;
+  std::vector<MediaTrack::Id> enabledMediaTrackIds;
+  for (const auto& blinkTrackId : enabledTrackIds) {
+    MediaTrack::Id track_id = blinkTrackId.utf8().data();
+    logstr << track_id << " ";
+    enabledMediaTrackIds.push_back(track_id);
+  }
+  MEDIA_LOG(INFO, media_log_) << "Enabled audio tracks: [" << logstr.str()
+                              << "]";
+  pipeline_.OnEnabledAudioTracksChanged(enabledMediaTrackIds);
+}
+
+void WebMediaPlayerImpl::selectedVideoTrackChanged(
+    blink::WebMediaPlayer::TrackId* selectedTrackId) {
+  DCHECK(main_task_runner_->BelongsToCurrentThread());
+
+  std::ostringstream logstr;
+  std::vector<MediaTrack::Id> selectedVideoMediaTrackId;
+  if (selectedTrackId) {
+    selectedVideoMediaTrackId.push_back(selectedTrackId->utf8().data());
+    logstr << selectedVideoMediaTrackId[0];
+  }
+  MEDIA_LOG(INFO, media_log_) << "Selected video track: [" << logstr.str()
+                              << "]";
+  pipeline_.OnSelectedVideoTrackChanged(selectedVideoMediaTrackId);
+}
+
 blink::WebSize WebMediaPlayerImpl::naturalSize() const {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
 

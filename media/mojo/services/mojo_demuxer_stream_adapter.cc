@@ -70,6 +70,20 @@ VideoRotation MojoDemuxerStreamAdapter::video_rotation() {
   return VIDEO_ROTATION_0;
 }
 
+bool MojoDemuxerStreamAdapter::enabled() const {
+  return true;
+}
+
+void MojoDemuxerStreamAdapter::set_enabled(bool enabled,
+                                           base::TimeDelta timestamp) {
+  NOTIMPLEMENTED();
+}
+
+void MojoDemuxerStreamAdapter::SetStreamRestartedCB(
+    const StreamRestartedCB& cb) {
+  NOTIMPLEMENTED();
+}
+
 // TODO(xhwang): Pass liveness here.
 void MojoDemuxerStreamAdapter::OnStreamReady(
     mojom::DemuxerStream::Type type,

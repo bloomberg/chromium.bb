@@ -17,6 +17,7 @@
 #include "media/base/demuxer_stream_provider.h"
 #include "media/base/eme_constants.h"
 #include "media/base/media_export.h"
+#include "media/base/media_track.h"
 #include "media/base/pipeline_status.h"
 #include "media/base/ranges.h"
 
@@ -67,7 +68,7 @@ class MEDIA_EXPORT Demuxer : public DemuxerStreamProvider {
                           const std::vector<uint8_t>& init_data)>;
 
   // Notifies demuxer clients that media track configuration has been updated
-  // (e.g. the inital stream metadata has been parsed successfully, or a new
+  // (e.g. the initial stream metadata has been parsed successfully, or a new
   // init segment has been parsed successfully in MSE case).
   using MediaTracksUpdatedCB =
       base::Callback<void(std::unique_ptr<MediaTracks>)>;
@@ -134,6 +135,15 @@ class MEDIA_EXPORT Demuxer : public DemuxerStreamProvider {
 
   // Returns the memory usage in bytes for the demuxer.
   virtual int64_t GetMemoryUsage() const = 0;
+
+  virtual void OnEnabledAudioTracksChanged(
+      const std::vector<MediaTrack::Id>& track_ids,
+      base::TimeDelta currTime) = 0;
+
+  // |track_ids| is either empty or contains a single video track id.
+  virtual void OnSelectedVideoTrackChanged(
+      const std::vector<MediaTrack::Id>& track_ids,
+      base::TimeDelta currTime) = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(Demuxer);

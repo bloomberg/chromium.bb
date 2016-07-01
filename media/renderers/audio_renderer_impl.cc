@@ -299,6 +299,7 @@ void AudioRendererImpl::DoFlush_Locked() {
   DCHECK(!pending_read_);
   DCHECK_EQ(state_, kFlushed);
 
+  ended_timestamp_ = kInfiniteDuration();
   audio_buffer_stream_->Reset(base::Bind(&AudioRendererImpl::ResetDecoderDone,
                                          weak_factory_.GetWeakPtr()));
 }

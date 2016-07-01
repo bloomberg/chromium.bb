@@ -38,7 +38,8 @@ ChunkDemuxerStream::ChunkDemuxerStream(Type type,
       media_track_id_(media_track_id),
       state_(UNINITIALIZED),
       splice_frames_enabled_(splice_frames_enabled),
-      partial_append_window_trimming_enabled_(false) {}
+      partial_append_window_trimming_enabled_(false),
+      is_enabled_(true) {}
 
 void ChunkDemuxerStream::StartReturningData() {
   DVLOG(1) << "ChunkDemuxerStream::StartReturningData()";
@@ -248,6 +249,14 @@ void ChunkDemuxerStream::Read(const ReadCB& read_cb) {
   DCHECK(read_cb_.is_null());
 
   read_cb_ = BindToCurrentLoop(read_cb);
+
+  if (!is_enabled_) {
+    DVLOG(1) << "Read from disabled stream, returning EOS";
+    base::ResetAndReturn(&read_cb_).Run(kOk,
+                                        StreamParserBuffer::CreateEOSBuffer());
+    return;
+  }
+
   CompletePendingReadIfPossible_Locked();
 }
 
@@ -274,6 +283,35 @@ bool ChunkDemuxerStream::SupportsConfigChanges() { return true; }
 
 VideoRotation ChunkDemuxerStream::video_rotation() {
   return VIDEO_ROTATION_0;
+}
+
+bool ChunkDemuxerStream::enabled() const {
+  base::AutoLock auto_lock(lock_);
+  return is_enabled_;
+}
+
+void ChunkDemuxerStream::set_enabled(bool enabled, base::TimeDelta timestamp) {
+  base::AutoLock auto_lock(lock_);
+
+  if (enabled == is_enabled_)
+    return;
+
+  is_enabled_ = enabled;
+  if (enabled) {
+    DCHECK(stream_);
+    stream_->Seek(timestamp);
+    if (!stream_restarted_cb_.is_null())
+      stream_restarted_cb_.Run(this, timestamp);
+  } else if (!read_cb_.is_null()) {
+    DVLOG(1) << "Read from disabled stream, returning EOS";
+    base::ResetAndReturn(&read_cb_).Run(kOk,
+                                        StreamParserBuffer::CreateEOSBuffer());
+  }
+}
+
+void ChunkDemuxerStream::SetStreamRestartedCB(const StreamRestartedCB& cb) {
+  DCHECK(!cb.is_null());
+  stream_restarted_cb_ = BindToCurrentLoop(cb);
 }
 
 TextTrackConfig ChunkDemuxerStream::text_track_config() {
@@ -606,6 +644,48 @@ base::TimeDelta ChunkDemuxer::GetHighestPresentationTimestamp(
 
   DCHECK(itr != source_state_map_.end());
   return itr->second->GetHighestPresentationTimestamp();
+}
+
+void ChunkDemuxer::OnEnabledAudioTracksChanged(
+    const std::vector<MediaTrack::Id>& track_ids,
+    base::TimeDelta currTime) {
+  // Note: We intentionally don't lock here, since we are not accessing any
+  // members directly.
+  DemuxerStream* audio_stream = GetStream(DemuxerStream::AUDIO);
+  bool enabled = false;
+  CHECK(audio_stream);
+  DCHECK_LE(track_ids.size(), 1u);
+  if (track_ids.size() > 0) {
+#if DCHECK_IS_ON()
+    base::AutoLock auto_lock(lock_);
+    DCHECK(track_id_to_demux_stream_map_[track_ids[0]] == audio_stream);
+#endif
+    enabled = true;
+  }
+  DVLOG(1) << __FUNCTION__ << ": " << (enabled ? "enabling" : "disabling")
+           << " audio stream";
+  audio_stream->set_enabled(enabled, currTime);
+}
+
+void ChunkDemuxer::OnSelectedVideoTrackChanged(
+    const std::vector<MediaTrack::Id>& track_ids,
+    base::TimeDelta currTime) {
+  // Note: We intentionally don't lock here, since we are not accessing any
+  // members directly.
+  DemuxerStream* video_stream = GetStream(DemuxerStream::VIDEO);
+  bool enabled = false;
+  CHECK(video_stream);
+  DCHECK_LE(track_ids.size(), 1u);
+  if (track_ids.size() > 0) {
+#if DCHECK_IS_ON()
+    base::AutoLock auto_lock(lock_);
+    DCHECK(track_id_to_demux_stream_map_[track_ids[0]] == video_stream);
+#endif
+    enabled = true;
+  }
+  DVLOG(1) << __FUNCTION__ << ": " << (enabled ? "enabling" : "disabling")
+           << " video stream";
+  video_stream->set_enabled(enabled, currTime);
 }
 
 bool ChunkDemuxer::EvictCodedFrames(const std::string& id,
@@ -1047,6 +1127,9 @@ ChunkDemuxerStream* ChunkDemuxer::CreateDemuxerStream(
         return NULL;
       audio_.reset(new ChunkDemuxerStream(
           DemuxerStream::AUDIO, splice_frames_enabled_, media_track_id));
+      DCHECK(track_id_to_demux_stream_map_.find(media_track_id) ==
+             track_id_to_demux_stream_map_.end());
+      track_id_to_demux_stream_map_[media_track_id] = audio_.get();
       return audio_.get();
       break;
     case DemuxerStream::VIDEO:
@@ -1054,6 +1137,9 @@ ChunkDemuxerStream* ChunkDemuxer::CreateDemuxerStream(
         return NULL;
       video_.reset(new ChunkDemuxerStream(
           DemuxerStream::VIDEO, splice_frames_enabled_, media_track_id));
+      DCHECK(track_id_to_demux_stream_map_.find(media_track_id) ==
+             track_id_to_demux_stream_map_.end());
+      track_id_to_demux_stream_map_[media_track_id] = video_.get();
       return video_.get();
       break;
     case DemuxerStream::TEXT: {

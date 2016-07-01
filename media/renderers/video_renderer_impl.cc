@@ -190,6 +190,7 @@ scoped_refptr<VideoFrame> VideoRendererImpl::Render(
        (!frames_decoded_ && was_background_rendering_))) {
     // Do not set |buffering_state_| here as the lock in FrameReady() may be
     // held already and it fire the state changes in the wrong order.
+    DVLOG(3) << __FUNCTION__ << " posted TransitionToHaveNothing.";
     task_runner_->PostTask(
         FROM_HERE, base::Bind(&VideoRendererImpl::TransitionToHaveNothing,
                               weak_factory_.GetWeakPtr()));
@@ -442,6 +443,7 @@ bool VideoRendererImpl::HaveEnoughData_Locked() {
 }
 
 void VideoRendererImpl::TransitionToHaveEnough_Locked() {
+  DVLOG(3) << __FUNCTION__;
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK_EQ(buffering_state_, BUFFERING_HAVE_NOTHING);
   lock_.AssertAcquired();
@@ -453,6 +455,7 @@ void VideoRendererImpl::TransitionToHaveEnough_Locked() {
 }
 
 void VideoRendererImpl::TransitionToHaveNothing() {
+  DVLOG(3) << __FUNCTION__;
   DCHECK(task_runner_->BelongsToCurrentThread());
 
   base::AutoLock auto_lock(lock_);

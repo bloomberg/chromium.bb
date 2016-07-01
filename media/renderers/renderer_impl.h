@@ -62,6 +62,8 @@ class MEDIA_EXPORT RendererImpl : public Renderer {
   bool HasAudio() final;
   bool HasVideo() final;
 
+  void RestartStreamPlayback(DemuxerStream* stream, base::TimeDelta time);
+
   // Helper functions for testing purposes. Must be called before Initialize().
   void DisableUnderflowForTesting();
   void EnableClocklessVideoPlaybackForTesting();
@@ -103,6 +105,9 @@ class MEDIA_EXPORT RendererImpl : public Renderer {
   void FlushVideoRenderer();
   void OnVideoRendererFlushDone();
 
+  void RestartAudioRenderer(base::TimeDelta time);
+  void RestartVideoRenderer(base::TimeDelta time);
+
   // Callback executed by filters to update statistics.
   void OnStatisticsUpdate(const PipelineStatistics& stats);
 
@@ -117,6 +122,15 @@ class MEDIA_EXPORT RendererImpl : public Renderer {
   //     and PausePlayback() should be called
   void OnBufferingStateChange(DemuxerStream::Type type,
                               BufferingState new_buffering_state);
+  // Handles the buffering notifications that we might get while an audio or a
+  // video stream is being restarted. In those cases we don't want to report
+  // underflows immediately and instead give decoders a chance to catch up with
+  // currently playing stream. Returns true if the buffering nofication has been
+  // handled and no further processing is necessary, returns false to indicate
+  // that we should fall back to the regular OnBufferingStateChange logic.
+  bool HandleRestartedStreamBufferingChanges(
+      DemuxerStream::Type type,
+      BufferingState new_buffering_state);
   bool WaitingForEnoughData() const;
   void PausePlayback();
   void StartPlayback();
@@ -172,11 +186,17 @@ class MEDIA_EXPORT RendererImpl : public Renderer {
   bool clockless_video_playback_enabled_for_testing_;
 
   // Used to defer underflow for video when audio is present.
-  base::CancelableClosure deferred_underflow_cb_;
+  base::CancelableClosure deferred_video_underflow_cb_;
+
+  // Used to defer underflow for audio when restarting audio playback.
+  base::CancelableClosure deferred_audio_restart_underflow_cb_;
 
   // The amount of time to wait before declaring underflow if the video renderer
   // runs out of data but the audio renderer still has enough.
   base::TimeDelta video_underflow_threshold_;
+
+  bool restarting_audio_ = false;
+  bool restarting_video_ = false;
 
   base::WeakPtr<RendererImpl> weak_this_;
   base::WeakPtrFactory<RendererImpl> weak_factory_;

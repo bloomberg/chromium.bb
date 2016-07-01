@@ -57,6 +57,15 @@ class PipelineImpl::RendererWrapper : public DemuxerHost,
   PipelineStatistics GetStatistics() const;
   void SetCdm(CdmContext* cdm_context, const CdmAttachedCB& cdm_attached_cb);
 
+  // |enabledTrackIds| contains track ids of enabled audio tracks.
+  void OnEnabledAudioTracksChanged(
+      const std::vector<MediaTrack::Id>& enabledTrackIds);
+
+  // |trackId| either empty, which means no video track is selected, or contain
+  // one element - the selected video track id.
+  void OnSelectedVideoTrackChanged(
+      const std::vector<MediaTrack::Id>& selectedTrackId);
+
  private:
   // Contains state shared between main and media thread.
   // Main thread can only read. Media thread can both - read and write.
@@ -488,6 +497,62 @@ void PipelineImpl::RendererWrapper::OnEnded() {
   DCHECK(!renderer_ended_);
   renderer_ended_ = true;
   CheckPlaybackEnded();
+}
+
+void PipelineImpl::OnEnabledAudioTracksChanged(
+    const std::vector<MediaTrack::Id>& enabledTrackIds) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  media_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&RendererWrapper::OnEnabledAudioTracksChanged,
+                 base::Unretained(renderer_wrapper_.get()), enabledTrackIds));
+}
+
+void PipelineImpl::OnSelectedVideoTrackChanged(
+    const std::vector<MediaTrack::Id>& selectedTrackId) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  media_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&RendererWrapper::OnSelectedVideoTrackChanged,
+                 base::Unretained(renderer_wrapper_.get()), selectedTrackId));
+}
+
+void PipelineImpl::RendererWrapper::OnEnabledAudioTracksChanged(
+    const std::vector<MediaTrack::Id>& enabledTrackIds) {
+  DCHECK(media_task_runner_->BelongsToCurrentThread());
+
+  // Track status notifications might be delivered asynchronously. If we receive
+  // a notification when pipeline is stopped/shut down, it's safe to ignore it.
+  if (state_ == kStopping || state_ == kStopped) {
+    return;
+  }
+
+  DCHECK(demuxer_);
+  DCHECK(shared_state_.renderer);
+
+  base::TimeDelta currTime = (state_ == kPlaying)
+                                 ? shared_state_.renderer->GetMediaTime()
+                                 : start_timestamp_;
+  demuxer_->OnEnabledAudioTracksChanged(enabledTrackIds, currTime);
+}
+
+void PipelineImpl::RendererWrapper::OnSelectedVideoTrackChanged(
+    const std::vector<MediaTrack::Id>& selectedTrackId) {
+  DCHECK(media_task_runner_->BelongsToCurrentThread());
+
+  // Track status notifications might be delivered asynchronously. If we receive
+  // a notification when pipeline is stopped/shut down, it's safe to ignore it.
+  if (state_ == kStopping || state_ == kStopped) {
+    return;
+  }
+
+  DCHECK(demuxer_);
+  DCHECK(shared_state_.renderer);
+
+  base::TimeDelta currTime = (state_ == kPlaying)
+                                 ? shared_state_.renderer->GetMediaTime()
+                                 : start_timestamp_;
+  demuxer_->OnSelectedVideoTrackChanged(selectedTrackId, currTime);
 }
 
 void PipelineImpl::RendererWrapper::OnStatisticsUpdate(
@@ -968,7 +1033,7 @@ void PipelineImpl::Stop() {
 }
 
 void PipelineImpl::Seek(base::TimeDelta time, const PipelineStatusCB& seek_cb) {
-  DVLOG(2) << __FUNCTION__;
+  DVLOG(2) << __FUNCTION__ << " to " << time.InMicroseconds();
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!seek_cb.is_null());
 

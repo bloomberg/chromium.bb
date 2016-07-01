@@ -110,6 +110,9 @@ class FFmpegDemuxerStream : public DemuxerStream {
   AudioDecoderConfig audio_decoder_config() override;
   VideoDecoderConfig video_decoder_config() override;
   VideoRotation video_rotation() override;
+  bool enabled() const override;
+  void set_enabled(bool enabled, base::TimeDelta timestamp) override;
+  void SetStreamRestartedCB(const StreamRestartedCB& cb) override;
 
   void SetLiveness(Liveness liveness);
 
@@ -171,9 +174,12 @@ class FFmpegDemuxerStream : public DemuxerStream {
   base::TimeDelta last_packet_duration_;
   Ranges<base::TimeDelta> buffered_ranges_;
   VideoRotation video_rotation_;
+  bool is_enabled_;
+  bool waiting_for_keyframe_;
 
   DecoderBufferQueue buffer_queue_;
   ReadCB read_cb_;
+  StreamRestartedCB stream_restarted_cb_;
 
 #if defined(USE_PROPRIETARY_CODECS)
   std::unique_ptr<FFmpegBitstreamConverter> bitstream_converter_;
@@ -217,6 +223,12 @@ class MEDIA_EXPORT FFmpegDemuxer : public Demuxer {
   // about capacity and what buffered data is available.
   void NotifyCapacityAvailable();
   void NotifyBufferingChanged();
+
+  void OnEnabledAudioTracksChanged(const std::vector<MediaTrack::Id>& track_ids,
+                                   base::TimeDelta currTime) override;
+  // |track_ids| is either empty or contains a single video track id.
+  void OnSelectedVideoTrackChanged(const std::vector<MediaTrack::Id>& track_ids,
+                                   base::TimeDelta currTime) override;
 
   // The lowest demuxed timestamp.  If negative, DemuxerStreams must use this to
   // adjust packet timestamps such that external clients see a zero-based
@@ -333,6 +345,8 @@ class MEDIA_EXPORT FFmpegDemuxer : public Demuxer {
   const EncryptedMediaInitDataCB encrypted_media_init_data_cb_;
 
   const MediaTracksUpdatedCB media_tracks_updated_cb_;
+
+  std::map<MediaTrack::Id, const DemuxerStream*> track_id_to_demux_stream_map_;
 
   // NOTE: Weak pointers must be invalidated before all other member variables.
   base::WeakPtrFactory<FFmpegDemuxer> weak_factory_;

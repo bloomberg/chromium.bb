@@ -272,6 +272,8 @@ FFmpegDemuxerStream::FFmpegDemuxerStream(
       last_packet_timestamp_(kNoTimestamp()),
       last_packet_duration_(kNoTimestamp()),
       video_rotation_(VIDEO_ROTATION_0),
+      is_enabled_(true),
+      waiting_for_keyframe_(false),
       fixup_negative_timestamps_(false) {
   DCHECK(demuxer_);
 
@@ -356,6 +358,15 @@ void FFmpegDemuxerStream::EnqueuePacket(ScopedAVPacket packet) {
   if (!demuxer_ || end_of_stream_) {
     NOTREACHED() << "Attempted to enqueue packet on a stopped stream";
     return;
+  }
+
+  if (waiting_for_keyframe_) {
+    if (packet.get()->flags & AV_PKT_FLAG_KEY)
+      waiting_for_keyframe_ = false;
+    else {
+      DVLOG(3) << "Dropped non-keyframe pts=" << packet->pts;
+      return;
+    }
   }
 
 #if defined(USE_PROPRIETARY_CODECS)
@@ -618,6 +629,12 @@ void FFmpegDemuxerStream::Read(const ReadCB& read_cb) {
     return;
   }
 
+  if (!is_enabled_) {
+    DVLOG(1) << "Read from disabled stream, returning EOS";
+    base::ResetAndReturn(&read_cb_).Run(kOk, DecoderBuffer::CreateEOSBuffer());
+    return;
+  }
+
   SatisfyPendingRead();
 }
 
@@ -679,6 +696,34 @@ VideoDecoderConfig FFmpegDemuxerStream::video_decoder_config() {
 
 VideoRotation FFmpegDemuxerStream::video_rotation() {
   return video_rotation_;
+}
+
+bool FFmpegDemuxerStream::enabled() const {
+  DCHECK(task_runner_->BelongsToCurrentThread());
+  return is_enabled_;
+}
+
+void FFmpegDemuxerStream::set_enabled(bool enabled, base::TimeDelta timestamp) {
+  DCHECK(task_runner_->BelongsToCurrentThread());
+  if (enabled == is_enabled_)
+    return;
+
+  is_enabled_ = enabled;
+  if (is_enabled_) {
+    waiting_for_keyframe_ = true;
+    if (!stream_restarted_cb_.is_null())
+      stream_restarted_cb_.Run(this, timestamp);
+  }
+  if (!is_enabled_ && !read_cb_.is_null()) {
+    DVLOG(1) << "Read from disabled stream, returning EOS";
+    base::ResetAndReturn(&read_cb_).Run(kOk, DecoderBuffer::CreateEOSBuffer());
+    return;
+  }
+}
+
+void FFmpegDemuxerStream::SetStreamRestartedCB(const StreamRestartedCB& cb) {
+  DCHECK(!cb.is_null());
+  stream_restarted_cb_ = cb;
 }
 
 void FFmpegDemuxerStream::SetLiveness(Liveness liveness) {
@@ -1131,6 +1176,8 @@ void FFmpegDemuxer::OnFindStreamInfoDone(const PipelineStatusCB& status_cb,
   AVStream* video_stream = NULL;
   VideoDecoderConfig video_config;
 
+  DCHECK(track_id_to_demux_stream_map_.empty());
+
   // If available, |start_time_| will be set to the lowest stream start time.
   start_time_ = kInfiniteDuration();
 
@@ -1246,6 +1293,9 @@ void FFmpegDemuxer::OnFindStreamInfoDone(const PipelineStatusCB& status_cb,
       media_track = media_tracks->AddAudioTrack(audio_config, track_id, "main",
                                                 track_label, track_language);
       media_track->set_id(base::UintToString(track_id));
+      DCHECK(track_id_to_demux_stream_map_.find(media_track->id()) ==
+             track_id_to_demux_stream_map_.end());
+      track_id_to_demux_stream_map_[media_track->id()] = streams_[i];
     } else if (codec_type == AVMEDIA_TYPE_VIDEO) {
       CHECK(!video_stream);
       video_stream = stream;
@@ -1257,6 +1307,9 @@ void FFmpegDemuxer::OnFindStreamInfoDone(const PipelineStatusCB& status_cb,
       media_track = media_tracks->AddVideoTrack(video_config, track_id, "main",
                                                 track_label, track_language);
       media_track->set_id(base::UintToString(track_id));
+      DCHECK(track_id_to_demux_stream_map_.find(media_track->id()) ==
+             track_id_to_demux_stream_map_.end());
+      track_id_to_demux_stream_map_[media_track->id()] = streams_[i];
     }
 
     max_duration = std::max(max_duration, streams_[i]->duration());
@@ -1469,6 +1522,38 @@ void FFmpegDemuxer::OnSeekFrameDone(const PipelineStatusCB& cb, int result) {
   cb.Run(PIPELINE_OK);
 }
 
+void FFmpegDemuxer::OnEnabledAudioTracksChanged(
+    const std::vector<MediaTrack::Id>& track_ids,
+    base::TimeDelta currTime) {
+  DCHECK(task_runner_->BelongsToCurrentThread());
+  bool enabled = false;
+  DemuxerStream* audio_stream = GetStream(DemuxerStream::AUDIO);
+  CHECK(audio_stream);
+  if (track_ids.size() > 0) {
+    DCHECK(track_id_to_demux_stream_map_[track_ids[0]] == audio_stream);
+    enabled = true;
+  }
+  DVLOG(1) << __FUNCTION__ << ": " << (enabled ? "enabling" : "disabling")
+           << " audio stream";
+  audio_stream->set_enabled(enabled, currTime);
+}
+
+void FFmpegDemuxer::OnSelectedVideoTrackChanged(
+    const std::vector<MediaTrack::Id>& track_ids,
+    base::TimeDelta currTime) {
+  DCHECK(task_runner_->BelongsToCurrentThread());
+  bool enabled = false;
+  DemuxerStream* video_stream = GetStream(DemuxerStream::VIDEO);
+  CHECK(video_stream);
+  if (track_ids.size() > 0) {
+    DCHECK(track_id_to_demux_stream_map_[track_ids[0]] == video_stream);
+    enabled = true;
+  }
+  DVLOG(1) << __FUNCTION__ << ": " << (enabled ? "enabling" : "disabling")
+           << " video stream";
+  video_stream->set_enabled(enabled, currTime);
+}
+
 void FFmpegDemuxer::ReadFrameIfNeeded() {
   DCHECK(task_runner_->BelongsToCurrentThread());
 
@@ -1556,7 +1641,8 @@ void FFmpegDemuxer::OnReadFrameDone(ScopedAVPacket packet, int result) {
     }
 
     FFmpegDemuxerStream* demuxer_stream = streams_[packet->stream_index];
-    demuxer_stream->EnqueuePacket(std::move(packet));
+    if (demuxer_stream->enabled())
+      demuxer_stream->EnqueuePacket(std::move(packet));
   }
 
   // Keep reading until we've reached capacity.
