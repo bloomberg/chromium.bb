@@ -44,6 +44,7 @@ private:
     void setSpaceSize(const LayoutSize& repeatSpacing) { m_repeatSpacing = repeatSpacing; }
     void setPhaseX(LayoutUnit x) { m_phase.setX(x); }
     void setPhaseY(LayoutUnit y) { m_phase.setY(y); }
+
     void setNoRepeatX(LayoutUnit xOffset);
     void setNoRepeatY(LayoutUnit yOffset);
     void setRepeatX(const FillLayer&, LayoutUnit, LayoutUnit, LayoutUnit, LayoutUnit);
@@ -54,6 +55,7 @@ private:
     void useFixedAttachment(const LayoutPoint& attachmentPoint);
     void setHasNonLocalGeometry() { m_hasNonLocalGeometry = true; }
 
+    // TODO(schenney): Convert these to IntPoints for values that we snap
     LayoutRect m_destRect;
     LayoutPoint m_phase;
     LayoutSize m_tileSize;
