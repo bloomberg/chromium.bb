@@ -2,6 +2,7 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-resizable-behavior/iron-resizable-behavior.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 <link rel="import" href="/device_page/drag_behavior.html">
+<link rel="import" href="/device_page/layout_behavior.html">
 <link rel="import" href="/settings_shared_css.html">
 
 <dom-module id="display-layout">
@@ -28,6 +29,18 @@
       .display[selected] {
         border: var(--google-blue-500) solid 2px;
         box-shadow: none;
+      }
+      .highlight-left {
+        border-left: var(--google-blue-700) solid 1px;
+      }
+      .highlight-right {
+        border-right: var(--google-blue-700) solid 1px;
+      }
+      .highlight-top {
+        border-top: var(--google-blue-700) solid 1px;
+      }
+      .highlight-bottom {
+        border-bottom: var(--google-blue-700) solid 1px;
       }
     </style>
     <div id="displayArea" on-iron-resize="calculateVisualScale_">

@@ -18,6 +18,7 @@ Polymer({
   behaviors: [
     Polymer.IronResizableBehavior,
     DragBehavior,
+    LayoutBehavior,
   ],
 
   properties: {
@@ -26,12 +27,6 @@ Polymer({
      * @type {!Array<!chrome.system.display.DisplayUnitInfo>}
      */
     displays: Array,
-
-    /**
-     * Array of display layouts.
-     * @type {!Array<!chrome.system.display.DisplayLayout>}
-     */
-    layouts: Array,
 
     /**
      * Whether or not mirroring is enabled.
@@ -48,18 +43,6 @@ Polymer({
      */
     visualScale: 1,
   },
-
-  /** @private {!Object<chrome.system.display.Bounds>} */
-  displayBoundsMap_: {},
-
-  /** @private {!Object<chrome.system.display.DisplayLayout>} */
-  layoutMap_: {},
-
-  /**
-   * The calculated bounds used for generating the div bounds.
-   * @private {!Object<chrome.system.display.Bounds>}
-  */
-  calculatedBoundsMap_: {},
 
   /** @private {!{left: number, top: number}} */
   visualOffset_: {left: 0, top: 0},
@@ -78,9 +61,7 @@ Polymer({
   },
 
   /** @override */
-  detached: function() {
-    this.initializeDrag(false);
-  },
+  detached: function() { this.initializeDrag(false); },
 
   /**
    * Called explicitly when |this.displays| and their associated |this.layouts|
@@ -94,17 +75,7 @@ Polymer({
 
     this.mirroring = displays.length > 0 && !!displays[0].mirroringSourceId;
 
-    this.displayBoundsMap_ = {};
-    for (let display of this.displays)
-      this.displayBoundsMap_[display.id] = display.bounds;
-
-    this.layoutMap_ = {};
-    for (let layout of this.layouts)
-      this.layoutMap_[layout.id] = layout;
-
-    this.calculatedBoundsMap_ = {};
-    for (let display of this.displays)
-      this.calculateBounds_(display.id, display.bounds);
+    this.initializeDisplayLayout(displays, layouts);
 
     this.calculateVisualScale_();
 
@@ -127,8 +98,8 @@ Polymer({
     }
 
     var display = this.displays[0];
-    var bounds = this.calculatedBoundsMap_[display.id];
-    var displayInfoBoundingBox = {
+    var bounds = this.getCalculatedDisplayBounds(display.id);
+    var boundsBoundingBox = {
       left: bounds.left,
       right: bounds.left + bounds.width,
       top: bounds.top,
@@ -138,34 +109,36 @@ Polymer({
     var maxHeight = bounds.height;
     for (let i = 1; i < this.displays.length; ++i) {
       display = this.displays[i];
-      bounds = this.calculatedBoundsMap_[display.id];
-      displayInfoBoundingBox.left =
-          Math.min(displayInfoBoundingBox.left, bounds.left);
-      displayInfoBoundingBox.right =
-          Math.max(displayInfoBoundingBox.right, bounds.left + bounds.width);
-      displayInfoBoundingBox.top =
-          Math.min(displayInfoBoundingBox.top, bounds.top);
-      displayInfoBoundingBox.bottom =
-          Math.max(displayInfoBoundingBox.bottom, bounds.top + bounds.height);
+      bounds = this.getCalculatedDisplayBounds(display.id);
+      boundsBoundingBox.left = Math.min(boundsBoundingBox.left, bounds.left);
+      boundsBoundingBox.right =
+          Math.max(boundsBoundingBox.right, bounds.left + bounds.width);
+      boundsBoundingBox.top = Math.min(boundsBoundingBox.top, bounds.top);
+      boundsBoundingBox.bottom =
+          Math.max(boundsBoundingBox.bottom, bounds.top + bounds.height);
       maxWidth = Math.max(maxWidth, bounds.width);
       maxHeight = Math.max(maxHeight, bounds.height);
     }
 
     // Create a margin around the bounding box equal to the size of the
     // largest displays.
-    var displayInfoBoundsWidth = displayInfoBoundingBox.right -
-        displayInfoBoundingBox.left + maxWidth * 2;
-    var displayInfoBoundsHeight = displayInfoBoundingBox.bottom -
-        displayInfoBoundingBox.top + maxHeight * 2;
+    var boundsWidth = boundsBoundingBox.right - boundsBoundingBox.left;
+    var boundsHeight = boundsBoundingBox.bottom - boundsBoundingBox.top;
 
     // Calculate the scale.
-    var horizontalScale = displayAreaDiv.offsetWidth / displayInfoBoundsWidth;
-    var verticalScale = displayAreaDiv.offsetHeight / displayInfoBoundsHeight;
+    var horizontalScale =
+        displayAreaDiv.offsetWidth / (boundsWidth + maxWidth * 2);
+    var verticalScale =
+        displayAreaDiv.offsetHeight / (boundsHeight + maxHeight * 2);
     var scale = Math.min(horizontalScale, verticalScale);
 
     // Calculate the offset.
-    this.visualOffset_.left = (-displayInfoBoundingBox.left + maxWidth) * scale;
-    this.visualOffset_.top = (-displayInfoBoundingBox.top + maxHeight) * scale;
+    this.visualOffset_.left =
+        ((displayAreaDiv.offsetWidth - (boundsWidth * scale)) / 2) -
+        boundsBoundingBox.left * scale;
+    this.visualOffset_.top =
+        ((displayAreaDiv.offsetHeight - (boundsHeight * scale)) / 2) -
+        boundsBoundingBox.top * scale;
 
     // Update the scale which will trigger calls to getDivStyle_.
     this.visualScale = Math.max(MIN_VISUAL_SCALE, scale);
@@ -183,7 +156,7 @@ Polymer({
   getDivStyle_: function(id, displayBounds, visualScale) {
     // This matches the size of the box-shadow or border in CSS.
     /** @const {number} */ var BORDER = 2;
-    var bounds = this.calculatedBoundsMap_[id];
+    var bounds = this.getCalculatedDisplayBounds(id);
     var height = Math.round(bounds.height * this.visualScale) - BORDER * 2;
     var width = Math.round(bounds.width * this.visualScale) - BORDER * 2;
     var left =
@@ -205,60 +178,14 @@ Polymer({
   },
 
   /**
-   * @param {!{model: !{index: number}}} e
+   * @param {!{model: !{item: !chrome.system.display.DisplayUnitInfo},
+   *     target: !PaperButtonElement}} e
    * @private
    */
   onSelectDisplayTap_: function(e) {
-    this.fire('select-display', e.model.index);
-  },
-
-  /**
-   * Recursively calculate the bounds of a display relative to its parents.
-   * Caches the display bounds so that parent bounds are only calculated once.
-   * TODO(stevenjb): Move this function and the maps it requires to a separate
-   *     behavior which will include snapping and collisions.
-   * @param {string} id
-   * @param {!chrome.system.display.Bounds} bounds
-   * @private
-   */
-  calculateBounds_: function(id, bounds) {
-    if (id in this.calculatedBoundsMap_)
-      return;  // Already calculated (i.e. a parent of a previous display)
-    var left, top;
-    var layout = this.layoutMap_[id];
-    if (!layout || !layout.parentId) {
-      left = -bounds.width / 2;
-      top = -bounds.height / 2;
-    } else {
-      var parentDisplayBounds = this.displayBoundsMap_[layout.parentId];
-      var parentBounds;
-      if (!(layout.parentId in this.calculatedBoundsMap_))
-        this.calculateBounds_(layout.parentId, parentDisplayBounds);
-      parentBounds = this.calculatedBoundsMap_[layout.parentId];
-      left = parentBounds.left;
-      top = parentBounds.top;
-      switch (layout.position) {
-        case chrome.system.display.LayoutPosition.TOP:
-          top -= bounds.height;
-          break;
-        case chrome.system.display.LayoutPosition.RIGHT:
-          left += parentBounds.width;
-          break;
-        case chrome.system.display.LayoutPosition.BOTTOM:
-          top += parentBounds.height;
-          break;
-        case chrome.system.display.LayoutPosition.LEFT:
-          left -= bounds.height;
-          break;
-      }
-    }
-    var result = {
-      left: left,
-      top: top,
-      width: bounds.width,
-      height: bounds.height
-    };
-    this.calculatedBoundsMap_[id] = result;
+    this.fire('select-display', e.model.item.id);
+    // Force active in case the selected display was clicked.
+    e.target.active = true;
   },
 
   /**
@@ -270,20 +197,20 @@ Polymer({
 
     var newBounds;
     if (!amount) {
-      // TODO(stevenjb): Resolve layout and send update.
-      newBounds = this.calculatedBoundsMap_[id];
+      this.finishUpdateDisplayBounds(id);
+      newBounds = this.getCalculatedDisplayBounds(id);
     } else {
       // Make sure the dragged display is also selected.
       if (id != this.selectedDisplay.id)
         this.fire('select-display', id);
 
-      var calculatedBounds = this.calculatedBoundsMap_[id];
+      var calculatedBounds = this.getCalculatedDisplayBounds(id);
       newBounds =
           /** @type {chrome.system.display.Bounds} */ (
               Object.assign({}, calculatedBounds));
       newBounds.left += Math.round(amount.x / this.visualScale);
       newBounds.top += Math.round(amount.y / this.visualScale);
-      // TODO(stevenjb): Update layout.
+      newBounds = this.updateDisplayBounds(id, newBounds);
     }
     var left =
         this.visualOffset_.left + Math.round(newBounds.left * this.visualScale);

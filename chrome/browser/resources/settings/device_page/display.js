@@ -233,17 +233,16 @@ Polymer({
   },
 
   /**
-   * @param {!{detail: number}} e
+   * @param {!{detail: string}} e |e.detail| is the id of the selected display.
    * @private
    */
   onSelectDisplay_: function(e) {
-    var index = e.detail;
-    assert(index >= 0);
-    if (index >= this.displays.length)
-      return;
-    this.selectedDisplay = this.displays[e.detail];
-    // Force active in case selected display was clicked.
-    e.target.active = true;
+    var id = e.detail;
+    for (let display of this.displays) {
+      if (id != display.id)
+        continue;
+      this.selectedDisplay = display;
+    }
   },
 
   /** @private */

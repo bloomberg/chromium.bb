@@ -149,11 +149,16 @@ chrome.system.display.setDisplayProperties = function(id, info, callback) {};
  * Set the layout for all displays. Any display not included will use the
  * default layout. If a layout would overlap or be otherwise invalid it will be
  * adjusted to a valid layout. After layout is resolved, an onDisplayChanged
- * event will be triggered.
- * @param {!Array<!chrome.system.display.DisplayLayout>} layouts
+ * event will be triggered. NOTE: This is only available to Chrome OS Kiosk apps
+ * and Web UI.
+ * @param {!Array<!chrome.system.display.DisplayLayout>} layouts The layout
+ *     information, required for all displays except     the primary display.
+ * @param {function():void=} callback Empty function called when the function
+ *     finishes. To find out     whether the function succeeded,
+ *     $(ref:runtime.lastError) should be     queried.
  * @see https://developer.chrome.com/extensions/system.display#method-setDisplayLayout
  */
-chrome.system.display.setDisplayLayout = function(layouts) {};
+chrome.system.display.setDisplayLayout = function(layouts, callback) {};
 
 /**
  * Enables/disables the unified desktop feature. Note that this simply enables
