@@ -123,6 +123,16 @@ public interface LocationBar extends UrlBarDelegate {
     void showUrlBarCursorWithoutFocusAnimations();
 
     /**
+     * @return Whether the UrlBar currently has focus.
+     */
+    boolean isUrlBarFocused();
+
+    /**
+     * Selects all of the editable text in the UrlBar.
+     */
+    void selectAll();
+
+    /**
      * Reverts any pending edits of the location bar and reset to the page state.  This does not
      * change the focus state of the location bar.
      */

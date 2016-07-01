@@ -700,6 +700,14 @@ public class CustomTabToolbar extends ToolbarLayout implements LocationBar,
     public void showUrlBarCursorWithoutFocusAnimations() {}
 
     @Override
+    public boolean isUrlBarFocused() {
+        return false;
+    }
+
+    @Override
+    public void selectAll() {}
+
+    @Override
     public void revertChanges() {}
 
     @Override

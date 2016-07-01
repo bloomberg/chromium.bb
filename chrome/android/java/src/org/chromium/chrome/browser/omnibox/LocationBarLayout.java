@@ -872,6 +872,16 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
     }
 
     @Override
+    public boolean isUrlBarFocused() {
+        return mUrlHasFocus;
+    }
+
+    @Override
+    public void selectAll() {
+        mUrlBar.selectAll();
+    }
+
+    @Override
     public void revertChanges() {
         if (!mUrlHasFocus) {
             setUrlToPageUrl();

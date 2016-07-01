@@ -947,11 +947,18 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
 
     /**
      * Focuses or unfocuses the URL bar.
+     *
+     * If you request focus and the UrlBar was already focused, this will select all of the text.
+     *
      * @param focused Whether URL bar should be focused.
      */
     public void setUrlBarFocus(boolean focused) {
         if (!isInitialized()) return;
+        boolean wasFocused = mToolbar.getLocationBar().isUrlBarFocused();
         mToolbar.getLocationBar().setUrlBarFocus(focused);
+        if (wasFocused && focused) {
+            mToolbar.getLocationBar().selectAll();
+        }
     }
 
     /**
