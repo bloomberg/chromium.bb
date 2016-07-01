@@ -63,9 +63,6 @@ class ErrorReporter {
   virtual void SendExtendedReportingReport(
       const std::string& serialized_report);
 
-  // Whether sending reports over HTTP is supported.
-  static bool IsHttpUploadUrlSupported();
-
   // Used by tests.
   static bool DecryptErrorReport(
       const uint8_t server_private_key[32],

@@ -81,30 +81,28 @@ TEST_F(ErrorReporterTest, ExtendedReportingSendReport) {
   EXPECT_EQ(mock_report_sender->latest_report(), kDummyReport);
 
   // Data should be encrypted when sent to an HTTP URL.
-  if (ErrorReporter::IsHttpUploadUrlSupported()) {
-    MockCertificateReportSender* http_mock_report_sender =
-        new MockCertificateReportSender();
-    GURL http_url(kDummyHttpReportUri);
-    ErrorReporter http_reporter(http_url, server_public_key_,
-                                kServerPublicKeyTestVersion,
-                                base::WrapUnique(http_mock_report_sender));
-    http_reporter.SendExtendedReportingReport(kDummyReport);
+  MockCertificateReportSender* http_mock_report_sender =
+      new MockCertificateReportSender();
+  GURL http_url(kDummyHttpReportUri);
+  ErrorReporter http_reporter(http_url, server_public_key_,
+                              kServerPublicKeyTestVersion,
+                              base::WrapUnique(http_mock_report_sender));
+  http_reporter.SendExtendedReportingReport(kDummyReport);
 
-    EXPECT_EQ(http_mock_report_sender->latest_report_uri(), http_url);
+  EXPECT_EQ(http_mock_report_sender->latest_report_uri(), http_url);
 
-    std::string uploaded_report;
-    EncryptedCertLoggerRequest encrypted_request;
-    ASSERT_TRUE(encrypted_request.ParseFromString(
-        http_mock_report_sender->latest_report()));
-    EXPECT_EQ(kServerPublicKeyTestVersion,
-              encrypted_request.server_public_key_version());
-    EXPECT_EQ(EncryptedCertLoggerRequest::AEAD_ECDH_AES_128_CTR_HMAC_SHA256,
-              encrypted_request.algorithm());
-    ASSERT_TRUE(ErrorReporter::DecryptErrorReport(
-        server_private_key_, encrypted_request, &uploaded_report));
+  std::string uploaded_report;
+  EncryptedCertLoggerRequest encrypted_request;
+  ASSERT_TRUE(encrypted_request.ParseFromString(
+      http_mock_report_sender->latest_report()));
+  EXPECT_EQ(kServerPublicKeyTestVersion,
+            encrypted_request.server_public_key_version());
+  EXPECT_EQ(EncryptedCertLoggerRequest::AEAD_ECDH_AES_128_CTR_HMAC_SHA256,
+            encrypted_request.algorithm());
+  ASSERT_TRUE(ErrorReporter::DecryptErrorReport(
+      server_private_key_, encrypted_request, &uploaded_report));
 
-    EXPECT_EQ(kDummyReport, uploaded_report);
-  }
+  EXPECT_EQ(kDummyReport, uploaded_report);
 }
 
 // This test decrypts a "known gold" report. It's intentionally brittle

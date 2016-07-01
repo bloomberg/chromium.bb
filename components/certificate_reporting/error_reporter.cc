@@ -131,7 +131,6 @@ void ErrorReporter::SendExtendedReportingReport(
   if (upload_url_.SchemeIsCryptographic()) {
     certificate_report_sender_->Send(upload_url_, serialized_report);
   } else {
-    DCHECK(IsHttpUploadUrlSupported());
     EncryptedCertLoggerRequest encrypted_report;
     if (!EncryptSerializedReport(server_public_key_, server_public_key_version_,
                                  serialized_report, &encrypted_report)) {
@@ -142,10 +141,6 @@ void ErrorReporter::SendExtendedReportingReport(
     encrypted_report.SerializeToString(&serialized_encrypted_report);
     certificate_report_sender_->Send(upload_url_, serialized_encrypted_report);
   }
-}
-
-bool ErrorReporter::IsHttpUploadUrlSupported() {
-  return true;
 }
 
 // Used only by tests.
