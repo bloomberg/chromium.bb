@@ -105,10 +105,7 @@ ChromeChannelForHistogram GetChromeChannelForHistogram(
 static base::LazyInstance<ChromeExtensionsClient> g_client =
     LAZY_INSTANCE_INITIALIZER;
 
-ChromeExtensionsClient::ChromeExtensionsClient()
-    : chrome_api_permissions_(ChromeAPIPermissions()),
-      extensions_api_permissions_(ExtensionsAPIPermissions()) {
-}
+ChromeExtensionsClient::ChromeExtensionsClient() {}
 
 ChromeExtensionsClient::~ChromeExtensionsClient() {
 }
@@ -354,8 +351,7 @@ std::set<base::FilePath> ChromeExtensionsClient::GetBrowserImagePaths(
       ExtensionsClient::GetBrowserImagePaths(extension);
 
   // Theme images
-  const base::DictionaryValue* theme_images =
-      extensions::ThemeInfo::GetImages(extension);
+  const base::DictionaryValue* theme_images = ThemeInfo::GetImages(extension);
   if (theme_images) {
     for (base::DictionaryValue::Iterator it(*theme_images); !it.IsAtEnd();
          it.Advance()) {
@@ -365,13 +361,12 @@ std::set<base::FilePath> ChromeExtensionsClient::GetBrowserImagePaths(
     }
   }
 
-  const extensions::ActionInfo* page_action =
-      extensions::ActionInfo::GetPageActionInfo(extension);
+  const ActionInfo* page_action = ActionInfo::GetPageActionInfo(extension);
   if (page_action && !page_action->default_icon.empty())
     page_action->default_icon.GetPaths(&image_paths);
 
-  const extensions::ActionInfo* browser_action =
-      extensions::ActionInfo::GetBrowserActionInfo(extension);
+  const ActionInfo* browser_action =
+      ActionInfo::GetBrowserActionInfo(extension);
   if (browser_action && !browser_action->default_icon.empty())
     browser_action->default_icon.GetPaths(&image_paths);
 
