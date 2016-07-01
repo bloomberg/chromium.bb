@@ -4277,6 +4277,74 @@ TEST_P(QuicStreamFactoryWithDestinationTest, SharedCertificate) {
   EXPECT_TRUE(AllDataConsumed());
 }
 
+// QuicStreamRequest is not pooled if PrivacyMode differs.
+TEST_P(QuicStreamFactoryWithDestinationTest, DifferentPrivacyMode) {
+  Initialize();
+
+  GURL url1("https://www.example.org/");
+  GURL url2("https://mail.example.org/");
+  origin1_ = HostPortPair::FromURL(url1);
+  origin2_ = HostPortPair::FromURL(url2);
+
+  HostPortPair destination = GetDestination();
+
+  scoped_refptr<X509Certificate> cert(
+      ImportCertFromFile(GetTestCertsDirectory(), "wildcard.pem"));
+  bool unused;
+  ASSERT_TRUE(cert->VerifyNameMatch(origin1_.host(), &unused));
+  ASSERT_TRUE(cert->VerifyNameMatch(origin2_.host(), &unused));
+  ASSERT_FALSE(cert->VerifyNameMatch(kDifferentHostname, &unused));
+
+  ProofVerifyDetailsChromium verify_details1;
+  verify_details1.cert_verify_result.verified_cert = cert;
+  verify_details1.cert_verify_result.is_issued_by_known_root = true;
+  crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details1);
+
+  ProofVerifyDetailsChromium verify_details2;
+  verify_details2.cert_verify_result.verified_cert = cert;
+  verify_details2.cert_verify_result.is_issued_by_known_root = true;
+  crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details2);
+
+  AddHangingSocketData();
+  AddHangingSocketData();
+
+  QuicStreamRequest request1(factory_.get());
+  EXPECT_EQ(ERR_IO_PENDING,
+            request1.Request(destination, PRIVACY_MODE_DISABLED,
+                             /*cert_verify_flags=*/0, url1, "GET", net_log_,
+                             callback_.callback()));
+  EXPECT_EQ(OK, callback_.WaitForResult());
+  std::unique_ptr<QuicHttpStream> stream1 = request1.CreateStream();
+  EXPECT_TRUE(stream1.get());
+  EXPECT_TRUE(HasActiveSession(origin1_));
+
+  TestCompletionCallback callback2;
+  QuicStreamRequest request2(factory_.get());
+  EXPECT_EQ(ERR_IO_PENDING,
+            request2.Request(destination, PRIVACY_MODE_ENABLED,
+                             /*cert_verify_flags=*/0, url2, "GET", net_log_,
+                             callback2.callback()));
+  EXPECT_EQ(OK, callback2.WaitForResult());
+  std::unique_ptr<QuicHttpStream> stream2 = request2.CreateStream();
+  EXPECT_TRUE(stream2.get());
+
+  // |request2| does not pool to the first session, because PrivacyMode does not
+  // match.  Instead, another session is opened to the same destination, but
+  // with a different QuicServerId.
+  QuicChromiumClientSession* session1 =
+      QuicHttpStreamPeer::GetSession(stream1.get());
+  QuicChromiumClientSession* session2 =
+      QuicHttpStreamPeer::GetSession(stream2.get());
+  EXPECT_NE(session1, session2);
+
+  EXPECT_EQ(QuicServerId(origin1_, PRIVACY_MODE_DISABLED),
+            session1->server_id());
+  EXPECT_EQ(QuicServerId(origin2_, PRIVACY_MODE_ENABLED),
+            session2->server_id());
+
+  EXPECT_TRUE(AllDataConsumed());
+}
+
 // QuicStreamRequest is not pooled if certificate does not match its origin.
 TEST_P(QuicStreamFactoryWithDestinationTest, DisjointCertificate) {
   Initialize();
