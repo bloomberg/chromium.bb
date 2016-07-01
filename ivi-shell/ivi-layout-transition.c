@@ -60,6 +60,10 @@ struct ivi_layout_transition {
 
 struct transition_node {
 	struct ivi_layout_transition *transition;
+
+	/* ivi_layout::pending_transition_list
+	 * ivi_layout_transition_set::transition_list
+	 */
 	struct wl_list link;
 };
 

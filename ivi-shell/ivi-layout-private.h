@@ -45,7 +45,7 @@ struct ivi_layout_view {
 };
 
 struct ivi_layout_surface {
-	struct wl_list link;
+	struct wl_list link;	/* ivi_layout::surface_list */
 	struct wl_signal property_changed;
 	int32_t update_count;
 	uint32_t id_surface;
@@ -63,7 +63,7 @@ struct ivi_layout_surface {
 };
 
 struct ivi_layout_layer {
-	struct wl_list link;
+	struct wl_list link;	/* ivi_layout::layer_list */
 	struct wl_signal property_changed;
 	uint32_t id_layer;
 
@@ -75,13 +75,13 @@ struct ivi_layout_layer {
 	struct {
 		struct ivi_layout_layer_properties prop;
 		struct wl_list view_list;	/* ivi_layout_view::pending_link */
-		struct wl_list link;
+		struct wl_list link;	/* ivi_layout_screen::pending.layer_list */
 	} pending;
 
 	struct {
 		int dirty;
 		struct wl_list view_list;	/* ivi_layout_view::order_link */
-		struct wl_list link;
+		struct wl_list link;	/* ivi_layout_screen::order.layer_list */
 	} order;
 
 	int32_t ref_count;
@@ -90,9 +90,9 @@ struct ivi_layout_layer {
 struct ivi_layout {
 	struct weston_compositor *compositor;
 
-	struct wl_list surface_list;
-	struct wl_list layer_list;
-	struct wl_list screen_list;
+	struct wl_list surface_list;	/* ivi_layout_surface::link */
+	struct wl_list layer_list;	/* ivi_layout_layer::link */
+	struct wl_list screen_list;	/* ivi_layout_screen::link */
 	struct wl_list view_list;	/* ivi_layout_view::link */
 
 	struct {
@@ -109,7 +109,7 @@ struct ivi_layout {
 	struct weston_layer layout_layer;
 
 	struct ivi_layout_transition_set *transitions;
-	struct wl_list pending_transition_list;
+	struct wl_list pending_transition_list;	/* transition_node::link */
 };
 
 struct ivi_layout *get_instance(void);

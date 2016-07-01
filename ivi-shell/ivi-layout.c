@@ -76,18 +76,18 @@
 struct ivi_layout;
 
 struct ivi_layout_screen {
-	struct wl_list link;
+	struct wl_list link;	/* ivi_layout::screen_list */
 
 	struct ivi_layout *layout;
 	struct weston_output *output;
 
 	struct {
-		struct wl_list layer_list;
+		struct wl_list layer_list;	/* ivi_layout_layer::pending.link */
 	} pending;
 
 	struct {
 		int dirty;
-		struct wl_list layer_list;
+		struct wl_list layer_list;	/* ivi_layout_layer::order.link */
 	} order;
 };
 
