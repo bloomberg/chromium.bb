@@ -13,10 +13,8 @@
 #include "tools/gn/test_with_scope.h"
 
 TEST(NinjaActionTargetWriter, WriteOutputFilesForBuildLine) {
-  TestWithScope setup;
   Err err;
-
-  setup.build_settings()->SetBuildDir(SourceDir("//out/Debug/"));
+  TestWithScope setup;
 
   Target target(setup.settings(), Label(SourceDir("//foo/"), "bar"));
   target.set_output_type(Target::ACTION_FOREACH);
@@ -39,10 +37,9 @@ TEST(NinjaActionTargetWriter, WriteOutputFilesForBuildLine) {
 
 // Tests an action with no sources.
 TEST(NinjaActionTargetWriter, ActionNoSources) {
-  TestWithScope setup;
   Err err;
+  TestWithScope setup;
 
-  setup.build_settings()->SetBuildDir(SourceDir("//out/Debug/"));
   Target target(setup.settings(), Label(SourceDir("//foo/"), "bar"));
   target.set_output_type(Target::ACTION);
 
@@ -79,10 +76,9 @@ TEST(NinjaActionTargetWriter, ActionNoSources) {
 
 // Tests an action with no sources and console = true
 TEST(NinjaActionTargetWriter, ActionNoSourcesConsole) {
-  TestWithScope setup;
   Err err;
+  TestWithScope setup;
 
-  setup.build_settings()->SetBuildDir(SourceDir("//out/Debug/"));
   Target target(setup.settings(), Label(SourceDir("//foo/"), "bar"));
   target.set_output_type(Target::ACTION);
 
@@ -121,10 +117,9 @@ TEST(NinjaActionTargetWriter, ActionNoSourcesConsole) {
 // Makes sure that we write sources as input dependencies for actions with
 // both sources and inputs (ACTION_FOREACH treats the sources differently).
 TEST(NinjaActionTargetWriter, ActionWithSources) {
-  TestWithScope setup;
   Err err;
+  TestWithScope setup;
 
-  setup.build_settings()->SetBuildDir(SourceDir("//out/Debug/"));
   Target target(setup.settings(), Label(SourceDir("//foo/"), "bar"));
   target.set_output_type(Target::ACTION);
 
@@ -161,10 +156,8 @@ TEST(NinjaActionTargetWriter, ActionWithSources) {
 }
 
 TEST(NinjaActionTargetWriter, ForEach) {
-  TestWithScope setup;
   Err err;
-
-  setup.build_settings()->SetBuildDir(SourceDir("//out/Debug/"));
+  TestWithScope setup;
 
   // Some dependencies that the action can depend on. Use actions for these
   // so they have a nice platform-independent stamp file that can appear in the
@@ -243,10 +236,9 @@ TEST(NinjaActionTargetWriter, ForEach) {
 }
 
 TEST(NinjaActionTargetWriter, ForEachWithDepfile) {
-  TestWithScope setup;
   Err err;
+  TestWithScope setup;
 
-  setup.build_settings()->SetBuildDir(SourceDir("//out/Debug/"));
   Target target(setup.settings(), Label(SourceDir("//foo/"), "bar"));
   target.set_output_type(Target::ACTION_FOREACH);
 
@@ -306,10 +298,9 @@ TEST(NinjaActionTargetWriter, ForEachWithDepfile) {
 }
 
 TEST(NinjaActionTargetWriter, ForEachWithResponseFile) {
-  TestWithScope setup;
   Err err;
+  TestWithScope setup;
 
-  setup.build_settings()->SetBuildDir(SourceDir("//out/Debug/"));
   Target target(setup.settings(), Label(SourceDir("//foo/"), "bar"));
   target.set_output_type(Target::ACTION_FOREACH);
 

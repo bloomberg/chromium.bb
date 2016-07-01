@@ -13,10 +13,8 @@
 #include "tools/gn/test_with_scope.h"
 
 TEST(NinjaBinaryTargetWriter, SourceSet) {
-  TestWithScope setup;
   Err err;
-
-  setup.build_settings()->SetBuildDir(SourceDir("//out/Debug/"));
+  TestWithScope setup;
 
   Target target(setup.settings(), Label(SourceDir("//foo/"), "bar"));
   target.set_output_type(Target::SOURCE_SET);
@@ -257,10 +255,8 @@ TEST(NinjaBinaryTargetWriter, CompleteStaticLibrary) {
 // This tests that output extension and output dir overrides apply, and input
 // dependencies are applied.
 TEST(NinjaBinaryTargetWriter, OutputExtensionAndInputDeps) {
-  TestWithScope setup;
   Err err;
-
-  setup.build_settings()->SetBuildDir(SourceDir("//out/Debug/"));
+  TestWithScope setup;
 
   // An action for our library to depend on.
   Target action(setup.settings(), Label(SourceDir("//foo/"), "action"));
@@ -314,10 +310,8 @@ TEST(NinjaBinaryTargetWriter, OutputExtensionAndInputDeps) {
 
 // Tests libs are applied.
 TEST(NinjaBinaryTargetWriter, LibsAndLibDirs) {
-  TestWithScope setup;
   Err err;
-
-  setup.build_settings()->SetBuildDir(SourceDir("//out/Debug/"));
+  TestWithScope setup;
 
   // A shared library w/ libs and lib_dirs.
   Target target(setup.settings(), Label(SourceDir("//foo/"), "shlib"));
@@ -351,10 +345,8 @@ TEST(NinjaBinaryTargetWriter, LibsAndLibDirs) {
 }
 
 TEST(NinjaBinaryTargetWriter, EmptyOutputExtension) {
-  TestWithScope setup;
   Err err;
-
-  setup.build_settings()->SetBuildDir(SourceDir("//out/Debug/"));
+  TestWithScope setup;
 
   // This test is the same as OutputExtensionAndInputDeps, except that we call
   // set_output_extension("") and ensure that we get an empty one and override
@@ -397,10 +389,8 @@ TEST(NinjaBinaryTargetWriter, EmptyOutputExtension) {
 }
 
 TEST(NinjaBinaryTargetWriter, SourceSetDataDeps) {
-  TestWithScope setup;
-  setup.build_settings()->SetBuildDir(SourceDir("//out/Debug/"));
-
   Err err;
+  TestWithScope setup;
 
   // This target is a data (runtime) dependency of the intermediate target.
   Target data(setup.settings(), Label(SourceDir("//foo/"), "data_target"));
@@ -479,16 +469,14 @@ TEST(NinjaBinaryTargetWriter, SourceSetDataDeps) {
 }
 
 TEST(NinjaBinaryTargetWriter, SharedLibraryModuleDefinitionFile) {
+  Err err;
   TestWithScope setup;
-  setup.build_settings()->SetBuildDir(SourceDir("//out/Debug/"));
 
   Target shared_lib(setup.settings(), Label(SourceDir("//foo/"), "bar"));
   shared_lib.set_output_type(Target::SHARED_LIBRARY);
   shared_lib.SetToolchain(setup.toolchain());
   shared_lib.sources().push_back(SourceFile("//foo/sources.cc"));
   shared_lib.sources().push_back(SourceFile("//foo/bar.def"));
-
-  Err err;
   ASSERT_TRUE(shared_lib.OnResolved(&err));
 
   std::ostringstream out;
@@ -515,16 +503,14 @@ TEST(NinjaBinaryTargetWriter, SharedLibraryModuleDefinitionFile) {
 }
 
 TEST(NinjaBinaryTargetWriter, LoadableModule) {
+  Err err;
   TestWithScope setup;
-  setup.build_settings()->SetBuildDir(SourceDir("//out/Debug/"));
 
   Target loadable_module(setup.settings(), Label(SourceDir("//foo/"), "bar"));
   loadable_module.set_output_type(Target::LOADABLE_MODULE);
   loadable_module.visibility().SetPublic();
   loadable_module.SetToolchain(setup.toolchain());
   loadable_module.sources().push_back(SourceFile("//foo/sources.cc"));
-
-  Err err;
   ASSERT_TRUE(loadable_module.OnResolved(&err)) << err.message();
 
   std::ostringstream out;
@@ -858,10 +844,8 @@ TEST(NinjaBinaryTargetWriter, DupeObjFileError) {
 // This tests that output extension and output dir overrides apply, and input
 // dependencies are applied.
 TEST(NinjaBinaryTargetWriter, InputFiles) {
-  TestWithScope setup;
   Err err;
-
-  setup.build_settings()->SetBuildDir(SourceDir("//out/Debug/"));
+  TestWithScope setup;
 
   // This target has one input.
   {

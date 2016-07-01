@@ -12,10 +12,9 @@
 
 // Tests multiple files with an output pattern and no toolchain dependency.
 TEST(NinjaCopyTargetWriter, Run) {
-  TestWithScope setup;
   Err err;
+  TestWithScope setup;
 
-  setup.build_settings()->SetBuildDir(SourceDir("//out/Debug/"));
   Target target(setup.settings(), Label(SourceDir("//foo/"), "bar"));
   target.set_output_type(Target::COPY_FILES);
 
@@ -43,10 +42,9 @@ TEST(NinjaCopyTargetWriter, Run) {
 
 // Tests a single file with no output pattern.
 TEST(NinjaCopyTargetWriter, ToolchainDeps) {
-  TestWithScope setup;
   Err err;
+  TestWithScope setup;
 
-  setup.build_settings()->SetBuildDir(SourceDir("//out/Debug/"));
   Target target(setup.settings(), Label(SourceDir("//foo/"), "bar"));
   target.set_output_type(Target::COPY_FILES);
 
@@ -71,10 +69,8 @@ TEST(NinjaCopyTargetWriter, ToolchainDeps) {
 }
 
 TEST(NinjaCopyTargetWriter, OrderOnlyDeps) {
-  TestWithScope setup;
   Err err;
-
-  setup.build_settings()->SetBuildDir(SourceDir("//out/Debug/"));
+  TestWithScope setup;
 
   Target target(setup.settings(), Label(SourceDir("//foo/"), "bar"));
   target.set_output_type(Target::COPY_FILES);

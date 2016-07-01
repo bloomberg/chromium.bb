@@ -13,9 +13,7 @@
 
 TEST(NinjaBundleDataTargetWriter, Run) {
   Err err;
-
   TestWithScope setup;
-  setup.build_settings()->SetBuildDir(SourceDir("//out/Debug/"));
 
   Target bundle_data(setup.settings(), Label(SourceDir("//foo/"), "data"));
   bundle_data.set_output_type(Target::BUNDLE_DATA);

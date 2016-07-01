@@ -8,12 +8,10 @@
 #include "tools/gn/test_with_scope.h"
 
 TEST(NinjaGroupTargetWriter, Run) {
-  TestWithScope setup;
   Err err;
+  TestWithScope setup;
 
-  setup.build_settings()->SetBuildDir(SourceDir("//out/Debug/"));
   Target target(setup.settings(), Label(SourceDir("//foo/"), "bar"));
-
   target.set_output_type(Target::GROUP);
   target.visibility().SetPublic();
 

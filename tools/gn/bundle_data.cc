@@ -148,7 +148,7 @@ SourceFile BundleData::GetCompiledAssetCatalogPath() const {
 }
 
 SourceFile BundleData::GetBundleRootDirOutput(const Settings* settings) const {
-  const SourceDir& build_dir = settings->build_settings()->build_dir();
+  const SourceDir& build_dir = settings->toolchain_output_dir();
   std::string bundle_root_relative = RebasePath(root_dir().value(), build_dir);
 
   size_t first_component = bundle_root_relative.find('/');

@@ -26,9 +26,7 @@ void SetupBundleDataDir(BundleData* bundle_data, const std::string& root_dir) {
 // Tests multiple files with an output pattern.
 TEST(NinjaCreateBundleTargetWriter, Run) {
   Err err;
-
   TestWithScope setup;
-  setup.build_settings()->SetBuildDir(SourceDir("//out/Debug/"));
 
   Target bundle_data(setup.settings(), Label(SourceDir("//foo/"), "data"));
   bundle_data.set_output_type(Target::BUNDLE_DATA);
@@ -70,9 +68,7 @@ TEST(NinjaCreateBundleTargetWriter, Run) {
 // Tests multiple files from asset catalog.
 TEST(NinjaCreateBundleTargetWriter, AssetCatalog) {
   Err err;
-
   TestWithScope setup;
-  setup.build_settings()->SetBuildDir(SourceDir("//out/Debug/"));
 
   Target bundle_data(setup.settings(), Label(SourceDir("//foo/"), "data"));
   bundle_data.set_output_type(Target::BUNDLE_DATA);
@@ -120,9 +116,7 @@ TEST(NinjaCreateBundleTargetWriter, AssetCatalog) {
 // correctly.
 TEST(NinjaCreateBundleTargetWriter, PhonyTarget) {
   Err err;
-
   TestWithScope setup;
-  setup.build_settings()->SetBuildDir(SourceDir("//out/Debug/"));
 
   Target create_bundle(
       setup.settings(),
@@ -148,9 +142,7 @@ TEST(NinjaCreateBundleTargetWriter, PhonyTarget) {
 // some asset catalog.
 TEST(NinjaCreateBundleTargetWriter, Complex) {
   Err err;
-
   TestWithScope setup;
-  setup.build_settings()->SetBuildDir(SourceDir("//out/Debug/"));
 
   Target bundle_data0(setup.settings(),
                       Label(SourceDir("//qux/"), "info_plist"));
@@ -251,9 +243,7 @@ TEST(NinjaCreateBundleTargetWriter, Complex) {
 // Tests code signing steps.
 TEST(NinjaCreateBundleTargetWriter, CodeSigning) {
   Err err;
-
   TestWithScope setup;
-  setup.build_settings()->SetBuildDir(SourceDir("//out/Debug/"));
 
   Target executable(setup.settings(), Label(SourceDir("//baz/"), "quz"));
   executable.set_output_type(Target::EXECUTABLE);
