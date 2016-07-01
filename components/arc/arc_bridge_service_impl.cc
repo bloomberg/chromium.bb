@@ -24,6 +24,8 @@
 
 namespace arc {
 
+extern ArcBridgeService* g_arc_bridge_service;
+
 namespace {
 constexpr int64_t kReconnectDelayInSeconds = 5;
 }  // namespace
@@ -34,10 +36,15 @@ ArcBridgeServiceImpl::ArcBridgeServiceImpl(
       binding_(this),
       session_started_(false),
       weak_factory_(this) {
+  DCHECK(!g_arc_bridge_service);
+  g_arc_bridge_service = this;
   bootstrap_->set_delegate(this);
 }
 
-ArcBridgeServiceImpl::~ArcBridgeServiceImpl() {}
+ArcBridgeServiceImpl::~ArcBridgeServiceImpl() {
+  DCHECK(g_arc_bridge_service == this);
+  g_arc_bridge_service = nullptr;
+}
 
 void ArcBridgeServiceImpl::HandleStartup() {
   DCHECK(CalledOnValidThread());

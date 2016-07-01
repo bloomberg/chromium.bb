@@ -13,24 +13,16 @@
 
 namespace arc {
 
-namespace {
-
 // Weak pointer.  This class is owned by ArcServiceManager.
 ArcBridgeService* g_arc_bridge_service = nullptr;
 
-}  // namespace
-
 ArcBridgeService::ArcBridgeService()
     : available_(false), state_(State::STOPPED), weak_factory_(this) {
-  DCHECK(!g_arc_bridge_service);
-  g_arc_bridge_service = this;
 }
 
 ArcBridgeService::~ArcBridgeService() {
   DCHECK(CalledOnValidThread());
   DCHECK(state() == State::STOPPING || state() == State::STOPPED);
-  DCHECK(g_arc_bridge_service == this);
-  g_arc_bridge_service = nullptr;
 }
 
 // static
