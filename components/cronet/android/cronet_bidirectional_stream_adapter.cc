@@ -23,6 +23,7 @@
 #include "net/http/http_status_code.h"
 #include "net/http/http_transaction_factory.h"
 #include "net/http/http_util.h"
+#include "net/quic/quic_protocol.h"
 #include "net/spdy/spdy_header_block.h"
 #include "net/ssl/ssl_info.h"
 #include "net/url_request/http_user_agent_settings.h"
@@ -315,8 +316,10 @@ void CronetBidirectionalStreamAdapter::OnFailed(int error) {
   DCHECK(context_->IsOnNetworkThread());
   stream_failed_ = true;
   JNIEnv* env = base::android::AttachCurrentThread();
+  // TODO(mgersh): Add support for NetErrorDetails (http://crbug.com/624942)
   cronet::Java_CronetBidirectionalStream_onError(
       env, owner_.obj(), NetErrorToUrlRequestError(error), error,
+      net::QUIC_NO_ERROR,
       ConvertUTF8ToJavaString(env, net::ErrorToString(error)).obj(),
       bidi_stream_->GetTotalReceivedBytes());
 }

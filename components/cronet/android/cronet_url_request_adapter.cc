@@ -23,6 +23,7 @@
 #include "net/http/http_response_headers.h"
 #include "net/http/http_status_code.h"
 #include "net/http/http_util.h"
+#include "net/quic/quic_protocol.h"
 #include "net/ssl/ssl_info.h"
 #include "net/url_request/redirect_info.h"
 #include "net/url_request/url_request_context.h"
@@ -235,6 +236,7 @@ void CronetURLRequestAdapter::OnSSLCertificateError(
   JNIEnv* env = base::android::AttachCurrentThread();
   cronet::Java_CronetUrlRequest_onError(
       env, owner_.obj(), NetErrorToUrlRequestError(net_error), net_error,
+      net::QUIC_NO_ERROR,
       ConvertUTF8ToJavaString(env, net::ErrorToString(net_error)).obj(),
       request->GetTotalReceivedBytes());
 }
@@ -368,11 +370,14 @@ bool CronetURLRequestAdapter::MaybeReportError(net::URLRequest* request) const {
   if (url_request_->status().is_success())
     return false;
   int net_error = url_request_->status().error();
+  net::NetErrorDetails net_error_details;
+  url_request_->PopulateNetErrorDetails(&net_error_details);
   VLOG(1) << "Error " << net::ErrorToString(net_error)
           << " on chromium request: " << initial_url_.possibly_invalid_spec();
   JNIEnv* env = base::android::AttachCurrentThread();
   cronet::Java_CronetUrlRequest_onError(
       env, owner_.obj(), NetErrorToUrlRequestError(net_error), net_error,
+      net_error_details.quic_connection_error,
       ConvertUTF8ToJavaString(env, net::ErrorToString(net_error)).obj(),
       request->GetTotalReceivedBytes());
   return true;

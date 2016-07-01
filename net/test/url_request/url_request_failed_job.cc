@@ -124,6 +124,13 @@ void URLRequestFailedJob::GetResponseInfo(HttpResponseInfo* info) {
   *info = response_info_;
 }
 
+void URLRequestFailedJob::PopulateNetErrorDetails(
+    NetErrorDetails* details) const {
+  if (net_error_ == ERR_QUIC_PROTOCOL_ERROR) {
+    details->quic_connection_error = QUIC_INTERNAL_ERROR;
+  }
+}
+
 // static
 void URLRequestFailedJob::AddUrlHandler() {
   return AddUrlHandlerForHostname(kMockHostname);

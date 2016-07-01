@@ -43,6 +43,7 @@ class URLRequestFailedJob : public URLRequestJob {
   int ReadRawData(IOBuffer* buf, int buf_size) override;
   int GetResponseCode() const override;
   void GetResponseInfo(HttpResponseInfo* info) override;
+  void PopulateNetErrorDetails(NetErrorDetails* details) const override;
 
   // Adds the testing URLs to the URLRequestFilter.
   static void AddUrlHandler();

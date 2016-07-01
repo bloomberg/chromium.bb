@@ -28,6 +28,8 @@ UrlRequestError NetErrorToUrlRequestError(int net_error) {
       return CONNECTION_RESET;
     case net::ERR_ADDRESS_UNREACHABLE:
       return ADDRESS_UNREACHABLE;
+    case net::ERR_QUIC_PROTOCOL_ERROR:
+      return QUIC_PROTOCOL_FAILED;
     default:
       return OTHER;
   }

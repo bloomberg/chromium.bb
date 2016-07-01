@@ -641,15 +641,19 @@ final class CronetUrlRequest implements UrlRequest {
      */
     @SuppressWarnings("unused")
     @CalledByNative
-    private void onError(
-            int errorCode, int nativeError, String errorString, long receivedBytesCount) {
+    private void onError(int errorCode, int nativeError, int nativeQuicError, String errorString,
+            long receivedBytesCount) {
         if (mResponseInfo != null) {
             mResponseInfo.setReceivedBytesCount(
                     mReceivedBytesCountFromRedirects + receivedBytesCount);
         }
-        UrlRequestException requestError = new UrlRequestException(
-                "Exception in CronetUrlRequest: " + errorString, errorCode, nativeError);
-        failWithException(requestError);
+        if (errorCode == UrlRequestException.ERROR_QUIC_PROTOCOL_FAILED) {
+            failWithException(new QuicException(
+                    "Exception in CronetUrlRequest: " + errorString, nativeError, nativeQuicError));
+        } else {
+            failWithException(new UrlRequestException(
+                    "Exception in CronetUrlRequest: " + errorString, errorCode, nativeError));
+        }
     }
 
     /**

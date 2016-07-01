@@ -582,13 +582,18 @@ class CronetBidirectionalStream extends BidirectionalStream {
 
     @SuppressWarnings("unused")
     @CalledByNative
-    private void onError(
-            int errorCode, int nativeError, String errorString, long receivedBytesCount) {
+    private void onError(int errorCode, int nativeError, int nativeQuicError, String errorString,
+            long receivedBytesCount) {
         if (mResponseInfo != null) {
             mResponseInfo.setReceivedBytesCount(receivedBytesCount);
         }
-        failWithException(new CronetException(
-                "Exception in BidirectionalStream: " + errorString, errorCode, nativeError));
+        if (errorCode == UrlRequestException.ERROR_QUIC_PROTOCOL_FAILED) {
+            failWithException(new QuicException("Exception in BidirectionalStream: " + errorString,
+                    nativeError, nativeQuicError));
+        } else {
+            failWithException(new CronetException(
+                    "Exception in BidirectionalStream: " + errorString, errorCode, nativeError));
+        }
     }
 
     /**

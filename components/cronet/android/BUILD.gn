@@ -261,6 +261,7 @@ android_library("cronet_api") {
     "api/src/org/chromium/net/NetworkQualityRttListener.java",
     "api/src/org/chromium/net/NetworkQualityThroughputListener.java",
     "api/src/org/chromium/net/Preconditions.java",
+    "api/src/org/chromium/net/QuicException.java",
     "api/src/org/chromium/net/ResponseTooLargeException.java",
     "api/src/org/chromium/net/UploadDataProvider.java",
     "api/src/org/chromium/net/UploadDataProviders.java",

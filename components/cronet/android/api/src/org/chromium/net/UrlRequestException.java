@@ -14,7 +14,9 @@ import java.io.IOException;
  *     {@link #getErrorCode} will return {@link #ERROR_LISTENER_EXCEPTION_THROWN}.
  * <li>Cronet fails to process a network request. In this case
  *     {@link #getErrorCode} and {@link #getCronetInternalErrorCode} can be used to get more
- *     information about the specific type of failure.
+ *     information about the specific type of failure. If {@link #getErrorCode}
+ *     returns {@link #ERROR_QUIC_PROTOCOL_FAILED}, this exception can be cast to a
+ *     {@link QuicException} which can provide further details.
  * </ul>
  */
 public class UrlRequestException extends IOException {
@@ -63,6 +65,12 @@ public class UrlRequestException extends IOException {
      * route to the specified host or network.
      */
     public static final int ERROR_ADDRESS_UNREACHABLE = UrlRequestError.ADDRESS_UNREACHABLE;
+    /**
+     * Error code indicating an error related to the <a href="https://www.chromium.org/quic">
+     * QUIC</a> protocol. When {@link #getErrorCode} returns this code, this exception can be cast
+     * to {@link QuicException} for more information.
+     */
+    public static final int ERROR_QUIC_PROTOCOL_FAILED = UrlRequestError.QUIC_PROTOCOL_FAILED;
     /**
      * Error code indicating another type of error was encountered.
      * {@link #getCronetInternalErrorCode} can be consulted to get a more specific cause.
