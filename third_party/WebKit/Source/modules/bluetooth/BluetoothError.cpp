@@ -48,6 +48,7 @@ DOMException* BluetoothError::take(ScriptPromiseResolver*, const WebBluetoothErr
         MAP_ERROR(UNTRANSLATED_CONNECT_ERROR_CODE, NetworkError, "Unknown ConnectErrorCode.");
 
         // NotFoundErrors:
+        MAP_ERROR(WEB_BLUETOOTH_NOT_SUPPORTED, NotFoundError, "Web Bluetooth is not supported on this platform. For a list of supported platforms see: https://goo.gl/J6ASzs");
         MAP_ERROR(NO_BLUETOOTH_ADAPTER, NotFoundError, "Bluetooth adapter not available.");
         MAP_ERROR(CHOSEN_DEVICE_VANISHED, NotFoundError, "User selected a device that doesn't exist anymore.");
         MAP_ERROR(CHOOSER_CANCELLED, NotFoundError, "User cancelled the requestDevice() chooser.");

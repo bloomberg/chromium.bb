@@ -121,6 +121,8 @@
         'shell/browser/layout_test/layout_test_devtools_frontend.h',
         'shell/browser/layout_test/layout_test_download_manager_delegate.cc',
         'shell/browser/layout_test/layout_test_download_manager_delegate.h',
+        'shell/browser/layout_test/layout_test_first_device_bluetooth_chooser.cc',
+        'shell/browser/layout_test/layout_test_first_device_bluetooth_chooser.h',
         'shell/browser/layout_test/layout_test_javascript_dialog_manager.cc',
         'shell/browser/layout_test/layout_test_javascript_dialog_manager.h',
         'shell/browser/layout_test/layout_test_message_filter.cc',

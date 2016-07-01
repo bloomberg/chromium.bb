@@ -498,8 +498,6 @@
       'browser/bluetooth/bluetooth_metrics.cc',
       'browser/bluetooth/bluetooth_metrics.h',
       'browser/bluetooth/cache_query_result.h',
-      'browser/bluetooth/first_device_bluetooth_chooser.cc',
-      'browser/bluetooth/first_device_bluetooth_chooser.h',
       'browser/bluetooth/frame_connected_bluetooth_devices.cc',
       'browser/bluetooth/frame_connected_bluetooth_devices.h',
       'browser/bluetooth/web_bluetooth_service_impl.cc',

@@ -42,6 +42,7 @@
 #include "content/public/common/url_constants.h"
 #include "content/shell/browser/layout_test/layout_test_bluetooth_chooser_factory.h"
 #include "content/shell/browser/layout_test/layout_test_devtools_frontend.h"
+#include "content/shell/browser/layout_test/layout_test_first_device_bluetooth_chooser.h"
 #include "content/shell/browser/shell.h"
 #include "content/shell/browser/shell_browser_context.h"
 #include "content/shell/browser/shell_content_browser_client.h"
@@ -399,7 +400,7 @@ std::unique_ptr<BluetoothChooser> BlinkTestController::RunBluetoothChooser(
     return bluetooth_chooser_factory_->RunBluetoothChooser(frame,
                                                            event_handler);
   }
-  return nullptr;
+  return base::MakeUnique<LayoutTestFirstDeviceBluetoothChooser>(event_handler);
 }
 
 bool BlinkTestController::OnMessageReceived(const IPC::Message& message) {

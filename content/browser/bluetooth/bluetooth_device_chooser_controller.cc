@@ -14,7 +14,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "content/browser/bluetooth/bluetooth_blacklist.h"
 #include "content/browser/bluetooth/bluetooth_metrics.h"
-#include "content/browser/bluetooth/first_device_bluetooth_chooser.h"
 #include "content/browser/bluetooth/web_bluetooth_service_impl.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
@@ -303,9 +302,8 @@ void BluetoothDeviceChooserController::GetDevice(
   }
 
   if (!chooser_.get()) {
-    LOG(WARNING)
-        << "No Bluetooth chooser implementation; falling back to first device.";
-    chooser_.reset(new FirstDeviceBluetoothChooser(chooser_event_handler));
+    PostErrorCallback(
+        blink::mojom::WebBluetoothError::WEB_BLUETOOTH_NOT_SUPPORTED);
   }
 
   if (!chooser_->CanAskForScanningPermission()) {
