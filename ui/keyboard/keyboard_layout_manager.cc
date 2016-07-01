@@ -19,7 +19,11 @@ void KeyboardLayoutManager::OnWindowResized() {
     // desired bounds before changing the bounds of the virtual keyboard window.
     gfx::Rect container_bounds = controller_->GetContainerWindow()->bounds();
     // Always align container window and keyboard window.
-    SetChildBoundsDirect(keyboard_, gfx::Rect(container_bounds.size()));
+    if (controller_->keyboard_mode() == FULL_WIDTH) {
+      SetChildBounds(keyboard_, gfx::Rect(container_bounds.size()));
+    } else {
+      SetChildBoundsDirect(keyboard_, gfx::Rect(container_bounds.size()));
+    }
   }
 }
 
@@ -42,7 +46,6 @@ void KeyboardLayoutManager::SetChildBounds(aura::Window* child,
   // window) should change the container window first. Then the child window is
   // resized and covers the container window. Note the child's bound is only set
   // in OnWindowResized.
-  gfx::Rect old_bounds = controller_->GetContainerWindow()->bounds();
   gfx::Rect new_bounds = requested_bounds;
   if (controller_->keyboard_mode() == FULL_WIDTH) {
     const gfx::Rect& window_bounds =
@@ -57,9 +60,12 @@ void KeyboardLayoutManager::SetChildBounds(aura::Window* child,
   // Keyboard bounds should only be reset when it actually changes. Otherwise
   // it interrupts the initial animation of showing the keyboard. Described in
   // crbug.com/356753.
-  if (new_bounds == old_bounds) {
+  gfx::Rect old_bounds = keyboard_->GetTargetBounds();
+  aura::Window::ConvertRectToTarget(keyboard_,
+                                    keyboard_->GetRootWindow(),
+                                    &old_bounds);
+  if (new_bounds == old_bounds)
     return;
-  }
 
   ui::LayerAnimator* animator =
       controller_->GetContainerWindow()->layer()->GetAnimator();
