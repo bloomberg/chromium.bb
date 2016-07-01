@@ -5,6 +5,7 @@
 #include "ash/first_run/first_run_helper_impl.h"
 
 #include "ash/common/shell_window_ids.h"
+#include "ash/shelf/app_list_button.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shell.h"
 #include "ash/system/tray/system_tray.h"
@@ -53,7 +54,7 @@ views::Widget* FirstRunHelperImpl::GetOverlayWidget() {
 
 gfx::Rect FirstRunHelperImpl::GetAppListButtonBounds() {
   Shelf* shelf = Shelf::ForPrimaryDisplay();
-  views::View* app_button = shelf->GetAppListButtonView();
+  AppListButton* app_button = shelf->GetAppListButton();
   return app_button->GetBoundsInScreen();
 }
 

@@ -38,6 +38,16 @@ class VIEWS_EXPORT InkDropHostView : public View, public InkDropHost {
   void set_ink_drop_size(const gfx::Size& size) { ink_drop_size_ = size; }
 
  protected:
+  // Used in SetInkDropMode() to specify whether the ink drop effect is enabled
+  // or not for the view. In case of having an ink drop, it also specifies
+  // whether the default gesture event handler for the ink drop should be
+  // installed or the subclass will handle gesture events itself.
+  enum class InkDropMode {
+    OFF,
+    ON,
+    ON_NO_GESTURE_HANDLER,
+  };
+
   static const int kInkDropSmallCornerRadius;
 
   void set_ink_drop_visible_opacity(float visible_opacity) {
@@ -84,7 +94,7 @@ class VIEWS_EXPORT InkDropHostView : public View, public InkDropHost {
   // Toggle to enable/disable an InkDrop on this View.  Descendants can override
   // CreateInkDropHighlight() and CreateInkDropRipple() to change the look/feel
   // of the InkDrop.
-  void SetHasInkDrop(bool has_an_ink_drop);
+  void SetInkDropMode(InkDropMode ink_drop_mode);
 
  private:
   class InkDropGestureHandler;

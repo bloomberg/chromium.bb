@@ -26,6 +26,7 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/vector_icons_public.h"
+#include "ui/views/animation/square_ink_drop_ripple.h"
 #include "ui/views/painter.h"
 
 namespace ash {
@@ -36,6 +37,11 @@ AppListButton::AppListButton(InkDropButtonListener* listener,
       draw_background_as_active_(false),
       listener_(listener),
       shelf_view_(shelf_view) {
+  if (ash::MaterialDesignController::IsShelfMaterial()) {
+    SetInkDropMode(InkDropMode::ON_NO_GESTURE_HANDLER);
+    set_ink_drop_base_color(kShelfInkDropBaseColor);
+    set_ink_drop_visible_opacity(kShelfInkDropVisibleOpacity);
+  }
   SetAccessibleName(
       app_list::switches::IsExperimentalAppListEnabled()
           ? l10n_util::GetStringUTF16(IDS_ASH_SHELF_APP_LIST_LAUNCHER_TITLE)
@@ -48,6 +54,14 @@ AppListButton::AppListButton(InkDropButtonListener* listener,
 }
 
 AppListButton::~AppListButton() {}
+
+void AppListButton::OnAppListShown() {
+  AnimateInkDrop(views::InkDropState::ACTIVATED, nullptr);
+}
+
+void AppListButton::OnAppListDismissed() {
+  AnimateInkDrop(views::InkDropState::DEACTIVATED, nullptr);
+}
 
 bool AppListButton::OnMousePressed(const ui::MouseEvent& event) {
   ImageButton::OnMousePressed(event);
@@ -72,10 +86,15 @@ bool AppListButton::OnMouseDragged(const ui::MouseEvent& event) {
 }
 
 void AppListButton::OnGestureEvent(ui::GestureEvent* event) {
+  const bool is_material = ash::MaterialDesignController::IsShelfMaterial();
+  const bool touch_feedback =
+      !is_material && switches::IsTouchFeedbackEnabled();
   switch (event->type()) {
     case ui::ET_GESTURE_SCROLL_BEGIN:
-      if (switches::IsTouchFeedbackEnabled())
+      if (touch_feedback)
         SetDrawBackgroundAsActive(false);
+      else if (is_material)
+        AnimateInkDrop(views::InkDropState::HIDDEN, event);
       shelf_view_->PointerPressedOnButton(this, ShelfView::TOUCH, *event);
       event->SetHandled();
       return;
@@ -89,13 +108,15 @@ void AppListButton::OnGestureEvent(ui::GestureEvent* event) {
       event->SetHandled();
       return;
     case ui::ET_GESTURE_TAP_DOWN:
-      if (switches::IsTouchFeedbackEnabled())
+      if (touch_feedback)
         SetDrawBackgroundAsActive(true);
+      else if (is_material && !Shell::GetInstance()->IsApplistVisible())
+        AnimateInkDrop(views::InkDropState::ACTION_PENDING, event);
       ImageButton::OnGestureEvent(event);
       break;
     case ui::ET_GESTURE_TAP_CANCEL:
     case ui::ET_GESTURE_TAP:
-      if (switches::IsTouchFeedbackEnabled())
+      if (touch_feedback)
         SetDrawBackgroundAsActive(false);
       ImageButton::OnGestureEvent(event);
       break;
@@ -143,16 +164,8 @@ void AppListButton::PaintBackgroundMD(gfx::Canvas* canvas) {
   gfx::Point circle_center = GetContentsBounds().CenterPoint();
   if (!IsHorizontalAlignment(shelf_view_->shelf()->alignment()))
     circle_center = gfx::Point(circle_center.y(), circle_center.x());
-  canvas->DrawCircle(circle_center, kAppListButtonRadius, background_paint);
 
-  if (Shell::GetInstance()->GetAppListTargetVisibility() ||
-      draw_background_as_active_) {
-    SkPaint highlight_paint;
-    highlight_paint.setColor(kShelfButtonActivatedHighlightColor);
-    highlight_paint.setFlags(SkPaint::kAntiAlias_Flag);
-    highlight_paint.setStyle(SkPaint::kFill_Style);
-    canvas->DrawCircle(circle_center, kAppListButtonRadius, highlight_paint);
-  }
+  canvas->DrawCircle(circle_center, kAppListButtonRadius, background_paint);
 }
 
 void AppListButton::PaintForegroundMD(gfx::Canvas* canvas,
@@ -234,10 +247,31 @@ void AppListButton::GetAccessibleState(ui::AXViewState* state) {
   state->name = shelf_view_->GetTitleForView(this);
 }
 
+std::unique_ptr<views::InkDropRipple> AppListButton::CreateInkDropRipple()
+    const {
+  // TODO(mohsen): A circular SquareInkDropRipple is created with equal small
+  // and large sizes to mimic a circular flood fill. Replace with an actual
+  // flood fill when circular flood fills are implemented.
+  gfx::Size ripple_size(2 * kAppListButtonRadius, 2 * kAppListButtonRadius);
+  auto ink_drop_ripple = new views::SquareInkDropRipple(
+      ripple_size, 0, ripple_size, 0, GetContentsBounds().CenterPoint(),
+      GetInkDropBaseColor(), ink_drop_visible_opacity());
+  ink_drop_ripple->set_activated_shape(views::SquareInkDropRipple::CIRCLE);
+  return base::WrapUnique(ink_drop_ripple);
+}
+
 void AppListButton::NotifyClick(const ui::Event& event) {
   ImageButton::NotifyClick(event);
   if (listener_)
     listener_->ButtonPressed(this, event, ink_drop());
+}
+
+bool AppListButton::ShouldEnterPushedState(const ui::Event& event) {
+  return !Shell::GetInstance()->IsApplistVisible();
+}
+
+bool AppListButton::ShouldShowInkDropHighlight() const {
+  return false;
 }
 
 void AppListButton::SetDrawBackgroundAsActive(bool draw_background_as_active) {

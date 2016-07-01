@@ -333,6 +333,10 @@ void Shell::ToggleAppList(aura::Window* window) {
       GetDisplayIdForWindow(window));
 }
 
+bool Shell::IsApplistVisible() const {
+  return delegate_->GetAppListPresenter()->IsVisible();
+}
+
 bool Shell::GetAppListTargetVisibility() const {
   return delegate_->GetAppListPresenter()->GetTargetVisibility();
 }

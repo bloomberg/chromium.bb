@@ -57,8 +57,9 @@ class TestContextMenuController : public ContextMenuController {
 
 class TestCustomButton : public CustomButton, public ButtonListener {
  public:
-  explicit TestCustomButton()
+  explicit TestCustomButton(bool has_ink_drop_action_on_click)
       : CustomButton(this) {
+    set_has_ink_drop_action_on_click(has_ink_drop_action_on_click);
   }
 
   ~TestCustomButton() override {}
@@ -108,7 +109,7 @@ class CustomButtonTest : public ViewsTestBase {
     widget_->Init(params);
     widget_->Show();
 
-    button_ = new TestCustomButton();
+    button_ = new TestCustomButton(false);
     widget_->SetContentsView(button_);
   }
 
@@ -117,9 +118,10 @@ class CustomButtonTest : public ViewsTestBase {
     ViewsTestBase::TearDown();
   }
 
-  void CreateButtonWithInkDrop(std::unique_ptr<InkDrop> ink_drop) {
+  void CreateButtonWithInkDrop(std::unique_ptr<InkDrop> ink_drop,
+                               bool has_ink_drop_action_on_click) {
     delete button_;
-    button_ = new TestCustomButton();
+    button_ = new TestCustomButton(has_ink_drop_action_on_click);
     InkDropHostViewTestApi(button_).SetInkDrop(std::move(ink_drop));
     widget_->SetContentsView(button_);
   }
@@ -350,7 +352,7 @@ TEST_F(CustomButtonTest, AsCustomButton) {
 // may enter a different ink drop state.
 TEST_F(CustomButtonTest, ButtonClickTogglesInkDrop) {
   TestInkDrop* ink_drop = new TestInkDrop();
-  CreateButtonWithInkDrop(base::WrapUnique(ink_drop));
+  CreateButtonWithInkDrop(base::WrapUnique(ink_drop), false);
 
   ui::test::EventGenerator generator(widget()->GetNativeWindow());
   generator.set_current_location(gfx::Point(50, 50));
@@ -365,7 +367,7 @@ TEST_F(CustomButtonTest, ButtonClickTogglesInkDrop) {
 // Releasing capture should also reset PRESSED button state to NORMAL.
 TEST_F(CustomButtonTest, CaptureLossHidesInkDrop) {
   TestInkDrop* ink_drop = new TestInkDrop();
-  CreateButtonWithInkDrop(base::WrapUnique(ink_drop));
+  CreateButtonWithInkDrop(base::WrapUnique(ink_drop), false);
 
   ui::test::EventGenerator generator(widget()->GetNativeWindow());
   generator.set_current_location(gfx::Point(50, 50));
@@ -386,7 +388,7 @@ TEST_F(CustomButtonTest, CaptureLossHidesInkDrop) {
 
 TEST_F(CustomButtonTest, HideInkDropWhenShowingContextMenu) {
   TestInkDrop* ink_drop = new TestInkDrop();
-  CreateButtonWithInkDrop(base::WrapUnique(ink_drop));
+  CreateButtonWithInkDrop(base::WrapUnique(ink_drop), false);
   TestContextMenuController context_menu_controller;
   button()->set_context_menu_controller(&context_menu_controller);
   button()->set_hide_ink_drop_when_showing_context_menu(true);
@@ -402,7 +404,7 @@ TEST_F(CustomButtonTest, HideInkDropWhenShowingContextMenu) {
 
 TEST_F(CustomButtonTest, DontHideInkDropWhenShowingContextMenu) {
   TestInkDrop* ink_drop = new TestInkDrop();
-  CreateButtonWithInkDrop(base::WrapUnique(ink_drop));
+  CreateButtonWithInkDrop(base::WrapUnique(ink_drop), false);
   TestContextMenuController context_menu_controller;
   button()->set_context_menu_controller(&context_menu_controller);
   button()->set_hide_ink_drop_when_showing_context_menu(false);
@@ -420,7 +422,7 @@ TEST_F(CustomButtonTest, HideInkDropOnBlur) {
   gfx::Point center(10, 10);
 
   TestInkDrop* ink_drop = new TestInkDrop();
-  CreateButtonWithInkDrop(base::WrapUnique(ink_drop));
+  CreateButtonWithInkDrop(base::WrapUnique(ink_drop), false);
 
   button()->OnFocus();
 
@@ -440,7 +442,7 @@ TEST_F(CustomButtonTest, HideInkDropOnBlur) {
 
 TEST_F(CustomButtonTest, InkDropAfterTryingToShowContextMenu) {
   TestInkDrop* ink_drop = new TestInkDrop();
-  CreateButtonWithInkDrop(base::WrapUnique(ink_drop));
+  CreateButtonWithInkDrop(base::WrapUnique(ink_drop), false);
   button()->set_context_menu_controller(nullptr);
 
   ink_drop->SetHovered(true);
@@ -452,12 +454,15 @@ TEST_F(CustomButtonTest, InkDropAfterTryingToShowContextMenu) {
   EXPECT_EQ(InkDropState::ACTION_PENDING, ink_drop->GetTargetInkDropState());
 }
 
-TEST_F(CustomButtonTest, InkDropShowHideOnMouseDragged) {
+// Tests that when button is set to notify on release, dragging mouse out and
+// back transitions ink drop states correctly.
+TEST_F(CustomButtonTest, InkDropShowHideOnMouseDraggedNotifyOnRelease) {
   gfx::Point center(10, 10);
   gfx::Point oob(-1, -1);
 
   TestInkDrop* ink_drop = new TestInkDrop();
-  CreateButtonWithInkDrop(base::WrapUnique(ink_drop));
+  CreateButtonWithInkDrop(base::WrapUnique(ink_drop), false);
+  button()->set_notify_action(CustomButton::NOTIFY_ON_RELEASE);
 
   button()->OnMousePressed(ui::MouseEvent(
       ui::ET_MOUSE_PRESSED, center, center, ui::EventTimeForNow(),
@@ -490,12 +495,54 @@ TEST_F(CustomButtonTest, InkDropShowHideOnMouseDragged) {
   EXPECT_FALSE(button()->pressed());
 }
 
+// Tests that when button is set to notify on press, dragging mouse out and back
+// does not change the ink drop state.
+TEST_F(CustomButtonTest, InkDropShowHideOnMouseDraggedNotifyOnPress) {
+  gfx::Point center(10, 10);
+  gfx::Point oob(-1, -1);
+
+  TestInkDrop* ink_drop = new TestInkDrop();
+  CreateButtonWithInkDrop(base::WrapUnique(ink_drop), true);
+  button()->set_notify_action(CustomButton::NOTIFY_ON_PRESS);
+
+  button()->OnMousePressed(ui::MouseEvent(
+      ui::ET_MOUSE_PRESSED, center, center, ui::EventTimeForNow(),
+      ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON));
+
+  EXPECT_EQ(InkDropState::ACTION_TRIGGERED, ink_drop->GetTargetInkDropState());
+  EXPECT_TRUE(button()->pressed());
+
+  button()->OnMouseDragged(
+      ui::MouseEvent(ui::ET_MOUSE_PRESSED, oob, oob, ui::EventTimeForNow(),
+                     ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON));
+
+  EXPECT_EQ(InkDropState::ACTION_TRIGGERED, ink_drop->GetTargetInkDropState());
+
+  button()->OnMouseDragged(ui::MouseEvent(
+      ui::ET_MOUSE_PRESSED, center, center, ui::EventTimeForNow(),
+      ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON));
+
+  EXPECT_EQ(InkDropState::ACTION_TRIGGERED, ink_drop->GetTargetInkDropState());
+
+  button()->OnMouseDragged(
+      ui::MouseEvent(ui::ET_MOUSE_PRESSED, oob, oob, ui::EventTimeForNow(),
+                     ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON));
+
+  EXPECT_EQ(InkDropState::ACTION_TRIGGERED, ink_drop->GetTargetInkDropState());
+
+  button()->OnMouseReleased(
+      ui::MouseEvent(ui::ET_MOUSE_PRESSED, oob, oob, ui::EventTimeForNow(),
+                     ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON));
+
+  EXPECT_EQ(InkDropState::ACTION_TRIGGERED, ink_drop->GetTargetInkDropState());
+}
+
 TEST_F(CustomButtonTest, InkDropStaysHiddenWhileDragging) {
   gfx::Point center(10, 10);
   gfx::Point oob(-1, -1);
 
   TestInkDrop* ink_drop = new TestInkDrop();
-  CreateButtonWithInkDrop(base::WrapUnique(ink_drop));
+  CreateButtonWithInkDrop(base::WrapUnique(ink_drop), false);
 
   button()->OnMousePressed(ui::MouseEvent(
       ui::ET_MOUSE_PRESSED, center, center, ui::EventTimeForNow(),

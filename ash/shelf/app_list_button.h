@@ -5,6 +5,7 @@
 #ifndef ASH_SHELF_APP_LIST_BUTTON_H_
 #define ASH_SHELF_APP_LIST_BUTTON_H_
 
+#include "ash/ash_export.h"
 #include "base/macros.h"
 #include "ui/views/controls/button/image_button.h"
 
@@ -13,11 +14,14 @@ class InkDropButtonListener;
 class ShelfView;
 
 // Button used for the AppList icon on the shelf.
-class AppListButton : public views::ImageButton {
+class ASH_EXPORT AppListButton : public views::ImageButton {
  public:
   explicit AppListButton(InkDropButtonListener* listener,
                          ShelfView* shelf_view);
   ~AppListButton() override;
+
+  void OnAppListShown();
+  void OnAppListDismissed();
 
   bool draw_background_as_active() { return draw_background_as_active_; }
 
@@ -29,7 +33,10 @@ class AppListButton : public views::ImageButton {
   bool OnMouseDragged(const ui::MouseEvent& event) override;
   void OnPaint(gfx::Canvas* canvas) override;
   void GetAccessibleState(ui::AXViewState* state) override;
+  std::unique_ptr<views::InkDropRipple> CreateInkDropRipple() const override;
   void NotifyClick(const ui::Event& event) override;
+  bool ShouldEnterPushedState(const ui::Event& event) override;
+  bool ShouldShowInkDropHighlight() const override;
 
   // ui::EventHandler overrides:
   void OnGestureEvent(ui::GestureEvent* event) override;

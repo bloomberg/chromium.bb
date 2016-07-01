@@ -10,6 +10,7 @@
 #include "ash/common/shelf/shelf_constants.h"
 #include "ash/common/shelf/shelf_model.h"
 #include "ash/common/wm/window_state.h"
+#include "ash/shelf/app_list_button.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_button.h"
 #include "ash/shelf/shelf_util.h"
@@ -1657,7 +1658,7 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, DISABLED_DragAndDrop) {
 
   // Open the app list menu and check that the drag and drop host was set.
   gfx::Rect app_list_bounds =
-      test.shelf_view()->GetAppListButtonView()->GetBoundsInScreen();
+      test.shelf_view()->GetAppListButton()->GetBoundsInScreen();
   generator.MoveMouseTo(app_list_bounds.CenterPoint().x(),
                         app_list_bounds.CenterPoint().y());
   base::RunLoop().RunUntilIdle();
@@ -1801,7 +1802,7 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTestWithMultiMonitor,
 
   // Open the app list menu and check that the drag and drop host was set.
   gfx::Rect app_list_bounds =
-      test.shelf_view()->GetAppListButtonView()->GetBoundsInScreen();
+      test.shelf_view()->GetAppListButton()->GetBoundsInScreen();
   display::Display display =
       display::Screen::GetScreen()->GetDisplayNearestWindow(
           secondary_root_window);
@@ -1988,7 +1989,7 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, ClickItem) {
 
   // Open the app list menu and check that the drag and drop host was set.
   gfx::Rect app_list_bounds =
-      test.shelf_view()->GetAppListButtonView()->GetBoundsInScreen();
+      test.shelf_view()->GetAppListButton()->GetBoundsInScreen();
   generator.MoveMouseTo(app_list_bounds.CenterPoint().x(),
                         app_list_bounds.CenterPoint().y());
   generator.ClickLeftButton();

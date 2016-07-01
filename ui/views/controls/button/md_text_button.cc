@@ -214,7 +214,7 @@ MdTextButton::MdTextButton(ButtonListener* listener)
     : LabelButton(listener, base::string16()),
       focus_ring_(new internal::MdFocusRing()),
       is_cta_(false) {
-  SetHasInkDrop(true);
+  SetInkDropMode(InkDropMode::ON);
   set_has_ink_drop_action_on_click(true);
   SetHorizontalAlignment(gfx::ALIGN_CENTER);
   SetFocusForPlatform();

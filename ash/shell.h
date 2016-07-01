@@ -245,6 +245,10 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
   // Shows the app list if it's not visible. Dismisses it otherwise.
   void ToggleAppList(aura::Window* anchor);
 
+  // Returns app list actual visibility. This might differ from
+  // GetAppListTargetVisibility() when hiding animation is still in flight.
+  bool IsApplistVisible() const;
+
   // Returns app list target visibility.
   bool GetAppListTargetVisibility() const;
 

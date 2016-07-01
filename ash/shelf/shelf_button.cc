@@ -55,7 +55,6 @@ const int kIndicatorCanvasScale = 5;
 const int kInkDropSmallSize = 48;
 const int kInkDropLargeSize = 60;
 const int kInkDropLargeCornerRadius = 4;
-const SkColor kInkDropBaseColor = SK_ColorWHITE;
 
 // Paints an activity indicator on |canvas| whose |size| is specified in DIP.
 void PaintIndicatorOnCanvas(gfx::Canvas* canvas, const gfx::Size& size) {
@@ -256,8 +255,8 @@ ShelfButton::ShelfButton(InkDropButtonListener* listener, ShelfView* shelf_view)
       destroyed_flag_(nullptr) {
   SetFocusBehavior(FocusBehavior::ACCESSIBLE_ONLY);
   if (ash::MaterialDesignController::IsShelfMaterial()) {
-    SetHasInkDrop(true);
-    set_ink_drop_base_color(kInkDropBaseColor);
+    SetInkDropMode(InkDropMode::ON);
+    set_ink_drop_base_color(kShelfInkDropBaseColor);
     set_ink_drop_visible_opacity(kShelfInkDropVisibleOpacity);
   }
 

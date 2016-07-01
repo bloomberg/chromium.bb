@@ -11,6 +11,7 @@
 #include "ash/display/window_tree_host_manager.h"
 #include "ash/root_window_controller.h"
 #include "ash/screen_util.h"
+#include "ash/shelf/app_list_button.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shell.h"
@@ -152,8 +153,8 @@ void AppListPresenterDelegate::Init(app_list::AppListView* view,
                                   ->GetRootWindowForDisplayId(display_id);
   aura::Window* container = GetRootWindowController(root_window)
                                 ->GetContainer(kShellWindowId_AppListContainer);
-  views::View* applist_button =
-      Shelf::ForWindow(container)->GetAppListButtonView();
+  AppListButton* applist_button =
+      Shelf::ForWindow(container)->GetAppListButton();
   is_centered_ = view->ShouldCenterWindow();
   bool is_fullscreen = IsFullscreenAppListEnabled() &&
                        Shell::GetInstance()
@@ -181,10 +182,10 @@ void AppListPresenterDelegate::Init(app_list::AppListView* view,
         ScreenUtil::ConvertRectFromScreen(root_window, applist_button_bounds);
     view->InitAsBubbleAttachedToAnchor(
         container, current_apps_page,
-        Shelf::ForWindow(container)->GetAppListButtonView(),
+        Shelf::ForWindow(container)->GetAppListButton(),
         GetAnchorPositionOffsetToShelf(
             applist_button_bounds,
-            Shelf::ForWindow(container)->GetAppListButtonView()->GetWidget()),
+            Shelf::ForWindow(container)->GetAppListButton()->GetWidget()),
         GetBubbleArrow(container), true /* border_accepts_events */);
     view->SetArrowPaintType(views::BubbleBorder::PAINT_NONE);
   }
@@ -209,7 +210,7 @@ void AppListPresenterDelegate::OnShown(int64_t display_id) {
   aura::Window* root_window = Shell::GetInstance()
                                   ->window_tree_host_manager()
                                   ->GetRootWindowForDisplayId(display_id);
-  Shelf::ForWindow(root_window)->GetAppListButtonView()->SchedulePaint();
+  Shelf::ForWindow(root_window)->GetAppListButton()->OnAppListShown();
 }
 
 void AppListPresenterDelegate::OnDismissed() {
@@ -226,8 +227,8 @@ void AppListPresenterDelegate::OnDismissed() {
 
   // Update applist button status when app list visibility is changed.
   Shelf::ForWindow(view_->GetWidget()->GetNativeView())
-      ->GetAppListButtonView()
-      ->SchedulePaint();
+      ->GetAppListButton()
+      ->OnAppListDismissed();
 }
 
 void AppListPresenterDelegate::UpdateBounds() {

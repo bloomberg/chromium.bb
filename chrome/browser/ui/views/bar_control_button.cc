@@ -20,7 +20,8 @@ const int kButtonExtraTouchSize = 4;
 
 BarControlButton::BarControlButton(views::ButtonListener* listener)
     : views::ImageButton(listener), id_(gfx::VectorIconId::VECTOR_ICON_NONE) {
-  SetHasInkDrop(ui::MaterialDesignController::IsModeMaterial());
+  if (ui::MaterialDesignController::IsModeMaterial())
+    SetInkDropMode(InkDropMode::ON);
   set_has_ink_drop_action_on_click(true);
   SetImageAlignment(views::ImageButton::ALIGN_CENTER,
                     views::ImageButton::ALIGN_MIDDLE);

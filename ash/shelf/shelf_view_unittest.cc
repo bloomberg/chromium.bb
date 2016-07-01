@@ -25,6 +25,7 @@
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
+#include "ash/test/ash_test_helper.h"
 #include "ash/test/material_design_controller_test_api.h"
 #include "ash/test/overflow_bubble_view_test_api.h"
 #include "ash/test/shelf_test_api.h"
@@ -32,6 +33,7 @@
 #include "ash/test/shell_test_api.h"
 #include "ash/test/test_shelf_delegate.h"
 #include "ash/test/test_shelf_item_delegate.h"
+#include "ash/test/test_shell_delegate.h"
 #include "ash/test/test_system_tray_delegate.h"
 #include "base/compiler_specific.h"
 #include "base/i18n/rtl.h"
@@ -43,6 +45,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "ui/app_list/presenter/app_list_presenter.h"
 #include "ui/aura/test/aura_test_base.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
@@ -1454,7 +1457,7 @@ TEST_F(ShelfViewTest, ShouldHideTooltipTest) {
   }
 
   // The tooltip should not hide on the app-list button.
-  views::View* app_list_button = shelf_view_->GetAppListButtonView();
+  AppListButton* app_list_button = shelf_view_->GetAppListButton();
   EXPECT_FALSE(shelf_view_->ShouldHideTooltip(
       app_list_button->GetMirroredBounds().CenterPoint()));
 
@@ -1475,7 +1478,7 @@ TEST_F(ShelfViewTest, ShouldHideTooltipTest) {
 
     all_area.Union(button->GetMirroredBounds());
   }
-  all_area.Union(shelf_view_->GetAppListButtonView()->GetMirroredBounds());
+  all_area.Union(shelf_view_->GetAppListButton()->GetMirroredBounds());
   EXPECT_FALSE(shelf_view_->ShouldHideTooltip(all_area.origin()));
   EXPECT_FALSE(shelf_view_->ShouldHideTooltip(
       gfx::Point(all_area.right() - 1, all_area.bottom() - 1)));
@@ -1505,7 +1508,7 @@ TEST_F(ShelfViewTest, ShouldHideTooltipWithAppListWindowTest) {
   }
 
   // The tooltip should hide on the app-list button.
-  views::View* app_list_button = shelf_view_->GetAppListButtonView();
+  AppListButton* app_list_button = shelf_view_->GetAppListButton();
   EXPECT_TRUE(shelf_view_->ShouldHideTooltip(
       app_list_button->GetMirroredBounds().CenterPoint()));
 }
@@ -1522,7 +1525,7 @@ TEST_F(ShelfViewTest, ShouldHideTooltipWhenHoveringOnTooltip) {
   EXPECT_FALSE(tooltip_manager->IsVisible());
 
   // Move the mouse over the button and check that it is visible.
-  views::View* app_list_button = shelf_view_->GetAppListButtonView();
+  AppListButton* app_list_button = shelf_view_->GetAppListButton();
   gfx::Rect bounds = app_list_button->GetBoundsInScreen();
   generator.MoveMouseTo(bounds.CenterPoint());
   // Wait for the timer to go off.
@@ -1831,8 +1834,7 @@ TEST_F(ShelfViewTest, CheckOverflowStatusPinOpenedAppToShelf) {
 
 // Tests that the AppListButton renders as active in response to touches.
 TEST_F(ShelfViewTest, AppListButtonTouchFeedback) {
-  AppListButton* app_list_button =
-      static_cast<AppListButton*>(shelf_view_->GetAppListButtonView());
+  AppListButton* app_list_button = shelf_view_->GetAppListButton();
   EXPECT_FALSE(app_list_button->draw_background_as_active());
 
   ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow());
@@ -1849,8 +1851,7 @@ TEST_F(ShelfViewTest, AppListButtonTouchFeedback) {
 // Tests that a touch that slides out of the bounds of the AppListButton leads
 // to the end of rendering an active state.
 TEST_F(ShelfViewTest, AppListButtonTouchFeedbackCancellation) {
-  AppListButton* app_list_button =
-      static_cast<AppListButton*>(shelf_view_->GetAppListButtonView());
+  AppListButton* app_list_button = shelf_view_->GetAppListButton();
   EXPECT_FALSE(app_list_button->draw_background_as_active());
 
   ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow());
@@ -1950,7 +1951,7 @@ class ShelfViewVisibleBoundsTest : public ShelfViewTest,
   void CheckAppListButtonIsInBounds() {
     gfx::Rect visible_bounds = shelf_view_->GetVisibleItemsBoundsInScreen();
     gfx::Rect app_list_button_bounds =
-        shelf_view_->GetAppListButtonView()->GetBoundsInScreen();
+        shelf_view_->GetAppListButton()->GetBoundsInScreen();
     EXPECT_TRUE(visible_bounds.Contains(app_list_button_bounds));
   }
 
@@ -2074,14 +2075,72 @@ class ListMenuShelfItemDelegate : public TestShelfItemDelegate {
   DISALLOW_COPY_AND_ASSIGN(ListMenuShelfItemDelegate);
 };
 
+// A test implementation for AppListPresenter that does not change visibility
+// state immediately to simulate an in-flight animation. Calling
+// FinishVisibilityChange() will change the visibility to the requested one,
+// simulating end of the animation. Similar to the actual AppListPresenter, this
+// class toggles app list visibility based on the actual visibility rather than
+// the target visibility (which might be different due to in-flight animation).
+class TestAppListPresenter : public app_list::AppListPresenter {
+ public:
+  TestAppListPresenter() {}
+  ~TestAppListPresenter() override {}
+
+  void FinishVisibilityChange() { is_visible_ = target_visibility_; }
+
+  // app_list::AppListPresenter:
+  void Show(int64_t display_id) override { target_visibility_ = true; }
+  void Dismiss() override { target_visibility_ = false; }
+  void ToggleAppList(int64_t display_id) override {
+    if (is_visible_)
+      Dismiss();
+    else
+      Show(display_id);
+  }
+  bool IsVisible() const override { return is_visible_; }
+  bool GetTargetVisibility() const override { return target_visibility_; }
+
+ private:
+  bool is_visible_ = false;
+  bool target_visibility_ = false;
+
+  DISALLOW_COPY_AND_ASSIGN(TestAppListPresenter);
+};
+
+// A test ShellDelegate implementation that returns a TestAppListPresenter as
+// the app list presenter.
+class TestAppListShellDelegate : public TestShellDelegate {
+ public:
+  TestAppListShellDelegate()
+      : app_list_presenter_(new TestAppListPresenter()) {}
+  ~TestAppListShellDelegate() override {}
+
+  TestAppListPresenter* app_list_presenter() const {
+    return app_list_presenter_.get();
+  }
+
+  // TestShellDelegate:
+  app_list::AppListPresenter* GetAppListPresenter() override {
+    return app_list_presenter();
+  }
+
+ private:
+  std::unique_ptr<TestAppListPresenter> app_list_presenter_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestAppListShellDelegate);
+};
+
 }  // namespace
 
 class ShelfViewInkDropTest : public ShelfViewTest {
  public:
-  ShelfViewInkDropTest() : ink_drop_(nullptr), browser_button_(nullptr) {}
+  ShelfViewInkDropTest() {}
   ~ShelfViewInkDropTest() override {}
 
   void SetUp() override {
+    shell_delegate_ = new TestAppListShellDelegate;
+    ash_test_helper()->set_test_shell_delegate(shell_delegate_);
+
     ShelfViewTest::SetUp();
 
     // TODO(mohsen): Ideally, we would want to set material mode before calling
@@ -2089,14 +2148,7 @@ class ShelfViewInkDropTest : public ShelfViewTest {
     // material mode. Currently, this is not possible as it expects material
     // mode be UNINITIALIZED. (See https://crbug.com/620093)
     ash_md_controller_.reset(new ash::test::MaterialDesignControllerTestAPI(
-        ash::MaterialDesignController::MATERIAL_NORMAL));
-
-    browser_button_ = test_api_->GetButton(browser_index_);
-
-    views::InkDropImpl* ink_drop_impl = new views::InkDropImpl(browser_button_);
-    ink_drop_ = new InkDropSpy(base::WrapUnique(ink_drop_impl));
-    views::test::InkDropHostViewTestApi(browser_button_)
-        .SetInkDrop(base::WrapUnique(ink_drop_));
+        ash::MaterialDesignController::MATERIAL_EXPERIMENTAL));
   }
 
   void TearDown() override {
@@ -2106,124 +2158,413 @@ class ShelfViewInkDropTest : public ShelfViewTest {
   }
 
  protected:
+  void InitAppListButtonInkDrop() {
+    app_list_button_ = shelf_view_->GetAppListButton();
+
+    views::InkDropImpl* ink_drop_impl =
+        new views::InkDropImpl(app_list_button_);
+    app_list_button_ink_drop_ = new InkDropSpy(base::WrapUnique(ink_drop_impl));
+    views::test::InkDropHostViewTestApi(app_list_button_)
+        .SetInkDrop(base::WrapUnique(app_list_button_ink_drop_), false);
+  }
+
+  void InitBrowserButtonInkDrop() {
+    browser_button_ = test_api_->GetButton(browser_index_);
+
+    views::InkDropImpl* ink_drop_impl = new views::InkDropImpl(browser_button_);
+    browser_button_ink_drop_ = new InkDropSpy(base::WrapUnique(ink_drop_impl));
+    views::test::InkDropHostViewTestApi(browser_button_)
+        .SetInkDrop(base::WrapUnique(browser_button_ink_drop_));
+  }
+
+  void ShowAppList() {
+    shell_delegate_->app_list_presenter()->Show(0);
+    // Similar to real AppListPresenter, notify button that the app list is
+    // shown.
+    app_list_button_->OnAppListShown();
+  }
+
+  void DismissAppList() {
+    shell_delegate_->app_list_presenter()->Dismiss();
+    // Similar to real AppListPresenter, notify button that the app list is
+    // dismissed.
+    app_list_button_->OnAppListDismissed();
+  }
+
+  void FinishAppListVisibilityChange() {
+    shell_delegate_->app_list_presenter()->FinishVisibilityChange();
+  }
+
   std::unique_ptr<ash::test::MaterialDesignControllerTestAPI>
       ash_md_controller_;
 
-  InkDropSpy* ink_drop_;
-  ShelfButton* browser_button_;
+  TestAppListShellDelegate* shell_delegate_ = nullptr;  // Owned by Shell.
+
+  AppListButton* app_list_button_ = nullptr;
+  InkDropSpy* app_list_button_ink_drop_ = nullptr;
+  ShelfButton* browser_button_ = nullptr;
+  InkDropSpy* browser_button_ink_drop_ = nullptr;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ShelfViewInkDropTest);
 };
 
+// Tests that changing visibility of the app list transitions app list button's
+// ink drop states correctly.
+TEST_F(ShelfViewInkDropTest, AppListButtonWhenVisibilityChanges) {
+  InitAppListButtonInkDrop();
+
+  ShowAppList();
+  FinishAppListVisibilityChange();
+  EXPECT_EQ(views::InkDropState::ACTIVATED,
+            app_list_button_ink_drop_->GetTargetInkDropState());
+  EXPECT_THAT(app_list_button_ink_drop_->GetAndResetRequestedStates(),
+              ElementsAre(views::InkDropState::ACTIVATED));
+
+  DismissAppList();
+  FinishAppListVisibilityChange();
+  EXPECT_EQ(views::InkDropState::HIDDEN,
+            app_list_button_ink_drop_->GetTargetInkDropState());
+  EXPECT_THAT(app_list_button_ink_drop_->GetAndResetRequestedStates(),
+              ElementsAre(views::InkDropState::DEACTIVATED));
+}
+
+// Tests that when the app list is hidden, mouse press on the app list button,
+// which shows the app list, transitions ink drop states correctly. Also, tests
+// that mouse drag and mouse release does not affect the ink drop state.
+TEST_F(ShelfViewInkDropTest, AppListButtonMouseEventsWhenHidden) {
+  InitAppListButtonInkDrop();
+
+  ui::test::EventGenerator& generator = GetEventGenerator();
+  generator.MoveMouseTo(app_list_button_->GetBoundsInScreen().CenterPoint());
+
+  // Mouse press on the button, which shows the app list, should end up in the
+  // activated state.
+  generator.PressLeftButton();
+  // Similar to real AppListPresenter, notify button that the app list is shown.
+  app_list_button_->OnAppListShown();
+  FinishAppListVisibilityChange();
+  EXPECT_EQ(views::InkDropState::ACTIVATED,
+            app_list_button_ink_drop_->GetTargetInkDropState());
+  EXPECT_THAT(app_list_button_ink_drop_->GetAndResetRequestedStates(),
+              ElementsAre(views::InkDropState::ACTION_PENDING,
+                          views::InkDropState::ACTIVATED));
+
+  // Dragging mouse out and back and releasing the button should not change the
+  // ink drop state.
+  generator.MoveMouseBy(app_list_button_->width(), 0);
+  generator.MoveMouseBy(-app_list_button_->width(), 0);
+  generator.ReleaseLeftButton();
+  EXPECT_EQ(views::InkDropState::ACTIVATED,
+            app_list_button_ink_drop_->GetTargetInkDropState());
+  EXPECT_THAT(app_list_button_ink_drop_->GetAndResetRequestedStates(),
+              IsEmpty());
+}
+
+// Tests that when the app list is visible, mouse press on the app list button,
+// which dismisses the app list, transitions ink drop states correctly. Also,
+// tests that mouse drag and mouse release does not affect the ink drop state.
+TEST_F(ShelfViewInkDropTest, AppListButtonMouseEventsWhenVisible) {
+  InitAppListButtonInkDrop();
+
+  // Show the app list.
+  ShowAppList();
+  FinishAppListVisibilityChange();
+  EXPECT_EQ(views::InkDropState::ACTIVATED,
+            app_list_button_ink_drop_->GetTargetInkDropState());
+  EXPECT_THAT(app_list_button_ink_drop_->GetAndResetRequestedStates(),
+              ElementsAre(views::InkDropState::ACTIVATED));
+
+  ui::test::EventGenerator& generator = GetEventGenerator();
+  generator.MoveMouseTo(app_list_button_->GetBoundsInScreen().CenterPoint());
+
+  // Mouse press on the button, which dismisses the app list, should end up in
+  // the hidden state.
+  // Dismiss app list similar to pre-target handler in real AppListPresenter.
+  DismissAppList();
+  generator.PressLeftButton();
+  FinishAppListVisibilityChange();
+  EXPECT_EQ(views::InkDropState::HIDDEN,
+            app_list_button_ink_drop_->GetTargetInkDropState());
+  EXPECT_THAT(app_list_button_ink_drop_->GetAndResetRequestedStates(),
+              ElementsAre(views::InkDropState::DEACTIVATED));
+
+  // Dragging mouse out and back and releasing the button should not change the
+  // ink drop state.
+  generator.MoveMouseBy(app_list_button_->width(), 0);
+  generator.MoveMouseBy(-app_list_button_->width(), 0);
+  generator.ReleaseLeftButton();
+  EXPECT_EQ(views::InkDropState::HIDDEN,
+            app_list_button_ink_drop_->GetTargetInkDropState());
+  EXPECT_THAT(app_list_button_ink_drop_->GetAndResetRequestedStates(),
+              IsEmpty());
+}
+
+#if !defined(OS_WIN)
+// There is no ink drop effect for gesture events on Windows.
+
+// Tests that when the app list is hidden, tapping on the app list button
+// transitions ink drop states correctly.
+TEST_F(ShelfViewInkDropTest, AppListButtonGestureTapWhenHidden) {
+  InitAppListButtonInkDrop();
+
+  ui::test::EventGenerator& generator = GetEventGenerator();
+  generator.MoveMouseTo(app_list_button_->GetBoundsInScreen().CenterPoint());
+
+  // Touch press on the button should end up in the pending state.
+  generator.PressTouch();
+  EXPECT_EQ(views::InkDropState::ACTION_PENDING,
+            app_list_button_ink_drop_->GetTargetInkDropState());
+  EXPECT_THAT(app_list_button_ink_drop_->GetAndResetRequestedStates(),
+              ElementsAre(views::InkDropState::ACTION_PENDING));
+
+  // Touch release on the button, which shows the app list, should end up in the
+  // activated state.
+  generator.ReleaseTouch();
+  // Similar to real AppListPresenter, notify button that the app list is shown.
+  app_list_button_->OnAppListShown();
+  FinishAppListVisibilityChange();
+  EXPECT_EQ(views::InkDropState::ACTIVATED,
+            app_list_button_ink_drop_->GetTargetInkDropState());
+  EXPECT_THAT(app_list_button_ink_drop_->GetAndResetRequestedStates(),
+              ElementsAre(views::InkDropState::ACTIVATED));
+}
+
+// Tests that when the app list is visible, tapping on the app list button
+// transitions ink drop states correctly.
+TEST_F(ShelfViewInkDropTest, AppListButtonGestureTapWhenVisible) {
+  InitAppListButtonInkDrop();
+
+  // Show the app list.
+  ShowAppList();
+  FinishAppListVisibilityChange();
+  EXPECT_EQ(views::InkDropState::ACTIVATED,
+            app_list_button_ink_drop_->GetTargetInkDropState());
+  EXPECT_THAT(app_list_button_ink_drop_->GetAndResetRequestedStates(),
+              ElementsAre(views::InkDropState::ACTIVATED));
+
+  ui::test::EventGenerator& generator = GetEventGenerator();
+  generator.MoveMouseTo(app_list_button_->GetBoundsInScreen().CenterPoint());
+
+  // Touch press on the button, which dismisses the app list, should end up in
+  // the hidden state.
+  // Dismiss app list similar to pre-target handler in real AppListPresenter.
+  DismissAppList();
+  generator.PressTouch();
+  EXPECT_EQ(views::InkDropState::HIDDEN,
+            app_list_button_ink_drop_->GetTargetInkDropState());
+  EXPECT_THAT(app_list_button_ink_drop_->GetAndResetRequestedStates(),
+              ElementsAre(views::InkDropState::DEACTIVATED));
+
+  // Touch release on the button should not change the ink drop state.
+  generator.ReleaseTouch();
+  FinishAppListVisibilityChange();
+  EXPECT_EQ(views::InkDropState::HIDDEN,
+            app_list_button_ink_drop_->GetTargetInkDropState());
+  EXPECT_THAT(app_list_button_ink_drop_->GetAndResetRequestedStates(),
+              IsEmpty());
+}
+
+// Tests that when the app list is hidden, tapping down on the app list button
+// and dragging the touch point transitions ink drop states correctly.
+TEST_F(ShelfViewInkDropTest, AppListButtonGestureTapDragWhenHidden) {
+  InitAppListButtonInkDrop();
+
+  ui::test::EventGenerator& generator = GetEventGenerator();
+  gfx::Point touch_location =
+      app_list_button_->GetBoundsInScreen().CenterPoint();
+  generator.MoveMouseTo(touch_location);
+
+  // Touch press on the button should end up in the pending state.
+  generator.PressTouch();
+  EXPECT_EQ(views::InkDropState::ACTION_PENDING,
+            app_list_button_ink_drop_->GetTargetInkDropState());
+  EXPECT_THAT(app_list_button_ink_drop_->GetAndResetRequestedStates(),
+              ElementsAre(views::InkDropState::ACTION_PENDING));
+
+  // Dragging the touch point should hide the pending ink drop.
+  touch_location.Offset(app_list_button_->width(), 0);
+  generator.MoveTouch(touch_location);
+  EXPECT_EQ(views::InkDropState::HIDDEN,
+            app_list_button_ink_drop_->GetTargetInkDropState());
+  EXPECT_THAT(app_list_button_ink_drop_->GetAndResetRequestedStates(),
+              ElementsAre(views::InkDropState::HIDDEN));
+
+  // Touch release should not change the ink drop state.
+  generator.ReleaseTouch();
+  EXPECT_EQ(views::InkDropState::HIDDEN,
+            app_list_button_ink_drop_->GetTargetInkDropState());
+  EXPECT_THAT(app_list_button_ink_drop_->GetAndResetRequestedStates(),
+              IsEmpty());
+}
+
+// Tests that when the app list is visible, tapping down on the app list button
+// and dragging the touch point transitions ink drop states correctly.
+TEST_F(ShelfViewInkDropTest, AppListButtonGestureTapDragWhenVisible) {
+  InitAppListButtonInkDrop();
+
+  // Show the app list.
+  ShowAppList();
+  FinishAppListVisibilityChange();
+  EXPECT_EQ(views::InkDropState::ACTIVATED,
+            app_list_button_ink_drop_->GetTargetInkDropState());
+  EXPECT_THAT(app_list_button_ink_drop_->GetAndResetRequestedStates(),
+              ElementsAre(views::InkDropState::ACTIVATED));
+
+  ui::test::EventGenerator& generator = GetEventGenerator();
+  gfx::Point touch_location =
+      app_list_button_->GetBoundsInScreen().CenterPoint();
+  generator.MoveMouseTo(touch_location);
+
+  // Touch press on the button, which dismisses the app list, should end up in
+  // the hidden state.
+  // Dismiss app list similar to pre-target handler in real AppListPresenter.
+  DismissAppList();
+  generator.PressTouch();
+  EXPECT_EQ(views::InkDropState::HIDDEN,
+            app_list_button_ink_drop_->GetTargetInkDropState());
+  EXPECT_THAT(app_list_button_ink_drop_->GetAndResetRequestedStates(),
+              ElementsAre(views::InkDropState::DEACTIVATED));
+
+  // Dragging the touch point and releasing should not change the ink drop
+  // state.
+  touch_location.Offset(app_list_button_->width(), 0);
+  generator.MoveTouch(touch_location);
+  generator.ReleaseTouch();
+  FinishAppListVisibilityChange();
+  EXPECT_EQ(views::InkDropState::HIDDEN,
+            app_list_button_ink_drop_->GetTargetInkDropState());
+  EXPECT_THAT(app_list_button_ink_drop_->GetAndResetRequestedStates(),
+              ElementsAre(views::InkDropState::HIDDEN));
+}
+#endif  // !defined(OS_WIN)
+
 // Tests that clicking on a shelf item that does not show a menu transitions ink
 // drop states correctly.
-TEST_F(ShelfViewInkDropTest, WithoutMenuPressRelease) {
-  views::CustomButton* button = browser_button_;
-  gfx::Point press_location = button->GetLocalBounds().CenterPoint();
+TEST_F(ShelfViewInkDropTest, ShelfButtonWithoutMenuPressRelease) {
+  InitBrowserButtonInkDrop();
 
-  ui::MouseEvent press_event(ui::ET_MOUSE_PRESSED, press_location,
-                             press_location, ui::EventTimeForNow(),
+  views::CustomButton* button = browser_button_;
+  gfx::Point mouse_location = button->GetLocalBounds().CenterPoint();
+
+  ui::MouseEvent press_event(ui::ET_MOUSE_PRESSED, mouse_location,
+                             mouse_location, ui::EventTimeForNow(),
                              ui::EF_LEFT_MOUSE_BUTTON, 0);
   button->OnMousePressed(press_event);
   EXPECT_EQ(views::InkDropState::ACTION_PENDING,
-            ink_drop_->GetTargetInkDropState());
-  EXPECT_THAT(ink_drop_->GetAndResetRequestedStates(),
+            browser_button_ink_drop_->GetTargetInkDropState());
+  EXPECT_THAT(browser_button_ink_drop_->GetAndResetRequestedStates(),
               ElementsAre(views::InkDropState::ACTION_PENDING));
 
-  ui::MouseEvent release_event(ui::ET_MOUSE_RELEASED, press_location,
-                               press_location, ui::EventTimeForNow(),
+  ui::MouseEvent release_event(ui::ET_MOUSE_RELEASED, mouse_location,
+                               mouse_location, ui::EventTimeForNow(),
                                ui::EF_LEFT_MOUSE_BUTTON, 0);
   button->OnMouseReleased(release_event);
-  EXPECT_EQ(views::InkDropState::HIDDEN, ink_drop_->GetTargetInkDropState());
-  EXPECT_THAT(ink_drop_->GetAndResetRequestedStates(),
+  EXPECT_EQ(views::InkDropState::HIDDEN,
+            browser_button_ink_drop_->GetTargetInkDropState());
+  EXPECT_THAT(browser_button_ink_drop_->GetAndResetRequestedStates(),
               ElementsAre(views::InkDropState::ACTION_TRIGGERED));
 }
 
 // Tests that dragging outside of a shelf item transitions ink drop states
 // correctly.
-TEST_F(ShelfViewInkDropTest, WithoutMenuPressDragReleaseOutside) {
-  views::CustomButton* button = browser_button_;
-  gfx::Point press_location = button->GetLocalBounds().CenterPoint();
+TEST_F(ShelfViewInkDropTest, ShelfButtonWithoutMenuPressDragReleaseOutside) {
+  InitBrowserButtonInkDrop();
 
-  ui::MouseEvent press_event(ui::ET_MOUSE_PRESSED, press_location,
-                             press_location, ui::EventTimeForNow(),
+  views::CustomButton* button = browser_button_;
+  gfx::Point mouse_location = button->GetLocalBounds().CenterPoint();
+
+  ui::MouseEvent press_event(ui::ET_MOUSE_PRESSED, mouse_location,
+                             mouse_location, ui::EventTimeForNow(),
                              ui::EF_LEFT_MOUSE_BUTTON, 0);
   button->OnMousePressed(press_event);
   EXPECT_EQ(views::InkDropState::ACTION_PENDING,
-            ink_drop_->GetTargetInkDropState());
-  EXPECT_THAT(ink_drop_->GetAndResetRequestedStates(),
+            browser_button_ink_drop_->GetTargetInkDropState());
+  EXPECT_THAT(browser_button_ink_drop_->GetAndResetRequestedStates(),
               ElementsAre(views::InkDropState::ACTION_PENDING));
 
-  press_location.Offset(test_api_->GetMinimumDragDistance() / 2, 0);
-  ui::MouseEvent drag_event_small(ui::ET_MOUSE_DRAGGED, press_location,
-                                  press_location, ui::EventTimeForNow(),
+  mouse_location.Offset(test_api_->GetMinimumDragDistance() / 2, 0);
+  ui::MouseEvent drag_event_small(ui::ET_MOUSE_DRAGGED, mouse_location,
+                                  mouse_location, ui::EventTimeForNow(),
                                   ui::EF_LEFT_MOUSE_BUTTON, 0);
   button->OnMouseDragged(drag_event_small);
   EXPECT_EQ(views::InkDropState::ACTION_PENDING,
-            ink_drop_->GetTargetInkDropState());
-  EXPECT_THAT(ink_drop_->GetAndResetRequestedStates(), IsEmpty());
+            browser_button_ink_drop_->GetTargetInkDropState());
+  EXPECT_THAT(browser_button_ink_drop_->GetAndResetRequestedStates(),
+              IsEmpty());
 
-  press_location.Offset(test_api_->GetMinimumDragDistance(), 0);
-  ui::MouseEvent drag_event_large(ui::ET_MOUSE_DRAGGED, press_location,
-                                  press_location, ui::EventTimeForNow(),
+  mouse_location.Offset(test_api_->GetMinimumDragDistance(), 0);
+  ui::MouseEvent drag_event_large(ui::ET_MOUSE_DRAGGED, mouse_location,
+                                  mouse_location, ui::EventTimeForNow(),
                                   ui::EF_LEFT_MOUSE_BUTTON, 0);
   button->OnMouseDragged(drag_event_large);
-  EXPECT_EQ(views::InkDropState::HIDDEN, ink_drop_->GetTargetInkDropState());
-  EXPECT_THAT(ink_drop_->GetAndResetRequestedStates(),
+  EXPECT_EQ(views::InkDropState::HIDDEN,
+            browser_button_ink_drop_->GetTargetInkDropState());
+  EXPECT_THAT(browser_button_ink_drop_->GetAndResetRequestedStates(),
               ElementsAre(views::InkDropState::HIDDEN));
 
-  ui::MouseEvent release_event(ui::ET_MOUSE_RELEASED, press_location,
-                               press_location, ui::EventTimeForNow(),
+  ui::MouseEvent release_event(ui::ET_MOUSE_RELEASED, mouse_location,
+                               mouse_location, ui::EventTimeForNow(),
                                ui::EF_LEFT_MOUSE_BUTTON, 0);
   button->OnMouseReleased(release_event);
-  EXPECT_EQ(views::InkDropState::HIDDEN, ink_drop_->GetTargetInkDropState());
-  EXPECT_THAT(ink_drop_->GetAndResetRequestedStates(), IsEmpty());
+  EXPECT_EQ(views::InkDropState::HIDDEN,
+            browser_button_ink_drop_->GetTargetInkDropState());
+  EXPECT_THAT(browser_button_ink_drop_->GetAndResetRequestedStates(),
+              IsEmpty());
 }
 
 // Tests that dragging outside of a shelf item and back transitions ink drop
 // states correctly.
-TEST_F(ShelfViewInkDropTest, WithoutMenuPressDragReleaseInside) {
-  views::CustomButton* button = browser_button_;
-  gfx::Point press_location = button->GetLocalBounds().CenterPoint();
+TEST_F(ShelfViewInkDropTest, ShelfButtonWithoutMenuPressDragReleaseInside) {
+  InitBrowserButtonInkDrop();
 
-  ui::MouseEvent press_event(ui::ET_MOUSE_PRESSED, press_location,
-                             press_location, ui::EventTimeForNow(),
+  views::CustomButton* button = browser_button_;
+  gfx::Point mouse_location = button->GetLocalBounds().CenterPoint();
+
+  ui::MouseEvent press_event(ui::ET_MOUSE_PRESSED, mouse_location,
+                             mouse_location, ui::EventTimeForNow(),
                              ui::EF_LEFT_MOUSE_BUTTON, 0);
   button->OnMousePressed(press_event);
   EXPECT_EQ(views::InkDropState::ACTION_PENDING,
-            ink_drop_->GetTargetInkDropState());
-  EXPECT_THAT(ink_drop_->GetAndResetRequestedStates(),
+            browser_button_ink_drop_->GetTargetInkDropState());
+  EXPECT_THAT(browser_button_ink_drop_->GetAndResetRequestedStates(),
               ElementsAre(views::InkDropState::ACTION_PENDING));
 
-  press_location.Offset(test_api_->GetMinimumDragDistance() * 2, 0);
-  ui::MouseEvent drag_event_outside(ui::ET_MOUSE_DRAGGED, press_location,
-                                    press_location, ui::EventTimeForNow(),
+  mouse_location.Offset(test_api_->GetMinimumDragDistance() * 2, 0);
+  ui::MouseEvent drag_event_outside(ui::ET_MOUSE_DRAGGED, mouse_location,
+                                    mouse_location, ui::EventTimeForNow(),
                                     ui::EF_LEFT_MOUSE_BUTTON, 0);
   button->OnMouseDragged(drag_event_outside);
-  EXPECT_EQ(views::InkDropState::HIDDEN, ink_drop_->GetTargetInkDropState());
-  EXPECT_THAT(ink_drop_->GetAndResetRequestedStates(),
+  EXPECT_EQ(views::InkDropState::HIDDEN,
+            browser_button_ink_drop_->GetTargetInkDropState());
+  EXPECT_THAT(browser_button_ink_drop_->GetAndResetRequestedStates(),
               ElementsAre(views::InkDropState::HIDDEN));
 
-  press_location.Offset(-test_api_->GetMinimumDragDistance() * 2, 0);
-  ui::MouseEvent drag_event_inside(ui::ET_MOUSE_DRAGGED, press_location,
-                                   press_location, ui::EventTimeForNow(),
+  mouse_location.Offset(-test_api_->GetMinimumDragDistance() * 2, 0);
+  ui::MouseEvent drag_event_inside(ui::ET_MOUSE_DRAGGED, mouse_location,
+                                   mouse_location, ui::EventTimeForNow(),
                                    ui::EF_LEFT_MOUSE_BUTTON, 0);
   button->OnMouseDragged(drag_event_inside);
-  EXPECT_EQ(views::InkDropState::HIDDEN, ink_drop_->GetTargetInkDropState());
-  EXPECT_THAT(ink_drop_->GetAndResetRequestedStates(), IsEmpty());
+  EXPECT_EQ(views::InkDropState::HIDDEN,
+            browser_button_ink_drop_->GetTargetInkDropState());
+  EXPECT_THAT(browser_button_ink_drop_->GetAndResetRequestedStates(),
+              IsEmpty());
 
-  ui::MouseEvent release_event(ui::ET_MOUSE_RELEASED, press_location,
-                               press_location, ui::EventTimeForNow(),
+  ui::MouseEvent release_event(ui::ET_MOUSE_RELEASED, mouse_location,
+                               mouse_location, ui::EventTimeForNow(),
                                ui::EF_LEFT_MOUSE_BUTTON, 0);
   button->OnMouseReleased(release_event);
-  EXPECT_EQ(views::InkDropState::HIDDEN, ink_drop_->GetTargetInkDropState());
-  EXPECT_THAT(ink_drop_->GetAndResetRequestedStates(), IsEmpty());
+  EXPECT_EQ(views::InkDropState::HIDDEN,
+            browser_button_ink_drop_->GetTargetInkDropState());
+  EXPECT_THAT(browser_button_ink_drop_->GetAndResetRequestedStates(),
+              IsEmpty());
 }
 
 // Tests that clicking on a shelf item that shows an app list menu transitions
 // ink drop state correctly.
-TEST_F(ShelfViewInkDropTest, WithMenuPressRelease) {
+TEST_F(ShelfViewInkDropTest, ShelfButtonWithMenuPressRelease) {
+  InitBrowserButtonInkDrop();
+
   // Set a delegate for the shelf item that returns an app list menu.
   ShelfID browser_shelf_id = model_->items()[browser_index_].id;
   ListMenuShelfItemDelegate* list_menu_delegate = new ListMenuShelfItemDelegate;
@@ -2231,15 +2572,15 @@ TEST_F(ShelfViewInkDropTest, WithMenuPressRelease) {
                                       base::WrapUnique(list_menu_delegate));
 
   views::CustomButton* button = browser_button_;
-  gfx::Point press_location = button->GetLocalBounds().CenterPoint();
+  gfx::Point mouse_location = button->GetLocalBounds().CenterPoint();
 
-  ui::MouseEvent press_event(ui::ET_MOUSE_PRESSED, press_location,
-                             press_location, ui::EventTimeForNow(),
+  ui::MouseEvent press_event(ui::ET_MOUSE_PRESSED, mouse_location,
+                             mouse_location, ui::EventTimeForNow(),
                              ui::EF_LEFT_MOUSE_BUTTON, 0);
   button->OnMousePressed(press_event);
   EXPECT_EQ(views::InkDropState::ACTION_PENDING,
-            ink_drop_->GetTargetInkDropState());
-  EXPECT_THAT(ink_drop_->GetAndResetRequestedStates(),
+            browser_button_ink_drop_->GetTargetInkDropState());
+  EXPECT_THAT(browser_button_ink_drop_->GetAndResetRequestedStates(),
               ElementsAre(views::InkDropState::ACTION_PENDING));
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -2248,12 +2589,13 @@ TEST_F(ShelfViewInkDropTest, WithMenuPressRelease) {
 
   // Mouse release will spawn a menu which will then get closed by the above
   // posted task.
-  ui::MouseEvent release_event(ui::ET_MOUSE_RELEASED, press_location,
-                               press_location, ui::EventTimeForNow(),
+  ui::MouseEvent release_event(ui::ET_MOUSE_RELEASED, mouse_location,
+                               mouse_location, ui::EventTimeForNow(),
                                ui::EF_LEFT_MOUSE_BUTTON, 0);
   button->OnMouseReleased(release_event);
-  EXPECT_EQ(views::InkDropState::HIDDEN, ink_drop_->GetTargetInkDropState());
-  EXPECT_THAT(ink_drop_->GetAndResetRequestedStates(),
+  EXPECT_EQ(views::InkDropState::HIDDEN,
+            browser_button_ink_drop_->GetTargetInkDropState());
+  EXPECT_THAT(browser_button_ink_drop_->GetAndResetRequestedStates(),
               ElementsAre(views::InkDropState::ACTIVATED,
                           views::InkDropState::DEACTIVATED));
 }

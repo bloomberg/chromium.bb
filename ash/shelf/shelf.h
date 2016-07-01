@@ -35,6 +35,7 @@ class View;
 }
 
 namespace ash {
+class AppListButton;
 class FocusCycler;
 class ShelfDelegate;
 class ShelfIconObserver;
@@ -132,7 +133,7 @@ class ASH_EXPORT Shelf {
 
   void SchedulePaint();
 
-  views::View* GetAppListButtonView() const;
+  AppListButton* GetAppListButton() const;
 
   // Launch a 0-indexed shelf item in the shelf.
   // A negative index launches the last shelf item in the shelf.

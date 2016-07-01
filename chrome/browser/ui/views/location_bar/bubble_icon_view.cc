@@ -25,7 +25,7 @@ BubbleIconView::BubbleIconView(CommandUpdater* command_updater, int command_id)
   image_->set_interactive(false);
   image_->EnableCanvasFlippingForRTLUI(true);
   if (ui::MaterialDesignController::IsModeMaterial()) {
-    SetHasInkDrop(true);
+    SetInkDropMode(InkDropMode::ON);
     SetFocusBehavior(FocusBehavior::ACCESSIBLE_ONLY);
   } else {
     image_->SetFocusBehavior(FocusBehavior::ACCESSIBLE_ONLY);

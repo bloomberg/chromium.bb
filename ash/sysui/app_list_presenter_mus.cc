@@ -45,6 +45,10 @@ void AppListPresenterMus::ToggleAppList(int64_t display_id) {
   presenter_->ToggleAppList(display_id);
 }
 
+bool AppListPresenterMus::IsVisible() const {
+  return false;
+}
+
 bool AppListPresenterMus::GetTargetVisibility() const {
   // TODO(mfomitchev): we have GetTargetVisibility() in mojom, but this
   // shouldn't be a synchronous method. We should go through the call sites and

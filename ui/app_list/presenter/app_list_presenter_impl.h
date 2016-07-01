@@ -55,13 +55,11 @@ class APP_LIST_PRESENTER_EXPORT AppListPresenterImpl
   void Show(int64_t display_id) override;
   void Dismiss() override;
   void ToggleAppList(int64_t display_id) override;
+  bool IsVisible() const override;
   bool GetTargetVisibility() const override;
 
  private:
   friend class test::AppListPresenterImplTestApi;
-
-  // Whether the app list's aura::Window is currently visible.
-  bool IsVisible() const;
 
   // Sets the app list view and attempts to show it.
   void SetView(AppListView* view);

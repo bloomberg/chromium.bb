@@ -63,7 +63,7 @@ ToolbarActionView::ToolbarActionView(
       menu_(nullptr),
       weak_factory_(this) {
   if (ui::MaterialDesignController::IsModeMaterial()) {
-    SetHasInkDrop(true);
+    SetInkDropMode(InkDropMode::ON);
     SetFocusPainter(nullptr);
   }
   set_has_ink_drop_action_on_click(true);

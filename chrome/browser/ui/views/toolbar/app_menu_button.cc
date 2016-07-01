@@ -44,7 +44,7 @@ AppMenuButton::AppMenuButton(ToolbarView* toolbar_view)
       margin_trailing_(0),
       weak_factory_(this) {
   if (ui::MaterialDesignController::IsModeMaterial()) {
-    SetHasInkDrop(true);
+    SetInkDropMode(InkDropMode::ON);
     SetFocusPainter(nullptr);
   } else {
     icon_painter_.reset(new AppMenuIconPainter(this));

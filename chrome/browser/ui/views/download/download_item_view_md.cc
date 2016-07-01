@@ -187,7 +187,7 @@ DownloadItemViewMd::DownloadItemViewMd(DownloadItem* download_item,
       creation_time_(base::Time::Now()),
       time_download_warning_shown_(base::Time()),
       weak_ptr_factory_(this) {
-  SetHasInkDrop(ui::MaterialDesignController::IsModeMaterial());
+  SetInkDropMode(InkDropMode::ON);
   DCHECK(download());
   DCHECK(ui::MaterialDesignController::IsModeMaterial());
   download()->AddObserver(this);

@@ -46,7 +46,7 @@ ContentSettingImageView::ContentSettingImageView(
       bubble_view_(nullptr),
       suppress_mouse_released_action_(false) {
   if (ui::MaterialDesignController::IsModeMaterial()) {
-    SetHasInkDrop(true);
+    SetInkDropMode(InkDropMode::ON);
     SetFocusBehavior(FocusBehavior::ACCESSIBLE_ONLY);
   } else {
     static const int kBackgroundImages[] =

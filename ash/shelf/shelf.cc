@@ -180,8 +180,8 @@ void Shelf::SchedulePaint() {
   shelf_view_->SchedulePaintForAllButtons();
 }
 
-views::View* Shelf::GetAppListButtonView() const {
-  return shelf_view_->GetAppListButtonView();
+AppListButton* Shelf::GetAppListButton() const {
+  return shelf_view_->GetAppListButton();
 }
 
 void Shelf::LaunchAppIndexAt(int item_index) {

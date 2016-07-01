@@ -242,16 +242,19 @@ bool InkDropHostView::ShouldShowInkDropForFocus() const {
   return false;
 }
 
-void InkDropHostView::SetHasInkDrop(bool has_an_ink_drop) {
-  if (has_an_ink_drop) {
+void InkDropHostView::SetInkDropMode(InkDropMode ink_drop_mode) {
+  if (ink_drop_mode == InkDropMode::OFF)
+    ink_drop_.reset(new InkDropStub());
+  else
     ink_drop_.reset(new InkDropImpl(this));
-    if (!gesture_handler_)
-      gesture_handler_.reset(new InkDropGestureHandler(this, ink_drop_.get()));
-    else
+
+  if (ink_drop_mode == InkDropMode::ON) {
+    if (gesture_handler_)
       gesture_handler_->SetInkDrop(ink_drop_.get());
+    else
+      gesture_handler_.reset(new InkDropGestureHandler(this, ink_drop_.get()));
   } else {
     gesture_handler_.reset();
-    ink_drop_.reset(new InkDropStub());
   }
 }
 

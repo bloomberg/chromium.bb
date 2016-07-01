@@ -32,6 +32,9 @@ class APP_LIST_PRESENTER_EXPORT AppListPresenter {
   // Show the app list if it is visible, hide it if it is hidden.
   virtual void ToggleAppList(int64_t display_id) = 0;
 
+  // Returns current visibility of the app list.
+  virtual bool IsVisible() const = 0;
+
   // Returns target visibility. This may differ from IsVisible() if a
   // visibility transition is in progress.
   virtual bool GetTargetVisibility() const = 0;

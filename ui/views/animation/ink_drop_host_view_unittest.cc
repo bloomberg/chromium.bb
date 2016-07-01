@@ -15,6 +15,7 @@
 
 namespace views {
 namespace test {
+using InkDropMode = InkDropHostViewTestApi::InkDropMode;
 
 class InkDropHostViewTest : public testing::Test {
  public:
@@ -57,17 +58,21 @@ TEST_F(InkDropHostViewTest, GetInkDropCenterBasedOnLastEventForLocatedEvent) {
   EXPECT_EQ(gfx::Point(5, 6), test_api_.GetInkDropCenterBasedOnLastEvent());
 }
 
-// Verifies that SetHasInkDrop() sets up gesture handling properly.
-TEST_F(InkDropHostViewTest, SetHasInkDropGestureHandler) {
+// Verifies that SetInkDropMode() sets up gesture handling properly.
+TEST_F(InkDropHostViewTest, SetInkDropModeGestureHandler) {
   EXPECT_FALSE(test_api_.HasGestureHandler());
 
-  test_api_.SetHasInkDrop(true);
+  test_api_.SetInkDropMode(InkDropMode::ON_NO_GESTURE_HANDLER);
+  EXPECT_FALSE(test_api_.HasGestureHandler());
+
+  test_api_.SetInkDropMode(InkDropMode::ON);
   EXPECT_TRUE(test_api_.HasGestureHandler());
 
-  test_api_.SetHasInkDrop(true);
+  // Enabling gesture handler the second time should just work (no crash).
+  test_api_.SetInkDropMode(InkDropMode::ON);
   EXPECT_TRUE(test_api_.HasGestureHandler());
 
-  test_api_.SetHasInkDrop(false);
+  test_api_.SetInkDropMode(InkDropMode::OFF);
   EXPECT_FALSE(test_api_.HasGestureHandler());
 }
 

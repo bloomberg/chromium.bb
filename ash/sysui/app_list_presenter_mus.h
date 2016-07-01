@@ -26,6 +26,7 @@ class AppListPresenterMus : public app_list::AppListPresenter {
   void Show(int64_t display_id) override;
   void Dismiss() override;
   void ToggleAppList(int64_t display_id) override;
+  bool IsVisible() const override;
   bool GetTargetVisibility() const override;
 
  private:

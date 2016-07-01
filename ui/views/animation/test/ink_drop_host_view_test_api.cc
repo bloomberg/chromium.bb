@@ -12,13 +12,20 @@ InkDropHostViewTestApi::InkDropHostViewTestApi(InkDropHostView* host_view)
 
 InkDropHostViewTestApi::~InkDropHostViewTestApi() {}
 
-void InkDropHostViewTestApi::SetHasInkDrop(bool has_an_ink_drop) {
-  host_view_->SetHasInkDrop(has_an_ink_drop);
+void InkDropHostViewTestApi::SetInkDropMode(InkDropMode ink_dorp_mode) {
+  host_view_->SetInkDropMode(ink_dorp_mode);
+}
+
+void InkDropHostViewTestApi::SetInkDrop(std::unique_ptr<InkDrop> ink_drop,
+                                        bool handles_gesture_events) {
+  host_view_->SetInkDropMode(handles_gesture_events
+                                 ? InkDropMode::ON
+                                 : InkDropMode::ON_NO_GESTURE_HANDLER);
+  host_view_->ink_drop_ = std::move(ink_drop);
 }
 
 void InkDropHostViewTestApi::SetInkDrop(std::unique_ptr<InkDrop> ink_drop) {
-  host_view_->SetHasInkDrop(true);
-  host_view_->ink_drop_ = std::move(ink_drop);
+  SetInkDrop(std::move(ink_drop), true);
 }
 
 bool InkDropHostViewTestApi::HasGestureHandler() const {

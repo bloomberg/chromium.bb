@@ -37,6 +37,7 @@ class MenuRunner;
 }
 
 namespace ash {
+class AppListButton;
 class DragImageView;
 class OverflowBubble;
 class OverflowButton;
@@ -103,7 +104,7 @@ class ASH_EXPORT ShelfView : public views::View,
     owner_overflow_bubble_ = owner;
   }
 
-  views::View* GetAppListButtonView() const;
+  AppListButton* GetAppListButton() const;
 
   // Returns true if the mouse cursor exits the area for launcher tooltip.
   // There are thin gaps between launcher buttons but the tooltip shouldn't hide

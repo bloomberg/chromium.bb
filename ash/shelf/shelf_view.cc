@@ -438,7 +438,7 @@ void ShelfView::OnShelfAlignmentChanged() {
   if (overflow_bubble_)
     overflow_bubble_->Hide();
   // For crbug.com/587931, because AppListButton layout logic is in OnPaint.
-  views::View* app_list_button = GetAppListButtonView();
+  AppListButton* app_list_button = GetAppListButton();
   if (app_list_button)
     app_list_button->SchedulePaint();
 }
@@ -512,10 +512,13 @@ bool ShelfView::IsShowingOverflowBubble() const {
   return overflow_bubble_.get() && overflow_bubble_->IsShowing();
 }
 
-views::View* ShelfView::GetAppListButtonView() const {
+AppListButton* ShelfView::GetAppListButton() const {
   for (int i = 0; i < model_->item_count(); ++i) {
-    if (model_->items()[i].type == TYPE_APP_LIST)
-      return view_model_->view_at(i);
+    if (model_->items()[i].type == TYPE_APP_LIST) {
+      views::View* view = view_model_->view_at(i);
+      CHECK_EQ(AppListButton::kViewClassName, view->GetClassName());
+      return static_cast<AppListButton*>(view);
+    }
   }
 
   NOTREACHED() << "Applist button not found";
@@ -533,7 +536,7 @@ bool ShelfView::ShouldHideTooltip(const gfx::Point& cursor_location) const {
 }
 
 bool ShelfView::ShouldShowTooltipForView(const views::View* view) const {
-  if (view == GetAppListButtonView() &&
+  if (view == GetAppListButton() &&
       Shell::GetInstance()->GetAppListTargetVisibility()) {
     return false;
   }
@@ -1744,9 +1747,12 @@ void ShelfView::ButtonPressed(views::Button* sender,
     shelf_button_pressed_metric_tracker_.ButtonPressed(event, sender,
                                                        performed_action);
 
+    // For the app list menu no TRIGGERED ink drop effect is needed and it
+    // handles its own ACTIVATED/DEACTIVATED states.
     if (performed_action == ShelfItemDelegate::kNewWindowCreated ||
-        !ShowListMenuForView(model_->items()[last_pressed_index_], sender,
-                             event, ink_drop)) {
+        (performed_action != ShelfItemDelegate::kAppListMenuShown &&
+         !ShowListMenuForView(model_->items()[last_pressed_index_], sender,
+                              event, ink_drop))) {
       ink_drop->AnimateToState(views::InkDropState::ACTION_TRIGGERED);
     }
   }
