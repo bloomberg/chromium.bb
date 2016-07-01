@@ -19,12 +19,3 @@ class PixelExpectations(GpuTestExpectations):
               ['mac'], bug=540039)
     self.Fail('Pixel.WebGLGreenTriangleES3',
               ['mac', ('intel', 0x116)], bug=540531)
-
-    # TODO(ccameron): Remove suppression after rebaseline.
-    self.Fail('Pixel.CSS3DBlueBox', ['mac'], bug=533690)
-    self.Fail('Pixel.CSS3DBlueBoxES3', ['mac'], bug=533690)
-
-    # TODO(vmiura): Re-enable these after reference images are generated.
-    self.Fail('Pixel.SolidColorBackground', bug=624256)
-    self.Fail('Pixel.SolidColorBackgroundES3', bug=624256)
-    self.Fail('Pixel.2DCanvasWebGLES3', bug=624256)
