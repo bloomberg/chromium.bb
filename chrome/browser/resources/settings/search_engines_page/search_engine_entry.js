@@ -24,7 +24,7 @@ Polymer({
     },
   },
 
-  /** @private {!settings.SearchEnginesBrowserProxy} */
+  /** @private {settings.SearchEnginesBrowserProxy} */
   browserProxy_: null,
 
   /** @override */

@@ -136,6 +136,7 @@ cr.define('settings', function() {
   };
 
   return {
+    SearchEnginesBrowserProxy: SearchEnginesBrowserProxy,
     SearchEnginesBrowserProxyImpl: SearchEnginesBrowserProxyImpl,
   };
 });

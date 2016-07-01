@@ -33,7 +33,7 @@ Polymer({
     actionButtonText_: String,
   },
 
-  /** @private {!settings.SearchEnginesBrowserProxy} */
+  /** @private {settings.SearchEnginesBrowserProxy} */
   browserProxy_: null,
 
   /**

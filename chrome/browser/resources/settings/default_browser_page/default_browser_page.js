@@ -55,9 +55,6 @@ Polymer({
     var self = this;
     cr.define('Settings', function() {
       return {
-        setAsDefaultConcluded: function() {
-          return self.setAsDefaultConcluded_.apply(self, arguments);
-        },
         updateDefaultBrowserState: function() {
           return self.updateDefaultBrowserState_.apply(self, arguments);
         },
@@ -82,7 +79,7 @@ Polymer({
     }
 
     this.showButton_ = !isDefault && canBeDefault;
-    if (!this.showButton) {
+    if (!this.showButton_) {
       this.message_ = loadTimeData.getString(
           canBeDefault ? 'defaultBrowserDefault' : 'defaultBrowserUnknown');
     }

@@ -35,7 +35,7 @@ Polymer({
 
     /**
      * List of options for the dropdown menu.
-     * @private {!DropdownMenuOptionList>}
+     * @private {!DropdownMenuOptionList}
      */
     clearFromOptions_: {
       readOnly: true,
@@ -59,7 +59,7 @@ Polymer({
     },
   },
 
-  /** @private {!settings.ClearBrowsingDataBrowserProxy} */
+  /** @private {settings.ClearBrowsingDataBrowserProxy} */
   browserProxy_: null,
 
   /** @override */
@@ -112,7 +112,7 @@ Polymer({
    * Updates the text of a browsing data counter corresponding to the given
    * preference.
    * @param {string} prefName Browsing data type deletion preference.
-   * @param {text} text The text with which to update the counter
+   * @param {string} text The text with which to update the counter
    * @private
    */
   updateCounterText_: function(prefName, text) {

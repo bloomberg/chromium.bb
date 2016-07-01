@@ -41,6 +41,7 @@ cr.define('settings', function() {
   };
 
   return {
+    ClearBrowsingDataBrowserProxy: ClearBrowsingDataBrowserProxy,
     ClearBrowsingDataBrowserProxyImpl: ClearBrowsingDataBrowserProxyImpl,
   };
 });
