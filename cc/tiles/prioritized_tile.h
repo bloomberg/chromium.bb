@@ -20,7 +20,11 @@ class CC_EXPORT PrioritizedTile {
   // represents a tile and its priority.
   PrioritizedTile();
   PrioritizedTile(const PrioritizedTile& other);
+  PrioritizedTile(PrioritizedTile&& other);
   ~PrioritizedTile();
+
+  PrioritizedTile& operator=(const PrioritizedTile& other);
+  PrioritizedTile& operator=(PrioritizedTile&& other);
 
   Tile* tile() const { return tile_; }
   const scoped_refptr<RasterSource>& raster_source() const {

@@ -21,9 +21,12 @@ PrioritizedTile::PrioritizedTile(Tile* tile,
       is_occluded_(is_occluded) {}
 
 PrioritizedTile::PrioritizedTile(const PrioritizedTile& other) = default;
+PrioritizedTile::PrioritizedTile(PrioritizedTile&& other) = default;
+PrioritizedTile::~PrioritizedTile() = default;
 
-PrioritizedTile::~PrioritizedTile() {
-}
+PrioritizedTile& PrioritizedTile::operator=(const PrioritizedTile& other) =
+    default;
+PrioritizedTile& PrioritizedTile::operator=(PrioritizedTile&& other) = default;
 
 void PrioritizedTile::AsValueInto(base::trace_event::TracedValue* value) const {
   tile_->AsValueInto(value);
