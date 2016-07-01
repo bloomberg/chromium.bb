@@ -473,16 +473,20 @@ void RTCVideoEncoder::Impl::BitstreamBufferReady(int32_t bitstream_buffer_id,
   }
   output_buffers_free_count_--;
 
-  // CrOS Nyan provides invalid timestamp. Use the current time for now.
-  // TODO(wuchengli): use the timestamp in BitstreamBufferReady after Nyan is
-  // fixed. http://crbug.com/620565.
-  const int64_t capture_time_us = rtc::TimeMicros();
-
   // Derive the capture time (in ms) and RTP timestamp (in 90KHz ticks).
-  const int64_t capture_time_ms =
-      capture_time_us / base::Time::kMicrosecondsPerMillisecond;
+  int64_t capture_time_us, capture_time_ms;
+  uint32_t rtp_timestamp;
 
-  const uint32_t rtp_timestamp = static_cast<uint32_t>(
+  if (!timestamp.is_zero()) {
+    capture_time_us = timestamp.InMicroseconds();;
+    capture_time_ms = timestamp.InMilliseconds();
+  } else {
+    // Fallback to the current time if encoder does not provide timestamp.
+    capture_time_us = rtc::TimeMicros();
+    capture_time_ms = capture_time_us / base::Time::kMicrosecondsPerMillisecond;
+  }
+  // RTP timestamp can wrap around. Get the lower 32 bits.
+  rtp_timestamp = static_cast<uint32_t>(
       capture_time_us * 90 / base::Time::kMicrosecondsPerMillisecond);
 
   webrtc::EncodedImage image(
@@ -567,13 +571,15 @@ void RTCVideoEncoder::Impl::EncodeOneFrame() {
   }
 
   if (requires_copy) {
+    const base::TimeDelta timestamp =
+        frame ? frame->timestamp()
+              : base::TimeDelta::FromMilliseconds(next_frame->ntp_time_ms());
     base::SharedMemory* input_buffer = input_buffers_[index];
     frame = media::VideoFrame::WrapExternalSharedMemory(
         media::PIXEL_FORMAT_I420, input_frame_coded_size_,
         gfx::Rect(input_visible_size_), input_visible_size_,
         reinterpret_cast<uint8_t*>(input_buffer->memory()),
-        input_buffer->mapped_size(), input_buffer->handle(), 0,
-        base::TimeDelta::FromMilliseconds(next_frame->ntp_time_ms()));
+        input_buffer->mapped_size(), input_buffer->handle(), 0, timestamp);
     if (!frame.get()) {
       LogAndNotifyError(FROM_HERE, "failed to create frame",
                         media::VideoEncodeAccelerator::kPlatformFailureError);
