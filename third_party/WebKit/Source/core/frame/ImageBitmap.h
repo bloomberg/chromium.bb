@@ -30,6 +30,10 @@ enum AlphaDisposition {
     PremultiplyAlpha,
     DontPremultiplyAlpha,
 };
+enum DataColorFormat {
+    RGBAColorType,
+    N32ColorType,
+};
 
 class CORE_EXPORT ImageBitmap final : public GarbageCollectedFinalized<ImageBitmap>, public ScriptWrappable, public CanvasImageSource, public ImageBitmapSource {
     DEFINE_WRAPPERTYPEINFO();
@@ -37,11 +41,15 @@ public:
     static ImageBitmap* create(HTMLImageElement*, const IntRect&, Document*, const ImageBitmapOptions& = ImageBitmapOptions());
     static ImageBitmap* create(HTMLVideoElement*, const IntRect&, Document*, const ImageBitmapOptions& = ImageBitmapOptions());
     static ImageBitmap* create(HTMLCanvasElement*, const IntRect&, const ImageBitmapOptions& = ImageBitmapOptions());
-    static ImageBitmap* create(ImageData*, const IntRect&, const ImageBitmapOptions& = ImageBitmapOptions(), const bool& isImageDataPremultiplied = false, const bool& isImageDataOriginClean = true);
+    static ImageBitmap* create(ImageData*, const IntRect&, const ImageBitmapOptions& = ImageBitmapOptions());
     static ImageBitmap* create(ImageBitmap*, const IntRect&, const ImageBitmapOptions& = ImageBitmapOptions());
     static ImageBitmap* create(PassRefPtr<StaticBitmapImage>);
     static ImageBitmap* create(PassRefPtr<StaticBitmapImage>, const IntRect&, const ImageBitmapOptions& = ImageBitmapOptions());
     static ImageBitmap* create(WebExternalTextureMailbox&);
+    // This function is called by structured-cloning an ImageBitmap.
+    // isImageBitmapPremultiplied indicates whether the original ImageBitmap is premultiplied or not.
+    // isImageBitmapOriginClean indicates whether the original ImageBitmap is origin clean or not.
+    static ImageBitmap* create(std::unique_ptr<uint8_t[]> data, uint32_t width, uint32_t height, bool isImageBitmapPremultiplied, bool isImageBitmapOriginClean);
     static PassRefPtr<SkImage> getSkImageFromDecoder(std::unique_ptr<ImageDecoder>);
 
     // Type and helper function required by CallbackPromiseAdapter:
@@ -49,7 +57,7 @@ public:
     static ImageBitmap* take(ScriptPromiseResolver*, sk_sp<SkImage>);
 
     StaticBitmapImage* bitmapImage() const { return (m_image) ? m_image.get() : nullptr; }
-    std::unique_ptr<uint8_t[]> copyBitmapData(AlphaDisposition alphaOp = DontPremultiplyAlpha);
+    std::unique_ptr<uint8_t[]> copyBitmapData(AlphaDisposition alphaOp = DontPremultiplyAlpha, DataColorFormat format = RGBAColorType);
     unsigned long width() const;
     unsigned long height() const;
     IntSize size() const;
@@ -82,11 +90,12 @@ private:
     ImageBitmap(HTMLImageElement*, const IntRect&, Document*, const ImageBitmapOptions&);
     ImageBitmap(HTMLVideoElement*, const IntRect&, Document*, const ImageBitmapOptions&);
     ImageBitmap(HTMLCanvasElement*, const IntRect&, const ImageBitmapOptions&);
-    ImageBitmap(ImageData*, const IntRect&, const ImageBitmapOptions&, const bool&, const bool&);
+    ImageBitmap(ImageData*, const IntRect&, const ImageBitmapOptions&);
     ImageBitmap(ImageBitmap*, const IntRect&, const ImageBitmapOptions&);
     ImageBitmap(PassRefPtr<StaticBitmapImage>);
     ImageBitmap(PassRefPtr<StaticBitmapImage>, const IntRect&, const ImageBitmapOptions&);
     ImageBitmap(WebExternalTextureMailbox&);
+    ImageBitmap(std::unique_ptr<uint8_t[]> data, uint32_t width, uint32_t height, bool isImageBitmapPremultiplied, bool isImageBitmapOriginClean);
 
     void parseOptions(const ImageBitmapOptions&, bool&, bool&);
 

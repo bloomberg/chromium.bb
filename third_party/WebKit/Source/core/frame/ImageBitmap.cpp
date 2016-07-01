@@ -258,8 +258,15 @@ ImageBitmap::ImageBitmap(HTMLCanvasElement* canvas, const IntRect& cropRect, con
     m_image->setPremultiplied(premultiplyAlpha);
 }
 
-// The last two parameters are used for structure-cloning.
-ImageBitmap::ImageBitmap(ImageData* data, const IntRect& cropRect, const ImageBitmapOptions& options, const bool& isImageDataPremultiplied, const bool& isImageDataOriginClean)
+ImageBitmap::ImageBitmap(std::unique_ptr<uint8_t[]> data, uint32_t width, uint32_t height, bool isImageBitmapPremultiplied, bool isImageBitmapOriginClean)
+{
+    SkImageInfo info = SkImageInfo::MakeN32(width, height, isImageBitmapPremultiplied ? kPremul_SkAlphaType : kUnpremul_SkAlphaType);
+    m_image = StaticBitmapImage::create(fromSkSp(SkImage::MakeRasterCopy(SkPixmap(info, data.get(), info.bytesPerPixel() * width))));
+    m_image->setPremultiplied(isImageBitmapPremultiplied);
+    m_image->setOriginClean(isImageBitmapOriginClean);
+}
+
+ImageBitmap::ImageBitmap(ImageData* data, const IntRect& cropRect, const ImageBitmapOptions& options)
 {
     bool flipY;
     bool premultiplyAlpha;
@@ -273,11 +280,7 @@ ImageBitmap::ImageBitmap(ImageData* data, const IntRect& cropRect, const ImageBi
         int dstHeight = cropRect.height();
         // TODO (xidachen): skia doesn't support SkImage::NewRasterCopy from a kRGBA color type.
         // For now, we swap R and B channel and uses kBGRA color type.
-        SkImageInfo info;
-        if (!isImageDataPremultiplied)
-            info = SkImageInfo::Make(cropRect.width(), dstHeight, kBGRA_8888_SkColorType, kUnpremul_SkAlphaType);
-        else
-            info = SkImageInfo::Make(cropRect.width(), dstHeight, kBGRA_8888_SkColorType, kPremul_SkAlphaType);
+        SkImageInfo info = SkImageInfo::Make(cropRect.width(), dstHeight, kBGRA_8888_SkColorType, kUnpremul_SkAlphaType);
         int srcPixelBytesPerRow = info.bytesPerPixel() * data->size().width();
         int dstPixelBytesPerRow = info.bytesPerPixel() * cropRect.width();
         if (cropRect == IntRect(IntPoint(), data->size())) {
@@ -317,7 +320,6 @@ ImageBitmap::ImageBitmap(ImageData* data, const IntRect& cropRect, const ImageBi
             m_image = StaticBitmapImage::create(newSkImageFromRaster(info, std::move(copiedDataBuffer), dstPixelBytesPerRow));
         }
         m_image->setPremultiplied(premultiplyAlpha);
-        m_image->setOriginClean(isImageDataOriginClean);
         return;
     }
 
@@ -405,10 +407,10 @@ ImageBitmap* ImageBitmap::create(HTMLCanvasElement* canvas, const IntRect& cropR
     return new ImageBitmap(canvas, normalizedCropRect, options);
 }
 
-ImageBitmap* ImageBitmap::create(ImageData* data, const IntRect& cropRect, const ImageBitmapOptions& options, const bool& isImageDataPremultiplied, const bool& isImageDataOriginClean)
+ImageBitmap* ImageBitmap::create(ImageData* data, const IntRect& cropRect, const ImageBitmapOptions& options)
 {
     IntRect normalizedCropRect = normalizeRect(cropRect);
-    return new ImageBitmap(data, normalizedCropRect, options, isImageDataPremultiplied, isImageDataOriginClean);
+    return new ImageBitmap(data, normalizedCropRect, options);
 }
 
 ImageBitmap* ImageBitmap::create(ImageBitmap* bitmap, const IntRect& cropRect, const ImageBitmapOptions& options)
@@ -433,6 +435,11 @@ ImageBitmap* ImageBitmap::create(WebExternalTextureMailbox& mailbox)
     return new ImageBitmap(mailbox);
 }
 
+ImageBitmap* ImageBitmap::create(std::unique_ptr<uint8_t[]> data, uint32_t width, uint32_t height, bool isImageBitmapPremultiplied, bool isImageBitmapOriginClean)
+{
+    return new ImageBitmap(std::move(data), width, height, isImageBitmapPremultiplied, isImageBitmapOriginClean);
+}
+
 void ImageBitmap::close()
 {
     if (!m_image || m_isNeutered)
@@ -447,9 +454,9 @@ ImageBitmap* ImageBitmap::take(ScriptPromiseResolver*, sk_sp<SkImage> image)
     return ImageBitmap::create(StaticBitmapImage::create(fromSkSp(image)));
 }
 
-std::unique_ptr<uint8_t[]> ImageBitmap::copyBitmapData(AlphaDisposition alphaOp)
+std::unique_ptr<uint8_t[]> ImageBitmap::copyBitmapData(AlphaDisposition alphaOp, DataColorFormat format)
 {
-    SkImageInfo info = SkImageInfo::Make(width(), height(), kRGBA_8888_SkColorType, (alphaOp == PremultiplyAlpha) ? kPremul_SkAlphaType : kUnpremul_SkAlphaType);
+    SkImageInfo info = SkImageInfo::Make(width(), height(), (format == RGBAColorType) ? kRGBA_8888_SkColorType : kN32_SkColorType, (alphaOp == PremultiplyAlpha) ? kPremul_SkAlphaType : kUnpremul_SkAlphaType);
     std::unique_ptr<uint8_t[]> dstPixels = copySkImageData(m_image->imageForCurrentFrame().get(), info);
     return dstPixels;
 }

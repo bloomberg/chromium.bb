@@ -327,10 +327,11 @@ void SerializedScriptValueWriter::writeImageData(uint32_t width, uint32_t height
     doWriteImageData(width, height, pixelData, pixelDataLength);
 }
 
-void SerializedScriptValueWriter::writeImageBitmap(uint32_t width, uint32_t height, uint32_t isOriginClean, const uint8_t* pixelData, uint32_t pixelDataLength)
+void SerializedScriptValueWriter::writeImageBitmap(uint32_t width, uint32_t height, uint32_t isOriginClean, uint32_t isPremultiplied, const uint8_t* pixelData, uint32_t pixelDataLength)
 {
     append(ImageBitmapTag);
     append(isOriginClean);
+    append(isPremultiplied);
     doWriteImageData(width, height, pixelData, pixelDataLength);
 }
 
@@ -1107,8 +1108,8 @@ ScriptValueSerializer::StateBase* ScriptValueSerializer::writeAndGreyImageBitmap
         m_writer.writeTransferredImageBitmap(index);
     } else {
         greyObject(object);
-        std::unique_ptr<uint8_t[]> pixelData = imageBitmap->copyBitmapData(PremultiplyAlpha);
-        m_writer.writeImageBitmap(imageBitmap->width(), imageBitmap->height(), static_cast<uint32_t>(imageBitmap->originClean()), pixelData.get(), imageBitmap->width() * imageBitmap->height() * 4);
+        std::unique_ptr<uint8_t[]> pixelData = imageBitmap->copyBitmapData(imageBitmap->isPremultiplied() ? PremultiplyAlpha : DontPremultiplyAlpha, N32ColorType);
+        m_writer.writeImageBitmap(imageBitmap->width(), imageBitmap->height(), static_cast<uint32_t>(imageBitmap->originClean()), static_cast<uint32_t>(imageBitmap->isPremultiplied()), pixelData.get(), imageBitmap->width() * imageBitmap->height() * 4);
     }
     return nullptr;
 }
@@ -1711,32 +1712,33 @@ bool SerializedScriptValueReader::readNumberObject(v8::Local<v8::Value>* value)
     return true;
 }
 
-// Helper function shared by readImageData and readImageBitmap
-ImageData* SerializedScriptValueReader::doReadImageData()
+// Helper function used by readImageData and readImageBitmap.
+bool SerializedScriptValueReader::doReadImageDataProperties(uint32_t* width, uint32_t* height, uint32_t* pixelDataLength)
+{
+    if (!doReadUint32(width))
+        return false;
+    if (!doReadUint32(height))
+        return false;
+    if (!doReadUint32(pixelDataLength))
+        return false;
+    if (m_length - m_position < *pixelDataLength)
+        return false;
+    return true;
+}
+
+bool SerializedScriptValueReader::readImageData(v8::Local<v8::Value>* value)
 {
     uint32_t width;
     uint32_t height;
     uint32_t pixelDataLength;
-    if (!doReadUint32(&width))
-        return nullptr;
-    if (!doReadUint32(&height))
-        return nullptr;
-    if (!doReadUint32(&pixelDataLength))
-        return nullptr;
-    if (m_position + pixelDataLength > m_length)
-        return nullptr;
+    if (!doReadImageDataProperties(&width, &height, &pixelDataLength))
+        return false;
     ImageData* imageData = ImageData::create(IntSize(width, height));
     DOMUint8ClampedArray* pixelArray = imageData->data();
     ASSERT(pixelArray);
     ASSERT(pixelArray->length() >= pixelDataLength);
     memcpy(pixelArray->data(), m_buffer + m_position, pixelDataLength);
     m_position += pixelDataLength;
-    return imageData;
-}
-
-bool SerializedScriptValueReader::readImageData(v8::Local<v8::Value>* value)
-{
-    ImageData* imageData = doReadImageData();
     if (!imageData)
         return false;
     *value = toV8(imageData, m_scriptState->context()->Global(), isolate());
@@ -1748,12 +1750,18 @@ bool SerializedScriptValueReader::readImageBitmap(v8::Local<v8::Value>* value)
     uint32_t isOriginClean;
     if (!doReadUint32(&isOriginClean))
         return false;
-    ImageData* imageData = doReadImageData();
-    if (!imageData)
+    uint32_t isPremultiplied;
+    if (!doReadUint32(&isPremultiplied))
         return false;
-    ImageBitmapOptions options;
-    options.setPremultiplyAlpha("none");
-    ImageBitmap* imageBitmap = ImageBitmap::create(imageData, IntRect(0, 0, imageData->width(), imageData->height()), options, true, isOriginClean);
+    uint32_t width;
+    uint32_t height;
+    uint32_t pixelDataLength;
+    if (!doReadImageDataProperties(&width, &height, &pixelDataLength))
+        return false;
+    std::unique_ptr<uint8_t[]> pixelData = wrapArrayUnique(new uint8_t[pixelDataLength]);
+    memcpy(pixelData.get(), m_buffer + m_position, pixelDataLength);
+    m_position += pixelDataLength;
+    ImageBitmap* imageBitmap = ImageBitmap::create(std::move(pixelData), width, height, isPremultiplied, isOriginClean);
     if (!imageBitmap)
         return false;
     *value = toV8(imageBitmap, m_scriptState->context()->Global(), isolate());

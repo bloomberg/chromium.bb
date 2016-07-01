@@ -38,14 +38,14 @@ function checkImageBitmap1() {
   // multiplying and dividing by alpha during the round trip, but
   // they should be close.
   // The alpha channel should be exactly the same.
-  compareImageData(newImage.data, image1.data);
+  compareImageData(newImage.data, imageData1);
 }
 
 function checkImageBitmap2() {
   shouldBe("bitmapWidth", "imageWidth2");
   shouldBe("bitmapHeight", "imageHeight2");
 
-  compareImageData(newImage.data, image2.data);
+  compareImageData(newImage.data, imageData2);
 }
 
 function postToWorker(message, transferable) {
@@ -59,7 +59,7 @@ function postToWorker(message, transferable) {
   });
 }
 
-function getNewImageDataFromWorkerReply(newImageBitmap)
+function getNewImageDataFromImageBitmap(newImageBitmap)
 {
   bitmapWidth = newImageBitmap.width;
   bitmapHeight = newImageBitmap.height;
@@ -77,6 +77,8 @@ var bitmapHeight;
 var imageBitmap1;
 var imageBitmap2;
 var newImage;
+var imageData1;
+var imageData2;
 var image1 = new ImageData(new Uint8ClampedArray(
             [255, 0, 0, 255,
             0, 255, 0, 255,
@@ -91,6 +93,11 @@ var context = document.getElementById("canvas").getContext("2d");
 var p1 = createImageBitmap(image1).then(function(image) {imageBitmap1 = image});
 var p2 = createImageBitmap(image2, {imageOrientation: "none", premultiplyAlpha: "none"}).then(function(image) {imageBitmap2 = image});
 Promise.all([p1, p2]).then(function() {
+  getNewImageDataFromImageBitmap(imageBitmap1);
+  imageData1 = newImage.data;
+  getNewImageDataFromImageBitmap(imageBitmap2);
+  imageData2 = newImage.data;
+
   bitmapWidth = imageBitmap1.width;
   bitmapHeight = imageBitmap1.height;
   shouldBe("bitmapWidth", "imageWidth1");
@@ -105,7 +112,7 @@ Promise.all([p1, p2]).then(function() {
   shouldBe("bitmapHeight", "imageHeight1");
 
   return replyPromise.then(reply => {
-    getNewImageDataFromWorkerReply(reply);
+    getNewImageDataFromImageBitmap(reply);
     checkImageBitmap1();
   });
 }).then(function() {
@@ -118,7 +125,7 @@ Promise.all([p1, p2]).then(function() {
   shouldBe("bitmapHeight", "0");
 
   return replyPromise.then(reply => {
-    getNewImageDataFromWorkerReply(reply);
+    getNewImageDataFromImageBitmap(reply);
     checkImageBitmap1();
   });
 }).then(function() {
@@ -131,7 +138,7 @@ Promise.all([p1, p2]).then(function() {
   shouldBe("bitmapHeight", "imageHeight2");
 
   return replyPromise.then(reply => {
-    getNewImageDataFromWorkerReply(reply);
+    getNewImageDataFromImageBitmap(reply);
     checkImageBitmap2();
   });
 }).then(finishJSTest, shouldNotBeCalled);
