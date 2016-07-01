@@ -7,7 +7,7 @@ if (is_android) {
   import("//build/config/android/config.gni")
 }
 
-source_set("lib") {
+static_library("lib") {
   sources = [
     "crash_keys_win.cc",
     "crash_keys_win.h",
