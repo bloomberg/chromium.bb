@@ -445,9 +445,9 @@ static AtomicString consumeStringOrURI(CSSParserTokenRange& range)
 
     CSSParserTokenRange contents = range.consumeBlock();
     const CSSParserToken& uri = contents.consumeIncludingWhitespace();
-    ASSERT(uri.type() == StringToken);
-    if (!contents.atEnd())
+    if (uri.type() == BadStringToken || !contents.atEnd())
         return AtomicString();
+    DCHECK_EQ(uri.type(), StringToken);
     return uri.value().toAtomicString();
 }
 
