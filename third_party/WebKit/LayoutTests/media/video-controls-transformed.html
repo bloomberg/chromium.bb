@@ -1,44 +1,30 @@
-<html>
-<head>
-  <title>Test controls on transformed video</title>
-  <style type="text/css" media="screen">
-    video {
-      margin: 50px;
-      transform: rotate(20deg);
-    }
-  </style>
-</head>
-<body>
-    <video controls></video>
-    <p>Test controls on transformed video.</p>
-    <p>This test only runs in DRT!</p>
-    <script src=media-file.js></script>
-    <!-- TODO(foolip): Convert test to testharness.js. crbug.com/588956
-         (Please avoid writing new tests using video-test.js) -->
-    <script src=video-test.js></script>
-    <script src=media-controls.js></script>
-    <script>
-        testExpected("video.controls", null, '!=');
-        waitForEvent('canplaythrough', function () {
-            if (window.eventSender) {
-                // Find the play button and click the middle of its bounding box.
-                var playCoords;
-                try {
-                    playCoords = mediaControlsButtonCoordinates(video, "play-button");
-                } catch (exception) {
-                    failTest(exception.description);
-                    return;
-                }
-                var clickX = playCoords[0];
-                var clickY = playCoords[1];
-                eventSender.mouseMoveTo(clickX, clickY);
-                eventSender.mouseDown();
-                eventSender.mouseUp();
-            }
-            testExpected("video.paused", false);
-            endTest();
-        } );
-        video.src = findMediaFile("video", "content/test");
-    </script>
-</body>
-</html>
+<!DOCTYPE html>
+<title>Test "controls" on transformed video.</title>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script src="media-file.js"></script>
+<script src="media-controls.js"></script>
+<style>
+video {
+    margin: 50px;
+    transform: rotate(20deg);
+}
+</style>
+<video controls></video>
+<script>
+async_test(function(t) {
+    var video = document.querySelector("video");
+    assert_true(video.controls);
+
+    video.oncanplaythrough = t.step_func_done(function() {
+        // Find the play button and click the middle of its bounding box.
+        var playCoords = mediaControlsButtonCoordinates(video, "play-button");
+        eventSender.mouseMoveTo(playCoords[0], playCoords[1]);
+        eventSender.mouseDown();
+        eventSender.mouseUp();
+        assert_false(video.paused);
+    });
+
+    video.src = findMediaFile("video", "content/test");
+});
+</script>
