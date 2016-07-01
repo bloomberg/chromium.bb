@@ -107,7 +107,9 @@ class WebrtcEventLogApiTest : public WebRtcTestBase {
 
 }  // namespace
 
-IN_PROC_BROWSER_TEST_F(WebrtcEventLogApiTest, TestStartStopWebRtcEventLogging) {
+// TODO(ivoc): Reenable when the event log functionality in Chrome is updated.
+IN_PROC_BROWSER_TEST_F(WebrtcEventLogApiTest,
+                       DISABLED_TestStartStopWebRtcEventLogging) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   content::WebContents* left_tab =
@@ -198,8 +200,9 @@ IN_PROC_BROWSER_TEST_F(WebrtcEventLogApiTest, TestStartStopWebRtcEventLogging) {
   base::DeleteFile(full_file_name, false);
 }
 
+// TODO(ivoc): Reenable when the event log functionality in Chrome is updated.
 IN_PROC_BROWSER_TEST_F(WebrtcEventLogApiTest,
-                       TestStartTimedWebRtcEventLogging) {
+                       DISABLED_TestStartTimedWebRtcEventLogging) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   content::WebContents* left_tab =
