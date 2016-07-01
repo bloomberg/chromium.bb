@@ -109,6 +109,7 @@ Still reading?
     <!-- Used by Android's policies system -->
     <ignore regexp="restriction_values.xml" />
 
+    <ignore path="android_webview/tools/automated_ui_tests/java/res/" />
     <!-- Used by chrome/android/java/AndroidManifest.xml -->
     <ignore path="chrome/android/java/res/drawable/window_background.xml" />
     <ignore path="chrome/android/java/res/xml/bookmark_widget_info.xml" />

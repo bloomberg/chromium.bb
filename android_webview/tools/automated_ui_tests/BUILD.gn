@@ -1,0 +1,55 @@
+# Copyright 2016 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//build/config/android/rules.gni")
+import("//testing/test.gni")
+
+group("webview_ui_test_app") {
+  testonly = true
+  deps = [
+    ":webview_ui_test_app_apk",
+    ":webview_ui_test_app_test_apk",
+  ]
+}
+
+android_apk("webview_ui_test_app_apk") {
+  apk_name = "WebViewUiTestApp"
+  android_manifest = "java/AndroidManifest.xml"
+  deps = [
+    ":webview_ui_test_app_apk_resources",
+    ":webview_ui_test_app_java",
+  ]
+}
+
+android_library("webview_ui_test_app_java") {
+  java_files =
+      [ "java/src/org/chromium/webview_ui_test/WebViewUiTestActivity.java" ]
+  deps = [
+    ":webview_ui_test_app_apk_resources",
+    "//base:base_java",
+  ]
+}
+
+android_resources("webview_ui_test_app_apk_resources") {
+  resource_dirs = [ "java/res" ]
+  custom_package = "org.chromium.webview_ui_test"
+}
+
+instrumentation_test_apk("webview_ui_test_app_test_apk") {
+  apk_name = "WebViewUiTestAppTest"
+  android_manifest = "javatests/AndroidManifest.xml"
+  java_files = [
+    "javatests/src/org/chromium/webview_ui_test/test/LoadDataTest.java",
+    "javatests/src/org/chromium/webview_ui_test/test/WebViewTestBase.java",
+  ]
+  deps = [
+    ":webview_ui_test_app_apk_resources",
+    ":webview_ui_test_app_java",
+    "//third_party/ub-uiautomator:ub_uiautomator_java",
+  ]
+  data_deps = [
+    ":webview_ui_test_app_apk",
+  ]
+  apk_under_test = ":webview_ui_test_app_apk"
+}
