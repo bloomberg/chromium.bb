@@ -491,6 +491,9 @@ void Internals::pauseAnimations(double pauseTime, ExceptionState& exceptionState
         return;
     }
 
+    if (!frame())
+        return;
+
     frame()->view()->updateAllLifecyclePhases();
     frame()->document()->timeline().pauseAnimationsForTesting(pauseTime);
 }
@@ -779,7 +782,9 @@ bool Internals::hasAutofocusRequest()
 
 Vector<String> Internals::formControlStateOfHistoryItem(ExceptionState& exceptionState)
 {
-    HistoryItem* mainItem = frame()->loader().currentItem();
+    HistoryItem* mainItem = nullptr;
+    if (frame())
+        mainItem = frame()->loader().currentItem();
     if (!mainItem) {
         exceptionState.throwDOMException(InvalidAccessError, "No history item is available.");
         return Vector<String>();
@@ -789,7 +794,9 @@ Vector<String> Internals::formControlStateOfHistoryItem(ExceptionState& exceptio
 
 void Internals::setFormControlStateOfHistoryItem(const Vector<String>& state, ExceptionState& exceptionState)
 {
-    HistoryItem* mainItem = frame()->loader().currentItem();
+    HistoryItem* mainItem = nullptr;
+    if (frame())
+        mainItem = frame()->loader().currentItem();
     if (!mainItem) {
         exceptionState.throwDOMException(InvalidAccessError, "No history item is available.");
         return;
@@ -1873,6 +1880,9 @@ void Internals::setPageScaleFactorLimits(float minScaleFactor, float maxScaleFac
 
 bool Internals::magnifyScaleAroundAnchor(float scaleFactor, float x, float y)
 {
+    if (!frame())
+        return false;
+
     return frame()->host()->visualViewport().magnifyScaleAroundAnchor(scaleFactor, FloatPoint(x, y));
 }
 
@@ -1949,6 +1959,9 @@ TypeConversions* Internals::typeConversions() const
 
 PrivateScriptTest* Internals::privateScriptTest() const
 {
+    if (!frame())
+        return nullptr;
+
     return PrivateScriptTest::create(frame()->document());
 }
 
@@ -1964,6 +1977,9 @@ UnionTypesTest* Internals::unionTypesTest() const
 
 Vector<String> Internals::getReferencedFilePaths() const
 {
+    if (!frame())
+        return Vector<String>();
+
     return frame()->loader().currentItem()->getReferencedFilePaths();
 }
 
@@ -2107,6 +2123,9 @@ static const char* cursorTypeToString(Cursor::Type cursorType)
 
 String Internals::getCurrentCursorInfo()
 {
+    if (!frame())
+        return String();
+
     Cursor cursor = frame()->page()->chromeClient().lastSetCursorForTesting();
 
     StringBuilder result;
@@ -2134,6 +2153,9 @@ String Internals::getCurrentCursorInfo()
 
 bool Internals::cursorUpdatePending() const
 {
+    if (!frame())
+        return false;
+
     return frame()->eventHandler().cursorUpdatePending();
 }
 
@@ -2153,6 +2175,9 @@ PassRefPtr<SerializedScriptValue> Internals::deserializeBuffer(DOMArrayBuffer* b
 
 void Internals::forceReload(bool bypassCache)
 {
+    if (!frame())
+        return;
+
     frame()->reload(bypassCache ? FrameLoadTypeReloadBypassingCache : FrameLoadTypeReload, ClientRedirectPolicy::NotClientRedirect);
 }
 
@@ -2255,6 +2280,9 @@ void Internals::forceCompositingUpdate(Document* document, ExceptionState& excep
 
 void Internals::setZoomFactor(float factor)
 {
+    if (!frame())
+        return;
+
     frame()->setPageZoomFactor(factor);
 }
 
@@ -2372,11 +2400,17 @@ String Internals::textSurroundingNode(Node* node, int x, int y, unsigned long ma
 
 void Internals::setFocused(bool focused)
 {
+    if (!frame())
+        return;
+
     frame()->page()->focusController().setFocused(focused);
 }
 
 void Internals::setInitialFocus(bool reverse)
 {
+    if (!frame())
+        return;
+
     frame()->document()->clearFocusedElement();
     frame()->page()->focusController().setInitialFocus(reverse ? WebFocusTypeBackward : WebFocusTypeForward);
 }
@@ -2453,36 +2487,57 @@ void Internals::forceBlinkGCWithoutV8GC()
 
 String Internals::selectedHTMLForClipboard()
 {
+    if (!frame())
+        return String();
+
     return frame()->selection().selectedHTMLForClipboard();
 }
 
 String Internals::selectedTextForClipboard()
 {
+    if (!frame())
+        return String();
+
     return frame()->selection().selectedTextForClipboard();
 }
 
 void Internals::setVisualViewportOffset(int x, int y)
 {
+    if (!frame())
+        return;
+
     frame()->host()->visualViewport().setLocation(FloatPoint(x, y));
 }
 
 int Internals::visualViewportHeight()
 {
+    if (!frame())
+        return 0;
+
     return expandedIntSize(frame()->host()->visualViewport().visibleRect().size()).height();
 }
 
 int Internals::visualViewportWidth()
 {
+    if (!frame())
+        return 0;
+
     return expandedIntSize(frame()->host()->visualViewport().visibleRect().size()).width();
 }
 
 double Internals::visualViewportScrollX()
 {
+    if (!frame())
+        return 0;
+
     return frame()->view()->getScrollableArea()->scrollPositionDouble().x();
 }
 
 double Internals::visualViewportScrollY()
 {
+    if (!frame())
+        return 0;
+
     return frame()->view()->getScrollableArea()->scrollPositionDouble().y();
 }
 
