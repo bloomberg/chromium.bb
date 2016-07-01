@@ -14,9 +14,12 @@ namespace blink {
 
 using Corner = ScrollAnchor::Corner;
 
+static const int kMaxAdjustments = 20;
+
 ScrollAnchor::ScrollAnchor(ScrollableArea* scroller)
     : m_scroller(scroller)
     , m_hasBounced(false)
+    , m_adjustmentCount(0)
 {
     ASSERT(m_scroller);
     ASSERT(m_scroller->isFrameView() || m_scroller->isPaintLayerScrollableArea());
@@ -251,7 +254,10 @@ void ScrollAnchor::restore()
         m_lastAdjusted.clear();
         return;
     }
-    adjust(adjustment);
+    // We impose a limit on the number of adjustments between user scrolls, to
+    // mitigate the impact of pathological feedback loops with event handlers.
+    if (++m_adjustmentCount <= kMaxAdjustments)
+        adjust(adjustment);
 }
 
 void ScrollAnchor::adjust(IntSize adjustment)
@@ -274,6 +280,7 @@ void ScrollAnchor::adjust(IntSize adjustment)
 
 void ScrollAnchor::clear()
 {
+    m_adjustmentCount = 0;
     m_current.clear();
 }
 

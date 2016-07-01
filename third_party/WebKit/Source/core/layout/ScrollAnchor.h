@@ -121,6 +121,9 @@ private:
     // True iff the last adjustment was the exact opposite of the one before it.
     // A bounce suggests a circular interaction with a scroll event handler.
     bool m_hasBounced;
+
+    // Number of adjustments made since the last clear().
+    int m_adjustmentCount;
 };
 
 } // namespace blink
