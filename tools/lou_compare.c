@@ -32,6 +32,7 @@ static int out_more = 0, out_pos = 0, in_line = 0, paused = 0;
 static unsigned short uni = 0xfeff, space = 0x0020, dash = 0x002d,
 	              bar = 0x007c, plus = 0x002b, tab = 0x0009;
 static unsigned int nl = 0x000a000d;//TODO:  doall.pl chokes on ueb-08
+//static unsigned int nl = 0x000a;//TODO:  doall.pl chokes on ueb-08
 
 widechar underText[BUF_MAX];
 char underLine[BUF_MAX];
@@ -45,9 +46,6 @@ int italicLen;
 widechar scriptText[BUF_MAX];
 char scriptLine[BUF_MAX];
 int scriptLen;
-widechar breakText[BUF_MAX];
-char breakLine[BUF_MAX];
-int breakLen;
 widechar resetText[BUF_MAX];
 char resetLine[BUF_MAX];
 int resetLen;
@@ -70,6 +68,14 @@ int tnote4Len;
 widechar tnote5Text[BUF_MAX];
 char tnote5Line[BUF_MAX];
 int tnote5Len;
+
+widechar noContractText[BUF_MAX];
+char noContractLine[BUF_MAX];
+int noContractLen;
+
+widechar directTransText[BUF_MAX];
+char directTransLine[BUF_MAX];
+int directTransLen;
 
 static void trimLine(char *line)
 {
@@ -333,55 +339,55 @@ int main(int argn, char **args)
 			return 1;
 		
 		if(!strncmp("~script", inputLine, 7))
-		if(inputEmphasis(script, scriptLine, scriptText, &scriptLen))
-			continue;
-		else
-			return 1;
-		
-		if(!strncmp("~passage_break", inputLine, 14))
-		if(inputEmphasis(passage_break, breakLine, breakText, &breakLen))
-			continue;
-		else
-			return 1;
-		
-		if(!strncmp("~word_reset", inputLine, 11))
-		if(inputEmphasis(word_reset, resetLine, resetText, &resetLen))
-			continue;
-		else
-			return 1;
-		
-		if(!strncmp("~trans_note", inputLine, 11))
-		if(inputEmphasis(trans_note, tnoteLine, tnoteText, &tnoteLen))
+		if(inputEmphasis(emph_4, scriptLine, scriptText, &scriptLen))
 			continue;
 		else
 			return 1;
 		
 		if(!strncmp("~trans_note_1", inputLine, 13))
-		if(inputEmphasis(trans_note_1, tnote1Line, tnote1Text, &tnote1Len))
+		if(inputEmphasis(emph_6, tnote1Line, tnote1Text, &tnote1Len))
 			continue;
 		else
 			return 1;
 		if(!strncmp("~trans_note_2", inputLine, 13))
-		if(inputEmphasis(trans_note_2, tnote2Line, tnote2Text, &tnote2Len))
+		if(inputEmphasis(emph_7, tnote2Line, tnote2Text, &tnote2Len))
 			continue;
 		else
 			return 1;
 		if(!strncmp("~trans_note_3", inputLine, 13))
-		if(inputEmphasis(trans_note_3, tnote3Line, tnote3Text, &tnote3Len))
+		if(inputEmphasis(emph_8, tnote3Line, tnote3Text, &tnote3Len))
 			continue;
 		else
 			return 1;
 		if(!strncmp("~trans_note_4", inputLine, 13))
-		if(inputEmphasis(trans_note_4, tnote4Line, tnote4Text, &tnote4Len))
+		if(inputEmphasis(emph_9, tnote4Line, tnote4Text, &tnote4Len))
 			continue;
 		else
 			return 1;
 		if(!strncmp("~trans_note_5", inputLine, 13))
-		if(inputEmphasis(trans_note_5, tnote5Line, tnote5Text, &tnote5Len))
+		if(inputEmphasis(emph_10, tnote5Line, tnote5Text, &tnote5Len))
 			continue;
 		else
 			return 1;
-		
+
+		if(!strncmp("~no_contract", inputLine, 12))
+		if(inputEmphasis(no_contract, noContractLine, noContractText, &noContractLen))
+			continue;
+		else
+			return 1;
+
+		if(!strncmp("~direct_trans", inputLine, 13))
+		if(inputEmphasis(computer_braille, directTransLine, directTransText, &directTransLen))
+			continue;
+		else
+			return 1;
+
+		if(!strncmp("~trans_note", inputLine, 11))
+		if(inputEmphasis(emph_5, tnoteLine, tnoteText, &tnoteLen))
+			continue;
+		else
+			return 1;
+
 		memcpy(emp1, emphasis, BUF_MAX * sizeof(formtype));
 		memcpy(emp2, emphasis, BUF_MAX * sizeof(formtype));
 		
@@ -459,10 +465,6 @@ int main(int argn, char **args)
 				outputEmphasis(outFile, 0, "~italic", italicText, italicLen);
 			if(scriptLen)
 				outputEmphasis(outFile, 0, "~script", scriptText, scriptLen);
-			if(breakLen)
-				outputEmphasis(outFile, 0, "~passage_break", breakText, breakLen);
-			if(resetLen)
-				outputEmphasis(outFile, 0, "~word_reset", resetText, resetLen);
 			if(tnoteLen)
 				outputEmphasis(outFile, 0, "~trans_note", tnoteText, tnoteLen);
 				
@@ -476,7 +478,13 @@ int main(int argn, char **args)
 				outputEmphasis(outFile, 0, "~trans_note_4", tnote4Text, tnote4Len);
 			if(tnote5Len)
 				outputEmphasis(outFile, 0, "~trans_note_5", tnote5Text, tnote5Len);
-				
+
+			if(noContractLen)
+				outputEmphasis(outFile, 0, "~no_contract", noContractText, noContractLen);
+
+			if(directTransLen)
+				outputEmphasis(outFile, 0, "~direct_trans", directTransText, directTransLen);
+
 			write(outFile, inputText, inputLen * 2);
 			if(out_pos)
 			{
@@ -568,8 +576,6 @@ int main(int argn, char **args)
 				outputEmphasis(failFile, 1, "ital:   ", italicText, italicLen);
 			if(scriptLen)
 				outputEmphasis(failFile, 1, "scpt:   ", scriptText, scriptLen);
-			if(breakLen)
-				outputEmphasis(failFile, 1, "pbrk:   ", breakText, breakLen);
 			if(resetLen)
 				outputEmphasis(failFile, 1, "wrst:   ", resetText, resetLen);
 			if(tnoteLen)
@@ -585,7 +591,13 @@ int main(int argn, char **args)
 				outputEmphasis(failFile, 1, "note4:  ", tnote4Text, tnote4Len);
 			if(tnote5Len)
 				outputEmphasis(failFile, 1, "note5:  ", tnote5Text, tnote5Len);
-			
+
+			if(noContractLen)
+				outputEmphasis(failFile, 1, "nocont:  ", noContractText, noContractLen);
+
+			if(directTransLen)
+				outputEmphasis(failFile, 1, "~direct_trans", directTransText, directTransLen);
+
 				tmpLen = extParseChars("ueb:    ", tmpText);
 			write(failFile, tmpText, tmpLen * 2);
 			write(failFile, expectText, expectLen * 2);
@@ -637,7 +649,6 @@ int main(int argn, char **args)
 		tnote1Len =
 		tnoteLen =
 		resetLen =
-		breakLen =
 		scriptLen = italicLen = underLen = boldLen = empLen = etnLen = 0;
 	}
 	

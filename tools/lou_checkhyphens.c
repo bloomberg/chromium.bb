@@ -22,10 +22,7 @@
 
    */
 
-#ifdef HAVE_CONFIG_H
-# include "config.h"
-#endif
-
+# include <config.h>
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -84,7 +81,8 @@ getInput (void)
 {
   int inputLength;
   inputBuffer[0] = 0;
-  fgets (inputBuffer, sizeof (inputBuffer), stdin);
+  if(!fgets (inputBuffer, sizeof (inputBuffer), stdin))
+    exit(EXIT_FAILURE);
   inputLength = strlen (inputBuffer) - 1;
   if (inputLength < 0)		/*EOF on script */
     exit (0);

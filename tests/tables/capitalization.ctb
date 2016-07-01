@@ -15,10 +15,10 @@ sign ] 14
 sign < 15
 sign > 16
 
-singlelettercaps 12
-capsword 13
-capswordstop 14
+capsletter 12
+begcapsword 13
+endcapsword 14
 lencapsphrase 3
-firstlettercaps 15
-lastlettercaps 16
+begcaps 15
+endcaps 16
 

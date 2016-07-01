@@ -183,6 +183,7 @@ table_files = \
 	marburg_unicode_defs.cti \
 	ml-in-g1.utb \
 	mn-in-g1.utb \
+	mn-MN.utb \
 	mr-in-g1.utb \
 	mt.ctb \
 	mun.ctb \
@@ -191,14 +192,21 @@ table_files = \
 	nemeth.ctb \
 	nemethdefs.cti \
 	nemeth_edit.ctb \
+	nl-BE-chardefs.cti \
 	nl-BE.dis \
 	nl-BE-g0.utb \
+	nl-BE-g1.ctb \
 	nl-chardefs.uti \
 	nl-g0.utb \
+	nl-NL-chardefs.cti \
 	nl-NL-g0.utb \
+	nl-NL-g1.ctb \
 	nl-NL-old-g0.utb \
 	nl-old-g0.utb \
-	no-no.ctb \
+	no-no-8dot-fallback-6dot-g0.utb \
+	no-no-8dot.utb \
+	no-no-chardefs6.uti \
+	no-no-comp8.ctb \
 	no-no.dis \
 	no-no-g0.utb \
 	no-no-g1.ctb \
@@ -206,6 +214,7 @@ table_files = \
 	no-no-g3.ctb \
 	no-no-generic.ctb \
 	no-no-generic.dis \
+	no-no-latinLetterDef6Dots_diacritics.uti \
 	np-in-g1.utb \
 	or-in-g1.utb \
 	oriya.cti \
@@ -230,15 +239,17 @@ table_files = \
 	se-se.dis \
 	Se-Se-g1.utb \
 	si-in-g1.utb \
+	sk-chardefs.cti \
+	sk-g1.ctb \
 	sk-sk-g1.utb \
 	sk-sk.utb \
+	sk-translation.cti \
 	sl-si-comp8.ctb \
 	sl-si-g1.utb \
 	sot-za-g1.ctb \
 	spaces.ctb \
 	sr-chardefs.cti \
 	sr-g1.ctb \
-	sr-translation.cti \
 	sv-1989.ctb \
 	sv-1996.ctb \
 	ta.ctb \

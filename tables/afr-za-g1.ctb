@@ -2,8 +2,10 @@
 
 # liblouis: Afrikaans Braille Code (Grade 1)
 #
+# Copyright (C) 2014, Greg Kearney <gkearney@gmail.com>
+#
 # Based on English UEB Grade 1
-# Modified by Greg Kearney <gkearney@gmail.com>
+#
 # Used to display symbols, Unicode chars and other symbols used throughout UEB code.
 #
 # This file is part of liblouis.

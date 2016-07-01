@@ -41,6 +41,8 @@ main(int argc, char **argv)
 
   result |= check_inpos(table, str3, expected_inpos3);
 
+  lou_free();
+
   return result;
 
 }

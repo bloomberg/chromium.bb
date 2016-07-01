@@ -26,5 +26,7 @@ main(int argc, char **argv)
   /* then try a word which uses pass2 */
   result |= check_translation(table, "Reno", NULL, "ren'o");
 
+  lou_free();
+
   return result;
 }

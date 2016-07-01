@@ -26,11 +26,13 @@ main (int argc, char **argv)
 	rst |= check_translation("capitalization.ctb", "ABC XYZ ABC", NULL, "<abc xyz abc>");
 	rst |= check_translation("capitalization.ctb", "ABC-XYZ-ABC", NULL, "[abc-[xyz-[abc");
 	rst |= check_translation("capitalization.ctb", "ABC XYZ-ABC", NULL, "[abc [xyz-[abc");
+	rst |= check_translation("capitalization.ctb", "ABC XYZ ABC   ", NULL, "<abc xyz abc>   ");
 	rst |= check_translation("capitalization.ctb", "ABC XYZ ABC XYZ", NULL, "<abc xyz abc xyz>");
 	rst |= check_translation("capitalization.ctb", "ABC-XYZ-ABC-XYZ", NULL, "[abc-[xyz-[abc-[xyz");
 	rst |= check_translation("capitalization.ctb", "ABC XYZ-ABC-XYZ", NULL, "[abc [xyz-[abc-[xyz");
 	rst |= check_translation("capitalization.ctb", "ABC XYZ ABC-XYZ", NULL, "<abc xyz abc-xyz>");
 	rst |= check_translation("capitalization.ctb", "A B C", NULL, "<a b c>");
+	rst |= check_translation("capitalization.ctb", "A B C ", NULL, "<a b c> ");
 	rst |= check_translation("capitalization.ctb", "A-B-C", NULL, "+a-+b-+c");
 	rst |= check_translation("capitalization.ctb", "AB-X-BC", NULL, "[ab-+x-[bc");
 	

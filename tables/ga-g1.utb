@@ -1,16 +1,24 @@
 # liblouis: Irish Gaeilge Braille Grade 1 Table
-# www.inbaf.ie Irish Grade 1 Braille Version 1.0 16th June 2014
 #
-#  This file is free software; you can redistribute it and/or modify it
-#   under the terms of the Lesser or Library GNU General Public License 
-#  as published by the Free Software Foundation; version 2.1.
-# 
-#  This file is distributed in the hope that it will be useful, but
+#  Copyright (C) 2014 Ronan McGuirk, <ronan.p.mcguirk@gmail.com>.
+#
+#  This file is part of liblouis.
+#
+#  liblouis is free software: you can redistribute it and/or modify it
+#  under the terms of the GNU Lesser General Public License as
+#  published by the Free Software Foundation, either version 2.1 of the
+#  License, or (at your option) any later version.
+#
+#  liblouis is distributed in the hope that it will be useful, but
 #  WITHOUT ANY WARRANTY; without even the implied warranty of
-#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the 
-#  Library GNU General Public License for more details.
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+#  Lesser General Public License for more details.
 #
-# Copyright (C) 2014 Ronan McGuirk, <ronan.p.mcguirk@gmail.com>.
+#  You should have received a copy of the GNU Lesser General Public
+#  License along with liblouis. If not, see
+#  <http://www.gnu.org/licenses/>.
+
+# www.inbaf.ie Irish Grade 1 Braille Version 1.0 16th June 2014
 #
 # Maintained by Ronan McGuirk, <ronan.p.mcguirk@gmail.com>
 # Supervised by Mesar Hameed <mesar.hameed@gmail.com>
@@ -21,13 +29,16 @@ punctuation • 456-256	# filled round bullet point
 
 # Braille indicators
 numsign 3456  number sign, just a dots operand
-capsign 6
-begcaps 6-6
-endcaps 6-3
-begital 46-2356
-endital 46-3
-begbold 45-2356
-endbold 45-3
+capsletter 6
+begcapsword 6-6
+endcapsword 6-3
+emphclass italic
+emphclass underline
+emphclass bold
+begemph italic 46-2356
+endemph italic 46-3
+begemph bold 45-2356
+endemph bold 45-3
 
 # the decimal digits
 include litdigits6Dots.uti

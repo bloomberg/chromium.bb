@@ -31,6 +31,7 @@ Boyer did a step back in 2014:
 
 Considerable coding was done by:
 
+  Davy Kager <mail@davykager.nl>
   Eitan Isaacson <eitan@ascender.com>
   James Teh <jamie@jantrid.net>
   Michael Whapples <mwhapples@aim.com>
@@ -43,11 +44,12 @@ Patches were provided by:
   Milan Zamazal <pdm@brailcom.org>
   Peter Nilsson Lundblad <plundblad@google.com>
   Timothy Lee <timothy.ty.lee@gmail.com>
-  Vincent Untz
+  Vincent Untz <vuntz@gnome.org>
   Volker Bijewitz <v.bijewitz@baum.de>
   Simon Aittamaa, Index Braille <simon.aittamaa@indexbraille.com>
   Ken Perry <kperry@aph.org>
-  Davy Kager <mail@davykager.nl>
+  Martin Michlmayr <tbm@cyrius.com>
+  Arend Arends <arend.arends@hccnet.nl>
 
 BRLTTY AUTHORS
 
@@ -84,13 +86,16 @@ Other contributors:
 
 TABLE CONTRIBUTORS
 
+  Amar Usama <ammar.usama@nlb.no>
   Aaron Cannon <cannona@fireantproductions.com>
   Abdolamir Banisaeid <saedjan@gmail.com>
   Adi Kushnir <adikushnir@gmail.com>
   Alex Ho
+  Ammar Usama <ammar.usama@nlb.no>
   André-Abush Clause <clause.andreabush@gmail.com>
   Birkir Gunnarsson <birkir@midstod.is>
   Brailcom, o.p.s. <technik@brailcom.cz>
+  Branislav Mamojka <mamojka@unss.sk>
   Bue Vester-Andersen <bue@vester-andersen.dk>
   Carles Sadurní Anguita <www.transcriptor.net>
   Carlos Ferreira <cferreira9886@gmail.com>
@@ -114,6 +119,7 @@ TABLE CONTRIBUTORS
   Jan Halousek <merit@login.cz> from MERIT
   Jan Hegr <hegrjan@gmail.com>
   Joseph Lee <joseph.lee22590@gmail.com>
+  Jostein Austvik Jacobsen <josteinaj@gmail.com>
   José Enrique Fernández del Campo <jefdelcampo@gmail.com>
   Jožef Gregorc <jozko.gregorc@gmail.com>
   Juan Carlos Buño Suárez <quetzatl@eresmas.net>
@@ -142,6 +148,7 @@ TABLE CONTRIBUTORS
   Patrick Zajda
   Paul Wood <paulw.torchtrust@gmail.com>
   Peter Engström <peter.engstrom@indexbraille.com> from Index Braille
+  Peter Vágner <pvdeejay@gmail.com>
   Rui Batista <ruiandrebatista@gmail.com>
   Rui Fontes <rui.fontes@tiflotecnia.com>
   Rumiana Kamenska <rkamenska@gmail.com>
@@ -152,7 +159,9 @@ TABLE CONTRIBUTORS
   Stefan Moisei <vortex37@gmail.com>
   Tamru E. Belay <tamru@sympatico.ca>, <g.braille@sympatico.ca> from Adaptive Technology Center for the Blind (ATCB)
   Tom Johnston <Tom.Johnston@accessibilityconsulting.co.uk>
+  Tsengel Maidar tsengel@digitalsunngo.org
   Yuemei Sun from ViewPlus Technologies, Inc.
+  Zvonimir Stanecic <zvonimirek222@yandex.com>
   <Aliminator83@gmail.com>
   <eric@integra-belgium.com>
 

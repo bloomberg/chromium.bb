@@ -23,6 +23,7 @@ int main(int argc, char **argv)
   assert(hyphens[7] == '\0');
   assert(hyphens[8] == '\0');
   free(hyphens);
+  lou_free();
   return ret;
 
 }

@@ -37,5 +37,7 @@ main(int argc, char **argv)
   const int expected_outpos4[] = {1, 2, 4, 5, 7};
   result |= check_outpos(table, str4, expected_outpos4);
 
+  lou_free();
+
   return result;
 }

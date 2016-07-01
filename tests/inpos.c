@@ -58,6 +58,8 @@ main(int argc, char **argv)
   result |= check_translation(table3, txt, NULL, brl3);
   result |= check_translation(table4, txt, NULL, brl4);
 
+  lou_free();
+
   return result;
 
 }

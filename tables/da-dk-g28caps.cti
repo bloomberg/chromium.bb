@@ -1,12 +1,12 @@
 # Liblouis: Danish rules for 8 dots grade 2 caps
 #
-# By Bue Vester-Andersen
+#  Copyright (C) 2014, Bue Vester-Andersen <bue@vester-andersen.dk>
 #
 #  This file is part of liblouis.
 #
 #  liblouis is free software: you can redistribute it and/or modify it
 #  under the terms of the GNU Lesser General Public License as
-#  published by the Free Software Foundation, either version 3 of the
+#  published by the Free Software Foundation, either version 2.1 of the
 #  License, or (at your option) any later version.
 #
 #  liblouis is distributed in the hope that it will be useful, but
@@ -21,7 +21,7 @@
 #------------
 #
 # This file contains rules for caps in Danish 8 dots grade 2.
-# It is a work-around for the missing ability to define capsign properly in 8 dots.
+# It is a work-around for the missing ability to define capsletter properly in 8 dots.
 # Included by da-dk-g28.ctb.
 #
 # Version: Bue Vester-Andersen, 140511

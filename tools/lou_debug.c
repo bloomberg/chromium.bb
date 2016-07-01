@@ -22,16 +22,14 @@
 
    */
 
-#ifdef HAVE_CONFIG_H
-# include "config.h"
-#endif
-
+# include <config.h>
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
 #include "louis.h"
 #include <getopt.h>
 #include "progname.h"
+#include "unistr.h"
 #include "version-etc.h"
 
 static const struct option longopts[] =
@@ -85,12 +83,26 @@ getInput (void)
 {
   int inputLength;
   inputBuffer[0] = 0;
-  fgets (inputBuffer, sizeof (inputBuffer), stdin);
+  if (!fgets (inputBuffer, sizeof (inputBuffer), stdin))
+    exit (EXIT_FAILURE);
   inputLength = strlen (inputBuffer) - 1;
   if (inputLength < 0)		/*EOF on script */
-    exit (0);
+    exit (EXIT_FAILURE);
   inputBuffer[inputLength] = 0;
   return inputLength;
+}
+
+static char*
+print_chars(const widechar *buffer, int length) {
+  static uint8_t result_buf[BUFSIZE];
+  size_t result_len = BUFSIZE - 1;
+#ifdef WIDECHARS_ARE_UCS4
+  u32_to_u8(buffer, length, &result_buf, &result_len);
+#else
+  u16_to_u8(buffer, length, &result_buf, &result_len);
+#endif
+  result_buf[result_len] = 0;
+  return result_buf;
 }
 
 static int
@@ -111,13 +123,13 @@ printRule (TranslationTableRule * thisRule, int mode)
     case CTO_Pass2:
     case CTO_Pass3:
     case CTO_Pass4:
-      printf ("code=%s ", showString (thisRule->charsdots, thisRule->charslen
+      printf ("code=%s ", print_chars(thisRule->charsdots, thisRule->charslen
 				      + thisRule->dotslen));
       break;
     default:
       if (mode == 0)
 	{
-	  printf ("chars=%s, ", showString (thisRule->charsdots,
+	  printf ("chars=%s, ", print_chars(thisRule->charsdots,
 					    thisRule->charslen));
 	  printf ("dots=%s, ",
 		  showDots (&thisRule->charsdots[thisRule->charslen],
@@ -128,7 +140,7 @@ printRule (TranslationTableRule * thisRule, int mode)
 	  printf ("dots=%s, ",
 		  showDots (&thisRule->charsdots[thisRule->charslen],
 			    thisRule->dotslen));
-	  printf ("chars=%s, ", showString (thisRule->charsdots,
+	  printf ("chars=%s, ", print_chars(thisRule->charsdots,
 					    thisRule->charslen));
 	}
       break;
@@ -144,9 +156,9 @@ printCharacter (TranslationTableCharacter * thisChar, int mode)
   if (mode == 0)
     {
       printf ("Char: ");
-      printf ("real=%s, ", showString (&thisChar->realchar, 1));
-      printf ("upper=%s, ", showString (&thisChar->uppercase, 1));
-      printf ("lower=%s, ", showString (&thisChar->lowercase, 1));
+      printf ("real=%s, ", print_chars(&thisChar->realchar, 1));
+      printf ("upper=%s, ", print_chars(&thisChar->uppercase, 1));
+      printf ("lower=%s, ", print_chars(&thisChar->lowercase, 1));
     }
   else
     printf ("Dots: real=%s, ", showDots (&thisChar->realchar, 1));
@@ -321,39 +333,43 @@ print_phraseLength (TranslationTableOffset offset, char *opcode)
 static int
 show_brailleIndicators (void)
 {
-  print_brailleIndicator (table->capitalSign, "capsign");
-  print_brailleIndicator (table->beginCapitalSign, "begcaps");
-  print_phraseLength (table->lenBeginCaps, "lenbegcaps");
-  print_brailleIndicator (table->endCapitalSign, "endcaps");
-  print_brailleIndicator (table->firstWordCaps, "firstwordcaps");
-  print_brailleIndicator (table->lastWordCapsAfter, "lastwordaftercaps");
-  print_phraseLength (table->lenCapsPhrase, "lencapsphrase");
+  char name[BUFSIZE];
+  char *emphNames[] = {"begemphphrase %s",
+		       "endemphphrase %s before",
+		       "endemphphrase %s after",
+		       "begemphword %s",
+		       "endemphword %s",
+		       "emphletter %s",
+		       "begemph %s",
+		       "endemph %s",
+		       NULL};
+  char *capsNames[] = {"firstwordcaps",
+		       "lastwordcapsbefore",
+		       "lastwordcapsafter",
+		       "begcaps",
+		       "endcaps",
+		       "capsletter",
+		       "capsword",
+		       "capswordstop",
+		       NULL};
+
+  // FIXME: update to include all UEB opcodes.
+
+  for (EmphCodeOffset offset = 0; capsNames[offset]; offset++) {
+    print_brailleIndicator (table->emphRules[capsRule][offset],capsNames[offset]);
+  }
+  print_phraseLength (table->emphRules[capsRule][lenPhraseOffset], "lencapsphrase");
   print_brailleIndicator (table->letterSign, "letsign");
   print_brailleIndicator (table->numberSign, "numsign");
-  print_brailleIndicator (table->firstWordItal, "firstwordital");
-  print_brailleIndicator (table->lastWordItalBefore, "lastworditalbefore");
-  print_brailleIndicator (table->lastWordItalAfter, "lastworditalafter");
-  print_brailleIndicator (table->firstLetterItal, "firstletterital");
-  print_brailleIndicator (table->lastLetterItal, "lastletterital");
-  print_brailleIndicator (table->singleLetterItal, "singleletterital");
-  print_brailleIndicator (table->italWord, "italword");
-  print_phraseLength (table->lenItalPhrase, "lenitalphrase");
-  print_brailleIndicator (table->firstWordBold, "firstwordbold");
-  print_brailleIndicator (table->lastWordBoldBefore, "lastwordboldbefore");
-  print_brailleIndicator (table->lastWordBoldAfter, "lastwordboldafter");
-  print_brailleIndicator (table->firstLetterBold, "firstletterbold");
-  print_brailleIndicator (table->lastLetterBold, "lastletterbold");
-  print_brailleIndicator (table->singleLetterBold, "singleletterbold");
-  print_brailleIndicator (table->boldWord, "boldword");
-  print_phraseLength (table->lenBoldPhrase, "lenboldphrase");
-  print_brailleIndicator (table->firstWordUnder, "firstwordunder");
-  print_brailleIndicator (table->lastWordUnderBefore, "lastwordunderbefore");
-  print_brailleIndicator (table->lastWordUnderAfter, "lastwordunderafter");
-  print_brailleIndicator (table->firstLetterUnder, "firstletterunder");
-  print_brailleIndicator (table->lastLetterUnder, "lastletterunder");
-  print_brailleIndicator (table->singleLetterUnder, "singleletterunder");
-  print_brailleIndicator (table->underWord, "underword");
-  print_phraseLength (table->lenUnderPhrase, "lenunderphrase");
+
+  for (int i = 0; table->emphClasses[i]; i++) {
+    for (EmphCodeOffset offset = 0; emphNames[offset]; offset++) {
+      snprintf(name, BUFSIZE, emphNames[offset], table->emphClasses[i]);
+      print_brailleIndicator (table->emphRules[emph1Rule][offset], name);
+    }
+    snprintf(name, BUFSIZE, "lenemphphrase %s", table->emphClasses[i]);
+    print_phraseLength (table->emphRules[emph1Rule][lenPhraseOffset], name);
+  }
   print_brailleIndicator (table->begComp, "begcomp");
   print_brailleIndicator (table->compBegEmph1, "compbegemph1");
   print_brailleIndicator (table->compEndEmph1, "compendemph1");
@@ -386,11 +402,11 @@ show_misc (void)
   printf ("'syllable' opcodes: %s\n", pickYN (table->syllables));
   printf ("'capsnocont' opcode: %s\n", pickYN (table->capsNoCont));
   printf ("Hyphenation table: %s\n", pickYN (table->hyphenStatesArray));
-  printf ("noletsignbefore %s\n", showString (&table->noLetsignBefore[0],
+  printf ("noletsignbefore %s\n", print_chars(&table->noLetsignBefore[0],
 					      table->noLetsignBeforeCount));
-  printf ("noletsign %s\n", showString (&table->noLetsign[0],
+  printf ("noletsign %s\n", print_chars(&table->noLetsign[0],
 					table->noLetsignCount));
-  printf ("noletsignafter %s\n", showString (&table->noLetsignAfter[0],
+  printf ("noletsignafter %s\n", print_chars(&table->noLetsignAfter[0],
 					     table->noLetsignAfterCount));
   return 1;
 }
@@ -414,7 +430,7 @@ show_charMap (int startHash)
 	while (nextChar)
 	  {
 	    thisChar = (CharOrDots *) & table->ruleArea[nextChar];
-	    printf ("Char: %s ", showString (&thisChar->lookFor, 1));
+	    printf ("Char: %s ", print_chars(&thisChar->lookFor, 1));
 	    printf ("dots=%s\n", showDots (&thisChar->found, 1));
 	    printf ("=> ");
 	    getInput ();
@@ -448,7 +464,7 @@ show_dotsMap (int startHash)
 	  {
 	    thisDots = (CharOrDots *) & table->ruleArea[nextDots];
 	    printf ("Dots: %s ", showDots (&thisDots->lookFor, 1));
-	    printf ("char=%s\n", showString (&thisDots->found, 1));
+	    printf ("char=%s\n", print_chars(&thisDots->found, 1));
 	    printf ("=> ");
 	    getInput ();
 	    if (*inputBuffer == 'h')
@@ -475,7 +491,7 @@ show_compDots (int startChar)
       {
 	TranslationTableRule *thisRule = (TranslationTableRule *)
 	  & table->ruleArea[table->compdotsPattern[k]];
-	printf ("Char: %s ", showString (&k, 1));
+	printf ("Char: %s ", print_chars(&k, 1));
 	printf ("dots=%s\n",
 		showDots (&thisRule->charsdots[1], thisRule->dotslen));
 	printf ("=> ");
@@ -625,11 +641,11 @@ static void
 paramLetters (void)
 {
   printf ("Press one of the letters in parentheses, then enter.\n");
-  printf
-    ("show-(f)orward-rules, show-(b)ackward-rules, show-(c)haracters, \n");
+  printf ("show-(f)orward-rules, show-(b)ackward-rules, show-(c)haracters, \n");
   printf ("show-(d)ot-patterns, show-(C)har-to-dots, show-(D)ots-tochar\n");
   printf ("show-(m)isc, show-(z)-compdots\n");
-  printf ("show-(p)articulars, (h)elp, (q)uit\n");
+  printf ("show-braille(i)ndicators, show-(p)articulars\n");
+  printf ("(h)elp, (q)uit\n");
 }
 
 static void

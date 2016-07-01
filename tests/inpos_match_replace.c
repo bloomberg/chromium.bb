@@ -30,6 +30,8 @@ main(int argc, char **argv)
   result |= check_translation(table, txt, NULL, brl);
   result |= check_inpos(table, txt, inpos);
 
+  lou_free();
+
   return result;
 
 }

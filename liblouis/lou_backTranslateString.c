@@ -1,31 +1,32 @@
 /* liblouis Braille Translation and Back-Translation Library
 
-   Based on the Linux screenreader BRLTTY, copyright (C) 1999-2006 by
-   The BRLTTY Team
+Based on the Linux screenreader BRLTTY, copyright (C) 1999-2006 by The
+BRLTTY Team
 
-   Copyright (C) 2004, 2005, 2006
-   ViewPlus Technologies, Inc. www.viewplus.com
-   and
-   JJB Software, Inc. www.jjb-software.com
-   All rights reserved
+Copyright (C) 2004, 2005, 2006 ViewPlus Technologies, Inc. www.viewplus.com
+Copyright (C) 2004, 2005, 2006 JJB Software, Inc. www.jjb-software.com
 
-   This file is free software; you can redistribute it and/or modify it
-   under the terms of the Lesser or Library GNU General Public License 
-   as published by the
-   Free Software Foundation; either version 3, or (at your option) any
-   later version.
+This file is part of liblouis.
 
-   This file is distributed in the hope that it will be useful, but
-   WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the 
-   Library GNU General Public License for more details.
+liblouis is free software: you can redistribute it and/or modify it
+under the terms of the GNU Lesser General Public License as published
+by the Free Software Foundation, either version 2.1 of the License, or
+(at your option) any later version.
 
-   You should have received a copy of the Library GNU General Public 
-   License along with this program; see the file COPYING.  If not, write to
-   the Free Software Foundation, 51 Franklin Street, Fifth Floor,
-   Boston, MA 02110-1301, USA.
+liblouis is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+Lesser General Public License for more details.
 
-   */
+You should have received a copy of the GNU Lesser General Public
+License along with liblouis. If not, see <http://www.gnu.org/licenses/>.
+
+*/
+
+/**
+ * @file
+ * @brief Translate from braille
+ */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -53,25 +54,37 @@ static int *outputPositions;
 static int *inputPositions;
 static int cursorPosition;
 static int cursorStatus;
+static const TranslationTableRule **appliedRules;
+static int maxAppliedRules;
+static int appliedRulesCount;
 
 int EXPORT_CALL
-lou_backTranslateString (const char *tableList, const widechar
-			 * inbuf,
-			 int *inlen, widechar * outbuf, int *outlen, 
-			 formtype
-			 *typeform, char *spacing, int modex)
+lou_backTranslateString (const char *tableList, const widechar * inbuf,
+			 int *inlen, widechar * outbuf, int *outlen,
+			 formtype *typeform, char *spacing, int modex)
 {
   return lou_backTranslate (tableList, inbuf, inlen, outbuf, outlen,
 			    typeform, spacing, NULL, NULL, NULL, modex);
 }
 
 int EXPORT_CALL
-lou_backTranslate (const char *tableList, const
-		   widechar
-		   * inbuf,
+lou_backTranslate (const char *tableList, const widechar *inbuf,
 		   int *inlen, widechar * outbuf, int *outlen,
-		   formtype *typeform, char *spacing, int
-		   *outputPos, int *inputPos, int *cursorPos, int modex)
+		   formtype *typeform, char *spacing, int *outputPos,
+		   int *inputPos, int *cursorPos, int modex)
+{
+  return backTranslateWithTracing(tableList, inbuf, inlen, outbuf, outlen,
+				  typeform, spacing, outputPos, inputPos,
+				  cursorPos, modex, NULL, NULL);
+}
+
+int
+backTranslateWithTracing (const char *tableList, const widechar * inbuf,
+			  int *inlen, widechar * outbuf,
+			  int *outlen, formtype *typeform,
+			  char *spacing, int *outputPos,
+			  int *inputPos, int *cursorPos, int modex,
+			  const TranslationTableRule **rules, int *rulesLen)
 {
   int k;
   int goodTrans = 1;
@@ -83,7 +96,7 @@ lou_backTranslate (const char *tableList, const
 				inlen, outbuf, outlen,
 				typeform, spacing, outputPos, inputPos,
 				cursorPos, modex);
-  table = lou_getTable (tableList);
+  table = getTable (tableList);
   if (table == NULL)
     return 0;
   srcmax = 0;
@@ -125,6 +138,17 @@ lou_backTranslate (const char *tableList, const
     {
       if (!(passbuf2 = liblouis_allocMem (alloc_passbuf2, srcmax, destmax)))
 	return 0;
+    }
+  appliedRulesCount = 0;
+  if (rules != NULL && rulesLen != NULL)
+    {
+      appliedRules = rules;
+      maxAppliedRules = *rulesLen;
+    }
+  else
+    {
+      appliedRules = NULL;
+      maxAppliedRules = 0;
     }
   currentPass = table->numPasses;
   if ((mode & pass1Only))
@@ -296,10 +320,12 @@ lou_backTranslate (const char *tableList, const
     }
   if (cursorPos != NULL)
     *cursorPos = cursorPosition;
+  if (rulesLen != NULL)
+    *rulesLen = appliedRulesCount;
   return goodTrans;
 }
 
-static char currentTypeform = plain_text;
+static formtype currentTypeform = plain_text;
 static int nextUpper = 0;
 static int allUpper = 0;
 static int allUpperPhrase = 0;
@@ -469,14 +495,22 @@ handleMultind ()
     return 0;
   switch (multindRule->charsdots[multindRule->charslen - doingMultind])
     {
-    case CTO_CapitalSign:
-      found = findBrailleIndicatorRule (table->capitalSign);
+    case CTO_CapsLetterRule: // FIXME: make sure this works
+      found = findBrailleIndicatorRule (table->emphRules[capsRule][letterOffset]);
       break;
-    case CTO_BeginCapitalSign:
-      found = findBrailleIndicatorRule (table->beginCapitalSign);
+    // NOTE:  following fixme is based on the names at the time of
+    //        commit f22f91eb510cb4eef33dfb4950a297235dd2f9f1.
+    // FIXME: the next two opcodes were begcaps/endcaps,
+    //        and they were aliased to opcodes capsword/capswordstop.
+    //        However, the table attributes they use are
+    //        table->beginCapitalSign and table->endCapitalSign.
+    //        These are actually compiled with firstlettercaps/lastlettercaps.
+    //        Which to use here?
+    case CTO_BegCapsWordRule:
+      found = findBrailleIndicatorRule (table->emphRules[capsRule][begWordOffset]);
       break;
-    case CTO_EndCapitalSign:
-      found = findBrailleIndicatorRule (table->endCapitalSign);
+    case CTO_EndCapsWordRule:
+      found = findBrailleIndicatorRule (table->emphRules[capsRule][endWordOffset]);
       break;
     case CTO_LetterSign:
       found = findBrailleIndicatorRule (table->letterSign);
@@ -484,32 +518,32 @@ handleMultind ()
     case CTO_NumberSign:
       found = findBrailleIndicatorRule (table->numberSign);
       break;
-    case CTO_LastWordItalBefore:
-      found = findBrailleIndicatorRule (table->lastWordItalBefore);
+    case CTO_EndEmph1PhraseBeforeRule:
+      found = findBrailleIndicatorRule (table->emphRules[emph1Rule][endPhraseBeforeOffset]);
       break;
-    case CTO_BegItal:
-      found = findBrailleIndicatorRule (table->firstLetterItal);
+    case CTO_BegEmph1Rule:
+      found = findBrailleIndicatorRule (table->emphRules[emph1Rule][begOffset]);
       break;
-    case CTO_LastLetterItal:
-      found = findBrailleIndicatorRule (table->lastLetterItal);
+    case CTO_EndEmph1Rule:
+      found = findBrailleIndicatorRule (table->emphRules[emph1Rule][endOffset]);
       break;
-    case CTO_LastWordBoldBefore:
-      found = findBrailleIndicatorRule (table->lastWordBoldBefore);
+    case CTO_EndEmph2PhraseBeforeRule:
+      found = findBrailleIndicatorRule (table->emphRules[emph2Rule][endPhraseBeforeOffset]);
       break;
-    case CTO_FirstLetterBold:
-      found = findBrailleIndicatorRule (table->firstLetterBold);
+    case CTO_BegEmph2Rule:
+      found = findBrailleIndicatorRule (table->emphRules[emph2Rule][begOffset]);
       break;
-    case CTO_LastLetterBold:
-      found = findBrailleIndicatorRule (table->lastLetterBold);
+    case CTO_EndEmph2Rule:
+      found = findBrailleIndicatorRule (table->emphRules[emph2Rule][endOffset]);
       break;
-    case CTO_LastWordUnderBefore:
-      found = findBrailleIndicatorRule (table->lastWordUnderBefore);
+    case CTO_EndEmph3PhraseBeforeRule:
+      found = findBrailleIndicatorRule (table->emphRules[emph3Rule][endPhraseBeforeOffset]);
       break;
-    case CTO_FirstLetterUnder:
-      found = findBrailleIndicatorRule (table->firstLetterUnder);
+    case CTO_BegEmph3Rule:
+      found = findBrailleIndicatorRule (table->emphRules[emph3Rule][begOffset]);
       break;
-    case CTO_EndUnder:
-      found = findBrailleIndicatorRule (table->lastLetterUnder);
+    case CTO_EndEmph3Rule:
+      found = findBrailleIndicatorRule (table->emphRules[emph3Rule][endOffset]);
       break;
     case CTO_BegComp:
       found = findBrailleIndicatorRule (table->begComp);
@@ -637,15 +671,17 @@ back_selectRule ()
 		      if (itsANumber)
 			return;
 		      break;
-		    case CTO_CapitalRule:
-		    case CTO_BeginCapitalRule:
-		    case CTO_EndCapitalRule:
-		    case CTO_FirstLetterItalRule:
-		    case CTO_LastLetterItalRule:
-		    case CTO_LastWordBoldBeforeRule:
-		    case CTO_LastLetterBoldRule:
-		    case CTO_FirstLetterUnderRule:
-		    case CTO_LastLetterUnderRule:
+		    case CTO_CapsLetterRule:
+		    case CTO_BegCapsRule:
+		    case CTO_EndCapsRule:
+		    case CTO_BegCapsWordRule:
+		    case CTO_EndCapsWordRule:
+		    case CTO_BegEmph1Rule:
+		    case CTO_EndEmph1Rule:
+		    case CTO_BegEmph2Rule:
+		    case CTO_EndEmph2Rule:
+		    case CTO_BegEmph3Rule:
+		    case CTO_EndEmph3Rule:
 		    case CTO_NumberRule:
 		    case CTO_BegCompRule:
 		    case CTO_EndCompRule:
@@ -1008,6 +1044,8 @@ makeCorrections ()
 	  currentOutput[dest++] = currentInput[src++];
 	  break;
 	case CTO_Correct:
+	  if (appliedRules != NULL && appliedRulesCount < maxAppliedRules)
+	    appliedRules[appliedRulesCount++] = currentRule;
 	  if (!back_passDoAction ())
 	    goto failure;
 	  src = endReplace;
@@ -1034,6 +1072,8 @@ backTranslateString ()
 /*the main translation loop */
       back_setBefore ();
       back_selectRule ();
+      if (appliedRules != NULL && appliedRulesCount < maxAppliedRules)
+	appliedRules[appliedRulesCount++] = currentRule;
       /* processing before replacement */
       switch (currentOpcode)
 	{
@@ -1045,22 +1085,27 @@ backTranslateString ()
 	    if (!insertSpace ())
 	      goto failure;
 	  break;
-	case CTO_CapitalRule:
+	case CTO_CapsLetterRule:
 	  nextUpper = 1;
 	  src += currentDotslen;
 	  continue;
 	  break;
-	case CTO_CapsWordRule:
+	case CTO_BegCapsWordRule:
 	  allUpper = 1;
 	  src += currentDotslen;
 	  continue;
 	  break;
-	case CTO_BeginCapitalRule:
+	case CTO_BegCapsRule:
 	  allUpperPhrase = 1;
 	  src += currentDotslen;
 	  continue;
 	  break;
-	case CTO_EndCapitalRule:
+	case CTO_EndCapsWordRule:
+	  allUpper = 0;
+	  src += currentDotslen;
+	  continue;
+	  break;
+	case CTO_EndCapsRule:
 	  allUpperPhrase = 0;
 	  src += currentDotslen;
 	  continue;
@@ -1076,32 +1121,24 @@ backTranslateString ()
 	  src += currentDotslen;
 	  continue;
 	  break;
-	case CTO_FirstLetterItalRule:
+	case CTO_BegEmph1Rule:
 	  currentTypeform = italic;
 	  src += currentDotslen;
 	  continue;
 	  break;
-	case CTO_LastLetterItalRule:
-	  currentTypeform = plain_text;
-	  src += currentDotslen;
-	  continue;
-	  break;
-	case CTO_FirstLetterBoldRule:
-	  currentTypeform = bold;
-	  src += currentDotslen;
-	  continue;
-	  break;
-	case CTO_LastLetterBoldRule:
-	  currentTypeform = plain_text;
-	  src += currentDotslen;
-	  continue;
-	  break;
-	case CTO_FirstLetterUnderRule:
+	case CTO_BegEmph2Rule:
 	  currentTypeform = underline;
 	  src += currentDotslen;
 	  continue;
 	  break;
-	case CTO_LastLetterUnderRule:
+	case CTO_BegEmph3Rule:
+	  currentTypeform = bold;
+	  src += currentDotslen;
+	  continue;
+	  break;
+	case CTO_EndEmph1Rule:
+	case CTO_EndEmph2Rule:
+	case CTO_EndEmph3Rule:
 	  currentTypeform = plain_text;
 	  src += currentDotslen;
 	  continue;
@@ -1622,6 +1659,8 @@ translatePass ()
 	case CTO_Pass2:
 	case CTO_Pass3:
 	case CTO_Pass4:
+	  if (appliedRules != NULL && appliedRulesCount < maxAppliedRules)
+	    appliedRules[appliedRulesCount++] = currentRule;
 	  if (!back_passDoAction ())
 	    goto failure;
 	  src = endReplace;

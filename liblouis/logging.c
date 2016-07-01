@@ -1,25 +1,29 @@
 /* liblouis Braille Translation and Back-Translation  Library
 
-   Copyright (C) 2014 ViewPlus Technologies, Inc. www.viewplus.com
-   and the liblouis team. http://liblouis.org
-   All rights reserved
+Copyright (C) 2004, 2005, 2006 ViewPlus Technologies, Inc. www.viewplus.com
+Copyright (C) 2004, 2005, 2006 JJB Software, Inc. www.jjb-software.com
 
-   This file is free software; you can redistribute it and/or modify it
-   under the terms of the Lesser or Library GNU General Public License 
-   as published by the
-   Free Software Foundation; either version 3, or (at your option) any
-   later version.
+This file is part of liblouis.
 
-   This file is distributed in the hope that it will be useful, but
-   WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the 
-   Library GNU General Public License for more details.
+liblouis is free software: you can redistribute it and/or modify it
+under the terms of the GNU Lesser General Public License as published
+by the Free Software Foundation, either version 2.1 of the License, or
+(at your option) any later version.
 
-   You should have received a copy of the Library GNU General Public 
-   License along with this program; see the file COPYING.  If not, write to
-   the Free Software Foundation, 51 Franklin Street, Fifth Floor,
-   Boston, MA 02110-1301, USA.
-   */
+liblouis is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+Lesser General Public License for more details.
+
+You should have received a copy of the GNU Lesser General Public
+License along with liblouis. If not, see <http://www.gnu.org/licenses/>.
+
+*/
+
+/**
+ * @file
+ * @brief Logging
+ */
 
 #include <stddef.h>
 #include <stdlib.h>
@@ -39,7 +43,7 @@ void logWidecharBuf(logLevels level, const char *msg, const widechar *wbuf, int 
    * Give space for additional message (+ strlen(msg))
    * Remember the null terminator (+ 1)
    */
-  int logBufSize = (wlen * ((sizeof(widechar) * 3) + 3)) + 3 + strlen(msg);
+  int logBufSize = (wlen * ((sizeof(widechar) * 3) + 3)) + 3 + (int)strlen(msg);
   char *logMsg = malloc(logBufSize);
   char *p = logMsg;
   char *formatString;
@@ -48,7 +52,7 @@ void logWidecharBuf(logLevels level, const char *msg, const widechar *wbuf, int 
     formatString = "0x%04X ";
   else
     formatString = "0x%08X ";
-  for (i = 0; i < strlen(msg); i++)
+  for (i = 0; i < (int) strlen(msg); i++)
     logMsg[i] = msg[i];
   p += strlen(msg);
   for (i = 0; i < wlen; i++)
@@ -101,7 +105,7 @@ void logMessage(logLevels level, const char *format, ...)
   if (logCallbackFunction != NULL)
     {
 #ifdef _WIN32
-      float f = 2.3; // Needed to force VC++ runtime floating point support
+      double f = 2.3; // Needed to force VC++ runtime floating point support
 #endif
       char *s;
       size_t len;
@@ -122,7 +126,7 @@ void logMessage(logLevels level, const char *format, ...)
 
 
 static FILE *logFile = NULL;
-static char initialLogFileName[256];
+static char initialLogFileName[256] = "";
 
 void EXPORT_CALL
 lou_logFile (const char *fileName)
@@ -168,13 +172,12 @@ lou_logPrint (const char *format, ...)
 void EXPORT_CALL
 lou_logEnd ()
 {
-  if (logFile != NULL)
-    fclose (logFile);
-  logFile = NULL;
+  closeLogFile();
 }
 
 void closeLogFile()
 {
-  if (logFile != NULL)
+  if (logFile != NULL && logFile != stderr)
     fclose (logFile);
+  logFile = NULL;
 }

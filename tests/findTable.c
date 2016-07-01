@@ -1,7 +1,9 @@
+#include <config.h>
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include "liblouis.h"
 #include "louis.h"
 
 int
@@ -16,5 +18,7 @@ main(int argc, char **argv)
   success |= (!match || (strstr(match, "tablesWithMetadata/foo") == NULL));
   match = lou_findTable("language:en");
   success |= (!match || (strstr(match, "tablesWithMetadata/bar") == NULL));
+
+  lou_free();
   return success;
 }

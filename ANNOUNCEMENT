@@ -1,7 +1,7 @@
-liblouis 2.6.3 has been released
+liblouis 3.0.0.alpha1 has been released
 
 The liblouis developer team is proud to announce the liblouis release
-2.6.3 The release is available for download at:
+3.0.0.alpha1 The release is available for download at:
 
     https://github.com/liblouis/liblouis/releases
 
@@ -18,68 +18,77 @@ liblouisutdml[2] deals with formatting of braille.
 Changes in this release
 =======================
 
-Given the release number you might think this is only a minor release.
-However looking at the number of developers who contributed to it and
-the number of pull requests and issues that were solved this turns out
-to be a very impressive and solid release. Most prominently we have a
-new function to discover tables based on meta data in table headers.
-Also makeinfo is no longer required to build liblouis. And lastly we
-have numerous improvements in Braille tables such as Korean,
-Vietnamese and UEB to name just a few.
+This is the biggest release of liblouis in years. In order to support
+UEB the internals of liblouis have seen a major rewrite. New Opcodes
+have been added to support the requirements for proper UEB for example
+for emphasis handling or to handle proper translation of numbers.
+Changes to the opcodes are described in the documentation.
+
+Some of these changes are not backwards compatible. All tables that
+come with liblouis have been migrated. If you have private tables look
+at the section on upgrading from previous versions in the wiki[3].
+
+This release also changes the C API. External applications will have
+to adapt the way they call liblouis. In particular the typeform
+parameter has changed.
 
 New features
 ~~~~~~~~~~~~
 
-- [beta] The new function lou_findTable can be used for table
-  discovery based on meta data in table headers. Thanks to Bert Frees.
-- The Python API now has a new function to check tables aptly named
-  `checkTable'. Thanks to Davy Kager.
+- Numerous features to support UEB properly. Thanks to Mike Gray.
+  - support the many emphasis classes needed for UEB.
+  - support translation of numbers according to the rules of UEB.
+  - Capitalization is now handled just like emphasis.
+- UTF-8 support for lou_trace thanks to Christian Egli.
+- The YAML tests now allow for an optional test description. See the
+  documentation for more details.
 
 Bug fixes
 ~~~~~~~~~
 
-- Fixed a problem in resolveTable when using a Java resolver, thanks
-  to Bert Frees
+- Stop buffer overrun in lou_getProgramPath, and also free memory
+  after usage. Thanks to Michael Curran.
 
 Other changes
 ~~~~~~~~~~~~~
 
-- The build dependency on makeinfo is now optional. If it is not
-  installed we simply do not build the documentation.
+- Improvements to the test suite:
+  - Output is printed to stderr. This helps with locating errors when
+    testing with the YAML test suite.
+  - typeform is included in output.
 
 Braille table improvements
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-- Improvements to Bengali, Devanagari, Kannada, Gujarati, Malayalam,
-  Telugu and Oriya, thanks to Sreeja Param
-- Corrections and improvements made to en-GB tables thanks to Paul
-  Wood
-- Vast restructuring to Korean tables. In 2006 the Institute for
-  Korean Braille modified some dots in Korean Braille. Specifically,
-  some punctuation dots are now based on English. To accommodate this
-  change and to retain the old tables, the Korean table set was
-  revised as follows:
-  - Added three files: ko-chars, the Korean characters dictionary, and
-    rules for g1 and g2.
-  - ko-g1 and ko-g2 are now interface files that includes needed
-    files.
-  - Added three files for Korean Braille 2006 revision along with a
-    test harness.
-- New table for Polish 8 dot computer braille. Thanks to Karol Pecyna.
-- New table for Vietnamese 6 dot. Thanks to Harri Pasanen.
-- Corrections and improvements made to UEB tables thanks to Paul Wood
-  - Typeform passage indicators
-  - Degree sign
-  - Dash signs
-  - Math signs
-  - Accent modifiers
-  - Accented letters
+- Improved Finish 6-dot braille thanks to Jukka Eerikäinen
+- Improvements to the Chinese braille table thanks to Coscell Kao
+- Improvements to Mongolian thanks to Tsengel Maidar and Sreeja Param
+- Added new Slovak tables based off the official Slovak braille
+  standard thanks to Peter Vagner
+- Changes to the Norwegian tables. There are now three Norwegian 8-dot
+  tables
+  - no-no-comp8.ctb: Norwegian 8-dot computer braille table
+  - no-no-8dot.utb: Norwegian 8-dot braille table
+  - no-no-8dot-fallback-6dot-g0.utb: Norwegian 8-dot braille table
+    with uncontracted 6-dot fallback
+
+Backwards incompatible changes
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+- The json based harness test suite has been removed as its
+  functionality has been superceded by the YAML tests. Please use
+  these from now on.
+- A number of opcodes to handle emphasis have been renamed.
+- The C API regarding the typeform parameter has changed.
 
 Next release
 ============
 
-The next release will be published on August 31 2015 so please keep up
-the excellent work and keep those improvements coming.
+This is the first in a series of alpha releases leading up to the 3.0
+release which will hopefully happen before the summer holidays. There
+are still a number of known outstanding issues[4] and possibly some that
+we haven't discovered yet. Please help to find bugs by testing this
+alpha release.
 
 Share and Enjoy!
 
@@ -89,5 +98,7 @@ Footnotes
 =========
 
 [1]  See https://github.com/liblouis/liblouis/tree/master/tables
-[2]  See http://code.google.com/p/liblouisutdml/
+[2]  See https://github.com/liblouis/liblouisutdml
+[3]  See https://github.com/liblouis/liblouis/wiki/Emphasis-Opcodes#upgrade-from-previous-versions
+[4]  See https://github.com/liblouis/liblouis/milestones/3.0
 
