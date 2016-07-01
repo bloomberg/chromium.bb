@@ -158,5 +158,46 @@ TEST(IPCMessageUtilsTest, MojoChannelHandle) {
   EXPECT_EQ(channel_handle.mojo_handle, result_handle.mojo_handle);
 }
 
+TEST(IPCMessageUtilsTest, OptionalUnset) {
+  base::Optional<int> opt;
+  base::Pickle pickle;
+  IPC::WriteParam(&pickle, opt);
+
+  base::PickleSizer sizer;
+  IPC::GetParamSize(&sizer, opt);
+
+  EXPECT_EQ(sizer.payload_size(), pickle.payload_size());
+
+  std::string log;
+  IPC::LogParam(opt, &log);
+  EXPECT_EQ("(unset)", log);
+
+  base::Optional<int> unserialized_opt;
+  base::PickleIterator iter(pickle);
+  EXPECT_TRUE(IPC::ReadParam(&pickle, &iter, &unserialized_opt));
+  EXPECT_FALSE(unserialized_opt);
+}
+
+TEST(IPCMessageUtilsTest, OptionalSet) {
+  base::Optional<int> opt(10);
+  base::Pickle pickle;
+  IPC::WriteParam(&pickle, opt);
+
+  base::PickleSizer sizer;
+  IPC::GetParamSize(&sizer, opt);
+
+  EXPECT_EQ(sizer.payload_size(), pickle.payload_size());
+
+  std::string log;
+  IPC::LogParam(opt, &log);
+  EXPECT_EQ("10", log);
+
+  base::Optional<int> unserialized_opt;
+  base::PickleIterator iter(pickle);
+  EXPECT_TRUE(IPC::ReadParam(&pickle, &iter, &unserialized_opt));
+  EXPECT_TRUE(unserialized_opt);
+  EXPECT_EQ(opt.value(), unserialized_opt.value());
+}
+
 }  // namespace
 }  // namespace IPC

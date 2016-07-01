@@ -22,6 +22,7 @@
 #include "base/files/file.h"
 #include "base/format_macros.h"
 #include "base/memory/scoped_vector.h"
+#include "base/optional.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -374,7 +375,7 @@ struct IPC_EXPORT ParamTraits<std::vector<bool> > {
 };
 
 template <class P>
-struct ParamTraits<std::vector<P> > {
+struct ParamTraits<std::vector<P>> {
   typedef std::vector<P> param_type;
   static void GetSize(base::PickleSizer* sizer, const param_type& p) {
     GetParamSize(sizer, static_cast<int>(p.size()));
@@ -981,6 +982,43 @@ struct ParamTraits<std::unique_ptr<P>> {
       LogParam(*p, l);
     else
       l->append("NULL");
+  }
+};
+
+template <class P>
+struct ParamTraits<base::Optional<P>> {
+  typedef base::Optional<P> param_type;
+  static void GetSize(base::PickleSizer* sizer, const param_type& p) {
+    const bool is_set = static_cast<bool>(p);
+    GetParamSize(sizer, is_set);
+    if (is_set)
+      GetParamSize(sizer, p.value());
+  }
+  static void Write(base::Pickle* m, const param_type& p) {
+    const bool is_set = static_cast<bool>(p);
+    WriteParam(m, is_set);
+    if (is_set)
+      WriteParam(m, p.value());
+  }
+  static bool Read(const base::Pickle* m,
+                   base::PickleIterator* iter,
+                   param_type* r) {
+    bool is_set = false;
+    if (!iter->ReadBool(&is_set))
+      return false;
+    if (is_set) {
+      P value;
+      if (!ReadParam(m, iter, &value))
+        return false;
+      *r = std::move(value);
+    }
+    return true;
+  }
+  static void Log(const param_type& p, std::string* l) {
+    if (p)
+      LogParam(p.value(), l);
+    else
+      l->append("(unset)");
   }
 };
 
