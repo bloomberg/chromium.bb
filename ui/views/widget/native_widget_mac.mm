@@ -8,9 +8,11 @@
 
 #include <utility>
 
+#import "base/mac/bind_objc_block.h"
 #include "base/mac/foundation_util.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/strings/sys_string_conversions.h"
+#include "base/threading/thread_task_runner_handle.h"
 #import "ui/base/cocoa/constrained_window/constrained_window_animation.h"
 #import "ui/base/cocoa/window_size_constants.h"
 #include "ui/gfx/font_list.h"
@@ -367,7 +369,13 @@ void NativeWidgetMac::Close() {
   // like -performClose:, first remove the window from AppKit's display
   // list to avoid crashes like http://crbug.com/156101.
   [window orderOut:nil];
-  [window performSelector:@selector(close) withObject:nil afterDelay:0];
+
+  // Many tests assume that base::RunLoop().RunUntilIdle() is always sufficient
+  // to execute a close. However, in rare cases, -performSelector:..afterDelay:0
+  // does not do this. So post a regular task.
+  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, base::BindBlock(^{
+    [window close];
+  }));
 }
 
 void NativeWidgetMac::CloseNow() {
