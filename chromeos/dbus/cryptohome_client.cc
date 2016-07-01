@@ -153,6 +153,21 @@ class CryptohomeClientImpl : public CryptohomeClient {
   }
 
   // CryptohomeClient override.
+  void GetAccountDiskUsage(const cryptohome::Identification& account_id,
+                           const ProtobufMethodCallback& callback) override {
+    dbus::MethodCall method_call(cryptohome::kCryptohomeInterface,
+                                 cryptohome::kCryptohomeGetAccountDiskUsage);
+    cryptohome::AccountIdentifier id;
+    FillIdentificationProtobuf(account_id, &id);
+
+    dbus::MessageWriter writer(&method_call);
+    writer.AppendProtoAsArrayOfBytes(id);
+    proxy_->CallMethod(&method_call, kTpmDBusTimeoutMs,
+                       base::Bind(&CryptohomeClientImpl::OnBaseReplyMethod,
+                                  weak_ptr_factory_.GetWeakPtr(), callback));
+  }
+
+  // CryptohomeClient override.
   void GetSystemSalt(const GetSystemSaltCallback& callback) override {
     dbus::MethodCall method_call(cryptohome::kCryptohomeInterface,
                                  cryptohome::kCryptohomeGetSystemSalt);

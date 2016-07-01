@@ -5,10 +5,15 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_OPTIONS_CHROMEOS_STORAGE_MANAGER_HANDLER_H_
 #define CHROME_BROWSER_UI_WEBUI_OPTIONS_CHROMEOS_STORAGE_MANAGER_HANDLER_H_
 
+#include <stdint.h>
+
+#include <vector>
+
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/ui/webui/options/options_ui.h"
 #include "components/arc/storage_manager/arc_storage_manager.h"
+#include "components/user_manager/user.h"
 
 namespace chromeos {
 namespace options {
@@ -65,6 +70,12 @@ class StorageManagerHandler : public ::options::OptionsPageUIHandler {
   // Callback to update the UI about the size of browsing data.
   void OnGetBrowsingDataSize(bool is_site_data, int64_t size);
 
+  // Requests updating the total size of other users' data.
+  void UpdateOtherUsersSize();
+
+  // Callback to save the fetched user sizes and update the UI.
+  void OnGetOtherUserSize(bool success, int64_t size);
+
   // Requests updating the space size used by Android apps and cache.
   void UpdateArcSize();
 
@@ -79,6 +90,13 @@ class StorageManagerHandler : public ::options::OptionsPageUIHandler {
 
   // Total size of site data in browsing data.
   int64_t browser_site_data_size_;
+
+  // The list of other users whose directory sizes will be accumulated as the
+  // size of "Other users".
+  user_manager::UserList other_users_;
+
+  // Fetched sizes of user directories.
+  std::vector<int64_t> user_sizes_;
 
   base::WeakPtrFactory<StorageManagerHandler> weak_ptr_factory_;
 

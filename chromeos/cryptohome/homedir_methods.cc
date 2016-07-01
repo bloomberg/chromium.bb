@@ -286,6 +286,14 @@ class HomedirMethodsImpl : public HomedirMethods {
                                    weak_ptr_factory_.GetWeakPtr(), callback));
   }
 
+  void GetAccountDiskUsage(
+      const Identification& id,
+      const GetAccountDiskUsageCallback& callback) override {
+    DBusThreadManager::Get()->GetCryptohomeClient()->GetAccountDiskUsage(
+        id, base::Bind(&HomedirMethodsImpl::OnGetAccountDiskUsageCallback,
+                       weak_ptr_factory_.GetWeakPtr(), callback));
+  }
+
  private:
   void OnGetKeyDataExCallback(const GetKeyDataCallback& callback,
                               chromeos::DBusMethodCallStatus call_status,
@@ -404,6 +412,30 @@ class HomedirMethodsImpl : public HomedirMethods {
     std::string mount_hash;
     mount_hash = reply.GetExtension(MountReply::reply).sanitized_username();
     callback.Run(true, MOUNT_ERROR_NONE, mount_hash);
+  }
+
+  void OnGetAccountDiskUsageCallback(
+      const GetAccountDiskUsageCallback& callback,
+      chromeos::DBusMethodCallStatus call_status,
+      bool result,
+      const BaseReply& reply) {
+    if (call_status != chromeos::DBUS_METHOD_CALL_SUCCESS) {
+      callback.Run(false, -1);
+      return;
+    }
+    if (reply.has_error()) {
+      if (reply.error() != CRYPTOHOME_ERROR_NOT_SET) {
+        callback.Run(false, -1);
+        return;
+      }
+    }
+    if (!reply.HasExtension(GetAccountDiskUsageReply::reply)) {
+      callback.Run(false, -1);
+      return;
+    }
+
+    int64_t size = reply.GetExtension(GetAccountDiskUsageReply::reply).size();
+    callback.Run(true, size);
   }
 
   void OnBaseReplyCallback(const Callback& callback,

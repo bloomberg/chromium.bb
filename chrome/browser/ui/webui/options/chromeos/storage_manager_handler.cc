@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/webui/options/chromeos/storage_manager_handler.h"
 
+#include <algorithm>
+#include <numeric>
 #include <string>
 
 #include "base/files/file_util.h"
@@ -15,8 +17,10 @@
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/grit/generated_resources.h"
+#include "chromeos/cryptohome/homedir_methods.h"
 #include "components/browsing_data/storage_partition_http_cache_data_remover.h"
 #include "components/drive/chromeos/file_system_interface.h"
+#include "components/user_manager/user_manager.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -81,6 +85,9 @@ void StorageManagerHandler::GetLocalizedValues(
   localized_strings->SetString(
       "storageSubitemLabelBrowsingData", l10n_util::GetStringUTF16(
           IDS_OPTIONS_SETTINGS_STORAGE_SUBITEM_LABEL_BROWSING_DATA));
+  localized_strings->SetString(
+      "storageSubitemLabelOtherUsers", l10n_util::GetStringUTF16(
+          IDS_OPTIONS_SETTINGS_STORAGE_SUBITEM_LABEL_OTHER_USERS));
   localized_strings->SetString(
       "storageSubitemLabelArc", l10n_util::GetStringUTF16(
           IDS_OPTIONS_SETTINGS_STORAGE_SUBITEM_LABEL_ARC));
@@ -147,6 +154,7 @@ void StorageManagerHandler::HandleUpdateStorageInfo(
   UpdateDownloadsSize();
   UpdateDriveCacheSize();
   UpdateBrowsingDataSize();
+  UpdateOtherUsersSize();
   UpdateArcSize();
 }
 
@@ -274,6 +282,37 @@ void StorageManagerHandler::OnGetBrowsingDataSize(bool is_site_data,
      "options.StorageManager.setBrowsingDataSize",
      base::StringValue(ui::FormatBytes(static_cast<int64_t>(
          browser_cache_size_ + browser_site_data_size_))));
+}
+
+void StorageManagerHandler::UpdateOtherUsersSize() {
+  other_users_.clear();
+  user_sizes_.clear();
+  const user_manager::UserList& users =
+      user_manager::UserManager::Get()->GetUsers();
+  for (const auto& user : users) {
+    if (user->is_active())
+      continue;
+    other_users_.push_back(user);
+    cryptohome::HomedirMethods::GetInstance()->GetAccountDiskUsage(
+        cryptohome::Identification(user->GetAccountId()),
+        base::Bind(&StorageManagerHandler::OnGetOtherUserSize,
+                   weak_ptr_factory_.GetWeakPtr()));
+  }
+}
+
+void StorageManagerHandler::OnGetOtherUserSize(bool success, int64_t size) {
+  user_sizes_.push_back(success ? size : -1);
+  if (user_sizes_.size() == other_users_.size()) {
+    base::StringValue other_users_size(l10n_util::GetStringUTF16(
+        IDS_OPTIONS_SETTINGS_STORAGE_SIZE_UNKNOWN));
+    // If all the requests succeed, shows the total bytes in the UI.
+    if (std::count(user_sizes_.begin(), user_sizes_.end(), -1) == 0) {
+      other_users_size = base::StringValue(ui::FormatBytes(
+          std::accumulate(user_sizes_.begin(), user_sizes_.end(), 0LL)));
+    }
+    web_ui()->CallJavascriptFunctionUnsafe(
+       "options.StorageManager.setOtherUsersSize", other_users_size);
+  }
 }
 
 void StorageManagerHandler::UpdateArcSize() {

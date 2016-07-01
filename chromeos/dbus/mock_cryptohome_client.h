@@ -48,6 +48,9 @@ class MockCryptohomeClient : public CryptohomeClient {
                void(const cryptohome::Identification& id_from,
                     const cryptohome::Identification& id_to,
                     const ProtobufMethodCallback& callback));
+  MOCK_METHOD2(GetAccountDiskUsage,
+               void(const cryptohome::Identification& account_id,
+                    const ProtobufMethodCallback& callback));
 
   MOCK_METHOD1(GetSystemSalt, void(const GetSystemSaltCallback& callback));
   MOCK_METHOD2(GetSanitizedUsername,

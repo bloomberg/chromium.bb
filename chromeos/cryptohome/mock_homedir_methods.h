@@ -55,6 +55,9 @@ class CHROMEOS_EXPORT MockHomedirMethods : public HomedirMethods {
                void(const Identification& id_from,
                     const Identification& id_to,
                     const Callback& callback));
+  MOCK_METHOD2(GetAccountDiskUsage,
+               void(const Identification& id,
+                    const GetAccountDiskUsageCallback& callback));
 
  private:
   bool success_;

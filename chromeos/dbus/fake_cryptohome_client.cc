@@ -105,6 +105,17 @@ void FakeCryptohomeClient::RenameCryptohome(
   ReturnProtobufMethodCallback(reply, callback);
 }
 
+void FakeCryptohomeClient::GetAccountDiskUsage(
+    const cryptohome::Identification& account_id,
+    const ProtobufMethodCallback& callback) {
+  cryptohome::BaseReply reply;
+  cryptohome::GetAccountDiskUsageReply* get_account_disk_usage_reply =
+      reply.MutableExtension(cryptohome::GetAccountDiskUsageReply::reply);
+  // Sets 100 MB as a fake usage.
+  get_account_disk_usage_reply->set_size(100 * 1024 * 1024);
+  ReturnProtobufMethodCallback(reply, callback);
+}
+
 void FakeCryptohomeClient::GetSystemSalt(
     const GetSystemSaltCallback& callback) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(

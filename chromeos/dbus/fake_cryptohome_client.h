@@ -42,6 +42,8 @@ class CHROMEOS_EXPORT FakeCryptohomeClient : public CryptohomeClient {
   void RenameCryptohome(const cryptohome::Identification& cryptohome_id_from,
                         const cryptohome::Identification& cryptohome_id_to,
                         const ProtobufMethodCallback& callback) override;
+  void GetAccountDiskUsage(const cryptohome::Identification& account_id,
+                           const ProtobufMethodCallback& callback) override;
   void GetSystemSalt(const GetSystemSaltCallback& callback) override;
   void GetSanitizedUsername(const cryptohome::Identification& cryptohome_id,
                             const StringDBusMethodCallback& callback) override;

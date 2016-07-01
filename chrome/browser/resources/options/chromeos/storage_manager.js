@@ -110,11 +110,20 @@ cr.define('options', function() {
 
     /**
      * Updates the size of browsing data.
-     * @param {string} size Formatted string of the size of Downloads.
+     * @param {string} size Formatted string of the size of browsing data.
      * @private
      */
     setBrowsingDataSize_: function(size) {
       $('storage-manager-size-browsing-data').textContent = size;
+    },
+
+    /**
+     * Updates the size of other users.
+     * @param {string} size Formatted string of the size of other users.
+     * @private
+     */
+    setOtherUsersSize_: function(size) {
+      $('storage-manager-size-other-users').textContent = size;
     },
 
     /**
@@ -143,6 +152,7 @@ cr.define('options', function() {
     'setBrowsingDataSize',
     'setDownloadsSize',
     'setDriveCacheSize',
+    'setOtherUsersSize',
     'setSizeStat',
     'showArcItem',
   ]);

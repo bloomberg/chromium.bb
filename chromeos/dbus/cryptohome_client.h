@@ -152,6 +152,11 @@ class CHROMEOS_EXPORT CryptohomeClient : public DBusClient {
       const cryptohome::Identification& cryptohome_id_to,
       const ProtobufMethodCallback& callback) = 0;
 
+  // Calls GetAccountDiskUsage method. |callback| is called after the method
+  // call succeeds
+  virtual void GetAccountDiskUsage(const cryptohome::Identification& account_id,
+                                   const ProtobufMethodCallback& callback) = 0;
+
   // Calls GetSystemSalt method.  |callback| is called after the method call
   // succeeds.
   virtual void GetSystemSalt(const GetSystemSaltCallback& callback) = 0;
