@@ -463,6 +463,14 @@ void ArcAuthService::OnSyncedPrefChanged(const std::string& path,
   }
 }
 
+void ArcAuthService::StopArc() {
+  if (state_ != State::STOPPED) {
+    UpdateEnabledStateUMA(false);
+    profile_->GetPrefs()->SetBoolean(prefs::kArcSignedIn, false);
+  }
+  ShutdownBridgeAndCloseUI();
+}
+
 void ArcAuthService::OnOptInPreferenceChanged() {
   DCHECK(thread_checker.Get().CalledOnValidThread());
   DCHECK(profile_);
@@ -471,11 +479,7 @@ void ArcAuthService::OnOptInPreferenceChanged() {
   FOR_EACH_OBSERVER(Observer, observer_list_, OnOptInEnabled(arc_enabled));
 
   if (!arc_enabled) {
-    if (state_ != State::STOPPED) {
-      UpdateEnabledStateUMA(false);
-      profile_->GetPrefs()->SetBoolean(prefs::kArcSignedIn, false);
-    }
-    ShutdownBridgeAndCloseUI();
+    StopArc();
     return;
   }
 
@@ -597,19 +601,29 @@ void ArcAuthService::StartLso() {
 void ArcAuthService::CancelAuthCode() {
   DCHECK(thread_checker.Get().CalledOnValidThread());
 
-  if (ui_page_ == UIPage::ERROR_WITH_FEEDBACK) {
-    ShutdownBridge();
-    if (profile_->GetPrefs()->HasPrefPath(prefs::kArcSignedIn))
-      profile_->GetPrefs()->SetBoolean(prefs::kArcSignedIn, false);
+  if (state_ == State::NOT_INITIALIZED) {
+    NOTREACHED();
+    return;
   }
 
+  // In case |state_| is ACTIVE, |ui_page_| can be START_PROGRESS (which means
+  // normal Arc booting) or  ERROR or ERROR_WITH_FEEDBACK (in case Arc can not
+  // be started). If Arc is booting normally dont't stop it on progress close.
   if (state_ != State::FETCHING_CODE && ui_page_ != UIPage::ERROR &&
-      ui_page_ != UIPage::ERROR_WITH_FEEDBACK)
+      ui_page_ != UIPage::ERROR_WITH_FEEDBACK) {
     return;
+  }
 
   // Update UMA with user cancel only if error is not currently shown.
-  if (ui_page_ != UIPage::ERROR && ui_page_ != UIPage::NO_PAGE)
+  if (ui_page_ != UIPage::ERROR && ui_page_ == UIPage::ERROR_WITH_FEEDBACK &&
+      ui_page_ != UIPage::NO_PAGE) {
     UpdateOptInCancelUMA(OptInCancelReason::USER_CANCEL);
+  }
+
+  StopArc();
+
+  if (IsArcManaged())
+    return;
 
   base::AutoReset<bool> auto_reset(&disable_arc_from_ui_, true);
   DisableArc();
@@ -630,7 +644,14 @@ bool ArcAuthService::IsArcEnabled() const {
 void ArcAuthService::EnableArc() {
   DCHECK(thread_checker.Get().CalledOnValidThread());
   DCHECK(profile_);
-  profile_->GetPrefs()->SetBoolean(prefs::kArcEnabled, true);
+
+  if (!IsArcEnabled()) {
+    if (IsArcManaged())
+      return;
+    profile_->GetPrefs()->SetBoolean(prefs::kArcEnabled, true);
+  } else {
+    OnOptInPreferenceChanged();
+  }
 }
 
 void ArcAuthService::DisableArc() {

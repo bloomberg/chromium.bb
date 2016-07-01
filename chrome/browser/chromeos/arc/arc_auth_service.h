@@ -185,6 +185,7 @@ class ArcAuthService : public ArcService,
   void StartAndroidManagementClient();
   void CheckAndroidManagement(bool background_mode);
   void StartArcIfSignedIn();
+  void StopArc();
 
   // Unowned pointer. Keeps current profile.
   Profile* profile_ = nullptr;
