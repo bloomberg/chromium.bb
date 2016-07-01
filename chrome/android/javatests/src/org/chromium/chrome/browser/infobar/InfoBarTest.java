@@ -175,6 +175,7 @@ public class InfoBarTest extends ChromeActivityTestCaseBase<ChromeActivity> {
      */
     @MediumTest
     @Feature({"Browser", "Main"})
+    @DisabledTest // crbug.com/625038
     public void testDataReductionPromoInfoBar() throws InterruptedException {
         ThreadUtils.runOnUiThread(new Runnable() {
             @Override
@@ -236,6 +237,7 @@ public class InfoBarTest extends ChromeActivityTestCaseBase<ChromeActivity> {
      */
     @MediumTest
     @Feature({"Browser", "Main"})
+    @DisabledTest // crbug.com/625038
     public void testDataReductionPromoInfoBarDismissed() throws InterruptedException {
         ThreadUtils.runOnUiThread(new Runnable() {
             @Override
@@ -295,6 +297,7 @@ public class InfoBarTest extends ChromeActivityTestCaseBase<ChromeActivity> {
     @UiThreadTest
     @MediumTest
     @Feature({"Browser", "Main"})
+    @DisabledTest // crbug.com/625038
     public void testDataReductionPromoInfoBarPostM48Install() {
         assertFalse("Data Reduction Proxy enabled",
                 DataReductionProxySettings.getInstance().isDataReductionProxyEnabled());
@@ -319,6 +322,7 @@ public class InfoBarTest extends ChromeActivityTestCaseBase<ChromeActivity> {
     @UiThreadTest
     @MediumTest
     @Feature({"Browser", "Main"})
+    @DisabledTest // crbug.com/625038
     public void testDataReductionPromoInfoBarFreOptOut() {
         // Try to add an infobar. Infobar should not be added since the first run experience or
         // second run promo hasn't been shown.
