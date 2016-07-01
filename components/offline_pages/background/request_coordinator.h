@@ -10,6 +10,8 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/time/time.h"
+#include "base/timer/timer.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/offline_pages/background/device_conditions.h"
 #include "components/offline_pages/background/offliner.h"
@@ -117,6 +119,10 @@ class RequestCoordinator : public KeyedService {
   // if needed.
   void GetOffliner();
 
+  void SetOfflinerTimeoutForTest(const base::TimeDelta& timeout) {
+    offliner_timeout_ = timeout;
+  }
+
   friend class RequestCoordinatorTest;
 
   // The offliner can only handle one request at a time - if the offliner is
@@ -125,6 +131,8 @@ class RequestCoordinator : public KeyedService {
   bool is_busy_;
   // True if the current request has been canceled.
   bool is_canceled_;
+  // How long to wait for an offliner request before giving up.
+  base::TimeDelta offliner_timeout_;
   // Unowned pointer to the current offliner, if any.
   Offliner* offliner_;
   // RequestCoordinator takes over ownership of the policy
@@ -143,6 +151,8 @@ class RequestCoordinator : public KeyedService {
   base::Callback<void(bool)> scheduler_callback_;
   // Logger to record events.
   RequestCoordinatorEventLogger event_logger_;
+  // Timer to watch for pre-render attempts running too long.
+  base::OneShotTimer watchdog_timer_;
   // Allows us to pass a weak pointer to callbacks.
   base::WeakPtrFactory<RequestCoordinator> weak_ptr_factory_;
 

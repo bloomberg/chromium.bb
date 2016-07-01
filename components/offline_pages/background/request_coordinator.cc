@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/logging.h"
+#include "base/time/time.h"
 #include "components/offline_pages/background/offliner_factory.h"
 #include "components/offline_pages/background/offliner_policy.h"
 #include "components/offline_pages/background/request_picker.h"
@@ -24,6 +25,14 @@ const Scheduler::TriggerConditions kUserRequestTriggerConditions(
     false /* require_power_connected */,
     50 /* minimum_battery_percentage */,
     false /* require_unmetered_network */);
+
+// Timeout is 2.5 minutes based on the size of Marshmallow doze mode
+// maintenance window (3 minutes)
+// TODO(petewil): Find the optimal timeout based on data for 2G connections and
+// common EM websites. crbug.com/625204
+// TODO(petewil): Move this value into the policy object.
+long OFFLINER_TIMEOUT_SECONDS = 150;
+
 }  // namespace
 
 RequestCoordinator::RequestCoordinator(std::unique_ptr<OfflinerPolicy> policy,
@@ -32,6 +41,7 @@ RequestCoordinator::RequestCoordinator(std::unique_ptr<OfflinerPolicy> policy,
                                        std::unique_ptr<Scheduler> scheduler)
     : is_busy_(false),
       is_canceled_(false),
+      offliner_timeout_(base::TimeDelta::FromSeconds(OFFLINER_TIMEOUT_SECONDS)),
       offliner_(nullptr),
       policy_(std::move(policy)),
       factory_(std::move(factory)),
@@ -81,6 +91,9 @@ void RequestCoordinator::StopProcessing() {
   is_canceled_ = true;
   if (offliner_ && is_busy_)
     offliner_->Cancel();
+
+  // Let the scheduler know we are done processing.
+  scheduler_callback_.Run(true);
 }
 
 // Returns true if the caller should expect a callback, false otherwise. For
@@ -119,7 +132,7 @@ void RequestCoordinator::RequestPicked(const SavePageRequest& request) {
 void RequestCoordinator::RequestQueueEmpty() {
   // Clear the outstanding "safety" task in the scheduler.
   scheduler_->Unschedule();
-  // Return control to the scheduler when there is no more to do.
+  // Let the scheduler know we are done processing.
   scheduler_callback_.Run(true);
 }
 
@@ -143,6 +156,10 @@ void RequestCoordinator::SendRequestToOffliner(const SavePageRequest& request) {
   offliner_->LoadAndSave(request,
                          base::Bind(&RequestCoordinator::OfflinerDoneCallback,
                                     weak_ptr_factory_.GetWeakPtr()));
+
+  // Start a watchdog timer to catch pre-renders running too long
+  watchdog_timer_.Start(FROM_HERE, offliner_timeout_, this,
+                        &RequestCoordinator::StopProcessing);
 }
 
 void RequestCoordinator::OfflinerDoneCallback(const SavePageRequest& request,
@@ -155,6 +172,7 @@ void RequestCoordinator::OfflinerDoneCallback(const SavePageRequest& request,
       "Saved",
       request.request_id());
   last_offlining_status_ = status;
+  watchdog_timer_.Stop();
 
   is_busy_ = false;
 

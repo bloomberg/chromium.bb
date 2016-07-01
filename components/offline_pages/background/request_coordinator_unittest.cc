@@ -11,8 +11,10 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/test/test_simple_task_runner.h"
+#include "base/synchronization/waitable_event.h"
+#include "base/test/test_mock_time_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/time/time.h"
 #include "components/offline_pages/background/device_conditions.h"
 #include "components/offline_pages/background/offliner.h"
 #include "components/offline_pages/background/offliner_factory.h"
@@ -30,6 +32,9 @@ namespace {
 const GURL kUrl("http://universe.com/everything");
 const ClientId kClientId("bookmark", "42");
 const int kRequestId(1);
+const long kTestTimeoutSeconds = 1;
+const int kBatteryPercentageHigh = 75;
+const bool kPowerRequired = true;
 }  // namespace
 
 class SchedulerStub : public Scheduler {
@@ -132,12 +137,13 @@ class RequestCoordinatorTest
     return coordinator_->is_busy();
   }
 
-  void SendRequestToOffliner(SavePageRequest& request) {
-    coordinator_->SendRequestToOffliner(request);
-  }
-
   // Empty callback function
   void EmptyCallbackFunction(bool result) {
+  }
+
+  // Callback function which releases a wait for it.
+  void WaitingCallbackFunction(bool result) {
+    waiter_.Signal();
   }
 
   // Callback for Add requests
@@ -163,6 +169,18 @@ class RequestCoordinatorTest
     offliner_->enable_callback(enable);
   }
 
+  void SetOfflinerTimeoutForTest(const base::TimeDelta& timeout) {
+    coordinator_->SetOfflinerTimeoutForTest(timeout);
+  }
+
+  void WaitForCallback() {
+    waiter_.Wait();
+  }
+
+  void AdvanceClockBy(base::TimeDelta delta) {
+    task_runner_->FastForwardBy(delta);
+  }
+
   Offliner::RequestStatus last_offlining_status() const {
     return coordinator_->last_offlining_status_;
   }
@@ -170,17 +188,20 @@ class RequestCoordinatorTest
  private:
   RequestQueue::GetRequestsResult last_get_requests_result_;
   std::vector<SavePageRequest> last_requests_;
-  scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
+  scoped_refptr<base::TestMockTimeTaskRunner> task_runner_;
   base::ThreadTaskRunnerHandle task_runner_handle_;
   std::unique_ptr<RequestCoordinator> coordinator_;
   OfflinerStub* offliner_;
+  base::WaitableEvent waiter_;
 };
 
 RequestCoordinatorTest::RequestCoordinatorTest()
     : last_get_requests_result_(RequestQueue::GetRequestsResult::STORE_FAILURE),
-      task_runner_(new base::TestSimpleTaskRunner),
+      task_runner_(new base::TestMockTimeTaskRunner),
       task_runner_handle_(task_runner_),
-      offliner_(nullptr) {}
+      offliner_(nullptr),
+      waiter_(base::WaitableEvent::ResetPolicy::MANUAL,
+              base::WaitableEvent::InitialState::NOT_SIGNALED) {}
 
 RequestCoordinatorTest::~RequestCoordinatorTest() {}
 
@@ -413,6 +434,50 @@ TEST_F(RequestCoordinatorTest, StartProcessingThenStopProcessingLater) {
 
   // OfflinerDoneCallback will not end up getting called with status SAVED,
   // Since we cancelled the event before it called offliner_->LoadAndSave().
+  EXPECT_EQ(Offliner::RequestStatus::CANCELED, last_offlining_status());
+}
+
+TEST_F(RequestCoordinatorTest, PrerendererTimeout) {
+  // Build a request to use with the pre-renderer, and put it on the queue.
+  offline_pages::SavePageRequest request(
+      kRequestId, kUrl, kClientId, base::Time::Now());
+  coordinator()->queue()->AddRequest(
+      request,
+      base::Bind(&RequestCoordinatorTest::AddRequestDone,
+                 base::Unretained(this)));
+  PumpLoop();
+
+  // Set up for the call to StartProcessing.
+  DeviceConditions device_conditions(
+      !kPowerRequired, kBatteryPercentageHigh,
+      net::NetworkChangeNotifier::CONNECTION_3G);
+  base::Callback<void(bool)> callback =
+      base::Bind(&RequestCoordinatorTest::WaitingCallbackFunction,
+                 base::Unretained(this));
+
+  // Ensure that the new request does not finish - we simulate it being
+  // in progress by asking it to skip making the completion callback.
+  EnableOfflinerCallback(false);
+
+  // Ask RequestCoordinator to stop waiting for the offliner after this many
+  // seconds.
+  SetOfflinerTimeoutForTest(base::TimeDelta::FromSeconds(kTestTimeoutSeconds));
+
+  // Sending the request to the offliner.
+  EXPECT_TRUE(coordinator()->StartProcessing(device_conditions, callback));
+  PumpLoop();
+
+  // Advance the mock clock far enough to cause a watchdog timeout
+  AdvanceClockBy(base::TimeDelta::FromSeconds(kTestTimeoutSeconds + 1));
+  PumpLoop();
+
+  // Wait for timeout to expire.  Use a TaskRunner with a DelayedTaskRunner
+  // which won't time out immediately, so the watchdog thread doesn't kill valid
+  // tasks too soon.
+  WaitForCallback();
+  PumpLoop();
+
+  // Now trying to start processing on another request should return false.
   EXPECT_EQ(Offliner::RequestStatus::CANCELED, last_offlining_status());
 }
 
