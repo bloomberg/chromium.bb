@@ -42,6 +42,7 @@ const HostedDocumentKind kHostedDocumentKinds[] = {
     {kGoogleTableMimeType,        ".gtable"},
     {kGoogleFormMimeType,         ".gform"},
     {kGoogleMapMimeType,          ".gmaps"},
+    {kGoogleSiteMimeType,         ".gsite"},
 };
 
 const char kUnknownHostedDocumentExtension[] = ".glink";

@@ -109,6 +109,12 @@ tree .tree-item[selected] > .tree-row > .shared[file-type-icon='folder'] {
       url(../images/filetype/2x/filetype_map.png) 2x);
 }
 
+[file-type-icon='gsite'] {
+  background-image: -webkit-image-set(
+      url(../images/filetype/filetype_gsite.png) 1x,
+      url(../images/filetype/2x/filetype_gsite.png) 2x);
+}
+
 [file-type-icon='image'] {
   background-image: -webkit-image-set(
       url(../images/filetype/filetype_image.png) 1x,

@@ -981,6 +981,9 @@ Press any key to continue exploring.
   <message name="IDS_FILE_BROWSER_GMAP_DOCUMENT_FILE_TYPE" desc="Google map file type">
     Google map
   </message>
+  <message name="IDS_FILE_BROWSER_GSITE_DOCUMENT_FILE_TYPE" desc="Google site file type">
+    Google site
+  </message>
   <message name="IDS_FILE_BROWSER_GLINK_DOCUMENT_FILE_TYPE" desc="Google Drive link file type">
     Google Drive link
   </message>

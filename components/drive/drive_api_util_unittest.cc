@@ -94,6 +94,8 @@ TEST(DriveAPIUtilTest, HasHostedDocumentExtension) {
   EXPECT_TRUE(
       HasHostedDocumentExtension(base::FilePath::FromUTF8Unsafe("xx.gmaps")));
   EXPECT_TRUE(
+      HasHostedDocumentExtension(base::FilePath::FromUTF8Unsafe("xx.gsite")));
+  EXPECT_TRUE(
       HasHostedDocumentExtension(base::FilePath::FromUTF8Unsafe("xx.glink")));
 
   EXPECT_FALSE(

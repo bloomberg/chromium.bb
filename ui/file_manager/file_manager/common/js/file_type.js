@@ -226,6 +226,10 @@ FileType.types = [
     type: 'hosted', icon: 'gmap', name: 'GMAP_DOCUMENT_FILE_TYPE',
     subtype: 'map', pattern: /\.gmaps$/i
   },
+  {
+    type: 'hosted', icon: 'gsite', name: 'GSITE_DOCUMENT_FILE_TYPE',
+    subtype: 'site', pattern: /\.gsite$/i
+  },
 
   // Others
   {

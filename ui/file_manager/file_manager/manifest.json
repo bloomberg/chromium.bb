@@ -99,6 +99,7 @@
         "filesystem:*.gtable",
         "filesystem:*.gform",
         "filesystem:*.gmaps",
+        "filesystem:*.gsite",
         "filesystem:*.glink"
       ]
     },
