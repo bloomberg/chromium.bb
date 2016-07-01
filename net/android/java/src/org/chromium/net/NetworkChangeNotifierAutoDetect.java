@@ -263,18 +263,7 @@ public class NetworkChangeNotifierAutoDetect extends BroadcastReceiver {
         }
 
         String getWifiSSID() {
-            final Intent intent = mContext.registerReceiver(null,
-                    new IntentFilter(WifiManager.NETWORK_STATE_CHANGED_ACTION));
-            if (intent != null) {
-                final WifiInfo wifiInfo = intent.getParcelableExtra(WifiManager.EXTRA_WIFI_INFO);
-                if (wifiInfo != null) {
-                    final String ssid = wifiInfo.getSSID();
-                    if (ssid != null) {
-                        return ssid;
-                    }
-                }
-            }
-            return "";
+            return AndroidNetworkLibrary.getWifiSSID(mContext);
         }
 
         // Fetches WifiInfo and records UMA for NullPointerExceptions.
