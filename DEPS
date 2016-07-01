@@ -576,6 +576,16 @@ hooks = [
     ],
   },
   {
+    'name': 'intellij',
+    'pattern': '.',
+    'action': ['python',
+               'src/build/android/update_deps/update_third_party_deps.py',
+               'download',
+               '-b', 'chromium-intellij',
+               '-l', 'third_party/intellij'
+    ],
+  },
+  {
     'name': 'javax_inject',
     'pattern': '.',
     'action': ['python',
