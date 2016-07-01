@@ -88,6 +88,9 @@ void StorageManagerHandler::GetLocalizedValues(
       "storageSizeCalculating", l10n_util::GetStringUTF16(
           IDS_OPTIONS_SETTINGS_STORAGE_SIZE_CALCULATING));
   localized_strings->SetString(
+      "storageClearDriveCacheDialogTitle", l10n_util::GetStringUTF16(
+          IDS_OPTIONS_SETTINGS_STORAGE_CLEAR_DRIVE_CACHE_DIALOG_TITLE));
+  localized_strings->SetString(
       "storageClearDriveCacheDescription", l10n_util::GetStringUTF16(
           IDS_OPTIONS_SETTINGS_STORAGE_CLEAR_DRIVE_CACHE_DESCRIPTION));
   localized_strings->SetString(

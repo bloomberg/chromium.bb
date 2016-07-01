@@ -3,31 +3,52 @@
  * found in the LICENSE file. */
 
 #storageManagerPage {
-  width: 400px;
+  width: 476px;
+}
+
+#storageManagerPage h1 {
+  font-size: 125%; /* go to 15px from 12px */
+  padding: 15px 20px 14px;
+}
+
+#storageManagerPage .content-area {
+  padding: 0 20px;
 }
 
 .storage-manager-section {
-  margin: 0 40px;
+  margin: 0;
 }
 
 .storage-manager-section:not(:last-child) {
-  margin-bottom: 28px;
+  margin-bottom: 30px;
 }
 
 .storage-manager-item,
 .storage-manager-subitem {
   display: flex;
-  font-size: 108.33%; /* go to 13px from 12px */
+  font-size: 125%; /* go to 15px from 12px */
   justify-content: space-between;
-  margin: 12px 0;
+  margin: 14px 0;
 }
 
 .storage-manager-item {
-  font-weight: 500;
+  color: black;
 }
 
-.storage-manager-item-size {
-  color: rgb(153, 153, 153);
+.storage-manager-subitem {
+  -webkit-padding-start: 20px;
+}
+
+.storage-manager-subitem .storage-manager-item-size {
+  color: rgba(0, 0, 0, 0.54);
+}
+
+#storage-manager-section-in-use {
+  margin-bottom: 45px;
+}
+
+#storage-manager-section-available {
+  margin-bottom: 30px;
 }
 
 .critically-low-space #storage-manager-message-critically-low-space,
@@ -38,7 +59,8 @@
 .storage-manager-message-area {
   background-color: rgb(245, 245, 245);
   display: none;
-  padding: 20px 24px;
+  margin-bottom: 4px;
+  padding: 22px 20px 8px;
 }
 
 .storage-manager-message-area img {
@@ -52,8 +74,8 @@
 }
 
 .storage-manager-message-title span {
-  font-size: 115%;
-  font-weight: 500;
+  color: black;
+  font-size: 125%; /* go to 15px from 12px */
   margin: 0 10px;
 }
 
@@ -64,18 +86,18 @@
 #storage-bar-progress {
   -webkit-appearance: none;
   display: block;
-  height: 6px;
+  height: 4px;
   width: 100%;
 }
 
 #storage-bar-progress::-webkit-progress-bar {
-  background-color: rgb(229, 229, 229);
-  border-radius: 3px;
+  background-color: rgb(224, 224, 226);
+  border-radius: 2px;
 }
 
 #storage-bar-progress::-webkit-progress-value {
-  background-color: rgb(74, 144, 226);
-  border-radius: 3px;
+  background-color: rgb(66, 133, 244);
+  border-radius: 2px;
 }
 
 .critically-low-space #storage-bar-progress::-webkit-progress-value {
