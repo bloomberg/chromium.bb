@@ -1,9 +1,3 @@
-cc = cc
-cxx = c++
-ld = $cc
-ldxx = $cxx
-ar = ar
-
 rule cc
   command = $cc -MMD -MF $out.d $defines $includes $cflags $cflags_c -c $in -o $out
   description = CC $out

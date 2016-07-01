@@ -29,12 +29,18 @@ BOOTSTRAP_DIR = os.path.dirname(os.path.abspath(__file__))
 GN_ROOT = os.path.dirname(BOOTSTRAP_DIR)
 SRC_ROOT = os.path.dirname(os.path.dirname(GN_ROOT))
 
+is_win = sys.platform.startswith('win')
 is_linux = sys.platform.startswith('linux')
 is_mac = sys.platform.startswith('darwin')
 is_posix = is_linux or is_mac
 
 def check_call(cmd, **kwargs):
   logging.debug('Running: %s', ' '.join(cmd))
+
+  # With shell=False, subprocess expects an executable on Windows
+  if is_win and cmd and cmd[0].endswith('.py'):
+    cmd.insert(0, sys.executable)
+
   subprocess.check_call(cmd, cwd=GN_ROOT, **kwargs)
 
 def mkdir_p(path):
@@ -65,6 +71,10 @@ def run_build(tempdir, options):
   build_gn_with_ninja_manually(tempdir, options)
   temp_gn = os.path.join(tempdir, 'gn')
   out_gn = os.path.join(build_root, 'gn')
+
+  if is_win:
+    temp_gn += '.exe'
+    out_gn += '.exe'
 
   if options.no_rebuild:
     mkdir_p(build_root)
@@ -113,22 +123,36 @@ def main(argv):
     return 1
   return 0
 
+def write_compiled_message(root_gen_dir, source):
+  path = os.path.join(root_gen_dir, os.path.dirname(source))
+  mkdir_p(path)
+  check_call([
+      'mc.exe',
+      '-r', path, '-h', path,
+      '-u', '-um',
+      os.path.join(SRC_ROOT, source),
+  ])
 
 def write_buildflag_header_manually(root_gen_dir, header, flags):
   mkdir_p(os.path.join(root_gen_dir, os.path.dirname(header)))
-  with tempfile.NamedTemporaryFile() as f:
+
+  # Don't use tempfile.NamedTemporaryFile() here.
+  # It doesn't work correctly on Windows.
+  # see: http://bugs.python.org/issue14243
+  temp_path = os.path.join(root_gen_dir, header + '.tmp')
+  with open(temp_path, 'w') as f:
     f.write('--flags')
     for name,value in flags.items():
       f.write(' ' + name + '=' + value)
-    f.flush()
 
-    check_call([
-        os.path.join(SRC_ROOT, 'build', 'write_buildflag_header.py'),
-        '--output', header,
-        '--gen-dir', root_gen_dir,
-        '--definitions', f.name,
-    ])
+  check_call([
+      os.path.join(SRC_ROOT, 'build', 'write_buildflag_header.py'),
+      '--output', header,
+      '--gen-dir', root_gen_dir,
+      '--definitions', temp_path,
+  ])
 
+  os.remove(temp_path)
 
 def build_gn_with_ninja_manually(tempdir, options):
   root_gen_dir = os.path.join(tempdir, 'gen')
@@ -150,19 +174,125 @@ def build_gn_with_ninja_manually(tempdir, options):
         'default'
     ])
 
-  write_ninja(os.path.join(tempdir, 'build.ninja'), root_gen_dir, options)
+  if is_win:
+    write_buildflag_header_manually(root_gen_dir, 'base/win/base_features.h',
+        {'SINGLE_MODULE_MODE_HANDLE_VERIFIER': 'true'})
+
+    write_compiled_message(root_gen_dir,
+        'base/trace_event/etw_manifest/chrome_events_win.man')
+
+  write_gn_ninja(os.path.join(tempdir, 'build.ninja'),
+                 root_gen_dir, options)
   cmd = ['ninja', '-C', tempdir]
   if options.verbose:
     cmd.append('-v')
-  cmd.append('gn')
+
+  if is_win:
+    cmd.append('gn.exe')
+  else:
+    cmd.append('gn')
+
   check_call(cmd)
 
-def write_ninja(path, root_gen_dir, options):
-  cc = os.environ.get('CC', '')
-  cxx = os.environ.get('CXX', '')
+def write_generic_ninja(path, static_libraries, executables,
+                        cc, cxx, ar, ld,
+                        cflags=[], cflags_cc=[], ldflags=[],
+                        include_dirs=[], solibs=[]):
+  ninja_header_lines = [
+    'cc = ' + cc,
+    'cxx = ' + cxx,
+    'ar = ' + ar,
+    'ld = ' + ld,
+    '',
+  ]
+
+  if is_win:
+    template_filename = 'build_vs.ninja.template'
+  elif is_mac:
+    template_filename = 'build_mac.ninja.template'
+  else:
+    template_filename = 'build.ninja.template'
+
+  with open(os.path.join(GN_ROOT, 'bootstrap', template_filename)) as f:
+    ninja_template = f.read()
+
+  if is_win:
+    executable_ext = '.exe'
+    library_ext = '.lib'
+    object_ext = '.obj'
+  else:
+    executable_ext = ''
+    library_ext = '.a'
+    object_ext = '.o'
+
+  def escape_path_ninja(path):
+      return path.replace('$ ', '$$ ').replace(' ', '$ ').replace(':', '$:')
+
+  def src_to_obj(path):
+    return escape_path_ninja('%s' % os.path.splitext(path)[0] + object_ext)
+
+  def library_to_a(library):
+    return '%s%s' % (library, library_ext)
+
+  ninja_lines = []
+  def build_source(src_file, settings):
+    ninja_lines.extend([
+        'build %s: %s %s' % (src_to_obj(src_file),
+                             settings['tool'],
+                             escape_path_ninja(
+                                 os.path.join(SRC_ROOT, src_file))),
+        '  includes = %s' % ' '.join(
+            ['-I' + escape_path_ninja(dirname) for dirname in
+             include_dirs + settings.get('include_dirs', [])]),
+        '  cflags = %s' % ' '.join(cflags + settings.get('cflags', [])),
+        '  cflags_cc = %s' %
+            ' '.join(cflags_cc + settings.get('cflags_cc', [])),
+    ])
+
+  for library, settings in static_libraries.iteritems():
+    for src_file in settings['sources']:
+      build_source(src_file, settings)
+
+    ninja_lines.append('build %s: alink_thin %s' % (
+        library_to_a(library),
+        ' '.join([src_to_obj(src_file) for src_file in settings['sources']])))
+
+  for executable, settings in executables.iteritems():
+    for src_file in settings['sources']:
+      build_source(src_file, settings)
+
+    ninja_lines.extend([
+      'build %s%s: link %s | %s' % (
+          executable, executable_ext,
+          ' '.join([src_to_obj(src_file) for src_file in settings['sources']]),
+          ' '.join([library_to_a(library) for library in settings['libs']])),
+      '  ldflags = %s' % ' '.join(ldflags),
+      '  solibs = %s' % ' '.join(solibs),
+      '  libs = %s' % ' '.join(
+          [library_to_a(library) for library in settings['libs']]),
+    ])
+
+  ninja_lines.append('')  # Make sure the file ends with a newline.
+
+  with open(path, 'w') as f:
+    f.write('\n'.join(ninja_header_lines))
+    f.write(ninja_template)
+    f.write('\n'.join(ninja_lines))
+
+def write_gn_ninja(path, root_gen_dir, options):
+  if is_win:
+    cc = os.environ.get('CC', 'cl.exe')
+    cxx = os.environ.get('CXX', 'cl.exe')
+    ld = os.environ.get('LD', 'link.exe')
+    ar = os.environ.get('AR', 'lib.exe')
+  else:
+    cc = os.environ.get('CC', 'cc')
+    cxx = os.environ.get('CXX', 'c++')
+    ld = os.environ.get('LD', cxx)
+    ar = os.environ.get('AR', 'ar')
+
   cflags = os.environ.get('CFLAGS', '').split()
   cflags_cc = os.environ.get('CXXFLAGS', '').split()
-  ld = os.environ.get('LD', cxx)
   ldflags = os.environ.get('LDFLAGS', '').split()
   include_dirs = [root_gen_dir, SRC_ROOT]
   libs = []
@@ -179,16 +309,43 @@ def write_ninja(path, root_gen_dir, options):
 
     cflags.extend([
         '-D_FILE_OFFSET_BITS=64',
+        '-D__STDC_CONSTANT_MACROS', '-D__STDC_FORMAT_MACROS',
         '-pthread',
         '-pipe',
         '-fno-exceptions'
     ])
     cflags_cc.extend(['-std=c++11', '-Wno-c++11-narrowing'])
+  elif is_win:
+    if not options.debug:
+      cflags.extend(['/Ox', '/DNDEBUG', '/GL'])
+      ldflags.extend(['/LTCG', '/OPT:REF', '/OPT:ICF'])
+
+    cflags.extend([
+        '/FS',
+        '/Gy',
+        '/W3', '/wd4244',
+        '/Zi',
+        '/DWIN32_LEAN_AND_MEAN', '/DNOMINMAX',
+        '/D_CRT_SECURE_NO_DEPRECATE', '/D_SCL_SECURE_NO_DEPRECATE',
+        '/D_WIN32_WINNT=0x0A00', '/DWINVER=0x0A00',
+        '/DUNICODE', '/D_UNICODE',
+    ])
+    cflags_cc.extend([
+        '/GR-',
+        '/D_HAS_EXCEPTIONS=0',
+    ])
+    # TODO(tim): Support for 64bit builds?
+    ldflags.extend(['/MACHINE:x86', '/DEBUG'])
 
   static_libraries = {
       'base': {'sources': [], 'tool': 'cxx', 'include_dirs': []},
       'dynamic_annotations': {'sources': [], 'tool': 'cc', 'include_dirs': []},
-      'gn': {'sources': [], 'tool': 'cxx', 'include_dirs': []},
+      'gn_lib': {'sources': [], 'tool': 'cxx', 'include_dirs': []},
+  }
+
+  executables = {
+      'gn': {'sources': ['tools/gn/gn_main.cc'],
+             'tool': 'cxx', 'include_dirs': [], 'libs': []},
   }
 
   for name in os.listdir(GN_ROOT):
@@ -198,8 +355,10 @@ def write_ninja(path, root_gen_dir, options):
       continue
     if name == 'run_all_unittests.cc':
       continue
+    if name == 'gn_main.cc':
+      continue
     full_path = os.path.join(GN_ROOT, name)
-    static_libraries['gn']['sources'].append(
+    static_libraries['gn_lib']['sources'].append(
         os.path.relpath(full_path, SRC_ROOT))
 
   static_libraries['dynamic_annotations']['sources'].extend([
@@ -272,7 +431,6 @@ def write_ninja(path, root_gen_dir, options):
       'base/sequenced_task_runner.cc',
       'base/sha1.cc',
       'base/strings/pattern.cc',
-      'base/strings/string16.cc',
       'base/strings/string_number_conversions.cc',
       'base/strings/string_piece.cc',
       'base/strings/string_split.cc',
@@ -352,6 +510,7 @@ def write_ninja(path, root_gen_dir, options):
         'base/process/process_handle_posix.cc',
         'base/process/process_metrics_posix.cc',
         'base/process/process_posix.cc',
+        'base/strings/string16.cc',
         'base/synchronization/condition_variable_posix.cc',
         'base/synchronization/lock_impl_posix.cc',
         'base/synchronization/read_write_lock_posix.cc',
@@ -386,9 +545,8 @@ def write_ninja(path, root_gen_dir, options):
         'cflags': cflags + ['-DHAVE_CONFIG_H'],
     }
 
-
   if is_linux:
-    libs.extend(['-lrt'])
+    libs.extend(['-lrt', '-latomic'])
     ldflags.extend(['-pthread'])
 
     static_libraries['xdg_user_dirs'] = {
@@ -454,65 +612,105 @@ def write_ninja(path, root_gen_dir, options):
         'base/third_party/libevent/kqueue.c',
     ])
 
-
-  if is_mac:
-    template_filename = 'build_mac.ninja.template'
-  else:
-    template_filename = 'build.ninja.template'
-
-  with open(os.path.join(GN_ROOT, 'bootstrap', template_filename)) as f:
-    ninja_template = f.read()
-
-  def src_to_obj(path):
-    return '%s' % os.path.splitext(path)[0] + '.o'
-
-  ninja_lines = []
-  for library, settings in static_libraries.iteritems():
-    for src_file in settings['sources']:
-      ninja_lines.extend([
-          'build %s: %s %s' % (src_to_obj(src_file),
-                               settings['tool'],
-                               os.path.join(SRC_ROOT, src_file)),
-          '  includes = %s' % ' '.join(
-              ['-I' + dirname for dirname in
-               include_dirs + settings.get('include_dirs', [])]),
-          '  cflags = %s' % ' '.join(cflags + settings.get('cflags', [])),
-          '  cflags_cc = %s' %
-              ' '.join(cflags_cc + settings.get('cflags_cc', [])),
-      ])
-      if cc:
-        ninja_lines.append('  cc = %s' % cc)
-      if cxx:
-        ninja_lines.append('  cxx = %s' % cxx)
-
-    ninja_lines.append('build %s.a: alink_thin %s' % (
-        library,
-        ' '.join([src_to_obj(src_file) for src_file in settings['sources']])))
-
-  if is_mac:
     libs.extend([
         '-framework', 'AppKit',
         '-framework', 'CoreFoundation',
         '-framework', 'Foundation',
         '-framework', 'Security',
-    ]);
+    ])
 
-  ninja_lines.extend([
-      'build gn: link %s' % (
-          ' '.join(['%s.a' % library for library in static_libraries])),
-      '  ldflags = %s' % ' '.join(ldflags),
-      '  libs = %s' % ' '.join(libs),
-  ])
-  if ld:
-    ninja_lines.append('  ld = %s' % ld)
-  else:
-    ninja_lines.append('  ld = $ldxx')
+  if is_win:
+    static_libraries['base']['sources'].extend([
+        'base/base_paths_win.cc',
+        'base/cpu.cc',
+        'base/debug/close_handle_hook_win.cc',
+        'base/debug/debugger.cc',
+        'base/debug/debugger_win.cc',
+        'base/debug/profiler.cc',
+        'base/debug/stack_trace_win.cc',
+        'base/file_version_info_win.cc',
+        'base/files/file_enumerator_win.cc',
+        'base/files/file_path_watcher_win.cc',
+        'base/files/file_util_win.cc',
+        'base/files/file_win.cc',
+        'base/files/memory_mapped_file_win.cc',
+        'base/logging_win.cc',
+        'base/memory/memory_pressure_monitor_win.cc',
+        'base/memory/shared_memory_handle_win.cc',
+        'base/memory/shared_memory_win.cc',
+        'base/message_loop/message_pump_win.cc',
+        'base/native_library_win.cc',
+        'base/power_monitor/power_monitor_device_source_win.cc',
+        'base/process/kill_win.cc',
+        'base/process/launch_win.cc',
+        'base/process/memory_win.cc',
+        'base/process/process_handle_win.cc',
+        'base/process/process_info_win.cc',
+        'base/process/process_iterator_win.cc',
+        'base/process/process_metrics_win.cc',
+        'base/process/process_win.cc',
+        'base/profiler/native_stack_sampler_win.cc',
+        'base/profiler/win32_stack_frame_unwinder.cc',
+        'base/rand_util.cc',
+        'base/rand_util_win.cc',
+        'base/strings/sys_string_conversions_win.cc',
+        'base/sync_socket_win.cc',
+        'base/synchronization/condition_variable_win.cc',
+        'base/synchronization/lock_impl_win.cc',
+        'base/synchronization/read_write_lock_win.cc',
+        'base/synchronization/waitable_event_watcher_win.cc',
+        'base/synchronization/waitable_event_win.cc',
+        'base/sys_info_win.cc',
+        'base/threading/platform_thread_win.cc',
+        'base/threading/thread_local_storage_win.cc',
+        'base/threading/thread_local_win.cc',
+        'base/threading/worker_pool_win.cc',
+        'base/time/time_win.cc',
+        'base/timer/hi_res_timer_manager_win.cc',
+        'base/trace_event/heap_profiler_allocation_register_win.cc',
+        'base/trace_event/trace_event_etw_export_win.cc',
+        'base/trace_event/winheap_dump_provider_win.cc',
+        'base/win/enum_variant.cc',
+        'base/win/event_trace_controller.cc',
+        'base/win/event_trace_provider.cc',
+        'base/win/i18n.cc',
+        'base/win/iat_patch_function.cc',
+        'base/win/iunknown_impl.cc',
+        'base/win/message_window.cc',
+        'base/win/object_watcher.cc',
+        'base/win/pe_image.cc',
+        'base/win/process_startup_helper.cc',
+        'base/win/registry.cc',
+        'base/win/resource_util.cc',
+        'base/win/scoped_bstr.cc',
+        'base/win/scoped_handle.cc',
+        'base/win/scoped_process_information.cc',
+        'base/win/scoped_variant.cc',
+        'base/win/shortcut.cc',
+        'base/win/startup_information.cc',
+        'base/win/wait_chain.cc',
+        'base/win/win_util.cc',
+        'base/win/windows_version.cc',
+        'base/win/wrapped_window_proc.cc',
+    ])
 
-  ninja_lines.append('')  # Make sure the file ends with a newline.
+    libs.extend([
+        'kernel32.lib',
+        'user32.lib',
+        'shell32.lib',
+        'ole32.lib',
+        'winmm.lib',
+        'ws2_32.lib',
+        'userenv.lib',
+        'version.lib',
+        'dbghelp.lib',
+    ])
 
-  with open(path, 'w') as f:
-    f.write(ninja_template + '\n'.join(ninja_lines))
+  # we just build static libraries that GN needs
+  executables['gn']['libs'].extend(static_libraries.keys())
 
+  write_generic_ninja(path, static_libraries, executables, cc, cxx, ar, ld,
+                      cflags, cflags_cc, ldflags, include_dirs, libs)
 
 def build_gn_with_gn(temp_gn, build_dir, options):
   gn_gen_args = options.gn_gen_args or ''
@@ -527,7 +725,7 @@ def build_gn_with_gn(temp_gn, build_dir, options):
   cmd.append('gn')
   check_call(cmd)
 
-  if not options.debug:
+  if not options.debug and not is_win:
     check_call(['strip', os.path.join(build_dir, 'gn')])
 
 
