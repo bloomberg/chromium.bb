@@ -45248,6 +45248,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Renderer4.Browser.PartialRasterPercentageSaved" units="%">
+  <owner>ericrk@chromium.org</owner>
+  <summary>
+    Percentage of pixels which would have been rastered, but were skipped due to
+    the partial raster optimization. Logged for each raster task run in a
+    Browser process. The histogram is suffixed by the RasterBufferProvider which
+    is in use.
+  </summary>
+</histogram>
+
 <histogram name="Renderer4.CommitToFinish" units="ms">
   <owner>wiltzius@chromium.org</owner>
   <summary>
@@ -45524,15 +45534,6 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
-<histogram name="Renderer4.PartialRasterPercentageSaved" units="%">
-  <owner>ericrk@chromium.org</owner>
-  <summary>
-    Percentage of pixels which would have been rastered, but were skipped due to
-    the partial raster optimization. Logged for each raster task. The histogram
-    is suffixed by the RasterBufferProvider which is in use.
-  </summary>
-</histogram>
-
 <histogram name="Renderer4.pixelCountCulled_Draw" units="NormalizedPixels">
   <owner>wiltzius@chromium.org</owner>
   <summary>
@@ -45573,6 +45574,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>
     For each tile that was ready to draw at some point, logs whether the tile
     was actually used in a draw. This is logged at tile destruction time.
+  </summary>
+</histogram>
+
+<histogram name="Renderer4.Renderer.PartialRasterPercentageSaved" units="%">
+  <owner>ericrk@chromium.org</owner>
+  <summary>
+    Percentage of pixels which would have been rastered, but were skipped due to
+    the partial raster optimization. Logged for each raster task run in a
+    Renderer process. The histogram is suffixed by the RasterBufferProvider
+    which is in use.
   </summary>
 </histogram>
 
@@ -99018,7 +99029,8 @@ To add a new entry, add it with any value and run test to compute valid value.
 <histogram_suffixes name="RasterBufferProvider" separator=".">
   <suffix name="Gpu" label="The GpuRasterBufferProvider was in use."/>
   <suffix name="OneCopy" label="The OneCopyRasterBufferProvider was in use."/>
-  <affected-histogram name="Renderer4.PartialRasterPercentageSaved"/>
+  <affected-histogram name="Renderer4.Browser.PartialRasterPercentageSaved"/>
+  <affected-histogram name="Renderer4.Renderer.PartialRasterPercentageSaved"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="RemoteProcessWarmStartFast" separator="">
