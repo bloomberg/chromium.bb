@@ -321,6 +321,7 @@ void WebUILoginView::SetStatusAreaVisible(bool visible) {
       ash::Shell::GetInstance()->HasPrimaryStatusArea()) {
     ash::SystemTray* tray = ash::Shell::GetInstance()->GetPrimarySystemTray();
     tray->SetVisible(visible);
+    tray->GetWidget()->SetOpacity(visible ? 1.0 : 0.0);
     if (visible) {
       // Tray may have been initialized being hidden.
       tray->GetWidget()->Show();
