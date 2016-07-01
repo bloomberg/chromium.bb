@@ -10,6 +10,7 @@
 #include "net/quic/quic_utils.h"
 #include "net/quic/spdy_utils.h"
 #include "net/quic/test_tools/quic_connection_peer.h"
+#include "net/quic/test_tools/quic_headers_stream_peer.h"
 #include "net/quic/test_tools/quic_spdy_session_peer.h"
 #include "net/quic/test_tools/quic_test_utils.h"
 #include "net/quic/test_tools/reliable_quic_stream_peer.h"
@@ -43,13 +44,6 @@ class MockHpackDebugVisitor : public QuicHeadersStream::HpackDebugVisitor {
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockHpackDebugVisitor);
-};
-
-class QuicHeadersStreamPeer {
- public:
-  static const SpdyFramer& GetSpdyFramer(QuicHeadersStream* stream) {
-    return stream->spdy_framer_;
-  }
 };
 
 namespace {

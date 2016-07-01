@@ -20,6 +20,7 @@
 #include "net/quic/test_tools/quic_config_peer.h"
 #include "net/quic/test_tools/quic_connection_peer.h"
 #include "net/quic/test_tools/quic_flow_controller_peer.h"
+#include "net/quic/test_tools/quic_headers_stream_peer.h"
 #include "net/quic/test_tools/quic_session_peer.h"
 #include "net/quic/test_tools/quic_spdy_session_peer.h"
 #include "net/quic/test_tools/quic_spdy_stream_peer.h"
@@ -1180,6 +1181,18 @@ TEST_P(QuicSessionTestClient, TestMaxIncomingAndOutgoingStreamsAllowed) {
             session_.max_open_incoming_streams());
   EXPECT_EQ(session_.max_open_outgoing_streams(),
             kDefaultMaxStreamsPerConnection);
+}
+
+TEST_P(QuicSessionTestClient, EnableDHDTThroughConnectionOption) {
+  FLAGS_quic_disable_hpack_dynamic_table = true;
+
+  QuicTagVector copt;
+  copt.push_back(kDHDT);
+  QuicConfigPeer::SetConnectionOptionsToSend(session_.config(), copt);
+  session_.OnConfigNegotiated();
+  EXPECT_EQ(QuicHeadersStreamPeer::GetSpdyFramer(session_.headers_stream())
+                .header_encoder_table_size(),
+            0UL);
 }
 
 }  // namespace

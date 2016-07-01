@@ -38,6 +38,9 @@ class QuicConfigPeer {
   static void SetReceivedMaxIncomingDynamicStreams(QuicConfig* config,
                                                    uint32_t max_streams);
 
+  static void SetConnectionOptionsToSend(QuicConfig* config,
+                                         const QuicTagVector& options);
+
  private:
   DISALLOW_COPY_AND_ASSIGN(QuicConfigPeer);
 };

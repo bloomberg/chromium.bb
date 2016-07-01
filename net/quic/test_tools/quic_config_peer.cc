@@ -58,5 +58,11 @@ void QuicConfigPeer::SetReceivedMaxIncomingDynamicStreams(
   config->max_incoming_dynamic_streams_.SetReceivedValue(max_streams);
 }
 
+// static
+void QuicConfigPeer::SetConnectionOptionsToSend(QuicConfig* config,
+                                                const QuicTagVector& options) {
+  config->SetConnectionOptionsToSend(options);
+}
+
 }  // namespace test
 }  // namespace net
