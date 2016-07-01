@@ -686,10 +686,6 @@ void CronetURLRequestContextAdapter::InitializeOnNetworkThread(
         pkp->pin_hashes, GURL::EmptyGURL());
   }
 
-  context_->transport_security_state()
-      ->SetEnablePublicKeyPinningBypassForLocalTrustAnchors(
-          config->bypass_public_key_pinning_for_local_trust_anchors);
-
   JNIEnv* env = base::android::AttachCurrentThread();
   jcronet_url_request_context_.Reset(env, jcronet_url_request_context.obj());
   Java_CronetUrlRequestContext_initNetworkThread(
@@ -844,8 +840,7 @@ static jlong CreateRequestContextConfig(
     jlong jhttp_cache_max_size,
     const JavaParamRef<jstring>& jexperimental_quic_connection_options,
     jlong jmock_cert_verifier,
-    jboolean jenable_network_quality_estimator,
-    jboolean jbypass_public_key_pinning_for_local_trust_anchors) {
+    jboolean jenable_network_quality_estimator) {
   return reinterpret_cast<jlong>(new URLRequestContextConfig(
       jquic_enabled,
       ConvertNullableJavaStringToUTF8(env, jquic_default_user_agent_id),
@@ -864,8 +859,7 @@ static jlong CreateRequestContextConfig(
           env, jdata_reduction_proxy_secure_proxy_check_url),
       base::WrapUnique(
           reinterpret_cast<net::CertVerifier*>(jmock_cert_verifier)),
-      jenable_network_quality_estimator,
-      jbypass_public_key_pinning_for_local_trust_anchors));
+      jenable_network_quality_estimator));
 }
 
 // Add a QUIC hint to a URLRequestContextConfig.

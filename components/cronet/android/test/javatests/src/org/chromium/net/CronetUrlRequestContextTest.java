@@ -1266,7 +1266,6 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
         builder.setExperimentalOptions("ijkl");
         builder.setDataReductionProxyOptions("mnop", "qrst", "uvwx");
         builder.setStoragePath(CronetTestFramework.getTestStorage(getContext()));
-        builder.enablePublicKeyPinningBypassForLocalTrustAnchors(false);
         nativeVerifyUrlRequestContextConfig(
                 CronetUrlRequestContext.createNativeUrlRequestContextConfig(getContext(), builder),
                 CronetTestFramework.getTestStorage(getContext()));

@@ -109,9 +109,7 @@ struct URLRequestContextConfig {
       // MockCertVerifier to use for testing purposes.
       std::unique_ptr<net::CertVerifier> mock_cert_verifier,
       // Enable network quality estimator.
-      bool enable_network_quality_estimator,
-      // Enable bypassing of public key pinning for local trust anchors
-      bool bypass_public_key_pinning_for_local_trust_anchors);
+      bool enable_network_quality_estimator);
   ~URLRequestContextConfig();
 
   // Configure |context_builder| based on |this|.
@@ -157,9 +155,6 @@ struct URLRequestContextConfig {
 
   // Enable network quality estimator.
   const bool enable_network_quality_estimator;
-
-  // Enable public key pinning bypass for local trust anchors.
-  const bool bypass_public_key_pinning_for_local_trust_anchors;
 
   // App-provided list of servers that support QUIC.
   ScopedVector<QuicHint> quic_hints;

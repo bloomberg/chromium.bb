@@ -29,7 +29,6 @@ static void VerifyUrlRequestContextConfig(
   CHECK_EQ(config->enable_spdy, false);
   CHECK_EQ(config->enable_quic, true);
   CHECK_EQ(config->enable_sdch, true);
-  CHECK_EQ(config->bypass_public_key_pinning_for_local_trust_anchors, false);
   CHECK_EQ(config->quic_hints.size(), 1u);
   CHECK_EQ((*config->quic_hints.begin())->host, "example.com");
   CHECK_EQ((*config->quic_hints.begin())->port, 12);
