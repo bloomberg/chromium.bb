@@ -45,6 +45,32 @@ class BspTreeTest {
     EXPECT_TRUE(VerifySidedness(bsp_tree.root()));
   }
 
+  static BspCompareResult SideCompare(const DrawPolygon& a,
+                                      const DrawPolygon& b) {
+    const float split_threshold = 0.05f;
+    bool pos = false;
+    bool neg = false;
+    for (const auto& pt : a.points()) {
+      float dist = b.SignedPointDistance(pt);
+      neg |= dist < -split_threshold;
+      pos |= dist > split_threshold;
+    }
+    if (pos && neg)
+      return BSP_SPLIT;
+    if (neg)
+      return BSP_BACK;
+    if (pos)
+      return BSP_FRONT;
+    double dot = gfx::DotProduct(a.normal(), b.normal());
+    if ((dot >= 0.0f && a.order_index() >= b.order_index()) ||
+        (dot <= 0.0f && a.order_index() <= b.order_index())) {
+      // The sign of the dot product of the normals along with document order
+      // determine which side it goes on, the vertices are ambiguous.
+      return BSP_COPLANAR_BACK;
+    }
+    return BSP_COPLANAR_FRONT;
+  }
+
   static bool VerifySidedness(const std::unique_ptr<BspNode>& node) {
     // We check if both the front and back child nodes have geometry that is
     // completely on the expected side of the current node.
@@ -52,8 +78,8 @@ class BspTreeTest {
     bool back_ok = true;
     if (node->back_child) {
       // Make sure the back child lies entirely behind this node.
-      BspCompareResult result = DrawPolygon::SideCompare(
-          *(node->back_child->node_data), *(node->node_data));
+      BspCompareResult result =
+          SideCompare(*(node->back_child->node_data), *(node->node_data));
       if (result != BSP_BACK) {
         return false;
       }
@@ -61,8 +87,8 @@ class BspTreeTest {
     }
     // Make sure the front child lies entirely in front of this node.
     if (node->front_child) {
-      BspCompareResult result = DrawPolygon::SideCompare(
-          *(node->front_child->node_data), *(node->node_data));
+      BspCompareResult result =
+          SideCompare(*(node->front_child->node_data), *(node->node_data));
       if (result != BSP_FRONT) {
         return false;
       }
@@ -74,15 +100,15 @@ class BspTreeTest {
 
     // Now we need to make sure our coplanar geometry is all actually coplanar.
     for (size_t i = 0; i < node->coplanars_front.size(); i++) {
-      BspCompareResult result = DrawPolygon::SideCompare(
-          *(node->coplanars_front[i]), *(node->node_data));
+      BspCompareResult result =
+          SideCompare(*(node->coplanars_front[i]), *(node->node_data));
       if (result != BSP_COPLANAR_FRONT) {
         return false;
       }
     }
     for (size_t i = 0; i < node->coplanars_back.size(); i++) {
-      BspCompareResult result = DrawPolygon::SideCompare(
-          *(node->coplanars_back[i]), *(node->node_data));
+      BspCompareResult result =
+          SideCompare(*(node->coplanars_back[i]), *(node->node_data));
       if (result != BSP_COPLANAR_BACK) {
         return false;
       }
