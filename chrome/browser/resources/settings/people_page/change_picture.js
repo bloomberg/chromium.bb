@@ -111,7 +111,7 @@ Polymer({
       readOnly: true,
     },
 
-    /** @private {!settings.ChangePictureBrowserProxyImpl} */
+    /** @private {!settings.ChangePictureBrowserProxy} */
     browserProxy_: {
       type: Object,
       value: function() {

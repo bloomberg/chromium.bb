@@ -43,7 +43,7 @@ cr.define('settings', function() {
 
   /**
    * @constructor
-   * @implements {EasyUnlockBrowserProxy}
+   * @implements {settings.EasyUnlockBrowserProxy}
    */
   function EasyUnlockBrowserProxyImpl() {}
   // The singleton instance_ is replaced with a test version of this wrapper
@@ -78,6 +78,7 @@ cr.define('settings', function() {
   };
 
   return {
+    EasyUnlockBrowserProxy: EasyUnlockBrowserProxy,
     EasyUnlockBrowserProxyImpl: EasyUnlockBrowserProxyImpl,
   };
 });

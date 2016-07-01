@@ -47,21 +47,21 @@ cr.define('settings', function() {
   SiteSettingsPrefsBrowserProxy.prototype = {
     /**
      * Sets the default value for a site settings category.
-     * @param {number} contentType The category to change.
-     * @param {number} defaultValue The value to set as default.
+     * @param {string} contentType The name of the category to change.
+     * @param {string} defaultValue The name of the value to set as default.
      */
     setDefaultValueForContentType: function(contentType, defaultValue) {},
 
     /**
      * Gets the default value for a site settings category.
-     * @param {number} contentType The category to change.
+     * @param {string} contentType The name of the category to query.
      * @return {Promise<boolean>}
      */
     getDefaultValueForContentType: function(contentType) {},
 
     /**
      * Gets the exceptions (site list) for a particular category.
-     * @param {number} contentType The category to change.
+     * @param {string} contentType The name of the category to query.
      * @return {Promise<Array<SiteException>>}
      */
     getExceptionList: function(contentType) {},
@@ -72,7 +72,7 @@ cr.define('settings', function() {
      * @param {string} primaryPattern The origin to change (primary pattern).
      * @param {string} secondaryPattern The embedding origin to change
      *    (secondary pattern).
-     * @param {number} contentType The category to change.
+     * @param {string} contentType The name of the category to reset.
      */
     resetCategoryPermissionForOrigin: function(
         primaryPattern, secondaryPattern, contentType) {},
@@ -83,7 +83,7 @@ cr.define('settings', function() {
      * @param {string} primaryPattern The origin to change (primary pattern).
      * @param {string} secondaryPattern The embedding origin to change
      *    (secondary pattern).
-     * @param {number} contentType The category to change.
+     * @param {string} contentType The name of the category to change.
      * @param {string} value The value to change the permission to.
      */
     setCategoryPermissionForOrigin: function(
@@ -113,7 +113,7 @@ cr.define('settings', function() {
 
   /**
    * @constructor
-   * @implements {SiteSettingsPrefsBrowserProxy}
+   * @implements {settings.SiteSettingsPrefsBrowserProxy}
    */
   function SiteSettingsPrefsBrowserProxyImpl() {}
 
@@ -168,6 +168,7 @@ cr.define('settings', function() {
   };
 
   return {
+    SiteSettingsPrefsBrowserProxy: SiteSettingsPrefsBrowserProxy,
     SiteSettingsPrefsBrowserProxyImpl: SiteSettingsPrefsBrowserProxyImpl,
   };
 });

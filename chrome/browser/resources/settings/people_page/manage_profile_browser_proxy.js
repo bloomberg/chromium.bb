@@ -27,7 +27,7 @@ cr.define('settings', function() {
 
   /**
    * @constructor
-   * @implements {ManageProfileBrowserProxy}
+   * @implements {settings.ManageProfileBrowserProxy}
    */
   function ManageProfileBrowserProxyImpl() {}
   // The singleton instance_ is replaced with a test version of this wrapper
@@ -47,6 +47,7 @@ cr.define('settings', function() {
   };
 
   return {
+    ManageProfileBrowserProxy: ManageProfileBrowserProxy,
     ManageProfileBrowserProxyImpl: ManageProfileBrowserProxyImpl,
   };
 });

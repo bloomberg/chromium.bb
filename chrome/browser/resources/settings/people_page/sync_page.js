@@ -61,7 +61,7 @@ Polymer({
 
     /**
      * The curerntly displayed page.
-     * @private {!settings.PageStatus}
+     * @private {?settings.PageStatus}
      */
     selectedPage_: {
       type: String,
@@ -78,7 +78,7 @@ Polymer({
 
     /**
      * The current sync preferences, supplied by SyncBrowserProxy.
-     * @type {?settings.SyncPrefs}
+     * @type {settings.SyncPrefs|undefined}
      */
     syncPrefs: {
       type: Object,
@@ -104,7 +104,7 @@ Polymer({
       value: false,
     },
 
-    /** @private {!settings.SyncBrowserProxyImpl} */
+    /** @private {!settings.SyncBrowserProxy} */
     browserProxy_: {
       type: Object,
       value: function() {
@@ -241,6 +241,7 @@ Polymer({
    * @private
    */
   onSingleSyncDataTypeChanged_: function() {
+    assert(this.syncPrefs);
     this.browserProxy_.setSyncDatatypes(this.syncPrefs).then(
         this.handlePageStatusChanged_.bind(this));
   },

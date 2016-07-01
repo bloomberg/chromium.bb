@@ -67,7 +67,7 @@ cr.define('settings', function() {
 
   /**
    * @constructor
-   * @implements {ChangePictureBrowserProxy}
+   * @implements {settings.ChangePictureBrowserProxy}
    */
   function ChangePictureBrowserProxyImpl() {}
   // The singleton instance_ is replaced with a test version of this wrapper
@@ -107,6 +107,7 @@ cr.define('settings', function() {
   };
 
   return {
+    ChangePictureBrowserProxy: ChangePictureBrowserProxy,
     ChangePictureBrowserProxyImpl: ChangePictureBrowserProxyImpl,
   };
 });

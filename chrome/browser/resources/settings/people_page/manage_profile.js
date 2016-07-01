@@ -33,7 +33,7 @@ Polymer({
     },
 
     /**
-     * @private {!settings.ManageProfileBrowserProxyImpl}
+     * @private {!settings.ManageProfileBrowserProxy}
      */
     browserProxy_: {
       type: Object,

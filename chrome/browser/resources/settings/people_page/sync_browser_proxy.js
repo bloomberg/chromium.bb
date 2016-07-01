@@ -150,7 +150,7 @@ cr.define('settings', function() {
 
   /**
    * @constructor
-   * @implements {SyncBrowserProxy}
+   * @implements {settings.SyncBrowserProxy}
    */
   function SyncBrowserProxyImpl() {}
   cr.addSingletonGetter(SyncBrowserProxyImpl);
@@ -212,6 +212,7 @@ cr.define('settings', function() {
   };
 
   return {
+    SyncBrowserProxy: SyncBrowserProxy,
     SyncBrowserProxyImpl: SyncBrowserProxyImpl,
   };
 });

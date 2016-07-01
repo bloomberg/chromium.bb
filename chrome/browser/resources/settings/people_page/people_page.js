@@ -51,7 +51,7 @@ Polymer({
      */
     profileManagesSupervisedUsers_: Boolean,
 
-    /** @private {!settings.SyncBrowserProxyImpl} */
+    /** @private {!settings.SyncBrowserProxy} */
     syncBrowserProxy_: {
       type: Object,
       value: function() {
@@ -71,7 +71,7 @@ Polymer({
       readOnly: true,
     },
 
-    /** @private {!settings.EasyUnlockBrowserProxyImpl} */
+    /** @private {!settings.EasyUnlockBrowserProxy} */
     easyUnlockBrowserProxy_: {
       type: Object,
       value: function() {

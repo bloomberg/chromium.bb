@@ -27,7 +27,7 @@ Polymer({
   behaviors: [I18nBehavior, WebUIListenerBehavior],
 
   properties: {
-    /** @private {!settings.EasyUnlockBrowserProxyImpl} */
+    /** @private {!settings.EasyUnlockBrowserProxy} */
     browserProxy_: Object,
 
     /** @private {!EasyUnlockTurnOffStatus} */

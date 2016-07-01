@@ -18,7 +18,7 @@ var SiteSettingsBehaviorImpl = {
     /**
      * The browser proxy used to retrieve and change information about site
      * settings categories and the sites within.
-     * @type {settings.SiteSettingsPrefsBrowserProxyImpl}
+     * @type {settings.SiteSettingsPrefsBrowserProxy}
      */
     browserProxy: Object,
   },
