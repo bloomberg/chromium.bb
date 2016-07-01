@@ -273,10 +273,6 @@ void LayerTreeImpl::SetRootLayerForTesting(std::unique_ptr<LayerImpl> layer) {
   layer_tree_host_impl_->OnCanDrawStateChangedForTree();
 }
 
-void LayerTreeImpl::SetRootLayerFromLayerListForTesting() {
-  root_layer_for_testing_ = layer_list_.empty() ? nullptr : layer_list_[0];
-}
-
 void LayerTreeImpl::OnCanDrawStateChangedForTree() {
   layer_tree_host_impl_->OnCanDrawStateChangedForTree();
 }

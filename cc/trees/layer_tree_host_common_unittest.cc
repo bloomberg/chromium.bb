@@ -5231,8 +5231,7 @@ TEST_F(LayerTreeHostCommonTest, OpacityAnimatingOnPendingTree) {
   // But if the opacity of the layer remains 0 after activation, it should not
   // be drawn.
   host_impl.ActivateSyncTree();
-  host_impl.active_tree()->SetRootLayerFromLayerListForTesting();
-  LayerImpl* active_root = host_impl.active_tree()->root_layer_for_testing();
+  LayerImpl* active_root = host_impl.active_tree()->LayerById(root_layer->id());
   LayerImpl* active_child = host_impl.active_tree()->LayerById(child_ptr->id());
 
   EffectTree& active_effect_tree =

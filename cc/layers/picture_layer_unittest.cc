@@ -389,13 +389,11 @@ TEST(PictureLayerTest, ClearVisibleRectWhenNoTiling) {
   EXPECT_EQ(2, host->source_frame_number());
 
   host_impl.ActivateSyncTree();
-  host_impl.active_tree()->SetRootLayerFromLayerListForTesting();
 
   // By updating the draw proprties on the active tree, we will set the viewport
   // rect for tile priorities to something non-empty.
   const bool can_use_lcd_text = false;
-  host_impl.active_tree()->property_trees()->needs_rebuild = true;
-  host_impl.active_tree()->BuildLayerListAndPropertyTreesForTesting();
+  host_impl.active_tree()->BuildPropertyTreesForTesting();
   host_impl.active_tree()->UpdateDrawProperties(can_use_lcd_text);
 
   layer->SetBounds(gfx::Size(11, 11));

@@ -9645,7 +9645,6 @@ TEST_F(LayerTreeHostImplTest, ExternalTileConstraintReflectedInPendingTree) {
   host_impl_->pending_tree()->UpdateDrawProperties(update_lcd_text);
 
   host_impl_->ActivateSyncTree();
-  host_impl_->active_tree()->SetRootLayerFromLayerListForTesting();
   host_impl_->active_tree()->BuildPropertyTreesForTesting();
   host_impl_->active_tree()->UpdateDrawProperties(update_lcd_text);
 
@@ -10797,7 +10796,6 @@ TEST_F(LayerTreeHostImplTest, UpdatePageScaleFactorOnActiveTree) {
                                 gfx::Size(100, 100));
   host_impl_->pending_tree()->BuildPropertyTreesForTesting();
   host_impl_->ActivateSyncTree();
-  host_impl_->active_tree()->SetRootLayerFromLayerListForTesting();
   DrawFrame();
 
   host_impl_->CreatePendingTree();
