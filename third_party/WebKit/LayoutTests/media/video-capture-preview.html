@@ -1,70 +1,33 @@
-<!DOCTYPE HTML">
-<html>
-<head>
-<script src=media-file.js></script>
-<!-- TODO(foolip): Convert test to testharness.js. crbug.com/588956
-     (Please avoid writing new tests using video-test.js) -->
-<script src=video-test.js></script>
-<script src=video-played.js></script>
+<!DOCTYPE html>
+<title>Verify video play using media stream as video src.</title>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<video autoplay></video>
+<script>
+async_test(function(t) {
+    var video = document.querySelector("video");
+    navigator.webkitGetUserMedia({video:true}, function(stream) {
+        var previewURL = URL.createObjectURL(stream);
 
-<script type="text/javascript">
+        video.ontimeupdate = t.step_func(function() {
+            // restart preview.
+            video.src = previewURL;
+            video.ontimeupdate = t.step_func_done();
+        });
 
-var previewURL = "";
-var localStream = null;
+        //start preview.
+        video.src = previewURL;
+    }, getStreamFailed);
 
-if (window.internals)
-    window.internals.settings.setMediaPlaybackRequiresUserGesture(true);
-
-function startPreview()
-{
-    video.src = previewURL;
-}
-
-function gotStream(stream)
-{
-    consoleWrite("got a stream");
-    previewURL = URL.createObjectURL(stream);
-    startPreview();
-    consoleWrite("start preview");
-    localStream = stream;
-    var playTimeInMillisecond = 2500;
-    var replayIfTimeIsReached = function ()
-    {
-        startPreview();
-        consoleWrite("restart preview");
-        setTimeout(endTest, playTimeInMillisecond);
+    function getStreamFailed(error) {
+        t.unreached_func();
     }
 
-    setTimeout(replayIfTimeIsReached, playTimeInMillisecond);
-}
-
-function gotStreamFailed(error)
-{
-    consoleWrite("Failed to get access to local media. Error code was " + error.code);
-}
-
-function playPreview()
-{
-    findMediaElement();
-    try {
-        consoleWrite("request access to local media");
-        navigator.webkitGetUserMedia({video:true}, gotStream, gotStreamFailed);
-    } catch (e) {
-        consoleWrite("getUserMedia error " + "(" + e.name + " / " + e.message + ")");
-    }
-
-    waitForEvent("error");
-    waitForEvent("loadstart");
-    waitForEvent("loadeddata");
-    waitForEvent("canplay");
-    waitForEvent("play");
-    waitForEvent("canplaythrough");
-}
-
+    video.onerror = t.unreached_func();
+    video.onloadstart = t.step_func(function() {});
+    video.onloadeddata = t.step_func(function() {});
+    video.oncanplay = t.step_func(function() {});
+    video.onplay = t.step_func(function() {});
+    video.oncanplaythrough = t.step_func(function() {});
+});
 </script>
-</head>
-
-<body onload="playPreview()">
-<video width="320" height="240" autoplay="autoplay"></video>
-</body>
-</html>

@@ -1,70 +1,34 @@
-<!DOCTYPE HTML">
-<html>
-<head>
-<script src=media-file.js></script>
-<!-- TODO(foolip): Convert test to testharness.js. crbug.com/588956
-     (Please avoid writing new tests using video-test.js) -->
-<script src=video-test.js></script>
-<script src=video-played.js></script>
-<script src="../resources/js-test.js"></script>
+<!DOCTYPE html>
+<title>Verify drawing video frames to canvas using media stream.</title>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<video></video>
+<canvas width="1" height="1"></canvas>
+<script>
+async_test(function(t) {
+    var video = document.querySelector("video");
+    var canvas = document.querySelector("canvas");
+    navigator.webkitGetUserMedia({ video: true }, function(stream) {
+        // start preview.
+        video.src = URL.createObjectURL(stream);
+    }, getStreamFailed);
 
-<script type="text/javascript">
-
-if (window.internals)
-    window.internals.settings.setMediaPlaybackRequiresUserGesture(true);
-
-function gotStream(stream)
-{
-    consoleWrite("got a stream");
-    previewURL = URL.createObjectURL(stream);
-    video.src = previewURL;
-    consoleWrite("start preview");
-}
-
-function gotStreamFailed(error)
-{
-    consoleWrite("Failed to get access to local media. Error code was " + error.code);
-}
-
-function canplaythrough()
-{
-    width = canvas.width;
-    height = canvas.height;
-    ctx = canvas.getContext("2d");
-    ctx.fillStyle = 'black';
-    ctx.fillRect(0, 0, width, height);
-
-    consoleWrite("paint to canvas");
-    ctx.drawImage(video, 0, 0, width, height);
-    shouldBeTrue("!!ctx.getImageData(0, 0, width, height)");
-
-    frame = ctx.getImageData(0, 0, width, height);
-    r = frame.data[0];
-    g = frame.data[1];
-    b = frame.data[2];
-    testExpected("r+g+b", 0, "!=");
-    endTest();
-}
-
-function playPreview()
-{
-    findMediaElement();
-    canvas = document.getElementsByTagName('canvas')[0];
-    try {
-        consoleWrite("request access to local media");
-        navigator.webkitGetUserMedia({video:true}, gotStream, gotStreamFailed);
-    } catch (e) {
-        consoleWrite("getUserMedia error " + "(" + e.name + " / " + e.message + ")");
+    function getStreamFailed(error) {
+        t.unreached_func();
     }
 
-    waitForEvent('canplaythrough', canplaythrough);
-}
+    video.oncanplaythrough = t.step_func_done(function() {
+        var width = canvas.width;
+        var height = canvas.height;
+        var ctx = canvas.getContext("2d");
+        ctx.fillStyle = "black";
+        ctx.fillRect(0, 0, width, height);
 
+        // paint to canvas.
+        ctx.drawImage(video, 0, 0, width, height);
+        var frame = ctx.getImageData(0, 0, width, height);
+        assert_not_equals(frame, null);
+        assert_not_equals(frame.data[0] + frame.data[1] + frame.data[2], 0);
+    });
+});
 </script>
-</head>
-
-<body onload="playPreview()">
-<video width="320" height="240" autoplay="autoplay"></video>
-<canvas width="1" height="1" ></canvas>
-</body>
-</html>
