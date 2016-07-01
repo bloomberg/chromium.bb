@@ -127,14 +127,7 @@ BOOL SetProcessDPIAwareWrapper() {
 }
 
 void EnableHighDPISupport() {
-  // Enable per-monitor DPI for Win10 or above instead of Win8.1 since Win8.1
-  // does not have EnableChildWindowDpiMessage, necessary for correct non-client
-  // area scaling across monitors.
-  PROCESS_DPI_AWARENESS process_dpi_awareness =
-      base::win::GetVersion() >= base::win::VERSION_WIN10
-          ? PROCESS_PER_MONITOR_DPI_AWARE
-          : PROCESS_SYSTEM_DPI_AWARE;
-  if (!SetProcessDpiAwarenessWrapper(process_dpi_awareness)) {
+  if (!SetProcessDpiAwarenessWrapper(PROCESS_SYSTEM_DPI_AWARE)) {
     SetProcessDPIAwareWrapper();
   }
 }
