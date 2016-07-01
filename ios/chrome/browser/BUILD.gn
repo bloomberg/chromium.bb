@@ -97,6 +97,8 @@ source_set("browser") {
     "browsing_data/ios_chrome_browsing_data_remover.mm",
     "chrome_constants.cc",
     "chrome_constants.h",
+    "chrome_coordinator.h",
+    "chrome_coordinator.mm",
     "chrome_paths.h",
     "chrome_paths.mm",
     "chrome_paths_internal.h",
@@ -332,6 +334,8 @@ source_set("browser") {
     "reading_list/reading_list_model_storage.h",
     "reading_list/reading_list_model_storage_defaults.h",
     "reading_list/reading_list_model_storage_defaults.mm",
+    "root_coordinator.h",
+    "root_coordinator.mm",
     "search/search_util.h",
     "search/search_util.mm",
     "search_engines/search_engines_util.cc",
@@ -562,7 +566,6 @@ source_set("browser") {
 
   deps = [
     ":about_flags",
-    ":chrome_coordinators",
     ":injected_js",
     "//base",
     "//base:i18n",
@@ -741,20 +744,6 @@ source_set("about_flags") {
     "GOOGLE_TEST_OAUTH_CLIENT_SECRET=\"$google_test_oauth_client_secret\"",
     "GOOGLE_TEST_OAUTH_URL=\"$google_test_oauth_url\"",
     "GOOGLE_TEST_SYNC_URL=\"$google_test_sync_url\"",
-  ]
-}
-
-# Temporary target while moving coordinator classes upstream.
-source_set("chrome_coordinators") {
-  sources = [
-    "chrome_coordinator.h",
-    "chrome_coordinator.mm",
-    "root_coordinator.h",
-    "root_coordinator.mm",
-  ]
-
-  deps = [
-    "//base",
   ]
 }
 

@@ -139,7 +139,6 @@
         '../web/ios_web.gyp:ios_web',
         'injected_js',
         'ios_chrome_browser_about_flags',
-        'ios_chrome_browser_chrome_coordinators',
         'ios_chrome_common',
         'ios_chrome_resources.gyp:ios_chrome_resources',
         'ios_chrome_resources.gyp:ios_chrome_ui_string_overrider_factory',
@@ -236,6 +235,8 @@
         'browser/browsing_data/ios_chrome_browsing_data_remover.mm',
         'browser/chrome_constants.cc',
         'browser/chrome_constants.h',
+        'browser/chrome_coordinator.h',
+        'browser/chrome_coordinator.mm',
         'browser/chrome_paths.h',
         'browser/chrome_paths.mm',
         'browser/chrome_paths_internal.h',
@@ -470,6 +471,8 @@
         'browser/reading_list/reading_list_model_storage.h',
         'browser/reading_list/reading_list_model_storage_defaults.h',
         'browser/reading_list/reading_list_model_storage_defaults.mm',
+        'browser/root_coordinator.h',
+        'browser/root_coordinator.mm',
         'browser/search/search_util.h',
         'browser/search/search_util.mm',
         'browser/search_engines/search_engines_util.cc',
@@ -751,23 +754,6 @@
         'google_test_oauth_url%': '',
         'google_test_sync_url%': '',
       },
-    },
-    {
-      # GN version: //ios/chrome/browser:chrome_coordinators
-      'target_name': 'ios_chrome_browser_chrome_coordinators',
-      'type': 'static_library',
-      'include_dirs': [
-        '../..',
-      ],
-      'dependencies': [
-        '../../base/base.gyp:base',
-      ],
-      'sources': [
-        'browser/chrome_coordinator.h',
-        'browser/chrome_coordinator.mm',
-        'browser/root_coordinator.h',
-        'browser/root_coordinator.mm',
-       ]
     },
     {
       # GN version: //ios/chrome/common
