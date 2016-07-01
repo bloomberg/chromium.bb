@@ -34,7 +34,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     # Too slow (take about one hour to run)
     self.Skip('deqp/functional/gles3/builtinprecision/*.html', bug=619403)
 
-    self.Fail('deqp/functional/gles3/fborender/*.html', bug=483282)
     self.Fail('deqp/functional/gles3/framebufferblit/*.html', bug=483282)
     self.Fail('deqp/data/gles3/shaders/linkage.html', bug=601821)
     self.Fail('deqp/functional/gles3/shaderoperator/*.html', bug=483282)
@@ -282,6 +281,11 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['mac'], bug=483282)
 
     self.Fail('deqp/functional/gles3/fbocolorbuffer/clear.html',
+        ['mac'], bug=483282)
+
+    self.Fail('deqp/functional/gles3/fborender/recreate_color_02.html',
+        ['mac'], bug=483282)
+    self.Fail('deqp/functional/gles3/fborender/resize_01.html',
         ['mac'], bug=483282)
 
     # Mac Retina NVIDIA

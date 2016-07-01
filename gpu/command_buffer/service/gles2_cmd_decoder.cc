@@ -2188,8 +2188,6 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
   bool supports_commit_overlay_planes_;
   bool supports_async_swap_;
 
-  ContextType context_type_;
-
   // These flags are used to override the state of the shared feature_info_
   // member.  Because the same FeatureInfo instance may be shared among many
   // contexts, the assumptions on the availablity of extensions in WebGL
@@ -2883,7 +2881,6 @@ GLES2DecoderImpl::GLES2DecoderImpl(ContextGroup* group)
       supports_post_sub_buffer_(false),
       supports_commit_overlay_planes_(false),
       supports_async_swap_(false),
-      context_type_(CONTEXT_TYPE_OPENGLES2),
       derivatives_explicitly_enabled_(false),
       frag_depth_explicitly_enabled_(false),
       draw_buffers_explicitly_enabled_(false),
@@ -4122,33 +4119,13 @@ bool GLES2DecoderImpl::CheckFramebufferValid(
     return true;
   }
 
-  if (framebuffer_manager()->IsComplete(framebuffer)) {
-    return true;
-  }
-
-  GLenum completeness = framebuffer->IsPossiblyComplete(feature_info_.get());
-  if (completeness != GL_FRAMEBUFFER_COMPLETE) {
-    LOCAL_SET_GL_ERROR(gl_error, func_name, "framebuffer incomplete");
-    return false;
-  }
-
-  // Are all the attachments cleared?
-  if (clear_uncleared_images &&
-      (renderbuffer_manager()->HaveUnclearedRenderbuffers() ||
-       texture_manager()->HaveUnclearedMips())) {
-    if (!framebuffer->IsCleared()) {
-      // Can we clear them?
-      if (framebuffer->GetStatus(texture_manager(), target) !=
-          GL_FRAMEBUFFER_COMPLETE) {
-        LOCAL_SET_GL_ERROR(
-            gl_error, func_name, "framebuffer incomplete (clear)");
-        return false;
-      }
-      ClearUnclearedAttachments(target, framebuffer);
-    }
-  }
-
   if (!framebuffer_manager()->IsComplete(framebuffer)) {
+    GLenum completeness = framebuffer->IsPossiblyComplete(feature_info_.get());
+    if (completeness != GL_FRAMEBUFFER_COMPLETE) {
+      LOCAL_SET_GL_ERROR(gl_error, func_name, "framebuffer incomplete");
+      return false;
+    }
+
     if (framebuffer->GetStatus(texture_manager(), target) !=
         GL_FRAMEBUFFER_COMPLETE) {
       LOCAL_SET_GL_ERROR(
@@ -4156,6 +4133,15 @@ bool GLES2DecoderImpl::CheckFramebufferValid(
       return false;
     }
     framebuffer_manager()->MarkAsComplete(framebuffer);
+  }
+
+  // Are all the attachments cleared?
+  if (clear_uncleared_images &&
+      (renderbuffer_manager()->HaveUnclearedRenderbuffers() ||
+       texture_manager()->HaveUnclearedMips())) {
+    if (!framebuffer->IsCleared()) {
+      ClearUnclearedAttachments(target, framebuffer);
+    }
   }
   return true;
 }
@@ -4393,10 +4379,10 @@ void GLES2DecoderImpl::MarkDrawBufferAsCleared(
       attachment = static_cast<GLenum>(GL_COLOR_ATTACHMENT0 + drawbuffer_i);
       break;
     case GL_DEPTH:
-      attachment = GL_DEPTH;
+      attachment = GL_DEPTH_ATTACHMENT;
       break;
     case GL_STENCIL:
-      attachment = GL_STENCIL;
+      attachment = GL_STENCIL_ATTACHMENT;
       break;
     default:
       // Caller is responsible for breaking GL_DEPTH_STENCIL into GL_DEPTH and
