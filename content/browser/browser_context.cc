@@ -412,7 +412,7 @@ void BrowserContext::Initialize(
                                new base::SupportsUserData::Data);
 
   MojoShellConnection* shell = MojoShellConnection::GetForProcess();
-  if (shell && base::ThreadTaskRunnerHandle::IsSet()) {
+  if (shell && base::MessageLoop::current()) {
     // NOTE: Many unit tests create a TestBrowserContext without initializing
     // Mojo or the global Mojo shell connection.
 
