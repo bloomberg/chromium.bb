@@ -175,6 +175,7 @@ ReducedReferrerGranularity
 ReferrerPolicyHeader status=experimental
 RemotePlayback status=experimental
 RenderingPipelineThrottling status=stable
+RenderUnicodeControlCharacters status=experimental
 RequestIdleCallback status=stable
 ResponseConstructedWithReadableStream status=stable
 ResponseBodyWithV8ExtraStream status=stable

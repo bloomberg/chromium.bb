@@ -96,10 +96,16 @@ public:
             || c == zeroWidthNonJoinerCharacter
             || c == zeroWidthJoinerCharacter;
     }
-    static bool treatAsZeroWidthSpaceInComplexScript(UChar32 c)
+    static bool legacyTreatAsZeroWidthSpaceInComplexScript(UChar32 c)
     {
         return c < 0x20 // ASCII Control Characters
             || (c >= 0x7F && c < 0xA0) // ASCII Delete .. No-break spaceCharacter
+            || treatAsZeroWidthSpaceInComplexScript(c);
+    }
+    static bool treatAsZeroWidthSpaceInComplexScript(UChar32 c)
+    {
+        return c == formFeedCharacter
+            || c == carriageReturnCharacter
             || c == softHyphenCharacter
             || c == zeroWidthSpaceCharacter
             || (c >= leftToRightMarkCharacter && c <= rightToLeftMarkCharacter)

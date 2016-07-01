@@ -182,14 +182,13 @@ const PassRefPtr<SimpleFontData> FontFallbackIterator::fallbackPriorityFont(
 
 const PassRefPtr<SimpleFontData> FontFallbackIterator::uniqueSystemFontForHint(UChar32 hint)
 {
-    FontCache* fontCache = FontCache::fontCache();
-
     // When we're asked for a fallback for the same characters again, we give up
     // because the shaper must have previously tried shaping with the font
     // already.
-    if (m_previouslyAskedForHint.contains(hint))
+    if (!hint || m_previouslyAskedForHint.contains(hint))
         return nullptr;
 
+    FontCache* fontCache = FontCache::fontCache();
     m_previouslyAskedForHint.add(hint);
     return fontCache->fallbackFontForCharacter(m_fontDescription, hint, m_fontFallbackList->primarySimpleFontData(m_fontDescription));
 }
