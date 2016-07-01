@@ -471,12 +471,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         'texturesize.html',
         ['mac', 'intel'], bug=483282)
 
-    self.Fail('deqp/functional/gles3/textureformat/sized_color_cube_*.html',
-        ['mac', 'intel'], bug=612205)
-
-    self.Fail('conformance2/reading/read-pixels-from-fbo-test.html',
-        ['mac', 'intel'], bug=483282)
-
     # Linux only.
     self.Fail('deqp/data/gles3/shaders/functions.html',
         ['linux'], bug=483282)
