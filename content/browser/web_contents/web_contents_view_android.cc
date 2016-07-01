@@ -13,8 +13,10 @@
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/web_contents_delegate.h"
+#include "content/public/common/drop_data.h"
 
 namespace content {
+
 WebContentsView* CreateWebContentsView(
     WebContentsImpl* web_contents,
     WebContentsViewDelegate* delegate,
@@ -197,6 +199,32 @@ void WebContentsViewAndroid::StartDragging(
 
 void WebContentsViewAndroid::UpdateDragCursor(blink::WebDragOperation op) {
   NOTIMPLEMENTED();
+}
+
+void WebContentsViewAndroid::OnDragEntered(
+    const std::vector<DropData::Metadata>& metadata,
+    const gfx::Point& location,
+    const gfx::Point& screen_location) {
+  web_contents_->GetRenderViewHost()->DragTargetDragEnterWithMetaData(
+      metadata, location, screen_location, blink::WebDragOperationCopy, 0);
+}
+
+void WebContentsViewAndroid::OnDragUpdated(const gfx::Point& location,
+                                           const gfx::Point& screen_location) {
+  web_contents_->GetRenderViewHost()->DragTargetDragOver(
+      location, screen_location, blink::WebDragOperationCopy, 0);
+}
+
+void WebContentsViewAndroid::OnDragExited() {
+  web_contents_->GetRenderViewHost()->DragTargetDragLeave();
+}
+
+void WebContentsViewAndroid::OnPerformDrop(DropData* drop_data,
+                                           const gfx::Point& location,
+                                           const gfx::Point& screen_location) {
+  web_contents_->GetRenderViewHost()->FilterDropData(drop_data);
+  web_contents_->GetRenderViewHost()->DragTargetDrop(*drop_data, location,
+                                                     screen_location, 0);
 }
 
 void WebContentsViewAndroid::GotFocus() {

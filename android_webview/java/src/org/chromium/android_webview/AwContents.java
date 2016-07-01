@@ -3033,8 +3033,7 @@ public class AwContents implements SmartClipProvider,
 
         @Override
         public boolean onDragEvent(DragEvent event) {
-            // TODO(hush): implement this. crbug.com/584789
-            return false;
+            return mContentViewCore.onDragEvent(event);
         }
 
         @Override

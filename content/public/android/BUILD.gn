@@ -282,6 +282,7 @@ generate_jar_jni("jar_jni") {
   jni_package = "content"
   classes = [
     "java/util/HashSet.class",
+    "android/view/DragEvent.class",
     "android/view/MotionEvent.class",
   ]
 }

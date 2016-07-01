@@ -282,6 +282,15 @@ class ContentViewCoreImpl : public ContentViewCore,
   void SetBackgroundOpaque(JNIEnv* env,
                            const base::android::JavaParamRef<jobject>& jobj,
                            jboolean opaque);
+  void OnDragEvent(JNIEnv* env,
+                   const base::android::JavaParamRef<jobject>& jobj,
+                   jint action,
+                   jint x,
+                   jint y,
+                   jint screen_x,
+                   jint screen_y,
+                   const base::android::JavaParamRef<jobjectArray>& j_mimeTypes,
+                   const base::android::JavaParamRef<jstring>& j_content);
 
   jint GetCurrentRenderProcessId(
       JNIEnv* env,
