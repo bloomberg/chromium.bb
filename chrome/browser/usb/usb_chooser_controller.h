@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_USB_USB_CHOOSER_CONTROLLER_H_
 #define CHROME_BROWSER_USB_USB_CHOOSER_CONTROLLER_H_
 
+#include <unordered_map>
 #include <utility>
 #include <vector>
 
@@ -40,7 +41,7 @@ class UsbChooserController : public ChooserController,
 
   // ChooserController:
   size_t NumOptions() const override;
-  const base::string16& GetOption(size_t index) const override;
+  base::string16 GetOption(size_t index) const override;
   void Select(size_t index) override;
   void Cancel() override;
   void Close() override;
@@ -63,6 +64,8 @@ class UsbChooserController : public ChooserController,
   // Each pair is a (device, device name).
   std::vector<std::pair<scoped_refptr<device::UsbDevice>, base::string16>>
       devices_;
+  // Maps from device name to number of devices.
+  std::unordered_map<base::string16, int> device_name_map_;
   base::WeakPtrFactory<UsbChooserController> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(UsbChooserController);

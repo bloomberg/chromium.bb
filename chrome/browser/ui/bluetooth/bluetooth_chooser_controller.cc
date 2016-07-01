@@ -4,12 +4,15 @@
 
 #include "chrome/browser/ui/bluetooth/bluetooth_chooser_controller.h"
 
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/net/referrer.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/bluetooth/bluetooth_chooser_desktop.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/scoped_tabbed_browser_displayer.h"
 #include "chrome/common/url_constants.h"
+#include "chrome/grit/generated_resources.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
 
 namespace {
@@ -34,10 +37,16 @@ size_t BluetoothChooserController::NumOptions() const {
   return device_names_and_ids_.size();
 }
 
-const base::string16& BluetoothChooserController::GetOption(
-    size_t index) const {
+base::string16 BluetoothChooserController::GetOption(size_t index) const {
   DCHECK_LT(index, device_names_and_ids_.size());
-  return device_names_and_ids_[index].first;
+  const base::string16& device_name = device_names_and_ids_[index].first;
+  const auto& it = device_name_map_.find(device_name);
+  DCHECK(it != device_name_map_.end());
+  return it->second == 1
+             ? device_name
+             : l10n_util::GetStringFUTF16(
+                   IDS_DEVICE_CHOOSER_DEVICE_NAME_WITH_ID, device_name,
+                   base::UTF8ToUTF16(device_names_and_ids_[index].second));
 }
 
 void BluetoothChooserController::Select(size_t index) {
@@ -66,6 +75,7 @@ void BluetoothChooserController::OpenHelpCenterUrl() const {
 void BluetoothChooserController::AddDevice(const std::string& device_id,
                                            const base::string16& device_name) {
   device_names_and_ids_.push_back(std::make_pair(device_name, device_id));
+  ++device_name_map_[device_name];
   if (observer())
     observer()->OnOptionAdded(device_names_and_ids_.size() - 1);
 }
@@ -75,6 +85,9 @@ void BluetoothChooserController::RemoveDevice(const std::string& device_id) {
        it != device_names_and_ids_.end(); ++it) {
     if (it->second == device_id) {
       size_t index = it - device_names_and_ids_.begin();
+      DCHECK_GT(device_name_map_[it->first], 0);
+      if (--device_name_map_[it->first] == 0)
+        device_name_map_.erase(it->first);
       device_names_and_ids_.erase(it);
       if (observer())
         observer()->OnOptionRemoved(index);

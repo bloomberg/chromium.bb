@@ -13,7 +13,7 @@ size_t MockChooserController::NumOptions() const {
   return option_names_.size();
 }
 
-const base::string16& MockChooserController::GetOption(size_t index) const {
+base::string16 MockChooserController::GetOption(size_t index) const {
   return option_names_[index];
 }
 

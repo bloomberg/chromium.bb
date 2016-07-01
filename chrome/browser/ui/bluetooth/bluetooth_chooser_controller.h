@@ -8,6 +8,7 @@
 #include <stddef.h>
 
 #include <string>
+#include <unordered_map>
 #include <utility>
 #include <vector>
 
@@ -28,7 +29,7 @@ class BluetoothChooserController : public ChooserController {
 
   // ChooserController:
   size_t NumOptions() const override;
-  const base::string16& GetOption(size_t index) const override;
+  base::string16 GetOption(size_t index) const override;
   void Select(size_t index) override;
   void Cancel() override;
   void Close() override;
@@ -45,6 +46,8 @@ class BluetoothChooserController : public ChooserController {
   // Each pair is a (device name, device id).
   std::vector<std::pair<base::string16, std::string>> device_names_and_ids_;
   content::BluetoothChooser::EventHandler event_handler_;
+  // Maps from device name to number of devices.
+  std::unordered_map<base::string16, int> device_name_map_;
 
   DISALLOW_COPY_AND_ASSIGN(BluetoothChooserController);
 };

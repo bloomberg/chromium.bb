@@ -18,7 +18,7 @@ class MockChooserController : public ChooserController {
 
   // ChooserController:
   size_t NumOptions() const override;
-  const base::string16& GetOption(size_t index) const override;
+  base::string16 GetOption(size_t index) const override;
   MOCK_METHOD1(Select, void(size_t index));
   MOCK_METHOD0(Cancel, void());
   MOCK_METHOD0(Close, void());

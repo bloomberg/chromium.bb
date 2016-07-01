@@ -61,7 +61,7 @@ class ChooserController {
   virtual size_t NumOptions() const = 0;
 
   // The |index|th option string which is listed in the chooser.
-  virtual const base::string16& GetOption(size_t index) const = 0;
+  virtual base::string16 GetOption(size_t index) const = 0;
 
   // These three functions are called just before this object is destroyed:
 

@@ -19,6 +19,7 @@
 #include "chrome/browser/usb/web_usb_histograms.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
+#include "chrome/grit/generated_resources.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "device/core/device_client.h"
@@ -26,6 +27,7 @@
 #include "device/usb/usb_device.h"
 #include "device/usb/usb_device_filter.h"
 #include "device/usb/webusb_descriptors.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
 
 namespace {
@@ -73,9 +75,16 @@ size_t UsbChooserController::NumOptions() const {
   return devices_.size();
 }
 
-const base::string16& UsbChooserController::GetOption(size_t index) const {
+base::string16 UsbChooserController::GetOption(size_t index) const {
   DCHECK_LT(index, devices_.size());
-  return devices_[index].second;
+  const base::string16& device_name = devices_[index].second;
+  const auto& it = device_name_map_.find(device_name);
+  DCHECK(it != device_name_map_.end());
+  return it->second == 1
+             ? device_name
+             : l10n_util::GetStringFUTF16(
+                   IDS_DEVICE_CHOOSER_DEVICE_NAME_WITH_ID, device_name,
+                   devices_[index].first->serial_number());
 }
 
 void UsbChooserController::Select(size_t index) {
@@ -121,7 +130,9 @@ void UsbChooserController::OpenHelpCenterUrl() const {
 void UsbChooserController::OnDeviceAdded(
     scoped_refptr<device::UsbDevice> device) {
   if (DisplayDevice(device)) {
-    devices_.push_back(std::make_pair(device, device->product_string()));
+    const base::string16& device_name = device->product_string();
+    devices_.push_back(std::make_pair(device, device_name));
+    ++device_name_map_[device_name];
     if (observer())
       observer()->OnOptionAdded(devices_.size() - 1);
   }
@@ -132,6 +143,9 @@ void UsbChooserController::OnDeviceRemoved(
   for (auto it = devices_.begin(); it != devices_.end(); ++it) {
     if (it->first == device) {
       size_t index = it - devices_.begin();
+      DCHECK_GT(device_name_map_[it->second], 0);
+      if (--device_name_map_[it->second] == 0)
+        device_name_map_.erase(it->second);
       devices_.erase(it);
       if (observer())
         observer()->OnOptionRemoved(index);
@@ -145,8 +159,11 @@ void UsbChooserController::OnDeviceRemoved(
 void UsbChooserController::GotUsbDeviceList(
     const std::vector<scoped_refptr<device::UsbDevice>>& devices) {
   for (const auto& device : devices) {
-    if (DisplayDevice(device))
-      devices_.push_back(std::make_pair(device, device->product_string()));
+    if (DisplayDevice(device)) {
+      const base::string16& device_name = device->product_string();
+      devices_.push_back(std::make_pair(device, device_name));
+      ++device_name_map_[device_name];
+    }
   }
   if (observer())
     observer()->OnOptionsInitialized();
