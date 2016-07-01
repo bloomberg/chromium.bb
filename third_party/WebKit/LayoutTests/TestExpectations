@@ -1398,3 +1398,5 @@ crbug.com/624709 [ Win ] virtual/gpu-rasterization/fast/images/png-with-color-pr
 crbug.com/624709 [ Win ] virtual/gpu-rasterization/fast/images/webp-color-profile-lossy.html [ Failure ]
 
 crbug.com/625020 [ Debug ] compositing/repaint/page-scale-repaint.html [ Timeout ]
+
+crbug.com/620432 accessibility/aria-activedescendant.html [ Failure ]

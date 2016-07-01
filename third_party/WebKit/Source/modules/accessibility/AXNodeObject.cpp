@@ -2188,7 +2188,7 @@ void AXNodeObject::computeAriaOwnsChildren(HeapVector<Member<AXObject>>& ownedCh
         return;
 
     Vector<String> idVector;
-    if (canHaveChildren())
+    if (canHaveChildren() && !isNativeTextControl() && !hasContentEditableAttributeSet())
         tokenVectorFromAttribute(idVector, aria_ownsAttr);
 
     axObjectCache().updateAriaOwns(this, idVector, ownedChildren);
