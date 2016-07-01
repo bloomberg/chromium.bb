@@ -135,6 +135,14 @@ _ANDROID_NEGATIVE_FILTER['chrome'] = (
         # Page cannot be loaded from file:// URI in Android unless it
         # is stored in device.
         'ChromeDriverTest.testCanClickAlertInIframes',
+        # Network emulation is only supported on desktop.
+        'ChromeDriverTest.testEmulateNetworkConnection',
+        'ChromeDriverTest.testWifiEmulation',
+        'ChromeDriverTest.testAirplaneModeEmulation',
+        'ChromeDriverTest.testWifiAndAirplaneModeEmulation',
+        'ChromeDriverTest.testNetworkConnectionTypeIsAppliedToAllTabsImmediately',
+        'ChromeDriverTest.testNetworkConnectionTypeIsAppliedToAllTabs',
+
     ]
 )
 _ANDROID_NEGATIVE_FILTER['chrome_stable'] = (
