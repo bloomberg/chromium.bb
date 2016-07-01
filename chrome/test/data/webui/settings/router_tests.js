@@ -5,9 +5,10 @@
 suite('routing', function() {
   test('no duplicate routes', function() {
     var urls = new Set();
-    document.createElement('settings-router').routes_.forEach(function(route) {
-      assertFalse(urls.has(route.url), route.url);
-      urls.add(route.url);
-    });
+    document.createElement('settings-router').canonicalRoutes_.forEach(
+        function(route) {
+          assertFalse(urls.has(route.url), route.url);
+          urls.add(route.url);
+        });
   });
 });
