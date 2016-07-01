@@ -22,6 +22,7 @@
         'language_usage_metrics',
         'pref_registry',
         'translate_core_common',
+        'variations',
       ],
       'include_dirs': [
         '..',
