@@ -112,6 +112,7 @@ class LayerTreeHostImplTest : public testing::Test,
     settings.renderer_settings.texture_id_allocation_chunk_size = 1;
     settings.gpu_rasterization_enabled = true;
     settings.verify_clip_tree_calculations = true;
+    settings.verify_transform_tree_calculations = true;
     return settings;
   }
 

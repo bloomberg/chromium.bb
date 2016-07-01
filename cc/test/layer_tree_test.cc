@@ -881,6 +881,7 @@ void LayerTreeTest::RunTest(CompositorMode mode, bool delegating_renderer) {
   settings_.renderer_settings.refresh_rate = 200.0;
   settings_.background_animation_rate = 200.0;
   settings_.verify_clip_tree_calculations = true;
+  settings_.verify_transform_tree_calculations = true;
   InitializeSettings(&settings_);
 
   main_task_runner_->PostTask(

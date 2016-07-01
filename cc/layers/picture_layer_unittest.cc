@@ -462,6 +462,7 @@ TEST(PictureLayerTest, NonMonotonicSourceFrameNumber) {
   settings.single_thread_proxy_scheduler = false;
   settings.use_zero_copy = true;
   settings.verify_clip_tree_calculations = true;
+  settings.verify_transform_tree_calculations = true;
 
   FakeLayerTreeHostClient host_client1(FakeLayerTreeHostClient::DIRECT_3D);
   FakeLayerTreeHostClient host_client2(FakeLayerTreeHostClient::DIRECT_3D);

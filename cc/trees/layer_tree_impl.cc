@@ -895,8 +895,9 @@ bool LayerTreeImpl::UpdateDrawProperties(bool update_lcd_text) {
         OverscrollElasticityLayer(), resource_provider()->max_texture_size(),
         can_render_to_separate_surface,
         settings().layer_transforms_should_scale_layer_contents,
-        settings().verify_clip_tree_calculations, &render_surface_layer_list_,
-        &property_trees_);
+        settings().verify_clip_tree_calculations,
+        settings().verify_transform_tree_calculations,
+        &render_surface_layer_list_, &property_trees_);
     LayerTreeHostCommon::CalculateDrawProperties(&inputs);
     if (const char* client_name = GetClientNameForMetrics()) {
       UMA_HISTOGRAM_COUNTS(

@@ -888,6 +888,45 @@ static void ComputeLayerClipRect(const PropertyTrees* property_trees,
   }
 }
 
+static int FindTargetTransformTreeIndexFromEffectTree(
+    const EffectTree& effect_tree,
+    const int effect_tree_index) {
+  const EffectNode* node = effect_tree.Node(effect_tree_index);
+  if (node->data.has_render_surface)
+    return node->data.transform_id;
+  node = effect_tree.Node(node->data.target_id);
+  return node->data.transform_id;
+}
+
+static void VerifyDrawTransformsMatch(LayerImpl* layer,
+                                      PropertyTrees* property_trees) {
+  const int source_id = layer->transform_tree_index();
+  int destination_id = FindTargetTransformTreeIndexFromEffectTree(
+      property_trees->effect_tree, layer->effect_tree_index());
+  // TODO(jaydasika) : Remove this after sorting out how sublayer scale works
+  // for these ids.
+  if (destination_id == 0 || destination_id == 1)
+    return;
+  gfx::Transform draw_transform;
+  property_trees->transform_tree.ComputeTransform(source_id, destination_id,
+                                                  &draw_transform);
+  TransformNode* target_node =
+      property_trees->transform_tree.Node(destination_id);
+  draw_transform.matrix().postScale(target_node->data.sublayer_scale.x(),
+                                    target_node->data.sublayer_scale.y(), 1.f);
+  if (layer->should_flatten_transform_from_property_tree())
+    draw_transform.FlattenTo2d();
+  draw_transform.Translate(layer->offset_to_transform_parent().x(),
+                           layer->offset_to_transform_parent().y());
+  DCHECK(draw_transform.ApproximatelyEqual(
+      DrawTransform(layer, property_trees->transform_tree)))
+      << " layer: " << layer->id() << " source transform id: " << source_id
+      << " destination transform id: " << destination_id
+      << " draw transform from transform tree: "
+      << DrawTransform(layer, property_trees->transform_tree).ToString()
+      << " v.s." << draw_transform.ToString();
+}
+
 static void ComputeVisibleRectsInternal(
     LayerImpl* root_layer,
     PropertyTrees* property_trees,
@@ -978,6 +1017,12 @@ void VerifyClipTreeCalculations(const LayerImplList& layer_list,
   }
   for (auto layer : layer_list)
     ComputeLayerClipRect(property_trees, layer);
+}
+
+void VerifyTransformTreeCalculations(const LayerImplList& layer_list,
+                                     PropertyTrees* property_trees) {
+  for (auto layer : layer_list)
+    VerifyDrawTransformsMatch(layer, property_trees);
 }
 
 void ComputeVisibleRects(LayerImpl* root_layer,
