@@ -42,6 +42,16 @@ cr.define('md_history', function() {
     },
 
     /**
+     * Remove bookmark of current item when bookmark-star is clicked.
+     * @private
+     */
+    onRemoveBookmarkTap_: function() {
+      md_history.BrowserService.getInstance()
+        .removeBookmark(this.item.url);
+      this.fire('remove-bookmark-stars', this.item.url);
+    },
+
+    /**
      * Fires a custom event when the menu button is clicked. Sends the details
      * of the history item and where the menu should appear.
      */

@@ -43,6 +43,13 @@ cr.define('md_history', function() {
     },
 
     /**
+     * @param {!string} url
+     */
+    removeBookmark: function(url) {
+      chrome.send('removeBookmark', [url]);
+    },
+
+    /**
      * @param {boolean} successful
      * @private
      */

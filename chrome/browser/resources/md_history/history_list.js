@@ -29,6 +29,7 @@ Polymer({
     'infinite-list.scroll': 'closeMenu_',
     'tap': 'closeMenu_',
     'toggle-menu': 'toggleMenu_',
+    'remove-bookmark-stars': 'removeBookmarkStars_',
   },
 
   /**
@@ -49,6 +50,23 @@ Polymer({
     var target = e.detail.target;
     /** @type {CrSharedMenuElement} */(this.$.sharedMenu).toggleMenu(
         target, e.detail.item);
+  },
+
+  /**
+   * Remove bookmark star for history items with matching URLs.
+   * @param {{detail: !string}} e
+   * @private
+   */
+  removeBookmarkStars_: function(e) {
+    var url = e.detail;
+
+    if (this.historyData_ === undefined)
+      return;
+
+    for (var i = 0; i < this.historyData_.length; i++) {
+      if (this.historyData_[i].url == url)
+        this.set('historyData_.' + i + '.starred', false);
+    }
   },
 
   /** @private */

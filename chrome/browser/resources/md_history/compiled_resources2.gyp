@@ -32,6 +32,7 @@
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:load_time_data',
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:util',
         'constants',
+        'browser_service',
         '../history/compiled_resources2.gyp:externs',
       ],
       'includes': ['../../../../third_party/closure_compiler/compile_js2.gypi'],

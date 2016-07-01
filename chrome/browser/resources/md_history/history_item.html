@@ -7,6 +7,7 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button-light.html">
 <link rel="import" href="chrome://resources/html/icon.html">
 <link rel="import" href="chrome://resources/html/util.html">
+<link rel="import" href="chrome://history/browser_service.html">
 <link rel="import" href="chrome://history/constants.html">
 <link rel="import" href="chrome://history/searched_label.html">
 <link rel="import" href="chrome://history/shared_style.html">
@@ -111,8 +112,13 @@
         -webkit-margin-end: 10px;
         -webkit-margin-start: 20px;
         color: rgb(68, 136, 255);
-        height: 16px;
+        height: 20px;
         visibility: hidden;
+        width: 20px;
+      }
+
+      #bookmark-star iron-icon {
+        height: 16px;
         width: 16px;
       }
 
@@ -143,7 +149,10 @@
           </a>
           <span id="domain">[[item.domain]]</span>
         </div>
-        <iron-icon icon="cr:star" id="bookmark-star"></iron-icon>
+        <button is="paper-icon-button-light" id="bookmark-star"
+            title="$i18n{removeBookmark}" on-tap="onRemoveBookmarkTap_">
+          <iron-icon icon="cr:star"></iron-icon>
+        </button>
         <button is="paper-icon-button-light" id="menu-button"
             on-tap="onMenuButtonTap_" title="$i18n{moreActionsButton}">
           <iron-icon icon="cr:more-vert"></iron-icon>

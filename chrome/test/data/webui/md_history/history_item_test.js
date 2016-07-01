@@ -76,6 +76,20 @@ cr.define('md_history.history_item_test', function() {
         });
       });
 
+      test('remove bookmarks', function() {
+        element.addNewResults(TEST_HISTORY_RESULTS);
+        return flush().then(function() {
+          element.historyData_[1].starred = true;
+          element.historyData_[5].starred = true;
+
+          items = Polymer.dom(element.root).querySelectorAll('history-item');
+          MockInteractions.tap(items[1].$$('#bookmark-star'));
+
+          assertEquals(element.historyData_[1].starred, false);
+          assertEquals(element.historyData_[5].starred, false);
+        });
+      });
+
       test('long titles are trimmed', function() {
         var item = document.createElement('history-item');
         var longtitle = '0123456789'.repeat(100);
