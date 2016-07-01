@@ -415,6 +415,27 @@ TEST_F(ProfileSyncServiceTest, SuccessfulInitialization) {
   EXPECT_TRUE(service()->IsSyncActive());
 }
 
+// Verify that an initialization where first setup is not complete does not
+// purge preferences and/or the directory.
+TEST_F(ProfileSyncServiceTest, NeedsConfirmation) {
+  prefs()->SetManagedPref(sync_driver::prefs::kSyncManaged,
+                          new base::FundamentalValue(false));
+  IssueTestTokens();
+  CreateService(ProfileSyncService::MANUAL_START);
+  ExpectSyncBackendHostCreation(1);
+  sync_driver::SyncPrefs sync_prefs(prefs());
+  base::Time now = base::Time::Now();
+  sync_prefs.SetLastSyncedTime(now);
+  sync_prefs.SetKeepEverythingSynced(true);
+  service()->Initialize();
+  EXPECT_FALSE(service()->IsSyncActive());
+
+  // The last sync time shouldn't be cleared.
+  // TODO(zea): figure out a way to check that the directory itself wasn't
+  // cleared.
+  EXPECT_EQ(now, sync_prefs.GetLastSyncedTime());
+}
+
 // Verify that the SetSetupInProgress function call updates state
 // and notifies observers.
 TEST_F(ProfileSyncServiceTest, SetupInProgress) {

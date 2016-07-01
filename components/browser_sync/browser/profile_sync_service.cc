@@ -357,8 +357,8 @@ void ProfileSyncService::Initialize() {
 
   RegisterAuthNotifications();
 
-  if (!IsFirstSetupComplete() || !IsSignedIn()) {
-    // Clean up in case of previous crash / setup abort / signout.
+  if (!IsSignedIn()) {
+    // Clean up in case of previous crash during signout.
     StopImpl(CLEAR_DATA);
   }
 
