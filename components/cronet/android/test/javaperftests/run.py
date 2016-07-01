@@ -47,13 +47,15 @@ sys.path.append(os.path.join(REPOSITORY_ROOT, 'tools', 'perf'))
 from chrome_telemetry_build import chromium_config
 sys.path.append(chromium_config.GetTelemetryDir())
 sys.path.append(os.path.join(REPOSITORY_ROOT, 'build', 'android'))
+sys.path.append(os.path.join(
+    REPOSITORY_ROOT, 'third_party', 'catapult', 'devil'))
 
 import android_rndis_forwarder
+from devil.android import device_utils
+from devil.android.sdk import intent
 import lighttpd_server
 from pylib import constants
 from pylib import pexpect
-from pylib.device import device_utils
-from pylib.device import intent
 from telemetry import android
 from telemetry import benchmark
 from telemetry import benchmark_runner
