@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <utility>
-
 class Foo {
  public:
   void foo() {}
@@ -33,7 +31,7 @@ int main() {
   auto* raw_foo_ptr_valid = &foo;
   const auto* const_raw_foo_ptr_valid = &foo;
 
-  int *int_ptr;
+  int* int_ptr;
 
   auto double_ptr_auto = &int_ptr;
   auto* double_ptr_auto_ptr = &int_ptr;
@@ -42,11 +40,11 @@ int main() {
   auto function_ptr = &f;
   auto method_ptr = &Foo::foo;
 
-  int *const *const volatile **const *pointer_awesomeness;
+  int* const* const volatile** const* pointer_awesomeness;
   auto auto_awesome = pointer_awesomeness;
 
   auto& int_ptr_ref = int_ptr;
   const auto& const_int_ptr_ref = int_ptr;
-  auto&& int_ptr_rref = std::move(int_ptr);
-  const auto&& const_int_ptr_rref = std::move(int_ptr);
+  auto&& int_ptr_rref = static_cast<int*&&>(int_ptr);
+  const auto&& const_int_ptr_rref = static_cast<int*&&>(int_ptr);
 }
