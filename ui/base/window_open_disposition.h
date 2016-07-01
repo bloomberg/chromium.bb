@@ -11,7 +11,6 @@
 // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.ui
 enum WindowOpenDisposition {
   UNKNOWN,
-  SUPPRESS_OPEN,
   CURRENT_TAB,
   // Indicates that only one tab with the url should exist in the same window.
   SINGLETON_TAB,

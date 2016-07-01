@@ -43,7 +43,6 @@ enum NavigationType {
 // Copied from //ui/base/window_open_disposition.h
 enum WindowOpenDisposition {
   UNKNOWN,
-  SUPPRESS_OPEN,
   CURRENT_TAB,
   SINGLETON_TAB,
   NEW_FOREGROUND_TAB,

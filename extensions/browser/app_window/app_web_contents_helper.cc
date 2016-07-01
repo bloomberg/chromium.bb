@@ -55,10 +55,8 @@ content::WebContents* AppWebContentsHelper::OpenURLFromTab(
   }
 
   // These dispositions aren't really navigations.
-  if (disposition == SUPPRESS_OPEN || disposition == SAVE_TO_DISK ||
-      disposition == IGNORE_ACTION) {
+  if (disposition == SAVE_TO_DISK || disposition == IGNORE_ACTION)
     return NULL;
-  }
 
   content::WebContents* contents =
       app_delegate_->OpenURLFromTab(browser_context_, web_contents_, params);

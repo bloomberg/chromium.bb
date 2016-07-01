@@ -107,9 +107,7 @@ content::WebContents* PanelHost::OpenURLFromTab(
     content::WebContents* source,
     const content::OpenURLParams& params) {
   // These dispositions aren't really navigations.
-  if (params.disposition == SUPPRESS_OPEN ||
-      params.disposition == SAVE_TO_DISK ||
-      params.disposition == IGNORE_ACTION)
+  if (params.disposition == SAVE_TO_DISK || params.disposition == IGNORE_ACTION)
     return NULL;
 
   // Only allow clicks on links.

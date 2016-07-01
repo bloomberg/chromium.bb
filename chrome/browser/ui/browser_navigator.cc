@@ -187,8 +187,7 @@ Browser* GetBrowserForDisposition(chrome::NavigateParams* params) {
     case OFF_THE_RECORD:
       // Make or find an incognito window.
       return GetOrCreateBrowser(profile->GetOffTheRecordProfile());
-    // The following types all result in no navigation.
-    case SUPPRESS_OPEN:
+    // The following types result in no navigation.
     case SAVE_TO_DISK:
     case IGNORE_ACTION:
       return NULL;

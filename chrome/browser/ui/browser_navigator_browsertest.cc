@@ -678,12 +678,6 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, Disposition_IncognitoRefocus) {
 }
 
 // This test verifies that no navigation action occurs when
-// WindowOpenDisposition = SUPPRESS_OPEN.
-IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, Disposition_SuppressOpen) {
-  RunSuppressTest(SUPPRESS_OPEN);
-}
-
-// This test verifies that no navigation action occurs when
 // WindowOpenDisposition = SAVE_TO_DISK.
 IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, Disposition_SaveToDisk) {
   RunSuppressTest(SAVE_TO_DISK);
