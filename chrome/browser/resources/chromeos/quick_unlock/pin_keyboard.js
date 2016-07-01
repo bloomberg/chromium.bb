@@ -84,5 +84,13 @@ Polymer({
       event.preventDefault();
       return;
     }
+  },
+
+  /**
+   * Changes the color of the submit button if PIN is ready.
+   * @param {string} value
+   */
+  computeSubmitClass_: function(value) {
+    return value.length > 0 ? 'ready-background' : '';
   }
 });
