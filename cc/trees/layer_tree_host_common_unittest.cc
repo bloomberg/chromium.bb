@@ -7172,12 +7172,11 @@ TEST_F(LayerTreeHostCommonTest, ScrollCompensationWithRounding) {
   scroller->test_properties()->AddChild(std::move(fixed));
   container->test_properties()->AddChild(std::move(scroller));
   root->test_properties()->AddChild(std::move(container));
+  root->layer_tree_impl()->SetRootLayerForTesting(std::move(root_ptr));
+  root->layer_tree_impl()->BuildPropertyTreesForTesting();
 
   // Rounded to integers already.
   {
-    root->layer_tree_impl()->SetRootLayerForTesting(std::move(root_ptr));
-    root->layer_tree_impl()->BuildLayerListAndPropertyTreesForTesting();
-
     gfx::Vector2dF scroll_delta(3.0, 5.0);
     SetScrollOffsetDelta(scroll_layer, scroll_delta);
 
@@ -7202,8 +7201,6 @@ TEST_F(LayerTreeHostCommonTest, ScrollCompensationWithRounding) {
 
   // Scroll delta requiring rounding.
   {
-    root->layer_tree_impl()->BuildLayerListAndPropertyTreesForTesting();
-
     gfx::Vector2dF scroll_delta(4.1f, 8.1f);
     SetScrollOffsetDelta(scroll_layer, scroll_delta);
 
@@ -7231,8 +7228,8 @@ TEST_F(LayerTreeHostCommonTest, ScrollCompensationWithRounding) {
     gfx::Transform scaled_container_transform = container_transform;
     scaled_container_transform.Scale3d(2.0, 2.0, 1.0);
     container_layer->SetTransform(scaled_container_transform);
+
     root->layer_tree_impl()->property_trees()->needs_rebuild = true;
-    root->layer_tree_impl()->BuildLayerListAndPropertyTreesForTesting();
 
     gfx::Vector2dF scroll_delta(4.5f, 8.5f);
     SetScrollOffsetDelta(scroll_layer, scroll_delta);
@@ -8195,6 +8192,8 @@ TEST_F(LayerTreeHostCommonTest, BoundsDeltaAffectVisibleContentRect) {
                                false,
                                false);
   sublayer->SetDrawsContent(true);
+
+  host_impl.active_tree()->BuildPropertyTreesForTesting();
 
   LayerImplList layer_impl_list;
   LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting inputs(

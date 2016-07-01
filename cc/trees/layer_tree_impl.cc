@@ -265,9 +265,11 @@ void LayerTreeImpl::SetRootLayerForTesting(std::unique_ptr<LayerImpl> layer) {
   if (root_layer_for_testing_ && layer.get() != root_layer_for_testing_)
     RemoveLayer(root_layer_for_testing_->id());
   root_layer_for_testing_ = layer.get();
-  if (layer)
+  ClearLayerList();
+  if (layer) {
     AddLayer(std::move(layer));
-  BuildLayerListForTesting();
+    BuildLayerListForTesting();
+  }
   layer_tree_host_impl_->OnCanDrawStateChangedForTree();
 }
 
@@ -1022,11 +1024,15 @@ bool LayerTreeImpl::UpdateDrawProperties(bool update_lcd_text) {
 
 void LayerTreeImpl::BuildLayerListAndPropertyTreesForTesting() {
   BuildLayerListForTesting();
-  PropertyTreeBuilder::PreCalculateMetaInformationForTesting(
-      root_layer_for_testing_);
+  BuildPropertyTreesForTesting();
+}
+
+void LayerTreeImpl::BuildPropertyTreesForTesting() {
+  PropertyTreeBuilder::PreCalculateMetaInformationForTesting(layer_list_[0]);
+  property_trees_.needs_rebuild = true;
   property_trees_.transform_tree.set_source_to_parent_updates_allowed(true);
   PropertyTreeBuilder::BuildPropertyTrees(
-      root_layer_for_testing_, PageScaleLayer(), InnerViewportScrollLayer(),
+      layer_list_[0], PageScaleLayer(), InnerViewportScrollLayer(),
       OuterViewportScrollLayer(), OverscrollElasticityLayer(),
       elastic_overscroll()->Current(IsActiveTree()),
       current_page_scale_factor(), device_scale_factor(),

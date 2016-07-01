@@ -33,6 +33,7 @@ void LayerImplTestProperties::AddChild(std::unique_ptr<LayerImpl> child) {
   child->test_properties()->parent = owning_layer;
   children.push_back(child.get());
   owning_layer->layer_tree_impl()->AddLayer(std::move(child));
+  owning_layer->layer_tree_impl()->BuildLayerListForTesting();
 }
 
 std::unique_ptr<LayerImpl> LayerImplTestProperties::RemoveChild(
@@ -42,7 +43,9 @@ std::unique_ptr<LayerImpl> LayerImplTestProperties::RemoveChild(
     children.erase(it);
   owning_layer->layer_tree_impl()->property_trees()->RemoveIdFromIdToIndexMaps(
       child->id());
-  return owning_layer->layer_tree_impl()->RemoveLayer(child->id());
+  auto layer = owning_layer->layer_tree_impl()->RemoveLayer(child->id());
+  owning_layer->layer_tree_impl()->BuildLayerListForTesting();
+  return layer;
 }
 
 void LayerImplTestProperties::SetMaskLayer(std::unique_ptr<LayerImpl> mask) {
