@@ -54,6 +54,9 @@ class BuilderList(object):
     def all_builder_names(self):
         return sorted(self._builders)
 
+    def all_try_builder_names(self):
+        return sorted(b for b in self._builders if self._builders[b].get('is_try_builder'))
+
     def all_continuous_builder_names(self):
         return sorted(b for b in self._builders if not self._builders[b].get('is_try_builder'))
 

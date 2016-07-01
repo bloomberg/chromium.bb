@@ -52,6 +52,10 @@ class BuilderListTest(unittest.TestCase):
         b = self.sample_builder_list()
         self.assertEqual(['Blink A', 'Blink B', 'Blink B (dbg)', 'Blink C (dbg)'], b.all_continuous_builder_names())
 
+    def test_all_try_builder_names(self):
+        b = self.sample_builder_list()
+        self.assertEqual(['Try A', 'Try B'], b.all_try_builder_names())
+
     def test_all_port_names(self):
         b = self.sample_builder_list()
         self.assertEqual(['port-a', 'port-b', 'port-c'], b.all_port_names())

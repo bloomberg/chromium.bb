@@ -20,12 +20,6 @@ from webkitpy.tool.commands.rebaseline import AbstractParallelRebaselineCommand
 from webkitpy.common.net.web import Web
 
 
-TRY_BOTS = (
-    'linux_chromium_rel_ng',
-    'mac_chromium_rel_ng',
-    'win_chromium_rel_ng',
-)
-
 _log = logging.getLogger(__name__)
 
 
@@ -42,6 +36,7 @@ class RebaselineFromTryJobs(AbstractParallelRebaselineCommand):
         ])
         self.web = Web()
 
+
     def _unexpected_mismatch_results(self, try_job):
         results_url = self._results_url(try_job.builder_name, try_job.master_name, try_job.build_number)
         builder = self._tool.buildbot.builder_with_name(try_job.builder_name, try_job.master_name)
@@ -50,6 +45,9 @@ class RebaselineFromTryJobs(AbstractParallelRebaselineCommand):
             _log.warning('Failed to request layout test results from "%s".', results_url)
             return []
         return layout_test_results.unexpected_mismatch_results()
+
+    def try_bots(self):
+        return self._tool.builders.all_try_builder_names()
 
     def execute(self, options, args, tool):
         if not options.issue:
@@ -60,7 +58,7 @@ class RebaselineFromTryJobs(AbstractParallelRebaselineCommand):
             return
         _log.info('Getting results for Rietveld issue %d.' % options.issue)
 
-        jobs = latest_try_jobs(options.issue, TRY_BOTS, self.web)
+        jobs = latest_try_jobs(options.issue, self.try_bots(), self.web)
 
         for job in jobs:
             _log.info('  Builder: %s', job.builder_name)

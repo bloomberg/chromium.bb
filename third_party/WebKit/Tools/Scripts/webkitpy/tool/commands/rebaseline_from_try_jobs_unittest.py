@@ -6,6 +6,7 @@ import json
 
 from webkitpy.common.net.web_mock import MockWeb
 from webkitpy.common.system.outputcapture import OutputCapture
+from webkitpy.layout_tests.builder_list import BuilderList
 from webkitpy.tool.commands.rebaseline_from_try_jobs import RebaselineFromTryJobs
 from webkitpy.tool.commands.rebaseline_unittest import BaseTestCase
 from webkitpy.tool.mock_tool import MockOptions
@@ -23,12 +24,24 @@ class RebaselineFromTryJobsTest(BaseTestCase):
             'https://codereview.chromium.org/api/11112222/2': json.dumps({
                 'try_job_results': [
                     {
-                        'builder': 'win_chromium_rel_ng',
+                        'builder': 'MOCK Try Win',
                         'master': 'tryserver.chromium.win',
                         'buildnumber': 5000,
                     },
                 ],
             }),
+        })
+        self.tool.builders = BuilderList({
+            "MOCK Try Win": {
+                "port_name": "test-win-win7",
+                "specifiers": ["Win7", "Release"],
+                "is_try_builder": True,
+            },
+            "MOCK Try Mac": {
+                "port_name": "test-mac-mac10.10",
+                "specifiers": ["Mac10.10", "Release"],
+                "is_try_builder": True,
+            },
         })
 
     def test_execute_with_issue_number_given(self):
@@ -41,7 +54,7 @@ class RebaselineFromTryJobsTest(BaseTestCase):
         self.assertEqual(
             logs,
             ('Getting results for Rietveld issue 11112222.\n'
-             '  Builder: win_chromium_rel_ng\n'
+             '  Builder: MOCK Try Win\n'
              '  Master: tryserver.chromium.win\n'
              '  Build: 5000\n'
              'fast/dom/prototype-inheritance.html (actual: TEXT, expected: PASS)\n'
