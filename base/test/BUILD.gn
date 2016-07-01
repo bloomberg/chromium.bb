@@ -128,6 +128,8 @@ source_set("test_support") {
     sources += [
       "launcher/test_launcher.cc",
       "launcher/test_launcher.h",
+      "launcher/test_launcher_tracer.cc",
+      "launcher/test_launcher_tracer.h",
       "launcher/test_results_tracker.cc",
       "launcher/unit_test_launcher.cc",
       "multiprocess_test.cc",
