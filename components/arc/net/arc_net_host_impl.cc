@@ -123,8 +123,9 @@ mojo::Array<arc::mojom::IPConfigurationPtr> TranslateONCIPConfigs(
     list->GetDictionary(i, &ip_dict);
     DCHECK(ip_dict);
 
+    // crbug.com/625229 - Gateway is not always present (but it should be).
     configuration->gateway = GetStringFromOncDictionary(
-        ip_dict, onc::ipconfig::kGateway, true /* required */);
+        ip_dict, onc::ipconfig::kGateway, false /* required */);
     configuration->ip_address = GetStringFromOncDictionary(
         ip_dict, onc::ipconfig::kIPAddress, true /* required */);
 
@@ -145,7 +146,8 @@ mojo::Array<arc::mojom::IPConfigurationPtr> TranslateONCIPConfigs(
                               : arc::mojom::IPAddressType::IPV4;
 
     configuration->web_proxy_auto_discovery_url = GetStringFromOncDictionary(
-        ip_dict, onc::ipconfig::kWebProxyAutoDiscoveryUrl, true /* required */);
+        ip_dict, onc::ipconfig::kWebProxyAutoDiscoveryUrl,
+        false /* required */);
 
     configs.push_back(std::move(configuration));
   }
