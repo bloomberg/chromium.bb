@@ -21,7 +21,7 @@ import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
 import org.chromium.chrome.browser.preferences.autofill.AutofillProfileBridge.AddressField;
 import org.chromium.chrome.browser.preferences.autofill.AutofillProfileBridge.AddressUiComponent;
 import org.chromium.chrome.browser.preferences.autofill.AutofillProfileBridge.DropdownKeyValue;
-import org.chromium.chrome.browser.widget.FloatLabelLayout;
+import org.chromium.chrome.browser.widget.CompatibilityTextInputLayout;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -33,15 +33,15 @@ public class AutofillProfileEditor extends AutofillEditorBase {
     private boolean mNoCountryItemIsSelected;
     private LayoutInflater mInflater;
     private EditText mPhoneText;
-    private FloatLabelLayout mPhoneLabel;
+    private CompatibilityTextInputLayout mPhoneLabel;
     private EditText mEmailText;
-    private FloatLabelLayout mEmailLabel;
+    private CompatibilityTextInputLayout mEmailLabel;
     private String mLanguageCodeString;
     private List<String> mCountryCodes;
     private int mCurrentCountryPos;
     private Spinner mCountriesDropdown;
     private ViewGroup mWidgetRoot;
-    private FloatLabelLayout[] mAddressFields;
+    private CompatibilityTextInputLayout[] mAddressFields;
     private AutofillProfileBridge mAutofillProfileBridge;
     private boolean mUseSavedProfileLanguage;
 
@@ -51,12 +51,12 @@ public class AutofillProfileEditor extends AutofillEditorBase {
         View v = super.onCreateView(inflater, container, savedInstanceState);
 
         mInflater = inflater;
-        mAddressFields = new FloatLabelLayout[AddressField.NUM_FIELDS];
+        mAddressFields = new CompatibilityTextInputLayout[AddressField.NUM_FIELDS];
 
         mPhoneText = (EditText) v.findViewById(R.id.phone_number_edit);
-        mPhoneLabel = (FloatLabelLayout) v.findViewById(R.id.phone_number_label);
+        mPhoneLabel = (CompatibilityTextInputLayout) v.findViewById(R.id.phone_number_label);
         mEmailText = (EditText) v.findViewById(R.id.email_address_edit);
-        mEmailLabel = (FloatLabelLayout) v.findViewById(R.id.email_address_label);
+        mEmailLabel = (CompatibilityTextInputLayout) v.findViewById(R.id.email_address_label);
         mWidgetRoot = (ViewGroup) v.findViewById(R.id.autofill_profile_widget_root);
         mCountriesDropdown = (Spinner) v.findViewById(R.id.countries);
 
@@ -90,7 +90,7 @@ public class AutofillProfileEditor extends AutofillEditorBase {
                 || !TextUtils.isEmpty(mEmailText.getText())) {
             return false;
         }
-        for (FloatLabelLayout field : mAddressFields) {
+        for (CompatibilityTextInputLayout field : mAddressFields) {
             if (field != null && !TextUtils.isEmpty(field.getEditText().getText())) {
                 return false;
             }
@@ -131,11 +131,11 @@ public class AutofillProfileEditor extends AutofillEditorBase {
 
         if (profile != null) {
             if (!TextUtils.isEmpty(profile.getPhoneNumber())) {
-                mPhoneLabel.setText(profile.getPhoneNumber());
+                mPhoneLabel.getEditText().setText(profile.getPhoneNumber());
             }
 
             if (!TextUtils.isEmpty(profile.getEmailAddress())) {
-                mEmailLabel.setText(profile.getEmailAddress());
+                mEmailLabel.getEditText().setText(profile.getEmailAddress());
             }
 
             mLanguageCodeString = profile.getLanguageCode();
@@ -202,13 +202,12 @@ public class AutofillProfileEditor extends AutofillEditorBase {
         // Create form fields and focus the first field if autoFocusFirstField is true.
         boolean firstField = true;
         for (AddressUiComponent field : fields) {
-            FloatLabelLayout fieldFloatLabel = (FloatLabelLayout) mInflater.inflate(
-                    R.layout.preference_address_float_label_layout, mWidgetRoot, false);
+            CompatibilityTextInputLayout fieldFloatLabel =
+                    (CompatibilityTextInputLayout) mInflater.inflate(
+                            R.layout.preference_address_float_label_layout, mWidgetRoot, false);
             fieldFloatLabel.setHint(field.label);
 
-            EditText fieldEditText =
-                    (EditText) fieldFloatLabel.findViewById(R.id.address_edit_text);
-            fieldEditText.setHint(field.label);
+            EditText fieldEditText = fieldFloatLabel.getEditText();
             fieldEditText.setContentDescription(field.label);
             fieldEditText.addTextChangedListener(this);
             if (field.id == AddressField.STREET_ADDRESS) {
@@ -219,7 +218,7 @@ public class AutofillProfileEditor extends AutofillEditorBase {
             mWidgetRoot.addView(fieldFloatLabel);
 
             if (firstField && autoFocusFirstField) {
-                fieldFloatLabel.focusWithoutAnimation();
+                fieldEditText.requestFocus();
                 firstField = false;
             }
         }
@@ -228,7 +227,7 @@ public class AutofillProfileEditor extends AutofillEditorBase {
         for (int i = 0; i < mAddressFields.length; i++) {
             if (mAddressFields[i] != null && fieldText[i] != null
                     && !TextUtils.isEmpty(fieldText[i])) {
-                mAddressFields[i].setText(fieldText[i]);
+                mAddressFields[i].getEditText().setText(fieldText[i]);
             }
         }
     }
@@ -257,7 +256,7 @@ public class AutofillProfileEditor extends AutofillEditorBase {
 
     private void setFieldText(int fieldId, String text) {
         if (mAddressFields[fieldId] != null && !TextUtils.isEmpty(text)) {
-            mAddressFields[fieldId].setText(text);
+            mAddressFields[fieldId].getEditText().setText(text);
         }
     }
 

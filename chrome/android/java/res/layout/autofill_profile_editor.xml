@@ -39,7 +39,7 @@
         android:orientation="vertical" >
     </LinearLayout>
 
-    <org.chromium.chrome.browser.widget.FloatLabelLayout
+    <org.chromium.chrome.browser.widget.CompatibilityTextInputLayout
         android:id="@+id/phone_number_label"
         android:layout_width="match_parent"
         android:layout_height="wrap_content" >
@@ -51,9 +51,9 @@
             android:inputType="phone"
             android:singleLine="true"
             android:hint="@string/autofill_profile_editor_phone_number" />
-    </org.chromium.chrome.browser.widget.FloatLabelLayout>
+    </org.chromium.chrome.browser.widget.CompatibilityTextInputLayout>
 
-    <org.chromium.chrome.browser.widget.FloatLabelLayout
+    <org.chromium.chrome.browser.widget.CompatibilityTextInputLayout
         android:id="@+id/email_address_label"
         android:layout_width="match_parent"
         android:layout_height="wrap_content" >
@@ -65,6 +65,6 @@
             android:inputType="textEmailAddress"
             android:singleLine="true"
             android:hint="@string/autofill_profile_editor_email_address" />
-    </org.chromium.chrome.browser.widget.FloatLabelLayout>
+    </org.chromium.chrome.browser.widget.CompatibilityTextInputLayout>
 
 </merge>

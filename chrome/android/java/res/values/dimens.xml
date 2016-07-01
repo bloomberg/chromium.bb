@@ -113,8 +113,6 @@
     <dimen name="password_generation_text_vertical_margin">12dp</dimen>
 
     <!-- Preferences dimensions -->
-    <dimen name="pref_autofill_field_horizontal_padding">3dp</dimen>
-    <dimen name="pref_autofill_field_top_padding">10dp</dimen>
     <dimen name="pref_autofill_touch_target_padding">15dp</dimen>
 
     <!-- Site Settings dimensions -->
@@ -365,6 +363,14 @@
     <dimen name="payments_section_add_button_height">48dp</dimen>
     <dimen name="payments_ui_max_dialog_width">0dp</dimen>
     <dimen name="payments_ui_translation">100dp</dimen>
+
+    <!-- Preferences dimensions
+         pref_autofill_field_horizontal_padding exists because TextInputLayouts have an internal
+         padding set.
+    -->
+    <dimen name="pref_autofill_content_padding">12dp</dimen>
+    <dimen name="pref_autofill_field_horizontal_padding">4dp</dimen>
+    <dimen name="pref_autofill_field_top_padding">10dp</dimen>
 
     <!-- Dialog dimensions.
          https://www.google.com/design/spec/components/dialogs.html#dialogs-simple-dialogs -->

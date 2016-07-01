@@ -3,7 +3,7 @@
      Use of this source code is governed by a BSD-style license that can be
      found in the LICENSE file. -->
 
-<org.chromium.chrome.browser.widget.FloatLabelLayout
+<org.chromium.chrome.browser.widget.CompatibilityTextInputLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/float_label_layout"
     android:layout_width="match_parent"
@@ -13,5 +13,6 @@
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:singleLine="true"
+        android:imeOptions="flagNoExtractUi"
         android:inputType="textPostalAddress|textCapWords" />
-</org.chromium.chrome.browser.widget.FloatLabelLayout>
+</org.chromium.chrome.browser.widget.CompatibilityTextInputLayout>

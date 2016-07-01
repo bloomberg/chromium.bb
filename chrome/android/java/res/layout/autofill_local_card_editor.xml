@@ -6,8 +6,11 @@
 <!-- EditText views in FloatLabelLayout require both hint and contentDescription to be set
      to work correctly for accessibility because FloatLabelLayout sometimes clear hint. -->
 <!--suppress ContentDescription -->
-<merge xmlns:android="http://schemas.android.com/apk/res/android">
-    <org.chromium.chrome.browser.widget.FloatLabelLayout
+<merge
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <org.chromium.chrome.browser.widget.CompatibilityTextInputLayout
         android:id="@+id/credit_card_name_label"
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
@@ -18,9 +21,9 @@
             android:imeOptions="flagNoExtractUi"
             android:inputType="textCapWords"
             android:hint="@string/autofill_credit_card_editor_name" />
-    </org.chromium.chrome.browser.widget.FloatLabelLayout>
+    </org.chromium.chrome.browser.widget.CompatibilityTextInputLayout>
 
-    <org.chromium.chrome.browser.widget.FloatLabelLayout
+    <org.chromium.chrome.browser.widget.CompatibilityTextInputLayout
         android:id="@+id/credit_card_number_label"
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
@@ -32,40 +35,42 @@
             android:inputType="phone"
             android:digits="0123456789- "
             android:hint="@string/autofill_credit_card_editor_number" />
-    </org.chromium.chrome.browser.widget.FloatLabelLayout>
+    </org.chromium.chrome.browser.widget.CompatibilityTextInputLayout>
 
     <TextView
         android:id="@+id/credit_card_expiration_label"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/pref_autofill_field_horizontal_padding"
+        android:layout_marginEnd="@dimen/pref_autofill_field_horizontal_padding"
         android:focusable="true"
-        android:paddingTop="@dimen/pref_autofill_field_top_padding"
         android:textAppearance="@style/PreferenceFloatLabelTextAppearance"
-        android:text="@string/autofill_credit_card_editor_expiration_date"
-        android:paddingStart="@dimen/pref_autofill_field_horizontal_padding"
-        android:paddingEnd="@dimen/pref_autofill_field_horizontal_padding" />
+        android:text="@string/autofill_credit_card_editor_expiration_date" />
 
     <LinearLayout
         android:id="@+id/credit_card_expiration_container"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/pref_autofill_field_horizontal_padding"
+        android:layout_marginEnd="@dimen/pref_autofill_field_horizontal_padding"
         android:orientation="horizontal"
         android:paddingTop="8dp"
-        android:baselineAligned="false"
-        android:layout_marginStart="@dimen/pref_autofill_field_horizontal_padding"
-        android:layout_marginEnd="@dimen/pref_autofill_field_horizontal_padding">
+        android:baselineAligned="false">
 
         <LinearLayout
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:orientation="vertical"
-            android:paddingEnd="10dp">
+            android:layout_marginEnd="@dimen/payments_section_large_spacing">
+
             <android.support.v7.widget.AppCompatSpinner
                 android:id="@+id/autofill_credit_card_editor_month_spinner"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content" />
+
             <View style="@style/PreferenceSpinnerUnderlineView" />
+
         </LinearLayout>
 
        <LinearLayout

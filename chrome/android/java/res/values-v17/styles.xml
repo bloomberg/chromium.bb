@@ -46,6 +46,7 @@
     <style name="FullscreenWhiteDialog" parent="Theme.AppCompat.Light" >
         <item name="android:windowBackground">@android:color/white</item>
         <item name="android:textColorLink">@color/light_active_color</item>
+        <item name="android:statusBarColor" tools:targetApi="21">@android:color/black</item>
         <item name="colorPrimary">@color/light_active_color</item>
         <item name="colorAccent">@color/light_active_color</item>
     </style>
@@ -124,8 +125,11 @@
     </style>
     <style name="PreferenceScreenLayout">
         <item name="android:paddingTop">16dp</item>
-        <item name="android:paddingStart">16dp</item>
-        <item name="android:paddingEnd">16dp</item>
+        
+        <!-- Additional padding is applied to each of the controls inside the layout, making this
+             a 16dp padding overall. -->
+        <item name="android:paddingStart">@dimen/pref_autofill_content_padding</item>
+        <item name="android:paddingEnd">@dimen/pref_autofill_content_padding</item>
     </style>
     <style name="PreferenceLayoutBase">
         <item name="android:background">?android:attr/activatedBackgroundIndicator</item>
@@ -140,8 +144,8 @@
         <item name="android:textSize">14sp</item>
     </style>
     <style name="PreferenceFloatLabelTextAppearance">
-        <item name="android:textColor">@color/float_label</item>
-        <item name="android:textSize">14sp</item>
+        <item name="android:textColor">@color/descriptive_text_color</item>
+        <item name="android:textSize">12sp</item>
     </style>
     <style name="PreferenceSpinnerItem">
         <item name="android:textAppearance">@style/PreferenceTextAppearanceMedium</item>
@@ -150,7 +154,7 @@
         <item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">1dp</item>
         <item name="android:layout_marginTop">2dp</item>
-        <item name="android:background">@color/input_underline_color</item>
+        <item name="android:background">@color/google_grey_600</item>
     </style>
 
     <style name="ThemeWithActionBar" parent="Theme.AppCompat.Light.DarkActionBar">

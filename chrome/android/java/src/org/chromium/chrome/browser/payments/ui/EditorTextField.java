@@ -5,26 +5,24 @@
 package org.chromium.chrome.browser.payments.ui;
 
 import android.content.Context;
-import android.os.Build;
-import android.support.design.widget.TextInputLayout;
-import android.support.v7.widget.AppCompatAutoCompleteTextView;
 import android.telephony.PhoneNumberFormattingTextWatcher;
 import android.text.Editable;
 import android.text.InputType;
 import android.text.TextWatcher;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.TextView.OnEditorActionListener;
 
 import org.chromium.base.VisibleForTesting;
+import org.chromium.chrome.R;
 import org.chromium.chrome.browser.payments.ui.PaymentRequestUI.PaymentRequestObserverForTest;
-
-import javax.annotation.Nullable;
+import org.chromium.chrome.browser.widget.CompatibilityTextInputLayout;
 
 /** Handles validation and display of one field from the {@link EditorFieldModel}. */
 @VisibleForTesting
-public class EditorTextField extends TextInputLayout {
+public class EditorTextField extends CompatibilityTextInputLayout {
 
     /** The indicator for input fields that are required. */
     private static final String REQUIRED_FIELD_INDICATOR = "*";
@@ -33,7 +31,6 @@ public class EditorTextField extends TextInputLayout {
     private AutoCompleteTextView mInput;
     private boolean mHasFocusedAtLeastOnce;
     private PaymentRequestObserverForTest mObserverForTest;
-    private boolean mIsBackgroundMutated;
 
     public EditorTextField(Context context, final EditorFieldModel fieldModel,
             OnEditorActionListener actionlistener, PhoneNumberFormattingTextWatcher formatter,
@@ -48,14 +45,11 @@ public class EditorTextField extends TextInputLayout {
         if (fieldModel.isRequired()) label = label + REQUIRED_FIELD_INDICATOR;
         setHint(label);
 
-        // The TextView is a child of this class.  The TextInputLayout manages how it looks.
-        mInput = new AppCompatAutoCompleteTextView(getContext());
-        addView(mInput);
-
+        // The EditText becomes a child of this class.  The TextInputLayout manages how it looks.
+        LayoutInflater.from(context).inflate(R.layout.payments_request_editor_textview, this, true);
+        mInput = (AutoCompleteTextView) findViewById(R.id.text_view);
         mInput.setText(fieldModel.getValue());
         mInput.setOnEditorActionListener(actionlistener);
-        mInput.getLayoutParams().width = LayoutParams.MATCH_PARENT;
-        mInput.getLayoutParams().height = LayoutParams.WRAP_CONTENT;
 
         // Validate the field when the user de-focuses it.
         mInput.setOnFocusChangeListener(new OnFocusChangeListener() {
@@ -134,34 +128,11 @@ public class EditorTextField extends TextInputLayout {
         }
     }
 
-    /**
-     * Super gross, dirty, awful hack for dealing with bugs in version 23 of the support library.
-     *
-     * Gleaned using dirty things from comments on the Android bug and support library source:
-     * https://code.google.com/p/android/issues/detail?id=190829
-     *
-     * TODO(dfalcantara): Remove this super gross dirty hack once Chrome can roll version 24:
-     *                    https://crbug.com/603635
-     */
-    @Override
-    public void setError(@Nullable CharSequence error) {
-        if (!mIsBackgroundMutated && getEditText() != null && getEditText().getBackground() != null
-                && ((Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP))) {
-            getEditText().setBackground(
-                    getEditText().getBackground().getConstantState().newDrawable());
-            getEditText().getBackground().mutate();
-            mIsBackgroundMutated = true;
-        }
-
-        super.setError(error);
-    }
-
     /** @return The EditorFieldModel that the TextView represents. */
     public EditorFieldModel getFieldModel() {
         return mEditorFieldModel;
     }
 
-    /** @return The TextView for the field. */
     @Override
     public AutoCompleteTextView getEditText() {
         return mInput;
@@ -174,6 +145,5 @@ public class EditorTextField extends TextInputLayout {
      */
     public void updateDisplayedError(boolean showError) {
         setError(showError ? mEditorFieldModel.getErrorMessage() : null);
-        setErrorEnabled(showError);
     }
 }

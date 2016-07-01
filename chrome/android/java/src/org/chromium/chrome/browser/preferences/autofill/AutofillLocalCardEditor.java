@@ -21,7 +21,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.autofill.PersonalDataManager;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.CreditCard;
-import org.chromium.chrome.browser.widget.FloatLabelLayout;
+import org.chromium.chrome.browser.widget.CompatibilityTextInputLayout;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -31,9 +31,9 @@ import java.util.Locale;
  * Local credit card settings.
  */
 public class AutofillLocalCardEditor extends AutofillCreditCardEditor {
-    private FloatLabelLayout mNameLabel;
+    private CompatibilityTextInputLayout mNameLabel;
     private EditText mNameText;
-    private FloatLabelLayout mNumberLabel;
+    private CompatibilityTextInputLayout mNumberLabel;
     private EditText mNumberText;
     private Spinner mExpirationMonth;
     private Spinner mExpirationYear;
@@ -46,9 +46,9 @@ public class AutofillLocalCardEditor extends AutofillCreditCardEditor {
             Bundle savedInstanceState) {
         View v = super.onCreateView(inflater, container, savedInstanceState);
 
-        mNameLabel = (FloatLabelLayout) v.findViewById(R.id.credit_card_name_label);
+        mNameLabel = (CompatibilityTextInputLayout) v.findViewById(R.id.credit_card_name_label);
         mNameText = (EditText) v.findViewById(R.id.credit_card_name_edit);
-        mNumberLabel = (FloatLabelLayout) v.findViewById(R.id.credit_card_number_label);
+        mNumberLabel = (CompatibilityTextInputLayout) v.findViewById(R.id.credit_card_number_label);
         mNumberText = (EditText) v.findViewById(R.id.credit_card_number_edit);
 
         // Set text watcher to format credit card number
@@ -117,19 +117,19 @@ public class AutofillLocalCardEditor extends AutofillCreditCardEditor {
 
     private void addCardDataToEditFields() {
         if (mCard == null) {
-            mNameLabel.focusWithoutAnimation();
+            mNameLabel.requestFocus();
             return;
         }
 
         if (!TextUtils.isEmpty(mCard.getName())) {
-            mNameLabel.setText(mCard.getName());
+            mNameLabel.getEditText().setText(mCard.getName());
         }
         if (!TextUtils.isEmpty(mCard.getNumber())) {
-            mNumberLabel.setText(mCard.getNumber());
+            mNumberLabel.getEditText().setText(mCard.getNumber());
         }
 
         // Make the name label focusable in touch mode so that mNameText doesn't get focused.
-        mNameLabel.getLabel().setFocusableInTouchMode(true);
+        mNameLabel.setFocusableInTouchMode(true);
 
         int monthAsInt = 1;
         if (!mCard.getMonth().isEmpty()) {
