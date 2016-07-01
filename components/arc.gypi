@@ -111,6 +111,7 @@
       ],
       'dependencies': [
         '../skia/skia.gyp:skia',
+        'arc_mojo_bindings',
       ],
       'sources': [
         'arc/bitmap/bitmap_type_converters.cc',
