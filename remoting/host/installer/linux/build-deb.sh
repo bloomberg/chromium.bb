@@ -10,7 +10,7 @@ ARCHITECTURE=$(dpkg-architecture | awk -F '=' '/DEB_BUILD_ARCH=/{print $2}')
 
 # These settings are copied from chrome/installer/linux/debian/build.sh .
 BASEREPOCONFIG="dl.google.com/linux/chrome-remote-desktop/deb/ stable main"
-REPOCONFIG="deb [arch=${ARCHITECTURE}] http://${BASEREPOCONFIG}}"
+REPOCONFIG="deb [arch=${ARCHITECTURE}] http://${BASEREPOCONFIG}"
 # Allowed configs include optional HTTPS support and explicit multiarch
 # platforms.
 REPOCONFIGREGEX="deb (\\\\[arch=[^]]*\\\\b${ARCHITECTURE}\\\\b[^]]*\\\\]"
