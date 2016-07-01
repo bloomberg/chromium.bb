@@ -18,3 +18,7 @@ hb-directwrite.*) from the tarball's src folder over to src, then checking for
 removed or added files and update our build recipes in BUILD.gn and
 harfbuzz.gyp accordingly, update the NEWS file from HarfBuzz' release notes,
 and bump the version numbers in README.chromium.
+
+Cherry picked https://github.com/behdad/harfbuzz/commit/46809dee30232d4 to fix
+crbug.com/132252 - incompatibility with font management software and third-party
+Type 1 versions of Helvetica.
