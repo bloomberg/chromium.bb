@@ -69,6 +69,11 @@ Polymer({
     document.addEventListener('toggle-advanced-page', function(e) {
       this.showAdvancedPage_ = e.detail;
       this.isAdvancedMenuOpen_ = e.detail;
+      this.currentRoute = {
+        page: this.isAdvancedMenuOpen_ ? 'advanced' : 'basic',
+        section: '',
+        subpage: [],
+      };
       if (this.showAdvancedPage_) {
         doWhenReady(
             function() {

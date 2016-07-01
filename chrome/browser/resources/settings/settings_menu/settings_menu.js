@@ -73,7 +73,6 @@ Polymer({
         page: submenuRoute,
         section: event.currentTarget.dataset.section,
         subpage: [],
-        url: '',
       };
     }
   },

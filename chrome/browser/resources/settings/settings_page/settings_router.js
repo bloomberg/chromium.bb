@@ -4,11 +4,11 @@
 
 /**
  * @typedef {{
- *   url: string,
+ *   dialog: (string|undefined),
  *   page: string,
  *   section: string,
  *   subpage: !Array<string>,
- *   dialog: (string|undefined),
+ *   url: (string|undefined),
  * }}
  */
 var SettingsRoute;
