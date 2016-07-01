@@ -41,9 +41,9 @@
 
 #if defined(USE_ASH)
 #include "ash/accelerators/accelerator_commands.h"
+#include "ash/common/wm/maximize_mode/maximize_mode_controller.h"
 #include "ash/common/wm/window_state.h"
 #include "ash/shell.h"
-#include "ash/wm/maximize_mode/maximize_mode_controller.h"
 #include "ash/wm/window_state_aura.h"
 #include "ui/wm/core/coordinate_conversion.h"
 #endif

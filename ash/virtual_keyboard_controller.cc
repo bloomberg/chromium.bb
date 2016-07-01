@@ -8,9 +8,9 @@
 
 #include "ash/common/ash_switches.h"
 #include "ash/common/system/tray/system_tray_notifier.h"
+#include "ash/common/wm/maximize_mode/maximize_mode_controller.h"
 #include "ash/common/wm_shell.h"
 #include "ash/shell.h"
-#include "ash/wm/maximize_mode/maximize_mode_controller.h"
 #include "base/command_line.h"
 #include "base/strings/string_util.h"
 #include "ui/events/devices/input_device.h"

@@ -4,9 +4,9 @@
 
 #include "chrome/browser/ui/webui/chromeos/touch_view_controller_delegate.h"
 
+#include "ash/common/wm/maximize_mode/maximize_mode_controller.h"
 #include "ash/common/wm_shell.h"
 #include "ash/shell.h"
-#include "ash/wm/maximize_mode/maximize_mode_controller.h"
 
 namespace chromeos {
 

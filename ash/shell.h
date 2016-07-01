@@ -284,13 +284,6 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
   // Called when a casting session is started or stopped.
   void OnCastingSessionStartedOrStopped(bool started);
 
-  // Called after maximize mode has started, windows might still animate though.
-  void OnMaximizeModeStarted();
-
-  // Called after maximize mode has ended, windows might still be returning to
-  // their original position.
-  void OnMaximizeModeEnded();
-
   // Called when a root window is created.
   void OnRootWindowAdded(WmWindow* root_window);
 

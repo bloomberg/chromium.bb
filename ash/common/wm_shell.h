@@ -30,6 +30,7 @@ class DisplayInfo;
 class FocusCycler;
 class KeyboardUI;
 class MruWindowTracker;
+class ScopedDisableInternalMouseAndKeyboard;
 class SessionStateDelegate;
 class ShellObserver;
 class SystemTrayDelegate;
@@ -100,6 +101,10 @@ class ASH_EXPORT WmShell {
   // TODO(msw): Remove this when DisplayManager has been moved. crbug.com/622480
   virtual const DisplayInfo& GetDisplayInfo(int64_t display_id) const = 0;
 
+  // Matches that of DisplayManager::IsActiveDisplayId().
+  // TODO: Remove this when DisplayManager has been moved. crbug.com/622480
+  virtual bool IsActiveDisplayId(int64_t display_id) const = 0;
+
   // Returns true if the first window shown on first run should be
   // unconditionally maximized, overriding the heuristic that normally chooses
   // the window size.
@@ -148,6 +153,16 @@ class ASH_EXPORT WmShell {
 
   virtual std::unique_ptr<wm::MaximizeModeEventHandler>
   CreateMaximizeModeEventHandler() = 0;
+
+  virtual std::unique_ptr<ScopedDisableInternalMouseAndKeyboard>
+  CreateScopedDisableInternalMouseAndKeyboard() = 0;
+
+  // Called after maximize mode has started, windows might still animate though.
+  void OnMaximizeModeStarted();
+
+  // Called after maximize mode has ended, windows might still be returning to
+  // their original position.
+  void OnMaximizeModeEnded();
 
   // Called when the overview mode is about to be started (before the windows
   // get re-arranged).

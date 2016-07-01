@@ -11,6 +11,7 @@
 #include "ash/common/shell_window_ids.h"
 #include "ash/common/system/tray/default_system_tray_delegate.h"
 #include "ash/common/wm/maximize_mode/maximize_mode_event_handler.h"
+#include "ash/common/wm/maximize_mode/scoped_disable_internal_mouse_and_keyboard.h"
 #include "ash/common/wm/mru_window_tracker.h"
 #include "ash/common/wm/window_resizer.h"
 #include "ash/common/wm_activation_observer.h"
@@ -180,6 +181,12 @@ const DisplayInfo& WmShellMus::GetDisplayInfo(int64_t display_id) const {
   return fake_info;
 }
 
+bool WmShellMus::IsActiveDisplayId(int64_t display_id) const {
+  // TODO: implement http://crbug.com/622480.
+  NOTIMPLEMENTED();
+  return true;
+}
+
 bool WmShellMus::IsForceMaximizeOnFirstRun() {
   NOTIMPLEMENTED();
   return false;
@@ -229,6 +236,13 @@ std::unique_ptr<wm::MaximizeModeEventHandler>
 WmShellMus::CreateMaximizeModeEventHandler() {
   // TODO: need support for window manager to get events before client:
   // http://crbug.com/624157.
+  NOTIMPLEMENTED();
+  return nullptr;
+}
+
+std::unique_ptr<ScopedDisableInternalMouseAndKeyboard>
+WmShellMus::CreateScopedDisableInternalMouseAndKeyboard() {
+  // TODO: needs implementation for mus, http://crbug.com/624967.
   NOTIMPLEMENTED();
   return nullptr;
 }

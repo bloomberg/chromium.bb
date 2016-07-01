@@ -35,6 +35,7 @@ class ASH_EXPORT WmShellAura : public WmShell,
   WmWindow* GetRootWindowForDisplayId(int64_t display_id) override;
   WmWindow* GetRootWindowForNewWindows() override;
   const DisplayInfo& GetDisplayInfo(int64_t display_id) const override;
+  bool IsActiveDisplayId(int64_t display_id) const override;
   bool IsForceMaximizeOnFirstRun() override;
   bool IsPinned() override;
   void SetPinnedWindow(WmWindow* window) override;
@@ -48,6 +49,8 @@ class ASH_EXPORT WmShellAura : public WmShell,
       wm::WindowState* window_state) override;
   std::unique_ptr<wm::MaximizeModeEventHandler> CreateMaximizeModeEventHandler()
       override;
+  std::unique_ptr<ScopedDisableInternalMouseAndKeyboard>
+  CreateScopedDisableInternalMouseAndKeyboard() override;
   void OnOverviewModeStarting() override;
   void OnOverviewModeEnded() override;
   AccessibilityDelegate* GetAccessibilityDelegate() override;

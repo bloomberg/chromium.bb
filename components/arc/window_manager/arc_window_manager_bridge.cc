@@ -4,9 +4,9 @@
 
 #include "components/arc/window_manager/arc_window_manager_bridge.h"
 
+#include "ash/common/wm/maximize_mode/maximize_mode_controller.h"
 #include "ash/common/wm_shell.h"
 #include "ash/shell.h"
-#include "ash/wm/maximize_mode/maximize_mode_controller.h"
 #include "base/logging.h"
 #include "components/arc/arc_bridge_service.h"
 

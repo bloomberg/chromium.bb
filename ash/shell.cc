@@ -25,6 +25,7 @@
 #include "ash/common/shell_window_ids.h"
 #include "ash/common/system/locale/locale_notification_controller.h"
 #include "ash/common/system/tray/system_tray_delegate.h"
+#include "ash/common/wm/maximize_mode/maximize_mode_controller.h"
 #include "ash/common/wm/maximize_mode/maximize_mode_window_manager.h"
 #include "ash/common/wm/mru_window_tracker.h"
 #include "ash/common/wm/root_window_finder.h"
@@ -68,7 +69,6 @@
 #include "ash/wm/ash_native_cursor_manager.h"
 #include "ash/wm/event_client_impl.h"
 #include "ash/wm/lock_state_controller.h"
-#include "ash/wm/maximize_mode/maximize_mode_controller.h"
 #include "ash/wm/overlay_event_filter.h"
 #include "ash/wm/overview/scoped_overview_animation_settings_factory_aura.h"
 #include "ash/wm/power_button_controller.h"
@@ -400,16 +400,6 @@ void Shell::OnCastingSessionStartedOrStopped(bool started) {
   FOR_EACH_OBSERVER(ShellObserver, *wm_shell_->shell_observers(),
                     OnCastingSessionStartedOrStopped(started));
 #endif
-}
-
-void Shell::OnMaximizeModeStarted() {
-  FOR_EACH_OBSERVER(ShellObserver, *wm_shell_->shell_observers(),
-                    OnMaximizeModeStarted());
-}
-
-void Shell::OnMaximizeModeEnded() {
-  FOR_EACH_OBSERVER(ShellObserver, *wm_shell_->shell_observers(),
-                    OnMaximizeModeEnded());
 }
 
 void Shell::OnRootWindowAdded(WmWindow* root_window) {

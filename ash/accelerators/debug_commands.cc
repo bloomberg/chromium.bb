@@ -6,6 +6,7 @@
 
 #include "ash/accelerators/accelerator_commands.h"
 #include "ash/common/ash_switches.h"
+#include "ash/common/wm/maximize_mode/maximize_mode_controller.h"
 #include "ash/debug.h"
 #include "ash/desktop_background/desktop_background_controller.h"
 #include "ash/desktop_background/user_wallpaper_delegate.h"
@@ -16,7 +17,6 @@
 #include "ash/shell_delegate.h"
 #include "ash/system/toast/toast_data.h"
 #include "ash/system/toast/toast_manager.h"
-#include "ash/wm/maximize_mode/maximize_mode_controller.h"
 #include "ash/wm/window_util.h"
 #include "base/command_line.h"
 #include "base/metrics/user_metrics.h"

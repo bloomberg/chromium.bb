@@ -5,10 +5,10 @@
 #include "ash/frame/caption_buttons/frame_caption_button_container_view.h"
 
 #include "ash/common/ash_layout_constants.h"
+#include "ash/common/wm/maximize_mode/maximize_mode_controller.h"
 #include "ash/frame/caption_buttons/frame_caption_button.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
-#include "ash/wm/maximize_mode/maximize_mode_controller.h"
 #include "grit/ash_resources.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/vector_icons_public.h"

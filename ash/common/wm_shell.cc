@@ -31,6 +31,14 @@ WmShell* WmShell::Get() {
   return instance_;
 }
 
+void WmShell::OnMaximizeModeStarted() {
+  FOR_EACH_OBSERVER(ShellObserver, shell_observers_, OnMaximizeModeStarted());
+}
+
+void WmShell::OnMaximizeModeEnded() {
+  FOR_EACH_OBSERVER(ShellObserver, shell_observers_, OnMaximizeModeEnded());
+}
+
 void WmShell::NotifyPinnedStateChanged(WmWindow* pinned_window) {
   FOR_EACH_OBSERVER(ShellObserver, shell_observers_,
                     OnPinnedStateChanged(pinned_window));

@@ -7,6 +7,7 @@
 #include "ash/aura/wm_window_aura.h"
 #include "ash/common/session/session_state_delegate.h"
 #include "ash/common/shell_observer.h"
+#include "ash/common/wm/maximize_mode/scoped_disable_internal_mouse_and_keyboard.h"
 #include "ash/common/wm/mru_window_tracker.h"
 #include "ash/common/wm/overview/window_selector_controller.h"
 #include "ash/common/wm_activation_observer.h"
@@ -25,6 +26,14 @@
 
 #if defined(OS_CHROMEOS)
 #include "ash/virtual_keyboard_controller.h"
+#endif
+
+#if defined(USE_X11)
+#include "ash/wm/maximize_mode/scoped_disable_internal_mouse_and_keyboard_x11.h"
+#endif
+
+#if defined(USE_OZONE)
+#include "ash/wm/maximize_mode/scoped_disable_internal_mouse_and_keyboard_ozone.h"
 #endif
 
 namespace ash {
@@ -79,6 +88,10 @@ const DisplayInfo& WmShellAura::GetDisplayInfo(int64_t display_id) const {
   return Shell::GetInstance()->display_manager()->GetDisplayInfo(display_id);
 }
 
+bool WmShellAura::IsActiveDisplayId(int64_t display_id) const {
+  return Shell::GetInstance()->display_manager()->IsActiveDisplayId(display_id);
+}
+
 bool WmShellAura::IsForceMaximizeOnFirstRun() {
   return Shell::GetInstance()->delegate()->IsForceMaximizeOnFirstRun();
 }
@@ -126,6 +139,16 @@ std::unique_ptr<WindowResizer> WmShellAura::CreateDragWindowResizer(
 std::unique_ptr<wm::MaximizeModeEventHandler>
 WmShellAura::CreateMaximizeModeEventHandler() {
   return base::WrapUnique(new wm::MaximizeModeEventHandlerAura);
+}
+
+std::unique_ptr<ScopedDisableInternalMouseAndKeyboard>
+WmShellAura::CreateScopedDisableInternalMouseAndKeyboard() {
+#if defined(USE_X11)
+  return base::WrapUnique(new ScopedDisableInternalMouseAndKeyboardX11);
+#elif defined(USE_OZONE)
+  return base::WrapUnique(new ScopedDisableInternalMouseAndKeyboardOzone);
+#endif
+  return nullptr;
 }
 
 void WmShellAura::OnOverviewModeStarting() {

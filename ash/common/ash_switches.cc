@@ -53,10 +53,10 @@ const char kAshEnableMagnifierKeyScroller[] =
 
 // Enables unified desktop mode.
 const char kAshEnableUnifiedDesktop[] = "ash-enable-unified-desktop";
+#endif
 
 // Enables the observation of accelerometer events to enter touch-view mode.
 const char kAshEnableTouchView[] = "enable-touchview";
-#endif
 
 // Enables mirrored screen.
 const char kAshEnableMirroredScreen[] = "ash-enable-mirrored-screen";

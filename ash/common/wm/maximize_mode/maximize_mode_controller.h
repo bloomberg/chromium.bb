@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_WM_MAXIMIZE_MODE_MAXIMIZE_MODE_CONTROLLER_H_
-#define ASH_WM_MAXIMIZE_MODE_MAXIMIZE_MODE_CONTROLLER_H_
+#ifndef ASH_COMMON_WM_MAXIMIZE_MODE_MAXIMIZE_MODE_CONTROLLER_H_
+#define ASH_COMMON_WM_MAXIMIZE_MODE_MAXIMIZE_MODE_CONTROLLER_H_
 
 #include <memory>
 
 #include "ash/ash_export.h"
 #include "ash/common/shell_observer.h"
-#include "ash/display/window_tree_host_manager.h"
+#include "ash/common/wm_display_observer.h"
 #include "base/macros.h"
 #include "base/time/time.h"
 #include "ui/gfx/geometry/vector3d_f.h"
@@ -53,7 +53,7 @@ class ASH_EXPORT MaximizeModeController :
     public chromeos::PowerManagerClient::Observer,
 #endif  // OS_CHROMEOS
     public ShellObserver,
-    public WindowTreeHostManager::Observer {
+    public WmDisplayObserver {
  public:
   MaximizeModeController();
   ~MaximizeModeController() override;
@@ -84,7 +84,7 @@ class ASH_EXPORT MaximizeModeController :
   void OnMaximizeModeStarted() override;
   void OnMaximizeModeEnded() override;
 
-  // WindowTreeHostManager::Observer:
+  // WmDisplayObserver:
   void OnDisplayConfigurationChanged() override;
 
 #if defined(OS_CHROMEOS)
@@ -187,4 +187,4 @@ class ASH_EXPORT MaximizeModeController :
 
 }  // namespace ash
 
-#endif  // ASH_WM_MAXIMIZE_MODE_MAXIMIZE_MODE_CONTROLLER_H_
+#endif  // ASH_COMMON_WM_MAXIMIZE_MODE_MAXIMIZE_MODE_CONTROLLER_H_

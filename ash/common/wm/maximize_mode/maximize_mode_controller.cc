@@ -2,18 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/wm/maximize_mode/maximize_mode_controller.h"
+#include "ash/common/wm/maximize_mode/maximize_mode_controller.h"
 
 #include <utility>
 
-#include "ash/accelerators/accelerator_controller.h"
-#include "ash/accelerators/accelerator_table.h"
 #include "ash/common/ash_switches.h"
 #include "ash/common/wm/maximize_mode/maximize_mode_window_manager.h"
+#include "ash/common/wm/maximize_mode/scoped_disable_internal_mouse_and_keyboard.h"
 #include "ash/common/wm_shell.h"
-#include "ash/display/display_manager.h"
-#include "ash/shell.h"
-#include "ash/wm/maximize_mode/scoped_disable_internal_mouse_and_keyboard.h"
 #include "base/command_line.h"
 #include "base/metrics/histogram.h"
 #include "base/time/default_tick_clock.h"
@@ -23,14 +19,6 @@
 #include "ui/events/event.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/gfx/geometry/vector3d_f.h"
-
-#if defined(USE_X11)
-#include "ash/wm/maximize_mode/scoped_disable_internal_mouse_and_keyboard_x11.h"
-#endif
-
-#if defined(USE_OZONE)
-#include "ash/wm/maximize_mode/scoped_disable_internal_mouse_and_keyboard_ozone.h"
-#endif
 
 #if defined(OS_CHROMEOS)
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -97,6 +85,11 @@ bool IsAngleBetweenAccelerometerReadingsStable(
 }
 #endif  // OS_CHROMEOS
 
+bool IsEnabled() {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kAshEnableTouchView);
+}
+
 }  // namespace
 
 MaximizeModeController::MaximizeModeController()
@@ -110,16 +103,17 @@ MaximizeModeController::MaximizeModeController()
   WmShell::Get()->AddShellObserver(this);
   WmShell::Get()->RecordUserMetricsAction(UMA_MAXIMIZE_MODE_INITIALLY_DISABLED);
 
-#if defined(OS_CHROMEOS)
   // TODO(jonross): Do not create MaximizeModeController if the flag is
   // unavailable. This will require refactoring
   // IsMaximizeModeWindowManagerEnabled to check for the existance of the
   // controller.
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kAshEnableTouchView)) {
+  const bool is_enabled = IsEnabled();
+  if (is_enabled)
+    WmShell::Get()->AddDisplayObserver(this);
+
+#if defined(OS_CHROMEOS)
+  if (is_enabled)
     chromeos::AccelerometerReader::GetInstance()->AddObserver(this);
-    Shell::GetInstance()->window_tree_host_manager()->AddObserver(this);
-  }
   chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->AddObserver(
       this);
 #endif  // OS_CHROMEOS
@@ -127,12 +121,13 @@ MaximizeModeController::MaximizeModeController()
 
 MaximizeModeController::~MaximizeModeController() {
   WmShell::Get()->RemoveShellObserver(this);
+  const bool is_enabled = IsEnabled();
+  if (is_enabled)
+    WmShell::Get()->RemoveDisplayObserver(this);
+
 #if defined(OS_CHROMEOS)
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kAshEnableTouchView)) {
+  if (is_enabled)
     chromeos::AccelerometerReader::GetInstance()->RemoveObserver(this);
-    Shell::GetInstance()->window_tree_host_manager()->RemoveObserver(this);
-  }
   chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->RemoveObserver(
       this);
 #endif  // OS_CHROMEOS
@@ -160,17 +155,17 @@ void MaximizeModeController::EnableMaximizeModeWindowManager(
   if (should_enable == is_enabled)
     return;
 
-  Shell* shell = Shell::GetInstance();
+  WmShell* shell = WmShell::Get();
 
   if (should_enable) {
     maximize_mode_window_manager_.reset(new MaximizeModeWindowManager());
     // TODO(jonross): Move the maximize mode notifications from ShellObserver
     // to MaximizeModeController::Observer
-    WmShell::Get()->RecordUserMetricsAction(UMA_MAXIMIZE_MODE_ENABLED);
+    shell->RecordUserMetricsAction(UMA_MAXIMIZE_MODE_ENABLED);
     shell->OnMaximizeModeStarted();
   } else {
     maximize_mode_window_manager_.reset();
-    WmShell::Get()->RecordUserMetricsAction(UMA_MAXIMIZE_MODE_DISABLED);
+    shell->RecordUserMetricsAction(UMA_MAXIMIZE_MODE_DISABLED);
     shell->OnMaximizeModeEnded();
   }
 }
@@ -196,7 +191,7 @@ void MaximizeModeController::OnAccelerometerUpdated(
   if (!display::Display::HasInternalDisplay())
     return;
 
-  if (!Shell::GetInstance()->display_manager()->IsActiveDisplayId(
+  if (!WmShell::Get()->IsActiveDisplayId(
           display::Display::InternalDisplayId())) {
     return;
   }
@@ -319,12 +314,8 @@ void MaximizeModeController::HandleHingeRotation(
 void MaximizeModeController::EnterMaximizeMode() {
   // Always reset first to avoid creation before destruction of a previous
   // object.
-  event_blocker_.reset();
-#if defined(USE_X11)
-  event_blocker_.reset(new ScopedDisableInternalMouseAndKeyboardX11);
-#elif defined(USE_OZONE)
-  event_blocker_.reset(new ScopedDisableInternalMouseAndKeyboardOzone);
-#endif
+  event_blocker_ =
+      WmShell::Get()->CreateScopedDisableInternalMouseAndKeyboard();
 
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kAshEnableTouchViewTesting)) {
@@ -366,7 +357,7 @@ void MaximizeModeController::OnMaximizeModeEnded() {
 
 void MaximizeModeController::OnDisplayConfigurationChanged() {
   if (!display::Display::HasInternalDisplay() ||
-      !Shell::GetInstance()->display_manager()->IsActiveDisplayId(
+      !WmShell::Get()->IsActiveDisplayId(
           display::Display::InternalDisplayId())) {
     LeaveMaximizeMode();
   }

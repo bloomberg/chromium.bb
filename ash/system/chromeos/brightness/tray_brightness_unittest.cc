@@ -8,10 +8,10 @@
 
 #include "ash/common/system/tray/system_tray_delegate.h"
 #include "ash/common/system/tray/system_tray_item.h"
+#include "ash/common/wm/maximize_mode/maximize_mode_controller.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/status_area_widget_test_helper.h"
-#include "ash/wm/maximize_mode/maximize_mode_controller.h"
 #include "ui/views/view.h"
 
 namespace ash {
