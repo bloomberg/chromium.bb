@@ -18,7 +18,7 @@ class JPEGImageEncoderState;
 
 class CORE_EXPORT CanvasAsyncBlobCreator : public GarbageCollectedFinalized<CanvasAsyncBlobCreator> {
 public:
-    static CanvasAsyncBlobCreator* create(DOMUint8ClampedArray* unpremultipliedRGBAImageData, const String& mimeType, const IntSize&, BlobCallback*);
+    static CanvasAsyncBlobCreator* create(DOMUint8ClampedArray* unpremultipliedRGBAImageData, const String& mimeType, const IntSize&, BlobCallback*, double);
     void scheduleAsyncBlobCreation(bool canUseIdlePeriodScheduling, const double& quality = 0.0);
     virtual ~CanvasAsyncBlobCreator();
     enum MimeType {
@@ -27,13 +27,15 @@ public:
         MimeTypeWebp,
         NumberOfMimeTypeSupported
     };
+    // This enum is used to back an UMA histogram, and should therefore be treated as append-only.
     enum IdleTaskStatus {
         IdleTaskNotStarted,
         IdleTaskStarted,
         IdleTaskCompleted,
         IdleTaskFailed,
         IdleTaskSwitchedToMainThreadTask,
-        IdleTaskNotSupported // Idle tasks are not implemented for some image types
+        IdleTaskNotSupported, // Idle tasks are not implemented for some image types
+        IdleTaskCount, // Should not be seen in production
     };
     // Methods are virtual for mocking in unit tests
     virtual void signalTaskSwitchInStartTimeoutEventForTesting() { }
@@ -46,7 +48,7 @@ public:
     }
 
 protected:
-    CanvasAsyncBlobCreator(DOMUint8ClampedArray* data, MimeType, const IntSize&, BlobCallback*);
+    CanvasAsyncBlobCreator(DOMUint8ClampedArray* data, MimeType, const IntSize&, BlobCallback*, double);
     // Methods are virtual for unit testing
     virtual void scheduleInitiatePngEncoding();
     virtual void scheduleInitiateJpegEncoding(const double&);
@@ -76,6 +78,9 @@ private:
     size_t m_pixelRowStride;
     const MimeType m_mimeType;
     Member<BlobCallback> m_callback;
+    double m_startTime;
+    double m_scheduleInitiateStartTime;
+    double m_elapsedTime;
 
     // PNG
     bool initializePngStruct();
@@ -90,6 +95,7 @@ private:
 
     void idleTaskStartTimeoutEvent(double quality);
     void idleTaskCompleteTimeoutEvent();
+    void recordIdleTaskStatusHistogram();
 };
 
 } // namespace blink

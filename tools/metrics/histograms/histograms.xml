@@ -3589,6 +3589,51 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>Time spent on 2D canvas putImageData API call.</summary>
 </histogram>
 
+<histogram name="Blink.Canvas.ToBlob.IdleEncodeDuration" units="microseconds">
+  <owner>junov@chromium.org</owner>
+  <owner>xlai@chromium.org</owner>
+  <summary>
+    This metric measures the total time spent on encoding all the rows of an
+    image (jpeg or png), as part of a canvas.toBlob API call. Encoding occurs
+    during one or more idle periods on the main thread.
+
+    This metric is useful in helping us adjust the IdleTaskCompleteTimeoutDelay
+    in canvas.toBlob. When the encoding idle task is delayed for longer than
+    IdleTaskCompleteTimeoutDelay, the browser will switch to a non-idle task to
+    force encoding to happen on the main thread.
+  </summary>
+</histogram>
+
+<histogram name="Blink.Canvas.ToBlob.IdleTaskStatus" enum="IdleTaskStatus">
+  <owner>junov@chromium.org</owner>
+  <owner>xlai@chromium.org</owner>
+  <summary>
+    Records the status of the idle task when finishing a toBlob call.
+  </summary>
+</histogram>
+
+<histogram name="Blink.Canvas.ToBlob.InitiateEncodingDelay"
+    units="microseconds">
+  <owner>junov@chromium.org</owner>
+  <owner>xlai@chromium.org</owner>
+  <summary>
+    This metric measures the time spent from initiating image encoding (jpeg or
+    png) on idle task to the actual execution time of initiation, as part of a
+    canvas.toBlob API call.
+
+    This metric is useful in helping us adjust the IdleTaskStartTimeoutDelay in
+    canvas.toBlob. When the initialization idle task is delayed for longer than
+    IdleTaskStartTimeoutDelay, the browser will switch to a non-idle task to
+    force initialization and encoding to occur on the main thread.
+  </summary>
+</histogram>
+
+<histogram name="Blink.Canvas.ToBlobDuration" units="microseconds">
+  <owner>junov@chromium.org</owner>
+  <owner>xlai@chromium.org</owner>
+  <summary>Time spent on 2D canvas toBlob API call.</summary>
+</histogram>
+
 <histogram name="Blink.Canvas.ToDataURL" units="microseconds">
   <owner>junov@chromium.org</owner>
   <summary>Time spent on 2D canvas toDataURL API call.</summary>
@@ -78852,6 +78897,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </int>
 </enum>
 
+<enum name="IdleTaskStatus" type="int">
+  <int value="0" label="IdleTaskNotStarted"/>
+  <int value="1" label="IdleTaskStarted"/>
+  <int value="2" label="IdleTaskCompleted"/>
+  <int value="3" label="IdleTaskFailed"/>
+  <int value="4" label="IdleTaskSwitchedToMainThreadTask"/>
+  <int value="5" label="IdleTaskNotSupported"/>
+</enum>
+
 <enum name="IMECommitType" type="int">
   <obsolete>
     Deprecated 03/2015, and replaced by IMECommitType2.
@@ -94048,6 +94102,20 @@ To add a new entry, add it with any value and run test to compute valid value.
   <affected-histogram name="Blink.Canvas.DrawImage.Video"/>
   <affected-histogram name="Blink.Canvas.GetImageData"/>
   <affected-histogram name="Blink.Canvas.PutImageData"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="BlinkCanvasToBlobIdleEncodAndDelayType" separator=".">
+  <suffix name="JPEG"/>
+  <suffix name="PNG"/>
+  <affected-histogram name="Blink.Canvas.ToBlob.IdleEncodeDuration"/>
+  <affected-histogram name="Blink.Canvas.ToBlob.InitiateEncodingDelay"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="BlinkCanvasToBlobType" separator=".">
+  <suffix name="JPEG"/>
+  <suffix name="PNG"/>
+  <suffix name="WEBP"/>
+  <affected-histogram name="Blink.Canvas.ToBlobDuration"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="BlinkCanvasToDataURLTime" separator=".">

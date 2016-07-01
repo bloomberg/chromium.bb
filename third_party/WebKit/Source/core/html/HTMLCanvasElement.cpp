@@ -678,6 +678,7 @@ void HTMLCanvasElement::toBlob(BlobCallback* callback, const String& mimeType, c
         return;
     }
 
+    double startTime = WTF::monotonicallyIncreasingTime();
     double quality = UndefinedQualityValue;
     if (!qualityArgument.isEmpty()) {
         v8::Local<v8::Value> v8Value = qualityArgument.v8Value();
@@ -690,7 +691,7 @@ void HTMLCanvasElement::toBlob(BlobCallback* callback, const String& mimeType, c
 
     ImageData* imageData = toImageData(BackBuffer, SnapshotReasonToBlob);
 
-    CanvasAsyncBlobCreator* asyncCreator = CanvasAsyncBlobCreator::create(imageData->data(), encodingMimeType, imageData->size(), callback);
+    CanvasAsyncBlobCreator* asyncCreator = CanvasAsyncBlobCreator::create(imageData->data(), encodingMimeType, imageData->size(), callback, startTime);
 
     bool useIdlePeriodScheduling = (encodingMimeType != "image/webp");
     asyncCreator->scheduleAsyncBlobCreation(useIdlePeriodScheduling, quality);
