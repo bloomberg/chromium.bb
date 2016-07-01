@@ -68,34 +68,6 @@ struct UCharBufferTranslator {
     }
 };
 
-template<typename CharacterType>
-struct HashAndCharacters {
-    unsigned hash;
-    const CharacterType* characters;
-    unsigned length;
-};
-
-template<typename CharacterType>
-struct HashAndCharactersTranslator {
-    static unsigned hash(const HashAndCharacters<CharacterType>& buffer)
-    {
-        DCHECK(buffer.hash == StringHasher::computeHashAndMaskTop8Bits(buffer.characters, buffer.length));
-        return buffer.hash;
-    }
-
-    static bool equal(StringImpl* const& string, const HashAndCharacters<CharacterType>& buffer)
-    {
-        return WTF::equal(string, buffer.characters, buffer.length);
-    }
-
-    static void translate(StringImpl*& location, const HashAndCharacters<CharacterType>& buffer, unsigned hash)
-    {
-        location = StringImpl::create(buffer.characters, buffer.length).leakRef();
-        location->setHash(hash);
-        location->setIsAtomic(true);
-    }
-};
-
 struct HashAndUTF8Characters {
     unsigned hash;
     const char* characters;
@@ -178,82 +150,6 @@ PassRefPtr<StringImpl> AtomicStringTable::add(const UChar* s, unsigned length)
     return addToStringTable<UCharBuffer, UCharBufferTranslator>(buffer);
 }
 
-PassRefPtr<StringImpl> AtomicStringTable::add(const UChar* s, unsigned length, unsigned existingHash)
-{
-    DCHECK(s);
-    DCHECK(existingHash);
-
-    if (!length)
-        return StringImpl::empty();
-
-    HashAndCharacters<UChar> buffer = { existingHash, s, length };
-    return addToStringTable<HashAndCharacters<UChar>, HashAndCharactersTranslator<UChar>>(buffer);
-}
-
-PassRefPtr<StringImpl> AtomicStringTable::add(const UChar* s)
-{
-    if (!s)
-        return nullptr;
-
-    unsigned length = 0;
-    while (s[length] != UChar(0))
-        ++length;
-
-    if (!length)
-        return StringImpl::empty();
-
-    UCharBuffer buffer = { s, length };
-    return addToStringTable<UCharBuffer, UCharBufferTranslator>(buffer);
-}
-
-struct SubstringLocation {
-    StringImpl* baseString;
-    unsigned start;
-    unsigned length;
-};
-
-struct SubstringTranslator {
-    static unsigned hash(const SubstringLocation& buffer)
-    {
-        if (buffer.baseString->is8Bit())
-            return StringHasher::computeHashAndMaskTop8Bits(buffer.baseString->characters8() + buffer.start, buffer.length);
-        return StringHasher::computeHashAndMaskTop8Bits(buffer.baseString->characters16() + buffer.start, buffer.length);
-    }
-
-    static bool equal(StringImpl* const& string, const SubstringLocation& buffer)
-    {
-        if (buffer.baseString->is8Bit())
-            return WTF::equal(string, buffer.baseString->characters8() + buffer.start, buffer.length);
-        return WTF::equal(string, buffer.baseString->characters16() + buffer.start, buffer.length);
-    }
-
-    static void translate(StringImpl*& location, const SubstringLocation& buffer, unsigned hash)
-    {
-        location = buffer.baseString->substring(buffer.start, buffer.length).leakRef();
-        location->setHash(hash);
-        location->setIsAtomic(true);
-    }
-};
-
-PassRefPtr<StringImpl> AtomicStringTable::add(StringImpl* baseString, unsigned start, unsigned length)
-{
-    if (!baseString)
-        return nullptr;
-
-    if (!length || start >= baseString->length())
-        return StringImpl::empty();
-
-    unsigned maxLength = baseString->length() - start;
-    if (length >= maxLength) {
-        if (!start)
-            return add(baseString);
-        length = maxLength;
-    }
-
-    SubstringLocation buffer = { baseString, start, length };
-    return addToStringTable<SubstringLocation, SubstringTranslator>(buffer);
-}
-
 typedef HashTranslatorCharBuffer<LChar> LCharBuffer;
 struct LCharBufferTranslator {
     static unsigned hash(const LCharBuffer& buf)
@@ -312,20 +208,10 @@ PassRefPtr<StringImpl> AtomicStringTable::addUTF8(const char* charactersStart, c
     return addToStringTable<HashAndUTF8Characters, HashAndUTF8CharactersTranslator>(buffer);
 }
 
-template<typename CharacterType>
-HashSet<StringImpl*>::iterator AtomicStringTable::find(const StringImpl* string)
-{
-    HashAndCharacters<CharacterType> buffer = { string->existingHash(), string->getCharacters<CharacterType>(), string->length() };
-    return m_table.find<HashAndCharactersTranslator<CharacterType>>(buffer);
-}
-
 void AtomicStringTable::remove(StringImpl* string)
 {
-    HashSet<StringImpl*>::iterator iterator;
-    if (string->is8Bit())
-        iterator = find<LChar>(string);
-    else
-        iterator = find<UChar>(string);
+    DCHECK(string->isAtomic());
+    auto iterator = m_table.find(string);
     RELEASE_ASSERT(iterator != m_table.end());
     m_table.remove(iterator);
 }

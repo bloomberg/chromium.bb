@@ -45,7 +45,6 @@ public:
         : AtomicString(reinterpret_cast<const LChar*>(chars)) {}
     AtomicString(const LChar* chars, unsigned length);
     AtomicString(const UChar* chars, unsigned length);
-    AtomicString(const UChar* chars, unsigned length, unsigned existingHash);
     AtomicString(const UChar* chars);
 
     template<size_t inlineCapacity>
@@ -56,8 +55,6 @@ public:
     // the StringImpl is not already atomic.
     explicit AtomicString(StringImpl* impl) : m_string(add(impl)) { }
     explicit AtomicString(const String& s) : m_string(add(s.impl())) { }
-
-    AtomicString(StringImpl* baseString, unsigned start, unsigned length);
 
     // Hash table deleted values, which are only constructed and never copied or destroyed.
     AtomicString(WTF::HashTableDeletedValueType) : m_string(WTF::HashTableDeletedValue) { }

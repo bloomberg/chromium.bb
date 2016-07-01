@@ -31,19 +31,14 @@ public:
 
     // Used by system initialization to preallocate enough storage for all of
     // the static strings.
-    void reserveCapacity(unsigned);
+    void reserveCapacity(unsigned size);
 
-    // Adding a StringImpl.
+    // Inserting strings into the table. Note that the return value from adding
+    // a UChar string may be an LChar string as the table will attempt to
+    // convert the string to save memory if possible.
     StringImpl* add(StringImpl*);
-    PassRefPtr<StringImpl> add(StringImpl*, unsigned offset, unsigned length);
-
-    // Adding an LChar.
-    PassRefPtr<StringImpl> add(const LChar*, unsigned length);
-
-    // Adding a UChar.
-    PassRefPtr<StringImpl> add(const UChar*, unsigned length);
-    PassRefPtr<StringImpl> add(const UChar*, unsigned length, unsigned existingHash);
-    PassRefPtr<StringImpl> add(const UChar*);
+    PassRefPtr<StringImpl> add(const LChar* chars, unsigned length);
+    PassRefPtr<StringImpl> add(const UChar* chars, unsigned length);
 
     // Adding UTF8.
     // Returns null if the characters contain invalid utf8 sequences.
@@ -57,9 +52,6 @@ public:
 private:
     template<typename T, typename HashTranslator>
     inline PassRefPtr<StringImpl> addToStringTable(const T& value);
-
-    template<typename CharacterType>
-    inline HashSet<StringImpl*>::iterator find(const StringImpl*);
 
     HashSet<StringImpl*> m_table;
 };

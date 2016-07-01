@@ -25,6 +25,7 @@
 #include "wtf/dtoa.h"
 #include "wtf/text/AtomicStringTable.h"
 #include "wtf/text/IntegerToStringConversion.h"
+#include "wtf/text/StringImpl.h"
 
 namespace WTF {
 
@@ -36,19 +37,13 @@ AtomicString::AtomicString(const LChar* chars, unsigned length)
 AtomicString::AtomicString(const UChar* chars, unsigned length)
     : m_string(AtomicStringTable::instance().add(chars, length)) {}
 
-AtomicString::AtomicString(const UChar* chars, unsigned length, unsigned existingHash)
-    : m_string(AtomicStringTable::instance().add(chars, length, existingHash)) {}
-
 AtomicString::AtomicString(const UChar* chars)
-    : m_string(AtomicStringTable::instance().add(chars)) {}
+    : m_string(AtomicStringTable::instance().add(chars, chars ? lengthOfNullTerminatedString(chars) : 0)) {}
 
-AtomicString::AtomicString(StringImpl* string, unsigned offset, unsigned length)
-    : m_string(AtomicStringTable::instance().add(string, offset, length)) {}
-
-PassRefPtr<StringImpl> AtomicString::addSlowCase(StringImpl* chars)
+PassRefPtr<StringImpl> AtomicString::addSlowCase(StringImpl* string)
 {
-    DCHECK(!chars->isAtomic());
-    return AtomicStringTable::instance().add(chars);
+    DCHECK(!string->isAtomic());
+    return AtomicStringTable::instance().add(string);
 }
 
 AtomicString AtomicString::fromUTF8(const char* chars, size_t length)
