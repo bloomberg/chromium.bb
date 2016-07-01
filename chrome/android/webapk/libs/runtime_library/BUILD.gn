@@ -23,9 +23,14 @@ android_aidl("webapk_service_aidl") {
 
 android_library("runtime_library_java") {
   dex_path = "$target_gen_dir/$runtime_library_dex_asset_name"
-  java_files =
-      [ "src/org/chromium/webapk/lib/runtime_library/WebApkServiceImpl.java" ]
+  java_files = [
+    "src/org/chromium/webapk/lib/runtime_library/HostBrowserLauncher.java",
+    "src/org/chromium/webapk/lib/runtime_library/WebApkServiceImpl.java",
+  ]
   srcjar_deps = [ ":webapk_service_aidl" ]
+  deps = [
+    "//chrome/android/webapk/libs/common:common_java",
+  ]
 }
 
 android_assets("runtime_library_assets") {

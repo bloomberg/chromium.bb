@@ -1,13 +1,16 @@
-The runtime library contains the implementation of the Web APK service. It
-implements functionality which Chrome delegates to the Web APK such as
-displaying notifications. The library is loaded by a ShellAPK which
-contains the Web APK's manifest and code to load the runtime library.
+The runtime library contains:
+1) Implementation of the WebAPK service. The service implements functionality
+which Chrome delegates to the WebAPK such as displaying notifications.
+2) Logic to send intent to Chrome to launch Chrome in WebAPK mode.
 
-The latest version of the runtime library is
-extracted from Chrome's APK by the ShellAPK when the Web APK service is created.
-Since the ShellAPK is updated asynchronously, the runtime library may run within
-an old ShellAPK. For instance, the ShellAPK's Android manifest may be missing
-some of the permissions that the runtime library is expecting.
+The library is loaded by a ShellAPK which contains the WebAPK's manifest and
+code to load the runtime library.
+
+The latest version of the runtime library is extracted from Chrome's APK by the
+ShellAPK when it is launched. Since the ShellAPK is updated asynchronously, the
+runtime library may run within an old ShellAPK. For instance, the ShellAPK's
+Android manifest may be missing some of the permissions that the runtime library
+is expecting.
 
 The number in runtime_library_version.gni must be incremented whenever the
 runtime library is updated. The WebAPK re-extracts the runtime library from the
