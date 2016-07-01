@@ -119,7 +119,20 @@ BOOL SetProcessDPIAwareWrapper() {
 }
 
 void EnableHighDPISupport() {
-  if (!SetProcessDpiAwarenessWrapper(PROCESS_SYSTEM_DPI_AWARE)) {
+  // Enable per-monitor DPI for Win10 or above instead of Win8.1 since Win8.1
+  // does not have EnableChildWindowDpiMessage, necessary for correct non-client
+  // area scaling across monitors.
+  bool allowed_platform = base::win::GetVersion() >= base::win::VERSION_WIN10;
+  const base::CommandLine* command_line =
+      base::CommandLine::ForCurrentProcess();
+  bool per_monitor_dpi_switch =
+      command_line->HasSwitch(switches::kEnablePerMonitorDpi) &&
+      !command_line->HasSwitch(switches::kDisablePerMonitorDpi);
+  PROCESS_DPI_AWARENESS process_dpi_awareness =
+      allowed_platform && per_monitor_dpi_switch
+          ? PROCESS_PER_MONITOR_DPI_AWARE
+          : PROCESS_SYSTEM_DPI_AWARE;
+  if (!SetProcessDpiAwarenessWrapper(process_dpi_awareness)) {
     SetProcessDPIAwareWrapper();
   }
 }
