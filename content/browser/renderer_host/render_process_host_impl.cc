@@ -227,7 +227,6 @@
 #if defined(ENABLE_WEBRTC)
 #include "content/browser/media/webrtc/webrtc_internals.h"
 #include "content/browser/renderer_host/media/media_stream_track_metrics_host.h"
-#include "content/browser/renderer_host/media/webrtc_identity_service_host.h"
 #include "content/browser/renderer_host/p2p/socket_dispatcher_host.h"
 #include "content/common/media/aec_dump_messages.h"
 #include "content/common/media/media_stream_messages.h"
@@ -921,9 +920,6 @@ void RenderProcessHostImpl::CreateMessageFilters() {
       blob_storage_context.get()));
 
 #if defined(ENABLE_WEBRTC)
-  AddFilter(new WebRTCIdentityServiceHost(
-      GetID(), storage_partition_impl_->GetWebRTCIdentityStore(),
-      resource_context));
   peer_connection_tracker_host_ = new PeerConnectionTrackerHost(GetID());
   AddFilter(peer_connection_tracker_host_.get());
   AddFilter(new MediaStreamDispatcherHost(

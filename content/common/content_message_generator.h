@@ -39,7 +39,6 @@
 #include "content/common/media/midi_messages.h"
 #include "content/common/media/peer_connection_tracker_messages.h"
 #include "content/common/media/video_capture_messages.h"
-#include "content/common/media/webrtc_identity_messages.h"
 #include "content/common/memory_messages.h"
 #include "content/common/message_port_messages.h"
 #include "content/common/page_messages.h"

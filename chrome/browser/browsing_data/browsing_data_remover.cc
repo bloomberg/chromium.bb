@@ -889,9 +889,6 @@ void BrowsingDataRemover::RemoveImpl(
     storage_partition_remove_mask |=
         content::StoragePartition::REMOVE_DATA_MASK_SHADER_CACHE;
 
-    storage_partition_remove_mask |=
-        content::StoragePartition::REMOVE_DATA_MASK_WEBRTC_IDENTITY;
-
     // When clearing cache, wipe accumulated network related data
     // (TransportSecurityState and HttpServerPropertiesManager data).
     waiting_for_clear_networking_history_ = true;
@@ -899,11 +896,6 @@ void BrowsingDataRemover::RemoveImpl(
         delete_begin_,
         base::Bind(&BrowsingDataRemover::OnClearedNetworkingHistory,
                    weak_ptr_factory_.GetWeakPtr()));
-  }
-
-  if (remove_mask & REMOVE_WEBRTC_IDENTITY) {
-    storage_partition_remove_mask |=
-        content::StoragePartition::REMOVE_DATA_MASK_WEBRTC_IDENTITY;
   }
 
   // Content Decryption Modules used by Encrypted Media store licenses in a

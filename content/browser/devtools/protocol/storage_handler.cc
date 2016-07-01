@@ -26,7 +26,6 @@ static const char kIndexedDB[] = "indexeddb";
 static const char kLocalStorage[] = "local_storage";
 static const char kShaderCache[] = "shader_cache";
 static const char kWebSQL[] = "websql";
-static const char kWebRTCIdentity[] = "webrdc_identity";
 static const char kServiceWorkers[] = "service_workers";
 static const char kCacheStorage[] = "cache_storage";
 static const char kAll[] = "all";
@@ -69,8 +68,6 @@ Response StorageHandler::ClearDataForOrigin(
     remove_mask |= StoragePartition::REMOVE_DATA_MASK_SHADER_CACHE;
   if (set.count(kWebSQL))
     remove_mask |= StoragePartition::REMOVE_DATA_MASK_WEBSQL;
-  if (set.count(kWebRTCIdentity))
-    remove_mask |= StoragePartition::REMOVE_DATA_MASK_WEBRTC_IDENTITY;
   if (set.count(kServiceWorkers))
     remove_mask |= StoragePartition::REMOVE_DATA_MASK_SERVICE_WORKERS;
   if (set.count(kCacheStorage))

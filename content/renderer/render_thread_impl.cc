@@ -191,7 +191,6 @@
 #include "content/renderer/media/peer_connection_tracker.h"
 #include "content/renderer/media/rtc_peer_connection_handler.h"
 #include "content/renderer/media/webrtc/peer_connection_dependency_factory.h"
-#include "content/renderer/media/webrtc_identity_service.h"
 #endif
 
 #ifdef ENABLE_VTUNE_JIT_INTERFACE
@@ -688,8 +687,6 @@ void RenderThreadImpl::Init(
   p2p_socket_dispatcher_ =
       new P2PSocketDispatcher(GetIOMessageLoopProxy().get());
   AddFilter(p2p_socket_dispatcher_.get());
-
-  webrtc_identity_service_.reset(new WebRTCIdentityService());
 
   peer_connection_factory_.reset(
       new PeerConnectionDependencyFactory(p2p_socket_dispatcher_.get()));

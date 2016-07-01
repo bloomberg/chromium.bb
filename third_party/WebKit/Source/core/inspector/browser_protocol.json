@@ -4146,7 +4146,6 @@
                     "local_storage",
                     "shader_cache",
                     "websql",
-                    "webrtc_indetity",
                     "service_workers",
                     "cache_storage",
                     "all"

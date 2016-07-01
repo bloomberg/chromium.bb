@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "base/files/file_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
@@ -99,6 +100,7 @@
 #include "components/update_client/update_client.h"
 #include "components/variations/service/variations_service.h"
 #include "components/web_resource/promo_resource_service.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
 #include "net/http/http_server_properties_manager.h"
 
@@ -295,6 +297,21 @@ const char kCheckDefaultBrowser[] = "browser.check_default_browser";
 // Deprecated 5/2016.
 const char kDesktopSearchRedirectionInfobarShownPref[] =
     "desktop_search_redirection_infobar_shown";
+
+void DeleteWebRTCIdentityStoreDBOnFileThread(base::FilePath profile_path) {
+  base::DeleteFile(profile_path.Append(
+      FILE_PATH_LITERAL("WebRTCIdentityStore")), false);
+  base::DeleteFile(profile_path.Append(
+      FILE_PATH_LITERAL("WebRTCIdentityStore-journal")), false);
+}
+
+void DeleteWebRTCIdentityStoreDB(Profile* profile) {
+  content::BrowserThread::PostDelayedTask(
+      content::BrowserThread::FILE,
+      FROM_HERE,
+      base::Bind(&DeleteWebRTCIdentityStoreDBOnFileThread, profile->GetPath()),
+      base::TimeDelta::FromSeconds(120));
+}
 
 }  // namespace
 
@@ -713,6 +730,9 @@ void MigrateObsoleteProfilePrefs(Profile* profile) {
 
   // Added 5/2016.
   profile_prefs->ClearPref(kDesktopSearchRedirectionInfobarShownPref);
+
+  // Added 7/2016.
+  DeleteWebRTCIdentityStoreDB(profile);
 }
 
 }  // namespace chrome

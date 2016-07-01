@@ -5,7 +5,6 @@
 #include "content/renderer/media/rtc_certificate.h"
 
 #include "base/memory/ptr_util.h"
-#include "content/renderer/media/peer_connection_identity_store.h"
 #include "url/gurl.h"
 
 namespace content {

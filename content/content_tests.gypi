@@ -529,7 +529,6 @@
       'browser/media/midi_host_unittest.cc',
       'browser/media/session/media_session_controller_unittest.cc',
       'browser/media/session/media_session_uma_helper_unittest.cc',
-      'browser/media/webrtc/webrtc_identity_store_unittest.cc',
       'browser/net/quota_policy_cookie_store_unittest.cc',
       'browser/notification_service_impl_unittest.cc',
       'browser/notifications/notification_database_data_unittest.cc',
@@ -776,7 +775,6 @@
     # WebRTC-specific sources. Put WebRTC plugin-related stuff further below.
     'content_unittests_webrtc_sources': [
       'browser/media/webrtc/webrtc_internals_unittest.cc',
-      'browser/renderer_host/media/webrtc_identity_service_host_unittest.cc',
       'browser/renderer_host/p2p/socket_host_tcp_server_unittest.cc',
       'browser/renderer_host/p2p/socket_host_tcp_unittest.cc',
       'browser/renderer_host/p2p/socket_host_test_utils.cc',
@@ -816,7 +814,6 @@
       'renderer/media/webrtc/webrtc_media_stream_adapter_unittest.cc',
       'renderer/media/webrtc/webrtc_video_capturer_adapter_unittest.cc',
       'renderer/media/webrtc_audio_renderer_unittest.cc',
-      'renderer/media/webrtc_identity_service_unittest.cc',
       'renderer/media/webrtc_local_audio_source_provider_unittest.cc',
       'renderer/media/webrtc_uma_histograms_unittest.cc',
       'renderer/p2p/filtering_network_manager_unittest.cc',

@@ -121,7 +121,6 @@ class RendererGpuVideoAcceleratorFactories;
 class ResourceDispatchThrottler;
 class V8SamplingProfiler;
 class VideoCaptureImplManager;
-class WebRTCIdentityService;
 
 #if defined(OS_ANDROID)
 class StreamTextureFactory;
@@ -371,12 +370,6 @@ class CONTENT_EXPORT RenderThreadImpl
 #if defined(OS_WIN)
   void PreCacheFontCharacters(const LOGFONT& log_font,
                               const base::string16& str);
-#endif
-
-#if defined(ENABLE_WEBRTC)
-  WebRTCIdentityService* get_webrtc_identity_service() {
-    return webrtc_identity_service_.get();
-  }
 #endif
 
   // For producing custom V8 histograms. Custom histograms are produced if all
@@ -648,10 +641,6 @@ class CONTENT_EXPORT RenderThreadImpl
   HistogramCustomizer histogram_customizer_;
 
   std::unique_ptr<base::MemoryPressureListener> memory_pressure_listener_;
-
-#if defined(ENABLE_WEBRTC)
-  std::unique_ptr<WebRTCIdentityService> webrtc_identity_service_;
-#endif
 
   std::unique_ptr<MemoryObserver> memory_observer_;
 

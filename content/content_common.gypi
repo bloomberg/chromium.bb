@@ -427,7 +427,6 @@
       'common/media/surface_view_manager_messages_android.h',
       'common/media/video_capture.h',
       'common/media/video_capture_messages.h',
-      'common/media/webrtc_identity_messages.h',
       'common/memory_messages.h',
       'common/message_port_messages.h',
       'common/mojo/embedded_application_runner.cc',
