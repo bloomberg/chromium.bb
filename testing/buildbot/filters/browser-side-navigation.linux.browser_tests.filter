@@ -39,6 +39,7 @@
 -ChromeServiceWorker*
 -ClickModifierTest.WindowOpenBasicClickTest
 -ClickModifierTest.WindowOpenControlShiftClickTest
+-ClickModifierTest.WindowOpenShiftMiddleClickTest
 -CommonNameMismatchBrowserTest.CheckWWWSubdomainMismatchInverse
 -CommonNameMismatchBrowserTest.ShouldShowWWWSubdomainMismatchInterstitial
 -ContentSettingsExceptionsAreaBrowserTest.OpenIncognitoWindow

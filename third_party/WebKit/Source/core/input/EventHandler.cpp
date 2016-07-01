@@ -1192,19 +1192,8 @@ WebInputEventResult EventHandler::handleMouseReleaseEvent(const PlatformMouseEve
             // because the mouseup dispatch above has already updated it
             // correctly. Moreover, clickTargetNode is different from
             // mev.innerNode at drag-release.
-
-            MouseEvent* event = MouseEvent::create(
-                EventTypeNames::click,
-                clickTargetNode->document().domWindow(),
-                mev.event(), m_clickCount, nullptr);
-
-            // This is to suppress sending click events for non-primary buttons.
-            // But still doing default action like opening a new tab for middle
-            // click (crbug.com/255).
-            if (mev.event().button() != MouseButton::LeftButton)
-                event->stopPropagation();
-
-            clickEventResult = toWebInputEventResult(clickTargetNode->dispatchEvent(event));
+            clickEventResult = toWebInputEventResult(clickTargetNode->dispatchMouseEvent(mev.event(),
+                EventTypeNames::click, m_clickCount));
         }
     }
 
