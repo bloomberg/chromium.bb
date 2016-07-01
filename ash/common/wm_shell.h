@@ -13,6 +13,7 @@
 #include "ash/ash_export.h"
 #include "ash/common/media_delegate.h"
 #include "ash/common/metrics/user_metrics_action.h"
+#include "base/observer_list.h"
 
 namespace gfx {
 class Rect;
@@ -62,6 +63,8 @@ class ASH_EXPORT WmShell {
 
   KeyboardUI* keyboard_ui() { return keyboard_ui_.get(); }
 
+  MruWindowTracker* mru_window_tracker() { return mru_window_tracker_.get(); }
+
   MediaDelegate* media_delegate() { return media_delegate_.get(); }
 
   SystemTrayNotifier* system_tray_notifier() {
@@ -75,8 +78,6 @@ class ASH_EXPORT WmShell {
   WindowSelectorController* window_selector_controller() {
     return window_selector_controller_.get();
   }
-
-  virtual MruWindowTracker* GetMruWindowTracker() = 0;
 
   // Creates a new window used as a container of other windows. No painting is
   // done to the created window.
@@ -155,6 +156,11 @@ class ASH_EXPORT WmShell {
   // Called after overview mode has ended.
   virtual void OnOverviewModeEnded() = 0;
 
+  // Notifies |observers_| when entering or exiting pinned mode for
+  // |pinned_window|. Entering or exiting can be checked by looking at
+  // |pinned_window|'s window state.
+  void NotifyPinnedStateChanged(WmWindow* pinned_window);
+
   virtual AccessibilityDelegate* GetAccessibilityDelegate() = 0;
 
   virtual SessionStateDelegate* GetSessionStateDelegate() = 0;
@@ -165,8 +171,8 @@ class ASH_EXPORT WmShell {
   virtual void AddDisplayObserver(WmDisplayObserver* observer) = 0;
   virtual void RemoveDisplayObserver(WmDisplayObserver* observer) = 0;
 
-  virtual void AddShellObserver(ShellObserver* observer) = 0;
-  virtual void RemoveShellObserver(ShellObserver* observer) = 0;
+  void AddShellObserver(ShellObserver* observer);
+  void RemoveShellObserver(ShellObserver* observer);
 
   virtual void AddPointerWatcher(views::PointerWatcher* watcher) = 0;
   virtual void RemovePointerWatcher(views::PointerWatcher* watcher) = 0;
@@ -184,6 +190,10 @@ class ASH_EXPORT WmShell {
   WmShell();
   virtual ~WmShell();
 
+  base::ObserverList<ShellObserver>* shell_observers() {
+    return &shell_observers_;
+  }
+
   void SetKeyboardUI(std::unique_ptr<KeyboardUI> keyboard_ui);
 
   // Helpers to set (and initialize) or destroy various delegates.
@@ -194,14 +204,20 @@ class ASH_EXPORT WmShell {
 
   void DeleteWindowSelectorController();
 
+  void CreateMruWindowTracker();
+  void DeleteMruWindowTracker();
+
  private:
   friend class Shell;
 
   static WmShell* instance_;
 
+  base::ObserverList<ShellObserver> shell_observers_;
+
   std::unique_ptr<FocusCycler> focus_cycler_;
   std::unique_ptr<KeyboardUI> keyboard_ui_;
   std::unique_ptr<MediaDelegate> media_delegate_;
+  std::unique_ptr<MruWindowTracker> mru_window_tracker_;
   std::unique_ptr<SystemTrayNotifier> system_tray_notifier_;
   std::unique_ptr<SystemTrayDelegate> system_tray_delegate_;
   std::unique_ptr<WindowSelectorController> window_selector_controller_;

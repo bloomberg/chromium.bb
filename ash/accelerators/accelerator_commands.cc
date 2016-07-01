@@ -7,6 +7,7 @@
 #include "ash/common/wm/mru_window_tracker.h"
 #include "ash/common/wm/window_state.h"
 #include "ash/common/wm/wm_event.h"
+#include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
 #include "ash/display/display_manager.h"
 #include "ash/display/display_util.h"
@@ -26,7 +27,7 @@ bool ToggleMinimized() {
   // the launcher when there is no active window.
   if (!window) {
     MruWindowTracker::WindowList mru_windows(
-        Shell::GetInstance()->mru_window_tracker()->BuildMruWindowList());
+        WmShell::Get()->mru_window_tracker()->BuildMruWindowList());
     if (!mru_windows.empty())
       mru_windows.front()->GetWindowState()->Activate();
     return true;

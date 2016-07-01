@@ -10,7 +10,7 @@
 #include "ash/aura/wm_window_aura.h"
 #include "ash/common/shell_window_ids.h"
 #include "ash/common/wm/window_state.h"
-#include "ash/common/wm_shell_common.h"
+#include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
 #include "ash/common/wm_window_observer.h"
 #include "ash/display/window_tree_host_manager.h"
@@ -40,9 +40,9 @@ std::vector<WmWindow*> GetSystemModalWindowsExceptPinned(
   WmWindow* pinned_root = pinned_window->GetRootWindow();
 
   std::vector<WmWindow*> result;
-  for (WmWindow* system_modal : WmWindowAura::FromAuraWindows(
-           ash::Shell::GetContainersFromAllRootWindows(
-               kShellWindowId_SystemModalContainer, nullptr))) {
+  for (WmWindow* system_modal :
+       WmWindowAura::FromAuraWindows(Shell::GetContainersFromAllRootWindows(
+           kShellWindowId_SystemModalContainer, nullptr))) {
     if (system_modal->GetRootWindow() == pinned_root)
       continue;
     result.push_back(system_modal);
@@ -180,10 +180,8 @@ class ScreenPinningController::DimWindowObserver : public aura::WindowObserver {
 };
 
 ScreenPinningController::ScreenPinningController(
-    WmShellCommon* wm_shell_common,
     WindowTreeHostManager* window_tree_host_manager)
-    : wm_shell_common_(wm_shell_common),
-      window_tree_host_manager_(window_tree_host_manager),
+    : window_tree_host_manager_(window_tree_host_manager),
       pinned_container_window_observer_(
           new PinnedContainerWindowObserver(this)),
       pinned_container_child_window_observer_(
@@ -281,7 +279,7 @@ void ScreenPinningController::SetPinnedWindow(WmWindow* pinned_window) {
     pinned_window_ = nullptr;
   }
 
-  wm_shell_common_->NotifyPinnedStateChanged(pinned_window);
+  WmShell::Get()->NotifyPinnedStateChanged(pinned_window);
 }
 
 void ScreenPinningController::OnWindowAddedToPinnedContainer(

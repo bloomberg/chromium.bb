@@ -11,7 +11,6 @@
 
 #include "ash/ash_export.h"
 #include "ash/common/shelf/shelf_types.h"
-#include "ash/common/wm_shell_common.h"
 #include "ash/metrics/user_metrics_recorder.h"
 #include "ash/wm/cursor_manager_chromeos.h"
 #include "ash/wm/system_modal_container_event_filter_delegate.h"
@@ -111,7 +110,6 @@ class MagnificationController;
 class MaximizeModeController;
 class MaximizeModeWindowManager;
 class MouseCursorEventFilter;
-class MruWindowTracker;
 class NewWindowDelegate;
 class OverlayEventFilter;
 class PartialMagnificationController;
@@ -347,9 +345,6 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
   }
   LockStateController* lock_state_controller() {
     return lock_state_controller_.get();
-  }
-  MruWindowTracker* mru_window_tracker() {
-    return wm_shell_common_->mru_window_tracker();
   }
   VideoDetector* video_detector() { return video_detector_.get(); }
   WindowCycleController* window_cycle_controller() {
@@ -593,7 +588,6 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
 
   std::unique_ptr<ScopedOverviewAnimationSettingsFactoryAura>
       scoped_overview_animation_settings_factory_;
-  std::unique_ptr<WmShellCommon> wm_shell_common_;
   std::unique_ptr<WmShellAura> wm_shell_;
 
   // When no explicit target display/RootWindow is given, new windows are

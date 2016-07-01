@@ -86,7 +86,7 @@ void WindowCycleController::HandleCycleWindow(Direction direction) {
 
 void WindowCycleController::StartCycling() {
   MruWindowTracker::WindowList window_list =
-      Shell::GetInstance()->mru_window_tracker()->BuildMruWindowList();
+      WmShell::Get()->mru_window_tracker()->BuildMruWindowList();
 
   active_window_before_window_cycle_ = GetActiveWindow(window_list);
 
@@ -112,7 +112,7 @@ void WindowCycleController::StopCycling() {
   window_cycle_list_.reset();
 
   WmWindow* active_window_after_window_cycle = GetActiveWindow(
-      Shell::GetInstance()->mru_window_tracker()->BuildMruWindowList());
+      WmShell::Get()->mru_window_tracker()->BuildMruWindowList());
 
   // Remove our key event filter.
   event_handler_.reset();

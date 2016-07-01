@@ -80,7 +80,7 @@ aura::Window* AshFocusRules::GetNextActivatableWindow(
   // Start from the container of the most-recently-used window. If the list of
   // MRU windows is empty, then start from the container of the window that just
   // lost focus |ignore|.
-  ash::MruWindowTracker* mru = ash::Shell::GetInstance()->mru_window_tracker();
+  MruWindowTracker* mru = WmShell::Get()->mru_window_tracker();
   std::vector<WmWindow*> windows = mru->BuildMruWindowList();
   aura::Window* starting_window =
       windows.empty() ? ignore : WmWindowAura::GetAuraWindow(windows[0]);

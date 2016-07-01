@@ -11,7 +11,6 @@
 #include "ash/common/wm/overview/window_selector_controller.h"
 #include "ash/common/wm_activation_observer.h"
 #include "ash/common/wm_display_observer.h"
-#include "ash/common/wm_shell_common.h"
 #include "ash/display/display_manager.h"
 #include "ash/display/window_tree_host_manager.h"
 #include "ash/shell.h"
@@ -30,8 +29,7 @@
 
 namespace ash {
 
-WmShellAura::WmShellAura(WmShellCommon* wm_shell_common)
-    : wm_shell_common_(wm_shell_common) {
+WmShellAura::WmShellAura() {
   WmShell::Set(this);
 }
 
@@ -45,10 +43,6 @@ void WmShellAura::PrepareForShutdown() {
 
   if (added_display_observer_)
     Shell::GetInstance()->window_tree_host_manager()->RemoveObserver(this);
-}
-
-MruWindowTracker* WmShellAura::GetMruWindowTracker() {
-  return wm_shell_common_->mru_window_tracker();
 }
 
 WmWindow* WmShellAura::NewContainerWindow() {
@@ -135,13 +129,12 @@ WmShellAura::CreateMaximizeModeEventHandler() {
 }
 
 void WmShellAura::OnOverviewModeStarting() {
-  FOR_EACH_OBSERVER(ShellObserver, *wm_shell_common_->shell_observers(),
+  FOR_EACH_OBSERVER(ShellObserver, *shell_observers(),
                     OnOverviewModeStarting());
 }
 
 void WmShellAura::OnOverviewModeEnded() {
-  FOR_EACH_OBSERVER(ShellObserver, *wm_shell_common_->shell_observers(),
-                    OnOverviewModeEnded());
+  FOR_EACH_OBSERVER(ShellObserver, *shell_observers(), OnOverviewModeEnded());
 }
 
 AccessibilityDelegate* WmShellAura::GetAccessibilityDelegate() {
@@ -174,14 +167,6 @@ void WmShellAura::AddDisplayObserver(WmDisplayObserver* observer) {
 
 void WmShellAura::RemoveDisplayObserver(WmDisplayObserver* observer) {
   display_observers_.RemoveObserver(observer);
-}
-
-void WmShellAura::AddShellObserver(ShellObserver* observer) {
-  wm_shell_common_->AddShellObserver(observer);
-}
-
-void WmShellAura::RemoveShellObserver(ShellObserver* observer) {
-  wm_shell_common_->RemoveShellObserver(observer);
 }
 
 void WmShellAura::AddPointerWatcher(views::PointerWatcher* watcher) {

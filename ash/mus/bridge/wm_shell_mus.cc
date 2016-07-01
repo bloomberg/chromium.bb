@@ -14,7 +14,6 @@
 #include "ash/common/wm/mru_window_tracker.h"
 #include "ash/common/wm/window_resizer.h"
 #include "ash/common/wm_activation_observer.h"
-#include "ash/common/wm_shell_common.h"
 #include "ash/mus/bridge/wm_root_window_controller_mus.h"
 #include "ash/mus/bridge/wm_window_mus.h"
 #include "ash/mus/container_ids.h"
@@ -97,8 +96,7 @@ WmShellMus::WmShellMus(::mus::WindowTreeClient* client)
   client_->AddObserver(this);
   WmShell::Set(this);
 
-  wm_shell_common_.reset(new WmShellCommon);
-  wm_shell_common_->CreateMruWindowTracker();
+  CreateMruWindowTracker();
 
   accessibility_delegate_.reset(new DefaultAccessibilityDelegate);
   SetSystemTrayDelegate(base::WrapUnique(new DefaultSystemTrayDelegate));
@@ -107,7 +105,7 @@ WmShellMus::WmShellMus(::mus::WindowTreeClient* client)
 WmShellMus::~WmShellMus() {
   DeleteSystemTrayDelegate();
   DeleteWindowSelectorController();
-  wm_shell_common_->DeleteMruWindowTracker();
+  DeleteMruWindowTracker();
   RemoveClientObserver();
   WmShell::Set(nullptr);
 }
@@ -149,10 +147,6 @@ WmRootWindowControllerMus* WmShellMus::GetRootWindowControllerWithDisplayId(
   }
   NOTREACHED();
   return nullptr;
-}
-
-MruWindowTracker* WmShellMus::GetMruWindowTracker() {
-  return wm_shell_common_->mru_window_tracker();
 }
 
 WmWindow* WmShellMus::NewContainerWindow() {
@@ -240,13 +234,12 @@ WmShellMus::CreateMaximizeModeEventHandler() {
 }
 
 void WmShellMus::OnOverviewModeStarting() {
-  FOR_EACH_OBSERVER(ShellObserver, *wm_shell_common_->shell_observers(),
+  FOR_EACH_OBSERVER(ShellObserver, *shell_observers(),
                     OnOverviewModeStarting());
 }
 
 void WmShellMus::OnOverviewModeEnded() {
-  FOR_EACH_OBSERVER(ShellObserver, *wm_shell_common_->shell_observers(),
-                    OnOverviewModeEnded());
+  FOR_EACH_OBSERVER(ShellObserver, *shell_observers(), OnOverviewModeEnded());
 }
 
 AccessibilityDelegate* WmShellMus::GetAccessibilityDelegate() {
@@ -271,14 +264,6 @@ void WmShellMus::AddDisplayObserver(WmDisplayObserver* observer) {
 
 void WmShellMus::RemoveDisplayObserver(WmDisplayObserver* observer) {
   NOTIMPLEMENTED();
-}
-
-void WmShellMus::AddShellObserver(ShellObserver* observer) {
-  wm_shell_common_->AddShellObserver(observer);
-}
-
-void WmShellMus::RemoveShellObserver(ShellObserver* observer) {
-  wm_shell_common_->RemoveShellObserver(observer);
 }
 
 void WmShellMus::AddPointerWatcher(views::PointerWatcher* watcher) {

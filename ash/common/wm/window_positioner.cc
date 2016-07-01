@@ -163,7 +163,7 @@ WmWindow* GetReferenceWindow(const WmWindow* root_window,
 
   // Get a list of all windows.
   const std::vector<WmWindow*> windows = root_window->GetShell()
-                                             ->GetMruWindowTracker()
+                                             ->mru_window_tracker()
                                              ->BuildWindowListIgnoreModal();
 
   if (windows.empty())
@@ -478,7 +478,7 @@ gfx::Rect WindowPositioner::SmartPopupPosition(const gfx::Rect& old_pos,
                                                const gfx::Rect& work_area,
                                                int grid) {
   const std::vector<WmWindow*> windows =
-      shell_->GetMruWindowTracker()->BuildWindowListIgnoreModal();
+      shell_->mru_window_tracker()->BuildWindowListIgnoreModal();
 
   std::vector<const gfx::Rect*> regions;
   // Process the window list and check if we can bail immediately.

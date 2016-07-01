@@ -7,6 +7,7 @@
 #include "ash/aura/wm_window_aura.h"
 #include "ash/common/shell_window_ids.h"
 #include "ash/common/wm/window_state.h"
+#include "ash/common/wm_shell.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/window_state_aura.h"
@@ -27,7 +28,7 @@ class MruWindowTrackerTest : public test::AshTestBase {
   }
 
   ash::MruWindowTracker* mru_window_tracker() {
-    return Shell::GetInstance()->mru_window_tracker();
+    return WmShell::Get()->mru_window_tracker();
   }
 
  private:

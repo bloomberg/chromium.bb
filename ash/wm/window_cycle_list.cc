@@ -6,6 +6,7 @@
 
 #include "ash/common/wm/mru_window_tracker.h"
 #include "ash/common/wm/window_state.h"
+#include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
 #include "ash/shell.h"
 #include "ash/wm/window_animations.h"
@@ -107,14 +108,14 @@ void ScopedShowWindow::OnWindowTreeChanging(WmWindow* window,
 
 WindowCycleList::WindowCycleList(const WindowList& windows)
     : windows_(windows), current_index_(0) {
-  ash::Shell::GetInstance()->mru_window_tracker()->SetIgnoreActivations(true);
+  WmShell::Get()->mru_window_tracker()->SetIgnoreActivations(true);
 
   for (WmWindow* window : windows_)
     window->AddObserver(this);
 }
 
 WindowCycleList::~WindowCycleList() {
-  ash::Shell::GetInstance()->mru_window_tracker()->SetIgnoreActivations(false);
+  WmShell::Get()->mru_window_tracker()->SetIgnoreActivations(false);
   for (WmWindow* window : windows_) {
     // TODO(oshima): Remove this once crbug.com/483491 is fixed.
     CHECK(window);

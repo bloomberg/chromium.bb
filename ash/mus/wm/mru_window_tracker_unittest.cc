@@ -24,7 +24,7 @@ class MruWindowTrackerTest : public mus::WmTestBase {
   }
 
   MruWindowTracker* mru_window_tracker() {
-    return WmShell::Get()->GetMruWindowTracker();
+    return WmShell::Get()->mru_window_tracker();
   }
 
  private:

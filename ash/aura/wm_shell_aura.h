@@ -15,14 +15,11 @@
 
 namespace ash {
 
-class WmShellCommon;
-
 class ASH_EXPORT WmShellAura : public WmShell,
                                public aura::client::ActivationChangeObserver,
                                public WindowTreeHostManager::Observer {
  public:
-  // |shell_common| is not owned by this class and must outlive this class.
-  explicit WmShellAura(WmShellCommon* wm_shell_common);
+  WmShellAura();
   ~WmShellAura() override;
 
   static WmShellAura* Get();
@@ -31,7 +28,6 @@ class ASH_EXPORT WmShellAura : public WmShell,
   void PrepareForShutdown();
 
   // WmShell:
-  MruWindowTracker* GetMruWindowTracker() override;
   WmWindow* NewContainerWindow() override;
   WmWindow* GetFocusedWindow() override;
   WmWindow* GetActiveWindow() override;
@@ -60,8 +56,6 @@ class ASH_EXPORT WmShellAura : public WmShell,
   void RemoveActivationObserver(WmActivationObserver* observer) override;
   void AddDisplayObserver(WmDisplayObserver* observer) override;
   void RemoveDisplayObserver(WmDisplayObserver* observer) override;
-  void AddShellObserver(ShellObserver* observer) override;
-  void RemoveShellObserver(ShellObserver* observer) override;
   void AddPointerWatcher(views::PointerWatcher* watcher) override;
   void RemovePointerWatcher(views::PointerWatcher* watcher) override;
 #if defined(OS_CHROMEOS)
@@ -79,9 +73,6 @@ class ASH_EXPORT WmShellAura : public WmShell,
   // WindowTreeHostManager::Observer:
   void OnDisplayConfigurationChanging() override;
   void OnDisplayConfigurationChanged() override;
-
-  // Owned by Shell.
-  WmShellCommon* wm_shell_common_;
 
   WmLookupAura wm_lookup_;
   bool added_activation_observer_ = false;

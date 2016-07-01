@@ -10,6 +10,7 @@
 #include "ash/common/system/chromeos/session/logout_confirmation_controller.h"
 #include "ash/common/system/tray/system_tray_delegate.h"
 #include "ash/common/system/tray/system_tray_notifier.h"
+#include "ash/common/wm/mru_window_tracker.h"
 #include "ash/common/wm/overview/window_selector_controller.h"
 #include "ash/common/wm_window.h"
 #include "base/bind.h"
@@ -28,6 +29,19 @@ void WmShell::Set(WmShell* instance) {
 // static
 WmShell* WmShell::Get() {
   return instance_;
+}
+
+void WmShell::NotifyPinnedStateChanged(WmWindow* pinned_window) {
+  FOR_EACH_OBSERVER(ShellObserver, shell_observers_,
+                    OnPinnedStateChanged(pinned_window));
+}
+
+void WmShell::AddShellObserver(ShellObserver* observer) {
+  shell_observers_.AddObserver(observer);
+}
+
+void WmShell::RemoveShellObserver(ShellObserver* observer) {
+  shell_observers_.RemoveObserver(observer);
 }
 
 WmShell::WmShell()
@@ -89,6 +103,14 @@ void WmShell::DeleteSystemTrayDelegate() {
 
 void WmShell::DeleteWindowSelectorController() {
   window_selector_controller_.reset();
+}
+
+void WmShell::CreateMruWindowTracker() {
+  mru_window_tracker_.reset(new MruWindowTracker);
+}
+
+void WmShell::DeleteMruWindowTracker() {
+  mru_window_tracker_.reset();
 }
 
 }  // namespace ash

@@ -8,6 +8,7 @@
 #include "ash/common/wm/mru_window_tracker.h"
 #include "ash/common/wm/window_positioner.h"
 #include "ash/common/wm/window_state.h"
+#include "ash/common/wm_shell.h"
 #include "ash/desktop_background/user_wallpaper_delegate.h"
 #include "ash/root_window_controller.h"
 #include "ash/shelf/shelf_layout_manager.h"
@@ -38,13 +39,12 @@ class UserChangeActionDisabler {
  public:
   UserChangeActionDisabler() {
     ash::WindowPositioner::DisableAutoPositioning(true);
-    ash::Shell::GetInstance()->mru_window_tracker()->SetIgnoreActivations(true);
+    ash::WmShell::Get()->mru_window_tracker()->SetIgnoreActivations(true);
   }
 
   ~UserChangeActionDisabler() {
     ash::WindowPositioner::DisableAutoPositioning(false);
-    ash::Shell::GetInstance()->mru_window_tracker()->SetIgnoreActivations(
-        false);
+    ash::WmShell::Get()->mru_window_tracker()->SetIgnoreActivations(false);
   }
  private:
 
@@ -363,10 +363,8 @@ void UserSwitchAnimatorChromeOS::TransitionWindows(
     }
     case ANIMATION_STEP_FINALIZE: {
       // Reactivate the MRU window of the new user.
-      aura::Window::Windows mru_list =
-          ash::WmWindowAura::ToAuraWindows(ash::Shell::GetInstance()
-                                               ->mru_window_tracker()
-                                               ->BuildMruWindowList());
+      aura::Window::Windows mru_list = ash::WmWindowAura::ToAuraWindows(
+          ash::WmShell::Get()->mru_window_tracker()->BuildMruWindowList());
       if (!mru_list.empty()) {
         aura::Window* window = mru_list[0];
         ash::wm::WindowState* window_state = ash::wm::GetWindowState(window);

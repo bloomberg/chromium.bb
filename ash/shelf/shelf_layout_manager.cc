@@ -1062,7 +1062,7 @@ ShelfAutoHideState ShelfLayoutManager::CalculateAutoHideState(
   // TODO(jamescook): Track visible windows on mash via ShelfDelegate.
   if (!Shell::GetInstance()->in_mus()) {
     const std::vector<WmWindow*> windows =
-        shell->mru_window_tracker()->BuildWindowListIgnoreModal();
+        WmShell::Get()->mru_window_tracker()->BuildWindowListIgnoreModal();
 
     // Process the window list and check if there are any visible windows.
     bool visible_window = false;

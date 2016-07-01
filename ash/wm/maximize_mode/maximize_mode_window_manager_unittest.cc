@@ -771,7 +771,7 @@ TEST_F(MaximizeModeWindowManagerTest, ModeChangeKeepsMRUOrder) {
   // The windows should be in the reverse order of creation in the MRU list.
   {
     aura::Window::Windows windows = WmWindowAura::ToAuraWindows(
-        ash::Shell::GetInstance()->mru_window_tracker()->BuildMruWindowList());
+        WmShell::Get()->mru_window_tracker()->BuildMruWindowList());
 
     EXPECT_EQ(w1.get(), windows[4]);
     EXPECT_EQ(w2.get(), windows[3]);
@@ -786,7 +786,7 @@ TEST_F(MaximizeModeWindowManagerTest, ModeChangeKeepsMRUOrder) {
   EXPECT_EQ(5, manager->GetNumberOfManagedWindows());
   {
     aura::Window::Windows windows = WmWindowAura::ToAuraWindows(
-        ash::Shell::GetInstance()->mru_window_tracker()->BuildMruWindowList());
+        WmShell::Get()->mru_window_tracker()->BuildMruWindowList());
     // We do not test maximization here again since that was done already.
     EXPECT_EQ(w1.get(), windows[4]);
     EXPECT_EQ(w2.get(), windows[3]);
@@ -799,7 +799,7 @@ TEST_F(MaximizeModeWindowManagerTest, ModeChangeKeepsMRUOrder) {
   DestroyMaximizeModeWindowManager();
   {
     aura::Window::Windows windows = WmWindowAura::ToAuraWindows(
-        ash::Shell::GetInstance()->mru_window_tracker()->BuildMruWindowList());
+        WmShell::Get()->mru_window_tracker()->BuildMruWindowList());
     // We do not test maximization here again since that was done already.
     EXPECT_EQ(w1.get(), windows[4]);
     EXPECT_EQ(w2.get(), windows[3]);

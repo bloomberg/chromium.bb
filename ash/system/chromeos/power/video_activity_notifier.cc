@@ -19,11 +19,11 @@ const int kNotifyIntervalSec = 5;
 VideoActivityNotifier::VideoActivityNotifier(VideoDetector* detector)
     : detector_(detector), screen_is_locked_(false) {
   detector_->AddObserver(this);
-  ash::WmShell::Get()->AddShellObserver(this);
+  WmShell::Get()->AddShellObserver(this);
 }
 
 VideoActivityNotifier::~VideoActivityNotifier() {
-  ash::WmShell::Get()->RemoveShellObserver(this);
+  WmShell::Get()->RemoveShellObserver(this);
   detector_->RemoveObserver(this);
 }
 

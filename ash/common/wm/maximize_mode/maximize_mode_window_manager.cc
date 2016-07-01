@@ -171,7 +171,7 @@ MaximizeModeWindowManager::MaximizeModeWindowManager()
 
 void MaximizeModeWindowManager::MaximizeAllWindows() {
   MruWindowTracker::WindowList windows =
-      WmShell::Get()->GetMruWindowTracker()->BuildWindowListIgnoreModal();
+      WmShell::Get()->mru_window_tracker()->BuildWindowListIgnoreModal();
   // Add all existing Mru windows.
   for (WmWindow* window : windows)
     MaximizeAndTrackWindow(window);

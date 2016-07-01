@@ -44,7 +44,7 @@ void WindowSelectorController::ToggleOverview() {
       return;
 
     std::vector<WmWindow*> windows =
-        WmShell::Get()->GetMruWindowTracker()->BuildMruWindowList();
+        WmShell::Get()->mru_window_tracker()->BuildMruWindowList();
     auto end =
         std::remove_if(windows.begin(), windows.end(),
                        std::not1(std::ptr_fun(&WindowSelector::IsSelectable)));

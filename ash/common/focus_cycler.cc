@@ -18,7 +18,7 @@ namespace ash {
 namespace {
 
 bool HasFocusableWindow() {
-  return !WmShell::Get()->GetMruWindowTracker()->BuildMruWindowList().empty();
+  return !WmShell::Get()->mru_window_tracker()->BuildMruWindowList().empty();
 }
 
 }  // namespace
@@ -80,7 +80,7 @@ void FocusCycler::RotateFocus(Direction direction) {
     if (index == browser_index) {
       // Activate the most recently active browser window.
       MruWindowTracker::WindowList mru_windows(
-          WmShell::Get()->GetMruWindowTracker()->BuildMruWindowList());
+          WmShell::Get()->mru_window_tracker()->BuildMruWindowList());
       if (mru_windows.empty())
         break;
       WmWindow* window = mru_windows.front();

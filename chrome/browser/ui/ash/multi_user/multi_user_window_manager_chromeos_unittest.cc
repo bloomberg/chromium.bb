@@ -10,6 +10,7 @@
 #include "ash/common/wm/mru_window_tracker.h"
 #include "ash/common/wm/window_state.h"
 #include "ash/common/wm/wm_event.h"
+#include "ash/common/wm_shell.h"
 #include "ash/content/shell_content_state.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_widget.h"
@@ -1497,7 +1498,7 @@ TEST_F(MultiUserWindowManagerChromeOSTest, WindowsOrderPreservedTests) {
   EXPECT_EQ(wm::GetActiveWindow(), window(0));
 
   aura::Window::Windows mru_list = WmWindowAura::ToAuraWindows(
-      Shell::GetInstance()->mru_window_tracker()->BuildMruWindowList());
+      WmShell::Get()->mru_window_tracker()->BuildMruWindowList());
   EXPECT_EQ(mru_list[0], window(0));
   EXPECT_EQ(mru_list[1], window(1));
   EXPECT_EQ(mru_list[2], window(2));
@@ -1513,7 +1514,7 @@ TEST_F(MultiUserWindowManagerChromeOSTest, WindowsOrderPreservedTests) {
   EXPECT_EQ(wm::GetActiveWindow(), window(0));
 
   mru_list = WmWindowAura::ToAuraWindows(
-      Shell::GetInstance()->mru_window_tracker()->BuildMruWindowList());
+      WmShell::Get()->mru_window_tracker()->BuildMruWindowList());
   EXPECT_EQ(mru_list[0], window(0));
   EXPECT_EQ(mru_list[1], window(1));
   EXPECT_EQ(mru_list[2], window(2));

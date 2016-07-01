@@ -85,9 +85,8 @@ void InitAfterFirstSessionStart() {
   // Restore focus after the user session is started.  It's needed because some
   // windows can be opened in background while login UI is still active because
   // we currently restore browser windows before login UI is deleted.
-  ash::Shell* shell = ash::Shell::GetInstance();
   aura::Window::Windows mru_list = ash::WmWindowAura::ToAuraWindows(
-      shell->mru_window_tracker()->BuildMruWindowList());
+      ash::WmShell::Get()->mru_window_tracker()->BuildMruWindowList());
   if (!mru_list.empty())
     mru_list.front()->Focus();
 

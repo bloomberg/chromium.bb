@@ -14,14 +14,13 @@
 namespace ash {
 
 class WindowTreeHostManager;
-class WmShellCommon;
 class WmWindow;
 
 // Handles pinned state.
 class ScreenPinningController : public WindowTreeHostManager::Observer {
  public:
-  ScreenPinningController(WmShellCommon* wm_shell_common,
-                          WindowTreeHostManager* window_tree_host_manager);
+  explicit ScreenPinningController(
+      WindowTreeHostManager* window_tree_host_manager);
   ~ScreenPinningController() override;
 
   // Sets a pinned window. It is not allowed to call this when there already
@@ -87,11 +86,6 @@ class ScreenPinningController : public WindowTreeHostManager::Observer {
 
   // Set true only when restacking done by this controller.
   bool in_restacking_ = false;
-
-  // For OnPinnedStateChanged event notification.
-  // While this controller is alive, it needs to be ensured that the instances
-  // refered from the pointers should be alive.
-  WmShellCommon* wm_shell_common_;
 
   // Keep references to remove this as a observer.
   // While this controller is alive, it needs to be ensured that the instances
