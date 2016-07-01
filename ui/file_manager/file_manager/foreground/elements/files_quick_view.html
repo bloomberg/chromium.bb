@@ -19,7 +19,7 @@
       <paper-toolbar id="toolbar">
         <div>[[filePath]]</div>
         <div id="buttons">
-           <paper-button id="open-button" on-tap="onOpenInNewButtonTap" hidden$="[[isUnsupported]]" i18n-values="aria-label:QUICK_VIEW_OPEN_IN_NEW_BUTTON_LABEL" tabindex="0" has-tooltip>
+           <paper-button id="open-button" on-tap="onOpenInNewButtonTap" hidden$="[[isUnsupported_(type)]]" i18n-values="aria-label:QUICK_VIEW_OPEN_IN_NEW_BUTTON_LABEL" tabindex="0" has-tooltip>
              <iron-icon icon="files:open-in-new"></iron-icon>
            </paper-button>
            <paper-button id-"metadata-button" active="{{metadataBoxActive}}" i18n-values="aria-label:QUICK_VIEW_TOGGLE_METADATA_BOX_BUTTON_LABEL" tabindex="0" toggles has-tooltip>
@@ -31,20 +31,24 @@
         <div class='close-on-click' id="contentPanel" metadata-box-active$="[[metadataBoxActive]]" on-tap="onContentPanelTap_">
           <div class='close-on-click' id="innerContentPanel" tabindex="0">
             <template is="dom-if" if="[[isImage_(type)]]">
-              <div class="close-on-click" generic-thumbnail="image">
+              <div class="close-on-click" hidden="[[!contentUrl]]">
                 <img class="content" src="[[contentUrl]]">
               </div>
+              <template is="dom-if" if="[[!contentUrl]]">
+                <div generic-thumbnail="image"></div>
+                <div class="no-preivew" i18n-content="QUICK_VIEW_NO_PREVIEW_AVAILABLE"></div>
+              </template>
             </template>
             <template is="dom-if" if="[[isVideo_(type)]]">
               <template is="dom-if" if="[[contentUrl]]">
                 <video class="content" controls autoplay="[[autoplay]]" src="[[contentUrl]]" poster="[[videoPoster]]"></video>
               </template>
-              <template is="dom-if" if=[[!contentUrl]]">
+              <template is="dom-if" if="[[!contentUrl]]">
                 <div class="thumbnail" hidden="[[!videoPoster]]">
                   <img id="video-poster" src="[[videoPoster]]">
                 </div>
                 <div hidden="[[videoPoster]]" generic-thumbnail="video"></div>
-                <div i18n-content="QUICK_VIEW_NO_PLAYBACK_AVAILABLE"></div>
+                <div class="no-preview" i18n-content="QUICK_VIEW_NO_PLAYBACK_AVAILABLE"></div>
               </template>
             </template>
             <template is="dom-if" if="[[isAudio_(type)]]">
@@ -58,17 +62,17 @@
               </template>
               <template is="dom-if" if="[[!contentUrl]]">
                 <div generic-thumbnail="audio"></div>
-                <div i18n-content="QUICK_VIEW_NO_PLAYBACK_AVAILABLE"></div>
+                <div class="no-preivew" i18n-content="QUICK_VIEW_NO_PLAYBACK_AVAILABLE"></div>
               </template>
             </template>
             <!-- TODO(oka): Support folder icon -->
-            <template is="dom-if" if="[[isUnsupported_(type)]]">
+            <div hidden="[[!isUnsupported_(type)]]">
               <div generic-thumbnail></div>
-              <div i18n-content="QUICK_VIEW_NO_PREVIEW_AVAILABLE"></div>
-            </template>
+              <div class="no-preview" i18n-content="QUICK_VIEW_NO_PREVIEW_AVAILABLE"></div>
+            </div>
             </div> <!-- innerContentPanel -->
           </div> <!-- contentPanel -->
-        <files-metadata-box id="metadata-box" hidden$="{{!metadataBoxActive}}"></file-metadata-box>
+        <files-metadata-box id="metadata-box" hidden$="[[!metadataBoxActive]]"></file-metadata-box>
       </div> <!-- mainPanel -->
     </paper-dialog>
     <files-tooltip></files-tooltip>

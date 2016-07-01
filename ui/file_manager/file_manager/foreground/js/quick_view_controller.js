@@ -110,6 +110,7 @@ QuickViewController.prototype.onKeyDownToOpen_ = function(event) {
 QuickViewController.prototype.onQuickViewKeyDown_ = function(event) {
   switch (event.key) {
     case ' ':
+    case 'Escape':
       event.preventDefault();
       this.quickView_.close();
       this.listContainer_.focus();

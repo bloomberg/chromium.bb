@@ -755,14 +755,71 @@ Press any key to continue exploring.
   <message name="IDS_FILE_BROWSER_MANY_ENTRIES_SELECTED" desc="Many items (both files and directories) selected.">
     <ph name="SELCTED_FILES_COUNT">$1<ex>21</ex></ph> items selected
   </message>
+  <message name="IDS_FILE_BROWSER_METADATA_BOX_ALBUM_TITLE" desc="Label for audio album title.">
+    Album
+  </message>
+  <message name="IDS_FILE_BROWSER_METADATA_BOX_AUDIO_INFO" desc="Category label for audio file info.">
+    Audio Info
+  </message>
+  <message name="IDS_FILE_BROWSER_METADATA_BOX_CODEC" desc="Label for video codec.">
+    Codec
+  </message>
+  <message name="IDS_FILE_BROWSER_METADATA_BOX_CREATED_BY" desc="Label for who created the file.">
+    Created By
+  </message>
+  <message name="IDS_FILE_BROWSER_METADATA_BOX_CREATION_TIME" desc="Label for file creation time.">
+    Created Time
+  </message>
+  <message name="IDS_FILE_BROWSER_METADATA_BOX_DURATION" desc="Label for audio/video duration.">
+    Duration
+  </message>
+  <message name="IDS_FILE_BROWSER_METADATA_BOX_FILE_PATH" desc="Label for file path.">
+    Path
+  </message>
   <message name="IDS_FILE_BROWSER_METADATA_BOX_FILE_SIZE" desc="Label fo file size.">
     Size
+  </message>
+  <message name="IDS_FILE_BROWSER_METADATA_BOX_FRAME_RATE" desc="Label for video frame rate.">
+    Frame Rate
   </message>
   <message name="IDS_FILE_BROWSER_METADATA_BOX_GENERAL_INFO" desc="Category label for general file info.">
     General Info
   </message>
+  <message name="IDS_FILE_BROWSER_METADATA_BOX_GENRE" desc="Label for audio genre.">
+    Genre
+  </message>
+  <message name="IDS_FILE_BROWSER_METADATA_BOX_IMAGE_INFO" desc="Category label for image file info.">
+    Image Info
+  </message>
+  <message name="IDS_FILE_BROWSER_METADATA_BOX_MEDIA_ARTIST" desc="Label for media artist.">
+    Artist
+  </message>
+  <message name="IDS_FILE_BROWSER_METADATA_BOX_MEDIA_MIME_TYPE" desc="Label for media mime type.">
+    Type
+  </message>
+  <message name="IDS_FILE_BROWSER_METADATA_BOX_MEDIA_TITLE" desc="Label for media title.">
+    Title
+  </message>
   <message name="IDS_FILE_BROWSER_METADATA_BOX_MODIFICATION_TIME" desc="Label for file modification time.">
     Modified Time
+  </message>
+  <message name="IDS_FILE_BROWSER_METADATA_BOX_MODIFIED_BY" desc="Label for who modified the file.">
+    Modified By
+  </message>
+  <message name="IDS_FILE_BROWSER_METADATA_BOX_PAGE_COUNT" desc="Label for pdf page count.">
+    Page Count
+  </message>
+  <message name="IDS_FILE_BROWSER_METADATA_BOX_RESOLUTION" desc="Label for image resolution.">
+    Resolution
+  </message>
+  <message name="IDS_FILE_BROWSER_METADATA_BOX_SOURCE" desc="Label for the device used to capture the image.">
+    Source
+  </message>
+  <message name="IDS_FILE_BROWSER_METADATA_BOX_VIDEO_INFO" desc="Category label for video file info.">
+    Video Info
+  </message>
+  <message name="IDS_FILE_BROWSER_METADATA_BOX_YEAR_RECORDED" desc="Label for audio recorded year.">
+    Year Recorded
   </message>
   <message name="IDS_FILE_BROWSER_CALCULATING_SIZE" desc="Message informing the user that total items size is being calculated.">
     Calculating size
@@ -777,10 +834,10 @@ Press any key to continue exploring.
     To save these files for offline use, get back online, right-click the files, and select the <ph name="OFFLINE_CHECKBOX_NAME">'$1'<ex>'Available offline'</ex></ph> option.
   </message>
   <message name="IDS_FILE_BROWSER_QUICK_VIEW_NO_PLAYBACK_AVAILABLE" desc="Massage for user to notify no playback is available.">
-    No playback available.
+    No playback available
   </message>
   <message name="IDS_FILE_BROWSER_QUICK_VIEW_NO_PREVIEW_AVAILABLE" desc="Massage for user to notify no preview is available.">
-    No preview available.
+    No preview available
   </message>
   <message name="IDS_FILE_BROWSER_HOSTED_OFFLINE_MESSAGE" desc="Message informing the user that the selected file is only available online.">
     You must be online to access this file.

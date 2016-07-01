@@ -75,28 +75,32 @@ MetadataBoxController.prototype.updateView_ = function() {
   if (!this.quickView_.metadataBoxActive) {
     return;
   }
+  this.metadataBox_.clear();
   var entry = this.quickViewModel_.getSelectedEntry();
   if (!entry)
     return;
   this.metadataModel_
       .get(
-          [entry],
-          MetadataBoxController.GENERAL_METADATA_NAME.concat(['hosted']))
+          [entry], MetadataBoxController.GENERAL_METADATA_NAME.concat(
+                       ['hosted', 'externalFileUrl']))
       .then(this.onGeneralMetadataLoaded_.bind(this, entry));
-
-  // TODO(oka): Add file type specific metadata.
 };
 
 /**
  * Update metadata box with general file information.
+ * Then retrieve file specific metadata if any.
  *
- * @param{!FileEntry} entry
- * @param{!Array<!MetadataItem>} items
+ * @param {!FileEntry} entry
+ * @param {!Array<!MetadataItem>} items
+ *
  * @private
  */
 MetadataBoxController.prototype.onGeneralMetadataLoaded_ = function(
     entry, items) {
+  var type = FileType.getType(entry).type;
   var item = items[0];
+
+  this.metadataBox_.type = type;
   if (item.size) {
     this.metadataBox_.size =
         this.fileMetadataFormatter_.formatSize(item.size, item.hosted);
@@ -104,5 +108,42 @@ MetadataBoxController.prototype.onGeneralMetadataLoaded_ = function(
   if (item.modificationTime) {
     this.metadataBox_.modificationTime =
         this.fileMetadataFormatter_.formatModDate(item.modificationTime);
+  }
+
+  if (item.externalFileUrl) {
+    this.metadataModel_.get([entry], ['contentMimeType']).then(function(items) {
+      var item = items[0];
+      this.metadataBox_.mediaMimeType = item.contentMimeType;
+    }.bind(this));
+  } else {
+    this.metadataModel_.get([entry], ['mediaMimeType']).then(function(items) {
+      var item = items[0];
+      this.metadataBox_.mediaMimeType = item.mediaMimeType;
+    }.bind(this));
+  }
+
+  var type = FileType.getType(entry).type;
+  this.metadataBox_.type = type;
+  if (['image', 'video', 'audio'].includes(type)) {
+    if (item.externalFileUrl) {
+      this.metadataModel_.get([entry], ['imageHeight', 'imageWidth'])
+          .then(function(items) {
+            var item = items[0];
+            this.metadataBox_.imageHeight = item.imageHeight;
+            this.metadataBox_.imageWidth = item.imageWidth;
+          }.bind(this));
+    } else {
+      this.metadataModel_
+          .get(
+              [entry],
+              ['imageHeight', 'imageWidth', 'mediaArtist', 'mediaTitle'])
+          .then(function(items) {
+            var item = items[0];
+            this.metadataBox_.imageHeight = item.imageHeight;
+            this.metadataBox_.imageWidth = item.imageWidth;
+            this.metadataBox_.mediaArtist = item.mediaArtist;
+            this.metadataBox_.mediaTitle = item.mediaTitle;
+          }.bind(this));
+    }
   }
 };

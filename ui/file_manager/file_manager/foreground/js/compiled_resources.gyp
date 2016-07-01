@@ -70,6 +70,7 @@
           '../../background/js/background.js',
           '../../../image_loader/image_loader_client.js',
           '../elements/files_metadata_box.js',
+          '../elements/files_metadata_entry.js',
           '../elements/files_quick_view.js',
           '../elements/files_ripple.js',
           '../elements/files_toggle_ripple.js',

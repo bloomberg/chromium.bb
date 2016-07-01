@@ -61,7 +61,7 @@ video::-webkit-media-controls-volume-slider {
 }
 
 #contentPanel[metadata-box-active] {
-  margin-right: 200px;
+  margin-right: 320px;
 }
 
 #innerContentPanel {
@@ -90,67 +90,82 @@ video::-webkit-media-controls-volume-slider {
 }
 
 #toolbar {
-  --paper-toolbar-background: black;
-  --paper-toolbar-height: 32px;
+  --paper-toolbar-background: rgb(60, 60, 60);
+  --paper-toolbar-height: 48px;
   color: white;
   margin: 0;
-  z-index: 1;
+  padding: 0;
   width: 100%;
+  z-index: 1;
 }
 
 #buttons {
+  display: flex;
   position: absolute;
   right: 0px;
 }
 
 paper-button {
-  padding: 4px;
+  border-radius: 2px;
+  height: 32px;
+  margin: 0 8px;
+  min-width: 32px;
+  padding: 0;
+}
+
+iron-icon {
+  height: 16px;
+  width: 16px;
 }
 
 #metadata-box {
-  background: black;
+  background-color: rgba(40, 40, 44, 0.8);
   bottom: 0;
   height: 100%;
   margin: 0;
   position: absolute;
   right: 0;
-  width: 200px;
 }
 
 [hidden] {
   display: none;
 }
 
+.no-preview {
+  margin-top: 16px;
+}
+
 /* Large generic thumbnails, used when a file does not have a thumbnail. */
 [generic-thumbnail] {
   background: -webkit-image-set(
-      url(../images/files/ui/filetype_placeholder_generic.png) 1x,
-      url(../images/files/ui/2x/filetype_placeholder_generic.png) 2x)
+      url(../images/files/ui/quick_view/filetype_generic.png) 1x,
+      url(../images/files/ui/quick_view/2x/filetype_generic.png) 2x)
     center
     no-repeat;
-  height: 48px;
+  height: 162px;
 }
 
 [generic-thumbnail='audio'] {
   background: -webkit-image-set(
-      url(../images/files/ui/filetype_placeholder_audio.png) 1x,
-      url(../images/files/ui/2x/filetype_placeholder_audio.png) 2x)
+      url(../images/files/ui/quick_view/filetype_audio.png) 1x,
+      url(../images/files/ui/quick_view/2x/filetype_audio.png) 2x)
     center
     no-repeat;
 }
 
 [generic-thumbnail='image'] {
   background: -webkit-image-set(
-      url(../images/files/ui/filetype_placeholder_image.png) 1x,
-      url(../images/files/ui/2x/filetype_placeholder_image.png) 2x)
+      url(../images/files/ui/quick_view/filetype_image.png) 1x,
+      url(../images/files/ui/quick_view/2x/filetype_image.png) 2x)
     center
     no-repeat;
 }
 
 [generic-thumbnail='video'] {
   background: -webkit-image-set(
-      url(../images/files/ui/filetype_placeholder_video.png) 1x,
-      url(../images/files/ui/2x/filetype_placeholder_video.png) 2x)
+      url(../images/files/ui/quick_view/filetype_video.png) 1x,
+      url(../images/files/ui/quick_view/2x/filetype_video.png) 2x)
     center
     no-repeat;
+  height: 134px;
 }

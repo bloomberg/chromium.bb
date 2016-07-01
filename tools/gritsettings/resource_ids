@@ -263,7 +263,7 @@
     "includes": [26760],
   },
   "components/chrome_apps/chrome_apps_resources.grd": {
-    "includes": [26940],
+    "includes": [26945],
   },
   "ui/login/login_resources.grd": {
     "includes": [26960],

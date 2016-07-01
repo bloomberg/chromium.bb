@@ -1,0 +1,53 @@
+<!-- Copyright 2016 The Chromium Authors. All rights reserved.
+  -- Use of this source code is governed by a BSD-style license that can be
+  -- found in the LICENSE file.
+-->
+
+<link rel="import" href="chrome://resources/polymer/v1_0/polymer/polymer.html">
+
+<dom-module id="files-metadata-entry">
+  <style>
+    div {
+      margin: 0;
+    }
+
+    #box {
+      display: flex;
+      margin: 12px 0;
+      min-height: 14px;
+      width: 320px;
+    }
+
+    #box[hidden] {
+      display: none;
+    }
+
+    #padding {
+      width: 15px;
+    }
+
+    #key {
+      color: #EFEFEF;
+      font-weight: bold;
+      overflow-wrap: break-word;
+      vertical-align: bottom;
+      width: 150px;
+    }
+
+    #value {
+      color: #D6D6D6;
+      overflow-wrap: break-word;
+      vertical-align: bottom;
+      width: 150px;
+    }
+  </style>
+  <template>
+    <div id="box" hidden="[[!value]]">
+      <div id="padding"></div>
+      <div id="key">[[key]]</div>
+      <div id="value">[[value]]</div>
+    </div>
+  </template>
+</dom-module>
+
+<script src="files_metadata_entry.js"></script>
