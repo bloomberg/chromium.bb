@@ -6296,6 +6296,11 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="ContentSettings.DefaultAutoplaySetting" enum="ContentSetting">
+  <owner>mlamouri@chromium.org</owner>
+  <summary>The default autoplay setting at profile open.</summary>
+</histogram>
+
 <histogram name="ContentSettings.DefaultCookiesSetting" enum="ContentSetting">
   <owner>toyoshim@chromium.org</owner>
   <summary>The default cookies setting at profile open.</summary>
