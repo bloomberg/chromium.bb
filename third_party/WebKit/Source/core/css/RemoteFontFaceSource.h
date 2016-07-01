@@ -64,14 +64,14 @@ private:
         FontLoadHistograms() : m_loadStartTime(0), m_blankPaintTime(0), m_isLongLimitExceeded(false) { }
         void loadStarted();
         void fallbackFontPainted(DisplayPeriod);
-        void fontLoaded(bool isInterventionTriggered, bool isLoadedFromCache);
+        void fontLoaded(bool isInterventionTriggered, bool isLoadedFromNetwork);
         void longLimitExceeded(bool isInterventionTriggered);
         void recordFallbackTime(const FontResource*);
         void recordRemoteFont(const FontResource*);
         bool hadBlankText() { return m_blankPaintTime; }
     private:
         void recordLoadTimeHistogram(const FontResource*, int duration);
-        void recordInterventionResult(bool isTriggered, bool isLoadedFromCache);
+        void recordInterventionResult(bool isTriggered, bool isLoadedFromNetwork);
         double m_loadStartTime;
         double m_blankPaintTime;
         bool m_isLongLimitExceeded;

@@ -40,12 +40,12 @@ bool isConnectionTypeSlow()
     return networkStateNotifier().connectionType() == WebConnectionTypeCellular2G;
 }
 
-bool shouldTriggerWebFontsIntervention(Document* document, FontDisplay display, bool isLoadedFromMemoryCache)
+bool shouldTriggerWebFontsIntervention(Document* document, FontDisplay display, bool isLoadedFromMemoryCache, bool isLoadedFromDataURL)
 {
-    if (isLoadedFromMemoryCache)
-        return false;
     if (RuntimeEnabledFeatures::webFontsInterventionTriggerEnabled())
         return true;
+    if (isLoadedFromMemoryCache || isLoadedFromDataURL)
+        return false;
 
     bool isV2Enabled = RuntimeEnabledFeatures::webFontsInterventionV2With2GEnabled() || RuntimeEnabledFeatures::webFontsInterventionV2WithSlow2GEnabled();
 
@@ -67,7 +67,7 @@ RemoteFontFaceSource::RemoteFontFaceSource(FontResource* font, CSSFontSelector* 
     ThreadState::current()->registerPreFinalizer(this);
     m_font->addClient(this);
 
-    if (shouldTriggerWebFontsIntervention(m_fontSelector->document(), display, m_isLoadedFromMemoryCache)) {
+    if (shouldTriggerWebFontsIntervention(m_fontSelector->document(), display, m_isLoadedFromMemoryCache, m_font->url().protocolIsData())) {
 
         m_isInterventionTriggered = true;
         m_period = SwapPeriod;
@@ -117,7 +117,7 @@ bool RemoteFontFaceSource::isValid() const
 void RemoteFontFaceSource::notifyFinished(Resource*)
 {
     m_histograms.recordRemoteFont(m_font.get());
-    m_histograms.fontLoaded(m_isInterventionTriggered, m_isLoadedFromMemoryCache || m_font->response().wasCached());
+    m_histograms.fontLoaded(m_isInterventionTriggered, !m_isLoadedFromMemoryCache && !m_font->url().protocolIsData() && !m_font->response().wasCached());
 
     m_font->ensureCustomFontData();
     // FIXME: Provide more useful message such as OTS rejection reason.
@@ -238,10 +238,10 @@ void RemoteFontFaceSource::FontLoadHistograms::fallbackFontPainted(DisplayPeriod
         m_blankPaintTime = currentTimeMS();
 }
 
-void RemoteFontFaceSource::FontLoadHistograms::fontLoaded(bool isInterventionTriggered, bool isLoadedFromCache)
+void RemoteFontFaceSource::FontLoadHistograms::fontLoaded(bool isInterventionTriggered, bool isLoadedFromNetwork)
 {
     if (!m_isLongLimitExceeded)
-        recordInterventionResult(isInterventionTriggered, isLoadedFromCache);
+        recordInterventionResult(isInterventionTriggered, isLoadedFromNetwork);
 }
 
 void RemoteFontFaceSource::FontLoadHistograms::longLimitExceeded(bool isInterventionTriggered)
@@ -314,7 +314,7 @@ void RemoteFontFaceSource::FontLoadHistograms::recordLoadTimeHistogram(const Fon
     over1mbHistogram.count(duration);
 }
 
-void RemoteFontFaceSource::FontLoadHistograms::recordInterventionResult(bool isTriggered, bool isLoadedFromCache)
+void RemoteFontFaceSource::FontLoadHistograms::recordInterventionResult(bool isTriggered, bool isLoadedFromNetwork)
 {
     // interventionResult takes 0-3 values.
     int interventionResult = 0;
@@ -327,7 +327,7 @@ void RemoteFontFaceSource::FontLoadHistograms::recordInterventionResult(bool isT
     DEFINE_STATIC_LOCAL(EnumerationHistogram, interventionHistogram, ("WebFont.InterventionResult", boundary));
     DEFINE_STATIC_LOCAL(EnumerationHistogram, missCachedInterventionHistogram, ("WebFont.MissCachedInterventionResult", boundary));
     interventionHistogram.count(interventionResult);
-    if (!isLoadedFromCache)
+    if (isLoadedFromNetwork)
         missCachedInterventionHistogram.count(interventionResult);
 }
 
