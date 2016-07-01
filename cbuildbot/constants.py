@@ -43,6 +43,9 @@ SITE_CONFIG_FILE = os.path.join(SITE_CONFIG_DIR, 'config_dump.json')
 CHROMEOS_CONFIG_FILE = os.path.join(CHROMITE_DIR, 'cbuildbot',
                                     'config_dump.json')
 
+GE_BUILD_CONFIG_FILE = os.path.join(
+    CHROMITE_DIR, 'cbuildbot', 'ge_build_config.json')
+
 # The following define the location for storing toolchain packages and
 # SDK overlay tarballs created during SDK builder runs. The paths are relative
 # to the build root's chroot, which guarantees that they are reachable from it

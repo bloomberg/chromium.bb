@@ -1,0 +1,1325 @@
+{
+  "metadata_version": "1.0",
+  "boards": [
+    {
+      "name": "amd64-generic-goofy",
+      "configs": [
+        {
+          "builder": "RELEASE",
+          "experimental": true,
+          "leader_board": false,
+          "board_group": ""
+        }
+      ]
+    },
+    {
+      "name": "amenia",
+      "configs": [
+        {
+          "builder": "RELEASE",
+          "experimental": true,
+          "leader_board": false,
+          "board_group": "reef"
+        }
+      ]
+    },
+    {
+      "name": "arkham",
+      "configs": [
+        {
+          "builder": "RELEASE",
+          "experimental": true,
+          "leader_board": false,
+          "board_group": "arkham"
+        }
+      ]
+    },
+    {
+      "name": "asuka",
+      "configs": [
+        {
+          "builder": "RELEASE",
+          "experimental": true,
+          "leader_board": false,
+          "board_group": "glados"
+        }
+      ]
+    },
+    {
+      "name": "auron",
+      "configs": [
+        {
+          "builder": "RELEASE",
+          "experimental": false,
+          "leader_board": false,
+          "board_group": "auron"
+        }
+      ]
+    },
+    {
+      "name": "auron_paine",
+      "configs": [
+        {
+          "builder": "RELEASE",
+          "experimental": false,
+          "leader_board": true,
+          "board_group": "auron"
+        }
+      ]
+    },
+    {
+      "name": "auron_yuna",
+      "configs": [
+        {
+          "builder": "RELEASE",
+          "experimental": false,
+          "leader_board": false,
+          "board_group": "auron"
+        }
+      ]
+    },
+    {
+      "name": "banjo",
+      "configs": [
+        {
+          "builder": "RELEASE",
+          "experimental": false,
+          "leader_board": false,
+          "board_group": "rambi"
+        }
+      ]
+    },
+    {
+      "name": "banon",
+      "configs": [
+        {
+          "builder": "RELEASE",
+          "experimental": false,
+          "leader_board": false,
+          "board_group": "strago"
+        }
+      ]
+    },
+    {
+      "name": "beaglebone",
+      "configs": [
+        {
+          "builder": "RELEASE",
+          "experimental": true,
+          "leader_board": false,
+          "board_group": ""
+        }
+      ]
+    },
+    {
+      "name": "beaglebone_servo",
+      "configs": [
+        {
+          "builder": "RELEASE",
+          "experimental": true,
+          "leader_board": false,
+          "board_group": ""
+        }
+      ]
+    },
+    {
+      "name": "buddy",
+      "configs": [
+        {
+          "builder": "RELEASE",
+          "experimental": false,
+          "leader_board": false,
+          "board_group": "auron"
+        }
+      ]
+    },
+    {
+      "name": "butterfly",
+      "configs": [
+        {
+          "builder": "RELEASE",
+          "experimental": false,
+          "leader_board": false,
+          "board_group": "sandybridge"
+        }
+      ]
+    },
+    {
+      "name": "candy",
+      "configs": [
+        {
+          "builder": "RELEASE",
+          "experimental": false,
+          "leader_board": false,
+          "board_group": "rambi"
+        }
+      ]
+    },
+    {
+      "name": "cave",
+      "configs": [
+        {
+          "builder": "RELEASE",
+          "experimental": true,
+          "leader_board": false,
+          "board_group": "glados"
+        }
+      ]
+    },
+    {
+      "name": "celes",
+      "configs": [
+        {
+          "builder": "RELEASE",
+          "experimental": false,
+          "leader_board": false,
+          "board_group": "strago"
+        }
+      ]
+    },
+    {
+      "name": "celes-cheets",
+      "configs": [
+        {
+          "builder": "RELEASE",
+          "experimental": true,
+          "leader_board": false,
+          "board_group": "strago,"
+        }
+      ]
+    },
+    {
+      "name": "chell",
+      "configs": [
+        {
+          "builder": "RELEASE",
+          "experimental": true,
+          "leader_board": false,
+          "board_group": "glados"
+        }
+      ]
+    },
+    {
+      "name": "chell-cheets",
+      "configs": [
+        {
+          "builder": "RELEASE",
+          "experimental": true,
+          "leader_board": false,
+          "board_group": "glados"
+        }
+      ]
+    },
+    {
+      "name": "clapper",
+      "configs": [
+        {
+          "builder": "RELEASE",
+          "experimental": false,
+          "leader_board": true,
+          "board_group": "rambi"
+        }
+      ]
+    },
+    {
+      "name": "cyan",
+      "configs": [
+        {
+          "builder": "RELEASE",
+          "experimental": false,
+          "leader_board": false,
+          "board_group": "strago"
+        }
+      ]
+    },
+    {
+      "name": "cyan-cheets",
+      "configs": [
+        {
+          "builder": "RELEASE",
+          "experimental": false,
+          "leader_board": false,
+          "board_group": "strago"
+        }
+      ]
+    },
+    {
+      "name": "daisy",
+      "configs": [
+        {
+          "builder": "RELEASE",
+          "experimental": false,
+          "leader_board": true,
+          "board_group": "daisy"
+        }
+      ]
+    },
+    {
+      "name": "daisy_skate",
+      "configs": [
+        {
+          "builder": "RELEASE",
+          "experimental": false,
+          "leader_board": false,
+          "board_group": "daisy"
+        }
+      ]
+    },
+    {
+      "name": "daisy_spring",
+      "configs": [
+        {
+          "builder": "RELEASE",
+          "experimental": false,
+          "leader_board": false,
+          "board_group": "daisy"
+        }
+      ]
+    },
+    {
+      "name": "edgar",
+      "configs": [
+        {
+          "builder": "RELEASE",
+          "experimental": false,
+          "leader_board": false,
+          "board_group": "strago"
+        }
+      ]
+    },
+    {
+      "name": "elm",
+      "configs": [
+        {
+          "builder": "RELEASE",
+          "experimental": false,
+          "leader_board": false,
+          "board_group": "oak"
+        }
+      ]
+    },
+    {
+      "name": "elm-cheets",
+      "configs": [
+        {
+          "builder": "RELEASE",
+          "experimental": false,
+          "leader_board": false,
+          "board_group": "oak"
+        }
+      ]
+    },
+    {
+      "name": "enguarde",
+      "configs": [
+        {
+          "builder": "RELEASE",
+          "experimental": false,
+          "leader_board": false,
+          "board_group": "rambi"
+        }
+      ]
+    },
+    {
+      "name": "expresso",
+      "configs": [
+        {
+          "builder": "RELEASE",
+          "experimental": false,
+          "leader_board": false,
+          "board_group": "rambi"
+        }
+      ]
+    },
+    {
+      "name": "falco",
+      "configs": [
+        {
+          "builder": "RELEASE",
+          "experimental": false,
+          "leader_board": false,
+          "board_group": "slippy"
+        }
+      ]
+    },
+    {
+      "name": "falco_li",
+      "configs": [
+        {
+          "builder": "RELEASE",
+          "experimental": false,
+          "leader_board": false,
+          "board_group": "slippy"
+        }
+      ]
+    },
+    {
+      "name": "gale",
+      "configs": [
+        {
+          "builder": "RELEASE",
+          "experimental": false,
+          "leader_board": true,
+          "board_group": "gale"
+        }
+      ]
+    },
+    {
+      "name": "gandof",
+      "configs": [
+        {
+          "builder": "RELEASE",
+          "experimental": false,
+          "leader_board": false,
+          "board_group": "auron"
+        }
+      ]
+    },
+    {
+      "name": "glados",
+      "configs": [
+        {
+          "builder": "RELEASE",
+          "experimental": true,
+          "leader_board": true,
+          "board_group": "glados"
+        }
+      ]
+    },
+    {
+      "name": "glados-cheets",
+      "configs": [
+        {
+          "builder": "RELEASE",
+          "experimental": true,
+          "leader_board": false,
+          "board_group": "glados"
+        }
+      ]
+    },
+    {
+      "name": "glimmer",
+      "configs": [
+        {
+          "builder": "RELEASE",
+          "experimental": false,
+          "leader_board": false,
+          "board_group": "rambi"
+        }
+      ]
+    },
+    {
+      "name": "glimmer-cheets",
+      "configs": [
+        {
+          "builder": "RELEASE",
+          "experimental": true,
+          "leader_board": false,
+          "board_group": "rambi"
+        }
+      ]
+    },
+    {
+      "name": "gnawty",
+      "configs": [
+        {
+          "builder": "RELEASE",
+          "experimental": false,
+          "leader_board": false,
+          "board_group": "rambi"
+        }
+      ]
+    },
+    {
+      "name": "gru",
+      "configs": [
+        {
+          "builder": "RELEASE",
+          "experimental": false,
+          "leader_board": true,
+          "board_group": "gru"
+        }
+      ]
+    },
+    {
+      "name": "guado",
+      "configs": [
+        {
+          "builder": "RELEASE",
+          "experimental": false,
+          "leader_board": false,
+          "board_group": "jecht"
+        }
+      ]
+    },
+    {
+      "name": "guado_labstation",
+      "configs": [
+        {
+          "builder": "RELEASE",
+          "experimental": true,
+          "leader_board": false,
+          "board_group": ""
+        }
+      ]
+    },
+    {
+      "name": "guado_moblab",
+      "configs": [
+        {
+          "builder": "RELEASE",
+          "experimental": true,
+          "leader_board": false,
+          "board_group": ""
+        }
+      ]
+    },
+    {
+      "name": "heli",
+      "configs": [
+        {
+          "builder": "RELEASE",
+          "experimental": false,
+          "leader_board": false,
+          "board_group": "rambi"
+        }
+      ]
+    },
+    {
+      "name": "jecht",
+      "configs": [
+        {
+          "builder": "RELEASE",
+          "experimental": false,
+          "leader_board": true,
+          "board_group": "jecht"
+        }
+      ]
+    },
+    {
+      "name": "kefka",
+      "configs": [
+        {
+          "builder": "RELEASE",
+          "experimental": true,
+          "leader_board": false,
+          "board_group": "strago,"
+        }
+      ]
+    },
+    {
+      "name": "kevin",
+      "configs": [
+        {
+          "builder": "RELEASE",
+          "experimental": false,
+          "leader_board": false,
+          "board_group": "gru"
+        }
+      ]
+    },
+    {
+      "name": "kip",
+      "configs": [
+        {
+          "builder": "RELEASE",
+          "experimental": false,
+          "leader_board": false,
+          "board_group": "rambi"
+        }
+      ]
+    },
+    {
+      "name": "kunimitsu",
+      "configs": [
+        {
+          "builder": "RELEASE",
+          "experimental": false,
+          "leader_board": true,
+          "board_group": "kunimitsu"
+        }
+      ]
+    },
+    {
+      "name": "lakitu",
+      "configs": [
+        {
+          "builder": "RELEASE",
+          "experimental": false,
+          "leader_board": false,
+          "board_group": ""
+        }
+      ]
+    },
+    {
+      "name": "lakitu_next",
+      "configs": [
+        {
+          "builder": "RELEASE",
+          "experimental": true,
+          "leader_board": false,
+          "board_group": ""
+        }
+      ]
+    },
+    {
+      "name": "lars",
+      "configs": [
+        {
+          "builder": "RELEASE",
+          "experimental": false,
+          "leader_board": false,
+          "board_group": "kunimitsu"
+        }
+      ]
+    },
+    {
+      "name": "leon",
+      "configs": [
+        {
+          "builder": "RELEASE",
+          "experimental": false,
+          "leader_board": false,
+          "board_group": "slippy"
+        }
+      ]
+    },
+    {
+      "name": "link",
+      "configs": [
+        {
+          "builder": "RELEASE",
+          "experimental": false,
+          "leader_board": false,
+          "board_group": "ivybridge"
+        }
+      ]
+    },
+    {
+      "name": "lulu",
+      "configs": [
+        {
+          "builder": "RELEASE",
+          "experimental": false,
+          "leader_board": false,
+          "board_group": "auron"
+        }
+      ]
+    },
+    {
+      "name": "lulu-cheets",
+      "configs": [
+        {
+          "builder": "RELEASE",
+          "experimental": true,
+          "leader_board": false,
+          "board_group": "auron"
+        }
+      ]
+    },
+    {
+      "name": "lumpy",
+      "configs": [
+        {
+          "builder": "RELEASE",
+          "experimental": false,
+          "leader_board": false,
+          "board_group": "sandybridge"
+        }
+      ]
+    },
+    {
+      "name": "mccloud",
+      "configs": [
+        {
+          "builder": "RELEASE",
+          "experimental": false,
+          "leader_board": false,
+          "board_group": "slippy"
+        }
+      ]
+    },
+    {
+      "name": "monroe",
+      "configs": [
+        {
+          "builder": "RELEASE",
+          "experimental": false,
+          "leader_board": false,
+          "board_group": "slippy"
+        }
+      ]
+    },
+    {
+      "name": "ninja",
+      "configs": [
+        {
+          "builder": "RELEASE",
+          "experimental": false,
+          "leader_board": false,
+          "board_group": "rambi"
+        }
+      ]
+    },
+    {
+      "name": "nyan",
+      "configs": [
+        {
+          "builder": "RELEASE",
+          "experimental": false,
+          "leader_board": false,
+          "board_group": "nyan"
+        }
+      ]
+    },
+    {
+      "name": "nyan_big",
+      "configs": [
+        {
+          "builder": "RELEASE",
+          "experimental": false,
+          "leader_board": true,
+          "board_group": "nyan"
+        }
+      ]
+    },
+    {
+      "name": "nyan_blaze",
+      "configs": [
+        {
+          "builder": "RELEASE",
+          "experimental": false,
+          "leader_board": false,
+          "board_group": "nyan"
+        }
+      ]
+    },
+    {
+      "name": "nyan_freon",
+      "configs": [
+        {
+          "builder": "RELEASE",
+          "experimental": true,
+          "leader_board": false,
+          "board_group": ""
+        }
+      ]
+    },
+    {
+      "name": "nyan_kitty",
+      "configs": [
+        {
+          "builder": "RELEASE",
+          "experimental": false,
+          "leader_board": false,
+          "board_group": "nyan"
+        }
+      ]
+    },
+    {
+      "name": "oak",
+      "configs": [
+        {
+          "builder": "RELEASE",
+          "experimental": false,
+          "leader_board": true,
+          "board_group": "oak"
+        }
+      ]
+    },
+    {
+      "name": "oak-cheets",
+      "configs": [
+        {
+          "builder": "RELEASE",
+          "experimental": false,
+          "leader_board": false,
+          "board_group": "oak"
+        }
+      ]
+    },
+    {
+      "name": "orco",
+      "configs": [
+        {
+          "builder": "RELEASE",
+          "experimental": false,
+          "leader_board": false,
+          "board_group": "rambi"
+        }
+      ]
+    },
+    {
+      "name": "panther",
+      "configs": [
+        {
+          "builder": "RELEASE",
+          "experimental": false,
+          "leader_board": false,
+          "board_group": "slippy"
+        }
+      ]
+    },
+    {
+      "name": "parrot",
+      "configs": [
+        {
+          "builder": "RELEASE",
+          "experimental": false,
+          "leader_board": true,
+          "board_group": "sandybridge"
+        }
+      ]
+    },
+    {
+      "name": "parrot_ivb",
+      "configs": [
+        {
+          "builder": "RELEASE",
+          "experimental": false,
+          "leader_board": false,
+          "board_group": "ivybridge"
+        }
+      ]
+    },
+    {
+      "name": "peach_pi",
+      "configs": [
+        {
+          "builder": "RELEASE",
+          "experimental": false,
+          "leader_board": false,
+          "board_group": "peach"
+        }
+      ]
+    },
+    {
+      "name": "peach_pit",
+      "configs": [
+        {
+          "builder": "RELEASE",
+          "experimental": false,
+          "leader_board": true,
+          "board_group": "peach"
+        }
+      ]
+    },
+    {
+      "name": "peppy",
+      "configs": [
+        {
+          "builder": "RELEASE",
+          "experimental": false,
+          "leader_board": true,
+          "board_group": "slippy"
+        }
+      ]
+    },
+    {
+      "name": "quawks",
+      "configs": [
+        {
+          "builder": "RELEASE",
+          "experimental": false,
+          "leader_board": false,
+          "board_group": "rambi"
+        }
+      ]
+    },
+    {
+      "name": "rambi",
+      "configs": [
+        {
+          "builder": "RELEASE",
+          "experimental": false,
+          "leader_board": false,
+          "board_group": "rambi"
+        }
+      ]
+    },
+    {
+      "name": "reef",
+      "configs": [
+        {
+          "builder": "RELEASE",
+          "experimental": true,
+          "leader_board": true,
+          "board_group": "reef"
+        }
+      ]
+    },
+    {
+      "name": "reks",
+      "configs": [
+        {
+          "builder": "RELEASE",
+          "experimental": false,
+          "leader_board": false,
+          "board_group": "strago"
+        }
+      ]
+    },
+    {
+      "name": "relm",
+      "configs": [
+        {
+          "builder": "RELEASE",
+          "experimental": true,
+          "leader_board": false,
+          "board_group": "strago,"
+        }
+      ]
+    },
+    {
+      "name": "rikku",
+      "configs": [
+        {
+          "builder": "RELEASE",
+          "experimental": false,
+          "leader_board": false,
+          "board_group": "jecht"
+        }
+      ]
+    },
+    {
+      "name": "samus",
+      "configs": [
+        {
+          "builder": "RELEASE",
+          "experimental": false,
+          "leader_board": false,
+          "board_group": ""
+        }
+      ]
+    },
+    {
+      "name": "samus-cheets",
+      "configs": [
+        {
+          "builder": "RELEASE",
+          "experimental": false,
+          "leader_board": false,
+          "board_group": "auron"
+        }
+      ]
+    },
+    {
+      "name": "sentry",
+      "configs": [
+        {
+          "builder": "RELEASE",
+          "experimental": false,
+          "leader_board": false,
+          "board_group": "kunimitsu"
+        }
+      ]
+    },
+    {
+      "name": "setzer",
+      "configs": [
+        {
+          "builder": "RELEASE",
+          "experimental": false,
+          "leader_board": false,
+          "board_group": "strago"
+        }
+      ]
+    },
+    {
+      "name": "smaug",
+      "configs": [
+        {
+          "builder": "RELEASE",
+          "experimental": true,
+          "leader_board": false,
+          "board_group": ""
+        }
+      ]
+    },
+    {
+      "name": "smaug-cheets",
+      "configs": [
+        {
+          "builder": "RELEASE",
+          "experimental": true,
+          "leader_board": false,
+          "board_group": ""
+        }
+      ]
+    },
+    {
+      "name": "squawks",
+      "configs": [
+        {
+          "builder": "RELEASE",
+          "experimental": false,
+          "leader_board": false,
+          "board_group": "rambi"
+        }
+      ]
+    },
+    {
+      "name": "storm",
+      "configs": [
+        {
+          "builder": "RELEASE",
+          "experimental": true,
+          "leader_board": true,
+          "board_group": "whirlwind"
+        }
+      ]
+    },
+    {
+      "name": "stout",
+      "configs": [
+        {
+          "builder": "RELEASE",
+          "experimental": false,
+          "leader_board": true,
+          "board_group": "ivybridge"
+        }
+      ]
+    },
+    {
+      "name": "strago",
+      "configs": [
+        {
+          "builder": "RELEASE",
+          "experimental": false,
+          "leader_board": true,
+          "board_group": "strago"
+        }
+      ]
+    },
+    {
+      "name": "stumpy",
+      "configs": [
+        {
+          "builder": "RELEASE",
+          "experimental": false,
+          "leader_board": false,
+          "board_group": "sandybridge"
+        }
+      ]
+    },
+    {
+      "name": "sumo",
+      "configs": [
+        {
+          "builder": "RELEASE",
+          "experimental": false,
+          "leader_board": false,
+          "board_group": "rambi"
+        }
+      ]
+    },
+    {
+      "name": "swanky",
+      "configs": [
+        {
+          "builder": "RELEASE",
+          "experimental": false,
+          "leader_board": false,
+          "board_group": "rambi"
+        }
+      ]
+    },
+    {
+      "name": "terra",
+      "configs": [
+        {
+          "builder": "RELEASE",
+          "experimental": false,
+          "leader_board": false,
+          "board_group": "strago"
+        }
+      ]
+    },
+    {
+      "name": "tidus",
+      "configs": [
+        {
+          "builder": "RELEASE",
+          "experimental": false,
+          "leader_board": false,
+          "board_group": "jecht"
+        }
+      ]
+    },
+    {
+      "name": "tricky",
+      "configs": [
+        {
+          "builder": "RELEASE",
+          "experimental": false,
+          "leader_board": false,
+          "board_group": "slippy"
+        }
+      ]
+    },
+    {
+      "name": "ultima",
+      "configs": [
+        {
+          "builder": "RELEASE",
+          "experimental": false,
+          "leader_board": false,
+          "board_group": "strago"
+        }
+      ]
+    },
+    {
+      "name": "umaro",
+      "configs": [
+        {
+          "builder": "RELEASE",
+          "experimental": false,
+          "leader_board": false,
+          "board_group": "strago"
+        }
+      ]
+    },
+    {
+      "name": "veyron_fievel",
+      "configs": [
+        {
+          "builder": "RELEASE",
+          "experimental": true,
+          "leader_board": false,
+          "board_group": "veyron,"
+        }
+      ]
+    },
+    {
+      "name": "veyron_jaq",
+      "configs": [
+        {
+          "builder": "RELEASE",
+          "experimental": false,
+          "leader_board": false,
+          "board_group": "veyron"
+        }
+      ]
+    },
+    {
+      "name": "veyron_jerry",
+      "configs": [
+        {
+          "builder": "RELEASE",
+          "experimental": false,
+          "leader_board": false,
+          "board_group": "veyron"
+        }
+      ]
+    },
+    {
+      "name": "veyron_mickey",
+      "configs": [
+        {
+          "builder": "RELEASE",
+          "experimental": true,
+          "leader_board": false,
+          "board_group": "veyron,"
+        }
+      ]
+    },
+    {
+      "name": "veyron_mighty",
+      "configs": [
+        {
+          "builder": "RELEASE",
+          "experimental": false,
+          "leader_board": false,
+          "board_group": "veyron"
+        }
+      ]
+    },
+    {
+      "name": "veyron_minnie",
+      "configs": [
+        {
+          "builder": "RELEASE",
+          "experimental": false,
+          "leader_board": false,
+          "board_group": "veyron"
+        }
+      ]
+    },
+    {
+      "name": "veyron_minnie-cheets",
+      "configs": [
+        {
+          "builder": "RELEASE",
+          "experimental": true,
+          "leader_board": false,
+          "board_group": "veyron,"
+        }
+      ]
+    },
+    {
+      "name": "veyron_pinky",
+      "configs": [
+        {
+          "builder": "RELEASE",
+          "experimental": false,
+          "leader_board": true,
+          "board_group": "veyron"
+        }
+      ]
+    },
+    {
+      "name": "veyron_rialto",
+      "configs": [
+        {
+          "builder": "RELEASE",
+          "experimental": false,
+          "leader_board": false,
+          "board_group": "veyron"
+        }
+      ]
+    },
+    {
+      "name": "veyron_shark",
+      "configs": [
+        {
+          "builder": "RELEASE",
+          "experimental": true,
+          "leader_board": false,
+          "board_group": "veyron,"
+        }
+      ]
+    },
+    {
+      "name": "veyron_speedy",
+      "configs": [
+        {
+          "builder": "RELEASE",
+          "experimental": false,
+          "leader_board": false,
+          "board_group": "veyron"
+        }
+      ]
+    },
+    {
+      "name": "veyron_tiger",
+      "configs": [
+        {
+          "builder": "RELEASE",
+          "experimental": true,
+          "leader_board": false,
+          "board_group": "veyron,"
+        }
+      ]
+    },
+    {
+      "name": "whirlwind",
+      "configs": [
+        {
+          "builder": "RELEASE",
+          "experimental": true,
+          "leader_board": false,
+          "board_group": "whirlwind"
+        }
+      ]
+    },
+    {
+      "name": "winky",
+      "configs": [
+        {
+          "builder": "RELEASE",
+          "experimental": false,
+          "leader_board": false,
+          "board_group": "rambi"
+        }
+      ]
+    },
+    {
+      "name": "wizpig",
+      "configs": [
+        {
+          "builder": "RELEASE",
+          "experimental": false,
+          "leader_board": false,
+          "board_group": "strago"
+        }
+      ]
+    },
+    {
+      "name": "wolf",
+      "configs": [
+        {
+          "builder": "RELEASE",
+          "experimental": false,
+          "leader_board": false,
+          "board_group": "slippy"
+        }
+      ]
+    },
+    {
+      "name": "x86-alex",
+      "configs": [
+        {
+          "builder": "RELEASE",
+          "experimental": false,
+          "leader_board": false,
+          "board_group": "pineview"
+        }
+      ]
+    },
+    {
+      "name": "x86-alex_he",
+      "configs": [
+        {
+          "builder": "RELEASE",
+          "experimental": false,
+          "leader_board": false,
+          "board_group": "pineview"
+        }
+      ]
+    },
+    {
+      "name": "x86-mario",
+      "configs": [
+        {
+          "builder": "RELEASE",
+          "experimental": false,
+          "leader_board": true,
+          "board_group": "pineview"
+        }
+      ]
+    },
+    {
+      "name": "x86-zgb",
+      "configs": [
+        {
+          "builder": "RELEASE",
+          "experimental": false,
+          "leader_board": false,
+          "board_group": "pineview"
+        }
+      ]
+    },
+    {
+      "name": "x86-zgb_he",
+      "configs": [
+        {
+          "builder": "RELEASE",
+          "experimental": false,
+          "leader_board": false,
+          "board_group": "pineview"
+        }
+      ]
+    },
+    {
+      "name": "zako",
+      "configs": [
+        {
+          "builder": "RELEASE",
+          "experimental": false,
+          "leader_board": false,
+          "board_group": "slippy"
+        }
+      ]
+    }
+  ]
+}

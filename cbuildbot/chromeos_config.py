@@ -715,6 +715,12 @@ _waterfall_config_map = {
 }
 
 
+ge_build_config = config_lib.LoadGEBuildConfigFromFile()
+builder_to_boards_dict = config_lib.GroupBoardsByBuilder(
+    ge_build_config[config_lib.CONFIG_TEMPLATE_BOARDS])
+_all_release_builder_boards = builder_to_boards_dict[
+    config_lib.CONFIG_TEMPLATE_RELEASE]
+
 @factory.CachedFunctionCall
 def GetConfig():
   # Chrome OS site parameters.
@@ -1208,7 +1214,7 @@ def GetConfig():
   _base_configs = dict()
 
   def _CreateBaseConfigs():
-    for board in _all_boards:
+    for board in _all_boards | _all_release_builder_boards:
       base = config_lib.BuildConfig()
 
       if board in _internal_boards:
@@ -2473,7 +2479,8 @@ def GetConfig():
         _release, _critical_for_chrome_boards, config_lib.CONFIG_TYPE_RELEASE,
         critical_for_chrome=True)
     _CreateConfigsForBoards(
-        _release, _all_release_boards, config_lib.CONFIG_TYPE_RELEASE)
+        _release, _all_release_boards | _all_release_builder_boards,
+        config_lib.CONFIG_TYPE_RELEASE)
 
   _AddInformationalConfigs()
   _AddReleaseConfigs()
@@ -2575,294 +2582,6 @@ def GetConfig():
           config_name, *configs, description=desc,
           important=important
       )
-
-  def _AdjustLeaderFollowerReleaseConfigs(
-      leader_boards,
-      follower_boards=None,
-      unimportant_boards=None,
-      **kwargs):
-    """Adjust existing release configs into a leader/follower group.
-
-    _AddReleaseConfigs created a <board>-release config for every board. This
-    method adjusts those existing configs to be important, and to designate one
-    of them to be a 'leader'.
-
-    We do full testing for the leader board, and cheaper testing on the
-    followers since we expect them to be very similar.
-
-    Args:
-      leader_boards: List/tuple of leader boards for the group, or name of a
-                     single leader board.
-      follower_boards: List of board names for normal followers (reduced GCE
-                       friendly testing).
-      unimportant_boards: List of boards that are not to be marked important.
-                          These boards are assumed to be followers, unless they
-                          are also in the leaders list.
-      kwargs: Any special build config settings needed for all builds in this
-              group can be passed in as additional named arguments.
-    """
-    def release_name(board):
-      """Convert a board name into the name of it's release config."""
-      return '%s-release' % board
-
-    # If leader_boards is a simple string, turn it into a single element tuple.
-    if isinstance(leader_boards, basestring):
-      leader_boards = (leader_boards,)
-
-    assert leader_boards
-
-    # Compute all release configuration names.
-    leaders = [release_name(b) for b in leader_boards]
-    followers = [release_name(b) for b in follower_boards or []]
-    unimportant = set(release_name(b) for b in unimportant_boards or [])
-
-    # Add unimportant to followers, if they are not covered already.
-    followers.extend(unimportant - set(leaders) - set(followers))
-
-    leader_config = config_lib.BuildConfig(
-        buildslave_type=constants.BAREMETAL_BUILD_SLAVE_TYPE,
-    )
-
-    # Followers are built on GCE instances, and turn off testing that breaks
-    # on GCE. The missing tests run on the leader board.
-    follower_config = config_lib.BuildConfig(
-        buildslave_type=constants.GCE_BEEFY_BUILD_SLAVE_TYPE,
-        chrome_sdk_build_chrome=False,
-        vm_tests=[],
-    )
-
-    # Adjust the leader board.
-    for config_name in leaders:
-      site_config[config_name] = site_config[config_name].derive(
-          leader_config,
-          important=config_name not in unimportant,
-          **kwargs
-      )
-
-    # Adjust all follower boards based on above options.
-    for config_name in followers:
-      site_config[config_name] = site_config[config_name].derive(
-          follower_config,
-          important=config_name not in unimportant,
-          **kwargs
-      )
-
-  # pineview chipset boards
-  _AdjustLeaderFollowerReleaseConfigs(
-      'x86-mario', (
-          'x86-alex',
-          'x86-zgb',
-          'x86-alex_he',
-          'x86-zgb_he',
-      )
-  )
-
-  # sandybridge chipset boards
-  _AdjustLeaderFollowerReleaseConfigs(
-      'parrot', (
-          'lumpy',
-          'butterfly',
-          'stumpy',
-      )
-  )
-
-  # ivybridge chipset boards
-  _AdjustLeaderFollowerReleaseConfigs(
-      'stout', (
-          'link',
-          'parrot_ivb',
-      )
-  )
-
-  # slippy, and beltino haswell boards
-  _AdjustLeaderFollowerReleaseConfigs(
-      'peppy', (
-          'falco',
-          'leon',
-          'wolf',
-          'panther',
-          'mccloud',
-          'monroe',
-          'tricky',
-          'zako',
-          'falco_li',
-      )
-  )
-
-  # rambi-based boards
-  _AdjustLeaderFollowerReleaseConfigs(
-      'clapper', (
-          'rambi',
-          'expresso',
-          'enguarde',
-          'glimmer',
-          'gnawty',
-          'kip',
-          'quawks',
-          'swanky',
-          'winky',
-          'candy',
-          'squawks',
-          'banjo',
-          'ninja',
-          'sumo',
-          'orco',
-          'heli',
-      ),
-      unimportant_boards=(
-          'glimmer-cheets',
-      ),
-  )
-
-  # daisy-based boards
-  _AdjustLeaderFollowerReleaseConfigs(
-      'daisy', (
-          'daisy_spring',
-          'daisy_skate',
-      ),
-  )
-
-  # peach-based boards
-  _AdjustLeaderFollowerReleaseConfigs(
-      'peach_pit', (
-          'peach_pi',
-      )
-  )
-
-  # Nyan-based boards
-  _AdjustLeaderFollowerReleaseConfigs(
-      'nyan_big', (
-          'nyan',
-          'nyan_blaze',
-          'nyan_kitty',
-      ),
-  )
-
-  # auron-based boards
-  _AdjustLeaderFollowerReleaseConfigs(
-      'auron_paine', (
-          'auron',
-          'auron_yuna',
-          'buddy',
-          'gandof',
-          'lulu',
-          'samus-cheets',
-      ),
-      unimportant_boards=(
-          'lulu-cheets',
-      ),
-  )
-
-  # veyron-based boards
-  _AdjustLeaderFollowerReleaseConfigs(
-      'veyron_pinky', (
-          'veyron_jerry',
-          'veyron_mighty',
-          'veyron_speedy',
-          'veyron_jaq',
-          'veyron_minnie',
-          'veyron_rialto',
-      ),
-      unimportant_boards=(
-          'veyron_mickey',
-          'veyron_tiger',
-          'veyron_shark',
-          'veyron_minnie-cheets',
-          'veyron_fievel',
-      ),
-  )
-
-  # jecht-based boards
-  _AdjustLeaderFollowerReleaseConfigs(
-      'jecht', (
-          'guado',
-          'tidus',
-          'rikku',
-      )
-  )
-
-  # strago-based boards
-  _AdjustLeaderFollowerReleaseConfigs(
-      'strago', (
-          'cyan',
-          'celes',
-          'ultima',
-          'reks',
-          'cyan-cheets',
-          'wizpig',
-          'terra',
-          'edgar',
-          'setzer',
-          'umaro',
-          'banon',
-      ),
-      unimportant_boards=(
-          'celes-cheets',
-          'kefka',
-          'relm',
-      ),
-  )
-
-  # oak-based boards
-  _AdjustLeaderFollowerReleaseConfigs(
-      'oak', (
-          'elm',
-          'oak-cheets',
-          'elm-cheets',
-      ),
-  )
-
-  # glados-based boards
-  _AdjustLeaderFollowerReleaseConfigs(
-      'glados', None,
-      unimportant_boards=(
-          'glados',
-          'chell',
-          'glados-cheets',
-          'cave',
-          'chell-cheets',
-          'asuka',
-      ),
-  )
-
-  # storm-based boards
-  _AdjustLeaderFollowerReleaseConfigs(
-      'storm', None,
-      unimportant_boards=(
-          'storm',
-          'arkham',
-          'whirlwind',
-      ),
-  )
-
-  # kunimitsu-based boards
-  _AdjustLeaderFollowerReleaseConfigs(
-      'kunimitsu', (
-          'lars',
-          'sentry',
-      ),
-  )
-
-  # gru-based boards
-  _AdjustLeaderFollowerReleaseConfigs(
-      'gru', (
-          'kevin',
-      ),
-  )
-
-  # gale-based boards
-  _AdjustLeaderFollowerReleaseConfigs(
-      'gale', None,
-  )
-
-  # reef-based boards
-  _AdjustLeaderFollowerReleaseConfigs(
-      'reef', None,
-      unimportant_boards=(
-          'reef',
-          'amenia',
-      ),
-  )
 
   # Factory and Firmware releases much inherit from these classes.
   # Modifications for these release builders should go here.
@@ -3105,6 +2824,80 @@ def GetConfig():
       chroot_replace=True,
   )
 
+  def GetReleaseConfigName(board):
+    """Convert a board name into a release config name."""
+    return '%s-release' % board
+
+  def GetConfigName(builder, board):
+    """Convert a board name into a config name."""
+    if builder == config_lib.CONFIG_TEMPLATE_RELEASE:
+      return GetReleaseConfigName(board)
+    else:
+      # Currently just support RELEASE builders
+      raise Exception('Do not support other builders.')
+
+  def _GetConfigValues(board):
+    """Get and return config values from template"""
+    config_values = {
+        'important': not board[config_lib.CONFIG_TEMPLATE_EXPERIMENTAL]
+    }
+
+    return config_values
+
+  def _AdjustUngroupedReleaseConfigs(builder_ungrouped_dict):
+    """Adjust for ungrouped release boards"""
+    for builder in builder_ungrouped_dict:
+      for board in builder_ungrouped_dict[builder]:
+        config_name = GetConfigName(builder,
+                                    board[config_lib.CONFIG_TEMPLATE_NAME])
+        site_config[config_name] = site_config[config_name].derive(
+            **_GetConfigValues(board))
+
+  def _AdjustGroupedReleaseConfigs(builder_group_dict):
+    """Adjust leader and follower configs for grouped boards"""
+
+    # Leaders are built on baremetal builders and run all tests needed by the
+    # related boards.
+    leader_config = config_lib.BuildConfig(
+       important=True,
+    )
+
+    # Followers are built on GCE instances, and turn off testing that breaks
+    # on GCE. The missing tests run on the leader board.
+    follower_config = leader_config.derive(
+        buildslave_type=constants.GCE_BEEFY_BUILD_SLAVE_TYPE,
+        chrome_sdk_build_chrome=False,
+        vm_tests=[],
+    )
+
+    for builder in builder_group_dict:
+      for group in builder_group_dict[builder]:
+        board_group = builder_group_dict[builder][group]
+
+        # Adjust the leader boards.
+        for board in board_group.leader_boards:
+          config_name = GetConfigName(builder,
+                                      board[config_lib.CONFIG_TEMPLATE_NAME])
+          site_config[config_name] = site_config[config_name].derive(
+              leader_config, **_GetConfigValues(board))
+
+        # Adjust all follower boards based on above options.
+        for board in board_group.follower_boards:
+          config_name = GetConfigName(builder,
+                                      board[config_lib.CONFIG_TEMPLATE_NAME])
+          site_config[config_name] = site_config[config_name].derive(
+              follower_config, **_GetConfigValues(board))
+
+  def _AdjustTemplateConfigs():
+    """Adjust ungrouped and grouped release configs"""
+    (builder_group_dict, builder_ungrouped_dict) = (
+        config_lib.GroupBoardsByBuilderAndBoardGroup(
+            ge_build_config[config_lib.CONFIG_TEMPLATE_BOARDS]))
+    _AdjustUngroupedReleaseConfigs(builder_ungrouped_dict)
+    _AdjustGroupedReleaseConfigs(builder_group_dict)
+
+  _AdjustTemplateConfigs()
+
   def MergeOverwrittenConfigs(*args, **kwargs):
     """Merge overwritten configs."""
     merged_configs = {}
@@ -3195,10 +2988,6 @@ def GetConfig():
            'vm_tests':[],
       }
   }
-
-  def GetReleaseConfigName(board):
-    """Convert a board name into config name."""
-    return '%s-release' % board
 
   def _OverwriteBoardConfigs():
     """Given boards, overwrite special configs if needed."""

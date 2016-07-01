@@ -79,6 +79,15 @@ DEFAULT_BUILD_CONFIG = '_default'
 # We cache the config we load from disk to avoid reparsing.
 _CACHED_CONFIG = None
 
+# Constants for config template file
+CONFIG_TEMPLATE_BOARDS = 'boards'
+CONFIG_TEMPLATE_NAME = 'name'
+CONFIG_TEMPLATE_EXPERIMENTAL = 'experimental'
+CONFIG_TEMPLATE_LEADER_BOARD = 'leader_board'
+CONFIG_TEMPLATE_BOARD_GROUP = 'board_group'
+CONFIG_TEMPLATE_BUILDER = 'builder'
+CONFIG_TEMPLATE_RELEASE = 'RELEASE'
+CONFIG_TEMPLATE_CONFIGS = 'configs'
 
 def IsPFQType(b_type):
   """Returns True if this build type is a PFQ."""
@@ -1273,6 +1282,76 @@ class SiteConfig(dict):
     return PrettyJsonDict(self)
 
 
+class BoardGroup(object):
+  """Class holds leader_boards and follower_boards for grouped boards"""
+
+  def __init__(self):
+    self.leader_boards = []
+    self.follower_boards = []
+
+  def AddLeaderBoard(self, board):
+    self.leader_boards.append(board)
+
+  def AddFollowerBoard(self, board):
+    self.follower_boards.append(board)
+
+  def __str__(self):
+    return ('Leader_boards: %s Follower_boards: %s' %
+            (self.leader_boards, self.follower_boards))
+
+def GroupBoardsByBuilderAndBoardGroup(board_list):
+  """Group boards by builder and board_group.
+
+  Args:
+    board_list: board list from the template file.
+
+  Returns:
+    builder_group_dict: maps builder to {group_n: board_group_n}
+    builder_ungrouped_dict: maps builder to a list of ungrouped boards
+  """
+  builder_group_dict = {}
+  builder_ungrouped_dict = {}
+
+  for b in board_list:
+    name = b[CONFIG_TEMPLATE_NAME]
+    for config in b[CONFIG_TEMPLATE_CONFIGS]:
+      board = {'name': name}
+      board.update(config)
+
+      builder = config[CONFIG_TEMPLATE_BUILDER]
+      if builder not in builder_group_dict:
+        builder_group_dict[builder] = {}
+      if builder not in builder_ungrouped_dict:
+        builder_ungrouped_dict[builder] = []
+
+      board_group = config[CONFIG_TEMPLATE_BOARD_GROUP]
+      if not board_group:
+        builder_ungrouped_dict[builder].append(board)
+        continue
+      if board_group not in builder_group_dict[builder]:
+        builder_group_dict[builder][board_group] = BoardGroup()
+      if config[CONFIG_TEMPLATE_LEADER_BOARD]:
+        builder_group_dict[builder][board_group].AddLeaderBoard(board)
+      else:
+        builder_group_dict[builder][board_group].AddFollowerBoard(board)
+
+  return (builder_group_dict, builder_ungrouped_dict)
+
+
+def GroupBoardsByBuilder(board_list):
+  """Group boards by the 'builder' flag."""
+  builder_to_boards_dict = {}
+
+  for b in board_list:
+    for config in b[CONFIG_TEMPLATE_CONFIGS]:
+      builder = config[CONFIG_TEMPLATE_BUILDER]
+      if builder not in builder_to_boards_dict:
+        builder_to_boards_dict[builder] = set()
+      builder_to_boards_dict[builder].add(b[CONFIG_TEMPLATE_NAME])
+
+  return builder_to_boards_dict
+
+
 class ObjectJSONEncoder(json.JSONEncoder):
   """Json Encoder that encodes objects as their dictionaries."""
   # pylint: disable=method-hidden
@@ -1289,6 +1368,13 @@ def PrettyJsonDict(dictionary):
 #
 # Methods related to loading/saving Json.
 #
+
+def LoadGEBuildConfigFromFile(
+    build_settings_file=constants.GE_BUILD_CONFIG_FILE):
+  """Load template config dict from a Json encoded file."""
+  json_string = osutils.ReadFile(build_settings_file)
+  return json.loads(json_string, object_hook=_DecodeDict)
+
 
 def LoadConfigFromFile(config_file=constants.CHROMEOS_CONFIG_FILE):
   """Load a Config a Json encoded file."""
