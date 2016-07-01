@@ -1787,6 +1787,10 @@
       'browser/renderer_host/resize_lock.h',
     ],
     'plugin_browser_sources': [
+      'browser/media/session/pepper_playback_observer.cc',
+      'browser/media/session/pepper_playback_observer.h',
+      'browser/media/session/pepper_player_delegate.cc',
+      'browser/media/session/pepper_player_delegate.h',
       'browser/pepper_flash_settings_helper_impl.cc',
       'browser/pepper_flash_settings_helper_impl.h',
       'browser/plugin_content_origin_whitelist.cc',

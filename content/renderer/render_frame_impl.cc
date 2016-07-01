@@ -6251,7 +6251,8 @@ void RenderFrameImpl::PepperInstanceCreated(
     PepperPluginInstanceImpl* instance) {
   active_pepper_instances_.insert(instance);
 
-  Send(new FrameHostMsg_PepperInstanceCreated(routing_id_));
+  Send(new FrameHostMsg_PepperInstanceCreated(
+      routing_id_, instance->pp_instance()));
 }
 
 void RenderFrameImpl::PepperInstanceDeleted(
@@ -6264,9 +6265,12 @@ void RenderFrameImpl::PepperInstanceDeleted(
     PepperFocusChanged(instance, false);
 
   RenderFrameImpl* const render_frame = instance->render_frame();
-  if (render_frame)
+  if (render_frame) {
     render_frame->Send(
-        new FrameHostMsg_PepperInstanceDeleted(render_frame->GetRoutingID()));
+        new FrameHostMsg_PepperInstanceDeleted(
+            render_frame->GetRoutingID(),
+            instance->pp_instance()));
+  }
 }
 
 void RenderFrameImpl::PepperFocusChanged(PepperPluginInstanceImpl* instance,
@@ -6282,13 +6286,23 @@ void RenderFrameImpl::PepperFocusChanged(PepperPluginInstanceImpl* instance,
 }
 
 void RenderFrameImpl::PepperStartsPlayback(PepperPluginInstanceImpl* instance) {
-  // TODO(zqzhang): send PepperStartsPlayback message to the browser.
-  // See https://crbug.com/619084
+  RenderFrameImpl* const render_frame = instance->render_frame();
+  if (render_frame) {
+    render_frame->Send(
+        new FrameHostMsg_PepperStartsPlayback(
+            render_frame->GetRoutingID(),
+            instance->pp_instance()));
+  }
 }
 
 void RenderFrameImpl::PepperStopsPlayback(PepperPluginInstanceImpl* instance) {
-  // TODO(zqzhang): send PepperStopsPlayback message to the browser.
-  // See https://crbug.com/619084
+  RenderFrameImpl* const render_frame = instance->render_frame();
+  if (render_frame) {
+    render_frame->Send(
+        new FrameHostMsg_PepperStopsPlayback(
+            render_frame->GetRoutingID(),
+            instance->pp_instance()));
+  }
 }
 
 void RenderFrameImpl::OnSetPepperVolume(int32_t pp_instance, double volume) {

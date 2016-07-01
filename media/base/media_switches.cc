@@ -135,6 +135,13 @@ const char kCastEncoderUtilHeuristic[] = "cast-encoder-util-heuristic";
 
 namespace media {
 
+#if defined(ENABLE_PLUGINS)
+// Let flash join and be controlled by media session, only valid when
+// |kEnableDefaultMediaSession| is on.
+const base::Feature kFlashJoinsMediaSession{"flash-join-media-session",
+                                            base::FEATURE_DISABLED_BY_DEFAULT};
+#endif  // defined(ENABLE_PLUGINS)
+
 // Use new audio rendering mixer.
 const base::Feature kNewAudioRenderingMixingStrategy{
     "NewAudioRenderingMixingStrategy", base::FEATURE_DISABLED_BY_DEFAULT};

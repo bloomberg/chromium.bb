@@ -92,6 +92,10 @@ struct ResourceRequestDetails;
 class WebContentsAndroid;
 #endif
 
+#if defined(ENABLE_PLUGINS)
+class PepperPlaybackObserver;
+#endif
+
 // Factory function for the implementations that content knows about. Takes
 // ownership of |delegate|.
 WebContentsView* CreateWebContentsView(
@@ -944,11 +948,13 @@ class CONTENT_EXPORT WebContentsImpl
                    const base::ListValue& args);
   void OnUpdatePageImportanceSignals(const PageImportanceSignals& signals);
 #if defined(ENABLE_PLUGINS)
-  void OnPepperInstanceCreated();
-  void OnPepperInstanceDeleted();
+  void OnPepperInstanceCreated(int32_t pp_instance);
+  void OnPepperInstanceDeleted(int32_t pp_instance);
   void OnPepperPluginHung(int plugin_child_id,
                           const base::FilePath& path,
                           bool is_hung);
+  void OnPepperStartsPlayback(int32_t pp_instance);
+  void OnPepperStopsPlayback(int32_t pp_instance);
   void OnPluginCrashed(const base::FilePath& plugin_path,
                        base::ProcessId plugin_pid);
   void OnRequestPpapiBrokerPermission(int routing_id,
@@ -1382,6 +1388,11 @@ class CONTENT_EXPORT WebContentsImpl
 
   // Manages media players, CDMs, and power save blockers for media.
   std::unique_ptr<MediaWebContentsObserver> media_web_contents_observer_;
+
+#if defined(ENABLE_PLUGINS)
+  // Observes pepper playback changes, and notifies MediaSession.
+  std::unique_ptr<PepperPlaybackObserver> pepper_playback_observer_;
+#endif  // defined(ENABLE_PLUGINS)
 
   std::unique_ptr<RenderWidgetHostInputEventRouter> rwh_input_event_router_;
 

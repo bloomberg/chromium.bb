@@ -10,6 +10,7 @@
 #include <utility>
 
 #include "base/command_line.h"
+#include "base/feature_list.h"
 #include "base/lazy_instance.h"
 #include "base/location.h"
 #include "base/logging.h"
@@ -144,6 +145,10 @@
 #include "content/public/common/mojo_shell_connection.h"
 #include "ui/aura/mus/mus_util.h"
 #endif
+
+#if defined(ENABLE_PLUGINS)
+#include "content/browser/media/session/pepper_playback_observer.h"
+#endif  // ENABLE_PLUGINS
 
 namespace content {
 namespace {
@@ -429,6 +434,9 @@ WebContentsImpl::WebContentsImpl(BrowserContext* browser_context)
 #else
   media_web_contents_observer_.reset(new MediaWebContentsObserver(this));
 #endif
+#if defined (ENABLE_PLUGINS)
+  pepper_playback_observer_.reset(new PepperPlaybackObserver(this));
+#endif
   loader_io_thread_notifier_.reset(new LoaderIOThreadNotifier(this));
   wake_lock_service_context_.reset(new WakeLockServiceContext(this));
 }
@@ -494,6 +502,12 @@ WebContentsImpl::~WebContentsImpl() {
           std::unique_ptr<NavigationHandleImpl>());
     }
   }
+
+#if defined(ENABLE_PLUGINS)
+  // Call this before WebContentsDestroyed() is broadcasted since
+  // AudioFocusManager will be destroyed after that.
+  pepper_playback_observer_.reset();
+#endif  // defined(ENABLED_PLUGINS)
 
   FOR_EACH_OBSERVER(WebContentsObserver, observers_,
                     FrameDeleted(root->current_frame_host()));
@@ -690,6 +704,10 @@ bool WebContentsImpl::OnMessageReceived(RenderViewHost* render_view_host,
     IPC_MESSAGE_HANDLER(FrameHostMsg_PepperInstanceDeleted,
                         OnPepperInstanceDeleted)
     IPC_MESSAGE_HANDLER(FrameHostMsg_PepperPluginHung, OnPepperPluginHung)
+    IPC_MESSAGE_HANDLER(FrameHostMsg_PepperStartsPlayback,
+                        OnPepperStartsPlayback)
+    IPC_MESSAGE_HANDLER(FrameHostMsg_PepperStopsPlayback,
+                        OnPepperStopsPlayback)
     IPC_MESSAGE_HANDLER(FrameHostMsg_PluginCrashed, OnPluginCrashed)
     IPC_MESSAGE_HANDLER(ViewHostMsg_RequestPpapiBrokerPermission,
                         OnRequestPpapiBrokerPermission)
@@ -3705,12 +3723,16 @@ void WebContentsImpl::OnWebUISend(const GURL& source_url,
 }
 
 #if defined(ENABLE_PLUGINS)
-void WebContentsImpl::OnPepperInstanceCreated() {
-  FOR_EACH_OBSERVER(WebContentsObserver, observers_, PepperInstanceCreated());
+void WebContentsImpl::OnPepperInstanceCreated(int32_t pp_instance) {
+  FOR_EACH_OBSERVER(WebContentsObserver, observers_,
+                    PepperInstanceCreated());
+  pepper_playback_observer_->PepperInstanceCreated(pp_instance);
 }
 
-void WebContentsImpl::OnPepperInstanceDeleted() {
-  FOR_EACH_OBSERVER(WebContentsObserver, observers_, PepperInstanceDeleted());
+void WebContentsImpl::OnPepperInstanceDeleted(int32_t pp_instance) {
+  FOR_EACH_OBSERVER(WebContentsObserver, observers_,
+                    PepperInstanceDeleted());
+  pepper_playback_observer_->PepperInstanceDeleted(pp_instance);
 }
 
 void WebContentsImpl::OnPepperPluginHung(int plugin_child_id,
@@ -3720,6 +3742,14 @@ void WebContentsImpl::OnPepperPluginHung(int plugin_child_id,
 
   FOR_EACH_OBSERVER(WebContentsObserver, observers_,
                     PluginHungStatusChanged(plugin_child_id, path, is_hung));
+}
+
+void WebContentsImpl::OnPepperStartsPlayback(int32_t pp_instance) {
+  pepper_playback_observer_->PepperStartsPlayback(pp_instance);
+}
+
+void WebContentsImpl::OnPepperStopsPlayback(int32_t pp_instance) {
+  pepper_playback_observer_->PepperStopsPlayback(pp_instance);
 }
 
 void WebContentsImpl::OnPluginCrashed(const base::FilePath& plugin_path,

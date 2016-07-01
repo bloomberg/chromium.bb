@@ -73,6 +73,11 @@ namespace media {
 
 // All features in alphabetical order. The features should be documented
 // alongside the definition of their values in the .cc file.
+
+#if defined(ENABLE_PLUGINS)
+MEDIA_EXPORT extern const base::Feature kFlashJoinsMediaSession;
+#endif  // defined(ENABLE_PLUGINS)
+
 MEDIA_EXPORT extern const base::Feature kNewAudioRenderingMixingStrategy;
 MEDIA_EXPORT extern const base::Feature kUseNewMediaCache;
 
