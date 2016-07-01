@@ -75,6 +75,10 @@ Still reading?
   <issue id="MissingApplicationIcon" severity="ignore"/>
   <issue id="MissingPermission" severity="ignore"/>
   <issue id="MissingRegistered" severity="ignore"/>
+  <issue id="MissingTranslation">
+    <!-- http://crbug.com/450548 -->
+    <ignore regexp=".*restriction_values.xml.*" />
+  </issue>
   <issue id="MissingVersion">
     <ignore path="AndroidManifest.xml"/>
   </issue>
@@ -102,6 +106,9 @@ Still reading?
   </issue>
   <issue id="SetJavaScriptEnabled" severity="ignore"/>
   <issue id="UnusedResources">
+    <!-- Used by Android's policies system -->
+    <ignore regexp="restriction_values.xml" />
+
     <!-- Used by chrome/android/java/AndroidManifest.xml -->
     <ignore path="chrome/android/java/res/drawable/window_background.xml" />
     <ignore path="chrome/android/java/res/xml/bookmark_widget_info.xml" />
