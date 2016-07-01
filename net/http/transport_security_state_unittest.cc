@@ -1034,7 +1034,13 @@ TEST_F(TransportSecurityStateTest, Preloaded) {
   EXPECT_TRUE(StaticShouldRedirect("foo.crate.io"));
 }
 
-TEST_F(TransportSecurityStateTest, PreloadedPins) {
+// http://crbug.com/624946
+#if defined(OS_IOS)
+#define MAYBE_PreloadedPins DISABLED_PreloadedPins
+#else
+#define MAYBE_PreloadedPins PreloadedPins
+#endif
+TEST_F(TransportSecurityStateTest, MAYBE_PreloadedPins) {
   TransportSecurityState state;
   EnableStaticPins(&state);
   TransportSecurityState::STSState sts_state;
@@ -1209,7 +1215,13 @@ TEST_F(TransportSecurityStateTest, PinValidationWithoutRejectedCerts) {
   EXPECT_FALSE(pkp_state.CheckPublicKeyPins(bad_hashes, &failure_log));
 }
 
-TEST_F(TransportSecurityStateTest, OptionalHSTSCertPins) {
+// http://crbug.com/624946
+#if defined(OS_IOS)
+#define MAYBE_OptionalHSTSCertPins DISABLED_OptionalHSTSCertPins
+#else
+#define MAYBE_OptionalHSTSCertPins OptionalHSTSCertPins
+#endif
+TEST_F(TransportSecurityStateTest, MAYBE_OptionalHSTSCertPins) {
   TransportSecurityState state;
   EnableStaticPins(&state);
 
