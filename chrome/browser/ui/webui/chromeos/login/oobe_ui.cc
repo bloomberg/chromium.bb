@@ -600,10 +600,10 @@ void OobeUI::OnCurrentScreenChanged(const std::string& screen) {
     NOTIMPLEMENTED();
   }
 
+  current_screen_ = new_screen;
   FOR_EACH_OBSERVER(Observer,
                     observer_list_,
                     OnCurrentScreenChanged(current_screen_, new_screen));
-  current_screen_ = new_screen;
 }
 
 }  // namespace chromeos
