@@ -16,10 +16,14 @@
 #include "net/dns/mock_host_resolver.h"
 #include "net/http/http_server_properties_impl.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "net/test/gtest_util.h"
 #include "net/url_request/url_request_job_factory_impl.h"
 #include "net/url_request/url_request_test_util.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
+
+using net::test::IsOk;
 
 // TODO(eroman): Test that cookies aren't sent.
 
@@ -79,7 +83,7 @@ class FetchResult {
       : net_error_(net_error), response_body_(response_body) {}
 
   void VerifySuccess(const std::string& expected_body) {
-    EXPECT_EQ(OK, net_error_);
+    EXPECT_THAT(net_error_, IsOk());
     EXPECT_EQ(expected_body,
               std::string(response_body_.begin(), response_body_.end()));
   }

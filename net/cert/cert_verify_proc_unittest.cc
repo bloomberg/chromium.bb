@@ -25,13 +25,18 @@
 #include "net/cert/test_root_certs.h"
 #include "net/cert/x509_certificate.h"
 #include "net/test/cert_test_util.h"
+#include "net/test/gtest_util.h"
 #include "net/test/test_certificate_data.h"
 #include "net/test/test_data_directory.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if defined(OS_ANDROID)
 #include "base/android/build_info.h"
 #endif
+
+using net::test::IsError;
+using net::test::IsOk;
 
 using base::HexEncode;
 
@@ -191,7 +196,7 @@ TEST_F(CertVerifyProcTest, MAYBE_EVVerification) {
                      crl_set.get(),
                      empty_cert_list_,
                      &verify_result);
-  EXPECT_EQ(OK, error);
+  EXPECT_THAT(error, IsOk());
   EXPECT_TRUE(verify_result.cert_status & CERT_STATUS_IS_EV);
 }
 
@@ -223,15 +228,15 @@ TEST_F(CertVerifyProcTest, DISABLED_PaypalNullCertParsing) {
                      empty_cert_list_,
                      &verify_result);
 #if defined(USE_NSS_CERTS) || defined(OS_ANDROID)
-  EXPECT_EQ(ERR_CERT_COMMON_NAME_INVALID, error);
+  EXPECT_THAT(error, IsError(ERR_CERT_COMMON_NAME_INVALID));
 #elif defined(OS_IOS) && TARGET_IPHONE_SIMULATOR
   // iOS returns a ERR_CERT_INVALID error on the simulator, while returning
   // ERR_CERT_AUTHORITY_INVALID on the real device.
-  EXPECT_EQ(ERR_CERT_INVALID, error);
+  EXPECT_THAT(error, IsError(ERR_CERT_INVALID));
 #else
   // TOOD(bulach): investigate why macosx and win aren't returning
   // ERR_CERT_INVALID or ERR_CERT_COMMON_NAME_INVALID.
-  EXPECT_EQ(ERR_CERT_AUTHORITY_INVALID, error);
+  EXPECT_THAT(error, IsError(ERR_CERT_AUTHORITY_INVALID));
 #endif
   // Either the system crypto library should correctly report a certificate
   // name mismatch, or our certificate blacklist should cause us to report an
@@ -278,7 +283,7 @@ TEST_F(CertVerifyProcTest, MAYBE_IntermediateCARequireExplicitPolicy) {
                      NULL,
                      empty_cert_list_,
                      &verify_result);
-  EXPECT_EQ(OK, error);
+  EXPECT_THAT(error, IsOk());
   EXPECT_EQ(0u, verify_result.cert_status);
 }
 
@@ -301,7 +306,7 @@ TEST_F(CertVerifyProcTest, RejectExpiredCert) {
   CertVerifyResult verify_result;
   int error = Verify(cert.get(), "127.0.0.1", flags, NULL, empty_cert_list_,
                      &verify_result);
-  EXPECT_EQ(ERR_CERT_DATE_INVALID, error);
+  EXPECT_THAT(error, IsError(ERR_CERT_DATE_INVALID));
   EXPECT_TRUE(verify_result.cert_status & CERT_STATUS_DATE_INVALID);
 }
 
@@ -379,7 +384,7 @@ TEST_F(CertVerifyProcTest, RejectWeakKeys) {
         EXPECT_NE(CERT_STATUS_INVALID,
                   verify_result.cert_status & CERT_STATUS_INVALID);
       } else {
-        EXPECT_EQ(OK, error);
+        EXPECT_THAT(error, IsOk());
         EXPECT_EQ(0U, verify_result.cert_status & CERT_STATUS_WEAK_KEY);
       }
     }
@@ -431,7 +436,7 @@ TEST_F(CertVerifyProcTest, MAYBE_ExtraneousMD5RootCert) {
                      NULL,
                      empty_cert_list_,
                      &verify_result);
-  EXPECT_EQ(OK, error);
+  EXPECT_THAT(error, IsOk());
 
   // The extra MD5 root should be discarded
   ASSERT_TRUE(verify_result.verified_cert.get());
@@ -557,12 +562,12 @@ TEST_F(CertVerifyProcTest, NameConstraintsOk) {
                      NULL,
                      empty_cert_list_,
                      &verify_result);
-  EXPECT_EQ(OK, error);
+  EXPECT_THAT(error, IsOk());
   EXPECT_EQ(0U, verify_result.cert_status);
 
   error = Verify(leaf.get(), "foo.test2.example.com", flags, NULL,
                  empty_cert_list_, &verify_result);
-  EXPECT_EQ(OK, error);
+  EXPECT_THAT(error, IsOk());
   EXPECT_EQ(0U, verify_result.cert_status);
 }
 
@@ -597,7 +602,7 @@ TEST_F(CertVerifyProcTest, NameConstraintsFailure) {
                      NULL,
                      empty_cert_list_,
                      &verify_result);
-  EXPECT_EQ(ERR_CERT_NAME_CONSTRAINT_VIOLATION, error);
+  EXPECT_THAT(error, IsError(ERR_CERT_NAME_CONSTRAINT_VIOLATION));
   EXPECT_EQ(CERT_STATUS_NAME_CONSTRAINT_VIOLATION,
             verify_result.cert_status & CERT_STATUS_NAME_CONSTRAINT_VIOLATION);
 }
@@ -657,7 +662,7 @@ TEST_F(CertVerifyProcTest, DISABLED_TestKnownRoot) {
   // against agl. See also PublicKeyHashes.
   int error = Verify(cert_chain.get(), "twitter.com", flags, NULL,
                      empty_cert_list_, &verify_result);
-  EXPECT_EQ(OK, error);
+  EXPECT_THAT(error, IsOk());
   EXPECT_TRUE(verify_result.is_issued_by_known_root);
 }
 
@@ -686,7 +691,7 @@ TEST_F(CertVerifyProcTest, DISABLED_PublicKeyHashes) {
   // against agl. See also TestKnownRoot.
   int error = Verify(cert_chain.get(), "twitter.com", flags, NULL,
                      empty_cert_list_, &verify_result);
-  EXPECT_EQ(OK, error);
+  EXPECT_THAT(error, IsOk());
   ASSERT_LE(3U, verify_result.public_key_hashes.size());
 
   HashValueVector sha1_hashes;
@@ -738,9 +743,9 @@ TEST_F(CertVerifyProcTest, InvalidKeyUsage) {
   // This certificate has two errors: "invalid key usage" and "untrusted CA".
   // However, OpenSSL returns only one (the latter), and we can't detect
   // the other errors.
-  EXPECT_EQ(ERR_CERT_AUTHORITY_INVALID, error);
+  EXPECT_THAT(error, IsError(ERR_CERT_AUTHORITY_INVALID));
 #else
-  EXPECT_EQ(ERR_CERT_INVALID, error);
+  EXPECT_THAT(error, IsError(ERR_CERT_INVALID));
   EXPECT_TRUE(verify_result.cert_status & CERT_STATUS_INVALID);
 #endif
   // TODO(wtc): fix http://crbug.com/75520 to get all the certificate errors
@@ -790,7 +795,7 @@ TEST_F(CertVerifyProcTest, VerifyReturnChainBasic) {
                      NULL,
                      empty_cert_list_,
                      &verify_result);
-  EXPECT_EQ(OK, error);
+  EXPECT_THAT(error, IsOk());
   ASSERT_NE(static_cast<X509Certificate*>(NULL),
             verify_result.verified_cert.get());
 
@@ -832,7 +837,7 @@ TEST_F(CertVerifyProcTest, IntranetHostsRejected) {
   verify_proc_ = new MockCertVerifyProc(dummy_result);
   error =
       Verify(cert.get(), "intranet", 0, NULL, empty_cert_list_, &verify_result);
-  EXPECT_EQ(OK, error);
+  EXPECT_THAT(error, IsOk());
   EXPECT_TRUE(verify_result.cert_status & CERT_STATUS_NON_UNIQUE_NAME);
 
   // However, if the CA is not well known, these should not be flagged:
@@ -841,7 +846,7 @@ TEST_F(CertVerifyProcTest, IntranetHostsRejected) {
   verify_proc_ = new MockCertVerifyProc(dummy_result);
   error =
       Verify(cert.get(), "intranet", 0, NULL, empty_cert_list_, &verify_result);
-  EXPECT_EQ(OK, error);
+  EXPECT_THAT(error, IsOk());
   EXPECT_FALSE(verify_result.cert_status & CERT_STATUS_NON_UNIQUE_NAME);
 }
 
@@ -868,7 +873,7 @@ TEST_F(CertVerifyProcTest, VerifyRejectsSHA1AfterDeprecation) {
   ASSERT_TRUE(cert);
   error = Verify(cert.get(), "127.0.0.1", 0, NULL, empty_cert_list_,
                  &verify_result);
-  EXPECT_EQ(OK, error);
+  EXPECT_THAT(error, IsOk());
   EXPECT_TRUE(verify_result.cert_status & CERT_STATUS_SHA1_SIGNATURE_PRESENT);
 
   // Publicly trusted SHA-1 leaf certificates issued on/after 1 January 2016
@@ -885,7 +890,7 @@ TEST_F(CertVerifyProcTest, VerifyRejectsSHA1AfterDeprecation) {
   ASSERT_TRUE(cert);
   error = Verify(cert.get(), "127.0.0.1", 0, NULL, empty_cert_list_,
                  &verify_result);
-  EXPECT_EQ(ERR_CERT_WEAK_SIGNATURE_ALGORITHM, error);
+  EXPECT_THAT(error, IsError(ERR_CERT_WEAK_SIGNATURE_ALGORITHM));
   EXPECT_TRUE(verify_result.cert_status & CERT_STATUS_WEAK_SIGNATURE_ALGORITHM);
 
   // Enterprise issued SHA-1 leaf certificates issued on/after 1 January 2016
@@ -902,7 +907,7 @@ TEST_F(CertVerifyProcTest, VerifyRejectsSHA1AfterDeprecation) {
   ASSERT_TRUE(cert);
   error = Verify(cert.get(), "127.0.0.1", 0, NULL, empty_cert_list_,
                  &verify_result);
-  EXPECT_EQ(OK, error);
+  EXPECT_THAT(error, IsOk());
   EXPECT_TRUE(verify_result.cert_status & CERT_STATUS_SHA1_SIGNATURE_PRESENT);
 
   // Publicly trusted SHA-1 intermediates issued on/after 1 January 2016 are,
@@ -919,7 +924,7 @@ TEST_F(CertVerifyProcTest, VerifyRejectsSHA1AfterDeprecation) {
   ASSERT_TRUE(cert);
   error = Verify(cert.get(), "127.0.0.1", 0, NULL, empty_cert_list_,
                  &verify_result);
-  EXPECT_EQ(OK, error);
+  EXPECT_THAT(error, IsOk());
   EXPECT_TRUE(verify_result.cert_status & CERT_STATUS_SHA1_SIGNATURE_PRESENT);
 }
 
@@ -962,7 +967,7 @@ TEST_F(CertVerifyProcTest, VerifyReturnChainProperlyOrdered) {
                      NULL,
                      empty_cert_list_,
                      &verify_result);
-  EXPECT_EQ(OK, error);
+  EXPECT_THAT(error, IsOk());
   ASSERT_NE(static_cast<X509Certificate*>(NULL),
             verify_result.verified_cert.get());
 
@@ -1023,7 +1028,7 @@ TEST_F(CertVerifyProcTest, VerifyReturnChainFiltersUnrelatedCerts) {
                      NULL,
                      empty_cert_list_,
                      &verify_result);
-  EXPECT_EQ(OK, error);
+  EXPECT_THAT(error, IsOk());
   ASSERT_NE(static_cast<X509Certificate*>(NULL),
             verify_result.verified_cert.get());
 
@@ -1065,7 +1070,7 @@ TEST_F(CertVerifyProcTest, AdditionalTrustAnchors) {
   CertVerifyResult verify_result;
   int error = Verify(
       cert.get(), "127.0.0.1", flags, NULL, empty_cert_list_, &verify_result);
-  EXPECT_EQ(ERR_CERT_AUTHORITY_INVALID, error);
+  EXPECT_THAT(error, IsError(ERR_CERT_AUTHORITY_INVALID));
   EXPECT_EQ(CERT_STATUS_AUTHORITY_INVALID, verify_result.cert_status);
   EXPECT_FALSE(verify_result.is_issued_by_additional_trust_anchor);
 
@@ -1074,7 +1079,7 @@ TEST_F(CertVerifyProcTest, AdditionalTrustAnchors) {
   trust_anchors.push_back(ca_cert);
   error = Verify(
       cert.get(), "127.0.0.1", flags, NULL, trust_anchors, &verify_result);
-  EXPECT_EQ(OK, error);
+  EXPECT_THAT(error, IsOk());
   EXPECT_EQ(0U, verify_result.cert_status);
   EXPECT_TRUE(verify_result.is_issued_by_additional_trust_anchor);
 
@@ -1082,7 +1087,7 @@ TEST_F(CertVerifyProcTest, AdditionalTrustAnchors) {
   // should be skipped).
   error = Verify(
       cert.get(), "127.0.0.1", flags, NULL, empty_cert_list_, &verify_result);
-  EXPECT_EQ(ERR_CERT_AUTHORITY_INVALID, error);
+  EXPECT_THAT(error, IsError(ERR_CERT_AUTHORITY_INVALID));
   EXPECT_EQ(CERT_STATUS_AUTHORITY_INVALID, verify_result.cert_status);
   EXPECT_FALSE(verify_result.is_issued_by_additional_trust_anchor);
 }
@@ -1103,7 +1108,7 @@ TEST_F(CertVerifyProcTest, IsIssuedByKnownRootIgnoresTestRoots) {
   CertVerifyResult verify_result;
   int error = Verify(
       cert.get(), "127.0.0.1", flags, NULL, empty_cert_list_, &verify_result);
-  EXPECT_EQ(OK, error);
+  EXPECT_THAT(error, IsOk());
   EXPECT_EQ(0U, verify_result.cert_status);
   // But should not be marked as a known root.
   EXPECT_FALSE(verify_result.is_issued_by_known_root);
@@ -1130,7 +1135,7 @@ TEST_F(CertVerifyProcTest, CRLSet) {
   CertVerifyResult verify_result;
   int error = Verify(
       cert.get(), "127.0.0.1", flags, NULL, empty_cert_list_, &verify_result);
-  EXPECT_EQ(OK, error);
+  EXPECT_THAT(error, IsOk());
   EXPECT_EQ(0U, verify_result.cert_status);
 
   scoped_refptr<CRLSet> crl_set;
@@ -1148,7 +1153,7 @@ TEST_F(CertVerifyProcTest, CRLSet) {
                  crl_set.get(),
                  empty_cert_list_,
                  &verify_result);
-  EXPECT_EQ(ERR_CERT_REVOKED, error);
+  EXPECT_THAT(error, IsError(ERR_CERT_REVOKED));
 
   // Second, test revocation by serial number of a cert directly under the
   // root.
@@ -1164,7 +1169,7 @@ TEST_F(CertVerifyProcTest, CRLSet) {
                  crl_set.get(),
                  empty_cert_list_,
                  &verify_result);
-  EXPECT_EQ(ERR_CERT_REVOKED, error);
+  EXPECT_THAT(error, IsError(ERR_CERT_REVOKED));
 }
 
 TEST_F(CertVerifyProcTest, CRLSetLeafSerial) {
@@ -1200,7 +1205,7 @@ TEST_F(CertVerifyProcTest, CRLSetLeafSerial) {
                      NULL,
                      empty_cert_list_,
                      &verify_result);
-  EXPECT_EQ(OK, error);
+  EXPECT_THAT(error, IsOk());
   EXPECT_EQ(CERT_STATUS_SHA1_SIGNATURE_PRESENT, verify_result.cert_status);
 
   // Test revocation by serial number of a certificate not under the root.
@@ -1217,7 +1222,7 @@ TEST_F(CertVerifyProcTest, CRLSetLeafSerial) {
                  crl_set.get(),
                  empty_cert_list_,
                  &verify_result);
-  EXPECT_EQ(ERR_CERT_REVOKED, error);
+  EXPECT_THAT(error, IsError(ERR_CERT_REVOKED));
 }
 
 // Tests that CRLSets participate in path building functions, and that as
@@ -1309,7 +1314,7 @@ TEST_F(CertVerifyProcTest, CRLSetDuringPathBuilding) {
       continue;
     }
 
-    ASSERT_EQ(OK, error);
+    ASSERT_THAT(error, IsOk());
     ASSERT_EQ(0U, verify_result.cert_status);
     ASSERT_TRUE(verify_result.verified_cert.get());
 
@@ -1434,11 +1439,11 @@ TEST_P(CertVerifyProcWeakDigestTest, Verify) {
   // present (MD2, MD4, MD5).
   if (data.root_cert_filename) {
     if (data.expected_algorithms & (EXPECT_MD2 | EXPECT_MD4)) {
-      EXPECT_EQ(ERR_CERT_INVALID, rv);
+      EXPECT_THAT(rv, IsError(ERR_CERT_INVALID));
     } else if (data.expected_algorithms & EXPECT_MD5) {
-      EXPECT_EQ(ERR_CERT_WEAK_SIGNATURE_ALGORITHM, rv);
+      EXPECT_THAT(rv, IsError(ERR_CERT_WEAK_SIGNATURE_ALGORITHM));
     } else {
-      EXPECT_EQ(OK, rv);
+      EXPECT_THAT(rv, IsOk());
     }
   }
 }
@@ -1647,10 +1652,10 @@ TEST_P(CertVerifyProcNameTest, VerifyCertName) {
   int error = Verify(cert.get(), data.hostname, 0, NULL, empty_cert_list_,
                      &verify_result);
   if (data.valid) {
-    EXPECT_EQ(OK, error);
+    EXPECT_THAT(error, IsOk());
     EXPECT_FALSE(verify_result.cert_status & CERT_STATUS_COMMON_NAME_INVALID);
   } else {
-    EXPECT_EQ(ERR_CERT_COMMON_NAME_INVALID, error);
+    EXPECT_THAT(error, IsError(ERR_CERT_COMMON_NAME_INVALID));
     EXPECT_TRUE(verify_result.cert_status & CERT_STATUS_COMMON_NAME_INVALID);
   }
 }
@@ -1679,7 +1684,7 @@ TEST_F(CertVerifyProcTest, LargeKey) {
   CertVerifyResult verify_result;
   int error = Verify(cert.get(), "127.0.0.1", flags, NULL, empty_cert_list_,
                      &verify_result);
-  EXPECT_EQ(ERR_CERT_INVALID, error);
+  EXPECT_THAT(error, IsError(ERR_CERT_INVALID));
   EXPECT_EQ(CERT_STATUS_INVALID, verify_result.cert_status);
 }
 #endif  // defined(OS_MACOSX) && !defined(OS_IOS)

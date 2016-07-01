@@ -11,7 +11,11 @@
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 #include "net/base/test_completion_callback.h"
+#include "net/test/gtest_util.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/platform_test.h"
+
+using net::test::IsOk;
 
 namespace net {
 
@@ -37,18 +41,18 @@ TEST_F(URLFetcherStringWriterTest, Basic) {
   // Initialize(), Write() and Finish().
   TestCompletionCallback callback;
   rv = writer_->Initialize(callback.callback());
-  EXPECT_EQ(OK, callback.GetResult(rv));
+  EXPECT_THAT(callback.GetResult(rv), IsOk());
   rv = writer_->Write(buf_.get(), buf_->size(), callback.callback());
   EXPECT_EQ(buf_->size(), callback.GetResult(rv));
   rv = writer_->Finish(callback.callback());
-  EXPECT_EQ(OK, callback.GetResult(rv));
+  EXPECT_THAT(callback.GetResult(rv), IsOk());
 
   // Verify the result.
   EXPECT_EQ(kData, writer_->data());
 
   // Initialize() again to reset.
   rv = writer_->Initialize(callback.callback());
-  EXPECT_EQ(OK, callback.GetResult(rv));
+  EXPECT_THAT(callback.GetResult(rv), IsOk());
   EXPECT_TRUE(writer_->data().empty());
 }
 
@@ -73,11 +77,11 @@ TEST_F(URLFetcherFileWriterTest, WriteToFile) {
   // Initialize(), Write() and Finish().
   TestCompletionCallback callback;
   rv = writer_->Initialize(callback.callback());
-  EXPECT_EQ(OK, callback.GetResult(rv));
+  EXPECT_THAT(callback.GetResult(rv), IsOk());
   rv = writer_->Write(buf_.get(), buf_->size(), callback.callback());
   EXPECT_EQ(buf_->size(), callback.GetResult(rv));
   rv = writer_->Finish(callback.callback());
-  EXPECT_EQ(OK, callback.GetResult(rv));
+  EXPECT_THAT(callback.GetResult(rv), IsOk());
 
   // Verify the result.
   EXPECT_EQ(file_path_.value(), writer_->file_path().value());
@@ -96,11 +100,11 @@ TEST_F(URLFetcherFileWriterTest, InitializeAgain) {
   // Initialize(), Write() and Finish().
   TestCompletionCallback callback;
   rv = writer_->Initialize(callback.callback());
-  EXPECT_EQ(OK, callback.GetResult(rv));
+  EXPECT_THAT(callback.GetResult(rv), IsOk());
   rv = writer_->Write(buf_.get(), buf_->size(), callback.callback());
   EXPECT_EQ(buf_->size(), callback.GetResult(rv));
   rv = writer_->Finish(callback.callback());
-  EXPECT_EQ(OK, callback.GetResult(rv));
+  EXPECT_THAT(callback.GetResult(rv), IsOk());
 
   // Verify the result.
   std::string file_contents;
@@ -112,11 +116,11 @@ TEST_F(URLFetcherFileWriterTest, InitializeAgain) {
   scoped_refptr<StringIOBuffer> buf2(new StringIOBuffer(data2));
 
   rv = writer_->Initialize(callback.callback());
-  EXPECT_EQ(OK, callback.GetResult(rv));
+  EXPECT_THAT(callback.GetResult(rv), IsOk());
   rv = writer_->Write(buf2.get(), buf2->size(), callback.callback());
   EXPECT_EQ(buf2->size(), callback.GetResult(rv));
   rv = writer_->Finish(callback.callback());
-  EXPECT_EQ(OK, callback.GetResult(rv));
+  EXPECT_THAT(callback.GetResult(rv), IsOk());
 
   // Verify the result.
   file_contents.clear();
@@ -129,9 +133,9 @@ TEST_F(URLFetcherFileWriterTest, DisownFile) {
   // Initialize() and Finish() to create a file.
   TestCompletionCallback callback;
   rv = writer_->Initialize(callback.callback());
-  EXPECT_EQ(OK, callback.GetResult(rv));
+  EXPECT_THAT(callback.GetResult(rv), IsOk());
   rv = writer_->Finish(callback.callback());
-  EXPECT_EQ(OK, callback.GetResult(rv));
+  EXPECT_THAT(callback.GetResult(rv), IsOk());
 
   // Disown file.
   writer_->DisownFile();
@@ -159,11 +163,11 @@ TEST_F(URLFetcherFileWriterTemporaryFileTest, WriteToTemporaryFile) {
   // Initialize(), Write() and Finish().
   TestCompletionCallback callback;
   rv = writer_->Initialize(callback.callback());
-  EXPECT_EQ(OK, callback.GetResult(rv));
+  EXPECT_THAT(callback.GetResult(rv), IsOk());
   rv = writer_->Write(buf_.get(), buf_->size(), callback.callback());
   EXPECT_EQ(buf_->size(), callback.GetResult(rv));
   rv = writer_->Finish(callback.callback());
-  EXPECT_EQ(OK, callback.GetResult(rv));
+  EXPECT_THAT(callback.GetResult(rv), IsOk());
 
   // Verify the result.
   std::string file_contents;

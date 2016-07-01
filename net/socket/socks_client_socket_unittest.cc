@@ -20,8 +20,13 @@
 #include "net/socket/client_socket_factory.h"
 #include "net/socket/socket_test_util.h"
 #include "net/socket/tcp_client_socket.h"
+#include "net/test/gtest_util.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
+
+using net::test::IsError;
+using net::test::IsOk;
 
 //-----------------------------------------------------------------------------
 
@@ -80,9 +85,9 @@ std::unique_ptr<SOCKSClientSocket> SOCKSClientSocketTest::BuildMockSocket(
   tcp_sock_ = new MockTCPClientSocket(address_list_, net_log, data_.get());
 
   int rv = tcp_sock_->Connect(callback.callback());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
   rv = callback.WaitForResult();
-  EXPECT_EQ(OK, rv);
+  EXPECT_THAT(rv, IsOk());
   EXPECT_TRUE(tcp_sock_->IsConnected());
 
   std::unique_ptr<ClientSocketHandle> connection(new ClientSocketHandle);
@@ -163,7 +168,7 @@ TEST_F(SOCKSClientSocketTest, CompleteHandshake) {
   EXPECT_FALSE(user_sock_->IsConnected());
 
   int rv = user_sock_->Connect(callback_.callback());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   TestNetLogEntry::List entries;
   log.GetEntries(&entries);
@@ -172,7 +177,7 @@ TEST_F(SOCKSClientSocketTest, CompleteHandshake) {
   EXPECT_FALSE(user_sock_->IsConnected());
 
   rv = callback_.WaitForResult();
-  EXPECT_EQ(OK, rv);
+  EXPECT_THAT(rv, IsOk());
   EXPECT_TRUE(user_sock_->IsConnected());
   log.GetEntries(&entries);
   EXPECT_TRUE(LogContainsEndEvent(
@@ -182,14 +187,14 @@ TEST_F(SOCKSClientSocketTest, CompleteHandshake) {
   memcpy(buffer->data(), payload_write.data(), payload_write.size());
   rv = user_sock_->Write(
       buffer.get(), payload_write.size(), callback_.callback());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
   rv = callback_.WaitForResult();
   EXPECT_EQ(static_cast<int>(payload_write.size()), rv);
 
   buffer = new IOBuffer(payload_read.size());
   rv =
       user_sock_->Read(buffer.get(), payload_read.size(), callback_.callback());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
   rv = callback_.WaitForResult();
   EXPECT_EQ(static_cast<int>(payload_read.size()), rv);
   EXPECT_EQ(payload_read, std::string(buffer->data(), payload_read.size()));
@@ -235,7 +240,7 @@ TEST_F(SOCKSClientSocketTest, HandshakeFailures) {
                                  &log);
 
     int rv = user_sock_->Connect(callback_.callback());
-    EXPECT_EQ(ERR_IO_PENDING, rv);
+    EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
     TestNetLogEntry::List entries;
     log.GetEntries(&entries);
@@ -272,14 +277,14 @@ TEST_F(SOCKSClientSocketTest, PartialServerReads) {
                                &log);
 
   int rv = user_sock_->Connect(callback_.callback());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
   TestNetLogEntry::List entries;
   log.GetEntries(&entries);
   EXPECT_TRUE(LogContainsBeginEvent(
       entries, 0, NetLog::TYPE_SOCKS_CONNECT));
 
   rv = callback_.WaitForResult();
-  EXPECT_EQ(OK, rv);
+  EXPECT_THAT(rv, IsOk());
   EXPECT_TRUE(user_sock_->IsConnected());
   log.GetEntries(&entries);
   EXPECT_TRUE(LogContainsEndEvent(
@@ -310,14 +315,14 @@ TEST_F(SOCKSClientSocketTest, PartialClientWrites) {
                                &log);
 
   int rv = user_sock_->Connect(callback_.callback());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
   TestNetLogEntry::List entries;
   log.GetEntries(&entries);
   EXPECT_TRUE(LogContainsBeginEvent(
       entries, 0, NetLog::TYPE_SOCKS_CONNECT));
 
   rv = callback_.WaitForResult();
-  EXPECT_EQ(OK, rv);
+  EXPECT_THAT(rv, IsOk());
   EXPECT_TRUE(user_sock_->IsConnected());
   log.GetEntries(&entries);
   EXPECT_TRUE(LogContainsEndEvent(
@@ -342,14 +347,14 @@ TEST_F(SOCKSClientSocketTest, FailedSocketRead) {
                                &log);
 
   int rv = user_sock_->Connect(callback_.callback());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
   TestNetLogEntry::List entries;
   log.GetEntries(&entries);
   EXPECT_TRUE(LogContainsBeginEvent(
       entries, 0, NetLog::TYPE_SOCKS_CONNECT));
 
   rv = callback_.WaitForResult();
-  EXPECT_EQ(ERR_CONNECTION_CLOSED, rv);
+  EXPECT_THAT(rv, IsError(ERR_CONNECTION_CLOSED));
   EXPECT_FALSE(user_sock_->IsConnected());
   log.GetEntries(&entries);
   EXPECT_TRUE(LogContainsEndEvent(
@@ -372,14 +377,14 @@ TEST_F(SOCKSClientSocketTest, FailedDNS) {
                                &log);
 
   int rv = user_sock_->Connect(callback_.callback());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
   TestNetLogEntry::List entries;
   log.GetEntries(&entries);
   EXPECT_TRUE(LogContainsBeginEvent(
       entries, 0, NetLog::TYPE_SOCKS_CONNECT));
 
   rv = callback_.WaitForResult();
-  EXPECT_EQ(ERR_NAME_NOT_RESOLVED, rv);
+  EXPECT_THAT(rv, IsError(ERR_NAME_NOT_RESOLVED));
   EXPECT_FALSE(user_sock_->IsConnected());
   log.GetEntries(&entries);
   EXPECT_TRUE(LogContainsEndEvent(
@@ -404,7 +409,7 @@ TEST_F(SOCKSClientSocketTest, DisconnectWhileHostResolveInProgress) {
 
   // Start connecting (will get stuck waiting for the host to resolve).
   int rv = user_sock_->Connect(callback_.callback());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   EXPECT_FALSE(user_sock_->IsConnected());
   EXPECT_FALSE(user_sock_->IsConnectedAndIdle());

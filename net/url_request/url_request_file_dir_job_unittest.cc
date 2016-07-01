@@ -16,9 +16,14 @@
 #include "net/base/filename_util.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
+#include "net/test/gtest_util.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_test_util.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+using net::test::IsError;
+using net::test::IsOk;
 
 namespace net {
 
@@ -126,7 +131,7 @@ TEST_F(URLRequestFileDirTest, ListCompletionOnNoPending) {
   // The URLRequestFileDirJobShould return the cached read error synchronously.
   // If it's not returned synchronously, the code path this is intended to test
   // was not executed.
-  EXPECT_EQ(ERR_FILE_NOT_FOUND, request->status().ToNetError());
+  EXPECT_THAT(request->status().ToNetError(), IsError(ERR_FILE_NOT_FOUND));
 }
 
 // Test the case where reading the response completes synchronously.

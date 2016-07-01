@@ -26,9 +26,14 @@
 #include "net/spdy/spdy_session.h"
 #include "net/spdy/spdy_test_util_common.h"
 #include "net/test/cert_test_util.h"
+#include "net/test/gtest_util.h"
 #include "net/test/test_data_directory.h"
 #include "net/url_request/url_request_test_util.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+using net::test::IsError;
+using net::test::IsOk;
 
 namespace net {
 
@@ -393,7 +398,7 @@ TEST_F(BidirectionalStreamTest, CreateInsecureStream) {
   delegate.SetRunUntilCompletion(true);
   delegate.Start(std::move(request_info), session.get());
 
-  EXPECT_EQ(ERR_DISALLOWED_URL_SCHEME, delegate.error());
+  EXPECT_THAT(delegate.error(), IsError(ERR_DISALLOWED_URL_SCHEME));
 }
 
 // Creates a BidirectionalStream with an insecure scheme. Destroy the stream
@@ -473,7 +478,7 @@ TEST_F(BidirectionalStreamTest, TestReadDataAfterClose) {
   EXPECT_FALSE(timer->IsRunning());
   // ReadData returns asynchronously because no data is buffered.
   int rv = delegate->ReadData();
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
   // Deliver a DATA frame.
   sequenced_data_->Resume();
   base::RunLoop().RunUntilIdle();
@@ -490,7 +495,7 @@ TEST_F(BidirectionalStreamTest, TestReadDataAfterClose) {
   rv = delegate->ReadData();
   EXPECT_EQ(kUploadDataSize * 2, rv);
   rv = delegate->ReadData();
-  EXPECT_EQ(OK, rv);  // EOF.
+  EXPECT_THAT(rv, IsOk());  // EOF.
 
   const SpdyHeaderBlock& response_headers = delegate->response_headers();
   EXPECT_EQ("200", response_headers.find(":status")->second);
@@ -564,7 +569,7 @@ TEST_F(BidirectionalStreamTest, TestNetLogContainEntries) {
   delegate->SendData(buf, buf->size(), true);
   // ReadData returns asynchronously because no data is buffered.
   int rv = delegate->ReadData();
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
   // Deliver the first DATA frame.
   sequenced_data_->Resume();
   sequenced_data_->RunUntilPaused();
@@ -709,7 +714,7 @@ TEST_F(BidirectionalStreamTest, TestInterleaveReadDataAndSendData) {
   delegate->SendData(buf, buf->size(), false);
   // ReadData and it should return asynchronously because no data is buffered.
   int rv = delegate->ReadData();
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
   // Deliver a DATA frame, and fire the timer.
   sequenced_data_->Resume();
   sequenced_data_->RunUntilPaused();
@@ -722,7 +727,7 @@ TEST_F(BidirectionalStreamTest, TestInterleaveReadDataAndSendData) {
   delegate->SendData(buf, buf->size(), false);
   // ReadData and it should return asynchronously because no data is buffered.
   rv = delegate->ReadData();
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
   // Deliver a DATA frame, and fire the timer.
   sequenced_data_->Resume();
   sequenced_data_->RunUntilPaused();
@@ -740,7 +745,7 @@ TEST_F(BidirectionalStreamTest, TestInterleaveReadDataAndSendData) {
 
   // OnClose is invoked since both sides are closed.
   rv = delegate->ReadData();
-  EXPECT_EQ(OK, rv);
+  EXPECT_THAT(rv, IsOk());
 
   EXPECT_EQ("200", delegate->response_headers().find(":status")->second);
   EXPECT_EQ(2, delegate->on_data_read_count());
@@ -801,7 +806,7 @@ TEST_F(BidirectionalStreamTest, TestCoalesceSmallDataBuffers) {
   delegate->SendvData({buf, buf2.get()}, {buf->size(), buf2->size()}, true);
   sequenced_data_->RunUntilPaused();  // OnHeadersReceived.
   // ReadData and it should return asynchronously because no data is buffered.
-  EXPECT_EQ(ERR_IO_PENDING, delegate->ReadData());
+  EXPECT_THAT(delegate->ReadData(), IsError(ERR_IO_PENDING));
   sequenced_data_->Resume();
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1, delegate->on_data_sent_count());
@@ -900,7 +905,7 @@ TEST_F(BidirectionalStreamTest, TestCompleteAsyncRead) {
 
   // ReadData should return asynchronously because no data is buffered.
   int rv = delegate->ReadData();
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
   // Deliver END_STREAM.
   // OnClose should trigger completion of the remaining read.
   sequenced_data_->Resume();
@@ -1192,7 +1197,7 @@ TEST_F(BidirectionalStreamTest, CancelStreamDuringReadData) {
   // Cancel the stream after ReadData returns ERR_IO_PENDING.
   int rv = delegate->ReadData();
   EXPECT_EQ(kProtoHTTP2, delegate->GetProtocol());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
   delegate->CancelStream();
   sequenced_data_->Resume();
   base::RunLoop().RunUntilIdle();
@@ -1241,7 +1246,7 @@ TEST_F(BidirectionalStreamTest, PropagateProtocolError) {
   delegate->Start(std::move(request_info), http_session_.get());
 
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(ERR_SPDY_PROTOCOL_ERROR, delegate->error());
+  EXPECT_THAT(delegate->error(), IsError(ERR_SPDY_PROTOCOL_ERROR));
   EXPECT_EQ(delegate->response_headers().end(),
             delegate->response_headers().find(":status"));
   EXPECT_EQ(0, delegate->on_data_read_count());
@@ -1270,7 +1275,7 @@ TEST_F(BidirectionalStreamTest, PropagateProtocolError) {
   entry = entries[index];
   int net_error = OK;
   EXPECT_TRUE(entry.params->GetInteger("net_error", &net_error));
-  EXPECT_EQ(ERR_SPDY_PROTOCOL_ERROR, net_error);
+  EXPECT_THAT(net_error, IsError(ERR_SPDY_PROTOCOL_ERROR));
 }
 
 INSTANTIATE_TEST_CASE_P(CancelOrDeleteTests,
@@ -1490,7 +1495,7 @@ TEST_P(BidirectionalStreamTest, CancelOrDeleteStreamDuringOnFailed) {
             delegate->response_headers().find(":status"));
   EXPECT_EQ(0, delegate->on_data_sent_count());
   EXPECT_EQ(0, delegate->on_data_read_count());
-  EXPECT_EQ(ERR_SPDY_PROTOCOL_ERROR, delegate->error());
+  EXPECT_THAT(delegate->error(), IsError(ERR_SPDY_PROTOCOL_ERROR));
 
   // If stream is destroyed, do not call into stream.
   if (!GetParam())

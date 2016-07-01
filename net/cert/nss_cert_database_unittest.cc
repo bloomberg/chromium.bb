@@ -30,9 +30,14 @@
 #include "net/cert/cert_verify_result.h"
 #include "net/cert/x509_certificate.h"
 #include "net/test/cert_test_util.h"
+#include "net/test/gtest_util.h"
 #include "net/test/test_data_directory.h"
 #include "net/third_party/mozilla_security_manager/nsNSSCertificateDB.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+using net::test::IsError;
+using net::test::IsOk;
 
 // In NSS 3.13, CERTDB_VALID_PEER was renamed CERTDB_TERMINAL_RECORD. So we use
 // the new name of the macro.
@@ -390,7 +395,7 @@ TEST_F(CertDatabaseNSSTest, ImportCA_NotCACert) {
   // ImportCACerts returns the same pointers that were passed in.  In the
   // general case IsSameOSCert should be used.
   EXPECT_EQ(certs[0], failed[0].certificate);
-  EXPECT_EQ(ERR_IMPORT_CA_CERT_NOT_CA, failed[0].net_error);
+  EXPECT_THAT(failed[0].net_error, IsError(ERR_IMPORT_CA_CERT_NOT_CA));
 
   EXPECT_EQ(0U, ListCerts().size());
 }
@@ -413,9 +418,10 @@ TEST_F(CertDatabaseNSSTest, ImportCACertHierarchy) {
 
   ASSERT_EQ(2U, failed.size());
   EXPECT_EQ("DOD CA-17", failed[0].certificate->subject().common_name);
-  EXPECT_EQ(ERR_FAILED, failed[0].net_error);  // The certificate expired.
+  EXPECT_THAT(failed[0].net_error,
+              IsError(ERR_FAILED));  // The certificate expired.
   EXPECT_EQ("www.us.army.mil", failed[1].certificate->subject().common_name);
-  EXPECT_EQ(ERR_IMPORT_CA_CERT_NOT_CA, failed[1].net_error);
+  EXPECT_THAT(failed[1].net_error, IsError(ERR_IMPORT_CA_CERT_NOT_CA));
 
   CertificateList cert_list = ListCerts();
   ASSERT_EQ(1U, cert_list.size());
@@ -449,11 +455,12 @@ TEST_F(CertDatabaseNSSTest, ImportCACertHierarchyDupeRoot) {
 
   ASSERT_EQ(3U, failed.size());
   EXPECT_EQ("DoD Root CA 2", failed[0].certificate->subject().common_name);
-  EXPECT_EQ(ERR_IMPORT_CERT_ALREADY_EXISTS, failed[0].net_error);
+  EXPECT_THAT(failed[0].net_error, IsError(ERR_IMPORT_CERT_ALREADY_EXISTS));
   EXPECT_EQ("DOD CA-17", failed[1].certificate->subject().common_name);
-  EXPECT_EQ(ERR_FAILED, failed[1].net_error);  // The certificate expired.
+  EXPECT_THAT(failed[1].net_error,
+              IsError(ERR_FAILED));  // The certificate expired.
   EXPECT_EQ("www.us.army.mil", failed[2].certificate->subject().common_name);
-  EXPECT_EQ(ERR_IMPORT_CA_CERT_NOT_CA, failed[2].net_error);
+  EXPECT_THAT(failed[2].net_error, IsError(ERR_IMPORT_CA_CERT_NOT_CA));
 
   cert_list = ListCerts();
   ASSERT_EQ(1U, cert_list.size());
@@ -474,7 +481,7 @@ TEST_F(CertDatabaseNSSTest, ImportCACertHierarchyUntrusted) {
   EXPECT_EQ("DOD CA-17", failed[0].certificate->subject().common_name);
   // TODO(mattm): should check for net error equivalent of
   // SEC_ERROR_UNTRUSTED_ISSUER
-  EXPECT_EQ(ERR_FAILED, failed[0].net_error);
+  EXPECT_THAT(failed[0].net_error, IsError(ERR_FAILED));
 
   CertificateList cert_list = ListCerts();
   ASSERT_EQ(1U, cert_list.size());
@@ -495,9 +502,11 @@ TEST_F(CertDatabaseNSSTest, ImportCACertHierarchyTree) {
 
   EXPECT_EQ(2U, failed.size());
   EXPECT_EQ("DOD CA-13", failed[0].certificate->subject().common_name);
-  EXPECT_EQ(ERR_FAILED, failed[0].net_error);  // The certificate expired.
+  EXPECT_THAT(failed[0].net_error,
+              IsError(ERR_FAILED));  // The certificate expired.
   EXPECT_EQ("DOD CA-17", failed[1].certificate->subject().common_name);
-  EXPECT_EQ(ERR_FAILED, failed[1].net_error);  // The certificate expired.
+  EXPECT_THAT(failed[1].net_error,
+              IsError(ERR_FAILED));  // The certificate expired.
 
   CertificateList cert_list = ListCerts();
   ASSERT_EQ(1U, cert_list.size());
@@ -522,9 +531,9 @@ TEST_F(CertDatabaseNSSTest, ImportCACertNotHierarchy) {
   // TODO(mattm): should check for net error equivalent of
   // SEC_ERROR_UNKNOWN_ISSUER
   EXPECT_EQ("DOD CA-13", failed[0].certificate->subject().common_name);
-  EXPECT_EQ(ERR_FAILED, failed[0].net_error);
+  EXPECT_THAT(failed[0].net_error, IsError(ERR_FAILED));
   EXPECT_EQ("DOD CA-17", failed[1].certificate->subject().common_name);
-  EXPECT_EQ(ERR_FAILED, failed[1].net_error);
+  EXPECT_THAT(failed[1].net_error, IsError(ERR_FAILED));
 
   CertificateList cert_list = ListCerts();
   ASSERT_EQ(1U, cert_list.size());
@@ -566,7 +575,7 @@ TEST_F(CertDatabaseNSSTest, DISABLED_ImportServerCert) {
   int error =
       verify_proc->Verify(goog_cert.get(), "www.google.com", std::string(),
                           flags, NULL, empty_cert_list_, &verify_result);
-  EXPECT_EQ(OK, error);
+  EXPECT_THAT(error, IsOk());
   EXPECT_EQ(0U, verify_result.cert_status);
 }
 
@@ -594,7 +603,7 @@ TEST_F(CertDatabaseNSSTest, ImportServerCert_SelfSigned) {
   int error =
       verify_proc->Verify(puny_cert.get(), "xn--wgv71a119e.com", std::string(),
                           flags, NULL, empty_cert_list_, &verify_result);
-  EXPECT_EQ(ERR_CERT_AUTHORITY_INVALID, error);
+  EXPECT_THAT(error, IsError(ERR_CERT_AUTHORITY_INVALID));
   EXPECT_EQ(CERT_STATUS_AUTHORITY_INVALID, verify_result.cert_status);
 }
 
@@ -623,7 +632,7 @@ TEST_F(CertDatabaseNSSTest, ImportServerCert_SelfSigned_Trusted) {
   int error =
       verify_proc->Verify(puny_cert.get(), "xn--wgv71a119e.com", std::string(),
                           flags, NULL, empty_cert_list_, &verify_result);
-  EXPECT_EQ(OK, error);
+  EXPECT_THAT(error, IsOk());
   EXPECT_EQ(0U, verify_result.cert_status);
 }
 
@@ -656,7 +665,7 @@ TEST_F(CertDatabaseNSSTest, ImportCaAndServerCert) {
   int error =
       verify_proc->Verify(certs[0].get(), "127.0.0.1", std::string(), flags,
                           NULL, empty_cert_list_, &verify_result);
-  EXPECT_EQ(OK, error);
+  EXPECT_THAT(error, IsOk());
   EXPECT_EQ(0U, verify_result.cert_status);
 }
 
@@ -695,7 +704,7 @@ TEST_F(CertDatabaseNSSTest, ImportCaAndServerCert_DistrustServer) {
   int error =
       verify_proc->Verify(certs[0].get(), "127.0.0.1", std::string(), flags,
                           NULL, empty_cert_list_, &verify_result);
-  EXPECT_EQ(ERR_CERT_REVOKED, error);
+  EXPECT_THAT(error, IsError(ERR_CERT_REVOKED));
   EXPECT_EQ(CERT_STATUS_REVOKED, verify_result.cert_status);
 }
 
@@ -740,7 +749,7 @@ TEST_F(CertDatabaseNSSTest, TrustIntermediateCa) {
   int error =
       verify_proc->Verify(certs[0].get(), "127.0.0.1", std::string(), flags,
                           NULL, empty_cert_list_, &verify_result);
-  EXPECT_EQ(OK, error);
+  EXPECT_THAT(error, IsOk());
   EXPECT_EQ(0U, verify_result.cert_status);
 
   // Trust the root cert and distrust the intermediate.
@@ -767,7 +776,7 @@ TEST_F(CertDatabaseNSSTest, TrustIntermediateCa) {
   CertVerifyResult verify_result2;
   error = verify_proc->Verify(certs[0].get(), "127.0.0.1", std::string(), flags,
                               NULL, empty_cert_list_, &verify_result2);
-  EXPECT_EQ(ERR_CERT_REVOKED, error);
+  EXPECT_THAT(error, IsError(ERR_CERT_REVOKED));
   EXPECT_EQ(CERT_STATUS_REVOKED, verify_result2.cert_status);
 }
 
@@ -809,7 +818,7 @@ TEST_F(CertDatabaseNSSTest, TrustIntermediateCa2) {
   int error =
       verify_proc->Verify(certs[0].get(), "127.0.0.1", std::string(), flags,
                           NULL, empty_cert_list_, &verify_result);
-  EXPECT_EQ(OK, error);
+  EXPECT_THAT(error, IsOk());
   EXPECT_EQ(0U, verify_result.cert_status);
 
   // Without explicit trust of the intermediate, verification should fail.
@@ -820,7 +829,7 @@ TEST_F(CertDatabaseNSSTest, TrustIntermediateCa2) {
   CertVerifyResult verify_result2;
   error = verify_proc->Verify(certs[0].get(), "127.0.0.1", std::string(), flags,
                               NULL, empty_cert_list_, &verify_result2);
-  EXPECT_EQ(ERR_CERT_AUTHORITY_INVALID, error);
+  EXPECT_THAT(error, IsError(ERR_CERT_AUTHORITY_INVALID));
   EXPECT_EQ(CERT_STATUS_AUTHORITY_INVALID, verify_result2.cert_status);
 }
 
@@ -872,7 +881,7 @@ TEST_F(CertDatabaseNSSTest, TrustIntermediateCa3) {
   int error =
       verify_proc->Verify(certs[0].get(), "127.0.0.1", std::string(), flags,
                           NULL, empty_cert_list_, &verify_result);
-  EXPECT_EQ(OK, error);
+  EXPECT_THAT(error, IsOk());
   EXPECT_EQ(0U, verify_result.cert_status);
 
   // Without explicit trust of the intermediate, verification should fail.
@@ -883,7 +892,7 @@ TEST_F(CertDatabaseNSSTest, TrustIntermediateCa3) {
   CertVerifyResult verify_result2;
   error = verify_proc->Verify(certs[0].get(), "127.0.0.1", std::string(), flags,
                               NULL, empty_cert_list_, &verify_result2);
-  EXPECT_EQ(ERR_CERT_AUTHORITY_INVALID, error);
+  EXPECT_THAT(error, IsError(ERR_CERT_AUTHORITY_INVALID));
   EXPECT_EQ(CERT_STATUS_AUTHORITY_INVALID, verify_result2.cert_status);
 }
 
@@ -929,7 +938,7 @@ TEST_F(CertDatabaseNSSTest, TrustIntermediateCa4) {
   int error =
       verify_proc->Verify(certs[0].get(), "127.0.0.1", std::string(), flags,
                           NULL, empty_cert_list_, &verify_result);
-  EXPECT_EQ(ERR_CERT_REVOKED, error);
+  EXPECT_THAT(error, IsError(ERR_CERT_REVOKED));
   EXPECT_EQ(CERT_STATUS_REVOKED, verify_result.cert_status);
 
   // Without explicit distrust of the intermediate, verification should succeed.
@@ -940,7 +949,7 @@ TEST_F(CertDatabaseNSSTest, TrustIntermediateCa4) {
   CertVerifyResult verify_result2;
   error = verify_proc->Verify(certs[0].get(), "127.0.0.1", std::string(), flags,
                               NULL, empty_cert_list_, &verify_result2);
-  EXPECT_EQ(OK, error);
+  EXPECT_THAT(error, IsOk());
   EXPECT_EQ(0U, verify_result2.cert_status);
 }
 

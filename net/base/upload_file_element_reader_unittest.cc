@@ -15,8 +15,13 @@
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 #include "net/base/test_completion_callback.h"
+#include "net/test/gtest_util.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
+
+using net::test::IsError;
+using net::test::IsOk;
 
 namespace net {
 
@@ -40,8 +45,8 @@ class UploadFileElementReaderTest : public PlatformTest {
         base::ThreadTaskRunnerHandle::Get().get(), temp_file_path_, 0,
         std::numeric_limits<uint64_t>::max(), base::Time()));
     TestCompletionCallback callback;
-    ASSERT_EQ(ERR_IO_PENDING, reader_->Init(callback.callback()));
-    EXPECT_EQ(OK, callback.WaitForResult());
+    ASSERT_THAT(reader_->Init(callback.callback()), IsError(ERR_IO_PENDING));
+    EXPECT_THAT(callback.WaitForResult(), IsOk());
     EXPECT_EQ(bytes_.size(), reader_->GetContentLength());
     EXPECT_EQ(bytes_.size(), reader_->BytesRemaining());
     EXPECT_FALSE(reader_->IsInMemory());
@@ -125,8 +130,8 @@ TEST_F(UploadFileElementReaderTest, MultipleInit) {
 
   // Call Init() again to reset the state.
   TestCompletionCallback init_callback;
-  ASSERT_EQ(ERR_IO_PENDING, reader_->Init(init_callback.callback()));
-  EXPECT_EQ(OK, init_callback.WaitForResult());
+  ASSERT_THAT(reader_->Init(init_callback.callback()), IsError(ERR_IO_PENDING));
+  EXPECT_THAT(init_callback.WaitForResult(), IsOk());
   EXPECT_EQ(bytes_.size(), reader_->GetContentLength());
   EXPECT_EQ(bytes_.size(), reader_->BytesRemaining());
 
@@ -152,12 +157,14 @@ TEST_F(UploadFileElementReaderTest, InitDuringAsyncOperation) {
 
   // Call Init to cancel the previous read.
   TestCompletionCallback init_callback1;
-  EXPECT_EQ(ERR_IO_PENDING, reader_->Init(init_callback1.callback()));
+  EXPECT_THAT(reader_->Init(init_callback1.callback()),
+              IsError(ERR_IO_PENDING));
 
   // Call Init again to cancel the previous init.
   TestCompletionCallback init_callback2;
-  EXPECT_EQ(ERR_IO_PENDING, reader_->Init(init_callback2.callback()));
-  EXPECT_EQ(OK, init_callback2.WaitForResult());
+  EXPECT_THAT(reader_->Init(init_callback2.callback()),
+              IsError(ERR_IO_PENDING));
+  EXPECT_THAT(init_callback2.WaitForResult(), IsOk());
   EXPECT_EQ(bytes_.size(), reader_->GetContentLength());
   EXPECT_EQ(bytes_.size(), reader_->BytesRemaining());
 
@@ -185,8 +192,8 @@ TEST_F(UploadFileElementReaderTest, Range) {
       base::ThreadTaskRunnerHandle::Get().get(), temp_file_path_, kOffset,
       kLength, base::Time()));
   TestCompletionCallback init_callback;
-  ASSERT_EQ(ERR_IO_PENDING, reader_->Init(init_callback.callback()));
-  EXPECT_EQ(OK, init_callback.WaitForResult());
+  ASSERT_THAT(reader_->Init(init_callback.callback()), IsError(ERR_IO_PENDING));
+  EXPECT_THAT(init_callback.WaitForResult(), IsOk());
   EXPECT_EQ(kLength, reader_->GetContentLength());
   EXPECT_EQ(kLength, reader_->BytesRemaining());
   std::vector<char> buf(kLength);
@@ -212,8 +219,8 @@ TEST_F(UploadFileElementReaderTest, FileChanged) {
       base::ThreadTaskRunnerHandle::Get().get(), temp_file_path_, 0,
       std::numeric_limits<uint64_t>::max(), expected_modification_time));
   TestCompletionCallback init_callback;
-  ASSERT_EQ(ERR_IO_PENDING, reader_->Init(init_callback.callback()));
-  EXPECT_EQ(ERR_UPLOAD_FILE_CHANGED, init_callback.WaitForResult());
+  ASSERT_THAT(reader_->Init(init_callback.callback()), IsError(ERR_IO_PENDING));
+  EXPECT_THAT(init_callback.WaitForResult(), IsError(ERR_UPLOAD_FILE_CHANGED));
 }
 
 TEST_F(UploadFileElementReaderTest, InexactExpectedTimeStamp) {
@@ -226,8 +233,8 @@ TEST_F(UploadFileElementReaderTest, InexactExpectedTimeStamp) {
       base::ThreadTaskRunnerHandle::Get().get(), temp_file_path_, 0,
       std::numeric_limits<uint64_t>::max(), expected_modification_time));
   TestCompletionCallback init_callback;
-  ASSERT_EQ(ERR_IO_PENDING, reader_->Init(init_callback.callback()));
-  EXPECT_EQ(OK, init_callback.WaitForResult());
+  ASSERT_THAT(reader_->Init(init_callback.callback()), IsError(ERR_IO_PENDING));
+  EXPECT_THAT(init_callback.WaitForResult(), IsOk());
 }
 
 TEST_F(UploadFileElementReaderTest, WrongPath) {
@@ -236,8 +243,8 @@ TEST_F(UploadFileElementReaderTest, WrongPath) {
       base::ThreadTaskRunnerHandle::Get().get(), wrong_path, 0,
       std::numeric_limits<uint64_t>::max(), base::Time()));
   TestCompletionCallback init_callback;
-  ASSERT_EQ(ERR_IO_PENDING, reader_->Init(init_callback.callback()));
-  EXPECT_EQ(ERR_FILE_NOT_FOUND, init_callback.WaitForResult());
+  ASSERT_THAT(reader_->Init(init_callback.callback()), IsError(ERR_IO_PENDING));
+  EXPECT_THAT(init_callback.WaitForResult(), IsError(ERR_FILE_NOT_FOUND));
 }
 
 }  // namespace net

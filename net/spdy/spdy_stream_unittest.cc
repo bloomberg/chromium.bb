@@ -29,7 +29,12 @@
 #include "net/spdy/spdy_session.h"
 #include "net/spdy/spdy_stream_test_util.h"
 #include "net/spdy/spdy_test_util_common.h"
+#include "net/test/gtest_util.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+using net::test::IsError;
+using net::test::IsOk;
 
 // TODO(ukai): factor out common part with spdy_http_stream_unittest.cc
 //
@@ -207,7 +212,7 @@ TEST_P(SpdyStreamTest, SendDataAfterOpen) {
   EXPECT_TRUE(stream->HasUrlFromHeaders());
   EXPECT_EQ(kStreamUrl, stream->GetUrlFromHeaders().spec());
 
-  EXPECT_EQ(ERR_CONNECTION_CLOSED, delegate.WaitForClose());
+  EXPECT_THAT(delegate.WaitForClose(), IsError(ERR_CONNECTION_CLOSED));
 
   EXPECT_TRUE(delegate.send_headers_completed());
   EXPECT_EQ("200", delegate.GetResponseHeaderValue(spdy_util_.GetStatusKey()));
@@ -289,7 +294,7 @@ TEST_P(SpdyStreamTest, Trailers) {
   EXPECT_TRUE(stream->HasUrlFromHeaders());
   EXPECT_EQ(kStreamUrl, stream->GetUrlFromHeaders().spec());
 
-  EXPECT_EQ(ERR_CONNECTION_CLOSED, delegate.WaitForClose());
+  EXPECT_THAT(delegate.WaitForClose(), IsError(ERR_CONNECTION_CLOSED));
 
   EXPECT_TRUE(delegate.send_headers_completed());
   EXPECT_EQ("200", delegate.GetResponseHeaderValue(spdy_util_.GetStatusKey()));
@@ -318,7 +323,7 @@ TEST_P(SpdyStreamTest, PushedStream) {
   int result = stream_request.StartRequest(SPDY_PUSH_STREAM, spdy_session,
                                            GURL(), DEFAULT_PRIORITY,
                                            BoundNetLog(), CompletionCallback());
-  ASSERT_EQ(OK, result);
+  ASSERT_THAT(result, IsOk());
   base::WeakPtr<SpdyStream> stream = stream_request.ReleaseStream();
   ActivatePushStream(spdy_session.get(), stream.get());
 
@@ -417,7 +422,7 @@ TEST_P(SpdyStreamTest, StreamError) {
   EXPECT_TRUE(stream->HasUrlFromHeaders());
   EXPECT_EQ(kStreamUrl, stream->GetUrlFromHeaders().spec());
 
-  EXPECT_EQ(ERR_CONNECTION_CLOSED, delegate.WaitForClose());
+  EXPECT_THAT(delegate.WaitForClose(), IsError(ERR_CONNECTION_CLOSED));
 
   const SpdyStreamId stream_id = delegate.stream_id();
 
@@ -495,7 +500,7 @@ TEST_P(SpdyStreamTest, SendLargeDataAfterOpenRequestResponse) {
   EXPECT_TRUE(stream->HasUrlFromHeaders());
   EXPECT_EQ(kStreamUrl, stream->GetUrlFromHeaders().spec());
 
-  EXPECT_EQ(ERR_CONNECTION_CLOSED, delegate.WaitForClose());
+  EXPECT_THAT(delegate.WaitForClose(), IsError(ERR_CONNECTION_CLOSED));
 
   EXPECT_TRUE(delegate.send_headers_completed());
   EXPECT_EQ("200", delegate.GetResponseHeaderValue(spdy_util_.GetStatusKey()));
@@ -553,7 +558,7 @@ TEST_P(SpdyStreamTest, SendLargeDataAfterOpenBidirectional) {
   EXPECT_TRUE(stream->HasUrlFromHeaders());
   EXPECT_EQ(kStreamUrl, stream->GetUrlFromHeaders().spec());
 
-  EXPECT_EQ(ERR_CONNECTION_CLOSED, delegate.WaitForClose());
+  EXPECT_THAT(delegate.WaitForClose(), IsError(ERR_CONNECTION_CLOSED));
 
   EXPECT_TRUE(delegate.send_headers_completed());
   EXPECT_EQ("200", delegate.GetResponseHeaderValue(spdy_util_.GetStatusKey()));
@@ -607,7 +612,7 @@ TEST_P(SpdyStreamTest, UpperCaseHeaders) {
   EXPECT_TRUE(stream->HasUrlFromHeaders());
   EXPECT_EQ(kStreamUrl, stream->GetUrlFromHeaders().spec());
 
-  EXPECT_EQ(ERR_SPDY_PROTOCOL_ERROR, delegate.WaitForClose());
+  EXPECT_THAT(delegate.WaitForClose(), IsError(ERR_SPDY_PROTOCOL_ERROR));
 }
 
 // Receiving a header with uppercase ASCII should result in a protocol
@@ -665,12 +670,12 @@ TEST_P(SpdyStreamTest, UpperCaseHeadersOnPush) {
   data.RunUntilPaused();
 
   base::WeakPtr<SpdyStream> push_stream;
-  EXPECT_EQ(OK, session->GetPushStream(url, &push_stream, BoundNetLog()));
+  EXPECT_THAT(session->GetPushStream(url, &push_stream, BoundNetLog()), IsOk());
   EXPECT_FALSE(push_stream);
 
   data.Resume();
 
-  EXPECT_EQ(ERR_CONNECTION_CLOSED, delegate.WaitForClose());
+  EXPECT_THAT(delegate.WaitForClose(), IsError(ERR_CONNECTION_CLOSED));
 }
 
 // Receiving a header with uppercase ASCII in a HEADERS frame should
@@ -735,18 +740,18 @@ TEST_P(SpdyStreamTest, UpperCaseHeadersInHeadersFrame) {
   data.RunUntilPaused();
 
   base::WeakPtr<SpdyStream> push_stream;
-  EXPECT_EQ(OK, session->GetPushStream(url, &push_stream, BoundNetLog()));
+  EXPECT_THAT(session->GetPushStream(url, &push_stream, BoundNetLog()), IsOk());
   EXPECT_TRUE(push_stream);
 
   data.Resume();
   data.RunUntilPaused();
 
-  EXPECT_EQ(OK, session->GetPushStream(url, &push_stream, BoundNetLog()));
+  EXPECT_THAT(session->GetPushStream(url, &push_stream, BoundNetLog()), IsOk());
   EXPECT_FALSE(push_stream);
 
   data.Resume();
 
-  EXPECT_EQ(ERR_CONNECTION_CLOSED, delegate.WaitForClose());
+  EXPECT_THAT(delegate.WaitForClose(), IsError(ERR_CONNECTION_CLOSED));
 }
 
 // Receiving a duplicate header in a HEADERS frame should result in a
@@ -811,18 +816,18 @@ TEST_P(SpdyStreamTest, DuplicateHeaders) {
   data.RunUntilPaused();
 
   base::WeakPtr<SpdyStream> push_stream;
-  EXPECT_EQ(OK, session->GetPushStream(url, &push_stream, BoundNetLog()));
+  EXPECT_THAT(session->GetPushStream(url, &push_stream, BoundNetLog()), IsOk());
   EXPECT_TRUE(push_stream);
 
   data.Resume();
   data.RunUntilPaused();
 
-  EXPECT_EQ(OK, session->GetPushStream(url, &push_stream, BoundNetLog()));
+  EXPECT_THAT(session->GetPushStream(url, &push_stream, BoundNetLog()), IsOk());
   EXPECT_FALSE(push_stream);
 
   data.Resume();
 
-  EXPECT_EQ(ERR_CONNECTION_CLOSED, delegate.WaitForClose());
+  EXPECT_THAT(delegate.WaitForClose(), IsError(ERR_CONNECTION_CLOSED));
 }
 
 // Call IncreaseSendWindowSize on a stream with a large enough delta
@@ -881,7 +886,7 @@ TEST_P(SpdyStreamTest, IncreaseSendWindowSizeOverflow) {
   data.Resume();
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_EQ(ERR_SPDY_PROTOCOL_ERROR, delegate.WaitForClose());
+  EXPECT_THAT(delegate.WaitForClose(), IsError(ERR_SPDY_PROTOCOL_ERROR));
 }
 
 // Functions used with
@@ -972,7 +977,7 @@ void SpdyStreamTest::RunResumeAfterUnstallRequestResponseTest(
 
   EXPECT_FALSE(stream->send_stalled_by_flow_control());
 
-  EXPECT_EQ(ERR_CONNECTION_CLOSED, delegate.WaitForClose());
+  EXPECT_THAT(delegate.WaitForClose(), IsError(ERR_CONNECTION_CLOSED));
 
   EXPECT_TRUE(delegate.send_headers_completed());
   EXPECT_EQ("200", delegate.GetResponseHeaderValue(":status"));
@@ -1058,7 +1063,7 @@ void SpdyStreamTest::RunResumeAfterUnstallBidirectionalTest(
 
   EXPECT_FALSE(stream->send_stalled_by_flow_control());
 
-  EXPECT_EQ(ERR_CONNECTION_CLOSED, delegate.WaitForClose());
+  EXPECT_THAT(delegate.WaitForClose(), IsError(ERR_CONNECTION_CLOSED));
 
   EXPECT_TRUE(delegate.send_headers_completed());
   EXPECT_EQ("200", delegate.GetResponseHeaderValue(":status"));
@@ -1151,7 +1156,7 @@ TEST_P(SpdyStreamTest, ReceivedBytes) {
 
   // FIN
   data.Resume();
-  EXPECT_EQ(ERR_CONNECTION_CLOSED, delegate.WaitForClose());
+  EXPECT_THAT(delegate.WaitForClose(), IsError(ERR_CONNECTION_CLOSED));
 }
 
 }  // namespace test

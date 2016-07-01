@@ -15,6 +15,8 @@
 #include "net/http/http_request_info.h"
 #include "net/http/mock_allow_http_auth_preferences.h"
 #include "net/ssl/ssl_info.h"
+#include "net/test/gtest_util.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 
@@ -25,6 +27,9 @@
 #elif defined(OS_POSIX)
 #include "net/http/mock_gssapi_library_posix.h"
 #endif
+
+using net::test::IsError;
+using net::test::IsOk;
 
 namespace net {
 
@@ -320,7 +325,7 @@ TEST_F(HttpAuthHandlerNegotiateTest, CnameAsync) {
   std::string token;
   EXPECT_EQ(ERR_IO_PENDING, auth_handler->GenerateAuthToken(
       NULL, &request_info, callback.callback(), &token));
-  EXPECT_EQ(OK, callback.WaitForResult());
+  EXPECT_THAT(callback.WaitForResult(), IsOk());
 #if defined(OS_WIN)
   EXPECT_EQ("HTTP/canonical.example.com", auth_handler->spn());
 #elif defined(OS_POSIX)
@@ -343,7 +348,7 @@ TEST_F(HttpAuthHandlerNegotiateTest, ServerNotInKerberosDatabase) {
   std::string token;
   EXPECT_EQ(ERR_IO_PENDING, auth_handler->GenerateAuthToken(
       NULL, &request_info, callback.callback(), &token));
-  EXPECT_EQ(ERR_MISSING_AUTH_CREDENTIALS, callback.WaitForResult());
+  EXPECT_THAT(callback.WaitForResult(), IsError(ERR_MISSING_AUTH_CREDENTIALS));
 }
 
 // This test is only for GSSAPI, as we can't use explicit credentials with
@@ -359,7 +364,7 @@ TEST_F(HttpAuthHandlerNegotiateTest, NoKerberosCredentials) {
   std::string token;
   EXPECT_EQ(ERR_IO_PENDING, auth_handler->GenerateAuthToken(
       NULL, &request_info, callback.callback(), &token));
-  EXPECT_EQ(ERR_MISSING_AUTH_CREDENTIALS, callback.WaitForResult());
+  EXPECT_THAT(callback.WaitForResult(), IsError(ERR_MISSING_AUTH_CREDENTIALS));
 }
 
 #if defined(DLOPEN_KERBEROS)
@@ -381,7 +386,7 @@ TEST_F(HttpAuthHandlerNegotiateTest, MissingGSSAPI) {
       gurl,
       BoundNetLog(),
       &generic_handler);
-  EXPECT_EQ(ERR_UNSUPPORTED_AUTH_SCHEME, rv);
+  EXPECT_THAT(rv, IsError(ERR_UNSUPPORTED_AUTH_SCHEME));
   EXPECT_TRUE(generic_handler.get() == NULL);
 }
 #endif  // defined(DLOPEN_KERBEROS)

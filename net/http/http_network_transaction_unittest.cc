@@ -88,12 +88,16 @@
 #include "net/ssl/ssl_info.h"
 #include "net/ssl/ssl_private_key.h"
 #include "net/test/cert_test_util.h"
+#include "net/test/gtest_util.h"
 #include "net/test/test_data_directory.h"
 #include "net/websockets/websocket_handshake_stream_base.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 #include "url/gurl.h"
+
+using net::test::IsError;
+using net::test::IsOk;
 
 using base::ASCIIToUTF16;
 
@@ -370,7 +374,7 @@ class HttpNetworkTransactionTest
 
     EXPECT_TRUE(log.bound().IsCapturing());
     int rv = trans->Start(&request, callback.callback(), log.bound());
-    EXPECT_EQ(ERR_IO_PENDING, rv);
+    EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
     out.rv = callback.WaitForResult();
     out.total_received_bytes = trans->GetTotalReceivedBytes();
@@ -402,7 +406,7 @@ class HttpNetworkTransactionTest
               out.remote_endpoint_after_start.address().size() > 0);
 
     rv = ReadTransaction(trans.get(), &out.response_data);
-    EXPECT_EQ(OK, rv);
+    EXPECT_THAT(rv, IsOk());
 
     TestNetLogEntry::List entries;
     log.GetEntries(&entries);
@@ -742,7 +746,7 @@ TEST_P(HttpNetworkTransactionTest, SimpleGET) {
   };
   SimpleGetHelperResult out = SimpleGetHelper(data_reads,
                                               arraysize(data_reads));
-  EXPECT_EQ(OK, out.rv);
+  EXPECT_THAT(out.rv, IsOk());
   EXPECT_EQ("HTTP/1.0 200 OK", out.status_line);
   EXPECT_EQ("hello world", out.response_data);
   int64_t reads_size = CountReadBytes(data_reads, arraysize(data_reads));
@@ -760,7 +764,7 @@ TEST_P(HttpNetworkTransactionTest, SimpleGETNoHeaders) {
   };
   SimpleGetHelperResult out = SimpleGetHelper(data_reads,
                                               arraysize(data_reads));
-  EXPECT_EQ(OK, out.rv);
+  EXPECT_THAT(out.rv, IsOk());
   EXPECT_EQ("HTTP/0.9 200 OK", out.status_line);
   EXPECT_EQ("hello world", out.response_data);
   int64_t reads_size = CountReadBytes(data_reads, arraysize(data_reads));
@@ -775,7 +779,7 @@ TEST_P(HttpNetworkTransactionTest, StatusLineJunk3Bytes) {
   };
   SimpleGetHelperResult out = SimpleGetHelper(data_reads,
                                               arraysize(data_reads));
-  EXPECT_EQ(OK, out.rv);
+  EXPECT_THAT(out.rv, IsOk());
   EXPECT_EQ("HTTP/1.0 404 Not Found", out.status_line);
   EXPECT_EQ("DATA", out.response_data);
   int64_t reads_size = CountReadBytes(data_reads, arraysize(data_reads));
@@ -790,7 +794,7 @@ TEST_P(HttpNetworkTransactionTest, StatusLineJunk4Bytes) {
   };
   SimpleGetHelperResult out = SimpleGetHelper(data_reads,
                                               arraysize(data_reads));
-  EXPECT_EQ(OK, out.rv);
+  EXPECT_THAT(out.rv, IsOk());
   EXPECT_EQ("HTTP/1.0 404 Not Found", out.status_line);
   EXPECT_EQ("DATA", out.response_data);
   int64_t reads_size = CountReadBytes(data_reads, arraysize(data_reads));
@@ -805,7 +809,7 @@ TEST_P(HttpNetworkTransactionTest, StatusLineJunk5Bytes) {
   };
   SimpleGetHelperResult out = SimpleGetHelper(data_reads,
                                               arraysize(data_reads));
-  EXPECT_EQ(OK, out.rv);
+  EXPECT_THAT(out.rv, IsOk());
   EXPECT_EQ("HTTP/0.9 200 OK", out.status_line);
   EXPECT_EQ("xxxxxHTTP/1.1 404 Not Found\nServer: blah", out.response_data);
   int64_t reads_size = CountReadBytes(data_reads, arraysize(data_reads));
@@ -824,7 +828,7 @@ TEST_P(HttpNetworkTransactionTest, StatusLineJunk4Bytes_Slow) {
   };
   SimpleGetHelperResult out = SimpleGetHelper(data_reads,
                                               arraysize(data_reads));
-  EXPECT_EQ(OK, out.rv);
+  EXPECT_THAT(out.rv, IsOk());
   EXPECT_EQ("HTTP/1.0 404 Not Found", out.status_line);
   EXPECT_EQ("DATA", out.response_data);
   int64_t reads_size = CountReadBytes(data_reads, arraysize(data_reads));
@@ -839,7 +843,7 @@ TEST_P(HttpNetworkTransactionTest, StatusLinePartial) {
   };
   SimpleGetHelperResult out = SimpleGetHelper(data_reads,
                                               arraysize(data_reads));
-  EXPECT_EQ(OK, out.rv);
+  EXPECT_THAT(out.rv, IsOk());
   EXPECT_EQ("HTTP/0.9 200 OK", out.status_line);
   EXPECT_EQ("HTT", out.response_data);
   int64_t reads_size = CountReadBytes(data_reads, arraysize(data_reads));
@@ -858,7 +862,7 @@ TEST_P(HttpNetworkTransactionTest, StopsReading204) {
   };
   SimpleGetHelperResult out = SimpleGetHelper(data_reads,
                                               arraysize(data_reads));
-  EXPECT_EQ(OK, out.rv);
+  EXPECT_THAT(out.rv, IsOk());
   EXPECT_EQ("HTTP/1.1 204 No Content", out.status_line);
   EXPECT_EQ("", out.response_data);
   int64_t reads_size = CountReadBytes(data_reads, arraysize(data_reads));
@@ -882,7 +886,7 @@ TEST_P(HttpNetworkTransactionTest, ChunkedEncoding) {
   };
   SimpleGetHelperResult out = SimpleGetHelper(data_reads,
                                               arraysize(data_reads));
-  EXPECT_EQ(OK, out.rv);
+  EXPECT_THAT(out.rv, IsOk());
   EXPECT_EQ("HTTP/1.1 200 OK", out.status_line);
   EXPECT_EQ("Hello world", out.response_data);
   int64_t reads_size = CountReadBytes(data_reads, arraysize(data_reads));
@@ -901,7 +905,7 @@ TEST_P(HttpNetworkTransactionTest,
   };
   SimpleGetHelperResult out = SimpleGetHelper(data_reads,
                                               arraysize(data_reads));
-  EXPECT_EQ(ERR_RESPONSE_HEADERS_MULTIPLE_CONTENT_LENGTH, out.rv);
+  EXPECT_THAT(out.rv, IsError(ERR_RESPONSE_HEADERS_MULTIPLE_CONTENT_LENGTH));
 }
 
 TEST_P(HttpNetworkTransactionTest,
@@ -914,7 +918,7 @@ TEST_P(HttpNetworkTransactionTest,
   };
   SimpleGetHelperResult out = SimpleGetHelper(data_reads,
                                               arraysize(data_reads));
-  EXPECT_EQ(OK, out.rv);
+  EXPECT_THAT(out.rv, IsOk());
   EXPECT_EQ("HTTP/1.1 200 OK", out.status_line);
   EXPECT_EQ("Hello", out.response_data);
 }
@@ -932,7 +936,7 @@ TEST_P(HttpNetworkTransactionTest,
     };
     SimpleGetHelperResult out = SimpleGetHelper(data_reads,
                                                 arraysize(data_reads));
-    EXPECT_EQ(OK, out.rv);
+    EXPECT_THAT(out.rv, IsOk());
     EXPECT_EQ("HTTP/1.1 200 OK", out.status_line);
     EXPECT_EQ("Hello", out.response_data);
   }
@@ -947,7 +951,7 @@ TEST_P(HttpNetworkTransactionTest,
     };
     SimpleGetHelperResult out = SimpleGetHelper(data_reads,
                                                 arraysize(data_reads));
-    EXPECT_EQ(OK, out.rv);
+    EXPECT_THAT(out.rv, IsOk());
     EXPECT_EQ("HTTP/1.0 200 OK", out.status_line);
     EXPECT_EQ("Hello", out.response_data);
   }
@@ -961,7 +965,7 @@ TEST_P(HttpNetworkTransactionTest,
     };
     SimpleGetHelperResult out = SimpleGetHelper(data_reads,
                                                 arraysize(data_reads));
-    EXPECT_EQ(ERR_RESPONSE_HEADERS_MULTIPLE_CONTENT_LENGTH, out.rv);
+    EXPECT_THAT(out.rv, IsError(ERR_RESPONSE_HEADERS_MULTIPLE_CONTENT_LENGTH));
   }
 }
 
@@ -981,7 +985,7 @@ TEST_P(HttpNetworkTransactionTest,
   };
   SimpleGetHelperResult out = SimpleGetHelper(data_reads,
                                               arraysize(data_reads));
-  EXPECT_EQ(OK, out.rv);
+  EXPECT_THAT(out.rv, IsOk());
   EXPECT_EQ("HTTP/1.1 200 OK", out.status_line);
   EXPECT_EQ("Hello world", out.response_data);
 }
@@ -998,7 +1002,7 @@ TEST_P(HttpNetworkTransactionTest, SingleContentDispositionHeader) {
   };
   SimpleGetHelperResult out = SimpleGetHelper(data_reads,
                                               arraysize(data_reads));
-  EXPECT_EQ(OK, out.rv);
+  EXPECT_THAT(out.rv, IsOk());
   EXPECT_EQ("HTTP/1.1 200 OK", out.status_line);
   EXPECT_EQ("Hello", out.response_data);
 }
@@ -1015,7 +1019,7 @@ TEST_P(HttpNetworkTransactionTest,
   };
   SimpleGetHelperResult out = SimpleGetHelper(data_reads,
                                               arraysize(data_reads));
-  EXPECT_EQ(OK, out.rv);
+  EXPECT_THAT(out.rv, IsOk());
   EXPECT_EQ("HTTP/1.1 200 OK", out.status_line);
   EXPECT_EQ("Hello", out.response_data);
 }
@@ -1031,7 +1035,8 @@ TEST_P(HttpNetworkTransactionTest, TwoDistinctContentDispositionHeaders) {
   };
   SimpleGetHelperResult out = SimpleGetHelper(data_reads,
                                               arraysize(data_reads));
-  EXPECT_EQ(ERR_RESPONSE_HEADERS_MULTIPLE_CONTENT_DISPOSITION, out.rv);
+  EXPECT_THAT(out.rv,
+              IsError(ERR_RESPONSE_HEADERS_MULTIPLE_CONTENT_DISPOSITION));
 }
 
 // Checks that two identical Location headers result in no error.
@@ -1060,9 +1065,9 @@ TEST_P(HttpNetworkTransactionTest, TwoIdenticalLocationHeaders) {
   TestCompletionCallback callback;
 
   int rv = trans->Start(&request, callback.callback(), BoundNetLog());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
-  EXPECT_EQ(OK, callback.WaitForResult());
+  EXPECT_THAT(callback.WaitForResult(), IsOk());
 
   const HttpResponseInfo* response = trans->GetResponseInfo();
   ASSERT_TRUE(response);
@@ -1085,7 +1090,7 @@ TEST_P(HttpNetworkTransactionTest, TwoDistinctLocationHeaders) {
   };
   SimpleGetHelperResult out = SimpleGetHelper(data_reads,
                                               arraysize(data_reads));
-  EXPECT_EQ(ERR_RESPONSE_HEADERS_MULTIPLE_LOCATION, out.rv);
+  EXPECT_THAT(out.rv, IsError(ERR_RESPONSE_HEADERS_MULTIPLE_LOCATION));
 }
 
 // Do a request using the HEAD method. Verify that we don't try to read the
@@ -1124,10 +1129,10 @@ TEST_P(HttpNetworkTransactionTest, Head) {
   TestCompletionCallback callback1;
 
   int rv = trans->Start(&request, callback1.callback(), BoundNetLog());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   rv = callback1.WaitForResult();
-  EXPECT_EQ(OK, rv);
+  EXPECT_THAT(rv, IsOk());
 
   const HttpResponseInfo* response = trans->GetResponseInfo();
   ASSERT_TRUE(response);
@@ -1151,7 +1156,7 @@ TEST_P(HttpNetworkTransactionTest, Head) {
   // (despite non-zero content-length).
   std::string response_data;
   rv = ReadTransaction(trans.get(), &response_data);
-  EXPECT_EQ(OK, rv);
+  EXPECT_THAT(rv, IsOk());
   EXPECT_EQ("", response_data);
 }
 
@@ -1184,10 +1189,10 @@ TEST_P(HttpNetworkTransactionTest, ReuseConnection) {
     TestCompletionCallback callback;
 
     int rv = trans->Start(&request, callback.callback(), BoundNetLog());
-    EXPECT_EQ(ERR_IO_PENDING, rv);
+    EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
     rv = callback.WaitForResult();
-    EXPECT_EQ(OK, rv);
+    EXPECT_THAT(rv, IsOk());
 
     const HttpResponseInfo* response = trans->GetResponseInfo();
     ASSERT_TRUE(response);
@@ -1198,7 +1203,7 @@ TEST_P(HttpNetworkTransactionTest, ReuseConnection) {
 
     std::string response_data;
     rv = ReadTransaction(trans.get(), &response_data);
-    EXPECT_EQ(OK, rv);
+    EXPECT_THAT(rv, IsOk());
     EXPECT_EQ(kExpectedResponseData[i], response_data);
   }
 }
@@ -1231,10 +1236,10 @@ TEST_P(HttpNetworkTransactionTest, Ignores100) {
   TestCompletionCallback callback;
 
   int rv = trans->Start(&request, callback.callback(), BoundNetLog());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   rv = callback.WaitForResult();
-  EXPECT_EQ(OK, rv);
+  EXPECT_THAT(rv, IsOk());
 
   const HttpResponseInfo* response = trans->GetResponseInfo();
   ASSERT_TRUE(response);
@@ -1244,7 +1249,7 @@ TEST_P(HttpNetworkTransactionTest, Ignores100) {
 
   std::string response_data;
   rv = ReadTransaction(trans.get(), &response_data);
-  EXPECT_EQ(OK, rv);
+  EXPECT_THAT(rv, IsOk());
   EXPECT_EQ("hello world", response_data);
 }
 
@@ -1273,10 +1278,10 @@ TEST_P(HttpNetworkTransactionTest, Ignores1xx) {
   TestCompletionCallback callback;
 
   int rv = trans->Start(&request, callback.callback(), BoundNetLog());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   rv = callback.WaitForResult();
-  EXPECT_EQ(OK, rv);
+  EXPECT_THAT(rv, IsOk());
 
   const HttpResponseInfo* response = trans->GetResponseInfo();
   ASSERT_TRUE(response);
@@ -1286,7 +1291,7 @@ TEST_P(HttpNetworkTransactionTest, Ignores1xx) {
 
   std::string response_data;
   rv = ReadTransaction(trans.get(), &response_data);
-  EXPECT_EQ(OK, rv);
+  EXPECT_THAT(rv, IsOk());
   EXPECT_EQ("hello world", response_data);
 }
 
@@ -1310,14 +1315,14 @@ TEST_P(HttpNetworkTransactionTest, Incomplete100ThenEOF) {
   TestCompletionCallback callback;
 
   int rv = trans->Start(&request, callback.callback(), BoundNetLog());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   rv = callback.WaitForResult();
-  EXPECT_EQ(OK, rv);
+  EXPECT_THAT(rv, IsOk());
 
   std::string response_data;
   rv = ReadTransaction(trans.get(), &response_data);
-  EXPECT_EQ(OK, rv);
+  EXPECT_THAT(rv, IsOk());
   EXPECT_EQ("", response_data);
 }
 
@@ -1340,10 +1345,10 @@ TEST_P(HttpNetworkTransactionTest, EmptyResponse) {
   TestCompletionCallback callback;
 
   int rv = trans->Start(&request, callback.callback(), BoundNetLog());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   rv = callback.WaitForResult();
-  EXPECT_EQ(ERR_EMPTY_RESPONSE, rv);
+  EXPECT_THAT(rv, IsError(ERR_EMPTY_RESPONSE));
 }
 
 void HttpNetworkTransactionTest::KeepAliveConnectionResendRequestTest(
@@ -1407,10 +1412,10 @@ void HttpNetworkTransactionTest::KeepAliveConnectionResendRequestTest(
         new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
     int rv = trans->Start(&request, callback.callback(), BoundNetLog());
-    EXPECT_EQ(ERR_IO_PENDING, rv);
+    EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
     rv = callback.WaitForResult();
-    EXPECT_EQ(OK, rv);
+    EXPECT_THAT(rv, IsOk());
 
     LoadTimingInfo load_timing_info;
     EXPECT_TRUE(trans->GetLoadTimingInfo(&load_timing_info));
@@ -1430,7 +1435,7 @@ void HttpNetworkTransactionTest::KeepAliveConnectionResendRequestTest(
 
     std::string response_data;
     rv = ReadTransaction(trans.get(), &response_data);
-    EXPECT_EQ(OK, rv);
+    EXPECT_THAT(rv, IsOk());
     EXPECT_EQ(kExpectedResponseData[i], response_data);
   }
 }
@@ -1528,10 +1533,10 @@ void HttpNetworkTransactionTest::PreconnectErrorResendRequestTest(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
   int rv = trans->Start(&request, callback.callback(), BoundNetLog());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   rv = callback.WaitForResult();
-  EXPECT_EQ(OK, rv);
+  EXPECT_THAT(rv, IsOk());
 
   LoadTimingInfo load_timing_info;
   EXPECT_TRUE(trans->GetLoadTimingInfo(&load_timing_info));
@@ -1551,7 +1556,7 @@ void HttpNetworkTransactionTest::PreconnectErrorResendRequestTest(
 
   std::string response_data;
   rv = ReadTransaction(trans.get(), &response_data);
-  EXPECT_EQ(OK, rv);
+  EXPECT_THAT(rv, IsOk());
   EXPECT_EQ(kHttpData, response_data);
 }
 
@@ -1658,10 +1663,10 @@ TEST_P(HttpNetworkTransactionTest, NonKeepAliveConnectionReset) {
   TestCompletionCallback callback;
 
   int rv = trans->Start(&request, callback.callback(), BoundNetLog());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   rv = callback.WaitForResult();
-  EXPECT_EQ(ERR_CONNECTION_RESET, rv);
+  EXPECT_THAT(rv, IsError(ERR_CONNECTION_RESET));
 
   IPEndPoint endpoint;
   EXPECT_TRUE(trans->GetRemoteEndpoint(&endpoint));
@@ -1686,7 +1691,7 @@ TEST_P(HttpNetworkTransactionTest, NonKeepAliveConnectionEOF) {
   };
   SimpleGetHelperResult out = SimpleGetHelper(data_reads,
                                               arraysize(data_reads));
-  EXPECT_EQ(ERR_EMPTY_RESPONSE, out.rv);
+  EXPECT_THAT(out.rv, IsError(ERR_EMPTY_RESPONSE));
 }
 
 // Test that network access can be deferred and resumed.
@@ -1718,7 +1723,7 @@ TEST_P(HttpNetworkTransactionTest, ThrottleBeforeNetworkStart) {
   TestCompletionCallback callback;
 
   int rv = trans->Start(&request, callback.callback(), BoundNetLog());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
   base::RunLoop().RunUntilIdle();
 
   // Should have deferred for network start.
@@ -1727,7 +1732,7 @@ TEST_P(HttpNetworkTransactionTest, ThrottleBeforeNetworkStart) {
 
   trans->ResumeNetworkStart();
   rv = callback.WaitForResult();
-  EXPECT_EQ(OK, rv);
+  EXPECT_THAT(rv, IsOk());
   EXPECT_TRUE(trans->GetResponseInfo());
 
   scoped_refptr<IOBufferWithSize> io_buf(new IOBufferWithSize(100));
@@ -1758,7 +1763,7 @@ TEST_P(HttpNetworkTransactionTest, ThrottleAndCancelBeforeNetworkStart) {
   TestCompletionCallback callback;
 
   int rv = trans->Start(&request, callback.callback(), BoundNetLog());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
   base::RunLoop().RunUntilIdle();
 
   // Should have deferred for network start.
@@ -1793,10 +1798,10 @@ TEST_P(HttpNetworkTransactionTest, KeepAliveEarlyClose) {
   TestCompletionCallback callback;
 
   int rv = trans->Start(&request, callback.callback(), BoundNetLog());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   rv = callback.WaitForResult();
-  EXPECT_EQ(OK, rv);
+  EXPECT_THAT(rv, IsOk());
 
   scoped_refptr<IOBufferWithSize> io_buf(new IOBufferWithSize(100));
   rv = trans->Read(io_buf.get(), io_buf->size(), callback.callback());
@@ -1804,7 +1809,7 @@ TEST_P(HttpNetworkTransactionTest, KeepAliveEarlyClose) {
     rv = callback.WaitForResult();
   EXPECT_EQ(5, rv);
   rv = trans->Read(io_buf.get(), io_buf->size(), callback.callback());
-  EXPECT_EQ(ERR_CONTENT_LENGTH_MISMATCH, rv);
+  EXPECT_THAT(rv, IsError(ERR_CONTENT_LENGTH_MISMATCH));
 
   trans.reset();
   base::RunLoop().RunUntilIdle();
@@ -1833,16 +1838,16 @@ TEST_P(HttpNetworkTransactionTest, KeepAliveEarlyClose2) {
   TestCompletionCallback callback;
 
   int rv = trans->Start(&request, callback.callback(), BoundNetLog());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   rv = callback.WaitForResult();
-  EXPECT_EQ(OK, rv);
+  EXPECT_THAT(rv, IsOk());
 
   scoped_refptr<IOBufferWithSize> io_buf(new IOBufferWithSize(100));
   rv = trans->Read(io_buf.get(), io_buf->size(), callback.callback());
   if (rv == ERR_IO_PENDING)
     rv = callback.WaitForResult();
-  EXPECT_EQ(ERR_CONTENT_LENGTH_MISMATCH, rv);
+  EXPECT_THAT(rv, IsError(ERR_CONTENT_LENGTH_MISMATCH));
 
   trans.reset();
   base::RunLoop().RunUntilIdle();
@@ -1930,7 +1935,7 @@ TEST_P(HttpNetworkTransactionTest, KeepAliveAfterUnreadBody) {
         new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
     int rv = trans->Start(&request, callback.callback(), BoundNetLog());
-    EXPECT_EQ(OK, callback.GetResult(rv));
+    EXPECT_THAT(callback.GetResult(rv), IsOk());
 
     LoadTimingInfo load_timing_info;
     EXPECT_TRUE(trans->GetLoadTimingInfo(&load_timing_info));
@@ -1976,14 +1981,14 @@ TEST_P(HttpNetworkTransactionTest, KeepAliveAfterUnreadBody) {
   std::unique_ptr<HttpTransaction> trans(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
   int rv = trans->Start(&request, callback.callback(), BoundNetLog());
-  EXPECT_EQ(OK, callback.GetResult(rv));
+  EXPECT_THAT(callback.GetResult(rv), IsOk());
   const HttpResponseInfo* response = trans->GetResponseInfo();
   ASSERT_TRUE(response);
   ASSERT_TRUE(response->headers);
   EXPECT_EQ("HTTP/1.1 200 OK", response->headers->GetStatusLine());
   std::string response_data;
   rv = ReadTransaction(trans.get(), &response_data);
-  EXPECT_EQ(OK, rv);
+  EXPECT_THAT(rv, IsOk());
   EXPECT_EQ("hello", response_data);
 }
 
@@ -2030,7 +2035,7 @@ TEST_P(HttpNetworkTransactionTest, KeepAliveWithUnusedData1) {
   std::unique_ptr<HttpTransaction> trans1(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
   int rv = trans1->Start(&request1, callback.callback(), BoundNetLog());
-  EXPECT_EQ(OK, callback.GetResult(rv));
+  EXPECT_THAT(callback.GetResult(rv), IsOk());
 
   const HttpResponseInfo* response1 = trans1->GetResponseInfo();
   ASSERT_TRUE(response1);
@@ -2039,7 +2044,7 @@ TEST_P(HttpNetworkTransactionTest, KeepAliveWithUnusedData1) {
   EXPECT_TRUE(response1->headers->IsKeepAlive());
 
   std::string response_data1;
-  EXPECT_EQ(OK, ReadTransaction(trans1.get(), &response_data1));
+  EXPECT_THAT(ReadTransaction(trans1.get(), &response_data1), IsOk());
   EXPECT_EQ("", response_data1);
   // Deleting the transaction attempts to release the socket back into the
   // socket pool.
@@ -2052,7 +2057,7 @@ TEST_P(HttpNetworkTransactionTest, KeepAliveWithUnusedData1) {
   std::unique_ptr<HttpTransaction> trans2(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
   rv = trans2->Start(&request2, callback.callback(), BoundNetLog());
-  EXPECT_EQ(OK, callback.GetResult(rv));
+  EXPECT_THAT(callback.GetResult(rv), IsOk());
 
   const HttpResponseInfo* response2 = trans2->GetResponseInfo();
   ASSERT_TRUE(response2);
@@ -2060,7 +2065,7 @@ TEST_P(HttpNetworkTransactionTest, KeepAliveWithUnusedData1) {
   EXPECT_EQ(200, response2->headers->response_code());
 
   std::string response_data2;
-  EXPECT_EQ(OK, ReadTransaction(trans2.get(), &response_data2));
+  EXPECT_THAT(ReadTransaction(trans2.get(), &response_data2), IsOk());
   EXPECT_EQ("foo", response_data2);
 }
 
@@ -2106,7 +2111,7 @@ TEST_P(HttpNetworkTransactionTest, KeepAliveWithUnusedData2) {
   std::unique_ptr<HttpTransaction> trans1(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
   int rv = trans1->Start(&request1, callback.callback(), BoundNetLog());
-  EXPECT_EQ(OK, callback.GetResult(rv));
+  EXPECT_THAT(callback.GetResult(rv), IsOk());
 
   const HttpResponseInfo* response1 = trans1->GetResponseInfo();
   ASSERT_TRUE(response1);
@@ -2115,7 +2120,7 @@ TEST_P(HttpNetworkTransactionTest, KeepAliveWithUnusedData2) {
   EXPECT_TRUE(response1->headers->IsKeepAlive());
 
   std::string response_data1;
-  EXPECT_EQ(OK, ReadTransaction(trans1.get(), &response_data1));
+  EXPECT_THAT(ReadTransaction(trans1.get(), &response_data1), IsOk());
   EXPECT_EQ("This server is borked.", response_data1);
   // Deleting the transaction attempts to release the socket back into the
   // socket pool.
@@ -2128,7 +2133,7 @@ TEST_P(HttpNetworkTransactionTest, KeepAliveWithUnusedData2) {
   std::unique_ptr<HttpTransaction> trans2(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
   rv = trans2->Start(&request2, callback.callback(), BoundNetLog());
-  EXPECT_EQ(OK, callback.GetResult(rv));
+  EXPECT_THAT(callback.GetResult(rv), IsOk());
 
   const HttpResponseInfo* response2 = trans2->GetResponseInfo();
   ASSERT_TRUE(response2);
@@ -2136,7 +2141,7 @@ TEST_P(HttpNetworkTransactionTest, KeepAliveWithUnusedData2) {
   EXPECT_EQ(200, response2->headers->response_code());
 
   std::string response_data2;
-  EXPECT_EQ(OK, ReadTransaction(trans2.get(), &response_data2));
+  EXPECT_THAT(ReadTransaction(trans2.get(), &response_data2), IsOk());
   EXPECT_EQ("foo", response_data2);
 }
 
@@ -2182,7 +2187,7 @@ TEST_P(HttpNetworkTransactionTest, KeepAliveWithUnusedData3) {
   std::unique_ptr<HttpTransaction> trans1(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
   int rv = trans1->Start(&request1, callback.callback(), BoundNetLog());
-  EXPECT_EQ(OK, callback.GetResult(rv));
+  EXPECT_THAT(callback.GetResult(rv), IsOk());
 
   const HttpResponseInfo* response1 = trans1->GetResponseInfo();
   ASSERT_TRUE(response1);
@@ -2191,7 +2196,7 @@ TEST_P(HttpNetworkTransactionTest, KeepAliveWithUnusedData3) {
   EXPECT_TRUE(response1->headers->IsKeepAlive());
 
   std::string response_data1;
-  EXPECT_EQ(OK, ReadTransaction(trans1.get(), &response_data1));
+  EXPECT_THAT(ReadTransaction(trans1.get(), &response_data1), IsOk());
   EXPECT_EQ("This server is borked.", response_data1);
   // Deleting the transaction attempts to release the socket back into the
   // socket pool.
@@ -2204,7 +2209,7 @@ TEST_P(HttpNetworkTransactionTest, KeepAliveWithUnusedData3) {
   std::unique_ptr<HttpTransaction> trans2(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
   rv = trans2->Start(&request2, callback.callback(), BoundNetLog());
-  EXPECT_EQ(OK, callback.GetResult(rv));
+  EXPECT_THAT(callback.GetResult(rv), IsOk());
 
   const HttpResponseInfo* response2 = trans2->GetResponseInfo();
   ASSERT_TRUE(response2);
@@ -2212,7 +2217,7 @@ TEST_P(HttpNetworkTransactionTest, KeepAliveWithUnusedData3) {
   EXPECT_EQ(200, response2->headers->response_code());
 
   std::string response_data2;
-  EXPECT_EQ(OK, ReadTransaction(trans2.get(), &response_data2));
+  EXPECT_THAT(ReadTransaction(trans2.get(), &response_data2), IsOk());
   EXPECT_EQ("foo", response_data2);
 }
 
@@ -2247,7 +2252,7 @@ TEST_P(HttpNetworkTransactionTest, KeepAliveWithUnusedData4) {
   std::unique_ptr<HttpTransaction> trans1(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
   int rv = trans1->Start(&request1, callback.callback(), BoundNetLog());
-  EXPECT_EQ(OK, callback.GetResult(rv));
+  EXPECT_THAT(callback.GetResult(rv), IsOk());
 
   const HttpResponseInfo* response1 = trans1->GetResponseInfo();
   ASSERT_TRUE(response1);
@@ -2329,10 +2334,10 @@ TEST_P(HttpNetworkTransactionTest, BasicAuth) {
   TestCompletionCallback callback1;
 
   int rv = trans->Start(&request, callback1.callback(), BoundNetLog());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   rv = callback1.WaitForResult();
-  EXPECT_EQ(OK, rv);
+  EXPECT_THAT(rv, IsOk());
 
   LoadTimingInfo load_timing_info1;
   EXPECT_TRUE(trans->GetLoadTimingInfo(&load_timing_info1));
@@ -2351,10 +2356,10 @@ TEST_P(HttpNetworkTransactionTest, BasicAuth) {
 
   rv = trans->RestartWithAuth(
       AuthCredentials(kFoo, kBar), callback2.callback());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   rv = callback2.WaitForResult();
-  EXPECT_EQ(OK, rv);
+  EXPECT_THAT(rv, IsOk());
 
   LoadTimingInfo load_timing_info2;
   EXPECT_TRUE(trans->GetLoadTimingInfo(&load_timing_info2));
@@ -2524,7 +2529,7 @@ TEST_P(HttpNetworkTransactionTest, DoNotSendAuth) {
   TestCompletionCallback callback;
 
   int rv = trans->Start(&request, callback.callback(), BoundNetLog());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   rv = callback.WaitForResult();
   EXPECT_EQ(0, rv);
@@ -2594,7 +2599,7 @@ TEST_P(HttpNetworkTransactionTest, BasicAuthKeepAlive) {
     std::unique_ptr<HttpTransaction> trans(
         new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
     int rv = trans->Start(&request, callback1.callback(), BoundNetLog());
-    ASSERT_EQ(OK, callback1.GetResult(rv));
+    ASSERT_THAT(callback1.GetResult(rv), IsOk());
 
     LoadTimingInfo load_timing_info1;
     EXPECT_TRUE(trans->GetLoadTimingInfo(&load_timing_info1));
@@ -2608,7 +2613,7 @@ TEST_P(HttpNetworkTransactionTest, BasicAuthKeepAlive) {
 
     rv = trans->RestartWithAuth(AuthCredentials(kFoo, kBar),
                                 callback2.callback());
-    ASSERT_EQ(OK, callback2.GetResult(rv));
+    ASSERT_THAT(callback2.GetResult(rv), IsOk());
 
     LoadTimingInfo load_timing_info2;
     EXPECT_TRUE(trans->GetLoadTimingInfo(&load_timing_info2));
@@ -2625,7 +2630,7 @@ TEST_P(HttpNetworkTransactionTest, BasicAuthKeepAlive) {
     EXPECT_EQ(5, response->headers->GetContentLength());
 
     std::string response_data;
-    EXPECT_EQ(OK, ReadTransaction(trans.get(), &response_data));
+    EXPECT_THAT(ReadTransaction(trans.get(), &response_data), IsOk());
 
     int64_t writes_size = CountWriteBytes(data_writes, arraysize(data_writes));
     EXPECT_EQ(writes_size, trans->GetTotalSentBytes());
@@ -2688,10 +2693,10 @@ TEST_P(HttpNetworkTransactionTest, BasicAuthKeepAliveNoBody) {
   std::unique_ptr<HttpTransaction> trans(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
   int rv = trans->Start(&request, callback1.callback(), BoundNetLog());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   rv = callback1.WaitForResult();
-  EXPECT_EQ(OK, rv);
+  EXPECT_THAT(rv, IsOk());
 
   const HttpResponseInfo* response = trans->GetResponseInfo();
   ASSERT_TRUE(response);
@@ -2701,10 +2706,10 @@ TEST_P(HttpNetworkTransactionTest, BasicAuthKeepAliveNoBody) {
 
   rv = trans->RestartWithAuth(
       AuthCredentials(kFoo, kBar), callback2.callback());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   rv = callback2.WaitForResult();
-  EXPECT_EQ(OK, rv);
+  EXPECT_THAT(rv, IsOk());
 
   response = trans->GetResponseInfo();
   ASSERT_TRUE(response);
@@ -2774,10 +2779,10 @@ TEST_P(HttpNetworkTransactionTest, BasicAuthKeepAliveLargeBody) {
   std::unique_ptr<HttpTransaction> trans(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
   int rv = trans->Start(&request, callback1.callback(), BoundNetLog());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   rv = callback1.WaitForResult();
-  EXPECT_EQ(OK, rv);
+  EXPECT_THAT(rv, IsOk());
 
   const HttpResponseInfo* response = trans->GetResponseInfo();
   ASSERT_TRUE(response);
@@ -2787,10 +2792,10 @@ TEST_P(HttpNetworkTransactionTest, BasicAuthKeepAliveLargeBody) {
 
   rv = trans->RestartWithAuth(
       AuthCredentials(kFoo, kBar), callback2.callback());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   rv = callback2.WaitForResult();
-  EXPECT_EQ(OK, rv);
+  EXPECT_THAT(rv, IsOk());
 
   response = trans->GetResponseInfo();
   ASSERT_TRUE(response);
@@ -2863,10 +2868,10 @@ TEST_P(HttpNetworkTransactionTest, BasicAuthKeepAliveImpatientServer) {
   std::unique_ptr<HttpTransaction> trans(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
   int rv = trans->Start(&request, callback1.callback(), BoundNetLog());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   rv = callback1.WaitForResult();
-  EXPECT_EQ(OK, rv);
+  EXPECT_THAT(rv, IsOk());
 
   const HttpResponseInfo* response = trans->GetResponseInfo();
   ASSERT_TRUE(response);
@@ -2876,10 +2881,10 @@ TEST_P(HttpNetworkTransactionTest, BasicAuthKeepAliveImpatientServer) {
 
   rv = trans->RestartWithAuth(
       AuthCredentials(kFoo, kBar), callback2.callback());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   rv = callback2.WaitForResult();
-  EXPECT_EQ(OK, rv);
+  EXPECT_THAT(rv, IsOk());
 
   response = trans->GetResponseInfo();
   ASSERT_TRUE(response);
@@ -2957,10 +2962,10 @@ TEST_P(HttpNetworkTransactionTest, BasicAuthProxyNoKeepAliveHttp10) {
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
   int rv = trans->Start(&request, callback1.callback(), log.bound());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   rv = callback1.WaitForResult();
-  EXPECT_EQ(OK, rv);
+  EXPECT_THAT(rv, IsOk());
   TestNetLogEntry::List entries;
   log.GetEntries(&entries);
   size_t pos = ExpectLogContainsSomewhere(
@@ -2987,10 +2992,10 @@ TEST_P(HttpNetworkTransactionTest, BasicAuthProxyNoKeepAliveHttp10) {
 
   rv =
       trans->RestartWithAuth(AuthCredentials(kFoo, kBar), callback2.callback());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   rv = callback2.WaitForResult();
-  EXPECT_EQ(OK, rv);
+  EXPECT_THAT(rv, IsOk());
 
   response = trans->GetResponseInfo();
   ASSERT_TRUE(response);
@@ -3080,10 +3085,10 @@ TEST_P(HttpNetworkTransactionTest, BasicAuthProxyNoKeepAliveHttp11) {
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
   int rv = trans->Start(&request, callback1.callback(), log.bound());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   rv = callback1.WaitForResult();
-  EXPECT_EQ(OK, rv);
+  EXPECT_THAT(rv, IsOk());
   TestNetLogEntry::List entries;
   log.GetEntries(&entries);
   size_t pos = ExpectLogContainsSomewhere(
@@ -3111,10 +3116,10 @@ TEST_P(HttpNetworkTransactionTest, BasicAuthProxyNoKeepAliveHttp11) {
 
   rv = trans->RestartWithAuth(
       AuthCredentials(kFoo, kBar), callback2.callback());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   rv = callback2.WaitForResult();
-  EXPECT_EQ(OK, rv);
+  EXPECT_THAT(rv, IsOk());
 
   response = trans->GetResponseInfo();
   ASSERT_TRUE(response);
@@ -3203,7 +3208,7 @@ TEST_P(HttpNetworkTransactionTest, BasicAuthProxyKeepAliveHttp10) {
     TestCompletionCallback callback1;
 
     int rv = trans->Start(&request, callback1.callback(), log.bound());
-    EXPECT_EQ(OK, callback1.GetResult(rv));
+    EXPECT_THAT(callback1.GetResult(rv), IsOk());
 
     TestNetLogEntry::List entries;
     log.GetEntries(&entries);
@@ -3229,7 +3234,7 @@ TEST_P(HttpNetworkTransactionTest, BasicAuthProxyKeepAliveHttp10) {
     // Wrong password (should be "bar").
     rv = trans->RestartWithAuth(AuthCredentials(kFoo, kBaz),
                                 callback2.callback());
-    EXPECT_EQ(OK, callback2.GetResult(rv));
+    EXPECT_THAT(callback2.GetResult(rv), IsOk());
 
     response = trans->GetResponseInfo();
     ASSERT_TRUE(response);
@@ -3312,7 +3317,7 @@ TEST_P(HttpNetworkTransactionTest, BasicAuthProxyKeepAliveHttp11) {
     TestCompletionCallback callback1;
 
     int rv = trans->Start(&request, callback1.callback(), log.bound());
-    EXPECT_EQ(OK, callback1.GetResult(rv));
+    EXPECT_THAT(callback1.GetResult(rv), IsOk());
 
     TestNetLogEntry::List entries;
     log.GetEntries(&entries);
@@ -3338,7 +3343,7 @@ TEST_P(HttpNetworkTransactionTest, BasicAuthProxyKeepAliveHttp11) {
     // Wrong password (should be "bar").
     rv = trans->RestartWithAuth(AuthCredentials(kFoo, kBaz),
                                 callback2.callback());
-    EXPECT_EQ(OK, callback2.GetResult(rv));
+    EXPECT_THAT(callback2.GetResult(rv), IsOk());
 
     response = trans->GetResponseInfo();
     ASSERT_TRUE(response);
@@ -3435,7 +3440,7 @@ TEST_P(HttpNetworkTransactionTest, BasicAuthProxyKeepAliveExtraData) {
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
   int rv = trans->Start(&request, callback1.callback(), log.bound());
-  EXPECT_EQ(OK, callback1.GetResult(rv));
+  EXPECT_THAT(callback1.GetResult(rv), IsOk());
 
   TestNetLogEntry::List entries;
   log.GetEntries(&entries);
@@ -3464,7 +3469,7 @@ TEST_P(HttpNetworkTransactionTest, BasicAuthProxyKeepAliveExtraData) {
 
   rv =
       trans->RestartWithAuth(AuthCredentials(kFoo, kBar), callback2.callback());
-  EXPECT_EQ(OK, callback2.GetResult(rv));
+  EXPECT_THAT(callback2.GetResult(rv), IsOk());
 
   EXPECT_TRUE(response->headers->IsKeepAlive());
   EXPECT_EQ(200, response->headers->response_code());
@@ -3551,7 +3556,7 @@ TEST_P(HttpNetworkTransactionTest, BasicAuthProxyKeepAliveHangupDuringBody) {
   TestCompletionCallback callback;
 
   int rv = trans->Start(&request, callback.callback(), BoundNetLog());
-  EXPECT_EQ(OK, callback.GetResult(rv));
+  EXPECT_THAT(callback.GetResult(rv), IsOk());
 
   const HttpResponseInfo* response = trans->GetResponseInfo();
   ASSERT_TRUE(response);
@@ -3561,7 +3566,7 @@ TEST_P(HttpNetworkTransactionTest, BasicAuthProxyKeepAliveHangupDuringBody) {
   EXPECT_TRUE(CheckBasicProxyAuth(response->auth_challenge.get()));
 
   rv = trans->RestartWithAuth(AuthCredentials(kFoo, kBar), callback.callback());
-  EXPECT_EQ(OK, callback.GetResult(rv));
+  EXPECT_THAT(callback.GetResult(rv), IsOk());
 
   response = trans->GetResponseInfo();
   ASSERT_TRUE(response);
@@ -3569,7 +3574,7 @@ TEST_P(HttpNetworkTransactionTest, BasicAuthProxyKeepAliveHangupDuringBody) {
   EXPECT_TRUE(response->headers->IsKeepAlive());
   EXPECT_EQ(200, response->headers->response_code());
   std::string body;
-  EXPECT_EQ(OK, ReadTransaction(trans.get(), &body));
+  EXPECT_THAT(ReadTransaction(trans.get(), &body), IsOk());
   EXPECT_EQ("hello", body);
 }
 
@@ -3612,10 +3617,10 @@ TEST_P(HttpNetworkTransactionTest, BasicAuthProxyCancelTunnel) {
   TestCompletionCallback callback;
 
   int rv = trans->Start(&request, callback.callback(), BoundNetLog());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   rv = callback.WaitForResult();
-  EXPECT_EQ(OK, rv);
+  EXPECT_THAT(rv, IsOk());
 
   const HttpResponseInfo* response = trans->GetResponseInfo();
   ASSERT_TRUE(response);
@@ -3626,7 +3631,7 @@ TEST_P(HttpNetworkTransactionTest, BasicAuthProxyCancelTunnel) {
 
   std::string response_data;
   rv = ReadTransaction(trans.get(), &response_data);
-  EXPECT_EQ(ERR_TUNNEL_CONNECTION_FAILED, rv);
+  EXPECT_THAT(rv, IsError(ERR_TUNNEL_CONNECTION_FAILED));
 
   // Flush the idle socket before the HttpNetworkTransaction goes out of scope.
   session->CloseAllConnections();
@@ -3672,10 +3677,10 @@ TEST_P(HttpNetworkTransactionTest, SanitizeProxyAuthHeaders) {
   TestCompletionCallback callback;
 
   int rv = trans->Start(&request, callback.callback(), BoundNetLog());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   rv = callback.WaitForResult();
-  EXPECT_EQ(OK, rv);
+  EXPECT_THAT(rv, IsOk());
 
   const HttpResponseInfo* response = trans->GetResponseInfo();
   ASSERT_TRUE(response);
@@ -3688,7 +3693,7 @@ TEST_P(HttpNetworkTransactionTest, SanitizeProxyAuthHeaders) {
 
   std::string response_data;
   rv = ReadTransaction(trans.get(), &response_data);
-  EXPECT_EQ(ERR_TUNNEL_CONNECTION_FAILED, rv);
+  EXPECT_THAT(rv, IsError(ERR_TUNNEL_CONNECTION_FAILED));
 
   // Flush the idle socket before the HttpNetworkTransaction goes out of scope.
   session->CloseAllConnections();
@@ -3729,10 +3734,10 @@ TEST_P(HttpNetworkTransactionTest, UnexpectedProxyAuth) {
   TestCompletionCallback callback;
 
   int rv = trans->Start(&request, callback.callback(), BoundNetLog());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   rv = callback.WaitForResult();
-  EXPECT_EQ(ERR_UNEXPECTED_PROXY_AUTH, rv);
+  EXPECT_THAT(rv, IsError(ERR_UNEXPECTED_PROXY_AUTH));
 }
 
 // Tests when an HTTPS server (non-proxy) returns a 407 (proxy-authentication)
@@ -3785,10 +3790,10 @@ TEST_P(HttpNetworkTransactionTest,
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
   int rv = trans->Start(&request, callback1.callback(), log.bound());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   rv = callback1.WaitForResult();
-  EXPECT_EQ(ERR_UNEXPECTED_PROXY_AUTH, rv);
+  EXPECT_THAT(rv, IsError(ERR_UNEXPECTED_PROXY_AUTH));
   TestNetLogEntry::List entries;
   log.GetEntries(&entries);
   size_t pos = ExpectLogContainsSomewhere(
@@ -3880,7 +3885,7 @@ TEST_P(HttpNetworkTransactionTest,
 
   TestCompletionCallback callback;
   int rv = trans->Start(&request, callback.callback(), BoundNetLog());
-  EXPECT_EQ(OK, callback.GetResult(rv));
+  EXPECT_THAT(callback.GetResult(rv), IsOk());
 
   const HttpResponseInfo* response = trans->GetResponseInfo();
   ASSERT_TRUE(response);
@@ -3897,7 +3902,7 @@ TEST_P(HttpNetworkTransactionTest,
   EXPECT_FALSE(trans->GetLoadTimingInfo(&load_timing_info));
 
   rv = trans->RestartWithAuth(AuthCredentials(), callback.callback());
-  EXPECT_EQ(OK, callback.GetResult(rv));
+  EXPECT_THAT(callback.GetResult(rv), IsOk());
   response = trans->GetResponseInfo();
   ASSERT_TRUE(response);
   ASSERT_TRUE(response->headers);
@@ -4000,7 +4005,7 @@ TEST_P(HttpNetworkTransactionTest,
 
   TestCompletionCallback callback;
   int rv = trans->Start(&request, callback.callback(), BoundNetLog());
-  EXPECT_EQ(OK, callback.GetResult(rv));
+  EXPECT_THAT(callback.GetResult(rv), IsOk());
 
   const HttpResponseInfo* response = trans->GetResponseInfo();
   ASSERT_TRUE(response);
@@ -4017,7 +4022,7 @@ TEST_P(HttpNetworkTransactionTest,
   EXPECT_FALSE(trans->GetLoadTimingInfo(&load_timing_info));
 
   rv = trans->RestartWithAuth(AuthCredentials(), callback.callback());
-  EXPECT_EQ(OK, callback.GetResult(rv));
+  EXPECT_THAT(callback.GetResult(rv), IsOk());
 
   response = trans->GetResponseInfo();
   ASSERT_TRUE(response);
@@ -4115,7 +4120,7 @@ TEST_P(HttpNetworkTransactionTest,
 
   TestCompletionCallback callback;
   int rv = trans->Start(&request, callback.callback(), BoundNetLog());
-  EXPECT_EQ(OK, callback.GetResult(rv));
+  EXPECT_THAT(callback.GetResult(rv), IsOk());
 
   const HttpResponseInfo* response = trans->GetResponseInfo();
   ASSERT_TRUE(response);
@@ -4130,7 +4135,7 @@ TEST_P(HttpNetworkTransactionTest,
   EXPECT_FALSE(trans->GetLoadTimingInfo(&load_timing_info));
 
   rv = trans->RestartWithAuth(AuthCredentials(), callback.callback());
-  EXPECT_EQ(ERR_EMPTY_RESPONSE, callback.GetResult(rv));
+  EXPECT_THAT(callback.GetResult(rv), IsError(ERR_EMPTY_RESPONSE));
 
   trans.reset();
   session->CloseAllConnections();
@@ -4214,7 +4219,7 @@ TEST_P(HttpNetworkTransactionTest,
 
   TestCompletionCallback callback;
   int rv = trans->Start(&request, callback.callback(), BoundNetLog());
-  EXPECT_EQ(OK, callback.GetResult(rv));
+  EXPECT_THAT(callback.GetResult(rv), IsOk());
 
   const HttpResponseInfo* response = trans->GetResponseInfo();
   ASSERT_TRUE(response);
@@ -4228,7 +4233,7 @@ TEST_P(HttpNetworkTransactionTest,
   EXPECT_FALSE(trans->GetLoadTimingInfo(&load_timing_info));
 
   rv = trans->RestartWithAuth(AuthCredentials(), callback.callback());
-  EXPECT_EQ(OK, callback.GetResult(rv));
+  EXPECT_THAT(callback.GetResult(rv), IsOk());
   response = trans->GetResponseInfo();
   ASSERT_TRUE(response);
   ASSERT_TRUE(response->headers);
@@ -4296,10 +4301,10 @@ TEST_P(HttpNetworkTransactionTest, HttpProxyLoadTimingNoPacTwoRequests) {
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
   int rv = trans1->Start(&request1, callback1.callback(), log.bound());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   rv = callback1.WaitForResult();
-  EXPECT_EQ(OK, rv);
+  EXPECT_THAT(rv, IsOk());
 
   const HttpResponseInfo* response1 = trans1->GetResponseInfo();
   ASSERT_TRUE(response1);
@@ -4317,10 +4322,10 @@ TEST_P(HttpNetworkTransactionTest, HttpProxyLoadTimingNoPacTwoRequests) {
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
   rv = trans2->Start(&request2, callback2.callback(), log.bound());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   rv = callback2.WaitForResult();
-  EXPECT_EQ(OK, rv);
+  EXPECT_THAT(rv, IsOk());
 
   const HttpResponseInfo* response2 = trans2->GetResponseInfo();
   ASSERT_TRUE(response2);
@@ -4394,10 +4399,10 @@ TEST_P(HttpNetworkTransactionTest, HttpProxyLoadTimingWithPacTwoRequests) {
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
   int rv = trans1->Start(&request1, callback1.callback(), log.bound());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   rv = callback1.WaitForResult();
-  EXPECT_EQ(OK, rv);
+  EXPECT_THAT(rv, IsOk());
 
   const HttpResponseInfo* response1 = trans1->GetResponseInfo();
   ASSERT_TRUE(response1);
@@ -4416,10 +4421,10 @@ TEST_P(HttpNetworkTransactionTest, HttpProxyLoadTimingWithPacTwoRequests) {
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
   rv = trans2->Start(&request2, callback2.callback(), log.bound());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   rv = callback2.WaitForResult();
-  EXPECT_EQ(OK, rv);
+  EXPECT_THAT(rv, IsOk());
 
   const HttpResponseInfo* response2 = trans2->GetResponseInfo();
   ASSERT_TRUE(response2);
@@ -4475,10 +4480,10 @@ TEST_P(HttpNetworkTransactionTest, HttpsProxyGet) {
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
   int rv = trans->Start(&request, callback1.callback(), log.bound());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   rv = callback1.WaitForResult();
-  EXPECT_EQ(OK, rv);
+  EXPECT_THAT(rv, IsOk());
 
   LoadTimingInfo load_timing_info;
   EXPECT_TRUE(trans->GetLoadTimingInfo(&load_timing_info));
@@ -4537,10 +4542,10 @@ TEST_P(HttpNetworkTransactionTest, HttpsProxySpdyGet) {
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
   int rv = trans->Start(&request, callback1.callback(), log.bound());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   rv = callback1.WaitForResult();
-  EXPECT_EQ(OK, rv);
+  EXPECT_THAT(rv, IsOk());
 
   LoadTimingInfo load_timing_info;
   EXPECT_TRUE(trans->GetLoadTimingInfo(&load_timing_info));
@@ -4553,7 +4558,7 @@ TEST_P(HttpNetworkTransactionTest, HttpsProxySpdyGet) {
   EXPECT_EQ("HTTP/1.1 200", response->headers->GetStatusLine());
 
   std::string response_data;
-  ASSERT_EQ(OK, ReadTransaction(trans.get(), &response_data));
+  ASSERT_THAT(ReadTransaction(trans.get(), &response_data), IsOk());
   EXPECT_EQ(kUploadData, response_data);
 }
 
@@ -4603,7 +4608,7 @@ TEST_P(HttpNetworkTransactionTest, HttpsProxySpdyGetWithSessionRace) {
   session_deps_.host_resolver->set_ondemand_mode(true);
 
   int rv = trans->Start(&request, callback1.callback(), log.bound());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   // Race a session to the proxy, which completes first.
   session_deps_.host_resolver->set_ondemand_mode(false);
@@ -4618,7 +4623,7 @@ TEST_P(HttpNetworkTransactionTest, HttpsProxySpdyGetWithSessionRace) {
 
   EXPECT_FALSE(callback1.have_result());
   rv = callback1.WaitForResult();
-  EXPECT_EQ(OK, rv);
+  EXPECT_THAT(rv, IsOk());
 
   const HttpResponseInfo* response = trans->GetResponseInfo();
   ASSERT_TRUE(response);
@@ -4626,7 +4631,7 @@ TEST_P(HttpNetworkTransactionTest, HttpsProxySpdyGetWithSessionRace) {
   EXPECT_EQ("HTTP/1.1 200", response->headers->GetStatusLine());
 
   std::string response_data;
-  ASSERT_EQ(OK, ReadTransaction(trans.get(), &response_data));
+  ASSERT_THAT(ReadTransaction(trans.get(), &response_data), IsOk());
   EXPECT_EQ(kUploadData, response_data);
 }
 
@@ -4698,10 +4703,10 @@ TEST_P(HttpNetworkTransactionTest, HttpsProxySpdyGetWithProxyAuth) {
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
   int rv = trans->Start(&request, callback1.callback(), log.bound());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   rv = callback1.WaitForResult();
-  EXPECT_EQ(OK, rv);
+  EXPECT_THAT(rv, IsOk());
 
   const HttpResponseInfo* const response = trans->GetResponseInfo();
 
@@ -4715,10 +4720,10 @@ TEST_P(HttpNetworkTransactionTest, HttpsProxySpdyGetWithProxyAuth) {
 
   rv = trans->RestartWithAuth(
       AuthCredentials(kFoo, kBar), callback2.callback());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   rv = callback2.WaitForResult();
-  EXPECT_EQ(OK, rv);
+  EXPECT_THAT(rv, IsOk());
 
   const HttpResponseInfo* const response_restart = trans->GetResponseInfo();
 
@@ -4794,10 +4799,10 @@ TEST_P(HttpNetworkTransactionTest, HttpsProxySpdyConnectHttps) {
   TestCompletionCallback callback1;
 
   int rv = trans->Start(&request, callback1.callback(), log.bound());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   rv = callback1.WaitForResult();
-  ASSERT_EQ(OK, rv);
+  ASSERT_THAT(rv, IsOk());
 
   LoadTimingInfo load_timing_info;
   EXPECT_TRUE(trans->GetLoadTimingInfo(&load_timing_info));
@@ -4809,7 +4814,7 @@ TEST_P(HttpNetworkTransactionTest, HttpsProxySpdyConnectHttps) {
   EXPECT_EQ("HTTP/1.1 200 OK", response->headers->GetStatusLine());
 
   std::string response_data;
-  ASSERT_EQ(OK, ReadTransaction(trans.get(), &response_data));
+  ASSERT_THAT(ReadTransaction(trans.get(), &response_data), IsOk());
   EXPECT_EQ("1234567890", response_data);
 }
 
@@ -4884,14 +4889,14 @@ TEST_P(HttpNetworkTransactionTest, HttpsProxySpdyConnectSpdy) {
   TestCompletionCallback callback1;
 
   int rv = trans->Start(&request, callback1.callback(), log.bound());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   // Allow the SpdyProxyClientSocket's write callback to complete.
   base::RunLoop().RunUntilIdle();
   // Now allow the read of the response to complete.
   spdy_data.Resume();
   rv = callback1.WaitForResult();
-  EXPECT_EQ(OK, rv);
+  EXPECT_THAT(rv, IsOk());
 
   LoadTimingInfo load_timing_info;
   EXPECT_TRUE(trans->GetLoadTimingInfo(&load_timing_info));
@@ -4903,7 +4908,7 @@ TEST_P(HttpNetworkTransactionTest, HttpsProxySpdyConnectSpdy) {
   EXPECT_EQ("HTTP/1.1 200", response->headers->GetStatusLine());
 
   std::string response_data;
-  ASSERT_EQ(OK, ReadTransaction(trans.get(), &response_data));
+  ASSERT_THAT(ReadTransaction(trans.get(), &response_data), IsOk());
   EXPECT_EQ(kUploadData, response_data);
 }
 
@@ -4955,10 +4960,10 @@ TEST_P(HttpNetworkTransactionTest, HttpsProxySpdyConnectFailure) {
   TestCompletionCallback callback1;
 
   int rv = trans->Start(&request, callback1.callback(), log.bound());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   rv = callback1.WaitForResult();
-  EXPECT_EQ(ERR_TUNNEL_CONNECTION_FAILED, rv);
+  EXPECT_THAT(rv, IsError(ERR_TUNNEL_CONNECTION_FAILED));
 
   // TODO(juliatuttle): Anything else to check here?
 }
@@ -5070,7 +5075,7 @@ TEST_P(HttpNetworkTransactionTest,
   std::unique_ptr<HttpTransaction> trans(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
   int rv = trans->Start(&request1, callback.callback(), BoundNetLog());
-  EXPECT_EQ(OK, callback.GetResult(rv));
+  EXPECT_THAT(callback.GetResult(rv), IsOk());
 
   LoadTimingInfo load_timing_info;
   EXPECT_TRUE(trans->GetLoadTimingInfo(&load_timing_info));
@@ -5089,7 +5094,7 @@ TEST_P(HttpNetworkTransactionTest,
   std::unique_ptr<HttpTransaction> trans2(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
   rv = trans2->Start(&request2, callback.callback(), BoundNetLog());
-  EXPECT_EQ(OK, callback.GetResult(rv));
+  EXPECT_THAT(callback.GetResult(rv), IsOk());
 
   LoadTimingInfo load_timing_info2;
   EXPECT_TRUE(trans2->GetLoadTimingInfo(&load_timing_info2));
@@ -5192,10 +5197,10 @@ TEST_P(HttpNetworkTransactionTest,
   std::unique_ptr<HttpTransaction> trans(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
   int rv = trans->Start(&request1, callback.callback(), BoundNetLog());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   rv = callback.WaitForResult();
-  EXPECT_EQ(OK, rv);
+  EXPECT_THAT(rv, IsOk());
 
   LoadTimingInfo load_timing_info;
   EXPECT_TRUE(trans->GetLoadTimingInfo(&load_timing_info));
@@ -5214,10 +5219,10 @@ TEST_P(HttpNetworkTransactionTest,
   std::unique_ptr<HttpTransaction> trans2(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
   rv = trans2->Start(&request2, callback.callback(), BoundNetLog());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   rv = callback.WaitForResult();
-  EXPECT_EQ(OK, rv);
+  EXPECT_THAT(rv, IsOk());
 
   LoadTimingInfo load_timing_info2;
   EXPECT_TRUE(trans2->GetLoadTimingInfo(&load_timing_info2));
@@ -5296,7 +5301,7 @@ TEST_P(HttpNetworkTransactionTest, HttpsProxySpdyLoadTimingTwoHttpRequests) {
   std::unique_ptr<HttpTransaction> trans(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
   int rv = trans->Start(&request1, callback.callback(), BoundNetLog());
-  EXPECT_EQ(OK, callback.GetResult(rv));
+  EXPECT_THAT(callback.GetResult(rv), IsOk());
 
   LoadTimingInfo load_timing_info;
   EXPECT_TRUE(trans->GetLoadTimingInfo(&load_timing_info));
@@ -5318,7 +5323,7 @@ TEST_P(HttpNetworkTransactionTest, HttpsProxySpdyLoadTimingTwoHttpRequests) {
   std::unique_ptr<HttpTransaction> trans2(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
   rv = trans2->Start(&request2, callback.callback(), BoundNetLog());
-  EXPECT_EQ(OK, callback.GetResult(rv));
+  EXPECT_THAT(callback.GetResult(rv), IsOk());
 
   LoadTimingInfo load_timing_info2;
   EXPECT_TRUE(trans2->GetLoadTimingInfo(&load_timing_info2));
@@ -5388,10 +5393,10 @@ TEST_P(HttpNetworkTransactionTest, HttpsProxyAuthRetry) {
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
   int rv = trans->Start(&request, callback1.callback(), log.bound());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   rv = callback1.WaitForResult();
-  EXPECT_EQ(OK, rv);
+  EXPECT_THAT(rv, IsOk());
 
   LoadTimingInfo load_timing_info;
   EXPECT_TRUE(trans->GetLoadTimingInfo(&load_timing_info));
@@ -5409,10 +5414,10 @@ TEST_P(HttpNetworkTransactionTest, HttpsProxyAuthRetry) {
 
   rv = trans->RestartWithAuth(
       AuthCredentials(kFoo, kBar), callback2.callback());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   rv = callback2.WaitForResult();
-  EXPECT_EQ(OK, rv);
+  EXPECT_THAT(rv, IsOk());
 
   load_timing_info = LoadTimingInfo();
   EXPECT_TRUE(trans->GetLoadTimingInfo(&load_timing_info));
@@ -5465,7 +5470,7 @@ void HttpNetworkTransactionTest::ConnectStatusHelperWithExpectedStatus(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
   int rv = trans->Start(&request, callback.callback(), BoundNetLog());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   rv = callback.WaitForResult();
   EXPECT_EQ(expected_status, rv);
@@ -5736,10 +5741,10 @@ TEST_P(HttpNetworkTransactionTest, BasicAuthProxyThenServer) {
   TestCompletionCallback callback1;
 
   int rv = trans->Start(&request, callback1.callback(), BoundNetLog());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   rv = callback1.WaitForResult();
-  EXPECT_EQ(OK, rv);
+  EXPECT_THAT(rv, IsOk());
 
   const HttpResponseInfo* response = trans->GetResponseInfo();
   ASSERT_TRUE(response);
@@ -5749,10 +5754,10 @@ TEST_P(HttpNetworkTransactionTest, BasicAuthProxyThenServer) {
 
   rv = trans->RestartWithAuth(
       AuthCredentials(kFoo, kBar), callback2.callback());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   rv = callback2.WaitForResult();
-  EXPECT_EQ(OK, rv);
+  EXPECT_THAT(rv, IsOk());
 
   response = trans->GetResponseInfo();
   ASSERT_TRUE(response);
@@ -5762,10 +5767,10 @@ TEST_P(HttpNetworkTransactionTest, BasicAuthProxyThenServer) {
 
   rv = trans->RestartWithAuth(
       AuthCredentials(kFoo2, kBar2), callback3.callback());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   rv = callback3.WaitForResult();
-  EXPECT_EQ(OK, rv);
+  EXPECT_THAT(rv, IsOk());
 
   response = trans->GetResponseInfo();
   EXPECT_FALSE(response->auth_challenge);
@@ -5872,10 +5877,10 @@ TEST_P(HttpNetworkTransactionTest, NTLMAuth1) {
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
   int rv = trans->Start(&request, callback1.callback(), BoundNetLog());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   rv = callback1.WaitForResult();
-  EXPECT_EQ(OK, rv);
+  EXPECT_THAT(rv, IsOk());
 
   EXPECT_FALSE(trans->IsReadyToRestartForAuth());
 
@@ -5887,10 +5892,10 @@ TEST_P(HttpNetworkTransactionTest, NTLMAuth1) {
 
   rv = trans->RestartWithAuth(AuthCredentials(kTestingNTLM, kTestingNTLM),
                               callback2.callback());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   rv = callback2.WaitForResult();
-  EXPECT_EQ(OK, rv);
+  EXPECT_THAT(rv, IsOk());
 
   EXPECT_TRUE(trans->IsReadyToRestartForAuth());
 
@@ -5901,10 +5906,10 @@ TEST_P(HttpNetworkTransactionTest, NTLMAuth1) {
   TestCompletionCallback callback3;
 
   rv = trans->RestartWithAuth(AuthCredentials(), callback3.callback());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   rv = callback3.WaitForResult();
-  EXPECT_EQ(OK, rv);
+  EXPECT_THAT(rv, IsOk());
 
   response = trans->GetResponseInfo();
   ASSERT_TRUE(response);
@@ -6052,10 +6057,10 @@ TEST_P(HttpNetworkTransactionTest, NTLMAuth2) {
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
   int rv = trans->Start(&request, callback1.callback(), BoundNetLog());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   rv = callback1.WaitForResult();
-  EXPECT_EQ(OK, rv);
+  EXPECT_THAT(rv, IsOk());
 
   EXPECT_FALSE(trans->IsReadyToRestartForAuth());
 
@@ -6068,17 +6073,17 @@ TEST_P(HttpNetworkTransactionTest, NTLMAuth2) {
   // Enter the wrong password.
   rv = trans->RestartWithAuth(AuthCredentials(kTestingNTLM, kWrongPassword),
                               callback2.callback());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   rv = callback2.WaitForResult();
-  EXPECT_EQ(OK, rv);
+  EXPECT_THAT(rv, IsOk());
 
   EXPECT_TRUE(trans->IsReadyToRestartForAuth());
   TestCompletionCallback callback3;
   rv = trans->RestartWithAuth(AuthCredentials(), callback3.callback());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
   rv = callback3.WaitForResult();
-  EXPECT_EQ(OK, rv);
+  EXPECT_THAT(rv, IsOk());
   EXPECT_FALSE(trans->IsReadyToRestartForAuth());
 
   response = trans->GetResponseInfo();
@@ -6090,10 +6095,10 @@ TEST_P(HttpNetworkTransactionTest, NTLMAuth2) {
   // Now enter the right password.
   rv = trans->RestartWithAuth(AuthCredentials(kTestingNTLM, kTestingNTLM),
                               callback4.callback());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   rv = callback4.WaitForResult();
-  EXPECT_EQ(OK, rv);
+  EXPECT_THAT(rv, IsOk());
 
   EXPECT_TRUE(trans->IsReadyToRestartForAuth());
 
@@ -6101,10 +6106,10 @@ TEST_P(HttpNetworkTransactionTest, NTLMAuth2) {
 
   // One more roundtrip
   rv = trans->RestartWithAuth(AuthCredentials(), callback5.callback());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   rv = callback5.WaitForResult();
-  EXPECT_EQ(OK, rv);
+  EXPECT_THAT(rv, IsOk());
 
   response = trans->GetResponseInfo();
   EXPECT_FALSE(response->auth_challenge);
@@ -6141,10 +6146,10 @@ TEST_P(HttpNetworkTransactionTest, LargeHeadersNoBody) {
   TestCompletionCallback callback;
 
   int rv = trans->Start(&request, callback.callback(), BoundNetLog());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   rv = callback.WaitForResult();
-  EXPECT_EQ(ERR_RESPONSE_HEADERS_TOO_BIG, rv);
+  EXPECT_THAT(rv, IsError(ERR_RESPONSE_HEADERS_TOO_BIG));
 }
 
 // Make sure that we don't try to reuse a TCPClientSocket when failing to
@@ -6188,10 +6193,10 @@ TEST_P(HttpNetworkTransactionTest,
   TestCompletionCallback callback1;
 
   int rv = trans->Start(&request, callback1.callback(), BoundNetLog());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   rv = callback1.WaitForResult();
-  EXPECT_EQ(ERR_TUNNEL_CONNECTION_FAILED, rv);
+  EXPECT_THAT(rv, IsError(ERR_TUNNEL_CONNECTION_FAILED));
 
   // Empty the current queue.  This is necessary because idle sockets are
   // added to the connection pool asynchronously with a PostTask.
@@ -6234,10 +6239,10 @@ TEST_P(HttpNetworkTransactionTest, RecycleSocket) {
   TestCompletionCallback callback;
 
   int rv = trans->Start(&request, callback.callback(), BoundNetLog());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   rv = callback.WaitForResult();
-  EXPECT_EQ(OK, rv);
+  EXPECT_THAT(rv, IsOk());
 
   const HttpResponseInfo* response = trans->GetResponseInfo();
   ASSERT_TRUE(response);
@@ -6250,7 +6255,7 @@ TEST_P(HttpNetworkTransactionTest, RecycleSocket) {
 
   std::string response_data;
   rv = ReadTransaction(trans.get(), &response_data);
-  EXPECT_EQ(OK, rv);
+  EXPECT_THAT(rv, IsOk());
   EXPECT_EQ("hello world", response_data);
 
   // Empty the current queue.  This is necessary because idle sockets are
@@ -6298,8 +6303,8 @@ TEST_P(HttpNetworkTransactionTest, RecycleSSLSocket) {
 
   int rv = trans->Start(&request, callback.callback(), BoundNetLog());
 
-  EXPECT_EQ(ERR_IO_PENDING, rv);
-  EXPECT_EQ(OK, callback.WaitForResult());
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
+  EXPECT_THAT(callback.WaitForResult(), IsOk());
 
   const HttpResponseInfo* response = trans->GetResponseInfo();
   ASSERT_TRUE(response);
@@ -6310,7 +6315,7 @@ TEST_P(HttpNetworkTransactionTest, RecycleSSLSocket) {
 
   std::string response_data;
   rv = ReadTransaction(trans.get(), &response_data);
-  EXPECT_EQ(OK, rv);
+  EXPECT_THAT(rv, IsOk());
   EXPECT_EQ("hello world", response_data);
 
   // Empty the current queue.  This is necessary because idle sockets are
@@ -6364,8 +6369,8 @@ TEST_P(HttpNetworkTransactionTest, RecycleDeadSSLSocket) {
 
   int rv = trans->Start(&request, callback.callback(), BoundNetLog());
 
-  EXPECT_EQ(ERR_IO_PENDING, rv);
-  EXPECT_EQ(OK, callback.WaitForResult());
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
+  EXPECT_THAT(callback.WaitForResult(), IsOk());
 
   const HttpResponseInfo* response = trans->GetResponseInfo();
   ASSERT_TRUE(response);
@@ -6376,7 +6381,7 @@ TEST_P(HttpNetworkTransactionTest, RecycleDeadSSLSocket) {
 
   std::string response_data;
   rv = ReadTransaction(trans.get(), &response_data);
-  EXPECT_EQ(OK, rv);
+  EXPECT_THAT(rv, IsOk());
   EXPECT_EQ("hello world", response_data);
 
   // Empty the current queue.  This is necessary because idle sockets are
@@ -6392,8 +6397,8 @@ TEST_P(HttpNetworkTransactionTest, RecycleDeadSSLSocket) {
 
   rv = trans->Start(&request, callback.callback(), BoundNetLog());
 
-  EXPECT_EQ(ERR_IO_PENDING, rv);
-  EXPECT_EQ(OK, callback.WaitForResult());
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
+  EXPECT_THAT(callback.WaitForResult(), IsOk());
 
   response = trans->GetResponseInfo();
   ASSERT_TRUE(response);
@@ -6403,7 +6408,7 @@ TEST_P(HttpNetworkTransactionTest, RecycleDeadSSLSocket) {
   EXPECT_EQ(0, GetIdleSocketCountInTransportSocketPool(session.get()));
 
   rv = ReadTransaction(trans.get(), &response_data);
-  EXPECT_EQ(OK, rv);
+  EXPECT_THAT(rv, IsOk());
   EXPECT_EQ("hello world", response_data);
 
   // Empty the current queue.  This is necessary because idle sockets are
@@ -6447,10 +6452,10 @@ TEST_P(HttpNetworkTransactionTest, RecycleSocketAfterZeroContentLength) {
   TestCompletionCallback callback;
 
   int rv = trans->Start(&request, callback.callback(), BoundNetLog());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   rv = callback.WaitForResult();
-  EXPECT_EQ(OK, rv);
+  EXPECT_THAT(rv, IsOk());
 
   const HttpResponseInfo* response = trans->GetResponseInfo();
   ASSERT_TRUE(response);
@@ -6463,7 +6468,7 @@ TEST_P(HttpNetworkTransactionTest, RecycleSocketAfterZeroContentLength) {
 
   std::string response_data;
   rv = ReadTransaction(trans.get(), &response_data);
-  EXPECT_EQ(OK, rv);
+  EXPECT_THAT(rv, IsOk());
   EXPECT_EQ("", response_data);
 
   // Empty the current queue.  This is necessary because idle sockets are
@@ -6546,10 +6551,10 @@ TEST_P(HttpNetworkTransactionTest, ResendRequestOnWriteBodyError) {
     TestCompletionCallback callback;
 
     int rv = trans->Start(&request[i], callback.callback(), BoundNetLog());
-    EXPECT_EQ(ERR_IO_PENDING, rv);
+    EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
     rv = callback.WaitForResult();
-    EXPECT_EQ(OK, rv);
+    EXPECT_THAT(rv, IsOk());
 
     const HttpResponseInfo* response = trans->GetResponseInfo();
     ASSERT_TRUE(response);
@@ -6559,7 +6564,7 @@ TEST_P(HttpNetworkTransactionTest, ResendRequestOnWriteBodyError) {
 
     std::string response_data;
     rv = ReadTransaction(trans.get(), &response_data);
-    EXPECT_EQ(OK, rv);
+    EXPECT_THAT(rv, IsOk());
     EXPECT_EQ(kExpectedResponseData[i], response_data);
   }
 }
@@ -6620,16 +6625,16 @@ TEST_P(HttpNetworkTransactionTest, AuthIdentityInURL) {
 
   TestCompletionCallback callback1;
   int rv = trans->Start(&request, callback1.callback(), BoundNetLog());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
   rv = callback1.WaitForResult();
-  EXPECT_EQ(OK, rv);
+  EXPECT_THAT(rv, IsOk());
   EXPECT_TRUE(trans->IsReadyToRestartForAuth());
 
   TestCompletionCallback callback2;
   rv = trans->RestartWithAuth(AuthCredentials(), callback2.callback());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
   rv = callback2.WaitForResult();
-  EXPECT_EQ(OK, rv);
+  EXPECT_THAT(rv, IsOk());
   EXPECT_FALSE(trans->IsReadyToRestartForAuth());
 
   const HttpResponseInfo* response = trans->GetResponseInfo();
@@ -6720,17 +6725,17 @@ TEST_P(HttpNetworkTransactionTest, WrongAuthIdentityInURL) {
   TestCompletionCallback callback1;
 
   int rv = trans->Start(&request, callback1.callback(), BoundNetLog());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   rv = callback1.WaitForResult();
-  EXPECT_EQ(OK, rv);
+  EXPECT_THAT(rv, IsOk());
 
   EXPECT_TRUE(trans->IsReadyToRestartForAuth());
   TestCompletionCallback callback2;
   rv = trans->RestartWithAuth(AuthCredentials(), callback2.callback());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
   rv = callback2.WaitForResult();
-  EXPECT_EQ(OK, rv);
+  EXPECT_THAT(rv, IsOk());
   EXPECT_FALSE(trans->IsReadyToRestartForAuth());
 
   const HttpResponseInfo* response = trans->GetResponseInfo();
@@ -6740,9 +6745,9 @@ TEST_P(HttpNetworkTransactionTest, WrongAuthIdentityInURL) {
   TestCompletionCallback callback3;
   rv = trans->RestartWithAuth(
       AuthCredentials(kFoo, kBar), callback3.callback());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
   rv = callback3.WaitForResult();
-  EXPECT_EQ(OK, rv);
+  EXPECT_THAT(rv, IsOk());
   EXPECT_FALSE(trans->IsReadyToRestartForAuth());
 
   response = trans->GetResponseInfo();
@@ -6811,9 +6816,9 @@ TEST_P(HttpNetworkTransactionTest, AuthIdentityInURLSuppressed) {
 
   TestCompletionCallback callback1;
   int rv = trans->Start(&request, callback1.callback(), BoundNetLog());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
   rv = callback1.WaitForResult();
-  EXPECT_EQ(OK, rv);
+  EXPECT_THAT(rv, IsOk());
   EXPECT_FALSE(trans->IsReadyToRestartForAuth());
 
   const HttpResponseInfo* response = trans->GetResponseInfo();
@@ -6823,9 +6828,9 @@ TEST_P(HttpNetworkTransactionTest, AuthIdentityInURLSuppressed) {
   TestCompletionCallback callback3;
   rv = trans->RestartWithAuth(
       AuthCredentials(kFoo, kBar), callback3.callback());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
   rv = callback3.WaitForResult();
-  EXPECT_EQ(OK, rv);
+  EXPECT_THAT(rv, IsOk());
   EXPECT_FALSE(trans->IsReadyToRestartForAuth());
 
   response = trans->GetResponseInfo();
@@ -6893,10 +6898,10 @@ TEST_P(HttpNetworkTransactionTest, BasicAuthCacheAndPreauth) {
     TestCompletionCallback callback1;
 
     int rv = trans->Start(&request, callback1.callback(), BoundNetLog());
-    EXPECT_EQ(ERR_IO_PENDING, rv);
+    EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
     rv = callback1.WaitForResult();
-    EXPECT_EQ(OK, rv);
+    EXPECT_THAT(rv, IsOk());
 
     const HttpResponseInfo* response = trans->GetResponseInfo();
     ASSERT_TRUE(response);
@@ -6906,10 +6911,10 @@ TEST_P(HttpNetworkTransactionTest, BasicAuthCacheAndPreauth) {
 
     rv = trans->RestartWithAuth(
         AuthCredentials(kFoo, kBar), callback2.callback());
-    EXPECT_EQ(ERR_IO_PENDING, rv);
+    EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
     rv = callback2.WaitForResult();
-    EXPECT_EQ(OK, rv);
+    EXPECT_THAT(rv, IsOk());
 
     response = trans->GetResponseInfo();
     ASSERT_TRUE(response);
@@ -6975,10 +6980,10 @@ TEST_P(HttpNetworkTransactionTest, BasicAuthCacheAndPreauth) {
     TestCompletionCallback callback1;
 
     int rv = trans->Start(&request, callback1.callback(), BoundNetLog());
-    EXPECT_EQ(ERR_IO_PENDING, rv);
+    EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
     rv = callback1.WaitForResult();
-    EXPECT_EQ(OK, rv);
+    EXPECT_THAT(rv, IsOk());
 
     const HttpResponseInfo* response = trans->GetResponseInfo();
     ASSERT_TRUE(response);
@@ -6993,10 +6998,10 @@ TEST_P(HttpNetworkTransactionTest, BasicAuthCacheAndPreauth) {
 
     rv = trans->RestartWithAuth(
         AuthCredentials(kFoo2, kBar2), callback2.callback());
-    EXPECT_EQ(ERR_IO_PENDING, rv);
+    EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
     rv = callback2.WaitForResult();
-    EXPECT_EQ(OK, rv);
+    EXPECT_THAT(rv, IsOk());
 
     response = trans->GetResponseInfo();
     ASSERT_TRUE(response);
@@ -7041,10 +7046,10 @@ TEST_P(HttpNetworkTransactionTest, BasicAuthCacheAndPreauth) {
     TestCompletionCallback callback1;
 
     int rv = trans->Start(&request, callback1.callback(), BoundNetLog());
-    EXPECT_EQ(ERR_IO_PENDING, rv);
+    EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
     rv = callback1.WaitForResult();
-    EXPECT_EQ(OK, rv);
+    EXPECT_THAT(rv, IsOk());
 
     const HttpResponseInfo* response = trans->GetResponseInfo();
     ASSERT_TRUE(response);
@@ -7106,17 +7111,17 @@ TEST_P(HttpNetworkTransactionTest, BasicAuthCacheAndPreauth) {
     TestCompletionCallback callback1;
 
     int rv = trans->Start(&request, callback1.callback(), BoundNetLog());
-    EXPECT_EQ(ERR_IO_PENDING, rv);
+    EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
     rv = callback1.WaitForResult();
-    EXPECT_EQ(OK, rv);
+    EXPECT_THAT(rv, IsOk());
 
     EXPECT_TRUE(trans->IsReadyToRestartForAuth());
     TestCompletionCallback callback2;
     rv = trans->RestartWithAuth(AuthCredentials(), callback2.callback());
-    EXPECT_EQ(ERR_IO_PENDING, rv);
+    EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
     rv = callback2.WaitForResult();
-    EXPECT_EQ(OK, rv);
+    EXPECT_THAT(rv, IsOk());
     EXPECT_FALSE(trans->IsReadyToRestartForAuth());
 
     const HttpResponseInfo* response = trans->GetResponseInfo();
@@ -7199,17 +7204,17 @@ TEST_P(HttpNetworkTransactionTest, BasicAuthCacheAndPreauth) {
     TestCompletionCallback callback1;
 
     int rv = trans->Start(&request, callback1.callback(), BoundNetLog());
-    EXPECT_EQ(ERR_IO_PENDING, rv);
+    EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
     rv = callback1.WaitForResult();
-    EXPECT_EQ(OK, rv);
+    EXPECT_THAT(rv, IsOk());
 
     EXPECT_TRUE(trans->IsReadyToRestartForAuth());
     TestCompletionCallback callback2;
     rv = trans->RestartWithAuth(AuthCredentials(), callback2.callback());
-    EXPECT_EQ(ERR_IO_PENDING, rv);
+    EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
     rv = callback2.WaitForResult();
-    EXPECT_EQ(OK, rv);
+    EXPECT_THAT(rv, IsOk());
     EXPECT_FALSE(trans->IsReadyToRestartForAuth());
 
     const HttpResponseInfo* response = trans->GetResponseInfo();
@@ -7220,10 +7225,10 @@ TEST_P(HttpNetworkTransactionTest, BasicAuthCacheAndPreauth) {
 
     rv = trans->RestartWithAuth(
         AuthCredentials(kFoo3, kBar3), callback3.callback());
-    EXPECT_EQ(ERR_IO_PENDING, rv);
+    EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
     rv = callback3.WaitForResult();
-    EXPECT_EQ(OK, rv);
+    EXPECT_THAT(rv, IsOk());
 
     response = trans->GetResponseInfo();
     ASSERT_TRUE(response);
@@ -7295,10 +7300,10 @@ TEST_P(HttpNetworkTransactionTest, DigestPreAuthNonceCount) {
     TestCompletionCallback callback1;
 
     int rv = trans->Start(&request, callback1.callback(), BoundNetLog());
-    EXPECT_EQ(ERR_IO_PENDING, rv);
+    EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
     rv = callback1.WaitForResult();
-    EXPECT_EQ(OK, rv);
+    EXPECT_THAT(rv, IsOk());
 
     const HttpResponseInfo* response = trans->GetResponseInfo();
     ASSERT_TRUE(response);
@@ -7308,10 +7313,10 @@ TEST_P(HttpNetworkTransactionTest, DigestPreAuthNonceCount) {
 
     rv = trans->RestartWithAuth(
         AuthCredentials(kFoo, kBar), callback2.callback());
-    EXPECT_EQ(ERR_IO_PENDING, rv);
+    EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
     rv = callback2.WaitForResult();
-    EXPECT_EQ(OK, rv);
+    EXPECT_THAT(rv, IsOk());
 
     response = trans->GetResponseInfo();
     ASSERT_TRUE(response);
@@ -7359,10 +7364,10 @@ TEST_P(HttpNetworkTransactionTest, DigestPreAuthNonceCount) {
     TestCompletionCallback callback1;
 
     int rv = trans->Start(&request, callback1.callback(), BoundNetLog());
-    EXPECT_EQ(ERR_IO_PENDING, rv);
+    EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
     rv = callback1.WaitForResult();
-    EXPECT_EQ(OK, rv);
+    EXPECT_THAT(rv, IsOk());
 
     const HttpResponseInfo* response = trans->GetResponseInfo();
     ASSERT_TRUE(response);
@@ -7452,16 +7457,16 @@ TEST_P(HttpNetworkTransactionTest, HTTPSBadCertificate) {
   TestCompletionCallback callback;
 
   int rv = trans->Start(&request, callback.callback(), BoundNetLog());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   rv = callback.WaitForResult();
-  EXPECT_EQ(ERR_CERT_AUTHORITY_INVALID, rv);
+  EXPECT_THAT(rv, IsError(ERR_CERT_AUTHORITY_INVALID));
 
   rv = trans->RestartIgnoringLastError(callback.callback());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   rv = callback.WaitForResult();
-  EXPECT_EQ(OK, rv);
+  EXPECT_THAT(rv, IsOk());
 
   const HttpResponseInfo* response = trans->GetResponseInfo();
 
@@ -7530,16 +7535,16 @@ TEST_P(HttpNetworkTransactionTest, HTTPSBadCertificateViaProxy) {
         new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
     int rv = trans->Start(&request, callback.callback(), BoundNetLog());
-    EXPECT_EQ(ERR_IO_PENDING, rv);
+    EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
     rv = callback.WaitForResult();
-    EXPECT_EQ(ERR_CERT_AUTHORITY_INVALID, rv);
+    EXPECT_THAT(rv, IsError(ERR_CERT_AUTHORITY_INVALID));
 
     rv = trans->RestartIgnoringLastError(callback.callback());
-    EXPECT_EQ(ERR_IO_PENDING, rv);
+    EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
     rv = callback.WaitForResult();
-    EXPECT_EQ(OK, rv);
+    EXPECT_THAT(rv, IsOk());
 
     const HttpResponseInfo* response = trans->GetResponseInfo();
 
@@ -7594,10 +7599,10 @@ TEST_P(HttpNetworkTransactionTest, HTTPSViaHttpsProxy) {
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
   int rv = trans->Start(&request, callback.callback(), BoundNetLog());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   rv = callback.WaitForResult();
-  EXPECT_EQ(OK, rv);
+  EXPECT_THAT(rv, IsOk());
   const HttpResponseInfo* response = trans->GetResponseInfo();
 
   ASSERT_TRUE(response);
@@ -7652,10 +7657,10 @@ TEST_P(HttpNetworkTransactionTest, RedirectOfHttpsConnectViaHttpsProxy) {
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
   int rv = trans->Start(&request, callback.callback(), BoundNetLog());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   rv = callback.WaitForResult();
-  EXPECT_EQ(OK, rv);
+  EXPECT_THAT(rv, IsOk());
   const HttpResponseInfo* response = trans->GetResponseInfo();
 
   ASSERT_TRUE(response);
@@ -7733,10 +7738,10 @@ TEST_P(HttpNetworkTransactionTest, RedirectOfHttpsConnectViaSpdyProxy) {
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
   int rv = trans->Start(&request, callback.callback(), BoundNetLog());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   rv = callback.WaitForResult();
-  EXPECT_EQ(OK, rv);
+  EXPECT_THAT(rv, IsOk());
   const HttpResponseInfo* response = trans->GetResponseInfo();
 
   ASSERT_TRUE(response);
@@ -7784,10 +7789,10 @@ TEST_P(HttpNetworkTransactionTest,
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
   int rv = trans->Start(&request, callback.callback(), BoundNetLog());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   rv = callback.WaitForResult();
-  EXPECT_EQ(ERR_TUNNEL_CONNECTION_FAILED, rv);
+  EXPECT_THAT(rv, IsError(ERR_TUNNEL_CONNECTION_FAILED));
 
   // TODO(juliatuttle): Anything else to check here?
 }
@@ -7840,10 +7845,10 @@ TEST_P(HttpNetworkTransactionTest,
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
   int rv = trans->Start(&request, callback.callback(), BoundNetLog());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   rv = callback.WaitForResult();
-  EXPECT_EQ(ERR_TUNNEL_CONNECTION_FAILED, rv);
+  EXPECT_THAT(rv, IsError(ERR_TUNNEL_CONNECTION_FAILED));
 
   // TODO(juliatuttle): Anything else to check here?
 }
@@ -7938,10 +7943,10 @@ TEST_P(HttpNetworkTransactionTest, BasicAuthSpdyProxy) {
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
   int rv = trans->Start(&request, callback1.callback(), log.bound());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   rv = callback1.WaitForResult();
-  EXPECT_EQ(OK, rv);
+  EXPECT_THAT(rv, IsOk());
   TestNetLogEntry::List entries;
   log.GetEntries(&entries);
   size_t pos = ExpectLogContainsSomewhere(
@@ -7964,10 +7969,10 @@ TEST_P(HttpNetworkTransactionTest, BasicAuthSpdyProxy) {
 
   rv = trans->RestartWithAuth(AuthCredentials(kFoo, kBar),
                               callback2.callback());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   rv = callback2.WaitForResult();
-  EXPECT_EQ(OK, rv);
+  EXPECT_THAT(rv, IsOk());
 
   response = trans->GetResponseInfo();
   ASSERT_TRUE(response);
@@ -8054,19 +8059,19 @@ TEST_P(HttpNetworkTransactionTest, CrossOriginSPDYProxyPush) {
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
   TestCompletionCallback callback;
   int rv = trans->Start(&request, callback.callback(), log.bound());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   rv = callback.WaitForResult();
-  EXPECT_EQ(OK, rv);
+  EXPECT_THAT(rv, IsOk());
   const HttpResponseInfo* response = trans->GetResponseInfo();
 
   std::unique_ptr<HttpTransaction> push_trans(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
   rv = push_trans->Start(&push_request, callback.callback(), log.bound());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   rv = callback.WaitForResult();
-  EXPECT_EQ(OK, rv);
+  EXPECT_THAT(rv, IsOk());
   const HttpResponseInfo* push_response = push_trans->GetResponseInfo();
 
   ASSERT_TRUE(response);
@@ -8077,7 +8082,7 @@ TEST_P(HttpNetworkTransactionTest, CrossOriginSPDYProxyPush) {
 
   std::string response_data;
   rv = ReadTransaction(trans.get(), &response_data);
-  EXPECT_EQ(OK, rv);
+  EXPECT_THAT(rv, IsOk());
   EXPECT_EQ("hello!", response_data);
 
   LoadTimingInfo load_timing_info;
@@ -8090,7 +8095,7 @@ TEST_P(HttpNetworkTransactionTest, CrossOriginSPDYProxyPush) {
   EXPECT_EQ(200, push_response->headers->response_code());
 
   rv = ReadTransaction(push_trans.get(), &response_data);
-  EXPECT_EQ(OK, rv);
+  EXPECT_THAT(rv, IsOk());
   EXPECT_EQ("pushed", response_data);
 
   LoadTimingInfo push_load_timing_info;
@@ -8165,10 +8170,10 @@ TEST_P(HttpNetworkTransactionTest, CrossOriginProxyPushCorrectness) {
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
   TestCompletionCallback callback;
   int rv = trans->Start(&request, callback.callback(), log.bound());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   rv = callback.WaitForResult();
-  EXPECT_EQ(OK, rv);
+  EXPECT_THAT(rv, IsOk());
   const HttpResponseInfo* response = trans->GetResponseInfo();
 
   ASSERT_TRUE(response);
@@ -8179,7 +8184,7 @@ TEST_P(HttpNetworkTransactionTest, CrossOriginProxyPushCorrectness) {
 
   std::string response_data;
   rv = ReadTransaction(trans.get(), &response_data);
-  EXPECT_EQ(OK, rv);
+  EXPECT_THAT(rv, IsOk());
   EXPECT_EQ("hello!", response_data);
 
   trans.reset();
@@ -8251,10 +8256,10 @@ TEST_P(HttpNetworkTransactionTest, SameOriginProxyPushCorrectness) {
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
   TestCompletionCallback callback;
   int rv = trans->Start(&request, callback.callback(), log.bound());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   rv = callback.WaitForResult();
-  EXPECT_EQ(OK, rv);
+  EXPECT_THAT(rv, IsOk());
   const HttpResponseInfo* response = trans->GetResponseInfo();
 
   ASSERT_TRUE(response);
@@ -8265,7 +8270,7 @@ TEST_P(HttpNetworkTransactionTest, SameOriginProxyPushCorrectness) {
 
   std::string response_data;
   rv = ReadTransaction(trans.get(), &response_data);
-  EXPECT_EQ(OK, rv);
+  EXPECT_THAT(rv, IsOk());
   EXPECT_EQ("hello!", response_data);
 
   trans.reset();
@@ -8337,16 +8342,16 @@ TEST_P(HttpNetworkTransactionTest, HTTPSBadCertificateViaHttpsProxy) {
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
   int rv = trans->Start(&request, callback.callback(), BoundNetLog());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   rv = callback.WaitForResult();
-  EXPECT_EQ(ERR_CERT_AUTHORITY_INVALID, rv);
+  EXPECT_THAT(rv, IsError(ERR_CERT_AUTHORITY_INVALID));
 
   rv = trans->RestartIgnoringLastError(callback.callback());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   rv = callback.WaitForResult();
-  EXPECT_EQ(OK, rv);
+  EXPECT_THAT(rv, IsOk());
 
   const HttpResponseInfo* response = trans->GetResponseInfo();
 
@@ -8388,10 +8393,10 @@ TEST_P(HttpNetworkTransactionTest, BuildRequest_UserAgent) {
   TestCompletionCallback callback;
 
   int rv = trans->Start(&request, callback.callback(), BoundNetLog());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   rv = callback.WaitForResult();
-  EXPECT_EQ(OK, rv);
+  EXPECT_THAT(rv, IsOk());
 }
 
 TEST_P(HttpNetworkTransactionTest, BuildRequest_UserAgentOverTunnel) {
@@ -8427,10 +8432,10 @@ TEST_P(HttpNetworkTransactionTest, BuildRequest_UserAgentOverTunnel) {
   TestCompletionCallback callback;
 
   int rv = trans->Start(&request, callback.callback(), BoundNetLog());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   rv = callback.WaitForResult();
-  EXPECT_EQ(OK, rv);
+  EXPECT_THAT(rv, IsOk());
 }
 
 TEST_P(HttpNetworkTransactionTest, BuildRequest_Referer) {
@@ -8468,10 +8473,10 @@ TEST_P(HttpNetworkTransactionTest, BuildRequest_Referer) {
   TestCompletionCallback callback;
 
   int rv = trans->Start(&request, callback.callback(), BoundNetLog());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   rv = callback.WaitForResult();
-  EXPECT_EQ(OK, rv);
+  EXPECT_THAT(rv, IsOk());
 }
 
 TEST_P(HttpNetworkTransactionTest, BuildRequest_PostContentLengthZero) {
@@ -8506,10 +8511,10 @@ TEST_P(HttpNetworkTransactionTest, BuildRequest_PostContentLengthZero) {
   TestCompletionCallback callback;
 
   int rv = trans->Start(&request, callback.callback(), BoundNetLog());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   rv = callback.WaitForResult();
-  EXPECT_EQ(OK, rv);
+  EXPECT_THAT(rv, IsOk());
 }
 
 TEST_P(HttpNetworkTransactionTest, BuildRequest_PutContentLengthZero) {
@@ -8544,10 +8549,10 @@ TEST_P(HttpNetworkTransactionTest, BuildRequest_PutContentLengthZero) {
   TestCompletionCallback callback;
 
   int rv = trans->Start(&request, callback.callback(), BoundNetLog());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   rv = callback.WaitForResult();
-  EXPECT_EQ(OK, rv);
+  EXPECT_THAT(rv, IsOk());
 }
 
 TEST_P(HttpNetworkTransactionTest, BuildRequest_HeadContentLengthZero) {
@@ -8580,10 +8585,10 @@ TEST_P(HttpNetworkTransactionTest, BuildRequest_HeadContentLengthZero) {
   TestCompletionCallback callback;
 
   int rv = trans->Start(&request, callback.callback(), BoundNetLog());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   rv = callback.WaitForResult();
-  EXPECT_EQ(OK, rv);
+  EXPECT_THAT(rv, IsOk());
 }
 
 TEST_P(HttpNetworkTransactionTest, BuildRequest_CacheControlNoCache) {
@@ -8620,10 +8625,10 @@ TEST_P(HttpNetworkTransactionTest, BuildRequest_CacheControlNoCache) {
   TestCompletionCallback callback;
 
   int rv = trans->Start(&request, callback.callback(), BoundNetLog());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   rv = callback.WaitForResult();
-  EXPECT_EQ(OK, rv);
+  EXPECT_THAT(rv, IsOk());
 }
 
 TEST_P(HttpNetworkTransactionTest,
@@ -8660,10 +8665,10 @@ TEST_P(HttpNetworkTransactionTest,
   TestCompletionCallback callback;
 
   int rv = trans->Start(&request, callback.callback(), BoundNetLog());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   rv = callback.WaitForResult();
-  EXPECT_EQ(OK, rv);
+  EXPECT_THAT(rv, IsOk());
 }
 
 TEST_P(HttpNetworkTransactionTest, BuildRequest_ExtraHeaders) {
@@ -8699,10 +8704,10 @@ TEST_P(HttpNetworkTransactionTest, BuildRequest_ExtraHeaders) {
   TestCompletionCallback callback;
 
   int rv = trans->Start(&request, callback.callback(), BoundNetLog());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   rv = callback.WaitForResult();
-  EXPECT_EQ(OK, rv);
+  EXPECT_THAT(rv, IsOk());
 }
 
 TEST_P(HttpNetworkTransactionTest, BuildRequest_ExtraHeadersStripped) {
@@ -8742,10 +8747,10 @@ TEST_P(HttpNetworkTransactionTest, BuildRequest_ExtraHeadersStripped) {
   TestCompletionCallback callback;
 
   int rv = trans->Start(&request, callback.callback(), BoundNetLog());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   rv = callback.WaitForResult();
-  EXPECT_EQ(OK, rv);
+  EXPECT_THAT(rv, IsOk());
 }
 
 TEST_P(HttpNetworkTransactionTest, SOCKS4_HTTP_GET) {
@@ -8788,10 +8793,10 @@ TEST_P(HttpNetworkTransactionTest, SOCKS4_HTTP_GET) {
   TestCompletionCallback callback;
 
   int rv = trans->Start(&request, callback.callback(), BoundNetLog());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   rv = callback.WaitForResult();
-  EXPECT_EQ(OK, rv);
+  EXPECT_THAT(rv, IsOk());
 
   const HttpResponseInfo* response = trans->GetResponseInfo();
   ASSERT_TRUE(response);
@@ -8803,7 +8808,7 @@ TEST_P(HttpNetworkTransactionTest, SOCKS4_HTTP_GET) {
 
   std::string response_text;
   rv = ReadTransaction(trans.get(), &response_text);
-  EXPECT_EQ(OK, rv);
+  EXPECT_THAT(rv, IsOk());
   EXPECT_EQ("Payload", response_text);
 }
 
@@ -8852,10 +8857,10 @@ TEST_P(HttpNetworkTransactionTest, SOCKS4_SSL_GET) {
   TestCompletionCallback callback;
 
   int rv = trans->Start(&request, callback.callback(), BoundNetLog());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   rv = callback.WaitForResult();
-  EXPECT_EQ(OK, rv);
+  EXPECT_THAT(rv, IsOk());
 
   LoadTimingInfo load_timing_info;
   EXPECT_TRUE(trans->GetLoadTimingInfo(&load_timing_info));
@@ -8867,7 +8872,7 @@ TEST_P(HttpNetworkTransactionTest, SOCKS4_SSL_GET) {
 
   std::string response_text;
   rv = ReadTransaction(trans.get(), &response_text);
-  EXPECT_EQ(OK, rv);
+  EXPECT_THAT(rv, IsOk());
   EXPECT_EQ("Payload", response_text);
 }
 
@@ -8911,10 +8916,10 @@ TEST_P(HttpNetworkTransactionTest, SOCKS4_HTTP_GET_no_PAC) {
   TestCompletionCallback callback;
 
   int rv = trans->Start(&request, callback.callback(), BoundNetLog());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   rv = callback.WaitForResult();
-  EXPECT_EQ(OK, rv);
+  EXPECT_THAT(rv, IsOk());
 
   const HttpResponseInfo* response = trans->GetResponseInfo();
   ASSERT_TRUE(response);
@@ -8926,7 +8931,7 @@ TEST_P(HttpNetworkTransactionTest, SOCKS4_HTTP_GET_no_PAC) {
 
   std::string response_text;
   rv = ReadTransaction(trans.get(), &response_text);
-  EXPECT_EQ(OK, rv);
+  EXPECT_THAT(rv, IsOk());
   EXPECT_EQ("Payload", response_text);
 }
 
@@ -8983,10 +8988,10 @@ TEST_P(HttpNetworkTransactionTest, SOCKS5_HTTP_GET) {
   TestCompletionCallback callback;
 
   int rv = trans->Start(&request, callback.callback(), BoundNetLog());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   rv = callback.WaitForResult();
-  EXPECT_EQ(OK, rv);
+  EXPECT_THAT(rv, IsOk());
 
   const HttpResponseInfo* response = trans->GetResponseInfo();
   ASSERT_TRUE(response);
@@ -8998,7 +9003,7 @@ TEST_P(HttpNetworkTransactionTest, SOCKS5_HTTP_GET) {
 
   std::string response_text;
   rv = ReadTransaction(trans.get(), &response_text);
-  EXPECT_EQ(OK, rv);
+  EXPECT_THAT(rv, IsOk());
   EXPECT_EQ("Payload", response_text);
 }
 
@@ -9060,10 +9065,10 @@ TEST_P(HttpNetworkTransactionTest, SOCKS5_SSL_GET) {
   TestCompletionCallback callback;
 
   int rv = trans->Start(&request, callback.callback(), BoundNetLog());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   rv = callback.WaitForResult();
-  EXPECT_EQ(OK, rv);
+  EXPECT_THAT(rv, IsOk());
 
   const HttpResponseInfo* response = trans->GetResponseInfo();
   ASSERT_TRUE(response);
@@ -9075,7 +9080,7 @@ TEST_P(HttpNetworkTransactionTest, SOCKS5_SSL_GET) {
 
   std::string response_text;
   rv = ReadTransaction(trans.get(), &response_text);
-  EXPECT_EQ(OK, rv);
+  EXPECT_THAT(rv, IsOk());
   EXPECT_EQ("Payload", response_text);
 }
 
@@ -9342,10 +9347,10 @@ TEST_P(HttpNetworkTransactionTest, ReconsiderProxyAfterFailedConnection) {
   TestCompletionCallback callback;
 
   int rv = trans->Start(&request, callback.callback(), BoundNetLog());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   rv = callback.WaitForResult();
-  EXPECT_EQ(ERR_PROXY_CONNECTION_FAILED, rv);
+  EXPECT_THAT(rv, IsError(ERR_PROXY_CONNECTION_FAILED));
 }
 
 // Base test to make sure that when the load flags for a request specify to
@@ -9371,16 +9376,16 @@ void HttpNetworkTransactionTest::BypassHostCacheOnRefreshHelper(
   int rv = session_deps_.host_resolver->Resolve(
       HostResolver::RequestInfo(HostPortPair("www.example.org", 80)),
       DEFAULT_PRIORITY, &addrlist, callback.callback(), NULL, BoundNetLog());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
   rv = callback.WaitForResult();
-  EXPECT_EQ(OK, rv);
+  EXPECT_THAT(rv, IsOk());
 
   // Verify that it was added to host cache, by doing a subsequent async lookup
   // and confirming it completes synchronously.
   rv = session_deps_.host_resolver->Resolve(
       HostResolver::RequestInfo(HostPortPair("www.example.org", 80)),
       DEFAULT_PRIORITY, &addrlist, callback.callback(), NULL, BoundNetLog());
-  ASSERT_EQ(OK, rv);
+  ASSERT_THAT(rv, IsOk());
 
   // Inject a failure the next time that "www.example.org" is resolved. This way
   // we can tell if the next lookup hit the cache, or the "network".
@@ -9395,12 +9400,12 @@ void HttpNetworkTransactionTest::BypassHostCacheOnRefreshHelper(
 
   // Run the request.
   rv = trans->Start(&request, callback.callback(), BoundNetLog());
-  ASSERT_EQ(ERR_IO_PENDING, rv);
+  ASSERT_THAT(rv, IsError(ERR_IO_PENDING));
   rv = callback.WaitForResult();
 
   // If we bypassed the cache, we would have gotten a failure while resolving
   // "www.example.org".
-  EXPECT_EQ(ERR_NAME_NOT_RESOLVED, rv);
+  EXPECT_THAT(rv, IsError(ERR_NAME_NOT_RESOLVED));
 }
 
 // There are multiple load flags that should trigger the host cache bypass.
@@ -9438,10 +9443,10 @@ TEST_P(HttpNetworkTransactionTest, RequestWriteError) {
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
   int rv = trans->Start(&request, callback.callback(), BoundNetLog());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   rv = callback.WaitForResult();
-  EXPECT_EQ(ERR_CONNECTION_RESET, rv);
+  EXPECT_THAT(rv, IsError(ERR_CONNECTION_RESET));
 
   IPEndPoint endpoint;
   EXPECT_TRUE(trans->GetRemoteEndpoint(&endpoint));
@@ -9470,10 +9475,10 @@ TEST_P(HttpNetworkTransactionTest, ConnectionClosedAfterStartOfHeaders) {
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
   int rv = trans->Start(&request, callback.callback(), BoundNetLog());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   rv = callback.WaitForResult();
-  EXPECT_EQ(OK, rv);
+  EXPECT_THAT(rv, IsOk());
 
   const HttpResponseInfo* response = trans->GetResponseInfo();
   ASSERT_TRUE(response);
@@ -9483,7 +9488,7 @@ TEST_P(HttpNetworkTransactionTest, ConnectionClosedAfterStartOfHeaders) {
 
   std::string response_data;
   rv = ReadTransaction(trans.get(), &response_data);
-  EXPECT_EQ(OK, rv);
+  EXPECT_THAT(rv, IsOk());
   EXPECT_EQ("", response_data);
 
   IPEndPoint endpoint;
@@ -9548,10 +9553,10 @@ TEST_P(HttpNetworkTransactionTest, DrainResetOK) {
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
   int rv = trans->Start(&request, callback1.callback(), BoundNetLog());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   rv = callback1.WaitForResult();
-  EXPECT_EQ(OK, rv);
+  EXPECT_THAT(rv, IsOk());
 
   const HttpResponseInfo* response = trans->GetResponseInfo();
   ASSERT_TRUE(response);
@@ -9561,10 +9566,10 @@ TEST_P(HttpNetworkTransactionTest, DrainResetOK) {
 
   rv = trans->RestartWithAuth(
       AuthCredentials(kFoo, kBar), callback2.callback());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   rv = callback2.WaitForResult();
-  EXPECT_EQ(OK, rv);
+  EXPECT_THAT(rv, IsOk());
 
   response = trans->GetResponseInfo();
   ASSERT_TRUE(response);
@@ -9601,10 +9606,10 @@ TEST_P(HttpNetworkTransactionTest, HTTPSViaProxyWithExtraData) {
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
   int rv = trans->Start(&request, callback.callback(), BoundNetLog());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   rv = callback.WaitForResult();
-  EXPECT_EQ(ERR_TUNNEL_CONNECTION_FAILED, rv);
+  EXPECT_THAT(rv, IsError(ERR_TUNNEL_CONNECTION_FAILED));
 }
 
 TEST_P(HttpNetworkTransactionTest, LargeContentLengthThenClose) {
@@ -9628,9 +9633,9 @@ TEST_P(HttpNetworkTransactionTest, LargeContentLengthThenClose) {
   TestCompletionCallback callback;
 
   int rv = trans->Start(&request, callback.callback(), BoundNetLog());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
-  EXPECT_EQ(OK, callback.WaitForResult());
+  EXPECT_THAT(callback.WaitForResult(), IsOk());
 
   const HttpResponseInfo* response = trans->GetResponseInfo();
   ASSERT_TRUE(response);
@@ -9640,7 +9645,7 @@ TEST_P(HttpNetworkTransactionTest, LargeContentLengthThenClose) {
 
   std::string response_data;
   rv = ReadTransaction(trans.get(), &response_data);
-  EXPECT_EQ(ERR_CONTENT_LENGTH_MISMATCH, rv);
+  EXPECT_THAT(rv, IsError(ERR_CONTENT_LENGTH_MISMATCH));
 }
 
 TEST_P(HttpNetworkTransactionTest, UploadFileSmallerThanLength) {
@@ -9677,10 +9682,10 @@ TEST_P(HttpNetworkTransactionTest, UploadFileSmallerThanLength) {
   TestCompletionCallback callback;
 
   int rv = trans->Start(&request, callback.callback(), BoundNetLog());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   rv = callback.WaitForResult();
-  EXPECT_EQ(ERR_UPLOAD_FILE_CHANGED, rv);
+  EXPECT_THAT(rv, IsError(ERR_UPLOAD_FILE_CHANGED));
 
   const HttpResponseInfo* response = trans->GetResponseInfo();
   ASSERT_TRUE(response);
@@ -9721,10 +9726,10 @@ TEST_P(HttpNetworkTransactionTest, UploadUnreadableFile) {
   TestCompletionCallback callback;
 
   int rv = trans->Start(&request, callback.callback(), BoundNetLog());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   rv = callback.WaitForResult();
-  EXPECT_EQ(ERR_ACCESS_DENIED, rv);
+  EXPECT_THAT(rv, IsError(ERR_ACCESS_DENIED));
 
   base::DeleteFile(temp_file, false);
 }
@@ -9774,7 +9779,7 @@ TEST_P(HttpNetworkTransactionTest, CancelDuringInitRequestBody) {
 
   TestCompletionCallback callback;
   int rv = trans->Start(&request, callback.callback(), BoundNetLog());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
   base::RunLoop().RunUntilIdle();
 
   // Transaction is pending on request body initialization.
@@ -9880,9 +9885,9 @@ TEST_P(HttpNetworkTransactionTest, ChangeAuthRealms) {
   // password prompt for first_realm waiting to be filled in after the
   // transaction completes.
   int rv = trans->Start(&request, callback1.callback(), BoundNetLog());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
   rv = callback1.WaitForResult();
-  EXPECT_EQ(OK, rv);
+  EXPECT_THAT(rv, IsOk());
   const HttpResponseInfo* response = trans->GetResponseInfo();
   ASSERT_TRUE(response);
   const AuthChallengeInfo* challenge = response->auth_challenge.get();
@@ -9898,9 +9903,9 @@ TEST_P(HttpNetworkTransactionTest, ChangeAuthRealms) {
   TestCompletionCallback callback2;
   rv = trans->RestartWithAuth(
       AuthCredentials(kFirst, kBaz), callback2.callback());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
   rv = callback2.WaitForResult();
-  EXPECT_EQ(OK, rv);
+  EXPECT_THAT(rv, IsOk());
   response = trans->GetResponseInfo();
   ASSERT_TRUE(response);
   challenge = response->auth_challenge.get();
@@ -9917,9 +9922,9 @@ TEST_P(HttpNetworkTransactionTest, ChangeAuthRealms) {
   TestCompletionCallback callback3;
   rv = trans->RestartWithAuth(
       AuthCredentials(kSecond, kFou), callback3.callback());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
   rv = callback3.WaitForResult();
-  EXPECT_EQ(OK, rv);
+  EXPECT_THAT(rv, IsOk());
   response = trans->GetResponseInfo();
   ASSERT_TRUE(response);
   challenge = response->auth_challenge.get();
@@ -9933,9 +9938,9 @@ TEST_P(HttpNetworkTransactionTest, ChangeAuthRealms) {
   TestCompletionCallback callback4;
   rv = trans->RestartWithAuth(
       AuthCredentials(kFirst, kBar), callback4.callback());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
   rv = callback4.WaitForResult();
-  EXPECT_EQ(OK, rv);
+  EXPECT_THAT(rv, IsOk());
   response = trans->GetResponseInfo();
   ASSERT_TRUE(response);
   EXPECT_FALSE(response->auth_challenge);
@@ -9971,7 +9976,7 @@ TEST_P(HttpNetworkTransactionTest, HonorAlternativeServiceHeader) {
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
   int rv = trans->Start(&request, callback.callback(), BoundNetLog());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   url::SchemeHostPort test_server(request.url);
   HttpServerProperties* http_server_properties =
@@ -9980,7 +9985,7 @@ TEST_P(HttpNetworkTransactionTest, HonorAlternativeServiceHeader) {
       http_server_properties->GetAlternativeServices(test_server);
   EXPECT_TRUE(alternative_service_vector.empty());
 
-  EXPECT_EQ(OK, callback.WaitForResult());
+  EXPECT_THAT(callback.WaitForResult(), IsOk());
 
   const HttpResponseInfo* response = trans->GetResponseInfo();
   ASSERT_TRUE(response);
@@ -9990,7 +9995,7 @@ TEST_P(HttpNetworkTransactionTest, HonorAlternativeServiceHeader) {
   EXPECT_FALSE(response->was_npn_negotiated);
 
   std::string response_data;
-  ASSERT_EQ(OK, ReadTransaction(trans.get(), &response_data));
+  ASSERT_THAT(ReadTransaction(trans.get(), &response_data), IsOk());
   EXPECT_EQ("hello world", response_data);
 
   alternative_service_vector =
@@ -10038,8 +10043,8 @@ TEST_P(HttpNetworkTransactionTest,
   EXPECT_TRUE(alternative_service_vector.empty());
 
   int rv = trans->Start(&request, callback.callback(), BoundNetLog());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
-  EXPECT_EQ(OK, callback.WaitForResult());
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
+  EXPECT_THAT(callback.WaitForResult(), IsOk());
 
   const HttpResponseInfo* response = trans->GetResponseInfo();
   ASSERT_TRUE(response);
@@ -10049,7 +10054,7 @@ TEST_P(HttpNetworkTransactionTest,
   EXPECT_FALSE(response->was_npn_negotiated);
 
   std::string response_data;
-  ASSERT_EQ(OK, ReadTransaction(trans.get(), &response_data));
+  ASSERT_THAT(ReadTransaction(trans.get(), &response_data), IsOk());
   EXPECT_EQ("hello world", response_data);
 
   alternative_service_vector =
@@ -10102,7 +10107,7 @@ TEST_P(HttpNetworkTransactionTest,
 
   int rv = trans->Start(&request, callback.callback(), BoundNetLog());
   // Alternative service is not used, request fails.
-  EXPECT_EQ(ERR_CONNECTION_REFUSED, callback.GetResult(rv));
+  EXPECT_THAT(callback.GetResult(rv), IsError(ERR_CONNECTION_REFUSED));
 }
 
 // Regression test for https://crbug.com/615497:
@@ -10143,7 +10148,7 @@ TEST_P(HttpNetworkTransactionTest,
 
   int rv = trans->Start(&request, callback.callback(), BoundNetLog());
   // Alternative service is not used, request fails.
-  EXPECT_EQ(ERR_CONNECTION_REFUSED, callback.GetResult(rv));
+  EXPECT_THAT(callback.GetResult(rv), IsError(ERR_CONNECTION_REFUSED));
 }
 
 TEST_P(HttpNetworkTransactionTest, ClearAlternativeServices) {
@@ -10185,7 +10190,7 @@ TEST_P(HttpNetworkTransactionTest, ClearAlternativeServices) {
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
   int rv = trans->Start(&request, callback.callback(), BoundNetLog());
-  EXPECT_EQ(OK, callback.GetResult(rv));
+  EXPECT_THAT(callback.GetResult(rv), IsOk());
 
   const HttpResponseInfo* response = trans->GetResponseInfo();
   ASSERT_TRUE(response);
@@ -10195,7 +10200,7 @@ TEST_P(HttpNetworkTransactionTest, ClearAlternativeServices) {
   EXPECT_FALSE(response->was_npn_negotiated);
 
   std::string response_data;
-  ASSERT_EQ(OK, ReadTransaction(trans.get(), &response_data));
+  ASSERT_THAT(ReadTransaction(trans.get(), &response_data), IsOk());
   EXPECT_EQ("hello world", response_data);
 
   alternative_service_vector =
@@ -10233,7 +10238,7 @@ TEST_P(HttpNetworkTransactionTest, HonorMultipleAlternativeServiceHeaders) {
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
   int rv = trans->Start(&request, callback.callback(), BoundNetLog());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   url::SchemeHostPort test_server("https", "www.example.org", 443);
   HttpServerProperties* http_server_properties =
@@ -10242,7 +10247,7 @@ TEST_P(HttpNetworkTransactionTest, HonorMultipleAlternativeServiceHeaders) {
       http_server_properties->GetAlternativeServices(test_server);
   EXPECT_TRUE(alternative_service_vector.empty());
 
-  EXPECT_EQ(OK, callback.WaitForResult());
+  EXPECT_THAT(callback.WaitForResult(), IsOk());
 
   const HttpResponseInfo* response = trans->GetResponseInfo();
   ASSERT_TRUE(response);
@@ -10252,7 +10257,7 @@ TEST_P(HttpNetworkTransactionTest, HonorMultipleAlternativeServiceHeaders) {
   EXPECT_FALSE(response->was_npn_negotiated);
 
   std::string response_data;
-  ASSERT_EQ(OK, ReadTransaction(trans.get(), &response_data));
+  ASSERT_THAT(ReadTransaction(trans.get(), &response_data), IsOk());
   EXPECT_EQ("hello world", response_data);
 
   alternative_service_vector =
@@ -10444,8 +10449,8 @@ TEST_P(HttpNetworkTransactionTest,
   TestCompletionCallback callback;
 
   int rv = trans->Start(&request, callback.callback(), BoundNetLog());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
-  EXPECT_EQ(OK, callback.WaitForResult());
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
+  EXPECT_THAT(callback.WaitForResult(), IsOk());
 
   const HttpResponseInfo* response = trans->GetResponseInfo();
   ASSERT_TRUE(response);
@@ -10453,7 +10458,7 @@ TEST_P(HttpNetworkTransactionTest,
   EXPECT_EQ("HTTP/1.1 200 OK", response->headers->GetStatusLine());
 
   std::string response_data;
-  ASSERT_EQ(OK, ReadTransaction(trans.get(), &response_data));
+  ASSERT_THAT(ReadTransaction(trans.get(), &response_data), IsOk());
   EXPECT_EQ("hello world", response_data);
 
   const AlternativeServiceVector alternative_service_vector =
@@ -10512,9 +10517,9 @@ TEST_P(HttpNetworkTransactionTest,
   int rv = trans->Start(
       &restricted_port_request,
       callback.callback(), BoundNetLog());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
   // Invalid change to unrestricted port should fail.
-  EXPECT_EQ(ERR_CONNECTION_REFUSED, callback.WaitForResult());
+  EXPECT_THAT(callback.WaitForResult(), IsError(ERR_CONNECTION_REFUSED));
 }
 
 // Ensure that we are allowed to redirect traffic via an alternate protocol to
@@ -10567,7 +10572,7 @@ TEST_P(HttpNetworkTransactionTest,
       &restricted_port_request,
       callback.callback(), BoundNetLog()));
   // Change to unrestricted port should succeed.
-  EXPECT_EQ(OK, callback.WaitForResult());
+  EXPECT_THAT(callback.WaitForResult(), IsOk());
 }
 
 // Ensure that we are not allowed to redirect traffic via an alternate protocol
@@ -10618,9 +10623,9 @@ TEST_P(HttpNetworkTransactionTest,
   int rv = trans->Start(
       &restricted_port_request,
       callback.callback(), BoundNetLog());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
   // Valid change to restricted port should pass.
-  EXPECT_EQ(OK, callback.WaitForResult());
+  EXPECT_THAT(callback.WaitForResult(), IsOk());
 }
 
 // Ensure that we are not allowed to redirect traffic via an alternate protocol
@@ -10670,9 +10675,9 @@ TEST_P(HttpNetworkTransactionTest,
 
   int rv = trans->Start(
       &unrestricted_port_request, callback.callback(), BoundNetLog());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
   // Valid change to restricted port should pass.
-  EXPECT_EQ(OK, callback.WaitForResult());
+  EXPECT_THAT(callback.WaitForResult(), IsOk());
 }
 
 // Ensure that we are not allowed to redirect traffic via an alternate protocol
@@ -10722,9 +10727,9 @@ TEST_P(HttpNetworkTransactionTest,
 
   int rv = trans->Start(
       &unrestricted_port_request, callback.callback(), BoundNetLog());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
   // Valid change to an unrestricted port should pass.
-  EXPECT_EQ(OK, callback.WaitForResult());
+  EXPECT_THAT(callback.WaitForResult(), IsOk());
 }
 
 // Ensure that we are not allowed to redirect traffic via an alternate protocol
@@ -10764,9 +10769,9 @@ TEST_P(HttpNetworkTransactionTest, AlternateProtocolUnsafeBlocked) {
   TestCompletionCallback callback;
 
   int rv = trans->Start(&request, callback.callback(), BoundNetLog());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
   // The HTTP request should succeed.
-  EXPECT_EQ(OK, callback.WaitForResult());
+  EXPECT_THAT(callback.WaitForResult(), IsOk());
 
   const HttpResponseInfo* response = trans->GetResponseInfo();
   ASSERT_TRUE(response);
@@ -10774,7 +10779,7 @@ TEST_P(HttpNetworkTransactionTest, AlternateProtocolUnsafeBlocked) {
   EXPECT_EQ("HTTP/1.1 200 OK", response->headers->GetStatusLine());
 
   std::string response_data;
-  ASSERT_EQ(OK, ReadTransaction(trans.get(), &response_data));
+  ASSERT_THAT(ReadTransaction(trans.get(), &response_data), IsOk());
   EXPECT_EQ("hello world", response_data);
 }
 
@@ -10840,8 +10845,8 @@ TEST_P(HttpNetworkTransactionTest, UseAlternateProtocolForNpnSpdy) {
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
   int rv = trans->Start(&request, callback.callback(), BoundNetLog());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
-  EXPECT_EQ(OK, callback.WaitForResult());
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
+  EXPECT_THAT(callback.WaitForResult(), IsOk());
 
   const HttpResponseInfo* response = trans->GetResponseInfo();
   ASSERT_TRUE(response);
@@ -10849,14 +10854,14 @@ TEST_P(HttpNetworkTransactionTest, UseAlternateProtocolForNpnSpdy) {
   EXPECT_EQ("HTTP/1.1 200 OK", response->headers->GetStatusLine());
 
   std::string response_data;
-  ASSERT_EQ(OK, ReadTransaction(trans.get(), &response_data));
+  ASSERT_THAT(ReadTransaction(trans.get(), &response_data), IsOk());
   EXPECT_EQ("hello world", response_data);
 
   trans.reset(new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
   rv = trans->Start(&request, callback.callback(), BoundNetLog());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
-  EXPECT_EQ(OK, callback.WaitForResult());
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
+  EXPECT_THAT(callback.WaitForResult(), IsOk());
 
   response = trans->GetResponseInfo();
   ASSERT_TRUE(response);
@@ -10865,7 +10870,7 @@ TEST_P(HttpNetworkTransactionTest, UseAlternateProtocolForNpnSpdy) {
   EXPECT_TRUE(response->was_fetched_via_spdy);
   EXPECT_TRUE(response->was_npn_negotiated);
 
-  ASSERT_EQ(OK, ReadTransaction(trans.get(), &response_data));
+  ASSERT_THAT(ReadTransaction(trans.get(), &response_data), IsOk());
   EXPECT_EQ("hello!", response_data);
 }
 
@@ -10952,8 +10957,8 @@ TEST_P(HttpNetworkTransactionTest, AlternateProtocolWithSpdyLateBinding) {
   HttpNetworkTransaction trans1(DEFAULT_PRIORITY, session.get());
 
   int rv = trans1.Start(&request, callback1.callback(), BoundNetLog());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
-  EXPECT_EQ(OK, callback1.WaitForResult());
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
+  EXPECT_THAT(callback1.WaitForResult(), IsOk());
 
   const HttpResponseInfo* response = trans1.GetResponseInfo();
   ASSERT_TRUE(response);
@@ -10961,21 +10966,21 @@ TEST_P(HttpNetworkTransactionTest, AlternateProtocolWithSpdyLateBinding) {
   EXPECT_EQ("HTTP/1.1 200 OK", response->headers->GetStatusLine());
 
   std::string response_data;
-  ASSERT_EQ(OK, ReadTransaction(&trans1, &response_data));
+  ASSERT_THAT(ReadTransaction(&trans1, &response_data), IsOk());
   EXPECT_EQ("hello world", response_data);
 
   TestCompletionCallback callback2;
   HttpNetworkTransaction trans2(DEFAULT_PRIORITY, session.get());
   rv = trans2.Start(&request, callback2.callback(), BoundNetLog());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   TestCompletionCallback callback3;
   HttpNetworkTransaction trans3(DEFAULT_PRIORITY, session.get());
   rv = trans3.Start(&request, callback3.callback(), BoundNetLog());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
-  EXPECT_EQ(OK, callback2.WaitForResult());
-  EXPECT_EQ(OK, callback3.WaitForResult());
+  EXPECT_THAT(callback2.WaitForResult(), IsOk());
+  EXPECT_THAT(callback3.WaitForResult(), IsOk());
 
   response = trans2.GetResponseInfo();
   ASSERT_TRUE(response);
@@ -10983,7 +10988,7 @@ TEST_P(HttpNetworkTransactionTest, AlternateProtocolWithSpdyLateBinding) {
   EXPECT_EQ("HTTP/1.1 200", response->headers->GetStatusLine());
   EXPECT_TRUE(response->was_fetched_via_spdy);
   EXPECT_TRUE(response->was_npn_negotiated);
-  ASSERT_EQ(OK, ReadTransaction(&trans2, &response_data));
+  ASSERT_THAT(ReadTransaction(&trans2, &response_data), IsOk());
   EXPECT_EQ("hello!", response_data);
 
   response = trans3.GetResponseInfo();
@@ -10992,7 +10997,7 @@ TEST_P(HttpNetworkTransactionTest, AlternateProtocolWithSpdyLateBinding) {
   EXPECT_EQ("HTTP/1.1 200", response->headers->GetStatusLine());
   EXPECT_TRUE(response->was_fetched_via_spdy);
   EXPECT_TRUE(response->was_npn_negotiated);
-  ASSERT_EQ(OK, ReadTransaction(&trans3, &response_data));
+  ASSERT_THAT(ReadTransaction(&trans3, &response_data), IsOk());
   EXPECT_EQ("hello!", response_data);
 }
 
@@ -11042,8 +11047,8 @@ TEST_P(HttpNetworkTransactionTest, StallAlternativeServiceForNpnSpdy) {
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
   int rv = trans->Start(&request, callback.callback(), BoundNetLog());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
-  EXPECT_EQ(OK, callback.WaitForResult());
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
+  EXPECT_THAT(callback.WaitForResult(), IsOk());
 
   const HttpResponseInfo* response = trans->GetResponseInfo();
   ASSERT_TRUE(response);
@@ -11051,14 +11056,14 @@ TEST_P(HttpNetworkTransactionTest, StallAlternativeServiceForNpnSpdy) {
   EXPECT_EQ("HTTP/1.1 200 OK", response->headers->GetStatusLine());
 
   std::string response_data;
-  ASSERT_EQ(OK, ReadTransaction(trans.get(), &response_data));
+  ASSERT_THAT(ReadTransaction(trans.get(), &response_data), IsOk());
   EXPECT_EQ("hello world", response_data);
 
   trans.reset(new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
   rv = trans->Start(&request, callback.callback(), BoundNetLog());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
-  EXPECT_EQ(OK, callback.WaitForResult());
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
+  EXPECT_THAT(callback.WaitForResult(), IsOk());
 
   response = trans->GetResponseInfo();
   ASSERT_TRUE(response);
@@ -11067,7 +11072,7 @@ TEST_P(HttpNetworkTransactionTest, StallAlternativeServiceForNpnSpdy) {
   EXPECT_FALSE(response->was_fetched_via_spdy);
   EXPECT_FALSE(response->was_npn_negotiated);
 
-  ASSERT_EQ(OK, ReadTransaction(trans.get(), &response_data));
+  ASSERT_THAT(ReadTransaction(trans.get(), &response_data), IsOk());
   EXPECT_EQ("hello world", response_data);
 }
 
@@ -11206,8 +11211,8 @@ TEST_P(HttpNetworkTransactionTest, UseAlternativeServiceForTunneledNpnSpdy) {
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
   int rv = trans->Start(&request, callback.callback(), BoundNetLog());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
-  EXPECT_EQ(OK, callback.WaitForResult());
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
+  EXPECT_THAT(callback.WaitForResult(), IsOk());
 
   const HttpResponseInfo* response = trans->GetResponseInfo();
   ASSERT_TRUE(response);
@@ -11217,14 +11222,14 @@ TEST_P(HttpNetworkTransactionTest, UseAlternativeServiceForTunneledNpnSpdy) {
   EXPECT_TRUE(response->was_npn_negotiated);
 
   std::string response_data;
-  ASSERT_EQ(OK, ReadTransaction(trans.get(), &response_data));
+  ASSERT_THAT(ReadTransaction(trans.get(), &response_data), IsOk());
   EXPECT_EQ("hello world", response_data);
 
   trans.reset(new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
   rv = trans->Start(&request, callback.callback(), BoundNetLog());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
-  EXPECT_EQ(OK, callback.WaitForResult());
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
+  EXPECT_THAT(callback.WaitForResult(), IsOk());
 
   response = trans->GetResponseInfo();
   ASSERT_TRUE(response);
@@ -11233,7 +11238,7 @@ TEST_P(HttpNetworkTransactionTest, UseAlternativeServiceForTunneledNpnSpdy) {
   EXPECT_TRUE(response->was_fetched_via_spdy);
   EXPECT_TRUE(response->was_npn_negotiated);
 
-  ASSERT_EQ(OK, ReadTransaction(trans.get(), &response_data));
+  ASSERT_THAT(ReadTransaction(trans.get(), &response_data), IsOk());
   EXPECT_EQ("hello!", response_data);
   ASSERT_EQ(2u, capturing_proxy_resolver.resolved().size());
   EXPECT_EQ("https://www.example.org/",
@@ -11303,8 +11308,8 @@ TEST_P(HttpNetworkTransactionTest,
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
   int rv = trans->Start(&request, callback.callback(), BoundNetLog());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
-  EXPECT_EQ(OK, callback.WaitForResult());
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
+  EXPECT_THAT(callback.WaitForResult(), IsOk());
 
   const HttpResponseInfo* response = trans->GetResponseInfo();
   ASSERT_TRUE(response);
@@ -11312,7 +11317,7 @@ TEST_P(HttpNetworkTransactionTest,
   EXPECT_EQ("HTTP/1.1 200 OK", response->headers->GetStatusLine());
 
   std::string response_data;
-  ASSERT_EQ(OK, ReadTransaction(trans.get(), &response_data));
+  ASSERT_THAT(ReadTransaction(trans.get(), &response_data), IsOk());
   EXPECT_EQ("hello world", response_data);
 
   // Set up an initial SpdySession in the pool to reuse.
@@ -11325,8 +11330,8 @@ TEST_P(HttpNetworkTransactionTest,
   trans.reset(new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
   rv = trans->Start(&request, callback.callback(), BoundNetLog());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
-  EXPECT_EQ(OK, callback.WaitForResult());
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
+  EXPECT_THAT(callback.WaitForResult(), IsOk());
 
   response = trans->GetResponseInfo();
   ASSERT_TRUE(response);
@@ -11335,7 +11340,7 @@ TEST_P(HttpNetworkTransactionTest,
   EXPECT_TRUE(response->was_fetched_via_spdy);
   EXPECT_TRUE(response->was_npn_negotiated);
 
-  ASSERT_EQ(OK, ReadTransaction(trans.get(), &response_data));
+  ASSERT_THAT(ReadTransaction(trans.get(), &response_data), IsOk());
   EXPECT_EQ("hello!", response_data);
 }
 
@@ -11870,7 +11875,7 @@ TEST_P(HttpNetworkTransactionTest, MultiRoundAuth) {
   rv = trans->Start(&request, callback.callback(), BoundNetLog());
   if (rv == ERR_IO_PENDING)
     rv = callback.WaitForResult();
-  EXPECT_EQ(OK, rv);
+  EXPECT_THAT(rv, IsOk());
   response = trans->GetResponseInfo();
   ASSERT_TRUE(response);
   EXPECT_TRUE(response->auth_challenge);
@@ -11884,7 +11889,7 @@ TEST_P(HttpNetworkTransactionTest, MultiRoundAuth) {
   TestCompletionCallback callback_compete;
   rv = trans_compete->Start(
       &request, callback_compete.callback(), BoundNetLog());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
   // callback_compete.WaitForResult at this point would stall forever,
   // since the HttpNetworkTransaction does not release the request back to
   // the pool until after authentication completes.
@@ -11894,7 +11899,7 @@ TEST_P(HttpNetworkTransactionTest, MultiRoundAuth) {
   rv = trans->RestartWithAuth(AuthCredentials(kFoo, kBar), callback.callback());
   if (rv == ERR_IO_PENDING)
     rv = callback.WaitForResult();
-  EXPECT_EQ(OK, rv);
+  EXPECT_THAT(rv, IsOk());
   response = trans->GetResponseInfo();
   ASSERT_TRUE(response);
   EXPECT_FALSE(response->auth_challenge);
@@ -11905,7 +11910,7 @@ TEST_P(HttpNetworkTransactionTest, MultiRoundAuth) {
   rv = trans->RestartWithAuth(AuthCredentials(), callback.callback());
   if (rv == ERR_IO_PENDING)
     rv = callback.WaitForResult();
-  EXPECT_EQ(OK, rv);
+  EXPECT_THAT(rv, IsOk());
   response = trans->GetResponseInfo();
   ASSERT_TRUE(response);
   EXPECT_FALSE(response->auth_challenge);
@@ -11916,7 +11921,7 @@ TEST_P(HttpNetworkTransactionTest, MultiRoundAuth) {
   rv = trans->RestartWithAuth(AuthCredentials(), callback.callback());
   if (rv == ERR_IO_PENDING)
     rv = callback.WaitForResult();
-  EXPECT_EQ(OK, rv);
+  EXPECT_THAT(rv, IsOk());
   response = trans->GetResponseInfo();
   ASSERT_TRUE(response);
   EXPECT_FALSE(response->auth_challenge);
@@ -11938,7 +11943,7 @@ TEST_P(HttpNetworkTransactionTest, MultiRoundAuth) {
   // The competing request can now finish. Wait for the headers and then
   // read the body.
   rv = callback_compete.WaitForResult();
-  EXPECT_EQ(OK, rv);
+  EXPECT_THAT(rv, IsOk());
   rv = trans_compete->Read(io_buf.get(), io_buf->size(), callback.callback());
   if (rv == ERR_IO_PENDING)
     rv = callback.WaitForResult();
@@ -11993,8 +11998,8 @@ TEST_P(HttpNetworkTransactionTest, NpnWithHttpOverSSL) {
 
   int rv = trans->Start(&request, callback.callback(), BoundNetLog());
 
-  EXPECT_EQ(ERR_IO_PENDING, rv);
-  EXPECT_EQ(OK, callback.WaitForResult());
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
+  EXPECT_THAT(callback.WaitForResult(), IsOk());
 
   const HttpResponseInfo* response = trans->GetResponseInfo();
   ASSERT_TRUE(response);
@@ -12002,7 +12007,7 @@ TEST_P(HttpNetworkTransactionTest, NpnWithHttpOverSSL) {
   EXPECT_EQ("HTTP/1.1 200 OK", response->headers->GetStatusLine());
 
   std::string response_data;
-  ASSERT_EQ(OK, ReadTransaction(trans.get(), &response_data));
+  ASSERT_THAT(ReadTransaction(trans.get(), &response_data), IsOk());
   EXPECT_EQ("hello world", response_data);
 
   EXPECT_FALSE(response->was_fetched_via_spdy);
@@ -12041,8 +12046,8 @@ TEST_P(HttpNetworkTransactionTest, SpdyPostNPNServerHangup) {
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
   int rv = trans->Start(&request, callback.callback(), BoundNetLog());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
-  EXPECT_EQ(ERR_CONNECTION_CLOSED, callback.WaitForResult());
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
+  EXPECT_THAT(callback.WaitForResult(), IsError(ERR_CONNECTION_CLOSED));
 }
 
 // A subclass of HttpAuthHandlerMock that records the request URL when
@@ -12101,7 +12106,7 @@ TEST_P(HttpNetworkTransactionTest, SimpleCancel) {
 
   BoundTestNetLog log;
   int rv = trans->Start(&request, callback.callback(), log.bound());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
   trans.reset();  // Cancel the transaction here.
 
   base::RunLoop().RunUntilIdle();
@@ -12139,7 +12144,7 @@ TEST_P(HttpNetworkTransactionTest, CancelAfterHeaders) {
     TestCompletionCallback callback;
 
     int rv = trans.Start(&request, callback.callback(), BoundNetLog());
-    EXPECT_EQ(ERR_IO_PENDING, rv);
+    EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
     callback.WaitForResult();
 
     const HttpResponseInfo* response = trans.GetResponseInfo();
@@ -12197,10 +12202,10 @@ TEST_P(HttpNetworkTransactionTest, ProxyGet) {
                  base::Unretained(&headers_handler)));
 
   int rv = trans->Start(&request, callback1.callback(), log.bound());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   rv = callback1.WaitForResult();
-  EXPECT_EQ(OK, rv);
+  EXPECT_THAT(rv, IsOk());
 
   const HttpResponseInfo* response = trans->GetResponseInfo();
   ASSERT_TRUE(response);
@@ -12270,10 +12275,10 @@ TEST_P(HttpNetworkTransactionTest, ProxyTunnelGet) {
                  base::Unretained(&headers_handler)));
 
   int rv = trans->Start(&request, callback1.callback(), log.bound());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   rv = callback1.WaitForResult();
-  EXPECT_EQ(OK, rv);
+  EXPECT_THAT(rv, IsOk());
   TestNetLogEntry::List entries;
   log.GetEntries(&entries);
   size_t pos = ExpectLogContainsSomewhere(
@@ -12349,10 +12354,10 @@ TEST_P(HttpNetworkTransactionTest, ProxyTunnelGetIPv6) {
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
   int rv = trans->Start(&request, callback1.callback(), log.bound());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   rv = callback1.WaitForResult();
-  EXPECT_EQ(OK, rv);
+  EXPECT_THAT(rv, IsOk());
   TestNetLogEntry::List entries;
   log.GetEntries(&entries);
   size_t pos = ExpectLogContainsSomewhere(
@@ -12420,10 +12425,10 @@ TEST_P(HttpNetworkTransactionTest, ProxyTunnelGetHangup) {
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
   int rv = trans->Start(&request, callback1.callback(), log.bound());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   rv = callback1.WaitForResult();
-  EXPECT_EQ(ERR_EMPTY_RESPONSE, rv);
+  EXPECT_THAT(rv, IsError(ERR_EMPTY_RESPONSE));
   TestNetLogEntry::List entries;
   log.GetEntries(&entries);
   size_t pos = ExpectLogContainsSomewhere(
@@ -12479,8 +12484,8 @@ TEST_P(HttpNetworkTransactionTest, PreconnectWithExistingSpdySession) {
 
   TestCompletionCallback callback;
   int rv = trans->Start(&request, callback.callback(), BoundNetLog());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
-  EXPECT_EQ(OK, callback.WaitForResult());
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
+  EXPECT_THAT(callback.WaitForResult(), IsOk());
 }
 
 // Given a net error, cause that error to be returned from the first Write()
@@ -12594,19 +12599,19 @@ TEST_P(HttpNetworkTransactionTest,
   // Begin the SSL handshake with the peer. This consumes ssl_data1.
   TestCompletionCallback callback;
   int rv = trans->Start(&request_info, callback.callback(), BoundNetLog());
-  ASSERT_EQ(ERR_IO_PENDING, rv);
+  ASSERT_THAT(rv, IsError(ERR_IO_PENDING));
 
   // Complete the SSL handshake, which should abort due to requiring a
   // client certificate.
   rv = callback.WaitForResult();
-  ASSERT_EQ(ERR_SSL_CLIENT_AUTH_CERT_NEEDED, rv);
+  ASSERT_THAT(rv, IsError(ERR_SSL_CLIENT_AUTH_CERT_NEEDED));
 
   // Indicate that no certificate should be supplied. From the perspective
   // of SSLClientCertCache, NULL is just as meaningful as a real
   // certificate, so this is the same as supply a
   // legitimate-but-unacceptable certificate.
   rv = trans->RestartWithCertificate(NULL, NULL, callback.callback());
-  ASSERT_EQ(ERR_IO_PENDING, rv);
+  ASSERT_THAT(rv, IsError(ERR_IO_PENDING));
 
   // Ensure the certificate was added to the client auth cache before
   // allowing the connection to continue restarting.
@@ -12620,7 +12625,7 @@ TEST_P(HttpNetworkTransactionTest,
   // then consume ssl_data3 and ssl_data4, both of which should also fail.
   // The result code is checked against what ssl_data4 should return.
   rv = callback.WaitForResult();
-  ASSERT_EQ(ERR_SSL_PROTOCOL_ERROR, rv);
+  ASSERT_THAT(rv, IsError(ERR_SSL_PROTOCOL_ERROR));
 
   // Ensure that the client certificate is removed from the cache on a
   // handshake failure.
@@ -12712,19 +12717,19 @@ TEST_P(HttpNetworkTransactionTest,
   // Begin the initial SSL handshake.
   TestCompletionCallback callback;
   int rv = trans->Start(&request_info, callback.callback(), BoundNetLog());
-  ASSERT_EQ(ERR_IO_PENDING, rv);
+  ASSERT_THAT(rv, IsError(ERR_IO_PENDING));
 
   // Complete the SSL handshake, which should abort due to requiring a
   // client certificate.
   rv = callback.WaitForResult();
-  ASSERT_EQ(ERR_SSL_CLIENT_AUTH_CERT_NEEDED, rv);
+  ASSERT_THAT(rv, IsError(ERR_SSL_CLIENT_AUTH_CERT_NEEDED));
 
   // Indicate that no certificate should be supplied. From the perspective
   // of SSLClientCertCache, NULL is just as meaningful as a real
   // certificate, so this is the same as supply a
   // legitimate-but-unacceptable certificate.
   rv = trans->RestartWithCertificate(NULL, NULL, callback.callback());
-  ASSERT_EQ(ERR_IO_PENDING, rv);
+  ASSERT_THAT(rv, IsError(ERR_IO_PENDING));
 
   // Ensure the certificate was added to the client auth cache before
   // allowing the connection to continue restarting.
@@ -12738,7 +12743,7 @@ TEST_P(HttpNetworkTransactionTest,
   // then consume ssl_data3 and ssl_data4, both of which should also fail.
   // The result code is checked against what ssl_data4 should return.
   rv = callback.WaitForResult();
-  ASSERT_EQ(ERR_SSL_PROTOCOL_ERROR, rv);
+  ASSERT_THAT(rv, IsError(ERR_SSL_PROTOCOL_ERROR));
 
   // Ensure that the client certificate is removed from the cache on a
   // handshake failure.
@@ -12805,19 +12810,19 @@ TEST_P(HttpNetworkTransactionTest, ClientAuthCertCache_Proxy_Fail) {
     // Begin the SSL handshake with the proxy.
     TestCompletionCallback callback;
     int rv = trans->Start(&requests[i], callback.callback(), BoundNetLog());
-    ASSERT_EQ(ERR_IO_PENDING, rv);
+    ASSERT_THAT(rv, IsError(ERR_IO_PENDING));
 
     // Complete the SSL handshake, which should abort due to requiring a
     // client certificate.
     rv = callback.WaitForResult();
-    ASSERT_EQ(ERR_SSL_CLIENT_AUTH_CERT_NEEDED, rv);
+    ASSERT_THAT(rv, IsError(ERR_SSL_CLIENT_AUTH_CERT_NEEDED));
 
     // Indicate that no certificate should be supplied. From the perspective
     // of SSLClientCertCache, NULL is just as meaningful as a real
     // certificate, so this is the same as supply a
     // legitimate-but-unacceptable certificate.
     rv = trans->RestartWithCertificate(NULL, NULL, callback.callback());
-    ASSERT_EQ(ERR_IO_PENDING, rv);
+    ASSERT_THAT(rv, IsError(ERR_IO_PENDING));
 
     // Ensure the certificate was added to the client auth cache before
     // allowing the connection to continue restarting.
@@ -12836,7 +12841,7 @@ TEST_P(HttpNetworkTransactionTest, ClientAuthCertCache_Proxy_Fail) {
     // then consume ssl_data3, which should also fail. The result code is
     // checked against what ssl_data3 should return.
     rv = callback.WaitForResult();
-    ASSERT_EQ(ERR_PROXY_CONNECTION_FAILED, rv);
+    ASSERT_THAT(rv, IsError(ERR_PROXY_CONNECTION_FAILED));
 
     // Now that the new handshake has failed, ensure that the client
     // certificate was removed from the client auth cache.
@@ -12897,8 +12902,8 @@ TEST_P(HttpNetworkTransactionTest, UseIPConnectionPooling) {
   HttpNetworkTransaction trans1(DEFAULT_PRIORITY, session.get());
 
   int rv = trans1.Start(&request1, callback.callback(), BoundNetLog());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
-  EXPECT_EQ(OK, callback.WaitForResult());
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
+  EXPECT_THAT(callback.WaitForResult(), IsOk());
 
   const HttpResponseInfo* response = trans1.GetResponseInfo();
   ASSERT_TRUE(response);
@@ -12906,7 +12911,7 @@ TEST_P(HttpNetworkTransactionTest, UseIPConnectionPooling) {
   EXPECT_EQ("HTTP/1.1 200", response->headers->GetStatusLine());
 
   std::string response_data;
-  ASSERT_EQ(OK, ReadTransaction(&trans1, &response_data));
+  ASSERT_THAT(ReadTransaction(&trans1, &response_data), IsOk());
   EXPECT_EQ("hello!", response_data);
 
   // Preload www.gmail.com into HostCache.
@@ -12919,9 +12924,9 @@ TEST_P(HttpNetworkTransactionTest, UseIPConnectionPooling) {
                                             callback.callback(),
                                             NULL,
                                             BoundNetLog());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
   rv = callback.WaitForResult();
-  EXPECT_EQ(OK, rv);
+  EXPECT_THAT(rv, IsOk());
 
   HttpRequestInfo request2;
   request2.method = "GET";
@@ -12930,8 +12935,8 @@ TEST_P(HttpNetworkTransactionTest, UseIPConnectionPooling) {
   HttpNetworkTransaction trans2(DEFAULT_PRIORITY, session.get());
 
   rv = trans2.Start(&request2, callback.callback(), BoundNetLog());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
-  EXPECT_EQ(OK, callback.WaitForResult());
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
+  EXPECT_THAT(callback.WaitForResult(), IsOk());
 
   response = trans2.GetResponseInfo();
   ASSERT_TRUE(response);
@@ -12939,7 +12944,7 @@ TEST_P(HttpNetworkTransactionTest, UseIPConnectionPooling) {
   EXPECT_EQ("HTTP/1.1 200", response->headers->GetStatusLine());
   EXPECT_TRUE(response->was_fetched_via_spdy);
   EXPECT_TRUE(response->was_npn_negotiated);
-  ASSERT_EQ(OK, ReadTransaction(&trans2, &response_data));
+  ASSERT_THAT(ReadTransaction(&trans2, &response_data), IsOk());
   EXPECT_EQ("hello!", response_data);
 }
 
@@ -12992,8 +12997,8 @@ TEST_P(HttpNetworkTransactionTest, UseIPConnectionPoolingAfterResolution) {
   HttpNetworkTransaction trans1(DEFAULT_PRIORITY, session.get());
 
   int rv = trans1.Start(&request1, callback.callback(), BoundNetLog());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
-  EXPECT_EQ(OK, callback.WaitForResult());
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
+  EXPECT_THAT(callback.WaitForResult(), IsOk());
 
   const HttpResponseInfo* response = trans1.GetResponseInfo();
   ASSERT_TRUE(response);
@@ -13001,7 +13006,7 @@ TEST_P(HttpNetworkTransactionTest, UseIPConnectionPoolingAfterResolution) {
   EXPECT_EQ("HTTP/1.1 200", response->headers->GetStatusLine());
 
   std::string response_data;
-  ASSERT_EQ(OK, ReadTransaction(&trans1, &response_data));
+  ASSERT_THAT(ReadTransaction(&trans1, &response_data), IsOk());
   EXPECT_EQ("hello!", response_data);
 
   HttpRequestInfo request2;
@@ -13011,8 +13016,8 @@ TEST_P(HttpNetworkTransactionTest, UseIPConnectionPoolingAfterResolution) {
   HttpNetworkTransaction trans2(DEFAULT_PRIORITY, session.get());
 
   rv = trans2.Start(&request2, callback.callback(), BoundNetLog());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
-  EXPECT_EQ(OK, callback.WaitForResult());
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
+  EXPECT_THAT(callback.WaitForResult(), IsOk());
 
   response = trans2.GetResponseInfo();
   ASSERT_TRUE(response);
@@ -13020,7 +13025,7 @@ TEST_P(HttpNetworkTransactionTest, UseIPConnectionPoolingAfterResolution) {
   EXPECT_EQ("HTTP/1.1 200", response->headers->GetStatusLine());
   EXPECT_TRUE(response->was_fetched_via_spdy);
   EXPECT_TRUE(response->was_npn_negotiated);
-  ASSERT_EQ(OK, ReadTransaction(&trans2, &response_data));
+  ASSERT_THAT(ReadTransaction(&trans2, &response_data), IsOk());
   EXPECT_EQ("hello!", response_data);
 }
 
@@ -13118,8 +13123,8 @@ TEST_P(HttpNetworkTransactionTest,
   HttpNetworkTransaction trans1(DEFAULT_PRIORITY, session.get());
 
   int rv = trans1.Start(&request1, callback.callback(), BoundNetLog());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
-  EXPECT_EQ(OK, callback.WaitForResult());
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
+  EXPECT_THAT(callback.WaitForResult(), IsOk());
 
   const HttpResponseInfo* response = trans1.GetResponseInfo();
   ASSERT_TRUE(response);
@@ -13127,7 +13132,7 @@ TEST_P(HttpNetworkTransactionTest,
   EXPECT_EQ("HTTP/1.1 200", response->headers->GetStatusLine());
 
   std::string response_data;
-  ASSERT_EQ(OK, ReadTransaction(&trans1, &response_data));
+  ASSERT_THAT(ReadTransaction(&trans1, &response_data), IsOk());
   EXPECT_EQ("hello!", response_data);
 
   // Preload cache entries into HostCache.
@@ -13139,9 +13144,9 @@ TEST_P(HttpNetworkTransactionTest,
                              callback.callback(),
                              NULL,
                              BoundNetLog());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
   rv = callback.WaitForResult();
-  EXPECT_EQ(OK, rv);
+  EXPECT_THAT(rv, IsOk());
 
   HttpRequestInfo request2;
   request2.method = "GET";
@@ -13150,8 +13155,8 @@ TEST_P(HttpNetworkTransactionTest,
   HttpNetworkTransaction trans2(DEFAULT_PRIORITY, session.get());
 
   rv = trans2.Start(&request2, callback.callback(), BoundNetLog());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
-  EXPECT_EQ(OK, callback.WaitForResult());
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
+  EXPECT_THAT(callback.WaitForResult(), IsOk());
 
   response = trans2.GetResponseInfo();
   ASSERT_TRUE(response);
@@ -13159,7 +13164,7 @@ TEST_P(HttpNetworkTransactionTest,
   EXPECT_EQ("HTTP/1.1 200", response->headers->GetStatusLine());
   EXPECT_TRUE(response->was_fetched_via_spdy);
   EXPECT_TRUE(response->was_npn_negotiated);
-  ASSERT_EQ(OK, ReadTransaction(&trans2, &response_data));
+  ASSERT_THAT(ReadTransaction(&trans2, &response_data), IsOk());
   EXPECT_EQ("hello!", response_data);
 }
 
@@ -13223,7 +13228,7 @@ TEST_P(HttpNetworkTransactionTest, DoNotUseSpdySessionForHttp) {
             trans1.Start(&request1, callback1.callback(), BoundNetLog()));
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_EQ(OK, callback1.WaitForResult());
+  EXPECT_THAT(callback1.WaitForResult(), IsOk());
   EXPECT_TRUE(trans1.GetResponseInfo()->was_fetched_via_spdy);
 
   // Now, start the HTTP request
@@ -13237,7 +13242,7 @@ TEST_P(HttpNetworkTransactionTest, DoNotUseSpdySessionForHttp) {
             trans2.Start(&request2, callback2.callback(), BoundNetLog()));
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_EQ(OK, callback2.WaitForResult());
+  EXPECT_THAT(callback2.WaitForResult(), IsOk());
   EXPECT_FALSE(trans2.GetResponseInfo()->was_fetched_via_spdy);
 }
 
@@ -13342,9 +13347,9 @@ class AltSvcCertificateVerificationTest : public HttpNetworkTransactionTest {
       TestCompletionCallback callback0;
 
       int rv = trans0->Start(&request0, callback0.callback(), BoundNetLog());
-      EXPECT_EQ(ERR_IO_PENDING, rv);
+      EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
       rv = callback0.WaitForResult();
-      EXPECT_EQ(OK, rv);
+      EXPECT_THAT(rv, IsOk());
     }
 
     // Second request to origin.
@@ -13357,18 +13362,18 @@ class AltSvcCertificateVerificationTest : public HttpNetworkTransactionTest {
     TestCompletionCallback callback1;
 
     int rv = trans1->Start(&request1, callback1.callback(), BoundNetLog());
-    EXPECT_EQ(ERR_IO_PENDING, rv);
+    EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
     base::RunLoop().RunUntilIdle();
     if (data.IsPaused())
       data.Resume();
     rv = callback1.WaitForResult();
     if (valid) {
-      EXPECT_EQ(OK, rv);
+      EXPECT_THAT(rv, IsOk());
     } else {
       if (pooling) {
-        EXPECT_EQ(ERR_CONNECTION_REFUSED, rv);
+        EXPECT_THAT(rv, IsError(ERR_CONNECTION_REFUSED));
       } else {
-        EXPECT_EQ(ERR_ALTERNATIVE_CERT_NOT_VALID_FOR_ORIGIN, rv);
+        EXPECT_THAT(rv, IsError(ERR_ALTERNATIVE_CERT_NOT_VALID_FOR_ORIGIN));
       }
     }
   }
@@ -13446,7 +13451,7 @@ TEST_P(HttpNetworkTransactionTest, AlternativeServiceNotOnHttp11) {
   // HTTP/2 (or SPDY) is required for alternative service, if HTTP/1.1 is
   // negotiated, the alternate Job should fail with ERR_NPN_NEGOTIATION_FAILED.
   int rv = trans->Start(&request, callback.callback(), BoundNetLog());
-  EXPECT_EQ(ERR_NPN_NEGOTIATION_FAILED, callback.GetResult(rv));
+  EXPECT_THAT(callback.GetResult(rv), IsError(ERR_NPN_NEGOTIATION_FAILED));
 }
 
 // A request to a server with an alternative service fires two Jobs: one to the
@@ -13514,7 +13519,7 @@ TEST_P(HttpNetworkTransactionTest, FailedAlternativeServiceIsNotUserVisible) {
 
   int rv = trans1.Start(&request1, callback1.callback(), BoundNetLog());
   rv = callback1.GetResult(rv);
-  EXPECT_EQ(OK, rv);
+  EXPECT_THAT(rv, IsOk());
 
   const HttpResponseInfo* response1 = trans1.GetResponseInfo();
   ASSERT_TRUE(response1);
@@ -13522,7 +13527,7 @@ TEST_P(HttpNetworkTransactionTest, FailedAlternativeServiceIsNotUserVisible) {
   EXPECT_EQ("HTTP/1.1 200 OK", response1->headers->GetStatusLine());
 
   std::string response_data1;
-  ASSERT_EQ(OK, ReadTransaction(&trans1, &response_data1));
+  ASSERT_THAT(ReadTransaction(&trans1, &response_data1), IsOk());
   EXPECT_EQ("foobar", response_data1);
 
   // Alternative should be marked as broken, because HTTP/1.1 is not sufficient
@@ -13542,7 +13547,7 @@ TEST_P(HttpNetworkTransactionTest, FailedAlternativeServiceIsNotUserVisible) {
 
   rv = trans2.Start(&request2, callback2.callback(), BoundNetLog());
   rv = callback2.GetResult(rv);
-  EXPECT_EQ(OK, rv);
+  EXPECT_THAT(rv, IsOk());
 
   const HttpResponseInfo* response2 = trans2.GetResponseInfo();
   ASSERT_TRUE(response2);
@@ -13550,7 +13555,7 @@ TEST_P(HttpNetworkTransactionTest, FailedAlternativeServiceIsNotUserVisible) {
   EXPECT_EQ("HTTP/1.1 200 OK", response2->headers->GetStatusLine());
 
   std::string response_data2;
-  ASSERT_EQ(OK, ReadTransaction(&trans2, &response_data2));
+  ASSERT_THAT(ReadTransaction(&trans2, &response_data2), IsOk());
   EXPECT_EQ("another", response_data2);
 }
 
@@ -13623,7 +13628,7 @@ TEST_P(HttpNetworkTransactionTest, AlternativeServiceShouldNotPoolToHttp11) {
   TestCompletionCallback callback1;
 
   int rv = trans1->Start(&request1, callback1.callback(), BoundNetLog());
-  EXPECT_EQ(OK, callback1.GetResult(rv));
+  EXPECT_THAT(callback1.GetResult(rv), IsOk());
   const HttpResponseInfo* response1 = trans1->GetResponseInfo();
   ASSERT_TRUE(response1);
   ASSERT_TRUE(response1->headers);
@@ -13631,7 +13636,7 @@ TEST_P(HttpNetworkTransactionTest, AlternativeServiceShouldNotPoolToHttp11) {
   EXPECT_TRUE(response1->was_npn_negotiated);
   EXPECT_FALSE(response1->was_fetched_via_spdy);
   std::string response_data1;
-  ASSERT_EQ(OK, ReadTransaction(trans1.get(), &response_data1));
+  ASSERT_THAT(ReadTransaction(trans1.get(), &response_data1), IsOk());
   EXPECT_EQ("first HTTP/1.1 response from alternative", response_data1);
 
   // Request for origin.example.org, which has an alternative service.  This
@@ -13648,7 +13653,7 @@ TEST_P(HttpNetworkTransactionTest, AlternativeServiceShouldNotPoolToHttp11) {
   TestCompletionCallback callback2;
 
   rv = trans2->Start(&request2, callback2.callback(), BoundNetLog());
-  EXPECT_EQ(ERR_CONNECTION_REFUSED, callback2.GetResult(rv));
+  EXPECT_THAT(callback2.GetResult(rv), IsError(ERR_CONNECTION_REFUSED));
 
   // Another transaction to alternative.  This is to test that the HTTP/1.1
   // socket is still open and in the pool.
@@ -13661,7 +13666,7 @@ TEST_P(HttpNetworkTransactionTest, AlternativeServiceShouldNotPoolToHttp11) {
   TestCompletionCallback callback3;
 
   rv = trans3->Start(&request3, callback3.callback(), BoundNetLog());
-  EXPECT_EQ(OK, callback3.GetResult(rv));
+  EXPECT_THAT(callback3.GetResult(rv), IsOk());
   const HttpResponseInfo* response3 = trans3->GetResponseInfo();
   ASSERT_TRUE(response3);
   ASSERT_TRUE(response3->headers);
@@ -13669,7 +13674,7 @@ TEST_P(HttpNetworkTransactionTest, AlternativeServiceShouldNotPoolToHttp11) {
   EXPECT_TRUE(response3->was_npn_negotiated);
   EXPECT_FALSE(response3->was_fetched_via_spdy);
   std::string response_data3;
-  ASSERT_EQ(OK, ReadTransaction(trans3.get(), &response_data3));
+  ASSERT_THAT(ReadTransaction(trans3.get(), &response_data3), IsOk());
   EXPECT_EQ("second HTTP/1.1 response from alternative", response_data3);
 }
 
@@ -13761,7 +13766,7 @@ TEST_P(HttpNetworkTransactionTest, DoNotUseSpdySessionForHttpOverTunnel) {
   data1.RunUntilPaused();
   base::RunLoop().RunUntilIdle();
   data1.Resume();
-  EXPECT_EQ(OK, callback1.GetResult(rv));
+  EXPECT_THAT(callback1.GetResult(rv), IsOk());
   EXPECT_TRUE(trans1.GetResponseInfo()->was_fetched_via_spdy);
 
   LoadTimingInfo load_timing_info1;
@@ -13782,7 +13787,7 @@ TEST_P(HttpNetworkTransactionTest, DoNotUseSpdySessionForHttpOverTunnel) {
   data1.RunUntilPaused();
   base::RunLoop().RunUntilIdle();
   data1.Resume();
-  EXPECT_EQ(OK, callback2.GetResult(rv));
+  EXPECT_THAT(callback2.GetResult(rv), IsOk());
 
   EXPECT_TRUE(trans2.GetResponseInfo()->was_fetched_via_spdy);
 
@@ -13898,7 +13903,7 @@ TEST_P(HttpNetworkTransactionTest, DoNotUseSpdySessionIfCertDoesNotMatch) {
   base::RunLoop().RunUntilIdle();
   data1.Resume();
 
-  EXPECT_EQ(OK, callback1.WaitForResult());
+  EXPECT_THAT(callback1.WaitForResult(), IsOk());
   EXPECT_TRUE(trans1.GetResponseInfo()->was_fetched_via_spdy);
 
   // Now, start the HTTP request
@@ -13913,7 +13918,7 @@ TEST_P(HttpNetworkTransactionTest, DoNotUseSpdySessionIfCertDoesNotMatch) {
   base::RunLoop().RunUntilIdle();
 
   ASSERT_TRUE(callback2.have_result());
-  EXPECT_EQ(OK, callback2.WaitForResult());
+  EXPECT_THAT(callback2.WaitForResult(), IsOk());
   EXPECT_TRUE(trans2.GetResponseInfo()->was_fetched_via_spdy);
 }
 
@@ -13972,7 +13977,7 @@ TEST_P(HttpNetworkTransactionTest, ErrorSocketNotConnected) {
   TestCompletionCallback callback1;
   EXPECT_EQ(ERR_IO_PENDING,
             trans1.Start(&request1, callback1.callback(), BoundNetLog()));
-  EXPECT_EQ(ERR_CONNECTION_CLOSED, callback1.WaitForResult());
+  EXPECT_THAT(callback1.WaitForResult(), IsError(ERR_CONNECTION_CLOSED));
 
   // Now, start the second request and make sure it succeeds.
   HttpRequestInfo request2;
@@ -13984,7 +13989,7 @@ TEST_P(HttpNetworkTransactionTest, ErrorSocketNotConnected) {
   EXPECT_EQ(ERR_IO_PENDING,
             trans2.Start(&request2, callback2.callback(), BoundNetLog()));
 
-  ASSERT_EQ(OK, callback2.WaitForResult());
+  ASSERT_THAT(callback2.WaitForResult(), IsOk());
   EXPECT_TRUE(trans2.GetResponseInfo()->was_fetched_via_spdy);
 }
 
@@ -14078,8 +14083,8 @@ TEST_P(HttpNetworkTransactionTest, CloseIdleSpdySessionToOpenNewOne) {
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
   int rv = trans->Start(&request1, callback.callback(), BoundNetLog());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
-  EXPECT_EQ(OK, callback.WaitForResult());
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
+  EXPECT_THAT(callback.WaitForResult(), IsOk());
 
   const HttpResponseInfo* response = trans->GetResponseInfo();
   ASSERT_TRUE(response);
@@ -14089,7 +14094,7 @@ TEST_P(HttpNetworkTransactionTest, CloseIdleSpdySessionToOpenNewOne) {
   EXPECT_TRUE(response->was_npn_negotiated);
 
   std::string response_data;
-  ASSERT_EQ(OK, ReadTransaction(trans.get(), &response_data));
+  ASSERT_THAT(ReadTransaction(trans.get(), &response_data), IsOk());
   EXPECT_EQ("hello!", response_data);
   trans.reset();
   EXPECT_TRUE(
@@ -14107,8 +14112,8 @@ TEST_P(HttpNetworkTransactionTest, CloseIdleSpdySessionToOpenNewOne) {
   trans.reset(new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
   rv = trans->Start(&request2, callback.callback(), BoundNetLog());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
-  EXPECT_EQ(OK, callback.WaitForResult());
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
+  EXPECT_THAT(callback.WaitForResult(), IsOk());
 
   response = trans->GetResponseInfo();
   ASSERT_TRUE(response);
@@ -14116,7 +14121,7 @@ TEST_P(HttpNetworkTransactionTest, CloseIdleSpdySessionToOpenNewOne) {
   EXPECT_EQ("HTTP/1.1 200", response->headers->GetStatusLine());
   EXPECT_TRUE(response->was_fetched_via_spdy);
   EXPECT_TRUE(response->was_npn_negotiated);
-  ASSERT_EQ(OK, ReadTransaction(trans.get(), &response_data));
+  ASSERT_THAT(ReadTransaction(trans.get(), &response_data), IsOk());
   EXPECT_EQ("hello!", response_data);
   EXPECT_FALSE(
       HasSpdySession(session->spdy_session_pool(), spdy_session_key_a));
@@ -14135,8 +14140,8 @@ TEST_P(HttpNetworkTransactionTest, CloseIdleSpdySessionToOpenNewOne) {
   trans.reset(new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
   rv = trans->Start(&request3, callback.callback(), BoundNetLog());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
-  EXPECT_EQ(OK, callback.WaitForResult());
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
+  EXPECT_THAT(callback.WaitForResult(), IsOk());
 
   response = trans->GetResponseInfo();
   ASSERT_TRUE(response);
@@ -14144,7 +14149,7 @@ TEST_P(HttpNetworkTransactionTest, CloseIdleSpdySessionToOpenNewOne) {
   EXPECT_EQ("HTTP/1.1 200 OK", response->headers->GetStatusLine());
   EXPECT_FALSE(response->was_fetched_via_spdy);
   EXPECT_FALSE(response->was_npn_negotiated);
-  ASSERT_EQ(OK, ReadTransaction(trans.get(), &response_data));
+  ASSERT_THAT(ReadTransaction(trans.get(), &response_data), IsOk());
   EXPECT_EQ("hello!", response_data);
   EXPECT_FALSE(
       HasSpdySession(session->spdy_session_pool(), spdy_session_key_a));
@@ -14170,10 +14175,10 @@ TEST_P(HttpNetworkTransactionTest, HttpSyncConnectError) {
   TestCompletionCallback callback;
 
   int rv = trans->Start(&request, callback.callback(), BoundNetLog());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   rv = callback.WaitForResult();
-  EXPECT_EQ(ERR_NAME_NOT_RESOLVED, rv);
+  EXPECT_THAT(rv, IsError(ERR_NAME_NOT_RESOLVED));
 
   // We don't care whether this succeeds or fails, but it shouldn't crash.
   HttpRequestHeaders request_headers;
@@ -14182,7 +14187,7 @@ TEST_P(HttpNetworkTransactionTest, HttpSyncConnectError) {
   ConnectionAttempts attempts;
   trans->GetConnectionAttempts(&attempts);
   ASSERT_EQ(1u, attempts.size());
-  EXPECT_EQ(ERR_NAME_NOT_RESOLVED, attempts[0].result);
+  EXPECT_THAT(attempts[0].result, IsError(ERR_NAME_NOT_RESOLVED));
 
   IPEndPoint endpoint;
   EXPECT_FALSE(trans->GetRemoteEndpoint(&endpoint));
@@ -14207,10 +14212,10 @@ TEST_P(HttpNetworkTransactionTest, HttpAsyncConnectError) {
   TestCompletionCallback callback;
 
   int rv = trans->Start(&request, callback.callback(), BoundNetLog());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   rv = callback.WaitForResult();
-  EXPECT_EQ(ERR_NAME_NOT_RESOLVED, rv);
+  EXPECT_THAT(rv, IsError(ERR_NAME_NOT_RESOLVED));
 
   // We don't care whether this succeeds or fails, but it shouldn't crash.
   HttpRequestHeaders request_headers;
@@ -14219,7 +14224,7 @@ TEST_P(HttpNetworkTransactionTest, HttpAsyncConnectError) {
   ConnectionAttempts attempts;
   trans->GetConnectionAttempts(&attempts);
   ASSERT_EQ(1u, attempts.size());
-  EXPECT_EQ(ERR_NAME_NOT_RESOLVED, attempts[0].result);
+  EXPECT_THAT(attempts[0].result, IsError(ERR_NAME_NOT_RESOLVED));
 
   IPEndPoint endpoint;
   EXPECT_FALSE(trans->GetRemoteEndpoint(&endpoint));
@@ -14250,10 +14255,10 @@ TEST_P(HttpNetworkTransactionTest, HttpSyncWriteError) {
   TestCompletionCallback callback;
 
   int rv = trans->Start(&request, callback.callback(), BoundNetLog());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   rv = callback.WaitForResult();
-  EXPECT_EQ(ERR_CONNECTION_RESET, rv);
+  EXPECT_THAT(rv, IsError(ERR_CONNECTION_RESET));
 
   HttpRequestHeaders request_headers;
   EXPECT_TRUE(trans->GetFullRequestHeaders(&request_headers));
@@ -14284,10 +14289,10 @@ TEST_P(HttpNetworkTransactionTest, HttpAsyncWriteError) {
   TestCompletionCallback callback;
 
   int rv = trans->Start(&request, callback.callback(), BoundNetLog());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   rv = callback.WaitForResult();
-  EXPECT_EQ(ERR_CONNECTION_RESET, rv);
+  EXPECT_THAT(rv, IsError(ERR_CONNECTION_RESET));
 
   HttpRequestHeaders request_headers;
   EXPECT_TRUE(trans->GetFullRequestHeaders(&request_headers));
@@ -14321,10 +14326,10 @@ TEST_P(HttpNetworkTransactionTest, HttpSyncReadError) {
   TestCompletionCallback callback;
 
   int rv = trans->Start(&request, callback.callback(), BoundNetLog());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   rv = callback.WaitForResult();
-  EXPECT_EQ(ERR_CONNECTION_RESET, rv);
+  EXPECT_THAT(rv, IsError(ERR_CONNECTION_RESET));
 
   HttpRequestHeaders request_headers;
   EXPECT_TRUE(trans->GetFullRequestHeaders(&request_headers));
@@ -14358,10 +14363,10 @@ TEST_P(HttpNetworkTransactionTest, HttpAsyncReadError) {
   TestCompletionCallback callback;
 
   int rv = trans->Start(&request, callback.callback(), BoundNetLog());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   rv = callback.WaitForResult();
-  EXPECT_EQ(ERR_CONNECTION_RESET, rv);
+  EXPECT_THAT(rv, IsError(ERR_CONNECTION_RESET));
 
   HttpRequestHeaders request_headers;
   EXPECT_TRUE(trans->GetFullRequestHeaders(&request_headers));
@@ -14400,10 +14405,10 @@ TEST_P(HttpNetworkTransactionTest, GetFullRequestHeadersIncludesExtraHeader) {
   TestCompletionCallback callback;
 
   int rv = trans->Start(&request, callback.callback(), BoundNetLog());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   rv = callback.WaitForResult();
-  EXPECT_EQ(OK, rv);
+  EXPECT_THAT(rv, IsOk());
 
   HttpRequestHeaders request_headers;
   EXPECT_TRUE(trans->GetFullRequestHeaders(&request_headers));
@@ -14971,9 +14976,9 @@ TEST_P(HttpNetworkTransactionTest, CloseSSLSocketOnIdleForHttpRequest) {
   EXPECT_TRUE(IsTransportSocketPoolStalled(session.get()));
 
   // Wait for response from SSL request.
-  ASSERT_EQ(OK, ssl_callback.WaitForResult());
+  ASSERT_THAT(ssl_callback.WaitForResult(), IsOk());
   std::string response_data;
-  ASSERT_EQ(OK, ReadTransaction(ssl_trans.get(), &response_data));
+  ASSERT_THAT(ReadTransaction(ssl_trans.get(), &response_data), IsOk());
   EXPECT_EQ("hello world", response_data);
 
   // The SSL socket should automatically be closed, so the HTTP request can
@@ -14982,8 +14987,8 @@ TEST_P(HttpNetworkTransactionTest, CloseSSLSocketOnIdleForHttpRequest) {
   ASSERT_FALSE(IsTransportSocketPoolStalled(session.get()));
 
   // The HTTP request can now complete.
-  ASSERT_EQ(OK, http_callback.WaitForResult());
-  ASSERT_EQ(OK, ReadTransaction(http_trans.get(), &response_data));
+  ASSERT_THAT(http_callback.WaitForResult(), IsOk());
+  ASSERT_THAT(ReadTransaction(http_trans.get(), &response_data), IsOk());
   EXPECT_EQ("falafel", response_data);
 
   EXPECT_EQ(1, GetIdleSocketCountInTransportSocketPool(session.get()));
@@ -15052,9 +15057,9 @@ TEST_P(HttpNetworkTransactionTest, CloseSSLSocketOnIdleForHttpRequest2) {
 
   // The SSL connection will automatically be closed once the connection is
   // established, to let the HTTP request start.
-  ASSERT_EQ(OK, http_callback.WaitForResult());
+  ASSERT_THAT(http_callback.WaitForResult(), IsOk());
   std::string response_data;
-  ASSERT_EQ(OK, ReadTransaction(http_trans.get(), &response_data));
+  ASSERT_THAT(ReadTransaction(http_trans.get(), &response_data), IsOk());
   EXPECT_EQ("falafel", response_data);
 
   EXPECT_EQ(1, GetIdleSocketCountInTransportSocketPool(session.get()));
@@ -15096,10 +15101,10 @@ TEST_P(HttpNetworkTransactionTest, PostReadsErrorResponseAfterReset) {
   TestCompletionCallback callback;
 
   int rv = trans->Start(&request, callback.callback(), BoundNetLog());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   rv = callback.WaitForResult();
-  EXPECT_EQ(OK, rv);
+  EXPECT_THAT(rv, IsOk());
 
   const HttpResponseInfo* response = trans->GetResponseInfo();
   ASSERT_TRUE(response);
@@ -15109,7 +15114,7 @@ TEST_P(HttpNetworkTransactionTest, PostReadsErrorResponseAfterReset) {
 
   std::string response_data;
   rv = ReadTransaction(trans.get(), &response_data);
-  EXPECT_EQ(OK, rv);
+  EXPECT_THAT(rv, IsOk());
   EXPECT_EQ("hello world", response_data);
 }
 
@@ -15151,10 +15156,10 @@ TEST_P(HttpNetworkTransactionTest,
   std::unique_ptr<HttpTransaction> trans1(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
   int rv = trans1->Start(&request1, callback.callback(), BoundNetLog());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   rv = callback.WaitForResult();
-  EXPECT_EQ(OK, rv);
+  EXPECT_THAT(rv, IsOk());
 
   const HttpResponseInfo* response1 = trans1->GetResponseInfo();
   ASSERT_TRUE(response1);
@@ -15164,7 +15169,7 @@ TEST_P(HttpNetworkTransactionTest,
 
   std::string response_data1;
   rv = ReadTransaction(trans1.get(), &response_data1);
-  EXPECT_EQ(OK, rv);
+  EXPECT_THAT(rv, IsOk());
   EXPECT_EQ("first response", response_data1);
   // Delete the transaction to release the socket back into the socket pool.
   trans1.reset();
@@ -15183,10 +15188,10 @@ TEST_P(HttpNetworkTransactionTest,
   std::unique_ptr<HttpTransaction> trans2(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
   rv = trans2->Start(&request2, callback.callback(), BoundNetLog());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   rv = callback.WaitForResult();
-  EXPECT_EQ(OK, rv);
+  EXPECT_THAT(rv, IsOk());
 
   const HttpResponseInfo* response2 = trans2->GetResponseInfo();
   ASSERT_TRUE(response2);
@@ -15196,7 +15201,7 @@ TEST_P(HttpNetworkTransactionTest,
 
   std::string response_data2;
   rv = ReadTransaction(trans2.get(), &response_data2);
-  EXPECT_EQ(OK, rv);
+  EXPECT_THAT(rv, IsOk());
   EXPECT_EQ("second response", response_data2);
 }
 
@@ -15238,10 +15243,10 @@ TEST_P(HttpNetworkTransactionTest,
   TestCompletionCallback callback;
 
   int rv = trans->Start(&request, callback.callback(), BoundNetLog());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   rv = callback.WaitForResult();
-  EXPECT_EQ(OK, rv);
+  EXPECT_THAT(rv, IsOk());
 
   const HttpResponseInfo* response = trans->GetResponseInfo();
   ASSERT_TRUE(response);
@@ -15251,7 +15256,7 @@ TEST_P(HttpNetworkTransactionTest,
 
   std::string response_data;
   rv = ReadTransaction(trans.get(), &response_data);
-  EXPECT_EQ(OK, rv);
+  EXPECT_THAT(rv, IsOk());
   EXPECT_EQ("hello world", response_data);
 }
 
@@ -15290,7 +15295,7 @@ TEST_P(HttpNetworkTransactionTest, ChunkedPostReadsErrorResponseAfterReset) {
   TestCompletionCallback callback;
 
   int rv = trans->Start(&request, callback.callback(), BoundNetLog());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
   // Make sure the headers are sent before adding a chunk.  This ensures that
   // they can't be merged with the body in a single send.  Not currently
   // necessary since a chunked body is never merged with headers, but this makes
@@ -15300,7 +15305,7 @@ TEST_P(HttpNetworkTransactionTest, ChunkedPostReadsErrorResponseAfterReset) {
   upload_data_stream.AppendData("last chunk", 10, true);
 
   rv = callback.WaitForResult();
-  EXPECT_EQ(OK, rv);
+  EXPECT_THAT(rv, IsOk());
 
   const HttpResponseInfo* response = trans->GetResponseInfo();
   ASSERT_TRUE(response);
@@ -15310,7 +15315,7 @@ TEST_P(HttpNetworkTransactionTest, ChunkedPostReadsErrorResponseAfterReset) {
 
   std::string response_data;
   rv = ReadTransaction(trans.get(), &response_data);
-  EXPECT_EQ(OK, rv);
+  EXPECT_THAT(rv, IsOk());
   EXPECT_EQ("hello world", response_data);
 }
 
@@ -15351,10 +15356,10 @@ TEST_P(HttpNetworkTransactionTest, PostReadsErrorResponseAfterResetAnd100) {
   TestCompletionCallback callback;
 
   int rv = trans->Start(&request, callback.callback(), BoundNetLog());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   rv = callback.WaitForResult();
-  EXPECT_EQ(OK, rv);
+  EXPECT_THAT(rv, IsOk());
 
   const HttpResponseInfo* response = trans->GetResponseInfo();
   ASSERT_TRUE(response);
@@ -15364,7 +15369,7 @@ TEST_P(HttpNetworkTransactionTest, PostReadsErrorResponseAfterResetAnd100) {
 
   std::string response_data;
   rv = ReadTransaction(trans.get(), &response_data);
-  EXPECT_EQ(OK, rv);
+  EXPECT_THAT(rv, IsOk());
   EXPECT_EQ("hello world", response_data);
 }
 
@@ -15404,10 +15409,10 @@ TEST_P(HttpNetworkTransactionTest, PostIgnoresNonErrorResponseAfterReset) {
   TestCompletionCallback callback;
 
   int rv = trans->Start(&request, callback.callback(), BoundNetLog());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   rv = callback.WaitForResult();
-  EXPECT_EQ(ERR_CONNECTION_RESET, rv);
+  EXPECT_THAT(rv, IsError(ERR_CONNECTION_RESET));
 }
 
 TEST_P(HttpNetworkTransactionTest,
@@ -15449,10 +15454,10 @@ TEST_P(HttpNetworkTransactionTest,
   TestCompletionCallback callback;
 
   int rv = trans->Start(&request, callback.callback(), BoundNetLog());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   rv = callback.WaitForResult();
-  EXPECT_EQ(ERR_CONNECTION_RESET, rv);
+  EXPECT_THAT(rv, IsError(ERR_CONNECTION_RESET));
 }
 
 TEST_P(HttpNetworkTransactionTest, PostIgnoresHttp09ResponseAfterReset) {
@@ -15490,10 +15495,10 @@ TEST_P(HttpNetworkTransactionTest, PostIgnoresHttp09ResponseAfterReset) {
   TestCompletionCallback callback;
 
   int rv = trans->Start(&request, callback.callback(), BoundNetLog());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   rv = callback.WaitForResult();
-  EXPECT_EQ(ERR_CONNECTION_RESET, rv);
+  EXPECT_THAT(rv, IsError(ERR_CONNECTION_RESET));
 }
 
 TEST_P(HttpNetworkTransactionTest, PostIgnoresPartial400HeadersAfterReset) {
@@ -15531,10 +15536,10 @@ TEST_P(HttpNetworkTransactionTest, PostIgnoresPartial400HeadersAfterReset) {
   TestCompletionCallback callback;
 
   int rv = trans->Start(&request, callback.callback(), BoundNetLog());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   rv = callback.WaitForResult();
-  EXPECT_EQ(ERR_CONNECTION_RESET, rv);
+  EXPECT_THAT(rv, IsError(ERR_CONNECTION_RESET));
 }
 
 // Verify that proxy headers are not sent to the destination server when
@@ -15606,10 +15611,10 @@ TEST_P(HttpNetworkTransactionTest, ProxyHeadersNotSentOverWssTunnel) {
     TestCompletionCallback callback;
 
     int rv = trans->Start(&request, callback.callback(), BoundNetLog());
-    EXPECT_EQ(ERR_IO_PENDING, rv);
+    EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
     rv = callback.WaitForResult();
-    EXPECT_EQ(OK, rv);
+    EXPECT_THAT(rv, IsOk());
   }
 
   const HttpResponseInfo* response = trans->GetResponseInfo();
@@ -15622,10 +15627,10 @@ TEST_P(HttpNetworkTransactionTest, ProxyHeadersNotSentOverWssTunnel) {
 
     int rv = trans->RestartWithAuth(AuthCredentials(kFoo, kBar),
                                     callback.callback());
-    EXPECT_EQ(ERR_IO_PENDING, rv);
+    EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
     rv = callback.WaitForResult();
-    EXPECT_EQ(OK, rv);
+    EXPECT_THAT(rv, IsOk());
   }
 
   response = trans->GetResponseInfo();
@@ -15704,10 +15709,10 @@ TEST_P(HttpNetworkTransactionTest, ProxyHeadersNotSentOverWsTunnel) {
   TestCompletionCallback callback;
 
   int rv = trans->Start(&request, callback.callback(), BoundNetLog());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   rv = callback.WaitForResult();
-  EXPECT_EQ(OK, rv);
+  EXPECT_THAT(rv, IsOk());
 
   const HttpResponseInfo* response = trans->GetResponseInfo();
   ASSERT_TRUE(response);
@@ -15753,10 +15758,10 @@ TEST_P(HttpNetworkTransactionTest, TotalNetworkBytesPost) {
 
   EXPECT_EQ(ERR_IO_PENDING,
             trans->Start(&request, callback.callback(), BoundNetLog()));
-  EXPECT_EQ(OK, callback.WaitForResult());
+  EXPECT_THAT(callback.WaitForResult(), IsOk());
 
   std::string response_data;
-  EXPECT_EQ(OK, ReadTransaction(trans.get(), &response_data));
+  EXPECT_THAT(ReadTransaction(trans.get(), &response_data), IsOk());
 
   EXPECT_EQ(CountWriteBytes(data_writes, arraysize(data_writes)),
             trans->GetTotalSentBytes());
@@ -15799,10 +15804,10 @@ TEST_P(HttpNetworkTransactionTest, TotalNetworkBytesPost100Continue) {
 
   EXPECT_EQ(ERR_IO_PENDING,
             trans->Start(&request, callback.callback(), BoundNetLog()));
-  EXPECT_EQ(OK, callback.WaitForResult());
+  EXPECT_THAT(callback.WaitForResult(), IsOk());
 
   std::string response_data;
-  EXPECT_EQ(OK, ReadTransaction(trans.get(), &response_data));
+  EXPECT_THAT(ReadTransaction(trans.get(), &response_data), IsOk());
 
   EXPECT_EQ(CountWriteBytes(data_writes, arraysize(data_writes)),
             trans->GetTotalSentBytes());
@@ -15849,10 +15854,10 @@ TEST_P(HttpNetworkTransactionTest, TotalNetworkBytesChunkedPost) {
   base::RunLoop().RunUntilIdle();
   upload_data_stream.AppendData("oo", 2, true);
 
-  EXPECT_EQ(OK, callback.WaitForResult());
+  EXPECT_THAT(callback.WaitForResult(), IsOk());
 
   std::string response_data;
-  EXPECT_EQ(OK, ReadTransaction(trans.get(), &response_data));
+  EXPECT_THAT(ReadTransaction(trans.get(), &response_data), IsOk());
 
   EXPECT_EQ(CountWriteBytes(data_writes, arraysize(data_writes)),
             trans->GetTotalSentBytes());

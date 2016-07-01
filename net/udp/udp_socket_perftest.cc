@@ -11,12 +11,16 @@
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_errors.h"
 #include "net/base/test_completion_callback.h"
+#include "net/test/gtest_util.h"
 #include "net/test/net_test_suite.h"
 #include "net/udp/udp_client_socket.h"
 #include "net/udp/udp_server_socket.h"
 #include "net/udp/udp_socket.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
+
+using net::test::IsOk;
 
 namespace net {
 
@@ -95,7 +99,7 @@ void UDPSocketPerfTest::WriteBenchmark(bool use_nonblocking_io) {
     server->UseNonBlockingIO();
 #endif
   int rv = server->Listen(bind_address);
-  ASSERT_EQ(OK, rv);
+  ASSERT_THAT(rv, IsOk());
 
   // Setup the client.
   IPEndPoint server_address;
@@ -108,7 +112,7 @@ void UDPSocketPerfTest::WriteBenchmark(bool use_nonblocking_io) {
     client->UseNonBlockingIO();
 #endif
   rv = client->Connect(server_address);
-  EXPECT_EQ(OK, rv);
+  EXPECT_THAT(rv, IsOk());
 
   base::RunLoop run_loop;
   base::TimeTicks start_ticks = base::TimeTicks::Now();

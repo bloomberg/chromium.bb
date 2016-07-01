@@ -24,8 +24,13 @@
 #include "net/spdy/spdy_session.h"
 #include "net/spdy/spdy_test_util_common.h"
 #include "net/test/cert_test_util.h"
+#include "net/test/gtest_util.h"
 #include "net/test/test_data_directory.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+using net::test::IsError;
+using net::test::IsOk;
 
 namespace net {
 
@@ -290,7 +295,7 @@ TEST_F(BidirectionalStreamSpdyImplTest, SendDataAfterStreamFailed) {
   delegate->SendData(buf.get(), buf->size(), false);
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_EQ(ERR_SPDY_PROTOCOL_ERROR, delegate->error());
+  EXPECT_THAT(delegate->error(), IsError(ERR_SPDY_PROTOCOL_ERROR));
   EXPECT_EQ(0, delegate->on_data_read_count());
   EXPECT_EQ(0, delegate->on_data_sent_count());
   EXPECT_EQ(kProtoHTTP2, delegate->GetProtocol());

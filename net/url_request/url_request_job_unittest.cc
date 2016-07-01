@@ -10,10 +10,15 @@
 #include "net/base/request_priority.h"
 #include "net/http/http_transaction_test_util.h"
 #include "net/test/cert_test_util.h"
+#include "net/test/gtest_util.h"
 #include "net/test/test_data_directory.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_test_util.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+using net::test::IsError;
+using net::test::IsOk;
 
 namespace net {
 
@@ -507,7 +512,7 @@ TEST(URLRequestJob, InvalidContentGZipTransaction) {
   EXPECT_FALSE(d.request_failed());
   EXPECT_EQ(200, req->GetResponseCode());
   EXPECT_FALSE(req->status().is_success());
-  EXPECT_EQ(ERR_CONTENT_DECODING_FAILED, req->status().error());
+  EXPECT_THAT(req->status().error(), IsError(ERR_CONTENT_DECODING_FAILED));
   EXPECT_TRUE(d.data_received().empty());
   EXPECT_FALSE(network_layer.done_reading_called());
 

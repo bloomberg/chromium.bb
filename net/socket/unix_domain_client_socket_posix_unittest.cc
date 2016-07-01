@@ -19,7 +19,12 @@
 #include "net/base/test_completion_callback.h"
 #include "net/socket/socket_posix.h"
 #include "net/socket/unix_domain_server_socket_posix.h"
+#include "net/test/gtest_util.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+using net::test::IsError;
+using net::test::IsOk;
 
 namespace net {
 namespace {
@@ -132,7 +137,7 @@ TEST_F(UnixDomainClientSocketTest, Connect) {
 
   UnixDomainServerSocket server_socket(CreateAuthCallback(true),
                                        kUseAbstractNamespace);
-  EXPECT_EQ(OK, server_socket.BindAndListen(socket_path_, /*backlog=*/1));
+  EXPECT_THAT(server_socket.BindAndListen(socket_path_, /*backlog=*/1), IsOk());
 
   std::unique_ptr<StreamSocket> accepted_socket;
   TestCompletionCallback accept_callback;
@@ -143,12 +148,12 @@ TEST_F(UnixDomainClientSocketTest, Connect) {
   UnixDomainClientSocket client_socket(socket_path_, kUseAbstractNamespace);
   EXPECT_FALSE(client_socket.IsConnected());
 
-  EXPECT_EQ(OK, ConnectSynchronously(&client_socket));
+  EXPECT_THAT(ConnectSynchronously(&client_socket), IsOk());
   EXPECT_TRUE(client_socket.IsConnected());
   // Server has not yet been notified of the connection.
   EXPECT_FALSE(accepted_socket);
 
-  EXPECT_EQ(OK, accept_callback.WaitForResult());
+  EXPECT_THAT(accept_callback.WaitForResult(), IsOk());
   EXPECT_TRUE(accepted_socket);
   EXPECT_TRUE(accepted_socket->IsConnected());
 }
@@ -158,7 +163,7 @@ TEST_F(UnixDomainClientSocketTest, ConnectWithSocketDescriptor) {
 
   UnixDomainServerSocket server_socket(CreateAuthCallback(true),
                                        kUseAbstractNamespace);
-  EXPECT_EQ(OK, server_socket.BindAndListen(socket_path_, /*backlog=*/1));
+  EXPECT_THAT(server_socket.BindAndListen(socket_path_, /*backlog=*/1), IsOk());
 
   SocketDescriptor accepted_socket_fd = kInvalidSocket;
   TestCompletionCallback accept_callback;
@@ -170,12 +175,12 @@ TEST_F(UnixDomainClientSocketTest, ConnectWithSocketDescriptor) {
   UnixDomainClientSocket client_socket(socket_path_, kUseAbstractNamespace);
   EXPECT_FALSE(client_socket.IsConnected());
 
-  EXPECT_EQ(OK, ConnectSynchronously(&client_socket));
+  EXPECT_THAT(ConnectSynchronously(&client_socket), IsOk());
   EXPECT_TRUE(client_socket.IsConnected());
   // Server has not yet been notified of the connection.
   EXPECT_EQ(kInvalidSocket, accepted_socket_fd);
 
-  EXPECT_EQ(OK, accept_callback.WaitForResult());
+  EXPECT_THAT(accept_callback.WaitForResult(), IsOk());
   EXPECT_NE(kInvalidSocket, accepted_socket_fd);
 
   SocketDescriptor client_socket_fd = client_socket.ReleaseConnectedSocket();
@@ -210,7 +215,7 @@ TEST_F(UnixDomainClientSocketTest, ConnectWithAbstractNamespace) {
 #if defined(OS_ANDROID) || defined(OS_LINUX)
   UnixDomainServerSocket server_socket(CreateAuthCallback(true),
                                        kUseAbstractNamespace);
-  EXPECT_EQ(OK, server_socket.BindAndListen(socket_path_, /*backlog=*/1));
+  EXPECT_THAT(server_socket.BindAndListen(socket_path_, /*backlog=*/1), IsOk());
 
   std::unique_ptr<StreamSocket> accepted_socket;
   TestCompletionCallback accept_callback;
@@ -218,16 +223,17 @@ TEST_F(UnixDomainClientSocketTest, ConnectWithAbstractNamespace) {
             server_socket.Accept(&accepted_socket, accept_callback.callback()));
   EXPECT_FALSE(accepted_socket);
 
-  EXPECT_EQ(OK, ConnectSynchronously(&client_socket));
+  EXPECT_THAT(ConnectSynchronously(&client_socket), IsOk());
   EXPECT_TRUE(client_socket.IsConnected());
   // Server has not yet beend notified of the connection.
   EXPECT_FALSE(accepted_socket);
 
-  EXPECT_EQ(OK, accept_callback.WaitForResult());
+  EXPECT_THAT(accept_callback.WaitForResult(), IsOk());
   EXPECT_TRUE(accepted_socket);
   EXPECT_TRUE(accepted_socket->IsConnected());
 #else
-  EXPECT_EQ(ERR_ADDRESS_INVALID, ConnectSynchronously(&client_socket));
+  EXPECT_THAT(ConnectSynchronously(&client_socket),
+              IsError(ERR_ADDRESS_INVALID));
 #endif
 }
 
@@ -236,7 +242,8 @@ TEST_F(UnixDomainClientSocketTest, ConnectToNonExistentSocket) {
 
   UnixDomainClientSocket client_socket(socket_path_, kUseAbstractNamespace);
   EXPECT_FALSE(client_socket.IsConnected());
-  EXPECT_EQ(ERR_FILE_NOT_FOUND, ConnectSynchronously(&client_socket));
+  EXPECT_THAT(ConnectSynchronously(&client_socket),
+              IsError(ERR_FILE_NOT_FOUND));
 }
 
 TEST_F(UnixDomainClientSocketTest,
@@ -248,23 +255,25 @@ TEST_F(UnixDomainClientSocketTest,
 
   TestCompletionCallback connect_callback;
 #if defined(OS_ANDROID) || defined(OS_LINUX)
-  EXPECT_EQ(ERR_CONNECTION_REFUSED, ConnectSynchronously(&client_socket));
+  EXPECT_THAT(ConnectSynchronously(&client_socket),
+              IsError(ERR_CONNECTION_REFUSED));
 #else
-  EXPECT_EQ(ERR_ADDRESS_INVALID, ConnectSynchronously(&client_socket));
+  EXPECT_THAT(ConnectSynchronously(&client_socket),
+              IsError(ERR_ADDRESS_INVALID));
 #endif
 }
 
 TEST_F(UnixDomainClientSocketTest, DisconnectFromClient) {
   UnixDomainServerSocket server_socket(CreateAuthCallback(true), false);
-  EXPECT_EQ(OK, server_socket.BindAndListen(socket_path_, /*backlog=*/1));
+  EXPECT_THAT(server_socket.BindAndListen(socket_path_, /*backlog=*/1), IsOk());
   std::unique_ptr<StreamSocket> accepted_socket;
   TestCompletionCallback accept_callback;
   EXPECT_EQ(ERR_IO_PENDING,
             server_socket.Accept(&accepted_socket, accept_callback.callback()));
   UnixDomainClientSocket client_socket(socket_path_, false);
-  EXPECT_EQ(OK, ConnectSynchronously(&client_socket));
+  EXPECT_THAT(ConnectSynchronously(&client_socket), IsOk());
 
-  EXPECT_EQ(OK, accept_callback.WaitForResult());
+  EXPECT_THAT(accept_callback.WaitForResult(), IsOk());
   EXPECT_TRUE(accepted_socket->IsConnected());
   EXPECT_TRUE(client_socket.IsConnected());
 
@@ -289,15 +298,15 @@ TEST_F(UnixDomainClientSocketTest, DisconnectFromClient) {
 
 TEST_F(UnixDomainClientSocketTest, DisconnectFromServer) {
   UnixDomainServerSocket server_socket(CreateAuthCallback(true), false);
-  EXPECT_EQ(OK, server_socket.BindAndListen(socket_path_, /*backlog=*/1));
+  EXPECT_THAT(server_socket.BindAndListen(socket_path_, /*backlog=*/1), IsOk());
   std::unique_ptr<StreamSocket> accepted_socket;
   TestCompletionCallback accept_callback;
   EXPECT_EQ(ERR_IO_PENDING,
             server_socket.Accept(&accepted_socket, accept_callback.callback()));
   UnixDomainClientSocket client_socket(socket_path_, false);
-  EXPECT_EQ(OK, ConnectSynchronously(&client_socket));
+  EXPECT_THAT(ConnectSynchronously(&client_socket), IsOk());
 
-  EXPECT_EQ(OK, accept_callback.WaitForResult());
+  EXPECT_THAT(accept_callback.WaitForResult(), IsOk());
   EXPECT_TRUE(accepted_socket->IsConnected());
   EXPECT_TRUE(client_socket.IsConnected());
 
@@ -322,15 +331,15 @@ TEST_F(UnixDomainClientSocketTest, DisconnectFromServer) {
 
 TEST_F(UnixDomainClientSocketTest, ReadAfterWrite) {
   UnixDomainServerSocket server_socket(CreateAuthCallback(true), false);
-  EXPECT_EQ(OK, server_socket.BindAndListen(socket_path_, /*backlog=*/1));
+  EXPECT_THAT(server_socket.BindAndListen(socket_path_, /*backlog=*/1), IsOk());
   std::unique_ptr<StreamSocket> accepted_socket;
   TestCompletionCallback accept_callback;
   EXPECT_EQ(ERR_IO_PENDING,
             server_socket.Accept(&accepted_socket, accept_callback.callback()));
   UnixDomainClientSocket client_socket(socket_path_, false);
-  EXPECT_EQ(OK, ConnectSynchronously(&client_socket));
+  EXPECT_THAT(ConnectSynchronously(&client_socket), IsOk());
 
-  EXPECT_EQ(OK, accept_callback.WaitForResult());
+  EXPECT_THAT(accept_callback.WaitForResult(), IsOk());
   EXPECT_TRUE(accepted_socket->IsConnected());
   EXPECT_TRUE(client_socket.IsConnected());
 
@@ -391,15 +400,15 @@ TEST_F(UnixDomainClientSocketTest, ReadAfterWrite) {
 
 TEST_F(UnixDomainClientSocketTest, ReadBeforeWrite) {
   UnixDomainServerSocket server_socket(CreateAuthCallback(true), false);
-  EXPECT_EQ(OK, server_socket.BindAndListen(socket_path_, /*backlog=*/1));
+  EXPECT_THAT(server_socket.BindAndListen(socket_path_, /*backlog=*/1), IsOk());
   std::unique_ptr<StreamSocket> accepted_socket;
   TestCompletionCallback accept_callback;
   EXPECT_EQ(ERR_IO_PENDING,
             server_socket.Accept(&accepted_socket, accept_callback.callback()));
   UnixDomainClientSocket client_socket(socket_path_, false);
-  EXPECT_EQ(OK, ConnectSynchronously(&client_socket));
+  EXPECT_THAT(ConnectSynchronously(&client_socket), IsOk());
 
-  EXPECT_EQ(OK, accept_callback.WaitForResult());
+  EXPECT_THAT(accept_callback.WaitForResult(), IsOk());
   EXPECT_TRUE(accepted_socket->IsConnected());
   EXPECT_TRUE(client_socket.IsConnected());
 

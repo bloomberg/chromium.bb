@@ -21,7 +21,12 @@
 #include "crypto/ec_private_key.h"
 #include "net/base/net_errors.h"
 #include "net/test/channel_id_test_util.h"
+#include "net/test/gtest_util.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+using net::test::IsError;
+using net::test::IsOk;
 
 namespace net {
 
@@ -217,7 +222,7 @@ TEST(DefaultChannelIDStoreTest, TestAsyncGet) {
   EXPECT_EQ(1, store.GetChannelIDCount());
   EXPECT_FALSE(key);
   EXPECT_TRUE(helper.called_);
-  EXPECT_EQ(OK, helper.err_);
+  EXPECT_THAT(helper.err_, IsOk());
   EXPECT_EQ("verisign.com", helper.server_identifier_);
   EXPECT_TRUE(KeysEqual(expected_key.get(), helper.key_.get()));
 }
@@ -375,11 +380,11 @@ TEST(DefaultChannelIDStoreTest, TestAsyncDelete) {
   EXPECT_EQ(1, store.GetChannelIDCount());
   EXPECT_FALSE(key);
   EXPECT_TRUE(a_helper.called_);
-  EXPECT_EQ(ERR_FILE_NOT_FOUND, a_helper.err_);
+  EXPECT_THAT(a_helper.err_, IsError(ERR_FILE_NOT_FOUND));
   EXPECT_EQ("a.com", a_helper.server_identifier_);
   EXPECT_FALSE(a_helper.key_);
   EXPECT_TRUE(b_helper.called_);
-  EXPECT_EQ(OK, b_helper.err_);
+  EXPECT_THAT(b_helper.err_, IsOk());
   EXPECT_EQ("b.com", b_helper.server_identifier_);
   EXPECT_TRUE(KeysEqual(expected_key.get(), b_helper.key_.get()));
 }

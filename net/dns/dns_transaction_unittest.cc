@@ -26,7 +26,11 @@
 #include "net/dns/dns_util.h"
 #include "net/log/net_log.h"
 #include "net/socket/socket_test_util.h"
+#include "net/test/gtest_util.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+using net::test::IsOk;
 
 namespace net {
 
@@ -281,7 +285,7 @@ class TransactionHelper {
       base::MessageLoop::current()->QuitWhenIdle();
 
     if (expected_answer_count_ >= 0) {
-      ASSERT_EQ(OK, rv);
+      ASSERT_THAT(rv, IsOk());
       ASSERT_TRUE(response != NULL);
       EXPECT_EQ(static_cast<unsigned>(expected_answer_count_),
                 response->answer_count());

@@ -27,9 +27,12 @@
 #include "net/proxy/proxy_config_service_fixed.h"
 #include "net/proxy/proxy_service.h"
 #include "net/test/event_waiter.h"
+#include "net/test/gtest_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
+
+using net::test::IsOk;
 
 namespace net {
 
@@ -167,7 +170,7 @@ TEST_F(ProxyServiceMojoTest, Basic) {
   EXPECT_EQ(GURL(kPacUrl), fetcher_->pending_request_url());
   fetcher_->NotifyFetchCompletion(OK, kSimplePacScript);
 
-  EXPECT_EQ(OK, callback.WaitForResult());
+  EXPECT_THAT(callback.WaitForResult(), IsOk());
   EXPECT_EQ("PROXY foo:1234", info.ToPacString());
   EXPECT_EQ(0u, mock_host_resolver_.num_resolve());
   proxy_service_.reset();
@@ -189,7 +192,7 @@ TEST_F(ProxyServiceMojoTest, DnsResolution) {
   EXPECT_EQ(GURL(kPacUrl), fetcher_->pending_request_url());
   fetcher_->NotifyFetchCompletion(OK, kDnsResolvePacScript);
 
-  EXPECT_EQ(OK, callback.WaitForResult());
+  EXPECT_THAT(callback.WaitForResult(), IsOk());
   EXPECT_EQ("QUIC bar:4321", info.ToPacString());
   EXPECT_EQ(1u, mock_host_resolver_.num_resolve());
   proxy_service_.reset();
@@ -223,7 +226,7 @@ TEST_F(ProxyServiceMojoTest, Error) {
   network_delegate_.event_waiter().WaitForEvent(
       TestNetworkDelegate::PAC_SCRIPT_ERROR);
 
-  EXPECT_EQ(OK, callback.WaitForResult());
+  EXPECT_THAT(callback.WaitForResult(), IsOk());
   EXPECT_EQ("DIRECT", info.ToPacString());
   EXPECT_EQ(0u, mock_host_resolver_.num_resolve());
 
@@ -252,7 +255,7 @@ TEST_F(ProxyServiceMojoTest, ErrorOnInitialization) {
   network_delegate_.event_waiter().WaitForEvent(
       TestNetworkDelegate::PAC_SCRIPT_ERROR);
 
-  EXPECT_EQ(OK, callback.WaitForResult());
+  EXPECT_THAT(callback.WaitForResult(), IsOk());
   EXPECT_EQ("DIRECT", info.ToPacString());
   EXPECT_EQ(0u, mock_host_resolver_.num_resolve());
 

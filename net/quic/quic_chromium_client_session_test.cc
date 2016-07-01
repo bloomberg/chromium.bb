@@ -37,8 +37,10 @@
 #include "net/socket/socket_test_util.h"
 #include "net/spdy/spdy_test_utils.h"
 #include "net/test/cert_test_util.h"
+#include "net/test/gtest_util.h"
 #include "net/test/test_data_directory.h"
 #include "net/udp/datagram_client_socket.h"
+#include "testing/gmock/include/gmock/gmock.h"
 
 using testing::_;
 
@@ -115,7 +117,7 @@ class QuicChromiumClientSessionTest
   }
 
   void CompleteCryptoHandshake() {
-    ASSERT_EQ(OK, session_->CryptoConnect(false, callback_.callback()));
+    ASSERT_THAT(session_->CryptoConnect(false, callback_.callback()), IsOk());
   }
 
   QuicPacketWriter* CreateQuicPacketWriter(DatagramClientSocket* socket,
@@ -225,7 +227,7 @@ TEST_P(QuicChromiumClientSessionTest, MaxNumStreamsViaRequest) {
   QuicRstStreamFrame rst1(stream_id, QUIC_STREAM_NO_ERROR, 0);
   session_->OnRstStream(rst1);
   ASSERT_TRUE(callback.have_result());
-  EXPECT_EQ(OK, callback.WaitForResult());
+  EXPECT_THAT(callback.WaitForResult(), IsOk());
   EXPECT_TRUE(stream != nullptr);
 }
 
@@ -364,7 +366,7 @@ TEST_P(QuicChromiumClientSessionTest, MigrateToSocket) {
       socket_factory_.CreateDatagramClientSocket(DatagramSocket::DEFAULT_BIND,
                                                  base::Bind(&base::RandInt),
                                                  &net_log_, NetLog::Source());
-  EXPECT_EQ(OK, new_socket->Connect(kIpEndPoint));
+  EXPECT_THAT(new_socket->Connect(kIpEndPoint), IsOk());
 
   // Create reader and writer.
   std::unique_ptr<QuicChromiumPacketReader> new_reader(
@@ -412,7 +414,7 @@ TEST_P(QuicChromiumClientSessionTest, MigrateToSocketMaxReaders) {
         socket_factory_.CreateDatagramClientSocket(DatagramSocket::DEFAULT_BIND,
                                                    base::Bind(&base::RandInt),
                                                    &net_log_, NetLog::Source());
-    EXPECT_EQ(OK, new_socket->Connect(kIpEndPoint));
+    EXPECT_THAT(new_socket->Connect(kIpEndPoint), IsOk());
 
     // Create reader and writer.
     std::unique_ptr<QuicChromiumPacketReader> new_reader(
@@ -472,7 +474,7 @@ TEST_P(QuicChromiumClientSessionTest, MigrateToSocketReadError) {
       socket_factory_.CreateDatagramClientSocket(DatagramSocket::DEFAULT_BIND,
                                                  base::Bind(&base::RandInt),
                                                  &net_log_, NetLog::Source());
-  EXPECT_EQ(OK, new_socket->Connect(kIpEndPoint));
+  EXPECT_THAT(new_socket->Connect(kIpEndPoint), IsOk());
 
   // Create reader and writer.
   std::unique_ptr<QuicChromiumPacketReader> new_reader(
@@ -525,7 +527,7 @@ TEST_P(QuicChromiumClientSessionTest, MigrateToSocketWriteError) {
       socket_factory_.CreateDatagramClientSocket(DatagramSocket::DEFAULT_BIND,
                                                  base::Bind(&base::RandInt),
                                                  &net_log_, NetLog::Source());
-  EXPECT_EQ(OK, new_socket->Connect(kIpEndPoint));
+  EXPECT_THAT(new_socket->Connect(kIpEndPoint), IsOk());
 
   // Create reader and writer.
   std::unique_ptr<QuicChromiumPacketReader> new_reader(

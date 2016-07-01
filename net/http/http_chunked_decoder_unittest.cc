@@ -7,7 +7,12 @@
 #include <memory>
 
 #include "net/base/net_errors.h"
+#include "net/test/gtest_util.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+using net::test::IsError;
+using net::test::IsOk;
 
 namespace net {
 
@@ -49,7 +54,7 @@ void RunTestUntilFailure(const char* const inputs[],
     std::string input = inputs[i];
     int n = decoder.FilterBuf(&input[0], static_cast<int>(input.size()));
     if (n < 0) {
-      EXPECT_EQ(ERR_INVALID_CHUNKED_ENCODING, n);
+      EXPECT_THAT(n, IsError(ERR_INVALID_CHUNKED_ENCODING));
       EXPECT_EQ(fail_index, i);
       return;
     }

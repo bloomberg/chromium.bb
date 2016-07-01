@@ -10,7 +10,12 @@
 #include "net/base/test_completion_callback.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/log/net_log.h"
+#include "net/test/gtest_util.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+using net::test::IsError;
+using net::test::IsOk;
 
 namespace net {
 
@@ -78,8 +83,8 @@ TEST(SingleRequestHostResolverTest, NormalResolve) {
   HostResolver::RequestInfo request(HostPortPair("watsup", 90));
   int rv = single_request_resolver.Resolve(
       request, DEFAULT_PRIORITY, &addrlist, callback.callback(), BoundNetLog());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
-  EXPECT_EQ(OK, callback.WaitForResult());
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
+  EXPECT_THAT(callback.WaitForResult(), IsOk());
 
   // Verify that the result is what we specified in the MockHostResolver.
   ASSERT_FALSE(addrlist.empty());
@@ -102,7 +107,7 @@ TEST(SingleRequestHostResolverTest, Cancel) {
                                              &addrlist,
                                              callback.callback(),
                                              BoundNetLog());
-    EXPECT_EQ(ERR_IO_PENDING, rv);
+    EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
     EXPECT_TRUE(resolver.has_outstanding_request());
   }
 

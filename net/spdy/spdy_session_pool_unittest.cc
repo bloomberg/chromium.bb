@@ -18,7 +18,12 @@
 #include "net/spdy/spdy_session.h"
 #include "net/spdy/spdy_stream_test_util.h"
 #include "net/spdy/spdy_test_util_common.h"
+#include "net/test/gtest_util.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+using net::test::IsError;
+using net::test::IsOk;
 
 namespace net {
 
@@ -613,13 +618,13 @@ TEST_P(SpdySessionPoolTest, IPAddressChanged) {
   EXPECT_FALSE(delegateA.StreamIsClosed());
 
   EXPECT_TRUE(delegateB.StreamIsClosed());  // Created stream was closed.
-  EXPECT_EQ(ERR_NETWORK_CHANGED, delegateB.WaitForClose());
+  EXPECT_THAT(delegateB.WaitForClose(), IsError(ERR_NETWORK_CHANGED));
 
   sessionA->CloseSessionOnError(ERR_ABORTED, "Closing");
   sessionB->CloseSessionOnError(ERR_ABORTED, "Closing");
 
   EXPECT_TRUE(delegateA.StreamIsClosed());
-  EXPECT_EQ(ERR_ABORTED, delegateA.WaitForClose());
+  EXPECT_THAT(delegateA.WaitForClose(), IsError(ERR_ABORTED));
 #else
   EXPECT_TRUE(sessionA->IsDraining());
   EXPECT_TRUE(sessionB->IsDraining());
@@ -627,9 +632,9 @@ TEST_P(SpdySessionPoolTest, IPAddressChanged) {
 
   // Both streams were closed with an error.
   EXPECT_TRUE(delegateA.StreamIsClosed());
-  EXPECT_EQ(ERR_NETWORK_CHANGED, delegateA.WaitForClose());
+  EXPECT_THAT(delegateA.WaitForClose(), IsError(ERR_NETWORK_CHANGED));
   EXPECT_TRUE(delegateB.StreamIsClosed());
-  EXPECT_EQ(ERR_NETWORK_CHANGED, delegateB.WaitForClose());
+  EXPECT_THAT(delegateB.WaitForClose(), IsError(ERR_NETWORK_CHANGED));
 #endif  // defined(OS_ANDROID) || defined(OS_WIN) || defined(OS_IOS)
 }
 

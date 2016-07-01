@@ -19,6 +19,8 @@
 #include "net/proxy/proxy_resolver_factory.h"
 #include "net/proxy/proxy_resolver_v8.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "net/test/gtest_util.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if defined(OS_WIN)
@@ -26,6 +28,8 @@
 #elif defined(OS_MACOSX)
 #include "net/proxy/proxy_resolver_mac.h"
 #endif
+
+using net::test::IsOk;
 
 namespace net {
 
@@ -118,7 +122,7 @@ class PacPerfSuiteRunner {
       int rv = factory_->CreateProxyResolver(
           ProxyResolverScriptData::FromURL(pac_url), &resolver,
           CompletionCallback(), nullptr);
-      EXPECT_EQ(OK, rv);
+      EXPECT_THAT(rv, IsOk());
     } else {
       resolver = LoadPacScriptAndCreateResolver(script_name);
     }
@@ -132,7 +136,7 @@ class PacPerfSuiteRunner {
       int result =
           resolver->GetProxyForURL(GURL("http://www.warmup.com"), &proxy_info,
                                    CompletionCallback(), NULL, BoundNetLog());
-      ASSERT_EQ(OK, result);
+      ASSERT_THAT(result, IsOk());
     }
 
     // Start the perf timer.
@@ -151,7 +155,7 @@ class PacPerfSuiteRunner {
 
       // Check that the result was correct. Note that ToPacString() and
       // ASSERT_EQ() are fast, so they won't skew the results.
-      ASSERT_EQ(OK, result);
+      ASSERT_THAT(result, IsOk());
       ASSERT_EQ(query.expected_result, proxy_info.ToPacString());
     }
 
@@ -183,7 +187,7 @@ class PacPerfSuiteRunner {
     int rv = factory_->CreateProxyResolver(
         ProxyResolverScriptData::FromUTF8(file_contents), &resolver,
         CompletionCallback(), nullptr);
-    EXPECT_EQ(OK, rv);
+    EXPECT_THAT(rv, IsOk());
     return resolver;
   }
 

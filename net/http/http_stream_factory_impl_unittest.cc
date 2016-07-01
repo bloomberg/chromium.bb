@@ -50,13 +50,19 @@
 #include "net/ssl/ssl_config_service.h"
 #include "net/ssl/ssl_config_service_defaults.h"
 #include "net/test/cert_test_util.h"
+#include "net/test/gtest_util.h"
 #include "net/test/test_data_directory.h"
 
 // This file can be included from net/http even though
 // it is in net/websockets because it doesn't
 // introduce any link dependency to net/websockets.
 #include "net/websockets/websocket_handshake_stream_base.h"
+
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+using net::test::IsError;
+using net::test::IsOk;
 
 namespace net {
 
@@ -1707,7 +1713,7 @@ TEST_P(HttpStreamFactoryBidirectionalQuicTest,
   delegate.WaitUntilDone();
 
   scoped_refptr<IOBuffer> buffer = new net::IOBuffer(1);
-  EXPECT_EQ(OK, stream_impl->ReadData(buffer.get(), 1));
+  EXPECT_THAT(stream_impl->ReadData(buffer.get(), 1), IsOk());
   EXPECT_EQ(kProtoQUIC1SPDY3, stream_impl->GetProtocol());
   EXPECT_EQ("200", delegate.response_headers().find(":status")->second);
   EXPECT_EQ(0, GetSocketPoolGroupCount(session()->GetTransportSocketPool(
@@ -1759,7 +1765,7 @@ TEST_P(HttpStreamFactoryBidirectionalQuicTest,
   ASSERT_FALSE(waiter.bidirectional_stream_impl());
   // Since the alternative service job is not started, we will get the error
   // from the http job.
-  ASSERT_EQ(ERR_CONNECTION_REFUSED, waiter.error_status());
+  ASSERT_THAT(waiter.error_status(), IsError(ERR_CONNECTION_REFUSED));
 }
 
 // Tests that if Http job fails, but Quic job succeeds, we return
@@ -1831,7 +1837,7 @@ TEST_P(HttpStreamFactoryBidirectionalQuicTest,
 
   // Make sure the BidirectionalStream negotiated goes through QUIC.
   scoped_refptr<IOBuffer> buffer = new net::IOBuffer(1);
-  EXPECT_EQ(OK, stream_impl->ReadData(buffer.get(), 1));
+  EXPECT_THAT(stream_impl->ReadData(buffer.get(), 1), IsOk());
   EXPECT_EQ(kProtoQUIC1SPDY3, stream_impl->GetProtocol());
   EXPECT_EQ("200", delegate.response_headers().find(":status")->second);
   // There is no Http2 socket pool.
@@ -1879,7 +1885,7 @@ TEST_P(HttpStreamFactoryTest, RequestBidirectionalStreamImplFailure) {
           BoundNetLog()));
   waiter.WaitForStream();
   EXPECT_TRUE(waiter.stream_done());
-  ASSERT_EQ(ERR_FAILED, waiter.error_status());
+  ASSERT_THAT(waiter.error_status(), IsError(ERR_FAILED));
   EXPECT_FALSE(waiter.websocket_stream());
   ASSERT_FALSE(waiter.stream());
   ASSERT_FALSE(waiter.bidirectional_stream_impl());

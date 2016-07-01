@@ -9,6 +9,8 @@
 #include "net/base/net_errors.h"
 #include "net/http/http_server_properties_impl.h"
 #include "net/quic/quic_server_id.h"
+#include "net/test/gtest_util.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace net {
@@ -74,7 +76,8 @@ TEST_F(PropertiesBasedQuicServerInfoTest, Update) {
   PropertiesBasedQuicServerInfo server_info1(server_id_,
                                              &http_server_properties_);
   server_info1.Start();
-  EXPECT_EQ(OK, server_info1.WaitForDataReady(callback_));  // Read the data.
+  EXPECT_THAT(server_info1.WaitForDataReady(callback_),
+              IsOk());  // Read the data.
   EXPECT_TRUE(server_info1.IsDataReady());
 
   // Verify the data.
@@ -92,7 +95,8 @@ TEST_F(PropertiesBasedQuicServerInfoTest, Update) {
   PropertiesBasedQuicServerInfo server_info2(server_id_,
                                              &http_server_properties_);
   server_info2.Start();
-  EXPECT_EQ(OK, server_info2.WaitForDataReady(callback_));  // Read the data.
+  EXPECT_THAT(server_info2.WaitForDataReady(callback_),
+              IsOk());  // Read the data.
   EXPECT_TRUE(server_info1.IsDataReady());
 
   // Verify updated data.

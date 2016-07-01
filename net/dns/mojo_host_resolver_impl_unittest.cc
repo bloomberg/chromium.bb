@@ -17,7 +17,12 @@
 #include "net/dns/mock_host_resolver.h"
 #include "net/dns/mojo_host_type_converters.h"
 #include "net/log/net_log.h"
+#include "net/test/gtest_util.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+using net::test::IsError;
+using net::test::IsOk;
 
 namespace net {
 
@@ -169,7 +174,7 @@ TEST_F(MojoHostResolverImplTest, Resolve) {
   resolver_service_->Resolve(std::move(request), std::move(client_ptr));
   client.WaitForResult();
 
-  EXPECT_EQ(net::OK, client.error_);
+  EXPECT_THAT(client.error_, IsOk());
   AddressList address_list = (*client.results_).To<AddressList>();
   EXPECT_EQ(1U, address_list.size());
   EXPECT_EQ("1.2.3.4:80", address_list[0].ToString());
@@ -186,7 +191,7 @@ TEST_F(MojoHostResolverImplTest, ResolveSynchronous) {
   resolver_service_->Resolve(std::move(request), std::move(client_ptr));
   client.WaitForResult();
 
-  EXPECT_EQ(net::OK, client.error_);
+  EXPECT_THAT(client.error_, IsOk());
   AddressList address_list = (*client.results_).To<AddressList>();
   EXPECT_EQ(1U, address_list.size());
   EXPECT_EQ("1.2.3.4:80", address_list[0].ToString());
@@ -212,11 +217,11 @@ TEST_F(MojoHostResolverImplTest, ResolveMultiple) {
   client1.WaitForResult();
   client2.WaitForResult();
 
-  EXPECT_EQ(net::OK, client1.error_);
+  EXPECT_THAT(client1.error_, IsOk());
   AddressList address_list = (*client1.results_).To<AddressList>();
   EXPECT_EQ(1U, address_list.size());
   EXPECT_EQ("1.2.3.4:80", address_list[0].ToString());
-  EXPECT_EQ(net::OK, client2.error_);
+  EXPECT_THAT(client2.error_, IsOk());
   address_list = (*client2.results_).To<AddressList>();
   EXPECT_EQ(1U, address_list.size());
   EXPECT_EQ("8.8.8.8:80", address_list[0].ToString());
@@ -242,11 +247,11 @@ TEST_F(MojoHostResolverImplTest, ResolveDuplicate) {
   client1.WaitForResult();
   client2.WaitForResult();
 
-  EXPECT_EQ(net::OK, client1.error_);
+  EXPECT_THAT(client1.error_, IsOk());
   AddressList address_list = (*client1.results_).To<AddressList>();
   EXPECT_EQ(1U, address_list.size());
   EXPECT_EQ("1.2.3.4:80", address_list[0].ToString());
-  EXPECT_EQ(net::OK, client2.error_);
+  EXPECT_THAT(client2.error_, IsOk());
   address_list = (*client2.results_).To<AddressList>();
   EXPECT_EQ(1U, address_list.size());
   EXPECT_EQ("1.2.3.4:80", address_list[0].ToString());
@@ -261,7 +266,7 @@ TEST_F(MojoHostResolverImplTest, ResolveFailure) {
   resolver_service_->Resolve(std::move(request), std::move(client_ptr));
   client.WaitForResult();
 
-  EXPECT_EQ(net::ERR_NAME_NOT_RESOLVED, client.error_);
+  EXPECT_THAT(client.error_, IsError(net::ERR_NAME_NOT_RESOLVED));
   EXPECT_TRUE(client.results_.is_null());
 }
 

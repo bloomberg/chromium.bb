@@ -29,7 +29,12 @@
 #include "net/socket/stream_socket.h"
 #include "net/socket/transport_client_socket_pool_test_util.h"
 #include "net/socket/websocket_endpoint_lock_manager.h"
+#include "net/test/gtest_util.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+using net::test::IsError;
+using net::test::IsOk;
 
 namespace net {
 
@@ -123,11 +128,11 @@ TEST_F(WebSocketTransportClientSocketPoolTest, Basic) {
   int rv =
       handle.Init("a", params_, LOW, ClientSocketPool::RespectLimits::ENABLED,
                   callback.callback(), &pool_, BoundNetLog());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
   EXPECT_FALSE(handle.is_initialized());
   EXPECT_FALSE(handle.socket());
 
-  EXPECT_EQ(OK, callback.WaitForResult());
+  EXPECT_THAT(callback.WaitForResult(), IsOk());
   EXPECT_TRUE(handle.is_initialized());
   EXPECT_TRUE(handle.socket());
   TestLoadTimingInfoConnectedNotReused(handle);
@@ -160,7 +165,7 @@ TEST_F(WebSocketTransportClientSocketPoolTest, InitHostResolutionFailure) {
             handle.Init("a", dest, kDefaultPriority,
                         ClientSocketPool::RespectLimits::ENABLED,
                         callback.callback(), &pool_, BoundNetLog()));
-  EXPECT_EQ(ERR_NAME_NOT_RESOLVED, callback.WaitForResult());
+  EXPECT_THAT(callback.WaitForResult(), IsError(ERR_NAME_NOT_RESOLVED));
 }
 
 TEST_F(WebSocketTransportClientSocketPoolTest, InitConnectionFailure) {
@@ -172,7 +177,7 @@ TEST_F(WebSocketTransportClientSocketPoolTest, InitConnectionFailure) {
             handle.Init("a", params_, kDefaultPriority,
                         ClientSocketPool::RespectLimits::ENABLED,
                         callback.callback(), &pool_, BoundNetLog()));
-  EXPECT_EQ(ERR_CONNECTION_FAILED, callback.WaitForResult());
+  EXPECT_THAT(callback.WaitForResult(), IsError(ERR_CONNECTION_FAILED));
 
   // Make the host resolutions complete synchronously this time.
   host_resolver_->set_synchronous_mode(true);
@@ -184,18 +189,18 @@ TEST_F(WebSocketTransportClientSocketPoolTest, InitConnectionFailure) {
 
 TEST_F(WebSocketTransportClientSocketPoolTest, PendingRequestsFinishFifo) {
   // First request finishes asynchronously.
-  EXPECT_EQ(ERR_IO_PENDING, StartRequest("a", kDefaultPriority));
-  EXPECT_EQ(OK, request(0)->WaitForResult());
+  EXPECT_THAT(StartRequest("a", kDefaultPriority), IsError(ERR_IO_PENDING));
+  EXPECT_THAT(request(0)->WaitForResult(), IsOk());
 
   // Make all subsequent host resolutions complete synchronously.
   host_resolver_->set_synchronous_mode(true);
 
   // Rest of them wait for the first socket to be released.
-  EXPECT_EQ(ERR_IO_PENDING, StartRequest("a", kDefaultPriority));
-  EXPECT_EQ(ERR_IO_PENDING, StartRequest("a", kDefaultPriority));
-  EXPECT_EQ(ERR_IO_PENDING, StartRequest("a", kDefaultPriority));
-  EXPECT_EQ(ERR_IO_PENDING, StartRequest("a", kDefaultPriority));
-  EXPECT_EQ(ERR_IO_PENDING, StartRequest("a", kDefaultPriority));
+  EXPECT_THAT(StartRequest("a", kDefaultPriority), IsError(ERR_IO_PENDING));
+  EXPECT_THAT(StartRequest("a", kDefaultPriority), IsError(ERR_IO_PENDING));
+  EXPECT_THAT(StartRequest("a", kDefaultPriority), IsError(ERR_IO_PENDING));
+  EXPECT_THAT(StartRequest("a", kDefaultPriority), IsError(ERR_IO_PENDING));
+  EXPECT_THAT(StartRequest("a", kDefaultPriority), IsError(ERR_IO_PENDING));
 
   ReleaseAllConnections(ClientSocketPoolTest::KEEP_ALIVE);
 
@@ -218,27 +223,27 @@ TEST_F(WebSocketTransportClientSocketPoolTest, PendingRequestsFinishFifo) {
 
 TEST_F(WebSocketTransportClientSocketPoolTest, PendingRequests_NoKeepAlive) {
   // First request finishes asynchronously.
-  EXPECT_EQ(ERR_IO_PENDING, StartRequest("a", kDefaultPriority));
-  EXPECT_EQ(OK, request(0)->WaitForResult());
+  EXPECT_THAT(StartRequest("a", kDefaultPriority), IsError(ERR_IO_PENDING));
+  EXPECT_THAT(request(0)->WaitForResult(), IsOk());
 
   // Make all subsequent host resolutions complete synchronously.
   host_resolver_->set_synchronous_mode(true);
 
   // Rest of them wait for the first socket to be released.
-  EXPECT_EQ(ERR_IO_PENDING, StartRequest("a", kDefaultPriority));
-  EXPECT_EQ(ERR_IO_PENDING, StartRequest("a", kDefaultPriority));
-  EXPECT_EQ(ERR_IO_PENDING, StartRequest("a", kDefaultPriority));
-  EXPECT_EQ(ERR_IO_PENDING, StartRequest("a", kDefaultPriority));
-  EXPECT_EQ(ERR_IO_PENDING, StartRequest("a", kDefaultPriority));
+  EXPECT_THAT(StartRequest("a", kDefaultPriority), IsError(ERR_IO_PENDING));
+  EXPECT_THAT(StartRequest("a", kDefaultPriority), IsError(ERR_IO_PENDING));
+  EXPECT_THAT(StartRequest("a", kDefaultPriority), IsError(ERR_IO_PENDING));
+  EXPECT_THAT(StartRequest("a", kDefaultPriority), IsError(ERR_IO_PENDING));
+  EXPECT_THAT(StartRequest("a", kDefaultPriority), IsError(ERR_IO_PENDING));
 
   ReleaseAllConnections(ClientSocketPoolTest::NO_KEEP_ALIVE);
 
   // The pending requests should finish successfully.
-  EXPECT_EQ(OK, request(1)->WaitForResult());
-  EXPECT_EQ(OK, request(2)->WaitForResult());
-  EXPECT_EQ(OK, request(3)->WaitForResult());
-  EXPECT_EQ(OK, request(4)->WaitForResult());
-  EXPECT_EQ(OK, request(5)->WaitForResult());
+  EXPECT_THAT(request(1)->WaitForResult(), IsOk());
+  EXPECT_THAT(request(2)->WaitForResult(), IsOk());
+  EXPECT_THAT(request(3)->WaitForResult(), IsOk());
+  EXPECT_THAT(request(4)->WaitForResult(), IsOk());
+  EXPECT_THAT(request(5)->WaitForResult(), IsOk());
 
   EXPECT_EQ(static_cast<int>(requests()->size()),
             client_socket_factory_.allocation_count());
@@ -277,7 +282,7 @@ TEST_F(WebSocketTransportClientSocketPoolTest, TwoRequestsCancelOne) {
 
   handle.Reset();
 
-  EXPECT_EQ(OK, callback2.WaitForResult());
+  EXPECT_THAT(callback2.WaitForResult(), IsOk());
   handle2.Reset();
 }
 
@@ -309,7 +314,7 @@ TEST_F(WebSocketTransportClientSocketPoolTest, ConnectCancelConnect) {
   // If the first one is not cancelled, it will advance the load state, and
   // then the second one will crash.
 
-  EXPECT_EQ(OK, callback2.WaitForResult());
+  EXPECT_THAT(callback2.WaitForResult(), IsOk());
   EXPECT_FALSE(callback.have_result());
 
   handle.Reset();
@@ -317,17 +322,17 @@ TEST_F(WebSocketTransportClientSocketPoolTest, ConnectCancelConnect) {
 
 TEST_F(WebSocketTransportClientSocketPoolTest, CancelRequest) {
   // First request finishes asynchronously.
-  EXPECT_EQ(ERR_IO_PENDING, StartRequest("a", kDefaultPriority));
-  EXPECT_EQ(OK, request(0)->WaitForResult());
+  EXPECT_THAT(StartRequest("a", kDefaultPriority), IsError(ERR_IO_PENDING));
+  EXPECT_THAT(request(0)->WaitForResult(), IsOk());
 
   // Make all subsequent host resolutions complete synchronously.
   host_resolver_->set_synchronous_mode(true);
 
-  EXPECT_EQ(ERR_IO_PENDING, StartRequest("a", kDefaultPriority));
-  EXPECT_EQ(ERR_IO_PENDING, StartRequest("a", kDefaultPriority));
-  EXPECT_EQ(ERR_IO_PENDING, StartRequest("a", kDefaultPriority));
-  EXPECT_EQ(ERR_IO_PENDING, StartRequest("a", kDefaultPriority));
-  EXPECT_EQ(ERR_IO_PENDING, StartRequest("a", kDefaultPriority));
+  EXPECT_THAT(StartRequest("a", kDefaultPriority), IsError(ERR_IO_PENDING));
+  EXPECT_THAT(StartRequest("a", kDefaultPriority), IsError(ERR_IO_PENDING));
+  EXPECT_THAT(StartRequest("a", kDefaultPriority), IsError(ERR_IO_PENDING));
+  EXPECT_THAT(StartRequest("a", kDefaultPriority), IsError(ERR_IO_PENDING));
+  EXPECT_THAT(StartRequest("a", kDefaultPriority), IsError(ERR_IO_PENDING));
 
   // Cancel a request.
   const size_t index_to_cancel = 2;
@@ -360,7 +365,7 @@ void RequestSocketOnComplete(ClientSocketHandle* handle,
                              WebSocketTransportClientSocketPool* pool,
                              const CompletionCallback& nested_callback,
                              int first_request_result) {
-  EXPECT_EQ(OK, first_request_result);
+  EXPECT_THAT(first_request_result, IsOk());
 
   // Don't allow reuse of the socket.  Disconnect it and then release it.
   handle->socket()->Disconnect();
@@ -372,7 +377,7 @@ void RequestSocketOnComplete(ClientSocketHandle* handle,
   int rv =
       handle->Init("a", dest, LOWEST, ClientSocketPool::RespectLimits::ENABLED,
                    nested_callback, pool, BoundNetLog());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
   if (ERR_IO_PENDING != rv)
     nested_callback.Run(rv);
 }
@@ -394,8 +399,8 @@ TEST_F(WebSocketTransportClientSocketPoolTest, RequestTwice) {
                   base::Bind(&RequestSocketOnComplete, &handle, &pool_,
                              second_result_callback.callback()),
                   &pool_, BoundNetLog());
-  ASSERT_EQ(ERR_IO_PENDING, rv);
-  EXPECT_EQ(OK, second_result_callback.WaitForResult());
+  ASSERT_THAT(rv, IsError(ERR_IO_PENDING));
+  EXPECT_THAT(second_result_callback.WaitForResult(), IsOk());
 
   handle.Reset();
 }
@@ -408,15 +413,15 @@ TEST_F(WebSocketTransportClientSocketPoolTest,
       MockTransportClientSocketFactory::MOCK_PENDING_CLIENT_SOCKET);
 
   // Queue up all the requests
-  EXPECT_EQ(ERR_IO_PENDING, StartRequest("a", kDefaultPriority));
-  EXPECT_EQ(ERR_IO_PENDING, StartRequest("a", kDefaultPriority));
-  EXPECT_EQ(ERR_IO_PENDING, StartRequest("a", kDefaultPriority));
-  EXPECT_EQ(ERR_IO_PENDING, StartRequest("a", kDefaultPriority));
-  EXPECT_EQ(ERR_IO_PENDING, StartRequest("a", kDefaultPriority));
-  EXPECT_EQ(ERR_IO_PENDING, StartRequest("a", kDefaultPriority));
-  EXPECT_EQ(ERR_IO_PENDING, StartRequest("a", kDefaultPriority));
-  EXPECT_EQ(ERR_IO_PENDING, StartRequest("a", kDefaultPriority));
-  EXPECT_EQ(ERR_IO_PENDING, StartRequest("a", kDefaultPriority));
+  EXPECT_THAT(StartRequest("a", kDefaultPriority), IsError(ERR_IO_PENDING));
+  EXPECT_THAT(StartRequest("a", kDefaultPriority), IsError(ERR_IO_PENDING));
+  EXPECT_THAT(StartRequest("a", kDefaultPriority), IsError(ERR_IO_PENDING));
+  EXPECT_THAT(StartRequest("a", kDefaultPriority), IsError(ERR_IO_PENDING));
+  EXPECT_THAT(StartRequest("a", kDefaultPriority), IsError(ERR_IO_PENDING));
+  EXPECT_THAT(StartRequest("a", kDefaultPriority), IsError(ERR_IO_PENDING));
+  EXPECT_THAT(StartRequest("a", kDefaultPriority), IsError(ERR_IO_PENDING));
+  EXPECT_THAT(StartRequest("a", kDefaultPriority), IsError(ERR_IO_PENDING));
+  EXPECT_THAT(StartRequest("a", kDefaultPriority), IsError(ERR_IO_PENDING));
 
   // Now, kMaxSocketsPerGroup requests should be active.  Let's cancel them.
   ASSERT_LE(kMaxSocketsPerGroup, static_cast<int>(requests()->size()));
@@ -425,7 +430,7 @@ TEST_F(WebSocketTransportClientSocketPoolTest,
 
   // Let's wait for the rest to complete now.
   for (size_t i = kMaxSocketsPerGroup; i < requests()->size(); ++i) {
-    EXPECT_EQ(OK, request(i)->WaitForResult());
+    EXPECT_THAT(request(i)->WaitForResult(), IsOk());
     request(i)->handle()->Reset();
   }
 
@@ -443,17 +448,17 @@ TEST_F(WebSocketTransportClientSocketPoolTest,
 
   // Queue up all the requests
   for (int i = 0; i < kNumRequests; i++)
-    EXPECT_EQ(ERR_IO_PENDING, StartRequest("a", kDefaultPriority));
+    EXPECT_THAT(StartRequest("a", kDefaultPriority), IsError(ERR_IO_PENDING));
 
   for (int i = 0; i < kNumRequests; i++)
-    EXPECT_EQ(ERR_CONNECTION_FAILED, request(i)->WaitForResult());
+    EXPECT_THAT(request(i)->WaitForResult(), IsError(ERR_CONNECTION_FAILED));
 }
 
 // The lock on the endpoint is released when a ClientSocketHandle is reset.
 TEST_F(WebSocketTransportClientSocketPoolTest, LockReleasedOnHandleReset) {
-  EXPECT_EQ(ERR_IO_PENDING, StartRequest("a", kDefaultPriority));
-  EXPECT_EQ(ERR_IO_PENDING, StartRequest("a", kDefaultPriority));
-  EXPECT_EQ(OK, request(0)->WaitForResult());
+  EXPECT_THAT(StartRequest("a", kDefaultPriority), IsError(ERR_IO_PENDING));
+  EXPECT_THAT(StartRequest("a", kDefaultPriority), IsError(ERR_IO_PENDING));
+  EXPECT_THAT(request(0)->WaitForResult(), IsOk());
   EXPECT_FALSE(request(1)->handle()->is_initialized());
   request(0)->handle()->Reset();
   RunUntilIdle();
@@ -467,10 +472,10 @@ TEST_F(WebSocketTransportClientSocketPoolTest, LockReleasedOnHandleDelete) {
   int rv =
       handle->Init("a", params_, LOW, ClientSocketPool::RespectLimits::ENABLED,
                    callback.callback(), &pool_, BoundNetLog());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
-  EXPECT_EQ(ERR_IO_PENDING, StartRequest("a", kDefaultPriority));
-  EXPECT_EQ(OK, callback.WaitForResult());
+  EXPECT_THAT(StartRequest("a", kDefaultPriority), IsError(ERR_IO_PENDING));
+  EXPECT_THAT(callback.WaitForResult(), IsOk());
   EXPECT_FALSE(request(0)->handle()->is_initialized());
   handle.reset();
   RunUntilIdle();
@@ -481,9 +486,9 @@ TEST_F(WebSocketTransportClientSocketPoolTest, LockReleasedOnHandleDelete) {
 // explicitly released.
 TEST_F(WebSocketTransportClientSocketPoolTest,
        ConnectionProceedsOnExplicitRelease) {
-  EXPECT_EQ(ERR_IO_PENDING, StartRequest("a", kDefaultPriority));
-  EXPECT_EQ(ERR_IO_PENDING, StartRequest("a", kDefaultPriority));
-  EXPECT_EQ(OK, request(0)->WaitForResult());
+  EXPECT_THAT(StartRequest("a", kDefaultPriority), IsError(ERR_IO_PENDING));
+  EXPECT_THAT(StartRequest("a", kDefaultPriority), IsError(ERR_IO_PENDING));
+  EXPECT_THAT(request(0)->WaitForResult(), IsOk());
   EXPECT_FALSE(request(1)->handle()->is_initialized());
   WebSocketTransportClientSocketPool::UnlockEndpoint(request(0)->handle());
   RunUntilIdle();
@@ -501,11 +506,11 @@ TEST_F(WebSocketTransportClientSocketPoolTest,
   client_socket_factory_.set_client_socket_types(case_types,
                                                  arraysize(case_types));
 
-  EXPECT_EQ(ERR_IO_PENDING, StartRequest("a", kDefaultPriority));
-  EXPECT_EQ(ERR_IO_PENDING, StartRequest("a", kDefaultPriority));
+  EXPECT_THAT(StartRequest("a", kDefaultPriority), IsError(ERR_IO_PENDING));
+  EXPECT_THAT(StartRequest("a", kDefaultPriority), IsError(ERR_IO_PENDING));
   RunUntilIdle();
   pool_.CancelRequest("a", request(0)->handle());
-  EXPECT_EQ(OK, request(1)->WaitForResult());
+  EXPECT_THAT(request(1)->WaitForResult(), IsOk());
 }
 
 // Test the case of the IPv6 address stalling, and falling back to the IPv4
@@ -535,11 +540,11 @@ TEST_F(WebSocketTransportClientSocketPoolTest,
   int rv =
       handle.Init("a", params_, LOW, ClientSocketPool::RespectLimits::ENABLED,
                   callback.callback(), &pool, BoundNetLog());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
   EXPECT_FALSE(handle.is_initialized());
   EXPECT_FALSE(handle.socket());
 
-  EXPECT_EQ(OK, callback.WaitForResult());
+  EXPECT_THAT(callback.WaitForResult(), IsOk());
   EXPECT_TRUE(handle.is_initialized());
   EXPECT_TRUE(handle.socket());
   IPEndPoint endpoint;
@@ -578,11 +583,11 @@ TEST_F(WebSocketTransportClientSocketPoolTest,
   int rv =
       handle.Init("a", params_, LOW, ClientSocketPool::RespectLimits::ENABLED,
                   callback.callback(), &pool, BoundNetLog());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
   EXPECT_FALSE(handle.is_initialized());
   EXPECT_FALSE(handle.socket());
 
-  EXPECT_EQ(OK, callback.WaitForResult());
+  EXPECT_THAT(callback.WaitForResult(), IsOk());
   EXPECT_TRUE(handle.is_initialized());
   EXPECT_TRUE(handle.socket());
   IPEndPoint endpoint;
@@ -611,11 +616,11 @@ TEST_F(WebSocketTransportClientSocketPoolTest,
   int rv =
       handle.Init("a", params_, LOW, ClientSocketPool::RespectLimits::ENABLED,
                   callback.callback(), &pool, BoundNetLog());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
   EXPECT_FALSE(handle.is_initialized());
   EXPECT_FALSE(handle.socket());
 
-  EXPECT_EQ(OK, callback.WaitForResult());
+  EXPECT_THAT(callback.WaitForResult(), IsOk());
   EXPECT_TRUE(handle.is_initialized());
   EXPECT_TRUE(handle.socket());
   IPEndPoint endpoint;
@@ -642,11 +647,11 @@ TEST_F(WebSocketTransportClientSocketPoolTest, IPv4HasNoFallback) {
   int rv =
       handle.Init("a", params_, LOW, ClientSocketPool::RespectLimits::ENABLED,
                   callback.callback(), &pool, BoundNetLog());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
   EXPECT_FALSE(handle.is_initialized());
   EXPECT_FALSE(handle.socket());
 
-  EXPECT_EQ(OK, callback.WaitForResult());
+  EXPECT_THAT(callback.WaitForResult(), IsOk());
   EXPECT_TRUE(handle.is_initialized());
   EXPECT_TRUE(handle.socket());
   IPEndPoint endpoint;
@@ -684,7 +689,7 @@ TEST_F(WebSocketTransportClientSocketPoolTest, IPv6InstantFail) {
   int rv =
       handle.Init("a", params_, LOW, ClientSocketPool::RespectLimits::ENABLED,
                   callback.callback(), &pool, BoundNetLog());
-  EXPECT_EQ(OK, rv);
+  EXPECT_THAT(rv, IsOk());
   ASSERT_TRUE(handle.socket());
 
   IPEndPoint endpoint;
@@ -721,11 +726,11 @@ TEST_F(WebSocketTransportClientSocketPoolTest, IPv6RapidFail) {
   int rv =
       handle.Init("a", params_, LOW, ClientSocketPool::RespectLimits::ENABLED,
                   callback.callback(), &pool, BoundNetLog());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
   EXPECT_FALSE(handle.socket());
 
   base::TimeTicks start(base::TimeTicks::Now());
-  EXPECT_EQ(OK, callback.WaitForResult());
+  EXPECT_THAT(callback.WaitForResult(), IsOk());
   EXPECT_LT(base::TimeTicks::Now() - start,
             base::TimeDelta::FromMilliseconds(
                 TransportConnectJob::kIPv6FallbackTimerInMs));
@@ -758,7 +763,7 @@ TEST_F(WebSocketTransportClientSocketPoolTest, FirstSuccessWins) {
   int rv =
       handle.Init("a", params_, LOW, ClientSocketPool::RespectLimits::ENABLED,
                   callback.callback(), &pool, BoundNetLog());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
   ASSERT_FALSE(handle.socket());
 
   base::Closure ipv6_connect_trigger =
@@ -769,7 +774,7 @@ TEST_F(WebSocketTransportClientSocketPoolTest, FirstSuccessWins) {
   ipv4_connect_trigger.Run();
   ipv6_connect_trigger.Run();
 
-  EXPECT_EQ(OK, callback.WaitForResult());
+  EXPECT_THAT(callback.WaitForResult(), IsOk());
   ASSERT_TRUE(handle.socket());
 
   IPEndPoint endpoint;
@@ -811,9 +816,9 @@ TEST_F(WebSocketTransportClientSocketPoolTest, LastFailureWins) {
   int rv =
       handle.Init("a", params_, LOW, ClientSocketPool::RespectLimits::ENABLED,
                   callback.callback(), &pool, BoundNetLog());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
-  EXPECT_EQ(ERR_CONNECTION_FAILED, callback.WaitForResult());
+  EXPECT_THAT(callback.WaitForResult(), IsError(ERR_CONNECTION_FAILED));
 
   EXPECT_GE(base::TimeTicks::Now() - start, delay * 5);
 }
@@ -849,24 +854,24 @@ TEST_F(WebSocketTransportClientSocketPoolTest, DISABLED_OverallTimeoutApplies) {
   int rv =
       handle.Init("a", params_, LOW, ClientSocketPool::RespectLimits::ENABLED,
                   callback.callback(), &pool, BoundNetLog());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
-  EXPECT_EQ(ERR_TIMED_OUT, callback.WaitForResult());
+  EXPECT_THAT(callback.WaitForResult(), IsError(ERR_TIMED_OUT));
 }
 
 TEST_F(WebSocketTransportClientSocketPoolTest, MaxSocketsEnforced) {
   host_resolver_->set_synchronous_mode(true);
   for (int i = 0; i < kMaxSockets; ++i) {
-    ASSERT_EQ(OK, StartRequest("a", kDefaultPriority));
+    ASSERT_THAT(StartRequest("a", kDefaultPriority), IsOk());
     WebSocketTransportClientSocketPool::UnlockEndpoint(request(i)->handle());
     RunUntilIdle();
   }
-  EXPECT_EQ(ERR_IO_PENDING, StartRequest("a", kDefaultPriority));
+  EXPECT_THAT(StartRequest("a", kDefaultPriority), IsError(ERR_IO_PENDING));
 }
 
 TEST_F(WebSocketTransportClientSocketPoolTest, MaxSocketsEnforcedWhenPending) {
   for (int i = 0; i < kMaxSockets + 1; ++i) {
-    EXPECT_EQ(ERR_IO_PENDING, StartRequest("a", kDefaultPriority));
+    EXPECT_THAT(StartRequest("a", kDefaultPriority), IsError(ERR_IO_PENDING));
   }
   // Now there are 32 sockets waiting to connect, and one stalled.
   for (int i = 0; i < kMaxSockets; ++i) {
@@ -884,12 +889,12 @@ TEST_F(WebSocketTransportClientSocketPoolTest, MaxSocketsEnforcedWhenPending) {
 TEST_F(WebSocketTransportClientSocketPoolTest, StalledSocketReleased) {
   host_resolver_->set_synchronous_mode(true);
   for (int i = 0; i < kMaxSockets; ++i) {
-    ASSERT_EQ(OK, StartRequest("a", kDefaultPriority));
+    ASSERT_THAT(StartRequest("a", kDefaultPriority), IsOk());
     WebSocketTransportClientSocketPool::UnlockEndpoint(request(i)->handle());
     RunUntilIdle();
   }
 
-  EXPECT_EQ(ERR_IO_PENDING, StartRequest("a", kDefaultPriority));
+  EXPECT_THAT(StartRequest("a", kDefaultPriority), IsError(ERR_IO_PENDING));
   ReleaseOneConnection(ClientSocketPoolTest::NO_KEEP_ALIVE);
   EXPECT_TRUE(request(kMaxSockets)->handle()->is_initialized());
   EXPECT_TRUE(request(kMaxSockets)->handle()->socket());
@@ -897,18 +902,18 @@ TEST_F(WebSocketTransportClientSocketPoolTest, StalledSocketReleased) {
 
 TEST_F(WebSocketTransportClientSocketPoolTest, IsStalledTrueWhenStalled) {
   for (int i = 0; i < kMaxSockets + 1; ++i) {
-    EXPECT_EQ(ERR_IO_PENDING, StartRequest("a", kDefaultPriority));
+    EXPECT_THAT(StartRequest("a", kDefaultPriority), IsError(ERR_IO_PENDING));
   }
-  EXPECT_EQ(OK, request(0)->WaitForResult());
+  EXPECT_THAT(request(0)->WaitForResult(), IsOk());
   EXPECT_TRUE(pool_.IsStalled());
 }
 
 TEST_F(WebSocketTransportClientSocketPoolTest,
        CancellingPendingSocketUnstallsStalledSocket) {
   for (int i = 0; i < kMaxSockets + 1; ++i) {
-    EXPECT_EQ(ERR_IO_PENDING, StartRequest("a", kDefaultPriority));
+    EXPECT_THAT(StartRequest("a", kDefaultPriority), IsError(ERR_IO_PENDING));
   }
-  EXPECT_EQ(OK, request(0)->WaitForResult());
+  EXPECT_THAT(request(0)->WaitForResult(), IsOk());
   request(1)->handle()->Reset();
   RunUntilIdle();
   EXPECT_FALSE(pool_.IsStalled());
@@ -917,7 +922,7 @@ TEST_F(WebSocketTransportClientSocketPoolTest,
 TEST_F(WebSocketTransportClientSocketPoolTest,
        LoadStateOfStalledSocketIsWaitingForAvailableSocket) {
   for (int i = 0; i < kMaxSockets + 1; ++i) {
-    EXPECT_EQ(ERR_IO_PENDING, StartRequest("a", kDefaultPriority));
+    EXPECT_THAT(StartRequest("a", kDefaultPriority), IsError(ERR_IO_PENDING));
   }
   EXPECT_EQ(LOAD_STATE_WAITING_FOR_AVAILABLE_SOCKET,
             pool_.GetLoadState("a", request(kMaxSockets)->handle()));
@@ -926,7 +931,7 @@ TEST_F(WebSocketTransportClientSocketPoolTest,
 TEST_F(WebSocketTransportClientSocketPoolTest,
        CancellingStalledSocketUnstallsPool) {
   for (int i = 0; i < kMaxSockets + 1; ++i) {
-    EXPECT_EQ(ERR_IO_PENDING, StartRequest("a", kDefaultPriority));
+    EXPECT_THAT(StartRequest("a", kDefaultPriority), IsError(ERR_IO_PENDING));
   }
   request(kMaxSockets)->handle()->Reset();
   RunUntilIdle();
@@ -935,28 +940,28 @@ TEST_F(WebSocketTransportClientSocketPoolTest,
 
 TEST_F(WebSocketTransportClientSocketPoolTest,
        FlushWithErrorFlushesPendingConnections) {
-  EXPECT_EQ(ERR_IO_PENDING, StartRequest("a", kDefaultPriority));
+  EXPECT_THAT(StartRequest("a", kDefaultPriority), IsError(ERR_IO_PENDING));
   pool_.FlushWithError(ERR_FAILED);
-  EXPECT_EQ(ERR_FAILED, request(0)->WaitForResult());
+  EXPECT_THAT(request(0)->WaitForResult(), IsError(ERR_FAILED));
 }
 
 TEST_F(WebSocketTransportClientSocketPoolTest,
        FlushWithErrorFlushesStalledConnections) {
   for (int i = 0; i < kMaxSockets + 1; ++i) {
-    EXPECT_EQ(ERR_IO_PENDING, StartRequest("a", kDefaultPriority));
+    EXPECT_THAT(StartRequest("a", kDefaultPriority), IsError(ERR_IO_PENDING));
   }
   pool_.FlushWithError(ERR_FAILED);
-  EXPECT_EQ(ERR_FAILED, request(kMaxSockets)->WaitForResult());
+  EXPECT_THAT(request(kMaxSockets)->WaitForResult(), IsError(ERR_FAILED));
 }
 
 TEST_F(WebSocketTransportClientSocketPoolTest,
        AfterFlushWithErrorCanMakeNewConnections) {
   for (int i = 0; i < kMaxSockets + 1; ++i) {
-    EXPECT_EQ(ERR_IO_PENDING, StartRequest("a", kDefaultPriority));
+    EXPECT_THAT(StartRequest("a", kDefaultPriority), IsError(ERR_IO_PENDING));
   }
   pool_.FlushWithError(ERR_FAILED);
   host_resolver_->set_synchronous_mode(true);
-  EXPECT_EQ(OK, StartRequest("a", kDefaultPriority));
+  EXPECT_THAT(StartRequest("a", kDefaultPriority), IsOk());
 }
 
 // Deleting pending connections can release the lock on the endpoint, which can
@@ -975,14 +980,14 @@ TEST_F(WebSocketTransportClientSocketPoolTest,
   client_socket_factory_.set_default_client_socket_type(
       MockTransportClientSocketFactory::MOCK_CLIENT_SOCKET);
   for (int i = 0; i < kMaxSockets; ++i) {
-    EXPECT_EQ(ERR_IO_PENDING, StartRequest("a", kDefaultPriority));
+    EXPECT_THAT(StartRequest("a", kDefaultPriority), IsError(ERR_IO_PENDING));
   }
   // Now we have one socket in STATE_TRANSPORT_CONNECT and the rest in
   // STATE_OBTAIN_LOCK. If any of the sockets in STATE_OBTAIN_LOCK is given the
   // lock, they will synchronously connect.
   pool_.FlushWithError(ERR_FAILED);
   for (int i = 0; i < kMaxSockets; ++i) {
-    EXPECT_EQ(ERR_FAILED, request(i)->WaitForResult());
+    EXPECT_THAT(request(i)->WaitForResult(), IsError(ERR_FAILED));
   }
 }
 
@@ -1014,7 +1019,7 @@ TEST_F(WebSocketTransportClientSocketPoolTest,
                                                   "1.1.1.1",
                                                   i + 1),
                                               std::string());
-    EXPECT_EQ(ERR_IO_PENDING, StartRequest("a", kDefaultPriority));
+    EXPECT_THAT(StartRequest("a", kDefaultPriority), IsError(ERR_IO_PENDING));
   }
   // Now we have |kMaxSockets| IPv6 sockets stalled in connect. No IPv4 sockets
   // are started yet.
@@ -1024,7 +1029,7 @@ TEST_F(WebSocketTransportClientSocketPoolTest,
   // connect, and |kMaxSockets - 1| IPv4 sockets waiting for the endpoint lock.
   pool_.FlushWithError(ERR_FAILED);
   for (int i = 0; i < kMaxSockets; ++i) {
-    EXPECT_EQ(ERR_FAILED, request(i)->WaitForResult());
+    EXPECT_THAT(request(i)->WaitForResult(), IsError(ERR_FAILED));
   }
 }
 
@@ -1038,14 +1043,14 @@ TEST_F(WebSocketTransportClientSocketPoolTest,
       MockTransportClientSocketFactory::MOCK_STALLED_CLIENT_SOCKET};
   client_socket_factory_.set_client_socket_types(socket_types,
                                                  arraysize(socket_types));
-  EXPECT_EQ(OK, StartRequest("a", kDefaultPriority));
+  EXPECT_THAT(StartRequest("a", kDefaultPriority), IsOk());
   // Socket has been "handed out".
   EXPECT_TRUE(request(0)->handle()->socket());
 
-  EXPECT_EQ(ERR_IO_PENDING, StartRequest("a", kDefaultPriority));
+  EXPECT_THAT(StartRequest("a", kDefaultPriority), IsError(ERR_IO_PENDING));
   // Now we have one socket handed out, and one pending.
   pool_.FlushWithError(ERR_FAILED);
-  EXPECT_EQ(ERR_FAILED, request(1)->WaitForResult());
+  EXPECT_THAT(request(1)->WaitForResult(), IsError(ERR_FAILED));
   // Socket owned by ClientSocketHandle is unaffected:
   EXPECT_TRUE(request(0)->handle()->socket());
   // Return it to the pool (which deletes it).
@@ -1063,7 +1068,7 @@ TEST_F(WebSocketTransportClientSocketPoolTest, CancelRequestReclaimsSockets) {
   client_socket_factory_.set_client_socket_types(socket_types,
                                                  arraysize(socket_types));
 
-  EXPECT_EQ(ERR_IO_PENDING, StartRequest("a", kDefaultPriority));
+  EXPECT_THAT(StartRequest("a", kDefaultPriority), IsError(ERR_IO_PENDING));
 
   base::Closure connect_trigger =
       client_socket_factory_.WaitForTriggerableSocketCreation();
@@ -1075,23 +1080,23 @@ TEST_F(WebSocketTransportClientSocketPoolTest, CancelRequestReclaimsSockets) {
   RunUntilIdle();
   // We should now be able to create a new connection without blocking on the
   // endpoint lock.
-  EXPECT_EQ(OK, StartRequest("a", kDefaultPriority));
+  EXPECT_THAT(StartRequest("a", kDefaultPriority), IsOk());
 }
 
 // A handshake completing and then the WebSocket closing should only release one
 // Endpoint, not two.
 TEST_F(WebSocketTransportClientSocketPoolTest, EndpointLockIsOnlyReleasedOnce) {
   host_resolver_->set_synchronous_mode(true);
-  ASSERT_EQ(OK, StartRequest("a", kDefaultPriority));
-  EXPECT_EQ(ERR_IO_PENDING, StartRequest("a", kDefaultPriority));
-  EXPECT_EQ(ERR_IO_PENDING, StartRequest("a", kDefaultPriority));
+  ASSERT_THAT(StartRequest("a", kDefaultPriority), IsOk());
+  EXPECT_THAT(StartRequest("a", kDefaultPriority), IsError(ERR_IO_PENDING));
+  EXPECT_THAT(StartRequest("a", kDefaultPriority), IsError(ERR_IO_PENDING));
   // First socket completes handshake.
   WebSocketTransportClientSocketPool::UnlockEndpoint(request(0)->handle());
   RunUntilIdle();
   // First socket is closed.
   request(0)->handle()->Reset();
   // Second socket should have been released.
-  EXPECT_EQ(OK, request(1)->WaitForResult());
+  EXPECT_THAT(request(1)->WaitForResult(), IsOk());
   // Third socket should still be waiting for endpoint.
   ASSERT_FALSE(request(2)->handle()->is_initialized());
   EXPECT_EQ(LOAD_STATE_WAITING_FOR_AVAILABLE_SOCKET,

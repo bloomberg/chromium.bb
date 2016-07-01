@@ -12,7 +12,11 @@
 #include "net/http/http_auth_handler_digest.h"
 #include "net/http/http_request_info.h"
 #include "net/ssl/ssl_info.h"
+#include "net/test/gtest_util.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+using net::test::IsOk;
 
 namespace net {
 
@@ -360,7 +364,7 @@ TEST(HttpAuthHandlerDigestTest, ParseChallenge) {
         tests[i].challenge, HttpAuth::AUTH_SERVER, null_ssl_info, origin,
         BoundNetLog(), &handler);
     if (tests[i].parsed_success) {
-      EXPECT_EQ(OK, rv);
+      EXPECT_THAT(rv, IsOk());
     } else {
       EXPECT_NE(OK, rv);
       EXPECT_TRUE(handler.get() == NULL);
@@ -523,7 +527,7 @@ TEST(HttpAuthHandlerDigestTest, AssembleCredentials) {
     int rv = factory->CreateAuthHandlerFromString(
         tests[i].challenge, HttpAuth::AUTH_SERVER, null_ssl_info, origin,
         BoundNetLog(), &handler);
-    EXPECT_EQ(OK, rv);
+    EXPECT_THAT(rv, IsOk());
     ASSERT_TRUE(handler != NULL);
 
     HttpAuthHandlerDigest* digest =
@@ -552,7 +556,7 @@ TEST(HttpAuthHandlerDigest, HandleAnotherChallenge) {
   int rv = factory->CreateAuthHandlerFromString(
       default_challenge, HttpAuth::AUTH_SERVER, null_ssl_info, origin,
       BoundNetLog(), &handler);
-  EXPECT_EQ(OK, rv);
+  EXPECT_THAT(rv, IsOk());
   ASSERT_TRUE(handler.get() != NULL);
   HttpAuthChallengeTokenizer tok_default(default_challenge.begin(),
                                          default_challenge.end());

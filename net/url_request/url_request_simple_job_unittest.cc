@@ -14,11 +14,16 @@
 #include "base/test/sequenced_worker_pool_owner.h"
 #include "base/threading/worker_pool.h"
 #include "net/base/request_priority.h"
+#include "net/test/gtest_util.h"
 #include "net/url_request/url_request_job.h"
 #include "net/url_request/url_request_job_factory.h"
 #include "net/url_request/url_request_job_factory_impl.h"
 #include "net/url_request/url_request_test_util.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+using net::test::IsError;
+using net::test::IsOk;
 
 namespace net {
 
@@ -189,7 +194,8 @@ TEST_F(URLRequestSimpleJobTest, MultipleRangeRequest) {
   StartRequest(&headers);
 
   EXPECT_TRUE(delegate_.request_failed());
-  EXPECT_EQ(ERR_REQUEST_RANGE_NOT_SATISFIABLE, request_->status().error());
+  EXPECT_THAT(request_->status().error(),
+              IsError(ERR_REQUEST_RANGE_NOT_SATISFIABLE));
 }
 
 TEST_F(URLRequestSimpleJobTest, InvalidRangeRequest) {

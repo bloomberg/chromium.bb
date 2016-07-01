@@ -15,8 +15,13 @@
 #include "net/proxy/mock_proxy_script_fetcher.h"
 #include "net/proxy/proxy_script_fetcher_impl.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "net/test/gtest_util.h"
 #include "net/url_request/url_request_test_util.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+using net::test::IsError;
+using net::test::IsOk;
 
 namespace net {
 
@@ -176,7 +181,7 @@ TEST(DhcpProxyScriptAdapterFetcher, NormalCaseURLNotInDhcp) {
   client.RunTest();
   client.WaitForResult(ERR_PAC_NOT_IN_DHCP);
   ASSERT_TRUE(client.fetcher_->DidFinish());
-  EXPECT_EQ(ERR_PAC_NOT_IN_DHCP, client.fetcher_->GetResult());
+  EXPECT_THAT(client.fetcher_->GetResult(), IsError(ERR_PAC_NOT_IN_DHCP));
   EXPECT_EQ(base::string16(L""), client.fetcher_->GetPacScript());
 }
 
@@ -185,7 +190,7 @@ TEST(DhcpProxyScriptAdapterFetcher, NormalCaseURLInDhcp) {
   client.RunTest();
   client.WaitForResult(OK);
   ASSERT_TRUE(client.fetcher_->DidFinish());
-  EXPECT_EQ(OK, client.fetcher_->GetResult());
+  EXPECT_THAT(client.fetcher_->GetResult(), IsOk());
   EXPECT_EQ(base::string16(L"bingo"), client.fetcher_->GetPacScript());
   EXPECT_EQ(GURL(kPacUrl), client.fetcher_->GetPacURL());
 }
@@ -208,7 +213,7 @@ TEST(DhcpProxyScriptAdapterFetcher, TimeoutDuringDhcp) {
   client.WaitForResult(ERR_TIMED_OUT);
 
   ASSERT_TRUE(client.fetcher_->DidFinish());
-  EXPECT_EQ(ERR_TIMED_OUT, client.fetcher_->GetResult());
+  EXPECT_THAT(client.fetcher_->GetResult(), IsError(ERR_TIMED_OUT));
   EXPECT_EQ(base::string16(L""), client.fetcher_->GetPacScript());
   EXPECT_EQ(GURL(), client.fetcher_->GetPacURL());
   client.FinishTestAllowCleanup();
@@ -221,7 +226,7 @@ TEST(DhcpProxyScriptAdapterFetcher, CancelWhileDhcp) {
   base::RunLoop().RunUntilIdle();
   ASSERT_FALSE(client.fetcher_->DidFinish());
   ASSERT_TRUE(client.fetcher_->WasCancelled());
-  EXPECT_EQ(ERR_ABORTED, client.fetcher_->GetResult());
+  EXPECT_THAT(client.fetcher_->GetResult(), IsError(ERR_ABORTED));
   EXPECT_EQ(base::string16(L""), client.fetcher_->GetPacScript());
   EXPECT_EQ(GURL(), client.fetcher_->GetPacURL());
   client.FinishTestAllowCleanup();
@@ -242,7 +247,7 @@ TEST(DhcpProxyScriptAdapterFetcher, CancelWhileFetcher) {
   base::RunLoop().RunUntilIdle();
   ASSERT_FALSE(client.fetcher_->DidFinish());
   ASSERT_TRUE(client.fetcher_->WasCancelled());
-  EXPECT_EQ(ERR_ABORTED, client.fetcher_->GetResult());
+  EXPECT_THAT(client.fetcher_->GetResult(), IsError(ERR_ABORTED));
   EXPECT_EQ(base::string16(L""), client.fetcher_->GetPacScript());
   // GetPacURL() still returns the URL fetched in this case.
   EXPECT_EQ(GURL(kPacUrl), client.fetcher_->GetPacURL());
@@ -257,7 +262,7 @@ TEST(DhcpProxyScriptAdapterFetcher, CancelAtCompletion) {
   // Canceling after you're done should have no effect, so these
   // are identical expectations to the NormalCaseURLInDhcp test.
   ASSERT_TRUE(client.fetcher_->DidFinish());
-  EXPECT_EQ(OK, client.fetcher_->GetResult());
+  EXPECT_THAT(client.fetcher_->GetResult(), IsOk());
   EXPECT_EQ(base::string16(L"bingo"), client.fetcher_->GetPacScript());
   EXPECT_EQ(GURL(kPacUrl), client.fetcher_->GetPacURL());
   client.FinishTestAllowCleanup();
@@ -304,7 +309,7 @@ TEST(DhcpProxyScriptAdapterFetcher, MockDhcpRealFetch) {
   client.RunTest();
   client.WaitForResult(OK);
   ASSERT_TRUE(client.fetcher_->DidFinish());
-  EXPECT_EQ(OK, client.fetcher_->GetResult());
+  EXPECT_THAT(client.fetcher_->GetResult(), IsOk());
   EXPECT_EQ(base::string16(L"-downloadable.pac-\n"),
             client.fetcher_->GetPacScript());
   EXPECT_EQ(configured_url,

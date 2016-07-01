@@ -20,8 +20,13 @@
 #include "net/socket/socket_test_util.h"
 #include "net/spdy/spdy_session_pool.h"
 #include "net/ssl/ssl_config_service_defaults.h"
+#include "net/test/gtest_util.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
+
+using net::test::IsError;
+using net::test::IsOk;
 
 namespace net {
 
@@ -66,16 +71,16 @@ class HttpNetworkLayerTest : public PlatformTest {
 
     std::unique_ptr<HttpTransaction> trans;
     int rv = factory_->CreateTransaction(DEFAULT_PRIORITY, &trans);
-    EXPECT_EQ(OK, rv);
+    EXPECT_THAT(rv, IsOk());
 
     rv = trans->Start(&request_info, callback.callback(), BoundNetLog());
     if (rv == ERR_IO_PENDING)
       rv = callback.WaitForResult();
-    ASSERT_EQ(OK, rv);
+    ASSERT_THAT(rv, IsOk());
 
     std::string contents;
     rv = ReadTransaction(trans.get(), &contents);
-    EXPECT_EQ(OK, rv);
+    EXPECT_THAT(rv, IsOk());
     EXPECT_EQ(content, contents);
 
     if (!header.empty()) {
@@ -273,28 +278,28 @@ class HttpNetworkLayerTest : public PlatformTest {
 TEST_F(HttpNetworkLayerTest, CreateAndDestroy) {
   std::unique_ptr<HttpTransaction> trans;
   int rv = factory_->CreateTransaction(DEFAULT_PRIORITY, &trans);
-  EXPECT_EQ(OK, rv);
+  EXPECT_THAT(rv, IsOk());
   EXPECT_TRUE(trans.get() != NULL);
 }
 
 TEST_F(HttpNetworkLayerTest, Suspend) {
   std::unique_ptr<HttpTransaction> trans;
   int rv = factory_->CreateTransaction(DEFAULT_PRIORITY, &trans);
-  EXPECT_EQ(OK, rv);
+  EXPECT_THAT(rv, IsOk());
 
   trans.reset();
 
   factory_->OnSuspend();
 
   rv = factory_->CreateTransaction(DEFAULT_PRIORITY, &trans);
-  EXPECT_EQ(ERR_NETWORK_IO_SUSPENDED, rv);
+  EXPECT_THAT(rv, IsError(ERR_NETWORK_IO_SUSPENDED));
 
   ASSERT_TRUE(trans == NULL);
 
   factory_->OnResume();
 
   rv = factory_->CreateTransaction(DEFAULT_PRIORITY, &trans);
-  EXPECT_EQ(OK, rv);
+  EXPECT_THAT(rv, IsOk());
 }
 
 TEST_F(HttpNetworkLayerTest, GET) {
@@ -324,15 +329,15 @@ TEST_F(HttpNetworkLayerTest, GET) {
 
   std::unique_ptr<HttpTransaction> trans;
   int rv = factory_->CreateTransaction(DEFAULT_PRIORITY, &trans);
-  EXPECT_EQ(OK, rv);
+  EXPECT_THAT(rv, IsOk());
 
   rv = trans->Start(&request_info, callback.callback(), BoundNetLog());
   rv = callback.GetResult(rv);
-  ASSERT_EQ(OK, rv);
+  ASSERT_THAT(rv, IsOk());
 
   std::string contents;
   rv = ReadTransaction(trans.get(), &contents);
-  EXPECT_EQ(OK, rv);
+  EXPECT_THAT(rv, IsOk());
   EXPECT_EQ("hello world", contents);
 }
 
@@ -363,10 +368,10 @@ TEST_F(HttpNetworkLayerTest, NetworkVerified) {
 
   std::unique_ptr<HttpTransaction> trans;
   int rv = factory_->CreateTransaction(DEFAULT_PRIORITY, &trans);
-  EXPECT_EQ(OK, rv);
+  EXPECT_THAT(rv, IsOk());
 
   rv = trans->Start(&request_info, callback.callback(), BoundNetLog());
-  ASSERT_EQ(OK, callback.GetResult(rv));
+  ASSERT_THAT(callback.GetResult(rv), IsOk());
 
   EXPECT_TRUE(trans->GetResponseInfo()->network_accessed);
 }
@@ -396,10 +401,10 @@ TEST_F(HttpNetworkLayerTest, NetworkUnVerified) {
 
   std::unique_ptr<HttpTransaction> trans;
   int rv = factory_->CreateTransaction(DEFAULT_PRIORITY, &trans);
-  EXPECT_EQ(OK, rv);
+  EXPECT_THAT(rv, IsOk());
 
   rv = trans->Start(&request_info, callback.callback(), BoundNetLog());
-  ASSERT_EQ(ERR_CONNECTION_RESET, callback.GetResult(rv));
+  ASSERT_THAT(callback.GetResult(rv), IsError(ERR_CONNECTION_RESET));
 
   // network_accessed is true; the HTTP stack did try to make a connection.
   EXPECT_TRUE(trans->GetResponseInfo()->network_accessed);

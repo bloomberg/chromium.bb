@@ -10,7 +10,11 @@
 #include "net/log/net_log.h"
 #include "net/proxy/proxy_retry_info.h"
 #include "net/proxy/proxy_server.h"
+#include "net/test/gtest_util.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+using net::test::IsOk;
 
 namespace net {
 
@@ -204,7 +208,7 @@ TEST(ProxyListTest, UpdateRetryInfoOnFallback) {
                                    base::TimeDelta::FromSeconds(60), true,
                                    bad_proxies, OK, net_log);
     EXPECT_TRUE(retry_info_map.end() != retry_info_map.find("foopy1:80"));
-    EXPECT_EQ(OK, retry_info_map[proxy_server.ToURI()].net_error);
+    EXPECT_THAT(retry_info_map[proxy_server.ToURI()].net_error, IsOk());
     EXPECT_TRUE(retry_info_map.end() == retry_info_map.find("foopy2:80"));
     EXPECT_TRUE(retry_info_map.end() == retry_info_map.find("foopy3:80"));
   }

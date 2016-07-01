@@ -16,7 +16,12 @@
 #include "net/base/test_completion_callback.h"
 #include "net/dns/mojo_host_type_converters.h"
 #include "net/test/event_waiter.h"
+#include "net/test/gtest_util.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+using net::test::IsError;
+using net::test::IsOk;
 
 namespace net {
 namespace {
@@ -185,7 +190,7 @@ TEST_F(HostResolverMojoTest, Basic) {
   HostResolver::RequestInfo request_info(
       HostPortPair::FromString("example.com:12345"));
   AddressList result;
-  EXPECT_EQ(OK, Resolve(request_info, &result));
+  EXPECT_THAT(Resolve(request_info, &result), IsOk());
   ASSERT_EQ(2u, result.size());
   EXPECT_EQ(address_list[0], result[0]);
   EXPECT_EQ(address_list[1], result[1]);
@@ -208,12 +213,12 @@ TEST_F(HostResolverMojoTest, ResolveCachedResult) {
   HostResolver::RequestInfo request_info(
       HostPortPair::FromString("example.com:12345"));
   AddressList result;
-  ASSERT_EQ(OK, Resolve(request_info, &result));
+  ASSERT_THAT(Resolve(request_info, &result), IsOk());
   ASSERT_EQ(1u, mock_resolver_->requests().size());
 
   result.clear();
   request_info.set_host_port_pair(HostPortPair::FromString("example.com:6789"));
-  EXPECT_EQ(OK, Resolve(request_info, &result));
+  EXPECT_THAT(Resolve(request_info, &result), IsOk());
   ASSERT_EQ(2u, result.size());
   address_list.clear();
   address_list.push_back(IPEndPoint(address, 6789));
@@ -226,7 +231,7 @@ TEST_F(HostResolverMojoTest, ResolveCachedResult) {
   mock_resolver_->AddAction(HostResolverAction::ReturnResult(address_list));
   result.clear();
   request_info.set_allow_cached_response(false);
-  EXPECT_EQ(OK, Resolve(request_info, &result));
+  EXPECT_THAT(Resolve(request_info, &result), IsOk());
   ASSERT_EQ(2u, result.size());
   EXPECT_EQ(address_list[0], result[0]);
   EXPECT_EQ(address_list[1], result[1]);
@@ -261,8 +266,9 @@ TEST_F(HostResolverMojoTest, Multiple) {
             resolver_->Resolve(request_info2, DEFAULT_PRIORITY, &result2,
                                callback2.callback(), &request_handle2,
                                BoundNetLog()));
-  EXPECT_EQ(OK, callback1.GetResult(ERR_IO_PENDING));
-  EXPECT_EQ(ERR_NAME_NOT_RESOLVED, callback2.GetResult(ERR_IO_PENDING));
+  EXPECT_THAT(callback1.GetResult(ERR_IO_PENDING), IsOk());
+  EXPECT_THAT(callback2.GetResult(ERR_IO_PENDING),
+              IsError(ERR_NAME_NOT_RESOLVED));
   ASSERT_EQ(1u, result1.size());
   EXPECT_EQ(address_list[0], result1[0]);
   ASSERT_EQ(0u, result2.size());
@@ -289,7 +295,7 @@ TEST_F(HostResolverMojoTest, Error) {
       HostPortPair::FromString("example.com:8080"));
   request_info.set_address_family(ADDRESS_FAMILY_IPV4);
   AddressList result;
-  EXPECT_EQ(ERR_NAME_NOT_RESOLVED, Resolve(request_info, &result));
+  EXPECT_THAT(Resolve(request_info, &result), IsError(ERR_NAME_NOT_RESOLVED));
   EXPECT_TRUE(result.empty());
 
   ASSERT_EQ(1u, mock_resolver_->requests().size());
@@ -305,7 +311,7 @@ TEST_F(HostResolverMojoTest, EmptyResult) {
   HostResolver::RequestInfo request_info(
       HostPortPair::FromString("example.com:8080"));
   AddressList result;
-  EXPECT_EQ(OK, Resolve(request_info, &result));
+  EXPECT_THAT(Resolve(request_info, &result), IsOk());
   EXPECT_TRUE(result.empty());
 
   ASSERT_EQ(1u, mock_resolver_->requests().size());
@@ -337,7 +343,7 @@ TEST_F(HostResolverMojoTest, ImplDropsClientConnection) {
   HostResolver::RequestInfo request_info(
       HostPortPair::FromString("example.com:1"));
   AddressList result;
-  EXPECT_EQ(ERR_FAILED, Resolve(request_info, &result));
+  EXPECT_THAT(Resolve(request_info, &result), IsError(ERR_FAILED));
   EXPECT_TRUE(result.empty());
 
   ASSERT_EQ(1u, mock_resolver_->requests().size());
@@ -367,7 +373,7 @@ TEST_F(HostResolverMojoTest, ResolveFromCache_Hit) {
   HostResolver::RequestInfo request_info(
       HostPortPair::FromString("example.com:12345"));
   AddressList result;
-  ASSERT_EQ(OK, Resolve(request_info, &result));
+  ASSERT_THAT(Resolve(request_info, &result), IsOk());
   EXPECT_EQ(1u, mock_resolver_->requests().size());
 
   result.clear();
@@ -389,7 +395,7 @@ TEST_F(HostResolverMojoTest, ResolveFromCache_CacheNotAllowed) {
   HostResolver::RequestInfo request_info(
       HostPortPair::FromString("example.com:12345"));
   AddressList result;
-  ASSERT_EQ(OK, Resolve(request_info, &result));
+  ASSERT_THAT(Resolve(request_info, &result), IsOk());
   EXPECT_EQ(1u, mock_resolver_->requests().size());
 
   result.clear();

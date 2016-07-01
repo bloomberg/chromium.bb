@@ -21,8 +21,13 @@
 #include "net/socket/client_socket_factory.h"
 #include "net/socket/tcp_client_socket.h"
 #include "net/socket/tcp_server_socket.h"
+#include "net/test/gtest_util.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
+
+using net::test::IsError;
+using net::test::IsOk;
 
 namespace net {
 
@@ -53,7 +58,7 @@ class TransportClientSocketTest
   }
 
   void AcceptCallback(int res) {
-    ASSERT_EQ(OK, res);
+    ASSERT_THAT(res, IsOk());
     connect_loop_.Quit();
   }
 
@@ -99,9 +104,9 @@ void TransportClientSocketTest::SetUp() {
   // Open a server socket on an ephemeral port.
   listen_sock_.reset(new TCPServerSocket(NULL, NetLog::Source()));
   IPEndPoint local_address(IPAddress::IPv4Localhost(), 0);
-  ASSERT_EQ(OK, listen_sock_->Listen(local_address, 1));
+  ASSERT_THAT(listen_sock_->Listen(local_address, 1), IsOk());
   // Get the server's address (including the actual port number).
-  ASSERT_EQ(OK, listen_sock_->GetLocalAddress(&local_address));
+  ASSERT_THAT(listen_sock_->GetLocalAddress(&local_address), IsOk());
   listen_port_ = local_address.port();
   listen_sock_->Accept(&connected_sock_,
                        base::Bind(&TransportClientSocketTest::AcceptCallback,
@@ -146,7 +151,7 @@ void TransportClientSocketTest::EstablishConnection(
   // Wait for |listen_sock_| to accept a connection.
   connect_loop_.Run();
   // Now wait for the client socket to accept the connection.
-  EXPECT_EQ(OK, callback->GetResult(rv));
+  EXPECT_THAT(callback->GetResult(rv), IsOk());
 }
 
 void TransportClientSocketTest::SendRequestAndResponse() {
@@ -332,7 +337,7 @@ TEST_P(TransportClientSocketTest, Read) {
   // then close the server socket, and note the close.
 
   int rv = sock_->Read(buf.get(), 4096, callback.callback());
-  ASSERT_EQ(ERR_IO_PENDING, rv);
+  ASSERT_THAT(rv, IsError(ERR_IO_PENDING));
   CloseServerSocket();
   EXPECT_EQ(0, callback.WaitForResult());
 }
@@ -359,7 +364,7 @@ TEST_P(TransportClientSocketTest, Read_SmallChunks) {
   // then close the server socket, and note the close.
 
   int rv = sock_->Read(buf.get(), 1, callback.callback());
-  ASSERT_EQ(ERR_IO_PENDING, rv);
+  ASSERT_THAT(rv, IsError(ERR_IO_PENDING));
   CloseServerSocket();
   EXPECT_EQ(0, callback.WaitForResult());
 }
@@ -388,7 +393,7 @@ TEST_P(TransportClientSocketTest, FullDuplex_ReadFirst) {
   const int kBufLen = 4096;
   scoped_refptr<IOBuffer> buf(new IOBuffer(kBufLen));
   int rv = sock_->Read(buf.get(), kBufLen, callback.callback());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   const int kWriteBufLen = 64 * 1024;
   scoped_refptr<IOBuffer> request_buffer(new IOBuffer(kWriteBufLen));

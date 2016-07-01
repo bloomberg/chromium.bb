@@ -17,9 +17,13 @@
 #include "net/cert/x509_certificate.h"
 #include "net/log/net_log.h"
 #include "net/test/cert_test_util.h"
+#include "net/test/gtest_util.h"
 #include "net/test/test_data_directory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+using net::test::IsError;
+using net::test::IsOk;
 
 using testing::_;
 using testing::Mock;
@@ -188,7 +192,7 @@ TEST_F(CachingCertVerifierTest, AddsEntries) {
   int error = callback.GetResult(
       verifier_.Verify(params, nullptr, &cached_result, callback.callback(),
                        &request, BoundNetLog()));
-  ASSERT_EQ(ERR_CERT_WEAK_KEY, error);
+  ASSERT_THAT(error, IsError(ERR_CERT_WEAK_KEY));
   EXPECT_TRUE(cached_result.has_md2);
   EXPECT_FALSE(cached_result.is_issued_by_known_root);
 
@@ -204,7 +208,7 @@ TEST_F(CachingCertVerifierTest, AddsEntries) {
   error = callback.GetResult(verifier_.Verify(params, nullptr, &cached_result,
                                               callback.callback(), &request,
                                               BoundNetLog()));
-  ASSERT_EQ(ERR_CERT_WEAK_KEY, error);
+  ASSERT_THAT(error, IsError(ERR_CERT_WEAK_KEY));
   EXPECT_TRUE(cached_result.has_md2);
   EXPECT_FALSE(cached_result.is_issued_by_known_root);
 

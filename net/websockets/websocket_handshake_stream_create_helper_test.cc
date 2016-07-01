@@ -17,12 +17,16 @@
 #include "net/http/http_response_info.h"
 #include "net/socket/client_socket_handle.h"
 #include "net/socket/socket_test_util.h"
+#include "net/test/gtest_util.h"
 #include "net/websockets/websocket_basic_handshake_stream.h"
 #include "net/websockets/websocket_stream.h"
 #include "net/websockets/websocket_test_util.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 #include "url/origin.h"
+
+using net::test::IsOk;
 
 namespace net {
 namespace {
@@ -104,7 +108,7 @@ class WebSocketHandshakeStreamCreateHelperTest : public ::testing::Test {
     request_info.load_flags = LOAD_DISABLE_CACHE;
     int rv = handshake->InitializeStream(
         &request_info, DEFAULT_PRIORITY, BoundNetLog(), CompletionCallback());
-    EXPECT_EQ(OK, rv);
+    EXPECT_THAT(rv, IsOk());
 
     HttpRequestHeaders headers;
     headers.SetHeader("Host", "localhost");
@@ -123,10 +127,10 @@ class WebSocketHandshakeStreamCreateHelperTest : public ::testing::Test {
 
     rv = handshake->SendRequest(headers, &response, dummy.callback());
 
-    EXPECT_EQ(OK, rv);
+    EXPECT_THAT(rv, IsOk());
 
     rv = handshake->ReadResponseHeaders(dummy.callback());
-    EXPECT_EQ(OK, rv);
+    EXPECT_THAT(rv, IsOk());
     EXPECT_EQ(101, response.headers->response_code());
     EXPECT_TRUE(response.headers->HasHeaderValue("Connection", "Upgrade"));
     EXPECT_TRUE(response.headers->HasHeaderValue("Upgrade", "websocket"));

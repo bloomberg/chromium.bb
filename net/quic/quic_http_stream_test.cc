@@ -51,9 +51,13 @@
 #include "net/spdy/spdy_http_utils.h"
 #include "net/spdy/spdy_protocol.h"
 #include "net/test/cert_test_util.h"
+#include "net/test/gtest_util.h"
 #include "net/test/test_data_directory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+using net::test::IsError;
+using net::test::IsOk;
 
 using std::string;
 using testing::_;
@@ -592,7 +596,8 @@ TEST_P(QuicHttpStreamTest, GetRequest) {
   // Ack the request.
   ProcessPacket(ConstructServerAckPacket(1, 0, 0));
 
-  EXPECT_EQ(ERR_IO_PENDING, stream_->ReadResponseHeaders(callback_.callback()));
+  EXPECT_THAT(stream_->ReadResponseHeaders(callback_.callback()),
+              IsError(ERR_IO_PENDING));
 
   SetResponse("404 Not Found", string());
   size_t spdy_response_header_frame_length;
@@ -600,7 +605,7 @@ TEST_P(QuicHttpStreamTest, GetRequest) {
       2, kFin, &spdy_response_header_frame_length));
 
   // Now that the headers have been processed, the callback will return.
-  EXPECT_EQ(OK, callback_.WaitForResult());
+  EXPECT_THAT(callback_.WaitForResult(), IsOk());
   ASSERT_TRUE(response_.headers.get());
   EXPECT_EQ(404, response_.headers->response_code());
   EXPECT_TRUE(response_.headers->HasHeaderValue("Content-Type", "text/plain"));
@@ -645,7 +650,8 @@ TEST_P(QuicHttpStreamTest, GetRequestWithTrailers) {
   // Ack the request.
   ProcessPacket(ConstructServerAckPacket(1, 0, 0));
 
-  EXPECT_EQ(ERR_IO_PENDING, stream_->ReadResponseHeaders(callback_.callback()));
+  EXPECT_THAT(stream_->ReadResponseHeaders(callback_.callback()),
+              IsError(ERR_IO_PENDING));
 
   SetResponse("200 OK", string());
 
@@ -655,7 +661,7 @@ TEST_P(QuicHttpStreamTest, GetRequestWithTrailers) {
   ProcessPacket(ConstructResponseHeadersPacketWithOffset(
       2, !kFin, &spdy_response_header_frame_length, &offset));
   // Now that the headers have been processed, the callback will return.
-  EXPECT_EQ(OK, callback_.WaitForResult());
+  EXPECT_THAT(callback_.WaitForResult(), IsOk());
   ASSERT_TRUE(response_.headers.get());
   EXPECT_EQ(200, response_.headers->response_code());
   EXPECT_TRUE(response_.headers->HasHeaderValue("Content-Type", "text/plain"));
@@ -733,7 +739,8 @@ TEST_P(QuicHttpStreamTest, GetRequestLargeResponse) {
   // Ack the request.
   ProcessPacket(ConstructServerAckPacket(1, 0, 0));
 
-  EXPECT_EQ(ERR_IO_PENDING, stream_->ReadResponseHeaders(callback_.callback()));
+  EXPECT_THAT(stream_->ReadResponseHeaders(callback_.callback()),
+              IsError(ERR_IO_PENDING));
 
   response_headers_[":status"] = "200 OK";
   response_headers_[":version"] = "HTTP/1.1";
@@ -745,7 +752,7 @@ TEST_P(QuicHttpStreamTest, GetRequestLargeResponse) {
       2, kFin, &spdy_response_headers_frame_length));
 
   // Now that the headers have been processed, the callback will return.
-  EXPECT_EQ(OK, callback_.WaitForResult());
+  EXPECT_THAT(callback_.WaitForResult(), IsOk());
   ASSERT_TRUE(response_.headers.get());
   EXPECT_EQ(200, response_.headers->response_code());
   EXPECT_TRUE(response_.headers->HasHeaderValue("Content-Type", "text/plain"));
@@ -832,7 +839,8 @@ TEST_P(QuicHttpStreamTest, LogGranularQuicConnectionError) {
 
   // Ack the request.
   ProcessPacket(ConstructServerAckPacket(1, 0, 0));
-  EXPECT_EQ(ERR_IO_PENDING, stream_->ReadResponseHeaders(callback_.callback()));
+  EXPECT_THAT(stream_->ReadResponseHeaders(callback_.callback()),
+              IsError(ERR_IO_PENDING));
 
   EXPECT_TRUE(QuicHttpStreamPeer::WasHandshakeConfirmed(stream_.get()));
 
@@ -866,7 +874,8 @@ TEST_P(QuicHttpStreamTest, DoNotLogGranularQuicErrorIfHandshakeNotConfirmed) {
 
   // Ack the request.
   ProcessPacket(ConstructServerAckPacket(1, 0, 0));
-  EXPECT_EQ(ERR_IO_PENDING, stream_->ReadResponseHeaders(callback_.callback()));
+  EXPECT_THAT(stream_->ReadResponseHeaders(callback_.callback()),
+              IsError(ERR_IO_PENDING));
 
   // The test setup defaults handshake to be confirmed. Manually set
   // it to be not confirmed.
@@ -931,7 +940,7 @@ TEST_P(QuicHttpStreamTest, SendPostRequest) {
   request_.method = "POST";
   request_.url = GURL("http://www.example.org/");
   request_.upload_data_stream = &upload_data_stream;
-  ASSERT_EQ(OK, request_.upload_data_stream->Init(CompletionCallback()));
+  ASSERT_THAT(request_.upload_data_stream->Init(CompletionCallback()), IsOk());
 
   EXPECT_EQ(OK,
             stream_->InitializeStream(&request_, DEFAULT_PRIORITY,
@@ -949,8 +958,9 @@ TEST_P(QuicHttpStreamTest, SendPostRequest) {
       2, !kFin, &spdy_response_headers_frame_length));
 
   // The headers have arrived, but they are delivered asynchronously.
-  EXPECT_EQ(ERR_IO_PENDING, stream_->ReadResponseHeaders(callback_.callback()));
-  EXPECT_EQ(OK, callback_.WaitForResult());
+  EXPECT_THAT(stream_->ReadResponseHeaders(callback_.callback()),
+              IsError(ERR_IO_PENDING));
+  EXPECT_THAT(callback_.WaitForResult(), IsOk());
   ASSERT_TRUE(response_.headers.get());
   EXPECT_EQ(200, response_.headers->response_code());
   EXPECT_TRUE(response_.headers->HasHeaderValue("Content-Type", "text/plain"));
@@ -1005,7 +1015,7 @@ TEST_P(QuicHttpStreamTest, SendChunkedPostRequest) {
             stream_->SendRequest(headers_, &response_, callback_.callback()));
 
   upload_data_stream.AppendData(kUploadData, chunk_size, true);
-  EXPECT_EQ(OK, callback_.WaitForResult());
+  EXPECT_THAT(callback_.WaitForResult(), IsOk());
 
   // Ack both packets in the request.
   ProcessPacket(ConstructServerAckPacket(1, 0, 0));
@@ -1017,8 +1027,9 @@ TEST_P(QuicHttpStreamTest, SendChunkedPostRequest) {
       2, !kFin, &spdy_response_headers_frame_length));
 
   // The headers have arrived, but they are delivered asynchronously
-  EXPECT_EQ(ERR_IO_PENDING, stream_->ReadResponseHeaders(callback_.callback()));
-  EXPECT_EQ(OK, callback_.WaitForResult());
+  EXPECT_THAT(stream_->ReadResponseHeaders(callback_.callback()),
+              IsError(ERR_IO_PENDING));
+  EXPECT_THAT(callback_.WaitForResult(), IsOk());
   ASSERT_TRUE(response_.headers.get());
   EXPECT_EQ(200, response_.headers->response_code());
   EXPECT_TRUE(response_.headers->HasHeaderValue("Content-Type", "text/plain"));
@@ -1074,7 +1085,7 @@ TEST_P(QuicHttpStreamTest, SendChunkedPostRequestWithFinalEmptyDataPacket) {
             stream_->SendRequest(headers_, &response_, callback_.callback()));
 
   upload_data_stream.AppendData(nullptr, 0, true);
-  EXPECT_EQ(OK, callback_.WaitForResult());
+  EXPECT_THAT(callback_.WaitForResult(), IsOk());
 
   ProcessPacket(ConstructServerAckPacket(1, 0, 0));
 
@@ -1085,8 +1096,9 @@ TEST_P(QuicHttpStreamTest, SendChunkedPostRequestWithFinalEmptyDataPacket) {
       2, !kFin, &spdy_response_headers_frame_length));
 
   // The headers have arrived, but they are delivered asynchronously
-  EXPECT_EQ(ERR_IO_PENDING, stream_->ReadResponseHeaders(callback_.callback()));
-  EXPECT_EQ(OK, callback_.WaitForResult());
+  EXPECT_THAT(stream_->ReadResponseHeaders(callback_.callback()),
+              IsError(ERR_IO_PENDING));
+  EXPECT_THAT(callback_.WaitForResult(), IsOk());
   ASSERT_TRUE(response_.headers.get());
   EXPECT_EQ(200, response_.headers->response_code());
   EXPECT_TRUE(response_.headers->HasHeaderValue("Content-Type", "text/plain"));
@@ -1137,7 +1149,7 @@ TEST_P(QuicHttpStreamTest, SendChunkedPostRequestWithOneEmptyDataPacket) {
             stream_->SendRequest(headers_, &response_, callback_.callback()));
 
   upload_data_stream.AppendData(nullptr, 0, true);
-  EXPECT_EQ(OK, callback_.WaitForResult());
+  EXPECT_THAT(callback_.WaitForResult(), IsOk());
 
   ProcessPacket(ConstructServerAckPacket(1, 0, 0));
 
@@ -1148,8 +1160,9 @@ TEST_P(QuicHttpStreamTest, SendChunkedPostRequestWithOneEmptyDataPacket) {
       2, !kFin, &spdy_response_headers_frame_length));
 
   // The headers have arrived, but they are delivered asynchronously
-  EXPECT_EQ(ERR_IO_PENDING, stream_->ReadResponseHeaders(callback_.callback()));
-  EXPECT_EQ(OK, callback_.WaitForResult());
+  EXPECT_THAT(stream_->ReadResponseHeaders(callback_.callback()),
+              IsError(ERR_IO_PENDING));
+  EXPECT_THAT(callback_.WaitForResult(), IsOk());
   ASSERT_TRUE(response_.headers.get());
   EXPECT_EQ(200, response_.headers->response_code());
   EXPECT_TRUE(response_.headers->HasHeaderValue("Content-Type", "text/plain"));
@@ -1196,7 +1209,8 @@ TEST_P(QuicHttpStreamTest, DestroyedEarly) {
 
   // Ack the request.
   ProcessPacket(ConstructServerAckPacket(1, 0, 0));
-  EXPECT_EQ(ERR_IO_PENDING, stream_->ReadResponseHeaders(callback_.callback()));
+  EXPECT_THAT(stream_->ReadResponseHeaders(callback_.callback()),
+              IsError(ERR_IO_PENDING));
 
   // Send the response with a body.
   SetResponse("404 OK", "hello world!");
@@ -1245,7 +1259,8 @@ TEST_P(QuicHttpStreamTest, Priority) {
 
   // Ack the request.
   ProcessPacket(ConstructServerAckPacket(1, 0, 0));
-  EXPECT_EQ(ERR_IO_PENDING, stream_->ReadResponseHeaders(callback_.callback()));
+  EXPECT_THAT(stream_->ReadResponseHeaders(callback_.callback()),
+              IsError(ERR_IO_PENDING));
 
   // Send the response with a body.
   SetResponse("404 OK", "hello world!");
@@ -1389,7 +1404,8 @@ TEST_P(QuicHttpStreamTest, ServerPushGetRequest) {
       promise_id_);
 
   // The headers will be immediately available.
-  EXPECT_EQ(OK, promised_stream_->ReadResponseHeaders(callback_.callback()));
+  EXPECT_THAT(promised_stream_->ReadResponseHeaders(callback_.callback()),
+              IsOk());
 
   // As will be the body.
   EXPECT_EQ(
@@ -1453,14 +1469,15 @@ TEST_P(QuicHttpStreamTest, ServerPushGetRequestSlowResponse) {
   // Rendezvous should have succeeded now, so the promised stream
   // should point at our push stream, and we should be able read
   // headers and data from it.
-  EXPECT_EQ(OK, callback_.WaitForResult());
+  EXPECT_THAT(callback_.WaitForResult(), IsOk());
 
   EXPECT_EQ(
       QuicHttpStreamPeer::GetQuicChromiumClientStream(promised_stream_.get())
           ->id(),
       promise_id_);
 
-  EXPECT_EQ(OK, promised_stream_->ReadResponseHeaders(callback_.callback()));
+  EXPECT_THAT(promised_stream_->ReadResponseHeaders(callback_.callback()),
+              IsOk());
 
   EXPECT_EQ(
       static_cast<int>(strlen(kResponseBody)),
@@ -1532,7 +1549,8 @@ TEST_P(QuicHttpStreamTest, ServerPushCrossOriginOK) {
       promise_id_);
 
   // The headers will be immediately available.
-  EXPECT_EQ(OK, promised_stream_->ReadResponseHeaders(callback_.callback()));
+  EXPECT_THAT(promised_stream_->ReadResponseHeaders(callback_.callback()),
+              IsOk());
 
   // As will be the body.
   EXPECT_EQ(
@@ -1628,14 +1646,15 @@ TEST_P(QuicHttpStreamTest, ServerPushVaryCheckOK) {
   // Rendezvous should have succeeded now, so the promised stream
   // should point at our push stream, and we should be able read
   // headers and data from it.
-  EXPECT_EQ(OK, callback_.WaitForResult());
+  EXPECT_THAT(callback_.WaitForResult(), IsOk());
 
   EXPECT_EQ(
       QuicHttpStreamPeer::GetQuicChromiumClientStream(promised_stream_.get())
           ->id(),
       promise_id_);
 
-  EXPECT_EQ(OK, promised_stream_->ReadResponseHeaders(callback_.callback()));
+  EXPECT_THAT(promised_stream_->ReadResponseHeaders(callback_.callback()),
+              IsOk());
 
   EXPECT_EQ(
       static_cast<int>(strlen(kResponseBody)),
@@ -1713,7 +1732,7 @@ TEST_P(QuicHttpStreamTest, ServerPushVaryCheckFail) {
   // Rendezvous should have failed due to vary mismatch, so the
   // promised stream should have been aborted, and instead we have a
   // new, regular client initiated stream.
-  EXPECT_EQ(OK, callback_.WaitForResult());
+  EXPECT_THAT(callback_.WaitForResult(), IsOk());
 
   // Not a server-initiated stream.
   EXPECT_NE(
@@ -1743,7 +1762,8 @@ TEST_P(QuicHttpStreamTest, ServerPushVaryCheckFail) {
 
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_EQ(OK, promised_stream_->ReadResponseHeaders(callback_.callback()));
+  EXPECT_THAT(promised_stream_->ReadResponseHeaders(callback_.callback()),
+              IsOk());
   ASSERT_TRUE(response_.headers.get());
   EXPECT_EQ(404, response_.headers->response_code());
   EXPECT_TRUE(response_.headers->HasHeaderValue("Content-Type", "text/plain"));
@@ -1790,7 +1810,7 @@ TEST_P(QuicHttpStreamTest, DataReadErrorSynchronous) {
                                       net_log_.bound(), callback_.callback()));
 
   int result = stream_->SendRequest(headers_, &response_, callback_.callback());
-  EXPECT_EQ(ERR_FAILED, result);
+  EXPECT_THAT(result, IsError(ERR_FAILED));
 
   EXPECT_TRUE(AtEof());
 
@@ -1826,8 +1846,8 @@ TEST_P(QuicHttpStreamTest, DataReadErrorAsynchronous) {
   ProcessPacket(ConstructServerAckPacket(1, 0, 0));
   SetResponse("200 OK", string());
 
-  EXPECT_EQ(ERR_IO_PENDING, result);
-  EXPECT_EQ(ERR_FAILED, callback_.GetResult(result));
+  EXPECT_THAT(result, IsError(ERR_IO_PENDING));
+  EXPECT_THAT(callback_.GetResult(result), IsError(ERR_FAILED));
 
   EXPECT_TRUE(AtEof());
 

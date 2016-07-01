@@ -11,7 +11,12 @@
 #include "net/base/test_completion_callback.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/log/net_log.h"
+#include "net/test/gtest_util.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+using net::test::IsError;
+using net::test::IsOk;
 
 namespace net {
 
@@ -48,9 +53,9 @@ TEST(MappedHostResolverTest, Inclusion) {
       callback.callback(),
       NULL,
       BoundNetLog());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
   rv = callback.WaitForResult();
-  EXPECT_EQ(ERR_NAME_NOT_RESOLVED, rv);
+  EXPECT_THAT(rv, IsError(ERR_NAME_NOT_RESOLVED));
 
   // Remap *.google.com to baz.com.
   EXPECT_TRUE(resolver->AddRuleFromString("map *.google.com baz.com"));
@@ -63,9 +68,9 @@ TEST(MappedHostResolverTest, Inclusion) {
       callback.callback(),
       NULL,
       BoundNetLog());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
   rv = callback.WaitForResult();
-  EXPECT_EQ(OK, rv);
+  EXPECT_THAT(rv, IsOk());
   EXPECT_EQ("192.168.1.5:80", FirstAddress(address_list));
 
   // Try resolving "foo.com:77". This will NOT be remapped, so result
@@ -76,9 +81,9 @@ TEST(MappedHostResolverTest, Inclusion) {
                          callback.callback(),
                          NULL,
                          BoundNetLog());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
   rv = callback.WaitForResult();
-  EXPECT_EQ(OK, rv);
+  EXPECT_THAT(rv, IsOk());
   EXPECT_EQ("192.168.1.8:77", FirstAddress(address_list));
 
   // Remap "*.org" to "proxy:99".
@@ -92,9 +97,9 @@ TEST(MappedHostResolverTest, Inclusion) {
       callback.callback(),
       NULL,
       BoundNetLog());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
   rv = callback.WaitForResult();
-  EXPECT_EQ(OK, rv);
+  EXPECT_THAT(rv, IsOk());
   EXPECT_EQ("192.168.1.11:99", FirstAddress(address_list));
 }
 
@@ -127,9 +132,9 @@ TEST(MappedHostResolverTest, Exclusion) {
       callback.callback(),
       NULL,
       BoundNetLog());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
   rv = callback.WaitForResult();
-  EXPECT_EQ(OK, rv);
+  EXPECT_THAT(rv, IsOk());
   EXPECT_EQ("192.168.1.3:80", FirstAddress(address_list));
 
   // Try resolving "chrome.com:80". Should be remapped to "baz:80".
@@ -140,9 +145,9 @@ TEST(MappedHostResolverTest, Exclusion) {
       callback.callback(),
       NULL,
       BoundNetLog());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
   rv = callback.WaitForResult();
-  EXPECT_EQ(OK, rv);
+  EXPECT_THAT(rv, IsOk());
   EXPECT_EQ("192.168.1.5:80", FirstAddress(address_list));
 }
 
@@ -171,9 +176,9 @@ TEST(MappedHostResolverTest, SetRulesFromString) {
       callback.callback(),
       NULL,
       BoundNetLog());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
   rv = callback.WaitForResult();
-  EXPECT_EQ(OK, rv);
+  EXPECT_THAT(rv, IsOk());
   EXPECT_EQ("192.168.1.7:80", FirstAddress(address_list));
 
   // Try resolving "chrome.net:80". Should be remapped to "bar:60".
@@ -184,9 +189,9 @@ TEST(MappedHostResolverTest, SetRulesFromString) {
       callback.callback(),
       NULL,
       BoundNetLog());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
   rv = callback.WaitForResult();
-  EXPECT_EQ(OK, rv);
+  EXPECT_THAT(rv, IsOk());
   EXPECT_EQ("192.168.1.9:60", FirstAddress(address_list));
 }
 
@@ -228,7 +233,7 @@ TEST(MappedHostResolverTest, MapToError) {
       callback1.callback(),
       NULL,
       BoundNetLog());
-  EXPECT_EQ(ERR_NAME_NOT_RESOLVED, rv);
+  EXPECT_THAT(rv, IsError(ERR_NAME_NOT_RESOLVED));
 
   // Try resolving www.foo.com --> Should succeed.
   TestCompletionCallback callback2;
@@ -239,9 +244,9 @@ TEST(MappedHostResolverTest, MapToError) {
       callback2.callback(),
       NULL,
       BoundNetLog());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
   rv = callback2.WaitForResult();
-  EXPECT_EQ(OK, rv);
+  EXPECT_THAT(rv, IsOk());
   EXPECT_EQ("192.168.1.5:80", FirstAddress(address_list));
 }
 

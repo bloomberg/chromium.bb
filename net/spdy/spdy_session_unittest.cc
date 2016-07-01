@@ -35,9 +35,13 @@
 #include "net/spdy/spdy_test_util_common.h"
 #include "net/spdy/spdy_test_utils.h"
 #include "net/test/cert_test_util.h"
+#include "net/test/gtest_util.h"
 #include "net/test/test_data_directory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/platform_test.h"
+
+using net::test::IsError;
+using net::test::IsOk;
 
 namespace net {
 
@@ -319,7 +323,7 @@ TEST_P(SpdySessionTest, PendingStreamCancellingAnother) {
 
   session_->CloseSessionOnError(ERR_ABORTED, "Aborting session");
 
-  EXPECT_EQ(ERR_ABORTED, callback1.WaitForResult());
+  EXPECT_THAT(callback1.WaitForResult(), IsError(ERR_ABORTED));
 }
 
 // A session receiving a GOAWAY frame with no active streams should close.
@@ -720,7 +724,7 @@ TEST_P(SpdySessionTest, GoAwayWhileDraining) {
 
   // Stream and session closed gracefully.
   EXPECT_TRUE(delegate.StreamIsClosed());
-  EXPECT_EQ(OK, delegate.WaitForClose());
+  EXPECT_THAT(delegate.WaitForClose(), IsOk());
   EXPECT_EQ(kUploadData, delegate.TakeReceivedData());
   EXPECT_FALSE(session_);
 }
@@ -778,7 +782,7 @@ TEST_P(SpdySessionTest, CreateStreamAfterGoAway) {
   int rv = stream_request.StartRequest(SPDY_REQUEST_RESPONSE_STREAM, session_,
                                        test_url_, MEDIUM, BoundNetLog(),
                                        CompletionCallback());
-  EXPECT_EQ(ERR_FAILED, rv);
+  EXPECT_THAT(rv, IsError(ERR_FAILED));
 
   EXPECT_TRUE(session_);
   data.Resume();
@@ -956,7 +960,7 @@ TEST_P(SpdySessionTest, ClientPing) {
   data.Resume();
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_EQ(ERR_CONNECTION_CLOSED, delegate.WaitForClose());
+  EXPECT_THAT(delegate.WaitForClose(), IsError(ERR_CONNECTION_CLOSED));
 
   EXPECT_FALSE(HasSpdySession(spdy_session_pool_, key_));
   EXPECT_FALSE(session_);
@@ -1150,17 +1154,17 @@ TEST_P(SpdySessionTest, StreamIdSpaceExhausted) {
 
   // Session is going away. Created and stalled streams were aborted.
   EXPECT_EQ(SpdySession::STATE_GOING_AWAY, session_->availability_state_);
-  EXPECT_EQ(ERR_ABORTED, delegate3.WaitForClose());
-  EXPECT_EQ(ERR_ABORTED, callback4.WaitForResult());
+  EXPECT_THAT(delegate3.WaitForClose(), IsError(ERR_ABORTED));
+  EXPECT_THAT(callback4.WaitForResult(), IsError(ERR_ABORTED));
   EXPECT_EQ(0u, session_->num_created_streams());
   EXPECT_EQ(0u, session_->pending_create_stream_queue_size(MEDIUM));
 
   // Read responses on remaining active streams.
   data.Resume();
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(OK, delegate1.WaitForClose());
+  EXPECT_THAT(delegate1.WaitForClose(), IsOk());
   EXPECT_EQ(kUploadData, delegate1.TakeReceivedData());
-  EXPECT_EQ(OK, delegate2.WaitForClose());
+  EXPECT_THAT(delegate2.WaitForClose(), IsOk());
   EXPECT_EQ(kUploadData, delegate2.TakeReceivedData());
 
   // Session was destroyed.
@@ -1241,7 +1245,7 @@ TEST_P(SpdySessionTest, MaxConcurrentStreamsZero) {
   int rv =
       request.StartRequest(SPDY_REQUEST_RESPONSE_STREAM, session_, test_url_,
                            MEDIUM, BoundNetLog(), callback.callback());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   // Stream is stalled.
   EXPECT_EQ(1u, session_->pending_create_stream_queue_size(MEDIUM));
@@ -1256,7 +1260,7 @@ TEST_P(SpdySessionTest, MaxConcurrentStreamsZero) {
   EXPECT_EQ(0u, session_->pending_create_stream_queue_size(MEDIUM));
   EXPECT_EQ(1u, session_->num_created_streams());
 
-  EXPECT_EQ(OK, callback.WaitForResult());
+  EXPECT_THAT(callback.WaitForResult(), IsOk());
 
   // Send request.
   base::WeakPtr<SpdyStream> stream = request.ReleaseStream();
@@ -1267,7 +1271,7 @@ TEST_P(SpdySessionTest, MaxConcurrentStreamsZero) {
   stream->SendRequestHeaders(std::move(headers), NO_MORE_DATA_TO_SEND);
   EXPECT_TRUE(stream->HasUrlFromHeaders());
 
-  EXPECT_EQ(OK, delegate.WaitForClose());
+  EXPECT_THAT(delegate.WaitForClose(), IsOk());
   EXPECT_EQ("hello!", delegate.TakeReceivedData());
 
   // Session is destroyed.
@@ -1333,7 +1337,7 @@ TEST_P(SpdySessionTest, UnstallRacesWithStreamCreation) {
 
   EXPECT_EQ(1u, session_->num_created_streams());
   EXPECT_EQ(0u, session_->pending_create_stream_queue_size(MEDIUM));
-  EXPECT_EQ(OK, callback2.WaitForResult());
+  EXPECT_THAT(callback2.WaitForResult(), IsOk());
 }
 
 TEST_P(SpdySessionTest, DeleteExpiredPushStreams) {
@@ -1520,7 +1524,7 @@ TEST_P(SpdySessionTest, OnSettings) {
 
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_EQ(OK, stream_releaser.WaitForResult());
+  EXPECT_THAT(stream_releaser.WaitForResult(), IsOk());
 
   data.Resume();
   base::RunLoop().RunUntilIdle();
@@ -1602,7 +1606,7 @@ TEST_P(SpdySessionTest, ClearSettings) {
 
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_EQ(OK, stream_releaser.WaitForResult());
+  EXPECT_THAT(stream_releaser.WaitForResult(), IsOk());
 
   // Make sure that persisted data is cleared.
   EXPECT_TRUE(spdy_session_pool_->http_server_properties()
@@ -1844,7 +1848,7 @@ TEST_P(SpdySessionTest, NetLogOnSessionGoaway) {
   TestNetLogEntry entry = entries[pos];
   int error_code = 0;
   ASSERT_TRUE(entry.GetNetErrorCode(&error_code));
-  EXPECT_EQ(OK, error_code);
+  EXPECT_THAT(error_code, IsOk());
 }
 
 TEST_P(SpdySessionTest, NetLogOnSessionEOF) {
@@ -1880,7 +1884,7 @@ TEST_P(SpdySessionTest, NetLogOnSessionEOF) {
     TestNetLogEntry entry = entries[pos];
     int error_code = 0;
     ASSERT_TRUE(entry.GetNetErrorCode(&error_code));
-    EXPECT_EQ(ERR_CONNECTION_CLOSED, error_code);
+    EXPECT_THAT(error_code, IsError(ERR_CONNECTION_CLOSED));
   } else {
     ADD_FAILURE();
   }
@@ -2697,7 +2701,7 @@ TEST_P(SpdySessionTest, CancelTwoStalledCreateStream) {
   spdy_stream1->Cancel();
   EXPECT_FALSE(spdy_stream1);
 
-  EXPECT_EQ(OK, callback2.WaitForResult());
+  EXPECT_THAT(callback2.WaitForResult(), IsOk());
   EXPECT_EQ(0u, session_->num_active_streams());
   EXPECT_EQ(kInitialMaxConcurrentStreams, session_->num_created_streams());
   EXPECT_EQ(1u, session_->pending_create_stream_queue_size(LOWEST));
@@ -2707,7 +2711,7 @@ TEST_P(SpdySessionTest, CancelTwoStalledCreateStream) {
   spdy_stream2->Cancel();
   EXPECT_FALSE(spdy_stream2);
 
-  EXPECT_EQ(OK, callback3.WaitForResult());
+  EXPECT_THAT(callback3.WaitForResult(), IsOk());
   EXPECT_EQ(0u, session_->num_active_streams());
   EXPECT_EQ(kInitialMaxConcurrentStreams, session_->num_created_streams());
   EXPECT_EQ(0u, session_->pending_create_stream_queue_size(LOWEST));
@@ -3258,7 +3262,7 @@ TEST_P(SpdySessionTest, CloseOneIdleConnection) {
 
   // The socket pool should close the connection asynchronously and establish a
   // new connection.
-  EXPECT_EQ(OK, callback2.WaitForResult());
+  EXPECT_THAT(callback2.WaitForResult(), IsOk());
   EXPECT_FALSE(pool->IsStalled());
   EXPECT_FALSE(session_);
 }
@@ -3333,7 +3337,7 @@ TEST_P(SpdySessionTest, CloseOneIdleConnectionWithAlias) {
 
   // The socket pool should close the connection asynchronously and establish a
   // new connection.
-  EXPECT_EQ(OK, callback3.WaitForResult());
+  EXPECT_THAT(callback3.WaitForResult(), IsOk());
   EXPECT_FALSE(pool->IsStalled());
   EXPECT_FALSE(session1);
   EXPECT_FALSE(session2);
@@ -3425,7 +3429,7 @@ TEST_P(SpdySessionTest, CloseSessionOnIdleWhenPoolStalled) {
   spdy_stream1->Cancel();
   base::RunLoop().RunUntilIdle();
   ASSERT_FALSE(pool->IsStalled());
-  EXPECT_EQ(OK, callback2.WaitForResult());
+  EXPECT_THAT(callback2.WaitForResult(), IsOk());
 }
 
 // Verify that SpdySessionKey and therefore SpdySession is different when
@@ -4057,7 +4061,7 @@ TEST_P(SpdySessionTest, SessionFlowControlNoReceiveLeaks) {
   stream->Close();
   EXPECT_FALSE(stream);
 
-  EXPECT_EQ(OK, delegate.WaitForClose());
+  EXPECT_THAT(delegate.WaitForClose(), IsOk());
 
   EXPECT_EQ(initial_window_size, session_->session_recv_window_size_);
   EXPECT_EQ(kMsgDataSize, session_->session_unacked_recv_window_bytes_);
@@ -4132,7 +4136,7 @@ TEST_P(SpdySessionTest, SessionFlowControlNoSendLeaks) {
 
   EXPECT_EQ(initial_window_size, session_->session_send_window_size_);
 
-  EXPECT_EQ(OK, delegate.WaitForClose());
+  EXPECT_THAT(delegate.WaitForClose(), IsOk());
 
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(session_);
@@ -4239,7 +4243,7 @@ TEST_P(SpdySessionTest, SessionFlowControlEndToEnd) {
   stream->Close();
   EXPECT_FALSE(stream);
 
-  EXPECT_EQ(OK, delegate.WaitForClose());
+  EXPECT_THAT(delegate.WaitForClose(), IsOk());
 
   EXPECT_EQ(initial_window_size, session_->session_send_window_size_);
   EXPECT_EQ(initial_window_size, session_->session_recv_window_size_);
@@ -4307,7 +4311,7 @@ void SpdySessionTest::RunResumeAfterUnstallTest(
 
   EXPECT_FALSE(stream->send_stalled_by_flow_control());
 
-  EXPECT_EQ(ERR_CONNECTION_CLOSED, delegate.WaitForClose());
+  EXPECT_THAT(delegate.WaitForClose(), IsError(ERR_CONNECTION_CLOSED));
 
   EXPECT_TRUE(delegate.send_headers_completed());
   EXPECT_EQ("200", delegate.GetResponseHeaderValue(":status"));
@@ -4470,8 +4474,8 @@ TEST_P(SpdySessionTest, ResumeByPriorityAfterSendWindowSizeIncrease) {
 
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_EQ(ERR_CONNECTION_CLOSED, delegate1.WaitForClose());
-  EXPECT_EQ(ERR_CONNECTION_CLOSED, delegate2.WaitForClose());
+  EXPECT_THAT(delegate1.WaitForClose(), IsError(ERR_CONNECTION_CLOSED));
+  EXPECT_THAT(delegate2.WaitForClose(), IsError(ERR_CONNECTION_CLOSED));
 
   EXPECT_TRUE(delegate1.send_headers_completed());
   EXPECT_EQ("200", delegate1.GetResponseHeaderValue(":status"));
@@ -4640,9 +4644,9 @@ TEST_P(SpdySessionTest, SendWindowSizeIncreaseWithDeletedStreams) {
   EXPECT_FALSE(stream2);
   EXPECT_FALSE(session_);
 
-  EXPECT_EQ(ERR_CONNECTION_CLOSED, delegate1.WaitForClose());
-  EXPECT_EQ(ERR_CONNECTION_CLOSED, delegate2.WaitForClose());
-  EXPECT_EQ(OK, delegate3.WaitForClose());
+  EXPECT_THAT(delegate1.WaitForClose(), IsError(ERR_CONNECTION_CLOSED));
+  EXPECT_THAT(delegate2.WaitForClose(), IsError(ERR_CONNECTION_CLOSED));
+  EXPECT_THAT(delegate3.WaitForClose(), IsOk());
 
   EXPECT_TRUE(delegate1.send_headers_completed());
   EXPECT_EQ(std::string(), delegate1.TakeReceivedData());
@@ -4743,8 +4747,8 @@ TEST_P(SpdySessionTest, SendWindowSizeIncreaseWithDeletedSession) {
 
   EXPECT_FALSE(HasSpdySession(spdy_session_pool_, key_));
 
-  EXPECT_EQ(ERR_CONNECTION_CLOSED, delegate1.WaitForClose());
-  EXPECT_EQ(ERR_CONNECTION_CLOSED, delegate2.WaitForClose());
+  EXPECT_THAT(delegate1.WaitForClose(), IsError(ERR_CONNECTION_CLOSED));
+  EXPECT_THAT(delegate2.WaitForClose(), IsError(ERR_CONNECTION_CLOSED));
 
   EXPECT_TRUE(delegate1.send_headers_completed());
   EXPECT_EQ(std::string(), delegate1.TakeReceivedData());
@@ -4803,7 +4807,7 @@ TEST_P(SpdySessionTest, GoAwayOnSessionFlowControlError) {
   data.Resume();
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_EQ(ERR_SPDY_FLOW_CONTROL_ERROR, delegate.WaitForClose());
+  EXPECT_THAT(delegate.WaitForClose(), IsError(ERR_SPDY_FLOW_CONTROL_ERROR));
   EXPECT_FALSE(session_);
 }
 
@@ -5344,7 +5348,7 @@ TEST_P(SpdySessionTest, CancelReservedStreamOnHeadersReceived) {
   base::WeakPtr<SpdyStream> pushed_stream;
   int rv =
       session_->GetPushStream(GURL(kPushedUrl), &pushed_stream, BoundNetLog());
-  ASSERT_EQ(OK, rv);
+  ASSERT_THAT(rv, IsOk());
   ASSERT_TRUE(pushed_stream);
   test::StreamDelegateCloseOnHeaders delegate2(pushed_stream);
   pushed_stream->SetDelegate(&delegate2);

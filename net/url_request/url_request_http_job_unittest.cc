@@ -25,6 +25,7 @@
 #include "net/log/test_net_log_util.h"
 #include "net/socket/socket_test_util.h"
 #include "net/test/cert_test_util.h"
+#include "net/test/gtest_util.h"
 #include "net/test/test_data_directory.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_job_factory_impl.h"
@@ -35,6 +36,9 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 #include "url/url_constants.h"
+
+using net::test::IsError;
+using net::test::IsOk;
 
 namespace net {
 
@@ -405,7 +409,7 @@ TEST_F(URLRequestHttpJobWithMockSocketsTest, BackoffHeader) {
   base::RunLoop().Run();
 
   EXPECT_FALSE(request2->status().is_success());
-  EXPECT_EQ(ERR_TEMPORARY_BACKOFF, request2->status().error());
+  EXPECT_THAT(request2->status().error(), IsError(ERR_TEMPORARY_BACKOFF));
   EXPECT_EQ(0, delegate2.received_before_network_start_count());
 }
 
@@ -982,7 +986,7 @@ TEST_F(URLRequestHttpJobWebSocketTest, RejectedWithoutCreateHelper) {
   req_->Start();
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(URLRequestStatus::FAILED, req_->status().status());
-  EXPECT_EQ(ERR_DISALLOWED_URL_SCHEME, req_->status().error());
+  EXPECT_THAT(req_->status().error(), IsError(ERR_DISALLOWED_URL_SCHEME));
 }
 
 TEST_F(URLRequestHttpJobWebSocketTest, CreateHelperPassedThrough) {

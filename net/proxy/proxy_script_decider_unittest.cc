@@ -27,8 +27,13 @@
 #include "net/proxy/proxy_resolver.h"
 #include "net/proxy/proxy_script_decider.h"
 #include "net/proxy/proxy_script_fetcher.h"
+#include "net/test/gtest_util.h"
 #include "net/url_request/url_request_context.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+using net::test::IsError;
+using net::test::IsOk;
 
 namespace net {
 namespace {
@@ -346,7 +351,7 @@ TEST_F(ProxyScriptDeciderQuickCheckTest, SyncSuccess) {
   resolver_.set_synchronous_mode(true);
   resolver_.rules()->AddRule("wpad", "1.2.3.4");
 
-  EXPECT_EQ(OK, StartDecider());
+  EXPECT_THAT(StartDecider(), IsOk());
   EXPECT_EQ(rule_.text(), decider_->script_data()->utf16());
 
   EXPECT_TRUE(decider_->effective_config().has_pac_url());
@@ -359,7 +364,7 @@ TEST_F(ProxyScriptDeciderQuickCheckTest, AsyncSuccess) {
   resolver_.set_ondemand_mode(true);
   resolver_.rules()->AddRule("wpad", "1.2.3.4");
 
-  EXPECT_EQ(ERR_IO_PENDING, StartDecider());
+  EXPECT_THAT(StartDecider(), IsError(ERR_IO_PENDING));
   ASSERT_TRUE(resolver_.has_pending_requests());
   resolver_.ResolveAllPending();
   callback_.WaitForResult();
@@ -374,7 +379,7 @@ TEST_F(ProxyScriptDeciderQuickCheckTest, AsyncSuccess) {
 TEST_F(ProxyScriptDeciderQuickCheckTest, AsyncFail) {
   resolver_.set_ondemand_mode(true);
   resolver_.rules()->AddSimulatedFailure("wpad");
-  EXPECT_EQ(ERR_IO_PENDING, StartDecider());
+  EXPECT_THAT(StartDecider(), IsError(ERR_IO_PENDING));
   ASSERT_TRUE(resolver_.has_pending_requests());
   resolver_.ResolveAllPending();
   callback_.WaitForResult();
@@ -385,7 +390,7 @@ TEST_F(ProxyScriptDeciderQuickCheckTest, AsyncFail) {
 // URL or causes ProxyScriptDecider not to cancel its pending resolution.
 TEST_F(ProxyScriptDeciderQuickCheckTest, AsyncTimeout) {
   resolver_.set_ondemand_mode(true);
-  EXPECT_EQ(ERR_IO_PENDING, StartDecider());
+  EXPECT_THAT(StartDecider(), IsError(ERR_IO_PENDING));
   ASSERT_TRUE(resolver_.has_pending_requests());
   callback_.WaitForResult();
   EXPECT_FALSE(resolver_.has_pending_requests());
@@ -400,7 +405,7 @@ TEST_F(ProxyScriptDeciderQuickCheckTest, QuickCheckInhibitsDhcp) {
   GURL url("http://foobar/baz");
   dhcp_fetcher.SetPacURL(url);
   decider_.reset(new ProxyScriptDecider(&fetcher_, &dhcp_fetcher, NULL));
-  EXPECT_EQ(ERR_IO_PENDING, StartDecider());
+  EXPECT_THAT(StartDecider(), IsError(ERR_IO_PENDING));
   dhcp_fetcher.CompleteRequests(OK, pac_contents);
   EXPECT_TRUE(decider_->effective_config().has_pac_url());
   EXPECT_EQ(decider_->effective_config().pac_url(), url);
@@ -416,7 +421,7 @@ TEST_F(ProxyScriptDeciderQuickCheckTest, QuickCheckDisabled) {
   resolver_.rules()->AddSimulatedFailure("wpad");
   MockProxyScriptFetcher fetcher;
   decider_.reset(new ProxyScriptDecider(&fetcher, &dhcp_fetcher_, NULL));
-  EXPECT_EQ(ERR_IO_PENDING, StartDecider());
+  EXPECT_THAT(StartDecider(), IsError(ERR_IO_PENDING));
   EXPECT_TRUE(fetcher.has_pending_request());
   fetcher.NotifyFetchCompletion(OK, kPac);
 }
@@ -427,7 +432,7 @@ TEST_F(ProxyScriptDeciderQuickCheckTest, ExplicitPacUrl) {
   Rules::Rule rule = rules_.AddSuccessRule(kCustomUrl);
   resolver_.rules()->AddSimulatedFailure("wpad");
   resolver_.rules()->AddRule("custom", "1.2.3.4");
-  EXPECT_EQ(ERR_IO_PENDING, StartDecider());
+  EXPECT_THAT(StartDecider(), IsError(ERR_IO_PENDING));
   callback_.WaitForResult();
   EXPECT_TRUE(decider_->effective_config().has_pac_url());
   EXPECT_EQ(rule.url, decider_->effective_config().pac_url());
@@ -439,7 +444,7 @@ TEST_F(ProxyScriptDeciderQuickCheckTest, ExplicitPacUrl) {
 TEST_F(ProxyScriptDeciderQuickCheckTest, CancelPartway) {
   resolver_.set_synchronous_mode(false);
   resolver_.set_ondemand_mode(true);
-  EXPECT_EQ(ERR_IO_PENDING, StartDecider());
+  EXPECT_THAT(StartDecider(), IsError(ERR_IO_PENDING));
   decider_.reset(NULL);
 }
 

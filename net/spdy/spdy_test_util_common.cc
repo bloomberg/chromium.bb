@@ -32,7 +32,11 @@
 #include "net/spdy/spdy_session.h"
 #include "net/spdy/spdy_session_pool.h"
 #include "net/spdy/spdy_stream.h"
+#include "net/test/gtest_util.h"
 #include "net/url_request/url_request_job_factory_impl.h"
+#include "testing/gmock/include/gmock/gmock.h"
+
+using net::test::IsOk;
 
 namespace net {
 
@@ -523,7 +527,7 @@ base::WeakPtr<SpdySession> CreateSpdySessionHelper(
   if (rv == ERR_IO_PENDING)
     rv = callback.WaitForResult();
 
-  EXPECT_EQ(OK, rv);
+  EXPECT_THAT(rv, IsOk());
 
   base::WeakPtr<SpdySession> spdy_session =
       http_session->spdy_session_pool()->CreateAvailableSessionFromSocket(

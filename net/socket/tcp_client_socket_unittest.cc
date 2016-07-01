@@ -16,7 +16,12 @@
 #include "net/base/test_completion_callback.h"
 #include "net/socket/socket_performance_watcher.h"
 #include "net/socket/tcp_server_socket.h"
+#include "net/test/gtest_util.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+using net::test::IsError;
+using net::test::IsOk;
 
 namespace base {
 class TimeDelta;
@@ -32,30 +37,31 @@ TEST(TCPClientSocketTest, BindLoopbackToLoopback) {
   IPAddress lo_address = IPAddress::IPv4Localhost();
 
   TCPServerSocket server(NULL, NetLog::Source());
-  ASSERT_EQ(OK, server.Listen(IPEndPoint(lo_address, 0), 1));
+  ASSERT_THAT(server.Listen(IPEndPoint(lo_address, 0), 1), IsOk());
   IPEndPoint server_address;
-  ASSERT_EQ(OK, server.GetLocalAddress(&server_address));
+  ASSERT_THAT(server.GetLocalAddress(&server_address), IsOk());
 
   TCPClientSocket socket(AddressList(server_address), NULL, NULL,
                          NetLog::Source());
 
-  EXPECT_EQ(OK, socket.Bind(IPEndPoint(lo_address, 0)));
+  EXPECT_THAT(socket.Bind(IPEndPoint(lo_address, 0)), IsOk());
 
   IPEndPoint local_address_result;
-  EXPECT_EQ(OK, socket.GetLocalAddress(&local_address_result));
+  EXPECT_THAT(socket.GetLocalAddress(&local_address_result), IsOk());
   EXPECT_EQ(lo_address, local_address_result.address());
 
   TestCompletionCallback connect_callback;
-  EXPECT_EQ(ERR_IO_PENDING, socket.Connect(connect_callback.callback()));
+  EXPECT_THAT(socket.Connect(connect_callback.callback()),
+              IsError(ERR_IO_PENDING));
 
   TestCompletionCallback accept_callback;
   std::unique_ptr<StreamSocket> accepted_socket;
   int result = server.Accept(&accepted_socket, accept_callback.callback());
   if (result == ERR_IO_PENDING)
     result = accept_callback.WaitForResult();
-  ASSERT_EQ(OK, result);
+  ASSERT_THAT(result, IsOk());
 
-  EXPECT_EQ(OK, connect_callback.WaitForResult());
+  EXPECT_THAT(connect_callback.WaitForResult(), IsOk());
 
   EXPECT_TRUE(socket.IsConnected());
   socket.Disconnect();
@@ -71,7 +77,7 @@ TEST(TCPClientSocketTest, BindLoopbackToExternal) {
   TCPClientSocket socket(AddressList::CreateFromIPAddress(external_ip, 80),
                          NULL, NULL, NetLog::Source());
 
-  EXPECT_EQ(OK, socket.Bind(IPEndPoint(IPAddress::IPv4Localhost(), 0)));
+  EXPECT_THAT(socket.Bind(IPEndPoint(IPAddress::IPv4Localhost(), 0)), IsOk());
 
   TestCompletionCallback connect_callback;
   int result = socket.Connect(connect_callback.callback());
@@ -96,11 +102,11 @@ TEST(TCPClientSocketTest, BindLoopbackToIPv6) {
   }
 
   IPEndPoint server_address;
-  ASSERT_EQ(OK, server.GetLocalAddress(&server_address));
+  ASSERT_THAT(server.GetLocalAddress(&server_address), IsOk());
   TCPClientSocket socket(AddressList(server_address), NULL, NULL,
                          NetLog::Source());
 
-  EXPECT_EQ(OK, socket.Bind(IPEndPoint(IPAddress::IPv4Localhost(), 0)));
+  EXPECT_THAT(socket.Bind(IPEndPoint(IPAddress::IPv4Localhost(), 0)), IsOk());
 
   TestCompletionCallback connect_callback;
   int result = socket.Connect(connect_callback.callback());
@@ -152,7 +158,7 @@ TEST(TCPClientSocketTest, MAYBE_TestSocketPerformanceWatcher) {
       AddressList::CreateFromIPAddressList(ip_list, "example.com"),
       std::move(watcher), NULL, NetLog::Source());
 
-  EXPECT_EQ(OK, socket.Bind(IPEndPoint(IPAddress::IPv4Localhost(), 0)));
+  EXPECT_THAT(socket.Bind(IPEndPoint(IPAddress::IPv4Localhost(), 0)), IsOk());
 
   TestCompletionCallback connect_callback;
 

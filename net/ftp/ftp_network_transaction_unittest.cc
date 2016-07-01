@@ -17,8 +17,13 @@
 #include "net/dns/mock_host_resolver.h"
 #include "net/ftp/ftp_request_info.h"
 #include "net/socket/socket_test_util.h"
+#include "net/test/gtest_util.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
+
+using net::test::IsError;
+using net::test::IsOk;
 
 namespace {
 
@@ -945,7 +950,7 @@ TEST_P(FtpNetworkTransactionTest, FailedLookup) {
   ASSERT_EQ(ERR_IO_PENDING,
             transaction_.Start(&request_info, callback_.callback(),
                                BoundNetLog()));
-  ASSERT_EQ(ERR_NAME_NOT_RESOLVED, callback_.WaitForResult());
+  ASSERT_THAT(callback_.WaitForResult(), IsError(ERR_NAME_NOT_RESOLVED));
   EXPECT_EQ(LOAD_STATE_IDLE, transaction_.GetLoadState());
 }
 
@@ -1176,7 +1181,7 @@ TEST_P(FtpNetworkTransactionTest, DownloadTransactionEvilPasvUnsafeHost) {
   ASSERT_EQ(ERR_IO_PENDING,
             transaction_.Start(&request_info, callback_.callback(),
                                BoundNetLog()));
-  ASSERT_EQ(OK, callback_.WaitForResult());
+  ASSERT_THAT(callback_.WaitForResult(), IsOk());
 
   // The transaction fires the callback when we can start reading data. That
   // means that the data socket should be open.
@@ -1361,7 +1366,7 @@ TEST_P(FtpNetworkTransactionTest, EvilRestartUser) {
   ASSERT_EQ(ERR_IO_PENDING,
             transaction_.Start(&request_info, callback_.callback(),
                                BoundNetLog()));
-  ASSERT_EQ(ERR_FTP_FAILED, callback_.WaitForResult());
+  ASSERT_THAT(callback_.WaitForResult(), IsError(ERR_FTP_FAILED));
 
   MockRead ctrl_reads[] = {
     MockRead("220 host TestFTPd\r\n"),
@@ -1380,7 +1385,7 @@ TEST_P(FtpNetworkTransactionTest, EvilRestartUser) {
                     base::ASCIIToUTF16("foo\nownz0red"),
                     base::ASCIIToUTF16("innocent")),
                 callback_.callback()));
-  EXPECT_EQ(ERR_MALFORMED_IDENTITY, callback_.WaitForResult());
+  EXPECT_THAT(callback_.WaitForResult(), IsError(ERR_MALFORMED_IDENTITY));
 }
 
 TEST_P(FtpNetworkTransactionTest, EvilRestartPassword) {
@@ -1395,7 +1400,7 @@ TEST_P(FtpNetworkTransactionTest, EvilRestartPassword) {
   ASSERT_EQ(ERR_IO_PENDING,
             transaction_.Start(&request_info, callback_.callback(),
                                BoundNetLog()));
-  ASSERT_EQ(ERR_FTP_FAILED, callback_.WaitForResult());
+  ASSERT_THAT(callback_.WaitForResult(), IsError(ERR_FTP_FAILED));
 
   MockRead ctrl_reads[] = {
     MockRead("220 host TestFTPd\r\n"),
@@ -1415,7 +1420,7 @@ TEST_P(FtpNetworkTransactionTest, EvilRestartPassword) {
                 AuthCredentials(base::ASCIIToUTF16("innocent"),
                                 base::ASCIIToUTF16("foo\nownz0red")),
                 callback_.callback()));
-  EXPECT_EQ(ERR_MALFORMED_IDENTITY, callback_.WaitForResult());
+  EXPECT_THAT(callback_.WaitForResult(), IsError(ERR_MALFORMED_IDENTITY));
 }
 
 TEST_P(FtpNetworkTransactionTest, Escaping) {

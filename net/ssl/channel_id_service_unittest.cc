@@ -23,7 +23,12 @@
 #include "net/cert/x509_certificate.h"
 #include "net/ssl/default_channel_id_store.h"
 #include "net/test/channel_id_test_util.h"
+#include "net/test/gtest_util.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+using net::test::IsError;
+using net::test::IsOk;
 
 namespace net {
 
@@ -143,7 +148,7 @@ TEST_F(ChannelIDServiceTest, GetCacheMiss) {
   std::unique_ptr<crypto::ECPrivateKey> key;
   EXPECT_EQ(0, service_->channel_id_count());
   error = service_->GetChannelID(host, &key, callback.callback(), &request);
-  EXPECT_EQ(ERR_FILE_NOT_FOUND, error);
+  EXPECT_THAT(error, IsError(ERR_FILE_NOT_FOUND));
   EXPECT_FALSE(request.is_active());
   EXPECT_EQ(0, service_->channel_id_count());
   EXPECT_FALSE(key);
@@ -161,10 +166,10 @@ TEST_F(ChannelIDServiceTest, CacheHit) {
   EXPECT_EQ(0, service_->channel_id_count());
   error = service_->GetOrCreateChannelID(host, &key1, callback.callback(),
                                          &request);
-  EXPECT_EQ(ERR_IO_PENDING, error);
+  EXPECT_THAT(error, IsError(ERR_IO_PENDING));
   EXPECT_TRUE(request.is_active());
   error = callback.WaitForResult();
-  EXPECT_EQ(OK, error);
+  EXPECT_THAT(error, IsOk());
   EXPECT_EQ(1, service_->channel_id_count());
   EXPECT_TRUE(key1);
   EXPECT_FALSE(request.is_active());
@@ -174,7 +179,7 @@ TEST_F(ChannelIDServiceTest, CacheHit) {
   error = service_->GetOrCreateChannelID(host, &key2, callback.callback(),
                                          &request);
   EXPECT_FALSE(request.is_active());
-  EXPECT_EQ(OK, error);
+  EXPECT_THAT(error, IsOk());
   EXPECT_EQ(1, service_->channel_id_count());
   EXPECT_TRUE(KeysEqual(key1.get(), key2.get()));
 
@@ -182,7 +187,7 @@ TEST_F(ChannelIDServiceTest, CacheHit) {
   std::unique_ptr<crypto::ECPrivateKey> key3;
   error = service_->GetChannelID(host, &key3, callback.callback(), &request);
   EXPECT_FALSE(request.is_active());
-  EXPECT_EQ(OK, error);
+  EXPECT_THAT(error, IsOk());
   EXPECT_EQ(1, service_->channel_id_count());
   EXPECT_TRUE(KeysEqual(key1.get(), key3.get()));
 
@@ -201,30 +206,30 @@ TEST_F(ChannelIDServiceTest, StoreChannelIDs) {
   EXPECT_EQ(0, service_->channel_id_count());
   error = service_->GetOrCreateChannelID(host1, &key1, callback.callback(),
                                          &request);
-  EXPECT_EQ(ERR_IO_PENDING, error);
+  EXPECT_THAT(error, IsError(ERR_IO_PENDING));
   EXPECT_TRUE(request.is_active());
   error = callback.WaitForResult();
-  EXPECT_EQ(OK, error);
+  EXPECT_THAT(error, IsOk());
   EXPECT_EQ(1, service_->channel_id_count());
 
   std::string host2("www.verisign.com");
   std::unique_ptr<crypto::ECPrivateKey> key2;
   error = service_->GetOrCreateChannelID(host2, &key2, callback.callback(),
                                          &request);
-  EXPECT_EQ(ERR_IO_PENDING, error);
+  EXPECT_THAT(error, IsError(ERR_IO_PENDING));
   EXPECT_TRUE(request.is_active());
   error = callback.WaitForResult();
-  EXPECT_EQ(OK, error);
+  EXPECT_THAT(error, IsOk());
   EXPECT_EQ(2, service_->channel_id_count());
 
   std::string host3("www.twitter.com");
   std::unique_ptr<crypto::ECPrivateKey> key3;
   error = service_->GetOrCreateChannelID(host3, &key3, callback.callback(),
                                          &request);
-  EXPECT_EQ(ERR_IO_PENDING, error);
+  EXPECT_THAT(error, IsError(ERR_IO_PENDING));
   EXPECT_TRUE(request.is_active());
   error = callback.WaitForResult();
-  EXPECT_EQ(OK, error);
+  EXPECT_THAT(error, IsOk());
   EXPECT_EQ(3, service_->channel_id_count());
 
   EXPECT_FALSE(KeysEqual(key1.get(), key2.get()));
@@ -247,18 +252,18 @@ TEST_F(ChannelIDServiceTest, InflightJoin) {
 
   error = service_->GetOrCreateChannelID(host, &key1, callback1.callback(),
                                          &request1);
-  EXPECT_EQ(ERR_IO_PENDING, error);
+  EXPECT_THAT(error, IsError(ERR_IO_PENDING));
   EXPECT_TRUE(request1.is_active());
   // Should join with the original request.
   error = service_->GetOrCreateChannelID(host, &key2, callback2.callback(),
                                          &request2);
-  EXPECT_EQ(ERR_IO_PENDING, error);
+  EXPECT_THAT(error, IsError(ERR_IO_PENDING));
   EXPECT_TRUE(request2.is_active());
 
   error = callback1.WaitForResult();
-  EXPECT_EQ(OK, error);
+  EXPECT_THAT(error, IsOk());
   error = callback2.WaitForResult();
-  EXPECT_EQ(OK, error);
+  EXPECT_THAT(error, IsOk());
 
   EXPECT_EQ(2u, service_->requests());
   EXPECT_EQ(0u, service_->key_store_hits());
@@ -281,17 +286,17 @@ TEST_F(ChannelIDServiceTest, InflightJoinGetOrCreateAndGet) {
 
   error = service_->GetOrCreateChannelID(host, &key1, callback1.callback(),
                                          &request1);
-  EXPECT_EQ(ERR_IO_PENDING, error);
+  EXPECT_THAT(error, IsError(ERR_IO_PENDING));
   EXPECT_TRUE(request1.is_active());
   // Should join with the original request.
   error = service_->GetChannelID(host, &key2, callback2.callback(), &request2);
-  EXPECT_EQ(ERR_IO_PENDING, error);
+  EXPECT_THAT(error, IsError(ERR_IO_PENDING));
   EXPECT_TRUE(request2.is_active());
 
   error = callback1.WaitForResult();
-  EXPECT_EQ(OK, error);
+  EXPECT_THAT(error, IsOk());
   error = callback2.WaitForResult();
-  EXPECT_EQ(OK, error);
+  EXPECT_THAT(error, IsOk());
   EXPECT_TRUE(KeysEqual(key1.get(), key2.get()));
 
   EXPECT_EQ(2u, service_->requests());
@@ -309,7 +314,7 @@ TEST_F(ChannelIDServiceTest, CancelRequest) {
 
   error = service_->GetOrCreateChannelID(host, &key, base::Bind(&FailTest),
                                          &request);
-  EXPECT_EQ(ERR_IO_PENDING, error);
+  EXPECT_THAT(error, IsError(ERR_IO_PENDING));
   EXPECT_TRUE(request.is_active());
   request.Cancel();
   EXPECT_FALSE(request.is_active());
@@ -333,7 +338,7 @@ TEST_F(ChannelIDServiceTest, CancelRequestByHandleDestruction) {
 
   error = service_->GetOrCreateChannelID(host, &key, base::Bind(&FailTest),
                                          request.get());
-  EXPECT_EQ(ERR_IO_PENDING, error);
+  EXPECT_THAT(error, IsError(ERR_IO_PENDING));
   EXPECT_TRUE(request->is_active());
 
   // Delete the Request object.
@@ -356,7 +361,7 @@ TEST_F(ChannelIDServiceTest, DestructionWithPendingRequest) {
 
   error = service_->GetOrCreateChannelID(host, &key, base::Bind(&FailTest),
                                          &request);
-  EXPECT_EQ(ERR_IO_PENDING, error);
+  EXPECT_THAT(error, IsError(ERR_IO_PENDING));
   EXPECT_TRUE(request.is_active());
 
   // Cancel request and destroy the ChannelIDService.
@@ -388,7 +393,7 @@ TEST_F(ChannelIDServiceTest, RequestAfterPoolShutdown) {
   error = service_->GetOrCreateChannelID(host, &key, base::Bind(&FailTest),
                                          &request);
   // If we got here without crashing or a valgrind error, it worked.
-  ASSERT_EQ(ERR_INSUFFICIENT_RESOURCES, error);
+  ASSERT_THAT(error, IsError(ERR_INSUFFICIENT_RESOURCES));
   EXPECT_FALSE(request.is_active());
 }
 
@@ -413,29 +418,29 @@ TEST_F(ChannelIDServiceTest, SimultaneousCreation) {
 
   error = service_->GetOrCreateChannelID(host1, &key1, callback1.callback(),
                                          &request1);
-  EXPECT_EQ(ERR_IO_PENDING, error);
+  EXPECT_THAT(error, IsError(ERR_IO_PENDING));
   EXPECT_TRUE(request1.is_active());
 
   error = service_->GetOrCreateChannelID(host2, &key2, callback2.callback(),
                                          &request2);
-  EXPECT_EQ(ERR_IO_PENDING, error);
+  EXPECT_THAT(error, IsError(ERR_IO_PENDING));
   EXPECT_TRUE(request2.is_active());
 
   error = service_->GetOrCreateChannelID(host3, &key3, callback3.callback(),
                                          &request3);
-  EXPECT_EQ(ERR_IO_PENDING, error);
+  EXPECT_THAT(error, IsError(ERR_IO_PENDING));
   EXPECT_TRUE(request3.is_active());
 
   error = callback1.WaitForResult();
-  EXPECT_EQ(OK, error);
+  EXPECT_THAT(error, IsOk());
   EXPECT_TRUE(key1);
 
   error = callback2.WaitForResult();
-  EXPECT_EQ(OK, error);
+  EXPECT_THAT(error, IsOk());
   EXPECT_TRUE(key2);
 
   error = callback3.WaitForResult();
-  EXPECT_EQ(OK, error);
+  EXPECT_THAT(error, IsOk());
   EXPECT_TRUE(key3);
 
   EXPECT_FALSE(KeysEqual(key1.get(), key2.get()));
@@ -462,13 +467,13 @@ TEST_F(ChannelIDServiceTest, AsyncStoreGetOrCreateNoChannelIDsInStore) {
   EXPECT_EQ(0, service_->channel_id_count());
   error =
       service_->GetOrCreateChannelID(host, &key, callback.callback(), &request);
-  EXPECT_EQ(ERR_IO_PENDING, error);
+  EXPECT_THAT(error, IsError(ERR_IO_PENDING));
   EXPECT_TRUE(request.is_active());
 
   mock_store->CallGetChannelIDCallbackWithResult(ERR_FILE_NOT_FOUND, nullptr);
 
   error = callback.WaitForResult();
-  EXPECT_EQ(OK, error);
+  EXPECT_THAT(error, IsOk());
   EXPECT_EQ(1, service_->channel_id_count());
   EXPECT_TRUE(key);
   EXPECT_FALSE(request.is_active());
@@ -490,13 +495,13 @@ TEST_F(ChannelIDServiceTest, AsyncStoreGetNoChannelIDsInStore) {
   std::unique_ptr<crypto::ECPrivateKey> key;
   EXPECT_EQ(0, service_->channel_id_count());
   error = service_->GetChannelID(host, &key, callback.callback(), &request);
-  EXPECT_EQ(ERR_IO_PENDING, error);
+  EXPECT_THAT(error, IsError(ERR_IO_PENDING));
   EXPECT_TRUE(request.is_active());
 
   mock_store->CallGetChannelIDCallbackWithResult(ERR_FILE_NOT_FOUND, nullptr);
 
   error = callback.WaitForResult();
-  EXPECT_EQ(ERR_FILE_NOT_FOUND, error);
+  EXPECT_THAT(error, IsError(ERR_FILE_NOT_FOUND));
   EXPECT_EQ(0, service_->channel_id_count());
   EXPECT_EQ(0u, service_->workers_created());
   EXPECT_FALSE(key);
@@ -520,7 +525,7 @@ TEST_F(ChannelIDServiceTest, AsyncStoreGetOrCreateOneCertInStore) {
   EXPECT_EQ(0, service_->channel_id_count());
   error =
       service_->GetOrCreateChannelID(host, &key, callback.callback(), &request);
-  EXPECT_EQ(ERR_IO_PENDING, error);
+  EXPECT_THAT(error, IsError(ERR_IO_PENDING));
   EXPECT_TRUE(request.is_active());
 
   std::unique_ptr<crypto::ECPrivateKey> expected_key(
@@ -528,7 +533,7 @@ TEST_F(ChannelIDServiceTest, AsyncStoreGetOrCreateOneCertInStore) {
   mock_store->CallGetChannelIDCallbackWithResult(OK, expected_key.get());
 
   error = callback.WaitForResult();
-  EXPECT_EQ(OK, error);
+  EXPECT_THAT(error, IsOk());
   EXPECT_EQ(1, service_->channel_id_count());
   EXPECT_EQ(1u, service_->requests());
   EXPECT_EQ(1u, service_->key_store_hits());
@@ -557,7 +562,7 @@ TEST_F(ChannelIDServiceTest, AsyncStoreGetOneCertInStore) {
   std::string private_key, spki;
   EXPECT_EQ(0, service_->channel_id_count());
   error = service_->GetChannelID(host, &key, callback.callback(), &request);
-  EXPECT_EQ(ERR_IO_PENDING, error);
+  EXPECT_THAT(error, IsError(ERR_IO_PENDING));
   EXPECT_TRUE(request.is_active());
 
   std::unique_ptr<crypto::ECPrivateKey> expected_key(
@@ -565,7 +570,7 @@ TEST_F(ChannelIDServiceTest, AsyncStoreGetOneCertInStore) {
   mock_store->CallGetChannelIDCallbackWithResult(OK, expected_key.get());
 
   error = callback.WaitForResult();
-  EXPECT_EQ(OK, error);
+  EXPECT_THAT(error, IsOk());
   EXPECT_EQ(1, service_->channel_id_count());
   EXPECT_EQ(1u, service_->requests());
   EXPECT_EQ(1u, service_->key_store_hits());
@@ -592,7 +597,7 @@ TEST_F(ChannelIDServiceTest, AsyncStoreGetThenCreateNoCertsInStore) {
   std::unique_ptr<crypto::ECPrivateKey> key1;
   EXPECT_EQ(0, service_->channel_id_count());
   error = service_->GetChannelID(host, &key1, callback1.callback(), &request1);
-  EXPECT_EQ(ERR_IO_PENDING, error);
+  EXPECT_THAT(error, IsError(ERR_IO_PENDING));
   EXPECT_TRUE(request1.is_active());
 
   // Asynchronous get/create with no certs in the store.
@@ -602,7 +607,7 @@ TEST_F(ChannelIDServiceTest, AsyncStoreGetThenCreateNoCertsInStore) {
   EXPECT_EQ(0, service_->channel_id_count());
   error = service_->GetOrCreateChannelID(host, &key2, callback2.callback(),
                                          &request2);
-  EXPECT_EQ(ERR_IO_PENDING, error);
+  EXPECT_THAT(error, IsError(ERR_IO_PENDING));
   EXPECT_TRUE(request2.is_active());
 
   mock_store->CallGetChannelIDCallbackWithResult(ERR_FILE_NOT_FOUND, nullptr);
@@ -610,9 +615,9 @@ TEST_F(ChannelIDServiceTest, AsyncStoreGetThenCreateNoCertsInStore) {
   // Even though the first request didn't ask to create a cert, it gets joined
   // by the second, which does, so both succeed.
   error = callback1.WaitForResult();
-  EXPECT_EQ(OK, error);
+  EXPECT_THAT(error, IsOk());
   error = callback2.WaitForResult();
-  EXPECT_EQ(OK, error);
+  EXPECT_THAT(error, IsOk());
 
   // One cert is created, one request is joined.
   EXPECT_EQ(2U, service_->requests());

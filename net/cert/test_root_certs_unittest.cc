@@ -11,12 +11,16 @@
 #include "net/cert/test_root_certs.h"
 #include "net/cert/x509_certificate.h"
 #include "net/test/cert_test_util.h"
+#include "net/test/gtest_util.h"
 #include "net/test/test_data_directory.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if defined(USE_NSS_CERTS)
 #include <nss.h>
 #endif
+
+using net::test::IsOk;
 
 namespace net {
 
@@ -105,7 +109,7 @@ TEST(TestRootCertsTest, OverrideTrust) {
   int good_status =
       verify_proc->Verify(test_cert.get(), "127.0.0.1", std::string(), flags,
                           NULL, CertificateList(), &good_verify_result);
-  EXPECT_EQ(OK, good_status);
+  EXPECT_THAT(good_status, IsOk());
   EXPECT_EQ(0u, good_verify_result.cert_status);
 
   test_roots->Clear();

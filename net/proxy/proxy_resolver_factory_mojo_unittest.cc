@@ -31,8 +31,13 @@
 #include "net/proxy/proxy_resolver_error_observer.h"
 #include "net/proxy/proxy_resolver_script_data.h"
 #include "net/test/event_waiter.h"
+#include "net/test/gtest_util.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
+
+using net::test::IsError;
+using net::test::IsOk;
 
 namespace net {
 
@@ -735,8 +740,8 @@ TEST_F(ProxyResolverFactoryMojoTest, GetProxyForURL) {
   net_log_.Clear();
 
   std::unique_ptr<Request> request(MakeRequest(GURL(kExampleUrl)));
-  EXPECT_EQ(ERR_IO_PENDING, request->Resolve());
-  EXPECT_EQ(OK, request->WaitForResult());
+  EXPECT_THAT(request->Resolve(), IsError(ERR_IO_PENDING));
+  EXPECT_THAT(request->WaitForResult(), IsOk());
 
   EXPECT_EQ("DIRECT", request->results().ToPacString());
 
@@ -757,8 +762,8 @@ TEST_F(ProxyResolverFactoryMojoTest, GetProxyForURL_MultipleResults) {
   CreateProxyResolver();
 
   std::unique_ptr<Request> request(MakeRequest(GURL(kExampleUrl)));
-  EXPECT_EQ(ERR_IO_PENDING, request->Resolve());
-  EXPECT_EQ(OK, request->WaitForResult());
+  EXPECT_THAT(request->Resolve(), IsError(ERR_IO_PENDING));
+  EXPECT_THAT(request->WaitForResult(), IsOk());
 
   EXPECT_EQ(kPacString, request->results().ToPacString());
 }
@@ -769,8 +774,8 @@ TEST_F(ProxyResolverFactoryMojoTest, GetProxyForURL_Error) {
   CreateProxyResolver();
 
   std::unique_ptr<Request> request(MakeRequest(GURL(kExampleUrl)));
-  EXPECT_EQ(ERR_IO_PENDING, request->Resolve());
-  EXPECT_EQ(ERR_UNEXPECTED, request->WaitForResult());
+  EXPECT_THAT(request->Resolve(), IsError(ERR_IO_PENDING));
+  EXPECT_THAT(request->WaitForResult(), IsError(ERR_UNEXPECTED));
 
   EXPECT_TRUE(request->results().is_empty());
 }
@@ -781,7 +786,7 @@ TEST_F(ProxyResolverFactoryMojoTest, GetProxyForURL_Cancel) {
   CreateProxyResolver();
 
   std::unique_ptr<Request> request(MakeRequest(GURL(kExampleUrl)));
-  EXPECT_EQ(ERR_IO_PENDING, request->Resolve());
+  EXPECT_THAT(request->Resolve(), IsError(ERR_IO_PENDING));
   request->Cancel();
 
   // The Mojo request is still made.
@@ -797,13 +802,13 @@ TEST_F(ProxyResolverFactoryMojoTest, GetProxyForURL_MultipleRequests) {
   CreateProxyResolver();
 
   std::unique_ptr<Request> request1(MakeRequest(GURL(kExampleUrl)));
-  EXPECT_EQ(ERR_IO_PENDING, request1->Resolve());
+  EXPECT_THAT(request1->Resolve(), IsError(ERR_IO_PENDING));
   std::unique_ptr<Request> request2(
       MakeRequest(GURL("https://www.chromium.org")));
-  EXPECT_EQ(ERR_IO_PENDING, request2->Resolve());
+  EXPECT_THAT(request2->Resolve(), IsError(ERR_IO_PENDING));
 
-  EXPECT_EQ(OK, request1->WaitForResult());
-  EXPECT_EQ(OK, request2->WaitForResult());
+  EXPECT_THAT(request1->WaitForResult(), IsOk());
+  EXPECT_THAT(request2->WaitForResult(), IsOk());
 
   EXPECT_EQ("DIRECT", request1->results().ToPacString());
   EXPECT_EQ("HTTPS foo:443", request2->results().ToPacString());
@@ -815,15 +820,15 @@ TEST_F(ProxyResolverFactoryMojoTest, GetProxyForURL_Disconnect) {
   CreateProxyResolver();
   {
     std::unique_ptr<Request> request(MakeRequest(GURL(kExampleUrl)));
-    EXPECT_EQ(ERR_IO_PENDING, request->Resolve());
-    EXPECT_EQ(ERR_PAC_SCRIPT_TERMINATED, request->WaitForResult());
+    EXPECT_THAT(request->Resolve(), IsError(ERR_IO_PENDING));
+    EXPECT_THAT(request->WaitForResult(), IsError(ERR_PAC_SCRIPT_TERMINATED));
     EXPECT_TRUE(request->results().is_empty());
   }
 
   {
     // Calling GetProxyForURL after a disconnect should fail.
     std::unique_ptr<Request> request(MakeRequest(GURL(kExampleUrl)));
-    EXPECT_EQ(ERR_PAC_SCRIPT_TERMINATED, request->Resolve());
+    EXPECT_THAT(request->Resolve(), IsError(ERR_PAC_SCRIPT_TERMINATED));
   }
 }
 
@@ -833,9 +838,9 @@ TEST_F(ProxyResolverFactoryMojoTest, GetProxyForURL_ClientClosed) {
   CreateProxyResolver();
 
   std::unique_ptr<Request> request1(MakeRequest(GURL(kExampleUrl)));
-  EXPECT_EQ(ERR_IO_PENDING, request1->Resolve());
+  EXPECT_THAT(request1->Resolve(), IsError(ERR_IO_PENDING));
 
-  EXPECT_EQ(ERR_PAC_SCRIPT_TERMINATED, request1->WaitForResult());
+  EXPECT_THAT(request1->WaitForResult(), IsError(ERR_PAC_SCRIPT_TERMINATED));
 }
 
 TEST_F(ProxyResolverFactoryMojoTest, GetProxyForURL_DeleteInCallback) {
@@ -883,7 +888,7 @@ TEST_F(ProxyResolverFactoryMojoTest, GetProxyForURL_DnsRequest) {
   CreateProxyResolver();
 
   std::unique_ptr<Request> request(MakeRequest(GURL(kExampleUrl)));
-  EXPECT_EQ(ERR_IO_PENDING, request->Resolve());
+  EXPECT_THAT(request->Resolve(), IsError(ERR_IO_PENDING));
   EXPECT_EQ(LOAD_STATE_RESOLVING_PROXY_FOR_URL, request->load_state());
 
   host_resolver_.waiter().WaitForEvent(MockHostResolver::DNS_REQUEST);

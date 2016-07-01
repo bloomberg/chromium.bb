@@ -33,7 +33,12 @@
 #include "net/dns/dns_test_util.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/log/test_net_log.h"
+#include "net/test/gtest_util.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+using net::test::IsError;
+using net::test::IsOk;
 
 namespace net {
 
@@ -234,7 +239,7 @@ class Request {
         &handle_,
         BoundNetLog());
     if (!list_.empty())
-      EXPECT_EQ(OK, result_);
+      EXPECT_THAT(result_, IsOk());
     return result_;
   }
 
@@ -307,12 +312,12 @@ class Request {
  private:
   void OnComplete(int rv) {
     EXPECT_TRUE(pending());
-    EXPECT_EQ(ERR_IO_PENDING, result_);
+    EXPECT_THAT(result_, IsError(ERR_IO_PENDING));
     EXPECT_NE(ERR_IO_PENDING, rv);
     result_ = rv;
     handle_ = NULL;
     if (!list_.empty()) {
-      EXPECT_EQ(OK, result_);
+      EXPECT_THAT(result_, IsOk());
       EXPECT_EQ(info_.port(), list_.front().port());
     }
     if (handler_)
@@ -631,8 +636,8 @@ TEST_F(HostResolverImplTest, AsynchronousLookup) {
   proc_->SignalMultiple(1u);
 
   Request* req = CreateRequest("just.testing", 80);
-  EXPECT_EQ(ERR_IO_PENDING, req->Resolve());
-  EXPECT_EQ(OK, req->WaitForResult());
+  EXPECT_THAT(req->Resolve(), IsError(ERR_IO_PENDING));
+  EXPECT_THAT(req->WaitForResult(), IsOk());
 
   EXPECT_TRUE(req->HasOneAddress("192.168.1.42", 80));
 
@@ -648,41 +653,41 @@ TEST_F(HostResolverImplTest, LocalhostLookup) {
   proc_->AddRuleForAllFamilies("localhost.", "192.168.1.42");
 
   Request* req0 = CreateRequest("foo.localhost", 80);
-  EXPECT_EQ(OK, req0->Resolve());
+  EXPECT_THAT(req0->Resolve(), IsOk());
   EXPECT_TRUE(req0->HasAddress("127.0.0.1", 80));
   EXPECT_TRUE(req0->HasAddress("::1", 80));
 
   Request* req1 = CreateRequest("localhost", 80);
-  EXPECT_EQ(OK, req1->Resolve());
+  EXPECT_THAT(req1->Resolve(), IsOk());
   EXPECT_TRUE(req1->HasAddress("127.0.0.1", 80));
   EXPECT_TRUE(req1->HasAddress("::1", 80));
 
   Request* req2 = CreateRequest("localhost.", 80);
-  EXPECT_EQ(OK, req2->Resolve());
+  EXPECT_THAT(req2->Resolve(), IsOk());
   EXPECT_TRUE(req2->HasAddress("127.0.0.1", 80));
   EXPECT_TRUE(req2->HasAddress("::1", 80));
 }
 
 TEST_F(HostResolverImplTest, LocalhostIPV4IPV6Lookup) {
   Request* req1 = CreateRequest("localhost6", 80, MEDIUM, ADDRESS_FAMILY_IPV4);
-  EXPECT_EQ(OK, req1->Resolve());
+  EXPECT_THAT(req1->Resolve(), IsOk());
   EXPECT_EQ(0u, req1->NumberOfAddresses());
 
   Request* req2 = CreateRequest("localhost6", 80, MEDIUM, ADDRESS_FAMILY_IPV6);
-  EXPECT_EQ(OK, req2->Resolve());
+  EXPECT_THAT(req2->Resolve(), IsOk());
   EXPECT_TRUE(req2->HasOneAddress("::1", 80));
 
   Request* req3 =
       CreateRequest("localhost6", 80, MEDIUM, ADDRESS_FAMILY_UNSPECIFIED);
-  EXPECT_EQ(OK, req3->Resolve());
+  EXPECT_THAT(req3->Resolve(), IsOk());
   EXPECT_TRUE(req3->HasOneAddress("::1", 80));
 
   Request* req4 = CreateRequest("localhost", 80, MEDIUM, ADDRESS_FAMILY_IPV4);
-  EXPECT_EQ(OK, req4->Resolve());
+  EXPECT_THAT(req4->Resolve(), IsOk());
   EXPECT_TRUE(req4->HasOneAddress("127.0.0.1", 80));
 
   Request* req5 = CreateRequest("localhost", 80, MEDIUM, ADDRESS_FAMILY_IPV6);
-  EXPECT_EQ(OK, req5->Resolve());
+  EXPECT_THAT(req5->Resolve(), IsOk());
   EXPECT_TRUE(req5->HasOneAddress("::1", 80));
 }
 
@@ -697,7 +702,7 @@ TEST_F(HostResolverImplTest, ResolveIPLiteralWithHostResolverSystemOnly) {
   info_bypass.set_host_resolver_flags(HOST_RESOLVER_SYSTEM_ONLY);
 
   Request* req = CreateRequest(info_bypass, MEDIUM);
-  EXPECT_EQ(OK, req->Resolve());
+  EXPECT_THAT(req->Resolve(), IsOk());
 
   EXPECT_TRUE(req->HasAddress(kIpLiteral, 80));
 }
@@ -707,8 +712,8 @@ TEST_F(HostResolverImplTest, EmptyListMeansNameNotResolved) {
   proc_->SignalMultiple(1u);
 
   Request* req = CreateRequest("just.testing", 80);
-  EXPECT_EQ(ERR_IO_PENDING, req->Resolve());
-  EXPECT_EQ(ERR_NAME_NOT_RESOLVED, req->WaitForResult());
+  EXPECT_THAT(req->Resolve(), IsError(ERR_IO_PENDING));
+  EXPECT_THAT(req->WaitForResult(), IsError(ERR_NAME_NOT_RESOLVED));
   EXPECT_EQ(0u, req->NumberOfAddresses());
   EXPECT_EQ("just.testing", proc_->GetCaptureList()[0].hostname);
 }
@@ -719,18 +724,18 @@ TEST_F(HostResolverImplTest, FailedAsynchronousLookup) {
   proc_->SignalMultiple(1u);
 
   Request* req = CreateRequest("just.testing", 80);
-  EXPECT_EQ(ERR_IO_PENDING, req->Resolve());
-  EXPECT_EQ(ERR_NAME_NOT_RESOLVED, req->WaitForResult());
+  EXPECT_THAT(req->Resolve(), IsError(ERR_IO_PENDING));
+  EXPECT_THAT(req->WaitForResult(), IsError(ERR_NAME_NOT_RESOLVED));
 
   EXPECT_EQ("just.testing", proc_->GetCaptureList()[0].hostname);
 
   // Also test that the error is not cached.
-  EXPECT_EQ(ERR_DNS_CACHE_MISS, req->ResolveFromCache());
+  EXPECT_THAT(req->ResolveFromCache(), IsError(ERR_DNS_CACHE_MISS));
 }
 
 TEST_F(HostResolverImplTest, AbortedAsynchronousLookup) {
   Request* req0 = CreateRequest("just.testing", 80);
-  EXPECT_EQ(ERR_IO_PENDING, req0->Resolve());
+  EXPECT_THAT(req0->Resolve(), IsError(ERR_IO_PENDING));
 
   EXPECT_TRUE(proc_->WaitFor(1u));
 
@@ -742,11 +747,11 @@ TEST_F(HostResolverImplTest, AbortedAsynchronousLookup) {
   // To ensure there was no spurious callback, complete with a new resolver.
   CreateResolver();
   Request* req1 = CreateRequest("just.testing", 80);
-  EXPECT_EQ(ERR_IO_PENDING, req1->Resolve());
+  EXPECT_THAT(req1->Resolve(), IsError(ERR_IO_PENDING));
 
   proc_->SignalMultiple(2u);
 
-  EXPECT_EQ(OK, req1->WaitForResult());
+  EXPECT_THAT(req1->WaitForResult(), IsOk());
 
   // This request was canceled.
   EXPECT_FALSE(req0->completed());
@@ -761,7 +766,7 @@ TEST_F(HostResolverImplTest, AbortedAsynchronousLookup) {
 TEST_F(HostResolverImplTest, MAYBE_NumericIPv4Address) {
   // Stevens says dotted quads with AI_UNSPEC resolve to a single sockaddr_in.
   Request* req = CreateRequest("127.1.2.3", 5555);
-  EXPECT_EQ(OK, req->Resolve());
+  EXPECT_THAT(req->Resolve(), IsOk());
 
   EXPECT_TRUE(req->HasOneAddress("127.1.2.3", 5555));
 }
@@ -776,7 +781,7 @@ TEST_F(HostResolverImplTest, MAYBE_NumericIPv6Address) {
   // Resolve a plain IPv6 address.  Don't worry about [brackets], because
   // the caller should have removed them.
   Request* req = CreateRequest("2001:db8::1", 5555);
-  EXPECT_EQ(OK, req->Resolve());
+  EXPECT_THAT(req->Resolve(), IsOk());
 
   EXPECT_TRUE(req->HasOneAddress("2001:db8::1", 5555));
 }
@@ -789,7 +794,7 @@ TEST_F(HostResolverImplTest, MAYBE_NumericIPv6Address) {
 #endif
 TEST_F(HostResolverImplTest, MAYBE_EmptyHost) {
   Request* req = CreateRequest(std::string(), 5555);
-  EXPECT_EQ(ERR_NAME_NOT_RESOLVED, req->Resolve());
+  EXPECT_THAT(req->Resolve(), IsError(ERR_NAME_NOT_RESOLVED));
 }
 
 #if defined(THREAD_SANITIZER)
@@ -804,7 +809,7 @@ TEST_F(HostResolverImplTest, MAYBE_EmptyHost) {
 TEST_F(HostResolverImplTest, MAYBE_EmptyDotsHost) {
   for (int i = 0; i < 16; ++i) {
     Request* req = CreateRequest(std::string(i, '.'), 5555);
-    EXPECT_EQ(ERR_NAME_NOT_RESOLVED, req->Resolve());
+    EXPECT_THAT(req->Resolve(), IsError(ERR_NAME_NOT_RESOLVED));
   }
 }
 
@@ -818,17 +823,17 @@ TEST_F(HostResolverImplTest, MAYBE_EmptyDotsHost) {
 #endif
 TEST_F(HostResolverImplTest, MAYBE_LongHost) {
   Request* req = CreateRequest(std::string(4097, 'a'), 5555);
-  EXPECT_EQ(ERR_NAME_NOT_RESOLVED, req->Resolve());
+  EXPECT_THAT(req->Resolve(), IsError(ERR_NAME_NOT_RESOLVED));
 }
 
 TEST_F(HostResolverImplTest, DeDupeRequests) {
   // Start 5 requests, duplicating hosts "a" and "b". Since the resolver_proc is
   // blocked, these should all pile up until we signal it.
-  EXPECT_EQ(ERR_IO_PENDING, CreateRequest("a", 80)->Resolve());
-  EXPECT_EQ(ERR_IO_PENDING, CreateRequest("b", 80)->Resolve());
-  EXPECT_EQ(ERR_IO_PENDING, CreateRequest("b", 81)->Resolve());
-  EXPECT_EQ(ERR_IO_PENDING, CreateRequest("a", 82)->Resolve());
-  EXPECT_EQ(ERR_IO_PENDING, CreateRequest("b", 83)->Resolve());
+  EXPECT_THAT(CreateRequest("a", 80)->Resolve(), IsError(ERR_IO_PENDING));
+  EXPECT_THAT(CreateRequest("b", 80)->Resolve(), IsError(ERR_IO_PENDING));
+  EXPECT_THAT(CreateRequest("b", 81)->Resolve(), IsError(ERR_IO_PENDING));
+  EXPECT_THAT(CreateRequest("a", 82)->Resolve(), IsError(ERR_IO_PENDING));
+  EXPECT_THAT(CreateRequest("b", 83)->Resolve(), IsError(ERR_IO_PENDING));
 
   proc_->SignalMultiple(2u);  // One for "a", one for "b".
 
@@ -838,11 +843,11 @@ TEST_F(HostResolverImplTest, DeDupeRequests) {
 }
 
 TEST_F(HostResolverImplTest, CancelMultipleRequests) {
-  EXPECT_EQ(ERR_IO_PENDING, CreateRequest("a", 80)->Resolve());
-  EXPECT_EQ(ERR_IO_PENDING, CreateRequest("b", 80)->Resolve());
-  EXPECT_EQ(ERR_IO_PENDING, CreateRequest("b", 81)->Resolve());
-  EXPECT_EQ(ERR_IO_PENDING, CreateRequest("a", 82)->Resolve());
-  EXPECT_EQ(ERR_IO_PENDING, CreateRequest("b", 83)->Resolve());
+  EXPECT_THAT(CreateRequest("a", 80)->Resolve(), IsError(ERR_IO_PENDING));
+  EXPECT_THAT(CreateRequest("b", 80)->Resolve(), IsError(ERR_IO_PENDING));
+  EXPECT_THAT(CreateRequest("b", 81)->Resolve(), IsError(ERR_IO_PENDING));
+  EXPECT_THAT(CreateRequest("a", 82)->Resolve(), IsError(ERR_IO_PENDING));
+  EXPECT_THAT(CreateRequest("b", 83)->Resolve(), IsError(ERR_IO_PENDING));
 
   // Cancel everything except request for ("a", 82).
   requests_[0]->Cancel();
@@ -852,7 +857,7 @@ TEST_F(HostResolverImplTest, CancelMultipleRequests) {
 
   proc_->SignalMultiple(2u);  // One for "a", one for "b".
 
-  EXPECT_EQ(OK, requests_[3]->WaitForResult());
+  EXPECT_THAT(requests_[3]->WaitForResult(), IsOk());
 }
 
 TEST_F(HostResolverImplTest, CanceledRequestsReleaseJobSlots) {
@@ -860,8 +865,10 @@ TEST_F(HostResolverImplTest, CanceledRequestsReleaseJobSlots) {
   for (unsigned i = 0; i < kMaxJobs + 1; ++i) {
     std::string hostname = "a_";
     hostname[1] = 'a' + i;
-    EXPECT_EQ(ERR_IO_PENDING, CreateRequest(hostname, 80)->Resolve());
-    EXPECT_EQ(ERR_IO_PENDING, CreateRequest(hostname, 81)->Resolve());
+    EXPECT_THAT(CreateRequest(hostname, 80)->Resolve(),
+                IsError(ERR_IO_PENDING));
+    EXPECT_THAT(CreateRequest(hostname, 81)->Resolve(),
+                IsError(ERR_IO_PENDING));
   }
 
   EXPECT_TRUE(proc_->WaitFor(kMaxJobs));
@@ -876,8 +883,8 @@ TEST_F(HostResolverImplTest, CanceledRequestsReleaseJobSlots) {
   proc_->SignalAll();
 
   size_t num_requests = requests_.size();
-  EXPECT_EQ(OK, requests_[num_requests - 1]->WaitForResult());
-  EXPECT_EQ(OK, requests_[num_requests - 2]->result());
+  EXPECT_THAT(requests_[num_requests - 1]->WaitForResult(), IsOk());
+  EXPECT_THAT(requests_[num_requests - 2]->result(), IsOk());
 }
 
 TEST_F(HostResolverImplTest, CancelWithinCallback) {
@@ -901,11 +908,11 @@ TEST_F(HostResolverImplTest, CancelWithinCallback) {
 
   proc_->SignalMultiple(2u);  // One for "a". One for "finalrequest".
 
-  EXPECT_EQ(OK, requests_[0]->WaitForResult());
+  EXPECT_THAT(requests_[0]->WaitForResult(), IsOk());
 
   Request* final_request = CreateRequest("finalrequest", 70);
-  EXPECT_EQ(ERR_IO_PENDING, final_request->Resolve());
-  EXPECT_EQ(OK, final_request->WaitForResult());
+  EXPECT_THAT(final_request->Resolve(), IsError(ERR_IO_PENDING));
+  EXPECT_THAT(final_request->WaitForResult(), IsOk());
   EXPECT_TRUE(requests_[3]->completed());
 }
 
@@ -952,12 +959,12 @@ TEST_F(HostResolverImplTest, DeleteWithinAbortedCallback) {
   set_handler(new MyHandler());
 
   // This test assumes that the Jobs will be Aborted in order ["a", "b"]
-  EXPECT_EQ(ERR_IO_PENDING, CreateRequest("a", 80)->Resolve());
+  EXPECT_THAT(CreateRequest("a", 80)->Resolve(), IsError(ERR_IO_PENDING));
   // HostResolverImpl will be deleted before later Requests can complete.
-  EXPECT_EQ(ERR_IO_PENDING, CreateRequest("a", 81)->Resolve());
+  EXPECT_THAT(CreateRequest("a", 81)->Resolve(), IsError(ERR_IO_PENDING));
   // Job for 'b' will be aborted before it can complete.
-  EXPECT_EQ(ERR_IO_PENDING, CreateRequest("b", 82)->Resolve());
-  EXPECT_EQ(ERR_IO_PENDING, CreateRequest("b", 83)->Resolve());
+  EXPECT_THAT(CreateRequest("b", 82)->Resolve(), IsError(ERR_IO_PENDING));
+  EXPECT_THAT(CreateRequest("b", 83)->Resolve(), IsError(ERR_IO_PENDING));
 
   EXPECT_TRUE(proc_->WaitFor(1u));
 
@@ -967,10 +974,10 @@ TEST_F(HostResolverImplTest, DeleteWithinAbortedCallback) {
   // |MyHandler| will send quit message once all the requests have finished.
   base::RunLoop().Run();
 
-  EXPECT_EQ(ERR_NETWORK_CHANGED, requests_[0]->result());
-  EXPECT_EQ(ERR_IO_PENDING, requests_[1]->result());
-  EXPECT_EQ(ERR_IO_PENDING, requests_[2]->result());
-  EXPECT_EQ(ERR_IO_PENDING, requests_[3]->result());
+  EXPECT_THAT(requests_[0]->result(), IsError(ERR_NETWORK_CHANGED));
+  EXPECT_THAT(requests_[1]->result(), IsError(ERR_IO_PENDING));
+  EXPECT_THAT(requests_[2]->result(), IsError(ERR_IO_PENDING));
+  EXPECT_THAT(requests_[3]->result(), IsError(ERR_IO_PENDING));
   // Clean up.
   proc_->SignalMultiple(requests_.size());
 }
@@ -981,7 +988,7 @@ TEST_F(HostResolverImplTest, StartWithinCallback) {
       if (req->index() == 0) {
         // On completing the first request, start another request for "a".
         // Since caching is disabled, this will result in another async request.
-        EXPECT_EQ(ERR_IO_PENDING, CreateRequest("a", 70)->Resolve());
+        EXPECT_THAT(CreateRequest("a", 70)->Resolve(), IsError(ERR_IO_PENDING));
       }
     }
   };
@@ -999,9 +1006,9 @@ TEST_F(HostResolverImplTest, StartWithinCallback) {
 
   proc_->SignalMultiple(2u);  // One for "a". One for the second "a".
 
-  EXPECT_EQ(OK, requests_[0]->WaitForResult());
+  EXPECT_THAT(requests_[0]->WaitForResult(), IsOk());
   ASSERT_EQ(5u, requests_.size());
-  EXPECT_EQ(OK, requests_.back()->WaitForResult());
+  EXPECT_THAT(requests_.back()->WaitForResult(), IsOk());
 
   EXPECT_EQ(2u, proc_->GetCaptureList().size());
 }
@@ -1013,8 +1020,8 @@ TEST_F(HostResolverImplTest, BypassCache) {
         // On completing the first request, start another request for "a".
         // Since caching is enabled, this should complete synchronously.
         std::string hostname = req->info().hostname();
-        EXPECT_EQ(OK, CreateRequest(hostname, 70)->Resolve());
-        EXPECT_EQ(OK, CreateRequest(hostname, 75)->ResolveFromCache());
+        EXPECT_THAT(CreateRequest(hostname, 70)->Resolve(), IsOk());
+        EXPECT_THAT(CreateRequest(hostname, 75)->ResolveFromCache(), IsOk());
 
         // Ok good. Now make sure that if we ask to bypass the cache, it can no
         // longer service the request synchronously.
@@ -1032,7 +1039,7 @@ TEST_F(HostResolverImplTest, BypassCache) {
   };
   set_handler(new MyHandler());
 
-  EXPECT_EQ(ERR_IO_PENDING, CreateRequest("a", 80)->Resolve());
+  EXPECT_THAT(CreateRequest("a", 80)->Resolve(), IsError(ERR_IO_PENDING));
   proc_->SignalMultiple(3u);  // Only need two, but be generous.
 
   // |verifier| will send quit message once all the requests have finished.
@@ -1046,16 +1053,16 @@ TEST_F(HostResolverImplTest, FlushCacheOnIPAddressChange) {
   proc_->SignalMultiple(2u);  // One before the flush, one after.
 
   Request* req = CreateRequest("host1", 70);
-  EXPECT_EQ(ERR_IO_PENDING, req->Resolve());
-  EXPECT_EQ(OK, req->WaitForResult());
+  EXPECT_THAT(req->Resolve(), IsError(ERR_IO_PENDING));
+  EXPECT_THAT(req->WaitForResult(), IsOk());
 
   req = CreateRequest("host1", 75);
-  EXPECT_EQ(OK, req->Resolve());  // Should complete synchronously.
+  EXPECT_THAT(req->Resolve(), IsOk());  // Should complete synchronously.
 
   // Verify initial DNS config read does not flush cache.
   NetworkChangeNotifier::NotifyObserversOfInitialDNSConfigReadForTests();
   req = CreateRequest("host1", 75);
-  EXPECT_EQ(OK, req->Resolve());  // Should complete synchronously.
+  EXPECT_THAT(req->Resolve(), IsOk());  // Should complete synchronously.
 
   // Flush cache by triggering an IP address change.
   NetworkChangeNotifier::NotifyObserversOfIPAddressChangeForTests();
@@ -1064,14 +1071,14 @@ TEST_F(HostResolverImplTest, FlushCacheOnIPAddressChange) {
   // Resolve "host1" again -- this time it won't be served from cache, so it
   // will complete asynchronously.
   req = CreateRequest("host1", 80);
-  EXPECT_EQ(ERR_IO_PENDING, req->Resolve());
-  EXPECT_EQ(OK, req->WaitForResult());
+  EXPECT_THAT(req->Resolve(), IsError(ERR_IO_PENDING));
+  EXPECT_THAT(req->WaitForResult(), IsOk());
 }
 
 // Test that IP address changes send ERR_NETWORK_CHANGED to pending requests.
 TEST_F(HostResolverImplTest, AbortOnIPAddressChanged) {
   Request* req = CreateRequest("host1", 70);
-  EXPECT_EQ(ERR_IO_PENDING, req->Resolve());
+  EXPECT_THAT(req->Resolve(), IsError(ERR_IO_PENDING));
 
   EXPECT_TRUE(proc_->WaitFor(1u));
   // Triggering an IP address change.
@@ -1079,14 +1086,14 @@ TEST_F(HostResolverImplTest, AbortOnIPAddressChanged) {
   base::RunLoop().RunUntilIdle();  // Notification happens async.
   proc_->SignalAll();
 
-  EXPECT_EQ(ERR_NETWORK_CHANGED, req->WaitForResult());
+  EXPECT_THAT(req->WaitForResult(), IsError(ERR_NETWORK_CHANGED));
   EXPECT_EQ(0u, resolver_->GetHostCache()->size());
 }
 
 // Test that initial DNS config read signals do not abort pending requests.
 TEST_F(HostResolverImplTest, DontAbortOnInitialDNSConfigRead) {
   Request* req = CreateRequest("host1", 70);
-  EXPECT_EQ(ERR_IO_PENDING, req->Resolve());
+  EXPECT_THAT(req->Resolve(), IsError(ERR_IO_PENDING));
 
   EXPECT_TRUE(proc_->WaitFor(1u));
   // Triggering initial DNS config read signal.
@@ -1094,16 +1101,16 @@ TEST_F(HostResolverImplTest, DontAbortOnInitialDNSConfigRead) {
   base::RunLoop().RunUntilIdle();  // Notification happens async.
   proc_->SignalAll();
 
-  EXPECT_EQ(OK, req->WaitForResult());
+  EXPECT_THAT(req->WaitForResult(), IsOk());
 }
 
 // Obey pool constraints after IP address has changed.
 TEST_F(HostResolverImplTest, ObeyPoolConstraintsAfterIPAddressChange) {
   // Runs at most one job at a time.
   CreateSerialResolver();
-  EXPECT_EQ(ERR_IO_PENDING, CreateRequest("a")->Resolve());
-  EXPECT_EQ(ERR_IO_PENDING, CreateRequest("b")->Resolve());
-  EXPECT_EQ(ERR_IO_PENDING, CreateRequest("c")->Resolve());
+  EXPECT_THAT(CreateRequest("a")->Resolve(), IsError(ERR_IO_PENDING));
+  EXPECT_THAT(CreateRequest("b")->Resolve(), IsError(ERR_IO_PENDING));
+  EXPECT_THAT(CreateRequest("c")->Resolve(), IsError(ERR_IO_PENDING));
 
   EXPECT_TRUE(proc_->WaitFor(1u));
   // Triggering an IP address change.
@@ -1111,15 +1118,15 @@ TEST_F(HostResolverImplTest, ObeyPoolConstraintsAfterIPAddressChange) {
   base::RunLoop().RunUntilIdle();  // Notification happens async.
   proc_->SignalMultiple(3u);  // Let the false-start go so that we can catch it.
 
-  EXPECT_EQ(ERR_NETWORK_CHANGED, requests_[0]->WaitForResult());
+  EXPECT_THAT(requests_[0]->WaitForResult(), IsError(ERR_NETWORK_CHANGED));
 
   EXPECT_EQ(1u, num_running_dispatcher_jobs());
 
   EXPECT_FALSE(requests_[1]->completed());
   EXPECT_FALSE(requests_[2]->completed());
 
-  EXPECT_EQ(OK, requests_[2]->WaitForResult());
-  EXPECT_EQ(OK, requests_[1]->result());
+  EXPECT_THAT(requests_[2]->WaitForResult(), IsOk());
+  EXPECT_THAT(requests_[1]->result(), IsOk());
 }
 
 // Tests that a new Request made from the callback of a previously aborted one
@@ -1143,9 +1150,9 @@ TEST_F(HostResolverImplTest, AbortOnlyExistingRequestsOnIPAddressChange) {
   };
   set_handler(new MyHandler());
 
-  EXPECT_EQ(ERR_IO_PENDING, CreateRequest("bbb")->Resolve());
-  EXPECT_EQ(ERR_IO_PENDING, CreateRequest("eee")->Resolve());
-  EXPECT_EQ(ERR_IO_PENDING, CreateRequest("ccc")->Resolve());
+  EXPECT_THAT(CreateRequest("bbb")->Resolve(), IsError(ERR_IO_PENDING));
+  EXPECT_THAT(CreateRequest("eee")->Resolve(), IsError(ERR_IO_PENDING));
+  EXPECT_THAT(CreateRequest("ccc")->Resolve(), IsError(ERR_IO_PENDING));
 
   // Wait until all are blocked;
   EXPECT_TRUE(proc_->WaitFor(3u));
@@ -1153,16 +1160,16 @@ TEST_F(HostResolverImplTest, AbortOnlyExistingRequestsOnIPAddressChange) {
   NetworkChangeNotifier::NotifyObserversOfIPAddressChangeForTests();
   // This should abort all running jobs.
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(ERR_NETWORK_CHANGED, requests_[0]->result());
-  EXPECT_EQ(ERR_NETWORK_CHANGED, requests_[1]->result());
-  EXPECT_EQ(ERR_NETWORK_CHANGED, requests_[2]->result());
+  EXPECT_THAT(requests_[0]->result(), IsError(ERR_NETWORK_CHANGED));
+  EXPECT_THAT(requests_[1]->result(), IsError(ERR_NETWORK_CHANGED));
+  EXPECT_THAT(requests_[2]->result(), IsError(ERR_NETWORK_CHANGED));
   ASSERT_EQ(6u, requests_.size());
   // Unblock all calls to proc.
   proc_->SignalMultiple(requests_.size());
   // Run until the re-started requests finish.
-  EXPECT_EQ(OK, requests_[3]->WaitForResult());
-  EXPECT_EQ(OK, requests_[4]->WaitForResult());
-  EXPECT_EQ(OK, requests_[5]->WaitForResult());
+  EXPECT_THAT(requests_[3]->WaitForResult(), IsOk());
+  EXPECT_THAT(requests_[4]->WaitForResult(), IsOk());
+  EXPECT_THAT(requests_[5]->WaitForResult(), IsOk());
   // Verify that results of aborted Jobs were not cached.
   EXPECT_EQ(6u, proc_->GetCaptureList().size());
   EXPECT_EQ(3u, resolver_->GetHostCache()->size());
@@ -1224,9 +1231,9 @@ TEST_F(HostResolverImplTest, ChangePriority) {
 
   // req0 starts immediately; without ChangePriority, req1 and then req2 should
   // run.
-  EXPECT_EQ(ERR_IO_PENDING, requests_[0]->Resolve());
-  EXPECT_EQ(ERR_IO_PENDING, requests_[1]->Resolve());
-  EXPECT_EQ(ERR_IO_PENDING, requests_[2]->Resolve());
+  EXPECT_THAT(requests_[0]->Resolve(), IsError(ERR_IO_PENDING));
+  EXPECT_THAT(requests_[1]->Resolve(), IsError(ERR_IO_PENDING));
+  EXPECT_THAT(requests_[2]->Resolve(), IsError(ERR_IO_PENDING));
 
   // Changing req2 to HIGH should make it run before req1.
   // (It can't run before req0, since req0 started immediately.)
@@ -1235,9 +1242,9 @@ TEST_F(HostResolverImplTest, ChangePriority) {
   // Let all 3 requests finish.
   proc_->SignalMultiple(3u);
 
-  EXPECT_EQ(OK, requests_[0]->WaitForResult());
-  EXPECT_EQ(OK, requests_[1]->WaitForResult());
-  EXPECT_EQ(OK, requests_[2]->WaitForResult());
+  EXPECT_THAT(requests_[0]->WaitForResult(), IsOk());
+  EXPECT_THAT(requests_[1]->WaitForResult(), IsOk());
+  EXPECT_THAT(requests_[2]->WaitForResult(), IsOk());
 
   MockHostResolverProc::CaptureList capture_list = proc_->GetCaptureList();
   ASSERT_EQ(3u, capture_list.size());
@@ -1301,10 +1308,14 @@ TEST_F(HostResolverImplTest, QueueOverflow) {
   // Note that at this point the MockHostResolverProc is blocked, so any
   // requests we make will not complete.
 
-  EXPECT_EQ(ERR_IO_PENDING, CreateRequest("req0", 80, LOWEST)->Resolve());
-  EXPECT_EQ(ERR_IO_PENDING, CreateRequest("req1", 80, HIGHEST)->Resolve());
-  EXPECT_EQ(ERR_IO_PENDING, CreateRequest("req2", 80, MEDIUM)->Resolve());
-  EXPECT_EQ(ERR_IO_PENDING, CreateRequest("req3", 80, MEDIUM)->Resolve());
+  EXPECT_THAT(CreateRequest("req0", 80, LOWEST)->Resolve(),
+              IsError(ERR_IO_PENDING));
+  EXPECT_THAT(CreateRequest("req1", 80, HIGHEST)->Resolve(),
+              IsError(ERR_IO_PENDING));
+  EXPECT_THAT(CreateRequest("req2", 80, MEDIUM)->Resolve(),
+              IsError(ERR_IO_PENDING));
+  EXPECT_THAT(CreateRequest("req3", 80, MEDIUM)->Resolve(),
+              IsError(ERR_IO_PENDING));
 
   // At this point, there are 3 enqueued jobs.
   // Insertion of subsequent requests will cause evictions
@@ -1313,21 +1324,27 @@ TEST_F(HostResolverImplTest, QueueOverflow) {
   EXPECT_EQ(ERR_HOST_RESOLVER_QUEUE_TOO_LARGE,
             CreateRequest("req4", 80, LOW)->Resolve());  // Evicts itself!
 
-  EXPECT_EQ(ERR_IO_PENDING, CreateRequest("req5", 80, MEDIUM)->Resolve());
-  EXPECT_EQ(ERR_HOST_RESOLVER_QUEUE_TOO_LARGE, requests_[2]->result());
-  EXPECT_EQ(ERR_IO_PENDING, CreateRequest("req6", 80, HIGHEST)->Resolve());
-  EXPECT_EQ(ERR_HOST_RESOLVER_QUEUE_TOO_LARGE, requests_[3]->result());
-  EXPECT_EQ(ERR_IO_PENDING, CreateRequest("req7", 80, MEDIUM)->Resolve());
-  EXPECT_EQ(ERR_HOST_RESOLVER_QUEUE_TOO_LARGE, requests_[5]->result());
+  EXPECT_THAT(CreateRequest("req5", 80, MEDIUM)->Resolve(),
+              IsError(ERR_IO_PENDING));
+  EXPECT_THAT(requests_[2]->result(),
+              IsError(ERR_HOST_RESOLVER_QUEUE_TOO_LARGE));
+  EXPECT_THAT(CreateRequest("req6", 80, HIGHEST)->Resolve(),
+              IsError(ERR_IO_PENDING));
+  EXPECT_THAT(requests_[3]->result(),
+              IsError(ERR_HOST_RESOLVER_QUEUE_TOO_LARGE));
+  EXPECT_THAT(CreateRequest("req7", 80, MEDIUM)->Resolve(),
+              IsError(ERR_IO_PENDING));
+  EXPECT_THAT(requests_[5]->result(),
+              IsError(ERR_HOST_RESOLVER_QUEUE_TOO_LARGE));
 
   // Unblock the resolver thread so the requests can run.
   proc_->SignalMultiple(4u);
 
   // The rest should succeed.
-  EXPECT_EQ(OK, requests_[7]->WaitForResult());
-  EXPECT_EQ(OK, requests_[0]->result());
-  EXPECT_EQ(OK, requests_[1]->result());
-  EXPECT_EQ(OK, requests_[6]->result());
+  EXPECT_THAT(requests_[7]->WaitForResult(), IsOk());
+  EXPECT_THAT(requests_[0]->result(), IsOk());
+  EXPECT_THAT(requests_[1]->result(), IsOk());
+  EXPECT_THAT(requests_[6]->result(), IsOk());
 
   // Verify that they called out the the resolver proc (which runs on the
   // resolver thread) in the expected order.
@@ -1352,25 +1369,25 @@ TEST_F(HostResolverImplTest, QueueOverflow) {
 TEST_F(HostResolverImplTest, AddressFamilyWithRawIPs) {
   Request* request =
       CreateRequest("127.0.0.1", 80,  MEDIUM, ADDRESS_FAMILY_IPV4);
-  EXPECT_EQ(OK, request->Resolve());
+  EXPECT_THAT(request->Resolve(), IsOk());
   EXPECT_TRUE(request->HasOneAddress("127.0.0.1", 80));
 
   request = CreateRequest("127.0.0.1", 80,  MEDIUM, ADDRESS_FAMILY_IPV6);
-  EXPECT_EQ(ERR_NAME_NOT_RESOLVED, request->Resolve());
+  EXPECT_THAT(request->Resolve(), IsError(ERR_NAME_NOT_RESOLVED));
 
   request = CreateRequest("127.0.0.1", 80,  MEDIUM, ADDRESS_FAMILY_UNSPECIFIED);
-  EXPECT_EQ(OK, request->Resolve());
+  EXPECT_THAT(request->Resolve(), IsOk());
   EXPECT_TRUE(request->HasOneAddress("127.0.0.1", 80));
 
   request = CreateRequest("::1", 80,  MEDIUM, ADDRESS_FAMILY_IPV4);
-  EXPECT_EQ(ERR_NAME_NOT_RESOLVED, request->Resolve());
+  EXPECT_THAT(request->Resolve(), IsError(ERR_NAME_NOT_RESOLVED));
 
   request = CreateRequest("::1", 80,  MEDIUM, ADDRESS_FAMILY_IPV6);
-  EXPECT_EQ(OK, request->Resolve());
+  EXPECT_THAT(request->Resolve(), IsOk());
   EXPECT_TRUE(request->HasOneAddress("::1", 80));
 
   request = CreateRequest("::1", 80,  MEDIUM, ADDRESS_FAMILY_UNSPECIFIED);
-  EXPECT_EQ(OK, request->Resolve());
+  EXPECT_THAT(request->Resolve(), IsOk());
   EXPECT_TRUE(request->HasOneAddress("::1", 80));
 }
 
@@ -1385,11 +1402,13 @@ TEST_F(HostResolverImplTest, ResolveFromCache) {
             CreateRequest(info, DEFAULT_PRIORITY)->ResolveFromCache());
 
   // This time, we fetch normally.
-  EXPECT_EQ(ERR_IO_PENDING, CreateRequest(info, DEFAULT_PRIORITY)->Resolve());
-  EXPECT_EQ(OK, requests_[1]->WaitForResult());
+  EXPECT_THAT(CreateRequest(info, DEFAULT_PRIORITY)->Resolve(),
+              IsError(ERR_IO_PENDING));
+  EXPECT_THAT(requests_[1]->WaitForResult(), IsOk());
 
   // Now we should be able to fetch from the cache.
-  EXPECT_EQ(OK, CreateRequest(info, DEFAULT_PRIORITY)->ResolveFromCache());
+  EXPECT_THAT(CreateRequest(info, DEFAULT_PRIORITY)->ResolveFromCache(),
+              IsOk());
   EXPECT_TRUE(requests_[2]->HasOneAddress("192.168.1.42", 80));
 }
 
@@ -1404,13 +1423,16 @@ TEST_F(HostResolverImplTest, ResolveStaleFromCache) {
             CreateRequest(info, DEFAULT_PRIORITY)->ResolveFromCache());
 
   // This time, we fetch normally.
-  EXPECT_EQ(ERR_IO_PENDING, CreateRequest(info, DEFAULT_PRIORITY)->Resolve());
-  EXPECT_EQ(OK, requests_[1]->WaitForResult());
+  EXPECT_THAT(CreateRequest(info, DEFAULT_PRIORITY)->Resolve(),
+              IsError(ERR_IO_PENDING));
+  EXPECT_THAT(requests_[1]->WaitForResult(), IsOk());
 
   // Now we should be able to fetch from the cache.
-  EXPECT_EQ(OK, CreateRequest(info, DEFAULT_PRIORITY)->ResolveFromCache());
+  EXPECT_THAT(CreateRequest(info, DEFAULT_PRIORITY)->ResolveFromCache(),
+              IsOk());
   EXPECT_TRUE(requests_[2]->HasOneAddress("192.168.1.42", 80));
-  EXPECT_EQ(OK, CreateRequest(info, DEFAULT_PRIORITY)->ResolveStaleFromCache());
+  EXPECT_THAT(CreateRequest(info, DEFAULT_PRIORITY)->ResolveStaleFromCache(),
+              IsOk());
   EXPECT_TRUE(requests_[3]->HasOneAddress("192.168.1.42", 80));
   EXPECT_FALSE(requests_[3]->staleness().is_stale());
 
@@ -1420,7 +1442,8 @@ TEST_F(HostResolverImplTest, ResolveStaleFromCache) {
   // ResolveStaleFromCache.
   EXPECT_EQ(ERR_DNS_CACHE_MISS,
             CreateRequest(info, DEFAULT_PRIORITY)->ResolveFromCache());
-  EXPECT_EQ(OK, CreateRequest(info, DEFAULT_PRIORITY)->ResolveStaleFromCache());
+  EXPECT_THAT(CreateRequest(info, DEFAULT_PRIORITY)->ResolveStaleFromCache(),
+              IsOk());
   EXPECT_TRUE(requests_[5]->HasOneAddress("192.168.1.42", 80));
   EXPECT_TRUE(requests_[5]->staleness().is_stale());
 }
@@ -1451,7 +1474,7 @@ TEST_F(HostResolverImplTest, MultipleAttempts) {
   // Resolve "host1".
   HostResolver::RequestInfo info(HostPortPair("host1", 70));
   Request* req = CreateRequest(info, DEFAULT_PRIORITY);
-  EXPECT_EQ(ERR_IO_PENDING, req->Resolve());
+  EXPECT_THAT(req->Resolve(), IsError(ERR_IO_PENDING));
 
   // Resolve returns -4 to indicate that 3rd attempt has resolved the host.
   EXPECT_EQ(-4, req->WaitForResult());
@@ -1480,35 +1503,35 @@ TEST_F(HostResolverImplTest, NameCollision127_0_53_53) {
   Request* request;
 
   request = CreateRequest("single");
-  EXPECT_EQ(ERR_IO_PENDING, request->Resolve());
-  EXPECT_EQ(ERR_ICANN_NAME_COLLISION, request->WaitForResult());
+  EXPECT_THAT(request->Resolve(), IsError(ERR_IO_PENDING));
+  EXPECT_THAT(request->WaitForResult(), IsError(ERR_ICANN_NAME_COLLISION));
 
   request = CreateRequest("multiple");
-  EXPECT_EQ(ERR_IO_PENDING, request->Resolve());
-  EXPECT_EQ(ERR_ICANN_NAME_COLLISION, request->WaitForResult());
+  EXPECT_THAT(request->Resolve(), IsError(ERR_IO_PENDING));
+  EXPECT_THAT(request->WaitForResult(), IsError(ERR_ICANN_NAME_COLLISION));
 
   // Resolving an IP literal of 127.0.53.53 however is allowed.
-  EXPECT_EQ(OK, CreateRequest("127.0.53.53")->Resolve());
+  EXPECT_THAT(CreateRequest("127.0.53.53")->Resolve(), IsOk());
 
   // Moreover the address should not be recognized when embedded in an IPv6
   // address.
   request = CreateRequest("ipv6");
-  EXPECT_EQ(ERR_IO_PENDING, request->Resolve());
-  EXPECT_EQ(OK, request->WaitForResult());
+  EXPECT_THAT(request->Resolve(), IsError(ERR_IO_PENDING));
+  EXPECT_THAT(request->WaitForResult(), IsOk());
 
   // Try some other IPs which are similar, but NOT an exact match on
   // 127.0.53.53.
   request = CreateRequest("not_reserved1");
-  EXPECT_EQ(ERR_IO_PENDING, request->Resolve());
-  EXPECT_EQ(OK, request->WaitForResult());
+  EXPECT_THAT(request->Resolve(), IsError(ERR_IO_PENDING));
+  EXPECT_THAT(request->WaitForResult(), IsOk());
 
   request = CreateRequest("not_reserved2");
-  EXPECT_EQ(ERR_IO_PENDING, request->Resolve());
-  EXPECT_EQ(OK, request->WaitForResult());
+  EXPECT_THAT(request->Resolve(), IsError(ERR_IO_PENDING));
+  EXPECT_THAT(request->WaitForResult(), IsOk());
 
   request = CreateRequest("not_reserved3");
-  EXPECT_EQ(ERR_IO_PENDING, request->Resolve());
-  EXPECT_EQ(OK, request->WaitForResult());
+  EXPECT_THAT(request->Resolve(), IsError(ERR_IO_PENDING));
+  EXPECT_THAT(request->WaitForResult(), IsOk());
 }
 
 TEST_F(HostResolverImplTest, IsIPv6Reachable) {
@@ -1637,10 +1660,10 @@ TEST_F(HostResolverImplDnsTest, DnsTask) {
   // All other hostnames will fail in proc_.
 
   // Initially there is no config, so client should not be invoked.
-  EXPECT_EQ(ERR_IO_PENDING, CreateRequest("ok_fail", 80)->Resolve());
+  EXPECT_THAT(CreateRequest("ok_fail", 80)->Resolve(), IsError(ERR_IO_PENDING));
   proc_->SignalMultiple(requests_.size());
 
-  EXPECT_EQ(ERR_NAME_NOT_RESOLVED, requests_[0]->WaitForResult());
+  EXPECT_THAT(requests_[0]->WaitForResult(), IsError(ERR_NAME_NOT_RESOLVED));
 
   ChangeDnsConfig(CreateValidDnsConfig());
 
@@ -1656,12 +1679,12 @@ TEST_F(HostResolverImplDnsTest, DnsTask) {
   for (size_t i = 1; i < requests_.size(); ++i)
     EXPECT_NE(ERR_UNEXPECTED, requests_[i]->WaitForResult()) << i;
 
-  EXPECT_EQ(OK, requests_[1]->result());
+  EXPECT_THAT(requests_[1]->result(), IsOk());
   // Resolved by MockDnsClient.
   EXPECT_TRUE(requests_[1]->HasOneAddress("127.0.0.1", 80));
   // Fallback to ProcTask.
-  EXPECT_EQ(ERR_NAME_NOT_RESOLVED, requests_[2]->result());
-  EXPECT_EQ(OK, requests_[3]->result());
+  EXPECT_THAT(requests_[2]->result(), IsError(ERR_NAME_NOT_RESOLVED));
+  EXPECT_THAT(requests_[3]->result(), IsOk());
   EXPECT_TRUE(requests_[3]->HasOneAddress("192.168.1.102", 80));
 }
 
@@ -1676,13 +1699,14 @@ TEST_F(HostResolverImplDnsTest, NoFallbackToProcTask) {
   // Set empty DnsConfig.
   ChangeDnsConfig(DnsConfig());
   // Initially there is no config, so client should not be invoked.
-  EXPECT_EQ(ERR_IO_PENDING, CreateRequest("ok_fail", 80)->Resolve());
+  EXPECT_THAT(CreateRequest("ok_fail", 80)->Resolve(), IsError(ERR_IO_PENDING));
   // There is no config, so fallback to ProcTask must work.
-  EXPECT_EQ(ERR_IO_PENDING, CreateRequest("nx_succeed", 80)->Resolve());
+  EXPECT_THAT(CreateRequest("nx_succeed", 80)->Resolve(),
+              IsError(ERR_IO_PENDING));
   proc_->SignalMultiple(requests_.size());
 
-  EXPECT_EQ(ERR_NAME_NOT_RESOLVED, requests_[0]->WaitForResult());
-  EXPECT_EQ(OK, requests_[1]->WaitForResult());
+  EXPECT_THAT(requests_[0]->WaitForResult(), IsError(ERR_NAME_NOT_RESOLVED));
+  EXPECT_THAT(requests_[1]->WaitForResult(), IsOk());
   EXPECT_TRUE(requests_[1]->HasOneAddress("192.168.1.102", 80));
 
   ChangeDnsConfig(CreateValidDnsConfig());
@@ -1707,37 +1731,39 @@ TEST_F(HostResolverImplDnsTest, NoFallbackToProcTask) {
   proc_->SignalMultiple(requests_.size());
 
   // Aborted due to Network Change.
-  EXPECT_EQ(ERR_NETWORK_CHANGED, requests_[2]->WaitForResult());
-  EXPECT_EQ(ERR_NETWORK_CHANGED, requests_[3]->WaitForResult());
+  EXPECT_THAT(requests_[2]->WaitForResult(), IsError(ERR_NETWORK_CHANGED));
+  EXPECT_THAT(requests_[3]->WaitForResult(), IsError(ERR_NETWORK_CHANGED));
   // Resolved by MockDnsClient.
-  EXPECT_EQ(OK, requests_[4]->WaitForResult());
+  EXPECT_THAT(requests_[4]->WaitForResult(), IsOk());
   EXPECT_TRUE(requests_[4]->HasOneAddress("127.0.0.1", 80));
   // Fallback to ProcTask is disabled.
-  EXPECT_EQ(ERR_NAME_NOT_RESOLVED, requests_[5]->WaitForResult());
+  EXPECT_THAT(requests_[5]->WaitForResult(), IsError(ERR_NAME_NOT_RESOLVED));
 }
 
 // Test behavior of OnDnsTaskFailure when Job is aborted.
 TEST_F(HostResolverImplDnsTest, OnDnsTaskFailureAbortedJob) {
   ChangeDnsConfig(CreateValidDnsConfig());
-  EXPECT_EQ(ERR_IO_PENDING, CreateRequest("nx_abort", 80)->Resolve());
+  EXPECT_THAT(CreateRequest("nx_abort", 80)->Resolve(),
+              IsError(ERR_IO_PENDING));
   // Abort all jobs here.
   CreateResolver();
   proc_->SignalMultiple(requests_.size());
   // Run to completion.
   base::RunLoop().RunUntilIdle();  // Notification happens async.
   // It shouldn't crash during OnDnsTaskFailure callbacks.
-  EXPECT_EQ(ERR_IO_PENDING, requests_[0]->result());
+  EXPECT_THAT(requests_[0]->result(), IsError(ERR_IO_PENDING));
 
   // Repeat test with Fallback to ProcTask disabled
   set_fallback_to_proctask(false);
   ChangeDnsConfig(CreateValidDnsConfig());
-  EXPECT_EQ(ERR_IO_PENDING, CreateRequest("nx_abort", 80)->Resolve());
+  EXPECT_THAT(CreateRequest("nx_abort", 80)->Resolve(),
+              IsError(ERR_IO_PENDING));
   // Abort all jobs here.
   CreateResolver();
   // Run to completion.
   base::RunLoop().RunUntilIdle();  // Notification happens async.
   // It shouldn't crash during OnDnsTaskFailure callbacks.
-  EXPECT_EQ(ERR_IO_PENDING, requests_[1]->result());
+  EXPECT_THAT(requests_[1]->result(), IsError(ERR_IO_PENDING));
 }
 
 TEST_F(HostResolverImplDnsTest, DnsTaskUnspec) {
@@ -1746,10 +1772,10 @@ TEST_F(HostResolverImplDnsTest, DnsTaskUnspec) {
   proc_->AddRuleForAllFamilies("4nx", "192.168.1.101");
   // All other hostnames will fail in proc_.
 
-  EXPECT_EQ(ERR_IO_PENDING, CreateRequest("ok", 80)->Resolve());
-  EXPECT_EQ(ERR_IO_PENDING, CreateRequest("4ok", 80)->Resolve());
-  EXPECT_EQ(ERR_IO_PENDING, CreateRequest("6ok", 80)->Resolve());
-  EXPECT_EQ(ERR_IO_PENDING, CreateRequest("4nx", 80)->Resolve());
+  EXPECT_THAT(CreateRequest("ok", 80)->Resolve(), IsError(ERR_IO_PENDING));
+  EXPECT_THAT(CreateRequest("4ok", 80)->Resolve(), IsError(ERR_IO_PENDING));
+  EXPECT_THAT(CreateRequest("6ok", 80)->Resolve(), IsError(ERR_IO_PENDING));
+  EXPECT_THAT(CreateRequest("4nx", 80)->Resolve(), IsError(ERR_IO_PENDING));
 
   proc_->SignalMultiple(requests_.size());
 
@@ -1777,8 +1803,8 @@ TEST_F(HostResolverImplDnsTest, ServeFromHosts) {
   proc_->SignalMultiple(1u);  // For the first request which misses.
 
   Request* req0 = CreateRequest("nx_ipv4", 80);
-  EXPECT_EQ(ERR_IO_PENDING, req0->Resolve());
-  EXPECT_EQ(ERR_NAME_NOT_RESOLVED, req0->WaitForResult());
+  EXPECT_THAT(req0->Resolve(), IsError(ERR_IO_PENDING));
+  EXPECT_THAT(req0->WaitForResult(), IsError(ERR_NAME_NOT_RESOLVED));
 
   IPAddress local_ipv4 = IPAddress::IPv4Localhost();
   IPAddress local_ipv6 = IPAddress::IPv6Localhost();
@@ -1794,30 +1820,30 @@ TEST_F(HostResolverImplDnsTest, ServeFromHosts) {
   ChangeDnsConfig(config);
 
   Request* req1 = CreateRequest("nx_ipv4", 80);
-  EXPECT_EQ(OK, req1->Resolve());
+  EXPECT_THAT(req1->Resolve(), IsOk());
   EXPECT_TRUE(req1->HasOneAddress("127.0.0.1", 80));
 
   Request* req2 = CreateRequest("nx_ipv6", 80);
-  EXPECT_EQ(OK, req2->Resolve());
+  EXPECT_THAT(req2->Resolve(), IsOk());
   EXPECT_TRUE(req2->HasOneAddress("::1", 80));
 
   Request* req3 = CreateRequest("nx_both", 80);
-  EXPECT_EQ(OK, req3->Resolve());
+  EXPECT_THAT(req3->Resolve(), IsOk());
   EXPECT_TRUE(req3->HasAddress("127.0.0.1", 80) &&
               req3->HasAddress("::1", 80));
 
   // Requests with specified AddressFamily.
   Request* req4 = CreateRequest("nx_ipv4", 80, MEDIUM, ADDRESS_FAMILY_IPV4);
-  EXPECT_EQ(OK, req4->Resolve());
+  EXPECT_THAT(req4->Resolve(), IsOk());
   EXPECT_TRUE(req4->HasOneAddress("127.0.0.1", 80));
 
   Request* req5 = CreateRequest("nx_ipv6", 80, MEDIUM, ADDRESS_FAMILY_IPV6);
-  EXPECT_EQ(OK, req5->Resolve());
+  EXPECT_THAT(req5->Resolve(), IsOk());
   EXPECT_TRUE(req5->HasOneAddress("::1", 80));
 
   // Request with upper case.
   Request* req6 = CreateRequest("nx_IPV4", 80);
-  EXPECT_EQ(OK, req6->Resolve());
+  EXPECT_THAT(req6->Resolve(), IsOk());
   EXPECT_TRUE(req6->HasOneAddress("127.0.0.1", 80));
 }
 
@@ -1827,11 +1853,14 @@ TEST_F(HostResolverImplDnsTest, BypassDnsTask) {
   proc_->AddRuleForAllFamilies(std::string(),
                                std::string());  // Default to failures.
 
-  EXPECT_EQ(ERR_IO_PENDING, CreateRequest("ok.local", 80)->Resolve());
-  EXPECT_EQ(ERR_IO_PENDING, CreateRequest("ok.local.", 80)->Resolve());
-  EXPECT_EQ(ERR_IO_PENDING, CreateRequest("oklocal", 80)->Resolve());
-  EXPECT_EQ(ERR_IO_PENDING, CreateRequest("oklocal.", 80)->Resolve());
-  EXPECT_EQ(ERR_IO_PENDING, CreateRequest("ok", 80)->Resolve());
+  EXPECT_THAT(CreateRequest("ok.local", 80)->Resolve(),
+              IsError(ERR_IO_PENDING));
+  EXPECT_THAT(CreateRequest("ok.local.", 80)->Resolve(),
+              IsError(ERR_IO_PENDING));
+  EXPECT_THAT(CreateRequest("oklocal", 80)->Resolve(), IsError(ERR_IO_PENDING));
+  EXPECT_THAT(CreateRequest("oklocal.", 80)->Resolve(),
+              IsError(ERR_IO_PENDING));
+  EXPECT_THAT(CreateRequest("ok", 80)->Resolve(), IsError(ERR_IO_PENDING));
 
   proc_->SignalMultiple(requests_.size());
 
@@ -1849,15 +1878,16 @@ TEST_F(HostResolverImplDnsTest, SystemOnlyBypassesDnsTask) {
 
   HostResolver::RequestInfo info_bypass(HostPortPair("ok", 80));
   info_bypass.set_host_resolver_flags(HOST_RESOLVER_SYSTEM_ONLY);
-  EXPECT_EQ(ERR_IO_PENDING, CreateRequest(info_bypass, MEDIUM)->Resolve());
+  EXPECT_THAT(CreateRequest(info_bypass, MEDIUM)->Resolve(),
+              IsError(ERR_IO_PENDING));
 
   HostResolver::RequestInfo info(HostPortPair("ok", 80));
-  EXPECT_EQ(ERR_IO_PENDING, CreateRequest(info, MEDIUM)->Resolve());
+  EXPECT_THAT(CreateRequest(info, MEDIUM)->Resolve(), IsError(ERR_IO_PENDING));
 
   proc_->SignalMultiple(requests_.size());
 
-  EXPECT_EQ(ERR_NAME_NOT_RESOLVED, requests_[0]->WaitForResult());
-  EXPECT_EQ(OK, requests_[1]->WaitForResult());
+  EXPECT_THAT(requests_[0]->WaitForResult(), IsError(ERR_NAME_NOT_RESOLVED));
+  EXPECT_THAT(requests_[1]->WaitForResult(), IsOk());
 }
 
 TEST_F(HostResolverImplDnsTest, DisableDnsClientOnPersistentFailure) {
@@ -1868,8 +1898,8 @@ TEST_F(HostResolverImplDnsTest, DisableDnsClientOnPersistentFailure) {
 
   // Check that DnsTask works.
   Request* req = CreateRequest("ok_1", 80);
-  EXPECT_EQ(ERR_IO_PENDING, req->Resolve());
-  EXPECT_EQ(OK, req->WaitForResult());
+  EXPECT_THAT(req->Resolve(), IsError(ERR_IO_PENDING));
+  EXPECT_THAT(req->WaitForResult(), IsOk());
 
   for (unsigned i = 0; i < maximum_dns_failures(); ++i) {
     // Use custom names to require separate Jobs.
@@ -1888,15 +1918,15 @@ TEST_F(HostResolverImplDnsTest, DisableDnsClientOnPersistentFailure) {
 
   // DnsTask should be disabled by now.
   req = CreateRequest("ok_2", 80);
-  EXPECT_EQ(ERR_IO_PENDING, req->Resolve());
+  EXPECT_THAT(req->Resolve(), IsError(ERR_IO_PENDING));
   proc_->SignalMultiple(1u);
-  EXPECT_EQ(ERR_NAME_NOT_RESOLVED, req->WaitForResult());
+  EXPECT_THAT(req->WaitForResult(), IsError(ERR_NAME_NOT_RESOLVED));
 
   // Check that it is re-enabled after DNS change.
   ChangeDnsConfig(CreateValidDnsConfig());
   req = CreateRequest("ok_3", 80);
-  EXPECT_EQ(ERR_IO_PENDING, req->Resolve());
-  EXPECT_EQ(OK, req->WaitForResult());
+  EXPECT_THAT(req->Resolve(), IsError(ERR_IO_PENDING));
+  EXPECT_THAT(req->WaitForResult(), IsOk());
 }
 
 TEST_F(HostResolverImplDnsTest, DontDisableDnsClientOnSporadicFailure) {
@@ -1922,8 +1952,8 @@ TEST_F(HostResolverImplDnsTest, DontDisableDnsClientOnSporadicFailure) {
 
   // DnsTask should still be enabled.
   Request* req = CreateRequest("ok_last", 80);
-  EXPECT_EQ(ERR_IO_PENDING, req->Resolve());
-  EXPECT_EQ(OK, req->WaitForResult());
+  EXPECT_THAT(req->Resolve(), IsError(ERR_IO_PENDING));
+  EXPECT_THAT(req->WaitForResult(), IsOk());
 }
 
 // Confirm that resolving "localhost" is unrestricted even if there are no
@@ -1962,7 +1992,7 @@ TEST_F(HostResolverImplDnsTest, DualFamilyLocalhost) {
   info_proc.set_host_resolver_flags(HOST_RESOLVER_SYSTEM_ONLY);
   Request* req = CreateRequest(info_proc, DEFAULT_PRIORITY);
 
-  EXPECT_EQ(OK, req->Resolve());
+  EXPECT_THAT(req->Resolve(), IsOk());
 
   EXPECT_TRUE(req->HasAddress("127.0.0.1", 80));
   EXPECT_TRUE(req->HasAddress("::1", 80));
@@ -1983,7 +2013,7 @@ TEST_F(HostResolverImplDnsTest, DualFamilyLocalhost) {
   info_hosts.set_address_family(ADDRESS_FAMILY_UNSPECIFIED);
   req = CreateRequest(info_hosts, DEFAULT_PRIORITY);
   // Expect synchronous resolution from DnsHosts.
-  EXPECT_EQ(OK, req->Resolve());
+  EXPECT_THAT(req->Resolve(), IsOk());
 
   EXPECT_EQ(saw_ipv4, req->HasAddress("127.0.0.1", 80));
   EXPECT_EQ(saw_ipv6, req->HasAddress("::1", 80));
@@ -2006,7 +2036,7 @@ TEST_F(HostResolverImplDnsTest, CancelWithOneTransactionActiveOnePending) {
   CreateSerialResolver();
   ChangeDnsConfig(CreateValidDnsConfig());
 
-  EXPECT_EQ(ERR_IO_PENDING, CreateRequest("ok", 80)->Resolve());
+  EXPECT_THAT(CreateRequest("ok", 80)->Resolve(), IsError(ERR_IO_PENDING));
   EXPECT_EQ(1u, num_running_dispatcher_jobs());
   requests_[0]->Cancel();
 
@@ -2017,7 +2047,7 @@ TEST_F(HostResolverImplDnsTest, CancelWithOneTransactionActiveOnePending) {
 TEST_F(HostResolverImplDnsTest, CancelWithTwoTransactionsActive) {
   ChangeDnsConfig(CreateValidDnsConfig());
 
-  EXPECT_EQ(ERR_IO_PENDING, CreateRequest("ok", 80)->Resolve());
+  EXPECT_THAT(CreateRequest("ok", 80)->Resolve(), IsError(ERR_IO_PENDING));
   EXPECT_EQ(2u, num_running_dispatcher_jobs());
   requests_[0]->Cancel();
 
@@ -2051,7 +2081,8 @@ TEST_F(HostResolverImplDnsTest, DeleteWithActiveTransactions) {
 TEST_F(HostResolverImplDnsTest, CancelWithIPv6TransactionActive) {
   ChangeDnsConfig(CreateValidDnsConfig());
 
-  EXPECT_EQ(ERR_IO_PENDING, CreateRequest("6slow_ok", 80)->Resolve());
+  EXPECT_THAT(CreateRequest("6slow_ok", 80)->Resolve(),
+              IsError(ERR_IO_PENDING));
   EXPECT_EQ(2u, num_running_dispatcher_jobs());
 
   // The IPv4 request should complete, the IPv6 request is still pending.
@@ -2067,7 +2098,8 @@ TEST_F(HostResolverImplDnsTest, CancelWithIPv4TransactionPending) {
   set_fallback_to_proctask(false);
   ChangeDnsConfig(CreateValidDnsConfig());
 
-  EXPECT_EQ(ERR_IO_PENDING, CreateRequest("4slow_ok", 80)->Resolve());
+  EXPECT_THAT(CreateRequest("4slow_ok", 80)->Resolve(),
+              IsError(ERR_IO_PENDING));
   EXPECT_EQ(2u, num_running_dispatcher_jobs());
 
   // The IPv6 request should complete, the IPv4 request is still pending.
@@ -2082,10 +2114,14 @@ TEST_F(HostResolverImplDnsTest, AAAACompletesFirst) {
   set_fallback_to_proctask(false);
   ChangeDnsConfig(CreateValidDnsConfig());
 
-  EXPECT_EQ(ERR_IO_PENDING, CreateRequest("4slow_ok", 80)->Resolve());
-  EXPECT_EQ(ERR_IO_PENDING, CreateRequest("4slow_4ok", 80)->Resolve());
-  EXPECT_EQ(ERR_IO_PENDING, CreateRequest("4slow_4timeout", 80)->Resolve());
-  EXPECT_EQ(ERR_IO_PENDING, CreateRequest("4slow_6timeout", 80)->Resolve());
+  EXPECT_THAT(CreateRequest("4slow_ok", 80)->Resolve(),
+              IsError(ERR_IO_PENDING));
+  EXPECT_THAT(CreateRequest("4slow_4ok", 80)->Resolve(),
+              IsError(ERR_IO_PENDING));
+  EXPECT_THAT(CreateRequest("4slow_4timeout", 80)->Resolve(),
+              IsError(ERR_IO_PENDING));
+  EXPECT_THAT(CreateRequest("4slow_6timeout", 80)->Resolve(),
+              IsError(ERR_IO_PENDING));
 
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(requests_[0]->completed());
@@ -2094,23 +2130,23 @@ TEST_F(HostResolverImplDnsTest, AAAACompletesFirst) {
   // The IPv6 of the third request should have failed and resulted in cancelling
   // the IPv4 request.
   EXPECT_TRUE(requests_[3]->completed());
-  EXPECT_EQ(ERR_DNS_TIMED_OUT, requests_[3]->result());
+  EXPECT_THAT(requests_[3]->result(), IsError(ERR_DNS_TIMED_OUT));
   EXPECT_EQ(3u, num_running_dispatcher_jobs());
 
   dns_client_->CompleteDelayedTransactions();
   EXPECT_TRUE(requests_[0]->completed());
-  EXPECT_EQ(OK, requests_[0]->result());
+  EXPECT_THAT(requests_[0]->result(), IsOk());
   EXPECT_EQ(2u, requests_[0]->NumberOfAddresses());
   EXPECT_TRUE(requests_[0]->HasAddress("127.0.0.1", 80));
   EXPECT_TRUE(requests_[0]->HasAddress("::1", 80));
 
   EXPECT_TRUE(requests_[1]->completed());
-  EXPECT_EQ(OK, requests_[1]->result());
+  EXPECT_THAT(requests_[1]->result(), IsOk());
   EXPECT_EQ(1u, requests_[1]->NumberOfAddresses());
   EXPECT_TRUE(requests_[1]->HasAddress("127.0.0.1", 80));
 
   EXPECT_TRUE(requests_[2]->completed());
-  EXPECT_EQ(ERR_DNS_TIMED_OUT, requests_[2]->result());
+  EXPECT_THAT(requests_[2]->result(), IsError(ERR_DNS_TIMED_OUT));
 }
 
 // Test the case where only a single transaction slot is available.
@@ -2119,12 +2155,12 @@ TEST_F(HostResolverImplDnsTest, SerialResolver) {
   set_fallback_to_proctask(false);
   ChangeDnsConfig(CreateValidDnsConfig());
 
-  EXPECT_EQ(ERR_IO_PENDING, CreateRequest("ok", 80)->Resolve());
+  EXPECT_THAT(CreateRequest("ok", 80)->Resolve(), IsError(ERR_IO_PENDING));
   EXPECT_EQ(1u, num_running_dispatcher_jobs());
 
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(requests_[0]->completed());
-  EXPECT_EQ(OK, requests_[0]->result());
+  EXPECT_THAT(requests_[0]->result(), IsOk());
   EXPECT_EQ(2u, requests_[0]->NumberOfAddresses());
   EXPECT_TRUE(requests_[0]->HasAddress("127.0.0.1", 80));
   EXPECT_TRUE(requests_[0]->HasAddress("::1", 80));
@@ -2153,7 +2189,7 @@ TEST_F(HostResolverImplDnsTest, AAAAStartsAfterOtherJobFinishes) {
 
   dns_client_->CompleteDelayedTransactions();
   EXPECT_TRUE(requests_[1]->completed());
-  EXPECT_EQ(OK, requests_[1]->result());
+  EXPECT_THAT(requests_[1]->result(), IsOk());
   EXPECT_EQ(2u, requests_[1]->NumberOfAddresses());
   EXPECT_TRUE(requests_[1]->HasAddress("127.0.0.1", 80));
   EXPECT_TRUE(requests_[1]->HasAddress("::1", 80));
@@ -2168,7 +2204,7 @@ TEST_F(HostResolverImplDnsTest, IPv4EmptyFallback) {
   EXPECT_EQ(ERR_IO_PENDING,
             CreateRequest("empty_fallback", 80, MEDIUM,
                           ADDRESS_FAMILY_IPV4)->Resolve());
-  EXPECT_EQ(OK, requests_[0]->WaitForResult());
+  EXPECT_THAT(requests_[0]->WaitForResult(), IsOk());
   EXPECT_TRUE(requests_[0]->HasOneAddress("192.168.0.1", 80));
 }
 
@@ -2181,7 +2217,7 @@ TEST_F(HostResolverImplDnsTest, UnspecEmptyFallback) {
   EXPECT_EQ(ERR_IO_PENDING,
             CreateRequest("empty_fallback", 80, MEDIUM,
                           ADDRESS_FAMILY_UNSPECIFIED)->Resolve());
-  EXPECT_EQ(OK, requests_[0]->WaitForResult());
+  EXPECT_THAT(requests_[0]->WaitForResult(), IsOk());
   EXPECT_TRUE(requests_[0]->HasOneAddress("192.168.0.1", 80));
 }
 
@@ -2200,24 +2236,24 @@ TEST_F(HostResolverImplDnsTest, InvalidDnsConfigWithPendingRequests) {
   proc_->AddRuleForAllFamilies("ok", "192.168.0.3");
 
   // First active job gets two slots.
-  EXPECT_EQ(ERR_IO_PENDING, CreateRequest("slow_nx1")->Resolve());
+  EXPECT_THAT(CreateRequest("slow_nx1")->Resolve(), IsError(ERR_IO_PENDING));
   // Next job gets one slot, and waits on another.
-  EXPECT_EQ(ERR_IO_PENDING, CreateRequest("slow_nx2")->Resolve());
-  EXPECT_EQ(ERR_IO_PENDING, CreateRequest("ok")->Resolve());
+  EXPECT_THAT(CreateRequest("slow_nx2")->Resolve(), IsError(ERR_IO_PENDING));
+  EXPECT_THAT(CreateRequest("ok")->Resolve(), IsError(ERR_IO_PENDING));
 
   EXPECT_EQ(3u, num_running_dispatcher_jobs());
 
   // Clear DNS config.  Two in-progress jobs should be aborted, and the next one
   // should use a ProcTask.
   ChangeDnsConfig(DnsConfig());
-  EXPECT_EQ(ERR_NETWORK_CHANGED, requests_[0]->WaitForResult());
-  EXPECT_EQ(ERR_NETWORK_CHANGED, requests_[1]->WaitForResult());
+  EXPECT_THAT(requests_[0]->WaitForResult(), IsError(ERR_NETWORK_CHANGED));
+  EXPECT_THAT(requests_[1]->WaitForResult(), IsError(ERR_NETWORK_CHANGED));
 
   // Finish up the third job.  Should bypass the DnsClient, and get its results
   // from MockHostResolverProc.
   EXPECT_FALSE(requests_[2]->completed());
   proc_->SignalMultiple(1u);
-  EXPECT_EQ(OK, requests_[2]->WaitForResult());
+  EXPECT_THAT(requests_[2]->WaitForResult(), IsOk());
   EXPECT_TRUE(requests_[2]->HasOneAddress("192.168.0.3", 80));
 }
 
@@ -2240,31 +2276,31 @@ TEST_F(HostResolverImplDnsTest,
     for (unsigned i = 0u; i < maximum_dns_failures(); ++i) {
       std::string host = base::StringPrintf("nx%u", i);
       proc_->AddRuleForAllFamilies(host, "192.168.0.1");
-      EXPECT_EQ(ERR_IO_PENDING, CreateRequest(host)->Resolve());
+      EXPECT_THAT(CreateRequest(host)->Resolve(), IsError(ERR_IO_PENDING));
     }
 
     // These requests should all bypass DnsTasks, due to the above failures,
     // so should end up using ProcTasks.
     proc_->AddRuleForAllFamilies("slow_ok1", "192.168.0.2");
-    EXPECT_EQ(ERR_IO_PENDING, CreateRequest("slow_ok1")->Resolve());
+    EXPECT_THAT(CreateRequest("slow_ok1")->Resolve(), IsError(ERR_IO_PENDING));
     proc_->AddRuleForAllFamilies("slow_ok2", "192.168.0.3");
-    EXPECT_EQ(ERR_IO_PENDING, CreateRequest("slow_ok2")->Resolve());
+    EXPECT_THAT(CreateRequest("slow_ok2")->Resolve(), IsError(ERR_IO_PENDING));
     proc_->AddRuleForAllFamilies("slow_ok3", "192.168.0.4");
-    EXPECT_EQ(ERR_IO_PENDING, CreateRequest("slow_ok3")->Resolve());
+    EXPECT_THAT(CreateRequest("slow_ok3")->Resolve(), IsError(ERR_IO_PENDING));
     proc_->SignalMultiple(maximum_dns_failures() + 3);
 
     for (size_t i = 0u; i < maximum_dns_failures(); ++i) {
-      EXPECT_EQ(OK, requests_[i]->WaitForResult());
+      EXPECT_THAT(requests_[i]->WaitForResult(), IsOk());
       EXPECT_TRUE(requests_[i]->HasOneAddress("192.168.0.1", 80));
     }
 
-    EXPECT_EQ(OK, requests_[maximum_dns_failures()]->WaitForResult());
+    EXPECT_THAT(requests_[maximum_dns_failures()]->WaitForResult(), IsOk());
     EXPECT_TRUE(requests_[maximum_dns_failures()]->HasOneAddress(
                     "192.168.0.2", 80));
-    EXPECT_EQ(OK, requests_[maximum_dns_failures() + 1]->WaitForResult());
+    EXPECT_THAT(requests_[maximum_dns_failures() + 1]->WaitForResult(), IsOk());
     EXPECT_TRUE(requests_[maximum_dns_failures() + 1]->HasOneAddress(
                     "192.168.0.3", 80));
-    EXPECT_EQ(OK, requests_[maximum_dns_failures() + 2]->WaitForResult());
+    EXPECT_THAT(requests_[maximum_dns_failures() + 2]->WaitForResult(), IsOk());
     EXPECT_TRUE(requests_[maximum_dns_failures() + 2]->HasOneAddress(
                     "192.168.0.4", 80));
     requests_.clear();
@@ -2286,11 +2322,11 @@ TEST_F(HostResolverImplDnsTest, ManuallyDisableDnsClientWithPendingRequests) {
   proc_->AddRuleForAllFamilies("ok", "192.168.0.3");
 
   // First active job gets two slots.
-  EXPECT_EQ(ERR_IO_PENDING, CreateRequest("slow_ok1")->Resolve());
+  EXPECT_THAT(CreateRequest("slow_ok1")->Resolve(), IsError(ERR_IO_PENDING));
   // Next job gets one slot, and waits on another.
-  EXPECT_EQ(ERR_IO_PENDING, CreateRequest("slow_ok2")->Resolve());
+  EXPECT_THAT(CreateRequest("slow_ok2")->Resolve(), IsError(ERR_IO_PENDING));
   // Next one is queued.
-  EXPECT_EQ(ERR_IO_PENDING, CreateRequest("ok")->Resolve());
+  EXPECT_THAT(CreateRequest("ok")->Resolve(), IsError(ERR_IO_PENDING));
 
   EXPECT_EQ(3u, num_running_dispatcher_jobs());
 
@@ -2302,11 +2338,11 @@ TEST_F(HostResolverImplDnsTest, ManuallyDisableDnsClientWithPendingRequests) {
   EXPECT_EQ(3u, num_running_dispatcher_jobs());
   proc_->SignalMultiple(3u);
 
-  EXPECT_EQ(OK, requests_[0]->WaitForResult());
+  EXPECT_THAT(requests_[0]->WaitForResult(), IsOk());
   EXPECT_TRUE(requests_[0]->HasOneAddress("192.168.0.1", 80));
-  EXPECT_EQ(OK, requests_[1]->WaitForResult());
+  EXPECT_THAT(requests_[1]->WaitForResult(), IsOk());
   EXPECT_TRUE(requests_[1]->HasOneAddress("192.168.0.2", 80));
-  EXPECT_EQ(OK, requests_[2]->WaitForResult());
+  EXPECT_THAT(requests_[2]->WaitForResult(), IsOk());
   EXPECT_TRUE(requests_[2]->HasOneAddress("192.168.0.3", 80));
 }
 

@@ -32,8 +32,13 @@
 #include "net/spdy/spdy_session_pool.h"
 #include "net/spdy/spdy_test_util_common.h"
 #include "net/ssl/ssl_config_service_defaults.h"
+#include "net/test/gtest_util.h"
 #include "net/test/test_certificate_data.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+using net::test::IsError;
+using net::test::IsOk;
 
 namespace net {
 
@@ -224,12 +229,13 @@ TEST_P(SSLClientSocketPoolTest, TCPFail) {
   int rv =
       handle.Init("a", params, MEDIUM, ClientSocketPool::RespectLimits::ENABLED,
                   CompletionCallback(), pool_.get(), BoundNetLog());
-  EXPECT_EQ(ERR_CONNECTION_FAILED, rv);
+  EXPECT_THAT(rv, IsError(ERR_CONNECTION_FAILED));
   EXPECT_FALSE(handle.is_initialized());
   EXPECT_FALSE(handle.socket());
   EXPECT_FALSE(handle.is_ssl_error());
   ASSERT_EQ(1u, handle.connection_attempts().size());
-  EXPECT_EQ(ERR_CONNECTION_FAILED, handle.connection_attempts()[0].result);
+  EXPECT_THAT(handle.connection_attempts()[0].result,
+              IsError(ERR_CONNECTION_FAILED));
 }
 
 TEST_P(SSLClientSocketPoolTest, TCPFailAsync) {
@@ -246,16 +252,17 @@ TEST_P(SSLClientSocketPoolTest, TCPFailAsync) {
   int rv =
       handle.Init("a", params, MEDIUM, ClientSocketPool::RespectLimits::ENABLED,
                   callback.callback(), pool_.get(), BoundNetLog());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
   EXPECT_FALSE(handle.is_initialized());
   EXPECT_FALSE(handle.socket());
 
-  EXPECT_EQ(ERR_CONNECTION_FAILED, callback.WaitForResult());
+  EXPECT_THAT(callback.WaitForResult(), IsError(ERR_CONNECTION_FAILED));
   EXPECT_FALSE(handle.is_initialized());
   EXPECT_FALSE(handle.socket());
   EXPECT_FALSE(handle.is_ssl_error());
   ASSERT_EQ(1u, handle.connection_attempts().size());
-  EXPECT_EQ(ERR_CONNECTION_FAILED, handle.connection_attempts()[0].result);
+  EXPECT_THAT(handle.connection_attempts()[0].result,
+              IsError(ERR_CONNECTION_FAILED));
 }
 
 TEST_P(SSLClientSocketPoolTest, BasicDirect) {
@@ -274,7 +281,7 @@ TEST_P(SSLClientSocketPoolTest, BasicDirect) {
   int rv =
       handle.Init("a", params, MEDIUM, ClientSocketPool::RespectLimits::ENABLED,
                   callback.callback(), pool_.get(), BoundNetLog());
-  EXPECT_EQ(OK, rv);
+  EXPECT_THAT(rv, IsOk());
   EXPECT_TRUE(handle.is_initialized());
   EXPECT_TRUE(handle.socket());
   TestLoadTimingInfo(handle);
@@ -321,11 +328,11 @@ TEST_P(SSLClientSocketPoolTest, BasicDirectAsync) {
   int rv =
       handle.Init("a", params, MEDIUM, ClientSocketPool::RespectLimits::ENABLED,
                   callback.callback(), pool_.get(), BoundNetLog());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
   EXPECT_FALSE(handle.is_initialized());
   EXPECT_FALSE(handle.socket());
 
-  EXPECT_EQ(OK, callback.WaitForResult());
+  EXPECT_THAT(callback.WaitForResult(), IsOk());
   EXPECT_TRUE(handle.is_initialized());
   EXPECT_TRUE(handle.socket());
   TestLoadTimingInfo(handle);
@@ -346,11 +353,11 @@ TEST_P(SSLClientSocketPoolTest, DirectCertError) {
   int rv =
       handle.Init("a", params, MEDIUM, ClientSocketPool::RespectLimits::ENABLED,
                   callback.callback(), pool_.get(), BoundNetLog());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
   EXPECT_FALSE(handle.is_initialized());
   EXPECT_FALSE(handle.socket());
 
-  EXPECT_EQ(ERR_CERT_COMMON_NAME_INVALID, callback.WaitForResult());
+  EXPECT_THAT(callback.WaitForResult(), IsError(ERR_CERT_COMMON_NAME_INVALID));
   EXPECT_TRUE(handle.is_initialized());
   EXPECT_TRUE(handle.socket());
   TestLoadTimingInfo(handle);
@@ -371,11 +378,11 @@ TEST_P(SSLClientSocketPoolTest, DirectSSLError) {
   int rv =
       handle.Init("a", params, MEDIUM, ClientSocketPool::RespectLimits::ENABLED,
                   callback.callback(), pool_.get(), BoundNetLog());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
   EXPECT_FALSE(handle.is_initialized());
   EXPECT_FALSE(handle.socket());
 
-  EXPECT_EQ(ERR_SSL_PROTOCOL_ERROR, callback.WaitForResult());
+  EXPECT_THAT(callback.WaitForResult(), IsError(ERR_SSL_PROTOCOL_ERROR));
   EXPECT_FALSE(handle.is_initialized());
   EXPECT_FALSE(handle.socket());
   EXPECT_TRUE(handle.is_ssl_error());
@@ -397,11 +404,11 @@ TEST_P(SSLClientSocketPoolTest, DirectWithNPN) {
   int rv =
       handle.Init("a", params, MEDIUM, ClientSocketPool::RespectLimits::ENABLED,
                   callback.callback(), pool_.get(), BoundNetLog());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
   EXPECT_FALSE(handle.is_initialized());
   EXPECT_FALSE(handle.socket());
 
-  EXPECT_EQ(OK, callback.WaitForResult());
+  EXPECT_THAT(callback.WaitForResult(), IsOk());
   EXPECT_TRUE(handle.is_initialized());
   EXPECT_TRUE(handle.socket());
   TestLoadTimingInfo(handle);
@@ -425,11 +432,11 @@ TEST_P(SSLClientSocketPoolTest, DirectNoSPDY) {
   int rv =
       handle.Init("a", params, MEDIUM, ClientSocketPool::RespectLimits::ENABLED,
                   callback.callback(), pool_.get(), BoundNetLog());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
   EXPECT_FALSE(handle.is_initialized());
   EXPECT_FALSE(handle.socket());
 
-  EXPECT_EQ(ERR_NPN_NEGOTIATION_FAILED, callback.WaitForResult());
+  EXPECT_THAT(callback.WaitForResult(), IsError(ERR_NPN_NEGOTIATION_FAILED));
   EXPECT_FALSE(handle.is_initialized());
   EXPECT_FALSE(handle.socket());
   EXPECT_TRUE(handle.is_ssl_error());
@@ -451,11 +458,11 @@ TEST_P(SSLClientSocketPoolTest, DirectGotSPDY) {
   int rv =
       handle.Init("a", params, MEDIUM, ClientSocketPool::RespectLimits::ENABLED,
                   callback.callback(), pool_.get(), BoundNetLog());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
   EXPECT_FALSE(handle.is_initialized());
   EXPECT_FALSE(handle.socket());
 
-  EXPECT_EQ(OK, callback.WaitForResult());
+  EXPECT_THAT(callback.WaitForResult(), IsOk());
   EXPECT_TRUE(handle.is_initialized());
   EXPECT_TRUE(handle.socket());
   TestLoadTimingInfo(handle);
@@ -483,11 +490,11 @@ TEST_P(SSLClientSocketPoolTest, DirectGotBonusSPDY) {
   int rv =
       handle.Init("a", params, MEDIUM, ClientSocketPool::RespectLimits::ENABLED,
                   callback.callback(), pool_.get(), BoundNetLog());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
   EXPECT_FALSE(handle.is_initialized());
   EXPECT_FALSE(handle.socket());
 
-  EXPECT_EQ(OK, callback.WaitForResult());
+  EXPECT_THAT(callback.WaitForResult(), IsOk());
   EXPECT_TRUE(handle.is_initialized());
   EXPECT_TRUE(handle.socket());
   TestLoadTimingInfo(handle);
@@ -513,7 +520,7 @@ TEST_P(SSLClientSocketPoolTest, SOCKSFail) {
   int rv =
       handle.Init("a", params, MEDIUM, ClientSocketPool::RespectLimits::ENABLED,
                   callback.callback(), pool_.get(), BoundNetLog());
-  EXPECT_EQ(ERR_CONNECTION_FAILED, rv);
+  EXPECT_THAT(rv, IsError(ERR_CONNECTION_FAILED));
   EXPECT_FALSE(handle.is_initialized());
   EXPECT_FALSE(handle.socket());
   EXPECT_FALSE(handle.is_ssl_error());
@@ -533,11 +540,11 @@ TEST_P(SSLClientSocketPoolTest, SOCKSFailAsync) {
   int rv =
       handle.Init("a", params, MEDIUM, ClientSocketPool::RespectLimits::ENABLED,
                   callback.callback(), pool_.get(), BoundNetLog());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
   EXPECT_FALSE(handle.is_initialized());
   EXPECT_FALSE(handle.socket());
 
-  EXPECT_EQ(ERR_CONNECTION_FAILED, callback.WaitForResult());
+  EXPECT_THAT(callback.WaitForResult(), IsError(ERR_CONNECTION_FAILED));
   EXPECT_FALSE(handle.is_initialized());
   EXPECT_FALSE(handle.socket());
   EXPECT_FALSE(handle.is_ssl_error());
@@ -559,7 +566,7 @@ TEST_P(SSLClientSocketPoolTest, SOCKSBasic) {
   int rv =
       handle.Init("a", params, MEDIUM, ClientSocketPool::RespectLimits::ENABLED,
                   callback.callback(), pool_.get(), BoundNetLog());
-  EXPECT_EQ(OK, rv);
+  EXPECT_THAT(rv, IsOk());
   EXPECT_TRUE(handle.is_initialized());
   EXPECT_TRUE(handle.socket());
   // SOCKS5 generally has no DNS times, but the mock SOCKS5 sockets used here
@@ -603,11 +610,11 @@ TEST_P(SSLClientSocketPoolTest, SOCKSBasicAsync) {
   int rv =
       handle.Init("a", params, MEDIUM, ClientSocketPool::RespectLimits::ENABLED,
                   callback.callback(), pool_.get(), BoundNetLog());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
   EXPECT_FALSE(handle.is_initialized());
   EXPECT_FALSE(handle.socket());
 
-  EXPECT_EQ(OK, callback.WaitForResult());
+  EXPECT_THAT(callback.WaitForResult(), IsOk());
   EXPECT_TRUE(handle.is_initialized());
   EXPECT_TRUE(handle.socket());
   // SOCKS5 generally has no DNS times, but the mock SOCKS5 sockets used here
@@ -629,7 +636,7 @@ TEST_P(SSLClientSocketPoolTest, HttpProxyFail) {
   int rv =
       handle.Init("a", params, MEDIUM, ClientSocketPool::RespectLimits::ENABLED,
                   callback.callback(), pool_.get(), BoundNetLog());
-  EXPECT_EQ(ERR_PROXY_CONNECTION_FAILED, rv);
+  EXPECT_THAT(rv, IsError(ERR_PROXY_CONNECTION_FAILED));
   EXPECT_FALSE(handle.is_initialized());
   EXPECT_FALSE(handle.socket());
   EXPECT_FALSE(handle.is_ssl_error());
@@ -649,11 +656,11 @@ TEST_P(SSLClientSocketPoolTest, HttpProxyFailAsync) {
   int rv =
       handle.Init("a", params, MEDIUM, ClientSocketPool::RespectLimits::ENABLED,
                   callback.callback(), pool_.get(), BoundNetLog());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
   EXPECT_FALSE(handle.is_initialized());
   EXPECT_FALSE(handle.socket());
 
-  EXPECT_EQ(ERR_PROXY_CONNECTION_FAILED, callback.WaitForResult());
+  EXPECT_THAT(callback.WaitForResult(), IsError(ERR_PROXY_CONNECTION_FAILED));
   EXPECT_FALSE(handle.is_initialized());
   EXPECT_FALSE(handle.socket());
   EXPECT_FALSE(handle.is_ssl_error());
@@ -687,7 +694,7 @@ TEST_P(SSLClientSocketPoolTest, HttpProxyBasic) {
   int rv =
       handle.Init("a", params, MEDIUM, ClientSocketPool::RespectLimits::ENABLED,
                   callback.callback(), pool_.get(), BoundNetLog());
-  EXPECT_EQ(OK, rv);
+  EXPECT_THAT(rv, IsOk());
   EXPECT_TRUE(handle.is_initialized());
   EXPECT_TRUE(handle.socket());
   TestLoadTimingInfoNoDns(handle);
@@ -753,11 +760,11 @@ TEST_P(SSLClientSocketPoolTest, HttpProxyBasicAsync) {
   int rv =
       handle.Init("a", params, MEDIUM, ClientSocketPool::RespectLimits::ENABLED,
                   callback.callback(), pool_.get(), BoundNetLog());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
   EXPECT_FALSE(handle.is_initialized());
   EXPECT_FALSE(handle.socket());
 
-  EXPECT_EQ(OK, callback.WaitForResult());
+  EXPECT_THAT(callback.WaitForResult(), IsOk());
   EXPECT_TRUE(handle.is_initialized());
   EXPECT_TRUE(handle.socket());
   TestLoadTimingInfoNoDns(handle);
@@ -791,11 +798,11 @@ TEST_P(SSLClientSocketPoolTest, NeedProxyAuth) {
   int rv =
       handle.Init("a", params, MEDIUM, ClientSocketPool::RespectLimits::ENABLED,
                   callback.callback(), pool_.get(), BoundNetLog());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
   EXPECT_FALSE(handle.is_initialized());
   EXPECT_FALSE(handle.socket());
 
-  EXPECT_EQ(ERR_PROXY_AUTH_REQUESTED, callback.WaitForResult());
+  EXPECT_THAT(callback.WaitForResult(), IsError(ERR_PROXY_AUTH_REQUESTED));
   EXPECT_FALSE(handle.is_initialized());
   EXPECT_FALSE(handle.socket());
   EXPECT_FALSE(handle.is_ssl_error());
@@ -894,7 +901,7 @@ void SSLClientSocketPoolTest::TestIPPoolingDisabled(
                                 callback.callback(),
                                 NULL,
                                 BoundNetLog());
-    EXPECT_EQ(OK, callback.GetResult(rv));
+    EXPECT_THAT(callback.GetResult(rv), IsOk());
 
     // Setup a SpdySessionKey
     test_hosts[i].key = SpdySessionKey(

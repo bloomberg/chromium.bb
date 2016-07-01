@@ -17,8 +17,12 @@
 #include "net/quic/spdy_utils.h"
 #include "net/quic/test_tools/crypto_test_utils.h"
 #include "net/quic/test_tools/quic_test_utils.h"
+#include "net/test/gtest_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gmock_mutant.h"
+
+using net::test::IsError;
+using net::test::IsOk;
 
 using testing::AnyNumber;
 using testing::CreateFunctor;
@@ -401,7 +405,7 @@ TEST_P(QuicChromiumClientStreamTest, MarkTrailersConsumedWhenNotifyDelegate) {
 
   // Read again, and it will be pending.
   scoped_refptr<IOBuffer> buffer(new IOBuffer(1));
-  EXPECT_EQ(ERR_IO_PENDING, stream_->Read(buffer.get(), 1));
+  EXPECT_THAT(stream_->Read(buffer.get(), 1), IsError(ERR_IO_PENDING));
 
   SpdyHeaderBlock trailers;
   trailers["bar"] = "foo";
@@ -481,7 +485,7 @@ TEST_P(QuicChromiumClientStreamTest, WriteStreamDataAsync) {
       .WillOnce(Return(QuicConsumedData(kDataLen, true)));
   stream_->OnCanWrite();
   ASSERT_TRUE(callback.have_result());
-  EXPECT_EQ(OK, callback.WaitForResult());
+  EXPECT_THAT(callback.WaitForResult(), IsOk());
 }
 
 TEST_P(QuicChromiumClientStreamTest, WritevStreamData) {
@@ -527,7 +531,7 @@ TEST_P(QuicChromiumClientStreamTest, WritevStreamDataAsync) {
       .WillOnce(Return(QuicConsumedData(buf2->size(), true)));
   stream_->OnCanWrite();
   ASSERT_TRUE(callback.have_result());
-  EXPECT_EQ(OK, callback.WaitForResult());
+  EXPECT_THAT(callback.WaitForResult(), IsOk());
 }
 
 TEST_P(QuicChromiumClientStreamTest, HeadersBeforeDelegate) {

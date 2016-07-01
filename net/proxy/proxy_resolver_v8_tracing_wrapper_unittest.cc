@@ -29,8 +29,13 @@
 #include "net/proxy/proxy_info.h"
 #include "net/proxy/proxy_resolver_error_observer.h"
 #include "net/test/event_waiter.h"
+#include "net/test/gtest_util.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
+
+using net::test::IsError;
+using net::test::IsOk;
 
 namespace net {
 
@@ -83,8 +88,8 @@ std::unique_ptr<ProxyResolver> CreateResolver(
   std::unique_ptr<ProxyResolverFactory::Request> request;
   int rv = factory.CreateProxyResolver(LoadScriptData(filename), &resolver,
                                        callback.callback(), &request);
-  EXPECT_EQ(ERR_IO_PENDING, rv);
-  EXPECT_EQ(OK, callback.WaitForResult());
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
+  EXPECT_THAT(callback.WaitForResult(), IsOk());
   EXPECT_TRUE(resolver);
   return resolver;
 }
@@ -134,8 +139,8 @@ TEST_F(ProxyResolverV8TracingWrapperTest, Simple) {
       resolver->GetProxyForURL(GURL("http://foo/"), &proxy_info,
                                callback.callback(), NULL, request_log.bound());
 
-  EXPECT_EQ(ERR_IO_PENDING, rv);
-  EXPECT_EQ(OK, callback.WaitForResult());
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
+  EXPECT_THAT(callback.WaitForResult(), IsOk());
 
   EXPECT_EQ("foo:99", proxy_info.proxy_server().ToURI());
 
@@ -165,8 +170,8 @@ TEST_F(ProxyResolverV8TracingWrapperTest, JavascriptError) {
       resolver->GetProxyForURL(GURL("http://throw-an-error/"), &proxy_info,
                                callback.callback(), NULL, request_log.bound());
 
-  EXPECT_EQ(ERR_IO_PENDING, rv);
-  EXPECT_EQ(ERR_PAC_SCRIPT_FAILED, callback.WaitForResult());
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
+  EXPECT_THAT(callback.WaitForResult(), IsError(ERR_PAC_SCRIPT_FAILED));
 
   EXPECT_EQ(0u, host_resolver.num_resolve());
 
@@ -214,8 +219,8 @@ TEST_F(ProxyResolverV8TracingWrapperTest, TooManyAlerts) {
       resolver->GetProxyForURL(GURL("http://foo/"), &proxy_info,
                                callback.callback(), NULL, request_log.bound());
 
-  EXPECT_EQ(ERR_IO_PENDING, rv);
-  EXPECT_EQ(OK, callback.WaitForResult());
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
+  EXPECT_THAT(callback.WaitForResult(), IsOk());
 
   // Iteration1 does a DNS resolve
   // Iteration2 exceeds the alert buffer
@@ -262,8 +267,8 @@ TEST_F(ProxyResolverV8TracingWrapperTest, TooManyEmptyAlerts) {
       resolver->GetProxyForURL(GURL("http://foo/"), &proxy_info,
                                callback.callback(), NULL, request_log.bound());
 
-  EXPECT_EQ(ERR_IO_PENDING, rv);
-  EXPECT_EQ(OK, callback.WaitForResult());
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
+  EXPECT_THAT(callback.WaitForResult(), IsOk());
 
   EXPECT_EQ("foo:3", proxy_info.proxy_server().ToURI());
 
@@ -319,8 +324,8 @@ TEST_F(ProxyResolverV8TracingWrapperTest, Dns) {
       resolver->GetProxyForURL(GURL("http://foo/"), &proxy_info,
                                callback.callback(), NULL, request_log.bound());
 
-  EXPECT_EQ(ERR_IO_PENDING, rv);
-  EXPECT_EQ(OK, callback.WaitForResult());
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
+  EXPECT_THAT(callback.WaitForResult(), IsOk());
 
   // The test does 13 DNS resolution, however only 7 of them are unique.
   EXPECT_EQ(7u, host_resolver.num_resolve());
@@ -384,8 +389,8 @@ TEST_F(ProxyResolverV8TracingWrapperTest, DnsChecksCache) {
       resolver->GetProxyForURL(GURL("http://foopy/req1"), &proxy_info,
                                callback1.callback(), NULL, request_log.bound());
 
-  EXPECT_EQ(ERR_IO_PENDING, rv);
-  EXPECT_EQ(OK, callback1.WaitForResult());
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
+  EXPECT_THAT(callback1.WaitForResult(), IsOk());
 
   // The test does 2 DNS resolutions.
   EXPECT_EQ(2u, host_resolver.num_resolve());
@@ -397,8 +402,8 @@ TEST_F(ProxyResolverV8TracingWrapperTest, DnsChecksCache) {
       resolver->GetProxyForURL(GURL("http://foopy/req2"), &proxy_info,
                                callback2.callback(), NULL, request_log.bound());
 
-  EXPECT_EQ(ERR_IO_PENDING, rv);
-  EXPECT_EQ(OK, callback2.WaitForResult());
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
+  EXPECT_THAT(callback2.WaitForResult(), IsOk());
 
   EXPECT_EQ(4u, host_resolver.num_resolve());
 
@@ -435,8 +440,8 @@ TEST_F(ProxyResolverV8TracingWrapperTest, FallBackToSynchronous1) {
   int rv =
       resolver->GetProxyForURL(GURL("http://foo/"), &proxy_info,
                                callback.callback(), NULL, request_log.bound());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
-  EXPECT_EQ(OK, callback.WaitForResult());
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
+  EXPECT_THAT(callback.WaitForResult(), IsOk());
 
   // The script itself only does 2 DNS resolves per execution, however it
   // constructs the hostname using a global counter which changes on each
@@ -489,8 +494,8 @@ TEST_F(ProxyResolverV8TracingWrapperTest, FallBackToSynchronous2) {
   int rv =
       resolver->GetProxyForURL(GURL("http://foo/"), &proxy_info,
                                callback.callback(), NULL, request_log.bound());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
-  EXPECT_EQ(OK, callback.WaitForResult());
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
+  EXPECT_THAT(callback.WaitForResult(), IsOk());
 
   EXPECT_EQ(3u, host_resolver.num_resolve());
 
@@ -527,8 +532,8 @@ TEST_F(ProxyResolverV8TracingWrapperTest, InfiniteDNSSequence) {
   int rv =
       resolver->GetProxyForURL(GURL("http://foo/"), &proxy_info,
                                callback.callback(), NULL, request_log.bound());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
-  EXPECT_EQ(OK, callback.WaitForResult());
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
+  EXPECT_THAT(callback.WaitForResult(), IsOk());
 
   EXPECT_EQ(20u, host_resolver.num_resolve());
 
@@ -572,8 +577,8 @@ TEST_F(ProxyResolverV8TracingWrapperTest, InfiniteDNSSequence2) {
   int rv =
       resolver->GetProxyForURL(GURL("http://foo/"), &proxy_info,
                                callback.callback(), NULL, request_log.bound());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
-  EXPECT_EQ(OK, callback.WaitForResult());
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
+  EXPECT_THAT(callback.WaitForResult(), IsOk());
 
   EXPECT_EQ(20u, host_resolver.num_resolve());
 
@@ -616,8 +621,8 @@ void DnsDuringInitHelper(bool synchronous_host_resolver) {
   int rv =
       resolver->GetProxyForURL(GURL("http://foo/"), &proxy_info,
                                callback.callback(), NULL, request_log.bound());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
-  EXPECT_EQ(OK, callback.WaitForResult());
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
+  EXPECT_THAT(callback.WaitForResult(), IsOk());
 
   // Fetched host1 and host2 again, since the ones done during initialization
   // should not have been cached.
@@ -675,7 +680,7 @@ TEST_F(ProxyResolverV8TracingWrapperTest, CancelAll) {
     int rv = resolver->GetProxyForURL(GURL("http://foo/"), &proxy_info[i],
                                       base::Bind(&CrashCallback), &request[i],
                                       BoundNetLog());
-    EXPECT_EQ(ERR_IO_PENDING, rv);
+    EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
   }
 
   for (size_t i = 0; i < kNumRequests; ++i) {
@@ -704,15 +709,15 @@ TEST_F(ProxyResolverV8TracingWrapperTest, CancelSome) {
   int rv = resolver->GetProxyForURL(GURL("http://foo/"), &proxy_info1,
                                     base::Bind(&CrashCallback), &request1,
                                     BoundNetLog());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   rv = resolver->GetProxyForURL(GURL("http://foo/"), &proxy_info2,
                                 callback.callback(), &request2, BoundNetLog());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   resolver->CancelRequest(request1);
 
-  EXPECT_EQ(OK, callback.WaitForResult());
+  EXPECT_THAT(callback.WaitForResult(), IsOk());
 }
 
 // Cancel a request after it has finished running on the worker thread, and has
@@ -735,7 +740,7 @@ TEST_F(ProxyResolverV8TracingWrapperTest, CancelWhilePendingCompletionTask) {
   int rv = resolver->GetProxyForURL(GURL("http://throw-an-error/"),
                                     &proxy_info1, base::Bind(&CrashCallback),
                                     &request1, BoundNetLog());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   // Wait until the first request has finished running on the worker thread.
   // Cancel the first request, while it has a pending completion task on
@@ -748,9 +753,9 @@ TEST_F(ProxyResolverV8TracingWrapperTest, CancelWhilePendingCompletionTask) {
   rv = resolver->GetProxyForURL(GURL("http://i-have-no-idea-what-im-doing/"),
                                 &proxy_info2, callback.callback(), &request2,
                                 BoundNetLog());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
-  EXPECT_EQ(OK, callback.WaitForResult());
+  EXPECT_THAT(callback.WaitForResult(), IsOk());
 
   EXPECT_EQ("i-approve-this-message:42", proxy_info2.proxy_server().ToURI());
 }
@@ -837,7 +842,7 @@ TEST_F(ProxyResolverV8TracingWrapperTest,
                                     base::Bind(&CrashCallback), &request1,
                                     BoundNetLog());
 
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   host_resolver.WaitUntilRequestIsReceived();
 
@@ -845,7 +850,7 @@ TEST_F(ProxyResolverV8TracingWrapperTest,
                                 base::Bind(&CrashCallback), &request2,
                                 BoundNetLog());
 
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   host_resolver.WaitUntilRequestIsReceived();
 
@@ -886,7 +891,7 @@ TEST_F(ProxyResolverV8TracingWrapperTest, CancelWhileBlockedInNonBlockingDns) {
                                     base::Bind(&CrashCallback), &request,
                                     BoundNetLog());
 
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   host_resolver.SetAction(
       base::Bind(CancelRequestAndPause, resolver.get(), request));
@@ -910,7 +915,7 @@ TEST_F(ProxyResolverV8TracingWrapperTest, CancelWhileBlockedInNonBlockingDns2) {
                                     base::Bind(&CrashCallback), &request,
                                     BoundNetLog());
 
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   // Wait a bit, so the DNS task has hopefully been posted. The test will
   // work whatever the delay is here, but it is most useful if the delay
@@ -936,7 +941,7 @@ TEST_F(ProxyResolverV8TracingWrapperTest,
   int rv = factory.CreateProxyResolver(LoadScriptData("dns_during_init.js"),
                                        &resolver, base::Bind(&CrashCallback),
                                        &request);
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   host_resolver.WaitUntilRequestIsReceived();
 
@@ -960,7 +965,7 @@ TEST_F(ProxyResolverV8TracingWrapperTest,
     int rv = factory.CreateProxyResolver(LoadScriptData("dns_during_init.js"),
                                          &resolver, base::Bind(&CrashCallback),
                                          &request);
-    EXPECT_EQ(ERR_IO_PENDING, rv);
+    EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
     host_resolver.WaitUntilRequestIsReceived();
   }
   EXPECT_EQ(1, host_resolver.num_cancelled_requests());
@@ -981,8 +986,8 @@ TEST_F(ProxyResolverV8TracingWrapperTest, ErrorLoadingScript) {
   int rv =
       factory.CreateProxyResolver(LoadScriptData("error_on_load.js"), &resolver,
                                   callback.callback(), &request);
-  EXPECT_EQ(ERR_IO_PENDING, rv);
-  EXPECT_EQ(ERR_PAC_SCRIPT_FAILED, callback.WaitForResult());
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
+  EXPECT_THAT(callback.WaitForResult(), IsError(ERR_PAC_SCRIPT_FAILED));
   EXPECT_FALSE(resolver);
 }
 
@@ -1007,8 +1012,8 @@ TEST_F(ProxyResolverV8TracingWrapperTest, Terminate) {
       resolver->GetProxyForURL(GURL("http://foopy/req1"), &proxy_info,
                                callback.callback(), NULL, request_log.bound());
 
-  EXPECT_EQ(ERR_IO_PENDING, rv);
-  EXPECT_EQ(OK, callback.WaitForResult());
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
+  EXPECT_THAT(callback.WaitForResult(), IsOk());
 
   // The test does 2 DNS resolutions.
   EXPECT_EQ(2u, host_resolver.num_resolve());
@@ -1089,7 +1094,7 @@ TEST_F(ProxyResolverV8TracingWrapperTest, MultipleResolvers) {
     int rv = resolver[resolver_i]->GetProxyForURL(
         GURL("http://foo/"), &proxy_info[i], callback[i].callback(), NULL,
         BoundNetLog());
-    EXPECT_EQ(ERR_IO_PENDING, rv);
+    EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
   }
 
   // ------------------------
@@ -1114,7 +1119,7 @@ TEST_F(ProxyResolverV8TracingWrapperTest, MultipleResolvers) {
 
   for (size_t i = 0; i < kNumResults; ++i) {
     size_t resolver_i = i % kNumResolvers;
-    EXPECT_EQ(OK, callback[i].WaitForResult());
+    EXPECT_THAT(callback[i].WaitForResult(), IsOk());
 
     std::string proxy_uri = proxy_info[i].proxy_server().ToURI();
 

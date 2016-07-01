@@ -13,9 +13,14 @@
 #include "net/socket/client_socket_handle.h"
 #include "net/socket/socket_test_util.h"
 #include "net/socket/transport_client_socket_pool.h"
+#include "net/test/gtest_util.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest-spi.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
+
+using net::test::IsError;
+using net::test::IsOk;
 
 //-----------------------------------------------------------------------------
 
@@ -381,7 +386,8 @@ void SequencedSocketDataTest::ReentrantAsyncWriteCallback(
   EXPECT_EQ(expected_rv, rv);
   scoped_refptr<IOBuffer> write_buf(new IOBuffer(len));
   memcpy(write_buf->data(), data, len);
-  EXPECT_EQ(ERR_IO_PENDING, sock_->Write(write_buf.get(), len, callback));
+  EXPECT_THAT(sock_->Write(write_buf.get(), len, callback),
+              IsError(ERR_IO_PENDING));
 }
 
 void SequencedSocketDataTest::FailingCompletionCallback(int rv) {

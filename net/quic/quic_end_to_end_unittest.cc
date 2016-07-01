@@ -33,11 +33,13 @@
 #include "net/ssl/default_channel_id_store.h"
 #include "net/ssl/ssl_config_service_defaults.h"
 #include "net/test/cert_test_util.h"
+#include "net/test/gtest_util.h"
 #include "net/test/test_data_directory.h"
 #include "net/tools/quic/quic_in_memory_cache.h"
 #include "net/tools/quic/quic_server.h"
 #include "net/tools/quic/test_tools/quic_in_memory_cache_peer.h"
 #include "net/tools/quic/test_tools/server_thread.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 
@@ -45,6 +47,7 @@ using base::StringPiece;
 
 namespace net {
 
+using test::IsOk;
 using test::QuicInMemoryCachePeer;
 using test::ServerThread;
 
@@ -234,7 +237,8 @@ class QuicEndToEndTest : public ::testing::TestWithParam<TestParams> {
     request_.method = "POST";
     request_.url = GURL("https://test.example.com/");
     request_.upload_data_stream = upload_data_stream_.get();
-    ASSERT_EQ(OK, request_.upload_data_stream->Init(CompletionCallback()));
+    ASSERT_THAT(request_.upload_data_stream->Init(CompletionCallback()),
+                IsOk());
   }
 
   // Checks that |consumer| completed and received |status_line| and |body|.
@@ -242,7 +246,7 @@ class QuicEndToEndTest : public ::testing::TestWithParam<TestParams> {
                      const std::string& status_line,
                      const std::string& body) {
     ASSERT_TRUE(consumer.is_done());
-    ASSERT_EQ(OK, consumer.error());
+    ASSERT_THAT(consumer.error(), IsOk());
     EXPECT_EQ(status_line, consumer.response_info()->headers->GetStatusLine());
     EXPECT_EQ(body, consumer.content());
   }

@@ -17,14 +17,17 @@
 #include "net/base/address_list.h"
 #include "net/base/io_buffer.h"
 #include "net/base/ip_endpoint.h"
-#include "net/base/ip_endpoint.h"
 #include "net/base/net_errors.h"
 #include "net/base/sockaddr_storage.h"
 #include "net/base/test_completion_callback.h"
 #include "net/socket/socket_performance_watcher.h"
 #include "net/socket/tcp_client_socket.h"
+#include "net/test/gtest_util.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
+
+using net::test::IsOk;
 
 namespace net {
 
@@ -67,10 +70,11 @@ class TCPSocketTest : public PlatformTest {
   TCPSocketTest() : socket_(NULL, NULL, NetLog::Source()) {}
 
   void SetUpListenIPv4() {
-    ASSERT_EQ(OK, socket_.Open(ADDRESS_FAMILY_IPV4));
-    ASSERT_EQ(OK, socket_.Bind(IPEndPoint(IPAddress::IPv4Localhost(), 0)));
-    ASSERT_EQ(OK, socket_.Listen(kListenBacklog));
-    ASSERT_EQ(OK, socket_.GetLocalAddress(&local_address_));
+    ASSERT_THAT(socket_.Open(ADDRESS_FAMILY_IPV4), IsOk());
+    ASSERT_THAT(socket_.Bind(IPEndPoint(IPAddress::IPv4Localhost(), 0)),
+                IsOk());
+    ASSERT_THAT(socket_.Listen(kListenBacklog), IsOk());
+    ASSERT_THAT(socket_.GetLocalAddress(&local_address_), IsOk());
   }
 
   void SetUpListenIPv6(bool* success) {
@@ -83,7 +87,7 @@ class TCPSocketTest : public PlatformTest {
           "disabled. Skipping the test";
       return;
     }
-    ASSERT_EQ(OK, socket_.GetLocalAddress(&local_address_));
+    ASSERT_THAT(socket_.GetLocalAddress(&local_address_), IsOk());
     *success = true;
   }
 
@@ -100,8 +104,8 @@ class TCPSocketTest : public PlatformTest {
                                       NetLog::Source());
     connecting_socket.Connect(connect_callback.callback());
 
-    EXPECT_EQ(OK, connect_callback.WaitForResult());
-    EXPECT_EQ(OK, accept_callback.WaitForResult());
+    EXPECT_THAT(connect_callback.WaitForResult(), IsOk());
+    EXPECT_THAT(accept_callback.WaitForResult(), IsOk());
 
     EXPECT_TRUE(accepted_socket.get());
 
@@ -142,7 +146,7 @@ class TCPSocketTest : public PlatformTest {
     connecting_socket.SetTickClockForTesting(std::move(tick_clock));
 
     int result = connecting_socket.Open(ADDRESS_FAMILY_IPV4);
-    ASSERT_EQ(OK, result);
+    ASSERT_THAT(result, IsOk());
     connecting_socket.Connect(local_address_, connect_callback.callback());
 
     TestCompletionCallback accept_callback;
@@ -150,14 +154,14 @@ class TCPSocketTest : public PlatformTest {
     IPEndPoint accepted_address;
     result = socket_.Accept(&accepted_socket, &accepted_address,
                             accept_callback.callback());
-    ASSERT_EQ(OK, accept_callback.GetResult(result));
+    ASSERT_THAT(accept_callback.GetResult(result), IsOk());
 
     ASSERT_TRUE(accepted_socket.get());
 
     // Both sockets should be on the loopback network interface.
     EXPECT_EQ(accepted_address.address(), local_address_.address());
 
-    ASSERT_EQ(OK, connect_callback.WaitForResult());
+    ASSERT_THAT(connect_callback.WaitForResult(), IsOk());
 
     for (size_t i = 0; i < num_messages; ++i) {
       tick_clock_ptr->Advance(advance_ticks);
@@ -216,14 +220,14 @@ TEST_F(TCPSocketTest, Accept) {
                               accept_callback.callback());
   if (result == ERR_IO_PENDING)
     result = accept_callback.WaitForResult();
-  ASSERT_EQ(OK, result);
+  ASSERT_THAT(result, IsOk());
 
   EXPECT_TRUE(accepted_socket.get());
 
   // Both sockets should be on the loopback network interface.
   EXPECT_EQ(accepted_address.address(), local_address_.address());
 
-  EXPECT_EQ(OK, connect_callback.WaitForResult());
+  EXPECT_THAT(connect_callback.WaitForResult(), IsOk());
 }
 
 // Test Accept() callback.
@@ -237,15 +241,15 @@ TEST_F(TCPSocketTest, AcceptAsync) {
 TEST_F(TCPSocketTest, AcceptForAdoptedListenSocket) {
   // Create a socket to be used with AdoptListenSocket.
   SOCKET existing_socket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
-  ASSERT_EQ(OK, socket_.AdoptListenSocket(existing_socket));
+  ASSERT_THAT(socket_.AdoptListenSocket(existing_socket), IsOk());
 
   IPEndPoint address(IPAddress::IPv4Localhost(), 0);
   SockaddrStorage storage;
   ASSERT_TRUE(address.ToSockAddr(storage.addr, &storage.addr_len));
   ASSERT_EQ(0, bind(existing_socket, storage.addr, storage.addr_len));
 
-  ASSERT_EQ(OK, socket_.Listen(kListenBacklog));
-  ASSERT_EQ(OK, socket_.GetLocalAddress(&local_address_));
+  ASSERT_THAT(socket_.Listen(kListenBacklog), IsOk());
+  ASSERT_THAT(socket_.GetLocalAddress(&local_address_), IsOk());
 
   TestAcceptAsync();
 }
@@ -273,7 +277,7 @@ TEST_F(TCPSocketTest, Accept2Connections) {
                                      NetLog::Source());
   connecting_socket2.Connect(connect_callback2.callback());
 
-  EXPECT_EQ(OK, accept_callback.WaitForResult());
+  EXPECT_THAT(accept_callback.WaitForResult(), IsOk());
 
   TestCompletionCallback accept_callback2;
   std::unique_ptr<TCPSocket> accepted_socket2;
@@ -283,10 +287,10 @@ TEST_F(TCPSocketTest, Accept2Connections) {
                               accept_callback2.callback());
   if (result == ERR_IO_PENDING)
     result = accept_callback2.WaitForResult();
-  ASSERT_EQ(OK, result);
+  ASSERT_THAT(result, IsOk());
 
-  EXPECT_EQ(OK, connect_callback.WaitForResult());
-  EXPECT_EQ(OK, connect_callback2.WaitForResult());
+  EXPECT_THAT(connect_callback.WaitForResult(), IsOk());
+  EXPECT_THAT(connect_callback2.WaitForResult(), IsOk());
 
   EXPECT_TRUE(accepted_socket.get());
   EXPECT_TRUE(accepted_socket2.get());
@@ -315,14 +319,14 @@ TEST_F(TCPSocketTest, AcceptIPv6) {
                               accept_callback.callback());
   if (result == ERR_IO_PENDING)
     result = accept_callback.WaitForResult();
-  ASSERT_EQ(OK, result);
+  ASSERT_THAT(result, IsOk());
 
   EXPECT_TRUE(accepted_socket.get());
 
   // Both sockets should be on the loopback network interface.
   EXPECT_EQ(accepted_address.address(), local_address_.address());
 
-  EXPECT_EQ(OK, connect_callback.WaitForResult());
+  EXPECT_THAT(connect_callback.WaitForResult(), IsOk());
 }
 
 TEST_F(TCPSocketTest, ReadWrite) {
@@ -331,7 +335,7 @@ TEST_F(TCPSocketTest, ReadWrite) {
   TestCompletionCallback connect_callback;
   TCPSocket connecting_socket(NULL, NULL, NetLog::Source());
   int result = connecting_socket.Open(ADDRESS_FAMILY_IPV4);
-  ASSERT_EQ(OK, result);
+  ASSERT_THAT(result, IsOk());
   connecting_socket.Connect(local_address_, connect_callback.callback());
 
   TestCompletionCallback accept_callback;
@@ -339,14 +343,14 @@ TEST_F(TCPSocketTest, ReadWrite) {
   IPEndPoint accepted_address;
   result = socket_.Accept(&accepted_socket, &accepted_address,
                           accept_callback.callback());
-  ASSERT_EQ(OK, accept_callback.GetResult(result));
+  ASSERT_THAT(accept_callback.GetResult(result), IsOk());
 
   ASSERT_TRUE(accepted_socket.get());
 
   // Both sockets should be on the loopback network interface.
   EXPECT_EQ(accepted_address.address(), local_address_.address());
 
-  EXPECT_EQ(OK, connect_callback.WaitForResult());
+  EXPECT_THAT(connect_callback.WaitForResult(), IsOk());
 
   const std::string message("test message");
   std::vector<char> buffer(message.size());

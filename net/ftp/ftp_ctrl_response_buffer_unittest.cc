@@ -7,7 +7,12 @@
 #include <string.h>
 
 #include "net/base/net_errors.h"
+#include "net/test/gtest_util.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+using net::test::IsError;
+using net::test::IsOk;
 
 namespace net {
 
@@ -28,7 +33,7 @@ class FtpCtrlResponseBufferTest : public testing::Test {
 TEST_F(FtpCtrlResponseBufferTest, Basic) {
   EXPECT_FALSE(buffer_.ResponseAvailable());
 
-  EXPECT_EQ(OK, PushDataToBuffer("200 Status Text\r\n"));
+  EXPECT_THAT(PushDataToBuffer("200 Status Text\r\n"), IsOk());
   EXPECT_TRUE(buffer_.ResponseAvailable());
 
   FtpCtrlResponse response = buffer_.PopResponse();
@@ -39,15 +44,15 @@ TEST_F(FtpCtrlResponseBufferTest, Basic) {
 }
 
 TEST_F(FtpCtrlResponseBufferTest, Chunks) {
-  EXPECT_EQ(OK, PushDataToBuffer("20"));
+  EXPECT_THAT(PushDataToBuffer("20"), IsOk());
   EXPECT_FALSE(buffer_.ResponseAvailable());
-  EXPECT_EQ(OK, PushDataToBuffer("0 Status"));
+  EXPECT_THAT(PushDataToBuffer("0 Status"), IsOk());
   EXPECT_FALSE(buffer_.ResponseAvailable());
-  EXPECT_EQ(OK, PushDataToBuffer(" Text"));
+  EXPECT_THAT(PushDataToBuffer(" Text"), IsOk());
   EXPECT_FALSE(buffer_.ResponseAvailable());
-  EXPECT_EQ(OK, PushDataToBuffer("\r"));
+  EXPECT_THAT(PushDataToBuffer("\r"), IsOk());
   EXPECT_FALSE(buffer_.ResponseAvailable());
-  EXPECT_EQ(OK, PushDataToBuffer("\n"));
+  EXPECT_THAT(PushDataToBuffer("\n"), IsOk());
   EXPECT_TRUE(buffer_.ResponseAvailable());
 
   FtpCtrlResponse response = buffer_.PopResponse();
@@ -58,13 +63,13 @@ TEST_F(FtpCtrlResponseBufferTest, Chunks) {
 }
 
 TEST_F(FtpCtrlResponseBufferTest, Continuation) {
-  EXPECT_EQ(OK, PushDataToBuffer("230-FirstLine\r\n"));
+  EXPECT_THAT(PushDataToBuffer("230-FirstLine\r\n"), IsOk());
   EXPECT_FALSE(buffer_.ResponseAvailable());
 
-  EXPECT_EQ(OK, PushDataToBuffer("230-SecondLine\r\n"));
+  EXPECT_THAT(PushDataToBuffer("230-SecondLine\r\n"), IsOk());
   EXPECT_FALSE(buffer_.ResponseAvailable());
 
-  EXPECT_EQ(OK, PushDataToBuffer("230 LastLine\r\n"));
+  EXPECT_THAT(PushDataToBuffer("230 LastLine\r\n"), IsOk());
   EXPECT_TRUE(buffer_.ResponseAvailable());
 
   FtpCtrlResponse response = buffer_.PopResponse();
@@ -77,19 +82,19 @@ TEST_F(FtpCtrlResponseBufferTest, Continuation) {
 }
 
 TEST_F(FtpCtrlResponseBufferTest, MultilineContinuation) {
-  EXPECT_EQ(OK, PushDataToBuffer("230-FirstLine\r\n"));
+  EXPECT_THAT(PushDataToBuffer("230-FirstLine\r\n"), IsOk());
   EXPECT_FALSE(buffer_.ResponseAvailable());
 
-  EXPECT_EQ(OK, PushDataToBuffer("Continued\r\n"));
+  EXPECT_THAT(PushDataToBuffer("Continued\r\n"), IsOk());
   EXPECT_FALSE(buffer_.ResponseAvailable());
 
-  EXPECT_EQ(OK, PushDataToBuffer("230-SecondLine\r\n"));
+  EXPECT_THAT(PushDataToBuffer("230-SecondLine\r\n"), IsOk());
   EXPECT_FALSE(buffer_.ResponseAvailable());
 
-  EXPECT_EQ(OK, PushDataToBuffer("215 Continued\r\n"));
+  EXPECT_THAT(PushDataToBuffer("215 Continued\r\n"), IsOk());
   EXPECT_FALSE(buffer_.ResponseAvailable());
 
-  EXPECT_EQ(OK, PushDataToBuffer("230 LastLine\r\n"));
+  EXPECT_THAT(PushDataToBuffer("230 LastLine\r\n"), IsOk());
   EXPECT_TRUE(buffer_.ResponseAvailable());
 
   FtpCtrlResponse response = buffer_.PopResponse();
@@ -103,13 +108,13 @@ TEST_F(FtpCtrlResponseBufferTest, MultilineContinuation) {
 
 TEST_F(FtpCtrlResponseBufferTest, MultilineContinuationZeroLength) {
   // For the corner case from bug 29322.
-  EXPECT_EQ(OK, PushDataToBuffer("230-\r\n"));
+  EXPECT_THAT(PushDataToBuffer("230-\r\n"), IsOk());
   EXPECT_FALSE(buffer_.ResponseAvailable());
 
-  EXPECT_EQ(OK, PushDataToBuffer("example.com\r\n"));
+  EXPECT_THAT(PushDataToBuffer("example.com\r\n"), IsOk());
   EXPECT_FALSE(buffer_.ResponseAvailable());
 
-  EXPECT_EQ(OK, PushDataToBuffer("230 LastLine\r\n"));
+  EXPECT_THAT(PushDataToBuffer("230 LastLine\r\n"), IsOk());
   EXPECT_TRUE(buffer_.ResponseAvailable());
 
   FtpCtrlResponse response = buffer_.PopResponse();
@@ -121,15 +126,15 @@ TEST_F(FtpCtrlResponseBufferTest, MultilineContinuationZeroLength) {
 }
 
 TEST_F(FtpCtrlResponseBufferTest, SimilarContinuation) {
-  EXPECT_EQ(OK, PushDataToBuffer("230-FirstLine\r\n"));
+  EXPECT_THAT(PushDataToBuffer("230-FirstLine\r\n"), IsOk());
   EXPECT_FALSE(buffer_.ResponseAvailable());
 
   // Notice the space at the start of the line. It should be recognized
   // as a continuation, and not the last line.
-  EXPECT_EQ(OK, PushDataToBuffer(" 230 Continued\r\n"));
+  EXPECT_THAT(PushDataToBuffer(" 230 Continued\r\n"), IsOk());
   EXPECT_FALSE(buffer_.ResponseAvailable());
 
-  EXPECT_EQ(OK, PushDataToBuffer("230 TrueLastLine\r\n"));
+  EXPECT_THAT(PushDataToBuffer("230 TrueLastLine\r\n"), IsOk());
   EXPECT_TRUE(buffer_.ResponseAvailable());
 
   FtpCtrlResponse response = buffer_.PopResponse();
@@ -142,16 +147,16 @@ TEST_F(FtpCtrlResponseBufferTest, SimilarContinuation) {
 
 // The nesting of multi-line responses is not allowed.
 TEST_F(FtpCtrlResponseBufferTest, NoNesting) {
-  EXPECT_EQ(OK, PushDataToBuffer("230-FirstLine\r\n"));
+  EXPECT_THAT(PushDataToBuffer("230-FirstLine\r\n"), IsOk());
   EXPECT_FALSE(buffer_.ResponseAvailable());
 
-  EXPECT_EQ(OK, PushDataToBuffer("300-Continuation\r\n"));
+  EXPECT_THAT(PushDataToBuffer("300-Continuation\r\n"), IsOk());
   EXPECT_FALSE(buffer_.ResponseAvailable());
 
-  EXPECT_EQ(OK, PushDataToBuffer("300 Still continuation\r\n"));
+  EXPECT_THAT(PushDataToBuffer("300 Still continuation\r\n"), IsOk());
   EXPECT_FALSE(buffer_.ResponseAvailable());
 
-  EXPECT_EQ(OK, PushDataToBuffer("230 Real End\r\n"));
+  EXPECT_THAT(PushDataToBuffer("230 Real End\r\n"), IsOk());
   ASSERT_TRUE(buffer_.ResponseAvailable());
 
   FtpCtrlResponse response = buffer_.PopResponse();
@@ -164,12 +169,13 @@ TEST_F(FtpCtrlResponseBufferTest, NoNesting) {
 }
 
 TEST_F(FtpCtrlResponseBufferTest, NonNumericResponse) {
-  EXPECT_EQ(ERR_INVALID_RESPONSE, PushDataToBuffer("Non-numeric\r\n"));
+  EXPECT_THAT(PushDataToBuffer("Non-numeric\r\n"),
+              IsError(ERR_INVALID_RESPONSE));
   EXPECT_FALSE(buffer_.ResponseAvailable());
 }
 
 TEST_F(FtpCtrlResponseBufferTest, OutOfRangeResponse) {
-  EXPECT_EQ(ERR_INVALID_RESPONSE, PushDataToBuffer("777 OK?\r\n"));
+  EXPECT_THAT(PushDataToBuffer("777 OK?\r\n"), IsError(ERR_INVALID_RESPONSE));
   EXPECT_FALSE(buffer_.ResponseAvailable());
 }
 

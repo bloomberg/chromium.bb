@@ -13,7 +13,12 @@
 #include "net/http/mock_allow_http_auth_preferences.h"
 #include "net/http/url_security_manager.h"
 #include "net/ssl/ssl_info.h"
+#include "net/test/gtest_util.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+using net::test::IsError;
+using net::test::IsOk;
 
 namespace net {
 
@@ -118,7 +123,7 @@ TEST(HttpAuthHandlerFactoryTest, DefaultFactory) {
     int rv = http_auth_handler_factory->CreateAuthHandlerFromString(
         "Basic realm=\"FooBar\"", HttpAuth::AUTH_SERVER, null_ssl_info,
         server_origin, BoundNetLog(), &handler);
-    EXPECT_EQ(OK, rv);
+    EXPECT_THAT(rv, IsOk());
     ASSERT_FALSE(handler.get() == NULL);
     EXPECT_EQ(HttpAuth::AUTH_SCHEME_BASIC, handler->auth_scheme());
     EXPECT_STREQ("FooBar", handler->realm().c_str());
@@ -131,7 +136,7 @@ TEST(HttpAuthHandlerFactoryTest, DefaultFactory) {
     int rv = http_auth_handler_factory->CreateAuthHandlerFromString(
         "UNSUPPORTED realm=\"FooBar\"", HttpAuth::AUTH_SERVER, null_ssl_info,
         server_origin, BoundNetLog(), &handler);
-    EXPECT_EQ(ERR_UNSUPPORTED_AUTH_SCHEME, rv);
+    EXPECT_THAT(rv, IsError(ERR_UNSUPPORTED_AUTH_SCHEME));
     EXPECT_TRUE(handler.get() == NULL);
   }
   {
@@ -139,7 +144,7 @@ TEST(HttpAuthHandlerFactoryTest, DefaultFactory) {
     int rv = http_auth_handler_factory->CreateAuthHandlerFromString(
         "Digest realm=\"FooBar\", nonce=\"xyz\"", HttpAuth::AUTH_PROXY,
         null_ssl_info, proxy_origin, BoundNetLog(), &handler);
-    EXPECT_EQ(OK, rv);
+    EXPECT_THAT(rv, IsOk());
     ASSERT_FALSE(handler.get() == NULL);
     EXPECT_EQ(HttpAuth::AUTH_SCHEME_DIGEST, handler->auth_scheme());
     EXPECT_STREQ("FooBar", handler->realm().c_str());
@@ -152,7 +157,7 @@ TEST(HttpAuthHandlerFactoryTest, DefaultFactory) {
     int rv = http_auth_handler_factory->CreateAuthHandlerFromString(
         "NTLM", HttpAuth::AUTH_SERVER, null_ssl_info, server_origin,
         BoundNetLog(), &handler);
-    EXPECT_EQ(OK, rv);
+    EXPECT_THAT(rv, IsOk());
     ASSERT_FALSE(handler.get() == NULL);
     EXPECT_EQ(HttpAuth::AUTH_SCHEME_NTLM, handler->auth_scheme());
     EXPECT_STREQ("", handler->realm().c_str());
@@ -167,7 +172,7 @@ TEST(HttpAuthHandlerFactoryTest, DefaultFactory) {
         BoundNetLog(), &handler);
 // Note the default factory doesn't support Kerberos on Android
 #if defined(USE_KERBEROS) && !defined(OS_ANDROID)
-    EXPECT_EQ(OK, rv);
+    EXPECT_THAT(rv, IsOk());
     ASSERT_FALSE(handler.get() == NULL);
     EXPECT_EQ(HttpAuth::AUTH_SCHEME_NEGOTIATE, handler->auth_scheme());
     EXPECT_STREQ("", handler->realm().c_str());
@@ -175,7 +180,7 @@ TEST(HttpAuthHandlerFactoryTest, DefaultFactory) {
     EXPECT_TRUE(handler->encrypts_identity());
     EXPECT_TRUE(handler->is_connection_based());
 #else
-    EXPECT_EQ(ERR_UNSUPPORTED_AUTH_SCHEME, rv);
+    EXPECT_THAT(rv, IsError(ERR_UNSUPPORTED_AUTH_SCHEME));
     EXPECT_TRUE(handler.get() == NULL);
 #endif  // defined(USE_KERBEROS) && !defined(OS_ANDROID)
   }

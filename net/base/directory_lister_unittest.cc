@@ -16,8 +16,13 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "net/base/directory_lister.h"
 #include "net/base/net_errors.h"
+#include "net/test/gtest_util.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
+
+using net::test::IsError;
+using net::test::IsOk;
 
 namespace net {
 
@@ -198,7 +203,7 @@ TEST_F(DirectoryListerTest, BigDirTest) {
   delegate.Run(&lister);
 
   EXPECT_TRUE(delegate.done());
-  EXPECT_EQ(OK, delegate.error());
+  EXPECT_THAT(delegate.error(), IsOk());
   EXPECT_EQ(expected_list_length_non_recursive(), delegate.num_files());
 }
 
@@ -209,7 +214,7 @@ TEST_F(DirectoryListerTest, BigDirRecursiveTest) {
   delegate.Run(&lister);
 
   EXPECT_TRUE(delegate.done());
-  EXPECT_EQ(OK, delegate.error());
+  EXPECT_THAT(delegate.error(), IsOk());
   EXPECT_EQ(expected_list_length_recursive(), delegate.num_files());
 }
 
@@ -222,7 +227,7 @@ TEST_F(DirectoryListerTest, EmptyDirTest) {
   delegate.Run(&lister);
 
   EXPECT_TRUE(delegate.done());
-  EXPECT_EQ(OK, delegate.error());
+  EXPECT_THAT(delegate.error(), IsOk());
   // Contains only the parent directory ("..").
   EXPECT_EQ(1, delegate.num_files());
 }
@@ -261,7 +266,7 @@ TEST_F(DirectoryListerTest, CancelOnListDoneTest) {
   delegate.Run(&lister);
 
   EXPECT_TRUE(delegate.done());
-  EXPECT_EQ(OK, delegate.error());
+  EXPECT_THAT(delegate.error(), IsOk());
   EXPECT_EQ(expected_list_length_non_recursive(), delegate.num_files());
 }
 
@@ -288,7 +293,7 @@ TEST_F(DirectoryListerTest, NoSuchDirTest) {
       tempDir.path().AppendASCII("this_path_does_not_exist"), &delegate);
   delegate.Run(&lister);
 
-  EXPECT_EQ(ERR_FILE_NOT_FOUND, delegate.error());
+  EXPECT_THAT(delegate.error(), IsError(ERR_FILE_NOT_FOUND));
   EXPECT_EQ(0, delegate.num_files());
 }
 

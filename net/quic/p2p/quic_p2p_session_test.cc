@@ -26,7 +26,11 @@
 #include "net/quic/quic_chromium_packet_writer.h"
 #include "net/quic/test_tools/quic_session_peer.h"
 #include "net/socket/socket.h"
+#include "net/test/gtest_util.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+using net::test::IsOk;
 
 namespace net {
 
@@ -263,7 +267,7 @@ class QuicP2PSessionTest : public ::testing::Test {
 };
 
 void QuicP2PSessionTest::OnWriteResult(int result) {
-  EXPECT_EQ(OK, result);
+  EXPECT_THAT(result, IsOk());
 }
 
 void QuicP2PSessionTest::TestStreamConnection(QuicP2PSession* from_session,

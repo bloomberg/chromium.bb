@@ -8,8 +8,12 @@
 
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
+#include "net/test/gtest_util.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
+
+using net::test::IsOk;
 
 namespace net {
 
@@ -19,7 +23,7 @@ class UploadBytesElementReaderTest : public PlatformTest {
     const char kData[] = "123abc";
     bytes_.assign(kData, kData + arraysize(kData));
     reader_.reset(new UploadBytesElementReader(&bytes_[0], bytes_.size()));
-    ASSERT_EQ(OK, reader_->Init(CompletionCallback()));
+    ASSERT_THAT(reader_->Init(CompletionCallback()), IsOk());
     EXPECT_EQ(bytes_.size(), reader_->GetContentLength());
     EXPECT_EQ(bytes_.size(), reader_->BytesRemaining());
     EXPECT_TRUE(reader_->IsInMemory());
@@ -78,7 +82,7 @@ TEST_F(UploadBytesElementReaderTest, MultipleInit) {
   EXPECT_EQ(bytes_, buf);
 
   // Call Init() again to reset the state.
-  ASSERT_EQ(OK, reader_->Init(CompletionCallback()));
+  ASSERT_THAT(reader_->Init(CompletionCallback()), IsOk());
   EXPECT_EQ(bytes_.size(), reader_->GetContentLength());
   EXPECT_EQ(bytes_.size(), reader_->BytesRemaining());
 

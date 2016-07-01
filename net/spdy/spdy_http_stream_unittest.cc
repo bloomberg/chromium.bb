@@ -28,7 +28,12 @@
 #include "net/spdy/spdy_session.h"
 #include "net/spdy/spdy_test_util_common.h"
 #include "net/ssl/default_channel_id_store.h"
+#include "net/test/gtest_util.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+using net::test::IsError;
+using net::test::IsOk;
 
 namespace net {
 
@@ -386,7 +391,7 @@ TEST_P(SpdyHttpStreamTest, SendChunkedPost) {
   request.url = GURL("http://www.example.org/");
   request.upload_data_stream = &upload_stream;
 
-  ASSERT_EQ(OK, upload_stream.Init(TestCompletionCallback().callback()));
+  ASSERT_THAT(upload_stream.Init(TestCompletionCallback().callback()), IsOk());
 
   TestCompletionCallback callback;
   HttpResponseInfo response;
@@ -402,7 +407,7 @@ TEST_P(SpdyHttpStreamTest, SendChunkedPost) {
       headers, &response, callback.callback()));
   EXPECT_TRUE(HasSpdySession(http_session_->spdy_session_pool(), key_));
 
-  EXPECT_EQ(OK, callback.WaitForResult());
+  EXPECT_THAT(callback.WaitForResult(), IsOk());
 
   EXPECT_EQ(static_cast<int64_t>(req->size() + body->size()),
             http_stream.GetTotalSentBytes());
@@ -444,7 +449,7 @@ TEST_P(SpdyHttpStreamTest, SendChunkedPostLastEmpty) {
   request.url = GURL("http://www.example.org/");
   request.upload_data_stream = &upload_stream;
 
-  ASSERT_EQ(OK, upload_stream.Init(TestCompletionCallback().callback()));
+  ASSERT_THAT(upload_stream.Init(TestCompletionCallback().callback()), IsOk());
 
   TestCompletionCallback callback;
   HttpResponseInfo response;
@@ -457,7 +462,7 @@ TEST_P(SpdyHttpStreamTest, SendChunkedPostLastEmpty) {
             http_stream.SendRequest(headers, &response, callback.callback()));
   EXPECT_TRUE(HasSpdySession(http_session_->spdy_session_pool(), key_));
 
-  EXPECT_EQ(OK, callback.WaitForResult());
+  EXPECT_THAT(callback.WaitForResult(), IsOk());
 
   EXPECT_EQ(static_cast<int64_t>(req->size() + chunk->size()),
             http_stream.GetTotalSentBytes());
@@ -499,7 +504,7 @@ TEST_P(SpdyHttpStreamTest, ConnectionClosedDuringChunkedPost) {
   request.url = GURL("http://www.example.org/");
   request.upload_data_stream = &upload_stream;
 
-  ASSERT_EQ(OK, upload_stream.Init(TestCompletionCallback().callback()));
+  ASSERT_THAT(upload_stream.Init(TestCompletionCallback().callback()), IsOk());
 
   TestCompletionCallback callback;
   HttpResponseInfo response;
@@ -513,7 +518,7 @@ TEST_P(SpdyHttpStreamTest, ConnectionClosedDuringChunkedPost) {
             http_stream.SendRequest(headers, &response, callback.callback()));
   EXPECT_TRUE(HasSpdySession(http_session_->spdy_session_pool(), key_));
 
-  EXPECT_EQ(ERR_CONNECTION_CLOSED, callback.WaitForResult());
+  EXPECT_THAT(callback.WaitForResult(), IsError(ERR_CONNECTION_CLOSED));
 
   EXPECT_EQ(static_cast<int64_t>(req->size() + body->size()),
             http_stream.GetTotalSentBytes());
@@ -573,7 +578,7 @@ TEST_P(SpdyHttpStreamTest, DelayedSendChunkedPost) {
   request.url = GURL("http://www.example.org/");
   request.upload_data_stream = &upload_stream;
 
-  ASSERT_EQ(OK, upload_stream.Init(TestCompletionCallback().callback()));
+  ASSERT_THAT(upload_stream.Init(TestCompletionCallback().callback()), IsOk());
   upload_stream.AppendData(kUploadData, kUploadDataSize, false);
 
   BoundNetLog net_log;
@@ -602,7 +607,7 @@ TEST_P(SpdyHttpStreamTest, DelayedSendChunkedPost) {
   // Finish writing all the chunks and do all reads.
   base::RunLoop().RunUntilIdle();
   ASSERT_TRUE(callback.have_result());
-  EXPECT_EQ(OK, callback.WaitForResult());
+  EXPECT_THAT(callback.WaitForResult(), IsOk());
 
   EXPECT_EQ(static_cast<int64_t>(req->size() + chunk1->size() + chunk2->size() +
                                  chunk3->size()),
@@ -612,7 +617,7 @@ TEST_P(SpdyHttpStreamTest, DelayedSendChunkedPost) {
             http_stream->GetTotalReceivedBytes());
 
   // Check response headers.
-  ASSERT_EQ(OK, http_stream->ReadResponseHeaders(callback.callback()));
+  ASSERT_THAT(http_stream->ReadResponseHeaders(callback.callback()), IsOk());
 
   // Check |chunk1| response.
   scoped_refptr<IOBuffer> buf1(new IOBuffer(kUploadDataSize));
@@ -671,7 +676,7 @@ TEST_P(SpdyHttpStreamTest, DelayedSendChunkedPostWithEmptyFinalDataFrame) {
   request.url = GURL("http://www.example.org/");
   request.upload_data_stream = &upload_stream;
 
-  ASSERT_EQ(OK, upload_stream.Init(TestCompletionCallback().callback()));
+  ASSERT_THAT(upload_stream.Init(TestCompletionCallback().callback()), IsOk());
   upload_stream.AppendData(kUploadData, kUploadDataSize, false);
 
   BoundNetLog net_log;
@@ -703,10 +708,10 @@ TEST_P(SpdyHttpStreamTest, DelayedSendChunkedPostWithEmptyFinalDataFrame) {
   // Finish writing the final frame, and perform all reads.
   base::RunLoop().RunUntilIdle();
   ASSERT_TRUE(callback.have_result());
-  EXPECT_EQ(OK, callback.WaitForResult());
+  EXPECT_THAT(callback.WaitForResult(), IsOk());
 
   // Check response headers.
-  ASSERT_EQ(OK, http_stream->ReadResponseHeaders(callback.callback()));
+  ASSERT_THAT(http_stream->ReadResponseHeaders(callback.callback()), IsOk());
 
   EXPECT_EQ(static_cast<int64_t>(req->size() + chunk1->size() + chunk2->size()),
             http_stream->GetTotalSentBytes());
@@ -758,7 +763,7 @@ TEST_P(SpdyHttpStreamTest, ChunkedPostWithEmptyPayload) {
   request.url = GURL("http://www.example.org/");
   request.upload_data_stream = &upload_stream;
 
-  ASSERT_EQ(OK, upload_stream.Init(TestCompletionCallback().callback()));
+  ASSERT_THAT(upload_stream.Init(TestCompletionCallback().callback()), IsOk());
   upload_stream.AppendData("", 0, true);
 
   BoundNetLog net_log;
@@ -779,7 +784,7 @@ TEST_P(SpdyHttpStreamTest, ChunkedPostWithEmptyPayload) {
   // Complete writing request, followed by a FIN.
   base::RunLoop().RunUntilIdle();
   ASSERT_TRUE(callback.have_result());
-  EXPECT_EQ(OK, callback.WaitForResult());
+  EXPECT_THAT(callback.WaitForResult(), IsOk());
 
   EXPECT_EQ(static_cast<int64_t>(req->size() + chunk->size()),
             http_stream->GetTotalSentBytes());
@@ -787,7 +792,7 @@ TEST_P(SpdyHttpStreamTest, ChunkedPostWithEmptyPayload) {
             http_stream->GetTotalReceivedBytes());
 
   // Check response headers.
-  ASSERT_EQ(OK, http_stream->ReadResponseHeaders(callback.callback()));
+  ASSERT_THAT(http_stream->ReadResponseHeaders(callback.callback()), IsOk());
 
   // Check |chunk| response.
   scoped_refptr<IOBuffer> buf(new IOBuffer(1));
@@ -878,7 +883,7 @@ TEST_P(SpdyHttpStreamTest, DelayedSendChunkedPostWithWindowUpdate) {
   request.url = GURL("http://www.example.org/");
   request.upload_data_stream = &upload_stream;
 
-  ASSERT_EQ(OK, upload_stream.Init(TestCompletionCallback().callback()));
+  ASSERT_THAT(upload_stream.Init(TestCompletionCallback().callback()), IsOk());
 
   BoundNetLog net_log;
   std::unique_ptr<SpdyHttpStream> http_stream(
@@ -906,7 +911,7 @@ TEST_P(SpdyHttpStreamTest, DelayedSendChunkedPostWithWindowUpdate) {
   upload_stream.AppendData(kUploadData, kUploadDataSize, true);
 
   ASSERT_TRUE(callback.have_result());
-  EXPECT_EQ(OK, callback.WaitForResult());
+  EXPECT_THAT(callback.WaitForResult(), IsOk());
 
   // Verify that the window size has decreased.
   ASSERT_TRUE(http_stream->stream() != nullptr);
@@ -938,7 +943,7 @@ TEST_P(SpdyHttpStreamTest, DelayedSendChunkedPostWithWindowUpdate) {
             http_stream->GetTotalReceivedBytes());
 
   // Check response headers.
-  ASSERT_EQ(OK, http_stream->ReadResponseHeaders(callback.callback()));
+  ASSERT_THAT(http_stream->ReadResponseHeaders(callback.callback()), IsOk());
 
   // Check |chunk1| response.
   scoped_refptr<IOBuffer> buf1(new IOBuffer(kUploadDataSize));
@@ -978,7 +983,8 @@ TEST_P(SpdyHttpStreamTest, DataReadErrorSynchronous) {
 
   ReadErrorUploadDataStream upload_data_stream(
       ReadErrorUploadDataStream::FailureMode::SYNC);
-  ASSERT_EQ(OK, upload_data_stream.Init(TestCompletionCallback().callback()));
+  ASSERT_THAT(upload_data_stream.Init(TestCompletionCallback().callback()),
+              IsOk());
 
   HttpRequestInfo request;
   request.method = "POST";
@@ -994,7 +1000,7 @@ TEST_P(SpdyHttpStreamTest, DataReadErrorSynchronous) {
                                              net_log, CompletionCallback()));
 
   int result = http_stream.SendRequest(headers, &response, callback.callback());
-  EXPECT_EQ(ERR_FAILED, callback.GetResult(result));
+  EXPECT_THAT(callback.GetResult(result), IsError(ERR_FAILED));
 
   // Because the server has not closed the connection yet, there shouldn't be
   // a stream but a session in the pool
@@ -1028,7 +1034,8 @@ TEST_P(SpdyHttpStreamTest, DataReadErrorAsynchronous) {
 
   ReadErrorUploadDataStream upload_data_stream(
       ReadErrorUploadDataStream::FailureMode::ASYNC);
-  ASSERT_EQ(OK, upload_data_stream.Init(TestCompletionCallback().callback()));
+  ASSERT_THAT(upload_data_stream.Init(TestCompletionCallback().callback()),
+              IsOk());
 
   HttpRequestInfo request;
   request.method = "POST";
@@ -1044,8 +1051,8 @@ TEST_P(SpdyHttpStreamTest, DataReadErrorAsynchronous) {
                                              net_log, CompletionCallback()));
 
   int result = http_stream.SendRequest(headers, &response, callback.callback());
-  EXPECT_EQ(ERR_IO_PENDING, result);
-  EXPECT_EQ(ERR_FAILED, callback.GetResult(result));
+  EXPECT_THAT(result, IsError(ERR_IO_PENDING));
+  EXPECT_THAT(callback.GetResult(result), IsError(ERR_FAILED));
 
   // Because the server has closed the connection, there shouldn't be a session
   // in the pool anymore.

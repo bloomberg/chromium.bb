@@ -20,14 +20,19 @@
 #include "net/proxy/proxy_config_service.h"
 #include "net/proxy/proxy_config_service_fixed.h"
 #include "net/socket/socket_test_util.h"
+#include "net/test/gtest_util.h"
 #include "net/url_request/ftp_protocol_handler.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_job_factory_impl.h"
 #include "net/url_request/url_request_status.h"
 #include "net/url_request/url_request_test_util.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
+
+using net::test::IsError;
+using net::test::IsOk;
 
 using base::ASCIIToUTF16;
 
@@ -673,7 +678,7 @@ TEST_F(URLRequestFtpJobTest, FtpProxyRequestDoNotFollowRedirects) {
   EXPECT_EQ(1, network_delegate()->completed_requests());
   EXPECT_EQ(1, network_delegate()->error_count());
   EXPECT_FALSE(url_request->status().is_success());
-  EXPECT_EQ(ERR_UNSAFE_REDIRECT, url_request->status().error());
+  EXPECT_THAT(url_request->status().error(), IsError(ERR_UNSAFE_REDIRECT));
 }
 
 // We should re-use socket for requests using the same scheme, host, and port.

@@ -26,15 +26,19 @@
 #include "net/socket/client_socket_handle.h"
 #include "net/socket/socket_test_util.h"
 #include "net/test/cert_test_util.h"
+#include "net/test/gtest_util.h"
 #include "net/test/test_data_directory.h"
 #include "net/url_request/url_request_test_util.h"
 #include "net/websockets/websocket_basic_handshake_stream.h"
 #include "net/websockets/websocket_frame.h"
 #include "net/websockets/websocket_stream_create_test_base.h"
 #include "net/websockets/websocket_test_util.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 #include "url/origin.h"
+
+using net::test::IsOk;
 
 namespace net {
 namespace {
@@ -552,7 +556,7 @@ TEST_F(WebSocketStreamCreateExtensionTest, PerMessageDeflateInflates) {
   ASSERT_TRUE(stream_);
   std::vector<std::unique_ptr<WebSocketFrame>> frames;
   CompletionCallback callback;
-  ASSERT_EQ(OK, stream_->ReadFrames(&frames, callback));
+  ASSERT_THAT(stream_->ReadFrames(&frames, callback), IsOk());
   ASSERT_EQ(1U, frames.size());
   ASSERT_EQ(5U, frames[0]->header.payload_length);
   EXPECT_EQ("Hello", std::string(frames[0]->data->data(), 5));

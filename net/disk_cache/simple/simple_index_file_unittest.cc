@@ -28,7 +28,11 @@
 #include "net/disk_cache/simple/simple_index.h"
 #include "net/disk_cache/simple/simple_util.h"
 #include "net/disk_cache/simple/simple_version_upgrade.h"
+#include "net/test/gtest_util.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+using net::test::IsOk;
 
 using base::Time;
 using disk_cache::SimpleIndexFile;
@@ -333,9 +337,9 @@ TEST_F(SimpleIndexFileTest, SimpleCacheUpgrade) {
                                         cache_thread.task_runner().get(), NULL);
   net::TestCompletionCallback cb;
   int rv = simple_cache->Init(cb.callback());
-  EXPECT_EQ(net::OK, cb.GetResult(rv));
+  EXPECT_THAT(cb.GetResult(rv), IsOk());
   rv = simple_cache->index()->ExecuteWhenReady(cb.callback());
-  EXPECT_EQ(net::OK, cb.GetResult(rv));
+  EXPECT_THAT(cb.GetResult(rv), IsOk());
   delete simple_cache;
 
   // The backend flushes the index on destruction and does so on the cache

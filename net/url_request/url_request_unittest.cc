@@ -93,6 +93,7 @@
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
+#include "net/test/gtest_util.h"
 #include "net/test/spawned_test_server/spawned_test_server.h"
 #include "net/test/test_data_directory.h"
 #include "net/test/url_request/url_request_failed_job.h"
@@ -107,6 +108,7 @@
 #include "net/url_request/url_request_redirect_job.h"
 #include "net/url_request/url_request_test_job.h"
 #include "net/url_request/url_request_test_util.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 
@@ -125,6 +127,9 @@
 #include "base/win/scoped_com_initializer.h"
 #include "base/win/scoped_comptr.h"
 #endif
+
+using net::test::IsError;
+using net::test::IsOk;
 
 using base::ASCIIToUTF16;
 using base::Time;
@@ -2129,10 +2134,11 @@ TEST_F(URLRequestTest, MAYBE_NetworkDelegateProxyError) {
   // The proxy server is not set before failure.
   EXPECT_TRUE(req->proxy_server().IsEmpty());
   EXPECT_EQ(URLRequestStatus::FAILED, req->status().status());
-  EXPECT_EQ(ERR_PROXY_CONNECTION_FAILED, req->status().error());
+  EXPECT_THAT(req->status().error(), IsError(ERR_PROXY_CONNECTION_FAILED));
 
   EXPECT_EQ(1, network_delegate.error_count());
-  EXPECT_EQ(ERR_PROXY_CONNECTION_FAILED, network_delegate.last_error());
+  EXPECT_THAT(network_delegate.last_error(),
+              IsError(ERR_PROXY_CONNECTION_FAILED));
   EXPECT_EQ(1, network_delegate.completed_requests());
 }
 
@@ -3167,7 +3173,7 @@ class URLRequestTestHTTP : public URLRequestTest {
     base::RunLoop().Run();
     EXPECT_EQ(redirect_method, req->method());
     EXPECT_EQ(URLRequestStatus::SUCCESS, req->status().status());
-    EXPECT_EQ(OK, req->status().error());
+    EXPECT_THAT(req->status().error(), IsOk());
     if (include_data) {
       if (request_method == redirect_method) {
         EXPECT_TRUE(req->extra_request_headers().HasHeader(
@@ -3571,7 +3577,7 @@ TEST_F(URLRequestTestHTTP, ProxyTunnelRedirectTest) {
     EXPECT_EQ(URLRequestStatus::FAILED, r->status().status());
     // The proxy server is not set before failure.
     EXPECT_TRUE(r->proxy_server().IsEmpty());
-    EXPECT_EQ(ERR_TUNNEL_CONNECTION_FAILED, r->status().error());
+    EXPECT_THAT(r->status().error(), IsError(ERR_TUNNEL_CONNECTION_FAILED));
     EXPECT_EQ(1, d.response_started_count());
     // We should not have followed the redirect.
     EXPECT_EQ(0, d.received_redirect_count());
@@ -3599,13 +3605,14 @@ TEST_F(URLRequestTestHTTP, NetworkDelegateTunnelConnectionFailed) {
     EXPECT_EQ(URLRequestStatus::FAILED, r->status().status());
     // The proxy server is not set before failure.
     EXPECT_TRUE(r->proxy_server().IsEmpty());
-    EXPECT_EQ(ERR_TUNNEL_CONNECTION_FAILED, r->status().error());
+    EXPECT_THAT(r->status().error(), IsError(ERR_TUNNEL_CONNECTION_FAILED));
     EXPECT_EQ(1, d.response_started_count());
     // We should not have followed the redirect.
     EXPECT_EQ(0, d.received_redirect_count());
 
     EXPECT_EQ(1, network_delegate.error_count());
-    EXPECT_EQ(ERR_TUNNEL_CONNECTION_FAILED, network_delegate.last_error());
+    EXPECT_THAT(network_delegate.last_error(),
+                IsError(ERR_TUNNEL_CONNECTION_FAILED));
   }
 }
 
@@ -3675,7 +3682,7 @@ TEST_F(URLRequestTestHTTP, NetworkDelegateCancelRequest) {
     EXPECT_EQ(URLRequestStatus::FAILED, r->status().status());
     // The proxy server is not set before cancellation.
     EXPECT_TRUE(r->proxy_server().IsEmpty());
-    EXPECT_EQ(ERR_EMPTY_RESPONSE, r->status().error());
+    EXPECT_THAT(r->status().error(), IsError(ERR_EMPTY_RESPONSE));
     EXPECT_EQ(1, network_delegate.created_requests());
     EXPECT_EQ(0, network_delegate.destroyed_requests());
   }
@@ -3708,7 +3715,7 @@ void NetworkDelegateCancelRequest(BlockingNetworkDelegate::BlockMode block_mode,
     EXPECT_EQ(URLRequestStatus::FAILED, r->status().status());
     // The proxy server is not set before cancellation.
     EXPECT_TRUE(r->proxy_server().IsEmpty());
-    EXPECT_EQ(ERR_BLOCKED_BY_CLIENT, r->status().error());
+    EXPECT_THAT(r->status().error(), IsError(ERR_BLOCKED_BY_CLIENT));
     EXPECT_EQ(1, network_delegate.created_requests());
     EXPECT_EQ(0, network_delegate.destroyed_requests());
   }
@@ -3960,7 +3967,7 @@ TEST_F(URLRequestTestHTTP, NetworkDelegateRedirectRequestOnHeadersReceived) {
     EXPECT_TRUE(network_delegate.last_observed_proxy().Equals(
         http_test_server()->host_port_pair()));
 
-    EXPECT_EQ(OK, r->status().error());
+    EXPECT_THAT(r->status().error(), IsOk());
     EXPECT_EQ(redirect_url, r->url());
     EXPECT_EQ(original_url, r->original_url());
     EXPECT_EQ(2U, r->url_chain().size());
@@ -4144,7 +4151,7 @@ TEST_F(URLRequestTestHTTP, NetworkDelegateOnAuthRequiredSyncCancel) {
     base::RunLoop().Run();
 
     EXPECT_EQ(URLRequestStatus::SUCCESS, r->status().status());
-    EXPECT_EQ(OK, r->status().error());
+    EXPECT_THAT(r->status().error(), IsOk());
     EXPECT_EQ(401, r->GetResponseCode());
     EXPECT_FALSE(d.auth_required_called());
     EXPECT_EQ(1, network_delegate.created_requests());
@@ -4249,7 +4256,7 @@ TEST_F(URLRequestTestHTTP, NetworkDelegateOnAuthRequiredAsyncCancel) {
     base::RunLoop().Run();
 
     EXPECT_EQ(URLRequestStatus::SUCCESS, r->status().status());
-    EXPECT_EQ(OK, r->status().error());
+    EXPECT_THAT(r->status().error(), IsOk());
     EXPECT_EQ(401, r->GetResponseCode());
     EXPECT_FALSE(d.auth_required_called());
     EXPECT_EQ(1, network_delegate.created_requests());
@@ -4287,7 +4294,7 @@ TEST_F(URLRequestTestHTTP, NetworkDelegateCancelWhileWaiting1) {
     // Ensure that network delegate is notified.
     EXPECT_EQ(1, network_delegate.completed_requests());
     EXPECT_EQ(URLRequestStatus::CANCELED, r->status().status());
-    EXPECT_EQ(ERR_ABORTED, r->status().error());
+    EXPECT_THAT(r->status().error(), IsError(ERR_ABORTED));
     EXPECT_EQ(1, network_delegate.created_requests());
     EXPECT_EQ(0, network_delegate.destroyed_requests());
   }
@@ -4325,7 +4332,7 @@ TEST_F(URLRequestTestHTTP, NetworkDelegateCancelWhileWaiting2) {
     // Ensure that network delegate is notified.
     EXPECT_EQ(1, network_delegate.completed_requests());
     EXPECT_EQ(URLRequestStatus::CANCELED, r->status().status());
-    EXPECT_EQ(ERR_ABORTED, r->status().error());
+    EXPECT_THAT(r->status().error(), IsError(ERR_ABORTED));
     EXPECT_EQ(1, network_delegate.created_requests());
     EXPECT_EQ(0, network_delegate.destroyed_requests());
   }
@@ -4361,7 +4368,7 @@ TEST_F(URLRequestTestHTTP, NetworkDelegateCancelWhileWaiting3) {
     // Ensure that network delegate is notified.
     EXPECT_EQ(1, network_delegate.completed_requests());
     EXPECT_EQ(URLRequestStatus::CANCELED, r->status().status());
-    EXPECT_EQ(ERR_ABORTED, r->status().error());
+    EXPECT_THAT(r->status().error(), IsError(ERR_ABORTED));
     EXPECT_EQ(1, network_delegate.created_requests());
     EXPECT_EQ(0, network_delegate.destroyed_requests());
   }
@@ -4397,7 +4404,7 @@ TEST_F(URLRequestTestHTTP, NetworkDelegateCancelWhileWaiting4) {
     // Ensure that network delegate is notified.
     EXPECT_EQ(1, network_delegate.completed_requests());
     EXPECT_EQ(URLRequestStatus::CANCELED, r->status().status());
-    EXPECT_EQ(ERR_ABORTED, r->status().error());
+    EXPECT_THAT(r->status().error(), IsError(ERR_ABORTED));
     EXPECT_EQ(1, network_delegate.created_requests());
     EXPECT_EQ(0, network_delegate.destroyed_requests());
   }
@@ -4449,7 +4456,7 @@ TEST_F(URLRequestTestHTTP, UnexpectedServerAuthTest) {
     EXPECT_EQ(URLRequestStatus::FAILED, r->status().status());
     // The proxy server is not set before failure.
     EXPECT_TRUE(r->proxy_server().IsEmpty());
-    EXPECT_EQ(ERR_TUNNEL_CONNECTION_FAILED, r->status().error());
+    EXPECT_THAT(r->status().error(), IsError(ERR_TUNNEL_CONNECTION_FAILED));
   }
 }
 
@@ -5762,7 +5769,7 @@ TEST_F(URLRequestTestHTTP, PostUnreadableFileTest) {
     EXPECT_FALSE(d.received_data_before_response());
     EXPECT_EQ(0, d.bytes_received());
     EXPECT_EQ(URLRequestStatus::FAILED, r->status().status());
-    EXPECT_EQ(ERR_FILE_NOT_FOUND, r->status().error());
+    EXPECT_THAT(r->status().error(), IsError(ERR_FILE_NOT_FOUND));
   }
 }
 
@@ -6556,7 +6563,7 @@ TEST_F(URLRequestTestHTTP, RestrictFileRedirects) {
   base::RunLoop().Run();
 
   EXPECT_EQ(URLRequestStatus::FAILED, req->status().status());
-  EXPECT_EQ(ERR_UNSAFE_REDIRECT, req->status().error());
+  EXPECT_THAT(req->status().error(), IsError(ERR_UNSAFE_REDIRECT));
 }
 #endif  // !defined(DISABLE_FILE_SUPPORT)
 
@@ -6571,7 +6578,7 @@ TEST_F(URLRequestTestHTTP, RestrictDataRedirects) {
   base::RunLoop().Run();
 
   EXPECT_EQ(URLRequestStatus::FAILED, req->status().status());
-  EXPECT_EQ(ERR_UNSAFE_REDIRECT, req->status().error());
+  EXPECT_THAT(req->status().error(), IsError(ERR_UNSAFE_REDIRECT));
 }
 
 TEST_F(URLRequestTestHTTP, RedirectToInvalidURL) {
@@ -6585,7 +6592,7 @@ TEST_F(URLRequestTestHTTP, RedirectToInvalidURL) {
   base::RunLoop().Run();
 
   EXPECT_EQ(URLRequestStatus::FAILED, req->status().status());
-  EXPECT_EQ(ERR_INVALID_URL, req->status().error());
+  EXPECT_THAT(req->status().error(), IsError(ERR_INVALID_URL));
 }
 
 // Make sure redirects are cached, despite not reading their bodies.
@@ -6683,7 +6690,7 @@ TEST_F(URLRequestTestHTTP, UnsafeRedirectToWhitelistedUnsafeURL) {
     EXPECT_EQ(URLRequestStatus::SUCCESS, r->status().status());
 
     EXPECT_EQ(2U, r->url_chain().size());
-    EXPECT_EQ(OK, r->status().error());
+    EXPECT_THAT(r->status().error(), IsOk());
     EXPECT_EQ(unsafe_url, r->url());
     EXPECT_EQ("this-is-considered-an-unsafe-url", d.data_received());
   }
@@ -6709,7 +6716,7 @@ TEST_F(URLRequestTestHTTP, UnsafeRedirectToDifferentUnsafeURL) {
     base::RunLoop().Run();
 
     EXPECT_EQ(URLRequestStatus::FAILED, r->status().status());
-    EXPECT_EQ(ERR_UNSAFE_REDIRECT, r->status().error());
+    EXPECT_THAT(r->status().error(), IsError(ERR_UNSAFE_REDIRECT));
   }
 }
 
@@ -6735,7 +6742,7 @@ TEST_F(URLRequestTestHTTP, UnsafeRedirectWithDifferentReferenceFragment) {
 
     EXPECT_EQ(2U, r->url_chain().size());
     EXPECT_EQ(URLRequestStatus::SUCCESS, r->status().status());
-    EXPECT_EQ(OK, r->status().error());
+    EXPECT_THAT(r->status().error(), IsOk());
     EXPECT_EQ(original_url, r->original_url());
     EXPECT_EQ(expected_url, r->url());
   }
@@ -6765,7 +6772,7 @@ TEST_F(URLRequestTestHTTP, RedirectWithReferenceFragmentAndUnrelatedUnsafeUrl) {
 
     EXPECT_EQ(2U, r->url_chain().size());
     EXPECT_EQ(URLRequestStatus::SUCCESS, r->status().status());
-    EXPECT_EQ(OK, r->status().error());
+    EXPECT_THAT(r->status().error(), IsOk());
     EXPECT_EQ(original_url, r->original_url());
     EXPECT_EQ(expected_redirect_url, r->url());
   }
@@ -6794,7 +6801,7 @@ TEST_F(URLRequestTestHTTP, RedirectWithReferenceFragment) {
 
     EXPECT_EQ(2U, r->url_chain().size());
     EXPECT_EQ(URLRequestStatus::SUCCESS, r->status().status());
-    EXPECT_EQ(OK, r->status().error());
+    EXPECT_THAT(r->status().error(), IsOk());
     EXPECT_EQ(original_url, r->original_url());
     EXPECT_EQ(redirect_url, r->url());
   }
@@ -6822,7 +6829,7 @@ TEST_F(URLRequestTestHTTP, RedirectJobWithReferenceFragment) {
   base::RunLoop().Run();
 
   EXPECT_EQ(URLRequestStatus::SUCCESS, r->status().status());
-  EXPECT_EQ(OK, r->status().error());
+  EXPECT_THAT(r->status().error(), IsOk());
   EXPECT_EQ(original_url, r->original_url());
   EXPECT_EQ(redirect_url, r->url());
 }
@@ -7463,7 +7470,7 @@ TEST_F(URLRequestTestHTTP, NoRedirectOn308WithoutLocationHeader) {
   request->Start();
   base::RunLoop().Run();
   EXPECT_EQ(URLRequestStatus::SUCCESS, request->status().status());
-  EXPECT_EQ(OK, request->status().error());
+  EXPECT_THAT(request->status().error(), IsOk());
   EXPECT_EQ(0, d.received_redirect_count());
   EXPECT_EQ(308, request->response_headers()->response_code());
   EXPECT_EQ("This is not a redirect.", d.data_received());
@@ -7486,7 +7493,7 @@ TEST_F(URLRequestTestHTTP, Redirect302PreserveReferenceFragment) {
 
     EXPECT_EQ(2U, r->url_chain().size());
     EXPECT_EQ(URLRequestStatus::SUCCESS, r->status().status());
-    EXPECT_EQ(OK, r->status().error());
+    EXPECT_THAT(r->status().error(), IsOk());
     EXPECT_EQ(original_url, r->original_url());
     EXPECT_EQ(expected_url, r->url());
   }
@@ -7509,7 +7516,7 @@ TEST_F(URLRequestTestHTTP, RedirectPreserveFirstPartyURL) {
 
     EXPECT_EQ(2U, r->url_chain().size());
     EXPECT_EQ(URLRequestStatus::SUCCESS, r->status().status());
-    EXPECT_EQ(OK, r->status().error());
+    EXPECT_THAT(r->status().error(), IsOk());
     EXPECT_EQ(first_party_url, r->first_party_for_cookies());
   }
 }
@@ -7534,7 +7541,7 @@ TEST_F(URLRequestTestHTTP, RedirectUpdateFirstPartyURL) {
 
     EXPECT_EQ(2U, r->url_chain().size());
     EXPECT_EQ(URLRequestStatus::SUCCESS, r->status().status());
-    EXPECT_EQ(OK, r->status().error());
+    EXPECT_THAT(r->status().error(), IsOk());
     EXPECT_EQ(expected_first_party_url, r->first_party_for_cookies());
   }
 }
@@ -7825,7 +7832,7 @@ TEST_F(URLRequestTestHTTP, NetworkSuspendTest) {
 
   EXPECT_TRUE(d.request_failed());
   EXPECT_EQ(URLRequestStatus::FAILED, req->status().status());
-  EXPECT_EQ(ERR_NETWORK_IO_SUSPENDED, req->status().error());
+  EXPECT_THAT(req->status().error(), IsError(ERR_NETWORK_IO_SUSPENDED));
 }
 
 namespace {
@@ -8669,7 +8676,7 @@ TEST_F(HTTPSRequestTest, DHE) {
     EXPECT_EQ(1, d.response_started_count());
     EXPECT_FALSE(r->status().is_success());
     EXPECT_EQ(URLRequestStatus::FAILED, r->status().status());
-    EXPECT_EQ(ERR_SSL_OBSOLETE_CIPHER, r->status().error());
+    EXPECT_THAT(r->status().error(), IsError(ERR_SSL_OBSOLETE_CIPHER));
   }
 }
 
@@ -9657,7 +9664,7 @@ TEST_F(URLRequestTestFTP, UnsafePort) {
 
     EXPECT_FALSE(r->is_pending());
     EXPECT_EQ(URLRequestStatus::FAILED, r->status().status());
-    EXPECT_EQ(ERR_UNSAFE_PORT, r->status().error());
+    EXPECT_THAT(r->status().error(), IsError(ERR_UNSAFE_PORT));
   }
 }
 

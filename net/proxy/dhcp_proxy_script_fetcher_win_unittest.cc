@@ -15,8 +15,13 @@
 #include "base/timer/elapsed_timer.h"
 #include "net/base/completion_callback.h"
 #include "net/proxy/dhcp_proxy_script_adapter_fetcher_win.h"
+#include "net/test/gtest_util.h"
 #include "net/url_request/url_request_test_util.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+using net::test::IsError;
+using net::test::IsOk;
 
 namespace net {
 
@@ -384,7 +389,7 @@ class FetcherClient {
     int result = fetcher_.Fetch(
         &pac_text_,
         base::Bind(&FetcherClient::OnCompletion, base::Unretained(this)));
-    ASSERT_EQ(ERR_IO_PENDING, result);
+    ASSERT_THAT(result, IsError(ERR_IO_PENDING));
   }
 
   void RunMessageLoopUntilComplete() {
@@ -436,7 +441,7 @@ void TestNormalCaseURLConfiguredOneAdapter(FetcherClient* client) {
   client->fetcher_.PushBackAdapter("a", adapter_fetcher.release());
   client->RunTest();
   client->RunMessageLoopUntilComplete();
-  ASSERT_EQ(OK, client->result_);
+  ASSERT_THAT(client->result_, IsOk());
   ASSERT_EQ(L"bingo", client->pac_text_);
 }
 
@@ -455,7 +460,7 @@ void TestNormalCaseURLConfiguredMultipleAdapters(FetcherClient* client) {
       "third", true, OK, L"rocko", base::TimeDelta::FromMilliseconds(1));
   client->RunTest();
   client->RunMessageLoopUntilComplete();
-  ASSERT_EQ(OK, client->result_);
+  ASSERT_THAT(client->result_, IsOk());
   ASSERT_EQ(L"bingo", client->pac_text_);
 }
 
@@ -477,7 +482,7 @@ void TestNormalCaseURLConfiguredMultipleAdaptersWithTimeout(
       "third", true, OK, L"rocko", base::TimeDelta::FromMilliseconds(1));
   client->RunTest();
   client->RunMessageLoopUntilComplete();
-  ASSERT_EQ(OK, client->result_);
+  ASSERT_THAT(client->result_, IsOk());
   ASSERT_EQ(L"rocko", client->pac_text_);
 }
 
@@ -506,7 +511,7 @@ void TestFailureCaseURLConfiguredMultipleAdaptersWithTimeout(
       base::TimeDelta::FromMilliseconds(1));
   client->RunTest();
   client->RunMessageLoopUntilComplete();
-  ASSERT_EQ(ERR_PAC_STATUS_NOT_OK, client->result_);
+  ASSERT_THAT(client->result_, IsError(ERR_PAC_STATUS_NOT_OK));
   ASSERT_EQ(L"", client->pac_text_);
 }
 
@@ -531,7 +536,7 @@ void TestFailureCaseNoURLConfigured(FetcherClient* client) {
       base::TimeDelta::FromMilliseconds(1));
   client->RunTest();
   client->RunMessageLoopUntilComplete();
-  ASSERT_EQ(ERR_PAC_NOT_IN_DHCP, client->result_);
+  ASSERT_THAT(client->result_, IsError(ERR_PAC_NOT_IN_DHCP));
   ASSERT_EQ(L"", client->pac_text_);
 }
 
@@ -543,7 +548,7 @@ TEST(DhcpProxyScriptFetcherWin, FailureCaseNoURLConfigured) {
 void TestFailureCaseNoDhcpAdapters(FetcherClient* client) {
   client->RunTest();
   client->RunMessageLoopUntilComplete();
-  ASSERT_EQ(ERR_PAC_NOT_IN_DHCP, client->result_);
+  ASSERT_THAT(client->result_, IsError(ERR_PAC_NOT_IN_DHCP));
   ASSERT_EQ(L"", client->pac_text_);
   ASSERT_EQ(0, client->fetcher_.num_fetchers_created_);
 }

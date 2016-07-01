@@ -22,7 +22,12 @@
 #include "net/socket/socket_test_util.h"
 #include "net/spdy/spdy_protocol.h"
 #include "net/spdy/spdy_test_util_common.h"
+#include "net/test/gtest_util.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+using net::test::IsError;
+using net::test::IsOk;
 
 namespace net {
 
@@ -257,7 +262,7 @@ TEST_P(HttpProxyClientSocketPoolTest, NoTunnel) {
   int rv = handle_.Init("a", CreateNoTunnelParams(proxy_delegate.get()), LOW,
                         ClientSocketPool::RespectLimits::ENABLED,
                         CompletionCallback(), &pool_, BoundNetLog());
-  EXPECT_EQ(OK, rv);
+  EXPECT_THAT(rv, IsOk());
   EXPECT_TRUE(handle_.is_initialized());
   ASSERT_TRUE(handle_.socket());
   EXPECT_TRUE(handle_.socket()->IsConnected());
@@ -317,12 +322,12 @@ TEST_P(HttpProxyClientSocketPoolTest, NeedAuth) {
   int rv = handle_.Init("a", CreateTunnelParams(NULL), LOW,
                         ClientSocketPool::RespectLimits::ENABLED,
                         callback_.callback(), &pool_, BoundNetLog());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
   EXPECT_FALSE(handle_.is_initialized());
   EXPECT_FALSE(handle_.socket());
 
   rv = callback_.WaitForResult();
-  EXPECT_EQ(ERR_PROXY_AUTH_REQUESTED, rv);
+  EXPECT_THAT(rv, IsError(ERR_PROXY_AUTH_REQUESTED));
   EXPECT_TRUE(handle_.is_initialized());
   ASSERT_TRUE(handle_.socket());
   ProxyClientSocket* tunnel_socket =
@@ -367,7 +372,7 @@ TEST_P(HttpProxyClientSocketPoolTest, HaveAuth) {
   int rv = handle_.Init("a", CreateTunnelParams(proxy_delegate.get()), LOW,
                         ClientSocketPool::RespectLimits::ENABLED,
                         callback_.callback(), &pool_, BoundNetLog());
-  EXPECT_EQ(OK, rv);
+  EXPECT_THAT(rv, IsOk());
   EXPECT_TRUE(handle_.is_initialized());
   ASSERT_TRUE(handle_.socket());
   EXPECT_TRUE(handle_.socket()->IsConnected());
@@ -422,11 +427,11 @@ TEST_P(HttpProxyClientSocketPoolTest, AsyncHaveAuth) {
   int rv = handle_.Init("a", CreateTunnelParams(proxy_delegate.get()), LOW,
                         ClientSocketPool::RespectLimits::ENABLED,
                         callback_.callback(), &pool_, BoundNetLog());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
   EXPECT_FALSE(handle_.is_initialized());
   EXPECT_FALSE(handle_.socket());
 
-  EXPECT_EQ(OK, callback_.WaitForResult());
+  EXPECT_THAT(callback_.WaitForResult(), IsOk());
   EXPECT_TRUE(handle_.is_initialized());
   ASSERT_TRUE(handle_.socket());
   EXPECT_TRUE(handle_.socket()->IsConnected());
@@ -466,7 +471,7 @@ TEST_P(HttpProxyClientSocketPoolTest,
                          callback_.callback(), &pool_, BoundNetLog()));
   EXPECT_EQ(MEDIUM, GetLastTransportRequestPriority());
 
-  EXPECT_EQ(OK, callback_.WaitForResult());
+  EXPECT_THAT(callback_.WaitForResult(), IsOk());
 }
 
 TEST_P(HttpProxyClientSocketPoolTest, TCPError) {
@@ -479,11 +484,11 @@ TEST_P(HttpProxyClientSocketPoolTest, TCPError) {
   int rv = handle_.Init("a", CreateTunnelParams(NULL), LOW,
                         ClientSocketPool::RespectLimits::ENABLED,
                         callback_.callback(), &pool_, BoundNetLog());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
   EXPECT_FALSE(handle_.is_initialized());
   EXPECT_FALSE(handle_.socket());
 
-  EXPECT_EQ(ERR_PROXY_CONNECTION_FAILED, callback_.WaitForResult());
+  EXPECT_THAT(callback_.WaitForResult(), IsError(ERR_PROXY_CONNECTION_FAILED));
 
   EXPECT_FALSE(handle_.is_initialized());
   EXPECT_FALSE(handle_.socket());
@@ -505,11 +510,12 @@ TEST_P(HttpProxyClientSocketPoolTest, SSLError) {
   int rv = handle_.Init("a", CreateTunnelParams(NULL), LOW,
                         ClientSocketPool::RespectLimits::ENABLED,
                         callback_.callback(), &pool_, BoundNetLog());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
   EXPECT_FALSE(handle_.is_initialized());
   EXPECT_FALSE(handle_.socket());
 
-  EXPECT_EQ(ERR_PROXY_CERTIFICATE_INVALID, callback_.WaitForResult());
+  EXPECT_THAT(callback_.WaitForResult(),
+              IsError(ERR_PROXY_CERTIFICATE_INVALID));
 
   EXPECT_FALSE(handle_.is_initialized());
   EXPECT_FALSE(handle_.socket());
@@ -531,11 +537,12 @@ TEST_P(HttpProxyClientSocketPoolTest, SslClientAuth) {
   int rv = handle_.Init("a", CreateTunnelParams(NULL), LOW,
                         ClientSocketPool::RespectLimits::ENABLED,
                         callback_.callback(), &pool_, BoundNetLog());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
   EXPECT_FALSE(handle_.is_initialized());
   EXPECT_FALSE(handle_.socket());
 
-  EXPECT_EQ(ERR_SSL_CLIENT_AUTH_CERT_NEEDED, callback_.WaitForResult());
+  EXPECT_THAT(callback_.WaitForResult(),
+              IsError(ERR_SSL_CLIENT_AUTH_CERT_NEEDED));
 
   EXPECT_FALSE(handle_.is_initialized());
   EXPECT_FALSE(handle_.socket());
@@ -571,16 +578,17 @@ TEST_P(HttpProxyClientSocketPoolTest, TunnelUnexpectedClose) {
   int rv = handle_.Init("a", CreateTunnelParams(NULL), LOW,
                         ClientSocketPool::RespectLimits::ENABLED,
                         callback_.callback(), &pool_, BoundNetLog());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
   EXPECT_FALSE(handle_.is_initialized());
   EXPECT_FALSE(handle_.socket());
 
   if (GetParam().proxy_type == SPDY) {
     // SPDY cannot process a headers block unless it's complete and so it
     // returns ERR_CONNECTION_CLOSED in this case.
-    EXPECT_EQ(ERR_CONNECTION_CLOSED, callback_.WaitForResult());
+    EXPECT_THAT(callback_.WaitForResult(), IsError(ERR_CONNECTION_CLOSED));
   } else {
-    EXPECT_EQ(ERR_RESPONSE_HEADERS_TRUNCATED, callback_.WaitForResult());
+    EXPECT_THAT(callback_.WaitForResult(),
+                IsError(ERR_RESPONSE_HEADERS_TRUNCATED));
   }
   EXPECT_FALSE(handle_.is_initialized());
   EXPECT_FALSE(handle_.socket());
@@ -610,11 +618,11 @@ TEST_P(HttpProxyClientSocketPoolTest, Tunnel1xxResponse) {
   int rv = handle_.Init("a", CreateTunnelParams(NULL), LOW,
                         ClientSocketPool::RespectLimits::ENABLED,
                         callback_.callback(), &pool_, BoundNetLog());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
   EXPECT_FALSE(handle_.is_initialized());
   EXPECT_FALSE(handle_.socket());
 
-  EXPECT_EQ(ERR_TUNNEL_CONNECTION_FAILED, callback_.WaitForResult());
+  EXPECT_THAT(callback_.WaitForResult(), IsError(ERR_TUNNEL_CONNECTION_FAILED));
 }
 
 TEST_P(HttpProxyClientSocketPoolTest, TunnelSetupError) {
@@ -652,13 +660,13 @@ TEST_P(HttpProxyClientSocketPoolTest, TunnelSetupError) {
   int rv = handle_.Init("a", CreateTunnelParams(NULL), LOW,
                         ClientSocketPool::RespectLimits::ENABLED,
                         callback_.callback(), &pool_, BoundNetLog());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
   EXPECT_FALSE(handle_.is_initialized());
   EXPECT_FALSE(handle_.socket());
 
   rv = callback_.WaitForResult();
   // All Proxy CONNECT responses are not trustworthy
-  EXPECT_EQ(ERR_TUNNEL_CONNECTION_FAILED, rv);
+  EXPECT_THAT(rv, IsError(ERR_TUNNEL_CONNECTION_FAILED));
   EXPECT_FALSE(handle_.is_initialized());
   EXPECT_FALSE(handle_.socket());
 }
@@ -712,7 +720,7 @@ TEST_P(HttpProxyClientSocketPoolTest, TunnelSetupRedirect) {
   int rv = handle_.Init("a", CreateTunnelParams(NULL), LOW,
                         ClientSocketPool::RespectLimits::ENABLED,
                         callback_.callback(), &pool_, BoundNetLog());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
   EXPECT_FALSE(handle_.is_initialized());
   EXPECT_FALSE(handle_.socket());
 
@@ -720,12 +728,12 @@ TEST_P(HttpProxyClientSocketPoolTest, TunnelSetupRedirect) {
 
   if (GetParam().proxy_type == HTTP) {
     // We don't trust 302 responses to CONNECT from HTTP proxies.
-    EXPECT_EQ(ERR_TUNNEL_CONNECTION_FAILED, rv);
+    EXPECT_THAT(rv, IsError(ERR_TUNNEL_CONNECTION_FAILED));
     EXPECT_FALSE(handle_.is_initialized());
     EXPECT_FALSE(handle_.socket());
   } else {
     // Expect ProxyClientSocket to return the proxy's response, sanitized.
-    EXPECT_EQ(ERR_HTTPS_PROXY_TUNNEL_RESPONSE, rv);
+    EXPECT_THAT(rv, IsError(ERR_HTTPS_PROXY_TUNNEL_RESPONSE));
     EXPECT_TRUE(handle_.is_initialized());
     ASSERT_TRUE(handle_.socket());
 

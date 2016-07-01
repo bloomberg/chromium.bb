@@ -22,7 +22,11 @@
 #include "net/proxy/proxy_service.h"
 #include "net/socket/socket_test_util.h"
 #include "net/ssl/default_channel_id_store.h"
+#include "net/test/gtest_util.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+using net::test::IsOk;
 
 namespace net {
 
@@ -146,7 +150,7 @@ TEST_F(HttpNetworkTransactionSSLTest, TokenBinding) {
   int rv = callback.GetResult(
       trans1.Start(GetRequestInfo("https://www.example.com/"),
                    callback.callback(), BoundNetLog()));
-  EXPECT_EQ(OK, rv);
+  EXPECT_THAT(rv, IsOk());
 
   HttpRequestHeaders headers1;
   ASSERT_TRUE(trans1.GetFullRequestHeaders(&headers1));
@@ -164,7 +168,7 @@ TEST_F(HttpNetworkTransactionSSLTest, TokenBinding) {
   rv = callback.GetResult(
       trans2.Start(GetRequestInfo("https://www.example.com/"),
                    callback.callback(), BoundNetLog()));
-  EXPECT_EQ(OK, rv);
+  EXPECT_THAT(rv, IsOk());
 
   HttpRequestHeaders headers2;
   ASSERT_TRUE(trans2.GetFullRequestHeaders(&headers2));
@@ -198,7 +202,7 @@ TEST_F(HttpNetworkTransactionSSLTest, NoTokenBindingOverHttp) {
   int rv =
       callback.GetResult(trans.Start(GetRequestInfo("http://www.example.com/"),
                                      callback.callback(), BoundNetLog()));
-  EXPECT_EQ(OK, rv);
+  EXPECT_THAT(rv, IsOk());
 
   HttpRequestHeaders headers;
   ASSERT_TRUE(trans.GetFullRequestHeaders(&headers));

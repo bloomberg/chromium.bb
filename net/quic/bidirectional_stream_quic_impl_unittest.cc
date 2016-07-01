@@ -36,8 +36,12 @@
 #include "net/quic/test_tools/quic_test_utils.h"
 #include "net/quic/test_tools/test_task_runner.h"
 #include "net/socket/socket_test_util.h"
+#include "net/test/gtest_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+using net::test::IsError;
+using net::test::IsOk;
 
 namespace net {
 
@@ -641,7 +645,7 @@ TEST_P(BidirectionalStreamQuicImplTest, GetRequest) {
   delegate->WaitUntilNextCallback();  // OnHeadersReceived
   TestCompletionCallback cb;
   int rv = delegate->ReadData(cb.callback());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
   EXPECT_EQ("200", delegate->response_headers().find(":status")->second);
   const char kResponseBody[] = "Hello world!";
   // Server sends data.
@@ -651,7 +655,7 @@ TEST_P(BidirectionalStreamQuicImplTest, GetRequest) {
 
   EXPECT_EQ(std::string(kResponseBody), delegate->data_received());
   TestCompletionCallback cb2;
-  EXPECT_EQ(ERR_IO_PENDING, delegate->ReadData(cb2.callback()));
+  EXPECT_THAT(delegate->ReadData(cb2.callback()), IsError(ERR_IO_PENDING));
 
   SpdyHeaderBlock trailers;
   size_t spdy_trailers_frame_length;
@@ -662,11 +666,11 @@ TEST_P(BidirectionalStreamQuicImplTest, GetRequest) {
       4, kFin, trailers.Clone(), &spdy_trailers_frame_length, &offset));
 
   delegate->WaitUntilNextCallback();  // OnTrailersReceived
-  EXPECT_EQ(OK, cb2.WaitForResult());
+  EXPECT_THAT(cb2.WaitForResult(), IsOk());
   trailers.erase(kFinalOffsetHeaderKey);
   EXPECT_EQ(trailers, delegate->trailers());
 
-  EXPECT_EQ(OK, delegate->ReadData(cb2.callback()));
+  EXPECT_THAT(delegate->ReadData(cb2.callback()), IsOk());
   base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(2, delegate->on_data_read_count());
@@ -759,7 +763,7 @@ TEST_P(BidirectionalStreamQuicImplTest, CoalesceDataBuffersNotHeadersFrame) {
   delegate->WaitUntilNextCallback();  // OnHeadersReceived
   TestCompletionCallback cb;
   int rv = delegate->ReadData(cb.callback());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
   EXPECT_EQ("200", delegate->response_headers().find(":status")->second);
   const char kResponseBody[] = "Hello world!";
   // Server sends data.
@@ -788,7 +792,7 @@ TEST_P(BidirectionalStreamQuicImplTest, CoalesceDataBuffersNotHeadersFrame) {
   delegate->WaitUntilNextCallback();  // OnTrailersReceived
   trailers.erase(kFinalOffsetHeaderKey);
   EXPECT_EQ(trailers, delegate->trailers());
-  EXPECT_EQ(OK, delegate->ReadData(cb.callback()));
+  EXPECT_THAT(delegate->ReadData(cb.callback()), IsOk());
 
   EXPECT_EQ(1, delegate->on_data_read_count());
   EXPECT_EQ(2, delegate->on_data_sent_count());
@@ -858,7 +862,7 @@ TEST_P(BidirectionalStreamQuicImplTest,
   delegate->WaitUntilNextCallback();  // OnHeadersReceived
   TestCompletionCallback cb;
   int rv = delegate->ReadData(cb.callback());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
   EXPECT_EQ("200", delegate->response_headers().find(":status")->second);
   const char kResponseBody[] = "Hello world!";
   // Server sends data.
@@ -884,7 +888,7 @@ TEST_P(BidirectionalStreamQuicImplTest,
   delegate->WaitUntilNextCallback();  // OnTrailersReceived
   trailers.erase(kFinalOffsetHeaderKey);
   EXPECT_EQ(trailers, delegate->trailers());
-  EXPECT_EQ(OK, delegate->ReadData(cb.callback()));
+  EXPECT_THAT(delegate->ReadData(cb.callback()), IsOk());
 
   EXPECT_EQ(1, delegate->on_data_read_count());
   EXPECT_EQ(2, delegate->on_data_sent_count());
@@ -958,7 +962,7 @@ TEST_P(BidirectionalStreamQuicImplTest,
   delegate->WaitUntilNextCallback();  // OnHeadersReceived
   TestCompletionCallback cb;
   int rv = delegate->ReadData(cb.callback());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
   EXPECT_EQ("200", delegate->response_headers().find(":status")->second);
   const char kResponseBody[] = "Hello world!";
   // Server sends data.
@@ -987,7 +991,7 @@ TEST_P(BidirectionalStreamQuicImplTest,
   delegate->WaitUntilNextCallback();  // OnTrailersReceived
   trailers.erase(kFinalOffsetHeaderKey);
   EXPECT_EQ(trailers, delegate->trailers());
-  EXPECT_EQ(OK, delegate->ReadData(cb.callback()));
+  EXPECT_THAT(delegate->ReadData(cb.callback()), IsOk());
 
   EXPECT_EQ(1, delegate->on_data_read_count());
   EXPECT_EQ(2, delegate->on_data_sent_count());
@@ -1047,7 +1051,7 @@ TEST_P(BidirectionalStreamQuicImplTest, PostRequest) {
   delegate->WaitUntilNextCallback();  // OnHeadersReceived
   TestCompletionCallback cb;
   int rv = delegate->ReadData(cb.callback());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
   EXPECT_EQ("200", delegate->response_headers().find(":status")->second);
   const char kResponseBody[] = "Hello world!";
   // Server sends data.
@@ -1067,7 +1071,7 @@ TEST_P(BidirectionalStreamQuicImplTest, PostRequest) {
   delegate->WaitUntilNextCallback();  // OnTrailersReceived
   trailers.erase(kFinalOffsetHeaderKey);
   EXPECT_EQ(trailers, delegate->trailers());
-  EXPECT_EQ(OK, delegate->ReadData(cb.callback()));
+  EXPECT_THAT(delegate->ReadData(cb.callback()), IsOk());
 
   EXPECT_EQ(1, delegate->on_data_read_count());
   EXPECT_EQ(1, delegate->on_data_sent_count());
@@ -1124,7 +1128,7 @@ TEST_P(BidirectionalStreamQuicImplTest, PutRequest) {
   delegate->WaitUntilNextCallback();  // OnHeadersReceived
   TestCompletionCallback cb;
   int rv = delegate->ReadData(cb.callback());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
   EXPECT_EQ("200", delegate->response_headers().find(":status")->second);
   const char kResponseBody[] = "Hello world!";
   // Server sends data.
@@ -1144,7 +1148,7 @@ TEST_P(BidirectionalStreamQuicImplTest, PutRequest) {
   delegate->WaitUntilNextCallback();  // OnTrailersReceived
   trailers.erase(kFinalOffsetHeaderKey);
   EXPECT_EQ(trailers, delegate->trailers());
-  EXPECT_EQ(OK, delegate->ReadData(cb.callback()));
+  EXPECT_THAT(delegate->ReadData(cb.callback()), IsOk());
 
   EXPECT_EQ(1, delegate->on_data_read_count());
   EXPECT_EQ(1, delegate->on_data_sent_count());
@@ -1204,7 +1208,7 @@ TEST_P(BidirectionalStreamQuicImplTest, InterleaveReadDataAndSendData) {
 
   TestCompletionCallback cb;
   int rv = delegate->ReadData(cb.callback());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
   const char kResponseBody[] = "Hello world!";
 
   // Server sends a data packet.
@@ -1220,7 +1224,7 @@ TEST_P(BidirectionalStreamQuicImplTest, InterleaveReadDataAndSendData) {
 
   TestCompletionCallback cb2;
   rv = delegate->ReadData(cb2.callback());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
   ProcessPacket(ConstructAckAndDataPacket(4, !kIncludeVersion, 3, 1, kFin,
                                           strlen(kResponseBody), kResponseBody,
                                           &server_maker_));
@@ -1231,7 +1235,7 @@ TEST_P(BidirectionalStreamQuicImplTest, InterleaveReadDataAndSendData) {
   expected_body.append(kResponseBody);
   EXPECT_EQ(expected_body, delegate->data_received());
 
-  EXPECT_EQ(OK, delegate->ReadData(cb.callback()));
+  EXPECT_THAT(delegate->ReadData(cb.callback()), IsOk());
   EXPECT_EQ(2, delegate->on_data_read_count());
   EXPECT_EQ(2, delegate->on_data_sent_count());
   EXPECT_EQ(kProtoQUIC1SPDY3, delegate->GetProtocol());
@@ -1268,11 +1272,12 @@ TEST_P(BidirectionalStreamQuicImplTest, ServerSendsRstAfterHeaders) {
 
   delegate->WaitUntilNextCallback();  // OnFailed
   TestCompletionCallback cb;
-  EXPECT_EQ(ERR_QUIC_PROTOCOL_ERROR, delegate->ReadData(cb.callback()));
+  EXPECT_THAT(delegate->ReadData(cb.callback()),
+              IsError(ERR_QUIC_PROTOCOL_ERROR));
 
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_EQ(ERR_QUIC_PROTOCOL_ERROR, delegate->error());
+  EXPECT_THAT(delegate->error(), IsError(ERR_QUIC_PROTOCOL_ERROR));
   EXPECT_EQ(0, delegate->on_data_read_count());
   EXPECT_EQ(0, delegate->on_data_sent_count());
   EXPECT_EQ(static_cast<int64_t>(spdy_request_headers_frame_length),
@@ -1320,15 +1325,16 @@ TEST_P(BidirectionalStreamQuicImplTest, ServerSendsRstAfterReadData) {
 
   TestCompletionCallback cb;
   int rv = delegate->ReadData(cb.callback());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   // Server sends a Rst.
   ProcessPacket(ConstructServerRstStreamPacket(3));
 
   delegate->WaitUntilNextCallback();  // OnFailed
 
-  EXPECT_EQ(ERR_QUIC_PROTOCOL_ERROR, delegate->ReadData(cb.callback()));
-  EXPECT_EQ(ERR_QUIC_PROTOCOL_ERROR, delegate->error());
+  EXPECT_THAT(delegate->ReadData(cb.callback()),
+              IsError(ERR_QUIC_PROTOCOL_ERROR));
+  EXPECT_THAT(delegate->error(), IsError(ERR_QUIC_PROTOCOL_ERROR));
   EXPECT_EQ(0, delegate->on_data_read_count());
   EXPECT_EQ(0, delegate->on_data_sent_count());
   EXPECT_EQ(static_cast<int64_t>(spdy_request_headers_frame_length),
@@ -1434,7 +1440,7 @@ TEST_P(BidirectionalStreamQuicImplTest, SessionClosedBeforeReadData) {
   delegate->WaitUntilNextCallback();  // OnHeadersReceived
   TestCompletionCallback cb;
   int rv = delegate->ReadData(cb.callback());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
   session()->connection()->CloseConnection(
       QUIC_NO_ERROR, "test", ConnectionCloseBehavior::SILENT_CLOSE);
   delegate->WaitUntilNextCallback();  // OnFailed
@@ -1445,8 +1451,8 @@ TEST_P(BidirectionalStreamQuicImplTest, SessionClosedBeforeReadData) {
   delegate->SendData(buf, buf->size(), false);
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_EQ(ERR_UNEXPECTED, delegate->ReadData(cb.callback()));
-  EXPECT_EQ(ERR_UNEXPECTED, delegate->error());
+  EXPECT_THAT(delegate->ReadData(cb.callback()), IsError(ERR_UNEXPECTED));
+  EXPECT_THAT(delegate->error(), IsError(ERR_UNEXPECTED));
   EXPECT_EQ(0, delegate->on_data_read_count());
   EXPECT_EQ(0, delegate->on_data_sent_count());
   EXPECT_EQ(kProtoQUIC1SPDY3, delegate->GetProtocol());
@@ -1493,7 +1499,7 @@ TEST_P(BidirectionalStreamQuicImplTest, CancelStreamAfterReadData) {
 
   // Cancel the stream after ReadData returns ERR_IO_PENDING.
   TestCompletionCallback cb;
-  EXPECT_EQ(ERR_IO_PENDING, delegate->ReadData(cb.callback()));
+  EXPECT_THAT(delegate->ReadData(cb.callback()), IsError(ERR_IO_PENDING));
   delegate->CancelStream();
 
   base::RunLoop().RunUntilIdle();
@@ -1590,7 +1596,7 @@ TEST_P(BidirectionalStreamQuicImplTest, DeleteStreamDuringOnDataRead) {
 
   TestCompletionCallback cb;
   int rv = delegate->ReadData(cb.callback());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
   const char kResponseBody[] = "Hello world!";
   // Server sends data.
   ProcessPacket(
@@ -1643,7 +1649,7 @@ TEST_P(BidirectionalStreamQuicImplTest, DeleteStreamDuringOnTrailersReceived) {
 
   TestCompletionCallback cb;
   int rv = delegate->ReadData(cb.callback());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
   const char kResponseBody[] = "Hello world!";
   // Server sends data.
   ProcessPacket(

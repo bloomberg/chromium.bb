@@ -30,8 +30,13 @@
 #include "net/spdy/spdy_protocol.h"
 #include "net/spdy/spdy_session_pool.h"
 #include "net/spdy/spdy_test_util_common.h"
+#include "net/test/gtest_util.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
+
+using net::test::IsError;
+using net::test::IsOk;
 
 //-----------------------------------------------------------------------------
 
@@ -245,12 +250,14 @@ scoped_refptr<IOBufferWithSize> SpdyProxyClientSocketTest::CreateBuffer(
 }
 
 void SpdyProxyClientSocketTest::AssertConnectSucceeds() {
-  ASSERT_EQ(ERR_IO_PENDING, sock_->Connect(read_callback_.callback()));
-  ASSERT_EQ(OK, read_callback_.WaitForResult());
+  ASSERT_THAT(sock_->Connect(read_callback_.callback()),
+              IsError(ERR_IO_PENDING));
+  ASSERT_THAT(read_callback_.WaitForResult(), IsOk());
 }
 
 void SpdyProxyClientSocketTest::AssertConnectFails(int result) {
-  ASSERT_EQ(ERR_IO_PENDING, sock_->Connect(read_callback_.callback()));
+  ASSERT_THAT(sock_->Connect(read_callback_.callback()),
+              IsError(ERR_IO_PENDING));
   ASSERT_EQ(result, read_callback_.WaitForResult());
 }
 
@@ -555,20 +562,20 @@ TEST_P(SpdyProxyClientSocketTest, GetPeerAddressReturnsCorrectValues) {
   Initialize(reads, arraysize(reads), writes, arraysize(writes));
 
   IPEndPoint addr;
-  EXPECT_EQ(ERR_SOCKET_NOT_CONNECTED, sock_->GetPeerAddress(&addr));
+  EXPECT_THAT(sock_->GetPeerAddress(&addr), IsError(ERR_SOCKET_NOT_CONNECTED));
 
   AssertConnectSucceeds();
   EXPECT_TRUE(sock_->IsConnected());
-  EXPECT_EQ(OK, sock_->GetPeerAddress(&addr));
+  EXPECT_THAT(sock_->GetPeerAddress(&addr), IsOk());
 
   ResumeAndRun();
 
   EXPECT_FALSE(sock_->IsConnected());
-  EXPECT_EQ(ERR_SOCKET_NOT_CONNECTED, sock_->GetPeerAddress(&addr));
+  EXPECT_THAT(sock_->GetPeerAddress(&addr), IsError(ERR_SOCKET_NOT_CONNECTED));
 
   sock_->Disconnect();
 
-  EXPECT_EQ(ERR_SOCKET_NOT_CONNECTED, sock_->GetPeerAddress(&addr));
+  EXPECT_THAT(sock_->GetPeerAddress(&addr), IsError(ERR_SOCKET_NOT_CONNECTED));
 }
 
 // ----------- Write
@@ -1151,7 +1158,7 @@ TEST_P(SpdyProxyClientSocketTest, WritePendingOnClose) {
 
   CloseSpdySession(ERR_ABORTED, std::string());
 
-  EXPECT_EQ(ERR_CONNECTION_CLOSED, write_callback_.WaitForResult());
+  EXPECT_THAT(write_callback_.WaitForResult(), IsError(ERR_CONNECTION_CLOSED));
 }
 
 // If the socket is Disconnected with a pending Write(), the callback

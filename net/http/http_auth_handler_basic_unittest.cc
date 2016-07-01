@@ -14,7 +14,11 @@
 #include "net/http/http_auth_challenge_tokenizer.h"
 #include "net/http/http_request_info.h"
 #include "net/ssl/ssl_info.h"
+#include "net/test/gtest_util.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+using net::test::IsOk;
 
 namespace net {
 
@@ -48,7 +52,7 @@ TEST(HttpAuthHandlerBasicTest, GenerateAuthToken) {
     TestCompletionCallback callback;
     int rv = basic->GenerateAuthToken(&credentials, &request_info,
                                       callback.callback(), &auth_token);
-    EXPECT_EQ(OK, rv);
+    EXPECT_THAT(rv, IsOk());
     EXPECT_STREQ(tests[i].expected_credentials, auth_token.c_str());
   }
 }

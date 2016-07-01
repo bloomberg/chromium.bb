@@ -25,15 +25,19 @@
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
 #include "net/test/embedded_test_server/request_handler_util.h"
+#include "net/test/gtest_util.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_fetcher_delegate.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_test_util.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if defined(USE_NSS_CERTS)
 #include "net/cert_net/nss_ocsp.h"
 #endif
+
+using net::test::IsOk;
 
 namespace net {
 namespace test_server {
@@ -301,7 +305,7 @@ TEST_P(EmbeddedTestServerTest, ConnectionListenerAccept) {
       ClientSocketFactory::GetDefaultFactory()->CreateTransportClientSocket(
           address_list, NULL, &net_log, NetLog::Source());
   TestCompletionCallback callback;
-  ASSERT_EQ(OK, callback.GetResult(socket->Connect(callback.callback())));
+  ASSERT_THAT(callback.GetResult(socket->Connect(callback.callback())), IsOk());
 
   connection_listener_.WaitUntilFirstConnectionAccepted();
 
