@@ -35,7 +35,6 @@ closure_args = [
   "language_out=ECMASCRIPT5_STRICT",
   "polymer_pass",
   "source_map_format=V3",
-  "summary_detail_level=3",
 ]
 
 default_disabled_closure_args = [

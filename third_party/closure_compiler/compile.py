@@ -208,11 +208,11 @@ class Checker(object):
       args += ["--js_output_file=%s" % out_file]
       args += ["--create_source_map=%s" % (self._MAP_FILE_FORMAT % out_file)]
 
-    if externs:
-      args += ["--externs=%s" % e for e in externs]
+    args += ["--externs=%s" % e for e in externs or []]
 
-    if closure_args:
-      args += ["--%s" % arg for arg in closure_args]
+    closure_args = closure_args or []
+    closure_args += ["summary_detail_level=3"]
+    args += ["--%s" % arg for arg in closure_args]
 
     args_file_content = " %s" % " ".join(args)
     self._log_debug("Args: %s" % args_file_content.strip())

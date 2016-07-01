@@ -244,9 +244,12 @@ class Checker(object):
 
       js_args = [self._expanded_file]
 
+    closure_args = closure_args or []
+    closure_args += ["summary_detail_level=3"]
+
     args = ["--externs=%s" % e for e in externs] + \
            ["--js=%s" % s for s in js_args] + \
-           ["--%s" % arg for arg in closure_args or []]
+           ["--%s" % arg for arg in closure_args]
 
     if out_file:
       out_dir = os.path.dirname(out_file)

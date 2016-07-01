@@ -35,7 +35,6 @@
     'language_out=ECMASCRIPT5_STRICT',
     'polymer_pass',
     'source_map_format=V3',
-    'summary_detail_level=3', # compile.py depends on this for output parsing; do not override.
   ],
   'default_disabled_closure_args': [
     # TODO(dbeam): happens when the same file is <include>d multiple times.
