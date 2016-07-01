@@ -5,7 +5,10 @@
 """Represents the trace of a page load."""
 
 import datetime
-import json
+try:
+  import ujson as json
+except ImportError:
+  import json
 import time
 
 import devtools_monitor
