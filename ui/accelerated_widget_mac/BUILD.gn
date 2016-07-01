@@ -39,7 +39,6 @@ component("accelerated_widget_mac") {
   ]
 
   libs = [
-    "ApplicationServices.framework",  # Temporary hack around https://crbug.com/620127. Remove after https://crbug.com/622481 is fixed.
     "AVFoundation.framework",
     "CoreGraphics.framework",
     "Foundation.framework",
