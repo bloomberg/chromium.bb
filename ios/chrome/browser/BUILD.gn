@@ -562,6 +562,7 @@ source_set("browser") {
 
   deps = [
     ":about_flags",
+    ":chrome_coordinators",
     ":injected_js",
     "//base",
     "//base:i18n",

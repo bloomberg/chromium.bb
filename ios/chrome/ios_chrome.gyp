@@ -139,6 +139,7 @@
         '../web/ios_web.gyp:ios_web',
         'injected_js',
         'ios_chrome_browser_about_flags',
+        'ios_chrome_browser_chrome_coordinators',
         'ios_chrome_common',
         'ios_chrome_resources.gyp:ios_chrome_resources',
         'ios_chrome_resources.gyp:ios_chrome_ui_string_overrider_factory',
