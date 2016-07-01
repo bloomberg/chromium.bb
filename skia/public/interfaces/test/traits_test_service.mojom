@@ -5,6 +5,7 @@
 module skia.mojom;
 
 import "skia/public/interfaces/bitmap.mojom";
+import "skia/public/interfaces/bitmap_array.mojom";
 import "skia/public/interfaces/image_filter.mojom";
 
 // All functions on this interface echo their arguments to test StructTraits
@@ -12,6 +13,9 @@ import "skia/public/interfaces/image_filter.mojom";
 interface TraitsTestService {
   [Sync]
   EchoBitmap(Bitmap b) => (Bitmap pass);
+
+  [Sync]
+  EchoBitmapArray(BitmapArray w) => (BitmapArray pass);
 
   [Sync]
   EchoImageFilter(ImageFilter i) => (ImageFilter pass);
