@@ -152,13 +152,16 @@
                 # below.
               ],
             }],
-            ['OS=="mac" and mac_sdk=="10.9"', {
+            ['OS=="mac"', {
               # The 10.9 SDK includes cups 1.7, which deprecates
               # httpConnectEncrypt() in favor of httpConnect2(). hhttpConnect2()
               # is new in 1.7, so it doesn't exist on OS X 10.6-10.8 and we
               # can't use it until 10.9 is our minimum system version.
               # (cups_version isn't reliable on OS X, so key the check off of
               # mac_sdk).
+              # With a 10.8 deployment target, several other APIs are
+              # deprecated.  We're still on CUPS 1.4 until Linux no longer
+              # needs to support it, see comment above.
               'xcode_settings': {
                 'WARNING_CFLAGS':  [
                   '-Wno-deprecated-declarations',
