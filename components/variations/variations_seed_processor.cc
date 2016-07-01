@@ -221,6 +221,16 @@ void VariationsSeedProcessor::CreateTrialFromStudy(
     base::FeatureList* feature_list) {
   const Study& study = *processed_study.study();
 
+  // If the trial already exists, check if the selected group exists in the
+  // |processed_study|. If not, there is nothing to do here.
+  base::FieldTrial* existing_trial = base::FieldTrialList::Find(study.name());
+  if (existing_trial) {
+    int experiment_index = processed_study.GetExperimentIndexByName(
+        existing_trial->GetGroupNameWithoutActivation());
+    if (experiment_index == -1)
+      return;
+  }
+
   // Check if any experiments need to be forced due to a command line
   // flag. Force the first experiment with an existing flag.
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();

@@ -40,6 +40,7 @@ const char kFlagStudyName[] = "flag_test_trial";
 const char kFlagGroup1Name[] = "flag_group1";
 const char kFlagGroup2Name[] = "flag_group2";
 const char kNonFlagGroupName[] = "non_flag_group";
+const char kOtherGroupName[] = "other_group";
 const char kForcingFlag1[] = "flag_test1";
 const char kForcingFlag2[] = "flag_test2";
 
@@ -224,6 +225,20 @@ TEST_F(VariationsSeedProcessorTest, ForceGroup_DontChooseGroupWithFlag) {
   Study study = CreateStudyWithFlagGroups(1, 999, 999);
   EXPECT_TRUE(CreateTrialFromStudy(study));
   EXPECT_EQ(kNonFlagGroupName,
+            base::FieldTrialList::FindFullName(kFlagStudyName));
+}
+
+TEST_F(VariationsSeedProcessorTest, CreateTrialForRegisteredGroup) {
+  base::FieldTrialList field_trial_list(nullptr);
+
+  base::FieldTrialList::CreateFieldTrial(kFlagStudyName, kOtherGroupName);
+
+  // Create an arbitrary study that does not have group named |kOtherGroupName|.
+  Study study = CreateStudyWithFlagGroups(100, 0, 0);
+  // Creating the trial should not crash.
+  EXPECT_TRUE(CreateTrialFromStudy(study));
+  // And the previous group should still be selected.
+  EXPECT_EQ(kOtherGroupName,
             base::FieldTrialList::FindFullName(kFlagStudyName));
 }
 
