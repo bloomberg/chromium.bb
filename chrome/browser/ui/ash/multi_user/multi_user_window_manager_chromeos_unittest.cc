@@ -246,14 +246,15 @@ class MultiUserWindowManagerChromeOSTest : public AshTestBase {
   // Create a maximize mode window manager.
   MaximizeModeWindowManager* CreateMaximizeModeWindowManager() {
     EXPECT_FALSE(maximize_mode_window_manager());
-    Shell::GetInstance()->maximize_mode_controller()->
-        EnableMaximizeModeWindowManager(true);
+    WmShell::Get()->maximize_mode_controller()->EnableMaximizeModeWindowManager(
+        true);
     return maximize_mode_window_manager();
   }
 
   MaximizeModeWindowManager* maximize_mode_window_manager() {
-    return Shell::GetInstance()->maximize_mode_controller()->
-        maximize_mode_window_manager_.get();
+    return WmShell::Get()
+        ->maximize_mode_controller()
+        ->maximize_mode_window_manager_.get();
   }
 
  private:

@@ -10,6 +10,7 @@
 #include "ash/common/ash_switches.h"
 #include "ash/common/display/display_info.h"
 #include "ash/common/wm/maximize_mode/maximize_mode_controller.h"
+#include "ash/common/wm_shell.h"
 #include "ash/content/shell_content_state.h"
 #include "ash/display/display_manager.h"
 #include "ash/shell.h"
@@ -48,9 +49,8 @@ DisplayInfo CreateDisplayInfo(int64_t id, const gfx::Rect& bounds) {
 }
 
 void EnableMaximizeMode(bool enable) {
-  Shell::GetInstance()
-      ->maximize_mode_controller()
-      ->EnableMaximizeModeWindowManager(enable);
+  WmShell::Get()->maximize_mode_controller()->EnableMaximizeModeWindowManager(
+      enable);
 }
 
 bool RotationLocked() {

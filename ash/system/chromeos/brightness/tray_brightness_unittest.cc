@@ -9,6 +9,7 @@
 #include "ash/common/system/tray/system_tray_delegate.h"
 #include "ash/common/system/tray/system_tray_item.h"
 #include "ash/common/wm/maximize_mode/maximize_mode_controller.h"
+#include "ash/common/wm_shell.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/status_area_widget_test_helper.h"
@@ -48,27 +49,23 @@ TEST_F(TrayBrightnessTest, CreateDefaultView) {
 // Tests the construction of the default view while MaximizeMode is active.
 // The BrightnessView should be visible.
 TEST_F(TrayBrightnessTest, CreateDefaultViewDuringMaximizeMode) {
-  Shell::GetInstance()
-      ->maximize_mode_controller()
-      ->EnableMaximizeModeWindowManager(true);
+  WmShell::Get()->maximize_mode_controller()->EnableMaximizeModeWindowManager(
+      true);
   std::unique_ptr<views::View> tray(CreateDefaultView());
   EXPECT_TRUE(tray->visible());
-  Shell::GetInstance()
-      ->maximize_mode_controller()
-      ->EnableMaximizeModeWindowManager(false);
+  WmShell::Get()->maximize_mode_controller()->EnableMaximizeModeWindowManager(
+      false);
 }
 
 // Tests that the enabling of MaximizeMode affects a previously created
 // BrightnessView, changing the visibility.
 TEST_F(TrayBrightnessTest, DefaultViewVisibilityChangesDuringMaximizeMode) {
   std::unique_ptr<views::View> tray(CreateDefaultView());
-  Shell::GetInstance()
-      ->maximize_mode_controller()
-      ->EnableMaximizeModeWindowManager(true);
+  WmShell::Get()->maximize_mode_controller()->EnableMaximizeModeWindowManager(
+      true);
   EXPECT_TRUE(tray->visible());
-  Shell::GetInstance()
-      ->maximize_mode_controller()
-      ->EnableMaximizeModeWindowManager(false);
+  WmShell::Get()->maximize_mode_controller()->EnableMaximizeModeWindowManager(
+      false);
   EXPECT_FALSE(tray->visible());
 }
 
@@ -82,27 +79,23 @@ TEST_F(TrayBrightnessTest, CreateDetailedView) {
 // Tests that when the detailed view is created during MaximizeMode that its
 // BrightnessView is visible.
 TEST_F(TrayBrightnessTest, CreateDetailedViewDuringMaximizeMode) {
-  Shell::GetInstance()
-      ->maximize_mode_controller()
-      ->EnableMaximizeModeWindowManager(true);
+  WmShell::Get()->maximize_mode_controller()->EnableMaximizeModeWindowManager(
+      true);
   std::unique_ptr<views::View> tray(CreateDetailedView());
   EXPECT_TRUE(tray->visible());
-  Shell::GetInstance()
-      ->maximize_mode_controller()
-      ->EnableMaximizeModeWindowManager(false);
+  WmShell::Get()->maximize_mode_controller()->EnableMaximizeModeWindowManager(
+      false);
 }
 
 // Tests that the enabling of MaximizeMode has no affect on the visibility of a
 // previously created BrightnessView that belongs to a detailed view.
 TEST_F(TrayBrightnessTest, DetailedViewVisibilityChangesDuringMaximizeMode) {
   std::unique_ptr<views::View> tray(CreateDetailedView());
-  Shell::GetInstance()
-      ->maximize_mode_controller()
-      ->EnableMaximizeModeWindowManager(true);
+  WmShell::Get()->maximize_mode_controller()->EnableMaximizeModeWindowManager(
+      true);
   EXPECT_TRUE(tray->visible());
-  Shell::GetInstance()
-      ->maximize_mode_controller()
-      ->EnableMaximizeModeWindowManager(false);
+  WmShell::Get()->maximize_mode_controller()->EnableMaximizeModeWindowManager(
+      false);
   EXPECT_TRUE(tray->visible());
 }
 

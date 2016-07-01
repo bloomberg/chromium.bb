@@ -308,7 +308,7 @@ void FrameCaptionButtonContainerView::SetButtonIcon(FrameCaptionButton* button,
 }
 
 bool FrameCaptionButtonContainerView::ShouldSizeButtonBeVisible() const {
-  return !Shell::GetInstance()
+  return !WmShell::Get()
               ->maximize_mode_controller()
               ->IsMaximizeModeWindowManagerEnabled() &&
          frame_->widget_delegate()->CanMaximize();

@@ -114,7 +114,7 @@ BrightnessView::BrightnessView(bool default_view, double initial_percent)
 
   if (is_default_view_) {
     WmShell::Get()->AddShellObserver(this);
-    SetVisible(Shell::GetInstance()
+    SetVisible(WmShell::Get()
                    ->maximize_mode_controller()
                    ->IsMaximizeModeWindowManagerEnabled());
   }

@@ -29,6 +29,7 @@ class AccessibilityDelegate;
 class DisplayInfo;
 class FocusCycler;
 class KeyboardUI;
+class MaximizeModeController;
 class MruWindowTracker;
 class ScopedDisableInternalMouseAndKeyboard;
 class SessionStateDelegate;
@@ -63,6 +64,10 @@ class ASH_EXPORT WmShell {
   FocusCycler* focus_cycler() { return focus_cycler_.get(); }
 
   KeyboardUI* keyboard_ui() { return keyboard_ui_.get(); }
+
+  MaximizeModeController* maximize_mode_controller() {
+    return maximize_mode_controller_.get();
+  }
 
   MruWindowTracker* mru_window_tracker() { return mru_window_tracker_.get(); }
 
@@ -219,6 +224,9 @@ class ASH_EXPORT WmShell {
 
   void DeleteWindowSelectorController();
 
+  void CreateMaximizeModeController();
+  void DeleteMaximizeModeController();
+
   void CreateMruWindowTracker();
   void DeleteMruWindowTracker();
 
@@ -231,6 +239,7 @@ class ASH_EXPORT WmShell {
 
   std::unique_ptr<FocusCycler> focus_cycler_;
   std::unique_ptr<KeyboardUI> keyboard_ui_;
+  std::unique_ptr<MaximizeModeController> maximize_mode_controller_;
   std::unique_ptr<MediaDelegate> media_delegate_;
   std::unique_ptr<MruWindowTracker> mru_window_tracker_;
   std::unique_ptr<SystemTrayNotifier> system_tray_notifier_;

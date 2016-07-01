@@ -97,6 +97,8 @@ WmShellMus::WmShellMus(::mus::WindowTreeClient* client)
   client_->AddObserver(this);
   WmShell::Set(this);
 
+  CreateMaximizeModeController();
+
   CreateMruWindowTracker();
 
   accessibility_delegate_.reset(new DefaultAccessibilityDelegate);
@@ -104,6 +106,11 @@ WmShellMus::WmShellMus(::mus::WindowTreeClient* client)
 }
 
 WmShellMus::~WmShellMus() {
+  // This order mirrors that of Shell.
+
+  // Destroy maximize mode controller early on since it has some observers which
+  // need to be removed.
+  DeleteMaximizeModeController();
   DeleteSystemTrayDelegate();
   DeleteWindowSelectorController();
   DeleteMruWindowTracker();

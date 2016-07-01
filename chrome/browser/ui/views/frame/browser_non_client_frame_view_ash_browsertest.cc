@@ -7,6 +7,7 @@
 #include "ash/common/ash_constants.h"
 #include "ash/common/ash_switches.h"
 #include "ash/common/wm/maximize_mode/maximize_mode_controller.h"
+#include "ash/common/wm_shell.h"
 #include "ash/frame/caption_buttons/frame_caption_button_container_view.h"
 #include "ash/frame/header_painter.h"
 #include "ash/shell.h"
@@ -284,16 +285,18 @@ IN_PROC_BROWSER_TEST_F(BrowserNonClientFrameViewAshTest,
           widget->non_client_view()->frame_view());
 
   const gfx::Rect initial = frame_view->caption_button_container_->bounds();
-  ash::Shell::GetInstance()->maximize_mode_controller()->
-      EnableMaximizeModeWindowManager(true);
+  ash::WmShell::Get()
+      ->maximize_mode_controller()
+      ->EnableMaximizeModeWindowManager(true);
   ash::FrameCaptionButtonContainerView::TestApi test(frame_view->
                                                      caption_button_container_);
   test.EndAnimations();
   const gfx::Rect during_maximize = frame_view->caption_button_container_->
       bounds();
   EXPECT_GT(initial.width(), during_maximize.width());
-  ash::Shell::GetInstance()->maximize_mode_controller()->
-      EnableMaximizeModeWindowManager(false);
+  ash::WmShell::Get()
+      ->maximize_mode_controller()
+      ->EnableMaximizeModeWindowManager(false);
   test.EndAnimations();
   const gfx::Rect after_restore = frame_view->caption_button_container_->
       bounds();

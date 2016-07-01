@@ -6,6 +6,7 @@
 
 #include "ash/common/ash_layout_constants.h"
 #include "ash/common/wm/maximize_mode/maximize_mode_controller.h"
+#include "ash/common/wm_shell.h"
 #include "ash/frame/caption_buttons/frame_caption_button.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
@@ -165,9 +166,8 @@ TEST_F(FrameCaptionButtonContainerViewTest,
 
   // Hidden size button should result in minimize button animating to the
   // right. The size button should not be visible, but should not have moved.
-  Shell::GetInstance()
-      ->maximize_mode_controller()
-      ->EnableMaximizeModeWindowManager(true);
+  WmShell::Get()->maximize_mode_controller()->EnableMaximizeModeWindowManager(
+      true);
   container.UpdateSizeButtonVisibility();
   test.EndAnimations();
   // Parent needs to layout in response to size change.
@@ -186,9 +186,8 @@ TEST_F(FrameCaptionButtonContainerViewTest,
 
   // Revealing the size button should cause the minimize button to return to its
   // original position.
-  Shell::GetInstance()
-      ->maximize_mode_controller()
-      ->EnableMaximizeModeWindowManager(false);
+  WmShell::Get()->maximize_mode_controller()->EnableMaximizeModeWindowManager(
+      false);
   container.UpdateSizeButtonVisibility();
   // Calling code needs to layout in response to size change.
   container.Layout();

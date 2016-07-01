@@ -157,7 +157,7 @@ void AppListPresenterDelegate::Init(app_list::AppListView* view,
       Shelf::ForWindow(container)->GetAppListButton();
   is_centered_ = view->ShouldCenterWindow();
   bool is_fullscreen = IsFullscreenAppListEnabled() &&
-                       Shell::GetInstance()
+                       WmShell::Get()
                            ->maximize_mode_controller()
                            ->IsMaximizeModeWindowManagerEnabled();
   if (is_fullscreen) {

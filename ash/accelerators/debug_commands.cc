@@ -7,6 +7,7 @@
 #include "ash/accelerators/accelerator_commands.h"
 #include "ash/common/ash_switches.h"
 #include "ash/common/wm/maximize_mode/maximize_mode_controller.h"
+#include "ash/common/wm_shell.h"
 #include "ash/debug.h"
 #include "ash/desktop_background/desktop_background_controller.h"
 #include "ash/desktop_background/user_wallpaper_delegate.h"
@@ -145,7 +146,7 @@ void HandleToggleTouchscreen() {
 
 void HandleToggleToggleTouchView() {
   MaximizeModeController* controller =
-      Shell::GetInstance()->maximize_mode_controller();
+      WmShell::Get()->maximize_mode_controller();
   controller->EnableMaximizeModeWindowManager(
       !controller->IsMaximizeModeWindowManagerEnabled());
 }

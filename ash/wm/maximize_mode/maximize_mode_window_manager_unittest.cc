@@ -82,25 +82,23 @@ class MaximizeModeWindowManagerTest : public test::AshTestBase {
   }
 
   // Create the Maximized mode window manager.
-  ash::MaximizeModeWindowManager* CreateMaximizeModeWindowManager() {
+  MaximizeModeWindowManager* CreateMaximizeModeWindowManager() {
     EXPECT_FALSE(maximize_mode_window_manager());
-    Shell::GetInstance()
-        ->maximize_mode_controller()
-        ->EnableMaximizeModeWindowManager(true);
+    WmShell::Get()->maximize_mode_controller()->EnableMaximizeModeWindowManager(
+        true);
     return maximize_mode_window_manager();
   }
 
   // Destroy the maximized mode window manager.
   void DestroyMaximizeModeWindowManager() {
-    Shell::GetInstance()
-        ->maximize_mode_controller()
-        ->EnableMaximizeModeWindowManager(false);
+    WmShell::Get()->maximize_mode_controller()->EnableMaximizeModeWindowManager(
+        false);
     EXPECT_FALSE(maximize_mode_window_manager());
   }
 
   // Get the maximze window manager.
-  ash::MaximizeModeWindowManager* maximize_mode_window_manager() {
-    return Shell::GetInstance()
+  MaximizeModeWindowManager* maximize_mode_window_manager() {
+    return WmShell::Get()
         ->maximize_mode_controller()
         ->maximize_mode_window_manager_.get();
   }
@@ -149,7 +147,7 @@ class MaximizeModeWindowManagerTest : public test::AshTestBase {
 // Test that creating the object and destroying it without any windows should
 // not cause any problems.
 TEST_F(MaximizeModeWindowManagerTest, SimpleStart) {
-  ash::MaximizeModeWindowManager* manager = CreateMaximizeModeWindowManager();
+  MaximizeModeWindowManager* manager = CreateMaximizeModeWindowManager();
   ASSERT_TRUE(manager);
   EXPECT_EQ(0, manager->GetNumberOfManagedWindows());
   DestroyMaximizeModeWindowManager();
@@ -189,7 +187,7 @@ TEST_F(MaximizeModeWindowManagerTest, PreCreateWindows) {
 
   // Create the manager and make sure that all qualifying windows were detected
   // and changed.
-  ash::MaximizeModeWindowManager* manager = CreateMaximizeModeWindowManager();
+  MaximizeModeWindowManager* manager = CreateMaximizeModeWindowManager();
   ASSERT_TRUE(manager);
   EXPECT_EQ(3, manager->GetNumberOfManagedWindows());
   EXPECT_TRUE(wm::GetWindowState(w1.get())->IsMaximized());
@@ -263,7 +261,7 @@ TEST_F(MaximizeModeWindowManagerTest, GoingToMaximizedWithModalDialogPresent) {
 
   // Create the manager and make sure that all qualifying windows were detected
   // and changed.
-  ash::MaximizeModeWindowManager* manager = CreateMaximizeModeWindowManager();
+  MaximizeModeWindowManager* manager = CreateMaximizeModeWindowManager();
   ASSERT_TRUE(manager);
   EXPECT_EQ(3, manager->GetNumberOfManagedWindows());
   EXPECT_TRUE(wm::GetWindowState(w1.get())->IsMaximized());
@@ -327,7 +325,7 @@ TEST_F(MaximizeModeWindowManagerTest,
 
   // Create the manager and make sure that all qualifying windows were detected
   // and changed.
-  ash::MaximizeModeWindowManager* manager = CreateMaximizeModeWindowManager();
+  MaximizeModeWindowManager* manager = CreateMaximizeModeWindowManager();
   ASSERT_TRUE(manager);
   EXPECT_EQ(3, manager->GetNumberOfManagedWindows());
   // The unlimited window should have the size of the workspace / parent window.
@@ -359,7 +357,7 @@ TEST_F(MaximizeModeWindowManagerTest,
 
 // Test that creating windows while a maximizer exists picks them properly up.
 TEST_F(MaximizeModeWindowManagerTest, CreateWindows) {
-  ash::MaximizeModeWindowManager* manager = CreateMaximizeModeWindowManager();
+  MaximizeModeWindowManager* manager = CreateMaximizeModeWindowManager();
   ASSERT_TRUE(manager);
   EXPECT_EQ(0, manager->GetNumberOfManagedWindows());
 
@@ -433,7 +431,7 @@ TEST_F(MaximizeModeWindowManagerTest, CreateWindows) {
 // is active gets restored to a usable (non tiny) size upon switching back.
 TEST_F(MaximizeModeWindowManagerTest,
        CreateWindowInMaximizedModeRestoresToUsefulSize) {
-  ash::MaximizeModeWindowManager* manager = CreateMaximizeModeWindowManager();
+  MaximizeModeWindowManager* manager = CreateMaximizeModeWindowManager();
   ASSERT_TRUE(manager);
   EXPECT_EQ(0, manager->GetNumberOfManagedWindows());
 
@@ -459,7 +457,7 @@ TEST_F(MaximizeModeWindowManagerTest,
 TEST_F(MaximizeModeWindowManagerTest, CreateNonMaximizableButResizableWindows) {
   // Create the manager and make sure that all qualifying windows were detected
   // and changed.
-  ash::MaximizeModeWindowManager* manager = CreateMaximizeModeWindowManager();
+  MaximizeModeWindowManager* manager = CreateMaximizeModeWindowManager();
   ASSERT_TRUE(manager);
 
   gfx::Rect rect(10, 10, 200, 50);
@@ -515,11 +513,11 @@ std::string GetPlacementString(const gfx::Rect& bounds,
 // Retrieves the window's restore state override - if any - and returns it as a
 // string.
 std::string GetPlacementOverride(aura::Window* window) {
-  gfx::Rect* bounds = window->GetProperty(ash::kRestoreBoundsOverrideKey);
+  gfx::Rect* bounds = window->GetProperty(kRestoreBoundsOverrideKey);
   if (bounds) {
     gfx::Rect restore_bounds = *bounds;
     ui::WindowShowState restore_state =
-        window->GetProperty(ash::kRestoreShowStateOverrideKey);
+        window->GetProperty(kRestoreShowStateOverrideKey);
     return GetPlacementString(restore_bounds, restore_state);
   }
   return std::string();
@@ -539,7 +537,7 @@ TEST_F(MaximizeModeWindowManagerTest, TestRestoreIntegrety) {
   EXPECT_EQ(std::string(), GetPlacementOverride(normal_window.get()));
   EXPECT_EQ(std::string(), GetPlacementOverride(maximized_window.get()));
 
-  ash::MaximizeModeWindowManager* manager = CreateMaximizeModeWindowManager();
+  MaximizeModeWindowManager* manager = CreateMaximizeModeWindowManager();
   ASSERT_TRUE(manager);
 
   // With the maximization the override states should be returned in its
@@ -570,7 +568,7 @@ TEST_F(MaximizeModeWindowManagerTest, TestRestoreIntegrety) {
 // Test that windows which got created before the maximizer was created can be
 // destroyed while the maximizer is still running.
 TEST_F(MaximizeModeWindowManagerTest, PreCreateWindowsDeleteWhileActive) {
-  ash::MaximizeModeWindowManager* manager = NULL;
+  MaximizeModeWindowManager* manager = NULL;
   {
     // Bounds for windows we know can be controlled.
     gfx::Rect rect1(10, 10, 200, 50);
@@ -598,7 +596,7 @@ TEST_F(MaximizeModeWindowManagerTest, PreCreateWindowsDeleteWhileActive) {
 // Test that windows which got created while the maximizer was running can get
 // destroyed before the maximizer gets destroyed.
 TEST_F(MaximizeModeWindowManagerTest, CreateWindowsAndDeleteWhileActive) {
-  ash::MaximizeModeWindowManager* manager = CreateMaximizeModeWindowManager();
+  MaximizeModeWindowManager* manager = CreateMaximizeModeWindowManager();
   ASSERT_TRUE(manager);
   EXPECT_EQ(0, manager->GetNumberOfManagedWindows());
   {
@@ -631,7 +629,7 @@ TEST_F(MaximizeModeWindowManagerTest, MaximizedShouldRemainMaximized) {
   wm::GetWindowState(window.get())->Maximize();
 
   // Create the manager and make sure that the window gets detected.
-  ash::MaximizeModeWindowManager* manager = CreateMaximizeModeWindowManager();
+  MaximizeModeWindowManager* manager = CreateMaximizeModeWindowManager();
   ASSERT_TRUE(manager);
   EXPECT_EQ(1, manager->GetNumberOfManagedWindows());
   EXPECT_TRUE(wm::GetWindowState(window.get())->IsMaximized());
@@ -659,7 +657,7 @@ TEST_F(MaximizeModeWindowManagerTest, MinimizedWindowBehavior) {
   wm::GetWindowState(initially_maximized_window.get())->Maximize();
 
   // Create the manager and make sure that the window gets detected.
-  ash::MaximizeModeWindowManager* manager = CreateMaximizeModeWindowManager();
+  MaximizeModeWindowManager* manager = CreateMaximizeModeWindowManager();
   ASSERT_TRUE(manager);
   EXPECT_EQ(3, manager->GetNumberOfManagedWindows());
   EXPECT_TRUE(
@@ -703,7 +701,7 @@ TEST_F(MaximizeModeWindowManagerTest, DesktopSizeChangeMovesUnmaximizable) {
       CreateFixedSizeNonMaximizableWindow(ui::wm::WINDOW_TYPE_NORMAL, rect2));
 
   // Turning on the manager will reposition (but not resize) the window.
-  ash::MaximizeModeWindowManager* manager = CreateMaximizeModeWindowManager();
+  MaximizeModeWindowManager* manager = CreateMaximizeModeWindowManager();
   ASSERT_TRUE(manager);
   EXPECT_EQ(2, manager->GetNumberOfManagedWindows());
   gfx::Rect moved_bounds(window1->bounds());
@@ -732,7 +730,7 @@ TEST_F(MaximizeModeWindowManagerTest, SizeChangeReturnWindowToOriginalPos) {
       CreateFixedSizeNonMaximizableWindow(ui::wm::WINDOW_TYPE_NORMAL, rect));
 
   // Turning on the manager will reposition (but not resize) the window.
-  ash::MaximizeModeWindowManager* manager = CreateMaximizeModeWindowManager();
+  MaximizeModeWindowManager* manager = CreateMaximizeModeWindowManager();
   ASSERT_TRUE(manager);
   EXPECT_EQ(1, manager->GetNumberOfManagedWindows());
   gfx::Rect moved_bounds(window->bounds());
@@ -781,7 +779,7 @@ TEST_F(MaximizeModeWindowManagerTest, ModeChangeKeepsMRUOrder) {
   }
 
   // Activating the window manager should keep the order.
-  ash::MaximizeModeWindowManager* manager = CreateMaximizeModeWindowManager();
+  MaximizeModeWindowManager* manager = CreateMaximizeModeWindowManager();
   ASSERT_TRUE(manager);
   EXPECT_EQ(5, manager->GetNumberOfManagedWindows());
   {
@@ -833,9 +831,8 @@ TEST_F(MaximizeModeWindowManagerTest, TestMinimize) {
       CreateWindow(ui::wm::WINDOW_TYPE_NORMAL, rect));
   wm::WindowState* window_state = wm::GetWindowState(window.get());
   EXPECT_EQ(rect.ToString(), window->bounds().ToString());
-  ash::Shell::GetInstance()
-      ->maximize_mode_controller()
-      ->EnableMaximizeModeWindowManager(true);
+  WmShell::Get()->maximize_mode_controller()->EnableMaximizeModeWindowManager(
+      true);
   EXPECT_TRUE(window_state->IsMaximized());
   EXPECT_FALSE(window_state->IsMinimized());
   EXPECT_TRUE(window->IsVisible());
@@ -850,9 +847,8 @@ TEST_F(MaximizeModeWindowManagerTest, TestMinimize) {
   EXPECT_FALSE(window_state->IsMinimized());
   EXPECT_TRUE(window->IsVisible());
 
-  ash::Shell::GetInstance()
-      ->maximize_mode_controller()
-      ->EnableMaximizeModeWindowManager(false);
+  WmShell::Get()->maximize_mode_controller()->EnableMaximizeModeWindowManager(
+      false);
   EXPECT_FALSE(window_state->IsMaximized());
   EXPECT_FALSE(window_state->IsMinimized());
   EXPECT_TRUE(window->IsVisible());
@@ -1237,9 +1233,8 @@ TEST_F(MaximizeModeWindowManagerTest, TryToDesktopSizeDragUnmaximizable) {
 
   // 2. Check that turning on the manager will stop allowing the window from
   // dragging.
-  ash::Shell::GetInstance()
-      ->maximize_mode_controller()
-      ->EnableMaximizeModeWindowManager(true);
+  WmShell::Get()->maximize_mode_controller()->EnableMaximizeModeWindowManager(
+      true);
   gfx::Rect center_bounds(window->bounds());
   EXPECT_NE(rect.origin().ToString(), center_bounds.origin().ToString());
   generator.MoveMouseTo(
@@ -1250,9 +1245,8 @@ TEST_F(MaximizeModeWindowManagerTest, TryToDesktopSizeDragUnmaximizable) {
   generator.ReleaseLeftButton();
   EXPECT_EQ(center_bounds.x(), window->bounds().x());
   EXPECT_EQ(center_bounds.y(), window->bounds().y());
-  ash::Shell::GetInstance()
-      ->maximize_mode_controller()
-      ->EnableMaximizeModeWindowManager(false);
+  WmShell::Get()->maximize_mode_controller()->EnableMaximizeModeWindowManager(
+      false);
 
   // 3. Releasing the mazimize manager again will restore the window to its
   // previous bounds and
@@ -1282,7 +1276,7 @@ TEST_F(MaximizeModeWindowManagerTest, ExitsOverview) {
       WmShell::Get()->window_selector_controller();
   window_selector_controller->ToggleOverview();
   ASSERT_TRUE(window_selector_controller->IsSelecting());
-  ash::MaximizeModeWindowManager* manager = CreateMaximizeModeWindowManager();
+  MaximizeModeWindowManager* manager = CreateMaximizeModeWindowManager();
   ASSERT_TRUE(manager);
   EXPECT_FALSE(window_selector_controller->IsSelecting());
 
@@ -1527,7 +1521,7 @@ TEST_F(MaximizeModeWindowManagerTest, AlwaysOnTopWindows) {
   // Enter maximize mode. Neither window should be managed because they have
   // the always-on-top property set, which means that none of their properties
   // should change.
-  ash::MaximizeModeWindowManager* manager = CreateMaximizeModeWindowManager();
+  MaximizeModeWindowManager* manager = CreateMaximizeModeWindowManager();
   ASSERT_TRUE(manager);
   EXPECT_EQ(0, manager->GetNumberOfManagedWindows());
   EXPECT_FALSE(wm::GetWindowState(w1.get())->IsMaximized());
@@ -1586,7 +1580,7 @@ TEST_F(MaximizeModeWindowManagerTest, DontMaximizeDockedWindows) {
   EXPECT_TRUE(wm::GetWindowState(window.get())->IsDocked());
   EXPECT_FALSE(wm::GetWindowState(window.get())->IsMaximized());
 
-  ash::MaximizeModeWindowManager* manager = CreateMaximizeModeWindowManager();
+  MaximizeModeWindowManager* manager = CreateMaximizeModeWindowManager();
   EXPECT_TRUE(wm::GetWindowState(window.get())->IsDocked());
   EXPECT_FALSE(wm::GetWindowState(window.get())->IsMaximized());
   EXPECT_EQ(0, manager->GetNumberOfManagedWindows());

@@ -107,8 +107,6 @@ class LocaleNotificationController;
 class LockStateController;
 enum class LoginStatus;
 class MagnificationController;
-class MaximizeModeController;
-class MaximizeModeWindowManager;
 class MouseCursorEventFilter;
 class NewWindowDelegate;
 class OverlayEventFilter;
@@ -464,10 +462,6 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
   // Starts the animation that occurs on first login.
   void DoInitialWorkspaceAnimation();
 
-  MaximizeModeController* maximize_mode_controller() {
-    return maximize_mode_controller_.get();
-  }
-
 #if defined(OS_CHROMEOS)
   // TODO(oshima): Move these objects to WindowTreeHostManager.
   ui::DisplayConfigurator* display_configurator() {
@@ -698,7 +692,6 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
 #endif  // defined(OS_CHROMEOS)
 
   std::unique_ptr<ToastManager> toast_manager_;
-  std::unique_ptr<MaximizeModeController> maximize_mode_controller_;
 
   // |native_cursor_manager_| is owned by |cursor_manager_|, but we keep a
   // pointer to vend to test code.

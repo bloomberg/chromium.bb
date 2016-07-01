@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "ash/common/wm/maximize_mode/maximize_mode_controller.h"
+#include "ash/common/wm_shell.h"
 #include "ash/display/display_layout_store.h"
 #include "ash/display/display_manager.h"
 #include "ash/display/display_util.h"
@@ -789,7 +790,8 @@ TEST_F(DisplayPreferencesTest, DontSaveMaximizeModeControllerRotations) {
   update->Set(chromeos::ACCELEROMETER_SOURCE_ATTACHED_KEYBOARD, 0.0f, 0.0f,
              kMeanGravity);
   update->Set(chromeos::ACCELEROMETER_SOURCE_SCREEN, 0.0f, -kMeanGravity, 0.0f);
-  ash::MaximizeModeController* controller = shell->maximize_mode_controller();
+  ash::MaximizeModeController* controller =
+      ash::WmShell::Get()->maximize_mode_controller();
   controller->OnAccelerometerUpdated(update);
   EXPECT_TRUE(controller->IsMaximizeModeWindowManagerEnabled());
 
@@ -936,7 +938,7 @@ TEST_F(DisplayPreferencesTest, LoadRotationNoLogin) {
              kMeanGravity);
   update->Set(chromeos::ACCELEROMETER_SOURCE_SCREEN, 0.0f, -kMeanGravity, 0.0f);
   ash::MaximizeModeController* maximize_mode_controller =
-      shell->maximize_mode_controller();
+      ash::WmShell::Get()->maximize_mode_controller();
   maximize_mode_controller->OnAccelerometerUpdated(update);
   EXPECT_TRUE(maximize_mode_controller->IsMaximizeModeWindowManagerEnabled());
   bool screen_orientation_rotation_lock = IsRotationLocked();

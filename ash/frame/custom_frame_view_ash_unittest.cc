@@ -207,16 +207,14 @@ TEST_F(CustomFrameViewAshTest, HeaderViewNotifiedOfChildSizeChange) {
 
   const gfx::Rect initial =
       delegate->GetFrameCaptionButtonContainerViewBounds();
-  Shell::GetInstance()
-      ->maximize_mode_controller()
-      ->EnableMaximizeModeWindowManager(true);
+  WmShell::Get()->maximize_mode_controller()->EnableMaximizeModeWindowManager(
+      true);
   delegate->EndFrameCaptionButtonContainerViewAnimations();
   const gfx::Rect maximize_mode_bounds =
       delegate->GetFrameCaptionButtonContainerViewBounds();
   EXPECT_GT(initial.width(), maximize_mode_bounds.width());
-  Shell::GetInstance()
-      ->maximize_mode_controller()
-      ->EnableMaximizeModeWindowManager(false);
+  WmShell::Get()->maximize_mode_controller()->EnableMaximizeModeWindowManager(
+      false);
   delegate->EndFrameCaptionButtonContainerViewAnimations();
   const gfx::Rect after_restore =
       delegate->GetFrameCaptionButtonContainerViewBounds();

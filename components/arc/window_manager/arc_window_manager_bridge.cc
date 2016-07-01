@@ -6,7 +6,6 @@
 
 #include "ash/common/wm/maximize_mode/maximize_mode_controller.h"
 #include "ash/common/wm_shell.h"
-#include "ash/shell.h"
 #include "base/logging.h"
 #include "components/arc/arc_bridge_service.h"
 
@@ -26,13 +25,13 @@ ArcWindowManagerBridge::ArcWindowManagerBridge(ArcBridgeService* bridge_service)
 }
 
 void ArcWindowManagerBridge::OnWindowManagerInstanceReady() {
-  if (!ash::Shell::HasInstance()) {
+  if (!ash::WmShell::HasInstance()) {
     // The shell gets always loaded before ARC. If there is no shell it can only
     // mean that a unit test is running.
     return;
   }
   ash::MaximizeModeController* controller =
-      ash::Shell::GetInstance()->maximize_mode_controller();
+      ash::WmShell::Get()->maximize_mode_controller();
   if (!controller)
     return;
 

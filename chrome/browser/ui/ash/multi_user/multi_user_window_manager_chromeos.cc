@@ -741,7 +741,7 @@ void MultiUserWindowManagerChromeOS::SetWindowVisible(
   // we tell it to maximize / track this window now before it gets shown, to
   // reduce animation jank from multiple resizes.
   if (visible) {
-    ash::Shell::GetInstance()->maximize_mode_controller()->AddWindow(
+    ash::WmShell::Get()->maximize_mode_controller()->AddWindow(
         ash::WmWindowAura::Get(window));
   }
 

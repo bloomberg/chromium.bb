@@ -301,9 +301,8 @@ class LockStateControllerTest : public AshTestBase {
   }
 
   void EnableMaximizeMode(bool enable) {
-    Shell::GetInstance()
-        ->maximize_mode_controller()
-        ->EnableMaximizeModeWindowManager(enable);
+    WmShell::Get()->maximize_mode_controller()->EnableMaximizeModeWindowManager(
+        enable);
   }
 
   void Initialize(bool legacy_button, LoginStatus status) {

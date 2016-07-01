@@ -43,7 +43,7 @@
 #include "ash/accelerators/accelerator_commands.h"
 #include "ash/common/wm/maximize_mode/maximize_mode_controller.h"
 #include "ash/common/wm/window_state.h"
-#include "ash/shell.h"
+#include "ash/common/wm_shell.h"
 #include "ash/wm/window_state_aura.h"
 #include "ui/wm/core/coordinate_conversion.h"
 #endif
@@ -309,9 +309,10 @@ void TabDragController::Init(
     source_tabstrip_->GetWidget()->SetCapture(source_tabstrip_);
 
 #if defined(USE_ASH)
-  if (ash::Shell::HasInstance() &&
-      ash::Shell::GetInstance()->maximize_mode_controller()->
-          IsMaximizeModeWindowManagerEnabled()) {
+  if (ash::WmShell::HasInstance() &&
+      ash::WmShell::Get()
+          ->maximize_mode_controller()
+          ->IsMaximizeModeWindowManagerEnabled()) {
     detach_behavior_ = NOT_DETACHABLE;
   }
 #endif

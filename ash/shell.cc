@@ -675,7 +675,7 @@ Shell::~Shell() {
 
   // Destroy maximize mode controller early on since it has some observers which
   // need to be removed.
-  maximize_mode_controller_.reset();
+  wm_shell_->DeleteMaximizeModeController();
 
   // Destroy the keyboard before closing the shelf, since it will invoke a shelf
   // layout.
@@ -922,7 +922,7 @@ void Shell::Init(const ShellInitParams& init_params) {
         display::Screen::GetScreen()->GetPrimaryDisplay());
 
   accelerator_controller_.reset(new AcceleratorController);
-  maximize_mode_controller_.reset(new MaximizeModeController());
+  wm_shell_->CreateMaximizeModeController();
 
   AddPreTargetHandler(window_tree_host_manager_->input_method_event_handler());
 

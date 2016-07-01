@@ -15,7 +15,6 @@
 #include "ash/common/wm/maximize_mode/maximize_mode_controller.h"
 #include "ash/common/wm/overview/window_selector_controller.h"
 #include "ash/common/wm_shell.h"
-#include "ash/shell.h"
 #include "grit/ash_resources.h"
 #include "grit/ash_strings.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -140,9 +139,9 @@ void OverviewButtonTray::UpdateIconVisibility() {
   // WindowSelectorController::CanSelect. The visibility of the button should
   // not change during transient times in which CanSelect is false. Such as when
   // a modal dialog is present.
-  Shell* shell = Shell::GetInstance();
+  WmShell* shell = WmShell::Get();
   SessionStateDelegate* session_state_delegate =
-      WmShell::Get()->GetSessionStateDelegate();
+      shell->GetSessionStateDelegate();
 
   SetVisible(
       shell->maximize_mode_controller()->IsMaximizeModeWindowManagerEnabled() &&
@@ -150,7 +149,7 @@ void OverviewButtonTray::UpdateIconVisibility() {
       !session_state_delegate->IsScreenLocked() &&
       session_state_delegate->GetSessionState() ==
           SessionStateDelegate::SESSION_STATE_ACTIVE &&
-      WmShell::Get()->system_tray_delegate()->GetUserLoginStatus() !=
+      shell->system_tray_delegate()->GetUserLoginStatus() !=
           LoginStatus::KIOSK_APP);
 }
 

@@ -10,6 +10,7 @@
 #include "ash/common/system/chromeos/session/logout_confirmation_controller.h"
 #include "ash/common/system/tray/system_tray_delegate.h"
 #include "ash/common/system/tray/system_tray_notifier.h"
+#include "ash/common/wm/maximize_mode/maximize_mode_controller.h"
 #include "ash/common/wm/mru_window_tracker.h"
 #include "ash/common/wm/overview/window_selector_controller.h"
 #include "ash/common/wm_window.h"
@@ -111,6 +112,14 @@ void WmShell::DeleteSystemTrayDelegate() {
 
 void WmShell::DeleteWindowSelectorController() {
   window_selector_controller_.reset();
+}
+
+void WmShell::CreateMaximizeModeController() {
+  maximize_mode_controller_.reset(new MaximizeModeController);
+}
+
+void WmShell::DeleteMaximizeModeController() {
+  maximize_mode_controller_.reset();
 }
 
 void WmShell::CreateMruWindowTracker() {

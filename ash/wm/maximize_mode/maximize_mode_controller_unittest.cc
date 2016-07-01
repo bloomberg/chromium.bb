@@ -90,7 +90,7 @@ class MaximizeModeControllerTest : public test::AshTestBase {
   }
 
   MaximizeModeController* maximize_mode_controller() {
-    return Shell::GetInstance()->maximize_mode_controller();
+    return WmShell::Get()->maximize_mode_controller();
   }
 
   void TriggerLidUpdate(const gfx::Vector3dF& lid) {

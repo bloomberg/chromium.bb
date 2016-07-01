@@ -947,9 +947,8 @@ TEST_P(WindowSelectorTest, FullscreenWindowMaximizeMode) {
   gfx::Rect bounds(0, 0, 400, 400);
   std::unique_ptr<aura::Window> window1(CreateWindow(bounds));
   std::unique_ptr<aura::Window> window2(CreateWindow(bounds));
-  Shell::GetInstance()
-      ->maximize_mode_controller()
-      ->EnableMaximizeModeWindowManager(true);
+  WmShell::Get()->maximize_mode_controller()->EnableMaximizeModeWindowManager(
+      true);
   wm::ActivateWindow(window2.get());
   wm::ActivateWindow(window1.get());
   gfx::Rect normal_window_bounds(window1->bounds());

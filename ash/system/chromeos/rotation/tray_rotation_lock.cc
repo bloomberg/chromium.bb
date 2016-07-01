@@ -45,7 +45,7 @@ class RotationLockDefaultView : public TrayItemMore, public ShellObserver {
 RotationLockDefaultView::RotationLockDefaultView(SystemTrayItem* owner)
     : TrayItemMore(owner, false) {
   UpdateImage();
-  SetVisible(Shell::GetInstance()
+  SetVisible(WmShell::Get()
                  ->maximize_mode_controller()
                  ->IsMaximizeModeWindowManagerEnabled());
   WmShell::Get()->AddShellObserver(this);
@@ -140,7 +140,7 @@ bool TrayRotationLock::GetInitialVisibility() {
 
 bool TrayRotationLock::ShouldBeVisible() {
   return OnPrimaryDisplay() &&
-         Shell::GetInstance()
+         WmShell::Get()
              ->maximize_mode_controller()
              ->IsMaximizeModeWindowManagerEnabled() &&
          Shell::GetInstance()

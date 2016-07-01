@@ -113,7 +113,7 @@ void ScreenOrientationController::UnlockOrientationForWindow(
 }
 
 bool ScreenOrientationController::ScreenOrientationProviderSupported() const {
-  return Shell::GetInstance()
+  return WmShell::Get()
              ->maximize_mode_controller()
              ->IsMaximizeModeWindowManagerEnabled() &&
          !base::CommandLine::ForCurrentProcess()->HasSwitch(

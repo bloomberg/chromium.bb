@@ -68,7 +68,7 @@ void PowerButtonController::OnPowerButtonEvent(
     return;
 
   if (volume_down_pressed_ && down &&
-      Shell::GetInstance()
+      WmShell::Get()
           ->maximize_mode_controller()
           ->IsMaximizeModeWindowManagerEnabled()) {
     Shell::GetInstance()->accelerator_controller()->PerformActionIfEnabled(
@@ -99,7 +99,7 @@ void PowerButtonController::OnPowerButtonEvent(
 
       if (session_state_delegate->CanLockScreen() &&
           !session_state_delegate->IsUserSessionBlocked()) {
-        if (Shell::GetInstance()
+        if (WmShell::Get()
                 ->maximize_mode_controller()
                 ->IsMaximizeModeWindowManagerEnabled() &&
             enable_quick_lock_)

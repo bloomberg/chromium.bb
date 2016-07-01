@@ -6,7 +6,6 @@
 
 #include "ash/common/wm/maximize_mode/maximize_mode_controller.h"
 #include "ash/common/wm_shell.h"
-#include "ash/shell.h"
 
 namespace chromeos {
 
@@ -27,8 +26,9 @@ void TouchViewControllerDelegate::RemoveObserver(Observer* observer) {
 }
 
 bool TouchViewControllerDelegate::IsMaximizeModeEnabled() const {
-  return ash::Shell::GetInstance()->maximize_mode_controller()->
-      IsMaximizeModeWindowManagerEnabled();
+  return ash::WmShell::Get()
+      ->maximize_mode_controller()
+      ->IsMaximizeModeWindowManagerEnabled();
 }
 
 void TouchViewControllerDelegate::OnMaximizeModeStarted() {

@@ -103,12 +103,12 @@ void VirtualKeyboardController::UpdateDevices() {
 
 void VirtualKeyboardController::UpdateKeyboardEnabled() {
   if (!IsSmartVirtualKeyboardEnabled()) {
-    SetKeyboardEnabled(Shell::GetInstance()
+    SetKeyboardEnabled(WmShell::Get()
                            ->maximize_mode_controller()
                            ->IsMaximizeModeWindowManagerEnabled());
     return;
   }
-  bool ignore_internal_keyboard = Shell::GetInstance()
+  bool ignore_internal_keyboard = WmShell::Get()
                                       ->maximize_mode_controller()
                                       ->IsMaximizeModeWindowManagerEnabled();
   bool is_internal_keyboard_active =
