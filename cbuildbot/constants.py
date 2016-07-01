@@ -219,6 +219,12 @@ MON_PRECQ_LAUNCH_COUNT = 'chromeos/cbuildbot/pre-cq/launch_count'
 MON_PRECQ_CL_LAUNCH_COUNT = 'chromeos/cbuildbot/pre-cq/cl_launch_count'
 MON_PRECQ_TICK_COUNT = 'chromeos/cbuildbot/pre-cq/tick_count'
 MON_STAGE_DURATION = 'chromeos/cbuildbot/stage/durations'
+MON_CL_HANDLE_TIME = 'chromeos/cbuildbot/submitted_change/handling_times'
+MON_CL_PRECQ_TIME = 'chromeos/cbuildbot/submitted_change/precq_times'
+MON_CL_WAIT_TIME = 'chromeos/cbuildbot/submitted_change/wait_times'
+MON_CL_CQRUN_TIME = 'chromeos/cbuildbot/submitted_change/cq_run_times'
+MON_CL_FALSE_REJ = 'chromeos/cbuildbot/submitted_change/false_rejections'
+
 
 # Re-execution API constants.
 # Used by --resume and --bootstrap to decipher which options they

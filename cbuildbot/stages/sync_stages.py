@@ -1650,7 +1650,14 @@ class PreCQLauncherStage(SyncStage):
                                     reason=constants.STRATEGY_NONMANIFEST)
       submit_reason = constants.STRATEGY_PRECQ_SUBMIT
       will_submit = {c:submit_reason for c in will_submit}
-      pool.SubmitChanges(will_submit, check_tree_open=False)
+      submitted, _ = pool.SubmitChanges(will_submit, check_tree_open=False)
+
+      # Record stats about submissions in monarch.
+      if db:
+        submitted_change_actions = db.GetActionsForChanges(submitted)
+        strategies = {m: constants.STRATEGY_PRECQ_SUBMIT for m in submitted}
+        clactions.RecordSubmissionMetrics(
+            clactions.CLActionHistory(submitted_change_actions), strategies)
 
     # Tell ValidationPool to keep waiting for more changes until we hit
     # its internal timeout.

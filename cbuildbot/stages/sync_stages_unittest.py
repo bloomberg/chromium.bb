@@ -413,7 +413,8 @@ class BaseCQTestCase(generic_stages_unittest.StageTestCase):
     # Block the CQ from contacting GoB.
     self.PatchObject(gerrit.GerritHelper, 'RemoveReady')
     self.PatchObject(validation_pool.PaladinMessage, 'Send')
-    self.PatchObject(validation_pool.ValidationPool, 'SubmitChanges')
+    self.PatchObject(validation_pool.ValidationPool, 'SubmitChanges',
+                     return_value=({}, {}))
 
     # If a test is still contacting GoB, something is busted.
     self.PatchObject(gob_util, 'CreateHttpConn',
@@ -859,7 +860,8 @@ pre-cq-configs: link-pre-cq
     change = self._PrepareSubmittableChange()
 
     # Change should be submitted by the pre-cq-launcher.
-    m = self.PatchObject(validation_pool.ValidationPool, 'SubmitChanges')
+    m = self.PatchObject(validation_pool.ValidationPool, 'SubmitChanges',
+                         return_value=({change}, {}))
     self.PerformSync(pre_cq_status=None, changes=[change], patch_objects=False)
     submit_reason = constants.STRATEGY_PRECQ_SUBMIT
     verified_cls = {c:submit_reason for c in set([change])}

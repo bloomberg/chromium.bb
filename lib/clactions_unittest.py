@@ -80,6 +80,8 @@ class TestCLActionHistory(cros_test_lib.TestCase):
     def a(build_id, action, reason=None):
       self._Act(build_id, change, action, reason=reason, timestamp=next_time())
 
+    strategies = {}
+
     # Change is screened, picked up, and rejected by the pre-cq,
     # non-speculatively.
     a(launcher_id, constants.CL_ACTION_VALIDATION_PENDING_PRE_CQ,
@@ -115,6 +117,7 @@ class TestCLActionHistory(cros_test_lib.TestCase):
     a(master_id, constants.CL_ACTION_PICKED_UP)
     a(slave_id, constants.CL_ACTION_PICKED_UP)
     a(master_id, constants.CL_ACTION_SUBMITTED)
+    strategies[change] = constants.STRATEGY_CQ_SUCCESS
 
     action_history = self.fake_db.GetActionsForChanges([change])
     # Note: There are 2 ticks in the total handling time that are not accounted
@@ -124,6 +127,9 @@ class TestCLActionHistory(cros_test_lib.TestCase):
     self.assertEqual(7, clactions.GetPreCQTime(change, action_history))
     self.assertEqual(3, clactions.GetCQWaitTime(change, action_history))
     self.assertEqual(6, clactions.GetCQRunTime(change, action_history))
+
+    clactions.RecordSubmissionMetrics(
+        clactions.CLActionHistory(action_history), strategies)
 
   def _Act(self, build_id, change, action, reason=None, timestamp=None):
     self.fake_db.InsertCLActions(

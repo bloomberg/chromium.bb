@@ -12,6 +12,7 @@ deployed with your code.
 from __future__ import print_function
 
 try:
+  from infra_libs.ts_mon.common import distribution
   from infra_libs.ts_mon.common import metrics
   from infra_libs.ts_mon.common import interface
 except (ImportError, RuntimeError):
@@ -40,17 +41,17 @@ def _ImportSafe(fn):
   return wrapper
 
 
-def _GetOrConstructMetric(name, constructor):
+def _GetOrConstructMetric(name, fn, *args, **kwargs):
   """Returns an existing metric handle or constructs a new one.
 
   Args:
     name: Name of the metric to construct.
-    constructor: Callable constructor object, if that metric doesn't exist.
+    fn: Callable constructor object, if that metric doesn't exist.
 
   Returns:
     A metric handle, or a MockMetric if ts_mon was not imported.
   """
-  return interface.state.metrics.get(name) or constructor(name)
+  return interface.state.metrics.get(name) or fn(name, *args, **kwargs)
 
 
 @_ImportSafe
@@ -87,3 +88,17 @@ def Float(name):
 def CumulativeDistribution(name):
   """Returns a metric handle for a cumulative distribution named |name|."""
   return _GetOrConstructMetric(name, metrics.CumulativeDistributionMetric)
+
+
+@_ImportSafe
+def CumulativeSmallIntegerDistribution(name):
+  """Returns a metric handle for a cumulative distribution named |name|.
+
+  This differs slightly from CumulativeDistribution, in that the underlying
+  metric uses a uniform bucketer rather than a geometric one.
+
+  This metric type is suitable for holding a distribution of numbers that are
+  nonnegative integers in the range of 0 to 100.
+  """
+  return _GetOrConstructMetric(name, metrics.CumulativeDistributionMetric,
+                               bucketer=distribution.FixedWidthBucketer(1))

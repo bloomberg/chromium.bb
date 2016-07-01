@@ -14,6 +14,7 @@ import operator
 from chromite.cbuildbot import config_lib
 from chromite.cbuildbot import constants
 
+from chromite.lib import metrics
 
 site_config = config_lib.GetConfig()
 
@@ -963,3 +964,54 @@ class CLActionHistory(object):
       return self._per_cl_actions[cl_or_patch]
     else:
       return self._per_patch_actions[cl_or_patch]
+
+
+def RecordSubmissionMetrics(action_history, submitted_change_strategies):
+  """Record submission metrics in monarch.
+
+  Args:
+    submitted_change_strategies: A dictionary from changes to submission
+        strategies. These changes will have their handling times recorded
+        in monarch.
+    action_history: A CLActionHistory instance for all cl actions for all
+        changes in submitted_change_strategies.
+  """
+  handling_time_metric = metrics.CumulativeDistribution(
+      constants.MON_CL_HANDLE_TIME)
+  precq_time_metric = metrics.CumulativeDistribution(
+      constants.MON_CL_PRECQ_TIME)
+  wait_time_metric = metrics.CumulativeDistribution(
+      constants.MON_CL_WAIT_TIME)
+  cq_run_time_metric = metrics.CumulativeDistribution(
+      constants.MON_CL_CQRUN_TIME)
+  false_rejection_metric = metrics.CumulativeSmallIntegerDistribution(
+      constants.MON_CL_FALSE_REJ)
+
+  precq_false_rejections = action_history.GetFalseRejections(
+      bot_type=constants.PRE_CQ)
+  cq_false_rejections = action_history.GetFalseRejections(
+      bot_type=constants.CQ)
+
+  for change, strategy in submitted_change_strategies.iteritems():
+    strategy = strategy or ''
+    handling_time = GetCLHandlingTime(change, action_history)
+    precq_time = GetPreCQTime(change, action_history)
+    wait_time = GetCQWaitTime(change, action_history)
+    run_time = GetCQRunTime(change, action_history)
+
+    fields = {'submission_strategy': strategy}
+
+    handling_time_metric.add(handling_time, fields=fields)
+    precq_time_metric.add(precq_time, fields=fields)
+    wait_time_metric.add(wait_time, fields=fields)
+    cq_run_time_metric.add(run_time, fields=fields)
+
+    rejection_types = (
+        (constants.PRE_CQ, precq_false_rejections),
+        (constants.CQ, cq_false_rejections),
+    )
+
+    for by, rej in rejection_types:
+      rejections = rej.get(change, [])
+      f = dict(fields, rejected_by=by)
+      false_rejection_metric.add(len(rejections), fields=f)

@@ -423,6 +423,9 @@ class DataSeries0Test(CIDBIntegrationTest):
     actions_for_change = db.GetActionsForChanges(
         [metadata_lib.GerritChangeTuple(205535, False)])
 
+    actions_for_build = db.GetActionsForBuild(511)
+    self.assertEqual(len(actions_for_build), 22)
+
     self.assertEqual(len(actions_for_change), 60)
     last_action_dict = dict(actions_for_change[-1]._asdict())
     last_action_dict.pop('timestamp')

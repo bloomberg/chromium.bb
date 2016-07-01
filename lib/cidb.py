@@ -1252,6 +1252,17 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
     return [clactions.CLAction(*values) for values in results]
 
   @minimum_schema(11)
+  def GetActionsForBuild(self, build_id):
+    """Gets all the actions associated with build |build_id|.
+
+    Returns:
+      A list of CLAction instance, in action id order.
+    """
+    q = '%s WHERE build_id = %s' % (self._SQL_FETCH_ACTIONS, build_id)
+    results = self._Execute(q).fetchall()
+    return [clactions.CLAction(*values) for values in results]
+
+  @minimum_schema(11)
   def GetActionHistory(self, start_date, end_date=None):
     """Get the action history of CLs in the specified range.
 

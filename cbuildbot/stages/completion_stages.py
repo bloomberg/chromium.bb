@@ -490,6 +490,8 @@ class CommitQueueCompletionStage(MasterSlaveSyncCompletionStage):
       chroot_manager = chroot_lib.ChrootManager(self._build_root)
       chroot_manager.SetChrootVersion(version)
 
+    self._RecordSubmissionMetrics()
+
   def HandleFailure(self, failing, inflight, no_stat):
     """Handle a build failure or timeout in the Commit Queue.
 
@@ -512,6 +514,29 @@ class CommitQueueCompletionStage(MasterSlaveSyncCompletionStage):
 
     if self._run.config.master:
       self.CQMasterHandleFailure(failing, inflight, no_stat)
+
+    self._RecordSubmissionMetrics()
+
+  def _RecordSubmissionMetrics(self):
+    """Record CL handling statistics for submitted changes in monarch."""
+    if not self._run.config.master:
+      return
+
+    build_id, db = self._run.GetCIDBHandle()
+    if db:
+      my_actions = db.GetActionsForBuild(build_id)
+      my_submit_actions = [m for m in my_actions
+                           if m.action == constants.CL_ACTION_SUBMITTED]
+      # A dictionary mapping from every change that was submitted to the
+      # submission reason.
+      submitted_change_strategies = {m.patch : m.reason
+                                     for m in my_submit_actions}
+      submitted_changes_all_actions = db.GetActionsForChanges(
+          submitted_change_strategies.keys())
+
+      action_history = clactions.CLActionHistory(submitted_changes_all_actions)
+      clactions.RecordSubmissionMetrics(action_history,
+                                        submitted_change_strategies)
 
   def _GetSlaveMappingAndCLActions(self, changes):
     """Query CIDB to for slaves and CL actions.
