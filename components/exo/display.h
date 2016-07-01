@@ -17,6 +17,7 @@
 #include "base/files/scoped_file.h"
 #include "ui/gfx/buffer_types.h"
 #include "ui/gfx/geometry/size.h"
+#include "ui/gfx/native_pixmap_handle_ozone.h"
 #endif
 
 namespace gfx {
@@ -58,8 +59,7 @@ class Display {
   std::unique_ptr<Buffer> CreateLinuxDMABufBuffer(
       const gfx::Size& size,
       gfx::BufferFormat format,
-      const std::vector<int>& strides,
-      const std::vector<int>& offsets,
+      const std::vector<gfx::NativePixmapPlane>& planes,
       std::vector<base::ScopedFD>&& fds);
 #endif
 

@@ -260,8 +260,8 @@ gfx::GpuMemoryBufferHandle GpuChannelHost::ShareGpuMemoryBufferToGpuProcess(
         handle.native_pixmap_handle.fds.emplace_back(scoped_fd.release(),
                                                      true /* auto_close */);
       }
-      handle.native_pixmap_handle.strides_and_offsets =
-          source_handle.native_pixmap_handle.strides_and_offsets;
+      handle.native_pixmap_handle.planes =
+          source_handle.native_pixmap_handle.planes;
       *requires_sync_point = false;
       return handle;
     }

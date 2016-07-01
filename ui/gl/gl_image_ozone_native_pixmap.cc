@@ -4,6 +4,7 @@
 
 #include "ui/gfx/buffer_format_util.h"
 #include "ui/gl/gl_image_ozone_native_pixmap.h"
+#include "ui/gl/gl_surface_egl.h"
 
 #define FOURCC(a, b, c, d)                                        \
   ((static_cast<uint32_t>(a)) | (static_cast<uint32_t>(b) << 8) | \
@@ -137,6 +138,12 @@ bool GLImageOzoneNativePixmap::Initialize(ui::NativePixmap* pixmap,
     attrs.push_back(EGL_LINUX_DRM_FOURCC_EXT);
     attrs.push_back(FourCC(format));
 
+    const EGLint kLinuxDrmModifiers[] = {EGL_LINUX_DRM_PLANE0_MODIFIER0_EXT,
+                                         EGL_LINUX_DRM_PLANE1_MODIFIER0_EXT,
+                                         EGL_LINUX_DRM_PLANE2_MODIFIER0_EXT};
+    bool has_dma_buf_import_modifier =
+        GLSurfaceEGL::HasEGLExtension("EGL_EXT_image_dma_buf_import_modifiers");
+
     for (size_t plane = 0;
          plane < gfx::NumberOfPlanesForBufferFormat(pixmap->GetBufferFormat());
          ++plane) {
@@ -147,6 +154,14 @@ bool GLImageOzoneNativePixmap::Initialize(ui::NativePixmap* pixmap,
       attrs.push_back(pixmap->GetDmaBufOffset(plane));
       attrs.push_back(EGL_DMA_BUF_PLANE0_PITCH_EXT + plane * 3);
       attrs.push_back(pixmap->GetDmaBufPitch(plane));
+      if (has_dma_buf_import_modifier) {
+        uint64_t modifier = pixmap->GetDmaBufModifier(plane);
+        DCHECK(plane < arraysize(kLinuxDrmModifiers));
+        attrs.push_back(kLinuxDrmModifiers[plane]);
+        attrs.push_back(modifier & 0xffffffff);
+        attrs.push_back(kLinuxDrmModifiers[plane] + 1);
+        attrs.push_back(static_cast<uint32_t>(modifier >> 32));
+      }
     }
     attrs.push_back(EGL_NONE);
 

@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread.h"
+#include "ui/gfx/native_pixmap_handle_ozone.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/vsync_provider.h"
 #include "ui/ozone/common/gpu/ozone_gpu_message_params.h"
@@ -63,8 +64,7 @@ class DrmThread : public base::Thread {
   void CreateBufferFromFds(const gfx::Size& size,
                            gfx::BufferFormat format,
                            std::vector<base::ScopedFD>&& fds,
-                           std::vector<int> strides,
-                           std::vector<int> offsets,
+                           const std::vector<gfx::NativePixmapPlane>& planes,
                            scoped_refptr<GbmBuffer>* buffer);
 
   void GetScanoutFormats(gfx::AcceleratedWidget widget,

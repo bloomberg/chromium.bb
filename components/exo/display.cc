@@ -62,8 +62,7 @@ std::unique_ptr<SharedMemory> Display::CreateSharedMemory(
 std::unique_ptr<Buffer> Display::CreateLinuxDMABufBuffer(
     const gfx::Size& size,
     gfx::BufferFormat format,
-    const std::vector<int>& strides,
-    const std::vector<int>& offsets,
+    const std::vector<gfx::NativePixmapPlane>& planes,
     std::vector<base::ScopedFD>&& fds) {
   TRACE_EVENT1("exo", "Display::CreateLinuxDMABufBuffer", "size",
                size.ToString());
@@ -73,11 +72,8 @@ std::unique_ptr<Buffer> Display::CreateLinuxDMABufBuffer(
   for (auto& fd : fds)
     handle.native_pixmap_handle.fds.emplace_back(std::move(fd));
 
-  DCHECK_EQ(strides.size(), offsets.size());
-  for (size_t plane = 0; plane < strides.size(); ++plane) {
-    handle.native_pixmap_handle.strides_and_offsets.emplace_back(
-        strides[plane], offsets[plane]);
-  }
+  for (auto& plane : planes)
+    handle.native_pixmap_handle.planes.push_back(plane);
 
   std::unique_ptr<gfx::GpuMemoryBuffer> gpu_memory_buffer =
       aura::Env::GetInstance()

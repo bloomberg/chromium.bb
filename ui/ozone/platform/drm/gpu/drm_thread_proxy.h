@@ -38,8 +38,7 @@ class DrmThreadProxy {
       const gfx::Size& size,
       gfx::BufferFormat format,
       std::vector<base::ScopedFD>&& fds,
-      std::vector<int> strides,
-      std::vector<int> offsets);
+      const std::vector<gfx::NativePixmapPlane>& planes);
 
   void GetScanoutFormats(gfx::AcceleratedWidget widget,
                          std::vector<gfx::BufferFormat>* scanout_formats);

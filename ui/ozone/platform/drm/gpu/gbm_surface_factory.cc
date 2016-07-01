@@ -114,9 +114,9 @@ scoped_refptr<ui::NativePixmap> GbmSurfaceFactory::CreateNativePixmapFromHandle(
     gfx::Size size,
     gfx::BufferFormat format,
     const gfx::NativePixmapHandle& handle) {
-  size_t planes = gfx::NumberOfPlanesForBufferFormat(format);
-  if (handle.strides_and_offsets.size() != planes ||
-      (handle.fds.size() != 1 && handle.fds.size() != planes)) {
+  size_t num_planes = gfx::NumberOfPlanesForBufferFormat(format);
+  if (handle.planes.size() != num_planes ||
+      (handle.fds.size() != 1 && handle.fds.size() != num_planes)) {
     return nullptr;
   }
   std::vector<base::ScopedFD> scoped_fds;
@@ -124,16 +124,14 @@ scoped_refptr<ui::NativePixmap> GbmSurfaceFactory::CreateNativePixmapFromHandle(
     scoped_fds.emplace_back(fd.fd);
   }
 
-  std::vector<int> strides;
-  std::vector<int> offsets;
+  std::vector<gfx::NativePixmapPlane> planes;
 
-  for (const auto& stride_and_offset : handle.strides_and_offsets) {
-    strides.push_back(stride_and_offset.first);
-    offsets.push_back(stride_and_offset.second);
+  for (const auto& plane : handle.planes) {
+    planes.push_back(plane);
   }
 
   scoped_refptr<GbmBuffer> buffer = drm_thread_->CreateBufferFromFds(
-      size, format, std::move(scoped_fds), strides, offsets);
+      size, format, std::move(scoped_fds), planes);
   if (!buffer)
     return nullptr;
   return make_scoped_refptr(new GbmPixmap(this, buffer));
