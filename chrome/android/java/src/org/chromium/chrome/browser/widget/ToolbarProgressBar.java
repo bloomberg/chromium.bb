@@ -95,6 +95,7 @@ public class ToolbarProgressBar extends ClipDrawableProgressBar {
         public void run() {
             animateAlphaTo(0.0f);
             mIsRunningSmoothIndeterminate = false;
+            if (mAnimatingView != null) mAnimatingView.cancelAnimation();
         }
     };
 
