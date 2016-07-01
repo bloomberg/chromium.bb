@@ -1374,11 +1374,6 @@ crbug.com/613659 imported/wpt/quirks-mode/percentage-height-calculation.html [ F
 crbug.com/613661 imported/wpt/quirks-mode/table-cell-nowrap-minimum-width-calculation.html [ Failure ]
 crbug.com/613663 imported/wpt/quirks-mode/table-cell-width-calculation.html [ Failure ]
 
-crbug.com/622294 css3/background/background-color-gradient-alignment.html [ NeedsRebaseline ]
-crbug.com/622294 ietestcenter/css3/bordersbackgrounds/background-repeat-space-padding-box.htm [ NeedsRebaseline ]
-crbug.com/622294 fast/images/color-profile-background-image-space.html [ NeedsRebaseline ]
-crbug.com/622294 virtual/gpu-rasterization/fast/images/color-profile-background-image-space.html [ NeedsRebaseline ]
-
 # Note: this test was previously marked as slow on Debug builds. Skipping until crash is fixed
 crbug.com/619978 fast/css/giant-stylesheet-crash.html [ Skip ]
 
