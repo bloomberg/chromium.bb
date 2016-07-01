@@ -655,12 +655,14 @@ void FileSelectHelper::Observe(int type,
 void FileSelectHelper::RenderFrameHostChanged(
     content::RenderFrameHost* old_host,
     content::RenderFrameHost* new_host) {
-  render_frame_host_ = nullptr;
+  if (old_host == render_frame_host_)
+    render_frame_host_ = nullptr;
 }
 
 void FileSelectHelper::RenderFrameDeleted(
     content::RenderFrameHost* render_frame_host) {
-  render_frame_host_ = nullptr;
+  if (render_frame_host == render_frame_host_)
+    render_frame_host_ = nullptr;
 }
 
 void FileSelectHelper::WebContentsDestroyed() {
