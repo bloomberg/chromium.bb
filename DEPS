@@ -55,7 +55,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling build tools
   # and whatever else without interference from each other.
-  'buildtools_revision': '454e53abae6e4d68ee992b0a93a4174b75519393',
+  'buildtools_revision': 'db6179b29f90d28026b0cb23ef71d56ec31b8bd6',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling PDFium
   # and whatever else without interference from each other.
