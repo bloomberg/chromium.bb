@@ -571,10 +571,11 @@ void BookmarkAppHelper::CreateFromAppBanner(
   DCHECK(manifest.start_url.is_valid());
 
   callback_ = callback;
-  OnDidGetManifest(manifest);
+  OnDidGetManifest(GURL(), manifest);
 }
 
-void BookmarkAppHelper::OnDidGetManifest(const content::Manifest& manifest) {
+void BookmarkAppHelper::OnDidGetManifest(const GURL& manifest_url,
+                                         const content::Manifest& manifest) {
   if (contents_->IsBeingDestroyed())
     return;
 

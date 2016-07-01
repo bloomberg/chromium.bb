@@ -55,10 +55,11 @@ IPC_MESSAGE_ROUTED1(ManifestManagerMsg_HasManifest,
                     int /* request_id */)
 
 // The render process' response to a RequestManifest. The |request_id| will
-// match the one that was initially received. The |manifest| object will be an
-// empty manifest in case of any failure.
-IPC_MESSAGE_ROUTED2(ManifestManagerHostMsg_RequestManifestResponse,
+// match the one that was initially received. The |manifest_url| and |manifest|
+// will be empty in case of any failure.
+IPC_MESSAGE_ROUTED3(ManifestManagerHostMsg_RequestManifestResponse,
                     int, /* request_id */
+                    GURL, /* manifest URL */
                     content::Manifest /* manifest */)
 
 // The render process' response to a HasManifest. The |request_id| is the one

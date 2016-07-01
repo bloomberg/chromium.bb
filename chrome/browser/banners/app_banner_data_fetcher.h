@@ -132,7 +132,8 @@ class AppBannerDataFetcher : public base::RefCountedThreadSafe<
 
   content::WebContents* GetWebContents();
   virtual std::string GetAppIdentifier();
-  const content::Manifest& web_app_data() { return web_app_data_; }
+  const GURL& manifest_url() { return manifest_url_; }
+  const content::Manifest& manifest() { return manifest_; }
   void set_app_title(const base::string16& title) { app_title_ = title; }
   int event_request_id() { return event_request_id_; }
 
@@ -147,7 +148,8 @@ class AppBannerDataFetcher : public base::RefCountedThreadSafe<
  private:
   // Callbacks for data retrieval.
   void OnDidHasManifest(bool has_manifest);
-  void OnDidGetManifest(const content::Manifest& manifest);
+  void OnDidGetManifest(const GURL& manifest_url,
+                        const content::Manifest& manifest);
   void OnDidCheckHasServiceWorker(bool has_service_worker);
   void OnAppIconFetched(const SkBitmap& bitmap);
 
@@ -164,8 +166,9 @@ class AppBannerDataFetcher : public base::RefCountedThreadSafe<
   // heuristic allowed.
   void RecordCouldShowBanner();
 
-  // Creates a banner for the app using the given |icon|.
-  virtual void ShowBanner(const SkBitmap* icon,
+  // Creates a banner for the app using the given icon.
+  virtual void ShowBanner(const GURL& icon_url,
+                          const SkBitmap* icon,
                           const base::string16& title,
                           const std::string& referrer) = 0;
 
@@ -192,12 +195,17 @@ class AppBannerDataFetcher : public base::RefCountedThreadSafe<
   const bool is_debug_mode_;
   ui::PageTransition transition_type_;
   int event_request_id_;
+  GURL app_icon_url_;
   std::unique_ptr<SkBitmap> app_icon_;
   std::string referrer_;
 
   GURL validated_url_;
   base::string16 app_title_;
-  content::Manifest web_app_data_;
+
+  // The URL of the Web app manifest.
+  GURL manifest_url_;
+
+  content::Manifest manifest_;
 
   friend struct content::BrowserThread::DeleteOnThread<
       content::BrowserThread::UI>;

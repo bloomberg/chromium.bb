@@ -115,7 +115,8 @@ class BookmarkAppHelper : public content::NotificationObserver {
   // Called by the WebContents when the manifest has been downloaded. If there
   // is no manifest, or the WebContents is destroyed before the manifest could
   // be downloaded, this is called with an empty manifest.
-  void OnDidGetManifest(const content::Manifest& manifest);
+  void OnDidGetManifest(const GURL& manifest_url,
+                        const content::Manifest& manifest);
 
   // Performs post icon download tasks including installing the bookmark app.
   void OnIconsDownloaded(bool success,

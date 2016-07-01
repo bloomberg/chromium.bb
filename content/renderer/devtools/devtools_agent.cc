@@ -294,6 +294,7 @@ bool DevToolsAgent::IsAttached() {
 
 void DevToolsAgent::GotManifest(int session_id,
                                 int call_id,
+                                const GURL& manifest_url,
                                 const Manifest& manifest,
                                 const ManifestDebugInfo& debug_info) {
   if (!is_attached_)

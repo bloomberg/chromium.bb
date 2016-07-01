@@ -78,9 +78,13 @@ void ShortcutHelper::AddShortcutInBackgroundWithSkBitmap(
       base::android::ConvertUTF16ToJavaString(env, info.name);
   ScopedJavaLocalRef<jstring> java_short_name =
       base::android::ConvertUTF16ToJavaString(env, info.short_name);
+  ScopedJavaLocalRef<jstring> java_icon_url =
+      base::android::ConvertUTF8ToJavaString(env, info.icon_url.spec());
   ScopedJavaLocalRef<jobject> java_bitmap;
   if (icon_bitmap.getSize())
     java_bitmap = gfx::ConvertToJavaBitmap(&icon_bitmap);
+  ScopedJavaLocalRef<jstring> java_manifest_url =
+      base::android::ConvertUTF8ToJavaString(env, info.manifest_url.spec());
 
   uintptr_t callback_pointer = 0;
   if (info.display == blink::WebDisplayModeStandalone ||
@@ -101,13 +105,14 @@ void ShortcutHelper::AddShortcutInBackgroundWithSkBitmap(
       java_user_title.obj(),
       java_name.obj(),
       java_short_name.obj(),
+      java_icon_url.obj(),
       java_bitmap.obj(),
       info.display,
       info.orientation,
       info.source,
       info.theme_color,
       info.background_color,
-      info.is_icon_generated,
+      java_manifest_url.obj(),
       callback_pointer);
 }
 

@@ -85,7 +85,7 @@ class ManifestBrowserTest : public ContentBrowserTest  {
     message_loop_runner_->Run();
   }
 
-  void OnGetManifest(const Manifest& manifest) {
+  void OnGetManifest(const GURL& manifest_url, const Manifest& manifest) {
     manifest_ = manifest;
     message_loop_runner_->Quit();
   }

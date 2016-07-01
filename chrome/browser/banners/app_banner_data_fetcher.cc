@@ -202,7 +202,7 @@ void AppBannerDataFetcher::OnBannerPromptReply(
   FOR_EACH_OBSERVER(Observer, observer_list_,
                     OnDecidedWhetherToShow(this, true));
 
-  ShowBanner(app_icon_.get(), app_title_, referrer);
+  ShowBanner(app_icon_url_, app_icon_.get(), app_title_, referrer);
   is_active_ = false;
 }
 
@@ -235,8 +235,8 @@ content::WebContents* AppBannerDataFetcher::GetWebContents() {
 }
 
 std::string AppBannerDataFetcher::GetAppIdentifier() {
-  DCHECK(!web_app_data_.IsEmpty());
-  return web_app_data_.start_url.spec();
+  DCHECK(!manifest_.IsEmpty());
+  return manifest_.start_url.spec();
 }
 
 void AppBannerDataFetcher::RecordDidShowBanner(const std::string& event_name) {
@@ -268,6 +268,7 @@ void AppBannerDataFetcher::OnDidHasManifest(bool has_manifest) {
 }
 
 void AppBannerDataFetcher::OnDidGetManifest(
+    const GURL& manifest_url,
     const content::Manifest& manifest) {
   content::WebContents* web_contents = GetWebContents();
   if (!CheckFetcherIsStillAlive(web_contents)) {
@@ -299,10 +300,10 @@ void AppBannerDataFetcher::OnDidGetManifest(
 
   // Since the manifest is valid, one of short name or name must be non-null.
   // Prefer name if it isn't null.
-  web_app_data_ = manifest;
-  app_title_ = (web_app_data_.name.is_null())
-                   ? web_app_data_.short_name.string()
-                   : web_app_data_.name.string();
+  manifest_url_ = manifest_url;
+  manifest_ = manifest;
+  app_title_ = (manifest_.name.is_null()) ? manifest_.short_name.string()
+                                          : manifest_.name.string();
 
   if (IsWebAppInstalled(web_contents->GetBrowserContext(),
                         manifest.start_url) &&
@@ -350,7 +351,7 @@ void AppBannerDataFetcher::OnDidCheckHasServiceWorker(
 void AppBannerDataFetcher::OnHasServiceWorker(
     content::WebContents* web_contents) {
   GURL icon_url = ManifestIconSelector::FindBestMatchingIcon(
-      web_app_data_.icons, ideal_icon_size_in_dp_, minimum_icon_size_in_dp_);
+      manifest_.icons, ideal_icon_size_in_dp_, minimum_icon_size_in_dp_);
 
   if (icon_url.is_empty()) {
     OutputDeveloperNotShownMessage(
@@ -369,13 +370,10 @@ void AppBannerDataFetcher::OnHasServiceWorker(
 
 bool AppBannerDataFetcher::FetchAppIcon(content::WebContents* web_contents,
                                         const GURL& icon_url) {
+  app_icon_url_ = icon_url;
   return ManifestIconDownloader::Download(
-      web_contents,
-      icon_url,
-      ideal_icon_size_in_dp_,
-      minimum_icon_size_in_dp_,
-      base::Bind(&AppBannerDataFetcher::OnAppIconFetched,
-                 this));
+      web_contents, icon_url, ideal_icon_size_in_dp_, minimum_icon_size_in_dp_,
+      base::Bind(&AppBannerDataFetcher::OnAppIconFetched, this));
 }
 
 void AppBannerDataFetcher::OnAppIconFetched(const SkBitmap& bitmap) {

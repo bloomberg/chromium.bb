@@ -34,8 +34,10 @@ class AppBannerInfoBarDelegateAndroid : public ConfirmInfoBarDelegate {
       int event_request_id,
       scoped_refptr<AppBannerDataFetcherAndroid> data_fetcher,
       const base::string16& app_title,
+      const GURL& app_icon_url,
       SkBitmap* app_icon,
-      const content::Manifest& web_app_data);
+      const GURL& manifest_url,
+      const content::Manifest& manifest);
 
   // Delegate for promoting an Android app.
   AppBannerInfoBarDelegateAndroid(
@@ -83,10 +85,12 @@ class AppBannerInfoBarDelegateAndroid : public ConfirmInfoBarDelegate {
   scoped_refptr<AppBannerDataFetcherAndroid> data_fetcher_;
 
   base::string16 app_title_;
+  GURL app_icon_url_;
   std::unique_ptr<SkBitmap> app_icon_;
 
   int event_request_id_;
-  content::Manifest web_app_data_;
+  GURL manifest_url_;
+  content::Manifest manifest_;
 
   base::android::ScopedJavaGlobalRef<jobject> native_app_data_;
   std::string native_app_package_;

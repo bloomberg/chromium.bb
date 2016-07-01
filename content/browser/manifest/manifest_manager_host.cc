@@ -65,7 +65,7 @@ void ManifestManagerHost::RenderFrameDeleted(
     {
       GetCallbackMap::const_iterator it(callbacks);
       for (; !it.IsAtEnd(); it.Advance())
-        it.GetCurrentValue()->Run(Manifest());
+        it.GetCurrentValue()->Run(GURL(), Manifest());
     }
 
     delete callbacks;
@@ -137,6 +137,7 @@ bool ManifestManagerHost::OnMessageReceived(
 void ManifestManagerHost::OnRequestManifestResponse(
     RenderFrameHost* render_frame_host,
     int request_id,
+    const GURL& manifest_url,
     const Manifest& insecure_manifest) {
   GetCallbackMap* callbacks = GetCallbackMapForFrame(render_frame_host);
   if (!callbacks) {
@@ -194,7 +195,7 @@ void ManifestManagerHost::OnRequestManifestResponse(
       manifest.background_color > std::numeric_limits<int32_t>::max())
     manifest.background_color = Manifest::kInvalidOrMissingColor;
 
-  callback->Run(manifest);
+  callback->Run(manifest_url, manifest);
   callbacks->Remove(request_id);
   if (callbacks->IsEmpty()) {
     delete callbacks;

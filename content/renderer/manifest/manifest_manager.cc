@@ -59,9 +59,10 @@ void ManifestManager::OnRequestManifest(int request_id) {
                          base::Unretained(this), request_id));
 }
 
-void ManifestManager::OnRequestManifestComplete(
-    int request_id, const Manifest& manifest,
-    const ManifestDebugInfo&) {
+void ManifestManager::OnRequestManifestComplete(int request_id,
+                                                const GURL& manifest_url,
+                                                const Manifest& manifest,
+                                                const ManifestDebugInfo&) {
   // When sent via IPC, the Manifest must follow certain security rules.
   Manifest ipc_manifest = manifest;
   ipc_manifest.name = base::NullableString16(
@@ -88,17 +89,17 @@ void ManifestManager::OnRequestManifestComplete(
   }
 
   Send(new ManifestManagerHostMsg_RequestManifestResponse(
-      routing_id(), request_id, ipc_manifest));
+      routing_id(), request_id, manifest_url, ipc_manifest));
 }
 
 void ManifestManager::GetManifest(const GetManifestCallback& callback) {
   if (!may_have_manifest_) {
-    callback.Run(Manifest(), ManifestDebugInfo());
+    callback.Run(GURL(), Manifest(), ManifestDebugInfo());
     return;
   }
 
   if (!manifest_dirty_) {
-    callback.Run(manifest_, manifest_debug_info_);
+    callback.Run(manifest_url_, manifest_, manifest_debug_info_);
     return;
   }
 
@@ -187,13 +188,16 @@ void ManifestManager::OnManifestFetchComplete(
     return;
   }
 
+  manifest_url_ = response.url();
   manifest_ = parser.manifest();
   ResolveCallbacks(ResolveStateSuccess);
 }
 
 void ManifestManager::ResolveCallbacks(ResolveState state) {
-  if (state == ResolveStateFailure)
+  if (state == ResolveStateFailure) {
+    manifest_url_ = GURL();
     manifest_ = Manifest();
+  }
 
   manifest_dirty_ = state != ResolveStateSuccess;
 
@@ -202,7 +206,7 @@ void ManifestManager::ResolveCallbacks(ResolveState state) {
 
   for (std::list<GetManifestCallback>::const_iterator it = callbacks.begin();
        it != callbacks.end(); ++it) {
-    it->Run(manifest_, manifest_debug_info_);
+    it->Run(manifest_url_, manifest_, manifest_debug_info_);
   }
 }
 

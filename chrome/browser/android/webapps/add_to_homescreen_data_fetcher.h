@@ -71,7 +71,8 @@ class AddToHomescreenDataFetcher
   void OnDidGetWebApplicationInfo(const WebApplicationInfo& web_app_info);
 
   // Called when the Manifest has been parsed, or if no Manifest was found.
-  void OnDidGetManifest(const content::Manifest& manifest);
+  void OnDidGetManifest(const GURL& manifest_url,
+                        const content::Manifest& manifest);
 
   // Accessors, etc.
   void set_weak_observer(Observer* observer) { weak_observer_ = observer; }
@@ -96,10 +97,10 @@ class AddToHomescreenDataFetcher
 
   // Callback run after an attempt to download manifest icon has been made. May
   // kick off the download of a favicon if it failed (i.e. the bitmap is empty).
-  void OnManifestIconFetched(const SkBitmap& icon);
+  void OnManifestIconFetched(const GURL& icon_url, const SkBitmap& icon);
 
   // Notifies the observer that the shortcut data is all available.
-  void NotifyObserver(const SkBitmap& icon, bool is_generated);
+  void NotifyObserver(const SkBitmap& icon);
 
   // Looks up the original, online URL of the site requested.  The URL from the
   // WebContents may be an offline page or a distilled article which is not

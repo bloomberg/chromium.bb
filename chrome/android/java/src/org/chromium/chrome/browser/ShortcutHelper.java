@@ -140,9 +140,9 @@ public class ShortcutHelper {
      */
     @SuppressWarnings("unused")
     @CalledByNative
-    private static void addShortcut(String id, String url, final String userTitle,
-            String name, String shortName, Bitmap icon, int displayMode, int orientation,
-            int source, long themeColor, long backgroundColor, boolean isIconGenerated,
+    private static void addShortcut(String id, String url, final String userTitle, String name,
+            String shortName, String iconUrl, Bitmap icon, int displayMode, int orientation,
+            int source, long themeColor, long backgroundColor, String manifestUrl,
             final long callbackPointer) {
         assert !ThreadUtils.runningOnUiThread();
 
@@ -154,13 +154,15 @@ public class ShortcutHelper {
             if (CommandLine.getInstance().hasSwitch(ChromeSwitches.ENABLE_WEBAPK)) {
                 WebApkBuilder apkBuilder = ((ChromeApplication) context).createWebApkBuilder();
                 if (apkBuilder != null) {
-                    apkBuilder.buildWebApkAsync(url, GURLUtils.getOrigin(url), shortName, icon);
+                    apkBuilder.buildWebApkAsync(url, GURLUtils.getOrigin(url), name, shortName,
+                            iconUrl, icon, displayMode, orientation, themeColor, backgroundColor,
+                            manifestUrl);
                     return;
                 }
             }
             shortcutIntent = createWebappShortcutIntent(id, sDelegate.getFullscreenAction(), url,
                     getScopeFromUrl(url), name, shortName, icon, WEBAPP_SHORTCUT_VERSION,
-                    displayMode, orientation, themeColor, backgroundColor, isIconGenerated);
+                    displayMode, orientation, themeColor, backgroundColor, iconUrl.isEmpty());
             shortcutIntent.putExtra(EXTRA_MAC, getEncodedMac(context, url));
         } else {
             // Add the shortcut as a launcher icon to open in the browser Activity.

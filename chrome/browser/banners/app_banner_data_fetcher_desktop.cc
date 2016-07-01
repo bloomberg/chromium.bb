@@ -41,11 +41,12 @@ bool AppBannerDataFetcherDesktop::IsWebAppInstalled(
       browser_context, start_url);
 }
 
-void AppBannerDataFetcherDesktop::ShowBanner(const SkBitmap* icon,
+void AppBannerDataFetcherDesktop::ShowBanner(const GURL& icon_url,
+                                             const SkBitmap* icon,
                                              const base::string16& title,
                                              const std::string& referrer) {
   content::WebContents* web_contents = GetWebContents();
-  DCHECK(web_contents && !web_app_data().IsEmpty());
+  DCHECK(web_contents && !manifest().IsEmpty());
 
   Profile* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
@@ -59,7 +60,7 @@ void AppBannerDataFetcherDesktop::ShowBanner(const SkBitmap* icon,
   // calls the InfoBarService to show the banner. On desktop, an InfoBar class
   // is not required, so the InfoBarService call is made within the delegate.
   infobars::InfoBar* infobar = AppBannerInfoBarDelegateDesktop::Create(
-      make_scoped_refptr(this), web_contents, web_app_data(),
+      make_scoped_refptr(this), web_contents, manifest(),
       bookmark_app_helper_.get(), event_request_id());
   if (infobar) {
     RecordDidShowBanner("AppBanner.WebApp.Shown");
@@ -81,7 +82,7 @@ void AppBannerDataFetcherDesktop::FinishCreateBookmarkApp(
               event_request_id()));
 
       AppBannerSettingsHelper::RecordBannerDismissEvent(
-          web_contents, web_app_data().start_url.spec(),
+          web_contents, manifest().start_url.spec(),
           AppBannerSettingsHelper::WEB);
     } else {
       web_contents->GetMainFrame()->Send(
@@ -90,7 +91,7 @@ void AppBannerDataFetcherDesktop::FinishCreateBookmarkApp(
               event_request_id(), "web"));
 
       AppBannerSettingsHelper::RecordBannerInstallEvent(
-          web_contents, web_app_data().start_url.spec(),
+          web_contents, manifest().start_url.spec(),
           AppBannerSettingsHelper::WEB);
     }
   }

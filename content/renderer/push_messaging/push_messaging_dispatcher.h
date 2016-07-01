@@ -53,6 +53,7 @@ class PushMessagingDispatcher : public RenderFrameObserver,
       blink::WebServiceWorkerRegistration* service_worker_registration,
       const blink::WebPushSubscriptionOptions& options,
       blink::WebPushSubscriptionCallbacks* callbacks,
+      const GURL& manifest_url,
       const Manifest& manifest,
       const ManifestDebugInfo&);
 

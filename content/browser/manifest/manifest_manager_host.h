@@ -24,7 +24,8 @@ class ManifestManagerHost : public WebContentsObserver {
   explicit ManifestManagerHost(WebContents* web_contents);
   ~ManifestManagerHost() override;
 
-  using GetManifestCallback = base::Callback<void(const Manifest&)>;
+  using GetManifestCallback =
+      base::Callback<void(const GURL&, const Manifest&)>;
   using HasManifestCallback = base::Callback<void(bool)>;
 
   // Calls the given callback with the manifest associated with the
@@ -47,7 +48,7 @@ class ManifestManagerHost : public WebContentsObserver {
   using FrameHasCallbackMap = base::hash_map<RenderFrameHost*, HasCallbackMap*>;
 
   void OnRequestManifestResponse(
-      RenderFrameHost*, int request_id, const Manifest&);
+      RenderFrameHost*, int request_id, const GURL&, const Manifest&);
   void OnHasManifestResponse(
       RenderFrameHost*, int request_id, bool);
 

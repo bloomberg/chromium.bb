@@ -71,6 +71,7 @@ void PushMessagingDispatcher::DidGetManifest(
     blink::WebServiceWorkerRegistration* service_worker_registration,
     const blink::WebPushSubscriptionOptions& options,
     blink::WebPushSubscriptionCallbacks* callbacks,
+    const GURL& manifest_url,
     const Manifest& manifest,
     const ManifestDebugInfo&) {
   // Get the sender_info from the manifest since it wasn't provided by

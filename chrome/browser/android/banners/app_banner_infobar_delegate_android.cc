@@ -41,15 +41,19 @@ AppBannerInfoBarDelegateAndroid::AppBannerInfoBarDelegateAndroid(
     int event_request_id,
     scoped_refptr<AppBannerDataFetcherAndroid> data_fetcher,
     const base::string16& app_title,
+    const GURL& app_icon_url,
     SkBitmap* app_icon,
-    const content::Manifest& web_app_data)
+    const GURL& manifest_url,
+    const content::Manifest& manifest)
     : data_fetcher_(data_fetcher),
       app_title_(app_title),
+      app_icon_url_(app_icon_url),
       app_icon_(app_icon),
       event_request_id_(event_request_id),
-      web_app_data_(web_app_data),
+      manifest_url_(manifest_url),
+      manifest_(manifest),
       has_user_interaction_(false) {
-  DCHECK(!web_app_data.IsEmpty());
+  DCHECK(!manifest.IsEmpty());
   CreateJavaDelegate();
 }
 
@@ -75,7 +79,7 @@ AppBannerInfoBarDelegateAndroid::~AppBannerInfoBarDelegateAndroid() {
   if (!has_user_interaction_) {
     if (!native_app_data_.is_null())
       TrackUserResponse(USER_RESPONSE_NATIVE_APP_IGNORED);
-    else if (!web_app_data_.IsEmpty())
+    else if (!manifest_.IsEmpty())
       TrackUserResponse(USER_RESPONSE_WEB_APP_IGNORED);
   }
 
@@ -188,10 +192,10 @@ void AppBannerInfoBarDelegateAndroid::InfoBarDismissed() {
     TrackUserResponse(USER_RESPONSE_NATIVE_APP_DISMISSED);
     AppBannerSettingsHelper::RecordBannerDismissEvent(
         web_contents, native_app_package_, AppBannerSettingsHelper::NATIVE);
-  } else if (!web_app_data_.IsEmpty()) {
+  } else if (!manifest_.IsEmpty()) {
     TrackUserResponse(USER_RESPONSE_WEB_APP_DISMISSED);
     AppBannerSettingsHelper::RecordBannerDismissEvent(
-        web_contents, web_app_data_.start_url.spec(),
+        web_contents, manifest_.start_url.spec(),
         AppBannerSettingsHelper::WEB);
   }
 }
@@ -240,15 +244,17 @@ bool AppBannerInfoBarDelegateAndroid::Accept() {
     }
     SendBannerAccepted(web_contents, "play");
     return was_opened;
-  } else if (!web_app_data_.IsEmpty()) {
+  } else if (!manifest_.IsEmpty()) {
     TrackUserResponse(USER_RESPONSE_WEB_APP_ACCEPTED);
 
     AppBannerSettingsHelper::RecordBannerInstallEvent(
-        web_contents, web_app_data_.start_url.spec(),
+        web_contents, manifest_.start_url.spec(),
         AppBannerSettingsHelper::WEB);
 
     ShortcutInfo info(GURL::EmptyGURL());
-    info.UpdateFromManifest(web_app_data_);
+    info.UpdateFromManifest(manifest_);
+    info.manifest_url = manifest_url_;
+    info.icon_url = app_icon_url_;
     info.UpdateSource(ShortcutInfo::SOURCE_APP_BANNER);
 
     const std::string& uid = base::GenerateGUID();

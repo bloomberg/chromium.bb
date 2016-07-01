@@ -65,7 +65,7 @@ base::Closure AppBannerDataFetcherAndroid::FetchWebappSplashScreenImageCallback(
   DCHECK(web_contents);
 
   GURL image_url = ManifestIconSelector::FindBestMatchingIcon(
-      web_app_data().icons, ideal_splash_image_size_in_dp_,
+      manifest().icons, ideal_splash_image_size_in_dp_,
       minimum_splash_image_size_in_dp_);
 
   return base::Bind(&ShortcutHelper::FetchSplashScreenImage,
@@ -73,7 +73,8 @@ base::Closure AppBannerDataFetcherAndroid::FetchWebappSplashScreenImageCallback(
       minimum_splash_image_size_in_dp_, webapp_id);
 }
 
-void AppBannerDataFetcherAndroid::ShowBanner(const SkBitmap* icon,
+void AppBannerDataFetcherAndroid::ShowBanner(const GURL& icon_url,
+                                             const SkBitmap* icon,
                                              const base::string16& title,
                                              const std::string& referrer) {
   content::WebContents* web_contents = GetWebContents();
@@ -83,11 +84,11 @@ void AppBannerDataFetcherAndroid::ShowBanner(const SkBitmap* icon,
   if (native_app_data_.is_null()) {
     std::unique_ptr<AppBannerInfoBarDelegateAndroid> delegate(
         new AppBannerInfoBarDelegateAndroid(event_request_id(), this, title,
-                                            new SkBitmap(*icon),
-                                            web_app_data()));
+                                            icon_url, new SkBitmap(*icon),
+                                            manifest_url(), manifest()));
 
     infobar = new AppBannerInfoBarAndroid(std::move(delegate),
-                                          web_app_data().start_url);
+                                          manifest().start_url);
     if (infobar) {
       RecordDidShowBanner("AppBanner.WebApp.Shown");
       TrackDisplayEvent(DISPLAY_EVENT_WEB_APP_BANNER_CREATED);

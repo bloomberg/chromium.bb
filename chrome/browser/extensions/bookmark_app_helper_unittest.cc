@@ -293,7 +293,7 @@ class TestBookmarkAppHelper : public BookmarkAppHelper {
   }
 
   void CompleteGetManifest(const content::Manifest& manifest) {
-    BookmarkAppHelper::OnDidGetManifest(manifest);
+    BookmarkAppHelper::OnDidGetManifest(GURL(), manifest);
   }
 
   void CompleteIconDownload(

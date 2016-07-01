@@ -19,6 +19,8 @@ namespace blink {
 class WebDevToolsAgent;
 }
 
+class GURL;
+
 namespace content {
 
 class DevToolsCPUThrottler;
@@ -93,6 +95,7 @@ class CONTENT_EXPORT DevToolsAgent
 
   void GotManifest(int session_id,
                    int command_id,
+                   const GURL& manifest_url,
                    const Manifest& manifest,
                    const ManifestDebugInfo& debug_info);
 

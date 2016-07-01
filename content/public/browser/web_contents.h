@@ -691,9 +691,10 @@ class WebContents : public PageNavigator,
   // Returns true if audio has recently been audible from the WebContents.
   virtual bool WasRecentlyAudible() = 0;
 
-  typedef base::Callback<void(const Manifest&)> GetManifestCallback;
+  typedef base::Callback<void(const GURL&, const Manifest&)>
+      GetManifestCallback;
 
-  // Requests the Manifest of the main frame's document.
+  // Requests the manifest URL and the Manifest of the main frame's document.
   virtual void GetManifest(const GetManifestCallback& callback) = 0;
 
   typedef base::Callback<void(bool)> HasManifestCallback;

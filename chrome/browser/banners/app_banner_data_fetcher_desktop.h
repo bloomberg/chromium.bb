@@ -38,7 +38,8 @@ class AppBannerDataFetcherDesktop : public AppBannerDataFetcher {
                          const GURL& start_url) override;
 
   // AppBannerDataFetcher override.
-  void ShowBanner(const SkBitmap* icon,
+  void ShowBanner(const GURL& icon_url,
+                  const SkBitmap* icon,
                   const base::string16& title,
                   const std::string& referrer) override;
 

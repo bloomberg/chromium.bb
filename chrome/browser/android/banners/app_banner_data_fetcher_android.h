@@ -43,7 +43,8 @@ class AppBannerDataFetcherAndroid : public AppBannerDataFetcher {
   std::string GetAppIdentifier() override;
 
  private:
-  void ShowBanner(const SkBitmap* icon,
+  void ShowBanner(const GURL& icon_url,
+                  const SkBitmap* icon,
                   const base::string16& title,
                   const std::string& referrer) override;
 
