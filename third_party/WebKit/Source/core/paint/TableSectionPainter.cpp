@@ -37,17 +37,12 @@ inline const LayoutTableCell* TableSectionPainter::primaryCellToPaint(unsigned r
 
 void TableSectionPainter::paintRepeatingHeaderGroup(const PaintInfo& paintInfo, const LayoutPoint& paintOffset, const CollapsedBorderValue& currentBorderValue, ItemToPaint itemToPaint)
 {
-    if (m_layoutTableSection.getPaginationBreakability() == LayoutBox::AllowAnyBreaks)
-        return;
-    // TODO(rhogan): Should we paint a header repeatedly if it's self-painting?
-    if (m_layoutTableSection.hasSelfPaintingLayer())
-        return;
-    LayoutTable* table = m_layoutTableSection.table();
-    LayoutUnit pageHeight = table->pageLogicalHeightForOffset(LayoutUnit());
-    if (!pageHeight)
+    if (!m_layoutTableSection.hasRepeatingHeaderGroup())
         return;
 
+    LayoutTable* table = m_layoutTableSection.table();
     LayoutPoint paginationOffset = paintOffset;
+    LayoutUnit pageHeight = table->pageLogicalHeightForOffset(LayoutUnit());
     // Move paginationOffset to the top of the second page.
     paginationOffset.move(0, pageHeight - table->pageLogicalOffset());
     // Now move paginationOffset to the top of the page the cull rect starts on.

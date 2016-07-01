@@ -302,6 +302,10 @@ public:
     void setOffsetForRepeatingHeader(LayoutUnit offset) { m_offsetForRepeatingHeader = offset; }
     LayoutUnit offsetForRepeatingHeader() const { return m_offsetForRepeatingHeader; }
 
+    bool mapToVisualRectInAncestorSpace(const LayoutBoxModelObject* ancestor, LayoutRect&, VisualRectFlags = DefaultVisualRectFlags) const override;
+
+    bool hasRepeatingHeaderGroup() const;
+
 protected:
     void styleDidChange(StyleDifference, const ComputedStyle* oldStyle) override;
     bool nodeAtPoint(HitTestResult&, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction) override;

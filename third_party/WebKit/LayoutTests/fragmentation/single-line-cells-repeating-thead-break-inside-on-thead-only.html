@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+<script src="../fast/repaint/resources/text-based-repaint.js"></script>
 <style>
 table {
     border-collapse: collapse;
@@ -16,7 +17,7 @@ thead {
     <table>
         <thead>
             <tr>
-                <th>Col 1</th>
+                <th id="target">Col 1</th>
                 <th>Col 2</th>
             </tr>
         </thead>
@@ -47,4 +48,10 @@ thead {
         </tbody>
     </table>
 </div>
-
+<script>
+onload = runRepaintAndPixelTest;
+function repaintTest()
+{
+    target.style.color = 'red';
+}
+</script>
