@@ -44,9 +44,6 @@ class {{class_name}} {
   uint32_t size;
   {{enum_name}} tag;
   Union_ data;
-
-  void EncodePointers();
-  void DecodePointers();
 };
 static_assert(sizeof({{class_name}}) == mojo::internal::kUnionDataSize,
               "Bad sizeof({{class_name}})");

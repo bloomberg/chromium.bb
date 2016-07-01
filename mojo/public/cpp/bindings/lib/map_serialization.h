@@ -122,22 +122,24 @@ struct Serializer<Map<Key, Value>, MaybeConstUserType> {
 
     auto result = Data::New(buf);
     if (result) {
-      result->keys.ptr =
+      auto keys_ptr =
           MojomTypeTraits<Array<Key>>::Data::New(Traits::GetSize(input), buf);
-      if (result->keys.ptr) {
+      if (keys_ptr) {
         MapKeyReader<MaybeConstUserType> key_reader(input);
         KeyArraySerializer::SerializeElements(
-            &key_reader, buf, result->keys.ptr,
-            validate_params->key_validate_params, context);
+            &key_reader, buf, keys_ptr, validate_params->key_validate_params,
+            context);
+        result->keys.Set(keys_ptr);
       }
 
-      result->values.ptr =
+      auto values_ptr =
           MojomTypeTraits<Array<Value>>::Data::New(Traits::GetSize(input), buf);
-      if (result->values.ptr) {
+      if (values_ptr) {
         MapValueReader<MaybeConstUserType> value_reader(input);
         ValueArraySerializer::SerializeElements(
-            &value_reader, buf, result->values.ptr,
+            &value_reader, buf, values_ptr,
             validate_params->element_validate_params, context);
+        result->values.Set(values_ptr);
       }
     }
     *output = result;
@@ -152,9 +154,9 @@ struct Serializer<Map<Key, Value>, MaybeConstUserType> {
     std::vector<UserKey> keys;
     std::vector<UserValue> values;
 
-    if (!KeyArraySerializer::DeserializeElements(input->keys.ptr, &keys,
+    if (!KeyArraySerializer::DeserializeElements(input->keys.Get(), &keys,
                                                  context) ||
-        !ValueArraySerializer::DeserializeElements(input->values.ptr, &values,
+        !ValueArraySerializer::DeserializeElements(input->values.Get(), &values,
                                                    context)) {
       return false;
     }

@@ -57,6 +57,27 @@ class Map_Data;
 
 using String_Data = Array_Data<char>;
 
+size_t Align(size_t size);
+char* AlignPointer(char* ptr);
+
+bool IsAligned(const void* ptr);
+
+// Pointers are encoded as relative offsets. The offsets are relative to the
+// address of where the offset value is stored, such that the pointer may be
+// recovered with the expression:
+//
+//   ptr = reinterpret_cast<char*>(offset) + *offset
+//
+// A null pointer is encoded as an offset value of 0.
+//
+void EncodePointer(const void* ptr, uint64_t* offset);
+// Note: This function doesn't validate the encoded pointer value.
+inline const void* DecodePointer(const uint64_t* offset) {
+  if (!*offset)
+    return nullptr;
+  return reinterpret_cast<const char*>(offset) + *offset;
+}
+
 #pragma pack(push, 1)
 
 struct StructHeader {
@@ -72,9 +93,18 @@ struct ArrayHeader {
 static_assert(sizeof(ArrayHeader) == 8, "Bad_sizeof(ArrayHeader)");
 
 template <typename T>
-union Pointer {
+struct Pointer {
+  using BaseType = T;
+
+  void Set(T* ptr) { EncodePointer(ptr, &offset); }
+  const T* Get() const { return static_cast<const T*>(DecodePointer(&offset)); }
+  T* Get() {
+    return static_cast<T*>(const_cast<void*>(DecodePointer(&offset)));
+  }
+
+  bool is_null() const { return offset == 0; }
+
   uint64_t offset;
-  T* ptr;
 };
 static_assert(sizeof(Pointer<char>) == 8, "Bad_sizeof(Pointer)");
 
@@ -172,7 +202,7 @@ struct MojomTypeTraits {
 template <typename T>
 struct MojomTypeTraits<Array<T>, false> {
   using Data = Array_Data<typename MojomTypeTraits<T>::DataAsArrayElement>;
-  using DataAsArrayElement = Data*;
+  using DataAsArrayElement = Pointer<Data>;
 
   static const MojomTypeCategory category = MojomTypeCategory::ARRAY;
 };
@@ -240,7 +270,7 @@ template <typename K, typename V>
 struct MojomTypeTraits<Map<K, V>, false> {
   using Data = Map_Data<typename MojomTypeTraits<K>::DataAsArrayElement,
                         typename MojomTypeTraits<V>::DataAsArrayElement>;
-  using DataAsArrayElement = Data*;
+  using DataAsArrayElement = Pointer<Data>;
 
   static const MojomTypeCategory category = MojomTypeCategory::MAP;
 };
@@ -248,7 +278,7 @@ struct MojomTypeTraits<Map<K, V>, false> {
 template <>
 struct MojomTypeTraits<String, false> {
   using Data = String_Data;
-  using DataAsArrayElement = Data*;
+  using DataAsArrayElement = Pointer<Data>;
 
   static const MojomTypeCategory category = MojomTypeCategory::STRING;
 };
@@ -259,7 +289,7 @@ struct MojomTypeTraits<StructPtr<T>, false> {
   using DataAsArrayElement =
       typename std::conditional<IsUnionDataType<Data>::value,
                                 Data,
-                                Data*>::type;
+                                Pointer<Data>>::type;
 
   static const MojomTypeCategory category = IsUnionDataType<Data>::value
                                                 ? MojomTypeCategory::UNION
@@ -272,7 +302,7 @@ struct MojomTypeTraits<InlinedStructPtr<T>, false> {
   using DataAsArrayElement =
       typename std::conditional<IsUnionDataType<Data>::value,
                                 Data,
-                                Data*>::type;
+                                Pointer<Data>>::type;
 
   static const MojomTypeCategory category = IsUnionDataType<Data>::value
                                                 ? MojomTypeCategory::UNION

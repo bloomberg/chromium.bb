@@ -110,7 +110,7 @@ TEST_F(WTFTypesTest, Serialization_WTFArrayToWTFArray) {
       cloned_strs, &context);
 
   mojo::internal::FixedBufferForTesting buf(size);
-  mojo::internal::Array_Data<mojo::internal::String_Data*>* data;
+  typename mojo::internal::MojomTypeTraits<Array<mojo::String>>::Data* data;
   mojo::internal::ContainerValidateParams validate_params(
       0, true, new mojo::internal::ContainerValidateParams(0, false, nullptr));
   mojo::internal::Serialize<Array<mojo::String>>(cloned_strs, &buf, &data,
@@ -131,7 +131,7 @@ TEST_F(WTFTypesTest, Serialization_WTFVectorToWTFVector) {
       cloned_strs, &context);
 
   mojo::internal::FixedBufferForTesting buf(size);
-  mojo::internal::Array_Data<mojo::internal::String_Data*>* data;
+  typename mojo::internal::MojomTypeTraits<Array<mojo::String>>::Data* data;
   mojo::internal::ContainerValidateParams validate_params(
       0, true, new mojo::internal::ContainerValidateParams(0, false, nullptr));
   mojo::internal::Serialize<Array<mojo::String>>(cloned_strs, &buf, &data,
@@ -151,7 +151,7 @@ TEST_F(WTFTypesTest, Serialization_WTFArrayToMojoArray) {
       mojo::internal::PrepareToSerialize<Array<mojo::String>>(strs, &context);
 
   mojo::internal::FixedBufferForTesting buf(size);
-  mojo::internal::Array_Data<mojo::internal::String_Data*>* data;
+  typename mojo::internal::MojomTypeTraits<Array<mojo::String>>::Data* data;
   mojo::internal::ContainerValidateParams validate_params(
       0, true, new mojo::internal::ContainerValidateParams(0, false, nullptr));
   mojo::internal::Serialize<Array<mojo::String>>(strs, &buf, &data,

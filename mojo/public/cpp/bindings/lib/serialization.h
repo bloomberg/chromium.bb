@@ -58,8 +58,6 @@ DataArrayType StructSerializeImpl(UserType* input) {
   typename MojomType::Struct::Data_* data = nullptr;
   Serialize<MojomType>(*input, &buffer, &data, &context);
 
-  data->EncodePointers();
-
   if (need_copy) {
     memcpy(&result.front(), result_buffer, size);
     free(result_buffer);
@@ -92,9 +90,6 @@ bool StructDeserializeImpl(DataArrayType input, UserType* output) {
   bool result = false;
   if (DataType::Validate(input_buffer, &validation_context)) {
     auto data = reinterpret_cast<DataType*>(input_buffer);
-    if (data)
-      data->DecodePointers();
-
     SerializationContext context;
     result = Deserialize<MojomType>(data, output, &context);
   }

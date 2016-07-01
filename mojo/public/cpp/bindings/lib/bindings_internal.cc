@@ -1,8 +1,8 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/public/cpp/bindings/lib/serialization_util.h"
+#include "mojo/public/cpp/bindings/lib/bindings_internal.h"
 
 namespace mojo {
 namespace internal {
@@ -41,12 +41,6 @@ void EncodePointer(const void* ptr, uint64_t* offset) {
   DCHECK(p_obj > p_slot);
 
   *offset = static_cast<uint64_t>(p_obj - p_slot);
-}
-
-const void* DecodePointerRaw(const uint64_t* offset) {
-  if (!*offset)
-    return nullptr;
-  return reinterpret_cast<const char*>(offset) + *offset;
 }
 
 }  // namespace internal

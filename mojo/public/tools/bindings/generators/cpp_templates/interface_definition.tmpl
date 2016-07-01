@@ -7,7 +7,6 @@
 
 {%- macro alloc_params(struct, params, message, serialization_context,
                        description) %}
-  ({{params}})->DecodePointers();
   ({{serialization_context}})->handles.Swap(({{message}})->mutable_handles());
   bool success = true;
 {%-   for param in struct.packed.packed_fields_in_ordinal_order %}
@@ -42,8 +41,6 @@ std::move(p_{{param.name}})
                             serialization_context)}}
   ({{serialization_context}})->handles.Swap(
       builder.message()->mutable_handles());
-  params->EncodePointers();
-
 {%- endmacro %}
 
 {#--- Begin #}

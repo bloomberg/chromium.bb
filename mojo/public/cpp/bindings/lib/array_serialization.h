@@ -353,17 +353,14 @@ struct ArraySerializer<MojomType,
                                MojomTypeCategory::STRUCT>::value>::type> {
   using UserType = typename std::remove_const<MaybeConstUserType>::type;
   using Data = typename MojomTypeTraits<MojomType>::Data;
-  using DataElement = typename Data::Element;
   using Element = typename MojomType::Element;
+  using DataElementPtr = typename MojomTypeTraits<Element>::Data*;
   using Traits = ArrayTraits<UserType>;
 
   static size_t GetSerializedSize(UserTypeIterator* input,
                                   SerializationContext* context) {
     size_t element_count = input->GetSize();
-    size_t size =
-        sizeof(Data) +
-        element_count *
-            sizeof(Pointer<typename std::remove_pointer<DataElement>::type>);
+    size_t size = sizeof(Data) + element_count * sizeof(typename Data::Element);
     for (size_t i = 0; i < element_count; ++i)
       size += PrepareToSerialize<Element>(input->GetNext(), context);
     return size;
@@ -376,13 +373,13 @@ struct ArraySerializer<MojomType,
                                 SerializationContext* context) {
     size_t size = input->GetSize();
     for (size_t i = 0; i < size; ++i) {
-      DataElement element;
-      SerializeCaller<Element>::Run(input->GetNext(), buf, &element,
+      DataElementPtr data_ptr;
+      SerializeCaller<Element>::Run(input->GetNext(), buf, &data_ptr,
                                     validate_params->element_validate_params,
                                     context);
-      output->at(i) = element;
+      output->at(i).Set(data_ptr);
       MOJO_INTERNAL_DLOG_SERIALIZATION_WARNING(
-          !validate_params->element_is_nullable && !element,
+          !validate_params->element_is_nullable && !data_ptr,
           VALIDATION_ERROR_UNEXPECTED_NULL_POINTER,
           MakeMessageWithArrayIndex("null in array expecting valid pointers",
                                     size, i));
@@ -391,19 +388,15 @@ struct ArraySerializer<MojomType,
   static bool DeserializeElements(Data* input,
                                   UserType* output,
                                   SerializationContext* context) {
-    bool success = true;
     if (!Traits::Resize(*output, input->size()))
       return false;
     ArrayIterator<Traits, UserType> iterator(*output);
     for (size_t i = 0; i < input->size(); ++i) {
-      // Note that we rely on complete deserialization taking place in order to
-      // transfer ownership of all encoded handles. Therefore we don't
-      // short-circuit on failure here.
-      if (!Deserialize<Element>(input->at(i), &iterator.GetNext(), context)) {
-        success = false;
-      }
+      if (!Deserialize<Element>(input->at(i).Get(), &iterator.GetNext(),
+                                context))
+        return false;
     }
-    return success;
+    return true;
   }
 
  private:
@@ -415,7 +408,7 @@ struct ArraySerializer<MojomType,
     template <typename InputElementType>
     static void Run(InputElementType&& input,
                     Buffer* buf,
-                    DataElement* output,
+                    DataElementPtr* output,
                     const ContainerValidateParams* validate_params,
                     SerializationContext* context) {
       Serialize<T>(std::forward<InputElementType>(input), buf, output, context);
@@ -427,7 +420,7 @@ struct ArraySerializer<MojomType,
     template <typename InputElementType>
     static void Run(InputElementType&& input,
                     Buffer* buf,
-                    DataElement* output,
+                    DataElementPtr* output,
                     const ContainerValidateParams* validate_params,
                     SerializationContext* context) {
       Serialize<T>(std::forward<InputElementType>(input), buf, output,
@@ -487,19 +480,14 @@ struct ArraySerializer<
   static bool DeserializeElements(Data* input,
                                   UserType* output,
                                   SerializationContext* context) {
-    bool success = true;
     if (!Traits::Resize(*output, input->size()))
       return false;
     ArrayIterator<Traits, UserType> iterator(*output);
     for (size_t i = 0; i < input->size(); ++i) {
-      // Note that we rely on complete deserialization taking place in order to
-      // transfer ownership of all encoded handles. Therefore we don't
-      // short-circuit on failure here.
-      if (!Deserialize<Element>(&input->at(i), &iterator.GetNext(), context)) {
-        success = false;
-      }
+      if (!Deserialize<Element>(&input->at(i), &iterator.GetNext(), context))
+        return false;
     }
-    return success;
+    return true;
   }
 };
 

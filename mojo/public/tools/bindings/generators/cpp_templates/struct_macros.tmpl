@@ -60,6 +60,7 @@
                     buffer, context, input_may_be_temp=False) -%}
   auto {{output}} =
       {{struct|get_qualified_name_for_kind(internal=True)}}::New({{buffer}});
+  ALLOW_UNUSED_LOCAL({{output}});
 {%- for pf in struct.packed.packed_fields_in_ordinal_order %}
 {%-   set input_field = input_field_pattern|format(pf.field.name) %}
 {%-   set name = pf.field.name %}
@@ -72,28 +73,27 @@
 {%-     if input_may_be_temp %}
   decltype({{original_input_field}}) in_{{name}} = {{original_input_field}};
 {%-     endif %}
-
 {%-     if kind|is_array_kind or kind|is_map_kind %}
+  typename decltype({{output}}->{{name}})::BaseType* {{name}}_ptr;
   const mojo::internal::ContainerValidateParams {{name}}_validate_params(
       {{kind|get_container_validate_params_ctor_args|indent(10)}});
   mojo::internal::Serialize<{{serializer_type}}>(
-      {{input_field}}, {{buffer}}, &{{output}}->{{name}}.ptr,
-      &{{name}}_validate_params, {{context}});
+      {{input_field}}, {{buffer}}, &{{name}}_ptr, &{{name}}_validate_params,
+      {{context}});
+  {{output}}->{{name}}.Set({{name}}_ptr);
 {%-     elif kind|is_union_kind %}
   auto {{name}}_ptr = &{{output}}->{{name}};
   mojo::internal::Serialize<{{serializer_type}}>(
       {{input_field}}, {{buffer}}, &{{name}}_ptr, true, {{context}});
 {%-     else %}
+  typename decltype({{output}}->{{name}})::BaseType* {{name}}_ptr;
   mojo::internal::Serialize<{{serializer_type}}>(
-      {{input_field}}, {{buffer}}, &{{output}}->{{name}}.ptr, {{context}});
+      {{input_field}}, {{buffer}}, &{{name}}_ptr, {{context}});
+  {{output}}->{{name}}.Set({{name}}_ptr);
 {%-     endif %}
 {%-     if not kind|is_nullable_kind %}
   MOJO_INTERNAL_DLOG_SERIALIZATION_WARNING(
-{%-       if kind|is_union_kind %}
       {{output}}->{{name}}.is_null(),
-{%-       else %}
-      !{{output}}->{{name}}.ptr,
-{%-       endif %}
       mojo::internal::VALIDATION_ERROR_UNEXPECTED_NULL_POINTER,
       "null {{name}} in {{struct_display_name}}");
 {%-     endif %}

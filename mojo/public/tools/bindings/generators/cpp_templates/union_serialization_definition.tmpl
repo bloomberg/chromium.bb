@@ -56,26 +56,24 @@ void UnionSerializerImpl<{{mojom_type}}Ptr>::Serialize(
       case {{mojom_type}}::Tag::{{field.name|upper}}: {
 {%-   set serializer_type = field.kind|unmapped_type_for_serializer %}
 {%-   if field.kind|is_object_kind %}
+        typename decltype(result->data.f_{{field.name}})::BaseType* ptr;
 {%-     if field.kind|is_union_kind %}
         mojo::internal::Serialize<{{serializer_type}}>(
-            *(input_acc.data()->{{field.name}}), buf,
-            &result->data.f_{{field.name}}.ptr, false, context);
+            *(input_acc.data()->{{field.name}}), buf, &ptr, false, context);
 {%-     elif field.kind|is_array_kind or field.kind|is_map_kind %}
         const ContainerValidateParams {{field.name}}_validate_params(
             {{field.kind|get_container_validate_params_ctor_args|indent(16)}});
         mojo::internal::Serialize<{{serializer_type}}>(
-            *(input_acc.data()->{{field.name}}), buf,
-            &result->data.f_{{field.name}}.ptr, &{{field.name}}_validate_params,
-            context);
+            *(input_acc.data()->{{field.name}}), buf, &ptr,
+            &{{field.name}}_validate_params, context);
 {%-     else %}
         mojo::internal::Serialize<{{serializer_type}}>(
-            *(input_acc.data()->{{field.name}}), buf,
-            &result->data.f_{{field.name}}.ptr, context);
+            *(input_acc.data()->{{field.name}}), buf, &ptr, context);
 {%-     endif %}
+        result->data.f_{{field.name}}.Set(ptr);
 {%-     if not field.kind|is_nullable_kind %}
         MOJO_INTERNAL_DLOG_SERIALIZATION_WARNING(
-            !result->data.f_{{field.name}}.ptr,
-            mojo::internal::VALIDATION_ERROR_UNEXPECTED_NULL_POINTER,
+            !ptr, mojo::internal::VALIDATION_ERROR_UNEXPECTED_NULL_POINTER,
             "null {{field.name}} in {{union.name}} union");
 {%-     endif %}
 
@@ -129,7 +127,7 @@ bool UnionSerializerImpl<{{mojom_type}}Ptr>::Deserialize(
 {%-   if field.kind|is_object_kind %}
         result_acc.SwitchActive({{mojom_type}}::Tag::{{field.name|upper}});
         if (!mojo::internal::Deserialize<{{serializer_type}}>(
-                input->data.f_{{field.name}}.ptr,
+                input->data.f_{{field.name}}.Get(),
                 result_acc.data()->{{field.name}}, context))
           success = false;
 

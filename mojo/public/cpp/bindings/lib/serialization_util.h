@@ -12,94 +12,11 @@
 
 #include "base/logging.h"
 #include "base/macros.h"
-#include "mojo/public/cpp/bindings/associated_interface_ptr_info.h"
-#include "mojo/public/cpp/bindings/interface_ptr.h"
 #include "mojo/public/cpp/bindings/lib/bindings_internal.h"
 #include "mojo/public/cpp/bindings/lib/serialization_context.h"
-#include "mojo/public/cpp/system/handle.h"
 
 namespace mojo {
-
-class AssociatedGroupController;
-
 namespace internal {
-
-size_t Align(size_t size);
-char* AlignPointer(char* ptr);
-
-bool IsAligned(const void* ptr);
-
-// Pointers are encoded as relative offsets. The offsets are relative to the
-// address of where the offset value is stored, such that the pointer may be
-// recovered with the expression:
-//
-//   ptr = reinterpret_cast<char*>(offset) + *offset
-//
-// A null pointer is encoded as an offset value of 0.
-//
-void EncodePointer(const void* ptr, uint64_t* offset);
-// Note: This function doesn't validate the encoded pointer value.
-const void* DecodePointerRaw(const uint64_t* offset);
-
-// Note: This function doesn't validate the encoded pointer value.
-template <typename T>
-inline void DecodePointer(const uint64_t* offset, T** ptr) {
-  *ptr = reinterpret_cast<T*>(const_cast<void*>(DecodePointerRaw(offset)));
-}
-
-// The following 2 functions are used to encode/decode all objects (structs and
-// arrays) in a consistent manner.
-
-template <typename T>
-inline void Encode(T* obj) {
-  if (obj->ptr)
-    obj->ptr->EncodePointers();
-  EncodePointer(obj->ptr, &obj->offset);
-}
-
-// Note: This function doesn't validate the encoded pointer and handle values.
-template <typename T>
-inline void Decode(T* obj) {
-  DecodePointer(&obj->offset, &obj->ptr);
-  if (obj->ptr)
-    obj->ptr->DecodePointers();
-}
-
-template <typename T>
-inline void AssociatedInterfacePtrInfoToData(
-    AssociatedInterfacePtrInfo<T> input,
-    AssociatedInterface_Data* output) {
-  output->version = input.version();
-  output->interface_id = input.PassHandle().release();
-}
-
-template <typename T>
-inline void AssociatedInterfaceDataToPtrInfo(
-    AssociatedInterface_Data* input,
-    AssociatedInterfacePtrInfo<T>* output,
-    AssociatedGroupController* group_controller) {
-  output->set_handle(group_controller->CreateLocalEndpointHandle(
-      FetchAndReset(&input->interface_id)));
-  output->set_version(input->version);
-}
-
-template <typename T>
-inline void InterfacePointerToData(InterfacePtr<T> input,
-                                   Interface_Data* output,
-                                   SerializationContext* context) {
-  InterfacePtrInfo<T> info = input.PassInterface();
-  output->handle = context->handles.AddHandle(info.PassHandle().release());
-  output->version = info.version();
-}
-
-template <typename T>
-inline void InterfaceDataToPointer(Interface_Data* input,
-                                   InterfacePtr<T>* output,
-                                   SerializationContext* context) {
-  output->Bind(InterfacePtrInfo<T>(
-      context->handles.TakeHandleAs<mojo::MessagePipeHandle>(input->handle),
-      input->version));
-}
 
 template <typename T>
 struct HasIsNullMethod {

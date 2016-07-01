@@ -20,9 +20,6 @@ class NativeStruct_Data {
  public:
   static bool Validate(const void* data, ValidationContext* validation_context);
 
-  void EncodePointers() {}
-  void DecodePointers() {}
-
   // Unlike normal structs, the memory layout is exactly the same as an array
   // of uint8_t.
   Array_Data<uint8_t> data;

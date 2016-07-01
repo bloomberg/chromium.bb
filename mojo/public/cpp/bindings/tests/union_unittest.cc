@@ -170,7 +170,6 @@ TEST(UnionTest, PodValidation) {
   mojo::internal::FixedBufferForTesting buf(size);
   internal::PodUnion_Data* data = nullptr;
   mojo::internal::Serialize<PodUnionPtr>(pod, &buf, &data, false, nullptr);
-  data->EncodePointers();
 
   void* raw_buf = buf.Leak();
   mojo::internal::ValidationContext validation_context(
@@ -356,9 +355,6 @@ TEST(UnionTest, StringSerialization) {
   internal::ObjectUnion_Data* data = nullptr;
   mojo::internal::Serialize<ObjectUnionPtr>(pod1, &buf, &data, false, nullptr);
 
-  data->EncodePointers();
-  data->DecodePointers();
-
   ObjectUnionPtr pod2;
   mojo::internal::Deserialize<ObjectUnionPtr>(data, &pod2, nullptr);
   EXPECT_EQ(hello, pod2->get_f_string());
@@ -502,8 +498,6 @@ TEST(UnionTest, ObjectUnionInArraySerialization) {
   mojo::internal::Serialize<Array<ObjectUnionPtr>>(array, &buf, &data,
                                                    &validate_params, nullptr);
 
-  data->EncodePointers();
-
   std::vector<char> new_buf;
   new_buf.resize(size);
 
@@ -519,7 +513,6 @@ TEST(UnionTest, ObjectUnionInArraySerialization) {
   ASSERT_TRUE(mojo::internal::Array_Data<internal::ObjectUnion_Data>::Validate(
       data, &validation_context, &validate_params));
 
-  data->DecodePointers();
   Array<ObjectUnionPtr> array2;
   mojo::internal::Deserialize<Array<ObjectUnionPtr>>(data, &array2, nullptr);
 
@@ -576,9 +569,6 @@ TEST(UnionTest, Serialization_UnionOfObjects) {
   mojo::internal::Serialize<SmallObjStructPtr>(obj_struct, &buf, &data,
                                                nullptr);
 
-  data->EncodePointers();
-  data->DecodePointers();
-
   SmallObjStructPtr deserialized;
   mojo::internal::Deserialize<SmallObjStructPtr>(data, &deserialized, nullptr);
 
@@ -600,7 +590,6 @@ TEST(UnionTest, Validation_UnionsInStruct) {
   mojo::internal::Serialize<SmallStructPtr>(small_struct, &buf, &data,
                                             &context);
 
-  data->EncodePointers();
 
   void* raw_buf = buf.Leak();
   mojo::internal::ValidationContext validation_context(
@@ -625,8 +614,6 @@ TEST(UnionTest, Validation_PodUnionInStruct_Failure) {
   mojo::internal::Serialize<SmallStructPtr>(small_struct, &buf, &data,
                                             &context);
   data->pod_union.tag = static_cast<internal::PodUnion_Data::PodUnion_Tag>(100);
-
-  data->EncodePointers();
 
   void* raw_buf = buf.Leak();
   mojo::internal::ValidationContext validation_context(
@@ -670,8 +657,6 @@ TEST(UnionTest, Validation_NullableUnion) {
   mojo::internal::Serialize<SmallStructPtr>(small_struct, &buf, &data,
                                             &context);
 
-  data->EncodePointers();
-
   void* raw_buf = buf.Leak();
   mojo::internal::ValidationContext validation_context(
       data, static_cast<uint32_t>(size), 0);
@@ -709,8 +694,8 @@ TEST(UnionTest, PodUnionInMapSerialization) {
   EXPECT_EQ(120U, size);
 
   mojo::internal::FixedBufferForTesting buf(size);
-  mojo::internal::Map_Data<mojo::internal::String_Data*,
-                           internal::PodUnion_Data>* data;
+  typename mojo::internal::MojomTypeTraits<Map<String, PodUnionPtr>>::Data*
+      data;
   mojo::internal::ContainerValidateParams validate_params(
       new mojo::internal::ContainerValidateParams(0, false, nullptr),
       new mojo::internal::ContainerValidateParams(0, false, nullptr));
@@ -737,8 +722,8 @@ TEST(UnionTest, PodUnionInMapSerializationWithNull) {
   EXPECT_EQ(120U, size);
 
   mojo::internal::FixedBufferForTesting buf(size);
-  mojo::internal::Map_Data<mojo::internal::String_Data*,
-                           internal::PodUnion_Data>* data;
+  typename mojo::internal::MojomTypeTraits<Map<String, PodUnionPtr>>::Data*
+      data;
   mojo::internal::ContainerValidateParams validate_params(
       new mojo::internal::ContainerValidateParams(0, false, nullptr),
       new mojo::internal::ContainerValidateParams(0, true, nullptr));
@@ -777,9 +762,6 @@ TEST(UnionTest, StructInUnionSerialization) {
   internal::ObjectUnion_Data* data = nullptr;
   mojo::internal::Serialize<ObjectUnionPtr>(obj, &buf, &data, false, nullptr);
 
-  data->EncodePointers();
-  data->DecodePointers();
-
   ObjectUnionPtr obj2;
   mojo::internal::Deserialize<ObjectUnionPtr>(data, &obj2, nullptr);
   EXPECT_EQ(8, obj2->get_f_dummy()->f_int8);
@@ -798,8 +780,6 @@ TEST(UnionTest, StructInUnionValidation) {
   mojo::internal::FixedBufferForTesting buf(size);
   internal::ObjectUnion_Data* data = nullptr;
   mojo::internal::Serialize<ObjectUnionPtr>(obj, &buf, &data, false, nullptr);
-
-  data->EncodePointers();
 
   void* raw_buf = buf.Leak();
   mojo::internal::ValidationContext validation_context(
@@ -823,7 +803,6 @@ TEST(UnionTest, StructInUnionValidationNonNullable) {
   mojo::internal::FixedBufferForTesting buf(size);
   internal::ObjectUnion_Data* data = nullptr;
   mojo::internal::Serialize<ObjectUnionPtr>(obj, &buf, &data, false, nullptr);
-  data->EncodePointers();
 
   void* raw_buf = buf.Leak();
   mojo::internal::ValidationContext validation_context(
@@ -845,8 +824,6 @@ TEST(UnionTest, StructInUnionValidationNullable) {
   mojo::internal::FixedBufferForTesting buf(size);
   internal::ObjectUnion_Data* data = nullptr;
   mojo::internal::Serialize<ObjectUnionPtr>(obj, &buf, &data, false, nullptr);
-
-  data->EncodePointers();
 
   void* raw_buf = buf.Leak();
   mojo::internal::ValidationContext validation_context(
@@ -884,9 +861,6 @@ TEST(UnionTest, ArrayInUnionSerialization) {
   internal::ObjectUnion_Data* data = nullptr;
   mojo::internal::Serialize<ObjectUnionPtr>(obj, &buf, &data, false, nullptr);
 
-  data->EncodePointers();
-  data->DecodePointers();
-
   ObjectUnionPtr obj2;
   mojo::internal::Deserialize<ObjectUnionPtr>(data, &obj2, nullptr);
 
@@ -907,8 +881,6 @@ TEST(UnionTest, ArrayInUnionValidation) {
   mojo::internal::FixedBufferForTesting buf(size);
   internal::ObjectUnion_Data* data = nullptr;
   mojo::internal::Serialize<ObjectUnionPtr>(obj, &buf, &data, false, nullptr);
-
-  data->EncodePointers();
 
   void* raw_buf = buf.Leak();
   mojo::internal::ValidationContext validation_context(
@@ -948,9 +920,6 @@ TEST(UnionTest, MapInUnionSerialization) {
   internal::ObjectUnion_Data* data = nullptr;
   mojo::internal::Serialize<ObjectUnionPtr>(obj, &buf, &data, false, &context);
 
-  data->EncodePointers();
-  data->DecodePointers();
-
   ObjectUnionPtr obj2;
   mojo::internal::Deserialize<ObjectUnionPtr>(data, &obj2, &context);
 
@@ -974,8 +943,6 @@ TEST(UnionTest, MapInUnionValidation) {
   mojo::internal::FixedBufferForTesting buf(size);
   internal::ObjectUnion_Data* data = nullptr;
   mojo::internal::Serialize<ObjectUnionPtr>(obj, &buf, &data, false, &context);
-
-  data->EncodePointers();
 
   void* raw_buf = buf.Leak();
   mojo::internal::ValidationContext validation_context(
@@ -1011,9 +978,6 @@ TEST(UnionTest, UnionInUnionSerialization) {
   internal::ObjectUnion_Data* data = nullptr;
   mojo::internal::Serialize<ObjectUnionPtr>(obj, &buf, &data, false, nullptr);
 
-  data->EncodePointers();
-  data->DecodePointers();
-
   ObjectUnionPtr obj2;
   mojo::internal::Deserialize<ObjectUnionPtr>(data, &obj2, nullptr);
   EXPECT_EQ(10, obj2->get_f_pod_union()->get_f_int8());
@@ -1033,8 +997,6 @@ TEST(UnionTest, UnionInUnionValidation) {
   mojo::internal::FixedBufferForTesting buf(size);
   internal::ObjectUnion_Data* data = nullptr;
   mojo::internal::Serialize<ObjectUnionPtr>(obj, &buf, &data, false, nullptr);
-
-  data->EncodePointers();
 
   void* raw_buf = buf.Leak();
   mojo::internal::ValidationContext validation_context(
@@ -1058,7 +1020,6 @@ TEST(UnionTest, UnionInUnionValidationNonNullable) {
   mojo::internal::FixedBufferForTesting buf(size);
   internal::ObjectUnion_Data* data = nullptr;
   mojo::internal::Serialize<ObjectUnionPtr>(obj, &buf, &data, false, nullptr);
-  data->EncodePointers();
 
   void* raw_buf = buf.Leak();
   mojo::internal::ValidationContext validation_context(

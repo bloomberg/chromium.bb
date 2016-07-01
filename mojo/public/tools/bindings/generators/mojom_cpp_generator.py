@@ -142,32 +142,6 @@ def IsNativeOnlyKind(kind):
 def GetNativeTypeName(typemapped_kind):
   return _current_typemap[GetFullMojomNameForKind(typemapped_kind)]["typename"]
 
-def GetCppType(kind):
-  if mojom.IsArrayKind(kind):
-    return "mojo::internal::Array_Data<%s>*" % GetCppType(kind.kind)
-  if mojom.IsMapKind(kind):
-    return "mojo::internal::Map_Data<%s, %s>*" % (
-      GetCppType(kind.key_kind), GetCppType(kind.value_kind))
-  if mojom.IsStructKind(kind):
-    return "%s*" % GetNameForKind(kind, internal=True)
-  if mojom.IsUnionKind(kind):
-    return "%s" % GetNameForKind(kind, internal=True)
-  if mojom.IsInterfaceKind(kind):
-    return "mojo::internal::Interface_Data"
-  if mojom.IsInterfaceRequestKind(kind):
-    return "mojo::internal::Handle_Data"
-  if mojom.IsAssociatedInterfaceKind(kind):
-    return "mojo::internal::AssociatedInterface_Data"
-  if mojom.IsAssociatedInterfaceRequestKind(kind):
-    return "mojo::internal::AssociatedInterfaceRequest_Data"
-  if mojom.IsEnumKind(kind):
-    return "int32_t"
-  if mojom.IsStringKind(kind):
-    return "mojo::internal::String_Data*"
-  if mojom.IsAnyHandleKind(kind):
-    return "mojo::internal::Handle_Data"
-  return _kind_to_cpp_type[kind]
-
 def GetCppPodType(kind):
   if mojom.IsStringKind(kind):
     return "char*"
@@ -231,10 +205,10 @@ def GetCppFieldType(kind):
     return "%s" % GetNameForKind(kind, internal=True)
   if mojom.IsArrayKind(kind):
     return ("mojo::internal::Pointer<mojo::internal::Array_Data<%s>>" %
-            GetCppType(kind.kind))
+            GetCppFieldType(kind.kind))
   if mojom.IsMapKind(kind):
     return ("mojo::internal::Pointer<mojo::internal::Map_Data<%s, %s>>" %
-            (GetCppType(kind.key_kind), GetCppType(kind.value_kind)))
+            (GetCppFieldType(kind.key_kind), GetCppFieldType(kind.value_kind)))
   if mojom.IsInterfaceKind(kind):
     return "mojo::internal::Interface_Data"
   if mojom.IsInterfaceRequestKind(kind):
@@ -261,8 +235,6 @@ def GetUnionGetterReturnType(kind):
     return "%s&" % GetCppWrapperType(kind)
   return GetCppWrapperType(kind)
 
-# TODO(yzshen): It is unfortunate that we have so many functions for returning
-# types. Refactor them.
 def GetUnmappedTypeForSerializer(kind):
   if mojom.IsEnumKind(kind):
     return GetQualifiedNameForKind(kind)

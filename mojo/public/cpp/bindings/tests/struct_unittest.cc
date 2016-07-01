@@ -59,15 +59,12 @@ U SerializeAndDeserialize(T input) {
   InputDataType data;
   mojo::internal::Serialize<T>(input, &buf, &data, &context);
 
-  data->EncodePointers();
-
   // Set the subsequent area to a special value, so that we can find out if we
   // mistakenly access the area.
   void* subsequent_area = buf.Allocate(32);
   memset(subsequent_area, 0xAA, 32);
 
   OutputDataType output_data = reinterpret_cast<OutputDataType>(data);
-  output_data->DecodePointers();
 
   U output;
   mojo::internal::Deserialize<U>(output_data, &output, &context);
@@ -474,9 +471,6 @@ TEST_F(StructTest, Serialization_NativeStruct) {
                                                nullptr);
 
     EXPECT_NE(nullptr, data);
-
-    data->EncodePointers();
-    data->DecodePointers();
 
     NativeStructPtr output_native;
     mojo::internal::Deserialize<NativeStructPtr>(data, &output_native, nullptr);

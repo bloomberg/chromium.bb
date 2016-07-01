@@ -33,7 +33,6 @@ void SendRunOrClosePipeMessage(MessageReceiver* receiver,
   pipe_control::internal::RunOrClosePipeMessageParams_Data* params = nullptr;
   internal::Serialize<pipe_control::RunOrClosePipeMessageParamsPtr>(
       params_ptr, builder.buffer(), &params, context);
-  params->EncodePointers();
   builder.message()->set_interface_id(kInvalidInterfaceId);
   bool ok = receiver->Accept(builder.message());
   // This return value may be ignored as !ok implies the underlying message pipe

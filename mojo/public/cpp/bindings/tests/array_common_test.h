@@ -215,7 +215,7 @@ class ArrayCommonTest {
     EXPECT_EQ(8U + 2 * 8U + 2 * (8U + 4 * 4U), size);
 
     mojo::internal::FixedBufferForTesting buf(size);
-    mojo::internal::Array_Data<mojo::internal::Array_Data<int32_t>*>* data;
+    typename mojo::internal::MojomTypeTraits<Array<Array<int32_t>>>::Data* data;
     mojo::internal::ContainerValidateParams validate_params(
         0, false,
         new mojo::internal::ContainerValidateParams(0, false, nullptr));
@@ -273,7 +273,7 @@ class ArrayCommonTest {
               size);
 
     mojo::internal::FixedBufferForTesting buf(size);
-    mojo::internal::Array_Data<mojo::internal::String_Data*>* data;
+    typename mojo::internal::MojomTypeTraits<Array<String>>::Data* data;
     mojo::internal::ContainerValidateParams validate_params(
         0, false,
         new mojo::internal::ContainerValidateParams(0, false, nullptr));

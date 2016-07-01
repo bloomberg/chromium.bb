@@ -48,28 +48,3 @@ void {{class_name}}::set_null() {
 {{class_name}}::{{class_name}}() {
 }
 
-void {{class_name}}::EncodePointers() {
-  switch (tag) {
-{%- for field in union.fields %}
-    case {{enum_name}}::{{field.name|upper}}: {
-{%-   if field.kind|is_object_kind %}
-      mojo::internal::Encode(&data.f_{{field.name}});
-{%-   endif %}
-      return;
-    }
-{%- endfor %}
-  }
-}
-
-void {{class_name}}::DecodePointers() {
-  switch (tag) {
-{%- for field in union.fields %}
-    case {{enum_name}}::{{field.name|upper}}: {
-{%-   if field.kind|is_object_kind %}
-      mojo::internal::Decode(&data.f_{{field.name}});
-{%-   endif %}
-      return;
-    }
-{%- endfor %}
-  }
-}
