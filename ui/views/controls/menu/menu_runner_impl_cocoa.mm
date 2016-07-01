@@ -7,6 +7,7 @@
 #include "base/mac/sdk_forward_declarations.h"
 #import "ui/base/cocoa/menu_controller.h"
 #include "ui/base/models/menu_model.h"
+#include "ui/events/base_event_utils.h"
 #include "ui/events/event_utils.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/mac/coordinate_conversion.h"
@@ -145,7 +146,7 @@ MenuRunner::RunResult MenuRunnerImplCocoa::RunMenuAt(Widget* parent,
     NOTREACHED();
   }
 
-  closing_event_time_ = base::TimeTicks::Now();
+  closing_event_time_ = ui::EventTimeForNow();
   running_ = false;
 
   if (delete_after_run_) {

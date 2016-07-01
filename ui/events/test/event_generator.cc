@@ -161,6 +161,7 @@ EventGenerator::EventGenerator(EventGeneratorDelegate* delegate)
 EventGenerator::~EventGenerator() {
   pending_events_.clear();
   delegate()->SetContext(NULL, NULL, NULL);
+  ui::SetEventTickClockForTesting(nullptr);
 }
 
 void EventGenerator::PressLeftButton() {
