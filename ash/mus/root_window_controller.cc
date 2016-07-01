@@ -197,8 +197,17 @@ gfx::Rect RootWindowController::CalculateDefaultBounds(
 }
 
 void RootWindowController::OnShelfWindowAvailable() {
-  DockedWindowLayoutManager::Get(WmWindowMus::Get(root_))
-      ->SetShelf(wm_shelf_.get());
+  DockedWindowLayoutManager* docked_window_layout_manager =
+      DockedWindowLayoutManager::Get(WmWindowMus::Get(root_));
+
+  // Following code expects the shelf to be called only once.
+  // TODO(sky): this check is only necessary while we have shelf hosted in
+  // sysui (as sysui can restart). Once that is fixed there should be a DCHECK
+  // that the shelf hasn't been set.
+  if (docked_window_layout_manager->shelf())
+    return;
+
+  docked_window_layout_manager->SetShelf(wm_shelf_.get());
 
   PanelLayoutManager::Get(WmWindowMus::Get(root_))->SetShelf(wm_shelf_.get());
 

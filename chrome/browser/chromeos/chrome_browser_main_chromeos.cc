@@ -711,13 +711,15 @@ void ChromeBrowserMainPartsChromeos::PreBrowserStart() {
     SystemKeyEventListener::Initialize();
   }
 
-  // Listen for XI_HierarchyChanged events. Note: if this is moved to
-  // PreMainMessageLoopRun() then desktopui_PageCyclerTests fail for unknown
-  // reasons, see http://crosbug.com/24833.
-  XInputHierarchyChangedEventListener::GetInstance();
+  if (!chrome::IsRunningInMash()) {
+    // Listen for XI_HierarchyChanged events. Note: if this is moved to
+    // PreMainMessageLoopRun() then desktopui_PageCyclerTests fail for unknown
+    // reasons, see http://crosbug.com/24833.
+    XInputHierarchyChangedEventListener::GetInstance();
 
-  // Start the CrOS input device UMA watcher
-  DeviceUMA::GetInstance();
+    // Start the CrOS input device UMA watcher
+    DeviceUMA::GetInstance();
+  }
 #endif
 
   // -- This used to be in ChromeBrowserMainParts::PreMainMessageLoopRun()
@@ -733,9 +735,9 @@ void ChromeBrowserMainPartsChromeos::PreBrowserStart() {
 }
 
 void ChromeBrowserMainPartsChromeos::PostBrowserStart() {
-  system::InputDeviceSettings::Get()->InitTouchDevicesStatusFromLocalPrefs();
-
   if (!chrome::IsRunningInMash()) {
+    system::InputDeviceSettings::Get()->InitTouchDevicesStatusFromLocalPrefs();
+
     // These are dependent on the ash::Shell singleton already having been
     // initialized. Consequently, these cannot be used when running as a mus
     // client.
@@ -799,11 +801,13 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
   keyboard_event_rewriters_.reset();
   low_disk_notification_.reset();
 #if defined(USE_X11)
-  // The XInput2 event listener needs to be shut down earlier than when
-  // Singletons are finally destroyed in AtExitManager.
-  XInputHierarchyChangedEventListener::GetInstance()->Stop();
+  if (!chrome::IsRunningInMash()) {
+    // The XInput2 event listener needs to be shut down earlier than when
+    // Singletons are finally destroyed in AtExitManager.
+    XInputHierarchyChangedEventListener::GetInstance()->Stop();
 
-  DeviceUMA::GetInstance()->Stop();
+    DeviceUMA::GetInstance()->Stop();
+  }
 
   // SystemKeyEventListener::Shutdown() is always safe to call,
   // even if Initialize() wasn't called.
