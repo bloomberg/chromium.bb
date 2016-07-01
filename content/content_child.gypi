@@ -254,15 +254,6 @@
         '../build/android/ndk.gyp:cpu_features',
       ],
     }],
-    ['OS=="win"', {
-      'msvs_settings': {
-        'VCLinkerTool': {
-          'AdditionalDependencies': [
-            'dwrite.lib',
-          ]
-        }
-      }
-    }],
     ['enable_plugins==0', {
       'sources!': [
         'child/browser_font_resource_trusted.cc',
