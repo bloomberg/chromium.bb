@@ -1917,7 +1917,7 @@ class _RietveldChangelistImpl(_ChangelistCodereviewBase):
                                      options.tbr_owners,
                                      change)
       if not options.force:
-        change_desc.prompt()
+        change_desc.prompt(bug=options.bug)
 
       if not change_desc.description:
         print('Description is empty; aborting.')
@@ -2435,7 +2435,7 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
           ask_for_data('Press enter to edit now, Ctrl+C to abort')
           if not options.force:
             change_desc = ChangeDescription(message)
-            change_desc.prompt()
+            change_desc.prompt(bug=options.bug)
             message = change_desc.description
             if not message:
               DieWithError("Description is empty. Aborting...")
@@ -2448,7 +2448,7 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
         change_desc = ChangeDescription(
             options.message or CreateDescriptionFromLog(args))
         if not options.force:
-          change_desc.prompt()
+          change_desc.prompt(bug=options.bug)
         if not change_desc.description:
           DieWithError("Description is empty. Aborting...")
         message = change_desc.description
@@ -2630,6 +2630,41 @@ def _process_codereview_select_options(parser, options):
     options.forced_codereview = 'rietveld'
 
 
+def _get_bug_line_values(default_project, bugs):
+  """Given default_project and comma separated list of bugs, yields bug line
+  values.
+
+  Each bug can be either:
+    * a number, which is combined with default_project
+    * string, which is left as is.
+
+  This function may produce more than one line, because bugdroid expects one
+  project per line.
+
+  >>> list(_get_bug_line_values('v8', '123,chromium:789'))
+      ['v8:123', 'chromium:789']
+  """
+  default_bugs = []
+  others = []
+  for bug in bugs.split(','):
+    bug = bug.strip()
+    if bug:
+      try:
+        default_bugs.append(int(bug))
+      except ValueError:
+        others.append(bug)
+
+  if default_bugs:
+    default_bugs = ','.join(map(str, default_bugs))
+    if default_project:
+      yield '%s:%s' % (default_project, default_bugs)
+    else:
+      yield default_bugs
+  for other in sorted(others):
+    # Don't bother finding common prefixes, CLs with >2 bugs are very very rare.
+    yield other
+
+
 class ChangeDescription(object):
   """Contains a parsed form of the change description."""
   R_LINE = r'^[ \t]*(TBR|R)[ \t]*=[ \t]*(.*?)[ \t]*$'
@@ -2705,7 +2740,7 @@ class ChangeDescription(object):
       if new_tbr_line:
         self.append_footer(new_tbr_line)
 
-  def prompt(self):
+  def prompt(self, bug=None):
     """Asks the user to update the description."""
     self.set_description([
       '# Enter a description of the change.',
@@ -2717,7 +2752,12 @@ class ChangeDescription(object):
 
     regexp = re.compile(self.BUG_LINE)
     if not any((regexp.match(line) for line in self._description_lines)):
-      self.append_footer('BUG=%s' % settings.GetBugPrefix())
+      prefix = settings.GetBugPrefix()
+      values = list(_get_bug_line_values(prefix, bug or '')) or [prefix]
+      for value in values:
+        # TODO(tandrii): change this to 'Bug: xxx' to be a proper Gerrit footer.
+        self.append_footer('BUG=%s' % value)
+
     content = gclient_utils.RunEditor(self.description, True,
                                       git_editor=settings.GetGitEditor())
     if not content:
@@ -3701,6 +3741,9 @@ def CMDupload(parser, args):
   parser.add_option('-f', action='store_true', dest='force',
                     help="force yes to questions (don't prompt)")
   parser.add_option('-m', dest='message', help='message for patchset')
+  parser.add_option('-b', '--bug',
+                    help='pre-populate the bug number(s) for this issue. '
+                         'If several, separate with commas')
   parser.add_option('--message-file', dest='message_file',
                     help='file which contains message for patchset')
   parser.add_option('-t', dest='title',

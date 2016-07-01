@@ -208,6 +208,16 @@ class TestGitClBasic(unittest.TestCase):
          123, 4, 'chrome-review.source.com')
     test('https://chrome-review.source.com/bad/123/4', fail=True)
 
+  def test_get_bug_line_values(self):
+    f = lambda p, bugs: list(git_cl._get_bug_line_values(p, bugs))
+    self.assertEqual(f('', ''), [])
+    self.assertEqual(f('', '123,v8:456'), ['123', 'v8:456'])
+    self.assertEqual(f('v8', '456'), ['v8:456'])
+    self.assertEqual(f('v8', 'chromium:123,456'), ['v8:456', 'chromium:123'])
+    # Not nice, but not worth carying.
+    self.assertEqual(f('v8', 'chromium:123,456,v8:123'),
+                     ['v8:456', 'chromium:123', 'v8:123'])
+
 
 class TestGitCl(TestCase):
   def setUp(self):
@@ -687,6 +697,14 @@ class TestGitCl(TestCase):
           stdout.getvalue())
       self.assertEqual(
           'Must specify reviewers to send email.\n', stderr.getvalue())
+
+  def test_bug_on_cmd(self):
+    self._run_reviewer_test(
+        ['--bug=500658,proj:123'],
+        'desc\n\nBUG=500658\nBUG=proj:123',
+        '# Blah blah comment.\ndesc\n\nBUG=500658\nBUG=proj:1234',
+        'desc\n\nBUG=500658\nBUG=proj:1234',
+        [])
 
   def test_dcommit(self):
     self.mock(git_cl.sys, 'stdout', StringIO.StringIO())
