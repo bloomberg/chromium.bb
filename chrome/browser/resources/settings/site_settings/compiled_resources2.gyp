@@ -4,6 +4,13 @@
 {
   'targets': [
     {
+      'target_name': 'add_site_dialog',
+      'dependencies': [
+        'site_settings_behavior',
+      ],
+      'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
+    },
+    {
       'target_name': 'all_sites',
       'dependencies': [
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:assert',
@@ -12,7 +19,6 @@
         '<(EXTERNS_GYP):settings_private',
         'constants',
         'site_settings_behavior',
-        'site_settings_prefs_browser_proxy',
       ],
       'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
     },
@@ -20,6 +26,14 @@
       'target_name': 'constants',
       'dependencies': [
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:cr',
+      ],
+      'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
+    },
+    {
+      'target_name': 'media_picker',
+      'dependencies': [
+        '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:web_ui_listener_behavior',
+        'site_settings_behavior',
       ],
       'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
     },
@@ -46,7 +60,6 @@
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:web_ui_listener_behavior',
         'constants',
         'site_settings_behavior',
-        'site_settings_prefs_browser_proxy',
       ],
       'externs': [
         '<(EXTERNS_GYP):settings_private',
@@ -61,7 +74,6 @@
         '<(EXTERNS_GYP):settings_private',
         'constants',
         'site_settings_behavior',
-        'site_settings_prefs_browser_proxy',
       ],
       'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
     },
@@ -73,6 +85,7 @@
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:load_time_data',
         '<(EXTERNS_GYP):settings_private',
         'constants',
+        'site_settings_prefs_browser_proxy',
       ],
       'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
     },
@@ -86,7 +99,6 @@
         '../settings_page/compiled_resources2.gyp:settings_animated_pages',
         'constants',
         'site_settings_behavior',
-        'site_settings_prefs_browser_proxy',
       ],
       'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
     },
