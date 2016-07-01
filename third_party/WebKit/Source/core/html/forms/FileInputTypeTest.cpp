@@ -4,6 +4,7 @@
 
 #include "core/html/forms/FileInputType.h"
 
+#include "core/HTMLNames.h"
 #include "core/clipboard/DataObject.h"
 #include "core/dom/Document.h"
 #include "core/fileapi/FileList.h"
@@ -72,6 +73,38 @@ TEST(FileInputTypeTest, ignoreDroppedNonNativeFiles)
     EXPECT_EQ("fileSystemId", fileInput->droppedFileSystemId());
     ASSERT_EQ(1u, fileInput->files()->length());
     EXPECT_EQ(String("/native/path"), fileInput->files()->item(0)->path());
+}
+
+TEST(FileInputTypeTest, setFilesFromPaths)
+{
+    Document* document = Document::create();
+    HTMLInputElement* input =
+        HTMLInputElement::create(*document, nullptr, false);
+    InputType* fileInput = FileInputType::create(*input);
+    Vector<String> paths;
+    paths.append("/native/path");
+    paths.append("/native/path2");
+    fileInput->setFilesFromPaths(paths);
+    ASSERT_EQ(1u, fileInput->files()->length());
+    EXPECT_EQ(String("/native/path"), fileInput->files()->item(0)->path());
+
+    // Try to upload multiple files without multipleAttr
+    paths.clear();
+    paths.append("/native/path1");
+    paths.append("/native/path2");
+    fileInput->setFilesFromPaths(paths);
+    ASSERT_EQ(1u, fileInput->files()->length());
+    EXPECT_EQ(String("/native/path1"), fileInput->files()->item(0)->path());
+
+    // Try to upload multiple files with multipleAttr
+    input->setBooleanAttribute(HTMLNames::multipleAttr, true);
+    paths.clear();
+    paths.append("/native/real/path1");
+    paths.append("/native/real/path2");
+    fileInput->setFilesFromPaths(paths);
+    ASSERT_EQ(2u, fileInput->files()->length());
+    EXPECT_EQ(String("/native/real/path1"), fileInput->files()->item(0)->path());
+    EXPECT_EQ(String("/native/real/path2"), fileInput->files()->item(1)->path());
 }
 
 } // namespace blink

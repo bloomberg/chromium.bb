@@ -317,34 +317,30 @@ void FileInputType::filesChosen(const Vector<FileChooserFileInfo>& files)
     setFiles(createFileList(files, element().fastHasAttribute(webkitdirectoryAttr)));
 }
 
-void FileInputType::receiveDropForDirectoryUpload(const Vector<String>& paths)
+void FileInputType::setFilesFromDirectory(const String& path)
 {
     if (ChromeClient* chromeClient = this->chromeClient()) {
         FileChooserSettings settings;
         HTMLInputElement& input = element();
         settings.allowsDirectoryUpload = true;
         settings.allowsMultipleFiles = true;
-        settings.selectedFiles.append(paths[0]);
+        settings.selectedFiles.append(path);
         settings.acceptMIMETypes = input.acceptMIMETypes();
         settings.acceptFileExtensions = input.acceptFileExtensions();
         chromeClient->enumerateChosenDirectory(newFileChooser(settings));
     }
 }
 
-bool FileInputType::receiveDroppedFiles(const DragData* dragData)
+void FileInputType::setFilesFromPaths(const Vector<String>& paths)
 {
-    Vector<String> paths;
-    dragData->asFilePaths(paths);
     if (paths.isEmpty())
-        return false;
+        return;
 
     HTMLInputElement& input = element();
     if (input.fastHasAttribute(webkitdirectoryAttr)) {
-        receiveDropForDirectoryUpload(paths);
-        return true;
+        setFilesFromDirectory(paths[0]);
+        return;
     }
-
-    m_droppedFileSystemId = dragData->droppedFileSystemId();
 
     Vector<FileChooserFileInfo> files;
     for (unsigned i = 0; i < paths.size(); ++i)
@@ -357,6 +353,19 @@ bool FileInputType::receiveDroppedFiles(const DragData* dragData)
         firstFileOnly.append(files[0]);
         filesChosen(firstFileOnly);
     }
+}
+
+bool FileInputType::receiveDroppedFiles(const DragData* dragData)
+{
+    Vector<String> paths;
+    dragData->asFilePaths(paths);
+    if (paths.isEmpty())
+        return false;
+
+    if (!element().fastHasAttribute(webkitdirectoryAttr)) {
+        m_droppedFileSystemId = dragData->droppedFileSystemId();
+    }
+    setFilesFromPaths(paths);
     return true;
 }
 

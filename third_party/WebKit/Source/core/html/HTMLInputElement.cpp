@@ -1914,4 +1914,10 @@ bool HTMLInputElement::hasFallbackContent() const
 {
     return m_inputTypeView->hasFallbackContent();
 }
+
+void HTMLInputElement::setFilesFromPaths(const Vector<String>& paths)
+{
+    return m_inputType->setFilesFromPaths(paths);
+}
+
 } // namespace blink

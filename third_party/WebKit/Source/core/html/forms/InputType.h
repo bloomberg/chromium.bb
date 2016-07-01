@@ -154,6 +154,7 @@ public:
     virtual bool shouldRespectAlignAttribute();
     virtual FileList* files();
     virtual void setFiles(FileList*);
+    virtual void setFilesFromPaths(const Vector<String>&);
     // Should return true if the given DragData has more than one dropped files.
     virtual bool receiveDroppedFiles(const DragData*);
     virtual String droppedFileSystemId();

@@ -186,6 +186,8 @@ public:
     FileList* files();
     void setFiles(FileList*);
 
+    void setFilesFromPaths(const Vector<String>&);
+
     // Returns true if the given DragData has more than one dropped files.
     bool receiveDroppedFiles(const DragData*);
 

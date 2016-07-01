@@ -503,6 +503,10 @@ void InputType::setFiles(FileList*)
 {
 }
 
+void InputType::setFilesFromPaths(const Vector<String>& paths)
+{
+}
+
 bool InputType::getTypeSpecificValue(String&)
 {
     return false;

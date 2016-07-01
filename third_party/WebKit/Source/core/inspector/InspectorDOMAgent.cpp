@@ -51,8 +51,6 @@
 #include "core/dom/shadow/InsertionPoint.h"
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/editing/serializers/Serialization.h"
-#include "core/fileapi/File.h"
-#include "core/fileapi/FileList.h"
 #include "core/frame/LocalFrame.h"
 #include "core/html/HTMLFrameOwnerElement.h"
 #include "core/html/HTMLInputElement.h"
@@ -1332,10 +1330,10 @@ void InspectorDOMAgent::setFileInputFiles(ErrorString* errorString, int nodeId, 
         return;
     }
 
-    FileList* fileList = FileList::create();
+    Vector<String> paths;
     for (size_t index = 0; index < files->length(); ++index)
-        fileList->append(File::create(files->get(index)));
-    toHTMLInputElement(node)->setFiles(fileList);
+        paths.append(files->get(index));
+    toHTMLInputElement(node)->setFilesFromPaths(paths);
 }
 
 void InspectorDOMAgent::getBoxModel(ErrorString* errorString, int nodeId, std::unique_ptr<protocol::DOM::BoxModel>* model)

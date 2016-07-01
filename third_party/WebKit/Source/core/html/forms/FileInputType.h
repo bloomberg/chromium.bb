@@ -58,6 +58,8 @@ public:
 
     void countUsage() override;
 
+    void setFilesFromPaths(const Vector<String>&) override;
+
 private:
     FileInputType(HTMLInputElement&);
     InputTypeView* createView() override;
@@ -85,7 +87,7 @@ private:
     // FileChooserClient implementation.
     void filesChosen(const Vector<FileChooserFileInfo>&) override;
 
-    void receiveDropForDirectoryUpload(const Vector<String>&);
+    void setFilesFromDirectory(const String&);
 
     Member<FileList> m_fileList;
     String m_droppedFileSystemId;
