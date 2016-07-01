@@ -16,10 +16,12 @@
 
 ClipboardURLProvider::ClipboardURLProvider(
     AutocompleteProviderClient* client,
+    HistoryURLProvider* history_url_provider,
     ClipboardRecentContent* clipboard_content)
     : AutocompleteProvider(AutocompleteProvider::TYPE_CLIPBOARD_URL),
       client_(client),
-      clipboard_content_(clipboard_content) {
+      clipboard_content_(clipboard_content),
+      history_url_provider_(history_url_provider) {
   DCHECK(clipboard_content_);
 }
 
@@ -39,7 +41,7 @@ void ClipboardURLProvider::Start(const AutocompleteInput& input,
   DCHECK(url.is_valid());
   // Adds a default match. This match will be opened when the user presses "Go".
   AutocompleteMatch verbatim_match = VerbatimMatchForURL(
-      client_, input.text(), input.current_page_classification(), -1);
+      client_, input, input.current_url(), history_url_provider_, -1);
   if (verbatim_match.destination_url.is_valid())
     matches_.push_back(verbatim_match);
 

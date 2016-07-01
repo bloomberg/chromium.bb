@@ -7,14 +7,17 @@
 
 #include "base/macros.h"
 #include "components/omnibox/browser/autocomplete_provider.h"
+#include "components/omnibox/browser/history_url_provider.h"
 
 class AutocompleteProviderClient;
 class ClipboardRecentContent;
+class HistoryURLProvider;
 
 // Autocomplete provider offering content based on the clipboard's content.
 class ClipboardURLProvider : public AutocompleteProvider {
  public:
   ClipboardURLProvider(AutocompleteProviderClient* client,
+                       HistoryURLProvider* history_url_provider,
                        ClipboardRecentContent* clipboard_content);
 
   // AutocompleteProvider implementation.
@@ -25,6 +28,9 @@ class ClipboardURLProvider : public AutocompleteProvider {
 
   AutocompleteProviderClient* client_;
   ClipboardRecentContent* clipboard_content_;
+
+  // Used for efficiency when creating the verbatim match.  Can be NULL.
+  HistoryURLProvider* history_url_provider_;
 
   DISALLOW_COPY_AND_ASSIGN(ClipboardURLProvider);
 };

@@ -5,15 +5,36 @@
 #include "components/omnibox/browser/verbatim_match.h"
 
 #include "components/omnibox/browser/autocomplete_classifier.h"
+#include "components/omnibox/browser/autocomplete_input.h"
 #include "components/omnibox/browser/autocomplete_provider_client.h"
+#include "components/omnibox/browser/history_url_provider.h"
+#include "components/search/search.h"
+#include "url/gurl.h"
 
 AutocompleteMatch VerbatimMatchForURL(
     AutocompleteProviderClient* client,
-    const base::string16& input_text,
-    metrics::OmniboxEventProto::PageClassification classification,
+    const AutocompleteInput& input,
+    const GURL& destination_url,
+    HistoryURLProvider* history_url_provider,
     int verbatim_relevance) {
   AutocompleteMatch match;
-  client->Classify(input_text, false, true, classification, &match, nullptr);
+  // If query-in-the-omnibox is not enabled (and thus the verbatim match for
+  // a URL is guaranteed to be a URL) and the caller already knows where the
+  // verbatim match should go and has provided a HistoryURLProvider to aid in
+  // its construction, construct the match directly, don't call Classify() on
+  // the input.  Classify() runs all providers' synchronous passes.  Some
+  // providers such as HistoryQuick can have a slow synchronous pass on some
+  // inputs.
+  if (history_url_provider && destination_url.is_valid() &&
+      !search::IsQueryExtractionEnabled()) {
+    match = history_url_provider->SuggestExactInput(
+        input,
+        destination_url,
+        !AutocompleteInput::HasHTTPScheme(input.text()));
+  } else {
+    client->Classify(input.text(), false, true,
+                     input.current_page_classification(), &match, nullptr);
+  }
   match.allowed_to_be_default_match = true;
   // The default relevance to use for relevance match. Should be greater than
   // all relevance matches returned by the ZeroSuggest server.

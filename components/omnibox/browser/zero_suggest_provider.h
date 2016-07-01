@@ -20,6 +20,7 @@
 #include "net/url_request/url_fetcher_delegate.h"
 
 class AutocompleteProviderListener;
+class HistoryURLProvider;
 
 namespace base {
 class ListValue;
@@ -49,6 +50,7 @@ class ZeroSuggestProvider : public BaseSearchProvider,
  public:
   // Creates and returns an instance of this provider.
   static ZeroSuggestProvider* Create(AutocompleteProviderClient* client,
+                                     HistoryURLProvider* history_url_provider,
                                      AutocompleteProviderListener* listener);
 
   // Registers a preference used to cache zero suggest results.
@@ -66,6 +68,7 @@ class ZeroSuggestProvider : public BaseSearchProvider,
 
  private:
   ZeroSuggestProvider(AutocompleteProviderClient* client,
+                      HistoryURLProvider* history_url_provider,
                       AutocompleteProviderListener* listener);
 
   ~ZeroSuggestProvider() override;
@@ -123,6 +126,9 @@ class ZeroSuggestProvider : public BaseSearchProvider,
   // Checks whether we have a set of zero suggest results cached, and if so
   // populates |matches_| with cached results.
   void MaybeUseCachedSuggestions();
+
+  // Used for efficiency when creating the verbatim match.  Can be null.
+  HistoryURLProvider* history_url_provider_;
 
   AutocompleteProviderListener* listener_;
 

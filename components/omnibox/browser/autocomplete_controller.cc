@@ -206,8 +206,8 @@ AutocompleteController::AutocompleteController(
   if (provider_types & AutocompleteProvider::TYPE_SHORTCUTS)
     providers_.push_back(new ShortcutsProvider(provider_client_.get()));
   if (provider_types & AutocompleteProvider::TYPE_ZERO_SUGGEST) {
-    zero_suggest_provider_ =
-        ZeroSuggestProvider::Create(provider_client_.get(), this);
+    zero_suggest_provider_ = ZeroSuggestProvider::Create(
+        provider_client_.get(), history_url_provider_, this);
     if (zero_suggest_provider_)
       providers_.push_back(zero_suggest_provider_);
   }
@@ -216,6 +216,7 @@ AutocompleteController::AutocompleteController(
         ClipboardRecentContent::GetInstance();
     if (clipboard_recent_content) {
       providers_.push_back(new ClipboardURLProvider(provider_client_.get(),
+                                                    history_url_provider_,
                                                     clipboard_recent_content));
     }
   }

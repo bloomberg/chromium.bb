@@ -26,8 +26,8 @@ class ClipboardURLProviderTest : public testing::Test {
  public:
   ClipboardURLProviderTest()
       : client_(new testing::NiceMock<MockAutocompleteProviderClient>()),
-        provider_(
-            new ClipboardURLProvider(client_.get(), &clipboard_content_)) {
+        provider_(new ClipboardURLProvider(client_.get(), nullptr,
+                                           &clipboard_content_)) {
     SetClipboardUrl(GURL(kClipboardURL));
   }
 

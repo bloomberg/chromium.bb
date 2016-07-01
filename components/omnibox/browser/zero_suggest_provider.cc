@@ -73,8 +73,9 @@ const int kDefaultZeroSuggestRelevance = 100;
 // static
 ZeroSuggestProvider* ZeroSuggestProvider::Create(
     AutocompleteProviderClient* client,
+    HistoryURLProvider* history_url_provider,
     AutocompleteProviderListener* listener) {
-  return new ZeroSuggestProvider(client, listener);
+  return new ZeroSuggestProvider(client, history_url_provider, listener);
 }
 
 // static
@@ -184,9 +185,12 @@ void ZeroSuggestProvider::ResetSession() {
   set_field_trial_triggered(false);
 }
 
-ZeroSuggestProvider::ZeroSuggestProvider(AutocompleteProviderClient* client,
-                                         AutocompleteProviderListener* listener)
+ZeroSuggestProvider::ZeroSuggestProvider(
+    AutocompleteProviderClient* client,
+    HistoryURLProvider* history_url_provider,
+    AutocompleteProviderListener* listener)
     : BaseSearchProvider(AutocompleteProvider::TYPE_ZERO_SUGGEST, client),
+      history_url_provider_(history_url_provider),
       listener_(listener),
       results_from_cache_(false),
       waiting_for_most_visited_urls_request_(false),
@@ -416,8 +420,10 @@ AutocompleteMatch ZeroSuggestProvider::MatchForCurrentURL() {
   // The placeholder suggestion for the current URL has high relevance so
   // that it is in the first suggestion slot and inline autocompleted. It
   // gets dropped as soon as the user types something.
-  return VerbatimMatchForURL(client(), permanent_text_,
-                             current_page_classification_,
+  AutocompleteInput tmp(GetInput(false));
+  tmp.UpdateText(permanent_text_, base::string16::npos, tmp.parts());
+  return VerbatimMatchForURL(client(), tmp, GURL(current_query_),
+                             history_url_provider_,
                              results_.verbatim_relevance);
 }
 
