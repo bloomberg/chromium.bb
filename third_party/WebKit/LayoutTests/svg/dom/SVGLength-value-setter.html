@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<title>Tests SVGLength.value setter</title>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<svg width="1" height="1" visibility="hidden">
+</svg>
+<script>
+test(function() {
+    var svgElement = document.querySelector("svg");
+    svgElement.setAttribute("width", "10em");
+    assert_equals(svgElement.width.baseVal.unitType, SVGLength.SVG_LENGTHTYPE_EMS);
+    svgElement.width.baseVal.value = 100;
+    assert_equals(svgElement.width.baseVal.value, 100);
+    assert_equals(svgElement.width.baseVal.unitType, SVGLength.SVG_LENGTHTYPE_NUMBER);
+}, "Tests SVGLength.value setter");
+</script>

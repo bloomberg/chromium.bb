@@ -138,13 +138,7 @@ void SVGLengthTearOff::setValue(float value, ExceptionState& exceptionState)
         return;
     }
 
-    if (target()->isRelative() && !canResolveRelativeUnits(contextElement())) {
-        exceptionState.throwDOMException(NotSupportedError, "Could not resolve relative length.");
-        return;
-    }
-
-    SVGLengthContext lengthContext(contextElement());
-    target()->setValue(value, lengthContext);
+    target()->setValueAsNumber(value);
     commitChange();
 }
 
