@@ -83,13 +83,11 @@ struct ivi_layout_screen {
 
 	struct {
 		struct wl_list layer_list;
-		struct wl_list link;
 	} pending;
 
 	struct {
 		int dirty;
 		struct wl_list layer_list;
-		struct wl_list link;
 	} order;
 };
 
@@ -238,8 +236,6 @@ ivi_layout_surface_destroy(struct ivi_layout_surface *ivisurf)
 		return;
 	}
 
-	wl_list_remove(&ivisurf->pending.link);
-	wl_list_remove(&ivisurf->order.link);
 	wl_list_remove(&ivisurf->link);
 
 	wl_list_for_each_safe(ivi_view, next, &ivisurf->view_list, surf_link) {
@@ -276,10 +272,8 @@ create_screen(struct weston_compositor *ec)
 		iviscrn->output = output;
 
 		wl_list_init(&iviscrn->pending.layer_list);
-		wl_list_init(&iviscrn->pending.link);
 
 		wl_list_init(&iviscrn->order.layer_list);
-		wl_list_init(&iviscrn->order.link);
 
 		wl_list_insert(&layout->screen_list, &iviscrn->link);
 	}
@@ -1995,10 +1989,6 @@ ivi_layout_surface_create(struct weston_surface *wl_surface,
 	init_surface_properties(&ivisurf->prop);
 
 	ivisurf->pending.prop = ivisurf->prop;
-	wl_list_init(&ivisurf->pending.link);
-
-	wl_list_init(&ivisurf->order.link);
-	wl_list_init(&ivisurf->order.layer_list);
 
 	wl_list_init(&ivisurf->view_list);
 

@@ -57,13 +57,7 @@ struct ivi_layout_surface {
 
 	struct {
 		struct ivi_layout_surface_properties prop;
-		struct wl_list link;
 	} pending;
-
-	struct {
-		struct wl_list link;
-		struct wl_list layer_list;
-	} order;
 
 	struct wl_list view_list;	/* ivi_layout_view::surf_link */
 };
@@ -113,7 +107,6 @@ struct ivi_layout {
 	} surface_notification;
 
 	struct weston_layer layout_layer;
-	struct wl_signal warning_signal;
 
 	struct ivi_layout_transition_set *transitions;
 	struct wl_list pending_transition_list;
