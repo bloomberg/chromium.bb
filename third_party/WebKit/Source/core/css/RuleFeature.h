@@ -98,10 +98,10 @@ public:
     void collectInvalidationSetsForAttribute(InvalidationLists&, Element&, const QualifiedName& attributeName) const;
     void collectInvalidationSetsForPseudoClass(InvalidationLists&, Element&, CSSSelector::PseudoType) const;
 
-    void collectSiblingInvalidationSetForClass(InvalidationLists&, Element&, const AtomicString& className) const;
-    void collectSiblingInvalidationSetForId(InvalidationLists&, Element&, const AtomicString& id) const;
-    void collectSiblingInvalidationSetForAttribute(InvalidationLists&, Element&, const QualifiedName& attributeName) const;
-    void collectUniversalSiblingInvalidationSet(InvalidationLists&) const;
+    void collectSiblingInvalidationSetForClass(InvalidationLists&, Element&, const AtomicString& className, unsigned minDirectAdjacent) const;
+    void collectSiblingInvalidationSetForId(InvalidationLists&, Element&, const AtomicString& id, unsigned minDirectAdjacent) const;
+    void collectSiblingInvalidationSetForAttribute(InvalidationLists&, Element&, const QualifiedName& attributeName, unsigned minDirectAdjacent) const;
+    void collectUniversalSiblingInvalidationSet(InvalidationLists&, unsigned minDirectAdjacent) const;
 
     bool hasIdsInSelectors() const
     {

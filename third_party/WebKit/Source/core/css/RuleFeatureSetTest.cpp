@@ -111,7 +111,7 @@ public:
 
     void collectUniversalSiblingInvalidationSet(InvalidationLists& invalidationLists)
     {
-        m_ruleFeatureSet->collectUniversalSiblingInvalidationSet(invalidationLists);
+        m_ruleFeatureSet->collectUniversalSiblingInvalidationSet(invalidationLists, 1);
     }
 
     const HashSet<AtomicString>& classSet(const InvalidationSet& invalidationSet)

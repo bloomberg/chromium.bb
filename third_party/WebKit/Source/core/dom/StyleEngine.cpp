@@ -694,25 +694,27 @@ void StyleEngine::pseudoStateChangedForElement(CSSSelector::PseudoType pseudoTyp
     m_styleInvalidator.scheduleInvalidationSetsForElement(invalidationLists, element);
 }
 
-void StyleEngine::scheduleSiblingInvalidationsForElement(Element& element, ContainerNode& schedulingParent)
+void StyleEngine::scheduleSiblingInvalidationsForElement(Element& element, ContainerNode& schedulingParent, unsigned minDirectAdjacent)
 {
+    DCHECK(minDirectAdjacent);
+
     InvalidationLists invalidationLists;
 
     RuleFeatureSet& ruleFeatureSet = ensureResolver().ensureUpdatedRuleFeatureSet();
 
     if (element.hasID())
-        ruleFeatureSet.collectSiblingInvalidationSetForId(invalidationLists, element, element.idForStyleResolution());
+        ruleFeatureSet.collectSiblingInvalidationSetForId(invalidationLists, element, element.idForStyleResolution(), minDirectAdjacent);
 
     if (element.hasClass()) {
         const SpaceSplitString& classNames = element.classNames();
         for (size_t i = 0; i < classNames.size(); i++)
-            ruleFeatureSet.collectSiblingInvalidationSetForClass(invalidationLists, element, classNames[i]);
+            ruleFeatureSet.collectSiblingInvalidationSetForClass(invalidationLists, element, classNames[i], minDirectAdjacent);
     }
 
     for (const Attribute& attribute : element.attributes())
-        ruleFeatureSet.collectSiblingInvalidationSetForAttribute(invalidationLists, element, attribute.name());
+        ruleFeatureSet.collectSiblingInvalidationSetForAttribute(invalidationLists, element, attribute.name(), minDirectAdjacent);
 
-    ruleFeatureSet.collectUniversalSiblingInvalidationSet(invalidationLists);
+    ruleFeatureSet.collectUniversalSiblingInvalidationSet(invalidationLists, minDirectAdjacent);
 
     m_styleInvalidator.scheduleSiblingInvalidationsAsDescendants(invalidationLists, schedulingParent);
 }
@@ -725,10 +727,10 @@ void StyleEngine::scheduleInvalidationsForInsertedSibling(Element* beforeElement
     if (!schedulingParent)
         return;
 
-    scheduleSiblingInvalidationsForElement(insertedElement, *schedulingParent);
+    scheduleSiblingInvalidationsForElement(insertedElement, *schedulingParent, 1);
 
-    for (unsigned i = 0; beforeElement && i < affectedSiblings; i++, beforeElement = ElementTraversal::previousSibling(*beforeElement))
-        scheduleSiblingInvalidationsForElement(*beforeElement, *schedulingParent);
+    for (unsigned i = 1; beforeElement && i <= affectedSiblings; i++, beforeElement = ElementTraversal::previousSibling(*beforeElement))
+        scheduleSiblingInvalidationsForElement(*beforeElement, *schedulingParent, i);
 }
 
 void StyleEngine::scheduleInvalidationsForRemovedSibling(Element* beforeElement, Element& removedElement, Element& afterElement)
@@ -739,10 +741,10 @@ void StyleEngine::scheduleInvalidationsForRemovedSibling(Element* beforeElement,
     if (!schedulingParent)
         return;
 
-    scheduleSiblingInvalidationsForElement(removedElement, *schedulingParent);
+    scheduleSiblingInvalidationsForElement(removedElement, *schedulingParent, 1);
 
-    for (unsigned i = 1; beforeElement && i < affectedSiblings; i++, beforeElement = ElementTraversal::previousSibling(*beforeElement))
-        scheduleSiblingInvalidationsForElement(*beforeElement, *schedulingParent);
+    for (unsigned i = 2; beforeElement && i <= affectedSiblings; i++, beforeElement = ElementTraversal::previousSibling(*beforeElement))
+        scheduleSiblingInvalidationsForElement(*beforeElement, *schedulingParent, i);
 }
 
 void StyleEngine::setStatsEnabled(bool enabled)

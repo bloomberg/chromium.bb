@@ -734,7 +734,7 @@ void RuleFeatureSet::collectInvalidationSetsForClass(InvalidationLists& invalida
     }
 }
 
-void RuleFeatureSet::collectSiblingInvalidationSetForClass(InvalidationLists& invalidationLists, Element& element, const AtomicString& className) const
+void RuleFeatureSet::collectSiblingInvalidationSetForClass(InvalidationLists& invalidationLists, Element& element, const AtomicString& className, unsigned minDirectAdjacent) const
 {
     InvalidationSetMap::const_iterator it = m_classInvalidationSets.find(className);
     if (it == m_classInvalidationSets.end())
@@ -745,6 +745,9 @@ void RuleFeatureSet::collectSiblingInvalidationSetForClass(InvalidationLists& in
         return;
 
     SiblingInvalidationSet* siblingSet = toSiblingInvalidationSet(invalidationSet);
+    if (siblingSet->maxDirectAdjacentSelectors() < minDirectAdjacent)
+        return;
+
     TRACE_SCHEDULE_STYLE_INVALIDATION(element, *siblingSet, classChange, className);
     invalidationLists.siblings.append(siblingSet);
 }
@@ -770,7 +773,7 @@ void RuleFeatureSet::collectInvalidationSetsForId(InvalidationLists& invalidatio
     }
 }
 
-void RuleFeatureSet::collectSiblingInvalidationSetForId(InvalidationLists& invalidationLists, Element& element, const AtomicString& id) const
+void RuleFeatureSet::collectSiblingInvalidationSetForId(InvalidationLists& invalidationLists, Element& element, const AtomicString& id, unsigned minDirectAdjacent) const
 {
     InvalidationSetMap::const_iterator it = m_idInvalidationSets.find(id);
     if (it == m_idInvalidationSets.end())
@@ -781,6 +784,9 @@ void RuleFeatureSet::collectSiblingInvalidationSetForId(InvalidationLists& inval
         return;
 
     SiblingInvalidationSet* siblingSet = toSiblingInvalidationSet(invalidationSet);
+    if (siblingSet->maxDirectAdjacentSelectors() < minDirectAdjacent)
+        return;
+
     TRACE_SCHEDULE_STYLE_INVALIDATION(element, *siblingSet, idChange, id);
     invalidationLists.siblings.append(siblingSet);
 }
@@ -806,7 +812,7 @@ void RuleFeatureSet::collectInvalidationSetsForAttribute(InvalidationLists& inva
     }
 }
 
-void RuleFeatureSet::collectSiblingInvalidationSetForAttribute(InvalidationLists& invalidationLists, Element& element, const QualifiedName& attributeName) const
+void RuleFeatureSet::collectSiblingInvalidationSetForAttribute(InvalidationLists& invalidationLists, Element& element, const QualifiedName& attributeName, unsigned minDirectAdjacent) const
 {
     InvalidationSetMap::const_iterator it = m_attributeInvalidationSets.find(attributeName.localName());
     if (it == m_attributeInvalidationSets.end())
@@ -817,6 +823,9 @@ void RuleFeatureSet::collectSiblingInvalidationSetForAttribute(InvalidationLists
         return;
 
     SiblingInvalidationSet* siblingSet = toSiblingInvalidationSet(invalidationSet);
+    if (siblingSet->maxDirectAdjacentSelectors() < minDirectAdjacent)
+        return;
+
     TRACE_SCHEDULE_STYLE_INVALIDATION(element, *siblingSet, attributeChange, attributeName);
     invalidationLists.siblings.append(siblingSet);
 }
@@ -842,9 +851,9 @@ void RuleFeatureSet::collectInvalidationSetsForPseudoClass(InvalidationLists& in
     }
 }
 
-void RuleFeatureSet::collectUniversalSiblingInvalidationSet(InvalidationLists& invalidationLists) const
+void RuleFeatureSet::collectUniversalSiblingInvalidationSet(InvalidationLists& invalidationLists, unsigned minDirectAdjacent) const
 {
-    if (m_universalSiblingInvalidationSet)
+    if (m_universalSiblingInvalidationSet && m_universalSiblingInvalidationSet->maxDirectAdjacentSelectors() >= minDirectAdjacent)
         invalidationLists.siblings.append(m_universalSiblingInvalidationSet);
 }
 
