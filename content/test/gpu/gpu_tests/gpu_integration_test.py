@@ -20,7 +20,7 @@ class _EmulatedPage(object):
 
 
 class GpuIntegrationTest(
-    serially_executed_browser_test_case.SeriallyBrowserTestCase):
+    serially_executed_browser_test_case.SeriallyExecutedBrowserTestCase):
 
   _cached_expectations = None
 
@@ -32,7 +32,8 @@ class GpuIntegrationTest(
   def _RestartBrowser(self, reason):
     logging.warning('Restarting browser due to ' + reason)
     self.StopBrowser()
-    self.StartBrowser(self._finder_options)
+    self.SetBrowserOptions(self._finder_options)
+    self.StartBrowser()
     self.tab = self.browser.tabs[0]
 
   def _RunGpuTest(self, url, test_name, args):

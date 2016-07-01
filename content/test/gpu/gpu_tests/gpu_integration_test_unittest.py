@@ -39,7 +39,8 @@ class SimpleIntegrationUnittest(gpu_integration_test.GpuIntegrationTest):
     cls._finder_options = finder_options
     cls.platform = None
     cls.browser = None
-    cls.StartBrowser(cls._finder_options)
+    cls.SetBrowserOptions(cls._finder_options)
+    cls.StartBrowser()
 
   @classmethod
   def GenerateGpuTests(cls, options):
@@ -58,8 +59,8 @@ class SimpleIntegrationUnittest(gpu_integration_test.GpuIntegrationTest):
     return expectations
 
   @classmethod
-  def StartBrowser(cls, options):
-    super(SimpleIntegrationUnittest, cls).StartBrowser(options)
+  def StartBrowser(cls):
+    super(SimpleIntegrationUnittest, cls).StartBrowser()
     cls._num_browser_starts += 1
 
   def RunActualGpuTest(self, file_path, *args):

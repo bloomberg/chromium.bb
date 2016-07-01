@@ -73,5 +73,6 @@ class WebGLConformanceIntegrationTest(gpu_integration_test.GpuIntegrationTest):
   def setUpClass(cls):
     super(cls, WebGLConformanceIntegrationTest).setUpClass()
     cls.CustomizeOptions()
-    cls.StartBrowser(cls._finder_options)
+    cls.SetBrowserOptions(cls._finder_options)
+    cls.StartBrowser()
     cls.SetStaticServerDir(webgl_conformance.conformance_path)
