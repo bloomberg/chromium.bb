@@ -182,6 +182,29 @@ CreateInstallerFileMetricsProvider(bool metrics_reporting_enabled) {
   return file_metrics_provider;
 }
 
+// If there is a global metrics file being updated on disk, mark it to be
+// deleted when the process exits. A normal shutdown is almost complete
+// so there is no benefit in keeping a file with no new data to be processed
+// during the next startup sequence. Deleting the file during shutdown adds
+// an extra disk-access or two to shutdown but eliminates the unnecessary
+// processing of the contents during startup only to find nothing.
+void CleanUpGlobalPersistentHistogramStorage() {
+  base::GlobalHistogramAllocator* allocator =
+      base::GlobalHistogramAllocator::Get();
+  if (!allocator)
+    return;
+
+  const base::FilePath& path = allocator->GetPersistentLocation();
+  if (path.empty())
+    return;
+
+  // Open (with delete) and then immediately close the file by going out of
+  // scope. This is the only cross-platform safe way to delete a file that may
+  // be open elsewhere.
+  base::File file(path, base::File::FLAG_OPEN | base::File::FLAG_READ |
+                        base::File::FLAG_DELETE_ON_CLOSE);
+}
+
 }  // namespace
 
 
@@ -213,6 +236,7 @@ ChromeMetricsServiceClient::ChromeMetricsServiceClient(
 
 ChromeMetricsServiceClient::~ChromeMetricsServiceClient() {
   DCHECK(thread_checker_.CalledOnValidThread());
+  CleanUpGlobalPersistentHistogramStorage();
 }
 
 // static
