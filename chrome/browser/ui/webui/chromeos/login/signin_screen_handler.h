@@ -178,9 +178,18 @@ class SigninScreenHandlerDelegate {
   // Whether login as guest is available.
   virtual bool IsShowGuest() const = 0;
 
-  // Weather to show the user pods or only GAIA sign in.
+  // Whether to show the user pods or only GAIA sign in.
   // Public sessions are always shown.
   virtual bool IsShowUsers() const = 0;
+
+  // Whether the show user pods setting has changed.
+  virtual bool ShowUsersHasChanged() const = 0;
+
+  // Whether the create new account option in GAIA is enabled by the setting.
+  virtual bool IsAllowNewUser() const = 0;
+
+  // Whether the allow new user setting has changed.
+  virtual bool AllowNewUserChanged() const = 0;
 
   // Whether user sign in has completed.
   virtual bool IsUserSigninCompleted() const = 0;

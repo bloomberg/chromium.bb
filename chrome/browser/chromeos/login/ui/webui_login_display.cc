@@ -52,13 +52,15 @@ void WebUILoginDisplay::ClearAndEnablePassword() {
 void WebUILoginDisplay::Init(const user_manager::UserList& users,
                              bool show_guest,
                              bool show_users,
-                             bool show_new_user) {
+                             bool allow_new_user) {
   // Testing that the delegate has been set.
   DCHECK(delegate_);
   SignInScreenController::Get()->Init(users, show_guest);
   show_guest_ = show_guest;
+  show_users_changed_ = (show_users_ != show_users);
   show_users_ = show_users;
-  show_new_user_ = show_new_user;
+  allow_new_user_changed_ = (allow_new_user_ != allow_new_user);
+  allow_new_user_ = allow_new_user;
 
   ui::UserActivityDetector* activity_detector = ui::UserActivityDetector::Get();
   if (activity_detector && !activity_detector->HasObserver(this))
@@ -300,6 +302,18 @@ bool WebUILoginDisplay::IsShowGuest() const {
 
 bool WebUILoginDisplay::IsShowUsers() const {
   return show_users_;
+}
+
+bool WebUILoginDisplay::ShowUsersHasChanged() const {
+  return show_users_changed_;
+}
+
+bool WebUILoginDisplay::IsAllowNewUser() const {
+  return allow_new_user_;
+}
+
+bool WebUILoginDisplay::AllowNewUserChanged() const {
+  return allow_new_user_changed_;
 }
 
 bool WebUILoginDisplay::IsSigninInProgress() const {

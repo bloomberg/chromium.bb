@@ -1037,8 +1037,8 @@ IN_PROC_BROWSER_TEST_F(KioskTest, DISABLED_LaunchAppNetworkPortal) {
 IN_PROC_BROWSER_TEST_F(KioskTest, LaunchAppUserCancel) {
   // Make fake_cws_ return empty update response.
   set_test_app_version("");
-  StartAppLaunchFromLoginScreen(SimulateNetworkOfflineClosure());
   OobeScreenWaiter splash_waiter(OobeScreen::SCREEN_APP_LAUNCH_SPLASH);
+  StartAppLaunchFromLoginScreen(SimulateNetworkOfflineClosure());
   splash_waiter.Wait();
 
   settings_helper_.SetBoolean(

@@ -75,6 +75,9 @@ class AppLaunchSigninScreen : public SigninScreenHandlerDelegate,
                                         const std::string& password);
   bool IsShowGuest() const override;
   bool IsShowUsers() const override;
+  bool ShowUsersHasChanged() const override;
+  bool IsAllowNewUser() const override;
+  bool AllowNewUserChanged() const override;
   bool IsSigninInProgress() const override;
   bool IsUserSigninCompleted() const override;
   void SetDisplayEmail(const std::string& email) override;

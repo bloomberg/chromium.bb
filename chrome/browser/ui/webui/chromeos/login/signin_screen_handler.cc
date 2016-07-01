@@ -920,17 +920,28 @@ void SigninScreenHandler::OnPreferencesChanged() {
     return;
   }
 
-  // Send the updated user list to the UI.
-  if (delegate_)
-    delegate_->HandleGetUsers();
+  preferences_changed_delayed_ = false;
 
-  if (delegate_ && !delegate_->IsShowUsers()) {
+  if (!delegate_)
+    return;
+
+  // Send the updated user list to the UI.
+  delegate_->HandleGetUsers();
+  if (GetCurrentScreen() == OobeScreen::SCREEN_ACCOUNT_PICKER &&
+      delegate_->ShowUsersHasChanged() &&
+      !delegate_->IsShowUsers()) {
+    // We are at the account picker screen and the POD setting has changed
+    // to be disabled. We need to show the add user page.
     HandleShowAddUser(nullptr);
-  } else {
-    UpdateUIState(UI_STATE_ACCOUNT_PICKER, nullptr);
+    return;
   }
 
-  preferences_changed_delayed_ = false;
+  if (delegate_->AllowNewUserChanged() || ui_state_ == UI_STATE_UNKNOWN) {
+    // We need to reload GAIA if UI_STATE_UNKNOWN or the allow new user setting
+    // has changed so that reloaded GAIA shows/hides the option to create a new
+    // account.
+    UpdateUIState(UI_STATE_ACCOUNT_PICKER, nullptr);
+  }
 }
 
 void SigninScreenHandler::ResetSigninScreenHandlerDelegate() {

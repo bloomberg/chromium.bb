@@ -36,7 +36,7 @@ class WebUILoginDisplay : public LoginDisplay,
   void Init(const user_manager::UserList& users,
             bool show_guest,
             bool show_users,
-            bool show_new_user) override;
+            bool allow_new_user) override;
   void OnPreferencesChanged() override;
   void RemoveUser(const AccountId& account_id) override;
   void SetUIEnabled(bool is_enabled) override;
@@ -78,6 +78,9 @@ class WebUILoginDisplay : public LoginDisplay,
                                         const std::string& password);
   bool IsShowGuest() const override;
   bool IsShowUsers() const override;
+  bool ShowUsersHasChanged() const override;
+  bool IsAllowNewUser() const override;
+  bool AllowNewUserChanged() const override;
   bool IsUserSigninCompleted() const override;
   void SetDisplayEmail(const std::string& email) override;
 
@@ -93,12 +96,18 @@ class WebUILoginDisplay : public LoginDisplay,
   // Whether to show guest login.
   bool show_guest_ = false;
 
-  // Weather to show the user pods or a GAIA sign in.
+  // Whether to show the user pods or a GAIA sign in.
   // Public sessions are always shown.
   bool show_users_ = false;
 
+  // Whether the create new account option in GAIA is enabled by the setting.
+  bool show_users_changed_ = false;
+
   // Whether to show add new user.
-  bool show_new_user_ = false;
+  bool allow_new_user_ = false;
+
+  // Whether the allow new user setting has changed.
+  bool allow_new_user_changed_ = false;
 
   // Reference to the WebUI handling layer for the login screen
   LoginDisplayWebUIHandler* webui_handler_ = nullptr;

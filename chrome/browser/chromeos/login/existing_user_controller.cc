@@ -262,10 +262,11 @@ void ExistingUserController::UpdateLoginDisplay(
   cros_settings_->GetBoolean(kAccountsPrefAllowGuest, &show_guest);
   show_users_on_signin |= !filtered_users.empty();
   show_guest &= !filtered_users.empty();
-  bool show_new_user = true;
+  bool allow_new_user = true;
+  cros_settings_->GetBoolean(kAccountsPrefAllowNewUser, &allow_new_user);
   login_display_->set_parent_window(GetNativeWindow());
-  login_display_->Init(
-      filtered_users, show_guest, show_users_on_signin, show_new_user);
+  login_display_->Init(filtered_users, show_guest, show_users_on_signin,
+                       allow_new_user);
   host_->OnPreferencesChanged();
 }
 

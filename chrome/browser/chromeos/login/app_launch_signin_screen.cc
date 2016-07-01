@@ -159,6 +159,18 @@ bool AppLaunchSigninScreen::IsShowUsers() const {
   return true;
 }
 
+bool AppLaunchSigninScreen::ShowUsersHasChanged() const {
+  return false;
+}
+
+bool AppLaunchSigninScreen::IsAllowNewUser() const {
+  return true;
+}
+
+bool AppLaunchSigninScreen::AllowNewUserChanged() const {
+  return false;
+}
+
 bool AppLaunchSigninScreen::IsSigninInProgress() const {
   // Return true to suppress network processing in the signin screen.
   return true;
