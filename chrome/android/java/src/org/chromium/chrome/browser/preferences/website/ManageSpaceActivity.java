@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.preferences.website;
 
+import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.app.ActivityManager;
 import android.content.Context;
@@ -14,21 +15,26 @@ import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.res.Resources;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.StrictMode;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.text.TextUtils;
 import android.text.format.Formatter;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
+import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ChromeVersionInfo;
 import org.chromium.chrome.browser.init.BrowserParts;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 import org.chromium.chrome.browser.init.EmptyBrowserParts;
+import org.chromium.chrome.browser.preferences.AboutChromePreferences;
 import org.chromium.chrome.browser.preferences.Preferences;
 import org.chromium.chrome.browser.preferences.PreferencesLauncher;
 import org.chromium.chrome.browser.preferences.website.Website.StoredDataClearedCallback;
@@ -54,6 +60,8 @@ public class ManageSpaceActivity extends AppCompatActivity implements View.OnCli
     private static final int OPTION_CLEAR_APP_DATA = 2;
     private static final int OPTION_MAX = 3;
 
+    private static final String PREF_FAILED_BUILD_VERSION = "ManagedSpace.FailedBuildVersion";
+
     private TextView mUnimportantSiteDataSizeText;
     private TextView mSiteDataSizeText;
     private Button mClearUnimportantButton;
@@ -66,6 +74,7 @@ public class ManageSpaceActivity extends AppCompatActivity implements View.OnCli
 
     private boolean mIsNativeInitialized;
 
+    @SuppressLint("CommitPrefEdits")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         ensureActivityNotExported();
@@ -110,6 +119,27 @@ public class ManageSpaceActivity extends AppCompatActivity implements View.OnCli
             }
         };
 
+        // Allow reading/writing to disk to check whether the last attempt was successful before
+        // kicking off the browser process initialization.
+        StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskReads();
+        StrictMode.allowThreadDiskWrites();
+        try {
+            String productVersion = AboutChromePreferences.getApplicationVersion(
+                    this, ChromeVersionInfo.getProductVersion());
+            String failedVersion = ContextUtils.getAppSharedPreferences().getString(
+                    PREF_FAILED_BUILD_VERSION, null);
+            if (TextUtils.equals(failedVersion, productVersion)) {
+                parts.onStartupFailure();
+                return;
+            }
+
+            ContextUtils.getAppSharedPreferences().edit()
+                    .putString(PREF_FAILED_BUILD_VERSION, productVersion)
+                    .commit();
+        } finally {
+            StrictMode.setThreadPolicy(oldPolicy);
+        }
+
         try {
             ChromeBrowserInitializer.getInstance(getApplicationContext())
                     .handlePreNativeStartup(parts);
@@ -136,6 +166,15 @@ public class ManageSpaceActivity extends AppCompatActivity implements View.OnCli
     public void onResume() {
         super.onResume();
         if (mIsNativeInitialized) refreshStorageNumbers();
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+
+        ContextUtils.getAppSharedPreferences().edit()
+                .putString(PREF_FAILED_BUILD_VERSION, null)
+                .apply();
     }
 
     @VisibleForTesting
