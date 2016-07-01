@@ -2668,6 +2668,9 @@ Press any key to continue exploring.
   <message name="IDS_OPTIONS_SETTINGS_STORAGE_CLEAR_DRIVE_CACHE_DESCRIPTION" desc="Description in the storage manager confirmation dialog to remove Google Drive offline files.">
     Temporary Google Drive offline files will be deleted. Files that you’ve set as available offline won’t be deleted from this device.
   </message>
+  <message name="IDS_OPTIONS_SETTINGS_STORAGE_USER_LIST_TITLE" desc="Title for the storage manager's user list dialog.">
+    Users
+  </message>
   <message name="IDS_OPTIONS_SETTINGS_STORAGE_REMOVE_USER_DIALOG_TITLE" desc="Title for the storage manager confirmation dialog to remove a user from the device.">
     Remove User
   </message>
