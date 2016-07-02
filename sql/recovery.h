@@ -18,13 +18,17 @@ class FilePath;
 
 namespace sql {
 
-// Recovery module for sql/.  The basic idea is to create a fresh
-// database and populate it with the recovered contents of the
-// original database.  If recovery is successful, the recovered
-// database is backed up over the original database.  If recovery is
-// not successful, the original database is razed.  In either case,
-// the original handle is poisoned so that operations on the stack do
-// not accidentally disrupt the restored data.
+// Recovery module for sql/.  The basic idea is to create a fresh database and
+// populate it with the recovered contents of the original database.  If
+// recovery is successful, the recovered database is backed up over the original
+// database.  If recovery is not successful, the original database is razed.  In
+// either case, the original handle is poisoned so that operations on the stack
+// do not accidentally disrupt the restored data.
+//
+// RecoverDatabaseOrRaze() automates this, including recoverying the schema of
+// from the suspect database.  If a database requires special handling, such as
+// recovering between different schema, or tables requiring post-processing,
+// then the module can be used manually like:
 //
 // {
 //   std::unique_ptr<sql::Recovery> r =
@@ -150,6 +154,22 @@ class SQL_EXPORT Recovery {
   //
   // Only valid to call after successful SetupMeta().
   bool GetMetaVersionNumber(int* version_number);
+
+  // Attempt to recover the database by creating a new database with schema from
+  // |db|, then copying over as much data as possible.  After this call, the
+  // |db| handle will be poisoned (though technically remaining open) so that
+  // future calls will return errors until the handle is re-opened.
+  //
+  // If a corrupt database contains tables without unique indices, the resulting
+  // table may contain duplication.  If this is not acceptable, the client
+  // should use the manual process as described in the example at the top of the
+  // file, cleaning up data at the appropriate points.
+  static void RecoverDatabase(Connection* db, const base::FilePath& db_path);
+
+  // Returns true for SQLite errors which RecoverDatabase() can plausibly fix.
+  // This does not guarantee that RecoverDatabase() will successfully recover
+  // the database.
+  static bool ShouldRecover(int extended_error);
 
  private:
   explicit Recovery(Connection* connection);

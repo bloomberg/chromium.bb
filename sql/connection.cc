@@ -243,8 +243,9 @@ bool Connection::IsExpectedSqliteError(int error) {
 void Connection::ReportDiagnosticInfo(int extended_error, Statement* stmt) {
   AssertIOAllowed();
 
-  std::string debug_info;
+  // Trim extended error codes.
   const int error = (extended_error & 0xFF);
+  std::string debug_info;
   if (error == SQLITE_CORRUPT) {
     // CollectCorruptionInfo() is implemented in terms of sql::Connection,
     // prevent reentrant calls to the error callback.

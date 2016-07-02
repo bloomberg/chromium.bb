@@ -6,12 +6,14 @@
 
 #include <string>
 
+#include "base/bind.h"
 #include "base/guid.h"
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
 #include "components/omnibox/browser/autocomplete_match_type.h"
 #include "sql/meta_table.h"
+#include "sql/recovery.h"
 #include "sql/statement.h"
 #include "sql/transaction.h"
 #include "ui/base/page_transition_types.h"
@@ -53,6 +55,32 @@ bool DeleteShortcut(const char* field_name,
                          field_name).c_str()));
   s.BindString(0, id);
   return s.Run();
+}
+
+void DatabaseErrorCallback(sql::Connection* db,
+                           const base::FilePath& db_path,
+                           int extended_error,
+                           sql::Statement* stmt) {
+  if (sql::Recovery::ShouldRecover(extended_error)) {
+    // Prevent reentrant calls.
+    db->reset_error_callback();
+
+    // After this call, the |db| handle is poisoned so that future calls will
+    // return errors until the handle is re-opened.
+    sql::Recovery::RecoverDatabase(db, db_path);
+
+    // The DLOG(FATAL) below is intended to draw immediate attention to errors
+    // in newly-written code.  Database corruption is generally a result of OS
+    // or hardware issues, not coding errors at the client level, so displaying
+    // the error would probably lead to confusion.  The ignored call signals the
+    // test-expectation framework that the error was handled.
+    ignore_result(sql::Connection::IsExpectedSqliteError(extended_error));
+    return;
+  }
+
+  // The default handling is to assert on debug and to ignore on release.
+  if (!sql::Connection::IsExpectedSqliteError(extended_error))
+    DLOG(FATAL) << db->GetErrorMessage();
 }
 
 }  // namespace
@@ -122,6 +150,10 @@ ShortcutsDatabase::ShortcutsDatabase(const base::FilePath& database_path)
 
 bool ShortcutsDatabase::Init() {
   db_.set_histogram_tag("Shortcuts");
+
+  // To recover from corruption.
+  db_.set_error_callback(
+      base::Bind(&DatabaseErrorCallback, &db_, database_path_));
 
   // Set the database page size to something a little larger to give us
   // better performance (we're typically seek rather than bandwidth limited).
@@ -257,22 +289,23 @@ bool ShortcutsDatabase::EnsureTable() {
   }
 
   if (!sql::MetaTable::DoesTableExist(&db_)) {
-    meta_table_.Init(&db_, kCurrentVersionNumber, kCompatibleVersionNumber);
     sql::Transaction transaction(&db_);
     if (!(transaction.Begin() &&
-      // Migrate old SEARCH_OTHER_ENGINE values to the new type value.
-      db_.Execute(base::StringPrintf("UPDATE omni_box_shortcuts "
-          "SET type = 13 WHERE type = 9").c_str()) &&
-      // Migrate old EXTENSION_APP values to the new type value.
-      db_.Execute(base::StringPrintf("UPDATE omni_box_shortcuts "
-           "SET type = 14 WHERE type = 10").c_str()) &&
-      // Migrate old CONTACT values to the new type value.
-      db_.Execute(base::StringPrintf("UPDATE omni_box_shortcuts "
-           "SET type = 15 WHERE type = 11").c_str()) &&
-      // Migrate old BOOKMARK_TITLE values to the new type value.
-      db_.Execute(base::StringPrintf("UPDATE omni_box_shortcuts "
-           "SET type = 16 WHERE type = 12").c_str()) &&
-      transaction.Commit())) {
+          meta_table_.Init(
+              &db_, kCurrentVersionNumber, kCompatibleVersionNumber) &&
+          // Migrate old SEARCH_OTHER_ENGINE values to the new type value.
+          db_.Execute(
+              "UPDATE omni_box_shortcuts SET type = 13 WHERE type = 9") &&
+          // Migrate old EXTENSION_APP values to the new type value.
+          db_.Execute(
+              "UPDATE omni_box_shortcuts SET type = 14 WHERE type = 10") &&
+          // Migrate old CONTACT values to the new type value.
+          db_.Execute(
+              "UPDATE omni_box_shortcuts SET type = 15 WHERE type = 11") &&
+          // Migrate old BOOKMARK_TITLE values to the new type value.
+          db_.Execute(
+              "UPDATE omni_box_shortcuts SET type = 16 WHERE type = 12") &&
+          transaction.Commit())) {
       return false;
     }
   }
