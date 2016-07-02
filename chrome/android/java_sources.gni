@@ -1105,6 +1105,7 @@ chrome_test_java_sources = [
   "javatests/src/org/chromium/chrome/browser/hardware_acceleration/CustomTabActivityHWATest.java",
   "javatests/src/org/chromium/chrome/browser/hardware_acceleration/EmbedContentViewActivityHWATest.java",
   "javatests/src/org/chromium/chrome/browser/hardware_acceleration/ManifestHWATest.java",
+  "javatests/src/org/chromium/chrome/browser/hardware_acceleration/ToastHWATest.java",
   "javatests/src/org/chromium/chrome/browser/hardware_acceleration/Utils.java",
   "javatests/src/org/chromium/chrome/browser/hardware_acceleration/WebappActivityHWATest.java",
   "javatests/src/org/chromium/chrome/browser/identity/SettingsSecureBasedIdentificationGeneratorTest.java",

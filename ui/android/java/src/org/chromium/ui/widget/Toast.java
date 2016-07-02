@@ -7,12 +7,9 @@ package org.chromium.ui.widget;
 import static android.view.ViewGroup.LayoutParams.WRAP_CONTENT;
 
 import android.annotation.SuppressLint;
-import android.app.Activity;
 import android.content.Context;
 import android.content.ContextWrapper;
-import android.content.pm.ActivityInfo;
 import android.content.pm.ApplicationInfo;
-import android.content.pm.PackageManager;
 import android.content.res.Resources;
 import android.os.Build;
 import android.view.View;
@@ -22,8 +19,7 @@ import android.widget.FrameLayout;
 import org.chromium.base.SysUtils;
 
 /**
- * Toast wrapper, makes sure toasts don't trigger HW acceleration when created
- * from activities that are not HW accelerated.
+ * Toast wrapper, makes sure toasts are not HW accelerated on low-end devices.
  *
  * Can (and should) also be used for Chromium-related additions and extensions.
  */
@@ -42,18 +38,22 @@ public class Toast {
     private Toast(Context context, android.widget.Toast toast) {
         mToast = toast;
 
-        if (SysUtils.isLowEndDevice()
-                && Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP
-                && context.getApplicationInfo().targetSdkVersion >= Build.VERSION_CODES.LOLLIPOP
-                && isHWAccelerationDisabled(context)) {
-            // Don't HW accelerate Toasts. Unfortunately the only way to do it is to make
-            // toast.getView().getContext().getApplicationInfo().targetSdkVersion return
-            // something less than LOLLIPOP (see WindowManagerGlobal.addView).
+        if (SysUtils.isLowEndDevice() && Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            // Don't HW accelerate Toasts. Unfortunately the only way to do that is to make
+            // toast.getView().getContext().getApplicationInfo() return lies to prevent
+            // WindowManagerGlobal.addView() from adding LayoutParams.FLAG_HARDWARE_ACCELERATED.
             mSWLayout = new FrameLayout(new ContextWrapper(context) {
                 @Override
                 public ApplicationInfo getApplicationInfo() {
                     ApplicationInfo info = new ApplicationInfo(super.getApplicationInfo());
+                    // On Lollipop the condition we need to fail is
+                    // "targetSdkVersion >= Build.VERSION_CODES.LOLLIPOP"
+                    // (and for Chrome targetSdkVersion is always the latest)
                     info.targetSdkVersion = Build.VERSION_CODES.KITKAT;
+
+                    // On M+ the condition we need to fail is
+                    // "flags & ApplicationInfo.FLAG_HARDWARE_ACCELERATED"
+                    info.flags &= ~ApplicationInfo.FLAG_HARDWARE_ACCELERATED;
                     return info;
                 }
             });
@@ -154,32 +154,5 @@ public class Toast {
     public static Toast makeText(Context context, int resId, int duration)
             throws Resources.NotFoundException {
         return new Toast(context, android.widget.Toast.makeText(context, resId, duration));
-    }
-
-    private static Activity getActivity(Context context) {
-        while (context != null) {
-            if (context instanceof Activity) {
-                return (Activity) context;
-            }
-            if (!(context instanceof ContextWrapper)) {
-                break;
-            }
-            context = ((ContextWrapper) context).getBaseContext();
-        }
-        return null;
-    }
-
-    private static boolean isHWAccelerationDisabled(Context context) {
-        Activity activity = getActivity(context);
-        if (activity == null) {
-            return false;
-        }
-        try {
-            ActivityInfo info = activity.getPackageManager().getActivityInfo(
-                    activity.getComponentName(), 0);
-            return (info.flags & ActivityInfo.FLAG_HARDWARE_ACCELERATED) == 0;
-        } catch (PackageManager.NameNotFoundException e) {
-            return false;
-        }
     }
 }
