@@ -566,6 +566,19 @@ TEST_F(NetworkSessionConfiguratorTest, QuicOriginsToForceQuicOn) {
                   net::HostPortPair::FromString("www.example.org:443")));
 }
 
+TEST_F(NetworkSessionConfiguratorTest, QuicOriginsToForceQuicOnAll) {
+  base::CommandLine::ForCurrentProcess()->AppendSwitch("enable-quic");
+  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+      "origin-to-force-quic-on", "*");
+
+  ParseFieldTrialsAndCommandLine();
+
+  EXPECT_EQ(1u, params_.origins_to_force_quic_on.size());
+  EXPECT_TRUE(
+      ContainsKey(params_.origins_to_force_quic_on,
+                  net::HostPortPair()));
+}
+
 TEST_F(NetworkSessionConfiguratorTest, QuicWhitelistFromCommandLinet) {
   base::CommandLine::ForCurrentProcess()->AppendSwitch("enable-quic");
   base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(

@@ -492,6 +492,8 @@ void ConfigureQuicParams(const base::CommandLine& command_line,
         command_line.GetSwitchValueASCII(switches::kOriginToForceQuicOn);
     for (const std::string& host_port : base::SplitString(
              origins, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL)) {
+      if (host_port == "*")
+        params->origins_to_force_quic_on.insert(net::HostPortPair());
       net::HostPortPair quic_origin = net::HostPortPair::FromString(host_port);
       if (!quic_origin.IsEmpty())
         params->origins_to_force_quic_on.insert(quic_origin);

@@ -736,10 +736,6 @@ TEST_P(QuicNetworkTransactionTest, ForceQuic) {
 
   mock_quic_data.AddSocketDataToFactory(&socket_factory_);
 
-  // The non-alternate protocol job needs to hang in order to guarantee that
-  // the alternate-protocol job will "win".
-  AddHangingNonAlternateProtocolSocketData();
-
   CreateSession();
 
   EXPECT_FALSE(
@@ -785,6 +781,31 @@ TEST_P(QuicNetworkTransactionTest, ForceQuic) {
   int log_stream_id;
   ASSERT_TRUE(entries[pos].GetIntegerValue("stream_id", &log_stream_id));
   EXPECT_EQ(3, log_stream_id);
+}
+
+TEST_P(QuicNetworkTransactionTest, ForceQuicForAll) {
+  params_.origins_to_force_quic_on.insert(HostPortPair());
+
+  AddQuicAlternateProtocolMapping(MockCryptoClientStream::CONFIRM_HANDSHAKE);
+
+  MockQuicData mock_quic_data;
+  mock_quic_data.AddWrite(ConstructClientRequestHeadersPacket(
+      1, kClientDataStreamId1, true, true,
+      GetRequestHeaders("GET", "https", "/")));
+  mock_quic_data.AddRead(ConstructServerResponseHeadersPacket(
+      1, kClientDataStreamId1, false, false, GetResponseHeaders("200 OK")));
+  mock_quic_data.AddRead(ConstructServerDataPacket(2, kClientDataStreamId1,
+                                                   false, true, 0, "hello!"));
+  mock_quic_data.AddWrite(ConstructClientAckPacket(2, 1));
+  mock_quic_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);  // No more data to read
+
+  mock_quic_data.AddSocketDataToFactory(&socket_factory_);
+
+  CreateSession();
+
+  SendRequestAndExpectQuicResponse("hello!");
+  EXPECT_TRUE(
+      test_socket_performance_watcher_factory_.rtt_notification_received());
 }
 
 TEST_P(QuicNetworkTransactionTest, QuicProxy) {
