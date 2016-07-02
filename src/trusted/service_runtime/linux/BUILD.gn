@@ -15,8 +15,20 @@
 # Gold for the link, so use_gold=true is a false statement and might
 # cause other problems.
 
-here = get_label_info(".", "dir")
-bootstrap_toolchain = here + "/toolchain:nacl_bootstrap_" + target_cpu
+# TODO(dpranke): There needs to be a better way to determine if
+# we are using the custom CrOS toolchains, but for now we check is_clang,
+# which is the same way we check in //build/config/BUILDCONFIG.gn.
+_is_cros_target_toolchain = is_chromeos && !is_clang
+if (target_os == "chromeos") {
+  import("//build/toolchain/cros_toolchain.gni")
+}
+
+if (_is_cros_target_toolchain) {
+  bootstrap_toolchain = "//build/toolchain/cros:nacl_bootstrap"
+} else {
+  here = get_label_info(".", "dir")
+  bootstrap_toolchain = here + "/toolchain:nacl_bootstrap_" + target_cpu
+}
 
 if (current_toolchain == bootstrap_toolchain) {
   bootstrap_lib_path = "$target_out_dir/libnacl_bootstrap_lib.a"
@@ -42,17 +54,14 @@ if (current_toolchain == bootstrap_toolchain) {
     linker_emulation = "elf32ltsmip"
   }
 
-  if (is_android) {
+  if (_is_cros_target_toolchain) {
+    compiler = cros_target_cxx
+  } else if (is_android) {
     compiler = "g++"
   } else if (current_cpu == "arm") {
     compiler = "arm-linux-gnueabihf-g++"
   } else {
     compiler = "g++"
-  }
-
-  if (target_os == "chromeos" && defined(cros_target_cxx) &&
-      cros_target_cxx != "") {
-    compiler = cros_target_cxx
   }
 
   static_library("nacl_bootstrap_lib") {
