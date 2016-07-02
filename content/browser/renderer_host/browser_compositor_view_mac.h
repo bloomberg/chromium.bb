@@ -57,6 +57,7 @@ class BrowserCompositorMac {
   void SwapCompositorFrame(uint32_t output_surface_id,
                            cc::CompositorFrame frame);
   void SetHasTransparentBackground(bool transparent);
+  void SetDisplayColorSpace(const gfx::ColorSpace& color_space);
   void UpdateVSyncParameters(const base::TimeTicks& timebase,
                              const base::TimeDelta& interval);
 

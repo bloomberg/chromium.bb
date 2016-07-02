@@ -107,8 +107,10 @@ void BufferQueue::SwapBuffers(const gfx::Rect& damage) {
   gl_->BindFramebuffer(GL_FRAMEBUFFER, fbo_);
 }
 
-void BufferQueue::Reshape(const gfx::Size& size, float scale_factor) {
-  if (size == size_)
+void BufferQueue::Reshape(const gfx::Size& size,
+                          float scale_factor,
+                          const gfx::ColorSpace& color_space) {
+  if (size == size_ && color_space == color_space_)
     return;
 #if !defined(OS_MACOSX)
   // TODO(ccameron): This assert is being hit on Mac try jobs. Determine if that
@@ -117,6 +119,7 @@ void BufferQueue::Reshape(const gfx::Size& size, float scale_factor) {
   DCHECK(!current_surface_);
 #endif
   size_ = size;
+  color_space_ = color_space;
 
   // TODO: add stencil buffer when needed.
   gl_->BindFramebuffer(GL_FRAMEBUFFER, fbo_);
@@ -218,6 +221,7 @@ std::unique_ptr<BufferQueue::AllocatedSurface> BufferQueue::GetNextSurface() {
     DLOG(ERROR) << "Failed to allocate GPU memory buffer";
     return nullptr;
   }
+  buffer->SetColorSpaceForScanout(color_space_);
 
   uint32_t id =
       gl_->CreateImageCHROMIUM(buffer->AsClientBuffer(), size_.width(),

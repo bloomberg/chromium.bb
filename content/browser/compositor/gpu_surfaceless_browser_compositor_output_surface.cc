@@ -99,9 +99,7 @@ void GpuSurfacelessBrowserCompositorOutputSurface::Reshape(
   GpuBrowserCompositorOutputSurface::Reshape(size, scale_factor, color_space,
                                              alpha);
   DCHECK(buffer_queue_);
-  // TODO(ccameron): Plumb the color profile to the output GpuMemoryBuffer.
-  // https://crbug.com/622133
-  buffer_queue_->Reshape(SurfaceSize(), scale_factor);
+  buffer_queue_->Reshape(SurfaceSize(), scale_factor, color_space);
 }
 
 void GpuSurfacelessBrowserCompositorOutputSurface::OnGpuSwapBuffersCompleted(

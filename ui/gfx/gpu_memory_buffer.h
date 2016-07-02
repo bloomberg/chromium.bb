@@ -26,6 +26,8 @@ extern "C" typedef struct _ClientBuffer* ClientBuffer;
 
 namespace gfx {
 
+class ColorSpace;
+
 enum GpuMemoryBufferType {
   EMPTY_BUFFER,
   SHARED_MEMORY_BUFFER,
@@ -88,6 +90,10 @@ class GFX_EXPORT GpuMemoryBuffer {
   // Fills the stride in bytes for each plane of the buffer. The stride of
   // plane K is stored at index K-1 of the |stride| array.
   virtual int stride(size_t plane) const = 0;
+
+  // Set the color space in which this buffer should be interpreted when used
+  // for scanout. Note that this will not impact texturing from the buffer.
+  virtual void SetColorSpaceForScanout(const gfx::ColorSpace& color_space);
 
   // Returns a unique identifier associated with buffer.
   virtual GpuMemoryBufferId GetId() const = 0;

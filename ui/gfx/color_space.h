@@ -11,6 +11,10 @@
 #include "build/build_config.h"
 #include "ui/gfx/gfx_export.h"
 
+#if defined(OS_MACOSX)
+#include <CoreGraphics/CGColorSpace.h>
+#endif
+
 namespace gfx {
 
 class GFX_EXPORT ColorSpace {
@@ -27,6 +31,9 @@ class GFX_EXPORT ColorSpace {
   // which monitor it will be displayed.
   static ColorSpace FromBestMonitor();
   static ColorSpace FromICCProfile(const std::vector<char>& icc_profile);
+#if defined(OS_MACOSX)
+  static ColorSpace FromCGColorSpace(CGColorSpaceRef cg_color_space);
+#endif
 
   const std::vector<char>& GetICCProfile() const { return icc_profile_; }
 

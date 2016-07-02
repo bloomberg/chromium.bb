@@ -15,6 +15,7 @@
 #include "base/memory/ref_counted.h"
 #include "components/display_compositor/display_compositor_export.h"
 #include "gpu/ipc/common/surface_handle.h"
+#include "ui/gfx/color_space.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -53,7 +54,9 @@ class DISPLAY_COMPOSITOR_EXPORT BufferQueue {
   void BindFramebuffer();
   void SwapBuffers(const gfx::Rect& damage);
   void PageFlipComplete();
-  void Reshape(const gfx::Size& size, float scale_factor);
+  void Reshape(const gfx::Size& size,
+               float scale_factor,
+               const gfx::ColorSpace& color_space);
 
   void RecreateBuffers();
 
@@ -102,6 +105,7 @@ class DISPLAY_COMPOSITOR_EXPORT BufferQueue {
 
   gpu::gles2::GLES2Interface* const gl_;
   gfx::Size size_;
+  gfx::ColorSpace color_space_;
   uint32_t fbo_;
   size_t allocated_count_;
   uint32_t texture_target_;

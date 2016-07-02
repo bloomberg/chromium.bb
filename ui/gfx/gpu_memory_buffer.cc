@@ -25,4 +25,7 @@ GpuMemoryBufferHandle::GpuMemoryBufferHandle(
 
 GpuMemoryBufferHandle::~GpuMemoryBufferHandle() {}
 
+void GpuMemoryBuffer::SetColorSpaceForScanout(
+    const gfx::ColorSpace& color_space) {}
+
 }  // namespace gfx

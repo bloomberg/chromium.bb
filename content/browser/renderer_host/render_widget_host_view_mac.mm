@@ -3111,9 +3111,8 @@ extern NSString *NSTextInputReplacementRangeAttributeName;
 }
 
 - (void)viewDidMoveToWindow {
-  if ([self window]) {
+  if ([self window])
     [self updateScreenProperties];
-  }
   renderWidgetHostView_->browser_compositor_->SetNSViewAttachedToWindow(
       [self window]);
 
@@ -3126,6 +3125,14 @@ extern NSString *NSTextInputReplacementRangeAttributeName;
     renderWidgetHostView_->ForwardMouseEvent(event);
 
     hasOpenMouseDown_ = NO;
+  }
+}
+
+- (void)viewDidChangeBackingProperties {
+  NSScreen* screen = [[self window] screen];
+  if (screen) {
+    renderWidgetHostView_->browser_compositor_->SetDisplayColorSpace(
+        gfx::ColorSpace::FromCGColorSpace([[screen colorSpace] CGColorSpace]));
   }
 }
 

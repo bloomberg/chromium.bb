@@ -15,18 +15,20 @@ namespace gfx {
 
 // static
 ColorSpace ColorSpace::FromBestMonitor() {
-  ColorSpace color_space;
-  CGColorSpaceRef monitor_color_space(base::mac::GetSystemColorSpace());
-  base::ScopedCFTypeRef<CFDataRef> icc_profile(
-      CGColorSpaceCopyICCProfile(monitor_color_space));
-  if (!icc_profile)
-    return color_space;
-  size_t length = CFDataGetLength(icc_profile);
-  if (!IsValidProfileLength(length))
-    return color_space;
-  const unsigned char* data = CFDataGetBytePtr(icc_profile);
-  color_space.icc_profile_.assign(data, data + length);
-  return color_space;
+  return FromCGColorSpace(base::mac::GetSystemColorSpace());
+}
+
+// static
+ColorSpace ColorSpace::FromCGColorSpace(CGColorSpaceRef cg_color_space) {
+  base::ScopedCFTypeRef<CFDataRef> cf_icc_profile(
+      CGColorSpaceCopyICCProfile(cg_color_space));
+  if (!cf_icc_profile)
+    return gfx::ColorSpace();
+  size_t length = CFDataGetLength(cf_icc_profile);
+  const unsigned char* data = CFDataGetBytePtr(cf_icc_profile);
+  std::vector<char> vector_icc_profile;
+  vector_icc_profile.assign(data, data + length);
+  return FromICCProfile(vector_icc_profile);
 }
 
 }  // namespace gfx

@@ -29,7 +29,8 @@ namespace display_compositor {
 
 class StubGpuMemoryBufferImpl : public gfx::GpuMemoryBuffer {
  public:
-  StubGpuMemoryBufferImpl() {}
+  StubGpuMemoryBufferImpl(size_t* set_color_space_count)
+      : set_color_space_count_(set_color_space_count) {}
 
   // Overridden from gfx::GpuMemoryBuffer:
   bool Map() override { return false; }
@@ -43,17 +44,24 @@ class StubGpuMemoryBufferImpl : public gfx::GpuMemoryBuffer {
   gfx::GpuMemoryBufferId GetId() const override {
     return gfx::GpuMemoryBufferId(0);
   }
+  void SetColorSpaceForScanout(const gfx::ColorSpace& color_space) override {
+    *set_color_space_count_ += 1;
+  }
   gfx::GpuMemoryBufferHandle GetHandle() const override {
     return gfx::GpuMemoryBufferHandle();
   }
   ClientBuffer AsClientBuffer() override {
     return reinterpret_cast<ClientBuffer>(this);
   }
+
+  size_t* set_color_space_count_;
 };
 
 class StubGpuMemoryBufferManager : public cc::TestGpuMemoryBufferManager {
  public:
   StubGpuMemoryBufferManager() : allocate_succeeds_(true) {}
+
+  size_t set_color_space_count() const { return set_color_space_count_; }
 
   void set_allocate_succeeds(bool value) { allocate_succeeds_ = value; }
 
@@ -68,12 +76,13 @@ class StubGpuMemoryBufferManager : public cc::TestGpuMemoryBufferManager {
     }
     if (allocate_succeeds_)
       return base::WrapUnique<gfx::GpuMemoryBuffer>(
-          new StubGpuMemoryBufferImpl);
+          new StubGpuMemoryBufferImpl(&set_color_space_count_));
     return nullptr;
   }
 
  private:
   bool allocate_succeeds_;
+  size_t set_color_space_count_ = 0;
 };
 
 #if defined(OS_WIN)
@@ -273,7 +282,7 @@ TEST(BufferQueueStandaloneTest, FboInitialization) {
   ON_CALL(*context, framebufferTexture2D(_, _, _, _, _))
       .WillByDefault(Return());
 
-  output_surface->Reshape(gfx::Size(10, 20), 1.0f);
+  output_surface->Reshape(gfx::Size(10, 20), 1.0f, gfx::ColorSpace());
 }
 
 TEST(BufferQueueStandaloneTest, FboBinding) {
@@ -325,7 +334,7 @@ TEST(BufferQueueStandaloneTest, CheckBoundFramebuffer) {
       context_provider->ContextGL(), GL_TEXTURE_2D, GL_RGBA, gl_helper.get(),
       gpu_memory_buffer_manager.get(), kFakeSurfaceHandle));
   output_surface->Initialize();
-  output_surface->Reshape(screen_size, 1.0f);
+  output_surface->Reshape(screen_size, 1.0f, gfx::ColorSpace());
   // Trigger a sub-buffer copy to exercise all paths.
   output_surface->BindFramebuffer();
   output_surface->SwapBuffers(screen_rect);
@@ -340,7 +349,7 @@ TEST(BufferQueueStandaloneTest, CheckBoundFramebuffer) {
 }
 
 TEST_F(BufferQueueTest, PartialSwapReuse) {
-  output_surface_->Reshape(screen_size, 1.0f);
+  output_surface_->Reshape(screen_size, 1.0f, gfx::ColorSpace());
   ASSERT_TRUE(doublebuffering_);
   EXPECT_CALL(*mock_output_surface_,
               CopyBufferDamage(_, _, small_damage, screen_rect))
@@ -360,7 +369,7 @@ TEST_F(BufferQueueTest, PartialSwapReuse) {
 }
 
 TEST_F(BufferQueueTest, PartialSwapFullFrame) {
-  output_surface_->Reshape(screen_size, 1.0f);
+  output_surface_->Reshape(screen_size, 1.0f, gfx::ColorSpace());
   ASSERT_TRUE(doublebuffering_);
   EXPECT_CALL(*mock_output_surface_,
               CopyBufferDamage(_, _, small_damage, screen_rect))
@@ -373,7 +382,7 @@ TEST_F(BufferQueueTest, PartialSwapFullFrame) {
 }
 
 TEST_F(BufferQueueTest, PartialSwapOverlapping) {
-  output_surface_->Reshape(screen_size, 1.0f);
+  output_surface_->Reshape(screen_size, 1.0f, gfx::ColorSpace());
   ASSERT_TRUE(doublebuffering_);
   EXPECT_CALL(*mock_output_surface_,
               CopyBufferDamage(_, _, small_damage, screen_rect))
@@ -483,7 +492,7 @@ TEST_F(BufferQueueTest, ReshapeWithInFlightSurfaces) {
     SwapBuffers();
   }
 
-  output_surface_->Reshape(gfx::Size(10, 20), 1.0f);
+  output_surface_->Reshape(gfx::Size(10, 20), 1.0f, gfx::ColorSpace());
   EXPECT_EQ(3u, in_flight_surfaces().size());
 
   for (size_t i = 0; i < kSwapCount; ++i) {
@@ -496,19 +505,23 @@ TEST_F(BufferQueueTest, ReshapeWithInFlightSurfaces) {
 }
 
 TEST_F(BufferQueueTest, SwapAfterReshape) {
+  DCHECK_EQ(0u, gpu_memory_buffer_manager_->set_color_space_count());
   const size_t kSwapCount = 3;
   for (size_t i = 0; i < kSwapCount; ++i) {
     output_surface_->BindFramebuffer();
     SwapBuffers();
   }
+  DCHECK_EQ(kSwapCount, gpu_memory_buffer_manager_->set_color_space_count());
 
-  output_surface_->Reshape(gfx::Size(10, 20), 1.0f);
+  output_surface_->Reshape(gfx::Size(10, 20), 1.0f, gfx::ColorSpace());
+  DCHECK_EQ(kSwapCount, gpu_memory_buffer_manager_->set_color_space_count());
 
   for (size_t i = 0; i < kSwapCount; ++i) {
     output_surface_->BindFramebuffer();
     SwapBuffers();
   }
-
+  DCHECK_EQ(2 * kSwapCount,
+            gpu_memory_buffer_manager_->set_color_space_count());
   EXPECT_EQ(2 * kSwapCount, in_flight_surfaces().size());
 
   for (size_t i = 0; i < kSwapCount; ++i) {
@@ -524,6 +537,16 @@ TEST_F(BufferQueueTest, SwapAfterReshape) {
     EXPECT_EQ(displayed_frame()->texture, next_texture_id);
     EXPECT_TRUE(displayed_frame());
   }
+
+  DCHECK_EQ(2 * kSwapCount,
+            gpu_memory_buffer_manager_->set_color_space_count());
+  for (size_t i = 0; i < kSwapCount; ++i) {
+    output_surface_->BindFramebuffer();
+    SwapBuffers();
+    output_surface_->PageFlipComplete();
+  }
+  DCHECK_EQ(2 * kSwapCount,
+            gpu_memory_buffer_manager_->set_color_space_count());
 }
 
 TEST_F(BufferQueueMockedContextTest, RecreateBuffers) {
@@ -602,7 +625,7 @@ TEST_F(BufferQueueMockedContextTest, RecreateBuffers) {
 }
 
 TEST_F(BufferQueueTest, AllocateFails) {
-  output_surface_->Reshape(screen_size, 1.0f);
+  output_surface_->Reshape(screen_size, 1.0f, gfx::ColorSpace());
 
   // Succeed in the two swaps.
   output_surface_->BindFramebuffer();

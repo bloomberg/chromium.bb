@@ -160,7 +160,7 @@ void DirectOutputSurfaceOzone::Reshape(const gfx::Size& size,
                                        bool alpha) {
   OutputSurface::Reshape(size, scale_factor, color_space, alpha);
   DCHECK(buffer_queue_);
-  buffer_queue_->Reshape(SurfaceSize(), scale_factor);
+  buffer_queue_->Reshape(SurfaceSize(), scale_factor, color_space);
 }
 
 }  // namespace mus

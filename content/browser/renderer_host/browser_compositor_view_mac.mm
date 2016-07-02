@@ -285,6 +285,12 @@ void BrowserCompositorMac::SetHasTransparentBackground(bool transparent) {
   }
 }
 
+void BrowserCompositorMac::SetDisplayColorSpace(
+    const gfx::ColorSpace& color_space) {
+  if (recyclable_compositor_)
+    recyclable_compositor_->compositor()->SetDisplayColorSpace(color_space);
+}
+
 void BrowserCompositorMac::UpdateVSyncParameters(
     const base::TimeTicks& timebase,
     const base::TimeDelta& interval) {

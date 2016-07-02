@@ -8,6 +8,7 @@
 #include "base/memory/ptr_util.h"
 #include "gpu/ipc/common/gpu_memory_buffer_support.h"
 #include "ui/gfx/buffer_format_util.h"
+#include "ui/gfx/color_space.h"
 #include "ui/gfx/mac/io_surface.h"
 
 namespace gpu {
@@ -107,6 +108,18 @@ void GpuMemoryBufferImplIOSurface::Unmap() {
 int GpuMemoryBufferImplIOSurface::stride(size_t plane) const {
   DCHECK_LT(plane, gfx::NumberOfPlanesForBufferFormat(format_));
   return IOSurfaceGetBytesPerRowOfPlane(io_surface_, plane);
+}
+
+void GpuMemoryBufferImplIOSurface::SetColorSpaceForScanout(
+    const gfx::ColorSpace& color_space) {
+  const std::vector<char>& icc_profile = color_space.GetICCProfile();
+  if (icc_profile.size()) {
+    base::ScopedCFTypeRef<CFDataRef> cf_data_icc_profile(CFDataCreate(
+        nullptr, reinterpret_cast<const UInt8*>(icc_profile.data()),
+        icc_profile.size()));
+    IOSurfaceSetValue(io_surface_, CFSTR("IOSurfaceColorSpace"),
+                      cf_data_icc_profile);
+  }
 }
 
 gfx::GpuMemoryBufferHandle GpuMemoryBufferImplIOSurface::GetHandle() const {
