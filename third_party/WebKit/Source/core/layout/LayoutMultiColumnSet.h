@@ -170,6 +170,12 @@ public:
 
     const char* name() const override { return "LayoutMultiColumnSet"; }
 
+    // Sets |columnRuleBounds| to the bounds of each column rule rect's painted extent, adjusted by paint offset,
+    // before pixel snapping. Returns true if column rules should be painted at all.
+    bool computeColumnRuleBounds(const LayoutPoint& paintOffset, Vector<LayoutRect>& columnRuleBounds) const;
+
+    LayoutRect localOverflowRectForPaintInvalidation() const override;
+
 protected:
     LayoutMultiColumnSet(LayoutFlowThread*);
 

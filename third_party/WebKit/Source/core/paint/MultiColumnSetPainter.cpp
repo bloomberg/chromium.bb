@@ -34,21 +34,8 @@ void MultiColumnSetPainter::paintObject(const PaintInfo& paintInfo, const Layout
 
 void MultiColumnSetPainter::paintColumnRules(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
-    if (m_layoutMultiColumnSet.flowThread()->isLayoutPagedFlowThread())
-        return;
-
-    const ComputedStyle& blockStyle = m_layoutMultiColumnSet.multiColumnBlockFlow()->styleRef();
-    const Color& ruleColor = m_layoutMultiColumnSet.resolveColor(blockStyle, CSSPropertyColumnRuleColor);
-    bool ruleTransparent = blockStyle.columnRuleIsTransparent();
-    EBorderStyle ruleStyle = blockStyle.columnRuleStyle();
-    LayoutUnit ruleThickness(blockStyle.columnRuleWidth());
-    LayoutUnit colGap = m_layoutMultiColumnSet.columnGap();
-    bool renderRule = ruleStyle > BorderStyleHidden && !ruleTransparent;
-    if (!renderRule)
-        return;
-
-    unsigned colCount = m_layoutMultiColumnSet.actualColumnCount();
-    if (colCount <= 1)
+    Vector<LayoutRect> columnRuleBounds;
+    if (!m_layoutMultiColumnSet.computeColumnRuleBounds(paintOffset, columnRuleBounds))
         return;
 
     if (LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(paintInfo.context, m_layoutMultiColumnSet, DisplayItem::ColumnRules))
@@ -58,36 +45,17 @@ void MultiColumnSetPainter::paintColumnRules(const PaintInfo& paintInfo, const L
     paintRect.moveBy(paintOffset);
     LayoutObjectDrawingRecorder drawingRecorder(paintInfo.context, m_layoutMultiColumnSet, DisplayItem::ColumnRules, paintRect);
 
+    const ComputedStyle& blockStyle = m_layoutMultiColumnSet.multiColumnBlockFlow()->styleRef();
+    EBorderStyle ruleStyle = blockStyle.columnRuleStyle();
     bool leftToRight = m_layoutMultiColumnSet.style()->isLeftToRightDirection();
-    LayoutUnit currLogicalLeftOffset = leftToRight ? LayoutUnit() : m_layoutMultiColumnSet.contentLogicalWidth();
-    LayoutUnit ruleAdd = m_layoutMultiColumnSet.borderAndPaddingLogicalLeft();
-    LayoutUnit ruleLogicalLeft = leftToRight ? LayoutUnit() : m_layoutMultiColumnSet.contentLogicalWidth();
-    LayoutUnit inlineDirectionSize = m_layoutMultiColumnSet.pageLogicalWidth();
     BoxSide boxSide = m_layoutMultiColumnSet.isHorizontalWritingMode()
         ? leftToRight ? BSLeft : BSRight
         : leftToRight ? BSTop : BSBottom;
+    const Color& ruleColor = m_layoutMultiColumnSet.resolveColor(blockStyle, CSSPropertyColumnRuleColor);
 
-    for (unsigned i = 0; i < colCount; i++) {
-        // Move to the next position.
-        if (leftToRight) {
-            ruleLogicalLeft += inlineDirectionSize + colGap / 2;
-            currLogicalLeftOffset += inlineDirectionSize + colGap;
-        } else {
-            ruleLogicalLeft -= (inlineDirectionSize + colGap / 2);
-            currLogicalLeftOffset -= (inlineDirectionSize + colGap);
-        }
-
-        // Now paint the column rule.
-        if (i < colCount - 1) {
-            LayoutUnit ruleLeft = m_layoutMultiColumnSet.isHorizontalWritingMode() ? paintOffset.x() + ruleLogicalLeft - ruleThickness / 2 + ruleAdd : paintOffset.x() + m_layoutMultiColumnSet.borderLeft() + m_layoutMultiColumnSet.paddingLeft();
-            LayoutUnit ruleRight = m_layoutMultiColumnSet.isHorizontalWritingMode() ? ruleLeft + ruleThickness : ruleLeft + m_layoutMultiColumnSet.contentWidth();
-            LayoutUnit ruleTop = m_layoutMultiColumnSet.isHorizontalWritingMode() ? paintOffset.y() + m_layoutMultiColumnSet.borderTop() + m_layoutMultiColumnSet.paddingTop() : paintOffset.y() + ruleLogicalLeft - ruleThickness / 2 + ruleAdd;
-            LayoutUnit ruleBottom = m_layoutMultiColumnSet.isHorizontalWritingMode() ? ruleTop + m_layoutMultiColumnSet.contentHeight() : ruleTop + ruleThickness;
-            IntRect pixelSnappedRuleRect = pixelSnappedIntRectFromEdges(ruleLeft, ruleTop, ruleRight, ruleBottom);
-            ObjectPainter::drawLineForBoxSide(paintInfo.context, pixelSnappedRuleRect.x(), pixelSnappedRuleRect.y(), pixelSnappedRuleRect.maxX(), pixelSnappedRuleRect.maxY(), boxSide, ruleColor, ruleStyle, 0, 0, true);
-        }
-
-        ruleLogicalLeft = currLogicalLeftOffset;
+    for (auto& bound : columnRuleBounds) {
+        IntRect pixelSnappedRuleRect = pixelSnappedIntRect(bound);
+        ObjectPainter::drawLineForBoxSide(paintInfo.context, pixelSnappedRuleRect.x(), pixelSnappedRuleRect.y(), pixelSnappedRuleRect.maxX(), pixelSnappedRuleRect.maxY(), boxSide, ruleColor, ruleStyle, 0, 0, true);
     }
 }
 

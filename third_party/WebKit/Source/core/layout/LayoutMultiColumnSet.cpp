@@ -476,4 +476,75 @@ LayoutRect LayoutMultiColumnSet::flowThreadPortionRect() const
     return portionRect;
 }
 
+bool LayoutMultiColumnSet::computeColumnRuleBounds(const LayoutPoint& paintOffset, Vector<LayoutRect>& columnRuleBounds) const
+{
+    if (flowThread()->isLayoutPagedFlowThread())
+        return false;
+
+    // Reference: https://www.w3.org/TR/css3-multicol/#column-gaps-and-rules
+    const ComputedStyle& blockStyle = multiColumnBlockFlow()->styleRef();
+    bool ruleTransparent = blockStyle.columnRuleIsTransparent();
+    EBorderStyle ruleStyle = blockStyle.columnRuleStyle();
+    LayoutUnit ruleThickness(blockStyle.columnRuleWidth());
+    LayoutUnit colGap = columnGap();
+    bool renderRule = ruleStyle > BorderStyleHidden && !ruleTransparent;
+    if (!renderRule)
+        return false;
+
+    unsigned colCount = actualColumnCount();
+    if (colCount <= 1)
+        return false;
+
+    bool leftToRight = style()->isLeftToRightDirection();
+    LayoutUnit currLogicalLeftOffset = leftToRight ? LayoutUnit() : contentLogicalWidth();
+    LayoutUnit ruleAdd = borderAndPaddingLogicalLeft();
+    LayoutUnit ruleLogicalLeft = leftToRight ? LayoutUnit() : contentLogicalWidth();
+    LayoutUnit inlineDirectionSize = pageLogicalWidth();
+
+    for (unsigned i = 0; i < colCount; i++) {
+        // Move to the next position.
+        if (leftToRight) {
+            ruleLogicalLeft += inlineDirectionSize + colGap / 2;
+            currLogicalLeftOffset += inlineDirectionSize + colGap;
+        } else {
+            ruleLogicalLeft -= (inlineDirectionSize + colGap / 2);
+            currLogicalLeftOffset -= (inlineDirectionSize + colGap);
+        }
+
+        // Now compute the final bounds.
+        if (i < colCount - 1) {
+            LayoutUnit ruleLeft, ruleRight, ruleTop, ruleBottom;
+            if (isHorizontalWritingMode()) {
+                ruleLeft = paintOffset.x() + ruleLogicalLeft - ruleThickness / 2 + ruleAdd;
+                ruleRight = ruleLeft + ruleThickness;
+                ruleTop = paintOffset.y() + borderTop() + paddingTop();
+                ruleBottom = ruleTop + contentHeight();
+            } else {
+                ruleLeft = paintOffset.x() + borderLeft() + paddingLeft();
+                ruleRight = ruleLeft + contentWidth();
+                ruleTop = paintOffset.y() + ruleLogicalLeft - ruleThickness / 2 + ruleAdd;
+                ruleBottom = ruleTop + ruleThickness;
+            }
+
+            columnRuleBounds.append(LayoutRect(ruleLeft, ruleTop, ruleRight - ruleLeft, ruleBottom - ruleTop));
+        }
+
+        ruleLogicalLeft = currLogicalLeftOffset;
+    }
+    return true;
+}
+
+LayoutRect LayoutMultiColumnSet::localOverflowRectForPaintInvalidation() const
+{
+    LayoutRect blockFlowBounds = LayoutBlockFlow::localOverflowRectForPaintInvalidation();
+
+    // Now add in column rule bounds, if present.
+    Vector<LayoutRect> columnRuleBounds;
+    if (computeColumnRuleBounds(LayoutPoint(), columnRuleBounds)) {
+        for (auto& bound : columnRuleBounds)
+            blockFlowBounds.unite(bound);
+    }
+    return blockFlowBounds;
+}
+
 } // namespace blink
