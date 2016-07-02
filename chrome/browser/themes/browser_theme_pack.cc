@@ -790,6 +790,10 @@ bool BrowserThemePack::GetColor(int id, SkColor* color) const {
     for (size_t i = 0; i < kColorTableLength; ++i) {
       if (colors_[i].id == id) {
         *color = colors_[i].color;
+        // The theme provider is intentionally made to ignore alpha for toolbar
+        // color, as we don't want to allow transparent toolbars.
+        if (id == ThemeProperties::COLOR_TOOLBAR)
+          *color = SkColorSetA(*color, SK_AlphaOPAQUE);
         return true;
       }
     }
