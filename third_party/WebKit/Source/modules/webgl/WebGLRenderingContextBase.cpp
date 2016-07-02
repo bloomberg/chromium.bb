@@ -448,6 +448,14 @@ void StripComments::process(UChar c)
         break;
 
     case InSingleLineComment:
+        // Line-continuation characters are processed before comment processing.
+        // Advance string if a new line character is immediately behind
+        // line-continuation character.
+        if (c == '\\') {
+            if (peek(temp) && isNewline(temp))
+                advance();
+        }
+
         // The newline code at the top of this function takes care
         // of resetting our state when we get out of the
         // single-line comment. Swallow all other characters.
@@ -3856,9 +3864,9 @@ void WebGLRenderingContextBase::shaderSource(WebGLShader* shader, const String& 
     if (isContextLost() || !validateWebGLObject("shaderSource", shader))
         return;
     String stringWithoutComments = StripComments(string).result();
-    // TODO(danakj): Make validateString reject characters > 255 (or utf16 Strings)
+    // TODO(danakj): Make validateShaderSource reject characters > 255 (or utf16 Strings)
     // so we don't need to use StringUTF8Adaptor.
-    if (!validateString("shaderSource", stringWithoutComments))
+    if (!validateShaderSource(stringWithoutComments))
         return;
     shader->setSource(string);
     WTF::StringUTF8Adaptor adaptor(stringWithoutComments);
@@ -5463,6 +5471,25 @@ bool WebGLRenderingContextBase::validateString(const char* functionName, const S
     for (size_t i = 0; i < string.length(); ++i) {
         if (!validateCharacter(string[i])) {
             synthesizeGLError(GL_INVALID_VALUE, functionName, "string not ASCII");
+            return false;
+        }
+    }
+    return true;
+}
+
+bool WebGLRenderingContextBase::validateShaderSource(const String& string)
+{
+    for (size_t i = 0; i < string.length(); ++i) {
+        // line-continuation character \ is supported in WebGL 2.0.
+        if (isWebGL2OrHigher() && string[i] == '\\') {
+            if (i + 1 >= string.length() || (string[i + 1] != '\n' && string[i + 1] != '\r')) {
+                synthesizeGLError(GL_INVALID_VALUE, "shaderSource", "line-continuation character is not immediately preceding a new-line");
+                return false;
+            }
+            continue;
+        }
+        if (!validateCharacter(string[i])) {
+            synthesizeGLError(GL_INVALID_VALUE, "shaderSource", "string not ASCII");
             return false;
         }
     }
