@@ -227,6 +227,8 @@
       'ssl/token_binding.h',
     ],
     'net_non_nacl_sources': [
+      'android/cellular_signal_strength.cc',
+      'android/cellular_signal_strength.h',
       'android/cert_verify_result_android.cc',
       'android/cert_verify_result_android.h',
       'android/gurl_utils.cc',
@@ -1330,6 +1332,7 @@
       'extras/sqlite/sqlite_persistent_cookie_store.h',
     ],
     'net_test_sources': [
+      'android/cellular_signal_strength_unittest.cc',
       'android/dummy_spnego_authenticator.cc',
       'android/dummy_spnego_authenticator.h',
       'android/http_auth_negotiate_android_unittest.cc',

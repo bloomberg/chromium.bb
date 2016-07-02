@@ -1230,6 +1230,7 @@ if (is_linux) {
 if (is_android) {
   generate_jni("net_jni_headers") {
     sources = [
+      "android/java/src/org/chromium/net/AndroidCellularSignalStrength.java",
       "android/java/src/org/chromium/net/AndroidCertVerifyResult.java",
       "android/java/src/org/chromium/net/AndroidKeyStore.java",
       "android/java/src/org/chromium/net/AndroidNetworkLibrary.java",

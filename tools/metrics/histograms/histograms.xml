@@ -35398,6 +35398,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="NQE.CellularSignalStrengthAvailable" enum="BooleanAvailable">
+  <owner>tbansal@chromium.org</owner>
+  <owner>bengr@chromium.org</owner>
+  <summary>
+    Whether the signal strength for the cellular network was available or not.
+    Recorded right before a connection change event. Recorded only on cellular
+    connections on Android platform.
+  </summary>
+</histogram>
+
 <histogram name="NQE.DifferenceRTTActualAndEstimated" units="ms">
   <obsolete>
     Replaced in June 2016 by NQE.Accuracy.HttpRTT.* metrics.

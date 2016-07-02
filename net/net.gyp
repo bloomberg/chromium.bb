@@ -1409,6 +1409,7 @@
           'target_name': 'net_jni_headers',
           'type': 'none',
           'sources': [
+            'android/java/src/org/chromium/net/AndroidCellularSignalStrength.java',
             'android/java/src/org/chromium/net/AndroidCertVerifyResult.java',
             'android/java/src/org/chromium/net/AndroidKeyStore.java',
             'android/java/src/org/chromium/net/AndroidNetworkLibrary.java',
@@ -1446,6 +1447,7 @@
           },
           'dependencies': [
             '../base/base.gyp:base',
+            'cellular_signal_strength_error_java',
             'cert_verify_status_android_java',
             'certificate_mime_types_java',
             'network_change_notifier_types_java',
@@ -1574,6 +1576,14 @@
             'template_deps': ['base/net_error_list.h'],
           },
           'includes': [ '../build/android/java_cpp_template.gypi' ],
+        },
+        {
+          'target_name': 'cellular_signal_strength_error_java',
+          'type': 'none',
+          'variables': {
+            'source_file': 'android/cellular_signal_strength.cc',
+          },
+          'includes': [ '../build/android/java_cpp_enum.gypi' ],
         },
         {
           'target_name': 'certificate_mime_types_java',

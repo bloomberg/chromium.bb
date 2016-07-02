@@ -6,6 +6,7 @@
 
 #include "base/android/jni_android.h"
 #include "base/android/jni_registrar.h"
+#include "net/android/cellular_signal_strength.h"
 #include "net/android/gurl_utils.h"
 #include "net/android/http_auth_negotiate_android.h"
 #include "net/android/keystore.h"
@@ -24,6 +25,7 @@ namespace net {
 namespace android {
 
 static base::android::RegistrationMethod kNetRegisteredMethods[] = {
+    {"AndroidCellularSignalStrength", cellular_signal_strength::Register},
     {"AndroidCertVerifyResult", RegisterCertVerifyResult},
     {"AndroidKeyStore", RegisterKeyStore},
     {"AndroidNetworkLibrary", RegisterNetworkLibrary},
