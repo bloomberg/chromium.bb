@@ -241,11 +241,11 @@ class QuicP2PSessionTest : public ::testing::Test {
         0, IPEndPoint(IPAddress::IPv4AllZeros(), 0), &quic_helper_,
         &alarm_factory_, writer, true /* owns_writer */, perspective,
         QuicSupportedVersions()));
-    writer->SetConnection(quic_connection1.get());
 
     std::unique_ptr<QuicP2PSession> result(
         new QuicP2PSession(config_, crypto_config, std::move(quic_connection1),
                            std::move(socket)));
+    writer->Initialize(result.get(), quic_connection1.get());
     result->Initialize();
     return result;
   }

@@ -1443,19 +1443,24 @@ void QuicStreamFactory::MaybeMigrateOrCloseSessions(
       continue;
     }
 
-    MigrateSessionToNetwork(session, new_network, bound_net_log);
+    MigrateSessionToNetwork(session, new_network, bound_net_log, nullptr);
   }
 }
 
-void QuicStreamFactory::MaybeMigrateSessionEarly(
-    QuicChromiumClientSession* session) {
-  ScopedConnectionMigrationEventLog scoped_event_log(net_log_,
-                                                     "EarlyMigration");
-  if (!migrate_sessions_early_ || session->HasNonMigratableStreams() ||
+void QuicStreamFactory::MaybeMigrateSingleSession(
+    QuicChromiumClientSession* session,
+    MigrationCause migration_cause,
+    scoped_refptr<StringIOBuffer> packet) {
+  ScopedConnectionMigrationEventLog scoped_event_log(
+      net_log_,
+      migration_cause == EARLY_MIGRATION ? "EarlyMigration" : "WriteError");
+  if (!migrate_sessions_on_network_change_ ||
+      (migration_cause == EARLY_MIGRATION && !migrate_sessions_early_) ||
+      session->HasNonMigratableStreams() ||
       session->config()->DisableConnectionMigration()) {
     HistogramAndLogMigrationFailure(
         scoped_event_log.net_log(), MIGRATION_STATUS_DISABLED,
-        session->connection_id(), "Early migration disabled");
+        session->connection_id(), "Migration disabled");
     return;
   }
   NetworkHandle new_network =
@@ -1470,13 +1475,15 @@ void QuicStreamFactory::MaybeMigrateSessionEarly(
     return;
   }
   OnSessionGoingAway(session);
-  MigrateSessionToNetwork(session, new_network, scoped_event_log.net_log());
+  MigrateSessionToNetwork(session, new_network, scoped_event_log.net_log(),
+                          packet);
 }
 
 void QuicStreamFactory::MigrateSessionToNetwork(
     QuicChromiumClientSession* session,
     NetworkHandle new_network,
-    const BoundNetLog& bound_net_log) {
+    const BoundNetLog& bound_net_log,
+    scoped_refptr<StringIOBuffer> packet) {
   // Use OS-specified port for socket (DEFAULT_BIND) instead of
   // using the PortSuggester since the connection is being migrated
   // and not being newly created.
@@ -1497,11 +1504,11 @@ void QuicStreamFactory::MigrateSessionToNetwork(
       new QuicChromiumPacketReader(socket.get(), clock_.get(), session,
                                    yield_after_packets_, yield_after_duration_,
                                    session->net_log()));
-  std::unique_ptr<QuicPacketWriter> new_writer(
+  std::unique_ptr<QuicChromiumPacketWriter> new_writer(
       new QuicChromiumPacketWriter(socket.get()));
 
   if (!session->MigrateToSocket(std::move(socket), std::move(new_reader),
-                                std::move(new_writer))) {
+                                std::move(new_writer), packet)) {
     session->CloseSessionOnError(ERR_NETWORK_CHANGED,
                                  QUIC_CONNECTION_MIGRATION_TOO_MANY_CHANGES);
     HistogramAndLogMigrationFailure(
@@ -1662,7 +1669,6 @@ int QuicStreamFactory::CreateSession(
   QuicConnection* connection = new QuicConnection(
       connection_id, addr, helper_.get(), alarm_factory_.get(), writer,
       true /* owns_writer */, Perspective::IS_CLIENT, supported_versions_);
-  writer->SetConnection(connection);
   connection->SetMaxPacketLength(max_packet_length_);
 
   QuicConfig config = config_;
@@ -1703,6 +1709,7 @@ int QuicStreamFactory::CreateSession(
       std::move(socket_performance_watcher), net_log.net_log());
 
   all_sessions_[*session] = key;  // owning pointer
+  writer->Initialize(*session, connection);
 
   (*session)->Initialize();
   bool closed_during_initialize = !ContainsKey(all_sessions_, *session) ||

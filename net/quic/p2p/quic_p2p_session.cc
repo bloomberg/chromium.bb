@@ -39,6 +39,11 @@ void QuicP2PSession::SetDelegate(Delegate* delegate) {
   delegate_ = delegate;
 }
 
+int QuicP2PSession::OnWriteError(int error_code,
+                                 scoped_refptr<StringIOBuffer> packet) {
+  return error_code;
+}
+
 QuicCryptoStream* QuicP2PSession::GetCryptoStream() {
   return crypto_stream_.get();
 }

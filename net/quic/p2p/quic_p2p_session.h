@@ -10,7 +10,9 @@
 
 #include "base/macros.h"
 #include "base/strings/string_piece.h"
+#include "net/base/io_buffer.h"
 #include "net/quic/p2p/quic_p2p_stream.h"
+#include "net/quic/quic_chromium_packet_writer.h"
 #include "net/quic/quic_client_session_base.h"
 #include "net/quic/quic_clock.h"
 #include "net/quic/quic_protocol.h"
@@ -32,7 +34,9 @@ class IOBuffer;
 //   1. Negotiated QuicConfig.
 //   2. Secret key exchanged with the peer on the other end of the |socket|.
 //      This key is passed to the constructor as part of the |crypto_config|.
-class NET_EXPORT QuicP2PSession : public QuicSession {
+class NET_EXPORT QuicP2PSession
+    : public QuicSession,
+      public QuicChromiumPacketWriter::WriteErrorObserver {
  public:
   class Delegate {
    public:
@@ -48,6 +52,10 @@ class NET_EXPORT QuicP2PSession : public QuicSession {
                  std::unique_ptr<QuicConnection> connection,
                  std::unique_ptr<Socket> socket);
   ~QuicP2PSession() override;
+
+  // QuicChromiumPacketWriter::WriteErrorObserver override.
+  int OnWriteError(int error_code,
+                   scoped_refptr<StringIOBuffer> last_packet) override;
 
   // QuicSession overrides.
   void Initialize() override;
