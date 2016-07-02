@@ -232,11 +232,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['mac'], bug=619264)
     self.Fail('deqp/functional/gles3/shaderloop_do_while.html',
         ['mac'], bug=617820)
-    self.Fail('deqp/functional/gles3/texturespecification/' +
-        'basic_copyteximage2d.html',
-        ['mac'], bug=620067)
-    self.Fail('deqp/functional/gles3/fragmentoutput/*.html',
-        ['mac'], bug=483282)
     # This one's flaky on AMD, NVIDIA and Intel GPUs, but the
     # GPU-specific expectations aren't working properly.
     self.Fail('deqp/functional/gles3/shaderpackingfunction.html',
@@ -280,14 +275,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('deqp/functional/gles3/fbomultisample*',
         ['mac'], bug=483282)
 
-    self.Fail('deqp/functional/gles3/fbocolorbuffer/clear.html',
-        ['mac'], bug=483282)
-
-    self.Fail('deqp/functional/gles3/fborender/recreate_color_02.html',
-        ['mac'], bug=483282)
-    self.Fail('deqp/functional/gles3/fborender/resize_01.html',
-        ['mac'], bug=483282)
-
     # Mac Retina NVIDIA
     self.Fail('conformance2/textures/misc/tex-input-validation.html',
         ['mac', ('nvidia', 0xfe9), 'no_angle'], bug=483282)
@@ -304,6 +291,9 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('deqp/functional/gles3/negativebufferapi.html',
         ['mac', ('nvidia', 0xfe9)], bug=483282)
 
+    self.Fail('deqp/functional/gles3/texturespecification/' +
+        'basic_copyteximage2d.html',
+        ['mac', ('nvidia', 0xfe9)], bug=620067)
     self.Fail('deqp/functional/gles3/texturespecification/' +
         'teximage2d_pbo_2d_00.html',
         ['mac', ('nvidia', 0xfe9)], bug=614174)
@@ -354,36 +344,39 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         'texturelod.html',
         ['mac', ('nvidia', 0xfe9)], bug=483282)
 
-    self.Fail('deqp/functional/gles3/fbocolorbuffer/' +
-        'tex2d_05.html',
+    self.Fail('deqp/functional/gles3/fragmentoutput/array.fixed.html',
         ['mac', ('nvidia', 0xfe9)], bug=483282)
-    self.Fail('deqp/functional/gles3/fbocolorbuffer/' +
-        'tex2darray_05.html',
+    self.Fail('deqp/functional/gles3/fragmentoutput/basic.fixed.html',
         ['mac', ('nvidia', 0xfe9)], bug=483282)
-    self.Fail('deqp/functional/gles3/fbocolorbuffer/' +
-        'tex3d_05.html',
+    self.Fail('deqp/functional/gles3/fragmentoutput/random_00.html',
         ['mac', ('nvidia', 0xfe9)], bug=483282)
-    self.Fail('deqp/functional/gles3/fbocolorbuffer/' +
-        'texcube_05.html',
+    self.Fail('deqp/functional/gles3/fragmentoutput/random_01.html',
         ['mac', ('nvidia', 0xfe9)], bug=483282)
-    self.Fail('deqp/functional/gles3/fbocolorbuffer/' +
-        'blend.html',
+    self.Fail('deqp/functional/gles3/fragmentoutput/random_02.html',
         ['mac', ('nvidia', 0xfe9)], bug=483282)
 
-    self.Fail('deqp/functional/gles3/draw/' +
-        'draw_arrays.html',
+    self.Fail('deqp/functional/gles3/fbocolorbuffer/clear.html',
         ['mac', ('nvidia', 0xfe9)], bug=483282)
-    self.Fail('deqp/functional/gles3/draw/' +
-        'draw_arrays_instanced.html',
+    self.Fail('deqp/functional/gles3/fbocolorbuffer/tex2d_05.html',
         ['mac', ('nvidia', 0xfe9)], bug=483282)
-    self.Fail('deqp/functional/gles3/draw/' +
-        'draw_elements.html',
+    self.Fail('deqp/functional/gles3/fbocolorbuffer/tex2darray_05.html',
         ['mac', ('nvidia', 0xfe9)], bug=483282)
-    self.Fail('deqp/functional/gles3/draw/' +
-        'draw_elements_instanced.html',
+    self.Fail('deqp/functional/gles3/fbocolorbuffer/tex3d_05.html',
         ['mac', ('nvidia', 0xfe9)], bug=483282)
-    self.Fail('deqp/functional/gles3/draw/' +
-        'draw_range_elements.html',
+    self.Fail('deqp/functional/gles3/fbocolorbuffer/texcube_05.html',
+        ['mac', ('nvidia', 0xfe9)], bug=483282)
+    self.Fail('deqp/functional/gles3/fbocolorbuffer/blend.html',
+        ['mac', ('nvidia', 0xfe9)], bug=483282)
+
+    self.Fail('deqp/functional/gles3/draw/draw_arrays.html',
+        ['mac', ('nvidia', 0xfe9)], bug=483282)
+    self.Fail('deqp/functional/gles3/draw/draw_arrays_instanced.html',
+        ['mac', ('nvidia', 0xfe9)], bug=483282)
+    self.Fail('deqp/functional/gles3/draw/draw_elements.html',
+        ['mac', ('nvidia', 0xfe9)], bug=483282)
+    self.Fail('deqp/functional/gles3/draw/draw_elements_instanced.html',
+        ['mac', ('nvidia', 0xfe9)], bug=483282)
+    self.Fail('deqp/functional/gles3/draw/draw_range_elements.html',
         ['mac', ('nvidia', 0xfe9)], bug=483282)
 
     self.Fail('conformance2/rendering/draw-buffers.html',
@@ -446,6 +439,9 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('deqp/functional/gles3/texturefiltering/3d_combinations_08.html',
         ['mac', 'intel'], bug=606074)
 
+    self.Fail('deqp/functional/gles3/texturespecification/' +
+        'basic_copyteximage2d.html',
+        ['mac', 'intel'], bug=620067)
     self.Fail('deqp/functional/gles3/texturespecification/' +
         'random_teximage2d_2d.html',
         ['mac', 'intel'], bug=483282)

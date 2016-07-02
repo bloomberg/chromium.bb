@@ -544,6 +544,11 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     # self.Fail('conformance/extensions/webgl-draw-buffers.html',
     #     ['linux', ('intel', 0x412), 'opengl'], bug=586536)
 
+
+    self.Skip('conformance/glsl/bugs/' +
+        'global-invariant-does-not-leak-across-shaders.html',
+        bug=625363)
+
     # Fails on multiple platforms
 
     # OpenGL / NVIDIA failures
