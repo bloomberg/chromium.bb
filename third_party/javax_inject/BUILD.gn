@@ -4,6 +4,6 @@
 
 import("//build/config/android/rules.gni")
 
-android_java_prebuilt("javax_inject") {
+android_java_prebuilt("javax_inject_java") {
   jar_path = "lib/javax.inject-1.jar"
 }

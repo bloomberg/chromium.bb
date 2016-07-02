@@ -4,42 +4,42 @@
 
 import("//build/config/android/rules.gni")
 
-android_java_prebuilt("espresso_contrib") {
+android_java_prebuilt("espresso_contrib_java") {
   jar_path = "lib/espresso-contrib-2.2-release-no-dep.jar"
   deps = [
-    ":espresso_core",
+    ":espresso_core_java",
     "//third_party/guava:guava_java",
     "//third_party/hamcrest:hamcrest_core_java",
   ]
 }
 
-android_java_prebuilt("espresso_core") {
+android_java_prebuilt("espresso_core_java") {
   jar_path = "lib/espresso-core-2.2-release-no-dep.jar"
   deps = [
     "//third_party/android_tools:android_support_annotations_javalib",
     "//third_party/guava:guava_java",
     "//third_party/hamcrest:hamcrest_core_java",
-    "//third_party/javax_inject:javax_inject",
+    "//third_party/javax_inject:javax_inject_java",
   ]
 }
 
-android_java_prebuilt("espresso_idling") {
+android_java_prebuilt("espresso_idling_java") {
   jar_path = "lib/espresso-idling-resource-2.2-release-no-dep.jar"
 }
 
-android_java_prebuilt("espresso_intents") {
+android_java_prebuilt("espresso_intents_java") {
   jar_path = "lib/espresso-intents-2.2-release-no-dep.jar"
   deps = [
-    "//third_party/android_support_test_runner:runner",
+    "//third_party/android_support_test_runner:runner_java",
     "//third_party/guava:guava_java",
     "//third_party/hamcrest:hamcrest_core_java",
   ]
 }
 
-android_java_prebuilt("espresso_web") {
+android_java_prebuilt("espresso_web_java") {
   jar_path = "lib/espresso-web-2.2-release-no-dep.jar"
   deps = [
-    ":espresso_core",
+    ":espresso_core_java",
     "//third_party/guava:guava_java",
     "//third_party/hamcrest:hamcrest_core_java",
   ]
