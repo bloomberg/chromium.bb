@@ -54,7 +54,7 @@ private:
     void collectPropertyNodes(const LayoutObject& object)
     {
         if (const ObjectPaintProperties* paintProperties = object.objectPaintProperties())
-            Traits::addObjectPaintProperties(*paintProperties, *this);
+            Traits::addObjectPaintProperties(object, *paintProperties, *this);
         for (LayoutObject* child = object.slowFirstChild(); child; child = child->nextSibling())
             collectPropertyNodes(*child);
     }
@@ -87,25 +87,25 @@ public:
     static void addFrameViewProperties(const FrameView& frameView, PropertyTreePrinter<TransformPaintPropertyNode>& printer)
     {
         if (const TransformPaintPropertyNode* preTranslation = frameView.preTranslation())
-            printer.addPropertyNode(preTranslation, "PreTranslation");
+            printer.addPropertyNode(preTranslation, String("PreTranslation (FrameView)"));
         if (const TransformPaintPropertyNode* scrollTranslation = frameView.scrollTranslation())
-            printer.addPropertyNode(scrollTranslation, "ScrollTranslation");
+            printer.addPropertyNode(scrollTranslation, String("ScrollTranslation (FrameView)"));
     }
 
-    static void addObjectPaintProperties(const ObjectPaintProperties& paintProperties, PropertyTreePrinter<TransformPaintPropertyNode>& printer)
+    static void addObjectPaintProperties(const LayoutObject& object, const ObjectPaintProperties& paintProperties, PropertyTreePrinter<TransformPaintPropertyNode>& printer)
     {
         if (const TransformPaintPropertyNode* paintOffsetTranslation = paintProperties.paintOffsetTranslation())
-            printer.addPropertyNode(paintOffsetTranslation, "PaintOffsetTranslation");
+            printer.addPropertyNode(paintOffsetTranslation, "PaintOffsetTranslation (" + object.debugName() + ")");
         if (const TransformPaintPropertyNode* transform = paintProperties.transform())
-            printer.addPropertyNode(transform, "Transform");
+            printer.addPropertyNode(transform, "Transform (" + object.debugName() + ")");
         if (const TransformPaintPropertyNode* perspective = paintProperties.perspective())
-            printer.addPropertyNode(perspective, "Perspective");
+            printer.addPropertyNode(perspective, "Perspective (" + object.debugName() + ")");
         if (const TransformPaintPropertyNode* svgLocalToBorderBoxTransform = paintProperties.svgLocalToBorderBoxTransform())
-            printer.addPropertyNode(svgLocalToBorderBoxTransform, "SvgLocalToBorderBoxTransform");
+            printer.addPropertyNode(svgLocalToBorderBoxTransform, "SvgLocalToBorderBoxTransform (" + object.debugName() + ")");
         if (const TransformPaintPropertyNode* scrollTranslation = paintProperties.scrollTranslation())
-            printer.addPropertyNode(scrollTranslation, "ScrollTranslation");
+            printer.addPropertyNode(scrollTranslation, "ScrollTranslation (" + object.debugName() + ")");
         if (const TransformPaintPropertyNode* scrollbarPaintOffset = paintProperties.scrollbarPaintOffset())
-            printer.addPropertyNode(scrollbarPaintOffset, "ScrollbarPaintOffset");
+            printer.addPropertyNode(scrollbarPaintOffset, "ScrollbarPaintOffset (" + object.debugName() + ")");
     }
 
     static void printNodeAsString(const TransformPaintPropertyNode* node, StringBuilder& stringBuilder)
@@ -135,17 +135,17 @@ public:
     static void addFrameViewProperties(const FrameView& frameView, PropertyTreePrinter<ClipPaintPropertyNode>& printer)
     {
         if (const ClipPaintPropertyNode* contentClip = frameView.contentClip())
-            printer.addPropertyNode(contentClip, "ContentClip");
+            printer.addPropertyNode(contentClip, "ContentClip (FrameView)");
     }
 
-    static void addObjectPaintProperties(const ObjectPaintProperties& paintProperties, PropertyTreePrinter<ClipPaintPropertyNode>& printer)
+    static void addObjectPaintProperties(const LayoutObject& object, const ObjectPaintProperties& paintProperties, PropertyTreePrinter<ClipPaintPropertyNode>& printer)
     {
         if (const ClipPaintPropertyNode* cssClip = paintProperties.cssClip())
-            printer.addPropertyNode(cssClip, "CssClip");
+            printer.addPropertyNode(cssClip, "CssClip (" + object.debugName() + ")");
         if (const ClipPaintPropertyNode* cssClipFixedPosition = paintProperties.cssClipFixedPosition())
-            printer.addPropertyNode(cssClipFixedPosition, "CssClipFixedPosition");
+            printer.addPropertyNode(cssClipFixedPosition, "CssClipFixedPosition (" + object.debugName() + ")");
         if (const ClipPaintPropertyNode* overflowClip = paintProperties.overflowClip())
-            printer.addPropertyNode(overflowClip, "OverflowClip");
+            printer.addPropertyNode(overflowClip, "OverflowClip (" + object.debugName() + ")");
     }
 
     static void printNodeAsString(const ClipPaintPropertyNode* node, StringBuilder& stringBuilder)
@@ -165,10 +165,10 @@ public:
         // FrameView does not create any effect nodes.
     }
 
-    static void addObjectPaintProperties(const ObjectPaintProperties& paintProperties, PropertyTreePrinter<EffectPaintPropertyNode>& printer)
+    static void addObjectPaintProperties(const LayoutObject& object, const ObjectPaintProperties& paintProperties, PropertyTreePrinter<EffectPaintPropertyNode>& printer)
     {
         if (const EffectPaintPropertyNode* effect = paintProperties.effect())
-            printer.addPropertyNode(effect, "Effect");
+            printer.addPropertyNode(effect, "Effect (" + object.debugName() + ")");
     }
 
     static void printNodeAsString(const EffectPaintPropertyNode* node, StringBuilder& stringBuilder)

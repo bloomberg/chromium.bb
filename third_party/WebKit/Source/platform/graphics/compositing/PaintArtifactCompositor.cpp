@@ -19,6 +19,7 @@
 #include "platform/graphics/paint/DrawingDisplayItem.h"
 #include "platform/graphics/paint/ForeignLayerDisplayItem.h"
 #include "platform/graphics/paint/PaintArtifact.h"
+#include "platform/graphics/paint/PropertyTreeState.h"
 #include "platform/graphics/paint/TransformPaintPropertyNode.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebCompositorSupport.h"
@@ -123,42 +124,6 @@ static gfx::Transform transformToTransformSpace(const TransformPaintPropertyNode
     return gfx::Transform(TransformationMatrix::toSkMatrix44(matrix));
 }
 
-unsigned clipNodeDepth(const ClipPaintPropertyNode* node)
-{
-    unsigned depth = 0;
-    while (node) {
-        depth++;
-        node = node->parent();
-    }
-    return depth;
-}
-
-const ClipPaintPropertyNode* nearestCommonAncestor(const ClipPaintPropertyNode* a, const ClipPaintPropertyNode* b)
-{
-    // Measure both depths.
-    unsigned depthA = clipNodeDepth(a);
-    unsigned depthB = clipNodeDepth(b);
-
-    // Make it so depthA >= depthB.
-    if (depthA < depthB) {
-        std::swap(a, b);
-        std::swap(depthA, depthB);
-    }
-
-    // Make it so depthA == depthB.
-    while (depthA > depthB) {
-        a = a->parent();
-        depthA--;
-    }
-
-    // Walk up until we find the ancestor.
-    while (a != b) {
-        a = a->parent();
-        b = b->parent();
-    }
-    return a;
-}
-
 const TransformPaintPropertyNode* localTransformSpace(const ClipPaintPropertyNode* clip)
 {
     return clip ? clip->localTransformSpace() : nullptr;
@@ -205,7 +170,7 @@ public:
     cc::Layer* switchToNewClipLayer(const ClipPaintPropertyNode* clip)
     {
         // Walk up to the nearest common ancestor.
-        const auto* ancestor = nearestCommonAncestor(clip, m_clipLayers.last().first);
+        const auto* ancestor = propertyTreeNearestCommonAncestor<ClipPaintPropertyNode>(clip, m_clipLayers.last().first);
         while (m_clipLayers.last().first != ancestor)
             m_clipLayers.removeLast();
 

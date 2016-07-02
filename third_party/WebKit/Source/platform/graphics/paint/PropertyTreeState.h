@@ -17,16 +17,56 @@ class EffectPaintPropertyNode;
 // Represents the combination of transform, clip and effect nodes for a particular coordinate space.
 // See GeometryMapper.
 struct PropertyTreeState {
+    PropertyTreeState() : PropertyTreeState(nullptr, nullptr, nullptr) {}
+
     PropertyTreeState(
         TransformPaintPropertyNode* transform,
         ClipPaintPropertyNode* clip,
         EffectPaintPropertyNode* effect)
     : transform(transform), clip(clip), effect(effect) {}
 
-    TransformPaintPropertyNode* transform;
-    ClipPaintPropertyNode* clip;
-    EffectPaintPropertyNode* effect;
+    RefPtr<TransformPaintPropertyNode> transform;
+    RefPtr<ClipPaintPropertyNode> clip;
+    RefPtr<EffectPaintPropertyNode> effect;
 };
+
+template <class A>
+unsigned propertyTreeNodeDepth(const A* node)
+{
+    unsigned depth = 0;
+    while (node) {
+        depth++;
+        node = node->parent();
+    }
+    return depth;
+}
+
+template <class A>
+const A* propertyTreeNearestCommonAncestor(const A* a, const A* b)
+{
+    // Measure both depths.
+    unsigned depthA = propertyTreeNodeDepth<A>(a);
+    unsigned depthB = propertyTreeNodeDepth<A>(b);
+
+    // Make it so depthA >= depthB.
+    if (depthA < depthB) {
+        std::swap(a, b);
+        std::swap(depthA, depthB);
+    }
+
+    // Make it so depthA == depthB.
+    while (depthA > depthB) {
+        a = a->parent();
+        depthA--;
+    }
+
+    // Walk up until we find the ancestor.
+    while (a != b) {
+        a = a->parent();
+        b = b->parent();
+    }
+    return a;
+}
 
 } // namespace blink
 

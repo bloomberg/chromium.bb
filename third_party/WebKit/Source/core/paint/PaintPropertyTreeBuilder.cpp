@@ -168,17 +168,14 @@ void PaintPropertyTreeBuilder::updateCssClip(const LayoutObject& object, PaintPr
 
 void PaintPropertyTreeBuilder::updateLocalBorderBoxContext(const LayoutObject& object, const PaintPropertyTreeBuilderContext& context)
 {
-    // Note: Currently only layer painter makes use of the pre-computed context.
-    // This condition may be loosened with no adverse effects beside memory use.
-    if (!object.hasLayer())
+    // Avoid adding an ObjectPaintProperties for non-boxes to save memory, since we don't need them at the moment.
+    if (!object.isBox() && !object.hasLayer())
         return;
 
     std::unique_ptr<ObjectPaintProperties::LocalBorderBoxProperties> borderBoxContext =
         wrapUnique(new ObjectPaintProperties::LocalBorderBoxProperties);
     borderBoxContext->paintOffset = context.paintOffset;
-    borderBoxContext->transform = context.currentTransform;
-    borderBoxContext->clip = context.currentClip;
-    borderBoxContext->effect = context.currentEffect;
+    borderBoxContext->propertyTreeState = PropertyTreeState(context.currentTransform, context.currentClip, context.currentEffect);
     object.getMutableForPainting().ensureObjectPaintProperties().setLocalBorderBoxProperties(std::move(borderBoxContext));
 }
 
@@ -390,10 +387,10 @@ static void deriveBorderBoxFromContainerContext(const LayoutObject& object, Pain
 
 void PaintPropertyTreeBuilder::buildTreeNodes(const LayoutObject& object, PaintPropertyTreeBuilderContext& context)
 {
+    object.getMutableForPainting().clearObjectPaintProperties();
+
     if (!object.isBoxModelObject() && !object.isSVG())
         return;
-
-    object.getMutableForPainting().clearObjectPaintProperties();
 
     deriveBorderBoxFromContainerContext(object, context);
 

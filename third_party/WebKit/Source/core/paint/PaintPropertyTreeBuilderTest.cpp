@@ -6,6 +6,7 @@
 #include "core/layout/LayoutTreeAsText.h"
 #include "core/layout/api/LayoutViewItem.h"
 #include "core/paint/ObjectPaintProperties.h"
+#include "platform/graphics/paint/GeometryMapper.h"
 #include "platform/graphics/paint/TransformPaintPropertyNode.h"
 #include "platform/testing/UnitTestHelpers.h"
 #include "platform/text/TextStream.h"
@@ -51,6 +52,23 @@ private:
     bool m_originalSlimmingPaintV2Enabled;
 };
 
+#define CHECK_VISUAL_RECT(sourceLayoutObject, ancestorLayoutObject) \
+do { \
+    GeometryMapper geometryMapper; \
+    LayoutRect source(sourceLayoutObject->localOverflowRectForPaintInvalidation()); \
+    source.moveBy(sourceLayoutObject->objectPaintProperties()->localBorderBoxProperties()->paintOffset); \
+    bool success = false; \
+    FloatRect actual = geometryMapper.mapToVisualRectInDestinationSpace( \
+        FloatRect(source), \
+        sourceLayoutObject->objectPaintProperties()->localBorderBoxProperties()->propertyTreeState, \
+        ancestorLayoutObject->objectPaintProperties()->localBorderBoxProperties()->propertyTreeState, success); \
+    EXPECT_TRUE(success); \
+\
+    LayoutRect expected = sourceLayoutObject->localOverflowRectForPaintInvalidation(); \
+    sourceLayoutObject->mapToVisualRectInAncestorSpace(ancestorLayoutObject, expected); \
+    EXPECT_EQ(expected, LayoutRect(actual)); \
+} while (0);
+
 TEST_F(PaintPropertyTreeBuilderTest, FixedPosition)
 {
     loadTestData("fixed-position.html");
@@ -79,6 +97,8 @@ TEST_F(PaintPropertyTreeBuilderTest, FixedPosition)
     EXPECT_EQ(target2Properties->paintOffsetTranslation(), target2Properties->overflowClip()->localTransformSpace());
     EXPECT_EQ(FloatRoundedRect(0, 0, 100, 100), target2Properties->overflowClip()->clipRect());
     EXPECT_EQ(scrollerProperties->overflowClip(), target2Properties->overflowClip()->parent());
+
+    CHECK_VISUAL_RECT(target1->layoutObject(), frameView->layoutView());
 }
 
 TEST_F(PaintPropertyTreeBuilderTest, PositionAndScroll)
@@ -216,7 +236,7 @@ TEST_F(PaintPropertyTreeBuilderTest, NestedOpacityEffect)
 
     LayoutObject& nodeWithoutOpacity = *document().getElementById("nodeWithoutOpacity")->layoutObject();
     ObjectPaintProperties* nodeWithoutOpacityProperties = nodeWithoutOpacity.objectPaintProperties();
-    EXPECT_EQ(nullptr, nodeWithoutOpacityProperties);
+    EXPECT_NE(nullptr, nodeWithoutOpacityProperties);
 
     LayoutObject& childWithOpacity = *document().getElementById("childWithOpacity")->layoutObject();
     ObjectPaintProperties* childWithOpacityProperties = childWithOpacity.objectPaintProperties();
@@ -225,7 +245,7 @@ TEST_F(PaintPropertyTreeBuilderTest, NestedOpacityEffect)
     EXPECT_NE(nullptr, childWithOpacityProperties->effect()->parent());
 
     LayoutObject& grandChildWithoutOpacity = *document().getElementById("grandChildWithoutOpacity")->layoutObject();
-    EXPECT_EQ(nullptr, grandChildWithoutOpacity.objectPaintProperties());
+    EXPECT_NE(nullptr, grandChildWithoutOpacity.objectPaintProperties());
 
     LayoutObject& greatGrandChildWithOpacity = *document().getElementById("greatGrandChildWithOpacity")->layoutObject();
     ObjectPaintProperties* greatGrandChildWithOpacityProperties = greatGrandChildWithOpacity.objectPaintProperties();
@@ -733,9 +753,9 @@ TEST_F(PaintPropertyTreeBuilderTest, TreeContextClipByNonStackingContext)
     LayoutObject& child = *document().getElementById("child")->layoutObject();
     ObjectPaintProperties* childProperties = child.objectPaintProperties();
 
-    EXPECT_EQ(scrollerProperties->overflowClip(), childProperties->localBorderBoxProperties()->clip);
-    EXPECT_EQ(scrollerProperties->scrollTranslation(), childProperties->localBorderBoxProperties()->transform);
-    EXPECT_NE(nullptr, childProperties->localBorderBoxProperties()->effect);
+    EXPECT_EQ(scrollerProperties->overflowClip(), childProperties->localBorderBoxProperties()->propertyTreeState.clip);
+    EXPECT_EQ(scrollerProperties->scrollTranslation(), childProperties->localBorderBoxProperties()->propertyTreeState.transform);
+    EXPECT_NE(nullptr, childProperties->localBorderBoxProperties()->propertyTreeState.effect);
 }
 
 TEST_F(PaintPropertyTreeBuilderTest, TreeContextUnclipFromParentStackingContext)
@@ -758,9 +778,9 @@ TEST_F(PaintPropertyTreeBuilderTest, TreeContextUnclipFromParentStackingContext)
     LayoutObject& child = *document().getElementById("child")->layoutObject();
     ObjectPaintProperties* childProperties = child.objectPaintProperties();
 
-    EXPECT_EQ(frameView->contentClip(), childProperties->localBorderBoxProperties()->clip);
-    EXPECT_EQ(frameView->scrollTranslation(), childProperties->localBorderBoxProperties()->transform);
-    EXPECT_EQ(scrollerProperties->effect(), childProperties->localBorderBoxProperties()->effect);
+    EXPECT_EQ(frameView->contentClip(), childProperties->localBorderBoxProperties()->propertyTreeState.clip);
+    EXPECT_EQ(frameView->scrollTranslation(), childProperties->localBorderBoxProperties()->propertyTreeState.transform);
+    EXPECT_EQ(scrollerProperties->effect(), childProperties->localBorderBoxProperties()->propertyTreeState.effect);
 }
 
 TEST_F(PaintPropertyTreeBuilderTest, TableCellLayoutLocation)
@@ -800,7 +820,7 @@ TEST_F(PaintPropertyTreeBuilderTest, TableCellLayoutLocation)
     ObjectPaintProperties* targetProperties = target.objectPaintProperties();
 
     EXPECT_EQ(LayoutPoint(170, 170), targetProperties->localBorderBoxProperties()->paintOffset);
-    EXPECT_EQ(frameView->scrollTranslation(), targetProperties->localBorderBoxProperties()->transform);
+    EXPECT_EQ(frameView->scrollTranslation(), targetProperties->localBorderBoxProperties()->propertyTreeState.transform);
 }
 
 TEST_F(PaintPropertyTreeBuilderTest, CSSClipFixedPositionDescendant)
@@ -839,9 +859,9 @@ TEST_F(PaintPropertyTreeBuilderTest, CSSClipFixedPositionDescendant)
 
     LayoutObject& fixed = *document().getElementById("fixed")->layoutObject();
     ObjectPaintProperties* fixedProperties = fixed.objectPaintProperties();
-    EXPECT_EQ(clipProperties->cssClip(), fixedProperties->localBorderBoxProperties()->clip);
-    EXPECT_EQ(frameView->preTranslation(), fixedProperties->localBorderBoxProperties()->transform->parent());
-    EXPECT_EQ(TransformationMatrix().translate(654, 321), fixedProperties->localBorderBoxProperties()->transform->matrix());
+    EXPECT_EQ(clipProperties->cssClip(), fixedProperties->localBorderBoxProperties()->propertyTreeState.clip);
+    EXPECT_EQ(frameView->preTranslation(), fixedProperties->localBorderBoxProperties()->propertyTreeState.transform->parent());
+    EXPECT_EQ(TransformationMatrix().translate(654, 321), fixedProperties->localBorderBoxProperties()->propertyTreeState.transform->matrix());
     EXPECT_EQ(LayoutPoint(), fixedProperties->localBorderBoxProperties()->paintOffset);
 }
 
@@ -898,9 +918,9 @@ TEST_F(PaintPropertyTreeBuilderTest, CSSClipFixedPositionDescendantNonShared)
 
     LayoutObject& fixed = *document().getElementById("fixed")->layoutObject();
     ObjectPaintProperties* fixedProperties = fixed.objectPaintProperties();
-    EXPECT_EQ(clipProperties->cssClipFixedPosition(), fixedProperties->localBorderBoxProperties()->clip);
-    EXPECT_EQ(frameView->preTranslation(), fixedProperties->localBorderBoxProperties()->transform->parent());
-    EXPECT_EQ(TransformationMatrix().translate(654, 321), fixedProperties->localBorderBoxProperties()->transform->matrix());
+    EXPECT_EQ(clipProperties->cssClipFixedPosition(), fixedProperties->localBorderBoxProperties()->propertyTreeState.clip);
+    EXPECT_EQ(frameView->preTranslation(), fixedProperties->localBorderBoxProperties()->propertyTreeState.transform->parent());
+    EXPECT_EQ(TransformationMatrix().translate(654, 321), fixedProperties->localBorderBoxProperties()->propertyTreeState.transform->matrix());
     EXPECT_EQ(LayoutPoint(), fixedProperties->localBorderBoxProperties()->paintOffset);
 }
 

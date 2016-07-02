@@ -1222,6 +1222,7 @@
       'graphics/paint/PaintArtifactToSkCanvasTest.cpp',
       'graphics/paint/PaintChunkerTest.cpp',
       'graphics/paint/PaintControllerTest.cpp',
+      'graphics/paint/PropertyTreeStateTest.cpp',
       'image-decoders/FastSharedBufferReaderTest.cpp',
       'image-decoders/ImageDecoderTest.cpp',
       'image-decoders/ImageDecoderTestHelpers.cpp',

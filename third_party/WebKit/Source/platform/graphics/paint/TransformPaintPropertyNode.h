@@ -31,9 +31,10 @@ public:
 
     // Parent transform that this transform is relative to, or nullptr if this
     // is the root transform.
-    const TransformPaintPropertyNode* parent() const { return m_parent.get(); }
+    TransformPaintPropertyNode* parent() const { return m_parent.get(); }
 
 private:
+
     TransformPaintPropertyNode(const TransformationMatrix& matrix, const FloatPoint3D& origin, PassRefPtr<TransformPaintPropertyNode> parent)
         : m_matrix(matrix), m_origin(origin), m_parent(parent) { }
 

@@ -5,10 +5,12 @@
 #ifndef ObjectPaintProperties_h
 #define ObjectPaintProperties_h
 
+#include "core/CoreExport.h"
 #include "platform/geometry/LayoutPoint.h"
 #include "platform/graphics/paint/ClipPaintPropertyNode.h"
 #include "platform/graphics/paint/EffectPaintPropertyNode.h"
 #include "platform/graphics/paint/PaintChunkProperties.h"
+#include "platform/graphics/paint/PropertyTreeState.h"
 #include "platform/graphics/paint/TransformPaintPropertyNode.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/PtrUtil.h"
@@ -22,7 +24,7 @@ namespace blink {
 // 1. The set of property nodes created locally by this LayoutObject.
 // 2. [Optional] A suite of property nodes (PaintChunkProperties) and paint offset
 //    that can be used to paint the border box of this LayoutObject.
-class ObjectPaintProperties {
+class CORE_EXPORT ObjectPaintProperties {
     WTF_MAKE_NONCOPYABLE(ObjectPaintProperties);
     USING_FAST_MALLOC(ObjectPaintProperties);
 public:
@@ -33,7 +35,7 @@ public:
         return wrapUnique(new ObjectPaintProperties());
     }
 
-    // The hierarchy of transform subtree created by a LayoutObject.
+    // The hierarchy of the transform subtree created by a LayoutObject is as follows:
     // [ paintOffsetTranslation ]           Normally paint offset is accumulated without creating a node
     // |                                    until we see, for example, transform or position:fixed.
     // +---[ transform ]                    The space created by CSS transform.
@@ -55,6 +57,10 @@ public:
 
     EffectPaintPropertyNode* effect() const { return m_effect.get(); }
 
+    // The hierarchy of the clip subtree created by a LayoutObject is as follows:
+    // [ css clip ]
+    // |
+    // +--- [ overflow clip ]
     ClipPaintPropertyNode* cssClip() const { return m_cssClip.get(); }
     ClipPaintPropertyNode* cssClipFixedPosition() const { return m_cssClipFixedPosition.get(); }
     ClipPaintPropertyNode* overflowClip() const { return m_overflowClip.get(); }
@@ -68,9 +74,7 @@ public:
     // at the right painting step.
     struct LocalBorderBoxProperties {
         LayoutPoint paintOffset;
-        RefPtr<TransformPaintPropertyNode> transform;
-        RefPtr<ClipPaintPropertyNode> clip;
-        RefPtr<EffectPaintPropertyNode> effect;
+        PropertyTreeState propertyTreeState;
     };
     LocalBorderBoxProperties* localBorderBoxProperties() const { return m_localBorderBoxProperties.get(); }
 

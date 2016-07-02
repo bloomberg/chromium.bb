@@ -374,9 +374,9 @@ PaintLayerPainter::PaintResult PaintLayerPainter::paintLayerContents(GraphicsCon
             ASSERT(objectPaintProperties && objectPaintProperties->localBorderBoxProperties());
             PaintChunkProperties properties(context.getPaintController().currentPaintChunkProperties());
             auto& localBorderBoxProperties = *objectPaintProperties->localBorderBoxProperties();
-            properties.transform = localBorderBoxProperties.transform;
-            properties.clip = localBorderBoxProperties.clip;
-            properties.effect = localBorderBoxProperties.effect;
+            properties.transform = localBorderBoxProperties.propertyTreeState.transform;
+            properties.clip = localBorderBoxProperties.propertyTreeState.clip;
+            properties.effect = localBorderBoxProperties.propertyTreeState.effect;
             properties.backfaceHidden = m_paintLayer.layoutObject()->hasHiddenBackface();
             scopedPaintChunkProperties.emplace(context.getPaintController(), properties);
         }

@@ -27,9 +27,9 @@ public:
         return state;
     }
 
-    PrecomputedDataForAncestor& GetPrecomputedDataForAncestor(const PropertyTreeState& propertyTreeState)
+    PrecomputedDataForAncestor& getPrecomputedDataForAncestor(const PropertyTreeState& propertyTreeState)
     {
-        return geometryMapper->GetPrecomputedDataForAncestor(propertyTreeState);
+        return geometryMapper->getPrecomputedDataForAncestor(propertyTreeState);
     }
 
 private:
@@ -60,12 +60,15 @@ do { \
 
 #define CHECK_MAPPINGS(inputRect, expectedVisualRect, expectedTransformedRect, expectedTransformToAncestor, expectedClipInAncestorSpace, localPropertyTreeState, ancestorPropertyTreeState) \
 do { \
+    bool success = false; \
     EXPECT_RECT_EQ(expectedVisualRect, \
-        geometryMapper->LocalToVisualRectInAncestorSpace(inputRect, localPropertyTreeState, ancestorPropertyTreeState)); \
+        geometryMapper->localToVisualRectInAncestorSpace(inputRect, localPropertyTreeState, ancestorPropertyTreeState, success)); \
+    EXPECT_TRUE(success); \
     EXPECT_RECT_EQ(expectedTransformedRect, \
-        geometryMapper->LocalToAncestorRect(inputRect, localPropertyTreeState, ancestorPropertyTreeState)); \
-    EXPECT_EQ(expectedTransformToAncestor, GetPrecomputedDataForAncestor(ancestorPropertyTreeState).toAncestorTransforms.get(localPropertyTreeState.transform)); \
-    EXPECT_EQ(expectedClipInAncestorSpace, GetPrecomputedDataForAncestor(ancestorPropertyTreeState).toAncestorClipRects.get(localPropertyTreeState.clip)); \
+        geometryMapper->localToAncestorRect(inputRect, localPropertyTreeState, ancestorPropertyTreeState, success)); \
+    EXPECT_TRUE(success); \
+    EXPECT_EQ(expectedTransformToAncestor, getPrecomputedDataForAncestor(ancestorPropertyTreeState).toAncestorTransforms.get(localPropertyTreeState.transform.get())); \
+    EXPECT_EQ(expectedClipInAncestorSpace, getPrecomputedDataForAncestor(ancestorPropertyTreeState).toAncestorClipRects.get(localPropertyTreeState.clip.get())); \
 } while (false)
 
 TEST_F(GeometryMapperTest, Root)
@@ -101,7 +104,7 @@ TEST_F(GeometryMapperTest, TranslationTransform)
 
     bool success = false;
     EXPECT_RECT_EQ(input,
-        geometryMapper->AncestorToLocalRect(output, localState, rootPropertyTreeState(), &success));
+        geometryMapper->ancestorToLocalRect(output, localState, rootPropertyTreeState(), success));
     EXPECT_TRUE(success);
 }
 
@@ -156,7 +159,7 @@ TEST_F(GeometryMapperTest, NestedTransforms)
     CHECK_MAPPINGS(input, output, output, final, rootClipNode->clipRect().rect(), localState, rootPropertyTreeState());
 
     // Check the cached matrix for the intermediate transform.
-    EXPECT_EQ(rotateTransform, GetPrecomputedDataForAncestor(rootPropertyTreeState()).toAncestorTransforms.get(transform1.get()));
+    EXPECT_EQ(rotateTransform, getPrecomputedDataForAncestor(rootPropertyTreeState()).toAncestorTransforms.get(transform1.get()));
 }
 
 TEST_F(GeometryMapperTest, NestedTransformsIntermediateDestination)
@@ -307,6 +310,40 @@ TEST_F(GeometryMapperTest, TwoClipsWithTransformBetween)
             mappedClip, // Clip rect in ancestor space
             localState, rootPropertyTreeState());
     }
+}
+
+TEST_F(GeometryMapperTest, SiblingTransforms)
+{
+    // These transforms are siblings. Thus mapping from one to the other requires going through the root.
+    TransformationMatrix rotateTransform1;
+    rotateTransform1.rotate(45);
+    RefPtr<TransformPaintPropertyNode> transform1 = TransformPaintPropertyNode::create(rotateTransform1, FloatPoint3D(), rootPropertyTreeState().transform);
+
+    TransformationMatrix rotateTransform2;
+    rotateTransform2.rotate(-45);
+    RefPtr<TransformPaintPropertyNode> transform2 = TransformPaintPropertyNode::create(rotateTransform2, FloatPoint3D(), rootPropertyTreeState().transform);
+
+    PropertyTreeState transform1State = rootPropertyTreeState();
+    transform1State.transform = transform1;
+    PropertyTreeState transform2State = rootPropertyTreeState();
+    transform2State.transform = transform2;
+
+    bool success;
+    FloatRect input(0, 0, 100, 100);
+    FloatRect result = geometryMapper->localToVisualRectInAncestorSpace(input, transform1State, transform2State, success);
+    // Fails, because the transform2state is not an ancestor of transform1State.
+    EXPECT_FALSE(success);
+    EXPECT_RECT_EQ(input, result);
+
+    result = geometryMapper->localToVisualRectInAncestorSpace(input, transform2State, transform1State, success);
+    // Fails, because the transform1state is not an ancestor of transform2State.
+    EXPECT_FALSE(success);
+    EXPECT_RECT_EQ(input, result);
+
+    FloatRect expected = rotateTransform2.inverse().mapRect(rotateTransform1.mapRect(input));
+    result = geometryMapper->mapToVisualRectInDestinationSpace(input, transform1State, transform2State, success);
+    EXPECT_TRUE(success);
+    EXPECT_RECT_EQ(expected, result);
 }
 
 } // namespace blink
