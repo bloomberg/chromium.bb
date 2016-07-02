@@ -13,6 +13,7 @@
 #include "components/arc/intent_helper/arc_intent_helper_bridge.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_handle.h"
+#include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 
 namespace arc {
 
@@ -63,6 +64,9 @@ content::NavigationThrottle::ThrottleCheckResult
 ArcNavigationThrottle::WillStartRequest() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (!navigation_handle()->HasUserGesture())
+    return content::NavigationThrottle::PROCEED;
+
+  if (!ShouldOverrideUrlLoading(navigation_handle()))
     return content::NavigationThrottle::PROCEED;
 
   const GURL& url = navigation_handle()->GetURL();
@@ -205,6 +209,17 @@ void ArcNavigationThrottle::OnDisambigDialogClosed(
   UMA_HISTOGRAM_ENUMERATION("Arc.IntentHandlerAction",
                             static_cast<int>(close_reason),
                             static_cast<int>(CloseReason::SIZE));
+}
+
+bool ArcNavigationThrottle::ShouldOverrideUrlLoading(
+    content::NavigationHandle* navigation_handle) {
+  GURL previous_url = navigation_handle->GetReferrer().url;
+  GURL current_url = navigation_handle->GetURL();
+  if (net::registry_controlled_domains::SameDomainOrHost(
+          current_url, previous_url,
+          net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES))
+    return false;
+  return true;
 }
 
 }  // namespace arc
