@@ -16,6 +16,7 @@
 #include "base/memory/linked_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/threading/thread_checker.h"
+#include "extensions/common/extension_id.h"
 #include "extensions/common/extension_resource.h"
 #include "extensions/common/install_warning.h"
 #include "extensions/common/manifest.h"
@@ -35,13 +36,6 @@ namespace extensions {
 class PermissionSet;
 class PermissionsData;
 class PermissionsParser;
-
-// Uniquely identifies an Extension, using 32 characters from the alphabet
-// 'a'-'p'.  An empty string represents "no extension".
-//
-// Note: If this gets used heavily in files that don't otherwise need to include
-// extension.h, we should pull it into a dedicated header.
-typedef std::string ExtensionId;
 
 // Represents a Chrome extension.
 // Once created, an Extension object is immutable, with the exception of its

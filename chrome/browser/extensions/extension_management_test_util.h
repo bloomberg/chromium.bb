@@ -12,7 +12,7 @@
 #include "base/values.h"
 #include "chrome/browser/extensions/extension_management_constants.h"
 #include "extensions/browser/pref_names.h"
-#include "extensions/common/extension.h"
+#include "extensions/common/extension_id.h"
 
 namespace policy {
 class MockConfigurationPolicyProvider;

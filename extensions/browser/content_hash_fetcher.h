@@ -5,6 +5,7 @@
 #ifndef EXTENSIONS_BROWSER_CONTENT_HASH_FETCHER_H_
 #define EXTENSIONS_BROWSER_CONTENT_HASH_FETCHER_H_
 
+#include <map>
 #include <set>
 #include <string>
 
@@ -12,14 +13,14 @@
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "extensions/common/extension.h"
+#include "extensions/common/extension_id.h"
 
 namespace content {
 class BrowserContext;
 }
 
 namespace extensions {
-
+class Extension;
 class ExtensionRegistry;
 class ContentHashFetcherJob;
 class ContentVerifierDelegate;

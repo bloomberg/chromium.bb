@@ -24,7 +24,7 @@
 #include "components/prefs/pref_change_registrar.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
-#include "extensions/common/extension.h"
+#include "extensions/common/extension_id.h"
 
 class BackgroundTrigger;
 class Browser;
@@ -35,6 +35,10 @@ class StatusTray;
 
 namespace base {
 class CommandLine;
+}
+
+namespace extensions {
+class Extension;
 }
 
 typedef std::vector<base::Closure> CommandIdHandlerVector;

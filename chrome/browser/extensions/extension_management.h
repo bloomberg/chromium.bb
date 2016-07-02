@@ -20,7 +20,7 @@
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "extensions/browser/management_policy.h"
-#include "extensions/common/extension.h"
+#include "extensions/common/extension_id.h"
 #include "extensions/common/manifest.h"
 
 class GURL;
@@ -40,6 +40,7 @@ struct GlobalSettings;
 }  // namespace internal
 
 class APIPermissionSet;
+class Extension;
 class PermissionSet;
 
 // Tracks the management policies that affect extensions and provides interfaces

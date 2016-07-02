@@ -16,7 +16,7 @@
 #include "base/timer/timer.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/search/launcher_search/launcher_search_result.h"
-#include "extensions/common/extension.h"
+#include "extensions/common/extension_id.h"
 #include "ui/app_list/search_provider.h"
 
 namespace app_list {

@@ -54,6 +54,7 @@
       'common/event_matcher.h',
       'common/extension.cc',
       'common/extension.h',
+      'common/extension_id.h',
       'common/extension_api.cc',
       'common/extension_api.h',
       'common/extension_icon_set.cc',

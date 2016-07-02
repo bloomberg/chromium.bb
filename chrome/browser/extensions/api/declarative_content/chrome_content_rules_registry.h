@@ -23,7 +23,7 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "extensions/browser/api/declarative_content/content_rules_registry.h"
-#include "extensions/common/extension.h"
+#include "extensions/common/extension_id.h"
 
 namespace content {
 class BrowserContext;

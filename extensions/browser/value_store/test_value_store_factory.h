@@ -9,8 +9,9 @@
 #include <memory>
 #include <set>
 
+#include "base/files/file_path.h"
 #include "extensions/browser/value_store/value_store_factory.h"
-#include "extensions/common/extension.h"
+#include "extensions/common/extension_id.h"
 
 class ValueStore;
 

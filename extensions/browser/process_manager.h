@@ -22,7 +22,7 @@
 #include "content/public/browser/notification_registrar.h"
 #include "extensions/browser/event_page_tracker.h"
 #include "extensions/browser/extension_registry_observer.h"
-#include "extensions/common/extension.h"
+#include "extensions/common/extension_id.h"
 #include "extensions/common/view_type.h"
 
 class GURL;

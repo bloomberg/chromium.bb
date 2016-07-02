@@ -12,7 +12,6 @@
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/value_store/leveldb_value_store.h"
 #include "extensions/common/constants.h"
-#include "extensions/common/extension.h"
 
 using base::AutoLock;
 using content::BrowserThread;

@@ -11,6 +11,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/value_store/value_store_factory.h"
 #include "extensions/common/api/storage.h"
+#include "extensions/common/extension.h"
 
 using content::BrowserThread;
 

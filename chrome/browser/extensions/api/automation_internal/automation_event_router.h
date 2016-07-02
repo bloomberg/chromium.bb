@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_API_AUTOMATION_INTERNAL_AUTOMATION_EVENT_ROUTER_H_
 #define CHROME_BROWSER_EXTENSIONS_API_AUTOMATION_INTERNAL_AUTOMATION_EVENT_ROUTER_H_
 
+#include <set>
 #include <vector>
 
 #include "base/macros.h"
@@ -13,7 +14,7 @@
 #include "content/public/browser/ax_event_notification_details.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
-#include "extensions/common/extension.h"
+#include "extensions/common/extension_id.h"
 
 class Profile;
 
@@ -24,8 +25,8 @@ class BrowserContext;
 struct ExtensionMsg_AccessibilityEventParams;
 
 namespace extensions {
-
 struct AutomationListener;
+class Extension;
 
 class AutomationEventRouter : public content::NotificationObserver {
  public:
