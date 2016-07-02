@@ -471,11 +471,8 @@ config("compiler") {
       ldflags += [ "-Wl,-plugin-opt,-function-sections" ]
     }
 
-    # TODO(pcc): Make these flags work correctly with CFI.
-    if (!is_cfi) {
-      cflags += [ "-fwhole-program-vtables" ]
-      ldflags += [ "-fwhole-program-vtables" ]
-    }
+    cflags += [ "-fwhole-program-vtables" ]
+    ldflags += [ "-fwhole-program-vtables" ]
   }
 
   # Pass the same C/C++ flags to the objective C/C++ compiler.

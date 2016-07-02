@@ -6085,6 +6085,12 @@
             'arflags': [
               '--plugin', '../../<(make_clang_dir)/lib/LLVMgold.so',
             ],
+            'cflags': [
+              '-fwhole-program-vtables',
+            ],
+            'ldflags': [
+              '-fwhole-program-vtables',
+            ],
           }],
         ],
         'msvs_settings': {
@@ -6270,21 +6276,6 @@
                 ],
               },
             },
-          }],
-        ],
-      },
-    }],
-    # TODO(pcc): Make these flags work correctly with CFI.
-    ['use_lto!=0 and cfi_vptr==0', {
-      'target_defaults': {
-        'target_conditions': [
-          ['_toolset=="target"', {
-            'cflags': [
-              '-fwhole-program-vtables',
-            ],
-            'ldflags': [
-              '-fwhole-program-vtables',
-            ],
           }],
         ],
       },
