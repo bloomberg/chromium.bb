@@ -797,7 +797,8 @@ void OmniboxEditModel::OpenMatch(AutocompleteMatch match,
     controller_->OnAutocompleteAccept(
         match.destination_url, disposition,
         ui::PageTransitionFromInt(
-            match.transition | ui::PAGE_TRANSITION_FROM_ADDRESS_BAR));
+            match.transition | ui::PAGE_TRANSITION_FROM_ADDRESS_BAR),
+        match.type);
     if (observer && observer->HasSeenPendingLoad())
       ignore_result(observer.release());  // The observer will delete itself.
   }

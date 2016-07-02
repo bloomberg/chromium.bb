@@ -56,7 +56,6 @@ void MaybeShowExtensionControlledHomeNotification(Browser* browser) {
 }
 
 void MaybeShowExtensionControlledSearchNotification(
-    Profile* profile,
     content::WebContents* web_contents,
     AutocompleteMatch::Type match_type) {
 #if !defined(OS_WIN) && !defined(OS_MACOSX)

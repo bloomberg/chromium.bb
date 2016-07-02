@@ -35,7 +35,8 @@ class ChromeOmniboxEditController : public OmniboxEditController {
   // OmniboxEditController:
   void OnAutocompleteAccept(const GURL& destination_url,
                             WindowOpenDisposition disposition,
-                            ui::PageTransition transition) override;
+                            ui::PageTransition transition,
+                            AutocompleteMatchType::Type type) override;
   void OnInputInProgress(bool in_progress) override;
 
   CommandUpdater* command_updater_;

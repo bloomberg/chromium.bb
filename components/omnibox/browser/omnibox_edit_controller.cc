@@ -7,7 +7,8 @@
 void OmniboxEditController::OnAutocompleteAccept(
     const GURL& destination_url,
     WindowOpenDisposition disposition,
-    ui::PageTransition transition) {
+    ui::PageTransition transition,
+    AutocompleteMatchType::Type type) {
   destination_url_ = destination_url;
   disposition_ = disposition;
   transition_ = transition;
