@@ -40,6 +40,9 @@ import java.util.Set;
 
 /**
  * A general-purpose dialog for presenting a list of things to pick from.
+ *
+ * The dialog is shown by the ItemChooserDialog constructor, and always calls
+ * ItemSelectedCallback.onItemSelected() as it's closing.
  */
 public class ItemChooserDialog {
     /**

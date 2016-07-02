@@ -95,6 +95,10 @@ class BluetoothTestAndroid : public BluetoothTestBase {
   void SimulateGattDescriptorWriteWillFailSynchronouslyOnce(
       BluetoothRemoteGattDescriptor* descriptor) override;
 
+  // Instruct the fake adapter to claim that location services are off for the
+  // device.
+  void SimulateLocationServicesOff();
+
   // Instruct the fake adapter to throw an IllegalStateException for
   // startScan and stopScan.
   void ForceIllegalStateException();

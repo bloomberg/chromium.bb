@@ -7,7 +7,9 @@ package org.chromium.chrome.browser;
 import android.Manifest;
 import android.app.Dialog;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.location.LocationManager;
 import android.test.MoreAsserts;
 import android.test.suitebuilder.annotation.SmallTest;
 import android.view.View;
@@ -41,6 +43,7 @@ public class BluetoothChooserDialogTest extends ChromeActivityTestCaseBase<Chrom
     static class BluetoothChooserDialogWithFakeNatives extends BluetoothChooserDialog {
         int mFinishedEventType = -1;
         String mFinishedDeviceId;
+        int mRestartSearchCount = 0;
 
         BluetoothChooserDialogWithFakeNatives(WindowAndroid windowAndroid, String origin,
                 int securityLevel, long nativeBluetoothChooserDialogPtr) {
@@ -57,7 +60,9 @@ public class BluetoothChooserDialogTest extends ChromeActivityTestCaseBase<Chrom
         }
 
         @Override
-        void nativeRestartSearch(long nativeBluetoothChooserAndroid) {}
+        void nativeRestartSearch(long nativeBluetoothChooserAndroid) {
+            mRestartSearchCount++;
+        }
 
         @Override
         void nativeShowBluetoothOverviewLink(long nativeBluetoothChooserAndroid) {}
@@ -156,13 +161,11 @@ public class BluetoothChooserDialogTest extends ChromeActivityTestCaseBase<Chrom
     }
 
     /**
-     * The messages include <link> ... </link> or <link1> ... </link1>, <link2> ... </link2>
-     * sections that are used to create clickable spans. For testing the messages, this function
-     * returns the raw string without the tags.
+     * The messages include <*link*> ... </*link*> sections that are used to create clickable spans.
+     * For testing the messages, this function returns the raw string without the tags.
      */
     private static String removeLinkTags(String message) {
-        return message.replaceAll("</?link1>", "").replaceAll(
-                "</?link2>", "").replaceAll("</?link>", "");
+        return message.replaceAll("</?[^>]*link[^>]*>", "");
     }
 
     @SmallTest
@@ -286,12 +289,71 @@ public class BluetoothChooserDialogTest extends ChromeActivityTestCaseBase<Chrom
             @Override
             public void run() {
                 permissionDelegate.mCallback.onRequestPermissionsResult(
-                        new String[] {Manifest.permission.ACCESS_FINE_LOCATION},
+                        new String[] {Manifest.permission.ACCESS_COARSE_LOCATION},
                         new int[] {PackageManager.PERMISSION_GRANTED});
             }
         });
 
-        assertEquals(removeLinkTags(getActivity().getString(R.string.bluetooth_adapter_off_help)),
+        assertEquals(1, mChooserDialog.mRestartSearchCount);
+        assertEquals(removeLinkTags(getActivity().getString(R.string.bluetooth_searching)),
+                statusView.getText().toString());
+
+        mChooserDialog.closeDialog();
+    }
+
+    @SmallTest
+    public void testNoLocationServices() throws InterruptedException {
+        ItemChooserDialog itemChooser = mChooserDialog.mItemChooserDialog;
+        Dialog dialog = itemChooser.getDialogForTesting();
+        assertTrue(dialog.isShowing());
+
+        final TextViewWithClickableSpans statusView =
+                (TextViewWithClickableSpans) dialog.findViewById(R.id.status);
+        final TextViewWithClickableSpans errorView =
+                (TextViewWithClickableSpans) dialog.findViewById(R.id.not_found_message);
+        final View items = dialog.findViewById(R.id.items);
+        final Button button = (Button) dialog.findViewById(R.id.positive);
+        final View progress = dialog.findViewById(R.id.progress);
+
+        final TestAndroidPermissionDelegate permissionDelegate =
+                new TestAndroidPermissionDelegate();
+        mWindowAndroid.setAndroidPermissionDelegate(permissionDelegate);
+
+        // Grant permissions, and turn off location services.
+        mLocationUtils.mLocationGranted = true;
+        mLocationUtils.mSystemLocationSettingsEnabled = false;
+
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                mChooserDialog.notifyDiscoveryState(
+                        BluetoothChooserDialog.DISCOVERY_FAILED_TO_START);
+            }
+        });
+
+        assertEquals(removeLinkTags(
+                             getActivity().getString(R.string.bluetooth_need_location_services_on)),
+                errorView.getText().toString());
+        assertEquals(removeLinkTags(getActivity().getString(
+                             R.string.bluetooth_need_location_permission_help)),
+                statusView.getText().toString());
+        assertFalse(button.isEnabled());
+        assertEquals(View.VISIBLE, errorView.getVisibility());
+        assertEquals(View.GONE, items.getVisibility());
+        assertEquals(View.GONE, progress.getVisibility());
+
+        // Turn on Location Services.
+        mLocationUtils.mSystemLocationSettingsEnabled = true;
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                mChooserDialog.mLocationModeBroadcastReceiver.onReceive(
+                        getActivity(), new Intent(LocationManager.MODE_CHANGED_ACTION));
+            }
+        });
+
+        assertEquals(1, mChooserDialog.mRestartSearchCount);
+        assertEquals(removeLinkTags(getActivity().getString(R.string.bluetooth_searching)),
                 statusView.getText().toString());
 
         mChooserDialog.closeDialog();
@@ -332,6 +394,13 @@ public class BluetoothChooserDialogTest extends ChromeActivityTestCaseBase<Chrom
         @Override
         public boolean hasAndroidLocationPermission(Context context) {
             return mLocationGranted;
+        }
+
+        public boolean mSystemLocationSettingsEnabled = true;
+
+        @Override
+        public boolean isSystemLocationSettingEnabled(Context context) {
+            return mSystemLocationSettingsEnabled;
         }
     }
 }

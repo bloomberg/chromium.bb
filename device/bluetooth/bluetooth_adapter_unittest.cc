@@ -552,6 +552,28 @@ TEST_F(BluetoothTest, NoPermissions) {
 }
 #endif  // defined(OS_ANDROID) || defined(OS_MACOSX)
 
+// Android-only: Only Android requires location services to be turned on to scan
+// for Bluetooth devices.
+#if defined(OS_ANDROID)
+// Checks that discovery fails (instead of hanging) when location services are
+// turned off.
+TEST_F(BluetoothTest, NoLocationServices) {
+  if (!PlatformSupportsLowEnergy()) {
+    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
+    return;
+  }
+  InitWithFakeAdapter();
+  TestBluetoothAdapterObserver observer(adapter_);
+
+  SimulateLocationServicesOff();
+
+  StartLowEnergyDiscoverySessionExpectedToFail();
+
+  EXPECT_EQ(0, callback_count_);
+  EXPECT_EQ(1, error_callback_count_);
+}
+#endif  // defined(OS_ANDROID)
+
 #if defined(OS_ANDROID) || defined(OS_MACOSX) || defined(OS_WIN)
 // Discovers a device.
 TEST_F(BluetoothTest, DiscoverLowEnergyDevice) {

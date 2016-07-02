@@ -85,6 +85,11 @@ BluetoothDevice* BluetoothTestAndroid::SimulateLowEnergyDevice(
   return observer.last_device();
 }
 
+void BluetoothTestAndroid::SimulateLocationServicesOff() {
+  Java_Fakes_setLocationServicesState(
+      AttachCurrentThread(), true /* hasPermission */, false /* isEnabled */);
+}
+
 void BluetoothTestAndroid::ForceIllegalStateException() {
   Java_FakeBluetoothAdapter_forceIllegalStateException(
       AttachCurrentThread(), j_fake_bluetooth_adapter_.obj());
