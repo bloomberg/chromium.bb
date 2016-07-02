@@ -192,14 +192,14 @@ class BrowserView : public BrowserWindow,
 
   // Returns true if the profile associated with this Browser window is
   // incognito.
-  bool IsOffTheRecord() const;
+  bool IsIncognito() const;
 
   // Returns true if the profile associated with this Browser window is
   // a guest session.
   bool IsGuestSession() const;
 
   // Returns true if the profile associated with this Browser window is
-  // not off the record or a guest session.
+  // not incognito or a guest session.
   bool IsRegularOrGuestSession() const;
 
   // Provides the containing frame with the accelerator for the specified

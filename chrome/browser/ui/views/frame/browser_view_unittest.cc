@@ -45,7 +45,7 @@ TEST_F(BrowserViewTest, BrowserView) {
 
   // Test initial state.
   EXPECT_TRUE(browser_view()->IsTabStripVisible());
-  EXPECT_FALSE(browser_view()->IsOffTheRecord());
+  EXPECT_FALSE(browser_view()->IsIncognito());
   EXPECT_FALSE(browser_view()->IsGuestSession());
   EXPECT_TRUE(browser_view()->IsBrowserTypeNormal());
   EXPECT_FALSE(browser_view()->IsFullscreen());

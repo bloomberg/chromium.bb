@@ -729,7 +729,7 @@ void OpaqueBrowserFrameView::PaintClientEdge(gfx::Canvas* canvas) const {
   const ui::ThemeProvider* tp = GetThemeProvider();
   const bool md = ui::MaterialDesignController::IsModeMaterial();
   const gfx::Rect toolbar_bounds(browser_view()->GetToolbarBounds());
-  const bool incognito = browser_view()->IsOffTheRecord();
+  const bool incognito = browser_view()->IsIncognito();
   const bool toolbar_visible = IsToolbarVisible();
   int img_y_offset = 0;
   if (tabstrip_visible) {

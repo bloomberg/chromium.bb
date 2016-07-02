@@ -600,7 +600,7 @@ bool BrowserView::IsTabStripVisible() const {
   return tabstrip_ != nullptr;
 }
 
-bool BrowserView::IsOffTheRecord() const {
+bool BrowserView::IsIncognito() const {
   return browser_->profile()->IsOffTheRecord();
 }
 
@@ -1659,7 +1659,7 @@ base::string16 BrowserView::GetWindowTitle() const {
 
 base::string16 BrowserView::GetAccessibleWindowTitle() const {
   const bool include_app_name = false;
-  if (IsOffTheRecord()) {
+  if (IsIncognito()) {
     return l10n_util::GetStringFUTF16(
         IDS_ACCESSIBLE_INCOGNITO_WINDOW_TITLE_FORMAT,
         browser_->GetWindowTitleForCurrentTab(include_app_name));

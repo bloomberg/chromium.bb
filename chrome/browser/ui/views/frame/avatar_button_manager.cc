@@ -29,7 +29,7 @@ void AvatarButtonManager::Update(AvatarButtonStyle style) {
            ->GetProfileAttributesStorage()
            .GetProfileAttributesWithPath(profile->GetPath(), &unused)) ||
       // Desktop guest shows the avatar button.
-      browser_view->IsOffTheRecord()) {
+      browser_view->IsIncognito()) {
     if (!view_) {
       view_ = new NewAvatarButton(this, style, profile);
       view_->set_id(VIEW_ID_AVATAR_BUTTON);
