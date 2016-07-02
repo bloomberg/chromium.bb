@@ -79,9 +79,9 @@ Polymer({
   /** @private */
   onClearBrowsingDataTap_: function() {
     this.currentRoute = {
-      page: this.currentRoute.page,
-      section: this.currentRoute.section,
-      subpage: this.currentRoute.subpage,
+      page: 'advanced',
+      section: 'privacy',
+      subpage: [],
       dialog: 'clear-browsing-data',
     };
   },
@@ -95,9 +95,9 @@ Polymer({
       return;
 
     this.currentRoute = {
-      page: this.currentRoute.page,
-      section: this.currentRoute.section,
-      subpage: this.currentRoute.subpage,
+      page: 'advanced',
+      section: 'privacy',
+      subpage: [],
       // Drop dialog key.
     };
   },
