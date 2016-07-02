@@ -5,7 +5,7 @@
 #ifndef UI_VIEWS_MUS_CLIPBOARD_MUS_H_
 #define UI_VIEWS_MUS_CLIPBOARD_MUS_H_
 
-#include "components/mus/public/interfaces/clipboard.mojom.h"
+#include "services/ui/public/interfaces/clipboard.mojom.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/views/mus/mus_export.h"
 

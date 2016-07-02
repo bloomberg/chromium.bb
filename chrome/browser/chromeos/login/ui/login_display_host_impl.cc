@@ -109,7 +109,7 @@
 
 #if defined(MOJO_SHELL_CLIENT)
 #include "ash/public/interfaces/container.mojom.h"
-#include "components/mus/public/cpp/property_type_converters.h"
+#include "services/ui/public/cpp/property_type_converters.h"
 #endif
 
 namespace {

@@ -25,8 +25,6 @@ executable("window_type_launcher") {
     "//base:i18n",
     "//build/config/sanitizers:deps",
     "//build/win:default_exe_manifest",
-    "//components/mus/public/cpp",
-    "//components/mus/public/interfaces",
     "//mash/public/interfaces",
     "//mash/session/public/interfaces",
     "//mojo/common:common_base",
@@ -36,6 +34,8 @@ executable("window_type_launcher") {
     "//services/shell/public/interfaces",
     "//services/shell/runner:init",
     "//services/shell/runner/common",
+    "//services/ui/public/cpp",
+    "//services/ui/public/interfaces",
     "//skia",
     "//ui/aura",
     "//ui/gfx",
@@ -47,7 +47,7 @@ executable("window_type_launcher") {
 
   data_deps = [
     ":manifest",
-    "//components/mus",
+    "//services/ui",
   ]
 }
 

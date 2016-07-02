@@ -6,7 +6,7 @@
 #define ASH_MUS_DISCONNECTED_APP_HANDLER_H_
 
 #include "base/macros.h"
-#include "components/mus/public/cpp/window_tracker.h"
+#include "services/ui/public/cpp/window_tracker.h"
 
 namespace ash {
 namespace mus {

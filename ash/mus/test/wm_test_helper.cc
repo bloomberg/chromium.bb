@@ -10,9 +10,9 @@
 #include "ash/mus/window_manager_application.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
-#include "components/mus/public/cpp/property_type_converters.h"
-#include "components/mus/public/cpp/tests/window_tree_client_private.h"
-#include "components/mus/public/cpp/window_tree_client.h"
+#include "services/ui/public/cpp/property_type_converters.h"
+#include "services/ui/public/cpp/tests/window_tree_client_private.h"
+#include "services/ui/public/cpp/window_tree_client.h"
 #include "ui/display/display.h"
 
 namespace ash {

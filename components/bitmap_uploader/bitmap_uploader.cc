@@ -13,9 +13,9 @@
 #include "cc/quads/render_pass.h"
 #include "cc/quads/solid_color_draw_quad.h"
 #include "cc/quads/texture_draw_quad.h"
-#include "components/mus/public/cpp/gles2_context.h"
-#include "components/mus/public/cpp/window.h"
-#include "components/mus/public/cpp/window_surface.h"
+#include "services/ui/public/cpp/gles2_context.h"
+#include "services/ui/public/cpp/window.h"
+#include "services/ui/public/cpp/window_surface.h"
 
 namespace bitmap_uploader {
 namespace {

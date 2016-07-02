@@ -9,7 +9,7 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "components/mus/public/interfaces/window_tree.mojom.h"
+#include "services/ui/public/interfaces/window_tree.mojom.h"
 #include "ui/views/mus/mus_export.h"
 
 namespace cc {

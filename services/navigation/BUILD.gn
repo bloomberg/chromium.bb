@@ -26,13 +26,13 @@ executable("navigation") {
     ":pak",
     "//base",
     "//build/win:default_exe_manifest",
-    "//components/mus/public/cpp",
     "//content",
     "//content/public/app:both",
     "//mojo/public/cpp/bindings",
     "//services/navigation/content_client",
     "//services/shell/runner:init",
     "//services/shell/runner/common",
+    "//services/ui/public/cpp",
     "//ui/views",
     "//ui/views/controls/webview",
     "//ui/views/mus",
@@ -40,7 +40,7 @@ executable("navigation") {
 
   data_deps = [
     ":manifest",
-    "//components/mus/test_wm",
+    "//services/ui/test_wm",
   ]
 
   if (is_win) {
@@ -60,10 +60,10 @@ static_library("lib") {
 
   deps = [
     "//base",
-    "//components/mus/public/cpp",
     "//content/public/browser",
     "//services/navigation/public/interfaces",
     "//services/shell/public/cpp",
+    "//services/ui/public/cpp",
     "//skia",
     "//ui/gfx/geometry/mojo",
     "//ui/views",
@@ -90,7 +90,7 @@ test("navigation_unittests") {
   data_deps = [
     ":navigation",
     ":unittest_manifest",
-    "//components/mus/test_wm",
+    "//services/ui/test_wm",
   ]
 }
 

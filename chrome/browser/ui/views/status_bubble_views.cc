@@ -44,8 +44,8 @@
 #endif
 
 #if defined(MOJO_SHELL_CLIENT)
-#include "components/mus/public/cpp/property_type_converters.h"
-#include "components/mus/public/interfaces/window_manager.mojom.h"
+#include "services/ui/public/cpp/property_type_converters.h"
+#include "services/ui/public/interfaces/window_manager.mojom.h"
 #endif
 
 // The alpha and color of the bubble's shadow.

@@ -19,12 +19,12 @@ mojo_native_application("views_examples") {
 
   deps = [
     "//base",
-    "//components/mus/public/interfaces",
     "//mash/public/interfaces",
     "//mojo/public/cpp/bindings",
     "//services/shell/public/cpp",
     "//services/shell/public/cpp:sources",
     "//services/tracing/public/cpp",
+    "//services/ui/public/interfaces",
     "//skia",
     "//ui/gfx",
     "//ui/gfx/geometry",
@@ -38,7 +38,7 @@ mojo_native_application("views_examples") {
 
   data_deps = [
     ":manifest",
-    "//components/mus",
+    "//services/ui",
   ]
 }
 

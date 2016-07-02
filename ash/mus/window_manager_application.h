@@ -14,13 +14,13 @@
 #include "ash/public/interfaces/shelf_layout.mojom.h"
 #include "ash/public/interfaces/user_window_controller.mojom.h"
 #include "base/macros.h"
-#include "components/mus/common/types.h"
-#include "components/mus/public/interfaces/accelerator_registrar.mojom.h"
 #include "mash/session/public/interfaces/session.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/shell/public/cpp/shell_client.h"
 #include "services/tracing/public/cpp/tracing_impl.h"
+#include "services/ui/common/types.h"
+#include "services/ui/public/interfaces/accelerator_registrar.mojom.h"
 
 namespace mus {
 class WindowTreeClient;

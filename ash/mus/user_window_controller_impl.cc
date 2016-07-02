@@ -9,11 +9,11 @@
 #include "ash/mus/property_util.h"
 #include "ash/mus/root_window_controller.h"
 #include "ash/public/interfaces/container.mojom.h"
-#include "components/mus/public/cpp/property_type_converters.h"
-#include "components/mus/public/cpp/window.h"
-#include "components/mus/public/cpp/window_property.h"
-#include "components/mus/public/cpp/window_tree_client.h"
 #include "mojo/common/common_type_converters.h"
+#include "services/ui/public/cpp/property_type_converters.h"
+#include "services/ui/public/cpp/window.h"
+#include "services/ui/public/cpp/window_property.h"
+#include "services/ui/public/cpp/window_tree_client.h"
 #include "ui/resources/grit/ui_resources.h"
 
 MUS_DECLARE_WINDOW_PROPERTY_TYPE(uint32_t)

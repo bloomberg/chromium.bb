@@ -16,7 +16,7 @@
 #include "ash/mus/bridge/wm_window_mus.h"
 #include "ash/mus/test/wm_test_base.h"
 #include "base/run_loop.h"
-#include "components/mus/public/cpp/tests/test_window.h"
+#include "services/ui/public/cpp/tests/test_window.h"
 #include "ui/display/display.h"
 
 namespace ash {

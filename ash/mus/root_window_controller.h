@@ -10,8 +10,8 @@
 #include "ash/mus/disconnected_app_handler.h"
 #include "ash/mus/shelf_layout_manager_delegate.h"
 #include "ash/public/interfaces/container.mojom.h"
-#include "components/mus/public/cpp/window_observer.h"
-#include "components/mus/public/interfaces/window_manager_constants.mojom.h"
+#include "services/ui/public/cpp/window_observer.h"
+#include "services/ui/public/interfaces/window_manager_constants.mojom.h"
 #include "ui/display/display.h"
 
 namespace shell {

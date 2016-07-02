@@ -230,7 +230,7 @@ a3451b74e1aac0c538d7d6824bd714553eb0141e
 ccfc5401e32e24f29847cd91f643d03ed651b19a
 # Convert //components/proximity_auth from scoped_ptr to std::unique_ptr
 2f01269f405de0dfd12cb1dc56459c4492d65b8b
-# Convert //components/mus from scoped_ptr to std::unique_ptr
+# Convert //services/ui from scoped_ptr to std::unique_ptr
 c314381373dc794d3875428994ec7a74edda77e4
 # Convert //components/exo from scoped_ptr to std::unique_ptr
 31759da04512d5815aff6c30134e33856638889d

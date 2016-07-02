@@ -8,8 +8,8 @@
 #include "cc/output/output_surface.h"
 #include "cc/resources/shared_bitmap_manager.h"
 #include "cc/surfaces/surface_id_allocator.h"
-#include "components/mus/public/cpp/window.h"
 #include "services/shell/public/interfaces/connector.mojom.h"
+#include "services/ui/public/cpp/window.h"
 #include "ui/compositor/reflector.h"
 #include "ui/gl/gl_bindings.h"
 

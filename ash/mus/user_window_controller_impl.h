@@ -11,9 +11,9 @@
 
 #include "ash/public/interfaces/user_window_controller.mojom.h"
 #include "base/macros.h"
-#include "components/mus/common/types.h"
-#include "components/mus/public/cpp/window_observer.h"
-#include "components/mus/public/cpp/window_tree_client_observer.h"
+#include "services/ui/common/types.h"
+#include "services/ui/public/cpp/window_observer.h"
+#include "services/ui/public/cpp/window_tree_client_observer.h"
 
 namespace ash {
 namespace mus {

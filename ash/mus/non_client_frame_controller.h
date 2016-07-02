@@ -9,7 +9,7 @@
 
 #include "base/macros.h"
 #include "base/strings/string16.h"
-#include "components/mus/public/cpp/window_observer.h"
+#include "services/ui/public/cpp/window_observer.h"
 #include "ui/views/widget/widget_delegate.h"
 
 namespace gfx {

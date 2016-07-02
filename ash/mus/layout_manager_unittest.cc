@@ -7,7 +7,7 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "components/mus/public/cpp/tests/test_window.h"
+#include "services/ui/public/cpp/tests/test_window.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace ash {

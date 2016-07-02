@@ -42,7 +42,7 @@ mojom("mojom") {
     "app_list_presenter.mojom",
   ]
   deps = [
-    "//components/mus/public/interfaces",
+    "//services/ui/public/interfaces",
   ]
 }
 

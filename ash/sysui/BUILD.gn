@@ -35,10 +35,6 @@ source_set("lib") {
     "//ash/public/interfaces",
     "//cc",
     "//cc/surfaces",
-    "//components/mus/common:mus_common",
-    "//components/mus/public/cpp",
-    "//components/mus/public/cpp/input_devices",
-    "//components/mus/public/interfaces",
     "//components/user_manager",
     "//components/wallpaper",
     "//device/bluetooth",
@@ -46,6 +42,10 @@ source_set("lib") {
     "//services/catalog/public/cpp",
     "//services/shell/public/cpp",
     "//services/tracing/public/cpp",
+    "//services/ui/common:mus_common",
+    "//services/ui/public/cpp",
+    "//services/ui/public/cpp/input_devices",
+    "//services/ui/public/interfaces",
     "//ui/app_list/presenter",
     "//ui/app_list/presenter:mojom",
     "//ui/aura",
@@ -94,7 +94,7 @@ mojo_native_application("sysui") {
 
   data_deps = [
     ":manifest",
-    "//components/mus",
+    "//services/ui",
   ]
 
   resources = [

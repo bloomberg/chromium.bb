@@ -835,7 +835,7 @@ test("content_unittests") {
 
   if (use_aura) {
     deps += [
-      "//components/mus/public/cpp/tests:unittest_support",
+      "//services/ui/public/cpp/tests:unittest_support",
       "//ui/aura:test_support",
       "//ui/aura_extra",
       "//ui/wm",

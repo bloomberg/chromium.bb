@@ -8,10 +8,10 @@
 #include "base/macros.h"
 #include "base/threading/thread_checker.h"
 #include "cc/output/output_surface.h"
-#include "components/mus/public/cpp/window_surface.h"
 #include "content/common/content_export.h"
 #include "content/renderer/input/render_widget_input_handler_delegate.h"
 #include "content/renderer/mus/compositor_mus_connection.h"
+#include "services/ui/public/cpp/window_surface.h"
 
 namespace content {
 

@@ -6,7 +6,7 @@
 
 #include "ash/common/wm_layout_manager.h"
 #include "ash/mus/bridge/wm_window_mus.h"
-#include "components/mus/public/cpp/window.h"
+#include "services/ui/public/cpp/window.h"
 
 namespace ash {
 namespace mus {

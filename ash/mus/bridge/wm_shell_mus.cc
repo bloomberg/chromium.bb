@@ -21,10 +21,10 @@
 #include "ash/mus/drag_window_resizer.h"
 #include "ash/mus/root_window_controller.h"
 #include "base/memory/ptr_util.h"
-#include "components/mus/common/util.h"
-#include "components/mus/public/cpp/window.h"
-#include "components/mus/public/cpp/window_tree_client.h"
 #include "components/user_manager/user_info_impl.h"
+#include "services/ui/common/util.h"
+#include "services/ui/public/cpp/window.h"
+#include "services/ui/public/cpp/window_tree_client.h"
 
 namespace ash {
 namespace mus {

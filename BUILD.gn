@@ -703,12 +703,12 @@ group("gn_only") {
 
   if (is_win || is_linux) {
     deps += [
-      "//components/mus/demo",
-      "//components/mus/ws:tests",
       "//mash:all",
       "//media/mojo/services:media_mojo_shell_unittests",
       "//mojo",
       "//services/navigation",
+      "//services/ui/demo",
+      "//services/ui/ws:tests",
       "//ui/views/mus:views_mus_interactive_ui_tests",
       "//ui/views/mus:views_mus_unittests",
     ]

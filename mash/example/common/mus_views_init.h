@@ -8,8 +8,8 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "components/mus/public/cpp/window_tree_client_delegate.h"
-#include "components/mus/public/interfaces/window_manager.mojom.h"
+#include "services/ui/public/cpp/window_tree_client_delegate.h"
+#include "services/ui/public/interfaces/window_manager.mojom.h"
 #include "ui/views/mus/aura_init.h"
 #include "ui/views/views_delegate.h"
 

@@ -8,9 +8,9 @@
 #include <stdint.h>
 
 #include "base/macros.h"
-#include "components/mus/common/mojo_gpu_memory_buffer_manager.h"
-#include "components/mus/gles2/raster_thread_helper.h"
-#include "components/mus/public/interfaces/window_tree.mojom.h"
+#include "services/ui/common/mojo_gpu_memory_buffer_manager.h"
+#include "services/ui/gles2/raster_thread_helper.h"
+#include "services/ui/public/interfaces/window_tree.mojom.h"
 #include "ui/compositor/compositor.h"
 #include "ui/views/mus/mus_export.h"
 #include "ui/views/mus/surface_binding.h"

@@ -15,19 +15,19 @@ source_set("lib") {
   ]
 
   deps = [
-    "//components/mus/common:mus_common",
     "//mash/public/interfaces",
+    "//services/ui/common:mus_common",
   ]
 
   public_deps = [
     "//base",
-    "//components/mus/public/interfaces",
     "//services/catalog/public/interfaces",
     "//services/shell/public/cpp:sources",
+    "//services/ui/public/interfaces",
   ]
 
   data_deps = [
-    "//components/mus",
+    "//services/ui",
   ]
 }
 

@@ -5,9 +5,9 @@
 #include "ash/mus/frame/move_event_handler.h"
 
 #include "ash/mus/bridge/wm_window_mus.h"
-#include "components/mus/public/cpp/window.h"
-#include "components/mus/public/cpp/window_manager_delegate.h"
-#include "components/mus/public/interfaces/cursor.mojom.h"
+#include "services/ui/public/cpp/window.h"
+#include "services/ui/public/cpp/window_manager_delegate.h"
+#include "services/ui/public/interfaces/cursor.mojom.h"
 #include "ui/aura/window.h"
 #include "ui/base/hit_test.h"
 #include "ui/events/event.h"

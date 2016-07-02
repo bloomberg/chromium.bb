@@ -6,7 +6,7 @@ component("mojo") {
   output_name = "mojo_display_lib"
 
   public_deps = [
-    "//components/mus/public/interfaces",
+    "//services/ui/public/interfaces",
     "//ui/display",
   ]
 

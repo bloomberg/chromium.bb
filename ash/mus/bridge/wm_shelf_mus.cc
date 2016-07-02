@@ -6,7 +6,7 @@
 
 #include "ash/mus/bridge/wm_window_mus.h"
 #include "ash/mus/shelf_layout_manager.h"
-#include "components/mus/public/cpp/window.h"
+#include "services/ui/public/cpp/window.h"
 
 // TODO(sky): fully implement this http://crbug.com/612631 .
 #undef NOTIMPLEMENTED

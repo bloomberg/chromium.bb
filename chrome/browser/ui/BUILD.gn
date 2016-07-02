@@ -321,8 +321,8 @@ split_static_library("ui") {
                       "//chrome")
       if (use_aura) {
         deps += [
-          "//components/mus/public/cpp",
-          "//components/mus/public/interfaces",
+          "//services/ui/public/cpp",
+          "//services/ui/public/interfaces",
         ]
       }
       if (enable_extensions) {

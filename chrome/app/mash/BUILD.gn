@@ -14,7 +14,6 @@ source_set("mash") {
     "//ash/resources",
     "//ash/sysui:lib",
     "//base:i18n",
-    "//components/mus:lib",
     "//content/public/common",
     "//mash/app_driver:lib",
     "//mash/quick_launch:lib",
@@ -27,6 +26,7 @@ source_set("mash") {
     "//services/shell/runner/common",
     "//services/shell/runner/host:child_process_base",
     "//services/shell/runner/host:lib",
+    "//services/ui:lib",
     "//url",
   ]
   data_deps = [
@@ -45,11 +45,11 @@ mojo_application_manifest("manifest") {
   deps = [
     "//ash/mus:manifest",
     "//ash/sysui:manifest",
-    "//components/mus:manifest",
     "//mash/app_driver:manifest",
     "//mash/quick_launch:manifest",
     "//mash/session:manifest",
     "//mash/task_viewer:manifest",
+    "//services/ui:manifest",
   ]
   packaged_applications = [
     "app_driver",

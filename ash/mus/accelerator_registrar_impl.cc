@@ -10,7 +10,7 @@
 #include "ash/mus/root_window_controller.h"
 #include "ash/mus/window_manager.h"
 #include "base/bind.h"
-#include "components/mus/public/cpp/window_manager_delegate.h"
+#include "services/ui/public/cpp/window_manager_delegate.h"
 
 namespace ash {
 namespace mus {

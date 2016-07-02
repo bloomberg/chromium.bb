@@ -6,8 +6,8 @@
 #define ASH_MUS_SHADOW_CONTROLLER_H_
 
 #include "base/macros.h"
-#include "components/mus/public/cpp/window_observer.h"
-#include "components/mus/public/cpp/window_tree_client_observer.h"
+#include "services/ui/public/cpp/window_observer.h"
+#include "services/ui/public/cpp/window_tree_client_observer.h"
 
 namespace mus {
 class WindowTreeClient;

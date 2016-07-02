@@ -8,11 +8,11 @@
 #include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "components/mus/public/cpp/input_event_handler.h"
-#include "components/mus/public/cpp/window.h"
-#include "components/mus/public/cpp/window_tree_client.h"
-#include "components/mus/public/cpp/window_tree_client_delegate.h"
 #include "content/common/content_export.h"
+#include "services/ui/public/cpp/input_event_handler.h"
+#include "services/ui/public/cpp/window.h"
+#include "services/ui/public/cpp/window_tree_client.h"
+#include "services/ui/public/cpp/window_tree_client_delegate.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 
 namespace content {

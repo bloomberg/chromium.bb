@@ -4,7 +4,7 @@
 
 module app_list.mojom;
 
-import "components/mus/public/interfaces/window_manager_constants.mojom";
+import "services/ui/public/interfaces/window_manager_constants.mojom";
 
 interface AppListPresenter {
   // Show the app list on the specified display.

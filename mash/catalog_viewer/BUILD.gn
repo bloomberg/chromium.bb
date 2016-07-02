@@ -28,7 +28,7 @@ source_set("lib") {
   ]
 
   data_deps = [
-    "//components/mus",
+    "//services/ui",
   ]
 }
 

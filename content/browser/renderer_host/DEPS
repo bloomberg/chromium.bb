@@ -1,7 +1,7 @@
 include_rules = [
   "+cc/switches.h", # For cc command line switches.
-  "+components/mus/public",
   "+components/display_compositor",
+  "+services/ui/public",
   "+third_party/zlib",
   "+third_party/libyuv",
 
@@ -22,7 +22,7 @@ specific_include_rules = {
     "+content/public/browser/web_contents_view.h",
   ],
   "render_process_host_impl\.cc": [
-    "+components/mus/common/switches.h",
+    "+services/ui/common/switches.h",
     "+content/browser/frame_host/render_frame_message_filter.h",
   ],
   "render_widget_host_view_mac\.mm": [

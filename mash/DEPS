@@ -1,7 +1,5 @@
 include_rules = [
   "+ash/public/interfaces",
-  "+components/mus/common",
-  "+components/mus/public",
   "+components/prefs",
   "+mojo/common",
   "+mojo/converters",
@@ -9,6 +7,8 @@ include_rules = [
   "+services/catalog/public",
   "+services/shell",
   "+services/tracing/public",
+  "+services/ui/common",
+  "+services/ui/public",
   "+third_party/skia/include",
   "+ui",
 ]

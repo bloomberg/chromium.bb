@@ -15,7 +15,6 @@
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/process/launch.h"
-#include "components/mus/mus_app.h"
 #include "content/public/common/content_switches.h"
 #include "mash/app_driver/app_driver.h"
 #include "mash/quick_launch/quick_launch_application.h"
@@ -31,6 +30,7 @@
 #include "services/shell/public/interfaces/shell_client_factory.mojom.h"
 #include "services/shell/runner/common/switches.h"
 #include "services/shell/runner/host/child_process_base.h"
+#include "services/ui/mus_app.h"
 
 #if defined(OS_LINUX)
 #include "components/font_service/font_service_app.h"

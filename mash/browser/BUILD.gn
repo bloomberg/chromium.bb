@@ -19,7 +19,6 @@ source_set("lib") {
 
   deps = [
     "//base",
-    "//components/mus/public/cpp",
     "//mash/public/interfaces",
     "//mojo/public/cpp/bindings",
     "//services/catalog/public/interfaces",
@@ -28,6 +27,7 @@ source_set("lib") {
     "//services/shell/public/cpp",
     "//services/shell/public/interfaces",
     "//services/tracing/public/cpp",
+    "//services/ui/public/cpp",
     "//ui/gfx/geometry/mojo",
     "//ui/native_theme",
     "//ui/views",
@@ -56,7 +56,7 @@ mojo_native_application("browser") {
 
   data_deps = [
     ":manifest",
-    "//components/mus",
+    "//services/ui",
   ]
 }
 

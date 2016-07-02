@@ -12,8 +12,8 @@ static_library("cpp") {
 
   deps = [
     "//base",
-    "//components/mus/public/cpp",
     "//mojo/public/cpp/bindings",
     "//services/navigation/public/interfaces",
+    "//services/ui/public/cpp",
   ]
 }

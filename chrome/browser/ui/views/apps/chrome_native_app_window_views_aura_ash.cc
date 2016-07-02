@@ -29,9 +29,9 @@
 #include "ui/views/widget/widget.h"
 
 #if defined(MOJO_SHELL_CLIENT)
-#include "components/mus/public/cpp/property_type_converters.h"
-#include "components/mus/public/cpp/window.h"
-#include "components/mus/public/interfaces/window_manager.mojom.h"
+#include "services/ui/public/cpp/property_type_converters.h"
+#include "services/ui/public/cpp/window.h"
+#include "services/ui/public/interfaces/window_manager.mojom.h"
 #include "ui/aura/mus/mus_util.h"
 #include "ui/gfx/skia_util.h"
 #endif

@@ -437,11 +437,11 @@
     "type": "console_test_launcher",
   },
   "mus_clipboard_unittests": {
-    "label": "//components/mus/clipboard:mus_clipboard_unittests",
+    "label": "//services/ui/clipboard:mus_clipboard_unittests",
     "type": "windowed_test_launcher",
   },
   "mus_public_unittests": {
-    "label": "//components/mus/public/cpp/tests:mus_public_unittests",
+    "label": "//services/ui/public/cpp/tests:mus_public_unittests",
     "type": "windowed_test_launcher",
   },
   "message_center_unittests": {
@@ -453,11 +453,11 @@
     "type": "windowed_test_launcher",
   },
   "mus_gpu_unittests": {
-    "label": "//components/mus/gpu:mus_gpu_unittests",
+    "label": "//services/ui/gpu:mus_gpu_unittests",
     "type": "console_test_launcher",
   },
   "mus_ws_unittests": {
-    "label": "//components/mus/ws:mus_ws_unittests",
+    "label": "//services/ui/ws:mus_ws_unittests",
     "type": "windowed_test_launcher",
   },
   "nacl_loader_unittests": {

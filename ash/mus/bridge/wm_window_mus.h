@@ -11,7 +11,7 @@
 #include "ash/common/wm_window.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
-#include "components/mus/public/cpp/window_observer.h"
+#include "services/ui/public/cpp/window_observer.h"
 
 namespace views {
 class Widget;

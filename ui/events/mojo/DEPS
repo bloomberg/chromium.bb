@@ -1,6 +1,6 @@
 include_rules = [
-  "+components/mus/public/interfaces",
   "+mojo/public",
+  "+services/ui/public/interfaces",
   "+ui/events",
   "+ui/gfx/geometry/mojo",
 ]

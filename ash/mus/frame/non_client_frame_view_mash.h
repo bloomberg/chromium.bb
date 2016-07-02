@@ -6,8 +6,8 @@
 #define ASH_MUS_FRAME_NON_CLIENT_FRAME_VIEW_MASH_H_
 
 #include "base/macros.h"
-#include "components/mus/public/cpp/window_observer.h"
-#include "components/mus/public/cpp/window_tree_client_observer.h"
+#include "services/ui/public/cpp/window_observer.h"
+#include "services/ui/public/cpp/window_tree_client_observer.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/compositor/paint_cache.h"
 #include "ui/views/window/non_client_view.h"

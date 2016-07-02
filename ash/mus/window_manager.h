@@ -12,11 +12,11 @@
 
 #include "base/macros.h"
 #include "base/observer_list.h"
-#include "components/mus/common/types.h"
-#include "components/mus/public/cpp/window_manager_delegate.h"
-#include "components/mus/public/cpp/window_observer.h"
-#include "components/mus/public/cpp/window_tree_client_delegate.h"
-#include "components/mus/public/interfaces/window_manager.mojom.h"
+#include "services/ui/common/types.h"
+#include "services/ui/public/cpp/window_manager_delegate.h"
+#include "services/ui/public/cpp/window_observer.h"
+#include "services/ui/public/cpp/window_tree_client_delegate.h"
+#include "services/ui/public/interfaces/window_manager.mojom.h"
 
 namespace display {
 class Display;

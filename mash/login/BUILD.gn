@@ -18,12 +18,12 @@ mojo_native_application("login") {
   deps = [
     "//ash/public/interfaces",
     "//base",
-    "//components/mus/public/cpp",
     "//mash/init/public/interfaces",
     "//mash/login/public/interfaces",
     "//mojo/public/cpp/bindings",
     "//services/shell/public/cpp",
     "//services/tracing/public/cpp",
+    "//services/ui/public/cpp",
     "//ui/views",
     "//ui/views/mus:for_mojo_application",
   ]
@@ -32,7 +32,7 @@ mojo_native_application("login") {
 
   data_deps = [
     ":manifest",
-    "//components/mus",
+    "//services/ui",
   ]
 }
 

@@ -14,8 +14,8 @@
 
 #include "base/macros.h"
 #include "base/observer_list.h"
-#include "components/mus/public/cpp/window_tree_client_delegate.h"
 #include "services/shell/public/cpp/identity.h"
+#include "services/ui/public/cpp/window_tree_client_delegate.h"
 #include "ui/views/mus/mus_export.h"
 #include "ui/views/mus/screen_mus_delegate.h"
 #include "ui/views/widget/widget.h"

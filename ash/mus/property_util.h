@@ -7,8 +7,8 @@
 
 #include "ash/public/interfaces/ash_window_type.mojom.h"
 #include "ash/public/interfaces/container.mojom.h"
-#include "components/mus/public/cpp/window.h"
-#include "components/mus/public/interfaces/window_manager_constants.mojom.h"
+#include "services/ui/public/cpp/window.h"
+#include "services/ui/public/interfaces/window_manager_constants.mojom.h"
 #include "ui/wm/public/window_types.h"
 
 namespace gfx {

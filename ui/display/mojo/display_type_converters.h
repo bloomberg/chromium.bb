@@ -5,7 +5,7 @@
 #ifndef UI_DISPLAY_MOJO_DISPLAY_TYPE_CONVERTERS_H_
 #define UI_DISPLAY_MOJO_DISPLAY_TYPE_CONVERTERS_H_
 
-#include "components/mus/public/interfaces/window_manager_constants.mojom.h"
+#include "services/ui/public/interfaces/window_manager_constants.mojom.h"
 #include "ui/display/display.h"
 #include "ui/display/mojo/mojo_display_export.h"
 

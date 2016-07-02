@@ -19,11 +19,11 @@
 #include "cc/output/output_surface_client.h"
 #include "cc/output/software_output_device.h"
 #include "cc/resources/shared_bitmap_manager.h"
-#include "components/mus/public/cpp/context_provider.h"
-#include "components/mus/public/cpp/output_surface.h"
-#include "components/mus/public/cpp/window.h"
-#include "components/mus/public/cpp/window_tree_client.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "services/ui/public/cpp/context_provider.h"
+#include "services/ui/public/cpp/output_surface.h"
+#include "services/ui/public/cpp/window.h"
+#include "services/ui/public/cpp/window_tree_client.h"
 #include "ui/views/mus/window_tree_host_mus.h"
 
 namespace views {

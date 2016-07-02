@@ -6,8 +6,8 @@
 
 #include "ash/mus/property_util.h"
 #include "ash/mus/shadow.h"
-#include "components/mus/public/cpp/window.h"
-#include "components/mus/public/cpp/window_tree_client.h"
+#include "services/ui/public/cpp/window.h"
+#include "services/ui/public/cpp/window_tree_client.h"
 
 namespace ash {
 namespace mus {

@@ -13,11 +13,11 @@
 #include "base/containers/hash_tables.h"
 #include "base/macros.h"
 #include "components/bitmap_uploader/bitmap_uploader_export.h"
-#include "components/mus/public/cpp/window_surface.h"
-#include "components/mus/public/cpp/window_surface_client.h"
-#include "components/mus/public/interfaces/surface.mojom.h"
 #include "gpu/GLES2/gl2chromium.h"
 #include "gpu/GLES2/gl2extchromium.h"
+#include "services/ui/public/cpp/window_surface.h"
+#include "services/ui/public/cpp/window_surface_client.h"
+#include "services/ui/public/interfaces/surface.mojom.h"
 
 namespace mus {
 class GLES2Context;

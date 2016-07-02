@@ -4,7 +4,7 @@
 
 module content.mojom;
 
-import "components/mus/public/interfaces/window_tree.mojom";
+import "services/ui/public/interfaces/window_tree.mojom";
 
 interface RenderWidgetWindowTreeClientFactory {
   CreateWindowTreeClientForRenderWidget(

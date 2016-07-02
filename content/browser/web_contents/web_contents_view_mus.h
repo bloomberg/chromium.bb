@@ -10,12 +10,12 @@
 
 #include "base/macros.h"
 #include "build/build_config.h"
-#include "components/mus/public/cpp/scoped_window_ptr.h"
-#include "components/mus/public/cpp/window.h"
 #include "content/browser/renderer_host/render_view_host_delegate_view.h"
 #include "content/browser/web_contents/web_contents_view.h"
 #include "content/common/content_export.h"
 #include "content/common/drag_event_source_info.h"
+#include "services/ui/public/cpp/scoped_window_ptr.h"
+#include "services/ui/public/cpp/window.h"
 #include "ui/aura/window_delegate.h"
 
 namespace content {

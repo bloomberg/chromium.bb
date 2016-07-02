@@ -5,7 +5,7 @@
 #include "ui/views/mus/window_tree_host_mus.h"
 
 #include "base/memory/ptr_util.h"
-#include "components/mus/public/cpp/window.h"
+#include "services/ui/public/cpp/window.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/events/event.h"

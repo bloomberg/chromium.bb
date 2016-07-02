@@ -8,16 +8,16 @@
 
 #include "base/lazy_instance.h"
 #include "base/macros.h"
-#include "components/mus/public/cpp/context_provider.h"
-#include "components/mus/public/cpp/output_surface.h"
-#include "components/mus/public/interfaces/command_buffer.mojom.h"
-#include "components/mus/public/interfaces/surface.mojom.h"
-#include "components/mus/public/interfaces/window_tree.mojom.h"
 #include "content/public/common/mojo_shell_connection.h"
 #include "content/renderer/mus/compositor_mus_connection.h"
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/render_view_impl.h"
 #include "services/shell/public/cpp/connector.h"
+#include "services/ui/public/cpp/context_provider.h"
+#include "services/ui/public/cpp/output_surface.h"
+#include "services/ui/public/interfaces/command_buffer.mojom.h"
+#include "services/ui/public/interfaces/surface.mojom.h"
+#include "services/ui/public/interfaces/window_tree.mojom.h"
 
 namespace content {
 

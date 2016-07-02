@@ -12,9 +12,9 @@
 #include "ash/mus/window_manager_observer.h"
 #include "base/callback.h"
 #include "base/macros.h"
-#include "components/mus/public/interfaces/accelerator_registrar.mojom.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
+#include "services/ui/public/interfaces/accelerator_registrar.mojom.h"
 
 namespace ash {
 namespace mus {

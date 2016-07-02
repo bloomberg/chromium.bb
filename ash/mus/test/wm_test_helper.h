@@ -9,7 +9,7 @@
 
 #include "ash/mus/window_manager_application.h"
 #include "base/macros.h"
-#include "components/mus/public/cpp/tests/test_window_tree_client_setup.h"
+#include "services/ui/public/cpp/tests/test_window_tree_client_setup.h"
 
 namespace base {
 class MessageLoop;

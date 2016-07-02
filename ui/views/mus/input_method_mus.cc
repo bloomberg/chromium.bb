@@ -6,7 +6,7 @@
 
 #include <utility>
 
-#include "components/mus/public/cpp/window.h"
+#include "services/ui/public/cpp/window.h"
 #include "ui/base/ime/text_input_client.h"
 #include "ui/events/event.h"
 #include "ui/platform_window/mojo/ime_type_converters.h"

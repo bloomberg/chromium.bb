@@ -9,7 +9,6 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
-#include "components/mus/public/interfaces/window_tree.mojom.h"
 #include "content/common/render_widget_window_tree_client_factory.mojom.h"
 #include "content/public/common/mojo_shell_connection.h"
 #include "content/renderer/mus/render_widget_mus_connection.h"
@@ -17,6 +16,7 @@
 #include "services/shell/public/cpp/connection.h"
 #include "services/shell/public/cpp/interface_factory.h"
 #include "services/shell/public/cpp/shell_client.h"
+#include "services/ui/public/interfaces/window_tree.mojom.h"
 #include "url/gurl.h"
 
 namespace content {

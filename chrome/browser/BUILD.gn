@@ -618,9 +618,9 @@ split_static_library("browser") {
       "ui/views/frame/browser_non_client_frame_view_mus.h",
     ]
     deps += [
-      "//components/mus/public/cpp",
-      "//components/mus/public/cpp/input_devices",
       "//content/public/common",
+      "//services/ui/public/cpp",
+      "//services/ui/public/cpp/input_devices",
       "//ui/aura",
       "//ui/compositor",
       "//ui/views/mus",

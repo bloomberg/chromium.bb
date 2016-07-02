@@ -6,7 +6,6 @@
 #define SERVICES_NAVIGATION_VIEW_IMPL_H_
 
 #include "base/macros.h"
-#include "components/mus/public/cpp/window_tree_client_delegate.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_contents_delegate.h"
@@ -16,6 +15,7 @@
 #include "services/shell/public/cpp/interface_factory.h"
 #include "services/shell/public/cpp/shell_client.h"
 #include "services/shell/public/cpp/shell_connection_ref.h"
+#include "services/ui/public/cpp/window_tree_client_delegate.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/views/widget/widget_delegate.h"
 

@@ -10,7 +10,7 @@ mojom("interfaces") {
   ]
 
   deps = [
-    "//components/mus/public/interfaces",
+    "//services/ui/public/interfaces",
     "//ui/gfx/geometry/mojo",
     "//url/mojo:url_mojom_gurl",
   ]

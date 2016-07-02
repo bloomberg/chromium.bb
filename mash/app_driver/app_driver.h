@@ -12,10 +12,10 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "components/mus/public/interfaces/accelerator_registrar.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/catalog/public/interfaces/catalog.mojom.h"
 #include "services/shell/public/cpp/shell_client.h"
+#include "services/ui/public/interfaces/accelerator_registrar.mojom.h"
 
 namespace mash {
 namespace app_driver {

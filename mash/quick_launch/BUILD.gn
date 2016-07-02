@@ -43,7 +43,7 @@ mojo_native_application("quick_launch") {
 
   data_deps = [
     ":manifest",
-    "//components/mus",
+    "//services/ui",
   ]
 }
 

@@ -585,7 +585,7 @@
       'filepath': 'mouse_lock',
     },
     'mus': {
-      'filepath': 'components/mus/'\
+      'filepath': 'services/ui/'\
                   '|mojo/gpu/',
     },
     'nacl': {

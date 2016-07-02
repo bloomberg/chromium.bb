@@ -15,11 +15,11 @@
 #endif
 
 #if defined(USE_AURA) && defined(MOJO_SHELL_CLIENT)
-#include "components/mus/public/cpp/input_devices/input_device_client.h"
-#include "components/mus/public/interfaces/input_devices/input_device_server.mojom.h"
 #include "content/public/common/mojo_shell_connection.h"
 #include "services/shell/public/cpp/connector.h"
 #include "services/shell/runner/common/client_util.h"
+#include "services/ui/public/cpp/input_devices/input_device_client.h"
+#include "services/ui/public/interfaces/input_devices/input_device_server.mojom.h"
 #include "ui/views/mus/window_manager_connection.h"
 #endif
 

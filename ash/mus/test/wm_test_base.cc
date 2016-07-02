@@ -14,8 +14,8 @@
 #include "ash/mus/window_manager_application.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
-#include "components/mus/public/cpp/property_type_converters.h"
-#include "components/mus/public/cpp/window_tree_client.h"
+#include "services/ui/public/cpp/property_type_converters.h"
+#include "services/ui/public/cpp/window_tree_client.h"
 #include "ui/display/display.h"
 
 namespace ash {

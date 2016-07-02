@@ -12,7 +12,7 @@
 #include "ash/common/wm_shell.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
-#include "components/mus/public/cpp/window_tree_client_observer.h"
+#include "services/ui/public/cpp/window_tree_client_observer.h"
 
 namespace mus {
 class WindowTreeClient;

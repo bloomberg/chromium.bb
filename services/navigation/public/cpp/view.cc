@@ -5,9 +5,9 @@
 #include "services/navigation/public/cpp/view.h"
 
 #include "base/strings/utf_string_conversions.h"
-#include "components/mus/public/cpp/window.h"
 #include "services/navigation/public/cpp/view_delegate.h"
 #include "services/navigation/public/cpp/view_observer.h"
+#include "services/ui/public/cpp/window.h"
 
 namespace navigation {
 

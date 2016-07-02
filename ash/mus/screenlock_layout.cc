@@ -5,9 +5,9 @@
 #include "ash/mus/screenlock_layout.h"
 
 #include "ash/mus/property_util.h"
-#include "components/mus/public/cpp/property_type_converters.h"
-#include "components/mus/public/cpp/window.h"
-#include "components/mus/public/cpp/window_property.h"
+#include "services/ui/public/cpp/property_type_converters.h"
+#include "services/ui/public/cpp/window.h"
+#include "services/ui/public/cpp/window_property.h"
 #include "ui/gfx/geometry/rect.h"
 
 namespace ash {

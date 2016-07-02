@@ -198,10 +198,10 @@
 #endif
 
 #if defined(MOJO_SHELL_CLIENT) && defined(USE_AURA)
-#include "components/mus/common/gpu_service.h"
 #include "content/public/common/mojo_shell_connection.h"
 #include "content/renderer/mus/render_widget_mus_connection.h"
 #include "content/renderer/mus/render_widget_window_tree_client_factory.h"
+#include "services/ui/common/gpu_service.h"
 #endif
 
 #if defined(ENABLE_IPC_FUZZER)

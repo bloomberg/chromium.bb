@@ -6,7 +6,7 @@
 
 #include "ash/mus/property_util.h"
 #include "ash/public/interfaces/ash_window_type.mojom.h"
-#include "components/mus/public/cpp/window.h"
+#include "services/ui/public/cpp/window.h"
 #include "ui/gfx/geometry/rect.h"
 
 namespace ash {

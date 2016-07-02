@@ -11,11 +11,11 @@
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
-#include "components/mus/public/cpp/window.h"
-#include "components/mus/public/cpp/window_tree_client.h"
-#include "components/mus/public/cpp/window_tree_client_delegate.h"
-#include "components/mus/public/interfaces/window_tree.mojom.h"
 #include "services/shell/public/cpp/shell_test.h"
+#include "services/ui/public/cpp/window.h"
+#include "services/ui/public/cpp/window_tree_client.h"
+#include "services/ui/public/cpp/window_tree_client_delegate.h"
+#include "services/ui/public/interfaces/window_tree.mojom.h"
 
 namespace ash {
 namespace mus {

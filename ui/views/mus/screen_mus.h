@@ -9,8 +9,8 @@
 
 #include "base/observer_list.h"
 #include "base/run_loop.h"
-#include "components/mus/public/interfaces/display.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "services/ui/public/interfaces/display.mojom.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/views/mus/display_list.h"

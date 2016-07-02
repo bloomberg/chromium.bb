@@ -9,11 +9,11 @@
 
 #include "base/macros.h"
 #include "build/build_config.h"
-#include "components/mus/public/cpp/input_event_handler.h"
-#include "components/mus/public/cpp/scoped_window_ptr.h"
-#include "components/mus/public/cpp/window.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/public/browser/render_process_host_observer.h"
+#include "services/ui/public/cpp/input_event_handler.h"
+#include "services/ui/public/cpp/scoped_window_ptr.h"
+#include "services/ui/public/cpp/window.h"
 
 namespace content {
 

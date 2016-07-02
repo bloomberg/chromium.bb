@@ -233,7 +233,7 @@
 #endif
 
 #if defined(MOJO_SHELL_CLIENT) && defined(USE_AURA)
-#include "components/mus/common/switches.h"  // nogncheck
+#include "services/ui/common/switches.h"  // nogncheck
 #endif
 
 #if defined(OS_WIN)
