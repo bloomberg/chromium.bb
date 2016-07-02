@@ -10,11 +10,13 @@
 #include "content/public/renderer/document_state.h"
 #include "net/http/http_response_info.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
+#include "third_party/WebKit/public/web/WebPerformance.h"
 #include "v8/include/v8.h"
 
 using blink::WebDataSource;
 using blink::WebLocalFrame;
 using blink::WebNavigationType;
+using blink::WebPerformance;
 using content::DocumentState;
 
 // Values for CSI "tran" property
@@ -29,7 +31,7 @@ static const char* const kLoadTimesExtensionName = "v8/LoadTimes";
 
 class LoadTimesExtensionWrapper : public v8::Extension {
  public:
-  // Creates an extension which adds a new function, chromium.GetLoadTimes()
+  // Creates an extension which adds a new function, chrome.loadTimes()
   // This function returns an object containing the following members:
   // requestTime: The time the request to load the page was received
   // loadTime: The time the renderer started the load process
@@ -38,6 +40,12 @@ class LoadTimesExtensionWrapper : public v8::Extension {
   // finishLoadTime: The time all loading is done, after the onload()
   //                 method and all resources
   // navigationType: A string describing what user action initiated the load
+  //
+  // Note that chrome.loadTimes() is deprecated in favor of performance.timing.
+  // Many of the timings reported via chrome.loadTimes() match timings available
+  // in performance.timing. Timing data will be removed from chrome.loadTimes()
+  // in a future release. No new timings or other information should be exposed
+  // via these APIs.
   LoadTimesExtensionWrapper() :
     v8::Extension(kLoadTimesExtensionName,
       "var chrome;"
@@ -111,15 +119,41 @@ class LoadTimesExtensionWrapper : public v8::Extension {
     if (!document_state) {
       return;
     }
-    double request_time = document_state->request_time().ToDoubleT();
-    double start_load_time = document_state->start_load_time().ToDoubleT();
-    double commit_load_time = document_state->commit_load_time().ToDoubleT();
+    WebPerformance web_performance = frame->performance();
+    // Though request time now tends to be used to describe the time that the
+    // request for the main resource was issued, when chrome.loadTimes() was
+    // added, it was used to describe 'The time the request to load the page was
+    // received', which is the time now known as navigation start. For backward
+    // compatibility, we continue to provide request_time, setting its value to
+    // navigation start.
+    double request_time = web_performance.navigationStart();
+    // Developers often use start_load_time as the time the navigation was
+    // started, so we return navigationStart for this value as well. See
+    // https://gist.github.com/search?utf8=%E2%9C%93&q=startLoadTime.
+    // Note that, historically, start_load_time reported the time that a
+    // provisional load was first processed in the render process. For
+    // browser-initiated navigations, this is some time after navigation start,
+    // which means that developers who used this value as a way to track the
+    // start of a navigation were misusing this timestamp and getting the wrong
+    // value - they should be using navigationStart intead. Additionally,
+    // once plznavigate ships, provisional loads will not be processed by the
+    // render process for browser-initiated navigations, so reporting the time a
+    // provisional load was processed in the render process will no longer make
+    // sense. Thus, we now report the time for navigationStart, which is a value
+    // more consistent with what developers currently use start_load_time for.
+    double start_load_time = web_performance.navigationStart();
+    // TODO(bmcquade): Remove this. 'commit' time is a concept internal to
+    // chrome that shouldn't be exposed to the web platform.
+    double commit_load_time = web_performance.responseStart();
     double finish_document_load_time =
-        document_state->finish_document_load_time().ToDoubleT();
-    double finish_load_time = document_state->finish_load_time().ToDoubleT();
-    double first_paint_time = document_state->first_paint_time().ToDoubleT();
-    double first_paint_after_load_time =
-        document_state->first_paint_after_load_time().ToDoubleT();
+        web_performance.domContentLoadedEventEnd();
+    double finish_load_time = web_performance.loadEventEnd();
+    double first_paint_time = web_performance.firstPaint();
+    // TODO(bmcquade): remove this. It's misleading to track the first paint
+    // after the load event, since many pages perform their meaningful paints
+    // long before the load event fires. We report a time of zero for the
+    // time being.
+    double first_paint_after_load_time = 0.0;
     std::string navigation_type =
         GetNavigationType(data_source->navigationType());
     bool was_fetched_via_spdy = document_state->was_fetched_via_spdy();
