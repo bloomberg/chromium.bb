@@ -1,62 +1,48 @@
 <!DOCTYPE html>
-<html>
-<head>
+<title>Test that touch events on the controls will not be seen by the video element.</title>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script src="media-file.js"></script>
+<script src="media-controls.js"></script>
+<video controls></video>
+<script>
+async_test(function(t) {
+    var coords;
+    var video = document.querySelector("video");
 
-</head>
-<body>
-    <video controls></video>
-    <p>This tests that touch events on the controls will not be seen by the video element.</p>
-    <script src=media-file.js></script>
-    <!-- TODO(foolip): Convert test to testharness.js. crbug.com/588956
-         (Please avoid writing new tests using video-test.js) -->
-    <script src=video-test.js></script>
-    <script src=media-controls.js></script>
-    <script>
-        waitForEventAndFail("click");
-        waitForEventAndFail("dblclick");
-        waitForEventAndFail("touchstart");
-        waitForEventAndFail("touchend");
-        waitForEventAndFail("touchmove");
+    video.onclick = t.unreached_func();
+    video.ondblclick = t.unreached_func();
+    video.ontouchstart = t.unreached_func();
+    video.ontouchend = t.unreached_func();
+    video.ontouchmove = t.unreached_func();
 
-        waitForEventAndEnd("loadeddata", function()
-        {
-            if (window.eventSender) {
-                // click the play button
-                var coords = mediaControlsButtonCoordinates(video, "play-button");
-                eventSender.addTouchPoint(coords[0], coords[1]);
+    video.onloadeddata = t.step_func_done(function() {
+        // click the play button.
+        touchMediaControl("play-button", true);
 
-                eventSender.touchStart();
-                eventSender.leapForward(100);
-                eventSender.touchEnd();
-                eventSender.cancelTouchPoint(0);
+        // Click the current time display, which should not respond to events,
+        // but should still capture them.
+        touchMediaControl("current-time-display", true);
 
-                // Click the current time display, which should not respond to events, but
-                // should still capture them
-                coords = mediaControlsButtonCoordinates(video, "current-time-display");
-                eventSender.addTouchPoint(coords[0], coords[1]);
+        // Click the timeline - this tests that multilevel shadow DOM elements work.
+        touchMediaControl("timeline");
 
-                eventSender.touchStart();
-                eventSender.leapForward(100);
-                eventSender.touchEnd();
-                eventSender.cancelTouchPoint(0);
+        // Check that the timeline also captures moves.
+        eventSender.updateTouchPoint(0, coords[0] + 10, coords[1] + 10)
+        eventSender.touchMove();
+        eventSender.cancelTouchPoint(0);
+    });
 
+    function touchMediaControl(controlId, cancelTouchPoint) {
+        coords = mediaControlsButtonCoordinates(video, controlId);
+        eventSender.addTouchPoint(coords[0], coords[1]);
+        eventSender.touchStart();
+        eventSender.leapForward(100);
+        eventSender.touchEnd();
+        if (cancelTouchPoint)
+            eventSender.cancelTouchPoint(0);
+    }
 
-                // Click the timeline - this tests that multilevel shadow DOM elements work
-                coords = mediaControlsButtonCoordinates(video, "timeline");
-                eventSender.addTouchPoint(coords[0], coords[1]);
-
-                eventSender.touchStart();
-                eventSender.leapForward(100);
-                eventSender.touchEnd();
-
-                // Check that the timeline also captures moves
-                eventSender.updateTouchPoint(0, coords[0]+10, coords[1]+10)
-                eventSender.touchMove();
-                eventSender.cancelTouchPoint(0);
-
-            }
-        });
-        video.src = findMediaFile("video", "content/test");
-    </script>
-</body>
-</html>
+    video.src = findMediaFile("video", "content/test");
+});
+</script>
