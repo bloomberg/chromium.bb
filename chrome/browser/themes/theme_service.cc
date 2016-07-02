@@ -123,6 +123,10 @@ SkColor ThemeService::BrowserThemeProvider::GetColor(int id) const {
   return theme_service_.GetColor(id, incognito_);
 }
 
+color_utils::HSL ThemeService::BrowserThemeProvider::GetTint(int id) const {
+  return theme_service_.GetTint(id, incognito_);
+}
+
 int ThemeService::BrowserThemeProvider::GetDisplayProperty(int id) const {
   return theme_service_.GetDisplayProperty(id);
 }

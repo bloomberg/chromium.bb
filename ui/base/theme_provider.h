@@ -28,6 +28,10 @@ namespace base {
 class RefCountedMemory;
 }
 
+namespace color_utils {
+struct HSL;
+}
+
 namespace gfx {
 class ImageSkia;
 }
@@ -53,6 +57,9 @@ class UI_BASE_EXPORT ThemeProvider {
 
   // Get the color specified by |id|.
   virtual SkColor GetColor(int id) const = 0;
+
+  // Get the HSL shift specified by |id|.
+  virtual color_utils::HSL GetTint(int id) const = 0;
 
   // Get the property (e.g. an alignment expressed in an enum, or a width or
   // height) specified by |id|.

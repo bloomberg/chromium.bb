@@ -6,6 +6,7 @@
 
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/color_palette.h"
+#include "ui/gfx/color_utils.h"
 #include "ui/gfx/image/image_skia.h"
 
 namespace ui {
@@ -20,6 +21,10 @@ gfx::ImageSkia* DefaultThemeProvider::GetImageSkiaNamed(int id) const {
 
 SkColor DefaultThemeProvider::GetColor(int id) const {
   return gfx::kPlaceholderColor;
+}
+
+color_utils::HSL DefaultThemeProvider::GetTint(int id) const {
+  return color_utils::HSL();
 }
 
 int DefaultThemeProvider::GetDisplayProperty(int id) const {

@@ -42,6 +42,7 @@
 #include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/theme_provider.h"
 #include "ui/events/test/cocoa_test_event_utils.h"
+#include "ui/gfx/color_utils.h"
 #include "ui/gfx/image/image_skia.h"
 
 using base::ASCIIToUTF16;
@@ -221,6 +222,7 @@ class FakeTheme : public ui::ThemeProvider {
   bool UsingSystemTheme() const override { return true; }
   gfx::ImageSkia* GetImageSkiaNamed(int id) const override { return NULL; }
   SkColor GetColor(int id) const override { return SkColor(); }
+  color_utils::HSL GetTint(int id) const override { return color_utils::HSL(); }
   int GetDisplayProperty(int id) const override { return -1; }
   bool ShouldUseNativeFrame() const override { return false; }
   bool HasCustomImage(int id) const override { return false; }

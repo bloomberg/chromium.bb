@@ -16,6 +16,7 @@
 #include "ui/base/layout.h"
 #include "ui/gfx/animation/animation_delegate.h"
 #include "ui/gfx/geometry/point.h"
+#include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/paint_throbber.h"
 #include "ui/views/context_menu_controller.h"
 #include "ui/views/controls/button/button.h"
@@ -257,12 +258,11 @@ class Tab : public gfx::AnimationDelegate,
                     int y_offset,
                     bool is_active);
 
-  // Paints the pinned tab title changed indicator and favicon. |favicon| may
-  // be null. |favicon_draw_bounds| is |favicon_bounds_| adjusted for rtl and
-  // clipped to the bounds of the tab.
+  // Paints the pinned tab title changed indicator and |favicon_|. |favicon_|
+  // may be null. |favicon_draw_bounds| is |favicon_bounds_| adjusted for rtl
+  // and clipped to the bounds of the tab.
   void PaintPinnedTabTitleChangedIndicatorAndIcon(
       gfx::Canvas* canvas,
-      const gfx::ImageSkia& favicon,
       const gfx::Rect& favicon_draw_bounds);
 
   // Paints the favicon, mirrored for RTL if needed.
@@ -297,9 +297,7 @@ class Tab : public gfx::AnimationDelegate,
   // animation.
   void SetFaviconHidingOffset(int offset);
 
-  void set_should_display_crashed_favicon() {
-    should_display_crashed_favicon_ = true;
-  }
+  void SetShouldDisplayCrashedFavicon(bool value);
 
   // Recalculates the correct |button_color_| and resets the title, alert
   // indicator, and close button colors if necessary.  This should be called any
@@ -401,6 +399,11 @@ class Tab : public gfx::AnimationDelegate,
 
   // The current color of the alert indicator and close button icons.
   SkColor button_color_;
+
+  // The favicon for the tab. This might be the sad tab icon or a copy of
+  // data().favicon and may be modified for theming. It is created on demand
+  // and thus may be null.
+  gfx::ImageSkia favicon_;
 
   // As the majority of the tabs are inactive, and painting tabs is slowish,
   // we cache a handful of the inactive tab backgrounds here.

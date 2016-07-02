@@ -557,9 +557,12 @@ gfx::Image Gtk2UI::GetThemeImageNamed(int id) const {
 
 bool Gtk2UI::GetTint(int id, color_utils::HSL* tint) const {
   switch (id) {
+    // Tints for which the cross-platform default is fine. Before adding new
+    // values here, specifically verify they work well on Linux.
     case ThemeProperties::TINT_BACKGROUND_TAB:
-      // Tints for which the cross-platform default is fine. Before adding new
-      // values here, specifically verify they work well on Linux.
+    // TODO(estade): Return something useful for TINT_BUTTONS so that chrome://
+    // page icons are colored appropriately.
+    case ThemeProperties::TINT_BUTTONS:
       break;
     default:
       // Assume any tints not specifically verified on Linux aren't usable.

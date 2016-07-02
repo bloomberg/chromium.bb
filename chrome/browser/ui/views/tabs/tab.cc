@@ -23,8 +23,10 @@
 #include "chrome/browser/ui/views/tabs/tab_controller.h"
 #include "chrome/browser/ui/views/touch_uma/touch_uma.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
 #include "content/public/browser/user_metrics.h"
+#include "content/public/common/url_constants.h"
 #include "grit/components_scaled_resources.h"
 #include "grit/components_strings.h"
 #include "grit/theme_resources.h"
@@ -137,6 +139,14 @@ void DrawHighlight(gfx::Canvas* canvas,
       paint);
 }
 
+// Returns whether the favicon for the given URL should be colored according to
+// the browser theme.
+bool ShouldThemifyFaviconForUrl(const GURL& url) {
+  return url.SchemeIs(content::kChromeUIScheme) &&
+         url.host() != chrome::kChromeUIHelpHost &&
+         url.host() != chrome::kChromeUIUberHost;
+}
+
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -163,7 +173,7 @@ class Tab::FaviconCrashAnimation : public gfx::LinearAnimation,
           static_cast<int>(floor(kHidingOffset * 2.0 * state)));
     } else {
       // Animate the crashed icon up.
-      target_->set_should_display_crashed_favicon();
+      target_->SetShouldDisplayCrashedFavicon(true);
       target_->SetFaviconHidingOffset(
           static_cast<int>(
               floor(kHidingOffset - ((state - .5) * 2.0 * kHidingOffset))));
@@ -610,7 +620,7 @@ void Tab::SetData(const TabRendererData& data) {
 
   if (!data_.IsCrashed()) {
     crash_icon_animation_->Stop();
-    should_display_crashed_favicon_ = false;
+    SetShouldDisplayCrashedFavicon(false);
     favicon_hiding_offset_ = 0;
   } else if (!should_display_crashed_favicon_ &&
              !crash_icon_animation_->is_animating()) {
@@ -982,6 +992,7 @@ void Tab::Layout() {
 void Tab::OnThemeChanged() {
   LoadTabImages();
   OnButtonColorMaybeChanged();
+  favicon_ = gfx::ImageSkia();
 }
 
 const char* Tab::GetClassName() const {
@@ -1164,6 +1175,12 @@ void Tab::MaybeAdjustLeftForPinnedTab(gfx::Rect* bounds) const {
 }
 
 void Tab::DataChanged(const TabRendererData& old) {
+  // We may overzealously reset the favicon cache here but this check eliminates
+  // at least some unnecessary re-computations and fixes the behavior of
+  // about:crash.
+  if (!old.favicon.BackedBySameObjectAs(data().favicon))
+    favicon_ = gfx::ImageSkia();
+
   if (data().alert_state != old.alert_state || data().title != old.title)
     TooltipTextChanged();
 
@@ -1423,18 +1440,17 @@ void Tab::PaintTabFill(gfx::Canvas* canvas,
 
 void Tab::PaintPinnedTabTitleChangedIndicatorAndIcon(
     gfx::Canvas* canvas,
-    const gfx::ImageSkia& favicon,
     const gfx::Rect& favicon_draw_bounds) {
   // The pinned tab title changed indicator consists of two parts:
   // . a clear (totally transparent) part over the bottom right (or left in rtl)
   //   of the favicon. This is done by drawing the favicon to a canvas, then
   //   drawing the clear part on top of the favicon.
   // . a circle in the bottom right (or left in rtl) of the favicon.
-  if (!favicon.isNull()) {
+  if (!favicon_.isNull()) {
     const float kIndicatorCropRadius = 4.5;
     gfx::Canvas icon_canvas(gfx::Size(gfx::kFaviconSize, gfx::kFaviconSize),
                             canvas->image_scale(), false);
-    icon_canvas.DrawImageInt(favicon, 0, 0);
+    icon_canvas.DrawImageInt(favicon_, 0, 0);
     SkPaint clear_paint;
     clear_paint.setAntiAlias(true);
     clear_paint.setXfermodeMode(SkXfermode::kClear_Mode);
@@ -1470,21 +1486,34 @@ void Tab::PaintIcon(gfx::Canvas* canvas) {
   if (bounds.IsEmpty())
     return;
 
-  if (data().network_state != TabRendererData::NETWORK_STATE_NONE) {
-    // Throbber will do its own painting.
+  // Throbber will do its own painting.
+  if (data().network_state != TabRendererData::NETWORK_STATE_NONE)
     return;
+
+  // Ensure that |favicon_| is created.
+  if (favicon_.isNull()) {
+    ui::ResourceBundle* rb = &ui::ResourceBundle::GetSharedInstance();
+    favicon_ = should_display_crashed_favicon_
+                   ? *rb->GetImageSkiaNamed(IDR_CRASH_SAD_FAVICON)
+                   : data().favicon;
+    // Themify the icon if it's a chrome:// page or if it's the sadtab favicon.
+    // This ensures chrome:// pages are visible over the tab background. This is
+    // similar to code in the bookmarks bar.
+    if (!favicon_.isNull() &&
+        (should_display_crashed_favicon_ ||
+         favicon_.BackedBySameObjectAs(
+             *rb->GetImageSkiaNamed(IDR_DEFAULT_FAVICON)) ||
+         ShouldThemifyFaviconForUrl(data().url))) {
+      favicon_ = gfx::ImageSkiaOperations::CreateHSLShiftedImage(
+          favicon_, GetThemeProvider()->GetTint(ThemeProperties::TINT_BUTTONS));
+    }
   }
-  const gfx::ImageSkia& favicon =
-      should_display_crashed_favicon_
-          ? *ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
-                IDR_CRASH_SAD_FAVICON)
-          : data().favicon;
 
   if (showing_pinned_tab_title_changed_indicator_ &&
       !should_display_crashed_favicon_) {
-    PaintPinnedTabTitleChangedIndicatorAndIcon(canvas, favicon, bounds);
-  } else if (!favicon.isNull()) {
-    canvas->DrawImageInt(favicon, 0, 0, bounds.width(), bounds.height(),
+    PaintPinnedTabTitleChangedIndicatorAndIcon(canvas, bounds);
+  } else if (!favicon_.isNull()) {
+    canvas->DrawImageInt(favicon_, 0, 0, bounds.width(), bounds.height(),
                          bounds.x(), bounds.y(), bounds.width(),
                          bounds.height(), false);
   }
@@ -1596,6 +1625,14 @@ double Tab::GetThrobValue() {
   else if (hover_controller_.ShouldDraw())
     val += hover_controller_.GetAnimationValue() * offset;
   return val;
+}
+
+void Tab::SetShouldDisplayCrashedFavicon(bool value) {
+  if (value == should_display_crashed_favicon_)
+    return;
+
+  should_display_crashed_favicon_ = value;
+  favicon_ = gfx::ImageSkia();
 }
 
 void Tab::SetFaviconHidingOffset(int offset) {

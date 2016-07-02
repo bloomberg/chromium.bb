@@ -19,6 +19,7 @@ class BackgroundTheme : public ui::ThemeProvider {
   bool UsingSystemTheme() const override;
   gfx::ImageSkia* GetImageSkiaNamed(int id) const override;
   SkColor GetColor(int id) const override;
+  color_utils::HSL GetTint(int id) const override;
   int GetDisplayProperty(int id) const override;
   bool ShouldUseNativeFrame() const override;
   bool HasCustomImage(int id) const override;

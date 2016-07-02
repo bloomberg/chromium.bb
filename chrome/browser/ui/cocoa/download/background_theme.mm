@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/cocoa/download/background_theme.h"
 
 #import "chrome/browser/themes/theme_properties.h"
+#include "ui/gfx/color_utils.h"
 
 BackgroundTheme::BackgroundTheme(const ui::ThemeProvider* provider)
     : provider_(provider) {
@@ -45,6 +46,10 @@ gfx::ImageSkia* BackgroundTheme::GetImageSkiaNamed(int id) const {
 
 SkColor BackgroundTheme::GetColor(int id) const {
   return SkColor();
+}
+
+color_utils::HSL BackgroundTheme::GetTint(int id) const {
+  return color_utils::HSL();
 }
 
 int BackgroundTheme::GetDisplayProperty(int id) const {

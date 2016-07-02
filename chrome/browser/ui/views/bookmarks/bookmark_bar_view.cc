@@ -89,6 +89,7 @@
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/favicon_size.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/image/image_skia_operations.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/scoped_canvas.h"
 #include "ui/gfx/text_constants.h"
@@ -1788,10 +1789,21 @@ void BookmarkBarView::ConfigureButton(const BookmarkNode* node,
   button->set_context_menu_controller(this);
   button->set_drag_controller(this);
   if (node->is_url()) {
-    const gfx::Image& favicon = model_->GetFavicon(node);
-    button->SetImage(views::Button::STATE_NORMAL,
-                     favicon.IsEmpty() ? *GetImageSkiaNamed(IDR_DEFAULT_FAVICON)
-                                       : *favicon.ToImageSkia());
+    // Themify chrome:// favicons and the default one. This is similar to
+    // code in the tabstrip.
+    bool themify_icon = node->url().SchemeIs(content::kChromeUIScheme);
+    gfx::ImageSkia favicon = model_->GetFavicon(node).AsImageSkia();
+    if (favicon.isNull()) {
+      favicon = *GetImageSkiaNamed(IDR_DEFAULT_FAVICON);
+      themify_icon = true;
+    }
+
+    if (themify_icon && GetThemeProvider()) {
+      favicon = gfx::ImageSkiaOperations::CreateHSLShiftedImage(
+          favicon, GetThemeProvider()->GetTint(ThemeProperties::TINT_BUTTONS));
+    }
+
+    button->SetImage(views::Button::STATE_NORMAL, favicon);
   }
   button->SetMaxSize(gfx::Size(kMaxButtonWidth, 0));
 }
