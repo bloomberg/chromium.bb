@@ -186,6 +186,7 @@
 #elif defined(OS_MACOSX)
 #include "chrome/browser/chrome_browser_main_mac.h"
 #elif defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/arc/arc_navigation_throttle.h"
 #include "chrome/browser/chromeos/attestation/platform_verification_impl.h"
 #include "chrome/browser/chromeos/chrome_browser_main_chromeos.h"
 #include "chrome/browser/chromeos/drive/fileapi/file_system_backend_delegate.h"
@@ -198,7 +199,10 @@
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/system/input_device_settings.h"
+#include "chrome/browser/ui/browser_dialogs.h"
 #include "chromeos/chromeos_switches.h"
+#include "components/arc/arc_service_manager.h"
+#include "components/arc/intent_helper/local_activity_resolver.h"
 #include "components/user_manager/user_manager.h"
 #if defined(MOJO_SHELL_CLIENT)
 #include "chrome/browser/chromeos/chrome_interface_factory.h"
@@ -738,6 +742,13 @@ bool GetDataSaverEnabledPref(const PrefService* prefs) {
          base::FieldTrialList::FindFullName("SaveDataHeader")
              .compare("Disabled");
 }
+
+#if defined(OS_CHROMEOS)
+bool IsIntentPickerEnabled() {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableIntentPicker);
+}
+#endif
 
 }  // namespace
 
@@ -2930,6 +2941,29 @@ ChromeContentBrowserClient::CreateThrottlesForNavigation(
     if (!merge_session_throttling_utils::AreAllSessionMergedAlready() &&
         handle->GetURL().SchemeIsHTTPOrHTTPS()) {
       throttles.push_back(MergeSessionNavigationThrottle::Create(handle));
+    }
+
+    // TODO(djacobo): Support incognito mode by showing an aditional dialog as a
+    // warning that the selected app is not in incognito mode.
+    if (IsIntentPickerEnabled() &&
+        !handle->GetWebContents()->GetBrowserContext()->IsOffTheRecord()) {
+      arc::ArcServiceManager* arc_service_manager =
+          arc::ArcServiceManager::Get();
+      DCHECK(arc_service_manager);
+      scoped_refptr<arc::LocalActivityResolver> local_resolver =
+          arc_service_manager->activity_resolver();
+      if (!local_resolver->ShouldChromeHandleUrl(handle->GetURL())) {
+        prerender::PrerenderContents* prerender_contents =
+            prerender::PrerenderContents::FromWebContents(
+                handle->GetWebContents());
+        if (!prerender_contents) {
+          auto intent_picker_cb = base::Bind(ShowIntentPickerBubble());
+          auto url_to_arc_throttle =
+              base::MakeUnique<arc::ArcNavigationThrottle>(handle,
+                                                           intent_picker_cb);
+          throttles.push_back(std::move(url_to_arc_throttle));
+        }
+      }
     }
   }
 #endif

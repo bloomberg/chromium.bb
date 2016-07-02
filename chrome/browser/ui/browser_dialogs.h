@@ -5,12 +5,20 @@
 #ifndef CHROME_BROWSER_UI_BROWSER_DIALOGS_H_
 #define CHROME_BROWSER_UI_BROWSER_DIALOGS_H_
 
+#include <string>
+#include <utility>
+#include <vector>
+
 #include "base/callback.h"
 #include "build/build_config.h"
 #include "chrome/browser/ui/bookmarks/bookmark_editor.h"
 #include "components/security_state/security_state_model.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/native_widget_types.h"
+
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/arc/arc_navigation_throttle.h"
+#endif  // OS_CHROMEOS
 
 class Browser;
 class ContentSettingBubbleModel;
@@ -37,6 +45,7 @@ class Extension;
 }
 
 namespace gfx {
+class Image;
 class Point;
 }
 
@@ -164,5 +173,18 @@ class ContentSettingBubbleViewsBridge {
 #endif  // TOOLKIT_VIEWS
 
 }  // namespace chrome
+
+#if defined(OS_CHROMEOS)
+
+// Return a pointer to the IntentPickerBubbleView::ShowBubble method.
+using BubbleShowPtr =
+void(*)(content::NavigationHandle*,
+        const std::vector<std::pair<std::basic_string<char>, gfx::Image> >&,
+        const base::Callback<void(size_t,
+                                  arc::ArcNavigationThrottle::CloseReason)>&);
+
+BubbleShowPtr ShowIntentPickerBubble();
+
+#endif  // OS_CHROMEOS
 
 #endif  // CHROME_BROWSER_UI_BROWSER_DIALOGS_H_

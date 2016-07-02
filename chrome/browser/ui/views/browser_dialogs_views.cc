@@ -13,6 +13,10 @@
 #include "chrome/browser/ui/views/new_task_manager_view.h"
 #include "components/chooser_controller/chooser_controller.h"
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/ui/views/intent_picker_bubble_view.h"
+#endif  // OS_CHROMEOS
+
 // This file provides definitions of desktop browser dialog-creation methods for
 // all toolkit-views platforms other than Mac. It also provides the definitions
 // on Mac when mac_views_browser=1 is specified in GYP_DEFINES. The file is
@@ -66,3 +70,11 @@ bool NotifyOldTaskManagerBytesRead(const net::URLRequest& request,
 }
 
 }  // namespace chrome
+
+#if defined(OS_CHROMEOS)
+
+BubbleShowPtr ShowIntentPickerBubble() {
+  return IntentPickerBubbleView::ShowBubble;
+}
+
+#endif  // OS_CHROMEOS

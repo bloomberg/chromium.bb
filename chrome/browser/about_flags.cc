@@ -1965,6 +1965,11 @@ const FeatureEntry kFeatureEntries[] = {
      IDS_NEW_AUDIO_RENDERING_MIXING_STRATEGY_DESCRIPTION,
      kOsWin | kOsMac | kOsLinux | kOsAndroid,
      FEATURE_VALUE_TYPE(media::kNewAudioRenderingMixingStrategy)},
+#if defined(OS_CHROMEOS)
+    {"enable-intent-picker", IDS_ENABLE_INTENT_PICKER,
+     IDS_ENABLE_INTENT_PICKER_DESCRIPTION, kOsCrOS,
+     SINGLE_VALUE_TYPE(switches::kEnableIntentPicker)},
+#endif  // defined(OS_CHROMEOS)
     // NOTE: Adding new command-line switches requires adding corresponding
     // entries to enum "LoginCustomFlags" in histograms.xml. See note in
     // histograms.xml and don't forget to run AboutFlagsHistogramTest unit test.

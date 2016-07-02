@@ -81307,6 +81307,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="929462705" label="disable-link-disambiguation-popup"/>
   <int value="936919953" label="bypass-app-banner-engagement-checks"/>
   <int value="939554480" label="enable-credit-card-scan"/>
+  <int value="943319566" label="enable-intent-picker"/>
   <int value="952558794" label="enable-remote-assistance"/>
   <int value="980396200" label="enable-new-korean-ime"/>
   <int value="983311394" label="tab-management-experiment-type"/>

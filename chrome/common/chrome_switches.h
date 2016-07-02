@@ -115,6 +115,9 @@ extern const char kEnableAllBookmarksView[];
 extern const char kEnableAppLink[];
 #endif
 extern const char kEnableAppsFileAssociations[];
+#if defined(OS_CHROMEOS)
+extern const char kEnableIntentPicker[];
+#endif  // defined(OS_CHROMEOS)
 extern const char kEnableAudioDebugRecordingsFromExtension[];
 extern const char kEnableBenchmarking[];
 extern const char kEnableBookmarkUndo[];

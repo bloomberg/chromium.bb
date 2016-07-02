@@ -372,6 +372,11 @@ const char kEnableAppLink[] = "enable-app-link";
 // Enable OS integration for Chrome app file associations.
 const char kEnableAppsFileAssociations[]    = "enable-apps-file-associations";
 
+#if defined(OS_CHROMEOS)
+// Enables the intent picker so the user can handle URL links with ARC apps.
+const char kEnableIntentPicker[] = "enable-intent-picker";
+#endif  // defined(OS_CHROMEOS)
+
 // If the WebRTC logging private API is active, enables audio debug recordings.
 const char kEnableAudioDebugRecordingsFromExtension[] =
     "enable-audio-debug-recordings-from-extension";
