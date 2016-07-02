@@ -19,6 +19,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/process/process.h"
 #include "cc/input/selection.h"
+#include "cc/layers/surface_layer.h"
 #include "cc/output/begin_frame_args.h"
 #include "cc/surfaces/surface_factory_client.h"
 #include "cc/surfaces/surface_id.h"
@@ -236,8 +237,6 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
                               gfx::Rect src_subrect,
                               const ReadbackRequestCallback& result_callback);
 
-  scoped_refptr<cc::Layer> CreateDelegatedLayer() const;
-
   bool HasValidFrame() const;
 
   void MoveCaret(const gfx::Point& point);
@@ -264,8 +263,6 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   void DestroyDelegatedContent();
   void CheckOutputSurfaceChanged(uint32_t output_surface_id);
   void SubmitCompositorFrame(cc::CompositorFrame frame_data);
-  void SwapDelegatedFrame(uint32_t output_surface_id,
-                          cc::CompositorFrame frame_data);
   void SendDelegatedFrameAck(uint32_t output_surface_id);
   void SendReturnedDelegatedResources(uint32_t output_surface_id);
 

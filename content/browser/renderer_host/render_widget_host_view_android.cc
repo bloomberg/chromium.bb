@@ -284,6 +284,24 @@ gfx::RectF GetSelectionRect(const ui::TouchSelectionController& controller) {
   return rect;
 }
 
+scoped_refptr<cc::SurfaceLayer> CreateSurfaceLayer(
+    const cc::SurfaceId& surface_id,
+    const gfx::Size& size) {
+  DCHECK(!surface_id.is_null());
+  cc::SurfaceManager* manager = CompositorImpl::GetSurfaceManager();
+  DCHECK(manager);
+  // manager must outlive compositors using it.
+  scoped_refptr<cc::SurfaceLayer> surface_layer = cc::SurfaceLayer::Create(
+      base::Bind(&SatisfyCallback, base::Unretained(manager)),
+      base::Bind(&RequireCallback, base::Unretained(manager)));
+  surface_layer->SetSurfaceId(surface_id, 1.f, size);
+  surface_layer->SetBounds(size);
+  surface_layer->SetIsDrawable(true);
+  surface_layer->SetContentsOpaque(true);
+
+  return surface_layer;
+}
+
 }  // anonymous namespace
 
 RenderWidgetHostViewAndroid::LastFrameInfo::LastFrameInfo(
@@ -428,25 +446,6 @@ void RenderWidgetHostViewAndroid::GetScaledContentBitmap(
 
   CopyFromCompositingSurface(src_subrect, dst_size, result_callback,
                              preferred_color_type);
-}
-
-scoped_refptr<cc::Layer> RenderWidgetHostViewAndroid::CreateDelegatedLayer()
-    const {
-  scoped_refptr<cc::Layer> delegated_layer;
-  DCHECK(!surface_id_.is_null());
-  cc::SurfaceManager* manager = CompositorImpl::GetSurfaceManager();
-  DCHECK(manager);
-  // manager must outlive compositors using it.
-  scoped_refptr<cc::SurfaceLayer> surface_layer = cc::SurfaceLayer::Create(
-      base::Bind(&SatisfyCallback, base::Unretained(manager)),
-      base::Bind(&RequireCallback, base::Unretained(manager)));
-  surface_layer->SetSurfaceId(surface_id_, 1.f, texture_size_in_layer_);
-  delegated_layer = surface_layer;
-  delegated_layer->SetBounds(texture_size_in_layer_);
-  delegated_layer->SetIsDrawable(true);
-  delegated_layer->SetContentsOpaque(true);
-
-  return delegated_layer;
 }
 
 bool RenderWidgetHostViewAndroid::HasValidFrame() const {
@@ -1009,7 +1008,7 @@ void RenderWidgetHostViewAndroid::SubmitCompositorFrame(
       surface_factory_->Destroy(surface_id_);
     surface_id_ = id_allocator_->GenerateId();
     surface_factory_->Create(surface_id_);
-    layer_ = CreateDelegatedLayer();
+    layer_ = CreateSurfaceLayer(surface_id_, texture_size_in_layer_);
 
     DCHECK(layer_);
 
@@ -1027,9 +1026,27 @@ void RenderWidgetHostViewAndroid::SubmitCompositorFrame(
                                           ack_callback);
 }
 
-void RenderWidgetHostViewAndroid::SwapDelegatedFrame(
+void RenderWidgetHostViewAndroid::InternalSwapCompositorFrame(
     uint32_t output_surface_id,
     cc::CompositorFrame frame) {
+  last_scroll_offset_ = frame.metadata.root_scroll_offset;
+  DCHECK(frame.delegated_frame_data);
+  DCHECK(CompositorImpl::GetSurfaceManager());
+
+  if (locks_on_frame_count_ > 0) {
+    DCHECK(HasValidFrame());
+    RetainFrame(output_surface_id, std::move(frame));
+    return;
+  }
+
+  DCHECK(!frame.delegated_frame_data->render_pass_list.empty());
+
+  cc::RenderPass* root_pass =
+      frame.delegated_frame_data->render_pass_list.back().get();
+  texture_size_in_layer_ = root_pass->output_rect.size();
+
+  cc::CompositorFrameMetadata metadata = frame.metadata.Clone();
+
   CheckOutputSurfaceChanged(output_surface_id);
   bool has_content = !texture_size_in_layer_.IsEmpty();
 
@@ -1044,9 +1061,6 @@ void RenderWidgetHostViewAndroid::SwapDelegatedFrame(
     DestroyDelegatedContent();
   } else {
     SubmitCompositorFrame(std::move(frame));
-  }
-
-  if (layer_.get()) {
     layer_->SetIsDrawable(true);
     layer_->SetContentsOpaque(true);
     layer_->SetBounds(texture_size_in_layer_);
@@ -1054,41 +1068,6 @@ void RenderWidgetHostViewAndroid::SwapDelegatedFrame(
 
   if (host_->is_hidden())
     RunAckCallbacks(cc::SurfaceDrawStatus::DRAW_SKIPPED);
-}
-
-void RenderWidgetHostViewAndroid::InternalSwapCompositorFrame(
-    uint32_t output_surface_id,
-    cc::CompositorFrame frame) {
-  last_scroll_offset_ = frame.metadata.root_scroll_offset;
-  if (!frame.delegated_frame_data) {
-    LOG(ERROR) << "Non-delegated renderer path no longer supported";
-    return;
-  }
-
-  if (locks_on_frame_count_ > 0) {
-    DCHECK(HasValidFrame());
-    RetainFrame(output_surface_id, std::move(frame));
-    return;
-  }
-
-  if (!CompositorImpl::GetSurfaceManager() && layer_.get() &&
-      layer_->layer_tree_host()) {
-    for (size_t i = 0; i < frame.metadata.latency_info.size(); i++) {
-      std::unique_ptr<cc::SwapPromise> swap_promise(
-          new cc::LatencyInfoSwapPromise(frame.metadata.latency_info[i]));
-      layer_->layer_tree_host()->QueueSwapPromise(std::move(swap_promise));
-    }
-  }
-
-  DCHECK(!frame.delegated_frame_data->render_pass_list.empty());
-
-  cc::RenderPass* root_pass =
-      frame.delegated_frame_data->render_pass_list.back().get();
-  texture_size_in_layer_ = root_pass->output_rect.size();
-
-  cc::CompositorFrameMetadata metadata = frame.metadata.Clone();
-
-  SwapDelegatedFrame(output_surface_id, std::move(frame));
   frame_evictor_->SwappedFrame(!host_->is_hidden());
 
   // As the metadata update may trigger view invalidation, always call it after
