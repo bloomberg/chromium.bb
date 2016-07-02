@@ -223,7 +223,7 @@ class TestRebaselineTest(BaseTestCase):
         super(TestRebaselineTest, self).setUp()
         self.options = MockOptions(
             builder="MOCK Mac10.11", test="userscripts/another-test.html", suffixes="txt", results_directory=None,
-            master_name='chromium.mymaster', build_number=None)
+            build_number=None)
 
     def test_baseline_directory(self):
         command = self.command
@@ -300,7 +300,7 @@ Bug(A) [ Debug ] : fast/css/large-list-of-rules-crash.html [ Failure ]
         try:
             options = MockOptions(
                 optimize=True, builder="MOCK Win10", suffixes="txt", verbose=True, test="failures/expected/image.html",
-                results_directory=None, master_name='chromium.mymaster', build_number=None)
+                results_directory=None, build_number=None)
 
             oc.capture_output()
             self.command.execute(options, [], self.tool)

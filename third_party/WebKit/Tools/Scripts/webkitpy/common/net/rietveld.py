@@ -14,7 +14,7 @@ _log = logging.getLogger(__name__)
 
 BASE_CODEREVIEW_URL = 'https://codereview.chromium.org/api'
 
-TryJob = collections.namedtuple('TryJob', ('builder_name', 'master_name', 'build_number'))
+TryJob = collections.namedtuple('TryJob', ('builder_name', 'build_number'))
 
 def latest_try_jobs(issue_number, builder_names, web, patchset_number=None):
     """Returns a list of TryJob objects for jobs on the latest patchset.
@@ -41,15 +41,8 @@ def latest_try_jobs(issue_number, builder_names, web, patchset_number=None):
     for job in patchset_data['try_job_results']:
         if job['builder'] not in builder_names:
             continue
-        # The master name may be prefixed with "master.", or possibly not;
-        # We want to normalize master name by stripping this prefix.
-        # See http://crbug.com/624545.
-        master_name = job['master']
-        if master_name.startswith('master.'):
-            master_name = master_name[len('master.'):]
         jobs.append(TryJob(
             builder_name=job['builder'],
-            master_name=master_name,
             build_number=job['buildnumber']))
     return jobs
 

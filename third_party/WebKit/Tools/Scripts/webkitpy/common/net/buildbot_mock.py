@@ -36,11 +36,9 @@ _log = logging.getLogger(__name__)
 
 class MockBuild(object):
 
-    def __init__(self, builder, build_number, revision, is_green):
+    def __init__(self, builder, build_number):
         self._builder = builder
         self._number = build_number
-        self._revision = revision
-        self._is_green = is_green
 
     def results_url(self):
         return "%s/%s" % (self._builder.results_url(), self._number)
@@ -48,24 +46,20 @@ class MockBuild(object):
 
 class MockBuilder(object):
 
-    def __init__(self, builder_name, master_name='chromium.mock'):
+    def __init__(self, builder_name):
         self._name = builder_name
-        self._master_name = master_name
 
     def name(self):
         return self._name
 
     def build(self, build_number):
-        return MockBuild(self, build_number=build_number, revision=1234, is_green=False)
+        return MockBuild(self, build_number=build_number)
 
     def results_url(self):
         return "http://example.com/builders/%s/results" % self.name()
 
-    def accumulated_results_url(self):
-        return "http://example.com/f/builders/%s/results/layout-test-results" % self.name()
-
     def latest_layout_test_results_url(self):
-        return self.accumulated_results_url()
+        return "http://example.com/f/builders/%s/results/layout-test-results" % self.name()
 
     def latest_layout_test_results(self):
         return self.fetch_layout_test_results(self.latest_layout_test_results_url())
@@ -76,26 +70,5 @@ class MockBuilder(object):
 
 class MockBuildBot(object):
 
-    def __init__(self):
-        self._mock_builder1_status = {
-            "name": "Builder1",
-            "is_green": True,
-            "activity": "building",
-        }
-        self._mock_builder2_status = {
-            "name": "Builder2",
-            "is_green": True,
-            "activity": "idle",
-        }
-
-    def builder_with_name(self, builder_name, master_name='chromium.mock'):
-        return MockBuilder(builder_name, master_name)
-
-    def builder_statuses(self):
-        return [
-            self._mock_builder1_status,
-            self._mock_builder2_status,
-        ]
-
-    def light_tree_on_fire(self):
-        self._mock_builder2_status["is_green"] = False
+    def builder_with_name(self, builder_name):
+        return MockBuilder(builder_name)

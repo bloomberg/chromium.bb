@@ -26,13 +26,11 @@ class RietveldTest(unittest.TestCase):
                 'try_job_results': [
                     {
                         'builder': 'foo-builder',
-                        'master': 'master.tryserver.foo',
                         'buildnumber': 10,
                         'result': -1
                     },
                     {
                         'builder': 'bar-builder',
-                        'master': 'master.tryserver.bar',
                         'buildnumber': 50,
                         'results': 0
                     },
@@ -42,13 +40,11 @@ class RietveldTest(unittest.TestCase):
                 'try_job_results': [
                     {
                         'builder': 'foo-builder',
-                        'master': 'master.tryserver.foo',
                         'buildnumber': 20,
                         'result': 1
                     },
                     {
                         'builder': 'bar-builder',
-                        'master': 'master.tryserver.bar',
                         'buildnumber': 60,
                         'result': 0
                     },
@@ -60,7 +56,7 @@ class RietveldTest(unittest.TestCase):
     def test_latest_try_jobs(self):
         self.assertEqual(
             latest_try_jobs(11112222, ('bar-builder', 'other-builder'), self.web),
-            [TryJob('bar-builder', 'tryserver.bar', 60)])
+            [TryJob('bar-builder', 60)])
 
     def test_latest_try_jobs_http_error(self):
         def raise_error(_):
@@ -86,7 +82,7 @@ class RietveldTest(unittest.TestCase):
     def test_latest_try_jobs_with_patchset(self):
         self.assertEqual(
             latest_try_jobs(11112222, ('bar-builder', 'other-builder'), self.web, patchset_number=2),
-            [TryJob('bar-builder', 'tryserver.bar', 50)])
+            [TryJob('bar-builder', 50)])
 
     def test_latest_try_jobs_no_relevant_builders(self):
         self.assertEqual(latest_try_jobs(11112222, ('foo', 'bar'), self.web), [])

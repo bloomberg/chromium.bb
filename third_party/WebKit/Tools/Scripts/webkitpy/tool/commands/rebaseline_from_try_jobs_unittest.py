@@ -25,7 +25,6 @@ class RebaselineFromTryJobsTest(BaseTestCase):
                 'try_job_results': [
                     {
                         'builder': 'MOCK Try Win',
-                        'master': 'tryserver.chromium.win',
                         'buildnumber': 5000,
                     },
                 ],
@@ -55,7 +54,6 @@ class RebaselineFromTryJobsTest(BaseTestCase):
             logs,
             ('Getting results for Rietveld issue 11112222.\n'
              '  Builder: MOCK Try Win\n'
-             '  Master: tryserver.chromium.win\n'
              '  Build: 5000\n'
              'fast/dom/prototype-inheritance.html (actual: TEXT, expected: PASS)\n'
              'fast/dom/prototype-taco.html (actual: PASS TEXT, expected: PASS)\n'

@@ -38,8 +38,8 @@ class RebaselineFromTryJobs(AbstractParallelRebaselineCommand):
 
 
     def _unexpected_mismatch_results(self, try_job):
-        results_url = self._results_url(try_job.builder_name, try_job.master_name, try_job.build_number)
-        builder = self._tool.buildbot.builder_with_name(try_job.builder_name, try_job.master_name)
+        results_url = self._results_url(try_job.builder_name, try_job.build_number)
+        builder = self._tool.buildbot.builder_with_name(try_job.builder_name)
         layout_test_results = builder.fetch_layout_test_results(results_url)
         if layout_test_results is None:
             _log.warning('Failed to request layout test results from "%s".', results_url)
@@ -62,7 +62,6 @@ class RebaselineFromTryJobs(AbstractParallelRebaselineCommand):
 
         for job in jobs:
             _log.info('  Builder: %s', job.builder_name)
-            _log.info('  Master: %s', job.master_name)
             _log.info('  Build: %s', job.build_number)
             test_results = self._unexpected_mismatch_results(job)
             if test_results:

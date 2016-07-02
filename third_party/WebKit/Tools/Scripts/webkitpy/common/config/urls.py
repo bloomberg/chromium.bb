@@ -41,19 +41,5 @@ def chromium_results_url_base_for_builder(builder_name):
     return '%s/%s' % (chromium_results_url_base(), re.sub('[ .()]', '_', builder_name))
 
 
-def chromium_results_zip_url(builder_name):
-    return chromium_results_url_base_for_builder(builder_name) + '/results/layout-test-results.zip'
-
-
 def chromium_accumulated_results_url_base_for_builder(builder_name):
     return chromium_results_url_base_for_builder(builder_name) + "/results/layout-test-results"
-
-
-def chromium_buildbot_url(master_name):
-    return "http://build.chromium.org/p/%s" % master_name
-
-
-chromium_lkgr_url = "http://chromium-status.appspot.com/lkgr"
-contribution_guidelines = "http://webkit.org/coding/contributing.html"
-chromium_webkit_sheriff_url = "http://build.chromium.org/p/chromium.webkit/sheriff_webkit.js"
-omahaproxy_url = "http://omahaproxy.appspot.com/"
