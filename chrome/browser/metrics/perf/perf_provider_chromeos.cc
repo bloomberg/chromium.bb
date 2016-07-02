@@ -615,7 +615,7 @@ void PerfProvider::CollectIfNecessary(
 
   // For privacy reasons, Chrome should only collect perf data if there is no
   // incognito session active (or gets spawned during the collection).
-  if (BrowserList::IsOffTheRecordSessionActive()) {
+  if (BrowserList::IsIncognitoSessionActive()) {
     AddToPerfHistogram(INCOGNITO_ACTIVE);
     return;
   }

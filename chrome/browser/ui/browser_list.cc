@@ -197,7 +197,7 @@ void BrowserList::SetLastActive(Browser* browser) {
 }
 
 // static
-bool BrowserList::IsOffTheRecordSessionActive() {
+bool BrowserList::IsIncognitoSessionActive() {
   for (auto* browser : *BrowserList::GetInstance()) {
     if (browser->profile()->IsOffTheRecord())
       return true;
@@ -206,7 +206,7 @@ bool BrowserList::IsOffTheRecordSessionActive() {
 }
 
 // static
-bool BrowserList::IsOffTheRecordSessionActiveForProfile(Profile* profile) {
+bool BrowserList::IsIncognitoSessionActiveForProfile(Profile* profile) {
   for (auto* browser : *BrowserList::GetInstance()) {
     if (browser->profile()->IsSameProfile(profile) &&
         browser->profile()->IsOffTheRecord()) {

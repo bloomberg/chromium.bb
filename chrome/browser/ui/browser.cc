@@ -508,7 +508,7 @@ Browser::~Browser() {
   instant_controller_.reset();
 
   if (profile_->IsOffTheRecord() &&
-      !BrowserList::IsOffTheRecordSessionActiveForProfile(profile_)) {
+      !BrowserList::IsIncognitoSessionActiveForProfile(profile_)) {
     if (profile_->IsGuestSession()) {
 // ChromeOS handles guest data independently.
 #if !defined(OS_CHROMEOS)

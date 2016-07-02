@@ -2272,7 +2272,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, IncognitoEnabled) {
   // Disable incognito via policy and verify that incognito windows can't be
   // opened.
   EXPECT_EQ(1u, active_browser_list->size());
-  EXPECT_FALSE(BrowserList::IsOffTheRecordSessionActive());
+  EXPECT_FALSE(BrowserList::IsIncognitoSessionActive());
   PolicyMap policies;
   policies.Set(key::kIncognitoEnabled, POLICY_LEVEL_MANDATORY,
                POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
@@ -2280,7 +2280,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, IncognitoEnabled) {
   UpdateProviderPolicy(policies);
   EXPECT_FALSE(chrome::ExecuteCommand(browser(), IDC_NEW_INCOGNITO_WINDOW));
   EXPECT_EQ(1u, active_browser_list->size());
-  EXPECT_FALSE(BrowserList::IsOffTheRecordSessionActive());
+  EXPECT_FALSE(BrowserList::IsIncognitoSessionActive());
 
   // Enable via policy and verify that incognito windows can be opened.
   policies.Set(key::kIncognitoEnabled, POLICY_LEVEL_MANDATORY,
@@ -2289,7 +2289,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, IncognitoEnabled) {
   UpdateProviderPolicy(policies);
   EXPECT_TRUE(chrome::ExecuteCommand(browser(), IDC_NEW_INCOGNITO_WINDOW));
   EXPECT_EQ(2u, active_browser_list->size());
-  EXPECT_TRUE(BrowserList::IsOffTheRecordSessionActive());
+  EXPECT_TRUE(BrowserList::IsIncognitoSessionActive());
 }
 
 IN_PROC_BROWSER_TEST_F(PolicyTest, Javascript) {
