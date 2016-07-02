@@ -535,6 +535,15 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     self.Fail('conformance/textures/misc/tex-sub-image-2d-bad-args.html',
         bug=570453)
 
+    self.Fail('conformance/extensions/webgl-draw-buffers.html',
+        bug=625365)
+    # self.Fail('conformance/extensions/webgl-draw-buffers.html',
+    #     ['win', 'intel', 'opengl'], bug=1007) # angle bug ID
+    # self.Fail('conformance/extensions/webgl-draw-buffers.html',
+    #     ['mavericks', ('nvidia', 0xfe9)], bug=586536)
+    # self.Fail('conformance/extensions/webgl-draw-buffers.html',
+    #     ['linux', ('intel', 0x412), 'opengl'], bug=586536)
+
     # Fails on multiple platforms
 
     # OpenGL / NVIDIA failures
@@ -621,8 +630,6 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['win', 'amd', 'opengl'], bug=478572)
 
     # Win / OpenGL / Intel failures
-    self.Fail('conformance/extensions/webgl-draw-buffers.html',
-        ['win', 'intel', 'opengl'], bug=1007) # angle bug ID
     self.Fail('conformance/glsl/functions/glsl-function-normalize.html',
         ['win', 'intel', 'opengl'], bug=1007) # angle bug ID
     self.Fail('conformance/glsl/misc/shader-struct-scope.html',
@@ -642,8 +649,6 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     self.Fail(
         'conformance/glsl/bugs/array-of-struct-with-int-first-position.html',
         ['mac', ('nvidia', 0xfd5), ('nvidia', 0xfe9)], bug=368912)
-    self.Fail('conformance/extensions/webgl-draw-buffers.html',
-        ['mavericks', ('nvidia', 0xfe9)], bug=586536)
 
     # Mac Retina AMD failures
     self.Flaky('conformance/extensions/oes-texture-float-with-video.html',
@@ -722,8 +727,6 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['linux', 'intel', 'opengl'], bug=598924)
     self.Skip('conformance/uniforms/gl-uniform-arrays.html',
         ['linux', 'debug', ('intel', 0x412)], bug=604140)
-    self.Fail('conformance/extensions/webgl-draw-buffers.html',
-        ['linux', ('intel', 0x412), 'opengl'], bug=586536)
 
     # Android failures
     self.Fail('deqp/data/gles2/shaders/constants.html',
