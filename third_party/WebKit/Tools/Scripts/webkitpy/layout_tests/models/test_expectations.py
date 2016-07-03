@@ -336,7 +336,10 @@ class TestExpectationParser(object):
                 warnings.append('"%s" is not legal in the new TestExpectations syntax.' % token)
                 break
             elif state == 'configuration':
-                specifiers.append(cls._configuration_tokens.get(token, token))
+                if token not in cls._configuration_tokens:
+                    warnings.append('Unrecognized specifier "%s"' % token)
+                else:
+                    specifiers.append(cls._configuration_tokens.get(token, token))
             elif state == 'expectations':
                 if token not in cls._expectation_tokens:
                     has_unrecognized_expectation = True

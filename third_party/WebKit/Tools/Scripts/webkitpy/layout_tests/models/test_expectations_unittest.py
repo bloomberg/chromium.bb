@@ -275,7 +275,7 @@ expectations:3 A reftest without text expectation cannot be marked as NeedsRebas
                            "Bug(user) [ Release ] test-to-rebaseline.html [ NeedsRebaseline ]", is_lint_mode=True)
             self.assertFalse(True, "ParseError wasn't raised")
         except ParseError as e:
-            warnings = ("expectations:1 Unrecognized specifier 'foo' failures/expected/text.html\n"
+            warnings = ("expectations:1 Unrecognized specifier \"FOO\" failures/expected/text.html\n"
                         "expectations:2 Path does not exist. non-existent-test.html\n"
                         "expectations:4 A test cannot be rebaselined for Debug/Release. test-to-rebaseline.html")
             self.assertEqual(str(e), warnings)
@@ -474,7 +474,8 @@ class ExpectationSyntaxTests(Base):
         self.assert_tokenize_exp('[ Mac ] foo.html [ Failure ] ', specifiers=['MAC'], expectations=['FAIL'])
 
     def test_unknown_config(self):
-        self.assert_tokenize_exp('[ Foo ] foo.html [ Pass ]', specifiers=['Foo'], expectations=['PASS'])
+        self.assert_tokenize_exp('[ Foo ] foo.html [ Pass ]', specifiers=['Foo'], expectations=['PASS'],
+                                 warnings=['Unrecognized specifier "Foo"'])
 
     def test_unknown_expectation(self):
         self.assert_tokenize_exp('foo.html [ Audio ]', warnings=['Unrecognized expectation "Audio"'])
