@@ -608,11 +608,13 @@ _no_unittest_boards = frozenset((
 ))
 
 _no_vmtest_boards = _arm_boards | _brillo_boards | frozenset((
+    'cyan',
     'cyan-cheets',
     'elm-cheets',
     'glados-cheets',
     'glimmer-cheets',
     'oak-cheets',
+    'samus',
     'samus-cheets',
     'smaug-cheets',
     'celes-cheets',
