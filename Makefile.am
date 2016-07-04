@@ -243,8 +243,7 @@ libwestoninclude_HEADERS =			\
 	libweston/timeline-object.h		\
 	shared/matrix.h				\
 	shared/config-parser.h			\
-	shared/zalloc.h				\
-	shared/platform.h
+	shared/zalloc.h
 
 westonincludedir = $(includedir)/weston
 westoninclude_HEADERS = compositor/weston.h
