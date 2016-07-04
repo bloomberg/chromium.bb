@@ -585,7 +585,6 @@ source_set("browser") {
     "//components/cookie_config",
     "//components/crash/core/browser",
     "//components/crash/core/common",
-    "//components/data_reduction_proxy/core/common",
     "//components/dom_distiller/core",
     "//components/dom_distiller/ios",
     "//components/favicon/core",

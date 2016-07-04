@@ -27,13 +27,11 @@
   GURL _url;
   base::TimeTicks _creationTime;
   BOOL _alreadyCounted;
-  BOOL _dataProxyUsed;
 }
 
 @synthesize url = _url;
 @synthesize creationTime = _creationTime;
 @synthesize alreadyCounted = _alreadyCounted;
-@synthesize dataProxyUsed = _dataProxyUsed;
 
 - (instancetype)initWithURL:(const GURL&)url time:(base::TimeTicks)time {
   if ((self = [super init])) {
@@ -123,12 +121,7 @@
     if (plt.url == _pageURL && !plt.alreadyCounted) {
       plt.alreadyCounted = YES;
       base::TimeDelta elapsed = base::TimeTicks::Now() - plt.creationTime;
-      if (plt.dataProxyUsed) {
-        UMA_HISTOGRAM_MEDIUM_TIMES(
-            "Tabs.iOS_PostRedirectPLT_DataReductionProxy", elapsed);
-      } else {
-        UMA_HISTOGRAM_MEDIUM_TIMES("Tabs.iOS_PostRedirectPLT", elapsed);
-      }
+      UMA_HISTOGRAM_MEDIUM_TIMES("Tabs.iOS_PostRedirectPLT", elapsed);
       break;
     }
   }

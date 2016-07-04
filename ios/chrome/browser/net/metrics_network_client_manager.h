@@ -12,7 +12,6 @@
 #include "url/gurl.h"
 
 @interface PageLoadTimeRecord : NSObject
-@property(nonatomic, assign) BOOL dataProxyUsed;
 @end
 
 // Factory that creates MetricsNetworkClient instances.

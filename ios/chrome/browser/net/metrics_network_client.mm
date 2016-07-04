@@ -8,7 +8,6 @@
 #include "base/logging.h"
 #include "base/metrics/sparse_histogram.h"
 #include "base/strings/sys_string_conversions.h"
-#include "components/data_reduction_proxy/core/common/data_reduction_proxy_headers.h"
 #import "ios/chrome/browser/net/metrics_network_client_manager.h"
 #include "ios/web/public/url_util.h"
 #include "net/base/net_errors.h"
@@ -81,15 +80,6 @@
 - (void)didFinishLoading {
   [super didFinishLoading];
   [self updateHistogram:net::OK];
-  if (!_nativeHeaders)
-    return;
-
-  if (!_loadTimeRecord)
-    return;
-
-  [_loadTimeRecord
-      setDataProxyUsed:data_reduction_proxy::HasDataReductionProxyViaHeader(
-                           _nativeHeaders.get(), NULL)];
 }
 
 @end
