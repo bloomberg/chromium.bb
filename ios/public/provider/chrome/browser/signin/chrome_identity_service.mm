@@ -15,6 +15,20 @@ ChromeIdentityService::~ChromeIdentityService() {
                     OnChromeIdentityServiceWillBeDestroyed());
 }
 
+base::scoped_nsobject<UINavigationController>
+ChromeIdentityService::NewAccountDetails(
+    ChromeIdentity* identity,
+    id<ChromeIdentityBrowserOpener> browser_opener) {
+  return base::scoped_nsobject<UINavigationController>();
+}
+
+base::scoped_nsobject<UINavigationController>
+ChromeIdentityService::NewWebAndAppSettingDetails(
+    ChromeIdentity* identity,
+    id<ChromeIdentityBrowserOpener> browser_opener) {
+  return base::scoped_nsobject<UINavigationController>();
+}
+
 ChromeIdentityInteractionManager*
 ChromeIdentityService::CreateChromeIdentityInteractionManager(
     ios::ChromeBrowserState* browser_state,

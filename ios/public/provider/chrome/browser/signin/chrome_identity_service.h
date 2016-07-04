@@ -9,10 +9,12 @@
 #include <string>
 #include <vector>
 
+#include "base/mac/scoped_nsobject.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
 
 @class ChromeIdentity;
+@protocol ChromeIdentityBrowserOpener;
 @class ChromeIdentityInteractionManager;
 @protocol ChromeIdentityInteractionManagerDelegate;
 @class NSArray;
@@ -20,6 +22,7 @@
 @class NSError;
 @class NSString;
 @class UIImage;
+@class UINavigationController;
 
 namespace ios {
 
@@ -82,6 +85,17 @@ class ChromeIdentityService {
 
   ChromeIdentityService();
   virtual ~ChromeIdentityService();
+
+  // Returns a new account details controller to present. A cancel button is
+  // present as leading navigation item.
+  virtual base::scoped_nsobject<UINavigationController> NewAccountDetails(
+      ChromeIdentity* identity,
+      id<ChromeIdentityBrowserOpener> browser_opener);
+
+  // Returns a new Web and App Setting Details controller to present.
+  virtual base::scoped_nsobject<UINavigationController>
+  NewWebAndAppSettingDetails(ChromeIdentity* identity,
+                             id<ChromeIdentityBrowserOpener> browser_opener);
 
   // Returns a newly created and autoreleased ChromeIdentityInteractionManager
   // with |delegate| as its delegate.

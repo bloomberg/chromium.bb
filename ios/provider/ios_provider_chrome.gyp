@@ -19,6 +19,7 @@
         '../public/provider/chrome/browser/geolocation_updater_provider.mm',
         '../public/provider/chrome/browser/signin/chrome_identity.h',
         '../public/provider/chrome/browser/signin/chrome_identity.mm',
+        '../public/provider/chrome/browser/signin/chrome_identity_browser_opener.h',
         '../public/provider/chrome/browser/signin/chrome_identity_interaction_manager.h',
         '../public/provider/chrome/browser/signin/chrome_identity_interaction_manager.mm',
         '../public/provider/chrome/browser/signin/chrome_identity_service.h',
