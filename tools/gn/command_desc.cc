@@ -338,7 +338,7 @@ void PrintOutputs(const Target* target, bool display_header) {
     target->bundle_data().GetOutputsAsSourceFiles(target->settings(),
                                                   &output_files);
     PrintFileList(output_files, std::string(), true, false);
-  } else {
+  } else if (target->output_type() == Target::ACTION_FOREACH) {
     const SubstitutionList& outputs = target->action_values().outputs();
     if (!outputs.required_types().empty()) {
       // Display the pattern and resolved pattern separately, since there are
@@ -356,6 +356,21 @@ void PrintOutputs(const Target* target, bool display_header) {
     SubstitutionWriter::ApplyListToSources(target->settings(), outputs,
                                            target->sources(), &output_files);
     PrintFileList(output_files, std::string(), true, false);
+  } else {
+    DCHECK(target->IsBinary());
+    const Tool* tool = target->toolchain()->GetToolForTargetFinalOutput(target);
+
+    std::vector<OutputFile> output_files;
+    SubstitutionWriter::ApplyListToLinkerAsOutputFile(
+        target, tool, tool->outputs(), &output_files);
+
+    std::vector<SourceFile> output_files_as_source_file;
+    for (const OutputFile& output_file : output_files) {
+      output_files_as_source_file.push_back(
+          output_file.AsSourceFile(target->settings()->build_settings()));
+    }
+
+    PrintFileList(output_files_as_source_file, std::string(), true, false);
   }
 }
 
@@ -613,10 +628,8 @@ bool PrintTarget(const Target* target,
   }
 
   // Outputs.
-  if (target->output_type() == Target::ACTION ||
-      target->output_type() == Target::ACTION_FOREACH ||
-      target->output_type() == Target::COPY_FILES ||
-      target->output_type() == Target::CREATE_BUNDLE) {
+  if (target->output_type() != Target::SOURCE_SET &&
+      target->output_type() != Target::GROUP) {
     if (what.empty() || what == variables::kOutputs) {
       PrintOutputs(target, display_headers);
       found_match = true;
@@ -819,6 +832,12 @@ const char kDesc_Help[] =
     "\n"
     "  Configs can have child configs. Specifying --tree will show the\n"
     "  hierarchy.\n"
+    "\n"
+    "Printing outputs\n"
+    "\n"
+    "  The \"outputs\" section will list all outputs that apply, including\n"
+    "  the outputs computed from the tool definition (eg for \"executable\",\n"
+    "  \"static_library\", ... targets).\n"
     "\n"
     "Printing deps\n"
     "\n"
