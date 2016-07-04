@@ -57,14 +57,13 @@ class WindowDelegateView : public views::WidgetDelegateView {
 
   // Creates and shows a window with the specified traits.
   static void Create(uint32_t traits) {
-    // Widget destroys itself when closed or mus::Window destroyed.
+    // Widget destroys itself when closed or ui::Window destroyed.
     views::Widget* widget = new views::Widget;
     views::Widget::InitParams params(
         (traits & PANEL) != 0 ? views::Widget::InitParams::TYPE_PANEL
                               : views::Widget::InitParams::TYPE_WINDOW);
     if ((traits & PANEL) != 0) {
-      params
-          .mus_properties[mus::mojom::WindowManager::kInitialBounds_Property] =
+      params.mus_properties[ui::mojom::WindowManager::kInitialBounds_Property] =
           mojo::TypeConverter<std::vector<uint8_t>, gfx::Rect>::Convert(
               gfx::Rect(100, 100, 300, 300));
     }

@@ -6,7 +6,7 @@
 
 #include "base/atomic_sequence_num.h"
 
-namespace mus {
+namespace ui {
 namespace {
 
 // Global atomic to generate gpu memory buffer unique IDs.
@@ -18,4 +18,4 @@ gfx::GenericSharedMemoryId GetNextGenericSharedMemoryId() {
   return gfx::GenericSharedMemoryId(g_next_generic_shared_memory_id.GetNext());
 }
 
-}  // namespace mus
+}  // namespace ui

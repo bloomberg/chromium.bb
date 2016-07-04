@@ -18,7 +18,7 @@
 #include "ui/ozone/public/native_pixmap.h"
 #endif
 
-namespace mus {
+namespace ui {
 
 // Provides common implementation of a GPU memory buffer.
 class MUS_COMMON_EXPORT GpuMemoryBufferImpl : public gfx::GpuMemoryBuffer {
@@ -56,6 +56,6 @@ class MUS_COMMON_EXPORT GpuMemoryBufferImpl : public gfx::GpuMemoryBuffer {
   DISALLOW_COPY_AND_ASSIGN(GpuMemoryBufferImpl);
 };
 
-}  // namespace mus
+}  // namespace ui
 
 #endif  // SERVICES_UI_COMMON_GPU_MEMORY_BUFFER_IMPL_H_

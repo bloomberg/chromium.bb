@@ -7,7 +7,7 @@
 #include "services/ui/ws/access_policy_delegate.h"
 #include "services/ui/ws/server_window.h"
 
-namespace mus {
+namespace ui {
 namespace ws {
 
 WindowManagerAccessPolicy::WindowManagerAccessPolicy() {}
@@ -88,7 +88,7 @@ bool WindowManagerAccessPolicy::CanChangeWindowOpacity(
 
 bool WindowManagerAccessPolicy::CanSetWindowSurface(
     const ServerWindow* window,
-    mus::mojom::SurfaceType surface_type) const {
+    ui::mojom::SurfaceType surface_type) const {
   if (surface_type == mojom::SurfaceType::UNDERLAY)
     return WasCreatedByThisClient(window);
 
@@ -181,4 +181,4 @@ bool WindowManagerAccessPolicy::WasCreatedByThisClient(
 }
 
 }  // namespace ws
-}  // namespace mus
+}  // namespace ui

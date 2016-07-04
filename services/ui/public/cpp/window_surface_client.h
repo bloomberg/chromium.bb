@@ -5,7 +5,7 @@
 #ifndef SERVICES_UI_PUBLIC_CPP_WINDOW_SURFACE_CLIENT_H_
 #define SERVICES_UI_PUBLIC_CPP_WINDOW_SURFACE_CLIENT_H_
 
-namespace mus {
+namespace ui {
 
 class WindowSurface;
 
@@ -19,6 +19,6 @@ class WindowSurfaceClient {
   virtual ~WindowSurfaceClient() {}
 };
 
-}  // namespace mus
+}  // namespace ui
 
 #endif  // SERVICES_UI_PUBLIC_CPP_WINDOW_SURFACE_CLIENT_H_

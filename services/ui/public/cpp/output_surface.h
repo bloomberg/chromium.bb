@@ -12,7 +12,7 @@
 #include "services/ui/public/cpp/window_surface.h"
 #include "services/ui/public/cpp/window_surface_client.h"
 
-namespace mus {
+namespace ui {
 
 class OutputSurface : public cc::OutputSurface, public WindowSurfaceClient {
  public:
@@ -40,6 +40,6 @@ class OutputSurface : public cc::OutputSurface, public WindowSurfaceClient {
   DISALLOW_COPY_AND_ASSIGN(OutputSurface);
 };
 
-}  // namespace mus
+}  // namespace ui
 
 #endif  // SERVICES_UI_PUBLIC_CPP_OUTPUT_SURFACE_H_

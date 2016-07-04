@@ -10,7 +10,7 @@
 #include "ui/gfx/x/x11_connection.h"  // nogncheck
 #endif
 
-namespace mus {
+namespace ui {
 
 WindowServerTestSuite::WindowServerTestSuite(int argc, char** argv)
     : TestSuite(argc, argv) {}
@@ -30,4 +30,4 @@ void WindowServerTestSuite::Initialize() {
   base::i18n::AllowMultipleInitializeCallsForTesting();
 }
 
-}  // namespace mus
+}  // namespace ui

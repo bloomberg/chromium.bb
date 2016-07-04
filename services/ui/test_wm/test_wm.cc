@@ -14,12 +14,12 @@
 #include "ui/display/display.h"
 #include "ui/display/mojo/display_type_converters.h"
 
-namespace mus {
+namespace ui {
 namespace test {
 
 class TestWM : public shell::ShellClient,
-               public mus::WindowTreeClientDelegate,
-               public mus::WindowManagerDelegate {
+               public ui::WindowTreeClientDelegate,
+               public ui::WindowManagerDelegate {
  public:
   TestWM() {}
   ~TestWM() override { delete window_tree_client_; }
@@ -29,42 +29,42 @@ class TestWM : public shell::ShellClient,
   void Initialize(shell::Connector* connector,
                   const shell::Identity& identity,
                   uint32_t id) override {
-    window_tree_client_ = new mus::WindowTreeClient(this, this, nullptr);
+    window_tree_client_ = new ui::WindowTreeClient(this, this, nullptr);
     window_tree_client_->ConnectAsWindowManager(connector);
   }
   bool AcceptConnection(shell::Connection* connection) override {
     return true;
   }
 
-  // mus::WindowTreeClientDelegate:
-  void OnEmbed(mus::Window* root) override {
+  // ui::WindowTreeClientDelegate:
+  void OnEmbed(ui::Window* root) override {
     // WindowTreeClients configured as the window manager should never get
     // OnEmbed().
     NOTREACHED();
   }
-  void OnDidDestroyClient(mus::WindowTreeClient* client) override {
+  void OnDidDestroyClient(ui::WindowTreeClient* client) override {
     window_tree_client_ = nullptr;
   }
-  void OnEventObserved(const ui::Event& event, mus::Window* target) override {
+  void OnEventObserved(const ui::Event& event, ui::Window* target) override {
     // Don't care.
   }
 
-  // mus::WindowManagerDelegate:
-  void SetWindowManagerClient(mus::WindowManagerClient* client) override {
+  // ui::WindowManagerDelegate:
+  void SetWindowManagerClient(ui::WindowManagerClient* client) override {
     window_manager_client_ = client;
   }
-  bool OnWmSetBounds(mus::Window* window, gfx::Rect* bounds) override {
+  bool OnWmSetBounds(ui::Window* window, gfx::Rect* bounds) override {
     return true;
   }
   bool OnWmSetProperty(
-      mus::Window* window,
+      ui::Window* window,
       const std::string& name,
       std::unique_ptr<std::vector<uint8_t>>* new_data) override {
     return true;
   }
-  mus::Window* OnWmCreateTopLevelWindow(
+  ui::Window* OnWmCreateTopLevelWindow(
       std::map<std::string, std::vector<uint8_t>>* properties) override {
-    mus::Window* window = root_->window_tree()->NewWindow(properties);
+    ui::Window* window = root_->window_tree()->NewWindow(properties);
     window->SetBounds(gfx::Rect(10, 10, 500, 500));
     root_->AddChild(window);
     return window;
@@ -80,8 +80,8 @@ class TestWM : public shell::ShellClient,
     root_ = window;
     DCHECK(window_manager_client_);
     window_manager_client_->AddActivationParent(root_);
-    mus::mojom::FrameDecorationValuesPtr frame_decoration_values =
-        mus::mojom::FrameDecorationValues::New();
+    ui::mojom::FrameDecorationValuesPtr frame_decoration_values =
+        ui::mojom::FrameDecorationValues::New();
     frame_decoration_values->max_title_bar_button_width = 0;
     window_manager_client_->SetFrameDecorationValues(
         std::move(frame_decoration_values));
@@ -90,18 +90,18 @@ class TestWM : public shell::ShellClient,
     // Don't care.
   }
 
-  mus::Window* root_ = nullptr;
-  mus::WindowManagerClient* window_manager_client_ = nullptr;
+  ui::Window* root_ = nullptr;
+  ui::WindowManagerClient* window_manager_client_ = nullptr;
   // See WindowTreeClient for details on ownership.
-  mus::WindowTreeClient* window_tree_client_ = nullptr;
+  ui::WindowTreeClient* window_tree_client_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(TestWM);
 };
 
 }  // namespace test
-}  // namespace mus
+}  // namespace ui
 
 MojoResult MojoMain(MojoHandle shell_handle) {
-  shell::ApplicationRunner runner(new mus::test::TestWM);
+  shell::ApplicationRunner runner(new ui::test::TestWM);
   return runner.Run(shell_handle);
 }

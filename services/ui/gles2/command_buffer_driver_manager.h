@@ -11,7 +11,7 @@
 #include "base/macros.h"
 #include "base/threading/non_thread_safe.h"
 
-namespace mus {
+namespace ui {
 
 class CommandBufferDriver;
 
@@ -41,6 +41,6 @@ class CommandBufferDriverManager : base::NonThreadSafe {
   DISALLOW_COPY_AND_ASSIGN(CommandBufferDriverManager);
 };
 
-}  // namespace mus
+}  // namespace ui
 
 #endif  // COMPONENTS_GLES2_COMMAND_BUFFER_DRIVER_MANAGER_H_

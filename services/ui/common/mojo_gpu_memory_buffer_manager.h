@@ -11,7 +11,7 @@
 #include "gpu/command_buffer/client/gpu_memory_buffer_manager.h"
 #include "services/ui/common/mus_common_export.h"
 
-namespace mus {
+namespace ui {
 
 class MUS_COMMON_EXPORT MojoGpuMemoryBufferManager
     : public gpu::GpuMemoryBufferManager {
@@ -38,6 +38,6 @@ class MUS_COMMON_EXPORT MojoGpuMemoryBufferManager
   DISALLOW_COPY_AND_ASSIGN(MojoGpuMemoryBufferManager);
 };
 
-}  // namespace mus
+}  // namespace ui
 
 #endif  // SERVICES_UI_COMMON_MOJO_GPU_MEMORY_BUFFER_MANAGER_H_

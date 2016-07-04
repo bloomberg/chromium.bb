@@ -168,7 +168,7 @@ void QuickLaunchApplication::Initialize(shell::Connector* connector,
                                         const shell::Identity& identity,
                                         uint32_t id) {
   connector_ = connector;
-  mus::GpuService::Initialize(connector);
+  ui::GpuService::Initialize(connector);
   tracing_.Initialize(connector, identity.name());
 
   aura_init_.reset(new views::AuraInit(connector, "views_mus_resources.pak"));

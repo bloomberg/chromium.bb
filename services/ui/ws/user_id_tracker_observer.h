@@ -9,7 +9,7 @@
 
 #include "services/ui/ws/user_id.h"
 
-namespace mus {
+namespace ui {
 namespace ws {
 
 class UserIdTrackerObserver {
@@ -24,6 +24,6 @@ class UserIdTrackerObserver {
 };
 
 }  // namespace ws
-}  // namespace mus
+}  // namespace ui
 
 #endif  // SERVICES_UI_WS_USER_ID_TRACKER_OBSERVER_H_

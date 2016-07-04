@@ -7,7 +7,7 @@
 #include "services/ui/common/gpu_type_converters.h"
 #include "services/ui/gles2/command_buffer_impl.h"
 
-namespace mus {
+namespace ui {
 
 GpuImpl::GpuImpl(mojo::InterfaceRequest<Gpu> request,
                  const scoped_refptr<GpuState>& state)
@@ -24,4 +24,4 @@ void GpuImpl::GetGpuInfo(const GetGpuInfoCallback& callback) {
   callback.Run(mojom::GpuInfo::From<gpu::GPUInfo>(state_->gpu_info()));
 }
 
-}  // namespace mus
+}  // namespace ui

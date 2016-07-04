@@ -5,7 +5,7 @@
 #ifndef SERVICES_UI_WS_SERVER_WINDOW_DRAWN_TRACKER_OBSERVER_H_
 #define SERVICES_UI_WS_SERVER_WINDOW_DRAWN_TRACKER_OBSERVER_H_
 
-namespace mus {
+namespace ui {
 
 namespace ws {
 
@@ -36,6 +36,6 @@ class ServerWindowDrawnTrackerObserver {
 
 }  // namespace ws
 
-}  // namespace mus
+}  // namespace ui
 
 #endif  // SERVICES_UI_WS_SERVER_WINDOW_DRAWN_TRACKER_OBSERVER_H_

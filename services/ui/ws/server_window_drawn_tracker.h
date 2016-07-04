@@ -10,7 +10,7 @@
 #include "base/macros.h"
 #include "services/ui/ws/server_window_observer.h"
 
-namespace mus {
+namespace ui {
 
 namespace ws {
 
@@ -60,6 +60,6 @@ class ServerWindowDrawnTracker : public ServerWindowObserver {
 
 }  // namespace ws
 
-}  // namespace mus
+}  // namespace ui
 
 #endif  // SERVICES_UI_WS_SERVER_WINDOW_DRAWN_TRACKER_H_

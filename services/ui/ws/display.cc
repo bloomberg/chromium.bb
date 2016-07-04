@@ -27,7 +27,7 @@
 #include "services/ui/ws/window_tree_binding.h"
 #include "ui/base/cursor/cursor.h"
 
-namespace mus {
+namespace ui {
 namespace ws {
 
 Display::Display(WindowServer* window_server,
@@ -416,4 +416,4 @@ void Display::OnWindowManagerWindowTreeFactoryReady(
 }
 
 }  // namespace ws
-}  // namespace mus
+}  // namespace ui

@@ -17,7 +17,7 @@
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_checker.h"
 
-namespace mus {
+namespace ui {
 
 class CommandBufferDriver;
 
@@ -73,6 +73,6 @@ class CommandBufferTaskRunner
   DISALLOW_COPY_AND_ASSIGN(CommandBufferTaskRunner);
 };
 
-}  // namespace mus
+}  // namespace ui
 
 #endif  // SERVICES_UI_GLES2_COMMAND_BUFFER_TASK_RUNNER_H_

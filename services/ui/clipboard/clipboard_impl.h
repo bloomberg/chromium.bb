@@ -13,7 +13,7 @@
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/ui/public/interfaces/clipboard.mojom.h"
 
-namespace mus {
+namespace ui {
 namespace clipboard {
 
 // Stub clipboard implementation.
@@ -60,6 +60,6 @@ class ClipboardImpl : public mojom::Clipboard {
 };
 
 }  // namespace clipboard
-}  // namespace mus
+}  // namespace ui
 
 #endif  // SERVICES_UI_CLIPBOARD_CLIPBOARD_IMPL_H_

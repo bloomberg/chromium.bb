@@ -6,7 +6,7 @@
 
 #include "services/ui/gpu/display_compositor/display_impl.h"
 
-namespace mus {
+namespace ui {
 namespace gpu {
 
 DisplayCompositorImpl::DisplayCompositorImpl(
@@ -25,4 +25,4 @@ void DisplayCompositorImpl::CreateDisplay(
 }
 
 }  // namespace gpu
-}  // namespace mus
+}  // namespace ui

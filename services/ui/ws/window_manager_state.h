@@ -17,7 +17,7 @@
 #include "services/ui/ws/user_id.h"
 #include "services/ui/ws/window_server.h"
 
-namespace mus {
+namespace ui {
 namespace ws {
 
 class DisplayManager;
@@ -178,6 +178,6 @@ class WindowManagerState : public EventDispatcherDelegate {
 };
 
 }  // namespace ws
-}  // namespace mus
+}  // namespace ui
 
 #endif  // SERVICES_UI_WS_WINDOW_MANAGER_STATE_H_

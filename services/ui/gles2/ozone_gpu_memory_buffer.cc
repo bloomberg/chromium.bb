@@ -11,7 +11,7 @@
 #include "ui/ozone/public/ozone_platform.h"
 #include "ui/ozone/public/surface_factory_ozone.h"
 
-namespace mus {
+namespace ui {
 
 OzoneGpuMemoryBuffer::OzoneGpuMemoryBuffer(
     gfx::GpuMemoryBufferId id,
@@ -112,4 +112,4 @@ scoped_refptr<ui::NativePixmap> OzoneGpuMemoryBuffer::GetNativePixmap() {
 }
 #endif
 
-}  // namespace mus
+}  // namespace ui

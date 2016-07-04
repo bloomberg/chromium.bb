@@ -12,9 +12,9 @@
 #include "services/ui/ws/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using mus::mojom::UserIdleObserver;
+using ui::mojom::UserIdleObserver;
 
-namespace mus {
+namespace ui {
 namespace ws {
 namespace test {
 
@@ -215,4 +215,4 @@ TEST_F(UserActivityMonitorTest, UserIdleObserverConnectNotification) {
 
 }  // namespace test
 }  // namespace ws
-}  // namespace mus
+}  // namespace ui

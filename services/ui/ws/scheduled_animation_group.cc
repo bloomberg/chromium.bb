@@ -8,9 +8,9 @@
 
 #include "services/ui/ws/server_window.h"
 
-using mus::mojom::AnimationProperty;
+using ui::mojom::AnimationProperty;
 
-namespace mus {
+namespace ui {
 namespace ws {
 namespace {
 
@@ -353,4 +353,4 @@ ScheduledAnimationGroup::ScheduledAnimationGroup(ServerWindow* window,
     : window_(window), id_(id), time_scheduled_(time_scheduled) {}
 
 }  // namespace ws
-}  // namespace mus
+}  // namespace ui

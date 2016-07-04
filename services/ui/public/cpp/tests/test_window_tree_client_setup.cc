@@ -9,7 +9,7 @@
 #include "services/ui/public/cpp/window_tree_client.h"
 #include "ui/display/display.h"
 
-namespace mus {
+namespace ui {
 
 TestWindowTreeClientSetup::TestWindowTreeClientSetup() {}
 
@@ -51,9 +51,9 @@ void TestWindowTreeClientSetup::CommonInit(
 }
 
 void TestWindowTreeClientSetup::OnDidDestroyClient(
-    mus::WindowTreeClient* client) {
+    ui::WindowTreeClient* client) {
   // See comment in header as to why we do this.
   window_tree_client_.release();
 }
 
-}  // namespace mus
+}  // namespace ui

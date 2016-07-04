@@ -14,7 +14,7 @@
 #include "services/ui/common/types.h"
 #include "services/ui/public/interfaces/window_tree.mojom.h"
 
-namespace mus {
+namespace ui {
 
 namespace mojom {
 class Display;
@@ -62,6 +62,6 @@ class WindowServerDelegate {
 };
 
 }  // namespace ws
-}  // namespace mus
+}  // namespace ui
 
 #endif  // SERVICES_UI_WS_WINDOW_SERVER_DELEGATE_H_

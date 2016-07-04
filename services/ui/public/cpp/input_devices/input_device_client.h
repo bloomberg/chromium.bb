@@ -17,7 +17,7 @@
 #include "ui/events/devices/input_device_manager.h"
 #include "ui/events/devices/touchscreen_device.h"
 
-namespace mus {
+namespace ui {
 
 // Allows in-process client code to register as a InputDeviceEventObserver and
 // get information about input-devices. InputDeviceClient itself acts as an
@@ -30,7 +30,7 @@ class InputDeviceClient : public mojom::InputDeviceObserverMojo,
   InputDeviceClient();
   ~InputDeviceClient() override;
 
-  // Connects to mojo:mus as an observer on InputDeviceServer to receive input
+  // Connects to mojo:ui as an observer on InputDeviceServer to receive input
   // device updates.
   void Connect(mojom::InputDeviceServerPtr server);
 
@@ -79,6 +79,6 @@ class InputDeviceClient : public mojom::InputDeviceObserverMojo,
   DISALLOW_COPY_AND_ASSIGN(InputDeviceClient);
 };
 
-}  // namespace mus
+}  // namespace ui
 
 #endif  // SERVICES_UI_PUBLIC_CPP_INPUT_DEVICES_INPUT_DEVICE_CLIENT_H_

@@ -7,7 +7,7 @@
 #include "services/ui/ws/server_window.h"
 #include "services/ui/ws/server_window_drawn_tracker_observer.h"
 
-namespace mus {
+namespace ui {
 
 namespace ws {
 
@@ -133,4 +133,4 @@ void ServerWindowDrawnTracker::OnWindowVisibilityChanged(ServerWindow* window) {
 
 }  // namespace ws
 
-}  // namespace mus
+}  // namespace ui

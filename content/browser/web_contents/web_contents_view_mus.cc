@@ -23,18 +23,18 @@ using blink::WebDragOperationsMask;
 namespace content {
 
 WebContentsViewMus::WebContentsViewMus(
-    mus::Window* parent_window,
+    ui::Window* parent_window,
     WebContentsImpl* web_contents,
     WebContentsViewDelegate* delegate,
     RenderViewHostDelegateView** delegate_view)
     : web_contents_(web_contents), delegate_(delegate) {
   DCHECK(parent_window);
   *delegate_view = this;
-  mus::Window* window = parent_window->window_tree()->NewWindow();
+  ui::Window* window = parent_window->window_tree()->NewWindow();
   window->SetVisible(true);
   window->SetBounds(gfx::Rect(300, 300));
   parent_window->AddChild(window);
-  mus_window_.reset(new mus::ScopedWindowPtr(window));
+  mus_window_.reset(new ui::ScopedWindowPtr(window));
 }
 
 WebContentsViewMus::~WebContentsViewMus() {}

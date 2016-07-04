@@ -6,7 +6,7 @@
 #include "services/ui/ws/server_window.h"
 #include "services/ui/ws/test_server_window_delegate.h"
 
-namespace mus {
+namespace ui {
 
 namespace ws {
 
@@ -15,7 +15,7 @@ TestServerWindowDelegate::TestServerWindowDelegate()
 
 TestServerWindowDelegate::~TestServerWindowDelegate() {}
 
-mus::SurfacesState* TestServerWindowDelegate::GetSurfacesState() {
+ui::SurfacesState* TestServerWindowDelegate::GetSurfacesState() {
   return surfaces_state_.get();
 }
 
@@ -31,4 +31,4 @@ void TestServerWindowDelegate::ScheduleSurfaceDestruction(
 
 }  // namespace ws
 
-}  // namespace mus
+}  // namespace ui

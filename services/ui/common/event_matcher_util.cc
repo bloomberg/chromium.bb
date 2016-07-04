@@ -4,7 +4,7 @@
 
 #include "services/ui/common/event_matcher_util.h"
 
-namespace mus {
+namespace ui {
 
 mojom::EventMatcherPtr CreateKeyMatcher(ui::mojom::KeyboardCode code,
                                         int flags) {
@@ -25,4 +25,4 @@ mojom::EventMatcherPtr CreateKeyMatcher(ui::mojom::KeyboardCode code,
   return matcher;
 }
 
-}  // namespace mus
+}  // namespace ui

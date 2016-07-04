@@ -6,7 +6,7 @@
 
 #include "services/ui/ws/window_tree_binding.h"
 
-namespace mus {
+namespace ui {
 namespace ws {
 
 void WindowServerDelegate::OnFirstDisplayReady() {}
@@ -22,4 +22,4 @@ WindowServerDelegate::CreateWindowTreeBinding(
 }
 
 }  // namespace ws
-}  // namespace mus
+}  // namespace ui

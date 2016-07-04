@@ -140,7 +140,7 @@ void Shadow::SetStyle(Style style) {
   }
 }
 
-void Shadow::Install(::mus::Window* window) {
+void Shadow::Install(::ui::Window* window) {
   SetShadow(window, this);
   window_ = window;
   window_->AddObserver(this);
@@ -201,7 +201,7 @@ void Shadow::UpdateLayerBounds() {
       gfx::Rect(aperture_x, aperture_y, aperture_x * 2, aperture_y * 2));
 }
 
-void Shadow::OnWindowDestroyed(::mus::Window* window) {
+void Shadow::OnWindowDestroyed(::ui::Window* window) {
   DCHECK_EQ(window_, window);
   window_ = nullptr;
 }

@@ -8,7 +8,7 @@
 #include "services/ui/ws/window_server.h"
 #include "services/ui/ws/window_tree.h"
 
-namespace mus {
+namespace ui {
 namespace ws {
 
 WindowTreeBinding::WindowTreeBinding(mojom::WindowTreeClient* client)
@@ -59,4 +59,4 @@ mojom::WindowManager* DefaultWindowTreeBinding::GetWindowManager() {
 }
 
 }  // namespace ws
-}  // namespace mus
+}  // namespace ui

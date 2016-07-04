@@ -4,7 +4,7 @@
 
 #include "services/ui/gles2/gpu_memory_tracker.h"
 
-namespace mus {
+namespace ui {
 
 GpuMemoryTracker::GpuMemoryTracker() {}
 
@@ -33,4 +33,4 @@ uint64_t GpuMemoryTracker::ShareGroupTracingGUID() const {
 
 GpuMemoryTracker::~GpuMemoryTracker() {}
 
-}  // namespace mus
+}  // namespace ui

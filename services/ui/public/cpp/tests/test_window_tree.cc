@@ -6,7 +6,7 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace mus {
+namespace ui {
 
 TestWindowTree::TestWindowTree()
     : got_change_(false), change_id_(0), window_id_(0u) {}
@@ -141,7 +141,7 @@ void TestWindowTree::SetCanFocus(uint32_t window_id, bool can_focus) {}
 
 void TestWindowTree::SetPredefinedCursor(uint32_t change_id,
                                          uint32_t window_id,
-                                         mus::mojom::Cursor cursor_id) {}
+                                         ui::mojom::Cursor cursor_id) {}
 
 void TestWindowTree::SetWindowTextInputState(uint32_t window_id,
                                              mojo::TextInputStatePtr state) {}
@@ -151,7 +151,7 @@ void TestWindowTree::SetImeVisibility(uint32_t window_id,
                                       mojo::TextInputStatePtr state) {}
 
 void TestWindowTree::OnWindowInputEventAck(uint32_t event_id,
-                                           mus::mojom::EventResult result) {
+                                           ui::mojom::EventResult result) {
   EXPECT_FALSE(acked_events_.count(event_id));
   acked_events_.insert(event_id);
 }
@@ -164,4 +164,4 @@ void TestWindowTree::GetCursorLocationMemory(
   callback.Run(mojo::ScopedSharedBufferHandle());
 }
 
-}  // namespace mus
+}  // namespace ui

@@ -14,7 +14,7 @@
 #include "services/ui/ws/server_window_observer.h"
 #include "services/ui/ws/server_window_surface_manager.h"
 
-namespace mus {
+namespace ui {
 
 namespace ws {
 
@@ -290,7 +290,7 @@ void ServerWindow::SetOpacity(float value) {
                     OnWindowOpacityChanged(this, old_opacity, opacity_));
 }
 
-void ServerWindow::SetPredefinedCursor(mus::mojom::Cursor value) {
+void ServerWindow::SetPredefinedCursor(ui::mojom::Cursor value) {
   if (value == cursor_id_)
     return;
   cursor_id_ = value;
@@ -299,7 +299,7 @@ void ServerWindow::SetPredefinedCursor(mus::mojom::Cursor value) {
       OnWindowPredefinedCursorChanged(this, static_cast<int32_t>(value)));
 }
 
-void ServerWindow::SetNonClientCursor(mus::mojom::Cursor value) {
+void ServerWindow::SetNonClientCursor(ui::mojom::Cursor value) {
   if (value == non_client_cursor_id_)
     return;
   non_client_cursor_id_ = value;
@@ -467,4 +467,4 @@ ServerWindow** ServerWindow::GetStackingTarget(ServerWindow* window) {
 
 }  // namespace ws
 
-}  // namespace mus
+}  // namespace ui

@@ -20,7 +20,7 @@
 #include "services/ui/surfaces/direct_output_surface_ozone.h"
 #endif
 
-namespace mus {
+namespace ui {
 
 DisplayCompositor::DisplayCompositor(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner,
@@ -121,4 +121,4 @@ void DisplayCompositor::DisplayOutputSurfaceLost() {
 void DisplayCompositor::DisplaySetMemoryPolicy(
     const cc::ManagedMemoryPolicy& policy) {}
 
-}  // namespace mus
+}  // namespace ui

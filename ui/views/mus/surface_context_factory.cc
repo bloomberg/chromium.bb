@@ -29,8 +29,8 @@ class FakeReflector : public ui::Reflector {
 
 SurfaceContextFactory::SurfaceContextFactory(
     shell::Connector* connector,
-    mus::Window* window,
-    mus::mojom::SurfaceType surface_type)
+    ui::Window* window,
+    ui::mojom::SurfaceType surface_type)
     : surface_binding_(connector, window, surface_type),
       next_surface_id_namespace_(1u) {}
 

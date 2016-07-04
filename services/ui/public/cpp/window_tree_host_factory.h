@@ -15,7 +15,7 @@ namespace shell {
 class Connector;
 }
 
-namespace mus {
+namespace ui {
 
 class WindowManagerDelegate;
 class WindowTreeClientDelegate;
@@ -32,6 +32,6 @@ void CreateWindowTreeHost(shell::Connector* connector,
                           mojom::WindowTreeHostPtr* host,
                           WindowManagerDelegate* window_manager_delegate);
 
-}  // namespace mus
+}  // namespace ui
 
 #endif  // SERVICES_UI_PUBLIC_CPP_WINDOW_TREE_HOST_FACTORY_H_

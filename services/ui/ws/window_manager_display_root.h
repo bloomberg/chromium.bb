@@ -11,7 +11,7 @@
 
 #include "base/macros.h"
 
-namespace mus {
+namespace ui {
 namespace ws {
 
 class Display;
@@ -57,6 +57,6 @@ class WindowManagerDisplayRoot {
 };
 
 }  // namespace ws
-}  // namespace mus
+}  // namespace ui
 
 #endif  // SERVICES_UI_WS_WINDOW_MANAGER_DISPLAY_ROOT_H_

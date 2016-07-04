@@ -10,7 +10,7 @@
 #include "services/ui/ws/display_binding.h"
 #include "services/ui/ws/window_server.h"
 
-namespace mus {
+namespace ui {
 namespace ws {
 
 WindowTreeHostFactory::WindowTreeHostFactory(
@@ -39,4 +39,4 @@ void WindowTreeHostFactory::CreateWindowTreeHost(
 }
 
 }  // namespace ws
-}  // namespace mus
+}  // namespace ui

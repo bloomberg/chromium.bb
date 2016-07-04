@@ -4,7 +4,7 @@
 
 #include "services/ui/public/cpp/window_observer.h"
 
-namespace mus {
+namespace ui {
 
 ////////////////////////////////////////////////////////////////////////////////
 // WindowObserver, public:
@@ -15,4 +15,4 @@ WindowObserver::TreeChangeParams::TreeChangeParams()
       new_parent(nullptr),
       receiver(nullptr) {}
 
-}  // namespace mus
+}  // namespace ui

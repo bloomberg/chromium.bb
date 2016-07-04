@@ -14,7 +14,7 @@
 
 using base::TimeDelta;
 
-namespace mus {
+namespace ui {
 using mojom::AnimationProperty;
 using mojom::AnimationTweenType;
 using mojom::AnimationElement;

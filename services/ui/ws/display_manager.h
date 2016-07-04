@@ -14,7 +14,7 @@
 #include "services/ui/ws/user_id.h"
 #include "services/ui/ws/user_id_tracker_observer.h"
 
-namespace mus {
+namespace ui {
 namespace ws {
 
 class Display;
@@ -97,6 +97,6 @@ class DisplayManager : public UserIdTrackerObserver {
 };
 
 }  // namespace ws
-}  // namespace mus
+}  // namespace ui
 
 #endif  // SERVICES_UI_WS_DISPLAY_MANAGER_H_

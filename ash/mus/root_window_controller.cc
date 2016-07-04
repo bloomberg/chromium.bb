@@ -75,7 +75,7 @@ class WorkspaceLayoutManagerDelegateImpl
 }  // namespace
 
 RootWindowController::RootWindowController(WindowManager* window_manager,
-                                           ::mus::Window* root,
+                                           ::ui::Window* root,
                                            const display::Display& display)
     : window_manager_(window_manager),
       root_(root),
@@ -113,20 +113,20 @@ shell::Connector* RootWindowController::GetConnector() {
   return window_manager_->connector();
 }
 
-::mus::Window* RootWindowController::NewTopLevelWindow(
+::ui::Window* RootWindowController::NewTopLevelWindow(
     std::map<std::string, std::vector<uint8_t>>* properties) {
   // TODO(sky): panels need a different frame, http:://crbug.com/614362.
   const bool provide_non_client_frame =
-      GetWindowType(*properties) == ::mus::mojom::WindowType::WINDOW ||
-      GetWindowType(*properties) == ::mus::mojom::WindowType::PANEL;
+      GetWindowType(*properties) == ::ui::mojom::WindowType::WINDOW ||
+      GetWindowType(*properties) == ::ui::mojom::WindowType::PANEL;
   if (provide_non_client_frame)
-    (*properties)[::mus::mojom::kWaitForUnderlay_Property].clear();
+    (*properties)[::ui::mojom::kWaitForUnderlay_Property].clear();
 
   // TODO(sky): constrain and validate properties before passing to server.
-  ::mus::Window* window = root_->window_tree()->NewWindow(properties);
+  ::ui::Window* window = root_->window_tree()->NewWindow(properties);
   window->SetBounds(CalculateDefaultBounds(window));
 
-  ::mus::Window* container_window = nullptr;
+  ::ui::Window* container_window = nullptr;
   mojom::Container container;
   if (GetRequestedContainer(window, &container)) {
     container_window = GetWindowForContainer(container);
@@ -149,8 +149,7 @@ shell::Connector* RootWindowController::GetConnector() {
   return window;
 }
 
-::mus::Window* RootWindowController::GetWindowForContainer(
-    Container container) {
+::ui::Window* RootWindowController::GetWindowForContainer(Container container) {
   WmWindowMus* wm_window =
       GetWindowByShellWindowId(MashContainerToAshShellWindowId(container));
   DCHECK(wm_window);
@@ -174,11 +173,11 @@ StatusLayoutManager* RootWindowController::GetStatusLayoutManager() {
 }
 
 gfx::Rect RootWindowController::CalculateDefaultBounds(
-    ::mus::Window* window) const {
+    ::ui::Window* window) const {
   if (window->HasSharedProperty(
-          ::mus::mojom::WindowManager::kInitialBounds_Property)) {
+          ::ui::mojom::WindowManager::kInitialBounds_Property)) {
     return window->GetSharedProperty<gfx::Rect>(
-        ::mus::mojom::WindowManager::kInitialBounds_Property);
+        ::ui::mojom::WindowManager::kInitialBounds_Property);
   }
 
   int width, height;

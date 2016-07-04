@@ -7,7 +7,7 @@
 
 #include "cc/surfaces/surface_id.h"
 
-namespace mus {
+namespace ui {
 namespace gpu {
 
 class CompositorFrameSinkImpl;
@@ -22,6 +22,6 @@ class CompositorFrameSinkDelegate {
 };
 
 }  // namespace gpu
-}  // namespace mus
+}  // namespace ui
 
 #endif  // SERVICES_UI_GPU_DISPLAY_COMPOSITOR_COMPOSITOR_FRAME_SINK_DELEGATE_H_

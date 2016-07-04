@@ -9,7 +9,7 @@
 #include "services/ui/public/interfaces/gpu/display_compositor.mojom.h"
 #include "services/ui/public/interfaces/gpu/display_compositor_host.mojom.h"
 
-namespace mus {
+namespace ui {
 namespace gpu {
 
 class DisplayCompositorImpl : public mojom::DisplayCompositor {
@@ -32,6 +32,6 @@ class DisplayCompositorImpl : public mojom::DisplayCompositor {
 };
 
 }  // namespace gpu
-}  // namespace mus
+}  // namespace ui
 
 #endif  // SERVICES_UI_GPU_DISPLAY_COMPOSITOR_DISPLAY_COMPOSITOR_IMPL_H_

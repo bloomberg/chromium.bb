@@ -10,7 +10,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "ui/gfx/geometry/rect.h"
 
-namespace mus {
+namespace ui {
 
 namespace ws {
 namespace {
@@ -40,4 +40,4 @@ void PlatformScreenImpl::ConfigurePhysicalDisplay(
 }
 
 }  // namespace ws
-}  // namespace mus
+}  // namespace ui

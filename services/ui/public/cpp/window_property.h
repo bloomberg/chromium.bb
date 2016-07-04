@@ -39,7 +39,7 @@
 // MUS_DECLARE_WINDOW_PROPERTY_TYPE(MyType) which is a shorthand for
 // MUS_DECLARE_EXPORTED_WINDOW_PROPERTY_TYPE(, MyType).
 
-namespace mus {
+namespace ui {
 
 template <typename T>
 void Window::SetSharedProperty(const std::string& name, const T& data) {
@@ -113,44 +113,44 @@ void Window::ClearLocalProperty(const WindowProperty<T>* property) {
   SetLocalProperty(property, property->default_value);
 }
 
-}  // namespace mus
+}  // namespace ui
 
 // Macros to instantiate the property getter/setter template functions.
-#define MUS_DECLARE_EXPORTED_WINDOW_PROPERTY_TYPE(EXPORT, T) \
-  template EXPORT void mus::Window::SetLocalProperty(        \
-      const mus::WindowProperty<T>*, T);                     \
-  template EXPORT T mus::Window::GetLocalProperty(           \
-      const mus::WindowProperty<T>*) const;                  \
-  template EXPORT void mus::Window::ClearLocalProperty(      \
-      const mus::WindowProperty<T>*);
+#define MUS_DECLARE_EXPORTED_WINDOW_PROPERTY_TYPE(EXPORT, T)                   \
+  template EXPORT void ui::Window::SetLocalProperty(                           \
+      const ui::WindowProperty<T>*, T);                                        \
+  template EXPORT T ui::Window::GetLocalProperty(const ui::WindowProperty<T>*) \
+      const;                                                                   \
+  template EXPORT void ui::Window::ClearLocalProperty(                         \
+      const ui::WindowProperty<T>*);
 #define MUS_DECLARE_WINDOW_PROPERTY_TYPE(T) \
   MUS_DECLARE_EXPORTED_WINDOW_PROPERTY_TYPE(, T)
 
-#define MUS_DEFINE_WINDOW_PROPERTY_KEY(TYPE, NAME, DEFAULT)                 \
-  static_assert(sizeof(TYPE) <= sizeof(int64_t),                            \
-                "Property type must fit in 64 bits");                       \
-  namespace {                                                               \
-  const mus::WindowProperty<TYPE> NAME##_Value = {DEFAULT, #NAME, nullptr}; \
-  }                                                                         \
-  const mus::WindowProperty<TYPE>* const NAME = &NAME##_Value;
+#define MUS_DEFINE_WINDOW_PROPERTY_KEY(TYPE, NAME, DEFAULT)                \
+  static_assert(sizeof(TYPE) <= sizeof(int64_t),                           \
+                "Property type must fit in 64 bits");                      \
+  namespace {                                                              \
+  const ui::WindowProperty<TYPE> NAME##_Value = {DEFAULT, #NAME, nullptr}; \
+  }                                                                        \
+  const ui::WindowProperty<TYPE>* const NAME = &NAME##_Value;
 
-#define MUS_DEFINE_LOCAL_WINDOW_PROPERTY_KEY(TYPE, NAME, DEFAULT)           \
-  static_assert(sizeof(TYPE) <= sizeof(int64_t),                            \
-                "Property type must fit in 64 bits");                       \
-  namespace {                                                               \
-  const mus::WindowProperty<TYPE> NAME##_Value = {DEFAULT, #NAME, nullptr}; \
-  const mus::WindowProperty<TYPE>* const NAME = &NAME##_Value;              \
+#define MUS_DEFINE_LOCAL_WINDOW_PROPERTY_KEY(TYPE, NAME, DEFAULT)          \
+  static_assert(sizeof(TYPE) <= sizeof(int64_t),                           \
+                "Property type must fit in 64 bits");                      \
+  namespace {                                                              \
+  const ui::WindowProperty<TYPE> NAME##_Value = {DEFAULT, #NAME, nullptr}; \
+  const ui::WindowProperty<TYPE>* const NAME = &NAME##_Value;              \
   }
 
-#define MUS_DEFINE_OWNED_WINDOW_PROPERTY_KEY(TYPE, NAME, DEFAULT)       \
-  namespace {                                                           \
-  void Deallocator##NAME(int64_t p) {                                   \
-    enum { type_must_be_complete = sizeof(TYPE) };                      \
-    delete mus::WindowPropertyCaster<TYPE*>::FromInt64(p);              \
-  }                                                                     \
-  const mus::WindowProperty<TYPE*> NAME##_Value = {DEFAULT, #NAME,      \
-                                                   &Deallocator##NAME}; \
-  }                                                                     \
-  const mus::WindowProperty<TYPE*>* const NAME = &NAME##_Value;
+#define MUS_DEFINE_OWNED_WINDOW_PROPERTY_KEY(TYPE, NAME, DEFAULT)      \
+  namespace {                                                          \
+  void Deallocator##NAME(int64_t p) {                                  \
+    enum { type_must_be_complete = sizeof(TYPE) };                     \
+    delete ui::WindowPropertyCaster<TYPE*>::FromInt64(p);              \
+  }                                                                    \
+  const ui::WindowProperty<TYPE*> NAME##_Value = {DEFAULT, #NAME,      \
+                                                  &Deallocator##NAME}; \
+  }                                                                    \
+  const ui::WindowProperty<TYPE*>* const NAME = &NAME##_Value;
 
 #endif  // SERVICES_UI_PUBLIC_CPP_WINDOW_PROPERTY_H_

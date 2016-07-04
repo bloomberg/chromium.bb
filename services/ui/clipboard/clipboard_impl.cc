@@ -16,7 +16,7 @@ using mojo::Array;
 using mojo::Map;
 using mojo::String;
 
-namespace mus {
+namespace ui {
 namespace clipboard {
 
 // ClipboardData contains data copied to the Clipboard for a variety of formats.
@@ -105,4 +105,4 @@ void ClipboardImpl::WriteClipboardData(
 }
 
 }  // namespace clipboard
-}  // namespace mus
+}  // namespace ui

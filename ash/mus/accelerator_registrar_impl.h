@@ -25,7 +25,7 @@ class WindowManager;
 // connection. This manages its own lifetime, and destroys itself when the
 // AcceleratorRegistrar and all its AcceleratorHandlers are disconnected. Upon
 // destruction, it calls the DestroyCallback.
-class AcceleratorRegistrarImpl : public ::mus::mojom::AcceleratorRegistrar,
+class AcceleratorRegistrarImpl : public ::ui::mojom::AcceleratorRegistrar,
                                  public WindowManagerObserver {
  public:
   using DestroyCallback = base::Callback<void(AcceleratorRegistrarImpl*)>;
@@ -51,10 +51,10 @@ class AcceleratorRegistrarImpl : public ::mus::mojom::AcceleratorRegistrar,
 
   void RemoveAllAccelerators();
 
-  // ::mus::mojom::AcceleratorRegistrar:
-  void SetHandler(::mus::mojom::AcceleratorHandlerPtr handler) override;
+  // ::ui::mojom::AcceleratorRegistrar:
+  void SetHandler(::ui::mojom::AcceleratorHandlerPtr handler) override;
   void AddAccelerator(uint32_t accelerator_id,
-                      ::mus::mojom::EventMatcherPtr matcher,
+                      ::ui::mojom::EventMatcherPtr matcher,
                       const AddAcceleratorCallback& callback) override;
   void RemoveAccelerator(uint32_t accelerator_id) override;
 
@@ -63,7 +63,7 @@ class AcceleratorRegistrarImpl : public ::mus::mojom::AcceleratorRegistrar,
   void OnWindowTreeClientDestroyed() override;
 
   WindowManager* window_manager_;
-  ::mus::mojom::AcceleratorHandlerPtr accelerator_handler_;
+  ::ui::mojom::AcceleratorHandlerPtr accelerator_handler_;
   mojo::Binding<AcceleratorRegistrar> binding_;
   uint32_t accelerator_namespace_;
   std::set<uint32_t> accelerators_;

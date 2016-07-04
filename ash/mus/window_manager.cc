@@ -46,7 +46,7 @@ WindowManager::~WindowManager() {
   delete window_tree_client_;
 }
 
-void WindowManager::Init(::mus::WindowTreeClient* window_tree_client) {
+void WindowManager::Init(::ui::WindowTreeClient* window_tree_client) {
   DCHECK(!window_tree_client_);
   window_tree_client_ = window_tree_client;
 
@@ -57,8 +57,8 @@ void WindowManager::Init(::mus::WindowTreeClient* window_tree_client) {
   // The insets are roughly what is needed by CustomFrameView. The expectation
   // is at some point we'll write our own NonClientFrameView and get the insets
   // from it.
-  ::mus::mojom::FrameDecorationValuesPtr frame_decoration_values =
-      ::mus::mojom::FrameDecorationValues::New();
+  ::ui::mojom::FrameDecorationValuesPtr frame_decoration_values =
+      ::ui::mojom::FrameDecorationValues::New();
   const gfx::Insets client_area_insets =
       NonClientFrameController::GetPreferredClientAreaInsets();
   frame_decoration_values->normal_client_area_insets = client_area_insets;
@@ -82,7 +82,7 @@ void WindowManager::SetScreenLocked(bool is_locked) {
   }
 }
 
-::mus::Window* WindowManager::NewTopLevelWindow(
+::ui::Window* WindowManager::NewTopLevelWindow(
     std::map<std::string, std::vector<uint8_t>>* properties) {
   // TODO(sky): need to maintain active as well as allowing specifying display.
   RootWindowController* root_window_controller =
@@ -110,13 +110,13 @@ void WindowManager::AddAccelerators() {
   // deal correctly.
   window_manager_client_->AddAccelerator(
       kWindowSwitchAccelerator,
-      ::mus::CreateKeyMatcher(ui::mojom::KeyboardCode::TAB,
-                              ui::mojom::kEventFlagControlDown),
+      ::ui::CreateKeyMatcher(ui::mojom::KeyboardCode::TAB,
+                             ui::mojom::kEventFlagControlDown),
       base::Bind(&AssertTrue));
 }
 
 RootWindowController* WindowManager::CreateRootWindowController(
-    ::mus::Window* window,
+    ::ui::Window* window,
     const display::Display& display) {
   // TODO(sky): there is timing issues with using ScreenMus.
   if (!screen_) {
@@ -137,7 +137,7 @@ RootWindowController* WindowManager::CreateRootWindowController(
   return root_window_controller;
 }
 
-void WindowManager::OnWindowDestroying(::mus::Window* window) {
+void WindowManager::OnWindowDestroying(::ui::Window* window) {
   for (auto it = root_window_controllers_.begin();
        it != root_window_controllers_.end(); ++it) {
     if ((*it)->root() == window) {
@@ -149,7 +149,7 @@ void WindowManager::OnWindowDestroying(::mus::Window* window) {
   NOTREACHED();
 }
 
-void WindowManager::OnWindowDestroyed(::mus::Window* window) {
+void WindowManager::OnWindowDestroyed(::ui::Window* window) {
   window->RemoveObserver(this);
   for (auto it = root_window_controllers_.begin();
        it != root_window_controllers_.end(); ++it) {
@@ -161,12 +161,12 @@ void WindowManager::OnWindowDestroyed(::mus::Window* window) {
   NOTREACHED();
 }
 
-void WindowManager::OnEmbed(::mus::Window* root) {
+void WindowManager::OnEmbed(::ui::Window* root) {
   // WindowManager should never see this, instead OnWmNewDisplay() is called.
   NOTREACHED();
 }
 
-void WindowManager::OnDidDestroyClient(::mus::WindowTreeClient* client) {
+void WindowManager::OnDidDestroyClient(::ui::WindowTreeClient* client) {
   // Destroying the roots should result in removal from
   // |root_window_controllers_|.
   DCHECK(root_window_controllers_.empty());
@@ -183,15 +183,15 @@ void WindowManager::OnDidDestroyClient(::mus::WindowTreeClient* client) {
 }
 
 void WindowManager::OnEventObserved(const ui::Event& event,
-                                    ::mus::Window* target) {
+                                    ::ui::Window* target) {
   // Does not use EventObservers.
 }
 
-void WindowManager::SetWindowManagerClient(::mus::WindowManagerClient* client) {
+void WindowManager::SetWindowManagerClient(::ui::WindowManagerClient* client) {
   window_manager_client_ = client;
 }
 
-bool WindowManager::OnWmSetBounds(::mus::Window* window, gfx::Rect* bounds) {
+bool WindowManager::OnWmSetBounds(::ui::Window* window, gfx::Rect* bounds) {
   // TODO(sky): this indirectly sets bounds, which is against what
   // OnWmSetBounds() recommends doing. Remove that restriction, or fix this.
   WmWindowMus::Get(window)->SetBounds(*bounds);
@@ -200,31 +200,31 @@ bool WindowManager::OnWmSetBounds(::mus::Window* window, gfx::Rect* bounds) {
 }
 
 bool WindowManager::OnWmSetProperty(
-    ::mus::Window* window,
+    ::ui::Window* window,
     const std::string& name,
     std::unique_ptr<std::vector<uint8_t>>* new_data) {
   // TODO(sky): constrain this to set of keys we know about, and allowed
   // values.
-  return name == ::mus::mojom::WindowManager::kShowState_Property ||
-         name == ::mus::mojom::WindowManager::kPreferredSize_Property ||
-         name == ::mus::mojom::WindowManager::kResizeBehavior_Property ||
-         name == ::mus::mojom::WindowManager::kWindowAppIcon_Property ||
-         name == ::mus::mojom::WindowManager::kWindowTitle_Property;
+  return name == ::ui::mojom::WindowManager::kShowState_Property ||
+         name == ::ui::mojom::WindowManager::kPreferredSize_Property ||
+         name == ::ui::mojom::WindowManager::kResizeBehavior_Property ||
+         name == ::ui::mojom::WindowManager::kWindowAppIcon_Property ||
+         name == ::ui::mojom::WindowManager::kWindowTitle_Property;
 }
 
-::mus::Window* WindowManager::OnWmCreateTopLevelWindow(
+::ui::Window* WindowManager::OnWmCreateTopLevelWindow(
     std::map<std::string, std::vector<uint8_t>>* properties) {
   return NewTopLevelWindow(properties);
 }
 
 void WindowManager::OnWmClientJankinessChanged(
-    const std::set<::mus::Window*>& client_windows,
+    const std::set<::ui::Window*>& client_windows,
     bool janky) {
   for (auto* window : client_windows)
     SetWindowIsJanky(window, janky);
 }
 
-void WindowManager::OnWmNewDisplay(::mus::Window* window,
+void WindowManager::OnWmNewDisplay(::ui::Window* window,
                                    const display::Display& display) {
   CreateRootWindowController(window, display);
 }

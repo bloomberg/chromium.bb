@@ -1556,7 +1556,7 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
 #endif
 #if defined(MOJO_SHELL_CLIENT) && defined(USE_AURA)
     switches::kUseMusInRenderer,
-    mus::switches::kUseMojoGpuCommandBufferInMus,
+    ui::switches::kUseMojoGpuCommandBufferInMus,
 #endif
   };
   renderer_cmd->CopySwitchesFrom(browser_cmd, kSwitchNames,

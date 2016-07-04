@@ -6,7 +6,7 @@
 
 #include "base/logging.h"
 
-namespace mus {
+namespace ui {
 
 InputDeviceClient::InputDeviceClient() : binding_(this) {
   InputDeviceManager::SetInstance(this);
@@ -109,4 +109,4 @@ bool InputDeviceClient::AreTouchscreensEnabled() const {
   return true;
 }
 
-}  // namespace mus
+}  // namespace ui

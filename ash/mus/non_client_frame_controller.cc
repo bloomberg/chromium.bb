@@ -113,12 +113,12 @@ class WmNativeWidgetMus : public views::NativeWidgetMus {
  public:
   WmNativeWidgetMus(views::internal::NativeWidgetDelegate* delegate,
                     shell::Connector* connector,
-                    ::mus::Window* window,
-                    ::mus::WindowManagerClient* window_manager_client)
+                    ::ui::Window* window,
+                    ::ui::WindowManagerClient* window_manager_client)
       : NativeWidgetMus(delegate,
                         connector,
                         window,
-                        ::mus::mojom::SurfaceType::UNDERLAY),
+                        ::ui::mojom::SurfaceType::UNDERLAY),
         window_manager_client_(window_manager_client) {}
   ~WmNativeWidgetMus() override {}
 
@@ -168,7 +168,7 @@ class WmNativeWidgetMus : public views::NativeWidgetMus {
 
   std::unique_ptr<MoveEventHandler> move_event_handler_;
 
-  ::mus::WindowManagerClient* window_manager_client_;
+  ::ui::WindowManagerClient* window_manager_client_;
 
   DISALLOW_COPY_AND_ASSIGN(WmNativeWidgetMus);
 };
@@ -202,9 +202,9 @@ class ClientViewMus : public views::ClientView {
 // static
 void NonClientFrameController::Create(
     shell::Connector* connector,
-    ::mus::Window* parent,
-    ::mus::Window* window,
-    ::mus::WindowManagerClient* window_manager_client) {
+    ::ui::Window* parent,
+    ::ui::Window* window,
+    ::ui::WindowManagerClient* window_manager_client) {
   new NonClientFrameController(connector, parent, window,
                                window_manager_client);
 }
@@ -221,9 +221,9 @@ int NonClientFrameController::GetMaxTitleBarButtonWidth() {
 
 NonClientFrameController::NonClientFrameController(
     shell::Connector* connector,
-    ::mus::Window* parent,
-    ::mus::Window* window,
-    ::mus::WindowManagerClient* window_manager_client)
+    ::ui::Window* parent,
+    ::ui::Window* window,
+    ::ui::WindowManagerClient* window_manager_client)
     : widget_(new views::Widget), window_(window) {
   WmWindowMus* wm_window = WmWindowMus::Get(window);
   wm_window->set_widget(widget_, WmWindowMus::WidgetCreationType::FOR_CLIENT);
@@ -231,8 +231,8 @@ NonClientFrameController::NonClientFrameController(
 
   // To simplify things this code creates a Widget. While a Widget is created
   // we need to ensure we don't inadvertently change random properties of the
-  // underlying mus::Window. For example, showing the Widget shouldn't change
-  // the bounds of the mus::Window in anyway.
+  // underlying ui::Window. For example, showing the Widget shouldn't change
+  // the bounds of the ui::Window in anyway.
   views::Widget::InitParams params(views::Widget::InitParams::TYPE_WINDOW);
   // We initiate focus at the mus level, not at the views level.
   params.activatable = views::Widget::InitParams::ACTIVATABLE_NO;
@@ -262,12 +262,12 @@ NonClientFrameController::~NonClientFrameController() {
 
 base::string16 NonClientFrameController::GetWindowTitle() const {
   if (!window_->HasSharedProperty(
-          ::mus::mojom::WindowManager::kWindowTitle_Property)) {
+          ::ui::mojom::WindowManager::kWindowTitle_Property)) {
     return base::string16();
   }
 
   base::string16 title = window_->GetSharedProperty<base::string16>(
-      ::mus::mojom::WindowManager::kWindowTitle_Property);
+      ::ui::mojom::WindowManager::kWindowTitle_Property);
 
   if (IsWindowJanky(window_))
     title += base::ASCIIToUTF16(" !! Not responding !!");
@@ -281,20 +281,20 @@ views::View* NonClientFrameController::GetContentsView() {
 
 bool NonClientFrameController::CanResize() const {
   return window_ &&
-         (GetResizeBehavior(window_) &
-          ::mus::mojom::kResizeBehaviorCanResize) != 0;
+         (GetResizeBehavior(window_) & ::ui::mojom::kResizeBehaviorCanResize) !=
+             0;
 }
 
 bool NonClientFrameController::CanMaximize() const {
   return window_ &&
          (GetResizeBehavior(window_) &
-          ::mus::mojom::kResizeBehaviorCanMaximize) != 0;
+          ::ui::mojom::kResizeBehaviorCanMaximize) != 0;
 }
 
 bool NonClientFrameController::CanMinimize() const {
   return window_ &&
          (GetResizeBehavior(window_) &
-          ::mus::mojom::kResizeBehaviorCanMinimize) != 0;
+          ::ui::mojom::kResizeBehaviorCanMinimize) != 0;
 }
 
 bool NonClientFrameController::ShouldShowWindowTitle() const {
@@ -309,18 +309,18 @@ views::ClientView* NonClientFrameController::CreateClientView(
 }
 
 void NonClientFrameController::OnWindowSharedPropertyChanged(
-    ::mus::Window* window,
+    ::ui::Window* window,
     const std::string& name,
     const std::vector<uint8_t>* old_data,
     const std::vector<uint8_t>* new_data) {
-  if (name == ::mus::mojom::WindowManager::kResizeBehavior_Property)
+  if (name == ::ui::mojom::WindowManager::kResizeBehavior_Property)
     widget_->OnSizeConstraintsChanged();
-  else if (name == ::mus::mojom::WindowManager::kWindowTitle_Property)
+  else if (name == ::ui::mojom::WindowManager::kWindowTitle_Property)
     widget_->UpdateWindowTitle();
 }
 
 void NonClientFrameController::OnWindowLocalPropertyChanged(
-    ::mus::Window* window,
+    ::ui::Window* window,
     const void* key,
     intptr_t old) {
   if (IsWindowJankyProperty(key)) {
@@ -329,7 +329,7 @@ void NonClientFrameController::OnWindowLocalPropertyChanged(
   }
 }
 
-void NonClientFrameController::OnWindowDestroyed(::mus::Window* window) {
+void NonClientFrameController::OnWindowDestroyed(::ui::Window* window) {
   window_->RemoveObserver(this);
   window_ = nullptr;
 }

@@ -16,7 +16,7 @@ class SurfaceHittest;
 class SurfaceManager;
 }  // namespace cc
 
-namespace mus {
+namespace ui {
 
 // The SurfacesState object is an object global to the Window Manager app that
 // holds the SurfaceManager and allocates new Surfaces namespaces.
@@ -44,6 +44,6 @@ class SurfacesState : public base::RefCounted<SurfacesState> {
   DISALLOW_COPY_AND_ASSIGN(SurfacesState);
 };
 
-}  // namespace mus
+}  // namespace ui
 
 #endif  //  SERVICES_UI_SURFACES_SURFACES_STATE_H_

@@ -150,7 +150,7 @@ void ChromeNativeAppWindowViewsAuraAsh::OnBeforeWidgetInit(
   }
 #if defined(MOJO_SHELL_CLIENT)
   init_params->mus_properties
-      [mus::mojom::WindowManager::kRemoveStandardFrame_Property] =
+      [ui::mojom::WindowManager::kRemoveStandardFrame_Property] =
       mojo::ConvertTo<std::vector<uint8_t>>(init_params->remove_standard_frame);
 #endif
 }

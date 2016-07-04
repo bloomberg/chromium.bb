@@ -14,7 +14,7 @@
 #include "services/ui/public/interfaces/gpu/display_compositor.mojom.h"
 #include "services/ui/surfaces/surfaces_state.h"
 
-namespace mus {
+namespace ui {
 namespace gpu {
 
 class CompositorFrameSinkDelegate;
@@ -69,6 +69,6 @@ class CompositorFrameSinkImpl : public cc::SurfaceFactoryClient,
 };
 
 }  // namespace gpu
-}  // namespace mus
+}  // namespace ui
 
 #endif  // SERVICES_UI_GPU_DISPLAY_COMPOSITOR_COMPOSITOR_FRAME_SINK_IMPL_H_

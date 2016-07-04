@@ -14,7 +14,7 @@ class TimeDelta;
 class TimeTicks;
 }
 
-namespace mus {
+namespace ui {
 
 class CommandBufferLocalClient {
  public:
@@ -26,6 +26,6 @@ class CommandBufferLocalClient {
   virtual ~CommandBufferLocalClient() {}
 };
 
-}  // namespace mus
+}  // namespace ui
 
 #endif  // SERVICES_UI_GLES2_COMMAND_BUFFER_LOCAL_CLIENT_H_

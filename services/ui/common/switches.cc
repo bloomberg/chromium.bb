@@ -4,7 +4,7 @@
 
 #include "services/ui/common/switches.h"
 
-namespace mus {
+namespace ui {
 namespace switches {
 
 // Use mojo GPU command buffer instead of Chrome GPU command buffer.
@@ -17,4 +17,4 @@ const char kUseMojoGpuCommandBufferInMus[] =
 const char kUseTestConfig[] = "use-test-config";
 
 }  // namespace switches
-}  // namespace mus
+}  // namespace ui

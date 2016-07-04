@@ -10,8 +10,8 @@ namespace mojo {
 
 // static
 display::Display
-TypeConverter<display::Display, mus::mojom::DisplayPtr>::Convert(
-    const mus::mojom::DisplayPtr& input) {
+TypeConverter<display::Display, ui::mojom::DisplayPtr>::Convert(
+    const ui::mojom::DisplayPtr& input) {
   if (input.is_null())
     return display::Display();
 
@@ -29,27 +29,27 @@ TypeConverter<display::Display, mus::mojom::DisplayPtr>::Convert(
   result.set_device_scale_factor(input->device_pixel_ratio);
 
   switch (input->rotation) {
-    case mus::mojom::Rotation::VALUE_0:
+    case ui::mojom::Rotation::VALUE_0:
       result.set_rotation(display::Display::ROTATE_0);
       break;
-    case mus::mojom::Rotation::VALUE_90:
+    case ui::mojom::Rotation::VALUE_90:
       result.set_rotation(display::Display::ROTATE_90);
       break;
-    case mus::mojom::Rotation::VALUE_180:
+    case ui::mojom::Rotation::VALUE_180:
       result.set_rotation(display::Display::ROTATE_180);
       break;
-    case mus::mojom::Rotation::VALUE_270:
+    case ui::mojom::Rotation::VALUE_270:
       result.set_rotation(display::Display::ROTATE_270);
       break;
   }
   switch (input->touch_support) {
-    case mus::mojom::TouchSupport::UNKNOWN:
+    case ui::mojom::TouchSupport::UNKNOWN:
       result.set_touch_support(display::Display::TOUCH_SUPPORT_UNKNOWN);
       break;
-    case mus::mojom::TouchSupport::AVAILABLE:
+    case ui::mojom::TouchSupport::AVAILABLE:
       result.set_touch_support(display::Display::TOUCH_SUPPORT_AVAILABLE);
       break;
-    case mus::mojom::TouchSupport::UNAVAILABLE:
+    case ui::mojom::TouchSupport::UNAVAILABLE:
       result.set_touch_support(display::Display::TOUCH_SUPPORT_UNAVAILABLE);
       break;
   }

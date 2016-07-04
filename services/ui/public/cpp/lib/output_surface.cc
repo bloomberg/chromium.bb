@@ -10,11 +10,11 @@
 #include "cc/output/output_surface_client.h"
 #include "services/ui/public/cpp/window_surface.h"
 
-namespace mus {
+namespace ui {
 
 OutputSurface::OutputSurface(
     const scoped_refptr<cc::ContextProvider>& context_provider,
-    std::unique_ptr<mus::WindowSurface> surface)
+    std::unique_ptr<ui::WindowSurface> surface)
     : cc::OutputSurface(context_provider, nullptr, nullptr),
       surface_(std::move(surface)) {
   capabilities_.delegated_rendering = true;
@@ -56,7 +56,7 @@ void OutputSurface::SwapBuffers(cc::CompositorFrame frame) {
 }
 
 void OutputSurface::OnResourcesReturned(
-    mus::WindowSurface* surface,
+    ui::WindowSurface* surface,
     mojo::Array<cc::ReturnedResource> resources) {
   cc::CompositorFrameAck cfa;
   cfa.resources = resources.To<cc::ReturnedResourceArray>();
@@ -67,4 +67,4 @@ void OutputSurface::SwapBuffersComplete() {
   client_->DidSwapBuffersComplete();
 }
 
-}  // namespace mus
+}  // namespace ui

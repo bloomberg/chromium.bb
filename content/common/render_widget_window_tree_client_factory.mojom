@@ -9,5 +9,5 @@ import "services/ui/public/interfaces/window_tree.mojom";
 interface RenderWidgetWindowTreeClientFactory {
   CreateWindowTreeClientForRenderWidget(
       uint32 routing_id,
-      mus.mojom.WindowTreeClient& window_tree_client);
+      ui.mojom.WindowTreeClient& window_tree_client);
 };

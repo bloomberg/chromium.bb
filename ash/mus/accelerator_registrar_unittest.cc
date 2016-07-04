@@ -15,10 +15,10 @@
 #include "services/ui/public/cpp/window.h"
 #include "services/ui/public/interfaces/accelerator_registrar.mojom.h"
 
-using ::mus::mojom::AcceleratorHandler;
-using ::mus::mojom::AcceleratorHandlerPtr;
-using ::mus::mojom::AcceleratorRegistrar;
-using ::mus::mojom::AcceleratorRegistrarPtr;
+using ::ui::mojom::AcceleratorHandler;
+using ::ui::mojom::AcceleratorHandlerPtr;
+using ::ui::mojom::AcceleratorRegistrar;
+using ::ui::mojom::AcceleratorRegistrarPtr;
 
 namespace ash {
 namespace mus {
@@ -36,7 +36,7 @@ class TestAcceleratorHandler : public AcceleratorHandler {
   // Attempts to install an accelerator with the specified id and event matcher.
   // Returns whether the accelerator could be successfully added or not.
   bool AttemptToInstallAccelerator(uint32_t accelerator_id,
-                                   ::mus::mojom::EventMatcherPtr matcher) {
+                                   ::ui::mojom::EventMatcherPtr matcher) {
     DCHECK(!run_loop_);
     registrar_->AddAccelerator(
         accelerator_id, std::move(matcher),
@@ -86,13 +86,13 @@ TEST_F(AcceleratorRegistrarTest, AcceleratorRegistrarBasic) {
   ConnectToRegistrar(&registrar_first);
   TestAcceleratorHandler handler_first(std::move(registrar_first));
   EXPECT_TRUE(handler_first.AttemptToInstallAccelerator(
-      1, ::mus::CreateKeyMatcher(ui::mojom::KeyboardCode::T,
-                                 ui::mojom::kEventFlagShiftDown)));
+      1, ::ui::CreateKeyMatcher(ui::mojom::KeyboardCode::T,
+                                ui::mojom::kEventFlagShiftDown)));
   // Attempting to add an accelerator with the same accelerator id from the same
   // registrar should fail.
   EXPECT_FALSE(handler_first.AttemptToInstallAccelerator(
-      1, ::mus::CreateKeyMatcher(ui::mojom::KeyboardCode::N,
-                                 ui::mojom::kEventFlagShiftDown)));
+      1, ::ui::CreateKeyMatcher(ui::mojom::KeyboardCode::N,
+                                ui::mojom::kEventFlagShiftDown)));
 
   // Attempting to add an accelerator with the same id from a different
   // registrar should be OK.
@@ -100,16 +100,16 @@ TEST_F(AcceleratorRegistrarTest, AcceleratorRegistrarBasic) {
   ConnectToRegistrar(&registrar_second);
   TestAcceleratorHandler handler_second(std::move(registrar_second));
   EXPECT_TRUE(handler_second.AttemptToInstallAccelerator(
-      1, ::mus::CreateKeyMatcher(ui::mojom::KeyboardCode::N,
-                                 ui::mojom::kEventFlagShiftDown)));
+      1, ::ui::CreateKeyMatcher(ui::mojom::KeyboardCode::N,
+                                ui::mojom::kEventFlagShiftDown)));
 
   // But attempting to add an accelerator with the same matcher should fail.
   EXPECT_FALSE(handler_first.AttemptToInstallAccelerator(
-      3, ::mus::CreateKeyMatcher(ui::mojom::KeyboardCode::N,
-                                 ui::mojom::kEventFlagShiftDown)));
+      3, ::ui::CreateKeyMatcher(ui::mojom::KeyboardCode::N,
+                                ui::mojom::kEventFlagShiftDown)));
   EXPECT_FALSE(handler_second.AttemptToInstallAccelerator(
-      3, ::mus::CreateKeyMatcher(ui::mojom::KeyboardCode::N,
-                                 ui::mojom::kEventFlagShiftDown)));
+      3, ::ui::CreateKeyMatcher(ui::mojom::KeyboardCode::N,
+                                ui::mojom::kEventFlagShiftDown)));
 }
 
 }  // namespace mus

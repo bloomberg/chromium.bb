@@ -15,7 +15,7 @@
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/transform.h"
 
-namespace mus {
+namespace ui {
 namespace ws {
 
 namespace {
@@ -102,4 +102,4 @@ void TouchController::OnTouchscreenDeviceConfigurationChanged() {
 }
 
 }  // namespace ws
-}  // namespace mus
+}  // namespace ui

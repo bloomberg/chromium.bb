@@ -10,7 +10,7 @@
 // Typedefs for the transport types. These typedefs match that of the mojom
 // file, see it for specifics.
 
-namespace mus {
+namespace ui {
 
 // Used to identify windows and change ids.
 typedef uint32_t Id;
@@ -20,6 +20,6 @@ typedef uint32_t Id;
 // and the ClientSpecificId of the window.
 typedef uint16_t ClientSpecificId;
 
-}  // namespace mus
+}  // namespace ui
 
 #endif  // SERVICES_UI_COMMON_TYPES_H_

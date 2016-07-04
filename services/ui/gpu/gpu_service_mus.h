@@ -40,7 +40,7 @@ namespace media {
 class MediaService;
 }
 
-namespace mus {
+namespace ui {
 
 class MusGpuMemoryBufferManager;
 
@@ -168,6 +168,6 @@ class GpuServiceMus : public gpu::GpuChannelManagerDelegate,
   DISALLOW_COPY_AND_ASSIGN(GpuServiceMus);
 };
 
-}  // namespace mus
+}  // namespace ui
 
 #endif  // SERVICES_UI_GPU_GPU_SERVICE_MUS_H_

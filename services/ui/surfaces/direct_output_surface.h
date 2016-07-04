@@ -16,7 +16,7 @@ class CompositorFrame;
 class SyntheticBeginFrameSource;
 }
 
-namespace mus {
+namespace ui {
 
 // An OutputSurface implementation that directly draws and
 // swaps to an actual GL surface.
@@ -42,6 +42,6 @@ class DirectOutputSurface : public cc::OutputSurface,
   base::WeakPtrFactory<DirectOutputSurface> weak_ptr_factory_;
 };
 
-}  // namespace mus
+}  // namespace ui
 
 #endif  // SERVICES_UI_SURFACES_DIRECT_OUTPUT_SURFACE_H_

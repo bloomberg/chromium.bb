@@ -15,7 +15,7 @@
 #include "services/ui/ws/window_manager_window_tree_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace mus {
+namespace ui {
 namespace ws {
 namespace test {
 namespace {
@@ -147,7 +147,7 @@ int EventDispatcherTestApi::NumberPointerTargetsForWindow(
 WindowTree* TestDisplayBinding::CreateWindowTree(ServerWindow* root) {
   const uint32_t embed_flags = 0;
   WindowTree* tree = window_server_->EmbedAtWindow(
-      root, shell::mojom::kRootUserID, mus::mojom::WindowTreeClientPtr(),
+      root, shell::mojom::kRootUserID, ui::mojom::WindowTreeClientPtr(),
       embed_flags, base::WrapUnique(new WindowManagerAccessPolicy));
   tree->ConfigureWindowManager();
   return tree;
@@ -185,7 +185,7 @@ void TestWindowTreeClient::Bind(
 
 void TestWindowTreeClient::OnEmbed(uint16_t client_id,
                                    mojom::WindowDataPtr root,
-                                   mus::mojom::WindowTreePtr tree,
+                                   ui::mojom::WindowTreePtr tree,
                                    int64_t display_id,
                                    Id focused_window_id,
                                    bool drawn) {
@@ -493,4 +493,4 @@ ServerWindow* NewWindowInTreeWithParent(WindowTree* tree,
 
 }  // namespace test
 }  // namespace ws
-}  // namespace mus
+}  // namespace ui

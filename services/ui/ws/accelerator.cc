@@ -4,7 +4,7 @@
 
 #include "services/ui/ws/accelerator.h"
 
-namespace mus {
+namespace ui {
 namespace ws {
 
 Accelerator::Accelerator(uint32_t id, const mojom::EventMatcher& matcher)
@@ -30,4 +30,4 @@ bool Accelerator::EqualEventMatcher(const Accelerator* other) const {
 }
 
 }  // namespace ws
-}  // namespace mus
+}  // namespace ui

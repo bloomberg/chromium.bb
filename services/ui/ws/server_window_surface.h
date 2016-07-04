@@ -18,7 +18,7 @@
 #include "services/ui/public/interfaces/window_tree.mojom.h"
 #include "services/ui/ws/ids.h"
 
-namespace mus {
+namespace ui {
 
 class SurfacesState;
 
@@ -81,6 +81,6 @@ class ServerWindowSurface : public mojom::Surface,
 
 }  // namespace ws
 
-}  // namespace mus
+}  // namespace ui
 
 #endif  // SERVICES_UI_WS_SERVER_WINDOW_SURFACE_H_

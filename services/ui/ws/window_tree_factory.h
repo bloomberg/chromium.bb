@@ -10,12 +10,12 @@
 #include "services/ui/public/interfaces/window_tree.mojom.h"
 #include "services/ui/ws/user_id.h"
 
-namespace mus {
+namespace ui {
 namespace ws {
 
 class WindowServer;
 
-class WindowTreeFactory : public mus::mojom::WindowTreeFactory {
+class WindowTreeFactory : public ui::mojom::WindowTreeFactory {
  public:
   WindowTreeFactory(WindowServer* window_server,
                     const UserId& user_id,
@@ -24,19 +24,19 @@ class WindowTreeFactory : public mus::mojom::WindowTreeFactory {
  private:
   ~WindowTreeFactory() override;
 
-  // mus::mojom::WindowTreeFactory:
+  // ui::mojom::WindowTreeFactory:
   void CreateWindowTree(mojo::InterfaceRequest<mojom::WindowTree> tree_request,
                         mojom::WindowTreeClientPtr client) override;
 
   WindowServer* window_server_;
   const UserId user_id_;
   const std::string client_name_;
-  mojo::StrongBinding<mus::mojom::WindowTreeFactory> binding_;
+  mojo::StrongBinding<ui::mojom::WindowTreeFactory> binding_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowTreeFactory);
 };
 
 }  // namespace ws
-}  // namespace mus
+}  // namespace ui
 
 #endif  // SERVICES_UI_WS_WINDOW_TREE_FACTORY_H_

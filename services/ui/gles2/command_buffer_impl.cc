@@ -12,7 +12,7 @@
 #include "services/ui/gles2/command_buffer_driver.h"
 #include "services/ui/gles2/gpu_state.h"
 
-namespace mus {
+namespace ui {
 
 namespace {
 
@@ -33,7 +33,7 @@ void RunMakeProgressCallback(
 }  // namespace
 
 CommandBufferImpl::CommandBufferImpl(
-    mojo::InterfaceRequest<mus::mojom::CommandBuffer> request,
+    mojo::InterfaceRequest<ui::mojom::CommandBuffer> request,
     scoped_refptr<GpuState> gpu_state)
     : gpu_state_(gpu_state) {
   // Bind |CommandBufferImpl| to the |request| in the GPU control thread.
@@ -58,7 +58,7 @@ CommandBufferImpl::~CommandBufferImpl() {
 }
 
 void CommandBufferImpl::Initialize(
-    mus::mojom::CommandBufferClientPtr client,
+    ui::mojom::CommandBufferClientPtr client,
     mojo::ScopedSharedBufferHandle shared_state,
     mojo::Array<int32_t> attribs,
     const mojom::CommandBuffer::InitializeCallback& callback) {
@@ -169,9 +169,9 @@ void CommandBufferImpl::WaitForTokenInRange(
 }
 
 void CommandBufferImpl::BindToRequest(
-    mojo::InterfaceRequest<mus::mojom::CommandBuffer> request) {
+    mojo::InterfaceRequest<ui::mojom::CommandBuffer> request) {
   binding_.reset(
-      new mojo::Binding<mus::mojom::CommandBuffer>(this, std::move(request)));
+      new mojo::Binding<ui::mojom::CommandBuffer>(this, std::move(request)));
   binding_->set_connection_error_handler(
       base::Bind(&CommandBufferImpl::OnConnectionError,
                  base::Unretained(this)));
@@ -298,4 +298,4 @@ void CommandBufferImpl::DeleteOnGpuThread2() {
   delete this;
 }
 
-}  // namespace mus
+}  // namespace ui

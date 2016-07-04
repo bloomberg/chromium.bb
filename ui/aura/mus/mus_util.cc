@@ -16,14 +16,14 @@ const char kMusWindowKey[] = "mus";
 
 }  // namespace
 
-mus::Window* GetMusWindow(Window* window) {
+ui::Window* GetMusWindow(Window* window) {
   if (!window)
     return nullptr;
-  return static_cast<mus::Window*>(
+  return static_cast<ui::Window*>(
       window->GetNativeWindowProperty(kMusWindowKey));
 }
 
-void SetMusWindow(Window* window, mus::Window* mus_window) {
+void SetMusWindow(Window* window, ui::Window* mus_window) {
   window->SetNativeWindowProperty(kMusWindowKey, mus_window);
 }
 

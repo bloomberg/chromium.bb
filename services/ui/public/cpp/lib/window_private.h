@@ -13,7 +13,7 @@
 #include "mojo/public/cpp/bindings/array.h"
 #include "services/ui/public/cpp/window.h"
 
-namespace mus {
+namespace ui {
 
 // This class is a friend of a Window and contains functions to mutate internal
 // state of Window.
@@ -95,6 +95,6 @@ class WindowPrivate {
   DISALLOW_COPY_AND_ASSIGN(WindowPrivate);
 };
 
-}  // namespace mus
+}  // namespace ui
 
 #endif  // SERVICES_UI_PUBLIC_CPP_LIB_WINDOW_PRIVATE_H_

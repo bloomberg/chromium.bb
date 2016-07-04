@@ -25,7 +25,7 @@
 #include "ui/gfx/transform.h"
 #include "ui/platform_window/text_input_state.h"
 
-namespace mus {
+namespace ui {
 namespace ws {
 
 class ServerWindowDelegate;
@@ -132,8 +132,8 @@ class ServerWindow {
   float opacity() const { return opacity_; }
   void SetOpacity(float value);
 
-  void SetPredefinedCursor(mus::mojom::Cursor cursor_id);
-  void SetNonClientCursor(mus::mojom::Cursor cursor_id);
+  void SetPredefinedCursor(ui::mojom::Cursor cursor_id);
+  void SetNonClientCursor(ui::mojom::Cursor cursor_id);
 
   const gfx::Transform& transform() const { return transform_; }
   void SetTransform(const gfx::Transform& transform);
@@ -244,6 +244,6 @@ class ServerWindow {
 };
 
 }  // namespace ws
-}  // namespace mus
+}  // namespace ui
 
 #endif  // SERVICES_UI_WS_SERVER_WINDOW_H_

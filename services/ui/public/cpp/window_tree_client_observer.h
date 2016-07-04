@@ -5,7 +5,7 @@
 #ifndef SERVICES_UI_PUBLIC_CPP_WINDOW_TREE_CLIENT_OBSERVER_H_
 #define SERVICES_UI_PUBLIC_CPP_WINDOW_TREE_CLIENT_OBSERVER_H_
 
-namespace mus {
+namespace ui {
 
 class Window;
 class WindowTreeClient;
@@ -27,6 +27,6 @@ class WindowTreeClientObserver {
   virtual ~WindowTreeClientObserver() {}
 };
 
-}  // namespace mus
+}  // namespace ui
 
 #endif  // SERVICES_UI_PUBLIC_CPP_WINDOW_TREE_CLIENT_OBSERVER_H_

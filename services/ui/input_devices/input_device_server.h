@@ -14,7 +14,7 @@
 #include "ui/events/devices/device_data_manager.h"
 #include "ui/events/devices/input_device_event_observer.h"
 
-namespace mus {
+namespace ui {
 
 // Listens to DeviceDataManager for updates on input-devices and forwards those
 // updates to any registered InputDeviceObserverMojo in other processes via
@@ -64,6 +64,6 @@ class InputDeviceServer
   DISALLOW_COPY_AND_ASSIGN(InputDeviceServer);
 };
 
-}  // namespace mus
+}  // namespace ui
 
 #endif  // SERVICES_UI_INPUT_DEVICES_INPUT_DEVICE_SERVER_H_

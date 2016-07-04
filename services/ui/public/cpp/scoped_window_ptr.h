@@ -8,7 +8,7 @@
 #include "base/macros.h"
 #include "services/ui/public/cpp/window_observer.h"
 
-namespace mus {
+namespace ui {
 
 // Wraps a Window, taking overship of the Window. Also deals with Window being
 // destroyed while ScopedWindowPtr still exists.
@@ -37,6 +37,6 @@ class ScopedWindowPtr : public WindowObserver {
   DISALLOW_COPY_AND_ASSIGN(ScopedWindowPtr);
 };
 
-}  // namespace mus
+}  // namespace ui
 
 #endif  // SERVICES_UI_PUBLIC_CPP_SCOPED_WINDOW_PTR_H_

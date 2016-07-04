@@ -31,63 +31,63 @@ namespace mojo {
 
 template <>
 struct MUS_COMMON_EXPORT
-    TypeConverter<mus::mojom::ChannelHandlePtr, IPC::ChannelHandle> {
-  static mus::mojom::ChannelHandlePtr Convert(const IPC::ChannelHandle& handle);
+    TypeConverter<ui::mojom::ChannelHandlePtr, IPC::ChannelHandle> {
+  static ui::mojom::ChannelHandlePtr Convert(const IPC::ChannelHandle& handle);
 };
 
 template <>
 struct MUS_COMMON_EXPORT
-    TypeConverter<IPC::ChannelHandle, mus::mojom::ChannelHandlePtr> {
-  static IPC::ChannelHandle Convert(const mus::mojom::ChannelHandlePtr& handle);
+    TypeConverter<IPC::ChannelHandle, ui::mojom::ChannelHandlePtr> {
+  static IPC::ChannelHandle Convert(const ui::mojom::ChannelHandlePtr& handle);
 };
 
 #if defined(USE_OZONE)
 template <>
 struct MUS_COMMON_EXPORT
-    TypeConverter<mus::mojom::NativePixmapHandlePtr, gfx::NativePixmapHandle> {
-  static mus::mojom::NativePixmapHandlePtr Convert(
+    TypeConverter<ui::mojom::NativePixmapHandlePtr, gfx::NativePixmapHandle> {
+  static ui::mojom::NativePixmapHandlePtr Convert(
       const gfx::NativePixmapHandle& handle);
 };
 
 template <>
 struct MUS_COMMON_EXPORT
-    TypeConverter<gfx::NativePixmapHandle, mus::mojom::NativePixmapHandlePtr> {
+    TypeConverter<gfx::NativePixmapHandle, ui::mojom::NativePixmapHandlePtr> {
   static gfx::NativePixmapHandle Convert(
-      const mus::mojom::NativePixmapHandlePtr& handle);
+      const ui::mojom::NativePixmapHandlePtr& handle);
 };
 #endif
 
 template <>
 struct MUS_COMMON_EXPORT
-    TypeConverter<mus::mojom::GpuMemoryBufferIdPtr, gfx::GpuMemoryBufferId> {
-  static mus::mojom::GpuMemoryBufferIdPtr Convert(
+    TypeConverter<ui::mojom::GpuMemoryBufferIdPtr, gfx::GpuMemoryBufferId> {
+  static ui::mojom::GpuMemoryBufferIdPtr Convert(
       const gfx::GpuMemoryBufferId& id);
 };
 
 template <>
 struct MUS_COMMON_EXPORT
-    TypeConverter<gfx::GpuMemoryBufferId, mus::mojom::GpuMemoryBufferIdPtr> {
+    TypeConverter<gfx::GpuMemoryBufferId, ui::mojom::GpuMemoryBufferIdPtr> {
   static gfx::GpuMemoryBufferId Convert(
-      const mus::mojom::GpuMemoryBufferIdPtr& id);
+      const ui::mojom::GpuMemoryBufferIdPtr& id);
 };
 
 template <>
-struct MUS_COMMON_EXPORT TypeConverter<mus::mojom::GpuMemoryBufferHandlePtr,
+struct MUS_COMMON_EXPORT TypeConverter<ui::mojom::GpuMemoryBufferHandlePtr,
                                        gfx::GpuMemoryBufferHandle> {
-  static mus::mojom::GpuMemoryBufferHandlePtr Convert(
+  static ui::mojom::GpuMemoryBufferHandlePtr Convert(
       const gfx::GpuMemoryBufferHandle& handle);
 };
 
 template <>
 struct MUS_COMMON_EXPORT TypeConverter<gfx::GpuMemoryBufferHandle,
-                                       mus::mojom::GpuMemoryBufferHandlePtr> {
+                                       ui::mojom::GpuMemoryBufferHandlePtr> {
   static gfx::GpuMemoryBufferHandle Convert(
-      const mus::mojom::GpuMemoryBufferHandlePtr& handle);
+      const ui::mojom::GpuMemoryBufferHandlePtr& handle);
 };
 
 template <>
-struct MUS_COMMON_EXPORT TypeConverter<mus::mojom::GpuInfoPtr, gpu::GPUInfo> {
-  static mus::mojom::GpuInfoPtr Convert(const gpu::GPUInfo& input);
+struct MUS_COMMON_EXPORT TypeConverter<ui::mojom::GpuInfoPtr, gpu::GPUInfo> {
+  static ui::mojom::GpuInfoPtr Convert(const gpu::GPUInfo& input);
 };
 
 }  // namespace mojo

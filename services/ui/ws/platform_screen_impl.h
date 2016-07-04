@@ -14,7 +14,7 @@ namespace gfx {
 class Rect;
 }
 
-namespace mus {
+namespace ui {
 namespace ws {
 
 // PlatformScreenImpl provides the necessary functionality to configure all
@@ -34,6 +34,6 @@ class PlatformScreenImpl : public PlatformScreen {
 };
 
 }  // namespace ws
-}  // namespace mus
+}  // namespace ui
 
 #endif  // SERVICES_UI_WS_PLATFORM_SCREEN_IMPL_H_

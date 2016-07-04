@@ -36,7 +36,7 @@ namespace shell {
 class Connector;
 }
 
-namespace mus {
+namespace ui {
 class InFlightChange;
 class WindowTreeClientDelegate;
 class WindowTreeClientPrivate;
@@ -112,7 +112,7 @@ class WindowTreeClient : public mojom::WindowTreeClient,
   void ClearHitTestMask(Id window_id);
   void SetFocus(Window* window);
   void SetCanFocus(Id window_id, bool can_focus);
-  void SetPredefinedCursor(Id window_id, mus::mojom::Cursor cursor_id);
+  void SetPredefinedCursor(Id window_id, ui::mojom::Cursor cursor_id);
   void SetVisible(Window* window, bool visible);
   void SetOpacity(Window* window, float opacity);
   void SetProperty(Window* window,
@@ -327,8 +327,7 @@ class WindowTreeClient : public mojom::WindowTreeClient,
   // Overridden from WindowManagerClient:
   void SetFrameDecorationValues(
       mojom::FrameDecorationValuesPtr values) override;
-  void SetNonClientCursor(Window* window,
-                          mus::mojom::Cursor cursor_id) override;
+  void SetNonClientCursor(Window* window, ui::mojom::Cursor cursor_id) override;
   void AddAccelerator(uint32_t id,
                       mojom::EventMatcherPtr event_matcher,
                       const base::Callback<void(bool)>& callback) override;
@@ -402,6 +401,6 @@ class WindowTreeClient : public mojom::WindowTreeClient,
   DISALLOW_COPY_AND_ASSIGN(WindowTreeClient);
 };
 
-}  // namespace mus
+}  // namespace ui
 
 #endif  // SERVICES_UI_PUBLIC_CPP_WINDOW_TREE_CLIENT_H_

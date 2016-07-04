@@ -8,7 +8,7 @@
 #include "services/ui/common/gpu_type_converters.h"
 #include "services/ui/gpu/gpu_service_mus.h"
 
-namespace mus {
+namespace ui {
 
 namespace {
 
@@ -60,4 +60,4 @@ void GpuServiceImpl::DestroyGpuMemoryBuffer(mojom::GpuMemoryBufferIdPtr id,
   NOTIMPLEMENTED();
 }
 
-}  // namespace mus
+}  // namespace ui

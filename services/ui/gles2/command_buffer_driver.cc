@@ -38,7 +38,7 @@
 #include "ui/gl/gl_image_ozone_native_pixmap.h"
 #endif
 
-namespace mus {
+namespace ui {
 
 namespace {
 
@@ -565,4 +565,4 @@ void CommandBufferDriver::OnGpuCompletedSwapBuffers(gfx::SwapResult result) {
   }
 }
 
-}  // namespace mus
+}  // namespace ui

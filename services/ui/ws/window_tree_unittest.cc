@@ -38,7 +38,7 @@
 #include "ui/events/event_utils.h"
 #include "ui/gfx/geometry/rect.h"
 
-namespace mus {
+namespace ui {
 namespace ws {
 namespace test {
 namespace {
@@ -106,8 +106,8 @@ class WindowTreeTest : public testing::Test {
   WindowTreeTest() {}
   ~WindowTreeTest() override {}
 
-  mus::mojom::Cursor cursor_id() {
-    return static_cast<mus::mojom::Cursor>(
+  ui::mojom::Cursor cursor_id() {
+    return static_cast<ui::mojom::Cursor>(
         window_event_targeting_helper_.cursor_id());
   }
   Display* display() { return window_event_targeting_helper_.display(); }
@@ -1014,4 +1014,4 @@ TEST_F(WindowTreeTest, SetCaptureTargetsRightConnection) {
 
 }  // namespace test
 }  // namespace ws
-}  // namespace mus
+}  // namespace ui

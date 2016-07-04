@@ -19,7 +19,7 @@ namespace mojo {
 class Connector;
 }
 
-namespace mus {
+namespace ui {
 class Window;
 }
 
@@ -28,8 +28,8 @@ namespace views {
 class VIEWS_MUS_EXPORT SurfaceContextFactory : public ui::ContextFactory {
  public:
   SurfaceContextFactory(shell::Connector* connector,
-                        mus::Window* window,
-                        mus::mojom::SurfaceType surface_type);
+                        ui::Window* window,
+                        ui::mojom::SurfaceType surface_type);
   ~SurfaceContextFactory() override;
 
  private:
@@ -62,7 +62,7 @@ class VIEWS_MUS_EXPORT SurfaceContextFactory : public ui::ContextFactory {
   SurfaceBinding surface_binding_;
   uint32_t next_surface_id_namespace_;
   gles2::RasterThreadHelper raster_thread_helper_;
-  mus::MojoGpuMemoryBufferManager gpu_memory_buffer_manager_;
+  ui::MojoGpuMemoryBufferManager gpu_memory_buffer_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(SurfaceContextFactory);
 };

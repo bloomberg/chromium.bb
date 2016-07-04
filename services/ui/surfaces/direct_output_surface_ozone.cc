@@ -22,7 +22,7 @@
 
 using display_compositor::BufferQueue;
 
-namespace mus {
+namespace ui {
 
 DirectOutputSurfaceOzone::DirectOutputSurfaceOzone(
     scoped_refptr<SurfacesContextProvider> context_provider,
@@ -163,4 +163,4 @@ void DirectOutputSurfaceOzone::Reshape(const gfx::Size& size,
   buffer_queue_->Reshape(SurfaceSize(), scale_factor, color_space);
 }
 
-}  // namespace mus
+}  // namespace ui

@@ -9,7 +9,7 @@
 #include "services/ui/ws/server_window.h"
 #include "services/ui/ws/server_window_drawn_tracker.h"
 
-namespace mus {
+namespace ui {
 namespace ws {
 namespace {
 
@@ -118,4 +118,4 @@ void ModalWindowController::OnDrawnStateChanged(ServerWindow* ancestor,
 }
 
 }  // namespace ws
-}  // namespace mus
+}  // namespace ui

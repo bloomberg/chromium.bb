@@ -24,10 +24,10 @@ namespace views {
 
 class ScreenMusDelegate;
 
-// Screen implementation backed by mus::mojom::DisplayManager.
+// Screen implementation backed by ui::mojom::DisplayManager.
 class VIEWS_MUS_EXPORT ScreenMus
     : public display::Screen,
-      public NON_EXPORTED_BASE(mus::mojom::DisplayManagerObserver) {
+      public NON_EXPORTED_BASE(ui::mojom::DisplayManagerObserver) {
  public:
   // |delegate| can be nullptr.
   explicit ScreenMus(ScreenMusDelegate* delegate);
@@ -56,16 +56,16 @@ class VIEWS_MUS_EXPORT ScreenMus
   void AddObserver(display::DisplayObserver* observer) override;
   void RemoveObserver(display::DisplayObserver* observer) override;
 
-  // mus::mojom::DisplayManager:
+  // ui::mojom::DisplayManager:
   void OnDisplays(
-      mojo::Array<mus::mojom::DisplayPtr> transport_displays) override;
+      mojo::Array<ui::mojom::DisplayPtr> transport_displays) override;
   void OnDisplaysChanged(
-      mojo::Array<mus::mojom::DisplayPtr> transport_displays) override;
+      mojo::Array<ui::mojom::DisplayPtr> transport_displays) override;
   void OnDisplayRemoved(int64_t id) override;
 
   ScreenMusDelegate* delegate_;  // Can be nullptr.
-  mus::mojom::DisplayManagerPtr display_manager_;
-  mojo::Binding<mus::mojom::DisplayManagerObserver>
+  ui::mojom::DisplayManagerPtr display_manager_;
+  mojo::Binding<ui::mojom::DisplayManagerObserver>
       display_manager_observer_binding_;
   DisplayList display_list_;
 

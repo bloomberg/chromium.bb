@@ -10,7 +10,7 @@
 #include "services/ui/public/interfaces/gpu/display_compositor_host.mojom.h"
 #include "services/ui/surfaces/surfaces_state.h"
 
-namespace mus {
+namespace ui {
 namespace gpu {
 
 class DisplayImpl : public mojom::Display, public CompositorFrameSinkDelegate {
@@ -39,6 +39,6 @@ class DisplayImpl : public mojom::Display, public CompositorFrameSinkDelegate {
 };
 
 }  // namespace gpu
-}  // namespace mus
+}  // namespace ui
 
 #endif  // SERVICES_UI_GPU_DISPLAY_COMPOSITOR_DISPLAY_IMPL_H_

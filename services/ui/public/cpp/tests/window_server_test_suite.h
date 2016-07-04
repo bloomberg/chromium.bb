@@ -8,7 +8,7 @@
 #include "base/macros.h"
 #include "base/test/test_suite.h"
 
-namespace mus {
+namespace ui {
 
 class WindowServerTestSuite : public base::TestSuite {
  public:
@@ -22,6 +22,6 @@ class WindowServerTestSuite : public base::TestSuite {
   DISALLOW_COPY_AND_ASSIGN(WindowServerTestSuite);
 };
 
-}  // namespace mus
+}  // namespace ui
 
 #endif  // SERVICES_UI_PUBLIC_CPP_TESTS_WINDOW_SERVER_TEST_SUITE_H_

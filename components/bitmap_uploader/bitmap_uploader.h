@@ -19,7 +19,7 @@
 #include "services/ui/public/cpp/window_surface_client.h"
 #include "services/ui/public/interfaces/surface.mojom.h"
 
-namespace mus {
+namespace ui {
 class GLES2Context;
 }
 
@@ -32,11 +32,11 @@ namespace bitmap_uploader {
 BITMAP_UPLOADER_EXPORT extern const char kBitmapUploaderForAcceleratedWidget[];
 
 // BitmapUploader is useful if you want to draw a bitmap or color in a
-// mus::Window.
+// ui::Window.
 class BITMAP_UPLOADER_EXPORT BitmapUploader
-    : public NON_EXPORTED_BASE(mus::WindowSurfaceClient) {
+    : public NON_EXPORTED_BASE(ui::WindowSurfaceClient) {
  public:
-  explicit BitmapUploader(mus::Window* window);
+  explicit BitmapUploader(ui::Window* window);
   ~BitmapUploader() override;
 
   void Init(shell::Connector* connector);
@@ -68,14 +68,14 @@ class BITMAP_UPLOADER_EXPORT BitmapUploader
 
   // WindowSurfaceClient implementation.
   void OnResourcesReturned(
-      mus::WindowSurface* surface,
+      ui::WindowSurface* surface,
       mojo::Array<cc::ReturnedResource> resources) override;
 
-  mus::Window* window_;
-  std::unique_ptr<mus::WindowSurface> surface_;
+  ui::Window* window_;
+  std::unique_ptr<ui::WindowSurface> surface_;
   // This may be null if there is an error contacting mus/initializing. We
   // assume we'll be shutting down soon and do nothing in this case.
-  std::unique_ptr<mus::GLES2Context> gles2_context_;
+  std::unique_ptr<ui::GLES2Context> gles2_context_;
 
   uint32_t color_;
   int width_;

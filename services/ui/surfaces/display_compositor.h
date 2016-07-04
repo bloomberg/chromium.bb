@@ -18,7 +18,7 @@ namespace cc {
 class Display;
 }
 
-namespace mus {
+namespace ui {
 
 // TODO(fsamuel): This should become a mojo interface for the mus-gpu split.
 // TODO(fsamuel): This should not be a SurfaceFactoryClient.
@@ -75,6 +75,6 @@ class DisplayCompositor : public cc::SurfaceFactoryClient,
   DISALLOW_COPY_AND_ASSIGN(DisplayCompositor);
 };
 
-}  // namespace mus
+}  // namespace ui
 
 #endif  // SERVICES_UI_SURFACES_DISPLAY_COMPOSITOR_H_

@@ -16,7 +16,7 @@ namespace cc {
 class OutputSurface;
 }
 
-namespace mus {
+namespace ui {
 class Window;
 }
 
@@ -34,8 +34,8 @@ namespace views {
 class VIEWS_MUS_EXPORT SurfaceBinding {
  public:
   SurfaceBinding(shell::Connector* connector,
-                 mus::Window* window,
-                 mus::mojom::SurfaceType surface_type);
+                 ui::Window* window,
+                 ui::mojom::SurfaceType surface_type);
   ~SurfaceBinding();
 
   // Creates an OutputSurface that renders to the Window supplied to the
@@ -45,8 +45,8 @@ class VIEWS_MUS_EXPORT SurfaceBinding {
  private:
   class PerClientState;
 
-  mus::Window* window_;
-  const mus::mojom::SurfaceType surface_type_;
+  ui::Window* window_;
+  const ui::mojom::SurfaceType surface_type_;
   scoped_refptr<PerClientState> state_;
 
   DISALLOW_COPY_AND_ASSIGN(SurfaceBinding);

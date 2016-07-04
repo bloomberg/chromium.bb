@@ -29,7 +29,7 @@ base::LazyInstance<ConnectionMap>::Leaky g_connections =
 }
 
 void RenderWidgetMusConnection::Bind(
-    mojo::InterfaceRequest<mus::mojom::WindowTreeClient> request) {
+    mojo::InterfaceRequest<ui::mojom::WindowTreeClient> request) {
   DCHECK(thread_checker_.CalledOnValidThread());
   RenderThreadImpl* render_thread = RenderThreadImpl::current();
   compositor_mus_connection_ = new CompositorMusConnection(
@@ -46,11 +46,11 @@ std::unique_ptr<cc::OutputSurface>
 RenderWidgetMusConnection::CreateOutputSurface() {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!window_surface_binding_);
-  scoped_refptr<cc::ContextProvider> context_provider(new mus::ContextProvider(
+  scoped_refptr<cc::ContextProvider> context_provider(new ui::ContextProvider(
       MojoShellConnection::GetForProcess()->GetConnector()));
 
-  std::unique_ptr<cc::OutputSurface> surface(new mus::OutputSurface(
-      context_provider, mus::WindowSurface::Create(&window_surface_binding_)));
+  std::unique_ptr<cc::OutputSurface> surface(new ui::OutputSurface(
+      context_provider, ui::WindowSurface::Create(&window_surface_binding_)));
   if (compositor_mus_connection_) {
     compositor_mus_connection_->AttachSurfaceOnMainThread(
         std::move(window_surface_binding_));
@@ -114,8 +114,8 @@ void RenderWidgetMusConnection::OnInputEventAck(
   DCHECK(!pending_ack_.is_null());
   pending_ack_.Run(input_event_ack->state ==
                            InputEventAckState::INPUT_EVENT_ACK_STATE_CONSUMED
-                       ? mus::mojom::EventResult::HANDLED
-                       : mus::mojom::EventResult::UNHANDLED);
+                       ? ui::mojom::EventResult::HANDLED
+                       : ui::mojom::EventResult::UNHANDLED);
   pending_ack_.Reset();
 }
 
@@ -158,12 +158,12 @@ void RenderWidgetMusConnection::OnConnectionLost() {
 
 void RenderWidgetMusConnection::OnWindowInputEvent(
     std::unique_ptr<blink::WebInputEvent> input_event,
-    const base::Callback<void(mus::mojom::EventResult)>& ack) {
+    const base::Callback<void(ui::mojom::EventResult)>& ack) {
   DCHECK(thread_checker_.CalledOnValidThread());
   // If we don't yet have a RenderWidgetInputHandler then we don't yet have
   // an initialized RenderWidget.
   if (!input_handler_) {
-    ack.Run(mus::mojom::EventResult::UNHANDLED);
+    ack.Run(ui::mojom::EventResult::UNHANDLED);
     return;
   }
   // TODO(fsamuel): It would be nice to add this DCHECK but the reality is an

@@ -14,7 +14,7 @@
 using mojo::Array;
 using mojo::String;
 
-namespace mus {
+namespace ui {
 
 namespace ws {
 
@@ -445,4 +445,4 @@ std::string TestWindow::ToString2() const {
 
 }  // namespace ws
 
-}  // namespace mus
+}  // namespace ui

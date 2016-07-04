@@ -1823,7 +1823,7 @@ RenderThreadImpl::CreateCompositorOutputSurface(
   auto shell_connection = MojoShellConnection::GetForProcess();
   if (shell_connection && !use_software &&
       command_line.HasSwitch(switches::kUseMusInRenderer)) {
-    mus::GpuService::Initialize(shell_connection->GetConnector());
+    ui::GpuService::Initialize(shell_connection->GetConnector());
     RenderWidgetMusConnection* connection =
         RenderWidgetMusConnection::GetOrCreate(routing_id);
     return connection->CreateOutputSurface();

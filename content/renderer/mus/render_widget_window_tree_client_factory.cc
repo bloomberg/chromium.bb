@@ -54,7 +54,7 @@ class RenderWidgetWindowTreeClientFactoryImpl
   // mojom::RenderWidgetWindowTreeClientFactory implementation.
   void CreateWindowTreeClientForRenderWidget(
       uint32_t routing_id,
-      mojo::InterfaceRequest<mus::mojom::WindowTreeClient> request) override {
+      mojo::InterfaceRequest<ui::mojom::WindowTreeClient> request) override {
     RenderWidgetMusConnection* connection =
         RenderWidgetMusConnection::GetOrCreate(routing_id);
     connection->Bind(std::move(request));

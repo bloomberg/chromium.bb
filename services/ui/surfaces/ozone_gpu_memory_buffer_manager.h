@@ -8,7 +8,7 @@
 #include "base/macros.h"
 #include "gpu/command_buffer/client/gpu_memory_buffer_manager.h"
 
-namespace mus {
+namespace ui {
 
 class OzoneGpuMemoryBufferManager : public gpu::GpuMemoryBufferManager {
  public:
@@ -34,6 +34,6 @@ class OzoneGpuMemoryBufferManager : public gpu::GpuMemoryBufferManager {
   DISALLOW_COPY_AND_ASSIGN(OzoneGpuMemoryBufferManager);
 };
 
-}  // namespace mus
+}  // namespace ui
 
 #endif  // COMPONENTS_MUS_SURFACES_DIRECT_OUTPUT_SURFACES_OZONE_H_

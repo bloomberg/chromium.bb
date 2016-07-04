@@ -17,12 +17,12 @@ class ClientNativePixmap;
 class NativePixmap;
 }  // namespace ui
 
-namespace mus {
+namespace ui {
 
 // A not-mojo GpuMemoryBuffer implementation solely for use internally to mus
 // for scanout buffers. Note that OzoneGpuMemoryBuffer is for use on the client
 // (aka CC thread).
-class OzoneGpuMemoryBuffer : public mus::GpuMemoryBufferImpl {
+class OzoneGpuMemoryBuffer : public ui::GpuMemoryBufferImpl {
  public:
   ~OzoneGpuMemoryBuffer() override;
 
@@ -66,6 +66,6 @@ class OzoneGpuMemoryBuffer : public mus::GpuMemoryBufferImpl {
   DISALLOW_COPY_AND_ASSIGN(OzoneGpuMemoryBuffer);
 };
 
-}  // namespace mus
+}  // namespace ui
 
 #endif  // COMPONENTS_MUS_GLES2_OZONE_GPU_MEMORY_BUFFER_

@@ -11,7 +11,7 @@
 #include "ui/gfx/geometry/point_f.h"
 #include "ui/gfx/geometry/rect.h"
 
-namespace mus {
+namespace ui {
 
 namespace ws {
 
@@ -59,4 +59,4 @@ TEST_F(WindowCoordinateConversionsTest, ConvertPointFBetweenWindows) {
 
 }  // namespace ws
 
-}  // namespace mus
+}  // namespace ui

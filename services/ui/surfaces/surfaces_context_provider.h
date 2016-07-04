@@ -33,7 +33,7 @@ namespace ui {
 class LatencyInfo;
 }
 
-namespace mus {
+namespace ui {
 
 class CommandBufferDriver;
 class CommandBufferImpl;
@@ -104,6 +104,6 @@ class SurfacesContextProvider : public cc::ContextProvider,
   DISALLOW_COPY_AND_ASSIGN(SurfacesContextProvider);
 };
 
-}  // namespace mus
+}  // namespace ui
 
 #endif  // SERVICES_UI_SURFACES_SURFACES_CONTEXT_PROVIDER_H_

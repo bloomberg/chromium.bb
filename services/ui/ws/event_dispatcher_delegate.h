@@ -17,7 +17,7 @@ namespace ui {
 class Event;
 }
 
-namespace mus {
+namespace ui {
 namespace ws {
 
 class Accelerator;
@@ -68,6 +68,6 @@ class EventDispatcherDelegate {
 };
 
 }  // namespace ws
-}  // namespace mus
+}  // namespace ui
 
 #endif  // SERVICES_UI_WS_EVENT_DISPATCHER_DELEGATE_H_

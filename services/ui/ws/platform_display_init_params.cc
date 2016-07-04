@@ -7,7 +7,7 @@
 #include "services/ui/gles2/gpu_state.h"
 #include "services/ui/surfaces/surfaces_state.h"
 
-namespace mus {
+namespace ui {
 namespace ws {
 
 PlatformDisplayInitParams::PlatformDisplayInitParams()
@@ -18,4 +18,4 @@ PlatformDisplayInitParams::PlatformDisplayInitParams(
 PlatformDisplayInitParams::~PlatformDisplayInitParams() {}
 
 }  // namespace ws
-}  // namespace mus
+}  // namespace ui

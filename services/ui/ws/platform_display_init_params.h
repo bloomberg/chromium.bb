@@ -14,7 +14,7 @@ namespace shell {
 class Connector;
 }
 
-namespace mus {
+namespace ui {
 
 class GpuState;
 class SurfacesState;
@@ -34,6 +34,6 @@ struct PlatformDisplayInitParams {
 };
 
 }  // namespace ws
-}  // namespace mus
+}  // namespace ui
 
 #endif  // SERVICES_UI_WS_PLATFORM_DISPLAY_INIT_PARAMS_H_

@@ -16,7 +16,7 @@
 #include "services/ui/public/interfaces/window_tree.mojom.h"
 #include "ui/gfx/geometry/mojo/geometry.mojom.h"
 
-namespace mus {
+namespace ui {
 
 namespace ws {
 
@@ -180,6 +180,6 @@ class TestChangeTracker {
 
 }  // namespace ws
 
-}  // namespace mus
+}  // namespace ui
 
 #endif  // SERVICES_UI_WS_TEST_CHANGE_TRACKER_H_

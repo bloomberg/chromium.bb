@@ -17,7 +17,7 @@
 #include "services/ui/public/cpp/window_observer.h"
 #include "ui/gfx/geometry/rect.h"
 
-namespace mus {
+namespace ui {
 
 namespace mojom {
 enum class Cursor : int32_t;
@@ -293,6 +293,6 @@ class InFlightSetModalChange : public InFlightChange {
   DISALLOW_COPY_AND_ASSIGN(InFlightSetModalChange);
 };
 
-}  // namespace mus
+}  // namespace ui
 
 #endif  // SERVICES_UI_PUBLIC_CPP_LIB_IN_FLIGHT_CHANGE_H_

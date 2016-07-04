@@ -13,7 +13,7 @@
 #include "services/ui/ws/user_id_tracker.h"
 #include "services/ui/ws/window_manager_state.h"
 
-namespace mus {
+namespace ui {
 namespace ws {
 
 DisplayManager::DisplayManager(DisplayManagerDelegate* delegate,
@@ -164,4 +164,4 @@ void DisplayManager::OnActiveUserIdChanged(const UserId& previously_active_id,
 }
 
 }  // namespace ws
-}  // namespace mus
+}  // namespace ui

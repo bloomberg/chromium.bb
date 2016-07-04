@@ -9,7 +9,7 @@
 #include "services/ui/ws/server_window_delegate.h"
 #include "services/ui/ws/server_window_surface.h"
 
-namespace mus {
+namespace ui {
 namespace ws {
 
 ServerWindowSurfaceManager::ServerWindowSurfaceManager(ServerWindow* window)
@@ -17,7 +17,7 @@ ServerWindowSurfaceManager::ServerWindowSurfaceManager(ServerWindow* window)
       surface_id_allocator_(
           window->delegate()->GetSurfacesState()->next_id_namespace()),
       waiting_for_initial_frames_(
-          window_->properties().count(mus::mojom::kWaitForUnderlay_Property) >
+          window_->properties().count(ui::mojom::kWaitForUnderlay_Property) >
           0) {
   surface_id_allocator_.RegisterSurfaceIdNamespace(GetSurfaceManager());
 }
@@ -99,4 +99,4 @@ cc::SurfaceId ServerWindowSurfaceManager::GenerateId() {
 }
 
 }  // namespace ws
-}  // namespace mus
+}  // namespace ui

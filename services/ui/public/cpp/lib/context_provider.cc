@@ -10,7 +10,7 @@
 #include "services/shell/public/cpp/connector.h"
 #include "services/ui/public/cpp/gles2_context.h"
 
-namespace mus {
+namespace ui {
 
 ContextProvider::ContextProvider(shell::Connector* connector)
     : connector_(connector->Clone()) {}
@@ -58,4 +58,4 @@ base::Lock* ContextProvider::GetLock() {
 ContextProvider::~ContextProvider() {
 }
 
-}  // namespace mus
+}  // namespace ui

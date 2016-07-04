@@ -4,7 +4,7 @@
 
 #include "services/ui/public/cpp/lib/window_private.h"
 
-namespace mus {
+namespace ui {
 
 WindowPrivate::WindowPrivate(Window* window) : window_(window) {
   CHECK(window);
@@ -28,4 +28,4 @@ void WindowPrivate::LocalSetSharedProperty(const std::string& name,
   LocalSetSharedProperty(name, data_ptr);
 }
 
-}  // namespace mus
+}  // namespace ui

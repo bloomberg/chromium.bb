@@ -21,7 +21,7 @@ namespace ui {
 struct TextInputState;
 }
 
-namespace mus {
+namespace ui {
 
 namespace ws {
 
@@ -92,6 +92,6 @@ class ServerWindowObserver {
 
 }  // namespace ws
 
-}  // namespace mus
+}  // namespace ui
 
 #endif  // SERVICES_UI_WS_SERVER_WINDOW_OBSERVER_H_

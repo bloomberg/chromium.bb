@@ -29,7 +29,7 @@
 #include "ui/events/event.h"
 #include "ui/gfx/geometry/rect.h"
 
-namespace mus {
+namespace ui {
 namespace ws {
 namespace test {
 
@@ -195,4 +195,4 @@ TEST_F(CursorTest, NonClientToClientByBoundsChange) {
 
 }  // namespace test
 }  // namespace ws
-}  // namespace mus
+}  // namespace ui

@@ -11,7 +11,7 @@
 #include "ui/events/devices/input_device.h"
 #include "ui/events/devices/touchscreen_device.h"
 
-namespace mus {
+namespace ui {
 
 InputDeviceServer::InputDeviceServer() {}
 
@@ -107,4 +107,4 @@ void InputDeviceServer::Create(shell::Connection* connection,
   bindings_.AddBinding(this, std::move(request));
 }
 
-}  // namespace mus
+}  // namespace ui

@@ -12,10 +12,10 @@
 #include "services/ui/public/cpp/window_observer.h"
 #include "ui/base/window_tracker_template.h"
 
-namespace mus {
+namespace ui {
 
 using WindowTracker = ui::WindowTrackerTemplate<Window, WindowObserver>;
 
-}  // namespace mus
+}  // namespace ui
 
 #endif  // SERVICES_UI_PUBLIC_CPP_WINDOW_TRACKER_H_

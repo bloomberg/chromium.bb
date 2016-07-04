@@ -9,31 +9,31 @@
 #include "services/ui/public/cpp/window_observer.h"
 #include "services/ui/public/cpp/window_tree_client_observer.h"
 
-namespace mus {
+namespace ui {
 class WindowTreeClient;
 }
 
 namespace ash {
 namespace mus {
 
-class ShadowController : public ::mus::WindowTreeClientObserver,
-                         public ::mus::WindowObserver {
+class ShadowController : public ::ui::WindowTreeClientObserver,
+                         public ::ui::WindowObserver {
  public:
-  explicit ShadowController(::mus::WindowTreeClient* window_tree);
+  explicit ShadowController(::ui::WindowTreeClient* window_tree);
   ~ShadowController() override;
 
  private:
-  void SetActiveWindow(::mus::Window* window);
+  void SetActiveWindow(::ui::Window* window);
 
-  // mus::WindowTreeClientObserver:
-  void OnWindowTreeFocusChanged(::mus::Window* gained_focus,
-                                ::mus::Window* lost_focus) override;
+  // ui::WindowTreeClientObserver:
+  void OnWindowTreeFocusChanged(::ui::Window* gained_focus,
+                                ::ui::Window* lost_focus) override;
 
-  // mus::WindowObserver:
-  void OnWindowDestroying(::mus::Window* window) override;
+  // ui::WindowObserver:
+  void OnWindowDestroying(::ui::Window* window) override;
 
-  ::mus::WindowTreeClient* window_tree_;
-  ::mus::Window* active_window_;
+  ::ui::WindowTreeClient* window_tree_;
+  ::ui::Window* active_window_;
 
   DISALLOW_COPY_AND_ASSIGN(ShadowController);
 };

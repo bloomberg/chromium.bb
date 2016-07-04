@@ -26,16 +26,16 @@ struct TextInputState;
 // This version of RenderWidgetHostView is for builds of Chrome that run through
 // the mojo shell and use the Mandoline UI Service (Mus). Mus is responsible for
 // windowing, compositing, and input event dispatch. The purpose of
-// RenderWidgetHostViewMus is to manage the mus::Window owned by the content
-// embedder. The browser is the owner of the mus::Window, controlling properties
+// RenderWidgetHostViewMus is to manage the ui::Window owned by the content
+// embedder. The browser is the owner of the ui::Window, controlling properties
 // such as visibility, and bounds. Some aspects such as input, focus, and cursor
 // are managed by Mus directly. Input event routing will be plumbed directly to
 // the renderer from Mus.
 class CONTENT_EXPORT RenderWidgetHostViewMus
     : public RenderWidgetHostViewBase,
-      NON_EXPORTED_BASE(public mus::InputEventHandler) {
+      NON_EXPORTED_BASE(public ui::InputEventHandler) {
  public:
-  RenderWidgetHostViewMus(mus::Window* parent_window,
+  RenderWidgetHostViewMus(ui::Window* parent_window,
                           RenderWidgetHostImpl* widget);
   ~RenderWidgetHostViewMus() override;
 
@@ -117,18 +117,18 @@ class CONTENT_EXPORT RenderWidgetHostViewMus
   void LockCompositingSurface() override;
   void UnlockCompositingSurface() override;
 
-  // mus::InputEventHandler:
+  // ui::InputEventHandler:
   void OnWindowInputEvent(
-      mus::Window* target,
+      ui::Window* target,
       const ui::Event& event,
-      std::unique_ptr<base::Callback<void(mus::mojom::EventResult)>>*
+      std::unique_ptr<base::Callback<void(ui::mojom::EventResult)>>*
           ack_callback) override;
 
   RenderWidgetHostImpl* host_;
 
   aura::Window* aura_window_;
 
-  std::unique_ptr<mus::ScopedWindowPtr> mus_window_;
+  std::unique_ptr<ui::ScopedWindowPtr> mus_window_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostViewMus);
 };

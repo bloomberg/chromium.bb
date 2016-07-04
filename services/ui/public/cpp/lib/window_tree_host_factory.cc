@@ -8,7 +8,7 @@
 #include "services/ui/public/cpp/window_tree_client.h"
 #include "services/ui/public/cpp/window_tree_client_delegate.h"
 
-namespace mus {
+namespace ui {
 
 void CreateWindowTreeHost(mojom::WindowTreeHostFactory* factory,
                           WindowTreeClientDelegate* delegate,
@@ -25,8 +25,8 @@ void CreateWindowTreeHost(shell::Connector* connector,
                           mojom::WindowTreeHostPtr* host,
                           WindowManagerDelegate* window_manager_delegate) {
   mojom::WindowTreeHostFactoryPtr factory;
-  connector->ConnectToInterface("mojo:mus", &factory);
+  connector->ConnectToInterface("mojo:ui", &factory);
   CreateWindowTreeHost(factory.get(), delegate, host, window_manager_delegate);
 }
 
-}  // namespace mus
+}  // namespace ui

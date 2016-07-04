@@ -14,7 +14,7 @@
 #include "ui/gfx/geometry/point_f.h"
 #include "ui/gfx/transform.h"
 
-namespace mus {
+namespace ui {
 namespace ws {
 
 bool IsValidWindowForEvents(ServerWindow* window) {
@@ -65,4 +65,4 @@ gfx::Transform GetTransformToWindow(ServerWindow* window) {
 }
 
 }  // namespace ws
-}  // namespace mus
+}  // namespace ui

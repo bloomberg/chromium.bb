@@ -14,7 +14,7 @@
 #define ENABLE_SYNC_CALL_RESTRICTIONS 0
 #endif
 
-namespace mus {
+namespace ui {
 class GpuService;
 }
 
@@ -50,7 +50,7 @@ class SyncCallRestrictions {
  private:
   // DO NOT ADD ANY OTHER FRIEND STATEMENTS, talk to mojo/OWNERS first.
   // BEGIN ALLOWED USAGE.
-  friend class mus::GpuService;  // http://crbug.com/620058
+  friend class ui::GpuService;  // http://crbug.com/620058
   // END ALLOWED USAGE.
 
   // BEGIN USAGE THAT NEEDS TO BE FIXED.

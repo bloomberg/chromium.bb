@@ -102,8 +102,8 @@ class Tab : public views::LabelButton,
 
   bool selected() const { return selected_; }
 
-  mus::Window* window() { return window_; }
-  void SetWindow(mus::Window* window) {
+  ui::Window* window() { return window_; }
+  void SetWindow(ui::Window* window) {
     window_ = window;
     window_->SetVisible(selected_);
     view_->EmbedInWindow(window_);
@@ -137,7 +137,7 @@ class Tab : public views::LabelButton,
       window_->SetVisible(selected_);
   }
 
-  mus::Window* window_ = nullptr;
+  ui::Window* window_ = nullptr;
   std::unique_ptr<navigation::View> view_;
   bool selected_ = false;
 
@@ -183,11 +183,11 @@ class TabStrip : public views::View,
       RemoveObserver(tab);
   }
 
-  void SetContainerWindow(mus::Window* container) {
+  void SetContainerWindow(ui::Window* container) {
     DCHECK(!container_);
     container_ = container;
     for (auto* tab : tabs_) {
-      mus::Window* window = container_->window_tree()->NewWindow();
+      ui::Window* window = container_->window_tree()->NewWindow();
       container_->AddChild(window);
       tab->SetWindow(window);
     }
@@ -198,7 +198,7 @@ class TabStrip : public views::View,
     Tab* tab = new Tab(std::move(view), this);
     // We won't have a WindowTree until we're added to a view hierarchy.
     if (container_) {
-      mus::Window* window = container_->window_tree()->NewWindow();
+      ui::Window* window = container_->window_tree()->NewWindow();
       container_->AddChild(window);
       tab->SetWindow(window);
     }
@@ -287,7 +287,7 @@ class TabStrip : public views::View,
   std::vector<Tab*> tabs_;
   int selected_index_ = -1;
   base::ObserverList<TabStripObserver> observers_;
-  mus::Window* container_ = nullptr;
+  ui::Window* container_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(TabStrip);
 };
@@ -676,7 +676,7 @@ class UI : public views::WidgetDelegateView,
   void ViewHierarchyChanged(
       const views::View::ViewHierarchyChangedDetails& details) override {
     if (details.is_add && GetWidget() && !content_area_) {
-      mus::Window* window = aura::GetMusWindow(GetWidget()->GetNativeWindow());
+      ui::Window* window = aura::GetMusWindow(GetWidget()->GetNativeWindow());
       content_area_ = window->window_tree()->NewWindow(nullptr);
       content_area_->SetVisible(true);
       window->AddChild(content_area_);
@@ -836,7 +836,7 @@ class UI : public views::WidgetDelegateView,
   Throbber* throbber_;
   ProgressBar* progress_bar_;
 
-  mus::Window* content_area_ = nullptr;
+  ui::Window* content_area_ = nullptr;
 
   DebugView* debug_view_;
   bool showing_debug_view_ = false;

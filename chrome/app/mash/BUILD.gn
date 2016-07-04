@@ -56,9 +56,9 @@ mojo_application_manifest("manifest") {
     "ash",
     "ash_sysui",
     "mash_session",
-    "mus",
     "quick_launch",
     "task_viewer",
+    "ui",
   ]
 
   if (is_linux && !is_android) {

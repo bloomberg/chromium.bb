@@ -23,7 +23,7 @@ static uint32_t accelerated_widget_count = 1;
 // WindowTreeHostMus, public:
 
 WindowTreeHostMus::WindowTreeHostMus(NativeWidgetMus* native_widget,
-                                     mus::Window* window)
+                                     ui::Window* window)
     : native_widget_(native_widget) {
 // We need accelerated widget numbers to be different for each
 // window and fit in the smallest sizeof(AcceleratedWidget) uint32_t
@@ -42,7 +42,7 @@ WindowTreeHostMus::WindowTreeHostMus(NativeWidgetMus* native_widget,
       this,
       false)));  // Do not advertise accelerated widget; already set manually.
 
-  // Initialize the stub platform window bounds to those of the mus::Window.
+  // Initialize the stub platform window bounds to those of the ui::Window.
   platform_window()->SetBounds(window->bounds());
 
   // The location of events is already transformed, and there is no way to

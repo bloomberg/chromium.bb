@@ -21,7 +21,7 @@
 #include "services/ui/public/interfaces/gpu_service.mojom.h"
 #include "url/gurl.h"
 
-namespace mus {
+namespace ui {
 
 GLES2Context::GLES2Context() {}
 
@@ -33,9 +33,9 @@ bool GLES2Context::Initialize(const std::vector<int32_t>& attribs,
   gpu::GpuControl* gpu_control = nullptr;
   // TODO(penghuang): Use type gpu::gles2::ContextCreationAttribHelper for
   // attribs.
-  if (!mus::GpuService::UseChromeGpuCommandBuffer()) {
+  if (!ui::GpuService::UseChromeGpuCommandBuffer()) {
     mojom::GpuPtr gpu;
-    connector->ConnectToInterface("mojo:mus", &gpu);
+    connector->ConnectToInterface("mojo:ui", &gpu);
     mojom::CommandBufferPtr command_buffer_ptr;
     gpu->CreateOffscreenGLES2Context(GetProxy(&command_buffer_ptr));
     command_buffer_client_impl_.reset(
@@ -106,4 +106,4 @@ std::unique_ptr<GLES2Context> GLES2Context::CreateOffscreenContext(
   return gles2_context;
 }
 
-}  // namespace mus
+}  // namespace ui

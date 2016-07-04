@@ -28,16 +28,16 @@ struct WebScreenInfo;
 
 namespace content {
 
-RenderWidgetHostViewMus::RenderWidgetHostViewMus(mus::Window* parent_window,
+RenderWidgetHostViewMus::RenderWidgetHostViewMus(ui::Window* parent_window,
                                                  RenderWidgetHostImpl* host)
     : host_(host), aura_window_(nullptr) {
   DCHECK(parent_window);
-  mus::Window* window = parent_window->window_tree()->NewWindow();
+  ui::Window* window = parent_window->window_tree()->NewWindow();
   window->SetVisible(true);
   window->SetBounds(gfx::Rect(300, 300));
   window->set_input_event_handler(this);
   parent_window->AddChild(window);
-  mus_window_.reset(new mus::ScopedWindowPtr(window));
+  mus_window_.reset(new ui::ScopedWindowPtr(window));
   host_->SetView(this);
 
   // Connect to the renderer, pass it a WindowTreeClient interface request
@@ -45,11 +45,11 @@ RenderWidgetHostViewMus::RenderWidgetHostViewMus(mus::Window* parent_window,
   mojom::RenderWidgetWindowTreeClientFactoryPtr factory;
   host_->GetProcess()->GetChildConnection()->GetInterface(&factory);
 
-  mus::mojom::WindowTreeClientPtr window_tree_client;
+  ui::mojom::WindowTreeClientPtr window_tree_client;
   factory->CreateWindowTreeClientForRenderWidget(
       host_->GetRoutingID(), mojo::GetProxy(&window_tree_client));
   mus_window_->window()->Embed(std::move(window_tree_client),
-                               mus::mojom::kEmbedFlagEmbedderInterceptsEvents);
+                               ui::mojom::kEmbedFlagEmbedderInterceptsEvents);
 }
 
 RenderWidgetHostViewMus::~RenderWidgetHostViewMus() {}
@@ -304,9 +304,9 @@ void RenderWidgetHostViewMus::UnlockCompositingSurface() {
 }
 
 void RenderWidgetHostViewMus::OnWindowInputEvent(
-    mus::Window* window,
+    ui::Window* window,
     const ui::Event& event,
-    std::unique_ptr<base::Callback<void(mus::mojom::EventResult)>>*
+    std::unique_ptr<base::Callback<void(ui::mojom::EventResult)>>*
         ack_callback) {
   // TODO(sad): Dispatch |event| to the RenderWidgetHost.
 }

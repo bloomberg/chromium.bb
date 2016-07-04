@@ -5,7 +5,7 @@
 #ifndef SERVICES_UI_WS_PLATFORM_DISPLAY_FACTORY_H_
 #define SERVICES_UI_WS_PLATFORM_DISPLAY_FACTORY_H_
 
-namespace mus {
+namespace ui {
 namespace ws {
 
 class PlatformDisplay;
@@ -18,6 +18,6 @@ class PlatformDisplayFactory {
 };
 
 }  // namespace ws
-}  // namespace mus
+}  // namespace ui
 
 #endif  // SERVICES_UI_WS_PLATFORM_DISPLAY_FACTORY_H_

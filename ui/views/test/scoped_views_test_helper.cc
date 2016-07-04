@@ -42,7 +42,7 @@ ScopedViewsTestHelper::ScopedViewsTestHelper(
   // ui::InitializeContextFactoryForTests() is only needed for the default
   // WindowTreeHost instance created by TestScreen. After that, the
   // context-factory is used when creating Widgets (to set-up the compositor for
-  // the corresponding mus::Windows). So unset the context-factory, so that
+  // the corresponding ui::Windows). So unset the context-factory, so that
   // NativeWidgetMus installs the correct context-factory that can talk to mus.
   if (PlatformTestHelper::IsMus())
     aura::Env::GetInstance()->set_context_factory(nullptr);

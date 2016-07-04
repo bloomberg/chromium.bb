@@ -26,8 +26,8 @@ class InputHandlerManager;
 // default all other methods are assumed to run on the compositor thread unless
 // explicited suffixed with OnMainThread.
 class CONTENT_EXPORT CompositorMusConnection
-    : NON_EXPORTED_BASE(public mus::WindowTreeClientDelegate),
-      NON_EXPORTED_BASE(public mus::InputEventHandler),
+    : NON_EXPORTED_BASE(public ui::WindowTreeClientDelegate),
+      NON_EXPORTED_BASE(public ui::InputEventHandler),
       public base::RefCountedThreadSafe<CompositorMusConnection> {
  public:
   // Created on main thread.
@@ -35,13 +35,13 @@ class CONTENT_EXPORT CompositorMusConnection
       int routing_id,
       const scoped_refptr<base::SingleThreadTaskRunner>& main_task_runner,
       const scoped_refptr<base::SingleThreadTaskRunner>& compositor_task_runner,
-      mojo::InterfaceRequest<mus::mojom::WindowTreeClient> request,
+      mojo::InterfaceRequest<ui::mojom::WindowTreeClient> request,
       InputHandlerManager* input_handler_manager);
 
-  // Attaches the provided |surface_binding| with the mus::Window for the
+  // Attaches the provided |surface_binding| with the ui::Window for the
   // renderer once it becomes available.
   void AttachSurfaceOnMainThread(
-      std::unique_ptr<mus::WindowSurfaceBinding> surface_binding);
+      std::unique_ptr<ui::WindowSurfaceBinding> surface_binding);
 
  private:
   friend class CompositorMusConnectionTest;
@@ -50,39 +50,39 @@ class CONTENT_EXPORT CompositorMusConnection
   ~CompositorMusConnection() override;
 
   void AttachSurfaceOnCompositorThread(
-      std::unique_ptr<mus::WindowSurfaceBinding> surface_binding);
+      std::unique_ptr<ui::WindowSurfaceBinding> surface_binding);
 
   void CreateWindowTreeClientOnCompositorThread(
-      mus::mojom::WindowTreeClientRequest request);
+      ui::mojom::WindowTreeClientRequest request);
 
   void OnConnectionLostOnMainThread();
 
   void OnWindowInputEventOnMainThread(
       std::unique_ptr<blink::WebInputEvent> web_event,
-      const base::Callback<void(mus::mojom::EventResult)>& ack);
+      const base::Callback<void(ui::mojom::EventResult)>& ack);
 
   void OnWindowInputEventAckOnMainThread(
-      const base::Callback<void(mus::mojom::EventResult)>& ack,
-      mus::mojom::EventResult result);
+      const base::Callback<void(ui::mojom::EventResult)>& ack,
+      ui::mojom::EventResult result);
 
   // WindowTreeClientDelegate implementation:
-  void OnDidDestroyClient(mus::WindowTreeClient* client) override;
-  void OnEmbed(mus::Window* root) override;
-  void OnEventObserved(const ui::Event& event, mus::Window* target) override;
+  void OnDidDestroyClient(ui::WindowTreeClient* client) override;
+  void OnEmbed(ui::Window* root) override;
+  void OnEventObserved(const ui::Event& event, ui::Window* target) override;
 
   // InputEventHandler implementation:
   void OnWindowInputEvent(
-      mus::Window* window,
+      ui::Window* window,
       const ui::Event& event,
-      std::unique_ptr<base::Callback<void(mus::mojom::EventResult)>>*
+      std::unique_ptr<base::Callback<void(ui::mojom::EventResult)>>*
           ack_callback) override;
 
   const int routing_id_;
-  mus::Window* root_;
+  ui::Window* root_;
   scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner_;
   InputHandlerManager* const input_handler_manager_;
-  std::unique_ptr<mus::WindowSurfaceBinding> window_surface_binding_;
+  std::unique_ptr<ui::WindowSurfaceBinding> window_surface_binding_;
 
   DISALLOW_COPY_AND_ASSIGN(CompositorMusConnection);
 };

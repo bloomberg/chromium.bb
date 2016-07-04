@@ -23,7 +23,7 @@ namespace gfx {
 class Size;
 }
 
-namespace mus {
+namespace ui {
 
 class InputEventHandler;
 class ServiceProviderImpl;
@@ -102,7 +102,7 @@ class Window {
 
   // Cursors
   mojom::Cursor predefined_cursor() const { return cursor_id_; }
-  void SetPredefinedCursor(mus::mojom::Cursor cursor_id);
+  void SetPredefinedCursor(ui::mojom::Cursor cursor_id);
 
   // A Window is drawn if the Window and all its ancestors are visible and the
   // Window is attached to the root.
@@ -210,11 +210,11 @@ class Window {
   void SetCanFocus(bool can_focus);
 
   // Embedding. See window_tree.mojom for details.
-  void Embed(mus::mojom::WindowTreeClientPtr client, uint32_t flags = 0);
+  void Embed(ui::mojom::WindowTreeClientPtr client, uint32_t flags = 0);
 
   // NOTE: callback is run synchronously if Embed() is not allowed on this
   // Window.
-  void Embed(mus::mojom::WindowTreeClientPtr client,
+  void Embed(ui::mojom::WindowTreeClientPtr client,
              const EmbedCallback& callback,
              uint32_t flags = 0);
 
@@ -351,6 +351,6 @@ class Window {
   DISALLOW_COPY_AND_ASSIGN(Window);
 };
 
-}  // namespace mus
+}  // namespace ui
 
 #endif  // SERVICES_UI_PUBLIC_CPP_WINDOW_H_

@@ -51,7 +51,7 @@ class SysUIApplication
   mojo::BindingSet<mojom::WallpaperController> wallpaper_controller_bindings_;
 
   // Subscribes to updates about input-devices.
-  ::mus::InputDeviceClient input_device_client_;
+  ::ui::InputDeviceClient input_device_client_;
 
   DISALLOW_COPY_AND_ASSIGN(SysUIApplication);
 };

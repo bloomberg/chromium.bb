@@ -11,7 +11,7 @@
 #include "base/macros.h"
 #include "gpu/command_buffer/service/memory_tracking.h"
 
-namespace mus {
+namespace ui {
 
 // TODO(fsamuel, rjkroege): This is a stub implementation that needs to be
 // completed for proper memory tracking.
@@ -34,6 +34,6 @@ class GpuMemoryTracker : public gpu::gles2::MemoryTracker {
   DISALLOW_COPY_AND_ASSIGN(GpuMemoryTracker);
 };
 
-}  // namespace mus
+}  // namespace ui
 
 #endif  // SERVICES_UI_GLES2_GPU_MEMORY_TRACKER_H_

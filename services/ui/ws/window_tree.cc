@@ -34,7 +34,7 @@ using mojo::Array;
 using mojo::InterfaceRequest;
 using mojo::String;
 
-namespace mus {
+namespace ui {
 namespace ws {
 
 class TargetedEvent : public ServerWindowObserver {
@@ -1376,7 +1376,7 @@ void WindowTree::SetCanFocus(Id transport_window_id, bool can_focus) {
 
 void WindowTree::SetPredefinedCursor(uint32_t change_id,
                                      Id transport_window_id,
-                                     mus::mojom::Cursor cursor_id) {
+                                     ui::mojom::Cursor cursor_id) {
   ServerWindow* window =
       GetWindowByClientId(ClientWindowId(transport_window_id));
 
@@ -1536,4 +1536,4 @@ bool WindowTree::IsWindowRootOfAnotherTreeForAccessPolicy(
 }
 
 }  // namespace ws
-}  // namespace mus
+}  // namespace ui

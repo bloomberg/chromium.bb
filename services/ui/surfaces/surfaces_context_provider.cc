@@ -26,7 +26,7 @@
 #include "services/ui/surfaces/surfaces_context_provider_delegate.h"
 #include "ui/gl/gpu_preference.h"
 
-namespace mus {
+namespace ui {
 
 SurfacesContextProvider::SurfacesContextProvider(
     gfx::AcceleratedWidget widget,
@@ -203,4 +203,4 @@ void SurfacesContextProvider::SetSwapBuffersCompletionCallback(
   swap_buffers_completion_callback_ = callback;
 }
 
-}  // namespace mus
+}  // namespace ui

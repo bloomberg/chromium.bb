@@ -17,7 +17,7 @@
 #undef LoWord
 #endif
 
-namespace mus {
+namespace ui {
 
 inline uint16_t HiWord(uint32_t id) {
   return static_cast<uint16_t>((id >> 16) & 0xFFFF);
@@ -27,6 +27,6 @@ inline uint16_t LoWord(uint32_t id) {
   return static_cast<uint16_t>(id & 0xFFFF);
 }
 
-}  // namespace mus
+}  // namespace ui
 
 #endif  // SERVICES_UI_COMMON_UTIL_H_

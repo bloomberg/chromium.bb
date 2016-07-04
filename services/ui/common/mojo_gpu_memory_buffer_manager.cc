@@ -7,7 +7,7 @@
 #include "base/logging.h"
 #include "services/ui/common/mojo_gpu_memory_buffer.h"
 
-namespace mus {
+namespace ui {
 
 MojoGpuMemoryBufferManager::MojoGpuMemoryBufferManager() {}
 
@@ -43,4 +43,4 @@ void MojoGpuMemoryBufferManager::SetDestructionSyncToken(
   NOTIMPLEMENTED();
 }
 
-}  // namespace mus
+}  // namespace ui

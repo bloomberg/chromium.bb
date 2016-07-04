@@ -16,7 +16,7 @@ namespace gfx {
 class Insets;
 }
 
-namespace mus {
+namespace ui {
 class Window;
 }
 
@@ -30,13 +30,13 @@ namespace mus {
 class FrameCaptionButtonContainerView;
 
 class NonClientFrameViewMash : public views::NonClientFrameView,
-                               public ::mus::WindowObserver,
-                               public ::mus::WindowTreeClientObserver {
+                               public ::ui::WindowObserver,
+                               public ::ui::WindowTreeClientObserver {
  public:
   // Internal class name.
   static const char kViewClassName[];
 
-  NonClientFrameViewMash(views::Widget* frame, ::mus::Window* window);
+  NonClientFrameViewMash(views::Widget* frame, ::ui::Window* window);
   ~NonClientFrameViewMash() override;
 
   static gfx::Insets GetPreferredClientAreaInsets();
@@ -66,14 +66,14 @@ class NonClientFrameViewMash : public views::NonClientFrameView,
   void OnPaint(gfx::Canvas* canvas) override;
   void PaintChildren(const ui::PaintContext& context) override;
 
-  // mus::WindowObserver:
+  // ui::WindowObserver:
   void OnWindowClientAreaChanged(
-      ::mus::Window* window,
+      ::ui::Window* window,
       const gfx::Insets& old_client_area,
       const std::vector<gfx::Rect>& old_additional_client_area) override;
-  void OnWindowDestroyed(::mus::Window* window) override;
+  void OnWindowDestroyed(::ui::Window* window) override;
   void OnWindowSharedPropertyChanged(
-      ::mus::Window* window,
+      ::ui::Window* window,
       const std::string& name,
       const std::vector<uint8_t>* old_data,
       const std::vector<uint8_t>* new_data) override;
@@ -89,14 +89,14 @@ class NonClientFrameViewMash : public views::NonClientFrameView,
 
   void RemoveObservers();
 
-  // mus::WindowTreeClientObserver:
-  void OnWindowTreeFocusChanged(::mus::Window* gained_focus,
-                                ::mus::Window* lost_focus) override;
+  // ui::WindowTreeClientObserver:
+  void OnWindowTreeFocusChanged(::ui::Window* gained_focus,
+                                ::ui::Window* lost_focus) override;
 
   // Not owned.
   views::Widget* frame_;
 
-  ::mus::Window* window_;
+  ::ui::Window* window_;
   ui::PaintCache paint_cache_;
 
   // View which contains the title and window controls.

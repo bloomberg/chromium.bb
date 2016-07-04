@@ -8,7 +8,7 @@
 #include "services/ui/public/cpp/window_tree_client.h"
 #include "ui/display/display.h"
 
-namespace mus {
+namespace ui {
 
 WindowTreeClientPrivate::WindowTreeClientPrivate(
     WindowTreeClient* tree_client_impl)
@@ -63,4 +63,4 @@ void WindowTreeClientPrivate::SetTreeAndClientId(mojom::WindowTree* window_tree,
   tree_client_impl_->client_id_ = client_id;
 }
 
-}  // namespace mus
+}  // namespace ui

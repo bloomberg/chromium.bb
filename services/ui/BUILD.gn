@@ -18,7 +18,6 @@ group("all") {
 }
 
 mojo_native_application("ui") {
-  output_name = "mus"
   sources = [
     "main.cc",
   ]
@@ -48,7 +47,7 @@ mojo_native_application("ui") {
 }
 
 mojo_application_manifest("manifest") {
-  application_name = "mus"
+  application_name = "ui"
   source = "manifest.json"
 }
 
@@ -65,15 +64,15 @@ if (is_win) {
     ]
 
     outputs = [
-      "$root_out_dir/$mojo_application_subdir/mus/{{source_file_part}}",
+      "$root_out_dir/$mojo_application_subdir/ui/{{source_file_part}}",
     ]
   }
 }
 
 source_set("lib") {
   sources = [
-    "mus_app.cc",
-    "mus_app.h",
+    "service.cc",
+    "service.h",
   ]
 
   public_deps = [

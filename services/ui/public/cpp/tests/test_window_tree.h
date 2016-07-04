@@ -12,7 +12,7 @@
 #include "base/macros.h"
 #include "services/ui/public/interfaces/window_tree.mojom.h"
 
-namespace mus {
+namespace ui {
 
 // Testing WindowTree implementation.
 class TestWindowTree : public mojom::WindowTree {
@@ -87,14 +87,14 @@ class TestWindowTree : public mojom::WindowTree {
   void SetCanFocus(uint32_t window_id, bool can_focus) override;
   void SetPredefinedCursor(uint32_t change_id,
                            uint32_t window_id,
-                           mus::mojom::Cursor cursor_id) override;
+                           ui::mojom::Cursor cursor_id) override;
   void SetWindowTextInputState(uint32_t window_id,
                                mojo::TextInputStatePtr state) override;
   void SetImeVisibility(uint32_t window_id,
                         bool visible,
                         mojo::TextInputStatePtr state) override;
   void OnWindowInputEventAck(uint32_t event_id,
-                             mus::mojom::EventResult result) override;
+                             ui::mojom::EventResult result) override;
   void GetWindowManagerClient(
       mojo::AssociatedInterfaceRequest<mojom::WindowManagerClient> internal)
       override;
@@ -109,6 +109,6 @@ class TestWindowTree : public mojom::WindowTree {
   DISALLOW_COPY_AND_ASSIGN(TestWindowTree);
 };
 
-}  // namespace mus
+}  // namespace ui
 
 #endif  // SERVICES_UI_PUBLIC_CPP_TESTS_TEST_WINDOW_TREE_H_

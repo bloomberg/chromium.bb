@@ -49,7 +49,7 @@ class WindowState;
 }
 
 // This class exists as a porting layer to allow ash/wm to work with
-// aura::Window or mus::Window. See aura::Window for details on the functions.
+// aura::Window or ui::Window. See aura::Window for details on the functions.
 class ASH_EXPORT WmWindow {
  public:
   // See comments in SetBoundsInScreen().

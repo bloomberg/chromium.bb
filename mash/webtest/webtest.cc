@@ -88,11 +88,11 @@ class UI : public views::WidgetDelegateView,
   void ViewHierarchyChanged(
       const views::View::ViewHierarchyChangedDetails& details) override {
     if (details.is_add && GetWidget() && !content_area_) {
-      mus::Window* window = aura::GetMusWindow(GetWidget()->GetNativeWindow());
+      ui::Window* window = aura::GetMusWindow(GetWidget()->GetNativeWindow());
       content_area_ = window->window_tree()->NewWindow(nullptr);
       window->AddChild(content_area_);
 
-      mus::mojom::WindowTreeClientPtr client;
+      ui::mojom::WindowTreeClientPtr client;
       view_->GetWindowTreeClient(GetProxy(&client));
       content_area_->Embed(std::move(client));
     }
@@ -134,7 +134,7 @@ class UI : public views::WidgetDelegateView,
   void NavigationListPruned(bool from_front, int count) override {}
 
   Webtest* webtest_;
-  mus::Window* content_area_ = nullptr;
+  ui::Window* content_area_ = nullptr;
   navigation::mojom::ViewPtr view_;
   mojo::Binding<navigation::mojom::ViewClient> view_client_binding_;
   base::string16 current_title_;

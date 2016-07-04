@@ -11,7 +11,7 @@
 #include "services/ui/ws/window_server.h"
 #include "services/ui/ws/window_tree.h"
 
-namespace mus {
+namespace ui {
 namespace ws {
 
 DisplayBindingImpl::DisplayBindingImpl(mojom::WindowTreeHostRequest request,
@@ -36,4 +36,4 @@ WindowTree* DisplayBindingImpl::CreateWindowTree(ServerWindow* root) {
 }
 
 }  // namespace ws
-}  // namespace mus
+}  // namespace ui

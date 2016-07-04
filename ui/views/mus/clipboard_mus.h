@@ -70,7 +70,7 @@ class VIEWS_MUS_EXPORT ClipboardMus : public ui::Clipboard {
 
   static mojo::String GetMimeTypeFor(const FormatType& format);
 
-  mus::mojom::ClipboardPtr clipboard_;
+  ui::mojom::ClipboardPtr clipboard_;
 
   // Internal buffer used to accumulate data types. The public interface is
   // WriteObjects(), which then calls our base class DispatchObject() which

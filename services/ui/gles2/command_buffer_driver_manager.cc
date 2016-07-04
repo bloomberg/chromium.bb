@@ -8,7 +8,7 @@
 
 #include "services/ui/gles2/command_buffer_driver.h"
 
-namespace mus {
+namespace ui {
 
 CommandBufferDriverManager::CommandBufferDriverManager() {}
 
@@ -47,4 +47,4 @@ uint32_t CommandBufferDriverManager::GetProcessedOrderNum() const {
   return processed_order_num;
 }
 
-}  // namespace mus
+}  // namespace ui

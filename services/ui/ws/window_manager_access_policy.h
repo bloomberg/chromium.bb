@@ -10,7 +10,7 @@
 #include "base/macros.h"
 #include "services/ui/ws/access_policy.h"
 
-namespace mus {
+namespace ui {
 namespace ws {
 
 class AccessPolicyDelegate;
@@ -42,7 +42,7 @@ class WindowManagerAccessPolicy : public AccessPolicy {
   bool CanChangeWindowVisibility(const ServerWindow* window) const override;
   bool CanChangeWindowOpacity(const ServerWindow* window) const override;
   bool CanSetWindowSurface(const ServerWindow* window,
-                           mus::mojom::SurfaceType surface_type) const override;
+                           ui::mojom::SurfaceType surface_type) const override;
   bool CanSetWindowBounds(const ServerWindow* window) const override;
   bool CanSetWindowProperties(const ServerWindow* window) const override;
   bool CanSetWindowTextInputState(const ServerWindow* window) const override;
@@ -71,6 +71,6 @@ class WindowManagerAccessPolicy : public AccessPolicy {
 };
 
 }  // namespace ws
-}  // namespace mus
+}  // namespace ui
 
 #endif  // SERVICES_UI_WS_WINDOW_MANAGER_ACCESS_POLICY_H_

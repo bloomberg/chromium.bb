@@ -15,7 +15,7 @@
 #include "services/ui/public/interfaces/gpu.mojom.h"
 #include "ui/gfx/geometry/mojo/geometry.mojom.h"
 
-namespace mus {
+namespace ui {
 
 class GpuImpl : public mojom::Gpu {
  public:
@@ -34,6 +34,6 @@ class GpuImpl : public mojom::Gpu {
   DISALLOW_COPY_AND_ASSIGN(GpuImpl);
 };
 
-}  // namespace mus
+}  // namespace ui
 
 #endif  // SERVICES_UI_GLES2_GPU_IMPL_H_

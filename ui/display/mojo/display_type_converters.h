@@ -13,8 +13,8 @@ namespace mojo {
 
 template <>
 struct MOJO_DISPLAY_EXPORT
-    TypeConverter<display::Display, mus::mojom::DisplayPtr> {
-  static display::Display Convert(const mus::mojom::DisplayPtr& input);
+    TypeConverter<display::Display, ui::mojom::DisplayPtr> {
+  static display::Display Convert(const ui::mojom::DisplayPtr& input);
 };
 
 }  // namespace mojo

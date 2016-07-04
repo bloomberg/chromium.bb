@@ -10,13 +10,13 @@
 #include "ui/events/mojo/event_constants.mojom.h"
 #include "ui/events/mojo/keyboard_codes.mojom.h"
 
-namespace mus {
+namespace ui {
 
 // |flags| is a bitfield of kEventFlag* and kMouseEventFlag* values in
 // input_event_constants.mojom.
 mojom::EventMatcherPtr MUS_COMMON_EXPORT
 CreateKeyMatcher(ui::mojom::KeyboardCode code, int flags);
 
-}  // namespace mus
+}  // namespace ui
 
 #endif  // SERVICES_UI_COMMON_EVENT_MATCHER_UTIL_H_

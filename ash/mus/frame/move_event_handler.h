@@ -16,13 +16,10 @@ namespace aura {
 class Window;
 }
 
-namespace mus {
-class Window;
-class WindowManagerClient;
-}
-
 namespace ui {
 class CancelModeEvent;
+class Window;
+class WindowManagerClient;
 }
 
 namespace ash {
@@ -34,8 +31,8 @@ class WmWindowMus;
 // forwards to WmToplevelWindowEventHandler to handle the actual drag/resize.
 class MoveEventHandler : public ui::EventHandler, public aura::WindowObserver {
  public:
-  MoveEventHandler(::mus::Window* mus_window,
-                   ::mus::WindowManagerClient* window_manager_client,
+  MoveEventHandler(::ui::Window* mus_window,
+                   ::ui::WindowManagerClient* window_manager_client,
                    aura::Window* aura_window);
   ~MoveEventHandler() override;
 
@@ -52,7 +49,7 @@ class MoveEventHandler : public ui::EventHandler, public aura::WindowObserver {
   void OnWindowDestroying(aura::Window* window) override;
 
   WmWindowMus* wm_window_;
-  ::mus::WindowManagerClient* window_manager_client_;
+  ::ui::WindowManagerClient* window_manager_client_;
   // The root window of the aura::Window supplied to the constructor.
   // MoveEventHandler is added as a pre-target handler (and observer) of this.
   aura::Window* root_window_;

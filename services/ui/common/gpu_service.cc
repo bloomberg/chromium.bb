@@ -16,7 +16,7 @@
 #include "services/ui/common/switches.h"
 #include "services/ui/public/interfaces/gpu_service.mojom.h"
 
-namespace mus {
+namespace ui {
 
 namespace {
 
@@ -158,7 +158,7 @@ void GpuService::EstablishGpuChannelOnMainThread() {
   if (!is_establishing_)
     return;
 
-  connector_->ConnectToInterface("mojo:mus", &gpu_service_);
+  connector_->ConnectToInterface("mojo:ui", &gpu_service_);
   const bool locked = false;
   gpu_service_->EstablishGpuChannel(
       base::Bind(&GpuService::EstablishGpuChannelOnMainThreadDone,
@@ -180,7 +180,7 @@ void GpuService::EstablishGpuChannelOnMainThreadSyncLocked() {
   int client_id = 0;
   mojom::ChannelHandlePtr channel_handle;
   mojom::GpuInfoPtr gpu_info;
-  connector_->ConnectToInterface("mojo:mus", &gpu_service_);
+  connector_->ConnectToInterface("mojo:ui", &gpu_service_);
   {
     base::AutoUnlock auto_unlock(lock_);
     mojo::SyncCallRestrictions::ScopedAllowSyncCall allow_sync_call;
@@ -254,4 +254,4 @@ std::unique_ptr<base::SharedMemory> GpuService::AllocateSharedMemory(
   return base::MakeUnique<base::SharedMemory>(platform_handle, readonly);
 }
 
-}  // namespace mus
+}  // namespace ui

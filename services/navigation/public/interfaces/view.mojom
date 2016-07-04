@@ -116,7 +116,7 @@ interface View {
 
   // Obtains a Mus WindowTreeClient for the View, so it can be embedded in a
   // UI.
-  GetWindowTreeClient(mus.mojom.WindowTreeClient& client);
+  GetWindowTreeClient(ui.mojom.WindowTreeClient& client);
 
   ShowInterstitial(string html);
   HideInterstitial();

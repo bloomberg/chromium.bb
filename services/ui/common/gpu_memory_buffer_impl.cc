@@ -4,7 +4,7 @@
 
 #include "services/ui/common/gpu_memory_buffer_impl.h"
 
-namespace mus {
+namespace ui {
 
 GpuMemoryBufferImpl::GpuMemoryBufferImpl(gfx::GpuMemoryBufferId id,
                                          const gfx::Size& size,
@@ -43,4 +43,4 @@ scoped_refptr<ui::NativePixmap> GpuMemoryBufferImpl::GetNativePixmap() {
 }
 #endif
 
-}  // namespace mus
+}  // namespace ui

@@ -15,7 +15,7 @@
 #include "mojo/public/cpp/system/platform_handle.h"
 #include "ui/gfx/buffer_format_util.h"
 
-namespace mus {
+namespace ui {
 
 MojoGpuMemoryBufferImpl::MojoGpuMemoryBufferImpl(
     const gfx::Size& size,
@@ -104,4 +104,4 @@ gfx::GpuMemoryBufferType MojoGpuMemoryBufferImpl::GetBufferType() const {
   return gfx::SHARED_MEMORY_BUFFER;
 }
 
-}  // namespace mus
+}  // namespace ui

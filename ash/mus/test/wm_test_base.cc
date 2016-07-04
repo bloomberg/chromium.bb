@@ -22,33 +22,33 @@ namespace ash {
 namespace mus {
 namespace {
 
-::mus::mojom::WindowType MusWindowTypeFromWmWindowType(
+::ui::mojom::WindowType MusWindowTypeFromWmWindowType(
     ui::wm::WindowType wm_window_type) {
   switch (wm_window_type) {
     case ui::wm::WINDOW_TYPE_UNKNOWN:
       break;
 
     case ui::wm::WINDOW_TYPE_NORMAL:
-      return ::mus::mojom::WindowType::WINDOW;
+      return ::ui::mojom::WindowType::WINDOW;
 
     case ui::wm::WINDOW_TYPE_POPUP:
-      return ::mus::mojom::WindowType::POPUP;
+      return ::ui::mojom::WindowType::POPUP;
 
     case ui::wm::WINDOW_TYPE_CONTROL:
-      return ::mus::mojom::WindowType::CONTROL;
+      return ::ui::mojom::WindowType::CONTROL;
 
     case ui::wm::WINDOW_TYPE_PANEL:
-      return ::mus::mojom::WindowType::PANEL;
+      return ::ui::mojom::WindowType::PANEL;
 
     case ui::wm::WINDOW_TYPE_MENU:
-      return ::mus::mojom::WindowType::MENU;
+      return ::ui::mojom::WindowType::MENU;
 
     case ui::wm::WINDOW_TYPE_TOOLTIP:
-      return ::mus::mojom::WindowType::TOOLTIP;
+      return ::ui::mojom::WindowType::TOOLTIP;
   }
 
   NOTREACHED();
-  return ::mus::mojom::WindowType::CONTROL;
+  return ::ui::mojom::WindowType::CONTROL;
 }
 
 bool CompareByDisplayId(const RootWindowController* root1,
@@ -120,14 +120,14 @@ void WmTestBase::UpdateDisplay(const std::string& display_spec) {
       roots[0]->display(), views::DisplayList::Type::PRIMARY);
 }
 
-::mus::Window* WmTestBase::GetPrimaryRootWindow() {
+::ui::Window* WmTestBase::GetPrimaryRootWindow() {
   std::vector<RootWindowController*> roots =
       WmTestBase::GetRootsOrderedByDisplayId();
   DCHECK(!roots.empty());
   return roots[0]->root();
 }
 
-::mus::Window* WmTestBase::GetSecondaryRootWindow() {
+::ui::Window* WmTestBase::GetSecondaryRootWindow() {
   std::vector<RootWindowController*> roots =
       WmTestBase::GetRootsOrderedByDisplayId();
   return roots.size() < 2 ? nullptr : roots[1]->root();
@@ -146,40 +146,40 @@ display::Display WmTestBase::GetSecondaryDisplay() {
   return roots.size() < 2 ? display::Display() : roots[1]->display();
 }
 
-::mus::Window* WmTestBase::CreateTestWindow(const gfx::Rect& bounds) {
+::ui::Window* WmTestBase::CreateTestWindow(const gfx::Rect& bounds) {
   return CreateTestWindow(bounds, ui::wm::WINDOW_TYPE_NORMAL);
 }
 
-::mus::Window* WmTestBase::CreateTestWindow(const gfx::Rect& bounds,
-                                            ui::wm::WindowType window_type) {
+::ui::Window* WmTestBase::CreateTestWindow(const gfx::Rect& bounds,
+                                           ui::wm::WindowType window_type) {
   std::map<std::string, std::vector<uint8_t>> properties;
-  properties[::mus::mojom::WindowManager::kWindowType_Property] =
+  properties[::ui::mojom::WindowManager::kWindowType_Property] =
       mojo::ConvertTo<std::vector<uint8_t>>(
           static_cast<int32_t>(MusWindowTypeFromWmWindowType(window_type)));
   if (!bounds.IsEmpty()) {
-    properties[::mus::mojom::WindowManager::kInitialBounds_Property] =
+    properties[::ui::mojom::WindowManager::kInitialBounds_Property] =
         mojo::ConvertTo<std::vector<uint8_t>>(bounds);
   }
-  properties[::mus::mojom::WindowManager::kResizeBehavior_Property] =
+  properties[::ui::mojom::WindowManager::kResizeBehavior_Property] =
       mojo::ConvertTo<std::vector<uint8_t>>(
-          ::mus::mojom::kResizeBehaviorCanResize |
-          ::mus::mojom::kResizeBehaviorCanMaximize |
-          ::mus::mojom::kResizeBehaviorCanMinimize);
+          ::ui::mojom::kResizeBehaviorCanResize |
+          ::ui::mojom::kResizeBehaviorCanMaximize |
+          ::ui::mojom::kResizeBehaviorCanMinimize);
 
-  ::mus::Window* window =
+  ::ui::Window* window =
       GetRootsOrderedByDisplayId()[0]->window_manager()->NewTopLevelWindow(
           &properties);
   window->SetVisible(true);
   return window;
 }
 
-::mus::Window* WmTestBase::CreateChildTestWindow(::mus::Window* parent,
-                                                 const gfx::Rect& bounds) {
+::ui::Window* WmTestBase::CreateChildTestWindow(::ui::Window* parent,
+                                                const gfx::Rect& bounds) {
   std::map<std::string, std::vector<uint8_t>> properties;
-  properties[::mus::mojom::WindowManager::kWindowType_Property] =
+  properties[::ui::mojom::WindowManager::kWindowType_Property] =
       mojo::ConvertTo<std::vector<uint8_t>>(static_cast<int32_t>(
           MusWindowTypeFromWmWindowType(ui::wm::WINDOW_TYPE_NORMAL)));
-  ::mus::Window* window =
+  ::ui::Window* window =
       GetRootsOrderedByDisplayId()[0]->root()->window_tree()->NewWindow(
           &properties);
   window->SetBounds(bounds);

@@ -15,7 +15,7 @@
 #include "base/observer_list.h"
 #include "base/time/time.h"
 
-namespace mus {
+namespace ui {
 namespace mojom {
 class AnimationGroup;
 }
@@ -114,6 +114,6 @@ class AnimationRunner {
 };
 
 }  // namespace ws
-}  // namespace mus
+}  // namespace ui
 
 #endif  // SERVICES_UI_WS_ANIMATION_RUNNER_H_

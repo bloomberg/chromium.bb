@@ -31,7 +31,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/event.h"
 
-namespace mus {
+namespace ui {
 namespace ws {
 namespace test {
 
@@ -111,7 +111,7 @@ WindowManagerStateTest::WindowManagerStateTest()
     : task_runner_(new base::TestSimpleTaskRunner) {}
 
 std::unique_ptr<Accelerator> WindowManagerStateTest::CreateAccelerator() {
-  mojom::EventMatcherPtr matcher = mus::CreateKeyMatcher(
+  mojom::EventMatcherPtr matcher = ui::CreateKeyMatcher(
       ui::mojom::KeyboardCode::W, ui::mojom::kEventFlagControlDown);
   matcher->accelerator_phase = ui::mojom::AcceleratorPhase::POST_TARGET;
   uint32_t accelerator_id = 1;
@@ -248,7 +248,7 @@ TEST_F(WindowManagerStateTest, EnqueuedAccelerators) {
 
   tracker->changes()->clear();
   ui::KeyEvent key2(ui::ET_KEY_PRESSED, ui::VKEY_Y, ui::EF_CONTROL_DOWN);
-  mojom::EventMatcherPtr matcher = mus::CreateKeyMatcher(
+  mojom::EventMatcherPtr matcher = ui::CreateKeyMatcher(
       ui::mojom::KeyboardCode::Y, ui::mojom::kEventFlagControlDown);
   matcher->accelerator_phase = ui::mojom::AcceleratorPhase::POST_TARGET;
   uint32_t accelerator_id = 2;
@@ -416,4 +416,4 @@ TEST_F(WindowManagerStateTest, InterceptingEmbedderReceivesEvents) {
 
 }  // namespace test
 }  // namespace ws
-}  // namespace mus
+}  // namespace ui

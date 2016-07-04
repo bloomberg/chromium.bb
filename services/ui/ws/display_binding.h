@@ -13,7 +13,7 @@
 #include "services/ui/ws/display.h"
 #include "services/ui/ws/user_id.h"
 
-namespace mus {
+namespace ui {
 namespace ws {
 
 class ServerWindow;
@@ -55,6 +55,6 @@ class DisplayBindingImpl : public DisplayBinding {
 };
 
 }  // namespace ws
-}  // namespace mus
+}  // namespace ui
 
 #endif  // SERVICES_UI_WS_DISPLAY_BINDING_H_

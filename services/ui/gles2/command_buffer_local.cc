@@ -32,7 +32,7 @@
 #include "ui/gl/gl_image_shared_memory.h"
 #include "ui/gl/gl_surface.h"
 
-namespace mus {
+namespace ui {
 
 namespace {
 
@@ -197,7 +197,7 @@ scoped_refptr<gpu::Buffer> CommandBufferLocal::CreateTransferBuffer(
                  base::Unretained(this), *id, base::Passed(&handle),
                  static_cast<uint32_t>(size)));
   std::unique_ptr<gpu::BufferBacking> backing(
-      new mus::MojoBufferBacking(std::move(mapping), size));
+      new ui::MojoBufferBacking(std::move(mapping), size));
   scoped_refptr<gpu::Buffer> buffer(new gpu::Buffer(std::move(backing)));
   return buffer;
 }
@@ -227,8 +227,8 @@ int32_t CommandBufferLocal::CreateImage(ClientBuffer buffer,
   int32_t new_id = ++next_image_id_;
   gfx::Size size(static_cast<int32_t>(width), static_cast<int32_t>(height));
 
-  mus::MojoGpuMemoryBufferImpl* gpu_memory_buffer =
-      mus::MojoGpuMemoryBufferImpl::FromClientBuffer(buffer);
+  ui::MojoGpuMemoryBufferImpl* gpu_memory_buffer =
+      ui::MojoGpuMemoryBufferImpl::FromClientBuffer(buffer);
 
   bool requires_sync_point = false;
 
@@ -573,4 +573,4 @@ void CommandBufferLocal::OnGpuCompletedSwapBuffersOnClientThread(
     client_->GpuCompletedSwapBuffers(result);
 }
 
-}  // namespace mus
+}  // namespace ui

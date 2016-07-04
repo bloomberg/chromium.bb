@@ -23,7 +23,7 @@ namespace shell {
 class Connector;
 }
 
-namespace mus {
+namespace ui {
 
 class MUS_COMMON_EXPORT GpuService : public gpu::GpuChannelHostFactory {
  public:
@@ -73,7 +73,7 @@ class MUS_COMMON_EXPORT GpuService : public gpu::GpuChannelHostFactory {
   // Lock for |gpu_channel_|, |establish_callbacks_| & |is_establishing_|.
   base::Lock lock_;
   bool is_establishing_;
-  mus::mojom::GpuServicePtr gpu_service_;
+  ui::mojom::GpuServicePtr gpu_service_;
   scoped_refptr<gpu::GpuChannelHost> gpu_channel_;
   std::vector<base::Closure> establish_callbacks_;
   base::ConditionVariable establishing_condition_;
@@ -81,6 +81,6 @@ class MUS_COMMON_EXPORT GpuService : public gpu::GpuChannelHostFactory {
   DISALLOW_COPY_AND_ASSIGN(GpuService);
 };
 
-}  // namespace mus
+}  // namespace ui
 
 #endif  // COMPONENTS_MUS_PUBLIC_CPP_LIB_GPU_SERVICE_CONNECTION_H_

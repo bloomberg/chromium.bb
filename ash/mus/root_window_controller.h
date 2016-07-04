@@ -37,26 +37,26 @@ class WmTestHelper;
 class WmWindowMus;
 
 // RootWindowController manages the windows and state for a single display.
-// RootWindowController is tied to the lifetime of the ::mus::Window it is
+// RootWindowController is tied to the lifetime of the ::ui::Window it is
 // created with. It is assumed the RootWindowController is deleted once the
-// associated ::mus::Window is destroyed.
+// associated ::ui::Window is destroyed.
 class RootWindowController : public ShelfLayoutManagerDelegate {
  public:
   RootWindowController(WindowManager* window_manager,
-                       ::mus::Window* root,
+                       ::ui::Window* root,
                        const display::Display& display);
   ~RootWindowController() override;
 
   shell::Connector* GetConnector();
 
-  ::mus::Window* root() { return root_; }
+  ::ui::Window* root() { return root_; }
 
   int window_count() { return window_count_; }
 
-  ::mus::Window* NewTopLevelWindow(
+  ::ui::Window* NewTopLevelWindow(
       std::map<std::string, std::vector<uint8_t>>* properties);
 
-  ::mus::Window* GetWindowForContainer(mojom::Container container);
+  ::ui::Window* GetWindowForContainer(mojom::Container container);
 
   WmWindowMus* GetWindowByShellWindowId(int id);
 
@@ -80,7 +80,7 @@ class RootWindowController : public ShelfLayoutManagerDelegate {
   friend class WmTestBase;
   friend class WmTestHelper;
 
-  gfx::Rect CalculateDefaultBounds(::mus::Window* window) const;
+  gfx::Rect CalculateDefaultBounds(::ui::Window* window) const;
   gfx::Rect GetMaximizedWindowBounds() const;
 
   // ShelfLayoutManagerDelegate:
@@ -90,7 +90,7 @@ class RootWindowController : public ShelfLayoutManagerDelegate {
   void CreateLayoutManagers();
 
   WindowManager* window_manager_;
-  ::mus::Window* root_;
+  ::ui::Window* root_;
   int window_count_ = 0;
 
   display::Display display_;
@@ -102,7 +102,7 @@ class RootWindowController : public ShelfLayoutManagerDelegate {
 
   // Owned by the corresponding container.
   WorkspaceLayoutManager* workspace_layout_manager_ = nullptr;
-  std::map<::mus::Window*, std::unique_ptr<LayoutManager>> layout_managers_;
+  std::map<::ui::Window*, std::unique_ptr<LayoutManager>> layout_managers_;
 
   std::unique_ptr<AlwaysOnTopController> always_on_top_controller_;
 

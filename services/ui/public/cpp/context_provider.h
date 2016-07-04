@@ -18,7 +18,7 @@ namespace shell {
 class Connector;
 }
 
-namespace mus {
+namespace ui {
 
 class GLES2Context;
 
@@ -49,6 +49,6 @@ class ContextProvider : public cc::ContextProvider {
   DISALLOW_COPY_AND_ASSIGN(ContextProvider);
 };
 
-}  // namespace mus
+}  // namespace ui
 
 #endif  // SERVICES_UI_PUBLIC_CPP_CONTEXT_PROVIDER_H_

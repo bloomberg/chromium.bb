@@ -11,7 +11,7 @@
 
 #include "services/ui/public/cpp/window.h"
 
-namespace mus {
+namespace ui {
 
 class Window;
 
@@ -105,6 +105,6 @@ class WindowObserver {
   virtual ~WindowObserver() {}
 };
 
-}  // namespace mus
+}  // namespace ui
 
 #endif  // SERVICES_UI_PUBLIC_CPP_WINDOW_OBSERVER_H_

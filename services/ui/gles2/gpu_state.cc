@@ -16,7 +16,7 @@
 #include "ui/ozone/public/ozone_platform.h"
 #endif
 
-namespace mus {
+namespace ui {
 
 GpuState::GpuState()
     : gpu_thread_("gpu_thread"),
@@ -79,4 +79,4 @@ void GpuState::DestroyGpuSpecificStateOnGpuThread() {
   driver_manager_.reset();
 }
 
-}  // namespace mus
+}  // namespace ui

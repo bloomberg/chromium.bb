@@ -57,7 +57,7 @@ bool WindowManagerConnection::Exists() {
   return !!lazy_tls_ptr.Pointer()->Get();
 }
 
-mus::Window* WindowManagerConnection::NewWindow(
+ui::Window* WindowManagerConnection::NewWindow(
     const std::map<std::string, std::vector<uint8_t>>& properties) {
   return client_->NewTopLevelWindow(&properties);
 }
@@ -73,10 +73,10 @@ NativeWidget* WindowManagerConnection::CreateNativeWidgetMus(
     return nullptr;
   std::map<std::string, std::vector<uint8_t>> properties = props;
   NativeWidgetMus::ConfigurePropertiesForNewWindow(init_params, &properties);
-  properties[mus::mojom::WindowManager::kAppID_Property] =
+  properties[ui::mojom::WindowManager::kAppID_Property] =
       mojo::ConvertTo<std::vector<uint8_t>>(identity_.name());
   return new NativeWidgetMus(delegate, connector_, NewWindow(properties),
-                             mus::mojom::SurfaceType::DEFAULT);
+                             ui::mojom::SurfaceType::DEFAULT);
 }
 
 void WindowManagerConnection::AddPointerWatcher(PointerWatcher* watcher) {
@@ -85,8 +85,8 @@ void WindowManagerConnection::AddPointerWatcher(PointerWatcher* watcher) {
   if (!had_watcher) {
     // Start a watcher for pointer down.
     // TODO(jamescook): Extend event observers to handle multiple event types.
-    mus::mojom::EventMatcherPtr matcher = mus::mojom::EventMatcher::New();
-    matcher->type_matcher = mus::mojom::EventTypeMatcher::New();
+    ui::mojom::EventMatcherPtr matcher = ui::mojom::EventMatcher::New();
+    matcher->type_matcher = ui::mojom::EventTypeMatcher::New();
     matcher->type_matcher->type = ui::mojom::EventType::POINTER_DOWN;
     client_->SetEventObserver(std::move(matcher));
   }
@@ -105,7 +105,7 @@ WindowManagerConnection::WindowManagerConnection(
     const shell::Identity& identity)
     : connector_(connector), identity_(identity) {
   lazy_tls_ptr.Pointer()->Set(this);
-  client_.reset(new mus::WindowTreeClient(this, nullptr, nullptr));
+  client_.reset(new ui::WindowTreeClient(this, nullptr, nullptr));
   client_->ConnectViaWindowTreeFactory(connector_);
 
   screen_.reset(new ScreenMus(this));
@@ -142,10 +142,9 @@ bool WindowManagerConnection::HasPointerWatcher() {
   return !!iterator.GetNext();
 }
 
-void WindowManagerConnection::OnEmbed(mus::Window* root) {}
+void WindowManagerConnection::OnEmbed(ui::Window* root) {}
 
-void WindowManagerConnection::OnDidDestroyClient(
-    mus::WindowTreeClient* client) {
+void WindowManagerConnection::OnDidDestroyClient(ui::WindowTreeClient* client) {
   if (client_.get() == client) {
     client_.release();
   } else {
@@ -154,12 +153,12 @@ void WindowManagerConnection::OnDidDestroyClient(
 }
 
 void WindowManagerConnection::OnEventObserved(const ui::Event& event,
-                                              mus::Window* target) {
+                                              ui::Window* target) {
   if (!event.IsLocatedEvent())
     return;
   Widget* target_widget = nullptr;
   if (target) {
-    mus::Window* root = target->GetRoot();
+    ui::Window* root = target->GetRoot();
     target_widget = NativeWidgetMus::GetWidgetForWindow(root);
   }
 

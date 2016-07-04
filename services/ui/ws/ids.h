@@ -14,7 +14,7 @@
 #include "services/ui/common/types.h"
 #include "services/ui/common/util.h"
 
-namespace mus {
+namespace ui {
 namespace ws {
 
 // A client id used to indicate no client. That is, no WindowTree ever gets this
@@ -90,21 +90,21 @@ inline WindowId RootWindowId(uint16_t index) {
 }
 
 }  // namespace ws
-}  // namespace mus
+}  // namespace ui
 
 namespace BASE_HASH_NAMESPACE {
 
 template <>
-struct hash<mus::ws::ClientWindowId> {
-  size_t operator()(const mus::ws::ClientWindowId& id) const {
-    return hash<mus::Id>()(id.id);
+struct hash<ui::ws::ClientWindowId> {
+  size_t operator()(const ui::ws::ClientWindowId& id) const {
+    return hash<ui::Id>()(id.id);
   }
 };
 
 template <>
-struct hash<mus::ws::WindowId> {
-  size_t operator()(const mus::ws::WindowId& id) const {
-    return hash<mus::Id>()(WindowIdToTransportId(id));
+struct hash<ui::ws::WindowId> {
+  size_t operator()(const ui::ws::WindowId& id) const {
+    return hash<ui::Id>()(WindowIdToTransportId(id));
   }
 };
 

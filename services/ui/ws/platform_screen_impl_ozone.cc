@@ -13,7 +13,7 @@
 #include "ui/display/types/native_display_delegate.h"
 #include "ui/ozone/public/ozone_platform.h"
 
-namespace mus {
+namespace ui {
 
 namespace ws {
 namespace {
@@ -123,4 +123,4 @@ void PlatformScreenImplOzone::OnDisplayConfigured(
 }
 
 }  // namespace ws
-}  // namespace mus
+}  // namespace ui

@@ -16,9 +16,9 @@
 using mojo::Array;
 using mojo::Map;
 using mojo::String;
-using mus::mojom::Clipboard;
+using ui::mojom::Clipboard;
 
-namespace mus {
+namespace ui {
 namespace clipboard {
 namespace {
 
@@ -37,7 +37,7 @@ class ClipboardAppTest : public shell::test::ShellTest {
   void SetUp() override {
     ShellTest::SetUp();
 
-    connector()->ConnectToInterface("mojo:mus", &clipboard_);
+    connector()->ConnectToInterface("mojo:ui", &clipboard_);
     ASSERT_TRUE(clipboard_);
   }
 
@@ -142,4 +142,4 @@ TEST_F(ClipboardAppTest, CanClearClipboardWithZeroArray) {
 }
 
 }  // namespace clipboard
-}  // namespace mus
+}  // namespace ui

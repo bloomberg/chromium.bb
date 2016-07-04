@@ -10,7 +10,7 @@
 #include "services/ui/public/interfaces/mus_constants.mojom.h"
 #include "services/ui/public/interfaces/window_tree.mojom.h"
 
-namespace mus {
+namespace ui {
 
 class SurfacesState;
 
@@ -41,6 +41,6 @@ class ServerWindowDelegate {
 
 }  // namespace ws
 
-}  // namespace mus
+}  // namespace ui
 
 #endif  // SERVICES_UI_WS_SERVER_WINDOW_DELEGATE_H_

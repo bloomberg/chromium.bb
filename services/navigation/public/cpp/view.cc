@@ -89,8 +89,8 @@ void View::SetResizerSize(const gfx::Size& size) {
   view_->SetResizerSize(size);
 }
 
-void View::EmbedInWindow(mus::Window* parent) {
-  mus::mojom::WindowTreeClientPtr client;
+void View::EmbedInWindow(ui::Window* parent) {
+  ui::mojom::WindowTreeClientPtr client;
   view_->GetWindowTreeClient(GetProxy(&client));
   parent->Embed(std::move(client));
 }

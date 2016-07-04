@@ -18,7 +18,7 @@ namespace gfx {
 class Point;
 }
 
-namespace mus {
+namespace ui {
 namespace ws {
 
 class Display;
@@ -113,6 +113,6 @@ class UserDisplayManager : public mojom::DisplayManager {
 };
 
 }  // namespace ws
-}  // namespace mus
+}  // namespace ui
 
 #endif  // SERVICES_UI_WS_USER_DISPLAY_MANAGER_H_

@@ -22,16 +22,13 @@
 #include "services/ui/common/types.h"
 #include "services/ui/public/interfaces/accelerator_registrar.mojom.h"
 
-namespace mus {
-class WindowTreeClient;
-}
-
 namespace views {
 class AuraInit;
 }
 
 namespace ui {
 class Event;
+class WindowTreeClient;
 }
 
 namespace ash {
@@ -47,7 +44,7 @@ class WindowManagerApplication
     : public shell::ShellClient,
       public shell::InterfaceFactory<mojom::ShelfLayout>,
       public shell::InterfaceFactory<mojom::UserWindowController>,
-      public shell::InterfaceFactory<::mus::mojom::AcceleratorRegistrar>,
+      public shell::InterfaceFactory<::ui::mojom::AcceleratorRegistrar>,
       public mash::session::mojom::ScreenlockStateListener,
       public WindowManagerObserver {
  public:
@@ -66,7 +63,7 @@ class WindowManagerApplication
 
   void OnAcceleratorRegistrarDestroyed(AcceleratorRegistrarImpl* registrar);
 
-  void InitWindowManager(::mus::WindowTreeClient* window_tree_client);
+  void InitWindowManager(::ui::WindowTreeClient* window_tree_client);
 
   // shell::ShellClient:
   void Initialize(shell::Connector* connector,
@@ -83,10 +80,10 @@ class WindowManagerApplication
       shell::Connection* connection,
       mojo::InterfaceRequest<mojom::UserWindowController> request) override;
 
-  // shell::InterfaceFactory<mus::mojom::AcceleratorRegistrar>:
+  // shell::InterfaceFactory<ui::mojom::AcceleratorRegistrar>:
   void Create(shell::Connection* connection,
-              mojo::InterfaceRequest<::mus::mojom::AcceleratorRegistrar>
-                  request) override;
+              mojo::InterfaceRequest<::ui::mojom::AcceleratorRegistrar> request)
+      override;
 
   // session::mojom::ScreenlockStateListener:
   void ScreenlockStateChanged(bool locked) override;

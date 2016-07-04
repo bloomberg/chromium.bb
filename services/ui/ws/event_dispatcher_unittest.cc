@@ -21,7 +21,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/event.h"
 
-namespace mus {
+namespace ui {
 namespace ws {
 namespace test {
 namespace {
@@ -370,35 +370,35 @@ TEST_F(EventDispatcherTest, AcceleratorBasic) {
   EventDispatcher dispatcher(&event_dispatcher_delegate);
 
   uint32_t accelerator_1 = 1;
-  mojom::EventMatcherPtr matcher = mus::CreateKeyMatcher(
+  mojom::EventMatcherPtr matcher = ui::CreateKeyMatcher(
       ui::mojom::KeyboardCode::W, ui::mojom::kEventFlagControlDown);
   EXPECT_TRUE(dispatcher.AddAccelerator(accelerator_1, std::move(matcher)));
 
   uint32_t accelerator_2 = 2;
-  matcher = mus::CreateKeyMatcher(ui::mojom::KeyboardCode::N,
-                                  ui::mojom::kEventFlagNone);
+  matcher = ui::CreateKeyMatcher(ui::mojom::KeyboardCode::N,
+                                 ui::mojom::kEventFlagNone);
   EXPECT_TRUE(dispatcher.AddAccelerator(accelerator_2, std::move(matcher)));
 
   // Attempting to add a new accelerator with the same id should fail.
-  matcher = mus::CreateKeyMatcher(ui::mojom::KeyboardCode::T,
-                                  ui::mojom::kEventFlagNone);
+  matcher = ui::CreateKeyMatcher(ui::mojom::KeyboardCode::T,
+                                 ui::mojom::kEventFlagNone);
   EXPECT_FALSE(dispatcher.AddAccelerator(accelerator_2, std::move(matcher)));
 
   // Adding the accelerator with the same id should succeed once the existing
   // accelerator is removed.
   dispatcher.RemoveAccelerator(accelerator_2);
-  matcher = mus::CreateKeyMatcher(ui::mojom::KeyboardCode::T,
-                                  ui::mojom::kEventFlagNone);
+  matcher = ui::CreateKeyMatcher(ui::mojom::KeyboardCode::T,
+                                 ui::mojom::kEventFlagNone);
   EXPECT_TRUE(dispatcher.AddAccelerator(accelerator_2, std::move(matcher)));
 
   // Attempting to add an accelerator with the same matcher should fail.
   uint32_t accelerator_3 = 3;
-  matcher = mus::CreateKeyMatcher(ui::mojom::KeyboardCode::T,
-                                  ui::mojom::kEventFlagNone);
+  matcher = ui::CreateKeyMatcher(ui::mojom::KeyboardCode::T,
+                                 ui::mojom::kEventFlagNone);
   EXPECT_FALSE(dispatcher.AddAccelerator(accelerator_3, std::move(matcher)));
 
-  matcher = mus::CreateKeyMatcher(ui::mojom::KeyboardCode::T,
-                                  ui::mojom::kEventFlagControlDown);
+  matcher = ui::CreateKeyMatcher(ui::mojom::KeyboardCode::T,
+                                 ui::mojom::kEventFlagControlDown);
   EXPECT_TRUE(dispatcher.AddAccelerator(accelerator_3, std::move(matcher)));
 }
 
@@ -407,7 +407,7 @@ TEST_F(EventDispatcherTest, EventMatching) {
       test_event_dispatcher_delegate();
   EventDispatcher* dispatcher = event_dispatcher();
 
-  mojom::EventMatcherPtr matcher = mus::CreateKeyMatcher(
+  mojom::EventMatcherPtr matcher = ui::CreateKeyMatcher(
       ui::mojom::KeyboardCode::W, ui::mojom::kEventFlagControlDown);
   uint32_t accelerator_1 = 1;
   dispatcher->AddAccelerator(accelerator_1, std::move(matcher));
@@ -430,8 +430,8 @@ TEST_F(EventDispatcherTest, EventMatching) {
   EXPECT_EQ(0u, event_dispatcher_delegate->GetAndClearLastAccelerator());
 
   uint32_t accelerator_2 = 2;
-  matcher = mus::CreateKeyMatcher(ui::mojom::KeyboardCode::W,
-                                  ui::mojom::kEventFlagNone);
+  matcher = ui::CreateKeyMatcher(ui::mojom::KeyboardCode::W,
+                                 ui::mojom::kEventFlagNone);
   dispatcher->AddAccelerator(accelerator_2, std::move(matcher));
   dispatcher->ProcessEvent(key);
   EXPECT_EQ(accelerator_2,
@@ -448,7 +448,7 @@ TEST_F(EventDispatcherTest, PostTargetAccelerator) {
       test_event_dispatcher_delegate();
   EventDispatcher* dispatcher = event_dispatcher();
 
-  mojom::EventMatcherPtr matcher = mus::CreateKeyMatcher(
+  mojom::EventMatcherPtr matcher = ui::CreateKeyMatcher(
       ui::mojom::KeyboardCode::W, ui::mojom::kEventFlagControlDown);
   matcher->accelerator_phase = ui::mojom::AcceleratorPhase::POST_TARGET;
   uint32_t accelerator_1 = 1;
@@ -1611,4 +1611,4 @@ TEST_F(EventDispatcherTest, ChangeCaptureFromClientToNonclient) {
 
 }  // namespace test
 }  // namespace ws
-}  // namespace mus
+}  // namespace ui

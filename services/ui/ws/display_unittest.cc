@@ -28,7 +28,7 @@
 #include "ui/events/event.h"
 #include "ui/gfx/geometry/rect.h"
 
-namespace mus {
+namespace ui {
 namespace ws {
 namespace test {
 namespace {
@@ -305,4 +305,4 @@ TEST_F(DisplayTest, MultipleDisplays) {
 
 }  // namespace test
 }  // namespace ws
-}  // namespace mus
+}  // namespace ui

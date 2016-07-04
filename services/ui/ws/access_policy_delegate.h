@@ -10,7 +10,7 @@
 #include "base/containers/hash_tables.h"
 #include "services/ui/ws/ids.h"
 
-namespace mus {
+namespace ui {
 
 namespace ws {
 
@@ -36,6 +36,6 @@ class AccessPolicyDelegate {
 
 }  // namespace ws
 
-}  // namespace mus
+}  // namespace ui
 
 #endif  // SERVICES_UI_WS_ACCESS_POLICY_DELEGATE_H_

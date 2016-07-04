@@ -18,17 +18,16 @@
 #include "services/ui/public/cpp/window_tree_client_observer.h"
 #include "ui/gfx/geometry/rect.h"
 
-namespace mus {
+namespace ui {
 namespace ws {
 
 namespace {
 
-Id server_id(mus::Window* window) {
+Id server_id(ui::Window* window) {
   return WindowPrivate(window).server_id();
 }
 
-mus::Window* GetChildWindowByServerId(WindowTreeClient* client,
-                                      uint32_t id) {
+ui::Window* GetChildWindowByServerId(WindowTreeClient* client, uint32_t id) {
   return client->GetWindowByServerId(id);
 }
 
@@ -278,8 +277,8 @@ class WindowServerTest : public WindowServerTestBase {
 
   // Establishes a connection to this application and asks for a
   // WindowTreeClient.
-  mus::mojom::WindowTreeClientPtr ConnectAndGetWindowServerClient() {
-    mus::mojom::WindowTreeClientPtr client;
+  ui::mojom::WindowTreeClientPtr ConnectAndGetWindowServerClient() {
+    ui::mojom::WindowTreeClientPtr client;
     connector()->ConnectToInterface(test_name(), &client);
     return client;
   }
@@ -1168,4 +1167,4 @@ TEST_F(WindowServerTest, EstablishConnectionViaFactory) {
 }
 
 }  // namespace ws
-}  // namespace mus
+}  // namespace ui

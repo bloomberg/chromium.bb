@@ -11,7 +11,7 @@
 #include "services/ui/ws/server_window.h"
 #include "services/ui/ws/server_window_drawn_tracker.h"
 
-namespace mus {
+namespace ui {
 namespace ws {
 
 namespace {
@@ -187,7 +187,7 @@ bool FocusController::CanBeActivated(ServerWindow* window) const {
     if (props.count(mojom::WindowManager::kShowState_Property)) {
       is_minimized =
           props.find(mojom::WindowManager::kShowState_Property)->second[0] ==
-          static_cast<int>(mus::mojom::ShowState::MINIMIZED);
+          static_cast<int>(ui::mojom::ShowState::MINIMIZED);
     }
     if (!is_minimized)
       return false;
@@ -308,4 +308,4 @@ void FocusController::OnDrawnStateChanged(ServerWindow* ancestor,
 }
 
 }  // namespace ws
-}  // namespace mus
+}  // namespace ui

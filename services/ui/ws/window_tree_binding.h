@@ -11,7 +11,7 @@
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/ui/public/interfaces/window_tree.mojom.h"
 
-namespace mus {
+namespace ui {
 namespace ws {
 
 class WindowServer;
@@ -67,6 +67,6 @@ class DefaultWindowTreeBinding : public WindowTreeBinding {
 };
 
 }  // namespace ws
-}  // namespace mus
+}  // namespace ui
 
 #endif  // SERVICES_UI_WS_WINDOW_TREE_BINDING_H_

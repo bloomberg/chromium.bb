@@ -18,7 +18,7 @@ namespace views {
 // InputMethodMUS, public:
 
 InputMethodMUS::InputMethodMUS(ui::internal::InputMethodDelegate* delegate,
-                               mus::Window* window)
+                               ui::Window* window)
     : window_(window) {
   SetDelegate(delegate);
 }

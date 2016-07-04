@@ -4,7 +4,7 @@
 
 #include "services/ui/ws/event_matcher.h"
 
-namespace mus {
+namespace ui {
 namespace ws {
 
 EventMatcher::EventMatcher(const mojom::EventMatcher& matcher)
@@ -110,4 +110,4 @@ bool EventMatcher::Equals(const EventMatcher& other) const {
 }
 
 }  // namespace ws
-}  // namespace mus
+}  // namespace ui

@@ -20,7 +20,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/geometry/rect.h"
 
-namespace mus {
+namespace ui {
 
 namespace {
 
@@ -1198,4 +1198,4 @@ TEST_F(WindowTest, StackUponCreation) {
   EXPECT_EQ("1 3 2", ChildWindowIDsAsString(parent.get()));
 }
 
-}  // namespace mus
+}  // namespace ui

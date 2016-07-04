@@ -48,7 +48,7 @@ void WindowManagerApplication::OnAcceleratorRegistrarDestroyed(
 }
 
 void WindowManagerApplication::InitWindowManager(
-    ::mus::WindowTreeClient* window_tree_client) {
+    ::ui::WindowTreeClient* window_tree_client) {
   window_manager_->Init(window_tree_client);
   window_manager_->AddObserver(this);
 }
@@ -57,14 +57,14 @@ void WindowManagerApplication::Initialize(shell::Connector* connector,
                                           const shell::Identity& identity,
                                           uint32_t id) {
   connector_ = connector;
-  ::mus::GpuService::Initialize(connector);
+  ::ui::GpuService::Initialize(connector);
   window_manager_.reset(new WindowManager(connector_));
 
   aura_init_.reset(new views::AuraInit(connector_, "ash_mus_resources.pak"));
 
   tracing_.Initialize(connector, identity.name());
 
-  ::mus::WindowTreeClient* window_tree_client = new ::mus::WindowTreeClient(
+  ::ui::WindowTreeClient* window_tree_client = new ::ui::WindowTreeClient(
       window_manager_.get(), window_manager_.get(), nullptr);
   window_tree_client->ConnectAsWindowManager(connector);
 
@@ -74,7 +74,7 @@ void WindowManagerApplication::Initialize(shell::Connector* connector,
 bool WindowManagerApplication::AcceptConnection(shell::Connection* connection) {
   connection->AddInterface<mojom::ShelfLayout>(this);
   connection->AddInterface<mojom::UserWindowController>(this);
-  connection->AddInterface<::mus::mojom::AcceleratorRegistrar>(this);
+  connection->AddInterface<::ui::mojom::AcceleratorRegistrar>(this);
   if (connection->GetRemoteIdentity().name() == "mojo:mash_session") {
     connection->GetInterface(&session_);
     session_->AddScreenlockStateListener(
@@ -107,7 +107,7 @@ void WindowManagerApplication::Create(
 
 void WindowManagerApplication::Create(
     shell::Connection* connection,
-    mojo::InterfaceRequest<::mus::mojom::AcceleratorRegistrar> request) {
+    mojo::InterfaceRequest<::ui::mojom::AcceleratorRegistrar> request) {
   if (!window_manager_->window_manager_client())
     return;  // Can happen during shutdown.
 

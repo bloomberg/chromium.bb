@@ -7,7 +7,7 @@
 
 #include "ui/aura/aura_export.h"
 
-namespace mus {
+namespace ui {
 class Window;
 }
 
@@ -15,9 +15,9 @@ namespace aura {
 
 class Window;
 
-AURA_EXPORT mus::Window* GetMusWindow(Window* window);
+AURA_EXPORT ui::Window* GetMusWindow(Window* window);
 
-AURA_EXPORT void SetMusWindow(Window* window, mus::Window* mus_window);
+AURA_EXPORT void SetMusWindow(Window* window, ui::Window* mus_window);
 
 }  // namespace aura
 

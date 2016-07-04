@@ -15,7 +15,7 @@
 #include "mojo/public/cpp/bindings/interface_ptr_info.h"
 #include "services/ui/public/interfaces/surface.mojom.h"
 
-namespace mus {
+namespace ui {
 
 class WindowSurfaceBinding;
 class WindowSurfaceClient;
@@ -80,6 +80,6 @@ class WindowSurfaceBinding {
   DISALLOW_COPY_AND_ASSIGN(WindowSurfaceBinding);
 };
 
-}  // namespace mus
+}  // namespace ui
 
 #endif  // SERVICES_UI_PUBLIC_CPP_WINDOW_SURFACE_H_

@@ -22,7 +22,7 @@
 #include "services/ui/common/mojo_buffer_backing.h"
 #include "services/ui/common/mojo_gpu_memory_buffer.h"
 
-namespace mus {
+namespace ui {
 
 namespace {
 
@@ -45,8 +45,8 @@ void MakeProgressCallback(gpu::CommandBuffer::State* output,
   *output = input;
 }
 
-void InitializeCallback(mus::mojom::CommandBufferInitializeResultPtr* output,
-                        mus::mojom::CommandBufferInitializeResultPtr input) {
+void InitializeCallback(ui::mojom::CommandBufferInitializeResultPtr* output,
+                        ui::mojom::CommandBufferInitializeResultPtr input) {
   *output = std::move(input);
 }
 
@@ -54,7 +54,7 @@ void InitializeCallback(mus::mojom::CommandBufferInitializeResultPtr* output,
 
 CommandBufferClientImpl::CommandBufferClientImpl(
     const std::vector<int32_t>& attribs,
-    mus::mojom::CommandBufferPtr command_buffer_ptr)
+    ui::mojom::CommandBufferPtr command_buffer_ptr)
     : gpu_control_client_(nullptr),
       destroyed_(false),
       attribs_(attribs),
@@ -83,10 +83,10 @@ bool CommandBufferClientImpl::Initialize() {
 
   shared_state()->Initialize();
 
-  mus::mojom::CommandBufferClientPtr client_ptr;
+  ui::mojom::CommandBufferClientPtr client_ptr;
   client_binding_.Bind(GetProxy(&client_ptr));
 
-  mus::mojom::CommandBufferInitializeResultPtr initialize_result;
+  ui::mojom::CommandBufferInitializeResultPtr initialize_result;
   command_buffer_->Initialize(
       std::move(client_ptr), std::move(handle),
       mojo::Array<int32_t>::From(attribs_),
@@ -176,7 +176,7 @@ scoped_refptr<gpu::Buffer> CommandBufferClientImpl::CreateTransferBuffer(
                                           static_cast<uint32_t>(size));
 
   std::unique_ptr<gpu::BufferBacking> backing(
-      new mus::MojoBufferBacking(std::move(mapping), size));
+      new ui::MojoBufferBacking(std::move(mapping), size));
   scoped_refptr<gpu::Buffer> buffer(new gpu::Buffer(std::move(backing)));
   return buffer;
 }
@@ -201,8 +201,8 @@ int32_t CommandBufferClientImpl::CreateImage(ClientBuffer buffer,
 
   gfx::Size size(static_cast<int32_t>(width), static_cast<int32_t>(height));
 
-  mus::MojoGpuMemoryBufferImpl* gpu_memory_buffer =
-      mus::MojoGpuMemoryBufferImpl::FromClientBuffer(buffer);
+  ui::MojoGpuMemoryBufferImpl* gpu_memory_buffer =
+      ui::MojoGpuMemoryBufferImpl::FromClientBuffer(buffer);
   gfx::GpuMemoryBufferHandle handle = gpu_memory_buffer->GetHandle();
 
   bool requires_sync_point = false;
@@ -245,7 +245,7 @@ int32_t CommandBufferClientImpl::CreateGpuMemoryBufferImage(
     unsigned internalformat,
     unsigned usage) {
   std::unique_ptr<gfx::GpuMemoryBuffer> buffer(
-      mus::MojoGpuMemoryBufferImpl::Create(
+      ui::MojoGpuMemoryBufferImpl::Create(
           gfx::Size(static_cast<int>(width), static_cast<int>(height)),
           gpu::DefaultBufferFormatForImageFormat(internalformat),
           gfx::BufferUsage::SCANOUT));
@@ -367,4 +367,4 @@ bool CommandBufferClientImpl::CanWaitUnverifiedSyncToken(
   return false;
 }
 
-}  // namespace mus
+}  // namespace ui

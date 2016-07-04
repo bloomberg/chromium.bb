@@ -6,7 +6,7 @@
 
 #include "services/ui/ws/server_window.h"
 
-namespace mus {
+namespace ui {
 namespace ws {
 
 ServerWindowSurfaceManagerTestApi::ServerWindowSurfaceManagerTestApi(
@@ -36,4 +36,4 @@ void DisableHitTest(ServerWindow* window) {
 }
 
 }  // namespace ws
-}  // namespace mus
+}  // namespace ui

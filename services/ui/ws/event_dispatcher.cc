@@ -18,7 +18,7 @@
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/point_conversions.h"
 
-namespace mus {
+namespace ui {
 namespace ws {
 
 using Entry = std::pair<uint32_t, std::unique_ptr<Accelerator>>;
@@ -524,7 +524,7 @@ ServerWindow* EventDispatcher::FindDeepestVisibleWindowForEvents(
   if (!root)
     return nullptr;
 
-  return mus::ws::FindDeepestVisibleWindowForEvents(root, location);
+  return ui::ws::FindDeepestVisibleWindowForEvents(root, location);
 }
 
 void EventDispatcher::OnWillChangeWindowHierarchy(ServerWindow* window,
@@ -556,4 +556,4 @@ void EventDispatcher::OnWindowDestroyed(ServerWindow* window) {
 }
 
 }  // namespace ws
-}  // namespace mus
+}  // namespace ui

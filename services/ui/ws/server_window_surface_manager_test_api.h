@@ -8,7 +8,7 @@
 #include "base/macros.h"
 #include "services/ui/ws/server_window_surface_manager.h"
 
-namespace mus {
+namespace ui {
 namespace ws {
 
 class ServerWindow;
@@ -34,6 +34,6 @@ void EnableHitTest(ServerWindow* window);
 void DisableHitTest(ServerWindow* window);
 
 }  // namespace ws
-}  // namespace mus
+}  // namespace ui
 
 #endif  // SERVICES_UI_WS_SERVER_WINDOW_SURFACE_MANAGER_TEST_API_H_

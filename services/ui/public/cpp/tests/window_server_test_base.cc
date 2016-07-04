@@ -15,7 +15,7 @@
 #include "services/ui/public/cpp/window_tree_client.h"
 #include "services/ui/public/cpp/window_tree_host_factory.h"
 
-namespace mus {
+namespace ui {
 namespace {
 
 base::RunLoop* current_run_loop = nullptr;
@@ -141,4 +141,4 @@ void WindowServerTestBase::Create(shell::Connection* connection,
   new WindowTreeClient(this, nullptr, std::move(request));
 }
 
-}  // namespace mus
+}  // namespace ui

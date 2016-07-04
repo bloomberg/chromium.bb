@@ -17,12 +17,11 @@ class ShelfLayoutManagerDelegate;
 // Lays out the shelf within shelf containers.
 class ShelfLayoutManager : public LayoutManager {
  public:
-  ShelfLayoutManager(::mus::Window* owner,
-                     ShelfLayoutManagerDelegate* delegate);
+  ShelfLayoutManager(::ui::Window* owner, ShelfLayoutManagerDelegate* delegate);
   ~ShelfLayoutManager() override;
 
   // Returns the shelf, which may be null.
-  ::mus::Window* GetShelfWindow();
+  ::ui::Window* GetShelfWindow();
 
   void SetAlignment(mash::shelf::mojom::Alignment alignment);
   void SetAutoHideBehavior(mash::shelf::mojom::AutoHideBehavior auto_hide);
@@ -34,8 +33,8 @@ class ShelfLayoutManager : public LayoutManager {
 
  private:
   // Overridden from LayoutManager:
-  void LayoutWindow(::mus::Window* window) override;
-  void WindowAdded(::mus::Window* window) override;
+  void LayoutWindow(::ui::Window* window) override;
+  void WindowAdded(::ui::Window* window) override;
 
   ShelfLayoutManagerDelegate* delegate_;
   mash::shelf::mojom::Alignment alignment_;

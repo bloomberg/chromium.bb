@@ -7,9 +7,9 @@
 #include "services/ui/public/cpp/tests/window_server_test_suite.h"
 
 int main(int argc, char** argv) {
-  mus::WindowServerTestSuite test_suite(argc, argv);
+  ui::WindowServerTestSuite test_suite(argc, argv);
 
   return base::LaunchUnitTests(argc, argv,
-                               base::Bind(&mus::WindowServerTestSuite::Run,
+                               base::Bind(&ui::WindowServerTestSuite::Run,
                                           base::Unretained(&test_suite)));
 }

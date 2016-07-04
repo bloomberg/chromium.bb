@@ -7,10 +7,10 @@
       "all_interfaces": [ "*" ]
     },
     "required": {
-      "mojo:mus": {
+      "mojo:ui": {
         "interfaces":  [
-          "mus::mojom::Gpu",
-          "mus::mojom::GpuService"
+          "ui::mojom::Gpu",
+          "ui::mojom::GpuService"
         ]
       }
     }

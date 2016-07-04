@@ -12,7 +12,7 @@
 #include "mojo/public/cpp/bindings/interface_ptr_set.h"
 #include "services/ui/public/interfaces/user_activity_monitor.mojom.h"
 
-namespace mus {
+namespace ui {
 namespace ws {
 
 namespace test {
@@ -77,6 +77,6 @@ class UserActivityMonitor : public mojom::UserActivityMonitor {
 };
 
 }  // namespace ws
-}  // namespace mus
+}  // namespace ui
 
 #endif  // SERVICES_UI_WS_USER_ACTIVITY_MONITOR_H_

@@ -45,7 +45,7 @@ class PlatformWindow;
 struct TextInputState;
 }  // namespace ui
 
-namespace mus {
+namespace ui {
 
 class GpuState;
 class SurfacesState;
@@ -190,6 +190,6 @@ class DefaultPlatformDisplay : public PlatformDisplay,
 
 }  // namespace ws
 
-}  // namespace mus
+}  // namespace ui
 
 #endif  // SERVICES_UI_WS_PLATFORM_DISPLAY_H_

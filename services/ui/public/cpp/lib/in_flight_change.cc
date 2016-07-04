@@ -7,7 +7,7 @@
 #include "services/ui/public/cpp/lib/window_private.h"
 #include "services/ui/public/cpp/window_tree_client.h"
 
-namespace mus {
+namespace ui {
 
 // InFlightChange -------------------------------------------------------------
 
@@ -217,4 +217,4 @@ void InFlightSetModalChange::Revert() {
   WindowPrivate(window()).LocalUnsetModal();
 }
 
-}  // namespace mus
+}  // namespace ui

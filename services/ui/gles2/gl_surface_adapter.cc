@@ -6,7 +6,7 @@
 
 #include "base/bind.h"
 
-namespace mus {
+namespace ui {
 
 GLSurfaceAdapterMus::GLSurfaceAdapterMus(scoped_refptr<gl::GLSurface> surface)
     : gl::GLSurfaceAdapter(surface.get()),
@@ -54,4 +54,4 @@ void GLSurfaceAdapterMus::SetGpuCompletedSwapBuffersCallback(
   adapter_callback_ = std::move(callback);
 }
 
-}  // namespace mus
+}  // namespace ui

@@ -15,7 +15,7 @@
 #include "gpu/command_buffer/client/context_support.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 
-namespace mus {
+namespace ui {
 
 DirectOutputSurface::DirectOutputSurface(
     scoped_refptr<SurfacesContextProvider> context_provider,
@@ -78,4 +78,4 @@ uint32_t DirectOutputSurface::GetFramebufferCopyTextureFormat() {
   return GL_RGB;
 }
 
-}  // namespace mus
+}  // namespace ui

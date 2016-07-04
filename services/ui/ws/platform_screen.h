@@ -13,7 +13,7 @@ namespace gfx {
 class Rect;
 }
 
-namespace mus {
+namespace ui {
 namespace ws {
 
 // PlatformScreen provides the necessary functionality to configure all
@@ -38,6 +38,6 @@ class PlatformScreen {
 };
 
 }  // namespace ws
-}  // namespace mus
+}  // namespace ui
 
 #endif  // SERVICES_UI_WS_PLATFORM_SCREEN_H_

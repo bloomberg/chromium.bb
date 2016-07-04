@@ -29,7 +29,7 @@
 #include "ui/events/mojo/event_constants.mojom.h"
 #include "ui/events/mojo/keyboard_codes.mojom.h"
 
-using mus::mojom::EventResult;
+using ui::mojom::EventResult;
 
 namespace {
 
@@ -220,7 +220,7 @@ class CompositorMusConnectionTest : public testing::Test {
 
   // Calls CompositorMusConnection::OnWindowInputEvent.
   void OnWindowInputEvent(
-      mus::Window* window,
+      ui::Window* window,
       const ui::Event& event,
       std::unique_ptr<base::Callback<void(EventResult)>>* ack_callback);
 
@@ -251,7 +251,7 @@ class CompositorMusConnectionTest : public testing::Test {
   FakeRendererScheduler renderer_scheduler_;
   MockRenderThread render_thread_;
   scoped_refptr<TestRenderWidget> render_widget_;
-  mojo::InterfaceRequest<mus::mojom::WindowTreeClient> request_;
+  mojo::InterfaceRequest<ui::mojom::WindowTreeClient> request_;
 
   // Not owned, RenderWidgetMusConnection tracks in static state. Cleared during
   // TearDown.
@@ -277,7 +277,7 @@ std::unique_ptr<ui::Event> CompositorMusConnectionTest::GenerateKeyEvent() {
 }
 
 void CompositorMusConnectionTest::OnWindowInputEvent(
-    mus::Window* window,
+    ui::Window* window,
     const ui::Event& event,
     std::unique_ptr<base::Callback<void(EventResult)>>* ack_callback) {
   compositor_connection_->OnWindowInputEvent(window, event, ack_callback);
@@ -336,7 +336,7 @@ TEST_F(CompositorMusConnectionTest, NotConsumed) {
   input_handler->set_state(
       InputEventAckState::INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
 
-  mus::TestWindow test_window;
+  ui::TestWindow test_window;
   std::unique_ptr<ui::Event> event(GenerateKeyEvent());
   scoped_refptr<TestCallback> test_callback(new TestCallback);
   std::unique_ptr<base::Callback<void(EventResult)>> ack_callback(
@@ -363,7 +363,7 @@ TEST_F(CompositorMusConnectionTest, Consumed) {
   input_handler->set_delegate(connection());
   input_handler->set_state(InputEventAckState::INPUT_EVENT_ACK_STATE_CONSUMED);
 
-  mus::TestWindow test_window;
+  ui::TestWindow test_window;
   std::unique_ptr<ui::Event> event(GenerateKeyEvent());
   scoped_refptr<TestCallback> test_callback(new TestCallback);
   std::unique_ptr<base::Callback<void(EventResult)>> ack_callback(
@@ -385,7 +385,7 @@ TEST_F(CompositorMusConnectionTest, Consumed) {
 // Tests that when the RenderWidgetInputHandler does not ack before a new event
 // arrives, that only the most recent ack is fired.
 TEST_F(CompositorMusConnectionTest, LostAck) {
-  mus::TestWindow test_window;
+  ui::TestWindow test_window;
   std::unique_ptr<ui::Event> event1(GenerateKeyEvent());
   scoped_refptr<TestCallback> test_callback1(new TestCallback);
   std::unique_ptr<base::Callback<void(EventResult)>> ack_callback1(
@@ -424,7 +424,7 @@ TEST_F(CompositorMusConnectionTest, LostAck) {
 TEST_F(CompositorMusConnectionTest, InputHandlerConsumes) {
   input_handler_manager()->SetHandleInputEventResult(
       InputEventAckState::INPUT_EVENT_ACK_STATE_CONSUMED);
-  mus::TestWindow test_window;
+  ui::TestWindow test_window;
   std::unique_ptr<ui::Event> event(GenerateKeyEvent());
   scoped_refptr<TestCallback> test_callback(new TestCallback);
   std::unique_ptr<base::Callback<void(EventResult)>> ack_callback(
@@ -441,7 +441,7 @@ TEST_F(CompositorMusConnectionTest, InputHandlerConsumes) {
 // Tests that when the renderer will not ack an event, that
 // CompositorMusConnection does not consume the ack, nor calls it.
 TEST_F(CompositorMusConnectionTest, RendererWillNotSendAck) {
-  mus::TestWindow test_window;
+  ui::TestWindow test_window;
   ui::PointerEvent event(
       ui::ET_POINTER_DOWN, gfx::Point(), gfx::Point(), ui::EF_NONE, 0,
       ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_MOUSE),
@@ -466,7 +466,7 @@ TEST_F(CompositorMusConnectionTest, TouchEventConsumed) {
   input_handler->set_delegate(connection());
   input_handler->set_state(InputEventAckState::INPUT_EVENT_ACK_STATE_CONSUMED);
 
-  mus::TestWindow test_window;
+  ui::TestWindow test_window;
   ui::PointerEvent event(
       ui::ET_POINTER_DOWN, gfx::Point(), gfx::Point(), ui::EF_NONE, 0,
       ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH),

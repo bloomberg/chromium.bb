@@ -14,7 +14,7 @@ namespace display {
 class Display;
 }
 
-namespace mus {
+namespace ui {
 
 class TestWindowTree;
 class WindowManagerDelegate;
@@ -23,7 +23,7 @@ class WindowTreeClientDelegate;
 
 // TestWindowTreeClientSetup is used to create a WindowTreeClient that is not
 // connected to mus.
-class TestWindowTreeClientSetup : public mus::WindowTreeClientObserver {
+class TestWindowTreeClientSetup : public ui::WindowTreeClientObserver {
  public:
   TestWindowTreeClientSetup();
   ~TestWindowTreeClientSetup() override;
@@ -44,8 +44,8 @@ class TestWindowTreeClientSetup : public mus::WindowTreeClientObserver {
   void CommonInit(WindowTreeClientDelegate* window_tree_delegate,
                   WindowManagerDelegate* window_manager_delegate);
 
-  // mus::WindowTreeClientObserver:
-  void OnDidDestroyClient(mus::WindowTreeClient* client) override;
+  // ui::WindowTreeClientObserver:
+  void OnDidDestroyClient(ui::WindowTreeClient* client) override;
 
   std::unique_ptr<TestWindowTree> window_tree_;
 
@@ -57,6 +57,6 @@ class TestWindowTreeClientSetup : public mus::WindowTreeClientObserver {
   DISALLOW_COPY_AND_ASSIGN(TestWindowTreeClientSetup);
 };
 
-}  // namespace mus
+}  // namespace ui
 
 #endif  // SERVICES_UI_PUBLIC_CPP_TESTS_TEST_WINDOW_TREE_CLIENT_SETUP_H_

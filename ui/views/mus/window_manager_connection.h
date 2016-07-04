@@ -43,7 +43,7 @@ class NativeWidgetDelegate;
 //
 // TODO(sky): this name is now totally confusing. Come up with a better one.
 class VIEWS_MUS_EXPORT WindowManagerConnection
-    : public NON_EXPORTED_BASE(mus::WindowTreeClientDelegate),
+    : public NON_EXPORTED_BASE(ui::WindowTreeClientDelegate),
       public ScreenMusDelegate {
  public:
   static std::unique_ptr<WindowManagerConnection> Create(
@@ -56,8 +56,8 @@ class VIEWS_MUS_EXPORT WindowManagerConnection
 
   shell::Connector* connector() { return connector_; }
 
-  mus::Window* NewWindow(const std::map<std::string,
-                         std::vector<uint8_t>>& properties);
+  ui::Window* NewWindow(
+      const std::map<std::string, std::vector<uint8_t>>& properties);
 
   NativeWidget* CreateNativeWidgetMus(
       const std::map<std::string, std::vector<uint8_t>>& properties,
@@ -76,10 +76,10 @@ class VIEWS_MUS_EXPORT WindowManagerConnection
   // Returns true if there is one or more pointer watchers for this client.
   bool HasPointerWatcher();
 
-  // mus::WindowTreeClientDelegate:
-  void OnEmbed(mus::Window* root) override;
-  void OnDidDestroyClient(mus::WindowTreeClient* client) override;
-  void OnEventObserved(const ui::Event& event, mus::Window* target) override;
+  // ui::WindowTreeClientDelegate:
+  void OnEmbed(ui::Window* root) override;
+  void OnDidDestroyClient(ui::WindowTreeClient* client) override;
+  void OnEventObserved(const ui::Event& event, ui::Window* target) override;
 
   // ScreenMusDelegate:
   void OnWindowManagerFrameValuesChanged() override;
@@ -88,7 +88,7 @@ class VIEWS_MUS_EXPORT WindowManagerConnection
   shell::Connector* connector_;
   shell::Identity identity_;
   std::unique_ptr<ScreenMus> screen_;
-  std::unique_ptr<mus::WindowTreeClient> client_;
+  std::unique_ptr<ui::WindowTreeClient> client_;
   // Must be empty on destruction.
   base::ObserverList<PointerWatcher, true> pointer_watchers_;
 

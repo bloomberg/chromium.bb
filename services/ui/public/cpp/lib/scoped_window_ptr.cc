@@ -8,7 +8,7 @@
 #include "services/ui/public/cpp/window_observer.h"
 #include "services/ui/public/cpp/window_tree_client.h"
 
-namespace mus {
+namespace ui {
 
 ScopedWindowPtr::ScopedWindowPtr(Window* window) : window_(window) {
   window_->AddObserver(this);
@@ -41,4 +41,4 @@ void ScopedWindowPtr::OnWindowDestroying(Window* window) {
   DetachFromWindow();
 }
 
-}  // namespace mus
+}  // namespace ui

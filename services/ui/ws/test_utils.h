@@ -26,7 +26,7 @@
 #include "services/ui/ws/window_tree.h"
 #include "services/ui/ws/window_tree_binding.h"
 
-namespace mus {
+namespace ui {
 namespace ws {
 namespace test {
 
@@ -268,8 +268,8 @@ class TestWindowManager : public mojom::WindowManager {
  private:
   // WindowManager:
   void OnConnect(uint16_t client_id) override {}
-  void WmNewDisplayAdded(mus::mojom::DisplayPtr display,
-                         mus::mojom::WindowDataPtr root,
+  void WmNewDisplayAdded(ui::mojom::DisplayPtr display,
+                         ui::mojom::WindowDataPtr root,
                          bool drawn) override {}
   void WmSetBounds(uint32_t change_id,
                    uint32_t window_id,
@@ -298,7 +298,7 @@ class TestWindowManager : public mojom::WindowManager {
 // -----------------------------------------------------------------------------
 
 // WindowTreeClient implementation that logs all calls to a TestChangeTracker.
-class TestWindowTreeClient : public mus::mojom::WindowTreeClient {
+class TestWindowTreeClient : public ui::mojom::WindowTreeClient {
  public:
   TestWindowTreeClient();
   ~TestWindowTreeClient() override;
@@ -315,7 +315,7 @@ class TestWindowTreeClient : public mus::mojom::WindowTreeClient {
   // WindowTreeClient:
   void OnEmbed(uint16_t client_id,
                mojom::WindowDataPtr root,
-               mus::mojom::WindowTreePtr tree,
+               ui::mojom::WindowTreePtr tree,
                int64_t display_id,
                Id focused_window_id,
                bool drawn) override;
@@ -532,6 +532,6 @@ ServerWindow* NewWindowInTreeWithParent(WindowTree* tree,
 
 }  // namespace test
 }  // namespace ws
-}  // namespace mus
+}  // namespace ui
 
 #endif  // SERVICES_UI_WS_TEST_UTILS_H_

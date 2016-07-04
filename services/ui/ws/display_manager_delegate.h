@@ -8,7 +8,7 @@
 #include "services/ui/public/interfaces/display.mojom.h"
 #include "services/ui/ws/user_id.h"
 
-namespace mus {
+namespace ui {
 namespace ws {
 
 class Display;
@@ -33,6 +33,6 @@ class DisplayManagerDelegate {
 };
 
 }  // namespace ws
-}  // namespace mus
+}  // namespace ui
 
 #endif  // SERVICES_UI_WS_DISPLAY_MANAGER_DELEGATE_H_

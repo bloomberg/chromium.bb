@@ -13,13 +13,13 @@
 #include "services/ui/ws/server_window_observer.h"
 #include "ui/base/window_tracker_template.h"
 
-namespace mus {
+namespace ui {
 namespace ws {
 
 using ServerWindowTracker =
     ui::WindowTrackerTemplate<ServerWindow, ServerWindowObserver>;
 
 }  // namespace ws
-}  // namespace mus
+}  // namespace ui
 
 #endif  // SERVICES_UI_WS_SERVER_WINDOW_TRACKER_H_

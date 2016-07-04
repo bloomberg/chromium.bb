@@ -9,7 +9,7 @@
 #include "services/ui/ws/scheduled_animation_group.h"
 #include "services/ui/ws/server_window.h"
 
-namespace mus {
+namespace ui {
 namespace ws {
 namespace {
 
@@ -160,4 +160,4 @@ bool AnimationRunner::RemoveWindowFromMaps(ServerWindow* window) {
 }
 
 }  // namespace ws
-}  // namespace mus
+}  // namespace ui

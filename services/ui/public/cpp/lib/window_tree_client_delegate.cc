@@ -4,8 +4,8 @@
 
 #include "services/ui/public/cpp/window_tree_client_delegate.h"
 
-namespace mus {
+namespace ui {
 
 void WindowTreeClientDelegate::OnUnembed(Window* root) {}
 
-}  // namespace mus
+}  // namespace ui

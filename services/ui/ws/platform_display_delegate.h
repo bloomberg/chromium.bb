@@ -11,7 +11,7 @@ namespace ui {
 class Event;
 }
 
-namespace mus {
+namespace ui {
 
 namespace ws {
 
@@ -48,6 +48,6 @@ class PlatformDisplayDelegate {
 
 }  // namespace ws
 
-}  // namespace mus
+}  // namespace ui
 
 #endif  // SERVICES_UI_WS_PLATFORM_DISPLAY_DELEGATE_H_

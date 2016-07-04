@@ -24,7 +24,7 @@ class KeyEvent;
 class LocatedEvent;
 }
 
-namespace mus {
+namespace ui {
 namespace ws {
 
 class Accelerator;
@@ -231,6 +231,6 @@ class EventDispatcher : public ServerWindowObserver {
 };
 
 }  // namespace ws
-}  // namespace mus
+}  // namespace ui
 
 #endif  // SERVICES_UI_WS_EVENT_DISPATCHER_H_

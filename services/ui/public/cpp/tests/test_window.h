@@ -9,7 +9,7 @@
 #include "services/ui/public/cpp/lib/window_private.h"
 #include "services/ui/public/cpp/window.h"
 
-namespace mus {
+namespace ui {
 
 // Subclass with public ctor/dtor.
 class TestWindow : public Window {
@@ -24,6 +24,6 @@ class TestWindow : public Window {
   DISALLOW_COPY_AND_ASSIGN(TestWindow);
 };
 
-}  // namespace mus
+}  // namespace ui
 
 #endif  // SERVICES_UI_PUBLIC_CPP_TESTS_TEST_WINDOW_H_

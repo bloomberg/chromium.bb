@@ -14,7 +14,7 @@
 #include "ui/gfx/swap_result.h"
 #include "ui/gl/gl_surface.h"
 
-namespace mus {
+namespace ui {
 
 // Wraps a GLSurface such that there is a real GLSurface instance acting as
 // delegate. Implements the GLSurface interface. The |gl::GLSurfaceAdapter|
@@ -66,6 +66,6 @@ class GLSurfaceAdapterMus : public gl::GLSurfaceAdapter {
   DISALLOW_COPY_AND_ASSIGN(GLSurfaceAdapterMus);
 };
 
-}  // namespace mus
+}  // namespace ui
 
 #endif  // SERVICES_UI_GLES2_GL_SURFACE_ADAPTER_H_

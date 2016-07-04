@@ -4,10 +4,10 @@
 
 #include "services/ui/surfaces/surfaces_state.h"
 
-namespace mus {
+namespace ui {
 
 SurfacesState::SurfacesState() : next_id_namespace_(1u) {}
 
 SurfacesState::~SurfacesState() {}
 
-}  // namespace mus
+}  // namespace ui

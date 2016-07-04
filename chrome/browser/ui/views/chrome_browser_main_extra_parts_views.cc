@@ -54,9 +54,9 @@ void ChromeBrowserMainExtraPartsViews::PreProfileInit() {
   content::MojoShellConnection* mojo_shell_connection =
       content::MojoShellConnection::GetForProcess();
   if (mojo_shell_connection && shell::ShellIsRemote()) {
-    input_device_client_.reset(new mus::InputDeviceClient());
-    mus::mojom::InputDeviceServerPtr server;
-    mojo_shell_connection->GetConnector()->ConnectToInterface("mojo:mus",
+    input_device_client_.reset(new ui::InputDeviceClient());
+    ui::mojom::InputDeviceServerPtr server;
+    mojo_shell_connection->GetConnector()->ConnectToInterface("mojo:ui",
                                                               &server);
     input_device_client_->Connect(std::move(server));
 

@@ -34,8 +34,8 @@ TEST_F(AppLaunchTest, TestQuickLaunch) {
   connector()->Connect("mojo:ash");
   connector()->Connect("mojo:quick_launch");
 
-  ::mus::mojom::WindowServerTestPtr test_interface;
-  connector()->ConnectToInterface("mojo:mus", &test_interface);
+  ::ui::mojom::WindowServerTestPtr test_interface;
+  connector()->ConnectToInterface("mojo:ui", &test_interface);
 
   base::RunLoop run_loop;
   bool success = false;

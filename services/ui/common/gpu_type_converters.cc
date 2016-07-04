@@ -17,10 +17,10 @@
 namespace mojo {
 
 // static
-mus::mojom::ChannelHandlePtr
-TypeConverter<mus::mojom::ChannelHandlePtr, IPC::ChannelHandle>::Convert(
+ui::mojom::ChannelHandlePtr
+TypeConverter<ui::mojom::ChannelHandlePtr, IPC::ChannelHandle>::Convert(
     const IPC::ChannelHandle& handle) {
-  mus::mojom::ChannelHandlePtr result = mus::mojom::ChannelHandle::New();
+  ui::mojom::ChannelHandlePtr result = ui::mojom::ChannelHandle::New();
   result->name = handle.name;
 #if defined(OS_WIN)
   // On windows, a pipe handle Will NOT be marshalled over IPC.
@@ -36,8 +36,8 @@ TypeConverter<mus::mojom::ChannelHandlePtr, IPC::ChannelHandle>::Convert(
 
 // static
 IPC::ChannelHandle
-TypeConverter<IPC::ChannelHandle, mus::mojom::ChannelHandlePtr>::Convert(
-    const mus::mojom::ChannelHandlePtr& handle) {
+TypeConverter<IPC::ChannelHandle, ui::mojom::ChannelHandlePtr>::Convert(
+    const ui::mojom::ChannelHandlePtr& handle) {
   if (handle.is_null())
     return IPC::ChannelHandle();
 #if defined(OS_WIN)
@@ -54,19 +54,19 @@ TypeConverter<IPC::ChannelHandle, mus::mojom::ChannelHandlePtr>::Convert(
 
 #if defined(USE_OZONE)
 // static
-mus::mojom::NativePixmapHandlePtr TypeConverter<
-    mus::mojom::NativePixmapHandlePtr,
+ui::mojom::NativePixmapHandlePtr TypeConverter<
+    ui::mojom::NativePixmapHandlePtr,
     gfx::NativePixmapHandle>::Convert(const gfx::NativePixmapHandle& handle) {
   // TODO(penghuang); support NativePixmapHandle.
-  mus::mojom::NativePixmapHandlePtr result =
-      mus::mojom::NativePixmapHandle::New();
+  ui::mojom::NativePixmapHandlePtr result =
+      ui::mojom::NativePixmapHandle::New();
   return result;
 }
 
 // static
 gfx::NativePixmapHandle
-TypeConverter<gfx::NativePixmapHandle, mus::mojom::NativePixmapHandlePtr>::
-    Convert(const mus::mojom::NativePixmapHandlePtr& handle) {
+TypeConverter<gfx::NativePixmapHandle, ui::mojom::NativePixmapHandlePtr>::
+    Convert(const ui::mojom::NativePixmapHandlePtr& handle) {
   // TODO(penghuang); support NativePixmapHandle.
   gfx::NativePixmapHandle result;
   return result;
@@ -74,32 +74,30 @@ TypeConverter<gfx::NativePixmapHandle, mus::mojom::NativePixmapHandlePtr>::
 #endif
 
 // static
-mus::mojom::GpuMemoryBufferIdPtr TypeConverter<
-    mus::mojom::GpuMemoryBufferIdPtr,
-    gfx::GpuMemoryBufferId>::Convert(const gfx::GpuMemoryBufferId& id) {
-  mus::mojom::GpuMemoryBufferIdPtr result =
-      mus::mojom::GpuMemoryBufferId::New();
+ui::mojom::GpuMemoryBufferIdPtr
+TypeConverter<ui::mojom::GpuMemoryBufferIdPtr, gfx::GpuMemoryBufferId>::Convert(
+    const gfx::GpuMemoryBufferId& id) {
+  ui::mojom::GpuMemoryBufferIdPtr result = ui::mojom::GpuMemoryBufferId::New();
   result->id = id.id;
   return result;
 }
 
 // static
 gfx::GpuMemoryBufferId
-TypeConverter<gfx::GpuMemoryBufferId, mus::mojom::GpuMemoryBufferIdPtr>::
-    Convert(const mus::mojom::GpuMemoryBufferIdPtr& id) {
+TypeConverter<gfx::GpuMemoryBufferId, ui::mojom::GpuMemoryBufferIdPtr>::Convert(
+    const ui::mojom::GpuMemoryBufferIdPtr& id) {
   return gfx::GpuMemoryBufferId(id->id);
 }
 
 // static
-mus::mojom::GpuMemoryBufferHandlePtr TypeConverter<
-    mus::mojom::GpuMemoryBufferHandlePtr,
-    gfx::GpuMemoryBufferHandle>::Convert(const gfx::GpuMemoryBufferHandle&
-                                             handle) {
+ui::mojom::GpuMemoryBufferHandlePtr
+TypeConverter<ui::mojom::GpuMemoryBufferHandlePtr, gfx::GpuMemoryBufferHandle>::
+    Convert(const gfx::GpuMemoryBufferHandle& handle) {
   DCHECK(handle.type == gfx::SHARED_MEMORY_BUFFER);
-  mus::mojom::GpuMemoryBufferHandlePtr result =
-      mus::mojom::GpuMemoryBufferHandle::New();
-  result->type = static_cast<mus::mojom::GpuMemoryBufferType>(handle.type);
-  result->id = mus::mojom::GpuMemoryBufferId::From(handle.id);
+  ui::mojom::GpuMemoryBufferHandlePtr result =
+      ui::mojom::GpuMemoryBufferHandle::New();
+  result->type = static_cast<ui::mojom::GpuMemoryBufferType>(handle.type);
+  result->id = ui::mojom::GpuMemoryBufferId::From(handle.id);
   base::PlatformFile platform_file;
 #if defined(OS_WIN)
   platform_file = handle.handle.GetHandle();
@@ -112,16 +110,16 @@ mus::mojom::GpuMemoryBufferHandlePtr TypeConverter<
   result->stride = handle.stride;
 #if defined(USE_OZONE)
   result->native_pixmap_handle =
-      mus::mojom::NativePixmapHandle::From(handle.native_pixmap_handle);
+      ui::mojom::NativePixmapHandle::From(handle.native_pixmap_handle);
 #endif
   return result;
 }
 
 // static
-gfx::GpuMemoryBufferHandle TypeConverter<gfx::GpuMemoryBufferHandle,
-                                         mus::mojom::GpuMemoryBufferHandlePtr>::
-    Convert(const mus::mojom::GpuMemoryBufferHandlePtr& handle) {
-  DCHECK(handle->type == mus::mojom::GpuMemoryBufferType::SHARED_MEMORY);
+gfx::GpuMemoryBufferHandle
+TypeConverter<gfx::GpuMemoryBufferHandle, ui::mojom::GpuMemoryBufferHandlePtr>::
+    Convert(const ui::mojom::GpuMemoryBufferHandlePtr& handle) {
+  DCHECK(handle->type == ui::mojom::GpuMemoryBufferType::SHARED_MEMORY);
   gfx::GpuMemoryBufferHandle result;
   result.type = static_cast<gfx::GpuMemoryBufferType>(handle->type);
   result.id = handle->id.To<gfx::GpuMemoryBufferId>();
@@ -148,10 +146,10 @@ gfx::GpuMemoryBufferHandle TypeConverter<gfx::GpuMemoryBufferHandle,
 }
 
 // static
-mus::mojom::GpuInfoPtr
-TypeConverter<mus::mojom::GpuInfoPtr, gpu::GPUInfo>::Convert(
+ui::mojom::GpuInfoPtr
+TypeConverter<ui::mojom::GpuInfoPtr, gpu::GPUInfo>::Convert(
     const gpu::GPUInfo& input) {
-  mus::mojom::GpuInfoPtr result(mus::mojom::GpuInfo::New());
+  ui::mojom::GpuInfoPtr result(ui::mojom::GpuInfo::New());
   result->vendor_id = input.gpu.vendor_id;
   result->device_id = input.gpu.device_id;
   result->vendor_info = mojo::String::From<std::string>(input.gl_vendor);

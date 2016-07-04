@@ -12,7 +12,7 @@
 #include "ui/gfx/geometry/vector2d.h"
 #include "ui/gfx/geometry/vector2d_f.h"
 
-namespace mus {
+namespace ui {
 
 namespace ws {
 
@@ -71,4 +71,4 @@ gfx::Rect ConvertRectBetweenWindows(const ServerWindow* from,
 
 }  // namespace ws
 
-}  // namespace mus
+}  // namespace ui

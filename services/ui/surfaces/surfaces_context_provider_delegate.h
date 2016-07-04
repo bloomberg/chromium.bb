@@ -12,7 +12,7 @@ class TimeDelta;
 class TimeTicks;
 }
 
-namespace mus {
+namespace ui {
 
 class SurfacesContextProviderDelegate {
  public:
@@ -23,6 +23,6 @@ class SurfacesContextProviderDelegate {
   virtual ~SurfacesContextProviderDelegate() {}
 };
 
-}  // namespace mus
+}  // namespace ui
 
 #endif  // SERVICES_UI_SURFACES_SURFACES_CONTEXT_PROVIDER_DELEGATE_H_

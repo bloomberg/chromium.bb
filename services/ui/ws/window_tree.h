@@ -34,7 +34,7 @@ namespace ui {
 class Event;
 }
 
-namespace mus {
+namespace ui {
 namespace ws {
 
 class AccessPolicy;
@@ -387,7 +387,7 @@ class WindowTree : public mojom::WindowTree,
   void SetCanFocus(Id transport_window_id, bool can_focus) override;
   void SetPredefinedCursor(uint32_t change_id,
                            Id transport_window_id,
-                           mus::mojom::Cursor cursor_id) override;
+                           ui::mojom::Cursor cursor_id) override;
   void SetWindowTextInputState(Id transport_window_id,
                                mojo::TextInputStatePtr state) override;
   void SetImeVisibility(Id transport_window_id,
@@ -446,7 +446,7 @@ class WindowTree : public mojom::WindowTree,
 
   std::unique_ptr<WindowTreeBinding> binding_;
 
-  std::unique_ptr<mus::ws::AccessPolicy> access_policy_;
+  std::unique_ptr<ui::ws::AccessPolicy> access_policy_;
 
   // The roots, or embed points, of this tree. A WindowTree may have any
   // number of roots, including 0.
@@ -492,6 +492,6 @@ class WindowTree : public mojom::WindowTree,
 };
 
 }  // namespace ws
-}  // namespace mus
+}  // namespace ui
 
 #endif  // SERVICES_UI_WS_WINDOW_TREE_H_

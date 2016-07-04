@@ -1528,7 +1528,7 @@ void WebContentsImpl::Init(const WebContents::CreateParams& params) {
   if (MojoShellConnection::GetForProcess() &&
       base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kUseMusInRenderer)) {
-    mus::Window* mus_window = aura::GetMusWindow(params.context);
+    ui::Window* mus_window = aura::GetMusWindow(params.context);
     if (mus_window) {
       view_.reset(new WebContentsViewMus(mus_window, this, delegate,
                                          &render_view_host_delegate_view_));

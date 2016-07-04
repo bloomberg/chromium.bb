@@ -16,7 +16,7 @@ namespace ui {
 class Event;
 }
 
-namespace mus {
+namespace ui {
 namespace ws {
 
 // An Accelerator encompasses an id defined by the client, along with a unique
@@ -52,6 +52,6 @@ class Accelerator {
 };
 
 }  // namespace ws
-}  // namespace mus
+}  // namespace ui
 
 #endif  // SERVICES_UI_WS_ACCELERATOR_H_

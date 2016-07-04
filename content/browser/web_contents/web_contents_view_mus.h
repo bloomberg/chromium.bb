@@ -31,7 +31,7 @@ class WebContentsViewMus : public WebContentsView,
   // The corresponding WebContentsImpl is passed in the constructor, and manages
   // our lifetime. This doesn't need to be the case, but is this way currently
   // because that's what was easiest when they were split.
-  WebContentsViewMus(mus::Window* parent_window,
+  WebContentsViewMus(ui::Window* parent_window,
                      WebContentsImpl* web_contents,
                      WebContentsViewDelegate* delegate,
                      RenderViewHostDelegateView** delegate_view);
@@ -109,7 +109,7 @@ class WebContentsViewMus : public WebContentsView,
 
   std::unique_ptr<WebContentsViewDelegate> delegate_;
   std::unique_ptr<aura::Window> aura_window_;
-  std::unique_ptr<mus::ScopedWindowPtr> mus_window_;
+  std::unique_ptr<ui::ScopedWindowPtr> mus_window_;
 
   DISALLOW_COPY_AND_ASSIGN(WebContentsViewMus);
 };

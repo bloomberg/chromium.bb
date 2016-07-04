@@ -12,7 +12,7 @@
 #include "services/ui/common/generic_shared_memory_id_generator.h"
 #include "services/ui/gpu/gpu_service_mus.h"
 
-namespace mus {
+namespace ui {
 
 namespace {
 
@@ -112,4 +112,4 @@ void MusGpuMemoryBufferManager::DestroyGpuMemoryBuffer(
   }
 }
 
-}  // namespace mus
+}  // namespace ui

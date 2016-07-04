@@ -15,19 +15,19 @@ class WmLayoutManager;
 
 namespace mus {
 
-// Used to associate a mus::Window with an WmLayoutManager. This
-// attaches an observer to the mus::Window and calls the appropriate methods on
+// Used to associate a ui::Window with an WmLayoutManager. This
+// attaches an observer to the ui::Window and calls the appropriate methods on
 // the WmLayoutManager at the appropriate time.
 //
 // NOTE: WmLayoutManager provides the function SetChildBounds(). This is
 // expected to be called to change the bounds of the Window. For aura this
 // function is called by way of aura exposing a hook (aura::LayoutManager). Mus
 // has no such hook. To ensure SetChildBounds() is called correctly all bounds
-// changes to mus::Windows must be routed through WmWindowMus. WmWindowMus
+// changes to ui::Windows must be routed through WmWindowMus. WmWindowMus
 // ensures WmLayoutManager::SetChildBounds() is called appropriately.
-class MusLayoutManagerAdapter : public ::mus::WindowObserver {
+class MusLayoutManagerAdapter : public ::ui::WindowObserver {
  public:
-  MusLayoutManagerAdapter(::mus::Window* window,
+  MusLayoutManagerAdapter(::ui::Window* window,
                           std::unique_ptr<WmLayoutManager> layout_manager);
   ~MusLayoutManagerAdapter() override;
 
@@ -35,30 +35,30 @@ class MusLayoutManagerAdapter : public ::mus::WindowObserver {
 
  private:
   // WindowObserver attached to child windows. A separate class is used to
-  // easily differentiate WindowObserver calls on the mus::Window associated
+  // easily differentiate WindowObserver calls on the ui::Window associated
   // with the MusLayoutManagerAdapter, vs children.
-  class ChildWindowObserver : public ::mus::WindowObserver {
+  class ChildWindowObserver : public ::ui::WindowObserver {
    public:
     explicit ChildWindowObserver(MusLayoutManagerAdapter* adapter);
     ~ChildWindowObserver() override;
 
    private:
-    // mus::WindowObserver:
-    void OnWindowVisibilityChanged(::mus::Window* window) override;
+    // ui::WindowObserver:
+    void OnWindowVisibilityChanged(::ui::Window* window) override;
 
     MusLayoutManagerAdapter* adapter_;
 
     DISALLOW_COPY_AND_ASSIGN(ChildWindowObserver);
   };
 
-  // mus::WindowObserver:
+  // ui::WindowObserver:
   void OnTreeChanging(const TreeChangeParams& params) override;
   void OnTreeChanged(const TreeChangeParams& params) override;
-  void OnWindowBoundsChanged(::mus::Window* window,
+  void OnWindowBoundsChanged(::ui::Window* window,
                              const gfx::Rect& old_bounds,
                              const gfx::Rect& new_bounds) override;
 
-  ::mus::Window* window_;
+  ::ui::Window* window_;
   ChildWindowObserver child_window_observer_;
   std::unique_ptr<WmLayoutManager> layout_manager_;
 

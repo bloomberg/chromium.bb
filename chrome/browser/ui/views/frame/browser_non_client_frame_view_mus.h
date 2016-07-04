@@ -20,7 +20,7 @@
 class TabIconView;
 class WebAppLeftHeaderView;
 
-namespace mus {
+namespace ui {
 class Window;
 }
 
@@ -77,9 +77,9 @@ class BrowserNonClientFrameViewMus : public BrowserNonClientFrameView,
   void UpdateProfileIcons() override;
 
  private:
-  mus::Window* mus_window();
+  ui::Window* mus_window();
 
-  // Resets the client area on the mus::Window.
+  // Resets the client area on the ui::Window.
   void UpdateClientArea();
 
   // TabStripObserver:

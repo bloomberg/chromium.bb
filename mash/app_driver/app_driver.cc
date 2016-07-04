@@ -66,7 +66,7 @@ void AppDriver::OnAvailableCatalogEntries(
     return;
   }
 
-  mus::mojom::AcceleratorRegistrarPtr registrar;
+  ui::mojom::AcceleratorRegistrarPtr registrar;
   connector_->ConnectToInterface(entries[0]->name, &registrar);
 
   if (binding_.is_bound())
@@ -80,7 +80,7 @@ void AppDriver::OnAvailableCatalogEntries(
   for (const AcceleratorSpec& spec : g_spec) {
     registrar->AddAccelerator(
         static_cast<uint32_t>(spec.id),
-        mus::CreateKeyMatcher(spec.keyboard_code, spec.event_flags),
+        ui::CreateKeyMatcher(spec.keyboard_code, spec.event_flags),
         base::Bind(&AssertTrue));
   }
 }

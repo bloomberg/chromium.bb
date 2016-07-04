@@ -7,7 +7,7 @@
 #include "services/shell/public/interfaces/connector.mojom.h"
 #include "services/ui/ws/user_id_tracker_observer.h"
 
-namespace mus {
+namespace ui {
 namespace ws {
 
 UserIdTracker::UserIdTracker() : active_id_(shell::mojom::kRootUserID) {
@@ -65,4 +65,4 @@ void UserIdTracker::SetActiveUser(const mojo::String& user_id) {
 }
 
 }  // namespace ws
-}  // namespace mus
+}  // namespace ui

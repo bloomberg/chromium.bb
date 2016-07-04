@@ -8,7 +8,7 @@
 #include "base/macros.h"
 #include "ui/events/devices/input_device_event_observer.h"
 
-namespace mus {
+namespace ui {
 namespace ws {
 
 class DisplayManager;
@@ -32,6 +32,6 @@ class TouchController : public ui::InputDeviceEventObserver {
 };
 
 }  // namespace ws
-}  // namespace mus
+}  // namespace ui
 
 #endif  // SERVICES_UI_WS_TOUCH_CONTROLLER_H_

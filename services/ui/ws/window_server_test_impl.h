@@ -8,7 +8,7 @@
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/ui/public/interfaces/window_server_test.mojom.h"
 
-namespace mus {
+namespace ui {
 namespace ws {
 
 class ServerWindow;
@@ -40,6 +40,6 @@ class WindowServerTestImpl : public mojom::WindowServerTest {
 };
 
 }  // namespace ws
-}  // namespace mus
+}  // namespace ui
 
 #endif  // SERVICES_UI_WS_WINDOW_SERVER_TEST_IMPL_H_

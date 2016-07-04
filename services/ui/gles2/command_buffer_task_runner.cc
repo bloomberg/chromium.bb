@@ -8,7 +8,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "services/ui/gles2/command_buffer_driver.h"
 
-namespace mus {
+namespace ui {
 
 CommandBufferTaskRunner::CommandBufferTaskRunner()
     : task_runner_(base::ThreadTaskRunnerHandle::Get()),
@@ -74,4 +74,4 @@ void CommandBufferTaskRunner::RunCommandBufferTask() {
   need_post_task_ = true;
 }
 
-}  // namespace mus
+}  // namespace ui

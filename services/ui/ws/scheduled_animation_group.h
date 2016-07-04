@@ -13,7 +13,7 @@
 #include "ui/gfx/animation/tween.h"
 #include "ui/gfx/transform.h"
 
-namespace mus {
+namespace ui {
 namespace ws {
 
 class ServerWindow;
@@ -111,6 +111,6 @@ class ScheduledAnimationGroup {
 };
 
 }  // namespace ws
-}  // namespace mus
+}  // namespace ui
 
 #endif  // SERVICES_UI_WS_SCHEDULED_ANIMATION_GROUP_H_

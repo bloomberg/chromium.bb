@@ -14,7 +14,7 @@ namespace shell {
 class Connection;
 }
 
-namespace mus {
+namespace ui {
 
 class GpuServiceImpl : public mojom::GpuService {
  public:
@@ -44,6 +44,6 @@ class GpuServiceImpl : public mojom::GpuService {
   DISALLOW_COPY_AND_ASSIGN(GpuServiceImpl);
 };
 
-}  // namespace mus
+}  // namespace ui
 
 #endif  // SERVICES_UI_GPU_GPU_SERVICE_IMPL_H_

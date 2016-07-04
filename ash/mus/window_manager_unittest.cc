@@ -20,17 +20,16 @@
 namespace ash {
 namespace mus {
 
-class WindowTreeClientDelegate : public ::mus::WindowTreeClientDelegate {
+class WindowTreeClientDelegate : public ::ui::WindowTreeClientDelegate {
  public:
   WindowTreeClientDelegate() {}
   ~WindowTreeClientDelegate() override {}
 
  private:
-  // mus::WindowTreeClientDelegate:
-  void OnEmbed(::mus::Window* root) override {}
-  void OnDidDestroyClient(::mus::WindowTreeClient* client) override {}
-  void OnEventObserved(const ui::Event& event, ::mus::Window* target) override {
-  }
+  // ui::WindowTreeClientDelegate:
+  void OnEmbed(::ui::Window* root) override {}
+  void OnDidDestroyClient(::ui::WindowTreeClient* client) override {}
+  void OnEventObserved(const ui::Event& event, ::ui::Window* target) override {}
 
   DISALLOW_COPY_AND_ASSIGN(WindowTreeClientDelegate);
 };
@@ -118,23 +117,23 @@ TEST_F(WindowManagerTest, OpenWindow) {
 
   // Connect to mus and create a new top level window. The request goes to
   // |ash|, but is async.
-  std::unique_ptr<::mus::WindowTreeClient> client(
-      new ::mus::WindowTreeClient(&window_tree_delegate, nullptr, nullptr));
+  std::unique_ptr<::ui::WindowTreeClient> client(
+      new ::ui::WindowTreeClient(&window_tree_delegate, nullptr, nullptr));
   client->ConnectViaWindowTreeFactory(connector());
-  ::mus::Window* top_level_window = client->NewTopLevelWindow(nullptr);
+  ::ui::Window* top_level_window = client->NewTopLevelWindow(nullptr);
   ASSERT_TRUE(top_level_window);
-  ::mus::Window* child_window = client->NewWindow();
+  ::ui::Window* child_window = client->NewWindow();
   ASSERT_TRUE(child_window);
   top_level_window->AddChild(child_window);
 
   // Create another WindowTreeClient by way of embedding in
   // |child_window|. This blocks until it succeeds.
-  ::mus::mojom::WindowTreeClientPtr tree_client;
+  ::ui::mojom::WindowTreeClientPtr tree_client;
   auto tree_client_request = GetProxy(&tree_client);
   child_window->Embed(std::move(tree_client), base::Bind(&OnEmbed));
-  std::unique_ptr<::mus::WindowTreeClient> child_client(
-      new ::mus::WindowTreeClient(&window_tree_delegate, nullptr,
-                                  std::move(tree_client_request)));
+  std::unique_ptr<::ui::WindowTreeClient> child_client(
+      new ::ui::WindowTreeClient(&window_tree_delegate, nullptr,
+                                 std::move(tree_client_request)));
   child_client->WaitForEmbed();
   ASSERT_TRUE(!child_client->GetRoots().empty());
 }
@@ -146,10 +145,10 @@ TEST_F(WindowManagerTest, OpenWindowAndClose) {
 
   // Connect to mus and create a new top level window.
   WindowTreeClientDelegate window_tree_delegate;
-  std::unique_ptr<::mus::WindowTreeClient> client(
-      new ::mus::WindowTreeClient(&window_tree_delegate, nullptr, nullptr));
+  std::unique_ptr<::ui::WindowTreeClient> client(
+      new ::ui::WindowTreeClient(&window_tree_delegate, nullptr, nullptr));
   client->ConnectViaWindowTreeFactory(connector());
-  ::mus::Window* top_level_window = client->NewTopLevelWindow(nullptr);
+  ::ui::Window* top_level_window = client->NewTopLevelWindow(nullptr);
   ASSERT_TRUE(top_level_window);
 
   observer.WaitUntilWindowCountReaches(1u);

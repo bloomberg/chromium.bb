@@ -39,7 +39,7 @@ class GpuControlClient;
 class SyncPointClient;
 }
 
-namespace mus {
+namespace ui {
 
 class CommandBufferDriver;
 class CommandBufferLocalClient;

@@ -10,7 +10,7 @@
 #include "base/macros.h"
 #include "ui/views/mus/mus_export.h"
 
-namespace mus {
+namespace ui {
 class Window;
 }  // namespace mojo
 
@@ -19,7 +19,7 @@ namespace views {
 class VIEWS_MUS_EXPORT InputMethodMUS : public ui::InputMethodBase {
  public:
   InputMethodMUS(ui::internal::InputMethodDelegate* delegate,
-                 mus::Window* window);
+                 ui::Window* window);
   ~InputMethodMUS() override;
 
  private:
@@ -43,7 +43,7 @@ class VIEWS_MUS_EXPORT InputMethodMUS : public ui::InputMethodBase {
   void UpdateTextInputType();
 
   // The toplevel window which is not owned by this class.
-  mus::Window* window_;
+  ui::Window* window_;
 
   DISALLOW_COPY_AND_ASSIGN(InputMethodMUS);
 };

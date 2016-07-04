@@ -5,7 +5,7 @@
 #ifndef SERVICES_UI_WS_FOCUS_CONTROLLER_DELEGATE_H_
 #define SERVICES_UI_WS_FOCUS_CONTROLLER_DELEGATE_H_
 
-namespace mus {
+namespace ui {
 
 namespace ws {
 
@@ -21,6 +21,6 @@ class FocusControllerDelegate {
 
 }  // namespace ws
 
-}  // namespace mus
+}  // namespace ui
 
 #endif  // SERVICES_UI_WS_FOCUS_CONTROLLER_DELEGATE_H_

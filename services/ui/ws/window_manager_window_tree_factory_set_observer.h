@@ -5,7 +5,7 @@
 #ifndef SERVICES_UI_WS_WINDOW_MANAGER_WINDOW_TREE_FACTORY_SET_OBSERVER_H_
 #define SERVICES_UI_WS_WINDOW_MANAGER_WINDOW_TREE_FACTORY_SET_OBSERVER_H_
 
-namespace mus {
+namespace ui {
 namespace ws {
 
 class WindowManagerWindowTreeFactory;
@@ -21,6 +21,6 @@ class WindowManagerWindowTreeFactorySetObserver {
 };
 
 }  // namespace ws
-}  // namespace mus
+}  // namespace ui
 
 #endif  // SERVICES_UI_WS_WINDOW_MANAGER_WINDOW_TREE_FACTORY_SET_OBSERVER_H_

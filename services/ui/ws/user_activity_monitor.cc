@@ -7,7 +7,7 @@
 #include "base/bind.h"
 #include "base/time/default_tick_clock.h"
 
-namespace mus {
+namespace ui {
 namespace ws {
 
 UserActivityMonitor::UserActivityMonitor(std::unique_ptr<base::TickClock> clock)
@@ -131,4 +131,4 @@ void UserActivityMonitor::OnIdleObserverDisconnected(
 }
 
 }  // namespace ws
-}  // namespace mus
+}  // namespace ui

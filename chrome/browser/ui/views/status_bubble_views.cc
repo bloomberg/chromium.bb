@@ -609,7 +609,7 @@ void StatusBubbleViews::Init() {
     params.context = frame->GetNativeWindow();
 #if defined(MOJO_SHELL_CLIENT)
     params.mus_properties
-        [mus::mojom::WindowManager::kWindowIgnoredByShelf_Property] =
+        [ui::mojom::WindowManager::kWindowIgnoredByShelf_Property] =
         mojo::ConvertTo<std::vector<uint8_t>>(true);
 #endif
     popup_->Init(params);

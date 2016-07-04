@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "services/ui/mus_app.h"
+#include "services/ui/service.h"
 
 #include <set>
 
@@ -52,11 +52,11 @@
 
 using shell::Connection;
 using mojo::InterfaceRequest;
-using mus::mojom::Gpu;
-using mus::mojom::WindowServerTest;
-using mus::mojom::WindowTreeHostFactory;
+using ui::mojom::Gpu;
+using ui::mojom::WindowServerTest;
+using ui::mojom::WindowTreeHostFactory;
 
-namespace mus {
+namespace ui {
 
 namespace {
 
@@ -67,30 +67,31 @@ const char kResourceFile200[] = "mus_app_resources_200.pak";
 }  // namespace
 
 // TODO(sky): this is a pretty typical pattern, make it easier to do.
-struct MusApp::PendingRequest {
+struct Service::PendingRequest {
   shell::Connection* connection;
   std::unique_ptr<mojom::WindowTreeFactoryRequest> wtf_request;
   std::unique_ptr<mojom::DisplayManagerRequest> dm_request;
 };
 
-struct MusApp::UserState {
+struct Service::UserState {
   std::unique_ptr<clipboard::ClipboardImpl> clipboard;
   std::unique_ptr<ws::WindowTreeHostFactory> window_tree_host_factory;
 };
 
-MusApp::MusApp()
+Service::Service()
     : test_config_(false),
-      // TODO(penghuang): Kludge: Use mojo command buffer when running on
-      // Windows since chrome command buffer breaks unit tests
+// TODO(penghuang): Kludge: Use mojo command buffer when running on
+// Windows since chrome command buffer breaks unit tests
 #if defined(OS_WIN)
       use_chrome_gpu_command_buffer_(false),
 #else
       use_chrome_gpu_command_buffer_(true),
 #endif
       platform_screen_(ws::PlatformScreen::Create()),
-      weak_ptr_factory_(this) {}
+      weak_ptr_factory_(this) {
+}
 
-MusApp::~MusApp() {
+Service::~Service() {
   // Destroy |window_server_| first, since it depends on |event_source_|.
   // WindowServer (or more correctly its Displays) may have state that needs to
   // be destroyed before GpuState as well.
@@ -100,7 +101,7 @@ MusApp::~MusApp() {
     platform_display_init_params_.gpu_state->StopThreads();
 }
 
-void MusApp::InitializeResources(shell::Connector* connector) {
+void Service::InitializeResources(shell::Connector* connector) {
   if (ui::ResourceBundle::HasSharedInstance())
     return;
 
@@ -127,7 +128,7 @@ void MusApp::InitializeResources(shell::Connector* connector) {
                          ui::SCALE_FACTOR_200P);
 }
 
-MusApp::UserState* MusApp::GetUserState(shell::Connection* connection) {
+Service::UserState* Service::GetUserState(shell::Connection* connection) {
   const ws::UserId& user_id = connection->GetRemoteIdentity().user_id();
   auto it = user_id_to_user_state_.find(user_id);
   if (it != user_id_to_user_state_.end())
@@ -136,19 +137,19 @@ MusApp::UserState* MusApp::GetUserState(shell::Connection* connection) {
   return user_id_to_user_state_[user_id].get();
 }
 
-void MusApp::AddUserIfNecessary(shell::Connection* connection) {
+void Service::AddUserIfNecessary(shell::Connection* connection) {
   window_server_->user_id_tracker()->AddUserId(
       connection->GetRemoteIdentity().user_id());
 }
 
-void MusApp::Initialize(shell::Connector* connector,
-                        const shell::Identity& identity,
-                        uint32_t id) {
+void Service::Initialize(shell::Connector* connector,
+                         const shell::Identity& identity,
+                         uint32_t id) {
   platform_display_init_params_.surfaces_state = new SurfacesState;
 
   base::PlatformThread::SetName("mus");
   tracing_.Initialize(connector, identity.name());
-  TRACE_EVENT0("mus", "MusApp::Initialize started");
+  TRACE_EVENT0("mus", "Service::Initialize started");
 
   test_config_ = base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kUseTestConfig);
@@ -222,7 +223,7 @@ void MusApp::Initialize(shell::Connector* connector,
         new ws::TouchController(window_server_->display_manager()));
 }
 
-bool MusApp::AcceptConnection(Connection* connection) {
+bool Service::AcceptConnection(Connection* connection) {
   connection->AddInterface<mojom::Clipboard>(this);
   connection->AddInterface<mojom::DisplayManager>(this);
   connection->AddInterface<mojom::UserAccessManager>(this);
@@ -251,7 +252,7 @@ bool MusApp::AcceptConnection(Connection* connection) {
   return true;
 }
 
-void MusApp::OnFirstDisplayReady() {
+void Service::OnFirstDisplayReady() {
   PendingRequests requests;
   requests.swap(pending_requests_);
   for (auto& request : requests) {
@@ -262,33 +263,33 @@ void MusApp::OnFirstDisplayReady() {
   }
 }
 
-void MusApp::OnNoMoreDisplays() {
+void Service::OnNoMoreDisplays() {
   // We may get here from the destructor, in which case there is no messageloop.
   if (base::MessageLoop::current())
     base::MessageLoop::current()->QuitWhenIdle();
 }
 
-bool MusApp::IsTestConfig() const {
+bool Service::IsTestConfig() const {
   return test_config_;
 }
 
-void MusApp::CreateDefaultDisplays() {
+void Service::CreateDefaultDisplays() {
   // An asynchronous callback will create the Displays once the physical
   // displays are ready.
   platform_screen_->ConfigurePhysicalDisplay(base::Bind(
-      &MusApp::OnCreatedPhysicalDisplay, weak_ptr_factory_.GetWeakPtr()));
+      &Service::OnCreatedPhysicalDisplay, weak_ptr_factory_.GetWeakPtr()));
 }
 
-void MusApp::Create(shell::Connection* connection,
-                    mojom::ClipboardRequest request) {
+void Service::Create(shell::Connection* connection,
+                     mojom::ClipboardRequest request) {
   UserState* user_state = GetUserState(connection);
   if (!user_state->clipboard)
     user_state->clipboard.reset(new clipboard::ClipboardImpl);
   user_state->clipboard->AddBinding(std::move(request));
 }
 
-void MusApp::Create(shell::Connection* connection,
-                    mojom::DisplayManagerRequest request) {
+void Service::Create(shell::Connection* connection,
+                     mojom::DisplayManagerRequest request) {
   // DisplayManagerObservers generally expect there to be at least one display.
   if (!window_server_->display_manager()->has_displays()) {
     std::unique_ptr<PendingRequest> pending_request(new PendingRequest);
@@ -303,42 +304,42 @@ void MusApp::Create(shell::Connection* connection,
       ->AddDisplayManagerBinding(std::move(request));
 }
 
-void MusApp::Create(shell::Connection* connection, mojom::GpuRequest request) {
+void Service::Create(shell::Connection* connection, mojom::GpuRequest request) {
   if (use_chrome_gpu_command_buffer_)
     return;
   DCHECK(platform_display_init_params_.gpu_state);
   new GpuImpl(std::move(request), platform_display_init_params_.gpu_state);
 }
 
-void MusApp::Create(shell::Connection* connection,
-                    mojom::GpuServiceRequest request) {
+void Service::Create(shell::Connection* connection,
+                     mojom::GpuServiceRequest request) {
   if (!use_chrome_gpu_command_buffer_)
     return;
   new GpuServiceImpl(std::move(request), connection);
 }
 
-void MusApp::Create(shell::Connection* connection,
-                    mojom::UserAccessManagerRequest request) {
+void Service::Create(shell::Connection* connection,
+                     mojom::UserAccessManagerRequest request) {
   window_server_->user_id_tracker()->Bind(std::move(request));
 }
 
-void MusApp::Create(shell::Connection* connection,
-                    mojom::UserActivityMonitorRequest request) {
+void Service::Create(shell::Connection* connection,
+                     mojom::UserActivityMonitorRequest request) {
   AddUserIfNecessary(connection);
   const ws::UserId& user_id = connection->GetRemoteIdentity().user_id();
   window_server_->GetUserActivityMonitorForUser(user_id)->Add(
       std::move(request));
 }
 
-void MusApp::Create(shell::Connection* connection,
-                    mojom::WindowManagerWindowTreeFactoryRequest request) {
+void Service::Create(shell::Connection* connection,
+                     mojom::WindowManagerWindowTreeFactoryRequest request) {
   AddUserIfNecessary(connection);
   window_server_->window_manager_window_tree_factory_set()->Add(
       connection->GetRemoteIdentity().user_id(), std::move(request));
 }
 
-void MusApp::Create(Connection* connection,
-                    mojom::WindowTreeFactoryRequest request) {
+void Service::Create(Connection* connection,
+                     mojom::WindowTreeFactoryRequest request) {
   AddUserIfNecessary(connection);
   if (!window_server_->display_manager()->has_displays()) {
     std::unique_ptr<PendingRequest> pending_request(new PendingRequest);
@@ -354,8 +355,8 @@ void MusApp::Create(Connection* connection,
       connection->GetRemoteIdentity().name(), std::move(request));
 }
 
-void MusApp::Create(Connection* connection,
-                    mojom::WindowTreeHostFactoryRequest request) {
+void Service::Create(Connection* connection,
+                     mojom::WindowTreeHostFactoryRequest request) {
   UserState* user_state = GetUserState(connection);
   if (!user_state->window_tree_host_factory) {
     user_state->window_tree_host_factory.reset(new ws::WindowTreeHostFactory(
@@ -365,14 +366,14 @@ void MusApp::Create(Connection* connection,
   user_state->window_tree_host_factory->AddBinding(std::move(request));
 }
 
-void MusApp::Create(Connection* connection,
-                    mojom::WindowServerTestRequest request) {
+void Service::Create(Connection* connection,
+                     mojom::WindowServerTestRequest request) {
   if (!test_config_)
     return;
   new ws::WindowServerTestImpl(window_server_.get(), std::move(request));
 }
 
-void MusApp::OnCreatedPhysicalDisplay(int64_t id, const gfx::Rect& bounds) {
+void Service::OnCreatedPhysicalDisplay(int64_t id, const gfx::Rect& bounds) {
   platform_display_init_params_.display_bounds = bounds;
   platform_display_init_params_.display_id = id;
 
@@ -385,4 +386,4 @@ void MusApp::OnCreatedPhysicalDisplay(int64_t id, const gfx::Rect& bounds) {
     touch_controller_->UpdateTouchTransforms();
 }
 
-}  // namespace mus
+}  // namespace ui

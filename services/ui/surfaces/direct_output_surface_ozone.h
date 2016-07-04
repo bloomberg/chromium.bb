@@ -30,7 +30,7 @@ class CompositorFrame;
 class SyntheticBeginFrameSource;
 }  // namespace cc
 
-namespace mus {
+namespace ui {
 
 class SurfacesContextProvider;
 
@@ -79,6 +79,6 @@ class DirectOutputSurfaceOzone : public cc::OutputSurface {
   base::WeakPtrFactory<DirectOutputSurfaceOzone> weak_ptr_factory_;
 };
 
-}  // namespace mus
+}  // namespace ui
 
 #endif  // SERVICES_UI_SURFACES_DIRECT_OUTPUT_SURFACE_OZONE_H_

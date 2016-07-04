@@ -18,7 +18,7 @@
 #include "services/ui/ws/window_tree.h"
 #include "ui/events/event.h"
 
-namespace mus {
+namespace ui {
 namespace ws {
 namespace {
 
@@ -482,4 +482,4 @@ void WindowManagerState::OnEventTargetNotFound(const ui::Event& event) {
 }
 
 }  // namespace ws
-}  // namespace mus
+}  // namespace ui

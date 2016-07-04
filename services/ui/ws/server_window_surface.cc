@@ -13,7 +13,7 @@
 #include "services/ui/ws/server_window_delegate.h"
 #include "services/ui/ws/server_window_surface_manager.h"
 
-namespace mus {
+namespace ui {
 namespace ws {
 namespace {
 
@@ -107,4 +107,4 @@ void ServerWindowSurface::SetBeginFrameSource(
 }
 
 }  // namespace ws
-}  // namespace mus
+}  // namespace ui

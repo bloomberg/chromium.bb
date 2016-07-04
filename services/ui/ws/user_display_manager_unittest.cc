@@ -31,7 +31,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/geometry/rect.h"
 
-namespace mus {
+namespace ui {
 namespace ws {
 namespace test {
 namespace {
@@ -241,4 +241,4 @@ TEST_F(UserDisplayManagerTest, NegativeCoordinates) {
 
 }  // namespace test
 }  // namespace ws
-}  // namespace mus
+}  // namespace ui

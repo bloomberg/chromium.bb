@@ -10,7 +10,7 @@
 #include "base/macros.h"
 #include "services/ui/common/types.h"
 
-namespace mus {
+namespace ui {
 namespace ws {
 
 class WindowServer;
@@ -72,6 +72,6 @@ class Operation {
 };
 
 }  // namespace ws
-}  // namespace mus
+}  // namespace ui
 
 #endif  // SERVICES_UI_WS_OPERATION_H_

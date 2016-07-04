@@ -7,7 +7,7 @@
 
 #include <string>
 
-namespace mus {
+namespace ui {
 namespace ws {
 
 using UserId = std::string;
@@ -17,6 +17,6 @@ inline UserId InvalidUserId() {
 }
 
 }  // namespace ws
-}  // namespace mus
+}  // namespace ui
 
 #endif  // SERVICES_UI_WS_USER_ID_H_

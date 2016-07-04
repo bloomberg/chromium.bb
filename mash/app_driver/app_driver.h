@@ -21,7 +21,7 @@ namespace mash {
 namespace app_driver {
 
 class AppDriver : public shell::ShellClient,
-                  public mus::mojom::AcceleratorHandler {
+                  public ui::mojom::AcceleratorHandler {
  public:
   AppDriver();
   ~AppDriver() override;
@@ -36,14 +36,14 @@ class AppDriver : public shell::ShellClient,
   bool AcceptConnection(shell::Connection* connection) override;
   bool ShellConnectionLost() override;
 
-  // mus::mojom::AcceleratorHandler:
+  // ui::mojom::AcceleratorHandler:
   void OnAccelerator(uint32_t id, std::unique_ptr<ui::Event> event) override;
 
   void AddAccelerators();
 
   shell::Connector* connector_;
   catalog::mojom::CatalogPtr catalog_;
-  mojo::Binding<mus::mojom::AcceleratorHandler> binding_;
+  mojo::Binding<ui::mojom::AcceleratorHandler> binding_;
   base::WeakPtrFactory<AppDriver> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(AppDriver);

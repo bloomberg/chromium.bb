@@ -14,7 +14,7 @@ namespace ui {
 class Event;
 }
 
-namespace mus {
+namespace ui {
 
 class Window;
 class WindowTreeClient;
@@ -48,6 +48,6 @@ class WindowTreeClientDelegate {
   virtual ~WindowTreeClientDelegate() {}
 };
 
-}  // namespace mus
+}  // namespace ui
 
 #endif  // SERVICES_UI_PUBLIC_CPP_WINDOW_TREE_CLIENT_DELEGATE_H_

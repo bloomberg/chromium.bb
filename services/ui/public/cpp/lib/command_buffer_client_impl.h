@@ -24,16 +24,16 @@ namespace base {
 class RunLoop;
 }
 
-namespace mus {
+namespace ui {
 class CommandBufferClientImpl;
 
-class CommandBufferClientImpl : public mus::mojom::CommandBufferClient,
+class CommandBufferClientImpl : public ui::mojom::CommandBufferClient,
                                 public gpu::CommandBuffer,
                                 public gpu::GpuControl {
  public:
   explicit CommandBufferClientImpl(
       const std::vector<int32_t>& attribs,
-      mus::mojom::CommandBufferPtr command_buffer_ptr);
+      ui::mojom::CommandBufferPtr command_buffer_ptr);
   ~CommandBufferClientImpl() override;
   bool Initialize();
 
@@ -77,7 +77,7 @@ class CommandBufferClientImpl : public mus::mojom::CommandBufferClient,
   bool CanWaitUnverifiedSyncToken(const gpu::SyncToken* sync_token) override;
 
  private:
-  // mus::mojom::CommandBufferClient implementation:
+  // ui::mojom::CommandBufferClient implementation:
   void Destroyed(int32_t lost_reason, int32_t error) override;
   void SignalAck(uint32_t id) override;
   void SwapBuffersCompleted(int32_t result) override;
@@ -95,8 +95,8 @@ class CommandBufferClientImpl : public mus::mojom::CommandBufferClient,
   gpu::GpuControlClient* gpu_control_client_;
   bool destroyed_;
   std::vector<int32_t> attribs_;
-  mojo::Binding<mus::mojom::CommandBufferClient> client_binding_;
-  mus::mojom::CommandBufferPtr command_buffer_;
+  mojo::Binding<ui::mojom::CommandBufferClient> client_binding_;
+  ui::mojom::CommandBufferPtr command_buffer_;
 
   gpu::CommandBufferId command_buffer_id_;
   gpu::Capabilities capabilities_;

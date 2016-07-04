@@ -12,7 +12,7 @@
 #include "services/ui/ws/platform_display_init_params.h"
 #include "services/ui/ws/user_id.h"
 
-namespace mus {
+namespace ui {
 namespace ws {
 
 class WindowServer;
@@ -41,6 +41,6 @@ class WindowTreeHostFactory : public mojom::WindowTreeHostFactory {
 };
 
 }  // namespace ws
-}  // namespace mus
+}  // namespace ui
 
 #endif  // SERVICES_UI_WS_WINDOW_TREE_HOST_FACTORY_H_

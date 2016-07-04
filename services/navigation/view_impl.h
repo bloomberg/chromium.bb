@@ -29,7 +29,7 @@ namespace navigation {
 class ViewImpl : public mojom::View,
                  public content::WebContentsDelegate,
                  public content::NotificationObserver,
-                 public mus::WindowTreeClientDelegate,
+                 public ui::WindowTreeClientDelegate,
                  public views::WidgetDelegate {
  public:
   ViewImpl(shell::Connector* connector,
@@ -47,8 +47,7 @@ class ViewImpl : public mojom::View,
   void NavigateToOffset(int offset) override;
   void Reload(bool skip_cache) override;
   void Stop() override;
-  void GetWindowTreeClient(
-      mus::mojom::WindowTreeClientRequest request) override;
+  void GetWindowTreeClient(ui::mojom::WindowTreeClientRequest request) override;
   void ShowInterstitial(const mojo::String& html) override;
   void HideInterstitial() override;
   void SetResizerSize(const gfx::Size& size) override;
@@ -78,10 +77,10 @@ class ViewImpl : public mojom::View,
                const content::NotificationSource& source,
                const content::NotificationDetails& details) override;
 
-  // mus::WindowTreeClientDelegate:
-  void OnEmbed(mus::Window* root) override;
-  void OnDidDestroyClient(mus::WindowTreeClient* client) override;
-  void OnEventObserved(const ui::Event& event, mus::Window* target) override;
+  // ui::WindowTreeClientDelegate:
+  void OnEmbed(ui::Window* root) override;
+  void OnDidDestroyClient(ui::WindowTreeClient* client) override;
+  void OnEventObserved(const ui::Event& event, ui::Window* target) override;
 
   // views::WidgetDelegate:
   views::View* GetContentsView() override;

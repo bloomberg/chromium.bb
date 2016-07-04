@@ -10,7 +10,7 @@
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/navigation/public/interfaces/view.mojom.h"
 
-namespace mus {
+namespace ui {
 class Window;
 }
 
@@ -72,7 +72,7 @@ class View : public mojom::ViewClient {
   void SetResizerSize(const gfx::Size& size);
 
   // Embed the View visually within |parent|.
-  void EmbedInWindow(mus::Window* parent);
+  void EmbedInWindow(ui::Window* parent);
 
  private:
   // mojom::ViewClient:

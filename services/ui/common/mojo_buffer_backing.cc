@@ -7,7 +7,7 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 
-namespace mus {
+namespace ui {
 
 MojoBufferBacking::MojoBufferBacking(mojo::ScopedSharedBufferMapping mapping,
                                      size_t size)
@@ -31,4 +31,4 @@ size_t MojoBufferBacking::GetSize() const {
   return size_;
 }
 
-}  // namespace mus
+}  // namespace ui

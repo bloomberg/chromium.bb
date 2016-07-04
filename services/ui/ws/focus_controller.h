@@ -12,7 +12,7 @@
 #include "services/ui/ws/server_window_drawn_tracker_observer.h"
 #include "services/ui/ws/server_window_tracker.h"
 
-namespace mus {
+namespace ui {
 
 namespace ws {
 
@@ -99,6 +99,6 @@ class FocusController : public ServerWindowDrawnTrackerObserver {
 
 }  // namespace ws
 
-}  // namespace mus
+}  // namespace ui
 
 #endif  // SERVICES_UI_WS_FOCUS_CONTROLLER_H_

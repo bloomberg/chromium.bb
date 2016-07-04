@@ -14,7 +14,7 @@
 #include "ui/events/mojo/keyboard_codes.mojom.h"
 #include "ui/gfx/geometry/rect_f.h"
 
-namespace mus {
+namespace ui {
 namespace ws {
 
 // Wraps a mojom::EventMatcher and allows events to be tested against it.
@@ -51,6 +51,6 @@ class EventMatcher {
 };
 
 }  // namespace ws
-}  // namespace mus
+}  // namespace ui
 
 #endif  // SERVICES_UI_WS_EVENT_MATCHER_H_

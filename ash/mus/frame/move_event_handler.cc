@@ -16,34 +16,34 @@ namespace ash {
 namespace mus {
 namespace {
 
-::mus::mojom::Cursor CursorForWindowComponent(int window_component) {
+::ui::mojom::Cursor CursorForWindowComponent(int window_component) {
   switch (window_component) {
     case HTBOTTOM:
-      return ::mus::mojom::Cursor::SOUTH_RESIZE;
+      return ::ui::mojom::Cursor::SOUTH_RESIZE;
     case HTBOTTOMLEFT:
-      return ::mus::mojom::Cursor::SOUTH_WEST_RESIZE;
+      return ::ui::mojom::Cursor::SOUTH_WEST_RESIZE;
     case HTBOTTOMRIGHT:
-      return ::mus::mojom::Cursor::SOUTH_EAST_RESIZE;
+      return ::ui::mojom::Cursor::SOUTH_EAST_RESIZE;
     case HTLEFT:
-      return ::mus::mojom::Cursor::WEST_RESIZE;
+      return ::ui::mojom::Cursor::WEST_RESIZE;
     case HTRIGHT:
-      return ::mus::mojom::Cursor::EAST_RESIZE;
+      return ::ui::mojom::Cursor::EAST_RESIZE;
     case HTTOP:
-      return ::mus::mojom::Cursor::NORTH_RESIZE;
+      return ::ui::mojom::Cursor::NORTH_RESIZE;
     case HTTOPLEFT:
-      return ::mus::mojom::Cursor::NORTH_WEST_RESIZE;
+      return ::ui::mojom::Cursor::NORTH_WEST_RESIZE;
     case HTTOPRIGHT:
-      return ::mus::mojom::Cursor::NORTH_EAST_RESIZE;
+      return ::ui::mojom::Cursor::NORTH_EAST_RESIZE;
     default:
-      return ::mus::mojom::Cursor::CURSOR_NULL;
+      return ::ui::mojom::Cursor::CURSOR_NULL;
   }
 }
 
 }  // namespace
 
 MoveEventHandler::MoveEventHandler(
-    ::mus::Window* mus_window,
-    ::mus::WindowManagerClient* window_manager_client,
+    ::ui::Window* mus_window,
+    ::ui::WindowManagerClient* window_manager_client,
     aura::Window* aura_window)
     : wm_window_(WmWindowMus::Get(mus_window)),
       window_manager_client_(window_manager_client),

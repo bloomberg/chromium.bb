@@ -29,7 +29,7 @@
 #include "services/ui/ws/user_id_tracker_observer.h"
 #include "services/ui/ws/window_manager_window_tree_factory_set.h"
 
-namespace mus {
+namespace ui {
 namespace ws {
 
 class AccessPolicy;
@@ -49,7 +49,7 @@ class WindowServer : public ServerWindowDelegate,
                      public UserIdTrackerObserver {
  public:
   WindowServer(WindowServerDelegate* delegate,
-               const scoped_refptr<mus::SurfacesState>& surfaces_state);
+               const scoped_refptr<ui::SurfacesState>& surfaces_state);
   ~WindowServer() override;
 
   WindowServerDelegate* delegate() { return delegate_; }
@@ -241,7 +241,7 @@ class WindowServer : public ServerWindowDelegate,
   void UpdateNativeCursorIfOver(ServerWindow* window);
 
   // Overridden from ServerWindowDelegate:
-  mus::SurfacesState* GetSurfacesState() override;
+  ui::SurfacesState* GetSurfacesState() override;
   void OnScheduleWindowPaint(ServerWindow* window) override;
   const ServerWindow* GetRootWindow(const ServerWindow* window) const override;
   void ScheduleSurfaceDestruction(ServerWindow* window) override;
@@ -304,7 +304,7 @@ class WindowServer : public ServerWindowDelegate,
   WindowServerDelegate* delegate_;
 
   // State for rendering into a Surface.
-  scoped_refptr<mus::SurfacesState> surfaces_state_;
+  scoped_refptr<ui::SurfacesState> surfaces_state_;
 
   // ID to use for next WindowTree.
   ClientSpecificId next_client_id_;
@@ -337,6 +337,6 @@ class WindowServer : public ServerWindowDelegate,
 };
 
 }  // namespace ws
-}  // namespace mus
+}  // namespace ui
 
 #endif  // SERVICES_UI_WS_WINDOW_SERVER_H_

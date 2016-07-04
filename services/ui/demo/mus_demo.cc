@@ -67,8 +67,8 @@ void MusDemo::Initialize(shell::Connector* connector,
                          const shell::Identity& identity,
                          uint32_t id) {
   connector_ = connector;
-  mus::GpuService::Initialize(connector_);
-  window_tree_client_ = new mus::WindowTreeClient(this, this, nullptr);
+  ui::GpuService::Initialize(connector_);
+  window_tree_client_ = new ui::WindowTreeClient(this, this, nullptr);
   window_tree_client_->ConnectAsWindowManager(connector);
 }
 
@@ -76,42 +76,42 @@ bool MusDemo::AcceptConnection(shell::Connection* connection) {
   return true;
 }
 
-void MusDemo::OnEmbed(mus::Window* window) {
+void MusDemo::OnEmbed(ui::Window* window) {
   // Not called for the WindowManager.
   NOTREACHED();
 }
 
-void MusDemo::OnDidDestroyClient(mus::WindowTreeClient* client) {
+void MusDemo::OnDidDestroyClient(ui::WindowTreeClient* client) {
   window_tree_client_ = nullptr;
   timer_.Stop();
 }
 
-void MusDemo::OnEventObserved(const ui::Event& event, mus::Window* target) {}
+void MusDemo::OnEventObserved(const ui::Event& event, ui::Window* target) {}
 
-void MusDemo::SetWindowManagerClient(mus::WindowManagerClient* client) {}
+void MusDemo::SetWindowManagerClient(ui::WindowManagerClient* client) {}
 
-bool MusDemo::OnWmSetBounds(mus::Window* window, gfx::Rect* bounds) {
+bool MusDemo::OnWmSetBounds(ui::Window* window, gfx::Rect* bounds) {
   return true;
 }
 
-bool MusDemo::OnWmSetProperty(mus::Window* window,
+bool MusDemo::OnWmSetProperty(ui::Window* window,
                               const std::string& name,
                               std::unique_ptr<std::vector<uint8_t>>* new_data) {
   return true;
 }
 
-mus::Window* MusDemo::OnWmCreateTopLevelWindow(
+ui::Window* MusDemo::OnWmCreateTopLevelWindow(
     std::map<std::string, std::vector<uint8_t>>* properties) {
   return nullptr;
 }
 
 void MusDemo::OnWmClientJankinessChanged(
-    const std::set<mus::Window*>& client_windows,
+    const std::set<ui::Window*>& client_windows,
     bool janky) {
   // Don't care
 }
 
-void MusDemo::OnWmNewDisplay(mus::Window* window,
+void MusDemo::OnWmNewDisplay(ui::Window* window,
                              const display::Display& display) {
   DCHECK(!window_);  // Only support one display.
   window_ = window;
@@ -176,4 +176,4 @@ void MusDemo::DrawFrame() {
                        bitmap_uploader::BitmapUploader::BGRA);
 }
 
-}  // namespace mus_demo
+}  // namespace ui_demo

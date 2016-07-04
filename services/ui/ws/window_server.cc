@@ -27,12 +27,12 @@
 #include "services/ui/ws/window_tree_binding.h"
 #include "ui/gfx/geometry/size_conversions.h"
 
-namespace mus {
+namespace ui {
 namespace ws {
 
 WindowServer::WindowServer(
     WindowServerDelegate* delegate,
-    const scoped_refptr<mus::SurfacesState>& surfaces_state)
+    const scoped_refptr<ui::SurfacesState>& surfaces_state)
     : delegate_(delegate),
       surfaces_state_(surfaces_state),
       next_client_id_(1),
@@ -472,7 +472,7 @@ void WindowServer::UpdateNativeCursorIfOver(ServerWindow* window) {
     display_root->display()->UpdateNativeCursor(cursor_id);
 }
 
-mus::SurfacesState* WindowServer::GetSurfacesState() {
+ui::SurfacesState* WindowServer::GetSurfacesState() {
   return surfaces_state_.get();
 }
 
@@ -704,4 +704,4 @@ void WindowServer::OnUserIdRemoved(const UserId& id) {
 }
 
 }  // namespace ws
-}  // namespace mus
+}  // namespace ui

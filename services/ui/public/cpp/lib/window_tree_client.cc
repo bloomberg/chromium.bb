@@ -28,7 +28,7 @@
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/size.h"
 
-namespace mus {
+namespace ui {
 
 void DeleteWindowTreeClient(WindowTreeClient* client) { delete client; }
 
@@ -148,7 +148,7 @@ void WindowTreeClient::ConnectViaWindowTreeFactory(
   client_id_ = 101;
 
   mojom::WindowTreeFactoryPtr factory;
-  connector->ConnectToInterface("mojo:mus", &factory);
+  connector->ConnectToInterface("mojo:ui", &factory);
   mojom::WindowTreePtr window_tree;
   factory->CreateWindowTree(GetProxy(&window_tree),
                             binding_.CreateInterfacePtrAndBind());
@@ -159,7 +159,7 @@ void WindowTreeClient::ConnectAsWindowManager(shell::Connector* connector) {
   DCHECK(window_manager_delegate_);
 
   mojom::WindowManagerWindowTreeFactoryPtr factory;
-  connector->ConnectToInterface("mojo:mus", &factory);
+  connector->ConnectToInterface("mojo:ui", &factory);
   mojom::WindowTreePtr window_tree;
   factory->CreateWindowTree(GetProxy(&window_tree),
                             binding_.CreateInterfacePtrAndBind());
@@ -301,7 +301,7 @@ void WindowTreeClient::SetCanFocus(Id window_id, bool can_focus) {
 }
 
 void WindowTreeClient::SetPredefinedCursor(Id window_id,
-                                               mus::mojom::Cursor cursor_id) {
+                                           ui::mojom::Cursor cursor_id) {
   DCHECK(tree_);
 
   Window* window = GetWindowByServerId(window_id);
@@ -1135,7 +1135,7 @@ void WindowTreeClient::SetFrameDecorationValues(
 }
 
 void WindowTreeClient::SetNonClientCursor(Window* window,
-                                              mus::mojom::Cursor cursor_id) {
+                                          ui::mojom::Cursor cursor_id) {
   window_manager_internal_client_->WmSetNonClientCursor(server_id(window),
                                                         cursor_id);
 }
@@ -1181,4 +1181,4 @@ void WindowTreeClient::SetUnderlaySurfaceOffsetAndExtendedHitArea(
   }
 }
 
-}  // namespace mus
+}  // namespace ui

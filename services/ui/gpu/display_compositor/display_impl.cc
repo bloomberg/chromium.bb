@@ -6,7 +6,7 @@
 
 #include "services/ui/gpu/display_compositor/compositor_frame_sink_impl.h"
 
-namespace mus {
+namespace ui {
 namespace gpu {
 
 DisplayImpl::DisplayImpl(
@@ -40,4 +40,4 @@ cc::SurfaceId DisplayImpl::GenerateSurfaceId() {
 }
 
 }  // namespace gpu
-}  // namespace mus
+}  // namespace ui

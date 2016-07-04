@@ -11,7 +11,7 @@
 #include "services/ui/ws/window_finder.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace mus {
+namespace ui {
 namespace ws {
 
 TEST(WindowFinderTest, FindDeepestVisibleWindow) {
@@ -76,4 +76,4 @@ TEST(WindowFinderTest, FindDeepestVisibleWindowHitTestMask) {
 }
 
 }  // namespace ws
-}  // namespace mus
+}  // namespace ui

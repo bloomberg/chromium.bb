@@ -23,11 +23,11 @@ using shell::Connection;
 using mojo::InterfaceRequest;
 using shell::ShellClient;
 using mojo::String;
-using mus::mojom::WindowDataPtr;
-using mus::mojom::WindowTree;
-using mus::mojom::WindowTreeClient;
+using ui::mojom::WindowDataPtr;
+using ui::mojom::WindowTree;
+using ui::mojom::WindowTreeClient;
 
-namespace mus {
+namespace ui {
 namespace ws {
 namespace test {
 
@@ -587,7 +587,7 @@ class WindowTreeClientTest : public WindowServerShellTestBase {
     WindowServerShellTestBase::SetUp();
 
     mojom::WindowTreeHostFactoryPtr factory;
-    connector()->ConnectToInterface("mojo:mus", &factory);
+    connector()->ConnectToInterface("mojo:ui", &factory);
 
     mojom::WindowTreeClientPtr tree_client_ptr;
     wt_client1_.reset(new TestWindowTreeClient());
@@ -2039,4 +2039,4 @@ TEST_F(WindowTreeClientTest, DISABLED_ExplicitCapturePropagation) {
 
 }  // namespace test
 }  // namespace ws
-}  // namespace mus
+}  // namespace ui

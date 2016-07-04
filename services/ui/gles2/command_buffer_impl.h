@@ -17,7 +17,7 @@
 #include "services/ui/gles2/command_buffer_driver.h"
 #include "services/ui/public/interfaces/command_buffer.mojom.h"
 
-namespace mus {
+namespace ui {
 
 class CommandBufferDriver;
 class GpuState;
@@ -121,6 +121,6 @@ class CommandBufferImpl : public mojom::CommandBuffer,
   DISALLOW_COPY_AND_ASSIGN(CommandBufferImpl);
 };
 
-}  // namespace mus
+}  // namespace ui
 
 #endif  // SERVICES_UI_GLES2_COMMAND_BUFFER_IMPL_H_

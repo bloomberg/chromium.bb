@@ -10,7 +10,7 @@
 #include "base/macros.h"
 #include "chrome/browser/chrome_browser_main_extra_parts.h"
 
-namespace mus {
+namespace ui {
 class InputDeviceClient;
 }
 
@@ -45,7 +45,7 @@ class ChromeBrowserMainExtraPartsViews : public ChromeBrowserMainExtraParts {
   std::unique_ptr<views::WindowManagerConnection> window_manager_connection_;
 
   // Subscribes to updates about input-devices.
-  std::unique_ptr<mus::InputDeviceClient> input_device_client_;
+  std::unique_ptr<ui::InputDeviceClient> input_device_client_;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(ChromeBrowserMainExtraPartsViews);

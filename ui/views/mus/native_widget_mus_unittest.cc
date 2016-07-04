@@ -31,7 +31,7 @@
 #include "ui/views/widget/widget_observer.h"
 #include "ui/wm/public/activation_client.h"
 
-using mus::mojom::EventResult;
+using ui::mojom::EventResult;
 
 namespace views {
 namespace {
@@ -161,9 +161,9 @@ class NativeWidgetMusTest : public ViewsTestBase {
 
   int ack_callback_count() { return ack_callback_count_; }
 
-  void AckCallback(mus::mojom::EventResult result) {
+  void AckCallback(ui::mojom::EventResult result) {
     ack_callback_count_++;
-    EXPECT_EQ(mus::mojom::EventResult::HANDLED, result);
+    EXPECT_EQ(ui::mojom::EventResult::HANDLED, result);
   }
 
   // Returns a mouse pressed event inside the widget. Tests that place views
@@ -179,8 +179,8 @@ class NativeWidgetMusTest : public ViewsTestBase {
   void OnWindowInputEvent(
       NativeWidgetMus* native_widget,
       const ui::Event& event,
-      std::unique_ptr<base::Callback<void(mus::mojom::EventResult)>>*
-      ack_callback) {
+      std::unique_ptr<base::Callback<void(ui::mojom::EventResult)>>*
+          ack_callback) {
     native_widget->OnWindowInputEvent(native_widget->window(), event,
                                       ack_callback);
   }
@@ -246,39 +246,39 @@ TEST_F(NativeWidgetMusTest, ShowNonActivatableWidget) {
   EXPECT_EQ(0u, activation_observer.changes().size());
 }
 
-// Tests that a window with an icon sets the mus::Window icon property.
+// Tests that a window with an icon sets the ui::Window icon property.
 TEST_F(NativeWidgetMusTest, AppIcon) {
   // Create a Widget with a bitmap as the icon.
   SkBitmap source_bitmap = MakeBitmap(SK_ColorRED);
   std::unique_ptr<Widget> widget(
       CreateWidget(new TestWidgetDelegate(source_bitmap)));
 
-  // The mus::Window has the icon property.
-  mus::Window* window =
+  // The ui::Window has the icon property.
+  ui::Window* window =
       static_cast<NativeWidgetMus*>(widget->native_widget_private())->window();
   EXPECT_TRUE(window->HasSharedProperty(
-      mus::mojom::WindowManager::kWindowAppIcon_Property));
+      ui::mojom::WindowManager::kWindowAppIcon_Property));
 
   // The icon is the expected icon.
   SkBitmap icon = window->GetSharedProperty<SkBitmap>(
-      mus::mojom::WindowManager::kWindowAppIcon_Property);
+      ui::mojom::WindowManager::kWindowAppIcon_Property);
   EXPECT_TRUE(gfx::BitmapsAreEqual(source_bitmap, icon));
 }
 
-// Tests that a window without an icon does not set the mus::Window icon
+// Tests that a window without an icon does not set the ui::Window icon
 // property.
 TEST_F(NativeWidgetMusTest, NoAppIcon) {
   // Create a Widget without a special icon.
   std::unique_ptr<Widget> widget(CreateWidget(nullptr));
 
-  // The mus::Window does not have an icon property.
-  mus::Window* window =
+  // The ui::Window does not have an icon property.
+  ui::Window* window =
       static_cast<NativeWidgetMus*>(widget->native_widget_private())->window();
   EXPECT_FALSE(window->HasSharedProperty(
-      mus::mojom::WindowManager::kWindowAppIcon_Property));
+      ui::mojom::WindowManager::kWindowAppIcon_Property));
 }
 
-// Tests that changing the icon on a Widget updates the mus::Window icon
+// Tests that changing the icon on a Widget updates the ui::Window icon
 // property.
 TEST_F(NativeWidgetMusTest, ChangeAppIcon) {
   // Create a Widget with an icon.
@@ -292,10 +292,10 @@ TEST_F(NativeWidgetMusTest, ChangeAppIcon) {
   widget->UpdateWindowIcon();
 
   // The window has the updated icon.
-  mus::Window* window =
+  ui::Window* window =
       static_cast<NativeWidgetMus*>(widget->native_widget_private())->window();
   SkBitmap icon = window->GetSharedProperty<SkBitmap>(
-      mus::mojom::WindowManager::kWindowAppIcon_Property);
+      ui::mojom::WindowManager::kWindowAppIcon_Property);
   EXPECT_TRUE(gfx::BitmapsAreEqual(bitmap2, icon));
 }
 
@@ -308,33 +308,33 @@ TEST_F(NativeWidgetMusTest, ValidLayerTree) {
 }
 
 // Tests that the internal name is propagated from the Widget to the
-// mus::Window.
+// ui::Window.
 TEST_F(NativeWidgetMusTest, GetName) {
   Widget widget;
   Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_WINDOW);
   params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.name = "MyWidget";
   widget.Init(params);
-  mus::Window* window =
+  ui::Window* window =
       static_cast<NativeWidgetMus*>(widget.native_widget_private())->window();
   EXPECT_EQ("MyWidget", window->GetName());
 }
 
 // Tests that a Widget with a hit test mask propagates the mask to the
-// mus::Window.
+// ui::Window.
 TEST_F(NativeWidgetMusTest, HitTestMask) {
   gfx::Rect mask(5, 5, 10, 10);
   std::unique_ptr<Widget> widget(
       CreateWidget(new WidgetDelegateWithHitTestMask(mask)));
 
   // The window has the mask.
-  mus::Window* window =
+  ui::Window* window =
       static_cast<NativeWidgetMus*>(widget->native_widget_private())->window();
   ASSERT_TRUE(window->hit_test_mask());
   EXPECT_EQ(mask.ToString(), window->hit_test_mask()->ToString());
 }
 
-// Verifies changing the visibility of a child mus::Window doesn't change the
+// Verifies changing the visibility of a child ui::Window doesn't change the
 // visibility of the parent.
 TEST_F(NativeWidgetMusTest, ChildVisibilityDoesntEffectParent) {
   Widget widget;
@@ -342,13 +342,13 @@ TEST_F(NativeWidgetMusTest, ChildVisibilityDoesntEffectParent) {
   params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   widget.Init(params);
   widget.Show();
-  mus::Window* window =
+  ui::Window* window =
       static_cast<NativeWidgetMus*>(widget.native_widget_private())->window();
   ASSERT_TRUE(window->visible());
 
   // Create a child window, make it visible and parent it to the Widget's
   // window.
-  mus::Window* child_window = window->window_tree()->NewWindow();
+  ui::Window* child_window = window->window_tree()->NewWindow();
   child_window->SetVisible(true);
   window->AddChild(child_window);
 
@@ -416,7 +416,7 @@ TEST_F(NativeWidgetMusTest, WidgetReceivesEvent) {
   std::unique_ptr<ui::MouseEvent> mouse = CreateMouseEvent();
   NativeWidgetMus* native_widget =
       static_cast<NativeWidgetMus*>(widget->native_widget_private());
-  mus::WindowTreeClientPrivate test_api(native_widget->window());
+  ui::WindowTreeClientPrivate test_api(native_widget->window());
   test_api.CallOnWindowInputEvent(native_widget->window(), std::move(mouse));
   EXPECT_EQ(1, handler.num_mouse_events());
 }
@@ -480,7 +480,7 @@ TEST_F(NativeWidgetMusTest, SetAndReleaseCapture) {
   widget->GetContentsView()->AddChildView(content);
   internal::NativeWidgetPrivate* widget_private =
       widget->native_widget_private();
-  mus::Window* mus_window =
+  ui::Window* mus_window =
       static_cast<NativeWidgetMus*>(widget_private)->window();
   EXPECT_FALSE(widget_private->HasCapture());
   EXPECT_FALSE(mus_window->HasCapture());
@@ -494,7 +494,7 @@ TEST_F(NativeWidgetMusTest, SetAndReleaseCapture) {
   EXPECT_FALSE(mus_window->HasCapture());
 }
 
-// Ensure that manually setting NativeWidgetMus's mus::Window bounds also
+// Ensure that manually setting NativeWidgetMus's ui::Window bounds also
 // updates its WindowTreeHost bounds.
 TEST_F(NativeWidgetMusTest, SetMusWindowBounds) {
   std::unique_ptr<Widget> widget(CreateWidget(nullptr));
@@ -503,7 +503,7 @@ TEST_F(NativeWidgetMusTest, SetMusWindowBounds) {
   widget->GetContentsView()->AddChildView(content);
   NativeWidgetMus* native_widget =
       static_cast<NativeWidgetMus*>(widget->native_widget_private());
-  mus::Window* mus_window = native_widget->window();
+  ui::Window* mus_window = native_widget->window();
 
   gfx::Rect start_bounds = initial_bounds();
   gfx::Rect end_bounds = gfx::Rect(40, 50, 60, 70);

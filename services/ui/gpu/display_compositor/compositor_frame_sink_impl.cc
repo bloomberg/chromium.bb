@@ -8,7 +8,7 @@
 #include "cc/surfaces/surface_factory.h"
 #include "services/ui/gpu/display_compositor/compositor_frame_sink_delegate.h"
 
-namespace mus {
+namespace ui {
 namespace gpu {
 
 namespace {
@@ -109,4 +109,4 @@ void CompositorFrameSinkImpl::OnConnectionLost() {
 }
 
 }  // namespace gpu
-}  // namespace mus
+}  // namespace ui

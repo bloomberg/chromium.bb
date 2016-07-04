@@ -10,7 +10,7 @@ class Point;
 class Transform;
 }
 
-namespace mus {
+namespace ui {
 namespace ws {
 
 class ServerWindow;
@@ -28,6 +28,6 @@ ServerWindow* FindDeepestVisibleWindowForEvents(
 gfx::Transform GetTransformToWindow(ServerWindow* window);
 
 }  // namespace ws
-}  // namespace mus
+}  // namespace ui
 
 #endif  // SERVICES_UI_WS_WINDOW_FINDER_H_

@@ -11,7 +11,7 @@
 #include "services/ui/public/interfaces/window_manager_window_tree_factory.mojom.h"
 #include "services/ui/ws/user_id.h"
 
-namespace mus {
+namespace ui {
 namespace ws {
 
 class ServerWindow;
@@ -63,6 +63,6 @@ class WindowManagerWindowTreeFactory
 };
 
 }  // namespace ws
-}  // namespace mus
+}  // namespace ui
 
 #endif  // SERVICES_UI_WS_WINDOW_MANAGER_WINDOW_TREE_FACTORY_H_

@@ -14,7 +14,7 @@
 #include "services/ui/common/switches.h"
 #include "ui/gl/gl_switches.h"
 
-namespace mus {
+namespace ui {
 
 namespace {
 
@@ -58,4 +58,4 @@ WindowServerShellTestBase::CreateShellClient() {
   return base::WrapUnique(new WindowServerShellTestClient(this));
 }
 
-}  // namespace mus
+}  // namespace ui

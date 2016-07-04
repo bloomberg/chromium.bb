@@ -15,7 +15,7 @@
 #include "services/ui/public/interfaces/window_tree.mojom.h"
 #include "services/ui/public/interfaces/window_tree_host.mojom.h"
 
-namespace mus {
+namespace ui {
 
 // WindowServerTestBase is a base class for use with shell tests that use
 // WindowServer. SetUp() connects to the WindowServer and blocks until OnEmbed()
@@ -110,6 +110,6 @@ class WindowServerTestBase
   DISALLOW_COPY_AND_ASSIGN(WindowServerTestBase);
 };
 
-}  // namespace mus
+}  // namespace ui
 
 #endif  // SERVICES_UI_PUBLIC_CPP_TESTS_WINDOW_SERVER_TEST_BASE_H_

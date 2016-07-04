@@ -8,7 +8,7 @@
 #include "services/ui/ws/display_manager.h"
 #include "services/ui/ws/display_manager_delegate.h"
 
-namespace mus {
+namespace ui {
 namespace ws {
 
 UserDisplayManager::UserDisplayManager(ws::DisplayManager* display_manager,
@@ -148,4 +148,4 @@ void UserDisplayManager::AddObserver(
 }
 
 }  // namespace ws
-}  // namespace mus
+}  // namespace ui

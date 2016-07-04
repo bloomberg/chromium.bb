@@ -9,7 +9,7 @@
 #include "services/shell/public/cpp/connection.h"
 #include "services/shell/public/cpp/shell_test.h"
 
-namespace mus {
+namespace ui {
 
 // Base class for all window manager shelltests to perform some common setup.
 class WindowServerShellTestBase : public shell::test::ShellTest {
@@ -26,6 +26,6 @@ class WindowServerShellTestBase : public shell::test::ShellTest {
   DISALLOW_COPY_AND_ASSIGN(WindowServerShellTestBase);
 };
 
-}  // namespace mus
+}  // namespace ui
 
 #endif  // SERVICES_UI_PUBLIC_CPP_TESTS_WINDOW_SERVER_SHELLTEST_BASE_H_

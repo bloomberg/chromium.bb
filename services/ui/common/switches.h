@@ -7,7 +7,7 @@
 
 #include "services/ui/common/mus_common_export.h"
 
-namespace mus {
+namespace ui {
 namespace switches {
 
 // All args in alphabetical order. The switches should be documented
@@ -16,6 +16,6 @@ extern const char MUS_COMMON_EXPORT kUseMojoGpuCommandBufferInMus[];
 extern const char MUS_COMMON_EXPORT kUseTestConfig[];
 
 }  // namespace switches
-}  // namespace mus
+}  // namespace ui
 
 #endif  // SERVICES_UI_COMMON_SWITCHES_H_

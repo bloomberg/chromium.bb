@@ -309,13 +309,13 @@ SysUIApplication::~SysUIApplication() {}
 void SysUIApplication::Initialize(::shell::Connector* connector,
                                   const ::shell::Identity& identity,
                                   uint32_t id) {
-  mus::GpuService::Initialize(connector);
+  ui::GpuService::Initialize(connector);
 
   ash_init_.reset(new AshInit());
   ash_init_->Initialize(connector, identity);
 
-  mus::mojom::InputDeviceServerPtr server;
-  connector->ConnectToInterface("mojo:mus", &server);
+  ui::mojom::InputDeviceServerPtr server;
+  connector->ConnectToInterface("mojo:ui", &server);
   input_device_client_.Connect(std::move(server));
 }
 

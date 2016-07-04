@@ -8,7 +8,7 @@
 #include "base/macros.h"
 #include "services/ui/ws/server_window_delegate.h"
 
-namespace mus {
+namespace ui {
 
 namespace ws {
 
@@ -23,19 +23,19 @@ class TestServerWindowDelegate : public ServerWindowDelegate {
 
  private:
   // ServerWindowDelegate:
-  mus::SurfacesState* GetSurfacesState() override;
+  ui::SurfacesState* GetSurfacesState() override;
   void OnScheduleWindowPaint(ServerWindow* window) override;
   const ServerWindow* GetRootWindow(const ServerWindow* window) const override;
   void ScheduleSurfaceDestruction(ServerWindow* window) override;
 
   const ServerWindow* root_window_;
-  scoped_refptr<mus::SurfacesState> surfaces_state_;
+  scoped_refptr<ui::SurfacesState> surfaces_state_;
 
   DISALLOW_COPY_AND_ASSIGN(TestServerWindowDelegate);
 };
 
 }  // namespace ws
 
-}  // namespace mus
+}  // namespace ui
 
 #endif  // SERVICES_UI_WS_TEST_SERVER_WINDOW_DELEGATE_H_

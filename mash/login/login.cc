@@ -51,10 +51,10 @@ class UI : public views::WidgetDelegateView,
     properties[ash::mojom::kWindowContainer_Property] =
         mojo::ConvertTo<std::vector<uint8_t>>(
             static_cast<int32_t>(ash::mojom::Container::LOGIN_WINDOWS));
-    mus::Window* window =
+    ui::Window* window =
         views::WindowManagerConnection::Get()->NewWindow(properties);
     params.native_widget = new views::NativeWidgetMus(
-        widget, connector, window, mus::mojom::SurfaceType::DEFAULT);
+        widget, connector, window, ui::mojom::SurfaceType::DEFAULT);
     widget->Init(params);
     widget->Show();
   }
@@ -157,7 +157,7 @@ class Login : public shell::ShellClient,
 
     aura_init_.reset(new views::AuraInit(connector, "views_mus_resources.pak"));
 
-    connector_->ConnectToInterface("mojo:mus", &user_access_manager_);
+    connector_->ConnectToInterface("mojo:ui", &user_access_manager_);
     user_access_manager_->SetActiveUser(identity.user_id());
   }
   bool AcceptConnection(shell::Connection* connection) override {
@@ -182,7 +182,7 @@ class Login : public shell::ShellClient,
   mojo::TracingImpl tracing_;
   std::unique_ptr<views::AuraInit> aura_init_;
   mojo::BindingSet<mojom::Login> bindings_;
-  mus::mojom::UserAccessManagerPtr user_access_manager_;
+  ui::mojom::UserAccessManagerPtr user_access_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(Login);
 };

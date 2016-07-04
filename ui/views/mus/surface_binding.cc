@@ -38,26 +38,25 @@ namespace views {
 class SurfaceBinding::PerClientState : public base::RefCounted<PerClientState> {
  public:
   static PerClientState* Get(shell::Connector* connector,
-                             mus::WindowTreeClient* client);
+                             ui::WindowTreeClient* client);
 
   std::unique_ptr<cc::OutputSurface> CreateOutputSurface(
-      mus::Window* window,
-      mus::mojom::SurfaceType type);
+      ui::Window* window,
+      ui::mojom::SurfaceType type);
 
  private:
-  typedef std::map<mus::WindowTreeClient*, PerClientState*> ClientToStateMap;
+  typedef std::map<ui::WindowTreeClient*, PerClientState*> ClientToStateMap;
 
   friend class base::RefCounted<PerClientState>;
 
-  PerClientState(shell::Connector* connector,
-                 mus::WindowTreeClient* client);
+  PerClientState(shell::Connector* connector, ui::WindowTreeClient* client);
   ~PerClientState();
 
   static base::LazyInstance<
       base::ThreadLocalPointer<ClientToStateMap>>::Leaky window_states;
 
   shell::Connector* connector_;
-  mus::WindowTreeClient* client_;
+  ui::WindowTreeClient* client_;
 
   DISALLOW_COPY_AND_ASSIGN(PerClientState);
 };
@@ -70,7 +69,7 @@ base::LazyInstance<base::ThreadLocalPointer<
 // static
 SurfaceBinding::PerClientState* SurfaceBinding::PerClientState::Get(
     shell::Connector* connector,
-    mus::WindowTreeClient* client) {
+    ui::WindowTreeClient* client) {
   // |connector| can be null in some unit-tests.
   if (!connector)
     return nullptr;
@@ -86,17 +85,16 @@ SurfaceBinding::PerClientState* SurfaceBinding::PerClientState::Get(
 
 std::unique_ptr<cc::OutputSurface>
 SurfaceBinding::PerClientState::CreateOutputSurface(
-    mus::Window* window,
-    mus::mojom::SurfaceType surface_type) {
+    ui::Window* window,
+    ui::mojom::SurfaceType surface_type) {
   scoped_refptr<cc::ContextProvider> context_provider(
-      new mus::ContextProvider(connector_));
-  return base::WrapUnique(new mus::OutputSurface(
+      new ui::ContextProvider(connector_));
+  return base::WrapUnique(new ui::OutputSurface(
       context_provider, window->RequestSurface(surface_type)));
 }
 
-SurfaceBinding::PerClientState::PerClientState(
-    shell::Connector* connector,
-    mus::WindowTreeClient* client)
+SurfaceBinding::PerClientState::PerClientState(shell::Connector* connector,
+                                               ui::WindowTreeClient* client)
     : connector_(connector), client_(client) {}
 
 SurfaceBinding::PerClientState::~PerClientState() {
@@ -113,8 +111,8 @@ SurfaceBinding::PerClientState::~PerClientState() {
 // SurfaceBinding --------------------------------------------------------------
 
 SurfaceBinding::SurfaceBinding(shell::Connector* connector,
-                               mus::Window* window,
-                               mus::mojom::SurfaceType surface_type)
+                               ui::Window* window,
+                               ui::mojom::SurfaceType surface_type)
     : window_(window),
       surface_type_(surface_type),
       state_(PerClientState::Get(connector, window->window_tree())) {}

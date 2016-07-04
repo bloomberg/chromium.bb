@@ -13,7 +13,7 @@ namespace ui {
 class Event;
 }
 
-namespace mus {
+namespace ui {
 
 class Window;
 
@@ -21,7 +21,7 @@ namespace mojom {
 enum class EventResult;
 }
 
-// Responsible for processing input events for mus::Window.
+// Responsible for processing input events for ui::Window.
 class InputEventHandler {
  public:
   // The event handler can asynchronously ack the event by taking ownership of
@@ -38,6 +38,6 @@ class InputEventHandler {
   virtual ~InputEventHandler() {}
 };
 
-}  // namespace mus
+}  // namespace ui
 
 #endif  // SERVICES_UI_PUBLIC_CPP_INPUT_EVENT_HANDLER_H_

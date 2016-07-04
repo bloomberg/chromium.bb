@@ -11,7 +11,7 @@
 #include "ui/events/mojo/event_constants.mojom.h"
 #include "ui/gfx/geometry/point.h"
 
-namespace mus {
+namespace ui {
 namespace ws {
 
 // NOTE: Most of the matching functionality is exercised by tests of Accelerator
@@ -68,4 +68,4 @@ TEST_F(EventTesterTest, MatchesEventByKeyFlags) {
 }
 
 }  // namespace ws
-}  // namespace mus
+}  // namespace ui

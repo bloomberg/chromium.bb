@@ -349,7 +349,7 @@ void BrowserNonClientFrameViewMus::UpdateProfileIcons() {
 ///////////////////////////////////////////////////////////////////////////////
 // BrowserNonClientFrameViewMus, private:
 
-mus::Window* BrowserNonClientFrameViewMus::mus_window() {
+ui::Window* BrowserNonClientFrameViewMus::mus_window() {
   return static_cast<BrowserFrameMus*>(frame()->native_widget())->window();
 }
 

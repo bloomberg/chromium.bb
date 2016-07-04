@@ -1180,7 +1180,7 @@ int BrowserMainLoop::BrowserThreadsStarted() {
     auto connection = MojoShellConnection::GetForProcess();
     if (connection) {
       WaitForMojoShellInitialize();
-      mus::GpuService::Initialize(connection->GetConnector());
+      ui::GpuService::Initialize(connection->GetConnector());
     }
 #endif
   }

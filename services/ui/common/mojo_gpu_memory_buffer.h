@@ -15,10 +15,10 @@
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/gpu_memory_buffer.h"
 
-namespace mus {
+namespace ui {
 
 class MUS_COMMON_EXPORT MojoGpuMemoryBufferImpl
-    : public mus::GpuMemoryBufferImpl {
+    : public ui::GpuMemoryBufferImpl {
  public:
   MojoGpuMemoryBufferImpl(const gfx::Size& size,
                           gfx::BufferFormat format,
@@ -49,6 +49,6 @@ class MUS_COMMON_EXPORT MojoGpuMemoryBufferImpl
   DISALLOW_COPY_AND_ASSIGN(MojoGpuMemoryBufferImpl);
 };
 
-}  // namespace mus
+}  // namespace ui
 
 #endif  // SERVICES_UI_COMMON_MOJO_GPU_MEMORY_BUFFER_H_

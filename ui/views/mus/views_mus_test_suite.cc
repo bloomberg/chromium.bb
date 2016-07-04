@@ -45,14 +45,12 @@ class PlatformTestHelperMus : public PlatformTestHelper {
  public:
   PlatformTestHelperMus(shell::Connector* connector,
                         const shell::Identity& identity) {
-    mus::GpuService::Initialize(connector);
+    ui::GpuService::Initialize(connector);
     // It is necessary to recreate the WindowManagerConnection for each test,
     // since a new MessageLoop is created for each test.
     connection_ = WindowManagerConnection::Create(connector, identity);
   }
-  ~PlatformTestHelperMus() override {
-    mus::GpuService::Terminate();
-  }
+  ~PlatformTestHelperMus() override { ui::GpuService::Terminate(); }
 
  private:
   std::unique_ptr<WindowManagerConnection> connection_;
@@ -167,7 +165,7 @@ void ViewsMusTestSuite::Initialize() {
   // Let other mojo apps know that we're running in tests. Do this with a
   // command line flag to avoid making blocking calls to other processes for
   // setup for tests (e.g. to unlock the screen in the window manager).
-  EnsureCommandLineSwitch(mus::switches::kUseTestConfig);
+  EnsureCommandLineSwitch(ui::switches::kUseTestConfig);
 
   ViewsTestSuite::Initialize();
   shell_connections_.reset(new ShellConnection);

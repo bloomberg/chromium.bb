@@ -464,17 +464,17 @@ void ShelfDelegateMus::OnUserWindowFocusChanged(uint32_t window_id,
 void ShelfDelegateMus::SetShelfPreferredSizes(Shelf* shelf) {
   ShelfWidget* widget = shelf->shelf_widget();
   ShelfLayoutManager* layout_manager = widget->shelf_layout_manager();
-  mus::Window* window = aura::GetMusWindow(widget->GetNativeWindow());
+  ui::Window* window = aura::GetMusWindow(widget->GetNativeWindow());
   gfx::Size size = layout_manager->GetPreferredSize();
   window->SetSharedProperty<gfx::Size>(
-      mus::mojom::WindowManager::kPreferredSize_Property, size);
+      ui::mojom::WindowManager::kPreferredSize_Property, size);
 
   StatusAreaWidget* status_widget = widget->status_area_widget();
-  mus::Window* status_window =
+  ui::Window* status_window =
       aura::GetMusWindow(status_widget->GetNativeWindow());
   gfx::Size status_size = status_widget->GetWindowBoundsInScreen().size();
   status_window->SetSharedProperty<gfx::Size>(
-      mus::mojom::WindowManager::kPreferredSize_Property, status_size);
+      ui::mojom::WindowManager::kPreferredSize_Property, status_size);
 }
 
 }  // namespace sysui

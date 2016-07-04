@@ -7,7 +7,7 @@
 #include "services/ui/ws/access_policy_delegate.h"
 #include "services/ui/ws/server_window.h"
 
-namespace mus {
+namespace ui {
 namespace ws {
 
 DefaultAccessPolicy::DefaultAccessPolicy() {}
@@ -200,4 +200,4 @@ bool DefaultAccessPolicy::IsValidIdForNewWindow(
 }
 
 }  // namespace ws
-}  // namespace mus
+}  // namespace ui

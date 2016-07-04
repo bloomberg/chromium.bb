@@ -26,7 +26,7 @@
 #include "services/ui/ws/user_id_tracker_observer.h"
 #include "services/ui/ws/window_manager_window_tree_factory_set_observer.h"
 
-namespace mus {
+namespace ui {
 namespace ws {
 
 class DisplayBinding;
@@ -219,6 +219,6 @@ class Display : public PlatformDisplayDelegate,
 };
 
 }  // namespace ws
-}  // namespace mus
+}  // namespace ui
 
 #endif  // SERVICES_UI_WS_DISPLAY_H_

@@ -25,7 +25,7 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 
-namespace mus {
+namespace ui {
 
 namespace {
 
@@ -256,7 +256,7 @@ void Window::SetOpacity(float opacity) {
   LocalSetOpacity(opacity);
 }
 
-void Window::SetPredefinedCursor(mus::mojom::Cursor cursor_id) {
+void Window::SetPredefinedCursor(ui::mojom::Cursor cursor_id) {
   if (cursor_id_ == cursor_id)
     return;
 
@@ -447,11 +447,11 @@ void Window::SetCanFocus(bool can_focus) {
     client_->SetCanFocus(server_id_, can_focus);
 }
 
-void Window::Embed(mus::mojom::WindowTreeClientPtr client, uint32_t flags) {
+void Window::Embed(ui::mojom::WindowTreeClientPtr client, uint32_t flags) {
   Embed(std::move(client), base::Bind(&EmptyEmbedCallback), flags);
 }
 
-void Window::Embed(mus::mojom::WindowTreeClientPtr client,
+void Window::Embed(ui::mojom::WindowTreeClientPtr client,
                    const EmbedCallback& callback,
                    uint32_t flags) {
   if (PrepareForEmbed())
@@ -888,4 +888,4 @@ bool Window::ReorderImpl(Window* window,
 Window** Window::GetStackingTarget(Window* window) {
   return &window->stacking_target_;
 }
-}  // namespace mus
+}  // namespace ui

@@ -9,14 +9,14 @@
 #include "services/ui/ws/test_server_window_delegate.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using mus::mojom::AnimationProperty;
-using mus::mojom::AnimationTweenType;
-using mus::mojom::AnimationGroup;
-using mus::mojom::AnimationSequence;
-using mus::mojom::AnimationElement;
-using mus::mojom::AnimationValue;
+using ui::mojom::AnimationProperty;
+using ui::mojom::AnimationTweenType;
+using ui::mojom::AnimationGroup;
+using ui::mojom::AnimationSequence;
+using ui::mojom::AnimationElement;
+using ui::mojom::AnimationValue;
 
-namespace mus {
+namespace ui {
 namespace ws {
 namespace {
 
@@ -89,4 +89,4 @@ TEST(ScheduledAnimationGroupTest, IsAnimationGroupValid) {
 }
 
 }  // namespace ws
-}  // namespace mus
+}  // namespace ui

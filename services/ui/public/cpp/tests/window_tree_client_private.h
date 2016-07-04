@@ -20,7 +20,7 @@ namespace ui {
 class Event;
 }
 
-namespace mus {
+namespace ui {
 namespace mojom {
 class WindowTree;
 }
@@ -55,6 +55,6 @@ class WindowTreeClientPrivate {
   DISALLOW_COPY_AND_ASSIGN(WindowTreeClientPrivate);
 };
 
-}  // namespace mus
+}  // namespace ui
 
 #endif  // SERVICES_UI_PUBLIC_CPP_TESTS_WINDOW_TREE_CLIENT_PRIVATE_H_

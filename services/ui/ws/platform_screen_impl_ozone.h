@@ -24,7 +24,7 @@ class NativeDisplayDelegate;
 class DisplaySnapshot;
 }
 
-namespace mus {
+namespace ui {
 namespace ws {
 
 // PlatformScreenImplOzone provides the necessary functionality to configure all
@@ -67,6 +67,6 @@ class PlatformScreenImplOzone : public PlatformScreen,
 };
 
 }  // namespace ws
-}  // namespace mus
+}  // namespace ui
 
 #endif  // SERVICES_UI_WS_PLATFORM_SCREEN_IMPL_OZONE_H_

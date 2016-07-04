@@ -6,10 +6,10 @@
     "required": {
       "*": { "classes": [ "app" ] },
       "mojo:mus_ws_unittests_app": {
-        "interfaces": [ "mus::mojom::WindowTreeClient" ]
+        "interfaces": [ "ui::mojom::WindowTreeClient" ]
       },
-      "mojo:mus": {
-        "interfaces":  [ "mus::mojom::WindowTreeHostFactory" ]
+      "mojo:ui": {
+        "interfaces":  [ "ui::mojom::WindowTreeHostFactory" ]
       }
     }
   }

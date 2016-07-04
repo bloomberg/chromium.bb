@@ -28,7 +28,7 @@
 typedef XID RROutput;
 typedef XID RRCrtc;
 typedef XID RRMode;
-typedef XID Window;
+typedef XID _Window;
 
 struct _XRROutputInfo;
 typedef _XRROutputInfo XRROutputInfo;
@@ -144,7 +144,7 @@ class DISPLAY_EXPORT NativeDisplayDelegateX11 : public NativeDisplayDelegate {
   void DrawBackground();
 
   XDisplay* display_;
-  Window window_;
+  _Window window_;
 
   // Initialized when the server is grabbed and freed when it's ungrabbed.
   gfx::XScopedPtr<

@@ -14,14 +14,14 @@
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/gpu_memory_buffer.h"
 
-// Test for mojo TypeConverter of mus::mojom::ChannelHandle.
+// Test for mojo TypeConverter of ui::mojom::ChannelHandle.
 TEST(MusGpuTypeConvertersTest, ChannelHandle) {
   {
     const std::string channel_name = "test_channel_name";
     IPC::ChannelHandle handle(channel_name);
 
-    mus::mojom::ChannelHandlePtr mojo_handle =
-        mus::mojom::ChannelHandle::From(handle);
+    ui::mojom::ChannelHandlePtr mojo_handle =
+        ui::mojom::ChannelHandle::From(handle);
     ASSERT_EQ(mojo_handle->name, channel_name);
     EXPECT_FALSE(mojo_handle->socket.is_valid());
 
@@ -45,8 +45,8 @@ TEST(MusGpuTypeConvertersTest, ChannelHandle) {
     IPC::ChannelHandle handle(channel_name,
                               base::FileDescriptor(scoped_fd1.release(), true));
 
-    mus::mojom::ChannelHandlePtr mojo_handle =
-        mus::mojom::ChannelHandle::From(handle);
+    ui::mojom::ChannelHandlePtr mojo_handle =
+        ui::mojom::ChannelHandle::From(handle);
     ASSERT_EQ(mojo_handle->name, channel_name);
     EXPECT_TRUE(mojo_handle->socket.is_valid());
 
@@ -59,7 +59,7 @@ TEST(MusGpuTypeConvertersTest, ChannelHandle) {
 #endif
 }
 
-// Test for mojo TypeConverter of mus::mojom::GpuMemoryBufferHandle
+// Test for mojo TypeConverter of ui::mojom::GpuMemoryBufferHandle
 TEST(MusGpuTypeConvertersTest, GpuMemoryBufferHandle) {
   const gfx::GpuMemoryBufferId kId(99);
   const uint32_t kOffset = 126;
@@ -75,10 +75,10 @@ TEST(MusGpuTypeConvertersTest, GpuMemoryBufferHandle) {
   handle.offset = kOffset;
   handle.stride = kStride;
 
-  mus::mojom::GpuMemoryBufferHandlePtr gpu_handle =
-      mus::mojom::GpuMemoryBufferHandle::From<gfx::GpuMemoryBufferHandle>(
+  ui::mojom::GpuMemoryBufferHandlePtr gpu_handle =
+      ui::mojom::GpuMemoryBufferHandle::From<gfx::GpuMemoryBufferHandle>(
           handle);
-  ASSERT_EQ(gpu_handle->type, mus::mojom::GpuMemoryBufferType::SHARED_MEMORY);
+  ASSERT_EQ(gpu_handle->type, ui::mojom::GpuMemoryBufferType::SHARED_MEMORY);
   ASSERT_EQ(gpu_handle->id->id, 99);
   ASSERT_EQ(gpu_handle->offset, kOffset);
   ASSERT_EQ(gpu_handle->stride, kStride);

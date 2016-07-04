@@ -23,7 +23,7 @@ namespace {
 class WaitableEvent;
 }
 
-namespace mus {
+namespace ui {
 
 // We need to share these across all CommandBuffer instances so that contexts
 // they create can share resources with each other via mailboxes.
@@ -102,6 +102,6 @@ class GpuState : public base::RefCountedThreadSafe<GpuState> {
   bool hardware_rendering_available_;
 };
 
-}  // namespace mus
+}  // namespace ui
 
 #endif  // SERVICES_UI_GLES2_GPU_STATE_H_

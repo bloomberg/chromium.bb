@@ -8,7 +8,7 @@
 #include "services/ui/gles2/ozone_gpu_memory_buffer.h"
 #include "ui/gfx/buffer_types.h"
 
-namespace mus {
+namespace ui {
 
 OzoneGpuMemoryBufferManager::OzoneGpuMemoryBufferManager() {}
 
@@ -46,4 +46,4 @@ void OzoneGpuMemoryBufferManager::SetDestructionSyncToken(
   NOTIMPLEMENTED();
 }
 
-}  // namespace mus
+}  // namespace ui

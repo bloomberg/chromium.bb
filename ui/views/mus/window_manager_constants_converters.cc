@@ -7,30 +7,30 @@
 namespace mojo {
 
 // static
-mus::mojom::WindowType
-TypeConverter<mus::mojom::WindowType, views::Widget::InitParams::Type>::Convert(
+ui::mojom::WindowType
+TypeConverter<ui::mojom::WindowType, views::Widget::InitParams::Type>::Convert(
     views::Widget::InitParams::Type type) {
   switch (type) {
     case views::Widget::InitParams::TYPE_WINDOW:
-      return mus::mojom::WindowType::WINDOW;
+      return ui::mojom::WindowType::WINDOW;
     case views::Widget::InitParams::TYPE_PANEL:
-      return mus::mojom::WindowType::PANEL;
+      return ui::mojom::WindowType::PANEL;
     case views::Widget::InitParams::TYPE_WINDOW_FRAMELESS:
-      return mus::mojom::WindowType::WINDOW_FRAMELESS;
+      return ui::mojom::WindowType::WINDOW_FRAMELESS;
     case views::Widget::InitParams::TYPE_CONTROL:
-      return mus::mojom::WindowType::CONTROL;
+      return ui::mojom::WindowType::CONTROL;
     case views::Widget::InitParams::TYPE_POPUP:
-      return mus::mojom::WindowType::POPUP;
+      return ui::mojom::WindowType::POPUP;
     case views::Widget::InitParams::TYPE_MENU:
-      return mus::mojom::WindowType::MENU;
+      return ui::mojom::WindowType::MENU;
     case views::Widget::InitParams::TYPE_TOOLTIP:
-      return mus::mojom::WindowType::TOOLTIP;
+      return ui::mojom::WindowType::TOOLTIP;
     case views::Widget::InitParams::TYPE_BUBBLE:
-      return mus::mojom::WindowType::BUBBLE;
+      return ui::mojom::WindowType::BUBBLE;
     case views::Widget::InitParams::TYPE_DRAG:
-      return mus::mojom::WindowType::DRAG;
+      return ui::mojom::WindowType::DRAG;
   }
-  return mus::mojom::WindowType::POPUP;
+  return ui::mojom::WindowType::POPUP;
 }
 
 }  // namespace mojo

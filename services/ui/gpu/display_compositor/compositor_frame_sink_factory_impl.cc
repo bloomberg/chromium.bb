@@ -8,7 +8,7 @@
 #include "cc/surfaces/surface_id.h"
 #include "services/ui/gpu/display_compositor/compositor_frame_sink_impl.h"
 
-namespace mus {
+namespace ui {
 namespace gpu {
 
 CompositorFrameSinkFactoryImpl::CompositorFrameSinkFactoryImpl(
@@ -43,4 +43,4 @@ void CompositorFrameSinkFactoryImpl::CreateCompositorFrameSink(
 }
 
 }  // namespace gpu
-}  // namespace mus
+}  // namespace ui

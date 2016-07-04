@@ -26,7 +26,7 @@ namespace shell {
 class Connector;
 }
 
-namespace mus {
+namespace ui {
 
 class CommandBufferClientImpl;
 
@@ -56,6 +56,6 @@ class GLES2Context {
   DISALLOW_COPY_AND_ASSIGN(GLES2Context);
 };
 
-}  // namespace mus
+}  // namespace ui
 
 #endif  // SERVICES_UI_PUBLIC_CPP_GLES2_CONTEXT_H_

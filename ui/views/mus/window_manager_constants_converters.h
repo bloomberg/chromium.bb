@@ -9,7 +9,7 @@
 #include "ui/views/mus/mus_export.h"
 #include "ui/views/widget/widget.h"
 
-namespace mus {
+namespace ui {
 class Window;
 }
 
@@ -17,8 +17,8 @@ namespace mojo {
 
 template <>
 struct VIEWS_MUS_EXPORT
-    TypeConverter<mus::mojom::WindowType, views::Widget::InitParams::Type> {
-  static mus::mojom::WindowType Convert(views::Widget::InitParams::Type type);
+    TypeConverter<ui::mojom::WindowType, views::Widget::InitParams::Type> {
+  static ui::mojom::WindowType Convert(views::Widget::InitParams::Type type);
 };
 
 }  // namespace mojo

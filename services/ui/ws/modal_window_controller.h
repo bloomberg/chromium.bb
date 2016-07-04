@@ -11,7 +11,7 @@
 #include "services/ui/ws/server_window_drawn_tracker_observer.h"
 #include "services/ui/ws/server_window_observer.h"
 
-namespace mus {
+namespace ui {
 namespace ws {
 
 class EventDispatcher;
@@ -82,6 +82,6 @@ class ModalWindowController : public ServerWindowObserver,
 };
 
 }  // namespace ws
-}  // namespace mus
+}  // namespace ui
 
 #endif  // SERVICES_UI_WS_MODAL_WINDOW_CONTROLLER_H_

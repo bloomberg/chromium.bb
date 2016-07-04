@@ -42,7 +42,7 @@
 #include "ui/ozone/public/ozone_platform.h"
 #endif
 
-namespace mus {
+namespace ui {
 
 namespace ws {
 namespace {
@@ -411,4 +411,4 @@ void DefaultPlatformDisplay::RequestCopyOfOutput(
 
 }  // namespace ws
 
-}  // namespace mus
+}  // namespace ui

@@ -8,12 +8,12 @@
 #include "services/ui/common/mus_common_export.h"
 #include "ui/gfx/generic_shared_memory_id.h"
 
-namespace mus {
+namespace ui {
 
 // Returns the next GenericSharedMemoryId for the current process. This should
 // be used anywhere a new GenericSharedMemoryId is needed.
 MUS_COMMON_EXPORT gfx::GenericSharedMemoryId GetNextGenericSharedMemoryId();
 
-}  // namespace mus
+}  // namespace ui
 
 #endif  // SERVICES_UI_COMMON_GENERIC_SHARED_MEMORY_ID_GENERATOR_H_

@@ -12,7 +12,7 @@
 #include "services/ui/ws/test_server_window_delegate.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace mus {
+namespace ui {
 
 namespace ws {
 namespace {
@@ -232,4 +232,4 @@ TEST(ServerWindowDrawnTrackerTest, TreeHierarchyChangeFromNonParentAncestor) {
 
 }  // namespace ws
 
-}  // namespace mus
+}  // namespace ui

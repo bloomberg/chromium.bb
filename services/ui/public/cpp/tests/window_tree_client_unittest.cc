@@ -26,13 +26,13 @@
 #include "ui/events/event_utils.h"
 #include "ui/gfx/geometry/rect.h"
 
-namespace mus {
+namespace ui {
 
 namespace {
 
 void DoNothingWithEventResult(mojom::EventResult result) {}
 
-Id server_id(mus::Window* window) {
+Id server_id(ui::Window* window) {
   return WindowPrivate(window).server_id();
 }
 
@@ -1048,4 +1048,4 @@ TEST_F(WindowTreeClientTest, WindowDestroyedWhileTransientChildHasCapture) {
   EXPECT_TRUE(child->HasCapture());
 }
 
-}  // namespace mus
+}  // namespace ui

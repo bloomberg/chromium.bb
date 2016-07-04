@@ -11,7 +11,7 @@
 #include "services/ui/public/interfaces/window_tree.mojom.h"
 #include "services/ui/ws/ids.h"
 
-namespace mus {
+namespace ui {
 namespace ws {
 
 class AccessPolicyDelegate;
@@ -79,6 +79,6 @@ class AccessPolicy {
 };
 
 }  // namespace ws
-}  // namespace mus
+}  // namespace ui
 
 #endif  // SERVICES_UI_WS_ACCESS_POLICY_H_

@@ -22,7 +22,7 @@ void Init::Initialize(shell::Connector* connector,
                       const shell::Identity& identity,
                       uint32_t id) {
   connector_ = connector;
-  connector_->Connect("mojo:mus");
+  connector_->Connect("mojo:ui");
   StartTracing();
   StartLogin();
 }

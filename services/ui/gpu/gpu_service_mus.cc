@@ -34,7 +34,7 @@
 #include "ui/ozone/public/ozone_platform.h"
 #endif
 
-namespace mus {
+namespace ui {
 namespace {
 
 const int kLocalGpuChannelClientId = 1;
@@ -270,4 +270,4 @@ GpuServiceMus* GpuServiceMus::GetInstance() {
                          base::LeakySingletonTraits<GpuServiceMus>>::get();
 }
 
-}  // namespace mus
+}  // namespace ui

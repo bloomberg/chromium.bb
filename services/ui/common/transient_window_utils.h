@@ -11,7 +11,7 @@
 
 #include "services/ui/public/interfaces/mus_constants.mojom.h"
 
-namespace mus {
+namespace ui {
 
 // Returns true if |window| has |ancestor| as a transient ancestor. A transient
 // ancestor is found by following the transient parent chain of the window.
@@ -121,6 +121,6 @@ void RestackTransientDescendants(T* window,
     }
   }
 }
-}  // namespace mus
+}  // namespace ui
 
 #endif  // SERVICES_UI_COMMON_TRANSIENT_WINDOW_UTILS_H_

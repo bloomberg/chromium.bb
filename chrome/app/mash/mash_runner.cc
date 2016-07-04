@@ -30,7 +30,7 @@
 #include "services/shell/public/interfaces/shell_client_factory.mojom.h"
 #include "services/shell/runner/common/switches.h"
 #include "services/shell/runner/host/child_process_base.h"
-#include "services/ui/mus_app.h"
+#include "services/ui/service.h"
 
 #if defined(OS_LINUX)
 #include "components/font_service/font_service_app.h"
@@ -90,8 +90,8 @@ class DefaultShellClient : public shell::ShellClient,
       return base::WrapUnique(new ash::mus::WindowManagerApplication);
     if (name == "mojo:mash_session")
       return base::WrapUnique(new mash::session::Session);
-    if (name == "mojo:mus")
-      return base::WrapUnique(new mus::MusApp);
+    if (name == "mojo:ui")
+      return base::WrapUnique(new ui::Service);
     if (name == "mojo:quick_launch")
       return base::WrapUnique(new mash::quick_launch::QuickLaunchApplication);
     if (name == "mojo:task_viewer")

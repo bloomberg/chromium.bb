@@ -36,7 +36,7 @@ namespace bitmap_uploader {
 class BitmapUploader;
 }
 
-namespace mus {
+namespace ui {
 class Window;
 class WindowTreeClient;
 namespace mojom {
@@ -63,9 +63,9 @@ namespace views {
 class SurfaceContextFactory;
 class WidgetDelegate;
 
-// An implementation of NativeWidget that binds to a mus::Window. Because Aura
+// An implementation of NativeWidget that binds to a ui::Window. Because Aura
 // is used extensively within Views code, this code uses aura and binds to the
-// mus::Window via a Mus-specific aura::WindowTreeHost impl. Because the root
+// ui::Window via a Mus-specific aura::WindowTreeHost impl. Because the root
 // aura::Window in a hierarchy is created without a delegate by the
 // aura::WindowTreeHost, we must create a child aura::Window in this class
 // (content_) and attach it to the root.
@@ -73,12 +73,12 @@ class VIEWS_MUS_EXPORT NativeWidgetMus
     : public internal::NativeWidgetPrivate,
       public aura::WindowDelegate,
       public aura::WindowTreeHostObserver,
-      public NON_EXPORTED_BASE(mus::InputEventHandler) {
+      public NON_EXPORTED_BASE(ui::InputEventHandler) {
  public:
   NativeWidgetMus(internal::NativeWidgetDelegate* delegate,
                   shell::Connector* connector,
-                  mus::Window* window,
-                  mus::mojom::SurfaceType surface_type);
+                  ui::Window* window,
+                  ui::mojom::SurfaceType surface_type);
   ~NativeWidgetMus() override;
 
   // Configures the set of properties supplied to the window manager when
@@ -88,12 +88,12 @@ class VIEWS_MUS_EXPORT NativeWidgetMus
       std::map<std::string, std::vector<uint8_t>>* properties);
 
   // Notifies all widgets the frame constants changed in some way.
-  static void NotifyFrameChanged(mus::WindowTreeClient* client);
+  static void NotifyFrameChanged(ui::WindowTreeClient* client);
 
-  // Returns the widget for a mus::Window, or null if there is none.
-  static Widget* GetWidgetForWindow(mus::Window* window);
+  // Returns the widget for a ui::Window, or null if there is none.
+  static Widget* GetWidgetForWindow(ui::Window* window);
 
-  mus::Window* window() { return window_; }
+  ui::Window* window() { return window_; }
   WindowTreeHostMus* window_tree_host() { return window_tree_host_.get(); }
 
   aura::Window* GetRootWindow();
@@ -102,7 +102,7 @@ class VIEWS_MUS_EXPORT NativeWidgetMus
   void OnActivationChanged(bool active);
 
  protected:
-  // Updates the client area in the mus::Window.
+  // Updates the client area in the ui::Window.
   virtual void UpdateClientArea();
 
   // internal::NativeWidgetPrivate:
@@ -222,14 +222,14 @@ class VIEWS_MUS_EXPORT NativeWidgetMus
   // Overridden from aura::WindowTreeHostObserver:
   void OnHostCloseRequested(const aura::WindowTreeHost* host) override;
 
-  // Overridden from mus::InputEventHandler:
+  // Overridden from ui::InputEventHandler:
   void OnWindowInputEvent(
-      mus::Window* view,
+      ui::Window* view,
       const ui::Event& event,
-      std::unique_ptr<base::Callback<void(mus::mojom::EventResult)>>*
+      std::unique_ptr<base::Callback<void(ui::mojom::EventResult)>>*
           ack_callback) override;
 
-private:
+ private:
   friend class NativeWidgetMusTest;
   class MusWindowObserver;
   class MusCaptureClient;
@@ -238,29 +238,29 @@ private:
     return window_tree_host();
   }
 
-  void set_last_cursor(mus::mojom::Cursor cursor) { last_cursor_ = cursor; }
-  void SetShowState(mus::mojom::ShowState show_state);
+  void set_last_cursor(ui::mojom::Cursor cursor) { last_cursor_ = cursor; }
+  void SetShowState(ui::mojom::ShowState show_state);
 
-  void OnMusWindowVisibilityChanging(mus::Window* window);
-  void OnMusWindowVisibilityChanged(mus::Window* window);
+  void OnMusWindowVisibilityChanging(ui::Window* window);
+  void OnMusWindowVisibilityChanged(ui::Window* window);
 
-  // Propagates the widget hit test mask, if any, to the mus::Window.
+  // Propagates the widget hit test mask, if any, to the ui::Window.
   // TODO(jamescook): Wire this through views::Widget so widgets can push
   // updates if needed.
   void UpdateHitTestMask();
 
-  mus::Window* window_;
-  mus::mojom::Cursor last_cursor_;
+  ui::Window* window_;
+  ui::mojom::Cursor last_cursor_;
 
   internal::NativeWidgetDelegate* native_widget_delegate_;
 
-  const mus::mojom::SurfaceType surface_type_;
-  mus::mojom::ShowState show_state_before_fullscreen_;
+  const ui::mojom::SurfaceType surface_type_;
+  ui::mojom::ShowState show_state_before_fullscreen_;
 
   // See class documentation for Widget in widget.h for a note about ownership.
   Widget::InitParams::Ownership ownership_;
 
-  // Functions with the same name require the mus::WindowObserver to be in
+  // Functions with the same name require the ui::WindowObserver to be in
   // a separate class.
   std::unique_ptr<MusWindowObserver> mus_window_observer_;
 

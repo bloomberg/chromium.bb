@@ -7,7 +7,7 @@
 #include "base/memory/ptr_util.h"
 #include "services/ui/public/cpp/window_surface_client.h"
 
-namespace mus {
+namespace ui {
 
 // static
 std::unique_ptr<WindowSurface> WindowSurface::Create(
@@ -66,4 +66,4 @@ WindowSurfaceBinding::WindowSurfaceBinding(
     : surface_request_(std::move(surface_request)),
       surface_client_(std::move(surface_client)) {}
 
-}  // namespace mus
+}  // namespace ui

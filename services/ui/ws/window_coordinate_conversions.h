@@ -11,7 +11,7 @@ class PointF;
 class Rect;
 }
 
-namespace mus {
+namespace ui {
 
 namespace ws {
 
@@ -34,6 +34,6 @@ gfx::Rect ConvertRectBetweenWindows(const ServerWindow* from,
 
 }  // namespace ws
 
-}  // namespace mus
+}  // namespace ui
 
 #endif  // SERVICES_UI_WS_WINDOW_COORDINATE_CONVERSIONS_H_

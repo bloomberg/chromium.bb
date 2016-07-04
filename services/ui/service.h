@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SERVICES_UI_MUS_APP_H_
-#define SERVICES_UI_MUS_APP_H_
+#ifndef SERVICES_UI_SERVICE_H_
+#define SERVICES_UI_SERVICE_H_
 
 #include <stdint.h>
 
@@ -50,14 +50,14 @@ namespace ui {
 class PlatformEventSource;
 }
 
-namespace mus {
+namespace ui {
 namespace ws {
 class ForwardingWindowManager;
 class PlatformScreen;
 class WindowServer;
 }
 
-class MusApp
+class Service
     : public shell::ShellClient,
       public ws::WindowServerDelegate,
       public shell::InterfaceFactory<mojom::Clipboard>,
@@ -71,8 +71,8 @@ class MusApp
       public shell::InterfaceFactory<mojom::WindowTreeHostFactory>,
       public shell::InterfaceFactory<mojom::WindowServerTest> {
  public:
-  MusApp();
-  ~MusApp() override;
+  Service();
+  ~Service() override;
 
  private:
   // Holds InterfaceRequests received before the first WindowTreeHost Display
@@ -84,7 +84,7 @@ class MusApp
 
   void InitializeResources(shell::Connector* connector);
 
-  // Returns the user specific state for the user id of |connection|. MusApp
+  // Returns the user specific state for the user id of |connection|. Service
   // owns the return value.
   // TODO(sky): if we allow removal of user ids then we need to close anything
   // associated with the user (all incoming pipes...) on removal.
@@ -172,11 +172,11 @@ class MusApp
   std::unique_ptr<ws::PlatformScreen> platform_screen_;
   std::unique_ptr<ws::TouchController> touch_controller_;
 
-  base::WeakPtrFactory<MusApp> weak_ptr_factory_;
+  base::WeakPtrFactory<Service> weak_ptr_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(MusApp);
+  DISALLOW_COPY_AND_ASSIGN(Service);
 };
 
-}  // namespace mus
+}  // namespace ui
 
-#endif  // SERVICES_UI_MUS_APP_H_
+#endif  // SERVICES_UI_SERVICE_H_

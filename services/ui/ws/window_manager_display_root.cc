@@ -8,7 +8,7 @@
 #include "services/ui/ws/server_window.h"
 #include "services/ui/ws/window_server.h"
 
-namespace mus {
+namespace ui {
 namespace ws {
 
 WindowManagerDisplayRoot::WindowManagerDisplayRoot(Display* display)
@@ -31,4 +31,4 @@ WindowServer* WindowManagerDisplayRoot::window_server() {
 }
 
 }  // namespace ws
-}  // namespace mus
+}  // namespace ui

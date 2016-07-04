@@ -14,7 +14,7 @@
 #include "mojo/public/cpp/system/core.h"
 #include "services/ui/common/mus_common_export.h"
 
-namespace mus {
+namespace ui {
 
 class MUS_COMMON_EXPORT MojoBufferBacking : public gpu::BufferBacking {
  public:
@@ -35,6 +35,6 @@ class MUS_COMMON_EXPORT MojoBufferBacking : public gpu::BufferBacking {
   DISALLOW_COPY_AND_ASSIGN(MojoBufferBacking);
 };
 
-}  // namespace mus
+}  // namespace ui
 
 #endif  // SERVICES_UI_COMMON_MOJO_BUFFER_BACKING_H_

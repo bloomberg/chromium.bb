@@ -11,7 +11,7 @@
 #include "base/memory/weak_ptr.h"
 #include "gpu/command_buffer/client/gpu_memory_buffer_manager.h"
 
-namespace mus {
+namespace ui {
 
 class GpuServiceMus;
 
@@ -52,6 +52,6 @@ class MusGpuMemoryBufferManager : public gpu::GpuMemoryBufferManager {
   base::WeakPtrFactory<MusGpuMemoryBufferManager> weak_factory_;
 };
 
-}  // namespace mus
+}  // namespace ui
 
 #endif  // SERVICES_UI_GPU_MUS_GPU_MEMORY_BUFFER_MANAGER_H_

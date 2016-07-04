@@ -48,7 +48,7 @@ namespace ui {
 class NativePixmap;
 }
 
-namespace mus {
+namespace ui {
 
 class GpuState;
 
@@ -168,6 +168,6 @@ class CommandBufferDriver : base::NonThreadSafe {
   DISALLOW_COPY_AND_ASSIGN(CommandBufferDriver);
 };
 
-}  // namespace mus
+}  // namespace ui
 
 #endif  // COMPONENTS_GLES2_COMMAND_BUFFER_DRIVER_H_
