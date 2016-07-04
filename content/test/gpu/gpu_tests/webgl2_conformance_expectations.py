@@ -34,9 +34,10 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     # Too slow (take about one hour to run)
     self.Skip('deqp/functional/gles3/builtinprecision/*.html', bug=619403)
 
-    self.Fail('deqp/functional/gles3/framebufferblit/*.html', bug=483282)
+    self.Fail('deqp/functional/gles3/framebufferblit/depth_stencil.html',
+        bug=483282)
     self.Fail('deqp/data/gles3/shaders/linkage.html', bug=601821)
-    self.Fail('deqp/functional/gles3/shaderoperator/*.html', bug=483282)
+    # self.Fail('deqp/functional/gles3/shaderoperator/*.html', bug=483282)
 
     self.Flaky('deqp/functional/gles3/negativefragmentapi.html', bug=604794)
 
@@ -94,19 +95,12 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         'textureprojgradoffset.html',
         ['win'], bug=483282)
 
-    self.Fail('deqp/functional/gles3/textureshadow/2d*',
-        ['win'], bug=483282)
-    self.Fail('deqp/functional/gles3/textureshadow/cube*',
-        ['win'], bug=483282)
-
     self.Fail('conformance2/glsl3/array-in-complex-expression.html',
         ['win'], bug=483282)
     self.Skip('conformance2/reading/read-pixels-pack-parameters.html',
         ['win'], bug=483282)
     self.Skip('conformance2/reading/read-pixels-into-pixel-pack-buffer.html',
         ['win'], bug=1266) # angle bug ID
-    self.Fail('conformance2/state/gl-object-get-calls.html',
-        ['win'], bug=483282)
 
     self.Fail('deqp/functional/gles3/fbomultisample*',
         ['win'], bug=483282)
@@ -132,14 +126,12 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     # Win / NVidia
     self.Fail('deqp/functional/gles3/textureformat/compressed_cube.html',
         ['win', 'nvidia'], bug=614573)
+    self.Fail('deqp/functional/gles3/framebufferblit/rect_02.html',
+        ['win', 'nvidia'], bug=483282)
+    self.Fail('deqp/functional/gles3/framebufferblit/rect_05.html',
+        ['win', 'nvidia'], bug=483282)
 
     # Win / AMD
-    # It's unfortunate that this suppression needs to be so broad, but
-    # basically any test that uses readPixels is potentially flaky, and
-    # it's infeasible to suppress individual failures one by one.
-    self.Flaky('conformance2/*', ['win', ('amd', 0x6779)], bug=491419)
-    self.Flaky('deqp/*', ['win', ('amd', 0x6779)], bug=491419)
-
     self.Fail('deqp/functional/gles3/texturespecification/' +
         'texstorage2d_format_depth_stencil.html',
         ['win', ('amd', 0x6779)], bug=614178)
@@ -167,6 +159,19 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['win', ('amd', 0x6779)], bug=483282)
     self.Fail('deqp/functional/gles3/fragmentoutput/random_02.html',
         ['win', ('amd', 0x6779)], bug=483282)
+
+    self.Fail('deqp/functional/gles3/framebufferblit/rect_02.html',
+        ['win', ('amd', 0x6779)], bug=483282)
+    self.Fail('deqp/functional/gles3/textureshadow/2d*',
+        ['win', ('amd', 0x6779)], bug=483282)
+    self.Fail('deqp/functional/gles3/textureshadow/cube*',
+        ['win', ('amd', 0x6779)], bug=483282)
+
+    # It's unfortunate that this suppression needs to be so broad, but
+    # basically any test that uses readPixels is potentially flaky, and
+    # it's infeasible to suppress individual failures one by one.
+    self.Flaky('conformance2/*', ['win', ('amd', 0x6779)], bug=491419)
+    self.Flaky('deqp/*', ['win', ('amd', 0x6779)], bug=491419)
 
     # Win / Intel
     self.Fail('conformance2/buffers/uniform-buffers.html',
@@ -252,13 +257,9 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['mac'], bug=483282)
     self.Fail('deqp/functional/gles3/pixelbufferobject.html',
         ['mac'], bug=483282)
-    self.Fail('deqp/functional/gles3/negativeshaderapi.html',
-        ['mac'], bug=483282)
 
     self.Fail('conformance2/textures/misc/compressed-tex-image.html',
         ['mac'], bug=565438)
-    self.Fail('conformance2/textures/misc/tex-new-formats.html',
-        ['mac'], bug=483282)
     self.Fail('conformance2/textures/misc/tex-storage-compressed-formats.html',
         ['mac'], bug=295792)
     self.Fail('conformance2/renderbuffers/framebuffer-test.html',
@@ -273,6 +274,42 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['mac'], bug=483282)
 
     self.Fail('deqp/functional/gles3/fbomultisample*',
+        ['mac'], bug=483282)
+
+    self.Fail('deqp/functional/gles3/framebufferblit/conversion_04.html',
+        ['mac'], bug=483282)
+    self.Fail('deqp/functional/gles3/framebufferblit/conversion_07.html',
+        ['mac'], bug=483282)
+    self.Fail('deqp/functional/gles3/framebufferblit/conversion_08.html',
+        ['mac'], bug=483282)
+    self.Fail('deqp/functional/gles3/framebufferblit/conversion_10.html',
+        ['mac'], bug=483282)
+    self.Fail('deqp/functional/gles3/framebufferblit/conversion_11.html',
+        ['mac'], bug=483282)
+    self.Fail('deqp/functional/gles3/framebufferblit/conversion_12.html',
+        ['mac'], bug=483282)
+    self.Fail('deqp/functional/gles3/framebufferblit/conversion_13.html',
+        ['mac'], bug=483282)
+    self.Fail('deqp/functional/gles3/framebufferblit/conversion_18.html',
+        ['mac'], bug=483282)
+    self.Fail('deqp/functional/gles3/framebufferblit/conversion_25.html',
+        ['mac'], bug=483282)
+    self.Fail('deqp/functional/gles3/framebufferblit/conversion_28.html',
+        ['mac'], bug=483282)
+    self.Fail('deqp/functional/gles3/framebufferblit/conversion_29.html',
+        ['mac'], bug=483282)
+    self.Fail('deqp/functional/gles3/framebufferblit/conversion_30.html',
+        ['mac'], bug=483282)
+    self.Fail('deqp/functional/gles3/framebufferblit/conversion_31.html',
+        ['mac'], bug=483282)
+    self.Fail('deqp/functional/gles3/framebufferblit/conversion_32.html',
+        ['mac'], bug=483282)
+    self.Fail('deqp/functional/gles3/framebufferblit/conversion_33.html',
+        ['mac'], bug=483282)
+    self.Fail('deqp/functional/gles3/framebufferblit/conversion_34.html',
+        ['mac'], bug=483282)
+    self.Fail('deqp/functional/gles3/framebufferblit/' +
+        'default_framebuffer_*.html',
         ['mac'], bug=483282)
 
     # Mac Retina NVIDIA
@@ -385,6 +422,9 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('deqp/functional/gles3/fboinvalidate/format_02.html',
         ['mac', ('nvidia', 0xfe9)], bug=483282)
 
+    self.Fail('deqp/functional/gles3/negativeshaderapi.html',
+        ['mac', ('nvidia', 0xfe9)], bug=483282)
+
     # Mac AMD
     self.Fail('deqp/functional/gles3/clipping.html',
         ['mac', 'amd'], bug=483282)
@@ -411,6 +451,20 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['mac', 'amd'], bug=483282)
     self.Fail('deqp/functional/gles3/vertexarrays/' +
         'single_attribute.normalize.html',
+        ['mac', 'amd'], bug=483282)
+
+    self.Fail('deqp/functional/gles3/framebufferblit/rect_02.html',
+        ['mac', 'amd'], bug=483282)
+
+    self.Fail('deqp/functional/gles3/shaderoperator/' +
+        'angle_and_trigonometry_02.html',
+        ['mac', 'amd'], bug=483282)
+    self.Fail('deqp/functional/gles3/shaderoperator/' +
+        'angle_and_trigonometry_03.html',
+        ['mac', 'amd'], bug=483282)
+    self.Fail('deqp/functional/gles3/shaderoperator/common_fucntions.html',
+        ['mac', 'amd'], bug=483282)
+    self.Fail('deqp/functional/gles3/shaderoperator/geometric.html',
         ['mac', 'amd'], bug=483282)
 
     # Mac Intel
@@ -469,6 +523,17 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['mac', 'intel'], bug=483282)
     self.Fail('deqp/functional/gles3/shadertexturefunction/' +
         'texturesize.html',
+        ['mac', 'intel'], bug=483282)
+
+    self.Fail('deqp/functional/gles3/framebufferblit/rect_02.html',
+        ['mac', 'intel'], bug=483282)
+    self.Fail('deqp/functional/gles3/framebufferblit/rect_03.html',
+        ['mac', 'intel'], bug=483282)
+    self.Fail('deqp/functional/gles3/framebufferblit/rect_04.html',
+        ['mac', 'intel'], bug=483282)
+    self.Fail('deqp/functional/gles3/framebufferblit/rect_05.html',
+        ['mac', 'intel'], bug=483282)
+    self.Fail('deqp/functional/gles3/framebufferblit/rect_06.html',
         ['mac', 'intel'], bug=483282)
 
     # Linux only.
