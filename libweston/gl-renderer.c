@@ -183,11 +183,7 @@ struct gl_renderer {
 	PFNGLEGLIMAGETARGETTEXTURE2DOESPROC image_target_texture_2d;
 	PFNEGLCREATEIMAGEKHRPROC create_image;
 	PFNEGLDESTROYIMAGEKHRPROC destroy_image;
-
-#ifdef EGL_EXT_swap_buffers_with_damage
 	PFNEGLSWAPBUFFERSWITHDAMAGEEXTPROC swap_buffers_with_damage;
-#endif
-
 	PFNEGLCREATEPLATFORMWINDOWSURFACEEXTPROC create_platform_window;
 
 	int has_unpack_subimage;
@@ -1085,11 +1081,9 @@ gl_renderer_repaint_output(struct weston_output *output,
 	struct gl_renderer *gr = get_renderer(compositor);
 	EGLBoolean ret;
 	static int errored;
-#ifdef EGL_EXT_swap_buffers_with_damage
 	int i, nrects, buffer_height;
 	EGLint *egl_damage, *d;
 	pixman_box32_t *rects;
-#endif
 	pixman_region32_t buffer_damage, total_damage;
 	enum gl_border_status border_damage = BORDER_STATUS_CLEAN;
 
@@ -1144,7 +1138,6 @@ gl_renderer_repaint_output(struct weston_output *output,
 	pixman_region32_copy(&output->previous_damage, output_damage);
 	wl_signal_emit(&output->frame_signal, output);
 
-#ifdef EGL_EXT_swap_buffers_with_damage
 	if (gr->swap_buffers_with_damage) {
 		pixman_region32_init(&buffer_damage);
 		weston_transformed_region(output->width, output->height,
@@ -1182,9 +1175,6 @@ gl_renderer_repaint_output(struct weston_output *output,
 	} else {
 		ret = eglSwapBuffers(gr->egl_display, go->egl_surface);
 	}
-#else /* ! defined EGL_EXT_swap_buffers_with_damage */
-	ret = eglSwapBuffers(gr->egl_display, go->egl_surface);
-#endif
 
 	if (ret == EGL_FALSE && !errored) {
 		errored = 1;
@@ -2752,14 +2742,12 @@ gl_renderer_setup_egl_extensions(struct weston_compositor *ec)
 		weston_log("warning: EGL_EXT_buffer_age not supported. "
 			   "Performance could be affected.\n");
 
-#ifdef EGL_EXT_swap_buffers_with_damage
 	if (check_extension(extensions, "EGL_EXT_swap_buffers_with_damage"))
 		gr->swap_buffers_with_damage =
 			(void *) eglGetProcAddress("eglSwapBuffersWithDamageEXT");
 	else
 		weston_log("warning: EGL_EXT_swap_buffers_with_damage not "
 			   "supported. Performance could be affected.\n");
-#endif
 
 #ifdef EGL_MESA_configless_context
 	if (check_extension(extensions, "EGL_MESA_configless_context"))

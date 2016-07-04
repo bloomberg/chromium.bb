@@ -48,11 +48,7 @@
 #define IVI_SURFACE_ID 9000
 
 #include "shared/platform.h"
-
-#ifndef EGL_EXT_swap_buffers_with_damage
-#define EGL_EXT_swap_buffers_with_damage 1
-typedef EGLBoolean (EGLAPIENTRYP PFNEGLSWAPBUFFERSWITHDAMAGEEXTPROC)(EGLDisplay dpy, EGLSurface surface, EGLint *rects, EGLint n_rects);
-#endif
+#include "weston-egl-ext.h"
 
 #ifndef EGL_EXT_buffer_age
 #define EGL_EXT_buffer_age 1
