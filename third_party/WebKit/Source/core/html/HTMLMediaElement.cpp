@@ -1634,8 +1634,13 @@ void HTMLMediaElement::setReadyState(ReadyState state)
 
             if (!isGestureNeededForPlayback()) {
                 if (isHTMLVideoElement() && muted() && RuntimeEnabledFeatures::autoplayMutedVideosEnabled()) {
-                    m_autoplayVisibilityObserver = new ElementVisibilityObserver(this, WTF::bind(&HTMLMediaElement::onVisibilityChangedForAutoplay, wrapPersistent(this)));
-                    m_autoplayVisibilityObserver->start();
+                    // We might end up in a situation where the previous
+                    // observer didn't had time to fire yet. We can avoid
+                    // creating a new one in this case.
+                    if (!m_autoplayVisibilityObserver) {
+                        m_autoplayVisibilityObserver = new ElementVisibilityObserver(this, WTF::bind(&HTMLMediaElement::onVisibilityChangedForAutoplay, wrapPersistent(this)));
+                        m_autoplayVisibilityObserver->start();
+                    }
                 } else {
                     m_paused = false;
                     invalidateCachedTime();
