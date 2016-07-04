@@ -3751,11 +3751,11 @@ insertEmphasesAt(const int at)
 
 	/*   insert capitalization last so it will be closest to word   */
 	if(emphasisBuffer[at] & CAPS_EMPHASIS)
+	{
 		insertEmphasisBegin(emphasisBuffer, at, capsRule, CAPS_BEGIN, CAPS_END, CAPS_WORD);
-
-	if(emphasisBuffer[at] & CAPS_EMPHASIS)
 		insertEmphasisSymbol(
 			emphasisBuffer, at, capsRule, CAPS_SYMBOL);
+	}
 
 }
 
