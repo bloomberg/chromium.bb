@@ -748,7 +748,7 @@ nested_init_compositor(struct nested *nested)
 
 	nested->egl_display = display_get_egl_display(nested->display);
 	extensions = eglQueryString(nested->egl_display, EGL_EXTENSIONS);
-	if (strstr(extensions, "EGL_WL_bind_wayland_display") == NULL) {
+	if (weston_check_egl_extension(extensions, "EGL_WL_bind_wayland_display") == NULL) {
 		fprintf(stderr, "no EGL_WL_bind_wayland_display extension\n");
 		return -1;
 	}
@@ -771,7 +771,7 @@ nested_init_compositor(struct nested *nested)
 		const char *func = "eglCreateWaylandBufferFromImageWL";
 		const char *ext = "EGL_WL_create_wayland_buffer_from_image";
 
-		if (strstr(extensions, ext)) {
+		if (weston_check_egl_extension(extensions, ext)) {
 			create_wayland_buffer_from_image =
 				(void *) eglGetProcAddress(func);
 			use_ss_renderer = 1;
