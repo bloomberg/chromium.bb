@@ -1,19 +1,22 @@
+<!DOCTYPE html>
+<title>Test that muted video has an unmute button.</title>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script src="media-file.js"></script>
+<script src="media-controls.js"></script>
 <video controls></video>
-<p>Test that muted video has an unmute button.<p>
-<script src=media-file.js></script>
-<!-- TODO(foolip): Convert test to testharness.js. crbug.com/588956
-     (Please avoid writing new tests using video-test.js) -->
-<script src=video-test.js></script>
-<script src=media-controls.js></script>
 <script>
-    run("video.muted = true");
-    video.src = findMediaFile("video", "content/test");
-    run("video.load()");
-    waitForEvent("canplaythrough", function () {
-        testExpected("video.muted", true);
-        muteButton = mediaControlsButton(video, "mute-button");
+async_test(function(t) {
+    var video = document.querySelector("video");
+    video.muted = true;
+
+    video.oncanplaythrough = t.step_func_done(function() {
+        assert_true(video.muted);
+        var muteButton = mediaControlsButton(video, "mute-button");
         // Make sure that the mute button is visible.
-        testExpected("getComputedStyle(muteButton).display", "none", '!=');
-        endTest();
+        assert_not_equals(getComputedStyle(muteButton).display, "none");
     });
+
+    video.src = findMediaFile("video", "content/test");
+});
 </script>

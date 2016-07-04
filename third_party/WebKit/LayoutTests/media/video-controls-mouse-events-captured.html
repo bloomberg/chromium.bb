@@ -1,71 +1,64 @@
 <!DOCTYPE html>
-<html>
-<head>
+<title>This tests that a mouse/keyboard event on the controls will not be seen by the video element.</title>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script src="media-file.js"></script>
+<script src="media-controls.js"></script>
+<video controls></video>
+<script>
+async_test(function(t) {
+    var video = document.querySelector("video");
 
-</head>
-<body>
-    <video controls></video>
-    <p>This tests that a mouse events on the controls will not be seen by the video element.</p>
-    <p>Also tests keyboard input.</p>
-    <script src=media-file.js></script>
-    <!-- TODO(foolip): Convert test to testharness.js. crbug.com/588956
-         (Please avoid writing new tests using video-test.js) -->
-    <script src=video-test.js></script>
-    <script src=media-controls.js></script>
-    <script>
-        waitForEventAndFail("click");
-        waitForEventAndFail("dblclick");
-        waitForEventAndFail("mousedown");
-        waitForEventAndFail("mouseup");
-        waitForEventAndFail("keydown");
+    video.onclick = t.unreached_func();
+    video.ondblclick = t.unreached_func();
+    video.onmousedown = t.unreached_func();
+    video.onmouseup = t.unreached_func();
+    video.onkeydown = t.unreached_func();
 
-        waitForEventAndEnd("loadeddata", function()
-        {
-            if (window.eventSender) {
-                // click the play button
-                var coords = mediaControlsButtonCoordinates(video, "play-button");
-                eventSender.mouseMoveTo(coords[0], coords[1]);
+    video.onloadeddata = t.step_func_done(function() {
+        // click the play button.
+        var coords = mediaControlsButtonCoordinates(video, "play-button");
+        eventSender.mouseMoveTo(coords[0], coords[1]);
+        sendMouseAndKeyEvents();
 
-                eventSender.mouseDown();
-                eventSender.mouseUp();
-                eventSender.keyDown('A');
+        // Click the current time display, which should not respond to events,
+        // but should still capture them.
+        coords = mediaControlsButtonCoordinates(video, "current-time-display");
+        eventSender.mouseMoveTo(coords[0], coords[1]);
+        sendMouseAndKeyEvents();
 
-                // Click the current time display, which should not respond to events, but
-                // should still capture them
-                coords = mediaControlsButtonCoordinates(video, "current-time-display");
-                eventSender.mouseMoveTo(coords[0], coords[1]);
+        // Click the timeline - this tests that multilevel shadow DOM elements work.
+        coords = mediaControlsButtonCoordinates(video, "timeline");
+        eventSender.mouseMoveTo(coords[0], coords[1]);
+        sendMouseAndKeyEvents();
 
-                eventSender.mouseDown();
-                eventSender.mouseUp();
-                eventSender.keyDown('A');
-
-                // Click the timeline - this tests that multilevel shadow DOM elements work
-                coords = mediaControlsButtonCoordinates(video, "timeline");
-                eventSender.mouseMoveTo(coords[0], coords[1]);
-
-                eventSender.mouseDown();
-                eventSender.mouseUp();
-                eventSender.keyDown('A');
-
-                // If we're not dragging, then we should get a mousemove.
-                waitForEventOnce("mousemove");
-                eventSender.mouseMoveTo(coords[0]+10, coords[1]+10);
-                // Expect another as we move back to the slider.
-                waitForEventOnce("mousemove");
-                eventSender.mouseMoveTo(coords[0], coords[1]);
-
-                // The above positioned the slider under the mouse.  Click
-                // to begin a drag.
-                eventSender.mouseDown();
-
-                waitForEventAndFail("mousemove")
-
-                // Check that the timeline also captures mousemove if the
-                // slider is being dragged.
-                eventSender.mouseMoveTo(coords[0]+10, coords[1]+10)
-            }
+        // If we're not dragging, then we should get a mousemove.
+        var mouseMoveEventCount = 0;
+        video.onmousemove = t.step_func(function() {
+            mouseMoveEventCount++;
         });
-        video.src = findMediaFile("video", "content/test");
-    </script>
-</body>
-</html>
+
+        eventSender.mouseMoveTo(coords[0] + 10, coords[1] + 10);
+        // Expect another as we move back to the slider.
+        eventSender.mouseMoveTo(coords[0], coords[1]);
+
+        // The above, positioned the slider under the mouse.
+        // Click to begin a drag.
+        eventSender.mouseDown();
+        video.onmousemove = t.unreached_func();
+
+        // Check that the timeline also captures mousemove if the
+        // slider is being dragged.
+        eventSender.mouseMoveTo(coords[0] + 10, coords[1] + 10)
+        assert_equals(mouseMoveEventCount, 2);
+    });
+
+    function sendMouseAndKeyEvents() {
+        eventSender.mouseDown();
+        eventSender.mouseUp();
+        eventSender.keyDown('A');
+    }
+
+    video.src = findMediaFile("video", "content/test");
+});
+</script>
