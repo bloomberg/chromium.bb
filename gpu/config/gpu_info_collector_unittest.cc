@@ -14,6 +14,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_mock.h"
+#include "ui/gl/init/gl_factory.h"
 #include "ui/gl/test/gl_surface_test_support.h"
 
 using ::gl::MockGLInterface;
@@ -167,7 +168,7 @@ class GPUInfoCollectorTest
   void TearDown() override {
     ::gl::MockGLInterface::SetGLInterface(NULL);
     gl_.reset();
-    gl::ClearGLBindings();
+    gl::init::ClearGLBindings();
 
     testing::Test::TearDown();
   }

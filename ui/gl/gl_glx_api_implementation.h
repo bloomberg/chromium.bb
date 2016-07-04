@@ -19,9 +19,9 @@ namespace gl {
 class GLContext;
 struct GLWindowSystemBindingInfo;
 
-void InitializeStaticGLBindingsGLX();
-void InitializeDebugGLBindingsGLX();
-void ClearGLBindingsGLX();
+GL_EXPORT void InitializeStaticGLBindingsGLX();
+GL_EXPORT void InitializeDebugGLBindingsGLX();
+GL_EXPORT void ClearGLBindingsGLX();
 bool GetGLWindowSystemBindingInfoGLX(GLWindowSystemBindingInfo* info);
 
 class GL_EXPORT GLXApiBase : public GLXApi {

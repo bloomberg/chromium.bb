@@ -16,6 +16,7 @@
 #include "ui/gl/gl_surface_stub.h"
 #include "ui/gl/gpu_preference.h"
 #include "ui/gl/gpu_timing_fake.h"
+#include "ui/gl/init/gl_factory.h"
 #include "ui/gl/test/gl_surface_test_support.h"
 
 namespace gl {
@@ -38,7 +39,7 @@ class GPUTimingTest : public testing::Test {
     surface_ = nullptr;
     if (setup_) {
       MockGLInterface::SetGLInterface(NULL);
-      ClearGLBindings();
+      init::ClearGLBindings();
     }
     setup_ = false;
     cpu_time_bounded_ = false;

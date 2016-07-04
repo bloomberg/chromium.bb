@@ -26,7 +26,6 @@
         'GL_IMPLEMENTATION',
       ],
       'include_dirs': [
-        '<(DEPTH)/third_party/swiftshader/include',
         '<(DEPTH)/third_party/khronos',
       ],
       'export_dependent_settings': [

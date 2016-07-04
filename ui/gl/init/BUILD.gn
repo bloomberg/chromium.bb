@@ -18,6 +18,8 @@ component("init") {
   ]
   defines = [ "GL_INIT_IMPLEMENTATION" ]
 
+  include_dirs = [ "//third_party/swiftshader/include" ]
+
   deps = [
     "//base",
     "//ui/gfx",
