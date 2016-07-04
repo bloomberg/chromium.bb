@@ -82,8 +82,8 @@ class BASE_EXPORT TaskSchedulerImpl : public TaskScheduler {
   void JoinForTesting();
 
  private:
-  TaskSchedulerImpl(const WorkerPoolIndexForTraitsCallback&
-                        worker_pool_index_for_traits_callback);
+  explicit TaskSchedulerImpl(const WorkerPoolIndexForTraitsCallback&
+                                 worker_pool_index_for_traits_callback);
 
   void Initialize(const std::vector<WorkerPoolCreationArgs>& worker_pools);
 
