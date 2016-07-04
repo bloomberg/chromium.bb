@@ -334,18 +334,18 @@ gfx::Rect MapRectInternal(const FilterOperation& op,
   switch (op.type()) {
     case FilterOperation::BLUR: {
       SkVector spread = MapStdDeviation(op.amount(), matrix);
-      float spreadX = std::abs(spread.x());
-      float spreadY = std::abs(spread.y());
+      float spread_x = std::abs(spread.x());
+      float spread_y = std::abs(spread.y());
       gfx::Rect result = rect;
-      result.Inset(-spreadX, -spreadY, -spreadX, -spreadY);
+      result.Inset(-spread_x, -spread_y, -spread_x, -spread_y);
       return result;
     }
     case FilterOperation::DROP_SHADOW: {
       SkVector spread = MapStdDeviation(op.amount(), matrix);
-      float spreadX = std::abs(spread.x());
-      float spreadY = std::abs(spread.y());
+      float spread_x = std::abs(spread.x());
+      float spread_y = std::abs(spread.y());
       gfx::Rect result = rect;
-      result.Inset(-spreadX, -spreadY, -spreadX, -spreadY);
+      result.Inset(-spread_x, -spread_y, -spread_x, -spread_y);
 
       gfx::Vector2d drop_shadow_offset =
           op.drop_shadow_offset().OffsetFromOrigin();
