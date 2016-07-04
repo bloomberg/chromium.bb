@@ -3244,14 +3244,10 @@ resolveEmphasisResets(
 static void
 markEmphases()
 {
+	/* Relies on the order of typeforms emph_1..emph_10. */
 	EmphRuleNumber emphRule;
 	int caps_start = -1, last_caps = -1, caps_cnt = 0;
-	int under_start = -1;
-	int bold_start = -1;
-	int italic_start = -1;
-	int script_start = -1;
-	int tnote_start = -1;
-	int trans_start[5] = {-1,-1,-1,-1,-1}, trans_bit;
+	int emph_start[10] = {-1, -1, -1, -1, -1, -1, -1, -1, -1, -1};
 	int i, j;
 		
 	for(i = 0; i < srcmax; i++)
@@ -3292,81 +3288,27 @@ markEmphases()
 		if(!haveEmphasis)
 			continue;
 	
-		if(typebuf[i] & underline)
+		for (j = 0; j < 10; j++)
 		{
-			if(under_start < 0)
-				under_start = i;
-		}
-		else if(under_start >= 0)
-		{
-			emphasisBuffer[under_start] |= UNDER_BEGIN;
-			emphasisBuffer[i] |= UNDER_END;
-			under_start = -1;
-		}
-
-		if(typebuf[i] & bold)
-		{
-			if(bold_start < 0)
-				bold_start = i;
-		}
-		else if(bold_start >= 0)
-		{
-			emphasisBuffer[bold_start] |= BOLD_BEGIN;
-			emphasisBuffer[i] |= BOLD_END;
-			bold_start = -1;
-		}
-
-		if(typebuf[i] & italic)
-		{
-			if(italic_start < 0)
-				italic_start = i;
-		}
-		else if(italic_start >= 0)
-		{
-			emphasisBuffer[italic_start] |= ITALIC_BEGIN;
-			emphasisBuffer[i] |= ITALIC_END;
-			italic_start = -1;
-		}
-
-		if(typebuf[i] & emph_4)
-		{
-			if(script_start < 0)
-				script_start = i;
-		}
-		else if(script_start >= 0)
-		{
-			emphasisBuffer[script_start] |= SCRIPT_BEGIN;
-			emphasisBuffer[i] |= SCRIPT_END;
-			script_start = -1;
-		}
-
-		if(typebuf[i] & emph_5)
-		{
-			if(tnote_start < 0)
-				tnote_start = i;
-		}
-		else if(tnote_start >= 0)
-		{
-			emphasisBuffer[tnote_start] |= TNOTE_BEGIN;
-			emphasisBuffer[i] |= TNOTE_END;
-			tnote_start = -1;
-		}
-		
-		trans_bit = emph_6;
-		for(j = 0; j < 5; j++)
-		{		
-			if(typebuf[i] & trans_bit)
+			if(typebuf[i] & (italic << j))
 			{
-				if(trans_start[j] < 0)
-					trans_start[j] = i;
+				if(emph_start[j] < 0)
+					emph_start[j] = i;
 			}
-			else if(trans_start[j] >= 0)
+			else if(emph_start[j] >= 0)
 			{
-				transNoteBuffer[trans_start[j]] |= (TRANSNOTE_BEGIN << (j * 4));
-				transNoteBuffer[i] |= (TRANSNOTE_END << (j * 4));
-				trans_start[j] = -1;
+				if (j < 5)
+				{
+					emphasisBuffer[emph_start[j]] |= ITALIC_BEGIN << (j * 4);
+					emphasisBuffer[i] |= ITALIC_END << (j * 4);
+				}
+				else
+				{
+					transNoteBuffer[emph_start[j]] |= TRANSNOTE_BEGIN << ((j - 5) * 4);
+					transNoteBuffer[i] |= TRANSNOTE_END << ((j - 5) * 4);
+				}
+				emph_start[j] = -1;
 			}
-			trans_bit <<= 1;
 		}
 	}
 	
@@ -3382,38 +3324,20 @@ markEmphases()
 
 	if(haveEmphasis)
 	{	
-		if(under_start >= 0)
+		for(j = 0; j < 10; j++)
 		{
-			emphasisBuffer[under_start] |= UNDER_BEGIN;
-			emphasisBuffer[srcmax] |= UNDER_END;
-		}
-		if(bold_start >= 0)
-		{
-			emphasisBuffer[bold_start] |= BOLD_BEGIN;
-			emphasisBuffer[srcmax] |= BOLD_END;
-		}
-		if(italic_start >= 0)
-		{
-			emphasisBuffer[italic_start] |= ITALIC_BEGIN;
-			emphasisBuffer[srcmax] |= ITALIC_END;
-		}
-		if(script_start >= 0)
-		{
-			emphasisBuffer[script_start] |= SCRIPT_BEGIN;
-			emphasisBuffer[srcmax] |= SCRIPT_END;
-		}
-		if(tnote_start >= 0)
-		{
-			emphasisBuffer[tnote_start] |= TNOTE_BEGIN;
-			emphasisBuffer[srcmax] |= TNOTE_END;
-		}
-		trans_bit = emph_6;
-		for(i = 0; i < 5; i++)
-		{
-			if(trans_start[i] >= 0)
+			if(emph_start[j] >= 0)
 			{
-				transNoteBuffer[trans_start[i]] |= (TRANSNOTE_BEGIN << (i * 4));
-				transNoteBuffer[srcmax] |= (TRANSNOTE_END << (i * 4));
+				if (j < 5)
+				{
+					emphasisBuffer[emph_start[j]] |= ITALIC_BEGIN << (j * 4);
+					emphasisBuffer[srcmax] |= ITALIC_END << (j * 4);
+				}
+				else
+				{
+					transNoteBuffer[emph_start[j]] |= TRANSNOTE_BEGIN << ((j - 5) * 4);
+					transNoteBuffer[srcmax] |= TRANSNOTE_END << ((j - 5) * 4);
+				}
 			}
 		}
 	}
@@ -3432,93 +3356,35 @@ markEmphases()
 	if(!haveEmphasis)
 		return;
 		
-	if(table->emphRules[emph2Rule][begWordOffset]) {
-	  resolveEmphasisWords(emphasisBuffer,
-			       UNDER_BEGIN, UNDER_END, UNDER_WORD, UNDER_SYMBOL);
-	  if (table->emphRules[emph2Rule][lenPhraseOffset])
-	    resolveEmphasisPassages(emphasisBuffer, emph2Rule,
-				    UNDER_BEGIN, UNDER_END, UNDER_WORD, UNDER_SYMBOL);
-	} else if(table->emphRules[emph2Rule][letterOffset])
-	  resolveEmphasisSymbols(emphasisBuffer,
-				 UNDER_BEGIN, UNDER_END, UNDER_SYMBOL);
-	/* from davy
-	if(table->usesEmphMode)
-		resolveEmphasisResets(emphasisBuffer,
-							UNDER_BEGIN, UNDER_END, UNDER_WORD, UNDER_SYMBOL);
-	*/
-	if(table->emphRules[emph3Rule][begWordOffset]) {
-	  resolveEmphasisWords(emphasisBuffer,
-			       BOLD_BEGIN, BOLD_END, BOLD_WORD, BOLD_SYMBOL);
-	  if (table->emphRules[emph3Rule][lenPhraseOffset])
-	    resolveEmphasisPassages(emphasisBuffer, emph3Rule,
-				    BOLD_BEGIN, BOLD_END, BOLD_WORD, BOLD_SYMBOL);
-	} else if(table->emphRules[emph3Rule][letterOffset])
-	  resolveEmphasisSymbols(emphasisBuffer,
-				 BOLD_BEGIN, BOLD_END, BOLD_SYMBOL);
-	/* from davy
-	if(table->usesEmphMode)
-		resolveEmphasisResets(emphasisBuffer,
-							BOLD_BEGIN, BOLD_END, BOLD_WORD, BOLD_SYMBOL);
-	*/
-	if(table->emphRules[emph1Rule][begWordOffset]) {
-	  resolveEmphasisWords(emphasisBuffer,
-			       ITALIC_BEGIN, ITALIC_END, ITALIC_WORD, ITALIC_SYMBOL);
-	  if (table->emphRules[emph1Rule][lenPhraseOffset])
-	    resolveEmphasisPassages(emphasisBuffer, emph1Rule,
-				    ITALIC_BEGIN, ITALIC_END, ITALIC_WORD, ITALIC_SYMBOL);
-	} else if(table->emphRules[emph1Rule][letterOffset])
-	  resolveEmphasisSymbols(emphasisBuffer,
-				 ITALIC_BEGIN, ITALIC_END, ITALIC_SYMBOL);
-	/* from davy
-	if(table->usesEmphMode)
-		resolveEmphasisResets(emphasisBuffer,
-							ITALIC_BEGIN, ITALIC_END, ITALIC_WORD, ITALIC_SYMBOL);
-	*/
-	if(table->emphRules[emph4Rule][begWordOffset]) {
-	  resolveEmphasisWords(emphasisBuffer,
-			       SCRIPT_BEGIN, SCRIPT_END, SCRIPT_WORD, SCRIPT_SYMBOL);
-	  if (table->emphRules[emph4Rule][lenPhraseOffset])
-	    resolveEmphasisPassages(emphasisBuffer, emph4Rule,
-				    SCRIPT_BEGIN, SCRIPT_END, SCRIPT_WORD, SCRIPT_SYMBOL);
-	} else if(table->emphRules[emph4Rule][letterOffset])
-	  resolveEmphasisSymbols(emphasisBuffer,
-				 SCRIPT_BEGIN, SCRIPT_END, SCRIPT_SYMBOL);
-
-//	resolveEmphasisWords(emphasisBuffer, &table->firstWordTransNote,
-//	                     TNOTE_BEGIN, TNOTE_END, TNOTE_WORD, TNOTE_SYMBOL);
-//	resolveEmphasisPassages(emphasisBuffer, &table->firstWordTransNote,
-//	                        TNOTE_BEGIN, TNOTE_END, TNOTE_WORD, TNOTE_SYMBOL);
-
-	for(i = 0; i < 5; i++)
+	for (j = 0; j < 5; j++)
 	{
-		switch(i)
-		{
-		case 0:  emphRule = emph6Rule; break;
-		case 1:  emphRule = emph7Rule; break;
-		case 2:  emphRule = emph8Rule; break;
-		case 3:  emphRule = emph9Rule; break;
-		case 4:  emphRule = emph10Rule; break;
-		}
-		if (table->emphRules[emphRule][begWordOffset]) {
-		  resolveEmphasisWords(
-				       transNoteBuffer,
-				       TRANSNOTE_BEGIN << (i * 4),
-				       TRANSNOTE_END << (i * 4),
-				       TRANSNOTE_WORD << (i * 4),
-				       TRANSNOTE_SYMBOL << (i * 4));
-		  resolveEmphasisPassages(
-					  transNoteBuffer,
-					  emphRule,
-					  TRANSNOTE_BEGIN << (i * 4),
-					  TRANSNOTE_END << (i * 4),
-					  TRANSNOTE_WORD << (i * 4),
-					  TRANSNOTE_SYMBOL << (i * 4));
-		} else if (table->emphRules[emphRule][letterOffset])
-		  resolveEmphasisSymbols(transNoteBuffer,
-					 TRANSNOTE_BEGIN << (i * 4),
-					 TRANSNOTE_END << (i * 4),
-					 TRANSNOTE_SYMBOL << (i * 4));
-		
+		if(table->emphRules[j+1][begWordOffset]) {
+			resolveEmphasisWords(emphasisBuffer,
+				ITALIC_BEGIN << (j * 4), ITALIC_END << (j * 4),
+				ITALIC_WORD << (j * 4), ITALIC_SYMBOL << (j * 4));
+			if (table->emphRules[j+1][lenPhraseOffset])
+				resolveEmphasisPassages(emphasisBuffer, j + 1,
+					ITALIC_BEGIN << (j * 4), ITALIC_END << (j * 4),
+					ITALIC_WORD << (j * 4), ITALIC_SYMBOL << (j * 4));
+		} else if(table->emphRules[j+1][letterOffset])
+			resolveEmphasisSymbols(emphasisBuffer,
+				ITALIC_BEGIN << (j * 4), ITALIC_END << (j * 4),
+				ITALIC_SYMBOL << (j * 4));
+	}
+	for (j = 0; j < 5; j++)
+	{
+		if(table->emphRules[j+6][begWordOffset]) {
+			resolveEmphasisWords(transNoteBuffer,
+				TRANSNOTE_BEGIN << (j * 4), TRANSNOTE_END << (j * 4),
+				TRANSNOTE_WORD << (j * 4), TRANSNOTE_SYMBOL << (j * 4));
+			if (table->emphRules[j+6][lenPhraseOffset])
+				resolveEmphasisPassages(transNoteBuffer, j + 6,
+					TRANSNOTE_BEGIN << (j * 4), TRANSNOTE_END << (j * 4),
+					TRANSNOTE_WORD << (j * 4), TRANSNOTE_SYMBOL << (j * 4));
+		} else if(table->emphRules[j+6][letterOffset])
+			resolveEmphasisSymbols(transNoteBuffer,
+				TRANSNOTE_BEGIN << (j * 4), TRANSNOTE_END << (j * 4),
+				TRANSNOTE_SYMBOL << (j * 4));
 	}
 }
 
