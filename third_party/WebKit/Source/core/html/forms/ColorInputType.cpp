@@ -167,7 +167,7 @@ void ColorInputType::setValue(const String& value, bool valueChanged, TextFieldE
 
 void ColorInputType::handleDOMActivateEvent(Event* event)
 {
-    if (element().isDisabledFormControl() || !element().layoutObject())
+    if (element().isDisabledFormControl())
         return;
 
     if (!UserGestureIndicator::utilizeUserGesture())
