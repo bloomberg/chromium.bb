@@ -116,7 +116,7 @@ void ScheduledAction::execute(LocalFrame* frame)
         DVLOG(1) << "ScheduledAction::execute " << this << ": have function";
         Vector<v8::Local<v8::Value>> info;
         createLocalHandlesForArgs(&info);
-        frame->script().callFunction(m_function.newLocal(m_scriptState->isolate()), m_scriptState->context()->Global(), info.size(), info.data());
+        V8ScriptRunner::callFunction(m_function.newLocal(m_scriptState->isolate()), frame->document(), m_scriptState->context()->Global(), info.size(), info.data(), m_scriptState->isolate());
     } else {
         DVLOG(1) << "ScheduledAction::execute " << this << ": executing from source";
         frame->script().executeScriptAndReturnValue(m_scriptState->context(), ScriptSourceCode(m_code));

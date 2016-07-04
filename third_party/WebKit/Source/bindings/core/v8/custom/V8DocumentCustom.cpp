@@ -81,7 +81,7 @@ void V8Document::openMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& inf
         for (int i = 0; i < info.Length(); i++)
             params[i] = info[i];
 
-        v8SetReturnValue(info, frame->script().callFunction(v8::Local<v8::Function>::Cast(function), global, info.Length(), params.get()));
+        v8SetReturnValue(info, V8ScriptRunner::callFunction(v8::Local<v8::Function>::Cast(function), frame->document(), global, info.Length(), params.get(), info.GetIsolate()));
         return;
     }
 

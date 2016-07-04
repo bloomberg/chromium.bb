@@ -97,7 +97,7 @@ v8::Local<v8::Value> V8LazyEventListener::callListenerFunction(ScriptState* scri
 
     v8::Local<v8::Value> parameters[1] = { jsEvent };
     v8::Local<v8::Value> result;
-    if (!frame->script().callFunction(handlerFunction, receiver, WTF_ARRAY_LENGTH(parameters), parameters).ToLocal(&result))
+    if (!V8ScriptRunner::callFunction(handlerFunction, frame->document(), receiver, WTF_ARRAY_LENGTH(parameters), parameters, scriptState->isolate()).ToLocal(&result))
         return v8::Local<v8::Value>();
     return result;
 }

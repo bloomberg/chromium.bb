@@ -832,7 +832,7 @@ v8::Local<v8::Value> WebLocalFrameImpl::callFunctionEvenIfScriptDisabled(v8::Loc
 {
     DCHECK(frame());
     v8::Local<v8::Value> result;
-    if (!frame()->script().callFunction(function, receiver, argc, static_cast<v8::Local<v8::Value>*>(argv)).ToLocal(&result))
+    if (!V8ScriptRunner::callFunction(function, frame()->document(), receiver, argc, static_cast<v8::Local<v8::Value>*>(argv), toIsolate(frame())).ToLocal(&result))
         return v8::Local<v8::Value>();
     return result;
 }
