@@ -796,37 +796,38 @@ void SpellChecker::respondToChangedSelection(const VisibleSelection& oldSelectio
     if (!isSpellCheckingEnabledFor(oldSelection))
         return;
 
-    bool closeTyping = options & FrameSelection::CloseTyping;
-    bool isContinuousSpellCheckingEnabled = this->isContinuousSpellCheckingEnabled();
-    bool isContinuousGrammarCheckingEnabled = isContinuousSpellCheckingEnabled;
-    if (isContinuousSpellCheckingEnabled && closeTyping && shouldCheckOldSelection(oldSelection)) {
-        VisibleSelection newAdjacentWords;
-        bool caretBrowsing = frame().settings() && frame().settings()->caretBrowsingEnabled();
-        const VisibleSelection newSelection = frame().selection().selection();
-        if (isSelectionInTextFormControl(newSelection)) {
-            Position newStart = newSelection.start();
-            newAdjacentWords.setWithoutValidation(HTMLTextFormControlElement::startOfWord(newStart), HTMLTextFormControlElement::endOfWord(newStart));
-        } else {
-            frame().document()->updateStyleAndLayoutIgnorePendingStylesheets();
-            if (newSelection.isContentEditable() || caretBrowsing) {
-                VisiblePosition newStart(newSelection.visibleStart());
-                newAdjacentWords = VisibleSelection(startOfWord(newStart, LeftWordIfOnBoundary), endOfWord(newStart, RightWordIfOnBoundary));
-            }
-        }
-
-        // When typing we check spelling elsewhere, so don't redo it here.
-        // If this is a change in selection resulting from a delete operation,
-        // oldSelection may no longer be in the document.
-        // FIXME(http://crbug.com/382809): if oldSelection is on a textarea
-        // element, we cause synchronous layout.
-        spellCheckOldSelection(oldSelection, newAdjacentWords);
+    // When continuous spell checking is off, existing markers disappear after the selection changes.
+    if (!isContinuousSpellCheckingEnabled()) {
+        frame().document()->markers().removeMarkers(DocumentMarker::Spelling);
+        frame().document()->markers().removeMarkers(DocumentMarker::Grammar);
+        return;
     }
 
-    // When continuous spell checking is off, existing markers disappear after the selection changes.
-    if (!isContinuousSpellCheckingEnabled)
-        frame().document()->markers().removeMarkers(DocumentMarker::Spelling);
-    if (!isContinuousGrammarCheckingEnabled)
-        frame().document()->markers().removeMarkers(DocumentMarker::Grammar);
+    if (!(options & FrameSelection::CloseTyping))
+        return;
+    if (!shouldCheckOldSelection(oldSelection))
+        return;
+
+    VisibleSelection newAdjacentWords;
+    const VisibleSelection newSelection = frame().selection().selection();
+    if (isSelectionInTextFormControl(newSelection)) {
+        const Position newStart = newSelection.start();
+        newAdjacentWords.setWithoutValidation(HTMLTextFormControlElement::startOfWord(newStart), HTMLTextFormControlElement::endOfWord(newStart));
+    } else {
+        frame().document()->updateStyleAndLayoutIgnorePendingStylesheets();
+        const bool caretBrowsing = frame().settings() && frame().settings()->caretBrowsingEnabled();
+        if (newSelection.isContentEditable() || caretBrowsing) {
+            const VisiblePosition newStart(newSelection.visibleStart());
+            newAdjacentWords = VisibleSelection(startOfWord(newStart, LeftWordIfOnBoundary), endOfWord(newStart, RightWordIfOnBoundary));
+        }
+    }
+
+    // When typing we check spelling elsewhere, so don't redo it here.
+    // If this is a change in selection resulting from a delete operation,
+    // oldSelection may no longer be in the document.
+    // FIXME(http://crbug.com/382809): if oldSelection is on a textarea
+    // element, we cause synchronous layout.
+    spellCheckOldSelection(oldSelection, newAdjacentWords);
 }
 
 void SpellChecker::removeSpellingMarkers()
