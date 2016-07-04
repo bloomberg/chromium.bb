@@ -313,7 +313,6 @@ def main(argv):
   direct_library_deps = deps.Direct('java_library')
   all_library_deps = deps.All('java_library')
 
-  direct_resources_deps = deps.Direct('android_resources')
   all_resources_deps = deps.All('android_resources')
   # Resources should be ordered with the highest-level dependency first so that
   # overrides are done correctly.
@@ -415,40 +414,32 @@ def main(argv):
       deps_info['r_text'] = options.r_text
     if options.is_locale_resource:
       deps_info['is_locale_resource'] = True
-    # Record resources_dirs of this target so dependendent libraries can pick up
-    # them and pass to Lint.
-    lint_info = deps_info['lint'] = {}
-    resource_dirs = []
-    lint_info['resources_zips'] = []
-    for gyp_list in options.resource_dirs:
-      resource_dirs += build_utils.ParseGypList(gyp_list)
-    if resource_dirs:
-      lint_info['resources_dirs'] = resource_dirs
-    # There things become ugly. Resource targets may have resource dependencies
-    # as well. Some of these dependencies are resources from other libraries
-    # so we should not lint them here (they should be linted within their
-    # libraries). But others are just generated resources that also contribute
-    # to this library and we should check them. These generated resources has no
-    # package_name so we skip all direct deps that has package names.
-    for c in direct_resources_deps:
-      if 'package_name' not in c:
-        lint_info['resources_zips'].append(c['resources_zip'])
+
+    deps_info['resources_dirs'] = []
+    if options.resource_dirs:
+      for gyp_list in options.resource_dirs:
+        deps_info['resources_dirs'].extend(build_utils.ParseGypList(gyp_list))
 
   if options.supports_android and options.type in ('android_apk',
                                                    'java_library'):
-    # GN's project model doesn't exactly match traditional Android project
-    # model: GN splits resources into separate targets, while in Android
-    # resources are part of the library/APK. Android Lint expects an Android
-    # project - with java sources and resources combined. So we assume that
-    # direct resource dependencies of the library/APK are the resources of this
-    # library in Android project sense.
-    lint_info = config['lint'] = {}
-    lint_info['resources_dirs'] = []
-    lint_info['resources_zips'] = []
-    for c in direct_resources_deps:
-      lint_info['resources_dirs'] += c['lint'].get('resources_dirs', [])
-      lint_info['resources_zips'] += c['lint'].get('resources_zips', [])
+    # Lint all resources that are not already linted by a dependent library.
+    owned_resource_dirs = set()
+    owned_resource_zips = set()
+    for c in all_resources_deps:
+      # Always use resources_dirs in favour of resources_zips so that lint error
+      # messages have paths that are closer to reality (and to avoid needing to
+      # extract during lint).
+      if c['resources_dirs']:
+        owned_resource_dirs.update(c['resources_dirs'])
+      else:
+        owned_resource_zips.add(c['resources_zip'])
 
+    for c in all_library_deps:
+      if c['supports_android']:
+        owned_resource_dirs.difference_update(c['owned_resources_dirs'])
+        owned_resource_zips.difference_update(c['owned_resources_zips'])
+    deps_info['owned_resources_dirs'] = list(owned_resource_dirs)
+    deps_info['owned_resources_zips'] = list(owned_resource_zips)
 
   if options.type in ('android_resources','android_apk', 'resource_rewriter'):
     config['resources'] = {}

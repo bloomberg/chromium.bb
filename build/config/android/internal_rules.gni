@@ -621,8 +621,8 @@ if (enable_java_templates) {
           rebase_path(invoker.jar_path, root_build_dir),
           "--java-files=$_rebased_java_files",
           "--classpath=@FileArg($_rebased_build_config:javac:interface_classpath)",
-          "--resource-sources=@FileArg($_rebased_build_config:lint:resources_dirs)",
-          "--resource-sources=@FileArg($_rebased_build_config:lint:resources_zips)",
+          "--resource-sources=@FileArg($_rebased_build_config:deps_info:owned_resources_dirs)",
+          "--resource-sources=@FileArg($_rebased_build_config:deps_info:owned_resources_zips)",
         ]
       }
     }

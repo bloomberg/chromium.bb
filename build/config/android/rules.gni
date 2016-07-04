@@ -752,8 +752,14 @@ if (enable_java_templates) {
                              [
                                "android_manifest",
                                "custom_package",
-                               "resource_dirs",
                              ])
+      resource_dirs = []
+      if (defined(invoker.resource_dirs)) {
+        resource_dirs += invoker.resource_dirs
+      }
+      if (defined(invoker.generated_resource_dirs)) {
+        resource_dirs += invoker.generated_resource_dirs
+      }
 
       if (defined(invoker.deps)) {
         possible_config_deps = invoker.deps
