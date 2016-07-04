@@ -9,7 +9,6 @@ from core import perf_benchmark
 from telemetry import benchmark
 from telemetry.timeline import chrome_trace_category_filter
 from telemetry.web_perf import timeline_based_measurement
-from telemetry.web_perf.metrics import memory_timeline
 
 import page_sets
 
@@ -27,9 +26,6 @@ class _MemoryInfra(perf_benchmark.PerfBenchmark):
   is part of chrome tracing, and extracts it using timeline-based measurements.
   """
 
-  # Subclasses can override this to use TBMv2 instead of TBMv1.
-  TBM_VERSION = 1
-
   def SetExtraBrowserOptions(self, options):
     options.AppendExtraBrowserArgs([
         # TODO(perezju): Temporary workaround to disable periodic memory dumps.
@@ -45,18 +41,7 @@ class _MemoryInfra(perf_benchmark.PerfBenchmark):
     tbm_options = timeline_based_measurement.Options(
         overhead_level=trace_memory)
     tbm_options.config.enable_android_graphics_memtrack = True
-    if self.TBM_VERSION == 1:
-      # TBMv1 (see telemetry/telemetry/web_perf/metrics/memory_timeline.py
-      # in third_party/catapult).
-      tbm_options.SetLegacyTimelineBasedMetrics((
-          memory_timeline.MemoryTimelineMetric(),
-      ))
-    elif self.TBM_VERSION == 2:
-      # TBMv2 (see tracing/tracing/metrics/system_health/memory_metric.html
-      # in third_party/catapult).
-      tbm_options.SetTimelineBasedMetric('memoryMetric')
-    else:
-      raise Exception('Unrecognized TBM version: %s' % self.TBM_VERSION)
+    tbm_options.SetTimelineBasedMetric('memoryMetric')
     return tbm_options
 
 
@@ -75,32 +60,6 @@ class MemoryBenchmarkTop10Mobile(_MemoryInfra):
   @classmethod
   def Name(cls):
     return 'memory.top_10_mobile'
-
-  @classmethod
-  def ShouldDisable(cls, possible_browser):
-    # Note: benchmark cannot be disabled with a decorator since, otherwise,
-    # subclasses would also get disabled.
-    return True
-
-
-# TODO(bashi): Workaround for http://crbug.com/532075.
-# @benchmark.Enabled('android') shouldn't be needed.
-@benchmark.Enabled('android')
-class TBMv2MemoryBenchmarkTop10Mobile(MemoryBenchmarkTop10Mobile):
-  """Measure foreground/background memory on top 10 mobile page set (TBMv2).
-
-  This is a temporary benchmark to compare the new TBMv2 memory metric
-  (memory_metric.html) with the existing TBMv1 one (memory_timeline.py). Once
-  all issues associated with the TBMv2 metric are resolved, all memory
-  benchmarks (including the ones in this file) will switch to use it instead
-  of the TBMv1 metric and this temporary benchmark will be removed. See
-  crbug.com/60361.
-  """
-  TBM_VERSION = 2
-
-  @classmethod
-  def Name(cls):
-    return 'memory.top_10_mobile_tbmv2'
 
   @classmethod
   def ShouldDisable(cls, possible_browser):
@@ -124,7 +83,6 @@ class DualBrowserBenchmark(_MemoryInfra):
   on a webview-based browser (a stand in for the Search app), and loading
   pages on a select browser.
   """
-  TBM_VERSION = 2
   page_set = page_sets.DualBrowserStorySet
   options = {'pageset_repeat': 5}
 
@@ -147,7 +105,6 @@ class LongRunningDualBrowserBenchmark(_MemoryInfra):
   Same as memory.dual_browser_test, but the test is run for 60 iterations
   and the browser is *not* restarted between page set repeats.
   """
-  TBM_VERSION = 2
   page_set = page_sets.DualBrowserStorySet
   options = {'pageset_repeat': 60}
 
@@ -173,8 +130,6 @@ class RendererMemoryBlinkMemoryMobile(_MemoryInfra):
   """Timeline based benchmark for measuring memory consumption on mobile
   sites on which blink's memory consumption is relatively high.
   """
-  TBM_VERSION = 2
-
   page_set = page_sets.BlinkMemoryMobilePageSet
 
   def SetExtraBrowserOptions(self, options):
