@@ -56,13 +56,7 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['amd'], bug=617290)
 
     # Windows only.
-    self.Fail('deqp/functional/gles3/texturespecification/' +
-        'basic_copyteximage2d.html',
-        ['win'], bug=483282)
-
     self.Fail('deqp/functional/gles3/transformfeedback/*.html',
-        ['win'], bug=483282)
-    self.Fail('deqp/functional/gles3/negativetextureapi.html',
         ['win'], bug=483282)
 
     self.Fail('deqp/functional/gles3/shaderloop_for.html',
@@ -146,18 +140,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         'texelfetchoffset.html',
         ['win', ('amd', 0x6779)], bug=483282)
     self.Fail('deqp/functional/gles3/shadertexturefunction/texturesize.html',
-        ['win', ('amd', 0x6779)], bug=483282)
-    self.Fail('deqp/functional/gles3/shadercommonfunction.html',
-        ['win', ('amd', 0x6779)], bug=621201)
-    self.Fail('deqp/functional/gles3/fragmentoutput/array.int.html',
-        ['win', ('amd', 0x6779)], bug=483282)
-    self.Fail('deqp/functional/gles3/fragmentoutput/array.uint.html',
-        ['win', ('amd', 0x6779)], bug=483282)
-    self.Fail('deqp/functional/gles3/fragmentoutput/random_00.html',
-        ['win', ('amd', 0x6779)], bug=483282)
-    self.Fail('deqp/functional/gles3/fragmentoutput/random_01.html',
-        ['win', ('amd', 0x6779)], bug=483282)
-    self.Fail('deqp/functional/gles3/fragmentoutput/random_02.html',
         ['win', ('amd', 0x6779)], bug=483282)
 
     self.Fail('deqp/functional/gles3/framebufferblit/rect_02.html',
