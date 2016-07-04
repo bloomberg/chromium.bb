@@ -25,6 +25,7 @@ import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.Log;
 import org.chromium.base.StreamUtil;
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.blink_public.platform.WebDisplayMode;
@@ -62,7 +63,7 @@ public class WebappActivity extends FullScreenActivity {
 
     private final WebappDirectoryManager mDirectoryManager;
 
-    private WebappInfo mWebappInfo;
+    protected WebappInfo mWebappInfo;
 
     private boolean mOldWebappCleanupStarted;
 
@@ -244,12 +245,14 @@ public class WebappActivity extends FullScreenActivity {
         return mWebappInfo;
     }
 
-    private void initializeWebappData() {
-        final int backgroundColor = ColorUtils.getOpaqueColor(mWebappInfo.backgroundColor(
+    protected int getBackgroundColor() {
+        return ColorUtils.getOpaqueColor(mWebappInfo.backgroundColor(
                 ApiCompatibilityUtils.getColor(getResources(), R.color.webapp_default_bg)));
+    }
 
+    private void initializeWebappData() {
         mSplashScreen = new FrameLayout(this);
-        mSplashScreen.setBackgroundColor(backgroundColor);
+        mSplashScreen.setBackgroundColor(getBackgroundColor());
 
         ViewGroup contentView = (ViewGroup) findViewById(android.R.id.content);
         contentView.addView(mSplashScreen);
@@ -258,48 +261,57 @@ public class WebappActivity extends FullScreenActivity {
         mWebappUma.recordSplashscreenBackgroundColor(mWebappInfo.hasValidBackgroundColor()
                 ? WebappUma.SPLASHSCREEN_COLOR_STATUS_CUSTOM
                 : WebappUma.SPLASHSCREEN_COLOR_STATUS_DEFAULT);
-        mWebappUma.recordSplashscreenThemeColor(mWebappInfo.hasValidThemeColor()
-                ? WebappUma.SPLASHSCREEN_COLOR_STATUS_CUSTOM
-                : WebappUma.SPLASHSCREEN_COLOR_STATUS_DEFAULT);
 
-        initializeSplashScreenWidgets(backgroundColor);
-    }
-
-    protected void initializeSplashScreenWidgets(final int backgroundColor) {
-        final Intent intent = getIntent();
         WebappRegistry.getWebappDataStorage(this, mWebappInfo.id(),
                 new WebappRegistry.FetchWebappDataStorageCallback() {
                     @Override
                     public void onWebappDataStorageRetrieved(WebappDataStorage storage) {
-                        if (storage == null) return;
-
-                        // The information in the WebappDataStorage may have been purged by the
-                        // user clearing their history or not launching the web app recently.
-                        // Restore the data if necessary from the intent.
-                        storage.updateFromShortcutIntent(intent);
-
-                        // A recent last used time is the indicator that the web app is still
-                        // present on the home screen, and enables sources such as notifications to
-                        // launch web apps. Thus, we do not update the last used time when the web
-                        // app is not directly launched from the home screen, as this interferes
-                        // with the heuristic.
-                        if (mWebappInfo.isLaunchedFromHomescreen()) {
-                            storage.updateLastUsedTime();
-                        }
-
-                        // Retrieve the splash image if it exists.
-                        storage.getSplashScreenImage(new WebappDataStorage.FetchCallback<Bitmap>() {
-                            @Override
-                            public void onDataRetrieved(Bitmap splashImage) {
-                                initializeSplashScreenWidgets(backgroundColor, splashImage);
-                            }
-                        });
+                        onDataStorageFetched(storage);
                     }
                 }
         );
     }
 
-    protected void initializeSplashScreenWidgets(int backgroundColor, Bitmap splashImage) {
+    protected void recordSplashScreenThemeColorUma() {
+        mWebappUma.recordSplashscreenThemeColor(mWebappInfo.hasValidThemeColor()
+                ? WebappUma.SPLASHSCREEN_COLOR_STATUS_CUSTOM
+                : WebappUma.SPLASHSCREEN_COLOR_STATUS_DEFAULT);
+    }
+
+    protected void onDataStorageFetched(WebappDataStorage storage) {
+        recordSplashScreenThemeColorUma();
+        if (storage == null) return;
+
+        // The information in the WebappDataStorage may have been purged by the
+        // user clearing their history or not launching the web app recently.
+        // Restore the data if necessary from the intent.
+        storage.updateFromShortcutIntent(getIntent());
+
+        // A recent last used time is the indicator that the web app is still
+        // present on the home screen, and enables sources such as notifications to
+        // launch web apps. Thus, we do not update the last used time when the web
+        // app is not directly launched from the home screen, as this interferes
+        // with the heuristic.
+        if (mWebappInfo.isLaunchedFromHomescreen()) {
+            storage.updateLastUsedTime();
+        }
+
+        retrieveSplashScreenImage(storage);
+    }
+
+    protected void retrieveSplashScreenImage(WebappDataStorage storage) {
+        assert !ThreadUtils.runningOnUiThread();
+
+        // Retrieve the splash image if it exists.
+        storage.getSplashScreenImage(new WebappDataStorage.FetchCallback<Bitmap>() {
+            @Override
+            public void onDataRetrieved(Bitmap splashImage) {
+                initializeSplashScreenWidgets(splashImage);
+            }
+        });
+    }
+
+    protected void initializeSplashScreenWidgets(Bitmap splashImage) {
         Bitmap displayIcon = splashImage == null ? mWebappInfo.icon() : splashImage;
         int minimiumSizeThreshold = getResources().getDimensionPixelSize(
                 R.dimen.webapp_splash_image_size_minimum);
@@ -348,7 +360,7 @@ public class WebappActivity extends FullScreenActivity {
         appNameView.setText(mWebappInfo.name());
         if (splashIconView != null) splashIconView.setImageBitmap(displayIcon);
 
-        if (ColorUtils.shouldUseLightForegroundOnBackground(backgroundColor)) {
+        if (ColorUtils.shouldUseLightForegroundOnBackground(getBackgroundColor())) {
             appNameView.setTextColor(ApiCompatibilityUtils.getColor(getResources(),
                     R.color.webapp_splash_title_light));
         }

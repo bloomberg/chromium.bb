@@ -351,6 +351,104 @@ public class WebappRegistryTest {
     }
 
     @Test
+    @Feature({"WebApk"})
+    public void testCleanupRemovesUninstalledWebApks() throws Exception {
+        String webappId1 = "webapk:uninstalledWebApk1";
+        String webApkPackage1 = "uninstalledWebApk1";
+        String webappId2 = "webapk:uninstalledWebApk2";
+        String webApkPackage2 = "uninstalledWebApk2";
+
+        FetchStorageCallback storageCallback1 = new FetchStorageCallback(
+                createWebApkIntent(webappId1, webApkPackage1));
+        WebappRegistry.registerWebapp(Robolectric.application, webappId1, storageCallback1);
+        BackgroundShadowAsyncTask.runBackgroundTasks();
+        Robolectric.runUiThreadTasks();
+        assertTrue(storageCallback1.getCallbackCalled());
+
+        FetchStorageCallback storageCallback2 = new FetchStorageCallback(
+                createWebApkIntent(webappId1, webApkPackage2));
+        WebappRegistry.registerWebapp(Robolectric.application, webappId2, storageCallback2);
+        BackgroundShadowAsyncTask.runBackgroundTasks();
+        Robolectric.runUiThreadTasks();
+        assertTrue(storageCallback2.getCallbackCalled());
+
+        // Verify that both WebAPKs are registered.
+        Set<String> actual = mSharedPreferences.getStringSet(
+                WebappRegistry.KEY_WEBAPP_SET, Collections.<String>emptySet());
+        assertEquals(2, actual.size());
+        assertTrue(actual.contains(webappId1));
+        assertTrue(actual.contains(webappId2));
+
+        // Set the current time such that the task runs.
+        long currentTime = System.currentTimeMillis() + WebappRegistry.FULL_CLEANUP_DURATION;
+        // Because the time is just inside the window, there should be a cleanup of
+        // uninstalled WebAPKs and the last cleaned up time should be set to the
+        // current time.
+        WebappRegistry.unregisterOldWebapps(Robolectric.application, currentTime);
+        BackgroundShadowAsyncTask.runBackgroundTasks();
+        Robolectric.runUiThreadTasks();
+
+        actual = mSharedPreferences.getStringSet(
+                WebappRegistry.KEY_WEBAPP_SET, Collections.<String>emptySet());
+        assertTrue(actual.isEmpty());
+
+        long lastCleanup = mSharedPreferences.getLong(
+                WebappRegistry.KEY_LAST_CLEANUP, -1);
+        assertEquals(currentTime, lastCleanup);
+    }
+
+    @Test
+    @Feature({"WebApk"})
+    public void testCleanupDoesNotRemoveInstalledWebApks() throws Exception {
+        String webappId = "webapk:installedWebApk";
+        String webApkPackage = "installedWebApk";
+        String uninstalledWebappId = "webapk:uninstalledWebApk";
+        String uninstalledWebApkPackage = "uninstalledWebApk";
+
+        FetchStorageCallback storageCallback = new FetchStorageCallback(
+                createWebApkIntent(webappId, webApkPackage));
+        WebappRegistry.registerWebapp(Robolectric.application, webappId, storageCallback);
+        BackgroundShadowAsyncTask.runBackgroundTasks();
+        Robolectric.runUiThreadTasks();
+        assertTrue(storageCallback.getCallbackCalled());
+
+        FetchStorageCallback storageCallback2 = new FetchStorageCallback(
+                createWebApkIntent(uninstalledWebappId, uninstalledWebApkPackage));
+        WebappRegistry.registerWebapp(Robolectric.application, uninstalledWebappId,
+                storageCallback2);
+        BackgroundShadowAsyncTask.runBackgroundTasks();
+        Robolectric.runUiThreadTasks();
+        assertTrue(storageCallback2.getCallbackCalled());
+
+        // Verify that both WebAPKs are registered.
+        Set<String> actual = mSharedPreferences.getStringSet(
+                WebappRegistry.KEY_WEBAPP_SET, Collections.<String>emptySet());
+        assertEquals(2, actual.size());
+        assertTrue(actual.contains(webappId));
+        assertTrue(actual.contains(uninstalledWebappId));
+
+        Robolectric.packageManager.addPackage(webApkPackage);
+
+        // Set the current time such that the task runs.
+        long currentTime = System.currentTimeMillis() + WebappRegistry.FULL_CLEANUP_DURATION;
+        // Because the time is just inside the window, there should be a cleanup of
+        // uninstalled WebAPKs and the last cleaned up time should be set to the
+        // current time.
+        WebappRegistry.unregisterOldWebapps(Robolectric.application, currentTime);
+        BackgroundShadowAsyncTask.runBackgroundTasks();
+        Robolectric.runUiThreadTasks();
+
+        actual = mSharedPreferences.getStringSet(
+                WebappRegistry.KEY_WEBAPP_SET, Collections.<String>emptySet());
+        assertEquals(1, actual.size());
+        assertTrue(actual.contains(webappId));
+
+        long lastCleanup = mSharedPreferences.getLong(
+                WebappRegistry.KEY_LAST_CLEANUP, -1);
+        assertEquals(currentTime, lastCleanup);
+    }
+
+    @Test
     @Feature({"Webapp"})
     public void testClearWebappHistoryRunsCallback() throws Exception {
         CallbackRunner callback = new CallbackRunner();
@@ -605,5 +703,13 @@ public class WebappRegistryTest {
         return ShortcutHelper.createWebappShortcutIntent("id", "action", url,
                 ShortcutHelper.getScopeFromUrl(url), "name", "shortName", null,
                 ShortcutHelper.WEBAPP_SHORTCUT_VERSION, WebDisplayMode.Standalone, 0, 0, 0, false);
+    }
+
+    private Intent createWebApkIntent(String webappId, String webApkPackage) {
+        Intent intent = new Intent();
+        intent.putExtra(ShortcutHelper.EXTRA_ID, webappId)
+              .putExtra(ShortcutHelper.EXTRA_URL, "https://foo.com")
+              .putExtra(ShortcutHelper.EXTRA_WEBAPK_PACKAGE_NAME, webApkPackage);
+        return intent;
     }
 }
