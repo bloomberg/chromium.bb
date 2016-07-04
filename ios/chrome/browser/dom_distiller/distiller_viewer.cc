@@ -13,24 +13,20 @@
 #include "components/dom_distiller/core/proto/distilled_article.pb.h"
 #include "components/dom_distiller/core/task_tracker.h"
 #include "components/dom_distiller/core/viewer.h"
-#include "ios/chrome/browser/browser_state/chrome_browser_state.h"
-#include "ios/chrome/browser/dom_distiller/dom_distiller_service_factory.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace dom_distiller {
 
-DistillerViewer::DistillerViewer(ios::ChromeBrowserState* browser_state,
-                                 const GURL& url,
-                                 const DistillationFinishedCallback& callback)
-    : DomDistillerRequestViewBase(
-          new DistilledPagePrefs(browser_state->GetPrefs())),
+DistillerViewer::DistillerViewer(
+    dom_distiller::DomDistillerService* distillerService,
+    PrefService* prefs,
+    const GURL& url,
+    const DistillationFinishedCallback& callback)
+    : DomDistillerRequestViewBase(new DistilledPagePrefs(prefs)),
       url_(url),
       callback_(callback) {
-  DCHECK(browser_state);
+  DCHECK(distillerService);
   DCHECK(url.is_valid());
-  dom_distiller::DomDistillerService* distillerService =
-      dom_distiller::DomDistillerServiceFactory::GetForBrowserState(
-          browser_state);
 
   std::unique_ptr<ViewerHandle> viewer_handle = distillerService->ViewUrl(
       this, distillerService->CreateDefaultDistillerPage(gfx::Size()), url);
@@ -45,6 +41,12 @@ void DistillerViewer::OnArticleReady(
     const dom_distiller::DistilledArticleProto* article_proto) {
   DomDistillerRequestViewBase::OnArticleReady(article_proto);
 
+  std::vector<ImageInfo> images;
+  for (int i = 0; i < article_proto->pages(0).image_size(); i++) {
+    auto image = article_proto->pages(0).image(i);
+    images.push_back({GURL(image.url()), image.data()});
+  }
+
   const std::string html = viewer::GetUnsafeArticleTemplateHtml(
       url_.spec(), distilled_page_prefs_->GetTheme(),
       distilled_page_prefs_->GetFontFamily());
@@ -52,7 +54,7 @@ void DistillerViewer::OnArticleReady(
   std::string html_and_script(html);
   html_and_script +=
       "<script> distiller_on_ios = true; " + js_buffer_ + "</script>";
-  callback_.Run(url_, html_and_script);
+  callback_.Run(url_, html_and_script, images);
 }
 
 void DistillerViewer::SendJavaScript(const std::string& buffer) {

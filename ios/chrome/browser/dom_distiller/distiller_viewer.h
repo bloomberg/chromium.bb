@@ -14,10 +14,6 @@
 
 class GURL;
 
-namespace ios {
-class ChromeBrowserState;
-}
-
 namespace dom_distiller {
 
 class DistilledPagePrefs;
@@ -27,10 +23,19 @@ class DistilledPagePrefs;
 // finished.
 class DistillerViewer : public DomDistillerRequestViewBase {
  public:
-  typedef base::Callback<void(const GURL&, const std::string&)>
+  typedef struct {
+    // The url of the image.
+    GURL url;
+    // The image data as a string.
+    std::string data;
+  } ImageInfo;
+  typedef base::Callback<void(const GURL&,
+                              const std::string&,
+                              const std::vector<ImageInfo>& images)>
       DistillationFinishedCallback;
 
-  DistillerViewer(ios::ChromeBrowserState* browser_state,
+  DistillerViewer(dom_distiller::DomDistillerService* distillerService,
+                  PrefService* prefs,
                   const GURL& url,
                   const DistillationFinishedCallback& callback);
   ~DistillerViewer() override;
