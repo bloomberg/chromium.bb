@@ -96,16 +96,25 @@ void StyleInvalidator::scheduleSiblingInvalidationsAsDescendants(const Invalidat
 
     PendingInvalidations& pendingInvalidations = ensurePendingInvalidations(schedulingParent);
 
+    schedulingParent.setNeedsStyleInvalidation();
+
     for (auto& invalidationSet : invalidationLists.siblings) {
+        if (invalidationSet->wholeSubtreeInvalid()) {
+            schedulingParent.setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::StyleInvalidator));
+            return;
+        }
         if (invalidationSet->invalidatesSelf() && !pendingInvalidations.descendants().contains(invalidationSet))
             pendingInvalidations.descendants().append(invalidationSet);
 
         if (DescendantInvalidationSet* descendants = toSiblingInvalidationSet(*invalidationSet).siblingDescendants()) {
+            if (descendants->wholeSubtreeInvalid()) {
+                schedulingParent.setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::StyleInvalidator));
+                return;
+            }
             if (!pendingInvalidations.descendants().contains(descendants))
                 pendingInvalidations.descendants().append(descendants);
         }
     }
-    schedulingParent.setNeedsStyleInvalidation();
 }
 
 void StyleInvalidator::clearInvalidation(ContainerNode& node)
