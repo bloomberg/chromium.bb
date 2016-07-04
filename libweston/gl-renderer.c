@@ -2749,10 +2749,8 @@ gl_renderer_setup_egl_extensions(struct weston_compositor *ec)
 		weston_log("warning: EGL_EXT_swap_buffers_with_damage not "
 			   "supported. Performance could be affected.\n");
 
-#ifdef EGL_MESA_configless_context
 	if (check_extension(extensions, "EGL_MESA_configless_context"))
 		gr->has_configless_context = 1;
-#endif
 
 	if (check_extension(extensions, "EGL_KHR_surfaceless_context"))
 		gr->has_surfaceless_context = 1;
@@ -3114,10 +3112,8 @@ gl_renderer_setup(struct weston_compositor *ec, EGLSurface egl_surface)
 
 	context_config = gr->egl_config;
 
-#ifdef EGL_MESA_configless_context
 	if (gr->has_configless_context)
 		context_config = EGL_NO_CONFIG_MESA;
-#endif
 
 	gr->egl_context = eglCreateContext(gr->egl_display, context_config,
 					   EGL_NO_CONTEXT, context_attribs);

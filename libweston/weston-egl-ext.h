@@ -121,5 +121,10 @@ typedef struct wl_buffer * (EGLAPIENTRYP PFNEGLCREATEWAYLANDBUFFERFROMIMAGEWL) (
 typedef EGLBoolean (EGLAPIENTRYP PFNEGLSWAPBUFFERSWITHDAMAGEEXTPROC) (EGLDisplay dpy, EGLSurface surface, EGLint *rects, EGLint n_rects);
 #endif /* EGL_EXT_swap_buffers_with_damage */
 
+#ifndef EGL_MESA_configless_context
+#define EGL_MESA_configless_context 1
+#define EGL_NO_CONFIG_MESA                      ((EGLConfig)0)
+#endif
+
 
 #endif
