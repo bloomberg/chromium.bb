@@ -37,7 +37,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('deqp/functional/gles3/framebufferblit/depth_stencil.html',
         bug=483282)
     self.Fail('deqp/data/gles3/shaders/linkage.html', bug=601821)
-    # self.Fail('deqp/functional/gles3/shaderoperator/*.html', bug=483282)
 
     self.Flaky('deqp/functional/gles3/negativefragmentapi.html', bug=604794)
 
@@ -56,9 +55,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['amd'], bug=617290)
 
     # Windows only.
-    self.Fail('deqp/functional/gles3/transformfeedback/*.html',
-        ['win'], bug=483282)
-
     self.Fail('deqp/functional/gles3/shaderloop_for.html',
         ['win'], bug=617817)
     self.Fail('deqp/functional/gles3/shaderloop_while.html',
@@ -124,6 +120,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['win', 'nvidia'], bug=483282)
     self.Fail('deqp/functional/gles3/framebufferblit/rect_05.html',
         ['win', 'nvidia'], bug=483282)
+    self.Fail('deqp/functional/gles3/transformfeedback/*.html',
+        ['win', 'nvidia'], bug=483282)
 
     # Win / AMD
     self.Fail('deqp/functional/gles3/texturespecification/' +
@@ -147,6 +145,9 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('deqp/functional/gles3/textureshadow/2d*',
         ['win', ('amd', 0x6779)], bug=483282)
     self.Fail('deqp/functional/gles3/textureshadow/cube*',
+        ['win', ('amd', 0x6779)], bug=483282)
+
+    self.Fail('deqp/functional/gles3/transformfeedback/*.html',
         ['win', ('amd', 0x6779)], bug=483282)
 
     # It's unfortunate that this suppression needs to be so broad, but
@@ -195,23 +196,11 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['win', 'intel'], bug=483282)
     self.Fail('deqp/functional/gles3/shadertexturefunction/texturesize.html',
         ['win', 'intel'], bug=483282)
-    self.Fail('conformance2/textures/misc/tex-unpack-params.html',
-        ['win', 'intel'], bug=483282)
     self.Fail('deqp/functional/gles3/uniformbuffers/*.html',
         ['win', 'intel'], bug=483282)
-    self.Fail('deqp/functional/gles3/fragmentoutput/array.int.html',
+    self.Fail('deqp/functional/gles3/framebufferblit/rect_02.html',
         ['win', 'intel'], bug=483282)
-    self.Fail('deqp/functional/gles3/fragmentoutput/array.uint.html',
-        ['win', 'intel'], bug=483282)
-    self.Fail('deqp/functional/gles3/fragmentoutput/basic.int.html',
-        ['win', 'intel'], bug=483282)
-    self.Fail('deqp/functional/gles3/fragmentoutput/basic.uint.html',
-        ['win', 'intel'], bug=483282)
-    self.Fail('deqp/functional/gles3/fragmentoutput/random_00.html',
-        ['win', 'intel'], bug=483282)
-    self.Fail('deqp/functional/gles3/fragmentoutput/random_01.html',
-        ['win', 'intel'], bug=483282)
-    self.Fail('deqp/functional/gles3/fragmentoutput/random_02.html',
+    self.Fail('deqp/functional/gles3/textureshadow/2d_array_*.html',
         ['win', 'intel'], bug=483282)
 
     # Mac only.
@@ -307,8 +296,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['mac', ('nvidia', 0xfe9)], bug=483282)
     self.Fail('deqp/functional/gles3/fbocompleteness.html',
         ['mac', ('nvidia', 0xfe9)], bug=616562)
-    self.Fail('deqp/functional/gles3/negativebufferapi.html',
-        ['mac', ('nvidia', 0xfe9)], bug=483282)
 
     self.Fail('deqp/functional/gles3/texturespecification/' +
         'basic_copyteximage2d.html',
@@ -358,10 +345,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('deqp/functional/gles3/texturespecification/' +
         'texsubimage3d_pbo_3d_01.html',
         ['mac', ('nvidia', 0xfe9)], bug=614174)
-
-    self.Fail('deqp/functional/gles3/shadertexturefunction/' +
-        'texturelod.html',
-        ['mac', ('nvidia', 0xfe9)], bug=483282)
 
     self.Fail('deqp/functional/gles3/fragmentoutput/array.fixed.html',
         ['mac', ('nvidia', 0xfe9)], bug=483282)
@@ -424,9 +407,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['mac', 'amd'], bug=483282)
     self.Fail('deqp/functional/gles3/shadertexturefunction/' +
         'textureprojlodoffset.html',
-        ['mac', 'amd'], bug=483282)
-    self.Fail('deqp/functional/gles3/shadertexturefunction/' +
-        'texturelod.html',
         ['mac', 'amd'], bug=483282)
     self.Fail('deqp/functional/gles3/shadertexturefunction/' +
         'textureprojlod.html',
@@ -586,6 +566,44 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('deqp/data/gles3/shaders/scoping.html',
         ['linux', 'intel'], bug=610800)
 
+    self.Fail('deqp/functional/gles3/framebufferblit/conversion_04.html',
+        ['linux', 'intel', 'opengl'], bug=483282)
+    self.Fail('deqp/functional/gles3/framebufferblit/conversion_07.html',
+        ['linux', 'intel', 'opengl'], bug=483282)
+    self.Fail('deqp/functional/gles3/framebufferblit/conversion_08.html',
+        ['linux', 'intel', 'opengl'], bug=483282)
+    self.Fail('deqp/functional/gles3/framebufferblit/conversion_10.html',
+        ['linux', 'intel', 'opengl'], bug=483282)
+    self.Fail('deqp/functional/gles3/framebufferblit/conversion_11.html',
+        ['linux', 'intel', 'opengl'], bug=483282)
+    self.Fail('deqp/functional/gles3/framebufferblit/conversion_12.html',
+        ['linux', 'intel', 'opengl'], bug=483282)
+    self.Fail('deqp/functional/gles3/framebufferblit/conversion_13.html',
+        ['linux', 'intel', 'opengl'], bug=483282)
+    self.Fail('deqp/functional/gles3/framebufferblit/conversion_18.html',
+        ['linux', 'intel', 'opengl'], bug=483282)
+    self.Fail('deqp/functional/gles3/framebufferblit/conversion_25.html',
+        ['linux', 'intel', 'opengl'], bug=483282)
+    self.Fail('deqp/functional/gles3/framebufferblit/conversion_28.html',
+        ['linux', 'intel', 'opengl'], bug=483282)
+    self.Fail('deqp/functional/gles3/framebufferblit/conversion_29.html',
+        ['linux', 'intel', 'opengl'], bug=483282)
+    self.Fail('deqp/functional/gles3/framebufferblit/conversion_30.html',
+        ['linux', 'intel', 'opengl'], bug=483282)
+    self.Fail('deqp/functional/gles3/framebufferblit/conversion_31.html',
+        ['linux', 'intel', 'opengl'], bug=483282)
+    self.Fail('deqp/functional/gles3/framebufferblit/conversion_32.html',
+        ['linux', 'intel', 'opengl'], bug=483282)
+    self.Fail('deqp/functional/gles3/framebufferblit/conversion_33.html',
+        ['linux', 'intel', 'opengl'], bug=483282)
+    self.Fail('deqp/functional/gles3/framebufferblit/conversion_34.html',
+        ['linux', 'intel', 'opengl'], bug=483282)
+    self.Fail('deqp/functional/gles3/framebufferblit/' +
+        'default_framebuffer_00.html',
+        ['linux', 'intel', 'opengl'], bug=483282)
+    self.Fail('deqp/functional/gles3/framebufferblit/rect_02.html',
+        ['linux', 'intel', 'opengl'], bug=483282)
+
     # Linux AMD only.
     # It looks like AMD shader compiler rejects many valid ES3 semantics.
     self.Fail('deqp/data/gles3/shaders/conversions.html',
@@ -744,6 +762,49 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('deqp/functional/gles3/shadermatrix/mul_dynamic_mediump.html',
         ['linux', 'amd'], bug=483282)
     self.Fail('deqp/functional/gles3/shadermatrix/pre_decrement.html',
+        ['linux', 'amd'], bug=483282)
+
+    self.Fail('deqp/functional/gles3/framebufferblit/conversion_04.html',
+        ['linux', 'amd'], bug=483282)
+    self.Fail('deqp/functional/gles3/framebufferblit/conversion_07.html',
+        ['linux', 'amd'], bug=483282)
+    self.Fail('deqp/functional/gles3/framebufferblit/conversion_08.html',
+        ['linux', 'amd'], bug=483282)
+    self.Fail('deqp/functional/gles3/framebufferblit/conversion_10.html',
+        ['linux', 'amd'], bug=483282)
+    self.Fail('deqp/functional/gles3/framebufferblit/conversion_11.html',
+        ['linux', 'amd'], bug=483282)
+    self.Fail('deqp/functional/gles3/framebufferblit/conversion_12.html',
+        ['linux', 'amd'], bug=483282)
+    self.Fail('deqp/functional/gles3/framebufferblit/conversion_13.html',
+        ['linux', 'amd'], bug=483282)
+    self.Fail('deqp/functional/gles3/framebufferblit/conversion_18.html',
+        ['linux', 'amd'], bug=483282)
+    self.Fail('deqp/functional/gles3/framebufferblit/conversion_25.html',
+        ['linux', 'amd'], bug=483282)
+    self.Fail('deqp/functional/gles3/framebufferblit/conversion_28.html',
+        ['linux', 'amd'], bug=483282)
+    self.Fail('deqp/functional/gles3/framebufferblit/conversion_29.html',
+        ['linux', 'amd'], bug=483282)
+    self.Fail('deqp/functional/gles3/framebufferblit/conversion_30.html',
+        ['linux', 'amd'], bug=483282)
+    self.Fail('deqp/functional/gles3/framebufferblit/conversion_31.html',
+        ['linux', 'amd'], bug=483282)
+    self.Fail('deqp/functional/gles3/framebufferblit/conversion_32.html',
+        ['linux', 'amd'], bug=483282)
+    self.Fail('deqp/functional/gles3/framebufferblit/conversion_33.html',
+        ['linux', 'amd'], bug=483282)
+    self.Fail('deqp/functional/gles3/framebufferblit/conversion_34.html',
+        ['linux', 'amd'], bug=483282)
+    self.Fail('deqp/functional/gles3/framebufferblit/' +
+        'default_framebuffer_00.html',
+        ['linux', 'amd'], bug=483282)
+    self.Fail('deqp/functional/gles3/framebufferblit/rect_02.html',
+        ['linux', 'amd'], bug=483282)
+
+    self.Fail('deqp/functional/gles3/shaderoperator/unary_operator_01.html',
+        ['linux', 'amd'], bug=483282)
+    self.Fail('deqp/functional/gles3/shaderoperator/unary_operator_02.html',
         ['linux', 'amd'], bug=483282)
 
     # Conflicting expectations to test that the
