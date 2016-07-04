@@ -329,6 +329,34 @@ int GetKeyModifiersFromV8(v8::Isolate* isolate, v8::Local<v8::Value> value) {
   return GetKeyModifiers(modifier_names);
 }
 
+WebMouseWheelEvent::Phase GetMouseWheelEventPhase(
+    const std::string& phase_name) {
+  if (phase_name == "phaseNone") {
+    return WebMouseWheelEvent::PhaseNone;
+  } else if (phase_name == "phaseBegan") {
+    return WebMouseWheelEvent::PhaseBegan;
+  } else if (phase_name == "phaseStationary") {
+    return WebMouseWheelEvent::PhaseStationary;
+  } else if (phase_name == "phaseChanged") {
+    return WebMouseWheelEvent::PhaseChanged;
+  } else if (phase_name == "phaseEnded") {
+    return WebMouseWheelEvent::PhaseEnded;
+  } else if (phase_name == "phaseCancelled") {
+    return WebMouseWheelEvent::PhaseCancelled;
+  } else if (phase_name == "phaseMayBegin") {
+    return WebMouseWheelEvent::PhaseMayBegin;
+  }
+
+  return WebMouseWheelEvent::PhaseNone;
+}
+
+WebMouseWheelEvent::Phase GetMouseWheelEventPhaseFromV8(
+    v8::Local<v8::Value> value) {
+  if (value->IsString())
+    return GetMouseWheelEventPhase(gin::V8ToString(value));
+  return WebMouseWheelEvent::PhaseNone;
+}
+
 // Maximum distance (in space and time) for a mouse click to register as a
 // double or triple click.
 const double kMultipleClickTimeSec = 1;
@@ -2540,6 +2568,7 @@ void EventSender::InitMouseWheelEvent(gin::Arguments* args,
   bool paged = false;
   bool has_precise_scrolling_deltas = false;
   int modifiers = 0;
+  WebMouseWheelEvent::Phase phase = WebMouseWheelEvent::PhaseNone;
   if (!args->PeekNext().IsEmpty()) {
     args->GetNext(&paged);
     if (!args->PeekNext().IsEmpty()) {
@@ -2550,6 +2579,11 @@ void EventSender::InitMouseWheelEvent(gin::Arguments* args,
         modifiers = GetKeyModifiersFromV8(args->isolate(), value);
         if (!args->PeekNext().IsEmpty()) {
           args->GetNext(send_gestures);
+          if (!args->PeekNext().IsEmpty()) {
+            v8::Local<v8::Value> phase_value;
+            args->GetNext(&phase_value);
+            phase = GetMouseWheelEventPhaseFromV8(phase_value);
+          }
         }
       }
     }
@@ -2566,6 +2600,7 @@ void EventSender::InitMouseWheelEvent(gin::Arguments* args,
   event->deltaY = event->wheelTicksY;
   event->scrollByPage = paged;
   event->hasPreciseScrollingDeltas = has_precise_scrolling_deltas;
+  event->phase = phase;
   if (scroll_type == MouseScrollType::PIXEL) {
     event->wheelTicksX /= kScrollbarPixelsPerTick;
     event->wheelTicksY /= kScrollbarPixelsPerTick;

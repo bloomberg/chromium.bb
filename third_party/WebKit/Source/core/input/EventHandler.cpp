@@ -1597,6 +1597,14 @@ bool EventHandler::slideFocusOnShadowHostIfNecessary(const Element& element)
 
 WebInputEventResult EventHandler::handleWheelEvent(const PlatformWheelEvent& event)
 {
+#if OS(MACOSX)
+    // Filter Mac OS specific phases, usually with a zero-delta.
+    // https://crbug.com/553732
+    // TODO(chongz): EventSender sends events with |PlatformWheelEventPhaseNone|, but it shouldn't.
+    const int kPlatformWheelEventPhaseNoEventMask = PlatformWheelEventPhaseEnded | PlatformWheelEventPhaseCancelled | PlatformWheelEventPhaseMayBegin;
+    if ((event.phase() & kPlatformWheelEventPhaseNoEventMask) || (event.momentumPhase() & kPlatformWheelEventPhaseNoEventMask))
+        return WebInputEventResult::NotHandled;
+#endif
     Document* doc = m_frame->document();
 
     if (doc->layoutViewItem().isNull())
