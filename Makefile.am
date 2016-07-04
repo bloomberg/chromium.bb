@@ -160,6 +160,7 @@ weston_SOURCES = 					\
 # add BUILT_SOURCES to CLEANFILES, but we want to keep git-version.h
 # in case we're building from tarballs.
 
+compositor/main.c : $(top_builddir)/libweston/git-version.h
 libweston/compositor.c : $(top_builddir)/libweston/git-version.h
 
 noinst_LTLIBRARIES +=				\
