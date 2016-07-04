@@ -869,11 +869,9 @@ draw_output_border_texture(struct gl_output_state *go,
 	}
 
 	if (go->border_status & (1 << side)) {
-#ifdef GL_EXT_unpack_subimage
 		glPixelStorei(GL_UNPACK_ROW_LENGTH_EXT, 0);
 		glPixelStorei(GL_UNPACK_SKIP_PIXELS_EXT, 0);
 		glPixelStorei(GL_UNPACK_SKIP_ROWS_EXT, 0);
-#endif
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_BGRA_EXT,
 			     img->tex_width, img->height, 0,
 			     GL_BGRA_EXT, GL_UNSIGNED_BYTE, img->data);
@@ -1226,12 +1224,9 @@ gl_renderer_flush_damage(struct weston_surface *surface)
 	struct weston_buffer *buffer = gs->buffer_ref.buffer;
 	struct weston_view *view;
 	bool texture_used;
-
-#ifdef GL_EXT_unpack_subimage
 	pixman_box32_t *rectangles;
 	void *data;
 	int i, n;
-#endif
 
 	pixman_region32_union(&gs->texture_damage,
 			      &gs->texture_damage, &surface->damage);
@@ -1271,7 +1266,6 @@ gl_renderer_flush_damage(struct weston_surface *surface)
 		goto done;
 	}
 
-#ifdef GL_EXT_unpack_subimage
 	glPixelStorei(GL_UNPACK_ROW_LENGTH_EXT, gs->pitch);
 	data = wl_shm_buffer_get_data(buffer->shm_buffer);
 
@@ -1300,7 +1294,6 @@ gl_renderer_flush_damage(struct weston_surface *surface)
 				gs->gl_format, gs->gl_pixel_type, data);
 	}
 	wl_shm_buffer_end_access(buffer->shm_buffer);
-#endif
 
 done:
 	pixman_region32_fini(&gs->texture_damage);
@@ -3152,10 +3145,8 @@ gl_renderer_setup(struct weston_compositor *ec, EGLSurface egl_surface)
 	else
 		ec->read_format = PIXMAN_a8b8g8r8;
 
-#ifdef GL_EXT_unpack_subimage
 	if (check_extension(extensions, "GL_EXT_unpack_subimage"))
 		gr->has_unpack_subimage = 1;
-#endif
 
 	if (check_extension(extensions, "GL_OES_EGL_image_external"))
 		gr->has_egl_image_external = 1;
