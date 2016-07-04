@@ -519,20 +519,20 @@ int ServiceWorkerVersion::StartRequestWithCustomTimeout(
       << "Event of type " << static_cast<int>(event_type)
       << " can only be dispatched to an active worker: " << status();
 
-  PendingRequest<StatusCallback>* request = new PendingRequest<StatusCallback>(
-      error_callback, base::TimeTicks::Now(), event_type);
-  int request_id = custom_requests_.Add(request);
+  PendingRequest* request =
+      new PendingRequest(error_callback, base::TimeTicks::Now(), event_type);
+  int request_id = pending_requests_.Add(request);
   TRACE_EVENT_ASYNC_BEGIN2("ServiceWorker", "ServiceWorkerVersion::Request",
                            request, "Request id", request_id, "Event type",
                            ServiceWorkerMetrics::EventTypeToString(event_type));
   base::TimeTicks expiration_time = base::TimeTicks::Now() + timeout;
-  requests_.push(
+  timeout_queue_.push(
       RequestInfo(request_id, event_type, expiration_time, timeout_behavior));
   return request_id;
 }
 
 bool ServiceWorkerVersion::FinishRequest(int request_id, bool was_handled) {
-  PendingRequest<StatusCallback>* request = custom_requests_.Lookup(request_id);
+  PendingRequest* request = pending_requests_.Lookup(request_id);
   if (!request)
     return false;
   // TODO(kinuko): Record other event statuses too.
@@ -544,7 +544,7 @@ bool ServiceWorkerVersion::FinishRequest(int request_id, bool was_handled) {
   RestartTick(&idle_time_);
   TRACE_EVENT_ASYNC_END1("ServiceWorker", "ServiceWorkerVersion::Request",
                          request, "Handled", was_handled);
-  custom_requests_.Remove(request_id);
+  pending_requests_.Remove(request_id);
   return true;
 }
 
@@ -569,14 +569,13 @@ void ServiceWorkerVersion::DispatchEvent(const std::vector<int>& request_ids,
   const ServiceWorkerStatusCode status = embedded_worker_->SendMessage(message);
 
   for (int request_id : request_ids) {
-    PendingRequest<StatusCallback>* request =
-        custom_requests_.Lookup(request_id);
+    PendingRequest* request = pending_requests_.Lookup(request_id);
     DCHECK(request) << "Invalid request id";
     DCHECK(!request->is_dispatched)
         << "Request already dispatched an IPC event";
     if (status != SERVICE_WORKER_OK) {
-      RunSoon(base::Bind(request->callback, status));
-      custom_requests_.Remove(request_id);
+      RunSoon(base::Bind(request->error_callback, status));
+      pending_requests_.Remove(request_id);
     } else {
       request->is_dispatched = true;
     }
@@ -731,12 +730,13 @@ bool ServiceWorkerVersion::RequestInfo::operator>(
   return expiration > other.expiration;
 }
 
-template <typename CallbackType>
-ServiceWorkerVersion::PendingRequest<CallbackType>::PendingRequest(
-    const CallbackType& callback,
+ServiceWorkerVersion::PendingRequest::PendingRequest(
+    const StatusCallback& callback,
     const base::TimeTicks& time,
     ServiceWorkerMetrics::EventType event_type)
-    : callback(callback), start_time(time), event_type(event_type) {}
+    : error_callback(callback), start_time(time), event_type(event_type) {}
+
+ServiceWorkerVersion::PendingRequest::~PendingRequest() {}
 
 ServiceWorkerVersion::BaseMojoServiceWrapper::BaseMojoServiceWrapper(
     ServiceWorkerVersion* worker,
@@ -744,15 +744,15 @@ ServiceWorkerVersion::BaseMojoServiceWrapper::BaseMojoServiceWrapper(
     : worker_(worker), service_name_(service_name) {}
 
 ServiceWorkerVersion::BaseMojoServiceWrapper::~BaseMojoServiceWrapper() {
-  IDMap<PendingRequest<StatusCallback>, IDMapOwnPointer>::iterator iter(
-      &worker_->custom_requests_);
+  IDMap<PendingRequest, IDMapOwnPointer>::iterator iter(
+      &worker_->pending_requests_);
   while (!iter.IsAtEnd()) {
-    PendingRequest<StatusCallback>* request = iter.GetCurrentValue();
+    PendingRequest* request = iter.GetCurrentValue();
     if (request->mojo_service == service_name_) {
       TRACE_EVENT_ASYNC_END1("ServiceWorker", "ServiceWorkerVersion::Request",
                              request, "Error", "Service Disconnected");
-      request->callback.Run(SERVICE_WORKER_ERROR_FAILED);
-      worker_->custom_requests_.Remove(iter.GetCurrentKey());
+      request->error_callback.Run(SERVICE_WORKER_ERROR_FAILED);
+      worker_->pending_requests_.Remove(iter.GetCurrentKey());
     }
     iter.Advance();
   }
@@ -959,9 +959,9 @@ void ServiceWorkerVersion::OnSimpleEventResponse(
     int request_id,
     blink::WebServiceWorkerEventResult result) {
   // Copy error callback before calling FinishRequest.
-  PendingRequest<StatusCallback>* request = custom_requests_.Lookup(request_id);
+  PendingRequest* request = pending_requests_.Lookup(request_id);
   DCHECK(request) << "Invalid request id";
-  StatusCallback callback = request->callback;
+  StatusCallback callback = request->error_callback;
 
   FinishRequest(request_id,
                 result == blink::WebServiceWorkerEventResultCompleted);
@@ -1468,8 +1468,8 @@ void ServiceWorkerVersion::OnTimeoutTimer() {
 
   // Requests have not finished before their expiration.
   bool stop_for_timeout = false;
-  while (!requests_.empty()) {
-    RequestInfo info = requests_.top();
+  while (!timeout_queue_.empty()) {
+    RequestInfo info = timeout_queue_.top();
     if (!RequestExpired(info.expiration))
       break;
     if (MaybeTimeOutRequest(info)) {
@@ -1477,7 +1477,7 @@ void ServiceWorkerVersion::OnTimeoutTimer() {
           stop_for_timeout || info.timeout_behavior == KILL_ON_TIMEOUT;
       ServiceWorkerMetrics::RecordEventTimeout(info.event_type);
     }
-    requests_.pop();
+    timeout_queue_.pop();
   }
   if (stop_for_timeout && running_status() != EmbeddedWorkerStatus::STOPPING)
     embedded_worker_->Stop();
@@ -1526,7 +1526,7 @@ void ServiceWorkerVersion::StopWorkerIfIdle() {
 }
 
 bool ServiceWorkerVersion::HasInflightRequests() const {
-  return !custom_requests_.IsEmpty() || !streaming_url_request_jobs_.empty();
+  return !pending_requests_.IsEmpty() || !streaming_url_request_jobs_.empty();
 }
 
 void ServiceWorkerVersion::RecordStartWorkerResult(
@@ -1583,27 +1583,27 @@ void ServiceWorkerVersion::RecordStartWorkerResult(
 }
 
 bool ServiceWorkerVersion::MaybeTimeOutRequest(const RequestInfo& info) {
-  PendingRequest<StatusCallback>* request = custom_requests_.Lookup(info.id);
+  PendingRequest* request = pending_requests_.Lookup(info.id);
   if (!request)
     return false;
 
   TRACE_EVENT_ASYNC_END1("ServiceWorker", "ServiceWorkerVersion::Request",
                          request, "Error", "Timeout");
-  request->callback.Run(SERVICE_WORKER_ERROR_TIMEOUT);
-  custom_requests_.Remove(info.id);
+  request->error_callback.Run(SERVICE_WORKER_ERROR_TIMEOUT);
+  pending_requests_.Remove(info.id);
   return true;
 }
 
 void ServiceWorkerVersion::SetAllRequestExpirations(
     const base::TimeTicks& expiration) {
   RequestInfoPriorityQueue new_requests;
-  while (!requests_.empty()) {
-    RequestInfo info = requests_.top();
+  while (!timeout_queue_.empty()) {
+    RequestInfo info = timeout_queue_.top();
     info.expiration = expiration;
     new_requests.push(info);
-    requests_.pop();
+    timeout_queue_.pop();
   }
-  requests_ = new_requests;
+  timeout_queue_ = new_requests;
 }
 
 ServiceWorkerStatusCode ServiceWorkerVersion::DeduceStartWorkerFailureReason(
@@ -1699,15 +1699,14 @@ void ServiceWorkerVersion::OnStoppedInternal(EmbeddedWorkerStatus old_status) {
   // Let all message callbacks fail (this will also fire and clear all
   // callbacks for events).
   // TODO(kinuko): Consider if we want to add queue+resend mechanism here.
-  IDMap<PendingRequest<StatusCallback>, IDMapOwnPointer>::iterator iter(
-      &custom_requests_);
+  IDMap<PendingRequest, IDMapOwnPointer>::iterator iter(&pending_requests_);
   while (!iter.IsAtEnd()) {
     TRACE_EVENT_ASYNC_END1("ServiceWorker", "ServiceWorkerVersion::Request",
                            iter.GetCurrentValue(), "Error", "Worker Stopped");
-    iter.GetCurrentValue()->callback.Run(SERVICE_WORKER_ERROR_FAILED);
+    iter.GetCurrentValue()->error_callback.Run(SERVICE_WORKER_ERROR_FAILED);
     iter.Advance();
   }
-  custom_requests_.Clear();
+  pending_requests_.Clear();
 
   // Close all mojo services. This will also fire and clear all callbacks
   // for messages that are still outstanding for those services.

@@ -397,21 +397,26 @@ class CONTENT_EXPORT ServiceWorkerVersion
     TimeoutBehavior timeout_behavior;
   };
 
-  template <typename CallbackType>
   struct PendingRequest {
-    PendingRequest(const CallbackType& callback,
+    PendingRequest(const StatusCallback& error_callback,
                    const base::TimeTicks& time,
                    ServiceWorkerMetrics::EventType event_type);
-    ~PendingRequest() {}
+    ~PendingRequest();
 
-    CallbackType callback;
+    // This is the |error_callback| passed to StartRequest.
+    StatusCallback error_callback;
     base::TimeTicks start_time;
     ServiceWorkerMetrics::EventType event_type;
+
     // Name of the mojo service this request is associated with. Used to call
     // the callback when a connection closes with outstanding requests.
     // Compared as pointer, so should only contain static strings. Typically
     // this would be Interface::Name_ for some mojo interface.
     const char* mojo_service = nullptr;
+
+    // This is set by RegisterRequestCallback. It is null for simple requests,
+    // which use only |error_callback| to communicate the service worker's
+    // response.
     std::unique_ptr<EmbeddedWorkerInstance::Listener> listener;
     bool is_dispatched = false;
   };
@@ -645,9 +650,9 @@ class CONTENT_EXPORT ServiceWorkerVersion
   std::vector<StatusCallback> stop_callbacks_;
   std::vector<base::Closure> status_change_callbacks_;
 
-  // Message callbacks. (Update HasInflightRequests() too when you update this
-  // list.)
-  IDMap<PendingRequest<StatusCallback>, IDMapOwnPointer> custom_requests_;
+  // Holds in-flight requests, including requests due to outstanding push,
+  // fetch, sync, etc. events.
+  IDMap<PendingRequest, IDMapOwnPointer> pending_requests_;
 
   // Stores all open connections to mojo services. Maps the service name to
   // the actual interface pointer. When a connection is closed it is removed
@@ -680,12 +685,12 @@ class CONTENT_EXPORT ServiceWorkerVersion
   // long.
   base::TimeTicks stale_time_;
 
-  // New requests are added to |requests_| along with their entry in a callback
-  // map. Requests are sorted by their expiration time (soonest to expire on top
-  // of the priority queue). The timeout timer periodically checks |requests_|
-  // for entries that should time out or have already been fulfilled (i.e.,
-  // removed from the callback map).
-  RequestInfoPriorityQueue requests_;
+  // Keeps track of requests for timeout purposes. Requests are sorted by
+  // their expiration time (soonest to expire on top of the priority queue). The
+  // timeout timer periodically checks |timeout_queue_| for entries that should
+  // time out or have already been fulfilled (i.e., removed from
+  // |pending_requests_|).
+  RequestInfoPriorityQueue timeout_queue_;
 
   bool skip_waiting_ = false;
   bool skip_recording_startup_time_ = false;
@@ -716,7 +721,7 @@ template <typename Interface>
 base::WeakPtr<Interface> ServiceWorkerVersion::GetMojoServiceForRequest(
     int request_id) {
   DCHECK_EQ(EmbeddedWorkerStatus::RUNNING, running_status());
-  PendingRequest<StatusCallback>* request = custom_requests_.Lookup(request_id);
+  PendingRequest* request = pending_requests_.Lookup(request_id);
   DCHECK(request) << "Invalid request id";
   DCHECK(!request->mojo_service)
       << "Request is already associated with a mojo service";
@@ -748,7 +753,7 @@ template <typename ResponseMessage, typename ResponseCallbackType>
 void ServiceWorkerVersion::RegisterRequestCallback(
     int request_id,
     const ResponseCallbackType& callback) {
-  PendingRequest<StatusCallback>* request = custom_requests_.Lookup(request_id);
+  PendingRequest* request = pending_requests_.Lookup(request_id);
   DCHECK(request) << "Invalid request id";
   DCHECK(!request->listener) << "Callback was already registered";
   DCHECK(!request->is_dispatched) << "Request already dispatched an IPC event";
