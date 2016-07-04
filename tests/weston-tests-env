@@ -24,7 +24,6 @@ MODDIR=$abs_builddir/.libs
 
 SHELL_PLUGIN=$MODDIR/desktop-shell.so
 TEST_PLUGIN=$MODDIR/weston-test.so
-XWAYLAND_PLUGIN=$MODDIR/xwayland.so
 
 CONFIG_FILE="${TEST_NAME}.ini"
 
@@ -60,7 +59,8 @@ case $TEST_FILE in
 			${CONFIG} \
 			--shell=$SHELL_PLUGIN \
 			--socket=test-${TEST_NAME} \
-			--modules=$MODDIR/${TEST_FILE/.la/.so},$XWAYLAND_PLUGIN \
+			--xwayland \
+			--modules=$MODDIR/${TEST_FILE/.la/.so} \
 			--log="$SERVERLOG" \
 			&> "$OUTLOG"
 		;;
@@ -89,7 +89,8 @@ case $TEST_FILE in
 			${CONFIG} \
 			--shell=$SHELL_PLUGIN \
 			--socket=test-${TEST_NAME} \
-			--modules=$TEST_PLUGIN,$XWAYLAND_PLUGIN \
+			--xwayland \
+			--modules=$TEST_PLUGIN \
 			--log="$SERVERLOG" \
 			$($abs_builddir/$TEST_FILE --params) \
 			&> "$OUTLOG"

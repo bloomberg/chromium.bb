@@ -845,7 +845,7 @@ wet_load_shell(struct weston_compositor *compositor,
 
 static int
 load_modules(struct weston_compositor *ec, const char *modules,
-	     int *argc, char *argv[])
+	     int *argc, char *argv[], int32_t *xwayland)
 {
 	const char *p, *end;
 	char buffer[256];
@@ -859,8 +859,10 @@ load_modules(struct weston_compositor *ec, const char *modules,
 		snprintf(buffer, sizeof buffer, "%.*s", (int) (end - p), p);
 
 		if (strstr(buffer, "xwayland.so")) {
-			if (wet_load_xwayland(ec) < 0)
-				return -1;
+			weston_log("Old Xwayland module loading detected:"
+				   "Please use --xwayland command line option"
+				   "or weston.ini xwayland=true\n");
+			*xwayland = 1;
 		} else {
 			if (wet_load_module(ec, buffer, argc, argv) < 0)
 				return -1;
@@ -1756,6 +1758,7 @@ int main(int argc, char *argv[])
 	int i, fd;
 	char *backend = NULL;
 	char *shell = NULL;
+	int32_t xwayland = 0;
 	char *modules = NULL;
 	char *option_modules = NULL;
 	char *log = NULL;
@@ -1780,6 +1783,7 @@ int main(int argc, char *argv[])
 		{ WESTON_OPTION_STRING, "shell", 0, &shell },
 		{ WESTON_OPTION_STRING, "socket", 'S', &socket_name },
 		{ WESTON_OPTION_INTEGER, "idle-time", 'i', &idle_time },
+		{ WESTON_OPTION_BOOLEAN, "xwayland", 0, &xwayland },
 		{ WESTON_OPTION_STRING, "modules", 0, &option_modules },
 		{ WESTON_OPTION_STRING, "log", 0, &log },
 		{ WESTON_OPTION_BOOLEAN, "help", 'h', &help },
@@ -1914,11 +1918,19 @@ int main(int argc, char *argv[])
 		goto out;
 
 	weston_config_section_get_string(section, "modules", &modules, "");
-	if (load_modules(ec, modules, &argc, argv) < 0)
+	if (load_modules(ec, modules, &argc, argv, &xwayland) < 0)
 		goto out;
 
-	if (load_modules(ec, option_modules, &argc, argv) < 0)
+	if (load_modules(ec, option_modules, &argc, argv, &xwayland) < 0)
 		goto out;
+
+	if (!xwayland)
+		weston_config_section_get_bool(section, "xwayland", &xwayland,
+					       false);
+	if (xwayland) {
+		if (wet_load_xwayland(ec) < 0)
+			goto out;
+	}
 
 	section = weston_config_get_section(config, "keyboard", NULL, NULL);
 	weston_config_section_get_bool(section, "numlock-on", &numlock_on, 0);

@@ -83,7 +83,7 @@ the X server. XWayland provides backwards compatibility to X applications in a
 Wayland stack.
 
 XWayland is activated by instructing
-.BR weston " to load " xwayland.so " module, see " EXAMPLES .
+.BR weston " to load the XWayland module, see " EXAMPLES .
 Weston starts listening on a new X display socket, and exports it in the
 environment variable
 .BR DISPLAY .
@@ -142,6 +142,9 @@ A value of 0 effectively disables the timeout.
 Append log messages to the file
 .I file.log
 instead of writing them to stderr.
+.TP
+\fB\-\-xwayland\fR
+Ask Weston to load the XWayland module.
 .TP
 \fB\-\-modules\fR=\fImodule1.so,module2.so\fR
 Load the comma-separated list of modules. Only used by the test
@@ -326,7 +329,7 @@ http://wayland.freedesktop.org/
 .IP "Launch Weston with the DRM backend on a VT"
 weston-launch
 .IP "Launch Weston with the DRM backend and XWayland support"
-weston-launch -- --modules=xwayland.so
+weston-launch -- --xwayland
 .IP "Launch Weston (wayland-1) nested in another Weston instance (wayland-0)"
 WAYLAND_DISPLAY=wayland-0 weston -Swayland-1
 .IP "From an X terminal, launch Weston with the x11 backend"

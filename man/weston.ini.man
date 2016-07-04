@@ -106,14 +106,17 @@ directory are:
 .fi
 .RE
 .TP 7
-.BI "modules=" xwayland.so,cms-colord.so
+.BI "xwayland=" true
+ask Weston to load the XWayland module (boolean).
+.RE
+.TP 7
+.BI "modules=" cms-colord.so,screen-share.so
 specifies the modules to load (string). Available modules in the
 .IR "__weston_modules_dir__"
 directory are:
 .PP
 .RS 10
 .nf
-.BR xwayland.so
 .BR cms-colord.so
 .BR screen-share.so
 .fi
