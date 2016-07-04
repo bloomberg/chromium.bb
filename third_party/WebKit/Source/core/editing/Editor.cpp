@@ -206,13 +206,6 @@ EditorClient& Editor::client() const
     return emptyEditorClient();
 }
 
-UndoStack* Editor::undoStack() const
-{
-    if (Page* page = frame().page())
-        return &page->undoStack();
-    return 0;
-}
-
 bool Editor::handleTextEvent(TextEvent* event)
 {
     // Default event handling for Drag and Drop will be handled by DragController
@@ -776,8 +769,7 @@ void Editor::appliedEditing(CompositeEditCommand* cmd)
         // Only register a new undo command if the command passed in is
         // different from the last command
         m_lastEditCommand = cmd;
-        if (UndoStack* undoStack = this->undoStack())
-            undoStack->registerUndoStep(m_lastEditCommand->ensureComposition());
+        m_undoStack->registerUndoStep(m_lastEditCommand->ensureComposition());
     }
 
     respondToChangedContents(newSelection);
@@ -797,8 +789,7 @@ void Editor::unappliedEditing(EditCommandComposition* cmd)
         changeSelectionAfterCommand(newSelection, FrameSelection::CloseTyping | FrameSelection::ClearTypingStyle);
 
     m_lastEditCommand = nullptr;
-    if (UndoStack* undoStack = this->undoStack())
-        undoStack->registerRedoStep(cmd);
+    m_undoStack->registerRedoStep(cmd);
     respondToChangedContents(newSelection);
 }
 
@@ -814,8 +805,7 @@ void Editor::reappliedEditing(EditCommandComposition* cmd)
     changeSelectionAfterCommand(newSelection, FrameSelection::CloseTyping | FrameSelection::ClearTypingStyle);
 
     m_lastEditCommand = nullptr;
-    if (UndoStack* undoStack = this->undoStack())
-        undoStack->registerUndoStep(cmd);
+    m_undoStack->registerUndoStep(cmd);
     respondToChangedContents(newSelection);
 }
 
@@ -826,6 +816,7 @@ Editor* Editor::create(LocalFrame& frame)
 
 Editor::Editor(LocalFrame& frame)
     : m_frame(&frame)
+    , m_undoStack(UndoStack::create())
     , m_preventRevealSelection(0)
     , m_shouldStartNewKillRingSequence(false)
     // This is off by default, since most editors want this behavior (this matches IE but not FF).
@@ -1060,28 +1051,22 @@ void Editor::copyImage(const HitTestResult& result)
 
 bool Editor::canUndo()
 {
-    if (UndoStack* undoStack = this->undoStack())
-        return undoStack->canUndo();
-    return false;
+    return m_undoStack->canUndo();
 }
 
 void Editor::undo()
 {
-    if (UndoStack* undoStack = this->undoStack())
-        undoStack->undo();
+    m_undoStack->undo();
 }
 
 bool Editor::canRedo()
 {
-    if (UndoStack* undoStack = this->undoStack())
-        return undoStack->canRedo();
-    return false;
+    return m_undoStack->canRedo();
 }
 
 void Editor::redo()
 {
-    if (UndoStack* undoStack = this->undoStack())
-        undoStack->redo();
+    m_undoStack->redo();
 }
 
 void Editor::setBaseWritingDirection(WritingDirection direction)
@@ -1434,6 +1419,7 @@ DEFINE_TRACE(Editor)
 {
     visitor->trace(m_frame);
     visitor->trace(m_lastEditCommand);
+    visitor->trace(m_undoStack);
     visitor->trace(m_mark);
 }
 

@@ -253,6 +253,7 @@ public:
 private:
     Member<LocalFrame> m_frame;
     Member<CompositeEditCommand> m_lastEditCommand;
+    const Member<UndoStack> m_undoStack;
     int m_preventRevealSelection;
     bool m_shouldStartNewKillRingSequence;
     bool m_shouldStyleWithCSS;
@@ -272,8 +273,6 @@ private:
 
     bool canDeleteRange(const EphemeralRange&) const;
     bool shouldDeleteRange(const EphemeralRange&) const;
-
-    UndoStack* undoStack() const;
 
     bool tryDHTMLCopy();
     bool tryDHTMLCut();
