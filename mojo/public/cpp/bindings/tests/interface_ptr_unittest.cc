@@ -195,9 +195,9 @@ class IntegerAccessorImpl : public sample::IntegerAccessor {
 class InterfacePtrTest : public testing::Test {
  public:
   InterfacePtrTest() {}
-  ~InterfacePtrTest() override { loop_.RunUntilIdle(); }
+  ~InterfacePtrTest() override { base::RunLoop().RunUntilIdle(); }
 
-  void PumpMessages() { loop_.RunUntilIdle(); }
+  void PumpMessages() { base::RunLoop().RunUntilIdle(); }
 
  private:
   base::MessageLoop loop_;

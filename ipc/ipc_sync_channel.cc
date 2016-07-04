@@ -14,6 +14,7 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "base/run_loop.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/synchronization/waitable_event_watcher.h"
 #include "base/threading/thread_local.h"
@@ -566,7 +567,7 @@ void SyncChannel::WaitForReplyWithNestedMessageLoop(SyncContext* context) {
   {
     base::MessageLoop::ScopedNestableTaskAllower allow(
         base::MessageLoop::current());
-    base::MessageLoop::current()->Run();
+    base::RunLoop().Run();
   }
 
   sync_msg_queue->set_top_send_done_watcher(old_send_done_event_watcher);

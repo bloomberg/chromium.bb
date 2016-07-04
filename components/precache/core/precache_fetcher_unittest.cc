@@ -20,6 +20,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/histogram_tester.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -361,7 +362,7 @@ class PrecacheFetcherTest : public testing::Test {
     }
 
     // Check again after allowing the message loop to process some messages.
-    loop_.PostTask(
+    loop_.task_runner()->PostTask(
         FROM_HERE,
         base::Bind(
             &PrecacheFetcherTest::CheckUntilParallelFetchesBeyondCapacity,

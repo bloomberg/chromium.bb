@@ -14,6 +14,7 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
+#include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -789,7 +790,7 @@ class PipelineIntegrationTest : public PipelineIntegrationTestHost {
           base::Bind(&FakeEncryptedMedia::OnEncryptedMediaInitData,
                      base::Unretained(encrypted_media)));
     }
-    message_loop_.Run();
+    base::RunLoop().Run();
     return pipeline_status_;
   }
 
@@ -1327,7 +1328,7 @@ TEST_F(PipelineIntegrationTest, MediaSource_Remove_Updates_BufferedRanges) {
 
   source.RemoveRange(base::TimeDelta::FromMilliseconds(1000),
                      base::TimeDelta::FromMilliseconds(k320WebMFileDurationMs));
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   buffered_ranges = pipeline_->GetBufferedTimeRanges();
   EXPECT_EQ(1u, buffered_ranges.size());
@@ -1363,7 +1364,7 @@ TEST_F(PipelineIntegrationTest, MediaSource_FillUp_Buffer) {
     source.EvictCodedFrames(media_time, file->data_size());
     ASSERT_TRUE(
         source.AppendAtTime(media_time, file->data(), file->data_size()));
-    message_loop_.RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
 
     buffered_ranges = pipeline_->GetBufferedTimeRanges();
   } while (buffered_ranges.size() == 1 &&
@@ -1420,7 +1421,7 @@ TEST_F(PipelineIntegrationTest,
 
   source.EndOfStream();
 
-  message_loop_.Run();
+  base::RunLoop().Run();
   EXPECT_EQ(CHUNK_DEMUXER_ERROR_APPEND_FAILED, pipeline_status_);
 
   EXPECT_EQ(1u, pipeline_->GetBufferedTimeRanges().size());

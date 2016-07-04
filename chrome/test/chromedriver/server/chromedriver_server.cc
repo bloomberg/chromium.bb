@@ -22,6 +22,7 @@
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -207,7 +208,7 @@ void RunServer(uint16_t port,
   HttpRequestHandlerFunc handle_request_func =
       base::Bind(&HandleRequestOnCmdThread, &handler, whitelisted_ips);
 
-  io_thread.message_loop()->PostTask(
+  io_thread.message_loop()->task_runner()->PostTask(
       FROM_HERE,
       base::Bind(&StartServerOnIOThread, port, allow_remote,
                  base::Bind(&HandleRequestOnIOThread, cmd_loop.task_runner(),
@@ -218,8 +219,8 @@ void RunServer(uint16_t port,
   // destroyed, which waits until all pending tasks have been completed.
   // This assumes the response is sent synchronously as part of the IO task.
   cmd_run_loop.Run();
-  io_thread.message_loop()
-      ->PostTask(FROM_HERE, base::Bind(&StopServerOnIOThread));
+  io_thread.message_loop()->task_runner()->PostTask(
+      FROM_HERE, base::Bind(&StopServerOnIOThread));
 }
 
 }  // namespace

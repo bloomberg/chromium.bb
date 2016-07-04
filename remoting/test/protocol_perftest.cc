@@ -210,10 +210,9 @@ class ProtocolPerfTest
 
   // HostStatusObserver interface.
   void OnClientConnected(const std::string& jid) override {
-    message_loop_.PostTask(
-        FROM_HERE,
-        base::Bind(&ProtocolPerfTest::OnHostConnectedMainThread,
-                   base::Unretained(this)));
+    message_loop_.task_runner()->PostTask(
+        FROM_HERE, base::Bind(&ProtocolPerfTest::OnHostConnectedMainThread,
+                              base::Unretained(this)));
   }
 
  protected:
@@ -367,9 +366,9 @@ class ProtocolPerfTest
     host_->AddStatusObserver(this);
     host_->Start(kHostOwner);
 
-    message_loop_.PostTask(FROM_HERE,
-                           base::Bind(&ProtocolPerfTest::StartClientAfterHost,
-                                      base::Unretained(this)));
+    message_loop_.task_runner()->PostTask(
+        FROM_HERE, base::Bind(&ProtocolPerfTest::StartClientAfterHost,
+                              base::Unretained(this)));
   }
 
   void StartClientAfterHost() {

@@ -11,6 +11,7 @@
 #include "base/callback.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
@@ -91,9 +92,9 @@ class IntegerSenderConnectionImpl : public IntegerSenderConnection {
 class AssociatedInterfaceTest : public testing::Test {
  public:
   AssociatedInterfaceTest() {}
-  ~AssociatedInterfaceTest() override { loop_.RunUntilIdle(); }
+  ~AssociatedInterfaceTest() override { base::RunLoop().RunUntilIdle(); }
 
-  void PumpMessages() { loop_.RunUntilIdle(); }
+  void PumpMessages() { base::RunLoop().RunUntilIdle(); }
 
   template <typename T>
   AssociatedInterfacePtrInfo<T> EmulatePassingAssociatedPtrInfo(
@@ -121,7 +122,7 @@ class AssociatedInterfaceTest : public testing::Test {
     if (loop_.task_runner()->BelongsToCurrentThread()) {
       run_loop->Quit();
     } else {
-      loop_.PostTask(
+      loop_.task_runner()->PostTask(
           FROM_HERE,
           base::Bind(&AssociatedInterfaceTest::QuitRunLoop,
                      base::Unretained(this), base::Unretained(run_loop)));

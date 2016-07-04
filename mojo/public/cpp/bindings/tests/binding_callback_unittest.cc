@@ -129,7 +129,7 @@ class BindingCallbackTest : public testing::Test {
   int32_t last_client_callback_value_seen_;
   sample::ProviderPtr interface_ptr_;
 
-  void PumpMessages() { loop_.RunUntilIdle(); }
+  void PumpMessages() { base::RunLoop().RunUntilIdle(); }
 
  private:
   base::MessageLoop loop_;

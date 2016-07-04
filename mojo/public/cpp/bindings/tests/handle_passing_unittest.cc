@@ -157,7 +157,7 @@ class HandlePassingTest : public testing::Test {
 
   void TearDown() override { PumpMessages(); }
 
-  void PumpMessages() { loop_.RunUntilIdle(); }
+  void PumpMessages() { base::RunLoop().RunUntilIdle(); }
 
  private:
   base::MessageLoop loop_;

@@ -869,7 +869,7 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadSampledFile) {
       &item,
       base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
                  base::Unretained(this)));
-  MessageLoop::current()->Run();
+  base::RunLoop().Run();
   EXPECT_TRUE(IsResult(DownloadProtectionService::UNKNOWN));
   EXPECT_FALSE(HasClientDownloadRequest());
 
@@ -881,7 +881,7 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadSampledFile) {
       &item,
       base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
                  base::Unretained(this)));
-  MessageLoop::current()->Run();
+  base::RunLoop().Run();
   EXPECT_TRUE(IsResult(DownloadProtectionService::UNKNOWN));
   EXPECT_TRUE(HasClientDownloadRequest());
   // Verify it's a "light" ping, check that URLs don't have paths, and
@@ -908,7 +908,7 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadSampledFile) {
       &item,
       base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
                  base::Unretained(this)));
-  MessageLoop::current()->Run();
+  base::RunLoop().Run();
   EXPECT_TRUE(IsResult(DownloadProtectionService::UNKNOWN));
   EXPECT_FALSE(HasClientDownloadRequest());
 
@@ -920,7 +920,7 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadSampledFile) {
       &item,
       base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
                  base::Unretained(this)));
-  MessageLoop::current()->Run();
+  base::RunLoop().Run();
   EXPECT_TRUE(IsResult(DownloadProtectionService::UNKNOWN));
   EXPECT_FALSE(HasClientDownloadRequest());
 }

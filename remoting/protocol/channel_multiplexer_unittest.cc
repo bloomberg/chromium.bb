@@ -99,7 +99,7 @@ class ChannelMultiplexerTest : public testing::Test {
         &ChannelMultiplexerTest::OnChannelConnected, base::Unretained(this),
         client_socket, &counter));
 
-    message_loop_.Run();
+    base::RunLoop().Run();
 
     EXPECT_TRUE(host_socket->get());
     EXPECT_TRUE(client_socket->get());
@@ -124,8 +124,11 @@ class ChannelMultiplexerTest : public testing::Test {
     return result;
   }
 
+ private:
+  // Must be instantiated before the FakeStreamChannelFactories below.
   base::MessageLoop message_loop_;
 
+ protected:
   FakeStreamChannelFactory host_channel_factory_;
   FakeStreamChannelFactory client_channel_factory_;
 
@@ -148,7 +151,7 @@ TEST_F(ChannelMultiplexerTest, OneChannel) {
   StreamConnectionTester tester(host_socket.get(), client_socket.get(),
                                 kMessageSize, kMessages);
   tester.Start();
-  message_loop_.Run();
+  base::RunLoop().Run();
   tester.CheckResults();
 }
 
@@ -170,7 +173,7 @@ TEST_F(ChannelMultiplexerTest, TwoChannels) {
   tester1.Start();
   tester2.Start();
   while (!tester1.done() || !tester2.done()) {
-    message_loop_.Run();
+    base::RunLoop().Run();
   }
   tester1.CheckResults();
   tester2.CheckResults();
@@ -212,7 +215,7 @@ TEST_F(ChannelMultiplexerTest, FourChannels) {
   tester4.Start();
   while (!tester1.done() || !tester2.done() ||
          !tester3.done() || !tester4.done()) {
-    message_loop_.Run();
+    base::RunLoop().Run();
   }
   tester1.CheckResults();
   tester2.CheckResults();

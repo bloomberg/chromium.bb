@@ -5,6 +5,7 @@
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/run_loop.h"
 #include "net/base/net_errors.h"
 #include "remoting/base/rsa_key_pair.h"
 #include "remoting/protocol/auth_util.h"
@@ -141,7 +142,7 @@ class NegotiatingAuthenticatorTest : public AuthenticatorTestBase {
                                   kMessageSize, kMessages);
 
     tester.Start();
-    message_loop_.Run();
+    base::RunLoop().Run();
     tester.CheckResults();
   }
 

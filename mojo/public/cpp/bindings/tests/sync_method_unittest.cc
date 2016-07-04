@@ -247,7 +247,7 @@ class TestSyncServiceThread {
 class SyncMethodTest : public testing::Test {
  public:
   SyncMethodTest() {}
-  ~SyncMethodTest() override { loop_.RunUntilIdle(); }
+  ~SyncMethodTest() override { base::RunLoop().RunUntilIdle(); }
 
  protected:
   base::MessageLoop loop_;

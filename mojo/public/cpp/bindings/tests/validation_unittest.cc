@@ -254,7 +254,7 @@ class ValidationIntegrationTest : public ValidationTest {
     mojo::Connector connector_;
   };
 
-  void PumpMessages() { loop_.RunUntilIdle(); }
+  void PumpMessages() { base::RunLoop().RunUntilIdle(); }
 
   TestMessageReceiver* test_message_receiver_;
   ScopedMessagePipeHandle testee_endpoint_;

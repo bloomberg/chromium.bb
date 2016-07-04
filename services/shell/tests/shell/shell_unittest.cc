@@ -183,7 +183,7 @@ TEST_F(ShellTest, CreateInstance) {
 
   // 2. Wait for the target to connect to us. (via
   //    mojo:shell_unittest)
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
 
   EXPECT_FALSE(connection->IsPending());
   uint32_t remote_id = connection->GetRemoteInstanceID();
@@ -215,7 +215,7 @@ TEST_F(ShellTest, CreateInstance) {
       base::Bind(&ShellTest::OnDriverQuit,
                  base::Unretained(this)));
   driver->QuitDriver();
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
 }
 
 }  // namespace shell

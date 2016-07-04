@@ -85,9 +85,9 @@ void RecordEnum(sample::Enum* storage,
 class RequestResponseTest : public testing::Test {
  public:
   RequestResponseTest() {}
-  ~RequestResponseTest() override { loop_.RunUntilIdle(); }
+  ~RequestResponseTest() override { base::RunLoop().RunUntilIdle(); }
 
-  void PumpMessages() { loop_.RunUntilIdle(); }
+  void PumpMessages() { base::RunLoop().RunUntilIdle(); }
 
  private:
   base::MessageLoop loop_;

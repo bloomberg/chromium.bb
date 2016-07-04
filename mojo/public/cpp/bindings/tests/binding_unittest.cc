@@ -123,7 +123,7 @@ TEST_F(BindingTest, DestroyClosesMessagePipe) {
   ptr->Frobinate(nullptr, sample::Service::BazOptions::REGULAR, nullptr,
                  SetFlagAndRunClosure<int32_t>(&called,
                                                run_loop2.QuitClosure()));
-  loop().RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(called);
 }
 
@@ -157,13 +157,13 @@ TEST_F(BindingTest, CloseDoesntCallConnectionErrorHandler) {
   bool called = false;
   binding.set_connection_error_handler(SetFlagAndRunClosure(&called));
   binding.Close();
-  loop().RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(called);
 
   // We can also close the other end, and the error handler still won't be
   // called.
   ptr.reset();
-  loop().RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(called);
 }
 
@@ -228,7 +228,7 @@ TEST_F(BindingTest, Unbind) {
   ptr->Frobinate(nullptr, sample::Service::BazOptions::REGULAR, nullptr,
                  SetFlagAndRunClosure<int32_t>(&called,
                                                run_loop.QuitClosure()));
-  loop().RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(called);
 
   called = false;
@@ -277,7 +277,7 @@ TEST_F(BindingTest, PauseResume) {
                  SetFlagAndRunClosure<int32_t>(&called,
                                                run_loop.QuitClosure()));
   EXPECT_FALSE(called);
-  loop().RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   // Frobinate() should not be called as the binding is paused.
   EXPECT_FALSE(called);
 
@@ -300,7 +300,7 @@ TEST_F(BindingTest, ErrorHandleNotRunWhilePaused) {
   binding.PauseIncomingMethodCallProcessing();
 
   ptr.reset();
-  loop().RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   // The connection error handle should not be called as the binding is paused.
   EXPECT_FALSE(called);
 
@@ -368,7 +368,7 @@ TEST_F(StrongBindingTest, ConnectionErrorDestroysImpl) {
   new ServiceImplWithBinding(&was_deleted, run_loop.QuitClosure(),
                              GetProxy(&ptr));
 
-  loop().RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(was_deleted);
 
   ptr.reset();
@@ -395,7 +395,7 @@ TEST_F(StrongBindingTest, ExplicitDeleteImpl) {
   impl->binding().set_connection_error_handler(
       SetFlagAndRunClosure(&binding_error_handler_called));
 
-  loop().RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(ptr_error_handler_called);
   EXPECT_FALSE(was_deleted);
 

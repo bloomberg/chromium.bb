@@ -11,10 +11,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
-
-namespace base {
-class MessageLoop;
-}  // namespace base
+#include "base/single_thread_task_runner.h"
 
 namespace net {
 class DrainableIOBuffer;
@@ -59,7 +56,7 @@ class StreamConnectionTester {
   void HandleReadResult(int result);
 
  private:
-  base::MessageLoop* message_loop_;
+  const scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   P2PStreamSocket* host_socket_;
   P2PStreamSocket* client_socket_;
   int message_size_;
@@ -94,7 +91,7 @@ class DatagramConnectionTester {
   void OnRead(int result);
   void HandleReadResult(int result);
 
-  base::MessageLoop* message_loop_;
+  const scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   P2PDatagramSocket* host_socket_;
   P2PDatagramSocket* client_socket_;
   int message_size_;

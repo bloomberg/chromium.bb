@@ -18,6 +18,7 @@
 #include "base/process/process.h"
 #include "base/process/process_handle.h"
 #include "base/run_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "build/build_config.h"
 #include "ipc/attachment_broker_privileged.h"
 #include "ipc/ipc_channel.h"
@@ -374,7 +375,8 @@ DesktopEnvironment* IpcDesktopEnvironmentTest::CreateDesktopEnvironment() {
       .Times(AtMost(1));
 
   // Let tests know that the remote desktop environment is created.
-  message_loop_.PostTask(FROM_HERE, setup_run_loop_->QuitClosure());
+  message_loop_.task_runner()->PostTask(FROM_HERE,
+                                        setup_run_loop_->QuitClosure());
 
   return desktop_environment;
 }

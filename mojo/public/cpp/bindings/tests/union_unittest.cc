@@ -1210,7 +1210,7 @@ void ExpectInt16(int16_t value, PodUnionPtr out) {
 }
 
 TEST(UnionTest, UnionInInterface) {
-  base::MessageLoop run_loop;
+  base::MessageLoop message_loop;
   UnionInterfaceImpl impl;
   UnionInterfacePtr ptr;
   Binding<UnionInterface> bindings(&impl, GetProxy(&ptr));
@@ -1219,7 +1219,7 @@ TEST(UnionTest, UnionInInterface) {
   pod->set_f_int16(16);
 
   ptr->Echo(std::move(pod), base::Bind(&ExpectInt16, 16));
-  run_loop.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 
 }  // namespace test
