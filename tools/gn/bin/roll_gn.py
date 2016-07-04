@@ -270,9 +270,18 @@ class GNRoller(object):
         fp = urllib2.urlopen(jsurl)
         js = json.loads(fp.read())
         fp.close()
+        sha1_step_name = 'gn sha1'
         for step in js['steps']:
-          if step['name'] == 'gn sha1':
-            sha1 = step['text'][1]
+          if step['name'] == sha1_step_name:
+            # TODO: At some point infra changed the step text to
+            # contain the step name; once all of the masters have been
+            # restarted we can probably assert that the step text
+            # with the step_name.
+            sha1_step_text_prefix = sha1_step_name + '<br>'
+            if step['text'][-1].startswith(sha1_step_text_prefix):
+              sha1 = step['text'][-1][len(sha1_step_text_prefix):]
+            else:
+              sha1 = step['text'][-1]
 
       if results[platform]['build'] < build:
         results[platform]['build'] = build
@@ -430,9 +439,7 @@ class GNRoller(object):
       '\n'
       '%s'
       '\n'
-      'TBR=%s\n'
-      'CQ_EXTRA_TRYBOTS=tryserver.chromium.mac:mac_chromium_gn_dbg;'
-      'tryserver.chromium.win:win8_chromium_gn_dbg\n' % (
+      'TBR=%s\n' % (
         old_buildtools_commitish[:COMMITISH_DIGITS],
         new_buildtools_commitish[:COMMITISH_DIGITS],
         self.old_gn_commitish[:COMMITISH_DIGITS],
