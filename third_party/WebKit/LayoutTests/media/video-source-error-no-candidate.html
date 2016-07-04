@@ -1,62 +1,23 @@
-<html lang="en">
-    <head>
-        <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-        <title>&lt;video&gt; and &lt;source&gt; error test</title>
-        <!-- TODO(foolip): Convert test to testharness.js. crbug.com/588956
-             (Please avoid writing new tests using video-test.js) -->
-        <script src=video-test.js></script>
+<!DOCTYPE html>
+<title>Test that "error" event is fired from "source" element when it can not be used.</title>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<video>
+    <source id="missing-src" type="video/blahblah"></source>
+    <source id="bogus-type" src="content/test.ogv" type="video/blahblah"></source>
+    <source id="empty-src" src="" type="video/ogg"></source>
+    <source id="no-extension-no-type" src="nonexistent"></source>
+</video>
+<script>
+async_test(function(t) {
+    var errorCount = 0;
+    document.addEventListener("error", function(event) {
+        assert_true(event.target instanceof HTMLSourceElement);
+        assert_equals(document.querySelector("video").error, null);
+        assert_less_than(errorCount, 4);
 
-        <script>
-
-            var sources = [];
-            var errorCount = 0;
-            var expectedErrorCount = 4;
-
-            function errorEvent(evt)
-            {
-                consoleWrite("");
-
-                var ndx;
-                for (ndx = 0; ndx < sources.length; ndx++) {
-                    if (sources[ndx] == evt.target)
-                        break;
-                }
-
-                var src = sources[ndx].getAttribute('src') == null ? "null" : "'" + relativeURL(evt.target.src) + "'";
-                if (sources[ndx] == evt.target)
-                    logResult(true, "EVENT(error) from &lt;source id='<em>" + evt.target.id + "</em>' src=<em>" + src + "</em>&gt;");
-                else
-                    logResult(false, "EVENT(error) from " + evt.target);
-
-                testExpected("video.error", null);
-
-                if (++errorCount == expectedErrorCount) {
-                    consoleWrite("");
-                    setTimeout(endTest, 200);
-                }
-            }
-
-            function start()
-            {
-                document.addEventListener("error", errorEvent, true);
-
-                sources = document.getElementsByTagName('source');
-
-                findMediaElement();
-            }
-        </script>
-    </head>
-
-    <body>
-
-       <video onloadstart="start()" controls>
-            <source id=missing-src type="video/blahblah">
-            <source id=bogus-type src=content/test.ogv type="video/blahblah">
-            <source id=empty-src src="" type="video/ogg">
-            <source id=no-extension-no-type src=nonexistent>
-        </video>
-
-        <p>Test that 'error' events are fired from &lt;source&gt; element when it can not be used.</p>
-
-    </body>
-</html>
+        if (++errorCount == 4)
+            setTimeout(t.step_func_done(), 200);
+    }, true);
+});
+</script>
