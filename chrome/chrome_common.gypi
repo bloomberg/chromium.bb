@@ -652,6 +652,7 @@
         'mojom_files': [
           'common/image_decoder.mojom',
           'common/resource_usage_reporter.mojom',
+          'common/shell_handler_win.mojom',
         ],
         'mojom_typemaps': [
           '../skia/public/interfaces/skbitmap.typemap',

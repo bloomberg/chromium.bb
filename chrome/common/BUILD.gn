@@ -428,6 +428,7 @@ mojom("mojo_bindings") {
   sources = [
     "image_decoder.mojom",
     "resource_usage_reporter.mojom",
+    "shell_handler_win.mojom",
   ]
 
   public_deps = [

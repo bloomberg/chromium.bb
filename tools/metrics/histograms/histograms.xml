@@ -64988,6 +64988,23 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Windows.IsPinnedToTaskbar" enum="IsPinnedToTaskbarResult">
+  <owner>pmonette@chromium.org</owner>
+  <summary>
+    Indicates whether Chrome is pinned to the Windows taskbar for the current
+    user. Recorded shortly after startup.
+  </summary>
+</histogram>
+
+<histogram name="Windows.IsPinnedToTaskbar.ProcessError" enum="BooleanError">
+  <owner>pmonette@chromium.org</owner>
+  <summary>
+    Indicates whether a connection error occured between the browser and the
+    shell handler process. This is usually caused by a crash in the utility
+    process. This is logged every time the pinned state is queried.
+  </summary>
+</histogram>
+
 <histogram name="Windows.Kernel32Version" enum="WindowsVersion">
   <owner>scottmg@chromium.org</owner>
   <summary>
@@ -79860,6 +79877,12 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="3" label="IPV6_GLOBAL_ADDRESS_MISSING"/>
   <int value="4" label="IPV6_GLOBAL_ADDRESS_PRESENT"/>
   <int value="5" label="IPV6_INTERFACE_ARRAY_TOO_SHORT"/>
+</enum>
+
+<enum name="IsPinnedToTaskbarResult" type="int">
+  <int value="0" label="Not pinned"/>
+  <int value="1" label="Pinned"/>
+  <int value="2" label="Failed to determine"/>
 </enum>
 
 <enum name="JavaScriptAPIName" type="int">

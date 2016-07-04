@@ -57,6 +57,10 @@ base::string16 GetAppModelIdForProfile(const base::string16& app_name,
 // calling GetAppModelIdForProfile() with ShellUtil::GetAppId() as app_name.
 base::string16 GetChromiumModelIdForProfile(const base::FilePath& profile_path);
 
+// Records the pinned state of the current executable into a histogram. Must be
+// called on the IO thread.
+void RecordIsPinnedToTaskbarHistogram();
+
 // Migrates existing chrome taskbar pins by tagging them with correct app id.
 // see http://crbug.com/28104
 void MigrateTaskbarPins();

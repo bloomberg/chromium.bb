@@ -52,6 +52,7 @@
 
 #if defined(OS_WIN)
 #include "base/win/windows_version.h"
+#include "chrome/browser/shell_integration_win.h"
 #include "chrome/installer/util/google_update_settings.h"
 #endif  // defined(OS_WIN)
 
@@ -349,11 +350,17 @@ void ChromeBrowserMainExtraPartsMetrics::PostBrowserStart() {
   RecordMacMetrics();
 #endif  // defined(OS_MACOSX)
 
-  const int kStartupMetricsGatheringDelaySeconds = 45;
+  constexpr base::TimeDelta kStartupMetricsGatheringDelay =
+      base::TimeDelta::FromSeconds(45);
   content::BrowserThread::GetBlockingPool()->PostDelayedTask(
-      FROM_HERE,
-      base::Bind(&RecordStartupMetricsOnBlockingPool),
-      base::TimeDelta::FromSeconds(kStartupMetricsGatheringDelaySeconds));
+      FROM_HERE, base::Bind(&RecordStartupMetricsOnBlockingPool),
+      kStartupMetricsGatheringDelay);
+#if defined(OS_WIN)
+  content::BrowserThread::PostDelayedTask(
+      content::BrowserThread::IO, FROM_HERE,
+      base::Bind(&shell_integration::win::RecordIsPinnedToTaskbarHistogram),
+      kStartupMetricsGatheringDelay);
+#endif  // defined(OS_WIN)
 
   display_count_ = display::Screen::GetScreen()->GetNumDisplays();
   UMA_HISTOGRAM_COUNTS_100("Hardware.Display.Count.OnStartup", display_count_);

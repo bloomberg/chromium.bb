@@ -38,7 +38,8 @@
 #endif
 
 #if defined(OS_WIN)
-#include "chrome/utility/shell_handler_win.h"
+#include "chrome/utility/ipc_shell_handler_win.h"
+#include "chrome/utility/shell_handler_impl_win.h"
 #endif
 
 #if defined(ENABLE_EXTENSIONS)
@@ -127,7 +128,7 @@ ChromeContentUtilityClient::ChromeContentUtilityClient()
 #endif
 
 #if defined(OS_WIN)
-  handlers_.push_back(new ShellHandler());
+  handlers_.push_back(new IPCShellHandler());
 #endif
 }
 
@@ -209,6 +210,9 @@ void ChromeContentUtilityClient::ExposeInterfacesToBrowser(
   registry->AddInterface(base::Bind(&CreateImageDecoder));
   registry->AddInterface(
       base::Bind(&safe_json::SafeJsonParserMojoImpl::Create));
+#if defined(OS_WIN)
+  registry->AddInterface(base::Bind(&ShellHandlerImpl::Create));
+#endif
 }
 
 void ChromeContentUtilityClient::AddHandler(
