@@ -74281,6 +74281,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="1140" label="QUICKUNLOCKPRIVATE_SETMODES"/>
   <int value="1141" label="QUICKUNLOCKPRIVATE_GETACTIVEMODES"/>
   <int value="1142" label="QUICKUNLOCKPRIVATE_GETAVAILABLEMODES"/>
+  <int value="1143" label="WEBSTOREPRIVATE_ISEXTENSIONPENDINGAPPROVAL"/>
 </enum>
 
 <enum name="ExtensionIconState" type="int">

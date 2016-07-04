@@ -317,6 +317,25 @@
             ]
           }
         ]
+      },
+      {
+        "name": "isPendingCustodianApproval",
+        "description": "Checks if an extension installed on a Supervised User profile is pending custodian approval.",
+        "parameters": [
+          {
+            "name": "id",
+            "type": "string",
+            "description": "The extension id of the extension to be checked."
+          },
+          { 
+            "name": "callback",
+            "type": "function",
+            "optional": false,
+            "parameters": [
+              { "name": "is_pending_approval", "type": "boolean" }
+            ]
+          }
+        ]
       }
     ]
   }

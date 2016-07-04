@@ -21,6 +21,7 @@
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/extension_install_ui_util.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/install_tracker.h"
 #include "chrome/browser/gpu/gpu_feature_checker.h"
 #include "chrome/browser/profiles/profile.h"
@@ -52,6 +53,8 @@ namespace GetEphemeralAppsEnabled =
 namespace GetIsLauncherEnabled = api::webstore_private::GetIsLauncherEnabled;
 namespace GetStoreLogin = api::webstore_private::GetStoreLogin;
 namespace GetWebGLStatus = api::webstore_private::GetWebGLStatus;
+namespace IsPendingCustodianApproval =
+    api::webstore_private::IsPendingCustodianApproval;
 namespace IsInIncognitoMode = api::webstore_private::IsInIncognitoMode;
 namespace LaunchEphemeralApp = api::webstore_private::LaunchEphemeralApp;
 namespace SetStoreLogin = api::webstore_private::SetStoreLogin;
@@ -584,6 +587,52 @@ ExtensionFunction::ResponseAction
 WebstorePrivateGetEphemeralAppsEnabledFunction::Run() {
   return RespondNow(ArgumentList(GetEphemeralAppsEnabled::Results::Create(
       false)));
+}
+
+WebstorePrivateIsPendingCustodianApprovalFunction::
+    WebstorePrivateIsPendingCustodianApprovalFunction()
+    : chrome_details_(this) {}
+
+WebstorePrivateIsPendingCustodianApprovalFunction::
+    ~WebstorePrivateIsPendingCustodianApprovalFunction() {}
+
+ExtensionFunction::ResponseAction
+WebstorePrivateIsPendingCustodianApprovalFunction::Run() {
+  std::unique_ptr<IsPendingCustodianApproval::Params> params(
+      IsPendingCustodianApproval::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params);
+
+  Profile* profile = chrome_details_.GetProfile();
+
+  if (!profile->IsSupervised()) {
+    return RespondNow(BuildResponse(false));
+  }
+
+  ExtensionRegistry* registry = ExtensionRegistry::Get(browser_context());
+
+  const Extension* extension =
+      registry->GetExtensionById(params->id, ExtensionRegistry::EVERYTHING);
+  if (!extension) {
+    return RespondNow(BuildResponse(false));
+  }
+
+  ExtensionPrefs* extensions_prefs = ExtensionPrefs::Get(browser_context());
+
+  if (extensions::util::NeedCustodianApprovalForPermissionIncrease(profile) &&
+      extensions_prefs->HasDisableReason(
+          params->id, Extension::DISABLE_PERMISSIONS_INCREASE)) {
+    return RespondNow(BuildResponse(true));
+  }
+
+  bool is_pending_approval = extensions_prefs->HasDisableReason(
+      params->id, Extension::DISABLE_CUSTODIAN_APPROVAL_REQUIRED);
+
+  return RespondNow(BuildResponse(is_pending_approval));
+}
+
+ExtensionFunction::ResponseValue
+WebstorePrivateIsPendingCustodianApprovalFunction::BuildResponse(bool result) {
+  return OneArgument(base::MakeUnique<base::FundamentalValue>(result));
 }
 
 }  // namespace extensions

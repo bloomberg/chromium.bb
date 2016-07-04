@@ -18,6 +18,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/field_trial.h"
 #include "base/test/mock_entropy_provider.h"
+#include "chrome/browser/extensions/api/webstore_private/webstore_private_api.h"
 #include "chrome/browser/extensions/component_loader.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_service_test_with_install.h"
@@ -33,6 +34,7 @@
 #include "components/browser_sync/browser/profile_sync_service.h"
 #include "components/crx_file/id_util.h"
 #include "components/variations/variations_associated_data.h"
+#include "extensions/browser/api_test_utils.h"
 #include "extensions/browser/app_sorting.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
@@ -61,6 +63,7 @@
 #include "chrome/common/pref_names.h"
 #endif
 
+using extensions::api_test_utils::RunFunctionAndReturnSingleResult;
 using extensions::AppSorting;
 using extensions::Extension;
 using extensions::ExtensionPrefs;
@@ -68,6 +71,7 @@ using extensions::ExtensionSyncData;
 using extensions::ExtensionSystem;
 using extensions::Manifest;
 using extensions::PermissionSet;
+using extensions::WebstorePrivateIsPendingCustodianApprovalFunction;
 using syncer::SyncChange;
 using syncer::SyncChangeList;
 using testing::Mock;
@@ -1592,6 +1596,18 @@ class ExtensionServiceTestSupervised : public ExtensionServiceSyncTest,
     base::FeatureList::SetInstance(std::move(feature_list));
   }
 
+  bool IsPendingCustodianApproval(const std::string& extension_id) {
+    auto function = make_scoped_refptr(
+        new WebstorePrivateIsPendingCustodianApprovalFunction());
+
+    std::unique_ptr<base::Value> result(RunFunctionAndReturnSingleResult(
+        function.get(), "[\"" + extension_id + "\"]", browser_context()));
+
+    bool copy_bool_result = false;
+    EXPECT_TRUE(result->GetAsBoolean(&copy_bool_result));
+    return copy_bool_result;
+  }
+
   void InitServices(bool profile_is_supervised) {
     ExtensionServiceInitParams params = CreateDefaultInitParams();
     params.profile_is_supervised = profile_is_supervised;
@@ -1770,6 +1786,7 @@ TEST_F(ExtensionServiceTestSupervised, InstallOnlyAllowedByCustodian) {
   EXPECT_FALSE(extensions[0]);
   ASSERT_TRUE(extensions[1]);
   EXPECT_TRUE(registry()->enabled_extensions().Contains(extensions[1]->id()));
+  EXPECT_FALSE(IsPendingCustodianApproval(extensions[1]->id()));
 }
 
 TEST_F(ExtensionServiceTestSupervised,
@@ -1864,7 +1881,9 @@ TEST_F(ExtensionServiceTestSupervised,
   ASSERT_TRUE(extensions[0]);
   ASSERT_TRUE(extensions[1]);
   EXPECT_TRUE(registry()->disabled_extensions().Contains(extensions[0]->id()));
+  EXPECT_TRUE(IsPendingCustodianApproval(extensions[0]->id()));
   EXPECT_TRUE(registry()->enabled_extensions().Contains(extensions[1]->id()));
+  EXPECT_FALSE(IsPendingCustodianApproval(extensions[1]->id()));
 }
 
 TEST_F(ExtensionServiceTestSupervised,
@@ -1895,6 +1914,7 @@ TEST_F(ExtensionServiceTestSupervised,
 
   // The extension should not be enabled anymore.
   CheckDisabledForCustodianApproval(id);
+  EXPECT_TRUE(IsPendingCustodianApproval(id));
 }
 
 TEST_F(ExtensionServiceTestSupervised,
@@ -1953,6 +1973,7 @@ TEST_F(ExtensionServiceTestSupervised, ExtensionApprovalBeforeInstallation) {
 
   // Make sure it's enabled.
   EXPECT_TRUE(registry()->enabled_extensions().Contains(id));
+  EXPECT_FALSE(IsPendingCustodianApproval(id));
 }
 
 TEST_F(ExtensionServiceTestSupervised, UpdateWithoutPermissionIncrease) {
@@ -1970,6 +1991,7 @@ TEST_F(ExtensionServiceTestSupervised, UpdateWithoutPermissionIncrease) {
   ASSERT_TRUE(extension);
   // The version should have changed.
   EXPECT_EQ(*extension->version(), base::Version(version2));
+  EXPECT_FALSE(IsPendingCustodianApproval(id));
 }
 
 TEST_F(ExtensionServiceTestSupervised, UpdateWithPermissionIncreaseNoApproval) {
@@ -1991,6 +2013,7 @@ TEST_F(ExtensionServiceTestSupervised, UpdateWithPermissionIncreaseNoApproval) {
                             RequestId(id, version2), testing::_))
       .Times(0);
   UpdatePermissionsTestExtension(id, version2, DISABLED);
+  EXPECT_FALSE(IsPendingCustodianApproval(id));
 }
 
 TEST_F(ExtensionServiceTestSupervised,
@@ -2013,6 +2036,7 @@ TEST_F(ExtensionServiceTestSupervised,
                             RequestId(id, version2), testing::_));
   UpdatePermissionsTestExtension(id, version2, DISABLED);
   Mock::VerifyAndClearExpectations(creator);
+  EXPECT_TRUE(IsPendingCustodianApproval(id));
 
   // Simulate a custodian approval for re-enabling the extension coming in
   // through Sync, but set the old version. This can happen when there already
@@ -2041,6 +2065,7 @@ TEST_F(ExtensionServiceTestSupervised,
   EXPECT_FALSE(extension_sync_service()->HasPendingReenable(
       id, base::Version(version2)));
   Mock::VerifyAndClearExpectations(creator);
+  EXPECT_TRUE(IsPendingCustodianApproval(id));
 }
 
 TEST_F(ExtensionServiceTestSupervised,
@@ -2061,6 +2086,7 @@ TEST_F(ExtensionServiceTestSupervised,
                             RequestId(id, version2), testing::_));
   UpdatePermissionsTestExtension(id, version2, DISABLED);
   Mock::VerifyAndClearExpectations(creator);
+  EXPECT_TRUE(IsPendingCustodianApproval(id));
 
   // Simulate a custodian approval for re-enabling the extension coming in
   // through Sync.
@@ -2078,6 +2104,7 @@ TEST_F(ExtensionServiceTestSupervised,
   extension_sync_service()->ProcessSyncChanges(FROM_HERE, list);
   // The extension should have gotten re-enabled.
   EXPECT_TRUE(registry()->enabled_extensions().Contains(id));
+  EXPECT_FALSE(IsPendingCustodianApproval(id));
 }
 
 TEST_F(ExtensionServiceTestSupervised,
@@ -2151,12 +2178,14 @@ TEST_F(ExtensionServiceTestSupervised, SupervisedUserInitiatedInstalls) {
   ASSERT_EQ(extension->id(), good_crx);
   EXPECT_TRUE(registry()->disabled_extensions().Contains(good_crx));
   Mock::VerifyAndClearExpectations(creator);
+  EXPECT_TRUE(IsPendingCustodianApproval(extension->id()));
 
   SimulateCustodianApprovalChangeViaSync(good_crx, version,
                                          SyncChange::ACTION_ADD);
 
   // The extension should be enabled now.
   EXPECT_TRUE(registry()->enabled_extensions().Contains(good_crx));
+  EXPECT_FALSE(IsPendingCustodianApproval(extension->id()));
 
   // Simulate approval removal coming via Sync.
   SimulateCustodianApprovalChangeViaSync(good_crx, version,
@@ -2164,6 +2193,7 @@ TEST_F(ExtensionServiceTestSupervised, SupervisedUserInitiatedInstalls) {
 
   // The extension should be disabled now.
   EXPECT_TRUE(registry()->disabled_extensions().Contains(good_crx));
+  EXPECT_TRUE(IsPendingCustodianApproval(extension->id()));
 }
 
 TEST_F(ExtensionServiceTestSupervised,
@@ -2202,6 +2232,7 @@ TEST_F(ExtensionServiceTestSupervised,
   approved_extensions->GetStringWithoutPathExpansion(id, &approved_version);
 
   EXPECT_EQ(base::Version(approved_version), *extension->version());
+  EXPECT_FALSE(IsPendingCustodianApproval(id));
 }
 
 TEST_F(ExtensionServiceTestSupervised,
@@ -2240,12 +2271,14 @@ TEST_F(ExtensionServiceTestSupervised,
   EXPECT_TRUE(ExtensionPrefs::Get(profile())->HasDisableReason(
       id, Extension::DISABLE_CUSTODIAN_APPROVAL_REQUIRED));
 
+  EXPECT_TRUE(IsPendingCustodianApproval(id));
   // Approve the latest version
   SimulateCustodianApprovalChangeViaSync(id, version3,
                                          SyncChange::ACTION_UPDATE);
 
   // The extension should be enabled again.
   EXPECT_TRUE(registry()->enabled_extensions().Contains(id));
+  EXPECT_FALSE(IsPendingCustodianApproval(id));
 }
 
 TEST_F(ExtensionServiceTestSupervised,
@@ -2275,6 +2308,7 @@ TEST_F(ExtensionServiceTestSupervised,
   UpdatePermissionsTestExtension(id, version2, ENABLED);
   // The extension should be enabled again.
   EXPECT_TRUE(registry()->enabled_extensions().Contains(id));
+  EXPECT_FALSE(IsPendingCustodianApproval(id));
 }
 
 TEST_F(ExtensionServiceSyncTest, SyncUninstallByCustodianSkipsPolicy) {

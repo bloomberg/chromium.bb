@@ -288,6 +288,25 @@ class WebstorePrivateGetEphemeralAppsEnabledFunction
   ExtensionFunction::ResponseAction Run() override;
 };
 
+class WebstorePrivateIsPendingCustodianApprovalFunction
+    : public UIThreadExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("webstorePrivate.isPendingCustodianApproval",
+                             WEBSTOREPRIVATE_ISPENDINGCUSTODIANAPPROVAL)
+
+  WebstorePrivateIsPendingCustodianApprovalFunction();
+
+ private:
+  ~WebstorePrivateIsPendingCustodianApprovalFunction() override;
+
+  // ExtensionFunction:
+  ExtensionFunction::ResponseAction Run() override;
+
+  ExtensionFunction::ResponseValue BuildResponse(bool result);
+
+  ChromeExtensionFunctionDetails chrome_details_;
+};
+
 }  // namespace extensions
 
 #endif  // CHROME_BROWSER_EXTENSIONS_API_WEBSTORE_PRIVATE_WEBSTORE_PRIVATE_API_H_
