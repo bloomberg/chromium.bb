@@ -24,12 +24,9 @@
 
 <script>
 async_test((test) => {
-    document.onpointerlockerror = () => {
-        assert_true(false, 'onpointerlockerror is not expected.');
-        test.done();
-    };
+    document.onpointerlockerror = test.unreached_func('onpointerlockerror is not expected.');
 
-    document.onpointerlockchange = () => {
+    document.onpointerlockchange = test.step_func(() => {
         // Not interested in handling before or after exitPointerLock.
         if (document.pointerLockElement === null)
             return;
@@ -42,17 +39,19 @@ async_test((test) => {
 
         document.exitPointerLock();
         test.done();
-    };
+    });
 
     convertTemplatesToShadowRootsWithin(host);
     var hostV1inV1 = hostV1.shadowRoot.querySelector('#hostV1inV1');
     var hostV0inV1inV1 = hostV1inV1.shadowRoot.querySelector('#hostV0inV1inV1');
 
-    assert_equals(document.pointerLockElement, null);
-    assert_equals(host.shadowRoot.pointerLockElement, null);
-    assert_equals(hostV1.shadowRoot.pointerLockElement, null);
-    assert_equals(hostV1inV1.shadowRoot.pointerLockElement, null);
-    assert_equals(hostV0inV1inV1.shadowRoot.pointerLockElement, null);
+    test.step(() => {
+        assert_equals(document.pointerLockElement, null);
+        assert_equals(host.shadowRoot.pointerLockElement, null);
+        assert_equals(hostV1.shadowRoot.pointerLockElement, null);
+        assert_equals(hostV1inV1.shadowRoot.pointerLockElement, null);
+        assert_equals(hostV0inV1inV1.shadowRoot.pointerLockElement, null);
+    });
 
     var canvas = hostV0inV1inV1.shadowRoot.querySelector('canvas');
     canvas.requestPointerLock();
