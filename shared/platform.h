@@ -26,6 +26,7 @@
 #ifndef WESTON_PLATFORM_H
 #define WESTON_PLATFORM_H
 
+#include <stdbool.h>
 #include <string.h>
 
 #ifdef ENABLE_EGL
