@@ -35,25 +35,13 @@
 #include <EGL/eglext.h>
 #endif
 
-#ifndef EGL_PLATFORM_WAYLAND_KHR
-#define EGL_PLATFORM_WAYLAND_KHR 0x31D8
-#endif
+#include "weston-egl-ext.h"
 
 #ifdef  __cplusplus
 extern "C" {
 #endif
 
 #ifdef ENABLE_EGL
-
-#ifndef EGL_EXT_platform_base
-typedef EGLDisplay (*PFNEGLGETPLATFORMDISPLAYEXTPROC) (EGLenum platform,
-						       void *native_display,
-						       const EGLint *attrib_list);
-typedef EGLSurface (*PFNEGLCREATEPLATFORMWINDOWSURFACEEXTPROC) (EGLDisplay dpy,
-								EGLConfig config,
-								void *native_window,
-								const EGLint *attrib_list);
-#endif
 
 static bool
 weston_check_egl_extension(const char *extensions, const char *extension)
