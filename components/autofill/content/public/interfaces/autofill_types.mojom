@@ -4,8 +4,6 @@
 
 module autofill.mojom;
 
-import "mojo/common/common_custom_types.mojom";
-import "url/mojo/origin.mojom";
 import "url/mojo/url.mojom";
 
 // autofill::FormFieldData::CheckStatus
@@ -27,35 +25,6 @@ enum TextDirection {
   RIGHT_TO_LEFT = 1,
   LEFT_TO_RIGHT = 2,
   TEXT_DIRECTION_NUM_DIRECTIONS = 3
-};
-
-// autofill::PasswordForm::GenerationUploadStatus
-enum GenerationUploadStatus {
-  NO_SIGNAL_SENT,
-  POSITIVE_SIGNAL_SENT,
-  NEGATIVE_SIGNAL_SENT,
-  UNKNOWN_STATUS = 10
-};
-
-// autofill::PasswordForm::Layout
-enum PasswordFormLayout {
-  LAYOUT_OTHER,
-  LAYOUT_LOGIN_AND_SIGNUP
-};
-
-// autofill::PasswordForm::Type
-enum PasswordFormType {
-  TYPE_MANUAL,
-  TYPE_GENERATED,
-  TYPE_API
-};
-
-enum PasswordFormScheme {
-  SCHEME_HTML,
-  SCHEME_BASIC,
-  SCHEME_DIGEST,
-  SCHEME_OTHER,
-  SCHEME_USERNAME_ONLY
 };
 
 struct FormFieldData {
@@ -127,48 +96,4 @@ struct PasswordFormFillData {
   array<array<string>> other_possible_usernames_values;
   bool wait_for_username;
   bool is_possible_change_password_form;
-};
-
-struct PasswordFormGenerationData {
-  string name;
-  url.mojom.Url action;
-  FormFieldData generation_field;
-};
-
-struct PasswordForm {
-  PasswordFormScheme scheme;
-  string signon_realm;
-  url.mojom.Url origin_with_path;
-  url.mojom.Url action;
-  string affiliated_web_realm;
-  string submit_element;
-  string username_element;
-  bool username_marked_by_site;
-  string username_value;
-  array<string> other_possible_usernames;
-  string password_element;
-  string password_value;
-  bool password_value_is_default;
-  string new_password_element;
-  string new_password_value;
-  bool new_password_value_is_default;
-  bool new_password_marked_by_site;
-  bool ssl_valid;
-  bool preferred;
-  mojo.common.mojom.Time date_created;
-  mojo.common.mojom.Time date_synced;
-  bool blacklisted_by_user;
-  PasswordFormType type;
-  int32 times_used;
-  FormData form_data;
-  GenerationUploadStatus generation_upload_status;
-  string display_name;
-  url.mojom.Url icon_url;
-  url.mojom.Origin federation_origin;
-  bool skip_zero_click;
-  PasswordFormLayout layout;
-  bool was_parsed_using_autofill_predictions;
-  bool is_public_suffix_match;
-  bool is_affiliation_based_match;
-  bool does_look_like_signup_form;
 };

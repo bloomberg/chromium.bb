@@ -21,9 +21,7 @@ mojom("types") {
   ]
 
   public_deps = [
-    "//mojo/common:common_custom_types",
     "//url/mojo:url_mojom_gurl",
-    "//url/mojo:url_mojom_origin",
   ]
 }
 

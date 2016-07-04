@@ -8,9 +8,7 @@ public_headers = [
   "//components/autofill/core/common/form_data_predictions.h",
   "//components/autofill/core/common/form_field_data.h",
   "//components/autofill/core/common/form_field_data_predictions.h",
-  "//components/autofill/core/common/password_form.h",
   "//components/autofill/core/common/password_form_fill_data.h",
-  "//components/autofill/core/common/password_form_generation_data.h",
 ]
 traits_headers = [ "//components/autofill/content/public/cpp/autofill_types_struct_traits.h" ]
 sources = [
@@ -28,14 +26,8 @@ type_mappings = [
   "autofill.mojom.FormDataPredictions=autofill::FormDataPredictions",
   "autofill.mojom.FormFieldData=autofill::FormFieldData",
   "autofill.mojom.FormFieldDataPredictions=autofill::FormFieldDataPredictions",
-  "autofill.mojom.GenerationUploadStatus=autofill::PasswordForm::GenerationUploadStatus",
   "autofill.mojom.PasswordAndRealm=autofill::PasswordAndRealm",
-  "autofill.mojom.PasswordForm=autofill::PasswordForm",
   "autofill.mojom.PasswordFormFillData=autofill::PasswordFormFillData",
-  "autofill.mojom.PasswordFormGenerationData=autofill::PasswordFormGenerationData",
-  "autofill.mojom.PasswordFormLayout=autofill::PasswordForm::Layout",
-  "autofill.mojom.PasswordFormScheme=autofill::PasswordForm::Scheme",
-  "autofill.mojom.PasswordFormType=autofill::PasswordForm::Type",
   "autofill.mojom.RoleAttribute=autofill::FormFieldData::RoleAttribute",
   "autofill.mojom.TextDirection=base::i18n::TextDirection",
   "autofill.mojom.UsernamesCollectionKey=autofill::UsernamesCollectionKey",
