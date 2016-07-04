@@ -184,10 +184,12 @@ struct StoragePartitionRemovalData {
 };
 
 net::CanonicalCookie CreateCookieWithHost(const GURL& source) {
-  return net::CanonicalCookie(
-      source, "A", "1", source.host(), "/", base::Time::Now(),
-      base::Time::Now(), base::Time::Now(), false, false,
-      net::CookieSameSite::DEFAULT_MODE, net::COOKIE_PRIORITY_MEDIUM);
+  std::unique_ptr<net::CanonicalCookie> cookie(net::CanonicalCookie::Create(
+      source, "A", "1", std::string(), "/", base::Time::Now(),
+      base::Time::Now(), false, false, net::CookieSameSite::DEFAULT_MODE, false,
+      net::COOKIE_PRIORITY_MEDIUM));
+  EXPECT_TRUE(cookie);
+  return *cookie;
 }
 
 class TestStoragePartition : public StoragePartition {
