@@ -24,11 +24,10 @@ std::string FindFileInResource(const std::string& base_name,
                                const std::string& language,
                                const std::string& ext) {
   std::string resource_file(base_name + "_" + language);
-  BOOL exists =
-      [base::mac::FrameworkBundle()
-          URLForResource:[NSString stringWithUTF8String:resource_file.c_str()]
-           withExtension:[NSString stringWithUTF8String:ext.c_str()]] != nil;
-  return exists ? resource_file + "." + ext : "";
+  BOOL exists = [base::mac::FrameworkBundle()
+                    URLForResource:base::SysUTF8ToNSString(resource_file)
+                     withExtension:base::SysUTF8ToNSString(ext)] != nil;
+  return exists ? resource_file + "." + ext : std::string();
 }
 
 }  // namespace
