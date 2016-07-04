@@ -74,6 +74,21 @@ class MemoryBenchmarkTop10Mobile(_MemoryInfra):
     return not _IGNORED_STATS_RE.search(value.name)
 
 
+class MemoryBenchmarkTop10MobileStress(MemoryBenchmarkTop10Mobile):
+  """Run top 10 mobile page set without closing/restarting the browser.
+
+  This benchmark is intended to stress-test the browser, catching memory leaks
+  or possible crashes after interacting with the browser for a period of time.
+  """
+  @classmethod
+  def Name(cls):
+    return 'memory.top_10_mobile_stress'
+
+  @classmethod
+  def ShouldTearDownStateAfterEachStorySetRun(cls):
+    return False
+
+
 # Benchmark disabled by default. Force to run with --also-run-disabled-tests.
 @benchmark.Disabled('all')
 class DualBrowserBenchmark(_MemoryInfra):
