@@ -896,6 +896,23 @@ usage(const char *argv0)
 	       "The default for both formats is YUYV.\n"
 	       "If the V4L2 and DRM formats differ, the data is simply "
 	       "reinterpreted rather than converted.\n", argv0);
+
+	printf("\n"
+	       "How to set up Vivid the virtual video driver for testing:\n"
+	       "- build your kernel with CONFIG_VIDEO_VIVID=m\n"
+	       "- add this to a /etc/modprobe.d/ file:\n"
+	       "    options vivid node_types=0x1 num_inputs=1 input_types=0x00\n"
+	       "- modprobe vivid and check which device was created,\n"
+	       "  here we assume /dev/video0\n"
+	       "- set the pixel format:\n"
+	       "    $ v4l2-ctl -d /dev/video0 --set-fmt-video=width=640,pixelformat=XR24\n"
+	       "- launch the demo:\n"
+	       "    $ %s /dev/video0 XR24 XR24\n"
+	       "You should see a test pattern with color bars, and some text.\n"
+	       "\n"
+	       "More about vivid: https://www.kernel.org/doc/Documentation/video4linux/vivid.txt\n"
+	       "\n", argv0);
+
 	exit(0);
 }
 
