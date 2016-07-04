@@ -33,8 +33,8 @@ import perf_tests_results_helper # pylint: disable=import-error
 # string_ids_off      : 112 (0x000070)
 # type_ids_size       : 5730
 # type_ids_off        : 184704 (0x02d180)
-# proto_ids_size       : 8289
-# proto_ids_off        : 207624 (0x032b08)
+# proto_ids_size      : 8289
+# proto_ids_off       : 207624 (0x032b08)
 # field_ids_size      : 17854
 # field_ids_off       : 307092 (0x04af94)
 # method_ids_size     : 33699
@@ -48,10 +48,20 @@ import perf_tests_results_helper # pylint: disable=import-error
 # https://source.android.com/devices/tech/dalvik/dex-format.html
 
 
+_CONTRIBUTORS_TO_DEX_CACHE = {'type_ids_size': 'types',
+                              'string_ids_size': 'strings',
+                              'method_ids_size': 'methods',
+                              'field_ids_size': 'fields'}
+
+
 def _ExtractSizesFromDexFile(dex_path):
   counts = {}
   for line in dexdump.DexDump(dex_path, file_summary=True):
     if not line.strip():
+      # Each method, type, field, and string contributes 4 bytes (1 reference)
+      # to our DexCache size.
+      counts['dex_cache_size'] = (
+          sum(counts[x] for x in _CONTRIBUTORS_TO_DEX_CACHE)) * 4
       return counts
     m = re.match(r'([a-z_]+_size) *: (\d+)', line)
     if m:
@@ -103,14 +113,15 @@ def main():
   else:
     sizes = _ExtractSizesFromDexFile(args.dexfile)
 
-  def print_result(name, value_key):
+  def print_result(name, value_key, description=None):
     perf_tests_results_helper.PrintPerfResult(
-        '%s_%s' % (args.apk_name, name), 'total', [sizes[value_key]], name)
+        '%s_%s' % (args.apk_name, name), 'total', [sizes[value_key]],
+        description or name)
 
-  print_result('classes', 'class_defs_size')
-  print_result('fields', 'field_ids_size')
-  print_result('methods', 'method_ids_size')
-  print_result('strings', 'string_ids_size')
+  for dex_header_name, readable_name in _CONTRIBUTORS_TO_DEX_CACHE.iteritems():
+    print_result(readable_name, dex_header_name)
+  print_result(
+      'DexCache_size', 'dex_cache_size', 'bytes of permanent dirty memory')
   return 0
 
 if __name__ == '__main__':
