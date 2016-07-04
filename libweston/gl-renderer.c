@@ -2748,10 +2748,8 @@ gl_renderer_setup_egl_extensions(struct weston_compositor *ec)
 	if (check_extension(extensions, "EGL_KHR_surfaceless_context"))
 		gr->has_surfaceless_context = 1;
 
-#ifdef EGL_EXT_image_dma_buf_import
 	if (check_extension(extensions, "EGL_EXT_image_dma_buf_import"))
 		gr->has_dmabuf_import = 1;
-#endif
 
 	renderer_setup_egl_client_extensions(gr);
 
