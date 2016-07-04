@@ -9,6 +9,7 @@
 #include "bindings/core/v8/ScriptPromiseResolver.h"
 #include "core/dom/DOMException.h"
 #include "core/dom/ExceptionCode.h"
+#include "core/frame/UseCounter.h"
 #include "modules/webaudio/AudioBufferCallback.h"
 #include "platform/Histogram.h"
 #include "platform/audio/AudioUtilities.h"
@@ -28,6 +29,9 @@ static unsigned s_contextId = 0;
 AbstractAudioContext* AudioContext::create(Document& document, ExceptionState& exceptionState)
 {
     ASSERT(isMainThread());
+
+    UseCounter::countCrossOriginIframe(document, UseCounter::AudioContextCrossOriginIframe);
+
     if (s_hardwareContextCount >= MaxHardwareContexts) {
         exceptionState.throwDOMException(
             NotSupportedError,

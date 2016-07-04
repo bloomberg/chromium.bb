@@ -76345,6 +76345,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="1427" label="PrefixedElementRequestFullscreenInShadow"/>
   <int value="1428" label="MediaSourceAbortRemove"/>
   <int value="1429" label="MediaSourceDurationTruncatingBuffered"/>
+  <int value="1430" label="AudioContextCrossOriginIframe"/>
 </enum>
 
 <enum name="FetchRequestMode" type="int">
