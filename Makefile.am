@@ -44,8 +44,8 @@ all-local : weston.ini ivi-shell/weston.ini
 AM_CFLAGS = $(GCC_CFLAGS)
 
 AM_CPPFLAGS = 					\
-	-I$(top_srcdir)/libweston		\
 	-I$(top_builddir)/libweston		\
+	-I$(top_srcdir)/libweston		\
 	-I$(top_builddir)/clients		\
 	-I$(top_builddir)/tests			\
 	-I$(top_srcdir)/shared			\
@@ -841,8 +841,8 @@ module_LTLIBRARIES += desktop-shell.la
 desktop_shell_la_CPPFLAGS =			\
 	-I$(top_builddir)/protocol		\
 	-I$(top_srcdir)/shared			\
-	-I$(top_srcdir)/libweston		\
 	-I$(top_builddir)/libweston		\
+	-I$(top_srcdir)/libweston		\
 	-I$(top_builddir)/desktop-shell		\
 	-DDATADIR='"$(datadir)"'		\
 	-DMODULEDIR='"$(moduledir)"'		\
@@ -874,8 +874,8 @@ module_LTLIBRARIES += fullscreen-shell.la
 fullscreen_shell_la_CPPFLAGS =			\
 	-I$(top_builddir)/protocol		\
 	-I$(top_srcdir)/shared			\
-	-I$(top_srcdir)/libweston		\
 	-I$(top_builddir)/libweston		\
+	-I$(top_srcdir)/libweston		\
 	-DIN_WESTON
 
 fullscreen_shell_la_LDFLAGS = -module -avoid-version
@@ -964,8 +964,8 @@ libweston_module_LTLIBRARIES += xwayland.la
 xwayland_la_CPPFLAGS =				\
 	-I$(top_builddir)/protocol		\
 	-I$(top_srcdir)/shared			\
-	-I$(top_srcdir)/libweston		\
 	-I$(top_builddir)/libweston		\
+	-I$(top_srcdir)/libweston		\
 	-I$(top_builddir)/xwayland		\
 	-DDATADIR='"$(datadir)"'		\
 	-DMODULEDIR='"$(moduledir)"'		\
