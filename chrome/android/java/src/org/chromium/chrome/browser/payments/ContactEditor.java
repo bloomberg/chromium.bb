@@ -15,8 +15,8 @@ import org.chromium.chrome.browser.payments.ui.EditorFieldModel;
 import org.chromium.chrome.browser.payments.ui.EditorFieldModel.EditorFieldValidator;
 import org.chromium.chrome.browser.payments.ui.EditorModel;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 import javax.annotation.Nullable;
 
@@ -26,8 +26,8 @@ import javax.annotation.Nullable;
 public class ContactEditor extends EditorBase<AutofillContact> {
     private final boolean mRequestPayerPhone;
     private final boolean mRequestPayerEmail;
-    private final List<CharSequence> mPhoneNumbers;
-    private final List<CharSequence> mEmailAddresses;
+    private final Set<CharSequence> mPhoneNumbers;
+    private final Set<CharSequence> mEmailAddresses;
     @Nullable private EditorFieldValidator mPhoneValidator;
     @Nullable private EditorFieldValidator mEmailValidator;
 
@@ -41,8 +41,8 @@ public class ContactEditor extends EditorBase<AutofillContact> {
         assert requestPayerPhone || requestPayerEmail;
         mRequestPayerPhone = requestPayerPhone;
         mRequestPayerEmail = requestPayerEmail;
-        mPhoneNumbers = new ArrayList<>();
-        mEmailAddresses = new ArrayList<>();
+        mPhoneNumbers = new HashSet<>();
+        mEmailAddresses = new HashSet<>();
     }
 
     /**
@@ -59,7 +59,7 @@ public class ContactEditor extends EditorBase<AutofillContact> {
     }
 
     /**
-     * Adds the given phone number to the autocomplete list, if it's valid.
+     * Adds the given phone number to the autocomplete set, if it's valid.
      *
      * @param phoneNumber The phone number to possibly add.
      */
@@ -68,7 +68,7 @@ public class ContactEditor extends EditorBase<AutofillContact> {
     }
 
     /**
-     * Adds the given email address to the autocomplete list, if it's valid.
+     * Adds the given email address to the autocomplete set, if it's valid.
      *
      * @param emailAddress The email address to possibly add.
      */

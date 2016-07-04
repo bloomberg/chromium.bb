@@ -20,7 +20,6 @@ import org.chromium.chrome.browser.preferences.autofill.AutofillProfileBridge;
 import org.chromium.chrome.browser.preferences.autofill.AutofillProfileBridge.AddressField;
 import org.chromium.chrome.browser.preferences.autofill.AutofillProfileBridge.AddressUiComponent;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -34,23 +33,14 @@ import javax.annotation.Nullable;
  * An address editor. Can be used for either shipping or billing address editing.
  */
 public class AddressEditor extends EditorBase<AutofillAddress> {
-    private final Handler mHandler;
-    private final Map<Integer, EditorFieldModel> mAddressFields;
-    private final List<CharSequence> mPhoneNumbers;
+    private final Handler mHandler = new Handler();
+    private final Map<Integer, EditorFieldModel> mAddressFields = new HashMap<>();
+    private final Set<CharSequence> mPhoneNumbers = new HashSet<>();
     @Nullable private AutofillProfileBridge mAutofillProfileBridge;
     @Nullable private EditorFieldModel mCountryField;
     @Nullable private EditorFieldModel mPhoneField;
     @Nullable private EditorFieldValidator mPhoneValidator;
     @Nullable private List<AddressUiComponent> mAddressUiComponents;
-
-    /**
-     * Builds an address editor.
-     */
-    public AddressEditor() {
-        mHandler = new Handler();
-        mAddressFields = new HashMap<>();
-        mPhoneNumbers = new ArrayList<>();
-    }
 
     /**
      * Returns whether the given profile can be sent to the merchant as-is without editing first. If
@@ -78,7 +68,7 @@ public class AddressEditor extends EditorBase<AutofillAddress> {
     }
 
     /**
-     * Adds the given phone number to the autocomplete list, if it's valid.
+     * Adds the given phone number to the autocomplete set, if it's valid.
      *
      * @param phoneNumber The phone number to possibly add.
      */

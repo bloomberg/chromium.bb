@@ -10,7 +10,9 @@ import android.util.Pair;
 import org.chromium.base.Callback;
 import org.chromium.chrome.browser.preferences.autofill.AutofillProfileBridge.DropdownKeyValue;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import javax.annotation.Nullable;
 
@@ -102,7 +104,7 @@ public class EditorFieldModel {
      * @param inputTypeHint        The type of input. For example, INPUT_TYPE_HINT_PHONE.
      * @param label                The human-readable label for user to understand the type of data
      *                             that should be entered into this field.
-     * @param suggestions          Optional list of values to suggest to the user.
+     * @param suggestions          Optionally empty set of values to suggest to the user.
      * @param validator            Optional validator for the values in this field.
      * @param requiredErrorMessage The optional error message that indicates to the user that they
      *                             cannot leave this field empty.
@@ -111,13 +113,14 @@ public class EditorFieldModel {
      * @param value                Optional initial value of this field.
      */
     public EditorFieldModel(int inputTypeHint, CharSequence label,
-            @Nullable List<CharSequence> suggestions, @Nullable EditorFieldValidator validator,
+            Set<CharSequence> suggestions, @Nullable EditorFieldValidator validator,
             @Nullable CharSequence requiredErrorMessage, @Nullable CharSequence invalidErrorMessage,
             @Nullable CharSequence value) {
         assert inputTypeHint != INPUT_TYPE_HINT_DROPDOWN;
+        assert suggestions != null;
         mInputTypeHint = inputTypeHint;
         mDropdownKeyValues = null;
-        mSuggestions = suggestions;
+        mSuggestions = new ArrayList<CharSequence>(suggestions);
         mValidator = validator;
         mInvalidErrorMessage = invalidErrorMessage;
         mLabel = label;

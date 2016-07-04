@@ -46,6 +46,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
@@ -245,6 +246,7 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
         }
 
         if (requestPayerPhone || requestPayerEmail) {
+            Set<String> uniqueContactInfos = new HashSet<>();
             mContactEditor = new ContactEditor(requestPayerPhone, requestPayerEmail);
             List<AutofillContact> contacts = new ArrayList<>();
             int firstCompleteContactIndex = SectionInformation.NO_SELECTION;
@@ -259,11 +261,19 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
                 mContactEditor.addEmailAddressIfValid(email);
 
                 if (phone != null || email != null) {
-                    boolean isComplete = mContactEditor.isContactInformationComplete(phone, email);
-                    contacts.add(new AutofillContact(profile, phone, email, isComplete));
-                    if (isComplete
-                            && firstCompleteContactIndex == SectionInformation.NO_SELECTION) {
-                        firstCompleteContactIndex = i;
+                    // Different profiles can have identical contact info. Do not add the same
+                    // contact info to the list twice.
+                    String uniqueContactInfo = phone + email;
+                    if (!uniqueContactInfos.contains(uniqueContactInfo)) {
+                        uniqueContactInfos.add(uniqueContactInfo);
+
+                        boolean isComplete =
+                                mContactEditor.isContactInformationComplete(phone, email);
+                        contacts.add(new AutofillContact(profile, phone, email, isComplete));
+                        if (isComplete
+                                && firstCompleteContactIndex == SectionInformation.NO_SELECTION) {
+                            firstCompleteContactIndex = i;
+                        }
                     }
                 }
             }
