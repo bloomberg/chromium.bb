@@ -55,6 +55,34 @@ typedef EGLSurface (*PFNEGLCREATEPLATFORMWINDOWSURFACEEXTPROC) (EGLDisplay dpy,
 								const EGLint *attrib_list);
 #endif
 
+static bool
+weston_check_egl_extension(const char *extensions, const char *extension)
+{
+	size_t extlen = strlen(extension);
+	const char *end = extensions + strlen(extensions);
+
+	while (extensions < end) {
+		size_t n = 0;
+
+		/* Skip whitespaces, if any */
+		if (*extensions == ' ') {
+			extensions++;
+			continue;
+		}
+
+		n = strcspn(extensions, " ");
+
+		/* Compare strings */
+		if (n == extlen && strncmp(extension, extensions, n) == 0)
+			return true; /* Found */
+
+		extensions += n;
+	}
+
+	/* Not found */
+	return false;
+}
+
 static inline void *
 weston_platform_get_egl_proc_address(const char *address)
 {

@@ -44,6 +44,7 @@
 #include "linux-dmabuf-unstable-v1-server-protocol.h"
 
 #include "shared/helpers.h"
+#include "shared/platform.h"
 #include "weston-egl-ext.h"
 
 struct gl_shader {
@@ -2652,34 +2653,6 @@ gl_renderer_destroy(struct weston_compositor *ec)
 	free(gr);
 }
 
-static bool
-check_extension(const char *extensions, const char *extension)
-{
-	size_t extlen = strlen(extension);
-	const char *end = extensions + strlen(extensions);
-
-	while (extensions < end) {
-		size_t n = 0;
-
-		/* Skip whitespaces, if any */
-		if (*extensions == ' ') {
-			extensions++;
-			continue;
-		}
-
-		n = strcspn(extensions, " ");
-
-		/* Compare strings */
-		if (n == extlen && strncmp(extension, extensions, n) == 0)
-			return true; /* Found */
-
-		extensions += n;
-	}
-
-	/* Not found */
-	return false;
-}
-
 static void
 renderer_setup_egl_client_extensions(struct gl_renderer *gr)
 {
@@ -2691,7 +2664,7 @@ renderer_setup_egl_client_extensions(struct gl_renderer *gr)
 		return;
 	}
 
-	if (check_extension(extensions, "EGL_EXT_platform_base"))
+	if (weston_check_egl_extension(extensions, "EGL_EXT_platform_base"))
 		gr->create_platform_window =
 			(void *) eglGetProcAddress("eglCreatePlatformWindowSurfaceEXT");
 	else
@@ -2721,7 +2694,7 @@ gl_renderer_setup_egl_extensions(struct weston_compositor *ec)
 		return -1;
 	}
 
-	if (check_extension(extensions, "EGL_WL_bind_wayland_display"))
+	if (weston_check_egl_extension(extensions, "EGL_WL_bind_wayland_display"))
 		gr->has_bind_display = 1;
 	if (gr->has_bind_display) {
 		ret = gr->bind_display(gr->egl_display, ec->wl_display);
@@ -2729,26 +2702,26 @@ gl_renderer_setup_egl_extensions(struct weston_compositor *ec)
 			gr->has_bind_display = 0;
 	}
 
-	if (check_extension(extensions, "EGL_EXT_buffer_age"))
+	if (weston_check_egl_extension(extensions, "EGL_EXT_buffer_age"))
 		gr->has_egl_buffer_age = 1;
 	else
 		weston_log("warning: EGL_EXT_buffer_age not supported. "
 			   "Performance could be affected.\n");
 
-	if (check_extension(extensions, "EGL_EXT_swap_buffers_with_damage"))
+	if (weston_check_egl_extension(extensions, "EGL_EXT_swap_buffers_with_damage"))
 		gr->swap_buffers_with_damage =
 			(void *) eglGetProcAddress("eglSwapBuffersWithDamageEXT");
 	else
 		weston_log("warning: EGL_EXT_swap_buffers_with_damage not "
 			   "supported. Performance could be affected.\n");
 
-	if (check_extension(extensions, "EGL_MESA_configless_context"))
+	if (weston_check_egl_extension(extensions, "EGL_MESA_configless_context"))
 		gr->has_configless_context = 1;
 
-	if (check_extension(extensions, "EGL_KHR_surfaceless_context"))
+	if (weston_check_egl_extension(extensions, "EGL_KHR_surfaceless_context"))
 		gr->has_surfaceless_context = 1;
 
-	if (check_extension(extensions, "EGL_EXT_image_dma_buf_import"))
+	if (weston_check_egl_extension(extensions, "EGL_EXT_image_dma_buf_import"))
 		gr->has_dmabuf_import = 1;
 
 	renderer_setup_egl_client_extensions(gr);
@@ -2817,19 +2790,19 @@ gl_renderer_supports(struct weston_compositor *ec,
 			       extensions);
 	}
 
-	if (!check_extension(extensions, "EGL_EXT_platform_base"))
+	if (!weston_check_egl_extension(extensions, "EGL_EXT_platform_base"))
 		return 0;
 
 	snprintf(s, sizeof s, "EGL_KHR_platform_%s", extension_suffix);
-	if (check_extension(extensions, s))
+	if (weston_check_egl_extension(extensions, s))
 		return 1;
 
 	snprintf(s, sizeof s, "EGL_EXT_platform_%s", extension_suffix);
-	if (check_extension(extensions, s))
+	if (weston_check_egl_extension(extensions, s))
 		return 1;
 
 	snprintf(s, sizeof s, "EGL_MESA_platform_%s", extension_suffix);
-	if (check_extension(extensions, s))
+	if (weston_check_egl_extension(extensions, s))
 		return 1;
 
 	/* at this point we definitely have some platform extensions but
@@ -3133,20 +3106,20 @@ gl_renderer_setup(struct weston_compositor *ec, EGLSurface egl_surface)
 		return -1;
 	}
 
-	if (!check_extension(extensions, "GL_EXT_texture_format_BGRA8888")) {
+	if (!weston_check_egl_extension(extensions, "GL_EXT_texture_format_BGRA8888")) {
 		weston_log("GL_EXT_texture_format_BGRA8888 not available\n");
 		return -1;
 	}
 
-	if (check_extension(extensions, "GL_EXT_read_format_bgra"))
+	if (weston_check_egl_extension(extensions, "GL_EXT_read_format_bgra"))
 		ec->read_format = PIXMAN_a8r8g8b8;
 	else
 		ec->read_format = PIXMAN_a8b8g8r8;
 
-	if (check_extension(extensions, "GL_EXT_unpack_subimage"))
+	if (weston_check_egl_extension(extensions, "GL_EXT_unpack_subimage"))
 		gr->has_unpack_subimage = 1;
 
-	if (check_extension(extensions, "GL_OES_EGL_image_external"))
+	if (weston_check_egl_extension(extensions, "GL_OES_EGL_image_external"))
 		gr->has_egl_image_external = 1;
 
 	glActiveTexture(GL_TEXTURE0);
