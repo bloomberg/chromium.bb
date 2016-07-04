@@ -43,7 +43,6 @@ EXTRA_DIST =						\
 	letterDefTest_harness.yaml			\
 	mn-MN_harness.yaml				\
 	nl-BE-g0_harness.yaml				\
-	nl-BE-g1_harness.yaml				\
 	nl-NL-g0_harness.yaml				\
 	no_8dot_harness.yaml				\
 	nocross_harness.yaml				\
