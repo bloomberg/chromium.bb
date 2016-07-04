@@ -104,8 +104,10 @@ void UserScriptInjector::OnUserScriptsUpdated(
     const std::vector<UserScript*>& scripts) {
   // If the host causing this injection changed, then this injection
   // will be removed, and there's no guarantee the backing script still exists.
-  if (changed_hosts.count(host_id_) > 0)
+  if (changed_hosts.count(host_id_) > 0) {
+    script_ = nullptr;
     return;
+  }
 
   for (std::vector<UserScript*>::const_iterator iter = scripts.begin();
        iter != scripts.end();
@@ -137,13 +139,13 @@ bool UserScriptInjector::ExpectsResults() const {
 
 bool UserScriptInjector::ShouldInjectJs(
     UserScript::RunLocation run_location) const {
-  return script_->run_location() == run_location &&
+  return script_ && script_->run_location() == run_location &&
          !script_->js_scripts().empty();
 }
 
 bool UserScriptInjector::ShouldInjectCss(
     UserScript::RunLocation run_location) const {
-  return run_location == UserScript::DOCUMENT_START &&
+  return script_ && run_location == UserScript::DOCUMENT_START &&
          !script_->css_scripts().empty();
 }
 
@@ -151,6 +153,11 @@ PermissionsData::AccessType UserScriptInjector::CanExecuteOnFrame(
     const InjectionHost* injection_host,
     blink::WebLocalFrame* web_frame,
     int tab_id) const {
+  // There is no harm in allowing the injection when the script is gone,
+  // because there is nothing to inject.
+  if (!script_)
+    return PermissionsData::ACCESS_ALLOWED;
+
   if (script_->consumer_instance_type() ==
           UserScript::ConsumerInstanceType::WEBVIEW) {
     int routing_id = content::RenderView::FromWebView(web_frame->top()->view())
@@ -191,9 +198,12 @@ PermissionsData::AccessType UserScriptInjector::CanExecuteOnFrame(
 
 std::vector<blink::WebScriptSource> UserScriptInjector::GetJsSources(
     UserScript::RunLocation run_location) const {
+  std::vector<blink::WebScriptSource> sources;
+  if (!script_)
+    return sources;
+
   DCHECK_EQ(script_->run_location(), run_location);
 
-  std::vector<blink::WebScriptSource> sources;
   const UserScript::FileList& js_scripts = script_->js_scripts();
 
   for (UserScript::FileList::const_iterator iter = js_scripts.begin();
@@ -224,6 +234,9 @@ std::vector<std::string> UserScriptInjector::GetCssSources(
   DCHECK_EQ(UserScript::DOCUMENT_START, run_location);
 
   std::vector<std::string> sources;
+  if (!script_)
+    return sources;
+
   const UserScript::FileList& css_scripts = script_->css_scripts();
   for (UserScript::FileList::const_iterator iter = css_scripts.begin();
        iter != css_scripts.end();
@@ -236,6 +249,9 @@ std::vector<std::string> UserScriptInjector::GetCssSources(
 void UserScriptInjector::GetRunInfo(
     ScriptsRunInfo* scripts_run_info,
     UserScript::RunLocation run_location) const {
+  if (!script_)
+    return;
+
   if (ShouldInjectJs(run_location)) {
     const UserScript::FileList& js_scripts = script_->js_scripts();
     scripts_run_info->num_js += js_scripts.size();
