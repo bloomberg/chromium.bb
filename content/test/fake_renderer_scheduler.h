@@ -27,6 +27,8 @@ class FakeRendererScheduler : public scheduler::RendererScheduler {
       const char* name) override;
   scoped_refptr<scheduler::TaskQueue> NewTimerTaskRunner(
       const char* name) override;
+  scoped_refptr<scheduler::TaskQueue> NewUnthrottledTaskRunner(
+      const char* name) override;
   std::unique_ptr<scheduler::RenderWidgetSchedulingState>
   NewRenderWidgetSchedulingState() override;
   void WillBeginFrame(const cc::BeginFrameArgs& args) override;

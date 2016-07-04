@@ -232,6 +232,14 @@ scoped_refptr<TaskQueue> RendererSchedulerImpl::NewTimerTaskRunner(
   return timer_task_queue;
 }
 
+scoped_refptr<TaskQueue> RendererSchedulerImpl::NewUnthrottledTaskRunner(
+    const char* name) {
+  helper_.CheckOnValidThread();
+  scoped_refptr<TaskQueue> unthrottled_task_queue(helper_.NewTaskQueue(
+      TaskQueue::Spec(name).SetShouldMonitorQuiescence(true)));
+  return unthrottled_task_queue;
+}
+
 std::unique_ptr<RenderWidgetSchedulingState>
 RendererSchedulerImpl::NewRenderWidgetSchedulingState() {
   return render_widget_scheduler_signals_.NewRenderWidgetSchedulingState();

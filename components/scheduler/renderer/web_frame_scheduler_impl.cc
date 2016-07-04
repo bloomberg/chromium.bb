@@ -27,14 +27,19 @@ WebFrameSchedulerImpl::WebFrameSchedulerImpl(
       page_visible_(true) {}
 
 WebFrameSchedulerImpl::~WebFrameSchedulerImpl() {
-  if (loading_task_queue_.get()) {
+  if (loading_task_queue_) {
     loading_task_queue_->UnregisterTaskQueue();
     loading_task_queue_->SetBlameContext(nullptr);
   }
 
-  if (timer_task_queue_.get()) {
+  if (timer_task_queue_) {
     timer_task_queue_->UnregisterTaskQueue();
     timer_task_queue_->SetBlameContext(nullptr);
+  }
+
+  if (unthrottled_task_queue_) {
+    unthrottled_task_queue_->UnregisterTaskQueue();
+    unthrottled_task_queue_->SetBlameContext(nullptr);
   }
 
   if (parent_web_view_scheduler_)
@@ -81,6 +86,22 @@ blink::WebTaskRunner* WebFrameSchedulerImpl::timerTaskRunner() {
     timer_web_task_runner_.reset(new WebTaskRunnerImpl(timer_task_queue_));
   }
   return timer_web_task_runner_.get();
+}
+
+blink::WebTaskRunner* WebFrameSchedulerImpl::unthrottledTaskRunner() {
+  DCHECK(parent_web_view_scheduler_);
+  if (!unthrottled_web_task_runner_) {
+    unthrottled_task_queue_ =
+        renderer_scheduler_->NewUnthrottledTaskRunner("frame_unthrottled_tq");
+    unthrottled_task_queue_->SetBlameContext(blame_context_);
+    if (parent_web_view_scheduler_->virtual_time_domain()) {
+      unthrottled_task_queue_->SetTimeDomain(
+          parent_web_view_scheduler_->virtual_time_domain());
+    }
+    unthrottled_web_task_runner_.reset(
+        new WebTaskRunnerImpl(unthrottled_task_queue_));
+  }
+  return unthrottled_web_task_runner_.get();
 }
 
 void WebFrameSchedulerImpl::setPageVisible(bool page_visible) {

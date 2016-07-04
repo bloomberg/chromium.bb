@@ -42,6 +42,7 @@ class SCHEDULER_EXPORT WebFrameSchedulerImpl : public blink::WebFrameScheduler {
   void setPageVisible(bool page_visible) override;
   blink::WebTaskRunner* loadingTaskRunner() override;
   blink::WebTaskRunner* timerTaskRunner() override;
+  blink::WebTaskRunner* unthrottledTaskRunner() override;
 
   void OnVirtualTimeDomainChanged();
 
@@ -53,8 +54,10 @@ class SCHEDULER_EXPORT WebFrameSchedulerImpl : public blink::WebFrameScheduler {
 
   scoped_refptr<TaskQueue> loading_task_queue_;
   scoped_refptr<TaskQueue> timer_task_queue_;
+  scoped_refptr<TaskQueue> unthrottled_task_queue_;
   std::unique_ptr<WebTaskRunnerImpl> loading_web_task_runner_;
   std::unique_ptr<WebTaskRunnerImpl> timer_web_task_runner_;
+  std::unique_ptr<WebTaskRunnerImpl> unthrottled_web_task_runner_;
   RendererSchedulerImpl* renderer_scheduler_;            // NOT OWNED
   WebViewSchedulerImpl* parent_web_view_scheduler_;      // NOT OWNED
   base::trace_event::BlameContext* blame_context_;       // NOT OWNED

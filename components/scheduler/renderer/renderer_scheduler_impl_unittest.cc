@@ -3368,4 +3368,48 @@ TEST_F(RendererSchedulerImplTest, TestIdleRAILMode) {
   scheduler_->SetRAILModeObserver(nullptr);
 }
 
+TEST_F(RendererSchedulerImplTest, UnthrottledTaskRunner) {
+  // Ensure neither suspension nor timer task throttling affects an unthrottled
+  // task runner.
+  SimulateCompositorGestureStart(TouchEventPolicy::SEND_TOUCH_START);
+  scoped_refptr<TaskQueue> unthrottled_task_runner =
+      scheduler_->NewUnthrottledTaskRunner("unthrottled_tq");
+
+  size_t timer_count = 0;
+  size_t unthrottled_count = 0;
+  scheduler_->TimerTaskRunner()->PostTask(
+      FROM_HERE, base::Bind(SlowCountingTask, &timer_count, clock_.get(), 7,
+                            scheduler_->TimerTaskRunner()));
+  unthrottled_task_runner->PostTask(
+      FROM_HERE, base::Bind(SlowCountingTask, &unthrottled_count, clock_.get(),
+                            7, unthrottled_task_runner));
+  scheduler_->SuspendTimerQueue();
+
+  for (int i = 0; i < 1000; i++) {
+    cc::BeginFrameArgs begin_frame_args = cc::BeginFrameArgs::Create(
+        BEGINFRAME_FROM_HERE, clock_->NowTicks(), base::TimeTicks(),
+        base::TimeDelta::FromMilliseconds(16), cc::BeginFrameArgs::NORMAL);
+    begin_frame_args.on_critical_path = true;
+    scheduler_->WillBeginFrame(begin_frame_args);
+    scheduler_->DidHandleInputEventOnCompositorThread(
+        FakeInputEvent(blink::WebInputEvent::GestureScrollUpdate),
+        RendererScheduler::InputEventState::EVENT_CONSUMED_BY_COMPOSITOR);
+
+    simulate_compositor_task_ran_ = false;
+    compositor_task_runner_->PostTask(
+        FROM_HERE,
+        base::Bind(&RendererSchedulerImplTest::SimulateMainThreadCompositorTask,
+                   base::Unretained(this),
+                   base::TimeDelta::FromMilliseconds(10)));
+
+    mock_task_runner_->RunTasksWhile(
+        base::Bind(&RendererSchedulerImplTest::SimulatedCompositorTaskPending,
+                   base::Unretained(this)));
+    EXPECT_EQ(UseCase::SYNCHRONIZED_GESTURE, CurrentUseCase()) << "i = " << i;
+  }
+
+  EXPECT_EQ(0u, timer_count);
+  EXPECT_EQ(500u, unthrottled_count);
+}
+
 }  // namespace scheduler

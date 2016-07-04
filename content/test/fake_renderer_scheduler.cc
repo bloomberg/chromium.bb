@@ -50,6 +50,11 @@ scoped_refptr<scheduler::TaskQueue> FakeRendererScheduler::NewTimerTaskRunner(
   return nullptr;
 }
 
+scoped_refptr<scheduler::TaskQueue>
+FakeRendererScheduler::NewUnthrottledTaskRunner(const char* name) {
+  return nullptr;
+}
+
 std::unique_ptr<scheduler::RenderWidgetSchedulingState>
 FakeRendererScheduler::NewRenderWidgetSchedulingState() {
   return nullptr;

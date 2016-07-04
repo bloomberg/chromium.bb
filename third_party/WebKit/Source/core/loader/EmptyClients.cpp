@@ -73,6 +73,7 @@ public:
     void setFrameVisible(bool) override { }
     WebTaskRunner* loadingTaskRunner() override;
     WebTaskRunner* timerTaskRunner() override;
+    WebTaskRunner* unthrottledTaskRunner() override;
 };
 
 WebTaskRunner* EmptyFrameScheduler::loadingTaskRunner()
@@ -81,6 +82,11 @@ WebTaskRunner* EmptyFrameScheduler::loadingTaskRunner()
 }
 
 WebTaskRunner* EmptyFrameScheduler::timerTaskRunner()
+{
+    return Platform::current()->currentThread()->getWebTaskRunner();
+}
+
+WebTaskRunner* EmptyFrameScheduler::unthrottledTaskRunner()
 {
     return Platform::current()->currentThread()->getWebTaskRunner();
 }

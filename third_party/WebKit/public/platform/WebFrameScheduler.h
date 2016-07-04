@@ -32,6 +32,14 @@ public:
     // Returns the WebTaskRunner for timer tasks.
     // WebFrameScheduler owns the returned WebTaskRunner.
     virtual WebTaskRunner* timerTaskRunner() { return nullptr; }
+
+    // Returns the WebTaskRunner for tasks which should never get throttled.
+    // This is generally used for executing internal browser tasks which should
+    // never be throttled. Ideally only tasks whose performance characteristics
+    // are known should be posted to this task runner; for example user
+    // JavaScript is discouraged. WebFrameScheduler owns the returned
+    // WebTaskRunner.
+    virtual WebTaskRunner* unthrottledTaskRunner() { return nullptr; }
 };
 
 } // namespace blink
