@@ -188,8 +188,8 @@ init_egl(struct display *display, struct window *window)
 	display->swap_buffers_with_damage = NULL;
 	extensions = eglQueryString(display->egl.dpy, EGL_EXTENSIONS);
 	if (extensions &&
-	    strstr(extensions, "EGL_EXT_swap_buffers_with_damage") &&
-	    strstr(extensions, "EGL_EXT_buffer_age"))
+	    weston_check_egl_extension(extensions, "EGL_EXT_swap_buffers_with_damage") &&
+	    weston_check_egl_extension(extensions, "EGL_EXT_buffer_age"))
 		display->swap_buffers_with_damage =
 			(PFNEGLSWAPBUFFERSWITHDAMAGEEXTPROC)
 			eglGetProcAddress("eglSwapBuffersWithDamageEXT");
