@@ -255,8 +255,6 @@ void ServiceWorkerRegistration::OnNoControllees(ServiceWorkerVersion* version) {
     Clear();
   else if (should_activate_when_ready_)
     ActivateWaitingVersion(true);
-  is_uninstalling_ = false;
-  should_activate_when_ready_ = false;
 }
 
 void ServiceWorkerRegistration::ActivateWaitingVersion(bool delay) {
@@ -432,6 +430,7 @@ void ServiceWorkerRegistration::OnDeleteFinished(
 void ServiceWorkerRegistration::Clear() {
   is_uninstalling_ = false;
   is_uninstalled_ = true;
+  should_activate_when_ready_ = false;
   if (context_)
     context_->storage()->NotifyDoneUninstallingRegistration(this);
 
