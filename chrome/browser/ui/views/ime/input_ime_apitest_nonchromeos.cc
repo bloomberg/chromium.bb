@@ -7,6 +7,7 @@
 #include "chrome/browser/extensions/api/input_ime/input_ime_api_nonchromeos.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -16,6 +17,7 @@
 #include "ui/base/ime/composition_text.h"
 #include "ui/base/ime/dummy_text_input_client.h"
 #include "ui/base/ime/input_method.h"
+#include "url/origin.h"
 
 namespace extensions {
 
@@ -105,9 +107,10 @@ IN_PROC_BROWSER_TEST_F(InputImeApiTest, BasicApiTest) {
   input_method->DetachTextInputClient(client2.get());
 }
 
-IN_PROC_BROWSER_TEST_F(InputImeApiTest, SendKeyEvntsOnNormalPage) {
+IN_PROC_BROWSER_TEST_F(InputImeApiTest, SendKeyEventsOnNormalPage) {
   // Navigates to special page that sendKeyEvents API has limition with.
-  ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUINewTabURL));
+  GURL test_url(chrome::kChromeUINewTabURL);
+  ui_test_utils::NavigateToURL(browser(), test_url);
   // Manipulates the focused text input client because the follow cursor
   // window requires the text input focus.
   ui::InputMethod* input_method =
@@ -122,26 +125,34 @@ IN_PROC_BROWSER_TEST_F(InputImeApiTest, SendKeyEvntsOnNormalPage) {
 
   ASSERT_TRUE(RunExtensionTest("input_ime_nonchromeos")) << message_;
 
-  std::vector<std::unique_ptr<ui::KeyEvent>> key_events;
-  key_events.push_back(std::unique_ptr<ui::KeyEvent>(
-      new ui::KeyEvent(ui::ET_KEY_PRESSED, ui::VKEY_A, ui::EF_NONE)));
-  key_events.push_back(std::unique_ptr<ui::KeyEvent>(
-      new ui::KeyEvent(ui::ET_KEY_RELEASED, ui::VKEY_A, ui::EF_NONE)));
-  key_events.push_back(std::unique_ptr<ui::KeyEvent>(
-      new ui::KeyEvent(ui::ET_KEY_PRESSED, ui::VKEY_A, ui::EF_CONTROL_DOWN)));
-  key_events.push_back(std::unique_ptr<ui::KeyEvent>(
-      new ui::KeyEvent(ui::ET_KEY_RELEASED, ui::VKEY_A, ui::EF_CONTROL_DOWN)));
-  key_events.push_back(std::unique_ptr<ui::KeyEvent>(
-      new ui::KeyEvent(ui::ET_KEY_PRESSED, ui::VKEY_TAB, ui::EF_NONE)));
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  url::Origin origin(web_contents->GetLastCommittedURL());
 
-  EXPECT_TRUE(CompareKeyEvents(key_events, input_method));
+  // Don't check events if the url has not been correctly set.
+  if (url::Origin(test_url).IsSameOriginWith(origin)) {
+    std::vector<std::unique_ptr<ui::KeyEvent>> key_events;
+    key_events.push_back(std::unique_ptr<ui::KeyEvent>(
+        new ui::KeyEvent(ui::ET_KEY_PRESSED, ui::VKEY_A, ui::EF_NONE)));
+    key_events.push_back(std::unique_ptr<ui::KeyEvent>(
+        new ui::KeyEvent(ui::ET_KEY_RELEASED, ui::VKEY_A, ui::EF_NONE)));
+    key_events.push_back(std::unique_ptr<ui::KeyEvent>(
+        new ui::KeyEvent(ui::ET_KEY_PRESSED, ui::VKEY_A, ui::EF_CONTROL_DOWN)));
+    key_events.push_back(std::unique_ptr<ui::KeyEvent>(new ui::KeyEvent(
+        ui::ET_KEY_RELEASED, ui::VKEY_A, ui::EF_CONTROL_DOWN)));
+    key_events.push_back(std::unique_ptr<ui::KeyEvent>(
+        new ui::KeyEvent(ui::ET_KEY_PRESSED, ui::VKEY_TAB, ui::EF_NONE)));
+
+    EXPECT_TRUE(CompareKeyEvents(key_events, input_method));
+  }
 
   input_method->DetachTextInputClient(client.get());
 }
 
 IN_PROC_BROWSER_TEST_F(InputImeApiTest, SendKeyEventsOnSpecialPage) {
   // Navigates to special page that sendKeyEvents API has limition with.
-  ui_test_utils::NavigateToURL(browser(), GURL("chrome://flags"));
+  GURL test_url("chrome://flags");
+  ui_test_utils::NavigateToURL(browser(), test_url);
 
   ui::InputMethod* input_method =
       browser()->window()->GetNativeWindow()->GetHost()->GetInputMethod();
@@ -155,13 +166,20 @@ IN_PROC_BROWSER_TEST_F(InputImeApiTest, SendKeyEventsOnSpecialPage) {
 
   ASSERT_TRUE(RunExtensionTest("input_ime_nonchromeos")) << message_;
 
-  std::vector<std::unique_ptr<ui::KeyEvent>> key_events;
-  key_events.push_back(std::unique_ptr<ui::KeyEvent>(
-      new ui::KeyEvent(ui::ET_KEY_PRESSED, ui::VKEY_A, ui::EF_NONE)));
-  key_events.push_back(std::unique_ptr<ui::KeyEvent>(
-      new ui::KeyEvent(ui::ET_KEY_RELEASED, ui::VKEY_A, ui::EF_NONE)));
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  url::Origin origin(web_contents->GetLastCommittedURL());
 
-  EXPECT_TRUE(CompareKeyEvents(key_events, input_method));
+  // Don't check events if the url has not been correctly set.
+  if (url::Origin(test_url).IsSameOriginWith(origin)) {
+    std::vector<std::unique_ptr<ui::KeyEvent>> key_events;
+    key_events.push_back(std::unique_ptr<ui::KeyEvent>(
+        new ui::KeyEvent(ui::ET_KEY_PRESSED, ui::VKEY_A, ui::EF_NONE)));
+    key_events.push_back(std::unique_ptr<ui::KeyEvent>(
+        new ui::KeyEvent(ui::ET_KEY_RELEASED, ui::VKEY_A, ui::EF_NONE)));
+
+    EXPECT_TRUE(CompareKeyEvents(key_events, input_method));
+  }
   input_method->DetachTextInputClient(client.get());
 }
 
