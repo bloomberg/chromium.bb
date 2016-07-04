@@ -801,8 +801,14 @@ void Editor::reappliedEditing(EditCommandComposition* cmd)
     dispatchEditableContentChangedEvents(cmd->startingRootEditableElement(), cmd->endingRootEditableElement());
     dispatchInputEventEditableContentChanged(cmd->startingRootEditableElement(), cmd->endingRootEditableElement(), InputEvent::InputType::Redo, emptyString(), InputEvent::EventIsComposing::NotComposing);
 
+    // TODO(yosin): Since |dispatchEditableContentChangedEvents()| and
+    // |dispatchInputEventEditableContentChanged()|, we would like to know
+    // such case. Once we have a case, this |DCHECK()| should be replaced
+    // with if-statement.
+    DCHECK(frame().document());
     VisibleSelection newSelection(cmd->endingSelection());
-    changeSelectionAfterCommand(newSelection, FrameSelection::CloseTyping | FrameSelection::ClearTypingStyle);
+    if (newSelection.isValidFor(*frame().document()))
+        changeSelectionAfterCommand(newSelection, FrameSelection::CloseTyping | FrameSelection::ClearTypingStyle);
 
     m_lastEditCommand = nullptr;
     m_undoStack->registerUndoStep(cmd);
