@@ -1,31 +1,20 @@
-<html>
-    <head>
-        <title>Test webkitRequestFullscreen() without any user gesture.</title>
-        <script src=media-file.js></script>
-        <!-- TODO(foolip): Convert test to testharness.js. crbug.com/588956
-             (Please avoid writing new tests using video-test.js) -->
-        <script src=video-test.js></script>
-        <script>
-            function canplaythrough()
-            {
-                consoleWrite("");
-                consoleWrite("* No user gesture initiated");
-                testExpected("video.paused", true);
-                run("video.webkitRequestFullscreen()");
-                waitForEvent('webkitfullscreenerror', endTest);
-            }
+<!DOCTYPE html>
+<title>Test webkitRequestFullscreen() without any user gesture.</title>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script src="media-file.js"></script>
+<video></video>
+<script>
+async_test(function(t) {
+    var video = document.querySelector("video");
 
-            function start()
-            {
-                 findMediaElement();
-                 waitForEvent('canplaythrough', canplaythrough);
-                 video.src = findMediaFile("video", "content/test");
-            }
-        </script>
-    </head>
+    video.oncanplaythrough = t.step_func(function() {
+        // No user gesture initiated.
+        assert_true(video.paused);
+        video.webkitRequestFullscreen();
+        video.onwebkitfullscreenerror = t.step_func_done();
+    });
 
-    <body onload="start()">
-    <p>Test webkitRequestFullscreen() without any user gesture.</p>
-    <video controls></video>
-    </body>
-</html>
+    video.src = findMediaFile("video", "content/test");
+});
+</script>
