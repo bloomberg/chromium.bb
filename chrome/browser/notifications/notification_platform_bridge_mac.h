@@ -8,6 +8,7 @@
 #include <set>
 #include <string>
 
+#include "base/compiler_specific.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/macros.h"
 #include "chrome/browser/notifications/notification_platform_bridge.h"
@@ -36,6 +37,10 @@ class NotificationPlatformBridgeMac : public NotificationPlatformBridge {
                     bool incognito,
                     std::set<std::string>* notifications) const override;
   bool SupportsNotificationCenter() const override;
+
+  // Validates contents of the |response| dictionary as received from the system
+  // when a notification gets activated.
+  static bool VerifyNotificationData(NSDictionary* response) WARN_UNUSED_RESULT;
 
  private:
   // Cocoa class that receives callbacks from the NSUserNotificationCenter.

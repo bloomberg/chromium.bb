@@ -184,6 +184,65 @@ bool NotificationPlatformBridgeMac::SupportsNotificationCenter() const {
   return true;
 }
 
+// static
+bool NotificationPlatformBridgeMac::VerifyNotificationData(
+    NSDictionary* response) {
+  if (![response
+          objectForKey:notification_constants::kNotificationButtonIndex] ||
+      ![response objectForKey:notification_constants::kNotificationOperation] ||
+      ![response objectForKey:notification_constants::kNotificationId] ||
+      ![response objectForKey:notification_constants::kNotificationProfileId] ||
+      ![response objectForKey:notification_constants::kNotificationIncognito]) {
+    LOG(ERROR) << "Missing required key";
+    return false;
+  }
+
+  NSNumber* button_index =
+      [response objectForKey:notification_constants::kNotificationButtonIndex];
+  NSNumber* operation =
+      [response objectForKey:notification_constants::kNotificationOperation];
+  NSString* notification_id =
+      [response objectForKey:notification_constants::kNotificationId];
+  NSString* profile_id =
+      [response objectForKey:notification_constants::kNotificationProfileId];
+
+  if (button_index.intValue < -1 ||
+      button_index.intValue >=
+          static_cast<int>(blink::kWebNotificationMaxActions)) {
+    LOG(ERROR) << "Invalid number of buttons supplied "
+               << button_index.intValue;
+    return false;
+  }
+
+  if (operation.unsignedIntValue > NotificationCommon::OPERATION_MAX) {
+    LOG(ERROR) << operation.unsignedIntValue
+               << " does not correspond to a valid operation.";
+    return false;
+  }
+
+  if (notification_id.length <= 0) {
+    LOG(ERROR) << "Notification Id is empty";
+    return false;
+  }
+
+  if (profile_id.length <= 0) {
+    LOG(ERROR) << "Profile Id is empty";
+    return false;
+  }
+
+  // Origin is not actually required but if it's there it should be a valid one.
+  NSString* origin =
+      [response objectForKey:notification_constants::kNotificationOrigin];
+  if (origin) {
+    std::string notificationOrigin = base::SysNSStringToUTF8(origin);
+    GURL url(notificationOrigin);
+    if (!url.is_valid())
+      return false;
+  }
+
+  return true;
+}
+
 // /////////////////////////////////////////////////////////////////////////////
 
 @implementation NotificationCenterDelegate
@@ -191,6 +250,8 @@ bool NotificationPlatformBridgeMac::SupportsNotificationCenter() const {
        didActivateNotification:(NSUserNotification*)notification {
   NSDictionary* response =
       [NotificationResponseBuilder buildDictionary:notification];
+  if (!NotificationPlatformBridgeMac::VerifyNotificationData(response))
+    return;
 
   NSNumber* buttonIndex =
       [response objectForKey:notification_constants::kNotificationButtonIndex];
@@ -199,8 +260,8 @@ bool NotificationPlatformBridgeMac::SupportsNotificationCenter() const {
 
   std::string notificationOrigin = base::SysNSStringToUTF8(
       [response objectForKey:notification_constants::kNotificationOrigin]);
-  NSString* notificationId = [notification.userInfo
-      objectForKey:notification_constants::kNotificationId];
+  NSString* notificationId =
+      [response objectForKey:notification_constants::kNotificationId];
   std::string persistentNotificationId =
       base::SysNSStringToUTF8(notificationId);
   int64_t persistentId;

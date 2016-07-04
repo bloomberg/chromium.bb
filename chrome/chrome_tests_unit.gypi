@@ -763,6 +763,7 @@
       'browser/notifications/message_center_notifications_unittest.cc',
       'browser/notifications/message_center_settings_controller_unittest.cc',
       'browser/notifications/notification_permission_context_unittest.cc',
+      'browser/notifications/notification_platform_bridge_mac_unittest.mm',
       'browser/notifications/platform_notification_service_unittest.cc',
     ],
      # Used by Full Safe Browsing (safe_browsing==1)

@@ -16,7 +16,8 @@ class NotificationCommon {
   enum Operation {
     CLICK = 0,
     CLOSE = 1,
-    SETTINGS = 2
+    SETTINGS = 2,
+    OPERATION_MAX = SETTINGS
   };
 
   // Open the Notification settings screen when clicking the right button.
