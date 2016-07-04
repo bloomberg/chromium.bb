@@ -813,6 +813,25 @@ TEST(BackspaceStateMachineTest, ZWJSequence)
     EXPECT_EQ(-11, machine.finalizeAndGetBoundaryOffset());
     EXPECT_EQ(-11, machine.finalizeAndGetBoundaryOffset());
 
+    // Sot + EMOJI_MODIFIER_BASE + EMOJI_MODIFIER + ZWJ + ZWJ_EMOJI
+    // As an example, use WOMAN + MODIFIER + ZWJ + BRIEFCASE
+    const UChar womanLead = 0xD83D;
+    const UChar womanTrail = 0xDC69;
+    const UChar emojiModifierLead = 0xD83C;
+    const UChar emojiModifierTrail = 0xDFFB;
+    const UChar briefcaseLead = 0xD83D;
+    const UChar briefcaseTrail = 0xDCBC;
+    machine.reset();
+    EXPECT_EQ(kNeedMoreCodeUnit, machine.feedPrecedingCodeUnit(briefcaseTrail));
+    EXPECT_EQ(kNeedMoreCodeUnit, machine.feedPrecedingCodeUnit(briefcaseLead));
+    EXPECT_EQ(kNeedMoreCodeUnit, machine.feedPrecedingCodeUnit(zwj));
+    EXPECT_EQ(kNeedMoreCodeUnit, machine.feedPrecedingCodeUnit(emojiModifierTrail));
+    EXPECT_EQ(kNeedMoreCodeUnit, machine.feedPrecedingCodeUnit(emojiModifierLead));
+    EXPECT_EQ(kNeedMoreCodeUnit, machine.feedPrecedingCodeUnit(womanTrail));
+    EXPECT_EQ(kFinished, machine.feedPrecedingCodeUnit(womanLead));
+    EXPECT_EQ(-7, machine.finalizeAndGetBoundaryOffset());
+    EXPECT_EQ(-7, machine.finalizeAndGetBoundaryOffset());
+
     // Followings are not edge cases but good to check.
     // If leading character is not zwj, delete only ZWJ_EMOJI.
     // other + ZWJ_EMOJI

@@ -163,7 +163,9 @@ BackspaceStateMachine::feedPrecedingCodeUnit(UChar codeUnit)
     case BackspaceState::BeforeZWJ:
         if (Character::isEmoji(codePoint)) {
             m_codeUnitsToBeDeleted += U16_LENGTH(codePoint) + 1; // +1 for ZWJ
-            return moveToNextState(BackspaceState::BeforeZWJEmoji);
+            return Character::isModifier(codePoint) ?
+                moveToNextState(BackspaceState::BeforeEmojiModifier) :
+                moveToNextState(BackspaceState::BeforeZWJEmoji);
         }
         if (u_hasBinaryProperty(codePoint, UCHAR_VARIATION_SELECTOR)) {
             DCHECK_EQ(m_lastSeenVSCodeUnits, 0);
