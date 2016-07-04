@@ -228,7 +228,7 @@ SPECIAL_CASES = {
         "URL": "http://www.netlib.org/fdlibm/",
         "License": "Freely Distributable",
         # Absolute path here is resolved as relative to the source root.
-        "License File" : "/v8/src/third_party/fdlibm/LICENSE",
+        "License File" : "/v8/LICENSE.fdlibm",
         "License Android Compatible" : "yes",
     },
     os.path.join('third_party', 'khronos_glcts'): {
