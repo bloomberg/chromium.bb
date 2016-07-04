@@ -41,25 +41,25 @@ continue evolving through many Weston releases before it achieves a
 stable API and feature completeness.
 
 
-API (in)stability and parallel installability
----------------------------------------------
+API/ABI (in)stability and parallel installability
+-------------------------------------------------
 
 As libweston's API surface is huge, it is impossible to get it right
-in one go. Therefore developers reserve the right to break the API
+in one go. Therefore developers reserve the right to break the API/ABI
 between every 1.x.0 Weston release (minor version bumps), just like
 Weston's plugin API does. For git snapshots of the master branch, the
-API can break any time without warning or version bump.
+API/ABI can break any time without warning or version bump.
 
 Libweston API or ABI will not be broken between Weston's stable
 releases 1.x.0 and 1.x.y, where y < 90.
 
-To make things tolerable for libweston users despite ABI breakages,
+To make things tolerable for libweston users despite API/ABI breakages,
 libweston is designed to be perfectly parallel-installable. An
-ABI-version is defined for libweston, and it is bumped for releases as
-needed. Different ABI-versions of libweston can be installed in
-parallel, so that external projects can easily depend on a particular
-ABI-version, and they do not have to fight over which ABI-version is
-installed in a user's system. This allows a user to install many
+API/ABI-version is defined for libweston, and it is bumped for releases as
+needed. Different non-backward compatible ABI versions of libweston can be
+installed in parallel, so that external projects can easily depend on a
+particular ABI-version. Thus they do not have to fight over which ABI-version
+is installed in a user's system. This allows a user to install many
 different compositors each requiring a different libweston ABI-version
 without tricks or conflicts.
 
@@ -161,8 +161,9 @@ would be roughly like this:
 
 - and possibly more...
 
-Everything should be parallel-installable across libweston
-ABI-versions, except those explicitly mentioned.
+Everything should be parallel-installable across libweston major
+ABI-versions (libweston-1.so, libweston-2.so, etc.), except those
+explicitly mentioned.
 
 Weston's build may not sanely allow this yet, but this is the
 intention.
