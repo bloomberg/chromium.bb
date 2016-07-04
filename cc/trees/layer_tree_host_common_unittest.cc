@@ -5847,7 +5847,9 @@ TEST_F(LayerTreeHostCommonTest, VisibleRectInNonRootCopyRequest) {
   copy_layer->test_properties()->copy_requests.push_back(
       CopyOutputRequest::CreateRequest(base::Bind(&EmptyCopyOutputCallback)));
 
+  DCHECK(!copy_layer->test_properties()->copy_requests.empty());
   ExecuteCalculateDrawProperties(root);
+  DCHECK(copy_layer->test_properties()->copy_requests.empty());
 
   EXPECT_EQ(gfx::Rect(100, 100), copy_layer->visible_layer_rect());
   EXPECT_EQ(gfx::Rect(20, 20), copy_child->visible_layer_rect());
@@ -5857,9 +5859,13 @@ TEST_F(LayerTreeHostCommonTest, VisibleRectInNonRootCopyRequest) {
   // Case 2: When the non root copy request layer is clipped.
   copy_layer->SetBounds(gfx::Size(50, 50));
   copy_layer->SetMasksToBounds(true);
+  copy_layer->test_properties()->copy_requests.push_back(
+      CopyOutputRequest::CreateRequest(base::Bind(&EmptyCopyOutputCallback)));
   root->layer_tree_impl()->property_trees()->needs_rebuild = true;
 
+  DCHECK(!copy_layer->test_properties()->copy_requests.empty());
   ExecuteCalculateDrawProperties(root);
+  DCHECK(copy_layer->test_properties()->copy_requests.empty());
 
   EXPECT_EQ(gfx::Rect(50, 50), copy_layer->visible_layer_rect());
   EXPECT_EQ(gfx::Rect(10, 10), copy_child->visible_layer_rect());

@@ -215,13 +215,6 @@ void CalculateClipRects(
     bool non_root_surfaces_enabled) {
   for (auto& layer : visible_layer_list) {
     const ClipNode* clip_node = clip_tree.Node(layer->clip_tree_index());
-    // The entire layer is visible if it has copy requests.
-    const EffectNode* effect_node =
-        effect_tree.Node(layer->effect_tree_index());
-    if (effect_node->data.has_copy_request &&
-        effect_node->owner_id == layer->id())
-      continue;
-
     if (!non_root_surfaces_enabled) {
       layer->set_clip_rect(
           gfx::ToEnclosingRect(clip_node->data.clip_in_target_space));
