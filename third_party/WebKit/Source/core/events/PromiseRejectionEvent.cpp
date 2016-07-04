@@ -19,10 +19,10 @@ PromiseRejectionEvent::PromiseRejectionEvent(ScriptState* state, const AtomicStr
 {
     ASSERT(initializer.hasPromise());
     m_promise.set(initializer.promise().isolate(), initializer.promise().v8Value());
-    m_promise.setWeak(this, &PromiseRejectionEvent::didCollectPromise);
+    m_promise.setPhantom();
     if (initializer.hasReason()) {
         m_reason.set(initializer.reason().isolate(), initializer.reason().v8Value());
-        m_reason.setWeak(this, &PromiseRejectionEvent::didCollectReason);
+        m_reason.setPhantom();
     }
 }
 
@@ -77,16 +77,6 @@ DEFINE_TRACE_WRAPPERS(PromiseRejectionEvent)
 {
     visitor->traceWrappers(&m_promise);
     visitor->traceWrappers(&m_reason);
-}
-
-void PromiseRejectionEvent::didCollectPromise(const v8::WeakCallbackInfo<PromiseRejectionEvent>& data)
-{
-    data.GetParameter()->m_promise.clear();
-}
-
-void PromiseRejectionEvent::didCollectReason(const v8::WeakCallbackInfo<PromiseRejectionEvent>& data)
-{
-    data.GetParameter()->m_reason.clear();
 }
 
 } // namespace blink

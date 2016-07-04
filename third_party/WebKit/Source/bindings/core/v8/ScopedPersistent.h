@@ -67,6 +67,8 @@ public:
         return v8::Local<T>::New(isolate, m_handle);
     }
 
+    // If you don't need to get weak callback, use setPhantom instead.
+    // setPhantom is faster than setWeak.
     template<typename P>
     void setWeak(P* parameters, void (*callback)(const v8::WeakCallbackInfo<P>&), v8::WeakCallbackType type = v8::WeakCallbackType::kParameter)
     {

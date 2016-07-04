@@ -27,11 +27,6 @@ ScriptPromisePropertyBase::~ScriptPromisePropertyBase()
     clearWrappers();
 }
 
-static void clearHandle(const v8::WeakCallbackInfo<ScopedPersistent<v8::Object>>& data)
-{
-    data.GetParameter()->clear();
-}
-
 ScriptPromise ScriptPromisePropertyBase::promise(DOMWrapperWorld& world)
 {
     if (!getExecutionContext())
@@ -148,7 +143,7 @@ v8::Local<v8::Object> ScriptPromisePropertyBase::ensureHolderWrapper(ScriptState
     v8::Local<v8::Object> wrapper = holder(m_isolate, context->Global());
     std::unique_ptr<ScopedPersistent<v8::Object>> weakPersistent = wrapUnique(new ScopedPersistent<v8::Object>);
     weakPersistent->set(m_isolate, wrapper);
-    weakPersistent->setWeak(weakPersistent.get(), &clearHandle);
+    weakPersistent->setPhantom();
     m_wrappers.append(std::move(weakPersistent));
     return wrapper;
 }

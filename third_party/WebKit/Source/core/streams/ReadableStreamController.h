@@ -27,7 +27,7 @@ public:
         : m_scriptState(controller.getScriptState())
         , m_jsController(controller.isolate(), controller.v8Value())
     {
-        m_jsController.setWeak(&m_jsController, ReadableStreamController::controllerWeakCallback);
+        m_jsController.setPhantom();
     }
 
     // Users of the ReadableStreamController can call this to note that the stream has been canceled and thus they
@@ -131,11 +131,6 @@ public:
     }
 
 private:
-    static void controllerWeakCallback(const v8::WeakCallbackInfo<ScopedPersistent<v8::Value>>& weakInfo)
-    {
-        weakInfo.GetParameter()->clear();
-    }
-
     static bool isTerminating(ScriptState* scriptState)
     {
         ExecutionContext* executionContext = scriptState->getExecutionContext();
