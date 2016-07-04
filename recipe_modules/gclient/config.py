@@ -239,14 +239,6 @@ def blink(c):
   del c.solutions[0].custom_deps
   c.revisions['src/third_party/WebKit'] = 'HEAD'
 
-@config_ctx(includes=['chromium'])
-def blink_or_chromium(c):
-  c.solutions[0].revision = gclient_api.ProjectRevisionResolver('chromium')
-  del c.solutions[0].custom_deps
-  c.revisions['src/third_party/WebKit'] = \
-      gclient_api.ProjectRevisionResolver(
-          'webkit', parent_got_revision='parent_got_webkit_revision')
-
 # TODO(phajdan.jr): Move to proper repo and add coverage.
 @config_ctx(includes=['chromium'])
 def blink_merged(c):  # pragma: no cover

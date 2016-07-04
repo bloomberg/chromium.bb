@@ -13,7 +13,6 @@ TEST_CONFIGS = [
   'android',
   'android_bare',
   'blink',
-  'blink_or_chromium',
   'boringssl',
   'build_internal',
   'build_internal_scripts_slave',
