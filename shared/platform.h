@@ -88,9 +88,9 @@ weston_platform_get_egl_proc_address(const char *address)
 {
 	const char *extensions = eglQueryString(EGL_NO_DISPLAY, EGL_EXTENSIONS);
 
-	if (extensions
-	    && (strstr(extensions, "EGL_EXT_platform_wayland")
-	        || strstr(extensions, "EGL_KHR_platform_wayland"))) {
+	if (extensions &&
+	    (weston_check_egl_extension(extensions, "EGL_EXT_platform_wayland") ||
+	     weston_check_egl_extension(extensions, "EGL_KHR_platform_wayland"))) {
 		return (void *) eglGetProcAddress(address);
 	}
 
