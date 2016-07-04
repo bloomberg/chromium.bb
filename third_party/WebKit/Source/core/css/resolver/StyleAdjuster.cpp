@@ -149,6 +149,223 @@ static bool hasWillChangeThatCreatesStackingContext(const ComputedStyle& style)
     return false;
 }
 
+void StyleAdjuster::adjustStyleForEditing(ComputedStyle& style)
+{
+    if (style.userModify() != READ_WRITE_PLAINTEXT_ONLY)
+        return;
+    // Collapsing whitespace is harmful in plain-text editing.
+    if (style.whiteSpace() == NORMAL)
+        style.setWhiteSpace(PRE_WRAP);
+    else if (style.whiteSpace() == NOWRAP)
+        style.setWhiteSpace(PRE);
+    else if (style.whiteSpace() == PRE_LINE)
+        style.setWhiteSpace(PRE_WRAP);
+}
+
+static void adjustStyleForFirstLetter(ComputedStyle& style)
+{
+    if (style.styleType() != PseudoIdFirstLetter)
+        return;
+
+    // Force inline display (except for floating first-letters).
+    style.setDisplay(style.isFloating() ? BLOCK : INLINE);
+
+    // CSS2 says first-letter can't be positioned.
+    style.setPosition(StaticPosition);
+}
+
+static void adjustStyleForAlignment(ComputedStyle& style, const ComputedStyle& parentStyle)
+{
+    bool isFlexOrGrid = style.isDisplayFlexibleOrGridBox();
+    bool absolutePositioned = style.position() == AbsolutePosition;
+
+    // If the inherited value of justify-items includes the legacy keyword, 'auto'
+    // computes to the the inherited value.
+    // Otherwise, auto computes to:
+    //  - 'stretch' for flex containers and grid containers.
+    //  - 'start' for everything else.
+    if (style.justifyItemsPosition() == ItemPositionAuto) {
+        if (parentStyle.justifyItemsPositionType() == LegacyPosition)
+            style.setJustifyItems(parentStyle.justifyItems());
+        else if (isFlexOrGrid)
+            style.setJustifyItemsPosition(ItemPositionStretch);
+    }
+
+    // The 'auto' keyword computes to 'stretch' on absolutely-positioned elements,
+    // and to the computed value of justify-items on the parent (minus
+    // any legacy keywords) on all other boxes.
+    if (style.justifySelfPosition() == ItemPositionAuto) {
+        if (absolutePositioned)
+            style.setJustifySelfPosition(ItemPositionStretch);
+        else
+            style.setJustifySelf(parentStyle.justifyItems());
+    }
+
+    // The 'auto' keyword computes to:
+    //  - 'stretch' for flex containers and grid containers,
+    //  - 'start' for everything else.
+    if (style.alignItemsPosition() == ItemPositionAuto) {
+        if (isFlexOrGrid)
+            style.setAlignItemsPosition(ItemPositionStretch);
+    }
+}
+
+static void adjustStyleForHTMLElement(ComputedStyle& style, const ComputedStyle& parentStyle, HTMLElement& element)
+{
+    // <div> and <span> are the most common elements on the web, we skip all the work for them.
+    if (isHTMLDivElement(element) || isHTMLSpanElement(element))
+        return;
+
+    if (isHTMLTableCellElement(element)) {
+        if (style.whiteSpace() == KHTML_NOWRAP) {
+            // Figure out if we are really nowrapping or if we should just
+            // use normal instead. If the width of the cell is fixed, then
+            // we don't actually use NOWRAP.
+            if (style.width().isFixed())
+                style.setWhiteSpace(NORMAL);
+            else
+                style.setWhiteSpace(NOWRAP);
+        }
+        return;
+    }
+
+    if (isHTMLTableElement(element)) {
+        // Tables never support the -webkit-* values for text-align and will reset back to the default.
+        if (style.textAlign() == WEBKIT_LEFT || style.textAlign() == WEBKIT_CENTER || style.textAlign() == WEBKIT_RIGHT)
+            style.setTextAlign(TASTART);
+        return;
+    }
+
+    if (isHTMLFrameElement(element) || isHTMLFrameSetElement(element)) {
+        // Frames and framesets never honor position:relative or position:absolute. This is necessary to
+        // fix a crash where a site tries to position these objects. They also never honor display.
+        style.setPosition(StaticPosition);
+        style.setDisplay(BLOCK);
+        return;
+    }
+
+    if (isHTMLFrameElementBase(element)) {
+        // Frames cannot overflow (they are always the size we ask them to be).
+        // Some compositing code paths may try to draw scrollbars anyhow.
+        style.setOverflowX(OverflowVisible);
+        style.setOverflowY(OverflowVisible);
+        return;
+    }
+
+    if (isHTMLRTElement(element)) {
+        // Ruby text does not support float or position. This might change with evolution of the specification.
+        style.setPosition(StaticPosition);
+        style.setFloating(NoFloat);
+        return;
+    }
+
+    if (isHTMLMarqueeElement(element)) {
+        // For now, <marquee> requires an overflow clip to work properly.
+        style.setOverflowX(OverflowHidden);
+        style.setOverflowY(OverflowHidden);
+        return;
+    }
+
+    if (isHTMLTextAreaElement(element)) {
+        // Textarea considers overflow visible as auto.
+        style.setOverflowX(style.overflowX() == OverflowVisible ? OverflowAuto : style.overflowX());
+        style.setOverflowY(style.overflowY() == OverflowVisible ? OverflowAuto : style.overflowY());
+        return;
+    }
+
+    if (isHTMLPlugInElement(element)) {
+        style.setRequiresAcceleratedCompositingForExternalReasons(toHTMLPlugInElement(element).shouldAccelerate());
+        return;
+    }
+}
+
+static void adjustOverflow(ComputedStyle& style)
+{
+    ASSERT(style.overflowX() != OverflowVisible || style.overflowY() != OverflowVisible);
+
+    if (style.display() == TABLE || style.display() == INLINE_TABLE) {
+        // Tables only support overflow:hidden and overflow:visible and ignore anything else,
+        // see http://dev.w3.org/csswg/css2/visufx.html#overflow. As a table is not a block
+        // container box the rules for resolving conflicting x and y values in CSS Overflow Module
+        // Level 3 do not apply. Arguably overflow-x and overflow-y aren't allowed on tables but
+        // all UAs allow it.
+        if (style.overflowX() != OverflowHidden)
+            style.setOverflowX(OverflowVisible);
+        if (style.overflowY() != OverflowHidden)
+            style.setOverflowY(OverflowVisible);
+        // If we are left with conflicting overflow values for the x and y axes on a table then resolve
+        // both to OverflowVisible. This is interoperable behaviour but is not specced anywhere.
+        if (style.overflowX() == OverflowVisible)
+            style.setOverflowY(OverflowVisible);
+        else if (style.overflowY() == OverflowVisible)
+            style.setOverflowX(OverflowVisible);
+    } else if (style.overflowX() == OverflowVisible && style.overflowY() != OverflowVisible) {
+        // If either overflow value is not visible, change to auto.
+        // FIXME: Once we implement pagination controls, overflow-x should default to hidden
+        // if overflow-y is set to -webkit-paged-x or -webkit-page-y. For now, we'll let it
+        // default to auto so we can at least scroll through the pages.
+        style.setOverflowX(OverflowAuto);
+    } else if (style.overflowY() == OverflowVisible && style.overflowX() != OverflowVisible) {
+        style.setOverflowY(OverflowAuto);
+    }
+
+    // Menulists should have visible overflow
+    if (style.appearance() == MenulistPart) {
+        style.setOverflowX(OverflowVisible);
+        style.setOverflowY(OverflowVisible);
+    }
+}
+
+static void adjustStyleForDisplay(ComputedStyle& style, const ComputedStyle& parentStyle, Document* document)
+{
+    if (style.display() == BLOCK && !style.isFloating())
+        return;
+
+    // FIXME: Don't support this mutation for pseudo styles like first-letter or first-line, since it's not completely
+    // clear how that should work.
+    if (style.display() == INLINE && style.styleType() == PseudoIdNone && style.getWritingMode() != parentStyle.getWritingMode())
+        style.setDisplay(INLINE_BLOCK);
+
+    // After performing the display mutation, check table rows. We do not honor position: relative table rows or cells.
+    // This has been established for position: relative in CSS2.1 (and caused a crash in containingBlock()
+    // on some sites).
+    if ((style.display() == TABLE_HEADER_GROUP || style.display() == TABLE_ROW_GROUP
+        || style.display() == TABLE_FOOTER_GROUP || style.display() == TABLE_ROW)
+        && style.position() == RelativePosition)
+        style.setPosition(StaticPosition);
+
+    // Cannot support position: sticky for table columns and column groups because current code is only doing
+    // background painting through columns / column groups
+    if ((style.display() == TABLE_COLUMN_GROUP || style.display() == TABLE_COLUMN)
+        && style.position() == StickyPosition)
+        style.setPosition(StaticPosition);
+
+    // writing-mode does not apply to table row groups, table column groups, table rows, and table columns.
+    // FIXME: Table cells should be allowed to be perpendicular or flipped with respect to the table, though.
+    if (style.display() == TABLE_COLUMN || style.display() == TABLE_COLUMN_GROUP || style.display() == TABLE_FOOTER_GROUP
+        || style.display() == TABLE_HEADER_GROUP || style.display() == TABLE_ROW || style.display() == TABLE_ROW_GROUP
+        || style.display() == TABLE_CELL)
+        style.setWritingMode(parentStyle.getWritingMode());
+
+    // FIXME: Since we don't support block-flow on flexible boxes yet, disallow setting
+    // of block-flow to anything other than TopToBottomWritingMode.
+    // https://bugs.webkit.org/show_bug.cgi?id=46418 - Flexible box support.
+    if (style.getWritingMode() != TopToBottomWritingMode && (style.display() == BOX || style.display() == INLINE_BOX))
+        style.setWritingMode(TopToBottomWritingMode);
+
+    if (parentStyle.isDisplayFlexibleOrGridBox()) {
+        style.setFloating(NoFloat);
+        style.setDisplay(equivalentBlockDisplay(style.display()));
+
+        // We want to count vertical percentage paddings/margins on flex items because our current
+        // behavior is different from the spec and we want to gather compatibility data.
+        if (style.paddingBefore().hasPercent() || style.paddingAfter().hasPercent())
+            UseCounter::count(document, UseCounter::FlexboxPercentagePaddingVertical);
+        if (style.marginBefore().hasPercent() || style.marginAfter().hasPercent())
+            UseCounter::count(document, UseCounter::FlexboxPercentageMarginVertical);
+    }
+}
+
 void StyleAdjuster::adjustComputedStyle(ComputedStyle& style, const ComputedStyle& parentStyle, Element* element)
 {
     if (style.display() != NONE) {
@@ -239,223 +456,6 @@ void StyleAdjuster::adjustComputedStyle(ComputedStyle& style, const ComputedStyl
             style.clearMultiCol();
     }
     adjustStyleForAlignment(style, parentStyle);
-}
-
-void StyleAdjuster::adjustStyleForEditing(ComputedStyle& style)
-{
-    if (style.userModify() != READ_WRITE_PLAINTEXT_ONLY)
-        return;
-    // Collapsing whitespace is harmful in plain-text editing.
-    if (style.whiteSpace() == NORMAL)
-        style.setWhiteSpace(PRE_WRAP);
-    else if (style.whiteSpace() == NOWRAP)
-        style.setWhiteSpace(PRE);
-    else if (style.whiteSpace() == PRE_LINE)
-        style.setWhiteSpace(PRE_WRAP);
-}
-
-void StyleAdjuster::adjustStyleForFirstLetter(ComputedStyle& style)
-{
-    if (style.styleType() != PseudoIdFirstLetter)
-        return;
-
-    // Force inline display (except for floating first-letters).
-    style.setDisplay(style.isFloating() ? BLOCK : INLINE);
-
-    // CSS2 says first-letter can't be positioned.
-    style.setPosition(StaticPosition);
-}
-
-void StyleAdjuster::adjustStyleForAlignment(ComputedStyle& style, const ComputedStyle& parentStyle)
-{
-    bool isFlexOrGrid = style.isDisplayFlexibleOrGridBox();
-    bool absolutePositioned = style.position() == AbsolutePosition;
-
-    // If the inherited value of justify-items includes the legacy keyword, 'auto'
-    // computes to the the inherited value.
-    // Otherwise, auto computes to:
-    //  - 'stretch' for flex containers and grid containers.
-    //  - 'start' for everything else.
-    if (style.justifyItemsPosition() == ItemPositionAuto) {
-        if (parentStyle.justifyItemsPositionType() == LegacyPosition)
-            style.setJustifyItems(parentStyle.justifyItems());
-        else if (isFlexOrGrid)
-            style.setJustifyItemsPosition(ItemPositionStretch);
-    }
-
-    // The 'auto' keyword computes to 'stretch' on absolutely-positioned elements,
-    // and to the computed value of justify-items on the parent (minus
-    // any legacy keywords) on all other boxes.
-    if (style.justifySelfPosition() == ItemPositionAuto) {
-        if (absolutePositioned)
-            style.setJustifySelfPosition(ItemPositionStretch);
-        else
-            style.setJustifySelf(parentStyle.justifyItems());
-    }
-
-    // The 'auto' keyword computes to:
-    //  - 'stretch' for flex containers and grid containers,
-    //  - 'start' for everything else.
-    if (style.alignItemsPosition() == ItemPositionAuto) {
-        if (isFlexOrGrid)
-            style.setAlignItemsPosition(ItemPositionStretch);
-    }
-}
-
-void StyleAdjuster::adjustStyleForHTMLElement(ComputedStyle& style, const ComputedStyle& parentStyle, HTMLElement& element)
-{
-    // <div> and <span> are the most common elements on the web, we skip all the work for them.
-    if (isHTMLDivElement(element) || isHTMLSpanElement(element))
-        return;
-
-    if (isHTMLTableCellElement(element)) {
-        if (style.whiteSpace() == KHTML_NOWRAP) {
-            // Figure out if we are really nowrapping or if we should just
-            // use normal instead. If the width of the cell is fixed, then
-            // we don't actually use NOWRAP.
-            if (style.width().isFixed())
-                style.setWhiteSpace(NORMAL);
-            else
-                style.setWhiteSpace(NOWRAP);
-        }
-        return;
-    }
-
-    if (isHTMLTableElement(element)) {
-        // Tables never support the -webkit-* values for text-align and will reset back to the default.
-        if (style.textAlign() == WEBKIT_LEFT || style.textAlign() == WEBKIT_CENTER || style.textAlign() == WEBKIT_RIGHT)
-            style.setTextAlign(TASTART);
-        return;
-    }
-
-    if (isHTMLFrameElement(element) || isHTMLFrameSetElement(element)) {
-        // Frames and framesets never honor position:relative or position:absolute. This is necessary to
-        // fix a crash where a site tries to position these objects. They also never honor display.
-        style.setPosition(StaticPosition);
-        style.setDisplay(BLOCK);
-        return;
-    }
-
-    if (isHTMLFrameElementBase(element)) {
-        // Frames cannot overflow (they are always the size we ask them to be).
-        // Some compositing code paths may try to draw scrollbars anyhow.
-        style.setOverflowX(OverflowVisible);
-        style.setOverflowY(OverflowVisible);
-        return;
-    }
-
-    if (isHTMLRTElement(element)) {
-        // Ruby text does not support float or position. This might change with evolution of the specification.
-        style.setPosition(StaticPosition);
-        style.setFloating(NoFloat);
-        return;
-    }
-
-    if (isHTMLMarqueeElement(element)) {
-        // For now, <marquee> requires an overflow clip to work properly.
-        style.setOverflowX(OverflowHidden);
-        style.setOverflowY(OverflowHidden);
-        return;
-    }
-
-    if (isHTMLTextAreaElement(element)) {
-        // Textarea considers overflow visible as auto.
-        style.setOverflowX(style.overflowX() == OverflowVisible ? OverflowAuto : style.overflowX());
-        style.setOverflowY(style.overflowY() == OverflowVisible ? OverflowAuto : style.overflowY());
-        return;
-    }
-
-    if (isHTMLPlugInElement(element)) {
-        style.setRequiresAcceleratedCompositingForExternalReasons(toHTMLPlugInElement(element).shouldAccelerate());
-        return;
-    }
-}
-
-void StyleAdjuster::adjustOverflow(ComputedStyle& style)
-{
-    ASSERT(style.overflowX() != OverflowVisible || style.overflowY() != OverflowVisible);
-
-    if (style.display() == TABLE || style.display() == INLINE_TABLE) {
-        // Tables only support overflow:hidden and overflow:visible and ignore anything else,
-        // see http://dev.w3.org/csswg/css2/visufx.html#overflow. As a table is not a block
-        // container box the rules for resolving conflicting x and y values in CSS Overflow Module
-        // Level 3 do not apply. Arguably overflow-x and overflow-y aren't allowed on tables but
-        // all UAs allow it.
-        if (style.overflowX() != OverflowHidden)
-            style.setOverflowX(OverflowVisible);
-        if (style.overflowY() != OverflowHidden)
-            style.setOverflowY(OverflowVisible);
-        // If we are left with conflicting overflow values for the x and y axes on a table then resolve
-        // both to OverflowVisible. This is interoperable behaviour but is not specced anywhere.
-        if (style.overflowX() == OverflowVisible)
-            style.setOverflowY(OverflowVisible);
-        else if (style.overflowY() == OverflowVisible)
-            style.setOverflowX(OverflowVisible);
-    } else if (style.overflowX() == OverflowVisible && style.overflowY() != OverflowVisible) {
-        // If either overflow value is not visible, change to auto.
-        // FIXME: Once we implement pagination controls, overflow-x should default to hidden
-        // if overflow-y is set to -webkit-paged-x or -webkit-page-y. For now, we'll let it
-        // default to auto so we can at least scroll through the pages.
-        style.setOverflowX(OverflowAuto);
-    } else if (style.overflowY() == OverflowVisible && style.overflowX() != OverflowVisible) {
-        style.setOverflowY(OverflowAuto);
-    }
-
-    // Menulists should have visible overflow
-    if (style.appearance() == MenulistPart) {
-        style.setOverflowX(OverflowVisible);
-        style.setOverflowY(OverflowVisible);
-    }
-}
-
-void StyleAdjuster::adjustStyleForDisplay(ComputedStyle& style, const ComputedStyle& parentStyle, Document* document)
-{
-    if (style.display() == BLOCK && !style.isFloating())
-        return;
-
-    // FIXME: Don't support this mutation for pseudo styles like first-letter or first-line, since it's not completely
-    // clear how that should work.
-    if (style.display() == INLINE && style.styleType() == PseudoIdNone && style.getWritingMode() != parentStyle.getWritingMode())
-        style.setDisplay(INLINE_BLOCK);
-
-    // After performing the display mutation, check table rows. We do not honor position: relative table rows or cells.
-    // This has been established for position: relative in CSS2.1 (and caused a crash in containingBlock()
-    // on some sites).
-    if ((style.display() == TABLE_HEADER_GROUP || style.display() == TABLE_ROW_GROUP
-        || style.display() == TABLE_FOOTER_GROUP || style.display() == TABLE_ROW)
-        && style.position() == RelativePosition)
-        style.setPosition(StaticPosition);
-
-    // Cannot support position: sticky for table columns and column groups because current code is only doing
-    // background painting through columns / column groups
-    if ((style.display() == TABLE_COLUMN_GROUP || style.display() == TABLE_COLUMN)
-        && style.position() == StickyPosition)
-        style.setPosition(StaticPosition);
-
-    // writing-mode does not apply to table row groups, table column groups, table rows, and table columns.
-    // FIXME: Table cells should be allowed to be perpendicular or flipped with respect to the table, though.
-    if (style.display() == TABLE_COLUMN || style.display() == TABLE_COLUMN_GROUP || style.display() == TABLE_FOOTER_GROUP
-        || style.display() == TABLE_HEADER_GROUP || style.display() == TABLE_ROW || style.display() == TABLE_ROW_GROUP
-        || style.display() == TABLE_CELL)
-        style.setWritingMode(parentStyle.getWritingMode());
-
-    // FIXME: Since we don't support block-flow on flexible boxes yet, disallow setting
-    // of block-flow to anything other than TopToBottomWritingMode.
-    // https://bugs.webkit.org/show_bug.cgi?id=46418 - Flexible box support.
-    if (style.getWritingMode() != TopToBottomWritingMode && (style.display() == BOX || style.display() == INLINE_BOX))
-        style.setWritingMode(TopToBottomWritingMode);
-
-    if (parentStyle.isDisplayFlexibleOrGridBox()) {
-        style.setFloating(NoFloat);
-        style.setDisplay(equivalentBlockDisplay(style.display()));
-
-        // We want to count vertical percentage paddings/margins on flex items because our current
-        // behavior is different from the spec and we want to gather compatibility data.
-        if (style.paddingBefore().hasPercent() || style.paddingAfter().hasPercent())
-            UseCounter::count(document, UseCounter::FlexboxPercentagePaddingVertical);
-        if (style.marginBefore().hasPercent() || style.marginAfter().hasPercent())
-            UseCounter::count(document, UseCounter::FlexboxPercentageMarginVertical);
-    }
 }
 
 } // namespace blink

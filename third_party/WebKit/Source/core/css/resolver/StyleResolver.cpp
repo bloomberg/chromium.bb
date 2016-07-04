@@ -697,8 +697,7 @@ PassRefPtr<ComputedStyle> StyleResolver::styleForDocument(Document& document)
 
 void StyleResolver::adjustComputedStyle(StyleResolverState& state, Element* element)
 {
-    StyleAdjuster adjuster;
-    adjuster.adjustComputedStyle(state.mutableStyleRef(), *state.parentStyle(), element);
+    StyleAdjuster::adjustComputedStyle(state.mutableStyleRef(), *state.parentStyle(), element);
 }
 
 // Start loading resources referenced by this style.

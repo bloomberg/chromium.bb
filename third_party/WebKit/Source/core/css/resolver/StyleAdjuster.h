@@ -22,33 +22,21 @@
 #ifndef StyleAdjuster_h
 #define StyleAdjuster_h
 
-#include "platform/heap/Handle.h"
+#include "wtf/Allocator.h"
 
 namespace blink {
 
-class Document;
 class Element;
-class HTMLElement;
 class ComputedStyle;
 
 // Certain CSS Properties/Values do not apply to certain elements
 // and the web expects that we expose "adjusted" values when
 // for those property/element pairs.
 class StyleAdjuster {
-    STACK_ALLOCATED();
+    STATIC_ONLY(StyleAdjuster);
 public:
-    StyleAdjuster()
-    { }
-
-    void adjustComputedStyle(ComputedStyle& styleToAdjust, const ComputedStyle& parentStyle, Element*);
+    static void adjustComputedStyle(ComputedStyle& styleToAdjust, const ComputedStyle& parentStyle, Element*);
     static void adjustStyleForEditing(ComputedStyle&);
-
-private:
-    void adjustStyleForFirstLetter(ComputedStyle&);
-    void adjustStyleForDisplay(ComputedStyle& styleToAdjust, const ComputedStyle& parentStyle, Document*);
-    void adjustStyleForHTMLElement(ComputedStyle& styleToAdjust, const ComputedStyle& parentStyle, HTMLElement&);
-    void adjustOverflow(ComputedStyle& styleToAdjust);
-    void adjustStyleForAlignment(ComputedStyle& styleToAdjust, const ComputedStyle& parentStyle);
 };
 
 } // namespace blink
