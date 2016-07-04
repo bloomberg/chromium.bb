@@ -18,6 +18,7 @@
 #include "base/memory/memory_pressure_monitor.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
+#include "base/observer_list.h"
 #include "base/process/process.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
@@ -31,6 +32,7 @@
 #include "chrome/browser/media/media_capture_devices_dispatcher.h"
 #include "chrome/browser/media/media_stream_capture_indicator.h"
 #include "chrome/browser/memory/oom_memory_details.h"
+#include "chrome/browser/memory/tab_manager_observer.h"
 #include "chrome/browser/memory/tab_manager_web_contents_data.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -888,6 +890,20 @@ TabStatsList TabManager::GetUnsortedTabStats() {
   }
 
   return stats_list;
+}
+
+void TabManager::AddObserver(TabManagerObserver* observer) {
+  observers_.AddObserver(observer);
+}
+
+void TabManager::RemoveObserver(TabManagerObserver* observer) {
+  observers_.RemoveObserver(observer);
+}
+
+void TabManager::OnDiscardedStateChange(content::WebContents* contents,
+                                        bool is_discarded) {
+  FOR_EACH_OBSERVER(TabManagerObserver, observers_,
+                    OnDiscardedStateChange(contents, is_discarded));
 }
 
 }  // namespace memory

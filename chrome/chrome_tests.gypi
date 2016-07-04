@@ -359,6 +359,7 @@
       'browser/media_galleries/media_galleries_dialog_controller_mock.cc',
       'browser/media_galleries/media_galleries_dialog_controller_mock.h',
       'browser/memory/tab_manager_browsertest.cc',
+      'browser/memory/tab_manager_observer_browsertest.cc',
       'browser/metrics/metrics_memory_details_browsertest.cc',
       'browser/metrics/metrics_service_browsertest.cc',
       'browser/net/cookie_policy_browsertest.cc',

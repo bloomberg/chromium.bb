@@ -1384,6 +1384,8 @@
       'browser/memory/tab_manager.h',
       'browser/memory/tab_manager_delegate_chromeos.cc',
       'browser/memory/tab_manager_delegate_chromeos.h',
+      'browser/memory/tab_manager_observer.cc',
+      'browser/memory/tab_manager_observer.h',
       'browser/memory/tab_manager_web_contents_data.cc',
       'browser/memory/tab_manager_web_contents_data.h',
       'browser/memory/tab_stats.cc',

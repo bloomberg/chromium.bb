@@ -52,7 +52,10 @@ bool TabManager::WebContentsData::IsDiscarded() {
 }
 
 void TabManager::WebContentsData::SetDiscardState(bool state) {
-  if (tab_data_.is_discarded_ && !state) {
+  if (tab_data_.is_discarded_ == state)
+    return;
+
+  if (!state) {
     static int reload_count = 0;
     tab_data_.last_reload_time_ = NowTicks();
     UMA_HISTOGRAM_CUSTOM_COUNTS("TabManager.Discarding.ReloadCount",
@@ -75,7 +78,7 @@ void TabManager::WebContentsData::SetDiscardState(bool state) {
                                  base::TimeDelta::FromDays(1), 100);
     }
 
-  } else if (!tab_data_.is_discarded_ && state) {
+  } else {
     static int discard_count = 0;
     UMA_HISTOGRAM_CUSTOM_COUNTS("TabManager.Discarding.DiscardCount",
                                 ++discard_count, 1, 1000, 50);
@@ -95,6 +98,12 @@ void TabManager::WebContentsData::SetDiscardState(bool state) {
   }
 
   tab_data_.is_discarded_ = state;
+
+  // TabManager could not exist in tests.
+  if (g_browser_process->GetTabManager()) {
+    g_browser_process->GetTabManager()->OnDiscardedStateChange(web_contents(),
+                                                               state);
+  }
 }
 
 int TabManager::WebContentsData::DiscardCount() {

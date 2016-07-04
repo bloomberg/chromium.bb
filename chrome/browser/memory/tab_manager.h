@@ -19,10 +19,12 @@
 #include "base/macros.h"
 #include "base/memory/memory_pressure_listener.h"
 #include "base/memory/weak_ptr.h"
+#include "base/observer_list.h"
 #include "base/strings/string16.h"
 #include "base/task_runner.h"
 #include "base/timer/timer.h"
 #include "build/build_config.h"
+#include "chrome/browser/memory/tab_manager_observer.h"
 #include "chrome/browser/memory/tab_stats.h"
 #include "chrome/browser/ui/browser_tab_strip_tracker.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
@@ -122,6 +124,10 @@ class TabManager : public TabStripModelObserver {
   // thread.
   TabStatsList GetUnsortedTabStats();
 
+  // Add/remove observers.
+  void AddObserver(TabManagerObserver* observer);
+  void RemoveObserver(TabManagerObserver* observer);
+
  private:
   FRIEND_TEST_ALL_PREFIXES(TabManagerTest, CanOnlyDiscardOnce);
   FRIEND_TEST_ALL_PREFIXES(TabManagerTest, ChildProcessNotifications);
@@ -136,6 +142,14 @@ class TabManager : public TabStripModelObserver {
   FRIEND_TEST_ALL_PREFIXES(TabManagerTest, ProtectVideoTabs);
   FRIEND_TEST_ALL_PREFIXES(TabManagerTest, ReloadDiscardedTabContextMenu);
   FRIEND_TEST_ALL_PREFIXES(TabManagerTest, TabManagerBasics);
+
+  // This is needed so WebContentsData can call OnDiscardedStateChange.
+  friend class WebContensData;
+
+  // Called by WebContentsData whenever the discard state of a WebContents
+  // changes, so that observers can be informed.
+  void OnDiscardedStateChange(content::WebContents* contents,
+                              bool is_discarded);
 
   // The time that a renderer is given to react to a memory pressure
   // notification before another renderer is also notified. This prevents all
@@ -328,6 +342,9 @@ class TabManager : public TabStripModelObserver {
   //     and make a delegate that centralizes all testing seams.
   using TestTabStripModel = std::pair<const TabStripModel*, bool>;
   std::vector<TestTabStripModel> test_tab_strip_models_;
+
+  // List of observers that will receive notifications on state changes.
+  base::ObserverList<TabManagerObserver> observers_;
 
   // Weak pointer factory used for posting delayed tasks to task_runner_.
   base::WeakPtrFactory<TabManager> weak_ptr_factory_;
