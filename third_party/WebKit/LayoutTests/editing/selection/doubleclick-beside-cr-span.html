@@ -172,10 +172,10 @@ function runTests()
         doTest("totest_tab_in_prewrap", "select5\t", getPositionOfNextLineHeadOf("totest_tab_in_prewrap"));
         doTest("totest_multiple_whitespaces_in_prewrap", "select6    ", getPositionOfNextLineHeadOf("totest_multiple_whitespaces_in_prewrap"));
 
-        doTest("totest_linebreak_out_preline", "select1\n");
+        doTest("totest_linebreak_out_preline", "select1");
         doTest("totest_tab_out_preline", "select2\t");
         doTest("totest_multiple_whitespaces_out_preline", "select3 ");
-        doTest("totest_linebreak_in_preline", "select4\n", getPositionOfNextLineHeadOf("totest_linebreak_in_preline"));
+        doTest("totest_linebreak_in_preline", "select4", getPositionOfNextLineHeadOf("totest_linebreak_in_preline"));
         doTest("totest_tab_in_preline", "select5\t");
         doTest("totest_multiple_whitespaces_in_preline", "select6 ");
 
