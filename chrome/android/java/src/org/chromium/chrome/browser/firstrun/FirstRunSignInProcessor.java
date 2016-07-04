@@ -15,6 +15,8 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.ChromeSwitches;
+import org.chromium.chrome.browser.IntentHandler;
+import org.chromium.chrome.browser.IntentHandler.ExternalAppId;
 import org.chromium.chrome.browser.preferences.PreferencesLauncher;
 import org.chromium.chrome.browser.signin.AccountManagementFragment;
 import org.chromium.chrome.browser.signin.SigninManager;
@@ -63,6 +65,15 @@ public final class FirstRunSignInProcessor {
                 || (!firstRunFlowComplete && ToSAckedReceiver.checkAnyUserHasSeenToS(activity))) {
             return;
         }
+
+        // Skip sign in if Chrome is neither started via Chrome icon nor GSA (Google Search App).
+        if (!TextUtils.equals(activity.getIntent().getAction(), Intent.ACTION_MAIN)
+                && IntentHandler.determineExternalIntentSource(
+                           activity.getPackageName(), activity.getIntent())
+                        != ExternalAppId.GSA) {
+            return;
+        }
+
         // Otherwise, force trigger the FRE.
         if (!firstRunFlowComplete) {
             requestToFireIntentAndFinish(activity);

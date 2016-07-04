@@ -55,6 +55,7 @@ public class ChromeBackupAgent extends BackupAgent {
     private static final String[] RESTORED_ANDROID_PREFS = {
             PrivacyPreferences.PREF_CRASH_DUMP_UPLOAD,
             FirstRunStatus.FIRST_RUN_FLOW_COMPLETE,
+            FirstRunStatus.LIGHTWEIGHT_FIRST_RUN_FLOW_COMPLETE,
             FirstRunSignInProcessor.FIRST_RUN_FLOW_SIGNIN_SETUP,
     };
 

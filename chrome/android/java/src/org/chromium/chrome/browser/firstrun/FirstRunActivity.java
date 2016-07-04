@@ -141,6 +141,12 @@ public class FirstRunActivity extends AppCompatActivity implements FirstRunPageD
             mFreProperties = new Bundle();
         }
 
+        // Skip creating content view if it is a lightweight First Run Experience without using
+        // USE_FRE_FLOW_SEQUENCER.
+        if (!mFreProperties.getBoolean(FirstRunActivity.USE_FRE_FLOW_SEQUENCER)) {
+            return;
+        }
+
         mPager = new ViewPager(this);
         mPager.setId(R.id.fre_pager);
         setContentView(mPager);
@@ -195,7 +201,7 @@ public class FirstRunActivity extends AppCompatActivity implements FirstRunPageD
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        mProfileDataCache.destroy();
+        if (mProfileDataCache != null) mProfileDataCache.destroy();
     }
 
     @Override
@@ -347,6 +353,7 @@ public class FirstRunActivity extends AppCompatActivity implements FirstRunPageD
     public void acceptTermsOfService(boolean allowCrashUpload) {
         UmaUtils.recordMetricsReportingDefaultOptIn(isMetricsReportingOptIn());
         sGlue.acceptTermsOfService(getApplicationContext(), allowCrashUpload);
+        FirstRunStatus.setSkipWelcomePage(FirstRunActivity.this, true);
         flushPersistentData();
         stopProgressionIfNotAcceptedTermsOfService();
         jumpToPage(mPager.getCurrentItem() + 1, true);
@@ -361,7 +368,7 @@ public class FirstRunActivity extends AppCompatActivity implements FirstRunPageD
         if (mNativeSideIsInitialized) ChromeApplication.flushPersistentData();
     }
 
-    private static void finishAllFREActivities(int result, Intent data) {
+    protected static void finishAllFREActivities(int result, Intent data) {
         List<WeakReference<Activity>> activities = ApplicationStatus.getRunningActivities();
         for (WeakReference<Activity> weakActivity : activities) {
             Activity activity = weakActivity.get();

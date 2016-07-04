@@ -24,7 +24,7 @@ public class CustomTabsConnectionService extends CustomTabsService {
     @Override
     public IBinder onBind(Intent intent) {
         boolean firstRunNecessary = FirstRunFlowSequencer
-                .checkIfFirstRunIsNecessary(getApplicationContext(), false) != null;
+                .checkIfFirstRunIsNecessary(getApplicationContext(), intent) != null;
         if (firstRunNecessary) return null;
         mConnection = CustomTabsConnection.getInstance(getApplication());
         mConnection.logCall("Service#onBind()", true);

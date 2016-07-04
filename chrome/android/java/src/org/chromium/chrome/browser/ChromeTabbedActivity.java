@@ -934,10 +934,8 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
             return;
         }
 
-        final boolean isIntentActionMain = getIntent() != null
-                && TextUtils.equals(getIntent().getAction(), Intent.ACTION_MAIN);
-        final Intent freIntent = FirstRunFlowSequencer.checkIfFirstRunIsNecessary(
-                this, isIntentActionMain);
+        final Intent freIntent =
+                FirstRunFlowSequencer.checkIfFirstRunIsNecessary(this, getIntent());
         if (freIntent == null) return;
 
         mIsOnFirstRun = true;

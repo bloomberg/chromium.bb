@@ -323,6 +323,12 @@ by a child template that "extends" this file.
             android:theme="@style/MainTheme"
             android:autoRemoveFromRecents="true">
         </activity>
+        <activity android:name="org.chromium.chrome.browser.firstrun.LightweightFirstRunActivity"
+            android:theme="@style/LightweightFreDialog"
+            android:launchMode="singleTop"
+            android:windowSoftInputMode="stateHidden|adjustPan"
+            android:configChanges="orientation|keyboardHidden|keyboard|screenSize|mcc|mnc|screenLayout|smallestScreenSize">
+        </activity>
         <activity android:name="org.chromium.chrome.browser.firstrun.FirstRunActivity"
             android:theme="@style/DialogWhenLarge"
             android:label="@string/fre_label"

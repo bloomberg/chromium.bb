@@ -83,6 +83,11 @@
         <item name="tint">@color/dark_mode_tint</item>
     </style>
 
+    <style name="LightweightFreDialog" parent="AlertDialogTheme">
+        <item name="windowNoTitle">true</item>
+        <item name="windowActionBar">false</item>
+    </style>
+
     <!-- Preferences -->
     <style name="PreferencesTheme" parent="ThemeWithActionBar">
         <item name="android:textColorLink">@color/pref_accent_color</item>

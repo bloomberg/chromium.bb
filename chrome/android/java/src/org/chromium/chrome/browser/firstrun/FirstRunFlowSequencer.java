@@ -9,12 +9,15 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.text.TextUtils;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.CommandLine;
 import org.chromium.base.FieldTrialList;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.ChromeSwitches;
+import org.chromium.chrome.browser.IntentHandler;
+import org.chromium.chrome.browser.IntentHandler.ExternalAppId;
 import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.preferences.privacy.PrivacyPreferencesManager;
@@ -214,10 +217,11 @@ public abstract class FirstRunFlowSequencer  {
     /**
      * Checks if the First Run needs to be launched.
      * @return The intent to launch the First Run Experience if necessary, or null.
-     * @param context The context
-     * @param fromChromeIcon Whether Chrome is opened via the Chrome icon
+     * @param context The context.
+     * @param fromIntent The intent that was used to launch Chrome. It contains the information of
+     * the client to launch different types of the First Run Experience.
      */
-    public static Intent checkIfFirstRunIsNecessary(Context context, boolean fromChromeIcon) {
+    public static Intent checkIfFirstRunIsNecessary(Context context, Intent fromIntent) {
         // If FRE is disabled (e.g. in tests), proceed directly to the intent handling.
         if (CommandLine.getInstance().hasSwitch(ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE)) {
             return null;
@@ -226,16 +230,38 @@ public abstract class FirstRunFlowSequencer  {
         // If Chrome isn't opened via the Chrome icon, and the user accepted the ToS
         // in the Setup Wizard, skip any First Run Experience screens and proceed directly
         // to the intent handling.
+        final boolean fromChromeIcon =
+                fromIntent != null && TextUtils.equals(fromIntent.getAction(), Intent.ACTION_MAIN);
         if (!fromChromeIcon && ToSAckedReceiver.checkAnyUserHasSeenToS(context)) return null;
 
-        // If the user hasn't been through the First Run Activity -- it must be shown.
         final boolean baseFreComplete = FirstRunStatus.getFirstRunFlowComplete(context);
         if (!baseFreComplete) {
-            return createGenericFirstRunIntent(context, fromChromeIcon);
+            // Show full First Run Experience if Chrome is opened via Chrome icon or GSA (Google
+            // Search App).
+            if (fromChromeIcon
+                    || (fromIntent != null
+                        && IntentHandler.determineExternalIntentSource(
+                            context.getPackageName(), fromIntent) == ExternalAppId.GSA)) {
+                return createGenericFirstRunIntent(context, fromChromeIcon);
+            }
+
+            // Show lightweight First Run Experience if the user has not accepted the ToS.
+            if (!FirstRunStatus.shouldSkipWelcomePage(context)
+                    && !FirstRunStatus.getLightweightFirstRunFlowComplete(context)) {
+                return createLightweightFirstRunIntent(context, fromChromeIcon);
+            }
         }
 
         // Promo pages are removed, so there is nothing else to show in FRE.
         return null;
+    }
+
+    private static Intent createLightweightFirstRunIntent(Context context, boolean fromChromeIcon) {
+        Intent intent = new Intent();
+        intent.setClassName(context, LightweightFirstRunActivity.class.getName());
+        intent.putExtra(FirstRunActivity.COMING_FROM_CHROME_ICON, fromChromeIcon);
+        intent.putExtra(FirstRunActivity.USE_FRE_FLOW_SEQUENCER, false);
+        return intent;
     }
 
     /**
