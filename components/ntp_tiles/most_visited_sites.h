@@ -23,10 +23,6 @@
 #include "components/suggestions/suggestions_service.h"
 #include "url/gurl.h"
 
-namespace gfx {
-class Image;
-}
-
 namespace history {
 class TopSites;
 }
@@ -146,8 +142,6 @@ class MostVisitedSites : public history::TopSitesObserver,
   // must not be null.
   void SetMostVisitedURLsObserver(Observer* observer, int num_sites);
 
-  using ThumbnailCallback = base::Callback<
-      void(bool /* is_local_thumbnail */, const SkBitmap* /* bitmap */)>;
   void AddOrRemoveBlacklistedUrl(const GURL& url, bool add_url);
   void RecordTileTypeMetrics(const std::vector<int>& tile_types);
   void RecordOpenedMostVisitedItem(int index, int tile_type);
