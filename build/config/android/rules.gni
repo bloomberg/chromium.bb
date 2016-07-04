@@ -1878,6 +1878,19 @@ if (enable_java_templates) {
       }
       _dex_sources = [ _proguard_output_jar_path ]
       _dex_deps = [ ":$_proguard_target" ]
+
+      _copy_proguard_mapping_target = "${_template_name}__copy_proguard_mapping"
+      copy(_copy_proguard_mapping_target) {
+        sources = [
+          "$_proguard_output_jar_path.mapping",
+        ]
+        outputs = [
+          "$_final_apk_path.mapping",
+        ]
+        deps = [
+          ":$_proguard_target",
+        ]
+      }
     } else {
       if (enable_multidex) {
         _dex_sources = [ _jar_path ]
@@ -2165,6 +2178,13 @@ if (enable_java_templates) {
                                "data_deps",
                              ])
       public_deps = _final_deps
+
+      # Make the proguard .mapping file easy to find by putting it beside the .apk.
+      if (_proguard_enabled) {
+        deps = [
+          ":$_copy_proguard_mapping_target",
+        ]
+      }
     }
     group("${target_name}_incremental") {
       forward_variables_from(invoker,
