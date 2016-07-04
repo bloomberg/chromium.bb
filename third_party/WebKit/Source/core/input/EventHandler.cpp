@@ -436,13 +436,6 @@ WebInputEventResult EventHandler::handleMouseReleaseEvent(const MouseEventWithHi
     if (controller && controller->autoscrollInProgress())
         m_scrollManager.stopAutoscroll();
 
-    // Used to prevent mouseMoveEvent from initiating a drag before
-    // the mouse is pressed again.
-    m_mousePressed = false;
-    m_capturesDragging = false;
-    m_mouseDownMayStartDrag = false;
-    m_mouseDownMayStartAutoscroll = false;
-
     return selectionController().handleMouseReleaseEvent(event, m_dragStartPos) ? WebInputEventResult::HandledSystem : WebInputEventResult::NotHandled;
 }
 
@@ -1201,6 +1194,7 @@ WebInputEventResult EventHandler::handleMouseReleaseEvent(const PlatformMouseEve
 
     if (eventResult == WebInputEventResult::NotHandled)
         eventResult = handleMouseReleaseEvent(mev);
+    clearDragHeuristicState();
 
     invalidateClick();
 
@@ -1376,6 +1370,16 @@ WebInputEventResult EventHandler::performDragAndDrop(const PlatformMouseEvent& e
     }
     clearDragState();
     return result;
+}
+
+void EventHandler::clearDragHeuristicState()
+{
+    // Used to prevent mouseMoveEvent from initiating a drag before
+    // the mouse is pressed again.
+    m_mousePressed = false;
+    m_capturesDragging = false;
+    m_mouseDownMayStartDrag = false;
+    m_mouseDownMayStartAutoscroll = false;
 }
 
 void EventHandler::clearDragState()
@@ -1863,6 +1867,7 @@ WebInputEventResult EventHandler::handleGestureTap(const GestureEventWithHitTest
 
     if (mouseUpEventResult == WebInputEventResult::NotHandled)
         mouseUpEventResult = handleMouseReleaseEvent(MouseEventWithHitTestResults(fakeMouseUp, currentHitTest));
+    clearDragHeuristicState();
 
     WebInputEventResult eventResult = mergeEventResult(mergeEventResult(mouseDownEventResult, mouseUpEventResult), clickEventResult);
     if (eventResult == WebInputEventResult::NotHandled && tappedNode && m_frame->page()) {

@@ -293,7 +293,13 @@ private:
 
     bool handleDrag(const MouseEventWithHitTestResults&, DragInitiator);
     bool tryStartDrag(const MouseEventWithHitTestResults&);
+
+    // Clears drag target and related states. It is called when drag is done or canceled.
     void clearDragState();
+
+    // Resets the state that indicates the next events could cause a drag. It is called when
+    // we realize the next events should not cause drag based on the drag heuristics.
+    void clearDragHeuristicState();
 
     WebInputEventResult dispatchDragSrcEvent(const AtomicString& eventType, const PlatformMouseEvent&);
 
