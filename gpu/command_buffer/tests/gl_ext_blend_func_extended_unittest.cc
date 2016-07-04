@@ -300,6 +300,15 @@ TEST_P(EXTBlendFuncExtendedES3DrawTest, ESSL3Var) {
 TEST_P(EXTBlendFuncExtendedES3DrawTest, ESSL3BindArrayWithSimpleName) {
   if (!IsApplicable())
     return;
+
+  // Fails on the Intel Mesa driver, see
+  // https://bugs.freedesktop.org/show_bug.cgi?id=96765
+  gpu::GPUTestBotConfig bot_config;
+  if (bot_config.LoadCurrentConfig(nullptr) &&
+      bot_config.Matches("linux intel")) {
+    return;
+  }
+
   // clang-format off
   static const char* kFragDataShader =
       "#version 300 es\n"
@@ -359,6 +368,15 @@ TEST_P(EXTBlendFuncExtendedES3DrawTest, ESSL3BindSimpleVarAsArrayNoBind) {
 TEST_P(EXTBlendFuncExtendedES3DrawTest, ESSL3BindArrayAsArray) {
   if (!IsApplicable())
     return;
+
+  // Fails on the Intel Mesa driver, see
+  // https://bugs.freedesktop.org/show_bug.cgi?id=96765
+  gpu::GPUTestBotConfig bot_config;
+  if (bot_config.LoadCurrentConfig(nullptr) &&
+      bot_config.Matches("linux intel")) {
+    return;
+  }
+
   // clang-format off
   static const char* kFragDataShader =
       "#version 300 es\n"
@@ -479,9 +497,12 @@ TEST_P(EXTBlendFuncExtendedES3DrawTest, ES3GettersArray) {
     return;
 
   // TODO(zmo): Figure out why this fails on AMD. crbug.com/585132.
+  // Also fails on the Intel Mesa driver, see
+  // https://bugs.freedesktop.org/show_bug.cgi?id=96765
   gpu::GPUTestBotConfig bot_config;
   if (bot_config.LoadCurrentConfig(nullptr) &&
-      bot_config.Matches("linux amd")) {
+      (bot_config.Matches("linux amd") ||
+      bot_config.Matches("linux intel"))) {
     return;
   }
 
