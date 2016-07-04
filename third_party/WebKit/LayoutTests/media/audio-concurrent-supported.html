@@ -1,72 +1,52 @@
-<html>
-    <title>Test of concurrent HTML5 audio</title>
-    <body>
+<!DOCTYPE html>
+<title>Test that multiple audio elements can play concurrently.</title>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script src="media-file.js"></script>
+<script>
+async_test(function(t) {
+    // Number of concurrent audio elements to test.
+    // For larger values a longer media file is needed.
+    var maxPlayers = 2;
+    var audioElementCount = 0;
 
-    <p>Test that multiple audio elements can play concurrently.</p>
+    for (var i = 0; i < maxPlayers; i++) {
+        var audio = document.createElement("audio");
+        document.documentElement.appendChild(audio);
+    }
 
-    <!-- TODO(foolip): Convert test to testharness.js. crbug.com/588956
-         (Please avoid writing new tests using video-test.js) -->
-    <script src=video-test.js></script>
-    <script src=media-file.js></script>
-    <script>
-        var maxPlayers = 2; // Number of concurrent audio elements to test. For larger values a longer media file is needed.
-        var audioElementCount = 0;
+    testAudioElement(0);
 
-        function errorListener(event)
-        {
-             logResult(false, "Element " + audioElementCount + " caught 'error' event, audio.error.code = " + this.error.code);
-             endTest();
-        }
+    function testAudioElement(count) {
+        var audioElement = document.querySelectorAll("audio")[count];
+        audioElement.onerror = t.unreached_func();
+        audioElement.onplaying = t.step_func(function() {});
 
-        function canplaythroughListener(event)
-        {
-             consoleWrite("EVENT(" + audioElementCount + ", canplaythrough)");
-             testElement = this;
-             testExpected(audioElementCount + ", testElement.currentTime", 0);
-             this.play();
-        }
+        audioElement.oncanplaythrough = t.step_func(function(event) {
+             var currentAudio = event.target;
+             assert_equals(currentAudio.currentTime, 0, "audio element " + (audioElementCount + 1) + " at start of playback");
+             currentAudio.play();
+        });
 
-        function playingListener(event)
-        {
-             consoleWrite("EVENT(" + audioElementCount + ", playing)");
-        }
-
-        function timeupdateListener(event)
-        {
-            testElement = this;
-            testExpected(audioElementCount + ", testElement.currentTime", 0, '>');
-            this.removeEventListener('timeupdate', timeupdateListener);
-            if (++audioElementCount >= maxPlayers) {
-                // All audio elements have been started playing. Make sure
-                // all of them are still playing.
-                consoleWrite("Making sure all " + maxPlayers + " audio elements are in playing state:");
+        audioElement.ontimeupdate = t.step_func(function(event) {
+            var currentAudio = event.target;
+            assert_greater_than(currentAudio.currentTime, 0, "audio element " + (audioElementCount + 1) + " during playback");
+            currentAudio.ontimeupdate = null;
+            if (++audioElementCount == maxPlayers) {
+                // All audio elements have been started playing.
+                // Make sure all of them are still playing.
                 for (var i = 0; i < maxPlayers; i++) {
-                    testElement = document.getElementsByTagName('audio')[i];
-                    testExpected(i + ", testElement.paused", false);
+                    currentAudio = document.getElementsByTagName('audio')[i];
+                    assert_false(currentAudio.paused, "audio element " + (i + 1) + " during playback");
                 }
-                endTest();
+                t.done();
             } else {
-                // Start the next audio element
+                // Start the next audio element.
                 testAudioElement(audioElementCount);
             }
-        }
+        });
 
-        function testAudioElement(count)
-        {
-            var audioElement = document.getElementsByTagName('audio')[count];
-            audioElement.addEventListener('error', errorListener);
-            audioElement.addEventListener('canplaythrough', canplaythroughListener);
-            audioElement.addEventListener('timeupdate', timeupdateListener);
-            audioElement.addEventListener('playing', playingListener);
-            audioElement.src = findMediaFile("audio", "content/silence");
-        }
-
-        consoleWrite("Starting a total of " + maxPlayers + " concurrent audio elements.");
-        for (var i = 0; i < maxPlayers; i++)
-            document.write("<audio controls></audio>");
-
-        testAudioElement(0);
-    </script>
-
-    </body>
-</html>
+        audioElement.src = findMediaFile("audio", "content/silence");
+    }
+});
+</script>

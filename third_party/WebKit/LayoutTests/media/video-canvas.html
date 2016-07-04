@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<title>Test "video" as a source for "canvas".</title>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script src="media-file.js"></script>
+<video></video>
+<canvas width="160" height="120"></canvas>
+<script>
+async_test(function(t) {
+    var ctx;
+    var width;
+    var height;
+    var results = {
+        current: 0,
+        values: [
+            { time: 0, r: 255, g: 255, b: 0 },
+            { time: 2, r: 0, g: 9, b: 237 },
+            { time: 4, r: 0, g: 32, b: 209 },
+            { time: 6, r: 0, g: 54, b: 182 },
+            { time: 8, r: 0, g: 77, b: 154 },
+            { time: 10, r: 0, g: 97, b: 126 }
+        ]
+    };
+
+    var video = document.querySelector("video");
+
+    video.onloadedmetadata = t.step_func(function() {
+        width = video.videoWidth / 2;
+        height = video.videoHeight / 2;
+
+        ctx = document.querySelector("canvas").getContext("2d");
+        ctx.fillStyle = "yellow";
+        ctx.fillRect(0, 0, width, height);
+        testFrame();
+    });
+
+    video.onseeked = t.step_func(function() {
+        ctx.drawImage(video, 0, 0, width, height);
+        testFrame();
+    });
+
+    function testFrame() {
+        var expected = results.values[results.current];
+        var frame = ctx.getImageData(0, 0, width, height);
+        var r = frame.data[4 * 2 * width + 16 + 0];
+        var g = frame.data[4 * 2 * width + 16 + 1];
+        var b = frame.data[4 * 2 * width + 16 + 2];
+
+        assert_equals(r, expected.r);
+        assert_equals(g, expected.g);
+        assert_equals(b, expected.b);
+
+        if (++results.current == results.values.length)
+            t.done();
+        else
+            video.currentTime = results.values[results.current].time;
+    }
+
+    video.src = findMediaFile("video", "content/counting");
+});
+</script>
