@@ -45,5 +45,6 @@ source_set("renderer") {
     "//ppapi/proxy:ipc",
     "//ppapi/shared_impl",
     "//third_party/WebKit/public:blink",
+    "//v8",
   ]
 }

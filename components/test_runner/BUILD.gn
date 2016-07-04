@@ -114,6 +114,7 @@ component("test_runner") {
     "//cc/blink",
     "//gin",
     "//gpu",
+    "//gpu/command_buffer/client:gles2_interface",
     "//net",
     "//skia",
     "//third_party/WebKit/public:blink",

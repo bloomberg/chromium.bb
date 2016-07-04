@@ -67,6 +67,7 @@ source_set("child") {
     "//ui/gl",
     "//ui/native_theme",
     "//url",
+    "//v8",
   ]
 
   if (!use_default_render_theme) {

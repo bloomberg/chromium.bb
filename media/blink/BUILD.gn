@@ -96,6 +96,7 @@ component("blink") {
         "webmediaplayer_cast_android.cc",
         "webmediaplayer_cast_android.h",
       ]
+      deps += [ "//gpu/command_buffer/client:gles2_interface" ]
     }
   }
 }

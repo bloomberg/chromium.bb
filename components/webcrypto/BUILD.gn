@@ -107,6 +107,7 @@ source_set("fuzzer_support") {
   ]
   deps = [
     ":webcrypto",
+    "//base",
     "//crypto",
     "//crypto:platform",
     "//third_party/WebKit/public:blink",

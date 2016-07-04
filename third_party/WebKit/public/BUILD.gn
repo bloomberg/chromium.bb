@@ -20,6 +20,8 @@ group("blink") {
   public_deps = [
     ":blink_headers",
     ":blink_minimal",
+  ]
+  deps = [
     "//third_party/WebKit/Source/platform",
     "//third_party/WebKit/Source/web",
   ]
