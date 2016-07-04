@@ -515,6 +515,8 @@ class Sample {
     /** @const @type {!Selection} */
     this.selection_ = this.iframe_.contentWindow.getSelection();
     this.selection_.document = this.document_;
+    this.selection_.document.offsetLeft = this.iframe_.offsetLeft;
+    this.selection_.document.offsetTop = this.iframe_.offsetTop;
 
     this.load(sampleText);
   }
