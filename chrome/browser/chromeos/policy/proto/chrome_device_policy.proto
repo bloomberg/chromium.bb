@@ -711,6 +711,11 @@ message LoginVideoCaptureAllowedUrlsProto {
   repeated string urls = 1;
 }
 
+// A list of app-ids to install from the webstore on the login page.
+message LoginAppsProto {
+  repeated string login_apps = 1;
+}
+
 message ChromeDeviceSettingsProto {
   optional DevicePolicyRefreshRateProto device_policy_refresh_rate = 1;
   optional UserWhitelistProto user_whitelist = 2;
@@ -763,4 +768,5 @@ message ChromeDeviceSettingsProto {
   optional DeviceQuirksDownloadEnabledProto quirks_download_enabled = 44;
   optional LoginVideoCaptureAllowedUrlsProto login_video_capture_allowed_urls =
       45;
+  optional LoginAppsProto login_apps = 46;
 }

@@ -2796,6 +2796,14 @@
     ]
   },
 
+  "LoginApps": {
+    "os": ["chromeos"],
+    "test_policy": { "LoginApps": [ "abcdefghijklmnopabcdefghijklmnop" ] },
+    "pref_mappings": [
+      { "pref": "cros.device.login_apps" }
+    ]
+  },
+
   "----- Chrome Frame policies -------------------------------------------": {},
 
   "ChromeFrameRendererSettings": {

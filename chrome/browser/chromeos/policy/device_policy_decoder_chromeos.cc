@@ -308,6 +308,15 @@ void DecodeLoginPolicies(const em::ChromeDeviceSettingsProto& policy,
                   POLICY_SCOPE_MACHINE, POLICY_SOURCE_CLOUD, std::move(urls),
                   nullptr);
   }
+
+  if (policy.has_login_apps()) {
+    const em::LoginAppsProto& login_apps_proto(policy.login_apps());
+    std::unique_ptr<base::ListValue> login_apps(new base::ListValue);
+    for (const auto& login_app : login_apps_proto.login_apps())
+      login_apps->Append(new base::StringValue(login_app));
+    policies->Set(key::kLoginApps, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
+                  POLICY_SOURCE_CLOUD, std::move(login_apps), nullptr);
+  }
 }
 
 void DecodeNetworkPolicies(const em::ChromeDeviceSettingsProto& policy,

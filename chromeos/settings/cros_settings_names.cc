@@ -204,4 +204,7 @@ const char kDeviceQuirksDownloadEnabled[] =
 const char kLoginVideoCaptureAllowedUrls[] =
     "cros.device.login_video_capture_allowed_urls";
 
+// A list pref storing the apps to install on the login page.
+const char kLoginApps[] = "cros.device.login_apps";
+
 }  // namespace chromeos

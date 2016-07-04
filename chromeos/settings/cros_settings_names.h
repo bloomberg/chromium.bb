@@ -102,6 +102,8 @@ CHROMEOS_EXPORT extern const char kDeviceQuirksDownloadEnabled[];
 
 CHROMEOS_EXPORT extern const char kLoginVideoCaptureAllowedUrls[];
 
+CHROMEOS_EXPORT extern const char kLoginApps[];
+
 }  // namespace chromeos
 
 #endif  // CHROMEOS_SETTINGS_CROS_SETTINGS_NAMES_H_

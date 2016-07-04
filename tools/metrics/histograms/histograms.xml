@@ -72317,6 +72317,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="334" label="Whether DHE cipher suites in TLS are enabled"/>
   <int value="335"
       label="Disable Certificate Transparency enforcement for these sites"/>
+  <int value="336"
+      label="Configure the list of installed apps on the login screen"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations" type="int">
