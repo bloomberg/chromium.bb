@@ -188,7 +188,7 @@ You can also just run lou_checktable for example:
 
   $ libtool --mode=execute valgrind -v --tool=memcheck \
     --leak-check=full --leak-resolution=high --log-file=valgrind.log \
-    ./tools/lou_checktable tables/nl-BE-g1.ctb
+    ./tools/lou_checktable tables/nl-BE-g0.utb
 
 Again open valgrind.log to see if any memory leaks were reported.
 
