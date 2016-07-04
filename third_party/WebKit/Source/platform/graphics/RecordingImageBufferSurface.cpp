@@ -258,8 +258,8 @@ void RecordingImageBufferSurface::didDraw(const FloatRect& rect)
 
 bool RecordingImageBufferSurface::finalizeFrameInternal(FallbackReason* fallbackReason)
 {
-    ASSERT(!m_fallbackSurface);
-    ASSERT(m_currentFrame);
+    CHECK(!m_fallbackSurface);
+    CHECK(m_currentFrame);
     ASSERT(m_currentFrame->getRecordingCanvas());
     ASSERT(fallbackReason);
     ASSERT(*fallbackReason == FallbackReasonUnknown);
@@ -270,7 +270,8 @@ bool RecordingImageBufferSurface::finalizeFrameInternal(FallbackReason* fallback
             m_previousFrame = fromSkSp(m_currentFrame->finishRecordingAsPicture());
             initializeCurrentFrame();
         }
-        return m_currentFrame.get();
+        CHECK(m_currentFrame);
+        return true;
     }
 
     if (!m_frameWasCleared) {
