@@ -21,6 +21,8 @@ import org.chromium.chrome.browser.preferences.website.ContentSetting;
 import org.chromium.chrome.browser.util.UrlUtilities;
 import org.chromium.chrome.browser.widget.RoundedIconGenerator;
 import org.chromium.chrome.test.util.browser.notifications.MockNotificationManagerProxy.NotificationEntry;
+import org.chromium.content.browser.test.util.Criteria;
+import org.chromium.content.browser.test.util.CriteriaHelper;
 
 import java.util.List;
 
@@ -310,6 +312,40 @@ public class NotificationPlatformBridgeTest extends NotificationTestBase {
         // event. This will eventually bubble up to a call to cancel() in the NotificationManager.
         waitForNotificationManagerMutation();
         assertTrue(getNotificationEntries().isEmpty());
+    }
+
+    /**
+     * Verifies that starting the PendingIntent stored as the notification's content intent will
+     * start up the associated Service Worker, where the JavaScript code will create a new tab for
+     * displaying the notification's event to the user.
+     */
+    @LargeTest
+    @Feature({"Browser", "Notifications"})
+    public void testNotificationContentIntentCreatesTab() throws Exception {
+        loadUrl(getTestServer().getURL(NOTIFICATION_TEST_PAGE));
+        setNotificationContentSettingForCurrentOrigin(ContentSetting.ALLOW);
+
+        assertEquals("Expected the notification test page to be the sole tab in the current model",
+                1, getActivity().getCurrentTabModel().getCount());
+
+        Notification notification =
+                showAndGetNotification("MyNotification", "{ data: 'ACTION_CREATE_TAB' }");
+
+        // Sending the PendingIntent resembles activating the notification.
+        assertNotNull(notification.contentIntent);
+        notification.contentIntent.send();
+
+        // The Service Worker, upon receiving the notificationclick event, will create a new tab
+        // after which it closes the notification.
+        waitForNotificationManagerMutation();
+        assertTrue(getNotificationEntries().isEmpty());
+
+        CriteriaHelper.pollInstrumentationThread(new Criteria("Expected a new tab to be created") {
+            @Override
+            public boolean isSatisfied() {
+                return 2 == getActivity().getCurrentTabModel().getCount();
+            }
+        });
     }
 
     /**

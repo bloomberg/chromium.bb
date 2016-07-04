@@ -9,6 +9,7 @@ import android.content.Intent;
 import android.os.AsyncTask;
 
 import org.chromium.base.CommandLine;
+import org.chromium.base.annotations.UsedByReflection;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.document.AsyncTabCreationParams;
@@ -38,8 +39,10 @@ import org.chromium.webapk.lib.client.WebApkValidator;
  * TODO(peter): after upstreaming, merge this with ServiceTabLauncher and remove reflection calls
  *              in ServiceTabLauncher.
  */
+@UsedByReflection("ServiceTabLauncher.java")
 public class ChromeServiceTabLauncher extends ServiceTabLauncher {
     @Override
+    @UsedByReflection("ServiceTabLauncher.java")
     public void launchTab(final Context context, final int requestId, final boolean incognito,
             final String url, final int disposition, final String referrerUrl,
             final int referrerPolicy, final String extraHeaders,

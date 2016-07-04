@@ -10,5 +10,8 @@ addEventListener('message', function(event) {
 });
 
 addEventListener('notificationclick', function(event) {
+  if (event.notification.data === 'ACTION_CREATE_TAB')
+    clients.openWindow('https://chrome.com/');
+
   event.notification.close();
 });
