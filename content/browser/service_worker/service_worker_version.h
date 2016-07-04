@@ -192,12 +192,18 @@ class CONTENT_EXPORT ServiceWorkerVersion
                            const StatusCallback& error_callback);
 
   // Call this while the worker is running before dispatching an event to the
-  // worker. This informs ServiceWorkerVersion about the event in progress.
-  // Returns a request id, which should later be passed to FinishRequest when
-  // the event finished.
+  // worker. This informs ServiceWorkerVersion about the event in progress. The
+  // worker attempts to keep running until the event finishes.
+  //
+  // Returns a request id, which must later be passed to FinishRequest when the
+  // event finished. The caller is responsible for ensuring FinishRequest is
+  // called. If FinishRequest is not called the request will eventually time
+  // out and the worker will be forcibly terminated.
+  //
   // The |error_callback| is called if either ServiceWorkerVersion decides the
   // event is taking too long, or if for some reason the worker stops or is
-  // killed before the request finishes.
+  // killed before the request finishes. In this case, the caller should not
+  // call FinishRequest.
   int StartRequest(ServiceWorkerMetrics::EventType event_type,
                    const StatusCallback& error_callback);
 
@@ -373,6 +379,7 @@ class CONTENT_EXPORT ServiceWorkerVersion
                            RequestCustomizedTimeoutKill);
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerVersionTest, MixedRequestTimeouts);
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerURLRequestJobTest, EarlyResponse);
+  FRIEND_TEST_ALL_PREFIXES(ServiceWorkerURLRequestJobTest, CancelRequest);
 
   class Metrics;
   class PingController;

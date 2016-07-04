@@ -44,6 +44,8 @@ class CONTENT_EXPORT ServiceWorkerFetchDispatcher {
   void Run();
 
  private:
+  class ResponseCallback;
+
   void DidWaitForActivation();
   void StartWorker();
   void DidStartWorker();

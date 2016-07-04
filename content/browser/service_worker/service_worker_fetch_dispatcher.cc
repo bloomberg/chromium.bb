@@ -71,6 +71,35 @@ ServiceWorkerMetrics::EventType FetchTypeToWaitUntilEventType(
 
 }  // namespace
 
+// Helper to receive the fetch event response even if
+// ServiceWorkerFetchDispatcher has been destroyed.
+class ServiceWorkerFetchDispatcher::ResponseCallback {
+ public:
+  ResponseCallback(base::WeakPtr<ServiceWorkerFetchDispatcher> fetch_dispatcher,
+                   ServiceWorkerVersion* version)
+      : fetch_dispatcher_(fetch_dispatcher), version_(version) {}
+
+  void Run(int request_id,
+           ServiceWorkerFetchEventResult fetch_result,
+           const ServiceWorkerResponse& response) {
+    const bool handled =
+        (fetch_result == SERVICE_WORKER_FETCH_EVENT_RESULT_RESPONSE);
+    if (!version_->FinishRequest(request_id, handled))
+      NOTREACHED() << "Should only receive one reply per event";
+
+    // |fetch_dispatcher| is null if the URLRequest was killed.
+    if (fetch_dispatcher_)
+      fetch_dispatcher_->DidFinish(request_id, fetch_result, response);
+  }
+
+ private:
+  base::WeakPtr<ServiceWorkerFetchDispatcher> fetch_dispatcher_;
+  // Owns |this|.
+  ServiceWorkerVersion* version_;
+
+  DISALLOW_COPY_AND_ASSIGN(ResponseCallback);
+};
+
 ServiceWorkerFetchDispatcher::ServiceWorkerFetchDispatcher(
     std::unique_ptr<ServiceWorkerFetchRequest> request,
     ServiceWorkerVersion* version,
@@ -168,9 +197,12 @@ void ServiceWorkerFetchDispatcher::DispatchFetchEvent() {
       FetchTypeToWaitUntilEventType(request_->fetch_type),
       base::Bind(&ServiceWorkerUtils::NoOpStatusCallback));
 
+  ResponseCallback* response_callback =
+      new ResponseCallback(weak_factory_.GetWeakPtr(), version_.get());
   version_->RegisterRequestCallback<ServiceWorkerHostMsg_FetchEventResponse>(
-      response_id, base::Bind(&ServiceWorkerFetchDispatcher::DidFinish,
-                              weak_factory_.GetWeakPtr()));
+      response_id,
+      base::Bind(&ServiceWorkerFetchDispatcher::ResponseCallback::Run,
+                 base::Owned(response_callback)));
   version_->RegisterSimpleRequest<ServiceWorkerHostMsg_FetchEventFinished>(
       event_finish_id);
   version_->DispatchEvent({response_id, event_finish_id},
@@ -196,12 +228,6 @@ void ServiceWorkerFetchDispatcher::DidFinish(
     ServiceWorkerFetchEventResult fetch_result,
     const ServiceWorkerResponse& response) {
   net_log_.EndEvent(net::NetLog::TYPE_SERVICE_WORKER_FETCH_EVENT);
-
-  const bool handled =
-      (fetch_result == SERVICE_WORKER_FETCH_EVENT_RESULT_RESPONSE);
-  if (!version_->FinishRequest(request_id, handled))
-    NOTREACHED() << "Should only receive one reply per event";
-
   Complete(SERVICE_WORKER_OK, fetch_result, response);
 }
 
