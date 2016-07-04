@@ -45,23 +45,6 @@ typedef intptr_t EGLNativeWindowType;
 
 #endif /* ENABLE_EGL */
 
-#ifndef EGL_EXT_platform_base
-typedef EGLDisplay (*PFNEGLGETPLATFORMDISPLAYEXTPROC) (EGLenum platform, void *native_display, const EGLint *attrib_list);
-typedef EGLSurface (*PFNEGLCREATEPLATFORMWINDOWSURFACEEXTPROC) (EGLDisplay dpy, EGLConfig config, void *native_window, const EGLint *attrib_list);
-#endif
-
-#ifndef EGL_PLATFORM_GBM_KHR
-#define EGL_PLATFORM_GBM_KHR 0x31D7
-#endif
-
-#ifndef EGL_PLATFORM_WAYLAND_KHR
-#define EGL_PLATFORM_WAYLAND_KHR 0x31D8
-#endif
-
-#ifndef EGL_PLATFORM_X11_KHR
-#define EGL_PLATFORM_X11_KHR 0x31D5
-#endif
-
 #define NO_EGL_PLATFORM 0
 
 enum gl_renderer_border_side {
