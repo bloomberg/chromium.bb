@@ -57,16 +57,6 @@ typedef void (^SigninCompletionCallback)(ChromeIdentity* identity,
                            email:(NSString*)userEmail
                       completion:(SigninCompletionCallback)completion;
 
-// Starts the reauthentication operation for a user. Presents user with the
-// screen to enter credentials with the email pre-entered.
-// Note: Calling this method will fail and the completion will be called with a
-// CHROME_IDENTITY_OPERATION_ONGOING error if there is already another add
-// account or reauthenticate operation ongoing.
-// * |email| will be pre-entered on the presented screen.
-// * |completion| will be called once the operation has finished.
-- (void)reauthenticateUserWithEmail:(NSString*)email
-                         completion:(SigninCompletionCallback)completion;
-
 // Cancels and dismisses any currently active operation. Completion will be
 // called with a cancel error.
 // * |animated| represents whether the UI should be dismissed with an animation.

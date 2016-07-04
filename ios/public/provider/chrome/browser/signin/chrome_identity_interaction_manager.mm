@@ -38,12 +38,6 @@
   completion(nil, nil);
 }
 
-- (void)reauthenticateUserWithEmail:(NSString*)email
-                         completion:(SigninCompletionCallback)completion {
-  NOTREACHED() << "Subclasses must override this";
-  completion(nil, nil);
-}
-
 - (void)cancelAndDismissAnimated:(BOOL)animated {
   NOTREACHED() << "Subclasses must override this";
 }
