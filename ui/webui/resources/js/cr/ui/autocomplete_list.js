@@ -239,8 +239,8 @@ cr.define('cr.ui', function() {
       if (this.hidden)
         return;
       var handled = false;
-      switch (event.keyIdentifier) {
-        case 'U+001B':  // Esc
+      switch (event.key) {
+        case 'Escape':
           this.suggestions = [];
           handled = true;
           break;
@@ -250,11 +250,9 @@ cr.define('cr.ui', function() {
           // handle the event as well.
           this.handleEnterKeydown();
           break;
-        case 'Up':
-        case 'Down':
-          var newEvent = new Event(event.type);
-          newEvent.keyIdentifier = event.keyIdentifier;
-          this.dispatchEvent(newEvent);
+        case 'ArrowUp':
+        case 'ArrowDown':
+          this.dispatchEvent(new KeyboardEvent(event.type, event));
           handled = true;
           break;
       }

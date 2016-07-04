@@ -10,7 +10,7 @@
   };
 
   window.onkeydown = function(e) {
-    if (e.keyIdentifier == 'Enter' || e.keyIdentifier == 'U+0020') {
+    if (e.key == 'Enter' || e.key == ' ') {
       plugin.load();
       e.preventDefault();
     }

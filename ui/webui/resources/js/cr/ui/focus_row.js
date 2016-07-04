@@ -271,13 +271,13 @@ cr.define('cr.ui', function() {
 
       var index = -1;
 
-      if (e.keyIdentifier == 'Left')
+      if (e.key == 'ArrowLeft')
         index = elementIndex + (isRTL() ? 1 : -1);
-      else if (e.keyIdentifier == 'Right')
+      else if (e.key == 'ArrowRight')
         index = elementIndex + (isRTL() ? -1 : 1);
-      else if (e.keyIdentifier == 'Home')
+      else if (e.key == 'Home')
         index = 0;
-      else if (e.keyIdentifier == 'End')
+      else if (e.key == 'End')
         index = elements.length - 1;
 
       var elementToFocus = elements[index];

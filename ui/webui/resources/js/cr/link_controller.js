@@ -81,8 +81,7 @@ cr.define('cr', function() {
      */
     openUrlFromEvent: function(url, e) {
       // We only support keydown Enter and non right click events.
-      if (e.type == 'keydown' && e.keyIdentifier == 'Enter' ||
-          e.button != 2) {
+      if (e.type == 'keydown' && e.key == 'Enter' || e.button != 2) {
         var kind;
         var ctrl = cr.isMac && e.metaKey || !cr.isMac && e.ctrlKey;
 

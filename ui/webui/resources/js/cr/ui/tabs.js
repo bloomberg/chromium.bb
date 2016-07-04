@@ -150,13 +150,13 @@ cr.define('cr.ui', function() {
      */
     handleKeyDown_: function(e) {
       var delta = 0;
-      switch (e.keyIdentifier) {
-        case 'Left':
-        case 'Up':
+      switch (e.key) {
+        case 'ArrowLeft':
+        case 'ArrowUp':
           delta = -1;
           break;
-        case 'Right':
-        case 'Down':
+        case 'ArrowRight':
+        case 'ArrowDown':
           delta = 1;
           break;
       }

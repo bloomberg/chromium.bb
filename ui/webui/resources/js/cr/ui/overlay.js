@@ -50,13 +50,13 @@ cr.define('cr.ui.overlay', function() {
           return;
 
         // Close the overlay on escape.
-        if (e.keyIdentifier == 'U+001B')
+        if (e.key == 'Escape')
           cr.dispatchSimpleEvent(overlay, 'cancelOverlay');
 
         // Execute the overlay's default button on enter, unless focus is on an
         // element that has standard behavior for the enter key.
         var forbiddenTagNames = /^(A|BUTTON|SELECT|TEXTAREA)$/;
-        if (e.keyIdentifier == 'Enter' &&
+        if (e.key == 'Enter' &&
             !forbiddenTagNames.test(document.activeElement.tagName)) {
           var button = getDefaultButton(overlay);
           if (button) {

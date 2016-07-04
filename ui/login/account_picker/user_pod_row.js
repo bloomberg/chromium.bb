@@ -475,7 +475,7 @@ cr.define('login', function() {
      * @private
      */
     handleKeyDown_: function(e) {
-      if (!this.actionHandler_ || e.keyIdentifier != 'Enter')
+      if (!this.actionHandler_ || e.key != 'Enter')
         return;
       this.actionHandler_(e);
       stopEventPropagation(e);
@@ -1442,15 +1442,15 @@ cr.define('login', function() {
     handleActionAreaButtonKeyDown_: function(e) {
       if (this.disabled)
         return;
-      switch (e.keyIdentifier) {
+      switch (e.key) {
         case 'Enter':
-        case 'U+0020':  // Space
+        case ' ':
           if (this.parentNode.focusedPod_ && !this.isActionBoxMenuActive)
             this.isActionBoxMenuActive = true;
           e.stopPropagation();
           break;
-        case 'Up':
-        case 'Down':
+        case 'ArrowUp':
+        case 'ArrowDown':
           if (this.isActionBoxMenuActive) {
             this.actionBoxMenuRemoveElement.tabIndex =
                 UserPodTabOrder.POD_MENU_ITEM;
@@ -1461,13 +1461,13 @@ cr.define('login', function() {
         // Ignore these two, so ChromeVox hotkeys don't close the menu before
         // they can navigate through it.
         case 'Shift':
-        case 'Win':
+        case 'Meta':
           break;
-        case 'U+001B':  // Esc
+        case 'Escape':
           this.isActionBoxMenuActive = false;
           e.stopPropagation();
           break;
-        case 'U+0009':  // Tab
+        case 'Tab':
           if (!this.parentNode.alwaysFocusSinglePod)
             this.parentNode.focusPod();
         default:
@@ -1484,7 +1484,7 @@ cr.define('login', function() {
       if (this.disabled)
         return;
 
-      if (e.keyIdentifier != 'U+0009' /* TAB */) {
+      if (e.key != 'Tab') {
         this.handleActionAreaButtonKeyDown_(e);
         return;
       }
@@ -1719,7 +1719,7 @@ cr.define('login', function() {
 
       // Only handle pressing 'Enter' or 'Space', and let all other events
       // bubble to the action box menu.
-      if (e.keyIdentifier == 'Enter' || e.keyIdentifier == 'U+0020') {
+      if (e.key == 'Enter' || e.key == ' ') {
         this.isActionBoxMenuActive = false;
         this.removeUser(this.user);
         e.stopPropagation();
@@ -1735,7 +1735,7 @@ cr.define('login', function() {
     handleRemoveCommandKeyDown_: function(e) {
       if (this.disabled)
         return;
-      switch (e.keyIdentifier) {
+      switch (e.key) {
         case 'Enter':
           if (this.user.legacySupervisedUser || this.user.isDesktopUser) {
             // Prevent default so that we don't trigger a 'click' event on the
@@ -1747,16 +1747,16 @@ cr.define('login', function() {
           }
           e.stopPropagation();
           break;
-        case 'Up':
-        case 'Down':
+        case 'ArrowUp':
+        case 'ArrowDown':
           e.stopPropagation();
           break;
         // Ignore these two, so ChromeVox hotkeys don't close the menu before
         // they can navigate through it.
         case 'Shift':
-        case 'Win':
+        case 'Meta':
           break;
-        case 'U+001B':  // Esc
+        case 'Escape':
           this.actionBoxAreaElement.focus();
           this.isActionBoxMenuActive = false;
           e.stopPropagation();
@@ -1822,9 +1822,9 @@ cr.define('login', function() {
     handlePodKeyDown_: function(e) {
       if (!this.isAuthTypeUserClick || this.disabled)
         return;
-      switch (e.keyIdentifier) {
+      switch (e.key) {
         case 'Enter':
-        case 'U+0020':  // Space
+        case ' ':
           if (this.parentNode.isFocused(this))
             this.parentNode.setActivatedPod(this);
           break;
@@ -1924,7 +1924,7 @@ cr.define('login', function() {
       this.classList.add('public-account');
 
       this.nameElement.addEventListener('keydown', (function(e) {
-        if (e.keyIdentifier == 'Enter') {
+        if (e.key == 'Enter') {
           this.parentNode.setActivatedPod(this, e);
           // Stop this keydown event from bubbling up to PodRow handler.
           e.stopPropagation();
@@ -3374,8 +3374,8 @@ cr.define('login', function() {
       if (this.disabled)
         return;
       var editing = e.target.tagName == 'INPUT' && e.target.value;
-      switch (e.keyIdentifier) {
-        case 'Left':
+      switch (e.key) {
+        case 'ArrowLeft':
           if (!editing) {
             if (this.focusedPod_ && this.focusedPod_.previousElementSibling)
               this.focusPod(this.focusedPod_.previousElementSibling);
@@ -3385,7 +3385,7 @@ cr.define('login', function() {
             e.stopPropagation();
           }
           break;
-        case 'Right':
+        case 'ArrowRight':
           if (!editing) {
             if (this.focusedPod_ && this.focusedPod_.nextElementSibling)
               this.focusPod(this.focusedPod_.nextElementSibling);
@@ -3407,7 +3407,7 @@ cr.define('login', function() {
             }
           }
           break;
-        case 'U+001B':  // Esc
+        case 'Escape':
           if (!this.alwaysFocusSinglePod)
             this.focusPod();
           break;

@@ -44,7 +44,7 @@ var ActionLink = document.registerElement('action-link', {
         this.setAttribute('role', 'link');
 
       this.addEventListener('keydown', function(e) {
-        if (!this.disabled && e.keyIdentifier == 'Enter' && !this.href) {
+        if (!this.disabled && e.key == 'Enter' && !this.href) {
           // Schedule a click asynchronously because other 'keydown' handlers
           // may still run later (e.g. document.addEventListener('keydown')).
           // Specifically options dialogs break when this timeout isn't here.

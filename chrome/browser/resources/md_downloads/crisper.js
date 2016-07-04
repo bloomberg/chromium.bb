@@ -839,7 +839,7 @@ cr.define('cr.ui', function() {
   function KeyboardShortcut(shortcut) {
     var mods = {};
     var ident = '';
-    shortcut.split('-').forEach(function(part) {
+    shortcut.split('|').forEach(function(part) {
       var partLc = part.toLowerCase();
       switch (partLc) {
         case 'alt':
@@ -866,7 +866,7 @@ cr.define('cr.ui', function() {
      * @return {boolean} Whether we found a match or not.
      */
     matchesEvent: function(e) {
-      if (e.keyIdentifier == this.ident_) {
+      if (e.key == this.ident_) {
         // All keyboard modifiers needs to match.
         var mods = this.mods_;
         return ['altKey', 'ctrlKey', 'metaKey', 'shiftKey'].every(function(k) {
@@ -927,17 +927,17 @@ cr.define('cr.ui', function() {
 
     /**
      * The keyboard shortcut that triggers the command. This is a string
-     * consisting of a keyIdentifier (as reported by WebKit in keydown) as
-     * well as optional key modifiers joinded with a '-'.
+     * consisting of a key (as reported by WebKit in keydown) as
+     * well as optional key modifiers joinded with a '|'.
      *
      * Multiple keyboard shortcuts can be provided by separating them by
      * whitespace.
      *
      * For example:
      *   "F1"
-     *   "U+0008-Meta" for Apple command backspace.
-     *   "U+0041-Ctrl" for Control A
-     *   "U+007F U+0008-Meta" for Delete and Command Backspace
+     *   "Backspace-Meta" for Apple command backspace.
+     *   "a-Ctrl" for Control A
+     *   "Delete Backspace-Meta" for Delete and Command Backspace
      *
      * @type {string}
      */
@@ -1714,8 +1714,7 @@ function quoteString(str) {
 
     /**
      * Special table for KeyboardEvent.keyCode.
-     * KeyboardEvent.keyIdentifier is better, and KeyBoardEvent.key is even better
-     * than that.
+     * KeyBoardEvent.key is even better than that.
      *
      * Values from: https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent.keyCode#Value_of_keyCode
      */
@@ -1757,11 +1756,6 @@ function quoteString(str) {
      * Apple-specific mapping. In this case, we fall back to .keyCode.
      */
     var KEY_CHAR = /[a-z0-9*]/;
-
-    /**
-     * Matches a keyIdentifier string.
-     */
-    var IDENT_CHAR = /U\+/;
 
     /**
      * Matches arrow keys in Gecko 27.0+
@@ -1811,21 +1805,6 @@ function quoteString(str) {
       return validKey;
     }
 
-    function transformKeyIdentifier(keyIdent) {
-      var validKey = '';
-      if (keyIdent) {
-        if (keyIdent in KEY_IDENTIFIER) {
-          validKey = KEY_IDENTIFIER[keyIdent];
-        } else if (IDENT_CHAR.test(keyIdent)) {
-          keyIdent = parseInt(keyIdent.replace('U+', '0x'), 16);
-          validKey = String.fromCharCode(keyIdent).toLowerCase();
-        } else {
-          validKey = keyIdent.toLowerCase();
-        }
-      }
-      return validKey;
-    }
-
     function transformKeyCode(keyCode) {
       var validKey = '';
       if (Number(keyCode)) {
@@ -1860,10 +1839,9 @@ function quoteString(str) {
       * To get @ returned, set noSpecialChars = false
      */
     function normalizedKeyForEvent(keyEvent, noSpecialChars) {
-      // Fall back from .key, to .keyIdentifier, to .keyCode, and then to
+      // Fall back from .key, to .keyCode, and then to
       // .detail.key to support artificial keyboard events.
       return transformKey(keyEvent.key, noSpecialChars) ||
-        transformKeyIdentifier(keyEvent.keyIdentifier) ||
         transformKeyCode(keyEvent.keyCode) ||
         transformKey(keyEvent.detail ? keyEvent.detail.key : keyEvent.detail, noSpecialChars) || '';
     }
@@ -4178,7 +4156,7 @@ var ActionLink = document.registerElement('action-link', {
         this.setAttribute('role', 'link');
 
       this.addEventListener('keydown', function(e) {
-        if (!this.disabled && e.keyIdentifier == 'Enter' && !this.href) {
+        if (!this.disabled && e.key == 'Enter' && !this.href) {
           // Schedule a click asynchronously because other 'keydown' handlers
           // may still run later (e.g. document.addEventListener('keydown')).
           // Specifically options dialogs break when this timeout isn't here.

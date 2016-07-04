@@ -143,7 +143,7 @@ cr.define('cr.ui', function() {
       var shortcut = shortcuts[0];
       var mods = {};
       var ident = '';
-      shortcut.split('-').forEach(function(part) {
+      shortcut.split('|').forEach(function(part) {
         var partUc = part.toUpperCase();
         switch (partUc) {
           case 'CTRL':
@@ -160,25 +160,19 @@ cr.define('cr.ui', function() {
 
       var shortcutText = '';
 
-      // TODO(zvorygin): if more cornercases appear - optimize following
-      // code. Currently 'Enter' keystroke is passed as 'Enter', but 'Space'
-      // and 'Backspace' are passed as 'U+0020' and 'U+0008'.
-      if (ident == 'U+0020')
-        ident = 'Space';
-      else if (ident == 'U+0008')
-        ident = 'Backspace';
-
       ['CTRL', 'ALT', 'SHIFT', 'META'].forEach(function(mod) {
         if (mods[mod])
           shortcutText += loadTimeData.getString('SHORTCUT_' + mod) + '+';
       });
 
-      if (ident.indexOf('U+') != 0) {
+      if (ident == ' ')
+        ident = 'Space';
+
+      if (ident.length != 1) {
         shortcutText +=
             loadTimeData.getString('SHORTCUT_' + ident.toUpperCase());
       } else {
-        shortcutText +=
-            String.fromCharCode(parseInt(ident.substring(2), 16));
+        shortcutText += ident.toUpperCase();
       }
 
       this.setAttribute('shortcutText', shortcutText);

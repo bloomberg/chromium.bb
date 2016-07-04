@@ -2772,14 +2772,14 @@ paper-button {
   </dom-module>
 </div>
   <downloads-manager></downloads-manager>
-  <command id="clear-all-command" shortcut="Alt-U+0043"></command>
+  <command id="clear-all-command" shortcut="Alt|c"></command>
 <if expr="is_macosx">
-  <command id="undo-command" shortcut="Meta-U+005A"></command>
-  <command id="find-command" shortcut="Meta-U+0046"></command>
+  <command id="undo-command" shortcut="Meta|z"></command>
+  <command id="find-command" shortcut="Meta|f"></command>
 </if>
 <if expr="not is_macosx">
-  <command id="undo-command" shortcut="Ctrl-U+005A"></command>
-  <command id="find-command" shortcut="Ctrl-U+0046"></command>
+  <command id="undo-command" shortcut="Ctrl|z"></command>
+  <command id="find-command" shortcut="Ctrl|f"></command>
 </if>
   <link rel="import" href="chrome://resources/html/polymer.html">
   <script src="crisper.js"></script></body></html>

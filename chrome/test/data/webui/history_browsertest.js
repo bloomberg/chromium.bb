@@ -818,9 +818,8 @@ TEST_F('HistoryWebUIRealBackendTest',
   visit.titleLink.focus();
   assertEquals(visit.titleLink, document.activeElement);
 
-  var deleteKey = document.createEvent('KeyboardEvent');
-  deleteKey.initKeyboardEvent('keydown', true, true, window, 'U+007F');
-  assertEquals('U+007F', deleteKey.keyIdentifier);
+  var deleteKey = new KeyboardEvent('keydown',
+    {bubbles: true, cancelable: true, key: 'Delete'});
 
   assertFalse(historyModel.isDeletingVisits());
   expectFalse(visit.titleLink.dispatchEvent(deleteKey));
@@ -883,16 +882,14 @@ TEST_F('HistoryWebUIRealBackendTest', 'leftRightChangeFocus', function() {
   visit.titleLink.focus();
   assertEquals(visit.titleLink, document.activeElement);
 
-  var right = document.createEvent('KeyboardEvent');
-  right.initKeyboardEvent('keydown', true, true, window, 'Right');
-  assertEquals('Right', right.keyIdentifier);
+  var right = new KeyboardEvent('keydown',
+    {bubbles: true, cancelable: true, key: 'ArrowRight'});
   expectFalse(visit.titleLink.dispatchEvent(right));
 
   assertEquals(visit.dropDown, document.activeElement);
 
-  var left = document.createEvent('KeyboardEvent');
-  left.initKeyboardEvent('keydown', true, true, window, 'Left');
-  assertEquals('Left', left.keyIdentifier);
+  var left = new KeyboardEvent('keydown',
+    {bubbles: true, cancelable: true, key: 'ArrowLeft'});
   expectFalse(visit.dropDown.dispatchEvent(left));
 
   expectEquals(visit.titleLink, document.activeElement);
@@ -910,8 +907,8 @@ TEST_F('HistoryWebUIRealBackendTest', 'showConfirmDialogAndCancel', function() {
   assertTrue($('alertOverlay').classList.contains('showing'));
   assertFalse($('history-page').contains(document.activeElement));
 
-  var esc = document.createEvent('KeyboardEvent');
-  esc.initKeyboardEvent('keydown', true, true, window, 'U+001B');
+  var esc = new KeyboardEvent('keydown',
+    {bubbles: true, cancelable: true, key: 'Escape'});
 
   document.documentElement.dispatchEvent(esc);
   assertFalse($('alertOverlay').classList.contains('showing'));
@@ -928,8 +925,8 @@ TEST_F('HistoryWebUIRealBackendTest', 'showConfirmDialogAndRemove', function() {
 
   waitForCallback('deleteComplete', testDone);
 
-  var enter = document.createEvent('KeyboardEvent');
-  enter.initKeyboardEvent('keydown', true, true, window, 'Enter');
+  var enter = new KeyboardEvent('keydown',
+    {bubbles: true, cancelable: true, key: 'Enter'});
   document.documentElement.dispatchEvent(enter);
   assertFalse($('alertOverlay').classList.contains('showing'));
 });
@@ -1039,16 +1036,14 @@ TEST_F('HistoryWebUIDeleteProhibitedTest', 'leftRightChangeFocus', function() {
   visit.titleLink.focus();
   assertEquals(visit.titleLink, document.activeElement);
 
-  var right = document.createEvent('KeyboardEvent');
-  right.initKeyboardEvent('keydown', true, true, window, 'Right');
-  assertEquals('Right', right.keyIdentifier);
+  var right = new KeyboardEvent('keydown',
+    {bubbles: true, cancelable: true, key: 'ArrowRight'});
   expectFalse(visit.titleLink.dispatchEvent(right));
 
   assertEquals(visit.dropDown, document.activeElement);
 
-  var left = document.createEvent('KeyboardEvent');
-  left.initKeyboardEvent('keydown', true, true, window, 'Left');
-  assertEquals('Left', left.keyIdentifier);
+  var left = new KeyboardEvent('keydown',
+    {bubbles: true, cancelable: true, key: 'ArrowLeft'});
   expectFalse(visit.dropDown.dispatchEvent(left));
 
   expectEquals(visit.titleLink, document.activeElement);
@@ -1062,9 +1057,8 @@ TEST_F('HistoryWebUIDeleteProhibitedTest', 'deleteIgnored', function() {
   visit.titleLink.focus();
   assertEquals(visit.titleLink, document.activeElement);
 
-  var deleteKey = document.createEvent('KeyboardEvent');
-  deleteKey.initKeyboardEvent('keydown', true, true, window, 'U+007F');
-  assertEquals('U+007F', deleteKey.keyIdentifier);
+  var deleteKey = new KeyboardEvent('keydown',
+    {bubbles: true, cancelable: true, key: 'Delete'});
 
   assertFalse(historyModel.isDeletingVisits());
   expectTrue(visit.titleLink.dispatchEvent(deleteKey));

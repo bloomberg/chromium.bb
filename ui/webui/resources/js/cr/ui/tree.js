@@ -146,23 +146,22 @@ cr.define('cr.ui', function() {
 
       var rtl = getComputedStyle(item).direction == 'rtl';
 
-      switch (e.keyIdentifier) {
-        case 'Up':
+      switch (e.key) {
+        case 'ArrowUp':
           itemToSelect = item ? getPrevious(item) :
               this.items[this.items.length - 1];
           break;
-        case 'Down':
+        case 'ArrowDown':
           itemToSelect = item ? getNext(item) :
               this.items[0];
           break;
-        case 'Left':
-        case 'Right':
+        case 'ArrowLeft':
+        case 'ArrowRight':
           // Don't let back/forward keyboard shortcuts be used.
           if (!cr.isMac && e.altKey || cr.isMac && e.metaKey)
             break;
 
-          if (e.keyIdentifier == 'Left' && !rtl ||
-              e.keyIdentifier == 'Right' && rtl) {
+          if (e.key == 'ArrowLeft' && !rtl || e.key == 'ArrowRight' && rtl) {
             if (item.expanded)
               item.expanded = false;
             else
@@ -559,8 +558,8 @@ cr.define('cr.ui', function() {
 
         // Calling tree.focus blurs the input which will make the tree item
         // non editable.
-        switch (e.keyIdentifier) {
-          case 'U+001B':  // Esc
+        switch (e.key) {
+          case 'Escape':
             input.value = text;
             // fall through
           case 'Enter':

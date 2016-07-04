@@ -321,7 +321,7 @@ TEST_F('OptionsWebUITest', 'EnterPreventsDefault', function() {
   var event = new KeyboardEvent('keydown', {
     'bubbles': true,
     'cancelable': true,
-    'keyIdentifier': 'Enter'
+    'key': 'Enter'
   });
   assertFalse(event.defaultPrevented);
   page.pageDiv.dispatchEvent(event);

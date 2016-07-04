@@ -23,14 +23,14 @@
 </head>
 <body>
   <downloads-manager></downloads-manager>
-  <command id="clear-all-command" shortcut="Alt-U+0043"><!-- Alt+C -->
+  <command id="clear-all-command" shortcut="Alt|c">
 <if expr="is_macosx">
-  <command id="undo-command" shortcut="Meta-U+005A"><!-- Command+Z -->
-  <command id="find-command" shortcut="Meta-U+0046"><!-- Command+F -->
+  <command id="undo-command" shortcut="Meta|z">
+  <command id="find-command" shortcut="Meta|f">
 </if>
 <if expr="not is_macosx">
-  <command id="undo-command" shortcut="Ctrl-U+005A"><!-- Ctrl+Z -->
-  <command id="find-command" shortcut="Ctrl-U+0046"><!-- Ctrl+F -->
+  <command id="undo-command" shortcut="Ctrl|z">
+  <command id="find-command" shortcut="Ctrl|f">
 </if>
   <link rel="import" href="chrome://resources/html/polymer.html">
   <link rel="import" href="chrome://downloads/i18n_setup.html">

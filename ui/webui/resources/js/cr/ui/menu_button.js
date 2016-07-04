@@ -266,20 +266,19 @@ cr.define('cr.ui', function() {
      * Handles the keydown event for the menu button.
      */
     handleKeyDown: function(e) {
-      switch (e.keyIdentifier) {
-        case 'Down':
-        case 'Up':
+      switch (e.key) {
+        case 'ArrowDown':
+        case 'ArrowUp':
           if (!this.respondToArrowKeys)
             break;
         case 'Enter':
-        case 'U+0020': // Space
+        case ' ':
           if (!this.isMenuShown())
             this.showMenu(true);
           e.preventDefault();
           break;
-        case 'Esc':
-        case 'U+001B': // Maybe this is remote desktop playing a prank?
-        case 'U+0009': // Tab
+        case 'Escape':
+        case 'Tab':
           this.hideMenu();
           break;
       }

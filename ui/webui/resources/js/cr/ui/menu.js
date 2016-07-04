@@ -241,17 +241,17 @@ cr.define('cr.ui', function() {
           self.selectedIndex = i;
       }
 
-      switch (e.keyIdentifier) {
-        case 'Down':
+      switch (e.key) {
+        case 'ArrowDown':
           selectNextAvailable(1);
           this.focusSelectedItem();
           return true;
-        case 'Up':
+        case 'ArrowUp':
           selectNextAvailable(-1);
           this.focusSelectedItem();
           return true;
         case 'Enter':
-        case 'U+0020': // Space
+        case ' ':
           if (item) {
             // Store |contextElement| since it'll be removed when handling the
             // 'activate' event.

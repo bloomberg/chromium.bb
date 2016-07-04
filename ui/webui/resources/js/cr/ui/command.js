@@ -26,7 +26,7 @@ cr.define('cr.ui', function() {
   function KeyboardShortcut(shortcut) {
     var mods = {};
     var ident = '';
-    shortcut.split('-').forEach(function(part) {
+    shortcut.split('|').forEach(function(part) {
       var partLc = part.toLowerCase();
       switch (partLc) {
         case 'alt':
@@ -53,7 +53,7 @@ cr.define('cr.ui', function() {
      * @return {boolean} Whether we found a match or not.
      */
     matchesEvent: function(e) {
-      if (e.keyIdentifier == this.ident_) {
+      if (e.key == this.ident_) {
         // All keyboard modifiers needs to match.
         var mods = this.mods_;
         return ['altKey', 'ctrlKey', 'metaKey', 'shiftKey'].every(function(k) {
@@ -114,17 +114,17 @@ cr.define('cr.ui', function() {
 
     /**
      * The keyboard shortcut that triggers the command. This is a string
-     * consisting of a keyIdentifier (as reported by WebKit in keydown) as
-     * well as optional key modifiers joinded with a '-'.
+     * consisting of a key (as reported by WebKit in keydown) as
+     * well as optional key modifiers joinded with a '|'.
      *
      * Multiple keyboard shortcuts can be provided by separating them by
      * whitespace.
      *
      * For example:
      *   "F1"
-     *   "U+0008-Meta" for Apple command backspace.
-     *   "U+0041-Ctrl" for Control A
-     *   "U+007F U+0008-Meta" for Delete and Command Backspace
+     *   "Backspace|Meta" for Apple command backspace.
+     *   "a|Ctrl" for Control A
+     *   "Delete Backspace|Meta" for Delete and Command Backspace
      *
      * @type {string}
      */

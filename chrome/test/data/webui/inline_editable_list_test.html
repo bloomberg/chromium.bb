@@ -108,12 +108,11 @@ function setUp() {
 
 /**
  * @param {!EventTarget} target Where to send the event. 
- * @param {!string} keyIdentifier Which key to send. 
+ * @param {!string} key Which key to send.
  */      
-function sendKeyDownEvent(target, keyIdentifier) {
-  var event = document.createEvent('KeyboardEvent');
-  event.initKeyboardEvent('keydown', true, true, window, keyIdentifier);
-  assertEquals(keyIdentifier, event.keyIdentifier);
+function sendKeyDownEvent(target, key) {
+  var event = new KeyboardEvent('keydown',
+    {bubbles: true, cancelable: true, key: key});
   target.dispatchEvent(event);  
 }
 
@@ -135,15 +134,15 @@ function testUpDownFocus() {
   list.selectionModel.leadIndex = 0;
 
   assertTrue(list.hasExactlyOneItemFocusable(0));
-  sendKeyDownEvent(list, 'Down');
+  sendKeyDownEvent(list, 'ArrowDown');
   assertTrue(list.hasExactlyOneItemFocusable(1));
-  sendKeyDownEvent(list, 'Down');
+  sendKeyDownEvent(list, 'ArrowDown');
   assertTrue(list.hasExactlyOneItemFocusable(2));
-  sendKeyDownEvent(list, 'Up');
+  sendKeyDownEvent(list, 'ArrowUp');
   assertTrue(list.hasExactlyOneItemFocusable(1));
-  sendKeyDownEvent(list, 'Up');
+  sendKeyDownEvent(list, 'ArrowUp');
   assertTrue(list.hasExactlyOneItemFocusable(0));
-  sendKeyDownEvent(list, 'Down');
+  sendKeyDownEvent(list, 'ArrowDown');
   assertTrue(list.hasExactlyOneItemFocusable(1));
 }
 

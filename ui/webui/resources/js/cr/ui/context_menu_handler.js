@@ -137,8 +137,7 @@ cr.define('cr.ui', function() {
         case 'keydown':
           this.keyIsDown_ = !e.ctrlKey && !e.altKey &&
               // context menu key or Shift-F10
-              (e.keyCode == 93 && !e.shiftKey ||
-               e.keyIdentifier == 'F10' && e.shiftKey);
+              (e.keyCode == 93 && !e.shiftKey || e.key == 'F10' && e.shiftKey);
           break;
 
         case 'keyup':
@@ -169,8 +168,7 @@ cr.define('cr.ui', function() {
           break;
 
         case 'keydown':
-          // keyIdentifier does not report 'Esc' correctly
-          if (e.keyCode == 27 /* Esc */) {
+          if (e.key == 'Escape') {
             this.hideMenu();
             e.stopPropagation();
             e.preventDefault();

@@ -177,7 +177,6 @@ cr.define('cr.ui', function() {
      * @param {Event} e The keydown event.
      */
     handleKeyDown: function(e) {
-      var SPACE_KEY_CODE = 32;
       var tagName = e.target.tagName;
       // If focus is in an input field of some kind, only handle navigation keys
       // that aren't likely to conflict with input interaction (e.g., text
@@ -186,10 +185,10 @@ cr.define('cr.ui', function() {
         var inputType = e.target.type;
         // Just protect space (for toggling) for checkbox and radio.
         if (inputType == 'checkbox' || inputType == 'radio') {
-          if (e.keyCode == SPACE_KEY_CODE)
+          if (e.key == ' ')
             return;
         // Protect all but the most basic navigation commands in anything else.
-        } else if (e.keyIdentifier != 'Up' && e.keyIdentifier != 'Down') {
+        } else if (e.key != 'ArrowUp' && e.key != 'ArrowDown') {
           return;
         }
       }
@@ -210,8 +209,7 @@ cr.define('cr.ui', function() {
         return;
       }
 
-      // Space
-      if (e.keyCode == SPACE_KEY_CODE) {
+      if (e.key == ' ') {
         if (leadIndex != -1) {
           var selected = sm.getIndexSelected(leadIndex);
           if (e.ctrlKey || !selected) {
@@ -221,27 +219,27 @@ cr.define('cr.ui', function() {
         }
       }
 
-      switch (e.keyIdentifier) {
+      switch (e.key) {
         case 'Home':
           newIndex = this.getFirstIndex();
           break;
         case 'End':
           newIndex = this.getLastIndex();
           break;
-        case 'Up':
+        case 'ArrowUp':
           newIndex = leadIndex == -1 ?
               this.getLastIndex() : this.getIndexAbove(leadIndex);
           break;
-        case 'Down':
+        case 'ArrowDown':
           newIndex = leadIndex == -1 ?
               this.getFirstIndex() : this.getIndexBelow(leadIndex);
           break;
-        case 'Left':
+        case 'ArrowLeft':
         case 'MediaPreviousTrack':
           newIndex = leadIndex == -1 ?
               this.getLastIndex() : this.getIndexBefore(leadIndex);
           break;
-        case 'Right':
+        case 'ArrowRight':
         case 'MediaNextTrack':
           newIndex = leadIndex == -1 ?
               this.getFirstIndex() : this.getIndexAfter(leadIndex);
