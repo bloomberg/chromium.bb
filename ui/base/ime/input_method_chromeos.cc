@@ -25,8 +25,6 @@
 #include "ui/base/ime/ime_engine_handler_interface.h"
 #include "ui/base/ime/text_input_client.h"
 #include "ui/events/event.h"
-#include "ui/events/keycodes/dom/dom_code.h"
-#include "ui/events/keycodes/dom/dom_key.h"
 #include "ui/gfx/geometry/rect.h"
 
 namespace {
@@ -364,9 +362,9 @@ void InputMethodChromeOS::ProcessFilteredKeyPressEvent(ui::KeyEvent* event) {
   }
   ui::KeyEvent fabricated_event(ET_KEY_PRESSED,
                                 VKEY_PROCESSKEY,
-                                ui::DomCode::NONE,
+                                event->code(),
                                 event->flags(),
-                                ui::DomKey::NONE,
+                                event->GetDomKey(),
                                 event->time_stamp());
   ignore_result(DispatchKeyEventPostIME(&fabricated_event));
   if (fabricated_event.stopped_propagation())
