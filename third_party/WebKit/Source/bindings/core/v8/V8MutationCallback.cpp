@@ -80,7 +80,7 @@ void V8MutationCallback::call(const HeapVector<Member<MutationRecord>>& mutation
 
     v8::TryCatch exceptionCatcher(isolate);
     exceptionCatcher.SetVerbose(true);
-    ScriptController::callFunction(getExecutionContext(), m_callback.newLocal(isolate), thisObject, WTF_ARRAY_LENGTH(argv), argv, isolate);
+    V8ScriptRunner::callFunction(m_callback.newLocal(isolate), getExecutionContext(), thisObject, WTF_ARRAY_LENGTH(argv), argv, isolate);
 }
 
 DEFINE_TRACE(V8MutationCallback)

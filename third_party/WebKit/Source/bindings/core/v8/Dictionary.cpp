@@ -131,7 +131,7 @@ DictionaryIterator Dictionary::getIterator(ExecutionContext* executionContext) c
     if (!getInternal(v8::Symbol::GetIterator(m_isolate), iteratorGetter) || !iteratorGetter->IsFunction())
         return nullptr;
     v8::Local<v8::Value> iterator;
-    if (!v8Call(ScriptController::callFunction(executionContext, v8::Local<v8::Function>::Cast(iteratorGetter), m_options, 0, nullptr, m_isolate), iterator))
+    if (!v8Call(V8ScriptRunner::callFunction(v8::Local<v8::Function>::Cast(iteratorGetter), executionContext, m_options, 0, nullptr, m_isolate), iterator))
         return nullptr;
     if (!iterator->IsObject())
         return nullptr;

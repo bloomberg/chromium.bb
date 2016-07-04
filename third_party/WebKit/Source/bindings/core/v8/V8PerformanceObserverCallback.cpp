@@ -59,7 +59,7 @@ void V8PerformanceObserverCallback::handleEvent(PerformanceObserverEntryList* en
 
     v8::TryCatch exceptionCatcher(m_scriptState->isolate());
     exceptionCatcher.SetVerbose(true);
-    ScriptController::callFunction(m_scriptState->getExecutionContext(), m_callback.newLocal(m_scriptState->isolate()), thisObject, 2, argv, m_scriptState->isolate());
+    V8ScriptRunner::callFunction(m_callback.newLocal(m_scriptState->isolate()), m_scriptState->getExecutionContext(), thisObject, 2, argv, m_scriptState->isolate());
 }
 
 DEFINE_TRACE(V8PerformanceObserverCallback)

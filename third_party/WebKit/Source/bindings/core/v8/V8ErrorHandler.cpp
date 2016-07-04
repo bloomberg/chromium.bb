@@ -76,7 +76,7 @@ v8::Local<v8::Value> V8ErrorHandler::callListenerFunction(ScriptState* scriptSta
     if (scriptState->getExecutionContext()->isWorkerGlobalScope()) {
         result = V8ScriptRunner::callFunction(callFunction, scriptState->getExecutionContext(), thisValue, WTF_ARRAY_LENGTH(parameters), parameters, isolate());
     } else {
-        result = ScriptController::callFunction(scriptState->getExecutionContext(), callFunction, thisValue, WTF_ARRAY_LENGTH(parameters), parameters, isolate());
+        result = V8ScriptRunner::callFunction(callFunction, scriptState->getExecutionContext(), thisValue, WTF_ARRAY_LENGTH(parameters), parameters, isolate());
     }
     v8::Local<v8::Value> returnValue;
     if (!result.ToLocal(&returnValue))

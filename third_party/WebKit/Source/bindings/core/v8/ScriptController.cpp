@@ -113,13 +113,7 @@ void ScriptController::updateSecurityOrigin(SecurityOrigin* origin)
 
 v8::MaybeLocal<v8::Value> ScriptController::callFunction(v8::Local<v8::Function> function, v8::Local<v8::Value> receiver, int argc, v8::Local<v8::Value> info[])
 {
-    return ScriptController::callFunction(frame()->document(), function, receiver, argc, info, isolate());
-}
-
-v8::MaybeLocal<v8::Value> ScriptController::callFunction(ExecutionContext* context, v8::Local<v8::Function> function, v8::Local<v8::Value> receiver, int argc, v8::Local<v8::Value> info[], v8::Isolate* isolate)
-{
-    v8::MaybeLocal<v8::Value> result = V8ScriptRunner::callFunction(function, context, receiver, argc, info, isolate);
-    return result;
+    return V8ScriptRunner::callFunction(function, frame()->document(), receiver, argc, info, isolate());
 }
 
 v8::Local<v8::Value> ScriptController::executeScriptAndReturnValue(v8::Local<v8::Context> context, const ScriptSourceCode& source, AccessControlStatus accessControlStatus, double* compilationFinishTime)

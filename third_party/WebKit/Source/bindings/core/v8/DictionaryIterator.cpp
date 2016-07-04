@@ -35,7 +35,7 @@ bool DictionaryIterator::next(ExecutionContext* executionContext, ExceptionState
     }
 
     v8::Local<v8::Value> result;
-    if (!v8Call(ScriptController::callFunction(executionContext, v8::Local<v8::Function>::Cast(next), m_iterator, 0, nullptr, m_isolate), result) || !result->IsObject()) {
+    if (!v8Call(V8ScriptRunner::callFunction(v8::Local<v8::Function>::Cast(next), executionContext, m_iterator, 0, nullptr, m_isolate), result) || !result->IsObject()) {
         exceptionState.throwTypeError("Expected iterator.next() to return an Object.");
         m_done = true;
         return false;

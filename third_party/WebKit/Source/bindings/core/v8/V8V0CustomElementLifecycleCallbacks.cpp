@@ -164,7 +164,7 @@ void V8V0CustomElementLifecycleCallbacks::created(Element* element)
 
     v8::TryCatch exceptionCatcher(isolate);
     exceptionCatcher.SetVerbose(true);
-    ScriptController::callFunction(getExecutionContext(), callback, receiver, 0, 0, isolate);
+    V8ScriptRunner::callFunction(callback, getExecutionContext(), receiver, 0, 0, isolate);
 }
 
 void V8V0CustomElementLifecycleCallbacks::attached(Element* element)
@@ -206,7 +206,7 @@ void V8V0CustomElementLifecycleCallbacks::attributeChanged(Element* element, con
 
     v8::TryCatch exceptionCatcher(isolate);
     exceptionCatcher.SetVerbose(true);
-    ScriptController::callFunction(getExecutionContext(), callback, receiver, WTF_ARRAY_LENGTH(argv), argv, isolate);
+    V8ScriptRunner::callFunction(callback, getExecutionContext(), receiver, WTF_ARRAY_LENGTH(argv), argv, isolate);
 }
 
 void V8V0CustomElementLifecycleCallbacks::call(const ScopedPersistent<v8::Function>& weakCallback, Element* element)
@@ -232,7 +232,7 @@ void V8V0CustomElementLifecycleCallbacks::call(const ScopedPersistent<v8::Functi
 
     v8::TryCatch exceptionCatcher(isolate);
     exceptionCatcher.SetVerbose(true);
-    ScriptController::callFunction(getExecutionContext(), callback, receiver, 0, 0, isolate);
+    V8ScriptRunner::callFunction(callback, getExecutionContext(), receiver, 0, 0, isolate);
 }
 
 DEFINE_TRACE(V8V0CustomElementLifecycleCallbacks)

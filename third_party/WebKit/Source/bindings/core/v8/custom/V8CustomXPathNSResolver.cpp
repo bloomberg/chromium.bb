@@ -80,7 +80,7 @@ AtomicString V8CustomXPathNSResolver::lookupNamespaceURI(const String& prefix)
 
     v8::Local<v8::Value> retval;
     // Eat exceptions from namespace resolver and return an empty string. This will most likely cause NamespaceError.
-    if (!ScriptController::callFunction(toExecutionContext(m_scriptState->context()), function, m_resolver, argc, argv, isolate).ToLocal(&retval))
+    if (!V8ScriptRunner::callFunction(function, toExecutionContext(m_scriptState->context()), m_resolver, argc, argv, isolate).ToLocal(&retval))
         return nullAtom;
 
     TOSTRING_DEFAULT(V8StringResource<TreatNullAsNullString>, returnString, retval, nullAtom);
