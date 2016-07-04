@@ -360,7 +360,12 @@ create_dmabuf_buffer(struct display *display, struct buffer *buffer)
 	unsigned i;
 
 	modifier = 0;
-	flags = ZWP_LINUX_BUFFER_PARAMS_V1_FLAGS_Y_INVERT;
+	flags = 0;
+
+	/* XXX: apparently some webcams may actually provide y-inverted images,
+	 * in which case we should set
+	 * flags = ZWP_LINUX_BUFFER_PARAMS_V1_FLAGS_Y_INVERT
+	 */
 
 	params = zwp_linux_dmabuf_v1_create_params(display->dmabuf);
 	for (i = 0; i < display->format.num_planes; ++i)

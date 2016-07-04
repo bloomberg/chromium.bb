@@ -1824,8 +1824,14 @@ gl_renderer_attach_dmabuf(struct weston_surface *surface,
 
 	buffer->width = dmabuf->attributes.width;
 	buffer->height = dmabuf->attributes.height;
+
+	/*
+	 * GL-renderer uses the OpenGL convention of texture coordinates, where
+	 * the origin is at bottom-left. Because dmabuf buffers have the origin
+	 * at top-left, we must invert the Y_INVERT flag to get the image right.
+	 */
 	buffer->y_inverted =
-		!!(dmabuf->attributes.flags & ZWP_LINUX_BUFFER_PARAMS_V1_FLAGS_Y_INVERT);
+		!(dmabuf->attributes.flags & ZWP_LINUX_BUFFER_PARAMS_V1_FLAGS_Y_INVERT);
 
 	for (i = 0; i < gs->num_images; i++)
 		egl_image_unref(gs->images[i]);
