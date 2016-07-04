@@ -1,38 +1,30 @@
 <!DOCTYPE html>
-<html>
-<title>Test focus movement when controls fade out with a button focused</title>
-<!-- TODO(foolip): Convert test to testharness.js. crbug.com/588956
-     (Please avoid writing new tests using video-test.js) -->
-<script src=video-test.js></script>
-<script src=media-controls.js></script>
-<p>
-Test that focus moves to the &lt;body>/document when controls fade out with a button focused.
-</p>
-<video controls src="content/test.ogv"></video>
+<title>Test that focus moves to "body" when controls fade out with a button focused.</title>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script src="media-controls.js"></script>
+<script src="media-file.js"></script>
+<video controls></video>
 <script>
-var controls;
-var video = document.querySelector("video");
+async_test(function(t) {
+    var video = document.querySelector("video");
 
-video.addEventListener("canplay", function()
-{
-    testExpected("document.activeElement", document.body);
+    video.oncanplay = t.step_func(function() {
+        assert_equals(document.activeElement, document.body);
 
-    var playButton = mediaControlsButton(video, "play-button");
-    playButton.focus();
-    playButton.click();
+        var playButton = mediaControlsButton(video, "play-button");
+        playButton.focus();
+        playButton.click();
 
-    testExpected("document.activeElement", video);
+        assert_equals(document.activeElement, video);
 
-    runAfterHideMediaControlsTimerFired(function()
-    {
-        controls = mediaControlsButton(video, "panel");
-        testExpected("getComputedStyle(controls).opacity", 0);
+        runAfterHideMediaControlsTimerFired(t.step_func_done(function() {
+            var controls = mediaControlsButton(video, "panel");
+            assert_equals(getComputedStyle(controls).opacity, "0");
+            assert_equals(document.activeElement, document.body);
+        }), video);
+    });
 
-        testExpected("document.activeElement", document.body);
-
-        consoleWrite("");
-        endTest();
-    }, video);
+    video.src = findMediaFile("video", "content/test");
 });
-
 </script>

@@ -1,46 +1,46 @@
+<!DOCTYPE html>
+<title>Test that hiding volume / mute button works as expected.</title>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script src="media-controls.js"></script>
+<script src="media-file.js"></script>
 <video controls></video>
-<p>Test that hiding volume / mute buttons works as expected.</p>
-<script src=media-file.js></script>
-<!-- TODO(foolip): Convert test to testharness.js. crbug.com/588956
-     (Please avoid writing new tests using video-test.js) -->
-<script src=video-test.js></script>
-<script src=media-controls.js></script>
 <script>
-    video.src = findMediaFile("video", "content/test");
-    run("video.load()");
-    waitForEvent("canplaythrough", function () {
+async_test(function(t) {
+    var video = document.querySelector("video");
+
+    video.oncanplaythrough = t.step_func_done(function() {
         // Enable hidden audio preferences to take effect.
-        run("window.internals.setAllowHiddenVolumeControls(video, true)");
+        internals.setAllowHiddenVolumeControls(video, true);
         // Request non-hidden audio controls.
-        run("window.internals.settings.setPreferHiddenVolumeControls(false)");
-        run("video.muted = false");
+        internals.settings.setPreferHiddenVolumeControls(false);
+        video.muted = false;
         muteButton = mediaControlsButton(video, "mute-button");
         volumeSlider = mediaControlsButton(video, "volume-slider");
 
         // Make sure that both are visible.
-        testExpected("getComputedStyle(muteButton).display", "none", '!=');
-        testExpected("getComputedStyle(volumeSlider).display", "none", '!=');
+        assert_not_equals(getComputedStyle(muteButton).display, "none");
+        assert_not_equals(getComputedStyle(volumeSlider).display, "none");
 
-        // Switch to muted video.  Both should still be visible.
-        run("video.muted = true");
-        testExpected("getComputedStyle(muteButton).display", "none", '!=');
-        testExpected("getComputedStyle(volumeSlider).display", "none", '!=');
+        // Switch to muted video. Both should still be visible.
+        video.muted = true;
+        assert_not_equals(getComputedStyle(muteButton).display, "none");
+        assert_not_equals(getComputedStyle(volumeSlider).display, "none");
 
-        run("window.internals.settings.setPreferHiddenVolumeControls(true)");
+        internals.settings.setPreferHiddenVolumeControls(true);
 
         // Switch back to unmuted video.
-        run("video.muted = false");
+        video.muted = false;
+        assert_not_equals(getComputedStyle(muteButton).display, "none");
+        assert_equals(getComputedStyle(volumeSlider).display, "none");
 
-        testExpected("getComputedStyle(muteButton).display", "none", '!=');
-        testExpected("getComputedStyle(volumeSlider).display", "none", '==');
-
-        // For muted video, the volume slider will hide but the mute
-        // button should stay, since we always have it present for media
-        // which have audio.
-        run("video.muted = true");
-        testExpected("getComputedStyle(muteButton).display", "none", '!=');
-        testExpected("getComputedStyle(volumeSlider).display", "none", '==');
-
-        endTest();
+        // For muted video, the volume slider will hide but the mute button
+        // should stay, since we always have it present for media which have audio.
+        video.muted = true;
+        assert_not_equals(getComputedStyle(muteButton).display, "none");
+        assert_equals(getComputedStyle(volumeSlider).display, "none");
     });
+
+    video.src = findMediaFile("video", "content/test");
+})
 </script>
