@@ -104,28 +104,63 @@ static bool tokenExitsMath(const CompactHTMLToken& token)
         || threadSafeMatch(tagName, MathMLNames::mtextTag);
 }
 
+// We always push tokens which may be related to elements which are
+// HTML integration points. elementMayBeHTMLIntegrationPoint gives
+// conservative false positives. Specifically, annotation-xml end tags
+// may not be related to HTML integration points; it depends on the
+// opening tags' attributes. But elementMayBeHTMLIntegrationPoint
+// returns true for these elements.
+static bool elementMayBeHTMLIntegrationPoint(const String& tagName)
+{
+    return threadSafeMatch(tagName, MathMLNames::annotation_xmlTag)
+        || threadSafeMatch(tagName, SVGNames::descTag)
+        || threadSafeMatch(tagName, SVGNames::foreignObjectTag)
+        || threadSafeMatch(tagName, titleTag);
+}
+
+// https://html.spec.whatwg.org/#html-integration-point
+// See also HTMLElementStack::isHTMLIntegrationPoint
+static bool tokenStartsHTMLIntegrationPoint(const CompactHTMLToken& token)
+{
+    if (token.type() != HTMLToken::StartTag)
+        return false;
+
+    const String& tagName = token.data();
+    if (threadSafeMatch(tagName, MathMLNames::annotation_xmlTag)) {
+        if (const CompactHTMLToken::Attribute* encoding = token.getAttributeItem(MathMLNames::encodingAttr)) {
+            return equalIgnoringCase(encoding->value(), "text/html")
+                || equalIgnoringCase(encoding->value(), "application/xhtml+xml");
+        }
+        return false;
+    }
+
+    return threadSafeMatch(tagName, SVGNames::descTag)
+        || threadSafeMatch(tagName, SVGNames::foreignObjectTag)
+        || threadSafeMatch(tagName, titleTag);
+}
+
 HTMLTreeBuilderSimulator::HTMLTreeBuilderSimulator(const HTMLParserOptions& options)
     : m_options(options)
 {
-    m_namespaceStack.append(HTML);
+    m_stack.append(StateFlags {HTML, false});
 }
 
 HTMLTreeBuilderSimulator::State HTMLTreeBuilderSimulator::stateFor(HTMLTreeBuilder* treeBuilder)
 {
     ASSERT(isMainThread());
-    State namespaceStack;
+    State stack;
     for (HTMLElementStack::ElementRecord* record = treeBuilder->openElements()->topRecord(); record; record = record->next()) {
-        Namespace currentNamespace = HTML;
+        Namespace recordNamespace = HTML;
         if (record->namespaceURI() == SVGNames::svgNamespaceURI)
-            currentNamespace = SVG;
+            recordNamespace = SVG;
         else if (record->namespaceURI() == MathMLNames::mathmlNamespaceURI)
-            currentNamespace = MathML;
+            recordNamespace = MathML;
 
-        if (namespaceStack.isEmpty() || namespaceStack.last() != currentNamespace)
-            namespaceStack.append(currentNamespace);
+        if (stack.isEmpty() || static_cast<Namespace>(stack.last().ns) != recordNamespace || elementMayBeHTMLIntegrationPoint(record->stackItem()->localName()))
+            stack.append(StateFlags {static_cast<unsigned>(recordNamespace), HTMLElementStack::isHTMLIntegrationPoint(record->stackItem())});
     }
-    namespaceStack.reverse();
-    return namespaceStack;
+    stack.reverse();
+    return stack;
 }
 
 HTMLTreeBuilderSimulator::SimulatedToken HTMLTreeBuilderSimulator::simulate(const CompactHTMLToken& token, HTMLTokenizer* tokenizer)
@@ -134,16 +169,23 @@ HTMLTreeBuilderSimulator::SimulatedToken HTMLTreeBuilderSimulator::simulate(cons
 
     if (token.type() == HTMLToken::StartTag) {
         const String& tagName = token.data();
-        if (threadSafeMatch(tagName, SVGNames::svgTag))
-            m_namespaceStack.append(SVG);
-        if (threadSafeMatch(tagName, MathMLNames::mathTag))
-            m_namespaceStack.append(MathML);
+        bool currentNodeIsHTMLIntegrationPoint = m_stack.last().isHTMLIntegrationPoint;
+        Namespace currentNodeNamespace = currentNamespace();
+
         if (inForeignContent() && tokenExitsForeignContent(token))
-            m_namespaceStack.removeLast();
-        if ((m_namespaceStack.last() == SVG && tokenExitsSVG(token))
-            || (m_namespaceStack.last() == MathML && tokenExitsMath(token)))
-            m_namespaceStack.append(HTML);
-        if (!inForeignContent()) {
+            m_stack.removeLast();
+
+        if (threadSafeMatch(tagName, SVGNames::svgTag))
+            m_stack.append(StateFlags {SVG, tokenStartsHTMLIntegrationPoint(token)});
+        else if (threadSafeMatch(tagName, MathMLNames::mathTag))
+            m_stack.append(StateFlags {MathML, tokenStartsHTMLIntegrationPoint(token)});
+        else if ((currentNodeNamespace == SVG && tokenExitsSVG(token))
+            || (currentNodeNamespace == MathML && tokenExitsMath(token)))
+            m_stack.append(StateFlags {HTML, tokenStartsHTMLIntegrationPoint(token)});
+        else if (elementMayBeHTMLIntegrationPoint(token.data()) != currentNodeIsHTMLIntegrationPoint)
+            m_stack.append(StateFlags {static_cast<unsigned>(currentNodeNamespace), tokenStartsHTMLIntegrationPoint(token)});
+
+        if (!inForeignContent() || currentNodeIsHTMLIntegrationPoint) {
             // FIXME: This is just a copy of Tokenizer::updateStateFor which uses threadSafeMatches.
             if (threadSafeMatch(tagName, textareaTag) || threadSafeMatch(tagName, titleTag)) {
                 tokenizer->setState(HTMLTokenizer::RCDATAState);
@@ -165,11 +207,18 @@ HTMLTreeBuilderSimulator::SimulatedToken HTMLTreeBuilderSimulator::simulate(cons
 
     if (token.type() == HTMLToken::EndTag) {
         const String& tagName = token.data();
-        if ((m_namespaceStack.last() == SVG && threadSafeMatch(tagName, SVGNames::svgTag))
-            || (m_namespaceStack.last() == MathML && threadSafeMatch(tagName, MathMLNames::mathTag))
-            || (m_namespaceStack.contains(SVG) && m_namespaceStack.last() == HTML && tokenExitsSVG(token))
-            || (m_namespaceStack.contains(MathML) && m_namespaceStack.last() == HTML && tokenExitsMath(token)))
-            m_namespaceStack.removeLast();
+        if ((currentNamespace() == SVG && threadSafeMatch(tagName, SVGNames::svgTag))
+            || (currentNamespace() == MathML && threadSafeMatch(tagName, MathMLNames::mathTag))
+            || (stackContainsNamespace(SVG) && currentNamespace() == HTML && tokenExitsSVG(token))
+            || (stackContainsNamespace(MathML) && currentNamespace() == HTML && tokenExitsMath(token))
+            // By checking the namespace, the above tests subtly avoid
+            // popping the base stack entry which is 'HTML'. Because
+            // HTML title is an integration point, we must explicitly
+            // check we are not popping the base entry when presented
+            // malformed input like </title> with no opening tag.
+            || (m_stack.size() > 1 && elementMayBeHTMLIntegrationPoint(token.data()) != static_cast<bool>(m_stack.last().isHTMLIntegrationPoint)))
+            m_stack.removeLast();
+
         if (threadSafeMatch(tagName, scriptTag)) {
             if (!inForeignContent())
                 tokenizer->setState(HTMLTokenizer::DataState);
