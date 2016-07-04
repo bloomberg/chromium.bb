@@ -28,6 +28,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include "core/loader/FrameLoadRequest.h"
 #include "core/page/Page.h"
 #include "public/web/WebFrameClient.h"
 #include "public/web/WebInputEvent.h"
@@ -35,6 +36,7 @@
 #include "public/web/WebView.h"
 #include "public/web/WebViewClient.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "web/WebLocalFrameImpl.h"
 #include "web/WebViewImpl.h"
 #include "web/tests/FrameTestHelpers.h"
 
@@ -253,6 +255,50 @@ TEST_F(GetNavigationPolicyTest, NotResizableForcesPopup)
     EXPECT_TRUE(isNavigationPolicyPopup());
     m_chromeClientImpl->setResizable(true);
     EXPECT_FALSE(isNavigationPolicyPopup());
+}
+
+class ViewCreatingClient : public FrameTestHelpers::TestWebViewClient {
+public:
+    WebView* createView(WebLocalFrame* opener, const WebURLRequest&, const WebWindowFeatures&, const WebString& name, WebNavigationPolicy, bool) override
+    {
+        return m_webViewHelper.initializeWithOpener(opener, true);
+    }
+
+private:
+    FrameTestHelpers::WebViewHelper m_webViewHelper;
+};
+
+class CreateWindowTest : public testing::Test {
+protected:
+    void SetUp() override
+    {
+        m_webView = toWebViewImpl(WebView::create(&m_webViewClient, WebPageVisibilityStateVisible));
+        m_mainFrame = WebLocalFrame::create(WebTreeScopeType::Document, &m_webFrameClient);
+        m_webView->setMainFrame(m_mainFrame);
+        m_chromeClientImpl = toChromeClientImpl(&m_webView->page()->chromeClient());
+    }
+
+    void TearDown() override
+    {
+        m_webView->close();
+        m_mainFrame->close();
+    }
+
+    ViewCreatingClient m_webViewClient;
+    WebViewImpl* m_webView;
+    WebFrame* m_mainFrame;
+    FrameTestHelpers::TestWebFrameClient m_webFrameClient;
+    Persistent<ChromeClientImpl> m_chromeClientImpl;
+};
+
+TEST_F(CreateWindowTest, CreateWindowFromDeferredPage)
+{
+    m_webView->page()->setDefersLoading(true);
+    LocalFrame* frame = toWebLocalFrameImpl(m_mainFrame)->frame();
+    FrameLoadRequest request(frame->document());
+    WindowFeatures features;
+    EXPECT_EQ(nullptr, m_chromeClientImpl->createWindow(frame, request, features, NavigationPolicyNewForegroundTab));
+    m_webView->page()->setDefersLoading(false);
 }
 
 } // namespace blink

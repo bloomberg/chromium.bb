@@ -358,6 +358,9 @@ Page* ChromeClientImpl::createWindow(LocalFrame* frame, const FrameLoadRequest& 
     if (!m_webView->client())
         return nullptr;
 
+    if (!frame->page() || frame->page()->defersLoading())
+        return nullptr;
+
     WebNavigationPolicy policy = effectiveNavigationPolicy(navigationPolicy, features);
     DCHECK(frame->document());
     Fullscreen::fullyExitFullscreen(*frame->document());
