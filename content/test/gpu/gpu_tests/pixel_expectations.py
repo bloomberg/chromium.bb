@@ -19,3 +19,10 @@ class PixelExpectations(GpuTestExpectations):
               ['mac'], bug=540039)
     self.Fail('Pixel.WebGLGreenTriangleES3',
               ['mac', ('intel', 0x116)], bug=540531)
+
+    # TODO(ccameron) fix these on Mac Retina
+    self.Fail('Pixel.CSS3DBlueBox', ['mac'], bug=533690)
+    self.Fail('Pixel.CSS3DBlueBoxES3', ['mac'], bug=533690)
+
+    # TODO(vmiura) check / generate reference images for Android devices
+    self.Fail('Pixel.SolidColorBackground', ['mac', 'android'], bug=624256)
