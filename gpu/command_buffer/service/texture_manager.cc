@@ -2989,10 +2989,10 @@ void TextureManager::DoTexImage(
   }
   GLenum error = ERRORSTATE_PEEK_GL_ERROR(error_state, function_name);
   if (args.command_type == DoTexImageArguments::kTexImage3D) {
-    UMA_HISTOGRAM_CUSTOM_ENUMERATION("GPU.Error.TexImage3D", error,
+    UMA_HISTOGRAM_CUSTOM_ENUMERATION("GPU.Error_TexImage3D", error,
         GetAllGLErrors());
   } else {
-    UMA_HISTOGRAM_CUSTOM_ENUMERATION("GPU.Error.TexImage2D", error,
+    UMA_HISTOGRAM_CUSTOM_ENUMERATION("GPU.Error_TexImage2D", error,
         GetAllGLErrors());
   }
   if (error == GL_NO_ERROR) {
