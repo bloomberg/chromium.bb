@@ -28,6 +28,7 @@ TEST(MixedContentCheckerTest, IsMixedContent)
         {"http://example.com/foo", "http://example.com/foo", false},
         {"http://example.com/foo", "https://example.com/foo", false},
         {"http://example.com/foo", "data:text/html,<p>Hi!</p>", false},
+        {"http://example.com/foo", "about:blank", false},
         {"https://example.com/foo", "https://example.com/foo", false},
         {"https://example.com/foo", "wss://example.com/foo", false},
         {"https://example.com/foo", "data:text/html,<p>Hi!</p>", false},
@@ -42,15 +43,12 @@ TEST(MixedContentCheckerTest, IsMixedContent)
         {"https://example.com/foo", "http://localhost/", true},
     };
 
-    for (size_t i = 0; i < WTF_ARRAY_LENGTH(cases); ++i) {
-        const char* origin = cases[i].origin;
-        const char* target = cases[i].target;
-        bool expectation = cases[i].expectation;
-
-        KURL originUrl(KURL(), origin);
+    for (const auto& test : cases) {
+        SCOPED_TRACE(::testing::Message() << "Origin: " << test.origin << ", Target: " << test.target << ", Expectation: " << test.expectation);
+        KURL originUrl(KURL(), test.origin);
         RefPtr<SecurityOrigin> securityOrigin(SecurityOrigin::create(originUrl));
-        KURL targetUrl(KURL(), target);
-        EXPECT_EQ(expectation, MixedContentChecker::isMixedContent(securityOrigin.get(), targetUrl)) << "Origin: " << origin << ", Target: " << target << ", Expectation: " << expectation;
+        KURL targetUrl(KURL(), test.target);
+        EXPECT_EQ(test.expectation, MixedContentChecker::isMixedContent(securityOrigin.get(), targetUrl));
     }
 }
 

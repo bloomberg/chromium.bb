@@ -89,8 +89,10 @@ bool MixedContentChecker::isMixedContent(SecurityOrigin* securityOrigin, const K
         return false;
 
     // |url| is mixed content if its origin is not potentially trustworthy, and
-    // its protocol is not 'data'.
-    bool isAllowed = url.protocolIsData() || SecurityOrigin::create(url)->isPotentiallyTrustworthy();
+    // its protocol is not 'data'. We do a quick check against `SecurityOrigin::isSecure`
+    // to catch things like `about:blank`, which cannot be sanely passed into
+    // `SecurityOrigin::create` (as their origin depends on their context).
+    bool isAllowed = url.protocolIsData() || SecurityOrigin::isSecure(url) || SecurityOrigin::create(url)->isPotentiallyTrustworthy();
     // TODO(mkwst): Remove this once 'localhost' is no longer considered potentially trustworthy:
     if (isAllowed && url.protocolIs("http") && url.host() == "localhost")
         isAllowed = false;
