@@ -30,16 +30,6 @@
 #include "wtf/text/UTF8.h"
 #include "wtf/text/Unicode.h"
 
-#undef SHARED_BUFFER_STATS
-
-#ifdef SHARED_BUFFER_STATS
-#include "public/platform/Platform.h"
-#include "public/platform/WebTaskRunner.h"
-#include "public/platform/WebTraceLocation.h"
-#include "wtf/DataLog.h"
-#include <set>
-#endif
-
 namespace blink {
 
 static inline size_t segmentIndex(size_t position)
@@ -62,90 +52,10 @@ static inline void freeSegment(char* p)
     WTF::Partitions::fastFree(p);
 }
 
-#ifdef SHARED_BUFFER_STATS
-
-static Mutex& statsMutex()
-{
-    DEFINE_STATIC_LOCAL(Mutex, mutex, ());
-    return mutex;
-}
-
-static std::set<SharedBuffer*>& liveBuffers()
-{
-    // Use std::set instead of WTF::HashSet to avoid increasing PartitionAlloc
-    // memory usage.
-    DEFINE_STATIC_LOCAL(std::set<SharedBuffer*>, buffers, ());
-    return buffers;
-}
-
-static bool sizeComparator(SharedBuffer* a, SharedBuffer* b)
-{
-    return a->size() > b->size();
-}
-
-static CString snippetForBuffer(SharedBuffer* sharedBuffer)
-{
-    const size_t kMaxSnippetLength = 64;
-    char* snippet = 0;
-    size_t snippetLength = std::min(sharedBuffer->size(), kMaxSnippetLength);
-    CString result = CString::newUninitialized(snippetLength, snippet);
-
-    const char* segment;
-    size_t offset = 0;
-    while (size_t segmentLength = sharedBuffer->getSomeDataInternal(segment, offset)) {
-        size_t length = std::min(segmentLength, snippetLength - offset);
-        memcpy(snippet + offset, segment, length);
-        offset += segmentLength;
-        if (offset >= snippetLength)
-            break;
-    }
-
-    for (size_t i = 0; i < snippetLength; ++i) {
-        if (!isASCIIPrintable(snippet[i]))
-            snippet[i] = '?';
-    }
-
-    return result;
-}
-
-static void printStats()
-{
-    MutexLocker locker(statsMutex());
-    Vector<SharedBuffer*> buffers;
-    for (auto* buffer : liveBuffers())
-        buffers.append(buffer);
-    std::sort(buffers.begin(), buffers.end(), sizeComparator);
-
-    dataLogF("---- Shared Buffer Stats ----\n");
-    for (size_t i = 0; i < buffers.size() && i < 64; ++i) {
-        CString snippet = snippetForBuffer(buffers[i]);
-        dataLogF("Buffer size=%8u %s\n", buffers[i]->size(), snippet.data());
-    }
-}
-
-static void didCreateSharedBuffer(SharedBuffer* buffer)
-{
-    MutexLocker locker(statsMutex());
-    liveBuffers().insert(buffer);
-
-    Platform::current()->mainThread()->taskRunner()->postTask(BLINK_FROM_HERE, WTF::bind(&printStats));
-}
-
-static void willDestroySharedBuffer(SharedBuffer* buffer)
-{
-    MutexLocker locker(statsMutex());
-    liveBuffers().erase(buffer);
-}
-
-#endif
-
 SharedBuffer::SharedBuffer()
     : m_size(0)
     , m_buffer(PurgeableVector::NotPurgeable)
 {
-#ifdef SHARED_BUFFER_STATS
-    didCreateSharedBuffer(this);
-#endif
 }
 
 SharedBuffer::SharedBuffer(size_t size)
@@ -154,9 +64,6 @@ SharedBuffer::SharedBuffer(size_t size)
 {
     m_buffer.reserveCapacity(size);
     m_buffer.grow(size);
-#ifdef SHARED_BUFFER_STATS
-    didCreateSharedBuffer(this);
-#endif
 }
 
 SharedBuffer::SharedBuffer(const char* data, size_t size)
@@ -164,10 +71,6 @@ SharedBuffer::SharedBuffer(const char* data, size_t size)
     , m_buffer(PurgeableVector::NotPurgeable)
 {
     appendInternal(data, size);
-
-#ifdef SHARED_BUFFER_STATS
-    didCreateSharedBuffer(this);
-#endif
 }
 
 SharedBuffer::SharedBuffer(const char* data, size_t size, PurgeableVector::PurgeableOption purgeable)
@@ -175,10 +78,6 @@ SharedBuffer::SharedBuffer(const char* data, size_t size, PurgeableVector::Purge
     , m_buffer(purgeable)
 {
     appendInternal(data, size);
-
-#ifdef SHARED_BUFFER_STATS
-    didCreateSharedBuffer(this);
-#endif
 }
 
 SharedBuffer::SharedBuffer(const unsigned char* data, size_t size)
@@ -186,19 +85,11 @@ SharedBuffer::SharedBuffer(const unsigned char* data, size_t size)
     , m_buffer(PurgeableVector::NotPurgeable)
 {
     appendInternal(reinterpret_cast<const char*>(data), size);
-
-#ifdef SHARED_BUFFER_STATS
-    didCreateSharedBuffer(this);
-#endif
 }
 
 SharedBuffer::~SharedBuffer()
 {
     clear();
-
-#ifdef SHARED_BUFFER_STATS
-    willDestroySharedBuffer(this);
-#endif
 }
 
 PassRefPtr<SharedBuffer> SharedBuffer::adoptVector(Vector<char>& vector)
