@@ -31,7 +31,7 @@ LOCAL_MODULE_TAGS := optional
 
 LOCAL_SHARED_LIBRARIES := libdrm
 
-LOCAL_SRC_FILES := $(UTIL_FILES)
+LOCAL_SRC_FILES := $(patsubst %.h, , $(UTIL_FILES))
 
 # avoid name clashes by requiring users to include util/*.h
 LOCAL_EXPORT_C_INCLUDE_DIRS := $(dir $(LOCAL_PATH))

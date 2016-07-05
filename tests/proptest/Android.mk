@@ -3,7 +3,7 @@ LOCAL_PATH := $(call my-dir)
 include $(CLEAR_VARS)
 include $(LOCAL_PATH)/Makefile.sources
 
-LOCAL_SRC_FILES := $(PROPTEST_FILES)
+LOCAL_SRC_FILES := $(patsubst %.h, , $(PROPTEST_FILES))
 
 LOCAL_MODULE := proptest
 

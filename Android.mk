@@ -32,7 +32,7 @@ include $(CLEAR_VARS)
 LOCAL_MODULE := libdrm
 LOCAL_MODULE_TAGS := optional
 
-LOCAL_SRC_FILES := $(LIBDRM_FILES)
+LOCAL_SRC_FILES := $(patsubst %.h, , $(LIBDRM_FILES))
 LOCAL_EXPORT_C_INCLUDE_DIRS := \
 	$(LOCAL_PATH) \
 	$(LOCAL_PATH)/include/drm
@@ -50,7 +50,7 @@ include $(CLEAR_VARS)
 LOCAL_MODULE := libdrm
 LOCAL_MODULE_TAGS := optional
 
-LOCAL_SRC_FILES := $(LIBDRM_FILES)
+LOCAL_SRC_FILES := $(patsubst %.h, , $(LIBDRM_FILES))
 LOCAL_EXPORT_C_INCLUDE_DIRS := \
         $(LOCAL_PATH) \
         $(LOCAL_PATH)/include/drm

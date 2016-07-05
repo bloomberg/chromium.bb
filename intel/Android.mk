@@ -30,7 +30,7 @@ include $(LOCAL_PATH)/Makefile.sources
 LOCAL_MODULE := libdrm_intel
 LOCAL_MODULE_TAGS := optional
 
-LOCAL_SRC_FILES := $(LIBDRM_INTEL_FILES)
+LOCAL_SRC_FILES := $(patsubst %.h, , $(LIBDRM_INTEL_FILES))
 LOCAL_EXPORT_C_INCLUDE_DIRS := $(LOCAL_PATH)
 
 LOCAL_CFLAGS := \
