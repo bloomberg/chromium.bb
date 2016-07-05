@@ -11,9 +11,9 @@ window.onmessage = function(e) {
 }
 
 var i = document.documentElement.appendChild(document.createElement('iframe'));
-var f = frames[0].Function;
+var f = frames[0].Function("location.replace('javascript:window.top.postMessage(\\'FAIL\\', \\'*\\')')");
 i.onload = function() {
-  f("location.replace('javascript:window.top.postMessage(\\'FAIL\\', \\'*\\')')")();
+  f();
   setTimeout(function() {
     window.postMessage("PASS", "*");
   }, 0);
