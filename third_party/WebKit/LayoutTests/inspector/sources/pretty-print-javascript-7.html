@@ -1,0 +1,42 @@
+<html>
+<head>
+<script src="../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../http/tests/inspector/debugger-test.js"></script>
+<script src="../../http/tests/inspector/sources-test.js"></script>
+<script src="debugger/resources/obfuscated.js"></script>
+
+<script>
+
+function test()
+{
+    var testJSFormatter = InspectorTest.testPrettyPrint.bind(InspectorTest, "text/javascript");
+
+    InspectorTest.runTestSuite([
+        function semicolonAfterFunctionExpression(next)
+        {
+            var mappingQueries = ["onClick", "function", "console", "log", "click!", "done"];
+            testJSFormatter("var onClick = function() { console.log('click!'); };console.log('done');", mappingQueries, next);
+        },
+
+        function semicolonAfterMultipleFunctionExpressions(next)
+        {
+            var mappingQueries = ["onStart", "onFinish", "a()", "b()"];
+            testJSFormatter("var onStart = function() { a(); }, onFinish = function() { b(); };", mappingQueries, next);
+        },
+
+        function semicolonAfterEmptyFunctionExpressions(next)
+        {
+            var mappingQueries = ["onStart", "delay", "1000", "belay", "activeElement"];
+            testJSFormatter("var onStart = function() {}, delay=1000, belay=document.activeElement;", mappingQueries, next);
+        },
+    ]);
+}
+
+</script>
+
+</head>
+
+<body onload="runTest()">
+<p>Verifies JavaScript pretty-printing functionality.</p>
+</body>
+</html>
