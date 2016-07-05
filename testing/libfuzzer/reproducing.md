@@ -34,15 +34,23 @@ additional information/links.
 
 2. (**Important**) In the following sections, `$FUZZER_NAME` will be the the
    string specified after the "Fuzzer :" in the report, but *without* the
-   "libfuzzer_" prefix. In this case, the `$FUZZER_NAME` is
+   "libfuzzer_" or "afl_" prefix. In this case, the `$FUZZER_NAME` is
    "media_pipeline_integration_fuzzer".
 
 3. Follow the steps in one of the subsequent sections (from a chromium
    checkout).  The string specified after the "Job Type: " will be either
-   `libfuzzer_chrome_asan`, `libfuzzer_chrome_msan`, or
+   `afl_chrome_asan`, `libfuzzer_chrome_asan`, `libfuzzer_chrome_msan`, or
    `libfuzzer_chrome_ubsan`, indicating which one to use.
 
-### Reproducing ASan bugs
+
+### Reproducing AFL + ASan bugs
+```bash
+$ gn gen out/afl '--args=use_afl=true is_asan=true enable_nacl=false proprietary_codecs=true'
+$ ninja -C out/afl $FUZZER_NAME
+$ out/afl/$FUZZER_NAME < /path/to/repro
+```
+
+### Reproducing LibFuzzer + ASan bugs
 
 ```bash
 $ gn gen out/libfuzzer '--args=use_libfuzzer=true is_asan=true enable_nacl=false proprietary_codecs=true'
@@ -50,7 +58,7 @@ $ ninja -C out/libfuzzer $FUZZER_NAME
 $ out/libfuzzer/$FUZZER_NAME /path/to/repro
 ```
 
-### Reproducing MSan bugs
+### Reproducing LibFuzzer + MSan bugs
 
 ```bash
 # The gclient sync is necessary to pull in instrumented libraries.
@@ -60,7 +68,7 @@ $ ninja -C out/libfuzzer $FUZZER_NAME
 $ out/libfuzzer/$FUZZER_NAME /path/to/repro
 ```
 
-### Reproducing UBSan bugs
+### Reproducing LibFuzzer + UBSan bugs
 
 ```bash
 $ gn gen out/libfuzzer '--args=use_libfuzzer=true is_ubsan_security=true enable_nacl=false proprietary_codecs=true'
