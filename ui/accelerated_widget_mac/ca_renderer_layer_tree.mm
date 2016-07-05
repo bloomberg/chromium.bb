@@ -394,13 +394,15 @@ void CARendererLayerTree::ClipAndSortingLayer::AddContentLayer(
 
 void CARendererLayerTree::TransformLayer::AddContentLayer(
     const CARendererLayerParams& params) {
-  gl::GLImageIOSurface* io_surface_image =
-      gl::GLImageIOSurface::FromGLImage(params.image);
-  DCHECK(io_surface_image);
-  base::ScopedCFTypeRef<IOSurfaceRef> io_surface =
-      io_surface_image->io_surface();
-  base::ScopedCFTypeRef<CVPixelBufferRef> cv_pixel_buffer =
-      io_surface_image->cv_pixel_buffer();
+  base::ScopedCFTypeRef<IOSurfaceRef> io_surface;
+  base::ScopedCFTypeRef<CVPixelBufferRef> cv_pixel_buffer;
+  if (params.image) {
+    gl::GLImageIOSurface* io_surface_image =
+        gl::GLImageIOSurface::FromGLImage(params.image);
+    DCHECK(io_surface_image);
+    io_surface = io_surface_image->io_surface();
+    cv_pixel_buffer = io_surface_image->cv_pixel_buffer();
+  }
 
   content_layers.push_back(
       ContentLayer(io_surface, cv_pixel_buffer, params.contents_rect,

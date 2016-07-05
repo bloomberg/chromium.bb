@@ -332,11 +332,13 @@ bool ImageTransportSurfaceOverlayMac::ScheduleOverlayPlane(
 
 bool ImageTransportSurfaceOverlayMac::ScheduleCALayer(
     const ui::CARendererLayerParams& params) {
-  gl::GLImageIOSurface* io_surface_image =
-      gl::GLImageIOSurface::FromGLImage(params.image);
-  if (!io_surface_image) {
-    DLOG(ERROR) << "Cannot schedule CALayer with non-IOSurface GLImage";
-    return false;
+  if (params.image) {
+    gl::GLImageIOSurface* io_surface_image =
+        gl::GLImageIOSurface::FromGLImage(params.image);
+    if (!io_surface_image) {
+      DLOG(ERROR) << "Cannot schedule CALayer with non-IOSurface GLImage";
+      return false;
+    }
   }
   return ca_layer_tree_coordinator_->GetPendingCARendererLayerTree()
       ->ScheduleCALayer(params);
