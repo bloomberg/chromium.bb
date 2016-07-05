@@ -46,9 +46,10 @@ class ArcCustomNotificationView : public views::NativeViewHost,
   // ArcCustomNotificationItem::Observer
   void OnItemDestroying() override;
   void OnItemPinnedChanged() override;
+  void OnItemNotificationSurfaceRemoved() override;
 
   ArcCustomNotificationItem* item_;
-  exo::NotificationSurface* const surface_;
+  exo::NotificationSurface* surface_;
 
   // A close button on top of NotificationSurface. Needed because the
   // aura::Window of NotificationSurface is added after hosting widget's

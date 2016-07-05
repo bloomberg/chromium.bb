@@ -24,6 +24,9 @@ class ArcCustomNotificationItem
     // Invoked when the pinned stated is changed.
     virtual void OnItemPinnedChanged() = 0;
 
+    // Invoked when the notification surface for this item is gone.
+    virtual void OnItemNotificationSurfaceRemoved() = 0;
+
    protected:
     virtual ~Observer() = default;
   };

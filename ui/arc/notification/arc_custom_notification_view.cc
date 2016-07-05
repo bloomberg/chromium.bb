@@ -77,7 +77,7 @@ void ArcCustomNotificationView::ViewHierarchyChanged(
 
   views::NativeViewHost::ViewHierarchyChanged(details);
 
-  if (!widget || !details.is_add)
+  if (!widget || !surface_ || !details.is_add)
     return;
 
   SetPreferredSize(surface_->GetSize());
@@ -87,7 +87,7 @@ void ArcCustomNotificationView::ViewHierarchyChanged(
 void ArcCustomNotificationView::Layout() {
   views::NativeViewHost::Layout();
 
-  if (!floating_close_button_widget_ || !GetWidget())
+  if (!floating_close_button_widget_ || !surface_ || !GetWidget())
     return;
 
   gfx::Rect surface_local_bounds(surface_->window()->bounds().size());
@@ -108,6 +108,10 @@ void ArcCustomNotificationView::ButtonPressed(views::Button* sender,
 void ArcCustomNotificationView::OnItemDestroying() {
   item_->RemoveObserver(this);
   item_ = nullptr;
+
+  // Reset |surface_| with |item_| since no one is observing the |surface_|
+  // after |item_| is gone and this view should be removed soon.
+  surface_ = nullptr;
 }
 
 void ArcCustomNotificationView::OnItemPinnedChanged() {
@@ -116,6 +120,10 @@ void ArcCustomNotificationView::OnItemPinnedChanged() {
   } else if (!item_->pinned() && !floating_close_button_widget_) {
     CreateFloatingCloseButton();
   }
+}
+
+void ArcCustomNotificationView::OnItemNotificationSurfaceRemoved() {
+  surface_ = nullptr;
 }
 
 }  // namespace arc

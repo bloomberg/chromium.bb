@@ -54,7 +54,9 @@ ArcCustomNotificationItem::ArcCustomNotificationItem(
     : ArcNotificationItem(manager,
                           message_center,
                           notification_key,
-                          profile_id) {}
+                          profile_id) {
+  ArcNotificationSurfaceManager::Get()->AddObserver(this);
+}
 
 ArcCustomNotificationItem::~ArcCustomNotificationItem() {
   if (ArcNotificationSurfaceManager::Get())
@@ -93,8 +95,6 @@ void ArcCustomNotificationItem::UpdateWithArcNotificationData(
       ArcNotificationSurfaceManager::Get()->GetSurface(notification_key());
   if (surface)
     OnNotificationSurfaceAdded(surface);
-  else
-    ArcNotificationSurfaceManager::Get()->AddObserver(this);
 
   pinned_ = rich_data.pinned;
   FOR_EACH_OBSERVER(Observer, observers_, OnItemPinnedChanged());
@@ -132,7 +132,7 @@ void ArcCustomNotificationItem::OnNotificationSurfaceRemoved(
   if (surface->notification_id() != notification_key())
     return;
 
-  OnClosedFromAndroid(false);
+  FOR_EACH_OBSERVER(Observer, observers_, OnItemNotificationSurfaceRemoved());
 }
 
 }  // namespace arc
