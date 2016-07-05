@@ -37,6 +37,28 @@ chrome_android_paks_gypi =
                 "scope",
                 [ "//chrome/chrome_android_paks.gypi" ])
 
+# GYP: //chrome/android/chrome_apk.gyp:chrome_apk_manifest
+jinja_template("chrome_public_apk_manifest") {
+  input = "java/AndroidManifest.xml"
+  output = "$root_gen_dir/chrome_public_apk_manifest/AndroidManifest.xml"
+  variables = chrome_public_jinja_variables
+  variables += [
+    "min_sdk_version=16",
+    "target_sdk_version=23",
+  ]
+}
+
+# GYP: //chrome/android/chrome_apk.gyp:chrome_sync_shell_apk_manifest
+jinja_template("chrome_sync_shell_apk_manifest") {
+  input = "java/AndroidManifest.xml"
+  output = "$root_gen_dir/chrome_sync_shell_apk_manifest/AndroidManifest.xml"
+  variables = chrome_sync_shell_jinja_variables
+  variables += [
+    "min_sdk_version=16",
+    "target_sdk_version=22",
+  ]
+}
+
 locale_pak_resources("chrome_locale_paks") {
   sources = chrome_android_paks_gypi.chrome_android_pak_locale_resources
 
@@ -119,6 +141,7 @@ java_strings_grd("chrome_strings_grd") {
 # GYP: //chrome/chrome.gyp:chrome_java
 android_library("chrome_java") {
   deps = [
+    ":chrome_public_apk_manifest",
     "//base:base_java",
     "//chrome/android/webapk/libs/client:client_java",
     "//chrome/android/webapk/libs/common:common_java",
@@ -170,6 +193,10 @@ android_library("chrome_java") {
 
   # New versions of BuildConfig.java will be created when creating an apk.
   jar_excluded_patterns = [ "*/BuildConfig.class" ]
+
+  # Manifest used for linting (determining unused resources).
+  android_manifest = get_target_outputs(":chrome_public_apk_manifest")
+  android_manifest = android_manifest[1]
 
   # TODO(sievers): Split java code into components. Not everything
   # is really all that UI related here.
@@ -386,28 +413,6 @@ android_assets("chrome_public_apk_assets") {
     "//chrome/android/webapk/libs/runtime_library:runtime_library_assets",
     "//third_party/icu:icu_assets",
     "//v8:v8_external_startup_data_assets",
-  ]
-}
-
-# GYP: //chrome/android/chrome_apk.gyp:chrome_apk_manifest
-jinja_template("chrome_public_apk_manifest") {
-  input = "java/AndroidManifest.xml"
-  output = "$root_gen_dir/chrome_public_apk_manifest/AndroidManifest.xml"
-  variables = chrome_public_jinja_variables
-  variables += [
-    "min_sdk_version=16",
-    "target_sdk_version=23",
-  ]
-}
-
-# GYP: //chrome/android/chrome_apk.gyp:chrome_sync_shell_apk_manifest
-jinja_template("chrome_sync_shell_apk_manifest") {
-  input = "java/AndroidManifest.xml"
-  output = "$root_gen_dir/chrome_sync_shell_apk_manifest/AndroidManifest.xml"
-  variables = chrome_sync_shell_jinja_variables
-  variables += [
-    "min_sdk_version=16",
-    "target_sdk_version=22",
   ]
 }
 
