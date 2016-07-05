@@ -1829,4 +1829,4 @@ if __name__ == '__main__':
     sys.exit(main())
   except KeyboardInterrupt:
     sys.stderr.write('interrupted\n')
-    sys.exit(1)
+    sys.exit(2)
