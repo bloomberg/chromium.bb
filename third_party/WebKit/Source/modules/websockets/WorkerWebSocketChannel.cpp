@@ -270,7 +270,7 @@ void Peer::disconnect()
 static void workerGlobalScopeDidConnect(Bridge* bridge, const String& subprotocol, const String& extensions, ExecutionContext* context)
 {
     ASSERT_UNUSED(context, context->isWorkerGlobalScope());
-    if (bridge->client())
+    if (bridge && bridge->client())
         bridge->client()->didConnect(subprotocol, extensions);
 }
 
@@ -283,7 +283,7 @@ void Peer::didConnect(const String& subprotocol, const String& extensions)
 static void workerGlobalScopeDidReceiveTextMessage(Bridge* bridge, const String& payload, ExecutionContext* context)
 {
     ASSERT_UNUSED(context, context->isWorkerGlobalScope());
-    if (bridge->client())
+    if (bridge && bridge->client())
         bridge->client()->didReceiveTextMessage(payload);
 }
 
@@ -296,7 +296,7 @@ void Peer::didReceiveTextMessage(const String& payload)
 static void workerGlobalScopeDidReceiveBinaryMessage(Bridge* bridge, std::unique_ptr<Vector<char>> payload, ExecutionContext* context)
 {
     ASSERT_UNUSED(context, context->isWorkerGlobalScope());
-    if (bridge->client())
+    if (bridge && bridge->client())
         bridge->client()->didReceiveBinaryMessage(std::move(payload));
 }
 
@@ -309,7 +309,7 @@ void Peer::didReceiveBinaryMessage(std::unique_ptr<Vector<char>> payload)
 static void workerGlobalScopeDidConsumeBufferedAmount(Bridge* bridge, uint64_t consumed, ExecutionContext* context)
 {
     ASSERT_UNUSED(context, context->isWorkerGlobalScope());
-    if (bridge->client())
+    if (bridge && bridge->client())
         bridge->client()->didConsumeBufferedAmount(consumed);
 }
 
@@ -322,7 +322,7 @@ void Peer::didConsumeBufferedAmount(uint64_t consumed)
 static void workerGlobalScopeDidStartClosingHandshake(Bridge* bridge, ExecutionContext* context)
 {
     ASSERT_UNUSED(context, context->isWorkerGlobalScope());
-    if (bridge->client())
+    if (bridge && bridge->client())
         bridge->client()->didStartClosingHandshake();
 }
 
@@ -335,7 +335,7 @@ void Peer::didStartClosingHandshake()
 static void workerGlobalScopeDidClose(Bridge* bridge, WebSocketChannelClient::ClosingHandshakeCompletionStatus closingHandshakeCompletion, unsigned short code, const String& reason, ExecutionContext* context)
 {
     ASSERT_UNUSED(context, context->isWorkerGlobalScope());
-    if (bridge->client())
+    if (bridge && bridge->client())
         bridge->client()->didClose(closingHandshakeCompletion, code, reason);
 }
 
@@ -352,7 +352,7 @@ void Peer::didClose(ClosingHandshakeCompletionStatus closingHandshakeCompletion,
 static void workerGlobalScopeDidError(Bridge* bridge, ExecutionContext* context)
 {
     ASSERT_UNUSED(context, context->isWorkerGlobalScope());
-    if (bridge->client())
+    if (bridge && bridge->client())
         bridge->client()->didError();
 }
 
