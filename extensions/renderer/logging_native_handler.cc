@@ -72,7 +72,8 @@ void LoggingNativeHandler::ParseArgs(
     *error_message = "Error: " + std::string(*v8::String::Utf8Value(args[1]));
   }
 
-  *error_message += "\n" + context()->GetStackTraceAsString();
+  if (!check_value)
+    *error_message += "\n" + context()->GetStackTraceAsString();
 }
 
 }  // namespace extensions
