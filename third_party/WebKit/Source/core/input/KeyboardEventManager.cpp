@@ -24,6 +24,8 @@ namespace blink {
 
 namespace {
 
+const int kVKeyProcessKey = 229;
+
 WebFocusType focusDirectionForKey(const String& key)
 {
     WebFocusType retVal = WebFocusTypeNone;
@@ -161,6 +163,11 @@ void KeyboardEventManager::defaultKeyboardEventHandler(
     if (event->type() == EventTypeNames::keydown) {
         m_frame->editor().handleKeyboardEvent(event);
         if (event->defaultHandled())
+            return;
+
+        // Do not perform the default action when inside a IME composition context.
+        // TODO(dtapuska): Replace this with isComposing support. crbug.com/625686
+        if (event->keyCode() == kVKeyProcessKey)
             return;
         if (event->key() == "Tab") {
             defaultTabEventHandler(event);
