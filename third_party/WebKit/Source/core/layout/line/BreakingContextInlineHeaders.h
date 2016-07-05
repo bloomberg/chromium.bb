@@ -116,6 +116,9 @@ public:
 
 private:
     void skipTrailingWhitespace(InlineIterator&, const LineInfo&);
+    bool shouldMidWordBreak(UChar, LineLayoutText, const Font&,
+        float& charWidth, float& widthFromLastBreakingOpportunity,
+        bool breakAll, int& nextBreakablePositionForBreakAll);
     bool rewindToMidWordBreak(WordMeasurement&, int end, float width);
     bool rewindToFirstMidWordBreak(LineLayoutText, const ComputedStyle&, const Font&, bool breakAll, WordMeasurement&);
     bool rewindToMidWordBreak(LineLayoutText, const ComputedStyle&, const Font&, bool breakAll, WordMeasurement&);
@@ -542,6 +545,36 @@ ALWAYS_INLINE float textWidth(LineLayoutText text, unsigned from, unsigned len, 
     return font.width(run, fallbackFonts, glyphBounds);
 }
 
+ALWAYS_INLINE bool BreakingContext::shouldMidWordBreak(
+    UChar c, LineLayoutText layoutText, const Font& font,
+    float& charWidth, float& widthFromLastBreakingOpportunity,
+    bool breakAll, int& nextBreakablePositionForBreakAll)
+{
+    // For breakWords/breakAll, we need to measure up to normal break
+    // opportunity and then rewindToMidWordBreak() because ligatures/kerning can
+    // shorten the width as we add more characters.
+    // However, doing so can hit the performance when a "word" is really long,
+    // such as minimized JS, because the next line will re-shape the rest of the
+    // word in the current architecture.
+    // This function is a heuristic optimization to stop at 2em overflow.
+    float overflowAllowance = 2 * font.getFontDescription().computedSize();
+
+    widthFromLastBreakingOpportunity += charWidth;
+    bool midWordBreakIsBeforeSurrogatePair = U16_IS_LEAD(c) && m_current.offset() + 1 < layoutText.textLength() && U16_IS_TRAIL(layoutText.uncheckedCharacterAt(m_current.offset() + 1));
+    charWidth = textWidth(layoutText, m_current.offset(), midWordBreakIsBeforeSurrogatePair ? 2 : 1, font, m_width.committedWidth() + widthFromLastBreakingOpportunity, m_collapseWhiteSpace);
+    if (m_width.committedWidth() + widthFromLastBreakingOpportunity + charWidth <= m_width.availableWidth() + overflowAllowance)
+        return false;
+
+    // breakAll has different break opportunities. Ensure we break only at
+    // breakAll allows to break.
+    if (breakAll &&
+        !m_layoutTextInfo.m_lineBreakIterator.isBreakable(m_current.offset(), nextBreakablePositionForBreakAll, LineBreakType::BreakAll)) {
+        return false;
+    }
+
+    return true;
+}
+
 ALWAYS_INLINE int lastBreakablePositionForBreakAll(LineLayoutText text,
     const ComputedStyle& style, int start, int end)
 {
@@ -715,6 +748,7 @@ inline bool BreakingContext::handleText(WordMeasurements& wordMeasurements, bool
     // rewindToMidWordBreak() finds the mid-word break point.
     LineBreakType lineBreakType = keepAll ? LineBreakType::KeepAll : LineBreakType::Normal;
     bool canBreakMidWord = breakAll || breakWords;
+    int nextBreakablePositionForBreakAll = -1;
 
     if (layoutText.isWordBreak()) {
         m_width.commit();
@@ -756,16 +790,8 @@ inline bool BreakingContext::handleText(WordMeasurements& wordMeasurements, bool
         bool applyWordSpacing = false;
 
         // Determine if we should try breaking in the middle of a word.
-        if (breakWords && !midWordBreak && !U16_IS_TRAIL(c)) {
-            widthFromLastBreakingOpportunity += charWidth;
-            bool midWordBreakIsBeforeSurrogatePair = U16_IS_LEAD(c) && m_current.offset() + 1 < layoutText.textLength() && U16_IS_TRAIL(layoutText.uncheckedCharacterAt(m_current.offset() + 1));
-            charWidth = textWidth(layoutText, m_current.offset(), midWordBreakIsBeforeSurrogatePair ? 2 : 1, font, m_width.committedWidth() + widthFromLastBreakingOpportunity, m_collapseWhiteSpace);
-            // Measure up to 2em overflow since ligatures/kerning can shorten
-            // the width as we add more characters. rewindToMidWordBreak() can
-            // measure the accurate mid-word break point then.
-            midWordBreak = m_width.committedWidth() + widthFromLastBreakingOpportunity + charWidth > m_width.availableWidth()
-                + 2 * font.getFontDescription().computedSize();
-        }
+        if (canBreakMidWord && !midWordBreak && !U16_IS_TRAIL(c))
+            midWordBreak = shouldMidWordBreak(c, layoutText, font, charWidth, widthFromLastBreakingOpportunity, breakAll, nextBreakablePositionForBreakAll);
 
         // Determine if we are in the whitespace between words.
         int nextBreakablePosition = m_current.nextBreakablePosition();
@@ -827,10 +853,6 @@ inline bool BreakingContext::handleText(WordMeasurements& wordMeasurements, bool
             m_appliedStartWidth = true;
         }
 
-        // If we haven't hit a breakable position yet and already don't fit on the line try to move below any floats.
-        if (!m_width.committedWidth() && m_autoWrap && !m_width.fitsOnLine() && !widthMeasurementAtLastBreakOpportunity)
-            m_width.fitBelowFloats(m_lineInfo.isFirstLine());
-
         midWordBreak = false;
         if (!m_width.fitsOnLine()) {
             if (canBreakMidWord) {
@@ -852,6 +874,15 @@ inline bool BreakingContext::handleText(WordMeasurements& wordMeasurements, bool
                 }
                 m_width.addUncommittedWidth(wordMeasurement.width);
             }
+        }
+
+        // If we haven't hit a breakable position yet and already don't fit on the line try to move below any floats.
+        if (!m_width.committedWidth() && m_autoWrap && !m_width.fitsOnLine() && !widthMeasurementAtLastBreakOpportunity) {
+            float availableWidthBefore = m_width.availableWidth();
+            m_width.fitBelowFloats(m_lineInfo.isFirstLine());
+            // If availableWidth changes by moving the line below floats, needs to measure midWordBreak again.
+            if (midWordBreak && availableWidthBefore != m_width.availableWidth())
+                midWordBreak = false;
         }
 
         // If there is a soft-break available at this whitespace position then take it.
