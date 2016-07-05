@@ -378,20 +378,6 @@ AudioManagerMac::AudioManagerMac(
 }
 
 AudioManagerMac::~AudioManagerMac() {
-  // We have seen cases where active input audio is not closed down properly
-  // at browser shutdown. AudioInputController::Close() is called but tasks
-  // in AudioInputController::DoClose() are not executed. Hence, input streams
-  // might remain even at this late state.
-  // TODO(henrika): figure out the real cause why streams are not closed
-  // properly by the AIC for all cases and then remove this loop.
-  for (auto* stream : low_latency_input_streams_) {
-    LOG(WARNING) << "Closing existing audio input stream at destruction";
-    // Prevents active Core Audio callbacks to use possibly invalid objects
-    // in its OnData() callback.
-    stream->Stop();
-    // Avoids hitting CHECK in dtor of AudioManagerBase.
-    stream->Close();
-  }
   Shutdown();
 }
 
