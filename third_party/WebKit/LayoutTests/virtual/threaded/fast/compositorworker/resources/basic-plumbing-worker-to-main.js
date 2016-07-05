@@ -1,5 +1,3 @@
-self.importScripts('worker-common.js');
-
 self.onmessage = function(msg) {
   if (msg.data.proxy)
     self.proxy = msg.data.proxy;
@@ -13,5 +11,16 @@ self.onmessage = function(msg) {
     proxy.scrollLeft = 10;
     proxy.scrollTop = 20;
     postMessage({});
+  });
+}
+
+function awaitProxyInit(proxy) {
+  return new Promise((resolve, reject) => {
+    function check() {
+      if (proxy.initialized)
+        resolve(proxy);
+      requestAnimationFrame(check);
+    }
+    requestAnimationFrame(check);
   });
 }

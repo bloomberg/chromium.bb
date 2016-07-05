@@ -1,5 +1,3 @@
-self.importScripts('worker-common.js');
-
 self.onmessage = function(msg) {
   awaitProxyInit(msg.data).then((proxy) => {
     proxy.opacity;
@@ -10,5 +8,16 @@ self.onmessage = function(msg) {
     } catch (e) {
       postMessage(e.name);
     }
+  });
+}
+
+function awaitProxyInit(proxy) {
+  return new Promise((resolve, reject) => {
+    function check() {
+      if (proxy.initialized)
+        resolve(proxy);
+      requestAnimationFrame(check);
+    }
+    requestAnimationFrame(check);
   });
 }

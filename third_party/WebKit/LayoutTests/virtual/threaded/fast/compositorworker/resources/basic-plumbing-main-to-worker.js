@@ -1,5 +1,3 @@
-self.importScripts('worker-common.js');
-
 self.onmessage = function(msg) {
   if (msg.data.proxy)
     self.proxy = msg.data.proxy;
@@ -12,5 +10,16 @@ self.onmessage = function(msg) {
     }
     values.transform = proxy.transform.toFloat32Array();
     postMessage(values);
+  });
+}
+
+function awaitProxyInit(proxy) {
+  return new Promise((resolve, reject) => {
+    function check() {
+      if (proxy.initialized)
+        resolve(proxy);
+      requestAnimationFrame(check);
+    }
+    requestAnimationFrame(check);
   });
 }

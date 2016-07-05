@@ -1,5 +1,3 @@
-self.importScripts('worker-common.js');
-
 self.onmessage = function(msg) {
   var proxy = msg.data[0];
   var attrib = msg.data[1];
@@ -15,5 +13,16 @@ self.onmessage = function(msg) {
     } catch (e) {
       postMessage('error: ' + e);
     }
+  });
+}
+
+function awaitProxyInit(proxy) {
+  return new Promise((resolve, reject) => {
+    function check() {
+      if (proxy.initialized)
+        resolve(proxy);
+      requestAnimationFrame(check);
+    }
+    requestAnimationFrame(check);
   });
 }
