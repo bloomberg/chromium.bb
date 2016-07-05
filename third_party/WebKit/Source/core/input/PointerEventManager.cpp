@@ -8,6 +8,7 @@
 #include "core/dom/shadow/FlatTreeTraversal.h"
 #include "core/events/MouseEvent.h"
 #include "core/frame/FrameView.h"
+#include "core/frame/UseCounter.h"
 #include "core/html/HTMLCanvasElement.h"
 #include "core/input/EventHandler.h"
 #include "core/input/TouchActionUtil.h"
@@ -154,6 +155,7 @@ WebInputEventResult PointerEventManager::dispatchPointerEvent(
     if (!RuntimeEnabledFeatures::pointerEventEnabled())
         return WebInputEventResult::NotHandled;
     if (!checkForListener || target->hasEventListeners(eventType)) {
+        UseCounter::count(m_frame->document(), UseCounter::PointerEventDispatch);
         DispatchEventResult dispatchResult = target->dispatchEvent(pointerEvent);
         return EventHandler::toWebInputEventResult(dispatchResult);
     }
@@ -748,6 +750,7 @@ void PointerEventManager::elementRemoved(EventTarget* target)
 
 void PointerEventManager::setPointerCapture(int pointerId, EventTarget* target)
 {
+    UseCounter::count(m_frame->document(), UseCounter::PointerEventSetCapture);
     if (m_pointerEventFactory.isActiveButtonsState(pointerId))
         m_pendingPointerCaptureTarget.set(pointerId, target);
 }

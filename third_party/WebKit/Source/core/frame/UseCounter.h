@@ -1234,6 +1234,8 @@ public:
         MediaSourceAbortRemove = 1428,
         MediaSourceDurationTruncatingBuffered = 1429,
         AudioContextCrossOriginIframe = 1430,
+        PointerEventSetCapture = 1431,
+        PointerEventDispatch = 1432,
 
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.
