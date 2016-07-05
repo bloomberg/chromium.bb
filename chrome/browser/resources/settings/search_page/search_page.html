@@ -19,12 +19,11 @@
 
       paper-listbox div {
         align-items: center;
+        color: var(--paper-grey-800);
         display: flex;
-        font-size: 16px;
-        font-weight: 400;
-        line-height: 24px;
+        font-size: inherit;
         min-height: 48px;
-        padding: 0px 16px;
+        padding: 0 16px;
       }
 
       paper-listbox div.iron-selected {
@@ -32,11 +31,8 @@
       }
 
       paper-listbox div:focus {
+        background-color: var(--paper-grey-300);
         outline: none;
-      }
-
-      paper-listbox div:hover {
-        background-color: var(--settings-hover-color);
       }
     </style>
     <settings-animated-pages id="pages" current-route="{{currentRoute}}"
@@ -49,7 +45,9 @@
                 selected="[[getSelectedSearchEngineIndex_(searchEngines_)]]"
                 on-iron-select="onIronSelect_">
               <template is="dom-repeat" items="[[searchEngines_]]">
-                <div>[[item.name]]</div>
+                <!--TODO(dpapad): Use <button class="paper-item">..</button>
+                    once it lands in paper-item-shared-styles.html-->
+                <div role="option">[[item.name]]</div>
               </template>
             </paper-listbox>
           </paper-dropdown-menu>
