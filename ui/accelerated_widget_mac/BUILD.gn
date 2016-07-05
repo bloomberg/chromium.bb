@@ -65,7 +65,7 @@ test("accelerated_widget_mac_unittests") {
     "//testing/gmock",
     "//testing/gtest",
     "//ui/gfx:test_support",
-    "//ui/gl:test_support",
+    "//ui/gl",
   ]
   libs = [
     "AVFoundation.framework",

@@ -62,6 +62,7 @@
         '<(DEPTH)/testing/gmock.gyp:gmock',
         '<(DEPTH)/testing/gtest.gyp:gtest',
         '<(DEPTH)/ui/gfx/gfx.gyp:gfx_test_support',
+        '<(DEPTH)/ui/gl/gl.gyp:gl',
         'accelerated_widget_mac',
       ],
       'sources': [
