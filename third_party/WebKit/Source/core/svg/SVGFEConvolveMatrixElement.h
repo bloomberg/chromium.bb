@@ -48,8 +48,8 @@ public:
     SVGAnimatedNumberList* kernelMatrix() { return m_kernelMatrix.get(); }
     SVGAnimatedString* in1() { return m_in1.get(); }
     SVGAnimatedEnumeration<EdgeModeType>* edgeMode() { return m_edgeMode.get(); }
-    SVGAnimatedInteger* orderX() { return m_order->firstInteger(); }
-    SVGAnimatedInteger* orderY() { return m_order->secondInteger(); }
+    SVGAnimatedInteger* orderX() const { return m_order->firstInteger(); }
+    SVGAnimatedInteger* orderY() const { return m_order->secondInteger(); }
     SVGAnimatedInteger* targetX() { return m_targetX.get(); }
     SVGAnimatedInteger* targetY() { return m_targetY.get(); }
 
@@ -57,6 +57,9 @@ public:
 
 private:
     explicit SVGFEConvolveMatrixElement(Document&);
+
+    IntSize matrixOrder() const;
+    IntPoint targetPoint() const;
 
     bool setFilterEffectAttribute(FilterEffect*, const QualifiedName&) override;
     void svgAttributeChanged(const QualifiedName&) override;

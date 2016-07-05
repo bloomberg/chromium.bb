@@ -118,6 +118,26 @@ DEFINE_TRACE(SVGFEConvolveMatrixElement)
 
 DEFINE_NODE_FACTORY(SVGFEConvolveMatrixElement)
 
+IntSize SVGFEConvolveMatrixElement::matrixOrder() const
+{
+    if (!m_order->isSpecified())
+        return IntSize(3, 3);
+    return IntSize(orderX()->currentValue()->value(), orderY()->currentValue()->value());
+}
+
+IntPoint SVGFEConvolveMatrixElement::targetPoint() const
+{
+    IntSize order = matrixOrder();
+    IntPoint target(m_targetX->currentValue()->value(), m_targetY->currentValue()->value());
+    // The spec says the default value is: targetX = floor ( orderX / 2 ))
+    if (!m_targetX->isSpecified())
+        target.setX(order.width() / 2);
+    // The spec says the default value is: targetY = floor ( orderY / 2 ))
+    if (!m_targetY->isSpecified())
+        target.setY(order.height() / 2);
+    return target;
+}
+
 bool SVGFEConvolveMatrixElement::setFilterEffectAttribute(FilterEffect* effect, const QualifiedName& attrName)
 {
     FEConvolveMatrix* convolveMatrix = static_cast<FEConvolveMatrix*>(effect);
@@ -127,10 +147,8 @@ bool SVGFEConvolveMatrixElement::setFilterEffectAttribute(FilterEffect* effect, 
         return convolveMatrix->setDivisor(m_divisor->currentValue()->value());
     if (attrName == SVGNames::biasAttr)
         return convolveMatrix->setBias(m_bias->currentValue()->value());
-    if (attrName == SVGNames::targetXAttr)
-        return convolveMatrix->setTargetOffset(IntPoint(m_targetX->currentValue()->value(), m_targetY->currentValue()->value()));
-    if (attrName == SVGNames::targetYAttr)
-        return convolveMatrix->setTargetOffset(IntPoint(m_targetX->currentValue()->value(), m_targetY->currentValue()->value()));
+    if (attrName == SVGNames::targetXAttr || attrName == SVGNames::targetYAttr)
+        return convolveMatrix->setTargetOffset(targetPoint());
     if (attrName == SVGNames::preserveAlphaAttr)
         return convolveMatrix->setPreserveAlpha(m_preserveAlpha->currentValue()->value());
 
@@ -167,23 +185,6 @@ FilterEffect* SVGFEConvolveMatrixElement::build(SVGFilterBuilder* filterBuilder,
     FilterEffect* input1 = filterBuilder->getEffectById(AtomicString(m_in1->currentValue()->value()));
     ASSERT(input1);
 
-    int orderXValue = orderX()->currentValue()->value();
-    int orderYValue = orderY()->currentValue()->value();
-    if (!m_order->isSpecified()) {
-        orderXValue = 3;
-        orderYValue = 3;
-    }
-
-    int targetXValue = m_targetX->currentValue()->value();
-    // The spec says the default value is: targetX = floor ( orderX / 2 ))
-    if (!m_targetX->isSpecified())
-        targetXValue = static_cast<int>(floorf(orderXValue / 2));
-
-    int targetYValue = m_targetY->currentValue()->value();
-    // The spec says the default value is: targetY = floor ( orderY / 2 ))
-    if (!m_targetY->isSpecified())
-        targetYValue = static_cast<int>(floorf(orderYValue / 2));
-
     float divisorValue = m_divisor->currentValue()->value();
     if (!m_divisor->isSpecified()) {
         SVGNumberList* kernelMatrix = m_kernelMatrix->currentValue();
@@ -195,8 +196,8 @@ FilterEffect* SVGFEConvolveMatrixElement::build(SVGFilterBuilder* filterBuilder,
     }
 
     FilterEffect* effect = FEConvolveMatrix::create(filter,
-        IntSize(orderXValue, orderYValue), divisorValue,
-        m_bias->currentValue()->value(), IntPoint(targetXValue, targetYValue), m_edgeMode->currentValue()->enumValue(),
+        matrixOrder(), divisorValue,
+        m_bias->currentValue()->value(), targetPoint(), m_edgeMode->currentValue()->enumValue(),
         m_preserveAlpha->currentValue()->value(), m_kernelMatrix->currentValue()->toFloatVector());
     effect->inputEffects().append(input1);
     return effect;
