@@ -29,7 +29,7 @@
 #include "ipc/ipc_channel_proxy.h"
 #include "ipc/ipc_platform_file.h"
 #include "mojo/public/cpp/bindings/interface_ptr.h"
-#include "services/shell/public/interfaces/shell_client.mojom.h"
+#include "services/shell/public/interfaces/service.mojom.h"
 #include "ui/gfx/gpu_memory_buffer.h"
 #include "ui/gl/gpu_switching_observer.h"
 
@@ -371,7 +371,7 @@ class CONTENT_EXPORT RenderProcessHostImpl
   std::string child_token_;
 
   std::unique_ptr<MojoChildConnection> mojo_child_connection_;
-  shell::mojom::ShellClientPtr test_shell_client_;
+  shell::mojom::ServicePtr test_service_;
 
   // The registered IPC listener objects. When this list is empty, we should
   // delete ourselves.

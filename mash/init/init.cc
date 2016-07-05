@@ -18,16 +18,16 @@ Init::Init()
     : connector_(nullptr) {}
 Init::~Init() {}
 
-void Init::Initialize(shell::Connector* connector,
-                      const shell::Identity& identity,
-                      uint32_t id) {
+void Init::OnStart(shell::Connector* connector,
+                   const shell::Identity& identity,
+                   uint32_t id) {
   connector_ = connector;
   connector_->Connect("mojo:ui");
   StartTracing();
   StartLogin();
 }
 
-bool Init::AcceptConnection(shell::Connection* connection) {
+bool Init::OnConnect(shell::Connection* connection) {
   connection->AddInterface<mojom::Init>(this);
   return true;
 }

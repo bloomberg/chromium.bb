@@ -13,7 +13,7 @@
 #include "mash/init/public/interfaces/init.mojom.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/shell/public/cpp/connector.h"
-#include "services/shell/public/cpp/shell_client.h"
+#include "services/shell/public/cpp/service.h"
 
 namespace mojo {
 class Connection;
@@ -22,7 +22,7 @@ class Connection;
 namespace mash {
 namespace init {
 
-class Init : public shell::ShellClient,
+class Init : public shell::Service,
              public shell::InterfaceFactory<mojom::Init>,
              public mojom::Init {
  public:
@@ -30,11 +30,11 @@ class Init : public shell::ShellClient,
   ~Init() override;
 
  private:
-  // shell::ShellClient:
-  void Initialize(shell::Connector* connector,
-                  const shell::Identity& identity,
-                  uint32_t id) override;
-  bool AcceptConnection(shell::Connection* connection) override;
+  // shell::Service:
+  void OnStart(shell::Connector* connector,
+               const shell::Identity& identity,
+               uint32_t id) override;
+  bool OnConnect(shell::Connection* connection) override;
 
   // shell::InterfaceFactory<mojom::Login>:
   void Create(shell::Connection* connection,

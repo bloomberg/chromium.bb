@@ -8,7 +8,7 @@
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/navigation/public/interfaces/view.mojom.h"
 #include "services/shell/public/cpp/interface_factory.h"
-#include "services/shell/public/cpp/shell_client.h"
+#include "services/shell/public/cpp/service.h"
 #include "services/shell/public/cpp/shell_connection_ref.h"
 
 namespace content {
@@ -17,7 +17,7 @@ class BrowserContext;
 
 namespace navigation {
 
-class Navigation : public shell::ShellClient,
+class Navigation : public shell::Service,
                    public shell::InterfaceFactory<mojom::ViewFactory>,
                    public mojom::ViewFactory {
  public:
@@ -25,11 +25,11 @@ class Navigation : public shell::ShellClient,
   ~Navigation() override;
 
  private:
-  // shell::ShellClient:
-  void Initialize(shell::Connector* connector,
-                  const shell::Identity& identity,
-                  uint32_t instance_id) override;
-  bool AcceptConnection(shell::Connection* connection) override;
+  // shell::Service:
+  void OnStart(shell::Connector* connector,
+               const shell::Identity& identity,
+               uint32_t instance_id) override;
+  bool OnConnect(shell::Connection* connection) override;
 
   // shell::InterfaceFactory<mojom::ViewFactory>:
   void Create(shell::Connection* connection,

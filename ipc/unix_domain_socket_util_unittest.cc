@@ -72,7 +72,7 @@ class SocketAcceptor : public base::MessageLoopForIO::Watcher {
   }
   void OnFileCanReadWithoutBlocking(int fd) override {
     ASSERT_EQ(-1, server_fd_);
-    IPC::ServerAcceptConnection(fd, &server_fd_);
+    IPC::ServerOnConnect(fd, &server_fd_);
     watcher_->StopWatchingFileDescriptor();
     accepted_event_.Signal();
   }

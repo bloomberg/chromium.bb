@@ -11,7 +11,7 @@
 #include "content/public/test/test_mojo_service.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/shell/public/cpp/interface_factory.h"
-#include "services/shell/public/cpp/shell_client.h"
+#include "services/shell/public/cpp/service.h"
 
 namespace content {
 
@@ -19,7 +19,7 @@ extern const char kTestMojoAppUrl[];
 
 // Simple Mojo app which provides a mojom::TestMojoService impl. The app
 // terminates itself after its TestService fulfills a single DoSomething call.
-class TestMojoApp : public shell::ShellClient,
+class TestMojoApp : public shell::Service,
                     public shell::InterfaceFactory<mojom::TestMojoService>,
                     public mojom::TestMojoService {
  public:
@@ -27,8 +27,8 @@ class TestMojoApp : public shell::ShellClient,
   ~TestMojoApp() override;
 
  private:
-  // shell::ShellClient:
-  bool AcceptConnection(shell::Connection* connection) override;
+  // shell::Service:
+  bool OnConnect(shell::Connection* connection) override;
 
   // shell::InterfaceFactory<mojom::TestMojoService>:
   void Create(shell::Connection* connection,

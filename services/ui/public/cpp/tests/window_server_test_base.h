@@ -63,7 +63,7 @@ class WindowServerTestBase
   void SetUp() override;
 
   // WindowServerShellTestBase:
-  bool AcceptConnection(shell::Connection* connection) override;
+  bool OnConnect(shell::Connection* connection) override;
 
   // WindowTreeClientDelegate:
   void OnEmbed(Window* root) override;

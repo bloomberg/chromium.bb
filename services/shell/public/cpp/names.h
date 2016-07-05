@@ -24,14 +24,14 @@ extern const char kNameType_Exe[];
 //   Represents an application packaged as a .mojo, launched from the
 //   NativeRunner launch path. .mojo files are assumed to live alongside the
 //   shell executable at a path matching <path>/<path>.mojo. .mojo applications
-//   have a MojoMain() entrypoint that receives a handle to a ShellClientRequest
+//   have a MojoMain() entrypoint that receives a handle to a ServiceRequest
 //   that must be bound to enable further communication with the shell.
 //
 //  exe
 //   Represents a native executable on the host platform, expected to live
 //   alongside the shell executable. Executables launched via this mechanism are
 //   passed a handle to the shell on the command line and are expected to bind
-//   a ShellClientRequest enabling further communication with the shell. The
+//   a ServiceRequest enabling further communication with the shell. The
 //   path component contains the executable name, minus any platform-specific
 //   extension.
 //

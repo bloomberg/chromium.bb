@@ -122,7 +122,7 @@ void ChildProcessMainWithCallback(const RunCallback& callback) {
 #endif
 
   ScopedAppContext app_context;
-  callback.Run(GetShellClientRequestFromCommandLine());
+  callback.Run(GetServiceRequestFromCommandLine());
 }
 
 }  // namespace shell

@@ -85,13 +85,13 @@ Catalog::Catalog(base::SingleThreadTaskRunner* task_runner,
 
 Catalog::~Catalog() {}
 
-shell::mojom::ShellClientPtr Catalog::TakeShellClient() {
-  return std::move(shell_client_);
+shell::mojom::ServicePtr Catalog::TakeService() {
+  return std::move(service_);
 }
 
 Catalog::Catalog(std::unique_ptr<Store> store)
     : store_(std::move(store)), weak_factory_(this) {
-  shell::mojom::ShellClientRequest request = GetProxy(&shell_client_);
+  shell::mojom::ServiceRequest request = GetProxy(&service_);
   shell_connection_.reset(new shell::ShellConnection(this, std::move(request)));
 }
 
@@ -104,7 +104,7 @@ void Catalog::ScanSystemPackageDir() {
                                   weak_factory_.GetWeakPtr()));
 }
 
-bool Catalog::AcceptConnection(shell::Connection* connection) {
+bool Catalog::OnConnect(shell::Connection* connection) {
   connection->AddInterface<mojom::Catalog>(this);
   connection->AddInterface<filesystem::mojom::Directory>(this);
   connection->AddInterface<shell::mojom::ShellResolver>(this);

@@ -21,7 +21,7 @@ TracingApp::TracingApp() : collector_binding_(this), tracing_active_(false) {
 TracingApp::~TracingApp() {
 }
 
-bool TracingApp::AcceptConnection(shell::Connection* connection) {
+bool TracingApp::OnConnect(shell::Connection* connection) {
   connection->AddInterface<TraceCollector>(this);
   connection->AddInterface<StartupPerformanceDataCollector>(this);
 
@@ -42,7 +42,7 @@ bool TracingApp::AcceptConnection(shell::Connection* connection) {
   return true;
 }
 
-bool TracingApp::ShellConnectionLost() {
+bool TracingApp::OnStop() {
   // TODO(beng): This is only required because TracingApp isn't run by
   // ApplicationRunner - instead it's launched automatically by the standalone
   // shell. It shouldn't be.

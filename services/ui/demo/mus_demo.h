@@ -13,7 +13,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/timer/timer.h"
-#include "services/shell/public/cpp/shell_client.h"
+#include "services/shell/public/cpp/service.h"
 #include "services/ui/public/cpp/window_manager_delegate.h"
 #include "services/ui/public/cpp/window_tree_client_delegate.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -27,7 +27,7 @@ namespace mus_demo {
 // A simple MUS Demo mojo app. This app connects to the mojo:ui, creates a new
 // window and draws a spinning square in the center of the window. Provides a
 // simple way to demonstrate that the graphic stack works as intended.
-class MusDemo : public shell::ShellClient,
+class MusDemo : public shell::Service,
                 public ui::WindowTreeClientDelegate,
                 public ui::WindowManagerDelegate {
  public:
@@ -35,11 +35,11 @@ class MusDemo : public shell::ShellClient,
   ~MusDemo() override;
 
  private:
-  // shell::ShellClient:
-  void Initialize(shell::Connector* connector,
-                  const shell::Identity& identity,
-                  uint32_t id) override;
-  bool AcceptConnection(shell::Connection* connection) override;
+  // shell::Service:
+  void OnStart(shell::Connector* connector,
+               const shell::Identity& identity,
+               uint32_t id) override;
+  bool OnConnect(shell::Connection* connection) override;
 
   // WindowTreeClientDelegate:
   void OnEmbed(ui::Window* root) override;

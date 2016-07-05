@@ -53,9 +53,9 @@ void WindowManagerApplication::InitWindowManager(
   window_manager_->AddObserver(this);
 }
 
-void WindowManagerApplication::Initialize(shell::Connector* connector,
-                                          const shell::Identity& identity,
-                                          uint32_t id) {
+void WindowManagerApplication::OnStart(shell::Connector* connector,
+                                       const shell::Identity& identity,
+                                       uint32_t id) {
   connector_ = connector;
   ::ui::GpuService::Initialize(connector);
   window_manager_.reset(new WindowManager(connector_));
@@ -71,7 +71,7 @@ void WindowManagerApplication::Initialize(shell::Connector* connector,
   InitWindowManager(window_tree_client);
 }
 
-bool WindowManagerApplication::AcceptConnection(shell::Connection* connection) {
+bool WindowManagerApplication::OnConnect(shell::Connection* connection) {
   connection->AddInterface<mojom::ShelfLayout>(this);
   connection->AddInterface<mojom::UserWindowController>(this);
   connection->AddInterface<::ui::mojom::AcceleratorRegistrar>(this);

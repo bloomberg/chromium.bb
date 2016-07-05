@@ -142,9 +142,9 @@ void Service::AddUserIfNecessary(shell::Connection* connection) {
       connection->GetRemoteIdentity().user_id());
 }
 
-void Service::Initialize(shell::Connector* connector,
-                         const shell::Identity& identity,
-                         uint32_t id) {
+void Service::OnStart(shell::Connector* connector,
+                      const shell::Identity& identity,
+                      uint32_t id) {
   platform_display_init_params_.surfaces_state = new SurfacesState;
 
   base::PlatformThread::SetName("mus");
@@ -223,7 +223,7 @@ void Service::Initialize(shell::Connector* connector,
         new ws::TouchController(window_server_->display_manager()));
 }
 
-bool Service::AcceptConnection(Connection* connection) {
+bool Service::OnConnect(Connection* connection) {
   connection->AddInterface<mojom::Clipboard>(this);
   connection->AddInterface<mojom::DisplayManager>(this);
   connection->AddInterface<mojom::UserAccessManager>(this);

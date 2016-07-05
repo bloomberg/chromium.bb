@@ -11,7 +11,7 @@
 #include "components/filesystem/lock_table.h"
 #include "components/filesystem/public/interfaces/file_system.mojom.h"
 #include "services/shell/public/cpp/interface_factory.h"
-#include "services/shell/public/cpp/shell_client.h"
+#include "services/shell/public/cpp/service.h"
 #include "services/tracing/public/cpp/tracing_impl.h"
 
 namespace mojo {
@@ -20,7 +20,7 @@ class Connector;
 
 namespace filesystem {
 
-class FileSystemApp : public shell::ShellClient,
+class FileSystemApp : public shell::Service,
                       public shell::InterfaceFactory<mojom::FileSystem> {
  public:
   FileSystemApp();
@@ -30,11 +30,12 @@ class FileSystemApp : public shell::ShellClient,
   // Gets the system specific toplevel profile directory.
   static base::FilePath GetUserDataDir();
 
-  // |shell::ShellClient| override:
-  void Initialize(shell::Connector* connector,
-                  const shell::Identity& identity,
-                  uint32_t id) override;
-  bool AcceptConnection(shell::Connection* connection) override;
+  // |shell::Service| override:
+  void OnStart(shell::Connector* connector,
+               const shell::Identity& identity,
+               uint32_t id) override;
+  bool OnConnect(shell::Connection* connection) override;
+
   // |InterfaceFactory<Files>| implementation:
   void Create(shell::Connection* connection,
               mojo::InterfaceRequest<mojom::FileSystem> request) override;

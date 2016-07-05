@@ -8,7 +8,7 @@
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/shell/public/cpp/connection.h"
 #include "services/shell/public/cpp/connector.h"
-#include "services/shell/public/cpp/shell_client.h"
+#include "services/shell/public/cpp/service.h"
 #include "services/shell/runner/child/test_native_main.h"
 #include "services/shell/runner/init.h"
 #include "services/shell/tests/connect/connect_test.mojom.h"
@@ -18,7 +18,7 @@ using shell::test::mojom::ConnectTestServiceRequest;
 
 namespace {
 
-class Target : public shell::ShellClient,
+class Target : public shell::Service,
                public shell::InterfaceFactory<ConnectTestService>,
                public ConnectTestService {
  public:
@@ -26,13 +26,13 @@ class Target : public shell::ShellClient,
   ~Target() override {}
 
  private:
-  // shell::ShellClient:
-  void Initialize(shell::Connector* connector,
-                  const shell::Identity& identity,
-                  uint32_t id) override {
+  // shell::Service:
+  void OnStart(shell::Connector* connector,
+               const shell::Identity& identity,
+               uint32_t id) override {
     identity_ = identity;
   }
-  bool AcceptConnection(shell::Connection* connection) override {
+  bool OnConnect(shell::Connection* connection) override {
     connection->AddInterface<ConnectTestService>(this);
     return true;
   }

@@ -16,9 +16,9 @@ class ShellConnectionRefImpl : public ShellConnectionRef {
  public:
   ShellConnectionRefImpl(
       base::WeakPtr<ShellConnectionRefFactory> factory,
-      scoped_refptr<base::SingleThreadTaskRunner> shell_client_task_runner)
+      scoped_refptr<base::SingleThreadTaskRunner> service_task_runner)
       : factory_(factory),
-        shell_client_task_runner_(shell_client_task_runner) {
+        service_task_runner_(service_task_runner) {
     // This object is not thread-safe but may be used exclusively on a different
     // thread from the one which constructed it.
     thread_checker_.DetachFromThread();
@@ -27,10 +27,10 @@ class ShellConnectionRefImpl : public ShellConnectionRef {
   ~ShellConnectionRefImpl() override {
     DCHECK(thread_checker_.CalledOnValidThread());
 
-    if (shell_client_task_runner_->BelongsToCurrentThread() && factory_) {
+    if (service_task_runner_->BelongsToCurrentThread() && factory_) {
       factory_->Release();
     } else {
-      shell_client_task_runner_->PostTask(
+      service_task_runner_->PostTask(
           FROM_HERE,
           base::Bind(&ShellConnectionRefFactory::Release, factory_));
     }
@@ -41,20 +41,20 @@ class ShellConnectionRefImpl : public ShellConnectionRef {
   std::unique_ptr<ShellConnectionRef> Clone() override {
     DCHECK(thread_checker_.CalledOnValidThread());
 
-    if (shell_client_task_runner_->BelongsToCurrentThread() && factory_) {
+    if (service_task_runner_->BelongsToCurrentThread() && factory_) {
       factory_->AddRef();
     } else {
-      shell_client_task_runner_->PostTask(
+      service_task_runner_->PostTask(
           FROM_HERE,
           base::Bind(&ShellConnectionRefFactory::AddRef, factory_));
     }
 
     return base::WrapUnique(
-        new ShellConnectionRefImpl(factory_, shell_client_task_runner_));
+        new ShellConnectionRefImpl(factory_, service_task_runner_));
   }
 
   base::WeakPtr<ShellConnectionRefFactory> factory_;
-  scoped_refptr<base::SingleThreadTaskRunner> shell_client_task_runner_;
+  scoped_refptr<base::SingleThreadTaskRunner> service_task_runner_;
   base::ThreadChecker thread_checker_;
 
   DISALLOW_COPY_AND_ASSIGN(ShellConnectionRefImpl);

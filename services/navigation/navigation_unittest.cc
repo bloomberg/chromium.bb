@@ -7,7 +7,7 @@
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "services/navigation/public/interfaces/view.mojom.h"
-#include "services/shell/public/cpp/shell_client.h"
+#include "services/shell/public/cpp/service.h"
 #include "services/shell/public/cpp/shell_test.h"
 
 namespace navigation {

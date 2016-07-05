@@ -192,7 +192,7 @@ bool IsPeerAuthorized(int peer_fd) {
   return true;
 }
 
-bool ServerAcceptConnection(int server_listen_fd, int* server_socket) {
+bool ServerOnConnect(int server_listen_fd, int* server_socket) {
   DCHECK(server_socket);
   *server_socket = -1;
 

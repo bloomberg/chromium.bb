@@ -11,7 +11,7 @@
 #include "services/shell/public/cpp/application_runner.h"
 #include "services/shell/public/cpp/connector.h"
 #include "services/shell/public/cpp/interface_factory.h"
-#include "services/shell/public/cpp/shell_client.h"
+#include "services/shell/public/cpp/service.h"
 #include "services/shell/public/interfaces/connector.mojom.h"
 #include "services/shell/tests/connect/connect_test.mojom.h"
 
@@ -20,7 +20,7 @@ namespace shell {
 using GetTitleCallback = test::mojom::ConnectTestService::GetTitleCallback;
 
 class ConnectTestClassApp
-    : public ShellClient,
+    : public Service,
       public InterfaceFactory<test::mojom::ConnectTestService>,
       public InterfaceFactory<test::mojom::ClassInterface>,
       public test::mojom::ConnectTestService,
@@ -30,13 +30,13 @@ class ConnectTestClassApp
   ~ConnectTestClassApp() override {}
 
  private:
-  // shell::ShellClient:
-  void Initialize(Connector* connector, const Identity& identity,
-                  uint32_t id) override {
+  // shell::Service:
+  void OnStart(Connector* connector, const Identity& identity,
+               uint32_t id) override {
     connector_ = connector;
     identity_ = identity;
   }
-  bool AcceptConnection(Connection* connection) override {
+  bool OnConnect(Connection* connection) override {
     connection->AddInterface<test::mojom::ConnectTestService>(this);
     connection->AddInterface<test::mojom::ClassInterface>(this);
     inbound_connections_.insert(connection);

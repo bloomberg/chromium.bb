@@ -14,13 +14,13 @@
 #include "base/memory/weak_ptr.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/catalog/public/interfaces/catalog.mojom.h"
-#include "services/shell/public/cpp/shell_client.h"
+#include "services/shell/public/cpp/service.h"
 #include "services/ui/public/interfaces/accelerator_registrar.mojom.h"
 
 namespace mash {
 namespace app_driver {
 
-class AppDriver : public shell::ShellClient,
+class AppDriver : public shell::Service,
                   public ui::mojom::AcceleratorHandler {
  public:
   AppDriver();
@@ -29,12 +29,12 @@ class AppDriver : public shell::ShellClient,
  private:
   void OnAvailableCatalogEntries(mojo::Array<catalog::mojom::EntryPtr> entries);
 
-  // shell::ShellClient:
-  void Initialize(shell::Connector* connector,
-                  const shell::Identity& identity,
-                  uint32_t id) override;
-  bool AcceptConnection(shell::Connection* connection) override;
-  bool ShellConnectionLost() override;
+  // shell::Service:
+  void OnStart(shell::Connector* connector,
+               const shell::Identity& identity,
+               uint32_t id) override;
+  bool OnConnect(shell::Connection* connection) override;
+  bool OnStop() override;
 
   // ui::mojom::AcceleratorHandler:
   void OnAccelerator(uint32_t id, std::unique_ptr<ui::Event> event) override;

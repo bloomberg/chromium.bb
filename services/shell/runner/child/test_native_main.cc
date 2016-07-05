@@ -15,7 +15,7 @@
 #include "build/build_config.h"
 #include "mojo/edk/embedder/embedder.h"
 #include "mojo/edk/embedder/process_delegate.h"
-#include "services/shell/public/cpp/shell_client.h"
+#include "services/shell/public/cpp/service.h"
 #include "services/shell/public/cpp/shell_connection.h"
 #include "services/shell/runner/common/client_util.h"
 #include "services/shell/runner/init.h"
@@ -36,7 +36,7 @@ class ProcessDelegate : public mojo::edk::ProcessDelegate {
 
 }  // namespace
 
-int TestNativeMain(shell::ShellClient* shell_client) {
+int TestNativeMain(shell::Service* service) {
   shell::WaitForDebuggerIfNecessary();
 
 #if !defined(OFFICIAL_BUILD)
@@ -58,8 +58,8 @@ int TestNativeMain(shell::ShellClient* shell_client) {
     mojo::edk::SetParentPipeHandleFromCommandLine();
 
     base::MessageLoop loop;
-    shell::ShellConnection impl(shell_client,
-                                shell::GetShellClientRequestFromCommandLine());
+    shell::ShellConnection impl(service,
+                                shell::GetServiceRequestFromCommandLine());
     base::RunLoop().Run();
 
     mojo::edk::ShutdownIPCSupport();

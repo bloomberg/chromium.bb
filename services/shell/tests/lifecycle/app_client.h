@@ -12,8 +12,8 @@
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/shell/public/cpp/application_runner.h"
 #include "services/shell/public/cpp/interface_factory.h"
-#include "services/shell/public/cpp/shell_client.h"
-#include "services/shell/public/interfaces/shell_client.mojom.h"
+#include "services/shell/public/cpp/service.h"
+#include "services/shell/public/interfaces/service.mojom.h"
 #include "services/shell/tests/lifecycle/lifecycle_unittest.mojom.h"
 
 using LifecycleControl = shell::test::mojom::LifecycleControl;
@@ -24,20 +24,20 @@ class ShellConnection;
 
 namespace test {
 
-class AppClient : public ShellClient,
+class AppClient : public Service,
                   public InterfaceFactory<LifecycleControl>,
                   public LifecycleControl {
  public:
   AppClient();
-  explicit AppClient(shell::mojom::ShellClientRequest request);
+  explicit AppClient(shell::mojom::ServiceRequest request);
   ~AppClient() override;
 
   void set_runner(ApplicationRunner* runner) {
     runner_ = runner;
   }
 
-  // ShellClient:
-  bool AcceptConnection(Connection* connection) override;
+  // Service:
+  bool OnConnect(Connection* connection) override;
 
   // InterfaceFactory<LifecycleControl>:
   void Create(Connection* connection, LifecycleControlRequest request) override;

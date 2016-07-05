@@ -7,7 +7,7 @@
 #include "base/macros.h"
 #include "services/shell/public/cpp/connection.h"
 #include "services/shell/public/cpp/connector.h"
-#include "services/shell/public/cpp/shell_client.h"
+#include "services/shell/public/cpp/service.h"
 #include "services/shell/runner/child/test_native_main.h"
 #include "services/shell/runner/init.h"
 #include "services/shell/tests/shell/shell_unittest.mojom.h"
@@ -16,16 +16,16 @@ using shell::test::mojom::CreateInstanceTestPtr;
 
 namespace {
 
-class Target : public shell::ShellClient {
+class Target : public shell::Service {
  public:
   Target() {}
   ~Target() override {}
 
  private:
-  // shell::ShellClient:
-  void Initialize(shell::Connector* connector,
-                  const shell::Identity& identity,
-                  uint32_t id) override {
+  // shell::Service:
+  void OnStart(shell::Connector* connector,
+               const shell::Identity& identity,
+               uint32_t id) override {
     CreateInstanceTestPtr service;
     connector->ConnectToInterface("mojo:shell_unittest", &service);
     service->SetTargetID(id);

@@ -14,7 +14,7 @@
 #include "base/threading/thread.h"
 #include "services/shell/background/background_shell.h"
 #include "services/shell/public/cpp/connector.h"
-#include "services/shell/public/cpp/shell_client.h"
+#include "services/shell/public/cpp/service.h"
 #include "services/shell/public/cpp/shell_connection.h"
 #include "services/ui/common/gpu_service.h"
 #include "services/ui/common/switches.h"
@@ -32,13 +32,13 @@ void EnsureCommandLineSwitch(const std::string& name) {
     cmd_line->AppendSwitch(name);
 }
 
-class DefaultShellClient : public shell::ShellClient {
+class DefaultService : public shell::Service {
  public:
-  DefaultShellClient() {}
-  ~DefaultShellClient() override {}
+   DefaultService() {}
+  ~DefaultService() override {}
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(DefaultShellClient);
+  DISALLOW_COPY_AND_ASSIGN(DefaultService);
 };
 
 class PlatformTestHelperMus : public PlatformTestHelper {
@@ -118,10 +118,10 @@ class ShellConnection {
   void SetUpConnections(base::WaitableEvent* wait) {
     background_shell_.reset(new shell::BackgroundShell);
     background_shell_->Init(nullptr);
-    shell_client_.reset(new DefaultShellClient);
+    service_.reset(new DefaultService);
     shell_connection_.reset(new shell::ShellConnection(
-        shell_client_.get(),
-        background_shell_->CreateShellClientRequest(GetTestName())));
+        service_.get(),
+        background_shell_->CreateServiceRequest(GetTestName())));
 
     // ui/views/mus requires a WindowManager running, so launch test_wm.
     shell::Connector* connector = shell_connection_->connector();
@@ -148,7 +148,7 @@ class ShellConnection {
   base::Thread thread_;
   std::unique_ptr<shell::BackgroundShell> background_shell_;
   std::unique_ptr<shell::ShellConnection> shell_connection_;
-  std::unique_ptr<DefaultShellClient> shell_client_;
+  std::unique_ptr<DefaultService> service_;
   std::unique_ptr<shell::Connector> shell_connector_;
   shell::Identity shell_identity_;
 

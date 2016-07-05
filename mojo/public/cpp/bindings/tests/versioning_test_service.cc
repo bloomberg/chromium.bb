@@ -13,7 +13,7 @@
 #include "mojo/public/interfaces/bindings/tests/versioning_test_service.mojom.h"
 #include "services/shell/public/cpp/application_runner.h"
 #include "services/shell/public/cpp/interface_factory.h"
-#include "services/shell/public/cpp/shell_client.h"
+#include "services/shell/public/cpp/service.h"
 
 namespace mojo {
 namespace test {
@@ -95,13 +95,13 @@ class HumanResourceDatabaseImpl : public HumanResourceDatabase {
 };
 
 class HumanResourceSystemServer
-    : public shell::ShellClient,
+    : public shell::Service,
       public InterfaceFactory<HumanResourceDatabase> {
  public:
   HumanResourceSystemServer() {}
 
-  // shell::ShellClient implementation.
-  bool AcceptConnection(Connection* connection) override {
+  // shell::Service implementation.
+  bool OnConnect(Connection* connection) override {
     connection->AddInterface<HumanResourceDatabase>(this);
     return true;
   }

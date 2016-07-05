@@ -18,12 +18,12 @@
 #include "services/shell/public/cpp/capabilities.h"
 #include "services/shell/public/cpp/identity.h"
 #include "services/shell/public/cpp/interface_factory.h"
-#include "services/shell/public/cpp/shell_client.h"
+#include "services/shell/public/cpp/service.h"
 #include "services/shell/public/interfaces/connector.mojom.h"
 #include "services/shell/public/interfaces/interface_provider.mojom.h"
+#include "services/shell/public/interfaces/service.mojom.h"
+#include "services/shell/public/interfaces/service_factory.mojom.h"
 #include "services/shell/public/interfaces/shell.mojom.h"
-#include "services/shell/public/interfaces/shell_client.mojom.h"
-#include "services/shell/public/interfaces/shell_client_factory.mojom.h"
 #include "services/shell/public/interfaces/shell_resolver.mojom.h"
 
 namespace shell {
@@ -33,7 +33,7 @@ class ShellConnection;
 // applications.
 Identity CreateShellIdentity();
 
-class Shell : public ShellClient {
+class Shell : public Service {
  public:
   // API for testing.
   class TestAPI {
@@ -55,7 +55,7 @@ class Shell : public ShellClient {
   // |file_task_runner| provides access to a thread to perform file copy
   // operations on.
   Shell(std::unique_ptr<NativeRunnerFactory> native_runner_factory,
-        mojom::ShellClientPtr catalog);
+        mojom::ServicePtr catalog);
   ~Shell() override;
 
   // Provide a callback to be notified whenever an instance is destroyed.
@@ -71,15 +71,15 @@ class Shell : public ShellClient {
   // Creates a new Instance identified as |name|. This is intended for use by
   // the Shell's embedder to register itself with the shell. This must only be
   // called once.
-  mojom::ShellClientRequest InitInstanceForEmbedder(const std::string& name);
+  mojom::ServiceRequest InitInstanceForEmbedder(const std::string& name);
 
  private:
   class Instance;
 
-  // ShellClient:
-  bool AcceptConnection(Connection* connection) override;
+  // Service:
+  bool OnConnect(Connection* connection) override;
 
-  void InitCatalog(mojom::ShellClientPtr catalog);
+  void InitCatalog(mojom::ServicePtr catalog);
 
   // Returns the resolver to use for the specified identity.
   // NOTE: ShellResolvers are cached to ensure we service requests in order. If
@@ -103,7 +103,7 @@ class Shell : public ShellClient {
   // application already running. The shell will create a new instance and use
   // |client| to control it.
   void Connect(std::unique_ptr<ConnectParams> params,
-               mojom::ShellClientPtr client);
+               mojom::ServicePtr client);
 
   // Returns a running instance matching |identity|. This might be an instance
   // running as a different user if one is available that services all users.
@@ -123,22 +123,22 @@ class Shell : public ShellClient {
   // Called from the instance implementing mojom::Shell.
   void AddInstanceListener(mojom::InstanceListenerPtr listener);
 
-  void CreateShellClientWithFactory(const Identity& shell_client_factory,
+  void CreateServiceWithFactory(const Identity& service_factory,
                                     const std::string& name,
-                                    mojom::ShellClientRequest request);
-  // Returns a running ShellClientFactory for |shell_client_factory_identity|.
+                                    mojom::ServiceRequest request);
+  // Returns a running ServiceFactory for |service_factory_identity|.
   // If there is not one running one is started for |source_identity|.
-  mojom::ShellClientFactory* GetShellClientFactory(
-      const Identity& shell_client_factory_identity);
-  void OnShellClientFactoryLost(const Identity& which);
+  mojom::ServiceFactory* GetServiceFactory(
+      const Identity& service_factory_identity);
+  void OnServiceFactoryLost(const Identity& which);
 
   // Callback when remote Catalog resolves mojo:foo to mojo:bar.
   // |params| are the params passed to Connect().
-  // |client| if provided is a ShellClientPtr which should be used to manage the
+  // |client| if provided is a ServicePtr which should be used to manage the
   // new application instance. This may be null.
   // |result| contains the result of the resolve operation.
   void OnGotResolvedName(std::unique_ptr<ConnectParams> params,
-                         mojom::ShellClientPtr client,
+                         mojom::ServicePtr client,
                          mojom::ResolveResultPtr result);
 
   base::WeakPtr<Shell> GetWeakPtr();
@@ -149,7 +149,7 @@ class Shell : public ShellClient {
   // from all users.
   std::set<std::string> singletons_;
 
-  std::map<Identity, mojom::ShellClientFactoryPtr> shell_client_factories_;
+  std::map<Identity, mojom::ServiceFactoryPtr> service_factories_;
   std::map<Identity, mojom::ShellResolverPtr> identity_to_resolver_;
   mojo::InterfacePtrSet<mojom::InstanceListener> instance_listeners_;
   base::Callback<void(const Identity&)> instance_quit_callback_;

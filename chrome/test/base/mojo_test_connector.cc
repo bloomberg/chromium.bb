@@ -22,15 +22,15 @@
 #include "services/shell/background/tests/test_catalog_store.h"
 #include "services/shell/native_runner_delegate.h"
 #include "services/shell/public/cpp/connector.h"
-#include "services/shell/public/cpp/shell_client.h"
+#include "services/shell/public/cpp/service.h"
 #include "services/shell/public/cpp/shell_connection.h"
 #include "services/shell/runner/common/client_util.h"
 #include "services/shell/runner/common/switches.h"
 #include "services/shell/shell.h"
 #include "services/shell/switches.h"
 
-using shell::mojom::ShellClient;
-using shell::mojom::ShellClientPtr;
+using shell::mojom::Service;
+using shell::mojom::ServicePtr;
 
 namespace {
 
@@ -102,8 +102,8 @@ class BackgroundTestState {
 #else
 #error "Unsupported"
 #endif
-    shell::mojom::ShellClientPtr client =
-        shell::PassShellClientRequestOnCommandLine(command_line, child_token_);
+    shell::mojom::ServicePtr service =
+        shell::PassServiceRequestOnCommandLine(command_line, child_token_);
 
     std::unique_ptr<shell::ConnectParams> params(new shell::ConnectParams);
     params->set_source(shell::CreateShellIdentity());
@@ -112,8 +112,8 @@ class BackgroundTestState {
 
     shell::mojom::ClientProcessConnectionPtr client_process_connection =
         shell::mojom::ClientProcessConnection::New();
-    client_process_connection->shell_client =
-        client.PassInterface().PassHandle();
+    client_process_connection->service =
+        service.PassInterface().PassHandle();
     client_process_connection->pid_receiver_request =
         mojo::GetProxy(&pid_receiver_).PassMessagePipe();
     params->set_client_process_connection(std::move(client_process_connection));
@@ -226,7 +226,7 @@ const char MojoTestConnector::kTestSwitch[] = "is_test";
 
 MojoTestConnector::MojoTestConnector() {}
 
-shell::mojom::ShellClientRequest MojoTestConnector::Init() {
+shell::mojom::ServiceRequest MojoTestConnector::Init() {
   std::unique_ptr<shell::BackgroundShell::InitParams> init_params(
       new shell::BackgroundShell::InitParams);
   init_params->catalog_store = BuildTestCatalogStore();
@@ -234,7 +234,7 @@ shell::mojom::ShellClientRequest MojoTestConnector::Init() {
   init_params->init_edk = !base::CommandLine::ForCurrentProcess()->HasSwitch(
       content::kSingleProcessTestsFlag);
   background_shell_.Init(std::move(init_params));
-  return background_shell_.CreateShellClientRequest(kTestRunnerName);
+  return background_shell_.CreateServiceRequest(kTestRunnerName);
 }
 
 MojoTestConnector::~MojoTestConnector() {}

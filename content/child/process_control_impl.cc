@@ -21,7 +21,7 @@ ProcessControlImpl::~ProcessControlImpl() {
 
 void ProcessControlImpl::LoadApplication(
     const mojo::String& name,
-    shell::mojom::ShellClientRequest request,
+    shell::mojom::ServiceRequest request,
     const LoadApplicationCallback& callback) {
   // Only register apps on first run.
   if (!has_registered_apps_) {
@@ -46,7 +46,7 @@ void ProcessControlImpl::LoadApplication(
   }
 
   callback.Run(true);
-  it->second->BindShellClientRequest(std::move(request));
+  it->second->BindServiceRequest(std::move(request));
 }
 
 }  // namespace content

@@ -25,7 +25,7 @@
 #include "services/shell/public/cpp/connection.h"
 #include "services/shell/public/cpp/connector.h"
 #include "services/shell/public/cpp/interface_factory.h"
-#include "services/shell/public/cpp/shell_client.h"
+#include "services/shell/public/cpp/service.h"
 #include "services/shell/public/interfaces/connector.mojom.h"
 #include "services/shell/public/interfaces/shell.mojom.h"
 #include "services/shell/runner/child/test_native_main.h"
@@ -36,7 +36,7 @@
 
 namespace {
 
-class Driver : public shell::ShellClient,
+class Driver : public shell::Service,
                public shell::InterfaceFactory<shell::test::mojom::Driver>,
                public shell::test::mojom::Driver {
  public:
@@ -44,10 +44,10 @@ class Driver : public shell::ShellClient,
   ~Driver() override {}
 
  private:
-  // shell::ShellClient:
-  void Initialize(shell::Connector* connector,
-                  const shell::Identity& identity,
-                  uint32_t id) override {
+  // shell::Service:
+  void OnStart(shell::Connector* connector,
+               const shell::Identity& identity,
+               uint32_t id) override {
     base::FilePath target_path;
     CHECK(base::PathService::Get(base::DIR_EXE, &target_path));
   #if defined(OS_WIN)
@@ -74,8 +74,8 @@ class Driver : public shell::ShellClient,
         &child_command_line, &handle_passing_info);
 
     std::string child_token = mojo::edk::GenerateRandomToken();
-    shell::mojom::ShellClientPtr client =
-        shell::PassShellClientRequestOnCommandLine(&child_command_line,
+    shell::mojom::ServicePtr client =
+        shell::PassServiceRequestOnCommandLine(&child_command_line,
                                                    child_token);
     shell::mojom::PIDReceiverPtr receiver;
 
@@ -102,7 +102,7 @@ class Driver : public shell::ShellClient,
                                     child_token);
   }
 
-  bool AcceptConnection(shell::Connection* connection) override {
+  bool OnConnect(shell::Connection* connection) override {
     connection->AddInterface<shell::test::mojom::Driver>(this);
     return true;
   }

@@ -25,8 +25,8 @@ class InterfaceBinder;
 class InterfaceProvider;
 
 // Represents a connection to another application. An instance of this class is
-// returned from Shell's ConnectToApplication(), and passed to ShellClient's
-// AcceptConnection() each time an incoming connection is received.
+// returned from Shell's ConnectToApplication(), and passed to Service's
+// OnConnect() each time an incoming connection is received.
 //
 // Call AddService<T>(factory) to expose an interface to the remote application,
 // and GetInterface(&interface_ptr) to consume an interface exposed by the

@@ -48,13 +48,13 @@ FontServiceApp::FontServiceApp() {}
 
 FontServiceApp::~FontServiceApp() {}
 
-void FontServiceApp::Initialize(shell::Connector* connector,
-                                const shell::Identity& identity,
-                                uint32_t id) {
+void FontServiceApp::OnStart(shell::Connector* connector,
+                             const shell::Identity& identity,
+                             uint32_t id) {
   tracing_.Initialize(connector, identity.name());
 }
 
-bool FontServiceApp::AcceptConnection(shell::Connection* connection) {
+bool FontServiceApp::OnConnect(shell::Connection* connection) {
   connection->AddInterface(this);
   return true;
 }

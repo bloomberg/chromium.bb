@@ -170,7 +170,7 @@
 #include "net/cookies/cookie_options.h"
 #include "net/ssl/ssl_cert_request_info.h"
 #include "ppapi/host/ppapi_host.h"
-#include "services/shell/public/cpp/shell_client.h"
+#include "services/shell/public/cpp/service.h"
 #include "storage/browser/fileapi/external_mount_points.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -2849,7 +2849,7 @@ void ChromeContentBrowserClient::RegisterInProcessMojoApplications(
 #if defined(OS_CHROMEOS)
 #if defined(MOJO_SHELL_CLIENT)
   if (chrome::IsRunningInMash()) {
-    content::MojoShellConnection::GetForProcess()->AddEmbeddedShellClient(
+    content::MojoShellConnection::GetForProcess()->MergeService(
         base::WrapUnique(new chromeos::ChromeInterfaceFactory));
   }
 #endif  // MOJO_SHELL_CLIENT

@@ -413,8 +413,8 @@ void ChildThreadImpl::Init(const Options& options) {
         mojo::edk::CreateChildMessagePipe(mojo_application_token);
     DCHECK(handle.is_valid());
     mojo_shell_connection_ = MojoShellConnection::Create(
-        mojo::MakeRequest<shell::mojom::ShellClient>(std::move(handle)));
-    mojo_shell_connection_->AddEmbeddedShellClient(this);
+        mojo::MakeRequest<shell::mojom::Service>(std::move(handle)));
+    mojo_shell_connection_->MergeService(this);
   }
 
   sync_message_filter_ = channel_->CreateSyncMessageFilter();

@@ -17,13 +17,13 @@ Navigation::Navigation()
 }
 Navigation::~Navigation() {}
 
-void Navigation::Initialize(shell::Connector* connector,
-                            const shell::Identity& identity,
-                            uint32_t instance_id) {
+void Navigation::OnStart(shell::Connector* connector,
+                         const shell::Identity& identity,
+                         uint32_t instance_id) {
   connector_ = connector;
 }
 
-bool Navigation::AcceptConnection(shell::Connection* connection) {
+bool Navigation::OnConnect(shell::Connection* connection) {
   std::string remote_user_id = connection->GetRemoteIdentity().user_id();
   if (!client_user_id_.empty() && client_user_id_ != remote_user_id) {
     LOG(ERROR) << "Must have a separate Navigation service instance for "

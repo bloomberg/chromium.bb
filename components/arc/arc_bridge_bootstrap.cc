@@ -282,7 +282,7 @@ void ArcBridgeBootstrapImpl::OnInstanceStarted(base::ScopedFD socket_fd,
 base::ScopedFD ArcBridgeBootstrapImpl::AcceptInstanceConnection(
     base::ScopedFD socket_fd) {
   int raw_fd = -1;
-  if (!IPC::ServerAcceptConnection(socket_fd.get(), &raw_fd)) {
+  if (!IPC::ServerOnConnect(socket_fd.get(), &raw_fd)) {
     return base::ScopedFD();
   }
   base::ScopedFD scoped_fd(raw_fd);

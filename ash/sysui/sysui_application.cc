@@ -306,9 +306,9 @@ SysUIApplication::SysUIApplication() {}
 
 SysUIApplication::~SysUIApplication() {}
 
-void SysUIApplication::Initialize(::shell::Connector* connector,
-                                  const ::shell::Identity& identity,
-                                  uint32_t id) {
+void SysUIApplication::OnStart(::shell::Connector* connector,
+                               const ::shell::Identity& identity,
+                               uint32_t id) {
   ui::GpuService::Initialize(connector);
 
   ash_init_.reset(new AshInit());
@@ -319,7 +319,7 @@ void SysUIApplication::Initialize(::shell::Connector* connector,
   input_device_client_.Connect(std::move(server));
 }
 
-bool SysUIApplication::AcceptConnection(::shell::Connection* connection) {
+bool SysUIApplication::OnConnect(::shell::Connection* connection) {
   connection->AddInterface<mash::shelf::mojom::ShelfController>(this);
   connection->AddInterface<mojom::WallpaperController>(this);
   return true;

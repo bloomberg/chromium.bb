@@ -13,15 +13,15 @@
 #include "services/shell/public/cpp/connector.h"
 #include "services/shell/public/cpp/lib/connection_impl.h"
 #include "services/shell/public/cpp/lib/connector_impl.h"
-#include "services/shell/public/cpp/shell_client.h"
+#include "services/shell/public/cpp/service.h"
 
 namespace shell {
 
 ////////////////////////////////////////////////////////////////////////////////
 // ShellConnection, public:
 
-ShellConnection::ShellConnection(shell::ShellClient* client,
-                                 mojom::ShellClientRequest request)
+ShellConnection::ShellConnection(shell::Service* client,
+                                 mojom::ServiceRequest request)
     : client_(client), binding_(this) {
   mojom::ConnectorPtr connector;
   pending_connector_request_ = GetProxy(&connector);
@@ -51,11 +51,11 @@ void ShellConnection::SetConnectionLostClosure(const base::Closure& closure) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// ShellConnection, mojom::ShellClient implementation:
+// ShellConnection, mojom::Service implementation:
 
-void ShellConnection::Initialize(mojom::IdentityPtr identity,
-                                 uint32_t id,
-                                 const InitializeCallback& callback) {
+void ShellConnection::OnStart(mojom::IdentityPtr identity,
+                              uint32_t id,
+                              const OnStartCallback& callback) {
   identity_ = identity.To<Identity>();
   if (!initialize_handler_.is_null())
     initialize_handler_.Run();
@@ -66,10 +66,10 @@ void ShellConnection::Initialize(mojom::IdentityPtr identity,
   binding_.set_connection_error_handler(
       base::Bind(&ShellConnection::OnConnectionError, base::Unretained(this)));
 
-  client_->Initialize(connector_.get(), identity_, id);
+  client_->OnStart(connector_.get(), identity_, id);
 }
 
-void ShellConnection::AcceptConnection(
+void ShellConnection::OnConnect(
     mojom::IdentityPtr source,
     uint32_t source_id,
     mojom::InterfaceProviderRequest local_interfaces,
@@ -103,7 +103,7 @@ void ShellConnection::AcceptConnection(
     registry->SetRemoteInterfaces(std::move(interfaces));
   }
 
-  if (!client_->AcceptConnection(registry.get()))
+  if (!client_->OnConnect(registry.get()))
     return;
 
   // TODO(beng): it appears we never prune this list. We should, when the
@@ -115,10 +115,10 @@ void ShellConnection::AcceptConnection(
 // ShellConnection, private:
 
 void ShellConnection::OnConnectionError() {
-  // Note that the ShellClient doesn't technically have to quit now, it may live
+  // Note that the Service doesn't technically have to quit now, it may live
   // on to service existing connections. All existing Connectors however are
   // invalid.
-  should_run_connection_lost_closure_ = client_->ShellConnectionLost();
+  should_run_connection_lost_closure_ = client_->OnStop();
   if (should_run_connection_lost_closure_ &&
       !connection_lost_closure_.is_null())
     connection_lost_closure_.Run();

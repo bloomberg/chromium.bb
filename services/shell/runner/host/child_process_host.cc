@@ -63,7 +63,7 @@ ChildProcessHost::~ChildProcessHost() {
   }
 }
 
-mojom::ShellClientPtr ChildProcessHost::Start(
+mojom::ServicePtr ChildProcessHost::Start(
     const Identity& target,
     const ProcessReadyCallback& callback,
     const base::Closure& quit_closure) {
@@ -98,8 +98,8 @@ mojom::ShellClientPtr ChildProcessHost::Start(
   mojo_ipc_channel_->PrepareToPassClientHandleToChildProcess(
       child_command_line.get(), &handle_passing_info_);
 
-  mojom::ShellClientPtr client =
-      PassShellClientRequestOnCommandLine(child_command_line.get(),
+  mojom::ServicePtr client =
+      PassServiceRequestOnCommandLine(child_command_line.get(),
                                           child_token_);
   launch_process_runner_->PostTaskAndReply(
       FROM_HERE,

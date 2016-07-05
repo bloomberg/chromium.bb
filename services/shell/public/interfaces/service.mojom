@@ -11,7 +11,7 @@ import "services/shell/public/interfaces/interface_provider.mojom";
 // Implemented by something "known to" the Mojo Shell (e.g. an application or
 // service), for which an instance is tracked. It allows the implementor to
 // receive lifecycle events and service inbound connection attempts.
-interface ShellClient {
+interface Service {
   // Called by the shell once an instance for this application has been created.
   // This method will be called exactly once before any other method is called.
   //
@@ -35,7 +35,7 @@ interface ShellClient {
   //    An optional Connector request for the shell to bind, allowing the
   //    initialized client to connect to others.
   //
-  Initialize(Identity identity, uint32 id) => (Connector&? connector_request);
+  OnStart(Identity identity, uint32 id) => (Connector&? connector_request);
 
   // Called when another application attempts to open a connection to this
   // application. An application implements this method to complete the exchange
@@ -69,10 +69,10 @@ interface ShellClient {
   //  resolved_name
   //    The resolved name used to complete this connection.
   //
-  AcceptConnection(Identity source,
-                   uint32 source_id,
-                   InterfaceProvider&? local_interfaces,
-                   InterfaceProvider? remote_interfaces,
-                   CapabilityRequest allowed_capabilities,
-                   string resolved_name);
+  OnConnect(Identity source,
+            uint32 source_id,
+            InterfaceProvider&? local_interfaces,
+            InterfaceProvider? remote_interfaces,
+            CapabilityRequest allowed_capabilities,
+            string resolved_name);
 };

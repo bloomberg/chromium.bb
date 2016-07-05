@@ -11,7 +11,7 @@
 #include "base/macros.h"
 #include "mash/session/public/interfaces/session.mojom.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
-#include "services/shell/public/cpp/shell_client.h"
+#include "services/shell/public/cpp/service.h"
 #include "services/tracing/public/cpp/tracing_impl.h"
 
 namespace views {
@@ -22,17 +22,17 @@ class WindowManagerConnection;
 namespace mash {
 namespace screenlock {
 
-class Screenlock : public shell::ShellClient,
+class Screenlock : public shell::Service,
                    public session::mojom::ScreenlockStateListener {
  public:
   Screenlock();
   ~Screenlock() override;
 
  private:
-  // shell::ShellClient:
-  void Initialize(shell::Connector* connector,
-                  const shell::Identity& identity,
-                  uint32_t id) override;
+  // shell::Service:
+  void OnStart(shell::Connector* connector,
+               const shell::Identity& identity,
+               uint32_t id) override;
 
   // session::mojom::ScreenlockStateListener:
   void ScreenlockStateChanged(bool locked) override;

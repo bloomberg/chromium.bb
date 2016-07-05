@@ -11,19 +11,19 @@
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/shell/public/cpp/application_runner.h"
 #include "services/shell/public/cpp/shell_connection.h"
-#include "services/shell/public/interfaces/shell_client_factory.mojom.h"
+#include "services/shell/public/interfaces/service_factory.mojom.h"
 #include "services/shell/tests/lifecycle/app_client.h"
 #include "services/shell/tests/lifecycle/lifecycle_unittest.mojom.h"
 
 namespace {
 
-class PackagedApp : public shell::ShellClient,
+class PackagedApp : public shell::Service,
                     public shell::InterfaceFactory<LifecycleControl>,
                     public LifecycleControl {
  public:
   using DestructCallback = base::Callback<void(PackagedApp*)>;
 
-  PackagedApp(shell::mojom::ShellClientRequest request,
+  PackagedApp(shell::mojom::ServiceRequest request,
               const DestructCallback& shell_connection_closed_callback,
               const DestructCallback& destruct_callback)
       : connection_(new shell::ShellConnection(this, std::move(request))),
@@ -37,8 +37,8 @@ class PackagedApp : public shell::ShellClient,
   }
 
  private:
-  // shell::ShellClient:
-  bool AcceptConnection(shell::Connection* connection) override {
+  // shell::Service:
+  bool OnConnect(shell::Connection* connection) override {
     connection->AddInterface<LifecycleControl>(this);
     return true;
   }
@@ -86,9 +86,9 @@ class PackagedApp : public shell::ShellClient,
 };
 
 class Package
-    : public shell::ShellClient,
-      public shell::InterfaceFactory<shell::mojom::ShellClientFactory>,
-      public shell::mojom::ShellClientFactory {
+    : public shell::Service,
+      public shell::InterfaceFactory<shell::mojom::ServiceFactory>,
+      public shell::mojom::ServiceFactory {
  public:
   Package() {}
   ~Package() override {}
@@ -99,19 +99,19 @@ class Package
 
  private:
   // shell::test::AppClient:
-  bool AcceptConnection(shell::Connection* connection) override {
-    connection->AddInterface<shell::mojom::ShellClientFactory>(this);
-    return app_client_.AcceptConnection(connection);
+  bool OnConnect(shell::Connection* connection) override {
+    connection->AddInterface<shell::mojom::ServiceFactory>(this);
+    return app_client_.OnConnect(connection);
   }
 
-  // shell::InterfaceFactory<shell::mojom::ShellClientFactory>:
+  // shell::InterfaceFactory<shell::mojom::ServiceFactory>:
   void Create(shell::Connection* connection,
-              shell::mojom::ShellClientFactoryRequest request) override {
+              shell::mojom::ServiceFactoryRequest request) override {
     bindings_.AddBinding(this, std::move(request));
   }
 
-  // shell::mojom::ShellClientFactory:
-  void CreateShellClient(shell::mojom::ShellClientRequest request,
+  // shell::mojom::ServiceFactory:
+  void CreateService(shell::mojom::ServiceRequest request,
                          const mojo::String& name) override {
     ++shell_connection_refcount_;
     apps_.push_back(
@@ -137,7 +137,7 @@ class Package
 
   shell::test::AppClient app_client_;
   int shell_connection_refcount_ = 0;
-  mojo::BindingSet<shell::mojom::ShellClientFactory> bindings_;
+  mojo::BindingSet<shell::mojom::ServiceFactory> bindings_;
   std::vector<PackagedApp*> apps_;
 
   DISALLOW_COPY_AND_ASSIGN(Package);

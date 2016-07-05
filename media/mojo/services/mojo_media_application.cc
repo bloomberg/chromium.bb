@@ -27,19 +27,19 @@ MojoMediaApplication::MojoMediaApplication(
 
 MojoMediaApplication::~MojoMediaApplication() {}
 
-void MojoMediaApplication::Initialize(shell::Connector* connector,
-                                      const shell::Identity& identity,
-                                      uint32_t /* id */) {
+void MojoMediaApplication::OnStart(shell::Connector* connector,
+                                   const shell::Identity& identity,
+                                   uint32_t /* id */) {
   connector_ = connector;
   mojo_media_client_->Initialize();
 }
 
-bool MojoMediaApplication::AcceptConnection(shell::Connection* connection) {
+bool MojoMediaApplication::OnConnect(shell::Connection* connection) {
   connection->AddInterface<mojom::ServiceFactory>(this);
   return true;
 }
 
-bool MojoMediaApplication::ShellConnectionLost() {
+bool MojoMediaApplication::OnStop() {
   mojo_media_client_->WillQuit();
   return true;
 }

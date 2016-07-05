@@ -16,7 +16,7 @@
 #include "mash/login/public/interfaces/login.mojom.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/shell/public/cpp/connector.h"
-#include "services/shell/public/cpp/shell_client.h"
+#include "services/shell/public/cpp/service.h"
 #include "services/tracing/public/cpp/tracing_impl.h"
 #include "services/ui/public/cpp/property_type_converters.h"
 #include "services/ui/public/interfaces/user_access_manager.mojom.h"
@@ -132,7 +132,7 @@ class UI : public views::WidgetDelegateView,
   DISALLOW_COPY_AND_ASSIGN(UI);
 };
 
-class Login : public shell::ShellClient,
+class Login : public shell::Service,
               public shell::InterfaceFactory<mojom::Login>,
               public mojom::Login {
  public:
@@ -147,10 +147,10 @@ class Login : public shell::ShellClient,
   }
 
  private:
-  // shell::ShellClient:
-  void Initialize(shell::Connector* connector,
-                  const shell::Identity& identity,
-                  uint32_t id) override {
+  // shell::Service:
+  void OnStart(shell::Connector* connector,
+               const shell::Identity& identity,
+               uint32_t id) override {
     connector_ = connector;
     identity_ = identity;
     tracing_.Initialize(connector, identity.name());
@@ -160,7 +160,7 @@ class Login : public shell::ShellClient,
     connector_->ConnectToInterface("mojo:ui", &user_access_manager_);
     user_access_manager_->SetActiveUser(identity.user_id());
   }
-  bool AcceptConnection(shell::Connection* connection) override {
+  bool OnConnect(shell::Connection* connection) override {
     connection->AddInterface<mojom::Login>(this);
     return true;
   }
@@ -201,7 +201,7 @@ void UI::ButtonPressed(views::Button* sender, const ui::Event& event) {
 
 }  // namespace
 
-shell::ShellClient* CreateLogin() {
+shell::Service* CreateLogin() {
   return new Login;
 }
 

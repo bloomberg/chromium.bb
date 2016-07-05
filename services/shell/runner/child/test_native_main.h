@@ -7,9 +7,9 @@
 
 namespace shell {
 
-class ShellClient;
+class Service;
 
-int TestNativeMain(ShellClient* shell_client);
+int TestNativeMain(Service* service);
 
 }  // namespace shell
 

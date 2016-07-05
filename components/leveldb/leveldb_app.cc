@@ -14,13 +14,13 @@ LevelDBApp::LevelDBApp() {}
 
 LevelDBApp::~LevelDBApp() {}
 
-void LevelDBApp::Initialize(shell::Connector* connector,
-                            const shell::Identity& identity,
-                            uint32_t id) {
+void LevelDBApp::OnStart(shell::Connector* connector,
+                         const shell::Identity& identity,
+                         uint32_t id) {
   tracing_.Initialize(connector, identity.name());
 }
 
-bool LevelDBApp::AcceptConnection(shell::Connection* connection) {
+bool LevelDBApp::OnConnect(shell::Connection* connection) {
   connection->AddInterface<mojom::LevelDBService>(this);
   return true;
 }

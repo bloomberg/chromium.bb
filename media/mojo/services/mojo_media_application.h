@@ -15,7 +15,7 @@
 #include "media/mojo/interfaces/service_factory.mojom.h"
 #include "media/mojo/services/media_mojo_export.h"
 #include "services/shell/public/cpp/interface_factory.h"
-#include "services/shell/public/cpp/shell_client.h"
+#include "services/shell/public/cpp/service.h"
 #include "services/shell/public/cpp/shell_connection_ref.h"
 #include "url/gurl.h"
 
@@ -25,7 +25,7 @@ class MediaLog;
 class MojoMediaClient;
 
 class MEDIA_MOJO_EXPORT MojoMediaApplication
-    : public NON_EXPORTED_BASE(shell::ShellClient),
+    : public NON_EXPORTED_BASE(shell::Service),
       public NON_EXPORTED_BASE(shell::InterfaceFactory<mojom::ServiceFactory>) {
  public:
   MojoMediaApplication(std::unique_ptr<MojoMediaClient> mojo_media_client,
@@ -33,12 +33,12 @@ class MEDIA_MOJO_EXPORT MojoMediaApplication
   ~MojoMediaApplication() final;
 
  private:
-  // shell::ShellClient implementation.
-  void Initialize(shell::Connector* connector,
-                  const shell::Identity& identity,
-                  uint32_t id) final;
-  bool AcceptConnection(shell::Connection* connection) final;
-  bool ShellConnectionLost() final;
+  // shell::Service implementation.
+  void OnStart(shell::Connector* connector,
+               const shell::Identity& identity,
+               uint32_t id) final;
+  bool OnConnect(shell::Connection* connection) final;
+  bool OnStop() final;
 
   // shell::InterfaceFactory<mojom::ServiceFactory> implementation.
   void Create(shell::Connection* connection,

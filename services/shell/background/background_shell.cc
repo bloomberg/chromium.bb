@@ -16,7 +16,7 @@
 #include "base/threading/simple_thread.h"
 #include "services/catalog/store.h"
 #include "services/shell/connect_params.h"
-#include "services/shell/public/cpp/shell_client.h"
+#include "services/shell/public/cpp/service.h"
 #include "services/shell/public/cpp/shell_connection.h"
 #include "services/shell/shell.h"
 #include "services/shell/standalone/context.h"
@@ -52,9 +52,9 @@ class BackgroundShell::MojoThread : public base::SimpleThread {
         init_params_(std::move(init_params)) {}
   ~MojoThread() override {}
 
-  void CreateShellClientRequest(base::WaitableEvent* signal,
+  void CreateServiceRequest(base::WaitableEvent* signal,
                                 const std::string& name,
-                                mojom::ShellClientRequest* request) {
+                                mojom::ServiceRequest* request) {
     // Only valid to call this on the background thread.
     DCHECK(message_loop_->task_runner()->BelongsToCurrentThread());
     *request = context_->shell()->InitInstanceForEmbedder(name);
@@ -146,17 +146,17 @@ void BackgroundShell::Init(std::unique_ptr<InitParams> init_params) {
   thread_->Start();
 }
 
-mojom::ShellClientRequest BackgroundShell::CreateShellClientRequest(
+mojom::ServiceRequest BackgroundShell::CreateServiceRequest(
     const std::string& name) {
   std::unique_ptr<ConnectParams> params(new ConnectParams);
   params->set_source(CreateShellIdentity());
   params->set_target(Identity(name, mojom::kRootUserID));
-  mojom::ShellClientRequest request;
+  mojom::ServiceRequest request;
   base::WaitableEvent signal(base::WaitableEvent::ResetPolicy::MANUAL,
                              base::WaitableEvent::InitialState::NOT_SIGNALED);
   thread_->message_loop()->task_runner()->PostTask(
       FROM_HERE,
-      base::Bind(&MojoThread::CreateShellClientRequest,
+      base::Bind(&MojoThread::CreateServiceRequest,
                  base::Unretained(thread_.get()), &signal, name, &request));
   signal.Wait();
   thread_->message_loop()->task_runner()->PostTask(

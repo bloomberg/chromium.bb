@@ -283,7 +283,7 @@ bool UtilityProcessHostImpl::StartProcess() {
         g_utility_main_thread_factory(InProcessChildThreadParams(
             std::string(), BrowserThread::UnsafeGetMessageLoopForThread(
                             BrowserThread::IO)->task_runner(),
-            mojo_channel_token, mojo_child_connection_->shell_client_token())));
+            mojo_channel_token, mojo_child_connection_->service_token())));
     in_process_thread_->Start();
   } else {
     const base::CommandLine& browser_command_line =
@@ -362,7 +362,7 @@ bool UtilityProcessHostImpl::StartProcess() {
 #endif
 
     cmd_line->AppendSwitchASCII(switches::kMojoApplicationChannelToken,
-                                mojo_child_connection_->shell_client_token());
+                                mojo_child_connection_->service_token());
 
     process_->Launch(
         new UtilitySandboxedProcessLauncherDelegate(exposed_dir_,

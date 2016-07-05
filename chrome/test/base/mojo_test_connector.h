@@ -11,7 +11,7 @@
 #include "base/process/process_handle.h"
 #include "base/test/launcher/test_launcher.h"
 #include "services/shell/background/background_shell.h"
-#include "services/shell/public/interfaces/shell_client.mojom.h"
+#include "services/shell/public/interfaces/service.mojom.h"
 
 namespace base {
 class CommandLine;
@@ -22,7 +22,7 @@ class TestState;
 }
 
 namespace mojo {
-class ShellClient;
+class Service;
 class ShellConnection;
 }
 
@@ -39,7 +39,7 @@ class MojoTestConnector {
   ~MojoTestConnector();
 
   // Initializes the background thread the Shell runs on.
-  shell::mojom::ShellClientRequest Init();
+  shell::mojom::ServiceRequest Init();
 
   std::unique_ptr<content::TestState> PrepareForTest(
       base::CommandLine* command_line,

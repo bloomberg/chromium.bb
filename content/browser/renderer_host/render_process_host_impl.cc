@@ -608,8 +608,7 @@ RenderProcessHostImpl::RenderProcessHostImpl(
     // MojoShellConnection prior to this point. This class of test code doesn't
     // care about render processes so we can initialize a dummy one.
     if (!MojoShellConnection::GetForProcess()) {
-      shell::mojom::ShellClientRequest request =
-          mojo::GetProxy(&test_shell_client_);
+      shell::mojom::ServiceRequest request = mojo::GetProxy(&test_service_);
       MojoShellConnection::SetForProcess(MojoShellConnection::Create(
           std::move(request)));
     }
@@ -747,7 +746,7 @@ bool RenderProcessHostImpl::Init() {
             BrowserThread::UnsafeGetMessageLoopForThread(BrowserThread::IO)
                 ->task_runner(),
             mojo_channel_token_,
-            mojo_child_connection_->shell_client_token())));
+            mojo_child_connection_->service_token())));
 
     base::Thread::Options options;
 #if defined(OS_WIN) && !defined(OS_MACOSX)
@@ -1349,7 +1348,7 @@ void RenderProcessHostImpl::AppendRendererCommandLine(
                                     mojo_channel_token_);
   }
   command_line->AppendSwitchASCII(switches::kMojoApplicationChannelToken,
-                                  mojo_child_connection_->shell_client_token());
+                                  mojo_child_connection_->service_token());
 }
 
 void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
@@ -1607,7 +1606,7 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
 
   DCHECK(mojo_child_connection_);
   renderer_cmd->AppendSwitchASCII(switches::kPrimordialPipeToken,
-                                  mojo_child_connection_->shell_client_token());
+                                  mojo_child_connection_->service_token());
 
 #if defined(OS_WIN) && !defined(OFFICIAL_BUILD)
   // Needed because we can't show the dialog from the sandbox. Don't pass

@@ -17,7 +17,7 @@
 #include "mash/session/public/interfaces/session.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
-#include "services/shell/public/cpp/shell_client.h"
+#include "services/shell/public/cpp/service.h"
 #include "services/tracing/public/cpp/tracing_impl.h"
 #include "services/ui/common/types.h"
 #include "services/ui/public/interfaces/accelerator_registrar.mojom.h"
@@ -41,7 +41,7 @@ class UserWindowControllerImpl;
 class WindowManager;
 
 class WindowManagerApplication
-    : public shell::ShellClient,
+    : public shell::Service,
       public shell::InterfaceFactory<mojom::ShelfLayout>,
       public shell::InterfaceFactory<mojom::UserWindowController>,
       public shell::InterfaceFactory<::ui::mojom::AcceleratorRegistrar>,
@@ -65,11 +65,11 @@ class WindowManagerApplication
 
   void InitWindowManager(::ui::WindowTreeClient* window_tree_client);
 
-  // shell::ShellClient:
-  void Initialize(shell::Connector* connector,
-                  const shell::Identity& identity,
-                  uint32_t id) override;
-  bool AcceptConnection(shell::Connection* connection) override;
+  // shell::Service:
+  void OnStart(shell::Connector* connector,
+               const shell::Identity& identity,
+               uint32_t id) override;
+  bool OnConnect(shell::Connection* connection) override;
 
   // shell::InterfaceFactory<mojom::ShelfLayout>:
   void Create(shell::Connection* connection,

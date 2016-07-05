@@ -12,7 +12,7 @@
 
 namespace shell {
 
-class ShellClient;
+class Service;
 class ShellConnection;
 
 // A utility for running a chromium based mojo Application. The typical use
@@ -29,7 +29,7 @@ class ShellConnection;
 class ApplicationRunner {
  public:
   // Takes ownership of |client|.
-  explicit ApplicationRunner(ShellClient* client);
+  explicit ApplicationRunner(Service* client);
   ~ApplicationRunner();
 
   static void InitBaseCommandLine();
@@ -60,7 +60,7 @@ class ApplicationRunner {
 
  private:
   std::unique_ptr<ShellConnection> connection_;
-  std::unique_ptr<ShellClient> client_;
+  std::unique_ptr<Service> client_;
 
   // MessageLoop type. TYPE_CUSTOM is default (MessagePumpMojo will be used as
   // the underlying message pump).

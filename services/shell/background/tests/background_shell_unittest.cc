@@ -11,7 +11,7 @@
 #include "services/shell/background/tests/test.mojom.h"
 #include "services/shell/background/tests/test_catalog_store.h"
 #include "services/shell/public/cpp/connector.h"
-#include "services/shell/public/cpp/shell_client.h"
+#include "services/shell/public/cpp/service.h"
 #include "services/shell/public/cpp/shell_connection.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -20,13 +20,13 @@ namespace {
 
 const char kTestName[] = "mojo:test-app";
 
-class ShellClientImpl : public ShellClient {
+class ServiceImpl : public Service {
  public:
-  ShellClientImpl() {}
-  ~ShellClientImpl() override {}
+  ServiceImpl() {}
+  ~ServiceImpl() override {}
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(ShellClientImpl);
+  DISALLOW_COPY_AND_ASSIGN(ServiceImpl);
 };
 
 std::unique_ptr<TestCatalogStore> BuildTestCatalogStore() {
@@ -61,9 +61,9 @@ TEST(BackgroundShellTest, MAYBE_Basic) {
   TestCatalogStore* store = store_ptr.get();
   init_params->catalog_store = std::move(store_ptr);
   background_shell.Init(std::move(init_params));
-  ShellClientImpl shell_client;
+  ServiceImpl service;
   ShellConnection shell_connection(
-      &shell_client, background_shell.CreateShellClientRequest(kTestName));
+      &service, background_shell.CreateServiceRequest(kTestName));
   mojom::TestServicePtr test_service;
   shell_connection.connector()->ConnectToInterface(
       "mojo:background_shell_test_app", &test_service);

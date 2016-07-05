@@ -6,15 +6,15 @@
 #define SERVICES_SHELL_RUNNER_HOST_CHILD_PROCESS_BASE_H_
 
 #include "base/callback.h"
-#include "services/shell/public/interfaces/shell_client.mojom.h"
+#include "services/shell/public/interfaces/service.mojom.h"
 
 namespace shell {
 
 // Child processes call this to establish the connection to the shell and obtain
-// the ShellClientRequest. Once the connection has been established |callback|
+// the ServiceRequest. Once the connection has been established |callback|
 // is run. ChildProcessMainWithCallback() returns once the the callback
 // completes.
-using RunCallback = base::Callback<void(mojom::ShellClientRequest)>;
+using RunCallback = base::Callback<void(mojom::ServiceRequest)>;
 void ChildProcessMainWithCallback(const RunCallback& callback);
 
 }  // namespace shell

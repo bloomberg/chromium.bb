@@ -14,7 +14,7 @@
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/interface_ptr_set.h"
 #include "services/shell/public/cpp/interface_factory.h"
-#include "services/shell/public/cpp/shell_client.h"
+#include "services/shell/public/cpp/service.h"
 
 namespace mojo {
 class Connection;
@@ -23,7 +23,7 @@ class Connection;
 namespace mash {
 namespace session {
 
-class Session : public shell::ShellClient,
+class Session : public shell::Service,
                 public mojom::Session,
                 public shell::InterfaceFactory<mojom::Session> {
  public:
@@ -31,11 +31,11 @@ class Session : public shell::ShellClient,
   ~Session() override;
 
  private:
-  // shell::ShellClient:
-  void Initialize(shell::Connector* connector,
-                  const shell::Identity& identity,
-                  uint32_t id) override;
-  bool AcceptConnection(shell::Connection* connection) override;
+  // shell::Service:
+  void OnStart(shell::Connector* connector,
+               const shell::Identity& identity,
+               uint32_t id) override;
+  bool OnConnect(shell::Connection* connection) override;
 
   // mojom::Session:
   void Logout() override;

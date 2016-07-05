@@ -17,11 +17,11 @@ class WindowServerShellTestBase : public shell::test::ShellTest {
   WindowServerShellTestBase();
   ~WindowServerShellTestBase() override;
 
-  virtual bool AcceptConnection(shell::Connection* connection) = 0;
+  virtual bool OnConnect(shell::Connection* connection) = 0;
 
  private:
   // shell::test::ShellTest:
-  std::unique_ptr<shell::ShellClient> CreateShellClient() override;
+  std::unique_ptr<shell::Service> CreateService() override;
 
   DISALLOW_COPY_AND_ASSIGN(WindowServerShellTestBase);
 };

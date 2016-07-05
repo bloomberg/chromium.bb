@@ -8,7 +8,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "services/shell/background/background_shell.h"
-#include "services/shell/public/cpp/shell_client.h"
+#include "services/shell/public/cpp/service.h"
 
 namespace shell {
 namespace test {
@@ -16,9 +16,9 @@ namespace test {
 ShellTestClient::ShellTestClient(ShellTest* test) : test_(test) {}
 ShellTestClient::~ShellTestClient() {}
 
-void ShellTestClient::Initialize(Connector* connector, const Identity& identity,
-                                 uint32_t id) {
-  test_->InitializeCalled(connector, identity.name(), identity.user_id(), id);
+void ShellTestClient::OnStart(Connector* connector, const Identity& identity,
+                              uint32_t id) {
+  test_->OnStartCalled(connector, identity.name(), identity.user_id(), id);
 }
 
 ShellTest::ShellTest() {}
@@ -30,7 +30,7 @@ void ShellTest::InitTestName(const std::string& test_name) {
   test_name_ = test_name;
 }
 
-std::unique_ptr<ShellClient> ShellTest::CreateShellClient() {
+std::unique_ptr<Service> ShellTest::CreateService() {
   return base::WrapUnique(new ShellTestClient(this));
 }
 
@@ -38,10 +38,10 @@ std::unique_ptr<base::MessageLoop> ShellTest::CreateMessageLoop() {
   return base::WrapUnique(new base::MessageLoop);
 }
 
-void ShellTest::InitializeCalled(Connector* connector,
-                                 const std::string& name,
-                                 const std::string& user_id,
-                                 uint32_t id) {
+void ShellTest::OnStartCalled(Connector* connector,
+                              const std::string& name,
+                              const std::string& user_id,
+                              uint32_t id) {
   DCHECK_EQ(connector_, connector);
   initialize_name_ = name;
   initialize_instance_id_ = id;
@@ -50,21 +50,21 @@ void ShellTest::InitializeCalled(Connector* connector,
 }
 
 void ShellTest::SetUp() {
-  shell_client_ = CreateShellClient();
+  service_ = CreateService();
   message_loop_ = CreateMessageLoop();
   background_shell_.reset(new shell::BackgroundShell);
   background_shell_->Init(nullptr);
 
   // Create the shell connection. We don't proceed until we get our
-  // ShellClient's Initialize() method is called.
+  // Service's OnStart() method is called.
   base::RunLoop run_loop;
   base::MessageLoop::ScopedNestableTaskAllower allow(
       base::MessageLoop::current());
   initialize_called_ = run_loop.QuitClosure();
 
   shell_connection_.reset(new ShellConnection(
-      shell_client_.get(),
-      background_shell_->CreateShellClientRequest(test_name_)));
+      service_.get(),
+      background_shell_->CreateServiceRequest(test_name_)));
   connector_ = shell_connection_->connector();
 
   run_loop.Run();
@@ -74,7 +74,7 @@ void ShellTest::TearDown() {
   shell_connection_.reset();
   background_shell_.reset();
   message_loop_.reset();
-  shell_client_.reset();
+  service_.reset();
 }
 
 }  // namespace test

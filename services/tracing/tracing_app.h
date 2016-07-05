@@ -15,7 +15,7 @@
 #include "mojo/public/cpp/bindings/interface_ptr_set.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/shell/public/cpp/interface_factory.h"
-#include "services/shell/public/cpp/shell_client.h"
+#include "services/shell/public/cpp/service.h"
 #include "services/tracing/public/interfaces/tracing.mojom.h"
 #include "services/tracing/trace_data_sink.h"
 #include "services/tracing/trace_recorder_impl.h"
@@ -23,7 +23,7 @@
 namespace tracing {
 
 class TracingApp
-    : public shell::ShellClient,
+    : public shell::Service,
       public shell::InterfaceFactory<TraceCollector>,
       public TraceCollector,
       public shell::InterfaceFactory<StartupPerformanceDataCollector>,
@@ -33,9 +33,9 @@ class TracingApp
   ~TracingApp() override;
 
  private:
-  // shell::ShellClient implementation.
-  bool AcceptConnection(shell::Connection* connection) override;
-  bool ShellConnectionLost() override;
+  // shell::Service implementation.
+  bool OnConnect(shell::Connection* connection) override;
+  bool OnStop() override;
 
   // shell::InterfaceFactory<TraceCollector> implementation.
   void Create(shell::Connection* connection,

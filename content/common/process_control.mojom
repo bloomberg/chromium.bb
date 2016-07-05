@@ -4,10 +4,10 @@
 
 module content.mojom;
 
-import "services/shell/public/interfaces/shell_client.mojom";
+import "services/shell/public/interfaces/service.mojom";
 
 interface ProcessControl {
   LoadApplication(string url,
-                  shell.mojom.ShellClient& request) => (bool success);
+                  shell.mojom.Service& request) => (bool success);
 };
 

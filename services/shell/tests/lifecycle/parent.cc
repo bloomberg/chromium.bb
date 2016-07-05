@@ -11,7 +11,7 @@
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/shell/public/cpp/application_runner.h"
 #include "services/shell/public/cpp/connector.h"
-#include "services/shell/public/cpp/shell_client.h"
+#include "services/shell/public/cpp/service.h"
 #include "services/shell/tests/lifecycle/lifecycle_unittest.mojom.h"
 
 namespace {
@@ -20,7 +20,7 @@ void QuitLoop(base::RunLoop* loop) {
   loop->Quit();
 }
 
-class Parent : public shell::ShellClient,
+class Parent : public shell::Service,
                public shell::InterfaceFactory<shell::test::mojom::Parent>,
                public shell::test::mojom::Parent {
  public:
@@ -32,13 +32,13 @@ class Parent : public shell::ShellClient,
   }
 
  private:
-  // ShellClient:
-  void Initialize(shell::Connector* connector,
-                  const shell::Identity& identity,
-                  uint32_t id) override {
+  // Service:
+  void OnStart(shell::Connector* connector,
+               const shell::Identity& identity,
+               uint32_t id) override {
     connector_ = connector;
   }
-  bool AcceptConnection(shell::Connection* connection) override {
+  bool OnConnect(shell::Connection* connection) override {
     connection->AddInterface<shell::test::mojom::Parent>(this);
     return true;
   }

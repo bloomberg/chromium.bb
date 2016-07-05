@@ -36,7 +36,7 @@ std::string ContentBrowserClient::GetShellUserIdForBrowserContext(
 
 void ContentBrowserClient::RegisterInProcessMojoApplications(
     StaticMojoApplicationMap* apps) {
-  content::MojoShellConnection::GetForProcess()->AddEmbeddedShellClient(
+  content::MojoShellConnection::GetForProcess()->MergeService(
       base::WrapUnique(new Navigation));
 }
 

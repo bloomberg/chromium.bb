@@ -364,7 +364,7 @@ bool ChannelPosix::Connect() {
         this);
 #endif
   } else {
-    did_connect = AcceptConnection();
+    did_connect = OnConnect();
   }
   return did_connect;
 }
@@ -632,7 +632,7 @@ void ChannelPosix::OnFileCanReadWithoutBlocking(int fd) {
         << "IPC channels in nacl_helper_nonsfi should not be SERVER mode.";
 #else
     int new_pipe = 0;
-    if (!ServerAcceptConnection(server_listen_pipe_.get(), &new_pipe) ||
+    if (!ServerOnConnect(server_listen_pipe_.get(), &new_pipe) ||
         new_pipe < 0) {
       Close();
       listener()->OnChannelListenError();
@@ -665,7 +665,7 @@ void ChannelPosix::OnFileCanReadWithoutBlocking(int fd) {
       }
     }
 
-    if (!AcceptConnection()) {
+    if (!OnConnect()) {
       NOTREACHED() << "AcceptConnection should not fail on server";
     }
     waiting_connect_ = false;
@@ -768,7 +768,7 @@ bool ChannelPosix::FlushPrelimQueue() {
   return !processing_error;
 }
 
-bool ChannelPosix::AcceptConnection() {
+bool ChannelPosix::OnConnect() {
   base::MessageLoopForIO::current()->WatchFileDescriptor(
       pipe_.get(),
       true,

@@ -48,7 +48,7 @@ bool UnixDomainSocketAcceptor::Listen() {
 void UnixDomainSocketAcceptor::OnFileCanReadWithoutBlocking(int fd) {
   DCHECK(fd == listen_fd_);
   int new_fd = -1;
-  if (!IPC::ServerAcceptConnection(listen_fd_, &new_fd)) {
+  if (!IPC::ServerOnConnect(listen_fd_, &new_fd)) {
     Close();
     delegate_->OnListenError();
     return;

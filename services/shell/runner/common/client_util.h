@@ -7,7 +7,7 @@
 
 #include <string>
 
-#include "services/shell/public/interfaces/shell_client.mojom.h"
+#include "services/shell/public/interfaces/service.mojom.h"
 
 namespace base {
 class CommandLine;
@@ -15,19 +15,19 @@ class CommandLine;
 
 namespace shell {
 
-// Creates a new ShellClient pipe and returns one end of it. The other end is
+// Creates a new Service pipe and returns one end of it. The other end is
 // passed via a token in |command_line|. A child of the calling process may
-// extract a ShellClientRequest from this by calling
-// GetShellClientRequestFromCommandLine().
-mojom::ShellClientPtr PassShellClientRequestOnCommandLine(
+// extract a ServiceRequest from this by calling
+// GetServiceRequestFromCommandLine().
+mojom::ServicePtr PassServiceRequestOnCommandLine(
     base::CommandLine* command_line, const std::string& child_token);
 
-// Extracts a ShellClientRequest from the command line of the current process.
+// Extracts a ServiceRequest from the command line of the current process.
 // The parent of this process should have passed a request using
-// PassShellClientRequestOnCommandLine().
-mojom::ShellClientRequest GetShellClientRequestFromCommandLine();
+// PassServiceRequestOnCommandLine().
+mojom::ServiceRequest GetServiceRequestFromCommandLine();
 
-// Returns true if the ShellClientRequest came via the command line from a shell
+// Returns true if the ServiceRequest came via the command line from a shell
 // instance in another process.
 bool ShellIsRemote();
 

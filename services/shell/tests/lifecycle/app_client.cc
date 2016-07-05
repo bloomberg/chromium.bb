@@ -10,11 +10,11 @@ namespace shell {
 namespace test {
 
 AppClient::AppClient() {}
-AppClient::AppClient(shell::mojom::ShellClientRequest request)
+AppClient::AppClient(shell::mojom::ServiceRequest request)
     : connection_(new ShellConnection(this, std::move(request))) {}
 AppClient::~AppClient() {}
 
-bool AppClient::AcceptConnection(Connection* connection) {
+bool AppClient::OnConnect(Connection* connection) {
   connection->AddInterface<LifecycleControl>(this);
   return true;
 }

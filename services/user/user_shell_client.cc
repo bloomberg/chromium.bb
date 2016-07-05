@@ -69,7 +69,7 @@ class UserShellClient::LevelDBServiceObjects
   DISALLOW_COPY_AND_ASSIGN(LevelDBServiceObjects);
 };
 
-std::unique_ptr<shell::ShellClient> CreateUserShellClient(
+std::unique_ptr<shell::Service> CreateUserService(
     scoped_refptr<base::SingleThreadTaskRunner> user_service_runner,
     scoped_refptr<base::SingleThreadTaskRunner> leveldb_service_runner,
     const base::Closure& quit_closure) {
@@ -88,16 +88,16 @@ UserShellClient::~UserShellClient() {
   leveldb_service_runner_->DeleteSoon(FROM_HERE, leveldb_objects_.release());
 }
 
-void UserShellClient::Initialize(shell::Connector* connector,
-                                 const shell::Identity& identity,
-                                 uint32_t id) {
+void UserShellClient::OnStart(shell::Connector* connector,
+                              const shell::Identity& identity,
+                              uint32_t id) {
   user_objects_.reset(new UserShellClient::UserServiceObjects(
       GetUserDirForUserId(identity.user_id())));
   leveldb_objects_.reset(
       new UserShellClient::LevelDBServiceObjects(leveldb_service_runner_));
 }
 
-bool UserShellClient::AcceptConnection(shell::Connection* connection) {
+bool UserShellClient::OnConnect(shell::Connection* connection) {
   connection->AddInterface<leveldb::mojom::LevelDBService>(this);
   connection->AddInterface<mojom::UserService>(this);
   return true;

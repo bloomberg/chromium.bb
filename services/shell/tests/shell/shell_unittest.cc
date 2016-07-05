@@ -16,7 +16,7 @@
 #include "base/run_loop.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/shell/public/cpp/interface_factory.h"
-#include "services/shell/public/cpp/shell_client.h"
+#include "services/shell/public/cpp/service.h"
 #include "services/shell/public/cpp/shell_test.h"
 #include "services/shell/public/interfaces/shell.mojom.h"
 #include "services/shell/tests/shell/shell_unittest.mojom.h"
@@ -40,7 +40,7 @@ class ShellTestClient
 
  private:
   // test::ShellTestClient:
-  bool AcceptConnection(Connection* connection) override {
+  bool OnConnect(Connection* connection) override {
     connection->AddInterface<test::mojom::CreateInstanceTest>(this);
     return true;
   }
@@ -71,7 +71,7 @@ class ShellTest : public test::ShellTest, public mojom::InstanceListener {
  public:
   ShellTest()
       : test::ShellTest("mojo:shell_unittest"),
-        shell_client_(nullptr),
+        service_(nullptr),
         binding_(this) {}
   ~ShellTest() override {}
 
@@ -112,8 +112,8 @@ class ShellTest : public test::ShellTest, public mojom::InstanceListener {
   }
 
   uint32_t target_id() const {
-    DCHECK(shell_client_);
-    return shell_client_->target_id();
+    DCHECK(service_);
+    return service_->target_id();
   }
 
   const std::vector<InstanceInfo>& instances() const {
@@ -122,9 +122,9 @@ class ShellTest : public test::ShellTest, public mojom::InstanceListener {
 
  private:
   // test::ShellTest:
-  std::unique_ptr<ShellClient> CreateShellClient() override {
-    shell_client_ = new ShellTestClient(this);
-    return base::WrapUnique(shell_client_);
+  std::unique_ptr<Service> CreateService() override {
+    service_ = new ShellTestClient(this);
+    return base::WrapUnique(service_);
   }
 
   // mojom::InstanceListener:
@@ -162,7 +162,7 @@ class ShellTest : public test::ShellTest, public mojom::InstanceListener {
     }
   }
 
-  ShellTestClient* shell_client_;
+  ShellTestClient* service_;
   mojo::Binding<mojom::InstanceListener> binding_;
   std::vector<InstanceInfo> instances_;
   std::vector<InstanceInfo> initial_instances_;

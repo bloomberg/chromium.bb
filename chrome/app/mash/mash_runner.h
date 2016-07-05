@@ -8,10 +8,10 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "services/shell/public/interfaces/shell_client.mojom.h"
+#include "services/shell/public/interfaces/service.mojom.h"
 
 namespace shell {
-class ShellClient;
+class Service;
 class ShellConnection;
 }
 
@@ -27,9 +27,9 @@ class MashRunner {
   void RunMain();
   void RunChild();
 
-  void StartChildApp(shell::mojom::ShellClientRequest client_request);
+  void StartChildApp(shell::mojom::ServiceRequest service_request);
 
-  std::unique_ptr<shell::ShellClient> shell_client_;
+  std::unique_ptr<shell::Service> service_;
   std::unique_ptr<shell::ShellConnection> shell_connection_;
 
   DISALLOW_COPY_AND_ASSIGN(MashRunner);

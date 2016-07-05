@@ -11,7 +11,7 @@
 #include "base/macros.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "services/catalog/store.h"
-#include "services/shell/public/interfaces/shell_client.mojom.h"
+#include "services/shell/public/interfaces/service.mojom.h"
 
 namespace catalog {
 class Store;
@@ -46,7 +46,7 @@ class BackgroundShell {
   void Init(std::unique_ptr<InitParams> init_params);
 
   // Obtains an InterfaceRequest for the specified name.
-  mojom::ShellClientRequest CreateShellClientRequest(
+  mojom::ServiceRequest CreateServiceRequest(
       const std::string& name);
 
   // Use to do processing on the thread running the shell. The callback is

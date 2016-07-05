@@ -45,7 +45,7 @@ class MojoChildConnection {
   // A token which must be passed to the child process via
   // |switches::kPrimordialPipeToken| in order for the child to initialize its
   // end of the shell connection pipe.
-  std::string shell_client_token() const { return shell_client_token_; }
+  std::string service_token() const { return service_token_; }
 
   // Sets the child connection's process handle. This should be called as soon
   // as the process has been launched, and the connection will not be fully
@@ -59,7 +59,7 @@ class MojoChildConnection {
 #endif
 
  private:
-  const std::string shell_client_token_;
+  const std::string service_token_;
   std::unique_ptr<shell::Connection> connection_;
   shell::mojom::PIDReceiverPtr pid_receiver_;
 #if defined(OS_ANDROID)

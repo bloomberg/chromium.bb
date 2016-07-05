@@ -6,7 +6,7 @@
 #include "mojo/public/c/system/main.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/shell/public/cpp/application_runner.h"
-#include "services/shell/public/cpp/shell_client.h"
+#include "services/shell/public/cpp/service.h"
 #include "services/shell/tests/shutdown/shutdown_unittest.mojom.h"
 
 namespace shell {
@@ -15,7 +15,7 @@ namespace {
 shell::ApplicationRunner* g_app = nullptr;
 
 class ShutdownServiceApp
-    : public ShellClient,
+    : public Service,
       public InterfaceFactory<mojom::ShutdownTestService>,
       public mojom::ShutdownTestService {
  public:
@@ -23,10 +23,10 @@ class ShutdownServiceApp
   ~ShutdownServiceApp() override {}
 
  private:
-  // shell::ShellClient:
-  void Initialize(Connector* connector, const Identity& identity,
-                  uint32_t id) override {}
-  bool AcceptConnection(Connection* connection) override {
+  // shell::Service:
+  void OnStart(Connector* connector, const Identity& identity,
+               uint32_t id) override {}
+  bool OnConnect(Connection* connection) override {
     connection->AddInterface<mojom::ShutdownTestService>(this);
     return true;
   }

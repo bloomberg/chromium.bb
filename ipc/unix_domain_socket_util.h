@@ -49,7 +49,7 @@ IPC_EXPORT bool IsPeerAuthorized(int peer_fd);
 // Returns true if it's valid to keep listening on |server_listen_fd|. In this
 // case, it's possible that a connection wasn't successfully established; then,
 // |server_socket| will be set to -1.
-IPC_EXPORT bool ServerAcceptConnection(int server_listen_fd,
+IPC_EXPORT bool ServerOnConnect(int server_listen_fd,
                                        int* server_socket);
 
 // The maximum length of the name of a socket for MODE_NAMED_SERVER or

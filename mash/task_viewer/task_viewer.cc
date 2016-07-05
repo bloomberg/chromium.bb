@@ -283,9 +283,9 @@ void TaskViewer::RemoveWindow(views::Widget* widget) {
     base::MessageLoop::current()->QuitWhenIdle();
 }
 
-void TaskViewer::Initialize(shell::Connector* connector,
-                            const shell::Identity& identity,
-                            uint32_t id) {
+void TaskViewer::OnStart(shell::Connector* connector,
+                         const shell::Identity& identity,
+                         uint32_t id) {
   connector_ = connector;
   tracing_.Initialize(connector, identity.name());
 
@@ -294,7 +294,7 @@ void TaskViewer::Initialize(shell::Connector* connector,
       views::WindowManagerConnection::Create(connector, identity);
 }
 
-bool TaskViewer::AcceptConnection(shell::Connection* connection) {
+bool TaskViewer::OnConnect(shell::Connection* connection) {
   connection->AddInterface<mojom::Launchable>(this);
   return true;
 }

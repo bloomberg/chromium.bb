@@ -12,7 +12,7 @@
 #include "mojo/public/cpp/system/message_pipe.h"
 #include "services/shell/public/cpp/connector.h"
 #include "services/shell/public/cpp/identity.h"
-#include "services/shell/public/interfaces/shell_client.mojom.h"
+#include "services/shell/public/interfaces/service.mojom.h"
 
 namespace content {
 
@@ -20,20 +20,20 @@ MojoChildConnection::MojoChildConnection(const std::string& application_name,
                                          const std::string& instance_id,
                                          const std::string& child_token,
                                          shell::Connector* connector)
-    : shell_client_token_(mojo::edk::GenerateRandomToken()) {
-  mojo::ScopedMessagePipeHandle shell_client_pipe =
-      mojo::edk::CreateParentMessagePipe(shell_client_token_, child_token);
+    : service_token_(mojo::edk::GenerateRandomToken()) {
+  mojo::ScopedMessagePipeHandle service_pipe =
+      mojo::edk::CreateParentMessagePipe(service_token_, child_token);
 
-  shell::mojom::ShellClientPtr client;
-  client.Bind(mojo::InterfacePtrInfo<shell::mojom::ShellClient>(
-      std::move(shell_client_pipe), 0u));
+  shell::mojom::ServicePtr service;
+  service.Bind(mojo::InterfacePtrInfo<shell::mojom::Service>(
+      std::move(service_pipe), 0u));
   shell::mojom::PIDReceiverRequest pid_receiver_request =
       GetProxy(&pid_receiver_);
 
   shell::Identity target(application_name, shell::mojom::kInheritUserID,
                          instance_id);
   shell::Connector::ConnectParams params(target);
-  params.set_client_process_connection(std::move(client),
+  params.set_client_process_connection(std::move(service),
                                        std::move(pid_receiver_request));
 
   // In some unit testing scenarios a null connector is passed.

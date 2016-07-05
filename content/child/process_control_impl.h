@@ -11,7 +11,7 @@
 #include "base/macros.h"
 #include "content/common/process_control.mojom.h"
 #include "content/public/common/mojo_application_info.h"
-#include "services/shell/public/interfaces/shell_client.mojom.h"
+#include "services/shell/public/interfaces/service.mojom.h"
 
 namespace content {
 
@@ -30,7 +30,7 @@ class ProcessControlImpl : public mojom::ProcessControl {
 
   // ProcessControl:
   void LoadApplication(const mojo::String& name,
-                       shell::mojom::ShellClientRequest request,
+                       shell::mojom::ServiceRequest request,
                        const LoadApplicationCallback& callback) override;
 
  private:

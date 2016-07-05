@@ -10,7 +10,7 @@
 #include "base/macros.h"
 #include "mash/public/interfaces/launchable.mojom.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
-#include "services/shell/public/cpp/shell_client.h"
+#include "services/shell/public/cpp/service.h"
 #include "services/tracing/public/cpp/tracing_impl.h"
 
 namespace views {
@@ -19,7 +19,7 @@ class WindowManagerConnection;
 }
 
 class ViewsExamplesApplicationDelegate
-    : public shell::ShellClient,
+    : public shell::Service,
       public mash::mojom::Launchable,
       public shell::InterfaceFactory<mash::mojom::Launchable> {
  public:
@@ -27,11 +27,11 @@ class ViewsExamplesApplicationDelegate
   ~ViewsExamplesApplicationDelegate() override;
 
  private:
-  // shell::ShellClient:
-  void Initialize(shell::Connector* connector,
-                  const shell::Identity& identity,
-                  uint32_t id) override;
-  bool AcceptConnection(shell::Connection* connection) override;
+  // shell::Service:
+  void OnStart(shell::Connector* connector,
+               const shell::Identity& identity,
+               uint32_t id) override;
+  bool OnConnect(shell::Connection* connection) override;
 
   // mash::mojom::Launchable:
   void Launch(uint32_t what, mash::mojom::LaunchMode how) override;

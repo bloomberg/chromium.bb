@@ -14,9 +14,9 @@
 #include "base/memory/scoped_vector.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/system/core.h"
-#include "services/shell/public/cpp/shell_client.h"
+#include "services/shell/public/cpp/service.h"
 #include "services/shell/public/interfaces/connector.mojom.h"
-#include "services/shell/public/interfaces/shell_client.mojom.h"
+#include "services/shell/public/interfaces/service.mojom.h"
 
 namespace shell {
 
@@ -26,29 +26,29 @@ class Connector;
 // - a bound InterfacePtr to mojom::Shell, the primary mechanism
 //   by which the instantiating application interacts with other services
 //   brokered by the Mojo Shell.
-// - a bound InterfaceRequest of mojom::ShellClient, an interface
+// - a bound InterfaceRequest of mojom::Service, an interface
 //   used by the Mojo Shell to inform this application of lifecycle events and
 //   inbound connections brokered by it.
 //
 // This class should be used in two scenarios:
-// - During early startup to bind the mojom::ShellClientRequest obtained from
+// - During early startup to bind the mojom::ServiceRequest obtained from
 //   the Mojo Shell, typically in response to either MojoMain() or main().
-// - In an implementation of mojom::ShellClientFactory to bind the
-//   mojom::ShellClientRequest passed via StartApplication. In this scenario
+// - In an implementation of mojom::ServiceFactory to bind the
+//   mojom::ServiceRequest passed via StartApplication. In this scenario
 //   there can be many instances of this class per process.
 //
 // Instances of this class are constructed with an implementation of the Shell
-// Client Lib's ShellClient interface. See documentation in shell_client.h
+// Client Lib's Service interface. See documentation in service.h
 // for details.
 //
-class ShellConnection : public mojom::ShellClient {
+class ShellConnection : public mojom::Service {
  public:
   // Creates a new ShellConnection bound to |request|. This connection may be
   // used immediately to make outgoing connections via connector().  Does not
   // take ownership of |client|, which must remain valid for the lifetime of
   // ShellConnection.
-  ShellConnection(shell::ShellClient* client,
-                  mojom::ShellClientRequest request);
+  ShellConnection(shell::Service* client,
+                  mojom::ServiceRequest request);
 
   ~ShellConnection() override;
 
@@ -67,20 +67,20 @@ class ShellConnection : public mojom::ShellClient {
   void SetConnectionLostClosure(const base::Closure& closure);
 
  private:
-  // mojom::ShellClient:
-  void Initialize(mojom::IdentityPtr identity,
-                  uint32_t id,
-                  const InitializeCallback& callback) override;
-  void AcceptConnection(mojom::IdentityPtr source,
-                        uint32_t source_id,
-                        mojom::InterfaceProviderRequest remote_interfaces,
-                        mojom::InterfaceProviderPtr local_interfaces,
-                        mojom::CapabilityRequestPtr allowed_capabilities,
-                        const mojo::String& name) override;
+  // mojom::Service:
+  void OnStart(mojom::IdentityPtr identity,
+               uint32_t id,
+               const OnStartCallback& callback) override;
+  void OnConnect(mojom::IdentityPtr source,
+                 uint32_t source_id,
+                 mojom::InterfaceProviderRequest remote_interfaces,
+                 mojom::InterfaceProviderPtr local_interfaces,
+                 mojom::CapabilityRequestPtr allowed_capabilities,
+                 const mojo::String& name) override;
 
   void OnConnectionError();
 
-  // A callback called when Initialize() is run.
+  // A callback called when OnStart() is run.
   base::Closure initialize_handler_;
 
   // We track the lifetime of incoming connection registries as it more
@@ -90,8 +90,8 @@ class ShellConnection : public mojom::ShellClient {
   // A pending Connector request which will eventually be passed to the shell.
   mojom::ConnectorRequest pending_connector_request_;
 
-  shell::ShellClient* client_;
-  mojo::Binding<mojom::ShellClient> binding_;
+  shell::Service* client_;
+  mojo::Binding<mojom::Service> binding_;
   std::unique_ptr<Connector> connector_;
   shell::Identity identity_;
   bool should_run_connection_lost_closure_ = false;

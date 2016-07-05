@@ -11,7 +11,7 @@
 #include "base/macros.h"
 #include "mash/shelf/public/interfaces/shelf.mojom.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
-#include "services/shell/public/cpp/shell_client.h"
+#include "services/shell/public/cpp/service.h"
 #include "services/tracing/public/cpp/tracing_impl.h"
 #include "services/ui/public/cpp/input_devices/input_device_client.h"
 
@@ -21,7 +21,7 @@ namespace sysui {
 class AshInit;
 
 class SysUIApplication
-    : public shell::ShellClient,
+    : public shell::Service,
       public shell::InterfaceFactory<mash::shelf::mojom::ShelfController>,
       public shell::InterfaceFactory<mojom::WallpaperController> {
  public:
@@ -29,11 +29,11 @@ class SysUIApplication
   ~SysUIApplication() override;
 
  private:
-  // shell::ShellClient:
-  void Initialize(::shell::Connector* connector,
-                  const ::shell::Identity& identity,
-                  uint32_t id) override;
-  bool AcceptConnection(shell::Connection* connection) override;
+  // shell::Service:
+  void OnStart(::shell::Connector* connector,
+               const ::shell::Identity& identity,
+               uint32_t id) override;
+  bool OnConnect(shell::Connection* connection) override;
 
   // InterfaceFactory<mash::shelf::mojom::ShelfController>:
   void Create(shell::Connection* connection,

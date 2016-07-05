@@ -486,9 +486,9 @@ void WindowTypeLauncher::RemoveWindow(views::Widget* window) {
     base::MessageLoop::current()->QuitWhenIdle();
 }
 
-void WindowTypeLauncher::Initialize(shell::Connector* connector,
-                                    const shell::Identity& identity,
-                                    uint32_t id) {
+void WindowTypeLauncher::OnStart(shell::Connector* connector,
+                                 const shell::Identity& identity,
+                                 uint32_t id) {
   connector_ = connector;
   aura_init_.reset(new views::AuraInit(connector, "views_mus_resources.pak"));
 
@@ -496,7 +496,7 @@ void WindowTypeLauncher::Initialize(shell::Connector* connector,
       views::WindowManagerConnection::Create(connector, identity);
 }
 
-bool WindowTypeLauncher::AcceptConnection(shell::Connection* connection) {
+bool WindowTypeLauncher::OnConnect(shell::Connection* connection) {
   connection->AddInterface<mash::mojom::Launchable>(this);
   return true;
 }

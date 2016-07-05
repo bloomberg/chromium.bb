@@ -10,7 +10,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/process/launch.h"
 #include "base/run_loop.h"
-#include "services/shell/public/cpp/shell_client.h"
+#include "services/shell/public/cpp/service.h"
 #include "services/shell/public/cpp/shell_connection.h"
 
 namespace shell {
@@ -18,8 +18,8 @@ namespace shell {
 int g_application_runner_argc;
 const char* const* g_application_runner_argv;
 
-ApplicationRunner::ApplicationRunner(ShellClient* client)
-    : client_(std::unique_ptr<ShellClient>(client)),
+ApplicationRunner::ApplicationRunner(Service* client)
+    : client_(std::unique_ptr<Service>(client)),
       message_loop_type_(base::MessageLoop::TYPE_DEFAULT),
       has_run_(false) {}
 
@@ -36,7 +36,7 @@ void ApplicationRunner::set_message_loop_type(base::MessageLoop::Type type) {
   message_loop_type_ = type;
 }
 
-MojoResult ApplicationRunner::Run(MojoHandle shell_client_request_handle,
+MojoResult ApplicationRunner::Run(MojoHandle service_request_handle,
                                   bool init_base) {
   DCHECK(!has_run_);
   has_run_ = true;
@@ -53,8 +53,8 @@ MojoResult ApplicationRunner::Run(MojoHandle shell_client_request_handle,
 
     connection_.reset(new ShellConnection(
         client_.get(),
-        mojo::MakeRequest<mojom::ShellClient>(mojo::MakeScopedHandle(
-            mojo::MessagePipeHandle(shell_client_request_handle)))));
+        mojo::MakeRequest<mojom::Service>(mojo::MakeScopedHandle(
+            mojo::MessagePipeHandle(service_request_handle)))));
     base::RunLoop run_loop;
     connection_->SetConnectionLostClosure(run_loop.QuitClosure());
     run_loop.Run();
@@ -71,13 +71,13 @@ MojoResult ApplicationRunner::Run(MojoHandle shell_client_request_handle,
   return MOJO_RESULT_OK;
 }
 
-MojoResult ApplicationRunner::Run(MojoHandle shell_client_request_handle) {
+MojoResult ApplicationRunner::Run(MojoHandle service_request_handle) {
   bool init_base = true;
   if (base::CommandLine::InitializedForCurrentProcess()) {
     init_base =
         !base::CommandLine::ForCurrentProcess()->HasSwitch("single-process");
   }
-  return Run(shell_client_request_handle, init_base);
+  return Run(service_request_handle, init_base);
 }
 
 void ApplicationRunner::DestroyShellConnection() {

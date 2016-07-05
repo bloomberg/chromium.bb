@@ -85,18 +85,18 @@ void AppDriver::OnAvailableCatalogEntries(
   }
 }
 
-void AppDriver::Initialize(shell::Connector* connector,
-                           const shell::Identity& identity,
-                           uint32_t id) {
+void AppDriver::OnStart(shell::Connector* connector,
+                        const shell::Identity& identity,
+                        uint32_t id) {
   connector_ = connector;
   AddAccelerators();
 }
 
-bool AppDriver::AcceptConnection(shell::Connection* connection) {
+bool AppDriver::OnConnect(shell::Connection* connection) {
   return true;
 }
 
-bool AppDriver::ShellConnectionLost() {
+bool AppDriver::OnStop() {
   // Prevent the code in AddAccelerators() from keeping this app alive.
   binding_.set_connection_error_handler(base::Bind(&DoNothing));
   return true;

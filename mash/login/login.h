@@ -6,13 +6,13 @@
 #define MASH_LOGIN_LOGIN_H_
 
 namespace shell {
-class ShellClient;
+class Service;
 }
 
 namespace mash {
 namespace login {
 
-shell::ShellClient* CreateLogin();
+shell::Service* CreateLogin();
 
 }  // namespace login
 }  // namespace mash

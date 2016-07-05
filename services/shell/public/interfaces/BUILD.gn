@@ -10,9 +10,9 @@ mojom("interfaces") {
     "capabilities.mojom",
     "connector.mojom",
     "interface_provider.mojom",
+    "service.mojom",
+    "service_factory.mojom",
     "shell.mojom",
-    "shell_client.mojom",
-    "shell_client_factory.mojom",
     "shell_resolver.mojom",
   ]
 

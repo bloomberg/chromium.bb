@@ -23,7 +23,7 @@
 #include "ipc/ipc_message.h"  // For IPC_MESSAGE_LOG_ENABLED.
 #include "ipc/ipc_platform_file.h"
 #include "ipc/message_router.h"
-#include "services/shell/public/cpp/shell_client.h"
+#include "services/shell/public/cpp/service.h"
 
 namespace base {
 class MessageLoop;
@@ -69,7 +69,7 @@ struct RequestInfo;
 class CONTENT_EXPORT ChildThreadImpl
     : public IPC::Listener,
       virtual public ChildThread,
-      public NON_EXPORTED_BASE(shell::ShellClient){
+      public NON_EXPORTED_BASE(shell::Service){
  public:
   struct CONTENT_EXPORT Options;
 
@@ -101,7 +101,7 @@ class CONTENT_EXPORT ChildThreadImpl
   shell::InterfaceRegistry* GetInterfaceRegistry() override;
   shell::InterfaceProvider* GetRemoteInterfaces() override;
 
-  // shell::ShellClient:
+  // shell::Service:
   shell::InterfaceRegistry* GetInterfaceRegistryForConnection() override;
   shell::InterfaceProvider* GetInterfaceProviderForConnection() override;
 

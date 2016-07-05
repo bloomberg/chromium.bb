@@ -89,18 +89,18 @@ std::unique_ptr<Connection> ConnectorImpl::Connect(ConnectParams* params) {
     registry->SetRemoteInterfaces(std::move(remote_interface_provider));
   }
 
-  mojom::ShellClientPtr shell_client;
+  mojom::ServicePtr service;
   mojom::PIDReceiverRequest pid_receiver_request;
-  params->TakeClientProcessConnection(&shell_client, &pid_receiver_request);
+  params->TakeClientProcessConnection(&service, &pid_receiver_request);
   mojom::ClientProcessConnectionPtr client_process_connection;
-  if (shell_client.is_bound() && pid_receiver_request.is_pending()) {
+  if (service.is_bound() && pid_receiver_request.is_pending()) {
     client_process_connection = mojom::ClientProcessConnection::New();
-    client_process_connection->shell_client =
-        shell_client.PassInterface().PassHandle();
+    client_process_connection->service =
+        service.PassInterface().PassHandle();
     client_process_connection->pid_receiver_request =
         pid_receiver_request.PassMessagePipe();
-  } else if (shell_client.is_bound() || pid_receiver_request.is_pending()) {
-    NOTREACHED() << "If one of shell_client or pid_receiver_request is valid, "
+  } else if (service.is_bound() || pid_receiver_request.is_pending()) {
+    NOTREACHED() << "If one of service or pid_receiver_request is valid, "
                  << "both must be valid.";
     return std::move(registry);
   }

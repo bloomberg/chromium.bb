@@ -69,12 +69,12 @@ interface PIDReceiver {
 // the process itself and provide the shell the pipes it needs to communicate
 // with it. When an instance of this struct is supplied to Connect(), the client
 // owns the lifetime of the child process, not the shell. The shell binds the
-// |shell_client| pipe, and when it closes destroys the associated  instance but
+// |service| pipe, and when it closes destroys the associated  instance but
 // the process stays alive.
 struct ClientProcessConnection {
-  // Provides the shell the ability to bind a ShellClient from the client
-  // process to the instance it creates.
-  handle<message_pipe> shell_client;
+  // Provides the shell the ability to bind a Service from the client process to
+  // the instance it creates.
+  handle<message_pipe> service;
 
   // Allows the client process launcher to tell the shell the PID of the process
   // it created (the pid isn't supplied directly here as the process may not

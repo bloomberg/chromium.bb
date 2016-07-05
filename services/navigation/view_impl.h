@@ -13,7 +13,7 @@
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/navigation/public/interfaces/view.mojom.h"
 #include "services/shell/public/cpp/interface_factory.h"
-#include "services/shell/public/cpp/shell_client.h"
+#include "services/shell/public/cpp/service.h"
 #include "services/shell/public/cpp/shell_connection_ref.h"
 #include "services/ui/public/cpp/window_tree_client_delegate.h"
 #include "ui/gfx/geometry/size.h"

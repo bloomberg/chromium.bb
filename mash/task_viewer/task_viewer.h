@@ -12,7 +12,7 @@
 #include "base/macros.h"
 #include "mash/public/interfaces/launchable.mojom.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
-#include "services/shell/public/cpp/shell_client.h"
+#include "services/shell/public/cpp/service.h"
 #include "services/tracing/public/cpp/tracing_impl.h"
 
 namespace views {
@@ -24,7 +24,7 @@ class WindowManagerConnection;
 namespace mash {
 namespace task_viewer {
 
-class TaskViewer : public shell::ShellClient,
+class TaskViewer : public shell::Service,
                    public mojom::Launchable,
                    public shell::InterfaceFactory<mojom::Launchable> {
  public:
@@ -34,11 +34,11 @@ class TaskViewer : public shell::ShellClient,
   void RemoveWindow(views::Widget* widget);
 
  private:
-  // shell::ShellClient:
-  void Initialize(shell::Connector* connector,
-                  const shell::Identity& identity,
-                  uint32_t id) override;
-  bool AcceptConnection(shell::Connection* connection) override;
+  // shell::Service:
+  void OnStart(shell::Connector* connector,
+               const shell::Identity& identity,
+               uint32_t id) override;
+  bool OnConnect(shell::Connection* connection) override;
 
   // mojom::Launchable:
   void Launch(uint32_t what, mojom::LaunchMode how) override;

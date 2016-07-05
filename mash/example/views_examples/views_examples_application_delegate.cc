@@ -16,7 +16,7 @@ ViewsExamplesApplicationDelegate::ViewsExamplesApplicationDelegate() {}
 ViewsExamplesApplicationDelegate::~ViewsExamplesApplicationDelegate() {
 }
 
-void ViewsExamplesApplicationDelegate::Initialize(
+void ViewsExamplesApplicationDelegate::OnStart(
     shell::Connector* connector,
     const shell::Identity& identity,
     uint32_t id) {
@@ -26,7 +26,7 @@ void ViewsExamplesApplicationDelegate::Initialize(
       views::WindowManagerConnection::Create(connector, identity);
 }
 
-bool ViewsExamplesApplicationDelegate::AcceptConnection(
+bool ViewsExamplesApplicationDelegate::OnConnect(
     shell::Connection* connection) {
   connection->AddInterface<mash::mojom::Launchable>(this);
   return true;

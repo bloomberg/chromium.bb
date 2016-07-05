@@ -80,7 +80,7 @@ class IPC_EXPORT ChannelPosix : public Channel,
   // previously blocked messages may no longer be blocked.
   bool ProcessOutgoingMessages();
 
-  bool AcceptConnection();
+  bool OnConnect();
   void ClosePipeOnError();
   int GetHelloMessageProcId() const;
   void QueueHelloMessage();

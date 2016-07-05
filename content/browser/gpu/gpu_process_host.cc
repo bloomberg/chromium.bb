@@ -570,7 +570,7 @@ bool GpuProcessHost::Init() {
     in_process_gpu_thread_.reset(g_gpu_main_thread_factory(
         InProcessChildThreadParams(
             channel_id, base::ThreadTaskRunnerHandle::Get(), std::string(),
-            mojo_child_connection_->shell_client_token()),
+            mojo_child_connection_->service_token()),
         gpu_preferences));
     base::Thread::Options options;
 #if defined(OS_WIN)
@@ -994,7 +994,7 @@ bool GpuProcessHost::LaunchGpuProcess(const std::string& channel_id,
   cmd_line->AppendSwitchASCII(switches::kProcessType, switches::kGpuProcess);
   cmd_line->AppendSwitchASCII(switches::kProcessChannelID, channel_id);
   cmd_line->AppendSwitchASCII(switches::kMojoApplicationChannelToken,
-                              mojo_child_connection_->shell_client_token());
+                              mojo_child_connection_->service_token());
   BrowserChildProcessHostImpl::CopyFeatureAndFieldTrialFlags(cmd_line);
 
 #if defined(OS_WIN)

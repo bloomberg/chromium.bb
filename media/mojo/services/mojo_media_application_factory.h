@@ -9,12 +9,12 @@
 
 #include "base/callback_forward.h"
 #include "media/mojo/services/media_mojo_export.h"
-#include "services/shell/public/cpp/shell_client.h"
+#include "services/shell/public/cpp/service.h"
 
 namespace media {
 
 // Creates a MojoMediaApplication instance using the default MojoMediaClient.
-std::unique_ptr<shell::ShellClient> MEDIA_MOJO_EXPORT
+std::unique_ptr<shell::Service> MEDIA_MOJO_EXPORT
 CreateMojoMediaApplication(const base::Closure& quit_closure);
 
 }  // namespace media

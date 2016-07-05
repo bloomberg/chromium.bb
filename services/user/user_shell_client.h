@@ -11,18 +11,18 @@
 #include "components/leveldb/public/interfaces/leveldb.mojom.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/shell/public/cpp/interface_factory.h"
-#include "services/shell/public/cpp/shell_client.h"
+#include "services/shell/public/cpp/service.h"
 #include "services/user/public/interfaces/user_service.mojom.h"
 
 namespace user_service {
 
-std::unique_ptr<shell::ShellClient> CreateUserShellClient(
+std::unique_ptr<shell::Service> CreateUserService(
     scoped_refptr<base::SingleThreadTaskRunner> user_service_runner,
     scoped_refptr<base::SingleThreadTaskRunner> leveldb_service_runner,
     const base::Closure& quit_closure);
 
 class UserShellClient
-    : public shell::ShellClient,
+    : public shell::Service,
       public shell::InterfaceFactory<mojom::UserService>,
       public shell::InterfaceFactory<leveldb::mojom::LevelDBService> {
  public:
@@ -32,11 +32,11 @@ class UserShellClient
   ~UserShellClient() override;
 
  private:
-  // |ShellClient| override:
-  void Initialize(shell::Connector* connector,
-                  const shell::Identity& identity,
-                  uint32_t id) override;
-  bool AcceptConnection(shell::Connection* connection) override;
+  // |Service| override:
+  void OnStart(shell::Connector* connector,
+               const shell::Identity& identity,
+               uint32_t id) override;
+  bool OnConnect(shell::Connection* connection) override;
 
   // |InterfaceFactory<mojom::UserService>| implementation:
   void Create(shell::Connection* connection,

@@ -10,23 +10,23 @@
 #include "components/leveldb/public/interfaces/leveldb.mojom.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/shell/public/cpp/interface_factory.h"
-#include "services/shell/public/cpp/shell_client.h"
+#include "services/shell/public/cpp/service.h"
 #include "services/tracing/public/cpp/tracing_impl.h"
 
 namespace leveldb {
 
-class LevelDBApp : public shell::ShellClient,
+class LevelDBApp : public shell::Service,
                    public shell::InterfaceFactory<mojom::LevelDBService> {
  public:
   LevelDBApp();
   ~LevelDBApp() override;
 
  private:
-  // |ShellClient| override:
-  void Initialize(shell::Connector* connector,
-                  const shell::Identity& identity,
-                  uint32_t id) override;
-  bool AcceptConnection(shell::Connection* connection) override;
+  // |Service| override:
+  void OnStart(shell::Connector* connector,
+               const shell::Identity& identity,
+               uint32_t id) override;
+  bool OnConnect(shell::Connection* connection) override;
 
   // |InterfaceFactory<mojom::LevelDBService>| implementation:
   void Create(shell::Connection* connection,

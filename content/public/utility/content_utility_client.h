@@ -16,7 +16,7 @@ class GURL;
 
 namespace shell {
 class InterfaceRegistry;
-class ShellClient;
+class Service;
 }
 
 namespace content {

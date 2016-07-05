@@ -40,7 +40,7 @@
 #include "net/url_request/url_request_context_getter.h"
 #include "services/shell/public/cpp/connection.h"
 #include "services/shell/public/cpp/connector.h"
-#include "services/shell/public/interfaces/shell_client.mojom.h"
+#include "services/shell/public/interfaces/service.mojom.h"
 #include "services/user/public/cpp/constants.h"
 #include "services/user/user_id_map.h"
 #include "services/user/user_shell_client.h"
@@ -150,7 +150,7 @@ class BrowserContextShellConnectionHolder
  public:
   BrowserContextShellConnectionHolder(
       std::unique_ptr<shell::Connection> connection,
-      shell::mojom::ShellClientRequest request)
+      shell::mojom::ServiceRequest request)
       : root_connection_(std::move(connection)),
         shell_connection_(MojoShellConnection::Create(std::move(request))) {}
   ~BrowserContextShellConnectionHolder() override {}
@@ -416,21 +416,20 @@ void BrowserContext::Initialize(
     // NOTE: Many unit tests create a TestBrowserContext without initializing
     // Mojo or the global Mojo shell connection.
 
-    shell::mojom::ShellClientPtr shell_client;
-    shell::mojom::ShellClientRequest shell_client_request =
-        mojo::GetProxy(&shell_client);
+    shell::mojom::ServicePtr service;
+    shell::mojom::ServiceRequest service_request = mojo::GetProxy(&service);
 
     shell::mojom::PIDReceiverPtr pid_receiver;
     shell::Connector::ConnectParams params(
         shell::Identity(kBrowserMojoApplicationName, new_id));
-    params.set_client_process_connection(std::move(shell_client),
+    params.set_client_process_connection(std::move(service),
                                          mojo::GetProxy(&pid_receiver));
     pid_receiver->SetPID(base::GetCurrentProcId());
 
     BrowserContextShellConnectionHolder* connection_holder =
         new BrowserContextShellConnectionHolder(
           shell->GetConnector()->Connect(&params),
-          std::move(shell_client_request));
+          std::move(service_request));
     browser_context->SetUserData(kMojoShellConnection, connection_holder);
 
     MojoShellConnection* connection = connection_holder->shell_connection();
@@ -441,7 +440,7 @@ void BrowserContext::Initialize(
             switches::kMojoLocalStorage)) {
       MojoApplicationInfo info;
       info.application_factory = base::Bind(
-          &user_service::CreateUserShellClient,
+          &user_service::CreateUserService,
           BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE),
           BrowserThread::GetMessageLoopProxyForThread(BrowserThread::DB));
       connection->AddEmbeddedService(user_service::kUserServiceName, info);

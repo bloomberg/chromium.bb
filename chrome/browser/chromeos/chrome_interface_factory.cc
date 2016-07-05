@@ -62,7 +62,7 @@ namespace chromeos {
 ChromeInterfaceFactory::ChromeInterfaceFactory() {}
 ChromeInterfaceFactory::~ChromeInterfaceFactory() {}
 
-bool ChromeInterfaceFactory::AcceptConnection(shell::Connection* connection) {
+bool ChromeInterfaceFactory::OnConnect(shell::Connection* connection) {
   connection->AddInterface<keyboard::mojom::Keyboard>(this);
   connection->AddInterface<mash::mojom::Launchable>(this);
   connection->AddInterface<ash::sysui::mojom::WallpaperManager>(this);

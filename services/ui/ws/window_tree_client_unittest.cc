@@ -21,7 +21,7 @@
 using mojo::Array;
 using shell::Connection;
 using mojo::InterfaceRequest;
-using shell::ShellClient;
+using shell::Service;
 using mojo::String;
 using ui::mojom::WindowDataPtr;
 using ui::mojom::WindowTree;
@@ -576,7 +576,7 @@ class WindowTreeClientTest : public WindowServerShellTestBase {
   }
 
   // WindowServerShellTestBase:
-  bool AcceptConnection(shell::Connection* connection) override {
+  bool OnConnect(shell::Connection* connection) override {
     connection->AddInterface(client_factory_.get());
     return true;
   }

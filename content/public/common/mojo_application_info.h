@@ -13,7 +13,7 @@
 #include "content/common/content_export.h"
 
 namespace shell {
-class ShellClient;
+class Service;
 }
 
 namespace content {
@@ -21,18 +21,18 @@ namespace content {
 // MojoApplicationInfo provides details necessary to construct and bind new
 // instances of embedded Mojo applications.
 struct CONTENT_EXPORT MojoApplicationInfo {
-  using ApplicationFactory = base::Callback<std::unique_ptr<shell::ShellClient>(
+  using ApplicationFactory = base::Callback<std::unique_ptr<shell::Service>(
       const base::Closure& quit_closure)>;
 
   MojoApplicationInfo();
   MojoApplicationInfo(const MojoApplicationInfo& other);
   ~MojoApplicationInfo();
 
-  // A factory function which will be called to produce a new ShellClient
+  // A factory function which will be called to produce a new Service
   // instance for this app whenever one is needed.
   ApplicationFactory application_factory;
 
-  // The task runner on which to construct and bind new ShellClient instances
+  // The task runner on which to construct and bind new Service instances
   // for this app. If null, behavior depends on the value of |use_own_thread|
   // below.
   scoped_refptr<base::SingleThreadTaskRunner> application_task_runner;

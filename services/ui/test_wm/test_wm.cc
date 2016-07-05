@@ -6,7 +6,7 @@
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/shell/public/cpp/application_runner.h"
 #include "services/shell/public/cpp/connector.h"
-#include "services/shell/public/cpp/shell_client.h"
+#include "services/shell/public/cpp/service.h"
 #include "services/ui/public/cpp/window.h"
 #include "services/ui/public/cpp/window_manager_delegate.h"
 #include "services/ui/public/cpp/window_tree_client.h"
@@ -17,7 +17,7 @@
 namespace ui {
 namespace test {
 
-class TestWM : public shell::ShellClient,
+class TestWM : public shell::Service,
                public ui::WindowTreeClientDelegate,
                public ui::WindowManagerDelegate {
  public:
@@ -25,14 +25,14 @@ class TestWM : public shell::ShellClient,
   ~TestWM() override { delete window_tree_client_; }
 
  private:
-  // shell::ShellClient:
-  void Initialize(shell::Connector* connector,
-                  const shell::Identity& identity,
-                  uint32_t id) override {
+  // shell::Service:
+  void OnStart(shell::Connector* connector,
+               const shell::Identity& identity,
+               uint32_t id) override {
     window_tree_client_ = new ui::WindowTreeClient(this, this, nullptr);
     window_tree_client_->ConnectAsWindowManager(connector);
   }
-  bool AcceptConnection(shell::Connection* connection) override {
+  bool OnConnect(shell::Connection* connection) override {
     return true;
   }
 

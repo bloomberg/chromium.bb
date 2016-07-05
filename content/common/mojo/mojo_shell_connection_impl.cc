@@ -9,7 +9,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/threading/thread_local.h"
 #include "content/common/mojo/embedded_application_runner.h"
-#include "services/shell/public/cpp/shell_client.h"
+#include "services/shell/public/cpp/service.h"
 #include "services/shell/public/cpp/shell_connection.h"
 #include "services/shell/runner/common/client_util.h"
 
@@ -57,7 +57,7 @@ void MojoShellConnection::SetFactoryForTest(Factory* factory) {
 
 // static
 std::unique_ptr<MojoShellConnection> MojoShellConnection::Create(
-    shell::mojom::ShellClientRequest request) {
+    shell::mojom::ServiceRequest request) {
   if (mojo_shell_connection_factory)
     return mojo_shell_connection_factory->Run();
   return base::WrapUnique(new MojoShellConnectionImpl(std::move(request)));
@@ -69,32 +69,32 @@ MojoShellConnection::~MojoShellConnection() {}
 // MojoShellConnectionImpl, public:
 
 MojoShellConnectionImpl::MojoShellConnectionImpl(
-    shell::mojom::ShellClientRequest request)
+    shell::mojom::ServiceRequest request)
     : shell_connection_(new shell::ShellConnection(this, std::move(request))) {}
 
 MojoShellConnectionImpl::~MojoShellConnectionImpl() {}
 
 ////////////////////////////////////////////////////////////////////////////////
-// MojoShellConnectionImpl, shell::ShellClient implementation:
+// MojoShellConnectionImpl, shell::Service implementation:
 
-void MojoShellConnectionImpl::Initialize(shell::Connector* connector,
-                                         const shell::Identity& identity,
-                                         uint32_t id) {
-  for (auto& client : embedded_shell_clients_)
-    client->Initialize(connector, identity, id);
+void MojoShellConnectionImpl::OnStart(shell::Connector* connector,
+                                      const shell::Identity& identity,
+                                      uint32_t id) {
+  for (auto& client : embedded_services_)
+    client->OnStart(connector, identity, id);
 }
 
-bool MojoShellConnectionImpl::AcceptConnection(shell::Connection* connection) {
+bool MojoShellConnectionImpl::OnConnect(shell::Connection* connection) {
   std::string remote_app = connection->GetRemoteIdentity().name();
   if (remote_app == "mojo:shell") {
     // Only expose the SCF interface to the shell.
-    connection->AddInterface<shell::mojom::ShellClientFactory>(this);
+    connection->AddInterface<shell::mojom::ServiceFactory>(this);
     return true;
   }
 
   bool accept = false;
-  for (auto& client : embedded_shell_clients_)
-    accept |= client->AcceptConnection(connection);
+  for (auto& client : embedded_services_)
+    accept |= client->OnConnect(connection);
 
   // Reject all other connections to this application.
   return accept;
@@ -105,7 +105,7 @@ MojoShellConnectionImpl::GetInterfaceRegistryForConnection() {
   // TODO(beng): This is really horrible since obviously subject to issues
   // of ordering, but is no more horrible than this API is in general.
   shell::InterfaceRegistry* registry = nullptr;
-  for (auto& client : embedded_shell_clients_) {
+  for (auto& client : embedded_services_) {
     registry = client->GetInterfaceRegistryForConnection();
     if (registry)
       return registry;
@@ -118,7 +118,7 @@ MojoShellConnectionImpl::GetInterfaceProviderForConnection() {
   // TODO(beng): This is really horrible since obviously subject to issues
   // of ordering, but is no more horrible than this API is in general.
   shell::InterfaceProvider* provider = nullptr;
-  for (auto& client : embedded_shell_clients_) {
+  for (auto& client : embedded_services_) {
     provider = client->GetInterfaceProviderForConnection();
     if (provider)
       return provider;
@@ -128,19 +128,19 @@ MojoShellConnectionImpl::GetInterfaceProviderForConnection() {
 
 ////////////////////////////////////////////////////////////////////////////////
 // MojoShellConnectionImpl,
-//     shell::InterfaceFactory<shell::mojom::ShellClientFactory> implementation:
+//     shell::InterfaceFactory<shell::mojom::ServiceFactory> implementation:
 
 void MojoShellConnectionImpl::Create(
     shell::Connection* connection,
-    shell::mojom::ShellClientFactoryRequest request) {
+    shell::mojom::ServiceFactoryRequest request) {
   factory_bindings_.AddBinding(this, std::move(request));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// MojoShellConnectionImpl, shell::mojom::ShellClientFactory implementation:
+// MojoShellConnectionImpl, shell::mojom::ServiceFactory implementation:
 
-void MojoShellConnectionImpl::CreateShellClient(
-    shell::mojom::ShellClientRequest request,
+void MojoShellConnectionImpl::CreateService(
+    shell::mojom::ServiceRequest request,
     const mojo::String& name) {
   auto it = request_handlers_.find(name);
   if (it != request_handlers_.end())
@@ -169,15 +169,15 @@ void MojoShellConnectionImpl::SetConnectionLostClosure(
   shell_connection_->SetConnectionLostClosure(closure);
 }
 
-void MojoShellConnectionImpl::AddEmbeddedShellClient(
-    std::unique_ptr<shell::ShellClient> shell_client) {
-  embedded_shell_clients_.push_back(shell_client.get());
-  owned_shell_clients_.push_back(std::move(shell_client));
+void MojoShellConnectionImpl::MergeService(
+    std::unique_ptr<shell::Service> service) {
+  embedded_services_.push_back(service.get());
+  owned_services_.push_back(std::move(service));
 }
 
-void MojoShellConnectionImpl::AddEmbeddedShellClient(
-    shell::ShellClient* shell_client) {
-  embedded_shell_clients_.push_back(shell_client);
+void MojoShellConnectionImpl::MergeService(
+    shell::Service* service) {
+  embedded_services_.push_back(service);
 }
 
 void MojoShellConnectionImpl::AddEmbeddedService(
@@ -185,16 +185,16 @@ void MojoShellConnectionImpl::AddEmbeddedService(
     const MojoApplicationInfo& info) {
   std::unique_ptr<EmbeddedApplicationRunner> app(
       new EmbeddedApplicationRunner(name, info));
-  AddShellClientRequestHandler(
-      name, base::Bind(&EmbeddedApplicationRunner::BindShellClientRequest,
+  AddServiceRequestHandler(
+      name, base::Bind(&EmbeddedApplicationRunner::BindServiceRequest,
                        base::Unretained(app.get())));
   auto result = embedded_apps_.insert(std::make_pair(name, std::move(app)));
   DCHECK(result.second);
 }
 
-void MojoShellConnectionImpl::AddShellClientRequestHandler(
+void MojoShellConnectionImpl::AddServiceRequestHandler(
     const std::string& name,
-    const ShellClientRequestHandler& handler) {
+    const ServiceRequestHandler& handler) {
   auto result = request_handlers_.insert(std::make_pair(name, handler));
   DCHECK(result.second);
 }

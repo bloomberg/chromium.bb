@@ -290,7 +290,7 @@ bool GpuChildThread::OnMessageReceived(const IPC::Message& msg) {
   return false;
 }
 
-bool GpuChildThread::AcceptConnection(shell::Connection* connection) {
+bool GpuChildThread::OnConnect(shell::Connection* connection) {
   // Use of base::Unretained(this) is safe here because |service_registry()|
   // will be destroyed before GpuChildThread is destructed.
   connection->GetInterfaceRegistry()->AddInterface(base::Bind(

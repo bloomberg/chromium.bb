@@ -39,13 +39,13 @@ FileSystemApp::FileSystemApp() : lock_table_(new LockTable) {}
 
 FileSystemApp::~FileSystemApp() {}
 
-void FileSystemApp::Initialize(shell::Connector* connector,
-                               const shell::Identity& identity,
-                               uint32_t id) {
+void FileSystemApp::OnStart(shell::Connector* connector,
+                            const shell::Identity& identity,
+                            uint32_t id) {
   tracing_.Initialize(connector, identity.name());
 }
 
-bool FileSystemApp::AcceptConnection(shell::Connection* connection) {
+bool FileSystemApp::OnConnect(shell::Connection* connection) {
   connection->AddInterface<mojom::FileSystem>(this);
   return true;
 }

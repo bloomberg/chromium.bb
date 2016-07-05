@@ -63,16 +63,16 @@ MusDemo::~MusDemo() {
   delete window_tree_client_;
 }
 
-void MusDemo::Initialize(shell::Connector* connector,
-                         const shell::Identity& identity,
-                         uint32_t id) {
+void MusDemo::OnStart(shell::Connector* connector,
+                      const shell::Identity& identity,
+                      uint32_t id) {
   connector_ = connector;
   ui::GpuService::Initialize(connector_);
   window_tree_client_ = new ui::WindowTreeClient(this, this, nullptr);
   window_tree_client_->ConnectAsWindowManager(connector);
 }
 
-bool MusDemo::AcceptConnection(shell::Connection* connection) {
+bool MusDemo::OnConnect(shell::Connection* connection) {
   return true;
 }
 

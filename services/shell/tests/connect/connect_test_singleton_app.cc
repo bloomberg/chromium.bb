@@ -5,20 +5,20 @@
 #include "base/macros.h"
 #include "mojo/public/c/system/main.h"
 #include "services/shell/public/cpp/application_runner.h"
-#include "services/shell/public/cpp/shell_client.h"
+#include "services/shell/public/cpp/service.h"
 
 namespace shell {
 
-class ConnectTestSingletonApp : public ShellClient {
+class ConnectTestSingletonApp : public Service {
  public:
   ConnectTestSingletonApp() {}
   ~ConnectTestSingletonApp() override {}
 
  private:
-  // shell::ShellClient:
-  void Initialize(Connector* connector, const Identity& identity,
-                  uint32_t id) override {}
-  bool AcceptConnection(Connection* connection) override {
+  // shell::Service:
+  void OnStart(Connector* connector, const Identity& identity,
+               uint32_t id) override {}
+  bool OnConnect(Connection* connection) override {
     return true;
   }
 

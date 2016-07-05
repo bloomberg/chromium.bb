@@ -25,9 +25,9 @@
 #include "services/shell/native_runner_delegate.h"
 #include "services/shell/public/cpp/connector.h"
 #include "services/shell/public/cpp/identity.h"
-#include "services/shell/public/cpp/shell_client.h"
+#include "services/shell/public/cpp/service.h"
 #include "services/shell/public/cpp/shell_connection.h"
-#include "services/shell/public/interfaces/shell_client_factory.mojom.h"
+#include "services/shell/public/interfaces/service_factory.mojom.h"
 #include "services/shell/runner/common/switches.h"
 #include "services/shell/runner/host/child_process_base.h"
 #include "services/ui/service.h"
@@ -36,44 +36,44 @@
 #include "components/font_service/font_service_app.h"
 #endif
 
-using shell::mojom::ShellClientFactory;
+using shell::mojom::ServiceFactory;
 
 namespace {
 
 // kProcessType used to identify child processes.
 const char* kMashChild = "mash-child";
 
-// ShellClient responsible for starting the appropriate app.
-class DefaultShellClient : public shell::ShellClient,
-                           public ShellClientFactory,
-                           public shell::InterfaceFactory<ShellClientFactory> {
+// Service responsible for starting the appropriate app.
+class DefaultService : public shell::Service,
+                       public ServiceFactory,
+                       public shell::InterfaceFactory<ServiceFactory> {
  public:
-  DefaultShellClient() {}
-  ~DefaultShellClient() override {}
+  DefaultService() {}
+  ~DefaultService() override {}
 
-  // shell::ShellClient:
-  bool AcceptConnection(shell::Connection* connection) override {
-    connection->AddInterface<ShellClientFactory>(this);
+  // shell::Service:
+  bool OnConnect(shell::Connection* connection) override {
+    connection->AddInterface<ServiceFactory>(this);
     return true;
   }
 
-  // shell::InterfaceFactory<ShellClientFactory>
+  // shell::InterfaceFactory<ServiceFactory>
   void Create(shell::Connection* connection,
-              mojo::InterfaceRequest<ShellClientFactory> request) override {
-    shell_client_factory_bindings_.AddBinding(this, std::move(request));
+              mojo::InterfaceRequest<ServiceFactory> request) override {
+    service_factory_bindings_.AddBinding(this, std::move(request));
   }
 
-  // ShellClientFactory:
-  void CreateShellClient(shell::mojom::ShellClientRequest request,
-                         const mojo::String& mojo_name) override {
-    if (shell_client_) {
-      LOG(ERROR) << "request to create additional app " << mojo_name;
+  // ServiceFactory:
+  void CreateService(shell::mojom::ServiceRequest request,
+                     const mojo::String& mojo_name) override {
+    if (service_) {
+      LOG(ERROR) << "request to create additional service " << mojo_name;
       return;
     }
-    shell_client_ = CreateShellClient(mojo_name);
-    if (shell_client_) {
+    service_ = CreateService(mojo_name);
+    if (service_) {
       shell_connection_.reset(
-          new shell::ShellConnection(shell_client_.get(), std::move(request)));
+          new shell::ShellConnection(service_.get(), std::move(request)));
       return;
     }
     LOG(ERROR) << "unknown name " << mojo_name;
@@ -82,7 +82,7 @@ class DefaultShellClient : public shell::ShellClient,
 
  private:
   // TODO(sky): move this into mash.
-  std::unique_ptr<shell::ShellClient> CreateShellClient(
+  std::unique_ptr<shell::Service> CreateService(
       const std::string& name) {
     if (name == "mojo:ash_sysui")
       return base::WrapUnique(new ash::sysui::SysUIApplication);
@@ -106,11 +106,11 @@ class DefaultShellClient : public shell::ShellClient,
     return nullptr;
   }
 
-  mojo::BindingSet<ShellClientFactory> shell_client_factory_bindings_;
-  std::unique_ptr<shell::ShellClient> shell_client_;
+  mojo::BindingSet<ServiceFactory> service_factory_bindings_;
+  std::unique_ptr<shell::Service> service_;
   std::unique_ptr<shell::ShellConnection> shell_connection_;
 
-  DISALLOW_COPY_AND_ASSIGN(DefaultShellClient);
+  DISALLOW_COPY_AND_ASSIGN(DefaultService);
 };
 
 bool IsChild() {
@@ -186,10 +186,10 @@ void MashRunner::RunMain() {
       new shell::BackgroundShell::InitParams);
   init_params->native_runner_delegate = &native_runner_delegate;
   background_shell.Init(std::move(init_params));
-  shell_client_.reset(new DefaultShellClient);
+  service_.reset(new DefaultService);
   shell_connection_.reset(new shell::ShellConnection(
-      shell_client_.get(),
-      background_shell.CreateShellClientRequest("exe:chrome_mash")));
+      service_.get(),
+      background_shell.CreateServiceRequest("exe:chrome_mash")));
   shell_connection_->connector()->Connect("mojo:mash_session");
   base::MessageLoop::current()->Run();
 }
@@ -201,12 +201,12 @@ void MashRunner::RunChild() {
 }
 
 void MashRunner::StartChildApp(
-    shell::mojom::ShellClientRequest client_request) {
+    shell::mojom::ServiceRequest service_request) {
   // TODO(sky): use MessagePumpMojo.
   base::MessageLoop message_loop(base::MessageLoop::TYPE_UI);
-  shell_client_.reset(new DefaultShellClient);
+  service_.reset(new DefaultService);
   shell_connection_.reset(new shell::ShellConnection(
-      shell_client_.get(), std::move(client_request)));
+      service_.get(), std::move(service_request)));
   message_loop.Run();
 }
 

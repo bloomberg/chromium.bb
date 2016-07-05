@@ -22,7 +22,7 @@
 #include "services/navigation/public/interfaces/view.mojom.h"
 #include "services/shell/public/cpp/application_runner.h"
 #include "services/shell/public/cpp/connector.h"
-#include "services/shell/public/cpp/shell_client.h"
+#include "services/shell/public/cpp/service.h"
 #include "services/tracing/public/cpp/tracing_impl.h"
 #include "services/ui/public/cpp/window.h"
 #include "services/ui/public/cpp/window_tree_client.h"
@@ -865,9 +865,9 @@ std::unique_ptr<navigation::View> Browser::CreateView() {
   return base::WrapUnique(new navigation::View(std::move(factory)));
 }
 
-void Browser::Initialize(shell::Connector* connector,
-                         const shell::Identity& identity,
-                         uint32_t id) {
+void Browser::OnStart(shell::Connector* connector,
+                      const shell::Identity& identity,
+                      uint32_t id) {
   connector_ = connector;
   tracing_.Initialize(connector, identity.name());
 
@@ -876,7 +876,7 @@ void Browser::Initialize(shell::Connector* connector,
       views::WindowManagerConnection::Create(connector, identity);
 }
 
-bool Browser::AcceptConnection(shell::Connection* connection) {
+bool Browser::OnConnect(shell::Connection* connection) {
   connection->AddInterface<mojom::Launchable>(this);
   return true;
 }

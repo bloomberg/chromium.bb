@@ -75,9 +75,9 @@ class ScreenlockView : public views::WidgetDelegateView,
 Screenlock::Screenlock() {}
 Screenlock::~Screenlock() {}
 
-void Screenlock::Initialize(shell::Connector* connector,
-                            const shell::Identity& identity,
-                            uint32_t id) {
+void Screenlock::OnStart(shell::Connector* connector,
+                         const shell::Identity& identity,
+                         uint32_t id) {
   tracing_.Initialize(connector, identity.name());
 
   mash::session::mojom::SessionPtr session;

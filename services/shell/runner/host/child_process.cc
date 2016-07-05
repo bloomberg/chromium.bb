@@ -41,8 +41,8 @@ namespace shell {
 namespace {
 
 void RunNativeLibrary(base::NativeLibrary app_library,
-                      mojom::ShellClientRequest shell_client_request) {
-  if (!RunNativeApplication(app_library, std::move(shell_client_request))) {
+                      mojom::ServiceRequest service_request) {
+  if (!RunNativeApplication(app_library, std::move(service_request))) {
     LOG(ERROR) << "Failure to RunNativeApplication()";
   }
 }

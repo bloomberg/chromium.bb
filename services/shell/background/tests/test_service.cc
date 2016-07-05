@@ -7,11 +7,11 @@
 #include "services/shell/background/tests/test.mojom.h"
 #include "services/shell/public/cpp/application_runner.h"
 #include "services/shell/public/cpp/connection.h"
-#include "services/shell/public/cpp/shell_client.h"
+#include "services/shell/public/cpp/service.h"
 
 namespace shell {
 
-class TestClient : public ShellClient,
+class TestClient : public Service,
                    public InterfaceFactory<mojom::TestService>,
                    public mojom::TestService {
  public:
@@ -19,12 +19,12 @@ class TestClient : public ShellClient,
   ~TestClient() override {}
 
  private:
-  // ShellClient:
-  bool AcceptConnection(Connection* connection) override {
+  // Service:
+  bool OnConnect(Connection* connection) override {
     connection->AddInterface(this);
     return true;
   }
-  bool ShellConnectionLost() override {
+  bool OnStop() override {
     return true;
   }
 

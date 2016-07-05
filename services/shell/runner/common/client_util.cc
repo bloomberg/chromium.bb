@@ -12,23 +12,23 @@
 
 namespace shell {
 
-mojom::ShellClientPtr PassShellClientRequestOnCommandLine(
+mojom::ServicePtr PassServiceRequestOnCommandLine(
     base::CommandLine* command_line, const std::string& child_token) {
   std::string token = mojo::edk::GenerateRandomToken();
   command_line->AppendSwitchASCII(switches::kPrimordialPipeToken, token);
 
-  mojom::ShellClientPtr client;
+  mojom::ServicePtr client;
   client.Bind(
-      mojom::ShellClientPtrInfo(
+      mojom::ServicePtrInfo(
           mojo::edk::CreateParentMessagePipe(token, child_token), 0));
   return client;
 }
 
-mojom::ShellClientRequest GetShellClientRequestFromCommandLine() {
+mojom::ServiceRequest GetServiceRequestFromCommandLine() {
   std::string token =
       base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
           switches::kPrimordialPipeToken);
-  mojom::ShellClientRequest request;
+  mojom::ServiceRequest request;
   if (!token.empty())
     request.Bind(mojo::edk::CreateChildMessagePipe(token));
   return request;

@@ -20,10 +20,6 @@ namespace catalog {
 class Catalog;
 }
 
-namespace shell {
-class ShellClient;
-}
-
 namespace content {
 
 // MojoShellContext hosts the browser's ApplicationManager, coordinating

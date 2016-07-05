@@ -219,7 +219,7 @@ class SimpleHttpServer : base::NonThreadSafe {
     DISALLOW_COPY_AND_ASSIGN(Connection);
   };
 
-  void AcceptConnection();
+  void OnConnect();
   void OnAccepted(int result);
 
   ParserFactory factory_;
@@ -236,7 +236,7 @@ SimpleHttpServer::SimpleHttpServer(const ParserFactory& factory,
       socket_(new net::TCPServerSocket(nullptr, net::NetLog::Source())),
       weak_factory_(this) {
   socket_->Listen(endpoint, 5);
-  AcceptConnection();
+  OnConnect();
 }
 
 SimpleHttpServer::~SimpleHttpServer() {
@@ -364,7 +364,7 @@ void SimpleHttpServer::Connection::OnDataWritten(int count) {
     delete this;
 }
 
-void SimpleHttpServer::AcceptConnection() {
+void SimpleHttpServer::OnConnect() {
   CHECK(CalledOnValidThread());
 
   int accept_result = socket_->Accept(&client_socket_,
@@ -380,7 +380,7 @@ void SimpleHttpServer::OnAccepted(int result) {
   CHECK(CalledOnValidThread());
   ASSERT_EQ(result, 0);  // Fails if the socket is already in use.
   new Connection(client_socket_.release(), factory_);
-  AcceptConnection();
+  OnConnect();
 }
 
 class AdbParser : public SimpleHttpServer::Parser,

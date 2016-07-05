@@ -8,13 +8,13 @@
 #include "services/shell/public/cpp/application_runner.h"
 #include "services/shell/public/cpp/connector.h"
 #include "services/shell/public/cpp/interface_factory.h"
-#include "services/shell/public/cpp/shell_client.h"
+#include "services/shell/public/cpp/service.h"
 #include "services/shell/tests/shutdown/shutdown_unittest.mojom.h"
 
 namespace shell {
 
 class ShutdownClientApp
-    : public ShellClient,
+    : public Service,
       public InterfaceFactory<mojom::ShutdownTestClientController>,
       public mojom::ShutdownTestClientController,
       public mojom::ShutdownTestClient {
@@ -23,13 +23,13 @@ class ShutdownClientApp
   ~ShutdownClientApp() override {}
 
  private:
-  // shell::ShellClient:
-  void Initialize(Connector* connector, const Identity& identity,
-                  uint32_t id) override {
+  // shell::Service:
+  void OnStart(Connector* connector, const Identity& identity,
+               uint32_t id) override {
     connector_ = connector;
   }
 
-  bool AcceptConnection(Connection* connection) override {
+  bool OnConnect(Connection* connection) override {
     connection->AddInterface<mojom::ShutdownTestClientController>(this);
     return true;
   }

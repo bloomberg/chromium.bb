@@ -49,7 +49,7 @@ base::NativeLibrary LoadNativeApplication(const base::FilePath& app_path) {
 }
 
 bool RunNativeApplication(base::NativeLibrary app_library,
-                          mojom::ShellClientRequest request) {
+                          mojom::ServiceRequest request) {
   // Tolerate |app_library| being null, to make life easier for callers.
   if (!app_library)
     return false;

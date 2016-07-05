@@ -169,7 +169,7 @@ void Context::Init(std::unique_ptr<InitParams> init_params) {
   catalog_.reset(
       new catalog::Catalog(blocking_pool_.get(), std::move(store), nullptr));
   shell_.reset(new Shell(std::move(runner_factory),
-                         catalog_->TakeShellClient()));
+                         catalog_->TakeService()));
 
   mojom::InterfaceProviderPtr tracing_remote_interfaces;
   mojom::InterfaceProviderPtr tracing_local_interfaces;

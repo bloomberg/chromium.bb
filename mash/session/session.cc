@@ -27,9 +27,9 @@ namespace session {
 Session::Session() : connector_(nullptr), screen_locked_(false) {}
 Session::~Session() {}
 
-void Session::Initialize(shell::Connector* connector,
-                         const shell::Identity& identity,
-                         uint32_t id) {
+void Session::OnStart(shell::Connector* connector,
+                      const shell::Identity& identity,
+                      uint32_t id) {
   connector_ = connector;
   StartAppDriver();
   StartWindowManager();
@@ -37,7 +37,7 @@ void Session::Initialize(shell::Connector* connector,
   StartQuickLaunch();
 }
 
-bool Session::AcceptConnection(shell::Connection* connection) {
+bool Session::OnConnect(shell::Connection* connection) {
   connection->AddInterface<mojom::Session>(this);
   return true;
 }

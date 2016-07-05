@@ -7,7 +7,7 @@
 #include "base/macros.h"
 #include "services/shell/public/cpp/connection.h"
 #include "services/shell/public/cpp/connector.h"
-#include "services/shell/public/cpp/shell_client.h"
+#include "services/shell/public/cpp/service.h"
 #include "services/shell/runner/child/test_native_main.h"
 #include "services/shell/runner/init.h"
 #include "services/shell/tests/lifecycle/app_client.h"

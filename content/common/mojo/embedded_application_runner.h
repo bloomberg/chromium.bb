@@ -14,12 +14,12 @@
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_piece.h"
 #include "content/public/common/mojo_application_info.h"
-#include "services/shell/public/cpp/shell_client.h"
-#include "services/shell/public/interfaces/shell_client.mojom.h"
+#include "services/shell/public/cpp/service.h"
+#include "services/shell/public/interfaces/service.mojom.h"
 
 namespace content {
 
-// Hosts an in-process application instance that supports multiple ShellClient
+// Hosts an in-process application instance that supports multiple Service
 // connections. The first incoming connection will invoke a provided factory
 // function to instantiate the application, and the application will
 // automatically be torn down when its last connection is lost. The application
@@ -34,10 +34,10 @@ class EmbeddedApplicationRunner {
                             const MojoApplicationInfo& info);
   ~EmbeddedApplicationRunner();
 
-  // Binds an incoming ShellClientRequest for this application. If the
+  // Binds an incoming ServiceRequest for this application. If the
   // application isn't already running, it's started. Otherwise the request is
   // bound to the running instance.
-  void BindShellClientRequest(shell::mojom::ShellClientRequest request);
+  void BindServiceRequest(shell::mojom::ServiceRequest request);
 
   // Sets a callback to run after the application loses its last connection and
   // is torn down.

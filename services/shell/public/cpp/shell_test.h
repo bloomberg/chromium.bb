@@ -9,7 +9,7 @@
 
 #include "base/macros.h"
 #include "services/shell/public/cpp/connector.h"
-#include "services/shell/public/cpp/shell_client.h"
+#include "services/shell/public/cpp/service.h"
 #include "services/shell/public/cpp/shell_connection.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -25,19 +25,19 @@ namespace test {
 
 class ShellTest;
 
-// A default implementation of ShellClient for use in ShellTests. Tests wishing
-// to customize this should subclass this class instead of ShellClient,
-// otherwise they will have to call ShellTest::InitializeCalled() to forward
-// metadata from Initialize() to the test.
-class ShellTestClient : public ShellClient {
+// A default implementation of Service for use in ShellTests. Tests wishing
+// to customize this should subclass this class instead of Service,
+// otherwise they will have to call ShellTest::OnStartCalled() to forward
+// metadata from OnStart() to the test.
+class ShellTestClient : public Service {
  public:
   explicit ShellTestClient(ShellTest* test);
   ~ShellTestClient() override;
 
  protected:
-  void Initialize(Connector* connector,
-                  const Identity& identity,
-                  uint32_t id) override;
+  void OnStart(Connector* connector,
+               const Identity& identity,
+               uint32_t id) override;
 
  private:
   ShellTest* test_;
@@ -61,24 +61,24 @@ class ShellTest : public testing::Test {
 
   Connector* connector() { return connector_; }
 
-  // Instance information received from the Shell during Initialize().
+  // Instance information received from the Shell during OnStart().
   const std::string& test_name() const { return initialize_name_; }
   const std::string& test_userid() const { return initialize_userid_; }
   uint32_t test_instance_id() const { return initialize_instance_id_; }
 
-  // By default, creates a simple ShellClient that captures the metadata sent
-  // via Initialize(). Override to customize, but custom implementations must
-  // call InitializeCalled() to forward the metadata so test_name() etc all
+  // By default, creates a simple Service that captures the metadata sent
+  // via OnStart(). Override to customize, but custom implementations must
+  // call OnStartCalled() to forward the metadata so test_name() etc all
   // work.
-  virtual std::unique_ptr<ShellClient> CreateShellClient();
+  virtual std::unique_ptr<Service> CreateService();
 
   virtual std::unique_ptr<base::MessageLoop> CreateMessageLoop();
 
-  // Call to set Initialize() metadata when GetShellClient() is overridden.
-  void InitializeCalled(Connector* connector,
-                        const std::string& name,
-                        const std::string& userid,
-                        uint32_t id);
+  // Call to set OnStart() metadata when GetService() is overridden.
+  void OnStartCalled(Connector* connector,
+                     const std::string& name,
+                     const std::string& userid,
+                     uint32_t id);
 
   // testing::Test:
   void SetUp() override;
@@ -87,7 +87,7 @@ class ShellTest : public testing::Test {
  private:
   friend ShellTestClient;
 
-  std::unique_ptr<ShellClient> shell_client_;
+  std::unique_ptr<Service> service_;
 
   std::unique_ptr<base::MessageLoop> message_loop_;
   std::unique_ptr<BackgroundShell> background_shell_;

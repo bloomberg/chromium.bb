@@ -11,7 +11,7 @@
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/shell/public/cpp/connection.h"
 #include "services/shell/public/cpp/connector.h"
-#include "services/shell/public/cpp/shell_client.h"
+#include "services/shell/public/cpp/service.h"
 #include "services/shell/runner/child/test_native_main.h"
 #include "services/shell/runner/init.h"
 #include "services/shell/tests/connect/connect_test.mojom.h"
@@ -22,7 +22,7 @@ using shell::test::mojom::ClientProcessTestRequest;
 
 namespace {
 
-class Driver : public shell::ShellClient,
+class Driver : public shell::Service,
                public shell::InterfaceFactory<ClientProcessTest>,
                public ClientProcessTest {
  public:
@@ -30,17 +30,17 @@ class Driver : public shell::ShellClient,
   ~Driver() override {}
 
  private:
-  // shell::ShellClient:
-  void Initialize(shell::Connector* connector,
-                  const shell::Identity& identity,
-                  uint32_t id) override {
+  // shell::Service:
+  void OnStart(shell::Connector* connector,
+               const shell::Identity& identity,
+               uint32_t id) override {
     connector_ = connector;
   }
-  bool AcceptConnection(shell::Connection* connection) override {
+  bool OnConnect(shell::Connection* connection) override {
     connection->AddInterface<ClientProcessTest>(this);
     return true;
   }
-  bool ShellConnectionLost() override {
+  bool OnStop() override {
     // TODO(rockot): http://crbug.com/596621. Should be able to remove this
     // override entirely.
     _exit(1);

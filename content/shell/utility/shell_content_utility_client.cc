@@ -54,9 +54,9 @@ class TestMojoServiceImpl : public mojom::TestMojoService {
   DISALLOW_COPY_AND_ASSIGN(TestMojoServiceImpl);
 };
 
-std::unique_ptr<shell::ShellClient> CreateTestApp(
+std::unique_ptr<shell::Service> CreateTestApp(
     const base::Closure& quit_closure) {
-  return std::unique_ptr<shell::ShellClient>(new TestMojoApp);
+  return std::unique_ptr<shell::Service>(new TestMojoApp);
 }
 
 }  // namespace

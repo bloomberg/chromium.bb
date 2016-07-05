@@ -62,7 +62,7 @@ class CdmFactory;
 
 namespace shell {
 class InterfaceRegistry;
-class ShellClient;
+class Service;
 }
 
 namespace net {

@@ -12,13 +12,13 @@
 #include "components/font_service/public/interfaces/font_service.mojom.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/shell/public/cpp/interface_factory.h"
-#include "services/shell/public/cpp/shell_client.h"
+#include "services/shell/public/cpp/service.h"
 #include "services/tracing/public/cpp/tracing_impl.h"
 #include "skia/ext/skia_utils_base.h"
 
 namespace font_service {
 
-class FontServiceApp : public shell::ShellClient,
+class FontServiceApp : public shell::Service,
                        public shell::InterfaceFactory<mojom::FontService>,
                        public mojom::FontService {
  public:
@@ -26,11 +26,11 @@ class FontServiceApp : public shell::ShellClient,
   ~FontServiceApp() override;
 
  private:
-  // shell::ShellClient:
-  void Initialize(shell::Connector* connector,
-                  const shell::Identity& identity,
-                  uint32_t id) override;
-  bool AcceptConnection(shell::Connection* connection) override;
+  // shell::Service:
+  void OnStart(shell::Connector* connector,
+               const shell::Identity& identity,
+               uint32_t id) override;
+  bool OnConnect(shell::Connection* connection) override;
 
   // shell::InterfaceFactory<mojom::FontService>:
   void Create(shell::Connection* connection,

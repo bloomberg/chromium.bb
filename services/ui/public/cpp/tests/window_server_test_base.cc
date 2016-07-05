@@ -73,7 +73,7 @@ void WindowServerTestBase::SetUp() {
   std::swap(window_manager_, most_recent_client_);
 }
 
-bool WindowServerTestBase::AcceptConnection(shell::Connection* connection) {
+bool WindowServerTestBase::OnConnect(shell::Connection* connection) {
   connection->AddInterface<mojom::WindowTreeClient>(this);
   return true;
 }

@@ -30,7 +30,7 @@ OutOfProcessNativeRunner::~OutOfProcessNativeRunner() {
     child_process_host_->Join();
 }
 
-mojom::ShellClientPtr OutOfProcessNativeRunner::Start(
+mojom::ServicePtr OutOfProcessNativeRunner::Start(
     const base::FilePath& app_path,
     const Identity& target,
     bool start_sandboxed,

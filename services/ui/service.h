@@ -16,7 +16,7 @@
 #include "base/memory/weak_ptr.h"
 #include "services/shell/public/cpp/application_runner.h"
 #include "services/shell/public/cpp/interface_factory.h"
-#include "services/shell/public/cpp/shell_client.h"
+#include "services/shell/public/cpp/service.h"
 #include "services/tracing/public/cpp/tracing_impl.h"
 #include "services/ui/input_devices/input_device_server.h"
 #include "services/ui/public/interfaces/clipboard.mojom.h"
@@ -58,7 +58,7 @@ class WindowServer;
 }
 
 class Service
-    : public shell::ShellClient,
+    : public shell::Service,
       public ws::WindowServerDelegate,
       public shell::InterfaceFactory<mojom::Clipboard>,
       public shell::InterfaceFactory<mojom::DisplayManager>,
@@ -92,11 +92,11 @@ class Service
 
   void AddUserIfNecessary(shell::Connection* connection);
 
-  // shell::ShellClient:
-  void Initialize(shell::Connector* connector,
-                  const shell::Identity& identity,
-                  uint32_t id) override;
-  bool AcceptConnection(shell::Connection* connection) override;
+  // shell::Service:
+  void OnStart(shell::Connector* connector,
+               const shell::Identity& identity,
+               uint32_t id) override;
+  bool OnConnect(shell::Connection* connection) override;
 
   // WindowServerDelegate:
   void OnFirstDisplayReady() override;

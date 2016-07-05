@@ -33,7 +33,7 @@ class OutOfProcessNativeRunner : public NativeRunner {
   ~OutOfProcessNativeRunner() override;
 
   // NativeRunner:
-  mojom::ShellClientPtr Start(
+  mojom::ServicePtr Start(
       const base::FilePath& app_path,
       const Identity& identity,
       bool start_sandboxed,

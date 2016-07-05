@@ -10,7 +10,7 @@
 #include "mash/public/interfaces/launchable.mojom.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/shell/public/cpp/interface_factory.h"
-#include "services/shell/public/cpp/shell_client.h"
+#include "services/shell/public/cpp/service.h"
 #include "ui/app_list/presenter/app_list_presenter.mojom.h"
 #include "ui/keyboard/keyboard.mojom.h"
 
@@ -23,7 +23,7 @@ namespace chromeos {
 
 // InterfaceFactory for creating all services provided by chrome.
 class ChromeInterfaceFactory
-    : public shell::ShellClient,
+    : public shell::Service,
       public shell::InterfaceFactory<keyboard::mojom::Keyboard>,
       public shell::InterfaceFactory<mash::mojom::Launchable>,
       public shell::InterfaceFactory<ash::sysui::mojom::WallpaperManager>,
@@ -33,8 +33,8 @@ class ChromeInterfaceFactory
   ~ChromeInterfaceFactory() override;
 
  private:
-  // shell::ShellClient:
-  bool AcceptConnection(shell::Connection* connection) override;
+  // shell::Service:
+  bool OnConnect(shell::Connection* connection) override;
 
   // shell::InterfaceFactory<keyboard::Keyboard>:
   void Create(

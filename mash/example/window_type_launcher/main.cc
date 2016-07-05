@@ -17,7 +17,7 @@
 #include "mojo/edk/embedder/embedder.h"
 #include "mojo/edk/embedder/process_delegate.h"
 #include "services/shell/public/cpp/shell_connection.h"
-#include "services/shell/public/interfaces/shell_client.mojom.h"
+#include "services/shell/public/interfaces/service.mojom.h"
 #include "services/shell/runner/common/client_util.h"
 #include "services/shell/runner/init.h"
 
@@ -66,7 +66,7 @@ int main(int argc, char** argv) {
     base::MessageLoop loop;
     WindowTypeLauncher delegate;
     shell::ShellConnection impl(&delegate,
-                                shell::GetShellClientRequestFromCommandLine());
+                                shell::GetServiceRequestFromCommandLine());
     loop.Run();
 
     mojo::edk::ShutdownIPCSupport();

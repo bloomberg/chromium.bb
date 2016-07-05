@@ -35,7 +35,7 @@ InProcessNativeRunner::~InProcessNativeRunner() {
   }
 }
 
-mojom::ShellClientPtr InProcessNativeRunner::Start(
+mojom::ServicePtr InProcessNativeRunner::Start(
     const base::FilePath& app_path,
     const Identity& target,
     bool start_sandboxed,
@@ -44,7 +44,7 @@ mojom::ShellClientPtr InProcessNativeRunner::Start(
   app_path_ = app_path;
 
   DCHECK(!request_.is_pending());
-  mojom::ShellClientPtr client;
+  mojom::ServicePtr client;
   request_ = GetProxy(&client);
 
   DCHECK(app_completed_callback_runner_.is_null());

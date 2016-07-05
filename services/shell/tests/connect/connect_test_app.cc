@@ -14,7 +14,7 @@
 #include "services/shell/public/cpp/application_runner.h"
 #include "services/shell/public/cpp/connector.h"
 #include "services/shell/public/cpp/interface_factory.h"
-#include "services/shell/public/cpp/shell_client.h"
+#include "services/shell/public/cpp/service.h"
 #include "services/shell/public/interfaces/connector.mojom.h"
 #include "services/shell/tests/connect/connect_test.mojom.h"
 
@@ -37,7 +37,7 @@ void ReceiveString(std::string* string,
 
 using GetTitleCallback = test::mojom::ConnectTestService::GetTitleCallback;
 
-class ConnectTestApp : public ShellClient,
+class ConnectTestApp : public Service,
                        public InterfaceFactory<test::mojom::ConnectTestService>,
                        public InterfaceFactory<test::mojom::StandaloneApp>,
                        public InterfaceFactory<test::mojom::BlockedInterface>,
@@ -51,9 +51,9 @@ class ConnectTestApp : public ShellClient,
   ~ConnectTestApp() override {}
 
  private:
-  // shell::ShellClient:
-  void Initialize(Connector* connector, const Identity& identity,
-                  uint32_t id) override {
+  // shell::Service:
+  void OnStart(Connector* connector, const Identity& identity,
+               uint32_t id) override {
     connector_ = connector;
     identity_ = identity;
     id_ = id;
@@ -64,7 +64,7 @@ class ConnectTestApp : public ShellClient,
         base::Bind(&ConnectTestApp::OnConnectionError,
                    base::Unretained(this)));
   }
-  bool AcceptConnection(Connection* connection) override {
+  bool OnConnect(Connection* connection) override {
     connection->AddInterface<test::mojom::ConnectTestService>(this);
     connection->AddInterface<test::mojom::StandaloneApp>(this);
     connection->AddInterface<test::mojom::BlockedInterface>(this);

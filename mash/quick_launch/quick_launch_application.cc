@@ -14,7 +14,7 @@
 #include "services/catalog/public/interfaces/catalog.mojom.h"
 #include "services/shell/public/cpp/application_runner.h"
 #include "services/shell/public/cpp/connector.h"
-#include "services/shell/public/cpp/shell_client.h"
+#include "services/shell/public/cpp/service.h"
 #include "services/tracing/public/cpp/tracing_impl.h"
 #include "services/ui/common/gpu_service.h"
 #include "ui/views/background.h"
@@ -164,9 +164,9 @@ void QuickLaunchApplication::RemoveWindow(views::Widget* window) {
     base::MessageLoop::current()->QuitWhenIdle();
 }
 
-void QuickLaunchApplication::Initialize(shell::Connector* connector,
-                                        const shell::Identity& identity,
-                                        uint32_t id) {
+void QuickLaunchApplication::OnStart(shell::Connector* connector,
+                                     const shell::Identity& identity,
+                                     uint32_t id) {
   connector_ = connector;
   ui::GpuService::Initialize(connector);
   tracing_.Initialize(connector, identity.name());
@@ -178,7 +178,7 @@ void QuickLaunchApplication::Initialize(shell::Connector* connector,
   Launch(mojom::kWindow, mojom::LaunchMode::MAKE_NEW);
 }
 
-bool QuickLaunchApplication::AcceptConnection(shell::Connection* connection) {
+bool QuickLaunchApplication::OnConnect(shell::Connection* connection) {
   connection->AddInterface<mojom::Launchable>(this);
   return true;
 }

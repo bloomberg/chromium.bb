@@ -30,7 +30,7 @@ class InProcessNativeRunner : public NativeRunner,
   ~InProcessNativeRunner() override;
 
   // NativeRunner:
-  mojom::ShellClientPtr Start(
+  mojom::ServicePtr Start(
       const base::FilePath& app_path,
       const Identity& target,
       bool start_sandboxed,
@@ -42,7 +42,7 @@ class InProcessNativeRunner : public NativeRunner,
   void Run() override;
 
   base::FilePath app_path_;
-  mojom::ShellClientRequest request_;
+  mojom::ServiceRequest request_;
   base::Callback<bool(void)> app_completed_callback_runner_;
 
   base::ScopedNativeLibrary app_library_;

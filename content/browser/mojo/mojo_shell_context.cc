@@ -37,10 +37,10 @@
 #include "services/shell/native_runner.h"
 #include "services/shell/public/cpp/connector.h"
 #include "services/shell/public/cpp/identity.h"
-#include "services/shell/public/cpp/shell_client.h"
+#include "services/shell/public/cpp/service.h"
 #include "services/shell/public/interfaces/connector.mojom.h"
-#include "services/shell/public/interfaces/shell_client.mojom.h"
-#include "services/shell/public/interfaces/shell_client_factory.mojom.h"
+#include "services/shell/public/interfaces/service.mojom.h"
+#include "services/shell/public/interfaces/service_factory.mojom.h"
 #include "services/shell/runner/common/client_util.h"
 #include "services/shell/runner/host/in_process_native_runner.h"
 #include "services/user/public/cpp/constants.h"
@@ -86,7 +86,7 @@ void OnApplicationLoaded(const std::string& name, bool success) {
 void LaunchAppInUtilityProcess(const std::string& app_name,
                                const base::string16& process_name,
                                bool use_sandbox,
-                               shell::mojom::ShellClientRequest request) {
+                               shell::mojom::ServiceRequest request) {
   mojom::ProcessControlPtr process_control;
   mojom::ProcessControlRequest process_request =
       mojo::GetProxy(&process_control);
@@ -121,7 +121,7 @@ void RequestGpuProcessControl(
 }
 
 void LaunchAppInGpuProcess(const std::string& app_name,
-                           shell::mojom::ShellClientRequest request) {
+                           shell::mojom::ServiceRequest request) {
   mojom::ProcessControlPtr process_control;
   mojom::ProcessControlRequest process_request =
       mojo::GetProxy(&process_control);
@@ -262,13 +262,13 @@ MojoShellContext::MojoShellContext() {
   catalog_.reset(new catalog::Catalog(file_task_runner.get(), nullptr,
                                       manifest_provider_.get()));
 
-  shell::mojom::ShellClientRequest request;
+  shell::mojom::ServiceRequest request;
   if (shell::ShellIsRemote()) {
     mojo::edk::SetParentPipeHandleFromCommandLine();
-    request = shell::GetShellClientRequestFromCommandLine();
+    request = shell::GetServiceRequestFromCommandLine();
   } else {
     shell_.reset(new shell::Shell(std::move(native_runner_factory),
-                                  catalog_->TakeShellClient()));
+                                  catalog_->TakeService()));
     request = shell_->InitInstanceForEmbedder(kBrowserMojoApplicationName);
   }
   MojoShellConnection::SetForProcess(
@@ -292,7 +292,7 @@ MojoShellContext::MojoShellContext() {
       ->browser()
       ->RegisterOutOfProcessMojoApplications(&sandboxed_apps);
   for (const auto& app : sandboxed_apps) {
-    MojoShellConnection::GetForProcess()->AddShellClientRequestHandler(
+    MojoShellConnection::GetForProcess()->AddServiceRequestHandler(
         app.first,
         base::Bind(&LaunchAppInUtilityProcess, app.first, app.second,
                    true /* use_sandbox */));
@@ -303,14 +303,14 @@ MojoShellContext::MojoShellContext() {
       ->browser()
       ->RegisterUnsandboxedOutOfProcessMojoApplications(&unsandboxed_apps);
   for (const auto& app : unsandboxed_apps) {
-    MojoShellConnection::GetForProcess()->AddShellClientRequestHandler(
+    MojoShellConnection::GetForProcess()->AddServiceRequestHandler(
         app.first,
         base::Bind(&LaunchAppInUtilityProcess, app.first, app.second,
                    false /* use_sandbox */));
   }
 
 #if (ENABLE_MOJO_MEDIA_IN_GPU_PROCESS)
-  MojoShellConnection::GetForProcess()->AddShellClientRequestHandler(
+  MojoShellConnection::GetForProcess()->AddServiceRequestHandler(
       "mojo:media", base::Bind(&LaunchAppInGpuProcess, "mojo:media"));
 #endif
 }

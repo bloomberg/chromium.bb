@@ -22,7 +22,7 @@
 #include "mojo/edk/embedder/platform_channel_pair.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 #include "services/shell/public/cpp/identity.h"
-#include "services/shell/public/interfaces/shell_client_factory.mojom.h"
+#include "services/shell/public/interfaces/service_factory.mojom.h"
 #include "services/shell/runner/host/child_process_host.h"
 
 namespace base {
@@ -60,7 +60,7 @@ class ChildProcessHost {
 
   // |Start()|s the child process; calls |DidStart()| (on the thread on which
   // |Start()| was called) when the child has been started (or failed to start).
-  mojom::ShellClientPtr Start(const Identity& target,
+  mojom::ServicePtr Start(const Identity& target,
                               const ProcessReadyCallback& callback,
                               const base::Closure& quit_closure);
 

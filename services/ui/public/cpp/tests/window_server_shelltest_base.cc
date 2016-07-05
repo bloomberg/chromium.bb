@@ -9,7 +9,7 @@
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
-#include "services/shell/public/cpp/shell_client.h"
+#include "services/shell/public/cpp/service.h"
 #include "services/shell/public/cpp/shell_test.h"
 #include "services/ui/common/switches.h"
 #include "ui/gl/gl_switches.h"
@@ -28,8 +28,8 @@ class WindowServerShellTestClient : public shell::test::ShellTestClient {
 
  private:
   // shell::test::ShellTestClient:
-  bool AcceptConnection(shell::Connection* connection) override {
-    return test_->AcceptConnection(connection);
+  bool OnConnect(shell::Connection* connection) override {
+    return test_->OnConnect(connection);
   }
 
   WindowServerShellTestBase* test_;
@@ -53,8 +53,8 @@ WindowServerShellTestBase::WindowServerShellTestBase()
 
 WindowServerShellTestBase::~WindowServerShellTestBase() {}
 
-std::unique_ptr<shell::ShellClient>
-WindowServerShellTestBase::CreateShellClient() {
+std::unique_ptr<shell::Service>
+WindowServerShellTestBase::CreateService() {
   return base::WrapUnique(new WindowServerShellTestClient(this));
 }
 
