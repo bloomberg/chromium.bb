@@ -544,7 +544,6 @@ private:
     friend class WebViewFrameWidget;
     friend class WTF::RefCounted<WebViewImpl>;
     friend void setCurrentInputEventForTest(const WebInputEvent*);
-    friend class WebViewFrameWidget;
 
     enum DragAction {
       DragEnter,
