@@ -12,6 +12,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
+#include "base/run_loop.h"
 #include "base/test/test_simple_task_runner.h"
 #include "net/base/io_buffer.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -118,7 +119,7 @@ TEST_F(ByteStreamTest, ByteStream_PushBack) {
   // Flush
   byte_stream_input->Close(0);
   EXPECT_EQ(4 * 1024U + 1U, byte_stream_input->GetTotalBufferedBytes());
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   // Data already sent to reader is also counted in.
   EXPECT_EQ(4 * 1024U + 1U, byte_stream_input->GetTotalBufferedBytes());
 
@@ -149,7 +150,7 @@ TEST_F(ByteStreamTest, ByteStream_PushBack) {
   EXPECT_EQ(ByteStreamReader::STREAM_COMPLETE,
             byte_stream_output->Read(&output_io_buffer, &output_length));
 
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   // Reader now knows that all data is read out.
   EXPECT_EQ(1024U, byte_stream_input->GetTotalBufferedBytes());
 }
@@ -163,7 +164,7 @@ TEST_F(ByteStreamTest, ByteStream_Flush) {
                    1024, &byte_stream_input, &byte_stream_output);
 
   EXPECT_TRUE(Write(byte_stream_input.get(), 1));
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   scoped_refptr<net::IOBuffer> output_io_buffer;
   size_t output_length = 0;
@@ -172,7 +173,7 @@ TEST_F(ByteStreamTest, ByteStream_Flush) {
             byte_stream_output->Read(&output_io_buffer, &output_length));
 
   byte_stream_input->Flush();
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(ByteStreamReader::STREAM_HAS_DATA,
             byte_stream_output->Read(&output_io_buffer, &output_length));
@@ -180,13 +181,13 @@ TEST_F(ByteStreamTest, ByteStream_Flush) {
 
   // Check that it's ok to Flush() an empty writer.
   byte_stream_input->Flush();
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(ByteStreamReader::STREAM_EMPTY,
             byte_stream_output->Read(&output_io_buffer, &output_length));
 
   byte_stream_input->Close(0);
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(ByteStreamReader::STREAM_COMPLETE,
             byte_stream_output->Read(&output_io_buffer, &output_length));
@@ -204,15 +205,15 @@ TEST_F(ByteStreamTest, ByteStream_PushBackSplit) {
   // Push a series of IO buffers on; test pushback happening and
   // that it's advisory.
   EXPECT_TRUE(Write(byte_stream_input.get(), 1024));
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(Write(byte_stream_input.get(), 1024));
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(Write(byte_stream_input.get(), 1024));
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(Write(byte_stream_input.get(), 1024));
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(Write(byte_stream_input.get(), 6 * 1024));
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   // Pull the IO buffers out; do we get the same buffers and do they
   // have the same contents?
@@ -257,7 +258,7 @@ TEST_F(ByteStreamTest, ByteStream_CompleteTransmits) {
   EXPECT_EQ(ByteStreamReader::STREAM_EMPTY,
             byte_stream_output->Read(&output_io_buffer, &output_length));
   byte_stream_input->Close(0);
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   ASSERT_EQ(ByteStreamReader::STREAM_COMPLETE,
             byte_stream_output->Read(&output_io_buffer, &output_length));
   EXPECT_EQ(0, byte_stream_output->GetStatus());
@@ -269,7 +270,7 @@ TEST_F(ByteStreamTest, ByteStream_CompleteTransmits) {
             byte_stream_output->Read(&output_io_buffer, &output_length));
   EXPECT_TRUE(Write(byte_stream_input.get(), 1024));
   byte_stream_input->Close(0);
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_EQ(ByteStreamReader::STREAM_HAS_DATA,
             byte_stream_output->Read(&output_io_buffer, &output_length));
   EXPECT_TRUE(ValidateIOBuffer(output_io_buffer, output_length));
@@ -285,7 +286,7 @@ TEST_F(ByteStreamTest, ByteStream_CompleteTransmits) {
   EXPECT_EQ(ByteStreamReader::STREAM_EMPTY,
             byte_stream_output->Read(&output_io_buffer, &output_length));
   byte_stream_input->Close(kFakeErrorCode);
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   ASSERT_EQ(ByteStreamReader::STREAM_COMPLETE,
             byte_stream_output->Read(&output_io_buffer, &output_length));
   EXPECT_EQ(kFakeErrorCode, byte_stream_output->GetStatus());
@@ -297,7 +298,7 @@ TEST_F(ByteStreamTest, ByteStream_CompleteTransmits) {
             byte_stream_output->Read(&output_io_buffer, &output_length));
   EXPECT_TRUE(Write(byte_stream_input.get(), 1024));
   byte_stream_input->Close(kFakeErrorCode);
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_EQ(ByteStreamReader::STREAM_HAS_DATA,
             byte_stream_output->Read(&output_io_buffer, &output_length));
   EXPECT_TRUE(ValidateIOBuffer(output_io_buffer, output_length));
@@ -332,7 +333,7 @@ TEST_F(ByteStreamTest, ByteStream_SinkCallback) {
       base::Bind(CountCallbacks, &num_callbacks));
 
   EXPECT_TRUE(Write(byte_stream_input.get(), 4000));
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(0, num_callbacks);
   task_runner->RunUntilIdle();
@@ -348,7 +349,7 @@ TEST_F(ByteStreamTest, ByteStream_SinkCallback) {
   // Confirm callback *isn't* called at less than 33% (by lack of
   // unexpected call on task runner).
   EXPECT_TRUE(Write(byte_stream_input.get(), 3000));
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   // This reflects an implementation artifact that data goes with callbacks,
   // which should not be considered part of the interface guarantee.
@@ -388,7 +389,7 @@ TEST_F(ByteStreamTest, ByteStream_SourceCallback) {
 
   // Allow bytes to transition (needed for message passing implementation),
   // and get and validate the data.
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_EQ(ByteStreamReader::STREAM_HAS_DATA,
             byte_stream_output->Read(&output_io_buffer, &output_length));
   EXPECT_TRUE(ValidateIOBuffer(output_io_buffer, output_length));
@@ -439,7 +440,7 @@ TEST_F(ByteStreamTest, ByteStream_SinkInterrupt) {
 
   // Add data, and pass it across.
   EXPECT_TRUE(Write(byte_stream_input.get(), 4000));
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   // The task runner should have been hit, but the callback count
   // isn't changed until we actually run the callback.
@@ -485,13 +486,13 @@ TEST_F(ByteStreamTest, ByteStream_SourceInterrupt) {
   EXPECT_TRUE(Write(byte_stream_input.get(), 2000));
   EXPECT_TRUE(Write(byte_stream_input.get(), 2001));
   EXPECT_FALSE(Write(byte_stream_input.get(), 6000));
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   // Initial get should not trigger callback.
   EXPECT_EQ(ByteStreamReader::STREAM_HAS_DATA,
             byte_stream_output->Read(&output_io_buffer, &output_length));
   EXPECT_TRUE(ValidateIOBuffer(output_io_buffer, output_length));
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   // Second get *should* trigger callback.
   EXPECT_EQ(ByteStreamReader::STREAM_HAS_DATA,
@@ -545,7 +546,7 @@ TEST_F(ByteStreamTest, ByteStream_CloseWithoutAnyWrite) {
                    3 * 1024, &byte_stream_input, &byte_stream_output);
 
   byte_stream_input->Close(0);
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   scoped_refptr<net::IOBuffer> output_io_buffer;
   size_t output_length;
@@ -560,7 +561,7 @@ TEST_F(ByteStreamTest, ByteStream_FlushWithoutAnyWrite) {
                    3 * 1024, &byte_stream_input, &byte_stream_output);
 
   byte_stream_input->Flush();
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   scoped_refptr<net::IOBuffer> output_io_buffer;
   size_t output_length;
@@ -568,7 +569,7 @@ TEST_F(ByteStreamTest, ByteStream_FlushWithoutAnyWrite) {
             byte_stream_output->Read(&output_io_buffer, &output_length));
 
   byte_stream_input->Close(0);
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(ByteStreamReader::STREAM_COMPLETE,
             byte_stream_output->Read(&output_io_buffer, &output_length));
@@ -586,7 +587,7 @@ TEST_F(ByteStreamTest, ByteStream_WriteOverflow) {
   scoped_refptr<net::IOBuffer> empty_io_buffer;
   EXPECT_FALSE(byte_stream_input->Write(empty_io_buffer,
                                         std::numeric_limits<size_t>::max()));
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   // The first write is below PostToPeer threshold. We shouldn't get anything
   // from the output.

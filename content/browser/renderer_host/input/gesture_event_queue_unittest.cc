@@ -1092,7 +1092,7 @@ TEST_F(GestureEventQueueTest, DebounceDefersFollowingGestureEvents) {
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE, base::MessageLoop::QuitWhenIdleClosure(),
       TimeDelta::FromMilliseconds(5));
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
 
   // The deferred events are correctly queued in coalescing queue.
   EXPECT_EQ(0U, GetAndResetSentGestureEventCount());

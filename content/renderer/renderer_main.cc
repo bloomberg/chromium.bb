@@ -14,6 +14,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/statistics_recorder.h"
 #include "base/pending_task.h"
+#include "base/run_loop.h"
 #include "base/strings/string_util.h"
 #include "base/sys_info.h"
 #include "base/threading/platform_thread.h"
@@ -194,7 +195,7 @@ int RendererMain(const MainFunctionParams& parameters) {
         pool->Recycle();
 #endif
       TRACE_EVENT_ASYNC_BEGIN0("toplevel", "RendererMain.START_MSG_LOOP", 0);
-      base::MessageLoop::current()->Run();
+      base::RunLoop().Run();
       TRACE_EVENT_ASYNC_END0("toplevel", "RendererMain.START_MSG_LOOP", 0);
     }
 

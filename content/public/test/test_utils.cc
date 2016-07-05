@@ -189,8 +189,7 @@ std::unique_ptr<base::Value> ExecuteScriptAndGetValue(
   render_frame_host->ExecuteJavaScriptForTests(
       base::UTF8ToUTF16(script),
       base::Bind(&ScriptCallback::ResultCallback, base::Unretained(&observer)));
-  base::MessageLoop* loop = base::MessageLoop::current();
-  loop->Run();
+  base::RunLoop().Run();
   return observer.result();
 }
 

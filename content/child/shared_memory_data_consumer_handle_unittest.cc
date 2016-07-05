@@ -18,6 +18,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "base/task_runner.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -166,7 +167,7 @@ class ThreadedSharedMemoryDataConsumerHandleTest : public ::testing::Test {
 
       // The operation is done.
       reader_.reset();
-      main_message_loop_->PostTask(FROM_HERE, on_done_);
+      main_message_loop_->task_runner()->PostTask(FROM_HERE, on_done_);
     }
 
    private:
@@ -1011,9 +1012,9 @@ TEST_F(ThreadedSharedMemoryDataConsumerHandleTest, Read) {
   base::Thread t("DataConsumerHandle test thread");
   ASSERT_TRUE(t.Start());
 
-  t.message_loop()->PostTask(FROM_HERE,
-                             base::Bind(&ReadDataOperation::ReadData,
-                                        base::Unretained(operation.get())));
+  t.task_runner()->PostTask(FROM_HERE,
+                            base::Bind(&ReadDataOperation::ReadData,
+                                       base::Unretained(operation.get())));
 
   logger->Add("1");
   writer_->AddData(

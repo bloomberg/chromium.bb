@@ -15,6 +15,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/time/default_tick_clock.h"
 #include "base/time/time.h"
@@ -449,7 +450,7 @@ TEST_F(WebURLLoaderImplTest, DeleteBeforeResponseDataURL) {
   request.setURL(GURL("data:text/html;charset=utf-8,blah!"));
   client()->loader()->loadAsynchronously(request, client());
   client()->DeleteLoader();
-  message_loop()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(client()->did_receive_response());
 }
 
@@ -460,7 +461,7 @@ TEST_F(WebURLLoaderImplTest, DataURL) {
   request.initialize();
   request.setURL(GURL("data:text/html;charset=utf-8,blah!"));
   client()->loader()->loadAsynchronously(request, client());
-  message_loop()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_EQ("blah!", client()->received_data());
   EXPECT_TRUE(client()->did_finish());
   EXPECT_EQ(net::OK, client()->error().reason);
@@ -473,7 +474,7 @@ TEST_F(WebURLLoaderImplTest, DataURLDeleteOnReceiveResponse) {
   request.setURL(GURL("data:text/html;charset=utf-8,blah!"));
   client()->set_delete_on_receive_response();
   client()->loader()->loadAsynchronously(request, client());
-  message_loop()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(client()->did_receive_response());
   EXPECT_EQ("", client()->received_data());
   EXPECT_FALSE(client()->did_finish());
@@ -485,7 +486,7 @@ TEST_F(WebURLLoaderImplTest, DataURLDeleteOnReceiveData) {
   request.setURL(GURL("data:text/html;charset=utf-8,blah!"));
   client()->set_delete_on_receive_data();
   client()->loader()->loadAsynchronously(request, client());
-  message_loop()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(client()->did_receive_response());
   EXPECT_EQ("blah!", client()->received_data());
   EXPECT_FALSE(client()->did_finish());
@@ -497,7 +498,7 @@ TEST_F(WebURLLoaderImplTest, DataURLDeleteOnFinish) {
   request.setURL(GURL("data:text/html;charset=utf-8,blah!"));
   client()->set_delete_on_finish();
   client()->loader()->loadAsynchronously(request, client());
-  message_loop()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(client()->did_receive_response());
   EXPECT_EQ("blah!", client()->received_data());
   EXPECT_TRUE(client()->did_finish());
@@ -518,22 +519,22 @@ TEST_F(WebURLLoaderImplTest, DataURLDefersLoading) {
   client()->loader()->setDefersLoading(false);
   client()->loader()->setDefersLoading(true);
   client()->loader()->setDefersLoading(true);
-  message_loop()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(client()->did_finish());
 
   client()->loader()->setDefersLoading(false);
   client()->loader()->setDefersLoading(true);
-  message_loop()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(client()->did_finish());
 
   client()->loader()->setDefersLoading(false);
-  message_loop()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(client()->did_finish());
 
   client()->loader()->setDefersLoading(true);
   client()->loader()->setDefersLoading(false);
   client()->loader()->setDefersLoading(false);
-  message_loop()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(client()->did_finish());
 
   EXPECT_EQ("blah!", client()->received_data());

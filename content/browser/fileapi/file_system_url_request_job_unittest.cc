@@ -202,7 +202,7 @@ class FileSystemURLRequestJobTest : public testing::Test {
     request_->Start();
     ASSERT_TRUE(request_->is_pending());  // verify that we're starting async
     if (run_to_completion)
-      base::MessageLoop::current()->Run();
+      base::RunLoop().Run();
   }
 
   void TestRequest(const GURL& url) {
@@ -363,7 +363,7 @@ TEST_F(FileSystemURLRequestJobTest, FileDirRedirect) {
 
   // We've deferred the redirect; now cancel the request to avoid following it.
   request_->Cancel();
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
 }
 
 TEST_F(FileSystemURLRequestJobTest, InvalidURL) {

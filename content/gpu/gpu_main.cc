@@ -13,6 +13,7 @@
 #include "base/metrics/histogram.h"
 #include "base/metrics/statistics_recorder.h"
 #include "base/rand_util.h"
+#include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/third_party/dynamic_annotations/dynamic_annotations.h"
@@ -45,8 +46,8 @@
 #include "ui/gl/init/gl_factory.h"
 
 #if defined(OS_WIN)
-#include <dwmapi.h>
 #include <windows.h>
+#include <dwmapi.h>
 #endif
 
 #if defined(OS_ANDROID)
@@ -417,7 +418,7 @@ int GpuMain(const MainFunctionParams& parameters) {
 
   {
     TRACE_EVENT0("gpu", "Run Message Loop");
-    main_message_loop.Run();
+    base::RunLoop().Run();
   }
 
   child_thread->StopWatchdog();

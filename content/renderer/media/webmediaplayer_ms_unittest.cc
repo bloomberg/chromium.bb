@@ -5,6 +5,7 @@
 #include <stddef.h>
 
 #include "base/run_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "content/public/renderer/media_stream_renderer_factory.h"
 #include "content/renderer/media/webmediaplayer_ms.h"
 #include "content/renderer/media/webmediaplayer_ms_compositor.h"
@@ -512,7 +513,7 @@ void WebMediaPlayerMSTest::StopUsingProvider() {
 void WebMediaPlayerMSTest::StartRendering() {
   if (!rendering_) {
     rendering_ = true;
-    message_loop_.PostTask(
+    message_loop_.task_runner()->PostTask(
         FROM_HERE,
         base::Bind(&WebMediaPlayerMSTest::RenderFrame, base::Unretained(this)));
   }
@@ -542,7 +543,7 @@ void WebMediaPlayerMSTest::RenderFrame() {
     auto frame = compositor_->GetCurrentFrame();
     compositor_->PutCurrentFrame();
   }
-  message_loop_.PostDelayedTask(
+  message_loop_.task_runner()->PostDelayedTask(
       FROM_HERE,
       base::Bind(&WebMediaPlayerMSTest::RenderFrame, base::Unretained(this)),
       base::TimeDelta::FromSecondsD(1.0 / 60.0));

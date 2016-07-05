@@ -1081,7 +1081,7 @@ TEST_F(RenderWidgetHostTest, DontPostponeHangMonitorTimeout) {
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE, base::MessageLoop::QuitWhenIdleClosure(),
       TimeDelta::FromMilliseconds(10));
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
   EXPECT_TRUE(delegate_->unresponsive_timer_fired());
 }
 
@@ -1100,7 +1100,7 @@ TEST_F(RenderWidgetHostTest, StopAndStartHangMonitorTimeout) {
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE, base::MessageLoop::QuitWhenIdleClosure(),
       TimeDelta::FromMilliseconds(40));
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
   EXPECT_TRUE(delegate_->unresponsive_timer_fired());
 }
 
@@ -1118,7 +1118,7 @@ TEST_F(RenderWidgetHostTest, ShorterDelayHangMonitorTimeout) {
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE, base::MessageLoop::QuitWhenIdleClosure(),
       TimeDelta::FromMilliseconds(25));
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
   EXPECT_TRUE(delegate_->unresponsive_timer_fired());
 }
 
@@ -1136,7 +1136,7 @@ TEST_F(RenderWidgetHostTest, HangMonitorTimeoutDisabledForInputWhenHidden) {
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE, base::MessageLoop::QuitWhenIdleClosure(),
       TimeDelta::FromMicroseconds(2));
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
   EXPECT_FALSE(delegate_->unresponsive_timer_fired());
 
   // The timeout should never reactivate while hidden.
@@ -1144,7 +1144,7 @@ TEST_F(RenderWidgetHostTest, HangMonitorTimeoutDisabledForInputWhenHidden) {
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE, base::MessageLoop::QuitWhenIdleClosure(),
       TimeDelta::FromMicroseconds(2));
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
   EXPECT_FALSE(delegate_->unresponsive_timer_fired());
 
   // Showing the widget should restore the timeout, as the events have
@@ -1153,7 +1153,7 @@ TEST_F(RenderWidgetHostTest, HangMonitorTimeoutDisabledForInputWhenHidden) {
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE, base::MessageLoop::QuitWhenIdleClosure(),
       TimeDelta::FromMicroseconds(2));
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
   EXPECT_TRUE(delegate_->unresponsive_timer_fired());
 }
 
@@ -1175,7 +1175,7 @@ TEST_F(RenderWidgetHostTest, MultipleInputEvents) {
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE, base::MessageLoop::QuitWhenIdleClosure(),
       TimeDelta::FromMicroseconds(20));
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
   EXPECT_TRUE(delegate_->unresponsive_timer_fired());
 }
 
@@ -1191,7 +1191,7 @@ TEST_F(RenderWidgetHostTest, NewContentRenderingTimeout) {
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE, base::MessageLoop::QuitWhenIdleClosure(),
       TimeDelta::FromMicroseconds(20));
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
 
   EXPECT_FALSE(host_->new_content_rendering_timeout_fired());
 
@@ -1202,7 +1202,7 @@ TEST_F(RenderWidgetHostTest, NewContentRenderingTimeout) {
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE, base::MessageLoop::QuitWhenIdleClosure(),
       TimeDelta::FromMicroseconds(20));
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
 
   EXPECT_FALSE(host_->new_content_rendering_timeout_fired());
 
@@ -1211,7 +1211,7 @@ TEST_F(RenderWidgetHostTest, NewContentRenderingTimeout) {
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE, base::MessageLoop::QuitWhenIdleClosure(),
       TimeDelta::FromMicroseconds(20));
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
   EXPECT_TRUE(host_->new_content_rendering_timeout_fired());
 }
 

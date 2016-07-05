@@ -11,6 +11,7 @@
 
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
+#include "base/run_loop.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "storage/browser/fileapi/file_system_usage_cache.h"
 #include "storage/browser/fileapi/obfuscated_file_util.h"
@@ -112,7 +113,7 @@ class QuotaBackendImplTest : public testing::Test {
     backend_.reset();
     quota_manager_proxy_ = NULL;
     file_util_.reset();
-    message_loop_.RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
   }
 
  protected:

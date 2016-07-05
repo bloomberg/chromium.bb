@@ -10,6 +10,7 @@
 #include "base/i18n/rtl.h"
 #include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
+#include "base/run_loop.h"
 #include "base/threading/platform_thread.h"
 #include "build/build_config.h"
 #include "content/child/child_process.h"
@@ -142,7 +143,7 @@ int PpapiPluginMain(const MainFunctionParams& parameters) {
       gfx::FontRenderParams::SUBPIXEL_RENDERING_NONE);
 #endif
 
-  main_message_loop.Run();
+  base::RunLoop().Run();
 
 #if defined(OS_WIN)
   UninitializeDWriteFontProxy();

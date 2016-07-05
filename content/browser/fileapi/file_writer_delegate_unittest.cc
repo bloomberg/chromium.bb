@@ -286,7 +286,7 @@ TEST_F(FileWriterDelegateTest, WriteSuccessWithoutQuotaLimit) {
   Result result;
   ASSERT_EQ(0, usage());
   file_writer_delegate_->Start(std::move(request_), GetWriteCallback(&result));
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
 
   ASSERT_EQ(FileWriterDelegate::SUCCESS_COMPLETED, result.write_status());
   file_writer_delegate_.reset();
@@ -306,7 +306,7 @@ TEST_F(FileWriterDelegateTest, WriteSuccessWithJustQuota) {
   Result result;
   ASSERT_EQ(0, usage());
   file_writer_delegate_->Start(std::move(request_), GetWriteCallback(&result));
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
   ASSERT_EQ(FileWriterDelegate::SUCCESS_COMPLETED, result.write_status());
   file_writer_delegate_.reset();
 
@@ -326,7 +326,7 @@ TEST_F(FileWriterDelegateTest, DISABLED_WriteFailureByQuota) {
   Result result;
   ASSERT_EQ(0, usage());
   file_writer_delegate_->Start(std::move(request_), GetWriteCallback(&result));
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
   ASSERT_EQ(FileWriterDelegate::ERROR_WRITE_STARTED, result.write_status());
   file_writer_delegate_.reset();
 
@@ -347,7 +347,7 @@ TEST_F(FileWriterDelegateTest, WriteZeroBytesSuccessfullyWithZeroQuota) {
   Result result;
   ASSERT_EQ(0, usage());
   file_writer_delegate_->Start(std::move(request_), GetWriteCallback(&result));
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
   ASSERT_EQ(FileWriterDelegate::SUCCESS_COMPLETED, result.write_status());
   file_writer_delegate_.reset();
 
@@ -383,10 +383,10 @@ TEST_F(FileWriterDelegateTest, WriteSuccessWithoutQuotaLimitConcurrent) {
   ASSERT_EQ(0, usage());
   file_writer_delegate_->Start(std::move(request_), GetWriteCallback(&result));
   file_writer_delegate2->Start(std::move(request2), GetWriteCallback(&result2));
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
   if (result.write_status() == FileWriterDelegate::SUCCESS_IO_PENDING ||
       result2.write_status() == FileWriterDelegate::SUCCESS_IO_PENDING)
-    base::MessageLoop::current()->Run();
+    base::RunLoop().Run();
 
   ASSERT_EQ(FileWriterDelegate::SUCCESS_COMPLETED, result.write_status());
   ASSERT_EQ(FileWriterDelegate::SUCCESS_COMPLETED, result2.write_status());
@@ -417,7 +417,7 @@ TEST_F(FileWriterDelegateTest, WritesWithQuotaAndOffset) {
     ASSERT_EQ(0, usage());
     file_writer_delegate_->Start(std::move(request_),
                                  GetWriteCallback(&result));
-    base::MessageLoop::current()->Run();
+    base::RunLoop().Run();
     ASSERT_EQ(FileWriterDelegate::SUCCESS_COMPLETED, result.write_status());
     file_writer_delegate_.reset();
 
@@ -436,7 +436,7 @@ TEST_F(FileWriterDelegateTest, WritesWithQuotaAndOffset) {
     Result result;
     file_writer_delegate_->Start(std::move(request_),
                                  GetWriteCallback(&result));
-    base::MessageLoop::current()->Run();
+    base::RunLoop().Run();
     EXPECT_EQ(kDataSize, usage());
     EXPECT_EQ(GetFileSizeOnDisk("test"), usage());
     EXPECT_EQ(kDataSize, result.bytes_written());
@@ -454,7 +454,7 @@ TEST_F(FileWriterDelegateTest, WritesWithQuotaAndOffset) {
     Result result;
     file_writer_delegate_->Start(std::move(request_),
                                  GetWriteCallback(&result));
-    base::MessageLoop::current()->Run();
+    base::RunLoop().Run();
     ASSERT_EQ(FileWriterDelegate::SUCCESS_COMPLETED, result.write_status());
     file_writer_delegate_.reset();
 
@@ -474,7 +474,7 @@ TEST_F(FileWriterDelegateTest, WritesWithQuotaAndOffset) {
     Result result;
     file_writer_delegate_->Start(std::move(request_),
                                  GetWriteCallback(&result));
-    base::MessageLoop::current()->Run();
+    base::RunLoop().Run();
     ASSERT_EQ(FileWriterDelegate::SUCCESS_COMPLETED, result.write_status());
     file_writer_delegate_.reset();
 
@@ -495,7 +495,7 @@ TEST_F(FileWriterDelegateTest, WritesWithQuotaAndOffset) {
     Result result;
     file_writer_delegate_->Start(std::move(request_),
                                  GetWriteCallback(&result));
-    base::MessageLoop::current()->Run();
+    base::RunLoop().Run();
     ASSERT_EQ(FileWriterDelegate::ERROR_WRITE_STARTED, result.write_status());
     file_writer_delegate_.reset();
 

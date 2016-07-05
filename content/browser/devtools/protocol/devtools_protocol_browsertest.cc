@@ -9,6 +9,7 @@
 #include "base/command_line.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
+#include "base/run_loop.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "content/public/browser/devtools_agent_host.h"
@@ -127,7 +128,7 @@ class DevToolsProtocolTest : public ContentBrowserTest,
     // Only run loop if we are not finished yet.
     if (in_dispatch_ && wait) {
       waiting_for_command_result_id_ = last_sent_id_;
-      base::MessageLoop::current()->Run();
+      base::RunLoop().Run();
     }
     in_dispatch_ = false;
   }

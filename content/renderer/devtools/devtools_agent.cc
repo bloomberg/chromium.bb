@@ -11,6 +11,7 @@
 #include "base/json/json_writer.h"
 #include "base/lazy_instance.h"
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/trace_event/trace_event.h"
 #include "content/common/devtools_messages.h"
@@ -50,7 +51,7 @@ class WebKitClientMessageLoopImpl
   ~WebKitClientMessageLoopImpl() override { message_loop_ = NULL; }
   void run() override {
     base::MessageLoop::ScopedNestableTaskAllower allow(message_loop_);
-    message_loop_->Run();
+    base::RunLoop().Run();
   }
   void quitNow() override { message_loop_->QuitNow(); }
 

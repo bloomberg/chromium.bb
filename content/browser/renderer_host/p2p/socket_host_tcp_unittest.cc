@@ -10,6 +10,7 @@
 #include <deque>
 
 #include "base/macros.h"
+#include "base/run_loop.h"
 #include "base/sys_byteorder.h"
 #include "content/browser/renderer_host/p2p/socket_host_test_utils.h"
 #include "net/socket/stream_socket.h"
@@ -237,7 +238,7 @@ TEST_F(P2PSocketHostTcpTest, AsyncWrites) {
   CreateStunResponse(&packet2);
   socket_host_->Send(dest_.ip_address, packet2, options, 0);
 
-  message_loop.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   std::string expected_data;
   expected_data.append(IntToSize(packet1.size()));
@@ -392,7 +393,7 @@ TEST_F(P2PSocketHostStunTcpTest, AsyncWrites) {
   CreateStunResponse(&packet2);
   socket_host_->Send(dest_.ip_address, packet2, options, 0);
 
-  message_loop.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   std::string expected_data;
   expected_data.append(packet1.begin(), packet1.end());

@@ -294,7 +294,7 @@ void URLRequestChromeJob::Start() {
 
   // Start reading asynchronously so that all error reporting and data
   // callbacks happen as they would for network requests.
-  base::MessageLoop::current()->PostTask(
+  base::MessageLoop::current()->task_runner()->PostTask(
       FROM_HERE,
       base::Bind(&URLRequestChromeJob::StartAsync, weak_factory_.GetWeakPtr()));
 

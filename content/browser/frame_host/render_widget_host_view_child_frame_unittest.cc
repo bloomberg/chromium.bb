@@ -11,6 +11,8 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "build/build_config.h"
 #include "cc/surfaces/surface.h"
 #include "cc/surfaces/surface_factory.h"
@@ -99,8 +101,9 @@ class RenderWidgetHostViewChildFrameTest : public testing::Test {
 
     browser_context_.reset();
 
-    message_loop_.DeleteSoon(FROM_HERE, browser_context_.release());
-    message_loop_.RunUntilIdle();
+    message_loop_.task_runner()->DeleteSoon(FROM_HERE,
+                                            browser_context_.release());
+    base::RunLoop().RunUntilIdle();
 #if !defined(OS_ANDROID)
     ImageTransportFactory::Terminate();
 #endif

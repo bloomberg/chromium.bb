@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/run_loop.h"
 #include "build/build_config.h"
 #include "content/browser/frame_host/frame_tree.h"
 #include "content/browser/site_per_process_browsertest.h"
@@ -45,7 +46,7 @@ class TestClient: public DevToolsAgentHostClient {
 
   void WaitForReply() {
     waiting_for_reply_ = true;
-    base::MessageLoop::current()->Run();
+    base::RunLoop().Run();
   }
 
  private:

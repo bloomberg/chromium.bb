@@ -18,6 +18,7 @@
 #include "base/format_macros.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/platform_thread.h"
@@ -331,7 +332,7 @@ class CountingDownloadFile : public DownloadFileImpl {
         BrowserThread::FILE, FROM_HERE,
         base::Bind(&CountingDownloadFile::GetNumberActiveFiles, &result),
         base::MessageLoop::current()->QuitWhenIdleClosure());
-    base::MessageLoop::current()->Run();
+    base::RunLoop().Run();
     DCHECK_NE(-1, result);
     return result;
   }
@@ -627,7 +628,7 @@ class DownloadContentTest : public ContentBrowserTest {
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
         base::Bind(&EnsureNoPendingDownloadJobsOnIO, &result));
-    base::MessageLoop::current()->Run();
+    base::RunLoop().Run();
     return result &&
            (CountingDownloadFile::GetNumberActiveFilesFromFileThread() == 0);
   }

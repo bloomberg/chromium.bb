@@ -119,7 +119,7 @@ class LocalFileStreamReaderTest : public testing::Test {
   void EnsureFileTaskFinished() {
     file_task_runner()->PostTaskAndReply(
         FROM_HERE, base::Bind(&EmptyCallback), base::Bind(&QuitLoop));
-    base::MessageLoop::current()->Run();
+    base::RunLoop().Run();
   }
 
  private:

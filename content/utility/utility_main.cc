@@ -5,6 +5,7 @@
 #include "base/command_line.h"
 #include "base/debug/leak_annotations.h"
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "base/threading/platform_thread.h"
 #include "base/timer/hi_res_timer_manager.h"
 #include "build/build_config.h"
@@ -56,7 +57,7 @@ int UtilityMain(const MainFunctionParams& parameters) {
   }
 #endif
 
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
 
 #if defined(LEAK_SANITIZER)
   // Invoke LeakSanitizer before shutting down the utility thread, to avoid

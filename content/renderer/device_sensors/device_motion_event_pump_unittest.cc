@@ -11,6 +11,7 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/common/device_sensors/device_motion_hardware_buffer.h"
@@ -138,7 +139,7 @@ TEST_F(DeviceMotionEventPumpTest, DidStartPolling) {
   motion_pump()->Start(listener());
   motion_pump()->DidStart(handle());
 
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
 
   const blink::WebDeviceMotionData& received_data = listener()->data();
   EXPECT_TRUE(listener()->did_change_device_motion());
@@ -163,7 +164,7 @@ TEST_F(DeviceMotionEventPumpTest, DidStartPollingNotAllSensorsActive) {
   motion_pump()->Start(listener());
   motion_pump()->DidStart(handle());
 
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
 
   const blink::WebDeviceMotionData& received_data = listener()->data();
   // No change in device motion because allAvailableSensorsAreActive is false.
@@ -196,7 +197,7 @@ TEST_F(DeviceMotionEventPumpTest, PumpThrottlesEventRate) {
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE, base::MessageLoop::QuitWhenIdleClosure(),
       base::TimeDelta::FromMilliseconds(100));
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
   motion_pump()->Stop();
 
   // Check that the blink::WebDeviceMotionListener does not receive excess

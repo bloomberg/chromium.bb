@@ -339,7 +339,7 @@ class InputRouterImplTest : public testing::Test {
   static void RunTasksAndWait(base::TimeDelta delay) {
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE, base::MessageLoop::QuitWhenIdleClosure(), delay);
-    base::MessageLoop::current()->Run();
+    base::RunLoop().Run();
   }
 
   InputRouterImpl::Config config_;

@@ -12,6 +12,7 @@
 #include "base/command_line.h"
 #include "base/location.h"
 #include "base/memory/discardable_memory.h"
+#include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -225,7 +226,7 @@ TEST_F(RenderThreadImplBrowserTest,
   test_helper_->Sender()->Send(new ResourceHostMsg_FollowRedirect(0));
   test_helper_->Sender()->Send(new TestMsg_QuitRunLoop());
 
-  test_helper_->GetMessageLoop()->Run();
+  base::RunLoop().Run();
   EXPECT_EQ(1, test_task_counter_->NumTasksPosted());
 }
 
@@ -237,7 +238,7 @@ TEST_F(RenderThreadImplBrowserTest,
   test_helper_->Sender()->Send(new WebSocketMsg_NotifyFailure(1, ""));
   test_helper_->Sender()->Send(new TestMsg_QuitRunLoop());
 
-  test_helper_->GetMessageLoop()->Run();
+  base::RunLoop().Run();
 
   EXPECT_EQ(0, test_task_counter_->NumTasksPosted());
 }

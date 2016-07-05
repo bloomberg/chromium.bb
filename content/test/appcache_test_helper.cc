@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "content/browser/appcache/appcache.h"
 #include "content/browser/appcache/appcache_entry.h"
 #include "content/browser/appcache/appcache_group.h"
@@ -49,7 +50,7 @@ void AppCacheTestHelper::AddGroupAndCache(AppCacheServiceImpl*
                                                         appcache,
                                                         this);
   // OnGroupAndNewestCacheStored will quit the message loop.
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
 }
 
 void AppCacheTestHelper::GetOriginsWithCaches(AppCacheServiceImpl*
@@ -62,7 +63,7 @@ void AppCacheTestHelper::GetOriginsWithCaches(AppCacheServiceImpl*
                  base::Unretained(this)));
 
   // OnGotAppCacheInfo will quit the message loop.
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
 }
 
 void AppCacheTestHelper::OnGotAppCacheInfo(int rv) {

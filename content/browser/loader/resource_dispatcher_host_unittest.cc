@@ -1568,7 +1568,7 @@ TEST_P(ResourceDispatcherHostTest, DetachedResourceTimesOut) {
   base::OneShotTimer timer;
   timer.Start(FROM_HERE, base::TimeDelta::FromMilliseconds(210),
               base::MessageLoop::current(), &base::MessageLoop::QuitWhenIdle);
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
 
   // The prefetch should be cancelled by now.
   EXPECT_EQ(0, host_.pending_requests());
@@ -2020,7 +2020,7 @@ TEST_P(ResourceDispatcherHostTest, TestProcessCancelDetachedTimesOut) {
   base::OneShotTimer timer;
   timer.Start(FROM_HERE, base::TimeDelta::FromMilliseconds(210),
               base::MessageLoop::current(), &base::MessageLoop::QuitWhenIdle);
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
 
   // The prefetch should be cancelled by now.
   EXPECT_EQ(0, host_.pending_requests());

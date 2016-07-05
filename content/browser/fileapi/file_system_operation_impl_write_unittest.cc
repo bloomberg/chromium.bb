@@ -186,7 +186,7 @@ TEST_F(FileSystemOperationImplWriteTest, TestWriteSuccess) {
       &url_request_context(), URLForPath(virtual_path_),
       blob.GetBlobDataHandle(),
       0, RecordWriteCallback());
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
 
   EXPECT_EQ(14, bytes_written());
   EXPECT_EQ(base::File::FILE_OK, status());
@@ -200,7 +200,7 @@ TEST_F(FileSystemOperationImplWriteTest, TestWriteZero) {
   file_system_context_->operation_runner()->Write(
       &url_request_context(), URLForPath(virtual_path_),
       blob.GetBlobDataHandle(), 0, RecordWriteCallback());
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
 
   EXPECT_EQ(0, bytes_written());
   EXPECT_EQ(base::File::FILE_OK, status());
@@ -215,7 +215,7 @@ TEST_F(FileSystemOperationImplWriteTest, TestWriteInvalidBlobUrl) {
   file_system_context_->operation_runner()->Write(
       &url_request_context(), URLForPath(virtual_path_), std::move(null_handle),
       0, RecordWriteCallback());
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
 
   EXPECT_EQ(0, bytes_written());
   EXPECT_EQ(base::File::FILE_ERROR_FAILED, status());
@@ -231,7 +231,7 @@ TEST_F(FileSystemOperationImplWriteTest, TestWriteInvalidFile) {
       &url_request_context(),
       URLForPath(base::FilePath(FILE_PATH_LITERAL("nonexist"))),
       blob.GetBlobDataHandle(), 0, RecordWriteCallback());
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
 
   EXPECT_EQ(0, bytes_written());
   EXPECT_EQ(base::File::FILE_ERROR_NOT_FOUND, status());
@@ -252,7 +252,7 @@ TEST_F(FileSystemOperationImplWriteTest, TestWriteDir) {
   file_system_context_->operation_runner()->Write(
       &url_request_context(), URLForPath(virtual_dir_path),
       blob.GetBlobDataHandle(),  0, RecordWriteCallback());
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
 
   EXPECT_EQ(0, bytes_written());
   // TODO(kinuko): This error code is platform- or fileutil- dependent
@@ -273,7 +273,7 @@ TEST_F(FileSystemOperationImplWriteTest, TestWriteFailureByQuota) {
   file_system_context_->operation_runner()->Write(
       &url_request_context(), URLForPath(virtual_path_),
       blob.GetBlobDataHandle(), 0, RecordWriteCallback());
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
 
   EXPECT_EQ(10, bytes_written());
   EXPECT_EQ(base::File::FILE_ERROR_NO_SPACE, status());

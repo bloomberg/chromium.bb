@@ -75,7 +75,7 @@ void RunCurrentLoopWithDeadline() {
       FROM_HERE, TestTimeouts::action_max_timeout(),
       base::Bind(&DeadlineExceeded,
                  base::MessageLoop::current()->QuitWhenIdleClosure()));
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
   deadline.Stop();
 }
 

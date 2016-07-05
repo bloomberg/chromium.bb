@@ -16,6 +16,7 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "content/common/frame_messages.h"
@@ -299,7 +300,7 @@ PP_Bool ReadImageData(PP_Resource device_context_2d,
 void RunMessageLoop(PP_Instance instance) {
   base::MessageLoop::ScopedNestableTaskAllower allow(
       base::MessageLoop::current());
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
 }
 
 void QuitMessageLoop(PP_Instance instance) {

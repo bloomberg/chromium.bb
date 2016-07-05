@@ -100,7 +100,7 @@ class AwaitCompletionHelper {
     if (!already_quit_) {
       DCHECK(!start_);
       start_ = true;
-      base::MessageLoop::current()->Run();
+      base::RunLoop().Run();
     } else {
       DCHECK(!start_);
       already_quit_ = false;

@@ -411,10 +411,10 @@ void WebMediaPlayerMSCompositor::SetCurrentFrame(
       current_frame_->natural_size() != frame->natural_size();
   current_frame_ = frame;
   if (size_changed) {
-    main_message_loop_->PostTask(
+    main_message_loop_->task_runner()->PostTask(
         FROM_HERE, base::Bind(&WebMediaPlayerMS::TriggerResize, player_));
   }
-  main_message_loop_->PostTask(
+  main_message_loop_->task_runner()->PostTask(
       FROM_HERE, base::Bind(&WebMediaPlayerMS::ResetCanvasCache, player_));
 }
 

@@ -9,6 +9,7 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/common/device_sensors/device_orientation_hardware_buffer.h"
@@ -128,7 +129,7 @@ TEST_F(DeviceOrientationEventPumpTest, DidStartPolling) {
   orientation_pump()->Start(listener());
   orientation_pump()->DidStart(handle());
 
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
 
   const blink::WebDeviceOrientationData& received_data = listener()->data();
   EXPECT_TRUE(listener()->did_change_device_orientation());
@@ -146,7 +147,7 @@ TEST_F(DeviceOrientationEventPumpTest, FireAllNullEvent) {
   orientation_pump()->Start(listener());
   orientation_pump()->DidStart(handle());
 
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
 
   const blink::WebDeviceOrientationData& received_data = listener()->data();
   EXPECT_TRUE(listener()->did_change_device_orientation());
@@ -161,7 +162,7 @@ TEST_F(DeviceOrientationEventPumpTest, UpdateRespectsOrientationThreshold) {
   orientation_pump()->Start(listener());
   orientation_pump()->DidStart(handle());
 
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
 
   const blink::WebDeviceOrientationData& received_data = listener()->data();
   EXPECT_TRUE(listener()->did_change_device_orientation());
@@ -183,7 +184,7 @@ TEST_F(DeviceOrientationEventPumpTest, UpdateRespectsOrientationThreshold) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::Bind(&DeviceOrientationEventPumpForTesting::FireEvent,
                             base::Unretained(orientation_pump())));
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
 
   EXPECT_FALSE(listener()->did_change_device_orientation());
   EXPECT_TRUE(received_data.allAvailableSensorsAreActive);
@@ -204,7 +205,7 @@ TEST_F(DeviceOrientationEventPumpTest, UpdateRespectsOrientationThreshold) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::Bind(&DeviceOrientationEventPumpForTesting::FireEvent,
                             base::Unretained(orientation_pump())));
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
 
   EXPECT_TRUE(listener()->did_change_device_orientation());
   EXPECT_EQ(1 + DeviceOrientationEventPump::kOrientationThreshold,

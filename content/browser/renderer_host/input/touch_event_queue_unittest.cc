@@ -12,6 +12,7 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/browser/renderer_host/input/timeout_monitor.h"
@@ -308,7 +309,7 @@ class TouchEventQueueTest : public testing::Test,
   static void RunTasksAndWait(base::TimeDelta delay) {
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE, base::MessageLoop::QuitWhenIdleClosure(), delay);
-    base::MessageLoop::current()->Run();
+    base::RunLoop().Run();
   }
 
   size_t uncancelable_touch_moves_pending_ack_count() const {

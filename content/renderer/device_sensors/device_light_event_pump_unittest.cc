@@ -6,6 +6,7 @@
 
 #include "base/location.h"
 #include "base/macros.h"
+#include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/common/device_sensors/device_light_hardware_buffer.h"
@@ -107,7 +108,7 @@ TEST_F(DeviceLightEventPumpTest, DidStartPolling) {
   light_pump()->Start(listener());
   light_pump()->DidStart(handle());
 
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
 
   const DeviceLightData& received_data = listener()->data();
   EXPECT_TRUE(listener()->did_change_device_light());
@@ -118,7 +119,7 @@ TEST_F(DeviceLightEventPumpTest, FireAllNullEvent) {
   light_pump()->Start(listener());
   light_pump()->DidStart(handle());
 
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
 
   const DeviceLightData& received_data = listener()->data();
   EXPECT_TRUE(listener()->did_change_device_light());
@@ -131,7 +132,7 @@ TEST_F(DeviceLightEventPumpTest, DidStartPollingValuesEqual) {
   light_pump()->Start(listener());
   light_pump()->DidStart(handle());
 
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
 
   const DeviceLightData& received_data = listener()->data();
   EXPECT_TRUE(listener()->did_change_device_light());
@@ -148,7 +149,7 @@ TEST_F(DeviceLightEventPumpTest, DidStartPollingValuesEqual) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::Bind(&DeviceLightEventPumpForTesting::FireEvent,
                             base::Unretained(light_pump())));
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
 
   // No change in device light as present value is same as previous value.
   EXPECT_FALSE(listener()->did_change_device_light());

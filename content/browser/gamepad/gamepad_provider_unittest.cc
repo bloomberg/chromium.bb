@@ -8,6 +8,7 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/run_loop.h"
 #include "build/build_config.h"
 #include "content/browser/gamepad/gamepad_data_fetcher.h"
 #include "content/browser/gamepad/gamepad_test_helpers.h"
@@ -89,7 +90,7 @@ TEST_F(GamepadProviderTest, MAYBE_PollingAccess) {
   GamepadProvider* provider = CreateProvider(test_data);
   provider->Resume();
 
-  message_loop().RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   mock_data_fetcher_->WaitForDataRead();
 
@@ -145,7 +146,7 @@ TEST_F(GamepadProviderTest, UserGesture) {
   mock_data_fetcher_->WaitForDataReadAndCallbacksIssued();
 
   // It should not have issued our callback.
-  message_loop().RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(listener.has_user_gesture());
 
   // Set a button down and wait for it to be read twice.
@@ -153,7 +154,7 @@ TEST_F(GamepadProviderTest, UserGesture) {
   mock_data_fetcher_->WaitForDataReadAndCallbacksIssued();
 
   // It should have issued our callback.
-  message_loop().RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(listener.has_user_gesture());
 }
 

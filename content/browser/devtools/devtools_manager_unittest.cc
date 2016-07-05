@@ -8,6 +8,7 @@
 
 #include "base/location.h"
 #include "base/macros.h"
+#include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
@@ -149,7 +150,7 @@ TEST_F(DevToolsManagerTest, NoUnresponsiveDialogInInspectedContents) {
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE, base::MessageLoop::QuitWhenIdleClosure(),
       TimeDelta::FromMilliseconds(10));
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
   EXPECT_FALSE(delegate.renderer_unresponsive_received());
 
   // Now close devtools and check that the notification is delivered.
@@ -161,7 +162,7 @@ TEST_F(DevToolsManagerTest, NoUnresponsiveDialogInInspectedContents) {
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE, base::MessageLoop::QuitWhenIdleClosure(),
       TimeDelta::FromMilliseconds(10));
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
   EXPECT_TRUE(delegate.renderer_unresponsive_received());
 
   contents()->SetDelegate(NULL);

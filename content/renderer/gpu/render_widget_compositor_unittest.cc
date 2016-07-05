@@ -9,6 +9,7 @@
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "cc/output/begin_frame_args.h"
@@ -240,7 +241,7 @@ class RenderWidgetCompositorOutputSurfaceTest : public testing::Test {
         FROM_HERE,
         base::Bind(&RenderWidgetCompositorOutputSurface::SynchronousComposite,
                    base::Unretained(&render_widget_compositor_)));
-    base::MessageLoop::current()->Run();
+    base::RunLoop().Run();
     render_widget_compositor_.AfterTest();
   }
 

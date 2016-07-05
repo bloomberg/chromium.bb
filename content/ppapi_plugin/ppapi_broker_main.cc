@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "base/threading/platform_thread.h"
 #include "build/build_config.h"
 #include "content/child/child_process.h"
@@ -31,7 +32,7 @@ int PpapiBrokerMain(const MainFunctionParams& parameters) {
   ppapi_broker_process.set_main_thread(
       new PpapiThread(parameters.command_line, true));  // Broker.
 
-  main_message_loop.Run();
+  base::RunLoop().Run();
   DVLOG(1) << "PpapiBrokerMain exiting";
   return 0;
 }

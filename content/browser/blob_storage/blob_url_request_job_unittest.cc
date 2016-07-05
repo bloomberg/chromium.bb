@@ -271,7 +271,7 @@ class BlobURLRequestJobTest : public testing::Test {
       request_->SetExtraRequestHeaders(extra_headers);
     request_->Start();
 
-    base::MessageLoop::current()->Run();
+    base::RunLoop().Run();
 
     // Verify response.
     EXPECT_TRUE(request_->status().is_success());

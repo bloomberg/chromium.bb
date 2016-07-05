@@ -4,6 +4,7 @@
 
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "base/test/power_monitor_test_base.h"
 #include "content/child/power_monitor_broadcast_source.h"
 #include "content/common/power_monitor_messages.h"
@@ -44,27 +45,27 @@ TEST_F(PowerMonitorBroadcastSourceTest, PowerMessageReceiveBroadcast) {
 
   // Sending resume when not suspended should have no effect.
   message_filter->OnMessageReceived(resume_msg);
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_EQ(observer.resumes(), 0);
 
   // Pretend we suspended.
   message_filter->OnMessageReceived(suspend_msg);
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_EQ(observer.suspends(), 1);
 
   // Send a second suspend notification.  This should be suppressed.
   message_filter->OnMessageReceived(suspend_msg);
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_EQ(observer.suspends(), 1);
 
   // Pretend we were awakened.
   message_filter->OnMessageReceived(resume_msg);
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_EQ(observer.resumes(), 1);
 
   // Send a duplicate resume notification.  This should be suppressed.
   message_filter->OnMessageReceived(resume_msg);
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_EQ(observer.resumes(), 1);
 
   PowerMonitorMsg_PowerStateChange on_battery_msg(true);
@@ -72,24 +73,24 @@ TEST_F(PowerMonitorBroadcastSourceTest, PowerMessageReceiveBroadcast) {
 
   // Pretend the device has gone on battery power
   message_filter->OnMessageReceived(on_battery_msg);
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_EQ(observer.power_state_changes(), 1);
   EXPECT_EQ(observer.last_power_state(), true);
 
   // Repeated indications the device is on battery power should be suppressed.
   message_filter->OnMessageReceived(on_battery_msg);
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_EQ(observer.power_state_changes(), 1);
 
   // Pretend the device has gone off battery power
   message_filter->OnMessageReceived(off_battery_msg);
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_EQ(observer.power_state_changes(), 2);
   EXPECT_EQ(observer.last_power_state(), false);
 
   // Repeated indications the device is off battery power should be suppressed.
   message_filter->OnMessageReceived(off_battery_msg);
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_EQ(observer.power_state_changes(), 2);
 }
 

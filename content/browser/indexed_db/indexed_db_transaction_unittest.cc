@@ -54,7 +54,7 @@ class IndexedDBTransactionTest : public testing::Test {
     ASSERT_TRUE(s.ok());
   }
 
-  void RunPostedTasks() { message_loop_.RunUntilIdle(); }
+  void RunPostedTasks() { base::RunLoop().RunUntilIdle(); }
   void DummyOperation(IndexedDBTransaction* transaction) {}
   void AbortableOperation(AbortObserver* observer,
                           IndexedDBTransaction* transaction) {

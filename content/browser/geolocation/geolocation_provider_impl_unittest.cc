@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
+#include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string16.h"
 #include "base/time/time.h"
@@ -151,7 +152,7 @@ bool GeolocationProviderTest::ProvidersStarted() {
       FROM_HERE, base::Bind(&GeolocationProviderTest::GetProvidersStarted,
                             base::Unretained(this), &started),
       base::MessageLoop::QuitWhenIdleClosure());
-  message_loop_.Run();
+  base::RunLoop().Run();
   return started;
 }
 
@@ -208,7 +209,7 @@ TEST_F(GeolocationProviderTest, StalePositionNotSent) {
   std::unique_ptr<content::GeolocationProvider::Subscription> subscription =
       provider()->AddLocationUpdateCallback(first_callback, false);
   SendMockLocation(first_position);
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
 
   subscription.reset();
 
@@ -228,13 +229,13 @@ TEST_F(GeolocationProviderTest, StalePositionNotSent) {
       base::Unretained(&second_observer));
   std::unique_ptr<content::GeolocationProvider::Subscription> subscription2 =
       provider()->AddLocationUpdateCallback(second_callback, false);
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   // The second observer should receive the new position now.
   EXPECT_CALL(second_observer,
               OnLocationUpdate(GeopositionEq(second_position)));
   SendMockLocation(second_position);
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
 
   subscription2.reset();
   EXPECT_FALSE(ProvidersStarted());
