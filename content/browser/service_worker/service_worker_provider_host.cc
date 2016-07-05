@@ -212,22 +212,12 @@ void ServiceWorkerProviderHost::SetControllerVersionAttribute(
       notify_controllerchange));
 }
 
-bool ServiceWorkerProviderHost::SetHostedVersion(
+void ServiceWorkerProviderHost::SetHostedVersion(
     ServiceWorkerVersion* version) {
-  // TODO(falken): Unclear why we check active_version. Should this just check
-  // that IsProviderForClient() is false?
-  if (active_version())
-    return false;  // Unexpected bad message.
-
+  DCHECK(!IsProviderForClient());
   DCHECK_EQ(EmbeddedWorkerStatus::STARTING, version->running_status());
-  if (version->embedded_worker()->process_id() != render_process_id_) {
-    // If we aren't trying to start this version in our process
-    // something is amiss.
-    return false;
-  }
-
+  DCHECK_EQ(render_process_id_, version->embedded_worker()->process_id());
   running_hosted_version_ = version;
-  return true;
 }
 
 bool ServiceWorkerProviderHost::IsProviderForClient() const {

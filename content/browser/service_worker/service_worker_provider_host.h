@@ -154,9 +154,7 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   // Clears the associated registration and stop listening to it.
   void DisassociateRegistration();
 
-  // Returns false if we have an active version or |version| is using  a
-  // different process.  That would be indicative of a bad IPC message.
-  bool SetHostedVersion(ServiceWorkerVersion* version);
+  void SetHostedVersion(ServiceWorkerVersion* version);
 
   // Returns a handler for a request, the handler may return NULL if
   // the request doesn't require special handling.

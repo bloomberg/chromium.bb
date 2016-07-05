@@ -66576,7 +66576,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="61" label="SWDH_PROVIDER_CREATED_NO_HOST"/>
   <int value="62" label="SWDH_PROVIDER_DESTROYED_NO_HOST"/>
   <int value="63" label="SWDH_SET_HOSTED_VERSION_NO_HOST"/>
-  <int value="64" label="SWDH_SET_HOSTED_VERSION"/>
+  <int value="64" label="OBSOLETE_SWDH_SET_HOSTED_VERSION"/>
   <int value="65" label="SWDH_WORKER_SCRIPT_LOAD_NO_HOST"/>
   <int value="66" label="SWDH_INCREMENT_WORKER_BAD_HANDLE"/>
   <int value="67" label="SWDH_DECREMENT_WORKER_BAD_HANDLE"/>
@@ -66640,6 +66640,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="125" label="DBMF_INVALID_ORIGIN_ON_MODIFIED"/>
   <int value="126" label="DBMF_INVALID_ORIGIN_ON_CLOSED"/>
   <int value="127" label="WSH_INVALID_HEADER_VALUE"/>
+  <int value="128" label="SWDH_SET_HOSTED_VERSION_INVALID_HOST"/>
+  <int value="129" label="SWDH_SET_HOSTED_VERSION_PROCESS_MISMATCH"/>
 </enum>
 
 <enum name="BadMessageReasonExtensions" type="int">

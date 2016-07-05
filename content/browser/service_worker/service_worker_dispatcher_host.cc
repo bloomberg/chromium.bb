@@ -806,6 +806,16 @@ void ServiceWorkerDispatcherHost::OnSetHostedVersionId(int provider_id,
         this, bad_message::SWDH_SET_HOSTED_VERSION_NO_HOST);
     return;
   }
+
+  // This provider host must be specialized for a controller.
+  if (provider_host->IsProviderForClient()) {
+    bad_message::ReceivedBadMessage(
+        this, bad_message::SWDH_SET_HOSTED_VERSION_INVALID_HOST);
+    return;
+  }
+
+  // A service worker context associated with this provider host was destroyed
+  // due to restarting the service worker system etc.
   if (!provider_host->IsContextAlive())
     return;
 
@@ -815,10 +825,14 @@ void ServiceWorkerDispatcherHost::OnSetHostedVersionId(int provider_id,
   if (!version || version->running_status() != EmbeddedWorkerStatus::STARTING)
     return;
 
-  if (!provider_host->SetHostedVersion(version)) {
-    bad_message::ReceivedBadMessage(this, bad_message::SWDH_SET_HOSTED_VERSION);
+  // A process for the worker must be equal to a process for the provider host.
+  if (version->embedded_worker()->process_id() != provider_host->process_id()) {
+    bad_message::ReceivedBadMessage(
+        this, bad_message::SWDH_SET_HOSTED_VERSION_PROCESS_MISMATCH);
     return;
   }
+
+  provider_host->SetHostedVersion(version);
 
   // Retrieve the registration associated with |version|. The registration
   // must be alive because the version keeps it during starting worker.
