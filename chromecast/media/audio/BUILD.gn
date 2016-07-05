@@ -2,15 +2,29 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/buildflag_header.gni")
+
+declare_args() {
+  enable_mixer = false
+}
+
+buildflag_header("audio_features") {
+  header = "audio_features.h"
+  flags = [ "ENABLE_PCM_MIXING=$enable_mixer" ]
+}
+
 source_set("audio") {
   sources = [
     "cast_audio_manager.cc",
     "cast_audio_manager.h",
+    "cast_audio_mixer.cc",
+    "cast_audio_mixer.h",
     "cast_audio_output_stream.cc",
     "cast_audio_output_stream.h",
   ]
 
   deps = [
+    ":audio_features",
     "//base",
     "//chromecast/base",
     "//chromecast/media/base",
