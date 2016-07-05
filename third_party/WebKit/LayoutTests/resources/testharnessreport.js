@@ -66,9 +66,19 @@
         return !!document.querySelector('script[src*="/resources/testharness"]');
     }
 
+
     function injectSyntheticInput() {
         var path = window.location.pathname;
         if (path.match(/imported\/wpt\/.*\.html$/)) {
+            // Set a global variable for the address of automated input script if they need to use it.
+            var automated_input_scripts_folder = path.replace(/imported\/wpt\/(.*)\.html$/, 'imported/wpt_automation');
+
+            importAutomationScript = function(relativePath) {
+              var common_script = document.createElement('script');
+              common_script.setAttribute('src', automated_input_scripts_folder + relativePath);
+              document.head.appendChild(common_script);
+            }
+
             path = path.replace(/imported\/wpt\/(.*)\.html$/, "imported/wpt_automation/$1-input.js");
             var input_script = document.createElement('script');
             input_script.setAttribute('src', path);
