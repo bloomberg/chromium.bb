@@ -72,6 +72,48 @@ void CreateTestPasswordFormFillData(PasswordFormFillData* fill_data) {
   fill_data->is_possible_change_password_form = false;
 }
 
+void CreateTestPasswordForm(PasswordForm* form) {
+  form->scheme = PasswordForm::Scheme::SCHEME_HTML;
+  form->signon_realm = "https://foo.com/";
+  form->origin = GURL("https://foo.com/");
+  form->action = GURL("https://foo.com/login");
+  form->affiliated_web_realm = "https://foo.com/";
+  form->submit_element = base::ASCIIToUTF16("test_submit");
+  form->username_element = base::ASCIIToUTF16("username");
+  form->username_marked_by_site = true;
+  form->username_value = base::ASCIIToUTF16("test@gmail.com");
+  form->other_possible_usernames.push_back(base::ASCIIToUTF16("Jerry_1"));
+  form->other_possible_usernames.push_back(base::ASCIIToUTF16("Jerry_2"));
+  form->password_element = base::ASCIIToUTF16("password");
+  form->password_value = base::ASCIIToUTF16("test");
+  form->password_value_is_default = true;
+  form->new_password_element = base::ASCIIToUTF16("new_password");
+  form->new_password_value = base::ASCIIToUTF16("new_password_value");
+  form->new_password_value_is_default = false;
+  form->new_password_marked_by_site = false;
+  form->ssl_valid = true;
+  form->preferred = false;
+  form->date_created = base::Time::Now();
+  form->date_synced = base::Time::Now();
+  form->blacklisted_by_user = false;
+  form->type = PasswordForm::Type::TYPE_GENERATED;
+  form->times_used = 999;
+  test::CreateTestAddressFormData(&form->form_data);
+  form->generation_upload_status =
+      PasswordForm::GenerationUploadStatus::POSITIVE_SIGNAL_SENT;
+  form->display_name = base::ASCIIToUTF16("test display name");
+  form->icon_url = GURL("https://foo.com/icon.png");
+  form->federation_origin =
+      url::Origin::UnsafelyCreateOriginWithoutNormalization(
+          "http", "www.google.com", 80);
+  form->skip_zero_click = false;
+  form->layout = PasswordForm::Layout::LAYOUT_LOGIN_AND_SIGNUP;
+  form->was_parsed_using_autofill_predictions = false;
+  form->is_public_suffix_match = true;
+  form->is_affiliation_based_match = true;
+  form->does_look_like_signup_form = true;
+}
+
 void CheckEqualPasswordFormFillData(const PasswordFormFillData& expected,
                                     const PasswordFormFillData& actual) {
   EXPECT_EQ(expected.name, actual.name);
@@ -119,6 +161,18 @@ void CheckEqualPasswordFormFillData(const PasswordFormFillData& expected,
             actual.is_possible_change_password_form);
 }
 
+void CheckEqualPasswordFormGenerationData(
+    const PasswordFormGenerationData& expected,
+    const PasswordFormGenerationData& actual) {
+  EXPECT_EQ(expected.name, actual.name);
+  EXPECT_EQ(expected.action, actual.action);
+  EXPECT_TRUE(expected.generation_field.SameFieldAs(actual.generation_field));
+  EXPECT_EQ(expected.generation_field.option_values,
+            actual.generation_field.option_values);
+  EXPECT_EQ(expected.generation_field.option_contents,
+            actual.generation_field.option_contents);
+}
+
 }  // namespace
 
 class AutofillTypeTraitsTestImpl : public testing::Test,
@@ -156,6 +210,17 @@ class AutofillTypeTraitsTestImpl : public testing::Test,
   void PassPasswordFormFillData(
       const PasswordFormFillData& s,
       const PassPasswordFormFillDataCallback& callback) override {
+    callback.Run(s);
+  }
+
+  void PassPasswordFormGenerationData(
+      const PasswordFormGenerationData& s,
+      const PassPasswordFormGenerationDataCallback& callback) override {
+    callback.Run(s);
+  }
+
+  void PassPasswordForm(const PasswordForm& s,
+                        const PassPasswordFormCallback& callback) override {
     callback.Run(s);
   }
 
@@ -199,6 +264,21 @@ void ExpectPasswordFormFillData(const PasswordFormFillData& expected,
                                 const base::Closure& closure,
                                 const PasswordFormFillData& passed) {
   CheckEqualPasswordFormFillData(expected, passed);
+  closure.Run();
+}
+
+void ExpectPasswordFormGenerationData(
+    const PasswordFormGenerationData& expected,
+    const base::Closure& closure,
+    const PasswordFormGenerationData& passed) {
+  CheckEqualPasswordFormGenerationData(expected, passed);
+  closure.Run();
+}
+
+void ExpectPasswordForm(const PasswordForm& expected,
+                        const base::Closure& closure,
+                        const PasswordForm& passed) {
+  EXPECT_EQ(expected, passed);
   closure.Run();
 }
 
@@ -266,6 +346,30 @@ TEST_F(AutofillTypeTraitsTestImpl, PassPasswordFormFillData) {
   mojom::TypeTraitsTestPtr proxy = GetTypeTraitsTestProxy();
   proxy->PassPasswordFormFillData(input, base::Bind(&ExpectPasswordFormFillData,
                                                     input, loop.QuitClosure()));
+  loop.Run();
+}
+
+TEST_F(AutofillTypeTraitsTestImpl, PassPasswordFormGenerationData) {
+  FormData form;
+  test::CreateTestAddressFormData(&form);
+  PasswordFormGenerationData input{form.name, form.action, form.fields[0]};
+
+  base::RunLoop loop;
+  mojom::TypeTraitsTestPtr proxy = GetTypeTraitsTestProxy();
+  proxy->PassPasswordFormGenerationData(
+      input,
+      base::Bind(&ExpectPasswordFormGenerationData, input, loop.QuitClosure()));
+  loop.Run();
+}
+
+TEST_F(AutofillTypeTraitsTestImpl, PassPasswordForm) {
+  PasswordForm input;
+  CreateTestPasswordForm(&input);
+
+  base::RunLoop loop;
+  mojom::TypeTraitsTestPtr proxy = GetTypeTraitsTestProxy();
+  proxy->PassPasswordForm(
+      input, base::Bind(&ExpectPasswordForm, input, loop.QuitClosure()));
   loop.Run();
 }
 

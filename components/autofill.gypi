@@ -325,7 +325,9 @@
             ],
             'mojom_typemaps': [
               'autofill/content/public/cpp/autofill_types.typemap',
+              '<(DEPTH)/mojo/common/common_custom_types.typemap',
               '<(DEPTH)/url/mojo/gurl.typemap',
+              '<(DEPTH)/url/mojo/origin.typemap',
             ],
           },
           'includes': [ '../mojo/mojom_bindings_generator_explicit.gypi' ],
@@ -341,9 +343,11 @@
             'autofill/content/public/cpp/autofill_types_struct_traits.cc'
           ],
           'export_dependent_settings': [
+            '../mojo/mojo_base.gyp:mojo_common_custom_types_mojom',
             '../url/url.gyp:url_mojom',
            ],
           'dependencies': [
+            '../mojo/mojo_base.gyp:mojo_common_custom_types_mojom',
             '../mojo/mojo_public.gyp:mojo_cpp_bindings',
             '../url/url.gyp:url_mojom',
             'autofill_content_types_mojo_bindings_mojom',
@@ -356,17 +360,21 @@
           'variables': {
             'mojom_typemaps': [
               'autofill/content/public/cpp/autofill_types.typemap',
+              '<(DEPTH)/mojo/common/common_custom_types.typemap',
               '<(DEPTH)/url/mojo/gurl.typemap',
+              '<(DEPTH)/url/mojo/origin.typemap',
             ],
           },
           'sources': [
             'autofill/content/public/interfaces/test_autofill_types.mojom',
           ],
           'export_dependent_settings': [
+            '../mojo/mojo_base.gyp:mojo_common_custom_types_mojom',
             '../url/url.gyp:url_mojom',
             'autofill_content_types_mojo_bindings',
            ],
           'dependencies': [
+            '../mojo/mojo_base.gyp:mojo_common_custom_types_mojom',
             '../mojo/mojo_public.gyp:mojo_cpp_bindings',
             '../url/url.gyp:url_mojom',
             'autofill_content_types_mojo_bindings',
