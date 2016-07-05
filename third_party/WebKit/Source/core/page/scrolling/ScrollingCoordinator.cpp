@@ -671,6 +671,8 @@ void ScrollingCoordinator::setShouldUpdateScrollLayerPositionOnMainThread(MainTh
     if (!m_page->mainFrame()->isLocalFrame() || !m_page->deprecatedLocalMainFrame()->view())
         return;
 
+    GraphicsLayer* visualViewportLayer = m_page->frameHost().visualViewport().scrollLayer();
+    WebLayer* visualViewportScrollLayer = toWebLayer(visualViewportLayer);
     GraphicsLayer* layer = m_page->deprecatedLocalMainFrame()->view()->layerForScrolling();
     if (WebLayer* scrollLayer = toWebLayer(layer)) {
         m_lastMainThreadScrollingReasons = mainThreadScrollingReasons;
@@ -680,12 +682,21 @@ void ScrollingCoordinator::setShouldUpdateScrollLayerPositionOnMainThread(MainTh
                 scrollAnimator->takeOverCompositorAnimation();
             }
             scrollLayer->addMainThreadScrollingReasons(mainThreadScrollingReasons);
+            if (visualViewportScrollLayer) {
+                if (ScrollAnimatorBase* scrollAnimator = visualViewportLayer->getScrollableArea()->existingScrollAnimator()) {
+                    DCHECK(m_page->deprecatedLocalMainFrame()->document()->lifecycle().state() >= DocumentLifecycle::CompositingClean);
+                    scrollAnimator->takeOverCompositorAnimation();
+                }
+                visualViewportScrollLayer->addMainThreadScrollingReasons(mainThreadScrollingReasons);
+            }
         } else {
             // Clear all main thread scrolling reasons except the one that's set
             // if there is a running scroll animation.
             uint32_t mainThreadScrollingReasonsToClear = ~0u;
             mainThreadScrollingReasonsToClear &= ~MainThreadScrollingReason::kAnimatingScrollOnMainThread;
             scrollLayer->clearMainThreadScrollingReasons(mainThreadScrollingReasonsToClear);
+            if (visualViewportScrollLayer)
+                visualViewportScrollLayer->clearMainThreadScrollingReasons(mainThreadScrollingReasonsToClear);
         }
     }
 }

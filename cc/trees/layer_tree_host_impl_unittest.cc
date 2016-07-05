@@ -6281,6 +6281,78 @@ TEST_F(LayerTreeHostImplTest, NoOverscrollWhenNotAtEdge) {
   }
 }
 
+TEST_F(LayerTreeHostImplTest, OverscrollOnMainThread) {
+  InputHandlerScrollResult scroll_result;
+  LayerTreeSettings settings = DefaultSettings();
+  CreateHostImpl(settings, CreateOutputSurface());
+
+  const gfx::Size content_size(50, 50);
+  const gfx::Size viewport_size(50, 50);
+  CreateBasicVirtualViewportLayers(viewport_size, content_size);
+
+  LayerImpl* scroll_layer =
+      host_impl_->active_tree()->InnerViewportScrollLayer();
+  scroll_layer->set_main_thread_scrolling_reasons(
+      MainThreadScrollingReason::kThreadedScrollingDisabled);
+  host_impl_->active_tree()->BuildPropertyTreesForTesting();
+
+  DrawFrame();
+
+  // Overscroll initiated outside layers will be handled by the main thread.
+  EXPECT_EQ(nullptr, host_impl_->active_tree()->FindLayerThatIsHitByPoint(
+                         gfx::PointF(0, 60)));
+  EXPECT_EQ(InputHandler::SCROLL_ON_MAIN_THREAD,
+            host_impl_
+                ->ScrollBegin(BeginState(gfx::Point(0, 60)).get(),
+                              InputHandler::WHEEL)
+                .thread);
+
+  // Overscroll initiated inside layers will be handled by the main thread.
+  EXPECT_NE(nullptr, host_impl_->active_tree()->FindLayerThatIsHitByPoint(
+                         gfx::PointF(0, 0)));
+  EXPECT_EQ(
+      InputHandler::SCROLL_ON_MAIN_THREAD,
+      host_impl_
+          ->ScrollBegin(BeginState(gfx::Point(0, 0)).get(), InputHandler::WHEEL)
+          .thread);
+}
+
+TEST_F(LayerTreeHostImplTest, OverscrollOnImplThread) {
+  InputHandlerScrollResult scroll_result;
+  LayerTreeSettings settings = DefaultSettings();
+  CreateHostImpl(settings, CreateOutputSurface());
+
+  const gfx::Size content_size(50, 50);
+  const gfx::Size viewport_size(50, 50);
+  CreateBasicVirtualViewportLayers(viewport_size, content_size);
+
+  // By default, no main thread scrolling reasons should exist.
+  LayerImpl* scroll_layer =
+      host_impl_->active_tree()->InnerViewportScrollLayer();
+  EXPECT_EQ(MainThreadScrollingReason::kNotScrollingOnMain,
+            scroll_layer->main_thread_scrolling_reasons());
+
+  DrawFrame();
+
+  // Overscroll initiated outside layers will be handled by the impl thread.
+  EXPECT_EQ(nullptr, host_impl_->active_tree()->FindLayerThatIsHitByPoint(
+                         gfx::PointF(0, 60)));
+  EXPECT_EQ(InputHandler::SCROLL_ON_IMPL_THREAD,
+            host_impl_
+                ->ScrollBegin(BeginState(gfx::Point(0, 60)).get(),
+                              InputHandler::WHEEL)
+                .thread);
+
+  // Overscroll initiated inside layers will be handled by the impl thread.
+  EXPECT_NE(nullptr, host_impl_->active_tree()->FindLayerThatIsHitByPoint(
+                         gfx::PointF(0, 0)));
+  EXPECT_EQ(
+      InputHandler::SCROLL_ON_IMPL_THREAD,
+      host_impl_
+          ->ScrollBegin(BeginState(gfx::Point(0, 0)).get(), InputHandler::WHEEL)
+          .thread);
+}
+
 class BlendStateCheckLayer : public LayerImpl {
  public:
   static std::unique_ptr<LayerImpl> Create(

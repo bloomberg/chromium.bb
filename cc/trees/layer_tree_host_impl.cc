@@ -2536,6 +2536,21 @@ InputHandler::ScrollStatus LayerTreeHostImpl::TryScroll(
   return scroll_status;
 }
 
+static bool IsMainThreadScrolling(const InputHandler::ScrollStatus& status,
+                                  const ScrollNode* scroll_node) {
+  if (status.thread == InputHandler::SCROLL_ON_MAIN_THREAD) {
+    if (!!scroll_node->data.main_thread_scrolling_reasons) {
+      DCHECK(MainThreadScrollingReason::MainThreadCanSetScrollReasons(
+          status.main_thread_scrolling_reasons));
+    } else {
+      DCHECK(MainThreadScrollingReason::CompositorCanSetScrollReasons(
+          status.main_thread_scrolling_reasons));
+    }
+    return true;
+  }
+  return false;
+}
+
 LayerImpl* LayerTreeHostImpl::FindScrollLayerForDeviceViewportPoint(
     const gfx::PointF& device_viewport_point,
     InputHandler::ScrollInputType type,
@@ -2548,9 +2563,9 @@ LayerImpl* LayerTreeHostImpl::FindScrollLayerForDeviceViewportPoint(
       MainThreadScrollingReason::kNotScrollingOnMain;
 
   // Walk up the hierarchy and look for a scrollable layer.
+  ScrollTree& scroll_tree = active_tree_->property_trees()->scroll_tree;
   LayerImpl* potentially_scrolling_layer_impl = NULL;
   if (layer_impl) {
-    ScrollTree& scroll_tree = active_tree_->property_trees()->scroll_tree;
     ScrollNode* scroll_node = scroll_tree.Node(layer_impl->scroll_tree_index());
     for (; scroll_tree.parent(scroll_node);
          scroll_node = scroll_tree.parent(scroll_node)) {
@@ -2558,15 +2573,7 @@ LayerImpl* LayerTreeHostImpl::FindScrollLayerForDeviceViewportPoint(
       // thread.
       ScrollStatus status =
           TryScroll(device_viewport_point, type, scroll_tree, scroll_node);
-      if (status.thread == SCROLL_ON_MAIN_THREAD) {
-        if (!!scroll_node->data.main_thread_scrolling_reasons) {
-          DCHECK(MainThreadScrollingReason::MainThreadCanSetScrollReasons(
-              status.main_thread_scrolling_reasons));
-        } else {
-          DCHECK(MainThreadScrollingReason::CompositorCanSetScrollReasons(
-              status.main_thread_scrolling_reasons));
-        }
-
+      if (IsMainThreadScrolling(status, scroll_node)) {
         *scroll_on_main_thread = true;
         *main_thread_scrolling_reasons = status.main_thread_scrolling_reasons;
         return NULL;
@@ -2579,16 +2586,29 @@ LayerImpl* LayerTreeHostImpl::FindScrollLayerForDeviceViewportPoint(
       }
     }
   }
+
   // Falling back to the root scroll layer ensures generation of root overscroll
-  // notifications while preventing scroll updates from being unintentionally
-  // forwarded to the main thread. The inner viewport layer represents the
-  // viewport during scrolling.
+  // notifications. The inner viewport layer represents the viewport during
+  // scrolling.
   if (!potentially_scrolling_layer_impl)
     potentially_scrolling_layer_impl = InnerViewportScrollLayer();
 
   // The inner viewport layer represents the viewport.
   if (potentially_scrolling_layer_impl == OuterViewportScrollLayer())
     potentially_scrolling_layer_impl = InnerViewportScrollLayer();
+
+  if (potentially_scrolling_layer_impl) {
+    // Ensure that final layer scrolls on impl thread (crbug.com/625100)
+    ScrollNode* scroll_node =
+        scroll_tree.Node(potentially_scrolling_layer_impl->scroll_tree_index());
+    ScrollStatus status =
+        TryScroll(device_viewport_point, type, scroll_tree, scroll_node);
+    if (IsMainThreadScrolling(status, scroll_node)) {
+      *scroll_on_main_thread = true;
+      *main_thread_scrolling_reasons = status.main_thread_scrolling_reasons;
+      return NULL;
+    }
+  }
 
   return potentially_scrolling_layer_impl;
 }
