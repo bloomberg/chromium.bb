@@ -137,8 +137,6 @@ public class SigninHelper {
 
         Account syncAccount = mChromeSigninController.getSignedInUser();
         if (syncAccount == null) {
-            if (SigninManager.getAndroidSigninPromoExperimentGroup() < 0) return;
-
             // Never shows a signin promo if user has manually disconnected.
             String lastSyncAccountName =
                     PrefServiceBridge.getInstance().getSyncLastAccountName();

@@ -33,9 +33,7 @@ public class SigninPromoUtil {
         preferenceManager.setShowSigninPromo(false);
 
         String lastSyncName = PrefServiceBridge.getInstance().getSyncLastAccountName();
-        if (SigninManager.getAndroidSigninPromoExperimentGroup() < 0
-                || ChromeSigninController.get(activity).isSignedIn()
-                || !TextUtils.isEmpty(lastSyncName)) {
+        if (ChromeSigninController.get(activity).isSignedIn() || !TextUtils.isEmpty(lastSyncName)) {
             return false;
         }
 
