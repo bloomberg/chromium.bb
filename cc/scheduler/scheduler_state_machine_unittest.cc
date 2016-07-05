@@ -1863,26 +1863,26 @@ TEST(SchedulerStateMachineTest, ForceDrawForResourcelessSoftwareDraw) {
   SchedulerSettings default_scheduler_settings;
   StateMachine state(default_scheduler_settings);
   SET_UP_STATE(state)
-  state.SetResourcelessSoftareDraw(true);
+  state.SetResourcelessSoftwareDraw(true);
   EXPECT_FALSE(state.PendingDrawsShouldBeAborted());
 
   state.SetVisible(false);
   EXPECT_FALSE(state.PendingDrawsShouldBeAborted());
 
-  state.SetResourcelessSoftareDraw(false);
+  state.SetResourcelessSoftwareDraw(false);
   EXPECT_TRUE(state.PendingDrawsShouldBeAborted());
 
-  state.SetResourcelessSoftareDraw(true);
+  state.SetResourcelessSoftwareDraw(true);
   EXPECT_FALSE(state.PendingDrawsShouldBeAborted());
   state.SetVisible(true);
 
   state.SetBeginFrameSourcePaused(true);
   EXPECT_FALSE(state.PendingDrawsShouldBeAborted());
 
-  state.SetResourcelessSoftareDraw(false);
+  state.SetResourcelessSoftwareDraw(false);
   EXPECT_TRUE(state.PendingDrawsShouldBeAborted());
 
-  state.SetResourcelessSoftareDraw(true);
+  state.SetResourcelessSoftwareDraw(true);
   EXPECT_FALSE(state.PendingDrawsShouldBeAborted());
   state.SetBeginFrameSourcePaused(false);
 

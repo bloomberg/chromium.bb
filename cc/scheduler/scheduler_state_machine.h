@@ -235,7 +235,7 @@ class CC_EXPORT SchedulerStateMachine {
   void SetSkipNextBeginMainFrameToReduceLatency();
 
   // Resourceless software draws are allowed even when invisible.
-  void SetResourcelessSoftareDraw(bool resourceless_draw);
+  void SetResourcelessSoftwareDraw(bool resourceless_draw);
 
   // Indicates whether drawing would, at this time, make sense.
   // CanDraw can be used to suppress flashes or checkerboarding

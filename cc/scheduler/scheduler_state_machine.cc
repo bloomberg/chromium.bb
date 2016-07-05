@@ -944,7 +944,8 @@ void SchedulerStateMachine::SetBeginFrameSourcePaused(bool paused) {
   begin_frame_source_paused_ = paused;
 }
 
-void SchedulerStateMachine::SetResourcelessSoftareDraw(bool resourceless_draw) {
+void SchedulerStateMachine::SetResourcelessSoftwareDraw(
+    bool resourceless_draw) {
   resourceless_draw_ = resourceless_draw;
 }
 

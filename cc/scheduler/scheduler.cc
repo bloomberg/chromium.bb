@@ -334,13 +334,13 @@ void Scheduler::OnDrawForOutputSurface(bool resourceless_software_draw) {
             SchedulerStateMachine::BEGIN_IMPL_FRAME_STATE_IDLE);
   DCHECK(!BeginImplFrameDeadlinePending());
 
-  state_machine_.SetResourcelessSoftareDraw(resourceless_software_draw);
+  state_machine_.SetResourcelessSoftwareDraw(resourceless_software_draw);
   state_machine_.OnBeginImplFrameDeadline();
   ProcessScheduledActions();
 
   state_machine_.OnBeginImplFrameIdle();
   ProcessScheduledActions();
-  state_machine_.SetResourcelessSoftareDraw(false);
+  state_machine_.SetResourcelessSoftwareDraw(false);
 }
 
 // BeginRetroFrame is called for BeginFrames that we've deferred because
