@@ -88,15 +88,22 @@ NSString* GetStringFromDataPack(const ui::DataPack& data_pack,
   return nil;
 }
 
-// Generates a NSDictionary mapping string IDs to localized strings. The
-// dictionary can be written as a Property List (only contains types that
-// are valid in Propery Lists).
-NSDictionary* GenerateLocalizableStringsDictionary(
-    const ui::DataPack& data_pack,
-    const char* locale,
-    NSArray* resources,
-    NSDictionary* resources_ids) {
-  NSMutableDictionary* dictionary = [NSMutableDictionary dictionary];
+NSString* EscapeStringForLocalizableStrings(NSString* string) {
+  NSString* slashEscapedString =
+      [string stringByReplacingOccurrencesOfString:@"\\" withString:@"\\\\"];
+  return [slashEscapedString stringByReplacingOccurrencesOfString:@"\""
+                                                       withString:@"\\\""];
+}
+
+// Generate the content of the Localizable.string file for |locale| from the
+// resource data pack |data_pack|. The content should have the format of:
+//   "IDS_PRINT_TO_PHONE" = "Print to phone jobs are available.";
+//   "IDS_SNAPSHOTS" = "Snapshots are available.";
+NSString* GenerateLocalizableStringsFileContent(const ui::DataPack& data_pack,
+                                                const char* locale,
+                                                NSArray* resources,
+                                                NSDictionary* resources_ids) {
+  NSMutableString* localizable_strings = [NSMutableString string];
   for (id resource : resources) {
     NSString* resource_name = nil;
     NSString* resource_output_name = nil;
@@ -121,7 +128,10 @@ NSDictionary* GenerateLocalizableStringsDictionary(
         [[resources_ids objectForKey:resource_name] integerValue];
     NSString* string = GetStringFromDataPack(data_pack, resource_id);
     if (string) {
-      [dictionary setObject:string forKey:resource_output_name];
+      const char* output_string_name = [resource_output_name UTF8String];
+      [localizable_strings
+          appendFormat:@" \"%s\" = \"%@\";\n", output_string_name,
+                       EscapeStringForLocalizableStrings(string)];
     } else {
       fprintf(stderr, "ERROR: fail to load string '%s' for locale '%s'\n",
               [resource_name UTF8String], locale);
@@ -129,7 +139,7 @@ NSDictionary* GenerateLocalizableStringsDictionary(
     }
   }
 
-  return dictionary;
+  return localizable_strings;
 }
 
 NSDictionary* LoadResourcesListFromHeaders(NSArray* header_list,
@@ -189,12 +199,12 @@ NSDictionary* LoadResourcesListFromHeaders(NSArray* header_list,
   return resources_ids;
 }
 
-// Save |dictionary| as a Property List file (in binary1 encoding)
-// with |locale| to |output_dir|/|locale|.lproj/|output_filename|.
-bool SavePropertyList(NSDictionary* dictionary,
-                      NSString* locale,
-                      NSString* output_dir,
-                      NSString* output_filename) {
+// Save |localizable_strings| with |locale| to
+// |output_dir|/|locale|.lproj/|output_filename|.
+bool SaveLocalizableFile(NSString* localizable_strings,
+                         NSString* locale,
+                         NSString* output_dir,
+                         NSString* output_filename) {
   // Compute the path to the output directory with locale.
   NSString* output_path = [output_dir
       stringByAppendingPathComponent:[NSString
@@ -212,22 +222,12 @@ bool SavePropertyList(NSDictionary* dictionary,
     return false;
   }
 
-  // Convert to property list in binary format.
-  NSError* error = nil;
-  NSData* data = [NSPropertyListSerialization
-      dataWithPropertyList:dictionary
-                    format:NSPropertyListBinaryFormat_v1_0
-                   options:0
-                     error:&error];
-  if (!data) {
-    fprintf(stderr, "ERROR: conversion to property list failed: %s\n",
-            [[error localizedDescription] UTF8String]);
-    return false;
-  }
-
   // Save the strings to the disk.
   output_path = [output_path stringByAppendingPathComponent:output_filename];
-  if (![data writeToFile:output_path atomically:YES]) {
+  if (![localizable_strings writeToFile:output_path
+                             atomically:YES
+                               encoding:NSUTF16StringEncoding
+                                  error:nil]) {
     fprintf(stderr, "ERROR: Failed to write out '%s'\n",
             [output_filename UTF8String]);
     return false;
@@ -358,10 +358,11 @@ int main(int argc, char* const argv[]) {
         exit(1);
       }
 
-      NSDictionary* dictionary = GenerateLocalizableStringsDictionary(
+      NSString* localizable_strings = GenerateLocalizableStringsFileContent(
           *data_pack, [locale UTF8String], output_strings, resources_ids);
-      if (dictionary) {
-        SavePropertyList(dictionary, locale, output_dir, output_name);
+      if (localizable_strings) {
+        SaveLocalizableFile(localizable_strings, locale, output_dir,
+                            output_name);
       } else {
         fprintf(stderr, "ERROR: Unable to create %s.\n",
                 [output_name UTF8String]);
