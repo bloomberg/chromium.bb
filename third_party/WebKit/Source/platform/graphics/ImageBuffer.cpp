@@ -35,6 +35,7 @@
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "platform/MIMETypeRegistry.h"
 #include "platform/geometry/IntRect.h"
+#include "platform/graphics/ExpensiveCanvasHeuristicParameters.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/ImageBufferClient.h"
 #include "platform/graphics/StaticBitmapImage.h"
@@ -123,6 +124,17 @@ bool ImageBuffer::isSurfaceValid() const
 bool ImageBuffer::isDirty()
 {
     return m_client ? m_client->isDirty() : false;
+}
+
+void ImageBuffer::didDisableAcceleration() const
+{
+    DCHECK(m_gpuMemoryUsage);
+    DCHECK_GT(s_globalAcceleratedImageBufferCount, 0u);
+    if (m_client)
+        m_client->didDisableAcceleration();
+    s_globalAcceleratedImageBufferCount--;
+    s_globalGPUMemoryUsage -= m_gpuMemoryUsage;
+    m_gpuMemoryUsage = 0;
 }
 
 void ImageBuffer::didFinalizeFrame()
@@ -307,7 +319,8 @@ bool ImageBuffer::getImageData(Multiply multiplied, const IntRect& rect, WTF::Ar
     }
 
     DCHECK(canvas());
-    RefPtr<SkImage> snapshot = m_surface->newImageSnapshot(PreferNoAcceleration, SnapshotReasonGetImageData);
+    AccelerationHint hint = (ExpensiveCanvasHeuristicParameters::GetImageDataForcesNoAcceleration) ? ForceNoAcceleration : PreferNoAcceleration;
+    RefPtr<SkImage> snapshot = m_surface->newImageSnapshot(hint, SnapshotReasonGetImageData);
     if (!snapshot)
         return false;
 

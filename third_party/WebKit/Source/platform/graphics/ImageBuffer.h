@@ -92,6 +92,7 @@ public:
     bool restoreSurface() const;
     void didDraw(const FloatRect&) const;
     bool wasDrawnToAfterSnapshot() const { return m_snapshotState == DrawnToAfterSnapshot; }
+    void didDisableAcceleration() const;
 
     void setFilterQuality(SkFilterQuality filterQuality) { m_surface->setFilterQuality(filterQuality); }
     void setIsHidden(bool hidden) { m_surface->setIsHidden(hidden); }

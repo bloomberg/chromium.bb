@@ -318,6 +318,13 @@ void HTMLCanvasElement::didFinalizeFrame()
     m_dirtyRect = FloatRect();
 }
 
+void HTMLCanvasElement::didDisableAcceleration()
+{
+    // We must force a paint invalidation on the canvas even if it's
+    // content did not change because it layer was destroyed.
+    didDraw(FloatRect(0, 0, size().width(), size().height()));
+}
+
 void HTMLCanvasElement::restoreCanvasMatrixClipStack(SkCanvas* canvas) const
 {
     if (m_context)

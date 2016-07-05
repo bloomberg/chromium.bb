@@ -83,6 +83,7 @@ enum AccelerationHint {
     // in the context of the canvas becoming visible again.
     PreferAccelerationAfterVisibilityChange,
     PreferNoAcceleration,
+    ForceNoAcceleration,
 };
 
 enum SnapshotReason {

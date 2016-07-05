@@ -171,6 +171,8 @@ bool Canvas2DLayerBridge::shouldAccelerate(AccelerationHint hint) const
 
 bool Canvas2DLayerBridge::isAccelerated() const
 {
+    if (m_accelerationMode == DisableAcceleration)
+        return false;
     if (isHibernating())
         return false;
     if (m_softwareRenderingWhileHidden)
@@ -464,22 +466,49 @@ void Canvas2DLayerBridge::reportSurfaceCreationFailure()
     }
 }
 
+void Canvas2DLayerBridge::disableAcceleration()
+{
+    DCHECK(isAccelerated());
+    bool surfaceIsAccelerated;
+    RefPtr<SkSurface> newSurface = createSkSurface(nullptr, m_size, m_msaaSampleCount, m_opacityMode, &surfaceIsAccelerated);
+    if (newSurface) {
+        DCHECK(!surfaceIsAccelerated);
+        flush();
+        SkPaint copyPaint;
+        copyPaint.setXfermodeMode(SkXfermode::kSrc_Mode);
+        m_surface->draw(newSurface->getCanvas(), 0, 0, &copyPaint); // GPU readback here
+        m_accelerationMode = DisableAcceleration; // Acceleration gets permanently disabled
+        GraphicsLayer::unregisterContentsLayer(m_layer->layer());
+        m_layer->clearTexture();
+        m_layer->layer()->removeFromParent();
+        m_surface = newSurface;
+        if (m_imageBuffer)
+            m_imageBuffer->didDisableAcceleration();
+    }
+}
+
 SkSurface* Canvas2DLayerBridge::getOrCreateSurface(AccelerationHint hint)
 {
-    if (m_surface)
+    if (m_surface) {
+        // Note: in layout tests, canvas2dFixedRenderingMode is set to true to inhibit
+        // mode switching so that we continue to get test coverage for GPU acceleration
+        // despite the use of getImageData in tests
+        if (hint == ForceNoAcceleration && isAccelerated() && !RuntimeEnabledFeatures::canvas2dFixedRenderingModeEnabled())
+            disableAcceleration();
         return m_surface.get();
+    }
 
-    if (m_layer && !isHibernating() && hint == PreferAcceleration) {
+    if (m_layer && !isHibernating() && hint == PreferAcceleration && m_accelerationMode != DisableAcceleration) {
         return nullptr; // re-creation will happen through restore()
     }
 
     bool wantAcceleration = shouldAccelerate(hint);
-    bool surfaceIsAccelerated;
     if (CANVAS2D_BACKGROUND_RENDER_SWITCH_TO_CPU && isHidden() && wantAcceleration) {
         wantAcceleration = false;
         m_softwareRenderingWhileHidden = true;
     }
 
+    bool surfaceIsAccelerated;
     m_surface = createSkSurface(wantAcceleration ? m_contextProvider->grContext() : nullptr, m_size, m_msaaSampleCount, m_opacityMode, &surfaceIsAccelerated);
 
     if (!m_surface)
@@ -580,7 +609,7 @@ void Canvas2DLayerBridge::beginDestruction()
 
     unregisterTaskObserver();
 
-    if (m_layer) {
+    if (m_layer && m_accelerationMode != DisableAcceleration) {
         GraphicsLayer::unregisterContentsLayer(m_layer->layer());
         m_layer->clearTexture();
         // Orphaning the layer is required to trigger the recration of a new layer
@@ -709,7 +738,7 @@ gpu::gles2::GLES2Interface* Canvas2DLayerBridge::contextGL()
 {
     // Check on m_layer is necessary because contextGL() may be called during
     // the destruction of m_layer
-    if (m_layer && !m_destructionInProgress) {
+    if (m_layer && m_accelerationMode != DisableAcceleration && !m_destructionInProgress) {
         // Call checkSurfaceValid to ensure rate limiter is disabled if context is lost.
         if (!checkSurfaceValid())
             return nullptr;
@@ -724,7 +753,7 @@ bool Canvas2DLayerBridge::checkSurfaceValid()
         return false;
     if (isHibernating())
         return true;
-    if (!m_layer)
+    if (!m_layer || m_accelerationMode == DisableAcceleration)
         return true;
     if (!m_surface)
         return false;
@@ -875,6 +904,9 @@ void Canvas2DLayerBridge::mailboxReleased(const WebExternalTextureMailbox& mailb
     // 2) Release the SkImage, which will return the texture to skia's scratch
     //    texture pool.
     m_mailboxes.remove(releasedMailboxInfo);
+
+    if (m_mailboxes.isEmpty() && m_accelerationMode == DisableAcceleration)
+        m_layer.reset();
 }
 
 WebLayer* Canvas2DLayerBridge::layer() const
@@ -908,7 +940,7 @@ void Canvas2DLayerBridge::prepareSurfaceForPaintingIfNeeded()
 void Canvas2DLayerBridge::finalizeFrame(const FloatRect &dirtyRect)
 {
     DCHECK(!m_destructionInProgress);
-    if (m_layer)
+    if (m_layer && m_accelerationMode != DisableAcceleration)
         m_layer->layer()->invalidateRect(enclosingIntRect(dirtyRect));
     if (m_rateLimiter)
         m_rateLimiter->reset();
