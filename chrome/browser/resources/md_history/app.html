@@ -43,19 +43,20 @@
         is-grouped-mode="{{grouped_}}"
         grouped-range="{{queryState_.range}}"
         search-term="{{queryState_.searchTerm}}"
-        query-start-time="[[queryState_.info.queryStartTime]]"
-        query-end-time="[[queryState_.info.queryEndTime]]">
+        query-start-time="[[queryResult_.info.queryStartTime]]"
+        query-end-time="[[queryResult_.info.queryEndTime]]">
     </history-toolbar>
 
     <div id="main-container">
       <iron-pages id="content" attr-for-selected="id"
           selected="[[selectedPage_]]">
         <history-list-container id="history" query-state="[[queryState_]]"
-            grouped="[[grouped_]]"></history-list-container>
+            query-result="[[queryResult_]]" grouped="[[grouped_]]">
+        </history-list-container>
         <template is="dom-if" if="[[syncedTabsSelected_(selectedPage_)]]">
           <history-synced-device-manager id="synced-devices"
-              session-list="[[sessionList]]"
-              searched-term=[[queryState_.info.term]]>
+              session-list="[[queryResult_.sessionList]]"
+              searched-term=[[queryState_.searchTerm]]>
           </history-synced-device-manager>
         </template>
       </iron-pages>

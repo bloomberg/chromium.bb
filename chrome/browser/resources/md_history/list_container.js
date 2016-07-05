@@ -2,12 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-/**
- * @typedef {{results: ?Array<!HistoryEntry>,
- *            info: ?HistoryQuery}}
- */
-var QueryResult;
-
 Polymer({
   is: 'history-list-container',
 
@@ -19,21 +13,10 @@ Polymer({
     grouped: Boolean,
 
     /** @type {!QueryState} */
-    queryState: {
-      type: Object,
-    },
+    queryState: Object,
 
     /** @type {!QueryResult} */
-    queryResult_: {
-      type: Object,
-      readOnly: true,
-      value: function() {
-        return {
-          info: null,
-          results: null,
-        };
-      }
-    },
+    queryResult: Object,
   },
 
   observers: [
@@ -52,9 +35,6 @@ Polymer({
    */
   historyResult: function(info, results) {
     this.initializeResults_(info, results);
-
-    this.set('queryResult_.info', info);
-    this.set('queryResult_.results', results);
 
     if (this.selectedPage_ == 'grouped-list') {
       this.$$('#grouped-list').historyData = results;
@@ -75,8 +55,10 @@ Polymer({
   queryHistory: function(incremental) {
     var queryState = this.queryState;
     // Disable querying until the first set of results have been returned.
-    if (this.queryResult_.results == null || queryState.queryingDisabled)
+    if (!this.queryResult || this.queryResult.results == null ||
+        queryState.queryingDisabled) {
       return;
+    }
 
     this.set('queryState.querying', true);
     this.set('queryState.incremental', incremental);
@@ -84,7 +66,7 @@ Polymer({
 
     var lastVisitTime = 0;
     if (incremental) {
-      var lastVisit = this.queryResult_.results.slice(-1)[0];
+      var lastVisit = this.queryResult.results.slice(-1)[0];
       lastVisitTime = lastVisit ? lastVisit.time : 0;
     }
 

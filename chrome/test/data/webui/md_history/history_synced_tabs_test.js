@@ -65,6 +65,11 @@ cr.define('md_history.history_synced_tabs_test', function() {
 
         return flush().then(function() {
           var card = element.$$('history-synced-device-card');
+          assertEquals(
+              'http://www.google.com',
+              Polymer.dom(card.root)
+                  .querySelectorAll('.website-title')[0].children[0].$.container
+                  .textContent.trim());
           assertEquals(2, card.tabs.length);
         });
       });
@@ -171,6 +176,13 @@ cr.define('md_history.history_synced_tabs_test', function() {
           assertEquals('http://www.gmail.com', cards[1].tabs[0].title);
           assertEquals('http://www.gmail.com', cards[1].tabs[1].title);
           assertEquals('http://bagssl.com', cards[1].tabs[2].title);
+
+          // Ensure the title text is rendered during searches.
+          assertEquals(
+              'http://www.google.com',
+              Polymer.dom(cards[0].root)
+                  .querySelectorAll('.website-title')[0].children[0].$.container
+                  .textContent.trim());
         });
       });
 

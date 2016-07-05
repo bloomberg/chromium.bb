@@ -75,7 +75,10 @@ cr.define('md_history.history_grouped_list_test', function() {
 
       test('items grouped by domain', function() {
         app.set('queryState_.range', HistoryRange.WEEK);
-        app.historyResult(createHistoryInfo(), SIMPLE_RESULTS);
+        var info = createHistoryInfo();
+        info.queryStartTime = 'Yesterday';
+        info.queryEndTime = 'Now';
+        app.historyResult(info, SIMPLE_RESULTS);
         return flush().then(function() {
           var data = groupedList.groupedHistoryData_;
           // 1 card for the day with 3 domains.
@@ -86,6 +89,10 @@ cr.define('md_history.history_grouped_list_test', function() {
           assertEquals(2, data[0].domains[0].visits.length);
           assertEquals(1, data[0].domains[1].visits.length);
           assertEquals(1, data[0].domains[2].visits.length);
+
+          // Ensure the toolbar displays the correct begin and end time.
+          assertEquals('Yesterday', toolbar.queryStartTime);
+          assertEquals('Now', toolbar.queryEndTime);
         });
       });
 

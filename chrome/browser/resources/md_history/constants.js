@@ -38,3 +38,10 @@ var HistoryRange = {
  *            searchTerm: string}}
  */
 var QueryState;
+
+/**
+ * @typedef {{info: ?HistoryQuery,
+ *            results: ?Array<!HistoryEntry>,
+ *            sessionList: ?Array<!ForeignSession>}}
+ */
+var QueryResult;

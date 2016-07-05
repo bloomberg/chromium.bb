@@ -21,7 +21,7 @@ Polymer({
           incremental: false,
           // A query is initiated by page load.
           querying: true,
-          queryingDisabled: Boolean,
+          queryingDisabled: false,
           _range: HistoryRange.ALL_TIME,
           searchTerm: '',
           // TODO(calamity): Make history toolbar buttons change the offset
@@ -33,7 +33,17 @@ Polymer({
       }
     },
 
-    sessionList: Array,
+   /** @type {!QueryResult} */
+    queryResult_: {
+      type: Object,
+      value: function() {
+        return {
+          info: null,
+          results: null,
+          sessionList: null,
+        };
+      }
+    },
   },
 
   listeners: {
@@ -96,6 +106,8 @@ Polymer({
    */
   historyResult: function(info, results) {
     this.set('queryState_.querying', false);
+    this.set('queryResult_.info', info);
+    this.set('queryResult_.results', results);
     var listContainer =
         /** @type {HistoryListContainerElement} */ (this.$['history']);
     listContainer.historyResult(info, results);
@@ -116,7 +128,7 @@ Polymer({
     if (!isTabSyncEnabled)
       return;
 
-    this.sessionList = sessionList;
+    this.set('queryResult_.sessionList', sessionList);
   },
 
   /**

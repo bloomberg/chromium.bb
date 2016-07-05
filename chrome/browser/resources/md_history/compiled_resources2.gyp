@@ -5,6 +5,9 @@
   'targets': [
     {
       'target_name': 'constants',
+      'dependencies': [
+        '../history/compiled_resources2.gyp:externs',
+      ],
       'includes': ['../../../../third_party/closure_compiler/compile_js2.gypi'],
     },
     {

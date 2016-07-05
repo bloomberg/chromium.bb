@@ -20,13 +20,13 @@
     <iron-pages id="content" attr-for-selected="id"
         selected="[[selectedPage_]]">
       <history-list id="infinite-list" querying="[[queryState.querying]]"
-          searched-term="[[queryResult_.info.term]]"></history-list>
+          searched-term="[[queryResult.info.term]]"></history-list>
       <template is="dom-if" if="[[grouped]]">
         <history-grouped-list id="grouped-list"
             range="[[queryState.range]]"
-            query-start-time="[[queryResult_.info.queryStartTime]]"
-            query-end-time="[[queryResult_.info.queryEndTime]]"
-            searched-term="[[queryResult_.info.term]]">
+            query-start-time="[[queryResult.info.queryStartTime]]"
+            query-end-time="[[queryResult.info.queryEndTime]]"
+            searched-term="[[queryResult.info.term]]">
         </history-grouped-list>
       </template>
       </template>
