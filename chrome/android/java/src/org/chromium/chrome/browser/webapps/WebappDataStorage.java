@@ -44,7 +44,6 @@ public class WebappDataStorage {
     static final String KEY_ACTION = "action";
     static final String KEY_IS_ICON_GENERATED = "is_icon_generated";
     static final String KEY_VERSION = "version";
-    static final String KEY_WEBAPK_PACKAGE_NAME = "webapk_package_name";
 
     // Unset/invalid constants for last used times and URLs. 0 is used as the null last
     // used time as WebappRegistry assumes that this is always a valid timestamp.
@@ -341,8 +340,6 @@ public class WebappDataStorage {
             editor.putInt(KEY_SOURCE, IntentUtils.safeGetIntExtra(
                         shortcutIntent, ShortcutHelper.EXTRA_SOURCE,
                         ShortcutSource.UNKNOWN));
-            editor.putString(KEY_WEBAPK_PACKAGE_NAME, IntentUtils.safeGetStringExtra(
-                    shortcutIntent, ShortcutHelper.EXTRA_WEBAPK_PACKAGE_NAME));
             updated = true;
         }
         if (updated) editor.apply();
@@ -363,23 +360,6 @@ public class WebappDataStorage {
     }
 
     /**
-     * Returns the theme color stored in this object, or
-     * ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING if it is not stored.
-     */
-    long getThemeColor() {
-        return mPreferences.getLong(KEY_THEME_COLOR,
-                ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING);
-    }
-
-    /**
-     * Returns the orientation stored in this object, or ScreenOrientationValues.DEFAULT if it is
-     * not stored.
-     */
-    int getOrientation() {
-        return mPreferences.getInt(KEY_ORIENTATION, ScreenOrientationValues.DEFAULT);
-    }
-
-    /**
      * Updates the last used time of this object.
      */
     void updateLastUsedTime() {
@@ -391,13 +371,6 @@ public class WebappDataStorage {
      */
     long getLastUsedTime() {
         return mPreferences.getLong(KEY_LAST_USED, LAST_USED_INVALID);
-    }
-
-    /**
-     * Returns the package name if the data is for a WebAPK, null otherwise.
-     */
-    String getWebApkPackageName() {
-        return mPreferences.getString(KEY_WEBAPK_PACKAGE_NAME, null);
     }
 
     /**

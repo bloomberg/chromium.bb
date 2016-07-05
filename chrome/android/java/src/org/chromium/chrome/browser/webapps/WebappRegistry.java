@@ -6,11 +6,8 @@ package org.chromium.chrome.browser.webapps;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.content.pm.PackageManager;
-import android.content.pm.PackageManager.NameNotFoundException;
 import android.os.AsyncTask;
 
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 
@@ -176,10 +173,9 @@ public class WebappRegistry {
     }
 
     /**
-     * 1. Deletes the data for all "old" web apps.
+     * Deletes the data for all "old" web apps.
      * "Old" web apps have not been opened by the user in the last 3 months, or have had their last
      * used time set to 0 by the user clearing their history. Cleanup is run, at most, once a month.
-     * 2. Deletes the data for all WebAPKs that have been uninstalled in the last month.
      *
      * @param context     Context to open the registry with.
      * @param currentTime The current time which will be checked to decide if the task should be run
@@ -195,16 +191,10 @@ public class WebappRegistry {
 
                 Set<String> currentWebapps = getRegisteredWebappIds(preferences);
                 Set<String> retainedWebapps = new HashSet<String>(currentWebapps);
-                PackageManager pm = context.getPackageManager();
                 for (String id : currentWebapps) {
-                    WebappDataStorage storage = new WebappDataStorage(context, id);
-                    String webApkPackage = storage.getWebApkPackageName();
-                    if (webApkPackage != null) {
-                        if (isWebApkInstalled(pm, webApkPackage)) continue;
-                    } else {
-                        long lastUsed = storage.getLastUsedTime();
-                        if ((currentTime - lastUsed) < WEBAPP_UNOPENED_CLEANUP_DURATION) continue;
-                    }
+                    long lastUsed = new WebappDataStorage(context, id).getLastUsedTime();
+                    if ((currentTime - lastUsed) < WEBAPP_UNOPENED_CLEANUP_DURATION) continue;
+
                     WebappDataStorage.deleteDataForWebapp(context, id);
                     retainedWebapps.remove(id);
                 }
@@ -216,19 +206,6 @@ public class WebappRegistry {
                 return null;
             }
         }.execute();
-    }
-
-    /**
-     * Returns whether the given WebAPK is still installed.
-     */
-    private static boolean isWebApkInstalled(PackageManager pm, String webApkPackage) {
-        assert !ThreadUtils.runningOnUiThread();
-        try {
-            pm.getPackageInfo(webApkPackage, PackageManager.GET_ACTIVITIES);
-        } catch (NameNotFoundException e) {
-            return false;
-        }
-        return true;
     }
 
     /**

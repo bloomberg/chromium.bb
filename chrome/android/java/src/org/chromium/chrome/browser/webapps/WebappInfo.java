@@ -220,10 +220,6 @@ public class WebappInfo {
         return mOrientation;
     }
 
-    public void updateOrientation(int orientation) {
-        mOrientation = orientation;
-    }
-
     public int source() {
         return mSource;
     }
@@ -235,10 +231,6 @@ public class WebappInfo {
      */
     public long themeColor() {
         return mThemeColor;
-    }
-
-    public void updateThemeColor(long themeColor) {
-        mThemeColor = themeColor;
     }
 
     /**
