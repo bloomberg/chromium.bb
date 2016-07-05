@@ -184,6 +184,7 @@
             </paper-dropdown-menu>
             <a id="import-user" is="action-link" on-tap="onImportUserTap_"
                 hidden="[[isImportUserLinkHidden_(createInProgress_,
+                                                  loadingSupervisedUsers_,
                                                   signedInUserIndex_)]]">
               $i18n{importExistingSupervisedUserLink}
             </a>
