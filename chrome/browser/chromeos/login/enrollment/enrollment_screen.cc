@@ -163,6 +163,10 @@ void EnrollmentScreen::OnAuthError(const GoogleServiceAuthError& error) {
 }
 
 void EnrollmentScreen::OnEnrollmentError(policy::EnrollmentStatus status) {
+  // TODO(pbond): remove this LOG once http://crbug.com/586961 is fixed.
+  LOG(WARNING) << "Enrollment error occured: status=" << status.status()
+               << " http status=" << status.http_status()
+               << " DM status=" << status.client_status();
   OnAnyEnrollmentError();
   actor_->ShowEnrollmentStatus(status);
 }
@@ -174,6 +178,8 @@ void EnrollmentScreen::OnOtherError(
 }
 
 void EnrollmentScreen::OnDeviceEnrolled(const std::string& additional_token) {
+  // TODO(pbond): remove this LOG once http://crbug.com/586961 is fixed.
+  LOG(WARNING) << "Device is successfully enrolled.";
   if (!additional_token.empty())
     SendEnrollmentAuthToken(additional_token);
 
@@ -189,10 +195,14 @@ void EnrollmentScreen::OnDeviceAttributeUpdatePermission(bool granted) {
   // If user is permitted to update device attributes
   // Show attribute prompt screen
   if (granted) {
+    // TODO(pbond): remove this LOG once http://crbug.com/586961 is fixed.
+    LOG(WARNING) << "Show device attribute prompt screen";
     StartupUtils::MarkDeviceRegistered(
         base::Bind(&EnrollmentScreen::ShowAttributePromptScreen,
                    weak_ptr_factory_.GetWeakPtr()));
   } else {
+    // TODO(pbond): remove this LOG once http://crbug.com/586961 is fixed.
+    LOG(WARNING) << "The device attribute update is not permitted";
     StartupUtils::MarkDeviceRegistered(
         base::Bind(&EnrollmentScreen::ShowEnrollmentStatusOnSuccess,
                    weak_ptr_factory_.GetWeakPtr()));
