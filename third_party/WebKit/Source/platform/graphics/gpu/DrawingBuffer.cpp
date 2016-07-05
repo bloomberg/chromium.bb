@@ -739,7 +739,7 @@ IntSize DrawingBuffer::adjustSize(const IntSize& desiredSize, const IntSize& cur
 
 bool DrawingBuffer::reset(const IntSize& newSize)
 {
-    ASSERT(!newSize.isEmpty());
+    CHECK(!newSize.isEmpty());
     IntSize adjustedSize = adjustSize(newSize, m_size, m_maxTextureSize);
     if (adjustedSize.isEmpty())
         return false;
