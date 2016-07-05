@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_SERVICE_TAB_LAUNCHER_BROWSER_ANDROID_SERVICE_TAB_LAUNCHER_H_
-#define COMPONENTS_SERVICE_TAB_LAUNCHER_BROWSER_ANDROID_SERVICE_TAB_LAUNCHER_H_
+#ifndef CHROME_BROWSER_ANDROID_CHROME_SERVICE_TAB_LAUNCHER_H_
+#define CHROME_BROWSER_ANDROID_CHROME_SERVICE_TAB_LAUNCHER_H_
 
 #include "base/android/jni_android.h"
 #include "base/callback_forward.h"
@@ -16,8 +16,6 @@ class BrowserContext;
 struct OpenURLParams;
 class WebContents;
 }
-
-namespace service_tab_launcher {
 
 // Launcher for creating new tabs on Android from a background service, where
 // there may not necessarily be an Activity or a tab model at all. When the
@@ -42,7 +40,7 @@ class ServiceTabLauncher {
   // the provisional load for the main frame of the navigation.
   void OnTabLaunched(int request_id, content::WebContents* web_contents);
 
-  static bool RegisterServiceTabLauncher(JNIEnv* env);
+  static bool Register(JNIEnv* env);
 
  private:
   friend struct base::DefaultSingletonTraits<ServiceTabLauncher>;
@@ -52,11 +50,7 @@ class ServiceTabLauncher {
 
   IDMap<TabLaunchedCallback, IDMapOwnPointer> tab_launched_callbacks_;
 
-  base::android::ScopedJavaGlobalRef<jobject> java_object_;
-
   DISALLOW_COPY_AND_ASSIGN(ServiceTabLauncher);
 };
 
-}  // namespace service_tab_launcher
-
-#endif  // COMPONENTS_SERVICE_TAB_LAUNCHER_BROWSER_ANDROID_SERVICE_TAB_LAUNCHER_H_
+#endif  // CHROME_BROWSER_ANDROID_CHROME_SERVICE_TAB_LAUNCHER_H_

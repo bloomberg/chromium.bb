@@ -229,8 +229,8 @@
 #if BUILDFLAG(ANDROID_JAVA_UI)
 #include "chrome/browser/android/mojo/chrome_service_registrar_android.h"
 #include "chrome/browser/android/ntp/new_tab_page_url_handler.h"
+#include "chrome/browser/android/service_tab_launcher.h"
 #include "chrome/browser/android/webapps/single_tab_mode_tab_helper.h"
-#include "components/service_tab_launcher/browser/android/service_tab_launcher.h"
 #endif
 
 #if defined(OS_ANDROID)
@@ -2871,8 +2871,8 @@ void ChromeContentBrowserClient::OpenURL(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
 #if BUILDFLAG(ANDROID_JAVA_UI)
-  service_tab_launcher::ServiceTabLauncher::GetInstance()->LaunchTab(
-      browser_context, params, callback);
+  ServiceTabLauncher::GetInstance()->LaunchTab(browser_context, params,
+                                               callback);
 #else
   chrome::NavigateParams nav_params(
       Profile::FromBrowserContext(browser_context),

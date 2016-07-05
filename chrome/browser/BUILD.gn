@@ -774,7 +774,6 @@ split_static_library("browser") {
       "//components/precache/content",
       "//components/precache/core",
       "//components/resources:components_resources",
-      "//components/service_tab_launcher",
       "//components/toolbar",
       "//components/web_contents_delegate_android",
     ]

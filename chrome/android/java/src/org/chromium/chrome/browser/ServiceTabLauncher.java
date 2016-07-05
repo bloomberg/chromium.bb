@@ -9,7 +9,7 @@ import android.content.Intent;
 import android.os.AsyncTask;
 
 import org.chromium.base.CommandLine;
-import org.chromium.base.annotations.UsedByReflection;
+import org.chromium.base.annotations.CalledByNative;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.document.AsyncTabCreationParams;
@@ -17,8 +17,8 @@ import org.chromium.chrome.browser.tabmodel.document.TabDelegate;
 import org.chromium.chrome.browser.webapps.WebappDataStorage;
 import org.chromium.chrome.browser.webapps.WebappRegistry;
 import org.chromium.chrome.browser.webapps.WebappRegistry.FetchWebappDataStorageCallback;
-import org.chromium.components.service_tab_launcher.ServiceTabLauncher;
 import org.chromium.content_public.browser.LoadUrlParams;
+import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.common.Referrer;
 import org.chromium.content_public.common.ResourceRequestBody;
 import org.chromium.ui.base.PageTransition;
@@ -26,26 +26,35 @@ import org.chromium.webapk.lib.client.WebApkNavigationClient;
 import org.chromium.webapk.lib.client.WebApkValidator;
 
 /**
- * Service Tab Launcher implementation for Chrome. Provides the ability for Android Services
- * running in Chrome to launch URLs, without having access to an activity.
- *
- * This class is referred to from the ServiceTabLauncher implementation in Chromium using a
- * meta-data value in the Android manifest file. The ServiceTabLauncher class has more
- * documentation about why this is necessary.
+ * Tab Launcher to be used to launch new tabs from background Android Services,
+ * when it is not known whether an activity is available. It will send an intent to launch the
+ * activity.
  *
  * URLs within the scope of a recently launched standalone-capable web app on the Android home
  * screen are launched in the standalone web app frame.
- *
- * TODO(peter): after upstreaming, merge this with ServiceTabLauncher and remove reflection calls
- *              in ServiceTabLauncher.
  */
-@UsedByReflection("ServiceTabLauncher.java")
-public class ChromeServiceTabLauncher extends ServiceTabLauncher {
-    @Override
-    @UsedByReflection("ServiceTabLauncher.java")
-    public void launchTab(final Context context, final int requestId, final boolean incognito,
-            final String url, final int disposition, final String referrerUrl,
-            final int referrerPolicy, final String extraHeaders,
+public class ServiceTabLauncher {
+    // Name of the extra containing the Id of a tab launch request id.
+    public static final String LAUNCH_REQUEST_ID_EXTRA =
+            "org.chromium.chrome.browser.ServiceTabLauncher.LAUNCH_REQUEST_ID";
+
+    /**
+     * Launches the browser activity and launches a tab for |url|.
+     *
+     * @param context The context using which the URL is being loaded.
+     * @param requestId Id of the request for launching this tab.
+     * @param incognito Whether the tab should be launched in incognito mode.
+     * @param url The URL which should be launched in a tab.
+     * @param disposition The disposition requested by the navigation source.
+     * @param referrerUrl URL of the referrer which is opening the page.
+     * @param referrerPolicy The referrer policy to consider when applying the referrer.
+     * @param extraHeaders Extra headers to apply when requesting the tab's URL.
+     * @param postData Post-data to include in the tab URL's request body.
+     */
+    @CalledByNative
+    public static void launchTab(final Context context, final int requestId,
+            final boolean incognito, final String url, final int disposition,
+            final String referrerUrl, final int referrerPolicy, final String extraHeaders,
             final ResourceRequestBody postData) {
         final TabDelegate tabDelegate = new TabDelegate(incognito);
 
@@ -106,4 +115,19 @@ public class ChromeServiceTabLauncher extends ServiceTabLauncher {
         };
         WebappRegistry.getWebappDataStorageForUrl(context, url, callback);
     }
+
+    /**
+     * To be called by the activity when the WebContents for |requestId| has been created, or has
+     * been recycled from previous use. The |webContents| must not yet have started provisional
+     * load for the main frame.
+     *
+     * @param requestId Id of the tab launching request which has been fulfilled.
+     * @param webContents The WebContents instance associated with this request.
+     */
+    public static void onWebContentsForRequestAvailable(int requestId, WebContents webContents) {
+        nativeOnWebContentsForRequestAvailable(requestId, webContents);
+    }
+
+    private static native void nativeOnWebContentsForRequestAvailable(
+            int requestId, WebContents webContents);
 }

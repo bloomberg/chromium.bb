@@ -81,6 +81,7 @@
 #include "chrome/browser/android/recently_closed_tabs_bridge.h"
 #include "chrome/browser/android/rlz/revenue_stats.h"
 #include "chrome/browser/android/safe_browsing/safe_browsing_api_handler_bridge.h"
+#include "chrome/browser/android/service_tab_launcher.h"
 #include "chrome/browser/android/sessions/session_tab_helper_android.h"
 #include "chrome/browser/android/shortcut_helper.h"
 #include "chrome/browser/android/signin/account_management_screen_helper.h"
@@ -170,7 +171,6 @@
 #include "components/navigation_interception/component_jni_registrar.h"
 #include "components/policy/core/browser/android/component_jni_registrar.h"
 #include "components/safe_json/android/component_jni_registrar.h"
-#include "components/service_tab_launcher/component_jni_registrar.h"
 #include "components/signin/core/browser/android/component_jni_registrar.h"
 #include "components/variations/android/component_jni_registrar.h"
 #include "components/variations/android/variations_seed_bridge.h"
@@ -354,7 +354,7 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
     {"SavePasswordInfoBar", SavePasswordInfoBar::Register},
     {"SceneLayer", chrome::android::RegisterSceneLayer},
     {"ScreenshotTask", RegisterScreenshotTask},
-    {"ServiceTabLauncher", service_tab_launcher::RegisterServiceTabLauncherJni},
+    {"ServiceTabLauncher", ServiceTabLauncher::Register},
     {"SessionTabHelper", RegisterSessionTabHelper},
     {"SigninInvestigator", SigninInvestigatorAndroid::Register},
     {"SigninManager", SigninManagerAndroid::Register},

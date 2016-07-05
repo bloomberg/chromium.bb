@@ -110,7 +110,6 @@
     ['OS == "android"', {
       'includes': [
         'external_video_surface.gypi',
-        'service_tab_launcher.gypi',
       ],
     }],
     ['OS != "ios"', {

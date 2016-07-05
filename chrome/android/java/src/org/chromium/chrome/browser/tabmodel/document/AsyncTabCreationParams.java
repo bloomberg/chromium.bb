@@ -6,7 +6,7 @@ package org.chromium.chrome.browser.tabmodel.document;
 
 import android.content.Intent;
 
-import org.chromium.chrome.browser.ChromeServiceTabLauncher;
+import org.chromium.chrome.browser.ServiceTabLauncher;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.AsyncTabParams;
@@ -27,7 +27,7 @@ public class AsyncTabCreationParams implements AsyncTabParams {
     /** WebContents object to initialize the Tab with. Set only by the {@link TabDelegate}. */
     private final WebContents mWebContents;
 
-    /** The tab launch request ID from the {@link ChromeServiceTabLauncher}. **/
+    /** The tab launch request ID from the {@link ServiceTabLauncher}. **/
     private final Integer mRequestId;
 
     /** Create parameters for creating a Tab asynchronously. */
@@ -47,7 +47,7 @@ public class AsyncTabCreationParams implements AsyncTabParams {
         assert webContents != null;
     }
 
-    /** Called by {@see ChromeServiceTabLauncher} to create tabs via service workers. */
+    /** Called by {@see ServiceTabLauncher} to create tabs via service workers. */
     public AsyncTabCreationParams(LoadUrlParams loadUrlParams, Integer requestId) {
         this(loadUrlParams, null, null, requestId);
         assert requestId != null;

@@ -231,7 +231,6 @@ android_library("chrome_java") {
       "//components/policy/android:policy_java",
       "//components/precache/android:precache_java",
       "//components/safe_json/android:safe_json_java",
-      "//components/service_tab_launcher:service_tab_launcher_java",
       "//components/signin/core/browser/android:java",
       "//components/web_contents_delegate_android:web_contents_delegate_android_java",
       "//sync/android:sync_java",
