@@ -397,7 +397,6 @@ public class NewTabPageView extends FrameLayout
                 }
             });
             initializeSearchBoxRecyclerViewScrollHandling();
-            mRecyclerView.updateSnippetsHeaderDisplay(mNewTabPageLayout.getPaddingTop());
         } else {
             initializeSearchBoxScrollHandling();
         }
@@ -483,7 +482,7 @@ public class NewTabPageView extends FrameLayout
                 }
                 updateSearchBoxOnScroll();
                 mRecyclerView.updatePeekingCard();
-                mRecyclerView.updateSnippetsHeaderDisplay(mNewTabPageLayout.getPaddingTop());
+                mRecyclerView.updateSnippetsHeaderDisplay();
             }
         });
 
@@ -819,6 +818,7 @@ public class NewTabPageView extends FrameLayout
 
         if (mUseCardsUi) {
             mRecyclerView.updatePeekingCard();
+            mRecyclerView.updateSnippetsHeaderDisplay();
             // The positioning of elements may have been changed (since the elements expand to fill
             // the available vertical space), so adjust the scroll.
             mRecyclerView.snapScroll(mSearchBoxView, getVerticalScroll(), getHeight());
@@ -1087,6 +1087,7 @@ public class NewTabPageView extends FrameLayout
 
         if (mUseCardsUi) {
             mRecyclerView.updatePeekingCard();
+            mRecyclerView.updateSnippetsHeaderDisplay();
         }
     }
 

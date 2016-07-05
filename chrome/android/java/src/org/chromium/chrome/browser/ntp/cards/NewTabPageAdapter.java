@@ -183,7 +183,8 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder> implements 
         }
 
         if (viewType == NewTabPageListItem.VIEW_TYPE_HEADER) {
-            return new SnippetHeaderViewHolder(SnippetHeaderListItem.createView(parent));
+            return new SnippetHeaderViewHolder(
+                    SnippetHeaderListItem.createView(parent), mRecyclerView);
         }
 
         if (viewType == NewTabPageListItem.VIEW_TYPE_SNIPPET) {

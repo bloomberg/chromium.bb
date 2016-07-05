@@ -220,15 +220,13 @@ public class NewTabPageRecyclerView extends RecyclerView {
     /**
      * Show the snippets header when the user scrolls down and snippet articles starts reaching the
      * top of the screen.
-     * @param omniBoxHeight The height of the omnibox displayed over the NTP, we use this to offset
-     *          the start point of the transition.
      */
-    public void updateSnippetsHeaderDisplay(int omniBoxHeight) {
+    public void updateSnippetsHeaderDisplay() {
         SnippetHeaderViewHolder header = findHeaderView();
         if (header == null) return;
 
         // Start doing the calculations if the snippet header is currently shown on screen.
-        header.onScrolled(omniBoxHeight);
+        header.updateDisplay();
 
         // Update the space at the bottom, which needs to know about the height of the header.
         refreshBottomSpacing();
@@ -236,7 +234,7 @@ public class NewTabPageRecyclerView extends RecyclerView {
 
     /**
      * Finds the header view.
-     * @return The viewholder of the header or null, if it is not present.
+     * @return The ViewHolder of the header or null, if it is not present.
      */
     private SnippetHeaderViewHolder findHeaderView() {
         // Get the snippet header view. It is always at position 1
@@ -302,23 +300,30 @@ public class NewTabPageRecyclerView extends RecyclerView {
         // and to allow the peeking card to peek a bit before snapping back.
         if (findFirstCard() != null && isFirstItemVisible()) {
             View peekingCard = findFirstCard().itemView;
+            View headerView = findHeaderView().itemView;
             final int peekingHeight = getResources().getDimensionPixelSize(
                     R.dimen.snippets_padding_and_peeking_card_height);
 
-            // |A + B| gives the offset of the peeking card relative to the Recycler View,
+            // |A + B - C| gives the offset of the peeking card relative to the Recycler View,
             // so scrolling to this point would put the peeking card at the top of the
-            // screen.
-            // |A + B - C| will scroll us so that the peeking card is just off the bottom
+            // screen. Remove the |headerView| height which gets dynamically increased with
+            // scrolling.
+            // |A + B - C - D| will scroll us so that the peeking card is just off the bottom
             // of the screen.
-            // Finally, we get |A + B - C + D| because the transition starts from the
-            // peeking card's resting point, which is |D| from the bottom of the screen.
+            // Finally, we get |A + B - C - D + E| because the transition starts from the
+            // peeking card's resting point, which is |E| from the bottom of the screen.
             int start = peekingCard.getTop()  // A.
-                    + parentScrollY  // B.
-                    - parentHeight  // C.
-                    + peekingHeight;  // D.
+                    + parentScrollY // B.
+                    - headerView.getHeight()  // C.
+                    - parentHeight  // D.
+                    + peekingHeight;  // E.
+
+            // The height of the region in which the the peeking card will snap.
+            int snapScrollHeight = (peekingCard.getHeight() / 2) + headerView.getHeight();
+
             scrollOutOfRegion(start,
-                              start + peekingCard.getHeight() / 2,
-                              start + peekingCard.getHeight() / 2);
+                              start + snapScrollHeight,
+                              start + snapScrollHeight);
         }
     }
 }
