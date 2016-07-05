@@ -714,7 +714,7 @@ private:
     void scrollToFragmentAnchor();
     void didScrollTimerFired(Timer<FrameView>*);
 
-    void updateLayersAndCompositingAfterScrollIfNeeded();
+    void updateLayersAndCompositingAfterScrollIfNeeded(const DoubleSize& scrollDelta);
 
     static bool computeCompositedSelection(LocalFrame&, CompositedSelection&);
     void updateCompositedSelectionIfNeeded();

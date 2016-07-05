@@ -71,7 +71,7 @@ class SubtreeLayoutScope;
 
 typedef WTF::HashMap<PaintLayer*, StickyPositionScrollingConstraints> StickyConstraintsMap;
 
-struct PaintLayerScrollableAreaRareData {
+struct CORE_EXPORT PaintLayerScrollableAreaRareData {
     WTF_MAKE_NONCOPYABLE(PaintLayerScrollableAreaRareData);
     USING_FAST_MALLOC(PaintLayerScrollableAreaRareData);
 public:

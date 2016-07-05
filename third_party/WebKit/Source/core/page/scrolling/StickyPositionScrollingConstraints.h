@@ -9,6 +9,8 @@
 
 namespace blink {
 
+class LayoutBoxModelObjectTest;
+
 class StickyPositionScrollingConstraints final {
 public:
     enum AnchorEdgeFlags {
@@ -71,6 +73,11 @@ public:
     bool operator!=(const StickyPositionScrollingConstraints& other) const { return !(*this == other); }
 
 private:
+    friend class LayoutBoxModelObjectTest;
+
+    const FloatRect& scrollContainerRelativeContainingBlockRect() const { return m_scrollContainerRelativeContainingBlockRect; }
+    const FloatRect& scrollContainerRelativeStickyBoxRect() const { return m_scrollContainerRelativeStickyBoxRect; }
+
     AnchorEdges m_anchorEdges;
     float m_leftOffset;
     float m_rightOffset;

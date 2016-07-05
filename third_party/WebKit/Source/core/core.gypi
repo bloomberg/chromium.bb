@@ -4132,6 +4132,7 @@
             'layout/ImageQualityControllerTest.cpp',
             'layout/InlineTextBoxTest.cpp',
             'layout/LayoutBlockTest.cpp',
+            'layout/LayoutBoxModelObjectTest.cpp',
             'layout/LayoutBoxTest.cpp',
             'layout/LayoutInlineTest.cpp',
             'layout/LayoutMultiColumnFlowThreadTest.cpp',
