@@ -90,4 +90,40 @@ test(function() {
   assert_equals(entries['border-image-repeat'].cssText, 'initial');
 }, "Iterating entries over border element expansion");
 
+test(function() {
+  testElement.style = "background-color: var(--bg-color);";
+  var entries = [...testElement.styleMap.values()];
+
+  assert_equals(entries.length, 1);
+  assert_equals(entries[0].constructor, CSSStyleValue);
+  assert_equals(entries[0].cssText, 'var(--bg-color)');
+}, "Variable values come out as CSSStyleValues");
+
+test(function() {
+  testElement.style = '';
+  testElement.style.setProperty('--my-custom-property', '5px');
+
+  var entries = [...testElement.styleMap.entries()];
+  assert_equals(entries.length, 1);
+  var propertyAndValue = entries[0];
+  assert_equals(propertyAndValue.length, 2);
+
+  assert_equals(propertyAndValue[0], '--my-custom-property');
+  assert_equals(propertyAndValue[1].constructor, CSSStyleValue);
+  assert_equals(propertyAndValue[1].cssText, '5px');
+}, "Custom properties set on the element come out as CSSStyleValues");
+
+test(function() {
+  testElement.style.cssText = "@apply --foo";
+
+  var entries = [...testElement.styleMap.entries()];
+  assert_equals(entries.length, 1);
+  var propertyAndValue = entries[0];
+  assert_equals(propertyAndValue.length, 2);
+
+  assert_equals(propertyAndValue[0], '@apply');
+  assert_equals(propertyAndValue[1].constructor, CSSStyleValue);
+  assert_equals(propertyAndValue[1].cssText, '--foo');
+}, "@apply rules come out as CSSStyleValues");
+
 </script>

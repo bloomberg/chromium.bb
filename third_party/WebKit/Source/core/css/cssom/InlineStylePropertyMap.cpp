@@ -6,12 +6,15 @@
 
 #include "bindings/core/v8/Iterable.h"
 #include "core/CSSPropertyNames.h"
+#include "core/css/CSSCustomIdentValue.h"
+#include "core/css/CSSCustomPropertyDeclaration.h"
 #include "core/css/CSSPrimitiveValue.h"
 #include "core/css/CSSPropertyMetadata.h"
 #include "core/css/CSSValueList.h"
 #include "core/css/StylePropertySet.h"
 #include "core/css/cssom/CSSOMTypes.h"
 #include "core/css/cssom/CSSSimpleLength.h"
+#include "core/css/cssom/CSSUnsupportedStyleValue.h"
 #include "core/css/cssom/StyleValueFactory.h"
 
 namespace blink {
@@ -148,13 +151,25 @@ HeapVector<StylePropertyMap::StylePropertyMapEntry> InlineStylePropertyMap::getI
     for (unsigned i = 0; i < inlineStyleSet.propertyCount(); i++) {
         StylePropertySet::PropertyReference propertyReference = inlineStyleSet.propertyAt(i);
         CSSPropertyID propertyID = propertyReference.id();
-        CSSStyleValueVector styleValueVector = StyleValueFactory::cssValueToStyleValueVector(propertyID, *propertyReference.value());
+        String name;
         CSSStyleValueOrCSSStyleValueSequence value;
-        if (styleValueVector.size() == 1)
-            value.setCSSStyleValue(styleValueVector[0]);
-        else
-            value.setCSSStyleValueSequence(styleValueVector);
-        result.append(std::make_pair(getPropertyNameString(propertyID), value));
+        if (propertyID == CSSPropertyVariable) {
+            const CSSCustomPropertyDeclaration* customDeclaration = toCSSCustomPropertyDeclaration(propertyReference.value());
+            name = customDeclaration->name();
+            // TODO(meade): Eventually custom properties will support other types, so actually return them instead of always returning a CSSUnsupportedStyleValue.
+            value.setCSSStyleValue(CSSUnsupportedStyleValue::create(customDeclaration->customCSSText()));
+        } else if (propertyID == CSSPropertyApplyAtRule) {
+            name = "@apply";
+            value.setCSSStyleValue(CSSUnsupportedStyleValue::create(toCSSCustomIdentValue(propertyReference.value())->value()));
+        } else {
+            name = getPropertyNameString(propertyID);
+            CSSStyleValueVector styleValueVector = StyleValueFactory::cssValueToStyleValueVector(propertyID, *propertyReference.value());
+            if (styleValueVector.size() == 1)
+                value.setCSSStyleValue(styleValueVector[0]);
+            else
+                value.setCSSStyleValueSequence(styleValueVector);
+        }
+        result.append(std::make_pair(name, value));
     }
     return result;
 }
