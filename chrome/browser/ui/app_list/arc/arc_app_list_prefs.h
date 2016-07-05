@@ -81,13 +81,15 @@ class ArcAppListPrefs : public KeyedService,
                 int32_t package_version,
                 int64_t last_backup_android_id,
                 int64_t last_backup_time,
-                bool should_sync);
+                bool should_sync,
+                bool system);
 
     std::string package_name;
     int32_t package_version;
     int64_t last_backup_android_id;
     int64_t last_backup_time;
     bool should_sync;
+    bool system;
   };
 
   class Observer {

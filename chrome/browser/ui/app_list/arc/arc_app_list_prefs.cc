@@ -37,6 +37,7 @@ const char kLastBackupAndroidId[] = "last_backup_android_id";
 const char kLastBackupTime[] = "last_backup_time";
 const char kLastLaunchTime[] = "lastlaunchtime";
 const char kShouldSync[] = "should_sync";
+const char kSystem[] = "system";
 constexpr int kSetNotificationsEnabledMinVersion = 6;
 
 // Provider of write access to a dictionary storing ARC prefs.
@@ -174,6 +175,7 @@ void AddOrUpdatePackagePrefs(PrefService* prefs,
   package_dict->SetInteger(kPackageVersion, package.package_version);
   package_dict->SetString(kLastBackupAndroidId, id_str);
   package_dict->SetString(kLastBackupTime, time_str);
+  package_dict->SetBoolean(kSystem, package.system);
 }
 
 // Remove given package from local pref.
@@ -396,15 +398,17 @@ std::unique_ptr<ArcAppListPrefs::PackageInfo> ArcAppListPrefs::GetPackage(
   int64_t last_backup_android_id = 0;
   int64_t last_backup_time = 0;
   bool should_sync = false;
+  bool system = false;
 
   GetInt64FromPref(package, kLastBackupAndroidId, &last_backup_android_id);
   GetInt64FromPref(package, kLastBackupTime, &last_backup_time);
   package->GetInteger(kPackageVersion, &package_version);
   package->GetBoolean(kShouldSync, &should_sync);
+  package->GetBoolean(kSystem, &system);
 
   return base::MakeUnique<PackageInfo>(package_name, package_version,
                                        last_backup_android_id, last_backup_time,
-                                       should_sync);
+                                       should_sync, system);
 }
 
 std::vector<std::string> ArcAppListPrefs::GetAppIds() const {
@@ -933,9 +937,11 @@ ArcAppListPrefs::PackageInfo::PackageInfo(const std::string& package_name,
                                           int32_t package_version,
                                           int64_t last_backup_android_id,
                                           int64_t last_backup_time,
-                                          bool should_sync)
+                                          bool should_sync,
+                                          bool system)
     : package_name(package_name),
       package_version(package_version),
       last_backup_android_id(last_backup_android_id),
       last_backup_time(last_backup_time),
-      should_sync(should_sync) {}
+      should_sync(should_sync),
+      system(system) {}

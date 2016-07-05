@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
-// Next MinVersion: 11
+// Next MinVersion: 12
 
 module arc.mojom;
 
@@ -25,6 +25,7 @@ struct ArcPackageInfo {
   int64 last_backup_android_id;
   int64 last_backup_time;
   bool sync;  // true if package installation should be synced
+  [MinVersion=11] bool system;  // true if package is system package.
 };
 
 // Describes ARC app shortcut.

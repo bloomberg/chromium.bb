@@ -46,10 +46,12 @@ ArcApplicationNotifierSourceChromeOS::GetNotifierList(Profile* profile) {
 
   for (const std::string& app_id : app_ids) {
     const auto app = app_list->GetApp(app_id);
-    if (!app)
-      continue;
     // Handle packages having multiple launcher activities.
-    if (package_to_app_ids_.count(app->package_name))
+    if (!app || package_to_app_ids_.count(app->package_name))
+      continue;
+
+    const auto package = app_list->GetPackage(app->package_name);
+    if (!package || package->system)
       continue;
 
     // Load icons for notifier.
