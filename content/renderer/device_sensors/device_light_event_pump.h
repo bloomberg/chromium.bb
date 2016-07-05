@@ -11,6 +11,7 @@
 #include "content/common/device_sensors/device_light_data.h"
 #include "content/renderer/device_sensors/device_sensor_event_pump.h"
 #include "content/renderer/shared_memory_seqlock_reader.h"
+#include "device/sensors/public/interfaces/light.mojom.h"
 
 namespace blink {
 class WebDeviceLightListener;
@@ -22,7 +23,9 @@ typedef SharedMemorySeqLockReader<DeviceLightData>
     DeviceLightSharedMemoryReader;
 
 class CONTENT_EXPORT DeviceLightEventPump
-    : public DeviceSensorEventPump<blink::WebDeviceLightListener> {
+    : public DeviceSensorMojoClientMixin<
+          DeviceSensorEventPump<blink::WebDeviceLightListener>,
+          device::mojom::LightSensor> {
  public:
   explicit DeviceLightEventPump(RenderThread* thread);
   ~DeviceLightEventPump() override;
@@ -32,17 +35,12 @@ class CONTENT_EXPORT DeviceLightEventPump
   bool SetListener(blink::WebDeviceLightListener* listener);
 
   // PlatformEventObserver implementation.
-  bool OnControlMessageReceived(const IPC::Message& message) override;
   void SendFakeDataForTesting(void* data) override;
 
  protected:
   // Methods overriden from base class DeviceSensorEventPump
   void FireEvent() override;
   bool InitializeReader(base::SharedMemoryHandle handle) override;
-
-  // PlatformEventObserver implementation.
-  void SendStartMessage() override;
-  void SendStopMessage() override;
 
  private:
   bool ShouldFireEvent(double data) const;

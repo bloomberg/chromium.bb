@@ -4,27 +4,17 @@
 
 #include "device_motion_event_pump.h"
 
-#include "content/common/device_sensors/device_motion_messages.h"
 #include "content/public/renderer/render_thread.h"
 #include "third_party/WebKit/public/platform/modules/device_orientation/WebDeviceMotionListener.h"
 
 namespace content {
 
 DeviceMotionEventPump::DeviceMotionEventPump(RenderThread* thread)
-    : DeviceSensorEventPump<blink::WebDeviceMotionListener>(thread) {
-}
+    : DeviceSensorMojoClientMixin<
+          DeviceSensorEventPump<blink::WebDeviceMotionListener>,
+          device::mojom::MotionSensor>(thread) {}
 
 DeviceMotionEventPump::~DeviceMotionEventPump() {
-}
-
-bool DeviceMotionEventPump::OnControlMessageReceived(
-    const IPC::Message& message) {
-  bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP(DeviceMotionEventPump, message)
-    IPC_MESSAGE_HANDLER(DeviceMotionMsg_DidStartPolling, OnDidStart)
-    IPC_MESSAGE_UNHANDLED(handled = false)
-  IPC_END_MESSAGE_MAP()
-  return handled;
 }
 
 void DeviceMotionEventPump::FireEvent() {
@@ -38,14 +28,6 @@ bool DeviceMotionEventPump::InitializeReader(base::SharedMemoryHandle handle) {
   if (!reader_)
     reader_.reset(new DeviceMotionSharedMemoryReader());
   return reader_->Initialize(handle);
-}
-
-void DeviceMotionEventPump::SendStartMessage() {
-  RenderThread::Get()->Send(new DeviceMotionHostMsg_StartPolling());
-}
-
-void DeviceMotionEventPump::SendStopMessage() {
-  RenderThread::Get()->Send(new DeviceMotionHostMsg_StopPolling());
 }
 
 void DeviceMotionEventPump::SendFakeDataForTesting(void* fake_data) {

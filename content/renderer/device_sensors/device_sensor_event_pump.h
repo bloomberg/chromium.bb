@@ -5,13 +5,56 @@
 #ifndef CONTENT_RENDERER_DEVICE_SENSORS_DEVICE_SENSOR_EVENT_PUMP_H_
 #define CONTENT_RENDERER_DEVICE_SENSORS_DEVICE_SENSOR_EVENT_PUMP_H_
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/macros.h"
 #include "base/memory/shared_memory.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "content/public/renderer/platform_event_observer.h"
+#include "content/renderer/render_thread_impl.h"
+#include "mojo/public/cpp/system/platform_handle.h"
+#include "services/shell/public/cpp/interface_provider.h"
 
 namespace content {
+
+template <typename Base, typename MojoInterface>
+class CONTENT_EXPORT DeviceSensorMojoClientMixin : public Base {
+ public:
+  template <typename... Args>
+  explicit DeviceSensorMojoClientMixin(Args&&... args)
+      : Base(std::forward<Args>(args)...) {
+    mojo::InterfaceRequest<MojoInterface> request =
+        mojo::GetProxy(&mojo_interface_);
+
+    // When running layout tests, those observers should not listen to the
+    // actual hardware changes. In order to make that happen, don't connect
+    // the other end of the mojo pipe to anything.
+    //
+    // TODO(sammc): Remove this when JS layout test support for shared buffers
+    // is ready and the layout tests are converted to use that for mocking.
+    if (RenderThreadImpl::current() &&
+        !RenderThreadImpl::current()->layout_test_mode()) {
+      RenderThread::Get()->GetRemoteInterfaces()->GetInterface(
+          std::move(request));
+    }
+  }
+
+  void SendStartMessage() override {
+    mojo_interface_->StartPolling(
+        base::Bind(&DeviceSensorMojoClientMixin<Base, MojoInterface>::DidStart,
+                   base::Unretained(this)));
+  }
+  void SendStopMessage() override { mojo_interface_->StopPolling(); }
+
+ protected:
+  void DidStart(mojo::ScopedSharedBufferHandle buffer_handle) {
+    Base::DidStart(std::move(buffer_handle));
+  }
+
+ private:
+  mojo::InterfacePtr<MojoInterface> mojo_interface_;
+};
 
 template <typename ListenerType>
 class CONTENT_EXPORT DeviceSensorEventPump
@@ -71,13 +114,18 @@ class CONTENT_EXPORT DeviceSensorEventPump
       PENDING_START
   };
 
-  void OnDidStart(base::SharedMemoryHandle handle) {
+  void DidStart(mojo::ScopedSharedBufferHandle buffer_handle) {
     DVLOG(2) << "did start sensor event pump";
 
     if (state_ != PENDING_START)
       return;
 
     DCHECK(!timer_.IsRunning());
+
+    base::SharedMemoryHandle handle;
+    MojoResult result = mojo::UnwrapSharedMemoryHandle(
+        std::move(buffer_handle), &handle, nullptr, nullptr);
+    DCHECK_EQ(MOJO_RESULT_OK, result);
 
     if (InitializeReader(handle)) {
       timer_.Start(FROM_HERE,

@@ -93,11 +93,10 @@ int DeviceInertialSensorService::GetNumberConsumers(
   return 0;
 }
 
-base::SharedMemoryHandle
-DeviceInertialSensorService::GetSharedMemoryHandleForProcess(
-    ConsumerType consumer_type, base::ProcessHandle handle) {
+mojo::ScopedSharedBufferHandle
+DeviceInertialSensorService::GetSharedMemoryHandle(ConsumerType consumer_type) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  return data_fetcher_->GetSharedMemoryHandleForProcess(consumer_type, handle);
+  return data_fetcher_->GetSharedMemoryHandle(consumer_type);
 }
 
 void DeviceInertialSensorService::Shutdown() {

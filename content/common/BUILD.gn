@@ -252,6 +252,7 @@ mojom("mojo_bindings") {
 
   public_deps = [
     "//components/leveldb/public/interfaces",
+    "//device/sensors/public/interfaces",
     "//services/shell/public/interfaces",
     "//services/ui/public/interfaces",
     "//skia/public/interfaces",

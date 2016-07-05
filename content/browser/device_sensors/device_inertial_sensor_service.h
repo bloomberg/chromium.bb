@@ -14,6 +14,7 @@
 #include "base/threading/thread_checker.h"
 #include "content/browser/device_sensors/device_sensors_consts.h"
 #include "content/common/content_export.h"
+#include "mojo/public/cpp/system/buffer.h"
 
 namespace content {
 
@@ -36,10 +37,9 @@ class CONTENT_EXPORT DeviceInertialSensorService {
   // Must be called on the I/O thread.
   void RemoveConsumer(ConsumerType cosumer_type);
 
-  // Returns the shared memory handle of the device motion data duplicated
-  // into the given process.
-  base::SharedMemoryHandle GetSharedMemoryHandleForProcess(
-      ConsumerType consumer_type, base::ProcessHandle handle);
+  // Returns the shared memory handle of the device motion data.
+  mojo::ScopedSharedBufferHandle GetSharedMemoryHandle(
+      ConsumerType consumer_type);
 
   // Stop/join with the background polling thread in |provider_|.
   void Shutdown();

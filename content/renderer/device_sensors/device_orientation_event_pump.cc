@@ -8,32 +8,20 @@
 
 #include <cmath>
 
-#include "content/common/device_sensors/device_orientation_messages.h"
 #include "content/public/renderer/render_thread.h"
 #include "third_party/WebKit/public/platform/modules/device_orientation/WebDeviceOrientationListener.h"
 
 namespace content {
 
-const double DeviceOrientationEventPump::kOrientationThreshold = 0.1;
+const double DeviceOrientationEventPumpBase::kOrientationThreshold = 0.1;
 
-DeviceOrientationEventPump::DeviceOrientationEventPump(RenderThread* thread)
-    : DeviceSensorEventPump<blink::WebDeviceOrientationListener>(thread) {
-}
+DeviceOrientationEventPumpBase::DeviceOrientationEventPumpBase(
+    RenderThread* thread)
+    : DeviceSensorEventPump<blink::WebDeviceOrientationListener>(thread) {}
 
-DeviceOrientationEventPump::~DeviceOrientationEventPump() {
-}
+DeviceOrientationEventPumpBase::~DeviceOrientationEventPumpBase() {}
 
-bool DeviceOrientationEventPump::OnControlMessageReceived(
-    const IPC::Message& message) {
-  bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP(DeviceOrientationEventPump, message)
-    IPC_MESSAGE_HANDLER(DeviceOrientationMsg_DidStartPolling, OnDidStart)
-    IPC_MESSAGE_UNHANDLED(handled = false)
-  IPC_END_MESSAGE_MAP()
-  return handled;
-}
-
-void DeviceOrientationEventPump::FireEvent() {
+void DeviceOrientationEventPumpBase::FireEvent() {
   DCHECK(listener());
   blink::WebDeviceOrientationData data;
   if (reader_->GetLatestData(&data) && ShouldFireEvent(data)) {
@@ -46,11 +34,12 @@ static bool IsSignificantlyDifferent(bool hasAngle1, double angle1,
     bool hasAngle2, double angle2) {
   if (hasAngle1 != hasAngle2)
     return true;
-  return (hasAngle1 && std::fabs(angle1 - angle2) >=
-          DeviceOrientationEventPump::kOrientationThreshold);
+  return (hasAngle1 &&
+          std::fabs(angle1 - angle2) >=
+              DeviceOrientationEventPumpBase::kOrientationThreshold);
 }
 
-bool DeviceOrientationEventPump::ShouldFireEvent(
+bool DeviceOrientationEventPumpBase::ShouldFireEvent(
     const blink::WebDeviceOrientationData& data) const {
   if (!data.allAvailableSensorsAreActive)
     return false;
@@ -68,7 +57,7 @@ bool DeviceOrientationEventPump::ShouldFireEvent(
              data_.hasGamma, data_.gamma, data.hasGamma, data.gamma);
 }
 
-bool DeviceOrientationEventPump::InitializeReader(
+bool DeviceOrientationEventPumpBase::InitializeReader(
     base::SharedMemoryHandle handle) {
   memset(&data_, 0, sizeof(data_));
   if (!reader_)
@@ -76,15 +65,7 @@ bool DeviceOrientationEventPump::InitializeReader(
   return reader_->Initialize(handle);
 }
 
-void DeviceOrientationEventPump::SendStartMessage() {
-  RenderThread::Get()->Send(new DeviceOrientationHostMsg_StartPolling());
-}
-
-void DeviceOrientationEventPump::SendStopMessage() {
-  RenderThread::Get()->Send(new DeviceOrientationHostMsg_StopPolling());
-}
-
-void DeviceOrientationEventPump::SendFakeDataForTesting(void* fake_data) {
+void DeviceOrientationEventPumpBase::SendFakeDataForTesting(void* fake_data) {
   blink::WebDeviceOrientationData data =
       *static_cast<blink::WebDeviceOrientationData*>(fake_data);
 

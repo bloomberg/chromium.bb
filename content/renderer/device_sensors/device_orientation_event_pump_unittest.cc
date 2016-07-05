@@ -52,11 +52,11 @@ class MockDeviceOrientationListener
 class DeviceOrientationEventPumpForTesting : public DeviceOrientationEventPump {
  public:
   DeviceOrientationEventPumpForTesting()
-      : DeviceOrientationEventPump(0) { }
+      : DeviceOrientationEventPump(nullptr) {}
   ~DeviceOrientationEventPumpForTesting() override {}
 
-  void OnDidStart(base::SharedMemoryHandle renderer_handle) {
-    DeviceOrientationEventPump::OnDidStart(renderer_handle);
+  void DidStart(mojo::ScopedSharedBufferHandle renderer_handle) {
+    DeviceOrientationEventPump::DidStart(std::move(renderer_handle));
   }
   void SendStartMessage() override {}
   void SendStopMessage() override {}
@@ -72,26 +72,21 @@ class DeviceOrientationEventPumpForTesting : public DeviceOrientationEventPump {
 
 class DeviceOrientationEventPumpTest : public testing::Test {
  public:
-  DeviceOrientationEventPumpTest() {
-      EXPECT_TRUE(shared_memory_.CreateAndMapAnonymous(
-          sizeof(DeviceOrientationHardwareBuffer)));
-  }
+  DeviceOrientationEventPumpTest() = default;
 
  protected:
   void SetUp() override {
-    const DeviceOrientationHardwareBuffer* null_buffer = nullptr;
     listener_.reset(new MockDeviceOrientationListener);
     orientation_pump_.reset(new DeviceOrientationEventPumpForTesting);
-    buffer_ = static_cast<DeviceOrientationHardwareBuffer*>(
-        shared_memory_.memory());
-    ASSERT_NE(null_buffer, buffer_);
-    memset(buffer_, 0, sizeof(DeviceOrientationHardwareBuffer));
-    ASSERT_TRUE(shared_memory_.ShareToProcess(base::GetCurrentProcessHandle(),
-        &handle_));
+    shared_memory_ = mojo::SharedBufferHandle::Create(
+        sizeof(DeviceOrientationHardwareBuffer));
+    mapping_ = shared_memory_->Map(sizeof(DeviceOrientationHardwareBuffer));
+    ASSERT_TRUE(mapping_);
+    memset(buffer(), 0, sizeof(DeviceOrientationHardwareBuffer));
   }
 
   void InitBuffer() {
-    blink::WebDeviceOrientationData& data = buffer_->data;
+    blink::WebDeviceOrientationData& data = buffer()->data;
     data.alpha = 1;
     data.hasAlpha = true;
     data.beta = 2;
@@ -102,7 +97,7 @@ class DeviceOrientationEventPumpTest : public testing::Test {
   }
 
   void InitBufferNoData() {
-    blink::WebDeviceOrientationData& data = buffer_->data;
+    blink::WebDeviceOrientationData& data = buffer()->data;
     data.allAvailableSensorsAreActive = true;
   }
 
@@ -110,25 +105,28 @@ class DeviceOrientationEventPumpTest : public testing::Test {
   DeviceOrientationEventPumpForTesting* orientation_pump() {
     return orientation_pump_.get();
   }
-  base::SharedMemoryHandle handle() { return handle_; }
-  DeviceOrientationHardwareBuffer* buffer() { return buffer_; }
+  mojo::ScopedSharedBufferHandle handle() {
+    return shared_memory_->Clone(
+        mojo::SharedBufferHandle::AccessMode::READ_ONLY);
+  }
+  DeviceOrientationHardwareBuffer* buffer() {
+    return reinterpret_cast<DeviceOrientationHardwareBuffer*>(mapping_.get());
+  }
 
  private:
+  base::MessageLoop loop_;
   std::unique_ptr<MockDeviceOrientationListener> listener_;
   std::unique_ptr<DeviceOrientationEventPumpForTesting> orientation_pump_;
-  base::SharedMemoryHandle handle_;
-  base::SharedMemory shared_memory_;
-  DeviceOrientationHardwareBuffer* buffer_;
+  mojo::ScopedSharedBufferHandle shared_memory_;
+  mojo::ScopedSharedBufferMapping mapping_;
 
   DISALLOW_COPY_AND_ASSIGN(DeviceOrientationEventPumpTest);
 };
 
 TEST_F(DeviceOrientationEventPumpTest, DidStartPolling) {
-  base::MessageLoop loop;
-
   InitBuffer();
   orientation_pump()->Start(listener());
-  orientation_pump()->OnDidStart(handle());
+  orientation_pump()->DidStart(handle());
 
   base::MessageLoop::current()->Run();
 
@@ -144,11 +142,9 @@ TEST_F(DeviceOrientationEventPumpTest, DidStartPolling) {
 }
 
 TEST_F(DeviceOrientationEventPumpTest, FireAllNullEvent) {
-  base::MessageLoop loop;
-
   InitBufferNoData();
   orientation_pump()->Start(listener());
-  orientation_pump()->OnDidStart(handle());
+  orientation_pump()->DidStart(handle());
 
   base::MessageLoop::current()->Run();
 
@@ -161,11 +157,9 @@ TEST_F(DeviceOrientationEventPumpTest, FireAllNullEvent) {
 }
 
 TEST_F(DeviceOrientationEventPumpTest, UpdateRespectsOrientationThreshold) {
-  base::MessageLoop loop;
-
   InitBuffer();
   orientation_pump()->Start(listener());
-  orientation_pump()->OnDidStart(handle());
+  orientation_pump()->DidStart(handle());
 
   base::MessageLoop::current()->Run();
 

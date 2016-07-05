@@ -54,9 +54,6 @@ class InterfaceProvider;
 
 namespace content {
 class BlinkServiceRegistryImpl;
-class DeviceLightEventPump;
-class DeviceMotionEventPump;
-class DeviceOrientationEventPump;
 class LocalStorageCachedAreas;
 class PlatformEventObserverBase;
 class QuotaMessageFilter;
@@ -284,10 +281,6 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
   std::unique_ptr<blink::WebBlobRegistry> blob_registry_;
 
   WebPublicSuffixListImpl public_suffix_list_;
-
-  std::unique_ptr<DeviceLightEventPump> device_light_event_pump_;
-  std::unique_ptr<DeviceMotionEventPump> device_motion_event_pump_;
-  std::unique_ptr<DeviceOrientationEventPump> device_orientation_event_pump_;
 
   scoped_refptr<base::SingleThreadTaskRunner> default_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> loading_task_runner_;

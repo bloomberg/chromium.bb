@@ -536,17 +536,15 @@ TEST(DataFetcherSharedMemoryBaseTest, DoesPollMotionAndOrientation) {
 
   EXPECT_TRUE(fake_data_fetcher.StartFetchingDeviceData(
       CONSUMER_TYPE_ORIENTATION));
-  base::SharedMemoryHandle handle_orientation =
-      fake_data_fetcher.GetSharedMemoryHandleForProcess(
-          CONSUMER_TYPE_ORIENTATION, base::GetCurrentProcessHandle());
-  EXPECT_TRUE(base::SharedMemory::IsHandleValid(handle_orientation));
+  mojo::ScopedSharedBufferHandle handle_orientation =
+      fake_data_fetcher.GetSharedMemoryHandle(CONSUMER_TYPE_ORIENTATION);
+  EXPECT_TRUE(handle_orientation.is_valid());
 
   EXPECT_TRUE(fake_data_fetcher.StartFetchingDeviceData(
       CONSUMER_TYPE_MOTION));
-  base::SharedMemoryHandle handle_motion =
-      fake_data_fetcher.GetSharedMemoryHandleForProcess(
-          CONSUMER_TYPE_MOTION, base::GetCurrentProcessHandle());
-  EXPECT_TRUE(base::SharedMemory::IsHandleValid(handle_motion));
+  mojo::ScopedSharedBufferHandle handle_motion =
+      fake_data_fetcher.GetSharedMemoryHandle(CONSUMER_TYPE_MOTION);
+  EXPECT_TRUE(handle_motion.is_valid());
 
   fake_data_fetcher.WaitForStart(CONSUMER_TYPE_ORIENTATION);
   fake_data_fetcher.WaitForStart(CONSUMER_TYPE_MOTION);

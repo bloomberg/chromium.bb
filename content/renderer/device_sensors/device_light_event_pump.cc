@@ -5,7 +5,6 @@
 #include "content/renderer/device_sensors/device_light_event_pump.h"
 
 #include "base/time/time.h"
-#include "content/common/device_sensors/device_light_messages.h"
 #include "content/public/renderer/render_thread.h"
 #include "third_party/WebKit/public/platform/WebDeviceLightListener.h"
 
@@ -19,22 +18,14 @@ const int kDefaultLightPumpDelayMicroseconds =
 namespace content {
 
 DeviceLightEventPump::DeviceLightEventPump(RenderThread* thread)
-    : DeviceSensorEventPump<blink::WebDeviceLightListener>(thread),
+    : DeviceSensorMojoClientMixin<
+          DeviceSensorEventPump<blink::WebDeviceLightListener>,
+          device::mojom::LightSensor>(thread),
       last_seen_data_(-1) {
   pump_delay_microseconds_ = kDefaultLightPumpDelayMicroseconds;
 }
 
 DeviceLightEventPump::~DeviceLightEventPump() {
-}
-
-bool DeviceLightEventPump::OnControlMessageReceived(
-    const IPC::Message& message) {
-  bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP(DeviceLightEventPump, message)
-    IPC_MESSAGE_HANDLER(DeviceLightMsg_DidStartPolling, OnDidStart)
-    IPC_MESSAGE_UNHANDLED(handled = false)
-  IPC_END_MESSAGE_MAP()
-  return handled;
 }
 
 void DeviceLightEventPump::FireEvent() {
@@ -62,15 +53,6 @@ bool DeviceLightEventPump::InitializeReader(base::SharedMemoryHandle handle) {
   if (!reader_)
     reader_.reset(new DeviceLightSharedMemoryReader());
   return reader_->Initialize(handle);
-}
-
-void DeviceLightEventPump::SendStartMessage() {
-  RenderThread::Get()->Send(new DeviceLightHostMsg_StartPolling());
-}
-
-void DeviceLightEventPump::SendStopMessage() {
-  last_seen_data_ = -1;
-  RenderThread::Get()->Send(new DeviceLightHostMsg_StopPolling());
 }
 
 void DeviceLightEventPump::SendFakeDataForTesting(void* fake_data) {

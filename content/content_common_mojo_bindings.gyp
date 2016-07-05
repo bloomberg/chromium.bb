@@ -42,6 +42,7 @@
         'enable_wexit_time_destructors': 1,
       },
       'dependencies': [
+        '../device/sensors/sensors.gyp:device_sensors_mojo_bindings',
         '../url/url.gyp:url_mojom',
         '../skia/skia.gyp:skia',
         'content_common_mojo_bindings_mojom',

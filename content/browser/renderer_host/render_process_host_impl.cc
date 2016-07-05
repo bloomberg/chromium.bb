@@ -60,10 +60,7 @@
 #include "content/browser/cache_storage/cache_storage_context_impl.h"
 #include "content/browser/cache_storage/cache_storage_dispatcher_host.h"
 #include "content/browser/child_process_security_policy_impl.h"
-#include "content/browser/device_sensors/device_light_message_filter.h"
-#include "content/browser/device_sensors/device_motion_message_filter.h"
-#include "content/browser/device_sensors/device_orientation_absolute_message_filter.h"
-#include "content/browser/device_sensors/device_orientation_message_filter.h"
+#include "content/browser/device_sensors/device_sensor_host.h"
 #include "content/browser/dom_storage/dom_storage_context_wrapper.h"
 #include "content/browser/dom_storage/dom_storage_message_filter.h"
 #include "content/browser/fileapi/fileapi_message_filter.h"
@@ -1015,10 +1012,6 @@ void RenderProcessHostImpl::CreateMessageFilters() {
   AddFilter(notification_message_filter_.get());
 
   AddFilter(new GamepadBrowserMessageFilter());
-  AddFilter(new DeviceLightMessageFilter());
-  AddFilter(new DeviceMotionMessageFilter());
-  AddFilter(new DeviceOrientationMessageFilter());
-  AddFilter(new DeviceOrientationAbsoluteMessageFilter());
   AddFilter(new ProfilerMessageFilter(PROCESS_TYPE_RENDERER));
   AddFilter(new HistogramMessageFilter());
   AddFilter(new MemoryMessageFilter(this));
@@ -1067,6 +1060,17 @@ void RenderProcessHostImpl::RegisterMojoInterfaces() {
   GetInterfaceRegistry()->AddInterface(
       base::Bind(&MimeRegistryImpl::Create),
       BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE));
+
+  scoped_refptr<base::SingleThreadTaskRunner> io_task_runner =
+      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO);
+  GetInterfaceRegistry()->AddInterface(base::Bind(&DeviceLightHost::Create),
+                                       io_task_runner);
+  GetInterfaceRegistry()->AddInterface(base::Bind(&DeviceMotionHost::Create),
+                                       io_task_runner);
+  GetInterfaceRegistry()->AddInterface(
+      base::Bind(&DeviceOrientationHost::Create), io_task_runner);
+  GetInterfaceRegistry()->AddInterface(
+      base::Bind(&DeviceOrientationAbsoluteHost::Create), io_task_runner);
 
 #if defined(OS_ANDROID)
   ServiceRegistrarAndroid::RegisterProcessHostServices(

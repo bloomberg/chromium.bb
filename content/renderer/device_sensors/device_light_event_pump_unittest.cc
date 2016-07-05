@@ -10,6 +10,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/common/device_sensors/device_light_hardware_buffer.h"
 #include "content/public/test/test_utils.h"
+#include "mojo/public/cpp/system/buffer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/platform/WebDeviceLightListener.h"
 
@@ -46,8 +47,8 @@ class DeviceLightEventPumpForTesting : public DeviceLightEventPump {
       : DeviceLightEventPump(0) {}
   ~DeviceLightEventPumpForTesting() override {}
 
-  void OnDidStart(base::SharedMemoryHandle renderer_handle) {
-    DeviceLightEventPump::OnDidStart(renderer_handle);
+  void DidStart(mojo::ScopedSharedBufferHandle renderer_handle) {
+    DeviceLightEventPump::DidStart(std::move(renderer_handle));
   }
   void SendStartMessage() override {}
   void SendStopMessage() override {}
@@ -63,49 +64,48 @@ class DeviceLightEventPumpForTesting : public DeviceLightEventPump {
 
 class DeviceLightEventPumpTest : public testing::Test {
  public:
-  DeviceLightEventPumpTest() {
-    EXPECT_TRUE(shared_memory_.CreateAndMapAnonymous(
-        sizeof(DeviceLightHardwareBuffer)));
-  }
+  DeviceLightEventPumpTest() = default;
 
  protected:
   void SetUp() override {
-    const DeviceLightHardwareBuffer* null_buffer = nullptr;
     listener_.reset(new MockDeviceLightListener);
     light_pump_.reset(new DeviceLightEventPumpForTesting);
-    buffer_ = static_cast<DeviceLightHardwareBuffer*>(shared_memory_.memory());
-    ASSERT_NE(null_buffer, buffer_);
-    ASSERT_TRUE(shared_memory_.ShareToProcess(base::GetCurrentProcessHandle(),
-                                              &handle_));
+    shared_memory_ =
+        mojo::SharedBufferHandle::Create(sizeof(DeviceLightHardwareBuffer));
+    mapping_ = shared_memory_->Map(sizeof(DeviceLightHardwareBuffer));
+    ASSERT_TRUE(mapping_);
   }
 
   void InitBuffer() {
-    DeviceLightData& data = buffer_->data;
+    DeviceLightData& data = buffer()->data;
     data.value = 1.0;
   }
 
   MockDeviceLightListener* listener() { return listener_.get(); }
   DeviceLightEventPumpForTesting* light_pump() { return light_pump_.get(); }
-  base::SharedMemoryHandle handle() { return handle_; }
-  DeviceLightHardwareBuffer* buffer() { return buffer_; }
+  mojo::ScopedSharedBufferHandle handle() {
+    return shared_memory_->Clone(
+        mojo::SharedBufferHandle::AccessMode::READ_ONLY);
+  }
+  DeviceLightHardwareBuffer* buffer() {
+    return reinterpret_cast<DeviceLightHardwareBuffer*>(mapping_.get());
+  }
 
  private:
+  base::MessageLoop loop_;
   std::unique_ptr<MockDeviceLightListener> listener_;
   std::unique_ptr<DeviceLightEventPumpForTesting> light_pump_;
-  base::SharedMemoryHandle handle_;
-  base::SharedMemory shared_memory_;
-  DeviceLightHardwareBuffer* buffer_;
+  mojo::ScopedSharedBufferHandle shared_memory_;
+  mojo::ScopedSharedBufferMapping mapping_;
 
   DISALLOW_COPY_AND_ASSIGN(DeviceLightEventPumpTest);
 };
 
 TEST_F(DeviceLightEventPumpTest, DidStartPolling) {
-  base::MessageLoopForUI loop;
-
   InitBuffer();
 
   light_pump()->Start(listener());
-  light_pump()->OnDidStart(handle());
+  light_pump()->DidStart(handle());
 
   base::MessageLoop::current()->Run();
 
@@ -115,10 +115,8 @@ TEST_F(DeviceLightEventPumpTest, DidStartPolling) {
 }
 
 TEST_F(DeviceLightEventPumpTest, FireAllNullEvent) {
-  base::MessageLoopForUI loop;
-
   light_pump()->Start(listener());
-  light_pump()->OnDidStart(handle());
+  light_pump()->DidStart(handle());
 
   base::MessageLoop::current()->Run();
 
@@ -128,12 +126,10 @@ TEST_F(DeviceLightEventPumpTest, FireAllNullEvent) {
 }
 
 TEST_F(DeviceLightEventPumpTest, DidStartPollingValuesEqual) {
-  base::MessageLoopForUI loop;
-
   InitBuffer();
 
   light_pump()->Start(listener());
-  light_pump()->OnDidStart(handle());
+  light_pump()->DidStart(handle());
 
   base::MessageLoop::current()->Run();
 
