@@ -158,11 +158,11 @@ std::unique_ptr<NTPSnippet> NTPSnippet::CreateFromContentSuggestionsDictionary(
         GetTimeValue(dict, "publishTime", &snippet->publish_date_) &&
         GetTimeValue(dict, "expirationTime", &snippet->expiry_date_) &&
         GetURLValue(dict, "imageUrl", &snippet->salient_image_url_) &&
-        GetURLValue(dict, "ampUrl", &source->amp_url) &&
         dict.GetString("publisherName", &source->publisher_name) &&
         GetURLValue(dict, "fullPageUrl", &source->url))) {
     return nullptr;
   }
+  GetURLValue(dict, "ampUrl", &source->amp_url);  // May fail; OK.
   // TODO(sfiera): also favicon URL.
 
   snippet->score_ = 0.0;  // TODO(sfiera): put score in protocol.
