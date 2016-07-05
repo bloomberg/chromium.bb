@@ -76370,6 +76370,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="1430" label="AudioContextCrossOriginIframe"/>
   <int value="1431" label="PointerEventSetCapture"/>
   <int value="1432" label="PointerEventDispatch"/>
+  <int value="1433" label="MIDIMessageEventReceivedTime"/>
 </enum>
 
 <enum name="FetchRequestMode" type="int">

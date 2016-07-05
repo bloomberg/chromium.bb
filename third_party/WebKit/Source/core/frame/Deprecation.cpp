@@ -32,6 +32,8 @@ const char* milestoneString(int milestone)
         return "M54, around October 2016";
     case 55:
         return "M55, around November 2016";
+    case 56:
+        return "M56, around January 2017";
     }
 
     ASSERT_NOT_REACHED();
@@ -385,6 +387,9 @@ String Deprecation::deprecationMessage(UseCounter::Feature feature)
 
     case UseCounter::TouchEndDuringScrollUserGestureUtilized:
         return willBeRemoved("Performing operations that require explicit user interaction on touchend events that occur as part of a scroll", 54, "5649871251963904");
+
+    case UseCounter::MIDIMessageEventReceivedTime:
+        return willBeRemoved("MIDIMessageEvent.receivedTime", 56, "5665772797952000");
 
     // Features that aren't deprecated don't have a deprecation message.
     default:
