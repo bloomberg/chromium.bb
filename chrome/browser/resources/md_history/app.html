@@ -1,15 +1,13 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-pages/iron-pages.html">
-<link rel="import" href="chrome://history/grouped_list.html">
-<link rel="import" href="chrome://history/history_list.html">
 <link rel="import" href="chrome://history/history_toolbar.html">
+<link rel="import" href="chrome://history/list_container.html">
 <link rel="import" href="chrome://history/synced_device_manager.html">
 <link rel="import" href="chrome://history/side_bar.html">
 <link rel="import" href="chrome://history/shared_style.html">
 <link rel="stylesheet" href="chrome://resources/css/md_colors.css">
 
 <dom-module id="history-app">
-  <!-- TODO(calamity): work around this deprecated import style -->
   <template>
     <style no-process>
       history-toolbar {
@@ -51,20 +49,12 @@
 
     <div id="main-container">
       <iron-pages id="content" attr-for-selected="id"
-          selected="[[getSelectedPage(selectedPage_, queryState_.range)]]">
-        <history-list id="history-list" querying="[[queryState_.querying]]"
-            searched-term="[[queryState_.info.term]]"></history-list>
-        <template is="dom-if" if="[[grouped_]]">
-          <history-grouped-list id="history-grouped-list"
-              range="[[queryState_.range]]"
-              query-start-time="[[queryState_.info.queryStartTime]]"
-              query-end-time="[[queryState_.info.queryEndTime]]"
-              searched-term="[[queryState_.info.term]]">
-          </history-grouped-list>
-        </template>
+          selected="[[selectedPage_]]">
+        <history-list-container id="history" query-state="[[queryState_]]"
+            grouped="[[grouped_]]"></history-list-container>
         <template is="dom-if" if="[[syncedTabsSelected_(selectedPage_)]]">
-          <history-synced-device-manager id="history-synced-device-manager"
-              session-list="[[queryState_.sessionList]]"
+          <history-synced-device-manager id="synced-devices"
+              session-list="[[sessionList]]"
               searched-term=[[queryState_.info.term]]>
           </history-synced-device-manager>
         </template>

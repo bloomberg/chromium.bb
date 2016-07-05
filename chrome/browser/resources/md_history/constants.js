@@ -28,3 +28,13 @@ var HistoryRange = {
   WEEK: 1,
   MONTH: 2
 };
+
+// Types:
+/**
+ * @typedef {{groupedOffset: number,
+ *            incremental: boolean,
+ *            querying: boolean,
+ *            range: HistoryRange,
+ *            searchTerm: string}}
+ */
+var QueryState;

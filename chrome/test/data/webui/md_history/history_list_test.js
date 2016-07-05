@@ -13,7 +13,7 @@ cr.define('md_history.history_list_test', function() {
 
       suiteSetup(function() {
         app = $('history-app');
-        element = app.$['history-list'];
+        element = app.$['history'].$['infinite-list'];
         toolbar = app.$['toolbar'];
 
         TEST_HISTORY_RESULTS = [
@@ -34,8 +34,8 @@ cr.define('md_history.history_list_test', function() {
       test('cancelling selection of multiple items', function() {
         app.historyResult(createHistoryInfo(), TEST_HISTORY_RESULTS);
         return flush().then(function() {
-          var items = Polymer.dom(element.root)
-              .querySelectorAll('history-item');
+          var items =
+              Polymer.dom(element.root).querySelectorAll('history-item');
 
           MockInteractions.tap(items[2].$.checkbox);
           MockInteractions.tap(items[3].$.checkbox);
@@ -99,7 +99,6 @@ cr.define('md_history.history_list_test', function() {
         app.historyResult(createHistoryInfo(), TEST_HISTORY_RESULTS);
         app.historyResult(createHistoryInfo(), ADDITIONAL_RESULTS);
         return flush().then(function() {
-          items = Polymer.dom(element.root).querySelectorAll('history-item');
 
           element.removeDeletedHistory_([
             element.historyData_[2], element.historyData_[5],
@@ -164,7 +163,7 @@ cr.define('md_history.history_list_test', function() {
       });
 
       test('more from this site sends and sets correct data', function(done) {
-        app.queryingDisabled_ = false;
+        app.queryState_.queryingDisabled = false;
         registerMessageCallback('queryHistory', this, function (info) {
           assertEquals('example.com', info[0]);
           flush().then(function() {
@@ -193,6 +192,35 @@ cr.define('md_history.history_list_test', function() {
               createHistoryInfo('ample'),
               [createHistoryEntry('2016-06-9', 'https://www.example.com')]);
           assertEquals(0, toolbar.count);
+        });
+      });
+
+      test('delete items end to end', function(done) {
+        app.historyResult(createHistoryInfo(), TEST_HISTORY_RESULTS);
+        app.historyResult(createHistoryInfo(), ADDITIONAL_RESULTS);
+        flush().then(function() {
+          items = Polymer.dom(element.root).querySelectorAll('history-item');
+
+          MockInteractions.tap(items[2].$.checkbox);
+          MockInteractions.tap(items[5].$.checkbox);
+          MockInteractions.tap(items[7].$.checkbox);
+
+          registerMessageCallback('removeVisits', this, function() {
+            flush().then(function() {
+              deleteComplete();
+            }).then(function() {
+              assertEquals(element.historyData_.length, 5);
+              assertEquals(element.historyData_[0].dateRelativeDay,
+                           '2016-03-15');
+              assertEquals(element.historyData_[2].dateRelativeDay,
+                           '2016-03-13');
+              assertEquals(element.historyData_[4].dateRelativeDay,
+                           '2016-03-11');
+              done();
+            });
+          });
+
+          MockInteractions.tap(app.$.toolbar.$$('#delete-button'));
         });
       });
 

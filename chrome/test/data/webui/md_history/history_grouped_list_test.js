@@ -8,6 +8,8 @@ cr.define('md_history.history_grouped_list_test', function() {
       var app;
       var toolbar;
       var groupedList;
+      var sidebar;
+
       var SIMPLE_RESULTS;
       var PER_DAY_RESULTS;
       var PER_MONTH_RESULTS;
@@ -16,6 +18,7 @@ cr.define('md_history.history_grouped_list_test', function() {
         app.grouped_ = true;
 
         toolbar = app.$['toolbar'];
+        sidebar = app.$['side-bar'];
 
         SIMPLE_RESULTS = [
           createHistoryEntry('2016-03-16', 'https://www.google.com/'),
@@ -40,26 +43,34 @@ cr.define('md_history.history_grouped_list_test', function() {
           createHistoryEntry('2016-03-1', 'https://en.wikipedia.org'),
           createHistoryEntry('2016-03-1', 'https://en.wikipedia.org')
         ];
+
         return flush().then(function() {
-          groupedList = app.$$('#history-grouped-list');
+          groupedList = app.$.history.$$('#grouped-list');
+          assertTrue(!!groupedList);
         });
       });
 
       test('grouped ui is shown', function() {
+        assertEquals('history', sidebar.$.menu.selected);
         assertTrue(!!toolbar.$$('#grouped-buttons-container'));
 
+        var content = app.$['history'].$['content'];
+
         // History list is shown at first.
-        assertEquals('history-list', app.$['content'].selected);
+        assertEquals('infinite-list', content.selected);
 
         // Switching to week or month causes grouped history list to be shown.
         app.set('queryState_.range', HistoryRange.WEEK);
-        assertEquals('history-grouped-list', app.$['content'].selected);
+        assertEquals('grouped-list', content.selected);
+        assertEquals('history', sidebar.$.menu.selected);
 
         app.set('queryState_.range', HistoryRange.ALL_TIME);
-        assertEquals('history-list', app.$['content'].selected);
+        assertEquals('infinite-list', content.selected);
+        assertEquals('history', sidebar.$.menu.selected);
 
         app.set('queryState_.range', HistoryRange.MONTH);
-        assertEquals('history-grouped-list', app.$['content'].selected);
+        assertEquals('grouped-list', content.selected);
+        assertEquals('history', sidebar.$.menu.selected);
       });
 
       test('items grouped by domain', function() {

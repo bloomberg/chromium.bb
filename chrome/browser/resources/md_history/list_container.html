@@ -1,0 +1,36 @@
+<link rel="import" href="chrome://resources/html/polymer.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-pages/iron-pages.html">
+<link rel="import" href="chrome://history/grouped_list.html">
+<link rel="import" href="chrome://history/history_list.html">
+
+<dom-module id="history-list-container">
+  <template>
+    <style>
+      :host {
+        display: block;
+        height: 100%;
+        overflow: hidden;
+      }
+
+      #content,
+      #content > * {
+        height: 100%;
+      }
+    </style>
+    <iron-pages id="content" attr-for-selected="id"
+        selected="[[selectedPage_]]">
+      <history-list id="infinite-list" querying="[[queryState.querying]]"
+          searched-term="[[queryResult_.info.term]]"></history-list>
+      <template is="dom-if" if="[[grouped]]">
+        <history-grouped-list id="grouped-list"
+            range="[[queryState.range]]"
+            query-start-time="[[queryResult_.info.queryStartTime]]"
+            query-end-time="[[queryResult_.info.queryEndTime]]"
+            searched-term="[[queryResult_.info.term]]">
+        </history-grouped-list>
+      </template>
+      </template>
+    </iron-pages>
+  </template>
+  <script src="chrome://history/list_container.js"></script>
+</dom-module>

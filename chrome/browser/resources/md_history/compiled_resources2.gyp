@@ -73,16 +73,25 @@
       'includes': ['../../../../third_party/closure_compiler/compile_js2.gypi'],
     },
     {
+      'target_name': 'list_container',
+      'dependencies': [
+        'grouped_list',
+        'history_list',
+        '<(EXTERNS_GYP):chrome_send',
+        '../history/compiled_resources2.gyp:externs',
+      ],
+      'includes': ['../../../../third_party/closure_compiler/compile_js2.gypi'],
+    },
+    {
       'target_name': 'app',
       'dependencies': [
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:util',
         'constants',
-        'history_list',
         'history_toolbar',
+        'list_container',
         'side_bar',
         'synced_device_card',
         'synced_device_manager',
-        '<(EXTERNS_GYP):chrome_send',
         '../history/compiled_resources2.gyp:externs',
       ],
       'includes': ['../../../../third_party/closure_compiler/compile_js2.gypi'],

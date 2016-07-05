@@ -12,7 +12,7 @@ cr.define('md_history.history_toolbar_test', function() {
 
       suiteSetup(function() {
         app = $('history-app');
-        element = app.$['history-list'];
+        element = app.$['history'].$['infinite-list'];
         toolbar = app.$['toolbar'];
         TEST_HISTORY_RESULTS =
             [createHistoryEntry('2016-03-15', 'https://google.com')];
@@ -43,7 +43,7 @@ cr.define('md_history.history_toolbar_test', function() {
       });
 
       test('search term gathered correctly from toolbar', function(done) {
-        app.queryingDisabled_ = false;
+        app.queryState_.queryingDisabled = false;
         registerMessageCallback('queryHistory', this, function (info) {
           assertEquals(info[0], 'Test');
           done();

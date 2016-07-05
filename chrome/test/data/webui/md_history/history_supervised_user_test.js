@@ -12,7 +12,7 @@ cr.define('md_history.history_supervised_user_test', function() {
 
       suiteSetup(function() {
         app = $('history-app');
-        element = app.$['history-list'];
+        element = app.$['history'].$['infinite-list'];
         toolbar = app.$['toolbar'];
         TEST_HISTORY_RESULTS =
             [createHistoryEntry('2016-03-15', 'https://www.google.com')];

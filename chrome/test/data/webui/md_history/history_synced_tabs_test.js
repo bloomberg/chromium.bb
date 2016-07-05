@@ -44,11 +44,12 @@ cr.define('md_history.history_synced_tabs_test', function() {
       suiteSetup(function() {
         app = $('history-app');
         // Not rendered until selected.
-        assertEquals(null, app.$$('#history-synced-device-manager'));
+        assertEquals(null, app.$$('#synced-devices'));
 
-        app.selectedPage_ = 'history-synced-device-manager';
+        app.selectedPage_ = 'synced-devices';
+        assertEquals('synced-devices', app.$['side-bar'].$.menu.selected);
         return flush().then(function() {
-          element = app.$$('#history-synced-device-manager');
+          element = app.$$('#synced-devices');
           assertTrue(!!element);
         });
       });
