@@ -13,6 +13,8 @@
 #include "ash/common/ash_switches.h"
 #include "ash/common/material_design/material_design_controller.h"
 #include "ash/common/shell_window_ids.h"
+#include "ash/common/wm/overview/scoped_overview_animation_settings.h"
+#include "ash/common/wm/overview/scoped_overview_animation_settings_factory.h"
 #include "ash/common/wm/overview/scoped_transform_overview_window.h"
 #include "ash/common/wm/overview/window_selector.h"
 #include "ash/common/wm/overview/window_selector_item.h"
@@ -94,7 +96,7 @@ const float kCardAspectRatio = 4.0f / 3.0f;
 // landscape orientation).
 const int kMinCardsMajor = 3;
 
-const int kOverviewSelectorTransitionMilliseconds = 200;
+const int kOverviewSelectorTransitionMilliseconds = 250;
 
 // The color and opacity of the screen shield in overview.
 const SkColor kShieldColor = SkColorSetARGB(178, 0, 0, 0);
@@ -121,9 +123,6 @@ const int kTextFilterBottomMargin = 5;
 // around the window within the cell. This margin does not overlap so the
 // closest distance between adjacent windows will be twice this amount.
 const int kWindowMarginMD = 5;
-
-// Additional inset of overview selector (4 is the visible selector thickness).
-const int kSelectionInset = kWindowMarginMD - 5;
 
 // Windows are not allowed to get taller than this.
 const int kMaxHeight = 512;
@@ -729,6 +728,19 @@ void WindowGrid::FilterItems(const base::string16& pattern) {
   }
 }
 
+void WindowGrid::WindowClosing(WindowSelectorItem* window) {
+  if (!selection_widget_ || SelectedWindow() != window)
+    return;
+  WmWindow* selection_widget_window =
+      WmLookup::Get()->GetWindowForWidget(selection_widget_.get());
+  std::unique_ptr<ScopedOverviewAnimationSettings> animation_settings_label =
+      ScopedOverviewAnimationSettingsFactory::Get()
+          ->CreateOverviewAnimationSettings(
+              OverviewAnimationType::OVERVIEW_ANIMATION_CLOSING_SELECTOR_ITEM,
+              selection_widget_window);
+  selection_widget_->SetOpacity(0.f);
+}
+
 void WindowGrid::OnWindowDestroying(WmWindow* window) {
   window->RemoveObserver(this);
   observed_windows_.erase(window);
@@ -863,8 +875,6 @@ void WindowGrid::MoveSelectionWidget(WindowSelector::Direction direction,
 void WindowGrid::MoveSelectionWidgetToTarget(bool animate) {
   gfx::Rect bounds =
       root_window_->ConvertRectFromScreen(SelectedWindow()->target_bounds());
-  if (ash::MaterialDesignController::IsOverviewMaterial())
-    bounds.Inset(kSelectionInset, kSelectionInset);
   if (animate) {
     WmWindow* selection_widget_window =
         WmLookup::Get()->GetWindowForWidget(selection_widget_.get());
@@ -872,7 +882,10 @@ void WindowGrid::MoveSelectionWidgetToTarget(bool animate) {
         selection_widget_window->GetLayer()->GetAnimator());
     animation_settings.SetTransitionDuration(base::TimeDelta::FromMilliseconds(
         kOverviewSelectorTransitionMilliseconds));
-    animation_settings.SetTweenType(gfx::Tween::LINEAR_OUT_SLOW_IN);
+    animation_settings.SetTweenType(
+        ash::MaterialDesignController::IsOverviewMaterial()
+            ? gfx::Tween::EASE_IN_OUT
+            : gfx::Tween::LINEAR_OUT_SLOW_IN);
     animation_settings.SetPreemptionStrategy(
         ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
     selection_widget_->SetBounds(bounds);

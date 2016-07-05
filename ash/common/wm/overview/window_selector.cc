@@ -476,6 +476,10 @@ void WindowSelector::SelectWindow(WmWindow* window) {
   window->GetWindowState()->Activate();
 }
 
+void WindowSelector::WindowClosing(WindowSelectorItem* window) {
+  grid_list_[selected_grid_index_]->WindowClosing(window);
+}
+
 bool WindowSelector::HandleKeyEvent(views::Textfield* sender,
                                     const ui::KeyEvent& key_event) {
   if (key_event.type() != ui::ET_KEY_PRESSED)

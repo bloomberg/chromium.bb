@@ -64,6 +64,9 @@ class ASH_EXPORT WindowSelector : public display::DisplayObserver,
   // Activates |window|.
   void SelectWindow(WmWindow* window);
 
+  // Called when |window| is about to get closed.
+  void WindowClosing(WindowSelectorItem* window);
+
   bool restoring_minimized_windows() const {
     return restoring_minimized_windows_;
   }

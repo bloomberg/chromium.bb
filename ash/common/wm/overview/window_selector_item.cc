@@ -414,6 +414,7 @@ void WindowSelectorItem::ButtonPressed(views::Button* sender,
       AnimateOpacity(
           0.0, OverviewAnimationType::OVERVIEW_ANIMATION_CLOSE_SELECTOR_ITEM);
     }
+    window_selector_->WindowClosing(this);
     transform_window_.Close();
     return;
   }
