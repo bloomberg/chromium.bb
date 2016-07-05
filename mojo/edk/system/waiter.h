@@ -62,8 +62,8 @@ class MOJO_SYSTEM_IMPL_EXPORT Waiter final : public Awakable {
   bool Awake(MojoResult result, uintptr_t context) override;
 
  private:
-  base::ConditionVariable cv_;  // Associated to |lock_|.
   base::Lock lock_;             // Protects the following members.
+  base::ConditionVariable cv_;  // Associated to |lock_|.
 #if DCHECK_IS_ON()
   bool initialized_;
 #endif
