@@ -31,16 +31,6 @@ class NTPUserDataLogger
   static NTPUserDataLogger* GetOrCreateFromWebContents(
       content::WebContents* content);
 
-  // Returns the name of the histogram that should be logged for an impression
-  // of a specified Most Visited |provider|.
-  static std::string GetMostVisitedImpressionHistogramNameForProvider(
-      const std::string& provider);
-
-  // Returns the name of the histogram that should be logged for a navigation
-  // to a specified Most Visited |provider|.
-  static std::string GetMostVisitedNavigationHistogramNameForProvider(
-      const std::string& provider);
-
   // Logs a number of statistics regarding the NTP. Called when an NTP tab is
   // about to be deactivated (be it by switching tabs, losing focus or closing
   // the tab/shutting down Chrome), or when the user navigates to a URL.

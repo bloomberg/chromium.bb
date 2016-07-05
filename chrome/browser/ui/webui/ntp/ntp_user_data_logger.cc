@@ -40,7 +40,7 @@ enum SuggestionsType {
 // Number of Most Visited elements on the NTP for logging purposes.
 const int kNumMostVisited = 8;
 
-// Name of the histogram keeping track of Most Visited impressions.
+// Name of the histogram keeping track of suggestion impressions.
 const char kMostVisitedImpressionHistogramName[] =
     "NewTabPage.SuggestionsImpression";
 
@@ -49,7 +49,7 @@ const char kMostVisitedImpressionHistogramName[] =
 const char kMostVisitedImpressionHistogramWithProvider[] =
     "NewTabPage.SuggestionsImpression.%s";
 
-// Name of the histogram keeping track of Most Visited navigations.
+// Name of the histogram keeping track of suggestion navigations.
 const char kMostVisitedNavigationHistogramName[] =
     "NewTabPage.MostVisited";
 
@@ -96,20 +96,6 @@ NTPUserDataLogger* NTPUserDataLogger::GetOrCreateFromWebContents(
     logger->ntp_url_ = entry->GetURL();
 
   return logger;
-}
-
-// static
-std::string NTPUserDataLogger::GetMostVisitedImpressionHistogramNameForProvider(
-    const std::string& provider) {
-  return base::StringPrintf(kMostVisitedImpressionHistogramWithProvider,
-                            provider.c_str());
-}
-
-// static
-std::string NTPUserDataLogger::GetMostVisitedNavigationHistogramNameForProvider(
-    const std::string& provider) {
-  return base::StringPrintf(kMostVisitedNavigationHistogramWithProvider,
-                            provider.c_str());
 }
 
 void NTPUserDataLogger::EmitNtpStatistics() {
@@ -232,8 +218,8 @@ void NTPUserDataLogger::LogMostVisitedImpression(
     // Cannot rely on UMA histograms macro because the name of the histogram is
     // generated dynamically.
     base::HistogramBase* counter = base::LinearHistogram::FactoryGet(
-        GetMostVisitedImpressionHistogramNameForProvider(
-            base::UTF16ToUTF8(provider)),
+        base::StringPrintf(kMostVisitedImpressionHistogramWithProvider,
+                           base::UTF16ToUTF8(provider).c_str()),
         1,
         kNumMostVisited,
         kNumMostVisited + 1,
@@ -254,8 +240,8 @@ void NTPUserDataLogger::LogMostVisitedNavigation(
     // Cannot rely on UMA histograms macro because the name of the histogram is
     // generated dynamically.
     base::HistogramBase* counter = base::LinearHistogram::FactoryGet(
-        GetMostVisitedNavigationHistogramNameForProvider(
-            base::UTF16ToUTF8(provider)),
+        base::StringPrintf(kMostVisitedNavigationHistogramWithProvider,
+                           base::UTF16ToUTF8(provider).c_str()),
         1,
         kNumMostVisited,
         kNumMostVisited + 1,
