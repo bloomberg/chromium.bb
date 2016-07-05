@@ -89,8 +89,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['win'], bug=483282)
     self.Skip('conformance2/reading/read-pixels-pack-parameters.html',
         ['win'], bug=483282)
-    self.Skip('conformance2/reading/read-pixels-into-pixel-pack-buffer.html',
-        ['win'], bug=1266) # angle bug ID
 
     self.Fail('deqp/functional/gles3/fbomultisample*',
         ['win'], bug=483282)
@@ -105,13 +103,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('conformance2/reading/read-pixels-from-fbo-test.html',
         ['win8'], bug=483282)
     self.Flaky('deqp/functional/gles3/buffercopy.html', ['win8'], bug=587601)
-
-    # Windows Debug. Causing assertions in the GPU process which raise
-    # a dialog box, so have to skip them rather than mark them as
-    # failing.
-    self.Skip('conformance2/textures/canvas/' +
-        'tex-2d-rgba8-rgba-unsigned_byte.html',
-        ['win', 'debug'], bug=542901)
 
     # Win / NVidia
     self.Fail('deqp/functional/gles3/textureformat/compressed_cube.html',
