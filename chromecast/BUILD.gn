@@ -62,12 +62,6 @@ cast_test_group("cast_tests") {
       # Running a batch of net_unittests has high overhead. Run tests in batches of 25 to reduce number of batches (b/23156294).
       "net_unittests --gtest_filter=-KeygenHandlerTest.SmokeTest:KeygenHandlerTest.ConcurrencyTest:ProxyScriptFetcherImplTest.HttpMimeType --test-launcher-timeout=90000 --test-launcher-batch-limit=25",
 
-      # Disable ProcessMetricsTest.GetNumberOfThreads (b/15610509)
-      # Disable ProcessUtilTest.* (need to define OS_ANDROID)
-      # Disable StackContainer.BufferAlignment (don't support 16-byte alignment)
-      # Disable SystemMetrics2Test.GetSystemMemoryInfo (buffers>0 can't be guaranteed)
-      "base_unittests --gtest_filter=-ProcessMetricsTest.GetNumberOfThreads:ProcessUtilTest.*:StackContainer.BufferAlignment:SystemMetrics2Test.GetSystemMemoryInfo",
-
       # DesktopCaptureDeviceTest.*: No capture device on Eureka
       # Disable PepperGamepadHostTest.WaitForReply (pepper not supported on Eureka)
       # Disable GpuDataManagerImplPrivateTest.SetGLStrings and
@@ -96,8 +90,16 @@ cast_test_group("cast_tests") {
       "url_unittests --gtest_filter=-URLCanonTest.DoAppendUTF8Invalid",
     ]
 
+    # Disable ProcessMetricsTest.GetNumberOfThreads (b/15610509)
+    # Disable ProcessUtilTest.* (need to define OS_ANDROID)
+    # Disable StackContainer.BufferAlignment (don't support 16-byte alignment)
+    # Disable SystemMetrics2Test.GetSystemMemoryInfo (buffers>0 can't be guaranteed)
     if (disable_display) {
-      filters += [ "base_unittests --gtest_filter=-TimeFormattingTest.*" ]
+      # Also disable TimeFormattingTest on audio-only builds, since we don't
+      # include the necessary info in icudtl.dat.
+      filters += [ "base_unittests --gtest_filter=-ProcessMetricsTest.GetNumberOfThreads:ProcessUtilTest.*:StackContainer.BufferAlignment:SystemMetrics2Test.GetSystemMemoryInfo:TimeFormattingTest.*" ]
+    } else {
+      filters += [ "base_unittests --gtest_filter=-ProcessMetricsTest.GetNumberOfThreads:ProcessUtilTest.*:StackContainer.BufferAlignment:SystemMetrics2Test.GetSystemMemoryInfo" ]
     }
   } else if (is_cast_desktop_build || target_os == "android") {
     filters += [
