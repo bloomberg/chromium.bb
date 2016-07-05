@@ -294,6 +294,8 @@ source_set("browser") {
     "passwords/ios_chrome_password_store_factory.h",
     "passwords/ios_chrome_save_password_infobar_delegate.h",
     "passwords/ios_chrome_save_password_infobar_delegate.mm",
+    "passwords/ios_chrome_update_password_infobar_delegate.h",
+    "passwords/ios_chrome_update_password_infobar_delegate.mm",
     "passwords/js_credential_manager.h",
     "passwords/js_credential_manager.mm",
     "passwords/js_password_manager.h",

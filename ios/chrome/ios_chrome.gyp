@@ -431,6 +431,8 @@
         'browser/passwords/ios_chrome_password_store_factory.h',
         'browser/passwords/ios_chrome_save_password_infobar_delegate.h',
         'browser/passwords/ios_chrome_save_password_infobar_delegate.mm',
+        'browser/passwords/ios_chrome_update_password_infobar_delegate.h',
+        'browser/passwords/ios_chrome_update_password_infobar_delegate.mm',
         'browser/passwords/js_credential_manager.h',
         'browser/passwords/js_credential_manager.mm',
         'browser/passwords/js_password_manager.h',
