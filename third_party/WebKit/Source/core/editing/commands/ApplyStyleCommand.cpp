@@ -365,17 +365,12 @@ void ApplyStyleCommand::applyRelativeFontStyleChange(EditingStyle* style, Editin
         end = endPosition();
     }
 
+    DCHECK(start.anchorNode());
+    DCHECK(end.anchorNode());
     // Calculate loop end point.
     // If the end node is before the start node (can only happen if the end node is
     // an ancestor of the start node), we gather nodes up to the next sibling of the end node
-    Node* beyondEnd;
-    DCHECK(start.anchorNode());
-    DCHECK(end.anchorNode());
-    if (start.anchorNode()->isDescendantOf(end.anchorNode()))
-        beyondEnd = NodeTraversal::nextSkippingChildren(*end.anchorNode());
-    else
-        beyondEnd = NodeTraversal::next(*end.anchorNode());
-
+    const Node* const beyondEnd = end.nodeAsRangePastLastNode();
     start = mostBackwardCaretPosition(start); // Move upstream to ensure we do not add redundant spans.
     Node* startNode = start.anchorNode();
     DCHECK(startNode);
