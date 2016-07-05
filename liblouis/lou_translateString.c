@@ -37,7 +37,7 @@ License along with liblouis. If not, see <http://www.gnu.org/licenses/>.
 #include "louis.h"
 
 /*additional bits in typebuf*/
-#define capsemph 0x8000
+#define CAPSEMPH 0x8000
 #define EMPHASIS 0x1fff
 #define SYLLABLEMARKS 0x6000
 #define INTERNALMARKS 0xe000
@@ -1741,7 +1741,7 @@ validMatch ()
       ruleChar = findCharOrDots (transRule->charsdots[kk++], 0);
       if ((currentInputChar->lowercase != ruleChar->lowercase))
 	return 0;
-      if (typebuf != NULL && (typebuf[src] & capsemph) == 0 &&
+      if (typebuf != NULL && (typebuf[src] & CAPSEMPH) == 0 &&
 	  (typebuf[k] | typebuf[src]) != (typebuf[src]))
 	return 0;
       if (currentInputChar->attributes != CTC_Letter)
@@ -3841,7 +3841,7 @@ translateString ()
   if (typebuf && table->emphRules[capsRule][letterOffset])
     for (k = 0; k < srcmax; k++)
       if (checkAttr (currentInput[k], CTC_UpperCase, 0))
-        typebuf[k] |= capsemph;
+        typebuf[k] |= CAPSEMPH;
 		
 	markEmphases();
 
