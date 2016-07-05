@@ -11,11 +11,33 @@
 
 #include "base/bind.h"
 #include "base/json/json_reader.h"
+#include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/persistent_histogram_allocator.h"
 #include "base/metrics/sparse_histogram.h"
 #include "base/values.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+namespace {
+
+// Class to make sure any manipulations we do to the min log level are
+// contained (i.e., do not affect other unit tests).
+class LogStateSaver {
+ public:
+  LogStateSaver() : old_min_log_level_(logging::GetMinLogLevel()) {}
+
+  ~LogStateSaver() {
+    logging::SetMinLogLevel(old_min_log_level_);
+    logging::SetLogAssertHandler(nullptr);
+  }
+
+ private:
+  int old_min_log_level_;
+
+  DISALLOW_COPY_AND_ASSIGN(LogStateSaver);
+};
+
+}  // namespace
 
 namespace base {
 
@@ -78,12 +100,24 @@ class StatisticsRecorderTest : public testing::TestWithParam<bool> {
     return count;
   }
 
+  void InitLogOnShutdown() {
+    DCHECK(statistics_recorder_);
+    statistics_recorder_->InitLogOnShutdownWithoutLock();
+  }
+
+  bool VLogInitialized() {
+    DCHECK(statistics_recorder_);
+    return statistics_recorder_->vlog_initialized_;
+  }
+
   const bool use_persistent_histogram_allocator_;
 
   std::unique_ptr<StatisticsRecorder> statistics_recorder_;
   std::unique_ptr<GlobalHistogramAllocator> old_global_allocator_;
 
  private:
+  LogStateSaver log_state_saver_;
+
   DISALLOW_COPY_AND_ASSIGN(StatisticsRecorderTest);
 };
 
@@ -590,6 +624,36 @@ TEST_P(StatisticsRecorderTest, CallbackUsedBeforeHistogramCreatedTest) {
 
   EXPECT_TRUE(callback_wrapper.called);
   EXPECT_EQ(callback_wrapper.last_histogram_value, 1);
+}
+
+TEST_P(StatisticsRecorderTest, LogOnShutdownNotInitialized) {
+  UninitializeStatisticsRecorder();
+  logging::SetMinLogLevel(logging::LOG_WARNING);
+  InitializeStatisticsRecorder();
+  EXPECT_FALSE(VLOG_IS_ON(1));
+  EXPECT_FALSE(VLogInitialized());
+  InitLogOnShutdown();
+  EXPECT_FALSE(VLogInitialized());
+}
+
+TEST_P(StatisticsRecorderTest, LogOnShutdownInitializedExplicitly) {
+  UninitializeStatisticsRecorder();
+  logging::SetMinLogLevel(logging::LOG_WARNING);
+  InitializeStatisticsRecorder();
+  EXPECT_FALSE(VLOG_IS_ON(1));
+  EXPECT_FALSE(VLogInitialized());
+  logging::SetMinLogLevel(logging::LOG_VERBOSE);
+  EXPECT_TRUE(VLOG_IS_ON(1));
+  InitLogOnShutdown();
+  EXPECT_TRUE(VLogInitialized());
+}
+
+TEST_P(StatisticsRecorderTest, LogOnShutdownInitialized) {
+  UninitializeStatisticsRecorder();
+  logging::SetMinLogLevel(logging::LOG_VERBOSE);
+  InitializeStatisticsRecorder();
+  EXPECT_TRUE(VLOG_IS_ON(1));
+  EXPECT_TRUE(VLogInitialized());
 }
 
 }  // namespace base

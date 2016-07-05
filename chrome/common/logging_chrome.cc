@@ -40,6 +40,7 @@
 #include "base/environment.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/metrics/statistics_recorder.h"
 #include "base/path_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -359,6 +360,8 @@ void InitChromeLogging(const base::CommandLine& command_line,
   // Enable trace control and transport through event tracing for Windows.
   logging::LogEventProvider::Initialize(kChromeTraceProviderName);
 #endif
+
+  base::StatisticsRecorder::InitLogOnShutdown();
 
   chrome_logging_initialized_ = true;
 }
