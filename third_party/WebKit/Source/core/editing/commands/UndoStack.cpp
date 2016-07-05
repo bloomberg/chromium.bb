@@ -28,6 +28,7 @@
 
 #include "core/dom/ContainerNode.h"
 #include "core/editing/commands/UndoStep.h"
+#include "platform/EventDispatchForbiddenScope.h"
 #include "wtf/TemporaryChange.h"
 
 namespace blink {
@@ -60,6 +61,25 @@ void UndoStack::registerUndoStep(UndoStep* step)
 void UndoStack::registerRedoStep(UndoStep* step)
 {
     m_redoStack.append(step);
+}
+
+void UndoStack::didUnloadFrame(const LocalFrame& frame)
+{
+    EventDispatchForbiddenScope assertNoEventDispatch;
+    filterOutUndoSteps(m_undoStack, frame);
+    filterOutUndoSteps(m_redoStack, frame);
+}
+
+void UndoStack::filterOutUndoSteps(UndoStepStack& stack, const LocalFrame& frame)
+{
+    UndoStepStack newStack;
+    while (!stack.isEmpty()) {
+        UndoStep* step = stack.first().get();
+        if (!step->belongsTo(frame))
+            newStack.append(step);
+        stack.removeFirst();
+    }
+    stack.swap(newStack);
 }
 
 bool UndoStack::canUndo() const

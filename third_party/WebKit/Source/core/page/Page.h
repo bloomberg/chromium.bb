@@ -62,6 +62,7 @@ class PointerLockController;
 class ScrollingCoordinator;
 class Settings;
 class SpellCheckerClient;
+class UndoStack;
 class ValidationMessageClient;
 class WebLayerTreeView;
 
@@ -123,6 +124,7 @@ public:
 
     EditorClient& editorClient() const { return *m_editorClient; }
     SpellCheckerClient& spellCheckerClient() const { return *m_spellCheckerClient; }
+    UndoStack& undoStack() const { return *m_undoStack; }
 
     void setMainFrame(Frame*);
     Frame* mainFrame() const { return m_mainFrame; }
@@ -224,6 +226,7 @@ private:
     const Member<ContextMenuController> m_contextMenuController;
     const Member<PointerLockController> m_pointerLockController;
     Member<ScrollingCoordinator> m_scrollingCoordinator;
+    const Member<UndoStack> m_undoStack;
 
     // Typically, the main frame and Page should both be owned by the embedder,
     // which must call Page::willBeDestroyed() prior to destroying Page. This
