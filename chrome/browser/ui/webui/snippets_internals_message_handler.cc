@@ -165,6 +165,9 @@ void SnippetsInternalsMessageHandler::SendInitialData() {
       break;
   }
 
+  SendString("switch-fetch-url",
+             ntp_snippets_service_->snippets_fetcher()->fetch_url().spec());
+
   SendSnippets();
   SendDiscardedSnippets();
 }

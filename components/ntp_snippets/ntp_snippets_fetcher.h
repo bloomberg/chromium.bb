@@ -105,6 +105,9 @@ class NTPSnippetsFetcher : public OAuth2TokenService::Consumer,
   // Returns the personalization setting of the fetcher.
   Personalization personalization() const { return personalization_; }
 
+  // Returns the URL endpoint used by the fetcher.
+  GURL fetch_url() const { return fetch_url_; }
+
   // Does the fetcher use host restrictions?
   bool UsesHostRestrictions() const;
   // Does the fetcher use authentication to get personalized results?
