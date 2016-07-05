@@ -106,7 +106,7 @@ Dispatcher::Type MessagePipeDispatcher::GetType() const {
 
 MojoResult MessagePipeDispatcher::Close() {
   base::AutoLock lock(signal_lock_);
-  DVLOG(1) << "Closing message pipe " << pipe_id_ << " endpoint " << endpoint_
+  DVLOG(2) << "Closing message pipe " << pipe_id_ << " endpoint " << endpoint_
            << " [port=" << port_.name() << "]";
   return CloseNoLock();
 }
@@ -141,7 +141,7 @@ MojoResult MessagePipeDispatcher::WriteMessage(
   size_t num_bytes = message->num_bytes();
   int rv = node_controller_->SendMessage(port_, message->TakePortsMessage());
 
-  DVLOG(1) << "Sent message on pipe " << pipe_id_ << " endpoint " << endpoint_
+  DVLOG(2) << "Sent message on pipe " << pipe_id_ << " endpoint " << endpoint_
            << " [port=" << port_.name() << "; rv=" << rv
            << "; num_bytes=" << num_bytes << "]";
 
@@ -536,12 +536,12 @@ void MessagePipeDispatcher::OnPortStatusChanged() {
             message_size = message.num_payload_bytes();
             return false;
           }, &unused);
-      DVLOG(1) << "New message detected on message pipe " << pipe_id_
+      DVLOG(2) << "New message detected on message pipe " << pipe_id_
                << " endpoint " << endpoint_ << " [port=" << port_.name()
                << "; size=" << message_size << "]";
     }
     if (port_status.peer_closed) {
-      DVLOG(1) << "Peer closure detected on message pipe " << pipe_id_
+      DVLOG(2) << "Peer closure detected on message pipe " << pipe_id_
                << " endpoint " << endpoint_ << " [port=" << port_.name() << "]";
     }
   }
