@@ -1466,7 +1466,6 @@ TEST_F(LayerTreeHostCommonTest, DrawableContentRectForReferenceFilterHighDpi) {
   const float device_scale_factor = 2.0f;
 
   LayerImpl* root = root_layer_for_testing();
-  root->layer_tree_impl()->SetDeviceScaleFactor(device_scale_factor);
   LayerImpl* child = AddChild<LayerImpl>(root);
   child->SetDrawsContent(true);
 
@@ -4791,7 +4790,6 @@ TEST_F(LayerTreeHostCommonScalingTest, SurfaceLayerTransformsInHighDPI) {
   root->layer_tree_impl()->SetViewportLayersFromIds(
       Layer::INVALID_ID, page_scale->id(), Layer::INVALID_ID,
       Layer::INVALID_ID);
-  root->layer_tree_impl()->SetDeviceScaleFactor(device_scale_factor);
   root->layer_tree_impl()->BuildLayerListAndPropertyTreesForTesting();
   root->layer_tree_impl()->SetPageScaleOnActiveTree(page_scale_factor);
   ExecuteCalculateDrawProperties(root, device_scale_factor, page_scale_factor,
@@ -5865,6 +5863,20 @@ TEST_F(LayerTreeHostCommonTest, VisibleRectInNonRootCopyRequest) {
 
   DCHECK(!copy_layer->test_properties()->copy_requests.empty());
   ExecuteCalculateDrawProperties(root);
+  DCHECK(copy_layer->test_properties()->copy_requests.empty());
+
+  EXPECT_EQ(gfx::Rect(50, 50), copy_layer->visible_layer_rect());
+  EXPECT_EQ(gfx::Rect(10, 10), copy_child->visible_layer_rect());
+  EXPECT_EQ(gfx::Rect(10, 10), copy_clipped_child->visible_layer_rect());
+  EXPECT_EQ(gfx::Rect(5, 5), copy_surface->visible_layer_rect());
+
+  // Case 3: When there is device scale factor.
+  float device_scale_factor = 2.f;
+  copy_layer->test_properties()->copy_requests.push_back(
+      CopyOutputRequest::CreateRequest(base::Bind(&EmptyCopyOutputCallback)));
+
+  DCHECK(!copy_layer->test_properties()->copy_requests.empty());
+  ExecuteCalculateDrawProperties(root, device_scale_factor);
   DCHECK(copy_layer->test_properties()->copy_requests.empty());
 
   EXPECT_EQ(gfx::Rect(50, 50), copy_layer->visible_layer_rect());

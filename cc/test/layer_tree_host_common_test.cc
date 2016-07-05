@@ -173,6 +173,10 @@ void LayerTreeHostCommonTestBase::ExecuteCalculateDrawProperties(
     float device_scale_factor,
     float page_scale_factor,
     LayerImpl* page_scale_layer) {
+  if (device_scale_factor !=
+      root_layer->layer_tree_impl()->device_scale_factor())
+    root_layer->layer_tree_impl()->property_trees()->needs_rebuild = true;
+
   root_layer->layer_tree_impl()->SetDeviceScaleFactor(device_scale_factor);
 
   EXPECT_TRUE(page_scale_layer || (page_scale_factor == 1.f));

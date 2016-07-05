@@ -97,7 +97,26 @@ struct ConditionalClip {
   gfx::RectF clip_rect;
 };
 
-static ConditionalClip ComputeRectInTargetSpace(
+static ConditionalClip ComputeTargetRectInLocalSpace(
+    gfx::RectF rect,
+    const TransformTree& transform_tree,
+    int current_transform_id,
+    int target_transform_id) {
+  gfx::Transform current_to_target;
+  if (!transform_tree.ComputeTransformWithSourceSublayerScale(
+          current_transform_id, target_transform_id, &current_to_target))
+    // If transform is not invertible, cannot apply clip.
+    return ConditionalClip{false, gfx::RectF()};
+
+  if (current_transform_id > target_transform_id)
+    return ConditionalClip{true,  // is_clipped.
+                           MathUtil::MapClippedRect(current_to_target, rect)};
+
+  return ConditionalClip{true,  // is_clipped.
+                         MathUtil::ProjectClippedRect(current_to_target, rect)};
+}
+
+static ConditionalClip ComputeLocalRectInTargetSpace(
     gfx::RectF rect,
     const TransformTree& transform_tree,
     int current_transform_id,
@@ -107,6 +126,7 @@ static ConditionalClip ComputeRectInTargetSpace(
           current_transform_id, target_transform_id, &current_to_target))
     // If transform is not invertible, cannot apply clip.
     return ConditionalClip{false, gfx::RectF()};
+
   if (current_transform_id > target_transform_id)
     return ConditionalClip{true,  // is_clipped.
                            MathUtil::MapClippedRect(current_to_target, rect)};
@@ -119,9 +139,9 @@ static ConditionalClip ComputeCurrentClip(const ClipNode* clip_node,
                                           const TransformTree& transform_tree,
                                           int target_transform_id) {
   if (clip_node->data.transform_id != target_transform_id)
-    return ComputeRectInTargetSpace(clip_node->data.clip, transform_tree,
-                                    clip_node->data.transform_id,
-                                    target_transform_id);
+    return ComputeLocalRectInTargetSpace(clip_node->data.clip, transform_tree,
+                                         clip_node->data.transform_id,
+                                         target_transform_id);
 
   gfx::RectF current_clip = clip_node->data.clip;
   gfx::Vector2dF sublayer_scale =
@@ -308,10 +328,11 @@ void CalculateVisibleRects(
 
       const EffectNode* copy_request_effect_node =
           effect_tree.Node(effect_ancestor_with_copy_request);
-      ConditionalClip clip_in_layer_space = ComputeRectInTargetSpace(
+      ConditionalClip clip_in_layer_space = ComputeTargetRectInLocalSpace(
           accumulated_clip_in_copy_request_space, transform_tree,
           copy_request_effect_node->data.transform_id,
           layer->transform_tree_index());
+
       if (clip_in_layer_space.is_clipped) {
         gfx::RectF clip_rect = clip_in_layer_space.clip_rect;
         clip_rect.Offset(-layer->offset_to_transform_parent());
