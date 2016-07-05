@@ -130,6 +130,14 @@
             "group_name": "Enable"
         }
     ],
+    "PointerEvent": [
+        {
+            "enable_features": [
+                "PointerEvent"
+            ],
+            "group_name": "Enabled"
+        }
+    ],
     "PreconnectMore": [
         {
             "enable_features": [

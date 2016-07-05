@@ -241,6 +241,14 @@
             "group_name": "Enabled"
         }
     ],
+    "PointerEvent": [
+        {
+            "enable_features": [
+                "PointerEvent"
+            ],
+            "group_name": "Enabled"
+        }
+    ],
     "PreRead": [
         {
             "group_name": "NoPrefetchArgument2",

@@ -270,6 +270,14 @@
             "group_name": "Enabled"
         }
     ],
+    "PointerEvent": [
+        {
+            "enable_features": [
+                "PointerEvent"
+            ],
+            "group_name": "Enabled"
+        }
+    ],
     "Precache": [
         {
             "group_name": "Enabled"
