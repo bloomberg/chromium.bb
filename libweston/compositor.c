@@ -4018,6 +4018,17 @@ weston_compositor_stack_plane(struct weston_compositor *ec,
 		wl_list_insert(&ec->plane_list, &plane->link);
 }
 
+static void
+output_release(struct wl_client *client, struct wl_resource *resource)
+{
+	wl_resource_destroy(resource);
+}
+
+static const struct wl_output_interface output_interface = {
+	output_release,
+};
+
+
 static void unbind_resource(struct wl_resource *resource)
 {
 	wl_list_remove(wl_resource_get_link(resource));
@@ -4039,7 +4050,7 @@ bind_output(struct wl_client *client,
 	}
 
 	wl_list_insert(&output->resource_list, wl_resource_get_link(resource));
-	wl_resource_set_implementation(resource, NULL, data, unbind_resource);
+	wl_resource_set_implementation(resource, &output_interface, data, unbind_resource);
 
 	wl_output_send_geometry(resource,
 				output->x,
@@ -4312,7 +4323,7 @@ weston_output_init(struct weston_output *output, struct weston_compositor *c,
 	output->compositor->output_id_pool |= 1u << output->id;
 
 	output->global =
-		wl_global_create(c->wl_display, &wl_output_interface, 2,
+		wl_global_create(c->wl_display, &wl_output_interface, 3,
 				 output, bind_output);
 }
 
