@@ -1030,6 +1030,125 @@ TEST_F(DownloadTargetDeterminerTest, TargetDeterminer_VisitedReferrer) {
                              arraysize(kVisitedReferrerCases));
 }
 
+TEST_F(DownloadTargetDeterminerTest, TransitionType) {
+  const DownloadTestCase kSafeFile = {
+      AUTOMATIC,
+      content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
+      DownloadFileType::NOT_DANGEROUS,
+      "http://example.com/foo.txt",
+      "text/plain",
+      FILE_PATH_LITERAL(""),
+
+      FILE_PATH_LITERAL("foo.txt"),
+      DownloadItem::TARGET_DISPOSITION_OVERWRITE,
+
+      EXPECT_CRDOWNLOAD};
+
+  const DownloadTestCase kAllowOnUserGesture = {
+      AUTOMATIC,
+      content::DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE,
+      DownloadFileType::ALLOW_ON_USER_GESTURE,
+      "http://example.com/foo.crx",
+      "application/octet-stream",
+      FILE_PATH_LITERAL(""),
+
+      FILE_PATH_LITERAL("foo.crx"),
+      DownloadItem::TARGET_DISPOSITION_OVERWRITE,
+
+      EXPECT_UNCONFIRMED};
+
+  const DownloadTestCase kDangerousFile = {
+      AUTOMATIC,
+      content::DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE,
+      DownloadFileType::DANGEROUS,
+      "http://example.com/foo.swf",
+      "application/octet-stream",
+      FILE_PATH_LITERAL(""),
+
+      FILE_PATH_LITERAL("foo.swf"),
+      DownloadItem::TARGET_DISPOSITION_OVERWRITE,
+
+      EXPECT_UNCONFIRMED};
+
+  const struct {
+    ui::PageTransition page_transition;
+    content::DownloadDangerType expected_danger_type;
+    const DownloadTestCase& template_download_test_case;
+  } kTestCases[] = {
+      {// Benign file type. Results in a danger type of NOT_DANGEROUS. Page
+       // transition type is irrelevant.
+       ui::PAGE_TRANSITION_LINK, content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
+       kSafeFile},
+
+      {// File type is ALLOW_ON_USER_GESTURE. PAGE_TRANSITION_LINK doesn't
+       // cause file to be marked as safe.
+       ui::PAGE_TRANSITION_LINK, content::DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE,
+       kAllowOnUserGesture},
+
+      {// File type is ALLOW_ON_USER_GESTURE. PAGE_TRANSITION_TYPED doesn't
+       // cause file to be marked as safe. TYPED can be used for certain
+       // types of explicit page transitions that aren't necessarily
+       // initiated by a user. Hence a resulting download may not be
+       // intentional.
+       ui::PAGE_TRANSITION_TYPED, content::DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE,
+       kAllowOnUserGesture},
+
+      {// File type is ALLOW_ON_USER_GESTURE.
+       // PAGE_TRANSITION_FROM_ADDRESS_BAR causes file to be marked as safe.
+       static_cast<ui::PageTransition>(ui::PAGE_TRANSITION_TYPED |
+                                       ui::PAGE_TRANSITION_FROM_ADDRESS_BAR),
+       content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS, kAllowOnUserGesture},
+
+      {// File type is ALLOW_ON_USER_GESTURE.
+       // PAGE_TRANSITION_FROM_ADDRESS_BAR causes file to be marked as safe.
+       static_cast<ui::PageTransition>(ui::PAGE_TRANSITION_GENERATED |
+                                       ui::PAGE_TRANSITION_FROM_ADDRESS_BAR),
+       content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS, kAllowOnUserGesture},
+
+      {// File type is ALLOW_ON_USER_GESTURE.
+       // PAGE_TRANSITION_FROM_ADDRESS_BAR causes file to be marked as safe.
+       ui::PAGE_TRANSITION_FROM_ADDRESS_BAR,
+       content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS, kAllowOnUserGesture},
+
+      {// File type is DANGEROUS. PageTransition is irrelevant.
+       static_cast<ui::PageTransition>(ui::PAGE_TRANSITION_TYPED |
+                                       ui::PAGE_TRANSITION_FROM_ADDRESS_BAR),
+       content::DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE, kDangerousFile},
+  };
+
+  // Test assumptions:
+  ASSERT_EQ(DownloadFileType::ALLOW_ON_USER_GESTURE,
+            Policies()->GetFileDangerLevel(
+                base::FilePath(FILE_PATH_LITERAL("foo.crx"))));
+  ASSERT_EQ(DownloadFileType::DANGEROUS,
+            Policies()->GetFileDangerLevel(
+                base::FilePath(FILE_PATH_LITERAL("foo.swf"))));
+  ASSERT_EQ(DownloadFileType::NOT_DANGEROUS,
+            Policies()->GetFileDangerLevel(
+                base::FilePath(FILE_PATH_LITERAL("foo.txt"))));
+
+  for (const auto& test_case : kTestCases) {
+    // The template download test case describes what to expect if the page
+    // transition was LINK. If the expectation is that the page transition type
+    // causes the download to be considered safe, then download_test_case needs
+    // to be adjusted accordingly.
+    DownloadTestCase download_test_case = test_case.template_download_test_case;
+    download_test_case.expected_danger_type = test_case.expected_danger_type;
+    if (test_case.expected_danger_type ==
+        content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS) {
+      download_test_case.expected_danger_level =
+          DownloadFileType::NOT_DANGEROUS;
+      download_test_case.expected_intermediate = EXPECT_CRDOWNLOAD;
+    }
+
+    std::unique_ptr<content::MockDownloadItem> item(
+        CreateActiveDownloadItem(1, download_test_case));
+    EXPECT_CALL(*item, GetTransitionType())
+        .WillRepeatedly(Return(test_case.page_transition));
+    RunTestCase(download_test_case, base::FilePath(), item.get());
+  }
+}
+
 // These test cases are run with "Prompt for download" user preference set to
 // true.
 TEST_F(DownloadTargetDeterminerTest, TargetDeterminer_PromptAlways) {

@@ -884,17 +884,22 @@ DownloadFileType::DangerLevel DownloadTargetDeterminer::GetDangerLevel(
       safe_browsing::FileTypePolicies::GetInstance()->GetFileDangerLevel(
           virtual_path_.BaseName());
 
-  // If the danger level is ALLOW_ON_USER_GESTURE and we have a user gesture AND
-  // there was a recorded visit to the referrer prior to today, then we are
-  // going to downgrade the danger_level to NOT_DANGEROUS. This prevents
-  // spurious prompting for moderately dangerous files that are downloaded from
-  // familiar sites.
-  // TODO(asanka): Check PAGE_TRANSITION_FROM_ADDRESS_BAR bit instead of
-  // comparing all bits with PageTransitionTypeIncludingQualifiersIs().
+  // A danger level of ALLOW_ON_USER_GESTURE is used to label potentially
+  // dangerous file types that have a high frequency of legitimate use. We would
+  // like to avoid prompting for the legitimate cases as much as possible. To
+  // that end, we consider a download to be legitimate if one of the following
+  // is true, and avoid prompting:
+  //
+  // * The user navigated to the download URL via the omnibox (either by typing
+  //   the URL, pasting it, or using search).
+  //
+  // * The navigation that initiated the download has a user gesture associated
+  //   with it AND the user the user is familiar with the referring origin. A
+  //   user is considered familiar with a referring origin if a visit for a page
+  //   from the same origin was recorded on the previous day or earlier.
   if (danger_level == DownloadFileType::ALLOW_ON_USER_GESTURE &&
-      (ui::PageTransitionTypeIncludingQualifiersIs(
-          download_->GetTransitionType(),
-          ui::PAGE_TRANSITION_FROM_ADDRESS_BAR) ||
+      ((download_->GetTransitionType() &
+        ui::PAGE_TRANSITION_FROM_ADDRESS_BAR) != 0 ||
        (download_->HasUserGesture() && visits == VISITED_REFERRER)))
     return DownloadFileType::NOT_DANGEROUS;
   return danger_level;
