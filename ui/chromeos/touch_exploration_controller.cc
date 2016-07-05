@@ -8,7 +8,6 @@
 
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/time/default_tick_clock.h"
 #include "ui/accessibility/ax_enums.h"
 #include "ui/aura/client/cursor_client.h"
 #include "ui/aura/window.h"
@@ -40,8 +39,7 @@ TouchExplorationController::TouchExplorationController(
       anchor_point_state_(ANCHOR_POINT_NONE),
       gesture_provider_(new GestureProviderAura(this, this)),
       prev_state_(NO_FINGERS_DOWN),
-      VLOG_on_(true),
-      tick_clock_(NULL) {
+      VLOG_on_(true) {
   DCHECK(root_window);
   root_window->GetHost()->GetEventSource()->AddEventRewriter(this);
 }
@@ -693,11 +691,6 @@ ui::EventRewriteStatus TouchExplorationController::InTwoFingerTap(
 }
 
 base::TimeTicks TouchExplorationController::Now() {
-  if (tick_clock_) {
-    // This is the same as what EventTimeForNow() does, but here we do it
-    // with a clock that can be replaced with a simulated clock for tests.
-    return tick_clock_->NowTicks();
-  }
   return ui::EventTimeForNow();
 }
 

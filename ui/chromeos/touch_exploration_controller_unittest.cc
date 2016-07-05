@@ -176,10 +176,6 @@ class TouchExplorationControllerTestApi {
     return touch_exploration_controller_->kSlopDistanceFromEdge;
   }
 
-  void SetTickClockForTesting(base::TickClock* simulated_clock) {
-    touch_exploration_controller_->tick_clock_ = simulated_clock;
-  }
-
   void SetTouchAccessibilityAnchorPoint(const gfx::Point& location) {
     touch_exploration_controller_->SetTouchAccessibilityAnchorPoint(location);
   }
@@ -192,10 +188,7 @@ class TouchExplorationControllerTestApi {
 
 class TouchExplorationTest : public aura::test::AuraTestBase {
  public:
-  TouchExplorationTest() : simulated_clock_(new base::SimpleTestTickClock()) {
-    // Tests fail if time is ever 0.
-    simulated_clock_->Advance(base::TimeDelta::FromMilliseconds(10));
-  }
+  TouchExplorationTest() : simulated_clock_(nullptr) {}
   ~TouchExplorationTest() override {}
 
   void SetUp() override {
@@ -205,14 +198,20 @@ class TouchExplorationTest : public aura::test::AuraTestBase {
     cursor_client_.reset(new aura::test::TestCursorClient(root_window()));
     root_window()->AddPreTargetHandler(&event_capturer_);
     generator_.reset(new test::EventGenerator(root_window()));
-    // The generator takes ownership of the tick clock.
-    generator_->SetTickClock(
+
+    simulated_clock_ = new base::SimpleTestTickClock();
+    // Tests fail if time is ever 0.
+    simulated_clock_->Advance(base::TimeDelta::FromMilliseconds(10));
+    // ui takes ownership of the tick clock.
+    ui::SetEventTickClockForTesting(
         std::unique_ptr<base::TickClock>(simulated_clock_));
+
     cursor_client()->ShowCursor();
     cursor_client()->DisableMouseEvents();
   }
 
   void TearDown() override {
+    ui::SetEventTickClockForTesting(nullptr);
     root_window()->RemovePreTargetHandler(&event_capturer_);
     SwitchTouchExplorationMode(false);
     cursor_client_.reset();
@@ -281,11 +280,6 @@ class TouchExplorationTest : public aura::test::AuraTestBase {
 
   void SuppressVLOGs(bool suppress) {
     touch_exploration_controller_->SuppressVLOGsForTesting(suppress);
-  }
-
-  void SetTickClock() {
-    touch_exploration_controller_->SetTickClockForTesting(
-        static_cast<base::TickClock*>(simulated_clock_));
   }
 
   void SwitchTouchExplorationMode(bool on) {
@@ -392,11 +386,7 @@ class TouchExplorationTest : public aura::test::AuraTestBase {
     return touch_exploration_controller_->GetSlopDistanceFromEdge();
   }
 
-  base::TimeTicks Now() {
-    // This is the same as what EventTimeForNow() does, but here we do it
-    // with our simulated clock.
-    return simulated_clock_->NowTicks();
-  }
+  base::TimeTicks Now() { return ui::EventTimeForNow(); }
 
   void SetTouchAccessibilityAnchorPoint(const gfx::Point& location) {
     touch_exploration_controller_->SetTouchAccessibilityAnchorPoint(location);
@@ -404,7 +394,7 @@ class TouchExplorationTest : public aura::test::AuraTestBase {
 
   std::unique_ptr<test::EventGenerator> generator_;
   ui::GestureDetector::Config gesture_detector_config_;
-  // Owned by |generator_|.
+  // Owned by |ui|.
   base::SimpleTestTickClock* simulated_clock_;
   MockTouchExplorationControllerDelegate delegate_;
 
@@ -846,7 +836,6 @@ TEST_F(TouchExplorationTest, DoubleTapPassthrough) {
 // to the location of the last successful touch exploration.
 TEST_F(TouchExplorationTest, DoubleTapLongPress) {
   SwitchTouchExplorationMode(true);
-  SetTickClock();
   // Tap at one location, and get a mouse move event.
   gfx::Point tap_location(11, 12);
   generator_->set_current_location(tap_location);

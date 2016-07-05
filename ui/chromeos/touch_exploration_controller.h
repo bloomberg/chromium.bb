@@ -6,7 +6,6 @@
 #define UI_CHROMEOS_TOUCH_EXPLORATION_CONTROLLER_H_
 
 #include "base/macros.h"
-#include "base/time/tick_clock.h"
 #include "base/timer/timer.h"
 #include "base/values.h"
 #include "ui/accessibility/ax_enums.h"
@@ -500,10 +499,6 @@ class UI_CHROMEOS_EXPORT TouchExplorationController
 
   // This toggles whether VLOGS are turned on or not.
   bool VLOG_on_;
-
-  // When touch_exploration_controller gets time relative to real time during
-  // testing, this clock is set to the simulated clock and used.
-  base::TickClock* tick_clock_;
 
   DISALLOW_COPY_AND_ASSIGN(TouchExplorationController);
 };

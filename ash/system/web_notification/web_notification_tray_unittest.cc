@@ -27,6 +27,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
+#include "ui/events/base_event_utils.h"
 #include "ui/events/event.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/gfx/geometry/point.h"
@@ -488,7 +489,7 @@ TEST_F(WebNotificationTrayTest, TouchFeedback) {
   gfx::Point center_point = tray->GetBoundsInScreen().CenterPoint();
 
   ui::TouchEvent press(ui::ET_TOUCH_PRESSED, center_point, touch_id,
-                       generator.Now());
+                       ui::EventTimeForNow());
   generator.Dispatch(&press);
   EXPECT_TRUE(tray->draw_background_as_active());
 
@@ -518,7 +519,7 @@ TEST_F(WebNotificationTrayTest, TouchFeedbackCancellation) {
   gfx::Point center_point = bounds.CenterPoint();
 
   ui::TouchEvent press(ui::ET_TOUCH_PRESSED, center_point, touch_id,
-                       generator.Now());
+                       ui::EventTimeForNow());
   generator.Dispatch(&press);
   EXPECT_TRUE(tray->draw_background_as_active());
 

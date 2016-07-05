@@ -13,6 +13,7 @@
 #include "components/exo/touch.h"
 #include "components/exo/touch_delegate.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "ui/events/base_event_utils.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/views/widget/widget.h"
 
@@ -180,7 +181,7 @@ TEST_F(TouchTest, OnTouchCancel) {
   // One touch point being canceled is enough for OnTouchCancel to be called.
   EXPECT_CALL(delegate, OnTouchCancel());
   ui::TouchEvent cancel_event(ui::ET_TOUCH_CANCELLED, gfx::Point(), 1,
-                              generator.Now());
+                              ui::EventTimeForNow());
   generator.Dispatch(&cancel_event);
 
   EXPECT_CALL(delegate, OnTouchDestroying(touch.get()));

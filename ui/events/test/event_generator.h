@@ -367,12 +367,6 @@ class EventGenerator {
     current_target_ = target;
   }
 
-  // Specify an alternative tick clock to be used for simulating time in tests.
-  void SetTickClock(std::unique_ptr<base::TickClock> tick_clock);
-
-  // Get the current time from the tick clock.
-  base::TimeTicks Now();
-
   // Default delegate set by a platform-specific GeneratorDelegate singleton.
   static EventGeneratorDelegate* default_delegate;
 
