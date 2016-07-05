@@ -1438,10 +1438,29 @@ const char ApplyFramebufferAttachmentCMAAINTELResourceManager::cmaa_frag_s2_[] =
     \n#ifdef BLUR_EDGES\n
     layout(early_fragment_tests) in;
     void BlurEdges() {
-      int _i;
-
+      // Each |gl_FragCoord| updates 4 texels of the original texture, which are
+      // 2x|gl_FragCoord| + (-1 or 0, -1 or 0) in the unnormalized texture
+      // coordinate, which is the coordinate used by texelFetch().
+      // e.g. when gl_FragCoord == (3.5, 3.5), this fragment shader covers
+      // (6,6) (6,7) (7,6) (7,7) texels.
+      // Note: gl_FragCoord == (0.5, 0.5) (i.e. left-bottom-most fragment)
+      // covers (0,0) (0,1) (1,0) (1,1) texels
+      // gl_FragCoord == ((w/2)-0.5, (h/2)-0.5) (i.e. right-top-most fragment)
+      // covers (w-2,h-2) (w-2,h-1) (w-1,h-2) (w-1,h-1)
       ivec3 screenPosIBase = ivec3(ivec2(gl_FragCoord.xy) * 2, 0);
       vec3 screenPosBase = vec3(screenPosIBase);
+
+      // When gl_FragCoord == (0.5, 0.5) (i.e. left-bottom-most fragment),
+      // |sampA| textureGatherOffset() looks up (-1,-1), (-1,0), (0,-1), (0,0).
+      // (-1,-1), (-1,0), (0,-1) must be handled.
+      // Note: textureGatherOffset() on out of range gives an undefined value.
+      uvec2 notBottomLeft = uvec2(notEqual(screenPosIBase.xy, ivec2(0, 0)));
+      // When gl_FragCoord == ((w/2)-0.5, (h/2)-0.5) (i.e. right-top-most
+      // fragment), |sampD| looks up (w-1, h-1), (w-1, h), (w, h-1), (w, h).
+      // (w-1, h), (w, h-1), (w, h) must be handled.
+      uvec2 notTopRight = uvec2(
+          notEqual((screenPosIBase.xy + 2), textureSize(g_src0TextureFlt, 0)));
+
       uint forFollowUpCount = 0u;
       ivec4 forFollowUpCoords[4];
 
@@ -1464,24 +1483,27 @@ const char ApplyFramebufferAttachmentCMAAINTELResourceManager::cmaa_frag_s2_[] =
                               screenPosBase.xy * g_OneOverScreenSize,
                               ivec2(2, 2)) *255.5);
 
-      packedEdgesArray[(0) * 4 + (0)] = sampA.w;
-      packedEdgesArray[(1) * 4 + (0)] = sampA.z;
-      packedEdgesArray[(0) * 4 + (1)] = sampA.x;
+      packedEdgesArray[(0) * 4 + (0)] =
+          sampA.w * notBottomLeft.x * notBottomLeft.y;
+      packedEdgesArray[(1) * 4 + (0)] = sampA.z * notBottomLeft.y;
+      packedEdgesArray[(0) * 4 + (1)] = sampA.x * notBottomLeft.x;
       packedEdgesArray[(1) * 4 + (1)] = sampA.y;
-      packedEdgesArray[(2) * 4 + (0)] = sampB.w;
-      packedEdgesArray[(3) * 4 + (0)] = sampB.z;
+      packedEdgesArray[(2) * 4 + (0)] = sampB.w * notBottomLeft.y;
+      packedEdgesArray[(3) * 4 + (0)] =
+          sampB.z * notBottomLeft.y * notTopRight.x;
       packedEdgesArray[(2) * 4 + (1)] = sampB.x;
-      packedEdgesArray[(3) * 4 + (1)] = sampB.y;
-      packedEdgesArray[(0) * 4 + (2)] = sampC.w;
+      packedEdgesArray[(3) * 4 + (1)] = sampB.y * notTopRight.x;
+      packedEdgesArray[(0) * 4 + (2)] = sampC.w * notBottomLeft.x;
       packedEdgesArray[(1) * 4 + (2)] = sampC.z;
-      packedEdgesArray[(0) * 4 + (3)] = sampC.x;
-      packedEdgesArray[(1) * 4 + (3)] = sampC.y;
+      packedEdgesArray[(0) * 4 + (3)] =
+          sampC.x * notBottomLeft.x * notTopRight.y;
+      packedEdgesArray[(1) * 4 + (3)] = sampC.y * notTopRight.y;
       packedEdgesArray[(2) * 4 + (2)] = sampD.w;
-      packedEdgesArray[(3) * 4 + (2)] = sampD.z;
-      packedEdgesArray[(2) * 4 + (3)] = sampD.x;
-      packedEdgesArray[(3) * 4 + (3)] = sampD.y;
+      packedEdgesArray[(3) * 4 + (2)] = sampD.z * notTopRight.x;
+      packedEdgesArray[(2) * 4 + (3)] = sampD.x * notTopRight.y;
+      packedEdgesArray[(3) * 4 + (3)] = sampD.y * notTopRight.x * notTopRight.y;
 
-      for (_i = 0; _i < 4; _i++) {
+      for (int _i = 0; _i < 4; _i++) {
         int _x = _i % 2;
         int _y = _i / 2;
 
