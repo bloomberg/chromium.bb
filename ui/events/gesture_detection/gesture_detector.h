@@ -110,6 +110,7 @@ class GESTURE_DETECTION_EXPORT GestureDetector {
                      const MotionEvent& first_up,
                      const MotionEvent& second_down) const;
   bool HandleSwipeIfNeeded(const MotionEvent& up, float vx, float vy);
+  bool IsWithinTouchSlop(const MotionEvent& ev);
 
   class TimeoutGestureHandler;
   std::unique_ptr<TimeoutGestureHandler> timeout_handler_;
@@ -130,7 +131,7 @@ class GESTURE_DETECTION_EXPORT GestureDetector {
 
   bool still_down_;
   bool defer_confirm_single_tap_;
-  bool always_in_tap_region_;
+  bool all_pointers_within_slop_regions_;
   bool always_in_bigger_tap_region_;
   bool two_finger_tap_allowed_for_gesture_;
 
@@ -147,6 +148,10 @@ class GESTURE_DETECTION_EXPORT GestureDetector {
   // corresponding ACTION_UP yields a valid tap and double-tap detection is
   // disabled.
   bool is_down_candidate_for_repeated_single_tap_;
+
+  // Stores the maximum number of pointers that have been down simultaneously
+  // during the current touch sequence.
+  int maximum_pointer_count_;
 
   // The number of repeated taps in the current sequence, i.e., for the initial
   // tap this is 0, for the first *repeated* tap 1, etc...

@@ -2576,6 +2576,7 @@ TEST_F(GestureRecognizerTest, TwoFingerTap) {
       delegate->events(), ui::ET_GESTURE_TAP_CANCEL, ui::ET_GESTURE_BEGIN);
 
   // Little bit of touch move should not affect our state.
+  // Moving within slop region doesn't cause scrolling.
   delegate->Reset();
   ui::TouchEvent move1(ui::ET_TOUCH_MOVED, gfx::Point(102, 202),
                        kTouchId1, tes.Now());
@@ -2583,8 +2584,7 @@ TEST_F(GestureRecognizerTest, TwoFingerTap) {
   ui::TouchEvent move2(ui::ET_TOUCH_MOVED, gfx::Point(131, 202),
                        kTouchId2, tes.Now());
   DispatchEventUsingWindowDispatcher(&move2);
-  EXPECT_3_EVENTS(delegate->events(), ui::ET_GESTURE_SCROLL_BEGIN,
-                  ui::ET_GESTURE_SCROLL_UPDATE, ui::ET_GESTURE_SCROLL_UPDATE);
+  EXPECT_0_EVENTS(delegate->events());
 
   // Make sure there is enough delay before the touch is released so that it is
   // recognized as a tap.
@@ -2597,15 +2597,14 @@ TEST_F(GestureRecognizerTest, TwoFingerTap) {
       delegate->events(), ui::ET_GESTURE_TWO_FINGER_TAP, ui::ET_GESTURE_END);
 
   // Lift second finger.
-  // Make sure there is enough delay before the touch is released so that it is
-  // recognized as a tap.
+  // Two fingers have been down at some point during the current touch,
+  // single tap doesn't happen while releasing the second finger.
   delegate->Reset();
   ui::TouchEvent release2(ui::ET_TOUCH_RELEASED, gfx::Point(130, 201),
                           kTouchId2, tes.LeapForward(50));
 
   DispatchEventUsingWindowDispatcher(&release2);
-  EXPECT_2_EVENTS(
-      delegate->events(), ui::ET_GESTURE_SCROLL_END, ui::ET_GESTURE_END);
+  EXPECT_1_EVENT(delegate->events(), ui::ET_GESTURE_END);
 }
 
 TEST_F(GestureRecognizerTest, TwoFingerTapExpired) {

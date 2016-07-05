@@ -112,6 +112,7 @@ bool StylusTextSelector::OnSingleTapUp(const MotionEvent& e, int tap_count) {
 
 bool StylusTextSelector::OnScroll(const MotionEvent& e1,
                                   const MotionEvent& e2,
+                                  const MotionEvent& secondary_pointer_down,
                                   float distance_x,
                                   float distance_y) {
   DCHECK(text_selection_triggered_);

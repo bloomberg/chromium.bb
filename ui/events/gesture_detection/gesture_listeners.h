@@ -21,6 +21,7 @@ class GESTURE_DETECTION_EXPORT GestureListener {
   virtual void OnLongPress(const MotionEvent& e) = 0;
   virtual bool OnScroll(const MotionEvent& e1,
                         const MotionEvent& e2,
+                        const MotionEvent& secondary_pointer_down,
                         float distance_x,
                         float distance_y) = 0;
   virtual bool OnFling(const MotionEvent& e1,
@@ -59,6 +60,7 @@ class GESTURE_DETECTION_EXPORT SimpleGestureListener
   void OnLongPress(const MotionEvent& e) override;
   bool OnScroll(const MotionEvent& e1,
                 const MotionEvent& e2,
+                const MotionEvent& secondary_pointer_down,
                 float distance_x,
                 float distance_y) override;
   bool OnFling(const MotionEvent& e1,

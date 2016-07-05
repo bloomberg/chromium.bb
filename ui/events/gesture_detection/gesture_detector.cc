@@ -130,11 +130,12 @@ GestureDetector::GestureDetector(
       min_swipe_direction_component_ratio_(0),
       still_down_(false),
       defer_confirm_single_tap_(false),
-      always_in_tap_region_(false),
+      all_pointers_within_slop_regions_(false),
       always_in_bigger_tap_region_(false),
       two_finger_tap_allowed_for_gesture_(false),
       is_double_tapping_(false),
       is_down_candidate_for_repeated_single_tap_(false),
+      maximum_pointer_count_(0),
       current_single_tap_repeat_count_(0),
       single_tap_repeat_interval_(1),
       last_focus_x_(0),
@@ -185,6 +186,14 @@ bool GestureDetector::OnTouchEvent(const MotionEvent& ev) {
       down_focus_y_ = last_focus_y_ = focus_y;
       // Cancel long press and taps.
       CancelTaps();
+      maximum_pointer_count_ = std::max(maximum_pointer_count_,
+                                        static_cast<int>(ev.GetPointerCount()));
+
+      // Even when two_finger_tap_allowed_for_gesture_ is false,
+      // second pointer down information must be stored to check
+      // the slop region in multi-finger scrolls.
+      if (ev.GetPointerCount() == 2)
+        secondary_pointer_down_event_ = ev.Clone();
 
       if (!two_finger_tap_allowed_for_gesture_)
         break;
@@ -193,12 +202,9 @@ bool GestureDetector::OnTouchEvent(const MotionEvent& ev) {
       const float dx = ev.GetX(action_index) - current_down_event_->GetX();
       const float dy = ev.GetY(action_index) - current_down_event_->GetY();
 
-      if (ev.GetPointerCount() == 2 &&
-          dx * dx + dy * dy < two_finger_tap_distance_square_) {
-        secondary_pointer_down_event_ = ev.Clone();
-      } else {
+      if (maximum_pointer_count_ > 2 ||
+          dx * dx + dy * dy >= two_finger_tap_distance_square_)
         two_finger_tap_allowed_for_gesture_ = false;
-      }
     } break;
 
     case MotionEvent::ACTION_POINTER_UP: {
@@ -272,11 +278,12 @@ bool GestureDetector::OnTouchEvent(const MotionEvent& ev) {
       current_down_event_ = ev.Clone();
 
       secondary_pointer_down_event_.reset();
-      always_in_tap_region_ = true;
+      all_pointers_within_slop_regions_ = true;
       always_in_bigger_tap_region_ = true;
       still_down_ = true;
       defer_confirm_single_tap_ = false;
       two_finger_tap_allowed_for_gesture_ = two_finger_tap_enabled_;
+      maximum_pointer_count_ = 1;
 
       // Always start the SHOW_PRESS timer before the LONG_PRESS timer to ensure
       // proper timeout ordering.
@@ -295,27 +302,30 @@ bool GestureDetector::OnTouchEvent(const MotionEvent& ev) {
           // Give the move events of the double-tap.
           DCHECK(double_tap_listener_);
           handled |= double_tap_listener_->OnDoubleTapEvent(ev);
-        } else if (always_in_tap_region_) {
+        } else if (all_pointers_within_slop_regions_) {
+          if (!IsWithinTouchSlop(ev)) {
+            handled = listener_->OnScroll(
+                *current_down_event_, ev,
+                (ev.GetPointerCount() > 1 ? *secondary_pointer_down_event_
+                                          : ev),
+                scroll_x, scroll_y);
+            last_focus_x_ = focus_x;
+            last_focus_y_ = focus_y;
+            all_pointers_within_slop_regions_ = false;
+            timeout_handler_->Stop();
+          }
+
           const float delta_x = focus_x - down_focus_x_;
           const float delta_y = focus_y - down_focus_y_;
           const float distance_square = delta_x * delta_x + delta_y * delta_y;
-          if (distance_square > touch_slop_square_) {
-            handled = listener_->OnScroll(
-                *current_down_event_, ev, scroll_x, scroll_y);
-            last_focus_x_ = focus_x;
-            last_focus_y_ = focus_y;
-            always_in_tap_region_ = false;
-            timeout_handler_->Stop();
-          }
           if (distance_square > double_tap_touch_slop_square_)
             always_in_bigger_tap_region_ = false;
         } else if (std::abs(scroll_x) > kScrollEpsilon ||
                    std::abs(scroll_y) > kScrollEpsilon) {
-          // We should eventually apply touch slop for multi-finger
-          // scrolls as well as single finger scrolls. See
-          // crbug.com/492185 for details.
-          handled =
-              listener_->OnScroll(*current_down_event_, ev, scroll_x, scroll_y);
+          handled = listener_->OnScroll(
+              *current_down_event_, ev,
+              (ev.GetPointerCount() > 1 ? *secondary_pointer_down_event_ : ev),
+              scroll_x, scroll_y);
           last_focus_x_ = focus_x;
           last_focus_y_ = focus_y;
         }
@@ -325,24 +335,10 @@ bool GestureDetector::OnTouchEvent(const MotionEvent& ev) {
 
         // Two-finger tap should be prevented if either pointer exceeds its
         // (independent) slop region.
-        const int id0 = current_down_event_->GetPointerId(0);
-        const int ev_idx0 = ev.GetPointerId(0) == id0 ? 0 : 1;
-
-        // Check if the primary pointer exceeded the slop region.
-        float dx = current_down_event_->GetX() - ev.GetX(ev_idx0);
-        float dy = current_down_event_->GetY() - ev.GetY(ev_idx0);
-        if (dx * dx + dy * dy > touch_slop_square_) {
+        // If the event has had more than two pointers down at any time,
+        // two finger tap should be prevented.
+        if (maximum_pointer_count_ > 2 || !IsWithinTouchSlop(ev)) {
           two_finger_tap_allowed_for_gesture_ = false;
-          break;
-        }
-        if (ev.GetPointerCount() == 2) {
-          // Check if the secondary pointer exceeded the slop region.
-          const int ev_idx1 = ev_idx0 == 0 ? 1 : 0;
-          const int idx1 = secondary_pointer_down_event_->GetActionIndex();
-          dx = secondary_pointer_down_event_->GetX(idx1) - ev.GetX(ev_idx1);
-          dy = secondary_pointer_down_event_->GetY(idx1) - ev.GetY(ev_idx1);
-          if (dx * dx + dy * dy > touch_slop_square_)
-            two_finger_tap_allowed_for_gesture_ = false;
         }
       }
       break;
@@ -354,7 +350,8 @@ bool GestureDetector::OnTouchEvent(const MotionEvent& ev) {
           // Finally, give the up event of the double-tap.
           DCHECK(double_tap_listener_);
           handled |= double_tap_listener_->OnDoubleTapEvent(ev);
-        } else if (always_in_tap_region_) {
+        } else if (all_pointers_within_slop_regions_ &&
+                   maximum_pointer_count_ == 1) {
           if (is_down_candidate_for_repeated_single_tap_) {
             current_single_tap_repeat_count_ =
                 (1 + current_single_tap_repeat_count_) %
@@ -392,6 +389,7 @@ bool GestureDetector::OnTouchEvent(const MotionEvent& ev) {
         timeout_handler_->StopTimeout(SHOW_PRESS);
         timeout_handler_->StopTimeout(LONG_PRESS);
       }
+      maximum_pointer_count_ = 0;
       break;
 
     case MotionEvent::ACTION_CANCEL:
@@ -477,13 +475,13 @@ void GestureDetector::OnTapTimeout() {
 void GestureDetector::Cancel() {
   CancelTaps();
   velocity_tracker_.Clear();
+  all_pointers_within_slop_regions_ = false;
   still_down_ = false;
 }
 
 void GestureDetector::CancelTaps() {
   timeout_handler_->Stop();
   is_double_tapping_ = false;
-  always_in_tap_region_ = false;
   always_in_bigger_tap_region_ = false;
   defer_confirm_single_tap_ = false;
   is_down_candidate_for_repeated_single_tap_ = false;
@@ -537,6 +535,34 @@ bool GestureDetector::HandleSwipeIfNeeded(const MotionEvent& up,
   else
     vx = 0;
   return listener_->OnSwipe(*current_down_event_, up, vx, vy);
+}
+
+bool GestureDetector::IsWithinTouchSlop(const MotionEvent& ev) {
+  // If there are more than two down pointers, tapping is not possible.
+  // Slop region check is not needed.
+  if (ev.GetPointerCount() > 2)
+    return false;
+
+  const int id0 = current_down_event_->GetPointerId(0);
+  const int ev_idx0 = ev.GetPointerId(0) == id0 ? 0 : 1;
+
+  // Check if the primary pointer exceeded the slop region.
+  float dx = current_down_event_->GetX() - ev.GetX(ev_idx0);
+  float dy = current_down_event_->GetY() - ev.GetY(ev_idx0);
+  if (dx * dx + dy * dy > touch_slop_square_)
+    return false;
+
+  if (ev.GetPointerCount() == 2) {
+    // Check if the secondary pointer exceeded the slop region.
+    const int ev_idx1 = ev_idx0 == 0 ? 1 : 0;
+    const int idx1 = secondary_pointer_down_event_->GetActionIndex();
+    dx = secondary_pointer_down_event_->GetX(idx1) - ev.GetX(ev_idx1);
+    dy = secondary_pointer_down_event_->GetY(idx1) - ev.GetY(ev_idx1);
+    if (dx * dx + dy * dy > touch_slop_square_)
+      return false;
+  }
+
+  return true;
 }
 
 }  // namespace ui

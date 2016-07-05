@@ -57,6 +57,7 @@ class CONTENT_EXPORT StylusTextSelector : public ui::SimpleGestureListener {
   bool OnSingleTapUp(const ui::MotionEvent& e, int tap_count) override;
   bool OnScroll(const ui::MotionEvent& e1,
                 const ui::MotionEvent& e2,
+                const ui::MotionEvent& secondary_pointer_down,
                 float distance_x,
                 float distance_y) override;
 
