@@ -1554,10 +1554,12 @@ emit_header(struct protocol *protocol, enum side side)
 			emit_structs(&i->request_list, i, side);
 			emit_opcodes(&i->event_list, i);
 			emit_opcode_versions(&i->event_list, i);
+			emit_opcode_versions(&i->request_list, i);
 			emit_event_wrappers(&i->event_list, i);
 		} else {
 			emit_structs(&i->event_list, i, side);
 			emit_opcodes(&i->request_list, i);
+			emit_opcode_versions(&i->event_list, i);
 			emit_opcode_versions(&i->request_list, i);
 			emit_stubs(&i->request_list, i);
 		}
