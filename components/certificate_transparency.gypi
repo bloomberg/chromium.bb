@@ -13,6 +13,7 @@
       ],
       'dependencies': [
         '../base/base.gyp:base',
+        '../components/components.gyp:base32',
         '../components/components.gyp:safe_json',
         '../components/components.gyp:url_matcher',
         '../components/prefs/prefs.gyp:prefs',
@@ -23,6 +24,8 @@
       'sources': [
         'certificate_transparency/ct_policy_manager.cc',
         'certificate_transparency/ct_policy_manager.h',
+        'certificate_transparency/log_dns_client.h',
+        'certificate_transparency/log_dns_client.cc',
         'certificate_transparency/log_proof_fetcher.h',
         'certificate_transparency/log_proof_fetcher.cc',
         'certificate_transparency/pref_names.cc',

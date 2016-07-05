@@ -223,10 +223,6 @@
           'dns/mdns_client.h',
           'dns/mdns_client_impl.cc',
           'dns/mdns_client_impl.h',
-          'dns/record_parsed.cc',
-          'dns/record_parsed.h',
-          'dns/record_rdata.cc',
-          'dns/record_rdata.h',
         ]
     }],
     [ 'OS == "win"', {

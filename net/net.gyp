@@ -346,8 +346,6 @@
               'dns/mdns_cache_unittest.cc',
               'dns/mdns_client_unittest.cc',
               'dns/mdns_query_unittest.cc',
-              'dns/record_parsed_unittest.cc',
-              'dns/record_rdata_unittest.cc',
             ],
         }],
         [ 'OS == "win"', {
