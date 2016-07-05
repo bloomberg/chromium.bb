@@ -82,8 +82,6 @@ namespace {
 
 #define VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(code_to_test)                \
   root->layer_tree_impl()->ResetAllChangeTracking();                     \
-  host_impl.active_tree()->property_trees()->needs_rebuild = true;       \
-  host_impl.active_tree()->BuildLayerListAndPropertyTreesForTesting();   \
   host_impl.ForcePrepareToDraw();                                        \
   EXPECT_FALSE(host_impl.active_tree()->needs_update_draw_properties()); \
   code_to_test;                                                          \
@@ -91,8 +89,6 @@ namespace {
 
 #define VERIFY_NO_NEEDS_UPDATE_DRAW_PROPERTIES(code_to_test)             \
   root->layer_tree_impl()->ResetAllChangeTracking();                     \
-  host_impl.active_tree()->property_trees()->needs_rebuild = true;       \
-  host_impl.active_tree()->BuildLayerListAndPropertyTreesForTesting();   \
   host_impl.ForcePrepareToDraw();                                        \
   EXPECT_FALSE(host_impl.active_tree()->needs_update_draw_properties()); \
   code_to_test;                                                          \
@@ -286,6 +282,7 @@ TEST(LayerImplTest, VerifyNeedsUpdateDrawProperties) {
   // Related scrolling functions.
   VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(layer->SetBounds(large_size));
   VERIFY_NO_NEEDS_UPDATE_DRAW_PROPERTIES(layer->SetBounds(large_size));
+  host_impl.active_tree()->BuildLayerListAndPropertyTreesForTesting();
   VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(layer->ScrollBy(arbitrary_vector2d));
   VERIFY_NO_NEEDS_UPDATE_DRAW_PROPERTIES(layer->ScrollBy(gfx::Vector2d()));
   VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(
