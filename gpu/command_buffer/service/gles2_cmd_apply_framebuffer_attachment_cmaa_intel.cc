@@ -1580,6 +1580,34 @@ const char ApplyFramebufferAttachmentCMAAINTELResourceManager::cmaa_frag_s2_[] =
                            bool(packedEdgesB & 0x04u);
           if (large_l1 || large_l2 || large_l3 || large_l4)
             continue;
+
+          // Don't blend isolated L shape because it's not a closed geometry.
+          // isolated_l1 isolated_l2 isolated_l3 isolated_l4
+          //   _                                   _
+          //   X|          X|         |X          |X
+          //               ¯¯         ¯¯
+          bool isolated_l1 = (packedEdgesC == (0x01u | 0x02u)) &&
+                           bool((packedEdgesL & 0x02u) == 0x00u) &&
+                           bool((packedEdgesT & 0x04u) == 0x00u) &&
+                           bool((packedEdgesR & 0x08u) == 0x00u) &&
+                           bool((packedEdgesB & 0x01u) == 0x00u);
+          bool isolated_l2 = (packedEdgesC == (0x01u | 0x08u)) &&
+                           bool((packedEdgesL & 0x08u) == 0x00u) &&
+                           bool((packedEdgesT & 0x01u) == 0x00u) &&
+                           bool((packedEdgesR & 0x02u) == 0x00u) &&
+                           bool((packedEdgesB & 0x04u) == 0x00u);
+          bool isolated_l3 = (packedEdgesC == (0x04u | 0x08u)) &&
+                           bool((packedEdgesL & 0x02u) == 0x00u) &&
+                           bool((packedEdgesT & 0x04u) == 0x00u) &&
+                           bool((packedEdgesR & 0x08u) == 0x00u) &&
+                           bool((packedEdgesB & 0x01u) == 0x00u);
+          bool isolated_l4 = (packedEdgesC == (0x02u | 0x04u)) &&
+                           bool((packedEdgesL & 0x08u) == 0x00u) &&
+                           bool((packedEdgesT & 0x01u) == 0x00u) &&
+                           bool((packedEdgesR & 0x02u) == 0x00u) &&
+                           bool((packedEdgesB & 0x04u) == 0x00u);
+          if (isolated_l1 || isolated_l2 || isolated_l3 || isolated_l4)
+            continue;
         }
 
         // 2.) U-like shape (surrounded with edges from 3 sides)
