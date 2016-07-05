@@ -61,6 +61,7 @@ void PermissionContextBase::RequestPermission(
     content::WebContents* web_contents,
     const PermissionRequestID& id,
     const GURL& requesting_frame,
+    bool user_gesture,
     const BrowserPermissionCallback& callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
@@ -112,7 +113,7 @@ void PermissionContextBase::RequestPermission(
                                          embedding_origin, profile_);
 
   DecidePermission(web_contents, id, requesting_origin, embedding_origin,
-                   callback);
+                   user_gesture, callback);
 }
 
 ContentSetting PermissionContextBase::GetPermissionStatus(
@@ -164,6 +165,7 @@ void PermissionContextBase::DecidePermission(
     const PermissionRequestID& id,
     const GURL& requesting_origin,
     const GURL& embedding_origin,
+    bool user_gesture,
     const BrowserPermissionCallback& callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 

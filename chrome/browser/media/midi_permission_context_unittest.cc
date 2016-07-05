@@ -98,7 +98,8 @@ TEST_F(MidiPermissionContextTests, TestInsecureRequestingUrl) {
       web_contents()->GetMainFrame()->GetRoutingID(),
       -1);
   permission_context.RequestPermission(
-      web_contents(), id, url,
+      web_contents(),
+      id, url, true,
       base::Bind(&TestPermissionContext::TrackPermissionDecision,
                  base::Unretained(&permission_context)));
 

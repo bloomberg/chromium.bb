@@ -52,6 +52,7 @@ class GeolocationPermissionContextAndroid
       content::WebContents* web_contents,
       const PermissionRequestID& id,
       const GURL& requesting_frame_origin,
+      bool user_gesture,
       const BrowserPermissionCallback& callback) override;
   void CancelPermissionRequest(content::WebContents* web_contents,
                                const PermissionRequestID& id) override;

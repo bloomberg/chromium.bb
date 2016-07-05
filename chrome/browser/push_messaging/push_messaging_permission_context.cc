@@ -75,6 +75,7 @@ void PushMessagingPermissionContext::DecidePermission(
     const PermissionRequestID& id,
     const GURL& requesting_origin,
     const GURL& embedding_origin,
+    bool user_gesture,
     const BrowserPermissionCallback& callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 #if defined(ENABLE_NOTIFICATIONS)
@@ -86,7 +87,7 @@ void PushMessagingPermissionContext::DecidePermission(
 
   PermissionManager::Get(profile_)->RequestPermission(
       content::PermissionType::NOTIFICATIONS, web_contents->GetMainFrame(),
-      requesting_origin,
+      requesting_origin, user_gesture,
       base::Bind(&PushMessagingPermissionContext::DecidePushPermission,
                  weak_factory_ui_thread_.GetWeakPtr(), id, requesting_origin,
                  embedding_origin, callback));

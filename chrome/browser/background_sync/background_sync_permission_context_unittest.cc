@@ -40,7 +40,7 @@ class BackgroundSyncPermissionContextTest
         web_contents()->GetRenderProcessHost()->GetID(),
         web_contents()->GetMainFrame()->GetRoutingID(), -1 /* request_id */);
     permission_context->RequestPermission(
-        web_contents(), id, url,
+        web_contents(), id, url, false /* user_gesture */,
         base::Bind(
             &BackgroundSyncPermissionContextTest::TrackPermissionDecision,
             base::Unretained(this), run_loop.QuitClosure()));

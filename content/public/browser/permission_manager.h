@@ -37,6 +37,7 @@ class CONTENT_EXPORT PermissionManager {
       PermissionType permission,
       RenderFrameHost* render_frame_host,
       const GURL& requesting_origin,
+      bool user_gesture,
       const base::Callback<void(blink::mojom::PermissionStatus)>& callback) = 0;
 
   // Requests multiple permissions on behalf of a frame identified by
@@ -53,6 +54,7 @@ class CONTENT_EXPORT PermissionManager {
       const std::vector<PermissionType>& permission,
       RenderFrameHost* render_frame_host,
       const GURL& requesting_origin,
+      bool user_gesture,
       const base::Callback<void(
           const std::vector<blink::mojom::PermissionStatus>&)>& callback) = 0;
 

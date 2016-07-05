@@ -202,14 +202,14 @@ TEST_F(PushMessagingPermissionContextTest, DecidePermission) {
 
   // Requesting and embedding origin are different.
   context.DecidePermission(NULL, request_id, GURL(kOriginA), GURL(kOriginB),
-                           callback);
+                           true /* user_gesture */, callback);
   EXPECT_FALSE(context.was_persisted());
   EXPECT_FALSE(context.was_granted());
 
   // Insecure origin
   NavigateAndCommit(GURL(kInsecureOrigin));
   context.RequestPermission(web_contents(), request_id, GURL(kInsecureOrigin),
-                            callback);
+                            true /* user_gesture */, callback);
   EXPECT_FALSE(context.was_persisted());
   EXPECT_FALSE(context.was_granted());
 }
@@ -235,7 +235,7 @@ TEST_F(PushMessagingPermissionContextTest, RequestPermission) {
   // silently assumed to be granted.
   NavigateAndCommit(GURL(kOriginA));
   context.RequestPermission(web_contents(), request_id, GURL(kOriginA),
-                            callback);
+                            true /* user_gesture */, callback);
 
   // Although the permission check goes through, the push message permission
   // isn't actually updated.
@@ -260,7 +260,7 @@ TEST_F(PushMessagingPermissionContextTest, RequestAfterRevokingNotifications) {
 
   NavigateAndCommit(GURL(kOriginA));
   context.RequestPermission(web_contents(), request_id, GURL(kOriginA),
-                            callback);
+                            true /* user_gesture */, callback);
   EXPECT_TRUE(context.was_granted());
 
   EXPECT_EQ(CONTENT_SETTING_ALLOW,
@@ -275,7 +275,7 @@ TEST_F(PushMessagingPermissionContextTest, RequestAfterRevokingNotifications) {
             context.GetPermissionStatus(GURL(kOriginA), GURL(kOriginA)));
 
   context.RequestPermission(web_contents(), request_id, GURL(kOriginA),
-                            callback);
+                            true /* user_gesture */, callback);
   EXPECT_FALSE(context.was_persisted());
   EXPECT_FALSE(context.was_granted());
   EXPECT_EQ(CONTENT_SETTING_BLOCK,

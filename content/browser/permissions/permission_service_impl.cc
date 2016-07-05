@@ -138,6 +138,7 @@ void PermissionServiceImpl::RequestPermission(
       PermissionNameToPermissionType(permission),
       context_->render_frame_host(),
       GURL(origin.get()),
+      user_gesture,
       base::Bind(&PermissionServiceImpl::OnRequestPermissionResponse,
                  weak_factory_.GetWeakPtr(),
                  pending_request_id));
@@ -198,6 +199,7 @@ void PermissionServiceImpl::RequestPermissions(
       types,
       context_->render_frame_host(),
       GURL(origin.get()),
+      user_gesture,
       base::Bind(&PermissionServiceImpl::OnRequestPermissionsResponse,
                  weak_factory_.GetWeakPtr(),
                  pending_request_id));

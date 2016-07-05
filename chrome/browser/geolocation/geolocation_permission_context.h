@@ -29,6 +29,7 @@ class GeolocationPermissionContext  : public PermissionContextBase {
                         const PermissionRequestID& id,
                         const GURL& requesting_origin,
                         const GURL& embedding_origin,
+                        bool user_gesture,
                         const BrowserPermissionCallback& callback) override;
 
   // Adds special logic when called through an extension.
