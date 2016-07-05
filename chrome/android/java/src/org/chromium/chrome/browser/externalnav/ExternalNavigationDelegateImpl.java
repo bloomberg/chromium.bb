@@ -298,11 +298,8 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
     }
 
     @Override
-    public String findValidWebApkPackageName(List<ResolveInfo> infos) {
-        String webApkPackageName = WebApkValidator.findWebApkPackage(infos);
-        return WebApkValidator.isValidWebApk(mApplicationContext, webApkPackageName)
-                ? webApkPackageName
-                : null;
+    public String findWebApkPackageName(List<ResolveInfo> infos) {
+        return WebApkValidator.findWebApkPackage(mApplicationContext, infos);
     }
 
     @Override

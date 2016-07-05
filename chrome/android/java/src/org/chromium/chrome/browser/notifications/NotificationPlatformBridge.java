@@ -207,8 +207,7 @@ public class NotificationPlatformBridge {
             if (CommandLine.getInstance().hasSwitch(ChromeSwitches.ENABLE_WEBAPK)) {
                 webApkPackage = intent.getStringExtra(
                     NotificationConstants.EXTRA_NOTIFICATION_INFO_WEBAPK_PACKAGE);
-                if (webApkPackage == null
-                        || !sInstance.queryWebApkPackage(origin).equals(webApkPackage)) {
+                if (webApkPackage == null) {
                     webApkPackage = "";
                 }
             }

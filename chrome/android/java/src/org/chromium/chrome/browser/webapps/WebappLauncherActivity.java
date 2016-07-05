@@ -186,10 +186,6 @@ public class WebappLauncherActivity extends Activity {
                 || webApkPackage == null) {
             return false;
         }
-        if (!WebApkValidator.isValidWebApk(this, webApkPackage)) {
-            Log.d(TAG, "%s is not valid WebAPK", webApkPackage);
-            return false;
-        }
         if (!webApkPackage.equals(WebApkValidator.queryWebApkPackage(this, url))) {
             Log.d(TAG, "%s is not within scope of %s WebAPK", url, webApkPackage);
             return false;

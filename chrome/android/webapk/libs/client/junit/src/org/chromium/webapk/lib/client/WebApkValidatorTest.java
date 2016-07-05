@@ -5,17 +5,11 @@
 package org.chromium.webapk.lib.client;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
-import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageInfo;
-import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.pm.ResolveInfo;
 import android.content.pm.Signature;
@@ -59,33 +53,27 @@ public class WebApkValidatorTest {
         49, 17, 48, 15, 6, 3, 85, 4, 10, 19, 8, 67, 104, 114, 111, 109, 105, 117, 109, 49, 17,
         48, 15, 6, 3, 85, 4, 11, 19, 8, 67, 104, 114, 111, 109, 105, 117, 109, 49, 26, 48, 24};
 
-    private Context mContext;
-    private PackageManager mPackageManager;
-    private PackageInfo mWebApkPackageInfo;
-    private PackageInfo mInvalidWebApkPackageInfo;
+    private RobolectricPackageManager mPackageManager;
 
     @Before
     public void setUp() {
-        mContext = mock(Context.class);
-        mPackageManager = mock(PackageManager.class);
-        when(mContext.getPackageManager()).thenReturn(mPackageManager);
+        mPackageManager = (RobolectricPackageManager) Robolectric.application.getPackageManager();
         WebApkValidator.initWithBrowserHostSignature(EXPECTED_SIGNATURE);
     }
 
     /**
      * Tests {@link WebApkValidator.queryWebApkPackage()} returns a WebAPK's package name if the
-     * WebAPK can handle the given URL.
+     * WebAPK can handle the given URL and the WebAPK is valid.
      */
     @Test
-    public void testQueryWebApkPackageReturnsWebApkPackageNameIfTheURLCanBeHandled() {
+    public void testQueryWebApkPackageReturnsPackageIfTheURLCanBeHandled() {
         try {
             Intent intent = Intent.parseUri(URL_OF_WEBAPK, Intent.URI_INTENT_SCHEME);
             intent.addCategory(Intent.CATEGORY_BROWSABLE);
 
-            ResolveInfo info = newResolveInfo(WEBAPK_PACKAGE_NAME);
-            RobolectricPackageManager packageManager =
-                    (RobolectricPackageManager) Robolectric.application.getPackageManager();
-            packageManager.addResolveInfoForIntent(intent, info);
+            mPackageManager.addResolveInfoForIntent(intent, newResolveInfo(WEBAPK_PACKAGE_NAME));
+            mPackageManager.addPackage(newPackageInfoWithOneSignature(
+                    WEBAPK_PACKAGE_NAME, new Signature(EXPECTED_SIGNATURE)));
 
             assertEquals(WEBAPK_PACKAGE_NAME,
                     WebApkValidator.queryWebApkPackage(Robolectric.application, URL_OF_WEBAPK));
@@ -102,10 +90,9 @@ public class WebApkValidatorTest {
         try {
             Intent intent = Intent.parseUri(URL_OF_WEBAPK, Intent.URI_INTENT_SCHEME);
 
-            ResolveInfo info = newResolveInfo(WEBAPK_PACKAGE_NAME);
-            RobolectricPackageManager packageManager =
-                    (RobolectricPackageManager) Robolectric.application.getPackageManager();
-            packageManager.addResolveInfoForIntent(intent, info);
+            mPackageManager.addResolveInfoForIntent(intent, newResolveInfo(WEBAPK_PACKAGE_NAME));
+            mPackageManager.addPackage(newPackageInfoWithOneSignature(
+                    WEBAPK_PACKAGE_NAME, new Signature(EXPECTED_SIGNATURE)));
 
             assertNull(WebApkValidator.queryWebApkPackage(
                     Robolectric.application, URL_OF_WEBAPK));
@@ -124,10 +111,9 @@ public class WebApkValidatorTest {
             Intent intent = Intent.parseUri(URL_OF_WEBAPK, Intent.URI_INTENT_SCHEME);
             intent.addCategory(Intent.CATEGORY_BROWSABLE);
 
-            ResolveInfo info = newResolveInfo(WEBAPK_PACKAGE_NAME);
-            RobolectricPackageManager packageManager =
-                    (RobolectricPackageManager) Robolectric.application.getPackageManager();
-            packageManager.addResolveInfoForIntent(intent, info);
+            mPackageManager.addResolveInfoForIntent(intent, newResolveInfo(WEBAPK_PACKAGE_NAME));
+            mPackageManager.addPackage(newPackageInfoWithOneSignature(
+                    WEBAPK_PACKAGE_NAME, new Signature(EXPECTED_SIGNATURE)));
 
             assertNull(WebApkValidator.queryWebApkPackage(
                     Robolectric.application, URL_WITHOUT_WEBAPK));
@@ -137,80 +123,65 @@ public class WebApkValidatorTest {
     }
 
     /**
-     * Tests {@link WebApkValidator.findWebApkPackage()} returns a WebAPK's package name when there
-     * are ResolveInfos corresponds to a WebAPK.
+     * Tests {@link WebApkValidator.findWebApkPackage} returns the WebAPK package name if one of the
+     * ResolveInfos corresponds to a WebAPK and the WebAPK is valid.
      */
     @Test
-    public void testFindWebApkPackageReturnsWebApkPackageName() {
+    public void testFindWebApkPackageReturnsPackageForValidWebApk() throws NameNotFoundException {
         List<ResolveInfo> infos = new ArrayList<ResolveInfo>();
         infos.add(newResolveInfo(WEBAPK_PACKAGE_NAME));
-        assertEquals(WEBAPK_PACKAGE_NAME, WebApkValidator.findWebApkPackage(infos));
+        mPackageManager.addPackage(newPackageInfoWithOneSignature(
+                WEBAPK_PACKAGE_NAME, new Signature(EXPECTED_SIGNATURE)));
+
+        assertEquals(WEBAPK_PACKAGE_NAME,
+                WebApkValidator.findWebApkPackage(Robolectric.application, infos));
     }
 
     /**
-     * Tests {@link WebApkValidator.findWebApkPackage()} returns null when there isn't any
-     * ResolveInfos corresponds to a WebAPK.
+     * Tests {@link WebApkValidator.findWebApkPackage} returns null if none of the packages for the
+     * ResolveInfos start with {@link WebApkConstants.WEBAPK_PACKAGE_PREFIX}.
      */
     @Test
-    public void testFindWebApkPackageReturnsNullWhenNoResolveInfosCorrespondingToWebApk() {
+    public void testFindWebApkPackageReturnsNullForInvalidPackageName() {
         List<ResolveInfo> infos = new ArrayList<ResolveInfo>();
-        infos.add(newResolveInfo("com.google.android"));
-        assertNull(WebApkValidator.findWebApkPackage(infos));
-    }
-    /**
-     * Tests {@link WebApkValidator.IsValidWebApk} returns false for a package that doesn't start
-     * with {@link WebApkConstants.WEBAPK_PACKAGE_PREFIX}.
-     */
-    @Test
-    public void testIsValidWebApkReturnsFalseForInvalidPackageName() {
-        assertFalse(WebApkValidator.isValidWebApk(Robolectric.application.getApplicationContext(),
-                INVALID_WEBAPK_PACKAGE_NAME));
+        infos.add(newResolveInfo(INVALID_WEBAPK_PACKAGE_NAME));
+        mPackageManager.addPackage(newPackageInfoWithOneSignature(
+                INVALID_WEBAPK_PACKAGE_NAME, new Signature(EXPECTED_SIGNATURE)));
+
+        assertNull(WebApkValidator.findWebApkPackage(Robolectric.application, infos));
     }
 
     /**
-     * Tests {@link WebApkValidator.IsValidWebApk} returns true if the WebAPK has the expected
-     * signature.
+     * Tests {@link WebApkValidator.findWebApkPackage} returns the WebAPK package name if a WebAPK
+     * has multiple signatures and one matches the expected signature.
      */
     @Test
-    public void testIsValidWebApkReturnsTrueForValidWebApk() throws NameNotFoundException {
-        mWebApkPackageInfo = mock(PackageInfo.class);
-        when(mPackageManager.getPackageInfo(WEBAPK_PACKAGE_NAME, PackageManager.GET_SIGNATURES))
-                     .thenReturn(mWebApkPackageInfo);
-        mWebApkPackageInfo.signatures = new Signature[] {new Signature(EXPECTED_SIGNATURE)};
-
-        assertTrue(WebApkValidator.isValidWebApk(mContext, WEBAPK_PACKAGE_NAME));
-    }
-
-    /**
-     * Tests {@link WebApkValidator.IsValidWebApk} returns true if a WebAPK has multiple
-     * signatures and one matches the expected signature.
-     */
-    @Test
-    public void testIsValidWebApkReturnsTrueForWebApkWithMultipleSignaturesAndOneMatched()
+    public void testFindWebApkPackageReturnsPackageForWebApkWithMultipleSignaturesAndOneMatched()
             throws NameNotFoundException {
-        mWebApkPackageInfo = mock(PackageInfo.class);
-        when(mPackageManager.getPackageInfo(WEBAPK_PACKAGE_NAME, PackageManager.GET_SIGNATURES))
-                     .thenReturn(mWebApkPackageInfo);
-        mWebApkPackageInfo.signatures = new Signature[] {new Signature(SIGNATURE_1),
+        List<ResolveInfo> infos = new ArrayList<ResolveInfo>();
+        infos.add(newResolveInfo(WEBAPK_PACKAGE_NAME));
+        Signature[] signatures = new Signature[] {new Signature(SIGNATURE_1),
                 new Signature(SIGNATURE_2), new Signature(EXPECTED_SIGNATURE)};
+        mPackageManager.addPackage(newPackageInfo(WEBAPK_PACKAGE_NAME, signatures));
 
-        assertTrue(WebApkValidator.isValidWebApk(mContext, WEBAPK_PACKAGE_NAME));
+        assertEquals(WEBAPK_PACKAGE_NAME,
+                WebApkValidator.findWebApkPackage(Robolectric.application, infos));
     }
 
     /**
-     * Tests {@link WebApkValidator.IsValidWebApk} returns false if a WebAPK has multiple
-     * signatures but none of them matches the expected signature.
+     * Tests {@link WebApkValidator.findWebApkPackage} returns null if a WebAPK has multiple
+     * signatures but none of the signatures match the expected signature.
      */
     @Test
-    public void testIsValidWebApkReturnsFalseForWebApkWithMultipleSignaturesWithoutAnyMatched()
+    public void testFindWebApkPackageReturnsNullForWebApkWithMultipleSignaturesWithoutAnyMatched()
             throws NameNotFoundException {
-        mWebApkPackageInfo = mock(PackageInfo.class);
-        when(mPackageManager.getPackageInfo(WEBAPK_PACKAGE_NAME, PackageManager.GET_SIGNATURES))
-                     .thenReturn(mWebApkPackageInfo);
-        mWebApkPackageInfo.signatures = new Signature[] {new Signature(SIGNATURE_1),
-                new Signature(SIGNATURE_2)};
+        List<ResolveInfo> infos = new ArrayList<ResolveInfo>();
+        infos.add(newResolveInfo(WEBAPK_PACKAGE_NAME));
+        Signature signatures[] =
+                new Signature[] {new Signature(SIGNATURE_1), new Signature(SIGNATURE_2)};
+        mPackageManager.addPackage(newPackageInfo(WEBAPK_PACKAGE_NAME, signatures));
 
-        assertFalse(WebApkValidator.isValidWebApk(mContext, WEBAPK_PACKAGE_NAME));
+        assertNull(WebApkValidator.findWebApkPackage(Robolectric.application, infos));
     }
 
     private static ResolveInfo newResolveInfo(String packageName) {
@@ -219,5 +190,17 @@ public class WebApkValidatorTest {
         ResolveInfo resolveInfo = new ResolveInfo();
         resolveInfo.activityInfo = activityInfo;
         return resolveInfo;
+    }
+
+    private static PackageInfo newPackageInfo(String packageName, Signature[] signatures) {
+        PackageInfo packageInfo = new PackageInfo();
+        packageInfo.packageName = packageName;
+        packageInfo.signatures = signatures;
+        return packageInfo;
+    }
+
+    private static PackageInfo newPackageInfoWithOneSignature(
+            String packageName, Signature signature) {
+        return newPackageInfo(packageName, new Signature[] {signature});
     }
 }

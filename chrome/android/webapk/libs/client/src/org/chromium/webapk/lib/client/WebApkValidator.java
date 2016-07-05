@@ -57,18 +57,20 @@ public class WebApkValidator {
 
         List<ResolveInfo> resolveInfos = context.getPackageManager().queryIntentActivities(
                 intent, PackageManager.GET_RESOLVED_FILTER);
-        return findWebApkPackage(resolveInfos);
+        return findWebApkPackage(context, resolveInfos);
     }
 
     /**
-     * @param The ResolveInfos to search.
+     * @param context The context to use to check whether WebAPK is valid.
+     * @param infos The ResolveInfos to search.
      * @return Package name of the ResolveInfo which corresponds to a WebAPK. Null if none of the
      * ResolveInfos corresponds to a WebAPK.
      */
-    public static String findWebApkPackage(List<ResolveInfo> infos) {
+    public static String findWebApkPackage(Context context, List<ResolveInfo> infos) {
         for (ResolveInfo info : infos) {
             if (info.activityInfo != null
-                    && info.activityInfo.packageName.startsWith(WEBAPK_PACKAGE_PREFIX)) {
+                    && info.activityInfo.packageName.startsWith(WEBAPK_PACKAGE_PREFIX)
+                    && isValidWebApk(context, info.activityInfo.packageName)) {
                 return info.activityInfo.packageName;
             }
         }
@@ -81,30 +83,28 @@ public class WebApkValidator {
      * @param webappPackageName The package name to check
      * @return true iff the WebAPK is installed and passes security checks
      */
-    public static boolean isValidWebApk(Context context, String webappPackageName) {
+    private static boolean isValidWebApk(Context context, String webappPackageName) {
         if (sExpectedSignature == null) {
             Log.wtf(TAG, "WebApk validation failure - expected signature not set."
                     + "missing call to WebApkValidator.initWithBrowserHostSignature");
         }
-        if (webappPackageName != null && webappPackageName.startsWith(WEBAPK_PACKAGE_PREFIX)) {
-            // check signature
-            PackageInfo packageInfo = null;
-            try {
-                packageInfo = context.getPackageManager().getPackageInfo(webappPackageName,
-                        PackageManager.GET_SIGNATURES);
-            } catch (NameNotFoundException e) {
-                e.printStackTrace();
-                Log.d(TAG, "WebApk not found");
-                return false;
-            }
+        // check signature
+        PackageInfo packageInfo = null;
+        try {
+            packageInfo = context.getPackageManager().getPackageInfo(webappPackageName,
+                    PackageManager.GET_SIGNATURES);
+        } catch (NameNotFoundException e) {
+            e.printStackTrace();
+            Log.d(TAG, "WebApk not found");
+            return false;
+        }
 
-            final Signature[] arrSignatures = packageInfo.signatures;
-            if (arrSignatures != null) {
-                for (Signature signature : arrSignatures) {
-                    if (Arrays.equals(sExpectedSignature, signature.toByteArray())) {
-                        Log.d(TAG, "WebApk valid - signature match!");
-                        return true;
-                    }
+        final Signature[] arrSignatures = packageInfo.signatures;
+        if (arrSignatures != null) {
+            for (Signature signature : arrSignatures) {
+                if (Arrays.equals(sExpectedSignature, signature.toByteArray())) {
+                    Log.d(TAG, "WebApk valid - signature match!");
+                    return true;
                 }
             }
         }

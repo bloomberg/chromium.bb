@@ -437,7 +437,7 @@ public class ExternalNavigationHandler {
                     // If the only specialized intent handler is a WebAPK, set the intent's package
                     // to launch the WebAPK without showing the intent picker.
                     String targetWebApkPackageName =
-                            mDelegate.findValidWebApkPackageName(resolvingInfos);
+                            mDelegate.findWebApkPackageName(resolvingInfos);
                     if (targetWebApkPackageName != null
                             && mDelegate.countSpecializedHandlers(resolvingInfos) == 1) {
                         intent.setPackage(targetWebApkPackageName);

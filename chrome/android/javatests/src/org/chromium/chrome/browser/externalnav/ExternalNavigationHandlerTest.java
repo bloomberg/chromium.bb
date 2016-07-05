@@ -1025,7 +1025,7 @@ public class ExternalNavigationHandlerTest extends InstrumentationTestCase {
         }
 
         @Override
-        public String findValidWebApkPackageName(List<ResolveInfo> infos) {
+        public String findWebApkPackageName(List<ResolveInfo> infos) {
             if (infos == null) {
                 return null;
             }
