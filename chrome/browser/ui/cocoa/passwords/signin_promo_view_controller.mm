@@ -60,6 +60,8 @@
   int titleWidth = kDesiredBubbleWidth - kFramePadding - titleRightPadding;
   [titleView setVerticallyResizable:YES];
   [titleView setFrameSize:NSMakeSize(titleWidth, MAXFLOAT)];
+  // Set the same text inset as in the pending password bubble.
+  [[titleView textContainer] setLineFragmentPadding:kTitleTextInset];
   [titleView sizeToFit];
   [view addSubview:titleView];
 
