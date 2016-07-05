@@ -175,6 +175,10 @@ class SiteEngagementServiceTest : public ChromeRenderViewHostTestHarness {
     EXPECT_EQ(prev_score, service->GetScore(url));
   }
 
+  void SetParamValue(SiteEngagementScore::Variation variation, double value) {
+    SiteEngagementScore::GetParamValues()[variation].second = value;
+  }
+
  private:
   base::ScopedTempDir temp_dir_;
 };
@@ -927,6 +931,38 @@ TEST_F(SiteEngagementServiceTest, CleanupEngagementScores) {
   }
 }
 
+TEST_F(SiteEngagementServiceTest, CleanupEngagementScoresProportional) {
+  SetParamValue(SiteEngagementScore::DECAY_PROPORTION, 0.5);
+  SetParamValue(SiteEngagementScore::DECAY_POINTS, 0);
+  SetParamValue(SiteEngagementScore::SCORE_CLEANUP_THRESHOLD, 0.5);
+
+  base::SimpleTestClock* clock = new base::SimpleTestClock();
+  std::unique_ptr<SiteEngagementService> service(
+      new SiteEngagementService(profile(), base::WrapUnique(clock)));
+
+  base::Time current_day = GetReferenceTime();
+  clock->SetNow(current_day);
+
+  GURL url1("https://www.google.com/");
+  GURL url2("https://www.somewhereelse.com/");
+
+  service->AddPoints(url1, 1.0);
+  service->AddPoints(url2, 1.2);
+
+  current_day += base::TimeDelta::FromDays(7);
+  clock->SetNow(current_day);
+  std::map<GURL, double> score_map = service->GetScoreMap();
+  EXPECT_EQ(2u, score_map.size());
+  EXPECT_EQ(0.5, service->GetScore(url1));
+  EXPECT_EQ(0.6, service->GetScore(url2));
+
+  service->CleanupEngagementScores(false);
+  score_map = service->GetScoreMap();
+  EXPECT_EQ(1u, score_map.size());
+  EXPECT_EQ(0, service->GetScore(url1));
+  EXPECT_EQ(0.6, service->GetScore(url2));
+}
+
 TEST_F(SiteEngagementServiceTest, NavigationAccumulation) {
   GURL url("https://www.google.com/");
 
@@ -981,6 +1017,10 @@ TEST_F(SiteEngagementServiceTest, IsBootstrapped) {
 }
 
 TEST_F(SiteEngagementServiceTest, CleanupOriginsOnHistoryDeletion) {
+  // Enable proportional decay to ensure that the undecay that happens to
+  // balance out history deletion also accounts for the proportional decay.
+  SetParamValue(SiteEngagementScore::DECAY_PROPORTION, 0.5);
+
   base::SimpleTestClock* clock = new base::SimpleTestClock();
   std::unique_ptr<SiteEngagementService> engagement(
       new SiteEngagementService(profile(), base::WrapUnique(clock)));

@@ -119,6 +119,8 @@ class SiteEngagementService : public KeyedService,
   friend class SiteEngagementObserver;
   FRIEND_TEST_ALL_PREFIXES(SiteEngagementServiceTest, CheckHistograms);
   FRIEND_TEST_ALL_PREFIXES(SiteEngagementServiceTest, CleanupEngagementScores);
+  FRIEND_TEST_ALL_PREFIXES(SiteEngagementServiceTest,
+                           CleanupEngagementScoresProportional);
   FRIEND_TEST_ALL_PREFIXES(SiteEngagementServiceTest, ClearHistoryForURLs);
   FRIEND_TEST_ALL_PREFIXES(SiteEngagementServiceTest, GetMedianEngagement);
   FRIEND_TEST_ALL_PREFIXES(SiteEngagementServiceTest, GetTotalNavigationPoints);

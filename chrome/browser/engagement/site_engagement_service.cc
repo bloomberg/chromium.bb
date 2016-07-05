@@ -314,7 +314,7 @@ void SiteEngagementService::CleanupEngagementScores(
         score.Commit();
       }
 
-      if (score.GetScore() != 0)
+      if (score.GetScore() > SiteEngagementScore::GetScoreCleanupThreshold())
         continue;
     }
 
@@ -565,19 +565,16 @@ void SiteEngagementService::GetCountsAndLastVisitForOriginsComplete(
     // engagement is next accessed, it will decay back to the proportionally
     // reduced value rather than being decayed once here, and then once again
     // when it is next accessed.
-    int undecay = 0;
-    int hours_since_engagement = (now - last_visit).InHours();
-    if (hours_since_engagement > 0) {
-      int periods =
-          hours_since_engagement / SiteEngagementScore::GetDecayPeriodInHours();
-      undecay = periods * SiteEngagementScore::GetDecayPoints();
-    }
-
     SiteEngagementScore engagement_score = CreateEngagementScore(origin);
 
-    double score = std::min(
-        SiteEngagementScore::kMaxPoints,
-        (proportion_remaining * engagement_score.GetScore()) + undecay);
+    double new_score = proportion_remaining * engagement_score.GetScore();
+    int hours_since_engagement = (now - last_visit).InHours();
+    int periods =
+        hours_since_engagement / SiteEngagementScore::GetDecayPeriodInHours();
+    new_score += periods * SiteEngagementScore::GetDecayPoints();
+    new_score *= pow(1.0 / SiteEngagementScore::GetDecayProportion(), periods);
+
+    double score = std::min(SiteEngagementScore::kMaxPoints, new_score);
     engagement_score.Reset(score, last_visit);
     if (!engagement_score.last_shortcut_launch_time().is_null() &&
         engagement_score.last_shortcut_launch_time() > last_visit) {

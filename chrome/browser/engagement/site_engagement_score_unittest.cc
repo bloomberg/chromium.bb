@@ -91,9 +91,8 @@ class SiteEngagementScoreTest : public testing::Test {
     VerifyScore(updated_score, 5, 10, different_day);
   }
 
-  void SetFirstDailyEngagementPointsForTesting(double points) {
-    SiteEngagementScore::param_values
-        [SiteEngagementScore::FIRST_DAILY_ENGAGEMENT] = points;
+  void SetParamValue(SiteEngagementScore::Variation variation, double value) {
+    SiteEngagementScore::GetParamValues()[variation].second = value;
   }
 
   base::SimpleTestClock test_clock_;
@@ -323,7 +322,7 @@ TEST_F(SiteEngagementScoreTest, PopulatedDictionary) {
 
 // Ensure bonus engagement is awarded for the first engagement of a day.
 TEST_F(SiteEngagementScoreTest, FirstDailyEngagementBonus) {
-  SetFirstDailyEngagementPointsForTesting(0.5);
+  SetParamValue(SiteEngagementScore::FIRST_DAILY_ENGAGEMENT, 0.5);
 
   SiteEngagementScore score1(&test_clock_,
                              std::unique_ptr<base::DictionaryValue>());
@@ -413,4 +412,33 @@ TEST_F(SiteEngagementScoreTest, Reset) {
   EXPECT_DOUBLE_EQ(0, score_.points_added_today_);
   EXPECT_EQ(now, score_.last_engagement_time_);
   EXPECT_EQ(old_now, score_.last_shortcut_launch_time_);
+}
+
+// Test proportional decay.
+TEST_F(SiteEngagementScoreTest, ProportionalDecay) {
+  SetParamValue(SiteEngagementScore::DECAY_PROPORTION, 0.5);
+  SetParamValue(SiteEngagementScore::DECAY_POINTS, 0);
+  SetParamValue(SiteEngagementScore::MAX_POINTS_PER_DAY, 20);
+  base::Time current_day = GetReferenceTime();
+  test_clock_.SetNow(current_day);
+
+  // Single decay period, expect the score to be halved once.
+  score_.AddPoints(2.0);
+  current_day += base::TimeDelta::FromDays(7);
+  test_clock_.SetNow(current_day);
+  EXPECT_DOUBLE_EQ(1.0, score_.GetScore());
+
+  // 3 decay periods, expect the score to be halved 3 times.
+  score_.AddPoints(15.0);
+  current_day += base::TimeDelta::FromDays(21);
+  test_clock_.SetNow(current_day);
+  EXPECT_DOUBLE_EQ(2.0, score_.GetScore());
+
+  // Ensure point removal happens after proportional decay.
+  score_.AddPoints(4.0);
+  EXPECT_DOUBLE_EQ(6.0, score_.GetScore());
+  SetParamValue(SiteEngagementScore::DECAY_POINTS, 2.0);
+  current_day += base::TimeDelta::FromDays(7);
+  test_clock_.SetNow(current_day);
+  EXPECT_DOUBLE_EQ(1.0, score_.GetScore());
 }

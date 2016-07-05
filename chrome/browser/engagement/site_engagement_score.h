@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_ENGAGEMENT_SITE_ENGAGEMENT_SCORE_H_
 #define CHROME_BROWSER_ENGAGEMENT_SITE_ENGAGEMENT_SCORE_H_
 
+#include <array>
 #include <memory>
 
 #include "base/gtest_prod_util.h"
@@ -31,6 +32,14 @@ class SiteEngagementScore {
 
     // The number of points to decay per period.
     DECAY_POINTS,
+
+    // The proportion [0-1] which the current engagement value is multiplied by
+    // at each decay period, before subtracting DECAY_POINTS.
+    DECAY_PROPORTION,
+
+    // A score will be erased from the engagement system if it's less than this
+    // value.
+    SCORE_CLEANUP_THRESHOLD,
 
     // The number of points given for navigations.
     NAVIGATION_POINTS,
@@ -83,6 +92,8 @@ class SiteEngagementScore {
   static double GetMaxPointsPerDay();
   static double GetDecayPeriodInHours();
   static double GetDecayPoints();
+  static double GetDecayProportion();
+  static double GetScoreCleanupThreshold();
   static double GetNavigationPoints();
   static double GetUserInputPoints();
   static double GetVisibleMediaPoints();
@@ -151,8 +162,11 @@ class SiteEngagementScore {
   friend class SiteEngagementScoreTest;
   friend class SiteEngagementServiceTest;
 
+  using ParamValues = std::array<std::pair<std::string, double>, MAX_VARIATION>;
+
   // Array holding the values corresponding to each item in Variation array.
-  static double param_values[];
+  static ParamValues& GetParamValues();
+  static ParamValues BuildParamValues();
 
   // Keys used in the content settings dictionary.
   static const char* kRawScoreKey;
