@@ -1,63 +1,51 @@
-<!doctype html>
-<html>
-    <head>
-        <title>load() and the &lt;source&gt; element</title>
-        <!-- TODO(foolip): Convert test to testharness.js. crbug.com/588956
-             (Please avoid writing new tests using video-test.js) -->
-        <script src=video-test.js></script>
-        <script src=media-file.js></script>
-        <script>
-            var sources = [];
-            var count = 0;
+<!DOCTYPE html>
+<title>Test that the resource selection algorithm is restarted when load() is called, and that all "source" elements are reconsidered.</title>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script src="media-file.js"></script>
+<video></video>
+<script>
+async_test(function(t) {
+    var sourceUrls = [];
+    var errorCount = 0;
+    var video = document.querySelector("video");
 
-            function canplaythrough()
-            {
-                testExpected("stripExtension(relativeURL(video.currentSrc))", relativeURL(stripExtension(sources[1])));
-                ++count;
-                switch (count)
-                {
-                    case 1:
-                        consoleWrite("<br>+++ Calling load().");
-                        video.load();
-                        break;
-                    case 2:
-                        endTest();
-                    return;
-                }
-            }
+    // Test initial networkState.
+    assert_equals(video.networkState, HTMLMediaElement.NETWORK_EMPTY);
 
-            function addSource(type, name)
-            {
-                var source = document.createElement('source');
-                source.src = findMediaFile(type, name);
-                sources.push(source.src);
-                source.type = mimeTypeForExtension(source.src.split('.').pop());
-                video.appendChild(source);
-            }
+    video.oncanplaythrough = t.step_func(function() {
+        var url = video.currentSrc;
+        assert_equals(url.substr(url.lastIndexOf("/media/") + 7),
+            sourceUrls[1].substr(sourceUrls[1].lastIndexOf("/media/") + 7));
+        switch (errorCount) {
+        case 1:
+            // Calling load() to invoke resource selection again.
+            video.load();
+            break;
+        case 2:
+            t.done();
+        }
+    });
 
-            function setup()
-            {
-                video = mediaElement = document.getElementsByTagName('video')[0];
+    video.addEventListener("error", function() {
+        errorCount++;
+    }, true);
 
-                consoleWrite("+++ Test initial networkState.");
-                testExpected("video.networkState", HTMLMediaElement.prototype.NETWORK_EMPTY, "==");
+    // Add an invalid url to the first source so we test getting
+    // an error event each time resource selection runs.
+    addSource("video", "content/bogus");
+    addSource("video", "content/test");
+    addSource("audio", "content/test");
 
-                // Add an invalid url to the first source so we test getting an error event
-                // each time resource selection runs.
-                addSource("video", "content/bogus");
-                addSource("video", "content/test");
-                addSource("audio", "content/test");
+    // test networkState.
+    assert_equals(video.networkState, HTMLMediaElement.NETWORK_NO_SOURCE);
 
-                consoleWrite("<br>+++ Add &lt;source&gt; elements to trigger loading, test networkState.");
-                testExpected("video.networkState", HTMLMediaElement.prototype.NETWORK_NO_SOURCE, "==");
-
-                waitForEvent("canplaythrough", canplaythrough);
-                waitForEvent("error");
-            }
-        </script>
-    </head>
-    <body onload="setup()">
-        <video controls width=300 ></video>
-        <p>Test that the resource selection algorithm is restarted when load() is called, and that all &lt;source&gt; elements are reconsidered.</p>
-    </body>
-</html>
+    function addSource(type, name) {
+        var source = document.createElement("source");
+        source.src = findMediaFile(type, name);
+        sourceUrls.push(source.src);
+        source.type = mimeTypeForExtension(source.src.split(".").pop());
+        video.appendChild(source);
+    }
+});
+</script>
