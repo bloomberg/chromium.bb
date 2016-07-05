@@ -118,7 +118,7 @@ TEST_F(DocumentLoaderTest, MultiChunkWithReentrancy)
         }
 
         // WebFrameClient overrides:
-        void frameDetached(WebFrame* frame, DetachType detachType) override
+        void frameDetached(WebLocalFrame* frame, DetachType detachType) override
         {
             if (m_dispatchingDidReceiveData) {
                 // This should be called by the first didReceiveData() call, since

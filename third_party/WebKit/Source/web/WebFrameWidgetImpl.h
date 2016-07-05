@@ -133,9 +133,9 @@ public:
     Element* focusedElement() const;
 
     PaintLayerCompositor* compositor() const;
-    void setRootGraphicsLayer(GraphicsLayer*);
-    void attachCompositorAnimationTimeline(CompositorAnimationTimeline*);
-    void detachCompositorAnimationTimeline(CompositorAnimationTimeline*);
+    void setRootGraphicsLayer(GraphicsLayer*) override;
+    void attachCompositorAnimationTimeline(CompositorAnimationTimeline*) override;
+    void detachCompositorAnimationTimeline(CompositorAnimationTimeline*) override;
 
     // Exposed for the purpose of overriding device metrics.
     void sendResizeEventAndRepaint();

@@ -623,7 +623,7 @@ class PrepareFrameAndViewForPrint : public blink::WebViewClient,
       const blink::WebString& unique_name,
       blink::WebSandboxFlags sandbox_flags,
       const blink::WebFrameOwnerProperties& frame_owner_properties) override;
-  void frameDetached(blink::WebFrame* frame, DetachType type) override;
+  void frameDetached(blink::WebLocalFrame* frame, DetachType type) override;
 
   void CallOnReady();
   void ResizeForPrinting();
@@ -779,7 +779,7 @@ blink::WebFrame* PrepareFrameAndViewForPrint::createChildFrame(
   return frame;
 }
 
-void PrepareFrameAndViewForPrint::frameDetached(blink::WebFrame* frame,
+void PrepareFrameAndViewForPrint::frameDetached(blink::WebLocalFrame* frame,
                                                 DetachType type) {
   DCHECK(type == DetachType::Remove);
   if (frame->parent())

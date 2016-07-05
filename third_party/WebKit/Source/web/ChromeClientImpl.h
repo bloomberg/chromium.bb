@@ -130,8 +130,8 @@ public:
 
     void didPaint(const PaintArtifact&) override;
 
-    void attachCompositorAnimationTimeline(CompositorAnimationTimeline*, LocalFrame* localRoot) override;
-    void detachCompositorAnimationTimeline(CompositorAnimationTimeline*, LocalFrame* localRoot) override;
+    void attachCompositorAnimationTimeline(CompositorAnimationTimeline*, LocalFrame*) override;
+    void detachCompositorAnimationTimeline(CompositorAnimationTimeline*, LocalFrame*) override;
 
     void enterFullScreenForElement(Element*) override;
     void exitFullScreenForElement(Element*) override;

@@ -1608,7 +1608,7 @@ TEST_F(WebFrameTest, FrameOwnerPropertiesMargin)
     WebFrameOwnerProperties properties;
     properties.marginWidth = 11;
     properties.marginHeight = 22;
-    WebLocalFrame* localFrame = FrameTestHelpers::createLocalChild(root, "frameName", nullptr, nullptr, properties);
+    WebLocalFrame* localFrame = FrameTestHelpers::createLocalChild(root, "frameName", nullptr, nullptr, nullptr, properties);
 
     registerMockedHttpURLLoad("frame_owner_properties.html");
     FrameTestHelpers::loadFrame(localFrame, m_baseURL + "frame_owner_properties.html");
@@ -1640,7 +1640,7 @@ TEST_F(WebFrameTest, FrameOwnerPropertiesScrolling)
     WebFrameOwnerProperties properties;
     // Turn off scrolling in the subframe.
     properties.scrollingMode = WebFrameOwnerProperties::ScrollingMode::AlwaysOff;
-    WebLocalFrame* localFrame = FrameTestHelpers::createLocalChild(root, "frameName", nullptr, nullptr, properties);
+    WebLocalFrame* localFrame = FrameTestHelpers::createLocalChild(root, "frameName", nullptr, nullptr, nullptr, properties);
 
     registerMockedHttpURLLoad("frame_owner_properties.html");
     FrameTestHelpers::loadFrame(localFrame, m_baseURL + "frame_owner_properties.html");
@@ -7134,6 +7134,8 @@ TEST_F(WebFrameSwapTest, SwapMainFrame)
 
     FrameTestHelpers::TestWebFrameClient client;
     WebLocalFrame* localFrame = WebLocalFrame::createProvisional(&client, remoteFrame, WebSandboxFlags::None);
+    FrameTestHelpers::TestWebWidgetClient webWidgetClient;
+    WebFrameWidget::create(&webWidgetClient, localFrame);
     remoteFrame->swap(localFrame);
 
     // Finally, make sure an embedder triggered load in the local frame swapped
@@ -7847,9 +7849,12 @@ TEST_P(ParameterizedWebFrameTest, RemoteFrameInitialCommitType)
     view->close();
 }
 
-class GestureEventTestWebViewClient : public FrameTestHelpers::TestWebViewClient {
+class GestureEventTestWebWidgetClient : public FrameTestHelpers::TestWebWidgetClient {
 public:
-    GestureEventTestWebViewClient() : m_didHandleGestureEvent(false) { }
+    GestureEventTestWebWidgetClient()
+        : m_didHandleGestureEvent(false)
+    {
+    }
     void didHandleGestureEvent(const WebGestureEvent& event, bool eventCancelled) override { m_didHandleGestureEvent = true; }
     bool didHandleGestureEvent() const { return m_didHandleGestureEvent; }
 
@@ -7865,17 +7870,14 @@ TEST_P(ParameterizedWebFrameTest, FrameWidgetTest)
     FrameTestHelpers::TestWebRemoteFrameClient remoteClient;
     view->setMainFrame(remoteClient.frame());
 
-    WebLocalFrame* childFrame = FrameTestHelpers::createLocalChild(view->mainFrame()->toWebRemoteFrame());
-
-    GestureEventTestWebViewClient childViewClient;
-    WebFrameWidget* widget = WebFrameWidget::create(childViewClient.widgetClient(), childFrame);
+    GestureEventTestWebWidgetClient childWidgetClient;
+    WebLocalFrame* childFrame = FrameTestHelpers::createLocalChild(view->mainFrame()->toWebRemoteFrame(), WebString(), nullptr, &childWidgetClient);
 
     view->resize(WebSize(1000, 1000));
 
-    widget->handleInputEvent(fatTap(20, 20));
-    EXPECT_TRUE(childViewClient.didHandleGestureEvent());
+    childFrame->frameWidget()->handleInputEvent(fatTap(20, 20));
+    EXPECT_TRUE(childWidgetClient.didHandleGestureEvent());
 
-    widget->close();
     view->close();
 }
 
@@ -8060,8 +8062,8 @@ TEST_P(ParameterizedWebFrameTest, CreateLocalChildWithPreviousSibling)
     WebRemoteFrame* parent = view->mainFrame()->toWebRemoteFrame();
 
     WebLocalFrame* secondFrame(FrameTestHelpers::createLocalChild(parent, "name2"));
-    WebLocalFrame* fourthFrame(FrameTestHelpers::createLocalChild(parent, "name4", nullptr, secondFrame));
-    WebLocalFrame* thirdFrame(FrameTestHelpers::createLocalChild(parent, "name3", nullptr, secondFrame));
+    WebLocalFrame* fourthFrame(FrameTestHelpers::createLocalChild(parent, "name4", nullptr, nullptr, secondFrame));
+    WebLocalFrame* thirdFrame(FrameTestHelpers::createLocalChild(parent, "name3", nullptr, nullptr, secondFrame));
     WebLocalFrame* firstFrame(FrameTestHelpers::createLocalChild(parent, "name1"));
 
     EXPECT_EQ(firstFrame, parent->firstChild());

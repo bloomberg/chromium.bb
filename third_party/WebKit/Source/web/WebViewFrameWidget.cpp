@@ -267,4 +267,19 @@ CompositorProxyClient* WebViewFrameWidget::createCompositorProxyClient()
     return m_webView->createCompositorProxyClient();
 }
 
+void WebViewFrameWidget::setRootGraphicsLayer(GraphicsLayer* layer)
+{
+    m_webView->setRootGraphicsLayer(layer);
+}
+
+void WebViewFrameWidget::attachCompositorAnimationTimeline(CompositorAnimationTimeline* compositorTimeline)
+{
+    m_webView->attachCompositorAnimationTimeline(compositorTimeline);
+}
+
+void WebViewFrameWidget::detachCompositorAnimationTimeline(CompositorAnimationTimeline* compositorTimeline)
+{
+    m_webView->detachCompositorAnimationTimeline(compositorTimeline);
+}
+
 } // namespace blink

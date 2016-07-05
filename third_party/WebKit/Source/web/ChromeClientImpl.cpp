@@ -791,24 +791,15 @@ String ChromeClientImpl::acceptLanguages()
     return m_webView->client()->acceptLanguages();
 }
 
-void ChromeClientImpl::attachRootGraphicsLayer(GraphicsLayer* rootLayer, LocalFrame* localRoot)
+void ChromeClientImpl::attachRootGraphicsLayer(GraphicsLayer* rootLayer, LocalFrame* localFrame)
 {
-    // FIXME: For top-level frames we still use the WebView as a WebWidget. This
-    // special case will be removed when top-level frames get WebFrameWidgets.
-    if (localRoot->isMainFrame()) {
-        m_webView->setRootGraphicsLayer(rootLayer);
-    } else {
-        WebLocalFrameImpl* webFrame = WebLocalFrameImpl::fromFrame(localRoot);
-        // FIXME: The following conditional is only needed for staging until the
-        // Chromium patch lands that instantiates a WebFrameWidget.
-        if (!webFrame->frameWidget()) {
-            m_webView->setRootGraphicsLayer(rootLayer);
-            return;
-        }
-        DCHECK(webFrame);
-        DCHECK(webFrame->frameWidget());
-        toWebFrameWidgetImpl(webFrame->frameWidget())->setRootGraphicsLayer(rootLayer);
-    }
+    WebLocalFrameImpl* webFrame = WebLocalFrameImpl::fromFrame(localFrame)->localRoot();
+
+    // This method can be called while the frame is being detached. In that
+    // case, the rootLayer is null, and the widget is already destroyed.
+    DCHECK(webFrame->frameWidget() || !rootLayer);
+    if (webFrame->frameWidget())
+        webFrame->frameWidget()->setRootGraphicsLayer(rootLayer);
 }
 
 void ChromeClientImpl::didPaint(const PaintArtifact& paintArtifact)
@@ -818,44 +809,20 @@ void ChromeClientImpl::didPaint(const PaintArtifact& paintArtifact)
     m_webView->getPaintArtifactCompositor().update(paintArtifact);
 }
 
-void ChromeClientImpl::attachCompositorAnimationTimeline(CompositorAnimationTimeline* compositorTimeline, LocalFrame* localRoot)
+void ChromeClientImpl::attachCompositorAnimationTimeline(CompositorAnimationTimeline* compositorTimeline, LocalFrame* localFrame)
 {
-    // FIXME: For top-level frames we still use the WebView as a WebWidget. This
-    // special case will be removed when top-level frames get WebFrameWidgets.
-    if (localRoot->isMainFrame()) {
-        m_webView->attachCompositorAnimationTimeline(compositorTimeline);
-    } else {
-        WebLocalFrameImpl* webFrame = WebLocalFrameImpl::fromFrame(localRoot);
-        // FIXME: The following conditional is only needed for staging until the
-        // Chromium patch lands that instantiates a WebFrameWidget.
-        if (!webFrame->frameWidget()) {
-            m_webView->attachCompositorAnimationTimeline(compositorTimeline);
-            return;
-        }
-        DCHECK(webFrame);
-        DCHECK(webFrame->frameWidget());
-        toWebFrameWidgetImpl(webFrame->frameWidget())->attachCompositorAnimationTimeline(compositorTimeline);
-    }
+    WebLocalFrameImpl* webFrame = WebLocalFrameImpl::fromFrame(localFrame)->localRoot();
+    webFrame->frameWidget()->attachCompositorAnimationTimeline(compositorTimeline);
 }
 
-void ChromeClientImpl::detachCompositorAnimationTimeline(CompositorAnimationTimeline* compositorTimeline, LocalFrame* localRoot)
+void ChromeClientImpl::detachCompositorAnimationTimeline(CompositorAnimationTimeline* compositorTimeline, LocalFrame* localFrame)
 {
-    // FIXME: For top-level frames we still use the WebView as a WebWidget. This
-    // special case will be removed when top-level frames get WebFrameWidgets.
-    if (localRoot->isMainFrame()) {
-        m_webView->detachCompositorAnimationTimeline(compositorTimeline);
-    } else {
-        WebLocalFrameImpl* webFrame = WebLocalFrameImpl::fromFrame(localRoot);
-        // FIXME: The following conditional is only needed for staging until the
-        // Chromium patch lands that instantiates a WebFrameWidget.
-        if (!webFrame->frameWidget()) {
-            m_webView->detachCompositorAnimationTimeline(compositorTimeline);
-            return;
-        }
-        DCHECK(webFrame);
-        DCHECK(webFrame->frameWidget());
-        toWebFrameWidgetImpl(webFrame->frameWidget())->detachCompositorAnimationTimeline(compositorTimeline);
-    }
+    WebLocalFrameImpl* webFrame = WebLocalFrameImpl::fromFrame(localFrame)->localRoot();
+
+    // This method can be called when the frame is being detached, after the
+    // widget is destroyed.
+    if (webFrame->frameWidget())
+        webFrame->frameWidget()->detachCompositorAnimationTimeline(compositorTimeline);
 }
 
 void ChromeClientImpl::enterFullScreenForElement(Element* element)

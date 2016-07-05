@@ -425,9 +425,10 @@ TEST_P(ParameterizedVisualViewportTest, TestWebViewResizedBeforeAttachment)
 
     // Make sure that a resize that comes in while there's no root layer is
     // honoured when we attach to the layer tree.
-    webViewImpl()->setRootGraphicsLayer(nullptr);
+    WebFrameWidget* mainFrameWidget = static_cast<WebFrameWidget*>(webViewImpl()->mainFrame()->toWebLocalFrame()->frameWidget());
+    mainFrameWidget->setRootGraphicsLayer(nullptr);
     webViewImpl()->resize(IntSize(320, 240));
-    webViewImpl()->setRootGraphicsLayer(rootGraphicsLayer);
+    mainFrameWidget->setRootGraphicsLayer(rootGraphicsLayer);
 
     navigateTo("about:blank");
     webViewImpl()->updateAllLifecyclePhases();

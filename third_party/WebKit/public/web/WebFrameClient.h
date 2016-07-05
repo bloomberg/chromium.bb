@@ -176,7 +176,7 @@ public:
     enum class DetachType { Remove, Swap };
 
     // This frame has been detached from the view, but has not been closed yet.
-    virtual void frameDetached(WebFrame*, DetachType) { }
+    virtual void frameDetached(WebLocalFrame*, DetachType) {}
 
     // This frame has become focused..
     virtual void frameFocused() { }

@@ -464,7 +464,7 @@ class CONTENT_EXPORT RenderFrameImpl
       blink::WebSandboxFlags sandbox_flags,
       const blink::WebFrameOwnerProperties& frame_owner_properties) override;
   void didChangeOpener(blink::WebFrame* frame) override;
-  void frameDetached(blink::WebFrame* frame, DetachType type) override;
+  void frameDetached(blink::WebLocalFrame* frame, DetachType type) override;
   void frameFocused() override;
   void willClose(blink::WebFrame* frame) override;
   void didChangeName(const blink::WebString& name,
