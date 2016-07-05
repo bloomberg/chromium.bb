@@ -230,7 +230,7 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
       base::FeatureList::IsEnabled(features::kMediaDocumentDownloadButton));
 
   if (base::FeatureList::IsEnabled(features::kPointerEvents))
-    WebRuntimeFeatures::enableFeatureFromString("PointerEvent", true);
+    WebRuntimeFeatures::enablePointerEvent(true);
 
   WebRuntimeFeatures::enableFeatureFromString(
       "FontCacheScaling",

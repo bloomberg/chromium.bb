@@ -92,7 +92,7 @@ const base::Feature kPaintOptimizations{"PaintOptimizations",
 const base::Feature kParseHTMLOnMainThread{"ParseHTMLOnMainThread",
                                            base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Partial support for pointer event feature.
+// Pointer events support.
 const base::Feature kPointerEvents{"PointerEvent",
                                    base::FEATURE_DISABLED_BY_DEFAULT};
 

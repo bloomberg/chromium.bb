@@ -80993,6 +80993,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="-1663410466" label="top-document-isolation"/>
   <int value="-1662447331" label="wake-on-packets"/>
   <int value="-1660972490" label="gpu-rasterization-msaa-sample-count"/>
+  <int value="-1655535052" label="enable-pointer-events"/>
   <int value="-1654344175" label="disable-extension-info-dialog"/>
   <int value="-1649778035" label="disable-clear-browsing-data-counters"/>
   <int value="-1630419335" label="enable-download-notification"/>
