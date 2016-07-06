@@ -21,7 +21,7 @@ import json
 import os
 import re
 import shutil
-from urlparse import urlparse
+import urlparse
 
 import chrome_cache
 import common_util
@@ -30,6 +30,7 @@ from prefetch_view import PrefetchSimulationView
 from request_dependencies_lens import RequestDependencyLens
 import sandwich_metrics
 import sandwich_runner
+import sandwich_utils
 import task_manager
 import wpr_backend
 
@@ -67,6 +68,13 @@ SUBRESOURCE_DISCOVERERS = set([
 
 
 _UPLOAD_DATA_STREAM_REQUESTS_REGEX = re.compile(r'^\d+/(?P<url>.*)$')
+
+
+def _NormalizeUrl(url):
+  """Returns normalized URL such as removing trailing slashes."""
+  parsed_url = list(urlparse.urlparse(url))
+  parsed_url[2] = re.sub(r'/{2,}', r'/', parsed_url[2])
+  return urlparse.urlunparse(parsed_url)
 
 
 def _PatchWpr(wpr_archive):
@@ -201,7 +209,15 @@ def _PruneOutOriginalNoStoreRequests(original_headers_path, requests):
     original_headers = json.load(file_input)
   pruned_requests = set()
   for request in requests:
-    request_original_headers = original_headers[request.url]
+    url = _NormalizeUrl(request.url)
+    if url not in original_headers:
+      # TODO(gabadie): Investigate why these requests were not in WPR.
+      assert request.failed
+      logging.warning(
+          'could not find original headers for: %s (failure: %s)',
+          url, request.error_text)
+      continue
+    request_original_headers = original_headers[url]
     if ('cache-control' in request_original_headers and
         'no-store' in request_original_headers['cache-control'].lower()):
       pruned_requests.add(request)
@@ -369,7 +385,7 @@ class _RunOutputVerifier(object):
     for request in all_wpr_requests:
       if request.is_wpr_host:
         continue
-      if urlparse(request.url).path.startswith('/web-page-replay'):
+      if urlparse.urlparse(request.url).path.startswith('/web-page-replay'):
         wpr_command_colliding_urls.add(request.url)
       elif request.is_served is False:
         unserved_wpr_urls.add(request.url)
@@ -481,6 +497,7 @@ def _ProcessRunOutputDir(
     served_from_network_bytes = 0
     served_from_cache_bytes = 0
     urls_hitting_network = set()
+    response_sizes = {}
     for request in _FilterOutDataAndIncompleteRequests(
         trace.request_track.GetEvents()):
       # Ignore requests served from the blink's cache.
@@ -488,9 +505,20 @@ def _ProcessRunOutputDir(
         continue
       urls_hitting_network.add(request.url)
       if request.from_disk_cache:
-        served_from_cache_bytes += cached_encoded_data_lengths[request.url]
+        if request.url in cached_encoded_data_lengths:
+          response_size = cached_encoded_data_lengths[request.url]
+        else:
+          # Some fat webpages may overflow the Memory cache, and so some
+          # requests might be served from disk cache couple of times per page
+          # load.
+          logging.warning('Looks like could be served from memory cache: %s',
+              request.url)
+          response_size = response_sizes[request.url]
+        served_from_cache_bytes += response_size
       else:
-        served_from_network_bytes += request.GetEncodedDataLength()
+        response_size = request.GetEncodedDataLength()
+        served_from_network_bytes += response_size
+      response_sizes[request.url] = response_size
 
     # Make sure the served from blink's cache requests have at least one
     # corresponding request that was not served from the blink's cache.
@@ -574,6 +602,15 @@ class PrefetchBenchmarkBuilder(task_manager.Builder):
       # Save up original response headers.
       original_response_headers = {e.url: e.GetResponseHeadersDict() \
           for e in wpr_archive.ListUrlEntries()}
+      logging.info('save up response headers for %d resources',
+                   len(original_response_headers))
+      if not original_response_headers:
+        # TODO(gabadie): How is it possible to not even have the main resource
+        # in the WPR archive? Example URL can be found in:
+        # http://crbug.com/623966#c5
+        raise Exception(
+            'Looks like no resources were recorded in WPR during: {}'.format(
+                self._common_builder.original_wpr_task.name))
       with open(self._original_headers_path, 'w') as file_output:
         json.dump(original_response_headers, file_output)
 
