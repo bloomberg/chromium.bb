@@ -1395,3 +1395,7 @@ crbug.com/624709 [ Win ] virtual/gpu-rasterization/fast/images/webp-color-profil
 crbug.com/625020 [ Debug ] compositing/repaint/page-scale-repaint.html [ Timeout ]
 
 crbug.com/620432 accessibility/aria-activedescendant.html [ Failure ]
+
+# Minor image differences after Skia GPU batching change.
+crbug.com/625909 virtual/gpu-rasterization/fast/images/color-profile-group.html  [ NeedsManualRebaseline ]
+crbug.com/625909 virtual/gpu/fast/canvas/image-object-in-canvas.html [ NeedsManualRebaseline ]
