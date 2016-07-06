@@ -71,11 +71,11 @@ struct SameSizeAsComputedStyle : public RefCounted<SameSizeAsComputedStyle> {
 
     struct InheritedData {
         unsigned m_bitfields[2];
-    } inherited_data;
+    } m_inheritedData;
 
     struct NonInheritedData {
         unsigned m_bitfields[3];
-    } noninherited_data;
+    } m_nonInheritedData;
 };
 
 static_assert(sizeof(ComputedStyle) == sizeof(SameSizeAsComputedStyle), "ComputedStyle should stay small");
@@ -111,12 +111,12 @@ PassRefPtr<ComputedStyle> ComputedStyle::clone(const ComputedStyle& other)
 
 ALWAYS_INLINE ComputedStyle::ComputedStyle()
     : m_box(initialStyle().m_box)
-    , visual(initialStyle().visual)
+    , m_visual(initialStyle().m_visual)
     , m_background(initialStyle().m_background)
-    , surround(initialStyle().surround)
-    , rareNonInheritedData(initialStyle().rareNonInheritedData)
-    , rareInheritedData(initialStyle().rareInheritedData)
-    , inherited(initialStyle().inherited)
+    , m_surround(initialStyle().m_surround)
+    , m_rareNonInheritedData(initialStyle().m_rareNonInheritedData)
+    , m_rareInheritedData(initialStyle().m_rareInheritedData)
+    , m_styleInheritedData(initialStyle().m_styleInheritedData)
     , m_svgStyle(initialStyle().m_svgStyle)
 {
     setBitDefaults(); // Would it be faster to copy this from the default style?
@@ -129,37 +129,37 @@ ALWAYS_INLINE ComputedStyle::ComputedStyle(InitialStyleTag)
     setBitDefaults();
 
     m_box.init();
-    visual.init();
+    m_visual.init();
     m_background.init();
-    surround.init();
-    rareNonInheritedData.init();
-    rareNonInheritedData.access()->m_deprecatedFlexibleBox.init();
-    rareNonInheritedData.access()->m_flexibleBox.init();
-    rareNonInheritedData.access()->m_multiCol.init();
-    rareNonInheritedData.access()->m_transform.init();
-    rareNonInheritedData.access()->m_willChange.init();
-    rareNonInheritedData.access()->m_filter.init();
-    rareNonInheritedData.access()->m_backdropFilter.init();
-    rareNonInheritedData.access()->m_grid.init();
-    rareNonInheritedData.access()->m_gridItem.init();
-    rareNonInheritedData.access()->m_scrollSnap.init();
-    rareInheritedData.init();
-    inherited.init();
+    m_surround.init();
+    m_rareNonInheritedData.init();
+    m_rareNonInheritedData.access()->m_deprecatedFlexibleBox.init();
+    m_rareNonInheritedData.access()->m_flexibleBox.init();
+    m_rareNonInheritedData.access()->m_multiCol.init();
+    m_rareNonInheritedData.access()->m_transform.init();
+    m_rareNonInheritedData.access()->m_willChange.init();
+    m_rareNonInheritedData.access()->m_filter.init();
+    m_rareNonInheritedData.access()->m_backdropFilter.init();
+    m_rareNonInheritedData.access()->m_grid.init();
+    m_rareNonInheritedData.access()->m_gridItem.init();
+    m_rareNonInheritedData.access()->m_scrollSnap.init();
+    m_rareInheritedData.init();
+    m_styleInheritedData.init();
     m_svgStyle.init();
 }
 
 ALWAYS_INLINE ComputedStyle::ComputedStyle(const ComputedStyle& o)
     : RefCounted<ComputedStyle>()
     , m_box(o.m_box)
-    , visual(o.visual)
+    , m_visual(o.m_visual)
     , m_background(o.m_background)
-    , surround(o.surround)
-    , rareNonInheritedData(o.rareNonInheritedData)
-    , rareInheritedData(o.rareInheritedData)
-    , inherited(o.inherited)
+    , m_surround(o.m_surround)
+    , m_rareNonInheritedData(o.m_rareNonInheritedData)
+    , m_rareInheritedData(o.m_rareInheritedData)
+    , m_styleInheritedData(o.m_styleInheritedData)
     , m_svgStyle(o.m_svgStyle)
-    , inherited_data(o.inherited_data)
-    , noninherited_data(o.noninherited_data)
+    , m_inheritedData(o.m_inheritedData)
+    , m_nonInheritedData(o.m_nonInheritedData)
 {
 }
 
@@ -271,13 +271,13 @@ void ComputedStyle::inheritFrom(const ComputedStyle& inheritParent, IsAtShadowBo
     if (isAtShadowBoundary == AtShadowBoundary) {
         // Even if surrounding content is user-editable, shadow DOM should act as a single unit, and not necessarily be editable
         EUserModify currentUserModify = userModify();
-        rareInheritedData = inheritParent.rareInheritedData;
+        m_rareInheritedData = inheritParent.m_rareInheritedData;
         setUserModify(currentUserModify);
     } else {
-        rareInheritedData = inheritParent.rareInheritedData;
+        m_rareInheritedData = inheritParent.m_rareInheritedData;
     }
-    inherited = inheritParent.inherited;
-    inherited_data = inheritParent.inherited_data;
+    m_styleInheritedData = inheritParent.m_styleInheritedData;
+    m_inheritedData = inheritParent.m_inheritedData;
     if (m_svgStyle != inheritParent.m_svgStyle)
         m_svgStyle.access()->inheritFrom(inheritParent.m_svgStyle.get());
 }
@@ -285,42 +285,42 @@ void ComputedStyle::inheritFrom(const ComputedStyle& inheritParent, IsAtShadowBo
 void ComputedStyle::copyNonInheritedFromCached(const ComputedStyle& other)
 {
     m_box = other.m_box;
-    visual = other.visual;
+    m_visual = other.m_visual;
     m_background = other.m_background;
-    surround = other.surround;
-    rareNonInheritedData = other.rareNonInheritedData;
+    m_surround = other.m_surround;
+    m_rareNonInheritedData = other.m_rareNonInheritedData;
 
-    // The flags are copied one-by-one because noninherited_data.m_contains a bunch of stuff other than real style data.
+    // The flags are copied one-by-one because m_nonInheritedData.m_contains a bunch of stuff other than real style data.
     // See comments for each skipped flag below.
-    noninherited_data.m_effectiveDisplay = other.noninherited_data.m_effectiveDisplay;
-    noninherited_data.m_originalDisplay = other.noninherited_data.m_originalDisplay;
-    noninherited_data.m_overflowX = other.noninherited_data.m_overflowX;
-    noninherited_data.m_overflowY = other.noninherited_data.m_overflowY;
-    noninherited_data.m_verticalAlign = other.noninherited_data.m_verticalAlign;
-    noninherited_data.m_clear = other.noninherited_data.m_clear;
-    noninherited_data.m_position = other.noninherited_data.m_position;
-    noninherited_data.m_floating = other.noninherited_data.m_floating;
-    noninherited_data.m_tableLayout = other.noninherited_data.m_tableLayout;
-    noninherited_data.m_unicodeBidi = other.noninherited_data.m_unicodeBidi;
-    noninherited_data.m_hasViewportUnits = other.noninherited_data.m_hasViewportUnits;
-    noninherited_data.m_breakBefore = other.noninherited_data.m_breakBefore;
-    noninherited_data.m_breakAfter = other.noninherited_data.m_breakAfter;
-    noninherited_data.m_breakInside = other.noninherited_data.m_breakInside;
-    noninherited_data.m_hasRemUnits = other.noninherited_data.m_hasRemUnits;
+    m_nonInheritedData.m_effectiveDisplay = other.m_nonInheritedData.m_effectiveDisplay;
+    m_nonInheritedData.m_originalDisplay = other.m_nonInheritedData.m_originalDisplay;
+    m_nonInheritedData.m_overflowX = other.m_nonInheritedData.m_overflowX;
+    m_nonInheritedData.m_overflowY = other.m_nonInheritedData.m_overflowY;
+    m_nonInheritedData.m_verticalAlign = other.m_nonInheritedData.m_verticalAlign;
+    m_nonInheritedData.m_clear = other.m_nonInheritedData.m_clear;
+    m_nonInheritedData.m_position = other.m_nonInheritedData.m_position;
+    m_nonInheritedData.m_floating = other.m_nonInheritedData.m_floating;
+    m_nonInheritedData.m_tableLayout = other.m_nonInheritedData.m_tableLayout;
+    m_nonInheritedData.m_unicodeBidi = other.m_nonInheritedData.m_unicodeBidi;
+    m_nonInheritedData.m_hasViewportUnits = other.m_nonInheritedData.m_hasViewportUnits;
+    m_nonInheritedData.m_breakBefore = other.m_nonInheritedData.m_breakBefore;
+    m_nonInheritedData.m_breakAfter = other.m_nonInheritedData.m_breakAfter;
+    m_nonInheritedData.m_breakInside = other.m_nonInheritedData.m_breakInside;
+    m_nonInheritedData.m_hasRemUnits = other.m_nonInheritedData.m_hasRemUnits;
 
     // Correctly set during selector matching:
-    // noninherited_data.m_styleType
-    // noninherited_data.m_pseudoBits
+    // m_nonInheritedData.m_styleType
+    // m_nonInheritedData.m_pseudoBits
 
     // Set correctly while computing style for children:
-    // noninherited_data.m_explicitInheritance
+    // m_nonInheritedData.m_explicitInheritance
 
     // unique() styles are not cacheable.
-    DCHECK(!other.noninherited_data.m_unique);
+    DCHECK(!other.m_nonInheritedData.m_unique);
 
     // styles with non inherited properties that reference variables are not
     // cacheable.
-    DCHECK(!other.noninherited_data.m_variableReference);
+    DCHECK(!other.m_nonInheritedData.m_variableReference);
 
     // The following flags are set during matching before we decide that we get a
     // match in the MatchedPropertiesCache which in turn calls this method. The
@@ -334,12 +334,12 @@ void ComputedStyle::copyNonInheritedFromCached(const ComputedStyle& other)
     // properties here, but the affectedBy flags will be set differently based on
     // the matching order of the :-webkit-any components.
     //
-    // noninherited_data.m_emptyState
-    // noninherited_data.m_affectedByFocus
-    // noninherited_data.m_affectedByHover
-    // noninherited_data.m_affectedByActive
-    // noninherited_data.m_affectedByDrag
-    // noninherited_data.m_isLink
+    // m_nonInheritedData.m_emptyState
+    // m_nonInheritedData.m_affectedByFocus
+    // m_nonInheritedData.m_affectedByHover
+    // m_nonInheritedData.m_affectedByActive
+    // m_nonInheritedData.m_affectedByDrag
+    // m_nonInheritedData.m_isLink
 
     if (m_svgStyle != other.m_svgStyle)
         m_svgStyle.access()->copyNonInheritedFromCached(other.m_svgStyle.get());
@@ -420,10 +420,10 @@ void ComputedStyle::removeCachedPseudoStyle(PseudoId pid)
 
 bool ComputedStyle::inheritedEqual(const ComputedStyle& other) const
 {
-    return inherited_data == other.inherited_data
-        && inherited == other.inherited
+    return m_inheritedData == other.m_inheritedData
+        && m_styleInheritedData == other.m_styleInheritedData
         && m_svgStyle->inheritedEqual(*other.m_svgStyle)
-        && rareInheritedData == other.rareInheritedData;
+        && m_rareInheritedData == other.m_rareInheritedData;
 }
 
 bool ComputedStyle::loadingCustomFontsEqual(const ComputedStyle& other) const
@@ -434,22 +434,22 @@ bool ComputedStyle::loadingCustomFontsEqual(const ComputedStyle& other) const
 bool ComputedStyle::nonInheritedEqual(const ComputedStyle& other) const
 {
     // compare everything except the pseudoStyle pointer
-    return noninherited_data == other.noninherited_data
+    return m_nonInheritedData == other.m_nonInheritedData
         && m_box == other.m_box
-        && visual == other.visual
+        && m_visual == other.m_visual
         && m_background == other.m_background
-        && surround == other.surround
-        && rareNonInheritedData == other.rareNonInheritedData
+        && m_surround == other.m_surround
+        && m_rareNonInheritedData == other.m_rareNonInheritedData
         && m_svgStyle->nonInheritedEqual(*other.m_svgStyle);
 }
 
 bool ComputedStyle::inheritedDataShared(const ComputedStyle& other) const
 {
     // This is a fast check that only looks if the data structures are shared.
-    return inherited_data == other.inherited_data
-        && inherited.get() == other.inherited.get()
+    return m_inheritedData == other.m_inheritedData
+        && m_styleInheritedData.get() == other.m_styleInheritedData.get()
         && m_svgStyle.get() == other.m_svgStyle.get()
-        && rareInheritedData.get() == other.rareInheritedData.get();
+        && m_rareInheritedData.get() == other.m_rareInheritedData.get();
 }
 
 static bool dependenceOnContentHeightHasChanged(const ComputedStyle& a, const ComputedStyle& b)
@@ -478,7 +478,7 @@ StyleDifference ComputedStyle::visualInvalidationDiff(const ComputedStyle& other
     if (!diff.needsFullLayout() && diffNeedsFullLayout(other))
         diff.setNeedsFullLayout();
 
-    if (!diff.needsFullLayout() && surround->margin != other.surround->margin) {
+    if (!diff.needsFullLayout() && m_surround->margin != other.m_surround->margin) {
         // Relative-positioned elements collapse their margins so need a full layout.
         if (hasOutOfFlowPosition())
             diff.setNeedsPositionedMovementLayout();
@@ -486,7 +486,7 @@ StyleDifference ComputedStyle::visualInvalidationDiff(const ComputedStyle& other
             diff.setNeedsFullLayout();
     }
 
-    if (!diff.needsFullLayout() && position() != StaticPosition && surround->offset != other.surround->offset) {
+    if (!diff.needsFullLayout() && position() != StaticPosition && m_surround->offset != other.m_surround->offset) {
         // Optimize for the case where a positioned layer is moving but not changing size.
         if (dependenceOnContentHeightHasChanged(*this, other))
             diff.setNeedsFullLayout();
@@ -518,7 +518,7 @@ bool ComputedStyle::diffNeedsFullLayoutAndPaintInvalidation(const ComputedStyle&
     // - or the layoutObject knows how to exactly invalidate paints caused by the layout change
     //   instead of forced full paint invalidation.
 
-    if (surround.get() != other.surround.get()) {
+    if (m_surround.get() != other.m_surround.get()) {
         // If our border widths change, then we need to layout. Other changes to borders only necessitate a paint invalidation.
         if (borderLeftWidth() != other.borderLeftWidth()
             || borderTopWidth() != other.borderTopWidth()
@@ -527,42 +527,42 @@ bool ComputedStyle::diffNeedsFullLayoutAndPaintInvalidation(const ComputedStyle&
             return true;
     }
 
-    if (rareNonInheritedData.get() != other.rareNonInheritedData.get()) {
-        if (rareNonInheritedData->m_appearance != other.rareNonInheritedData->m_appearance
-            || rareNonInheritedData->marginBeforeCollapse != other.rareNonInheritedData->marginBeforeCollapse
-            || rareNonInheritedData->marginAfterCollapse != other.rareNonInheritedData->marginAfterCollapse
-            || rareNonInheritedData->lineClamp != other.rareNonInheritedData->lineClamp
-            || rareNonInheritedData->textOverflow != other.rareNonInheritedData->textOverflow
-            || rareNonInheritedData->m_wrapFlow != other.rareNonInheritedData->m_wrapFlow
-            || rareNonInheritedData->m_wrapThrough != other.rareNonInheritedData->m_wrapThrough
-            || rareNonInheritedData->m_shapeMargin != other.rareNonInheritedData->m_shapeMargin
-            || rareNonInheritedData->m_order != other.rareNonInheritedData->m_order
-            || rareNonInheritedData->m_grid.get() != other.rareNonInheritedData->m_grid.get()
-            || rareNonInheritedData->m_gridItem.get() != other.rareNonInheritedData->m_gridItem.get()
-            || rareNonInheritedData->hasFilters() != other.rareNonInheritedData->hasFilters())
+    if (m_rareNonInheritedData.get() != other.m_rareNonInheritedData.get()) {
+        if (m_rareNonInheritedData->m_appearance != other.m_rareNonInheritedData->m_appearance
+            || m_rareNonInheritedData->marginBeforeCollapse != other.m_rareNonInheritedData->marginBeforeCollapse
+            || m_rareNonInheritedData->marginAfterCollapse != other.m_rareNonInheritedData->marginAfterCollapse
+            || m_rareNonInheritedData->lineClamp != other.m_rareNonInheritedData->lineClamp
+            || m_rareNonInheritedData->textOverflow != other.m_rareNonInheritedData->textOverflow
+            || m_rareNonInheritedData->m_wrapFlow != other.m_rareNonInheritedData->m_wrapFlow
+            || m_rareNonInheritedData->m_wrapThrough != other.m_rareNonInheritedData->m_wrapThrough
+            || m_rareNonInheritedData->m_shapeMargin != other.m_rareNonInheritedData->m_shapeMargin
+            || m_rareNonInheritedData->m_order != other.m_rareNonInheritedData->m_order
+            || m_rareNonInheritedData->m_grid.get() != other.m_rareNonInheritedData->m_grid.get()
+            || m_rareNonInheritedData->m_gridItem.get() != other.m_rareNonInheritedData->m_gridItem.get()
+            || m_rareNonInheritedData->hasFilters() != other.m_rareNonInheritedData->hasFilters())
             return true;
 
-        if (rareNonInheritedData->m_deprecatedFlexibleBox.get() != other.rareNonInheritedData->m_deprecatedFlexibleBox.get()
-            && *rareNonInheritedData->m_deprecatedFlexibleBox.get() != *other.rareNonInheritedData->m_deprecatedFlexibleBox.get())
+        if (m_rareNonInheritedData->m_deprecatedFlexibleBox.get() != other.m_rareNonInheritedData->m_deprecatedFlexibleBox.get()
+            && *m_rareNonInheritedData->m_deprecatedFlexibleBox.get() != *other.m_rareNonInheritedData->m_deprecatedFlexibleBox.get())
             return true;
 
-        if (rareNonInheritedData->m_flexibleBox.get() != other.rareNonInheritedData->m_flexibleBox.get()
-            && *rareNonInheritedData->m_flexibleBox.get() != *other.rareNonInheritedData->m_flexibleBox.get())
+        if (m_rareNonInheritedData->m_flexibleBox.get() != other.m_rareNonInheritedData->m_flexibleBox.get()
+            && *m_rareNonInheritedData->m_flexibleBox.get() != *other.m_rareNonInheritedData->m_flexibleBox.get())
             return true;
 
-        if (rareNonInheritedData->m_multiCol.get() != other.rareNonInheritedData->m_multiCol.get()
-            && *rareNonInheritedData->m_multiCol.get() != *other.rareNonInheritedData->m_multiCol.get())
+        if (m_rareNonInheritedData->m_multiCol.get() != other.m_rareNonInheritedData->m_multiCol.get()
+            && *m_rareNonInheritedData->m_multiCol.get() != *other.m_rareNonInheritedData->m_multiCol.get())
             return true;
 
         // If the counter directives change, trigger a relayout to re-calculate counter values and rebuild the counter node tree.
-        const CounterDirectiveMap* mapA = rareNonInheritedData->m_counterDirectives.get();
-        const CounterDirectiveMap* mapB = other.rareNonInheritedData->m_counterDirectives.get();
+        const CounterDirectiveMap* mapA = m_rareNonInheritedData->m_counterDirectives.get();
+        const CounterDirectiveMap* mapB = other.m_rareNonInheritedData->m_counterDirectives.get();
         if (!(mapA == mapB || (mapA && mapB && *mapA == *mapB)))
             return true;
 
         // We only need do layout for opacity changes if adding or losing opacity could trigger a change
         // in us being a stacking context.
-        if (isStackingContext() != other.isStackingContext() && rareNonInheritedData->hasOpacity() != other.rareNonInheritedData->hasOpacity()) {
+        if (isStackingContext() != other.isStackingContext() && m_rareNonInheritedData->hasOpacity() != other.m_rareNonInheritedData->hasOpacity()) {
             // FIXME: We would like to use SimplifiedLayout here, but we can't quite do that yet.
             // We need to make sure SimplifiedLayout can operate correctly on LayoutInlines (we will need
             // to add a selfNeedsSimplifiedLayout bit in order to not get confused and taint every line).
@@ -572,84 +572,84 @@ bool ComputedStyle::diffNeedsFullLayoutAndPaintInvalidation(const ComputedStyle&
         }
     }
 
-    if (rareInheritedData.get() != other.rareInheritedData.get()) {
-        if (rareInheritedData->highlight != other.rareInheritedData->highlight
-            || rareInheritedData->indent != other.rareInheritedData->indent
-            || rareInheritedData->m_textAlignLast != other.rareInheritedData->m_textAlignLast
-            || rareInheritedData->m_textIndentLine != other.rareInheritedData->m_textIndentLine
-            || rareInheritedData->m_effectiveZoom != other.rareInheritedData->m_effectiveZoom
-            || rareInheritedData->wordBreak != other.rareInheritedData->wordBreak
-            || rareInheritedData->overflowWrap != other.rareInheritedData->overflowWrap
-            || rareInheritedData->lineBreak != other.rareInheritedData->lineBreak
-            || rareInheritedData->textSecurity != other.rareInheritedData->textSecurity
-            || rareInheritedData->hyphens != other.rareInheritedData->hyphens
-            || rareInheritedData->hyphenationLimitBefore != other.rareInheritedData->hyphenationLimitBefore
-            || rareInheritedData->hyphenationLimitAfter != other.rareInheritedData->hyphenationLimitAfter
-            || rareInheritedData->hyphenationString != other.rareInheritedData->hyphenationString
-            || rareInheritedData->m_respectImageOrientation != other.rareInheritedData->m_respectImageOrientation
-            || rareInheritedData->m_rubyPosition != other.rareInheritedData->m_rubyPosition
-            || rareInheritedData->textEmphasisMark != other.rareInheritedData->textEmphasisMark
-            || rareInheritedData->textEmphasisPosition != other.rareInheritedData->textEmphasisPosition
-            || rareInheritedData->textEmphasisCustomMark != other.rareInheritedData->textEmphasisCustomMark
-            || rareInheritedData->m_textJustify != other.rareInheritedData->m_textJustify
-            || rareInheritedData->m_textOrientation != other.rareInheritedData->m_textOrientation
-            || rareInheritedData->m_textCombine != other.rareInheritedData->m_textCombine
-            || rareInheritedData->m_tabSize != other.rareInheritedData->m_tabSize
-            || rareInheritedData->m_textSizeAdjust != other.rareInheritedData->m_textSizeAdjust
-            || rareInheritedData->listStyleImage != other.rareInheritedData->listStyleImage
-            || rareInheritedData->m_snapHeightUnit != other.rareInheritedData->m_snapHeightUnit
-            || rareInheritedData->m_snapHeightPosition != other.rareInheritedData->m_snapHeightPosition
-            || rareInheritedData->textStrokeWidth != other.rareInheritedData->textStrokeWidth)
+    if (m_rareInheritedData.get() != other.m_rareInheritedData.get()) {
+        if (m_rareInheritedData->highlight != other.m_rareInheritedData->highlight
+            || m_rareInheritedData->indent != other.m_rareInheritedData->indent
+            || m_rareInheritedData->m_textAlignLast != other.m_rareInheritedData->m_textAlignLast
+            || m_rareInheritedData->m_textIndentLine != other.m_rareInheritedData->m_textIndentLine
+            || m_rareInheritedData->m_effectiveZoom != other.m_rareInheritedData->m_effectiveZoom
+            || m_rareInheritedData->wordBreak != other.m_rareInheritedData->wordBreak
+            || m_rareInheritedData->overflowWrap != other.m_rareInheritedData->overflowWrap
+            || m_rareInheritedData->lineBreak != other.m_rareInheritedData->lineBreak
+            || m_rareInheritedData->textSecurity != other.m_rareInheritedData->textSecurity
+            || m_rareInheritedData->hyphens != other.m_rareInheritedData->hyphens
+            || m_rareInheritedData->hyphenationLimitBefore != other.m_rareInheritedData->hyphenationLimitBefore
+            || m_rareInheritedData->hyphenationLimitAfter != other.m_rareInheritedData->hyphenationLimitAfter
+            || m_rareInheritedData->hyphenationString != other.m_rareInheritedData->hyphenationString
+            || m_rareInheritedData->m_respectImageOrientation != other.m_rareInheritedData->m_respectImageOrientation
+            || m_rareInheritedData->m_rubyPosition != other.m_rareInheritedData->m_rubyPosition
+            || m_rareInheritedData->textEmphasisMark != other.m_rareInheritedData->textEmphasisMark
+            || m_rareInheritedData->textEmphasisPosition != other.m_rareInheritedData->textEmphasisPosition
+            || m_rareInheritedData->textEmphasisCustomMark != other.m_rareInheritedData->textEmphasisCustomMark
+            || m_rareInheritedData->m_textJustify != other.m_rareInheritedData->m_textJustify
+            || m_rareInheritedData->m_textOrientation != other.m_rareInheritedData->m_textOrientation
+            || m_rareInheritedData->m_textCombine != other.m_rareInheritedData->m_textCombine
+            || m_rareInheritedData->m_tabSize != other.m_rareInheritedData->m_tabSize
+            || m_rareInheritedData->m_textSizeAdjust != other.m_rareInheritedData->m_textSizeAdjust
+            || m_rareInheritedData->listStyleImage != other.m_rareInheritedData->listStyleImage
+            || m_rareInheritedData->m_snapHeightUnit != other.m_rareInheritedData->m_snapHeightUnit
+            || m_rareInheritedData->m_snapHeightPosition != other.m_rareInheritedData->m_snapHeightPosition
+            || m_rareInheritedData->textStrokeWidth != other.m_rareInheritedData->textStrokeWidth)
             return true;
 
-        if (!rareInheritedData->shadowDataEquivalent(*other.rareInheritedData.get()))
+        if (!m_rareInheritedData->shadowDataEquivalent(*other.m_rareInheritedData.get()))
             return true;
 
-        if (!rareInheritedData->quotesDataEquivalent(*other.rareInheritedData.get()))
-            return true;
-    }
-
-    if (inherited->textAutosizingMultiplier != other.inherited->textAutosizingMultiplier)
-        return true;
-
-    if (inherited->font.loadingCustomFonts() != other.inherited->font.loadingCustomFonts())
-        return true;
-
-    if (inherited.get() != other.inherited.get()) {
-        if (inherited->line_height != other.inherited->line_height
-            || inherited->font != other.inherited->font
-            || inherited->horizontal_border_spacing != other.inherited->horizontal_border_spacing
-            || inherited->vertical_border_spacing != other.inherited->vertical_border_spacing)
+        if (!m_rareInheritedData->quotesDataEquivalent(*other.m_rareInheritedData.get()))
             return true;
     }
 
-    if (inherited_data.m_boxDirection != other.inherited_data.m_boxDirection
-        || inherited_data.m_rtlOrdering != other.inherited_data.m_rtlOrdering
-        || inherited_data.m_textAlign != other.inherited_data.m_textAlign
-        || inherited_data.m_textTransform != other.inherited_data.m_textTransform
-        || inherited_data.m_direction != other.inherited_data.m_direction
-        || inherited_data.m_whiteSpace != other.inherited_data.m_whiteSpace
-        || inherited_data.m_writingMode != other.inherited_data.m_writingMode)
+    if (m_styleInheritedData->textAutosizingMultiplier != other.m_styleInheritedData->textAutosizingMultiplier)
         return true;
 
-    if (noninherited_data.m_overflowX != other.noninherited_data.m_overflowX
-        || noninherited_data.m_overflowY != other.noninherited_data.m_overflowY
-        || noninherited_data.m_clear != other.noninherited_data.m_clear
-        || noninherited_data.m_unicodeBidi != other.noninherited_data.m_unicodeBidi
-        || noninherited_data.m_floating != other.noninherited_data.m_floating
-        || noninherited_data.m_originalDisplay != other.noninherited_data.m_originalDisplay)
+    if (m_styleInheritedData->font.loadingCustomFonts() != other.m_styleInheritedData->font.loadingCustomFonts())
         return true;
 
-    if (noninherited_data.m_effectiveDisplay >= FIRST_TABLE_DISPLAY && noninherited_data.m_effectiveDisplay <= LAST_TABLE_DISPLAY) {
-        if (inherited_data.m_borderCollapse != other.inherited_data.m_borderCollapse
-            || inherited_data.m_emptyCells != other.inherited_data.m_emptyCells
-            || inherited_data.m_captionSide != other.inherited_data.m_captionSide
-            || noninherited_data.m_tableLayout != other.noninherited_data.m_tableLayout)
+    if (m_styleInheritedData.get() != other.m_styleInheritedData.get()) {
+        if (m_styleInheritedData->line_height != other.m_styleInheritedData->line_height
+            || m_styleInheritedData->font != other.m_styleInheritedData->font
+            || m_styleInheritedData->horizontal_border_spacing != other.m_styleInheritedData->horizontal_border_spacing
+            || m_styleInheritedData->vertical_border_spacing != other.m_styleInheritedData->vertical_border_spacing)
+            return true;
+    }
+
+    if (m_inheritedData.m_boxDirection != other.m_inheritedData.m_boxDirection
+        || m_inheritedData.m_rtlOrdering != other.m_inheritedData.m_rtlOrdering
+        || m_inheritedData.m_textAlign != other.m_inheritedData.m_textAlign
+        || m_inheritedData.m_textTransform != other.m_inheritedData.m_textTransform
+        || m_inheritedData.m_direction != other.m_inheritedData.m_direction
+        || m_inheritedData.m_whiteSpace != other.m_inheritedData.m_whiteSpace
+        || m_inheritedData.m_writingMode != other.m_inheritedData.m_writingMode)
+        return true;
+
+    if (m_nonInheritedData.m_overflowX != other.m_nonInheritedData.m_overflowX
+        || m_nonInheritedData.m_overflowY != other.m_nonInheritedData.m_overflowY
+        || m_nonInheritedData.m_clear != other.m_nonInheritedData.m_clear
+        || m_nonInheritedData.m_unicodeBidi != other.m_nonInheritedData.m_unicodeBidi
+        || m_nonInheritedData.m_floating != other.m_nonInheritedData.m_floating
+        || m_nonInheritedData.m_originalDisplay != other.m_nonInheritedData.m_originalDisplay)
+        return true;
+
+    if (m_nonInheritedData.m_effectiveDisplay >= FIRST_TABLE_DISPLAY && m_nonInheritedData.m_effectiveDisplay <= LAST_TABLE_DISPLAY) {
+        if (m_inheritedData.m_borderCollapse != other.m_inheritedData.m_borderCollapse
+            || m_inheritedData.m_emptyCells != other.m_inheritedData.m_emptyCells
+            || m_inheritedData.m_captionSide != other.m_inheritedData.m_captionSide
+            || m_nonInheritedData.m_tableLayout != other.m_nonInheritedData.m_tableLayout)
             return true;
 
         // In the collapsing border model, 'hidden' suppresses other borders, while 'none'
         // does not, so these style differences can be width differences.
-        if (inherited_data.m_borderCollapse
+        if (m_inheritedData.m_borderCollapse
             && ((borderTopStyle() == BorderStyleHidden && other.borderTopStyle() == BorderStyleNone)
                 || (borderTopStyle() == BorderStyleNone && other.borderTopStyle() == BorderStyleHidden)
                 || (borderBottomStyle() == BorderStyleHidden && other.borderBottomStyle() == BorderStyleNone)
@@ -659,9 +659,9 @@ bool ComputedStyle::diffNeedsFullLayoutAndPaintInvalidation(const ComputedStyle&
                 || (borderRightStyle() == BorderStyleHidden && other.borderRightStyle() == BorderStyleNone)
                 || (borderRightStyle() == BorderStyleNone && other.borderRightStyle() == BorderStyleHidden)))
             return true;
-    } else if (noninherited_data.m_effectiveDisplay == LIST_ITEM) {
-        if (inherited_data.m_listStyleType != other.inherited_data.m_listStyleType
-            || inherited_data.m_listStylePosition != other.inherited_data.m_listStylePosition)
+    } else if (m_nonInheritedData.m_effectiveDisplay == LIST_ITEM) {
+        if (m_inheritedData.m_listStyleType != other.m_inheritedData.m_listStyleType
+            || m_inheritedData.m_listStylePosition != other.m_inheritedData.m_listStylePosition)
             return true;
     }
 
@@ -694,26 +694,26 @@ bool ComputedStyle::diffNeedsFullLayout(const ComputedStyle& other) const
             return true;
     }
 
-    if (noninherited_data.m_verticalAlign != other.noninherited_data.m_verticalAlign
-        || noninherited_data.m_position != other.noninherited_data.m_position)
+    if (m_nonInheritedData.m_verticalAlign != other.m_nonInheritedData.m_verticalAlign
+        || m_nonInheritedData.m_position != other.m_nonInheritedData.m_position)
         return true;
 
-    if (surround.get() != other.surround.get()) {
-        if (surround->padding != other.surround->padding)
+    if (m_surround.get() != other.m_surround.get()) {
+        if (m_surround->padding != other.m_surround->padding)
             return true;
     }
 
-    if (rareNonInheritedData.get() != other.rareNonInheritedData.get()) {
-        if (rareNonInheritedData->m_alignContent != other.rareNonInheritedData->m_alignContent
-            || rareNonInheritedData->m_alignItems != other.rareNonInheritedData->m_alignItems
-            || rareNonInheritedData->m_alignSelf != other.rareNonInheritedData->m_alignSelf
-            || rareNonInheritedData->m_justifyContent != other.rareNonInheritedData->m_justifyContent
-            || rareNonInheritedData->m_justifyItems != other.rareNonInheritedData->m_justifyItems
-            || rareNonInheritedData->m_justifySelf != other.rareNonInheritedData->m_justifySelf
-            || rareNonInheritedData->m_contain != other.rareNonInheritedData->m_contain)
+    if (m_rareNonInheritedData.get() != other.m_rareNonInheritedData.get()) {
+        if (m_rareNonInheritedData->m_alignContent != other.m_rareNonInheritedData->m_alignContent
+            || m_rareNonInheritedData->m_alignItems != other.m_rareNonInheritedData->m_alignItems
+            || m_rareNonInheritedData->m_alignSelf != other.m_rareNonInheritedData->m_alignSelf
+            || m_rareNonInheritedData->m_justifyContent != other.m_rareNonInheritedData->m_justifyContent
+            || m_rareNonInheritedData->m_justifyItems != other.m_rareNonInheritedData->m_justifyItems
+            || m_rareNonInheritedData->m_justifySelf != other.m_rareNonInheritedData->m_justifySelf
+            || m_rareNonInheritedData->m_contain != other.m_rareNonInheritedData->m_contain)
             return true;
 
-        if (!RuntimeEnabledFeatures::cssBoxReflectFilterEnabled() && !rareNonInheritedData->reflectionDataEquivalent(*other.rareNonInheritedData.get()))
+        if (!RuntimeEnabledFeatures::cssBoxReflectFilterEnabled() && !m_rareNonInheritedData->reflectionDataEquivalent(*other.m_rareNonInheritedData.get()))
             return true;
     }
 
@@ -722,19 +722,19 @@ bool ComputedStyle::diffNeedsFullLayout(const ComputedStyle& other) const
 
 bool ComputedStyle::diffNeedsPaintInvalidationSubtree(const ComputedStyle& other) const
 {
-    if (position() != StaticPosition && (visual->clip != other.visual->clip || visual->hasAutoClip != other.visual->hasAutoClip))
+    if (position() != StaticPosition && (m_visual->clip != other.m_visual->clip || m_visual->hasAutoClip != other.m_visual->hasAutoClip))
         return true;
 
-    if (rareNonInheritedData.get() != other.rareNonInheritedData.get()) {
-        if (rareNonInheritedData->m_effectiveBlendMode != other.rareNonInheritedData->m_effectiveBlendMode
-            || rareNonInheritedData->m_isolation != other.rareNonInheritedData->m_isolation)
+    if (m_rareNonInheritedData.get() != other.m_rareNonInheritedData.get()) {
+        if (m_rareNonInheritedData->m_effectiveBlendMode != other.m_rareNonInheritedData->m_effectiveBlendMode
+            || m_rareNonInheritedData->m_isolation != other.m_rareNonInheritedData->m_isolation)
             return true;
 
-        if (rareNonInheritedData->m_mask != other.rareNonInheritedData->m_mask
-            || rareNonInheritedData->m_maskBoxImage != other.rareNonInheritedData->m_maskBoxImage)
+        if (m_rareNonInheritedData->m_mask != other.m_rareNonInheritedData->m_mask
+            || m_rareNonInheritedData->m_maskBoxImage != other.m_rareNonInheritedData->m_maskBoxImage)
             return true;
 
-        if (!RuntimeEnabledFeatures::cssBoxReflectFilterEnabled() && !rareNonInheritedData->reflectionDataEquivalent(*other.rareNonInheritedData.get()))
+        if (!RuntimeEnabledFeatures::cssBoxReflectFilterEnabled() && !m_rareNonInheritedData->reflectionDataEquivalent(*other.m_rareNonInheritedData.get()))
             return true;
     }
 
@@ -746,27 +746,27 @@ bool ComputedStyle::diffNeedsPaintInvalidationObject(const ComputedStyle& other)
     if (!m_background->outline().visuallyEqual(other.m_background->outline()))
         return true;
 
-    if (inherited_data.m_visibility != other.inherited_data.m_visibility
-        || inherited_data.m_printColorAdjust != other.inherited_data.m_printColorAdjust
-        || inherited_data.m_insideLink != other.inherited_data.m_insideLink
-        || !surround->border.visuallyEqual(other.surround->border)
+    if (m_inheritedData.m_visibility != other.m_inheritedData.m_visibility
+        || m_inheritedData.m_printColorAdjust != other.m_inheritedData.m_printColorAdjust
+        || m_inheritedData.m_insideLink != other.m_inheritedData.m_insideLink
+        || !m_surround->border.visuallyEqual(other.m_surround->border)
         || !m_background->visuallyEqual(*other.m_background))
         return true;
 
-    if (rareInheritedData.get() != other.rareInheritedData.get()) {
-        if (rareInheritedData->userModify != other.rareInheritedData->userModify
-            || rareInheritedData->userSelect != other.rareInheritedData->userSelect
-            || rareInheritedData->m_imageRendering != other.rareInheritedData->m_imageRendering)
+    if (m_rareInheritedData.get() != other.m_rareInheritedData.get()) {
+        if (m_rareInheritedData->userModify != other.m_rareInheritedData->userModify
+            || m_rareInheritedData->userSelect != other.m_rareInheritedData->userSelect
+            || m_rareInheritedData->m_imageRendering != other.m_rareInheritedData->m_imageRendering)
             return true;
     }
 
-    if (rareNonInheritedData.get() != other.rareNonInheritedData.get()) {
-        if (rareNonInheritedData->userDrag != other.rareNonInheritedData->userDrag
-            || rareNonInheritedData->m_objectFit != other.rareNonInheritedData->m_objectFit
-            || rareNonInheritedData->m_objectPosition != other.rareNonInheritedData->m_objectPosition
-            || !rareNonInheritedData->shadowDataEquivalent(*other.rareNonInheritedData.get())
-            || !rareNonInheritedData->shapeOutsideDataEquivalent(*other.rareNonInheritedData.get())
-            || !rareNonInheritedData->clipPathDataEquivalent(*other.rareNonInheritedData.get())
+    if (m_rareNonInheritedData.get() != other.m_rareNonInheritedData.get()) {
+        if (m_rareNonInheritedData->userDrag != other.m_rareNonInheritedData->userDrag
+            || m_rareNonInheritedData->m_objectFit != other.m_rareNonInheritedData->m_objectFit
+            || m_rareNonInheritedData->m_objectPosition != other.m_rareNonInheritedData->m_objectPosition
+            || !m_rareNonInheritedData->shadowDataEquivalent(*other.m_rareNonInheritedData.get())
+            || !m_rareNonInheritedData->shapeOutsideDataEquivalent(*other.m_rareNonInheritedData.get())
+            || !m_rareNonInheritedData->clipPathDataEquivalent(*other.m_rareNonInheritedData.get())
             || (visitedLinkBorderLeftColor() != other.visitedLinkBorderLeftColor() && borderLeftWidth())
             || (visitedLinkBorderRightColor() != other.visitedLinkBorderRightColor() && borderRightWidth())
             || (visitedLinkBorderBottomColor() != other.visitedLinkBorderBottomColor() && borderBottomWidth())
@@ -779,8 +779,8 @@ bool ComputedStyle::diffNeedsPaintInvalidationObject(const ComputedStyle& other)
     if (resize() != other.resize())
         return true;
 
-    if (rareNonInheritedData->m_paintImages) {
-        for (const auto& image : *rareNonInheritedData->m_paintImages) {
+    if (m_rareNonInheritedData->m_paintImages) {
+        for (const auto& image : *m_rareNonInheritedData->m_paintImages) {
             if (diffNeedsPaintInvalidationObjectForPaintImage(image, other))
                 return true;
         }
@@ -824,49 +824,49 @@ void ComputedStyle::updatePropertySpecificDifferences(const ComputedStyle& other
     if (m_box->zIndex() != other.m_box->zIndex() || isStackingContext() != other.isStackingContext())
         diff.setZIndexChanged();
 
-    if (rareNonInheritedData.get() != other.rareNonInheritedData.get()) {
+    if (m_rareNonInheritedData.get() != other.m_rareNonInheritedData.get()) {
         if (!transformDataEquivalent(other))
             diff.setTransformChanged();
 
-        if (rareNonInheritedData->opacity != other.rareNonInheritedData->opacity)
+        if (m_rareNonInheritedData->opacity != other.m_rareNonInheritedData->opacity)
             diff.setOpacityChanged();
 
-        if (rareNonInheritedData->m_filter != other.rareNonInheritedData->m_filter)
+        if (m_rareNonInheritedData->m_filter != other.m_rareNonInheritedData->m_filter)
             diff.setFilterChanged();
 
-        if (!rareNonInheritedData->shadowDataEquivalent(*other.rareNonInheritedData.get()))
+        if (!m_rareNonInheritedData->shadowDataEquivalent(*other.m_rareNonInheritedData.get()))
             diff.setNeedsRecomputeOverflow();
 
-        if (rareNonInheritedData->m_backdropFilter != other.rareNonInheritedData->m_backdropFilter)
+        if (m_rareNonInheritedData->m_backdropFilter != other.m_rareNonInheritedData->m_backdropFilter)
             diff.setBackdropFilterChanged();
 
-        if (RuntimeEnabledFeatures::cssBoxReflectFilterEnabled() && !rareNonInheritedData->reflectionDataEquivalent(*other.rareNonInheritedData.get()))
+        if (RuntimeEnabledFeatures::cssBoxReflectFilterEnabled() && !m_rareNonInheritedData->reflectionDataEquivalent(*other.m_rareNonInheritedData.get()))
             diff.setFilterChanged();
     }
 
-    if (!m_background->outline().visuallyEqual(other.m_background->outline()) || !surround->border.visualOverflowEqual(other.surround->border))
+    if (!m_background->outline().visuallyEqual(other.m_background->outline()) || !m_surround->border.visualOverflowEqual(other.m_surround->border))
         diff.setNeedsRecomputeOverflow();
 
     if (!diff.needsPaintInvalidation()) {
-        if (inherited->color != other.inherited->color
-            || inherited->visitedLinkColor != other.inherited->visitedLinkColor
-            || inherited_data.m_textUnderline != other.inherited_data.m_textUnderline
-            || visual->textDecoration != other.visual->textDecoration) {
+        if (m_styleInheritedData->color != other.m_styleInheritedData->color
+            || m_styleInheritedData->visitedLinkColor != other.m_styleInheritedData->visitedLinkColor
+            || m_inheritedData.m_textUnderline != other.m_inheritedData.m_textUnderline
+            || m_visual->textDecoration != other.m_visual->textDecoration) {
             diff.setTextDecorationOrColorChanged();
-        } else if (rareNonInheritedData.get() != other.rareNonInheritedData.get()
-            && (rareNonInheritedData->m_textDecorationStyle != other.rareNonInheritedData->m_textDecorationStyle
-                || rareNonInheritedData->m_textDecorationColor != other.rareNonInheritedData->m_textDecorationColor
-                || rareNonInheritedData->m_visitedLinkTextDecorationColor != other.rareNonInheritedData->m_visitedLinkTextDecorationColor)) {
+        } else if (m_rareNonInheritedData.get() != other.m_rareNonInheritedData.get()
+            && (m_rareNonInheritedData->m_textDecorationStyle != other.m_rareNonInheritedData->m_textDecorationStyle
+                || m_rareNonInheritedData->m_textDecorationColor != other.m_rareNonInheritedData->m_textDecorationColor
+                || m_rareNonInheritedData->m_visitedLinkTextDecorationColor != other.m_rareNonInheritedData->m_visitedLinkTextDecorationColor)) {
                 diff.setTextDecorationOrColorChanged();
-        } else if (rareInheritedData.get() != other.rareInheritedData.get()
-            && (rareInheritedData->textFillColor() != other.rareInheritedData->textFillColor()
-                || rareInheritedData->textStrokeColor() != other.rareInheritedData->textStrokeColor()
-                || rareInheritedData->textEmphasisColor() != other.rareInheritedData->textEmphasisColor()
-                || rareInheritedData->visitedLinkTextFillColor() != other.rareInheritedData->visitedLinkTextFillColor()
-                || rareInheritedData->visitedLinkTextStrokeColor() != other.rareInheritedData->visitedLinkTextStrokeColor()
-                || rareInheritedData->visitedLinkTextEmphasisColor() != other.rareInheritedData->visitedLinkTextEmphasisColor()
-                || rareInheritedData->textEmphasisFill != other.rareInheritedData->textEmphasisFill
-                || rareInheritedData->appliedTextDecorations != other.rareInheritedData->appliedTextDecorations)) {
+        } else if (m_rareInheritedData.get() != other.m_rareInheritedData.get()
+            && (m_rareInheritedData->textFillColor() != other.m_rareInheritedData->textFillColor()
+                || m_rareInheritedData->textStrokeColor() != other.m_rareInheritedData->textStrokeColor()
+                || m_rareInheritedData->textEmphasisColor() != other.m_rareInheritedData->textEmphasisColor()
+                || m_rareInheritedData->visitedLinkTextFillColor() != other.m_rareInheritedData->visitedLinkTextFillColor()
+                || m_rareInheritedData->visitedLinkTextStrokeColor() != other.m_rareInheritedData->visitedLinkTextStrokeColor()
+                || m_rareInheritedData->visitedLinkTextEmphasisColor() != other.m_rareInheritedData->visitedLinkTextEmphasisColor()
+                || m_rareInheritedData->textEmphasisFill != other.m_rareInheritedData->textEmphasisFill
+                || m_rareInheritedData->appliedTextDecorations != other.m_rareInheritedData->appliedTextDecorations)) {
                 diff.setTextDecorationOrColorChanged();
         }
     }
@@ -874,32 +874,32 @@ void ComputedStyle::updatePropertySpecificDifferences(const ComputedStyle& other
 
 void ComputedStyle::addPaintImage(StyleImage* image)
 {
-    if (!rareNonInheritedData.access()->m_paintImages)
-        rareNonInheritedData.access()->m_paintImages = WTF::wrapUnique(new Vector<Persistent<StyleImage>>());
-    rareNonInheritedData.access()->m_paintImages->append(image);
+    if (!m_rareNonInheritedData.access()->m_paintImages)
+        m_rareNonInheritedData.access()->m_paintImages = WTF::wrapUnique(new Vector<Persistent<StyleImage>>());
+    m_rareNonInheritedData.access()->m_paintImages->append(image);
 }
 
 void ComputedStyle::addCursor(StyleImage* image, bool hotSpotSpecified, const IntPoint& hotSpot)
 {
-    if (!rareInheritedData.access()->cursorData)
-        rareInheritedData.access()->cursorData = new CursorList;
-    rareInheritedData.access()->cursorData->append(CursorData(image, hotSpotSpecified, hotSpot));
+    if (!m_rareInheritedData.access()->cursorData)
+        m_rareInheritedData.access()->cursorData = new CursorList;
+    m_rareInheritedData.access()->cursorData->append(CursorData(image, hotSpotSpecified, hotSpot));
 }
 
 void ComputedStyle::setCursorList(CursorList* other)
 {
-    rareInheritedData.access()->cursorData = other;
+    m_rareInheritedData.access()->cursorData = other;
 }
 
 void ComputedStyle::setQuotes(PassRefPtr<QuotesData> q)
 {
-    rareInheritedData.access()->quotes = q;
+    m_rareInheritedData.access()->quotes = q;
 }
 
 void ComputedStyle::clearCursorList()
 {
-    if (rareInheritedData->cursorData)
-        rareInheritedData.access()->cursorData = nullptr;
+    if (m_rareInheritedData->cursorData)
+        m_rareInheritedData.access()->cursorData = nullptr;
 }
 
 static bool hasPropertyThatCreatesStackingContext(const Vector<CSSPropertyID>& properties)
@@ -957,19 +957,19 @@ void ComputedStyle::updateIsStackingContext(bool isDocumentElement, bool isInTop
 
 void ComputedStyle::addCallbackSelector(const String& selector)
 {
-    if (!rareNonInheritedData->m_callbackSelectors.contains(selector))
-        rareNonInheritedData.access()->m_callbackSelectors.append(selector);
+    if (!m_rareNonInheritedData->m_callbackSelectors.contains(selector))
+        m_rareNonInheritedData.access()->m_callbackSelectors.append(selector);
 }
 
 void ComputedStyle::setContent(ContentData* contentData)
 {
-    SET_VAR(rareNonInheritedData, m_content, contentData);
+    SET_VAR(m_rareNonInheritedData, m_content, contentData);
 }
 
 bool ComputedStyle::hasWillChangeCompositingHint() const
 {
-    for (size_t i = 0; i < rareNonInheritedData->m_willChange->m_properties.size(); ++i) {
-        switch (rareNonInheritedData->m_willChange->m_properties[i]) {
+    for (size_t i = 0; i < m_rareNonInheritedData->m_willChange->m_properties.size(); ++i) {
+        switch (m_rareNonInheritedData->m_willChange->m_properties[i]) {
         case CSSPropertyOpacity:
         case CSSPropertyTransform:
         case CSSPropertyAliasWebkitTransform:
@@ -987,7 +987,7 @@ bool ComputedStyle::hasWillChangeCompositingHint() const
 
 bool ComputedStyle::hasWillChangeTransformHint() const
 {
-    for (const auto& property: rareNonInheritedData->m_willChange->m_properties) {
+    for (const auto& property: m_rareNonInheritedData->m_willChange->m_properties) {
         switch (property) {
         case CSSPropertyTransform:
         case CSSPropertyAliasWebkitTransform:
@@ -1077,7 +1077,7 @@ void ComputedStyle::applyTransform(TransformationMatrix& result, const FloatRect
 
 void ComputedStyle::applyMotionPathTransform(float originX, float originY, TransformationMatrix& transform) const
 {
-    const StyleMotionData& motionData = rareNonInheritedData->m_transform->m_motion;
+    const StyleMotionData& motionData = m_rareNonInheritedData->m_transform->m_motion;
     ASSERT(motionData.m_path);
     const StylePath& motionPath = *motionData.m_path;
     float pathLength = motionPath.length();
@@ -1104,12 +1104,12 @@ void ComputedStyle::applyMotionPathTransform(float originX, float originY, Trans
 
 void ComputedStyle::setTextShadow(PassRefPtr<ShadowList> s)
 {
-    rareInheritedData.access()->textShadow = s;
+    m_rareInheritedData.access()->textShadow = s;
 }
 
 void ComputedStyle::setBoxShadow(PassRefPtr<ShadowList> s)
 {
-    rareNonInheritedData.access()->m_boxShadow = s;
+    m_rareNonInheritedData.access()->m_boxShadow = s;
 }
 
 static FloatRoundedRect::Radii calcRadiiFor(const BorderData& border, LayoutSize size)
@@ -1125,29 +1125,29 @@ static FloatRoundedRect::Radii calcRadiiFor(const BorderData& border, LayoutSize
             floatValueForLength(border.bottomRight().height(), size.height().toFloat())));
 }
 
-StyleImage* ComputedStyle::listStyleImage() const { return rareInheritedData->listStyleImage.get(); }
+StyleImage* ComputedStyle::listStyleImage() const { return m_rareInheritedData->listStyleImage.get(); }
 void ComputedStyle::setListStyleImage(StyleImage* v)
 {
-    if (rareInheritedData->listStyleImage != v)
-        rareInheritedData.access()->listStyleImage = v;
+    if (m_rareInheritedData->listStyleImage != v)
+        m_rareInheritedData.access()->listStyleImage = v;
 }
 
-Color ComputedStyle::color() const { return inherited->color; }
-Color ComputedStyle::visitedLinkColor() const { return inherited->visitedLinkColor; }
-void ComputedStyle::setColor(const Color& v) { SET_VAR(inherited, color, v); }
-void ComputedStyle::setVisitedLinkColor(const Color& v) { SET_VAR(inherited, visitedLinkColor, v); }
+Color ComputedStyle::color() const { return m_styleInheritedData->color; }
+Color ComputedStyle::visitedLinkColor() const { return m_styleInheritedData->visitedLinkColor; }
+void ComputedStyle::setColor(const Color& v) { SET_VAR(m_styleInheritedData, color, v); }
+void ComputedStyle::setVisitedLinkColor(const Color& v) { SET_VAR(m_styleInheritedData, visitedLinkColor, v); }
 
-short ComputedStyle::horizontalBorderSpacing() const { return inherited->horizontal_border_spacing; }
-short ComputedStyle::verticalBorderSpacing() const { return inherited->vertical_border_spacing; }
-void ComputedStyle::setHorizontalBorderSpacing(short v) { SET_VAR(inherited, horizontal_border_spacing, v); }
-void ComputedStyle::setVerticalBorderSpacing(short v) { SET_VAR(inherited, vertical_border_spacing, v); }
+short ComputedStyle::horizontalBorderSpacing() const { return m_styleInheritedData->horizontal_border_spacing; }
+short ComputedStyle::verticalBorderSpacing() const { return m_styleInheritedData->vertical_border_spacing; }
+void ComputedStyle::setHorizontalBorderSpacing(short v) { SET_VAR(m_styleInheritedData, horizontal_border_spacing, v); }
+void ComputedStyle::setVerticalBorderSpacing(short v) { SET_VAR(m_styleInheritedData, vertical_border_spacing, v); }
 
 FloatRoundedRect ComputedStyle::getRoundedBorderFor(const LayoutRect& borderRect,
     bool includeLogicalLeftEdge, bool includeLogicalRightEdge) const
 {
     FloatRoundedRect roundedRect(pixelSnappedIntRect(borderRect));
     if (hasBorderRadius()) {
-        FloatRoundedRect::Radii radii = calcRadiiFor(surround->border, borderRect.size());
+        FloatRoundedRect::Radii radii = calcRadiiFor(m_surround->border, borderRect.size());
         roundedRect.includeLogicalEdges(radii, isHorizontalWritingMode(), includeLogicalLeftEdge, includeLogicalRightEdge);
         roundedRect.constrainRadii();
     }
@@ -1206,12 +1206,12 @@ bool ComputedStyle::hasEntirelyFixedBackground() const
 
 const CounterDirectiveMap* ComputedStyle::counterDirectives() const
 {
-    return rareNonInheritedData->m_counterDirectives.get();
+    return m_rareNonInheritedData->m_counterDirectives.get();
 }
 
 CounterDirectiveMap& ComputedStyle::accessCounterDirectives()
 {
-    std::unique_ptr<CounterDirectiveMap>& map = rareNonInheritedData.access()->m_counterDirectives;
+    std::unique_ptr<CounterDirectiveMap>& map = m_rareNonInheritedData.access()->m_counterDirectives;
     if (!map)
         map = wrapUnique(new CounterDirectiveMap);
     return *map;
@@ -1254,7 +1254,7 @@ void ComputedStyle::clearResetDirectives()
 
 const AtomicString& ComputedStyle::hyphenString() const
 {
-    const AtomicString& hyphenationString = rareInheritedData.get()->hyphenationString;
+    const AtomicString& hyphenationString = m_rareInheritedData.get()->hyphenationString;
     if (!hyphenationString.isNull())
         return hyphenationString;
 
@@ -1309,21 +1309,21 @@ const AtomicString& ComputedStyle::textEmphasisMarkString() const
 
 CSSAnimationData& ComputedStyle::accessAnimations()
 {
-    if (!rareNonInheritedData.access()->m_animations)
-        rareNonInheritedData.access()->m_animations = CSSAnimationData::create();
-    return *rareNonInheritedData->m_animations;
+    if (!m_rareNonInheritedData.access()->m_animations)
+        m_rareNonInheritedData.access()->m_animations = CSSAnimationData::create();
+    return *m_rareNonInheritedData->m_animations;
 }
 
 CSSTransitionData& ComputedStyle::accessTransitions()
 {
-    if (!rareNonInheritedData.access()->m_transitions)
-        rareNonInheritedData.access()->m_transitions = CSSTransitionData::create();
-    return *rareNonInheritedData->m_transitions;
+    if (!m_rareNonInheritedData.access()->m_transitions)
+        m_rareNonInheritedData.access()->m_transitions = CSSTransitionData::create();
+    return *m_rareNonInheritedData->m_transitions;
 }
 
-const Font& ComputedStyle::font() const { return inherited->font; }
-const FontMetrics& ComputedStyle::getFontMetrics() const { return inherited->font.getFontMetrics(); }
-const FontDescription& ComputedStyle::getFontDescription() const { return inherited->font.getFontDescription(); }
+const Font& ComputedStyle::font() const { return m_styleInheritedData->font; }
+const FontMetrics& ComputedStyle::getFontMetrics() const { return m_styleInheritedData->font.getFontMetrics(); }
+const FontDescription& ComputedStyle::getFontDescription() const { return m_styleInheritedData->font.getFontDescription(); }
 float ComputedStyle::specifiedFontSize() const { return getFontDescription().specifiedSize(); }
 float ComputedStyle::computedFontSize() const { return getFontDescription().computedSize(); }
 int ComputedStyle::fontSize() const { return getFontDescription().computedPixelSize(); }
@@ -1346,27 +1346,27 @@ TextDecoration ComputedStyle::textDecorationsInEffect() const
 
 const Vector<AppliedTextDecoration>& ComputedStyle::appliedTextDecorations() const
 {
-    if (!inherited_data.m_textUnderline && !rareInheritedData->appliedTextDecorations) {
+    if (!m_inheritedData.m_textUnderline && !m_rareInheritedData->appliedTextDecorations) {
         DEFINE_STATIC_LOCAL(Vector<AppliedTextDecoration>, empty, ());
         return empty;
     }
-    if (inherited_data.m_textUnderline) {
+    if (m_inheritedData.m_textUnderline) {
         DEFINE_STATIC_LOCAL(Vector<AppliedTextDecoration>, underline, (1, AppliedTextDecoration(TextDecorationUnderline)));
         return underline;
     }
 
-    return rareInheritedData->appliedTextDecorations->vector();
+    return m_rareInheritedData->appliedTextDecorations->vector();
 }
 
 StyleVariableData* ComputedStyle::variables() const
 {
     ASSERT(RuntimeEnabledFeatures::cssVariablesEnabled());
-    return rareInheritedData->variables.get();
+    return m_rareInheritedData->variables.get();
 }
 
 void ComputedStyle::setVariable(const AtomicString& name, PassRefPtr<CSSVariableData> value)
 {
-    RefPtr<StyleVariableData>& variables = rareInheritedData.access()->variables;
+    RefPtr<StyleVariableData>& variables = m_rareInheritedData.access()->variables;
     if (!variables)
         variables = StyleVariableData::create();
     else if (!variables->hasOneRef())
@@ -1376,7 +1376,7 @@ void ComputedStyle::setVariable(const AtomicString& name, PassRefPtr<CSSVariable
 
 void ComputedStyle::removeVariable(const AtomicString& name)
 {
-    RefPtr<StyleVariableData>& variables = rareInheritedData.access()->variables;
+    RefPtr<StyleVariableData>& variables = m_rareInheritedData.access()->variables;
     if (!variables)
         return;
     if (!variables->hasOneRef())
@@ -1389,8 +1389,8 @@ float ComputedStyle::letterSpacing() const { return getFontDescription().letterS
 
 bool ComputedStyle::setFontDescription(const FontDescription& v)
 {
-    if (inherited->font.getFontDescription() != v) {
-        inherited.access()->font = Font(v);
+    if (m_styleInheritedData->font.getFontDescription() != v) {
+        m_styleInheritedData.access()->font = Font(v);
         return true;
     }
     return false;
@@ -1398,13 +1398,13 @@ bool ComputedStyle::setFontDescription(const FontDescription& v)
 
 void ComputedStyle::setFont(const Font& font)
 {
-    inherited.access()->font = font;
+    m_styleInheritedData.access()->font = font;
 }
 
-const Length& ComputedStyle::specifiedLineHeight() const { return inherited->line_height; }
+const Length& ComputedStyle::specifiedLineHeight() const { return m_styleInheritedData->line_height; }
 Length ComputedStyle::lineHeight() const
 {
-    const Length& lh = inherited->line_height;
+    const Length& lh = m_styleInheritedData->line_height;
     // Unlike getFontDescription().computedSize() and hence fontSize(), this is
     // recalculated on demand as we only store the specified line height.
     // FIXME: Should consider scaling the fixed part of any calc expressions
@@ -1417,7 +1417,7 @@ Length ComputedStyle::lineHeight() const
     return lh;
 }
 
-void ComputedStyle::setLineHeight(const Length& specifiedLineHeight) { SET_VAR(inherited, line_height, specifiedLineHeight); }
+void ComputedStyle::setLineHeight(const Length& specifiedLineHeight) { SET_VAR(m_styleInheritedData, line_height, specifiedLineHeight); }
 
 int ComputedStyle::computedLineHeight() const
 {
@@ -1454,7 +1454,7 @@ void ComputedStyle::setLetterSpacing(float letterSpacing)
 
 void ComputedStyle::setTextAutosizingMultiplier(float multiplier)
 {
-    SET_VAR(inherited, textAutosizingMultiplier, multiplier);
+    SET_VAR(m_styleInheritedData, textAutosizingMultiplier, multiplier);
 
     float size = specifiedFontSize();
 
@@ -1478,15 +1478,15 @@ void ComputedStyle::setTextAutosizingMultiplier(float multiplier)
 
 void ComputedStyle::addAppliedTextDecoration(const AppliedTextDecoration& decoration)
 {
-    RefPtr<AppliedTextDecorationList>& list = rareInheritedData.access()->appliedTextDecorations;
+    RefPtr<AppliedTextDecorationList>& list = m_rareInheritedData.access()->appliedTextDecorations;
 
     if (!list)
         list = AppliedTextDecorationList::create();
     else if (!list->hasOneRef())
         list = list->copy();
 
-    if (inherited_data.m_textUnderline) {
-        inherited_data.m_textUnderline = false;
+    if (m_inheritedData.m_textUnderline) {
+        m_inheritedData.m_textUnderline = false;
         list->append(AppliedTextDecoration(TextDecorationUnderline));
     }
 
@@ -1508,8 +1508,8 @@ void ComputedStyle::applyTextDecorations()
         // common case of a single simple underline.
         AppliedTextDecoration underline(TextDecorationUnderline, style, styleColor);
 
-        if (!rareInheritedData->appliedTextDecorations && underline.isSimpleUnderline())
-            inherited_data.m_textUnderline = true;
+        if (!m_rareInheritedData->appliedTextDecorations && underline.isSimpleUnderline())
+            m_inheritedData.m_textUnderline = true;
         else
             addAppliedTextDecoration(underline);
     }
@@ -1521,16 +1521,16 @@ void ComputedStyle::applyTextDecorations()
 
 void ComputedStyle::clearAppliedTextDecorations()
 {
-    inherited_data.m_textUnderline = false;
+    m_inheritedData.m_textUnderline = false;
 
-    if (rareInheritedData->appliedTextDecorations)
-        rareInheritedData.access()->appliedTextDecorations = nullptr;
+    if (m_rareInheritedData->appliedTextDecorations)
+        m_rareInheritedData.access()->appliedTextDecorations = nullptr;
 }
 
 void ComputedStyle::clearMultiCol()
 {
-    rareNonInheritedData.access()->m_multiCol = nullptr;
-    rareNonInheritedData.access()->m_multiCol.init();
+    m_rareNonInheritedData.access()->m_multiCol = nullptr;
+    m_rareNonInheritedData.access()->m_multiCol.init();
 }
 
 StyleColor ComputedStyle::decorationColorIncludingFallback(bool visitedLink) const
@@ -1768,7 +1768,7 @@ void ComputedStyle::setMarginEnd(const Length& margin)
 
 void ComputedStyle::setMotionPath(PassRefPtr<StylePath> path)
 {
-    rareNonInheritedData.access()->m_transform.access()->m_motion.m_path = path;
+    m_rareNonInheritedData.access()->m_transform.access()->m_motion.m_path = path;
 }
 
 int ComputedStyle::outlineOutsetExtent() const
@@ -1789,7 +1789,7 @@ bool ComputedStyle::columnRuleEquivalent(const ComputedStyle* otherStyle) const
 
 TextEmphasisMark ComputedStyle::getTextEmphasisMark() const
 {
-    TextEmphasisMark mark = static_cast<TextEmphasisMark>(rareInheritedData->textEmphasisMark);
+    TextEmphasisMark mark = static_cast<TextEmphasisMark>(m_rareInheritedData->textEmphasisMark);
     if (mark != TextEmphasisMarkAuto)
         return mark;
 
@@ -1827,37 +1827,37 @@ LayoutRectOutsets ComputedStyle::imageOutsets(const NinePieceImage& image) const
 
 void ComputedStyle::setBorderImageSource(StyleImage* image)
 {
-    if (surround->border.m_image.image() == image)
+    if (m_surround->border.m_image.image() == image)
         return;
-    surround.access()->border.m_image.setImage(image);
+    m_surround.access()->border.m_image.setImage(image);
 }
 
 void ComputedStyle::setBorderImageSlices(const LengthBox& slices)
 {
-    if (surround->border.m_image.imageSlices() == slices)
+    if (m_surround->border.m_image.imageSlices() == slices)
         return;
-    surround.access()->border.m_image.setImageSlices(slices);
+    m_surround.access()->border.m_image.setImageSlices(slices);
 }
 
 void ComputedStyle::setBorderImageSlicesFill(bool fill)
 {
-    if (surround->border.m_image.fill() == fill)
+    if (m_surround->border.m_image.fill() == fill)
         return;
-    surround.access()->border.m_image.setFill(fill);
+    m_surround.access()->border.m_image.setFill(fill);
 }
 
 void ComputedStyle::setBorderImageWidth(const BorderImageLengthBox& slices)
 {
-    if (surround->border.m_image.borderSlices() == slices)
+    if (m_surround->border.m_image.borderSlices() == slices)
         return;
-    surround.access()->border.m_image.setBorderSlices(slices);
+    m_surround.access()->border.m_image.setBorderSlices(slices);
 }
 
 void ComputedStyle::setBorderImageOutset(const BorderImageLengthBox& outset)
 {
-    if (surround->border.m_image.outset() == outset)
+    if (m_surround->border.m_image.outset() == outset)
         return;
-    surround.access()->border.m_image.setOutset(outset);
+    m_surround.access()->border.m_image.setOutset(outset);
 }
 
 bool ComputedStyle::borderObscuresBackground() const
