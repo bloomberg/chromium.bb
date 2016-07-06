@@ -6,6 +6,7 @@
 
 #include "ash/aura/wm_window_aura.h"
 #include "ash/common/session/session_state_delegate.h"
+#include "ash/common/shell_delegate.h"
 #include "ash/common/shell_observer.h"
 #include "ash/common/wm/maximize_mode/scoped_disable_internal_mouse_and_keyboard.h"
 #include "ash/common/wm/mru_window_tracker.h"
@@ -15,7 +16,6 @@
 #include "ash/display/display_manager.h"
 #include "ash/display/window_tree_host_manager.h"
 #include "ash/shell.h"
-#include "ash/shell_delegate.h"
 #include "ash/wm/drag_window_resizer.h"
 #include "ash/wm/maximize_mode/maximize_mode_event_handler_aura.h"
 #include "ash/wm/screen_pinning_controller.h"
@@ -38,7 +38,7 @@
 
 namespace ash {
 
-WmShellAura::WmShellAura() {
+WmShellAura::WmShellAura(ShellDelegate* delegate) : WmShell(delegate) {
   WmShell::Set(this);
 }
 
@@ -93,7 +93,7 @@ bool WmShellAura::IsActiveDisplayId(int64_t display_id) const {
 }
 
 bool WmShellAura::IsForceMaximizeOnFirstRun() {
-  return Shell::GetInstance()->delegate()->IsForceMaximizeOnFirstRun();
+  return delegate()->IsForceMaximizeOnFirstRun();
 }
 
 bool WmShellAura::IsPinned() {
@@ -106,7 +106,7 @@ void WmShellAura::SetPinnedWindow(WmWindow* window) {
 }
 
 bool WmShellAura::CanShowWindowForUser(WmWindow* window) {
-  return Shell::GetInstance()->delegate()->CanShowWindowForUser(window);
+  return delegate()->CanShowWindowForUser(window);
 }
 
 void WmShellAura::LockCursor() {

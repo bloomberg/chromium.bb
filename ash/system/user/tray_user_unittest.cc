@@ -4,11 +4,12 @@
 
 #include <vector>
 
+#include "ash/common/shell_delegate.h"
 #include "ash/common/system/tray/tray_constants.h"
 #include "ash/common/system/user/tray_user_separator.h"
+#include "ash/common/wm_shell.h"
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
-#include "ash/shell_delegate.h"
 #include "ash/system/tray/system_tray.h"
 #include "ash/system/user/tray_user.h"
 #include "ash/system/user/user_view.h"
@@ -78,7 +79,7 @@ void TrayUserTest::InitializeParameters(int users_logged_in,
   // after everything was created.
   delegate_->set_logged_in_users(users_logged_in);
   test::TestShellDelegate* shell_delegate =
-      static_cast<test::TestShellDelegate*>(Shell::GetInstance()->delegate());
+      static_cast<test::TestShellDelegate*>(WmShell::Get()->delegate());
   shell_delegate->set_multi_profiles_enabled(multiprofile);
 
   // Instead of using the existing tray panels we create new ones which makes

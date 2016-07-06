@@ -70,7 +70,7 @@ class LockStateControllerTest : public AshTestBase {
     power_button_controller_ = Shell::GetInstance()->power_button_controller();
 
     shell_delegate_ =
-        static_cast<TestShellDelegate*>(Shell::GetInstance()->delegate());
+        static_cast<TestShellDelegate*>(WmShell::Get()->delegate());
   }
 
  protected:

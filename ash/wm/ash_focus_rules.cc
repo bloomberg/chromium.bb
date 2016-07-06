@@ -11,7 +11,6 @@
 #include "ash/common/wm/window_state.h"
 #include "ash/common/wm_shell.h"
 #include "ash/shell.h"
-#include "ash/shell_delegate.h"
 #include "ash/wm/window_state_aura.h"
 #include "ui/aura/window.h"
 

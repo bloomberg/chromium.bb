@@ -11,10 +11,10 @@
 #include "ash/cancel_mode.h"
 #include "ash/common/accessibility_delegate.h"
 #include "ash/common/ash_switches.h"
+#include "ash/common/shell_delegate.h"
 #include "ash/common/shell_window_ids.h"
 #include "ash/common/wm_shell.h"
 #include "ash/shell.h"
-#include "ash/shell_delegate.h"
 #include "ash/wm/session_state_animator.h"
 #include "ash/wm/session_state_animator_impl.h"
 #include "base/bind.h"
@@ -214,7 +214,7 @@ void LockStateController::SetLockScreenDisplayedCallback(
 
 void LockStateController::OnHostCloseRequested(
     const aura::WindowTreeHost* host) {
-  Shell::GetInstance()->delegate()->Exit();
+  WmShell::Get()->delegate()->Exit();
 }
 
 void LockStateController::OnLoginStateChanged(LoginStatus status) {
@@ -333,7 +333,7 @@ void LockStateController::OnRealPowerTimeout() {
   DCHECK(shutting_down_);
 #if defined(OS_CHROMEOS)
   if (!base::SysInfo::IsRunningOnChromeOS()) {
-    ShellDelegate* delegate = Shell::GetInstance()->delegate();
+    ShellDelegate* delegate = WmShell::Get()->delegate();
     if (delegate) {
       delegate->Exit();
       return;

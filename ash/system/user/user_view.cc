@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "ash/common/session/session_state_delegate.h"
+#include "ash/common/shell_delegate.h"
 #include "ash/common/shell_window_ids.h"
 #include "ash/common/system/tray/system_tray_delegate.h"
 #include "ash/common/system/tray/tray_constants.h"
@@ -22,8 +23,6 @@
 #include "ash/common/wm_window.h"
 #include "ash/multi_profile_uma.h"
 #include "ash/popup_message.h"
-#include "ash/shell.h"
-#include "ash/shell_delegate.h"
 #include "ash/system/tray/system_tray.h"
 #include "ash/system/user/user_card_view.h"
 #include "components/signin/core/account_id/account_id.h"
@@ -85,7 +84,7 @@ void SwitchUser(UserIndex user_index) {
 }
 
 bool IsMultiProfileSupportedAndUserActive() {
-  return Shell::GetInstance()->delegate()->IsMultiProfilesEnabled() &&
+  return WmShell::Get()->delegate()->IsMultiProfilesEnabled() &&
          !WmShell::Get()->GetSessionStateDelegate()->IsUserSessionBlocked();
 }
 

@@ -10,9 +10,8 @@
 #include <memory>
 #include <string>
 
-#include "ash/shell_delegate.h"
+#include "ash/common/shell_delegate.h"
 #include "ash/wm/lock_state_observer.h"
-#include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"

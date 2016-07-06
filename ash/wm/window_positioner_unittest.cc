@@ -9,6 +9,7 @@
 #include "ash/common/material_design/material_design_controller.h"
 #include "ash/common/wm/window_positioner.h"
 #include "ash/common/wm/window_state.h"
+#include "ash/common/wm_shell.h"
 #include "ash/shell.h"
 #include "ash/shell/toplevel_window.h"
 #include "ash/test/ash_md_test_base.h"
@@ -174,7 +175,7 @@ TEST_P(WindowPositionerTest, FirstRunMaximizeWindowHighResloution) {
   ui::WindowShowState show_state_out = ui::SHOW_STATE_DEFAULT;
 
   test::TestShellDelegate* const delegate =
-      static_cast<test::TestShellDelegate*>(Shell::GetInstance()->delegate());
+      static_cast<test::TestShellDelegate*>(WmShell::Get()->delegate());
   delegate->SetForceMaximizeOnFirstRun(true);
 
   WindowPositioner::GetBoundsAndShowStateForNewWindow(
@@ -193,7 +194,7 @@ TEST_P(WindowPositionerTest, FirstRunMaximizeWindowLowResolution) {
   ui::WindowShowState show_state_out = ui::SHOW_STATE_DEFAULT;
 
   test::TestShellDelegate* const delegate =
-      static_cast<test::TestShellDelegate*>(Shell::GetInstance()->delegate());
+      static_cast<test::TestShellDelegate*>(WmShell::Get()->delegate());
   delegate->SetForceMaximizeOnFirstRun(true);
 
   WindowPositioner::GetBoundsAndShowStateForNewWindow(

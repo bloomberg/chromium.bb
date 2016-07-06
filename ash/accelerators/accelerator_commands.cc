@@ -12,7 +12,6 @@
 #include "ash/display/display_manager.h"
 #include "ash/display/display_util.h"
 #include "ash/shell.h"
-#include "ash/shell_delegate.h"
 #include "ash/wm/screen_pinning_controller.h"
 #include "ash/wm/window_state_aura.h"
 #include "ash/wm/window_util.h"

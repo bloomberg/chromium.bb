@@ -92,8 +92,10 @@ class SessionStateDelegateStub : public SessionStateDelegate {
 
 }  // namespace
 
-WmShellMus::WmShellMus(::ui::WindowTreeClient* client)
-    : client_(client), session_state_delegate_(new SessionStateDelegateStub) {
+WmShellMus::WmShellMus(ShellDelegate* delegate, ::ui::WindowTreeClient* client)
+    : WmShell(delegate),
+      client_(client),
+      session_state_delegate_(new SessionStateDelegateStub) {
   client_->AddObserver(this);
   WmShell::Set(this);
 

@@ -68,7 +68,8 @@ void WindowManager::Init(::ui::WindowTreeClient* window_tree_client) {
   window_manager_client_->SetFrameDecorationValues(
       std::move(frame_decoration_values));
 
-  shell_.reset(new WmShellMus(window_tree_client_));
+  // TODO(msw): Provide a valid ShellDelegate here; maybe port ShellDelegateMus?
+  shell_.reset(new WmShellMus(nullptr, window_tree_client_));
   lookup_.reset(new WmLookupMus);
 }
 

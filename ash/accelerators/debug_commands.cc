@@ -6,6 +6,7 @@
 
 #include "ash/accelerators/accelerator_commands.h"
 #include "ash/common/ash_switches.h"
+#include "ash/common/shell_delegate.h"
 #include "ash/common/wm/maximize_mode/maximize_mode_controller.h"
 #include "ash/common/wm_shell.h"
 #include "ash/debug.h"
@@ -15,7 +16,6 @@
 #include "ash/host/ash_window_tree_host.h"
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
-#include "ash/shell_delegate.h"
 #include "ash/system/toast/toast_data.h"
 #include "ash/system/toast/toast_manager.h"
 #include "ash/wm/window_util.h"
@@ -134,14 +134,12 @@ void HandleToggleDesktopBackgroundMode() {
 
 void HandleToggleTouchpad() {
   base::RecordAction(base::UserMetricsAction("Accel_Toggle_Touchpad"));
-
-  ash::Shell::GetInstance()->delegate()->ToggleTouchpad();
+  ash::WmShell::Get()->delegate()->ToggleTouchpad();
 }
 
 void HandleToggleTouchscreen() {
   base::RecordAction(base::UserMetricsAction("Accel_Toggle_Touchscreen"));
-
-  ash::Shell::GetInstance()->delegate()->ToggleTouchscreen();
+  ash::WmShell::Get()->delegate()->ToggleTouchscreen();
 }
 
 void HandleToggleToggleTouchView() {

@@ -5,8 +5,6 @@
 #include "ash/sysui/keyboard_ui_mus.h"
 
 #include "ash/common/keyboard/keyboard_ui_observer.h"
-#include "ash/shell.h"
-#include "ash/shell_delegate.h"
 #include "base/memory/ptr_util.h"
 #include "services/shell/public/cpp/connector.h"
 

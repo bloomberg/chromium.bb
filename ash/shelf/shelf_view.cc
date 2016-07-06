@@ -14,6 +14,7 @@
 #include "ash/common/shelf/shelf_item_delegate_manager.h"
 #include "ash/common/shelf/shelf_menu_model.h"
 #include "ash/common/shelf/shelf_model.h"
+#include "ash/common/shell_delegate.h"
 #include "ash/common/wm/root_window_finder.h"
 #include "ash/common/wm_shell.h"
 #include "ash/drag_drop/drag_image_view.h"
@@ -28,7 +29,6 @@
 #include "ash/shelf/shelf_icon_observer.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
-#include "ash/shell_delegate.h"
 #include "base/auto_reset.h"
 #include "base/metrics/histogram.h"
 #include "grit/ash_strings.h"
@@ -1794,7 +1794,7 @@ void ShelfView::ShowContextMenuForView(views::View* source,
   }
 
   std::unique_ptr<ui::MenuModel> context_menu_model(
-      Shell::GetInstance()->delegate()->CreateContextMenu(wm_shelf_, item));
+      WmShell::Get()->delegate()->CreateContextMenu(wm_shelf_, item));
   if (!context_menu_model)
     return;
 

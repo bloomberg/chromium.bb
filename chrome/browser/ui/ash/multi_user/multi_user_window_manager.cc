@@ -6,10 +6,9 @@
 
 #include "ash/common/ash_switches.h"
 #include "ash/common/session/session_state_delegate.h"
+#include "ash/common/shell_delegate.h"
 #include "ash/common/wm_shell.h"
 #include "ash/multi_profile_uma.h"
-#include "ash/shell.h"
-#include "ash/shell_delegate.h"
 #include "base/logging.h"
 #include "build/build_config.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager_chromeos.h"
@@ -39,22 +38,23 @@ MultiUserWindowManager* MultiUserWindowManager::CreateInstance() {
   multi_user_mode_ = MULTI_PROFILE_MODE_OFF;
   ash::MultiProfileUMA::SessionMode mode =
       ash::MultiProfileUMA::SESSION_SINGLE_USER_MODE;
-  if (!g_instance &&
-      ash::Shell::GetInstance()->delegate()->IsMultiProfilesEnabled()) {
-    MultiUserWindowManagerChromeOS* manager =
-        new MultiUserWindowManagerChromeOS(ash::WmShell::Get()
-                                               ->GetSessionStateDelegate()
-                                               ->GetUserInfo(0)
-                                               ->GetAccountId());
-    g_instance = manager;
-    manager->Init();
-    multi_user_mode_ = MULTI_PROFILE_MODE_SEPARATED;
-    mode = ash::MultiProfileUMA::SESSION_SEPARATE_DESKTOP_MODE;
-  } else if (ash::Shell::GetInstance()->delegate()->IsMultiProfilesEnabled()) {
-    // The side by side mode is using the Single user window manager since all
-    // windows are unmanaged side by side.
-    multi_user_mode_ = MULTI_PROFILE_MODE_MIXED;
-    mode = ash::MultiProfileUMA::SESSION_SIDE_BY_SIDE_MODE;
+  if (ash::WmShell::Get()->delegate()->IsMultiProfilesEnabled()) {
+    if (!g_instance) {
+      MultiUserWindowManagerChromeOS* manager =
+          new MultiUserWindowManagerChromeOS(ash::WmShell::Get()
+                                                 ->GetSessionStateDelegate()
+                                                 ->GetUserInfo(0)
+                                                 ->GetAccountId());
+      g_instance = manager;
+      manager->Init();
+      multi_user_mode_ = MULTI_PROFILE_MODE_SEPARATED;
+      mode = ash::MultiProfileUMA::SESSION_SEPARATE_DESKTOP_MODE;
+    } else {
+      // The side by side mode is using the Single user window manager since all
+      // windows are unmanaged side by side.
+      multi_user_mode_ = MULTI_PROFILE_MODE_MIXED;
+      mode = ash::MultiProfileUMA::SESSION_SIDE_BY_SIDE_MODE;
+    }
   }
   ash::MultiProfileUMA::RecordSessionMode(mode);
 

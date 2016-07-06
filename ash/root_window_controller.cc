@@ -17,6 +17,7 @@
 #include "ash/common/root_window_controller_common.h"
 #include "ash/common/session/session_state_delegate.h"
 #include "ash/common/shelf/shelf_types.h"
+#include "ash/common/shell_delegate.h"
 #include "ash/common/shell_window_ids.h"
 #include "ash/common/system/tray/system_tray_delegate.h"
 #include "ash/common/wm/always_on_top_controller.h"
@@ -41,7 +42,6 @@
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
-#include "ash/shell_delegate.h"
 #include "ash/shell_factory.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/touch/touch_hud_debug.h"
@@ -314,7 +314,7 @@ class WorkspaceLayoutManagerDelegateImpl
 void RootWindowController::CreateForPrimaryDisplay(AshWindowTreeHost* host) {
   RootWindowController* controller = new RootWindowController(host);
   controller->Init(RootWindowController::PRIMARY,
-                   Shell::GetInstance()->delegate()->IsFirstRunAfterBoot());
+                   WmShell::Get()->delegate()->IsFirstRunAfterBoot());
 }
 
 void RootWindowController::CreateForSecondaryDisplay(AshWindowTreeHost* host) {
@@ -657,7 +657,7 @@ SystemTray* RootWindowController::GetSystemTray() {
 
 void RootWindowController::ShowContextMenu(const gfx::Point& location_in_screen,
                                            ui::MenuSourceType source_type) {
-  ShellDelegate* delegate = Shell::GetInstance()->delegate();
+  ShellDelegate* delegate = WmShell::Get()->delegate();
   DCHECK(delegate);
   menu_model_.reset(delegate->CreateContextMenu(wm_shelf_aura_.get(), nullptr));
   if (!menu_model_)
@@ -703,7 +703,7 @@ void RootWindowController::ActivateKeyboard(
   keyboard_controller->AddObserver(workspace_controller_->layout_manager());
   keyboard_controller->AddObserver(
       always_on_top_controller_->GetLayoutManager());
-  Shell::GetInstance()->delegate()->VirtualKeyboardActivated(true);
+  WmShell::Get()->delegate()->VirtualKeyboardActivated(true);
   aura::Window* parent = GetContainer(kShellWindowId_ImeWindowParentContainer);
   DCHECK(parent);
   aura::Window* keyboard_container = keyboard_controller->GetContainerWindow();
@@ -733,7 +733,7 @@ void RootWindowController::DeactivateKeyboard(
         workspace_controller_->layout_manager());
     keyboard_controller->RemoveObserver(
         always_on_top_controller_->GetLayoutManager());
-    Shell::GetInstance()->delegate()->VirtualKeyboardActivated(false);
+    WmShell::Get()->delegate()->VirtualKeyboardActivated(false);
   }
 }
 

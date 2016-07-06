@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "ash/common/system/system_notifier.h"
-#include "ash/shell.h"
+#include "ash/common/wm_shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/ash_test_helper.h"
 #include "ash/test/test_session_state_delegate.h"
@@ -43,7 +43,7 @@ class MultiUserNotificationBlockerChromeOSTest
 
     ash::test::TestShellDelegate* shell_delegate =
         static_cast<ash::test::TestShellDelegate*>(
-            ash::Shell::GetInstance()->delegate());
+            ash::WmShell::Get()->delegate());
     shell_delegate->set_multi_profiles_enabled(true);
     chrome::MultiUserWindowManager::CreateInstance();
 

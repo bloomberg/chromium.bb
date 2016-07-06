@@ -7,10 +7,11 @@
 #include <utility>
 #include <vector>
 
+#include "ash/common/shell_delegate.h"
+#include "ash/common/wm_shell.h"
 #include "ash/desktop_background/user_wallpaper_delegate.h"
 #include "ash/new_window_delegate.h"
 #include "ash/shell.h"
-#include "ash/shell_delegate.h"
 #include "base/memory/weak_ptr.h"
 #include "components/arc/intent_helper/activity_icon_loader.h"
 #include "components/arc/intent_helper/link_handler_model_impl.h"
@@ -76,7 +77,7 @@ void ArcIntentHelperBridge::OnOpenDownloads() {
 void ArcIntentHelperBridge::OnOpenUrl(const mojo::String& url) {
   DCHECK(thread_checker_.CalledOnValidThread());
   GURL gurl(url.get());
-  ash::Shell::GetInstance()->delegate()->OpenUrl(gurl);
+  ash::WmShell::Get()->delegate()->OpenUrl(gurl);
 }
 
 void ArcIntentHelperBridge::OpenWallpaperPicker() {

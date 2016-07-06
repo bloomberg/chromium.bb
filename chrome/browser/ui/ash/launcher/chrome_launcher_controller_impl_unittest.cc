@@ -18,6 +18,7 @@
 #include "ash/common/shelf/shelf_item_delegate_manager.h"
 #include "ash/common/shelf/shelf_model.h"
 #include "ash/common/shelf/shelf_model_observer.h"
+#include "ash/common/wm_shell.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_helper.h"
 #include "ash/test/shelf_item_delegate_manager_test_api.h"
@@ -1038,7 +1039,7 @@ class MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerImplTest
     ash::test::AshTestHelper::GetTestSessionStateDelegate()
         ->set_logged_in_users(2);
     shell_delegate_ = static_cast<ash::test::TestShellDelegate*>(
-        ash::Shell::GetInstance()->delegate());
+        ash::WmShell::Get()->delegate());
     shell_delegate_->set_multi_profiles_enabled(true);
   }
 

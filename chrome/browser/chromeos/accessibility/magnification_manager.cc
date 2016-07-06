@@ -12,7 +12,6 @@
 #include "ash/magnifier/magnification_controller.h"
 #include "ash/magnifier/partial_magnification_controller.h"
 #include "ash/shell.h"
-#include "ash/shell_delegate.h"
 #include "base/macros.h"
 #include "base/memory/singleton.h"
 #include "chrome/browser/chrome_notification_types.h"

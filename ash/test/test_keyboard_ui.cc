@@ -5,7 +5,6 @@
 #include "ash/test/test_keyboard_ui.h"
 
 #include "ash/shell.h"
-#include "ash/shell_delegate.h"
 #include "ash/wm/window_util.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"

@@ -4,10 +4,10 @@
 
 #include "ash/wm/lock_layout_manager.h"
 
+#include "ash/common/shell_delegate.h"
 #include "ash/common/wm/window_state.h"
 #include "ash/common/wm/wm_event.h"
-#include "ash/shell.h"
-#include "ash/shell_delegate.h"
+#include "ash/common/wm_shell.h"
 #include "ash/wm/lock_window_state.h"
 #include "ash/wm/window_state_aura.h"
 #include "ui/aura/window.h"
@@ -23,7 +23,7 @@ LockLayoutManager::LockLayoutManager(aura::Window* window)
       window_(window),
       root_window_(window->GetRootWindow()),
       is_observing_keyboard_(false) {
-  Shell::GetInstance()->delegate()->AddVirtualKeyboardStateObserver(this);
+  WmShell::Get()->delegate()->AddVirtualKeyboardStateObserver(this);
   root_window_->AddObserver(this);
   if (keyboard::KeyboardController::GetInstance()) {
     keyboard::KeyboardController::GetInstance()->AddObserver(this);
@@ -40,7 +40,7 @@ LockLayoutManager::~LockLayoutManager() {
     (*it)->RemoveObserver(this);
   }
 
-  Shell::GetInstance()->delegate()->RemoveVirtualKeyboardStateObserver(this);
+  WmShell::Get()->delegate()->RemoveVirtualKeyboardStateObserver(this);
 
   if (keyboard::KeyboardController::GetInstance() && is_observing_keyboard_) {
     keyboard::KeyboardController::GetInstance()->RemoveObserver(this);

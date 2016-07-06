@@ -9,7 +9,7 @@
 #include <string>
 
 #include "ash/common/media_delegate.h"
-#include "ash/shell_delegate.h"
+#include "ash/common/shell_delegate.h"
 #include "ash/test/test_session_state_delegate.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
@@ -88,7 +88,7 @@ class TestShellDelegate : public ShellDelegate {
       app_list_presenter_delegate_factory_;
   std::unique_ptr<app_list::AppListPresenterImpl> app_list_presenter_;
 
-  base::ObserverList<ash::VirtualKeyboardStateObserver>
+  base::ObserverList<VirtualKeyboardStateObserver>
       keyboard_state_observer_list_;
 
   DISALLOW_COPY_AND_ASSIGN(TestShellDelegate);

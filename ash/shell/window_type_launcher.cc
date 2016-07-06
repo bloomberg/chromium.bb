@@ -17,7 +17,6 @@
 #include "ash/shell/example_factory.h"
 #include "ash/shell/panel_window.h"
 #include "ash/shell/toplevel_window.h"
-#include "ash/shell_delegate.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/test/child_modal_window.h"
 #include "base/strings/utf_string_conversions.h"

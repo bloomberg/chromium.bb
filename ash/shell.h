@@ -14,7 +14,6 @@
 #include "ash/metrics/user_metrics_recorder.h"
 #include "ash/wm/cursor_manager_chromeos.h"
 #include "ash/wm/system_modal_container_event_filter_delegate.h"
-#include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -367,8 +366,6 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
   }
   ::wm::CursorManager* cursor_manager() { return cursor_manager_.get(); }
 
-  ShellDelegate* delegate() { return delegate_.get(); }
-
   UserWallpaperDelegate* user_wallpaper_delegate() {
     return user_wallpaper_delegate_.get();
   }
@@ -595,7 +592,6 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
 
   std::unique_ptr<UserMetricsRecorder> user_metrics_recorder_;
   std::unique_ptr<AcceleratorController> accelerator_controller_;
-  std::unique_ptr<ShellDelegate> delegate_;
   std::unique_ptr<UserWallpaperDelegate> user_wallpaper_delegate_;
   std::unique_ptr<SessionStateDelegate> session_state_delegate_;
   std::unique_ptr<AccessibilityDelegate> accessibility_delegate_;

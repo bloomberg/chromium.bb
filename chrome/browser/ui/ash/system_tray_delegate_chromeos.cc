@@ -16,6 +16,7 @@
 #include "ash/common/login_status.h"
 #include "ash/common/session/session_state_delegate.h"
 #include "ash/common/session/session_state_observer.h"
+#include "ash/common/shell_delegate.h"
 #include "ash/common/shell_window_ids.h"
 #include "ash/common/system/chromeos/bluetooth/bluetooth_observer.h"
 #include "ash/common/system/chromeos/power/power_status.h"
@@ -32,7 +33,6 @@
 #include "ash/common/wm_shell.h"
 #include "ash/desktop_background/desktop_background_controller.h"
 #include "ash/shell.h"
-#include "ash/shell_delegate.h"
 #include "ash/system/tray/system_tray.h"
 #include "ash/wm/lock_state_controller.h"
 #include "base/bind_helpers.h"
@@ -547,9 +547,8 @@ void SystemTrayDelegateChromeOS::ShowEnterpriseInfo() {
 }
 
 void SystemTrayDelegateChromeOS::ShowUserLogin() {
-  ash::Shell* shell = ash::Shell::GetInstance();
   ash::WmShell* wm_shell = ash::WmShell::Get();
-  if (!shell->delegate()->IsMultiProfilesEnabled())
+  if (!wm_shell->delegate()->IsMultiProfilesEnabled())
     return;
 
   // Only regular non-supervised users could add other users to current session.

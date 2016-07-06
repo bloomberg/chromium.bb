@@ -19,7 +19,7 @@ class ASH_EXPORT WmShellAura : public WmShell,
                                public aura::client::ActivationChangeObserver,
                                public WindowTreeHostManager::Observer {
  public:
-  WmShellAura();
+  explicit WmShellAura(ShellDelegate* delegate);
   ~WmShellAura() override;
 
   static WmShellAura* Get();

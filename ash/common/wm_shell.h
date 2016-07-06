@@ -33,6 +33,7 @@ class MaximizeModeController;
 class MruWindowTracker;
 class ScopedDisableInternalMouseAndKeyboard;
 class SessionStateDelegate;
+class ShellDelegate;
 class ShellObserver;
 class SystemTrayDelegate;
 class SystemTrayNotifier;
@@ -60,6 +61,8 @@ class ASH_EXPORT WmShell {
   static void Set(WmShell* instance);
   static WmShell* Get();
   static bool HasInstance() { return instance_ != nullptr; }
+
+  ShellDelegate* delegate() { return delegate_.get(); }
 
   FocusCycler* focus_cycler() { return focus_cycler_.get(); }
 
@@ -207,7 +210,7 @@ class ASH_EXPORT WmShell {
 #endif
 
  protected:
-  WmShell();
+  explicit WmShell(ShellDelegate* delegate);
   virtual ~WmShell();
 
   base::ObserverList<ShellObserver>* shell_observers() {
@@ -236,7 +239,7 @@ class ASH_EXPORT WmShell {
   static WmShell* instance_;
 
   base::ObserverList<ShellObserver> shell_observers_;
-
+  std::unique_ptr<ShellDelegate> delegate_;
   std::unique_ptr<FocusCycler> focus_cycler_;
   std::unique_ptr<KeyboardUI> keyboard_ui_;
   std::unique_ptr<MaximizeModeController> maximize_mode_controller_;

@@ -5,7 +5,6 @@
 #include "chrome/browser/chromeos/display/output_protection_delegate.h"
 
 #include "ash/shell.h"
-#include "ash/shell_delegate.h"
 #include "build/build_config.h"
 #include "chrome/browser/media/media_capture_devices_dispatcher.h"
 #include "content/public/browser/browser_thread.h"

@@ -6,11 +6,9 @@
 
 #include <utility>
 
-#include "ash/aura/wm_shell_aura.h"
 #include "ash/common/wm/window_resizer.h"
+#include "ash/common/wm_shell.h"
 #include "ash/test/ash_test_base.h"
-#include "ash/test/test_shell_delegate.h"
-#include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "chrome/browser/ui/browser.h"

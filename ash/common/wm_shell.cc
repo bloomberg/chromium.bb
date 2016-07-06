@@ -6,6 +6,7 @@
 
 #include "ash/common/focus_cycler.h"
 #include "ash/common/keyboard/keyboard_ui.h"
+#include "ash/common/shell_delegate.h"
 #include "ash/common/shell_window_ids.h"
 #include "ash/common/system/chromeos/session/logout_confirmation_controller.h"
 #include "ash/common/system/tray/system_tray_delegate.h"
@@ -53,8 +54,9 @@ void WmShell::RemoveShellObserver(ShellObserver* observer) {
   shell_observers_.RemoveObserver(observer);
 }
 
-WmShell::WmShell()
-    : focus_cycler_(new FocusCycler),
+WmShell::WmShell(ShellDelegate* delegate)
+    : delegate_(delegate),
+      focus_cycler_(new FocusCycler),
       system_tray_notifier_(new SystemTrayNotifier),
       window_selector_controller_(new WindowSelectorController()) {}
 

@@ -4,9 +4,10 @@
 
 #include "chrome/browser/chromeos/display/display_configuration_observer.h"
 
+#include "ash/common/shell_delegate.h"
+#include "ash/common/wm_shell.h"
 #include "ash/display/window_tree_host_manager.h"
 #include "ash/shell.h"
-#include "ash/shell_delegate.h"
 #include "chrome/browser/chromeos/display/display_preferences.h"
 
 namespace chromeos {
@@ -21,7 +22,7 @@ DisplayConfigurationObserver::~DisplayConfigurationObserver() {
 
 void DisplayConfigurationObserver::OnDisplaysInitialized() {
   // Update the display pref with the initial power state.
-  if (ash::Shell::GetInstance()->delegate()->IsFirstRunAfterBoot())
+  if (ash::WmShell::Get()->delegate()->IsFirstRunAfterBoot())
     StoreDisplayPrefs();
 }
 

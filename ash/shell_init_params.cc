@@ -4,8 +4,6 @@
 
 #include "ash/shell_init_params.h"
 
-#include "ash/shell_delegate.h"
-
 namespace ash {
 
 ShellInitParams::ShellInitParams()

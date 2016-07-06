@@ -27,7 +27,7 @@ class WmWindowMus;
 // WmShell implementation for mus.
 class WmShellMus : public WmShell, public ::ui::WindowTreeClientObserver {
  public:
-  explicit WmShellMus(::ui::WindowTreeClient* client);
+  WmShellMus(ShellDelegate* delegate, ::ui::WindowTreeClient* client);
   ~WmShellMus() override;
 
   static WmShellMus* Get();

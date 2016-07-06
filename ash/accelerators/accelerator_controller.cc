@@ -18,6 +18,7 @@
 #include "ash/common/media_delegate.h"
 #include "ash/common/session/session_state_delegate.h"
 #include "ash/common/shelf/shelf_model.h"
+#include "ash/common/shell_delegate.h"
 #include "ash/common/shell_window_ids.h"
 #include "ash/common/system/system_notifier.h"
 #include "ash/common/system/tray/system_tray_delegate.h"
@@ -47,7 +48,6 @@
 #include "ash/shelf/shelf_delegate.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
-#include "ash/shell_delegate.h"
 #include "ash/system/brightness_control_delegate.h"
 #include "ash/system/keyboard_brightness/keyboard_brightness_control_delegate.h"
 #include "ash/system/status_area_widget.h"
@@ -106,7 +106,7 @@ class DeprecatedAcceleratorNotificationDelegate
 
   void Click() override {
     if (!WmShell::Get()->GetSessionStateDelegate()->IsUserSessionBlocked())
-      Shell::GetInstance()->delegate()->OpenKeyboardShortcutHelpPage();
+      WmShell::Get()->delegate()->OpenKeyboardShortcutHelpPage();
   }
 
  private:
@@ -171,7 +171,7 @@ void ShowDeprecatedAcceleratorNotification(const char* const notification_id,
       new message_center::Notification(
           message_center::NOTIFICATION_TYPE_SIMPLE, notification_id,
           base::string16(), message,
-          Shell::GetInstance()->delegate()->GetDeprecatedAcceleratorImage(),
+          WmShell::Get()->delegate()->GetDeprecatedAcceleratorImage(),
           base::string16(), GURL(),
           message_center::NotifierId(
               message_center::NotifierId::SYSTEM_COMPONENT,
@@ -277,7 +277,7 @@ void HandleMediaPrevTrack() {
 }
 
 bool CanHandleNewIncognitoWindow() {
-  return Shell::GetInstance()->delegate()->IsIncognitoAllowed();
+  return WmShell::Get()->delegate()->IsIncognitoAllowed();
 }
 
 void HandleNewIncognitoWindow() {
@@ -639,8 +639,7 @@ void HandleSwapPrimaryDisplay() {
 }
 
 bool CanHandleCycleUser() {
-  Shell* shell = Shell::GetInstance();
-  return shell->delegate()->IsMultiProfilesEnabled() &&
+  return WmShell::Get()->delegate()->IsMultiProfilesEnabled() &&
          WmShell::Get()->GetSessionStateDelegate()->NumberOfLoggedInUsers() > 1;
 }
 
@@ -1404,7 +1403,6 @@ AcceleratorController::GetAcceleratorProcessingRestriction(int action) {
           actions_allowed_in_pinned_mode_.end()) {
     return RESTRICTION_PREVENT_PROCESSING_AND_PROPAGATION;
   }
-  Shell* shell = Shell::GetInstance();
   WmShell* wm_shell = WmShell::Get();
   if (!wm_shell->GetSessionStateDelegate()->IsActiveUserSessionStarted() &&
       actions_allowed_at_login_screen_.find(action) ==
@@ -1416,7 +1414,7 @@ AcceleratorController::GetAcceleratorProcessingRestriction(int action) {
           actions_allowed_at_lock_screen_.end()) {
     return RESTRICTION_PREVENT_PROCESSING;
   }
-  if (shell->delegate()->IsRunningInForcedAppMode() &&
+  if (wm_shell->delegate()->IsRunningInForcedAppMode() &&
       actions_allowed_in_app_mode_.find(action) ==
           actions_allowed_in_app_mode_.end()) {
     return RESTRICTION_PREVENT_PROCESSING;

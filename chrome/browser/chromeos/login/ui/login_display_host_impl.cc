@@ -9,6 +9,7 @@
 
 #include "ash/audio/sounds.h"
 #include "ash/common/shell_window_ids.h"
+#include "ash/common/wm_shell.h"
 #include "ash/desktop_background/desktop_background_controller.h"
 #include "ash/desktop_background/user_wallpaper_delegate.h"
 #include "ash/shell.h"
@@ -299,12 +300,10 @@ LoginDisplayHostImpl::LoginDisplayHostImpl(const gfx::Rect& background_bounds)
     is_observing_keyboard_ = true;
   }
 
-  if (!chrome::IsRunningInMash()) {
-    ash::Shell::GetInstance()->delegate()->AddVirtualKeyboardStateObserver(
-        this);
-  } else {
+  if (!chrome::IsRunningInMash())
+    ash::WmShell::Get()->delegate()->AddVirtualKeyboardStateObserver(this);
+  else
     NOTIMPLEMENTED();
-  }
   display::Screen::GetScreen()->AddObserver(this);
 
   // We need to listen to CLOSE_ALL_BROWSERS_REQUEST but not APP_TERMINATING
@@ -420,12 +419,10 @@ LoginDisplayHostImpl::~LoginDisplayHostImpl() {
     is_observing_keyboard_ = false;
   }
 
-  if (!chrome::IsRunningInMash()) {
-    ash::Shell::GetInstance()->delegate()->RemoveVirtualKeyboardStateObserver(
-        this);
-  } else {
+  if (!chrome::IsRunningInMash())
+    ash::WmShell::Get()->delegate()->RemoveVirtualKeyboardStateObserver(this);
+  else
     NOTIMPLEMENTED();
-  }
   display::Screen::GetScreen()->RemoveObserver(this);
 
   if (login_view_ && login_window_)

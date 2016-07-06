@@ -4,12 +4,13 @@
 
 #include "ash/test/shell_test_api.h"
 
+#include "ash/aura/wm_shell_aura.h"
 #include "ash/common/session/session_state_delegate.h"
+#include "ash/common/shell_delegate.h"
 #include "ash/display/display_configuration_controller.h"
 #include "ash/root_window_controller.h"
 #include "ash/shelf/shelf_delegate.h"
 #include "ash/shell.h"
-#include "ash/shell_delegate.h"
 
 namespace ash {
 namespace test {
@@ -41,7 +42,7 @@ DragDropController* ShellTestApi::drag_drop_controller() {
 }
 
 app_list::AppListPresenter* ShellTestApi::app_list_presenter() {
-  return shell_->delegate_->GetAppListPresenter();
+  return shell_->wm_shell_->delegate()->GetAppListPresenter();
 }
 
 void ShellTestApi::DisableDisplayAnimator() {

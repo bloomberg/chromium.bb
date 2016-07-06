@@ -7,7 +7,7 @@
 
 #include <memory>
 
-#include "ash/shell_delegate.h"
+#include "ash/common/shell_delegate.h"
 #include "base/macros.h"
 
 namespace keyboard {
@@ -20,7 +20,7 @@ class AppListPresenterMus;
 
 namespace sysui {
 
-class ShellDelegateMus : public ash::ShellDelegate {
+class ShellDelegateMus : public ShellDelegate {
  public:
   explicit ShellDelegateMus(std::unique_ptr<AppListPresenterMus>);
   ~ShellDelegateMus() override;
@@ -43,12 +43,12 @@ class ShellDelegateMus : public ash::ShellDelegate {
   void OpenUrl(const GURL& url) override;
   app_list::AppListPresenter* GetAppListPresenter() override;
   ShelfDelegate* CreateShelfDelegate(ShelfModel* model) override;
-  ash::SystemTrayDelegate* CreateSystemTrayDelegate() override;
-  ash::UserWallpaperDelegate* CreateUserWallpaperDelegate() override;
-  ash::SessionStateDelegate* CreateSessionStateDelegate() override;
-  ash::AccessibilityDelegate* CreateAccessibilityDelegate() override;
-  ash::NewWindowDelegate* CreateNewWindowDelegate() override;
-  ash::MediaDelegate* CreateMediaDelegate() override;
+  SystemTrayDelegate* CreateSystemTrayDelegate() override;
+  UserWallpaperDelegate* CreateUserWallpaperDelegate() override;
+  SessionStateDelegate* CreateSessionStateDelegate() override;
+  AccessibilityDelegate* CreateAccessibilityDelegate() override;
+  NewWindowDelegate* CreateNewWindowDelegate() override;
+  MediaDelegate* CreateMediaDelegate() override;
   std::unique_ptr<PointerWatcherDelegate> CreatePointerWatcherDelegate()
       override;
   ui::MenuModel* CreateContextMenu(WmShelf* wm_shelf,
