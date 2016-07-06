@@ -139,8 +139,21 @@ void ColorChooserMac::SetSelectedColor(SkColor color) {
     nonUserChange_ = NO;
     return;
   }
-  chooser_->DidChooseColorInColorPanel(skia::NSDeviceColorToSkColor(
-      [[panel color] colorUsingColorSpaceName:NSDeviceRGBColorSpace]));
+  NSColor* color = [panel color];
+  if ([color colorSpace] == [NSColorSpace genericRGBColorSpace]) {
+    // genericRGB -> deviceRGB conversion isn't ignorable.  We'd like to use RGB
+    // values shown in NSColorPanel UI.
+    CGFloat red, green, blue, alpha;
+    [color getRed:&red green:&green blue:&blue alpha:&alpha];
+    SkColor skColor = SkColorSetARGB(SkScalarRoundToInt(255.0 * alpha),
+                                     SkScalarRoundToInt(255.0 * red),
+                                     SkScalarRoundToInt(255.0 * green),
+                                     SkScalarRoundToInt(255.0 * blue));
+    chooser_->DidChooseColorInColorPanel(skColor);
+  } else {
+    chooser_->DidChooseColorInColorPanel(skia::NSDeviceColorToSkColor(
+        [[panel color] colorUsingColorSpaceName:NSDeviceRGBColorSpace]));
+  }
   nonUserChange_ = NO;
 }
 
