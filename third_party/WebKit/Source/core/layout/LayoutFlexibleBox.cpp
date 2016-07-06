@@ -1205,6 +1205,8 @@ bool LayoutFlexibleBox::computeNextFlexLine(OrderedFlexItemList& orderedChildren
             continue;
         }
 
+        ChildLayoutType layoutType = relayoutChildren ? ForceLayout : LayoutIfNeeded;
+
         // If this condition is true, then computeMainAxisExtentForChild will call child.intrinsicContentLogicalHeight()
         // and child.scrollbarLogicalHeight(), so if the child has intrinsic min/max/preferred size,
         // run layout on it now to make sure its logical height and scroll bars are up to date.
@@ -1212,9 +1214,10 @@ bool LayoutFlexibleBox::computeNextFlexLine(OrderedFlexItemList& orderedChildren
             child->clearOverrideSize();
             child->layoutIfNeeded();
             cacheChildMainSize(*child);
+            layoutType = LayoutIfNeeded;
         }
 
-        LayoutUnit childInnerFlexBaseSize = computeInnerFlexBaseSizeForChild(*child, relayoutChildren ? ForceLayout : LayoutIfNeeded);
+        LayoutUnit childInnerFlexBaseSize = computeInnerFlexBaseSizeForChild(*child, layoutType);
         LayoutUnit childMainAxisMarginBorderPadding = mainAxisBorderAndPaddingExtentForChild(*child)
             + (isHorizontalFlow() ? child->marginWidth() : child->marginHeight());
         LayoutUnit childOuterFlexBaseSize = childInnerFlexBaseSize + childMainAxisMarginBorderPadding;
