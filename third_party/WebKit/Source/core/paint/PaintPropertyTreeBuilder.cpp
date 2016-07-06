@@ -12,6 +12,7 @@
 #include "core/layout/svg/LayoutSVGRoot.h"
 #include "core/paint/ObjectPaintProperties.h"
 #include "core/paint/PaintLayer.h"
+#include "core/paint/SVGRootPainter.h"
 #include "platform/transforms/TransformationMatrix.h"
 #include "wtf/PtrUtil.h"
 #include <memory>
@@ -261,13 +262,12 @@ void PaintPropertyTreeBuilder::updateSvgLocalToBorderBoxTransform(const LayoutOb
     if (!object.isSVGRoot())
         return;
 
-    AffineTransform transform = AffineTransform::translation(context.paintOffset.x().toFloat(), context.paintOffset.y().toFloat());
-    transform *= toLayoutSVGRoot(object).localToBorderBoxTransform();
-    if (transform.isIdentity())
+    AffineTransform transformToBorderBox = SVGRootPainter(toLayoutSVGRoot(object)).transformToPixelSnappedBorderBox(context.paintOffset);
+    if (transformToBorderBox.isIdentity())
         return;
 
     RefPtr<TransformPaintPropertyNode> svgLocalToBorderBoxTransform = TransformPaintPropertyNode::create(
-        transform, FloatPoint3D(0, 0, 0), context.currentTransform);
+        transformToBorderBox, FloatPoint3D(0, 0, 0), context.currentTransform);
     context.currentTransform = svgLocalToBorderBoxTransform.get();
     context.paintOffset = LayoutPoint();
     object.getMutableForPainting().ensureObjectPaintProperties().setSvgLocalToBorderBoxTransform(svgLocalToBorderBoxTransform.release());

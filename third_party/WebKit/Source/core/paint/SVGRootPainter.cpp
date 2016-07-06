@@ -18,13 +18,27 @@
 
 namespace blink {
 
+IntRect SVGRootPainter::pixelSnappedSize(const LayoutPoint& paintOffset) const
+{
+    return pixelSnappedIntRect(paintOffset, m_layoutSVGRoot.size());
+}
+
+AffineTransform SVGRootPainter::transformToPixelSnappedBorderBox(const LayoutPoint& paintOffset) const
+{
+    const IntRect snappedSize = pixelSnappedSize(paintOffset);
+    AffineTransform paintOffsetToBorderBox =
+        AffineTransform::translation(snappedSize.x(), snappedSize.y());
+    paintOffsetToBorderBox.scale(
+        snappedSize.width() / m_layoutSVGRoot.size().width().toFloat(),
+        snappedSize.height() / m_layoutSVGRoot.size().height().toFloat());
+    paintOffsetToBorderBox.multiply(m_layoutSVGRoot.localToBorderBoxTransform());
+    return paintOffsetToBorderBox;
+}
+
 void SVGRootPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
-    // Pixel-snap to match BoxPainter's alignment.
-    const IntRect adjustedRect = pixelSnappedIntRect(paintOffset, m_layoutSVGRoot.size());
-
     // An empty viewport disables rendering.
-    if (adjustedRect.isEmpty())
+    if (pixelSnappedSize(paintOffset).isEmpty())
         return;
 
     // SVG outlines are painted during PaintPhaseForeground.
@@ -47,18 +61,9 @@ void SVGRootPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& paintO
         clipRecorder.emplace(paintInfoBeforeFiltering.context, m_layoutSVGRoot, paintInfoBeforeFiltering.displayItemTypeForClipping(), pixelSnappedIntRect(m_layoutSVGRoot.overflowClipRect(paintOffset)));
     }
 
-    // Convert from container offsets (html layoutObjects) to a relative transform (svg layoutObjects).
-    // Transform from our paint container's coordinate system to our local coords.
-    AffineTransform paintOffsetToBorderBox =
-        AffineTransform::translation(adjustedRect.x(), adjustedRect.y());
-    // Compensate for size snapping.
-    paintOffsetToBorderBox.scale(
-        adjustedRect.width() / m_layoutSVGRoot.size().width().toFloat(),
-        adjustedRect.height() / m_layoutSVGRoot.size().height().toFloat());
-    paintOffsetToBorderBox.multiply(m_layoutSVGRoot.localToBorderBoxTransform());
-
-    paintInfoBeforeFiltering.updateCullRect(paintOffsetToBorderBox);
-    SVGTransformContext transformContext(paintInfoBeforeFiltering.context, m_layoutSVGRoot, paintOffsetToBorderBox);
+    AffineTransform transformToBorderBox = transformToPixelSnappedBorderBox(paintOffset);
+    paintInfoBeforeFiltering.updateCullRect(transformToBorderBox);
+    SVGTransformContext transformContext(paintInfoBeforeFiltering.context, m_layoutSVGRoot, transformToBorderBox);
 
     SVGPaintContext paintContext(m_layoutSVGRoot, paintInfoBeforeFiltering);
     if (paintContext.paintInfo().phase == PaintPhaseForeground && !paintContext.applyClipMaskAndFilterIfNecessary())
