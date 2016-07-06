@@ -244,9 +244,8 @@ bool SVGInlineTextBox::nodeAtPoint(HitTestResult& result, const HitTestLocation&
         if (hitRules.canHitBoundingBox
             || (hitRules.canHitStroke && (getLineLayoutItem().style()->svgStyle().hasStroke() || !hitRules.requireStroke))
             || (hitRules.canHitFill && (getLineLayoutItem().style()->svgStyle().hasFill() || !hitRules.requireFill))) {
-            LayoutPoint boxOrigin(x(), y());
-            boxOrigin.moveBy(accumulatedOffset);
-            LayoutRect rect(boxOrigin, size());
+            LayoutRect rect(topLeft(), LayoutSize(logicalWidth(), logicalHeight()));
+            rect.moveBy(accumulatedOffset);
             if (locationInContainer.intersects(rect)) {
                 LineLayoutSVGInlineText lineLayoutItem = LineLayoutSVGInlineText(this->getLineLayoutItem());
                 ASSERT(lineLayoutItem.scalingFactor());
