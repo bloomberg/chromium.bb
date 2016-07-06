@@ -44,8 +44,13 @@ class PermissionBubbleViewViews : public PermissionBubbleView {
  private:
   // These three functions have separate implementations for Views-based and
   // Cocoa-based browsers, to allow this bubble to be used in either.
+
+  // Returns the view to anchor the permission bubble to. May be null.
   views::View* GetAnchorView();
+  // Returns the anchor point to anchor the permission bubble to, as a fallback.
+  // Only used if GetAnchorView() returns nullptr.
   gfx::Point GetAnchorPoint();
+  // Returns the type of arrow to display on the permission bubble.
   views::BubbleBorder::Arrow GetAnchorArrow();
 
   Browser* browser_;

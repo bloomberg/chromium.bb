@@ -361,10 +361,9 @@ void PermissionsBubbleDialogDelegateView::UpdateAnchor(
       new views::BubbleBorder(adjusted_arrow, shadow(), color())));
 
   // Reposition the bubble based on the updated arrow and view.
-  if (anchor_view)
-    SetAnchorView(anchor_view);
-  else
-    SetAnchorRect(gfx::Rect(anchor_point, gfx::Size()));
+  SetAnchorView(anchor_view);
+  // The anchor rect is ignored unless |anchor_view| is nullptr.
+  SetAnchorRect(gfx::Rect(anchor_point, gfx::Size()));
 }
 
 //////////////////////////////////////////////////////////////////////////////
