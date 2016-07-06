@@ -69,13 +69,13 @@ struct SameSizeAsComputedStyle : public RefCounted<SameSizeAsComputedStyle> {
     void* ownPtrs[1];
     void* dataRefSvgStyle;
 
-    struct InheritedFlags {
+    struct InheritedData {
         unsigned m_bitfields[2];
-    } inherited_flags;
+    } inherited_data;
 
-    struct NonInheritedFlags {
+    struct NonInheritedData {
         unsigned m_bitfields[3];
-    } noninherited_flags;
+    } noninherited_data;
 };
 
 static_assert(sizeof(ComputedStyle) == sizeof(SameSizeAsComputedStyle), "ComputedStyle should stay small");
@@ -120,8 +120,8 @@ ALWAYS_INLINE ComputedStyle::ComputedStyle()
     , m_svgStyle(initialStyle().m_svgStyle)
 {
     setBitDefaults(); // Would it be faster to copy this from the default style?
-    static_assert((sizeof(InheritedFlags) <= 8), "InheritedFlags should not grow");
-    static_assert((sizeof(NonInheritedFlags) <= 12), "NonInheritedFlags should not grow");
+    static_assert((sizeof(InheritedData) <= 8), "InheritedData should not grow");
+    static_assert((sizeof(NonInheritedData) <= 12), "NonInheritedData should not grow");
 }
 
 ALWAYS_INLINE ComputedStyle::ComputedStyle(InitialStyleTag)
@@ -158,8 +158,8 @@ ALWAYS_INLINE ComputedStyle::ComputedStyle(const ComputedStyle& o)
     , rareInheritedData(o.rareInheritedData)
     , inherited(o.inherited)
     , m_svgStyle(o.m_svgStyle)
-    , inherited_flags(o.inherited_flags)
-    , noninherited_flags(o.noninherited_flags)
+    , inherited_data(o.inherited_data)
+    , noninherited_data(o.noninherited_data)
 {
 }
 
@@ -197,7 +197,8 @@ StyleRecalcChange ComputedStyle::stylePropagationDiff(const ComputedStyle* oldSt
         || oldStyle->justifyItems() != newStyle->justifyItems()) // TODO (lajava): We must avoid this Reattach.
         return Reattach;
 
-    if (oldStyle->inheritedNotEqual(*newStyle))
+    if (!oldStyle->inheritedEqual(*newStyle)
+        || !oldStyle->loadingCustomFontsEqual(*newStyle))
         return Inherit;
 
     if (*oldStyle == *newStyle)
@@ -276,7 +277,7 @@ void ComputedStyle::inheritFrom(const ComputedStyle& inheritParent, IsAtShadowBo
         rareInheritedData = inheritParent.rareInheritedData;
     }
     inherited = inheritParent.inherited;
-    inherited_flags = inheritParent.inherited_flags;
+    inherited_data = inheritParent.inherited_data;
     if (m_svgStyle != inheritParent.m_svgStyle)
         m_svgStyle.access()->inheritFrom(inheritParent.m_svgStyle.get());
 }
@@ -289,37 +290,37 @@ void ComputedStyle::copyNonInheritedFromCached(const ComputedStyle& other)
     surround = other.surround;
     rareNonInheritedData = other.rareNonInheritedData;
 
-    // The flags are copied one-by-one because noninherited_flags contains a bunch of stuff other than real style data.
+    // The flags are copied one-by-one because noninherited_data.m_contains a bunch of stuff other than real style data.
     // See comments for each skipped flag below.
-    noninherited_flags.effectiveDisplay = other.noninherited_flags.effectiveDisplay;
-    noninherited_flags.originalDisplay = other.noninherited_flags.originalDisplay;
-    noninherited_flags.overflowX = other.noninherited_flags.overflowX;
-    noninherited_flags.overflowY = other.noninherited_flags.overflowY;
-    noninherited_flags.verticalAlign = other.noninherited_flags.verticalAlign;
-    noninherited_flags.clear = other.noninherited_flags.clear;
-    noninherited_flags.position = other.noninherited_flags.position;
-    noninherited_flags.floating = other.noninherited_flags.floating;
-    noninherited_flags.tableLayout = other.noninherited_flags.tableLayout;
-    noninherited_flags.unicodeBidi = other.noninherited_flags.unicodeBidi;
-    noninherited_flags.hasViewportUnits = other.noninherited_flags.hasViewportUnits;
-    noninherited_flags.breakBefore = other.noninherited_flags.breakBefore;
-    noninherited_flags.breakAfter = other.noninherited_flags.breakAfter;
-    noninherited_flags.breakInside = other.noninherited_flags.breakInside;
-    noninherited_flags.hasRemUnits = other.noninherited_flags.hasRemUnits;
+    noninherited_data.m_effectiveDisplay = other.noninherited_data.m_effectiveDisplay;
+    noninherited_data.m_originalDisplay = other.noninherited_data.m_originalDisplay;
+    noninherited_data.m_overflowX = other.noninherited_data.m_overflowX;
+    noninherited_data.m_overflowY = other.noninherited_data.m_overflowY;
+    noninherited_data.m_verticalAlign = other.noninherited_data.m_verticalAlign;
+    noninherited_data.m_clear = other.noninherited_data.m_clear;
+    noninherited_data.m_position = other.noninherited_data.m_position;
+    noninherited_data.m_floating = other.noninherited_data.m_floating;
+    noninherited_data.m_tableLayout = other.noninherited_data.m_tableLayout;
+    noninherited_data.m_unicodeBidi = other.noninherited_data.m_unicodeBidi;
+    noninherited_data.m_hasViewportUnits = other.noninherited_data.m_hasViewportUnits;
+    noninherited_data.m_breakBefore = other.noninherited_data.m_breakBefore;
+    noninherited_data.m_breakAfter = other.noninherited_data.m_breakAfter;
+    noninherited_data.m_breakInside = other.noninherited_data.m_breakInside;
+    noninherited_data.m_hasRemUnits = other.noninherited_data.m_hasRemUnits;
 
     // Correctly set during selector matching:
-    // noninherited_flags.styleType
-    // noninherited_flags.pseudoBits
+    // noninherited_data.m_styleType
+    // noninherited_data.m_pseudoBits
 
     // Set correctly while computing style for children:
-    // noninherited_flags.explicitInheritance
+    // noninherited_data.m_explicitInheritance
 
     // unique() styles are not cacheable.
-    ASSERT(!other.noninherited_flags.unique);
+    DCHECK(!other.noninherited_data.m_unique);
 
     // styles with non inherited properties that reference variables are not
     // cacheable.
-    ASSERT(!other.noninherited_flags.variableReference);
+    DCHECK(!other.noninherited_data.m_variableReference);
 
     // The following flags are set during matching before we decide that we get a
     // match in the MatchedPropertiesCache which in turn calls this method. The
@@ -333,31 +334,22 @@ void ComputedStyle::copyNonInheritedFromCached(const ComputedStyle& other)
     // properties here, but the affectedBy flags will be set differently based on
     // the matching order of the :-webkit-any components.
     //
-    // noninherited_flags.emptyState
-    // noninherited_flags.affectedByFocus
-    // noninherited_flags.affectedByHover
-    // noninherited_flags.affectedByActive
-    // noninherited_flags.affectedByDrag
-    // noninherited_flags.isLink
+    // noninherited_data.m_emptyState
+    // noninherited_data.m_affectedByFocus
+    // noninherited_data.m_affectedByHover
+    // noninherited_data.m_affectedByActive
+    // noninherited_data.m_affectedByDrag
+    // noninherited_data.m_isLink
 
     if (m_svgStyle != other.m_svgStyle)
         m_svgStyle.access()->copyNonInheritedFromCached(other.m_svgStyle.get());
-    ASSERT(zoom() == initialZoom());
+    DCHECK_EQ(zoom(), initialZoom());
 }
 
 bool ComputedStyle::operator==(const ComputedStyle& o) const
 {
-    // compare everything except the pseudoStyle pointer
-    return inherited_flags == o.inherited_flags
-        && noninherited_flags == o.noninherited_flags
-        && m_box == o.m_box
-        && visual == o.visual
-        && m_background == o.m_background
-        && surround == o.surround
-        && rareNonInheritedData == o.rareNonInheritedData
-        && rareInheritedData == o.rareInheritedData
-        && inherited == o.inherited
-        && m_svgStyle == o.m_svgStyle;
+    return inheritedEqual(o)
+        && nonInheritedEqual(o);
 }
 
 bool ComputedStyle::isStyleAvailable() const
@@ -426,19 +418,35 @@ void ComputedStyle::removeCachedPseudoStyle(PseudoId pid)
     }
 }
 
-bool ComputedStyle::inheritedNotEqual(const ComputedStyle& other) const
+bool ComputedStyle::inheritedEqual(const ComputedStyle& other) const
 {
-    return inherited_flags != other.inherited_flags
-        || inherited != other.inherited
-        || font().loadingCustomFonts() != other.font().loadingCustomFonts()
-        || m_svgStyle->inheritedNotEqual(other.m_svgStyle.get())
-        || rareInheritedData != other.rareInheritedData;
+    return inherited_data == other.inherited_data
+        && inherited == other.inherited
+        && m_svgStyle->inheritedEqual(*other.m_svgStyle)
+        && rareInheritedData == other.rareInheritedData;
+}
+
+bool ComputedStyle::loadingCustomFontsEqual(const ComputedStyle& other) const
+{
+    return font().loadingCustomFonts() == other.font().loadingCustomFonts();
+}
+
+bool ComputedStyle::nonInheritedEqual(const ComputedStyle& other) const
+{
+    // compare everything except the pseudoStyle pointer
+    return noninherited_data == other.noninherited_data
+        && m_box == other.m_box
+        && visual == other.visual
+        && m_background == other.m_background
+        && surround == other.surround
+        && rareNonInheritedData == other.rareNonInheritedData
+        && m_svgStyle->nonInheritedEqual(*other.m_svgStyle);
 }
 
 bool ComputedStyle::inheritedDataShared(const ComputedStyle& other) const
 {
     // This is a fast check that only looks if the data structures are shared.
-    return inherited_flags == other.inherited_flags
+    return inherited_data == other.inherited_data
         && inherited.get() == other.inherited.get()
         && m_svgStyle.get() == other.m_svgStyle.get()
         && rareInheritedData.get() == other.rareInheritedData.get();
@@ -615,33 +623,33 @@ bool ComputedStyle::diffNeedsFullLayoutAndPaintInvalidation(const ComputedStyle&
             return true;
     }
 
-    if (inherited_flags._box_direction != other.inherited_flags._box_direction
-        || inherited_flags.m_rtlOrdering != other.inherited_flags.m_rtlOrdering
-        || inherited_flags._text_align != other.inherited_flags._text_align
-        || inherited_flags._text_transform != other.inherited_flags._text_transform
-        || inherited_flags._direction != other.inherited_flags._direction
-        || inherited_flags._white_space != other.inherited_flags._white_space
-        || inherited_flags.m_writingMode != other.inherited_flags.m_writingMode)
+    if (inherited_data.m_boxDirection != other.inherited_data.m_boxDirection
+        || inherited_data.m_rtlOrdering != other.inherited_data.m_rtlOrdering
+        || inherited_data.m_textAlign != other.inherited_data.m_textAlign
+        || inherited_data.m_textTransform != other.inherited_data.m_textTransform
+        || inherited_data.m_direction != other.inherited_data.m_direction
+        || inherited_data.m_whiteSpace != other.inherited_data.m_whiteSpace
+        || inherited_data.m_writingMode != other.inherited_data.m_writingMode)
         return true;
 
-    if (noninherited_flags.overflowX != other.noninherited_flags.overflowX
-        || noninherited_flags.overflowY != other.noninherited_flags.overflowY
-        || noninherited_flags.clear != other.noninherited_flags.clear
-        || noninherited_flags.unicodeBidi != other.noninherited_flags.unicodeBidi
-        || noninherited_flags.floating != other.noninherited_flags.floating
-        || noninherited_flags.originalDisplay != other.noninherited_flags.originalDisplay)
+    if (noninherited_data.m_overflowX != other.noninherited_data.m_overflowX
+        || noninherited_data.m_overflowY != other.noninherited_data.m_overflowY
+        || noninherited_data.m_clear != other.noninherited_data.m_clear
+        || noninherited_data.m_unicodeBidi != other.noninherited_data.m_unicodeBidi
+        || noninherited_data.m_floating != other.noninherited_data.m_floating
+        || noninherited_data.m_originalDisplay != other.noninherited_data.m_originalDisplay)
         return true;
 
-    if (noninherited_flags.effectiveDisplay >= FIRST_TABLE_DISPLAY && noninherited_flags.effectiveDisplay <= LAST_TABLE_DISPLAY) {
-        if (inherited_flags._border_collapse != other.inherited_flags._border_collapse
-            || inherited_flags._empty_cells != other.inherited_flags._empty_cells
-            || inherited_flags._caption_side != other.inherited_flags._caption_side
-            || noninherited_flags.tableLayout != other.noninherited_flags.tableLayout)
+    if (noninherited_data.m_effectiveDisplay >= FIRST_TABLE_DISPLAY && noninherited_data.m_effectiveDisplay <= LAST_TABLE_DISPLAY) {
+        if (inherited_data.m_borderCollapse != other.inherited_data.m_borderCollapse
+            || inherited_data.m_emptyCells != other.inherited_data.m_emptyCells
+            || inherited_data.m_captionSide != other.inherited_data.m_captionSide
+            || noninherited_data.m_tableLayout != other.noninherited_data.m_tableLayout)
             return true;
 
         // In the collapsing border model, 'hidden' suppresses other borders, while 'none'
         // does not, so these style differences can be width differences.
-        if (inherited_flags._border_collapse
+        if (inherited_data.m_borderCollapse
             && ((borderTopStyle() == BorderStyleHidden && other.borderTopStyle() == BorderStyleNone)
                 || (borderTopStyle() == BorderStyleNone && other.borderTopStyle() == BorderStyleHidden)
                 || (borderBottomStyle() == BorderStyleHidden && other.borderBottomStyle() == BorderStyleNone)
@@ -651,9 +659,9 @@ bool ComputedStyle::diffNeedsFullLayoutAndPaintInvalidation(const ComputedStyle&
                 || (borderRightStyle() == BorderStyleHidden && other.borderRightStyle() == BorderStyleNone)
                 || (borderRightStyle() == BorderStyleNone && other.borderRightStyle() == BorderStyleHidden)))
             return true;
-    } else if (noninherited_flags.effectiveDisplay == LIST_ITEM) {
-        if (inherited_flags._list_style_type != other.inherited_flags._list_style_type
-            || inherited_flags._list_style_position != other.inherited_flags._list_style_position)
+    } else if (noninherited_data.m_effectiveDisplay == LIST_ITEM) {
+        if (inherited_data.m_listStyleType != other.inherited_data.m_listStyleType
+            || inherited_data.m_listStylePosition != other.inherited_data.m_listStylePosition)
             return true;
     }
 
@@ -686,8 +694,8 @@ bool ComputedStyle::diffNeedsFullLayout(const ComputedStyle& other) const
             return true;
     }
 
-    if (noninherited_flags.verticalAlign != other.noninherited_flags.verticalAlign
-        || noninherited_flags.position != other.noninherited_flags.position)
+    if (noninherited_data.m_verticalAlign != other.noninherited_data.m_verticalAlign
+        || noninherited_data.m_position != other.noninherited_data.m_position)
         return true;
 
     if (surround.get() != other.surround.get()) {
@@ -738,9 +746,9 @@ bool ComputedStyle::diffNeedsPaintInvalidationObject(const ComputedStyle& other)
     if (!m_background->outline().visuallyEqual(other.m_background->outline()))
         return true;
 
-    if (inherited_flags._visibility != other.inherited_flags._visibility
-        || inherited_flags.m_printColorAdjust != other.inherited_flags.m_printColorAdjust
-        || inherited_flags._insideLink != other.inherited_flags._insideLink
+    if (inherited_data.m_visibility != other.inherited_data.m_visibility
+        || inherited_data.m_printColorAdjust != other.inherited_data.m_printColorAdjust
+        || inherited_data.m_insideLink != other.inherited_data.m_insideLink
         || !surround->border.visuallyEqual(other.surround->border)
         || !m_background->visuallyEqual(*other.m_background))
         return true;
@@ -842,7 +850,7 @@ void ComputedStyle::updatePropertySpecificDifferences(const ComputedStyle& other
     if (!diff.needsPaintInvalidation()) {
         if (inherited->color != other.inherited->color
             || inherited->visitedLinkColor != other.inherited->visitedLinkColor
-            || inherited_flags.m_textUnderline != other.inherited_flags.m_textUnderline
+            || inherited_data.m_textUnderline != other.inherited_data.m_textUnderline
             || visual->textDecoration != other.visual->textDecoration) {
             diff.setTextDecorationOrColorChanged();
         } else if (rareNonInheritedData.get() != other.rareNonInheritedData.get()
@@ -1338,11 +1346,11 @@ TextDecoration ComputedStyle::textDecorationsInEffect() const
 
 const Vector<AppliedTextDecoration>& ComputedStyle::appliedTextDecorations() const
 {
-    if (!inherited_flags.m_textUnderline && !rareInheritedData->appliedTextDecorations) {
+    if (!inherited_data.m_textUnderline && !rareInheritedData->appliedTextDecorations) {
         DEFINE_STATIC_LOCAL(Vector<AppliedTextDecoration>, empty, ());
         return empty;
     }
-    if (inherited_flags.m_textUnderline) {
+    if (inherited_data.m_textUnderline) {
         DEFINE_STATIC_LOCAL(Vector<AppliedTextDecoration>, underline, (1, AppliedTextDecoration(TextDecorationUnderline)));
         return underline;
     }
@@ -1477,8 +1485,8 @@ void ComputedStyle::addAppliedTextDecoration(const AppliedTextDecoration& decora
     else if (!list->hasOneRef())
         list = list->copy();
 
-    if (inherited_flags.m_textUnderline) {
-        inherited_flags.m_textUnderline = false;
+    if (inherited_data.m_textUnderline) {
+        inherited_data.m_textUnderline = false;
         list->append(AppliedTextDecoration(TextDecorationUnderline));
     }
 
@@ -1501,7 +1509,7 @@ void ComputedStyle::applyTextDecorations()
         AppliedTextDecoration underline(TextDecorationUnderline, style, styleColor);
 
         if (!rareInheritedData->appliedTextDecorations && underline.isSimpleUnderline())
-            inherited_flags.m_textUnderline = true;
+            inherited_data.m_textUnderline = true;
         else
             addAppliedTextDecoration(underline);
     }
@@ -1513,7 +1521,7 @@ void ComputedStyle::applyTextDecorations()
 
 void ComputedStyle::clearAppliedTextDecorations()
 {
-    inherited_flags.m_textUnderline = false;
+    inherited_data.m_textUnderline = false;
 
     if (rareInheritedData->appliedTextDecorations)
         rareInheritedData.access()->appliedTextDecorations = nullptr;

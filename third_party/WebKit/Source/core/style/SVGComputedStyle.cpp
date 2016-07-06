@@ -80,23 +80,25 @@ SVGComputedStyle::~SVGComputedStyle()
 
 bool SVGComputedStyle::operator==(const SVGComputedStyle& other) const
 {
-    return fill == other.fill
-        && stroke == other.stroke
-        && stops == other.stops
-        && misc == other.misc
-        && inheritedResources == other.inheritedResources
-        && geometry == other.geometry
-        && resources == other.resources
-        && svg_inherited_flags == other.svg_inherited_flags
-        && svg_noninherited_flags == other.svg_noninherited_flags;
+    return inheritedEqual(other)
+        && nonInheritedEqual(other);
 }
 
-bool SVGComputedStyle::inheritedNotEqual(const SVGComputedStyle* other) const
+bool SVGComputedStyle::inheritedEqual(const SVGComputedStyle& other) const
 {
-    return fill != other->fill
-        || stroke != other->stroke
-        || inheritedResources != other->inheritedResources
-        || svg_inherited_flags != other->svg_inherited_flags;
+    return fill == other.fill
+        && stroke == other.stroke
+        && inheritedResources == other.inheritedResources
+        && svg_inherited_flags == other.svg_inherited_flags;
+}
+
+bool SVGComputedStyle::nonInheritedEqual(const SVGComputedStyle& other) const
+{
+    return stops == other.stops
+        && misc == other.misc
+        && geometry == other.geometry
+        && resources == other.resources
+        && svg_noninherited_flags == other.svg_noninherited_flags;
 }
 
 void SVGComputedStyle::inheritFrom(const SVGComputedStyle* svgInheritParent)

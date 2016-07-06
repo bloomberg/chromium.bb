@@ -41,7 +41,8 @@ public:
     PassRefPtr<SVGComputedStyle> copy() const { return adoptRef(new SVGComputedStyle(*this));}
     ~SVGComputedStyle();
 
-    bool inheritedNotEqual(const SVGComputedStyle*) const;
+    bool inheritedEqual(const SVGComputedStyle&) const;
+    bool nonInheritedEqual(const SVGComputedStyle&) const;
     void inheritFrom(const SVGComputedStyle*);
     void copyNonInheritedFromCached(const SVGComputedStyle*);
 
