@@ -22,3 +22,6 @@ and bump the version numbers in README.chromium.
 Cherry picked https://github.com/behdad/harfbuzz/commit/46809dee30232d4 to fix
 crbug.com/132252 - incompatibility with font management software and third-party
 Type 1 versions of Helvetica.
+
+Plus, applied speculative fix for crbug.com/625606 where the URL for the fonts
+cannot be retrieved.
