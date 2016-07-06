@@ -169,13 +169,7 @@ TEST(WaitableEventWatcherTest, OutlivesMessageLoop) {
   }
 }
 
-#if defined(OS_WIN)
-// Crashes sometimes on vista.  http://crbug.com/62119
-#define MAYBE_DeleteUnder DISABLED_DeleteUnder
-#else
-#define MAYBE_DeleteUnder DeleteUnder
-#endif
-TEST(WaitableEventWatcherTest, MAYBE_DeleteUnder) {
+TEST(WaitableEventWatcherTest, DeleteUnder) {
   for (int i = 0; i < kNumTestingMessageLoops; i++) {
     RunTest_DeleteUnder(testing_message_loops[i]);
   }
