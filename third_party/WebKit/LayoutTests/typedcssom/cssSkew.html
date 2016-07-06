@@ -47,7 +47,7 @@ test(function() {
     assert_true(inputAsMatrix.is2D());
     var tanAx = tanDegrees(input.ax);
     var tanAy = tanDegrees(input.ay);
-    var expectedMatrix = new CSSMatrix(1, tanAy, tanAx, 1, 0, 0);
+    var expectedMatrix = new CSSMatrixTransformComponent(1, tanAy, tanAx, 1, 0, 0);
     for (var attribute in expectedMatrix) {
       if (typeof expectedMatrix[attribute] === "number") {
         assert_approx_equals(inputAsMatrix[attribute], expectedMatrix[attribute], EPSILON);

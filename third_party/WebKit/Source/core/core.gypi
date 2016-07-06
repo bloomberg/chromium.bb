@@ -43,7 +43,7 @@
             'css/cssom/CSSCalcLength.idl',
             'css/cssom/CSSKeywordValue.idl',
             'css/cssom/CSSLengthValue.idl',
-            'css/cssom/CSSMatrix.idl',
+            'css/cssom/CSSMatrixTransformComponent.idl',
             'css/cssom/CSSNumberValue.idl',
             'css/cssom/CSSPerspective.idl',
             'css/cssom/CSSPositionValue.idl',

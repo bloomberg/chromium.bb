@@ -9,9 +9,8 @@
         double m31, double m32, double m33, double m34,
         double m41, double m42, double m43, double m44),
     Exposed=(Window,PaintWorklet),
-    ImplementedAs=CSSMatrixTransformComponent,
     RuntimeEnabled=CSSTypedOM
-] interface CSSMatrix : CSSTransformComponent {
+] interface CSSMatrixTransformComponent : CSSTransformComponent {
     readonly attribute double a;
     readonly attribute double b;
     readonly attribute double c;
