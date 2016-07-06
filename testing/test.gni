@@ -281,10 +281,7 @@ template("test") {
     _resources_bundle_data = target_name + "_resources_bundle_data"
 
     bundle_data(_resources_bundle_data) {
-      visibility = [
-        ":${_test_target}",
-        ":${_test_target}_generate_executable",
-      ]
+      visibility = [ ":*" ]
       sources = [
         "//testing/gtest_ios/Default.png",
       ]
