@@ -143,6 +143,16 @@ fuzzer_test("usrsctp_fuzzer") {
   ]
 }
 
+fuzzer_test("libsrtp_fuzzer") {
+  sources = [
+    "libsrtp_fuzzer.cc",
+  ]
+  deps = [
+    "//third_party/libsrtp",
+  ]
+  libfuzzer_options = [ "max_len=1000" ]
+}
+
 fuzzer_test("base_json_reader_fuzzer") {
   sources = [
     "base_json_reader_fuzzer.cc",
