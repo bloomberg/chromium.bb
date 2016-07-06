@@ -8,7 +8,12 @@ var sourceCanvas2D = document.createElement("canvas");
 var sourceCtx2D = sourceCanvas2D.getContext("2d");
 var destCanvas2D = document.createElement("canvas");
 var destCtx2D = destCanvas2D.getContext("2d");
- 
+var dummyCanvas2D = document.createElement("canvas");
+var dummyCtx2D = dummyCanvas2D.getContext("2d");
+
+dummyCanvas2D.width = 1;
+dummyCanvas2D.height = 1;
+
 function setSize(sourceWidth, sourceHeight, destWidth, destHeight) {
     sourceCanvas2D.width = sourceWidth;
     sourceCanvas2D.height = sourceHeight;
@@ -32,9 +37,9 @@ function doRun() {
 }
 
 function ensureComplete() {
-    // Calling getImageData() is just to flush out the content when
-    // accelerated 2D canvas is in use. The cost of reading 1x1 pixels is low.
-    destCtx2D.getImageData(0, 0, 1, 1);
+    // Using destCanvas2D as a source image is just to flush out the content when
+    // accelerated 2D canvas is in use. 
+    dummyCtx2D.drawImage(destCanvas2D, 0, 0, 1, 1, 0, 0, 1, 1);
 }
 
 window.onload = function () {
