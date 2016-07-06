@@ -3,7 +3,6 @@
 <link rel="help" href="https://html.spec.whatwg.org/multipage/scripting.html#customelementsregistry">
 <meta name="author" title="Dominic Cooney" href="mailto:dominicc@chromium.org">
 <script src="../../resources/testharness.js"></script>
-<script src="../../resources/testharness-helpers.js"></script>
 <script src="../../resources/testharnessreport.js"></script>
 <script src="resources/custom-elements-helpers.js"></script>
 <body>
@@ -12,6 +11,19 @@
 // https://github.com/w3c/web-platform-tests/pull/2940
 
 'use strict';
+
+function assert_throws_dom_exception(global_context, code, func, description) {
+  let exception;
+  assert_throws(code, () => {
+    try {
+      func.call(this);
+    } catch(e) {
+      exception = e;
+      throw e;
+    }
+  }, description);
+  assert_true(exception instanceof global_context.DOMException, 'DOMException on the appropriate window');
+}
 
 test_with_window((w) => {
   assert_throws(TypeError.prototype, () => {
@@ -48,9 +60,9 @@ test_with_window((w) => {
   ];
   class X extends w.HTMLElement {}
   invalid_names.forEach((name) => {
-    assert_throws('SYNTAX_ERR', () => {
+    assert_throws_dom_exception(w, 'SYNTAX_ERR', () => {
       w.customElements.define(name, X);
-    }, `defining an element named "${name}" should throw a SyntaxError`);
+    })
   });
 }, 'Invalid names');
 
@@ -58,76 +70,51 @@ test_with_window((w) => {
   class X extends w.HTMLElement {}
   class Y extends w.HTMLElement {}
   w.customElements.define('a-a', X);
-  assert_throws('NotSupportedError', () => {
+  assert_throws_dom_exception(w, 'NotSupportedError', () => {
     w.customElements.define('a-a', Y);
   }, 'defining an element with a name that is already defined should throw ' +
      'a NotSupportedError');
 }, 'Duplicate name');
 
-// TODO(dominicc): Update this (perhaps by removing this comment) when
-// https://github.com/whatwg/html/pull/1333 lands/issue
-// https://github.com/whatwg/html/issues/1329 is closed.
 test_with_window((w) => {
   class Y extends w.HTMLElement {}
   let X = (function () {}).bind({});
   Object.defineProperty(X, 'prototype', {
     get() {
-      assert_throws('NotSupportedError', () => {
+      assert_throws_dom_exception(w, 'NotSupportedError', () => {
         w.customElements.define('a-a', Y);
       }, 'defining an element with a name that is being defined should ' +
          'throw a NotSupportedError');
       return new Object();
     }
   });
-  // TODO(dominicc): When callback retrieval is implemented, change this
-  // to pass a valid constructor and recursively call define when retrieving
-  // callbacks instead; then it is possible to assert the first definition
-  // worked:
-  //  let element = Reflect.construct(HTMLElement, [], X);
-  //  assert_equals(element.localName, 'a-a');
   w.customElements.define('a-a', X);
+  assert_equals(w.customElements.get('a-a'), X, 'the first definition should have worked');
 }, 'Duplicate name defined recursively');
 
 test_with_window((w) => {
   class X extends w.HTMLElement {}
   w.customElements.define('a-a', X);
-  assert_throws('NotSupportedError', () => {
+  assert_throws_dom_exception(w, 'NotSupportedError', () => {
     w.customElements.define('a-b', X);
   }, 'defining an element with a constructor that is already in the ' +
      'registry should throw a NotSupportedError');
 }, 'Reused constructor');
 
-// TODO(dominicc): Update this (perhaps by removing this comment) when
-// https://github.com/whatwg/html/pull/1333 lands/issue
-// https://github.com/whatwg/html/issues/1329 is closed.
 test_with_window((w) => {
   let X = (function () {}).bind({});
   Object.defineProperty(X, 'prototype', {
     get() {
-      assert_throws('NotSupportedError', () => {
+      assert_throws_dom_exception(w, 'NotSupportedError', () => {
         w.customElements.define('second-name', X);
       }, 'defining an element with a constructor that is being defined ' +
          'should throw a NotSupportedError');
       return new Object();
     }
   });
-  // TODO(dominicc): When callback retrieval is implemented, change this
-  // to pass a valid constructor and recursively call define when retrieving
-  // callbacks instead; then it is possible to assert the first definition
-  // worked:
-  //  let element = Reflect.construct(HTMLElement, [], X);
-  //  assert_equals(element.localName, 'a-a');
   w.customElements.define('first-name', X);
+  assert_equals(w.customElements.get('first-name'), X, 'the first definition should have worked');
 }, 'Reused constructor recursively');
-
-test_with_window((w) => {
-  function F() {}
-  F.prototype = 42;
-  assert_throws(TypeError.prototype, () => {
-    w.customElements.define('a-a', F);
-  }, 'defining an element with a constructor with a prototype that is not an ' +
-     'object should throw a TypeError');
-}, 'Retrieved prototype is a non-object');
 
 test_with_window((w) => {
   assert_throws(TypeError.prototype, () => {
@@ -139,7 +126,7 @@ test_with_window((w) => {
 
   class C extends w.HTMLElement {}
   w.customElements.define('a-a', C);
-  assert_throws('SYNTAX_ERR', () => {
+  assert_throws_dom_exception(w, 'SYNTAX_ERR', () => {
     let invalid_name = 'annotation-xml';
     let reused_constructor = C;
     w.customElements.define(invalid_name, reused_constructor);
@@ -209,4 +196,152 @@ test_with_window((w) => {
                       'the constructor should have been invoked once for the ' +
                       'elements in the shadow tree');
 }, 'Upgrade: shadow tree');
+
+// Final step in Step 14
+// 14. Finally, if the first set of steps threw an exception, then rethrow that exception, 
+// and terminate this algorithm. 
+test_with_window((w) => {
+  class Y extends w.HTMLElement {}
+  let X = (function () {}).bind({});
+  Object.defineProperty(X, 'prototype', {
+    get() { throw { name: 42 }; }
+  });
+  assert_throws({ name: 42 }, () => {
+    w.customElements.define('a-a', X);
+  }, 'should rethrow constructor exception');
+  w.customElements.define('a-a', Y);
+  assert_equals(w.customElements.get('a-a'), Y, 'the same name can be registered after failure');
+}, 'If an exception is thrown, rethrow that exception and terminate the algorithm');
+
+// 14.1 Let prototype be Get(constructor, "prototype"). Rethrow any exceptions.
+test_with_window((w) => {
+  let X = (function () {}).bind({});
+  Object.defineProperty(X, 'prototype', {
+    get() { throw { name: 'prototype throws' }; }
+  });
+  assert_throws({ name: 'prototype throws' }, () => {
+    w.customElements.define('a-a', X);
+  }, 'Exception from Get(constructor, prototype) should be rethrown');
+}, 'Rethrow any exceptions thrown while getting prototype');
+
+// 14.2 If Type(prototype) is not Object, then throw a TypeError exception.
+test_with_window((w) => {
+  function F() {}
+  F.prototype = 42;
+  assert_throws(TypeError.prototype, () => {
+    w.customElements.define('a-a', F);
+  }, 'defining an element with a constructor with a prototype that is not an ' +
+     'object should throw a TypeError');
+}, 'Retrieved prototype is a non-object');
+
+// 14.3 Let connectedCallback be Get(prototype, "connectedCallback"). Rethrow any exceptions.
+// 14.5 Let disconnectedCallback be Get(prototype, "disconnectedCallback"). Rethrow any exceptions.
+// 14.7 Let attributeChangedCallback be Get(prototype, "attributeChangedCallback"). Rethrow any exceptions.
+// Note that this test implicitly tests order of callback retrievals.
+// Callbacks are defined in reverse order.
+let callbacks_in_reverse = ['attributeChangedCallback', 'disconnectedCallback', 'connectedCallback'];
+function F_for_callbacks_in_reverse() {};
+callbacks_in_reverse.forEach((callback) => {
+  test_with_window((w) => {
+    Object.defineProperty(F_for_callbacks_in_reverse.prototype, callback, {
+      get() { throw { name: callback }; }
+    });
+    assert_throws({ name: callback }, () => {
+      w.customElements.define('a-a', F_for_callbacks_in_reverse);
+    }, 'Exception from Get(prototype, callback) should be rethrown');  
+  }, 'Rethrow any exceptions thrown while retrieving ' + callback);
+});
+
+// 14.4 If connectedCallback is not undefined, and IsCallable(connectedCallback) is false, 
+//      then throw a TypeError exception.
+// 14.6 If disconnectedCallback is not undefined, and IsCallable(disconnectedCallback) is false,
+//      then throw a TypeError exception.  
+// 14.9. If attributeChangedCallback is not undefined, then
+//       1. If IsCallable(attributeChangedCallback) is false, then throw a TypeError exception.
+callbacks_in_reverse.forEach((callback) => {
+  test_with_window((w) => {
+      function F() {}
+      Object.defineProperty(F.prototype, callback, {
+        get() { return new Object(); }
+      });
+      assert_throws(TypeError.prototype, () => {
+        w.customElements.define('a-a', F);
+      }, 'defining an element with a constructor with a callback that is ' +
+       'not undefined and not callable should throw a TypeError');  
+  }, 'If retrieved callback '+ callback + ' is not undefined and not callable, throw TypeError');
+});
+
+// 14.9.2 Let observedAttributesIterable be Get(constructor, "observedAttributes").
+//        Rethrow any exceptions.
+test_with_window((w) => {
+  class X extends w.HTMLElement{
+    constructor() { super(); }
+    attributeChangedCallback() {}
+    static get observedAttributes() { throw { name: 'observedAttributes throws' }; }
+  }
+  assert_throws({ name: 'observedAttributes throws' }, () => {
+    w.customElements.define('a-a', X);
+  }, 'Exception from Get(constructor, observedAttributes) should be rethrown');
+}, 'Rethrow any exceptions thrown while getting observedAttributes');
+
+// 14.9.3 If observedAttributesIterable is not undefined, then set observedAttributes 
+//        to the result of converting observedAttributesIterable to a sequence<DOMString>. 
+//        Rethrow any exceptions.
+test_with_window((w) => {
+  class X extends w.HTMLElement{
+    constructor() { super(); }
+    attributeChangedCallback() {}
+    static get observedAttributes() { return new RegExp(); }
+  }
+  assert_throws(TypeError.prototype, () => {
+    w.customElements.define('a-a', X);
+  }, 'converting RegExp to sequence<DOMString> should throw TypeError');
+}, 'exception thrown while converting observedAttributes to sequence<DOMString> ' +
+    'should be rethrown');
+
+// 14.9.2 test Get(constructor, observedAttributes) does not throw if
+// attributeChangedCallback is undefined.
+test_with_window((w) => {
+  let observedAttributes_invoked = false;
+  let X = (function () {}).bind({});
+  Object.defineProperty(X, 'observedAttributes', {
+    get() { observedAttributes_invoked = true; }
+  });
+  assert_false( observedAttributes_invoked, 'Get(constructor, observedAttributes) should not be invoked');
+}, 'Get(constructor, observedAttributes)' + 
+    'should not execute if attributeChangedCallback is undefined');
+
+// step 2
+// 2. If constructor is an interface object whose corresponding interface either is 
+//    HTMLElement or has HTMLElement in its set of inherited interfaces, throw 
+//    a TypeError and abort these steps.
+// 3. If name is not a valid custom element name, then throw a "SyntaxError" DOMException 
+//    and abort these steps.
+test_with_window((w) => {
+  let invalid_name = 'annotation-xml';
+  // TODO(davaajav): change this to TypeError, when we add a failure expectation to this file
+  assert_throws_dom_exception(w, 'SYNTAX_ERR', () => {
+    w.customElements.define(invalid_name, HTMLElement);
+  }, 'defining a constructor that is an interface object whose interface is HTMLElement' + 
+       'should throw TypeError not SyntaxError');
+}, 'Invalid constructor');
+
+// step 2
+test_with_window((w) => {
+  let invalid_name = 'annotation-xml';
+  assert_throws_dom_exception(w, 'SYNTAX_ERR', () => {
+    w.customElements.define(invalid_name, HTMLButtonElement);
+  }, 'defining a constructor that is an interface object who has HTMLElement' + 
+       'in its set of inhertied interfaces should throw TypeError not SyntaxError');
+}, 'Invalid constructor');
+
+// step 2
+test_with_window((w) => {
+  let invalid_name = 'annotation-xml';
+  assert_throws_dom_exception(w, 'SYNTAX_ERR', () => {
+    w.customElements.define(invalid_name, class extends HTMLElement {});
+  }, 'defining author-defined custom element constructor' + 
+       'should pass this step without throwing TypeError');
+}, 'Invalid constructor');
 </script>
+</body>
