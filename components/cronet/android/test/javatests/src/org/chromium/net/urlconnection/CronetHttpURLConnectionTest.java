@@ -201,7 +201,7 @@ public class CronetHttpURLConnectionTest extends CronetTestBase {
                 (HttpURLConnection) url.openConnection();
         connection.setDoOutput(true);
         connection.setRequestMethod("POST");
-        if (Build.VERSION.SDK_INT >= 19) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
             String dataString = "some very important data";
             byte[] data = dataString.getBytes();
             Class<?> c = connection.getClass();
@@ -996,7 +996,7 @@ public class CronetHttpURLConnectionTest extends CronetTestBase {
         assertEquals(302, connection.getResponseCode());
         assertEquals("Found", connection.getResponseMessage());
         // Behavior changed in Android Marshmallow to not update the URL.
-        if (testingSystemHttpURLConnection() && Build.VERSION.SDK_INT == Build.VERSION_CODES.M) {
+        if (testingSystemHttpURLConnection() && Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             // Redirected port is randomized, verify everything but port.
             assertEquals(url.getProtocol(), connection.getURL().getProtocol());
             assertEquals(url.getHost(), connection.getURL().getHost());
