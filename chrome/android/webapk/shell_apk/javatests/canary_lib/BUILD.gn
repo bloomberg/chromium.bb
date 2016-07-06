@@ -9,8 +9,14 @@ android_library("canary_lib_java") {
   java_files = [ "src/org/chromium/webapk/shell_apk/test/canary/Canary.java" ]
 }
 
-# dex asset added to dex_optimizer_apk in order to test creating ClassLoader
+android_library("canary_lib2_java") {
+  dex_path = "$target_gen_dir/canary2.dex"
+  java_files = [ "src/org/chromium/webapk/shell_apk/test/canary/Canary2.java" ]
+}
+
+# dex assets added to dex_optimizer_apk in order to test creating ClassLoader
 # from .dex in remote APK.
+
 android_assets("canary_dex_assets") {
   sources = [
     "$target_gen_dir/canary.dex",
@@ -18,5 +24,15 @@ android_assets("canary_dex_assets") {
   disable_compression = true
   deps = [
     ":canary_lib_java",
+  ]
+}
+
+android_assets("canary_dex2_assets") {
+  sources = [
+    "$target_gen_dir/canary2.dex",
+  ]
+  disable_compression = true
+  deps = [
+    ":canary_lib2_java",
   ]
 }
