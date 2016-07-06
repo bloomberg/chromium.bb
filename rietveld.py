@@ -278,6 +278,12 @@ class Rietveld(object):
         ('xsrf_token', self.xsrf_token()),
         (flag, str(value))])
 
+  def set_flags(self, issue, patchset, flags):
+    return self.post('/%d/edit_flags' % issue, [
+        ('last_patchset', str(patchset)),
+        ('xsrf_token', self.xsrf_token()),
+        ] + [(flag, str(value)) for flag, value in flags.iteritems()])
+
   def search(
       self,
       owner=None, reviewer=None,
@@ -743,6 +749,10 @@ class ReadOnlyRietveld(object):
     logging.info('ReadOnlyRietveld: setting flag "%s" to "%s" for issue %d' %
         (flag, value, issue))
     ReadOnlyRietveld._local_changes.setdefault(issue, {})[flag] = value
+
+  def set_flags(self, issue, patchset, flags):
+    for flag, value in flags.iteritems():
+      self.set_flag(issue, patchset, flag, value)
 
   def trigger_try_jobs(  # pylint:disable=R0201
       self, issue, patchset, reason, clobber, revision, builders_and_tests,

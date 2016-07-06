@@ -1737,12 +1737,18 @@ class _RietveldChangelistImpl(_ChangelistCodereviewBase):
     return self.RpcServer().close_issue(self.GetIssue())
 
   def SetFlag(self, flag, value):
-    """Patchset must match."""
+    return self.SetFlags({flag: value})
+
+  def SetFlags(self, flags):
+    """Sets flags on this CL/patchset in Rietveld.
+
+    The latest patchset in Rietveld must be the same as latest known locally.
+    """
     if not self.GetPatchset():
       DieWithError('The patchset needs to match. Send another patchset.')
     try:
-      return self.RpcServer().set_flag(
-          self.GetIssue(), self.GetPatchset(), flag, value)
+      return self.RpcServer().set_flags(
+          self.GetIssue(), self.GetPatchset(), flags)
     except urllib2.HTTPError as e:
       if e.code == 404:
         DieWithError('The issue %s doesn\'t exist.' % self.GetIssue())
@@ -1791,9 +1797,10 @@ class _RietveldChangelistImpl(_ChangelistCodereviewBase):
     if new_state == _CQState.COMMIT:
       self.SetFlag('commit', '1')
     elif new_state == _CQState.NONE:
-      self.SetFlag('commit', '0')
+      self.SetFlags({'commit': '0', 'cq_dry_run': '0'})
     else:
-      raise NotImplementedError()
+      assert new_state == _CQState.DRY_RUN
+      self.SetFlags({'commit': '1', 'cq_dry_run': '1'})
 
 
   def CMDPatchWithParsedIssue(self, parsed_issue_arg, reject, nocommit,
