@@ -76371,6 +76371,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="1431" label="PointerEventSetCapture"/>
   <int value="1432" label="PointerEventDispatch"/>
   <int value="1433" label="MIDIMessageEventReceivedTime"/>
+  <int value="1434" label="SummaryElementWithDisplayBlockAuthorRule"/>
 </enum>
 
 <enum name="FetchRequestMode" type="int">

@@ -80,6 +80,7 @@
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
+#include "core/frame/UseCounter.h"
 #include "core/html/HTMLIFrameElement.h"
 #include "core/html/HTMLSlotElement.h"
 #include "core/inspector/InspectorInstrumentation.h"
@@ -791,6 +792,16 @@ PassRefPtr<ComputedStyle> StyleResolver::styleForElement(Element* element, const
         ElementRuleCollector collector(state.elementContext(), m_selectorFilter, state.style());
 
         matchAllRules(state, collector, matchingBehavior != MatchAllRulesExcludingSMIL);
+
+        // TODO(dominicc): Remove this counter when Issue 590014 is fixed.
+        if (element->hasTagName(HTMLNames::summaryTag)) {
+            MatchedPropertiesRange properties = collector.matchedResult().authorRules();
+            for (auto it = properties.begin(); it != properties.end(); ++it) {
+                CSSValue* value = it->properties->getPropertyCSSValue(CSSPropertyDisplay);
+                if (value && value->isPrimitiveValue() && toCSSPrimitiveValue(*value).getValueID() == CSSValueBlock)
+                    UseCounter::count(element->document(), UseCounter::SummaryElementWithDisplayBlockAuthorRule);
+            }
+        }
 
         if (element->computedStyle() && element->computedStyle()->textAutosizingMultiplier() != state.style()->textAutosizingMultiplier()) {
             // Preserve the text autosizing multiplier on style recalc. Autosizer will update it during layout if needed.
