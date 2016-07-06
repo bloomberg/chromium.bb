@@ -92,6 +92,10 @@ const base::Feature kPaintOptimizations{"PaintOptimizations",
 const base::Feature kParseHTMLOnMainThread{"ParseHTMLOnMainThread",
                                            base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Whether document level event listeners should default 'passive' to true.
+const base::Feature kPassiveDocumentEventListeners{
+    "PassiveDocumentEventListeners", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Pointer events support.
 const base::Feature kPointerEvents{"PointerEvent",
                                    base::FEATURE_DISABLED_BY_DEFAULT};

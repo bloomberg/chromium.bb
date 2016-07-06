@@ -199,6 +199,20 @@ void EventTarget::setDefaultAddEventListenerOptions(const AtomicString& eventTyp
         }
     }
 
+    if (RuntimeEnabledFeatures::passiveDocumentEventListenersEnabled()) {
+        if (!options.hasPassive()) {
+            if (Node* node = toNode()) {
+                if (node->isDocumentNode() || node->document().documentElement() == node || node->document().body() == node) {
+                    options.setPassive(true);
+                    return;
+                }
+            } else if (toLocalDOMWindow()) {
+                options.setPassive(true);
+                return;
+            }
+        }
+    }
+
     if (Settings* settings = windowSettings(executingWindow())) {
         switch (settings->passiveListenerDefault()) {
         case PassiveListenerDefault::False:
@@ -211,17 +225,6 @@ void EventTarget::setDefaultAddEventListenerOptions(const AtomicString& eventTyp
             break;
         case PassiveListenerDefault::ForceAllTrue:
             options.setPassive(true);
-            break;
-        case PassiveListenerDefault::DocumentTrue:
-            if (!options.hasPassive()) {
-                if (Node* node = toNode()) {
-                    if (node->isDocumentNode() || node->document().documentElement() == node || node->document().body() == node) {
-                        options.setPassive(true);
-                    }
-                } else if (toLocalDOMWindow()) {
-                    options.setPassive(true);
-                }
-            }
             break;
         }
     } else {

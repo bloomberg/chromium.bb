@@ -16,7 +16,6 @@ namespace blink {
 enum class PassiveListenerDefault {
     False, // Default of false.
     True, // Default of true.
-    DocumentTrue, // Default of true for document level elements, false otherwise.
     ForceAllTrue // Force all values to be true even when specified.
 };
 

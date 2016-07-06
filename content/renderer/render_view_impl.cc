@@ -746,9 +746,7 @@ void RenderViewImpl::Initialize(const ViewMsg_New_Params& params,
   if (!passiveListenersDefault.empty()) {
     WebSettings::PassiveEventListenerDefault passiveDefault =
         WebSettings::PassiveEventListenerDefault::False;
-    if (passiveListenersDefault == "documentonlytrue")
-      passiveDefault = WebSettings::PassiveEventListenerDefault::DocumentTrue;
-    else if (passiveListenersDefault == "true")
+    if (passiveListenersDefault == "true")
       passiveDefault = WebSettings::PassiveEventListenerDefault::True;
     else if (passiveListenersDefault == "forcealltrue")
       passiveDefault = WebSettings::PassiveEventListenerDefault::ForceAllTrue;

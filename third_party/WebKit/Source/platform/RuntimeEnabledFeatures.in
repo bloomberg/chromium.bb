@@ -155,6 +155,7 @@ ForceOverlayFullscreenVideo
 OverlayScrollbars
 PagePopup status=stable
 PaintOptimizations status=stable
+PassiveDocumentEventListeners
 PassiveEventListeners status=stable
 PassPaintVisualRectToCompositor
 PathOpsSVGClipping status=stable

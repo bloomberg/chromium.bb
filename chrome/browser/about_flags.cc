@@ -184,8 +184,6 @@ const FeatureEntry::Choice kNaClDebugMaskChoices[] = {
 
 const FeatureEntry::Choice kPassiveListenersChoices[] = {
     {IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", ""},
-    {IDS_FLAGS_PASSIVE_EVENT_LISTENER_DOCUMENT_TRUE,
-     switches::kPassiveListenersDefault, "documentonlytrue"},
     {IDS_FLAGS_PASSIVE_EVENT_LISTENER_TRUE, switches::kPassiveListenersDefault,
      "true"},
     {IDS_FLAGS_PASSIVE_EVENT_LISTENER_FORCE_ALL_TRUE,
@@ -1930,6 +1928,10 @@ const FeatureEntry kFeatureEntries[] = {
      IDS_FLAGS_PASSIVE_EVENT_LISTENER_DEFAULT_NAME,
      IDS_FLAGS_PASSIVE_EVENT_LISTENER_DEFAULT_DESCRIPTION, kOsAll,
      MULTI_VALUE_TYPE(kPassiveListenersChoices)},
+    {"document-passive-event-listeners",  // FLAGS:RECORD_UMA
+     IDS_FLAGS_PASSIVE_DOCUMENT_EVENT_LISTENERS_NAME,
+     IDS_FLAGS_PASSIVE_DOCUMENT_EVENT_LISTENERS_DESCRIPTION, kOsAll,
+     FEATURE_VALUE_TYPE(features::kPassiveDocumentEventListeners)},
     {"enable-loading-ipc-optimization-for-small-resources",
      IDS_FLAGS_OPTIMIZE_LOADING_IPC_FOR_SMALL_RESOURCES_NAME,
      IDS_FLAGS_OPTIMIZE_LOADING_IPC_FOR_SMALL_RESOURCES_DESCRIPTION, kOsAll,

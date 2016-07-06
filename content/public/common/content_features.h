@@ -32,6 +32,7 @@ CONTENT_EXPORT extern const base::Feature kOptimizeLoadingIPCForSmallResources;
 CONTENT_EXPORT extern const base::Feature kOriginTrials;
 CONTENT_EXPORT extern const base::Feature kPaintOptimizations;
 CONTENT_EXPORT extern const base::Feature kParseHTMLOnMainThread;
+CONTENT_EXPORT extern const base::Feature kPassiveDocumentEventListeners;
 CONTENT_EXPORT extern const base::Feature kPointerEvents;
 CONTENT_EXPORT extern const base::Feature kRenderingPipelineThrottling;
 CONTENT_EXPORT extern const base::Feature kScrollAnchoring;
