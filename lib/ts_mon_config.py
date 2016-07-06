@@ -55,4 +55,5 @@ class TsMonFlusher(object):
 
   def __exit__(self, _type, _value, _traceback):
     if interface and _WasSetup:
+      logging.info('Forcing flush of ts_mon metrics due to end of context.')
       interface.flush()
