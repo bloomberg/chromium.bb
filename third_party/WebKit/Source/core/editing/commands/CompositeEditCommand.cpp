@@ -36,6 +36,7 @@
 #include "core/editing/EditingUtilities.h"
 #include "core/editing/Editor.h"
 #include "core/editing/PlainTextRange.h"
+#include "core/editing/RelocatablePosition.h"
 #include "core/editing/VisibleUnits.h"
 #include "core/editing/commands/AppendNodeCommand.h"
 #include "core/editing/commands/ApplyStyleCommand.h"
@@ -1282,8 +1283,8 @@ void CompositeEditCommand::moveParagraphs(const VisiblePosition& startOfParagrap
         }
     }
 
-    VisiblePosition beforeParagraph = previousPositionOf(startOfParagraphToMove, CannotCrossEditingBoundary);
-    VisiblePosition afterParagraph = nextPositionOf(endOfParagraphToMove, CannotCrossEditingBoundary);
+    RelocatablePosition beforeParagraphPosition(previousPositionOf(startOfParagraphToMove, CannotCrossEditingBoundary).deepEquivalent());
+    RelocatablePosition afterParagraphPosition(nextPositionOf(endOfParagraphToMove, CannotCrossEditingBoundary).deepEquivalent());
 
     // We upstream() the end and downstream() the start so that we don't include collapsed whitespace in the move.
     // When we paste a fragment, spaces after the end and before the start are treated as though they were rendered.
@@ -1327,8 +1328,8 @@ void CompositeEditCommand::moveParagraphs(const VisiblePosition& startOfParagrap
     // Imagine moving 'bar' to ^. 'bar' will be deleted and its div pruned. That would
     // cause 'baz' to collapse onto the line with 'foobar' unless we insert a br.
     // Must recononicalize these two VisiblePositions after the pruning above.
-    beforeParagraph = createVisiblePosition(beforeParagraph.deepEquivalent());
-    afterParagraph = createVisiblePosition(afterParagraph.deepEquivalent());
+    VisiblePosition beforeParagraph = createVisiblePosition(beforeParagraphPosition.position());
+    VisiblePosition afterParagraph = createVisiblePosition(afterParagraphPosition.position());
     if (beforeParagraph.isNotNull() && (!isEndOfParagraph(beforeParagraph) || beforeParagraph.deepEquivalent() == afterParagraph.deepEquivalent())) {
         // FIXME: Trim text between beforeParagraph and afterParagraph if they aren't equal.
         insertNodeAt(HTMLBRElement::create(document()), beforeParagraph.deepEquivalent(), editingState);
