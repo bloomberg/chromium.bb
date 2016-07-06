@@ -1,82 +1,47 @@
-<!doctype html>
-<html>
-    <head>
-        <title>Test that the overlay play button respects the controls attribute</title>
-        <script src="media-controls.js"></script>
-        <script src="media-file.js"></script>
-        <!-- TODO(foolip): Convert test to testharness.js. crbug.com/588956
-             (Please avoid writing new tests using video-test.js) -->
-        <script src="video-test.js"></script>
-        <script>
-            function start()
-            {
-                window.internals.settings.setMediaControlsOverlayPlayButtonEnabled(true);
+<!DOCTYPE html>
+<title>Test that the overlay play button respects the controls attribute.</title>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script src="media-file.js"></script>
+<script src="media-controls.js"></script>
+<body>
+<script>
+async_test(function(t) {
+    internals.settings.setMediaControlsOverlayPlayButtonEnabled(true);
 
-                // Add element dynamically, since otherwise the controls are created, but
-                // hidden, before the setting is set, causing the setting to be ignored.
-                addVideoElement();
+    // Add video dynamically, since otherwise the controls are created, but
+    // hidden, before the setting is set, causing the setting to be ignored.
+    var video = document.createElement("video");
+    document.body.appendChild(video);
 
-                findMediaElement();
+    video.controls = true;
+    var button = mediaControlsButton(video, "overlay-play-button")
+    assert_equals(getComputedStyle(button).display, "flex");
 
-                video.controls = true;
+    var watcher = new EventWatcher(t, video, ["loadeddata", "play", "pause"]);
+    watcher.wait_for("loadeddata").then(t.step_func(function() {
+        video.play();
+        return watcher.wait_for("play");
+    })).then(t.step_func(function() {
+        assert_equals(getComputedStyle(button).display, "none");
+        video.pause();
+        return watcher.wait_for("pause");
+    })).then(t.step_func(function() {
+        assert_equals(getComputedStyle(button).display, "flex");
+        video.controls = false;
+        assert_equals(getComputedStyle(button).display, "none");
+        video.play();
+        return watcher.wait_for("play");
+    })).then(t.step_func(function() {
+        assert_equals(getComputedStyle(button).display, "none");
+        video.pause();
+        return watcher.wait_for("pause");
+    })).then(t.step_func_done(function() {
+        assert_equals(getComputedStyle(button).display, "none");
+        video.controls = true;
+        assert_equals(getComputedStyle(button).display, "flex");
+    }));
 
-                button = mediaControlsButton(video, 'overlay-play-button')
-                testExpected('getComputedStyle(button).display', 'flex');
-
-                waitForEventOnce('loadeddata', loadeddata);
-                video.src = findMediaFile('video', 'content/test');
-            }
-
-            function addVideoElement() {
-                element = document.createElement('video');
-                document.body.appendChild(element);
-            }
-
-            function loadeddata()
-            {
-                waitForEventOnce('play', play1);
-                run('video.play()');
-            }
-
-            function play1()
-            {
-                testExpected('getComputedStyle(button).display', 'none');
-
-                waitForEventOnce('pause', pause1);
-                run('video.pause()');
-            }
-
-            function pause1()
-            {
-                testExpected('getComputedStyle(button).display', 'flex');
-
-                video.controls = false;
-                testExpected('getComputedStyle(button).display', 'none');
-
-                waitForEventOnce('play', play2);
-                run('video.play()');
-            }
-
-            function play2()
-            {
-                testExpected('getComputedStyle(button).display', 'none');
-
-                waitForEventOnce('pause', pause2);
-                run('video.pause()');
-            }
-
-            function pause2()
-            {
-                testExpected('getComputedStyle(button).display', 'none');
-
-                video.controls = true;
-                testExpected('getComputedStyle(button).display', 'flex');
-
-                endTest();
-            }
-        </script>
-    </head>
-    <body onload="start()">
-        <p>Test that the overlay play button respects the controls attribute</p>
-    </body>
-</html>
+    video.src = findMediaFile("video", "content/test");
+});
+</script>
