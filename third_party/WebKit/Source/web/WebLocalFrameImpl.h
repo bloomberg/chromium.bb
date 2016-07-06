@@ -203,8 +203,6 @@ public:
     void setDevToolsAgentClient(WebDevToolsAgentClient*) override;
     WebDevToolsAgent* devToolsAgent() override;
     WebLocalFrameImpl* localRoot() override;
-    WebLocalFrame* traversePreviousLocal(bool wrap) const override;
-    WebLocalFrame* traverseNextLocal(bool wrap) const override;
     void sendPings(const WebURL& destinationURL) override;
     bool dispatchBeforeUnloadEvent(bool) override;
     WebURLRequest requestFromHistoryItem(const WebHistoryItem&, WebCachePolicy) const override;
