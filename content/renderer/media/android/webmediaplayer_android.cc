@@ -65,10 +65,9 @@
 #include "third_party/WebKit/public/web/WebFrame.h"
 #include "third_party/WebKit/public/web/WebView.h"
 #include "third_party/skia/include/core/SkCanvas.h"
+#include "third_party/skia/include/core/SkImage.h"
 #include "third_party/skia/include/core/SkPaint.h"
 #include "third_party/skia/include/core/SkTypeface.h"
-#include "third_party/skia/include/gpu/GrContext.h"
-#include "third_party/skia/include/gpu/SkGrPixelRef.h"
 #include "ui/gfx/image/image.h"
 
 static const uint32_t kGLTextureExternalOES = 0x8D65;
@@ -107,40 +106,6 @@ void OnReleaseTexture(
   gl->DeleteTextures(1, &texture_id);
   // Flush to ensure that the stream texture gets deleted in a timely fashion.
   gl->ShallowFlushCHROMIUM();
-}
-
-bool IsSkBitmapProperlySizedTexture(const SkBitmap* bitmap,
-                                    const gfx::Size& size) {
-  return bitmap->getTexture() && bitmap->width() == size.width() &&
-         bitmap->height() == size.height();
-}
-
-bool AllocateSkBitmapTexture(GrContext* gr,
-                             SkBitmap* bitmap,
-                             const gfx::Size& size) {
-  DCHECK(gr);
-  GrTextureDesc desc;
-  // Use kRGBA_8888_GrPixelConfig, not kSkia8888_GrPixelConfig, to avoid
-  // RGBA to BGRA conversion.
-  desc.fConfig = kRGBA_8888_GrPixelConfig;
-  // kRenderTarget_GrTextureFlagBit avoids a copy before readback in skia.
-  desc.fFlags = kRenderTarget_GrSurfaceFlag;
-  desc.fSampleCnt = 0;
-  desc.fOrigin = kTopLeft_GrSurfaceOrigin;
-  desc.fWidth = size.width();
-  desc.fHeight = size.height();
-  sk_sp<GrTexture> texture(gr->textureProvider()->refScratchTexture(
-        desc, GrTextureProvider::kExact_ScratchTexMatch));
-  if (!texture.get())
-    return false;
-
-  SkImageInfo info = SkImageInfo::MakeN32Premul(desc.fWidth, desc.fHeight);
-  SkGrPixelRef* pixel_ref = new SkGrPixelRef(info, texture.get());
-  if (!pixel_ref)
-    return false;
-  bitmap->setInfo(info);
-  bitmap->setPixelRef(pixel_ref)->unref();
-  return true;
 }
 
 class SyncTokenClientImpl : public media::VideoFrame::SyncTokenClient {
@@ -659,31 +624,40 @@ void WebMediaPlayerAndroid::paint(blink::WebCanvas* canvas,
     return;
   gpu::gles2::GLES2Interface* gl = provider->contextGL();
 
-  // Copy video texture into a RGBA texture based bitmap first as video texture
-  // on Android is GL_TEXTURE_EXTERNAL_OES which is not supported by Skia yet.
-  // The bitmap's size needs to be the same as the video and use naturalSize()
-  // here. Check if we could reuse existing texture based bitmap.
-  // Otherwise, release existing texture based bitmap and allocate
-  // a new one based on video size.
-  if (!IsSkBitmapProperlySizedTexture(&bitmap_, naturalSize())) {
-    if (!AllocateSkBitmapTexture(provider->grContext(), &bitmap_,
-                                 naturalSize())) {
-      return;
-    }
+  scoped_refptr<VideoFrame> video_frame;
+  {
+    base::AutoLock auto_lock(current_frame_lock_);
+    video_frame = current_frame_;
   }
 
-  unsigned textureId = skia::GrBackendObjectToGrGLTextureInfo(
-                           (bitmap_.getTexture())->getTextureHandle())
-                           ->fID;
-  if (!copyVideoTextureToPlatformTexture(gl, textureId, GL_RGBA,
-                                         GL_UNSIGNED_BYTE, true, false)) {
+  if (!video_frame.get() || !video_frame->HasTextures())
     return;
-  }
+  DCHECK_EQ(1u, media::VideoFrame::NumPlanes(video_frame->format()));
+  const gpu::MailboxHolder& mailbox_holder = video_frame->mailbox_holder(0);
 
-  // Ensure SkBitmap to make the latest change by external source visible.
-  bitmap_.notifyPixelsChanged();
+  gl->WaitSyncTokenCHROMIUM(mailbox_holder.sync_token.GetConstData());
 
-  // Draw the texture based bitmap onto the Canvas. If the canvas is
+  uint32_t src_texture = gl->CreateAndConsumeTextureCHROMIUM(
+      mailbox_holder.texture_target, mailbox_holder.mailbox.name);
+
+  GrGLTextureInfo texture_info;
+  texture_info.fID = src_texture;
+  texture_info.fTarget = mailbox_holder.texture_target;
+
+  GrBackendTextureDesc desc;
+  desc.fWidth = naturalSize().width;
+  desc.fHeight = naturalSize().height;
+  desc.fOrigin = kTopLeft_GrSurfaceOrigin;
+  desc.fConfig = kRGBA_8888_GrPixelConfig;
+  desc.fSampleCnt = 0;
+  desc.fTextureHandle = skia::GrGLTextureInfoToGrBackendObject(texture_info);
+
+  sk_sp<SkImage> image(SkImage::MakeFromTexture(provider->grContext(), desc,
+                                                kOpaque_SkAlphaType));
+  if (!image)
+    return;
+
+  // Draw the texture based image onto the Canvas. If the canvas is
   // hardware based, this will do a GPU-GPU texture copy.
   // If the canvas is software based, the texture based bitmap will be
   // readbacked to system memory then draw onto the canvas.
@@ -694,8 +668,16 @@ void WebMediaPlayerAndroid::paint(blink::WebCanvas* canvas,
   paint.setXfermodeMode(mode);
   // It is not necessary to pass the dest into the drawBitmap call since all
   // the context have been set up before calling paintCurrentFrameInContext.
-  canvas->drawBitmapRect(bitmap_, dest, &paint);
+  canvas->drawImageRect(image, dest, &paint);
+
+  // Ensure the Skia draw of the GL texture is flushed to GL, delete the
+  // mailboxed texture from this context, and then signal that we're done with
+  // the video frame.
   canvas->flush();
+  gl->DeleteTextures(1, &src_texture);
+  gl->Flush();
+  SyncTokenClientImpl client(gl);
+  video_frame->UpdateReleaseSyncToken(&client);
 }
 
 bool WebMediaPlayerAndroid::copyVideoTextureToPlatformTexture(

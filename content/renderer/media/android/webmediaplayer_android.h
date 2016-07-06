@@ -35,7 +35,6 @@
 #include "third_party/WebKit/public/platform/WebSetSinkIdCallbacks.h"
 #include "third_party/WebKit/public/platform/WebSize.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
-#include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/geometry/rect_f.h"
 
 namespace base {
@@ -479,8 +478,6 @@ class WebMediaPlayerAndroid
   // systems, a browser side CDM will be used and we set CDM by calling
   // player_manager_->SetCdm() directly.
   MediaSourceDelegate::CdmReadyCB cdm_ready_cb_;
-
-  SkBitmap bitmap_;
 
   // Whether stored credentials are allowed to be passed to the server.
   bool allow_stored_credentials_;
