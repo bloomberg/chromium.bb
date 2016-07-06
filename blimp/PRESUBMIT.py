@@ -19,6 +19,12 @@ def CheckChangeLintsClean(input_api, output_api):
   return input_api.canned_checks.CheckChangeLintsClean(
       input_api, output_api, source_filter, lint_filters=[], verbose_level=1)
 
+def _NeedsTest(name):
+  is_cc = name.endswith('.cc')
+  is_test = name.endswith('test.cc')
+  is_test_support = name.startswith('blimp/test/support/')
+  return is_cc and not is_test and not is_test_support
+
 def CheckNewFilesHaveTests(input_api, output_api):
   unittest_files = set()
   files_needing_unittest = set()
@@ -28,7 +34,7 @@ def CheckNewFilesHaveTests(input_api, output_api):
       name = source_file.LocalPath()
       if name.endswith('_unittest.cc'):
         unittest_files.add(name)
-      elif name.endswith('.cc') and not name.endswith('test.cc'):
+      elif _NeedsTest(name):
         files_needing_unittest.add(name)
 
   missing_unittest_files = []
