@@ -1418,6 +1418,11 @@ class Changelist(object):
     print_stats(options.similarity, options.find_copies, git_diff_args)
     ret = self.CMDUploadChange(options, git_diff_args, change)
     if not ret:
+      if options.use_commit_queue:
+        self.SetCQState(_CQState.COMMIT)
+      elif options.cq_dry_run:
+        self.SetCQState(_CQState.DRY_RUN)
+
       git_set_branch_value('last-upload-hash',
                            RunGit(['rev-parse', 'HEAD']).strip())
       # Run post upload hooks, if specified.
@@ -2012,9 +2017,6 @@ class _RietveldChangelistImpl(_ChangelistCodereviewBase):
     if project:
       upload_args.extend(['--project', project])
 
-    if options.cq_dry_run:
-      upload_args.extend(['--cq_dry_run'])
-
     try:
       upload_args = ['upload'] + upload_args + args
       logging.info('upload.RealMain(%s)', upload_args)
@@ -2038,9 +2040,6 @@ class _RietveldChangelistImpl(_ChangelistCodereviewBase):
     if not self.GetIssue():
       self.SetIssue(issue)
     self.SetPatchset(patchset)
-
-    if options.use_commit_queue:
-      self.SetCQState(_CQState.COMMIT)
     return 0
 
 
@@ -3814,6 +3813,9 @@ def CMDupload(parser, args):
     options.message = gclient_utils.FileRead(options.message_file)
     options.message_file = None
 
+  if options.cq_dry_run and options.use_commit_queue:
+    parser.error('only one of --use-commit-queue and --cq-dry-run allowed.')
+
   # For sanity of test expectations, do this otherwise lazy-loading *now*.
   settings.GetIsGerrit()
 
@@ -4750,7 +4752,7 @@ def CMDset_commit(parser, args):
     state = _CQState.COMMIT
   if not cl.GetIssue():
     parser.error('Must upload the issue first')
-  cl.SetCQState(state)
+  cl._codereview_impl.SetCQState(state)
   return 0
 
 
