@@ -496,11 +496,11 @@ void LabelButton::ResetColorsFromNativeTheme() {
     label_->set_background(Background::CreateSolidBackground(SK_ColorBLACK));
     label_->SetAutoColorReadabilityEnabled(true);
     label_->SetShadows(gfx::ShadowValues());
-  } else if (style() == STYLE_BUTTON) {
-    PlatformStyle::ApplyLabelButtonTextStyle(label_, &colors);
-    label_->set_background(nullptr);
   } else {
+    if (style() == STYLE_BUTTON)
+      PlatformStyle::ApplyLabelButtonTextStyle(label_, &colors);
     label_->set_background(nullptr);
+    label_->SetAutoColorReadabilityEnabled(false);
   }
 
   for (size_t state = STATE_NORMAL; state < STATE_COUNT; ++state) {

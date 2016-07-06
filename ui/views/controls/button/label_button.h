@@ -154,6 +154,7 @@ class VIEWS_EXPORT LabelButton : public CustomButton,
   FRIEND_TEST_ALL_PREFIXES(LabelButtonTest, Image);
   FRIEND_TEST_ALL_PREFIXES(LabelButtonTest, LabelAndImage);
   FRIEND_TEST_ALL_PREFIXES(LabelButtonTest, FontList);
+  FRIEND_TEST_ALL_PREFIXES(LabelButtonTest, ResetColorsFromNativeTheme);
 
   void SetTextInternal(const base::string16& text);
 

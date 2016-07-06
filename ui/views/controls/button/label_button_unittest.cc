@@ -14,6 +14,7 @@
 #include "ui/base/ui_base_switches.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/color_utils.h"
 #include "ui/gfx/font_list.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/geometry/vector2d.h"
@@ -403,6 +404,21 @@ TEST_F(LabelButtonTest, HighlightedButtonStyle) {
   TestLabelButton* default_before = AddStyledButton("OK", true);
   EXPECT_EQ(styled_highlight_text_color_,
             default_before->label()->enabled_color());
+}
+
+// Ensure the label gets the correct enabled color after
+// LabelButton::ResetColorsFromNativeTheme() is invoked.
+TEST_F(LabelButtonTest, ResetColorsFromNativeTheme) {
+  ASSERT_FALSE(color_utils::IsInvertedColorScheme());
+  ASSERT_NE(button_->label()->background_color(), SK_ColorBLACK);
+  EXPECT_EQ(themed_normal_text_color_, button_->label()->enabled_color());
+
+  button_->label()->SetBackgroundColor(SK_ColorBLACK);
+  button_->label()->SetAutoColorReadabilityEnabled(true);
+  EXPECT_NE(themed_normal_text_color_, button_->label()->enabled_color());
+
+  button_->ResetColorsFromNativeTheme();
+  EXPECT_EQ(themed_normal_text_color_, button_->label()->enabled_color());
 }
 
 // Test fixture for a LabelButton that has an ink drop configured.
