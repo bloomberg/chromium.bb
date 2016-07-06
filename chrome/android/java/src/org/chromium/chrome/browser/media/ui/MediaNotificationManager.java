@@ -680,11 +680,6 @@ public class MediaNotificationManager {
 
     private boolean isRunningN() {
         // TODO(zqzhang): update this when N is released.
-        if (TextUtils.equals(Build.VERSION.CODENAME, "N")) return true;
-        if (TextUtils.equals(Build.VERSION.CODENAME, "REL")
-                && Build.VERSION.SDK_INT > Build.VERSION_CODES.M) {
-            return true;
-        }
-        return false;
+        return Build.VERSION.CODENAME.equals("N") || Build.VERSION.SDK_INT > Build.VERSION_CODES.M;
     }
 }
