@@ -6,6 +6,7 @@ package org.chromium.blimp;
 
 import android.test.InstrumentationTestCase;
 
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.library_loader.ProcessInitException;
 
 import java.util.concurrent.Semaphore;
@@ -20,13 +21,22 @@ public class BlimpNativeInstrumentationTestCase extends InstrumentationTestCase 
 
     @Override
     public void setUp() throws ProcessInitException {
-        BlimpLibraryLoader.startAsync(
-                getInstrumentation().getTargetContext(), new BlimpLibraryLoader.Callback() {
-                    public void onStartupComplete(boolean success) {
-                        mSuccess = success;
-                        mNativeReadySemaphore.release();
-                    }
-                });
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    BlimpLibraryLoader.startAsync(getInstrumentation().getTargetContext(),
+                            new BlimpLibraryLoader.Callback() {
+                                public void onStartupComplete(boolean success) {
+                                    mSuccess = success;
+                                    mNativeReadySemaphore.release();
+                                }
+                            });
+                } catch (ProcessInitException e) {
+                    throw new RuntimeException("Failed to initialize process.");
+                }
+            }
+        });
     }
 
     /**

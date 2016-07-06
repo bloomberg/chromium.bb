@@ -7,7 +7,6 @@ package org.chromium.blimp.core;
 import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.base.ThreadUtils;
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.blimp.BlimpNativeInstrumentationTestCase;
 import org.chromium.blimp.core_public.BlimpContents;
 import org.chromium.blimp.core_public.BlimpNavigationController;
@@ -37,7 +36,6 @@ public class BlimpContentsTest extends BlimpNativeInstrumentationTestCase {
         });
     }
 
-    @DisabledTest(message = "https://crbug.com/622236")
     @SmallTest
     public void testBasic() throws InterruptedException {
         waitUntilNativeIsReady();
