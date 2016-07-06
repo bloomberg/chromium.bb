@@ -420,8 +420,10 @@ inline bool shouldSkipWhitespaceAfterStartObject(LineLayoutBlockFlow block, Line
     while (next && next.isFloatingOrOutOfFlowPositioned())
         next = bidiNextSkippingEmptyInlines(block, next);
 
-    if (next && isEmptyInline(next))
-        next = LineLayoutInline(next).firstChild();
+    while (next && isEmptyInline(next)) {
+        LineLayoutItem child = LineLayoutInline(next).firstChild();
+        next = child ? child : bidiNextSkippingEmptyInlines(block, next);
+    }
 
     if (next && !next.isBR() && next.isText() && LineLayoutText(next).textLength() > 0) {
         LineLayoutText nextText(next);
