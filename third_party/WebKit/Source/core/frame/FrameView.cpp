@@ -814,13 +814,6 @@ void FrameView::performPreLayoutTasks()
     document->updateStyleAndLayoutTree();
     lifecycle().advanceTo(DocumentLifecycle::StyleClean);
 
-    if (m_frame->isMainFrame() && !m_viewportScrollableArea) {
-        ScrollableArea& visualViewport = m_frame->host()->visualViewport();
-        ScrollableArea* layoutViewport = layoutViewportScrollableArea();
-        ASSERT(layoutViewport);
-        m_viewportScrollableArea = RootFrameViewport::create(visualViewport, *layoutViewport);
-    }
-
     if (RuntimeEnabledFeatures::scrollAnchoringEnabled())
         m_scrollAnchor.save();
 }
@@ -2395,6 +2388,17 @@ void FrameView::updateDocumentAnnotatedRegions() const
     document->setAnnotatedRegions(newRegions);
     if (Page* page = m_frame->page())
         page->chromeClient().annotatedRegionsChanged();
+}
+
+void FrameView::didAttachDocument()
+{
+    if (m_frame->isMainFrame()) {
+        DCHECK(m_frame->host());
+        ScrollableArea& visualViewport = m_frame->host()->visualViewport();
+        ScrollableArea* layoutViewport = layoutViewportScrollableArea();
+        DCHECK(layoutViewport);
+        m_viewportScrollableArea = RootFrameViewport::create(visualViewport, *layoutViewport);
+    }
 }
 
 void FrameView::updateScrollCorner()

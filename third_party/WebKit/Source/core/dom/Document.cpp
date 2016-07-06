@@ -2121,6 +2121,9 @@ void Document::attach(const AttachContext& context)
 
     m_frame->selection().documentAttached(this);
     m_lifecycle.advanceTo(DocumentLifecycle::StyleClean);
+
+    if (view())
+        view()->didAttachDocument();
 }
 
 void Document::detach(const AttachContext& context)

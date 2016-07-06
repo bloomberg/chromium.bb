@@ -223,6 +223,8 @@ public:
 
     void updateDocumentAnnotatedRegions() const;
 
+    void didAttachDocument();
+
     void restoreScrollbar();
 
     void postLayoutTimerFired(Timer<FrameView>*);
