@@ -14,6 +14,7 @@
 #include "ash/shell.h"
 #include "ash/wm/lock_state_controller.h"
 #include "base/bind.h"
+#include "base/i18n/number_formatting.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
@@ -365,7 +366,18 @@ void SigninScreenHandler::SetUserInputMethod(
 
 void SigninScreenHandler::DeclareLocalizedValues(
     ::login::LocalizedValuesBuilder* builder) {
+  // Format numbers to be used on the pin keyboard.
+  for (int j = 0; j <= 9; j++) {
+    builder->Add("pinKeyboard" + base::IntToString(j),
+                 base::FormatNumber(int64_t{j}));
+  }
+
   builder->Add("passwordHint", IDS_LOGIN_POD_EMPTY_PASSWORD_TEXT);
+  builder->Add("pinKeyboardPlaceholderPin",
+               IDS_PIN_KEYBOARD_HINT_TEXT_PIN);
+  builder->Add("pinKeyboardPlaceholderPinPassword",
+               IDS_PIN_KEYBOARD_HINT_TEXT_PIN_PASSWORD);
+  builder->Add("pinKeyboardClear", IDS_PIN_KEYBOARD_CLEAR);
   builder->Add("signingIn", IDS_LOGIN_POD_SIGNING_IN);
   builder->Add("podMenuButtonAccessibleName",
                IDS_LOGIN_POD_MENU_BUTTON_ACCESSIBLE_NAME);

@@ -2,6 +2,7 @@
                              what i18n to use for keypad, ie, does 1 ABC make
                              sense in every scenario? -->
 
+<link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-styles/paper-styles.html">
@@ -11,7 +12,12 @@
   <template>
     <style>
       #root {
+        direction: ltr;
         display: flex;
+      }
+
+      .input-non-pin {
+        direction: rtl;
       }
 
       .row {
@@ -121,8 +127,10 @@
 
     <div id="root">
       <div id="container-constrained-width">
-        <div class="row">
-          <input id="pin-input" type="number" placeholder="Enter PIN"
+        <div class="row horizontal-center">
+          <input id="pin-input" type="[[computeInputType_(enablePassword)]]"
+                 class$="[[computeInputClass_(value)]]"
+                 placeholder="[[computeInputPlaceholder_(enablePassword)]]"
                  value="{{value::input}}"
                  on-keydown="onInputKeyDown_"></input>
           <paper-button class="digit-button first-row submit-button"
@@ -135,51 +143,52 @@
 
         <div class="row keyboard">
           <paper-button class="digit-button" on-tap="onNumberTap_" value="1">
-            <inner-text>1</inner-text>
+            <inner-text>$i18n{pinKeyboard1}</inner-text>
           </paper-button>
           <paper-button class="digit-button center-button" on-tap="onNumberTap_"
                         value="2">
-            <inner-text>2</inner-text>
+            <inner-text>$i18n{pinKeyboard2}</inner-text>
           </paper-button>
           <paper-button class="digit-button" on-tap="onNumberTap_" value="3">
-            <inner-text>3</inner-text>
+            <inner-text>$i18n{pinKeyboard3}</inner-text>
           </paper-button>
         </div>
         <div class="row keyboard">
           <paper-button class="digit-button" on-tap="onNumberTap_" value="4">
-            <inner-text>4</inner-text>
+            <inner-text>$i18n{pinKeyboard4}</inner-text>
           </paper-button>
           <paper-button class="digit-button center-button" on-tap="onNumberTap_"
                         value="5">
-            <inner-text>5</inner-text>
+            <inner-text>$i18n{pinKeyboard5}</inner-text>
           </paper-button>
           <paper-button class="digit-button" on-tap="onNumberTap_" value="6">
-            <inner-text>6</inner-text>
+            <inner-text>$i18n{pinKeyboard6}</inner-text>
           </paper-button>
         </div>
         <div class="row keyboard">
           <paper-button class="digit-button" on-tap="onNumberTap_" value="7">
-            <inner-text>7</inner-text>
+            <inner-text>$i18n{pinKeyboard7}</inner-text>
           </paper-button>
           <paper-button class="digit-button center-button" on-tap="onNumberTap_"
-                        value="8">
-            <inner-text>8</inner-text>
+            <inner-text>$i18n{pinKeyboard8}</inner-text>
           </paper-button>
           <paper-button class="digit-button" on-tap="onNumberTap_" value="9">
-            <inner-text>9</inner-text>
+            <inner-text>$i18n{pinKeyboard9}</inner-text>
           </paper-button>
         </div>
         <div class="row keyboard">
           <div class="digit-button"></div>
           <paper-button class="digit-button center-button" on-tap="onNumberTap_"
                         value="0">
-            <inner-text>0</inner-text>
+            <inner-text>$i18n{pinKeyboard0}</inner-text>
           </paper-button>
           <paper-button class="digit-button clear-button" on-tap="onPinClear_">
             <div class="icon-container">
               <iron-icon class="icon" icon="icons:clear"><iron-icon>
             </div>
-            <inner-text class="icon-subheading">Clear</inner-text>
+            <inner-text class="icon-subheading">
+              $i18n{pinKeyboardClear}
+            </inner-text>
           </paper-button>
         </div>
       </div>

@@ -13196,6 +13196,17 @@ Please check your email at <ph name="ACCOUNT_EMAIL">$2<ex>jane.doe@gmail.com</ex
         <message name="IDS_SCREEN_LOCK_ACTIVE_USER">
           Currently signed in
         </message>
+        <if expr="chromeos">
+          <message name="IDS_PIN_KEYBOARD_HINT_TEXT_PIN" desc="Text to display in the pin field for user pod when no pin has been entered.">
+            Enter PIN
+          </message>
+          <message name="IDS_PIN_KEYBOARD_HINT_TEXT_PIN_PASSWORD" desc="Text to display in the pin field for user pod when no pin has been entered, and passwords are allowed.">
+            Enter PIN or Password
+          </message>
+          <message name="IDS_PIN_KEYBOARD_CLEAR" desc="Text to display text of button on pin keyboard which deletes last character.">
+            Clear
+          </message>
+        </if>
         <message name="IDS_LOGIN_ERROR_AUTHENTICATING" desc="Couldn't sign in because password is invalid">
           Sorry, your password could not be verified. Please try again.
         </message>

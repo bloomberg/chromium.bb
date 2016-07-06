@@ -7,6 +7,8 @@
 #include <string>
 
 #include "base/command_line.h"
+#include "base/i18n/number_formatting.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
@@ -753,6 +755,10 @@ void AddPeopleStrings(content::WebUIDataSource* html_source) {
     {"manageSupervisedUsers", IDS_SETTINGS_PEOPLE_MANAGE_SUPERVISED_USERS},
 #if defined(OS_CHROMEOS)
     {"enableScreenlock", IDS_SETTINGS_PEOPLE_ENABLE_SCREENLOCK},
+    {"pinKeyboardPlaceholderPin", IDS_PIN_KEYBOARD_HINT_TEXT_PIN},
+    {"pinKeyboardPlaceholderPinPassword",
+      IDS_PIN_KEYBOARD_HINT_TEXT_PIN_PASSWORD},
+    {"pinKeyboardClear", IDS_PIN_KEYBOARD_CLEAR},
     {"quickUnlockTitle", IDS_SETTINGS_PEOPLE_QUICK_UNLOCK_TITLE},
     {"quickUnlockConfirmLogin", IDS_SETTINGS_PEOPLE_QUICK_UNLOCK_CONFIRM_LOGIN},
     {"quickUnlockPasswordLabel",
@@ -857,6 +863,12 @@ void AddPeopleStrings(content::WebUIDataSource* html_source) {
   };
   AddLocalizedStringsBulk(html_source, localized_strings,
                           arraysize(localized_strings));
+
+  // Format numbers to be used on the pin keyboard.
+  for (int j = 0; j <= 9; j++) {
+    html_source->AddString("pinKeyboard" + base::IntToString(j),
+                           base::FormatNumber(int64_t{j}));
+  }
 
   html_source->AddString("autofillHelpURL", autofill::kHelpURL);
   html_source->AddString("supervisedUsersUrl",
