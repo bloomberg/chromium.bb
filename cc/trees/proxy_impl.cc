@@ -117,6 +117,7 @@ ProxyImpl::~ProxyImpl() {
 
   // Take away the OutputSurface before destroying things so it doesn't try
   // to call into its client mid-shutdown.
+  scheduler_->DidLoseOutputSurface();
   layer_tree_host_impl_->ReleaseOutputSurface();
 
   scheduler_ = nullptr;
