@@ -32,7 +32,6 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &features::kSimplifiedFullscreenUI,
     &kAndroidPayIntegrationV1,
     &kImportantSitesInCBD,
-    &kMediaStyleNotification,
     &kNTPFakeOmniboxTextFeature,
     &kNTPMaterialDesign,
     &kNTPOfflinePagesFeature,
@@ -50,10 +49,6 @@ const base::Feature* kFeaturesExposedToJava[] = {
 
 const base::Feature kImportantSitesInCBD{"ImportantSitesInCBD",
                                          base::FEATURE_DISABLED_BY_DEFAULT};
-
-const base::Feature kMediaStyleNotification {
-  "MediaStyleNotification", base::FEATURE_ENABLED_BY_DEFAULT
-};
 
 const base::Feature kNTPMaterialDesign{"NTPMaterialDesign",
                                        base::FEATURE_ENABLED_BY_DEFAULT};
