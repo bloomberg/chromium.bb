@@ -91,7 +91,8 @@ views::View* SaveCardBubbleViews::CreateFootnoteView() {
 }
 
 bool SaveCardBubbleViews::Accept() {
-  controller_->OnSaveButton();
+  if (controller_)
+    controller_->OnSaveButton();
   return true;
 }
 
@@ -102,7 +103,8 @@ bool SaveCardBubbleViews::Cancel() {
 }
 
 bool SaveCardBubbleViews::Close() {
-  // Override to prevent Cancel from being called when the bubble is hidden.
+  // Cancel is logged as a different user action than closing, so override
+  // Close() to prevent the superclass' implementation from calling Cancel().
   // Return true to indicate that the bubble can be closed.
   return true;
 }
@@ -129,7 +131,7 @@ gfx::Size SaveCardBubbleViews::GetPreferredSize() const {
 }
 
 base::string16 SaveCardBubbleViews::GetWindowTitle() const {
-  return controller_->GetWindowTitle();
+  return controller_ ? controller_->GetWindowTitle() : base::string16();
 }
 
 void SaveCardBubbleViews::WindowClosing() {
@@ -139,12 +141,16 @@ void SaveCardBubbleViews::WindowClosing() {
 
 void SaveCardBubbleViews::LinkClicked(views::Link* source, int event_flags) {
   DCHECK_EQ(source, learn_more_link_);
-  controller_->OnLearnMoreClicked();
+  if (controller_)
+    controller_->OnLearnMoreClicked();
 }
 
 void SaveCardBubbleViews::StyledLabelLinkClicked(views::StyledLabel* label,
                                                  const gfx::Range& range,
                                                  int event_flags) {
+  if (!controller_)
+    return;
+
   // Index of |label| within its parent's view hierarchy is the same as the
   // legal message line index. DCHECK this assumption to guard against future
   // layout changes.
