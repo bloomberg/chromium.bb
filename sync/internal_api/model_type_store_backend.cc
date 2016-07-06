@@ -20,23 +20,48 @@
 
 namespace syncer_v2 {
 
-ModelTypeStoreBackend::ModelTypeStoreBackend() {
-}
+// static
+base::LazyInstance<ModelTypeStoreBackend::BackendMap>
+    ModelTypeStoreBackend::backend_map_ = LAZY_INSTANCE_INITIALIZER;
+
+ModelTypeStoreBackend::ModelTypeStoreBackend(const std::string& path)
+    : path_(path) {}
 
 ModelTypeStoreBackend::~ModelTypeStoreBackend() {
+  backend_map_.Get().erase(path_);
 }
 
 std::unique_ptr<leveldb::Env> ModelTypeStoreBackend::CreateInMemoryEnv() {
   return base::WrapUnique(leveldb::NewMemEnv(leveldb::Env::Default()));
 }
 
-void ModelTypeStoreBackend::TakeEnvOwnership(
-    std::unique_ptr<leveldb::Env> env) {
-  env_ = std::move(env);
+// static
+scoped_refptr<ModelTypeStoreBackend> ModelTypeStoreBackend::GetOrCreateBackend(
+    const std::string& path,
+    std::unique_ptr<leveldb::Env> env,
+    ModelTypeStore::Result* result) {
+  if (backend_map_.Get().find(path) != backend_map_.Get().end()) {
+    *result = ModelTypeStore::Result::SUCCESS;
+    return make_scoped_refptr(backend_map_.Get()[path]);
+  }
+
+  scoped_refptr<ModelTypeStoreBackend> backend =
+      new ModelTypeStoreBackend(path);
+
+  *result = backend->Init(path, std::move(env));
+
+  if (*result == ModelTypeStore::Result::SUCCESS) {
+    backend_map_.Get()[path] = backend.get();
+  } else {
+    backend = nullptr;
+  }
+
+  return backend;
 }
 
-ModelTypeStore::Result ModelTypeStoreBackend::Init(const std::string& path,
-                                                   leveldb::Env* env) {
+ModelTypeStore::Result ModelTypeStoreBackend::Init(
+    const std::string& path,
+    std::unique_ptr<leveldb::Env> env) {
   DFAKE_SCOPED_LOCK(push_pop_);
   leveldb::DB* db_raw = nullptr;
 
@@ -44,8 +69,11 @@ ModelTypeStore::Result ModelTypeStoreBackend::Init(const std::string& path,
   options.create_if_missing = true;
   options.reuse_logs = leveldb_env::kDefaultLogReuseOptionValue;
   options.paranoid_checks = true;
-  if (env)
-    options.env = env;
+  if (env.get()) {
+    options.env = env.get();
+    env_ = std::move(env);
+  }
+
   leveldb::Status status = leveldb::DB::Open(options, path, &db_raw);
   if (!status.ok()) {
     DCHECK(db_raw == nullptr);

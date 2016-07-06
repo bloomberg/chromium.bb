@@ -315,6 +315,11 @@ SYNC_EXPORT ModelTypeSet ModelTypeSetFromValue(const base::ListValue& value);
 // Returns a string corresponding to the syncable tag for this datatype.
 SYNC_EXPORT std::string ModelTypeToRootTag(ModelType type);
 
+// Returns root_tag for |model_type| in ModelTypeInfo.
+// Difference with ModelTypeToRootTag(), this just simply return toor_tag in
+// ModelTypeInfo.
+SYNC_EXPORT const char* GetModelTypeRootTag(ModelType model_type);
+
 // Convert a real model type to a notification type (used for
 // subscribing to server-issued notifications).  Returns true iff
 // |model_type| was a real model type and |notification_type| was
@@ -355,11 +360,6 @@ SYNC_EXPORT bool TypeSupportsHierarchy(ModelType model_type);
 
 // Returns true if |model_type| supports ordering of sibling entries.
 SYNC_EXPORT bool TypeSupportsOrdering(ModelType model_type);
-
-// Returns root_tag for |model_type| in ModelTypeInfo.
-// Difference with ModelTypeToRootTag(), this just simply return toor_tag in
-// ModelTypeInfo.
-SYNC_EXPORT const char* ModelTypeToTag(ModelType model_type);
 
 }  // namespace syncer
 

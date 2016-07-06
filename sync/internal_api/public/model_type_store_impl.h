@@ -64,9 +64,12 @@ class ModelTypeStoreImpl : public ModelTypeStore, public base::NonThreadSafe {
     std::unique_ptr<leveldb::WriteBatch> leveldb_write_batch_;
   };
 
-  static void BackendInitDone(const InitCallback& callback,
-                              std::unique_ptr<ModelTypeStoreImpl> store,
-                              Result result);
+  static void BackendInitDone(
+      const syncer::ModelType type,
+      std::unique_ptr<Result> result,
+      scoped_refptr<base::SequencedTaskRunner> blocking_task_runner,
+      const InitCallback& callback,
+      scoped_refptr<ModelTypeStoreBackend> backend);
 
   // Format prefix key for data/metadata records with |type|.
   static std::string FormatDataPrefix(const syncer::ModelType type);
@@ -80,7 +83,7 @@ class ModelTypeStoreImpl : public ModelTypeStore, public base::NonThreadSafe {
 
   ModelTypeStoreImpl(
       const syncer::ModelType type,
-      std::unique_ptr<ModelTypeStoreBackend> backend,
+      scoped_refptr<ModelTypeStoreBackend> backend,
       scoped_refptr<base::SequencedTaskRunner> backend_task_runner);
 
   // Callbacks for different calls to ModelTypeStoreBackend.
@@ -102,15 +105,15 @@ class ModelTypeStoreImpl : public ModelTypeStore, public base::NonThreadSafe {
   void WriteModificationsDone(const CallbackWithResult& callback,
                               Result result);
 
-  // Backend is owned by store, but should be deleted on backend thread. To
-  // accomplish this store's dtor posts task to backend thread passing backend
-  // ownership to task parameter.
-  std::unique_ptr<ModelTypeStoreBackend> backend_;
+  // Backend should be deleted on backend thread.
+  // To accomplish this store's dtor posts task to backend thread passing
+  // backend ownership to task parameter.
+  scoped_refptr<ModelTypeStoreBackend> backend_;
   scoped_refptr<base::SequencedTaskRunner> backend_task_runner_;
 
   // Key prefix for data/metadata records of this model type.
-  const std::string dataPrefix_;
-  const std::string metadataPrefix_;
+  const std::string data_prefix_;
+  const std::string metadata_prefix_;
 
   base::WeakPtrFactory<ModelTypeStoreImpl> weak_ptr_factory_;
 };

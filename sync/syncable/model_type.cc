@@ -701,6 +701,10 @@ std::string ModelTypeToRootTag(ModelType type) {
   return "INVALID";
 }
 
+const char* GetModelTypeRootTag(ModelType model_type) {
+  return kModelTypeInfoMap[model_type].root_tag;
+}
+
 bool RealModelTypeToNotificationType(ModelType model_type,
                                      std::string* notification_type) {
   if (ProtocolTypes().Has(model_type)) {
@@ -755,10 +759,6 @@ bool TypeSupportsHierarchy(ModelType model_type) {
 
 bool TypeSupportsOrdering(ModelType model_type) {
   return model_type == BOOKMARKS;
-}
-
-const char* ModelTypeToTag(ModelType model_type) {
-  return kModelTypeInfoMap[model_type].root_tag;
 }
 
 }  // namespace syncer

@@ -7,7 +7,9 @@
 
 #include <memory>
 #include <string>
+#include <unordered_map>
 
+#include "base/lazy_instance.h"
 #include "base/macros.h"
 #include "base/threading/thread_collision_warner.h"
 #include "sync/api/model_type_store.h"
@@ -24,25 +26,22 @@ namespace syncer_v2 {
 // ModelTypeStoreBackend handles operations with leveldb. It is oblivious of the
 // fact that it is called from separate thread (with the exception of ctor),
 // meaning it shouldn't deal with callbacks and task_runners.
-class SYNC_EXPORT ModelTypeStoreBackend {
+class SYNC_EXPORT ModelTypeStoreBackend
+    : public base::RefCountedThreadSafe<ModelTypeStoreBackend> {
  public:
-  ModelTypeStoreBackend();
-  ~ModelTypeStoreBackend();
+  typedef std::unordered_map<std::string, ModelTypeStoreBackend*> BackendMap;
 
   // Helper function to create in memory environment for leveldb.
   static std::unique_ptr<leveldb::Env> CreateInMemoryEnv();
 
-  // Take ownership of env from consumer of ModelTypeStoreBackend object. env
-  // will be deleted right after db_ is deleted. This function allows tests to
-  // create in-memory store without requiring them to manage env ownership.
-  void TakeEnvOwnership(std::unique_ptr<leveldb::Env> env);
-
-  // Init opens database at |path|. If database doesn't exist it creates one.
-  // Normally |env| should be nullptr, this causes leveldb to use default disk
-  // based environment from leveldb::Env::Default().
-  // Providing |env| allows to override environment used by leveldb for tests
-  // with in-memory or faulty environment.
-  ModelTypeStore::Result Init(const std::string& path, leveldb::Env* env);
+  // GetOrCreateBackend will check if |backend_map_| has a backend with same
+  // |path|. If |backend_map_| has one, wrap that backend to scoped_refptr and
+  // return. If |backend_map_| does not have, create a backend and store it into
+  // |backend_map_|.
+  static scoped_refptr<ModelTypeStoreBackend> GetOrCreateBackend(
+      const std::string& path,
+      std::unique_ptr<leveldb::Env> env,
+      ModelTypeStore::Result* result);
 
   // Reads records with keys formed by prepending ids from |id_list| with
   // |prefix|. If the record is found its id (without prefix) and value is
@@ -66,6 +65,12 @@ class SYNC_EXPORT ModelTypeStoreBackend {
       std::unique_ptr<leveldb::WriteBatch> write_batch);
 
  private:
+  friend class base::RefCountedThreadSafe<ModelTypeStoreBackend>;
+  friend class ModelTypeStoreBackendTest;
+
+  ModelTypeStoreBackend(const std::string& path);
+  ~ModelTypeStoreBackend();
+
   // In some scenarios ModelTypeStoreBackend holds ownership of env. Typical
   // example is when test creates in memory environment with CreateInMemoryEnv
   // and wants it to be destroyed along with backend. This is achieved by
@@ -76,6 +81,22 @@ class SYNC_EXPORT ModelTypeStoreBackend {
   std::unique_ptr<leveldb::Env> env_;
 
   std::unique_ptr<leveldb::DB> db_;
+
+  std::string path_;
+
+  // backend_map_ holds raw pointer of backend, and when stores ask for backend,
+  // GetOrCreateBackend will return scoped_refptr of backend. backend_map_
+  // doesn't take reference to backend, therefore doesn't block backend
+  // destruction.
+  static base::LazyInstance<BackendMap> backend_map_;
+
+  // Init opens database at |path|. If database doesn't exist it creates one.
+  // Normally |env| should be nullptr, this causes leveldb to use default disk
+  // based environment from leveldb::Env::Default().
+  // Providing |env| allows to override environment used by leveldb for tests
+  // with in-memory or faulty environment.
+  ModelTypeStore::Result Init(const std::string& path,
+                              std::unique_ptr<leveldb::Env> env);
 
   // Macro wrapped mutex to guard against concurrent calls in debug builds.
   DFAKE_MUTEX(push_pop_);

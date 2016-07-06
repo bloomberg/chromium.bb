@@ -4,11 +4,6 @@
 
 #include "sync/internal_api/public/model_type_store_backend.h"
 
-#include <utility>
-
-#include "base/bind.h"
-#include "base/message_loop/message_loop.h"
-#include "base/run_loop.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/leveldatabase/src/include/leveldb/env.h"
 #include "third_party/leveldatabase/src/include/leveldb/write_batch.h"
@@ -17,30 +12,46 @@ namespace syncer_v2 {
 
 class ModelTypeStoreBackendTest : public testing::Test {
  public:
-  void SetUp() override {
-    in_memory_env_ = ModelTypeStoreBackend::CreateInMemoryEnv();
+  scoped_refptr<ModelTypeStoreBackend> GetOrCreateBackend() {
+    std::string path = "/test_db";
+    return GetOrCreateBackendWithPath(path);
   }
 
-  void TearDown() override { in_memory_env_.reset(); }
-
-  std::unique_ptr<ModelTypeStoreBackend> CreateBackend() {
-    std::unique_ptr<ModelTypeStoreBackend> backend(new ModelTypeStoreBackend());
+  scoped_refptr<ModelTypeStoreBackend> GetOrCreateBackendWithPath(
+      std::string custom_path) {
+    std::unique_ptr<leveldb::Env> in_memory_env =
+        ModelTypeStoreBackend::CreateInMemoryEnv();
     std::string path;
-    in_memory_env_->GetTestDirectory(&path);
-    path += "/test_db";
-    ModelTypeStore::Result result = backend->Init(path, in_memory_env_.get());
-    EXPECT_EQ(ModelTypeStore::Result::SUCCESS, result);
+    in_memory_env->GetTestDirectory(&path);
+    path += custom_path;
+
+    ModelTypeStore::Result result;
+    // In-memory store backend works on the same thread as test.
+    scoped_refptr<ModelTypeStoreBackend> backend =
+        ModelTypeStoreBackend::GetOrCreateBackend(
+            path, std::move(in_memory_env), &result);
+    EXPECT_TRUE(backend.get());
+    EXPECT_EQ(result, ModelTypeStore::Result::SUCCESS);
     return backend;
   }
 
- protected:
-  std::unique_ptr<leveldb::Env> in_memory_env_;
+  bool BackendExistsForPath(std::string path) {
+    if (ModelTypeStoreBackend::backend_map_.Get().end() ==
+        ModelTypeStoreBackend::backend_map_.Get().find(path)) {
+      return false;
+    }
+    return true;
+  }
+
+  std::string GetBackendPath(scoped_refptr<ModelTypeStoreBackend> backend) {
+    return backend->path_;
+  }
 };
 
 // Test that after record is written to backend it can be read back even after
 // backend is destroyed and recreated in the same environment.
 TEST_F(ModelTypeStoreBackendTest, WriteThenRead) {
-  std::unique_ptr<ModelTypeStoreBackend> backend = CreateBackend();
+  scoped_refptr<ModelTypeStoreBackend> backend = GetOrCreateBackend();
 
   // Write record.
   std::unique_ptr<leveldb::WriteBatch> write_batch(new leveldb::WriteBatch());
@@ -59,7 +70,7 @@ TEST_F(ModelTypeStoreBackendTest, WriteThenRead) {
   record_list.clear();
 
   // Recreate backend and read all records with prefix.
-  backend = CreateBackend();
+  backend = GetOrCreateBackend();
   result = backend->ReadAllRecordsWithPrefix("prefix:", &record_list);
   ASSERT_EQ(ModelTypeStore::Result::SUCCESS, result);
   ASSERT_EQ(1ul, record_list.size());
@@ -69,7 +80,7 @@ TEST_F(ModelTypeStoreBackendTest, WriteThenRead) {
 
 // Test that ReadAllRecordsWithPrefix correclty filters records by prefix.
 TEST_F(ModelTypeStoreBackendTest, ReadAllRecordsWithPrefix) {
-  std::unique_ptr<ModelTypeStoreBackend> backend = CreateBackend();
+  scoped_refptr<ModelTypeStoreBackend> backend = GetOrCreateBackend();
 
   std::unique_ptr<leveldb::WriteBatch> write_batch(new leveldb::WriteBatch());
   write_batch->Put("prefix1:id1", "data1");
@@ -89,7 +100,7 @@ TEST_F(ModelTypeStoreBackendTest, ReadAllRecordsWithPrefix) {
 // Test that deleted records are correctly marked as milling in results of
 // ReadRecordsWithPrefix.
 TEST_F(ModelTypeStoreBackendTest, ReadDeletedRecord) {
-  std::unique_ptr<ModelTypeStoreBackend> backend = CreateBackend();
+  scoped_refptr<ModelTypeStoreBackend> backend = GetOrCreateBackend();
 
   // Create records, ensure they are returned by ReadRecordsWithPrefix.
   std::unique_ptr<leveldb::WriteBatch> write_batch(new leveldb::WriteBatch());
@@ -126,6 +137,54 @@ TEST_F(ModelTypeStoreBackendTest, ReadDeletedRecord) {
   ASSERT_EQ("id1", record_list[0].id);
   ASSERT_EQ(1UL, missing_id_list.size());
   ASSERT_EQ("id2", missing_id_list[0]);
+}
+
+// Test that only one backend got create when we ask two backend with same path,
+// and after de-reference the backend, the backend will be deleted.
+TEST_F(ModelTypeStoreBackendTest, TwoSameBackendTest) {
+  // Create two backend with same path, check if they are reference to same
+  // address.
+  scoped_refptr<ModelTypeStoreBackend> backend = GetOrCreateBackend();
+  scoped_refptr<ModelTypeStoreBackend> backend_second = GetOrCreateBackend();
+  std::string path = GetBackendPath(backend);
+  ASSERT_EQ(backend.get(), backend_second.get());
+
+  // Delete one reference, check the real backend still here.
+  backend = nullptr;
+  ASSERT_FALSE(backend.get());
+  ASSERT_TRUE(backend_second.get());
+  ASSERT_TRUE(backend_second->HasOneRef());
+
+  // Delete another reference, check the real backend is deleted.
+  backend_second = nullptr;
+  ASSERT_FALSE(backend_second.get());
+  ASSERT_FALSE(BackendExistsForPath(path));
+}
+
+// Test that two backend got create when we ask two backend with different path,
+// and after de-reference two backend, the both backend will be deleted.
+TEST_F(ModelTypeStoreBackendTest, TwoDifferentBackendTest) {
+  // Create two backend with different path, check if they are reference to
+  // different address.
+  scoped_refptr<ModelTypeStoreBackend> backend = GetOrCreateBackend();
+  scoped_refptr<ModelTypeStoreBackend> backend_second =
+      GetOrCreateBackendWithPath("/test_db2");
+  std::string path = GetBackendPath(backend);
+  ASSERT_NE(backend.get(), backend_second.get());
+  ASSERT_TRUE(backend->HasOneRef());
+  ASSERT_TRUE(backend_second->HasOneRef());
+
+  // delete one backend, check only one got deleted.
+  backend = nullptr;
+  ASSERT_FALSE(backend.get());
+  ASSERT_TRUE(backend_second.get());
+  ASSERT_TRUE(backend_second->HasOneRef());
+  ASSERT_FALSE(BackendExistsForPath(path));
+
+  // delete another backend.
+  backend_second = nullptr;
+  ASSERT_FALSE(backend_second.get());
+  ASSERT_FALSE(BackendExistsForPath("/test_db2"));
 }
 
 }  // namespace syncer_v2
