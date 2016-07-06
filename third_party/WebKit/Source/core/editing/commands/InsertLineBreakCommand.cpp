@@ -105,11 +105,15 @@ void InsertLineBreakCommand::doApply(EditingState* editingState)
         if (needExtraLineBreak) {
             Node* extraNode;
             // TODO(tkent): Can we remove HTMLTextFormControlElement dependency?
-            if (HTMLTextFormControlElement* textControl = enclosingTextFormControl(nodeToInsert))
+            if (HTMLTextFormControlElement* textControl = enclosingTextFormControl(nodeToInsert)) {
                 extraNode = textControl->createPlaceholderBreakElement();
-            else
+                // The placeholder BR should be the last child.  There might be
+                // empty Text nodes at |pos|.
+                appendNode(extraNode, nodeToInsert->parentNode(), editingState);
+            } else {
                 extraNode = nodeToInsert->cloneNode(false);
-            insertNodeAfter(extraNode, nodeToInsert, editingState);
+                insertNodeAfter(extraNode, nodeToInsert, editingState);
+            }
             if (editingState->isAborted())
                 return;
             nodeToInsert = extraNode;
