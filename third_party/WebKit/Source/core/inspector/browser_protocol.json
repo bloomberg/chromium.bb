@@ -3868,7 +3868,7 @@
                 "properties": [
                     { "name": "id", "type": "string", "description": "<code>Animation</code>'s id." },
                     { "name": "name", "type": "string", "description": "<code>Animation</code>'s name." },
-                    { "name": "pausedState", "type": "boolean", "hidden": "true", "description": "<code>Animation</code>'s internal paused state." },
+                    { "name": "pausedState", "type": "boolean", "hidden": true, "description": "<code>Animation</code>'s internal paused state." },
                     { "name": "playState", "type": "string", "description": "<code>Animation</code>'s play state." },
                     { "name": "playbackRate", "type": "number", "description": "<code>Animation</code>'s playback rate." },
                     { "name": "startTime", "type": "number", "description": "<code>Animation</code>'s start time." },
@@ -4082,7 +4082,6 @@
                 "type": "object",
                 "properties": [
                     { "name": "type", "$ref": "AXValueType", "description": "The type of this value." },
-
                     { "name": "value", "type": "any", "description": "The computed value of this property.", "optional": true },
                     { "name": "relatedNodes", "type": "array", "items": { "$ref": "AXRelatedNode" }, "description": "One or more related nodes, if applicable.", "optional": true },
                     { "name": "sources", "type": "array", "items": { "$ref": "AXValueSource" }, "description": "The sources which contributed to the computation of this property.", "optional": true }
@@ -4105,7 +4104,7 @@
                 "id": "AXWidgetAttributes",
                 "type": "string",
                 "enum": [ "autocomplete", "haspopup", "level", "multiselectable", "orientation", "multiline", "readonly", "required", "valuemin", "valuemax", "valuetext" ],
-                "Description": "Attributes which apply to widgets."
+                "description": "Attributes which apply to widgets."
             },
             {
                 "id": "AXWidgetStates",
