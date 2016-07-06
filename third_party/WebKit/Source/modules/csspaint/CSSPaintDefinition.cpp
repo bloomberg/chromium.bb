@@ -21,15 +21,17 @@
 
 namespace blink {
 
-CSSPaintDefinition* CSSPaintDefinition::create(ScriptState* scriptState, v8::Local<v8::Function> constructor, v8::Local<v8::Function> paint, Vector<CSSPropertyID>& nativeInvalidationProperties, Vector<AtomicString>& customInvalidationProperties)
+CSSPaintDefinition* CSSPaintDefinition::create(ScriptState* scriptState, v8::Local<v8::Function> constructor, v8::Local<v8::Function> paint, Vector<CSSPropertyID>& nativeInvalidationProperties, Vector<AtomicString>& customInvalidationProperties, bool hasAlpha)
 {
-    return new CSSPaintDefinition(scriptState, constructor, paint, nativeInvalidationProperties, customInvalidationProperties);
+    return new CSSPaintDefinition(scriptState, constructor, paint, nativeInvalidationProperties, customInvalidationProperties, hasAlpha);
 }
 
-CSSPaintDefinition::CSSPaintDefinition(ScriptState* scriptState, v8::Local<v8::Function> constructor, v8::Local<v8::Function> paint, Vector<CSSPropertyID>& nativeInvalidationProperties, Vector<AtomicString>& customInvalidationProperties)
+CSSPaintDefinition::CSSPaintDefinition(ScriptState* scriptState, v8::Local<v8::Function> constructor, v8::Local<v8::Function> paint, Vector<CSSPropertyID>& nativeInvalidationProperties, Vector<AtomicString>& customInvalidationProperties, bool hasAlpha)
     : m_scriptState(scriptState)
     , m_constructor(scriptState->isolate(), constructor)
     , m_paint(scriptState->isolate(), paint)
+    , m_didCallConstructor(false)
+    , m_hasAlpha(hasAlpha)
 {
     m_nativeInvalidationProperties.swap(nativeInvalidationProperties);
     m_customInvalidationProperties.swap(customInvalidationProperties);
@@ -56,7 +58,7 @@ PassRefPtr<Image> CSSPaintDefinition::paint(const LayoutObject& layoutObject, co
     DCHECK(layoutObject.node());
 
     PaintRenderingContext2D* renderingContext = PaintRenderingContext2D::create(
-        ImageBuffer::create(wrapUnique(new RecordingImageBufferSurface(size))));
+        ImageBuffer::create(wrapUnique(new RecordingImageBufferSurface(size, nullptr /* fallbackFactory */, m_hasAlpha ? NonOpaque : Opaque))),  m_hasAlpha);
     PaintSize* paintSize = PaintSize::create(size);
     StylePropertyMap* styleMap = FilteredComputedStylePropertyMap::create(
         CSSComputedStyleDeclaration::create(layoutObject.node()),

@@ -84,6 +84,16 @@ void PaintWorkletGlobalScope::registerPaint(const String& name, const ScriptValu
         }
     }
 
+    // Parse 'alpha' AKA hasAlpha property.
+    v8::Local<v8::Value> alphaValue;
+    if (!v8Call(constructor->Get(context, v8String(isolate, "alpha")), alphaValue))
+        return;
+    if (!isUndefinedOrNull(alphaValue) && !alphaValue->IsBoolean()) {
+        exceptionState.throwTypeError("The 'alpha' property on the class is not a boolean.");
+        return;
+    }
+    bool hasAlpha = alphaValue->IsBoolean() ? v8::Local<v8::Boolean>::Cast(alphaValue)->Value() : true;
+
     v8::Local<v8::Value> prototypeValue;
     if (!v8Call(constructor->Get(context, v8String(isolate, "prototype")), prototypeValue))
         return;
@@ -116,7 +126,7 @@ void PaintWorkletGlobalScope::registerPaint(const String& name, const ScriptValu
 
     v8::Local<v8::Function> paint = v8::Local<v8::Function>::Cast(paintValue);
 
-    CSSPaintDefinition* definition = CSSPaintDefinition::create(scriptController()->getScriptState(), constructor, paint, nativeInvalidationProperties, customInvalidationProperties);
+    CSSPaintDefinition* definition = CSSPaintDefinition::create(scriptController()->getScriptState(), constructor, paint, nativeInvalidationProperties, customInvalidationProperties, hasAlpha);
     m_paintDefinitions.set(name, definition);
 
     // Set the definition on any pending generators.

@@ -56,6 +56,11 @@ void CSSPaintValue::paintImageGeneratorReady()
     }
 }
 
+bool CSSPaintValue::knownToBeOpaque(const LayoutObject& layoutObject) const
+{
+    return m_generator && !m_generator->hasAlpha();
+}
+
 bool CSSPaintValue::equals(const CSSPaintValue& other) const
 {
     return name() == other.name();

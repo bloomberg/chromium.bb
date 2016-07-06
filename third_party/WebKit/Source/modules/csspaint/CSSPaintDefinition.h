@@ -21,7 +21,7 @@ class ScriptState;
 // the author.
 class CSSPaintDefinition final : public GarbageCollectedFinalized<CSSPaintDefinition> {
 public:
-    static CSSPaintDefinition* create(ScriptState*, v8::Local<v8::Function> constructor, v8::Local<v8::Function> paint, Vector<CSSPropertyID>&, Vector<AtomicString>& customInvalidationProperties);
+    static CSSPaintDefinition* create(ScriptState*, v8::Local<v8::Function> constructor, v8::Local<v8::Function> paint, Vector<CSSPropertyID>&, Vector<AtomicString>& customInvalidationProperties, bool hasAlpha);
     virtual ~CSSPaintDefinition();
 
     // Invokes the javascript 'paint' callback on an instance of the javascript
@@ -33,6 +33,7 @@ public:
     PassRefPtr<Image> paint(const LayoutObject&, const IntSize&);
     const Vector<CSSPropertyID>& nativeInvalidationProperties() const { return m_nativeInvalidationProperties; }
     const Vector<AtomicString>& customInvalidationProperties() const { return m_customInvalidationProperties; }
+    bool hasAlpha() const { return m_hasAlpha; }
 
     ScriptState* getScriptState() const { return m_scriptState.get(); }
 
@@ -41,7 +42,7 @@ public:
     DEFINE_INLINE_TRACE() { };
 
 private:
-    CSSPaintDefinition(ScriptState*, v8::Local<v8::Function> constructor, v8::Local<v8::Function> paint, Vector<CSSPropertyID>& nativeInvalidationProperties, Vector<AtomicString>& customInvalidationProperties);
+    CSSPaintDefinition(ScriptState*, v8::Local<v8::Function> constructor, v8::Local<v8::Function> paint, Vector<CSSPropertyID>& nativeInvalidationProperties, Vector<AtomicString>& customInvalidationProperties, bool hasAlpha);
 
     void maybeCreatePaintInstance();
 
@@ -60,6 +61,7 @@ private:
 
     Vector<CSSPropertyID> m_nativeInvalidationProperties;
     Vector<AtomicString> m_customInvalidationProperties;
+    bool m_hasAlpha;
 };
 
 } // namespace blink

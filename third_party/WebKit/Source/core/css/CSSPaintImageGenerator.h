@@ -43,6 +43,7 @@ public:
 
     virtual const Vector<CSSPropertyID>& nativeInvalidationProperties() const = 0;
     virtual const Vector<AtomicString>& customInvalidationProperties() const = 0;
+    virtual bool hasAlpha() const = 0;
 
     DEFINE_INLINE_VIRTUAL_TRACE() { }
 };

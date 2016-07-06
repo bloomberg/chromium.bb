@@ -29,7 +29,7 @@ public:
     IntSize fixedSize(const LayoutObject&) { return IntSize(); }
 
     bool isPending() const { return true; }
-    bool knownToBeOpaque(const LayoutObject&) const { return false; }
+    bool knownToBeOpaque(const LayoutObject&) const;
 
     void loadSubimages(Document*) { }
 

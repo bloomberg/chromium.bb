@@ -22,7 +22,7 @@ protected:
 
 void PaintRenderingContext2DTest::SetUp()
 {
-    m_ctx = PaintRenderingContext2D::create(ImageBuffer::create(IntSize(s_width, s_height)));
+    m_ctx = PaintRenderingContext2D::create(ImageBuffer::create(IntSize(s_width, s_height)), false /* hasAlpha */);
 }
 
 void trySettingStrokeStyle(PaintRenderingContext2D* ctx, const String& expected, const String& value)

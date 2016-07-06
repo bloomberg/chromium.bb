@@ -20,6 +20,10 @@ CONSOLE MESSAGE: line 18: The worklet should not throw an error.
 CONSOLE MESSAGE: line 1: Success for 'foo10'.
 CONSOLE MESSAGE: line 18: The worklet should not throw an error.
 CONSOLE MESSAGE: line 1: Success for 'foo11'.
+CONSOLE MESSAGE: line 14: The worklet should throw an error with: "The 'alpha' property on the class is not a boolean."
+CONSOLE ERROR: line 1: Uncaught TypeError: Failed to execute 'registerPaint' on 'PaintWorkletGlobalScope': The 'alpha' property on the class is not a boolean.
+CONSOLE MESSAGE: line 18: The worklet should not throw an error.
+CONSOLE MESSAGE: line 1: Success for 'foo13'.
 This tests a series of PaintWorkletGlobalScope#registerPaint calls.
 
 See the devtools console for test output.

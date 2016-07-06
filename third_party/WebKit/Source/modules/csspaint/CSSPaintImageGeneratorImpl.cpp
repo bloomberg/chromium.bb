@@ -70,6 +70,11 @@ const Vector<AtomicString>& CSSPaintImageGeneratorImpl::customInvalidationProper
     return m_definition ? m_definition->customInvalidationProperties() : emptyVector;
 }
 
+bool CSSPaintImageGeneratorImpl::hasAlpha() const
+{
+    return m_definition && m_definition->hasAlpha();
+}
+
 DEFINE_TRACE(CSSPaintImageGeneratorImpl)
 {
     visitor->trace(m_definition);

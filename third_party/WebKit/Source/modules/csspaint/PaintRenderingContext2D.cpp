@@ -9,11 +9,17 @@
 
 namespace blink {
 
-PaintRenderingContext2D::PaintRenderingContext2D(std::unique_ptr<ImageBuffer> imageBuffer)
-    : m_imageBuffer(std::move(imageBuffer))
+PaintRenderingContext2D::PaintRenderingContext2D(std::unique_ptr<ImageBuffer> imageBuffer, bool hasAlpha)
+    : m_imageBuffer(std::move(imageBuffer)), m_hasAlpha(hasAlpha)
 {
     m_clipAntialiasing = AntiAliased;
     modifiableState().setShouldAntialias(true);
+
+
+    // RecordingImageBufferSurface doesn't call ImageBufferSurface::clear explicitly.
+    DCHECK(m_imageBuffer);
+    m_imageBuffer->canvas()->clear(hasAlpha ? SK_ColorTRANSPARENT : SK_ColorBLACK);
+    m_imageBuffer->didDraw(FloatRect(0, 0, width(), height()));
 }
 
 int PaintRenderingContext2D::width() const

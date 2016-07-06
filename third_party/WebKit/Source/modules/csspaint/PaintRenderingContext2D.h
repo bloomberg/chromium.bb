@@ -23,9 +23,9 @@ class MODULES_EXPORT PaintRenderingContext2D : public BaseRenderingContext2D, pu
     USING_GARBAGE_COLLECTED_MIXIN(PaintRenderingContext2D);
     WTF_MAKE_NONCOPYABLE(PaintRenderingContext2D);
 public:
-    static PaintRenderingContext2D* create(std::unique_ptr<ImageBuffer> imageBuffer)
+    static PaintRenderingContext2D* create(std::unique_ptr<ImageBuffer> imageBuffer, bool hasAlpha)
     {
-        return new PaintRenderingContext2D(std::move(imageBuffer));
+        return new PaintRenderingContext2D(std::move(imageBuffer), hasAlpha);
     }
 
     // BaseRenderingContext2D
@@ -62,15 +62,16 @@ public:
 
     void validateStateStack() final;
 
-    bool hasAlpha() const final { return true; }
+    bool hasAlpha() const final { return m_hasAlpha; }
 
     // PaintRenderingContext2D cannot lose it's context.
     bool isContextLost() const final { return false; }
 
 private:
-    explicit PaintRenderingContext2D(std::unique_ptr<ImageBuffer>);
+    PaintRenderingContext2D(std::unique_ptr<ImageBuffer>, bool hasAlpha);
 
     std::unique_ptr<ImageBuffer> m_imageBuffer;
+    bool m_hasAlpha;
 };
 
 } // namespace blink

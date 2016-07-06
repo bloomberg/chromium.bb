@@ -58,6 +58,11 @@ function runTest() {
         script: "var c = function() { }; c.prototype.paint = function() { }; registerPaint('foo10', c); console.log('Success for \\'foo10\\'.');",
     }, {
         script: "registerPaint('foo11', class { static get inputProperties() { return ['-webkit-border-radius']; } paint() { } }); console.log('Success for \\'foo11\\'.');"
+    }, {
+        expectedError: "The 'alpha' property on the class is not a boolean.",
+        script: "registerPaint('foo12', class { static get alpha() { return 42; } });",
+    }, {
+        script: "registerPaint('foo13', class { static get alpha() { return true; } paint() { } }); console.log('Success for \\'foo13\\'.');",
     }]);
 }
 </script>
