@@ -41,11 +41,12 @@
       }
 
       #last-update-time {
-        color: #969696;
+        color: var(--secondary-text-color);
       }
 
       #dropdown-indicator {
         -webkit-margin-end: 12px;
+        color: var(--secondary-text-color);
         height: 20px;
         width: 20px;
       }
@@ -58,6 +59,7 @@
         background: #fff;
         border: 1px solid var(--card-border-color);
         border-bottom-width: 2px;
+        border-radius: 2px;
         max-width: var(--card-max-width);
         min-width: var(--card-min-width);
         width: 100%;
@@ -66,7 +68,7 @@
       #item-container {
         @apply(--layout-center);
         @apply(--layout-horizontal);
-        min-height: 40px;
+        min-height: var(--item-height);
       }
 
       #window-separator {

@@ -9,6 +9,9 @@
         --card-padding-between: 20px;
         --card-padding-side: 24px;
         --first-card-padding-top: 24px;
+        --item-height: 44px;
+        --primary-text-color: #333;
+        --secondary-text-color: #757575;
         --side-bar-width: 256px;
         --toolbar-grouped-height: 101px;
         --toolbar-height: 56px;
@@ -22,10 +25,9 @@
         @apply(--layout-center);
         @apply(--layout-horizontal);
         -webkit-padding-start: 20px;
-        background: #fafafa;
         border-bottom: 1px solid var(--card-border-color);
         border-radius: 2px 2px 0 0;
-        color: #333;
+        color: var(--primary-text-color);
         font-size: 14px;
         font-weight: 500;
         height: 48px;
@@ -51,7 +53,7 @@
       }
 
       .website-title {
-        color: #333;
+        color: var(--primary-text-color);
         overflow: hidden;
         text-decoration: none;
         text-overflow: ellipsis;
