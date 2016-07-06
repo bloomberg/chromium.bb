@@ -11,7 +11,7 @@ VpnProviderSharedBuffer::VpnProviderSharedBuffer(
     uint32_t packet_size,
     std::unique_ptr<base::SharedMemory> shm)
     : capacity_(capacity),
-      packet_size_(packet_size),
+      max_packet_size_(packet_size),
       shm_(std::move(shm)),
       available_(capacity, true) {
   DCHECK(this->shm_);
@@ -44,7 +44,7 @@ void* VpnProviderSharedBuffer::GetBuffer(uint32_t id) {
     NOTREACHED();
     return nullptr;
   }
-  return reinterpret_cast<char*>(shm_->memory()) + packet_size_ * id;
+  return reinterpret_cast<char*>(shm_->memory()) + max_packet_size_ * id;
 }
 
 base::SharedMemoryHandle VpnProviderSharedBuffer::GetHandle() {
