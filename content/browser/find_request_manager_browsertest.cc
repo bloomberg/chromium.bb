@@ -277,27 +277,15 @@ INSTANTIATE_TEST_CASE_P(
 // TODO(crbug.com/615291): These tests sometimes fail on the
 // linux_android_rel_ng trybot.
 #if defined(OS_ANDROID) && defined(NDEBUG)
-#define MAYBE_Basic DISABLED_Basic
-#define MAYBE_CharacterByCharacter DISABLED_CharacterByCharacter
-#define MAYBE_RapidFire DISABLED_RapidFire
-#define MAYBE_RemoveFrame DISABLED_RemoveFrame
-#define MAYBE_HiddenFrame DISABLED_HiddenFrame
-#define MAYBE_FindMatchRects DISABLED_FindMatchRects
-#define MAYBE_ActivateNearestFindMatch DISABLED_ActivateNearestFindMatch
+#define MAYBE(x) DISABLED_##x
 #else
-#define MAYBE_Basic Basic
-#define MAYBE_CharacterByCharacter CharacterByCharacter
-#define MAYBE_RapidFire RapidFire
-#define MAYBE_RemoveFrame RemoveFrame
-#define MAYBE_HiddenFrame HiddenFrame
-#define MAYBE_FindMatchRects FindMatchRects
-#define MAYBE_ActivateNearestFindMatch ActivateNearestFindMatch
+#define MAYBE(x) x
 #endif
 
 
 // Tests basic find-in-page functionality (such as searching forward and
 // backward) and check for correct results at each step.
-IN_PROC_BROWSER_TEST_P(FindRequestManagerTest, MAYBE_Basic) {
+IN_PROC_BROWSER_TEST_P(FindRequestManagerTest, MAYBE(Basic)) {
   LoadAndWait("/find_in_page.html");
   if (GetParam())
     MakeChildFrameCrossProcess();
@@ -336,7 +324,7 @@ IN_PROC_BROWSER_TEST_P(FindRequestManagerTest, MAYBE_Basic) {
 
 // Tests searching for a word character-by-character, as would typically be done
 // by a user typing into the find bar.
-IN_PROC_BROWSER_TEST_P(FindRequestManagerTest, MAYBE_CharacterByCharacter) {
+IN_PROC_BROWSER_TEST_P(FindRequestManagerTest, MAYBE(CharacterByCharacter)) {
   LoadAndWait("/find_in_page.html");
   if (GetParam())
     MakeChildFrameCrossProcess();
@@ -357,7 +345,7 @@ IN_PROC_BROWSER_TEST_P(FindRequestManagerTest, MAYBE_CharacterByCharacter) {
 }
 
 // Tests sending a large number of find requests subsequently.
-IN_PROC_BROWSER_TEST_P(FindRequestManagerTest, MAYBE_RapidFire) {
+IN_PROC_BROWSER_TEST_P(FindRequestManagerTest, MAYBE(RapidFire)) {
   LoadAndWait("/find_in_page.html");
   if (GetParam())
     MakeChildFrameCrossProcess();
@@ -378,7 +366,7 @@ IN_PROC_BROWSER_TEST_P(FindRequestManagerTest, MAYBE_RapidFire) {
 }
 
 // Tests removing a frame during a find session.
-IN_PROC_BROWSER_TEST_P(FindRequestManagerTest, MAYBE_RemoveFrame) {
+IN_PROC_BROWSER_TEST_P(FindRequestManagerTest, MAYBE(RemoveFrame)) {
   LoadMultiFramePage(2 /* height */, GetParam() /* cross_process */);
 
   blink::WebFindOptions options;
@@ -415,7 +403,7 @@ IN_PROC_BROWSER_TEST_P(FindRequestManagerTest, MAYBE_RemoveFrame) {
 
 // Tests Searching in a hidden frame. Matches in the hidden frame should be
 // ignored.
-IN_PROC_BROWSER_TEST_F(FindRequestManagerTest, MAYBE_HiddenFrame) {
+IN_PROC_BROWSER_TEST_F(FindRequestManagerTest, MAYBE(HiddenFrame)) {
   LoadAndWait("/find_in_hidden_frame.html");
 
   blink::WebFindOptions default_options;
@@ -430,7 +418,7 @@ IN_PROC_BROWSER_TEST_F(FindRequestManagerTest, MAYBE_HiddenFrame) {
 
 #if defined(OS_ANDROID)
 // Tests requesting find match rects.
-IN_PROC_BROWSER_TEST_F(FindRequestManagerTest, MAYBE_FindMatchRects) {
+IN_PROC_BROWSER_TEST_F(FindRequestManagerTest, MAYBE(FindMatchRects)) {
   LoadAndWait("/find_in_page.html");
 
   blink::WebFindOptions default_options;
@@ -511,7 +499,8 @@ IN_PROC_BROWSER_TEST_F(FindRequestManagerTest, MAYBE_FindMatchRects) {
 }
 
 // Tests activating the find match nearest to a given point.
-IN_PROC_BROWSER_TEST_F(FindRequestManagerTest, MAYBE_ActivateNearestFindMatch) {
+IN_PROC_BROWSER_TEST_F(FindRequestManagerTest,
+                       MAYBE(ActivateNearestFindMatch)) {
   LoadAndWait("/find_in_page.html");
 
   blink::WebFindOptions default_options;
