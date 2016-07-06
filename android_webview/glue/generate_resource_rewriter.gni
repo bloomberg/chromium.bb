@@ -26,7 +26,7 @@ template("generate_resource_rewriter") {
   _build_config_target_name = "${target_name}__build_config"
   _srcjar = "$target_gen_dir/${target_name}.srcjar"
   write_build_config(_build_config_target_name) {
-    deps = invoker.deps
+    possible_config_deps = invoker.deps
     type = "resource_rewriter"
     build_config = _build_config
   }
@@ -36,9 +36,7 @@ template("generate_resource_rewriter") {
     inputs = [
       _build_config,
     ]
-    deps = [
-      ":${_build_config_target_name}",
-    ]
+    deps = invoker.deps + [ ":${_build_config_target_name}" ]
     script = "//build/android/gyp/generate_resource_rewriter.py"
 
     _rebased_build_config = rebase_path(_build_config)
