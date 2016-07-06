@@ -12,9 +12,9 @@
   <template>
     <style include="shared-style">
       :host {
-        @apply(--layout-center);
-        @apply(--layout-vertical);
-        padding: 0 var(--card-padding-side) var(--card-padding-between);
+        @apply(--card-sizing);
+        display: block;
+        padding-bottom: var(--card-padding-between);
       }
 
       #card-heading {
@@ -60,9 +60,6 @@
         border: 1px solid var(--card-border-color);
         border-bottom-width: 2px;
         border-radius: 2px;
-        max-width: var(--card-max-width);
-        min-width: var(--card-min-width);
-        width: 100%;
       }
 
       #item-container {

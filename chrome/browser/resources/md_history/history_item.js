@@ -25,6 +25,10 @@ cr.define('md_history', function() {
 
       isCardEnd: {type: Boolean, reflectToAttribute: true},
 
+      // True if the item is being displayed embedded in another element and
+      // should not manage its own borders or size.
+      embedded: {type: Boolean, reflectToAttribute: true},
+
       hasTimeGap: {type: Boolean},
 
       numberOfItems: {type: Number}

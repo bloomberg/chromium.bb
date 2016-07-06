@@ -15,10 +15,11 @@
       }
 
       #main-container {
+        @apply(--card-sizing);
         align-items: center;
         display: flex;
         flex-direction: column;
-        padding: var(--first-card-padding-top) var(--card-padding-side);
+        padding-top: var(--first-card-padding-top);
       }
 
       .domain-heading {
@@ -61,7 +62,6 @@
       }
 
       history-item {
-        --border-style: none;
         padding-left: 20px;
       }
     </style>
@@ -101,7 +101,8 @@
                         has-time-gap="[[needsTimeGap_(
                             groupIndex, domainIndex, itemIndex)]]"
                         search-term="[[searchedTerm]]"
-                        number-of-items="[[historyData.length]]">
+                        number-of-items="[[historyData.length]]"
+                        embedded>
                     </history-item>
                   </template>
                 </template>

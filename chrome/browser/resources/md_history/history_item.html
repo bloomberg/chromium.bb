@@ -16,20 +16,19 @@
   <template>
     <style include="shared-style">
       :host {
-        @apply(--layout-center);
-        @apply(--layout-vertical);
-        padding: 0 var(--history-item-padding-side, 0);
+        display: block;
       }
 
-      #main-container {
+      :host(:not([embedded])) #main-container {
         background: #fff;
         border-color: var(--card-border-color);
         border-radius: 2px;
-        border-style: var(--border-style, solid);
+        border-style: solid;
         border-width: 0 1px;
-        max-width: var(--card-max-width);
-        min-width: var(--card-min-width);
-        width: 100%;
+      }
+
+      :host(:not([embedded])) #sizing-container {
+        @apply(--card-sizing);
       }
 
       :host([is-first-item]) #main-container {
@@ -132,35 +131,38 @@
         height: 15px;
       }
     </style>
-    <div id="main-container">
-      <div id="date-accessed" class="card-title">
-        [[cardTitle_(numberOfItems, item.dateRelativeDay, searchTerm)]]
-      </div>
-      <div id="item-container">
-        <paper-checkbox id="checkbox" on-tap="onCheckboxSelected_"
-            checked="{{selected}}" disabled="[[selectionNotAllowed_()]]">
-        </paper-checkbox>
-        <span id="time-accessed">[[item.readableTimestamp]]</span>
-        <div class="website-icon" id="icon"></div>
-        <div id="title-and-domain">
-          <a href="[[item.url]]" id="title" class="website-title">
-            <history-searched-label title="[[cropItemTitle_(item.title)]]"
-                search-term="[[searchTerm]]"></history-searched-label>
-          </a>
-          <span id="domain">[[item.domain]]</span>
+
+    <div id="sizing-container">
+      <div id="main-container">
+        <div id="date-accessed" class="card-title">
+          [[cardTitle_(numberOfItems, item.dateRelativeDay, searchTerm)]]
         </div>
-        <button is="paper-icon-button-light" id="bookmark-star"
-            title="$i18n{removeBookmark}" on-tap="onRemoveBookmarkTap_">
-          <iron-icon icon="cr:star"></iron-icon>
-        </button>
-        <button is="paper-icon-button-light" id="menu-button"
-            on-tap="onMenuButtonTap_" title="$i18n{moreActionsButton}">
-          <iron-icon icon="cr:more-vert"></iron-icon>
-        </button>
+        <div id="item-container">
+          <paper-checkbox id="checkbox" on-tap="onCheckboxSelected_"
+              checked="{{selected}}" disabled="[[selectionNotAllowed_()]]">
+          </paper-checkbox>
+          <span id="time-accessed">[[item.readableTimestamp]]</span>
+          <div class="website-icon" id="icon"></div>
+          <div id="title-and-domain">
+            <a href="[[item.url]]" id="title" class="website-title">
+              <history-searched-label title="[[cropItemTitle_(item.title)]]"
+                  search-term="[[searchTerm]]"></history-searched-label>
+            </a>
+            <span id="domain">[[item.domain]]</span>
+          </div>
+          <button is="paper-icon-button-light" id="bookmark-star"
+              title="$i18n{removeBookmark}" on-tap="onRemoveBookmarkTap_">
+            <iron-icon icon="cr:star"></iron-icon>
+          </button>
+          <button is="paper-icon-button-light" id="menu-button"
+              on-tap="onMenuButtonTap_" title="$i18n{moreActionsButton}">
+            <iron-icon icon="cr:more-vert"></iron-icon>
+          </button>
+        </div>
+        <template is="dom-if" if="[[hasTimeGap]]">
+          <div id="time-gap-separator"></div>
+        </template>
       </div>
-      <template is="dom-if" if="[[hasTimeGap]]">
-        <div id="time-gap-separator"></div>
-      </template>
     </div>
   </template>
   <script src="chrome://history/history_item.js"></script>
