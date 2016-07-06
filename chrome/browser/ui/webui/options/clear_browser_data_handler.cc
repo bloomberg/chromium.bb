@@ -22,7 +22,6 @@
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browsing_data/autofill_counter.h"
-#include "chrome/browser/browsing_data/browsing_data_counter.h"
 #include "chrome/browser/browsing_data/browsing_data_counter_utils.h"
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_remover.h"
@@ -40,6 +39,8 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/locale_settings.h"
+#include "components/browsing_data/counters/browsing_data_counter.h"
+#include "components/browsing_data/pref_names.h"
 #include "components/browsing_data_ui/history_notice_utils.h"
 #include "components/google/core/browser/google_util.h"
 #include "components/prefs/pref_service.h"
@@ -91,14 +92,14 @@ void ClearBrowserDataHandler::InitializeHandler() {
                  base::Unretained(this)));
 
   if (AreCountersEnabled()) {
-    AddCounter(base::WrapUnique(new PasswordsCounter()));
-    AddCounter(base::WrapUnique(new HistoryCounter()));
-    AddCounter(base::WrapUnique(new CacheCounter()));
-    AddCounter(base::WrapUnique(new AutofillCounter()));
-    AddCounter(base::WrapUnique(new MediaLicensesCounter()));
+    Profile* profile = Profile::FromWebUI(web_ui());
+    AddCounter(base::WrapUnique(new PasswordsCounter(profile)));
+    AddCounter(base::WrapUnique(new HistoryCounter(profile)));
+    AddCounter(base::WrapUnique(new CacheCounter(profile)));
+    AddCounter(base::WrapUnique(new AutofillCounter(profile)));
+    AddCounter(base::WrapUnique(new MediaLicensesCounter(profile)));
 
-    sync_service_ =
-        ProfileSyncServiceFactory::GetForProfile(Profile::FromWebUI(web_ui()));
+    sync_service_ = ProfileSyncServiceFactory::GetForProfile(profile);
     if (sync_service_)
       sync_service_->AddObserver(this);
   }
@@ -146,7 +147,7 @@ void ClearBrowserDataHandler::UpdateInfoBannerVisibility() {
 }
 
 void ClearBrowserDataHandler::OnPageOpened(const base::ListValue* value) {
-  for (BrowsingDataCounter* counter : counters_) {
+  for (browsing_data::BrowsingDataCounter* counter : counters_) {
     DCHECK(AreCountersEnabled());
     counter->Restart();
   }
@@ -312,11 +313,11 @@ void ClearBrowserDataHandler::HandleClearBrowserData(
 
   remover_ = BrowsingDataRemoverFactory::GetForBrowserContext(profile);
   remover_->AddObserver(this);
-  int period_selected = prefs->GetInteger(prefs::kDeleteTimePeriod);
-  remover_->Remove(
-      BrowsingDataRemover::Period(
-          static_cast<BrowsingDataRemover::TimePeriod>(period_selected)),
-      remove_mask, origin_mask);
+  int period_selected =
+      prefs->GetInteger(browsing_data::prefs::kDeleteTimePeriod);
+  remover_->Remove(BrowsingDataRemover::Period(
+                       static_cast<browsing_data::TimePeriod>(period_selected)),
+                   remove_mask, origin_mask);
 
   // Store the clear browsing data time. Next time the clear browsing data
   // dialog is open, this time is used to decide whether to display an info
@@ -363,18 +364,17 @@ void ClearBrowserDataHandler::OnBrowsingHistoryPrefChanged() {
 }
 
 void ClearBrowserDataHandler::AddCounter(
-    std::unique_ptr<BrowsingDataCounter> counter) {
+    std::unique_ptr<browsing_data::BrowsingDataCounter> counter) {
   DCHECK(AreCountersEnabled());
 
-  counter->Init(
-      Profile::FromWebUI(web_ui()),
-      base::Bind(&ClearBrowserDataHandler::UpdateCounterText,
-                 base::Unretained(this)));
+  counter->Init(Profile::FromWebUI(web_ui())->GetPrefs(),
+                base::Bind(&ClearBrowserDataHandler::UpdateCounterText,
+                           base::Unretained(this)));
   counters_.push_back(std::move(counter));
 }
 
 void ClearBrowserDataHandler::UpdateCounterText(
-    std::unique_ptr<BrowsingDataCounter::Result> result) {
+    std::unique_ptr<browsing_data::BrowsingDataCounter::Result> result) {
   DCHECK(AreCountersEnabled());
   web_ui()->CallJavascriptFunctionUnsafe(
       "ClearBrowserDataOverlay.updateCounter",

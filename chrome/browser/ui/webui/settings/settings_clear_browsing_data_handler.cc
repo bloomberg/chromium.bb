@@ -24,6 +24,7 @@
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/common/channel_info.h"
 #include "chrome/common/pref_names.h"
+#include "components/browsing_data/pref_names.h"
 #include "components/browsing_data_ui/history_notice_utils.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/web_ui.h"
@@ -160,13 +161,13 @@ void ClearBrowsingDataHandler::HandleClearBrowsingData(
         checked_other_types);
   }
 
-  int period_selected = prefs->GetInteger(prefs::kDeleteTimePeriod);
+  int period_selected =
+      prefs->GetInteger(browsing_data::prefs::kDeleteTimePeriod);
   remover_ = BrowsingDataRemoverFactory::GetForBrowserContext(profile_);
   remover_->AddObserver(this);
-  remover_->Remove(
-      BrowsingDataRemover::Period(
-          static_cast<BrowsingDataRemover::TimePeriod>(period_selected)),
-      remove_mask, origin_mask);
+  remover_->Remove(BrowsingDataRemover::Period(
+                       static_cast<browsing_data::TimePeriod>(period_selected)),
+                   remove_mask, origin_mask);
 }
 
 void ClearBrowsingDataHandler::OnBrowsingDataRemoverDone() {
@@ -215,13 +216,13 @@ void ClearBrowsingDataHandler::HandleInitialize(const base::ListValue* args) {
   AllowJavascript();
 
   // TODO(msramek): Simplify this using a factory.
-  AddCounter(base::WrapUnique(new AutofillCounter()));
-  AddCounter(base::WrapUnique(new CacheCounter()));
-  AddCounter(base::WrapUnique(new DownloadsCounter()));
-  AddCounter(base::WrapUnique(new HistoryCounter()));
-  AddCounter(base::WrapUnique(new HostedAppsCounter()));
-  AddCounter(base::WrapUnique(new PasswordsCounter()));
-  AddCounter(base::WrapUnique(new MediaLicensesCounter()));
+  AddCounter(base::WrapUnique(new AutofillCounter(profile_)));
+  AddCounter(base::WrapUnique(new CacheCounter(profile_)));
+  AddCounter(base::WrapUnique(new DownloadsCounter(profile_)));
+  AddCounter(base::WrapUnique(new HistoryCounter(profile_)));
+  AddCounter(base::WrapUnique(new HostedAppsCounter(profile_)));
+  AddCounter(base::WrapUnique(new PasswordsCounter(profile_)));
+  AddCounter(base::WrapUnique(new MediaLicensesCounter(profile_)));
 
   OnStateChanged();
   RefreshHistoryNotice();
@@ -273,17 +274,16 @@ void ClearBrowsingDataHandler::UpdateHistoryDeletionDialog(bool show) {
 }
 
 void ClearBrowsingDataHandler::AddCounter(
-    std::unique_ptr<BrowsingDataCounter> counter) {
-  counter->Init(
-      profile_,
-      base::Bind(&ClearBrowsingDataHandler::UpdateCounterText,
-                 base::Unretained(this)));
+    std::unique_ptr<browsing_data::BrowsingDataCounter> counter) {
+  counter->Init(profile_->GetPrefs(),
+                base::Bind(&ClearBrowsingDataHandler::UpdateCounterText,
+                           base::Unretained(this)));
   counter->Restart();
   counters_.push_back(std::move(counter));
 }
 
 void ClearBrowsingDataHandler::UpdateCounterText(
-    std::unique_ptr<BrowsingDataCounter::Result> result) {
+    std::unique_ptr<browsing_data::BrowsingDataCounter::Result> result) {
   CallJavascriptFunction(
       "cr.webUIListenerCallback",
       base::StringValue("update-counter-text"),

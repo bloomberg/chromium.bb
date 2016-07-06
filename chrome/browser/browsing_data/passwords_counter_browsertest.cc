@@ -12,6 +12,8 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "components/autofill/core/common/password_form.h"
+#include "components/browsing_data/browsing_data_utils.h"
+#include "components/browsing_data/pref_names.h"
 #include "components/prefs/pref_service.h"
 
 namespace {
@@ -26,7 +28,7 @@ class PasswordsCounterTest : public InProcessBrowserTest,
     store_ = PasswordStoreFactory::GetForProfile(
         browser()->profile(), ServiceAccessType::IMPLICIT_ACCESS);
     SetPasswordsDeletionPref(true);
-    SetDeletionPeriodPref(BrowsingDataRemover::EVERYTHING);
+    SetDeletionPeriodPref(browsing_data::EVERYTHING);
   }
 
   void AddLogin(const std::string& origin,
@@ -66,9 +68,9 @@ class PasswordsCounterTest : public InProcessBrowserTest,
         prefs::kDeletePasswords, value);
   }
 
-  void SetDeletionPeriodPref(BrowsingDataRemover::TimePeriod period) {
+  void SetDeletionPeriodPref(browsing_data::TimePeriod period) {
     browser()->profile()->GetPrefs()->SetInteger(
-        prefs::kDeleteTimePeriod, static_cast<int>(period));
+        browsing_data::prefs::kDeleteTimePeriod, static_cast<int>(period));
   }
 
   void RevertTimeInDays(int days) {
@@ -82,17 +84,20 @@ class PasswordsCounterTest : public InProcessBrowserTest,
     run_loop_->Run();
   }
 
-  BrowsingDataCounter::ResultInt GetResult() {
+  browsing_data::BrowsingDataCounter::ResultInt GetResult() {
     DCHECK(finished_);
     return result_;
   }
 
-  void Callback(std::unique_ptr<BrowsingDataCounter::Result> result) {
+  void Callback(
+      std::unique_ptr<browsing_data::BrowsingDataCounter::Result> result) {
     finished_ = result->Finished();
 
     if (finished_) {
-      result_ = static_cast<BrowsingDataCounter::FinishedResult*>(
-          result.get())->Value();
+      result_ =
+          static_cast<browsing_data::BrowsingDataCounter::FinishedResult*>(
+              result.get())
+              ->Value();
     }
 
     if (run_loop_ && finished_)
@@ -119,7 +124,7 @@ class PasswordsCounterTest : public InProcessBrowserTest,
   base::Time time_;
 
   bool finished_;
-  BrowsingDataCounter::ResultInt result_;
+  browsing_data::BrowsingDataCounter::ResultInt result_;
 };
 
 // Tests that the counter correctly counts each individual credential on
@@ -131,10 +136,10 @@ IN_PROC_BROWSER_TEST_F(PasswordsCounterTest, SameDomain) {
   AddLogin("https://www.chrome.com", "user1", false);
   AddLogin("https://www.chrome.com", "user2", false);
 
-  PasswordsCounter counter;
-  counter.Init(browser()->profile(),
-               base::Bind(&PasswordsCounterTest::Callback,
-                          base::Unretained(this)));
+  Profile* profile = browser()->profile();
+  PasswordsCounter counter(profile);
+  counter.Init(profile->GetPrefs(), base::Bind(&PasswordsCounterTest::Callback,
+                                               base::Unretained(this)));
   counter.Restart();
 
   WaitForCounting();
@@ -147,10 +152,10 @@ IN_PROC_BROWSER_TEST_F(PasswordsCounterTest, Blacklisted) {
   AddLogin("https://www.google.com", "user2", true);
   AddLogin("https://www.chrome.com", "user3", true);
 
-  PasswordsCounter counter;
-  counter.Init(browser()->profile(),
-               base::Bind(&PasswordsCounterTest::Callback,
-                          base::Unretained(this)));
+  Profile* profile = browser()->profile();
+  PasswordsCounter counter(profile);
+  counter.Init(profile->GetPrefs(), base::Bind(&PasswordsCounterTest::Callback,
+                                               base::Unretained(this)));
   counter.Restart();
 
   WaitForCounting();
@@ -164,10 +169,10 @@ IN_PROC_BROWSER_TEST_F(PasswordsCounterTest, PrefChanged) {
   AddLogin("https://www.google.com", "user", false);
   AddLogin("https://www.chrome.com", "user", false);
 
-  PasswordsCounter counter;
-  counter.Init(browser()->profile(),
-               base::Bind(&PasswordsCounterTest::Callback,
-                          base::Unretained(this)));
+  Profile* profile = browser()->profile();
+  PasswordsCounter counter(profile);
+  counter.Init(profile->GetPrefs(), base::Bind(&PasswordsCounterTest::Callback,
+                                               base::Unretained(this)));
   SetPasswordsDeletionPref(true);
 
   WaitForCounting();
@@ -180,10 +185,10 @@ IN_PROC_BROWSER_TEST_F(PasswordsCounterTest, PrefIsFalse) {
   SetPasswordsDeletionPref(false);
   AddLogin("https://www.google.com", "user", false);
 
-  PasswordsCounter counter;
-  counter.Init(browser()->profile(),
-               base::Bind(&PasswordsCounterTest::Callback,
-                          base::Unretained(this)));
+  Profile* profile = browser()->profile();
+  PasswordsCounter counter(profile);
+  counter.Init(profile->GetPrefs(), base::Bind(&PasswordsCounterTest::Callback,
+                                               base::Unretained(this)));
   counter.Restart();
 
   EXPECT_FALSE(counter.cancelable_task_tracker()->HasTrackedTasks());
@@ -194,10 +199,10 @@ IN_PROC_BROWSER_TEST_F(PasswordsCounterTest, PrefIsFalse) {
 IN_PROC_BROWSER_TEST_F(PasswordsCounterTest, StoreChanged) {
   AddLogin("https://www.google.com", "user", false);
 
-  PasswordsCounter counter;
-  counter.Init(browser()->profile(),
-               base::Bind(&PasswordsCounterTest::Callback,
-                          base::Unretained(this)));
+  Profile* profile = browser()->profile();
+  PasswordsCounter counter(profile);
+  counter.Init(profile->GetPrefs(), base::Bind(&PasswordsCounterTest::Callback,
+                                               base::Unretained(this)));
   counter.Restart();
 
   WaitForCounting();
@@ -223,28 +228,28 @@ IN_PROC_BROWSER_TEST_F(PasswordsCounterTest, PeriodChanged) {
   RevertTimeInDays(30);
   AddLogin("https://www.chrome.com", "user", false);
 
-  PasswordsCounter counter;
-  counter.Init(browser()->profile(),
-               base::Bind(&PasswordsCounterTest::Callback,
-                          base::Unretained(this)));
+  Profile* profile = browser()->profile();
+  PasswordsCounter counter(profile);
+  counter.Init(profile->GetPrefs(), base::Bind(&PasswordsCounterTest::Callback,
+                                               base::Unretained(this)));
 
-  SetDeletionPeriodPref(BrowsingDataRemover::LAST_HOUR);
+  SetDeletionPeriodPref(browsing_data::LAST_HOUR);
   WaitForCounting();
   EXPECT_EQ(1u, GetResult());
 
-  SetDeletionPeriodPref(BrowsingDataRemover::LAST_DAY);
+  SetDeletionPeriodPref(browsing_data::LAST_DAY);
   WaitForCounting();
   EXPECT_EQ(1u, GetResult());
 
-  SetDeletionPeriodPref(BrowsingDataRemover::LAST_WEEK);
+  SetDeletionPeriodPref(browsing_data::LAST_WEEK);
   WaitForCounting();
   EXPECT_EQ(3u, GetResult());
 
-  SetDeletionPeriodPref(BrowsingDataRemover::FOUR_WEEKS);
+  SetDeletionPeriodPref(browsing_data::FOUR_WEEKS);
   WaitForCounting();
   EXPECT_EQ(3u, GetResult());
 
-  SetDeletionPeriodPref(BrowsingDataRemover::EVERYTHING);
+  SetDeletionPeriodPref(browsing_data::EVERYTHING);
   WaitForCounting();
   EXPECT_EQ(4u, GetResult());
 }

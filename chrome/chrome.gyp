@@ -455,8 +455,6 @@
           'type': 'none',
           'dependencies': [
             'activity_type_ids_java',
-            'browsing_data_time_period_java',
-            'browsing_data_type_java',
             'chrome_locale_paks',
             'chrome_resources.gyp:chrome_strings',
             'chrome_strings_grd',
@@ -484,6 +482,7 @@
             '../components/components.gyp:autocomplete_match_java',
             '../components/components.gyp:autocomplete_match_type_java',
             '../components/components.gyp:bookmarks_java',
+            '../components/components.gyp:browsing_data_utils_java',
             '../components/components.gyp:dom_distiller_core_java',
             '../components/components.gyp:gcm_driver_java',
             '../components/components.gyp:infobar_delegate_java',

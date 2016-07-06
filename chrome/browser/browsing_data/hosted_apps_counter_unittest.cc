@@ -14,6 +14,8 @@
 #include "base/values.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/browsing_data/browsing_data_utils.h"
+#include "components/browsing_data/pref_names.h"
 #include "components/crx_file/id_util.h"
 #include "components/prefs/pref_service.h"
 #include "extensions/browser/extension_registry.h"
@@ -33,7 +35,7 @@ class HostedAppsCounterTest : public testing::Test {
     extension_registry_ = extensions::ExtensionRegistry::Get(profile_.get());
 
     SetHostedAppsDeletionPref(true);
-    SetDeletionPeriodPref(BrowsingDataRemover::EVERYTHING);
+    SetDeletionPeriodPref(browsing_data::EVERYTHING);
   }
 
   // Adding and removing apps and extensions. ----------------------------------
@@ -99,14 +101,14 @@ class HostedAppsCounterTest : public testing::Test {
     GetProfile()->GetPrefs()->SetBoolean(prefs::kDeleteHostedAppsData, value);
   }
 
-  void SetDeletionPeriodPref(BrowsingDataRemover::TimePeriod period) {
+  void SetDeletionPeriodPref(browsing_data::TimePeriod period) {
     GetProfile()->GetPrefs()->SetInteger(
-        prefs::kDeleteTimePeriod, static_cast<int>(period));
+        browsing_data::prefs::kDeleteTimePeriod, static_cast<int>(period));
   }
 
   // Retrieving counter results. -----------------------------------------------
 
-  BrowsingDataCounter::ResultInt GetNumHostedApps() {
+  browsing_data::BrowsingDataCounter::ResultInt GetNumHostedApps() {
     DCHECK(finished_);
     return num_apps_;
   }
@@ -116,7 +118,8 @@ class HostedAppsCounterTest : public testing::Test {
     return examples_;
   }
 
-  void Callback(std::unique_ptr<BrowsingDataCounter::Result> result) {
+  void Callback(
+      std::unique_ptr<browsing_data::BrowsingDataCounter::Result> result) {
     finished_ = result->Finished();
 
     if (finished_) {
@@ -140,16 +143,16 @@ class HostedAppsCounterTest : public testing::Test {
   extensions::ExtensionRegistry* extension_registry_;
 
   bool finished_;
-  BrowsingDataCounter::ResultInt num_apps_;
+  browsing_data::BrowsingDataCounter::ResultInt num_apps_;
   std::vector<std::string> examples_;
 };
 
 // Tests that we count the total number of hosted apps correctly.
 TEST_F(HostedAppsCounterTest, Count) {
-  HostedAppsCounter counter;
-  counter.Init(GetProfile(),
-               base::Bind(&HostedAppsCounterTest::Callback,
-                          base::Unretained(this)));
+  Profile* profile = GetProfile();
+  HostedAppsCounter counter(profile);
+  counter.Init(profile->GetPrefs(), base::Bind(&HostedAppsCounterTest::Callback,
+                                               base::Unretained(this)));
   counter.Restart();
   EXPECT_EQ(0u, GetNumHostedApps());
 
@@ -172,10 +175,10 @@ TEST_F(HostedAppsCounterTest, Count) {
 
 // Tests that we only count hosted apps, not packaged apps or extensions.
 TEST_F(HostedAppsCounterTest, OnlyHostedApps) {
-  HostedAppsCounter counter;
-  counter.Init(GetProfile(),
-               base::Bind(&HostedAppsCounterTest::Callback,
-                          base::Unretained(this)));
+  Profile* profile = GetProfile();
+  HostedAppsCounter counter(profile);
+  counter.Init(profile->GetPrefs(), base::Bind(&HostedAppsCounterTest::Callback,
+                                               base::Unretained(this)));
 
   AddHostedApp();  // 1
   AddExtension();
@@ -209,10 +212,10 @@ TEST_F(HostedAppsCounterTest, OnlyHostedApps) {
 // Tests that the counter results contain names of the first two hosted apps
 // in lexicographic ordering.
 TEST_F(HostedAppsCounterTest, Examples) {
-  HostedAppsCounter counter;
-  counter.Init(GetProfile(),
-               base::Bind(&HostedAppsCounterTest::Callback,
-                          base::Unretained(this)));
+  Profile* profile = GetProfile();
+  HostedAppsCounter counter(profile);
+  counter.Init(profile->GetPrefs(), base::Bind(&HostedAppsCounterTest::Callback,
+                                               base::Unretained(this)));
   counter.Restart();
   EXPECT_EQ(0u, GetExamples().size());
 

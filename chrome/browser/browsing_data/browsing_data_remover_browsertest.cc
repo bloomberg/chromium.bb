@@ -23,6 +23,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/browsing_data/browsing_data_utils.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
@@ -95,15 +96,15 @@ class BrowsingDataRemoverBrowserTest : public InProcessBrowserTest {
     VerifyDownloadCount(1u);
   }
 
-  BrowsingDataCounter::ResultInt GetCacheSize() {
+  browsing_data::BrowsingDataCounter::ResultInt GetCacheSize() {
     base::RunLoop run_loop;
-    BrowsingDataCounter::ResultInt size;
+    browsing_data::BrowsingDataCounter::ResultInt size;
 
-    CacheCounter counter;
-    counter.Init(browser()->profile(),
+    Profile* profile = browser()->profile();
+    CacheCounter counter(profile);
+    counter.Init(profile->GetPrefs(),
                  base::Bind(&BrowsingDataRemoverBrowserTest::OnCacheSizeResult,
-                            base::Unretained(this),
-                            base::Unretained(&run_loop),
+                            base::Unretained(this), base::Unretained(&run_loop),
                             base::Unretained(&size)));
     counter.Restart();
     run_loop.Run();
@@ -114,7 +115,7 @@ class BrowsingDataRemoverBrowserTest : public InProcessBrowserTest {
     BrowsingDataRemover* remover =
         BrowsingDataRemoverFactory::GetForBrowserContext(browser()->profile());
     BrowsingDataRemoverCompletionObserver completion_observer(remover);
-    remover->Remove(BrowsingDataRemover::Period(BrowsingDataRemover::LAST_HOUR),
+    remover->Remove(BrowsingDataRemover::Period(browsing_data::LAST_HOUR),
                     remove_mask, BrowsingDataHelper::UNPROTECTED_WEB);
     completion_observer.BlockUntilCompletion();
   }
@@ -126,21 +127,23 @@ class BrowsingDataRemoverBrowserTest : public InProcessBrowserTest {
         BrowsingDataRemoverFactory::GetForBrowserContext(browser()->profile());
     BrowsingDataRemoverCompletionObserver completion_observer(remover);
     remover->RemoveWithFilter(
-        BrowsingDataRemover::Period(BrowsingDataRemover::LAST_HOUR),
-        remove_mask, BrowsingDataHelper::UNPROTECTED_WEB, filter_builder);
+        BrowsingDataRemover::Period(browsing_data::LAST_HOUR), remove_mask,
+        BrowsingDataHelper::UNPROTECTED_WEB, filter_builder);
     completion_observer.BlockUntilCompletion();
   }
 
  private:
   void OnCacheSizeResult(
       base::RunLoop* run_loop,
-      BrowsingDataCounter::ResultInt* out_size,
-      std::unique_ptr<BrowsingDataCounter::Result> result) {
+      browsing_data::BrowsingDataCounter::ResultInt* out_size,
+      std::unique_ptr<browsing_data::BrowsingDataCounter::Result> result) {
     if (!result->Finished())
       return;
 
-    *out_size = static_cast<BrowsingDataCounter::FinishedResult*>(
-        result.get())->Value();
+    *out_size =
+        static_cast<browsing_data::BrowsingDataCounter::FinishedResult*>(
+            result.get())
+            ->Value();
     run_loop->Quit();
   }
 };
@@ -237,7 +240,7 @@ IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest, Cache) {
   ui_test_utils::NavigateToURL(browser(), url2);
 
   // The cache is nonempty, because we created entries by visiting websites.
-  BrowsingDataCounter::ResultInt original_size = GetCacheSize();
+  browsing_data::BrowsingDataCounter::ResultInt original_size = GetCacheSize();
   EXPECT_GT(original_size, 0);
 
   // Partially delete cache data. Delete data for localhost, which is the origin
@@ -247,7 +250,7 @@ IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest, Cache) {
   RemoveWithFilterAndWait(BrowsingDataRemover::REMOVE_CACHE, filter_builder);
 
   // After the partial deletion, the cache should be smaller but still nonempty.
-  BrowsingDataCounter::ResultInt new_size = GetCacheSize();
+  browsing_data::BrowsingDataCounter::ResultInt new_size = GetCacheSize();
   EXPECT_LT(new_size, original_size);
 
   // Another partial deletion with the same filter should have no effect.

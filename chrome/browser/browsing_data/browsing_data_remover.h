@@ -21,6 +21,7 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "chrome/common/features.h"
+#include "components/browsing_data/browsing_data_utils.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "components/keyed_service/core/keyed_service.h"
@@ -70,23 +71,6 @@ class BrowsingDataRemover : public KeyedService
 #endif
 {
  public:
-  // Time period ranges available when doing browsing data removals.
-  // TODO(msramek): As this is now reused on Android, we should move it
-  // to browsing_data_counter_utils.h (and rename appropriately), so that
-  // all fundamental types related to browsing data on all platforms are in
-  // one place.
-  //
-  // A Java counterpart will be generated for this enum.
-  // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.chrome.browser
-  enum TimePeriod {
-    LAST_HOUR = 0,
-    LAST_DAY,
-    LAST_WEEK,
-    FOUR_WEEKS,
-    EVERYTHING,
-    TIME_PERIOD_LAST = EVERYTHING
-  };
-
   // Mask used for Remove.
   enum RemoveDataMask {
     REMOVE_APPCACHE = 1 << 0,
@@ -223,10 +207,7 @@ class BrowsingDataRemover : public KeyedService
 
   static TimeRange Unbounded();
 
-  static TimeRange Period(TimePeriod period);
-
-  // Calculate the begin time for the deletion range specified by |time_period|.
-  static base::Time CalculateBeginDeleteTime(TimePeriod time_period);
+  static TimeRange Period(browsing_data::TimePeriod period);
 
   // Is the BrowsingDataRemover currently in the process of removing data?
   bool is_removing() { return is_removing_; }

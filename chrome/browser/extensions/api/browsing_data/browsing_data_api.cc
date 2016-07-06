@@ -21,6 +21,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/pref_names.h"
+#include "components/browsing_data/pref_names.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/common/error_utils.h"
 #include "extensions/common/extension.h"
@@ -143,12 +144,12 @@ bool BrowsingDataSettingsFunction::RunSync() {
       extension_browsing_data_api_constants::kExtensionsKey, false);
 
   // Fill deletion time period.
-  int period_pref = prefs->GetInteger(prefs::kDeleteTimePeriod);
-  BrowsingDataRemover::TimePeriod period =
-      static_cast<BrowsingDataRemover::TimePeriod>(period_pref);
+  int period_pref = prefs->GetInteger(browsing_data::prefs::kDeleteTimePeriod);
+  browsing_data::TimePeriod period =
+      static_cast<browsing_data::TimePeriod>(period_pref);
   double since = 0;
-  if (period != BrowsingDataRemover::EVERYTHING) {
-    base::Time time = BrowsingDataRemover::CalculateBeginDeleteTime(period);
+  if (period != browsing_data::EVERYTHING) {
+    base::Time time = browsing_data::CalculateBeginDeleteTime(period);
     since = time.ToJsTime();
   }
 

@@ -5,23 +5,24 @@
 #ifndef CHROME_BROWSER_BROWSING_DATA_PASSWORDS_COUNTER_H_
 #define CHROME_BROWSER_BROWSING_DATA_PASSWORDS_COUNTER_H_
 
-#include "chrome/browser/browsing_data/browsing_data_counter.h"
+#include "components/browsing_data/counters/browsing_data_counter.h"
 #include "components/password_manager/core/browser/password_store.h"
 #include "components/password_manager/core/browser/password_store_consumer.h"
 
-class PasswordsCounter: public BrowsingDataCounter,
-                        public password_manager::PasswordStoreConsumer,
-                        public password_manager::PasswordStore::Observer {
+class Profile;
+
+class PasswordsCounter : public browsing_data::BrowsingDataCounter,
+                         public password_manager::PasswordStoreConsumer,
+                         public password_manager::PasswordStore::Observer {
  public:
-  PasswordsCounter();
+  explicit PasswordsCounter(Profile* profile);
   ~PasswordsCounter() override;
 
-  const std::string& GetPrefName() const override;
-
  private:
-  const std::string pref_name_;
   base::CancelableTaskTracker cancelable_task_tracker_;
-  password_manager::PasswordStore* store_ = nullptr;
+  scoped_refptr<password_manager::PasswordStore> store_;
+
+  Profile* profile_;
 
   void OnInitialized() override;
 

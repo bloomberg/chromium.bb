@@ -43,6 +43,8 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/locale_settings.h"
 #include "components/browser_sync/browser/profile_sync_service.h"
+#include "components/browsing_data/browsing_data_utils.h"
+#include "components/browsing_data/pref_names.h"
 #include "components/browsing_data_ui/history_notice_utils.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings.h"
@@ -552,7 +554,7 @@ static jboolean GetBrowsingDataDeletionPreference(
     const JavaParamRef<jobject>& obj,
     jint data_type) {
   DCHECK_GE(data_type, 0);
-  DCHECK_LT(data_type, BrowsingDataType::NUM_TYPES);
+  DCHECK_LT(data_type, browsing_data::NUM_TYPES);
 
   // If there is no corresponding preference for this |data_type|, pretend
   // that it's set to false.
@@ -560,7 +562,7 @@ static jboolean GetBrowsingDataDeletionPreference(
   // data types for consistency.
   std::string pref;
   if (!GetDeletionPreferenceFromDataType(
-      static_cast<BrowsingDataType>(data_type), &pref)) {
+          static_cast<browsing_data::BrowsingDataType>(data_type), &pref)) {
     return false;
   }
 
@@ -573,11 +575,11 @@ static void SetBrowsingDataDeletionPreference(
     jint data_type,
     jboolean value) {
   DCHECK_GE(data_type, 0);
-  DCHECK_LT(data_type, BrowsingDataType::NUM_TYPES);
+  DCHECK_LT(data_type, browsing_data::NUM_TYPES);
 
   std::string pref;
   if (!GetDeletionPreferenceFromDataType(
-      static_cast<BrowsingDataType>(data_type), &pref)) {
+          static_cast<browsing_data::BrowsingDataType>(data_type), &pref)) {
     return;
   }
 
@@ -587,7 +589,7 @@ static void SetBrowsingDataDeletionPreference(
 static jint GetBrowsingDataDeletionTimePeriod(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj) {
-  return GetPrefService()->GetInteger(prefs::kDeleteTimePeriod);
+  return GetPrefService()->GetInteger(browsing_data::prefs::kDeleteTimePeriod);
 }
 
 static void SetBrowsingDataDeletionTimePeriod(
@@ -595,8 +597,9 @@ static void SetBrowsingDataDeletionTimePeriod(
     const JavaParamRef<jobject>& obj,
     jint time_period) {
   DCHECK_GE(time_period, 0);
-  DCHECK_LE(time_period, BrowsingDataRemover::TIME_PERIOD_LAST);
-  GetPrefService()->SetInteger(prefs::kDeleteTimePeriod, time_period);
+  DCHECK_LE(time_period, browsing_data::TIME_PERIOD_LAST);
+  GetPrefService()->SetInteger(browsing_data::prefs::kDeleteTimePeriod,
+                               time_period);
 }
 
 static void ClearBrowsingData(
@@ -616,28 +619,28 @@ static void ClearBrowsingData(
 
   int remove_mask = 0;
   for (const int data_type : data_types_vector) {
-    switch (static_cast<BrowsingDataType>(data_type)) {
-      case HISTORY:
+    switch (static_cast<browsing_data::BrowsingDataType>(data_type)) {
+      case browsing_data::HISTORY:
         remove_mask |= BrowsingDataRemover::REMOVE_HISTORY;
         break;
-      case CACHE:
+      case browsing_data::CACHE:
         remove_mask |= BrowsingDataRemover::REMOVE_CACHE;
         break;
-      case COOKIES:
+      case browsing_data::COOKIES:
         remove_mask |= BrowsingDataRemover::REMOVE_COOKIES;
         remove_mask |= BrowsingDataRemover::REMOVE_SITE_DATA;
         break;
-      case PASSWORDS:
+      case browsing_data::PASSWORDS:
         remove_mask |= BrowsingDataRemover::REMOVE_PASSWORDS;
         break;
-      case FORM_DATA:
+      case browsing_data::FORM_DATA:
         remove_mask |= BrowsingDataRemover::REMOVE_FORM_DATA;
         break;
-      case BOOKMARKS:
+      case browsing_data::BOOKMARKS:
         // Bookmarks are deleted separately on the Java side.
         NOTREACHED();
         break;
-      case NUM_TYPES:
+      case browsing_data::NUM_TYPES:
         NOTREACHED();
     }
   }
@@ -652,7 +655,7 @@ static void ClearBrowsingData(
 
   browsing_data_remover->RemoveWithFilter(
       BrowsingDataRemover::Period(
-          static_cast<BrowsingDataRemover::TimePeriod>(time_period)),
+          static_cast<browsing_data::TimePeriod>(time_period)),
       remove_mask, BrowsingDataHelper::UNPROTECTED_WEB, filter_builder);
 }
 

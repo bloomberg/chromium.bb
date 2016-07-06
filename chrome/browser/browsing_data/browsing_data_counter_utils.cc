@@ -11,9 +11,11 @@
 #include "chrome/browser/browsing_data/history_counter.h"
 #include "chrome/browser/browsing_data/media_licenses_counter.h"
 #include "chrome/browser/browsing_data/passwords_counter.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/browsing_data/pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/text/bytes_formatting.h"
@@ -43,7 +45,8 @@ bool AreCountersEnabled() {
 // A helper function to display the size of cache in units of MB or higher.
 // We need this, as 1 MB is the lowest nonzero cache size displayed by the
 // counter.
-base::string16 FormatBytesMBOrHigher(BrowsingDataCounter::ResultInt bytes) {
+base::string16 FormatBytesMBOrHigher(
+    browsing_data::BrowsingDataCounter::ResultInt bytes) {
   if (ui::GetByteDisplayUnits(bytes) >= ui::DataUnits::DATA_UNITS_MEBIBYTE)
     return ui::FormatBytes(bytes);
 
@@ -52,7 +55,7 @@ base::string16 FormatBytesMBOrHigher(BrowsingDataCounter::ResultInt bytes) {
 }
 
 base::string16 GetCounterTextFromResult(
-    const BrowsingDataCounter::Result* result) {
+    const browsing_data::BrowsingDataCounter::Result* result) {
   base::string16 text;
   std::string pref_name = result->source()->GetPrefName();
 
@@ -63,9 +66,10 @@ base::string16 GetCounterTextFromResult(
   } else if (pref_name == prefs::kDeletePasswords ||
              pref_name == prefs::kDeleteDownloadHistory) {
     // Counters with trivially formatted result: passwords and downloads.
-    BrowsingDataCounter::ResultInt count =
-        static_cast<const BrowsingDataCounter::FinishedResult*>(
-            result)->Value();
+    browsing_data::BrowsingDataCounter::ResultInt count =
+        static_cast<const browsing_data::BrowsingDataCounter::FinishedResult*>(
+            result)
+            ->Value();
     text = l10n_util::GetPluralStringFUTF16(
         pref_name == prefs::kDeletePasswords
             ? IDS_DEL_PASSWORDS_COUNTER
@@ -74,24 +78,25 @@ base::string16 GetCounterTextFromResult(
 
   } else if (pref_name == prefs::kDeleteCache) {
     // Cache counter.
-    BrowsingDataCounter::ResultInt cache_size_bytes =
-        static_cast<const BrowsingDataCounter::FinishedResult*>(
-            result)->Value();
+    browsing_data::BrowsingDataCounter::ResultInt cache_size_bytes =
+        static_cast<const browsing_data::BrowsingDataCounter::FinishedResult*>(
+            result)
+            ->Value();
 
-    PrefService* prefs = result->source()->GetProfile()->GetPrefs();
-    BrowsingDataRemover::TimePeriod time_period =
-        static_cast<BrowsingDataRemover::TimePeriod>(
-            prefs->GetInteger(prefs::kDeleteTimePeriod));
+    PrefService* prefs = result->source()->GetPrefs();
+    browsing_data::TimePeriod time_period =
+        static_cast<browsing_data::TimePeriod>(
+            prefs->GetInteger(browsing_data::prefs::kDeleteTimePeriod));
 
     // Three cases: Nonzero result for the entire cache, nonzero result for
     // a subset of cache (i.e. a finite time interval), and almost zero (< 1MB).
     static const int kBytesInAMegabyte = 1024 * 1024;
     if (cache_size_bytes >= kBytesInAMegabyte) {
       base::string16 formatted_size = FormatBytesMBOrHigher(cache_size_bytes);
-      text = time_period == BrowsingDataRemover::EVERYTHING
-          ? formatted_size
-          : l10n_util::GetStringFUTF16(IDS_DEL_CACHE_COUNTER_UPPER_ESTIMATE,
-                                       formatted_size);
+      text = time_period == browsing_data::EVERYTHING
+                 ? formatted_size
+                 : l10n_util::GetStringFUTF16(
+                       IDS_DEL_CACHE_COUNTER_UPPER_ESTIMATE, formatted_size);
     } else {
       text = l10n_util::GetStringUTF16(IDS_DEL_CACHE_COUNTER_ALMOST_EMPTY);
     }
@@ -100,7 +105,8 @@ base::string16 GetCounterTextFromResult(
     // History counter.
     const HistoryCounter::HistoryResult* history_result =
         static_cast<const HistoryCounter::HistoryResult*>(result);
-    BrowsingDataCounter::ResultInt local_item_count = history_result->Value();
+    browsing_data::BrowsingDataCounter::ResultInt local_item_count =
+        history_result->Value();
     bool has_synced_visits = history_result->has_synced_visits();
 
     text = has_synced_visits
@@ -192,7 +198,7 @@ base::string16 GetCounterTextFromResult(
     int hosted_apps_count = hosted_apps_result->Value();
 
     DCHECK_GE(hosted_apps_result->Value(),
-              base::checked_cast<BrowsingDataCounter::ResultInt>(
+              base::checked_cast<browsing_data::BrowsingDataCounter::ResultInt>(
                   hosted_apps_result->examples().size()));
 
     std::vector<base::string16> replacements;
@@ -225,28 +231,29 @@ base::string16 GetCounterTextFromResult(
 }
 
 bool GetDeletionPreferenceFromDataType(
-    BrowsingDataType data_type, std::string* out_pref) {
+    browsing_data::BrowsingDataType data_type,
+    std::string* out_pref) {
   switch (data_type) {
-    case HISTORY:
+    case browsing_data::HISTORY:
       *out_pref = prefs::kDeleteBrowsingHistory;
       return true;
-    case CACHE:
+    case browsing_data::CACHE:
       *out_pref = prefs::kDeleteCache;
       return true;
-    case COOKIES:
+    case browsing_data::COOKIES:
       *out_pref = prefs::kDeleteCookies;
       return true;
-    case PASSWORDS:
+    case browsing_data::PASSWORDS:
       *out_pref = prefs::kDeletePasswords;
       return true;
-    case FORM_DATA:
+    case browsing_data::FORM_DATA:
       *out_pref = prefs::kDeleteFormData;
       return true;
-    case BOOKMARKS:
+    case browsing_data::BOOKMARKS:
       // Bookmarks are deleted on the Android side. No corresponding deletion
       // preference.
       return false;
-    case NUM_TYPES:
+    case browsing_data::NUM_TYPES:
       // This is not an actual type.
       NOTREACHED();
       return false;
@@ -255,18 +262,20 @@ bool GetDeletionPreferenceFromDataType(
   return false;
 }
 
-BrowsingDataCounter* CreateCounterForPreference(std::string pref_name) {
+browsing_data::BrowsingDataCounter* CreateCounterForPreference(
+    std::string pref_name,
+    Profile* profile) {
   if (!AreCountersEnabled())
     return nullptr;
 
   if (pref_name == prefs::kDeleteBrowsingHistory)
-    return new HistoryCounter();
+    return new HistoryCounter(profile);
   if (pref_name == prefs::kDeleteCache)
-    return new CacheCounter();
+    return new CacheCounter(profile);
   if (pref_name == prefs::kDeletePasswords)
-    return new PasswordsCounter();
+    return new PasswordsCounter(profile);
   if (pref_name == prefs::kDeleteFormData)
-    return new AutofillCounter();
+    return new AutofillCounter(profile);
 
   return nullptr;
 }

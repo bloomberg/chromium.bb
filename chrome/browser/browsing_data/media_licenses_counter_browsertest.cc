@@ -6,6 +6,7 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -55,7 +56,8 @@ class MediaLicensesCounterTest : public InProcessBrowserTest {
   }
 
   // Callback from the counter.
-  void CountingCallback(std::unique_ptr<BrowsingDataCounter::Result> result) {
+  void CountingCallback(
+      std::unique_ptr<browsing_data::BrowsingDataCounter::Result> result) {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
     callback_called_ = true;
@@ -73,7 +75,7 @@ class MediaLicensesCounterTest : public InProcessBrowserTest {
 
   bool CallbackCalled() { return callback_called_; }
 
-  BrowsingDataCounter::ResultInt GetCount() {
+  browsing_data::BrowsingDataCounter::ResultInt GetCount() {
     DCHECK(finished_);
     return count_;
   }
@@ -143,7 +145,7 @@ class MediaLicensesCounterTest : public InProcessBrowserTest {
 
   bool callback_called_ = false;
   bool finished_ = false;
-  BrowsingDataCounter::ResultInt count_;
+  browsing_data::BrowsingDataCounter::ResultInt count_;
   std::string origin_;
 
   std::unique_ptr<base::RunLoop> run_loop_;
@@ -151,8 +153,9 @@ class MediaLicensesCounterTest : public InProcessBrowserTest {
 
 // Tests that for the empty file system, the result is zero.
 IN_PROC_BROWSER_TEST_F(MediaLicensesCounterTest, Empty) {
-  MediaLicensesCounter counter;
-  counter.Init(browser()->profile(),
+  Profile* profile = browser()->profile();
+  MediaLicensesCounter counter(profile);
+  counter.Init(profile->GetPrefs(),
                base::Bind(&MediaLicensesCounterTest::CountingCallback,
                           base::Unretained(this)));
   counter.Restart();
@@ -168,8 +171,9 @@ IN_PROC_BROWSER_TEST_F(MediaLicensesCounterTest, Empty) {
 IN_PROC_BROWSER_TEST_F(MediaLicensesCounterTest, NonEmpty) {
   CreateMediaLicenseTestData();
 
-  MediaLicensesCounter counter;
-  counter.Init(browser()->profile(),
+  Profile* profile = browser()->profile();
+  MediaLicensesCounter counter(profile);
+  counter.Init(profile->GetPrefs(),
                base::Bind(&MediaLicensesCounterTest::CountingCallback,
                           base::Unretained(this)));
   counter.Restart();
@@ -185,8 +189,9 @@ IN_PROC_BROWSER_TEST_F(MediaLicensesCounterTest, NonEmpty) {
 IN_PROC_BROWSER_TEST_F(MediaLicensesCounterTest, PrefIsFalse) {
   SetMediaLicenseDeletionPref(false);
 
-  MediaLicensesCounter counter;
-  counter.Init(browser()->profile(),
+  Profile* profile = browser()->profile();
+  MediaLicensesCounter counter(profile);
+  counter.Init(profile->GetPrefs(),
                base::Bind(&MediaLicensesCounterTest::CountingCallback,
                           base::Unretained(this)));
   counter.Restart();
@@ -199,8 +204,9 @@ IN_PROC_BROWSER_TEST_F(MediaLicensesCounterTest, PrefIsFalse) {
 IN_PROC_BROWSER_TEST_F(MediaLicensesCounterTest, PrefChanged) {
   SetMediaLicenseDeletionPref(false);
 
-  MediaLicensesCounter counter;
-  counter.Init(browser()->profile(),
+  Profile* profile = browser()->profile();
+  MediaLicensesCounter counter(profile);
+  counter.Init(profile->GetPrefs(),
                base::Bind(&MediaLicensesCounterTest::CountingCallback,
                           base::Unretained(this)));
   SetMediaLicenseDeletionPref(true);

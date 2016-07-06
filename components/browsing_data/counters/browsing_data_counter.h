@@ -1,18 +1,20 @@
-// Copyright (c) 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_BROWSING_DATA_BROWSING_DATA_COUNTER_H_
-#define CHROME_BROWSER_BROWSING_DATA_BROWSING_DATA_COUNTER_H_
+#ifndef COMPONENTS_BROWSING_DATA_COUNTERS_BROWSING_DATA_COUNTER_H_
+#define COMPONENTS_BROWSING_DATA_COUNTERS_BROWSING_DATA_COUNTER_H_
 
 #include <stdint.h>
 #include <string>
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "chrome/browser/browsing_data/browsing_data_remover.h"
-#include "chrome/browser/profiles/profile.h"
 #include "components/prefs/pref_member.h"
+
+class PrefService;
+
+namespace browsing_data {
 
 class BrowsingDataCounter {
  public:
@@ -56,18 +58,18 @@ class BrowsingDataCounter {
 
   typedef base::Callback<void(std::unique_ptr<Result>)> Callback;
 
-  BrowsingDataCounter();
+  BrowsingDataCounter(const std::string& pref_name);
   virtual ~BrowsingDataCounter();
 
   // Should be called once to initialize this class.
-  void Init(Profile* profile,
-            const Callback& callback);
+  void Init(PrefService* pref_service, const Callback& callback);
 
   // Name of the preference associated with this counter.
-  virtual const std::string& GetPrefName() const = 0;
+  const std::string& GetPrefName() const;
 
-  // The profile associated with this counter.
-  Profile* GetProfile() const;
+  // PrefService that manages the preferences for the user profile
+  // associated with this counter.
+  PrefService* GetPrefs() const;
 
   // Restarts the counter. Will be called automatically if the counting needs
   // to be restarted, e.g. when the deletion preference changes state or when
@@ -93,8 +95,12 @@ class BrowsingDataCounter {
   // Count the data.
   virtual void Count() = 0;
 
-  // The profile for which we will count the data volume.
-  Profile* profile_;
+  // Name of the preference associated with this counter.
+  const std::string pref_name_;
+
+  // Pointer to the PrefService that manages the preferences for the user
+  // profile associated with this counter.
+  PrefService* pref_service_;
 
   // The callback that will be called when the UI should be updated with a new
   // counter value.
@@ -112,4 +118,6 @@ class BrowsingDataCounter {
   bool initialized_ = false;
 };
 
-#endif  // CHROME_BROWSER_BROWSING_DATA_BROWSING_DATA_COUNTER_H_
+}  // namespace browsing_data
+
+#endif  // COMPONENTS_BROWSING_DATA_COUNTERS_BROWSING_DATA_COUNTER_H_

@@ -13,9 +13,12 @@
 #include "chrome/browser/download/download_history.h"
 #include "chrome/browser/download/download_service.h"
 #include "chrome/browser/download/download_service_factory.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "components/browsing_data/browsing_data_utils.h"
+#include "components/browsing_data/pref_names.h"
 #include "components/history/core/browser/download_row.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/download_manager.h"
@@ -43,7 +46,7 @@ class DownloadsCounterTest : public InProcessBrowserTest,
         content::BrowserContext::GetDownloadManager(
             browser()->profile()->GetOffTheRecordProfile());
     SetDownloadsDeletionPref(true);
-    SetDeletionPeriodPref(BrowsingDataRemover::EVERYTHING);
+    SetDeletionPeriodPref(browsing_data::EVERYTHING);
   }
 
   void TearDownOnMainThread() override {
@@ -165,9 +168,9 @@ class DownloadsCounterTest : public InProcessBrowserTest,
         prefs::kDeleteDownloadHistory, value);
   }
 
-  void SetDeletionPeriodPref(BrowsingDataRemover::TimePeriod period) {
+  void SetDeletionPeriodPref(browsing_data::TimePeriod period) {
     browser()->profile()->GetPrefs()->SetInteger(
-        prefs::kDeleteTimePeriod, static_cast<int>(period));
+        browsing_data::prefs::kDeleteTimePeriod, static_cast<int>(period));
   }
 
   void RevertTimeInHours(int days) {
@@ -214,17 +217,20 @@ class DownloadsCounterTest : public InProcessBrowserTest,
 
   // Retrieving the result. ----------------------------------------------------
 
-  BrowsingDataCounter::ResultInt GetResult() {
+  browsing_data::BrowsingDataCounter::ResultInt GetResult() {
     DCHECK(finished_);
     return result_;
   }
 
-  void ResultCallback(std::unique_ptr<BrowsingDataCounter::Result> result) {
+  void ResultCallback(
+      std::unique_ptr<browsing_data::BrowsingDataCounter::Result> result) {
     finished_ = result->Finished();
 
     if (finished_) {
-      result_ = static_cast<BrowsingDataCounter::FinishedResult*>(
-          result.get())->Value();
+      result_ =
+          static_cast<browsing_data::BrowsingDataCounter::FinishedResult*>(
+              result.get())
+              ->Value();
     }
   }
 
@@ -249,13 +255,14 @@ class DownloadsCounterTest : public InProcessBrowserTest,
   int items_count_;
 
   bool finished_;
-  BrowsingDataCounter::ResultInt result_;
+  browsing_data::BrowsingDataCounter::ResultInt result_;
 };
 
 // Tests that we count the total number of downloads correctly.
 IN_PROC_BROWSER_TEST_F(DownloadsCounterTest, Count) {
-  DownloadsCounter counter;
-  counter.Init(browser()->profile(),
+  Profile* profile = browser()->profile();
+  DownloadsCounter counter(profile);
+  counter.Init(profile->GetPrefs(),
                base::Bind(&DownloadsCounterTest::ResultCallback,
                           base::Unretained(this)));
   counter.Restart();
@@ -282,8 +289,9 @@ IN_PROC_BROWSER_TEST_F(DownloadsCounterTest, Count) {
 
 // Tests that not just standard complete downloads are counted.
 IN_PROC_BROWSER_TEST_F(DownloadsCounterTest, Types) {
-  DownloadsCounter counter;
-  counter.Init(browser()->profile(),
+  Profile* profile = browser()->profile();
+  DownloadsCounter counter(profile);
+  counter.Init(profile->GetPrefs(),
                base::Bind(&DownloadsCounterTest::ResultCallback,
                           base::Unretained(this)));
 
@@ -316,8 +324,9 @@ IN_PROC_BROWSER_TEST_F(DownloadsCounterTest, Types) {
 
 // Tests that downloads not persisted by DownloadHistory are not counted.
 IN_PROC_BROWSER_TEST_F(DownloadsCounterTest, NotPersisted) {
-  DownloadsCounter counter;
-  counter.Init(browser()->profile(),
+  Profile* profile = browser()->profile();
+  DownloadsCounter counter(profile);
+  counter.Init(profile->GetPrefs(),
                base::Bind(&DownloadsCounterTest::ResultCallback,
                           base::Unretained(this)));
 
@@ -364,24 +373,25 @@ IN_PROC_BROWSER_TEST_F(DownloadsCounterTest, TimeRanges) {
 
   WaitForDownloadHistory();
 
-  DownloadsCounter counter;
-  counter.Init(browser()->profile(),
+  Profile* profile = browser()->profile();
+  DownloadsCounter counter(profile);
+  counter.Init(profile->GetPrefs(),
                base::Bind(&DownloadsCounterTest::ResultCallback,
                           base::Unretained(this)));
 
-  SetDeletionPeriodPref(BrowsingDataRemover::LAST_HOUR);
+  SetDeletionPeriodPref(browsing_data::LAST_HOUR);
   EXPECT_EQ(2u, GetResult());
 
-  SetDeletionPeriodPref(BrowsingDataRemover::LAST_DAY);
+  SetDeletionPeriodPref(browsing_data::LAST_DAY);
   EXPECT_EQ(5u, GetResult());
 
-  SetDeletionPeriodPref(BrowsingDataRemover::LAST_WEEK);
+  SetDeletionPeriodPref(browsing_data::LAST_WEEK);
   EXPECT_EQ(7u, GetResult());
 
-  SetDeletionPeriodPref(BrowsingDataRemover::FOUR_WEEKS);
+  SetDeletionPeriodPref(browsing_data::FOUR_WEEKS);
   EXPECT_EQ(8u, GetResult());
 
-  SetDeletionPeriodPref(BrowsingDataRemover::EVERYTHING);
+  SetDeletionPeriodPref(browsing_data::EVERYTHING);
   EXPECT_EQ(11u, GetResult());
 }
 

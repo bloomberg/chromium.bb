@@ -8,15 +8,17 @@
 #include "base/memory/weak_ptr.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "base/timer/timer.h"
-#include "chrome/browser/browsing_data/browsing_data_counter.h"
+#include "components/browsing_data/counters/browsing_data_counter.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/history/core/browser/web_history_service.h"
 #include "components/sync_driver/sync_service_observer.h"
 
+class Profile;
+
 class ProfileSyncService;
 
-class HistoryCounter: public BrowsingDataCounter,
-                      public sync_driver::SyncServiceObserver {
+class HistoryCounter : public browsing_data::BrowsingDataCounter,
+                       public sync_driver::SyncServiceObserver {
  public:
   class HistoryResult : public FinishedResult {
    public:
@@ -31,11 +33,10 @@ class HistoryCounter: public BrowsingDataCounter,
     bool has_synced_visits_;
   };
 
-  HistoryCounter();
+  explicit HistoryCounter(Profile* profile);
   ~HistoryCounter() override;
 
   void OnInitialized() override;
-  const std::string& GetPrefName() const override;
 
   // Whether there are counting tasks in progress. Only used for testing.
   bool HasTrackedTasks();
@@ -45,7 +46,7 @@ class HistoryCounter: public BrowsingDataCounter,
   void SetWebHistoryServiceForTesting(history::WebHistoryService* service);
 
  private:
-  const std::string pref_name_;
+  Profile* profile_;
 
   BrowsingDataCounter::ResultInt local_result_;
   bool has_synced_visits_;

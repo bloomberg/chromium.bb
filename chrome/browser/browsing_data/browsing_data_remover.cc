@@ -296,27 +296,23 @@ BrowsingDataRemover::TimeRange BrowsingDataRemover::Unbounded() {
 }
 
 // static
-BrowsingDataRemover::TimeRange BrowsingDataRemover::Period(TimePeriod period) {
+BrowsingDataRemover::TimeRange BrowsingDataRemover::Period(
+    browsing_data::TimePeriod period) {
   switch (period) {
-    case LAST_HOUR:
-      content::RecordAction(
-          UserMetricsAction("ClearBrowsingData_LastHour"));
+    case browsing_data::LAST_HOUR:
+      content::RecordAction(UserMetricsAction("ClearBrowsingData_LastHour"));
       break;
-    case LAST_DAY:
-      content::RecordAction(
-          UserMetricsAction("ClearBrowsingData_LastDay"));
+    case browsing_data::LAST_DAY:
+      content::RecordAction(UserMetricsAction("ClearBrowsingData_LastDay"));
       break;
-    case LAST_WEEK:
-      content::RecordAction(
-          UserMetricsAction("ClearBrowsingData_LastWeek"));
+    case browsing_data::LAST_WEEK:
+      content::RecordAction(UserMetricsAction("ClearBrowsingData_LastWeek"));
       break;
-    case FOUR_WEEKS:
-      content::RecordAction(
-          UserMetricsAction("ClearBrowsingData_LastMonth"));
+    case browsing_data::FOUR_WEEKS:
+      content::RecordAction(UserMetricsAction("ClearBrowsingData_LastMonth"));
       break;
-    case EVERYTHING:
-      content::RecordAction(
-          UserMetricsAction("ClearBrowsingData_Everything"));
+    case browsing_data::EVERYTHING:
+      content::RecordAction(UserMetricsAction("ClearBrowsingData_Everything"));
       break;
   }
   return TimeRange(CalculateBeginDeleteTime(period), base::Time::Max());
@@ -1078,30 +1074,6 @@ void BrowsingDataRemover::ClearSettingsForOneTypeWithPredicate(
           std::string(), nullptr);
     }
   }
-}
-
-base::Time BrowsingDataRemover::CalculateBeginDeleteTime(
-    TimePeriod time_period) {
-  base::TimeDelta diff;
-  base::Time delete_begin_time = base::Time::Now();
-  switch (time_period) {
-    case LAST_HOUR:
-      diff = base::TimeDelta::FromHours(1);
-      break;
-    case LAST_DAY:
-      diff = base::TimeDelta::FromHours(24);
-      break;
-    case LAST_WEEK:
-      diff = base::TimeDelta::FromHours(7*24);
-      break;
-    case FOUR_WEEKS:
-      diff = base::TimeDelta::FromHours(4*7*24);
-      break;
-    case EVERYTHING:
-      delete_begin_time = base::Time();
-      break;
-  }
-  return delete_begin_time - diff;
 }
 
 bool BrowsingDataRemover::AllDone() {

@@ -2,11 +2,21 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+if (is_android) {
+  import("//build/config/android/rules.gni")
+}
+
 static_library("browsing_data") {
   output_name = "browsing_data"
   sources = [
+    "browsing_data_utils.cc",
+    "browsing_data_utils.h",
     "conditional_cache_deletion_helper.cc",
     "conditional_cache_deletion_helper.h",
+    "counters/browsing_data_counter.cc",
+    "counters/browsing_data_counter.h",
+    "pref_names.cc",
+    "pref_names.h",
     "storage_partition_http_cache_data_remover.cc",
     "storage_partition_http_cache_data_remover.h",
   ]
@@ -15,7 +25,17 @@ static_library("browsing_data") {
 
   deps = [
     "//base",
+    "//components/prefs:prefs",
     "//content/public/browser",
     "//net",
   ]
+}
+
+if (is_android) {
+  # GYP: //components/browsing_data.gypi:browsing_data_utils_java
+  java_cpp_enum("browsing_data_utils_java") {
+    sources = [
+      "browsing_data_utils.h",
+    ]
+  }
 }

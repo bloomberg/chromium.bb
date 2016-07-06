@@ -5,23 +5,19 @@
 #include "chrome/browser/browsing_data/downloads_counter.h"
 
 #include "chrome/browser/download/download_history.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/download_manager.h"
 
-DownloadsCounter::DownloadsCounter()
-    : pref_name_(prefs::kDeleteDownloadHistory) {
-}
+DownloadsCounter::DownloadsCounter(Profile* profile)
+    : BrowsingDataCounter(prefs::kDeleteDownloadHistory), profile_(profile) {}
 
 DownloadsCounter::~DownloadsCounter() {
 }
 
-const std::string& DownloadsCounter::GetPrefName() const {
-  return pref_name_;
-}
-
 void DownloadsCounter::Count() {
   content::DownloadManager* download_manager =
-      content::BrowserContext::GetDownloadManager(GetProfile());
+      content::BrowserContext::GetDownloadManager(profile_);
   std::vector<content::DownloadItem*> downloads;
   download_manager->GetAllDownloads(&downloads);
   base::Time begin_time = GetPeriodStart();

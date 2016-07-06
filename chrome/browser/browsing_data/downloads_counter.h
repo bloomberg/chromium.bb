@@ -5,23 +5,24 @@
 #ifndef CHROME_BROWSER_BROWSING_DATA_DOWNLOADS_COUNTER_H_
 #define CHROME_BROWSER_BROWSING_DATA_DOWNLOADS_COUNTER_H_
 
-#include "chrome/browser/browsing_data/browsing_data_counter.h"
+#include "components/browsing_data/counters/browsing_data_counter.h"
+
+class Profile;
 
 // A BrowsingDataCounter that counts the number of downloads as seen on the
 // chrome://downloads page.
-class DownloadsCounter: public BrowsingDataCounter {
+class DownloadsCounter : public browsing_data::BrowsingDataCounter {
  public:
-  DownloadsCounter();
+  explicit DownloadsCounter(Profile* profile);
   ~DownloadsCounter() override;
-
-  // BrowsingDataRemover implementation.
-  const std::string& GetPrefName() const override;
 
  private:
   // BrowsingDataRemover implementation.
   void Count() override;
 
   const std::string pref_name_;
+
+  Profile* profile_;
 
   DISALLOW_COPY_AND_ASSIGN(DownloadsCounter);
 };

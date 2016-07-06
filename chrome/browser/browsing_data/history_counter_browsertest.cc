@@ -13,6 +13,8 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/pref_names.h"
 #include "components/browser_sync/browser/profile_sync_service.h"
+#include "components/browsing_data/browsing_data_utils.h"
+#include "components/browsing_data/pref_names.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/history/core/browser/web_history_service.h"
 #include "components/history/core/test/fake_web_history_service.h"
@@ -40,7 +42,7 @@ class HistoryCounterTest : public SyncTest {
     service_ = HistoryServiceFactory::GetForProfileWithoutCreating(
         browser()->profile());
     SetHistoryDeletionPref(true);
-    SetDeletionPeriodPref(BrowsingDataRemover::EVERYTHING);
+    SetDeletionPeriodPref(browsing_data::EVERYTHING);
   }
 
   void AddVisit(const std::string url) {
@@ -60,9 +62,9 @@ class HistoryCounterTest : public SyncTest {
         prefs::kDeleteBrowsingHistory, value);
   }
 
-  void SetDeletionPeriodPref(BrowsingDataRemover::TimePeriod period) {
+  void SetDeletionPeriodPref(browsing_data::TimePeriod period) {
     browser()->profile()->GetPrefs()->SetInteger(
-        prefs::kDeleteTimePeriod, static_cast<int>(period));
+        browsing_data::prefs::kDeleteTimePeriod, static_cast<int>(period));
   }
 
   void WaitForCounting() {
@@ -70,7 +72,7 @@ class HistoryCounterTest : public SyncTest {
     run_loop_->Run();
   }
 
-  BrowsingDataCounter::ResultInt GetLocalResult() {
+  browsing_data::BrowsingDataCounter::ResultInt GetLocalResult() {
     DCHECK(finished_);
     return local_result_;
   }
@@ -80,7 +82,8 @@ class HistoryCounterTest : public SyncTest {
     return has_synced_visits_;
   }
 
-  void Callback(std::unique_ptr<BrowsingDataCounter::Result> result) {
+  void Callback(
+      std::unique_ptr<browsing_data::BrowsingDataCounter::Result> result) {
     finished_ = result->Finished();
 
     if (finished_) {
@@ -115,7 +118,7 @@ class HistoryCounterTest : public SyncTest {
   base::Time time_;
 
   bool finished_;
-  BrowsingDataCounter::ResultInt local_result_;
+  browsing_data::BrowsingDataCounter::ResultInt local_result_;
   bool has_synced_visits_;
 };
 
@@ -143,10 +146,11 @@ IN_PROC_BROWSER_TEST_F(HistoryCounterTest, DuplicateVisits) {
   AddVisit("https://www.google.com");
   AddVisit("https://www.chrome.com");
 
-  HistoryCounter counter;
-  counter.Init(browser()->profile(),
-               base::Bind(&HistoryCounterTest::Callback,
-                          base::Unretained(this)));
+  Profile* profile = browser()->profile();
+
+  HistoryCounter counter(profile);
+  counter.Init(profile->GetPrefs(), base::Bind(&HistoryCounterTest::Callback,
+                                               base::Unretained(this)));
   counter.Restart();
 
   WaitForCounting();
@@ -160,10 +164,11 @@ IN_PROC_BROWSER_TEST_F(HistoryCounterTest, PrefChanged) {
   AddVisit("https://www.google.com");
   AddVisit("https://www.chrome.com");
 
-  HistoryCounter counter;
-  counter.Init(browser()->profile(),
-               base::Bind(&HistoryCounterTest::Callback,
-                          base::Unretained(this)));
+  Profile* profile = browser()->profile();
+
+  HistoryCounter counter(profile);
+  counter.Init(profile->GetPrefs(), base::Bind(&HistoryCounterTest::Callback,
+                                               base::Unretained(this)));
   SetHistoryDeletionPref(true);
 
   WaitForCounting();
@@ -176,10 +181,11 @@ IN_PROC_BROWSER_TEST_F(HistoryCounterTest, PrefIsFalse) {
   SetHistoryDeletionPref(false);
   AddVisit("https://www.google.com");
 
-  HistoryCounter counter;
-  counter.Init(browser()->profile(),
-               base::Bind(&HistoryCounterTest::Callback,
-                          base::Unretained(this)));
+  Profile* profile = browser()->profile();
+
+  HistoryCounter counter(profile);
+  counter.Init(profile->GetPrefs(), base::Bind(&HistoryCounterTest::Callback,
+                                               base::Unretained(this)));
   counter.Restart();
 
   EXPECT_FALSE(counter.HasTrackedTasks());
@@ -209,28 +215,29 @@ IN_PROC_BROWSER_TEST_F(HistoryCounterTest, PeriodChanged) {
   AddVisit("https://www.example.com");
   AddVisit("https://www.example.com");
 
-  HistoryCounter counter;
-  counter.Init(browser()->profile(),
-               base::Bind(&HistoryCounterTest::Callback,
-                          base::Unretained(this)));
+  Profile* profile = browser()->profile();
 
-  SetDeletionPeriodPref(BrowsingDataRemover::LAST_HOUR);
+  HistoryCounter counter(profile);
+  counter.Init(profile->GetPrefs(), base::Bind(&HistoryCounterTest::Callback,
+                                               base::Unretained(this)));
+
+  SetDeletionPeriodPref(browsing_data::LAST_HOUR);
   WaitForCounting();
   EXPECT_EQ(1u, GetLocalResult());
 
-  SetDeletionPeriodPref(BrowsingDataRemover::LAST_DAY);
+  SetDeletionPeriodPref(browsing_data::LAST_DAY);
   WaitForCounting();
   EXPECT_EQ(1u, GetLocalResult());
 
-  SetDeletionPeriodPref(BrowsingDataRemover::LAST_WEEK);
+  SetDeletionPeriodPref(browsing_data::LAST_WEEK);
   WaitForCounting();
   EXPECT_EQ(5u, GetLocalResult());
 
-  SetDeletionPeriodPref(BrowsingDataRemover::FOUR_WEEKS);
+  SetDeletionPeriodPref(browsing_data::FOUR_WEEKS);
   WaitForCounting();
   EXPECT_EQ(8u, GetLocalResult());
 
-  SetDeletionPeriodPref(BrowsingDataRemover::EVERYTHING);
+  SetDeletionPeriodPref(browsing_data::EVERYTHING);
   WaitForCounting();
   EXPECT_EQ(9u, GetLocalResult());
 }
@@ -239,17 +246,18 @@ IN_PROC_BROWSER_TEST_F(HistoryCounterTest, PeriodChanged) {
 IN_PROC_BROWSER_TEST_F(HistoryCounterTest, Synced) {
   // WebHistoryService makes network requests, so we need to use a fake one
   // for testing.
+  Profile* profile = browser()->profile();
+
   std::unique_ptr<history::FakeWebHistoryService> service(
       new history::FakeWebHistoryService(
-          ProfileOAuth2TokenServiceFactory::GetForProfile(browser()->profile()),
-          SigninManagerFactory::GetForProfile(browser()->profile()),
-          browser()->profile()->GetRequestContext()));
+          ProfileOAuth2TokenServiceFactory::GetForProfile(profile),
+          SigninManagerFactory::GetForProfile(profile),
+          profile->GetRequestContext()));
 
-  HistoryCounter counter;
+  HistoryCounter counter(profile);
   counter.SetWebHistoryServiceForTesting(service.get());
-  counter.Init(browser()->profile(),
-               base::Bind(&HistoryCounterTest::Callback,
-                          base::Unretained(this)));
+  counter.Init(profile->GetPrefs(), base::Bind(&HistoryCounterTest::Callback,
+                                               base::Unretained(this)));
 
   // No entries locally and no entries in Sync.
   service->SetupFakeResponse(true /* success */, net::HTTP_OK);
@@ -260,7 +268,7 @@ IN_PROC_BROWSER_TEST_F(HistoryCounterTest, Synced) {
 
   // No entries locally. There are some entries in Sync, but they are out of the
   // time range.
-  SetDeletionPeriodPref(BrowsingDataRemover::LAST_HOUR);
+  SetDeletionPeriodPref(browsing_data::LAST_HOUR);
   service->AddSyncedVisit(
       "www.google.com", GetCurrentTime() - base::TimeDelta::FromHours(2));
   service->AddSyncedVisit(
@@ -330,11 +338,10 @@ IN_PROC_BROWSER_TEST_F(HistoryCounterTest, DISABLED_RestartOnSyncChange) {
           ProfileOAuth2TokenServiceFactory::GetForProfile(browser()->profile()),
           SigninManagerFactory::GetForProfile(browser()->profile()),
           browser()->profile()->GetRequestContext()));
-  HistoryCounter counter;
+  HistoryCounter counter(profile);
   counter.SetWebHistoryServiceForTesting(web_history_service.get());
-  counter.Init(profile,
-               base::Bind(&HistoryCounterTest::Callback,
-                          base::Unretained(this)));
+  counter.Init(profile->GetPrefs(), base::Bind(&HistoryCounterTest::Callback,
+                                               base::Unretained(this)));
 
   // Note that some Sync operations notify observers immediately (and thus there
   // is no need to call |WaitForCounting()|; in fact, it would block the test),

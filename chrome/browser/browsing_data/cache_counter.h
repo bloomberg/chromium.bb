@@ -8,21 +8,21 @@
 #include <stdint.h>
 
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/browsing_data/browsing_data_counter.h"
+#include "components/browsing_data/counters/browsing_data_counter.h"
 
-class CacheCounter: public BrowsingDataCounter {
+class Profile;
+
+class CacheCounter : public browsing_data::BrowsingDataCounter {
  public:
-  CacheCounter();
+  explicit CacheCounter(Profile* profile);
   ~CacheCounter() override;
-
-  const std::string& GetPrefName() const override;
 
   // Whether this counter awaits the calculation result callback.
   // Used only for testing.
   bool Pending();
 
  private:
-  const std::string pref_name_;
+  Profile* profile_;
   bool pending_;
 
   base::WeakPtrFactory<CacheCounter> weak_ptr_factory_;

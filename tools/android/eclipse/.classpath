@@ -118,8 +118,7 @@ to the classpath for downstream development. See "additional_entries" below.
     <classpathentry kind="src" path="out/Debug/gen/enums/base_java_memory_pressure_level"/>
     <classpathentry kind="src" path="out/Debug/gen/enums/bitmap_format_java"/>
     <classpathentry kind="src" path="out/Debug/gen/enums/bookmark_type_java"/>
-    <classpathentry kind="src" path="out/Debug/gen/enums/browsing_data_time_period_java"/>
-    <classpathentry kind="src" path="out/Debug/gen/enums/browsing_data_type_java"/>
+    <classpathentry kind="src" path="out/Debug/gen/enums/browsing_data_utils_java"/>
     <classpathentry kind="src" path="out/Debug/gen/enums/certificate_mime_types_java"/>
     <classpathentry kind="src" path="out/Debug/gen/enums/cert_verify_status_android_java"/>
     <classpathentry kind="src" path="out/Debug/gen/enums/chromium_url_request_java"/>

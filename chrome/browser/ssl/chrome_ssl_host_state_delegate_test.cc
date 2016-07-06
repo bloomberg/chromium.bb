@@ -21,6 +21,7 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "components/browsing_data/browsing_data_utils.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
 #include "content/public/browser/ssl_host_state_delegate.h"
@@ -546,7 +547,7 @@ class RemoveBrowsingHistorySSLHostStateDelegateTest
     BrowsingDataRemover* remover =
         BrowsingDataRemoverFactory::GetForBrowserContext(profile);
     BrowsingDataRemoverCompletionObserver completion_observer(remover);
-    remover->Remove(BrowsingDataRemover::Period(BrowsingDataRemover::LAST_HOUR),
+    remover->Remove(BrowsingDataRemover::Period(browsing_data::LAST_HOUR),
                     BrowsingDataRemover::REMOVE_HISTORY,
                     BrowsingDataHelper::UNPROTECTED_WEB);
     completion_observer.BlockUntilCompletion();

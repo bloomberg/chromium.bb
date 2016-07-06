@@ -7,10 +7,12 @@
 #include <string>
 #include <vector>
 
+#include "base/message_loop/message_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browsing_data/autofill_counter.h"
 #include "chrome/test/base/testing_browser_process.h"
+#include "chrome/test/base/testing_profile.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if defined(ENABLE_EXTENSIONS)
@@ -18,9 +20,21 @@
 #include "chrome/browser/browsing_data/hosted_apps_counter.h"
 #endif
 
+class BrowsingDataCounterUtilsTest : public testing::Test {
+ public:
+  BrowsingDataCounterUtilsTest() {}
+  ~BrowsingDataCounterUtilsTest() override {}
+
+  TestingProfile* GetProfile() { return &profile_; }
+
+ private:
+  base::MessageLoop loop_;
+  TestingProfile profile_;
+};
+
 // Tests the complex output of the Autofill counter.
-TEST(BrowsingDataCounterUtilsTest, AutofillCounterResult) {
-  AutofillCounter counter;
+TEST_F(BrowsingDataCounterUtilsTest, AutofillCounterResult) {
+  AutofillCounter counter(GetProfile());
 
   // This test assumes that the strings are served exactly as defined,
   // i.e. that the locale is set to the default "en".
@@ -68,8 +82,8 @@ TEST(BrowsingDataCounterUtilsTest, AutofillCounterResult) {
 
 #if defined(ENABLE_EXTENSIONS)
 // Tests the complex output of the hosted apps counter.
-TEST(BrowsingDataCounterUtilsTest, HostedAppsCounterResult) {
-  HostedAppsCounter counter;
+TEST_F(BrowsingDataCounterUtilsTest, HostedAppsCounterResult) {
+  HostedAppsCounter counter(GetProfile());
 
   // This test assumes that the strings are served exactly as defined,
   // i.e. that the locale is set to the default "en".

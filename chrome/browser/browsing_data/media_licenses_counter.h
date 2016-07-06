@@ -9,13 +9,15 @@
 #include <string>
 
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/browsing_data/browsing_data_counter.h"
+#include "components/browsing_data/counters/browsing_data_counter.h"
 #include "url/gurl.h"
+
+class Profile;
 
 // MediaLicensesCounter is used to determine the number of origins that
 // have plugin private filesystem data (used by EME). It does not include
 // origins that have content licenses owned by Flash.
-class MediaLicensesCounter : public BrowsingDataCounter {
+class MediaLicensesCounter : public browsing_data::BrowsingDataCounter {
  public:
   // MediaLicenseResult is the result of counting the number of origins
   // that have plugin private filesystem data. It also contains one of the
@@ -33,13 +35,12 @@ class MediaLicensesCounter : public BrowsingDataCounter {
     std::string one_origin_;
   };
 
-  MediaLicensesCounter();
+  explicit MediaLicensesCounter(Profile* profile);
   ~MediaLicensesCounter() override;
 
-  // BrowsingDataCounter implementation.
-  const std::string& GetPrefName() const final;
-
  private:
+  Profile* profile_;
+
   // BrowsingDataCounter implementation.
   void Count() final;
 
@@ -48,7 +49,6 @@ class MediaLicensesCounter : public BrowsingDataCounter {
   // subsequently reported.
   void OnContentLicensesObtained(const std::set<GURL>& origins);
 
-  const std::string pref_name_;
   base::WeakPtrFactory<MediaLicensesCounter> weak_ptr_factory_;
 };
 

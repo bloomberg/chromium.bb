@@ -8,11 +8,13 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "chrome/browser/browsing_data/browsing_data_counter.h"
+#include "components/browsing_data/counters/browsing_data_counter.h"
+
+class Profile;
 
 // A BrowsingDataCounter that returns the number of hosted apps and names
 // of up to two of them as examples.
-class HostedAppsCounter: public BrowsingDataCounter {
+class HostedAppsCounter : public browsing_data::BrowsingDataCounter {
  public:
   class HostedAppsResult : public FinishedResult {
    public:
@@ -29,17 +31,14 @@ class HostedAppsCounter: public BrowsingDataCounter {
     DISALLOW_COPY_AND_ASSIGN(HostedAppsResult);
   };
 
-  HostedAppsCounter();
+  explicit HostedAppsCounter(Profile* profile);
   ~HostedAppsCounter() override;
-
-  // BrowsingDataCounter:
-  const std::string& GetPrefName() const override;
 
  private:
   // BrowsingDataCounter:
   void Count() override;
 
-  const std::string pref_name_;
+  Profile* profile_;
 
   DISALLOW_COPY_AND_ASSIGN(HostedAppsCounter);
 };

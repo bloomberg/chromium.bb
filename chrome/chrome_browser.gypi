@@ -71,8 +71,6 @@
       'browser/browsing_data/browsing_data_channel_id_helper.h',
       'browser/browsing_data/browsing_data_cookie_helper.cc',
       'browser/browsing_data/browsing_data_cookie_helper.h',
-      'browser/browsing_data/browsing_data_counter.cc',
-      'browser/browsing_data/browsing_data_counter.h',
       'browser/browsing_data/browsing_data_counter_utils.cc',
       'browser/browsing_data/browsing_data_counter_utils.h',
       'browser/browsing_data/browsing_data_database_helper.cc',
@@ -4137,24 +4135,6 @@
           'type': 'none',
           'variables': {
             'source_file': 'browser/android/activity_type_ids.h',
-          },
-          'includes': [ '../build/android/java_cpp_enum.gypi' ],
-        },
-        {
-          # GN: //chrome/android:chrome_android_java_enums_srcjar
-          'target_name': 'browsing_data_type_java',
-          'type': 'none',
-          'variables': {
-            'source_file': 'browser/browsing_data/browsing_data_counter_utils.h',
-          },
-          'includes': [ '../build/android/java_cpp_enum.gypi' ],
-        },
-        {
-          # GN: //chrome/android:chrome_android_java_enums_srcjar
-          'target_name': 'browsing_data_time_period_java',
-          'type': 'none',
-          'variables': {
-            'source_file': 'browser/browsing_data/browsing_data_remover.h',
           },
           'includes': [ '../build/android/java_cpp_enum.gypi' ],
         },

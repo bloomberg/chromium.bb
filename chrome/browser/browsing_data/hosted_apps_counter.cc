@@ -8,25 +8,22 @@
 #include <string>
 
 #include "base/memory/ptr_util.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension.h"
 
-HostedAppsCounter::HostedAppsCounter()
-    : pref_name_(prefs::kDeleteHostedAppsData) {}
+HostedAppsCounter::HostedAppsCounter(Profile* profile)
+    : BrowsingDataCounter(prefs::kDeleteHostedAppsData), profile_(profile) {}
 
 HostedAppsCounter::~HostedAppsCounter() {}
-
-const std::string& HostedAppsCounter::GetPrefName() const {
-  return pref_name_;
-}
 
 void HostedAppsCounter::Count() {
   int count = 0;
   std::vector<std::string> names;
 
   std::unique_ptr<extensions::ExtensionSet> extensions =
-      extensions::ExtensionRegistry::Get(GetProfile())
+      extensions::ExtensionRegistry::Get(profile_)
           ->GenerateInstalledExtensionsSet();
 
   for (const auto& extension : *extensions) {

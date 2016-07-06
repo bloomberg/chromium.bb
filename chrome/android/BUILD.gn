@@ -207,6 +207,7 @@ android_library("chrome_java") {
     srcjar_deps += [
       "//chrome:page_info_connection_type_javagen",
       "//chrome:website_settings_action_javagen",
+      "//components/browsing_data:browsing_data_utils_java",
       "//components/infobars/core:infobar_enums_java",
       "//components/ntp_snippets:ntp_snippets_java_enums_srcjar",
       "//components/ntp_tiles:ntp_tiles_enums_java",
@@ -264,8 +265,6 @@ java_cpp_enum("chrome_android_java_enums_srcjar") {
     "//chrome/browser/android/policy/policy_auditor.cc",
     "//chrome/browser/android/shortcut_info.h",
     "//chrome/browser/android/tab_android.h",
-    "//chrome/browser/browsing_data/browsing_data_counter_utils.h",
-    "//chrome/browser/browsing_data/browsing_data_remover.h",
     "//chrome/browser/profiles/profile_metrics.h",
     "//chrome/browser/ui/android/infobars/infobar_android.h",
   ]

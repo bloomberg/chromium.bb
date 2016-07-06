@@ -7,10 +7,10 @@
 
 #include "base/macros.h"
 #include "base/memory/scoped_vector.h"
-#include "chrome/browser/browsing_data/browsing_data_counter.h"
 #include "chrome/browser/browsing_data/browsing_data_remover.h"
 #include "chrome/browser/ui/webui/options/options_ui.h"
 #include "components/browser_sync/browser/profile_sync_service.h"
+#include "components/browsing_data/counters/browsing_data_counter.h"
 #include "components/prefs/pref_member.h"
 
 namespace options {
@@ -49,10 +49,11 @@ class ClearBrowserDataHandler : public OptionsPageUIHandler,
   virtual void OnBrowsingHistoryPrefChanged();
 
   // Adds a |counter| for browsing data.
-  void AddCounter(std::unique_ptr<BrowsingDataCounter> counter);
+  void AddCounter(std::unique_ptr<browsing_data::BrowsingDataCounter> counter);
 
   // Updates a counter in the UI according to the |result|.
-  void UpdateCounterText(std::unique_ptr<BrowsingDataCounter::Result> result);
+  void UpdateCounterText(
+      std::unique_ptr<browsing_data::BrowsingDataCounter::Result> result);
 
   // Implementation of SyncServiceObserver. Updates the support string at the
   // bottom of the dialog.
@@ -80,7 +81,7 @@ class ClearBrowserDataHandler : public OptionsPageUIHandler,
   BooleanPrefMember allow_deleting_browser_history_;
 
   // Counters that calculate the data volume for some of the data types.
-  ScopedVector<BrowsingDataCounter> counters_;
+  ScopedVector<browsing_data::BrowsingDataCounter> counters_;
 
   // Informs us whether the user is syncing their data.
   ProfileSyncService* sync_service_;

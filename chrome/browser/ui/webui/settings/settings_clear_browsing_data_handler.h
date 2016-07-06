@@ -10,11 +10,11 @@
 
 #include "base/macros.h"
 #include "base/scoped_observer.h"
-#include "chrome/browser/browsing_data/browsing_data_counter.h"
 #include "chrome/browser/browsing_data/browsing_data_remover.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/settings/settings_page_ui_handler.h"
 #include "components/browser_sync/browser/profile_sync_service.h"
+#include "components/browsing_data/counters/browsing_data_counter.h"
 #include "components/prefs/pref_change_registrar.h"
 
 namespace base {
@@ -72,16 +72,17 @@ class ClearBrowsingDataHandler : public SettingsPageUIHandler,
   void UpdateHistoryDeletionDialog(bool show);
 
   // Adds a browsing data |counter|.
-  void AddCounter(std::unique_ptr<BrowsingDataCounter> counter);
+  void AddCounter(std::unique_ptr<browsing_data::BrowsingDataCounter> counter);
 
   // Updates a counter text according to the |result|.
-  void UpdateCounterText(std::unique_ptr<BrowsingDataCounter::Result> result);
+  void UpdateCounterText(
+      std::unique_ptr<browsing_data::BrowsingDataCounter::Result> result);
 
   // Cached profile corresponding to the WebUI of this handler.
   Profile* profile_;
 
   // Counters that calculate the data volume for individual data types.
-  std::vector<std::unique_ptr<BrowsingDataCounter>> counters_;
+  std::vector<std::unique_ptr<browsing_data::BrowsingDataCounter>> counters_;
 
   // ProfileSyncService to observe sync state changes.
   ProfileSyncService* sync_service_;

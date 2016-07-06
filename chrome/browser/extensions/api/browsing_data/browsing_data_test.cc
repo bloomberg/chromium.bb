@@ -20,6 +20,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "components/browsing_data/pref_names.h"
 #include "components/prefs/pref_service.h"
 
 using extension_function_test_utils::RunFunctionAndReturnError;
@@ -129,9 +130,9 @@ class ExtensionBrowsingDataTest : public InProcessBrowserTest {
     EXPECT_EQ(UNPROTECTED_WEB, GetOriginTypeMask());
   }
 
-  void SetSinceAndVerify(BrowsingDataRemover::TimePeriod since_pref) {
+  void SetSinceAndVerify(browsing_data::TimePeriod since_pref) {
     PrefService* prefs = browser()->profile()->GetPrefs();
-    prefs->SetInteger(prefs::kDeleteTimePeriod, since_pref);
+    prefs->SetInteger(browsing_data::prefs::kDeleteTimePeriod, since_pref);
 
     scoped_refptr<BrowsingDataSettingsFunction> function =
         new BrowsingDataSettingsFunction();
@@ -147,9 +148,8 @@ class ExtensionBrowsingDataTest : public InProcessBrowserTest {
     EXPECT_TRUE(options->GetDouble("since", &since));
 
     double expected_since = 0;
-    if (since_pref != BrowsingDataRemover::EVERYTHING) {
-      base::Time time =
-          BrowsingDataRemover::CalculateBeginDeleteTime(since_pref);
+    if (since_pref != browsing_data::EVERYTHING) {
+      base::Time time = CalculateBeginDeleteTime(since_pref);
       expected_since = time.ToJsTime();
     }
     // Even a synchronous function takes nonzero time, but the difference
@@ -481,11 +481,11 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowsingDataTest, ShortcutFunctionRemovalMask) {
 
 // Test the processing of the 'delete since' preference.
 IN_PROC_BROWSER_TEST_F(ExtensionBrowsingDataTest, SettingsFunctionSince) {
-  SetSinceAndVerify(BrowsingDataRemover::EVERYTHING);
-  SetSinceAndVerify(BrowsingDataRemover::LAST_HOUR);
-  SetSinceAndVerify(BrowsingDataRemover::LAST_DAY);
-  SetSinceAndVerify(BrowsingDataRemover::LAST_WEEK);
-  SetSinceAndVerify(BrowsingDataRemover::FOUR_WEEKS);
+  SetSinceAndVerify(browsing_data::EVERYTHING);
+  SetSinceAndVerify(browsing_data::LAST_HOUR);
+  SetSinceAndVerify(browsing_data::LAST_DAY);
+  SetSinceAndVerify(browsing_data::LAST_WEEK);
+  SetSinceAndVerify(browsing_data::FOUR_WEEKS);
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionBrowsingDataTest, SettingsFunctionEmpty) {

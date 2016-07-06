@@ -8,15 +8,17 @@
 #include "base/macros.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
-#include "chrome/browser/browsing_data/browsing_data_counter.h"
+#include "components/browsing_data/counters/browsing_data_counter.h"
 #include "components/webdata/common/web_data_service_consumer.h"
+
+class Profile;
 
 namespace autofill {
 class AutofillWebDataService;
 }
 
-class AutofillCounter: public BrowsingDataCounter,
-                       public WebDataServiceConsumer {
+class AutofillCounter : public browsing_data::BrowsingDataCounter,
+                        public WebDataServiceConsumer {
  public:
   class AutofillResult : public FinishedResult {
    public:
@@ -36,12 +38,11 @@ class AutofillCounter: public BrowsingDataCounter,
     DISALLOW_COPY_AND_ASSIGN(AutofillResult);
   };
 
-  AutofillCounter();
+  explicit AutofillCounter(Profile* profile);
   ~AutofillCounter() override;
 
   // BrowsingDataCounter implementation.
   void OnInitialized() override;
-  const std::string& GetPrefName() const override;
 
   // Whether the counting is in progress.
   bool HasPendingQuery() {
@@ -57,7 +58,7 @@ class AutofillCounter: public BrowsingDataCounter,
   void SetPeriodStartForTesting(const base::Time& period_start_for_testing);
 
  private:
-  const std::string pref_name_;
+  Profile* profile_;
   base::ThreadChecker thread_checker_;
 
   scoped_refptr<autofill::AutofillWebDataService> web_data_service_;
