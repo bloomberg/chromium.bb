@@ -70,13 +70,13 @@ instead of "initial value".
 | <select>
 |   id="select"
 |   <option>
-|     "CA"
+|     "initial value"
 |     <shadow:root>
-|       "CA"
+|       "initial value"
 |   <option>
-|     "TX"
+|     "inserted value"
 |     <shadow:root>
-|       "TX"
+|       "inserted value"
 |   <shadow:root>
 |     <content>
 |       select="option,optgroup,hr"
@@ -88,5 +88,6 @@ instead of "initial value".
 | "internals.suggestedValue(month): 2014-01"
 | "textarea.value: initial value"
 | "internals.suggestedValue(textarea): suggested value"
-| "select.value: "
-| "internals.suggestedValue(select): TX"
+| "select.value: initial value"
+| "internals.suggestedValue(select): suggested value"
+| "internals.suggestedValue(select): "

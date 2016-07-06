@@ -91,7 +91,6 @@ HTMLSelectElement::HTMLSelectElement(Document& document, HTMLFormElement* form)
     , m_multiple(false)
     , m_activeSelectionState(false)
     , m_shouldRecalcListItems(false)
-    , m_suggestedIndex(-1)
     , m_isAutofilledByPreview(false)
     , m_indexToSelectOnCancel(-1)
     , m_popupIsVisible(false)
@@ -301,7 +300,7 @@ void HTMLSelectElement::setValue(const String &value, bool sendEvents)
     }
 
     int previousSelectedIndex = selectedIndex();
-    setSuggestedIndex(-1);
+    setSuggestedOption(nullptr);
     if (m_isAutofilledByPreview)
         setAutofilled(false);
     SelectOptionFlags flags = DeselectOtherOptions | MakeOptionDirty;
@@ -315,36 +314,27 @@ void HTMLSelectElement::setValue(const String &value, bool sendEvents)
 
 String HTMLSelectElement::suggestedValue() const
 {
-    const ListItems& items = listItems();
-    for (unsigned i = 0; i < items.size(); ++i) {
-        if (isHTMLOptionElement(items[i]) && m_suggestedIndex >= 0) {
-            if (i == static_cast<unsigned>(m_suggestedIndex))
-                return toHTMLOptionElement(items[i])->value();
-        }
-    }
-    return "";
+    return m_suggestedOption ? m_suggestedOption->value() : "";
 }
 
 void HTMLSelectElement::setSuggestedValue(const String& value)
 {
     if (value.isNull()) {
-        setSuggestedIndex(-1);
+        setSuggestedOption(nullptr);
         return;
     }
 
-    unsigned optionIndex = 0;
     for (auto& item : listItems()) {
         if (!isHTMLOptionElement(item))
             continue;
         if (toHTMLOptionElement(item)->value() == value) {
-            setSuggestedIndex(optionIndex);
+            setSuggestedOption(toHTMLOptionElement(item));
             m_isAutofilledByPreview = true;
             return;
         }
-        optionIndex++;
     }
 
-    setSuggestedIndex(-1);
+    setSuggestedOption(nullptr);
 }
 
 bool HTMLSelectElement::isPresentationAttribute(const QualifiedName& name) const
@@ -958,18 +948,15 @@ void HTMLSelectElement::setSelectedIndex(int index)
     selectOption(index, DeselectOtherOptions | MakeOptionDirty);
 }
 
-int HTMLSelectElement::suggestedIndex() const
+void HTMLSelectElement::setSuggestedOption(HTMLOptionElement* option)
 {
-    return m_suggestedIndex;
-}
-
-void HTMLSelectElement::setSuggestedIndex(int suggestedIndex)
-{
-    m_suggestedIndex = suggestedIndex;
+    if (m_suggestedOption == option)
+        return;
+    m_suggestedOption = option;
 
     if (LayoutObject* layoutObject = this->layoutObject())  {
         layoutObject->updateFromElement();
-        scrollToOption(item(listToOptionIndex(suggestedIndex)));
+        scrollToOption(option);
     }
     if (popupIsVisible())
         m_popup->updateFromElement(PopupMenu::BySelectionChange);
@@ -1046,6 +1033,8 @@ void HTMLSelectElement::optionRemoved(HTMLOptionElement& option)
         m_activeSelectionAnchor.clear();
     if (m_activeSelectionEnd == &option)
         m_activeSelectionEnd.clear();
+    if (m_suggestedOption == &option)
+        setSuggestedOption(nullptr);
     if (option.selected())
         setAutofilled(false);
     setNeedsValidityCheck();
@@ -1893,6 +1882,7 @@ DEFINE_TRACE(HTMLSelectElement)
     visitor->trace(m_activeSelectionAnchor);
     visitor->trace(m_activeSelectionEnd);
     visitor->trace(m_optionToScrollTo);
+    visitor->trace(m_suggestedOption);
     visitor->trace(m_popup);
     visitor->trace(m_popupUpdater);
     HTMLFormControlElementWithState::trace(visitor);
@@ -1989,8 +1979,8 @@ int HTMLSelectElement::optionIndexToBeShown() const
 {
     if (m_indexToSelectOnCancel >= 0)
         return listToOptionIndex(m_indexToSelectOnCancel);
-    if (suggestedIndex() >= 0)
-        return suggestedIndex();
+    if (m_suggestedOption)
+        return m_suggestedOption->index();
     return selectedIndex();
 }
 

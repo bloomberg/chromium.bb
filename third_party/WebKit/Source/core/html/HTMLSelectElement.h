@@ -54,8 +54,6 @@ public:
 
     int selectedIndex() const;
     void setSelectedIndex(int);
-    int suggestedIndex() const;
-    void setSuggestedIndex(int);
 
     void optionSelectedByUser(int index, bool dispatchChangeEvent, bool allowMultipleSelection = false);
 
@@ -237,6 +235,7 @@ private:
     size_t searchOptionsForValue(const String&, size_t listIndexStart, size_t listIndexEnd) const;
     void updateListBoxSelection(bool deselectOtherOptions, bool scroll = true);
     void setIndexToSelectOnCancel(int listIndex);
+    void setSuggestedOption(HTMLOptionElement*);
 
     enum SkipDirection {
         SkipBackwards = -1,
@@ -274,10 +273,10 @@ private:
     Member<HTMLOptionElement> m_activeSelectionAnchor;
     Member<HTMLOptionElement> m_activeSelectionEnd;
     Member<HTMLOptionElement> m_optionToScrollTo;
+    Member<HTMLOptionElement> m_suggestedOption;
     bool m_multiple;
     bool m_activeSelectionState;
     mutable bool m_shouldRecalcListItems;
-    int m_suggestedIndex;
     bool m_isAutofilledByPreview;
 
     class PopupUpdater;
