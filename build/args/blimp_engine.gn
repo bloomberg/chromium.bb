@@ -23,3 +23,7 @@ use_alsa = false
 use_pulseaudio = false
 use_cups = false
 use_glib = false
+
+# udev is not supported on targeted platform and also not something that will
+# be used by Blimp Engine.
+use_udev = false
