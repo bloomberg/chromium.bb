@@ -77,8 +77,8 @@ The high-level goal of libweston is to decouple the compositor from
 the shell implementation (what used to be shell plugins).
 
 Thus, instead of launching 'weston' with various arguments to choose the
-shell, one would launch the shell itself, eg. 'weston-desktop',
-'weston-ivi', 'orbital',etc. The main executable (the hosting program)
+shell, one would launch the shell itself, e.g. 'weston-desktop',
+'weston-ivi', 'orbital', etc. The main executable (the hosting program)
 will implement the shell, while libweston will be used for a fundamental
 compositor implementation.
 
