@@ -43,6 +43,9 @@ class SCHEDULER_EXPORT WebFrameSchedulerImpl : public blink::WebFrameScheduler {
   blink::WebTaskRunner* loadingTaskRunner() override;
   blink::WebTaskRunner* timerTaskRunner() override;
   blink::WebTaskRunner* unthrottledTaskRunner() override;
+  blink::WebViewScheduler* webViewScheduler() override;
+  void incrementPendingResourceLoadCount() override;
+  void decrementPendingResourceLoadCount() override;
 
   void OnVirtualTimeDomainChanged();
 

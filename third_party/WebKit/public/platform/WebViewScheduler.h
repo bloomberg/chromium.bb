@@ -37,13 +37,28 @@ public:
     // |-----------------------------> time
     virtual void enableVirtualTime() = 0;
 
-    // Controls whether or not virtual time is allowed to advance. If virtual time
-    // is not allowed to advance then delayed tasks posted to the WebTaskRunners owned
-    // by any child WebFrameSchedulers will be paused. If virtual time is allowed to
-    // advance then tasks will be run in time order (as usual) but virtual time will
-    // fast forward so that the system doesn't actually sleep for the delays between
-    // tasks before executing them.
-    virtual void setAllowVirtualTimeToAdvance(bool) = 0;
+    // Returns true if virtual time is currently allowed to advance.
+    virtual bool virtualTimeAllowedToAdvance() const = 0;
+
+    enum class VirtualTimePolicy {
+        // In this policy virtual time is allowed to advance. If the blink scheduler runs out of
+        // immediate work, the virtual timebase will be incremented so that the next sceduled
+        // timer may fire.  NOTE Tasks will be run in time order (as usual).
+        ADVANCE,
+
+        // In this policy virtual time is not allowed to advance. Delayed tasks posted to
+        // WebTaskRunners owned by any child WebFrameSchedulers will be paused, unless their
+        // scheduled run time is less than or equal to the current virtual time.  Note non-delayed
+        // tasks will run as normal.
+        PAUSE,
+
+        // In this policy virtual time is allowed to advance unless there are pending network
+        // fetches associated any child WebFrameScheduler.
+        PAUSE_IF_NETWORK_FETCHES_PENDING
+    };
+
+    // Sets the virtual time policy, which is applied imemdiatly to all child WebFrameSchedulers.
+    virtual void setVirtualTimePolicy(VirtualTimePolicy) = 0;
 };
 
 } // namespace blink

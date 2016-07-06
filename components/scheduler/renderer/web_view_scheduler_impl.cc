@@ -24,6 +24,8 @@ WebViewSchedulerImpl::WebViewSchedulerImpl(
     : virtual_time_pump_policy_(TaskQueue::PumpPolicy::AUTO),
       web_view_(web_view),
       renderer_scheduler_(renderer_scheduler),
+      pending_resource_load_count_(0),
+      virtual_time_policy_(VirtualTimePolicy::ADVANCE),
       page_visible_(true),
       disable_background_timer_throttling_(disable_background_timer_throttling),
       allow_virtual_time_to_advance_(true) {
@@ -109,6 +111,53 @@ void WebViewSchedulerImpl::setAllowVirtualTimeToAdvance(
   if (virtual_time_domain_) {
     virtual_time_domain_->SetCanAdvanceVirtualTime(
         allow_virtual_time_to_advance);
+  }
+}
+
+bool WebViewSchedulerImpl::virtualTimeAllowedToAdvance() const {
+  return allow_virtual_time_to_advance_;
+}
+
+void WebViewSchedulerImpl::incrementPendingResourceLoadCount() {
+  pending_resource_load_count_++;
+
+  if (virtual_time_policy_ !=
+      VirtualTimePolicy::PAUSE_IF_NETWORK_FETCHES_PENDING) {
+    return;
+  }
+
+  if (pending_resource_load_count_ == 1)
+    setAllowVirtualTimeToAdvance(false);
+}
+
+void WebViewSchedulerImpl::decrementPendingResourceLoadCount() {
+  pending_resource_load_count_--;
+  DCHECK_GE(pending_resource_load_count_, 0);
+
+  if (virtual_time_policy_ !=
+      VirtualTimePolicy::PAUSE_IF_NETWORK_FETCHES_PENDING) {
+      return;
+  }
+
+  if (pending_resource_load_count_ == 0)
+      setAllowVirtualTimeToAdvance(true);
+}
+
+void WebViewSchedulerImpl::setVirtualTimePolicy(VirtualTimePolicy policy) {
+  virtual_time_policy_ = policy;
+
+  switch (virtual_time_policy_) {
+    case VirtualTimePolicy::ADVANCE:
+      setAllowVirtualTimeToAdvance(true);
+      break;
+
+    case VirtualTimePolicy::PAUSE:
+      setAllowVirtualTimeToAdvance(false);
+      break;
+
+    case VirtualTimePolicy::PAUSE_IF_NETWORK_FETCHES_PENDING:
+      setAllowVirtualTimeToAdvance(pending_resource_load_count_ == 0);
+      break;
   }
 }
 

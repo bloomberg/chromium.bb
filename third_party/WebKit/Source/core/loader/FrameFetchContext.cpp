@@ -73,6 +73,7 @@
 #include "public/platform/WebDocumentSubresourceFilter.h"
 #include "public/platform/WebFrameScheduler.h"
 #include "public/platform/WebInsecureRequestPolicy.h"
+#include "public/platform/WebViewScheduler.h"
 #include <algorithm>
 #include <memory>
 
@@ -319,6 +320,8 @@ void FrameFetchContext::dispatchWillSendRequest(unsigned long identifier, Resour
         prepareRequest(identifier, request, redirectResponse);
     TRACE_EVENT_INSTANT1("devtools.timeline", "ResourceSendRequest", TRACE_EVENT_SCOPE_THREAD, "data", InspectorSendRequestEvent::data(identifier, frame(), request));
     InspectorInstrumentation::willSendRequest(frame(), identifier, masterDocumentLoader(), request, redirectResponse, initiatorInfo);
+    if (frame()->frameScheduler())
+        frame()->frameScheduler()->incrementPendingResourceLoadCount();
 }
 
 void FrameFetchContext::dispatchDidReceiveResponse(unsigned long identifier, const ResourceResponse& response, WebURLRequest::FrameType frameType, WebURLRequest::RequestContext requestContext, Resource* resource)
@@ -368,6 +371,8 @@ void FrameFetchContext::dispatchDidFinishLoading(unsigned long identifier, doubl
 
     TRACE_EVENT_INSTANT1("devtools.timeline", "ResourceFinish", TRACE_EVENT_SCOPE_THREAD, "data", InspectorResourceFinishEvent::data(identifier, finishTime, false));
     InspectorInstrumentation::didFinishLoading(frame(), identifier, finishTime, encodedDataLength);
+    if (frame()->frameScheduler())
+        frame()->frameScheduler()->decrementPendingResourceLoadCount();
 }
 
 void FrameFetchContext::dispatchDidFail(unsigned long identifier, const ResourceError& error, bool isInternalRequest)
@@ -379,6 +384,8 @@ void FrameFetchContext::dispatchDidFail(unsigned long identifier, const Resource
     // Notification to FrameConsole should come AFTER InspectorInstrumentation call, DevTools front-end relies on this.
     if (!isInternalRequest)
         frame()->console().didFailLoading(identifier, error);
+    if (frame()->frameScheduler())
+        frame()->frameScheduler()->decrementPendingResourceLoadCount();
 }
 
 void FrameFetchContext::dispatchDidLoadResourceFromMemoryCache(unsigned long identifier, Resource* resource, WebURLRequest::FrameType frameType, WebURLRequest::RequestContext requestContext)

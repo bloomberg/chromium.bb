@@ -33,6 +33,7 @@ public:
     void setTouchEmulationEnabled(ErrorString*, bool in_enabled, const protocol::Maybe<String>& in_configuration) override;
     void setEmulatedMedia(ErrorString*, const String& in_media) override;
     void setCPUThrottlingRate(ErrorString*, double in_rate) override;
+    void setVirtualTimePolicy(ErrorString*, const String& in_policy) override;
 
     // InspectorBaseAgent overrides.
     void disable(ErrorString*) override;

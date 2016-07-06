@@ -104,6 +104,20 @@ blink::WebTaskRunner* WebFrameSchedulerImpl::unthrottledTaskRunner() {
   return unthrottled_web_task_runner_.get();
 }
 
+blink::WebViewScheduler* WebFrameSchedulerImpl::webViewScheduler() {
+  return parent_web_view_scheduler_;
+}
+
+void WebFrameSchedulerImpl::incrementPendingResourceLoadCount() {
+  if (parent_web_view_scheduler_)
+    parent_web_view_scheduler_->incrementPendingResourceLoadCount();
+}
+
+void WebFrameSchedulerImpl::decrementPendingResourceLoadCount() {
+  if (parent_web_view_scheduler_)
+    parent_web_view_scheduler_->decrementPendingResourceLoadCount();
+}
+
 void WebFrameSchedulerImpl::setPageVisible(bool page_visible) {
   DCHECK(parent_web_view_scheduler_);
   if (page_visible_ == page_visible)

@@ -9,6 +9,7 @@
 #include "core/frame/Settings.h"
 #include "core/page/Page.h"
 #include "platform/geometry/DoubleRect.h"
+#include "public/platform/WebViewScheduler.h"
 #include "web/DevToolsEmulator.h"
 #include "web/WebLocalFrameImpl.h"
 #include "web/WebViewImpl.h"
@@ -90,6 +91,20 @@ void InspectorEmulationAgent::setEmulatedMedia(ErrorString*, const String& media
 void InspectorEmulationAgent::setCPUThrottlingRate(ErrorString*, double throttlingRate)
 {
     m_client->setCPUThrottlingRate(throttlingRate);
+}
+
+void InspectorEmulationAgent::setVirtualTimePolicy(ErrorString*, const String& in_policy)
+{
+    if (protocol::Emulation::VirtualTimePolicyEnum::Advance == in_policy) {
+        m_webLocalFrameImpl->view()->scheduler()->enableVirtualTime();
+        m_webLocalFrameImpl->view()->scheduler()->setVirtualTimePolicy(WebViewScheduler::VirtualTimePolicy::ADVANCE);
+    } else if (protocol::Emulation::VirtualTimePolicyEnum::Pause == in_policy) {
+        m_webLocalFrameImpl->view()->scheduler()->enableVirtualTime();
+        m_webLocalFrameImpl->view()->scheduler()->setVirtualTimePolicy(WebViewScheduler::VirtualTimePolicy::PAUSE);
+    } else if (protocol::Emulation::VirtualTimePolicyEnum::PauseIfNetworkFetchesPending == in_policy) {
+        m_webLocalFrameImpl->view()->scheduler()->enableVirtualTime();
+        m_webLocalFrameImpl->view()->scheduler()->setVirtualTimePolicy(WebViewScheduler::VirtualTimePolicy::PAUSE_IF_NETWORK_FETCHES_PENDING);
+    }
 }
 
 DEFINE_TRACE(InspectorEmulationAgent)

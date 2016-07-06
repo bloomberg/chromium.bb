@@ -9,6 +9,7 @@
 #include "public/web/WebScriptExecutionCallback.h"
 #include "public/web/WebScriptSource.h"
 #include "public/web/WebView.h"
+#include "web/tests/sim/SimRequest.h"
 #include "web/tests/sim/SimTest.h"
 
 namespace blink {
@@ -86,7 +87,7 @@ TEST_F(VirtualTimeTest, SetInterval)
 TEST_F(VirtualTimeTest, AllowVirtualTimeToAdvance)
 {
     webView().scheduler()->enableVirtualTime();
-    webView().scheduler()->setAllowVirtualTimeToAdvance(false);
+    webView().scheduler()->setVirtualTimePolicy(WebViewScheduler::VirtualTimePolicy::PAUSE);
 
     ExecuteJavaScript(
         "var run_order = [];"
@@ -99,10 +100,51 @@ TEST_F(VirtualTimeTest, AllowVirtualTimeToAdvance)
 
     EXPECT_EQ("", ExecuteJavaScript("run_order.join(', ')"));
 
-    webView().scheduler()->setAllowVirtualTimeToAdvance(true);
+    webView().scheduler()->setVirtualTimePolicy(WebViewScheduler::VirtualTimePolicy::ADVANCE);
     testing::runPendingTasks();
 
     EXPECT_EQ("c, b, a", ExecuteJavaScript("run_order.join(', ')"));
+}
+
+TEST_F(VirtualTimeTest, VirtualTimeNotAllowedToAdvanceWhileResourcesLoading)
+{
+    webView().scheduler()->enableVirtualTime();
+    webView().scheduler()->setVirtualTimePolicy(WebViewScheduler::VirtualTimePolicy::PAUSE_IF_NETWORK_FETCHES_PENDING);
+
+    EXPECT_TRUE(webView().scheduler()->virtualTimeAllowedToAdvance());
+
+    SimRequest mainResource("https://example.com/test.html", "text/html");
+    SimRequest cssResource("https://example.com/test.css", "text/css");
+
+    // Not loading, virtual time should be able to advance.
+    EXPECT_TRUE(webView().scheduler()->virtualTimeAllowedToAdvance());
+
+    // Loading, virtual time should not advance.
+    loadURL("https://example.com/test.html");
+    EXPECT_FALSE(webView().scheduler()->virtualTimeAllowedToAdvance());
+
+    mainResource.start();
+
+    // Still Loading, virtual time should not advance.
+    mainResource.write("<!DOCTYPE html><link rel=stylesheet href=test.css>");
+    EXPECT_FALSE(webView().scheduler()->virtualTimeAllowedToAdvance());
+
+    // Still Loading, virtual time should not advance.
+    cssResource.start();
+    cssResource.write("a { color: red; }");
+    EXPECT_FALSE(webView().scheduler()->virtualTimeAllowedToAdvance());
+
+    // Still Loading, virtual time should not advance.
+    cssResource.finish();
+    EXPECT_FALSE(webView().scheduler()->virtualTimeAllowedToAdvance());
+
+    // Still Loading, virtual time should not advance.
+    mainResource.write("<body>");
+    EXPECT_FALSE(webView().scheduler()->virtualTimeAllowedToAdvance());
+
+    // Finished loading, virtual time should be able to advance.
+    mainResource.finish();
+    EXPECT_TRUE(webView().scheduler()->virtualTimeAllowedToAdvance());
 }
 
 } // namespace blink

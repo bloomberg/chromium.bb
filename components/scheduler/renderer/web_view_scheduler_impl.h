@@ -44,14 +44,17 @@ class SCHEDULER_EXPORT WebViewSchedulerImpl : public blink::WebViewScheduler {
   std::unique_ptr<blink::WebFrameScheduler> createFrameScheduler(
       blink::BlameContext* blame_context) override;
   void enableVirtualTime() override;
-  void setAllowVirtualTimeToAdvance(
-      bool allow_virtual_time_to_advance) override;
+  bool virtualTimeAllowedToAdvance() const override;
+  void setVirtualTimePolicy(VirtualTimePolicy virtual_time_policy) override;
 
   // Virtual for testing.
   virtual void AddConsoleWarning(const std::string& message);
 
   std::unique_ptr<WebFrameSchedulerImpl> createWebFrameSchedulerImpl(
       base::trace_event::BlameContext* blame_context);
+
+  void incrementPendingResourceLoadCount();
+  void decrementPendingResourceLoadCount();
 
  private:
   friend class WebFrameSchedulerImpl;
@@ -62,11 +65,15 @@ class SCHEDULER_EXPORT WebViewSchedulerImpl : public blink::WebViewScheduler {
     return virtual_time_domain_.get();
   }
 
+  void setAllowVirtualTimeToAdvance(bool allow_virtual_time_to_advance);
+
   std::set<WebFrameSchedulerImpl*> frame_schedulers_;
   std::unique_ptr<AutoAdvancingVirtualTimeDomain> virtual_time_domain_;
   TaskQueue::PumpPolicy virtual_time_pump_policy_;
   blink::WebView* web_view_;
   RendererSchedulerImpl* renderer_scheduler_;
+  int pending_resource_load_count_;
+  VirtualTimePolicy virtual_time_policy_;
   bool page_visible_;
   bool disable_background_timer_throttling_;
   bool allow_virtual_time_to_advance_;

@@ -20,6 +20,7 @@
 #include "third_party/WebKit/public/platform/WebTraceLocation.h"
 
 using testing::ElementsAre;
+using VirtualTimePolicy = blink::WebViewScheduler::VirtualTimePolicy;
 
 namespace scheduler {
 
@@ -335,7 +336,7 @@ class DelayedRunOrderTask : public blink::WebTaskRunner::Task {
 TEST_F(WebViewSchedulerImplTest, VirtualTime_NotAllowedToAdvance) {
   std::vector<int> run_order;
 
-  web_view_scheduler_->setAllowVirtualTimeToAdvance(false);
+  web_view_scheduler_->setVirtualTimePolicy(VirtualTimePolicy::PAUSE);
   web_view_scheduler_->enableVirtualTime();
 
   web_frame_scheduler_->timerTaskRunner()->postTask(
@@ -362,7 +363,7 @@ TEST_F(WebViewSchedulerImplTest, VirtualTime_NotAllowedToAdvance) {
 TEST_F(WebViewSchedulerImplTest, VirtualTime_AllowedToAdvance) {
   std::vector<int> run_order;
 
-  web_view_scheduler_->setAllowVirtualTimeToAdvance(true);
+  web_view_scheduler_->setVirtualTimePolicy(VirtualTimePolicy::ADVANCE);
   web_view_scheduler_->enableVirtualTime();
 
   web_frame_scheduler_->timerTaskRunner()->postTask(
@@ -411,7 +412,7 @@ TEST_F(WebViewSchedulerImplTestWithDisabledBackgroundTimerThrottling,
 TEST_F(WebViewSchedulerImplTest, VirtualTimeSettings_NewWebFrameScheduler) {
   std::vector<int> run_order;
 
-  web_view_scheduler_->setAllowVirtualTimeToAdvance(false);
+  web_view_scheduler_->setVirtualTimePolicy(VirtualTimePolicy::PAUSE);
   web_view_scheduler_->enableVirtualTime();
 
   std::unique_ptr<WebFrameSchedulerImpl> web_frame_scheduler =
@@ -423,7 +424,7 @@ TEST_F(WebViewSchedulerImplTest, VirtualTimeSettings_NewWebFrameScheduler) {
   mock_task_runner_->RunUntilIdle();
   EXPECT_TRUE(run_order.empty());
 
-  web_view_scheduler_->setAllowVirtualTimeToAdvance(true);
+  web_view_scheduler_->setVirtualTimePolicy(VirtualTimePolicy::ADVANCE);
   mock_task_runner_->RunUntilIdle();
 
   EXPECT_THAT(run_order, ElementsAre(1));
@@ -499,6 +500,31 @@ TEST_F(WebViewSchedulerImplTest, DeleteThrottledQueue_InTask) {
 
   mock_task_runner_->RunForPeriod(base::TimeDelta::FromSeconds(100));
   EXPECT_EQ(10, run_count);
+}
+
+TEST_F(WebViewSchedulerImplTest,
+       VirtualTimePolicy_PAUSE_IF_NETWORK_FETCHES_PENDING) {
+  web_view_scheduler_->setVirtualTimePolicy(
+      VirtualTimePolicy::PAUSE_IF_NETWORK_FETCHES_PENDING);
+  EXPECT_TRUE(web_view_scheduler_->virtualTimeAllowedToAdvance());
+
+  web_view_scheduler_->incrementPendingResourceLoadCount();
+  EXPECT_FALSE(web_view_scheduler_->virtualTimeAllowedToAdvance());
+
+  web_view_scheduler_->incrementPendingResourceLoadCount();
+  EXPECT_FALSE(web_view_scheduler_->virtualTimeAllowedToAdvance());
+
+  web_view_scheduler_->decrementPendingResourceLoadCount();
+  EXPECT_FALSE(web_view_scheduler_->virtualTimeAllowedToAdvance());
+
+  web_view_scheduler_->incrementPendingResourceLoadCount();
+  EXPECT_FALSE(web_view_scheduler_->virtualTimeAllowedToAdvance());
+
+  web_view_scheduler_->decrementPendingResourceLoadCount();
+  EXPECT_FALSE(web_view_scheduler_->virtualTimeAllowedToAdvance());
+
+  web_view_scheduler_->decrementPendingResourceLoadCount();
+  EXPECT_TRUE(web_view_scheduler_->virtualTimeAllowedToAdvance());
 }
 
 }  // namespace scheduler

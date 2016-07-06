@@ -13,6 +13,7 @@ namespace blink {
 
 class WebSecurityOrigin;
 class WebTaskRunner;
+class WebViewScheduler;
 
 class BLINK_PLATFORM_EXPORT WebFrameScheduler {
 public:
@@ -40,6 +41,17 @@ public:
     // JavaScript is discouraged. WebFrameScheduler owns the returned
     // WebTaskRunner.
     virtual WebTaskRunner* unthrottledTaskRunner() { return nullptr; }
+
+    // Returns the parent WebViewScheduler.
+    virtual WebViewScheduler* webViewScheduler() { return nullptr; }
+
+    // Tells the scheduler a resource load has started. The scheduler may make
+    // policy decisions based on this.
+    virtual void incrementPendingResourceLoadCount() { }
+
+    // Tells the scheduler a resource load has started. The scheduler may make
+    // policy decisions based on this.
+    virtual void decrementPendingResourceLoadCount() { }
 };
 
 } // namespace blink
