@@ -316,6 +316,10 @@ class NTPSnippetsServiceTest : public test::NTPSnippetsTestBase {
     snippets_fetcher->SetPersonalizationForTesting(
         NTPSnippetsFetcher::Personalization::kNonPersonal);
 
+    // Add an initial fetch response, as the service tries to fetch when there
+    // is nothing in the DB.
+    SetUpFetchResponse(GetTestJson({GetSnippet()}));
+
     service_.reset(new NTPSnippetsService(
         enabled, pref_service(), nullptr, "fr", &scheduler_,
         std::move(snippets_fetcher), /*image_fetcher=*/nullptr,
@@ -372,10 +376,18 @@ class NTPSnippetsServiceDisabledTest : public NTPSnippetsServiceTest {
 
 TEST_F(NTPSnippetsServiceTest, ScheduleIfEnabled) {
   // SetUp() checks that Schedule is called.
+
+  // When we have no snippets are all, loading the service initiates a fetch.
+  base::RunLoop().RunUntilIdle();
+  ASSERT_EQ("OK", service()->snippets_fetcher()->last_status());
 }
 
 TEST_F(NTPSnippetsServiceDisabledTest, Unschedule) {
   // SetUp() checks that Unschedule is called.
+
+  // Make sure we don't fetch anything.
+  base::RunLoop().RunUntilIdle();
+  EXPECT_THAT(service()->snippets_fetcher()->last_status(), IsEmpty());
 }
 
 TEST_F(NTPSnippetsServiceTest, Full) {
