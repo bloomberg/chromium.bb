@@ -146,7 +146,7 @@ spawn_xserver(void *user_data, const char *display, int abstract_fd, int unix_fd
 		break;
 
 	case -1:
-		weston_log( "failed to fork\n");
+		weston_log("Failed to fork to spawn xserver process\n");
 		break;
 	}
 
