@@ -450,7 +450,12 @@ TEST_P(CacheStorageManagerTestP, DeleteCacheReducesOriginSize) {
   int64_t put_delta = quota_manager_proxy_->last_notified_delta();
   EXPECT_LT(0, put_delta);
   EXPECT_TRUE(Delete(origin1_, "foo"));
-  EXPECT_EQ(put_delta, -1 * quota_manager_proxy_->last_notified_delta());
+
+  // Drop the cache handle so that the cache can be erased from disk.
+  callback_cache_handle_ = nullptr;
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_EQ(-1 * quota_manager_proxy_->last_notified_delta(), put_delta);
 }
 
 TEST_P(CacheStorageManagerTestP, EmptyKeys) {
@@ -649,6 +654,43 @@ TEST_F(CacheStorageManagerTest, DropReference) {
   EXPECT_FALSE(cache);
 }
 
+// A cache continues to work so long as there is a handle to it. Only after the
+// last cache handle is deleted can the cache be freed.
+TEST_P(CacheStorageManagerTestP, CacheWorksAfterDelete) {
+  const GURL kFooURL("http://example.com/foo");
+  const GURL kBarURL("http://example.com/bar");
+  const GURL kBazURL("http://example.com/baz");
+  EXPECT_TRUE(Open(origin1_, "foo"));
+  std::unique_ptr<CacheStorageCacheHandle> original_handle =
+      std::move(callback_cache_handle_);
+  EXPECT_TRUE(CachePut(original_handle->value(), kFooURL));
+  EXPECT_TRUE(Delete(origin1_, "foo"));
+
+  // Verify that the existing cache handle still works.
+  EXPECT_TRUE(CacheMatch(original_handle->value(), kFooURL));
+  EXPECT_TRUE(CachePut(original_handle->value(), kBarURL));
+  EXPECT_TRUE(CacheMatch(original_handle->value(), kBarURL));
+
+  // The cache shouldn't be visible to subsequent storage operations.
+  EXPECT_TRUE(Keys(origin1_));
+  EXPECT_TRUE(callback_strings_.empty());
+
+  // Open a new cache with the same name, it should create a new cache, but not
+  // interfere with the original cache.
+  EXPECT_TRUE(Open(origin1_, "foo"));
+  std::unique_ptr<CacheStorageCacheHandle> new_handle =
+      std::move(callback_cache_handle_);
+  EXPECT_TRUE(CachePut(new_handle->value(), kBazURL));
+
+  EXPECT_FALSE(CacheMatch(new_handle->value(), kFooURL));
+  EXPECT_FALSE(CacheMatch(new_handle->value(), kBarURL));
+  EXPECT_TRUE(CacheMatch(new_handle->value(), kBazURL));
+
+  EXPECT_TRUE(CacheMatch(original_handle->value(), kFooURL));
+  EXPECT_TRUE(CacheMatch(original_handle->value(), kBarURL));
+  EXPECT_FALSE(CacheMatch(original_handle->value(), kBazURL));
+}
+
 // With a memory cache the cache can't be freed from memory until the client
 // calls delete.
 TEST_F(CacheStorageManagerMemoryOnlyTest, MemoryLosesReferenceOnlyAfterDelete) {
@@ -658,6 +700,7 @@ TEST_F(CacheStorageManagerMemoryOnlyTest, MemoryLosesReferenceOnlyAfterDelete) {
   callback_cache_handle_ = nullptr;
   EXPECT_TRUE(cache);
   EXPECT_TRUE(Delete(origin1_, "foo"));
+  base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(cache);
 }
 

@@ -1,5 +1,6 @@
 This is a testharness.js-based test.
 PASS CacheStorage.open 
+PASS CacheStorage.delete dooms 
 PASS CacheStorage.open with an empty name 
 PASS CacheStorage.open with no arguments 
 PASS CacheStorage.has with existing cache 

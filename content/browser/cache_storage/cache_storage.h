@@ -77,7 +77,11 @@ class CONTENT_EXPORT CacheStorage {
                 const BoolAndErrorCallback& callback);
 
   // Deletes the cache if it exists. If it doesn't exist,
-  // CACHE_STORAGE_ERROR_NOT_FOUND is returned.
+  // CACHE_STORAGE_ERROR_NOT_FOUND is returned. Any existing
+  // CacheStorageCacheHandle(s) to the cache will remain valid but future
+  // CacheStorage operations won't be able to access the cache. The cache
+  // isn't actually erased from disk until the last handle is dropped.
+  // TODO(jkarlin): Rename to DoomCache.
   void DeleteCache(const std::string& cache_name,
                    const BoolAndErrorCallback& callback);
 
@@ -154,19 +158,15 @@ class CONTENT_EXPORT CacheStorage {
   // The DeleteCache callbacks are below.
   void DeleteCacheImpl(const std::string& cache_name,
                        const BoolAndErrorCallback& callback);
-
-  void DeleteCacheDidClose(
+  void DeleteCacheDidWriteIndex(
       const std::string& cache_name,
+      const StringVector& original_ordered_cache_names,
       const BoolAndErrorCallback& callback,
-      const StringVector& ordered_cache_names,
-      std::unique_ptr<CacheStorageCacheHandle> cache_handle,
-      int64_t cache_size);
-  void DeleteCacheDidWriteIndex(const std::string& cache_name,
-                                const BoolAndErrorCallback& callback,
-                                int cache_size,
-                                bool success);
-  void DeleteCacheDidCleanUp(const BoolAndErrorCallback& callback,
-                             bool success);
+      bool success);
+  void DeleteCacheFinalize(std::unique_ptr<CacheStorageCache> doomed_cache);
+  void DeleteCacheDidGetSize(std::unique_ptr<CacheStorageCache> cache,
+                             int64_t cache_size);
+  void DeleteCacheDidCleanUp(bool success);
 
   // The EnumerateCache callbacks are below.
   void EnumerateCachesImpl(const StringsAndErrorCallback& callback);
@@ -234,7 +234,7 @@ class CONTENT_EXPORT CacheStorage {
   // Caches that have been deleted but must still be held onto until all handles
   // have been released.
   std::map<CacheStorageCache*, std::unique_ptr<CacheStorageCache>>
-      deleted_caches_;
+      doomed_caches_;
 
   // CacheStorageCacheHandle reference counts
   std::map<CacheStorageCache*, size_t> cache_handle_counts_;
