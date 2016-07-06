@@ -27,7 +27,7 @@
 #include "services/shell/public/cpp/interface_factory.h"
 #include "services/shell/public/cpp/service.h"
 #include "services/shell/public/interfaces/connector.mojom.h"
-#include "services/shell/public/interfaces/shell.mojom.h"
+#include "services/shell/public/interfaces/service_manager.mojom.h"
 #include "services/shell/runner/child/test_native_main.h"
 #include "services/shell/runner/common/client_util.h"
 #include "services/shell/runner/common/switches.h"

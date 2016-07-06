@@ -18,7 +18,7 @@
 #include "services/shell/public/cpp/interface_factory.h"
 #include "services/shell/public/cpp/service.h"
 #include "services/shell/public/cpp/shell_test.h"
-#include "services/shell/public/interfaces/shell.mojom.h"
+#include "services/shell/public/interfaces/service_manager.mojom.h"
 #include "services/shell/tests/shell/shell_unittest.mojom.h"
 
 namespace shell {
@@ -67,7 +67,8 @@ class ShellTestClient
 
 }  // namespace
 
-class ShellTest : public test::ShellTest, public mojom::InstanceListener {
+class ShellTest : public test::ShellTest,
+                  public mojom::ServiceManagerListener {
  public:
   ShellTest()
       : test::ShellTest("mojo:shell_unittest"),
@@ -90,10 +91,10 @@ class ShellTest : public test::ShellTest, public mojom::InstanceListener {
   };
 
   void AddListenerAndWaitForApplications() {
-    mojom::ShellPtr shell;
-    connector()->ConnectToInterface("mojo:shell", &shell);
+    mojom::ServiceManagerPtr service_manager;
+    connector()->ConnectToInterface("mojo:shell", &service_manager);
 
-    shell->AddInstanceListener(binding_.CreateInterfacePtrAndBind());
+    service_manager->AddListener(binding_.CreateInterfacePtrAndBind());
 
     wait_for_instances_loop_.reset(new base::RunLoop);
     wait_for_instances_loop_->Run();
@@ -127,9 +128,8 @@ class ShellTest : public test::ShellTest, public mojom::InstanceListener {
     return base::WrapUnique(service_);
   }
 
-  // mojom::InstanceListener:
-  void SetExistingInstances(
-      mojo::Array<mojom::InstanceInfoPtr> instances) override {
+  // mojom::ServiceManagerListener:
+  void OnInit(mojo::Array<mojom::ServiceInfoPtr> instances) override {
     for (size_t i = 0; i < instances.size(); ++i) {
       initial_instances_.push_back(InstanceInfo(instances[i]->id,
                                                 instances[i]->identity->name));
@@ -138,12 +138,18 @@ class ShellTest : public test::ShellTest, public mojom::InstanceListener {
     DCHECK(wait_for_instances_loop_);
     wait_for_instances_loop_->Quit();
   }
-
-  void InstanceCreated(mojom::InstanceInfoPtr instance) override {
+  void OnServiceCreated(mojom::ServiceInfoPtr instance) override {
     instances_.push_back(InstanceInfo(instance->id, instance->identity->name));
   }
-
-  void InstanceDestroyed(uint32_t id) override {
+  void OnServiceStarted(uint32_t id, uint32_t pid) override {
+    for (auto& instance : instances_) {
+      if (instance.id == id) {
+        instance.pid = pid;
+        break;
+      }
+    }
+  }
+  void OnServiceStopped(uint32_t id) override {
     for (auto it = instances_.begin(); it != instances_.end(); ++it) {
       auto& instance = *it;
       if (instance.id == id) {
@@ -153,17 +159,8 @@ class ShellTest : public test::ShellTest, public mojom::InstanceListener {
     }
   }
 
-  void InstancePIDAvailable(uint32_t id, uint32_t pid) override {
-    for (auto& instance : instances_) {
-      if (instance.id == id) {
-        instance.pid = pid;
-        break;
-      }
-    }
-  }
-
   ShellTestClient* service_;
-  mojo::Binding<mojom::InstanceListener> binding_;
+  mojo::Binding<mojom::ServiceManagerListener> binding_;
   std::vector<InstanceInfo> instances_;
   std::vector<InstanceInfo> initial_instances_;
   std::unique_ptr<base::RunLoop> wait_for_instances_loop_;

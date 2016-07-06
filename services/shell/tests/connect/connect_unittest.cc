@@ -16,7 +16,7 @@
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/shell/public/cpp/names.h"
 #include "services/shell/public/cpp/shell_test.h"
-#include "services/shell/public/interfaces/shell.mojom.h"
+#include "services/shell/public/interfaces/service_manager.mojom.h"
 #include "services/shell/tests/connect/connect_test.mojom.h"
 
 // Tests that multiple applications can be packaged in a single Mojo application

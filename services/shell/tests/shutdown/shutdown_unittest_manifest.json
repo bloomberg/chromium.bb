@@ -4,7 +4,7 @@
   "display_name": "Shutdown Unittest",
   "capabilities": {
     "required": {
-      "mojo:shell": { "interfaces": [ "shell::mojom::Shell" ] },
+      "mojo:shell": { "interfaces": [ "shell::mojom::ServiceManager" ] },
       "mojo:shutdown_client": {
         "interfaces": [ "shell::mojom::ShutdownTestClientController" ]
       },

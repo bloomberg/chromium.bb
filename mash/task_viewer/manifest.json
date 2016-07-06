@@ -9,7 +9,7 @@
       "mojo:catalog": {
         "interfaces": [ "catalog::mojom::Catalog" ]
       },
-      "mojo:shell": { "interfaces": [ "shell::mojom::Shell" ] }
+      "mojo:shell": { "interfaces": [ "shell::mojom::ServiceManager" ] }
     }
   }
 }

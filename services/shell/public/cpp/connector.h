@@ -11,7 +11,7 @@
 #include "services/shell/public/cpp/identity.h"
 #include "services/shell/public/interfaces/connector.mojom.h"
 #include "services/shell/public/interfaces/service.mojom.h"
-#include "services/shell/public/interfaces/shell.mojom.h"
+#include "services/shell/public/interfaces/service_manager.mojom.h"
 
 namespace shell {
 

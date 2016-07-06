@@ -4,7 +4,7 @@
   "display_name": "Shell Unittest",
   "capabilities": {
     "required": {
-      "mojo:shell": { "interfaces": [ "shell::mojom::Shell" ] },
+      "mojo:shell": { "interfaces": [ "shell::mojom::ServiceManager" ] },
       "exe:shell_unittest_driver": {
         "interfaces": [ "shell::test::mojom::Driver" ]
       }

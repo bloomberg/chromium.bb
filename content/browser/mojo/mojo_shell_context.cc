@@ -267,9 +267,11 @@ MojoShellContext::MojoShellContext() {
     mojo::edk::SetParentPipeHandleFromCommandLine();
     request = shell::GetServiceRequestFromCommandLine();
   } else {
-    shell_.reset(new shell::Shell(std::move(native_runner_factory),
+    service_manager_.reset(
+        new shell::ServiceManager(std::move(native_runner_factory),
                                   catalog_->TakeService()));
-    request = shell_->InitInstanceForEmbedder(kBrowserMojoApplicationName);
+    request = service_manager_->StartEmbedderService(
+        kBrowserMojoApplicationName);
   }
   MojoShellConnection::SetForProcess(
       MojoShellConnection::Create(std::move(request)));
@@ -356,7 +358,7 @@ void MojoShellContext::ConnectToApplicationOnOwnThread(
   params->set_remote_interfaces(std::move(request));
   params->set_local_interfaces(std::move(exposed_services));
   params->set_connect_callback(callback);
-  shell_->Connect(std::move(params));
+  service_manager_->Connect(std::move(params));
 }
 
 }  // namespace content

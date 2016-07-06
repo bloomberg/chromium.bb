@@ -9,7 +9,7 @@
 #include <set>
 #include <string>
 
-#include "services/shell/public/interfaces/shell_resolver.mojom.h"
+#include "services/shell/public/interfaces/resolver.mojom.h"
 
 namespace shell {
 

@@ -4,7 +4,7 @@
   "display_name": "Shutdown Service",
   "capabilities": {
     "required": {
-      "mojo:shell": { "interfaces": [ "shell::mojom::Shell" ] }
+      "mojo:shell": { "interfaces": [ "shell::mojom::ServiceManager" ] }
     }
   }
 }

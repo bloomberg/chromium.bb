@@ -30,8 +30,6 @@ namespace mash {
 namespace catalog_viewer {
 namespace {
 
-using shell::mojom::InstanceInfoPtr;
-
 class CatalogViewerContents : public views::WidgetDelegateView,
                               public ui::TableModel {
  public:

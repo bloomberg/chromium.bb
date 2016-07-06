@@ -14,7 +14,7 @@
 #include "base/macros.h"
 #include "content/common/content_export.h"
 #include "services/shell/public/interfaces/connector.mojom.h"
-#include "services/shell/shell.h"
+#include "services/shell/service_manager.h"
 
 namespace catalog {
 class Catalog;
@@ -61,7 +61,7 @@ class CONTENT_EXPORT MojoShellContext {
 
   std::unique_ptr<BuiltinManifestProvider> manifest_provider_;
   std::unique_ptr<catalog::Catalog> catalog_;
-  std::unique_ptr<shell::Shell> shell_;
+  std::unique_ptr<shell::ServiceManager> service_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(MojoShellContext);
 };

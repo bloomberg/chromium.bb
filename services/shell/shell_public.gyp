@@ -13,10 +13,10 @@
         'public/interfaces/capabilities.mojom',
         'public/interfaces/connector.mojom',
         'public/interfaces/interface_provider.mojom',
+        'public/interfaces/resolver.mojom',
         'public/interfaces/service.mojom',
         'public/interfaces/service_factory.mojom',
-        'public/interfaces/shell.mojom',
-        'public/interfaces/shell_resolver.mojom',
+        'public/interfaces/service_manager.mojom',
       ],
       'mojom_typemaps': [
         '<(DEPTH)/mojo/common/common_custom_types.typemap',

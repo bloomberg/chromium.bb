@@ -18,7 +18,7 @@
 #include "services/shell/connect_params.h"
 #include "services/shell/public/cpp/service.h"
 #include "services/shell/public/cpp/shell_connection.h"
-#include "services/shell/shell.h"
+#include "services/shell/service_manager.h"
 #include "services/shell/standalone/context.h"
 
 namespace shell {
@@ -57,12 +57,12 @@ class BackgroundShell::MojoThread : public base::SimpleThread {
                                 mojom::ServiceRequest* request) {
     // Only valid to call this on the background thread.
     DCHECK(message_loop_->task_runner()->BelongsToCurrentThread());
-    *request = context_->shell()->InitInstanceForEmbedder(name);
+    *request = context_->service_manager()->StartEmbedderService(name);
     signal->Signal();
   }
 
   void Connect(std::unique_ptr<ConnectParams> params) {
-    context_->shell()->Connect(std::move(params));
+    context_->service_manager()->Connect(std::move(params));
   }
 
   base::MessageLoop* message_loop() { return message_loop_; }
@@ -75,9 +75,10 @@ class BackgroundShell::MojoThread : public base::SimpleThread {
     Join();
   }
 
-  void RunShellCallback(const BackgroundShell::ShellThreadCallback& callback) {
+  void RunServiceManagerCallback(
+      const BackgroundShell::ServiceManagerThreadCallback& callback) {
     DCHECK(message_loop_->task_runner()->BelongsToCurrentThread());
-    callback.Run(context_->shell());
+    callback.Run(context_->service_manager());
   }
 
   // base::SimpleThread:
@@ -149,7 +150,7 @@ void BackgroundShell::Init(std::unique_ptr<InitParams> init_params) {
 mojom::ServiceRequest BackgroundShell::CreateServiceRequest(
     const std::string& name) {
   std::unique_ptr<ConnectParams> params(new ConnectParams);
-  params->set_source(CreateShellIdentity());
+  params->set_source(CreateServiceManagerIdentity());
   params->set_target(Identity(name, mojom::kRootUserID));
   mojom::ServiceRequest request;
   base::WaitableEvent signal(base::WaitableEvent::ResetPolicy::MANUAL,
@@ -166,10 +167,10 @@ mojom::ServiceRequest BackgroundShell::CreateServiceRequest(
   return request;
 }
 
-void BackgroundShell::ExecuteOnShellThread(
-    const ShellThreadCallback& callback) {
+void BackgroundShell::ExecuteOnServiceManagerThread(
+    const ServiceManagerThreadCallback& callback) {
   thread_->message_loop()->task_runner()->PostTask(
-      FROM_HERE, base::Bind(&MojoThread::RunShellCallback,
+      FROM_HERE, base::Bind(&MojoThread::RunServiceManagerCallback,
                             base::Unretained(thread_.get()), callback));
 }
 

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SERVICES_SHELL_SHELL_H_
-#define SERVICES_SHELL_SHELL_H_
+#ifndef SERVICES_SHELL_SERVICE_MANAGER_H_
+#define SERVICES_SHELL_SERVICE_MANAGER_H_
 
 #include <map>
 #include <memory>
@@ -21,30 +21,30 @@
 #include "services/shell/public/cpp/service.h"
 #include "services/shell/public/interfaces/connector.mojom.h"
 #include "services/shell/public/interfaces/interface_provider.mojom.h"
+#include "services/shell/public/interfaces/resolver.mojom.h"
 #include "services/shell/public/interfaces/service.mojom.h"
 #include "services/shell/public/interfaces/service_factory.mojom.h"
-#include "services/shell/public/interfaces/shell.mojom.h"
-#include "services/shell/public/interfaces/shell_resolver.mojom.h"
+#include "services/shell/public/interfaces/service_manager.mojom.h"
 
 namespace shell {
 class ShellConnection;
 
-// Creates an identity for the Shell, used when the Shell connects to
-// applications.
-Identity CreateShellIdentity();
+// Creates an identity for the Service Manager, used when the Service Manager
+// connects to services.
+Identity CreateServiceManagerIdentity();
 
-class Shell : public Service {
+class ServiceManager : public Service {
  public:
   // API for testing.
   class TestAPI {
    public:
-    explicit TestAPI(Shell* shell);
+    explicit TestAPI(ServiceManager* service_manager);
     ~TestAPI();
 
     // Returns true if there is a Instance for this name.
     bool HasRunningInstanceForName(const std::string& name) const;
    private:
-    Shell* shell_;
+    ServiceManager* service_manager_;
 
     DISALLOW_COPY_AND_ASSIGN(TestAPI);
   };
@@ -54,13 +54,13 @@ class Shell : public Service {
   // See native_runner.h and RunNativeApplication().
   // |file_task_runner| provides access to a thread to perform file copy
   // operations on.
-  Shell(std::unique_ptr<NativeRunnerFactory> native_runner_factory,
-        mojom::ServicePtr catalog);
-  ~Shell() override;
+  ServiceManager(std::unique_ptr<NativeRunnerFactory> native_runner_factory,
+                 mojom::ServicePtr catalog);
+  ~ServiceManager() override;
 
   // Provide a callback to be notified whenever an instance is destroyed.
-  // Typically the creator of the Shell will use this to determine when some set
-  // of instances it created are destroyed, so it can shut down.
+  // Typically the creator of the Service Manager will use this to determine
+  // when some set of services it created are destroyed, so it can shut down.
   void SetInstanceQuitCallback(base::Callback<void(const Identity&)> callback);
 
   // Completes a connection between a source and target application as defined
@@ -69,9 +69,9 @@ class Shell : public Service {
   void Connect(std::unique_ptr<ConnectParams> params);
 
   // Creates a new Instance identified as |name|. This is intended for use by
-  // the Shell's embedder to register itself with the shell. This must only be
-  // called once.
-  mojom::ServiceRequest InitInstanceForEmbedder(const std::string& name);
+  // the Service Manager's embedder to register itself. This must only be called
+  // once.
+  mojom::ServiceRequest StartEmbedderService(const std::string& name);
 
  private:
   class Instance;
@@ -82,15 +82,15 @@ class Shell : public Service {
   void InitCatalog(mojom::ServicePtr catalog);
 
   // Returns the resolver to use for the specified identity.
-  // NOTE: ShellResolvers are cached to ensure we service requests in order. If
-  // we use a separate ShellResolver for each request ordering is not
+  // NOTE: Resolvers are cached to ensure we service requests in order. If
+  // we use a separate Resolver for each request ordering is not
   // guaranteed and can lead to random flake.
-  mojom::ShellResolver* GetResolver(const Identity& identity);
+  mojom::Resolver* GetResolver(const Identity& identity);
 
-  // Destroys all Shell-ends of connections established with Applications.
-  // Applications connected by this Shell will observe pipe errors and have a
-  // chance to shutdown.
-  void TerminateShellConnections();
+  // Destroys all Service Manager-ends of connections established with Services.
+  // Services connected by this Service Manager will observe pipe errors and
+  // have a chance to shut down.
+  void TerminateServiceManagerConnections();
 
   // Removes a Instance when it encounters an error.
   void OnInstanceError(Instance* instance);
@@ -99,11 +99,11 @@ class Shell : public Service {
   // by |params|, exchanging InterfaceProviders between them. If no existing
   // instance of the target application is running, one will be loaded.
   //
-  // If |client| is not null, there must not be an instance of the target
-  // application already running. The shell will create a new instance and use
-  // |client| to control it.
+  // If |service| is not null, there must not be an instance of the target
+  // application already running. The Service Manager will create a new instance
+  // and use |service| to control it.
   void Connect(std::unique_ptr<ConnectParams> params,
-               mojom::ServicePtr client);
+               mojom::ServicePtr service);
 
   // Returns a running instance matching |identity|. This might be an instance
   // running as a different user if one is available that services all users.
@@ -120,12 +120,12 @@ class Shell : public Service {
                            const Identity& target,
                            const CapabilitySpec& spec);
 
-  // Called from the instance implementing mojom::Shell.
-  void AddInstanceListener(mojom::InstanceListenerPtr listener);
+  // Called from the instance implementing mojom::ServiceManager.
+  void AddListener(mojom::ServiceManagerListenerPtr listener);
 
   void CreateServiceWithFactory(const Identity& service_factory,
-                                    const std::string& name,
-                                    mojom::ServiceRequest request);
+                                const std::string& name,
+                                mojom::ServiceRequest request);
   // Returns a running ServiceFactory for |service_factory_identity|.
   // If there is not one running one is started for |source_identity|.
   mojom::ServiceFactory* GetServiceFactory(
@@ -134,14 +134,14 @@ class Shell : public Service {
 
   // Callback when remote Catalog resolves mojo:foo to mojo:bar.
   // |params| are the params passed to Connect().
-  // |client| if provided is a ServicePtr which should be used to manage the
+  // |service| if provided is a ServicePtr which should be used to manage the
   // new application instance. This may be null.
   // |result| contains the result of the resolve operation.
   void OnGotResolvedName(std::unique_ptr<ConnectParams> params,
-                         mojom::ServicePtr client,
+                         mojom::ServicePtr service,
                          mojom::ResolveResultPtr result);
 
-  base::WeakPtr<Shell> GetWeakPtr();
+  base::WeakPtr<ServiceManager> GetWeakPtr();
 
   std::map<Identity, Instance*> identity_to_instance_;
 
@@ -150,18 +150,18 @@ class Shell : public Service {
   std::set<std::string> singletons_;
 
   std::map<Identity, mojom::ServiceFactoryPtr> service_factories_;
-  std::map<Identity, mojom::ShellResolverPtr> identity_to_resolver_;
-  mojo::InterfacePtrSet<mojom::InstanceListener> instance_listeners_;
+  std::map<Identity, mojom::ResolverPtr> identity_to_resolver_;
+  mojo::InterfacePtrSet<mojom::ServiceManagerListener> listeners_;
   base::Callback<void(const Identity&)> instance_quit_callback_;
   std::unique_ptr<NativeRunnerFactory> native_runner_factory_;
   std::unique_ptr<ShellConnection> shell_connection_;
-  base::WeakPtrFactory<Shell> weak_ptr_factory_;
+  base::WeakPtrFactory<ServiceManager> weak_ptr_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(Shell);
+  DISALLOW_COPY_AND_ASSIGN(ServiceManager);
 };
 
 mojom::Connector::ConnectCallback EmptyConnectCallback();
 
 }  // namespace shell
 
-#endif  // SERVICES_SHELL_SHELL_H_
+#endif  // SERVICES_SHELL_SERVICE_MANAGER_H_

@@ -15,7 +15,7 @@
           "shell:instance_name",
           "shell:client_process"
         ],
-        "interfaces": [ "shell::mojom::Shell" ]
+        "interfaces": [ "shell::mojom::ServiceManager" ]
       }
     }
   }

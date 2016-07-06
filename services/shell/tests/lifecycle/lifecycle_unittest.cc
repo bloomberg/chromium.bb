@@ -12,7 +12,7 @@
 #include "base/run_loop.h"
 #include "services/shell/public/cpp/identity.h"
 #include "services/shell/public/cpp/shell_test.h"
-#include "services/shell/public/interfaces/shell.mojom.h"
+#include "services/shell/public/interfaces/service_manager.mojom.h"
 #include "services/shell/tests/lifecycle/lifecycle_unittest.mojom.h"
 #include "services/shell/tests/util.h"
 
@@ -47,9 +47,10 @@ struct Instance {
   uint32_t pid;
 };
 
-class InstanceState : public mojom::InstanceListener {
+class InstanceState : public mojom::ServiceManagerListener {
  public:
-  InstanceState(mojom::InstanceListenerRequest request, base::RunLoop* loop)
+  InstanceState(mojom::ServiceManagerListenerRequest request,
+                base::RunLoop* loop)
       : binding_(this, std::move(request)), loop_(loop) {}
   ~InstanceState() override {}
 
@@ -68,9 +69,8 @@ class InstanceState : public mojom::InstanceListener {
   }
 
  private:
-  // mojom::InstanceListener:
-  void SetExistingInstances(
-      mojo::Array<mojom::InstanceInfoPtr> instances) override {
+  // mojom::ServiceManagerListener:
+  void OnInit(mojo::Array<mojom::ServiceInfoPtr> instances) override {
     for (const auto& instance : instances) {
       Instance i(instance->identity.To<Identity>(), instance->id,
                  instance->pid);
@@ -79,12 +79,20 @@ class InstanceState : public mojom::InstanceListener {
     }
     loop_->Quit();
   }
-  void InstanceCreated(mojom::InstanceInfoPtr instance) override {
+  void OnServiceCreated(mojom::ServiceInfoPtr instance) override {
     instances_[instance->identity->name] =
         Instance(instance->identity.To<Identity>(), instance->id,
                  instance->pid);
   }
-  void InstanceDestroyed(uint32_t id) override {
+  void OnServiceStarted(uint32_t id, uint32_t pid) override {
+    for (auto& instance : instances_) {
+      if (instance.second.id == id) {
+        instance.second.pid = pid;
+        break;
+      }
+    }
+  }
+  void OnServiceStopped(uint32_t id) override {
     for (auto it = instances_.begin(); it != instances_.end(); ++it) {
       if (it->second.id == id) {
         instances_.erase(it);
@@ -92,14 +100,6 @@ class InstanceState : public mojom::InstanceListener {
       }
     }
     TryToQuitDestructionLoop();
-  }
-  void InstancePIDAvailable(uint32_t id, uint32_t pid) override {
-    for (auto& instance : instances_) {
-      if (instance.second.id == id) {
-        instance.second.pid = pid;
-        break;
-      }
-    }
   }
 
   void TryToQuitDestructionLoop() {
@@ -114,7 +114,7 @@ class InstanceState : public mojom::InstanceListener {
   // The initial set of instances.
   std::map<std::string, Instance> initial_instances_;
 
-  mojo::Binding<mojom::InstanceListener> binding_;
+  mojo::Binding<mojom::ServiceManagerListener> binding_;
   base::RunLoop* loop_;
 
   // Set when the client wants to wait for this object to track the destruction
@@ -192,12 +192,12 @@ class LifecycleTest : public test::ShellTest {
 
  private:
   std::unique_ptr<InstanceState> TrackInstances() {
-    mojom::ShellPtr shell;
-    connector()->ConnectToInterface("mojo:shell", &shell);
-    mojom::InstanceListenerPtr listener;
+    mojom::ServiceManagerPtr service_manager;
+    connector()->ConnectToInterface("mojo:shell", &service_manager);
+    mojom::ServiceManagerListenerPtr listener;
     base::RunLoop loop;
     InstanceState* state = new InstanceState(GetProxy(&listener), &loop);
-    shell->AddInstanceListener(std::move(listener));
+    service_manager->AddListener(std::move(listener));
     loop.Run();
     return base::WrapUnique(state);
   }

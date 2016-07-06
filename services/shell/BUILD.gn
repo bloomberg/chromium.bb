@@ -26,8 +26,8 @@ source_set("shell") {
     "connect_util.h",
     "native_runner.h",
     "native_runner_delegate.h",
-    "shell.cc",
-    "shell.h",
+    "service_manager.cc",
+    "service_manager.h",
     "switches.cc",
     "switches.h",
   ]

@@ -18,7 +18,7 @@
 #include "services/catalog/public/interfaces/catalog.mojom.h"
 #include "services/shell/public/cpp/connection.h"
 #include "services/shell/public/cpp/connector.h"
-#include "services/shell/public/interfaces/shell.mojom.h"
+#include "services/shell/public/interfaces/service_manager.mojom.h"
 #include "ui/base/models/table_model.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/resources/grit/ui_resources.h"
@@ -34,15 +34,15 @@ namespace mash {
 namespace task_viewer {
 namespace {
 
-using shell::mojom::InstanceInfoPtr;
+using shell::mojom::ServiceInfoPtr;
 
 class TaskViewerContents : public views::WidgetDelegateView,
                            public ui::TableModel,
                            public views::ButtonListener,
-                           public shell::mojom::InstanceListener {
+                           public shell::mojom::ServiceManagerListener {
  public:
   TaskViewerContents(TaskViewer* task_viewer,
-                     shell::mojom::InstanceListenerRequest request,
+                     shell::mojom::ServiceManagerListenerRequest request,
                      catalog::mojom::CatalogPtr catalog)
       : task_viewer_(task_viewer),
         binding_(this, std::move(request)),
@@ -151,8 +151,8 @@ class TaskViewerContents : public views::WidgetDelegateView,
     process.Terminate(9, true);
   }
 
-  // Overridden from shell::mojom::InstanceListener:
-  void SetExistingInstances(mojo::Array<InstanceInfoPtr> instances) override {
+  // Overridden from shell::mojom::ServiceManagerListener:
+  void OnInit(mojo::Array<ServiceInfoPtr> instances) override {
     // This callback should only be called with an empty model.
     DCHECK(instances_.empty());
     mojo::Array<mojo::String> names;
@@ -165,7 +165,7 @@ class TaskViewerContents : public views::WidgetDelegateView,
                          base::Bind(&TaskViewerContents::OnGotCatalogEntries,
                                     weak_ptr_factory_.GetWeakPtr()));
   }
-  void InstanceCreated(InstanceInfoPtr instance) override {
+  void OnServiceCreated(ServiceInfoPtr instance) override {
     DCHECK(!ContainsId(instance->id));
     InsertInstance(instance->id, instance->identity->name, instance->pid);
     observer_->OnItemsAdded(static_cast<int>(instances_.size()), 1);
@@ -175,7 +175,17 @@ class TaskViewerContents : public views::WidgetDelegateView,
                          base::Bind(&TaskViewerContents::OnGotCatalogEntries,
                                     weak_ptr_factory_.GetWeakPtr()));
   }
-  void InstanceDestroyed(uint32_t id) override {
+  void OnServiceStarted(uint32_t id, uint32_t pid) override {
+    for (auto it = instances_.begin(); it != instances_.end(); ++it) {
+      if ((*it)->id == id) {
+        (*it)->pid = pid;
+        observer_->OnItemsChanged(
+          static_cast<int>(it - instances_.begin()), 1);
+        return;
+      }
+    }
+  }
+  void OnServiceStopped(uint32_t id) override {
     for (auto it = instances_.begin(); it != instances_.end(); ++it) {
       if ((*it)->id == id) {
         observer_->OnItemsRemoved(
@@ -185,16 +195,6 @@ class TaskViewerContents : public views::WidgetDelegateView,
       }
     }
     NOTREACHED();
-  }
-  void InstancePIDAvailable(uint32_t id, uint32_t pid) override {
-    for (auto it = instances_.begin(); it != instances_.end(); ++it) {
-      if ((*it)->id == id) {
-        (*it)->pid = pid;
-        observer_->OnItemsChanged(
-            static_cast<int>(it - instances_.begin()), 1);
-        return;
-      }
-    }
   }
 
   bool ContainsId(uint32_t id) const {
@@ -255,7 +255,7 @@ class TaskViewerContents : public views::WidgetDelegateView,
   }
 
   TaskViewer* task_viewer_;
-  mojo::Binding<shell::mojom::InstanceListener> binding_;
+  mojo::Binding<shell::mojom::ServiceManagerListener> binding_;
   catalog::mojom::CatalogPtr catalog_;
 
   views::TableView* table_view_;
@@ -307,12 +307,12 @@ void TaskViewer::Launch(uint32_t what, mojom::LaunchMode how) {
     return;
   }
 
-  shell::mojom::ShellPtr shell;
-  connector_->ConnectToInterface("mojo:shell", &shell);
+  shell::mojom::ServiceManagerPtr service_manager;
+  connector_->ConnectToInterface("mojo:shell", &service_manager);
 
-  shell::mojom::InstanceListenerPtr listener;
-  shell::mojom::InstanceListenerRequest request = GetProxy(&listener);
-  shell->AddInstanceListener(std::move(listener));
+  shell::mojom::ServiceManagerListenerPtr listener;
+  shell::mojom::ServiceManagerListenerRequest request = GetProxy(&listener);
+  service_manager->AddListener(std::move(listener));
 
   catalog::mojom::CatalogPtr catalog;
   connector_->ConnectToInterface("mojo:catalog", &catalog);

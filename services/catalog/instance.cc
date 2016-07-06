@@ -32,12 +32,11 @@ Instance::Instance(std::unique_ptr<Store> store, Reader* system_reader)
       weak_factory_(this) {}
 Instance::~Instance() {}
 
-void Instance::BindShellResolver(
-    shell::mojom::ShellResolverRequest request) {
+void Instance::BindResolver(shell::mojom::ResolverRequest request) {
   if (system_cache_)
-    shell_resolver_bindings_.AddBinding(this, std::move(request));
+    resolver_bindings_.AddBinding(this, std::move(request));
   else
-    pending_shell_resolver_requests_.push_back(std::move(request));
+    pending_resolver_requests_.push_back(std::move(request));
 }
 
 void Instance::BindCatalog(mojom::CatalogRequest request) {
@@ -50,14 +49,14 @@ void Instance::BindCatalog(mojom::CatalogRequest request) {
 void Instance::CacheReady(EntryCache* cache) {
   system_cache_ = cache;
   DeserializeCatalog();
-  for (auto& request : pending_shell_resolver_requests_)
-    BindShellResolver(std::move(request));
+  for (auto& request : pending_resolver_requests_)
+    BindResolver(std::move(request));
   for (auto& request : pending_catalog_requests_)
     BindCatalog(std::move(request));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// Instance, shell::mojom::ShellResolver:
+// Instance, shell::mojom::Resolver:
 
 void Instance::ResolveMojoName(const mojo::String& mojo_name,
                                const ResolveMojoNameCallback& callback) {

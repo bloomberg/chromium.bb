@@ -7,7 +7,7 @@ module shell.mojom;
 import "mojo/common/common_custom_types.mojom";
 import "services/shell/public/interfaces/capabilities.mojom";
 
-// The result of a Resolve operation via ShellResolver.
+// The result of a Resolve operation via Resolver.
 struct ResolveResult {
   // The mojo: name that was requested to be resolved.
   string name;
@@ -29,10 +29,10 @@ struct ResolveResult {
   mojo.common.mojom.FilePath package_path;
 };
 
-// Implemented exclusively for the Mojo Shell's use in resolving mojo: names
-// and reading static manifest information.
-interface ShellResolver {
+// Implemented exclusively for the Service Manager's use in resolving mojo:
+// names and reading static manifest information.
+interface Resolver {
   // Resolves |mojo_name| and returns a ResolveResult containing metadata from
-  // the catalog that the Shell uses to run an instance of it.
+  // the catalog that the Service Manager uses to run an instance of it.
   ResolveMojoName(string mojo_name) => (ResolveResult result);
 };

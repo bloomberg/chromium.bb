@@ -12,7 +12,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "services/catalog/types.h"
-#include "services/shell/public/interfaces/shell_resolver.mojom.h"
+#include "services/shell/public/interfaces/resolver.mojom.h"
 
 namespace base {
 class SequencedWorkerPool;

@@ -13,7 +13,7 @@
 #include "base/threading/thread.h"
 #include "base/time/time.h"
 #include "mojo/edk/embedder/process_delegate.h"
-#include "services/shell/shell.h"
+#include "services/shell/service_manager.h"
 #include "services/shell/standalone/tracer.h"
 
 namespace base {
@@ -56,7 +56,7 @@ class Context : public mojo::edk::ProcessDelegate {
   // Run the application specified on the command line.
   void RunCommandLineApplication();
 
-  Shell* shell() { return shell_.get(); }
+  ServiceManager* service_manager() { return service_manager_.get(); }
 
  private:
   // mojo::edk::ProcessDelegate:
@@ -65,7 +65,7 @@ class Context : public mojo::edk::ProcessDelegate {
   // Runs the app specified by |name|.
   void Run(const std::string& name);
 
-  scoped_refptr<base::SingleThreadTaskRunner> shell_runner_;
+  scoped_refptr<base::SingleThreadTaskRunner> service_manager_runner_;
   std::unique_ptr<base::Thread> io_thread_;
   scoped_refptr<base::SequencedWorkerPool> blocking_pool_;
 
@@ -73,7 +73,7 @@ class Context : public mojo::edk::ProcessDelegate {
   // that needs the IO thread to destruct cleanly.
   Tracer tracer_;
   std::unique_ptr<catalog::Catalog> catalog_;
-  std::unique_ptr<Shell> shell_;
+  std::unique_ptr<ServiceManager> service_manager_;
   base::Time main_entry_time_;
   bool init_edk_ = false;
 

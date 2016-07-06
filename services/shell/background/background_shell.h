@@ -20,7 +20,7 @@ class Store;
 namespace shell {
 
 class NativeRunnerDelegate;
-class Shell;
+class ServiceManager;
 
 // BackgroundShell starts up the mojo shell on a background thread, and
 // destroys the thread in the destructor. Once created use CreateApplication()
@@ -49,10 +49,12 @@ class BackgroundShell {
   mojom::ServiceRequest CreateServiceRequest(
       const std::string& name);
 
-  // Use to do processing on the thread running the shell. The callback is
-  // supplied a pointer to the Shell. The callback does *not* own the Shell.
-  using ShellThreadCallback = base::Callback<void(Shell*)>;
-  void ExecuteOnShellThread(const ShellThreadCallback& callback);
+  // Use to do processing on the thread running the Service Manager. The
+  // callback is supplied a pointer to the Service Manager. The callback does
+  // *not* own the Service Manager.
+  using ServiceManagerThreadCallback = base::Callback<void(ServiceManager*)>;
+  void ExecuteOnServiceManagerThread(
+      const ServiceManagerThreadCallback& callback);
 
  private:
   class MojoThread;

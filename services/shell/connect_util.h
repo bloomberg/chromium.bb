@@ -12,33 +12,35 @@
 
 namespace shell {
 
-class Shell;
+class ServiceManager;
 
 mojo::ScopedMessagePipeHandle ConnectToInterfaceByName(
-    Shell* shell,
+    ServiceManager* service_manager,
     const Identity& source,
     const Identity& target,
     const std::string& interface_name);
 
-// Must only be used by shell internals and test code as it does not forward
-// capability filters. Runs |name| with a permissive capability filter.
+// Must only be used by Service Manager internals and test code as it does not
+// forward capability filters. Runs |name| with a permissive capability filter.
 template <typename Interface>
-inline void ConnectToInterface(Shell* shell,
+inline void ConnectToInterface(ServiceManager* service_manager,
                                const Identity& source,
                                const Identity& target,
                                mojo::InterfacePtr<Interface>* ptr) {
   mojo::ScopedMessagePipeHandle service_handle =
-      ConnectToInterfaceByName(shell, source, target, Interface::Name_);
+      ConnectToInterfaceByName(service_manager, source, target,
+                               Interface::Name_);
   ptr->Bind(mojo::InterfacePtrInfo<Interface>(std::move(service_handle), 0u));
 }
 
 template <typename Interface>
-inline void ConnectToInterface(Shell* shell,
+inline void ConnectToInterface(ServiceManager* service_manager,
                                const Identity& source,
                                const std::string& name,
                                mojo::InterfacePtr<Interface>* ptr) {
   mojo::ScopedMessagePipeHandle service_handle = ConnectToInterfaceByName(
-      shell, source, Identity(name, mojom::kInheritUserID), Interface::Name_);
+      service_manager, source, Identity(name, mojom::kInheritUserID),
+      Interface::Name_);
   ptr->Bind(mojo::InterfacePtrInfo<Interface>(std::move(service_handle), 0u));
 }
 

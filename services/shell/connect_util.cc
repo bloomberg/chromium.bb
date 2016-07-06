@@ -8,12 +8,12 @@
 #include <utility>
 
 #include "services/shell/connect_params.h"
-#include "services/shell/shell.h"
+#include "services/shell/service_manager.h"
 
 namespace shell {
 
 mojo::ScopedMessagePipeHandle ConnectToInterfaceByName(
-    Shell* shell,
+    ServiceManager* service_manager,
     const Identity& source,
     const Identity& target,
     const std::string& interface_name) {
@@ -22,7 +22,7 @@ mojo::ScopedMessagePipeHandle ConnectToInterfaceByName(
   params->set_source(source);
   params->set_target(target);
   params->set_remote_interfaces(mojo::GetProxy(&remote_interfaces));
-  shell->Connect(std::move(params));
+  service_manager->Connect(std::move(params));
   mojo::MessagePipe pipe;
   remote_interfaces->GetInterface(interface_name, std::move(pipe.handle1));
   return std::move(pipe.handle0);

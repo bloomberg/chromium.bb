@@ -16,8 +16,8 @@
 #include "services/catalog/public/interfaces/catalog.mojom.h"
 #include "services/catalog/types.h"
 #include "services/shell/public/cpp/service.h"
+#include "services/shell/public/interfaces/resolver.mojom.h"
 #include "services/shell/public/interfaces/service.mojom.h"
-#include "services/shell/public/interfaces/shell_resolver.mojom.h"
 
 namespace base {
 class SequencedWorkerPool;
@@ -44,7 +44,7 @@ class Store;
 class Catalog : public shell::Service,
                 public shell::InterfaceFactory<mojom::Catalog>,
                 public shell::InterfaceFactory<filesystem::mojom::Directory>,
-                public shell::InterfaceFactory<shell::mojom::ShellResolver> {
+                public shell::InterfaceFactory<shell::mojom::Resolver> {
  public:
   // |manifest_provider| may be null.
   Catalog(base::SequencedWorkerPool* worker_pool,
@@ -66,9 +66,9 @@ class Catalog : public shell::Service,
   // shell::Service:
   bool OnConnect(shell::Connection* connection) override;
 
-  // shell::InterfaceFactory<shell::mojom::ShellResolver>:
+  // shell::InterfaceFactory<shell::mojom::Resolver>:
   void Create(shell::Connection* connection,
-              shell::mojom::ShellResolverRequest request) override;
+              shell::mojom::ResolverRequest request) override;
 
   // shell::InterfaceFactory<mojom::Catalog>:
   void Create(shell::Connection* connection,

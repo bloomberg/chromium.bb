@@ -107,15 +107,15 @@ void Catalog::ScanSystemPackageDir() {
 bool Catalog::OnConnect(shell::Connection* connection) {
   connection->AddInterface<mojom::Catalog>(this);
   connection->AddInterface<filesystem::mojom::Directory>(this);
-  connection->AddInterface<shell::mojom::ShellResolver>(this);
+  connection->AddInterface<shell::mojom::Resolver>(this);
   return true;
 }
 
 void Catalog::Create(shell::Connection* connection,
-                     shell::mojom::ShellResolverRequest request) {
+                     shell::mojom::ResolverRequest request) {
   Instance* instance =
       GetInstanceForUserId(connection->GetRemoteIdentity().user_id());
-  instance->BindShellResolver(std::move(request));
+  instance->BindResolver(std::move(request));
 }
 
 void Catalog::Create(shell::Connection* connection,
