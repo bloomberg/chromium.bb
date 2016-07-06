@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/macros.h"
+#include "base/run_loop.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/font_fallback_win.h"
 
@@ -112,6 +113,27 @@ TEST(FontFallbackWinTest, LinkedFontsIteratorSetNextFont) {
   ASSERT_EQ("Times New Roman", font.GetFontName());
 
   EXPECT_FALSE(iterator.NextFont(&font));
+}
+
+TEST(FontFallbackWinTest, FontFallback) {
+  // Needed to bypass DCHECK in GetFallbackFont.
+  base::MessageLoopForUI message_loop;
+
+  Font base_font("Segoe UI", 14);
+  Font fallback_font;
+  bool result = GetFallbackFont(base_font, L"abc", 3, &fallback_font);
+  EXPECT_TRUE(result);
+  EXPECT_STREQ("Segoe UI", fallback_font.GetFontName().c_str());
+}
+
+TEST(FontFallbackWinTest, EmptyStringFallback) {
+  // Needed to bypass DCHECK in GetFallbackFont.
+  base::MessageLoopForUI message_loop;
+
+  Font base_font;
+  Font fallback_font;
+  bool result = GetFallbackFont(base_font, L"", 0, &fallback_font);
+  EXPECT_FALSE(result);
 }
 
 }  // namespace gfx

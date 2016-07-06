@@ -8,6 +8,7 @@
 #include <usp10.h>
 #include <wrl.h>
 
+#include <algorithm>
 #include <map>
 
 #include "base/i18n/rtl.h"
@@ -349,6 +350,12 @@ bool GetFallbackFont(const Font& font,
   // renderer this can cause hangs. Code that needs font fallback in the
   // renderer should instead use the font proxy.
   DCHECK(base::MessageLoopForUI::IsCurrent());
+
+  // Check that we have at least as much text as was claimed. If we have less
+  // text than expected then DirectWrite will become confused and crash. This
+  // shouldn't happen, but crbug.com/624905 shows that it happens sometimes.
+  DCHECK_GE(wcslen(text), static_cast<size_t>(text_length));
+  text_length = std::min(wcslen(text), static_cast<size_t>(text_length));
 
   if (g_factory == nullptr) {
     gfx::win::CreateDWriteFactory(&g_factory);
