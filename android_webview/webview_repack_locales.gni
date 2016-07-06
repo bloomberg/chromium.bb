@@ -9,6 +9,7 @@ import("//build/config/chrome_build.gni")
 import("//build/config/features.gni")
 import("//build/config/ui.gni")
 import("//tools/grit/repack.gni")
+import("webview_repack_locales_list.gni")
 
 # Arguments:
 #
@@ -26,17 +27,22 @@ template("_repack_one_locale") {
   repack(target_name) {
     visibility = invoker.visibility
 
+    # Adding webview specific pak file? You should add it to
+    # webview_repack_locales_source_patterns, so it is also included in
+    # Monochrome.
+
     # Each input pak file should also have a deps line for completeness.
     sources = [
-      "${root_gen_dir}/android_webview/aw_strings_${locale}.pak",
       "${root_gen_dir}/android_webview/components_strings_${locale}.pak",
       "${root_gen_dir}/content/app/strings/content_strings_${locale}.pak",
     ]
     deps = [
-      "//android_webview:generate_aw_strings",
       "//android_webview:generate_components_strings",
       "//content/app/strings",
     ]
+    sources += process_file_template(webview_repack_locales_source_patterns,
+                                     [ "{{source}}_${locale}.pak" ])
+    deps += webview_repack_locales_deps
     output = invoker.output
   }
 }

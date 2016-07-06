@@ -1,0 +1,14 @@
+# Copyright 2016 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//android_webview/webview_repack_locales_list.gni")
+import("//chrome/chrome_repack_locales.gni")
+
+template("monochrome_repack_locales") {
+  chrome_repack_locales(target_name) {
+    forward_variables_from(invoker, "*")
+    additional_source_patterns = webview_repack_locales_source_patterns
+    additional_deps = webview_repack_locales_deps
+  }
+}

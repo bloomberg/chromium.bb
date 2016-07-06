@@ -17,6 +17,19 @@ import("//tools/grit/repack.gni")
 #
 #   visibility
 #       Normal meaning.
+#
+#   additional_source_patterns
+#      The pattern of additional pak files which need repacked, the name of
+#      pak always ends with '_${locale}.pak' e.g. foo_zh-CN.pak, since the
+#      locale is argument of template, the sources in this list should be
+#      the file name without '_${locale}.pak', tempate expands sources to
+#      the full name, e.g
+#         ${root_gen_dir}/foo expands to ${root_gen_dir}/foo_zh-CN.pak
+#       when locale is zh-CN.
+#
+#   additional_deps
+#      The corresponding deps of additonal_source_patterns.
+#
 template("_repack_one_locale") {
   locale = invoker.locale
 
@@ -43,6 +56,12 @@ template("_repack_one_locale") {
     # not translated (English only), this should change in late 2015.
     sources += [ "${root_gen_dir}/chrome/settings_strings.pak" ]
     deps += [ "//chrome/app:settings_strings" ]
+
+    if (defined(invoker.additional_source_patterns)) {
+      sources += process_file_template(invoker.additional_source_patterns,
+                                       [ "{{source}}_${locale}.pak" ])
+      deps += invoker.additional_deps
+    }
 
     if (use_ash) {
       sources += [ "${root_gen_dir}/ash/strings/ash_strings_${locale}.pak" ]
@@ -132,6 +151,16 @@ template("_repack_one_locale") {
 #       input names. Mac uses different names in some cases.
 #
 #   visibility
+#
+#   additional_source_patterns
+#      Pass to template("_repack_one_locale")
+#
+#   additional_deps
+#      Pass to template("_repack_one_locale")
+#
+#   output_dir
+#      this is used to override default output dir.
+#
 template("chrome_repack_locales") {
   # This is the name of the group below that will collect all the invidual
   # locale targets. External targets will depend on this.
@@ -160,10 +189,17 @@ template("chrome_repack_locales") {
       locale = input_locale
 
       # Compute the output name. Mac uses a different location.
-      if (is_mac || is_ios) {
+      if (defined(invoker.output_dir)) {
+        output = "${invoker.output_dir}/${output_locale}.pak"
+      } else if (is_mac || is_ios) {
         output = "${root_gen_dir}/repack/locales/${output_locale}.pak"
       } else {
         output = "${root_out_dir}/locales/${output_locale}.pak"
+      }
+
+      if (defined(invoker.additional_source_patterns)) {
+        additional_source_patterns = invoker.additional_source_patterns
+        additional_deps = invoker.additional_deps
       }
     }
 
