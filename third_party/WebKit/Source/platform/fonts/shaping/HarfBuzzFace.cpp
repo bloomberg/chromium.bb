@@ -332,9 +332,10 @@ hb_face_t* HarfBuzzFace::createFace()
         zeroCopySuccessHistogram,
         ("Blink.Fonts.HarfBuzzFaceZeroCopyAccess"));
     SkTypeface* typeface = m_platformData->typeface();
+    CHECK(typeface);
     int ttcIndex = 0;
     SkStreamAsset* typefaceStream = typeface->openStream(&ttcIndex);
-    if (typefaceStream->getMemoryBase()) {
+    if (typefaceStream && typefaceStream->getMemoryBase()) {
         std::unique_ptr<hb_blob_t, void(*)(hb_blob_t*)> faceBlob(hb_blob_create(
             reinterpret_cast<const char*>(typefaceStream->getMemoryBase()),
             typefaceStream->getLength(),
