@@ -159,7 +159,7 @@ class V8InfiniteScroll(_InfiniteScrollBenchmark):
 
   @classmethod
   def Name(cls):
-    return 'v8.infinite_scroll'
+    return 'v8.infinite_scroll_tbmv2'
 
 
 # Disabled on reference builds because they don't support the new
@@ -174,7 +174,7 @@ class V8InfiniteScrollIgnition(V8InfiniteScroll):
 
   @classmethod
   def Name(cls):
-    return 'v8.infinite_scroll-ignition'
+    return 'v8.infinite_scroll-ignition_tbmv2'
 
 
 @benchmark.Enabled('android')
@@ -187,7 +187,7 @@ class V8MobileInfiniteScroll(_InfiniteScrollBenchmark):
 
   @classmethod
   def Name(cls):
-    return 'v8.mobile_infinite_scroll'
+    return 'v8.mobile_infinite_scroll_tbmv2'
 
   @classmethod
   def ShouldDisable(cls, possible_browser):  # http://crbug.com/597656
