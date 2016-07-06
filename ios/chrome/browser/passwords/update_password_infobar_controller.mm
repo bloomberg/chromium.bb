@@ -4,6 +4,7 @@
 
 #import "ios/chrome/browser/passwords/update_password_infobar_controller.h"
 
+#import "base/mac/objc_property_releaser.h"
 #include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "ios/chrome/browser/infobars/confirm_infobar_controller+protected.h"
@@ -18,11 +19,25 @@ NSUInteger kAccountTag = 10;
 }
 
 @interface UpdatePasswordInfoBarController ()<SelectorCoordinatorDelegate> {
+  base::mac::ObjCPropertyReleaser
+      _propertyReleaser_UpdatePasswordInfoBarController;
   IOSChromeUpdatePasswordInfoBarDelegate* _delegate;
 }
+@property(nonatomic, retain) SelectorCoordinator* selectorCoordinator;
 @end
 
 @implementation UpdatePasswordInfoBarController
+
+@synthesize selectorCoordinator = _selectorCoordinator;
+
+- (instancetype)initWithDelegate:(InfoBarViewDelegate*)delegate {
+  self = [super initWithDelegate:delegate];
+  if (self) {
+    _propertyReleaser_UpdatePasswordInfoBarController.Init(
+        self, [UpdatePasswordInfoBarController class]);
+  }
+  return self;
+}
 
 - (base::scoped_nsobject<UIView<InfoBarViewProtocol>>)
 viewForDelegate:(IOSChromeUpdatePasswordInfoBarDelegate*)delegate
@@ -58,13 +73,13 @@ viewForDelegate:(IOSChromeUpdatePasswordInfoBarDelegate*)delegate
 
   UIViewController* baseViewController =
       [[UIApplication sharedApplication] keyWindow].rootViewController;
-  SelectorCoordinator* selectorCoordinator = [[[SelectorCoordinator alloc]
-      initWithBaseViewController:baseViewController] autorelease];
-  selectorCoordinator.delegate = self;
-  selectorCoordinator.options = [_delegate->GetAccounts() copy];
-  selectorCoordinator.defaultOption =
+  self.selectorCoordinator = [[SelectorCoordinator alloc]
+      initWithBaseViewController:baseViewController];
+  self.selectorCoordinator.delegate = self;
+  self.selectorCoordinator.options = [_delegate->GetAccounts() copy];
+  self.selectorCoordinator.defaultOption =
       base::SysUTF16ToNSString(_delegate->selected_account());
-  [selectorCoordinator start];
+  [self.selectorCoordinator start];
 }
 
 #pragma mark SelectorCoordinatorDelegate
@@ -72,6 +87,7 @@ viewForDelegate:(IOSChromeUpdatePasswordInfoBarDelegate*)delegate
 - (void)selectorCoordinator:(SelectorCoordinator*)coordinator
     didCompleteWithSelection:(NSString*)selection {
   _delegate->set_selected_account(base::SysNSStringToUTF16(selection));
+  [self updateInfobarLabel:self.view];
 }
 
 @end
