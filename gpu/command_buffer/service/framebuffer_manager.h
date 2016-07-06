@@ -145,6 +145,7 @@ class GPU_EXPORT Framebuffer : public base::RefCounted<Framebuffer> {
     return has_been_bound_ && !IsDeleted();
   }
 
+  bool HasColorAttachment(int index) const;
   bool HasDepthAttachment() const;
   bool HasStencilAttachment() const;
   GLenum GetDepthFormat() const;

@@ -6055,9 +6055,14 @@ bool GLES2DecoderImpl::GetHelper(
           if (framebuffer->HasAlphaMRT() &&
               framebuffer->HasSameInternalFormatsMRT()) {
             if (feature_info_->gl_version_info().is_desktop_core_profile) {
-              glGetFramebufferAttachmentParameterivEXT(
-                  GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
-                  GL_FRAMEBUFFER_ATTACHMENT_ALPHA_SIZE, &v);
+              for (uint32_t i = 0; i < group_->max_draw_buffers(); i++) {
+                if (framebuffer->HasColorAttachment(i)) {
+                  glGetFramebufferAttachmentParameterivEXT(
+                      GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i,
+                      GL_FRAMEBUFFER_ATTACHMENT_ALPHA_SIZE, &v);
+                  break;
+                }
+              }
             } else {
               glGetIntegerv(GL_ALPHA_BITS, &v);
             }
@@ -6076,9 +6081,11 @@ bool GLES2DecoderImpl::GetHelper(
           Framebuffer* framebuffer =
               GetFramebufferInfoForTarget(GL_DRAW_FRAMEBUFFER_EXT);
           if (framebuffer) {
-            glGetFramebufferAttachmentParameterivEXT(
-                GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
-                GL_FRAMEBUFFER_ATTACHMENT_DEPTH_SIZE, &v);
+            if (framebuffer->HasDepthAttachment()) {
+              glGetFramebufferAttachmentParameterivEXT(
+                  GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
+                  GL_FRAMEBUFFER_ATTACHMENT_DEPTH_SIZE, &v);
+            }
           } else {
             v = (back_buffer_has_depth_ ? 24 : 0);
           }
@@ -6098,20 +6105,28 @@ bool GLES2DecoderImpl::GetHelper(
           Framebuffer* framebuffer =
               GetFramebufferInfoForTarget(GL_DRAW_FRAMEBUFFER_EXT);
           if (framebuffer) {
-            GLenum framebuffer_enum = 0;
-            switch (pname) {
-              case GL_RED_BITS:
-                framebuffer_enum = GL_FRAMEBUFFER_ATTACHMENT_RED_SIZE;
-                break;
-              case GL_GREEN_BITS:
-                framebuffer_enum = GL_FRAMEBUFFER_ATTACHMENT_GREEN_SIZE;
-                break;
-              case GL_BLUE_BITS:
-                framebuffer_enum = GL_FRAMEBUFFER_ATTACHMENT_BLUE_SIZE;
-                break;
+            if (framebuffer->HasSameInternalFormatsMRT()) {
+              GLenum framebuffer_enum = 0;
+              switch (pname) {
+                case GL_RED_BITS:
+                  framebuffer_enum = GL_FRAMEBUFFER_ATTACHMENT_RED_SIZE;
+                  break;
+                case GL_GREEN_BITS:
+                  framebuffer_enum = GL_FRAMEBUFFER_ATTACHMENT_GREEN_SIZE;
+                  break;
+                case GL_BLUE_BITS:
+                  framebuffer_enum = GL_FRAMEBUFFER_ATTACHMENT_BLUE_SIZE;
+                  break;
+              }
+              for (uint32_t i = 0; i < group_->max_draw_buffers(); i++) {
+                if (framebuffer->HasColorAttachment(i)) {
+                  glGetFramebufferAttachmentParameterivEXT(
+                      GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i,
+                      framebuffer_enum, &v);
+                  break;
+                }
+              }
             }
-            glGetFramebufferAttachmentParameterivEXT(
-                GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, framebuffer_enum, &v);
           } else {
             v = 8;
           }
@@ -6129,9 +6144,11 @@ bool GLES2DecoderImpl::GetHelper(
           Framebuffer* framebuffer =
               GetFramebufferInfoForTarget(GL_DRAW_FRAMEBUFFER_EXT);
           if (framebuffer) {
-            glGetFramebufferAttachmentParameterivEXT(
-                GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT,
-                GL_FRAMEBUFFER_ATTACHMENT_STENCIL_SIZE, &v);
+            if (framebuffer->HasStencilAttachment()) {
+              glGetFramebufferAttachmentParameterivEXT(
+                  GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT,
+                  GL_FRAMEBUFFER_ATTACHMENT_STENCIL_SIZE, &v);
+            }
           } else {
             v = (back_buffer_has_stencil_ ? 8 : 0);
           }

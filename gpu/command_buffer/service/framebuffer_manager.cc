@@ -552,6 +552,10 @@ void Framebuffer::MarkAttachmentsAsCleared(
   }
 }
 
+bool Framebuffer::HasColorAttachment(int index) const {
+  return attachments_.find(GL_COLOR_ATTACHMENT0 + index) != attachments_.end();
+}
+
 bool Framebuffer::HasDepthAttachment() const {
   return attachments_.find(GL_DEPTH_STENCIL_ATTACHMENT) != attachments_.end() ||
          attachments_.find(GL_DEPTH_ATTACHMENT) != attachments_.end();
