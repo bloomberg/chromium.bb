@@ -267,7 +267,11 @@ void AppListButton::NotifyClick(const ui::Event& event) {
 }
 
 bool AppListButton::ShouldEnterPushedState(const ui::Event& event) {
-  return !Shell::GetInstance()->IsApplistVisible();
+  if (!shelf_view_->ShouldEventActivateButton(this, event))
+    return false;
+  if (Shell::GetInstance()->IsApplistVisible())
+    return false;
+  return views::ImageButton::ShouldEnterPushedState(event);
 }
 
 bool AppListButton::ShouldShowInkDropHighlight() const {
