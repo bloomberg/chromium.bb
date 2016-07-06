@@ -30,7 +30,7 @@ TEST_F(HttpServerTest, StartAndInterfaceWithResponseProvider) {
 
   web::test::HttpServer& server = web::test::HttpServer::GetSharedInstance();
   ASSERT_TRUE(server.IsRunning());
-  server.AddResponseProvider(provider.release());
+  server.AddResponseProvider(std::move(provider));
 
   __block base::scoped_nsobject<NSString> page_result;
   id completion_handler =

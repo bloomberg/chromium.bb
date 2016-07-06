@@ -48,11 +48,9 @@ web::ResponseProvider::Request ResponseProviderRequestFromGCDWebServerRequest(
 namespace web {
 namespace test {
 
-
 RefCountedResponseProviderWrapper::RefCountedResponseProviderWrapper(
-    ResponseProvider* response_provider) {
-  response_provider_.reset(response_provider);
-}
+    std::unique_ptr<ResponseProvider> response_provider)
+    : response_provider_(std::move(response_provider)) {}
 
 RefCountedResponseProviderWrapper::~RefCountedResponseProviderWrapper() {}
 
@@ -68,12 +66,12 @@ HttpServer& HttpServer::GetSharedInstance() {
 
 // static
 HttpServer& HttpServer::GetSharedInstanceWithResponseProviders(
-    const ProviderList& response_providers) {
+    ProviderList response_providers) {
   DCHECK([NSThread isMainThread]);
   HttpServer& server = HttpServer::GetSharedInstance();
-  for (const auto& response_provider : response_providers) {
-    server.AddResponseProvider(response_provider);
-  }
+  // Use non-const reference as the response_provider ownership is transfered.
+  for (std::unique_ptr<ResponseProvider>& provider : response_providers)
+    server.AddResponseProvider(std::move(provider));
   return server;
 }
 
@@ -193,14 +191,15 @@ scoped_refptr<RefCountedResponseProviderWrapper>
   return result;
 }
 
-void HttpServer::AddResponseProvider(ResponseProvider* response_provider) {
+void HttpServer::AddResponseProvider(
+    std::unique_ptr<ResponseProvider> response_provider) {
   DCHECK([NSThread isMainThread]);
   DCHECK(IsRunning()) << "Can add a response provider only when the server is "
                       << "running.";
   base::AutoLock autolock(provider_list_lock_);
   scoped_refptr<RefCountedResponseProviderWrapper>
       ref_counted_response_provider(
-          new RefCountedResponseProviderWrapper(response_provider));
+          new RefCountedResponseProviderWrapper(std::move(response_provider)));
   providers_.push_back(ref_counted_response_provider);
 }
 

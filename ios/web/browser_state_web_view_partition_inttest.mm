@@ -8,6 +8,7 @@
 #include <string>
 
 #import "base/mac/scoped_nsobject.h"
+#include "base/memory/ptr_util.h"
 #include "base/test/ios/wait_util.h"
 #include "ios/web/public/browser_state.h"
 #import "ios/web/public/test/http_server.h"
@@ -50,13 +51,16 @@ class BrowserStateWebViewPartitionTest : public web::WebIntTest {
     web::test::HttpServer& server = web::test::HttpServer::GetSharedInstance();
     ASSERT_TRUE(server.IsRunning());
 
-    provider_.reset(new web::StringResponseProvider("Hello World"));
-    server.AddResponseProvider(provider_.get());
+    auto provider =
+        base::MakeUnique<web::StringResponseProvider>("Hello World");
+    provider_ = provider.get();  // Keep a weak copy to allow unregistration.
+    server.AddResponseProvider(std::move(provider));
   }
 
   void TearDown() override {
     web::test::HttpServer& server = web::test::HttpServer::GetSharedInstance();
-    server.RemoveResponseProvider(provider_.release());
+    server.RemoveResponseProvider(provider_);
+    provider_ = nullptr;
 
     web::WebIntTest::TearDown();
   }
@@ -134,7 +138,7 @@ class BrowserStateWebViewPartitionTest : public web::WebIntTest {
 
  private:
   // The ResponseProvider used to load a simple web page.
-  std::unique_ptr<web::ResponseProvider> provider_;
+  web::ResponseProvider* provider_;
   // The OTR browser state used in tests.
   web::TestBrowserState otr_browser_state_;
 };

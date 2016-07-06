@@ -4,6 +4,7 @@
 
 #include "ios/web/public/test/http_server_util.h"
 
+#include "base/memory/ptr_util.h"
 #include "base/path_service.h"
 #import "ios/web/public/test/http_server.h"
 #include "ios/web/public/test/response_providers/file_based_response_provider.h"
@@ -15,11 +16,10 @@ namespace test {
 void SetUpSimpleHttpServer(const std::map<GURL, std::string>& responses) {
   web::test::HttpServer& server = web::test::HttpServer::GetSharedInstance();
   DCHECK(server.IsRunning());
-  std::unique_ptr<web::ResponseProvider> provider;
-  provider.reset(new HtmlResponseProvider(responses));
+  auto provider = base::MakeUnique<HtmlResponseProvider>(responses);
 
   server.RemoveAllResponseProviders();
-  server.AddResponseProvider(provider.release());
+  server.AddResponseProvider(std::move(provider));
 }
 
 void SetUpFileBasedHttpServer() {
@@ -27,12 +27,10 @@ void SetUpFileBasedHttpServer() {
   DCHECK(server.IsRunning());
   base::FilePath path;
   PathService::Get(base::DIR_MODULE, &path);
-  std::unique_ptr<web::ResponseProvider> file_provider;
-  file_provider.reset(new FileBasedResponseProvider(path));
-  DCHECK(file_provider);
+  auto provider = base::MakeUnique<FileBasedResponseProvider>(path);
 
   server.RemoveAllResponseProviders();
-  server.AddResponseProvider(file_provider.release());
+  server.AddResponseProvider(std::move(provider));
 }
 
 }  // namespace test

@@ -11,7 +11,6 @@
 #import "base/mac/scoped_nsobject.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_vector.h"
 #include "base/synchronization/lock.h"
 #include "ios/web/public/test/response_providers/response_provider.h"
 
@@ -30,7 +29,7 @@ class RefCountedResponseProviderWrapper :
  public:
   // Main constructor.
   explicit RefCountedResponseProviderWrapper(
-      ResponseProvider* response_provider);
+      std::unique_ptr<ResponseProvider> response_provider);
   // Returns the ResponseProvider that backs this object.
   ResponseProvider* GetResponseProvider() { return response_provider_.get(); }
  private:
@@ -48,7 +47,7 @@ class RefCountedResponseProviderWrapper :
 // thread safe.
 class HttpServer {
  public:
-  typedef ScopedVector<ResponseProvider> ProviderList;
+  typedef std::vector<std::unique_ptr<ResponseProvider>> ProviderList;
 
   // Returns the shared HttpServer instance. Thread safe.
   static HttpServer& GetSharedInstance();
@@ -56,7 +55,7 @@ class HttpServer {
   // as well. Takes ownership of the response providers. Must be called from the
   // main thread.
   static HttpServer& GetSharedInstanceWithResponseProviders(
-      const ProviderList& response_providers);
+      ProviderList response_providers);
 
   // A convenience method for the longer form of
   // |web::test::HttpServer::GetSharedInstance().MakeUrlForHttpServer|
@@ -82,7 +81,7 @@ class HttpServer {
   // ResponseProviders must be converted at runtime after the HttpServer's port
   // is determined. Please use |MakeUrl| to handle converting URLs.
   // Must be called from the main thread.
-  void AddResponseProvider(ResponseProvider* response_provider);
+  void AddResponseProvider(std::unique_ptr<ResponseProvider> response_provider);
   // Removes the |response_provider|. Must be called from the main thread.
   void RemoveResponseProvider(ResponseProvider* response_provider);
   // Removes all the response providers. Must be called from the main thread.
