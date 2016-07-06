@@ -1192,6 +1192,10 @@ void HTMLSelectElement::dispatchBlurEvent(Element* newFocusedElement, WebFocusTy
 
 void HTMLSelectElement::deselectItemsWithoutValidation(HTMLElement* excludeElement)
 {
+    if (!multiple() && usesMenuList() && m_lastOnChangeOption && m_lastOnChangeOption != excludeElement) {
+        m_lastOnChangeOption->setSelectedState(false);
+        return;
+    }
     for (auto& element : listItems()) {
         if (element != excludeElement && isHTMLOptionElement(*element))
             toHTMLOptionElement(element)->setSelectedState(false);
