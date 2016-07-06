@@ -179,6 +179,12 @@ class TestingBrowserProcess : public BrowserProcess {
 
   std::unique_ptr<network_time::NetworkTimeTracker> network_time_tracker_;
 
+  // |tab_manager_| is null by default and will be created when
+  // GetTabManager() is invoked on supported platforms.
+#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
+  std::unique_ptr<memory::TabManager> tab_manager_;
+#endif
+
   // The following objects are not owned by TestingBrowserProcess:
   PrefService* local_state_;
   IOThread* io_thread_;
