@@ -471,7 +471,7 @@ linux_dmabuf_setup(struct weston_compositor *compositor)
  * In any case, the options are to either composite garbage or nothing,
  * or disconnect the client. This is a helper function for the latter.
  *
- * The error is sent as a INVALID_OBJECT error on the client's wl_display.
+ * The error is sent as an INVALID_OBJECT error on the client's wl_display.
  *
  * \param buffer The linux_dmabuf_buffer that is unusable.
  * \param msg A custom error message attached to the protocol error.
