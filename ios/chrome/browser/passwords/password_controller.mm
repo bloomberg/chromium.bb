@@ -34,6 +34,7 @@
 #include "ios/chrome/browser/experimental_flags.h"
 #include "ios/chrome/browser/infobars/infobar_manager_impl.h"
 #import "ios/chrome/browser/passwords/ios_chrome_save_password_infobar_delegate.h"
+#import "ios/chrome/browser/passwords/ios_chrome_update_password_infobar_delegate.h"
 #import "ios/chrome/browser/passwords/js_password_manager.h"
 #import "ios/chrome/browser/passwords/password_generation_agent.h"
 #include "ios/chrome/browser/sync/ios_chrome_profile_sync_service_factory.h"
@@ -47,6 +48,11 @@ using password_manager::PasswordGenerationManager;
 using password_manager::PasswordManager;
 using password_manager::PasswordManagerClient;
 using password_manager::PasswordManagerDriver;
+
+namespace {
+// Types of password infobars to display.
+enum class PasswordInfoBarType { SAVE, UPDATE };
+}
 
 @interface PasswordController ()
 
@@ -105,6 +111,12 @@ using password_manager::PasswordManagerDriver;
 - (BOOL)getPasswordForm:(autofill::PasswordForm*)form
          fromDictionary:(const base::DictionaryValue*)dictionary
                 pageURL:(const GURL&)pageLocation;
+
+// Displays infobar for |form| with |type|. If |type| is UPDATE, the user
+// is prompted to update the password. If |type| is SAVE, the user is prompted
+// to save the password.
+- (void)showInfoBarForForm:(std::unique_ptr<PasswordFormManager>)form
+               infoBarType:(PasswordInfoBarType)type;
 
 @end
 
@@ -616,6 +628,20 @@ bool GetPageURLAndCheckTrustLevel(web::WebState* web_state, GURL* page_url) {
   }
 }
 
+#pragma mark - PasswordManagerClientDelegate
+
+- (void)showSavePasswordInfoBar:
+    (std::unique_ptr<PasswordFormManager>)formToSave {
+  [self showInfoBarForForm:std::move(formToSave)
+               infoBarType:PasswordInfoBarType::SAVE];
+}
+
+- (void)showUpdatePasswordInfoBar:
+    (std::unique_ptr<PasswordFormManager>)formToUpdate {
+  [self showInfoBarForForm:std::move(formToUpdate)
+               infoBarType:PasswordInfoBarType::UPDATE];
+}
+
 #pragma mark -
 #pragma mark WebPasswordFormData Adaptation
 
@@ -757,26 +783,6 @@ bool GetPageURLAndCheckTrustLevel(web::WebState* web_state, GURL* page_url) {
   return YES;
 }
 
-- (void)showSavePasswordInfoBar:
-    (std::unique_ptr<PasswordFormManager>)formToSave {
-  if (!webStateObserverBridge_ || !webStateObserverBridge_->web_state())
-    return;
-
-  bool isSmartLockBrandingEnabled = false;
-  if (self.browserState) {
-    sync_driver::SyncService* sync_service =
-        IOSChromeProfileSyncServiceFactory::GetForBrowserState(
-            self.browserState);
-    isSmartLockBrandingEnabled =
-        password_bubble_experiment::IsSmartLockBrandingSavePromptEnabled(
-            sync_service);
-  }
-  infobars::InfoBarManager* infoBarManager =
-      InfoBarManagerImpl::FromWebState(webStateObserverBridge_->web_state());
-  IOSChromeSavePasswordInfoBarDelegate::Create(
-      isSmartLockBrandingEnabled, infoBarManager, std::move(formToSave));
-}
-
 - (void)fillPasswordForm:(const autofill::PasswordFormFillData&)formData
             withUsername:(const base::string16&)username
                 password:(const base::string16&)password
@@ -830,6 +836,38 @@ bool GetPageURLAndCheckTrustLevel(web::WebState* web_state, GURL* page_url) {
 
 - (JsPasswordManager*)passwordJsManager {
   return passwordJsManager_;
+}
+
+#pragma mark - Private methods
+
+- (void)showInfoBarForForm:(std::unique_ptr<PasswordFormManager>)form
+               infoBarType:(PasswordInfoBarType)type {
+  if (!webStateObserverBridge_ || !webStateObserverBridge_->web_state())
+    return;
+
+  bool isSmartLockBrandingEnabled = false;
+  if (self.browserState) {
+    sync_driver::SyncService* sync_service =
+        IOSChromeProfileSyncServiceFactory::GetForBrowserState(
+            self.browserState);
+    isSmartLockBrandingEnabled =
+        password_bubble_experiment::IsSmartLockBrandingSavePromptEnabled(
+            sync_service);
+  }
+  infobars::InfoBarManager* infoBarManager =
+      InfoBarManagerImpl::FromWebState(webStateObserverBridge_->web_state());
+
+  switch (type) {
+    case PasswordInfoBarType::SAVE:
+      IOSChromeSavePasswordInfoBarDelegate::Create(
+          isSmartLockBrandingEnabled, infoBarManager, std::move(form));
+      break;
+
+    case PasswordInfoBarType::UPDATE:
+      IOSChromeUpdatePasswordInfoBarDelegate::Create(
+          isSmartLockBrandingEnabled, infoBarManager, std::move(form));
+      break;
+  }
 }
 
 @end

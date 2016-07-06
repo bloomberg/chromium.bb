@@ -24,6 +24,10 @@ class PasswordFormManager;
 - (void)showSavePasswordInfoBar:
     (std::unique_ptr<password_manager::PasswordFormManager>)formToSave;
 
+// Shows UI to prompt the user to update the password.
+- (void)showUpdatePasswordInfoBar:
+    (std::unique_ptr<password_manager::PasswordFormManager>)formToUpdate;
+
 @property(readonly, nonatomic) ios::ChromeBrowserState* browserState;
 
 @property(readonly, nonatomic) const GURL& lastCommittedURL;
@@ -65,6 +69,7 @@ class IOSChromePasswordManagerClient
   void NotifyStorePasswordCalled() override;
   void ForceSavePassword() override;
   bool IsSavingAndFillingEnabledForCurrentPage() const override;
+  bool IsUpdatePasswordUIEnabled() const override;
   const GURL& GetLastCommittedEntryURL() const override;
   const password_manager::CredentialsFilter* GetStoreResultFilter()
       const override;

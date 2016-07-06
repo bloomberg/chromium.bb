@@ -40,6 +40,9 @@ bool IsAllBookmarksEnabled();
 // Whether the Physical Web feature is enabled.
 bool IsPhysicalWebEnabled();
 
+// Whether the update password UI is enabled.
+bool IsUpdatePasswordUIEnabled();
+
 }  // namespace experimental_flags
 
 #endif  // IOS_CHROME_BROWSER_EXPERIMENTAL_FLAGS_H_
