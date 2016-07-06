@@ -107,7 +107,6 @@ PassRefPtr<SkImage> DragImage::resizeAndOrientImage(PassRefPtr<SkImage> image, I
         ? kNone_SkFilterQuality : kHigh_SkFilterQuality);
 
     SkCanvas* canvas = surface->getCanvas();
-    canvas->clear(SK_ColorTRANSPARENT);
     canvas->concat(affineTransformToSkMatrix(transform));
     canvas->drawImage(image.get(), 0, 0, &paint);
 

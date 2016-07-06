@@ -60,7 +60,6 @@ sk_sp<SkShader> ImagePattern::createShader(const SkMatrix& localMatrix) const
     if (!surface)
         return SkShader::MakeColorShader(SK_ColorTRANSPARENT);
 
-    surface->getCanvas()->clear(SK_ColorTRANSPARENT);
     SkPaint paint;
     paint.setXfermodeMode(SkXfermode::kSrc_Mode);
     surface->getCanvas()->drawImage(m_tileImage, 0, 0, &paint);
