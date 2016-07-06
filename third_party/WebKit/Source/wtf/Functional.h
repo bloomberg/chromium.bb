@@ -28,7 +28,6 @@
 
 #include "base/bind.h"
 #include "base/threading/thread_checker.h"
-#include "base/tuple.h"
 #include "wtf/Allocator.h"
 #include "wtf/Assertions.h"
 #include "wtf/PassRefPtr.h"
@@ -37,7 +36,6 @@
 #include "wtf/ThreadSafeRefCounted.h"
 #include "wtf/TypeTraits.h"
 #include "wtf/WeakPtr.h"
-#include <tuple>
 #include <utility>
 
 namespace blink {
@@ -248,10 +246,6 @@ private:
 template <FunctionThreadAffinity threadAffinity, typename FunctionType, typename... BoundParameters>
 std::unique_ptr<Function<base::MakeUnboundRunType<FunctionType, BoundParameters...>, threadAffinity>> bindInternal(FunctionType function, BoundParameters&&... boundParameters)
 {
-    // Bound parameters' types are wrapped with std::tuple so we can pass two template parameter packs (bound
-    // parameters and unbound) to PartBoundFunctionImpl. Note that a tuple of this type isn't actually created;
-    // std::tuple<> is just for carrying the bound parameters' types. Any other class template taking a type parameter
-    // pack can be used instead of std::tuple. std::tuple is used just because it's most convenient for this purpose.
     using UnboundRunType = base::MakeUnboundRunType<FunctionType, BoundParameters...>;
     return wrapUnique(new Function<UnboundRunType, threadAffinity>(base::Bind(function, typename ParamStorageTraits<typename std::decay<BoundParameters>::type>::StorageType(std::forward<BoundParameters>(boundParameters))...)));
 }
