@@ -3,7 +3,7 @@ Test that WebSocket sends HttpOnly cookies.
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
 
-PASS cookie is "WK-websocket-test-httponly=1; WK-websocket-test=1"
+PASS cookie is "ws-httponly=1; ws=1"
 PASS successfullyParsed is true
 
 TEST COMPLETE

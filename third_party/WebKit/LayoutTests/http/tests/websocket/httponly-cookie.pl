@@ -3,8 +3,8 @@ use strict;
 
 if ($ENV{"QUERY_STRING"} eq "clear=1") {
     print "Content-Type: text/plain\r\n",
-          "Set-Cookie: WK-websocket-test=0; Path=/; Max-Age=0\r\n",
-          "Set-Cookie: WK-websocket-test-httponly=0; Path=/; HttpOnly; Max-Age=0\r\n",
+          "Set-Cookie: ws=0; Path=/; Max-Age=0\r\n",
+          "Set-Cookie: ws-httponly=0; Path=/; HttpOnly; Max-Age=0\r\n",
           "\r\n",
           "Cookies are cleared.";
     exit;
@@ -13,8 +13,8 @@ if ($ENV{"QUERY_STRING"} eq "clear=1") {
 print "Content-Type: text/html\r\n",
 # The "Path" attribute is set to "/" so that the WebSocket created below
 # will receive these cookies.
-      "Set-Cookie: WK-websocket-test=1; Path=/\r\n",
-      "Set-Cookie: WK-websocket-test-httponly=1; Path=/; HttpOnly\r\n",
+      "Set-Cookie: ws=1; Path=/\r\n",
+      "Set-Cookie: ws-httponly=1; Path=/; HttpOnly\r\n",
       "\r\n";
 print <<'HTML';
 <!DOCTYPE html>
@@ -53,7 +53,7 @@ connectAndGetRequestHeader('cookie').then(function(value)
 {
     cookie = value;
     cookie = normalizeCookie(cookie);
-    shouldBeEqualToString('cookie', 'WK-websocket-test-httponly=1; WK-websocket-test=1');
+    shouldBeEqualToString('cookie', 'ws-httponly=1; ws=1');
     clearCookies().then(finishJSTest);
 }, finishAsFailed);
 

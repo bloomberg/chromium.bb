@@ -48,7 +48,7 @@ function runTests()
         .then(echoCookie)
         .then(
         function (cookie) {
-            if (cookie != 'WK-WebSocket-test-domain-pass=1; WK-WebSocket-test-path-pass=1; WK-WebSocket-test=1')
+            if (cookie != 'ws-domain-local-ip=1; ws-path-root=1; ws=1')
                 return Promise.reject('Echoed cookie is incorrect');
 
             postMessage("DONE");

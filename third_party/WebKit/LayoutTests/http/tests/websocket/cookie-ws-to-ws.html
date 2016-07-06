@@ -22,7 +22,7 @@ ws_set_cookie.onopen = function () {
 ws_set_cookie.onclose = function (e) {
     connectAndGetRequestHeader('cookie').then(function(value) {
         cookie = normalizeCookie(value);
-        shouldBeEqualToString('cookie', 'WK-WebSocket-test-domain-pass=1; WK-WebSocket-test-path-pass=1; WK-WebSocket-test=1');
+        shouldBeEqualToString('cookie', 'ws-domain-local-ip=1; ws-path-root=1; ws=1');
         clear();
     }, finishAsFailed);
 };

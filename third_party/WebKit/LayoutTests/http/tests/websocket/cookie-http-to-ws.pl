@@ -5,8 +5,8 @@ my $originPath = $ENV{"SCRIPT_NAME"};
 
 if ($ENV{"QUERY_STRING"} eq "clear=1") {
     print "Content-Type: text/plain\r\n",
-          "Set-Cookie: WK-websocket-test-path=0; Path=$originPath; Max-Age=0\r\n",
-          "Set-Cookie: WK-websocket-test-domain=0; Path=/; Domain=127.0.0.1; Max-Age=0\r\n",
+          "Set-Cookie: ws-path-origin-script=0; Path=$originPath; Max-Age=0\r\n",
+          "Set-Cookie: ws-path-root-domain-local-ip=0; Path=/; Domain=127.0.0.1; Max-Age=0\r\n",
           "\r\n",
           "Cookies are cleared.";
     exit;
@@ -16,12 +16,12 @@ print "Content-Type: text/html\r\n",
 # Test that even if the "Path" attribute of a cookie matches the path of the
 # origin document, the cookie won't be sent in the WebSocket handshake unless
 # the "Path" attribute matches the WebSocket URL.
-      "Set-Cookie: WK-websocket-test-path=1; Path=$originPath\r\n",
+      "Set-Cookie: ws-path-origin-script=1; Path=$originPath\r\n",
 # Test that if the "Path" and "Domain" matches the WebSocket URL, the cookie
 # will be sent in the WebSocket handshake. "Path" is set to / so that the
 # WebSocket created below can pass "Path" check so that we can test that
 # "Domain" checking is working.
-      "Set-Cookie: WK-websocket-test-domain=1; Path=/; Domain=127.0.0.1\r\n",
+      "Set-Cookie: ws-path-root-domain-local-ip=1; Path=/; Domain=127.0.0.1\r\n",
       "\r\n";
 print <<'HTML';
 <script src="/js-test-resources/js-test.js"></script>
@@ -56,12 +56,12 @@ function clearCookies()
 
 var cookie = normalizeCookie(document.cookie);
 
-shouldBeEqualToString('cookie', 'WK-websocket-test-domain=1; WK-websocket-test-path=1');
+shouldBeEqualToString('cookie', 'ws-path-origin-script=1; ws-path-root-domain-local-ip=1');
 
 connectAndGetRequestHeader('cookie').then(function(value)
 {
     cookie = value;
-    shouldBeEqualToString('cookie', 'WK-websocket-test-domain=1');
+    shouldBeEqualToString('cookie', 'ws-path-root-domain-local-ip=1');
     clearCookies().then(finishJSTest);
 }, finishAsFailed);
 </script>

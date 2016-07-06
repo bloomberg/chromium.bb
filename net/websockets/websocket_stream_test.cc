@@ -988,11 +988,11 @@ TEST_F(WebSocketStreamCreateTest, CancellationDuringRead) {
 // "cookie-flood.html".
 TEST_F(WebSocketStreamCreateTest, VeryLargeResponseHeaders) {
   std::string set_cookie_headers;
-  set_cookie_headers.reserve(45 * 10000);
-  for (int i = 0; i < 10000; ++i) {
-    set_cookie_headers +=
-        base::StringPrintf("Set-Cookie: WK-websocket-test-flood-%d=1\r\n", i);
+  set_cookie_headers.reserve(24 * 20000);
+  for (int i = 0; i < 20000; ++i) {
+    set_cookie_headers += base::StringPrintf("Set-Cookie: ws-%d=1\r\n", i);
   }
+  ASSERT_GT(set_cookie_headers.size(), 256U * 1024U);
   CreateAndConnectStandard("ws://localhost/", "localhost", "/",
                            NoSubProtocols(), LocalhostOrigin(), "", "",
                            set_cookie_headers);
