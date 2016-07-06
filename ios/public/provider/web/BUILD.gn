@@ -6,10 +6,6 @@ source_set("web") {
   sources = [
     "web_controller_provider.h",
     "web_controller_provider.mm",
-    "web_ui_ios.h",
-    "web_ui_ios_controller.h",
-    "web_ui_ios_controller_factory.h",
-    "web_ui_ios_message_handler.h",
   ]
 
   deps = [

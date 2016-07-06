@@ -20,10 +20,6 @@
       'sources': [
         '../public/provider/web/web_controller_provider.h',
         '../public/provider/web/web_controller_provider.mm',
-        '../public/provider/web/web_ui_ios.h',
-        '../public/provider/web/web_ui_ios_controller.h',
-        '../public/provider/web/web_ui_ios_controller_factory.h',
-        '../public/provider/web/web_ui_ios_message_handler.h',
       ],
     },
   ],
