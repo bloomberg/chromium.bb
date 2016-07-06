@@ -6,16 +6,16 @@
 var container = document.getElementById('container');
 var nodes = [];
 var childCount = 500;
-for (var i = 0; i < childCount; ++i) {
+for (var i = 0; i < childCount; ++i)
     nodes.push(document.createElement('option'));
-    nodes[i].selected = !!(i % 2);
-}
 
 PerfTestRunner.measureRunsPerSecond({
     description: 'Measures performance of adding option elements to a single-selection select element.',
     run: function() {
-        for (var i = 0; i < childCount; ++i)
+        for (var i = 0; i < childCount; ++i) {
+            nodes[i].selected = !!(i % 2);
             container.appendChild(nodes[i]);
+        }
         container.innerHTML = '';
     }
 });
