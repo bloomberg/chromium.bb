@@ -10,6 +10,7 @@
 #include "services/ui/surfaces/surfaces_state.h"
 #include "services/ui/ws/display_binding.h"
 #include "services/ui/ws/display_manager.h"
+#include "services/ui/ws/platform_display_init_params.h"
 #include "services/ui/ws/server_window_surface_manager_test_api.h"
 #include "services/ui/ws/window_manager_access_policy.h"
 #include "services/ui/ws/window_manager_window_tree_factory.h"

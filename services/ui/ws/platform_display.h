@@ -13,31 +13,22 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
-#include "base/timer/timer.h"
 #include "build/build_config.h"
-#include "cc/surfaces/surface.h"
 #include "services/ui/public/interfaces/window_manager.mojom.h"
 #include "services/ui/public/interfaces/window_manager_constants.mojom.h"
 #include "services/ui/public/interfaces/window_tree.mojom.h"
+#include "services/ui/ws/frame_generator.h"
+#include "services/ui/ws/frame_generator_delegate.h"
 #include "services/ui/ws/platform_display_delegate.h"
-#include "services/ui/ws/platform_display_init_params.h"
-#include "ui/gfx/geometry/rect.h"
 #include "ui/platform_window/platform_window_delegate.h"
 
 namespace cc {
-class CompositorFrame;
 class CopyOutputRequest;
-class SurfaceIdAllocator;
-class SurfaceManager;
 }  // namespace cc
 
-namespace gles2 {
-class GpuState;
-}  // namespace gles2
-
-namespace shell {
-class Connector;
-}  // namespace shell
+namespace gfx {
+class Rect;
+}
 
 namespace ui {
 class CursorLoader;
@@ -47,20 +38,14 @@ struct TextInputState;
 
 namespace ui {
 
-class GpuState;
-class SurfacesState;
-class DisplayCompositor;
+class FrameGenerator;
 
 namespace ws {
 
 class EventDispatcher;
 class PlatformDisplayFactory;
+struct PlatformDisplayInitParams;
 class ServerWindow;
-
-struct ViewportMetrics {
-  gfx::Size size_in_pixels;
-  float device_scale_factor = 0.f;
-};
 
 // PlatformDisplay is used to connect the root ServerWindow to a display.
 class PlatformDisplay {
@@ -114,7 +99,8 @@ class PlatformDisplay {
 // PlatformDisplay implementation that connects to the services necessary to
 // actually display.
 class DefaultPlatformDisplay : public PlatformDisplay,
-                               public ui::PlatformWindowDelegate {
+                               public ui::PlatformWindowDelegate,
+                               private FrameGeneratorDelegate {
  public:
   explicit DefaultPlatformDisplay(const PlatformDisplayInitParams& init_params);
   ~DefaultPlatformDisplay() override;
@@ -138,19 +124,7 @@ class DefaultPlatformDisplay : public PlatformDisplay,
   int64_t GetDisplayId() const override;
 
  private:
-  void WantToDraw();
-
-  // This method initiates a top level redraw of the display.
-  // TODO(fsamuel): This should use vblank as a signal rather than a timer
-  // http://crbug.com/533042
-  void Draw();
-
-  // This is called after cc::Display has completed generating a new frame
-  // for the display. TODO(fsamuel): Idle time processing should happen here
-  // if there is budget for it.
-  void DidDraw(cc::SurfaceDrawStatus status);
   void UpdateMetrics(const gfx::Size& size, float device_scale_factor);
-  cc::CompositorFrame GenerateCompositorFrame();
 
   // ui::PlatformWindowDelegate:
   void OnBoundsChanged(const gfx::Rect& new_bounds) override;
@@ -165,25 +139,22 @@ class DefaultPlatformDisplay : public PlatformDisplay,
   void OnAcceleratedWidgetDestroyed() override;
   void OnActivationChanged(bool active) override;
 
+  // FrameGeneratorDelegate:
+  ServerWindow* GetRootWindow() override;
+  void OnCompositorFrameDrawn() override;
+  const ViewportMetrics& GetViewportMetrics() override;
+
   int64_t display_id_;
-
-  scoped_refptr<GpuState> gpu_state_;
-  scoped_refptr<SurfacesState> surfaces_state_;
-  PlatformDisplayDelegate* delegate_;
-
-  ViewportMetrics metrics_;
-  gfx::Rect dirty_rect_;
-  base::Timer draw_timer_;
-  bool frame_pending_;
-
-  std::unique_ptr<DisplayCompositor> display_compositor_;
-  std::unique_ptr<ui::PlatformWindow> platform_window_;
 
 #if !defined(OS_ANDROID)
   std::unique_ptr<ui::CursorLoader> cursor_loader_;
 #endif
 
-  base::WeakPtrFactory<DefaultPlatformDisplay> weak_factory_;
+  PlatformDisplayDelegate* delegate_ = nullptr;
+  std::unique_ptr<FrameGenerator> frame_generator_;
+
+  ViewportMetrics metrics_;
+  std::unique_ptr<ui::PlatformWindow> platform_window_;
 
   DISALLOW_COPY_AND_ASSIGN(DefaultPlatformDisplay);
 };
