@@ -662,7 +662,8 @@ TEST_F(ArcAppModelBuilderTest, RequestIcons) {
   }
 }
 
-TEST_F(ArcAppModelBuilderTest, RequestShortcutIcons) {
+// TODO(crbug.com/624446) - reenable once this test is fixed
+TEST_F(ArcAppModelBuilderTest, DISABLED_RequestShortcutIcons) {
   // Make sure we are on UI thread.
   ASSERT_TRUE(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
