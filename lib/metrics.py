@@ -20,6 +20,12 @@ except (ImportError, RuntimeError):
   interface = None
 
 
+# This number is chosen because 1.16^100 seconds is about
+# 32 days. This is a good compromise between bucket size
+# and dynamic range.
+_SECONDS_BUCKET_FACTOR = 1.16
+
+
 class MockMetric(object):
   """Mock metric object, to be returned if ts_mon is not set up."""
 
@@ -102,3 +108,17 @@ def CumulativeSmallIntegerDistribution(name):
   """
   return _GetOrConstructMetric(name, metrics.CumulativeDistributionMetric,
                                bucketer=distribution.FixedWidthBucketer(1))
+
+@_ImportSafe
+def SecondsDistribution(name):
+  """Returns a metric handle for a cumulative distribution named |name|.
+
+  The distribution handle returned by this method is better suited than the
+  default one for recording handling times, in seconds.
+
+  This metric handle has bucketing that is optimized for time intervals
+  (in seconds) in the range of 1 second to 32 days.
+  """
+  b = distribution.GeometricBucketer(growth_factor=_SECONDS_BUCKET_FACTOR)
+  return _GetOrConstructMetric(name, metrics.CumulativeDistributionMetric,
+                               bucketer=b)

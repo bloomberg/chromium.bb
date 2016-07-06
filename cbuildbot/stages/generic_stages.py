@@ -204,7 +204,7 @@ class BuilderStage(object):
     if self._build_stage_id is not None and db is not None:
       db.FinishBuildStage(self._build_stage_id, status)
 
-    metrics.CumulativeDistribution(constants.MON_STAGE_DURATION).add(
+    metrics.SecondsDistribution(constants.MON_STAGE_DURATION).add(
         elapsed_time_seconds,
         fields={'status': status,
                 'name': self.name,

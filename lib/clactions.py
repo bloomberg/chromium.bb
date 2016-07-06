@@ -976,13 +976,13 @@ def RecordSubmissionMetrics(action_history, submitted_change_strategies):
     action_history: A CLActionHistory instance for all cl actions for all
         changes in submitted_change_strategies.
   """
-  handling_time_metric = metrics.CumulativeDistribution(
+  handling_time_metric = metrics.SecondsDistribution(
       constants.MON_CL_HANDLE_TIME)
-  precq_time_metric = metrics.CumulativeDistribution(
+  precq_time_metric = metrics.SecondsDistribution(
       constants.MON_CL_PRECQ_TIME)
-  wait_time_metric = metrics.CumulativeDistribution(
+  wait_time_metric = metrics.SecondsDistribution(
       constants.MON_CL_WAIT_TIME)
-  cq_run_time_metric = metrics.CumulativeDistribution(
+  cq_run_time_metric = metrics.SecondsDistribution(
       constants.MON_CL_CQRUN_TIME)
   false_rejection_metric = metrics.CumulativeSmallIntegerDistribution(
       constants.MON_CL_FALSE_REJ)
