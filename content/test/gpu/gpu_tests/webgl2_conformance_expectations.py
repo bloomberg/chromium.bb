@@ -156,14 +156,14 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['win', 'intel'], bug=483282)
     self.Fail('deqp/functional/gles3/shaderstruct.html',
         ['win', 'intel'], bug=483282)
+    self.Flaky('deqp/functional/gles3/lifetime.html',
+        ['win', 'intel'], bug=620379)
     self.Fail('deqp/functional/gles3/texturespecification/' +
         'teximage3d_depth.html',
         ['win', 'intel'], bug=614418)
     self.Skip('deqp/functional/gles3/texturespecification/' +
         'teximage3d_depth_pbo.html',
         ['win', 'intel'], bug=617449)
-    self.Flaky('deqp/functional/gles3/lifetime.html',
-        ['win', 'intel'], bug=620379)
     self.Fail('deqp/functional/gles3/texturespecification/' +
         'texsubimage3d_depth.html',
         ['win', 'intel'], bug=614418)
@@ -172,6 +172,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['win', 'intel'], bug=614418)
     self.Fail('deqp/functional/gles3/textureformat/sized_color_3d_pot_00.html',
         ['win', 'intel'], bug=614418)
+    self.Fail('deqp/functional/gles3/textureformat/sized_color_3d_pot_01.html',
+        ['win', 'intel'], bug=614418)
     self.Fail('deqp/functional/gles3/textureformat/sized_color_3d_pot_02.html',
         ['win', 'intel'], bug=614418)
     self.Fail('deqp/functional/gles3/textureformat/sized_color_3d_pot_03.html',
@@ -179,6 +181,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('deqp/functional/gles3/textureformat/sized_depth_stencil.html',
         ['win', 'intel'], bug=614418)
     self.Fail('deqp/functional/gles3/textureformat/compressed_cube.html',
+        ['win', 'intel'], bug=614418)
+    self.Flaky('deqp/functional/gles3/textureformat/unsized_3d.html',
         ['win', 'intel'], bug=614418)
     self.Fail('deqp/functional/gles3/shadertexturefunction/texture.html',
         ['win', 'intel'], bug=483282)
@@ -193,6 +197,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['win', 'intel'], bug=483282)
     self.Fail('deqp/functional/gles3/textureshadow/2d_array_*.html',
         ['win', 'intel'], bug=483282)
+    self.Flaky('deqp/functional/gles3/transformfeedback/*.html',
+        ['win', 'intel'], bug=626068)
 
     # Mac only.
     self.Flaky('deqp/functional/gles3/shaderindexing/varying.html',
