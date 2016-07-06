@@ -110,15 +110,6 @@ MAX_RETRIES = 6
 MAX_TOTAL_ERRORS_FOR_RETRY = 30
 
 
-class Counter(object):
-  """Simple API for a counter. Easy to pass around by reference."""
-  def __init__(self):
-    self.value = 0
-
-  def increment(self):
-    self.value += 1
-
-
 def BatchGenerator(iterator, batch_size):
   """Given an iterator, break into lists of size batch_size.
 
@@ -168,6 +159,7 @@ class SymbolFile(object):
   INITIAL = 'initial'
   DUPLICATE = 'duplicate'
   UPLOADED = 'uploaded'
+  ERROR = 'error'
 
   def __init__(self, display_path, file_name):
     """An instance of this class represents a symbol file over time.
@@ -487,83 +479,93 @@ def UploadSymbolFile(upload_url, symbol, product_name):
   urllib2.urlopen(request, timeout=GetUploadTimeout(symbol))
 
 
-def PerformSymbolFileUpload(symbol, upload_url, failures,
-                            product_name='ChromeOS'):
+def PerformSymbolsFileUpload(symbols, upload_url, product_name='ChromeOS'):
   """Upload the symbols to the crash server
 
   Args:
-    symbol: An instance of SymbolFile.
+    symbols: An iterable of SymbolFiles to be uploaded.
     upload_url: URL of crash server to upload too.
     failures: Tracker for total upload failures.
     product_name: A string for stats purposes. Usually 'ChromeOS' or 'Android'.
 
-  Returns:
-    The same instance of SymbolFile (possibly with status UPLOADED).
+  Yields:
+    Each symbol from symbols, perhaps modified.
   """
-  if (failures.value < MAX_TOTAL_ERRORS_FOR_RETRY and
-      symbol.status == SymbolFile.INITIAL):
-    # Keeps us from DoS-ing the symbol server.
-    time.sleep(SLEEP_DELAY)
-    logging.info('Uploading symbol_file: %s', symbol.display_path)
-    try:
-      # This command retries the upload multiple times with growing delays. We
-      # only consider the upload a failure if these retries fail.
-      cros_build_lib.TimedCommand(
-          retry_util.RetryException,
-          (urllib2.HTTPError, urllib2.URLError), MAX_RETRIES,
-          UploadSymbolFile,
-          upload_url, symbol, product_name,
-          sleep=INITIAL_RETRY_DELAY,
-          timed_log_msg=('upload of %10i bytes took %%(delta)s' %
-                         symbol.FileSize()))
-      symbol.status = SymbolFile.UPLOADED
-    except urllib2.HTTPError as e:
-      logging.warning('could not upload: %s: HTTP %s: %s',
-                      symbol.display_name, e.code, e.reason)
-      failures.increment()
-    except (urllib2.URLError, httplib.HTTPException, socket.error) as e:
-      logging.warning('could not upload: %s: %s', symbol.display_name, e)
-      failures.increment()
+  failures = 0
 
-  # We pass the symbol along, on both success and failure.
-  return symbol
+  for s in symbols:
+    if (failures < MAX_TOTAL_ERRORS_FOR_RETRY and
+        s.status in (SymbolFile.INITIAL, SymbolFile.ERROR)):
+      # Keeps us from DoS-ing the symbol server.
+      time.sleep(SLEEP_DELAY)
+      logging.info('Uploading symbol_file: %s', s.display_path)
+      try:
+        # This command retries the upload multiple times with growing delays. We
+        # only consider the upload a failure if these retries fail.
+        cros_build_lib.TimedCommand(
+            retry_util.RetryException,
+            (urllib2.HTTPError, urllib2.URLError), MAX_RETRIES,
+            UploadSymbolFile,
+            upload_url, s, product_name,
+            sleep=INITIAL_RETRY_DELAY,
+            timed_log_msg=('upload of %10i bytes took %%(delta)s' %
+                           s.FileSize()))
+        s.status = SymbolFile.UPLOADED
+      except urllib2.HTTPError as e:
+        logging.warning('could not upload: %s: HTTP %s: %s',
+                        s.display_name, e.code, e.reason)
+        s.status = SymbolFile.ERROR
+        failures += 1
+      except (urllib2.URLError, httplib.HTTPException, socket.error) as e:
+        logging.warning('could not upload: %s: %s', s.display_name, e)
+        s.status = SymbolFile.ERROR
+        failures += 1
+
+    # We pass the symbol along, on both success and failure.
+    yield s
 
 
-def ReportResults(symbols, failures, failed_list):
+def ReportResults(symbols, failed_list):
   """Log a summary of the symbol uploading.
 
   This has the side effect of fully consuming the symbols iterator.
 
   Args:
     symbols: An iterator of SymbolFiles to be uploaded.
-    failures: Tracker for total upload failures.
     failed_list: A filename at which to write out a list of our failed uploads.
+
+  Returns:
+    The number of symbols not uploaded.
   """
   upload_failures = []
   result_counts = {
       SymbolFile.INITIAL: 0,
       SymbolFile.UPLOADED: 0,
       SymbolFile.DUPLICATE: 0,
+      SymbolFile.ERROR: 0,
   }
 
   for s in symbols:
     result_counts[s.status] += 1
-    if s.status == SymbolFile.INITIAL:
+    if s.status in [SymbolFile.INITIAL, SymbolFile.ERROR]:
       upload_failures.append(s)
 
   logging.info('Uploaded %(uploaded)d, Skipped %(duplicate)d duplicates.',
                result_counts)
 
-  if result_counts[SymbolFile.INITIAL]:
+  if result_counts[SymbolFile.INITIAL] or result_counts[SymbolFile.ERROR]:
     logging.PrintBuildbotStepWarnings()
     logging.warning('%d non-recoverable upload errors caused %d skipped'
                     ' uploads.',
-                    failures.value, result_counts[SymbolFile.INITIAL])
+                    result_counts[SymbolFile.ERROR],
+                    result_counts[SymbolFile.INITIAL])
 
   if failed_list is not None:
     with open(failed_list, 'w') as fl:
       for s in upload_failures:
         fl.write('%s\n' % s.display_path)
+
+  return result_counts[SymbolFile.INITIAL] + result_counts[SymbolFile.ERROR]
 
 
 def UploadSymbols(sym_paths, upload_url, product_name, dedupe_namespace=None,
@@ -590,9 +592,6 @@ def UploadSymbols(sym_paths, upload_url, product_name, dedupe_namespace=None,
   # some batching) each SymbolFile goes through all of these steps before the
   # next one is processed at all.
 
-  # Track unrecoverable errors, so we don't keep trying for too long.
-  failures = Counter()
-
   # This is used to hold striped
   with osutils.TempDir(prefix='upload_symbols.') as tempdir:
     symbols = FindSymbolFiles(tempdir, sym_paths)
@@ -614,17 +613,16 @@ def UploadSymbols(sym_paths, upload_url, product_name, dedupe_namespace=None,
       symbols = FindDuplicates(symbols, dedupe_namespace)
 
     # Perform uploads
-    symbols = (PerformSymbolFileUpload(s, upload_url, failures, product_name)
-               for s in symbols)
+    symbols = PerformSymbolsFileUpload(symbols, upload_url, product_name)
 
     # Record for future deduping.
     if dedupe_namespace:
       symbols = PostForDeduplication(symbols, dedupe_namespace)
 
     # Log the final results, and consume the symbols generator fully.
-    ReportResults(symbols, failures, failed_list)
+    failures = ReportResults(symbols, failed_list)
 
-  return failures.value
+  return failures
 
 
 def main(argv):

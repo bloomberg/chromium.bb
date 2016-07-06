@@ -209,17 +209,6 @@ PUBLIC 1471 0 main"""
 
 class UploadSymbolsHelpersTest(cros_test_lib.TestCase):
   """Test assorted helper functions and classes."""
-  def testCounter(self):
-    counter = upload_symbols.Counter()
-    self.assertEquals(counter.value, 0)
-
-    counter.increment()
-    self.assertEquals(counter.value, 1)
-
-    for _ in xrange(1000):
-      counter.increment()
-    self.assertEquals(counter.value, 1001)
-
   def testIsTarball(self):
     notTar = [
         '/foo/bar/test.bin',
@@ -497,16 +486,22 @@ class DeduplicateTest(SymbolsTestBase):
     self.assertEqual(self.push_mock.call_count, 1)
 
 
-class PerformSymbolFileUploadTest(SymbolsTestBase):
+class PerformSymbolFilesUploadTest(SymbolsTestBase):
   """Test PerformSymbolFile, and it's helper methods."""
   def setUp(self):
-    self.symfile = self.createSymbolFile('symfile.sym')
-    self.failures = upload_symbols.Counter()
+    self.sym_initial = self.createSymbolFile(
+        'initial.sym')
+    self.sym_error = self.createSymbolFile(
+        'error.sym', status=upload_symbols.SymbolFile.ERROR)
+    self.sym_duplicate = self.createSymbolFile(
+        'duplicate.sym', status=upload_symbols.SymbolFile.DUPLICATE)
+    self.sym_uploaded = self.createSymbolFile(
+        'uploaded.sym', status=upload_symbols.SymbolFile.UPLOADED)
 
   def testGetUploadTimeout(self):
     """Test GetUploadTimeout helper function."""
     # Timeout for small file.
-    self.assertEqual(upload_symbols.GetUploadTimeout(self.symfile),
+    self.assertEqual(upload_symbols.GetUploadTimeout(self.sym_initial),
                      upload_symbols.UPLOAD_MIN_TIMEOUT)
 
     # Timeout for 300M file.
@@ -514,43 +509,114 @@ class PerformSymbolFileUploadTest(SymbolsTestBase):
     self.assertEqual(upload_symbols.GetUploadTimeout(large), 1542)
 
   def testUploadSymbolFile(self):
-    upload_symbols.UploadSymbolFile('fake_url', self.symfile, 'product')
+    upload_symbols.UploadSymbolFile('fake_url', self.sym_initial, 'product')
     # TODO: Examine mock in more detail to make sure request is correct.
     self.assertEqual(self.urlopen_mock.call_count, 1)
 
-  def testPerformSymbolFileUpload(self):
+  def testPerformSymbolsFileUpload(self):
     """We upload on first try."""
-    result = upload_symbols.PerformSymbolFileUpload(
-        self.symfile, 'fake_url', self.failures, product_name='product')
+    symbols = [self.sym_initial]
 
-    self.assertIs(result, self.symfile)
-    self.assertEqual(result.status, upload_symbols.SymbolFile.UPLOADED)
+    result = upload_symbols.PerformSymbolsFileUpload(
+        symbols, 'fake_url', product_name='product')
+
+    self.assertEqual(list(result), symbols)
+    self.assertEqual(self.sym_initial.status,
+                     upload_symbols.SymbolFile.UPLOADED)
     self.assertEqual(self.urlopen_mock.call_count, 1)
-    self.assertEqual(self.failures.value, 0)
 
-  def testPerformSymbolFileUploadFailure(self):
+  def testPerformSymbolsFileUploadFailure(self):
     """All network requests fail."""
     self.urlopen_mock.side_effect = urllib2.URLError('network failure')
+    symbols = [self.sym_initial]
 
-    result = upload_symbols.PerformSymbolFileUpload(
-        self.symfile, 'fake_url', self.failures, product_name='product')
+    result = upload_symbols.PerformSymbolsFileUpload(
+        symbols, 'fake_url', product_name='product')
 
-    self.assertIs(result, self.symfile)
-    self.assertEqual(result.status, upload_symbols.SymbolFile.INITIAL)
+    self.assertEqual(list(result), symbols)
+    self.assertEqual(self.sym_initial.status, upload_symbols.SymbolFile.ERROR)
     self.assertEqual(self.urlopen_mock.call_count, 7)
-    self.assertEqual(self.failures.value, 1)
 
-  def testPerformSymbolFileUploadTransientFailure(self):
+  def testPerformSymbolsFileUploadTransisentFailure(self):
     """We fail once, then succeed."""
     self.urlopen_mock.side_effect = (urllib2.URLError('network failure'), None)
+    symbols = [self.sym_initial]
 
-    result = upload_symbols.PerformSymbolFileUpload(
-        self.symfile, 'fake_url', self.failures, product_name='product')
+    result = upload_symbols.PerformSymbolsFileUpload(
+        symbols, 'fake_url', product_name='product')
 
-    self.assertIs(result, self.symfile)
-    self.assertEqual(result.status, upload_symbols.SymbolFile.UPLOADED)
+    self.assertEqual(list(result), symbols)
+    self.assertEqual(self.sym_initial.status,
+                     upload_symbols.SymbolFile.UPLOADED)
     self.assertEqual(self.urlopen_mock.call_count, 2)
-    self.assertEqual(self.failures.value, 0)
+
+  def testPerformSymbolsFileUploadMixed(self):
+    """Upload symbols in mixed starting states.
+
+    Demonstrate that INITIAL and ERROR are uploaded, but DUPLICATE/UPLOADED are
+    ignored.
+    """
+    symbols = [self.sym_initial, self.sym_error,
+               self.sym_duplicate, self.sym_uploaded]
+
+    result = upload_symbols.PerformSymbolsFileUpload(
+        symbols, 'fake_url', product_name='product')
+
+    #
+    self.assertEqual(list(result), symbols)
+    self.assertEqual(self.sym_initial.status,
+                     upload_symbols.SymbolFile.UPLOADED)
+    self.assertEqual(self.sym_error.status,
+                     upload_symbols.SymbolFile.UPLOADED)
+    self.assertEqual(self.sym_duplicate.status,
+                     upload_symbols.SymbolFile.DUPLICATE)
+    self.assertEqual(self.sym_uploaded.status,
+                     upload_symbols.SymbolFile.UPLOADED)
+    self.assertEqual(self.urlopen_mock.call_count, 2)
+
+
+  def testPerformSymbolsFileUploadErrorOut(self):
+    """Demonstate we exit only after X errors."""
+
+    symbol_count = upload_symbols.MAX_TOTAL_ERRORS_FOR_RETRY + 10
+    symbols = []
+    fail_file = None
+
+    # potentially twice as many errors as we should attempt.
+    for _ in xrange(symbol_count):
+      # Each loop will get unique SymbolFile instances that use the same files.
+      fail = self.createSymbolFile('fail.sym')
+      fail_file = fail.file_name
+      symbols.append(self.createSymbolFile('pass.sym'))
+      symbols.append(fail)
+
+    # Mock out UploadSymbolFile and fail for fail.sym files.
+    def failSome(_url, symbol, _product):
+      if symbol.file_name == fail_file:
+        raise urllib2.URLError('network failure')
+
+    self.PatchObject(upload_symbols, 'UploadSymbolFile', side_effect=failSome)
+
+    result = upload_symbols.PerformSymbolsFileUpload(
+        symbols, 'fake_url', product_name='product')
+
+    self.assertEqual(list(result), symbols)
+
+    passed = sum(s.status == upload_symbols.SymbolFile.UPLOADED
+                 for s in symbols)
+    failed = sum(s.status == upload_symbols.SymbolFile.ERROR
+                 for s in symbols)
+    skipped = sum(s.status == upload_symbols.SymbolFile.INITIAL
+                  for s in symbols)
+
+    # Shows we all pass.sym files worked until limit hit.
+    self.assertEqual(passed, upload_symbols.MAX_TOTAL_ERRORS_FOR_RETRY)
+
+    # Shows we all fail.sym files failed until limit hit.
+    self.assertEqual(failed, upload_symbols.MAX_TOTAL_ERRORS_FOR_RETRY)
+
+    # Shows both pass/fail were skipped after limit hit.
+    self.assertEqual(skipped, 10 * 2)
 
 
 class UploadSymbolsTest(SymbolsTestBase):
@@ -614,7 +680,6 @@ class UploadSymbolsTest(SymbolsTestBase):
     self.assertEquals(result, 1)
     self.assertEqual(upload_mock.call_count, 8)
     self.assertEquals(osutils.ReadFile(self.failure_file), 'fail.sym\n')
-
 
 # TODO: We removed --network integration tests.
 
