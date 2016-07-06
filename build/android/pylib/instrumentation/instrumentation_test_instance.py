@@ -240,7 +240,7 @@ def FilterTests(tests, test_filter=None, annotations=None,
     return any(
         ak in all_annotations
         and annotation_value_matches(av, all_annotations[ak])
-        for ak, av in filter_annotations.iteritems())
+        for ak, av in filter_annotations)
 
   def annotation_value_matches(filter_av, av):
     if filter_av is None:
@@ -486,33 +486,29 @@ class InstrumentationTestInstance(test_instance.TestInstance):
     if args.test_filter:
       self._test_filter = args.test_filter.replace('#', '.')
 
-    def annotation_dict_element(a):
-      a = a.split('=')
+    def annotation_element(a):
+      a = a.split('=', 1)
       return (a[0], a[1] if len(a) == 2 else None)
 
     if args.annotation_str:
-      self._annotations = dict(
-          annotation_dict_element(a)
-          for a in args.annotation_str.split(','))
+      self._annotations = [
+          annotation_element(a) for a in args.annotation_str.split(',')]
     elif not self._test_filter:
-      self._annotations = dict(
-          annotation_dict_element(a)
-          for a in _DEFAULT_ANNOTATIONS)
+      self._annotations = [
+          annotation_element(a) for a in _DEFAULT_ANNOTATIONS]
     else:
-      self._annotations = {}
+      self._annotations = []
 
     if args.exclude_annotation_str:
-      self._excluded_annotations = dict(
-          annotation_dict_element(a)
-          for a in args.exclude_annotation_str.split(','))
+      self._excluded_annotations = [
+          annotation_element(a) for a in args.exclude_annotation_str.split(',')]
     else:
-      self._excluded_annotations = {}
+      self._excluded_annotations = []
 
-    self._excluded_annotations.update(
-        {
-          a: None for a in _EXCLUDE_UNLESS_REQUESTED_ANNOTATIONS
-          if a not in self._annotations
-        })
+    requested_annotations = set(a[0] for a in self._annotations)
+    self._excluded_annotations.extend(
+        annotation_element(a) for a in _EXCLUDE_UNLESS_REQUESTED_ANNOTATIONS
+        if a not in requested_annotations)
 
   def _initializeFlagAttributes(self, args):
     self._flags = ['--enable-test-intents']

@@ -287,7 +287,7 @@ class InstrumentationTestInstanceTest(unittest.TestCase):
       },
     ]
 
-    o._annotations = {'SmallTest': None}
+    o._annotations = [('SmallTest', None)]
     with mock.patch(_INSTRUMENTATION_TEST_INSTANCE_PATH % '_GetTestsFromPickle',
                     return_value=raw_tests):
       actual_tests = o.GetTests()
@@ -334,7 +334,7 @@ class InstrumentationTestInstanceTest(unittest.TestCase):
       },
     ]
 
-    o._excluded_annotations = {'SmallTest': None}
+    o._excluded_annotations = [('SmallTest', None)]
     with mock.patch(_INSTRUMENTATION_TEST_INSTANCE_PATH % '_GetTestsFromPickle',
                     return_value=raw_tests):
       actual_tests = o.GetTests()
@@ -391,7 +391,7 @@ class InstrumentationTestInstanceTest(unittest.TestCase):
       },
     ]
 
-    o._annotations = {'TestValue': '1'}
+    o._annotations = [('TestValue', '1')]
     with mock.patch(_INSTRUMENTATION_TEST_INSTANCE_PATH % '_GetTestsFromPickle',
                     return_value=raw_tests):
       actual_tests = o.GetTests()
@@ -438,7 +438,65 @@ class InstrumentationTestInstanceTest(unittest.TestCase):
       },
     ]
 
-    o._annotations = {'Feature': 'Bar'}
+    o._annotations = [('Feature', 'Bar')]
+    with mock.patch(_INSTRUMENTATION_TEST_INSTANCE_PATH % '_GetTestsFromPickle',
+                    return_value=raw_tests):
+      actual_tests = o.GetTests()
+
+    self.assertEquals(actual_tests, expected_tests)
+
+  def testGetTests_multipleAnnotationValuesRequested(self):
+    o = self.createTestInstance()
+    raw_tests = [
+      {
+        'annotations': {'Feature': {'value': ['Foo']}},
+        'class': 'org.chromium.test.SampleTest',
+        'methods': [
+          {
+            'annotations': {'SmallTest': None},
+            'method': 'testMethod1',
+          },
+          {
+            'annotations': {
+              'Feature': {'value': ['Baz']},
+              'MediumTest': None,
+            },
+            'method': 'testMethod2',
+          },
+        ],
+      },
+      {
+        'annotations': {'Feature': {'value': ['Bar']}},
+        'class': 'org.chromium.test.SampleTest2',
+        'methods': [
+          {
+            'annotations': {'SmallTest': None},
+            'method': 'testMethod1',
+          },
+        ],
+      }
+    ]
+
+    expected_tests = [
+      {
+        'annotations': {
+          'Feature': {'value': ['Baz']},
+          'MediumTest': None,
+        },
+        'class': 'org.chromium.test.SampleTest',
+        'method': 'testMethod2',
+      },
+      {
+        'annotations': {
+          'Feature': {'value': ['Bar']},
+          'SmallTest': None,
+        },
+        'class': 'org.chromium.test.SampleTest2',
+        'method': 'testMethod1',
+      },
+    ]
+
+    o._annotations = [('Feature', 'Bar'), ('Feature', 'Baz')]
     with mock.patch(_INSTRUMENTATION_TEST_INSTANCE_PATH % '_GetTestsFromPickle',
                     return_value=raw_tests):
       actual_tests = o.GetTests()
