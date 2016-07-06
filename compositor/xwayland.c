@@ -24,6 +24,8 @@
  * SOFTWARE.
  */
 
+#include "config.h"
+
 #include <signal.h>
 #include <sys/socket.h>
 
