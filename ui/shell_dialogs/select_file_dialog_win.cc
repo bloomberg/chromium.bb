@@ -445,7 +445,6 @@ bool SelectFileDialogImpl::SaveFileAsWithFilter(
       filter.empty() ? NULL : filter.c_str();
   save_as.GetOPENFILENAME()->nFilterIndex = *index;
   save_as.GetOPENFILENAME()->lpstrDefExt = &def_ext[0];
-  save_as.MaybeInstallWindowPositionHookForSaveAsOnXP();
 
   if (!get_save_file_name_impl_.Run(save_as.GetOPENFILENAME()))
     return false;

@@ -61,8 +61,6 @@ void IPCShellHandler::OnGetSaveFileName(
   open_file_name.GetOPENFILENAME()->lpstrDefExt =
       params.default_extension.c_str();
 
-  open_file_name.MaybeInstallWindowPositionHookForSaveAsOnXP();
-
   if (::GetSaveFileName(open_file_name.GetOPENFILENAME())) {
     content::UtilityThread::Get()->Send(
         new ChromeUtilityHostMsg_GetSaveFileName_Result(
