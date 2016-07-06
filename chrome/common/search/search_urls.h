@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_COMMON_SEARCH_URLS_H_
-#define CHROME_COMMON_SEARCH_URLS_H_
+#ifndef CHROME_COMMON_SEARCH_SEARCH_URLS_H_
+#define CHROME_COMMON_SEARCH_SEARCH_URLS_H_
 
 class GURL;
 
@@ -18,4 +18,4 @@ bool MatchesOriginAndPath(const GURL& my_url, const GURL& other_url);
 
 }  // namespace search
 
-#endif  // CHROME_COMMON_SEARCH_URLS_H_
+#endif  // CHROME_COMMON_SEARCH_SEARCH_URLS_H_

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_COMMON_SEARCH_TYPES_H_
-#define CHROME_COMMON_SEARCH_TYPES_H_
+#ifndef CHROME_COMMON_SEARCH_SEARCH_TYPES_H_
+#define CHROME_COMMON_SEARCH_SEARCH_TYPES_H_
 
 // The Mode structure encodes the visual states encountered when interacting
 // with the NTP and the Omnibox.
@@ -87,4 +87,4 @@ struct SearchMode {
   Origin origin;
 };
 
-#endif  // CHROME_COMMON_SEARCH_TYPES_H_
+#endif  // CHROME_COMMON_SEARCH_SEARCH_TYPES_H_

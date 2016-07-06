@@ -15,7 +15,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "chrome/common/instant_types.h"
+#include "chrome/common/search/instant_types.h"
 
 // In InstantExtended, iframes are used to display objects which can only be
 // referenced by the Instant page using an ID (restricted ID). These IDs need to

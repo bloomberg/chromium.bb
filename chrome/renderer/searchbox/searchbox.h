@@ -10,8 +10,8 @@
 
 #include "base/macros.h"
 #include "base/strings/string16.h"
-#include "chrome/common/instant_types.h"
-#include "chrome/common/ntp_logging_events.h"
+#include "chrome/common/search/instant_types.h"
+#include "chrome/common/search/ntp_logging_events.h"
 #include "chrome/renderer/instant_restricted_id_cache.h"
 #include "components/omnibox/common/omnibox_focus_state.h"
 #include "content/public/renderer/render_view_observer.h"

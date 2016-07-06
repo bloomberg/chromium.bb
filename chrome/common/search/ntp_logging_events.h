@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_COMMON_NTP_LOGGING_EVENTS_H_
-#define CHROME_COMMON_NTP_LOGGING_EVENTS_H_
+#ifndef CHROME_COMMON_SEARCH_NTP_LOGGING_EVENTS_H_
+#define CHROME_COMMON_SEARCH_NTP_LOGGING_EVENTS_H_
 
 // The different types of events that are logged from the NTP. This enum is used
 // to transfer information from the NTP javascript to the renderer and is not
@@ -49,4 +49,4 @@ enum NTPLoggingEventType {
   NTP_EVENT_TYPE_LAST = NTP_TILE_LOADED
 };
 
-#endif  // CHROME_COMMON_NTP_LOGGING_EVENTS_H_
+#endif  // CHROME_COMMON_SEARCH_NTP_LOGGING_EVENTS_H_

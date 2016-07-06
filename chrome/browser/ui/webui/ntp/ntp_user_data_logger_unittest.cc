@@ -7,7 +7,7 @@
 #include "base/metrics/histogram.h"
 #include "base/metrics/statistics_recorder.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/common/ntp_logging_events.h"
+#include "chrome/common/search/ntp_logging_events.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

@@ -9,7 +9,7 @@
 #include "chrome/browser/ui/search/search_model_observer.h"
 #include "chrome/browser/ui/search/search_tab_helper.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/search_types.h"
+#include "chrome/common/search/search_types.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 
 namespace {

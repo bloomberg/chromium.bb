@@ -9,7 +9,7 @@
 
 #include "base/macros.h"
 #include "base/strings/string16.h"
-#include "chrome/common/instant_types.h"
+#include "chrome/common/search/instant_types.h"
 #include "content/public/browser/navigation_controller.h"
 
 class GURL;

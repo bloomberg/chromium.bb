@@ -13,7 +13,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/ui/tab_contents/core_tab_helper.h"
 #include "chrome/browser/ui/webui/ntp/ntp_user_data_logger.h"
-#include "chrome/common/ntp_logging_events.h"
+#include "chrome/common/search/ntp_logging_events.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"

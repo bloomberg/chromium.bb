@@ -17,7 +17,7 @@
 #include "base/macros.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/ui/search/instant_page.h"
-#include "chrome/common/search_types.h"
+#include "chrome/common/search/search_types.h"
 #include "ui/gfx/native_widget_types.h"
 
 class BrowserInstantController;

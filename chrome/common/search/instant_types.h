@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_COMMON_INSTANT_TYPES_H_
-#define CHROME_COMMON_INSTANT_TYPES_H_
+#ifndef CHROME_COMMON_SEARCH_INSTANT_TYPES_H_
+#define CHROME_COMMON_SEARCH_INSTANT_TYPES_H_
 
 #include <stdint.h>
 
@@ -190,4 +190,4 @@ struct EmbeddedSearchRequestParams {
   // For more details, see http://goto.google.com/binary-clients-logging.
   base::string16 assisted_query_stats;
 };
-#endif  // CHROME_COMMON_INSTANT_TYPES_H_
+#endif  // CHROME_COMMON_SEARCH_INSTANT_TYPES_H_

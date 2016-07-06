@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/instant_types.h"
+#include "chrome/common/search/instant_types.h"
 
 #include "base/strings/utf_string_conversions.h"
 #include "net/base/escape.h"

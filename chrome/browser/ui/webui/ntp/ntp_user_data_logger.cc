@@ -14,7 +14,7 @@
 #include "chrome/browser/search/most_visited_iframe_source.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
-#include "chrome/common/search_urls.h"
+#include "chrome/common/search/search_urls.h"
 #include "chrome/common/url_constants.h"
 #include "components/browser_sync/browser/profile_sync_service.h"
 #include "components/sync_sessions/sessions_sync_manager.h"

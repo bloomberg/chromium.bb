@@ -13,7 +13,7 @@
 #include "base/macros.h"
 #include "base/strings/string16.h"
 #include "base/time/time.h"
-#include "chrome/common/ntp_logging_events.h"
+#include "chrome/common/search/ntp_logging_events.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 
