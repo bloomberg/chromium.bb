@@ -16,7 +16,7 @@
  * @const
  */
 var LOG_TYPE = {
-  // The suggestion is coming from the server. Unused here.
+  // The suggestion is coming from the server.
   NTP_SERVER_SIDE_SUGGESTION: 0,
   // The suggestion is coming from the client.
   NTP_CLIENT_SIDE_SUGGESTION: 1,
@@ -47,6 +47,18 @@ var LOG_TYPE = {
 
 
 /**
+ * The different sources that an NTP tile can have.
+ * Note: Keep in sync with common/ntp_logging_events.h
+ * @enum {number}
+ * @const
+ */
+var NTPLoggingTileSource = {
+  CLIENT: 0,
+  SERVER: 1,
+};
+
+
+/**
  * Total number of tiles to show at any time. If the host page doesn't send
  * enough tiles, we fill them blank.
  * @const {number}
@@ -67,19 +79,6 @@ var USE_ICONS = false;
  */
 var NUM_TITLE_LINES = 1;
 
-/**
- * Type of the impression provider for a generic client-provided suggestion.
- * @type {string}
- * @const
- */
-var CLIENT_PROVIDER_NAME = 'client';
-
-/**
- * Type of the impression provider for a generic server-provided suggestion.
- * @type {string}
- * @const
- */
-var SERVER_PROVIDER_NAME = 'server';
 
 /**
  * The origin of this request.
@@ -124,25 +123,23 @@ var logEvent = function(eventType) {
 };
 
 /**
- * Log impression of a most visited tile on the NTP.
- * @param {number} tileIndex position of the tile, >= 0 and < NUMBER_OF_TILES
- * @param {string} provider specifies the UMA histogram to be reported
- *     (NewTabPage.SuggestionsImpression.{provider})
+ * Log impression of an NTP tile.
+ * @param {number} tileIndex Position of the tile, >= 0 and < NUMBER_OF_TILES.
+ * @param {number} tileSource The source from NTPLoggingTileSource.
  */
-function logMostVisitedImpression(tileIndex, provider) {
+function logMostVisitedImpression(tileIndex, tileSource) {
   chrome.embeddedSearch.newTabPage.logMostVisitedImpression(tileIndex,
-                                                            provider);
+                                                            tileSource);
 }
 
 /**
- * Log click on a most visited tile on the NTP.
- * @param {number} tileIndex position of the tile, >= 0 and < NUMBER_OF_TILES
- * @param {string} provider specifies the UMA histogram to be reported
- *     (NewTabPage.SuggestionsImpression.{provider})
+ * Log click on an NTP tile.
+ * @param {number} tileIndex Position of the tile, >= 0 and < NUMBER_OF_TILES.
+ * @param {number} tileSource The source from NTPLoggingTileSource.
  */
-function logMostVisitedNavigation(tileIndex, provider) {
+function logMostVisitedNavigation(tileIndex, tileSource) {
   chrome.embeddedSearch.newTabPage.logMostVisitedNavigation(tileIndex,
-                                                            provider);
+                                                            tileSource);
 }
 
 /**
@@ -325,7 +322,7 @@ var addTile = function(args) {
       return;
 
     data.tid = data.rid;
-    data.provider = CLIENT_PROVIDER_NAME;
+    data.tileSource = NTPLoggingTileSource.CLIENT;
     if (!data.faviconUrl) {
       data.faviconUrl = 'chrome-search://favicon/size/16@' +
           window.devicePixelRatio + 'x/' + data.renderViewId + '/' + data.tid;
@@ -334,11 +331,10 @@ var addTile = function(args) {
     tiles.appendChild(renderTile(data));
   } else if (args.url) {
     // If a URL is passed: a server-side suggestion.
-    args.provider = args.provider || SERVER_PROVIDER_NAME;
+    args.tileSource = NTPLoggingTileSource.SERVER;
     // check sanity of the arguments
     if (/^javascript:/i.test(args.url) ||
-        /^javascript:/i.test(args.thumbnailUrl) ||
-        !/^[a-z0-9]{0,8}$/i.test(args.provider))
+        /^javascript:/i.test(args.thumbnailUrl))
       return;
     logEvent(LOG_TYPE.NTP_SERVER_SIDE_SUGGESTION);
     tiles.appendChild(renderTile(args));
@@ -392,9 +388,7 @@ var renderTile = function(data) {
   logEvent(LOG_TYPE.NTP_TILE);
   // The tile will be appended to tiles.
   var position = tiles.children.length;
-  if (data.provider) {
-    logMostVisitedImpression(position, data.provider);
-  }
+  logMostVisitedImpression(position, data.tileSource);
 
   tile.className = 'mv-tile';
   tile.setAttribute('data-tid', data.tid);
@@ -421,9 +415,7 @@ var renderTile = function(data) {
   }
 
   tile.addEventListener('click', function(ev) {
-    if (data.provider) {
-      logMostVisitedNavigation(position, data.provider);
-    }
+    logMostVisitedNavigation(position, data.tileSource);
   });
 
   tile.addEventListener('keydown', function(event) {

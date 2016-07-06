@@ -41,11 +41,11 @@ class NTPUserDataLogger
   // this event happened.
   void LogEvent(NTPLoggingEventType event, base::TimeDelta time);
 
-  // Logs an impression on one of the Most Visited tiles by a given provider.
-  void LogMostVisitedImpression(int position, const base::string16& provider);
+  // Logs an impression on one of the NTP tiles by a given source.
+  void LogMostVisitedImpression(int position, NTPLoggingTileSource tile_source);
 
-  // Logs a navigation on one of the Most Visited tiles by a given provider.
-  void LogMostVisitedNavigation(int position, const base::string16& provider);
+  // Logs a navigation on one of the NTP tiles by a given source.
+  void LogMostVisitedNavigation(int position, NTPLoggingTileSource tile_source);
 
   // content::WebContentsObserver override
   void NavigationEntryCommitted(

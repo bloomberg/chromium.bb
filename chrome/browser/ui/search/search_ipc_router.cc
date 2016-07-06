@@ -13,24 +13,6 @@
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/web_contents.h"
 
-namespace {
-
-bool IsProviderValid(const base::string16& provider) {
-  // Only allow string of 8 alphanumeric characters or less as providers.
-  // The empty string is considered valid and should be treated as if no
-  // provider were specified.
-  if (provider.length() > 8)
-    return false;
-  for (base::string16::const_iterator it = provider.begin();
-       it != provider.end(); ++it) {
-    if (!base::IsAsciiAlpha(*it) && !base::IsAsciiDigit(*it))
-      return false;
-  }
-  return true;
-}
-
-}  // namespace
-
 SearchIPCRouter::SearchIPCRouter(content::WebContents* web_contents,
                                  Delegate* delegate,
                                  std::unique_ptr<Policy> policy)
@@ -254,8 +236,8 @@ void SearchIPCRouter::OnLogEvent(int page_seq_no,
 }
 
 void SearchIPCRouter::OnLogMostVisitedImpression(
-    int page_seq_no, int position, const base::string16& provider) const {
-  if (page_seq_no != commit_counter_ || !IsProviderValid(provider))
+    int page_seq_no, int position, NTPLoggingTileSource tile_source) const {
+  if (page_seq_no != commit_counter_)
     return;
 
   delegate_->OnInstantSupportDetermined(true);
@@ -263,12 +245,12 @@ void SearchIPCRouter::OnLogMostVisitedImpression(
   if (!policy_->ShouldProcessLogEvent())
     return;
 
-  delegate_->OnLogMostVisitedImpression(position, provider);
+  delegate_->OnLogMostVisitedImpression(position, tile_source);
 }
 
 void SearchIPCRouter::OnLogMostVisitedNavigation(
-    int page_seq_no, int position, const base::string16& provider) const {
-  if (page_seq_no != commit_counter_ || !IsProviderValid(provider))
+    int page_seq_no, int position, NTPLoggingTileSource tile_source) const {
+  if (page_seq_no != commit_counter_)
     return;
 
   delegate_->OnInstantSupportDetermined(true);
@@ -276,7 +258,7 @@ void SearchIPCRouter::OnLogMostVisitedNavigation(
   if (!policy_->ShouldProcessLogEvent())
     return;
 
-  delegate_->OnLogMostVisitedNavigation(position, provider);
+  delegate_->OnLogMostVisitedNavigation(position, tile_source);
 }
 
 void SearchIPCRouter::OnPasteAndOpenDropDown(int page_seq_no,

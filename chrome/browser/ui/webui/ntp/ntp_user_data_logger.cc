@@ -58,6 +58,17 @@ const char kMostVisitedNavigationHistogramName[] =
 const char kMostVisitedNavigationHistogramWithProvider[] =
     "NewTabPage.MostVisited.%s";
 
+std::string GetSourceName(NTPLoggingTileSource tile_source) {
+  switch (tile_source) {
+    case NTPLoggingTileSource::CLIENT:
+      return "client";
+    case NTPLoggingTileSource::SERVER:
+      return "server";
+  }
+  NOTREACHED();
+  return std::string();
+}
+
 }  // namespace
 
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(NTPUserDataLogger);
@@ -207,47 +218,37 @@ void NTPUserDataLogger::LogEvent(NTPLoggingEventType event,
 }
 
 void NTPUserDataLogger::LogMostVisitedImpression(
-    int position, const base::string16& provider) {
-  // Log the Most Visited navigation for navigations that have providers and
-  // those that dont.
+    int position, NTPLoggingTileSource tile_source) {
   UMA_HISTOGRAM_ENUMERATION(kMostVisitedImpressionHistogramName, position,
                             kNumMostVisited);
 
-  // If a provider is specified, log the metric specific to it.
-  if (!provider.empty()) {
-    // Cannot rely on UMA histograms macro because the name of the histogram is
-    // generated dynamically.
-    base::HistogramBase* counter = base::LinearHistogram::FactoryGet(
-        base::StringPrintf(kMostVisitedImpressionHistogramWithProvider,
-                           base::UTF16ToUTF8(provider).c_str()),
-        1,
-        kNumMostVisited,
-        kNumMostVisited + 1,
-        base::Histogram::kUmaTargetedHistogramFlag);
-    counter->Add(position);
-  }
+  // Cannot rely on UMA histograms macro because the name of the histogram is
+  // generated dynamically.
+  base::HistogramBase* counter = base::LinearHistogram::FactoryGet(
+      base::StringPrintf(kMostVisitedImpressionHistogramWithProvider,
+                         GetSourceName(tile_source).c_str()),
+      1,
+      kNumMostVisited,
+      kNumMostVisited + 1,
+      base::Histogram::kUmaTargetedHistogramFlag);
+  counter->Add(position);
 }
 
 void NTPUserDataLogger::LogMostVisitedNavigation(
-    int position, const base::string16& provider) {
-  // Log the Most Visited navigation for navigations that have providers and
-  // those that dont.
+    int position, NTPLoggingTileSource tile_source) {
   UMA_HISTOGRAM_ENUMERATION(kMostVisitedNavigationHistogramName, position,
                             kNumMostVisited);
 
-  // If a provider is specified, log the metric specific to it.
-  if (!provider.empty()) {
-    // Cannot rely on UMA histograms macro because the name of the histogram is
-    // generated dynamically.
-    base::HistogramBase* counter = base::LinearHistogram::FactoryGet(
-        base::StringPrintf(kMostVisitedNavigationHistogramWithProvider,
-                           base::UTF16ToUTF8(provider).c_str()),
-        1,
-        kNumMostVisited,
-        kNumMostVisited + 1,
-        base::Histogram::kUmaTargetedHistogramFlag);
-    counter->Add(position);
-  }
+  // Cannot rely on UMA histograms macro because the name of the histogram is
+  // generated dynamically.
+  base::HistogramBase* counter = base::LinearHistogram::FactoryGet(
+      base::StringPrintf(kMostVisitedNavigationHistogramWithProvider,
+                         GetSourceName(tile_source).c_str()),
+      1,
+      kNumMostVisited,
+      kNumMostVisited + 1,
+      base::Histogram::kUmaTargetedHistogramFlag);
+  counter->Add(position);
 
   // Records the action. This will be available as a time-stamped stream
   // server-side and can be used to compute time-to-long-dwell.

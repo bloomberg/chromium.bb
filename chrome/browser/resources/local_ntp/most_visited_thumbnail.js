@@ -14,9 +14,9 @@ window.addEventListener('DOMContentLoaded', function() {
     function logEvent(eventName) {
       chrome.embeddedSearch.newTabPage.logEvent(eventName);
     }
-    function logMostVisitedImpression(tileIndex, provider) {
-      chrome.embeddedSearch.newTabPage.logMostVisitedImpression(
-          tileIndex, provider);
+    function logMostVisitedImpression(tileIndex, tileSource) {
+      chrome.embeddedSearch.newTabPage.logMostVisitedImpression(tileIndex,
+                                                                tileSource);
     }
     function displayLink(link) {
       document.body.appendChild(link);
@@ -25,7 +25,7 @@ window.addEventListener('DOMContentLoaded', function() {
     function showDomainElement() {
       var link = createMostVisitedLink(
           params, data.url, data.title, undefined, data.direction,
-          data.provider);
+          data.tileSource);
       var domain = document.createElement('div');
       domain.textContent = data.domain;
       link.appendChild(domain);
@@ -36,7 +36,7 @@ window.addEventListener('DOMContentLoaded', function() {
     function showEmptyTile() {
       displayLink(createMostVisitedLink(
           params, data.url, data.title, undefined, data.direction,
-          data.provider));
+          data.tileSource));
     }
     // Creates and adds an image.
     function createThumbnail(src, imageClass) {
@@ -47,7 +47,7 @@ window.addEventListener('DOMContentLoaded', function() {
       image.onload = function() {
         var link = createMostVisitedLink(
             params, data.url, data.title, undefined, data.direction,
-            data.provider);
+            data.tileSource);
         // Use blocker to prevent context menu from showing image-related items.
         var blocker = document.createElement('span');
         blocker.className = 'blocker';
@@ -91,8 +91,8 @@ window.addEventListener('DOMContentLoaded', function() {
     logEvent(NTP_LOGGING_EVENT_TYPE.NTP_TILE);
 
     // Log an impression if we know the position of the tile.
-    if (isFinite(params.pos) && data.provider) {
-      logMostVisitedImpression(parseInt(params.pos, 10), data.provider);
+    if (isFinite(params.pos)) {
+      logMostVisitedImpression(parseInt(params.pos, 10), data.tileSource);
     }
   });
 });

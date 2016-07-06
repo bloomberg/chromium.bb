@@ -1060,15 +1060,19 @@ void SearchBoxExtensionWrapper::LogMostVisitedImpression(
       GURL(chrome::kChromeSearchMostVisitedUrl));
   if (!render_view) return;
 
-  if (args.Length() < 2 || !args[0]->IsNumber() || args[1]->IsUndefined()) {
+  if (args.Length() < 2 || !args[0]->IsNumber() || !args[1]->IsNumber()) {
     ThrowInvalidParameters(args);
     return;
   }
 
   DVLOG(1) << render_view << " LogMostVisitedImpression";
 
-  SearchBox::Get(render_view)->LogMostVisitedImpression(
-      args[0]->IntegerValue(), V8ValueToUTF16(args[1]));
+  if (args[1]->Uint32Value() <= static_cast<int>(NTPLoggingTileSource::LAST)) {
+    NTPLoggingTileSource tile_source =
+        static_cast<NTPLoggingTileSource>(args[1]->Uint32Value());
+    SearchBox::Get(render_view)->LogMostVisitedImpression(
+        args[0]->IntegerValue(), tile_source);
+  }
 }
 
 // static
@@ -1078,15 +1082,19 @@ void SearchBoxExtensionWrapper::LogMostVisitedNavigation(
       GURL(chrome::kChromeSearchMostVisitedUrl));
   if (!render_view) return;
 
-  if (args.Length() < 2 || !args[0]->IsNumber() || args[1]->IsUndefined()) {
+  if (args.Length() < 2 || !args[0]->IsNumber() || !args[1]->IsNumber()) {
     ThrowInvalidParameters(args);
     return;
   }
 
   DVLOG(1) << render_view << " LogMostVisitedNavigation";
 
-  SearchBox::Get(render_view)->LogMostVisitedNavigation(
-      args[0]->IntegerValue(), V8ValueToUTF16(args[1]));
+  if (args[1]->Uint32Value() <= static_cast<int>(NTPLoggingTileSource::LAST)) {
+    NTPLoggingTileSource tile_source =
+        static_cast<NTPLoggingTileSource>(args[1]->Uint32Value());
+    SearchBox::Get(render_view)->LogMostVisitedNavigation(
+        args[0]->IntegerValue(), tile_source);
+  }
 }
 
 // static

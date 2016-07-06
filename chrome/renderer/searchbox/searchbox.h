@@ -54,10 +54,10 @@ class SearchBox : public content::RenderViewObserver,
   void LogEvent(NTPLoggingEventType event);
 
   // Sends ChromeViewHostMsg_LogMostVisitedImpression to the browser.
-  void LogMostVisitedImpression(int position, const base::string16& provider);
+  void LogMostVisitedImpression(int position, NTPLoggingTileSource tile_source);
 
   // Sends ChromeViewHostMsg_LogMostVisitedNavigation to the browser.
-  void LogMostVisitedNavigation(int position, const base::string16& provider);
+  void LogMostVisitedNavigation(int position, NTPLoggingTileSource tile_source);
 
   // Sends ChromeViewHostMsg_ChromeIdentityCheck to the browser.
   void CheckIsUserSignedInToChromeAs(const base::string16& identity);

@@ -108,56 +108,79 @@ TEST_F(NTPUserDataLoggerTest, TestLogging) {
 TEST_F(NTPUserDataLoggerTest, TestLogMostVisitedImpression) {
   base::StatisticsRecorder::Initialize();
 
-  EXPECT_EQ(0, GetBinCount("NewTabPage.SuggestionsImpression.foobar", 1));
-  EXPECT_EQ(0, GetBinCount("NewTabPage.SuggestionsImpression.foobar", 5));
+  EXPECT_EQ(0, GetTotalCount("NewTabPage.SuggestionsImpression"));
+  EXPECT_EQ(0, GetBinCount("NewTabPage.SuggestionsImpression.server", 1));
+  EXPECT_EQ(0, GetBinCount("NewTabPage.SuggestionsImpression.server", 5));
+  EXPECT_EQ(0, GetBinCount("NewTabPage.SuggestionsImpression.client", 1));
+  EXPECT_EQ(0, GetBinCount("NewTabPage.SuggestionsImpression.client", 5));
 
   TestNTPUserDataLogger logger;
 
-  logger.LogMostVisitedImpression(1, base::ASCIIToUTF16("foobar"));
-  EXPECT_EQ(1, GetBinCount("NewTabPage.SuggestionsImpression.foobar", 1));
-  EXPECT_EQ(0, GetBinCount("NewTabPage.SuggestionsImpression.foobar", 5));
+  logger.LogMostVisitedImpression(1, NTPLoggingTileSource::SERVER);
+  EXPECT_EQ(1, GetTotalCount("NewTabPage.SuggestionsImpression"));
+  EXPECT_EQ(1, GetBinCount("NewTabPage.SuggestionsImpression.server", 1));
+  EXPECT_EQ(0, GetBinCount("NewTabPage.SuggestionsImpression.server", 5));
+  EXPECT_EQ(0, GetBinCount("NewTabPage.SuggestionsImpression.client", 1));
+  EXPECT_EQ(0, GetBinCount("NewTabPage.SuggestionsImpression.client", 5));
 
-  logger.LogMostVisitedImpression(5, base::ASCIIToUTF16("foobar"));
-  EXPECT_EQ(1, GetBinCount("NewTabPage.SuggestionsImpression.foobar", 1));
-  EXPECT_EQ(1, GetBinCount("NewTabPage.SuggestionsImpression.foobar", 5));
+  logger.LogMostVisitedImpression(5, NTPLoggingTileSource::SERVER);
+  EXPECT_EQ(2, GetTotalCount("NewTabPage.SuggestionsImpression"));
+  EXPECT_EQ(1, GetBinCount("NewTabPage.SuggestionsImpression.server", 1));
+  EXPECT_EQ(1, GetBinCount("NewTabPage.SuggestionsImpression.server", 5));
+  EXPECT_EQ(0, GetBinCount("NewTabPage.SuggestionsImpression.client", 1));
+  EXPECT_EQ(0, GetBinCount("NewTabPage.SuggestionsImpression.client", 5));
 
-  // Try without provider. Only total increases.
-  logger.LogMostVisitedImpression(5, base::ASCIIToUTF16(""));
-  EXPECT_EQ(1, GetBinCount("NewTabPage.SuggestionsImpression.foobar", 1));
-  EXPECT_EQ(1, GetBinCount("NewTabPage.SuggestionsImpression.foobar", 5));
+  logger.LogMostVisitedImpression(1, NTPLoggingTileSource::CLIENT);
+  EXPECT_EQ(3, GetTotalCount("NewTabPage.SuggestionsImpression"));
+  EXPECT_EQ(1, GetBinCount("NewTabPage.SuggestionsImpression.server", 1));
+  EXPECT_EQ(1, GetBinCount("NewTabPage.SuggestionsImpression.server", 5));
+  EXPECT_EQ(1, GetBinCount("NewTabPage.SuggestionsImpression.client", 1));
+  EXPECT_EQ(0, GetBinCount("NewTabPage.SuggestionsImpression.client", 5));
 
-  logger.LogMostVisitedImpression(1, base::ASCIIToUTF16("foobar"));
-  EXPECT_EQ(2, GetBinCount("NewTabPage.SuggestionsImpression.foobar", 1));
-  EXPECT_EQ(1, GetBinCount("NewTabPage.SuggestionsImpression.foobar", 5));
+  logger.LogMostVisitedImpression(5, NTPLoggingTileSource::CLIENT);
+  EXPECT_EQ(4, GetTotalCount("NewTabPage.SuggestionsImpression"));
+  EXPECT_EQ(1, GetBinCount("NewTabPage.SuggestionsImpression.server", 1));
+  EXPECT_EQ(1, GetBinCount("NewTabPage.SuggestionsImpression.server", 5));
+  EXPECT_EQ(1, GetBinCount("NewTabPage.SuggestionsImpression.client", 1));
+  EXPECT_EQ(1, GetBinCount("NewTabPage.SuggestionsImpression.client", 5));
 }
 
 TEST_F(NTPUserDataLoggerTest, TestLogMostVisitedNavigation) {
   base::StatisticsRecorder::Initialize();
 
   EXPECT_EQ(0, GetTotalCount("NewTabPage.MostVisited"));
-  EXPECT_EQ(0, GetBinCount("NewTabPage.MostVisited.foobar", 1));
-  EXPECT_EQ(0, GetBinCount("NewTabPage.MostVisited.foobar", 5));
+  EXPECT_EQ(0, GetBinCount("NewTabPage.MostVisited.server", 1));
+  EXPECT_EQ(0, GetBinCount("NewTabPage.MostVisited.server", 5));
+  EXPECT_EQ(0, GetBinCount("NewTabPage.MostVisited.client", 1));
+  EXPECT_EQ(0, GetBinCount("NewTabPage.MostVisited.client", 5));
 
   TestNTPUserDataLogger logger;
 
-  logger.LogMostVisitedNavigation(1, base::ASCIIToUTF16("foobar"));
+  logger.LogMostVisitedNavigation(1, NTPLoggingTileSource::SERVER);
   EXPECT_EQ(1, GetTotalCount("NewTabPage.MostVisited"));
-  EXPECT_EQ(1, GetBinCount("NewTabPage.MostVisited.foobar", 1));
-  EXPECT_EQ(0, GetBinCount("NewTabPage.MostVisited.foobar", 5));
+  EXPECT_EQ(1, GetBinCount("NewTabPage.MostVisited.server", 1));
+  EXPECT_EQ(0, GetBinCount("NewTabPage.MostVisited.server", 5));
+  EXPECT_EQ(0, GetBinCount("NewTabPage.MostVisited.client", 1));
+  EXPECT_EQ(0, GetBinCount("NewTabPage.MostVisited.client", 5));
 
-  logger.LogMostVisitedNavigation(5, base::ASCIIToUTF16("foobar"));
+  logger.LogMostVisitedNavigation(5, NTPLoggingTileSource::SERVER);
   EXPECT_EQ(2, GetTotalCount("NewTabPage.MostVisited"));
-  EXPECT_EQ(1, GetBinCount("NewTabPage.MostVisited.foobar", 1));
-  EXPECT_EQ(1, GetBinCount("NewTabPage.MostVisited.foobar", 5));
+  EXPECT_EQ(1, GetBinCount("NewTabPage.MostVisited.server", 1));
+  EXPECT_EQ(1, GetBinCount("NewTabPage.MostVisited.server", 5));
+  EXPECT_EQ(0, GetBinCount("NewTabPage.MostVisited.client", 1));
+  EXPECT_EQ(0, GetBinCount("NewTabPage.MostVisited.client", 5));
 
-  // Try without provider. Only total increases.
-  logger.LogMostVisitedNavigation(5, base::ASCIIToUTF16(""));
+  logger.LogMostVisitedNavigation(1, NTPLoggingTileSource::CLIENT);
   EXPECT_EQ(3, GetTotalCount("NewTabPage.MostVisited"));
-  EXPECT_EQ(1, GetBinCount("NewTabPage.MostVisited.foobar", 1));
-  EXPECT_EQ(1, GetBinCount("NewTabPage.MostVisited.foobar", 5));
+  EXPECT_EQ(1, GetBinCount("NewTabPage.MostVisited.server", 1));
+  EXPECT_EQ(1, GetBinCount("NewTabPage.MostVisited.server", 5));
+  EXPECT_EQ(1, GetBinCount("NewTabPage.MostVisited.client", 1));
+  EXPECT_EQ(0, GetBinCount("NewTabPage.MostVisited.client", 5));
 
-  logger.LogMostVisitedNavigation(1, base::ASCIIToUTF16("foobar"));
+  logger.LogMostVisitedNavigation(5, NTPLoggingTileSource::CLIENT);
   EXPECT_EQ(4, GetTotalCount("NewTabPage.MostVisited"));
-  EXPECT_EQ(2, GetBinCount("NewTabPage.MostVisited.foobar", 1));
-  EXPECT_EQ(1, GetBinCount("NewTabPage.MostVisited.foobar", 5));
+  EXPECT_EQ(1, GetBinCount("NewTabPage.MostVisited.server", 1));
+  EXPECT_EQ(1, GetBinCount("NewTabPage.MostVisited.server", 5));
+  EXPECT_EQ(1, GetBinCount("NewTabPage.MostVisited.client", 1));
+  EXPECT_EQ(1, GetBinCount("NewTabPage.MostVisited.client", 5));
 }

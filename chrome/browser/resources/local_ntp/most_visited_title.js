@@ -14,7 +14,7 @@ window.addEventListener('DOMContentLoaded', function() {
     document.body.appendChild(
         createMostVisitedLink(
             params, data.url, data.title, data.title, data.direction,
-            data.provider));
+            data.tileSource));
   });
 });
 

@@ -165,9 +165,9 @@ class SearchTabHelper : public content::WebContentsObserver,
   void OnUndoAllMostVisitedDeletions() override;
   void OnLogEvent(NTPLoggingEventType event, base::TimeDelta time) override;
   void OnLogMostVisitedImpression(int position,
-                                  const base::string16& provider) override;
+                                  NTPLoggingTileSource tile_source) override;
   void OnLogMostVisitedNavigation(int position,
-                                  const base::string16& provider) override;
+                                  NTPLoggingTileSource tile_source) override;
   void PasteIntoOmnibox(const base::string16& text) override;
   void OnChromeIdentityCheck(const base::string16& identity) override;
   void OnHistorySyncCheck() override;

@@ -165,6 +165,9 @@ IPC_STRUCT_TRAITS_END()
 IPC_ENUM_TRAITS_MAX_VALUE(NTPLoggingEventType,
                           NTP_EVENT_TYPE_LAST)
 
+IPC_ENUM_TRAITS_MAX_VALUE(NTPLoggingTileSource,
+                          NTPLoggingTileSource::LAST)
+
 IPC_ENUM_TRAITS_MAX_VALUE(WebApplicationInfo::MobileCapable,
                           WebApplicationInfo::MOBILE_CAPABLE_APPLE)
 
@@ -488,14 +491,14 @@ IPC_MESSAGE_ROUTED3(ChromeViewHostMsg_LogEvent,
 IPC_MESSAGE_ROUTED3(ChromeViewHostMsg_LogMostVisitedImpression,
                     int /* page_seq_no */,
                     int /* position */,
-                    base::string16 /* provider */)
+                    NTPLoggingTileSource /* tile_source */)
 
 // Logs a navigation on one of the Most Visited tile on the InstantExtended
 // New Tab Page.
 IPC_MESSAGE_ROUTED3(ChromeViewHostMsg_LogMostVisitedNavigation,
                     int /* page_seq_no */,
                     int /* position */,
-                    base::string16 /* provider */)
+                    NTPLoggingTileSource /* tile_source */)
 
 // The Instant page asks whether the user syncs its history.
 IPC_MESSAGE_ROUTED1(ChromeViewHostMsg_HistorySyncCheck,
