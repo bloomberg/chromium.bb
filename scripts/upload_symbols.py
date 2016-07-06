@@ -93,8 +93,8 @@ UPLOAD_MIN_RATE = CRASH_SERVER_FILE_LIMIT / (30 * 60)
 UPLOAD_MIN_TIMEOUT = 2 * 60
 
 
-# Sleep for 200ms in between uploads to avoid DoS'ing symbol server.
-SLEEP_DELAY = 0.2
+# Sleep for 500ms in between uploads to avoid DoS'ing symbol server.
+SLEEP_DELAY = 0.5
 
 
 # Number of seconds to wait before retrying an upload.  The delay will double
