@@ -5,6 +5,7 @@
 #include "content/browser/media/session/pepper_playback_observer.h"
 
 #include "base/feature_list.h"
+#include "base/metrics/histogram_macros.h"
 #include "content/browser/media/session/media_session.h"
 #include "content/browser/media/session/pepper_player_delegate.h"
 #include "content/common/frame_messages.h"
@@ -30,13 +31,20 @@ PepperPlaybackObserver::~PepperPlaybackObserver() {
 }
 
 void PepperPlaybackObserver::PepperInstanceCreated(int32_t pp_instance) {
+  players_played_sound_map_[pp_instance] = false;
 }
 
 void PepperPlaybackObserver::PepperInstanceDeleted(int32_t pp_instance) {
+  UMA_HISTOGRAM_BOOLEAN("Media.Pepper.PlayedSound",
+                        players_played_sound_map_[pp_instance]);
+  players_played_sound_map_.erase(pp_instance);
+
   PepperStopsPlayback(pp_instance);
 }
 
 void PepperPlaybackObserver::PepperStartsPlayback(int32_t pp_instance) {
+  players_played_sound_map_[pp_instance] = true;
+
   if (!base::FeatureList::IsEnabled(media::kFlashJoinsMediaSession))
     return;
 

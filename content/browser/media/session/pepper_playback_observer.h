@@ -35,6 +35,12 @@ class PepperPlaybackObserver {
       std::map<int32_t, std::unique_ptr<PepperPlayerDelegate>>;
   PlayersMap players_map_;
 
+  // Map for whether Pepper players have ever played sound.
+  // Used for recording UMA.
+  using PlayersPlayedSoundMap =
+      std::map<int32_t, bool>;
+  PlayersPlayedSoundMap players_played_sound_map_;
+
   // Weak reference to WebContents.
   WebContentsImpl* contents_;
 

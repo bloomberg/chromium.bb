@@ -22412,6 +22412,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Media.Pepper.PlayedSound" enum="Boolean">
+  <owner>avayvod@chromium.org</owner>
+  <owner>mlamouri@chromium.org</owner>
+  <owner>zqzhang@chromium.org</owner>
+  <summary>
+    Whether Pepper players have played sound through its lifetime.
+  </summary>
+</histogram>
+
 <histogram name="Media.PepperVideoDecoderError"
     enum="VideoDecodeAcceleratorError">
   <owner>ihf@chromium.org</owner>
