@@ -45,16 +45,16 @@ typedef pid_t
 
 /** The libweston Xwayland API
  *
- * This API allows to control the Xwayland libweston module.
+ * This API allows control of the Xwayland libweston module.
  * The module must be loaded at runtime with \a weston_compositor_load_xwayland,
  * after which the API can be retrieved by using \a weston_xwayland_get_api.
  */
 struct weston_xwayland_api {
 	/** Retrieve the Xwayland context object.
 	 *
-	 * Note that this function does not create a new object, but returns
-	 * always the same object per compositor instance.
-	 * This function cannot fail, if this API object is valid.
+	 * Note that this function does not create a new object, but always
+	 * returns the same object per compositor instance.
+	 * This function cannot fail while this API object is valid.
 	 *
 	 * \param compositor The compositor instance.
 	 */
@@ -63,8 +63,8 @@ struct weston_xwayland_api {
 
 	/** Listen for X connections.
 	 *
-	 * This function tells the Xwayland module to start create a X socket
-	 * and to listen for client connections. When one such connection is
+	 * This function tells the Xwayland module to begin creating an X socket
+	 * and start listening for client connections. When one such connection is
 	 * detected the given \a spawn_func callback will be called to start
 	 * the Xwayland process.
 	 *
@@ -79,7 +79,7 @@ struct weston_xwayland_api {
 	(*listen)(struct weston_xwayland *xwayland, void *user_data,
 	          weston_xwayland_spawn_xserver_func_t spawn_func);
 
-	/** Notify the Xwayland module the Xwayland server is loaded.
+	/** Notify the Xwayland module that the Xwayland server is loaded.
 	 *
 	 * After the Xwayland server process has been spawned it will notify
 	 * the parent that is has finished the initialization by sending a
@@ -96,7 +96,7 @@ struct weston_xwayland_api {
 	(*xserver_loaded)(struct weston_xwayland *xwayland,
 			  struct wl_client *client, int wm_fd);
 
-	/** Notify the Xwayland module the Xwayland server has exited.
+	/** Notify the Xwayland module that the Xwayland server has exited.
 	 *
 	 * Whenever the Xwayland server process quits this function should be
 	 * called.
