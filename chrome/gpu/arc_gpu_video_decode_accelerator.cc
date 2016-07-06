@@ -181,50 +181,49 @@ void ArcGpuVideoDecodeAccelerator::BindSharedMemory(PortType port,
   input_info->length = length;
 }
 
-bool ArcGpuVideoDecodeAccelerator::VerifyStride(const base::ScopedFD& dmabuf_fd,
-                                                int32_t stride) const {
+bool ArcGpuVideoDecodeAccelerator::VerifyDmabuf(
+    const base::ScopedFD& dmabuf_fd,
+    const std::vector<DmabufPlane>& dmabuf_planes) const {
+  size_t num_planes = media::VideoFrame::NumPlanes(output_pixel_format_);
+  if (dmabuf_planes.size() != num_planes) {
+    DLOG(ERROR) << "Invalid number of dmabuf planes passed: "
+                << dmabuf_planes.size() << ", expected: " << num_planes;
+    return false;
+  }
+
   off_t size = lseek(dmabuf_fd.get(), 0, SEEK_END);
   lseek(dmabuf_fd.get(), 0, SEEK_SET);
-
   if (size < 0) {
     DPLOG(ERROR) << "fail to find the size of dmabuf";
     return false;
   }
 
-  int height = coded_size_.height();
-  switch (output_pixel_format_) {
-    case media::PIXEL_FORMAT_I420:
-    case media::PIXEL_FORMAT_YV12:
-    case media::PIXEL_FORMAT_NV12:
-    case media::PIXEL_FORMAT_NV21:
-      // Adjusts the height for UV plane.
-      // The coded height should always be even. But for security reason,  we
-      // still round up to two here in case VDA reports an incorrect value.
-      height += (height + 1) / 2;
-      break;
-    case media::PIXEL_FORMAT_ARGB:
-      // No need to adjust height.
-      break;
-    default:
-      DLOG(ERROR) << "Format not supported: " << output_pixel_format_;
-      return false;
-  }
-  base::CheckedNumeric<off_t> used_bytes(height);
-  used_bytes *= stride;
+  size_t i = 0;
+  for (const auto& plane : dmabuf_planes) {
+    DVLOG(4) << "Plane " << i << ", offset: " << plane.offset
+             << ", stride: " << plane.stride;
 
-  if (stride < 0 || !used_bytes.IsValid() || used_bytes.ValueOrDie() > size) {
-    DLOG(ERROR) << "invalid stride: " << stride << ", height: " << height
-                << ", size of dmabuf: " << size;
-    return false;
+    size_t rows =
+        media::VideoFrame::Rows(i, output_pixel_format_, coded_size_.height());
+    base::CheckedNumeric<off_t> current_size(plane.offset);
+    current_size += plane.stride * rows;
+
+    if (!current_size.IsValid() || current_size.ValueOrDie() > size) {
+      DLOG(ERROR) << "Invalid strides/offsets";
+      return false;
+    }
+
+    ++i;
   }
 
   return true;
 }
 
-void ArcGpuVideoDecodeAccelerator::BindDmabuf(PortType port,
-                                              uint32_t index,
-                                              base::ScopedFD dmabuf_fd,
-                                              int32_t stride) {
+void ArcGpuVideoDecodeAccelerator::BindDmabuf(
+    PortType port,
+    uint32_t index,
+    base::ScopedFD dmabuf_fd,
+    const std::vector<DmabufPlane>& dmabuf_planes) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   if (!vda_) {
@@ -241,14 +240,14 @@ void ArcGpuVideoDecodeAccelerator::BindDmabuf(PortType port,
     arc_client_->OnError(INVALID_ARGUMENT);
     return;
   }
-  if (!VerifyStride(dmabuf_fd, stride)) {
+  if (!VerifyDmabuf(dmabuf_fd, dmabuf_planes)) {
     arc_client_->OnError(INVALID_ARGUMENT);
     return;
   }
 
   OutputBufferInfo& info = buffers_pending_import_[index];
   info.handle = std::move(dmabuf_fd);
-  info.stride = stride;
+  info.planes = dmabuf_planes;
 }
 
 void ArcGpuVideoDecodeAccelerator::UseBuffer(PortType port,
@@ -294,7 +293,10 @@ void ArcGpuVideoDecodeAccelerator::UseBuffer(PortType port,
 #if defined(USE_OZONE)
         handle.native_pixmap_handle.fds.emplace_back(
             base::FileDescriptor(info.handle.release(), true));
-        handle.native_pixmap_handle.planes.emplace_back(info.stride, 0, 0);
+        for (const auto& plane : info.planes) {
+          handle.native_pixmap_handle.planes.emplace_back(
+              plane.stride, plane.offset, 0);
+        }
 #endif
         vda_->ImportBufferForPicture(index, handle);
       } else {

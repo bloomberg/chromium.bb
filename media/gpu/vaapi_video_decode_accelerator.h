@@ -305,9 +305,11 @@ class MEDIA_GPU_EXPORT VaapiVideoDecodeAccelerator
   // to be returned before we can free them.
   bool awaiting_va_surfaces_recycle_;
 
-  // Last requested number/resolution of output picture buffers.
+  // Last requested number/resolution of output picture buffers and their
+  // format.
   size_t requested_num_pics_;
   gfx::Size requested_pic_size_;
+  gfx::BufferFormat output_format_;
 
   // Callback to make GL context current.
   MakeGLContextCurrentCallback make_context_current_cb_;

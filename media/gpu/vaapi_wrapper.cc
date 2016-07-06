@@ -27,6 +27,7 @@
 #elif defined(USE_OZONE)
 #include "third_party/libva/va/drm/va_drm.h"
 #include "third_party/libva/va/va_drmcommon.h"
+#include "ui/gfx/buffer_format_util.h"
 #include "ui/ozone/public/ozone_platform.h"
 #include "ui/ozone/public/surface_factory_ozone.h"
 #endif  // USE_X11
@@ -71,6 +72,8 @@ uint32_t BufferFormatToVAFourCC(gfx::BufferFormat fmt) {
       return VA_FOURCC_BGRA;
     case gfx::BufferFormat::UYVY_422:
       return VA_FOURCC_UYVY;
+    case gfx::BufferFormat::YVU_420:
+      return VA_FOURCC_YV12;
     default:
       NOTREACHED();
       return 0;
@@ -84,6 +87,8 @@ uint32_t BufferFormatToVARTFormat(gfx::BufferFormat fmt) {
     case gfx::BufferFormat::BGRX_8888:
     case gfx::BufferFormat::BGRA_8888:
       return VA_RT_FORMAT_RGB32;
+    case gfx::BufferFormat::YVU_420:
+      return VA_RT_FORMAT_YUV420;
     default:
       NOTREACHED();
       return 0;
@@ -614,33 +619,49 @@ scoped_refptr<VASurface> VaapiWrapper::CreateUnownedSurface(
 #if defined(USE_OZONE)
 scoped_refptr<VASurface> VaapiWrapper::CreateVASurfaceForPixmap(
     const scoped_refptr<ui::NativePixmap>& pixmap) {
-  // Get the dmabuf of the created buffer.
-  int dmabuf_fd = pixmap->GetDmaBufFd(0);
-  if (dmabuf_fd < 0) {
-    LOG(ERROR) << "Failed to get dmabuf from an Ozone NativePixmap";
-    return nullptr;
-  }
-  int dmabuf_pitch = pixmap->GetDmaBufPitch(0);
-  gfx::Size pixmap_size = pixmap->GetBufferSize();
-
-  // Create a VASurface out of the created buffer using the dmabuf.
+  // Create a VASurface for a NativePixmap by importing the underlying dmabufs.
   VASurfaceAttribExternalBuffers va_attrib_extbuf;
   memset(&va_attrib_extbuf, 0, sizeof(va_attrib_extbuf));
+
   va_attrib_extbuf.pixel_format =
       BufferFormatToVAFourCC(pixmap->GetBufferFormat());
-  va_attrib_extbuf.width = pixmap_size.width();
-  va_attrib_extbuf.height = pixmap_size.height();
-  va_attrib_extbuf.data_size = pixmap_size.height() * dmabuf_pitch;
-  va_attrib_extbuf.num_planes = 1;
-  va_attrib_extbuf.pitches[0] = dmabuf_pitch;
-  va_attrib_extbuf.offsets[0] = 0;
-  va_attrib_extbuf.buffers = reinterpret_cast<unsigned long*>(&dmabuf_fd);
-  va_attrib_extbuf.num_buffers = 1;
+  gfx::Size size = pixmap->GetBufferSize();
+  va_attrib_extbuf.width = size.width();
+  va_attrib_extbuf.height = size.height();
+
+  size_t num_fds = pixmap->GetDmaBufFdCount();
+  size_t num_planes =
+      gfx::NumberOfPlanesForBufferFormat(pixmap->GetBufferFormat());
+  if (num_fds == 0 || num_fds > num_planes) {
+    LOG(ERROR) << "Invalid number of dmabuf fds: " << num_fds
+               << " , planes: " << num_planes;
+    return nullptr;
+  }
+
+  for (size_t i = 0; i < num_planes; ++i) {
+    va_attrib_extbuf.pitches[i] = pixmap->GetDmaBufPitch(i);
+    va_attrib_extbuf.offsets[i] = pixmap->GetDmaBufOffset(i);
+    DVLOG(4) << "plane " << i << ": pitch: " << va_attrib_extbuf.pitches[i]
+             << " offset: " << va_attrib_extbuf.offsets[i];
+  }
+  va_attrib_extbuf.num_planes = num_planes;
+
+  std::vector<unsigned long> fds(num_fds);
+  for (size_t i = 0; i < num_fds; ++i) {
+    int dmabuf_fd = pixmap->GetDmaBufFd(i);
+    if (dmabuf_fd < 0) {
+      LOG(ERROR) << "Failed to get dmabuf from an Ozone NativePixmap";
+      return nullptr;
+    }
+    fds[i] = dmabuf_fd;
+  }
+  va_attrib_extbuf.buffers = fds.data();
+  va_attrib_extbuf.num_buffers = fds.size();
+
   va_attrib_extbuf.flags = 0;
   va_attrib_extbuf.private_data = NULL;
 
-  std::vector<VASurfaceAttrib> va_attribs;
-  va_attribs.resize(2);
+  std::vector<VASurfaceAttrib> va_attribs(2);
 
   va_attribs[0].type = VASurfaceAttribMemoryType;
   va_attribs[0].flags = VA_SURFACE_ATTRIB_SETTABLE;
@@ -652,9 +673,8 @@ scoped_refptr<VASurface> VaapiWrapper::CreateVASurfaceForPixmap(
   va_attribs[1].value.type = VAGenericValueTypePointer;
   va_attribs[1].value.value.p = &va_attrib_extbuf;
 
-  scoped_refptr<VASurface> va_surface =
-      CreateUnownedSurface(BufferFormatToVARTFormat(pixmap->GetBufferFormat()),
-                           pixmap_size, va_attribs);
+  scoped_refptr<VASurface> va_surface = CreateUnownedSurface(
+      BufferFormatToVARTFormat(pixmap->GetBufferFormat()), size, va_attribs);
   if (!va_surface) {
     LOG(ERROR) << "Failed to create VASurface for an Ozone NativePixmap";
     return nullptr;
