@@ -4,6 +4,8 @@
 
 #include "components/arc/user_data/arc_user_data_service.h"
 
+#include "base/command_line.h"
+#include "chromeos/chromeos_switches.h"
 #include "chromeos/cryptohome/cryptohome_parameters.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/session_manager_client.h"
@@ -49,8 +51,11 @@ void ArcUserDataService::ClearIfDisabled() {
     LOG(ERROR) << "ARC instance not stopped, user data can't be cleared";
     return;
   }
-  if (arc_enabled_pref_->GetValue())
+  if (arc_enabled_pref_->GetValue() ||
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          chromeos::switches::kDisableArcDataWipe)) {
     return;
+  }
   const cryptohome::Identification cryptohome_id(primary_user_account_id_);
   chromeos::SessionManagerClient* session_manager_client =
       chromeos::DBusThreadManager::Get()->GetSessionManagerClient();

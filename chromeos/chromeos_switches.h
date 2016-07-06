@@ -37,6 +37,7 @@ CHROMEOS_EXPORT extern const char kDbusStub[];
 CHROMEOS_EXPORT extern const char kDbusUnstubClients[];
 CHROMEOS_EXPORT extern const char kDerelictDetectionTimeout[];
 CHROMEOS_EXPORT extern const char kDerelictIdleTimeout[];
+CHROMEOS_EXPORT extern const char kDisableArcDataWipe[];
 CHROMEOS_EXPORT extern const char kDisableArcOptInVerification[];
 CHROMEOS_EXPORT extern const char kDisableBootAnimation[];
 CHROMEOS_EXPORT extern const char kDisableCloudImport[];

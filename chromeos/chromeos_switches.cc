@@ -71,6 +71,9 @@ const char kDerelictDetectionTimeout[] = "derelict-detection-timeout";
 // Time in seconds before a derelict machines starts demo mode.
 const char kDerelictIdleTimeout[] = "derelict-idle-timeout";
 
+// Disables android user data wipe on opt out.
+const char kDisableArcDataWipe[] = "disable-arc-data-wipe";
+
 // Disables ARC Opt-in verification process and ARC is enabled by default.
 const char kDisableArcOptInVerification[] = "disable-arc-opt-in-verification";
 
