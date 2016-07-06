@@ -240,13 +240,17 @@ class ProfileChooserView : public content::WebContentsDelegate,
 
   // Links and buttons displayed in the active profile card.
   views::Link* manage_accounts_link_;
+  views::LabelButton* manage_accounts_button_;
   views::LabelButton* signin_current_profile_button_;
   views::LabelButton* auth_error_email_button_;
 
-  // The profile name and photo in the active profile card. Owned by the
-  // views hierarchy.
+  // The profile name and photo in the active profile card in non-material-
+  // design user menu. Owned by the views hierarchy.
   EditableProfilePhoto* current_profile_photo_;
   EditableProfileName* current_profile_name_;
+  // For material design user menu, the active profile card owns the profile
+  // name and photo.
+  views::LabelButton* current_profile_card_;
 
   // Action buttons.
   views::LabelButton* guest_profile_button_;
