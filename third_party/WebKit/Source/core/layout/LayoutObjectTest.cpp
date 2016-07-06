@@ -6,6 +6,7 @@
 
 #include "core/layout/LayoutTestHelper.h"
 #include "core/layout/LayoutView.h"
+#include "core/layout/api/LayoutAPIShim.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
@@ -15,7 +16,7 @@ public:
     LayoutObjectTest()
         : RenderingTest(SingleChildFrameLoaderClient::create()) {}
 protected:
-    LayoutView& layoutView() const { return *document().layoutView(); }
+    LayoutView& layoutView() const { return *toLayoutView(LayoutAPIShim::layoutObjectFrom(document().layoutViewItem())); }
 };
 
 TEST_F(LayoutObjectTest, LayoutDecoratedNameCalledWithPositionedObject)
