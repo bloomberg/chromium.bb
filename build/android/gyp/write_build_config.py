@@ -131,15 +131,6 @@ class Deps(object):
     self.all_deps_config_paths.remove(path)
     self.all_deps_configs.remove(GetDepConfig(path))
 
-  def PrebuiltJarPaths(self):
-    ret = []
-    for config in self.Direct('java_library'):
-      if config['is_prebuilt']:
-        ret.append(config['jar_path'])
-        ret.extend(Deps(config['deps_configs']).PrebuiltJarPaths())
-    return ret
-
-
 def _MergeAssets(all_assets):
   """Merges all assets from the given deps.
 
@@ -235,7 +226,6 @@ def main(argv):
 
   # java library options
   parser.add_option('--jar-path', help='Path to target\'s jar output.')
-  parser.add_option('--java-sources-file', help='Path to .sources file')
   parser.add_option('--supports-android', action='store_true',
       help='Whether this library supports running on the Android platform.')
   parser.add_option('--requires-android', action='store_true',
@@ -277,7 +267,6 @@ def main(argv):
   required_options_map = {
       'java_binary': ['build_config', 'jar_path'],
       'java_library': ['build_config', 'jar_path'],
-      'java_prebuilt': ['build_config', 'jar_path'],
       'android_assets': ['build_config'],
       'android_resources': ['build_config', 'resources_zip'],
       'android_apk': ['build_config', 'jar_path', 'dex_path', 'resources_zip'],
@@ -290,11 +279,6 @@ def main(argv):
     raise Exception('Unknown type: <%s>' % options.type)
 
   build_utils.CheckOptions(options, parser, required_options)
-
-  # Java prebuilts are the same as libraries except for in gradle files.
-  is_java_prebuilt = options.type == 'java_prebuilt'
-  if is_java_prebuilt:
-    options.type = 'java_library'
 
   if options.type == 'java_library':
     if options.supports_android and not options.dex_path:
@@ -341,33 +325,15 @@ def main(argv):
         d for d in all_resources_deps if not d in tested_apk_resources_deps]
 
   # Initialize some common config.
-  # Any value that needs to be queryable by dependents must go within deps_info.
   config = {
     'deps_info': {
       'name': os.path.basename(options.build_config),
       'path': options.build_config,
       'type': options.type,
       'deps_configs': direct_deps_config_paths
-    },
-    # Info needed only by generate_gradle.py.
-    'gradle': {}
+    }
   }
   deps_info = config['deps_info']
-  gradle = config['gradle']
-
-  # Required for generating gradle files.
-  if options.type == 'java_library':
-    deps_info['is_prebuilt'] = is_java_prebuilt
-
-  if options.android_manifest:
-    gradle['android_manifest'] = options.android_manifest
-  if options.type in ('java_binary', 'java_library', 'android_apk'):
-    if options.java_sources_file:
-      gradle['java_sources_file'] = options.java_sources_file
-    gradle['dependent_prebuilt_jars'] = deps.PrebuiltJarPaths()
-    gradle['dependent_projects'] = (
-        [c['path'] for c in direct_library_deps if not c['is_prebuilt']])
-
 
   if (options.type in ('java_binary', 'java_library') and
       not options.bypass_platform_checks):
@@ -400,7 +366,6 @@ def main(argv):
 
     # Classpath values filled in below (after applying tested_apk_config).
     config['javac'] = {}
-
 
   if options.type in ('java_binary', 'java_library'):
     # Only resources might have srcjars (normal srcjar targets are listed in

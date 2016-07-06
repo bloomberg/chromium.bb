@@ -324,17 +324,7 @@ def _ParseOptions(argv):
   options.javac_includes = build_utils.ParseGypList(options.javac_includes)
   options.jar_excluded_classes = (
       build_utils.ParseGypList(options.jar_excluded_classes))
-
-  java_files = []
-  for arg in args:
-    # Interpret a path prefixed with @ as a file containing a list of sources.
-    if arg.startswith('@'):
-      with open(arg[1:]) as f:
-        java_files.extend(l.strip() for l in f)
-    else:
-      java_files.append(arg)
-
-  return options, java_files
+  return options, args
 
 
 def main(argv):
