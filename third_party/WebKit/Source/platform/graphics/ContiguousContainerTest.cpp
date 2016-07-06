@@ -524,5 +524,33 @@ TEST(ContiguousContainerTest, CapacityInBytesAfterClear)
     EXPECT_EQ(emptyCapacity, list.capacityInBytes());
 }
 
+TEST(ContiguousContainerTest, Alignment)
+{
+    const size_t maxAlign = WTF_ALIGN_OF(long double);
+    ContiguousContainer<Point2D, maxAlign> list(kMaxPointSize);
+
+    list.allocateAndConstruct<Point2D>();
+    EXPECT_EQ(0u, reinterpret_cast<intptr_t>(&list.last()) & (maxAlign - 1));
+    list.allocateAndConstruct<Point2D>();
+    EXPECT_EQ(0u, reinterpret_cast<intptr_t>(&list.last()) & (maxAlign - 1));
+    list.allocateAndConstruct<Point3D>();
+    EXPECT_EQ(0u, reinterpret_cast<intptr_t>(&list.last()) & (maxAlign - 1));
+    list.allocateAndConstruct<Point3D>();
+    EXPECT_EQ(0u, reinterpret_cast<intptr_t>(&list.last()) & (maxAlign - 1));
+    list.allocateAndConstruct<Point2D>();
+    EXPECT_EQ(0u, reinterpret_cast<intptr_t>(&list.last()) & (maxAlign - 1));
+
+    list.appendByMoving(list[0], sizeof(Point2D));
+    EXPECT_EQ(0u, reinterpret_cast<intptr_t>(&list.last()) & (maxAlign - 1));
+    list.appendByMoving(list[1], sizeof(Point2D));
+    EXPECT_EQ(0u, reinterpret_cast<intptr_t>(&list.last()) & (maxAlign - 1));
+    list.appendByMoving(list[2], sizeof(Point3D));
+    EXPECT_EQ(0u, reinterpret_cast<intptr_t>(&list.last()) & (maxAlign - 1));
+    list.appendByMoving(list[3], sizeof(Point3D));
+    EXPECT_EQ(0u, reinterpret_cast<intptr_t>(&list.last()) & (maxAlign - 1));
+    list.appendByMoving(list[4], sizeof(Point2D));
+    EXPECT_EQ(0u, reinterpret_cast<intptr_t>(&list.last()) & (maxAlign - 1));
+}
+
 } // namespace
 } // namespace blink

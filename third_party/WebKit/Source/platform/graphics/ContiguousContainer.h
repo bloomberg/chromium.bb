@@ -166,8 +166,7 @@ public:
             "Must use subclass of BaseElementType.");
         static_assert(alignment % WTF_ALIGN_OF(DerivedElementType) == 0,
             "Derived type requires stronger alignment.");
-        size_t allocSize = align(sizeof(DerivedElementType));
-        return *new (allocate(allocSize)) DerivedElementType(std::forward<Args>(args)...);
+        return *new (alignedAllocate(sizeof(DerivedElementType))) DerivedElementType(std::forward<Args>(args)...);
     }
 
     void removeLast()
@@ -193,24 +192,26 @@ public:
     BaseElementType& appendByMoving(BaseElementType& item, size_t size)
     {
         ASSERT(size >= sizeof(BaseElementType));
-        void* newItem = allocate(size);
+        void* newItem = alignedAllocate(size);
         memcpy(newItem, static_cast<void*>(&item), size);
         new (&item) BaseElementType;
         return *static_cast<BaseElementType*>(newItem);
     }
 
 private:
-    void* allocate(size_t objectSize)
+    void* alignedAllocate(size_t size)
     {
-        return ContiguousContainerBase::allocate(objectSize, WTF_HEAP_PROFILER_TYPE_NAME(BaseElementType));
+        void* result = ContiguousContainerBase::allocate(align(size), WTF_HEAP_PROFILER_TYPE_NAME(BaseElementType));
+        DCHECK_EQ(reinterpret_cast<intptr_t>(result) & (alignment - 1), 0u);
+        return result;
     }
 
     static size_t align(size_t size)
     {
         size_t alignedSize = alignment * ((size + alignment - 1) / alignment);
-        ASSERT(alignedSize % alignment == 0);
-        ASSERT(alignedSize >= size);
-        ASSERT(alignedSize < size + alignment);
+        DCHECK_EQ(alignedSize % alignment, 0u);
+        DCHECK_GE(alignedSize, size);
+        DCHECK_LT(alignedSize, size + alignment);
         return alignedSize;
     }
 };

@@ -170,8 +170,7 @@ class ContiguousContainer : public ContiguousContainerBase {
   DerivedElementType& AllocateAndConstruct(Args&&... args) {
     static_assert(alignment % ALIGNOF(DerivedElementType) == 0,
                   "Derived type requires stronger alignment.");
-    size_t alloc_size = Align(sizeof(DerivedElementType));
-    return *new (Allocate(alloc_size))
+    return *new (AlignedAllocate(sizeof(DerivedElementType)))
         DerivedElementType(std::forward<Args>(args)...);
   }
 
@@ -198,14 +197,20 @@ class ContiguousContainer : public ContiguousContainerBase {
   // element in its place. Use with care.
   BaseElementType& AppendByMoving(BaseElementType* item, size_t size) {
     DCHECK_GE(size, sizeof(BaseElementType));
-    void* new_item = Allocate(size);
+    void* new_item = AlignedAllocate(size);
     memcpy(new_item, static_cast<void*>(item), size);
     new (item) BaseElementType;
     return *static_cast<BaseElementType*>(new_item);
   }
 
  private:
-  static size_t Align(size_t size) {
+  void* AlignedAllocate(size_t size) {
+    void* result = ContiguousContainerBase::Allocate(Align(size));
+    DCHECK_EQ(reinterpret_cast<intptr_t>(result) & (alignment - 1), 0u);
+    return result;
+  }
+
+  size_t Align(size_t size) {
     size_t aligned_size = alignment * ((size + alignment - 1) / alignment);
     DCHECK_EQ(aligned_size % alignment, 0u);
     DCHECK_GE(aligned_size, size);
