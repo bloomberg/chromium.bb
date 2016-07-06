@@ -26,22 +26,6 @@ import java.io.ByteArrayOutputStream;
  * Launches Chrome in WebAPK mode.
  */
 public class HostBrowserLauncher {
-    // These EXTRA_* values must stay in sync with
-    // {@link org.chromium.chrome.browser.ShortcutHelper}.
-    private static final String EXTRA_ID = "org.chromium.chrome.browser.webapp_id";
-    private static final String EXTRA_ICON = "org.chromium.chrome.browser.webapp_icon";
-    private static final String EXTRA_SHORT_NAME = "org.chromium.chrome.browser.webapp_short_name";
-    private static final String EXTRA_NAME = "org.chromium.chrome.browser.webapp_name";
-    private static final String EXTRA_URL = "org.chromium.chrome.browser.webapp_url";
-    private static final String EXTRA_SOURCE = "org.chromium.chrome.browser.webapp_source";
-    private static final String EXTRA_THEME_COLOR = "org.chromium.chrome.browser.theme_color";
-    private static final String EXTRA_BACKGROUND_COLOR =
-            "org.chromium.chrome.browser.background_color";
-    private static final String EXTRA_IS_ICON_GENERATED =
-            "org.chromium.chrome.browser.is_icon_generated";
-    private static final String EXTRA_WEBAPK_PACKAGE_NAME =
-            "org.chromium.chrome.browser.webapk_package_name";
-
     private static final String META_DATA_RUNTIME_HOST = "runtimeHost";
     private static final String META_DATA_START_URL = "startUrl";
     private static final String META_DATA_NAME = "name";
@@ -84,7 +68,7 @@ public class HostBrowserLauncher {
         if (overrideUrl != null && overrideUrl.startsWith("https:")) {
             url = overrideUrl;
         }
-        int source = intent.getIntExtra(EXTRA_SOURCE, 0);
+        int source = intent.getIntExtra(WebApkConstants.EXTRA_SOURCE, 0);
 
         String webappId = WebApkConstants.WEBAPK_ID_PREFIX + packageName;
         String runtimeHost = metaBundle.getString(META_DATA_RUNTIME_HOST);
@@ -111,16 +95,16 @@ public class HostBrowserLauncher {
         // Chrome expects the ShortcutHelper.EXTRA_DISPLAY_MODE and
         // ShortcutHelper.EXTRA_ORIENTATION extras to be enum values. We send string extras for
         // the display mode and orientation so have to use different keys.
-        newIntent.putExtra(EXTRA_ID, webappId)
-                .putExtra(EXTRA_SHORT_NAME, shortName)
-                .putExtra(EXTRA_NAME, name)
-                .putExtra(EXTRA_URL, url)
-                .putExtra(EXTRA_ICON, encodedIcon)
-                .putExtra(EXTRA_SOURCE, source)
-                .putExtra(EXTRA_THEME_COLOR, themeColor)
-                .putExtra(EXTRA_BACKGROUND_COLOR, backgroundColor)
-                .putExtra(EXTRA_IS_ICON_GENERATED, isIconGenerated)
-                .putExtra(EXTRA_WEBAPK_PACKAGE_NAME, packageName)
+        newIntent.putExtra(WebApkConstants.EXTRA_ID, webappId)
+                .putExtra(WebApkConstants.EXTRA_SHORT_NAME, shortName)
+                .putExtra(WebApkConstants.EXTRA_NAME, name)
+                .putExtra(WebApkConstants.EXTRA_URL, url)
+                .putExtra(WebApkConstants.EXTRA_ICON, encodedIcon)
+                .putExtra(WebApkConstants.EXTRA_SOURCE, source)
+                .putExtra(WebApkConstants.EXTRA_THEME_COLOR, themeColor)
+                .putExtra(WebApkConstants.EXTRA_BACKGROUND_COLOR, backgroundColor)
+                .putExtra(WebApkConstants.EXTRA_IS_ICON_GENERATED, isIconGenerated)
+                .putExtra(WebApkConstants.EXTRA_WEBAPK_PACKAGE_NAME, packageName)
                 .putExtra(WebApkConstants.EXTRA_WEBAPK_DISPLAY_MODE, displayMode)
                 .putExtra(WebApkConstants.EXTRA_WEBAPK_ORIENTATION, orientation);
 
