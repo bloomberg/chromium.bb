@@ -130,6 +130,7 @@ private:
     {
         return new HTMLDocumentParser(fragment, contextElement, parserContentPolicy);
     }
+    HTMLDocumentParser(Document&, ParserContentPolicy, ParserSynchronizationPolicy);
 
     // DocumentParser
     void detach() final;

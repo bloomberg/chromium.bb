@@ -89,14 +89,30 @@ static HTMLTokenizer::State tokenizerStateForContextElement(Element* contextElem
 }
 
 HTMLDocumentParser::HTMLDocumentParser(HTMLDocument& document, ParserSynchronizationPolicy syncPolicy)
-    : ScriptableDocumentParser(document)
+    : HTMLDocumentParser(document, AllowScriptingContent, syncPolicy)
+{
+    m_scriptRunner = HTMLScriptRunner::create(&document, this);
+    m_treeBuilder = HTMLTreeBuilder::create(this, &document, AllowScriptingContent, m_options);
+}
+
+HTMLDocumentParser::HTMLDocumentParser(DocumentFragment* fragment, Element* contextElement, ParserContentPolicy parserContentPolicy)
+    : HTMLDocumentParser(fragment->document(), parserContentPolicy, ForceSynchronousParsing)
+{
+    // No m_scriptRunner in fragment parser.
+    m_treeBuilder = HTMLTreeBuilder::create(this, fragment, contextElement, parserContentPolicy, m_options);
+
+    bool reportErrors = false; // For now document fragment parsing never reports errors.
+    m_tokenizer->setState(tokenizerStateForContextElement(contextElement, reportErrors, m_options));
+    m_xssAuditor.initForFragment();
+}
+
+HTMLDocumentParser::HTMLDocumentParser(Document& document, ParserContentPolicy contentPolicy, ParserSynchronizationPolicy syncPolicy)
+    : ScriptableDocumentParser(document, contentPolicy)
     , m_options(&document)
     , m_token(syncPolicy == ForceSynchronousParsing ? wrapUnique(new HTMLToken) : nullptr)
     , m_tokenizer(syncPolicy == ForceSynchronousParsing ? HTMLTokenizer::create(m_options) : nullptr)
-    , m_scriptRunner(HTMLScriptRunner::create(&document, this))
-    , m_treeBuilder(HTMLTreeBuilder::create(this, &document, getParserContentPolicy(), m_options))
     , m_loadingTaskRunner(wrapUnique(document.loadingTaskRunner()->clone()))
-    , m_parserScheduler(HTMLParserScheduler::create(this, m_loadingTaskRunner.get()))
+    , m_parserScheduler(syncPolicy == AllowAsynchronousParsing ? HTMLParserScheduler::create(this, m_loadingTaskRunner.get()) : nullptr)
     , m_xssAuditorDelegate(&document)
     , m_weakFactory(this)
     , m_preloader(HTMLResourcePreloader::create(document))
@@ -112,29 +128,6 @@ HTMLDocumentParser::HTMLDocumentParser(HTMLDocument& document, ParserSynchroniza
     , m_triedLoadingLinkHeaders(false)
 {
     ASSERT(shouldUseThreading() || (m_token && m_tokenizer));
-}
-
-// FIXME: Member variables should be grouped into self-initializing structs to
-// minimize code duplication between these constructors.
-HTMLDocumentParser::HTMLDocumentParser(DocumentFragment* fragment, Element* contextElement, ParserContentPolicy parserContentPolicy)
-    : ScriptableDocumentParser(fragment->document(), parserContentPolicy)
-    , m_options(&fragment->document())
-    , m_token(wrapUnique(new HTMLToken))
-    , m_tokenizer(HTMLTokenizer::create(m_options))
-    , m_treeBuilder(HTMLTreeBuilder::create(this, fragment, contextElement, this->getParserContentPolicy(), m_options))
-    , m_loadingTaskRunner(wrapUnique(fragment->document().loadingTaskRunner()->clone()))
-    , m_xssAuditorDelegate(&fragment->document())
-    , m_weakFactory(this)
-    , m_shouldUseThreading(false)
-    , m_endWasDelayed(false)
-    , m_haveBackgroundParser(false)
-    , m_tasksWereSuspended(false)
-    , m_pumpSessionNestingLevel(0)
-    , m_pumpSpeculationsSessionNestingLevel(0)
-{
-    bool reportErrors = false; // For now document fragment parsing never reports errors.
-    m_tokenizer->setState(tokenizerStateForContextElement(contextElement, reportErrors, m_options));
-    m_xssAuditor.initForFragment();
 }
 
 HTMLDocumentParser::~HTMLDocumentParser()
