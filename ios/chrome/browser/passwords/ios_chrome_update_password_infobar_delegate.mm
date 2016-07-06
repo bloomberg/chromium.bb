@@ -14,8 +14,8 @@
 #include "components/password_manager/core/browser/password_form_manager.h"
 #include "components/password_manager/core/browser/password_manager_constants.h"
 #include "components/strings/grit/components_strings.h"
-#import "ios/chrome/browser/infobars/confirm_infobar_controller.h"
 #include "ios/chrome/browser/infobars/infobar.h"
+#import "ios/chrome/browser/passwords/update_password_infobar_controller.h"
 #include "ios/chrome/grit/ios_chromium_strings.h"
 #include "ios/chrome/grit/ios_google_chrome_strings.h"
 #include "ios/chrome/grit/ios_strings.h"
@@ -32,10 +32,8 @@ void IOSChromeUpdatePasswordInfoBarDelegate::Create(
   auto delegate = base::WrapUnique(new IOSChromeUpdatePasswordInfoBarDelegate(
       is_smart_lock_branding_enabled, std::move(form_manager)));
   std::unique_ptr<InfoBarIOS> infobar(new InfoBarIOS(std::move(delegate)));
-  // TODO(crbug.com/622244): Replace ConfirmInfoBarController with update
-  // password controller class.
-  base::scoped_nsobject<ConfirmInfoBarController> controller(
-      [[ConfirmInfoBarController alloc] initWithDelegate:infobar.get()]);
+  base::scoped_nsobject<UpdatePasswordInfoBarController> controller(
+      [[UpdatePasswordInfoBarController alloc] initWithDelegate:infobar.get()]);
   infobar->SetController(controller);
   infobar_manager->AddInfoBar(std::move(infobar));
 }
