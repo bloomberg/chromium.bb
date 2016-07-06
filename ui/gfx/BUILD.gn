@@ -66,6 +66,7 @@ component("gfx") {
     "color_space.h",
     "color_space_mac.mm",
     "color_space_win.cc",
+    "color_space_x11.cc",
     "color_utils.cc",
     "color_utils.h",
     "favicon_size.cc",
@@ -400,7 +401,10 @@ component("gfx") {
     deps += [ "//ui/gfx/x" ]
     configs += [ "//build/config/linux:x11" ]
   } else {
-    sources -= [ "path_x11.cc" ]
+    sources -= [
+      "color_space_x11.cc",
+      "path_x11.cc",
+    ]
   }
 
   if (use_cairo) {

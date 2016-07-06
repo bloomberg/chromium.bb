@@ -200,6 +200,7 @@
         'color_space.h',
         'color_space_mac.mm',
         'color_space_win.cc',
+        'color_space_x11.cc',
         'color_utils.cc',
         'color_utils.h',
         'favicon_size.cc',

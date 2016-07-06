@@ -29,7 +29,7 @@ ColorSpace ColorSpace::FromICCProfile(const std::vector<char>& icc_profile) {
   return color_space;
 }
 
-#if !defined(OS_WIN) && !defined(OS_MACOSX)
+#if !defined(OS_WIN) && !defined(OS_MACOSX) && !defined(USE_X11)
 // static
 ColorSpace ColorSpace::FromBestMonitor() {
   return ColorSpace();
