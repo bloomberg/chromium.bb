@@ -26,6 +26,7 @@
 #ifndef EditCommand_h
 #define EditCommand_h
 
+#include "core/CoreExport.h"
 #include "core/editing/VisibleSelection.h"
 #include "core/editing/commands/EditAction.h"
 #include "platform/heap/Handle.h"
@@ -36,7 +37,7 @@ class CompositeEditCommand;
 class Document;
 class EditingState;
 
-class EditCommand : public GarbageCollectedFinalized<EditCommand> {
+class CORE_EXPORT EditCommand : public GarbageCollectedFinalized<EditCommand> {
 public:
     virtual ~EditCommand();
 

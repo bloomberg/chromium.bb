@@ -26,6 +26,7 @@
 #ifndef ReplaceSelectionCommand_h
 #define ReplaceSelectionCommand_h
 
+#include "core/CoreExport.h"
 #include "core/dom/NodeTraversal.h"
 #include "core/editing/commands/CompositeEditCommand.h"
 
@@ -34,7 +35,7 @@ namespace blink {
 class DocumentFragment;
 class ReplacementFragment;
 
-class ReplaceSelectionCommand final : public CompositeEditCommand {
+class CORE_EXPORT ReplaceSelectionCommand final : public CompositeEditCommand {
 public:
     enum CommandOption {
         SelectReplacement = 1 << 0,

@@ -785,7 +785,6 @@ static void removeHeadContents(ReplacementFragment& fragment)
         if (isHTMLBaseElement(*node)
             || isHTMLLinkElement(*node)
             || isHTMLMetaElement(*node)
-            || isHTMLStyleElement(*node)
             || isHTMLTitleElement(*node)) {
             next = NodeTraversal::nextSkippingChildren(*node);
             fragment.removeNode(node);

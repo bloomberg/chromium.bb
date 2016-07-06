@@ -64,7 +64,7 @@ td
 </body>
 </html>
 </script>
-<p>This test ensures WebKit strips away base, link, meta, style, and title elements before inserting HTML.</p>
+<p>This test ensures WebKit strips away base, link, meta and title elements before inserting HTML.</p>
 <div id="test" contenteditable></div>
 <pre><script type="text/javascript">
 
@@ -73,15 +73,24 @@ document.getElementById('test').focus();
 document.execCommand('InsertHTML', false, htmlInPasteboard);
 
 var passed = true;
-function expectNoInstanceOf(elementName) {
-    var elements = document.body.getElementsByTagName(elementName);
-    if (elements.length <= 0)
+
+function expectElementCount(test, selector) {
+    let actual = document.body.querySelectorAll(selector).length;
+    if (test(actual))
         return;
 
-    document.write('FAIL - found ' + elements.length + ' ');
-    document.write(elements.length == 1 ? 'instance' : 'instances');
-    document.writeln(' of ' + elementName + ' element');
+    document.write('FAIL - found ' + actual + ' ');
+    document.write(actual == 1 ? 'instance' : 'instances');
+    document.writeln(' of ' + selector);
     passed = false;
+}
+
+function expectNoInstanceOf(elementName) {
+    expectElementCount((x) => x == 0, elementName);
+}
+
+function expectInstancesOf(elementName) {
+    expectElementCount((x) => x > 0, elementName);
 }
 
 if (window.testRunner)
@@ -91,7 +100,9 @@ expectNoInstanceOf('base');
 expectNoInstanceOf('meta');
 expectNoInstanceOf('link');
 expectNoInstanceOf('title');
-expectNoInstanceOf('style');
+
+expectInstancesOf('style');
+
 if (passed)
     document.writeln('PASS');
 

@@ -27,6 +27,7 @@
 #define CompositeEditCommand_h
 
 #include "core/CSSPropertyNames.h"
+#include "core/CoreExport.h"
 #include "core/editing/commands/EditCommand.h"
 #include "core/editing/commands/EditingState.h"
 #include "core/editing/commands/UndoStep.h"
@@ -72,7 +73,7 @@ private:
     EditAction m_editAction;
 };
 
-class CompositeEditCommand : public EditCommand {
+class CORE_EXPORT CompositeEditCommand : public EditCommand {
 public:
     enum ShouldPreserveSelection { PreserveSelection, DoNotPreserveSelection };
     enum ShouldPreserveStyle { PreserveStyle, DoNotPreserveStyle };

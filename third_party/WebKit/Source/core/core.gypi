@@ -4043,6 +4043,7 @@
             'editing/FrameSelectionTest.cpp',
             'editing/GranularityStrategyTest.cpp',
             'editing/InputMethodControllerTest.cpp',
+            'editing/commands/ReplaceSelectionCommandTest.cpp',
             'editing/iterators/BackwardsTextBufferTest.cpp',
             'editing/iterators/CharacterIteratorTest.cpp',
             'editing/iterators/ForwardsTextBufferTest.cpp',
