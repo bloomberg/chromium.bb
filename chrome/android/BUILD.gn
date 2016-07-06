@@ -14,6 +14,11 @@ import("//third_party/protobuf/proto_library.gni")
 import("channel.gni")
 import("java_sources.gni")
 
+declare_args() {
+  # Enables blimp for android.
+  enable_blimp = false
+}
+
 manifest_package = "org.chromium.chrome"
 
 chrome_public_jinja_variables = default_chrome_public_jinja_variables +
