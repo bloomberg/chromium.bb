@@ -2,30 +2,33 @@
 -AllUrlsApiTest.WhitelistedExtension
 -BrowserNavigatorTest.NavigateFromNTPToOptionsInSameTab
 -BrowserTest.OtherRedirectsDontForkProcess
--ChromeRenderProcessHostTest.*
--ChromeRenderProcessHostTestWithCommandLine.*
--ErrorPageTest.*
+-ChromeRenderProcessHostTest.ProcessOverflow
+-ChromeRenderProcessHostTest.ProcessPerTab
+-ChromeRenderProcessHostTestWithCommandLine.ProcessOverflowCommandLine
+-ErrorPageTest.DNSError_DoClickLink
+-ErrorPageTest.DNSError_DoReload
+-ErrorPageTest.DNSError_DoReloadAfterSamePageNavigation
 -PolicyTest.HomepageLocation
--PrerenderBrowserTest.*
--ProcessManagementTest.*
+-PrerenderBrowserTest.PrerenderLocationReplaceGWSHistograms
+-ProcessManagementTest.ExtensionProcessBalancing
+-ProcessManagementTest.ProcessOverflow
 -RedirectTest.ClientEmptyReferer
 -ReferrerPolicyTest.HttpsRedirect
 -RestoreOnStartupPolicyTestInstance/RestoreOnStartupPolicyTest.RunTest*
 -WebNavigationApiTest.ServerRedirectSingleProcess
--WebRtcBrowserTest.RunsAudioVideoWebRTCCallInTwoTabs*
 
 # crbug.com/467126: BrowserTest.WindowOpenClose is flaky in --site-per-process
 # mode:
 -BrowserTest.WindowOpenClose
 
-# crbug.com/448592: Get extension browsertests to pass in --site-per-process
-# mode:
--ExtensionApiTest.Tabs2
+# crbug.com/483522
+ExtensionApiTest.Tabs2
+
+# crbug.com/448592: Get extension browsertests to pass with --site-per-process
 -ExtensionApiTest.TabMove
 -ExtensionApiTest.TabsOnUpdated
 -ExtensionURLRewriteBrowserTest.NewTabPageURL
--IsolatedAppTest.*
-
-# crbug.com/603261: WebrtcEventLogApiTest tests failing on Site Isolation FYI bot
--WebrtcEventLogApiTest.TestStartTimedWebRtcEventLogging
--WebrtcEventLogApiTest.TestStartStopWebRtcEventLogging
+-IsolatedAppTest.CookieIsolation
+-IsolatedAppTest.CrossProcessClientRedirect
+-IsolatedAppTest.IsolatedAppProcessModel
+-IsolatedAppTest.SubresourceCookieIsolation
