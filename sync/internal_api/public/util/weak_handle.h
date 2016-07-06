@@ -48,11 +48,9 @@
 #define SYNC_INTERNAL_API_PUBLIC_UTIL_WEAK_HANDLE_H_
 
 #include <cstddef>
-#include <memory>
+#include <utility>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
-#include "base/callback_forward.h"
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "base/location.h"
@@ -74,28 +72,6 @@ template <typename T> class WeakHandle;
 namespace internal {
 // These classes are part of the WeakHandle implementation.  DO NOT
 // USE THESE CLASSES DIRECTLY YOURSELF.
-
-// Adapted from base/callback_internal.h.
-
-template <typename T>
-struct ParamTraits {
-  typedef const T& ForwardType;
-};
-
-template <typename T>
-struct ParamTraits<T&> {
-  typedef T& ForwardType;
-};
-
-template <typename T>
-// unique_ptr<T> is the type the target function will accept; PassedWrapper is
-// the type that gets passed into Call and through to base::Bind. It would be
-// better to support movable types in a generic way but this was the simplest
-// fix for supporting unique_ptr. Using base::internal is unfortunate but since
-// this class is basically a wrapper around base::Bind it makes sense.
-struct ParamTraits<std::unique_ptr<T>> {
-  typedef base::internal::PassedWrapper<std::unique_ptr<T>> ForwardType;
-};
 
 // Base class for WeakHandleCore<T> to avoid template bloat.  Handles
 // the interaction with the owner thread and its message loop.
@@ -140,45 +116,11 @@ class WeakHandleCore
 
   // Call(...) may be called on any thread, but all its arguments
   // should be safe to be bound and copied across threads.
-
-  template <typename U>
+  template <typename Method, typename... Args>
   void Call(const tracked_objects::Location& from_here,
-            void (U::*fn)(void)) const {
-    PostToOwnerThread(from_here, Bind(fn, ptr_));
-  }
-
-  template <typename U, typename A1>
-  void Call(const tracked_objects::Location& from_here,
-            void (U::*fn)(A1),
-            typename ParamTraits<A1>::ForwardType a1) const {
-    PostToOwnerThread(from_here, Bind(fn, ptr_, a1));
-  }
-
-  template <typename U, typename A1, typename A2>
-  void Call(const tracked_objects::Location& from_here,
-            void (U::*fn)(A1, A2),
-            typename ParamTraits<A1>::ForwardType a1,
-            typename ParamTraits<A2>::ForwardType a2) const {
-    PostToOwnerThread(from_here, Bind(fn, ptr_, a1, a2));
-  }
-
-  template <typename U, typename A1, typename A2, typename A3>
-  void Call(const tracked_objects::Location& from_here,
-            void (U::*fn)(A1, A2, A3),
-            typename ParamTraits<A1>::ForwardType a1,
-            typename ParamTraits<A2>::ForwardType a2,
-            typename ParamTraits<A3>::ForwardType a3) const {
-    PostToOwnerThread(from_here, Bind(fn, ptr_, a1, a2, a3));
-  }
-
-  template <typename U, typename A1, typename A2, typename A3, typename A4>
-  void Call(const tracked_objects::Location& from_here,
-            void (U::*fn)(A1, A2, A3, A4),
-            typename ParamTraits<A1>::ForwardType a1,
-            typename ParamTraits<A2>::ForwardType a2,
-            typename ParamTraits<A3>::ForwardType a3,
-            typename ParamTraits<A4>::ForwardType a4) const {
-    PostToOwnerThread(from_here, Bind(fn, ptr_, a1, a2, a3, a4));
+            Method method, Args&&... args) const {
+    PostToOwnerThread(
+        from_here, base::Bind(method, ptr_, std::forward<Args>(args)...));
   }
 
  private:
@@ -240,50 +182,11 @@ class WeakHandle {
 
   // Call(...) may be called on any thread, but all its arguments
   // should be safe to be bound and copied across threads.
-
-  template <typename U>
+  template <typename Method, typename... Args>
   void Call(const tracked_objects::Location& from_here,
-            void (U::*fn)(void)) const {
+            Method method, Args&&... args) const {
     CHECK(IsInitialized());
-    core_->Call(from_here, fn);
-  }
-
-  template <typename U, typename A1>
-  void Call(const tracked_objects::Location& from_here,
-            void (U::*fn)(A1),
-            typename internal::ParamTraits<A1>::ForwardType a1) const {
-    CHECK(IsInitialized());
-    core_->Call(from_here, fn, a1);
-  }
-
-  template <typename U, typename A1, typename A2>
-  void Call(const tracked_objects::Location& from_here,
-            void (U::*fn)(A1, A2),
-            typename internal::ParamTraits<A1>::ForwardType a1,
-            typename internal::ParamTraits<A2>::ForwardType a2) const {
-    CHECK(IsInitialized());
-    core_->Call(from_here, fn, a1, a2);
-  }
-
-  template <typename U, typename A1, typename A2, typename A3>
-  void Call(const tracked_objects::Location& from_here,
-            void (U::*fn)(A1, A2, A3),
-            typename internal::ParamTraits<A1>::ForwardType a1,
-            typename internal::ParamTraits<A2>::ForwardType a2,
-            typename internal::ParamTraits<A3>::ForwardType a3) const {
-    CHECK(IsInitialized());
-    core_->Call(from_here, fn, a1, a2, a3);
-  }
-
-  template <typename U, typename A1, typename A2, typename A3, typename A4>
-  void Call(const tracked_objects::Location& from_here,
-            void (U::*fn)(A1, A2, A3, A4),
-            typename internal::ParamTraits<A1>::ForwardType a1,
-            typename internal::ParamTraits<A2>::ForwardType a2,
-            typename internal::ParamTraits<A3>::ForwardType a3,
-            typename internal::ParamTraits<A4>::ForwardType a4) const {
-    CHECK(IsInitialized());
-    core_->Call(from_here, fn, a1, a2, a3, a4);
+    core_->Call(from_here, method, std::forward<Args>(args)...);
   }
 
  private:
