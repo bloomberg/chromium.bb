@@ -365,51 +365,42 @@ if (enable_java_templates) {
     set_sources_assignment_filter([])
     forward_variables_from(invoker, [ "testonly" ])
 
-    assert(defined(invoker.sources))
-    package_name = invoker.package_name + ""
-
+    _include_path = "//"
     if (defined(invoker.include_path)) {
-      include_path = invoker.include_path + ""
-    } else {
-      include_path = "//"
+      _include_path = invoker.include_path
     }
 
-    apply_gcc_target_name = "${target_name}__apply_gcc"
-    zip_srcjar_target_name = "${target_name}__zip_srcjar"
-    final_target_name = target_name
+    _apply_gcc_target_name = "${target_name}__apply_gcc"
+    _base_gen_dir = "${target_gen_dir}/${target_name}/java_cpp_template"
 
-    action_foreach(apply_gcc_target_name) {
+    action_foreach(_apply_gcc_target_name) {
       forward_variables_from(invoker,
                              [
                                "deps",
                                "public_deps",
                                "data_deps",
                              ])
-      visibility = [ ":$zip_srcjar_target_name" ]
       script = "//build/android/gyp/gcc_preprocess.py"
       if (defined(invoker.inputs)) {
         inputs = invoker.inputs + []
       }
-      depfile = "${target_gen_dir}/${target_name}_{{source_name_part}}.d"
+      depfile =
+          "${target_gen_dir}/${invoker.target_name}_{{source_name_part}}.d"
 
       sources = invoker.sources
 
-      gen_dir =
-          "${target_gen_dir}/${target_name}/java_cpp_template/${package_name}"
-      gcc_template_output_pattern = "${gen_dir}/{{source_name_part}}.java"
-
       outputs = [
         depfile,
-        gcc_template_output_pattern,
+        "$_base_gen_dir/${invoker.package_name}/{{source_name_part}}.java",
       ]
 
       args = [
         "--depfile",
         rebase_path(depfile, root_build_dir),
         "--include-path",
-        rebase_path(include_path, root_build_dir),
+        rebase_path(_include_path, root_build_dir),
         "--output",
-        rebase_path(gen_dir, root_build_dir) + "/{{source_name_part}}.java",
+        rebase_path(outputs[1], root_build_dir),
         "--template={{source}}",
       ]
 
@@ -423,24 +414,17 @@ if (enable_java_templates) {
       }
     }
 
-    apply_gcc_outputs = get_target_outputs(":$apply_gcc_target_name")
-    base_gen_dir = get_label_info(":$apply_gcc_target_name", "target_gen_dir")
+    # Filter out .d files.
+    set_sources_assignment_filter([ "*.d" ])
+    sources = get_target_outputs(":$_apply_gcc_target_name")
 
-    srcjar_path = "${target_gen_dir}/${target_name}.srcjar"
-    zip(zip_srcjar_target_name) {
-      visibility = [ ":$final_target_name" ]
-      inputs = apply_gcc_outputs
-      output = srcjar_path
-      base_dir = base_gen_dir
-      deps = [
-        ":$apply_gcc_target_name",
-      ]
-    }
-
-    group(final_target_name) {
+    zip(target_name) {
       forward_variables_from(invoker, [ "visibility" ])
-      public_deps = [
-        ":$zip_srcjar_target_name",
+      inputs = sources
+      output = "${target_gen_dir}/${target_name}.srcjar"
+      base_dir = _base_gen_dir
+      deps = [
+        ":$_apply_gcc_target_name",
       ]
     }
   }
