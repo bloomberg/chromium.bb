@@ -243,6 +243,9 @@ generate_tests(assert_throws, [
     ['Empty list of supported payment method identifiers should throw TypeError.', new TypeError(), function() {
         new PaymentRequest([], buildDetails())
     }],
+    ['Empty supported payment method identifiers should throw TypeError.', null, function() {
+        new PaymentRequest([{'supportedMethods': []}], buildDetails())
+    }],
     ['Empty details should throw', null, function() {
         new PaymentRequest([{'supportedMethods': ['foo']}], {})
     }],
