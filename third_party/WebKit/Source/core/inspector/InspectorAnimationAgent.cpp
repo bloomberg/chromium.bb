@@ -260,13 +260,7 @@ blink::Animation* InspectorAnimationAgent::animationClone(blink::Animation* anim
             StringKeyframeVector newKeyframes;
             for (auto& oldKeyframe : oldKeyframes)
                 newKeyframes.append(toStringKeyframe(oldKeyframe.get()));
-            StringKeyframeEffectModel* newStringKeyframeModel = StringKeyframeEffectModel::create(newKeyframes);
-            // TODO(samli): This shouldn't be required.
-            Element* element = oldEffect->target();
-            if (!element)
-                return nullptr;
-            newStringKeyframeModel->forceConversionsToAnimatableValues(*element, element->computedStyle());
-            newModel = newStringKeyframeModel;
+            newModel = StringKeyframeEffectModel::create(newKeyframes);
         } else if (oldModel->isAnimatableValueKeyframeEffectModel()) {
             AnimatableValueKeyframeEffectModel* oldAnimatableValueKeyframeModel = toAnimatableValueKeyframeEffectModel(oldModel);
             KeyframeVector oldKeyframes = oldAnimatableValueKeyframeModel->getFrames();

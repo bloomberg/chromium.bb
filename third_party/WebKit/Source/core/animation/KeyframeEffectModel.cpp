@@ -78,15 +78,7 @@ bool KeyframeEffectModelBase::sample(int iteration, double fraction, double iter
     return changed;
 }
 
-void KeyframeEffectModelBase::forceConversionsToAnimatableValues(Element& element, const ComputedStyle* baseStyle)
-{
-    ensureKeyframeGroups();
-    // TODO(alancutter): Defer compositor keyframe snapshotting to style resolve to remove the Element and ComputedStyle dependency here.
-    snapshotAllCompositorKeyframes(element, baseStyle);
-    ensureInterpolationEffectPopulated();
-}
-
-bool KeyframeEffectModelBase::snapshotNeutralCompositorKeyframes(Element& element, const ComputedStyle& oldStyle, const ComputedStyle& newStyle)
+bool KeyframeEffectModelBase::snapshotNeutralCompositorKeyframes(Element& element, const ComputedStyle& oldStyle, const ComputedStyle& newStyle, const ComputedStyle* parentStyle) const
 {
     bool updated = false;
     ensureKeyframeGroups();
@@ -98,14 +90,15 @@ bool KeyframeEffectModelBase::snapshotNeutralCompositorKeyframes(Element& elemen
             continue;
         for (auto& keyframe : keyframeGroup->m_keyframes) {
             if (keyframe->isNeutral())
-                updated |= keyframe->populateAnimatableValue(property, element, &newStyle, true);
+                updated |= keyframe->populateAnimatableValue(property, element, newStyle, parentStyle);
         }
     }
     return updated;
 }
 
-bool KeyframeEffectModelBase::snapshotAllCompositorKeyframes(Element& element, const ComputedStyle* baseStyle)
+bool KeyframeEffectModelBase::snapshotAllCompositorKeyframes(Element& element, const ComputedStyle& baseStyle, const ComputedStyle* parentStyle) const
 {
+    m_needsCompositorKeyframesSnapshot = false;
     bool updated = false;
     ensureKeyframeGroups();
     for (CSSPropertyID property : CompositorAnimations::compositableProperties) {
@@ -113,7 +106,7 @@ bool KeyframeEffectModelBase::snapshotAllCompositorKeyframes(Element& element, c
         if (!keyframeGroup)
             continue;
         for (auto& keyframe : keyframeGroup->m_keyframes)
-            updated |= keyframe->populateAnimatableValue(property, element, baseStyle, true);
+            updated |= keyframe->populateAnimatableValue(property, element, baseStyle, parentStyle);
     }
     return updated;
 }

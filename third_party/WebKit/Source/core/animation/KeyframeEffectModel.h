@@ -105,11 +105,9 @@ public:
         return m_hasSyntheticKeyframes;
     }
 
-    // FIXME: This is a hack used to resolve CSSValues to AnimatableValues while we have a valid handle on an element.
-    // This should be removed once AnimatableValues are obsolete.
-    void forceConversionsToAnimatableValues(Element&, const ComputedStyle* baseStyle);
-    bool snapshotNeutralCompositorKeyframes(Element&, const ComputedStyle& oldStyle, const ComputedStyle& newStyle);
-    bool snapshotAllCompositorKeyframes(Element&, const ComputedStyle* baseStyle);
+    bool needsCompositorKeyframesSnapshot() const { return m_needsCompositorKeyframesSnapshot; }
+    bool snapshotNeutralCompositorKeyframes(Element&, const ComputedStyle& oldStyle, const ComputedStyle& newStyle, const ComputedStyle* parentStyle) const;
+    bool snapshotAllCompositorKeyframes(Element&, const ComputedStyle& baseStyle, const ComputedStyle* parentStyle) const;
 
     static KeyframeVector normalizedKeyframesForInspector(const KeyframeVector& keyframes) { return normalizedKeyframes(keyframes); }
 
@@ -128,6 +126,7 @@ protected:
         , m_lastIterationDuration(0)
         , m_defaultKeyframeEasing(defaultKeyframeEasing)
         , m_hasSyntheticKeyframes(false)
+        , m_needsCompositorKeyframesSnapshot(true)
     {
     }
 
@@ -149,6 +148,7 @@ protected:
     RefPtr<TimingFunction> m_defaultKeyframeEasing;
 
     mutable bool m_hasSyntheticKeyframes;
+    mutable bool m_needsCompositorKeyframesSnapshot;
 
     friend class KeyframeEffectModelTest;
 };

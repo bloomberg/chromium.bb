@@ -35,6 +35,7 @@
 #include "core/animation/AnimationTimeline.h"
 #include "core/animation/CompositorAnimations.h"
 #include "core/animation/ElementAnimations.h"
+#include "core/animation/InertEffect.h"
 #include "core/animation/Interpolation.h"
 #include "core/animation/KeyframeEffectModel.h"
 #include "core/animation/LegacyStyleInterpolation.h"
@@ -174,7 +175,6 @@ static StringKeyframeEffectModel* createKeyframeEffectModel(StyleResolver* resol
     }
 
     StringKeyframeEffectModel* model = StringKeyframeEffectModel::create(keyframes, &keyframes[0]->easing());
-    model->forceConversionsToAnimatableValues(element, style);
     if (animationIndex > 0 && model->hasSyntheticKeyframes())
         UseCounter::count(elementForScoping->document(), UseCounter::CSSAnimationsStackedNeutralKeyframe);
     return model;
@@ -206,14 +206,28 @@ bool CSSAnimations::isTransitionAnimationForInspector(const Animation& animation
 
 void CSSAnimations::calculateUpdate(const Element* animatingElement, Element& element, const ComputedStyle& style, ComputedStyle* parentStyle, CSSAnimationUpdate& animationUpdate, StyleResolver* resolver)
 {
-    calculateCompositorAnimationUpdate(animationUpdate, animatingElement, element, style);
+    calculateCompositorAnimationUpdate(animationUpdate, animatingElement, element, style, parentStyle);
     calculateAnimationUpdate(animationUpdate, animatingElement, element, style, parentStyle, resolver);
     calculateAnimationActiveInterpolations(animationUpdate, animatingElement);
     calculateTransitionUpdate(animationUpdate, animatingElement, style);
     calculateTransitionActiveInterpolations(animationUpdate, animatingElement);
 }
 
-void CSSAnimations::calculateCompositorAnimationUpdate(CSSAnimationUpdate& update, const Element* animatingElement, Element& element, const ComputedStyle& style)
+static const KeyframeEffectModelBase* getKeyframeEffectModelBase(const AnimationEffect* effect)
+{
+    if (!effect)
+        return nullptr;
+    const EffectModel* model = nullptr;
+    if (effect->isKeyframeEffect())
+        model = toKeyframeEffect(effect)->model();
+    else if (effect->isInertEffect())
+        model = toInertEffect(effect)->model();
+    if (!model || !model->isKeyframeEffectModel())
+        return nullptr;
+    return toKeyframeEffectModelBase(model);
+}
+
+void CSSAnimations::calculateCompositorAnimationUpdate(CSSAnimationUpdate& update, const Element* animatingElement, Element& element, const ComputedStyle& style, const ComputedStyle* parentStyle)
 {
     ElementAnimations* elementAnimations = animatingElement ? animatingElement->elementAnimations() : nullptr;
 
@@ -231,19 +245,16 @@ void CSSAnimations::calculateCompositorAnimationUpdate(CSSAnimationUpdate& updat
     bool transformZoomChanged = oldStyle.hasCurrentTransformAnimation() && oldStyle.effectiveZoom() != style.effectiveZoom();
     for (auto& entry : elementAnimations->animations()) {
         Animation& animation = *entry.key;
-        if (!animation.effect() || !animation.effect()->isKeyframeEffect())
+        const KeyframeEffectModelBase* keyframeEffect = getKeyframeEffectModelBase(animation.effect());
+        if (!keyframeEffect)
             continue;
-        EffectModel* model = toKeyframeEffect(animation.effect())->model();
-        if (!model || !model->isKeyframeEffectModel())
-            continue;
-        KeyframeEffectModelBase& keyframeEffect = toKeyframeEffectModelBase(*model);
 
         bool updateCompositorKeyframes = false;
-        if (transformZoomChanged && keyframeEffect.affects(PropertyHandle(CSSPropertyTransform))
-            && keyframeEffect.snapshotAllCompositorKeyframes(element, &style)) {
+        if (transformZoomChanged && keyframeEffect->affects(PropertyHandle(CSSPropertyTransform))
+            && keyframeEffect->snapshotAllCompositorKeyframes(element, style, parentStyle)) {
             updateCompositorKeyframes = true;
-        } else if (keyframeEffect.hasSyntheticKeyframes()
-            && keyframeEffect.snapshotNeutralCompositorKeyframes(element, oldStyle, style)) {
+        } else if (keyframeEffect->hasSyntheticKeyframes()
+            && keyframeEffect->snapshotNeutralCompositorKeyframes(element, oldStyle, style, parentStyle)) {
             updateCompositorKeyframes = true;
         }
 
@@ -345,6 +356,31 @@ void CSSAnimations::calculateAnimationUpdate(CSSAnimationUpdate& update, const E
             update.cancelAnimation(i, *cssAnimations->m_runningAnimations[i]->animation);
         }
     }
+}
+
+void CSSAnimations::snapshotCompositorKeyframes(Element& element, CSSAnimationUpdate& update, const ComputedStyle& style, const ComputedStyle* parentStyle)
+{
+    const auto& snapshot = [&element, &style, parentStyle](const AnimationEffect* effect)
+    {
+        const KeyframeEffectModelBase* keyframeEffect = getKeyframeEffectModelBase(effect);
+        if (keyframeEffect && keyframeEffect->needsCompositorKeyframesSnapshot())
+            keyframeEffect->snapshotAllCompositorKeyframes(element, style, parentStyle);
+    };
+
+    ElementAnimations* elementAnimations = element.elementAnimations();
+    if (elementAnimations) {
+        for (auto& entry : elementAnimations->animations())
+            snapshot(entry.key->effect());
+    }
+
+    for (const auto& newAnimation : update.newAnimations())
+        snapshot(newAnimation.effect.get());
+
+    for (const auto& updatedAnimation : update.animationsWithUpdates())
+        snapshot(updatedAnimation.effect.get());
+
+    for (const auto& newTransition : update.newTransitions())
+        snapshot(newTransition.value.effect.get());
 }
 
 void CSSAnimations::maybeApplyPendingUpdate(Element* element)

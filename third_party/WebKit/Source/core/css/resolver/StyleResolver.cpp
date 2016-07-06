@@ -850,17 +850,12 @@ PassRefPtr<ComputedStyle> StyleResolver::styleForElement(Element* element, const
     return state.takeStyle();
 }
 
-// This function is used by the WebAnimations JavaScript API method animate().
-// FIXME: Remove this when animate() switches away from resolution-dependent parsing.
-PassRefPtr<AnimatableValue> StyleResolver::createAnimatableValueSnapshot(Element& element, const ComputedStyle* baseStyle, CSSPropertyID property, const CSSValue* value)
+// TODO(alancutter): Create compositor keyframe values directly instead of intermediate AnimatableValues.
+PassRefPtr<AnimatableValue> StyleResolver::createAnimatableValueSnapshot(Element& element, const ComputedStyle& baseStyle, const ComputedStyle* parentStyle, CSSPropertyID property, const CSSValue* value)
 {
-    StyleResolverState state(element.document(), &element);
-    state.setStyle(baseStyle ? ComputedStyle::clone(*baseStyle) : ComputedStyle::create());
-    return createAnimatableValueSnapshot(state, property, value);
-}
-
-PassRefPtr<AnimatableValue> StyleResolver::createAnimatableValueSnapshot(StyleResolverState& state, CSSPropertyID property, const CSSValue* value)
-{
+    // TODO(alancutter): Avoid creating a StyleResolverState just to apply a single value on a ComputedStyle.
+    StyleResolverState state(element.document(), &element, parentStyle);
+    state.setStyle(ComputedStyle::clone(baseStyle));
     if (value) {
         StyleBuilder::applyProperty(property, state, *value);
         state.fontBuilder().createFont(state.document().styleEngine().fontSelector(), state.mutableStyleRef());
@@ -1130,6 +1125,8 @@ bool StyleResolver::applyAnimatedProperties(StyleResolverState& state, const Ele
     CSSAnimations::calculateUpdate(animatingElement, *element, *state.style(), state.parentStyle(), state.animationUpdate(), this);
     if (state.animationUpdate().isEmpty())
         return false;
+
+    CSSAnimations::snapshotCompositorKeyframes(*element, state.animationUpdate(), *state.style(), state.parentStyle());
 
     if (state.style()->insideLink() != NotInsideLink) {
         ASSERT(state.applyPropertyToRegularStyle());

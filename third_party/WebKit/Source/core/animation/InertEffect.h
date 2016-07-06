@@ -47,6 +47,8 @@ public:
     EffectModel* model() const { return m_model.get(); }
     bool paused() const { return m_paused; }
 
+    bool isInertEffect() const final { return true; }
+
     DECLARE_VIRTUAL_TRACE();
 
 protected:
@@ -59,6 +61,8 @@ private:
     bool m_paused;
     double m_inheritedTime;
 };
+
+DEFINE_TYPE_CASTS(InertEffect, AnimationEffect, animationEffect, animationEffect->isInertEffect(), animationEffect.isInertEffect());
 
 } // namespace blink
 

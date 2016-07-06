@@ -83,6 +83,7 @@ public:
     virtual ~AnimationEffect() { }
 
     virtual bool isKeyframeEffect() const { return false; }
+    virtual bool isInertEffect() const { return false; }
 
     Phase getPhase() const { return ensureCalculated().phase; }
     bool isCurrent() const { return ensureCalculated().isCurrent; }

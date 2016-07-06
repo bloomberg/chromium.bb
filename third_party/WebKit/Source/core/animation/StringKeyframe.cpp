@@ -5,7 +5,6 @@
 #include "core/animation/StringKeyframe.h"
 
 #include "core/StylePropertyShorthand.h"
-#include "core/animation/DeferredLegacyStyleInterpolation.h"
 #include "core/animation/css/CSSAnimations.h"
 #include "core/css/CSSPropertyMetadata.h"
 #include "core/css/resolver/StyleResolver.h"
@@ -88,15 +87,9 @@ PassRefPtr<Keyframe::PropertySpecificKeyframe> StringKeyframe::createPropertySpe
     return SVGPropertySpecificKeyframe::create(offset(), &easing(), svgPropertyValue(property.svgAttribute()), composite());
 }
 
-bool StringKeyframe::CSSPropertySpecificKeyframe::populateAnimatableValue(CSSPropertyID property, Element& element, const ComputedStyle* baseStyle, bool force) const
+bool StringKeyframe::CSSPropertySpecificKeyframe::populateAnimatableValue(CSSPropertyID property, Element& element, const ComputedStyle& baseStyle, const ComputedStyle* parentStyle) const
 {
-    if (m_animatableValueCache && !force)
-        return false;
-    if (!baseStyle && (!m_value || DeferredLegacyStyleInterpolation::interpolationRequiresStyleResolve(*m_value)))
-        return false;
-    if (!element.document().frame())
-        return false;
-    m_animatableValueCache = StyleResolver::createAnimatableValueSnapshot(element, baseStyle, property, m_value.get());
+    m_animatableValueCache = StyleResolver::createAnimatableValueSnapshot(element, baseStyle, parentStyle, property, m_value.get());
     return true;
 }
 

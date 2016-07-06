@@ -57,7 +57,7 @@ public:
 
         CSSValue* value() const { return m_value.get(); }
 
-        virtual bool populateAnimatableValue(CSSPropertyID, Element&, const ComputedStyle* baseStyle, bool force) const;
+        bool populateAnimatableValue(CSSPropertyID, Element&, const ComputedStyle& baseStyle, const ComputedStyle* parentStyle) const final;
         const PassRefPtr<AnimatableValue> getAnimatableValue() const final { return m_animatableValueCache.get(); }
         void setAnimatableValue(PassRefPtr<AnimatableValue> value) { m_animatableValueCache = value; }
 

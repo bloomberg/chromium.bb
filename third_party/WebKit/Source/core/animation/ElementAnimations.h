@@ -91,9 +91,8 @@ private:
     bool m_animationStyleChange;
     RefPtr<ComputedStyle> m_baseComputedStyle;
 
-    // CSSAnimations and DeferredLegacyStyleInterpolation checks if a style change is due to animation.
+    // CSSAnimations checks if a style change is due to animation.
     friend class CSSAnimations;
-    friend class DeferredLegacyStyleInterpolation;
 };
 
 } // namespace blink

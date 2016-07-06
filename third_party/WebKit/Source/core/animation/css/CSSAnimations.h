@@ -62,6 +62,7 @@ public:
     static const StylePropertyShorthand& propertiesForTransitionAll();
     static bool isAnimatableProperty(CSSPropertyID);
     static void calculateUpdate(const Element* animatingElement, Element&, const ComputedStyle&, ComputedStyle* parentStyle, CSSAnimationUpdate&, StyleResolver*);
+    static void snapshotCompositorKeyframes(Element&, CSSAnimationUpdate&, const ComputedStyle&, const ComputedStyle* parentStyle);
 
     void setPendingUpdate(const CSSAnimationUpdate& update)
     {
@@ -137,7 +138,7 @@ private:
 
     ActiveInterpolationsMap m_previousActiveInterpolationsForAnimations;
 
-    static void calculateCompositorAnimationUpdate(CSSAnimationUpdate&, const Element* animatingElement, Element&, const ComputedStyle&);
+    static void calculateCompositorAnimationUpdate(CSSAnimationUpdate&, const Element* animatingElement, Element&, const ComputedStyle&, const ComputedStyle* parentStyle);
     static void calculateAnimationUpdate(CSSAnimationUpdate&, const Element* animatingElement, Element&, const ComputedStyle&, ComputedStyle* parentStyle, StyleResolver*);
     static void calculateTransitionUpdate(CSSAnimationUpdate&, const Element* animatingElement, const ComputedStyle&);
     static void calculateTransitionUpdateForProperty(CSSPropertyID, const CSSTransitionData&, size_t transitionIndex, const ComputedStyle& oldStyle, const ComputedStyle&, const TransitionMap* activeTransitions, CSSAnimationUpdate&, const Element*);
