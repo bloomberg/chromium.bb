@@ -554,11 +554,6 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     # OpenGL / NVIDIA failures
     self.Fail('conformance/attribs/gl-disabled-vertex-attrib.html',
         ['win', 'linux', 'nvidia', 'opengl'], bug=1007) # angle bug ID
-    # Starts failing in between the 364.19 and 367.27 drivers
-    self.Fail('conformance/ogles/GL/build/build_001_to_008.html',
-        ['win', 'linux', 'nvidia', 'opengl'], bug=622492)
-    self.Fail('conformance/ogles/GL/build/build_001_to_008.html',
-        ['linux', 'nvidia', 'no_angle'], bug=622492)
 
     # Win failures
     self.Fail('conformance/extensions/oes-texture-half-float.html',
