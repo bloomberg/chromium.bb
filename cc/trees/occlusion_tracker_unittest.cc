@@ -1437,11 +1437,6 @@ class OcclusionTrackerTestDontOccludePixelsNeededForBackgroundFilter
     FilterOperations filters;
     filters.Append(FilterOperation::CreateBlurFilter(10.f));
 
-    // Save the distance of influence for the blur effect.
-    int outset_top, outset_right, outset_bottom, outset_left;
-    filters.GetOutsets(
-        &outset_top, &outset_right, &outset_bottom, &outset_left);
-
     enum Direction {
       LEFT,
       RIGHT,
@@ -1512,19 +1507,20 @@ class OcclusionTrackerTestDontOccludePixelsNeededForBackgroundFilter
       this->VisitContributingSurface(filtered_surface, &occlusion);
       this->EnterLayer(parent, &occlusion);
 
+      // The spread due to a 10px blur is 30px.
       gfx::Rect expected_occlusion = occlusion_rect;
       switch (i) {
         case LEFT:
-          expected_occlusion.Inset(0, 0, outset_right, 0);
+          expected_occlusion.Inset(0, 0, 30, 0);
           break;
         case RIGHT:
-          expected_occlusion.Inset(outset_right, 0, 0, 0);
+          expected_occlusion.Inset(30, 0, 0, 0);
           break;
         case TOP:
-          expected_occlusion.Inset(0, 0, 0, outset_right);
+          expected_occlusion.Inset(0, 0, 0, 30);
           break;
         case BOTTOM:
-          expected_occlusion.Inset(0, outset_right, 0, 0);
+          expected_occlusion.Inset(0, 30, 0, 0);
           break;
       }
 
@@ -1573,11 +1569,6 @@ class OcclusionTrackerTestTwoBackgroundFiltersReduceOcclusionTwice
     filtered_surface1->test_properties()->background_filters = filters;
     filtered_surface2->test_properties()->background_filters = filters;
 
-    // Save the distance of influence for the blur effect.
-    int outset_top, outset_right, outset_bottom, outset_left;
-    filters.GetOutsets(
-        &outset_top, &outset_right, &outset_bottom, &outset_left);
-
     this->CalcDrawEtc(root);
 
     TestOcclusionTrackerWithClip occlusion(gfx::Rect(0, 0, 1000, 1000));
@@ -1594,11 +1585,10 @@ class OcclusionTrackerTestTwoBackgroundFiltersReduceOcclusionTwice
     this->VisitContributingSurface(filtered_surface1, &occlusion);
 
     // Test expectations in the target.
+    int blur_outset = 3;
     gfx::Rect expected_occlusion =
-        gfx::Rect(100 / 2 + outset_right * 2,
-                  100 / 2 + outset_bottom * 2,
-                  50 / 2 - (outset_left + outset_right) * 2,
-                  50 / 2 - (outset_top + outset_bottom) * 2);
+        gfx::Rect(100 / 2 + blur_outset * 2, 100 / 2 + blur_outset * 2,
+                  50 / 2 - blur_outset * 4, 50 / 2 - blur_outset * 4);
     EXPECT_EQ(expected_occlusion.ToString(),
               occlusion.occlusion_from_inside_target().ToString());
 
@@ -1794,11 +1784,6 @@ class OcclusionTrackerTestReduceOcclusionWhenBkgdFilterIsPartiallyOccluded
     filters.Append(FilterOperation::CreateBlurFilter(3.f));
     filtered_surface->test_properties()->background_filters = filters;
 
-    // Save the distance of influence for the blur effect.
-    int outset_top, outset_right, outset_bottom, outset_left;
-    filters.GetOutsets(
-        &outset_top, &outset_right, &outset_bottom, &outset_left);
-
     this->CalcDrawEtc(parent);
 
     TestOcclusionTrackerWithClip occlusion(gfx::Rect(0, 0, 1000, 1000));
@@ -1819,10 +1804,11 @@ class OcclusionTrackerTestReduceOcclusionWhenBkgdFilterIsPartiallyOccluded
     // it will not touch occlusion_beside____ since that is not beside the
     // unoccluded part of the surface, even though it is beside the occluded
     // part of the surface.
+    int blur_outset = 9;
     gfx::Rect occlusion_above_surface =
-        gfx::Rect(70 + outset_right, 50, 30 - outset_right, 50);
+        gfx::Rect(70 + blur_outset, 50, 30 - blur_outset, 50);
     gfx::Rect occlusion_above_replica =
-        gfx::Rect(200, 50, 30 - outset_left, 50);
+        gfx::Rect(200, 50, 30 - blur_outset, 50);
     gfx::Rect occlusion_beside_surface = gfx::Rect(90, 40, 10, 10);
     gfx::Rect occlusion_beside_replica = gfx::Rect(200, 40, 10, 10);
 

@@ -539,8 +539,6 @@ TEST_F(DamageTrackerTest, VerifyDamageForBlurredSurface) {
 
   FilterOperations filters;
   filters.Append(FilterOperation::CreateBlurFilter(5.f));
-  int outset_top, outset_right, outset_bottom, outset_left;
-  filters.GetOutsets(&outset_top, &outset_right, &outset_bottom, &outset_left);
 
   // Setting the filter will damage the whole surface.
   ClearDamageForAllSurfaces(root);
@@ -556,16 +554,11 @@ TEST_F(DamageTrackerTest, VerifyDamageForBlurredSurface) {
   EmulateDrawingOneFrame(root);
 
   // Damage position on the surface should be: position of update_rect (1, 2)
-  // relative to the child (300, 300), but expanded by the blur outsets.
+  // relative to the child (300, 300), but expanded by the blur outsets
+  // (15, since the blur radius is 5).
   gfx::Rect root_damage_rect =
       root->render_surface()->damage_tracker()->current_damage_rect();
-  gfx::Rect expected_damage_rect = gfx::Rect(301, 302, 3, 4);
-
-  expected_damage_rect.Inset(-outset_left,
-                             -outset_top,
-                             -outset_right,
-                             -outset_bottom);
-  EXPECT_EQ(expected_damage_rect.ToString(), root_damage_rect.ToString());
+  EXPECT_EQ(gfx::Rect(286, 287, 33, 34), root_damage_rect);
 }
 
 TEST_F(DamageTrackerTest, VerifyDamageForImageFilter) {
@@ -579,8 +572,6 @@ TEST_F(DamageTrackerTest, VerifyDamageForImageFilter) {
   FilterOperations filters;
   filters.Append(FilterOperation::CreateReferenceFilter(
       SkBlurImageFilter::Make(2, 2, nullptr)));
-  int outset_top, outset_right, outset_bottom, outset_left;
-  filters.GetOutsets(&outset_top, &outset_right, &outset_bottom, &outset_left);
 
   // Setting the filter will damage the whole surface.
   ClearDamageForAllSurfaces(root);
@@ -593,14 +584,12 @@ TEST_F(DamageTrackerTest, VerifyDamageForImageFilter) {
           root->render_surface()->damage_tracker()->current_damage_rect();
   child_damage_rect =
           child->render_surface()->damage_tracker()->current_damage_rect();
-  EXPECT_EQ(gfx::Rect(100 - outset_left, 100 - outset_top,
-                      30 + outset_left + outset_right,
-                      30 + outset_top + outset_bottom),
-            root_damage_rect);
-  EXPECT_EQ(
-      gfx::Rect(-outset_left, -outset_top, 30 + (outset_left + outset_right),
-                30 + (outset_top + outset_bottom)),
-      child_damage_rect);
+
+  // gfx::Rect(100, 100, 30, 30), expanded by 6px for the 2px blur filter.
+  EXPECT_EQ(gfx::Rect(94, 94, 42, 42), root_damage_rect);
+
+  // gfx::Rect(0, 0, 30, 30), expanded by 6px for the 2px blur filter.
+  EXPECT_EQ(gfx::Rect(-6, -6, 42, 42), child_damage_rect);
 
   // CASE 1: Setting the update rect should damage the whole surface (for now)
   ClearDamageForAllSurfaces(root);
@@ -613,13 +602,11 @@ TEST_F(DamageTrackerTest, VerifyDamageForImageFilter) {
   child_damage_rect =
           child->render_surface()->damage_tracker()->current_damage_rect();
 
-  int expect_width = 1 + outset_left + outset_right;
-  int expect_height = 1 + outset_top + outset_bottom;
-  EXPECT_EQ(gfx::Rect(100 - outset_left, 100 - outset_top, expect_width,
-                      expect_height),
-            root_damage_rect);
-  EXPECT_EQ(gfx::Rect(-outset_left, -outset_top, expect_width, expect_height),
-            child_damage_rect);
+  // gfx::Rect(100, 100, 1, 1), expanded by 6px for the 2px blur filter.
+  EXPECT_EQ(gfx::Rect(94, 94, 13, 13), root_damage_rect);
+
+  // gfx::Rect(0, 0, 1, 1), expanded by 6px for the 2px blur filter.
+  EXPECT_EQ(gfx::Rect(-6, -6, 13, 13), child_damage_rect);
 }
 
 TEST_F(DamageTrackerTest, VerifyDamageForTransformedImageFilter) {
@@ -633,8 +620,6 @@ TEST_F(DamageTrackerTest, VerifyDamageForTransformedImageFilter) {
   FilterOperations filters;
   filters.Append(FilterOperation::CreateReferenceFilter(
       SkBlurImageFilter::Make(2, 2, nullptr)));
-  int outset_top, outset_right, outset_bottom, outset_left;
-  filters.GetOutsets(&outset_top, &outset_right, &outset_bottom, &outset_left);
 
   // Setting the filter will damage the whole surface.
   gfx::Transform transform;
@@ -650,17 +635,18 @@ TEST_F(DamageTrackerTest, VerifyDamageForTransformedImageFilter) {
       root->render_surface()->damage_tracker()->current_damage_rect();
   child_damage_rect =
       child->render_surface()->damage_tracker()->current_damage_rect();
-  int rotated_outset_left = outset_left / 2;
-  int expected_rotated_width = (30 + outset_left + outset_right) / 2;
-  gfx::Rect expected_root_damage(100 - rotated_outset_left, 100 - outset_top,
-                                 expected_rotated_width,
-                                 30 + outset_top + outset_bottom);
+
+  // Blur outset is 6px for a 2px blur.
+  int blur_outset = 6;
+  int rotated_outset_left = blur_outset / 2;
+  int expected_rotated_width = (30 + 2 * blur_outset) / 2;
+  gfx::Rect expected_root_damage(100 - rotated_outset_left, 100 - blur_outset,
+                                 expected_rotated_width, 30 + 2 * blur_outset);
   expected_root_damage.Union(gfx::Rect(100, 100, 30, 30));
   EXPECT_EQ(expected_root_damage, root_damage_rect);
-  EXPECT_EQ(
-      gfx::Rect(-outset_left, -outset_top, 30 + (outset_left + outset_right),
-                30 + (outset_top + outset_bottom)),
-      child_damage_rect);
+  EXPECT_EQ(gfx::Rect(-blur_outset, -blur_outset, 30 + 2 * blur_outset,
+                      30 + 2 * blur_outset),
+            child_damage_rect);
 
   // Setting the update rect should damage the whole surface (for now)
   ClearDamageForAllSurfaces(root);
@@ -673,12 +659,12 @@ TEST_F(DamageTrackerTest, VerifyDamageForTransformedImageFilter) {
   child_damage_rect =
       child->render_surface()->damage_tracker()->current_damage_rect();
 
-  int expect_width = 30 + outset_left + outset_right;
-  int expect_height = 30 + outset_top + outset_bottom;
-  EXPECT_EQ(gfx::Rect(100 - outset_left / 2, 100 - outset_top, expect_width / 2,
-                      expect_height),
+  int expect_width = 30 + 2 * blur_outset;
+  int expect_height = 30 + 2 * blur_outset;
+  EXPECT_EQ(gfx::Rect(100 - blur_outset / 2, 100 - blur_outset,
+                      expect_width / 2, expect_height),
             root_damage_rect);
-  EXPECT_EQ(gfx::Rect(-outset_left, -outset_top, expect_width, expect_height),
+  EXPECT_EQ(gfx::Rect(-blur_outset, -blur_outset, expect_width, expect_height),
             child_damage_rect);
 }
 
@@ -692,8 +678,6 @@ TEST_F(DamageTrackerTest, VerifyDamageForBackgroundBlurredChild) {
 
   FilterOperations filters;
   filters.Append(FilterOperation::CreateBlurFilter(2.f));
-  int outset_top, outset_right, outset_bottom, outset_left;
-  filters.GetOutsets(&outset_top, &outset_right, &outset_bottom, &outset_left);
 
   // Setting the filter will damage the whole surface.
   ClearDamageForAllSurfaces(root);
@@ -718,10 +702,8 @@ TEST_F(DamageTrackerTest, VerifyDamageForBackgroundBlurredChild) {
   // update_rect (297, 297), but expanded by the blur outsets.
   gfx::Rect expected_damage_rect = gfx::Rect(297, 297, 2, 2);
 
-  expected_damage_rect.Inset(-outset_left,
-                             -outset_top,
-                             -outset_right,
-                             -outset_bottom);
+  // 6px spread for a 2px blur.
+  expected_damage_rect.Inset(-6, -6, -6, -6);
   EXPECT_EQ(expected_damage_rect.ToString(), root_damage_rect.ToString());
 
   // CASE 2: Setting the update rect should cause the corresponding damage to
@@ -740,10 +722,8 @@ TEST_F(DamageTrackerTest, VerifyDamageForBackgroundBlurredChild) {
   // update_rect (297, 297), but expanded on the left/top by the blur outsets.
   expected_damage_rect = gfx::Rect(297, 297, 30, 30);
 
-  expected_damage_rect.Inset(-outset_left,
-                             -outset_top,
-                             0,
-                             0);
+  // 6px spread for a 2px blur.
+  expected_damage_rect.Inset(-6, -6, 0, 0);
   EXPECT_EQ(expected_damage_rect.ToString(), root_damage_rect.ToString());
 
   // CASE 3: Setting this update rect outside the blurred content_bounds of the
