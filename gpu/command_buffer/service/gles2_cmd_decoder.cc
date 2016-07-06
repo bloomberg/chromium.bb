@@ -2298,6 +2298,7 @@ ScopedGLErrorSuppressor::~ScopedGLErrorSuppressor() {
 }
 
 static void RestoreCurrentTextureBindings(ContextState* state, GLenum target) {
+  DCHECK(!state->texture_units.empty());
   TextureUnit& info = state->texture_units[0];
   GLuint last_id;
   scoped_refptr<TextureRef>& texture_ref = info.GetInfoForTarget(target);
