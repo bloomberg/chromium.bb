@@ -9,15 +9,20 @@
 namespace remoting {
 namespace protocol {
 
-FrameStats::FrameStats() = default;
-FrameStats::FrameStats(const FrameStats&) = default;
-FrameStats::~FrameStats() = default;
+ClientFrameStats::ClientFrameStats() = default;
+ClientFrameStats::ClientFrameStats(const ClientFrameStats&) = default;
+ClientFrameStats::~ClientFrameStats() = default;
+ClientFrameStats& ClientFrameStats::operator=(const ClientFrameStats&) =
+    default;
+
+HostFrameStats::HostFrameStats() = default;
+HostFrameStats::HostFrameStats(const HostFrameStats&) = default;
+HostFrameStats::~HostFrameStats() = default;
 
 // static
-FrameStats FrameStats::GetForVideoPacket(const VideoPacket& packet) {
-  FrameStats result;
+HostFrameStats HostFrameStats::GetForVideoPacket(const VideoPacket& packet) {
+  HostFrameStats result;
   result.frame_size = packet.data().size();
-  result.time_received = base::TimeTicks::Now();
   if (packet.has_latest_event_timestamp()) {
     result.latest_event_timestamp =
         base::TimeTicks::FromInternalValue(packet.latest_event_timestamp());
@@ -48,6 +53,10 @@ FrameStats FrameStats::GetForVideoPacket(const VideoPacket& packet) {
   }
   return result;
 }
+
+FrameStats::FrameStats() = default;
+FrameStats::FrameStats(const FrameStats&) = default;
+FrameStats::~FrameStats() = default;
 
 }  // namespace protocol
 }  // namespace remoting

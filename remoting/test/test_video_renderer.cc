@@ -294,8 +294,9 @@ TestVideoRenderer::~TestVideoRenderer() {
   video_decode_thread_->Stop();
 }
 
-bool TestVideoRenderer::Initialize(const ClientContext& client_context,
-                                   protocol::PerformanceTracker* perf_tracker) {
+bool TestVideoRenderer::Initialize(
+    const ClientContext& client_context,
+    protocol::FrameStatsConsumer* stats_consumer) {
   return true;
 }
 
@@ -317,6 +318,9 @@ protocol::VideoStub* TestVideoRenderer::GetVideoStub() {
 protocol::FrameConsumer* TestVideoRenderer::GetFrameConsumer() {
   DCHECK(thread_checker_.CalledOnValidThread());
   NOTREACHED();
+  return nullptr;
+}
+protocol::FrameStatsConsumer* TestVideoRenderer::GetFrameStatsConsumer() {
   return nullptr;
 }
 

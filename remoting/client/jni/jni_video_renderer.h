@@ -41,12 +41,13 @@ class JniVideoRenderer : public protocol::FrameConsumer,
                  const base::Closure& done) override;
   PixelFormat GetPixelFormat() override;
 
-  // JniVideoRenderer implementation.
+  // VideoRenderer implementation.
+  bool Initialize(const ClientContext& client_context,
+                  protocol::FrameStatsConsumer* stats_consumer) override;
   void OnSessionConfig(const protocol::SessionConfig& config) override;
   protocol::VideoStub* GetVideoStub() override;
   protocol::FrameConsumer* GetFrameConsumer() override;
-  bool Initialize(const ClientContext& client_context,
-                  protocol::PerformanceTracker* perf_tracker) override;
+  protocol::FrameStatsConsumer* GetFrameStatsConsumer() override;
 
  private:
   class Renderer;

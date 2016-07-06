@@ -12,14 +12,16 @@ class ClientContext;
 namespace protocol {
 
 class FrameConsumer;
-class PerformanceTracker;
+class FrameStatsConsumer;
 class SessionConfig;
 class VideoStub;
 
 // VideoRenderer is responsible for decoding and displaying incoming video
 // stream. This interface is used by ConnectionToHost implementations to
 // render received video frames. ConnectionToHost may feed encoded frames to the
-// VideoStub or decode them and pass decoded frames to the FrameConsumer.
+// VideoStub or decode them and pass decoded frames to the FrameConsumer. If the
+// implementation uses FrameConsumer directly then it must also call
+// FrameStatsConsumer with FrameStats for each frame.
 //
 // TODO(sergeyu): Reconsider this design.
 class VideoRenderer {
@@ -32,7 +34,7 @@ class VideoRenderer {
   // should always return true.
   // |perf_tracker| must outlive the renderer.
   virtual bool Initialize(const ClientContext& client_context,
-                          protocol::PerformanceTracker* perf_tracker) = 0;
+                          protocol::FrameStatsConsumer* stats_consumer) = 0;
 
   // Configures the renderer with the supplied |config|. This must be called
   // exactly once before video data is supplied to the renderer.
@@ -43,6 +45,9 @@ class VideoRenderer {
 
   // Returns the FrameConsumer interface for this renderer.
   virtual FrameConsumer* GetFrameConsumer() = 0;
+
+  // Returns the FrameStatsConsumer interface for this renderer.
+  virtual FrameStatsConsumer* GetFrameStatsConsumer() = 0;
 };
 
 }  // namespace protocol

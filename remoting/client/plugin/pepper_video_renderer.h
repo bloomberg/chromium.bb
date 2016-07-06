@@ -23,7 +23,7 @@ namespace remoting {
 class ClientContext;
 
 namespace protocol {
-class PerformanceTracker;
+class FrameStatsConsumer;
 }  // namespace protocol
 
 // Interface for video renderers that render video in pepper plugin.

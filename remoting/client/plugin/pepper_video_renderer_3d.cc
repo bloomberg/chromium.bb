@@ -33,27 +33,34 @@ const uint32_t kMinimumPictureCount = 3;
 class PepperVideoRenderer3D::FrameTracker {
  public:
   FrameTracker(std::unique_ptr<VideoPacket> packet,
-               protocol::PerformanceTracker* perf_tracker,
+               protocol::FrameStatsConsumer* stats_consumer,
                const base::Closure& done)
-      : packet_(std::move(packet)), perf_tracker_(perf_tracker), done_(done) {
-    stats_ = protocol::FrameStats::GetForVideoPacket(*packet_);
+      : packet_(std::move(packet)),
+        stats_consumer_(stats_consumer),
+        done_(done) {
+    stats_.host_stats = protocol::HostFrameStats::GetForVideoPacket(*packet_);
+    stats_.client_stats.time_received = base::TimeTicks::Now();
   }
 
   ~FrameTracker() {
-    if (perf_tracker_)
-      perf_tracker_->RecordVideoFrameStats(stats_);
+    if (stats_consumer_)
+      stats_consumer_->OnVideoFrameStats(stats_);
     if (!done_.is_null())
       done_.Run();
   }
 
-  void OnDecoded() { stats_.time_decoded = base::TimeTicks::Now(); }
-  void OnRendered() { stats_.time_rendered = base::TimeTicks::Now(); }
+  void OnDecoded() {
+    stats_.client_stats.time_decoded = base::TimeTicks::Now();
+  }
+  void OnRendered() {
+    stats_.client_stats.time_rendered = base::TimeTicks::Now();
+  }
 
   VideoPacket* packet() { return packet_.get(); }
 
  private:
   std::unique_ptr<VideoPacket> packet_;
-  protocol::PerformanceTracker* perf_tracker_;
+  protocol::FrameStatsConsumer* stats_consumer_;
   protocol::FrameStats stats_;
   base::Closure done_;
 };
@@ -104,8 +111,8 @@ void PepperVideoRenderer3D::EnableDebugDirtyRegion(bool enable) {
 
 bool PepperVideoRenderer3D::Initialize(
     const ClientContext& context,
-    protocol::PerformanceTracker* perf_tracker) {
-  perf_tracker_ = perf_tracker;
+    protocol::FrameStatsConsumer* stats_consumer) {
+  stats_consumer_ = stats_consumer;
 
   const int32_t context_attributes[] = {
       PP_GRAPHICS3DATTRIB_ALPHA_SIZE,     8,
@@ -198,12 +205,16 @@ protocol::FrameConsumer* PepperVideoRenderer3D::GetFrameConsumer() {
   return nullptr;
 }
 
+protocol::FrameStatsConsumer* PepperVideoRenderer3D::GetFrameStatsConsumer() {
+  return stats_consumer_;
+}
+
 void PepperVideoRenderer3D::ProcessVideoPacket(
     std::unique_ptr<VideoPacket> packet,
     const base::Closure& done) {
   VideoPacket* packet_ptr = packet.get();
   std::unique_ptr<FrameTracker> frame_tracker(
-      new FrameTracker(std::move(packet), perf_tracker_, done));
+      new FrameTracker(std::move(packet), stats_consumer_, done));
 
   // Don't need to do anything if the packet is empty. Host sends empty video
   // packets when the screen is not changing.

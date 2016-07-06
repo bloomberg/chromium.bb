@@ -124,8 +124,7 @@ void WebrtcConnectionToHost::OnWebrtcTransportMediaStreamAdded(
     LOG(WARNING)
         << "Received multiple media streams. Ignoring all except the last one.";
   }
-  video_adapter_.reset(new WebrtcVideoRendererAdapter(
-      stream, video_renderer_->GetFrameConsumer()));
+  video_adapter_.reset(new WebrtcVideoRendererAdapter(stream, video_renderer_));
 }
 
 void WebrtcConnectionToHost::OnWebrtcTransportMediaStreamRemoved(

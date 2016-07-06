@@ -132,6 +132,12 @@ protocol::FrameConsumer::PixelFormat JniVideoRenderer::GetPixelFormat() {
   return FORMAT_RGBA;
 }
 
+bool JniVideoRenderer::Initialize(
+    const ClientContext& context,
+    protocol::FrameStatsConsumer* stats_consumer) {
+  return software_video_renderer_.Initialize(context, stats_consumer);
+}
+
 void JniVideoRenderer::OnSessionConfig(const protocol::SessionConfig& config) {
   return software_video_renderer_.OnSessionConfig(config);
 }
@@ -144,9 +150,8 @@ protocol::FrameConsumer* JniVideoRenderer::GetFrameConsumer() {
   return software_video_renderer_.GetFrameConsumer();
 }
 
-bool JniVideoRenderer::Initialize(const ClientContext& context,
-                                  protocol::PerformanceTracker* perf_tracker) {
-  return software_video_renderer_.Initialize(context, perf_tracker);
+protocol::FrameStatsConsumer* JniVideoRenderer::GetFrameStatsConsumer() {
+  return software_video_renderer_.GetFrameStatsConsumer();
 }
 
 }  // namespace remoting

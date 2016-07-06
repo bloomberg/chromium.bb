@@ -107,7 +107,7 @@ void PerformanceTracker::SetUpdateUmaCallbacks(
   uma_enum_histogram_updater_ = update_uma_enum_histogram_callback;
 }
 
-void PerformanceTracker::RecordVideoFrameStats(const FrameStats& stats) {
+void PerformanceTracker::OnVideoFrameStats(const FrameStats& stats) {
   if (!is_paused_ && !upload_uma_stats_timer_.IsRunning()) {
     upload_uma_stats_timer_.Start(
         FROM_HERE, base::TimeDelta::FromSeconds(kStatsUpdatePeriodSeconds),
@@ -119,72 +119,77 @@ void PerformanceTracker::RecordVideoFrameStats(const FrameStats& stats) {
   video_packet_rate_.Record(1);
 
   // Use only non-empty frames to estimate frame rate.
-  if (stats.frame_size)
+  if (stats.host_stats.frame_size)
     video_frame_rate_.Record(1);
 
-  video_bandwidth_.Record(stats.frame_size);
+  video_bandwidth_.Record(stats.host_stats.frame_size);
 
-  if (stats.capture_delay != base::TimeDelta::Max()) {
-    video_capture_ms_.Record(stats.capture_delay.InMilliseconds());
+  if (stats.host_stats.capture_delay != base::TimeDelta::Max()) {
+    video_capture_ms_.Record(stats.host_stats.capture_delay.InMilliseconds());
     uma_custom_times_updater_.Run(
-        kVideoCaptureLatencyHistogram, stats.capture_delay.InMilliseconds(),
+        kVideoCaptureLatencyHistogram,
+        stats.host_stats.capture_delay.InMilliseconds(),
         kVideoActionsHistogramsMinMs, kVideoActionsHistogramsMaxMs,
         kVideoActionsHistogramsBuckets);
   }
 
-  if (stats.encode_delay != base::TimeDelta::Max()) {
-    video_encode_ms_.Record(stats.encode_delay.InMilliseconds());
+  if (stats.host_stats.encode_delay != base::TimeDelta::Max()) {
+    video_encode_ms_.Record(stats.host_stats.encode_delay.InMilliseconds());
     uma_custom_times_updater_.Run(
-        kVideoEncodeLatencyHistogram, stats.encode_delay.InMilliseconds(),
+        kVideoEncodeLatencyHistogram,
+        stats.host_stats.encode_delay.InMilliseconds(),
         kVideoActionsHistogramsMinMs, kVideoActionsHistogramsMaxMs,
         kVideoActionsHistogramsBuckets);
   }
 
-  if (stats.capture_pending_delay != base::TimeDelta::Max()) {
-    uma_custom_times_updater_.Run(kCapturePendingLatencyHistogram,
-                                  stats.capture_pending_delay.InMilliseconds(),
-                                  kVideoActionsHistogramsMinMs,
-                                  kVideoActionsHistogramsMaxMs,
-                                  kVideoActionsHistogramsBuckets);
-  }
-
-  if (stats.capture_overhead_delay != base::TimeDelta::Max()) {
-    uma_custom_times_updater_.Run(kCaptureOverheadHistogram,
-                                  stats.capture_overhead_delay.InMilliseconds(),
-                                  kVideoActionsHistogramsMinMs,
-                                  kVideoActionsHistogramsMaxMs,
-                                  kVideoActionsHistogramsBuckets);
-  }
-
-  if (stats.encode_pending_delay != base::TimeDelta::Max()) {
-    uma_custom_times_updater_.Run(kEncodePendingLatencyHistogram,
-                                  stats.encode_pending_delay.InMilliseconds(),
-                                  kVideoActionsHistogramsMinMs,
-                                  kVideoActionsHistogramsMaxMs,
-                                  kVideoActionsHistogramsBuckets);
-  }
-
-  if (stats.send_pending_delay != base::TimeDelta::Max()) {
+  if (stats.host_stats.capture_pending_delay != base::TimeDelta::Max()) {
     uma_custom_times_updater_.Run(
-        kSendPendingLatencyHistogram, stats.send_pending_delay.InMilliseconds(),
+        kCapturePendingLatencyHistogram,
+        stats.host_stats.capture_pending_delay.InMilliseconds(),
         kVideoActionsHistogramsMinMs, kVideoActionsHistogramsMaxMs,
         kVideoActionsHistogramsBuckets);
   }
 
-  DCHECK(!stats.time_received.is_null());
+  if (stats.host_stats.capture_overhead_delay != base::TimeDelta::Max()) {
+    uma_custom_times_updater_.Run(
+        kCaptureOverheadHistogram,
+        stats.host_stats.capture_overhead_delay.InMilliseconds(),
+        kVideoActionsHistogramsMinMs, kVideoActionsHistogramsMaxMs,
+        kVideoActionsHistogramsBuckets);
+  }
+
+  if (stats.host_stats.encode_pending_delay != base::TimeDelta::Max()) {
+    uma_custom_times_updater_.Run(
+        kEncodePendingLatencyHistogram,
+        stats.host_stats.encode_pending_delay.InMilliseconds(),
+        kVideoActionsHistogramsMinMs, kVideoActionsHistogramsMaxMs,
+        kVideoActionsHistogramsBuckets);
+  }
+
+  if (stats.host_stats.send_pending_delay != base::TimeDelta::Max()) {
+    uma_custom_times_updater_.Run(
+        kSendPendingLatencyHistogram,
+        stats.host_stats.send_pending_delay.InMilliseconds(),
+        kVideoActionsHistogramsMinMs, kVideoActionsHistogramsMaxMs,
+        kVideoActionsHistogramsBuckets);
+  }
+
+  DCHECK(!stats.client_stats.time_received.is_null());
 
   // Report decode and render delay only for non-empty frames.
-  if (stats.frame_size > 0) {
-    DCHECK(!stats.time_rendered.is_null());
-    DCHECK(!stats.time_decoded.is_null());
-    base::TimeDelta decode_delay = stats.time_decoded - stats.time_received;
+  if (stats.host_stats.frame_size > 0) {
+    DCHECK(!stats.client_stats.time_rendered.is_null());
+    DCHECK(!stats.client_stats.time_decoded.is_null());
+    base::TimeDelta decode_delay =
+        stats.client_stats.time_decoded - stats.client_stats.time_received;
     video_decode_ms_.Record(decode_delay.InMilliseconds());
     uma_custom_times_updater_.Run(
         kVideoDecodeLatencyHistogram, decode_delay.InMilliseconds(),
         kVideoActionsHistogramsMinMs, kVideoActionsHistogramsMaxMs,
         kVideoActionsHistogramsBuckets);
 
-    base::TimeDelta render_delay = stats.time_rendered - stats.time_decoded;
+    base::TimeDelta render_delay =
+        stats.client_stats.time_rendered - stats.client_stats.time_decoded;
     video_paint_ms_.Record(render_delay.InMilliseconds());
     uma_custom_times_updater_.Run(
         kVideoPaintLatencyHistogram, render_delay.InMilliseconds(),
@@ -194,31 +199,35 @@ void PerformanceTracker::RecordVideoFrameStats(const FrameStats& stats) {
 
   // |latest_event_timestamp| is set only for the first frame after an input
   // event.
-  if (stats.latest_event_timestamp.is_null())
+  if (stats.host_stats.latest_event_timestamp.is_null())
     return;
 
   // For empty frames use time_received as time_rendered.
-  base::TimeTicks time_rendered =
-      (stats.frame_size > 0) ? stats.time_rendered : stats.time_received;
+  base::TimeTicks time_rendered = (stats.host_stats.frame_size > 0)
+                                      ? stats.client_stats.time_rendered
+                                      : stats.client_stats.time_received;
   base::TimeDelta round_trip_latency =
-      time_rendered - stats.latest_event_timestamp;
+      time_rendered - stats.host_stats.latest_event_timestamp;
   round_trip_ms_.Record(round_trip_latency.InMilliseconds());
   uma_custom_times_updater_.Run(
       kRoundTripLatencyHistogram, round_trip_latency.InMilliseconds(),
       kLatencyHistogramMinMs, kLatencyHistogramMaxMs, kLatencyHistogramBuckets);
 
   // Report estimated network latency.
-  if (stats.capture_delay != base::TimeDelta::Max() &&
-      stats.encode_delay != base::TimeDelta::Max() &&
-      stats.capture_pending_delay != base::TimeDelta::Max() &&
-      stats.capture_overhead_delay != base::TimeDelta::Max() &&
-      stats.encode_pending_delay != base::TimeDelta::Max() &&
-      stats.send_pending_delay != base::TimeDelta::Max()) {
+  if (stats.host_stats.capture_delay != base::TimeDelta::Max() &&
+      stats.host_stats.encode_delay != base::TimeDelta::Max() &&
+      stats.host_stats.capture_pending_delay != base::TimeDelta::Max() &&
+      stats.host_stats.capture_overhead_delay != base::TimeDelta::Max() &&
+      stats.host_stats.encode_pending_delay != base::TimeDelta::Max() &&
+      stats.host_stats.send_pending_delay != base::TimeDelta::Max()) {
     // Calculate total processing time on host and client.
     base::TimeDelta total_processing_latency =
-        stats.capture_delay + stats.encode_delay + stats.capture_pending_delay +
-        stats.capture_overhead_delay + stats.encode_pending_delay +
-        stats.send_pending_delay + (time_rendered - stats.time_received);
+        stats.host_stats.capture_delay + stats.host_stats.encode_delay +
+        stats.host_stats.capture_pending_delay +
+        stats.host_stats.capture_overhead_delay +
+        stats.host_stats.encode_pending_delay +
+        stats.host_stats.send_pending_delay +
+        (time_rendered - stats.client_stats.time_received);
     base::TimeDelta network_latency =
         round_trip_latency - total_processing_latency;
     uma_custom_times_updater_.Run(

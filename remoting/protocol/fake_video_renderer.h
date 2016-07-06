@@ -11,6 +11,7 @@
 #include "base/callback.h"
 #include "base/threading/thread_checker.h"
 #include "remoting/protocol/frame_consumer.h"
+#include "remoting/protocol/frame_stats.h"
 #include "remoting/protocol/video_renderer.h"
 #include "remoting/protocol/video_stub.h"
 
@@ -64,6 +65,25 @@ class FakeFrameConsumer : public FrameConsumer {
   base::Closure on_frame_callback_;
 };
 
+class FakeFrameStatsConsumer : public FrameStatsConsumer {
+ public:
+  FakeFrameStatsConsumer();
+  ~FakeFrameStatsConsumer() override;
+
+  const std::list<FrameStats>& received_stats() { return received_stats_; }
+
+  void set_on_stats_callback(base::Closure on_stats_callback);
+
+  // FrameStatsConsumer interface.
+  void OnVideoFrameStats(const FrameStats& stats) override;
+
+ private:
+  base::ThreadChecker thread_checker_;
+
+  std::list<FrameStats> received_stats_;
+  base::Closure on_stats_callback_;
+};
+
 class FakeVideoRenderer : public VideoRenderer {
  public:
   FakeVideoRenderer();
@@ -71,16 +91,18 @@ class FakeVideoRenderer : public VideoRenderer {
 
   // VideoRenderer interface.
   bool Initialize(const ClientContext& client_context,
-                  protocol::PerformanceTracker* perf_tracker) override;
+                  protocol::FrameStatsConsumer* stats_consumer) override;
   void OnSessionConfig(const SessionConfig& config) override;
   FakeVideoStub* GetVideoStub() override;
   FakeFrameConsumer* GetFrameConsumer() override;
+  FakeFrameStatsConsumer* GetFrameStatsConsumer() override;
 
  private:
   base::ThreadChecker thread_checker_;
 
   FakeVideoStub video_stub_;
   FakeFrameConsumer frame_consumer_;
+  FakeFrameStatsConsumer frame_stats_consumer_;
 };
 
 }  // namespace protocol

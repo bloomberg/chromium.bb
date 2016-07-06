@@ -63,11 +63,27 @@ FrameConsumer::PixelFormat FakeFrameConsumer::GetPixelFormat() {
   return FORMAT_BGRA;
 }
 
+FakeFrameStatsConsumer::FakeFrameStatsConsumer() {}
+FakeFrameStatsConsumer::~FakeFrameStatsConsumer() {}
+
+void FakeFrameStatsConsumer::set_on_stats_callback(
+    base::Closure on_stats_callback) {
+  on_stats_callback_ = on_stats_callback;
+}
+
+void FakeFrameStatsConsumer::OnVideoFrameStats(const FrameStats& stats) {
+  CHECK(thread_checker_.CalledOnValidThread());
+  received_stats_.push_back(stats);
+  if (!on_stats_callback_.is_null())
+    on_stats_callback_.Run();
+}
+
 FakeVideoRenderer::FakeVideoRenderer() {}
 FakeVideoRenderer::~FakeVideoRenderer() {}
 
-bool FakeVideoRenderer::Initialize(const ClientContext& client_context,
-                                   protocol::PerformanceTracker* perf_tracker) {
+bool FakeVideoRenderer::Initialize(
+    const ClientContext& client_context,
+    protocol::FrameStatsConsumer* stats_consumer) {
   return true;
 }
 
@@ -81,6 +97,11 @@ FakeVideoStub* FakeVideoRenderer::GetVideoStub() {
 FakeFrameConsumer* FakeVideoRenderer::GetFrameConsumer() {
   CHECK(thread_checker_.CalledOnValidThread());
   return &frame_consumer_;
+}
+
+FakeFrameStatsConsumer* FakeVideoRenderer::GetFrameStatsConsumer() {
+  CHECK(thread_checker_.CalledOnValidThread());
+  return &frame_stats_consumer_;
 }
 
 }  // namespace protocol

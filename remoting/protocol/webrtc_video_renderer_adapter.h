@@ -24,15 +24,15 @@ class VideoFrameBuffer;
 namespace remoting {
 namespace protocol {
 
-class FrameConsumer;
-struct FrameStats;
+struct ClientFrameStats;
+class VideoRenderer;
 
 class WebrtcVideoRendererAdapter
     : public rtc::VideoSinkInterface<cricket::VideoFrame> {
  public:
   WebrtcVideoRendererAdapter(
       scoped_refptr<webrtc::MediaStreamInterface> media_stream,
-      FrameConsumer* frame_consumer);
+      VideoRenderer* video_renderer);
   ~WebrtcVideoRendererAdapter() override;
 
   std::string label() const { return media_stream_->label(); }
@@ -41,14 +41,14 @@ class WebrtcVideoRendererAdapter
   void OnFrame(const cricket::VideoFrame& frame) override;
 
  private:
-  void HandleFrameOnMainThread(std::unique_ptr<FrameStats> stats,
+  void HandleFrameOnMainThread(std::unique_ptr<ClientFrameStats> stats,
                                scoped_refptr<webrtc::VideoFrameBuffer> frame);
-  void DrawFrame(std::unique_ptr<FrameStats> stats,
+  void DrawFrame(std::unique_ptr<ClientFrameStats> stats,
                  std::unique_ptr<webrtc::DesktopFrame> frame);
-  void FrameRendered(std::unique_ptr<FrameStats> stats);
+  void FrameRendered(std::unique_ptr<ClientFrameStats> stats);
 
   scoped_refptr<webrtc::MediaStreamInterface> media_stream_;
-  FrameConsumer* frame_consumer_;
+  VideoRenderer* video_renderer_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
   base::WeakPtrFactory<WebrtcVideoRendererAdapter> weak_factory_;

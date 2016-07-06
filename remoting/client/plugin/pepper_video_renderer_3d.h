@@ -25,6 +25,10 @@ struct PPB_OpenGLES2;
 
 namespace remoting {
 
+namespace protocol {
+class FrameStatsConsumer;
+}  // namespace protocol
+
 // PepperVideoRenderer that uses the PPB_VideoDecoder interface for video
 // decoding and Graphics3D for rendering.
 class PepperVideoRenderer3D : public PepperVideoRenderer,
@@ -41,10 +45,11 @@ class PepperVideoRenderer3D : public PepperVideoRenderer,
 
   // VideoRenderer interface.
   bool Initialize(const ClientContext& client_context,
-                  protocol::PerformanceTracker* perf_tracker) override;
+                  protocol::FrameStatsConsumer* stats_consumer) override;
   void OnSessionConfig(const protocol::SessionConfig& config) override;
   protocol::VideoStub* GetVideoStub() override;
   protocol::FrameConsumer* GetFrameConsumer() override;
+  protocol::FrameStatsConsumer* GetFrameStatsConsumer() override;
 
   // protocol::VideoStub interface.
   void ProcessVideoPacket(std::unique_ptr<VideoPacket> packet,
@@ -93,7 +98,7 @@ class PepperVideoRenderer3D : public PepperVideoRenderer,
 
   pp::Instance* pp_instance_ = nullptr;
   EventHandler* event_handler_ = nullptr;
-  protocol::PerformanceTracker* perf_tracker_ = nullptr;
+  protocol::FrameStatsConsumer* stats_consumer_ = nullptr;
 
   pp::Graphics3D graphics_;
   const PPB_OpenGLES2* gles2_if_;

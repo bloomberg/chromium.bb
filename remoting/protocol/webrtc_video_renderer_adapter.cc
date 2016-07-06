@@ -17,6 +17,7 @@
 #include "base/threading/worker_pool.h"
 #include "remoting/protocol/frame_consumer.h"
 #include "remoting/protocol/frame_stats.h"
+#include "remoting/protocol/video_renderer.h"
 #include "third_party/libyuv/include/libyuv/convert_argb.h"
 #include "third_party/libyuv/include/libyuv/video_common.h"
 #include "third_party/webrtc/media/base/videoframe.h"
@@ -51,9 +52,9 @@ std::unique_ptr<webrtc::DesktopFrame> ConvertYuvToRgb(
 
 WebrtcVideoRendererAdapter::WebrtcVideoRendererAdapter(
     scoped_refptr<webrtc::MediaStreamInterface> media_stream,
-    FrameConsumer* frame_consumer)
+    VideoRenderer* video_renderer)
     : media_stream_(std::move(media_stream)),
-      frame_consumer_(frame_consumer),
+      video_renderer_(video_renderer),
       task_runner_(base::ThreadTaskRunnerHandle::Get()),
       weak_factory_(this) {
   webrtc::VideoTrackVector video_tracks = media_stream_->GetVideoTracks();
@@ -84,7 +85,7 @@ void WebrtcVideoRendererAdapter::OnFrame(const cricket::VideoFrame& frame) {
     LOG(WARNING) << "Received frame with playout delay greater than 0.";
   }
 
-  std::unique_ptr<FrameStats> stats(new FrameStats());
+  std::unique_ptr<ClientFrameStats> stats(new ClientFrameStats());
   // TODO(sergeyu): |time_received| is not reported correctly here because the
   // frame is already decoded at this point.
   stats->time_received = base::TimeTicks::Now();
@@ -98,35 +99,36 @@ void WebrtcVideoRendererAdapter::OnFrame(const cricket::VideoFrame& frame) {
 }
 
 void WebrtcVideoRendererAdapter::HandleFrameOnMainThread(
-    std::unique_ptr<FrameStats> stats,
+    std::unique_ptr<ClientFrameStats> stats,
     scoped_refptr<webrtc::VideoFrameBuffer> frame) {
   DCHECK(task_runner_->BelongsToCurrentThread());
 
   std::unique_ptr<webrtc::DesktopFrame> rgb_frame =
-      frame_consumer_->AllocateFrame(
+      video_renderer_->GetFrameConsumer()->AllocateFrame(
           webrtc::DesktopSize(frame->width(), frame->height()));
 
   base::PostTaskAndReplyWithResult(
       base::WorkerPool::GetTaskRunner(false).get(), FROM_HERE,
       base::Bind(&ConvertYuvToRgb, base::Passed(&frame),
-                 base::Passed(&rgb_frame), frame_consumer_->GetPixelFormat()),
+                 base::Passed(&rgb_frame),
+                 video_renderer_->GetFrameConsumer()->GetPixelFormat()),
       base::Bind(&WebrtcVideoRendererAdapter::DrawFrame,
                  weak_factory_.GetWeakPtr(), base::Passed(&stats)));
 }
 
 void WebrtcVideoRendererAdapter::DrawFrame(
-    std::unique_ptr<FrameStats> stats,
+    std::unique_ptr<ClientFrameStats> stats,
     std::unique_ptr<webrtc::DesktopFrame> frame) {
   DCHECK(task_runner_->BelongsToCurrentThread());
   stats->time_decoded = base::TimeTicks::Now();
-  frame_consumer_->DrawFrame(
+  video_renderer_->GetFrameConsumer()->DrawFrame(
       std::move(frame),
       base::Bind(&WebrtcVideoRendererAdapter::FrameRendered,
                  weak_factory_.GetWeakPtr(), base::Passed(&stats)));
 }
 
 void WebrtcVideoRendererAdapter::FrameRendered(
-    std::unique_ptr<FrameStats> stats) {
+    std::unique_ptr<ClientFrameStats> stats) {
   // TODO(sergeyu): Report stats here
 }
 

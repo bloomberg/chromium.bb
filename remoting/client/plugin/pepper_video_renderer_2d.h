@@ -52,10 +52,11 @@ class PepperVideoRenderer2D : public PepperVideoRenderer,
 
   // VideoRenderer interface.
   bool Initialize(const ClientContext& client_context,
-                  protocol::PerformanceTracker* perf_tracker) override;
+                  protocol::FrameStatsConsumer* stats_consumer) override;
   void OnSessionConfig(const protocol::SessionConfig& config) override;
   protocol::VideoStub* GetVideoStub() override;
   protocol::FrameConsumer* GetFrameConsumer() override;
+  protocol::FrameStatsConsumer* GetFrameStatsConsumer() override;
 
  private:
   // protocol::FrameConsumer implementation.

@@ -13,13 +13,13 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/threading/thread_checker.h"
 #include "remoting/protocol/client_authentication_config.h"
 #include "remoting/protocol/client_stub.h"
 #include "remoting/protocol/clipboard_stub.h"
 #include "remoting/protocol/connection_to_host.h"
 #include "remoting/protocol/input_stub.h"
 #include "remoting/protocol/mouse_input_filter.h"
-#include "remoting/protocol/performance_tracker.h"
 #include "remoting/protocol/session_config.h"
 #include "remoting/protocol/video_stub.h"
 #include "remoting/signaling/signal_strategy.h"
@@ -143,9 +143,6 @@ class ChromotingClient : public SignalStrategy::Listener,
 
   // True if |protocol::Capabilities| message has been received.
   bool host_capabilities_received_ = false;
-
-  // Record the statistics of the connection.
-  protocol::PerformanceTracker perf_tracker_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromotingClient);
 };

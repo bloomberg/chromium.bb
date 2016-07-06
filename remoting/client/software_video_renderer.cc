@@ -46,18 +46,17 @@ std::unique_ptr<webrtc::DesktopFrame> DoDecodeFrame(
 }  // namespace
 
 SoftwareVideoRenderer::SoftwareVideoRenderer(protocol::FrameConsumer* consumer)
-    : consumer_(consumer),
-      weak_factory_(this) {
+    : consumer_(consumer), weak_factory_(this) {
   thread_checker_.DetachFromThread();
 }
 
 SoftwareVideoRenderer::SoftwareVideoRenderer(
     scoped_refptr<base::SingleThreadTaskRunner> decode_task_runner,
     protocol::FrameConsumer* consumer,
-    protocol::PerformanceTracker* perf_tracker)
+    protocol::FrameStatsConsumer* stats_consumer)
     : decode_task_runner_(decode_task_runner),
       consumer_(consumer),
-      perf_tracker_(perf_tracker),
+      stats_consumer_(stats_consumer),
       weak_factory_(this) {}
 
 SoftwareVideoRenderer::~SoftwareVideoRenderer() {
@@ -67,10 +66,10 @@ SoftwareVideoRenderer::~SoftwareVideoRenderer() {
 
 bool SoftwareVideoRenderer::Initialize(
     const ClientContext& client_context,
-    protocol::PerformanceTracker* perf_tracker) {
+    protocol::FrameStatsConsumer* stats_consumer) {
   DCHECK(thread_checker_.CalledOnValidThread());
   decode_task_runner_ = client_context.decode_task_runner();
-  perf_tracker_ = perf_tracker;
+  stats_consumer_ = stats_consumer;
   return true;
 }
 
@@ -105,6 +104,10 @@ protocol::FrameConsumer* SoftwareVideoRenderer::GetFrameConsumer() {
   return consumer_;
 }
 
+protocol::FrameStatsConsumer* SoftwareVideoRenderer::GetFrameStatsConsumer() {
+  return stats_consumer_;
+}
+
 void SoftwareVideoRenderer::ProcessVideoPacket(
     std::unique_ptr<VideoPacket> packet,
     const base::Closure& done) {
@@ -112,15 +115,17 @@ void SoftwareVideoRenderer::ProcessVideoPacket(
 
   base::ScopedClosureRunner done_runner(done);
 
-  std::unique_ptr<protocol::FrameStats> frame_stats(new protocol::FrameStats(
-      protocol::FrameStats::GetForVideoPacket(*packet)));
+  std::unique_ptr<protocol::FrameStats> frame_stats(new protocol::FrameStats());
+  frame_stats->host_stats =
+      protocol::HostFrameStats::GetForVideoPacket(*packet);
+  frame_stats->client_stats.time_received = base::TimeTicks::Now();
 
   // If the video packet is empty then there is nothing to decode. Empty packets
   // are used to maintain activity on the network. Stats for such packets still
   // need to be reported.
   if (!packet->has_data() || packet->data().size() == 0) {
-    if (perf_tracker_)
-      perf_tracker_->RecordVideoFrameStats(*frame_stats);
+    if (stats_consumer_)
+      stats_consumer_->OnVideoFrameStats(*frame_stats);
     return;
   }
 
@@ -162,8 +167,7 @@ void SoftwareVideoRenderer::RenderFrame(
     std::unique_ptr<webrtc::DesktopFrame> frame) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  stats->time_decoded = base::TimeTicks::Now();
-
+  stats->client_stats.time_decoded = base::TimeTicks::Now();
   if (!frame) {
     if (!done.is_null())
       done.Run();
@@ -181,9 +185,9 @@ void SoftwareVideoRenderer::OnFrameRendered(
     const base::Closure& done) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  stats->time_rendered = base::TimeTicks::Now();
-  if (perf_tracker_)
-    perf_tracker_->RecordVideoFrameStats(*stats);
+  stats->client_stats.time_rendered = base::TimeTicks::Now();
+  if (stats_consumer_)
+    stats_consumer_->OnVideoFrameStats(*stats);
 
   if (!done.is_null())
     done.Run();

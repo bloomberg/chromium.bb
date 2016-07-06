@@ -12,15 +12,14 @@
 #include "base/timer/timer.h"
 #include "remoting/base/rate_counter.h"
 #include "remoting/base/running_samples.h"
+#include "remoting/protocol/frame_stats.h"
 
 namespace remoting {
 namespace protocol {
 
-struct FrameStats;
-
 // PerformanceTracker defines a bundle of performance counters and statistics
 // for chromoting.
-class PerformanceTracker {
+class PerformanceTracker : public FrameStatsConsumer {
  public:
   // Callback that updates UMA custom counts or custom times histograms.
   typedef base::Callback<void(const std::string& histogram_name,
@@ -36,7 +35,7 @@ class PerformanceTracker {
       UpdateUmaEnumHistogramCallback;
 
   PerformanceTracker();
-  virtual ~PerformanceTracker();
+  ~PerformanceTracker() override;
 
   // Constant used to calculate the average for rate metrics and used by the
   // plugin for the frequency at which stats should be updated.
@@ -52,8 +51,8 @@ class PerformanceTracker {
   const RunningSamples& video_paint_ms() { return video_paint_ms_; }
   const RunningSamples& round_trip_ms() { return round_trip_ms_; }
 
-  // Record stats for a video-packet.
-  void RecordVideoFrameStats(const FrameStats& stats);
+  // FrameStatsConsumer interface.
+  void OnVideoFrameStats(const FrameStats& stats) override;
 
   // Sets callbacks in ChromotingInstance to update a UMA custom counts, custom
   // times or enum histogram.

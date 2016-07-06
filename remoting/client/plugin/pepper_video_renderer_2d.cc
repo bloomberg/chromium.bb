@@ -98,10 +98,10 @@ void PepperVideoRenderer2D::EnableDebugDirtyRegion(bool enable) {
 
 bool PepperVideoRenderer2D::Initialize(
     const ClientContext& client_context,
-    protocol::PerformanceTracker* perf_tracker) {
+    protocol::FrameStatsConsumer* stats_consumer) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  return software_video_renderer_.Initialize(client_context, perf_tracker);
+  return software_video_renderer_.Initialize(client_context, stats_consumer);
 }
 
 void PepperVideoRenderer2D::OnSessionConfig(
@@ -121,6 +121,12 @@ protocol::FrameConsumer* PepperVideoRenderer2D::GetFrameConsumer() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   return software_video_renderer_.GetFrameConsumer();
+}
+
+protocol::FrameStatsConsumer* PepperVideoRenderer2D::GetFrameStatsConsumer() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  return software_video_renderer_.GetFrameStatsConsumer();
 }
 
 std::unique_ptr<webrtc::DesktopFrame> PepperVideoRenderer2D::AllocateFrame(
