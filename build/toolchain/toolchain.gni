@@ -33,6 +33,9 @@ declare_args() {
   use_xcode_clang = is_ios && is_official_build
 }
 
+assert(!use_xcode_clang || is_ios,
+       "Using Xcode's clang is only supported in iOS builds")
+
 # Subdirectory within root_out_dir for shared library files.
 # TODO(agrieve): GYP sets this to "lib" for Linux & Android, but this won't work
 #     in GN until support for loadable_module() is added.
