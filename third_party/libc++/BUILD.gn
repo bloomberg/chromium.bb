@@ -115,12 +115,17 @@ group("libcxx_proxy") {
 config("link_helper") {
   ldflags = [
     "-stdlib=libc++",
-
-    # Normally the generator takes care of RPATH. Our case is special because
-    # the generator is unaware of the libc++.so dependency. Note that setting
-    # RPATH here is a potential security issue. See the following for another
-    # example of this issue: https://code.google.com/p/gyp/issues/detail?id=315
-    "-Wl,-R,\$ORIGIN/",
   ]
+
+  if (!is_mac) {
+    ldflags += [
+      # Normally the generator takes care of RPATH. Our case is special because
+      # the generator is unaware of the libc++.so dependency. Note that setting
+      # RPATH here is a potential security issue. See the following for another
+      # example of this issue: https://code.google.com/p/gyp/issues/detail?id=315
+      "-Wl,-R,\$ORIGIN/",
+    ]
+  }
+
   lib_dirs = [ root_build_dir ]
 }
