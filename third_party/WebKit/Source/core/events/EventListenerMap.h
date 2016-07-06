@@ -71,6 +71,10 @@ private:
 
     void assertNoActiveIterators();
 
+    // We use HeapVector instead of HeapHashMap because
+    //  - HeapVector is much more space efficient than HeapHashMap.
+    //  - An EventTarget rarely has event listeners for many event types, and
+    //    HeapVector is faster in such cases.
     HeapVector<std::pair<AtomicString, Member<EventListenerVector>>, 2> m_entries;
 
 #if ENABLE(ASSERT)
