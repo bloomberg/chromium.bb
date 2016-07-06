@@ -515,6 +515,10 @@ void Target::PullRecursiveBundleData() {
     if (pair.ptr->output_type() == CREATE_BUNDLE)
       continue;
 
+    // Don't propagate across toolchain.
+    if (pair.ptr->toolchain() != toolchain())
+      continue;
+
     // Direct dependency on a bundle_data target.
     if (pair.ptr->output_type() == BUNDLE_DATA)
       bundle_data_.AddBundleData(pair.ptr);
