@@ -40,6 +40,8 @@ namespace blink {
 class LocalFrame;
 class UndoStep;
 
+// |UndoStack| is owned by and always 1:1 to |Editor|. Since |Editor| is 1:1 to
+// |LocalFrame|, |UndoStack| is also 1:1 to |LocalFrame|.
 class UndoStack final : public GarbageCollected<UndoStack> {
     WTF_MAKE_NONCOPYABLE(UndoStack);
 public:
@@ -47,11 +49,11 @@ public:
 
     void registerUndoStep(UndoStep*);
     void registerRedoStep(UndoStep*);
-    void didUnloadFrame(const LocalFrame&);
     bool canUndo() const;
     bool canRedo() const;
     void undo();
     void redo();
+    void clear();
 
     DECLARE_TRACE();
 
@@ -59,8 +61,6 @@ private:
     UndoStack();
 
     typedef HeapDeque<Member<UndoStep>> UndoStepStack;
-
-    void filterOutUndoSteps(UndoStepStack&, const LocalFrame&);
 
     bool m_inRedo;
     UndoStepStack m_undoStack;

@@ -24,7 +24,6 @@
 #include "core/dom/StyleChangeReason.h"
 #include "core/dom/VisitedLinkState.h"
 #include "core/editing/DragCaretController.h"
-#include "core/editing/commands/UndoStack.h"
 #include "core/editing/markers/DocumentMarkerController.h"
 #include "core/events/Event.h"
 #include "core/fetch/ResourceFetcher.h"
@@ -116,7 +115,6 @@ Page::Page(PageClients& pageClients)
     , m_focusController(FocusController::create(this))
     , m_contextMenuController(ContextMenuController::create(this, pageClients.contextMenuClient))
     , m_pointerLockController(PointerLockController::create(this))
-    , m_undoStack(UndoStack::create())
     , m_mainFrame(nullptr)
     , m_editorClient(pageClients.editorClient)
     , m_spellCheckerClient(pageClients.spellCheckerClient)
@@ -474,7 +472,6 @@ DEFINE_TRACE(Page)
     visitor->trace(m_contextMenuController);
     visitor->trace(m_pointerLockController);
     visitor->trace(m_scrollingCoordinator);
-    visitor->trace(m_undoStack);
     visitor->trace(m_mainFrame);
     visitor->trace(m_validationMessageClient);
     visitor->trace(m_frameHost);

@@ -42,7 +42,6 @@
 #include "core/dom/Element.h"
 #include "core/dom/ViewportDescription.h"
 #include "core/editing/Editor.h"
-#include "core/editing/commands/UndoStack.h"
 #include "core/events/GestureEvent.h"
 #include "core/events/KeyboardEvent.h"
 #include "core/events/MouseEvent.h"
@@ -269,9 +268,6 @@ void FrameLoader::dispatchUnloadEvent()
 
     if (m_frame->document() && !SVGImage::isInSVGImage(m_frame->document()))
         m_frame->document()->dispatchUnloadEvents();
-
-    if (Page* page = m_frame->page())
-        page->undoStack().didUnloadFrame(*m_frame);
 }
 
 void FrameLoader::didExplicitOpen()
