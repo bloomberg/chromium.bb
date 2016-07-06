@@ -184,6 +184,10 @@ class MEDIA_EXPORT AudioManagerMac : public AudioManagerBase {
   // all output streams using the specific device.
   std::map<AudioDeviceID, size_t> output_io_buffer_size_map_;
 
+  // Set to true in the destructor. Ensures that methods that touches native
+  // Core Audio APIs are not executed during shutdown.
+  bool in_shutdown_;
+
   DISALLOW_COPY_AND_ASSIGN(AudioManagerMac);
 };
 
