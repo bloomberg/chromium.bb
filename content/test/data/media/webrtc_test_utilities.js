@@ -26,6 +26,7 @@ function setAllEventsOccuredHandler(handler) {
 
 // Tells the C++ code we succeeded, which will generally exit the test.
 function reportTestSuccess() {
+  console.log('Test Success');
   window.domAutomationController.send('OK');
 }
 

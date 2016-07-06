@@ -29,7 +29,8 @@
   // Creates a MediaStream and renders it locally. When the video is detected to
   // be rolling, the stream should be stopped.
   function getUserMediaAndStop(constraints) {
-    console.log('Calling getUserMediaAndStop.');
+    console.log('Calling getUserMediaAndStop. constraints : ' +
+        JSON.stringify(constraints));
     navigator.webkitGetUserMedia(
         constraints,
         function(stream) {

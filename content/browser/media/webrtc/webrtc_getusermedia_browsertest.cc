@@ -362,13 +362,13 @@ IN_PROC_BROWSER_TEST_F(WebRtcGetUserMediaBrowserTest,
   GetInputDevices(&audio_ids, &video_ids);
 
   GURL url(embedded_test_server()->GetURL("/media/getusermedia.html"));
+  NavigateToURL(shell(), url);
 
   // Test all combinations of mandatory sourceID;
   for (std::vector<std::string>::const_iterator video_it = video_ids.begin();
        video_it != video_ids.end(); ++video_it) {
     for (std::vector<std::string>::const_iterator audio_it = audio_ids.begin();
          audio_it != audio_ids.end(); ++audio_it) {
-      NavigateToURL(shell(), url);
       EXPECT_EQ(kOK, ExecuteJavascriptAndReturnResult(
           GenerateGetUserMediaWithMandatorySourceID(
               kGetUserMediaAndStop,
