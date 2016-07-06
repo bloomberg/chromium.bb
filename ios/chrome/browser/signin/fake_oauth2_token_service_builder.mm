@@ -7,11 +7,11 @@
 #include "base/memory/ptr_util.h"
 #include "components/signin/core/browser/fake_profile_oauth2_token_service.h"
 #include "components/signin/ios/browser/fake_profile_oauth2_token_service_ios_delegate.h"
+#include "components/signin/ios/browser/fake_profile_oauth2_token_service_ios_provider.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/signin/account_tracker_service_factory.h"
 #include "ios/chrome/browser/signin/signin_client_factory.h"
 #include "ios/chrome/browser/signin/signin_error_controller_factory.h"
-#include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 
 std::unique_ptr<KeyedService> BuildFakeOAuth2TokenService(
     web::BrowserState* context) {
@@ -20,8 +20,7 @@ std::unique_ptr<KeyedService> BuildFakeOAuth2TokenService(
   OAuth2TokenServiceDelegate* delegate =
       new FakeProfileOAuth2TokenServiceIOSDelegate(
           SigninClientFactory::GetForBrowserState(browser_state),
-          ios::GetChromeBrowserProvider()
-              ->GetProfileOAuth2TokenServiceIOSProvider(),
+          base::MakeUnique<FakeProfileOAuth2TokenServiceIOSProvider>(),
           ios::AccountTrackerServiceFactory::GetForBrowserState(browser_state),
           ios::SigninErrorControllerFactory::GetForBrowserState(browser_state));
   return base::WrapUnique(new FakeProfileOAuth2TokenService(delegate));

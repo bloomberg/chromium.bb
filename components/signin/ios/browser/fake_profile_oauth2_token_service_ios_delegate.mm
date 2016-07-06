@@ -3,16 +3,18 @@
 // found in the LICENSE file.
 
 #include "components/signin/ios/browser/fake_profile_oauth2_token_service_ios_delegate.h"
+
+#include "components/signin/ios/browser/profile_oauth2_token_service_ios_provider.h"
 #include "google_apis/gaia/oauth2_access_token_fetcher_impl.h"
 
 FakeProfileOAuth2TokenServiceIOSDelegate::
     FakeProfileOAuth2TokenServiceIOSDelegate(
         SigninClient* client,
-        ProfileOAuth2TokenServiceIOSProvider* provider,
+        std::unique_ptr<ProfileOAuth2TokenServiceIOSProvider> provider,
         AccountTrackerService* account_tracker_service,
         SigninErrorController* signin_error_controller)
     : ProfileOAuth2TokenServiceIOSDelegate(client,
-                                           provider,
+                                           std::move(provider),
                                            account_tracker_service,
                                            signin_error_controller) {}
 

@@ -14,7 +14,7 @@ class FakeProfileOAuth2TokenServiceIOSDelegate
  public:
   FakeProfileOAuth2TokenServiceIOSDelegate(
       SigninClient* client,
-      ProfileOAuth2TokenServiceIOSProvider* provider,
+      std::unique_ptr<ProfileOAuth2TokenServiceIOSProvider> provider,
       AccountTrackerService* account_tracker_service,
       SigninErrorController* signin_error_controller);
   ~FakeProfileOAuth2TokenServiceIOSDelegate() override;

@@ -30,6 +30,14 @@ bool SigninErrorProvider::IsCanceled(NSError* error) {
   return false;
 }
 
+bool SigninErrorProvider::IsForbidden(NSError* error) {
+  return false;
+}
+
+bool SigninErrorProvider::IsBadRequest(NSError* error) {
+  return false;
+}
+
 NSString* SigninErrorProvider::GetInvalidGrantJsonErrorKey() {
   return @"invalid_grant_error_key";
 }

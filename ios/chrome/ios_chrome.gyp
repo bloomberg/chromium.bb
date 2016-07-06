@@ -527,6 +527,8 @@
         'browser/signin/ios_chrome_signin_status_metrics_provider_delegate.h',
         'browser/signin/oauth2_token_service_factory.h',
         'browser/signin/oauth2_token_service_factory.mm',
+        'browser/signin/profile_oauth2_token_service_ios_provider_impl.h',
+        'browser/signin/profile_oauth2_token_service_ios_provider_impl.mm',
         'browser/signin/signin_client_factory.cc',
         'browser/signin/signin_client_factory.h',
         'browser/signin/signin_client_impl.h',

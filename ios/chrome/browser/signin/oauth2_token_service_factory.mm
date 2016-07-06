@@ -13,9 +13,9 @@
 #include "components/signin/ios/browser/profile_oauth2_token_service_ios_delegate.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/signin/account_tracker_service_factory.h"
+#include "ios/chrome/browser/signin/profile_oauth2_token_service_ios_provider_impl.h"
 #include "ios/chrome/browser/signin/signin_client_factory.h"
 #include "ios/chrome/browser/signin/signin_error_controller_factory.h"
-#include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 
 OAuth2TokenServiceFactory::OAuth2TokenServiceFactory()
     : BrowserStateKeyedServiceFactory(
@@ -54,8 +54,7 @@ OAuth2TokenServiceFactory::BuildServiceInstanceFor(
   ProfileOAuth2TokenServiceIOSDelegate* delegate =
       new ProfileOAuth2TokenServiceIOSDelegate(
           SigninClientFactory::GetForBrowserState(chrome_browser_state),
-          ios::GetChromeBrowserProvider()
-              ->GetProfileOAuth2TokenServiceIOSProvider(),
+          base::MakeUnique<ProfileOAuth2TokenServiceIOSProviderImpl>(),
           ios::AccountTrackerServiceFactory::GetForBrowserState(
               chrome_browser_state),
           ios::SigninErrorControllerFactory::GetForBrowserState(

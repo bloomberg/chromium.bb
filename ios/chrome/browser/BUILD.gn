@@ -390,6 +390,8 @@ source_set("browser") {
     "signin/ios_chrome_signin_status_metrics_provider_delegate.h",
     "signin/oauth2_token_service_factory.h",
     "signin/oauth2_token_service_factory.mm",
+    "signin/profile_oauth2_token_service_ios_provider_impl.h",
+    "signin/profile_oauth2_token_service_ios_provider_impl.mm",
     "signin/signin_client_factory.cc",
     "signin/signin_client_factory.h",
     "signin/signin_client_impl.h",

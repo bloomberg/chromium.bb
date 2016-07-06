@@ -47,6 +47,12 @@ class SigninErrorProvider {
   // Tests if an NSError is user cancellation error.
   virtual bool IsCanceled(NSError* error);
 
+  // Tests if an NSError is an authorization forbidden error.
+  virtual bool IsForbidden(NSError* error);
+
+  // Tests if an NSError is a bad request error.
+  virtual bool IsBadRequest(NSError* error);
+
   // Constant in JSON error responses to server requests indicating that
   // the authentication was revoked by the server.
   virtual NSString* GetInvalidGrantJsonErrorKey();
