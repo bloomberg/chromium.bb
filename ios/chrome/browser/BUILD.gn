@@ -488,6 +488,8 @@ source_set("browser") {
     "ui/context_menu/context_menu_coordinator.mm",
     "ui/elements/selector_coordinator.h",
     "ui/elements/selector_coordinator.mm",
+    "ui/elements/selector_picker_presentation_controller.h",
+    "ui/elements/selector_picker_presentation_controller.mm",
     "ui/elements/selector_picker_view_controller.h",
     "ui/elements/selector_picker_view_controller.mm",
     "ui/elements/selector_view_controller_delegate.h",

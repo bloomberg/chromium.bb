@@ -625,6 +625,8 @@
         'browser/ui/context_menu/context_menu_coordinator.mm',
         'browser/ui/elements/selector_coordinator.h',
         'browser/ui/elements/selector_coordinator.mm',
+        'browser/ui/elements/selector_picker_presentation_controller.h',
+        'browser/ui/elements/selector_picker_presentation_controller.mm',
         'browser/ui/elements/selector_picker_view_controller.h',
         'browser/ui/elements/selector_picker_view_controller.mm',
         'browser/ui/elements/selector_view_controller_delegate.h',

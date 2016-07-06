@@ -6,9 +6,11 @@
 
 #import "base/mac/objc_property_releaser.h"
 #import "ios/chrome/browser/ui/elements/selector_picker_view_controller.h"
+#import "ios/chrome/browser/ui/elements/selector_picker_presentation_controller.h"
 #import "ios/chrome/browser/ui/elements/selector_view_controller_delegate.h"
 
-@interface SelectorCoordinator ()<SelectorViewControllerDelegate> {
+@interface SelectorCoordinator ()<SelectorViewControllerDelegate,
+                                  UIViewControllerTransitioningDelegate> {
   base::mac::ObjCPropertyReleaser _propertyReleaser_SelectorCoordinator;
   __unsafe_unretained id<SelectorCoordinatorDelegate> _delegate;
   __unsafe_unretained NSOrderedSet<NSString*>* _options;
@@ -42,12 +44,13 @@
       [[SelectorPickerViewController alloc] initWithOptions:self.options
                                                     default:self.defaultOption];
   self.selectorPickerViewController.delegate = self;
-  // TODO(crbug.com/622244): Display via custom UIPresentionController to
-  // show as a bottom sheet.
+
   self.selectorPickerViewController.modalTransitionStyle =
       UIModalTransitionStyleCoverVertical;
   self.selectorPickerViewController.modalPresentationStyle =
-      UIModalPresentationFormSheet;
+      UIModalPresentationCustom;
+  self.selectorPickerViewController.transitioningDelegate = self;
+
   [self.baseViewController
       presentViewController:self.selectorPickerViewController
                    animated:YES
@@ -65,6 +68,17 @@
                didSelectOption:(NSString*)option {
   [self.delegate selectorCoordinator:self didCompleteWithSelection:option];
   [self stop];
+}
+
+#pragma mark UIViewControllerTransitioningDelegate
+
+- (UIPresentationController*)
+presentationControllerForPresentedViewController:(UIViewController*)presented
+                        presentingViewController:(UIViewController*)presenting
+                            sourceViewController:(UIViewController*)source {
+  return [[[SelectorPickerPresentationController alloc]
+      initWithPresentedViewController:self.selectorPickerViewController
+             presentingViewController:self.baseViewController] autorelease];
 }
 
 @end

@@ -72,7 +72,6 @@ CGFloat kUIPickerFontSize = 26;
       initWithArrangedSubviews:@[ self.navigationBar, self.pickerView ]]
       autorelease];
   stackView.axis = UILayoutConstraintAxisVertical;
-  stackView.translatesAutoresizingMaskIntoConstraints = NO;
   self.view = stackView;
 }
 
@@ -92,11 +91,11 @@ CGFloat kUIPickerFontSize = 26;
       [[[UINavigationItem alloc] initWithTitle:@""] autorelease];
   UIBarButtonItem* doneButton = [[[UIBarButtonItem alloc]
       initWithBarButtonSystemItem:UIBarButtonSystemItemDone
-                           target:nil
+                           target:self
                            action:@selector(doneButtonPressed)] autorelease];
   UIBarButtonItem* cancelButton = [[[UIBarButtonItem alloc]
       initWithBarButtonSystemItem:UIBarButtonSystemItemCancel
-                           target:nil
+                           target:self
                            action:@selector(cancelButtonPressed)] autorelease];
   [navigationItem setRightBarButtonItem:doneButton];
   [navigationItem setLeftBarButtonItem:cancelButton];
