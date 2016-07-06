@@ -7,8 +7,6 @@ package org.chromium.chrome.browser.preferences.website;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.res.Resources;
-import android.graphics.PorterDuff;
-import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.preference.ListPreference;
@@ -22,7 +20,6 @@ import android.text.format.Formatter;
 import android.widget.ListAdapter;
 import android.widget.ListView;
 
-import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ContentSettingsType;
@@ -462,7 +459,8 @@ public class SingleWebsitePreferences extends PreferenceFragment
                 listPreference.setIcon(ContentSettingsResources.getIcon(contentType));
             }
         } else {
-            listPreference.setIcon(getDisabledInChromeIcon(contentType));
+            listPreference.setIcon(
+                    ContentSettingsResources.getDisabledIcon(contentType, getResources()));
         }
 
         preference.setSummary("%s");
@@ -516,19 +514,6 @@ public class SingleWebsitePreferences extends PreferenceFragment
                 ContentSetting.BLOCK.toString(),
         });
         listPreference.setValueIndex(0);
-    }
-
-    /**
-     * Returns the icon for permissions that have been disabled by Chrome.
-     */
-    private Drawable getDisabledInChromeIcon(int contentType) {
-        Drawable icon = ApiCompatibilityUtils.getDrawable(getResources(),
-                ContentSettingsResources.getIcon(contentType));
-        icon.mutate();
-        int disabledColor = ApiCompatibilityUtils.getColor(getResources(),
-                R.color.primary_text_disabled_material_light);
-        icon.setColorFilter(disabledColor, PorterDuff.Mode.SRC_IN);
-        return icon;
     }
 
     private int getContentSettingsTypeFromPreferenceKey(String preferenceKey) {

@@ -4,14 +4,12 @@
 
 package org.chromium.chrome.browser.preferences.website;
 
-import android.graphics.PorterDuff;
 import android.os.Build;
 import android.os.Bundle;
 import android.preference.Preference;
 import android.preference.Preference.OnPreferenceClickListener;
 import android.preference.PreferenceFragment;
 
-import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.FieldTrialList;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
@@ -211,7 +209,6 @@ public class SiteSettingsPreferences extends PreferenceFragment
 
             int contentType = keyToContentSettingsType(prefName);
             p.setTitle(ContentSettingsResources.getTitle(contentType));
-            p.setIcon(ContentSettingsResources.getIcon(contentType));
             p.setOnPreferenceClickListener(this);
 
             // Disable autoplay preference if Data Saver is ON.
@@ -219,8 +216,6 @@ public class SiteSettingsPreferences extends PreferenceFragment
                     && DataReductionProxySettings.getInstance().isDataReductionProxyEnabled()) {
                 p.setSummary(ContentSettingsResources.getAutoplayDisabledByDataSaverSummary());
                 p.setEnabled(false);
-                p.getIcon().setColorFilter(ApiCompatibilityUtils.getColor(getResources(),
-                        R.color.primary_text_disabled_material_light), PorterDuff.Mode.SRC_IN);
             } else if (COOKIES_KEY.equals(prefName) && checked
                     && prefServiceBridge.isBlockThirdPartyCookiesEnabled()) {
                 p.setSummary(ContentSettingsResources.getCookieAllowedExceptThirdPartySummary());
@@ -229,6 +224,12 @@ public class SiteSettingsPreferences extends PreferenceFragment
                 p.setSummary(ContentSettingsResources.getGeolocationAllowedSummary());
             } else {
                 p.setSummary(ContentSettingsResources.getCategorySummary(contentType, checked));
+            }
+
+            if (p.isEnabled()) {
+                p.setIcon(ContentSettingsResources.getIcon(contentType));
+            } else {
+                p.setIcon(ContentSettingsResources.getDisabledIcon(contentType, getResources()));
             }
         }
 

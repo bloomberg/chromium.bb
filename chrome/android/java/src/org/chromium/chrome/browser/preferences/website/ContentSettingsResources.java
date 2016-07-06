@@ -5,7 +5,11 @@
 package org.chromium.chrome.browser.preferences.website;
 
 import android.annotation.SuppressLint;
+import android.content.res.Resources;
+import android.graphics.PorterDuff;
+import android.graphics.drawable.Drawable;
 
+import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ContentSettingsType;
@@ -173,6 +177,18 @@ public class ContentSettingsResources {
      */
     public static int getIcon(int contentType) {
         return getResourceItem(contentType).getIcon();
+    }
+
+    /**
+     * Returns the Drawable object of the icon for a content type with a disabled tint.
+     */
+    public static Drawable getDisabledIcon(int contentType, Resources resources) {
+        Drawable icon = ApiCompatibilityUtils.getDrawable(resources, getIcon(contentType));
+        icon.mutate();
+        int disabledColor = ApiCompatibilityUtils.getColor(resources,
+                R.color.primary_text_disabled_material_light);
+        icon.setColorFilter(disabledColor, PorterDuff.Mode.SRC_IN);
+        return icon;
     }
 
     /**
