@@ -1048,6 +1048,18 @@ TEST_F(VisibleUnitsTest, previousPositionOfOneCharPerLine)
     EXPECT_EQ(PositionWithAffinity(Position(sample, 1)), previousPositionOf(createVisiblePosition(Position(sample, 2), TextAffinity::Upstream)).toPositionWithAffinity());
 }
 
+TEST_F(VisibleUnitsTest, previousPositionOfNoPreviousPosition)
+{
+    setBodyContent(
+        "<span contenteditable='true'>"
+            "<span> </span>"
+            " " // This whitespace causes no previous position.
+            "<div id='anchor'> bar</div>"
+        "</span>");
+    const Position position(document().getElementById("anchor")->firstChild(), 1);
+    EXPECT_EQ(Position(), previousPositionOf(createVisiblePosition(position)).deepEquivalent());
+}
+
 TEST_F(VisibleUnitsTest, rendersInDifferentPositionAfterAnchor)
 {
     const char* bodyContent = "<p id='sample'>00</p>";

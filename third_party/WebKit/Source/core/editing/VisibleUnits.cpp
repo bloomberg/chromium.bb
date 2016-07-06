@@ -3232,7 +3232,8 @@ static VisiblePositionTemplate<Strategy> previousPositionOfAlgorithm(const Visib
     // never yield another |TextAffinity::Upstream position| (unless line wrap
     // length is 0!).
     const VisiblePositionTemplate<Strategy> prev = createVisiblePosition(pos);
-    DCHECK_NE(prev.deepEquivalent(), visiblePosition.deepEquivalent());
+    if (prev.deepEquivalent() == visiblePosition.deepEquivalent())
+        return VisiblePositionTemplate<Strategy>();
 
     switch (rule) {
     case CanCrossEditingBoundary:
