@@ -639,13 +639,9 @@ template("component") {
     assert(invoker.static_component_type == "static_library" ||
            invoker.static_component_type == "source_set")
     _component_mode = invoker.static_component_type
-  } else if (!defined(invoker.sources) || is_mac) {
+  } else if (!defined(invoker.sources)) {
     # When there are no sources defined, use a source set to avoid creating
     # an empty static library (which generally don't work).
-    #
-    # TODO(brettw) bug 618797: Remove the mac condition. On Mac making these as
-    # static_library causes crashes. Remove the mac condition above when this
-    # is fixed.
     _component_mode = "source_set"
   } else {
     _component_mode = "static_library"
