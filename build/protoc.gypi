@@ -52,6 +52,12 @@
     'cc_dir': '<(SHARED_INTERMEDIATE_DIR)/protoc_out/<(proto_out_dir)',
     'py_dir': '<(PRODUCT_DIR)/pyproto/<(proto_out_dir)',
     'cc_generator_options%': '',
+    'generate_python%': 1,
+    'generate_cc%': 1,
+    # Name of plugin executable which generates custom cc stubs.
+    # If passed, generator_plugin_suffix (before .cc and .h) is also required.
+    'generator_plugin%': '',
+    'generator_plugin_options%': '',
     'cc_include%': '',
     'proto_in_dir%': '.',
     'conditions': [
@@ -70,14 +76,10 @@
         '<(protoc_wrapper)',
         '<(protoc)',
       ],
-      'outputs': [
-        '<(py_dir)/<(RULE_INPUT_ROOT)_pb2.py',
-        '<(cc_dir)/<(RULE_INPUT_ROOT).pb.cc',
-        '<(cc_dir)/<(RULE_INPUT_ROOT).pb.h',
-      ],
       'action': [
         'python',
         '<(protoc_wrapper)',
+        # If no cc_include specified --protobuf option will be ignored.
         '--include',
         '<(cc_include)',
         '--protobuf',
@@ -91,16 +93,47 @@
         '--use-system-protobuf=<(use_system_protobuf)',
         '--',
         '<(protoc)',
-        '--cpp_out', '<(cc_generator_options)<(cc_dir)',
-        '--python_out', '<(py_dir)',
       ],
       'message': 'Generating C++ and Python code from <(RULE_INPUT_PATH)',
       'process_outputs_as_sources': 1,
+
+      'conditions': [
+        ['generate_python==1', {
+          'outputs': [
+            '<(py_dir)/<(RULE_INPUT_ROOT)_pb2.py',
+          ],
+          'action': [
+            '--python_out',
+            '<(py_dir)',
+          ],
+        }],
+        ['generate_cc==1', {
+          'outputs': [
+            '<(cc_dir)/<(RULE_INPUT_ROOT).pb.cc',
+            '<(cc_dir)/<(RULE_INPUT_ROOT).pb.h',
+          ],
+          'action': [
+            '--cpp_out',
+            '<(cc_generator_options)<(cc_dir)',
+          ],
+        }],
+        ['generator_plugin!=""', {
+          'outputs': [
+            '<(cc_dir)/<(RULE_INPUT_ROOT)<(generator_plugin_suffix).cc',
+            '<(cc_dir)/<(RULE_INPUT_ROOT)<(generator_plugin_suffix).h',
+          ],
+          'action': [
+            '--plugin',
+            'protoc-gen-plugin=<(PRODUCT_DIR)/<(EXECUTABLE_PREFIX)<(generator_plugin)<(EXECUTABLE_SUFFIX)',
+            '--plugin_out',
+            '<(generator_plugin_options)<(cc_dir)',
+          ],
+        }],
+      ],
     },
   ],
   'dependencies': [
     '<(DEPTH)/third_party/protobuf/protobuf.gyp:protoc#host',
-    '<(DEPTH)/third_party/protobuf/protobuf.gyp:protobuf_lite',
   ],
   'include_dirs': [
     '<(SHARED_INTERMEDIATE_DIR)/protoc_out',
@@ -112,12 +145,20 @@
       '<(DEPTH)',
     ]
   },
-  'export_dependent_settings': [
-    # The generated headers reference headers within protobuf_lite,
-    # so dependencies must be able to find those headers too.
-    '<(DEPTH)/third_party/protobuf/protobuf.gyp:protobuf_lite',
-  ],
-  # This target exports a hard dependency because it generates header
-  # files.
+  # This target exports a hard dependency because it generates header files.
   'hard_dependency': 1,
+
+  # If using built-in cc generator the resulting headers reference headers
+  # within protobuf_lite, hence dependencies require those headers too.
+  # In case of generator plugin such issues should be resolved by invoker.
+  'conditions': [
+    ['generate_cc==1', {
+      'dependencies': [
+        '<(DEPTH)/third_party/protobuf/protobuf.gyp:protobuf_lite',
+      ],
+      'export_dependent_settings': [
+        '<(DEPTH)/third_party/protobuf/protobuf.gyp:protobuf_lite',
+      ],
+    }],
+  ],
 }
