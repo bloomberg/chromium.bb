@@ -59,9 +59,7 @@ class ComputedStyle;
 class LayoutBoxModelObject;
 
 // PaintLayerStackingNode represents a stacked element which is either a
-// stacking context (i.e. an element with non-auto z-index) or a positioned
-// element with auto z-index which is treated as a stacking context but
-// doesn't contain other stacked elements.
+// stacking context or a positioned element.
 // See https://chromium.googlesource.com/chromium/src.git/+/master/third_party/WebKit/Source/core/paint/README.md
 // for more details of stacked elements.
 //

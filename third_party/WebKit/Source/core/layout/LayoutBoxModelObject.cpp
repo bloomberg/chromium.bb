@@ -151,7 +151,7 @@ void LayoutBoxModelObject::styleWillChange(StyleDifference diff, const ComputedS
     if (hasLayer()
         && enclosingLayer()->stackingNode()
         && enclosingLayer()->stackingNode()->isStackingContext()
-        && newStyle.hasAutoZIndex()) {
+        && !newStyle.isStackingContext()) {
         // The following disablers are valid because we need to invalidate based on the current
         // status.
         DisableCompositingQueryAsserts compositingDisabler;

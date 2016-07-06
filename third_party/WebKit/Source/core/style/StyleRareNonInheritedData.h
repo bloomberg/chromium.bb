@@ -183,6 +183,8 @@ public:
     unsigned m_runningFilterAnimationOnCompositor : 1;
     unsigned m_runningBackdropFilterAnimationOnCompositor : 1;
 
+    unsigned m_isStackingContext : 1;
+
     unsigned m_effectiveBlendMode: 5; // EBlendMode
 
     unsigned m_touchAction : TouchActionBits; // TouchAction

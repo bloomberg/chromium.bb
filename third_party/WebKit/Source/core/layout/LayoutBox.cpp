@@ -109,7 +109,7 @@ PaintLayerType LayoutBox::layerTypeRequired() const
     // position:static elements that are not flex-items get their z-index coerced to auto.
     if (isPositioned() || createsGroup() || hasClipPath() || hasTransformRelatedProperty()
         || style()->hasCompositorProxy() || hasHiddenBackface() || hasReflection() || style()->specifiesColumns()
-        || !style()->hasAutoZIndex() || style()->shouldCompositeForCurrentAnimations())
+        || style()->isStackingContext() || style()->shouldCompositeForCurrentAnimations())
         return NormalPaintLayer;
 
     if (hasOverflowClip())
@@ -1389,7 +1389,7 @@ static bool isCandidateForOpaquenessTest(const LayoutBox& childBox)
         if (childLayer->compositingState() != NotComposited)
             return false;
         // FIXME: Deal with z-index.
-        if (!childStyle.hasAutoZIndex())
+        if (childStyle.isStackingContext())
             return false;
         if (childLayer->hasTransformRelatedProperty() || childLayer->isTransparent() || childLayer->hasFilterInducingProperty())
             return false;

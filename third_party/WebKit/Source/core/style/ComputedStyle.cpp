@@ -554,7 +554,7 @@ bool ComputedStyle::diffNeedsFullLayoutAndPaintInvalidation(const ComputedStyle&
 
         // We only need do layout for opacity changes if adding or losing opacity could trigger a change
         // in us being a stacking context.
-        if (hasAutoZIndex() != other.hasAutoZIndex() && rareNonInheritedData->hasOpacity() != other.rareNonInheritedData->hasOpacity()) {
+        if (isStackingContext() != other.isStackingContext() && rareNonInheritedData->hasOpacity() != other.rareNonInheritedData->hasOpacity()) {
             // FIXME: We would like to use SimplifiedLayout here, but we can't quite do that yet.
             // We need to make sure SimplifiedLayout can operate correctly on LayoutInlines (we will need
             // to add a selfNeedsSimplifiedLayout bit in order to not get confused and taint every line).
@@ -813,8 +813,7 @@ bool ComputedStyle::diffNeedsPaintInvalidationObjectForPaintImage(const StyleIma
 
 void ComputedStyle::updatePropertySpecificDifferences(const ComputedStyle& other, StyleDifference& diff) const
 {
-    // StyleAdjuster has ensured that zIndex is non-auto only if it's applicable.
-    if (m_box->zIndex() != other.m_box->zIndex() || m_box->hasAutoZIndex() != other.m_box->hasAutoZIndex())
+    if (m_box->zIndex() != other.m_box->zIndex() || isStackingContext() != other.isStackingContext())
         diff.setZIndexChanged();
 
     if (rareNonInheritedData.get() != other.rareNonInheritedData.get()) {
@@ -893,6 +892,59 @@ void ComputedStyle::clearCursorList()
 {
     if (rareInheritedData->cursorData)
         rareInheritedData.access()->cursorData = nullptr;
+}
+
+static bool hasPropertyThatCreatesStackingContext(const Vector<CSSPropertyID>& properties)
+{
+    for (CSSPropertyID property : properties) {
+        switch (property) {
+        case CSSPropertyOpacity:
+        case CSSPropertyTransform:
+        case CSSPropertyAliasWebkitTransform:
+        case CSSPropertyTransformStyle:
+        case CSSPropertyAliasWebkitTransformStyle:
+        case CSSPropertyPerspective:
+        case CSSPropertyAliasWebkitPerspective:
+        case CSSPropertyWebkitMask:
+        case CSSPropertyWebkitMaskBoxImage:
+        case CSSPropertyWebkitClipPath:
+        case CSSPropertyWebkitBoxReflect:
+        case CSSPropertyFilter:
+        case CSSPropertyAliasWebkitFilter:
+        case CSSPropertyBackdropFilter:
+        case CSSPropertyZIndex:
+        case CSSPropertyPosition:
+        case CSSPropertyMixBlendMode:
+        case CSSPropertyIsolation:
+            return true;
+        default:
+            break;
+        }
+    }
+    return false;
+}
+
+void ComputedStyle::updateIsStackingContext(bool isDocumentElement, bool isInTopLayer)
+{
+    if (isStackingContext())
+        return;
+
+    if (isDocumentElement
+        || isInTopLayer
+        || styleType() == PseudoIdBackdrop
+        || hasOpacity()
+        || hasTransformRelatedProperty()
+        || hasMask()
+        || clipPath()
+        || boxReflect()
+        || hasFilterInducingProperty()
+        || hasBlendMode()
+        || hasIsolation()
+        || hasViewportConstrainedPosition()
+        || hasPropertyThatCreatesStackingContext(willChangeProperties())
+        || containsPaint()) {
+        setIsStackingContext(true);
+    }
 }
 
 void ComputedStyle::addCallbackSelector(const String& selector)

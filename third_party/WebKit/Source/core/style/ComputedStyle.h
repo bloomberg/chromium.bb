@@ -1293,10 +1293,12 @@ public:
 
     // A stacking context is painted atomically and defines a stacking order, whereas
     // a containing stacking context defines in which order the stacking contexts
-    // below are painted. In Blink, a stacking context is defined by non-auto
-    // z-index'. This invariant is enforced by the logic in StyleAdjuster
+    // below are painted.
     // See CSS 2.1, Appendix E (https://www.w3.org/TR/CSS21/zindex.html) for more details.
-    bool isStackingContext() const { return !hasAutoZIndex(); }
+    bool isStackingContext() const { return rareNonInheritedData->m_isStackingContext; }
+
+    void updateIsStackingContext(bool isDocumentElement, bool isInTopLayer);
+    void setIsStackingContext(bool b) { SET_VAR(rareNonInheritedData, m_isStackingContext, b); }
 
     // Stacking contexts and positioned elements[1] are stacked (sorted in negZOrderList
     // and posZOrderList) in their enclosing stacking contexts.

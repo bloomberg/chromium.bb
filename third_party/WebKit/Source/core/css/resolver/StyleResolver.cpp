@@ -683,6 +683,7 @@ PassRefPtr<ComputedStyle> StyleResolver::styleForDocument(Document& document)
     documentFontDescription.setLocale(document.contentLanguage());
     documentStyle->setFontDescription(documentFontDescription);
     documentStyle->setZIndex(0);
+    documentStyle->setIsStackingContext(true);
     documentStyle->setUserModify(document.inDesignMode() ? READ_WRITE : READ_ONLY);
     // These are designed to match the user-agent stylesheet values for the document element
     // so that the common case doesn't need to create a new ComputedStyle in

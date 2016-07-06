@@ -22,7 +22,8 @@ treated in different ways during painting:
 
 *   Stacked objects: objects that are z-ordered in stacking contexts, including:
 
-    *   Stacking contexts: elements with non-auto z-indices.
+    *   Stacking contexts: elements with non-auto z-indices or other properties
+        that affect stacking e.g. transform, opacity, blend-mode.
 
     *   Elements that are not real stacking contexts but are treated as stacking
         contexts but don't manage other stacked elements. Their z-ordering are

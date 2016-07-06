@@ -98,6 +98,7 @@ void LayoutFullScreen::updateStyle()
 
     // Create a stacking context:
     fullscreenStyle->setZIndex(INT_MAX);
+    fullscreenStyle->setIsStackingContext(true);
 
     fullscreenStyle->setFontDescription(FontDescription());
     fullscreenStyle->font().update(nullptr);

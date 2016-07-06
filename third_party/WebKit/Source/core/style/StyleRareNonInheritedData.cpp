@@ -113,6 +113,7 @@ StyleRareNonInheritedData::StyleRareNonInheritedData()
     , m_runningTransformAnimationOnCompositor(false)
     , m_runningFilterAnimationOnCompositor(false)
     , m_runningBackdropFilterAnimationOnCompositor(false)
+    , m_isStackingContext(false)
     , m_effectiveBlendMode(ComputedStyle::initialBlendMode())
     , m_touchAction(ComputedStyle::initialTouchAction())
     , m_objectFit(ComputedStyle::initialObjectFit())
@@ -195,6 +196,7 @@ StyleRareNonInheritedData::StyleRareNonInheritedData(const StyleRareNonInherited
     , m_runningTransformAnimationOnCompositor(o.m_runningTransformAnimationOnCompositor)
     , m_runningFilterAnimationOnCompositor(o.m_runningFilterAnimationOnCompositor)
     , m_runningBackdropFilterAnimationOnCompositor(o.m_runningBackdropFilterAnimationOnCompositor)
+    , m_isStackingContext(o.m_isStackingContext)
     , m_effectiveBlendMode(o.m_effectiveBlendMode)
     , m_touchAction(o.m_touchAction)
     , m_objectFit(o.m_objectFit)
@@ -277,6 +279,7 @@ bool StyleRareNonInheritedData::operator==(const StyleRareNonInheritedData& o) c
         && m_hasCurrentTransformAnimation == o.m_hasCurrentTransformAnimation
         && m_hasCurrentFilterAnimation == o.m_hasCurrentFilterAnimation
         && m_hasCurrentBackdropFilterAnimation == o.m_hasCurrentBackdropFilterAnimation
+        && m_isStackingContext == o.m_isStackingContext
         && m_effectiveBlendMode == o.m_effectiveBlendMode
         && m_touchAction == o.m_touchAction
         && m_objectFit == o.m_objectFit

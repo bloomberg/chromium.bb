@@ -119,36 +119,6 @@ static bool parentStyleForcesZIndexToCreateStackingContext(const ComputedStyle& 
     return parentStyle.isDisplayFlexibleOrGridBox();
 }
 
-static bool hasWillChangeThatCreatesStackingContext(const ComputedStyle& style)
-{
-    for (size_t i = 0; i < style.willChangeProperties().size(); ++i) {
-        switch (style.willChangeProperties()[i]) {
-        case CSSPropertyOpacity:
-        case CSSPropertyTransform:
-        case CSSPropertyAliasWebkitTransform:
-        case CSSPropertyTransformStyle:
-        case CSSPropertyAliasWebkitTransformStyle:
-        case CSSPropertyPerspective:
-        case CSSPropertyAliasWebkitPerspective:
-        case CSSPropertyWebkitMask:
-        case CSSPropertyWebkitMaskBoxImage:
-        case CSSPropertyWebkitClipPath:
-        case CSSPropertyWebkitBoxReflect:
-        case CSSPropertyFilter:
-        case CSSPropertyAliasWebkitFilter:
-        case CSSPropertyBackdropFilter:
-        case CSSPropertyZIndex:
-        case CSSPropertyPosition:
-        case CSSPropertyMixBlendMode:
-        case CSSPropertyIsolation:
-            return true;
-        default:
-            break;
-        }
-    }
-    return false;
-}
-
 void StyleAdjuster::adjustStyleForEditing(ComputedStyle& style)
 {
     if (style.userModify() != READ_WRITE_PLAINTEXT_ONLY)
@@ -398,29 +368,17 @@ void StyleAdjuster::adjustComputedStyle(ComputedStyle& style, const ComputedStyl
         style.setHasCompositorProxy(true);
 
     // Make sure our z-index value is only applied if the object is positioned.
-    if (style.position() == StaticPosition && !parentStyleForcesZIndexToCreateStackingContext(parentStyle))
-        style.setHasAutoZIndex();
+    if (style.position() == StaticPosition && !parentStyleForcesZIndexToCreateStackingContext(parentStyle)) {
+        style.setIsStackingContext(false);
+        // TODO(alancutter): Avoid altering z-index here.
+        if (!style.hasAutoZIndex())
+            style.setZIndex(0);
+    } else if (!style.hasAutoZIndex()) {
+        style.setIsStackingContext(true);
+    }
 
     if (style.overflowX() != OverflowVisible || style.overflowY() != OverflowVisible)
         adjustOverflow(style);
-
-    // Auto z-index becomes 0 for the root element and transparent objects. This prevents
-    // cases where objects that should be blended as a single unit end up with a non-transparent
-    // object wedged in between them. Auto z-index also becomes 0 for objects that specify transforms/masks/reflections.
-    if (style.hasAutoZIndex() && ((element && element->document().documentElement() == element)
-        || style.hasOpacity()
-        || style.hasTransformRelatedProperty()
-        || style.hasMask()
-        || style.clipPath()
-        || style.boxReflect()
-        || style.hasFilterInducingProperty()
-        || style.hasBlendMode()
-        || style.hasIsolation()
-        || style.hasViewportConstrainedPosition()
-        || isInTopLayer(element, style)
-        || hasWillChangeThatCreatesStackingContext(style)
-        || style.containsPaint()))
-        style.setZIndex(0);
 
     if (doesNotInheritTextDecoration(style, element))
         style.clearAppliedTextDecorations();

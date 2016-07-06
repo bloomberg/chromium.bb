@@ -1682,6 +1682,8 @@ PassRefPtr<ComputedStyle> Element::styleForLayoutObject()
             style->setHasInlineTransform(inlineStyle->hasProperty(CSSPropertyTransform));
     }
 
+    style->updateIsStackingContext(this == document().documentElement(), isInTopLayer());
+
     return style.release();
 }
 
