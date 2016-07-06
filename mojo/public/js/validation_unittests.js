@@ -282,7 +282,7 @@ define([
     var testFiles = getMessageTestFiles(testFilesPattern);
     expect(testFiles.length).toBeGreaterThan(0);
 
-    var testMessagePipe = new core.createMessagePipe();
+    var testMessagePipe = core.createMessagePipe();
     expect(testMessagePipe.result).toBe(core.RESULT_OK);
     var testConnection = new connection.TestConnection(
         testMessagePipe.handle1, localFactory, remoteFactory);

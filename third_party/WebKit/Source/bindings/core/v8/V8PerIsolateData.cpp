@@ -277,6 +277,7 @@ v8::Local<v8::FunctionTemplate> V8PerIsolateData::findOrCreateOperationTemplate(
         return result->value.Get(isolate());
 
     v8::Local<v8::FunctionTemplate> templ = v8::FunctionTemplate::New(isolate(), callback, data, signature, length);
+    templ->RemovePrototype();
     map.add(key, v8::Eternal<v8::FunctionTemplate>(isolate(), templ));
     return templ;
 }

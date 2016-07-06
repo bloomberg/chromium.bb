@@ -73,6 +73,7 @@ void BindLogMethod(v8::Isolate* isolate,
       isolate,
       &BoundLogMethodCallback,
       v8::External::New(isolate, reinterpret_cast<void*>(log_method)));
+  tmpl->RemovePrototype();
   v8::Local<v8::Function> function;
   if (!tmpl->GetFunction(isolate->GetCurrentContext()).ToLocal(&function)) {
     LOG(FATAL) << "Could not create log function \"" << name << "\"";

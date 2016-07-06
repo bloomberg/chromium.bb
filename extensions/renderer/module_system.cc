@@ -667,6 +667,7 @@ v8::Local<v8::Value> ModuleSystem::LoadModule(const std::string& module_name) {
   v8::Local<v8::FunctionTemplate> tmpl = v8::FunctionTemplate::New(
       GetIsolate(),
       &SetExportsProperty);
+  tmpl->RemovePrototype();
   v8::Local<v8::String> v8_key;
   if (!v8_helpers::ToV8String(GetIsolate(), "$set", &v8_key)) {
     NOTREACHED();

@@ -102,6 +102,7 @@ bool DocumentWriteEvaluator::ensureEvaluationContext()
     m_window.newLocal(isolate)->Set(navigatorString, m_navigator.newLocal(isolate));
 
     v8::Local<v8::FunctionTemplate> writeTemplate = v8::FunctionTemplate::New(isolate, documentWriteCallback, v8::External::New(isolate, this));
+    writeTemplate->RemovePrototype();
     m_document.newLocal(isolate)->Set(locationString, m_location.newLocal(isolate));
     m_document.newLocal(isolate)->Set(v8String(isolate, "write"), writeTemplate->GetFunction());
     m_document.newLocal(isolate)->Set(v8String(isolate, "writeln"), writeTemplate->GetFunction());
