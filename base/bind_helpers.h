@@ -225,7 +225,7 @@ class OwnedWrapper {
   explicit OwnedWrapper(T* o) : ptr_(o) {}
   ~OwnedWrapper() { delete ptr_; }
   T* get() const { return ptr_; }
-  OwnedWrapper(const OwnedWrapper& other) {
+  OwnedWrapper(OwnedWrapper&& other) {
     ptr_ = other.ptr_;
     other.ptr_ = NULL;
   }
@@ -262,7 +262,7 @@ class PassedWrapper {
  public:
   explicit PassedWrapper(T&& scoper)
       : is_valid_(true), scoper_(std::move(scoper)) {}
-  PassedWrapper(const PassedWrapper& other)
+  PassedWrapper(PassedWrapper&& other)
       : is_valid_(other.is_valid_), scoper_(std::move(other.scoper_)) {}
   T Take() const {
     CHECK(is_valid_);
