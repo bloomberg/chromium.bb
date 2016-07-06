@@ -691,37 +691,40 @@ bool GetPageURLAndCheckTrustLevel(web::WebState* web_state, GURL* page_url) {
       form->password_value = values[0];
       break;
     case 2: {
-      if (values[0] == values[1]) {
-        // Treat two identical passwords as a single password.
-        form->password_element = elements[0];
-        form->password_value = values[0];
-      } else {
-        // Assume first is old password, second is new (no choice but to guess).
+      if (!values[0].empty() && values[0] == values[1]) {
+        // Treat two identical passwords as a single password new password, with
+        // confirmation. This can be either be a sign-up form or a password
+        // change form that does not ask for a new password.
         form->new_password_element = elements[0];
         form->new_password_value = values[0];
-        form->password_element = elements[1];
-        form->password_value = values[1];
+      } else {
+        // Assume first is old password, second is new (no choice but to guess).
+        form->password_element = elements[0];
+        form->password_value = values[0];
+        form->new_password_element = elements[1];
+        form->new_password_value = values[1];
       }
       break;
       default:
-        if (values[0] == values[1] && values[0] == values[2]) {
-          // All three passwords the same? Just treat as one and hope.
+        if (!values[0].empty() && values[0] == values[1] &&
+            values[0] == values[2]) {
+          // All three passwords the same? This does not make sense, do not
+          // add the password element.
+          break;
+        } else if (values[0] == values[1]) {
+          // First two the same and the third different implies that the old
+          // password is the duplicated one.
           form->password_element = elements[0];
           form->password_value = values[0];
-        } else if (values[0] == values[1]) {
-          // Two the same and one different -> old password is the duplicated
-          // one.
-          form->new_password_element = elements[0];
-          form->new_password_value = values[0];
-          form->password_element = elements[2];
-          form->password_value = values[2];
+          form->new_password_element = elements[2];
+          form->new_password_value = values[2];
         } else if (values[1] == values[2]) {
           // Two the same and one different -> new password is the duplicated
           // one.
-          form->new_password_element = elements[0];
-          form->new_password_value = values[0];
-          form->password_element = elements[1];
-          form->password_value = values[1];
+          form->password_element = elements[0];
+          form->password_value = values[0];
+          form->new_password_element = elements[1];
+          form->new_password_value = values[1];
         } else {
           // Three different passwords, or first and last match with middle
           // different. No idea which is which, so no luck.
