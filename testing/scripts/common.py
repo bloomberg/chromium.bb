@@ -22,6 +22,10 @@ SRC_DIR = os.path.abspath(
 MAX_FAILURES_EXIT_STATUS = 101
 
 
+# Exit code to indicate infrastructure issue.
+INFRA_FAILURE_EXIT_CODE = 87
+
+
 def run_script(argv, funcs):
   def parse_json(path):
     with open(path) as f:
