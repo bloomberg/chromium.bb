@@ -1,6 +1,2 @@
-importAutomationScript('/pointerevents/pointerevent_common_input.js');
-
-function inject_input() {
-  mouseClickInTarget('target0');
-}
-
+if (window.eventSender)
+  eventSender.mouseMoveTo(200, 220);
