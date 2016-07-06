@@ -51,13 +51,12 @@ public:
         DCHECK_EQ(m_state, State::ValidNotNull);
         return m_renderedRect.contains(point);
     }
-    bool setRenderedRect(const LayoutRect& rect)
+    void setRenderedRect(const LayoutRect& rect)
     {
         if (m_state == State::ValidNotNull && rect == m_renderedRect)
-            return false;
+            return;
         m_state = State::ValidNotNull;
         m_renderedRect = rect;
-        return true;
     }
 
     const LayoutRect& renderedRect() const
@@ -66,7 +65,12 @@ public:
         return m_renderedRect;
     }
 
-    bool nullifyRenderedRect() { return m_state == State::ValidNull; }
+    void nullifyRenderedRect()
+    {
+        m_state = State::ValidNull;
+        // Now |m_renderedRect| can not be accessed until |setRenderedRect| is
+        // called.
+    }
 
     void invalidate() { m_state = State::Invalid; }
     bool isValid() const { return m_state != State::Invalid; }

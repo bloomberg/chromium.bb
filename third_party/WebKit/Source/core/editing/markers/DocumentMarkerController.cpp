@@ -188,7 +188,7 @@ static bool doesNotInclude(const Member<RenderedDocumentMarker>& marker, size_t 
     return marker->endOffset() < startOffset;
 }
 
-static bool updateMarkerRenderedRect(const Node& node, RenderedDocumentMarker& marker)
+static void updateMarkerRenderedRect(const Node& node, RenderedDocumentMarker& marker)
 {
     Range* range = Range::create(node.document());
     // The offsets of the marker may be out-dated, so check for exceptions.
@@ -196,15 +196,14 @@ static bool updateMarkerRenderedRect(const Node& node, RenderedDocumentMarker& m
     range->setStart(&const_cast<Node&>(node), marker.startOffset(), exceptionState);
     if (!exceptionState.hadException())
         range->setEnd(&const_cast<Node&>(node), marker.endOffset(), IGNORE_EXCEPTION);
-    if (exceptionState.hadException()) {
-        range->dispose();
-        return marker.nullifyRenderedRect();
+    if (!exceptionState.hadException()) {
+        // TODO(yosin): Once we have a |EphemeralRange| version of |boundingBox()|,
+        // we should use it instead of |Range| version.
+        marker.setRenderedRect(LayoutRect(range->boundingBox()));
+    } else {
+        marker.nullifyRenderedRect();
     }
-    // TODO(yosin): Once we have a |EphemeralRange| version of |boundingBox()|,
-    // we should use it instead of |Range| version.
-    const bool isUpdated = marker.setRenderedRect(LayoutRect(range->boundingBox()));
     range->dispose();
-    return isUpdated;
 }
 
 // Markers are stored in order sorted by their start offset.
