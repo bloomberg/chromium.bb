@@ -1,51 +1,35 @@
 <!DOCTYPE html>
+<title>Test that we can add a track dynamically and it is displayed on the track selection menu.</title>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
 <script src="../media-file.js"></script>
-<!-- TODO(srivats): Convert test to testharness.js. crbug.com/588956
-     (Please avoid writing new tests using video-test.js) -->
-<script src="../video-test.js"></script>
 <script src="../media-controls.js"></script>
-<script>
-
-    var trackCueText = "Bonjour";
-
-    function selectTrackAdded()
-    {
-        findMediaElement();
-        testClosedCaptionsButtonVisibility(true);
-        consoleWrite("");
-        testExpected("video.textTracks.length", 2);
-        testExpected("video.textTracks[0].mode", "showing");
-        testExpected("video.textTracks[1].mode", "hidden");
-
-        consoleWrite("");
-        consoleWrite("Verify the default track is being displayed");
-        testExpected("textTrackDisplayElement(video, 'display').innerText", "Lorem");
-
-        consoleWrite("");
-        consoleWrite("Select the newly added track");
-        selectTextTrack(video, 1);
-        testExpected("video.textTracks[1].mode", "showing");
-        testExpected("video.textTracks[0].mode", "disabled");
-        testExpected("textTrackDisplayElement(video, 'display').innerText", trackCueText);
-        endTest();
-    }
-
-    function addTextTrack()
-    {
-        track = video.addTextTrack("captions", "French", "fr");
-        track.addCue(new VTTCue(0.0, 1.0, trackCueText));
-        selectTrackAdded();
-    }
-
-    window.onload = function()
-    {
-        consoleWrite("Test that we can add a track dynamically and it is displayed on the track selection menu");
-        findMediaElement();
-        video.src = findMediaFile("video", "../content/test");
-        waitForEvent("canplaythrough", addTextTrack);
-    }
-
-</script>
 <video controls>
     <track src="captions-webvtt/captions.vtt" kind="captions" label="English" srclang="en" default>
 </video>
+<script>
+async_test(function(t) {
+    var trackCueText = "Bonjour";
+    var video = document.querySelector("video");
+
+    video.oncanplaythrough = t.step_func_done(function() {
+        var track = video.addTextTrack("captions", "French", "fr");
+        track.addCue(new VTTCue(0, 1, trackCueText));
+        assert_true(isClosedCaptionsButtonVisible(video));
+        assert_equals(video.textTracks.length, 2);
+        assert_equals(video.textTracks[0].mode, "showing");
+        assert_equals(video.textTracks[1].mode, "hidden");
+
+        // Verify the default track is being displayed.
+        assert_equals(textTrackCueDisplayElement(video).innerText, "Lorem");
+
+        // Click the newly added track.
+        clickTextTrackAtIndex(video, 1);
+        assert_equals(video.textTracks[1].mode, "showing");
+        assert_equals(video.textTracks[0].mode, "disabled");
+        assert_equals(textTrackCueDisplayElement(video).innerText, trackCueText);
+    });
+
+    video.src = findMediaFile("video", "../content/test");
+})
+</script>
