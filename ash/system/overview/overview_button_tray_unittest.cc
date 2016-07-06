@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/system/overview/overview_button_tray.h"
+#include "ash/common/system/overview/overview_button_tray.h"
 
 #include "ash/common/ash_switches.h"
 #include "ash/common/login_status.h"
@@ -48,6 +48,7 @@ OverviewButtonTray* GetSecondaryTray() {
 
 }  // namespace
 
+// TODO(jamescook): Migrate to //ash/common/system. http://crbug.com/620955
 class OverviewButtonTrayTest : public test::AshTestBase {
  public:
   OverviewButtonTrayTest() {}
