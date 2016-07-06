@@ -1024,7 +1024,6 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 @synthesize usePlaceholderOverlay = _usePlaceholderOverlay;
 @synthesize loadPhase = _loadPhase;
 @synthesize shouldSuppressDialogs = _shouldSuppressDialogs;
-@synthesize useMojoForWebUI = _useMojoForWebUI;
 
 - (instancetype)initWithWebState:(WebStateImpl*)webState {
   self = [super init];
@@ -4939,8 +4938,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
                         completionHandler:
                             (void (^)(NSString* result))completionHandler {
   GURL origin(web::GURLOriginWithWKSecurityOrigin(frame.securityOrigin));
-  if (self.useMojoForWebUI && web::GetWebClient()->IsAppSpecificURL(origin) &&
-      _webUIManager) {
+  if (web::GetWebClient()->IsAppSpecificURL(origin) && _webUIManager) {
     std::string mojoResponse =
         self.mojoFacade->HandleMojoMessage(base::SysNSStringToUTF8(prompt));
     completionHandler(base::SysUTF8ToNSString(mojoResponse));

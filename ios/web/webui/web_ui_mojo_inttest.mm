@@ -151,7 +151,6 @@ class WebUIMojoTest : public WebIntTest {
 // |TestUIHandler| sucessfully receives "ack" message from WebUI page.
 TEST_F(WebUIMojoTest, MessageExchange) {
   web_state()->SetWebUsageEnabled(true);
-  web_state()->GetWebController().useMojoForWebUI = YES;
   web_state()->GetView();  // WebState won't load URL without view.
   NavigationManager::WebLoadParams load_params(GURL(
       url::SchemeHostPort(kTestWebUIScheme, kTestWebUIURLHost, 0).Serialize()));

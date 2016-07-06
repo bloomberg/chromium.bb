@@ -117,9 +117,6 @@ class WebStateImpl;
 // |CRWWebDelegate webControllerDidSuppressDialog:| will be called.
 @property(nonatomic, assign) BOOL shouldSuppressDialogs;
 
-// YES if Mojo should be used for WebUI, defaults to NO.
-@property(nonatomic, assign) BOOL useMojoForWebUI;
-
 // Designated initializer. Initializes web controller with |webState|. The
 // calling code must retain the ownership of |webState|.
 - (instancetype)initWithWebState:(web::WebStateImpl*)webState;
