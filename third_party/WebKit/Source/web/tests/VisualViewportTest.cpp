@@ -421,7 +421,7 @@ TEST_P(ParameterizedVisualViewportTest, TestWebViewResizedBeforeAttachment)
     initializeWithDesktopSettings();
     FrameView& frameView = *webViewImpl()->mainFrameImpl()->frameView();
     GraphicsLayer* rootGraphicsLayer =
-        frameView.layoutView()->compositor()->rootGraphicsLayer();
+        frameView.layoutViewItem().compositor()->rootGraphicsLayer();
 
     // Make sure that a resize that comes in while there's no root layer is
     // honoured when we attach to the layer tree.
