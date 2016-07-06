@@ -71,6 +71,7 @@ BluetoothRemoteGattCharacteristicMac::BluetoothRemoteGattCharacteristicMac(
     : gatt_service_(gatt_service),
       cb_characteristic_(cb_characteristic, base::scoped_policy::RETAIN),
       characteristic_value_read_or_write_in_progress_(false),
+      start_notifications_in_progress_(false),
       weak_ptr_factory_(this) {
   uuid_ = BluetoothAdapterMac::BluetoothUUIDWithCBUUID(
       [cb_characteristic_.get() UUID]);
@@ -132,6 +133,7 @@ void BluetoothRemoteGattCharacteristicMac::StartNotifySession(
     const NotifySessionCallback& callback,
     const ErrorCallback& error_callback) {
   if (IsNotifying()) {
+    VLOG(2) << "Already notifying. Creating notify session.";
     std::unique_ptr<BluetoothGattNotifySessionMac> notify_session(
         new BluetoothGattNotifySessionMac(weak_ptr_factory_.GetWeakPtr()));
     base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -139,6 +141,7 @@ void BluetoothRemoteGattCharacteristicMac::StartNotifySession(
         base::Bind(callback, base::Passed(std::move(notify_session))));
     return;
   }
+
   if (!SupportsNotificationsOrIndications()) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
@@ -146,10 +149,16 @@ void BluetoothRemoteGattCharacteristicMac::StartNotifySession(
                    BluetoothRemoteGattService::GATT_ERROR_NOT_SUPPORTED));
     return;
   }
+
   start_notify_session_callbacks_.push_back(
       std::make_pair(callback, error_callback));
-  if (start_notifications_in_progress_)
+
+  if (start_notifications_in_progress_) {
+    VLOG(2) << "Start Notifications already in progress. "
+            << "Request has been queued.";
     return;
+  }
+
   [gatt_service_->GetCBPeripheral() setNotifyValue:YES
                                  forCharacteristic:cb_characteristic_.get()];
   start_notifications_in_progress_ = true;
