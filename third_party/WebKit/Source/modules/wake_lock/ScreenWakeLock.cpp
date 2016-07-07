@@ -4,6 +4,7 @@
 
 #include "modules/wake_lock/ScreenWakeLock.h"
 
+#include "core/dom/Document.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Screen.h"
 #include "core/page/PageVisibilityState.h"
@@ -39,17 +40,14 @@ const char* ScreenWakeLock::supplementName()
 // static
 ScreenWakeLock* ScreenWakeLock::from(LocalFrame* frame)
 {
-    return static_cast<ScreenWakeLock*>(Supplement<LocalFrame>::from(frame, supplementName()));
-}
-
-// static
-void ScreenWakeLock::provideTo(LocalFrame& frame, ServiceRegistry* registry)
-{
-    DCHECK(RuntimeEnabledFeatures::wakeLockEnabled());
-    Supplement<LocalFrame>::provideTo(
-        frame,
-        ScreenWakeLock::supplementName(),
-        registry ? new ScreenWakeLock(frame, registry) : nullptr);
+    if (!RuntimeEnabledFeatures::wakeLockEnabled())
+        return nullptr;
+    ScreenWakeLock* supplement = static_cast<ScreenWakeLock*>(Supplement<LocalFrame>::from(frame, supplementName()));
+    if (!supplement) {
+        supplement = new ScreenWakeLock(*frame);
+        Supplement<LocalFrame>::provideTo(*frame, supplementName(), supplement);
+    }
+    return supplement;
 }
 
 void ScreenWakeLock::pageVisibilityChanged()
@@ -57,14 +55,7 @@ void ScreenWakeLock::pageVisibilityChanged()
     notifyService();
 }
 
-void ScreenWakeLock::didCommitLoad(LocalFrame* committedFrame)
-{
-    // Reset wake lock flag for this frame if it is the one being navigated.
-    if (committedFrame == frame())
-        setKeepAwake(false);
-}
-
-void ScreenWakeLock::willDetachFrameHost()
+void ScreenWakeLock::contextDestroyed()
 {
     setKeepAwake(false);
 }
@@ -73,17 +64,17 @@ DEFINE_TRACE(ScreenWakeLock)
 {
     Supplement<LocalFrame>::trace(visitor);
     PageLifecycleObserver::trace(visitor);
-    LocalFrameLifecycleObserver::trace(visitor);
+    ContextLifecycleObserver::trace(visitor);
 }
 
-ScreenWakeLock::ScreenWakeLock(LocalFrame& frame, ServiceRegistry* registry)
-    : PageLifecycleObserver(frame.page())
-    , LocalFrameLifecycleObserver(&frame)
+ScreenWakeLock::ScreenWakeLock(LocalFrame& frame)
+    : ContextLifecycleObserver(frame.document())
+    , PageLifecycleObserver(frame.page())
     , m_keepAwake(false)
 {
     DCHECK(!m_service.is_bound());
-    DCHECK(registry);
-    registry->connectToRemoteService(mojo::GetProxy(&m_service));
+    DCHECK(frame.serviceRegistry());
+    frame.serviceRegistry()->connectToRemoteService(mojo::GetProxy(&m_service));
 }
 
 bool ScreenWakeLock::keepAwake() const
@@ -108,7 +99,7 @@ void ScreenWakeLock::notifyService()
     if (!m_service)
         return;
 
-    if (m_keepAwake && frame()->page() && frame()->page()->isPageVisible())
+    if (m_keepAwake && page() && page()->isPageVisible())
         m_service->RequestWakeLock();
     else
         m_service->CancelWakeLock();
