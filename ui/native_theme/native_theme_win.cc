@@ -21,8 +21,6 @@
 #include "skia/ext/skia_utils_win.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkColor.h"
-#include "third_party/skia/include/core/SkColorPriv.h"
-#include "third_party/skia/include/core/SkRefCnt.h"
 #include "third_party/skia/include/core/SkShader.h"
 #include "ui/base/material_design/material_design_controller.h"
 #include "ui/display/win/dpi.h"
@@ -251,43 +249,77 @@ void NativeThemeWin::Paint(SkCanvas* canvas,
       CommonThemePaintMenuItemBackground(this, canvas, state, rect,
                                          extra.menu_item);
       return;
+    case kScrollbarCorner:
+      canvas->drawColor(SK_ColorWHITE, SkXfermode::kSrc_Mode);
+      return;
     default:
       break;
   }
 
-  bool needs_paint_indirect = false;
-  if (!skia::SupportsPlatformPaint(canvas)) {
-    // This block will only get hit with --enable-accelerated-drawing flag.
-    needs_paint_indirect = true;
-  } else {
-    // Scrollbar components on Windows Classic theme (on all Windows versions)
-    // have particularly problematic alpha values, so always draw them
-    // indirectly. In addition, scrollbar thumbs and grippers for the Windows XP
-    // theme (available only on Windows XP) also need their alpha values
-    // fixed.
-    switch (part) {
-      case kScrollbarDownArrow:
-      case kScrollbarUpArrow:
-      case kScrollbarLeftArrow:
-      case kScrollbarRightArrow:
-        needs_paint_indirect = !GetThemeHandle(SCROLLBAR);
-        break;
-      case kScrollbarHorizontalThumb:
-      case kScrollbarVerticalThumb:
-      case kScrollbarHorizontalGripper:
-      case kScrollbarVerticalGripper:
-        needs_paint_indirect = !GetThemeHandle(SCROLLBAR) ||
-            base::win::GetVersion() == base::win::VERSION_XP;
-        break;
-      default:
-        break;
-    }
-  }
+  skia::ScopedPlatformPaint scoped_platform_paint(canvas);
+  HDC hdc = scoped_platform_paint.GetPlatformSurface();
 
-  if (needs_paint_indirect)
-    PaintIndirect(canvas, part, state, rect, extra);
-  else
-    PaintDirect(canvas, part, state, rect, extra);
+  switch (part) {
+    case kCheckbox:
+      PaintCheckbox(hdc, part, state, rect, extra.button);
+      return;
+    case kInnerSpinButton:
+      PaintSpinButton(hdc, part, state, rect, extra.inner_spin);
+      return;
+    case kMenuList:
+      PaintMenuList(hdc, state, rect, extra.menu_list);
+      return;
+    case kMenuCheck:
+      PaintMenuCheck(hdc, state, rect, extra.menu_check);
+      return;
+    case kMenuCheckBackground:
+      PaintMenuCheckBackground(hdc, state, rect);
+      return;
+    case kMenuPopupArrow:
+      PaintMenuArrow(hdc, state, rect, extra.menu_arrow);
+      return;
+    case kProgressBar:
+      PaintProgressBar(hdc, rect, extra.progress_bar);
+      return;
+    case kPushButton:
+      PaintPushButton(hdc, part, state, rect, extra.button);
+      return;
+    case kRadio:
+      PaintRadioButton(hdc, part, state, rect, extra.button);
+      return;
+    case kScrollbarDownArrow:
+    case kScrollbarUpArrow:
+    case kScrollbarLeftArrow:
+    case kScrollbarRightArrow:
+      PaintScrollbarArrow(hdc, part, state, rect, extra.scrollbar_arrow);
+      return;
+    case kScrollbarHorizontalThumb:
+    case kScrollbarVerticalThumb:
+    case kScrollbarHorizontalGripper:
+    case kScrollbarVerticalGripper:
+      PaintScrollbarThumb(hdc, part, state, rect, extra.scrollbar_thumb);
+      return;
+    case kScrollbarHorizontalTrack:
+    case kScrollbarVerticalTrack:
+      PaintScrollbarTrack(canvas, hdc, part, state, rect,
+                          extra.scrollbar_track);
+      return;
+    case kTabPanelBackground:
+      PaintTabPanelBackground(hdc, rect);
+      return;
+    case kTextField:
+      PaintTextField(hdc, part, state, rect, extra.text_field);
+      return;
+    case kTrackbarThumb:
+    case kTrackbarTrack:
+      PaintTrackbar(canvas, hdc, part, state, rect, extra.trackbar);
+      return;
+    case kWindowResizeGripper:
+      PaintWindowResizeGripper(hdc, rect);
+      return;
+    default:
+      NOTREACHED();
+  }
 }
 
 NativeThemeWin::NativeThemeWin()
@@ -374,94 +406,6 @@ void NativeThemeWin::PaintMenuBackground(SkCanvas* canvas,
   SkPaint paint;
   paint.setColor(GetSystemColor(NativeTheme::kColorId_MenuBackgroundColor));
   canvas->drawRect(gfx::RectToSkRect(rect), paint);
-}
-
-void NativeThemeWin::PaintDirect(SkCanvas* canvas,
-                                 Part part,
-                                 State state,
-                                 const gfx::Rect& rect,
-                                 const ExtraParams& extra) const {
-  skia::ScopedPlatformPaint scoped_platform_paint(canvas);
-  HDC hdc = scoped_platform_paint.GetPlatformSurface();
-
-  switch (part) {
-    case kCheckbox:
-      PaintCheckbox(hdc, part, state, rect, extra.button);
-      return;
-    case kInnerSpinButton:
-      PaintSpinButton(hdc, part, state, rect, extra.inner_spin);
-      return;
-    case kMenuList:
-      PaintMenuList(hdc, state, rect, extra.menu_list);
-      return;
-    case kMenuCheck:
-      PaintMenuCheck(hdc, state, rect, extra.menu_check);
-      return;
-    case kMenuCheckBackground:
-      PaintMenuCheckBackground(hdc, state, rect);
-      return;
-    case kMenuPopupArrow:
-      PaintMenuArrow(hdc, state, rect, extra.menu_arrow);
-      return;
-    case kMenuPopupBackground:
-      PaintMenuBackground(hdc, rect);
-      return;
-    case kMenuPopupGutter:
-      PaintMenuGutter(hdc, rect);
-      return;
-    case kMenuPopupSeparator:
-      PaintMenuSeparator(hdc, rect);
-      return;
-    case kMenuItemBackground:
-      PaintMenuItemBackground(hdc, state, rect, extra.menu_item);
-      return;
-    case kProgressBar:
-      PaintProgressBar(hdc, rect, extra.progress_bar);
-      return;
-    case kPushButton:
-      PaintPushButton(hdc, part, state, rect, extra.button);
-      return;
-    case kRadio:
-      PaintRadioButton(hdc, part, state, rect, extra.button);
-      return;
-    case kScrollbarDownArrow:
-    case kScrollbarUpArrow:
-    case kScrollbarLeftArrow:
-    case kScrollbarRightArrow:
-      PaintScrollbarArrow(hdc, part, state, rect, extra.scrollbar_arrow);
-      return;
-    case kScrollbarHorizontalThumb:
-    case kScrollbarVerticalThumb:
-    case kScrollbarHorizontalGripper:
-    case kScrollbarVerticalGripper:
-      PaintScrollbarThumb(hdc, part, state, rect, extra.scrollbar_thumb);
-      return;
-    case kScrollbarHorizontalTrack:
-    case kScrollbarVerticalTrack:
-      PaintScrollbarTrack(canvas, hdc, part, state, rect,
-                          extra.scrollbar_track);
-      return;
-    case kScrollbarCorner:
-      canvas->drawColor(SK_ColorWHITE, SkXfermode::kSrc_Mode);
-      return;
-    case kTabPanelBackground:
-      PaintTabPanelBackground(hdc, rect);
-      return;
-    case kTextField:
-      PaintTextField(hdc, part, state, rect, extra.text_field);
-      return;
-    case kTrackbarThumb:
-    case kTrackbarTrack:
-      PaintTrackbar(canvas, hdc, part, state, rect, extra.trackbar);
-      return;
-    case kWindowResizeGripper:
-      PaintWindowResizeGripper(hdc, rect);
-      return;
-    case kSliderTrack:
-    case kSliderThumb:
-    case kMaxPart:
-      NOTREACHED();
-  }
 }
 
 SkColor NativeThemeWin::GetSystemColor(ColorId color_id) const {
@@ -672,76 +616,6 @@ SkColor NativeThemeWin::GetSystemColor(ColorId color_id) const {
   return GetAuraColor(color_id, this);
 }
 
-void NativeThemeWin::PaintIndirect(SkCanvas* canvas,
-                                   Part part,
-                                   State state,
-                                   const gfx::Rect& rect,
-                                   const ExtraParams& extra) const {
-  // TODO(asvitkine): This path is pretty inefficient - for each paint operation
-  //                  it creates a new offscreen bitmap Skia canvas. This can
-  //                  be sped up by doing it only once per part/state and
-  //                  keeping a cache of the resulting bitmaps.
-
-  // Create an offscreen canvas that is backed by an HDC.
-  sk_sp<skia::BitmapPlatformDevice> device(
-      skia::BitmapPlatformDevice::Create(
-          rect.width(), rect.height(), false, NULL));
-  DCHECK(device);
-  SkCanvas offscreen_canvas(device.get());
-  DCHECK(skia::SupportsPlatformPaint(&offscreen_canvas));
-
-  // Some of the Windows theme drawing operations do not write correct alpha
-  // values for fully-opaque pixels; instead the pixels get alpha 0. This is
-  // especially a problem on Windows XP or when using the Classic theme.
-  //
-  // To work-around this, mark all pixels with a placeholder value, to detect
-  // which pixels get touched by the paint operation. After paint, set any
-  // pixels that have alpha 0 to opaque and placeholders to fully-transparent.
-  const SkColor placeholder = SkColorSetARGB(1, 0, 0, 0);
-  offscreen_canvas.clear(placeholder);
-
-  // Offset destination rects to have origin (0,0).
-  gfx::Rect adjusted_rect(rect.size());
-  ExtraParams adjusted_extra(extra);
-  switch (part) {
-    case kProgressBar:
-      adjusted_extra.progress_bar.value_rect_x = 0;
-      adjusted_extra.progress_bar.value_rect_y = 0;
-      break;
-    case kScrollbarHorizontalTrack:
-    case kScrollbarVerticalTrack:
-      adjusted_extra.scrollbar_track.track_x = 0;
-      adjusted_extra.scrollbar_track.track_y = 0;
-      break;
-    default:
-      break;
-  }
-  // Draw the theme controls using existing HDC-drawing code.
-  PaintDirect(&offscreen_canvas, part, state, adjusted_rect, adjusted_extra);
-
-  SkBitmap bitmap = skia::ReadPixels(&offscreen_canvas);
-
-  // Post-process the pixels to fix up the alpha values (see big comment above).
-  const SkPMColor placeholder_value = SkPreMultiplyColor(placeholder);
-  const int pixel_count = rect.width() * rect.height();
-  SkPMColor* pixels = bitmap.getAddr32(0, 0);
-  for (int i = 0; i < pixel_count; i++) {
-    if (pixels[i] == placeholder_value) {
-      // Pixel wasn't touched - make it fully transparent.
-      pixels[i] = SkPackARGB32(0, 0, 0, 0);
-    } else if (SkGetPackedA32(pixels[i]) == 0) {
-      // Pixel was touched but has incorrect alpha of 0, make it fully opaque.
-      pixels[i] = SkPackARGB32(0xFF,
-                               SkGetPackedR32(pixels[i]),
-                               SkGetPackedG32(pixels[i]),
-                               SkGetPackedB32(pixels[i]));
-    }
-  }
-
-  // Draw the offscreen bitmap to the destination canvas.
-  canvas->drawBitmap(bitmap, rect.x(), rect.y());
-}
-
 HRESULT NativeThemeWin::GetThemePartSize(ThemeName theme_name,
                                          HDC hdc,
                                          int part_id,
@@ -843,33 +717,6 @@ HRESULT NativeThemeWin::PaintButton(HDC hdc,
   return S_OK;
 }
 
-HRESULT NativeThemeWin::PaintMenuSeparator(
-    HDC hdc,
-    const gfx::Rect& rect) const {
-  RECT rect_win = rect.ToRECT();
-
-  HANDLE handle = GetThemeHandle(MENU);
-  if (handle && draw_theme_) {
-    // Delta is needed for non-classic to move separator up slightly.
-    --rect_win.top;
-    --rect_win.bottom;
-    return draw_theme_(handle, hdc, MENU_POPUPSEPARATOR, MPI_NORMAL, &rect_win,
-                       NULL);
-  }
-
-  DrawEdge(hdc, &rect_win, EDGE_ETCHED, BF_TOP);
-  return S_OK;
-}
-
-HRESULT NativeThemeWin::PaintMenuGutter(HDC hdc,
-                                        const gfx::Rect& rect) const {
-  RECT rect_win = rect.ToRECT();
-  HANDLE handle = GetThemeHandle(MENU);
-  return (handle && draw_theme_) ?
-      draw_theme_(handle, hdc, MENU_POPUPGUTTER, MPI_NORMAL, &rect_win, NULL) :
-      E_NOTIMPL;
-}
-
 HRESULT NativeThemeWin::PaintMenuArrow(
     HDC hdc,
     State state,
@@ -916,22 +763,6 @@ HRESULT NativeThemeWin::PaintMenuArrow(
                            state);
 }
 
-HRESULT NativeThemeWin::PaintMenuBackground(HDC hdc,
-                                            const gfx::Rect& rect) const {
-  HANDLE handle = GetThemeHandle(MENU);
-  RECT rect_win = rect.ToRECT();
-  if (handle && draw_theme_) {
-    HRESULT result = draw_theme_(handle, hdc, MENU_POPUPBACKGROUND, 0,
-                                 &rect_win, NULL);
-    FrameRect(hdc, &rect_win, GetSysColorBrush(COLOR_3DSHADOW));
-    return result;
-  }
-
-  FillRect(hdc, &rect_win, GetSysColorBrush(COLOR_MENU));
-  DrawEdge(hdc, &rect_win, EDGE_RAISED, BF_RECT);
-  return S_OK;
-}
-
 HRESULT NativeThemeWin::PaintMenuCheck(
     HDC hdc,
     State state,
@@ -962,37 +793,6 @@ HRESULT NativeThemeWin::PaintMenuCheckBackground(HDC hdc,
   RECT rect_win = rect.ToRECT();
   return draw_theme_(handle, hdc, MENU_POPUPCHECKBACKGROUND, state_id,
                      &rect_win, NULL);
-}
-
-HRESULT NativeThemeWin::PaintMenuItemBackground(
-    HDC hdc,
-    State state,
-    const gfx::Rect& rect,
-    const MenuItemExtraParams& extra) const {
-  HANDLE handle = GetThemeHandle(MENU);
-  RECT rect_win = rect.ToRECT();
-  int state_id = MPI_NORMAL;
-  switch (state) {
-    case kDisabled:
-      state_id = extra.is_selected ? MPI_DISABLEDHOT : MPI_DISABLED;
-      break;
-    case kHovered:
-      state_id = MPI_HOT;
-      break;
-    case kNormal:
-      break;
-    case kPressed:
-    case kNumStates:
-      NOTREACHED();
-      break;
-  }
-
-  if (handle && draw_theme_)
-    return draw_theme_(handle, hdc, MENU_POPUPITEM, state_id, &rect_win, NULL);
-
-  if (extra.is_selected)
-    FillRect(hdc, &rect_win, GetSysColorBrush(COLOR_HIGHLIGHT));
-  return S_OK;
 }
 
 HRESULT NativeThemeWin::PaintPushButton(HDC hdc,
