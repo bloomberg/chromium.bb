@@ -181,6 +181,11 @@ if (use_system_harfbuzz) {
         "src/hb-coretext.h",
       ]
       defines += [ "HAVE_CORETEXT" ]
+      libs = [
+        "CoreFoundation.framework",
+        "CoreGraphics.framework",
+        "CoreText.framework",
+      ]
     }
 
     # When without -fvisibility=hidden for pango to use the harfbuzz
