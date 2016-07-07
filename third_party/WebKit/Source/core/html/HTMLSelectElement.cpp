@@ -887,10 +887,7 @@ void HTMLSelectElement::resetToDefaultSelection(ResetReason reason)
     // We can't use HTMLSelectElement::options here because this function is
     // called in Node::insertedInto and Node::removedFrom before invalidating
     // node collections.
-    for (auto& item : listItems()) {
-        if (!isHTMLOptionElement(item))
-            continue;
-        HTMLOptionElement* option = toHTMLOptionElement(item);
+    for (const auto& option : optionList()) {
         if (option->selected()) {
             if (lastSelectedOption) {
                 lastSelectedOption->setSelectedState(false);

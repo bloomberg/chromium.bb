@@ -31,6 +31,7 @@
 #include "core/html/HTMLContentElement.h"
 #include "core/html/HTMLFormControlElementWithState.h"
 #include "core/html/HTMLOptionsCollection.h"
+#include "core/html/forms/OptionList.h"
 #include "core/html/forms/TypeAhead.h"
 #include "wtf/Vector.h"
 
@@ -83,14 +84,23 @@ public:
     String suggestedValue() const;
     void setSuggestedValue(const String&);
 
+    // |options| and |selectedOptions| are not safe to be used in in
+    // HTMLOptionElement::removedFrom() and insertedInto() because their cache
+    // is inconsistent in these functions.
     HTMLOptionsCollection* options();
     HTMLCollection* selectedOptions();
+
+    // This is similar to |options| HTMLCollection.  But this is safe in
+    // HTMLOptionElement::removedFrom() and insertedInto().
+    // OptionList supports only forward iteration.
+    OptionList optionList() { return OptionList(*this); }
 
     void optionElementChildrenChanged(const HTMLOptionElement&);
 
     void invalidateSelectedItems();
 
     using ListItems = HeapVector<Member<HTMLElement>>;
+    // We prefer |optionList()| to |listItems()|.
     const ListItems& listItems() const;
 
     void accessKeyAction(bool sendMouseEvents) override;
