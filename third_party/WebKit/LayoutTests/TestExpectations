@@ -850,7 +850,8 @@ crbug.com/417782 virtual/rootlayerscrolls/fast/scrolling/scrollbar-tickmarks-sty
 
 crbug.com/600087 virtual/gpu-rasterization/fast/images/pixel-crack-image-background-webkit-transform-scale.html [ Timeout ]
 
-crbug.com/624233 [ Win10 ] virtual/gpu-rasterization/fast/images/color-profile-background-clip-text.html [ Failure ]
+# Flaky on Win10 and Win7
+crbug.com/624233 [ Win ] virtual/gpu-rasterization/fast/images/color-profile-background-clip-text.html [ Failure ]
 
 crbug.com/385014 crbug.com/410145 accessibility/canvas-fallback-content-2.html [ Pass Failure Timeout ]
 
