@@ -367,6 +367,10 @@ class MEDIA_GPU_EXPORT AndroidVideoDecodeAccelerator
   static bool UseTextureCopyForDeferredStrategy(
       const gpu::GpuPreferences& gpu_preferences);
 
+  // Indicates if MediaCodec should not be used for software decoding since we
+  // have safer versions elsewhere.
+  bool IsMediaCodecSoftwareDecodingForbidden() const;
+
   // Used to DCHECK that we are called on the correct thread.
   base::ThreadChecker thread_checker_;
 

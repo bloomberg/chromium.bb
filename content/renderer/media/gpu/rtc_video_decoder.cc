@@ -35,7 +35,14 @@ namespace content {
 const int32_t RTCVideoDecoder::ID_LAST = 0x3FFFFFFF;
 const int32_t RTCVideoDecoder::ID_HALF = 0x20000000;
 const int32_t RTCVideoDecoder::ID_INVALID = -1;
+
+// Android vp8, vp9 decoders are quite finicky and often out of date, so give
+// them much less leeway on errors than other platforms.
+#if defined(OS_ANDROID)
+const uint32_t kNumVDAErrorsBeforeSWFallback = 5;
+#else
 const uint32_t kNumVDAErrorsBeforeSWFallback = 50;
+#endif
 
 // Maximum number of concurrent VDA::Decode() operations RVD will maintain.
 // Higher values allow better pipelining in the GPU, but also require more

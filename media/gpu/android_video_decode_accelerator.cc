@@ -509,9 +509,7 @@ bool AndroidVideoDecodeAccelerator::Initialize(const Config& config,
 
   // Only use MediaCodec for VP8/9 if it's likely backed by hardware
   // or if the stream is encrypted.
-  if ((codec_config_->codec_ == kCodecVP8 ||
-       codec_config_->codec_ == kCodecVP9) &&
-      !config_.is_encrypted &&
+  if (IsMediaCodecSoftwareDecodingForbidden() &&
       VideoCodecBridge::IsKnownUnaccelerated(codec_config_->codec_,
                                              MEDIA_CODEC_DECODER)) {
     DVLOG(1) << "Initialization failed: "
@@ -1097,6 +1095,15 @@ void AndroidVideoDecodeAccelerator::ConfigureMediaCodecAsynchronously() {
   // outgoing codec for ReleaseMediaCodec().
   codec_config_->allow_autodetection_ =
       g_avda_timer.Pointer()->IsCodecAutodetectionProbablySafe();
+
+  // If autodetection is disallowed, fall back to Chrome's software decoders
+  // instead of using the software decoders provided by MediaCodec.
+  if (!codec_config_->allow_autodetection_ &&
+      IsMediaCodecSoftwareDecodingForbidden()) {
+    OnCodecConfigured(nullptr);
+    return;
+  }
+
   codec_config_->notify_completion_ = codec_config_->allow_autodetection_;
   if (codec_config_->allow_autodetection_)
     g_avda_timer.Pointer()->OnAsyncCodecAutodetectionStarted();
@@ -1769,6 +1776,14 @@ AndroidVideoDecodeAccelerator::GetCapabilities(
   }
 
   return capabilities;
+}
+
+bool AndroidVideoDecodeAccelerator::IsMediaCodecSoftwareDecodingForbidden()
+    const {
+  // Prevent MediaCodec from using its internal software decoders when we have
+  // more secure and up to date versions in the renderer process.
+  return !config_.is_encrypted && (codec_config_->codec_ == media::kCodecVP8 ||
+                                   codec_config_->codec_ == media::kCodecVP9);
 }
 
 }  // namespace media
