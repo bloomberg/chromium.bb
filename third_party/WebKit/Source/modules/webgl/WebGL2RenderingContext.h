@@ -32,7 +32,6 @@ public:
 
     CanvasRenderingContext::ContextType getContextType() const override { return CanvasRenderingContext::ContextWebgl2; }
     ImageBitmap* transferToImageBitmap(ExceptionState&) final;
-    unsigned version() const override { return 2; }
     String contextName() const override { return "WebGL2RenderingContext"; }
     void registerContextExtensions() override;
     void setCanvasGetContextResult(RenderingContext&) final;

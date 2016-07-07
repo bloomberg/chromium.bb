@@ -230,7 +230,9 @@ public:
     }
 
     DrawingBufferForTests(std::unique_ptr<WebGraphicsContext3DProvider> contextProvider, std::unique_ptr<Extensions3DUtil> extensionsUtil, PreserveDrawingBuffer preserve)
-        : DrawingBuffer(std::move(contextProvider), std::move(extensionsUtil), false /* discardFramebufferSupported */, true /* wantAlphaChannel */, false /* premultipliedAlpha */, preserve, false /* wantDepth */, false /* wantStencil */)
+        : DrawingBuffer(std::move(contextProvider), std::move(extensionsUtil), false /* discardFramebufferSupported */,
+            true /* wantAlphaChannel */, false /* premultipliedAlpha */, preserve, WebGL1,
+            false /* wantDepth */, false /* wantStencil */)
         , m_live(0)
     { }
 
@@ -727,7 +729,8 @@ TEST(DrawingBufferDepthStencilTest, packedDepthStencilSupported)
             wantDepthBuffer,
             wantStencilBuffer,
             wantAntialiasing,
-            preserve);
+            preserve,
+            DrawingBuffer::WebGL1);
 
         // When we request a depth or a stencil buffer, we will get both.
         EXPECT_EQ(cases[i].requestDepth || cases[i].requestStencil, drawingBuffer->hasDepthBuffer());

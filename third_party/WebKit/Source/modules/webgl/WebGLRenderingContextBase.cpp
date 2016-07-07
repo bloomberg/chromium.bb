@@ -885,15 +885,21 @@ bool isSRGBFormat(GLenum internalformat)
 
 } // namespace
 
-WebGLRenderingContextBase::WebGLRenderingContextBase(OffscreenCanvas* passedOffscreenCanvas, std::unique_ptr<WebGraphicsContext3DProvider> contextProvider, const WebGLContextAttributes& requestedAttributes)
-    : WebGLRenderingContextBase(nullptr, passedOffscreenCanvas, std::move(contextProvider), requestedAttributes)
+WebGLRenderingContextBase::WebGLRenderingContextBase(OffscreenCanvas* passedOffscreenCanvas,
+    std::unique_ptr<WebGraphicsContext3DProvider> contextProvider,
+    const WebGLContextAttributes& requestedAttributes, unsigned version)
+    : WebGLRenderingContextBase(nullptr, passedOffscreenCanvas, std::move(contextProvider), requestedAttributes, version)
 { }
 
-WebGLRenderingContextBase::WebGLRenderingContextBase(HTMLCanvasElement* passedCanvas, std::unique_ptr<WebGraphicsContext3DProvider> contextProvider, const WebGLContextAttributes& requestedAttributes)
-    : WebGLRenderingContextBase(passedCanvas, nullptr, std::move(contextProvider), requestedAttributes)
+WebGLRenderingContextBase::WebGLRenderingContextBase(HTMLCanvasElement* passedCanvas,
+    std::unique_ptr<WebGraphicsContext3DProvider> contextProvider,
+    const WebGLContextAttributes& requestedAttributes, unsigned version)
+    : WebGLRenderingContextBase(passedCanvas, nullptr, std::move(contextProvider), requestedAttributes, version)
 { }
 
-WebGLRenderingContextBase::WebGLRenderingContextBase(HTMLCanvasElement* passedCanvas, OffscreenCanvas* passedOffscreenCanvas, std::unique_ptr<WebGraphicsContext3DProvider> contextProvider, const WebGLContextAttributes& requestedAttributes)
+WebGLRenderingContextBase::WebGLRenderingContextBase(HTMLCanvasElement* passedCanvas,
+    OffscreenCanvas* passedOffscreenCanvas, std::unique_ptr<WebGraphicsContext3DProvider> contextProvider,
+    const WebGLContextAttributes& requestedAttributes, unsigned version)
     : CanvasRenderingContext(passedCanvas, passedOffscreenCanvas)
     , m_isHidden(false)
     , m_contextLostMode(NotLostContext)
@@ -913,6 +919,7 @@ WebGLRenderingContextBase::WebGLRenderingContextBase(HTMLCanvasElement* passedCa
     , m_isOESTextureHalfFloatFormatsTypesAdded(false)
     , m_isWebGLDepthTextureFormatsTypesAdded(false)
     , m_isEXTsRGBFormatsTypesAdded(false)
+    , m_version(version)
 {
     ASSERT(contextProvider);
 
@@ -952,6 +959,14 @@ PassRefPtr<DrawingBuffer> WebGLRenderingContextBase::createDrawingBuffer(std::un
     bool wantStencilBuffer = m_requestedAttributes.stencil();
     bool wantAntialiasing = m_requestedAttributes.antialias();
     DrawingBuffer::PreserveDrawingBuffer preserve = m_requestedAttributes.preserveDrawingBuffer() ? DrawingBuffer::Preserve : DrawingBuffer::Discard;
+    DrawingBuffer::WebGLVersion webGLVersion = DrawingBuffer::WebGL1;
+    if (version() == 1) {
+        webGLVersion = DrawingBuffer::WebGL1;
+    } else if (version() == 2) {
+        webGLVersion = DrawingBuffer::WebGL2;
+    } else {
+        NOTREACHED();
+    }
     return DrawingBuffer::create(
         std::move(contextProvider),
         clampedCanvasSize(),
@@ -960,7 +975,8 @@ PassRefPtr<DrawingBuffer> WebGLRenderingContextBase::createDrawingBuffer(std::un
         wantDepthBuffer,
         wantStencilBuffer,
         wantAntialiasing,
-        preserve);
+        preserve,
+        webGLVersion);
 }
 
 void WebGLRenderingContextBase::initializeNewContext()

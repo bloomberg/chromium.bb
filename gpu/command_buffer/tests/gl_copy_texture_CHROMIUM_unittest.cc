@@ -73,6 +73,20 @@ class GLCopyTextureCHROMIUMTest
     }
   }
 
+  GLenum ExtractFormatFrom(GLenum internalformat) {
+    switch (internalformat) {
+      case GL_RGBA8_OES:
+        return GL_RGBA;
+      case GL_RGB8_OES:
+        return GL_RGB;
+      case GL_BGRA8_EXT:
+        return GL_BGRA_EXT;
+      default:
+        NOTREACHED();
+        return GL_NONE;
+    }
+  }
+
   GLManager gl_;
   GLuint textures_[2];
   GLuint framebuffer_id_;
@@ -124,41 +138,53 @@ TEST_P(GLCopyTextureCHROMIUMTest, ImmutableTexture) {
     return;
   }
   CopyType copy_type = GetParam();
+  GLenum src_internal_formats[] = {GL_RGB8_OES, GL_RGBA8_OES, GL_BGRA8_EXT};
+  GLenum dest_internal_formats[] = {GL_RGB8_OES, GL_RGBA8_OES, GL_BGRA8_EXT};
 
-  uint8_t pixels[1 * 4] = {255u, 0u, 0u, 255u};
+  uint8_t pixels[1 * 4] = {255u, 0u, 255u, 255u};
 
-  glBindTexture(GL_TEXTURE_2D, textures_[0]);
-  glTexStorage2DEXT(GL_TEXTURE_2D, 1, GL_RGBA8_OES, 1, 1);
-  glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE,
-                  pixels);
+  for (auto src_internal_format : src_internal_formats) {
+    for (auto dest_internal_format : dest_internal_formats) {
+      glDeleteTextures(2, textures_);
+      glDeleteFramebuffers(1, &framebuffer_id_);
+      CreateAndBindDestinationTextureAndFBO(GL_TEXTURE_2D);
 
-  glBindTexture(GL_TEXTURE_2D, textures_[1]);
-  glTexStorage2DEXT(GL_TEXTURE_2D, 1, GL_RGBA8_OES, 1, 1);
-  glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D,
-                         textures_[1], 0);
-  EXPECT_TRUE(glGetError() == GL_NO_ERROR);
+      glBindTexture(GL_TEXTURE_2D, textures_[0]);
+      glTexStorage2DEXT(GL_TEXTURE_2D, 1, src_internal_format, 1, 1);
+      glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, 1, 1,
+                      ExtractFormatFrom(src_internal_format), GL_UNSIGNED_BYTE,
+                      pixels);
 
-  if (copy_type == TexImage) {
-    glCopyTextureCHROMIUM(textures_[0], textures_[1], GL_RGBA,
-                          GL_UNSIGNED_BYTE, false, false, false);
-    EXPECT_TRUE(glGetError() == GL_INVALID_OPERATION);
-  } else {
-    glCopySubTextureCHROMIUM(textures_[0], textures_[1], 0, 0, 0,
-                             0, 1, 1, false, false, false);
-    EXPECT_TRUE(glGetError() == GL_NO_ERROR);
+      glBindTexture(GL_TEXTURE_2D, textures_[1]);
+      glTexStorage2DEXT(GL_TEXTURE_2D, 1, dest_internal_format, 1, 1);
+      glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+                             GL_TEXTURE_2D, textures_[1], 0);
+      EXPECT_TRUE(glGetError() == GL_NO_ERROR);
 
-    // Check the FB is still bound.
-    GLint value = 0;
-    glGetIntegerv(GL_FRAMEBUFFER_BINDING, &value);
-    GLuint fb_id = value;
-    EXPECT_EQ(framebuffer_id_, fb_id);
+      if (copy_type == TexImage) {
+        glCopyTextureCHROMIUM(textures_[0], textures_[1],
+                              ExtractFormatFrom(dest_internal_format),
+                              GL_UNSIGNED_BYTE, false, false, false);
+        EXPECT_TRUE(glGetError() == GL_INVALID_OPERATION);
+      } else {
+        glCopySubTextureCHROMIUM(textures_[0], textures_[1], 0, 0, 0, 0, 1, 1,
+                                 false, false, false);
+        EXPECT_TRUE(glGetError() == GL_NO_ERROR);
 
-    // Check that FB is complete.
-    EXPECT_EQ(static_cast<GLenum>(GL_FRAMEBUFFER_COMPLETE),
-              glCheckFramebufferStatus(GL_FRAMEBUFFER));
+        // Check the FB is still bound.
+        GLint value = 0;
+        glGetIntegerv(GL_FRAMEBUFFER_BINDING, &value);
+        GLuint fb_id = value;
+        EXPECT_EQ(framebuffer_id_, fb_id);
 
-    GLTestHelper::CheckPixels(0, 0, 1, 1, 0, pixels);
-    EXPECT_TRUE(GL_NO_ERROR == glGetError());
+        // Check that FB is complete.
+        EXPECT_EQ(static_cast<GLenum>(GL_FRAMEBUFFER_COMPLETE),
+                  glCheckFramebufferStatus(GL_FRAMEBUFFER));
+
+        GLTestHelper::CheckPixels(0, 0, 1, 1, 0, pixels);
+        EXPECT_TRUE(GL_NO_ERROR == glGetError());
+      }
+    }
   }
 }
 

@@ -123,12 +123,12 @@ void WebGLRenderingContext::Factory::onError(HTMLCanvasElement* canvas, const St
 }
 
 WebGLRenderingContext::WebGLRenderingContext(HTMLCanvasElement* passedCanvas, std::unique_ptr<WebGraphicsContext3DProvider> contextProvider, const WebGLContextAttributes& requestedAttributes)
-    : WebGLRenderingContextBase(passedCanvas, std::move(contextProvider), requestedAttributes)
+    : WebGLRenderingContextBase(passedCanvas, std::move(contextProvider), requestedAttributes, 1)
 {
 }
 
 WebGLRenderingContext::WebGLRenderingContext(OffscreenCanvas* passedOffscreenCanvas, std::unique_ptr<WebGraphicsContext3DProvider> contextProvider, const WebGLContextAttributes& requestedAttributes)
-    : WebGLRenderingContextBase(passedOffscreenCanvas, std::move(contextProvider), requestedAttributes)
+    : WebGLRenderingContextBase(passedOffscreenCanvas, std::move(contextProvider), requestedAttributes, 1)
 {
 }
 

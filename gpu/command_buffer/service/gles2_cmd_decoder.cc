@@ -14411,15 +14411,19 @@ bool GLES2DecoderImpl::ValidateCopyTextureCHROMIUMInternalFormats(
   // The destination format should be GL_RGB, or GL_RGBA. GL_ALPHA,
   // GL_LUMINANCE, and GL_LUMINANCE_ALPHA are not supported because they are not
   // renderable on some platforms.
-  bool valid_dest_format = dest_internal_format == GL_RGB ||
-                           dest_internal_format == GL_RGBA ||
-                           dest_internal_format == GL_BGRA_EXT;
+  bool valid_dest_format =
+      dest_internal_format == GL_RGB || dest_internal_format == GL_RGBA ||
+      dest_internal_format == GL_RGB8 || dest_internal_format == GL_RGBA8 ||
+      dest_internal_format == GL_BGRA_EXT ||
+      dest_internal_format == GL_BGRA8_EXT;
   bool valid_source_format =
       source_internal_format == GL_RED || source_internal_format == GL_ALPHA ||
       source_internal_format == GL_RGB || source_internal_format == GL_RGBA ||
+      source_internal_format == GL_RGB8 || source_internal_format == GL_RGBA8 ||
       source_internal_format == GL_LUMINANCE ||
       source_internal_format == GL_LUMINANCE_ALPHA ||
       source_internal_format == GL_BGRA_EXT ||
+      source_internal_format == GL_BGRA8_EXT ||
       source_internal_format == GL_RGB_YCBCR_420V_CHROMIUM ||
       source_internal_format == GL_RGB_YCBCR_422_CHROMIUM;
   if (!valid_source_format || !valid_dest_format) {
