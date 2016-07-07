@@ -389,7 +389,8 @@ void InspectorOverlay::rebuildOverlayPage()
     LocalFrame* frame = toLocalFrame(overlayPage()->mainFrame());
     frame->view()->resize(viewportSize);
     overlayPage()->frameHost().visualViewport().setSize(viewportSize);
-    frame->setPageZoomFactor(windowToViewportScale());
+    float windowToViewportScale = m_webViewImpl->chromeClient().windowToViewportScalar(1.0f);
+    frame->setPageZoomFactor(windowToViewportScale);
 
     reset(viewportSize, visibleRectInDocument.location());
 
@@ -445,7 +446,7 @@ void InspectorOverlay::drawQuadHighlight()
     if (!m_highlightQuad)
         return;
 
-    InspectorHighlight highlight(windowToViewportScale());
+    InspectorHighlight highlight;
     highlight.appendQuad(*m_highlightQuad, m_quadHighlightConfig.content, m_quadHighlightConfig.contentOutline);
     evaluateInOverlay("drawHighlight", highlight.asProtocolValue());
 }
@@ -460,11 +461,6 @@ void InspectorOverlay::drawViewSize()
 {
     if (m_resizeTimerActive && m_drawViewSize)
         evaluateInOverlay("drawViewSize", "");
-}
-
-float InspectorOverlay::windowToViewportScale() const
-{
-    return m_webViewImpl->chromeClient().windowToViewportScalar(1.0f);
 }
 
 Page* InspectorOverlay::overlayPage()
@@ -548,7 +544,8 @@ void InspectorOverlay::reset(const IntSize& viewportSize, const IntPoint& docume
 
     // The zoom factor in the overlay frame already has been multiplied by the window to viewport scale
     // (aka device scale factor), so cancel it.
-    resetData->setNumber("pageZoomFactor", m_webViewImpl->mainFrameImpl()->frame()->pageZoomFactor() / windowToViewportScale());
+    float windowToViewportScale = m_webViewImpl->chromeClient().windowToViewportScalar(1.0f);
+    resetData->setNumber("pageZoomFactor", m_webViewImpl->mainFrameImpl()->frame()->pageZoomFactor() / windowToViewportScale);
 
     resetData->setNumber("scrollX", documentScrollOffset.x());
     resetData->setNumber("scrollY", documentScrollOffset.y());
