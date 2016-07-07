@@ -20,3 +20,16 @@ function test_with_window(f, name) {
     });
   }, name);
 }
+
+function assert_throws_dom_exception(global_context, code, func, description) {
+  let exception;
+  assert_throws(code, () => {
+    try {
+      func.call(this);
+    } catch(e) {
+      exception = e;
+      throw e;
+    }
+  }, description);
+  assert_true(exception instanceof global_context.DOMException, 'DOMException on the appropriate window');
+}

@@ -12,19 +12,6 @@
 
 'use strict';
 
-function assert_throws_dom_exception(global_context, code, func, description) {
-  let exception;
-  assert_throws(code, () => {
-    try {
-      func.call(this);
-    } catch(e) {
-      exception = e;
-      throw e;
-    }
-  }, description);
-  assert_true(exception instanceof global_context.DOMException, 'DOMException on the appropriate window');
-}
-
 test_with_window((w) => {
   assert_throws(TypeError.prototype, () => {
     w.customElements.define('a-a', 42);
