@@ -15,6 +15,7 @@ const char kInstallEventHistogram[] = "AppBanners.InstallEvent";
 const char kMinutesHistogram[] =
     "AppBanners.MinutesFromFirstVisitToBannerShown";
 const char kUserResponseHistogram[] = "AppBanners.UserResponse";
+const char kBeforeInstallEventHistogram[] = "AppBanners.BeforeInstallEvent";
 
 void TrackDismissEvent(int event) {
   DCHECK_LT(DISMISS_EVENT_MIN, event);
@@ -46,6 +47,12 @@ void TrackUserResponse(int event) {
   DCHECK_LT(USER_RESPONSE_MIN, event);
   DCHECK_LT(event, USER_RESPONSE_MAX);
   UMA_HISTOGRAM_SPARSE_SLOWLY(kUserResponseHistogram, event);
+}
+
+void TrackBeforeInstallEvent(int event) {
+  DCHECK_LT(BEFORE_INSTALL_EVENT_MIN, event);
+  DCHECK_LT(event, BEFORE_INSTALL_EVENT_MAX);
+  UMA_HISTOGRAM_SPARSE_SLOWLY(kBeforeInstallEventHistogram, event);
 }
 
 }  // namespace banners

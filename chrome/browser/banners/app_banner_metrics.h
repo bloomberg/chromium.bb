@@ -7,7 +7,7 @@
 
 namespace banners {
 
-// Keep in sync with the values defined in histograms.xml.
+// This enum backs a UMA histogram, so it should be treated as append-only.
 enum DisplayEvent {
   DISPLAY_EVENT_MIN = 0,
   DISPLAY_EVENT_BANNER_REQUESTED = 1,
@@ -25,6 +25,7 @@ enum DisplayEvent {
   DISPLAY_EVENT_MAX = 13,
 };
 
+// This enum backs a UMA histogram, so it should be treated as append-only.
 enum InstallEvent {
   INSTALL_EVENT_MIN = 20,
   INSTALL_EVENT_NATIVE_APP_INSTALL_TRIGGERED = 21,
@@ -34,6 +35,7 @@ enum InstallEvent {
   INSTALL_EVENT_MAX = 25,
 };
 
+// This enum backs a UMA histogram, so it should be treated as append-only.
 enum DismissEvent {
   DISMISS_EVENT_MIN = 40,
   DISMISS_EVENT_ERROR = 41,
@@ -46,6 +48,7 @@ enum DismissEvent {
   DISMISS_EVENT_MAX = 48,
 };
 
+// This enum backs a UMA histogram, so it should be treated as append-only.
 enum UserResponse {
   USER_RESPONSE_MIN = 0,
   USER_RESPONSE_NATIVE_APP_ACCEPTED = 1,
@@ -57,17 +60,31 @@ enum UserResponse {
   USER_RESPONSE_MAX = 7,
 };
 
+// This enum backs a UMA histogram, so it should be treated as append-only.
+enum BeforeInstallEvent {
+  BEFORE_INSTALL_EVENT_MIN = 0,
+  BEFORE_INSTALL_EVENT_CREATED = 1,
+  BEFORE_INSTALL_EVENT_COMPLETE = 2,
+  BEFORE_INSTALL_EVENT_NO_ACTION = 3,
+  BEFORE_INSTALL_EVENT_PREVENT_DEFAULT_CALLED = 4,
+  BEFORE_INSTALL_EVENT_PROMPT_CALLED_AFTER_PREVENT_DEFAULT = 5,
+  BEFORE_INSTALL_EVENT_PROMPT_NOT_CALLED_AFTER_PREVENT_DEFAULT = 6,
+  BEFORE_INSTALL_EVENT_MAX = 7,
+};
+
 extern const char kDismissEventHistogram[];
 extern const char kDisplayEventHistogram[];
 extern const char kInstallEventHistogram[];
 extern const char kMinutesHistogram[];
 extern const char kUserResponseHistogram[];
+extern const char kBeforeInstallEventHistogram[];
 
 void TrackDismissEvent(int event);
 void TrackDisplayEvent(int event);
 void TrackInstallEvent(int event);
 void TrackMinutesFromFirstVisitToBannerShown(int minutes);
 void TrackUserResponse(int event);
+void TrackBeforeInstallEvent(int event);
 
 };  // namespace banners
 
