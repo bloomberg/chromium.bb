@@ -57,6 +57,9 @@ class ASH_EXPORT ScreenOrientationController
       blink::WebScreenOrientationLockType lock_orientation);
   void UnlockOrientationForWindow(aura::Window* window);
 
+  // Unlock all and set the rotation back to the user specified rotation.
+  void UnlockAll();
+
   bool ScreenOrientationProviderSupported() const;
 
   bool ignore_display_configuration_updates() const {

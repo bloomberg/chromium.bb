@@ -9,6 +9,7 @@
 #include <memory>
 #include <vector>
 
+#include "ash/common/shell_observer.h"
 #include "base/macros.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "chrome/browser/ui/ash/launcher/app_window_launcher_controller.h"
@@ -36,6 +37,7 @@ class Profile;
 class ArcAppWindowLauncherController : public AppWindowLauncherController,
                                        public aura::EnvObserver,
                                        public aura::WindowObserver,
+                                       public ash::ShellObserver,
                                        public ArcAppListPrefs::Observer {
  public:
   ArcAppWindowLauncherController(ChromeLauncherController* owner,
@@ -65,6 +67,10 @@ class ArcAppWindowLauncherController : public AppWindowLauncherController,
       aura::Window* gained_active,
       aura::Window* lost_active) override;
 
+  // ash::ShellObserver:
+  void OnMaximizeModeStarted() override;
+  void OnMaximizeModeEnded() override;
+
   // ArcAppListPrefs::Observer:
   void OnAppReadyChanged(const std::string& app_id, bool ready) override;
   void OnAppRemoved(const std::string& app_id) override;
@@ -73,6 +79,9 @@ class ArcAppWindowLauncherController : public AppWindowLauncherController,
                      const std::string& activity) override;
   void OnTaskDestroyed(int task_id) override;
   void OnTaskSetActive(int32_t task_id) override;
+  void OnTaskOrientationLockRequested(
+      int32_t task_id,
+      const arc::mojom::OrientationLock orientation_lock) override;
 
  private:
   class AppWindow;
@@ -91,6 +100,8 @@ class ArcAppWindowLauncherController : public AppWindowLauncherController,
 
   void CheckForAppWindowWidget(aura::Window* window);
 
+  void SetOrientationLockForAppWindow(AppWindow* app_window);
+
   // AppWindowLauncherController:
   AppWindowLauncherItemController* ControllerForWindow(
       aura::Window* window) override;
@@ -102,6 +113,7 @@ class ArcAppWindowLauncherController : public AppWindowLauncherController,
   AppControllerMap app_controller_map_;
   std::vector<aura::Window*> observed_windows_;
   Profile* observed_profile_ = nullptr;
+  bool observing_shell_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(ArcAppWindowLauncherController);
 };

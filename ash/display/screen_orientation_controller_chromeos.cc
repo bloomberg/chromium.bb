@@ -112,6 +112,16 @@ void ScreenOrientationController::UnlockOrientationForWindow(
   ApplyLockForActiveWindow();
 }
 
+void ScreenOrientationController::UnlockAll() {
+  for (auto pair : locking_windows_)
+    pair.first->RemoveObserver(this);
+  locking_windows_.clear();
+  Shell::GetInstance()->activation_client()->RemoveObserver(this);
+  SetRotationLocked(false);
+  if (user_rotation_ != current_rotation_)
+    SetDisplayRotation(user_rotation_, display::Display::ROTATION_SOURCE_USER);
+}
+
 bool ScreenOrientationController::ScreenOrientationProviderSupported() const {
   return WmShell::Get()
              ->maximize_mode_controller()
@@ -386,11 +396,13 @@ void ScreenOrientationController::LoadDisplayRotationProperties() {
 void ScreenOrientationController::ApplyLockForActiveWindow() {
   aura::Window* active_window =
       Shell::GetInstance()->activation_client()->GetActiveWindow();
-  for (auto const& windows : locking_windows_) {
-    if (windows.first->TargetVisibility() &&
-        active_window->Contains(windows.first)) {
-      LockRotationToOrientation(windows.second);
-      return;
+  if (active_window) {
+    for (auto const& windows : locking_windows_) {
+      if (windows.first->TargetVisibility() &&
+          active_window->Contains(windows.first)) {
+        LockRotationToOrientation(windows.second);
+        return;
+      }
     }
   }
   SetRotationLocked(false);

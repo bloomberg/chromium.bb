@@ -60,7 +60,8 @@ class ArcAppListPrefs : public KeyedService,
             bool notifications_enabled,
             bool ready,
             bool showInLauncher,
-            bool shortcut);
+            bool shortcut,
+            arc::mojom::OrientationLock orientation_lock);
     ~AppInfo();
 
     std::string name;
@@ -74,6 +75,7 @@ class ArcAppListPrefs : public KeyedService,
     bool ready;
     bool showInLauncher;
     bool shortcut;
+    arc::mojom::OrientationLock orientation_lock;
   };
 
   struct PackageInfo {
@@ -119,6 +121,10 @@ class ArcAppListPrefs : public KeyedService,
 
     virtual void OnNotificationsEnabledChanged(
         const std::string& package_name, bool enabled) {}
+
+    virtual void OnTaskOrientationLockRequested(
+        int32_t task_id,
+        const arc::mojom::OrientationLock orientation_lock) {}
 
    protected:
     virtual ~Observer() {}
@@ -194,7 +200,7 @@ class ArcAppListPrefs : public KeyedService,
   void RemoveApp(const std::string& app_id);
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(ChromeLauncherControllerImplTest, ArcAppPinPolicy);
+  friend class ChromeLauncherControllerImplTest;
 
   // See the Create methods.
   ArcAppListPrefs(const base::FilePath& base_path, PrefService* prefs);
@@ -227,6 +233,9 @@ class ArcAppListPrefs : public KeyedService,
   void OnPackageModified(arc::mojom::ArcPackageInfoPtr package_info) override;
   void OnPackageListRefreshed(
       mojo::Array<arc::mojom::ArcPackageInfoPtr> packages) override;
+  void OnTaskOrientationLockRequested(
+      int32_t task_id,
+      const arc::mojom::OrientationLock orientation_lock) override;
 
   void AddAppAndShortcut(const std::string& name,
                          const std::string& package_name,
@@ -235,7 +244,8 @@ class ArcAppListPrefs : public KeyedService,
                          const std::string& icon_resource_id,
                          const bool sticky,
                          const bool notifications_enabled,
-                         const bool shortcut);
+                         const bool shortcut,
+                         arc::mojom::OrientationLock orientation_lock);
   void DisableAllApps();
   void RemoveAllApps();
   std::vector<std::string> GetAppIdsNoArcEnabledCheck() const;

@@ -18,12 +18,15 @@
 #include "ash/common/shelf/shelf_item_delegate_manager.h"
 #include "ash/common/shelf/shelf_model.h"
 #include "ash/common/shelf/shelf_model_observer.h"
+#include "ash/common/wm/maximize_mode/maximize_mode_controller.h"
 #include "ash/common/wm_shell.h"
+#include "ash/display/screen_orientation_controller_chromeos.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_helper.h"
 #include "ash/test/shelf_item_delegate_manager_test_api.h"
 #include "ash/test/test_session_state_delegate.h"
 #include "ash/test/test_shell_delegate.h"
+#include "ash/wm/window_util.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
@@ -98,12 +101,15 @@
 #include "ui/aura/client/window_tree_client.h"
 #include "ui/aura/window.h"
 #include "ui/base/models/menu_model.h"
+#include "ui/display/display.h"
+#include "ui/display/screen.h"
 #include "ui/views/widget/widget.h"
 
 using base::ASCIIToUTF16;
 using extensions::Extension;
 using extensions::Manifest;
 using extensions::UnloadedExtensionInfo;
+using arc::mojom::OrientationLock;
 
 namespace {
 const char* offline_gmail_url = "https://mail.google.com/mail/mu/u";
@@ -306,6 +312,10 @@ class ChromeLauncherControllerImplTest : public BrowserWithTestWindowTest {
   ~ChromeLauncherControllerImplTest() override {}
 
   void SetUp() override {
+    base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+    command_line->AppendSwitch(ash::switches::kAshUseFirstDisplayAsInternal);
+    command_line->AppendSwitch(ash::switches::kAshEnableTouchViewTesting);
+
     app_list::AppListSyncableServiceFactory::SetUseInTesting();
 
     BrowserWithTestWindowTest::SetUp();
@@ -832,6 +842,12 @@ class ChromeLauncherControllerImplTest : public BrowserWithTestWindowTest {
     base::RunLoop().RunUntilIdle();
   }
 
+  void EnableTabletMode(bool enable) {
+    ash::MaximizeModeController* controller =
+        ash::WmShell::Get()->maximize_mode_controller();
+    controller->EnableMaximizeModeWindowManager(enable);
+  }
+
   void ValidateArcState(bool arc_enabled,
                         bool arc_managed,
                         arc::ArcAuthService::State state,
@@ -843,18 +859,55 @@ class ChromeLauncherControllerImplTest : public BrowserWithTestWindowTest {
   }
 
   // Creates app window and set optional Arc application id.
-  views::Widget* CreateAppWindow(std::string* window_app_id) {
+  views::Widget* CreateArcWindow(std::string& window_app_id) {
     views::Widget::InitParams params(views::Widget::InitParams::TYPE_WINDOW);
     params.bounds = gfx::Rect(5, 5, 20, 20);
+    params.context = GetContext();
     views::Widget* widget = new views::Widget();
     widget->Init(params);
     widget->Show();
     widget->Activate();
-    if (window_app_id) {
-      exo::ShellSurface::SetApplicationId(widget->GetNativeWindow(),
-                                          window_app_id);
-    }
+    exo::ShellSurface::SetApplicationId(widget->GetNativeWindow(),
+                                        &window_app_id);
     return widget;
+  }
+
+  arc::mojom::AppInfo CreateAppInfo(const std::string& name,
+                                    const std::string& activity,
+                                    const std::string& package_name,
+                                    OrientationLock lock) {
+    arc::mojom::AppInfo appinfo;
+    appinfo.name = name;
+    appinfo.package_name = package_name;
+    appinfo.activity = activity;
+    appinfo.orientation_lock = lock;
+    return appinfo;
+  }
+
+  std::string AddArcAppAndShortcut(const arc::mojom::AppInfo& app_info) {
+    ArcAppListPrefs* const prefs = arc_test_.arc_app_list_prefs();
+    // Adding app to the prefs, and check that the app is accessible by id.
+    prefs->AddAppAndShortcut(
+        app_info.name, app_info.package_name, app_info.activity,
+        std::string() /* intent_uri */, std::string() /* icon_resource_id */,
+        false /* sticky */, true /* notifications_enabled */,
+        false /* shortcut */, app_info.orientation_lock);
+    const std::string app_id =
+        ArcAppListPrefs::GetAppId(app_info.package_name, app_info.activity);
+    EXPECT_TRUE(prefs->GetApp(app_id));
+    return app_id;
+  }
+
+  void NotifyOnTaskCreated(const arc::mojom::AppInfo& appinfo,
+                           int32_t task_id) {
+    ArcAppListPrefs* const prefs = arc_test_.arc_app_list_prefs();
+    prefs->OnTaskCreated(task_id, appinfo.package_name, appinfo.activity);
+  }
+
+  void NotifyOnTaskOrientationLockRequested(int32_t task_id,
+                                            OrientationLock lock) {
+    ArcAppListPrefs* const prefs = arc_test_.arc_app_list_prefs();
+    prefs->OnTaskOrientationLockRequested(task_id, lock);
   }
 
   // Needed for extension service & friends to work.
@@ -3345,24 +3398,9 @@ TEST_F(ChromeLauncherControllerImplTest, MultipleAppIconLoaders) {
 TEST_F(ChromeLauncherControllerImplTest, ArcAppPinPolicy) {
   arc_test_.SetUp(profile());
   InitLauncherControllerWithBrowser();
-
-  arc::mojom::AppInfo appinfo;
-  appinfo.name = "Some App";
-  appinfo.activity = "SomeActivity";
-  appinfo.package_name = "com.example.app";
-
-  ArcAppListPrefs* const prefs = arc_test_.arc_app_list_prefs();
-  ASSERT_TRUE(prefs);
-
-  // Adding app to the prefs, and check that the app is accessible by id.
-  prefs->AddAppAndShortcut(appinfo.name, appinfo.package_name, appinfo.activity,
-                           std::string() /* intent_uri */,
-                           std::string() /* icon_resource_id */,
-                           false /* sticky */, true /* notifications_enabled */,
-                           false /* shortcut */);
-  const std::string app_id =
-      ArcAppListPrefs::GetAppId(appinfo.package_name, appinfo.activity);
-  EXPECT_TRUE(prefs->GetApp(app_id));
+  arc::mojom::AppInfo appinfo = CreateAppInfo(
+      "Some App", "SomeActivity", "com.example.app", OrientationLock::NONE);
+  const std::string app_id = AddArcAppAndShortcut(appinfo);
 
   // Set policy, that makes pins ARC app. Unlike native extension, for ARC app
   // package_name (not hash) specified as id. In this test we check that
@@ -3426,4 +3464,138 @@ TEST_F(ChromeLauncherControllerImplTest, ArcManaged) {
   EnableArc(true);
   ValidateArcState(true, false, arc::ArcAuthService::State::FETCHING_CODE,
                    "AppList, Chrome");
+}
+
+TEST_F(ChromeLauncherControllerImplTest, ArcOrientationLock) {
+  DCHECK(display::Display::HasInternalDisplay());
+
+  extension_service_->AddExtension(arc_support_host_.get());
+  arc_test_.SetUp(profile());
+  EnableArc(true);
+  EnableTabletMode(true);
+
+  InitLauncherController();
+  arc::ArcAuthService::SetShelfDelegateForTesting(launcher_controller_.get());
+  arc::mojom::AppInfo appinfo_none =
+      CreateAppInfo("None", "None", "com.example.app", OrientationLock::NONE);
+  arc::mojom::AppInfo appinfo_landscape = CreateAppInfo(
+      "Landscape", "Landscape", "com.example.app", OrientationLock::LANDSCAPE);
+  arc::mojom::AppInfo appinfo_portrait = CreateAppInfo(
+      "Portrait", "Portrait", "com.example.app", OrientationLock::PORTRAIT);
+
+  const std::string app_id_none = AddArcAppAndShortcut(appinfo_none);
+  const std::string app_id_landscape = AddArcAppAndShortcut(appinfo_landscape);
+  const std::string app_id_portrait = AddArcAppAndShortcut(appinfo_portrait);
+
+  int32_t task_id_none = 1;
+  int32_t task_id_landscape = 2;
+  int32_t task_id_portrait = 3;
+
+  // This needs to be kept on stack because window's property has
+  // refeference to this.
+  std::string window_app_id_none("org.chromium.arc.1");
+  std::string window_app_id_landscape("org.chromium.arc.2");
+  std::string window_app_id_portrait("org.chromium.arc.3");
+
+  ash::ScreenOrientationController* controller =
+      ash::Shell::GetInstance()->screen_orientation_controller();
+
+  // Creating a window with NONE orientation will not lock the screen.
+  views::Widget* window_none = CreateArcWindow(window_app_id_none);
+  NotifyOnTaskCreated(appinfo_none, task_id_none);
+  EXPECT_FALSE(controller->rotation_locked());
+  EXPECT_EQ(display::Display::ROTATE_0,
+            display::Screen::GetScreen()->GetPrimaryDisplay().rotation());
+
+  // Create a arc window with PORTRAIT orientation locks the screen to 90.
+  views::Widget* window_portrait = CreateArcWindow(window_app_id_portrait);
+  NotifyOnTaskCreated(appinfo_portrait, task_id_portrait);
+  EXPECT_TRUE(controller->rotation_locked());
+  EXPECT_EQ(display::Display::ROTATE_90,
+            display::Screen::GetScreen()->GetPrimaryDisplay().rotation());
+
+  // Create a arc window with LANDSCAPE orientation locks the screen to 0.
+  views::Widget* window_landscape = CreateArcWindow(window_app_id_landscape);
+  NotifyOnTaskCreated(appinfo_landscape, task_id_landscape);
+  EXPECT_TRUE(controller->rotation_locked());
+  EXPECT_EQ(display::Display::ROTATE_0,
+            display::Screen::GetScreen()->GetPrimaryDisplay().rotation());
+
+  // Activating a window with NON orientation unlocks the screen.
+  window_none->Activate();
+  EXPECT_FALSE(controller->rotation_locked());
+  EXPECT_EQ(display::Display::ROTATE_0,
+            display::Screen::GetScreen()->GetPrimaryDisplay().rotation());
+
+  // Activating a window with PORTRAIT orientation locks the screen to 90.
+  window_portrait->Activate();
+  EXPECT_TRUE(controller->rotation_locked());
+  EXPECT_EQ(display::Display::ROTATE_90,
+            display::Screen::GetScreen()->GetPrimaryDisplay().rotation());
+
+  // Disable Tablet mode, and make sure the screen is unlocked.
+  EnableTabletMode(false);
+  EXPECT_FALSE(controller->rotation_locked());
+  EXPECT_EQ(display::Display::ROTATE_0,
+            display::Screen::GetScreen()->GetPrimaryDisplay().rotation());
+
+  // Re-enable Tablet mode, and make sure the screen is locked to 90.
+  EnableTabletMode(true);
+  EXPECT_TRUE(controller->rotation_locked());
+  EXPECT_EQ(display::Display::ROTATE_90,
+            display::Screen::GetScreen()->GetPrimaryDisplay().rotation());
+
+  window_portrait->Activate();
+  EXPECT_TRUE(controller->rotation_locked());
+  EXPECT_EQ(display::Display::ROTATE_90,
+            display::Screen::GetScreen()->GetPrimaryDisplay().rotation());
+
+  window_landscape->Activate();
+  EXPECT_TRUE(controller->rotation_locked());
+  EXPECT_EQ(display::Display::ROTATE_0,
+            display::Screen::GetScreen()->GetPrimaryDisplay().rotation());
+
+  // OnTaskOrientationLockRequested can overwrite the current lock.
+  NotifyOnTaskOrientationLockRequested(task_id_landscape,
+                                       OrientationLock::NONE);
+  EXPECT_FALSE(controller->rotation_locked());
+  EXPECT_EQ(display::Display::ROTATE_0,
+            display::Screen::GetScreen()->GetPrimaryDisplay().rotation());
+
+  NotifyOnTaskOrientationLockRequested(task_id_landscape,
+                                       OrientationLock::PORTRAIT);
+  EXPECT_TRUE(controller->rotation_locked());
+  EXPECT_EQ(display::Display::ROTATE_90,
+            display::Screen::GetScreen()->GetPrimaryDisplay().rotation());
+
+  // Non active window won't change the lock.
+  NotifyOnTaskOrientationLockRequested(task_id_none,
+                                       OrientationLock::LANDSCAPE);
+  EXPECT_TRUE(controller->rotation_locked());
+  EXPECT_EQ(display::Display::ROTATE_90,
+            display::Screen::GetScreen()->GetPrimaryDisplay().rotation());
+
+  // But activating it will change the locked orinetation.
+  window_none->Activate();
+  EXPECT_TRUE(controller->rotation_locked());
+  EXPECT_EQ(display::Display::ROTATE_0,
+            display::Screen::GetScreen()->GetPrimaryDisplay().rotation());
+
+  // OnTaskOrientationLockRequested will not lock the screen in non Tablet mode.
+  EnableTabletMode(false);
+  EXPECT_FALSE(controller->rotation_locked());
+  EXPECT_EQ(display::Display::ROTATE_0,
+            display::Screen::GetScreen()->GetPrimaryDisplay().rotation());
+
+  NotifyOnTaskOrientationLockRequested(task_id_none, OrientationLock::PORTRAIT);
+  EXPECT_FALSE(controller->rotation_locked());
+  EXPECT_EQ(display::Display::ROTATE_0,
+            display::Screen::GetScreen()->GetPrimaryDisplay().rotation());
+
+  // But it remembers the orientation lock and use it when Tablet mode is
+  // enabled.
+  EnableTabletMode(true);
+  EXPECT_TRUE(controller->rotation_locked());
+  EXPECT_EQ(display::Display::ROTATE_90,
+            display::Screen::GetScreen()->GetPrimaryDisplay().rotation());
 }

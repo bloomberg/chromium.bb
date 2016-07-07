@@ -9,6 +9,14 @@ module arc.mojom;
 import "scale_factor.mojom";
 import "screen_rect.mojom";
 
+// Describes OrientationLock request.
+[Extensible]
+enum OrientationLock {
+  NONE = 0,
+  PORTRAIT = 1,
+  LANDSCAPE = 2,
+};
+
 // Describes ARC app.
 struct AppInfo {
   string name;
@@ -16,6 +24,7 @@ struct AppInfo {
   string activity;
   [MinVersion=2] bool sticky;  // true if the app cannot be uninstalled
   [MinVersion=7] bool notifications_enabled;
+  [MinVersion=11] OrientationLock orientation_lock;
 };
 
 // Describes ARC package.
@@ -46,7 +55,7 @@ enum ShowPackageInfoPage {
   MANAGE_LINKS = 1,
 };
 
-// Next method ID: 12
+// Next method ID: 13
 interface AppHost {
   // Sends newly added ARC app to Chrome. This message is sent when ARC receives
   // package added notification. Multiple apps may be added in the one package.
@@ -96,6 +105,10 @@ interface AppHost {
 
   // Notifies that an application shortcut needs to be created.
   [MinVersion=9] OnInstallShortcut@11(ShortcutInfo shortcut);
+
+  // Notifies that task requested orientation lock.
+  [MinVersion=11] OnTaskOrientationLockRequested@12(int32 task_id,
+                                                    OrientationLock lock);
 };
 
 // TODO(lhchavez): Migrate all request/response messages to Mojo.

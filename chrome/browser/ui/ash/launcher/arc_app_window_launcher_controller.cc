@@ -3,9 +3,13 @@
 // found in the LICENSE file.
 #include "chrome/browser/ui/ash/launcher/arc_app_window_launcher_controller.h"
 
+#include "ash/common/wm/maximize_mode/maximize_mode_controller.h"
 #include "ash/common/wm/window_state.h"
+#include "ash/common/wm_shell.h"
+#include "ash/display/screen_orientation_controller_chromeos.h"
 #include "ash/shelf/shelf_delegate.h"
 #include "ash/shelf/shelf_util.h"
+#include "ash/shell.h"
 #include "ash/wm/window_state_aura.h"
 #include "ash/wm/window_util.h"
 #include "base/bind.h"
@@ -20,6 +24,7 @@
 #include "components/exo/shell_surface.h"
 #include "components/signin/core/account_id/account_id.h"
 #include "components/user_manager/user_manager.h"
+#include "third_party/WebKit/public/platform/modules/screen_orientation/WebScreenOrientationLockType.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/env.h"
 #include "ui/base/base_window.h"
@@ -32,6 +37,17 @@ enum class FullScreenMode {
   ACTIVE,       // Fullscreen is activated for an app.
   NON_ACTIVE,   // Fullscreen was not activated for an app.
 };
+
+blink::WebScreenOrientationLockType BlinkOrientationLockFromMojom(
+    arc::mojom::OrientationLock orientation_lock) {
+  if (orientation_lock == arc::mojom::OrientationLock::PORTRAIT) {
+    return blink::WebScreenOrientationLockPortrait;
+  } else if (orientation_lock == arc::mojom::OrientationLock::LANDSCAPE) {
+    return blink::WebScreenOrientationLockLandscape;
+  } else {
+    return blink::WebScreenOrientationLockAny;
+  }
+}
 
 }  // namespace
 
@@ -155,6 +171,19 @@ class ArcAppWindowLauncherController::AppWindow : public ui::BaseWindow {
 
   void SetAlwaysOnTop(bool always_on_top) override { NOTREACHED(); }
 
+  arc::mojom::OrientationLock requested_orientation_lock() const {
+    return requested_orientation_lock_;
+  }
+
+  void set_requested_orientation_lock(arc::mojom::OrientationLock lock) {
+    has_requested_orientation_lock_ = true;
+    requested_orientation_lock_ = lock;
+  }
+
+  bool has_requested_orientation_lock() const {
+    return has_requested_orientation_lock_;
+  }
+
  private:
   arc::mojom::AppInstance* GetAppInstance() {
     arc::ArcBridgeService* bridge_service = arc::ArcBridgeService::Get();
@@ -183,6 +212,10 @@ class ArcAppWindowLauncherController::AppWindow : public ui::BaseWindow {
   // Unowned pointer, represents host Arc window.
   views::Widget* widget_ = nullptr;
 
+  arc::mojom::OrientationLock requested_orientation_lock_ =
+      arc::mojom::OrientationLock::NONE;
+  bool has_requested_orientation_lock_ = false;
+
   DISALLOW_COPY_AND_ASSIGN(AppWindow);
 };
 
@@ -199,6 +232,8 @@ ArcAppWindowLauncherController::ArcAppWindowLauncherController(
 ArcAppWindowLauncherController::~ArcAppWindowLauncherController() {
   if (observed_profile_)
     StopObserving(observed_profile_);
+  if (observing_shell_)
+    ash::WmShell::Get()->RemoveShellObserver(this);
 }
 
 // static
@@ -284,6 +319,14 @@ void ArcAppWindowLauncherController::CheckForAppWindowWidget(
     return;
 
   if (task_id) {
+    // We need to add the observer after exo started observing shell
+    // because we want to update the orientation after exo send
+    // the layout switch information.
+    if (!observing_shell_) {
+      observing_shell_ = true;
+      ash::WmShell::Get()->AddShellObserver(this);
+    }
+
     AppWindow* app_window = GetAppWindowForTask(task_id);
     if (app_window) {
       app_window->set_widget(views::Widget::GetWidgetForNativeWindow(window));
@@ -293,6 +336,11 @@ void ArcAppWindowLauncherController::CheckForAppWindowWidget(
       chrome::MultiUserWindowManager::GetInstance()->SetWindowOwner(
           window,
           user_manager::UserManager::Get()->GetPrimaryUser()->GetAccountId());
+      if (ash::WmShell::Get()
+              ->maximize_mode_controller()
+              ->IsMaximizeModeWindowManagerEnabled()) {
+        SetOrientationLockForAppWindow(app_window);
+      }
     }
   }
 }
@@ -391,6 +439,23 @@ void ArcAppWindowLauncherController::OnTaskSetActive(int32_t task_id) {
   }
 }
 
+void ArcAppWindowLauncherController::OnTaskOrientationLockRequested(
+    int32_t task_id,
+    const arc::mojom::OrientationLock orientation_lock) {
+  // Don't save to AppInfo because this is requested in runtime.
+  TaskIdToAppWindow::iterator app_it = task_id_to_app_window_.find(task_id);
+  if (app_it == task_id_to_app_window_.end())
+    return;
+  AppWindow* app_window = app_it->second.get();
+  app_window->set_requested_orientation_lock(orientation_lock);
+
+  if (ash::WmShell::Get()
+          ->maximize_mode_controller()
+          ->IsMaximizeModeWindowManagerEnabled()) {
+    SetOrientationLockForAppWindow(app_window);
+  }
+}
+
 AppWindowLauncherItemController*
 ArcAppWindowLauncherController::ControllerForWindow(aura::Window* window) {
   AppWindow* app_window = GetAppWindowForTask(active_task_id_);
@@ -412,6 +477,18 @@ void ArcAppWindowLauncherController::OnWindowActivated(
     aura::Window* gained_active,
     aura::Window* lost_active) {
   OnTaskSetActive(active_task_id_);
+}
+
+void ArcAppWindowLauncherController::OnMaximizeModeStarted() {
+  for (auto& it : task_id_to_app_window_)
+    SetOrientationLockForAppWindow(it.second.get());
+}
+
+void ArcAppWindowLauncherController::OnMaximizeModeEnded() {
+  ash::ScreenOrientationController* orientation_controller =
+      ash::Shell::GetInstance()->screen_orientation_controller();
+  // Don't unlock one by one because it'll switch to next rotation.
+  orientation_controller->UnlockAll();
 }
 
 void ArcAppWindowLauncherController::StartObserving(Profile* profile) {
@@ -476,4 +553,25 @@ void ArcAppWindowLauncherController::UnregisterApp(AppWindow* app_window) {
     app_controller_map_.erase(it);
   }
   app_window->ResetController();
+}
+
+void ArcAppWindowLauncherController::SetOrientationLockForAppWindow(
+    AppWindow* app_window) {
+  ash::Shell* shell = ash::Shell::GetInstance();
+  aura::Window* window = app_window->widget()->GetNativeWindow();
+  if (!window)
+    return;
+  arc::mojom::OrientationLock orientation_lock;
+  if (app_window->has_requested_orientation_lock()) {
+    orientation_lock = app_window->requested_orientation_lock();
+  } else {
+    ArcAppListPrefs* prefs = ArcAppListPrefs::Get(observed_profile_);
+    std::unique_ptr<ArcAppListPrefs::AppInfo> app_info =
+        prefs->GetApp(app_window->app_id());
+    if (!app_info)
+      return;
+    orientation_lock = app_info->orientation_lock;
+  }
+  shell->screen_orientation_controller()->LockOrientationForWindow(
+      window, BlinkOrientationLockFromMojom(orientation_lock));
 }

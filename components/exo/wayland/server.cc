@@ -37,8 +37,10 @@
 #include "base/macros.h"
 #include "base/memory/free_deleter.h"
 #include "base/memory/ptr_util.h"
+#include "base/memory/weak_ptr.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "components/exo/buffer.h"
 #include "components/exo/display.h"
 #include "components/exo/keyboard.h"
@@ -86,6 +88,10 @@ DECLARE_SURFACE_PROPERTY_TYPE(bool);
 namespace exo {
 namespace wayland {
 namespace {
+
+// We don't send configure immediately after tablet mode switch
+// because layout can change due to orientation lock state or accelerometer.
+const int kConfigureDelayAfterLayoutSwitchMs = 300;
 
 // Default wayland socket name.
 const base::FilePath::CharType kSocketName[] = FILE_PATH_LITERAL("wayland-0");
@@ -1547,7 +1553,8 @@ class WaylandRemoteShell : public ash::ShellObserver,
                      wl_resource* remote_shell_resource)
       : display_(display),
         display_id_(display_id),
-        remote_shell_resource_(remote_shell_resource) {
+        remote_shell_resource_(remote_shell_resource),
+        weak_ptr_factory_(this) {
     ash::WmShell::Get()->AddShellObserver(this);
     ash::Shell* shell = ash::Shell::GetInstance();
     shell->activation_client()->AddObserver(this);
@@ -1585,9 +1592,19 @@ class WaylandRemoteShell : public ash::ShellObserver,
   void OnDisplayWorkAreaInsetsChanged() override { SendConfigure(); }
   void OnMaximizeModeStarted() override {
     SendLayoutModeChange(ZWP_REMOTE_SHELL_V1_LAYOUT_MODE_TABLET);
+    send_configure_after_layout_change_ = true;
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE, base::Bind(&WaylandRemoteShell::MaybeSendConfigure,
+                              weak_ptr_factory_.GetWeakPtr()),
+        base::TimeDelta::FromMilliseconds(kConfigureDelayAfterLayoutSwitchMs));
   }
   void OnMaximizeModeEnded() override {
     SendLayoutModeChange(ZWP_REMOTE_SHELL_V1_LAYOUT_MODE_WINDOWED);
+    send_configure_after_layout_change_ = true;
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE, base::Bind(&WaylandRemoteShell::MaybeSendConfigure,
+                              weak_ptr_factory_.GetWeakPtr()),
+        base::TimeDelta::FromMilliseconds(kConfigureDelayAfterLayoutSwitchMs));
   }
 
   // Overridden from aura::client::ActivationChangeObserver:
@@ -1599,7 +1616,13 @@ class WaylandRemoteShell : public ash::ShellObserver,
   }
 
  private:
+  void MaybeSendConfigure() {
+    if (send_configure_after_layout_change_)
+      SendConfigure();
+  }
+
   void SendConfigure() {
+    send_configure_after_layout_change_ = false;
     const display::Display& display =
         ash::Shell::GetInstance()->display_manager()->GetDisplayForId(
             display_id_);
@@ -1611,7 +1634,7 @@ class WaylandRemoteShell : public ash::ShellObserver,
     wl_client_flush(wl_resource_get_client(remote_shell_resource_));
   }
 
-  void SendLayoutModeChange(int mode) {
+  void SendLayoutModeChange(uint32_t mode) {
     if (wl_resource_get_version(remote_shell_resource_) < 8)
       return;
     zwp_remote_shell_v1_send_layout_mode_changed(remote_shell_resource_, mode);
@@ -1659,6 +1682,10 @@ class WaylandRemoteShell : public ash::ShellObserver,
 
   // The remote shell resource associated with observer.
   wl_resource* const remote_shell_resource_;
+
+  bool send_configure_after_layout_change_ = false;
+
+  base::WeakPtrFactory<WaylandRemoteShell> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(WaylandRemoteShell);
 };
