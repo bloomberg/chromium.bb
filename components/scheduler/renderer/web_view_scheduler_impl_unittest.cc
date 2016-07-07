@@ -508,22 +508,45 @@ TEST_F(WebViewSchedulerImplTest,
       VirtualTimePolicy::PAUSE_IF_NETWORK_FETCHES_PENDING);
   EXPECT_TRUE(web_view_scheduler_->virtualTimeAllowedToAdvance());
 
-  web_view_scheduler_->incrementPendingResourceLoadCount();
+  web_view_scheduler_->DidStartLoading(1u);
   EXPECT_FALSE(web_view_scheduler_->virtualTimeAllowedToAdvance());
 
-  web_view_scheduler_->incrementPendingResourceLoadCount();
+  web_view_scheduler_->DidStartLoading(2u);
   EXPECT_FALSE(web_view_scheduler_->virtualTimeAllowedToAdvance());
 
-  web_view_scheduler_->decrementPendingResourceLoadCount();
+  web_view_scheduler_->DidStopLoading(2u);
   EXPECT_FALSE(web_view_scheduler_->virtualTimeAllowedToAdvance());
 
-  web_view_scheduler_->incrementPendingResourceLoadCount();
+  web_view_scheduler_->DidStartLoading(3u);
   EXPECT_FALSE(web_view_scheduler_->virtualTimeAllowedToAdvance());
 
-  web_view_scheduler_->decrementPendingResourceLoadCount();
+  web_view_scheduler_->DidStopLoading(1u);
   EXPECT_FALSE(web_view_scheduler_->virtualTimeAllowedToAdvance());
 
-  web_view_scheduler_->decrementPendingResourceLoadCount();
+  web_view_scheduler_->DidStopLoading(3u);
+  EXPECT_TRUE(web_view_scheduler_->virtualTimeAllowedToAdvance());
+}
+
+TEST_F(WebViewSchedulerImplTest, RedundantDidStopLoadingCallsAreHarmless) {
+  web_view_scheduler_->setVirtualTimePolicy(
+      VirtualTimePolicy::PAUSE_IF_NETWORK_FETCHES_PENDING);
+
+  web_view_scheduler_->DidStartLoading(1u);
+  EXPECT_FALSE(web_view_scheduler_->virtualTimeAllowedToAdvance());
+
+  web_view_scheduler_->DidStopLoading(1u);
+  EXPECT_TRUE(web_view_scheduler_->virtualTimeAllowedToAdvance());
+
+  web_view_scheduler_->DidStopLoading(1u);
+  EXPECT_TRUE(web_view_scheduler_->virtualTimeAllowedToAdvance());
+
+  web_view_scheduler_->DidStopLoading(1u);
+  EXPECT_TRUE(web_view_scheduler_->virtualTimeAllowedToAdvance());
+
+  web_view_scheduler_->DidStartLoading(2u);
+  EXPECT_FALSE(web_view_scheduler_->virtualTimeAllowedToAdvance());
+
+  web_view_scheduler_->DidStopLoading(2u);
   EXPECT_TRUE(web_view_scheduler_->virtualTimeAllowedToAdvance());
 }
 

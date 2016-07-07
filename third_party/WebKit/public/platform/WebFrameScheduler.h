@@ -47,11 +47,11 @@ public:
 
     // Tells the scheduler a resource load has started. The scheduler may make
     // policy decisions based on this.
-    virtual void incrementPendingResourceLoadCount() { }
+    virtual void didStartLoading(unsigned long identifier) { }
 
-    // Tells the scheduler a resource load has started. The scheduler may make
+    // Tells the scheduler a resource load has stopped. The scheduler may make
     // policy decisions based on this.
-    virtual void decrementPendingResourceLoadCount() { }
+    virtual void didStopLoading(unsigned long identifier) { }
 };
 
 } // namespace blink

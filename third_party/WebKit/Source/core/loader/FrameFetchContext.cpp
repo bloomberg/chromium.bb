@@ -321,7 +321,7 @@ void FrameFetchContext::dispatchWillSendRequest(unsigned long identifier, Resour
     TRACE_EVENT_INSTANT1("devtools.timeline", "ResourceSendRequest", TRACE_EVENT_SCOPE_THREAD, "data", InspectorSendRequestEvent::data(identifier, frame(), request));
     InspectorInstrumentation::willSendRequest(frame(), identifier, masterDocumentLoader(), request, redirectResponse, initiatorInfo);
     if (frame()->frameScheduler())
-        frame()->frameScheduler()->incrementPendingResourceLoadCount();
+        frame()->frameScheduler()->didStartLoading(identifier);
 }
 
 void FrameFetchContext::dispatchDidReceiveResponse(unsigned long identifier, const ResourceResponse& response, WebURLRequest::FrameType frameType, WebURLRequest::RequestContext requestContext, Resource* resource)
@@ -372,7 +372,7 @@ void FrameFetchContext::dispatchDidFinishLoading(unsigned long identifier, doubl
     TRACE_EVENT_INSTANT1("devtools.timeline", "ResourceFinish", TRACE_EVENT_SCOPE_THREAD, "data", InspectorResourceFinishEvent::data(identifier, finishTime, false));
     InspectorInstrumentation::didFinishLoading(frame(), identifier, finishTime, encodedDataLength);
     if (frame()->frameScheduler())
-        frame()->frameScheduler()->decrementPendingResourceLoadCount();
+        frame()->frameScheduler()->didStopLoading(identifier);
 }
 
 void FrameFetchContext::dispatchDidFail(unsigned long identifier, const ResourceError& error, bool isInternalRequest)
@@ -385,7 +385,7 @@ void FrameFetchContext::dispatchDidFail(unsigned long identifier, const Resource
     if (!isInternalRequest)
         frame()->console().didFailLoading(identifier, error);
     if (frame()->frameScheduler())
-        frame()->frameScheduler()->decrementPendingResourceLoadCount();
+        frame()->frameScheduler()->didStopLoading(identifier);
 }
 
 void FrameFetchContext::dispatchDidLoadResourceFromMemoryCache(unsigned long identifier, Resource* resource, WebURLRequest::FrameType frameType, WebURLRequest::RequestContext requestContext)
