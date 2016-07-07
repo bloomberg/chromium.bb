@@ -93,8 +93,6 @@ const uint8_t kPolicyVerificationKey[] = {
 const char kPolicyVerificationKeyHash[] = "1:356l7w";
 
 std::string GetPolicyVerificationKey() {
-  // Disable key verification by default until production servers generate
-  // the proper signatures.
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kDisablePolicyKeyVerification)) {
     return std::string();
