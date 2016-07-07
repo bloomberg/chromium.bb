@@ -44,18 +44,16 @@ const int InkDropHostView::kInkDropSmallCornerRadius = 2;
 // TODO(bruthig): Consider getting rid of this class.
 class InkDropHostView::InkDropGestureHandler : public ui::EventHandler {
  public:
-  InkDropGestureHandler(InkDropHostView* host_view, InkDrop* ink_drop)
+  explicit InkDropGestureHandler(InkDropHostView* host_view)
       : target_handler_(new ui::ScopedTargetHandler(host_view, this)),
-        host_view_(host_view),
-        ink_drop_(ink_drop) {}
+        host_view_(host_view) {}
 
   ~InkDropGestureHandler() override {}
 
-  void SetInkDrop(InkDrop* ink_drop) { ink_drop_ = ink_drop; }
-
   // ui::EventHandler:
   void OnGestureEvent(ui::GestureEvent* event) override {
-    InkDropState current_ink_drop_state = ink_drop_->GetTargetInkDropState();
+    InkDropState current_ink_drop_state =
+        host_view_->ink_drop()->GetTargetInkDropState();
 
     InkDropState ink_drop_state = InkDropState::HIDDEN;
     switch (event->type()) {
@@ -101,9 +99,6 @@ class InkDropHostView::InkDropGestureHandler : public ui::EventHandler {
 
   // The host view to cache ui::Events to when animating the ink drop.
   InkDropHostView* host_view_;
-
-  // Animation controller for the ink drop ripple effect.
-  InkDrop* ink_drop_;
 
   DISALLOW_COPY_AND_ASSIGN(InkDropGestureHandler);
 };
@@ -241,14 +236,10 @@ void InkDropHostView::SetInkDropMode(InkDropMode ink_drop_mode) {
   else
     ink_drop_.reset(new InkDropImpl(this));
 
-  if (ink_drop_mode == InkDropMode::ON) {
-    if (gesture_handler_)
-      gesture_handler_->SetInkDrop(ink_drop_.get());
-    else
-      gesture_handler_.reset(new InkDropGestureHandler(this, ink_drop_.get()));
-  } else {
+  if (ink_drop_mode != InkDropMode::ON)
     gesture_handler_.reset();
-  }
+  else if (!gesture_handler_)
+    gesture_handler_.reset(new InkDropGestureHandler(this));
 }
 
 }  // namespace views
