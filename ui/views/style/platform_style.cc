@@ -39,6 +39,8 @@ const int PlatformStyle::kMinLabelButtonWidth = 70;
 const int PlatformStyle::kMinLabelButtonHeight = 33;
 const bool PlatformStyle::kDefaultLabelButtonHasBoldFont = true;
 const bool PlatformStyle::kTextfieldDragVerticallyDragsToEnd = false;
+const CustomButton::NotifyAction PlatformStyle::kMenuNotifyActivationAction =
+    CustomButton::NOTIFY_ON_RELEASE;
 
 // static
 gfx::ImageSkia PlatformStyle::CreateComboboxArrow(bool is_enabled,

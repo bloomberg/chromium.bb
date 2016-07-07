@@ -233,15 +233,23 @@ class ComboboxTest : public ViewsTestBase {
     return widget_->GetFocusManager()->GetFocusedView();
   }
 
-  void PerformClick(const gfx::Point& point) {
+  void PerformMousePress(const gfx::Point& point) {
     ui::MouseEvent pressed_event = ui::MouseEvent(
         ui::ET_MOUSE_PRESSED, point, point, ui::EventTimeForNow(),
         ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON);
     widget_->OnMouseEvent(&pressed_event);
+  }
+
+  void PerformMouseRelease(const gfx::Point& point) {
     ui::MouseEvent released_event = ui::MouseEvent(
         ui::ET_MOUSE_RELEASED, point, point, ui::EventTimeForNow(),
         ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON);
     widget_->OnMouseEvent(&released_event);
+  }
+
+  void PerformClick(const gfx::Point& point) {
+    PerformMousePress(point);
+    PerformMouseRelease(point);
   }
 
   // We need widget to populate wrapper class.
@@ -586,17 +594,31 @@ TEST_F(ComboboxTest, NotifyOnClickWithMouse) {
   // Click the right side (arrow button). The menu is shown.
   int menu_show_count = 0;
   test_api_->InstallTestMenuRunner(&menu_show_count);
+  const gfx::Point right_point(combobox_->x() + combobox_->width() - 1,
+                         combobox_->y() + combobox_->height() / 2);
+
   EXPECT_EQ(0, menu_show_count);
-  PerformClick(gfx::Point(combobox_->x() + combobox_->width() - 1,
-                          combobox_->y() + combobox_->height() / 2));
-  EXPECT_FALSE(listener.on_perform_action_called());
+
+// On Mac, actions occur on mouse down. Otherwise mouse up.
+#if defined(OS_MACOSX)
+  const int kActOnMouseDown = 1;
+#else
+  const int kActOnMouseDown = 0;
+#endif
+
+  PerformMousePress(right_point);
+  EXPECT_EQ(kActOnMouseDown, menu_show_count);
+  PerformMouseRelease(right_point);
   EXPECT_EQ(1, menu_show_count);
 
   // Click the left side (text button). The click event is notified.
+  const gfx::Point left_point(
+      gfx::Point(combobox_->x() + 1, combobox_->y() + combobox_->height() / 2));
   test_api_->InstallTestMenuRunner(&menu_show_count);
-  PerformClick(gfx::Point(combobox_->x() + 1,
-                          combobox_->y() + combobox_->height() / 2));
-  EXPECT_TRUE(listener.on_perform_action_called());
+
+  PerformMousePress(left_point);
+  PerformMouseRelease(left_point);
+
   EXPECT_EQ(1, menu_show_count);  // Unchanged.
   EXPECT_EQ(0, listener.perform_action_index());
 }

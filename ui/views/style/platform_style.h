@@ -9,6 +9,7 @@
 
 #include "base/macros.h"
 #include "ui/views/controls/button/button.h"
+#include "ui/views/controls/button/custom_button.h"
 #include "ui/views/controls/combobox/combobox.h"
 #include "ui/views/views_export.h"
 
@@ -41,6 +42,9 @@ class VIEWS_EXPORT PlatformStyle {
   // Whether dragging vertically above or below a textfield's bounds selects to
   // the left or right end of the text from the cursor, respectively.
   static const bool kTextfieldDragVerticallyDragsToEnd;
+
+  // The menu button's action to show the menu.
+  static const CustomButton::NotifyAction kMenuNotifyActivationAction;
 
   // Creates an ImageSkia containing the image to use for the combobox arrow.
   // The |is_enabled| argument is true if the control the arrow is for is
