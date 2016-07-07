@@ -143,6 +143,22 @@ void CheckTrue(bool result) {
   EXPECT_TRUE(result);
 }
 
+void WriteHTMLAttributes(const PasswordForm& form, base::Pickle* pickle) {
+  pickle->WriteInt(form.scheme);
+  pickle->WriteString(form.origin.spec());
+  pickle->WriteString(form.action.spec());
+  pickle->WriteString16(form.username_element);
+  pickle->WriteString16(form.username_value);
+  pickle->WriteString16(form.password_element);
+  pickle->WriteString16(form.password_value);
+  pickle->WriteString16(form.submit_element);
+}
+
+void WritePreferenceMetadata(const PasswordForm& form, base::Pickle* pickle) {
+  pickle->WriteBool(form.preferred);
+  pickle->WriteBool(form.blacklisted_by_user);
+}
+
 }  // anonymous namespace
 
 // Obscure magic: we need to declare storage for this constant because we use it
@@ -1139,9 +1155,12 @@ class NativeBackendKWalletPickleTest : public NativeBackendKWalletTestBase {
                                 base::Pickle* pickle,
                                 int stored_version,
                                 int effective_version);
+  // If |size_32| is true, stores the number of forms in the pickle as a 32bit
+  // uint, otherwise as 64 bit size_t.
   void CreateVersion0Pickle(bool size_32,
                             const PasswordForm& form,
                             base::Pickle* pickle);
+  void CheckVersion8Pickle();
   void CheckVersion7Pickle();
   // As explained in http://crbug.com/494229#c11, version 6 added a new optional
   // field to version 5. This field became required in version 7. Depending on
@@ -1153,16 +1172,6 @@ class NativeBackendKWalletPickleTest : public NativeBackendKWalletTestBase {
   void CheckVersion2Pickle();
   void CheckVersion1Pickle();
   void CheckVersion0Pickle(bool size_32, PasswordForm::Scheme scheme);
-
- private:
-  // Creates a Pickle from |form|. If |size_32| is true, stores the number of
-  // forms in the pickle as a 32bit uint, otherwise as 64 bit size_t. The latter
-  // should be the case for versions > 0. If |date_created_internal| is true,
-  // stores |date_created| as base::Time's internal value, otherwise as time_t.
-  void CreatePickle(bool size_32,
-                    bool date_created_internal,
-                    const PasswordForm& form,
-                    base::Pickle* pickle);
 };
 
 void NativeBackendKWalletPickleTest::CreateVersion1PlusPickle(
@@ -1171,7 +1180,11 @@ void NativeBackendKWalletPickleTest::CreateVersion1PlusPickle(
     int stored_version,
     int effective_version) {
   pickle->WriteInt(stored_version);
-  CreatePickle(false, true, form, pickle);
+  pickle->WriteUInt64(1);  // Number of forms in the pickle.
+  WriteHTMLAttributes(form, pickle);
+  pickle->WriteBool(form.ssl_valid);
+  WritePreferenceMetadata(form, pickle);
+  pickle->WriteInt64(form.date_created.ToInternalValue());
   if (effective_version < 2)
     return;
   pickle->WriteInt(form.type);
@@ -1196,32 +1209,31 @@ void NativeBackendKWalletPickleTest::CreateVersion0Pickle(
     const PasswordForm& form,
     base::Pickle* pickle) {
   pickle->WriteInt(0);
-  CreatePickle(size_32, false, form, pickle);
+  // Write the number of forms in the pickle in the appopriate bit size.
+  if (size_32)
+    pickle->WriteUInt32(1);
+  else
+    pickle->WriteUInt64(1);
+  WriteHTMLAttributes(form, pickle);
+  pickle->WriteBool(form.ssl_valid);
+  WritePreferenceMetadata(form, pickle);
+  // Old way to store the date.
+  pickle->WriteInt64(form.date_created.ToTimeT());
 }
 
-void NativeBackendKWalletPickleTest::CreatePickle(bool size_32,
-                                                  bool date_created_internal,
-                                                  const PasswordForm& form,
-                                                  base::Pickle* pickle) {
-  if (size_32)
-    pickle->WriteUInt32(1);  // Size of form list. 32 bits.
-  else
-    pickle->WriteUInt64(1);  // Size of form list. 64 bits.
-  pickle->WriteInt(form.scheme);
-  pickle->WriteString(form.origin.spec());
-  pickle->WriteString(form.action.spec());
-  pickle->WriteString16(form.username_element);
-  pickle->WriteString16(form.username_value);
-  pickle->WriteString16(form.password_element);
-  pickle->WriteString16(form.password_value);
-  pickle->WriteString16(form.submit_element);
-  pickle->WriteBool(form.ssl_valid);
-  pickle->WriteBool(form.preferred);
-  pickle->WriteBool(form.blacklisted_by_user);
-  if (date_created_internal)
-    pickle->WriteInt64(form.date_created.ToInternalValue());
-  else
-    pickle->WriteInt64(form.date_created.ToTimeT());
+void NativeBackendKWalletPickleTest::CheckVersion8Pickle() {
+  base::Pickle pickle;
+  PasswordForm default_values;
+  PasswordForm form = form_google_;
+
+  // Version 8 pickles deserialize with their own 'skip_zero_click' value.
+  form.skip_zero_click = false;
+  CreateVersion1PlusPickle(form, &pickle, 8, 8);
+  ScopedVector<PasswordForm> form_list =
+      NativeBackendKWalletStub::DeserializeValue(form.signon_realm, pickle);
+  EXPECT_EQ(1u, form_list.size());
+  if (form_list.size() > 0)
+    CheckPasswordForm(form, *form_list[0], true);
 }
 
 void NativeBackendKWalletPickleTest::CheckVersion7Pickle() {
@@ -1236,15 +1248,6 @@ void NativeBackendKWalletPickleTest::CheckVersion7Pickle() {
       NativeBackendKWalletStub::DeserializeValue(form.signon_realm, pickle);
   EXPECT_EQ(1u, form_list.size());
   form.skip_zero_click = true;
-  if (form_list.size() > 0)
-    CheckPasswordForm(form, *form_list[0], true);
-
-  // Version 8 pickles deserialize with their own 'skip_zero_click' value.
-  form.skip_zero_click = false;
-  CreateVersion1PlusPickle(form, &pickle, 8, 8);
-  form_list =
-      NativeBackendKWalletStub::DeserializeValue(form.signon_realm, pickle);
-  EXPECT_EQ(1u, form_list.size());
   if (form_list.size() > 0)
     CheckPasswordForm(form, *form_list[0], true);
 }
@@ -1391,4 +1394,12 @@ TEST_F(NativeBackendKWalletPickleTest, CheckVersion5Pickle) {
 TEST_F(NativeBackendKWalletPickleTest, CheckVersion6Pickle) {
   CheckVersion6Pickle(false);
   CheckVersion6Pickle(true);
+}
+
+TEST_F(NativeBackendKWalletPickleTest, CheckVersion7Pickle) {
+  CheckVersion7Pickle();
+}
+
+TEST_F(NativeBackendKWalletPickleTest, CheckVersion8Pickle) {
+  CheckVersion8Pickle();
 }
