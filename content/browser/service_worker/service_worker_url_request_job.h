@@ -103,7 +103,16 @@ class CONTENT_EXPORT ServiceWorkerURLRequestJob
   ~ServiceWorkerURLRequestJob() override;
 
   // Sets the response type.
+  // When an in-flight request possibly needs CORS check, use
+  // FallbackToNetworkOrRenderer. This method will decide whether the request
+  // can directly go to the network or should fallback to a renderer to send
+  // CORS preflight. You can use FallbackToNetwork only when, like main resource
+  // or foreign fetch cases, it's apparent that the request should go to the
+  // network directly.
+  // TODO(shimazu): Update the comment when what should we do at foreign fetch
+  // fallback is determined: crbug.com/604084
   void FallbackToNetwork();
+  void FallbackToNetworkOrRenderer();
   void ForwardToServiceWorker();
 
   bool ShouldFallbackToNetwork() const {
@@ -156,6 +165,7 @@ class CONTENT_EXPORT ServiceWorkerURLRequestJob
   enum ResponseType {
     NOT_DETERMINED,
     FALLBACK_TO_NETWORK,
+    FALLBACK_TO_RENDERER,  // Use this when falling back with CORS check
     FORWARD_TO_SERVICE_WORKER,
   };
 
@@ -198,6 +208,19 @@ class CONTENT_EXPORT ServiceWorkerURLRequestJob
 
   // Creates and commits a response header indicating error.
   void DeliverErrorResponse();
+
+  // Restarts this job to fallback to network.
+  // This can be called after StartRequest.
+  void FinalizeFallbackToNetwork();
+
+  // Sends back a response with fall_back_required set as true to trigger
+  // subsequent network requests with CORS checking.
+  // This can be called after StartRequest.
+  void FinalizeFallbackToRenderer();
+
+  // True if need to send back a response with fall_back_required set as true to
+  // trigger subsequent network requests with CORS checking.
+  bool IsFallbackToRendererNeeded() const;
 
   // For UMA.
   void SetResponseBodyType(ResponseBodyType type);
