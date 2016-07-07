@@ -139,7 +139,7 @@ namespace blink {
 
 using namespace WTF;
 
-#define DISALLOW_ALLOCATION()                   \
+#define DISALLOW_NEW()                   \
     private:                                    \
     void* operator new(size_t) = delete;        \
     void* operator new(size_t, void*) = delete;

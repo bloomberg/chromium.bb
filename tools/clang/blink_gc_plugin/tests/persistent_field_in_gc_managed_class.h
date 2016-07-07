@@ -12,7 +12,7 @@ namespace blink {
 class HeapObject;
 
 class PartObject {
-    DISALLOW_ALLOCATION();
+    DISALLOW_NEW();
 private:
     Persistent<HeapObject> m_obj;
 };
