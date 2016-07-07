@@ -72,6 +72,8 @@ const wchar_t kVP9DecoderDLLName[] =
 #error Unsupported Windows CPU Architecture
 #endif
 
+const wchar_t kMSVP9DecoderDLLName[] = L"MSVP9DEC.dll";
+
 const CLSID CLSID_WebmMfVp8Dec = {
     0x451e3cb7,
     0x2622,
@@ -693,6 +695,8 @@ bool DXVAVideoDecodeAccelerator::Initialize(const Config& config,
 
   InitializeMediaFoundation();
 
+  config_ = config;
+
   RETURN_AND_NOTIFY_ON_FAILURE(InitDecoder(config.profile),
                                "Failed to initialize decoder", PLATFORM_FAILURE,
                                false);
@@ -710,8 +714,6 @@ bool DXVAVideoDecodeAccelerator::Initialize(const Config& config,
       SendMFTMessage(MFT_MESSAGE_NOTIFY_START_OF_STREAM, 0),
       "Send MFT_MESSAGE_NOTIFY_START_OF_STREAM notification failed",
       PLATFORM_FAILURE, false);
-
-  config_ = config;
 
   config_change_detector_.reset(new H264ConfigChangeDetector);
 
@@ -1420,28 +1422,37 @@ bool DXVAVideoDecodeAccelerator::InitDecoder(VideoCodecProfile profile) {
               profile == VP9PROFILE_PROFILE1 ||
               profile == VP9PROFILE_PROFILE2 ||
               profile == VP9PROFILE_PROFILE3)) {
-    int program_files_key = base::DIR_PROGRAM_FILES;
-    if (base::win::OSInfo::GetInstance()->wow64_status() ==
-        base::win::OSInfo::WOW64_ENABLED) {
-      program_files_key = base::DIR_PROGRAM_FILES6432;
-    }
-
-    base::FilePath dll_path;
-    RETURN_ON_FAILURE(PathService::Get(program_files_key, &dll_path),
-                      "failed to get path for Program Files", false);
-
-    dll_path = dll_path.Append(kVPXDecoderDLLPath);
-    if (profile == VP8PROFILE_ANY) {
-      codec_ = kCodecVP8;
-      dll_path = dll_path.Append(kVP8DecoderDLLName);
-      clsid = CLSID_WebmMfVp8Dec;
-    } else {
+    if (profile != VP8PROFILE_ANY) {
       codec_ = kCodecVP9;
-      dll_path = dll_path.Append(kVP9DecoderDLLName);
-      clsid = CLSID_WebmMfVp9Dec;
+      clsid = CLSID_MSVPxDecoder;
+      decoder_dll = ::LoadLibrary(kMSVP9DecoderDLLName);
+      if (decoder_dll)
+        using_ms_vp9_mft_ = true;
     }
-    decoder_dll = ::LoadLibraryEx(dll_path.value().data(), NULL,
-                                  LOAD_WITH_ALTERED_SEARCH_PATH);
+    if (!decoder_dll) {
+      int program_files_key = base::DIR_PROGRAM_FILES;
+      if (base::win::OSInfo::GetInstance()->wow64_status() ==
+          base::win::OSInfo::WOW64_ENABLED) {
+        program_files_key = base::DIR_PROGRAM_FILES6432;
+      }
+
+      base::FilePath dll_path;
+      RETURN_ON_FAILURE(PathService::Get(program_files_key, &dll_path),
+                        "failed to get path for Program Files", false);
+
+      dll_path = dll_path.Append(kVPXDecoderDLLPath);
+      if (profile == VP8PROFILE_ANY) {
+        codec_ = kCodecVP8;
+        dll_path = dll_path.Append(kVP8DecoderDLLName);
+        clsid = CLSID_WebmMfVp8Dec;
+      } else {
+        codec_ = kCodecVP9;
+        dll_path = dll_path.Append(kVP9DecoderDLLName);
+        clsid = CLSID_WebmMfVp9Dec;
+      }
+      decoder_dll = ::LoadLibraryEx(dll_path.value().data(), NULL,
+                                    LOAD_WITH_ALTERED_SEARCH_PATH);
+    }
     RETURN_ON_FAILURE(decoder_dll, "vpx decoder dll is not loaded", false);
   } else {
     RETURN_ON_FAILURE(false, "Unsupported codec.", false);
@@ -1573,11 +1584,22 @@ bool DXVAVideoDecodeAccelerator::SetDecoderInputMediaType() {
   }
   RETURN_ON_HR_FAILURE(hr, "Failed to set subtype", false);
 
-  // Not sure about this. msdn recommends setting this value on the input
-  // media type.
-  hr = media_type->SetUINT32(MF_MT_INTERLACE_MODE,
-                             MFVideoInterlace_MixedInterlaceOrProgressive);
-  RETURN_ON_HR_FAILURE(hr, "Failed to set interlace mode", false);
+  if (using_ms_vp9_mft_) {
+    hr = MFSetAttributeSize(media_type.get(), MF_MT_FRAME_SIZE,
+                            config_.initial_expected_coded_size.width(),
+                            config_.initial_expected_coded_size.height());
+    RETURN_ON_HR_FAILURE(hr, "Failed to set attribute size", false);
+
+    hr = media_type->SetUINT32(MF_MT_INTERLACE_MODE,
+                               MFVideoInterlace_Progressive);
+    RETURN_ON_HR_FAILURE(hr, "Failed to set interlace mode", false);
+  } else {
+    // Not sure about this. msdn recommends setting this value on the input
+    // media type.
+    hr = media_type->SetUINT32(MF_MT_INTERLACE_MODE,
+                               MFVideoInterlace_MixedInterlaceOrProgressive);
+    RETURN_ON_HR_FAILURE(hr, "Failed to set interlace mode", false);
+  }
 
   hr = decoder_->SetInputType(0, media_type.get(), 0);  // No flags
   RETURN_ON_HR_FAILURE(hr, "Failed to set decoder input type", false);
