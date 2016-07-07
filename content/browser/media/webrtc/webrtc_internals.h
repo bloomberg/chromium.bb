@@ -102,10 +102,11 @@ class CONTENT_EXPORT WebRTCInternals : public RenderProcessHostObserver,
   const base::FilePath& GetAudioDebugRecordingsFilePath() const;
 
   // Enables or disables diagnostic event log.
-  void SetEventLogRecordings(bool enable, content::WebContents* web_contents);
+  void EnableEventLogRecordings(content::WebContents* web_contents);
+  void DisableEventLogRecordings();
 
   bool IsEventLogRecordingsEnabled() const;
-  const base::FilePath& GetEventLogRecordingsFilePath() const;
+  const base::FilePath& GetEventLogFilePath() const;
 
  protected:
   // Constructor/Destructor are protected to allow tests to derive from the

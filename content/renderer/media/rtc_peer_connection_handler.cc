@@ -1437,6 +1437,19 @@ void RTCPeerConnectionHandler::CloseClientPeerConnection() {
     client_->closePeerConnection();
 }
 
+void RTCPeerConnectionHandler::StartEventLog(IPC::PlatformFileForTransit file,
+                                             int64_t max_file_size_bytes) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(file != IPC::InvalidPlatformFileForTransit());
+  native_peer_connection_->StartRtcEventLog(
+      IPC::PlatformFileForTransitToPlatformFile(file), max_file_size_bytes);
+}
+
+void RTCPeerConnectionHandler::StopEventLog() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  native_peer_connection_->StopRtcEventLog();
+}
+
 blink::WebRTCDataChannelHandler* RTCPeerConnectionHandler::createDataChannel(
     const blink::WebString& label, const blink::WebRTCDataChannelInit& init) {
   DCHECK(thread_checker_.CalledOnValidThread());

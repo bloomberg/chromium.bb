@@ -31,14 +31,13 @@ base::FilePath GetWebRtcEventLogPrefixPath(const base::FilePath& directory,
                                            uint64_t rtc_event_log_id) {
   static const char kWebRtcEventLogFilePrefix[] = "WebRtcEventLog.";
   return directory.AppendASCII(kWebRtcEventLogFilePrefix +
-                               base::Int64ToString(rtc_event_log_id));
+                               base::Uint64ToString(rtc_event_log_id));
 }
 
 }  // namespace
 
 WebRtcEventLogHandler::WebRtcEventLogHandler(Profile* profile)
     : profile_(profile),
-      is_rtc_event_logging_in_progress_(false),
       current_rtc_event_log_id_(0) {
   DCHECK(profile_);
   thread_checker_.DetachFromThread();
@@ -94,15 +93,12 @@ void WebRtcEventLogHandler::DoStartWebRtcEventLogging(
     const base::FilePath& log_directory) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  if (is_rtc_event_logging_in_progress_) {
+  base::FilePath prefix_path =
+      GetWebRtcEventLogPrefixPath(log_directory, ++current_rtc_event_log_id_);
+  if (!host->StartWebRTCEventLog(prefix_path)) {
     error_callback.Run("RTC event logging already in progress");
     return;
   }
-
-  is_rtc_event_logging_in_progress_ = true;
-  base::FilePath prefix_path =
-      GetWebRtcEventLogPrefixPath(log_directory, ++current_rtc_event_log_id_);
-  host->EnableEventLogRecordings(prefix_path);
 
   if (delay.is_zero()) {
     const bool is_stopped = false, is_manual_stop = false;
@@ -142,13 +138,11 @@ void WebRtcEventLogHandler::DoStopWebRtcEventLogging(
     return;
   }
 
-  if (!is_rtc_event_logging_in_progress_) {
+  if (!host->StopWebRTCEventLog()) {
     error_callback.Run("No RTC event logging in progress");
     return;
   }
 
-  host->DisableEventLogRecordings();
-  is_rtc_event_logging_in_progress_ = false;
   const bool is_stopped = true;
   callback.Run(prefix_path.AsUTF8Unsafe(), is_stopped, is_manual_stop);
 }

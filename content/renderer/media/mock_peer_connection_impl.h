@@ -62,6 +62,13 @@ class MockPeerConnectionImpl : public webrtc::PeerConnectionInterface {
     return PeerConnectionInterface::kIceGatheringNew;
   }
 
+  bool StartRtcEventLog(rtc::PlatformFile file,
+                        int64_t max_size_bytes) override {
+    NOTIMPLEMENTED();
+    return false;
+  }
+  void StopRtcEventLog() override { NOTIMPLEMENTED(); }
+
   MOCK_METHOD0(Close, void());
 
   const webrtc::SessionDescriptionInterface* local_description() const override;

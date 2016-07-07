@@ -108,12 +108,6 @@ class CONTENT_EXPORT PeerConnectionDependencyFactory
       int sdp_mline_index,
       const std::string& sdp);
 
-  // Starts recording an RTC event log.
-  virtual bool StartRtcEventLog(base::PlatformFile file);
-
-  // Starts recording an RTC event log.
-  virtual void StopRtcEventLog();
-
   WebRtcAudioDeviceImpl* GetWebRtcAudioDevice();
 
   void EnsureInitialized();

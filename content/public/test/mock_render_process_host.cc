@@ -317,10 +317,14 @@ void MockRenderProcessHost::EnableAudioDebugRecordings(
 
 void MockRenderProcessHost::DisableAudioDebugRecordings() {}
 
-void MockRenderProcessHost::EnableEventLogRecordings(
-    const base::FilePath& file) {}
+bool MockRenderProcessHost::StartWebRTCEventLog(
+    const base::FilePath& file_path) {
+  return false;
+}
 
-void MockRenderProcessHost::DisableEventLogRecordings() {}
+bool MockRenderProcessHost::StopWebRTCEventLog() {
+  return false;
+}
 
 void MockRenderProcessHost::SetWebRtcLogMessageCallback(
     base::Callback<void(const std::string&)> callback) {

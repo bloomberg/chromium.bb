@@ -248,8 +248,6 @@ const char kSiteProcessMapKeyName[] = "content_site_process_map";
 #ifdef ENABLE_WEBRTC
 const base::FilePath::CharType kAecDumpFileNameAddition[] =
     FILE_PATH_LITERAL("aec_dump");
-const base::FilePath::CharType kEventLogFileNameAddition[] =
-    FILE_PATH_LITERAL("event_log");
 #endif
 
 void CacheShaderInfo(int32_t id, base::FilePath path) {
@@ -553,6 +551,9 @@ RenderProcessHostImpl::RenderProcessHostImpl(
       delayed_cleanup_needed_(false),
       within_process_died_observer_(false),
       power_monitor_broadcaster_(this),
+#if defined(ENABLE_WEBRTC)
+      webrtc_eventlog_host_(id_),
+#endif
       worker_ref_count_(0),
       max_worker_count_(0),
       permission_service_context_(new PermissionServiceContext(this)),
@@ -932,7 +933,8 @@ void RenderProcessHostImpl::CreateMessageFilters() {
       blob_storage_context.get()));
 
 #if defined(ENABLE_WEBRTC)
-  peer_connection_tracker_host_ = new PeerConnectionTrackerHost(GetID());
+  peer_connection_tracker_host_ =
+      new PeerConnectionTrackerHost(GetID(), &webrtc_eventlog_host_);
   AddFilter(peer_connection_tracker_host_.get());
   AddFilter(new MediaStreamDispatcherHost(
       GetID(), browser_context->GetResourceContext()->GetMediaDeviceIDSalt(),
@@ -1757,12 +1759,8 @@ bool RenderProcessHostImpl::OnMessageReceived(const IPC::Message& msg) {
 #if defined(ENABLE_WEBRTC)
       IPC_MESSAGE_HANDLER(AecDumpMsg_RegisterAecDumpConsumer,
                           OnRegisterAecDumpConsumer)
-      IPC_MESSAGE_HANDLER(WebRTCEventLogMsg_RegisterEventLogConsumer,
-                          OnRegisterEventLogConsumer)
       IPC_MESSAGE_HANDLER(AecDumpMsg_UnregisterAecDumpConsumer,
                           OnUnregisterAecDumpConsumer)
-      IPC_MESSAGE_HANDLER(WebRTCEventLogMsg_UnregisterEventLogConsumer,
-                          OnUnregisterEventLogConsumer)
 #endif
     // Adding single handlers for your service here is fine, but once your
     // service needs more than one handler, please extract them into a new
@@ -2021,26 +2019,13 @@ void RenderProcessHostImpl::DisableAudioDebugRecordings() {
   }
 }
 
-void RenderProcessHostImpl::EnableEventLogRecordings(
-    const base::FilePath& file) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
-  // Enable Event log for each registered consumer.
-  base::FilePath file_with_extensions = GetEventLogFilePathWithExtensions(file);
-  for (int id : aec_dump_consumers_)
-    EnableEventLogForId(file_with_extensions, id);
+bool RenderProcessHostImpl::StartWebRTCEventLog(
+    const base::FilePath& file_path) {
+  return webrtc_eventlog_host_.StartWebRTCEventLog(file_path);
 }
 
-void RenderProcessHostImpl::DisableEventLogRecordings() {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
-  // Posting on the FILE thread and then replying back on the UI thread is only
-  // for avoiding races between enable and disable. Nothing is done on the FILE
-  // thread.
-  BrowserThread::PostTaskAndReply(
-      BrowserThread::FILE, FROM_HERE, base::Bind(&base::DoNothing),
-      base::Bind(&RenderProcessHostImpl::SendDisableEventLogToRenderer,
-                 weak_factory_.GetWeakPtr()));
+bool RenderProcessHostImpl::StopWebRTCEventLog() {
+  return webrtc_eventlog_host_.StopWebRTCEventLog();
 }
 
 void RenderProcessHostImpl::SetWebRtcLogMessageCallback(
@@ -2682,24 +2667,10 @@ void RenderProcessHostImpl::OnRegisterAecDumpConsumer(int id) {
                  weak_factory_.GetWeakPtr(), id));
 }
 
-void RenderProcessHostImpl::OnRegisterEventLogConsumer(int id) {
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      base::Bind(&RenderProcessHostImpl::RegisterEventLogConsumerOnUIThread,
-                 weak_factory_.GetWeakPtr(), id));
-}
-
 void RenderProcessHostImpl::OnUnregisterAecDumpConsumer(int id) {
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::Bind(&RenderProcessHostImpl::UnregisterAecDumpConsumerOnUIThread,
-                 weak_factory_.GetWeakPtr(), id));
-}
-
-void RenderProcessHostImpl::OnUnregisterEventLogConsumer(int id) {
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      base::Bind(&RenderProcessHostImpl::UnregisterEventLogConsumerOnUIThread,
                  weak_factory_.GetWeakPtr(), id));
 }
 
@@ -2714,29 +2685,7 @@ void RenderProcessHostImpl::RegisterAecDumpConsumerOnUIThread(int id) {
   }
 }
 
-void RenderProcessHostImpl::RegisterEventLogConsumerOnUIThread(int id) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  aec_dump_consumers_.push_back(id);
-
-  if (WebRTCInternals::GetInstance()->IsEventLogRecordingsEnabled()) {
-    base::FilePath file_with_extensions = GetEventLogFilePathWithExtensions(
-        WebRTCInternals::GetInstance()->GetEventLogRecordingsFilePath());
-    EnableEventLogForId(file_with_extensions, id);
-  }
-}
-
 void RenderProcessHostImpl::UnregisterAecDumpConsumerOnUIThread(int id) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  for (std::vector<int>::iterator it = aec_dump_consumers_.begin();
-       it != aec_dump_consumers_.end(); ++it) {
-    if (*it == id) {
-      aec_dump_consumers_.erase(it);
-      break;
-    }
-  }
-}
-
-void RenderProcessHostImpl::UnregisterEventLogConsumerOnUIThread(int id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   for (std::vector<int>::iterator it = aec_dump_consumers_.begin();
        it != aec_dump_consumers_.end(); ++it) {
@@ -2757,16 +2706,6 @@ void RenderProcessHostImpl::EnableAecDumpForId(const base::FilePath& file,
                  weak_factory_.GetWeakPtr(), id));
 }
 
-void RenderProcessHostImpl::EnableEventLogForId(const base::FilePath& file,
-                                                int id) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  BrowserThread::PostTaskAndReplyWithResult(
-      BrowserThread::FILE, FROM_HERE,
-      base::Bind(&CreateFileForProcess, file.AddExtension(IntToStringType(id))),
-      base::Bind(&RenderProcessHostImpl::SendEventLogFileToRenderer,
-                 weak_factory_.GetWeakPtr(), id));
-}
-
 void RenderProcessHostImpl::SendAecDumpFileToRenderer(
     int id,
     IPC::PlatformFileForTransit file_for_transit) {
@@ -2775,32 +2714,14 @@ void RenderProcessHostImpl::SendAecDumpFileToRenderer(
   Send(new AecDumpMsg_EnableAecDump(id, file_for_transit));
 }
 
-void RenderProcessHostImpl::SendEventLogFileToRenderer(
-    int id,
-    IPC::PlatformFileForTransit file_for_transit) {
-  if (file_for_transit == IPC::InvalidPlatformFileForTransit())
-    return;
-  Send(new WebRTCEventLogMsg_EnableEventLog(id, file_for_transit));
-}
-
 void RenderProcessHostImpl::SendDisableAecDumpToRenderer() {
   Send(new AecDumpMsg_DisableAecDump());
-}
-
-void RenderProcessHostImpl::SendDisableEventLogToRenderer() {
-  Send(new WebRTCEventLogMsg_DisableEventLog());
 }
 
 base::FilePath RenderProcessHostImpl::GetAecDumpFilePathWithExtensions(
     const base::FilePath& file) {
   return file.AddExtension(IntToStringType(base::GetProcId(GetHandle())))
       .AddExtension(kAecDumpFileNameAddition);
-}
-
-base::FilePath RenderProcessHostImpl::GetEventLogFilePathWithExtensions(
-    const base::FilePath& file) {
-  return file.AddExtension(IntToStringType(base::GetProcId(GetHandle())))
-      .AddExtension(kEventLogFileNameAddition);
 }
 #endif  // defined(ENABLE_WEBRTC)
 

@@ -1693,6 +1693,8 @@
       'browser/accessibility/browser_accessibility_manager_auralinux.h',
     ],
     'webrtc_browser_sources': [
+      'browser/media/webrtc/webrtc_eventlog_host.cc',
+      'browser/media/webrtc/webrtc_eventlog_host.h',
       'browser/media/webrtc/webrtc_internals.cc',
       'browser/media/webrtc/webrtc_internals.h',
       'browser/media/webrtc/webrtc_internals_message_handler.cc',

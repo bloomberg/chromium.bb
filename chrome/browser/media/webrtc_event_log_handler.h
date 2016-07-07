@@ -36,8 +36,9 @@ class WebRtcEventLogHandler
 
   explicit WebRtcEventLogHandler(Profile* profile);
 
-  // Starts an RTC event log. The call writes the most recent events to a
-  // file and then starts logging events for the given |delay|.
+  // Starts an RTC event log for each peerconnection on the specified |host|.
+  // The call writes the most recent events to a file and then starts logging
+  // events for the given |delay|.
   // If |delay| is zero, the logging will continue until
   // StopWebRtcEventLogging()
   // is explicitly invoked.
@@ -80,9 +81,6 @@ class WebRtcEventLogHandler
 
   // The profile associated with our renderer process.
   Profile* const profile_;
-
-  // Must be accessed on the UI thread.
-  bool is_rtc_event_logging_in_progress_;
 
   // This counter allows saving each log in a separate file.
   uint64_t current_rtc_event_log_id_;

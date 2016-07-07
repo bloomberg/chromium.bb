@@ -19,6 +19,8 @@ class ListValue;
 
 namespace content {
 
+class WebRTCEventLogHost;
+
 // This class is the host for PeerConnectionTracker in the browser process
 // managed by RenderProcessHostImpl. It receives PeerConnection events from
 // PeerConnectionTracker as IPC messages that it forwards to WebRTCInternals.
@@ -26,7 +28,8 @@ namespace content {
 class PeerConnectionTrackerHost : public BrowserMessageFilter,
                                   public base::PowerObserver {
  public:
-  explicit PeerConnectionTrackerHost(int render_process_id);
+  PeerConnectionTrackerHost(int render_process_id,
+                            WebRTCEventLogHost* event_log_host);
 
   // content::BrowserMessageFilter override.
   bool OnMessageReceived(const IPC::Message& message) override;
@@ -56,6 +59,8 @@ class PeerConnectionTrackerHost : public BrowserMessageFilter,
   void SendOnSuspendOnUIThread();
 
   int render_process_id_;
+
+  WebRTCEventLogHost* const event_log_host_;
 
   DISALLOW_COPY_AND_ASSIGN(PeerConnectionTrackerHost);
 };

@@ -23,6 +23,7 @@
 #include "content/browser/bluetooth/bluetooth_adapter_factory_wrapper.h"
 #include "content/browser/child_process_launcher.h"
 #include "content/browser/dom_storage/session_storage_namespace_impl.h"
+#include "content/browser/media/webrtc/webrtc_eventlog_host.h"
 #include "content/browser/power_monitor_message_broadcaster.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/render_process_host.h"
@@ -143,8 +144,8 @@ class CONTENT_EXPORT RenderProcessHostImpl
 #if defined(ENABLE_WEBRTC)
   void EnableAudioDebugRecordings(const base::FilePath& file) override;
   void DisableAudioDebugRecordings() override;
-  void EnableEventLogRecordings(const base::FilePath& file) override;
-  void DisableEventLogRecordings() override;
+  bool StartWebRTCEventLog(const base::FilePath& file_path) override;
+  bool StopWebRTCEventLog() override;
   void SetWebRtcLogMessageCallback(
       base::Callback<void(const std::string&)> callback) override;
   void ClearWebRtcLogMessageCallback() override;
@@ -343,24 +344,15 @@ class CONTENT_EXPORT RenderProcessHostImpl
 
 #if defined(ENABLE_WEBRTC)
   void OnRegisterAecDumpConsumer(int id);
-  void OnRegisterEventLogConsumer(int id);
   void OnUnregisterAecDumpConsumer(int id);
-  void OnUnregisterEventLogConsumer(int id);
   void RegisterAecDumpConsumerOnUIThread(int id);
-  void RegisterEventLogConsumerOnUIThread(int id);
   void UnregisterAecDumpConsumerOnUIThread(int id);
-  void UnregisterEventLogConsumerOnUIThread(int id);
   void EnableAecDumpForId(const base::FilePath& file, int id);
-  void EnableEventLogForId(const base::FilePath& file, int id);
   // Sends |file_for_transit| to the render process.
   void SendAecDumpFileToRenderer(int id,
                                  IPC::PlatformFileForTransit file_for_transit);
-  void SendEventLogFileToRenderer(int id,
-                                  IPC::PlatformFileForTransit file_for_transit);
   void SendDisableAecDumpToRenderer();
-  void SendDisableEventLogToRenderer();
   base::FilePath GetAecDumpFilePathWithExtensions(const base::FilePath& file);
-  base::FilePath GetEventLogFilePathWithExtensions(const base::FilePath& file);
 #endif
 
   static void OnMojoError(
@@ -488,6 +480,8 @@ class CONTENT_EXPORT RenderProcessHostImpl
   std::vector<int> aec_dump_consumers_;
 
   WebRtcStopRtpDumpCallback stop_rtp_dump_callback_;
+
+  WebRTCEventLogHost webrtc_eventlog_host_;
 #endif
 
   int worker_ref_count_;

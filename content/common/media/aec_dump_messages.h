@@ -21,17 +21,8 @@ IPC_MESSAGE_CONTROL2(AecDumpMsg_EnableAecDump,
                      int /* id */,
                      IPC::PlatformFileForTransit /* file_handle */)
 
-// The browser hands over a file handle to the consumer in the renderer
-// identified by |id| to use for the event log.
-IPC_MESSAGE_CONTROL2(WebRTCEventLogMsg_EnableEventLog,
-                     int /* id */,
-                     IPC::PlatformFileForTransit /* file_handle */)
-
 // Tell the renderer to disable AEC dump in all consumers.
 IPC_MESSAGE_CONTROL0(AecDumpMsg_DisableAecDump)
-
-// Tell the renderer to disable event log in all consumers.
-IPC_MESSAGE_CONTROL0(WebRTCEventLogMsg_DisableEventLog)
 
 // Messages sent from the renderer to the browser.
 
@@ -40,13 +31,6 @@ IPC_MESSAGE_CONTROL0(WebRTCEventLogMsg_DisableEventLog)
 IPC_MESSAGE_CONTROL1(AecDumpMsg_RegisterAecDumpConsumer,
                      int /* id */)
 
-// Registers a consumer with the browser. The consumer will then get a file
-// handle when the dump is enabled.
-IPC_MESSAGE_CONTROL1(WebRTCEventLogMsg_RegisterEventLogConsumer, int /* id */)
-
 // Unregisters a consumer with the browser.
 IPC_MESSAGE_CONTROL1(AecDumpMsg_UnregisterAecDumpConsumer,
                      int /* id */)
-
-// Unregisters a consumer with the browser.
-IPC_MESSAGE_CONTROL1(WebRTCEventLogMsg_UnregisterEventLogConsumer, int /* id */)

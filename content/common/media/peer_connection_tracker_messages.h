@@ -5,6 +5,7 @@
 #include "base/values.h"
 #include "content/common/content_export.h"
 #include "ipc/ipc_message_macros.h"
+#include "ipc/ipc_platform_file.h"
 
 #undef IPC_MESSAGE_EXPORT
 #define IPC_MESSAGE_EXPORT CONTENT_EXPORT
@@ -41,3 +42,8 @@ IPC_MESSAGE_CONTROL5(PeerConnectionTrackerHost_GetUserMedia,
 // Messages sent to PeerConnectionTracker.
 IPC_MESSAGE_CONTROL0(PeerConnectionTracker_GetAllStats)
 IPC_MESSAGE_CONTROL0(PeerConnectionTracker_OnSuspend)
+IPC_MESSAGE_CONTROL2(PeerConnectionTracker_StartEventLog,
+                     int /* peer_connection_local_id */,
+                     IPC::PlatformFileForTransit /* file */)
+IPC_MESSAGE_CONTROL1(PeerConnectionTracker_StopEventLog,
+                     int /* peer_connection_local_id */)

@@ -343,6 +343,8 @@ bool PeerConnectionTracker::OnControlMessageReceived(
   IPC_BEGIN_MESSAGE_MAP(PeerConnectionTracker, message)
     IPC_MESSAGE_HANDLER(PeerConnectionTracker_GetAllStats, OnGetAllStats)
     IPC_MESSAGE_HANDLER(PeerConnectionTracker_OnSuspend, OnSuspend)
+    IPC_MESSAGE_HANDLER(PeerConnectionTracker_StartEventLog, OnStartEventLog)
+    IPC_MESSAGE_HANDLER(PeerConnectionTracker_StopEventLog, OnStopEventLog)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -377,6 +379,36 @@ void PeerConnectionTracker::OnSuspend() {
   for (PeerConnectionIdMap::iterator it = peer_connection_id_map_.begin();
        it != peer_connection_id_map_.end(); ++it) {
     it->first->CloseClientPeerConnection();
+  }
+}
+
+void PeerConnectionTracker::OnStartEventLog(int peer_connection_id,
+                                            IPC::PlatformFileForTransit file) {
+  DCHECK(main_thread_.CalledOnValidThread());
+  for (auto& it : peer_connection_id_map_) {
+    if (it.second == peer_connection_id) {
+#if defined(OS_ANDROID)
+      // A lower maximum filesize is used on Android because storage space is
+      // more scarce on mobile. This upper limit applies to each peerconnection
+      // individually, so the total amount of used storage can be a multiple of
+      // this.
+      const int64_t kMaxFilesizeBytes = 10000000;
+#else
+      const int64_t kMaxFilesizeBytes = 60000000;
+#endif
+      it.first->StartEventLog(file, kMaxFilesizeBytes);
+      return;
+    }
+  }
+}
+
+void PeerConnectionTracker::OnStopEventLog(int peer_connection_id) {
+  DCHECK(main_thread_.CalledOnValidThread());
+  for (auto& it : peer_connection_id_map_) {
+    if (it.second == peer_connection_id) {
+      it.first->StopEventLog();
+      return;
+    }
   }
 }
 

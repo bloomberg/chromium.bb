@@ -94,8 +94,12 @@ void WebRTCInternalsMessageHandler::OnSetAudioDebugRecordingsEnabled(
 void WebRTCInternalsMessageHandler::OnSetEventLogRecordingsEnabled(
     bool enable,
     const base::ListValue* /* unused_list */) {
-  WebRTCInternals::GetInstance()->SetEventLogRecordings(
-      enable, enable ? web_ui()->GetWebContents() : nullptr);
+  if (enable) {
+    WebRTCInternals::GetInstance()->EnableEventLogRecordings(
+        web_ui()->GetWebContents());
+  } else {
+    WebRTCInternals::GetInstance()->DisableEventLogRecordings();
+  }
 }
 
 void WebRTCInternalsMessageHandler::OnDOMLoadDone(

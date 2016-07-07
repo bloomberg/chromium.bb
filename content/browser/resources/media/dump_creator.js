@@ -33,12 +33,12 @@ var DumpCreator = (function() {
         '</button></a></div>' +
         '<p><label><input type=checkbox>' +
         'Enable diagnostic audio recordings</label></p>' +
-        '<p class=audio-recordings-info>A diagnostic audio recording is used' +
-        ' for analyzing audio problems. It consists of two files and contains' +
-        ' the audio played out from the speaker and recorded from the' +
-        ' microphone and is saved to the local disk. Checking this box will' +
-        ' enable the recording for ongoing WebRTC calls and for future WebRTC' +
-        ' calls. When the box is unchecked or this page is closed, all' +
+        '<p class=audio-diagnostic-dumps-info>A diagnostic audio recording is' +
+        ' used for analyzing audio problems. It consists of two files and' +
+        ' contains the audio played out from the speaker and recorded from' +
+        ' the microphone and is saved to the local disk. Checking this box' +
+        ' will enable the recording for ongoing WebRTC calls and for future' +
+        ' WebRTC calls. When the box is unchecked or this page is closed, all' +
         ' ongoing recordings will be stopped and this recording' +
         ' functionality will be disabled for future WebRTC calls. Recordings' +
         ' in multiple tabs are supported as well as multiple recordings in' +
@@ -48,26 +48,37 @@ var DumpCreator = (function() {
         '.aec_dump.&lt;recording ID&gt;</div>' +
         '<div>&lt;base filename&gt;.&lt;render process ID&gt;' +
         '.source_input.&lt;stream ID&gt;.wav</div></p>' +
-        '<p class=audio-recordings-info>If recordings are disabled and then' +
-        ' enabled using the same base filename, the microphone recording file' +
-        ' will be overwritten, and the AEC dump file will be appended to and' +
-        ' may become invalid. It is recommended to choose a new base filename' +
-        ' each time or move the produced files before enabling again.</p>' +
+        '<p class=audio-diagnostic-dumps-info>If recordings are disabled and' +
+        ' then enabled using the same base filename, the microphone recording' +
+        ' file will be overwritten, and the AEC dump file will be appended to' +
+        ' and may become invalid. It is recommended to choose a new base' +
+        ' filename each time or move the produced files before enabling' +
+        ' again.</p>' +
         '<p><label><input type=checkbox>' +
         'Enable diagnostic packet and event recording</label></p>' +
-        '<p class=audio-recordings-info>A diagnostic packet and event' +
+        '<p class=audio-diagnostic-dumps-info>A diagnostic packet and event' +
         ' recording can be used for analyzing various issues related to' +
         ' thread starvation, jitter buffers or bandwidth estimation. Two' +
         ' types of data are logged. First, incoming and outgoing RTP headers' +
         ' and RTCP packets are logged. These do not include any audio or' +
         ' video information, nor any other types of personally identifiable' +
         ' information (so no IP addresses or URLs). Checking this box will' +
-        ' enable the recording for currently ongoing WebRTC calls. When' +
-        ' the box is unchecked or this page is closed, all active recordings' +
-        ' will be stopped. Recording in multiple tabs or multiple recordings' +
-        ' in the same tab is currently not supported. When enabling, a' +
-        ' filename for the recording can be selected. If an existing file is' +
-        ' selected, it will be overwritten. </p>';
+        ' enable the recording for ongoing WebRTC calls and for future' +
+        ' WebRTC calls. When the box is unchecked or this page is closed,' +
+        ' all ongoing recordings will be stopped and this recording' +
+        ' functionality will be disabled for future WebRTC calls. Recording' +
+        ' in multiple tabs or multiple recordings in the same tab will cause' +
+        ' multiple log files to be created. When enabling, a filename for the' +
+        ' recording can be entered. The entered filename is used as a' +
+        ' base, to which the following suffixes will be appended.</p>' +
+        ' <p>&lt;base filename&gt;.&lt;render process ID&gt;' +
+        '.&lt;recording ID&gt;</p>' +
+        '<p class=audio-diagnostic-dumps-info>If a file with the same name' +
+        ' already exists, it will be overwritten. No more than 5 logfiles ' +
+        ' will be created, and each of them is limited to 60MB of storage. ' +
+        ' On Android these limits are 3 files of at most 10MB each. ' +
+        ' When the limit is reached, the checkbox must be unchecked and ' +
+        ' rechecked to resume logging.</p>';
     content.getElementsByTagName('a')[0].addEventListener(
         'click', this.onDownloadData_.bind(this));
     content.getElementsByTagName('input')[0].addEventListener(

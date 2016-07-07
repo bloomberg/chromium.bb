@@ -692,8 +692,7 @@ void RenderThreadImpl::Init(
       new PeerConnectionDependencyFactory(p2p_socket_dispatcher_.get()));
 
   aec_dump_message_filter_ = new AecDumpMessageFilter(
-      GetIOMessageLoopProxy(), message_loop()->task_runner(),
-      peer_connection_factory_.get());
+      GetIOMessageLoopProxy(), message_loop()->task_runner());
 
   AddFilter(aec_dump_message_filter_.get());
 
