@@ -8,6 +8,7 @@
 
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
+#include "base/single_thread_task_runner.h"
 #include "content/browser/device_sensors/ambient_light_mac.h"
 #include "third_party/sudden_motion_sensor/sudden_motion_sensor_mac.h"
 
@@ -141,7 +142,7 @@ DataFetcherSharedMemory::~DataFetcherSharedMemory() {
 }
 
 void DataFetcherSharedMemory::Fetch(unsigned consumer_bitmask) {
-  DCHECK(base::MessageLoop::current() == GetPollingMessageLoop());
+  DCHECK(GetPollingMessageLoop()->task_runner()->BelongsToCurrentThread());
   DCHECK(consumer_bitmask & CONSUMER_TYPE_ORIENTATION ||
          consumer_bitmask & CONSUMER_TYPE_MOTION ||
          consumer_bitmask & CONSUMER_TYPE_LIGHT);
@@ -159,7 +160,7 @@ DataFetcherSharedMemory::FetcherType DataFetcherSharedMemory::GetType() const {
 }
 
 bool DataFetcherSharedMemory::Start(ConsumerType consumer_type, void* buffer) {
-  DCHECK(base::MessageLoop::current() == GetPollingMessageLoop());
+  DCHECK(GetPollingMessageLoop()->task_runner()->BelongsToCurrentThread());
   DCHECK(buffer);
 
   switch (consumer_type) {
@@ -235,7 +236,7 @@ bool DataFetcherSharedMemory::Start(ConsumerType consumer_type, void* buffer) {
 }
 
 bool DataFetcherSharedMemory::Stop(ConsumerType consumer_type) {
-  DCHECK(base::MessageLoop::current() == GetPollingMessageLoop());
+  DCHECK(GetPollingMessageLoop()->task_runner()->BelongsToCurrentThread());
 
   switch (consumer_type) {
     case CONSUMER_TYPE_MOTION:

@@ -94,7 +94,7 @@ GeolocationProviderImpl::~GeolocationProviderImpl() {
 }
 
 bool GeolocationProviderImpl::OnGeolocationThread() const {
-  return base::MessageLoop::current() == message_loop();
+  return task_runner()->BelongsToCurrentThread();
 }
 
 void GeolocationProviderImpl::OnClientsChanged() {

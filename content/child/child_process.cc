@@ -10,6 +10,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/statistics_recorder.h"
 #include "base/process/process_handle.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread.h"
@@ -87,13 +88,13 @@ void ChildProcess::set_main_thread(ChildThreadImpl* thread) {
 
 void ChildProcess::AddRefProcess() {
   DCHECK(!main_thread_.get() ||  // null in unittests.
-         base::MessageLoop::current() == main_thread_->message_loop());
+         main_thread_->message_loop()->task_runner()->BelongsToCurrentThread());
   ref_count_++;
 }
 
 void ChildProcess::ReleaseProcess() {
   DCHECK(!main_thread_.get() ||  // null in unittests.
-         base::MessageLoop::current() == main_thread_->message_loop());
+         main_thread_->message_loop()->task_runner()->BelongsToCurrentThread());
   DCHECK(ref_count_);
   if (--ref_count_)
     return;

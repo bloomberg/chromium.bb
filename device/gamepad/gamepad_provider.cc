@@ -159,7 +159,7 @@ void GamepadProvider::Initialize(std::unique_ptr<GamepadDataFetcher> fetcher) {
 
 void GamepadProvider::DoInitializePollingThread(
     std::unique_ptr<GamepadDataFetcher> fetcher) {
-  DCHECK(base::MessageLoop::current() == polling_thread_->message_loop());
+  DCHECK(polling_thread_->task_runner()->BelongsToCurrentThread());
   DCHECK(!data_fetcher_.get());  // Should only initialize once.
 
   if (!fetcher)
@@ -168,7 +168,7 @@ void GamepadProvider::DoInitializePollingThread(
 }
 
 void GamepadProvider::SendPauseHint(bool paused) {
-  DCHECK(base::MessageLoop::current() == polling_thread_->message_loop());
+  DCHECK(polling_thread_->task_runner()->BelongsToCurrentThread());
   if (data_fetcher_)
     data_fetcher_->PauseHint(paused);
 }
@@ -207,7 +207,7 @@ void GamepadProvider::PadState::AsWebGamepad(WebGamepad* pad) {
 }
 
 void GamepadProvider::DoPoll() {
-  DCHECK(base::MessageLoop::current() == polling_thread_->message_loop());
+  DCHECK(polling_thread_->task_runner()->BelongsToCurrentThread());
   DCHECK(have_scheduled_do_poll_);
   have_scheduled_do_poll_ = false;
 
@@ -256,7 +256,7 @@ void GamepadProvider::DoPoll() {
 }
 
 void GamepadProvider::ScheduleDoPoll() {
-  DCHECK(base::MessageLoop::current() == polling_thread_->message_loop());
+  DCHECK(polling_thread_->task_runner()->BelongsToCurrentThread());
   if (have_scheduled_do_poll_)
     return;
 

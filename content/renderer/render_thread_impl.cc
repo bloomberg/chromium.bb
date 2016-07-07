@@ -2056,7 +2056,7 @@ void RenderThreadImpl::OnMemoryPressure(
 
 scoped_refptr<base::SingleThreadTaskRunner>
 RenderThreadImpl::GetFileThreadMessageLoopProxy() {
-  DCHECK(message_loop() == base::MessageLoop::current());
+  DCHECK(message_loop()->task_runner()->BelongsToCurrentThread());
   if (!file_thread_) {
     file_thread_.reset(new base::Thread("Renderer::FILE"));
     file_thread_->Start();
@@ -2066,7 +2066,7 @@ RenderThreadImpl::GetFileThreadMessageLoopProxy() {
 
 scoped_refptr<base::SingleThreadTaskRunner>
 RenderThreadImpl::GetMediaThreadTaskRunner() {
-  DCHECK(message_loop() == base::MessageLoop::current());
+  DCHECK(message_loop()->task_runner()->BelongsToCurrentThread());
   if (!media_thread_) {
     media_thread_.reset(new base::Thread("Media"));
     media_thread_->Start();

@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/process/process_handle.h"
+#include "base/single_thread_task_runner.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"
 #include "content/common/device_sensors/device_light_hardware_buffer.h"
@@ -273,7 +274,8 @@ class FakePollingDataFetcher : public FakeDataFetcher {
   ~FakePollingDataFetcher() override {}
 
   bool Start(ConsumerType consumer_type, void* buffer) override {
-    EXPECT_TRUE(base::MessageLoop::current() == GetPollingMessageLoop());
+    EXPECT_TRUE(
+        GetPollingMessageLoop()->task_runner()->BelongsToCurrentThread());
 
     Init(consumer_type, buffer);
     switch (consumer_type) {
@@ -296,7 +298,8 @@ class FakePollingDataFetcher : public FakeDataFetcher {
   }
 
   bool Stop(ConsumerType consumer_type) override {
-    EXPECT_TRUE(base::MessageLoop::current() == GetPollingMessageLoop());
+    EXPECT_TRUE(
+        GetPollingMessageLoop()->task_runner()->BelongsToCurrentThread());
 
     switch (consumer_type) {
       case CONSUMER_TYPE_MOTION:
@@ -318,7 +321,8 @@ class FakePollingDataFetcher : public FakeDataFetcher {
   }
 
   void Fetch(unsigned consumer_bitmask) override {
-    EXPECT_TRUE(base::MessageLoop::current() == GetPollingMessageLoop());
+    EXPECT_TRUE(
+        GetPollingMessageLoop()->task_runner()->BelongsToCurrentThread());
     EXPECT_TRUE(consumer_bitmask & CONSUMER_TYPE_ORIENTATION ||
                 consumer_bitmask & CONSUMER_TYPE_ORIENTATION_ABSOLUTE ||
                 consumer_bitmask & CONSUMER_TYPE_MOTION ||
@@ -346,7 +350,8 @@ class FakeZeroDelayPollingDataFetcher : public FakeDataFetcher {
   ~FakeZeroDelayPollingDataFetcher() override {}
 
   bool Start(ConsumerType consumer_type, void* buffer) override {
-    EXPECT_TRUE(base::MessageLoop::current() == GetPollingMessageLoop());
+    EXPECT_TRUE(
+        GetPollingMessageLoop()->task_runner()->BelongsToCurrentThread());
 
     Init(consumer_type, buffer);
     switch (consumer_type) {
@@ -369,7 +374,8 @@ class FakeZeroDelayPollingDataFetcher : public FakeDataFetcher {
   }
 
   bool Stop(ConsumerType consumer_type) override {
-    EXPECT_TRUE(base::MessageLoop::current() == GetPollingMessageLoop());
+    EXPECT_TRUE(
+        GetPollingMessageLoop()->task_runner()->BelongsToCurrentThread());
 
     switch (consumer_type) {
       case CONSUMER_TYPE_MOTION:

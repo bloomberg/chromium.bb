@@ -157,7 +157,7 @@ bool GeolocationProviderTest::ProvidersStarted() {
 }
 
 void GeolocationProviderTest::GetProvidersStarted(bool* started) {
-  DCHECK(base::MessageLoop::current() == provider_->message_loop());
+  DCHECK(provider_->task_runner()->BelongsToCurrentThread());
   *started = provider_->mock_arbitrator()->providers_started();
 }
 
