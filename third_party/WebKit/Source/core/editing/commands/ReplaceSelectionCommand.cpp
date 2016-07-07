@@ -1313,7 +1313,7 @@ void ReplaceSelectionCommand::doApply(EditingState* editingState)
     if (editingState->isAborted())
         return;
 
-    if (m_sanitizeFragment) {
+    if (m_sanitizeFragment && insertedNodes.firstNodeInserted()) {
         applyCommandToComposite(SimplifyMarkupCommand::create(document(), insertedNodes.firstNodeInserted(), insertedNodes.pastLastLeaf()), editingState);
         if (editingState->isAborted())
             return;

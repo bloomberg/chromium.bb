@@ -25,6 +25,34 @@ namespace blink {
 class ReplaceSelectionCommandTest : public EditingTestBase {
 };
 
+// This is a regression test for https://crbug.com/619131
+TEST_F(ReplaceSelectionCommandTest, pastingEmptySpan)
+{
+    document().setDesignMode("on");
+    setBodyContent("foo");
+
+    LocalFrame* frame = document().frame();
+    frame->selection().setSelection(
+        VisibleSelection(Position(document().body(), 0)));
+
+    DocumentFragment* fragment = document().createDocumentFragment();
+    fragment->appendChild(document().createElement("span", ASSERT_NO_EXCEPTION));
+
+    // |options| are taken from |Editor::replaceSelectionWithFragment()| with
+    // |selectReplacement| and |smartReplace|.
+    ReplaceSelectionCommand::CommandOptions options =
+        ReplaceSelectionCommand::PreventNesting |
+        ReplaceSelectionCommand::SanitizeFragment |
+        ReplaceSelectionCommand::SelectReplacement |
+        ReplaceSelectionCommand::SmartReplace;
+    ReplaceSelectionCommand* command =
+        ReplaceSelectionCommand::create(document(), fragment, options);
+
+    EXPECT_TRUE(command->apply())
+        << "the replace command should have succeeded";
+    EXPECT_EQ("foo", document().body()->innerHTML()) << "no DOM tree mutation";
+}
+
 // This is a regression test for https://crbug.com/121163
 TEST_F(ReplaceSelectionCommandTest, styleTagsInPastedHeadIncludedInContent)
 {
