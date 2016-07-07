@@ -11,14 +11,13 @@
 #include "base/memory/ref_counted.h"
 #include "base/strings/string_piece.h"
 #include "net/base/net_export.h"
+#include "net/cert/internal/parsed_certificate.h"
 
 namespace net {
 
 namespace der {
 class Input;
 }
-
-class ParsedCertificate;
 
 // A very simple implementation of a TrustStore, which contains a set of
 // trusted certificates.
@@ -36,9 +35,8 @@ class NET_EXPORT TrustStore {
   void AddTrustedCertificate(scoped_refptr<ParsedCertificate> anchor);
 
   // Returns the trust anchors that match |name| in |*matches|, if any.
-  void FindTrustAnchorsByNormalizedName(
-      const der::Input& normalized_name,
-      std::vector<scoped_refptr<ParsedCertificate>>* matches) const;
+  void FindTrustAnchorsByNormalizedName(const der::Input& normalized_name,
+                                        ParsedCertificateList* matches) const;
 
   // Returns true if |cert| matches a certificate in the TrustStore.
   bool IsTrustedCertificate(const ParsedCertificate* cert) const

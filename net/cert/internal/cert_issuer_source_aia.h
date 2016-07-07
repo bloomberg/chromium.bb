@@ -22,9 +22,8 @@ class NET_EXPORT CertIssuerSourceAia : public CertIssuerSource {
   ~CertIssuerSourceAia() override;
 
   // CertIssuerSource implementation:
-  void SyncGetIssuersOf(
-      const ParsedCertificate* cert,
-      std::vector<scoped_refptr<ParsedCertificate>>* issuers) override;
+  void SyncGetIssuersOf(const ParsedCertificate* cert,
+                        ParsedCertificateList* issuers) override;
   void AsyncGetIssuersOf(const ParsedCertificate* cert,
                          const IssuerCallback& issuers_callback,
                          std::unique_ptr<Request>* out_req) override;

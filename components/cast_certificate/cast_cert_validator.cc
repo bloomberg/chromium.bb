@@ -13,15 +13,16 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/memory/singleton.h"
+#include "net/cert/internal/cert_issuer_source_static.h"
 #include "net/cert/internal/certificate_policies.h"
 #include "net/cert/internal/extended_key_usage.h"
 #include "net/cert/internal/parse_certificate.h"
 #include "net/cert/internal/parse_name.h"
 #include "net/cert/internal/parsed_certificate.h"
+#include "net/cert/internal/path_builder.h"
 #include "net/cert/internal/signature_algorithm.h"
 #include "net/cert/internal/signature_policy.h"
 #include "net/cert/internal/trust_store.h"
-#include "net/cert/internal/verify_certificate_chain.h"
 #include "net/cert/internal/verify_signed_data.h"
 #include "net/der/input.h"
 
@@ -245,20 +246,6 @@ net::der::GeneralizedTime ConvertExplodedTime(
   return result;
 }
 
-class ScopedCheckUnreferencedCerts {
- public:
-  explicit ScopedCheckUnreferencedCerts(
-      std::vector<scoped_refptr<net::ParsedCertificate>>* certs)
-      : certs_(certs) {}
-  ~ScopedCheckUnreferencedCerts() {
-    for (const auto& cert : *certs_)
-      DCHECK(cert->HasOneRef());
-  }
-
- private:
-  std::vector<scoped_refptr<net::ParsedCertificate>>* certs_;
-};
-
 // Returns the parsing options used for Cast certificates.
 net::ParseCertificateOptions GetCertParsingOptions() {
   net::ParseCertificateOptions options;
@@ -281,38 +268,46 @@ bool VerifyDeviceCert(const std::vector<std::string>& certs,
                       const base::Time::Exploded& time,
                       std::unique_ptr<CertVerificationContext>* context,
                       CastDeviceCertPolicy* policy) {
-  // The underlying verification function expects a sequence of
-  // ParsedCertificate.
-  std::vector<scoped_refptr<net::ParsedCertificate>> input_chain;
-  // Verify that nothing saves a reference to the input certs, since the backing
-  // data will go out of scope when the function finishes.
-  ScopedCheckUnreferencedCerts ref_checker(&input_chain);
+  if (certs.empty())
+    return false;
 
-  for (const auto& cert_der : certs) {
-    // No reference to the ParsedCertificate is kept past the end of this
-    // function, so using EXTERNAL_REFERENCE here is safe.
-    if (!net::ParsedCertificate::CreateAndAddToVector(
-            reinterpret_cast<const uint8_t*>(cert_der.data()), cert_der.size(),
+  // No reference to these ParsedCertificates is kept past the end of this
+  // function, so using EXTERNAL_REFERENCE here is safe.
+  scoped_refptr<net::ParsedCertificate> target_cert;
+  net::CertIssuerSourceStatic intermediate_cert_issuer_source;
+  for (size_t i = 0; i < certs.size(); ++i) {
+    scoped_refptr<net::ParsedCertificate> cert(
+        net::ParsedCertificate::CreateFromCertificateData(
+            reinterpret_cast<const uint8_t*>(certs[i].data()), certs[i].size(),
             net::ParsedCertificate::DataSource::EXTERNAL_REFERENCE,
-            GetCertParsingOptions(), &input_chain)) {
+            GetCertParsingOptions()));
+    if (!cert)
       return false;
-    }
+
+    if (i == 0)
+      target_cert = std::move(cert);
+    else
+      intermediate_cert_issuer_source.AddCert(std::move(cert));
   }
 
   // Use a signature policy compatible with Cast's PKI.
   auto signature_policy = CreateCastSignaturePolicy();
 
-  // Do RFC 5280 compatible certificate verification using the two Cast
-  // trust anchors and Cast signature policy.
-  if (!net::VerifyCertificateChain(input_chain, CastTrustStore::Get(),
-                                   signature_policy.get(),
-                                   ConvertExplodedTime(time), nullptr)) {
+  // Do path building and RFC 5280 compatible certificate verification using the
+  // two Cast trust anchors and Cast signature policy.
+  net::CertPathBuilder::Result result;
+  net::CertPathBuilder path_builder(target_cert.get(), &CastTrustStore::Get(),
+                                    signature_policy.get(),
+                                    ConvertExplodedTime(time), &result);
+  path_builder.AddCertIssuerSource(&intermediate_cert_issuer_source);
+  net::CompletionStatus rv = path_builder.Run(base::Closure());
+  DCHECK_EQ(rv, net::CompletionStatus::SYNC);
+  if (!result.is_success())
     return false;
-  }
 
   // Check properties of the leaf certificate (key usage, policy), and construct
   // a CertVerificationContext that uses its public key.
-  return CheckTargetCertificate(input_chain[0].get(), context, policy);
+  return CheckTargetCertificate(target_cert.get(), context, policy);
 }
 
 std::unique_ptr<CertVerificationContext> CertVerificationContextImplForTest(

@@ -162,7 +162,7 @@ bool ParsedCertificate::CreateAndAddToVector(
     size_t length,
     DataSource source,
     const ParseCertificateOptions& options,
-    std::vector<scoped_refptr<ParsedCertificate>>* chain) {
+    ParsedCertificateList* chain) {
   scoped_refptr<ParsedCertificate> cert(
       CreateFromCertificateData(data, length, source, options));
   if (!cert)

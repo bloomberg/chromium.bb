@@ -18,7 +18,10 @@ namespace net {
 
 struct GeneralNames;
 class NameConstraints;
+class ParsedCertificate;
 class SignatureAlgorithm;
+
+using ParsedCertificateList = std::vector<scoped_refptr<ParsedCertificate>>;
 
 // Represents an X.509 certificate, including Certificate, TBSCertificate, and
 // standard extensions.

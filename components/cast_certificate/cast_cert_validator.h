@@ -54,9 +54,9 @@ class CertVerificationContext {
 // Inputs:
 //
 // * |certs| is a chain of DER-encoded certificates:
-//   * |certs[0]| is the target certificate (i.e. the device certificate)
-//   * |certs[i]| is the certificate that issued certs[i-1]
-//   * |certs.back()| must be signed by a trust anchor
+//   * |certs[0]| is the target certificate (i.e. the device certificate).
+//   * |certs[1..n-1]| are intermediates certificates to use in path building.
+//     Their ordering does not matter.
 //
 // * |time| is the UTC time to use for determining if the certificate
 //   is expired.

@@ -4,8 +4,6 @@
 
 #include "net/cert/internal/trust_store.h"
 
-#include "net/cert/internal/parsed_certificate.h"
-
 namespace net {
 
 TrustStore::TrustStore() {}
@@ -24,7 +22,7 @@ void TrustStore::AddTrustedCertificate(
 
 void TrustStore::FindTrustAnchorsByNormalizedName(
     const der::Input& normalized_name,
-    std::vector<scoped_refptr<ParsedCertificate>>* matches) const {
+    ParsedCertificateList* matches) const {
   auto range = anchors_.equal_range(normalized_name.AsStringPiece());
   for (auto it = range.first; it != range.second; ++it)
     matches->push_back(it->second);
@@ -33,9 +31,13 @@ void TrustStore::FindTrustAnchorsByNormalizedName(
 bool TrustStore::IsTrustedCertificate(const ParsedCertificate* cert) const {
   auto range = anchors_.equal_range(cert->normalized_subject().AsStringPiece());
   for (auto it = range.first; it != range.second; ++it) {
-    // First compare the ParsedCertificate pointers as an optimization, fall
-    // back to comparing full DER encoding.
-    if (it->second == cert || it->second->der_cert() == cert->der_cert())
+    // First compare the ParsedCertificate pointers as an optimization.
+    if (it->second == cert ||
+        // Trust check is based on Name+SPKI match. This could match the same
+        // certificate stored in a different ParsedCertificate object, or a
+        // different cert that has the same Name+SPKI.
+        (it->second->normalized_subject() == cert->normalized_subject() &&
+         it->second->tbs().spki_tlv == cert->tbs().spki_tlv))
       return true;
   }
   return false;

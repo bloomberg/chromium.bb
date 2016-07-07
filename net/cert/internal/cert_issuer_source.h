@@ -11,10 +11,9 @@
 #include "base/callback.h"
 #include "net/base/net_export.h"
 #include "net/cert/internal/completion_status.h"
+#include "net/cert/internal/parsed_certificate.h"
 
 namespace net {
-
-class ParsedCertificate;
 
 // Interface for looking up issuers of a certificate during path building.
 // Provides a synchronous and asynchronous method for retrieving issuers, so the
@@ -58,9 +57,8 @@ class NET_EXPORT CertIssuerSource {
   // Matches are appended to |issuers|. Any existing contents of |issuers| will
   // not be modified. If the implementation does not support synchronous
   // lookups, or if there are no matches, |issuers| is not modified.
-  virtual void SyncGetIssuersOf(
-      const ParsedCertificate* cert,
-      std::vector<scoped_refptr<ParsedCertificate>>* issuers) = 0;
+  virtual void SyncGetIssuersOf(const ParsedCertificate* cert,
+                                ParsedCertificateList* issuers) = 0;
 
   // Finds certificates whose Subject matches |cert|'s Issuer.
   // If an async callback will be made |*out_req| is filled with a Request

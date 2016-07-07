@@ -2,11 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/cert/internal/verify_certificate_chain.h"
+#include "net/cert/internal/path_builder.h"
 
+#include "net/base/net_errors.h"
+#include "net/cert/internal/cert_issuer_source_static.h"
+#include "net/cert/internal/parse_certificate.h"
 #include "net/cert/internal/parsed_certificate.h"
 #include "net/cert/internal/signature_policy.h"
 #include "net/cert/internal/trust_store.h"
+#include "net/cert/internal/verify_certificate_chain.h"
 #include "net/der/input.h"
 
 // Disable tests that require DSA signatures (DSA signatures are intentionally
@@ -44,7 +48,7 @@ namespace net {
 
 namespace {
 
-class VerifyCertificateChainPkitsTestDelegate {
+class PathBuilderPkitsTestDelegate {
  public:
   static bool Verify(std::vector<std::string> cert_ders,
                      std::vector<std::string> crl_ders) {
@@ -52,40 +56,50 @@ class VerifyCertificateChainPkitsTestDelegate {
       ADD_FAILURE() << "cert_ders is empty";
       return false;
     }
-
-    // PKITS lists chains from trust anchor to target, VerifyCertificateChain
-    // takes them starting with the target and not including the trust anchor.
-    std::vector<scoped_refptr<net::ParsedCertificate>> input_chain;
-    for (auto i = cert_ders.rbegin(); i != cert_ders.rend(); ++i) {
-      if (!net::ParsedCertificate::CreateAndAddToVector(
-              reinterpret_cast<const uint8_t*>(i->data()), i->size(),
-              net::ParsedCertificate::DataSource::EXTERNAL_REFERENCE, {},
-              &input_chain)) {
-        ADD_FAILURE() << "cert failed to parse";
+    ParsedCertificateList certs;
+    for (const std::string& der : cert_ders) {
+      certs.push_back(ParsedCertificate::CreateFromCertificateCopy(der, {}));
+      if (!certs.back()) {
+        ADD_FAILURE() << "ParsedCertificate::CreateFromCertificateCopy failed";
         return false;
       }
     }
-
+    // First entry in the PKITS chain is the trust anchor.
+    // TODO(mattm): test with all possible trust anchors in the trust store?
     TrustStore trust_store;
-    trust_store.AddTrustedCertificate(input_chain.back());
+    trust_store.AddTrustedCertificate(certs[0]);
+
+    // TODO(mattm): test with other irrelevant certs in cert_issuer_sources?
+    CertIssuerSourceStatic cert_issuer_source;
+    for (size_t i = 1; i < cert_ders.size() - 1; ++i)
+      cert_issuer_source.AddCert(certs[i]);
+
+    scoped_refptr<ParsedCertificate> target_cert(certs.back());
 
     SimpleSignaturePolicy signature_policy(1024);
 
     // Run all tests at the time the PKITS was published.
     der::GeneralizedTime time = {2011, 4, 15, 0, 0, 0};
 
-    return VerifyCertificateChainAssumingTrustedRoot(input_chain, trust_store,
-                                                     &signature_policy, time);
+    CertPathBuilder::Result result;
+    CertPathBuilder path_builder(std::move(target_cert), &trust_store,
+                                 &signature_policy, time, &result);
+    path_builder.AddCertIssuerSource(&cert_issuer_source);
+
+    CompletionStatus rv = path_builder.Run(base::Closure());
+    EXPECT_EQ(CompletionStatus::SYNC, rv);
+
+    return result.is_success();
   }
 };
 
 }  // namespace
 
-class PkitsTest01SignatureVerificationCustom
-    : public PkitsTest<VerifyCertificateChainPkitsTestDelegate> {};
+class PkitsTest01SignatureVerificationCustomPathBuilderFoo
+    : public PkitsTest<PathBuilderPkitsTestDelegate> {};
 
 // Modified version of 4.1.4 Valid DSA Signatures Test4
-TEST_F(PkitsTest01SignatureVerificationCustom,
+TEST_F(PkitsTest01SignatureVerificationCustomPathBuilderFoo,
        Section1ValidDSASignaturesTest4Custom) {
   const char* const certs[] = {"TrustAnchorRootCertificate", "DSACACert",
                                "ValidDSASignaturesTest4EE"};
@@ -95,7 +109,7 @@ TEST_F(PkitsTest01SignatureVerificationCustom,
 }
 
 // Modified version of 4.1.5 Valid DSA Parameter Inheritance Test5
-TEST_F(PkitsTest01SignatureVerificationCustom,
+TEST_F(PkitsTest01SignatureVerificationCustomPathBuilderFoo,
        Section1ValidDSAParameterInheritanceTest5Custom) {
   const char* const certs[] = {"TrustAnchorRootCertificate", "DSACACert",
                                "DSAParametersInheritedCACert",
@@ -106,11 +120,11 @@ TEST_F(PkitsTest01SignatureVerificationCustom,
   ASSERT_FALSE(this->Verify(certs, crls));
 }
 
-class PkitsTest13SignatureVerificationCustom
-    : public PkitsTest<VerifyCertificateChainPkitsTestDelegate> {};
+class PkitsTest13SignatureVerificationCustomPathBuilderFoo
+    : public PkitsTest<PathBuilderPkitsTestDelegate> {};
 
 // Modified version of 4.13.21 Valid RFC822 nameConstraints Test21
-TEST_F(PkitsTest13SignatureVerificationCustom,
+TEST_F(PkitsTest13SignatureVerificationCustomPathBuilderFoo,
        Section13ValidRFC822nameConstraintsTest21Custom) {
   const char* const certs[] = {"TrustAnchorRootCertificate",
                                "nameConstraintsRFC822CA1Cert",
@@ -122,7 +136,7 @@ TEST_F(PkitsTest13SignatureVerificationCustom,
 }
 
 // Modified version of 4.13.23 Valid RFC822 nameConstraints Test23
-TEST_F(PkitsTest13SignatureVerificationCustom,
+TEST_F(PkitsTest13SignatureVerificationCustomPathBuilderFoo,
        Section13ValidRFC822nameConstraintsTest23Custom) {
   const char* const certs[] = {"TrustAnchorRootCertificate",
                                "nameConstraintsRFC822CA2Cert",
@@ -134,7 +148,7 @@ TEST_F(PkitsTest13SignatureVerificationCustom,
 }
 
 // Modified version of 4.13.25 Valid RFC822 nameConstraints Test25
-TEST_F(PkitsTest13SignatureVerificationCustom,
+TEST_F(PkitsTest13SignatureVerificationCustomPathBuilderFoo,
        Section13ValidRFC822nameConstraintsTest25Custom) {
   const char* const certs[] = {"TrustAnchorRootCertificate",
                                "nameConstraintsRFC822CA3Cert",
@@ -146,7 +160,7 @@ TEST_F(PkitsTest13SignatureVerificationCustom,
 }
 
 // Modified version of 4.13.27 Valid DN and RFC822 nameConstraints Test27
-TEST_F(PkitsTest13SignatureVerificationCustom,
+TEST_F(PkitsTest13SignatureVerificationCustomPathBuilderFoo,
        Section13ValidDNandRFC822nameConstraintsTest27Custom) {
   const char* const certs[] = {"TrustAnchorRootCertificate",
                                "nameConstraintsDN1CACert",
@@ -159,7 +173,7 @@ TEST_F(PkitsTest13SignatureVerificationCustom,
 }
 
 // Modified version of 4.13.34 Valid URI nameConstraints Test34
-TEST_F(PkitsTest13SignatureVerificationCustom,
+TEST_F(PkitsTest13SignatureVerificationCustomPathBuilderFoo,
        Section13ValidURInameConstraintsTest34Custom) {
   const char* const certs[] = {"TrustAnchorRootCertificate",
                                "nameConstraintsURI1CACert",
@@ -170,7 +184,7 @@ TEST_F(PkitsTest13SignatureVerificationCustom,
 }
 
 // Modified version of 4.13.36 Valid URI nameConstraints Test36
-TEST_F(PkitsTest13SignatureVerificationCustom,
+TEST_F(PkitsTest13SignatureVerificationCustomPathBuilderFoo,
        Section13ValidURInameConstraintsTest36Custom) {
   const char* const certs[] = {"TrustAnchorRootCertificate",
                                "nameConstraintsURI2CACert",
@@ -180,27 +194,27 @@ TEST_F(PkitsTest13SignatureVerificationCustom,
   ASSERT_FALSE(this->Verify(certs, crls));
 }
 
-INSTANTIATE_TYPED_TEST_CASE_P(VerifyCertificateChain,
+INSTANTIATE_TYPED_TEST_CASE_P(PathBuilder,
                               PkitsTest01SignatureVerification,
-                              VerifyCertificateChainPkitsTestDelegate);
-INSTANTIATE_TYPED_TEST_CASE_P(VerifyCertificateChain,
+                              PathBuilderPkitsTestDelegate);
+INSTANTIATE_TYPED_TEST_CASE_P(PathBuilder,
                               PkitsTest02ValidityPeriods,
-                              VerifyCertificateChainPkitsTestDelegate);
-INSTANTIATE_TYPED_TEST_CASE_P(VerifyCertificateChain,
+                              PathBuilderPkitsTestDelegate);
+INSTANTIATE_TYPED_TEST_CASE_P(PathBuilder,
                               PkitsTest03VerifyingNameChaining,
-                              VerifyCertificateChainPkitsTestDelegate);
-INSTANTIATE_TYPED_TEST_CASE_P(VerifyCertificateChain,
+                              PathBuilderPkitsTestDelegate);
+INSTANTIATE_TYPED_TEST_CASE_P(PathBuilder,
                               PkitsTest06VerifyingBasicConstraints,
-                              VerifyCertificateChainPkitsTestDelegate);
-INSTANTIATE_TYPED_TEST_CASE_P(VerifyCertificateChain,
+                              PathBuilderPkitsTestDelegate);
+INSTANTIATE_TYPED_TEST_CASE_P(PathBuilder,
                               PkitsTest07KeyUsage,
-                              VerifyCertificateChainPkitsTestDelegate);
-INSTANTIATE_TYPED_TEST_CASE_P(VerifyCertificateChain,
+                              PathBuilderPkitsTestDelegate);
+INSTANTIATE_TYPED_TEST_CASE_P(PathBuilder,
                               PkitsTest13NameConstraints,
-                              VerifyCertificateChainPkitsTestDelegate);
-INSTANTIATE_TYPED_TEST_CASE_P(VerifyCertificateChain,
+                              PathBuilderPkitsTestDelegate);
+INSTANTIATE_TYPED_TEST_CASE_P(PathBuilder,
                               PkitsTest16PrivateCertificateExtensions,
-                              VerifyCertificateChainPkitsTestDelegate);
+                              PathBuilderPkitsTestDelegate);
 
 // TODO(mattm): CRL support: PkitsTest04BasicCertificateRevocationTests,
 // PkitsTest05VerifyingPathswithSelfIssuedCertificates,

@@ -23,9 +23,8 @@ class NET_EXPORT CertIssuerSourceStatic : public CertIssuerSource {
   void AddCert(scoped_refptr<ParsedCertificate> cert);
 
   // CertIssuerSource implementation:
-  void SyncGetIssuersOf(
-      const ParsedCertificate* cert,
-      std::vector<scoped_refptr<ParsedCertificate>>* issuers) override;
+  void SyncGetIssuersOf(const ParsedCertificate* cert,
+                        ParsedCertificateList* issuers) override;
   void AsyncGetIssuersOf(const ParsedCertificate* cert,
                          const IssuerCallback& issuers_callback,
                          std::unique_ptr<Request>* out_req) override;

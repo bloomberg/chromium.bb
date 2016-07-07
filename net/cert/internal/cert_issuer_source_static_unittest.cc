@@ -78,7 +78,7 @@ TEST_F(CertIssuerSourceStaticTest, NoMatch) {
   CertIssuerSourceStatic source;
   source.AddCert(root_);
 
-  std::vector<scoped_refptr<ParsedCertificate>> issuers;
+  ParsedCertificateList issuers;
   source.SyncGetIssuersOf(c1_.get(), &issuers);
   ASSERT_EQ(0U, issuers.size());
 }
@@ -87,7 +87,7 @@ TEST_F(CertIssuerSourceStaticTest, OneMatch) {
   CertIssuerSourceStatic source;
   AddAllCerts(&source);
 
-  std::vector<scoped_refptr<ParsedCertificate>> issuers;
+  ParsedCertificateList issuers;
   source.SyncGetIssuersOf(i1_1_.get(), &issuers);
   ASSERT_EQ(1U, issuers.size());
   EXPECT_TRUE(issuers[0] == root_);
@@ -102,7 +102,7 @@ TEST_F(CertIssuerSourceStaticTest, MultipleMatches) {
   CertIssuerSourceStatic source;
   AddAllCerts(&source);
 
-  std::vector<scoped_refptr<ParsedCertificate>> issuers;
+  ParsedCertificateList issuers;
   source.SyncGetIssuersOf(c1_.get(), &issuers);
 
   ASSERT_EQ(2U, issuers.size());
@@ -120,7 +120,7 @@ TEST_F(CertIssuerSourceStaticTest, SelfIssued) {
   CertIssuerSourceStatic source;
   AddAllCerts(&source);
 
-  std::vector<scoped_refptr<ParsedCertificate>> issuers;
+  ParsedCertificateList issuers;
   source.SyncGetIssuersOf(root_.get(), &issuers);
 
   ASSERT_EQ(1U, issuers.size());

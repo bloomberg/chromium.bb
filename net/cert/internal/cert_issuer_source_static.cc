@@ -4,8 +4,6 @@
 
 #include "net/cert/internal/cert_issuer_source_static.h"
 
-#include "net/cert/internal/parsed_certificate.h"
-
 namespace net {
 
 CertIssuerSourceStatic::CertIssuerSourceStatic() = default;
@@ -16,9 +14,8 @@ void CertIssuerSourceStatic::AddCert(scoped_refptr<ParsedCertificate> cert) {
       cert->normalized_subject().AsStringPiece(), std::move(cert)));
 }
 
-void CertIssuerSourceStatic::SyncGetIssuersOf(
-    const ParsedCertificate* cert,
-    std::vector<scoped_refptr<ParsedCertificate>>* issuers) {
+void CertIssuerSourceStatic::SyncGetIssuersOf(const ParsedCertificate* cert,
+                                              ParsedCertificateList* issuers) {
   auto range =
       intermediates_.equal_range(cert->normalized_issuer().AsStringPiece());
   for (auto it = range.first; it != range.second; ++it)

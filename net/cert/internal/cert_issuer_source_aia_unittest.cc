@@ -166,7 +166,7 @@ TEST(CertIssuerSourceAiaTest, NoSyncResults) {
 
   StrictMock<MockCertNetFetcherImpl> mock_fetcher;
   CertIssuerSourceAia aia_source(&mock_fetcher);
-  std::vector<scoped_refptr<ParsedCertificate>> issuers;
+  ParsedCertificateList issuers;
   aia_source.SyncGetIssuersOf(cert.get(), &issuers);
   EXPECT_EQ(0U, issuers.size());
 }

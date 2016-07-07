@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "net/cert/cert_net_fetcher.h"
-#include "net/cert/internal/parsed_certificate.h"
 #include "url/gurl.h"
 
 namespace net {
@@ -37,7 +36,7 @@ class AiaRequest : public CertIssuerSource::Request {
   CertIssuerSource::IssuerCallback issuers_callback_;
   std::vector<std::unique_ptr<CertNetFetcher::Request>> cert_fetcher_requests_;
   size_t pending_requests_ = 0;
-  std::vector<scoped_refptr<ParsedCertificate>> results_;
+  ParsedCertificateList results_;
   size_t current_result_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(AiaRequest);
@@ -109,9 +108,8 @@ CertIssuerSourceAia::CertIssuerSourceAia(CertNetFetcher* cert_fetcher)
 
 CertIssuerSourceAia::~CertIssuerSourceAia() = default;
 
-void CertIssuerSourceAia::SyncGetIssuersOf(
-    const ParsedCertificate* cert,
-    std::vector<scoped_refptr<ParsedCertificate>>* issuers) {
+void CertIssuerSourceAia::SyncGetIssuersOf(const ParsedCertificate* cert,
+                                           ParsedCertificateList* issuers) {
   // CertIssuerSourceAia never returns synchronous results.
 }
 
