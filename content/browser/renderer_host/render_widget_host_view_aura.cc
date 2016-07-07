@@ -1041,46 +1041,6 @@ gfx::Size RenderWidgetHostViewAura::GetRequestedRendererSize() const {
   return delegated_frame_host_->GetRequestedRendererSize();
 }
 
-void RenderWidgetHostViewAura::SelectionBoundsChanged(
-    const ViewHostMsg_SelectionBounds_Params& params) {
-  gfx::SelectionBound anchor_bound, focus_bound;
-  anchor_bound.SetEdge(gfx::PointF(params.anchor_rect.origin()),
-                       gfx::PointF(params.anchor_rect.bottom_left()));
-  focus_bound.SetEdge(gfx::PointF(params.focus_rect.origin()),
-                      gfx::PointF(params.focus_rect.bottom_left()));
-
-  if (params.anchor_rect == params.focus_rect) {
-    anchor_bound.set_type(gfx::SelectionBound::CENTER);
-    focus_bound.set_type(gfx::SelectionBound::CENTER);
-  } else {
-    // Whether text is LTR at the anchor handle.
-    bool anchor_LTR = params.anchor_dir == blink::WebTextDirectionLeftToRight;
-    // Whether text is LTR at the focus handle.
-    bool focus_LTR = params.focus_dir == blink::WebTextDirectionLeftToRight;
-
-    if ((params.is_anchor_first && anchor_LTR) ||
-        (!params.is_anchor_first && !anchor_LTR)) {
-      anchor_bound.set_type(gfx::SelectionBound::LEFT);
-    } else {
-      anchor_bound.set_type(gfx::SelectionBound::RIGHT);
-    }
-    if ((params.is_anchor_first && focus_LTR) ||
-        (!params.is_anchor_first && !focus_LTR)) {
-      focus_bound.set_type(gfx::SelectionBound::RIGHT);
-    } else {
-      focus_bound.set_type(gfx::SelectionBound::LEFT);
-    }
-  }
-
-  if (anchor_bound == selection_anchor_ && focus_bound == selection_focus_)
-    return;
-
-  selection_anchor_ = anchor_bound;
-  selection_focus_ = focus_bound;
-  if (GetInputMethod())
-    GetInputMethod()->OnCaretBoundsChanged(this);
-}
-
 void RenderWidgetHostViewAura::CopyFromCompositingSurface(
     const gfx::Rect& src_subrect,
     const gfx::Size& dst_size,
@@ -1564,8 +1524,9 @@ gfx::Rect RenderWidgetHostViewAura::ConvertRectFromScreen(
 }
 
 gfx::Rect RenderWidgetHostViewAura::GetCaretBounds() const {
-  return ConvertRectToScreen(
-      gfx::RectBetweenSelectionBounds(selection_anchor_, selection_focus_));
+  if (!text_input_manager_ || !text_input_manager_->GetActiveWidget())
+    return gfx::Rect();
+  return ConvertRectToScreen(text_input_manager_->GetSelectionBoundsRect());
 }
 
 bool RenderWidgetHostViewAura::GetCompositionCharacterBounds(
@@ -3029,6 +2990,13 @@ void RenderWidgetHostViewAura::OnImeCancelComposition(
   if (GetInputMethod())
     GetInputMethod()->CancelComposition(this);
   has_composition_text_ = false;
+}
+
+void RenderWidgetHostViewAura::OnSelectionBoundsChanged(
+    TextInputManager* text_input_manager,
+    RenderWidgetHostViewBase* updated_view) {
+  if (GetInputMethod())
+    GetInputMethod()->OnCaretBoundsChanged(this);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

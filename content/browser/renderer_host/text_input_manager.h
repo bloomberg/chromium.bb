@@ -6,13 +6,17 @@
 #define CONTENT_BROWSER_RENDERER_HOST_TEXT_INPUT_MANAGER_H__
 
 #include <unordered_map>
+#include <utility>
 
 #include "base/observer_list.h"
 #include "content/common/content_export.h"
 #include "content/common/text_input_state.h"
+#include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/selection_bound.h"
+
+struct ViewHostMsg_SelectionBounds_Params;
 
 namespace content {
-
 class RenderWidgetHostImpl;
 class RenderWidgetHostView;
 class RenderWidgetHostViewBase;
@@ -41,6 +45,10 @@ class CONTENT_EXPORT TextInputManager {
     virtual void OnImeCancelComposition(
         TextInputManager* text_input_manager,
         RenderWidgetHostViewBase* updated_view) {}
+    // Called when the selection bounds for the |updated_view| has changed.
+    virtual void OnSelectionBoundsChanged(
+        TextInputManager* text_input_manager,
+        RenderWidgetHostViewBase* updated_view) {}
   };
 
   TextInputManager();
@@ -59,6 +67,9 @@ class CONTENT_EXPORT TextInputManager {
   // dangling if the TextInputManager or |active_view_| might go away.
   const TextInputState* GetTextInputState();
 
+  // Returns the rect between selection bounds for the |active_view_|.
+  gfx::Rect GetSelectionBoundsRect();
+
   // ---------------------------------------------------------------------------
   // The following methods are called by RWHVs on the tab to update their IME-
   // related state.
@@ -70,6 +81,12 @@ class CONTENT_EXPORT TextInputManager {
   // The current IME composition has been cancelled on the renderer side for
   // the widget corresponding to |view|.
   void ImeCancelComposition(RenderWidgetHostViewBase* view);
+
+  // Updates the selection bounds for the |view|. In Aura, selection bounds are
+  // used to provide the InputMethod with the position of the caret, e.g., in
+  // setting the position of the ui::ImeWindow.
+  void SelectionBoundsChanged(RenderWidgetHostViewBase* view,
+                              const ViewHostMsg_SelectionBounds_Params& params);
 
   // Registers the given |view| for tracking its TextInputState. This is called
   // by any view which has updates in its TextInputState (whether tab's RWHV or
@@ -100,6 +117,23 @@ class CONTENT_EXPORT TextInputManager {
       RenderWidgetHostViewBase* view);
 
  private:
+  // Text selection bounds.
+  struct SelectionRegion {
+    SelectionRegion();
+    SelectionRegion(const SelectionRegion& other);
+
+    // The begining of the selection region.
+    gfx::SelectionBound anchor;
+    // The end of the selection region (caret position).
+    gfx::SelectionBound focus;
+  };
+
+  // This class is used to create maps which hold specific IME state for a
+  // view.
+  template <class Value>
+  class ViewMap : public std::unordered_map<RenderWidgetHostViewBase*, Value> {
+  };
+
   void NotifyObserversAboutInputStateUpdate(RenderWidgetHostViewBase* view,
                                             bool did_update_state);
 
@@ -108,8 +142,10 @@ class CONTENT_EXPORT TextInputManager {
   // cannot have a |TextInputState.type| of ui::TEXT_INPUT_TYPE_NONE.
   RenderWidgetHostViewBase* active_view_;
 
-  std::unordered_map<RenderWidgetHostViewBase*, TextInputState>
-      text_input_state_map_;
+  ViewMap<TextInputState> text_input_state_map_;
+
+  // Text selection bounds information for registered views.
+  ViewMap<SelectionRegion> selection_region_map_;
 
   base::ObserverList<Observer> observer_list_;
 

@@ -251,17 +251,26 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView,
                                                cc::SurfaceId original_surface,
                                                gfx::Point* transformed_point);
 
+  //----------------------------------------------------------------------------
+  // The following methods are related to IME.
+  // TODO(ekaramad): Most of the IME methods should not stay virtual after IME
+  // is implemented for OOPIF. After fixing IME, mark the corresponding methods
+  // non-virtual (https://crbug.com/578168).
+
   // Updates the state of the input method attached to the view.
-  // TODO(ekaramad): This method will not stay virtual. It will be moved up top
-  // with the other non-virtual methods after TextInputState tracking is fixed
-  // on all platforms (https://crbug.com/578168).
   virtual void TextInputStateChanged(const TextInputState& text_input_state);
 
   // Cancel the ongoing composition of the input method attached to the view.
-  // TODO(ekaramad): This method will not stay virtual. It will be moved up top
-  // with the other non-virtual methods after IME is fixed on all platforms.
-  // (https://crbug.com/578168).
   virtual void ImeCancelComposition();
+
+  // Notifies the view that the renderer selection bounds has changed.
+  // Selection bounds are described as a focus bound which is the current
+  // position of caret on the screen, as well as the anchor bound which is the
+  // starting position of the selection. The coordinates are with respect to
+  // RenderWidget's window's origin. Focus and anchor bound are represented as
+  // gfx::Rect.
+  virtual void SelectionBoundsChanged(
+      const ViewHostMsg_SelectionBounds_Params& params);
 
   //----------------------------------------------------------------------------
   // The following static methods are implemented by each platform.
@@ -298,13 +307,6 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView,
   // Tells the View that the tooltip text for the current mouse position over
   // the page has changed.
   virtual void SetTooltipText(const base::string16& tooltip_text) = 0;
-
-  // Notifies the View that the renderer selection bounds has changed.
-  // |start_rect| and |end_rect| are the bounds end of the selection in the
-  // coordinate system of the render view. |start_direction| and |end_direction|
-  // indicates the direction at which the selection was made on touch devices.
-  virtual void SelectionBoundsChanged(
-      const ViewHostMsg_SelectionBounds_Params& params) = 0;
 
   // Copies the contents of the compositing surface, providing a new SkBitmap
   // result via an asynchronously-run |callback|. |src_subrect| is specified in

@@ -108,8 +108,6 @@ class TestRenderWidgetHostView : public RenderWidgetHostViewBase {
                          int error_code) override;
   void Destroy() override;
   void SetTooltipText(const base::string16& tooltip_text) override {}
-  void SelectionBoundsChanged(
-      const ViewHostMsg_SelectionBounds_Params& params) override {}
   void CopyFromCompositingSurface(
       const gfx::Rect& src_subrect,
       const gfx::Size& dst_size,

@@ -102,6 +102,12 @@ float RenderWidgetHostViewBase::GetTopControlsHeight() const {
   return 0.f;
 }
 
+void RenderWidgetHostViewBase::SelectionBoundsChanged(
+    const ViewHostMsg_SelectionBounds_Params& params) {
+  if (GetTextInputManager())
+    GetTextInputManager()->SelectionBoundsChanged(this, params);
+}
+
 void RenderWidgetHostViewBase::SelectionChanged(const base::string16& text,
                                                 size_t offset,
                                                 const gfx::Range& range) {

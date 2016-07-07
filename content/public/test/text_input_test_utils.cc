@@ -13,6 +13,7 @@
 #include "content/browser/renderer_host/text_input_manager.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/text_input_state.h"
+#include "content/common/view_messages.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -35,7 +36,6 @@ class TextInputManagerTester::InternalObserver
  public:
   InternalObserver(WebContents* web_contents, TextInputManagerTester* tester)
       : WebContentsObserver(web_contents),
-        tester_(tester),
         updated_view_(nullptr),
         text_input_state_changed_(false) {
     text_input_manager_ =
@@ -50,8 +50,12 @@ class TextInputManagerTester::InternalObserver
   }
 
   void set_update_text_input_state_called_callback(
-      const TextInputManagerTester::Callback& callback) {
+      const base::Closure& callback) {
     update_text_input_state_callback_ = callback;
+  }
+
+  void set_on_selection_bounds_changed_callback(const base::Closure& callback) {
+    on_selection_bounds_changed_callback_ = callback;
   }
 
   const RenderWidgetHostView* GetUpdatedView() const { return updated_view_; }
@@ -68,18 +72,27 @@ class TextInputManagerTester::InternalObserver
       return;
     text_input_state_changed_ = did_change_state;
     updated_view_ = updated_view;
-    update_text_input_state_callback_.Run(tester_);
+    if (!update_text_input_state_callback_.is_null())
+      update_text_input_state_callback_.Run();
+  }
+
+  void OnSelectionBoundsChanged(
+      TextInputManager* text_input_manager_,
+      RenderWidgetHostViewBase* updated_view) override {
+    updated_view_ = updated_view;
+    if (!on_selection_bounds_changed_callback_.is_null())
+      on_selection_bounds_changed_callback_.Run();
   }
 
   // WebContentsObserver implementation.
   void WebContentsDestroyed() override { text_input_manager_ = nullptr; }
 
  private:
-  TextInputManagerTester* tester_;
   TextInputManager* text_input_manager_;
   RenderWidgetHostViewBase* updated_view_;
   bool text_input_state_changed_;
-  TextInputManagerTester::Callback update_text_input_state_callback_;
+  base::Closure update_text_input_state_callback_;
+  base::Closure on_selection_bounds_changed_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(InternalObserver);
 };
@@ -222,8 +235,13 @@ TextInputManagerTester::TextInputManagerTester(WebContents* web_contents)
 TextInputManagerTester::~TextInputManagerTester() {}
 
 void TextInputManagerTester::SetUpdateTextInputStateCalledCallback(
-    const Callback& callback) {
+    const base::Closure& callback) {
   observer_->set_update_text_input_state_called_callback(callback);
+}
+
+void TextInputManagerTester::SetOnSelectionBoundsChangedCallback(
+    const base::Closure& callback) {
+  observer_->set_on_selection_bounds_changed_callback(callback);
 }
 
 bool TextInputManagerTester::GetTextInputType(ui::TextInputType* type) {

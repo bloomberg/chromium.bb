@@ -153,8 +153,6 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
                         size_t offset,
                         const gfx::Range& range) override;
   gfx::Size GetRequestedRendererSize() const override;
-  void SelectionBoundsChanged(
-      const ViewHostMsg_SelectionBounds_Params& params) override;
   void CopyFromCompositingSurface(
       const gfx::Rect& src_subrect,
       const gfx::Size& dst_size,
@@ -349,7 +347,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   const ui::MotionEventAura& pointer_state() const { return pointer_state_; }
 
  private:
-  friend class InputMethodResultAuraTest;
+  friend class InputMethodAuraTestBase;
   friend class RenderWidgetHostViewAuraCopyRequestTest;
   friend class TestInputMethodObserver;
   FRIEND_TEST_ALL_PREFIXES(InputMethodResultAuraTest,
@@ -475,6 +473,9 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
                                     bool did_update_state) override;
   void OnImeCancelComposition(TextInputManager* text_input_manager,
                               RenderWidgetHostViewBase* updated_view) override;
+  void OnSelectionBoundsChanged(
+      TextInputManager* text_input_manager,
+      RenderWidgetHostViewBase* updated_view) override;
 
   // cc::BeginFrameObserver implementation.
   void OnBeginFrame(const cc::BeginFrameArgs& args) override;
@@ -584,10 +585,6 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   // Stores the current state of the active pointers targeting this
   // object.
   ui::MotionEventAura pointer_state_;
-
-  // Bounds for the selection.
-  gfx::SelectionBound selection_anchor_;
-  gfx::SelectionBound selection_focus_;
 
   // The current composition character bounds.
   std::vector<gfx::Rect> composition_character_bounds_;

@@ -98,8 +98,7 @@ class TextInputManagerValueObserver : public TextInputManagerObserverBase {
   }
 
  private:
-  void VerifyValue(content::TextInputManagerTester* text_input_manager_tester) {
-    ASSERT_EQ(tester(), text_input_manager_tester);
+  void VerifyValue() {
     std::string value;
     if (tester()->GetTextInputValue(&value) && expected_value_ == value)
       OnSuccess();
@@ -122,8 +121,7 @@ class TextInputManagerTypeObserver : public TextInputManagerObserverBase {
   }
 
  private:
-  void VerifyType(content::TextInputManagerTester* text_input_manager_tester) {
-    ASSERT_EQ(tester(), text_input_manager_tester);
+  void VerifyType() {
     ui::TextInputType type =
         tester()->GetTextInputType(&type) ? type : ui::TEXT_INPUT_TYPE_NONE;
     if (expected_type_ == type)
@@ -145,9 +143,7 @@ class TextInputManagerChangeObserver : public TextInputManagerObserverBase {
   }
 
  private:
-  void VerifyChange(
-      content::TextInputManagerTester* text_input_manager_tester) {
-    ASSERT_EQ(tester(), text_input_manager_tester);
+  void VerifyChange() {
     if (tester()->IsTextInputStateChanged())
       OnSuccess();
   }
@@ -170,7 +166,7 @@ class ViewTextInputTypeObserver : public TextInputManagerObserverBase {
   }
 
  private:
-  void VerifyType(content::TextInputManagerTester* tester) {
+  void VerifyType() {
     ui::TextInputType type;
     if (!content::GetTextInputTypeForView(web_contents_, view_, &type))
       return;
@@ -183,6 +179,31 @@ class ViewTextInputTypeObserver : public TextInputManagerObserverBase {
   const ui::TextInputType expected_type_;
 
   DISALLOW_COPY_AND_ASSIGN(ViewTextInputTypeObserver);
+};
+
+// This class observes the |expected_view| for the first change in its
+// selection bounds.
+class ViewSelectionBoundsChangedObserver : public TextInputManagerObserverBase {
+ public:
+  ViewSelectionBoundsChangedObserver(
+      content::WebContents* web_contents,
+      content::RenderWidgetHostView* expected_view)
+      : TextInputManagerObserverBase(web_contents),
+        expected_view_(expected_view) {
+    tester()->SetOnSelectionBoundsChangedCallback(
+        base::Bind(&ViewSelectionBoundsChangedObserver::VerifyChange,
+                   base::Unretained(this)));
+  }
+
+ private:
+  void VerifyChange() {
+    if (expected_view_ == tester()->GetUpdatedView())
+      OnSuccess();
+  }
+
+  const content::RenderWidgetHostView* const expected_view_;
+
+  DISALLOW_COPY_AND_ASSIGN(ViewSelectionBoundsChangedObserver);
 };
 
 }  // namespace
@@ -454,6 +475,44 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessTextInputManagerTest,
                                                     ui::TEXT_INPUT_TYPE_NONE);
   ui_test_utils::NavigateToURL(browser(), GURL("about:blank"));
   reset_state_observer.Wait();
+}
+
+// This test creates a page with multiple child frames and adds an <input> to
+// each frame. Then, sequentially, each <input> is focused by sending a tab key.
+// Then, after |TextInputState.type| for a view is changed to text, another key
+// is pressed (a character) and then the test verifies that TextInputManager
+// receives the corresponding update on the change in selection bounds on the
+// browser side.
+IN_PROC_BROWSER_TEST_F(SitePerProcessTextInputManagerTest,
+                       TrackSelectionBoundsForChildFrames) {
+  CreateIframePage("a(b,c(a,b),d)");
+  std::vector<content::RenderFrameHost*> frames{
+      GetFrame(IndexVector{}),     GetFrame(IndexVector{0}),
+      GetFrame(IndexVector{1}),    GetFrame(IndexVector{1, 0}),
+      GetFrame(IndexVector{1, 1}), GetFrame(IndexVector{2})};
+  std::vector<content::RenderWidgetHostView*> views;
+  for (auto frame : frames)
+    views.push_back(frame->GetView());
+  for (size_t i = 0; i < frames.size(); ++i)
+    AddInputFieldToFrame(frames[i], "text", "", true);
+
+  content::WebContents* web_contents = active_contents();
+
+  auto send_tab_insert_text_wait_for_bounds_change = [&web_contents](
+      content::RenderWidgetHostView* view) {
+    ViewTextInputTypeObserver type_observer(web_contents, view,
+                                            ui::TEXT_INPUT_TYPE_TEXT);
+    SimulateKeyPress(web_contents, ui::DomKey::TAB, ui::DomCode::TAB,
+                     ui::VKEY_TAB, false, false, false, false);
+    type_observer.Wait();
+    ViewSelectionBoundsChangedObserver bounds_observer(web_contents, view);
+    SimulateKeyPress(web_contents, ui::DomKey::FromCharacter('E'),
+                     ui::DomCode::US_E, ui::VKEY_E, false, false, false, false);
+    bounds_observer.Wait();
+  };
+
+  for (auto view : views)
+    send_tab_insert_text_wait_for_bounds_change(view);
 }
 
 // TODO(ekaramad): The following tests are specifically written for Aura and are

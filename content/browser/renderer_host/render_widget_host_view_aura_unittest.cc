@@ -87,6 +87,8 @@
 #include "ui/events/keycodes/dom/dom_code.h"
 #include "ui/events/keycodes/dom/keycode_converter.h"
 #include "ui/events/test/event_generator.h"
+#include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/selection_bound.h"
 #include "ui/wm/core/default_activation_client.h"
 #include "ui/wm/core/default_screen_position_client.h"
 #include "ui/wm/core/window_util.h"
@@ -4031,19 +4033,13 @@ TEST_F(RenderWidgetHostViewAuraWithViewHarnessTest,
 // ----------------------------------------------------------------------------
 // TextInputManager and IME-Related Tests
 
-// A group of tests which verify that the IME method results are routed to the
-// right RenderWidget in the OOPIF structure.
+// The test class for OOPIF IME related unit tests in RenderWidgetHostViewAura.
 // In each test, 3 views are created where one is in process with main frame and
-// the other two are in distinct processes (this makes a total of 4 RWHVs). Then
-// each test will verify the correctness of routing for one of the IME result
-// methods. The method is called on ui::TextInputClient (i.e., RWHV for the tab
-// in aura) and then the test verifies that the IPC is routed to the
-// RenderWidget corresponding to the active view (i.e., the RenderWidget
-// with focused <input>).
-class InputMethodResultAuraTest : public RenderWidgetHostViewAuraTest {
+// the other two are in distinct processes (this makes a total of 4 RWHVs).
+class InputMethodAuraTestBase : public RenderWidgetHostViewAuraTest {
  public:
-  InputMethodResultAuraTest() {}
-  ~InputMethodResultAuraTest() override {}
+  InputMethodAuraTestBase() {}
+  ~InputMethodAuraTestBase() override {}
 
   void SetUp() override {
     RenderWidgetHostViewAuraTest::SetUp();
@@ -4087,14 +4083,6 @@ class InputMethodResultAuraTest : public RenderWidgetHostViewAuraTest {
   }
 
  protected:
-  const IPC::Message* RunAndReturnIPCSent(const base::Closure closure,
-                                          MockRenderProcessHost* process,
-                                          int32_t message_id) {
-    process->sink().ClearMessages();
-    closure.Run();
-    return process->sink().GetFirstMessageMatching(message_id);
-  }
-
   MockRenderWidgetHostDelegate* render_widget_host_delegate() const {
     return delegates_.back().get();
   }
@@ -4157,6 +4145,31 @@ class InputMethodResultAuraTest : public RenderWidgetHostViewAuraTest {
   MockRenderProcessHost* third_process_host_;
   TestRenderWidgetHostView* view_for_third_process_;
 
+  DISALLOW_COPY_AND_ASSIGN(InputMethodAuraTestBase);
+};
+
+// A group of tests which verify that the IME method results are routed to the
+// right RenderWidget when there are multiple RenderWidgetHostViews on tab. Each
+// test will verify the correctness of routing for one of the IME result
+// methods. The method is called on ui::TextInputClient (i.e., RWHV for the tab
+// in aura) and then the test verifies that the IPC is routed to the
+// RenderWidget corresponding to the active view (i.e., the RenderWidget
+// with focused <input>).
+class InputMethodResultAuraTest : public InputMethodAuraTestBase {
+ public:
+  InputMethodResultAuraTest() {}
+  ~InputMethodResultAuraTest() override {}
+
+ protected:
+  const IPC::Message* RunAndReturnIPCSent(const base::Closure closure,
+                                          MockRenderProcessHost* process,
+                                          int32_t message_id) {
+    process->sink().ClearMessages();
+    closure.Run();
+    return process->sink().GetFirstMessageMatching(message_id);
+  }
+
+ private:
   DISALLOW_COPY_AND_ASSIGN(InputMethodResultAuraTest);
 };
 
@@ -4217,9 +4230,9 @@ TEST_F(InputMethodResultAuraTest, InsertText) {
   }
 }
 
-// This test makes a specific child frame's view active and then forces the
-// tab's view end the current IME composition session by sending out an IME
-// IPC to confirm composition. The test then verifies that the message is sent
+// This test makes a specific view active and then forces the tab's view end the
+// current IME composition session by sending out an IME IPC to confirm
+// composition. The test then verifies that the message is sent
 //  to the active widget's process.
 TEST_F(InputMethodResultAuraTest, FinishImeCompositionSession) {
   base::Closure ime_finish_session_call =
@@ -4231,6 +4244,59 @@ TEST_F(InputMethodResultAuraTest, FinishImeCompositionSession) {
     EXPECT_TRUE(!!RunAndReturnIPCSent(ime_finish_session_call,
                                       processes_[index],
                                       InputMsg_ImeConfirmComposition::ID));
+  }
+}
+
+// A class of tests which verify the correctness of some tracked IME related
+// state at the browser side, e.g., caret bounds.
+class InputMethodStateAuraTest : public InputMethodAuraTestBase {
+ public:
+  InputMethodStateAuraTest() {}
+  ~InputMethodStateAuraTest() override {}
+
+ protected:
+  gfx::SelectionBound GetSelectionBoundFromRect(const gfx::Rect& rect) {
+    gfx::SelectionBound bound;
+    bound.SetEdge(gfx::PointF(rect.origin()), gfx::PointF(rect.bottom_left()));
+    return bound;
+  }
+
+  gfx::Rect TransformRectToViewsRootCoordSpace(const gfx::Rect rect,
+                                               RenderWidgetHostView* view) {
+    return gfx::Rect(view->TransformPointToRootCoordSpace(rect.origin()),
+                     rect.size());
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(InputMethodStateAuraTest);
+};
+
+// This test activates the views on the tab according to a predefined order and
+// for each tab, simulates a selection bounds changed call. Then it verifies
+// that the caret bounds reported by the TextInputClient match those reported
+// for the active view.
+TEST_F(InputMethodStateAuraTest, GetCaretBounds) {
+  ViewHostMsg_SelectionBounds_Params params;
+  params.is_anchor_first = true;
+  params.anchor_dir = blink::WebTextDirectionLeftToRight;
+  params.focus_dir = blink::WebTextDirectionLeftToRight;
+  params.anchor_rect = gfx::Rect(0, 0, 10, 10);
+  for (auto index : active_view_sequence_) {
+    ActivateViewForTextInputManager(views_[index], ui::TEXT_INPUT_TYPE_TEXT);
+    params.focus_rect = gfx::Rect(10 + index, 10 + index, 10, 10);
+    views_[index]->SelectionBoundsChanged(params);
+
+    // Calculate the bounds.
+    gfx::SelectionBound anchor_bound = GetSelectionBoundFromRect(
+        TransformRectToViewsRootCoordSpace(params.anchor_rect, views_[index]));
+    gfx::SelectionBound focus_bound = GetSelectionBoundFromRect(
+        TransformRectToViewsRootCoordSpace(params.focus_rect, views_[index]));
+    anchor_bound.set_type(gfx::SelectionBound::LEFT);
+    focus_bound.set_type(gfx::SelectionBound::RIGHT);
+    gfx::Rect measured_rect =
+        gfx::RectBetweenSelectionBounds(anchor_bound, focus_bound);
+
+    EXPECT_EQ(measured_rect, text_input_client()->GetCaretBounds());
   }
 }
 

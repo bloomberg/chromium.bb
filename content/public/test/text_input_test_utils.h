@@ -42,14 +42,16 @@ RenderWidgetHostView* GetActiveViewFromWebContents(WebContents* web_contents);
 // observing the TextInputManager for WebContents.
 class TextInputManagerTester {
  public:
-  using Callback = base::Callback<void(TextInputManagerTester*)>;
-
   TextInputManagerTester(WebContents* web_contents);
   virtual ~TextInputManagerTester();
 
   // Sets a callback which is invoked when a RWHV calls UpdateTextInputState
   // on the TextInputManager which is being observed.
-  void SetUpdateTextInputStateCalledCallback(const Callback& callback);
+  void SetUpdateTextInputStateCalledCallback(const base::Closure& callback);
+
+  // Sets a callback which is invoked when a RWHV calls SelectionBoundsChanged
+  // on the TextInputManager which is being observed.
+  void SetOnSelectionBoundsChangedCallback(const base::Closure& callback);
 
   // Returns true if there is a focused <input> and populates |type| with
   // |TextInputState.type| of the TextInputManager.
@@ -63,9 +65,8 @@ class TextInputManagerTester {
   // if none exists.
   const RenderWidgetHostView* GetActiveView();
 
-  // Returns the RenderWidgetHostView which has most recently called
-  // TextInputManager::UpdateTextInputState on the TextInputManager which is
-  // being observed.
+  // Returns the RenderWidgetHostView which has most recently updated any of its
+  // state (e.g., TextInputState or otherwise).
   const RenderWidgetHostView* GetUpdatedView();
 
   // Returns true if a call to TextInputManager::UpdateTextInputState has led

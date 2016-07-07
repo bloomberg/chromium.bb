@@ -297,10 +297,6 @@ void RenderWidgetHostViewChildFrame::SelectionChanged(
     const gfx::Range& range) {
 }
 
-void RenderWidgetHostViewChildFrame::SelectionBoundsChanged(
-    const ViewHostMsg_SelectionBounds_Params& params) {
-}
-
 void RenderWidgetHostViewChildFrame::LockCompositingSurface() {
   NOTIMPLEMENTED();
 }

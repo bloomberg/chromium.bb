@@ -6,6 +6,7 @@
 
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
+#include "content/common/view_messages.h"
 
 namespace content {
 
@@ -54,6 +55,15 @@ RenderWidgetHostImpl* TextInputManager::GetActiveWidget() const {
                         : nullptr;
 }
 
+gfx::Rect TextInputManager::GetSelectionBoundsRect() {
+  if (!active_view_)
+    return gfx::Rect();
+
+  return gfx::RectBetweenSelectionBounds(
+      selection_region_map_[active_view_].anchor,
+      selection_region_map_[active_view_].focus);
+}
+
 void TextInputManager::UpdateTextInputState(
     RenderWidgetHostViewBase* view,
     const TextInputState& text_input_state) {
@@ -82,6 +92,60 @@ void TextInputManager::ImeCancelComposition(RenderWidgetHostViewBase* view) {
   DCHECK(IsRegistered(view));
   FOR_EACH_OBSERVER(Observer, observer_list_,
                     OnImeCancelComposition(this, view));
+}
+
+void TextInputManager::SelectionBoundsChanged(
+    RenderWidgetHostViewBase* view,
+    const ViewHostMsg_SelectionBounds_Params& params) {
+  DCHECK(IsRegistered(view));
+
+// TODO(ekaramad): Implement the logic for other platforms (crbug.com/578168).
+#if defined(USE_AURA)
+  gfx::SelectionBound anchor_bound, focus_bound;
+  // Converting the points to the |view|'s root coordinate space (for child
+  // frame views).
+  anchor_bound.SetEdge(gfx::PointF(view->TransformPointToRootCoordSpace(
+                           params.anchor_rect.origin())),
+                       gfx::PointF(view->TransformPointToRootCoordSpace(
+                           params.anchor_rect.bottom_left())));
+  focus_bound.SetEdge(gfx::PointF(view->TransformPointToRootCoordSpace(
+                          params.focus_rect.origin())),
+                      gfx::PointF(view->TransformPointToRootCoordSpace(
+                          params.focus_rect.bottom_left())));
+
+  if (params.anchor_rect == params.focus_rect) {
+    anchor_bound.set_type(gfx::SelectionBound::CENTER);
+    focus_bound.set_type(gfx::SelectionBound::CENTER);
+  } else {
+    // Whether text is LTR at the anchor handle.
+    bool anchor_LTR = params.anchor_dir == blink::WebTextDirectionLeftToRight;
+    // Whether text is LTR at the focus handle.
+    bool focus_LTR = params.focus_dir == blink::WebTextDirectionLeftToRight;
+
+    if ((params.is_anchor_first && anchor_LTR) ||
+        (!params.is_anchor_first && !anchor_LTR)) {
+      anchor_bound.set_type(gfx::SelectionBound::LEFT);
+    } else {
+      anchor_bound.set_type(gfx::SelectionBound::RIGHT);
+    }
+    if ((params.is_anchor_first && focus_LTR) ||
+        (!params.is_anchor_first && !focus_LTR)) {
+      focus_bound.set_type(gfx::SelectionBound::RIGHT);
+    } else {
+      focus_bound.set_type(gfx::SelectionBound::LEFT);
+    }
+  }
+
+  if (anchor_bound == selection_region_map_[view].anchor &&
+      focus_bound == selection_region_map_[view].focus)
+    return;
+
+  selection_region_map_[view].anchor = anchor_bound;
+  selection_region_map_[view].focus = focus_bound;
+
+  FOR_EACH_OBSERVER(Observer, observer_list_,
+                    OnSelectionBoundsChanged(this, view));
+#endif
 }
 
 void TextInputManager::Register(RenderWidgetHostViewBase* view) {
@@ -130,5 +194,10 @@ void TextInputManager::NotifyObserversAboutInputStateUpdate(
       Observer, observer_list_,
       OnUpdateTextInputStateCalled(this, updated_view, did_update_state));
 }
+
+TextInputManager::SelectionRegion::SelectionRegion() {}
+
+TextInputManager::SelectionRegion::SelectionRegion(
+    const SelectionRegion& other) = default;
 
 }  // namespace content
