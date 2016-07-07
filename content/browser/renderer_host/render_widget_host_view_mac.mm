@@ -48,7 +48,6 @@
 #include "content/browser/renderer_host/render_widget_host_input_event_router.h"
 #import "content/browser/renderer_host/render_widget_host_view_mac_dictionary_helper.h"
 #import "content/browser/renderer_host/render_widget_host_view_mac_editcommand_helper.h"
-#include "content/browser/renderer_host/resize_lock.h"
 #import "content/browser/renderer_host/text_input_client_mac.h"
 #include "content/common/accessibility_messages.h"
 #include "content/common/edit_command.h"
@@ -403,17 +402,17 @@ blink::WebScreenInfo GetWebScreenInfo(NSView* view) {
 namespace content {
 
 ////////////////////////////////////////////////////////////////////////////////
-// DelegatedFrameHost, public:
+// BrowserCompositorMacClient, public:
 
-ui::Layer* RenderWidgetHostViewMac::DelegatedFrameHostGetLayer() const {
-  return browser_compositor_->GetRootLayer();
+NSView* RenderWidgetHostViewMac::BrowserCompositorMacGetNSView() const {
+  return cocoa_view_;
 }
 
-bool RenderWidgetHostViewMac::DelegatedFrameHostIsVisible() const {
+bool RenderWidgetHostViewMac::BrowserCompositorMacIsVisible() const {
   return !render_widget_host_->is_hidden();
 }
 
-SkColor RenderWidgetHostViewMac::DelegatedFrameHostGetGutterColor(
+SkColor RenderWidgetHostViewMac::BrowserCompositorMacGetGutterColor(
     SkColor color) const {
   // When making an element on the page fullscreen the element's background
   // may not match the page's, so use black as the gutter color to avoid
@@ -425,92 +424,35 @@ SkColor RenderWidgetHostViewMac::DelegatedFrameHostGetGutterColor(
   return color;
 }
 
-gfx::Size RenderWidgetHostViewMac::DelegatedFrameHostDesiredSizeInDIP() const {
-  return GetViewBounds().size();
-}
-
-bool RenderWidgetHostViewMac::DelegatedFrameCanCreateResizeLock() const {
-  // Mac uses the RenderWidgetResizeHelper instead of a resize lock.
-  return false;
-}
-
-std::unique_ptr<ResizeLock>
-RenderWidgetHostViewMac::DelegatedFrameHostCreateResizeLock(
-    bool defer_compositor_lock) {
-  NOTREACHED();
-  return std::unique_ptr<ResizeLock>();
-}
-
-void RenderWidgetHostViewMac::DelegatedFrameHostResizeLockWasReleased() {
-  NOTREACHED();
-}
-
-void RenderWidgetHostViewMac::DelegatedFrameHostSendCompositorSwapAck(
+void RenderWidgetHostViewMac::BrowserCompositorMacSendCompositorSwapAck(
     int output_surface_id,
     const cc::CompositorFrameAck& ack) {
   render_widget_host_->Send(new ViewMsg_SwapCompositorFrameAck(
       render_widget_host_->GetRoutingID(), output_surface_id, ack));
 }
 
-void RenderWidgetHostViewMac::DelegatedFrameHostSendReclaimCompositorResources(
-    int output_surface_id,
-    const cc::CompositorFrameAck& ack) {
+void RenderWidgetHostViewMac::
+    BrowserCompositorMacSendReclaimCompositorResources(
+        int output_surface_id,
+        const cc::CompositorFrameAck& ack) {
   render_widget_host_->Send(new ViewMsg_ReclaimCompositorResources(
       render_widget_host_->GetRoutingID(), output_surface_id, ack));
 }
 
-void RenderWidgetHostViewMac::DelegatedFrameHostOnLostCompositorResources() {
+void RenderWidgetHostViewMac::BrowserCompositorMacOnLostCompositorResources() {
   render_widget_host_->ScheduleComposite();
 }
 
-void RenderWidgetHostViewMac::DelegatedFrameHostUpdateVSyncParameters(
+void RenderWidgetHostViewMac::BrowserCompositorMacUpdateVSyncParameters(
     const base::TimeTicks& timebase,
     const base::TimeDelta& interval) {
   render_widget_host_->UpdateVSyncParameters(timebase, interval);
 }
 
-void RenderWidgetHostViewMac::SetBeginFrameSource(
-    cc::BeginFrameSource* source) {
-  if (begin_frame_source_ && needs_begin_frames_)
-    begin_frame_source_->RemoveObserver(this);
-  begin_frame_source_ = source;
-  if (begin_frame_source_ && needs_begin_frames_)
-    begin_frame_source_->AddObserver(this);
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// cc::BeginFrameSourceBase, public:
-
-void RenderWidgetHostViewMac::OnSetNeedsBeginFrames(bool needs_begin_frames) {
-  if (needs_begin_frames_ == needs_begin_frames)
-    return;
-
-  needs_begin_frames_ = needs_begin_frames;
-  if (begin_frame_source_) {
-    if (needs_begin_frames_)
-      begin_frame_source_->AddObserver(this);
-    else
-      begin_frame_source_->RemoveObserver(this);
-  }
-}
-
-void RenderWidgetHostViewMac::OnBeginFrame(
+void RenderWidgetHostViewMac::BrowserCompositorMacSendBeginFrame(
     const cc::BeginFrameArgs& args) {
-  browser_compositor_->GetDelegatedFrameHost()->SetVSyncParameters(
-      args.frame_time, args.interval);
   render_widget_host_->Send(
       new ViewMsg_BeginFrame(render_widget_host_->GetRoutingID(), args));
-  last_begin_frame_args_ = args;
-}
-
-const cc::BeginFrameArgs& RenderWidgetHostViewMac::LastUsedBeginFrameArgs()
-    const {
-  return last_begin_frame_args_;
-}
-
-void RenderWidgetHostViewMac::OnBeginFrameSourcePausedChanged(
-    bool paused) {
-  // Only used on Android WebView.
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -556,8 +498,6 @@ RenderWidgetHostViewMac::RenderWidgetHostViewMac(RenderWidgetHost* widget,
       allow_pause_for_resize_or_repaint_(true),
       is_guest_view_hack_(is_guest_view_hack),
       fullscreen_parent_host_view_(nullptr),
-      begin_frame_source_(nullptr),
-      needs_begin_frames_(false),
       weak_factory_(this) {
   // |cocoa_view_| owns us and we will be deleted when |cocoa_view_|
   // goes away.  Since we autorelease it, our caller must put
@@ -601,8 +541,7 @@ RenderWidgetHostViewMac::~RenderWidgetHostViewMac() {
 
   UnlockMouse();
 
-  // Ensure that the browser compositor is destroyed in a safe order.
-  browser_compositor_->Destroy();
+  browser_compositor_.reset();
 
   // We are owned by RenderWidgetHostViewCocoa, so if we go away before the
   // RenderWidgetHost does we need to tell it not to hold a stale pointer to
@@ -1012,7 +951,7 @@ void RenderWidgetHostViewMac::Destroy() {
 
   // Delete the delegated frame state, which will reach back into
   // render_widget_host_.
-  browser_compositor_->Destroy();
+  browser_compositor_.reset();
 
   // Make sure none of our observers send events for us to process after
   // we release render_widget_host_.
@@ -1192,6 +1131,10 @@ void RenderWidgetHostViewMac::ForwardMouseEvent(const WebMouseEvent& event) {
     [cocoa_view_ setToolTipAtMousePoint:nil];
     tooltip_text_.clear();
   }
+}
+
+void RenderWidgetHostViewMac::OnSetNeedsBeginFrames(bool needs_begin_frames) {
+  browser_compositor_->SetNeedsBeginFrames(needs_begin_frames);
 }
 
 void RenderWidgetHostViewMac::KillSelf() {

@@ -22,10 +22,8 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
-#include "cc/scheduler/begin_frame_source.h"
 #include "cc/surfaces/surface_id.h"
 #include "content/browser/renderer_host/browser_compositor_view_mac.h"
-#include "content/browser/renderer_host/delegated_frame_host.h"
 #include "content/browser/renderer_host/input/mouse_wheel_rails_filter_mac.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/common/content_export.h"
@@ -226,11 +224,10 @@ namespace content {
 // RenderWidgetHostView class hierarchy described in render_widget_host_view.h.
 class CONTENT_EXPORT RenderWidgetHostViewMac
     : public RenderWidgetHostViewBase,
-      public DelegatedFrameHostClient,
+      public BrowserCompositorMacClient,
       public ui::AcceleratedWidgetMacNSView,
       public IPC::Sender,
-      public display::DisplayObserver,
-      public cc::BeginFrameObserver {
+      public display::DisplayObserver {
  public:
   // The view will associate itself with the given widget. The native view must
   // be hooked up immediately to the view hierarchy, or else when it is
@@ -446,31 +443,22 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
 
   void PauseForPendingResizeOrRepaintsAndDraw();
 
-  // DelegatedFrameHostClient implementation.
-  ui::Layer* DelegatedFrameHostGetLayer() const override;
-  bool DelegatedFrameHostIsVisible() const override;
-  SkColor DelegatedFrameHostGetGutterColor(SkColor color) const override;
-  gfx::Size DelegatedFrameHostDesiredSizeInDIP() const override;
-  bool DelegatedFrameCanCreateResizeLock() const override;
-  std::unique_ptr<ResizeLock> DelegatedFrameHostCreateResizeLock(
-      bool defer_compositor_lock) override;
-  void DelegatedFrameHostResizeLockWasReleased() override;
-  void DelegatedFrameHostSendCompositorSwapAck(
+  // BrowserCompositorMacClient implementation.
+  NSView* BrowserCompositorMacGetNSView() const override;
+  bool BrowserCompositorMacIsVisible() const override;
+  SkColor BrowserCompositorMacGetGutterColor(SkColor color) const override;
+  void BrowserCompositorMacSendCompositorSwapAck(
       int output_surface_id,
       const cc::CompositorFrameAck& ack) override;
-  void DelegatedFrameHostSendReclaimCompositorResources(
+  void BrowserCompositorMacSendReclaimCompositorResources(
       int output_surface_id,
       const cc::CompositorFrameAck& ack) override;
-  void DelegatedFrameHostOnLostCompositorResources() override;
-  void DelegatedFrameHostUpdateVSyncParameters(
+  void BrowserCompositorMacOnLostCompositorResources() override;
+  void BrowserCompositorMacUpdateVSyncParameters(
       const base::TimeTicks& timebase,
       const base::TimeDelta& interval) override;
-  void SetBeginFrameSource(cc::BeginFrameSource* source) override;
-
-  // cc::BeginFrameObserver implementation.
-  void OnBeginFrame(const cc::BeginFrameArgs& args) override;
-  const cc::BeginFrameArgs& LastUsedBeginFrameArgs() const override;
-  void OnBeginFrameSourcePausedChanged(bool paused) override;
+  void BrowserCompositorMacSendBeginFrame(
+      const cc::BeginFrameArgs& args) override;
 
   // AcceleratedWidgetMacNSView implementation.
   NSView* AcceleratedWidgetGetNSView() const override;
@@ -540,11 +528,6 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   // to SendVSyncParametersToRenderer(), and refreshed regularly thereafter.
   base::TimeTicks vsync_timebase_;
   base::TimeDelta vsync_interval_;
-
-  // The begin frame source being observed.  Null if none.
-  cc::BeginFrameSource* begin_frame_source_;
-  cc::BeginFrameArgs last_begin_frame_args_;
-  bool needs_begin_frames_;
 
   // The current composition character range and its bounds.
   gfx::Range composition_range_;
