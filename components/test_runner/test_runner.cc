@@ -1723,8 +1723,7 @@ void TestRunner::DumpPixelsAsync(
   }
 
   test_runner::DumpPixelsAsync(web_view, layout_test_runtime_flags_,
-                               delegate_->GetDeviceScaleFactorForTest(),
-                               callback);
+                               delegate_->GetDeviceScaleFactor(), callback);
 }
 
 void TestRunner::ReplicateLayoutTestRuntimeFlagsChanges(

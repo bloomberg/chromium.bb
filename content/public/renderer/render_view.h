@@ -144,9 +144,6 @@ class CONTENT_EXPORT RenderView : public IPC::Sender {
   virtual gfx::RectF ElementBoundsInWindow(const blink::WebElement& element)
       = 0;
 
-  // Returns the device scale factor for unit tests.
-  virtual float GetDeviceScaleFactorForTest() const = 0;
-
   virtual bool HasAddedInputHandler() const = 0;
 
  protected:

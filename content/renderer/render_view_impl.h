@@ -428,7 +428,6 @@ class CONTENT_EXPORT RenderViewImpl
 #endif
   void ConvertViewportToWindowViaWidget(blink::WebRect* rect) override;
   gfx::RectF ElementBoundsInWindow(const blink::WebElement& element) override;
-  float GetDeviceScaleFactorForTest() const override;
   bool HasAddedInputHandler() const override;
 
   gfx::Point ConvertWindowPointToViewport(const gfx::Point& point);

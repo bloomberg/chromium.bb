@@ -2147,10 +2147,6 @@ gfx::RectF RenderViewImpl::ElementBoundsInWindow(
   return gfx::RectF(bounding_box_in_window);
 }
 
-float RenderViewImpl::GetDeviceScaleFactorForTest() const {
-  return device_scale_factor_;
-}
-
 bool RenderViewImpl::HasAddedInputHandler() const {
   return has_added_input_handler_;
 }

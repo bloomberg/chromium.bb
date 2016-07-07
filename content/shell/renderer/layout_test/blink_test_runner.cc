@@ -709,8 +709,8 @@ blink::WebPlugin* BlinkTestRunner::CreatePluginPlaceholder(
   return placeholder->plugin();
 }
 
-float BlinkTestRunner::GetDeviceScaleFactorForTest() const {
-  return render_view()->GetDeviceScaleFactorForTest();
+float BlinkTestRunner::GetDeviceScaleFactor() const {
+  return render_view()->GetDeviceScaleFactor();
 }
 
 void BlinkTestRunner::RunIdleTasks(const base::Closure& callback) {
