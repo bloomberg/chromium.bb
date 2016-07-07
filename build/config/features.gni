@@ -50,17 +50,17 @@ declare_args() {
   # We always build Google Chrome and Chromecast with proprietary codecs.
   proprietary_codecs = is_chrome_branded || is_chromecast
 
-  enable_captive_portal_detection = !is_android && !is_ios
+  enable_captive_portal_detection = !is_android && !is_ios && !is_chromecast
 
   # Enables use of the session service, which is enabled by default.
   # Android stores them separately on the Java side.
-  enable_session_service = !is_android && !is_ios
+  enable_session_service = !is_android && !is_ios && !is_chromecast
 
   enable_plugin_installation = is_win || is_mac
 
   enable_app_list = is_chromeos
 
-  enable_supervised_users = !is_ios
+  enable_supervised_users = !is_ios && !is_chromecast
 
   enable_remoting = !is_ios && !is_chromecast
 
