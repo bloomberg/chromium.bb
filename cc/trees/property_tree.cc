@@ -792,9 +792,9 @@ void TransformTree::UpdateTransforms(int id) {
     UndoSnapping(node);
   UpdateScreenSpaceTransform(node, parent_node, target_node);
   UpdateSublayerScale(node);
-  UpdateTargetSpaceTransform(node, target_node);
   UpdateAnimationProperties(node, parent_node);
   UpdateSnapping(node);
+  UpdateTargetSpaceTransform(node, target_node);
   UpdateNodeAndAncestorsHaveIntegerTranslations(node, parent_node);
   UpdateTransformChanged(node, parent_node, source_node);
   UpdateNodeAndAncestorsAreAnimatedOrInvertible(node, parent_node);
@@ -1078,12 +1078,6 @@ void TransformTree::UpdateSnapping(TransformNode* node) {
   gfx::Transform from_screen = FromScreen(node->id);
   from_screen.matrix().postTranslate(-translation.x(), -translation.y(), 0);
   SetFromScreen(node->id, from_screen);
-  gfx::Transform to_target = ToTarget(node->id);
-  to_target.Translate(translation.x(), translation.y());
-  SetToTarget(node->id, to_target);
-  gfx::Transform from_target = FromTarget(node->id);
-  from_target.matrix().postTranslate(-translation.x(), -translation.y(), 0);
-  SetFromTarget(node->id, from_target);
   node->data.scroll_snap = translation;
 }
 
