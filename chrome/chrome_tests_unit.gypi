@@ -236,8 +236,6 @@
       'browser/service_process/service_process_control_mac_unittest.mm',
       'browser/services/gcm/fake_gcm_profile_service.cc',
       'browser/services/gcm/fake_gcm_profile_service.h',
-      'browser/services/gcm/fake_signin_manager.cc',
-      'browser/services/gcm/fake_signin_manager.h',
       'browser/sessions/restore_on_startup_policy_handler_unittest.cc',
       'browser/shell_integration_win_unittest.cc',
       'browser/signin/account_reconcilor_unittest.cc',
