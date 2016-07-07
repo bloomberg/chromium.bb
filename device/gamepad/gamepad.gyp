@@ -54,7 +54,10 @@
         ['OS!="win" and OS!="mac" and OS!="android" and (OS!="linux" or use_udev==0)', {
           'sources': [
             'gamepad_platform_data_fetcher.cc',
-          ]
+          ],
+          'sources!': [
+            'gamepad_platform_data_fetcher_linux.cc',
+          ],
         }],
         ['use_udev == 1', {
           'dependencies': [
