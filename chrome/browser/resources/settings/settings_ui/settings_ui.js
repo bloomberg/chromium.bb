@@ -57,6 +57,13 @@ Polymer({
     this.$$('app-drawer').toggle();
   },
 
+  /** @override */
+  ready: function() {
+    this.$$('cr-toolbar').addEventListener('search-changed', function(e) {
+      this.$$('settings-main').searchContents(e.detail);
+    }.bind(this));
+  },
+
   /** @private */
   directionDelegateChanged_: function() {
     this.$$('app-drawer').align = this.directionDelegate.isRtl() ?

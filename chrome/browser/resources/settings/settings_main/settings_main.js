@@ -59,6 +59,7 @@ Polymer({
     },
   },
 
+  /** @override */
   created: function() {
     /** @private {!PromiseResolver} */
     this.resolver_ = new PromiseResolver;
@@ -128,5 +129,37 @@ Polymer({
   /** @private */
   toggleAdvancedPage_: function() {
     this.fire('toggle-advanced-page', !this.isAdvancedMenuOpen_);
+  },
+
+  /**
+   * Navigates to the default search page (if necessary).
+   * @private
+   */
+  ensureInDefaultSearchPage_: function() {
+    if (this.currentRoute.page != 'basic' ||
+        this.currentRoute.section != '' ||
+        this.currentRoute.subpage.length != 0) {
+      this.currentRoute = {page: 'basic', section: '', subpage: [], url: ''};
+    }
+  },
+
+  /**
+   * @param {string} query
+   */
+  searchContents: function(query) {
+    this.ensureInDefaultSearchPage_();
+
+    // Trigger rendering of the basic and advanced pages and search once ready.
+    // Even if those are already rendered, yield to the message loop before
+    // initiating searching.
+    this.showBasicPage_ = true;
+    setTimeout(function() {
+      settings.search(query, assert(this.$$('settings-basic-page')));
+    }.bind(this), 0);
+
+    this.showAdvancedPage_ = true;
+    setTimeout(function() {
+      settings.search(query, assert(this.$$('settings-advanced-page')));
+    }.bind(this), 0);
   },
 });

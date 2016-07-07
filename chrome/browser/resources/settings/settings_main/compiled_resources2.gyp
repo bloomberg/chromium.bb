@@ -14,8 +14,10 @@
     {
       'target_name': 'settings_main',
       'dependencies': [
-        'settings_main_rendered',
+        '../compiled_resources2.gyp:search_settings',
+        '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:assert',
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:promise_resolver',
+        'settings_main_rendered',
         '../settings_page/compiled_resources2.gyp:main_page_behavior',
         '../settings_page/compiled_resources2.gyp:settings_router',
       ],
