@@ -44,7 +44,6 @@ TEST_F(GLNativeGMBTest, TestNativeGMBBackbufferWithDifferentConfigurations) {
       options.image_factory = &image_factory_;
       options.multisampled = msaa == 1;
       options.backbuffer_alpha = has_alpha == 1;
-      options.enable_arb_texture_rectangle = true;
 
       GLManager gl;
       gl.Initialize(options);
