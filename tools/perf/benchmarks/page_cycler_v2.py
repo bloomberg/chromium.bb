@@ -17,7 +17,11 @@ from telemetry.timeline import chrome_trace_category_filter
 from telemetry.web_perf import timeline_based_measurement
 
 
+# crbug.com/619254
+@benchmark.Disabled('reference')
 class _PageCyclerV2(perf_benchmark.PerfBenchmark):
+  options = {'pageset_repeat': 2}
+
   def CreateTimelineBasedMeasurementOptions(self):
     cat_filter = chrome_trace_category_filter.ChromeTraceCategoryFilter(
         filter_string='blink.console,navigation,blink.user_timing,loading')
@@ -31,20 +35,6 @@ class _PageCyclerV2(perf_benchmark.PerfBenchmark):
     tbm_options.SetTimelineBasedMetric('firstPaintMetric')
     return tbm_options
 
-# crbug.com/619254
-@benchmark.Disabled('reference')
-class PageCyclerV2Typical25(_PageCyclerV2):
-  """Page load time benchmark for a 25 typical web pages.
-
-  Designed to represent typical, not highly optimized or highly popular web
-  sites. Runs against pages recorded in June, 2014.
-  """
-  options = {'pageset_repeat': 2}
-
-  @classmethod
-  def Name(cls):
-    return 'page_cycler_v2.typical_25'
-
   @classmethod
   def ShouldDisable(cls, possible_browser):
     # crbug.com/616781
@@ -54,7 +44,34 @@ class PageCyclerV2Typical25(_PageCyclerV2):
       return True
     return False
 
+
+class PageCyclerV2Typical25(_PageCyclerV2):
+  """Page load time benchmark for a 25 typical web pages.
+
+  Designed to represent typical, not highly optimized or highly popular web
+  sites. Runs against pages recorded in June, 2014.
+  """
+
+  @classmethod
+  def Name(cls):
+    return 'page_cycler_v2.typical_25'
+
   def CreateStorySet(self, options):
     return page_sets.Typical25PageSet(run_no_page_interactions=True,
         cache_temperatures=[
+          cache_temperature.PCV1_COLD, cache_temperature.PCV1_WARM])
+
+
+class PageCyclerV2IntlJaZh(_PageCyclerV2):
+  """Page load time benchmark for a variety of pages in Japanese and Chinese.
+
+  Runs against pages recorded in April, 2013.
+  """
+
+  @classmethod
+  def Name(cls):
+    return 'page_cycler_v2.intl_ja_zh'
+
+  def CreateStorySet(self, options):
+    return page_sets.IntlJaZhPageSet(cache_temperatures=[
           cache_temperature.PCV1_COLD, cache_temperature.PCV1_WARM])
