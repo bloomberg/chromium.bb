@@ -102,7 +102,7 @@ template("write_build_config") {
     assert(type == "android_apk" || type == "java_library" ||
            type == "android_resources" || type == "deps_dex" ||
            type == "android_assets" || type == "resource_rewriter" ||
-           type == "java_binary" || type == "group")
+           type == "java_binary" || type == "group" || type == "java_prebuilt")
 
     forward_variables_from(invoker,
                            [
@@ -159,7 +159,8 @@ template("write_build_config") {
       rebase_path(build_config, root_build_dir),
     ]
 
-    is_java = type == "java_library" || type == "java_binary"
+    is_java = type == "java_library" || type == "java_binary" ||
+              type == "java_prebuilt"
     is_apk = type == "android_apk"
     is_android_assets = type == "android_assets"
     is_android_resources = type == "android_resources"
@@ -314,6 +315,12 @@ template("write_build_config") {
       }
     }
 
+    if (defined(invoker.java_sources_file)) {
+      args += [
+        "--java-sources-file",
+        rebase_path(invoker.java_sources_file, root_build_dir),
+      ]
+    }
     if (defined(invoker.srcjar)) {
       args += [
         "--srcjar",
@@ -1039,77 +1046,56 @@ if (enable_java_templates) {
   }
 
   template("emma_instr") {
-    set_sources_assignment_filter([])
-    forward_variables_from(invoker, [ "testonly" ])
+    action(target_name) {
+      forward_variables_from(invoker,
+                             [
+                               "deps",
+                               "testonly",
+                             ])
 
-    assert(invoker.source_files != [] || true)  # Mark as used
-
-    if (invoker.emma_instrument) {
-      _output_jar_target = "${target_name}__process"
       _coverage_file = "$target_out_dir/${target_name}.em"
       _source_dirs_listing_file = "$target_out_dir/${target_name}_sources.txt"
       _emma_jar = "${android_sdk_root}/tools/lib/emma.jar"
-      _rebased_source_files = rebase_path(invoker.source_files, root_build_dir)
-      action(_output_jar_target) {
-        forward_variables_from(invoker, [ "deps" ])
 
-        script = "//build/android/gyp/emma_instr.py"
-        depfile = "${target_gen_dir}/${target_name}.d"
-        inputs = [
-          _emma_jar,
-          invoker.input_jar_path,
-        ]
-        outputs = [
-          depfile,
-          _coverage_file,
-          _source_dirs_listing_file,
-          invoker.output_jar_path,
-        ]
-        args = [
-          "instrument_jar",
-          "--input-path",
-          rebase_path(invoker.input_jar_path, root_build_dir),
-          "--output-path",
-          rebase_path(invoker.output_jar_path, root_build_dir),
-          "--depfile",
-          rebase_path(depfile, root_build_dir),
-          "--coverage-file",
-          rebase_path(_coverage_file, root_build_dir),
-          "--sources-list-file",
-          rebase_path(_source_dirs_listing_file, root_build_dir),
-          "--source-files=$_rebased_source_files",
-          "--src-root",
-          rebase_path("//", root_build_dir),
-          "--emma-jar",
-          rebase_path(_emma_jar, root_build_dir),
-        ]
-
-        if (emma_filter != "") {
-          args += [
-            "--filter-string",
-            emma_filter,
-          ]
-        }
-      }
-    } else {
-      _output_jar_target = "${target_name}__copy_jar"
-      copy(_output_jar_target) {
-        forward_variables_from(invoker, [ "deps" ])
-
-        sources = [
-          invoker.input_jar_path,
-        ]
-        outputs = [
-          invoker.output_jar_path,
-        ]
-      }
-    }
-
-    group(target_name) {
-      forward_variables_from(invoker, [ "visibility" ])
-      public_deps = [
-        ":$_output_jar_target",
+      script = "//build/android/gyp/emma_instr.py"
+      depfile = "${target_gen_dir}/${target_name}.d"
+      inputs = invoker.java_files + [
+                 _emma_jar,
+                 invoker.input_jar_path,
+               ]
+      outputs = [
+        depfile,
+        _coverage_file,
+        _source_dirs_listing_file,
+        invoker.output_jar_path,
       ]
+      args = [
+        "instrument_jar",
+        "--input-path",
+        rebase_path(invoker.input_jar_path, root_build_dir),
+        "--output-path",
+        rebase_path(invoker.output_jar_path, root_build_dir),
+        "--depfile",
+        rebase_path(depfile, root_build_dir),
+        "--coverage-file",
+        rebase_path(_coverage_file, root_build_dir),
+        "--sources-list-file",
+        rebase_path(_source_dirs_listing_file, root_build_dir),
+        "--src-root",
+        rebase_path("//", root_build_dir),
+        "--emma-jar",
+        rebase_path(_emma_jar, root_build_dir),
+      ]
+      _rebased_java_sources_file =
+          rebase_path(invoker.java_sources_file, root_build_dir)
+      args += [ "--java-sources-file=$_rebased_java_sources_file" ]
+
+      if (emma_filter != "") {
+        args += [
+          "--filter-string",
+          emma_filter,
+        ]
+      }
     }
   }
 
@@ -1688,7 +1674,7 @@ if (enable_java_templates) {
     }
 
     write_build_config(_build_config_target_name) {
-      type = "java_library"
+      type = "java_prebuilt"
       supports_android = _supports_android
       requires_android =
           defined(invoker.requires_android) && invoker.requires_android
@@ -1797,7 +1783,8 @@ if (enable_java_templates) {
   #  $jar_path.interface.jar
   #
   # Variables
-  #   java_files: List of .java files to compile.
+  #   java_files: List of .java files to compile (same as exists in java_sources_file)
+  #   java_sources_file: Path to file containing list of files to compile.
   #   chromium_code: If true, enable extra warnings.
   #   srcjar_deps: List of srcjar dependencies. The .java files contained in the
   #     dependencies srcjar outputs will be compiled and added to the output jar.
@@ -1807,17 +1794,8 @@ if (enable_java_templates) {
     set_sources_assignment_filter([])
     forward_variables_from(invoker, [ "testonly" ])
 
-    assert(defined(invoker.java_files))
     assert(defined(invoker.build_config))
     assert(defined(invoker.jar_path))
-
-    _java_files = invoker.java_files
-    _final_jar_path = invoker.jar_path
-    _javac_jar_path = "$target_gen_dir/$target_name.javac.jar"
-    _process_prebuilt_jar_path =
-        "$target_gen_dir/$target_name.process_prebuilt.jar"
-    _final_ijar_path = get_path_info(_final_jar_path, "dir") + "/" +
-                       get_path_info(_final_jar_path, "name") + ".interface.jar"
 
     _build_config = invoker.build_config
 
@@ -1891,14 +1869,27 @@ if (enable_java_templates) {
     # Mark srcjar_deps as used.
     assert(_srcjar_deps == [] || true)
 
-    _rebased_build_config = rebase_path(_build_config, root_build_dir)
-    _rebased_jar_path = rebase_path(_javac_jar_path, root_build_dir)
-
     _javac_target_name = "${target_name}__javac"
     _process_prebuilt_target_name = "${target_name}__process_prebuilt"
-    _emma_instr_target_name = "${target_name}__emma_instr"
     _ijar_target_name = "${target_name}__ijar"
     _final_target_name = target_name
+
+    _final_jar_path = invoker.jar_path
+    _javac_jar_path = "$target_gen_dir/$target_name.javac.jar"
+    _process_prebuilt_jar_path = _final_jar_path
+    _final_ijar_path = get_path_info(_final_jar_path, "dir") + "/" +
+                       get_path_info(_final_jar_path, "name") + ".interface.jar"
+
+    _emma_instrument = defined(invoker.emma_instrument) &&
+                       invoker.emma_instrument && invoker.java_files != []
+    if (_emma_instrument) {
+      _emma_instr_target_name = "${target_name}__emma_instr"
+      _process_prebuilt_jar_path =
+          "$target_gen_dir/$target_name.process_prebuilt.jar"
+    }
+
+    _rebased_build_config = rebase_path(_build_config, root_build_dir)
+    _rebased_jar_path = rebase_path(_javac_jar_path, root_build_dir)
 
     action(_javac_target_name) {
       script = "//build/android/gyp/javac.py"
@@ -1913,10 +1904,13 @@ if (enable_java_templates) {
         _javac_jar_path,
         _javac_jar_path + ".md5.stamp",
       ]
-      sources = _java_files + _java_srcjars
+      sources = invoker.java_files + _java_srcjars
       inputs = [
         _build_config,
       ]
+      if (invoker.java_files != []) {
+        inputs += [ invoker.java_sources_file ]
+      }
 
       _rebased_java_srcjars = rebase_path(_java_srcjars, root_build_dir)
       _rebased_depfile = rebase_path(depfile, root_build_dir)
@@ -1976,7 +1970,9 @@ if (enable_java_templates) {
       foreach(e, _processor_args) {
         args += [ "--processor-arg=" + e ]
       }
-      args += rebase_path(_java_files, root_build_dir)
+      if (invoker.java_files != []) {
+        args += [ "@" + rebase_path(invoker.java_sources_file, root_build_dir) ]
+      }
     }
 
     process_java_prebuilt(_process_prebuilt_target_name) {
@@ -1996,37 +1992,47 @@ if (enable_java_templates) {
       }
     }
 
-    emma_instr(_emma_instr_target_name) {
-      visibility = [
-        ":$_ijar_target_name",
-        ":$_final_target_name",
-      ]
+    if (_emma_instrument) {
+      emma_instr(_emma_instr_target_name) {
+        forward_variables_from(invoker,
+                               [
+                                 "java_files",
+                                 "java_sources_file",
+                               ])
 
-      forward_variables_from(invoker, [ "emma_instrument" ])
+        input_jar_path = _process_prebuilt_jar_path
+        output_jar_path = _final_jar_path
 
-      input_jar_path = _process_prebuilt_jar_path
-      output_jar_path = _final_jar_path
-      source_files = _java_files
-
-      deps = [
-        ":$_process_prebuilt_target_name",
-      ]
+        deps = [
+          ":$_process_prebuilt_target_name",
+        ]
+      }
     }
 
     generate_interface_jar(_ijar_target_name) {
       input_jar = _final_jar_path
       output_jar = _final_ijar_path
-      deps = [
-        ":$_emma_instr_target_name",
-      ]
+      if (_emma_instrument) {
+        deps = [
+          ":$_emma_instr_target_name",
+        ]
+      } else {
+        deps = [
+          ":$_process_prebuilt_target_name",
+        ]
+      }
     }
 
     group(_final_target_name) {
       forward_variables_from(invoker, [ "visibility" ])
       public_deps = [
-        ":$_emma_instr_target_name",
         ":$_ijar_target_name",
       ]
+      if (_emma_instrument) {
+        public_deps += [ ":$_emma_instr_target_name" ]
+      } else {
+        public_deps += [ ":$_process_prebuilt_target_name" ]
+      }
     }
   }
 
@@ -2112,6 +2118,15 @@ if (enable_java_templates) {
       }
     }
 
+    _java_files = []
+    if (defined(invoker.java_files)) {
+      _java_files += invoker.java_files
+    }
+    if (_java_files != []) {
+      _java_sources_file = "$_base_path.sources"
+      write_file(_java_sources_file, rebase_path(_java_files, root_build_dir))
+    }
+
     # Define build_config_deps which will be a list of targets required to
     # build the _build_config.
     if (defined(invoker.override_build_config)) {
@@ -2139,6 +2154,9 @@ if (enable_java_templates) {
         if (_supports_android) {
           dex_path = _dex_path
         }
+        if (_java_files != []) {
+          java_sources_file = _java_sources_file
+        }
       }
       _accumulated_deps += [ ":$build_config_target_name" ]
     }
@@ -2153,10 +2171,6 @@ if (enable_java_templates) {
       _srcjars = invoker.srcjars
     }
 
-    _java_files = []
-    if (defined(invoker.java_files)) {
-      _java_files += invoker.java_files
-    }
     assert(_java_files != [] || _srcjar_deps != [] || _srcjars != [])
 
     _compile_java_target = "${_template_name}__compile_java"
@@ -2181,6 +2195,9 @@ if (enable_java_templates) {
       jar_path = _jar_path
       build_config = _build_config
       java_files = _java_files
+      if (_java_files != []) {
+        java_sources_file = _java_sources_file
+      }
       srcjar_deps = _srcjar_deps
       srcjars = _srcjars
       chromium_code = _chromium_code
