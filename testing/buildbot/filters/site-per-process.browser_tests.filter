@@ -28,6 +28,7 @@ ExtensionApiTest.Tabs2
 -ExtensionApiTest.TabMove
 -ExtensionApiTest.TabsOnUpdated
 -ExtensionURLRewriteBrowserTest.NewTabPageURL
+-InputImeApiTest.SendKeyEventsOnNormalPage
 -IsolatedAppTest.CookieIsolation
 -IsolatedAppTest.CrossProcessClientRedirect
 -IsolatedAppTest.IsolatedAppProcessModel
