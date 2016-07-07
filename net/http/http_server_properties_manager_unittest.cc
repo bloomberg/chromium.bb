@@ -246,7 +246,7 @@ TEST_P(HttpServerPropertiesManagerTest,
   std::unique_ptr<base::DictionaryValue> alternative_service_dict0(
       new base::DictionaryValue);
   alternative_service_dict0->SetInteger("port", 443);
-  alternative_service_dict0->SetString("protocol_str", "npn-h2");
+  alternative_service_dict0->SetString("protocol_str", "h2");
   std::unique_ptr<base::DictionaryValue> alternative_service_dict1(
       new base::DictionaryValue);
   alternative_service_dict1->SetInteger("port", 1234);
@@ -1121,9 +1121,9 @@ TEST_P(HttpServerPropertiesManagerTest, UpdateCacheWithPrefs) {
       "\"servers\":["
       "{\"http://www.google.com\":{"
       "\"alternative_service\":[{\"expiration\":\"13756212000000000\","
-      "\"port\":443,\"protocol_str\":\"npn-h2\"},"
+      "\"port\":443,\"protocol_str\":\"h2\"},"
       "{\"expiration\":\"13758804000000000\",\"host\":\"www.google.com\","
-      "\"port\":1234,\"protocol_str\":\"npn-h2\"}]}},"
+      "\"port\":1234,\"protocol_str\":\"h2\"}]}},"
       "{\"http://mail.google.com\":{\"alternative_service\":[{"
       "\"expiration\":\"9223372036854775807\",\"host\":\"foo.google.com\","
       "\"port\":444,\"protocol_str\":\"npn-spdy/3.1\"}],"
@@ -1142,7 +1142,7 @@ TEST_P(HttpServerPropertiesManagerTest, UpdateCacheWithPrefs) {
 
 TEST_P(HttpServerPropertiesManagerTest, AddToAlternativeServiceMap) {
   std::unique_ptr<base::Value> server_value = base::JSONReader::Read(
-      "{\"alternative_service\":[{\"port\":443,\"protocol_str\":\"npn-h2\"},"
+      "{\"alternative_service\":[{\"port\":443,\"protocol_str\":\"h2\"},"
       "{\"port\":123,\"protocol_str\":\"quic\","
       "\"expiration\":\"9223372036854775807\"},{\"host\":\"example.org\","
       "\"port\":1234,\"protocol_str\":\"npn-h2\","
