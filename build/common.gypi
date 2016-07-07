@@ -4634,18 +4634,19 @@
 
             'target_conditions': [
               ['_toolset=="target"', {
-                'ldflags': [
-                  # Experimentation found that using four linking threads
-                  # saved ~20% of link time.
-                  # https://groups.google.com/a/chromium.org/group/chromium-dev/browse_thread/thread/281527606915bb36
-                  # Only apply this to the target linker, since the host
-                  # linker might not be gold, but isn't used much anyway.
-                  # TODO(raymes): Disable threading because gold is frequently
-                  # crashing on the bots: crbug.com/161942.
-                  # '-Wl,--threads',
-                  # '-Wl,--thread-count=4',
-                ],
                 'conditions': [
+                  # TODO(thestig): Enable this for disabled cases.
+                  [ 'linux_use_bundled_binutils==1', {
+                    'ldflags': [
+                      # Experimentation found that using four linking threads
+                      # saved ~20% of link time.
+                      # https://groups.google.com/a/chromium.org/group/chromium-dev/browse_thread/thread/281527606915bb36
+                      # Only apply this to the target linker, since the host
+                      # linker might not be gold, but isn't used much anyway.
+                      '-Wl,--threads',
+                      '-Wl,--thread-count=4',
+                    ],
+                  }],
                   # TODO(thestig): Enable this for disabled cases.
                   [ 'buildtype!="Official" and chromeos==0 and release_valgrind_build==0 and asan==0 and lsan==0 and tsan==0 and msan==0 and ubsan==0 and ubsan_security==0 and ubsan_vptr==0', {
                     'ldflags': [
