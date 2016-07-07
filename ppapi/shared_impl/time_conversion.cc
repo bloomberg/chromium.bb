@@ -32,9 +32,12 @@ double PPGetLocalTimeZoneOffset(const base::Time& time) {
   time.LocalExplode(&exploded);
   time.UTCExplode(&utc_exploded);
   if (exploded.HasValidValues() && utc_exploded.HasValidValues()) {
-    base::Time adj_time = base::Time::FromUTCExploded(exploded);
-    base::Time cur = base::Time::FromUTCExploded(utc_exploded);
-    return (adj_time - cur).InSecondsF();
+    base::Time adj_time;
+    if (base::Time::FromUTCExploded(exploded, &adj_time)) {
+      base::Time cur;
+      if (base::Time::FromUTCExploded(utc_exploded, &cur))
+        return (adj_time - cur).InSecondsF();
+    }
   }
   return 0.0;
 }
