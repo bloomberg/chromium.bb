@@ -55,7 +55,7 @@ static void setFocusForDialog(HTMLDialogElement* dialog)
         Element* element = toElement(node);
         if (element->isFormControlElement()) {
             HTMLFormControlElement* control = toHTMLFormControlElement(node);
-            if (control->isAutofocusable()) {
+            if (control->isAutofocusable() && control->isFocusable()) {
                 control->focus();
                 return;
             }

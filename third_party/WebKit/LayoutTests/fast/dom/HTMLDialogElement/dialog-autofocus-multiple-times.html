@@ -33,6 +33,9 @@ waitUntilLoadedAndAutofocused(test);
 <body>
 <button id="outer-button" autofocus></button>
 <dialog id="dlg">
+    <!-- Unfocusable elements with [autofocus] should be ignored. -->
+    <input autofocus disabled>
+    <textarea autofocus hidden></textarea>
     <input id="input1"></input>
     <input id="input2" autofocus></input>
 </dialog>
