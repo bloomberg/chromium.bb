@@ -80,9 +80,9 @@ KeyedService* NTPSnippetsServiceFactory::BuildServiceInstanceFor(
 
   // TODO(mvanouwerkerk): Move the enable logic into the service once we start
   // observing pref changes.
-  bool enabled = profile->GetPrefs()->GetBoolean(prefs::kSearchSuggestEnabled);
+  bool enabled = false;
 #if defined(OS_ANDROID)
-  enabled = enabled &&
+  enabled = profile->GetPrefs()->GetBoolean(prefs::kSearchSuggestEnabled) &&
             base::FeatureList::IsEnabled(chrome::android::kNTPSnippetsFeature);
 #endif  // OS_ANDROID
 
