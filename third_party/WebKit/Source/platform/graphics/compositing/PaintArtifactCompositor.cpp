@@ -337,43 +337,45 @@ scoped_refptr<cc::Layer> PaintArtifactCompositor::layerForPaintChunk(const Paint
 
 namespace {
 
-class TransformTreeManager {
-    WTF_MAKE_NONCOPYABLE(TransformTreeManager);
+class PropertyTreeManager {
+    WTF_MAKE_NONCOPYABLE(PropertyTreeManager);
 public:
-    TransformTreeManager(cc::TransformTree& transformTree, cc::Layer* rootLayer)
-        : m_transformTree(transformTree)
+    PropertyTreeManager(cc::PropertyTrees& propertyTrees, cc::Layer* rootLayer)
+        : m_propertyTrees(propertyTrees)
         , m_rootLayer(rootLayer) {}
 
-    int compositorIdForNode(const TransformPaintPropertyNode*);
+    int compositorIdForTransformNode(const TransformPaintPropertyNode*);
 
 private:
-    // Transform tree which should be updated by the manager.
-    cc::TransformTree& m_transformTree;
+    cc::TransformTree& transformTree() { return m_propertyTrees.transform_tree; }
+
+    // Property trees which should be updated by the manager.
+    cc::PropertyTrees& m_propertyTrees;
 
     // Layer to which transform "owner" layers should be added. These will not
     // have any actual children, but at present must exist in the tree.
     cc::Layer* m_rootLayer;
 
     // Map from Blink-side transform nodes to cc transform node indices.
-    HashMap<const TransformPaintPropertyNode*, int> m_nodeMap;
+    HashMap<const TransformPaintPropertyNode*, int> m_transformNodeMap;
 };
 
-int TransformTreeManager::compositorIdForNode(const TransformPaintPropertyNode* transformNode)
+int PropertyTreeManager::compositorIdForTransformNode(const TransformPaintPropertyNode* transformNode)
 {
     if (!transformNode)
         return kSecondaryRootNodeId;
 
-    auto it = m_nodeMap.find(transformNode);
-    if (it != m_nodeMap.end())
+    auto it = m_transformNodeMap.find(transformNode);
+    if (it != m_transformNodeMap.end())
         return it->value;
 
     scoped_refptr<cc::Layer> dummyLayer = cc::Layer::Create();
-    int parentId = compositorIdForNode(transformNode->parent());
-    int id = m_transformTree.Insert(cc::TransformNode(), parentId);
+    int parentId = compositorIdForTransformNode(transformNode->parent());
+    int id = transformTree().Insert(cc::TransformNode(), parentId);
 
-    cc::TransformNode& compositorNode = *m_transformTree.Node(id);
-    m_transformTree.SetTargetId(id, kRealRootNodeId);
-    m_transformTree.SetContentTargetId(id, kRealRootNodeId);
+    cc::TransformNode& compositorNode = *transformTree().Node(id);
+    transformTree().SetTargetId(id, kRealRootNodeId);
+    transformTree().SetContentTargetId(id, kRealRootNodeId);
     compositorNode.data.source_node_id = parentId;
 
     FloatPoint3D origin = transformNode->origin();
@@ -391,9 +393,9 @@ int TransformTreeManager::compositorIdForNode(const TransformPaintPropertyNode* 
     dummyLayer->SetScrollTreeIndex(kRealRootNodeId);
     dummyLayer->set_property_tree_sequence_number(kPropertyTreeSequenceNumber);
 
-    auto result = m_nodeMap.set(transformNode, id);
+    auto result = m_transformNodeMap.set(transformNode, id);
     DCHECK(result.isNewEntry);
-    m_transformTree.set_needs_update(true);
+    transformTree().set_needs_update(true);
     return id;
 }
 
@@ -411,14 +413,14 @@ void PaintArtifactCompositor::updateInLayerListMode(const PaintArtifact& paintAr
     m_rootLayer->SetEffectTreeIndex(kSecondaryRootNodeId);
     m_rootLayer->SetScrollTreeIndex(kRealRootNodeId);
 
-    TransformTreeManager transformTreeManager(host->property_trees()->transform_tree, m_rootLayer.get());
+    PropertyTreeManager propertyTreeManager(*host->property_trees(), m_rootLayer.get());
     m_contentLayerClients.clear();
     m_contentLayerClients.reserveCapacity(paintArtifact.paintChunks().size());
     for (const PaintChunk& paintChunk : paintArtifact.paintChunks()) {
         gfx::Vector2dF layerOffset;
         scoped_refptr<cc::Layer> layer = layerForPaintChunk(paintArtifact, paintChunk, layerOffset);
 
-        int transformId = transformTreeManager.compositorIdForNode(paintChunk.properties.transform.get());
+        int transformId = propertyTreeManager.compositorIdForTransformNode(paintChunk.properties.transform.get());
         layer->set_offset_to_transform_parent(layerOffset);
 
         m_rootLayer->AddChild(layer);
