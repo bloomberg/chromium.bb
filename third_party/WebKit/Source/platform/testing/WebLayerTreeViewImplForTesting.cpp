@@ -22,6 +22,18 @@ WebLayerTreeViewImplForTesting::WebLayerTreeViewImplForTesting()
 {
 }
 
+static cc::LayerTreeSettings settingsForLayerListPolicy(WebLayerTreeViewImplForTesting::LayerListPolicy policy)
+{
+    cc::LayerTreeSettings settings = WebLayerTreeViewImplForTesting::defaultLayerTreeSettings();
+    settings.use_layer_lists = policy == WebLayerTreeViewImplForTesting::UseLayerLists;
+    return settings;
+}
+
+WebLayerTreeViewImplForTesting::WebLayerTreeViewImplForTesting(LayerListPolicy policy)
+    : WebLayerTreeViewImplForTesting(settingsForLayerListPolicy(policy))
+{
+}
+
 WebLayerTreeViewImplForTesting::WebLayerTreeViewImplForTesting(const cc::LayerTreeSettings& settings)
 {
     cc::LayerTreeHost::InitParams params;
@@ -46,6 +58,11 @@ cc::LayerTreeSettings WebLayerTreeViewImplForTesting::defaultLayerTreeSettings()
     settings.layer_transforms_should_scale_layer_contents = true;
 
     return settings;
+}
+
+bool WebLayerTreeViewImplForTesting::hasLayer(const WebLayer& layer)
+{
+    return layer.ccLayer()->layer_tree_host() == m_layerTreeHost.get();
 }
 
 void WebLayerTreeViewImplForTesting::setRootLayer(const blink::WebLayer& root)

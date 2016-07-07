@@ -121,7 +121,8 @@ public:
 
         ForeignLayerFirst,
         ForeignLayerPlugin = ForeignLayerFirst,
-        ForeignLayerLast = ForeignLayerPlugin,
+        ForeignLayerVideo,
+        ForeignLayerLast = ForeignLayerVideo,
 
         ClipFirst,
         ClipBoxPaintPhaseFirst = ClipFirst,

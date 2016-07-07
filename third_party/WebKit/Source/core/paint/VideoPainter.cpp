@@ -13,6 +13,7 @@
 #include "core/paint/PaintInfo.h"
 #include "platform/geometry/LayoutPoint.h"
 #include "platform/graphics/paint/ClipRecorder.h"
+#include "platform/graphics/paint/ForeignLayerDisplayItem.h"
 
 namespace blink {
 
@@ -39,10 +40,24 @@ void VideoPainter::paintReplaced(const PaintInfo& paintInfo, const LayoutPoint& 
     if (LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(context, m_layoutVideo, paintInfo.phase))
         return;
 
-    LayoutObjectDrawingRecorder drawingRecorder(context, m_layoutVideo, paintInfo.phase, contentRect);
 
     // Video frames are only painted in software for printing or capturing node images via web APIs.
     bool forceSoftwareVideoPaint = paintInfo.getGlobalPaintFlags() & GlobalPaintFlattenCompositingLayers;
+
+    bool paintWithForeignLayer =
+        !displayingPoster && !forceSoftwareVideoPaint
+        && RuntimeEnabledFeatures::slimmingPaintV2Enabled();
+    if (paintWithForeignLayer) {
+        if (WebLayer* layer = m_layoutVideo.mediaElement()->platformLayer()) {
+            IntRect pixelSnappedRect = pixelSnappedIntRect(contentRect);
+            recordForeignLayer(
+                context, m_layoutVideo, DisplayItem::ForeignLayerVideo, layer,
+                pixelSnappedRect.location(), pixelSnappedRect.size());
+            return;
+        }
+    }
+
+    LayoutObjectDrawingRecorder drawingRecorder(context, m_layoutVideo, paintInfo.phase, contentRect);
 
     if (displayingPoster || !forceSoftwareVideoPaint) {
         // This will display the poster image, if one is present, and otherwise paint nothing.

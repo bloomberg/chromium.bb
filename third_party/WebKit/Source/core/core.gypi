@@ -4192,6 +4192,7 @@
             'paint/PaintPropertyTreeBuilderTest.cpp',
             'paint/TableCellPainterTest.cpp',
             'paint/TextPainterTest.cpp',
+            'paint/VideoPainterTest.cpp',
             'streams/ReadableStreamOperationsTest.cpp',
             'streams/ReadableStreamReaderTest.cpp',
             'streams/ReadableStreamTest.cpp',

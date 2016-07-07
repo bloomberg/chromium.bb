@@ -28,11 +28,14 @@ class WebLayerTreeViewImplForTesting : public blink::WebLayerTreeView,
     WTF_MAKE_NONCOPYABLE(WebLayerTreeViewImplForTesting);
 public:
     WebLayerTreeViewImplForTesting();
+    enum LayerListPolicy { DontUseLayerLists, UseLayerLists };
+    explicit WebLayerTreeViewImplForTesting(LayerListPolicy);
     explicit WebLayerTreeViewImplForTesting(const cc::LayerTreeSettings&);
     ~WebLayerTreeViewImplForTesting() override;
 
     static cc::LayerTreeSettings defaultLayerTreeSettings();
     cc::LayerTreeHost* layerTreeHost() { return m_layerTreeHost.get(); }
+    bool hasLayer(const WebLayer&);
 
     // blink::WebLayerTreeView implementation.
     void setRootLayer(const blink::WebLayer&) override;

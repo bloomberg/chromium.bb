@@ -132,6 +132,7 @@ static String foreignLayerTypeAsDebugString(DisplayItem::Type type)
 {
     switch (type) {
         DEBUG_STRING_CASE(ForeignLayerPlugin);
+        DEBUG_STRING_CASE(ForeignLayerVideo);
         DEFAULT_CASE;
     }
 }
