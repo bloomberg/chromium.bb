@@ -23,6 +23,10 @@
 #include "ui/events/event.h"
 #include "ui/views/mus/aura_init.h"
 
+#if defined(OS_CHROMEOS)
+#include "chromeos/dbus/dbus_thread_manager.h"
+#endif
+
 namespace ash {
 namespace mus {
 
@@ -40,6 +44,10 @@ WindowManagerApplication::~WindowManagerApplication() {
   // Destroy the WindowManager while still valid. This way we ensure
   // OnWillDestroyRootWindowController() is called (if it hasn't been already).
   window_manager_.reset();
+
+#if defined(OS_CHROMEOS)
+  chromeos::DBusThreadManager::Shutdown();
+#endif
 }
 
 void WindowManagerApplication::OnAcceleratorRegistrarDestroyed(
@@ -49,6 +57,11 @@ void WindowManagerApplication::OnAcceleratorRegistrarDestroyed(
 
 void WindowManagerApplication::InitWindowManager(
     ::ui::WindowTreeClient* window_tree_client) {
+#if defined(OS_CHROMEOS)
+  // Must occur after mojo::ApplicationRunner has initialized AtExitManager, but
+  // before WindowManager::Init().
+  chromeos::DBusThreadManager::Initialize();
+#endif
   window_manager_->Init(window_tree_client);
   window_manager_->AddObserver(this);
 }

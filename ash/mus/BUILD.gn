@@ -104,6 +104,10 @@ source_set("lib") {
     "//ui/views",
     "//ui/views/mus:for_mojo_application",
   ]
+
+  if (is_chromeos) {
+    deps += [ "//chromeos" ]
+  }
 }
 
 mojo_native_application("mus") {
