@@ -999,7 +999,7 @@ charactersDefined (FileInfo * nested)
       }
   if (!(newRule->opcode == CTO_Correct || newRule->opcode == CTO_SwapCc || newRule->opcode == CTO_SwapCd)
 	//TODO:  these just need to know there is a way to get from dots to a char
-	&& !(newRule->opcode >= CTO_CapsLetterRule && newRule->opcode <= CTO_EndEmph5PhraseAfterRule))
+	&& !(newRule->opcode >= CTO_CapsLetterRule && newRule->opcode <= CTO_EndEmph10PhraseAfterRule))
     {
       for (k = newRule->charslen; k < newRule->charslen + newRule->dotslen;
 	   k++)
