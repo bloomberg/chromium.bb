@@ -545,6 +545,8 @@ void NodeController::DropPeer(const ports::NodeName& name) {
     node_->ClosePort(port);
 
   node_->LostConnectionToNode(name);
+
+  AcceptIncomingMessages();
 }
 
 void NodeController::SendPeerMessage(const ports::NodeName& name,
@@ -740,14 +742,16 @@ void NodeController::OnAcceptChild(const ports::NodeName& from_node,
   scoped_refptr<NodeChannel> parent;
   {
     base::AutoLock lock(parent_lock_);
-    if (!bootstrap_parent_channel_ || parent_name_ != ports::kInvalidNodeName) {
-      DLOG(ERROR) << "Unexpected AcceptChild message from " << from_node;
-      DropPeer(from_node);
-      return;
+    if (bootstrap_parent_channel_ && parent_name_ == ports::kInvalidNodeName) {
+      parent_name_ = parent_name;
+      parent = bootstrap_parent_channel_;
     }
+  }
 
-    parent_name_ = parent_name;
-    parent = bootstrap_parent_channel_;
+  if (!parent) {
+    DLOG(ERROR) << "Unexpected AcceptChild message from " << from_node;
+    DropPeer(from_node);
+    return;
   }
 
   parent->SetRemoteNodeName(parent_name);
@@ -996,6 +1000,8 @@ void NodeController::OnRequestPortMerge(
   int rv = node_->MergePorts(local_port, from_node, connector_port_name);
   if (rv != ports::OK)
     DLOG(ERROR) << "MergePorts failed: " << rv;
+
+  AcceptIncomingMessages();
 }
 
 void NodeController::OnRequestIntroduction(const ports::NodeName& from_node,
