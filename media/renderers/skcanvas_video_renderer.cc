@@ -109,9 +109,9 @@ sk_sp<SkImage> NewSkImageFromVideoFrameYUVTextures(
     source_textures[i].fTarget = mailbox_holder.texture_target;
 
     // TODO(dcastagna): avoid this copy once Skia supports native textures
-    // with a texture target different than TEXTURE_2D.
+    // with a GL_TEXTURE_RECTANGLE_ARB texture target.
     // crbug.com/505026
-    if (mailbox_holder.texture_target != GL_TEXTURE_2D) {
+    if (mailbox_holder.texture_target == GL_TEXTURE_RECTANGLE_ARB) {
       unsigned texture_copy = 0;
       gl->GenTextures(1, &texture_copy);
       DCHECK(texture_copy);
