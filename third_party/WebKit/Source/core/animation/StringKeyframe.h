@@ -50,12 +50,12 @@ public:
 
     class CSSPropertySpecificKeyframe : public Keyframe::PropertySpecificKeyframe {
     public:
-        static PassRefPtr<CSSPropertySpecificKeyframe> create(double offset, PassRefPtr<TimingFunction> easing, CSSValue* value, EffectModel::CompositeOperation composite)
+        static PassRefPtr<CSSPropertySpecificKeyframe> create(double offset, PassRefPtr<TimingFunction> easing, const CSSValue* value, EffectModel::CompositeOperation composite)
         {
             return adoptRef(new CSSPropertySpecificKeyframe(offset, easing, value, composite));
         }
 
-        CSSValue* value() const { return m_value.get(); }
+        const CSSValue* value() const { return m_value.get(); }
 
         bool populateAnimatableValue(CSSPropertyID, Element&, const ComputedStyle& baseStyle, const ComputedStyle* parentStyle) const final;
         const PassRefPtr<AnimatableValue> getAnimatableValue() const final { return m_animatableValueCache.get(); }
@@ -65,9 +65,9 @@ public:
         PassRefPtr<Keyframe::PropertySpecificKeyframe> neutralKeyframe(double offset, PassRefPtr<TimingFunction> easing) const final;
 
     private:
-        CSSPropertySpecificKeyframe(double offset, PassRefPtr<TimingFunction> easing, CSSValue* value, EffectModel::CompositeOperation composite)
+        CSSPropertySpecificKeyframe(double offset, PassRefPtr<TimingFunction> easing, const CSSValue* value, EffectModel::CompositeOperation composite)
             : Keyframe::PropertySpecificKeyframe(offset, easing, composite)
-            , m_value(value)
+            , m_value(const_cast<CSSValue*>(value))
         { }
 
         virtual PassRefPtr<Keyframe::PropertySpecificKeyframe> cloneWithOffset(double offset) const;
@@ -75,6 +75,7 @@ public:
 
         void populateAnimatableValueCaches(CSSPropertyID, Keyframe::PropertySpecificKeyframe&, Element*, CSSValue& fromCSSValue, CSSValue& toCSSValue) const;
 
+        // TODO(sashab): Make this a const CSSValue.
         Persistent<CSSValue> m_value;
         mutable RefPtr<AnimatableValue> m_animatableValueCache;
     };
