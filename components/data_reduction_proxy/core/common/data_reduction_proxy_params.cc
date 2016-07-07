@@ -94,18 +94,21 @@ const char* GetLoFiFlagFieldTrialName() {
 }
 
 bool IsIncludedInLoFiEnabledFieldTrial() {
-  return FieldTrialList::FindFullName(GetLoFiFieldTrialName()).find(kEnabled) ==
-         0;
+  return !IsLoFiOnViaFlags() && !IsLoFiDisabledViaFlags() &&
+         FieldTrialList::FindFullName(GetLoFiFieldTrialName()).find(kEnabled) ==
+             0;
 }
 
 bool IsIncludedInLoFiControlFieldTrial() {
-  return FieldTrialList::FindFullName(GetLoFiFieldTrialName()).find(kControl) ==
-         0;
+  return !IsLoFiOnViaFlags() && !IsLoFiDisabledViaFlags() &&
+         FieldTrialList::FindFullName(GetLoFiFieldTrialName()).find(kControl) ==
+             0;
 }
 
 bool IsIncludedInLoFiPreviewFieldTrial() {
-  return FieldTrialList::FindFullName(GetLoFiFieldTrialName()).find(kPreview) ==
-         0;
+  return !IsLoFiOnViaFlags() && !IsLoFiDisabledViaFlags() &&
+         FieldTrialList::FindFullName(GetLoFiFieldTrialName()).find(kPreview) ==
+             0;
 }
 
 bool IsIncludedInServerExperimentsFieldTrial() {
