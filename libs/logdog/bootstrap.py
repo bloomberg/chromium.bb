@@ -69,4 +69,4 @@ class ButlerBootstrap(_ButlerBootstrapBase):
     """
     if not self.streamserver_uri:
       raise ValueError('No streamserver in bootstrap environment.')
-    return stream.StreamClient.create(self.streamserver_uri)
+    return stream.create(self.streamserver_uri)
