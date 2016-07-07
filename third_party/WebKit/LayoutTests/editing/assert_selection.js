@@ -509,6 +509,8 @@ class Sample {
   constructor(sampleText) {
     /** @const @type {!HTMLIFame} */
     this.iframe_ = document.createElement('iframe');
+    if (!document.body)
+        document.body = document.createElement("body");
     document.body.appendChild(this.iframe_);
     /** @const @type {!HTMLDocument} */
     this.document_ = this.iframe_.contentDocument;
