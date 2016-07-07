@@ -62,12 +62,17 @@ class CONTENT_EXPORT DWriteFontProxyMessageFilter
                     IDWriteLocalFontFileLoader* local_loader,
                     IDWriteFontFile* font_file);
 
+  bool IsLastResortFallbackFont(uint32_t font_index);
+
  private:
   bool direct_write_initialized_ = false;
   Microsoft::WRL::ComPtr<IDWriteFontCollection> collection_;
   Microsoft::WRL::ComPtr<IDWriteFactory2> factory2_;
   Microsoft::WRL::ComPtr<IDWriteFontFallback> font_fallback_;
   base::string16 windows_fonts_path_;
+
+  // Temp code to help track down crbug.com/561873
+  std::vector<uint32_t> last_resort_fonts_;
 
   DISALLOW_COPY_AND_ASSIGN(DWriteFontProxyMessageFilter);
 };

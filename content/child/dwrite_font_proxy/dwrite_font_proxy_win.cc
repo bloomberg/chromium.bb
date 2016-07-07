@@ -40,11 +40,35 @@ enum DirectWriteLoadFamilyResult {
   LOAD_FAMILY_MAX_VALUE
 };
 
+// This enum is used to define the buckets for an enumerated UMA histogram.
+// Hence,
+//   (a) existing enumerated constants should never be deleted or reordered, and
+//   (b) new constants should only be appended at the end of the enumeration.
+enum FontProxyError {
+  FIND_FAMILY_SEND_FAILED = 0,
+  GET_FAMILY_COUNT_SEND_FAILED = 1,
+  COLLECTION_KEY_INVALID = 2,
+  FAMILY_INDEX_OUT_OF_RANGE = 3,
+  GET_FONT_FILES_SEND_FAILED = 4,
+  MAPPED_FILE_FAILED = 5,
+
+  FONT_PROXY_ERROR_MAX_VALUE
+};
+
 const char kFontKeyName[] = "font_key_name";
 
 void LogLoadFamilyResult(DirectWriteLoadFamilyResult result) {
   UMA_HISTOGRAM_ENUMERATION("DirectWrite.Fonts.Proxy.LoadFamilyResult", result,
                             LOAD_FAMILY_MAX_VALUE);
+}
+
+void LogFamilyCount(uint32_t count) {
+  UMA_HISTOGRAM_COUNTS_1000("DirectWrite.Fonts.Proxy.FamilyCount", count);
+}
+
+void LogFontProxyError(FontProxyError error) {
+  UMA_HISTOGRAM_ENUMERATION("DirectWrite.Fonts.Proxy.FontProxyError", error,
+                            FONT_PROXY_ERROR_MAX_VALUE);
 }
 
 }  // namespace
@@ -73,6 +97,7 @@ HRESULT DWriteFontCollectionProxy::FindFamilyName(const WCHAR* family_name,
 
   if (!GetSender()->Send(
           new DWriteFontProxyMsg_FindFamily(name, &family_index))) {
+    LogFontProxyError(FIND_FAMILY_SEND_FAILED);
     return E_FAIL;
   }
 
@@ -117,8 +142,11 @@ UINT32 DWriteFontCollectionProxy::GetFontFamilyCount() {
   uint32_t family_count = 0;
   if (!GetSender()->Send(
           new DWriteFontProxyMsg_GetFamilyCount(&family_count))) {
+    LogFontProxyError(GET_FAMILY_COUNT_SEND_FAILED);
     return 0;
   }
+
+  LogFamilyCount(family_count);
   family_count_ = family_count;
   return family_count;
 }
@@ -146,6 +174,7 @@ HRESULT DWriteFontCollectionProxy::CreateEnumeratorFromKey(
     UINT32 collection_key_size,
     IDWriteFontFileEnumerator** font_file_enumerator) {
   if (!collection_key || collection_key_size != sizeof(uint32_t)) {
+    LogFontProxyError(COLLECTION_KEY_INVALID);
     return E_INVALIDARG;
   }
 
@@ -155,6 +184,7 @@ HRESULT DWriteFontCollectionProxy::CreateEnumeratorFromKey(
       reinterpret_cast<const uint32_t*>(collection_key);
 
   if (*family_index >= GetFontFamilyCount()) {
+    LogFontProxyError(FAMILY_INDEX_OUT_OF_RANGE);
     return E_INVALIDARG;
   }
 
@@ -164,6 +194,7 @@ HRESULT DWriteFontCollectionProxy::CreateEnumeratorFromKey(
   std::vector<base::string16> file_names;
   if (!GetSender()->Send(
           new DWriteFontProxyMsg_GetFontFiles(*family_index, &file_names))) {
+    LogFontProxyError(GET_FONT_FILES_SEND_FAILED);
     return E_FAIL;
   }
 
@@ -552,8 +583,10 @@ HRESULT FontFileStream::ReadFileFragment(const void** fragment_start,
 HRESULT FontFileStream::RuntimeClassInitialize(
     const base::string16& file_name) {
   data_.Initialize(base::FilePath(file_name));
-  if (!data_.IsValid())
+  if (!data_.IsValid()) {
+    LogFontProxyError(MAPPED_FILE_FAILED);
     return E_FAIL;
+  }
   return S_OK;
 }
 

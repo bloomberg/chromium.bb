@@ -8997,6 +8997,36 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="DirectWrite.Fonts.Proxy.FamilyCount" units="families">
+  <owner>kulshin@chromium.org</owner>
+  <summary>
+    The number of font families as seen by the font proxy in the renderer.
+  </summary>
+</histogram>
+
+<histogram name="DirectWrite.Fonts.Proxy.FontProxyError"
+    enum="DirectWriteFontProxyError">
+  <owner>kulshin@chromium.org</owner>
+  <summary>
+    The errors encountered by the DirectWrite font proxy while loading fonts.
+  </summary>
+</histogram>
+
+<histogram name="DirectWrite.Fonts.Proxy.LastResortFontCount" units="fonts">
+  <owner>kulshin@chromium.org</owner>
+  <summary>
+    The number of last resort fallback fonts found on the system as seen by the
+    browser.
+  </summary>
+</histogram>
+
+<histogram name="DirectWrite.Fonts.Proxy.LastResortFontFileCount" units="files">
+  <owner>kulshin@chromium.org</owner>
+  <summary>
+    The number of font files found for a last resort fallback font.
+  </summary>
+</histogram>
+
 <histogram name="DirectWrite.Fonts.Proxy.LoaderType"
     enum="DirectWriteFontLoaderType">
   <owner>kulshin@chromium.org</owner>
@@ -9022,6 +9052,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>
     The time taken to load a font family, excluding glyph data. This is logged
     in the renderer once per family that is loaded.
+  </summary>
+</histogram>
+
+<histogram name="DirectWrite.Fonts.Proxy.MessageFilterError"
+    enum="DirectWriteMessageFilterError">
+  <owner>kulshin@chromium.org</owner>
+  <summary>
+    Errors, if any, encountered by the DirectWrite font proxy message filter.
   </summary>
 </histogram>
 
@@ -70670,12 +70708,29 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="2" label="Non-file loader"/>
 </enum>
 
+<enum name="DirectWriteFontProxyError" type="int">
+  <int value="0" label="FindFamily: send failed"/>
+  <int value="1" label="GetFamilyCount: send failed"/>
+  <int value="2" label="CreateEnumeratorFromKey: invalid key"/>
+  <int value="3" label="CreateEnumeratorFromKey: family index out of range"/>
+  <int value="4" label="GetFontFiles: send failed"/>
+  <int value="5" label="FontfileStream: failed to created mapped file"/>
+</enum>
+
 <enum name="DirectWriteLoadFamilyResult" type="int">
   <int value="0" label="Success: single family"/>
   <int value="1" label="Success: matched from collection"/>
   <int value="2" label="Error: multiple families"/>
   <int value="3" label="Error: no families"/>
-  <int value="4" label="Error: failed to create colleciton"/>
+  <int value="4" label="Error: failed to create collection"/>
+</enum>
+
+<enum name="DirectWriteMessageFilterError" type="int">
+  <int value="0" label="OnGetFontFiles: GetFont failed"/>
+  <int value="1" label="OnGetFontFiles: AddFilesForFont failed"/>
+  <int value="2" label="OnGetFontFiles: GetFontFamily failed"/>
+  <int value="3" label="InitializeDirectWrite: GetSystemFontCollection failed"/>
+  <int value="4" label="MapCharacters: could not find family"/>
 </enum>
 
 <enum name="DistillableType" type="int">

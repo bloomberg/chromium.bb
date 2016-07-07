@@ -15,6 +15,7 @@
 #include "base/callback_helpers.h"
 #include "base/i18n/case_conversion.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
@@ -42,9 +43,38 @@ enum DirectWriteFontLoaderType {
   FONT_LOADER_TYPE_MAX_VALUE
 };
 
+// This enum is used to define the buckets for an enumerated UMA histogram.
+// Hence,
+//   (a) existing enumerated constants should never be deleted or reordered, and
+//   (b) new constants should only be appended at the end of the enumeration.
+enum MessageFilterError {
+  LAST_RESORT_FONT_GET_FONT_FAILED = 0,
+  LAST_RESORT_FONT_ADD_FILES_FAILED = 1,
+  LAST_RESORT_FONT_GET_FAMILY_FAILED = 2,
+  ERROR_NO_COLLECTION = 3,
+  MAP_CHARACTERS_NO_FAMILY = 4,
+
+  MESSAGE_FILTER_ERROR_MAX_VALUE
+};
+
 void LogLoaderType(DirectWriteFontLoaderType loader_type) {
   UMA_HISTOGRAM_ENUMERATION("DirectWrite.Fonts.Proxy.LoaderType", loader_type,
                             FONT_LOADER_TYPE_MAX_VALUE);
+}
+
+void LogLastResortFontCount(size_t count) {
+  UMA_HISTOGRAM_COUNTS_100("DirectWrite.Fonts.Proxy.LastResortFontCount",
+                           count);
+}
+
+void LogLastResortFontFileCount(size_t count) {
+  UMA_HISTOGRAM_COUNTS_100("DirectWrite.Fonts.Proxy.LastResortFontFileCount",
+                           count);
+}
+
+void LogMessageFilterError(MessageFilterError error) {
+  UMA_HISTOGRAM_ENUMERATION("DirectWrite.Fonts.Proxy.MessageFilterError", error,
+                            MESSAGE_FILTER_ERROR_MAX_VALUE);
 }
 
 const wchar_t* kFontsToIgnore[] = {
@@ -74,6 +104,11 @@ base::string16 GetWindowsFontsPath() {
   DCHECK(result);
   return base::i18n::FoldCase(font_path_chars.data());
 }
+
+// These are the fonts that Blink tries to load in getLastResortFallbackFont,
+// and will crash if none can be loaded.
+const wchar_t* kLastResortFontNames[] = {L"Sans", L"Arial", L"MS UI Gothic",
+                                         L"Microsoft Sans Serif"};
 
 }  // namespace
 
@@ -203,6 +238,8 @@ void DWriteFontProxyMessageFilter::OnGetFontFiles(
   mswr::ComPtr<IDWriteFontFamily> family;
   HRESULT hr = collection_->GetFontFamily(family_index, &family);
   if (FAILED(hr)) {
+    if (IsLastResortFallbackFont(family_index))
+      LogMessageFilterError(LAST_RESORT_FONT_GET_FAMILY_FAILED);
     return;
   }
 
@@ -216,13 +253,19 @@ void DWriteFontProxyMessageFilter::OnGetFontFiles(
     mswr::ComPtr<IDWriteFont> font;
     hr = family->GetFont(font_index, &font);
     if (FAILED(hr)) {
+      if (IsLastResortFallbackFont(family_index))
+        LogMessageFilterError(LAST_RESORT_FONT_GET_FONT_FAILED);
       return;
     }
 
-    AddFilesForFont(&path_set, font.Get());
+    if (!AddFilesForFont(&path_set, font.Get())) {
+      if (IsLastResortFallbackFont(family_index))
+        LogMessageFilterError(LAST_RESORT_FONT_ADD_FILES_FAILED);
+    }
   }
 
   file_paths->assign(path_set.begin(), path_set.end());
+  LogLastResortFontFileCount(file_paths->size());
 }
 
 void DWriteFontProxyMessageFilter::OnMapCharacters(
@@ -318,8 +361,7 @@ void DWriteFontProxyMessageFilter::OnMapCharacters(
     return;
   }
   // Could not find a matching family
-  // TODO(kulshin): log UMA that we matched a font, but could not locate the
-  // family
+  LogMessageFilterError(MAP_CHARACTERS_NO_FAMILY);
   DCHECK_EQ(result->family_index, UINT32_MAX);
   DCHECK_GT(result->mapped_length, 0u);
 }
@@ -344,6 +386,23 @@ void DWriteFontProxyMessageFilter::InitializeDirectWrite() {
 
   HRESULT hr = factory->GetSystemFontCollection(&collection_);
   DCHECK(SUCCEEDED(hr));
+
+  if (!collection_) {
+    LogMessageFilterError(ERROR_NO_COLLECTION);
+    return;
+  }
+
+  // Temp code to help track down crbug.com/561873
+  for (size_t font = 0; font < arraysize(kLastResortFontNames); font++) {
+    uint32_t font_index = 0;
+    BOOL exists = FALSE;
+    if (SUCCEEDED(collection_->FindFamilyName(kLastResortFontNames[font],
+                                              &font_index, &exists)) &&
+        exists && font_index != UINT32_MAX) {
+      last_resort_fonts_.push_back(font_index);
+    }
+  }
+  LogLastResortFontCount(last_resort_fonts_.size());
 }
 
 bool DWriteFontProxyMessageFilter::AddFilesForFont(
@@ -469,6 +528,16 @@ bool DWriteFontProxyMessageFilter::AddLocalFile(
   LogLoaderType(FILE_SYSTEM_FONT_DIR);
   path_set->insert(file_path);
   return true;
+}
+
+bool DWriteFontProxyMessageFilter::IsLastResortFallbackFont(
+    uint32_t font_index) {
+  for (auto iter = last_resort_fonts_.begin(); iter != last_resort_fonts_.end();
+       ++iter) {
+    if (*iter == font_index)
+      return true;
+  }
+  return false;
 }
 
 }  // namespace content
