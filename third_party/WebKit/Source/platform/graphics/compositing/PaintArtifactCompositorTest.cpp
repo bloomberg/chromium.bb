@@ -518,6 +518,20 @@ TEST_F(PaintArtifactCompositorTestWithPropertyTrees, TransformCombining)
         contentLayerAt(1)->transform_tree_index());
 }
 
+TEST_F(PaintArtifactCompositorTestWithPropertyTrees, ForeignLayerPassesThrough)
+{
+    scoped_refptr<cc::Layer> layer = cc::Layer::Create();
+
+    TestPaintArtifact artifact;
+    artifact.chunk(PaintChunkProperties())
+        .foreignLayer(FloatPoint(50, 100), IntSize(400, 300), layer);
+    update(artifact.build());
+
+    ASSERT_EQ(1u, contentLayerCount());
+    EXPECT_EQ(layer, contentLayerAt(0));
+    EXPECT_EQ(gfx::Size(400, 300), layer->bounds());
+    EXPECT_EQ(translation(50, 100), layer->screen_space_transform());
+}
 
 } // namespace
 } // namespace blink
