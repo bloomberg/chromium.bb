@@ -20,6 +20,7 @@ enum Container {
   BUBBLES,
   MENUS,
   DRAG_AND_TOOLTIPS,
+  OVERLAY,
 };
 
 const string kWindowContainer_Property = "ash:window-container";

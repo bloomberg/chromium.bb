@@ -36,6 +36,9 @@ int MashContainerToAshShellWindowId(Container container) {
 
     case Container::DRAG_AND_TOOLTIPS:
       return kShellWindowId_DragImageAndTooltipContainer;
+
+    case Container::OVERLAY:
+      return kShellWindowId_OverlayContainer;
   }
   return kShellWindowId_Invalid;
 }
