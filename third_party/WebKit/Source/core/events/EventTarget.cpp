@@ -105,7 +105,7 @@ void reportBlockedEvent(ExecutionContext* context, const Event* event, Registere
 
     String messageText = String::format(
         "Handling of '%s' input event was delayed for %ld ms due to main thread being busy. "
-        "Consider marking event handler as 'passive' to make the page more responive.",
+        "Consider marking event handler as 'passive' to make the page more responsive.",
         event->type().getString().utf8().data(), lround(delayedSeconds * 1000));
 
     v8::Local<v8::Function> function = eventListenerEffectiveFunction(v8Listener->isolate(), handler);
