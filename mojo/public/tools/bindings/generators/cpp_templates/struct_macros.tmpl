@@ -66,13 +66,17 @@
 {%-   set name = pf.field.name %}
 {%-   set kind = pf.field.kind %}
 {%-   set serializer_type = kind|unmapped_type_for_serializer %}
-{%-   if kind|is_object_kind %}
+
+{%-   if kind|is_object_kind or kind|is_any_handle_or_interface_kind %}
 {%-     set original_input_field = input_field_pattern|format(name) %}
 {%-     set input_field = "in_%s"|format(name) if input_may_be_temp
                                                else original_input_field %}
 {%-     if input_may_be_temp %}
   decltype({{original_input_field}}) in_{{name}} = {{original_input_field}};
 {%-     endif %}
+{%-   endif %}
+
+{%-   if kind|is_object_kind %}
 {%-     if kind|is_array_kind or kind|is_map_kind %}
   typename decltype({{output}}->{{name}})::BaseType* {{name}}_ptr;
   const mojo::internal::ContainerValidateParams {{name}}_validate_params(

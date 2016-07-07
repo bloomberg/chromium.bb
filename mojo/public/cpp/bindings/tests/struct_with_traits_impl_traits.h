@@ -101,8 +101,8 @@ struct StructTraits<test::PassByValueStructWithTraits,
 
   // Fields in test::PassByValueStructWithTraits.
   // See src/mojo/public/interfaces/bindings/tests/struct_with_traits.mojom.
-  static ScopedHandle& f_handle(test::PassByValueStructWithTraitsImpl& value) {
-    return value.get_mutable_handle();
+  static ScopedHandle f_handle(test::PassByValueStructWithTraitsImpl& value) {
+    return std::move(value.get_mutable_handle());
   }
 };
 
