@@ -92,7 +92,7 @@
         </span>
       </label>
     </div>
-<if expr="is_posix and not chromeos and not is_macosx">
+<if expr="is_linux and not chromeos">
     <div class="checkbox"><label>
         <input id="show-window-decorations" type="checkbox"
             pref="browser.custom_chrome_frame" metric="Options_CustomFrame"

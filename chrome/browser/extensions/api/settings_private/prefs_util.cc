@@ -67,6 +67,8 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetWhitelistedKeys() {
       settings_private::PrefType::PREF_TYPE_BOOLEAN;
   (*s_whitelist)["bookmark_bar.show_on_all_tabs"] =
       settings_private::PrefType::PREF_TYPE_BOOLEAN;
+  (*s_whitelist)["browser.custom_chrome_frame"] =
+      settings_private::PrefType::PREF_TYPE_BOOLEAN;
   (*s_whitelist)["browser.show_home_button"] =
       settings_private::PrefType::PREF_TYPE_BOOLEAN;
 

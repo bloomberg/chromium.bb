@@ -1039,9 +1039,11 @@ const char kShowUpdatePromotionInfoBar[] =
     "browser.show_update_promotion_info_bar";
 #endif
 
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
 // Boolean that is false if we should show window manager decorations.  If
 // true, we draw a custom chrome frame (thicker title bar and blue border).
 const char kUseCustomChromeFrame[] = "browser.custom_chrome_frame";
+#endif
 
 const char kBackShortcutBubbleShownCount[] =
     "browser.back_shortcut_bubble_shown_count";

@@ -9,11 +9,14 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/tab_restore_service_factory.h"
 #include "chrome/browser/ui/browser_commands.h"
-#include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
-#include "components/prefs/pref_service.h"
 #include "components/sessions/core/tab_restore_service.h"
 #include "ui/base/l10n/l10n_util.h"
+
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+#include "chrome/common/pref_names.h"
+#include "components/prefs/pref_service.h"
+#endif
 
 SystemMenuModelDelegate::SystemMenuModelDelegate(
     ui::AcceleratorProvider* provider,
@@ -26,14 +29,13 @@ SystemMenuModelDelegate::~SystemMenuModelDelegate() {
 }
 
 bool SystemMenuModelDelegate::IsCommandIdChecked(int command_id) const {
-  switch (command_id) {
-    case IDC_USE_SYSTEM_TITLE_BAR: {
-      PrefService* prefs = browser_->profile()->GetPrefs();
-      return !prefs->GetBoolean(prefs::kUseCustomChromeFrame);
-    }
-    default:
-      return false;
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+  if (command_id == IDC_USE_SYSTEM_TITLE_BAR) {
+    PrefService* prefs = browser_->profile()->GetPrefs();
+    return !prefs->GetBoolean(prefs::kUseCustomChromeFrame);
   }
+#endif
+  return false;
 }
 
 bool SystemMenuModelDelegate::IsCommandIdEnabled(int command_id) const {

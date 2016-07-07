@@ -221,6 +221,9 @@ void AddAppearanceStrings(content::WebUIDataSource* html_source) {
     {"openWallpaperApp", IDS_SETTINGS_OPEN_WALLPAPER_APP},
     {"setWallpaper", IDS_SETTINGS_SET_WALLPAPER},
 #endif
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+    {"showWindowDecorations", IDS_SHOW_WINDOW_DECORATIONS},
+#endif
   };
   AddLocalizedStringsBulk(html_source, localized_strings,
                           arraysize(localized_strings));

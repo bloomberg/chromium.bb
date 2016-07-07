@@ -85,6 +85,13 @@
               pref="{{prefs.bookmark_bar.show_on_all_tabs}}">
           </settings-checkbox>
         </div>
+<if expr="is_linux and not chromeos">
+        <div class="settings-box">
+          <settings-checkbox class="start" label="$i18n{showWindowDecorations}"
+              pref="{{prefs.browser.custom_chrome_frame}}">
+          </settings-checkbox>
+        </div>
+</if>
         <div class="settings-box">
           <div class="start">$i18n{fontSize}</div>
           <settings-dropdown-menu id="defaultFontSize"

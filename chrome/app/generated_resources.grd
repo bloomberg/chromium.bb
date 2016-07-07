@@ -10213,7 +10213,7 @@ I don't think this site should be blocked!
       <message name="IDS_THEMES_RESET_BUTTON" desc="The button to reset your theme">
         Reset to default theme
       </message>
-      <if expr="is_posix and not is_macosx and not is_ios">
+      <if expr="is_linux and not chromeos">
         <message name="IDS_THEMES_GTK_BUTTON" desc="The button to choose GTK colors and icons as the current theme.">
           Use GTK+ theme
         </message>
@@ -11484,14 +11484,9 @@ Some features may be unavailable.  Please check that the profile exists and you 
         Don't ask again
       </message>
 
-      <if expr="not use_titlecase">
+      <if expr="is_linux and not chromeos">
         <message name="IDS_SHOW_WINDOW_DECORATIONS_MENU" desc="The menu entry text in the tab strip context menu.  This toggles the system title bar and window borders (window decorations) on linux.">
           Use system title bar and borders
-        </message>
-      </if>
-      <if expr="use_titlecase">
-        <message name="IDS_SHOW_WINDOW_DECORATIONS_MENU" desc="In Title Case: The menu entry text in the tab strip context menu.  This toggles the system title bar and window borders (window decorations) on linux.">
-          Use System Title Bar and Borders
         </message>
       </if>
 

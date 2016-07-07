@@ -74,7 +74,10 @@
 #define IDC_ALL_WINDOWS_FRONT           34048
 #define IDC_VISIT_DESKTOP_OF_LRU_USER_2 34049
 #define IDC_VISIT_DESKTOP_OF_LRU_USER_3 34050
+
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
 #define IDC_USE_SYSTEM_TITLE_BAR        34051
+#endif
 
 // Page-related commands
 #define IDC_BOOKMARK_PAGE               35000
