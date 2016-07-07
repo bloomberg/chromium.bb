@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.payments.ui;
 
 import android.content.Context;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemSelectedListener;
@@ -12,6 +13,7 @@ import android.widget.ArrayAdapter;
 import android.widget.Spinner;
 import android.widget.TextView;
 
+import org.chromium.chrome.R;
 import org.chromium.chrome.browser.preferences.autofill.AutofillProfileBridge.DropdownKeyValue;
 
 import java.util.List;
@@ -21,6 +23,7 @@ import java.util.List;
  */
 class EditorDropdownField {
     private final EditorFieldModel mFieldModel;
+    private final View mLayout;
     private final TextView mLabel;
     private final Spinner mDropdown;
     private int mSelectedIndex;
@@ -38,7 +41,10 @@ class EditorDropdownField {
         assert fieldModel.getInputTypeHint() == EditorFieldModel.INPUT_TYPE_HINT_DROPDOWN;
         mFieldModel = fieldModel;
 
-        mLabel = new TextView(context);
+        mLayout = LayoutInflater.from(context).inflate(
+                R.layout.payment_request_editor_dropdown, null, false);
+
+        mLabel = (TextView) mLayout.findViewById(R.id.spinner_label);
         mLabel.setText(mFieldModel.getLabel());
 
         final List<DropdownKeyValue> dropdownKeyValues = mFieldModel.getDropdownKeyValues();
@@ -49,11 +55,12 @@ class EditorDropdownField {
             }
         }
 
-        ArrayAdapter<DropdownKeyValue> adapter = new ArrayAdapter<DropdownKeyValue>(context,
-                android.R.layout.simple_spinner_item, dropdownKeyValues);
+        ArrayAdapter<DropdownKeyValue> adapter = new ArrayAdapter<DropdownKeyValue>(
+                context, android.R.layout.simple_spinner_item, dropdownKeyValues);
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
 
-        mDropdown = new Spinner(context);
+        mDropdown = (Spinner) mLayout.findViewById(R.id.spinner);
+        mDropdown.setContentDescription(mFieldModel.getLabel());
         mDropdown.setAdapter(adapter);
         mDropdown.setSelection(mSelectedIndex);
         mDropdown.setOnItemSelectedListener(new OnItemSelectedListener() {
@@ -69,6 +76,11 @@ class EditorDropdownField {
             @Override
             public void onNothingSelected(AdapterView<?> parent) {}
         });
+    }
+
+    /** @return The View containing everything. */
+    public View getLayout() {
+        return mLayout;
     }
 
     /** @return The EditorFieldModel that the EditorDropdownField represents. */

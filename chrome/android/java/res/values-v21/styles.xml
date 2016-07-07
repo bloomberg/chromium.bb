@@ -13,7 +13,7 @@
         <item name="floatLabelTextAppearance">@style/PreferenceFloatLabelTextAppearance</item>
         <item name="floatLabelPaddingLeft">@dimen/pref_autofill_field_horizontal_padding</item>
         <item name="floatLabelPaddingRight">@dimen/pref_autofill_field_horizontal_padding</item>
-        <item name="floatLabelPaddingTop">@dimen/pref_autofill_field_top_padding</item>
+        <item name="floatLabelPaddingTop">@dimen/pref_autofill_field_top_margin</item>
     </style>
     <style name="PreferencesDialogTheme" parent="@android:style/Theme.Material.Light.Dialog.Alert">
         <item name="android:colorAccent">@color/pref_accent_color</item>
