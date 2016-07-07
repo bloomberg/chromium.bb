@@ -56,10 +56,9 @@ void CompileShader(GLuint shader, const char* shader_source) {
 namespace gpu {
 
 ClearFramebufferResourceManager::ClearFramebufferResourceManager(
-    const gles2::GLES2Decoder* decoder,
-    const gles2::FeatureInfo::FeatureFlags& feature_flags)
-    : initialized_(false), program_(0u), vao_(0), buffer_id_(0u) {
-  Initialize(decoder, feature_flags);
+    const gles2::GLES2Decoder* decoder)
+    : initialized_(false), program_(0u), buffer_id_(0u) {
+  Initialize(decoder);
 }
 
 ClearFramebufferResourceManager::~ClearFramebufferResourceManager() {
@@ -68,13 +67,12 @@ ClearFramebufferResourceManager::~ClearFramebufferResourceManager() {
 }
 
 void ClearFramebufferResourceManager::Initialize(
-    const gles2::GLES2Decoder* decoder,
-    const gles2::FeatureInfo::FeatureFlags& feature_flags) {
+    const gles2::GLES2Decoder* decoder) {
   static_assert(
       kVertexPositionAttrib == 0u,
       "kVertexPositionAttrib must be 0");
-
   DCHECK(!buffer_id_);
+
   glGenBuffersARB(1, &buffer_id_);
   glBindBuffer(GL_ARRAY_BUFFER, buffer_id_);
   const GLfloat kQuadVertices[] = {-1.0f, -1.0f,
@@ -83,19 +81,6 @@ void ClearFramebufferResourceManager::Initialize(
                                    -1.0f,  1.0f};
   glBufferData(
       GL_ARRAY_BUFFER, sizeof(kQuadVertices), kQuadVertices, GL_STATIC_DRAW);
-
-  DCHECK(!vao_);
-
-  if (feature_flags.native_vertex_array_object) {
-    glGenVertexArraysOES(1, &vao_);
-
-    glBindVertexArrayOES(vao_);
-    glEnableVertexAttribArray(kVertexPositionAttrib);
-    glVertexAttribPointer(kVertexPositionAttrib, 2, GL_FLOAT, GL_FALSE, 0, 0);
-
-    decoder->RestoreAllAttributes();
-  }
-
   decoder->RestoreBufferBindings();
   initialized_ = true;
 }
@@ -105,12 +90,6 @@ void ClearFramebufferResourceManager::Destroy() {
     return;
 
   glDeleteProgram(program_);
-
-  if (vao_ != 0) {
-    glDeleteVertexArraysOES(1, &vao_);
-    vao_ = 0;
-  }
-
   glDeleteBuffersARB(1, &buffer_id_);
   buffer_id_ = 0;
 }
@@ -161,14 +140,11 @@ void ClearFramebufferResourceManager::ClearFramebuffer(
     DLOG(ERROR) << "Invalid shader.";
 #endif
 
-  if (vao_) {
-    glBindVertexArrayOES(vao_);
-  } else {
-    decoder->ClearAllAttributes();
-    glBindBuffer(GL_ARRAY_BUFFER, buffer_id_);
-    glEnableVertexAttribArray(kVertexPositionAttrib);
-    glVertexAttribPointer(kVertexPositionAttrib, 2, GL_FLOAT, GL_FALSE, 0, 0);
-  }
+  decoder->ClearAllAttributes();
+  glEnableVertexAttribArray(kVertexPositionAttrib);
+
+  glBindBuffer(GL_ARRAY_BUFFER, buffer_id_);
+  glVertexAttribPointer(kVertexPositionAttrib, 2, GL_FLOAT, GL_FALSE, 0, 0);
 
   glUniform1f(depth_handle_, clear_depth_value);
   glUniform4f(color_handle_, clear_color_red, clear_color_green,
@@ -203,11 +179,9 @@ void ClearFramebufferResourceManager::ClearFramebuffer(
   glViewport(0, 0, framebuffer_size.width(), framebuffer_size.height());
   glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 
-  if (vao_ == 0) {
-    decoder->RestoreBufferBindings();
-  }
   decoder->RestoreAllAttributes();
   decoder->RestoreProgramBindings();
+  decoder->RestoreBufferBindings();
   decoder->RestoreGlobalState();
 }
 
