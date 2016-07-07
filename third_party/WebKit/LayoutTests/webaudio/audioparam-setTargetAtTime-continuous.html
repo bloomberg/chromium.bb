@@ -215,9 +215,8 @@
           // Verify the ramp part of the curve
           startIndex += length;
           length = expected.rampPart.length;
-          success = Should(prefix, result.slice(startIndex, startIndex + length), {
-              verbose: true
-            }).beCloseToArray(expected.rampPart, thresholdRamp) && success;
+          success = Should(prefix, result.slice(startIndex, startIndex + length))
+            .beCloseToArray(expected.rampPart, thresholdRamp) && success;
 
           // Verify that the end of the curve after the ramp (if any) is a constant.
           startIndex += length;

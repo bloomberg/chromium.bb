@@ -102,9 +102,7 @@
 
           // Verify the time domain data is correct.
           var prefix = "Analyser downmix " + options.message + " to mono"
-          success = Should(prefix + " time data", timeData, {
-              verbose: true
-            })
+          success = Should(prefix + " time data", timeData)
             .beEqualToArray(renderedBuffer.getChannelData(0).subarray(0, analyser.fftSize));
 
           var expectedTimeData = renderedBuffer.getChannelData(0).subarray(0, analyser.fftSize);

@@ -209,10 +209,16 @@
         source.start();
 
         // Some consistency checks on the test parameters
-        Should("Check: Curve end time", config.curveStartTime + config.curveDuration)
+        Should("Check: Curve end time", config.curveStartTime + config.curveDuration, {
+            brief: true
+          })
           .beLessThanOrEqualTo(testDurationSec);
-        Should("Check: Full gain start time", config.fullGainTime).beLessThanOrEqualTo(testDurationSec);
-        Should("Check: Full gain start time", config.fullGainTime).beGreaterThanOrEqualTo(config.curveStartTime + config.curveDuration);
+        Should("Check: Full gain start time", config.fullGainTime, {
+          brief: true
+        }).beLessThanOrEqualTo(testDurationSec);
+        Should("Check: Full gain start time", config.fullGainTime, {
+          brief: true
+        }).beGreaterThanOrEqualTo(config.curveStartTime + config.curveDuration);
 
         // Rock and roll!
         return context.startRendering().then(checkResult(config));
@@ -239,7 +245,9 @@
             }
           }
 
-          success = success && Should("SNR", SNR).beGreaterThanOrEqualTo(config.snrThreshold);
+          success = success && Should("SNR", SNR, {
+            brief: true
+          }).beGreaterThanOrEqualTo(config.snrThreshold);
 
           if (maxDiff <= config.maxErrorThreshold) {
             testPassed("Max difference is less than or equal to " + config.maxErrorThreshold + ".");

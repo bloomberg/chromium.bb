@@ -166,7 +166,7 @@
 
           // Threshold isn't exactly zero due to round-off in the single-precision IIRFilterNode
           // computations versus the double-precision Javascript computations.
-          Should('IIR 1-pole output', actual, {verbose: true})
+          Should('IIR 1-pole output', actual)
             .beCloseToArray(expected, {relativeThreshold: 5.723e-8});
         }).then(done);
       });
@@ -224,13 +224,14 @@
             // even if the threshold passes.  Thus, only print out a very small number of elements
             // of the array where we have tested that they are consistent.
             Should("IIRFilter for Biquad " + filterType, actual, {
-                precision: 5,
-                verbose: true
+                precision: 5
               })
               .beCloseToArray(expected, errorThreshold);
 
             var snr = 10*Math.log10(computeSNR(actual, expected));
-            Should("SNR for IIRFIlter for Biquad " + filterType, snr).beGreaterThanOrEqualTo(snrThreshold);
+            Should("SNR for IIRFIlter for Biquad " + filterType, snr, {
+              brief: true
+            }).beGreaterThanOrEqualTo(snrThreshold);
           }).then(done);
         };
       }
@@ -361,7 +362,9 @@
             });
 
             success = Should("Max difference between IIR and Biquad on channel " + channel,
-              maxError).beLessThanOrEqualTo(errorThresholds[channel]);
+              maxError, {
+                brief: true
+              }).beLessThanOrEqualTo(errorThresholds[channel]);
           }
 
           if (success) {
@@ -547,7 +550,6 @@
 
           Should("4-th order IIRFilter (biquad ref)",
               actual, {
-                verbose: true,
                 precision: 5
               })
             .beCloseToArray(expected, {
@@ -557,7 +559,9 @@
             });
 
           var snr = 10*Math.log10(computeSNR(actual, expected));
-          Should("SNR of 4-th order IIRFilter (biquad ref)", snr)
+          Should("SNR of 4-th order IIRFilter (biquad ref)", snr, {
+              brief: true
+            })
             .beGreaterThanOrEqualTo(108.947);
         }).then(done);
       });

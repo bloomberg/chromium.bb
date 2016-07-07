@@ -89,9 +89,9 @@
             x => x != 0);
 
           // Verify that the expected clamping range is a subset of the actual range.
-          success = Should("Actual Clamp start (" + actualClampStart + ")",
+          success = Should("Actual Clamp start",
             actualClampStart).beLessThanOrEqualTo(clampStartFrame) && success;
-          success == Should("Actual Clamp end (" + actualClampEnd + ")",
+          success == Should("Actual Clamp end",
             actualClampEnd).beGreaterThanOrEqualTo(clampEndFrame) && success;
 
           if (success)

@@ -72,9 +72,8 @@
           var expectedByteData = convertFloatToByte(smoothedFloatResult.map(linearToDb),
             analyser.minDecibels, analyser.maxDecibels);
 
-          success = Should(analyser.fftSize + "-point byte FFT", byteFreqData, {
-            verbose: true
-          }).beCloseToArray(expectedByteData, 0) && success;
+          success = Should(analyser.fftSize + "-point byte FFT", byteFreqData)
+              .beCloseToArray(expectedByteData, 0) && success;
 
         }).then(context.resume.bind(context));
 
@@ -111,9 +110,8 @@
           var expectedByteData = convertFloatToByte(smoothedFloatResult.map(linearToDb),
             analyser.minDecibels, analyser.maxDecibels);
 
-          success = Should(analyser.fftSize + "-point byte FFT", byteFreqData, {
-            verbose: true
-          }).beCloseToArray(expectedByteData, 0) && success;
+          success = Should(analyser.fftSize + "-point byte FFT", byteFreqData)
+            .beCloseToArray(expectedByteData, 0) && success;
 
         }).then(context.resume.bind(context));
 

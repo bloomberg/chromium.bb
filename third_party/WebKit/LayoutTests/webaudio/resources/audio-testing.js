@@ -420,7 +420,7 @@ var Should = (function () {
 
         // If true, verbose output for the failure case is printed, for methods where this makes
         // sense.
-        this.verbose = opts.verbose;
+        this.verbose = !opts.brief;
 
         // If set, this is the precision with which numbers will be printed.
         this.PRINT_PRECISION = opts.precision;
@@ -1046,7 +1046,8 @@ var Should = (function () {
     return function (desc, target, opts) {
         var _opts = {
             numberOfErrorLog: 8,
-            numberOfArrayLog: 16
+            numberOfArrayLog: 16,
+            verbose: true
         };
 
         if (opts instanceof Object) {
@@ -1054,8 +1055,8 @@ var Should = (function () {
                 _opts.numberOfErrorLog = opts.numberOfErrorLog;
             if (opts.hasOwnProperty('numberOfArrayLog'))
                 _opts.numberOfArrayLog = opts.numberOfArrayLog;
-            if (opts.hasOwnProperty('verbose'))
-                _opts.verbose = opts.verbose;
+            if (opts.hasOwnProperty('brief'))
+                _opts.brief = opts.brief;
             if (opts.hasOwnProperty('precision'))
                 _opts.precision = opts.precision;
         }

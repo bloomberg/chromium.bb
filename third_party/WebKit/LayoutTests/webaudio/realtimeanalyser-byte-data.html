@@ -71,8 +71,12 @@
           var indexMax = floatData.findIndex(function (x) { return x > 1; });
           var indexMin = floatData.findIndex(function (x) { return x < -1; });
       
-          Should("Index of first sample greater than +1", indexMax).beGreaterThanOrEqualTo(0);
-          Should("Index of first sample less than -1", indexMin).beGreaterThanOrEqualTo(0);
+          Should("Index of first sample greater than +1", indexMax, {
+            brief: true
+          }).beGreaterThanOrEqualTo(0);
+          Should("Index of first sample less than -1", indexMin, {
+            brief: true
+          }).beGreaterThanOrEqualTo(0);
 
           // Verify explicitly that clipping happened correctly at the above indices.
           Should("Clip  " + floatData[indexMax].toPrecision(6) + ": byteData[" + indexMax + "]",
@@ -81,9 +85,7 @@
             byteData[indexMin]).beEqualTo(0);
 
           // Verify that all other samples are computed correctly.
-          Should("Byte data", byteData, {
-            verbose: true
-          }).beEqualToArray(expected);
+          Should("Byte data", byteData).beEqualToArray(expected);
         }).then(context.resume.bind(context))
 
         src.start();

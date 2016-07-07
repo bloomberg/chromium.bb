@@ -52,7 +52,9 @@
 
            var message = "setValueCurve([" + curve + "], 0, " + duration + ")";
 
-           success = Should("Max amplitude of " + message, max).beLessThanOrEqualTo(expectedMax);
+           success = Should("Max amplitude of " + message, max, {
+             brief: true
+           }).beLessThanOrEqualTo(expectedMax);
 
            if (success)
              testPassed(message + " correctly rendered.")
