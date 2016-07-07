@@ -61,20 +61,18 @@ class BadLoginDatabase : public LoginDatabase {
 };
 
 PasswordFormData CreateTestPasswordFormData() {
-  PasswordFormData data = {
-    PasswordForm::SCHEME_HTML,
-    "http://bar.example.com",
-    "http://bar.example.com/origin",
-    "http://bar.example.com/action",
-    L"submit_element",
-    L"username_element",
-    L"password_element",
-    L"username_value",
-    L"password_value",
-    true,
-    false,
-    1
-  };
+  PasswordFormData data = {PasswordForm::SCHEME_HTML,
+                           "http://bar.example.com",
+                           "http://bar.example.com/origin",
+                           "http://bar.example.com/action",
+                           L"submit_element",
+                           L"username_element",
+                           L"password_element",
+                           L"username_value",
+                           L"password_value",
+                           true,
+                           false,
+                           1};
   return data;
 }
 
@@ -168,16 +166,10 @@ TEST(PasswordStoreDefaultTest, NonASCIIData) {
 
   // Some non-ASCII password form data.
   static const PasswordFormData form_data[] = {
-    { PasswordForm::SCHEME_HTML,
-      "http://foo.example.com",
-      "http://foo.example.com/origin",
-      "http://foo.example.com/action",
-      L"มีสีสัน",
-      L"お元気ですか?",
-      L"盆栽",
-      L"أحب كرة",
-      L"£éä국수çà",
-      true, false, 1 },
+      {PasswordForm::SCHEME_HTML, "http://foo.example.com",
+       "http://foo.example.com/origin", "http://foo.example.com/action",
+       L"มีสีสัน", L"お元気ですか?", L"盆栽", L"أحب كرة", L"£éä국수çà", true,
+       false, 1},
   };
 
   // Build the expected forms vector and add the forms to the store.
@@ -212,7 +204,7 @@ TEST(PasswordStoreDefaultTest, Notifications) {
   store->AddObserver(&observer);
 
   const PasswordStoreChange expected_add_changes[] = {
-    PasswordStoreChange(PasswordStoreChange::ADD, *form),
+      PasswordStoreChange(PasswordStoreChange::ADD, *form),
   };
 
   EXPECT_CALL(observer,
@@ -226,7 +218,7 @@ TEST(PasswordStoreDefaultTest, Notifications) {
   form->password_value = base::ASCIIToUTF16("a different password");
 
   const PasswordStoreChange expected_update_changes[] = {
-    PasswordStoreChange(PasswordStoreChange::UPDATE, *form),
+      PasswordStoreChange(PasswordStoreChange::UPDATE, *form),
   };
 
   EXPECT_CALL(observer,
@@ -237,7 +229,7 @@ TEST(PasswordStoreDefaultTest, Notifications) {
   base::RunLoop().RunUntilIdle();
 
   const PasswordStoreChange expected_delete_changes[] = {
-    PasswordStoreChange(PasswordStoreChange::REMOVE, *form),
+      PasswordStoreChange(PasswordStoreChange::REMOVE, *form),
   };
 
   EXPECT_CALL(observer,

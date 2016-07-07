@@ -87,9 +87,7 @@ class StartSyncFlareMock {
 
 class PasswordStoreTest : public testing::Test {
  protected:
-  void SetUp() override {
-    ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-  }
+  void SetUp() override { ASSERT_TRUE(temp_dir_.CreateUniqueTempDir()); }
 
   void TearDown() override { ASSERT_TRUE(temp_dir_.Delete()); }
 
@@ -113,61 +111,34 @@ TEST_F(PasswordStoreTest, IgnoreOldWwwGoogleLogins) {
 
   const time_t cutoff = 1325376000;  // 00:00 Jan 1 2012 UTC
   static const PasswordFormData form_data[] = {
-    // A form on https://www.google.com/ older than the cutoff. Will be ignored.
-    { PasswordForm::SCHEME_HTML,
-      "https://www.google.com",
-      "https://www.google.com/origin",
-      "https://www.google.com/action",
-      L"submit_element",
-      L"username_element",
-      L"password_element",
-      L"username_value_1",
-      L"",
-      true, true, cutoff - 1 },
-    // A form on https://www.google.com/ older than the cutoff. Will be ignored.
-    { PasswordForm::SCHEME_HTML,
-      "https://www.google.com",
-      "https://www.google.com/origin",
-      "https://www.google.com/action",
-      L"submit_element",
-      L"username_element",
-      L"password_element",
-      L"username_value_2",
-      L"",
-      true, true, cutoff - 1 },
-    // A form on https://www.google.com/ newer than the cutoff.
-    { PasswordForm::SCHEME_HTML,
-      "https://www.google.com",
-      "https://www.google.com/origin",
-      "https://www.google.com/action",
-      L"submit_element",
-      L"username_element",
-      L"password_element",
-      L"username_value_3",
-      L"",
-      true, true, cutoff + 1 },
-    // A form on https://accounts.google.com/ older than the cutoff.
-    { PasswordForm::SCHEME_HTML,
-      "https://accounts.google.com",
-      "https://accounts.google.com/origin",
-      "https://accounts.google.com/action",
-      L"submit_element",
-      L"username_element",
-      L"password_element",
-      L"username_value",
-      L"",
-      true, true, cutoff - 1 },
-    // A form on http://bar.example.com/ older than the cutoff.
-    { PasswordForm::SCHEME_HTML,
-      "http://bar.example.com",
-      "http://bar.example.com/origin",
-      "http://bar.example.com/action",
-      L"submit_element",
-      L"username_element",
-      L"password_element",
-      L"username_value",
-      L"",
-      true, false, cutoff - 1 },
+      // A form on https://www.google.com/ older than the cutoff. Will be
+      // ignored.
+      {PasswordForm::SCHEME_HTML, "https://www.google.com",
+       "https://www.google.com/origin", "https://www.google.com/action",
+       L"submit_element", L"username_element", L"password_element",
+       L"username_value_1", L"", true, true, cutoff - 1},
+      // A form on https://www.google.com/ older than the cutoff. Will be
+      // ignored.
+      {PasswordForm::SCHEME_HTML, "https://www.google.com",
+       "https://www.google.com/origin", "https://www.google.com/action",
+       L"submit_element", L"username_element", L"password_element",
+       L"username_value_2", L"", true, true, cutoff - 1},
+      // A form on https://www.google.com/ newer than the cutoff.
+      {PasswordForm::SCHEME_HTML, "https://www.google.com",
+       "https://www.google.com/origin", "https://www.google.com/action",
+       L"submit_element", L"username_element", L"password_element",
+       L"username_value_3", L"", true, true, cutoff + 1},
+      // A form on https://accounts.google.com/ older than the cutoff.
+      {PasswordForm::SCHEME_HTML, "https://accounts.google.com",
+       "https://accounts.google.com/origin",
+       "https://accounts.google.com/action", L"submit_element",
+       L"username_element", L"password_element", L"username_value", L"", true,
+       true, cutoff - 1},
+      // A form on http://bar.example.com/ older than the cutoff.
+      {PasswordForm::SCHEME_HTML, "http://bar.example.com",
+       "http://bar.example.com/origin", "http://bar.example.com/action",
+       L"submit_element", L"username_element", L"password_element",
+       L"username_value", L"", true, false, cutoff - 1},
   };
 
   // Build the forms vector and add the forms to the store.

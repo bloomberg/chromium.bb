@@ -74,23 +74,24 @@ class PasswordStoreWinTest : public testing::Test {
  protected:
   PasswordStoreWinTest()
       : ui_thread_(BrowserThread::UI, &message_loop_),
-        db_thread_(BrowserThread::DB) {
-  }
+        db_thread_(BrowserThread::DB) {}
 
-  bool CreateIE7PasswordInfo(const std::wstring& url, const base::Time& created,
+  bool CreateIE7PasswordInfo(const std::wstring& url,
+                             const base::Time& created,
                              IE7PasswordInfo* info) {
     // Copied from chrome/browser/importer/importer_unittest.cc
     // The username is "abcdefgh" and the password "abcdefghijkl".
-    unsigned char data[] = "\x0c\x00\x00\x00\x38\x00\x00\x00\x2c\x00\x00\x00"
-                           "\x57\x49\x43\x4b\x18\x00\x00\x00\x02\x00\x00\x00"
-                           "\x67\x00\x72\x00\x01\x00\x00\x00\x00\x00\x00\x00"
-                           "\x00\x00\x00\x00\x4e\xfa\x67\x76\x22\x94\xc8\x01"
-                           "\x08\x00\x00\x00\x12\x00\x00\x00\x4e\xfa\x67\x76"
-                           "\x22\x94\xc8\x01\x0c\x00\x00\x00\x61\x00\x62\x00"
-                           "\x63\x00\x64\x00\x65\x00\x66\x00\x67\x00\x68\x00"
-                           "\x00\x00\x61\x00\x62\x00\x63\x00\x64\x00\x65\x00"
-                           "\x66\x00\x67\x00\x68\x00\x69\x00\x6a\x00\x6b\x00"
-                           "\x6c\x00\x00\x00";
+    unsigned char data[] =
+        "\x0c\x00\x00\x00\x38\x00\x00\x00\x2c\x00\x00\x00"
+        "\x57\x49\x43\x4b\x18\x00\x00\x00\x02\x00\x00\x00"
+        "\x67\x00\x72\x00\x01\x00\x00\x00\x00\x00\x00\x00"
+        "\x00\x00\x00\x00\x4e\xfa\x67\x76\x22\x94\xc8\x01"
+        "\x08\x00\x00\x00\x12\x00\x00\x00\x4e\xfa\x67\x76"
+        "\x22\x94\xc8\x01\x0c\x00\x00\x00\x61\x00\x62\x00"
+        "\x63\x00\x64\x00\x65\x00\x66\x00\x67\x00\x68\x00"
+        "\x00\x00\x61\x00\x62\x00\x63\x00\x64\x00\x65\x00"
+        "\x66\x00\x67\x00\x68\x00\x69\x00\x6a\x00\x6b\x00"
+        "\x6c\x00\x00\x00";
     DATA_BLOB input = {0};
     DATA_BLOB url_key = {0};
     DATA_BLOB output = {0};
@@ -98,10 +99,10 @@ class PasswordStoreWinTest : public testing::Test {
     input.pbData = data;
     input.cbData = sizeof(data);
 
-    url_key.pbData = reinterpret_cast<unsigned char*>(
-        const_cast<wchar_t*>(url.data()));
-    url_key.cbData = static_cast<DWORD>((url.size() + 1) *
-                                        sizeof(std::wstring::value_type));
+    url_key.pbData =
+        reinterpret_cast<unsigned char*>(const_cast<wchar_t*>(url.data()));
+    url_key.cbData =
+        static_cast<DWORD>((url.size() + 1) * sizeof(std::wstring::value_type));
 
     if (!CryptProtectData(&input, nullptr, &url_key, nullptr, nullptr,
                           CRYPTPROTECT_UI_FORBIDDEN, &output))
@@ -127,15 +128,14 @@ class PasswordStoreWinTest : public testing::Test {
     profile_.reset(new TestingProfile());
 
     base::FilePath path = temp_dir_.path().AppendASCII("web_data_test");
-    wdbs_ = new WebDatabaseService(path,
-        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),
+    wdbs_ = new WebDatabaseService(
+        path, BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),
         BrowserThread::GetMessageLoopProxyForThread(BrowserThread::DB));
     // Need to add at least one table so the database gets created.
     wdbs_->AddTable(std::unique_ptr<WebDatabaseTable>(new LoginsTable()));
     wdbs_->LoadDatabase();
     wds_ = new PasswordWebDataService(
-        wdbs_,
-        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),
+        wdbs_, BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),
         WebDataServiceBase::ProfileErrorCallback());
     wds_->Init();
   }
@@ -153,7 +153,8 @@ class PasswordStoreWinTest : public testing::Test {
     }
     base::WaitableEvent done(base::WaitableEvent::ResetPolicy::AUTOMATIC,
                              base::WaitableEvent::InitialState::NOT_SIGNALED);
-    BrowserThread::PostTask(BrowserThread::DB, FROM_HERE,
+    BrowserThread::PostTask(
+        BrowserThread::DB, FROM_HERE,
         base::Bind(&base::WaitableEvent::Signal, base::Unretained(&done)));
     done.Wait();
     base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -196,8 +197,9 @@ ACTION(QuitUIMessageLoop) {
 }
 
 MATCHER(EmptyWDResult, "") {
-  return static_cast<const WDResult<std::vector<PasswordForm*> >*>(
-      arg)->GetValue().empty();
+  return static_cast<const WDResult<std::vector<PasswordForm*>>*>(arg)
+      ->GetValue()
+      .empty();
 }
 
 // Hangs flakily, http://crbug.com/71385.
@@ -217,7 +219,8 @@ TEST_F(PasswordStoreWinTest, DISABLED_ConvertIE7Login) {
   // task to notify us that it's safe to carry on with the test.
   WaitableEvent done(base::WaitableEvent::ResetPolicy::AUTOMATIC,
                      base::WaitableEvent::InitialState::NOT_SIGNALED);
-  BrowserThread::PostTask(BrowserThread::DB, FROM_HERE,
+  BrowserThread::PostTask(
+      BrowserThread::DB, FROM_HERE,
       base::Bind(&WaitableEvent::Signal, base::Unretained(&done)));
   done.Wait();
 
@@ -231,16 +234,18 @@ TEST_F(PasswordStoreWinTest, DISABLED_ConvertIE7Login) {
       .WillByDefault(QuitUIMessageLoop());
 
   PasswordFormData form_data = {
-    PasswordForm::SCHEME_HTML,
-    "http://example.com/",
-    "http://example.com/origin",
-    "http://example.com/action",
-    L"submit_element",
-    L"username_element",
-    L"password_element",
-    L"",
-    L"",
-    true, false, 1,
+      PasswordForm::SCHEME_HTML,
+      "http://example.com/",
+      "http://example.com/origin",
+      "http://example.com/action",
+      L"submit_element",
+      L"username_element",
+      L"password_element",
+      L"",
+      L"",
+      true,
+      false,
+      1,
   };
   std::unique_ptr<PasswordForm> form =
       CreatePasswordFormFromDataForTesting(form_data);
@@ -248,16 +253,18 @@ TEST_F(PasswordStoreWinTest, DISABLED_ConvertIE7Login) {
   // The returned form will not have 'action' or '*_element' fields set. This
   // is because credentials imported from IE don't have this information.
   PasswordFormData expected_form_data = {
-    PasswordForm::SCHEME_HTML,
-    "http://example.com/",
-    "http://example.com/origin",
-    "",
-    L"",
-    L"",
-    L"",
-    L"abcdefgh",
-    L"abcdefghijkl",
-    true, false, 1,
+      PasswordForm::SCHEME_HTML,
+      "http://example.com/",
+      "http://example.com/origin",
+      "",
+      L"",
+      L"",
+      L"",
+      L"abcdefgh",
+      L"abcdefghijkl",
+      true,
+      false,
+      1,
   };
   ScopedVector<autofill::PasswordForm> expected_forms;
   expected_forms.push_back(
@@ -277,16 +284,18 @@ TEST_F(PasswordStoreWinTest, OutstandingWDSQueries) {
   EXPECT_TRUE(store_->Init(syncer::SyncableService::StartSyncFlare()));
 
   PasswordFormData form_data = {
-    PasswordForm::SCHEME_HTML,
-    "http://example.com/",
-    "http://example.com/origin",
-    "http://example.com/action",
-    L"submit_element",
-    L"username_element",
-    L"password_element",
-    L"",
-    L"",
-    true, false, 1,
+      PasswordForm::SCHEME_HTML,
+      "http://example.com/",
+      "http://example.com/origin",
+      "http://example.com/action",
+      L"submit_element",
+      L"username_element",
+      L"password_element",
+      L"",
+      L"",
+      true,
+      false,
+      1,
   };
   std::unique_ptr<PasswordForm> form =
       CreatePasswordFormFromDataForTesting(form_data);
@@ -317,7 +326,8 @@ TEST_F(PasswordStoreWinTest, DISABLED_MultipleWDSQueriesOnDifferentThreads) {
   // task to notify us that it's safe to carry on with the test.
   WaitableEvent done(base::WaitableEvent::ResetPolicy::AUTOMATIC,
                      base::WaitableEvent::InitialState::NOT_SIGNALED);
-  BrowserThread::PostTask(BrowserThread::DB, FROM_HERE,
+  BrowserThread::PostTask(
+      BrowserThread::DB, FROM_HERE,
       base::Bind(&WaitableEvent::Signal, base::Unretained(&done)));
   done.Wait();
 
@@ -330,31 +340,35 @@ TEST_F(PasswordStoreWinTest, DISABLED_MultipleWDSQueriesOnDifferentThreads) {
       .WillByDefault(QuitUIMessageLoop());
 
   PasswordFormData form_data = {
-    PasswordForm::SCHEME_HTML,
-    "http://example.com/",
-    "http://example.com/origin",
-    "http://example.com/action",
-    L"submit_element",
-    L"username_element",
-    L"password_element",
-    L"",
-    L"",
-    true, false, 1,
+      PasswordForm::SCHEME_HTML,
+      "http://example.com/",
+      "http://example.com/origin",
+      "http://example.com/action",
+      L"submit_element",
+      L"username_element",
+      L"password_element",
+      L"",
+      L"",
+      true,
+      false,
+      1,
   };
   std::unique_ptr<PasswordForm> form =
       CreatePasswordFormFromDataForTesting(form_data);
 
   PasswordFormData expected_form_data = {
-    PasswordForm::SCHEME_HTML,
-    "http://example.com/",
-    "http://example.com/origin",
-    "http://example.com/action",
-    L"submit_element",
-    L"username_element",
-    L"password_element",
-    L"abcdefgh",
-    L"abcdefghijkl",
-    true, false, 1,
+      PasswordForm::SCHEME_HTML,
+      "http://example.com/",
+      "http://example.com/origin",
+      "http://example.com/action",
+      L"submit_element",
+      L"username_element",
+      L"password_element",
+      L"abcdefgh",
+      L"abcdefghijkl",
+      true,
+      false,
+      1,
   };
   ScopedVector<autofill::PasswordForm> expected_forms;
   expected_forms.push_back(
@@ -386,16 +400,18 @@ TEST_F(PasswordStoreWinTest, EmptyLogins) {
   store_->Init(syncer::SyncableService::StartSyncFlare());
 
   PasswordFormData form_data = {
-    PasswordForm::SCHEME_HTML,
-    "http://example.com/",
-    "http://example.com/origin",
-    "http://example.com/action",
-    L"submit_element",
-    L"username_element",
-    L"password_element",
-    L"",
-    L"",
-    true, false, 1,
+      PasswordForm::SCHEME_HTML,
+      "http://example.com/",
+      "http://example.com/origin",
+      "http://example.com/action",
+      L"submit_element",
+      L"username_element",
+      L"password_element",
+      L"",
+      L"",
+      true,
+      false,
+      1,
   };
   std::unique_ptr<PasswordForm> form =
       CreatePasswordFormFromDataForTesting(form_data);

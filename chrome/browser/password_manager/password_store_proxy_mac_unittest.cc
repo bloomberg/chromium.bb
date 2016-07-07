@@ -144,8 +144,7 @@ PasswordStoreProxyMacTest::PasswordStoreProxyMacTest() {
   OSCryptMocker::SetUpWithSingleton();
 }
 
-PasswordStoreProxyMacTest::~PasswordStoreProxyMacTest() {
-}
+PasswordStoreProxyMacTest::~PasswordStoreProxyMacTest() {}
 
 void PasswordStoreProxyMacTest::SetUp() {
   std::unique_ptr<password_manager::LoginDatabase> login_db(
@@ -350,9 +349,18 @@ TEST_P(PasswordStoreProxyMacTest, OperationsOnABadDatabaseSilentlyFail) {
 
   // Add a new autofillable login + a blacklisted login.
   password_manager::PasswordFormData www_form_data = {
-      PasswordForm::SCHEME_HTML, "http://www.facebook.com/",
-      "http://www.facebook.com/index.html", "login", L"username", L"password",
-      L"submit", L"not_joe_user", L"12345", true, false, 1};
+      PasswordForm::SCHEME_HTML,
+      "http://www.facebook.com/",
+      "http://www.facebook.com/index.html",
+      "login",
+      L"username",
+      L"password",
+      L"submit",
+      L"not_joe_user",
+      L"12345",
+      true,
+      false,
+      1};
   std::unique_ptr<PasswordForm> form =
       CreatePasswordFormFromDataForTesting(www_form_data);
   std::unique_ptr<PasswordForm> blacklisted_form(new PasswordForm(*form));
@@ -456,7 +464,8 @@ void PasswordStoreProxyMacMigrationTest::TestMigration(bool lock_keychain) {
   // Check the password is still there.
   if (lock_keychain && store_->password_store_mac()) {
     static_cast<crypto::MockAppleKeychain*>(
-        store_->password_store_mac()->keychain())->set_locked(false);
+        store_->password_store_mac()->keychain())
+        ->set_locked(false);
   }
   MockPasswordStoreConsumer mock_consumer;
   store()->GetLogins(form, &mock_consumer);
@@ -479,8 +488,7 @@ void PasswordStoreProxyMacMigrationTest::TestMigration(bool lock_keychain) {
     EXPECT_EQ(static_cast<int>(MigrationStatus::MIGRATED), status);
   }
   histogram_tester_.ExpectUniqueSample(
-      "PasswordManager.KeychainMigration.Status",
-      status, 1);
+      "PasswordManager.KeychainMigration.Status", status, 1);
 }
 
 TEST_P(PasswordStoreProxyMacMigrationTest, TestSuccessfullMigration) {
