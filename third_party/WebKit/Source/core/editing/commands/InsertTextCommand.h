@@ -43,6 +43,8 @@ public:
         return new InsertTextCommand(document, text, selectInsertedText, rebalanceType);
     }
 
+    String textDataForInputEvent() const final;
+
 private:
     InsertTextCommand(Document&, const String& text, bool selectInsertedText, RebalanceType);
 

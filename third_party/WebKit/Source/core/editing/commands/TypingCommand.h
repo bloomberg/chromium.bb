@@ -79,6 +79,8 @@ public:
 
     ETypingCommand commandTypeOfOpenCommand() const { return m_commandType; }
     TextCompositionType compositionType() const { return m_compositionType; }
+    // |TypingCommand| may contain multiple |InsertTextCommand|, should return |textDataForInputEvent()| of the last one.
+    String textDataForInputEvent() const final;
 
 private:
     static TypingCommand* create(Document& document, ETypingCommand command, const String& text = "", Options options = 0, TextGranularity granularity = CharacterGranularity)

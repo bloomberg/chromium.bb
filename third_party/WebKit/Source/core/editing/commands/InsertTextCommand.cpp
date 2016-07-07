@@ -44,6 +44,11 @@ InsertTextCommand::InsertTextCommand(Document& document, const String& text, boo
 {
 }
 
+String InsertTextCommand::textDataForInputEvent() const
+{
+    return m_text;
+}
+
 Position InsertTextCommand::positionInsideTextNode(const Position& p, EditingState* editingState)
 {
     Position pos = p;

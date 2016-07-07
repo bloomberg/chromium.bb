@@ -53,6 +53,11 @@ EditAction EditCommand::editingAction() const
     return EditActionUnspecified;
 }
 
+String EditCommand::textDataForInputEvent() const
+{
+    return emptyString();
+}
+
 static inline EditCommandComposition* compositionIfPossible(EditCommand* command)
 {
     if (!command->isCompositeEditCommand())

@@ -55,6 +55,9 @@ public:
     // The |EditingState*| argument must not be nullptr.
     virtual void doApply(EditingState*) = 0;
 
+    // |TypingCommand| will return the text of the last |m_commands|.
+    virtual String textDataForInputEvent() const;
+
     DECLARE_VIRTUAL_TRACE();
 
 protected:

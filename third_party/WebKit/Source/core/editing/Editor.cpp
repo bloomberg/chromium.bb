@@ -752,8 +752,7 @@ void Editor::appliedEditing(CompositeEditCommand* cmd)
     DCHECK(composition);
     dispatchEditableContentChangedEvents(composition->startingRootEditableElement(), composition->endingRootEditableElement());
     // TODO(chongz): Filter empty InputType after spec is finalized.
-    // TODO(chongz): Fill in |data| field.
-    dispatchInputEventEditableContentChanged(composition->startingRootEditableElement(), composition->endingRootEditableElement(), inputTypeFromCommand(cmd), emptyString(), isComposingFromCommand(cmd));
+    dispatchInputEventEditableContentChanged(composition->startingRootEditableElement(), composition->endingRootEditableElement(), inputTypeFromCommand(cmd), cmd->textDataForInputEvent(), isComposingFromCommand(cmd));
     VisibleSelection newSelection(cmd->endingSelection());
 
     // Don't clear the typing style with this selection change. We do those things elsewhere if necessary.

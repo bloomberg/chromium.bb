@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>InputEvent: data field from keyboard</title>
+<script src="../../../resources/testharness.js"></script>
+<script src="../../../resources/testharnessreport.js"></script>
+</head>
+<body>
+<p id="txt" contenteditable></p>
+<script>
+test(function() {
+    assert_not_equals(window.eventSender, undefined, 'This test requires eventSender.');
+
+    const NOT_FIRED = 'NOT_FIRED';
+    var beforeinputData = NOT_FIRED;
+    var inputData = NOT_FIRED;
+
+    var txt = document.getElementById('txt');
+    txt.addEventListener('beforeinput', event => beforeinputData = event.data);
+    txt.addEventListener('input', event => inputData = event.data);
+
+    function testKeyDownData(key, modifiers, data) {
+        beforeinputData = NOT_FIRED;
+        inputData = NOT_FIRED;
+        eventSender.keyDown(key, modifiers);
+        assert_equals(beforeinputData, data, `${modifiers.toString()}+${key} should produce beforeinput data: ${data}`);
+        assert_equals(inputData, data, `${modifiers.toString()}+${key} should produce input data: ${data}`);
+    }
+
+    txt.focus();
+    // Typing
+    testKeyDownData('a', [], 'a');
+    testKeyDownData('4', [], '4');
+    testKeyDownData('Backspace', [], '');
+    testKeyDownData('L', ['shiftKey'], 'L');
+    testKeyDownData('^', ['shiftKey'], '^');
+    testKeyDownData(' ', [], ' ');
+}, 'Testing data field from keyboard');
+</script>
+</body>
+</html>

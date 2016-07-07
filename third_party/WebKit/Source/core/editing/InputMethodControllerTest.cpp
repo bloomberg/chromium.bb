@@ -349,7 +349,7 @@ TEST_F(InputMethodControllerTest, SetCompositionForContentEditableWithDifferentN
     EXPECT_EQ(24u, controller().getSelectionOffsets().end());
 }
 
-TEST_F(InputMethodControllerTest, CompositionFireBeforeInput)
+TEST_F(InputMethodControllerTest, CompositionInputEventIsComposing)
 {
     document().settings()->setScriptEnabled(true);
     Element* editable = insertHTMLElement("<div id='sample' contentEditable='true'></div>", "sample");
@@ -376,8 +376,42 @@ TEST_F(InputMethodControllerTest, CompositionFireBeforeInput)
 
     document().setTitle(emptyString());
     controller().confirmComposition();
-    // Last 'beforeinput' should also be inside composition scope.
+    // Last pair of InputEvent should also be inside composition scope.
     EXPECT_STREQ("beforeinput.isComposing:true;input.isComposing:true;", document().title().utf8().data());
+}
+
+TEST_F(InputMethodControllerTest, CompositionInputEventData)
+{
+    document().settings()->setScriptEnabled(true);
+    Element* editable = insertHTMLElement("<div id='sample' contentEditable='true'></div>", "sample");
+    Element* script = document().createElement("script", ASSERT_NO_EXCEPTION);
+    script->setInnerHTML(
+        "document.getElementById('sample').addEventListener('beforeinput', function(event) {"
+        "    document.title = `beforeinput.data:${event.data};`;"
+        "});"
+        "document.getElementById('sample').addEventListener('input', function(event) {"
+        "    document.title += `input.data:${event.data};`;"
+        "});",
+        ASSERT_NO_EXCEPTION);
+    document().body()->appendChild(script, ASSERT_NO_EXCEPTION);
+    document().view()->updateAllLifecyclePhases();
+
+    // Simulate composition in the |contentEditable|.
+    Vector<CompositionUnderline> underlines;
+    underlines.append(CompositionUnderline(0, 5, Color(255, 0, 0), false, 0));
+    editable->focus();
+
+    document().setTitle(emptyString());
+    controller().setComposition("n", underlines, 0, 1);
+    EXPECT_STREQ("beforeinput.data:n;input.data:n;", document().title().utf8().data());
+
+    document().setTitle(emptyString());
+    controller().setComposition("ni", underlines, 0, 1);
+    EXPECT_STREQ("beforeinput.data:ni;input.data:ni;", document().title().utf8().data());
+
+    document().setTitle(emptyString());
+    controller().confirmComposition();
+    EXPECT_STREQ("beforeinput.data:ni;input.data:ni;", document().title().utf8().data());
 }
 
 } // namespace blink

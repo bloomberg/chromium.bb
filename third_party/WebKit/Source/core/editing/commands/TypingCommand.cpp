@@ -122,6 +122,13 @@ void TypingCommand::forwardDeleteKeyPressed(Document& document, EditingState* ed
     TypingCommand::create(document, ForwardDeleteKey, "", options, granularity)->apply();
 }
 
+String TypingCommand::textDataForInputEvent() const
+{
+    if (m_commands.isEmpty())
+        return m_textToInsert;
+    return m_commands.last()->textDataForInputEvent();
+}
+
 void TypingCommand::updateSelectionIfDifferentFromCurrentSelection(TypingCommand* typingCommand, LocalFrame* frame)
 {
     DCHECK(frame);
