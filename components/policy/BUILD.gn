@@ -330,7 +330,6 @@ if (enable_configuration_policy) {
       ]
 
       args = [
-               "xcrun",
                "plutil",
                "-convert",
                "xml1",
