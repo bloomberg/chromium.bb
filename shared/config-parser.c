@@ -169,8 +169,9 @@ weston_config_section_get_int(struct weston_config_section *section,
 		return -1;
 	}
 
+	errno = 0;
 	*value = strtol(entry->value, &end, 0);
-	if (*end != '\0') {
+	if (errno != 0 || end == entry->value || *end != '\0') {
 		*value = default_value;
 		errno = EINVAL;
 		return -1;
@@ -195,8 +196,9 @@ weston_config_section_get_uint(struct weston_config_section *section,
 		return -1;
 	}
 
+	errno = 0;
 	*value = strtoul(entry->value, &end, 0);
-	if (*end != '\0') {
+	if (errno != 0 || end == entry->value || *end != '\0') {
 		*value = default_value;
 		errno = EINVAL;
 		return -1;
