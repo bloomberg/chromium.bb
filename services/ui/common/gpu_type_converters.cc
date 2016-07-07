@@ -31,6 +31,7 @@ TypeConverter<ui::mojom::ChannelHandlePtr, IPC::ChannelHandle>::Convert(
   if (platform_file != -1)
     result->socket = mojo::WrapPlatformFile(platform_file);
 #endif
+  result->mojo_handle.reset(handle.mojo_handle);
   return result;
 }
 
@@ -40,6 +41,11 @@ TypeConverter<IPC::ChannelHandle, ui::mojom::ChannelHandlePtr>::Convert(
     const ui::mojom::ChannelHandlePtr& handle) {
   if (handle.is_null())
     return IPC::ChannelHandle();
+  if (handle->mojo_handle.is_valid()) {
+    IPC::ChannelHandle channel_handle(handle->mojo_handle.release());
+    channel_handle.name = handle->name;
+    return channel_handle;
+  }
 #if defined(OS_WIN)
   // On windows, a pipe handle Will NOT be marshalled over IPC.
   DCHECK(!handle->socket.is_valid());

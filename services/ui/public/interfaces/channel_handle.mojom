@@ -10,4 +10,7 @@ struct ChannelHandle {
 
   // On POSIX, it is one endpoint of a socket pair. On Windows, it is not used.
   handle socket;
+
+  // Message pipe handle used for ChannelMojo.
+  handle<message_pipe>? mojo_handle;
 };

@@ -57,6 +57,28 @@ TEST(MusGpuTypeConvertersTest, ChannelHandle) {
     base::ScopedFD socped_fd3(handle.socket.fd);
   }
 #endif
+
+  {
+    const std::string channel_name = "test_channel_name";
+    mojo::MessagePipe message_pipe;
+    mojo::MessagePipeHandle mp_handle = message_pipe.handle0.release();
+    EXPECT_TRUE(mp_handle.is_valid());
+    IPC::ChannelHandle handle(mp_handle);
+    handle.name = channel_name;
+
+    ui::mojom::ChannelHandlePtr mojo_handle =
+        ui::mojom::ChannelHandle::From(handle);
+    ASSERT_EQ(mojo_handle->name, channel_name);
+    ASSERT_EQ(mojo_handle->mojo_handle.get(), mp_handle);
+    EXPECT_FALSE(mojo_handle->socket.is_valid());
+
+    handle = mojo_handle.To<IPC::ChannelHandle>();
+    ASSERT_EQ(handle.name, channel_name);
+    ASSERT_EQ(handle.mojo_handle, mp_handle);
+#if defined(OS_POSIX)
+    ASSERT_EQ(handle.socket.fd, -1);
+#endif
+  }
 }
 
 // Test for mojo TypeConverter of ui::mojom::GpuMemoryBufferHandle
