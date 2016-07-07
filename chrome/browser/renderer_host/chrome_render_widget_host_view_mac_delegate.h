@@ -16,22 +16,11 @@ namespace content {
 class RenderWidgetHost;
 }
 
-namespace ChromeRenderWidgetHostViewMacDelegateInternal {
-class SpellCheckObserver;
-}
-
 @class HistorySwiper;
 @interface ChromeRenderWidgetHostViewMacDelegate
     : NSObject<RenderWidgetHostViewMacDelegate> {
  @private
   content::RenderWidgetHost* renderWidgetHost_;  // weak
-  std::unique_ptr<
-      ChromeRenderWidgetHostViewMacDelegateInternal::SpellCheckObserver>
-      spellingObserver_;
-
-  // Used for continuous spell checking.
-  BOOL spellcheckEnabled_;
-  BOOL spellcheckChecked_;
 
   // Responsible for 2-finger swipes history navigation.
   base::scoped_nsobject<HistorySwiper> historySwiper_;

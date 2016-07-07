@@ -24,49 +24,11 @@
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/browser/web_contents_observer.h"
 
 using content::RenderViewHost;
 
 @interface ChromeRenderWidgetHostViewMacDelegate () <HistorySwiperDelegate>
-- (void)spellCheckEnabled:(BOOL)enabled checked:(BOOL)checked;
 @end
-
-namespace ChromeRenderWidgetHostViewMacDelegateInternal {
-
-// Filters the message sent by the renderer to know if spellchecking is enabled
-// or not for the currently focused element.
-class SpellCheckObserver : public content::WebContentsObserver {
- public:
-  SpellCheckObserver(
-      RenderViewHost* host,
-      ChromeRenderWidgetHostViewMacDelegate* view_delegate)
-      : content::WebContentsObserver(
-            content::WebContents::FromRenderViewHost(host)),
-        view_delegate_(view_delegate) {
-  }
-
-  ~SpellCheckObserver() override {}
-
- private:
-  bool OnMessageReceived(const IPC::Message& message) override {
-    bool handled = true;
-    IPC_BEGIN_MESSAGE_MAP(SpellCheckObserver, message)
-      IPC_MESSAGE_HANDLER(SpellCheckHostMsg_ToggleSpellCheck,
-                          OnToggleSpellCheck)
-      IPC_MESSAGE_UNHANDLED(handled = false)
-    IPC_END_MESSAGE_MAP()
-    return handled;
-  }
-
-  void OnToggleSpellCheck(bool enabled, bool checked) {
-    [view_delegate_ spellCheckEnabled:enabled checked:checked];
-  }
-
-  ChromeRenderWidgetHostViewMacDelegate* view_delegate_;
-};
-
-}  // namespace ChromeRenderWidgetHostViewMacDelegateInternal
 
 @implementation ChromeRenderWidgetHostViewMacDelegate
 
@@ -74,13 +36,6 @@ class SpellCheckObserver : public content::WebContentsObserver {
   self = [super init];
   if (self) {
     renderWidgetHost_ = renderWidgetHost;
-    RenderViewHost* rvh = RenderViewHost::From(renderWidgetHost_);
-    if (rvh) {
-      spellingObserver_.reset(
-          new ChromeRenderWidgetHostViewMacDelegateInternal::SpellCheckObserver(
-              rvh, self));
-    }
-
     historySwiper_.reset([[HistorySwiper alloc] initWithDelegate:self]);
   }
   return self;
@@ -175,13 +130,12 @@ class SpellCheckObserver : public content::WebContentsObserver {
       content::RenderProcessHost* host = renderWidgetHost_->GetProcess();
       Profile* profile = Profile::FromBrowserContext(host->GetBrowserContext());
       DCHECK(profile);
-      spellcheckChecked_ =
-          profile->GetPrefs()->GetBoolean(prefs::kEnableContinuousSpellcheck);
       NSCellStateValue checkedState =
-          spellcheckChecked_ ? NSOnState : NSOffState;
+          profile->GetPrefs()->GetBoolean(prefs::kEnableContinuousSpellcheck) ?
+              NSOnState : NSOffState;
       [(id)item setState:checkedState];
     }
-    *valid = spellcheckEnabled_;
+    *valid = YES;
     return YES;
   }
 
@@ -252,11 +206,6 @@ class SpellCheckObserver : public content::WebContentsObserver {
   PrefService* pref = profile->GetPrefs();
   pref->SetBoolean(prefs::kEnableContinuousSpellcheck,
                    !pref->GetBoolean(prefs::kEnableContinuousSpellcheck));
-}
-
-- (void)spellCheckEnabled:(BOOL)enabled checked:(BOOL)checked {
-  spellcheckEnabled_ = enabled;
-  spellcheckChecked_ = checked;
 }
 
 // END Spellchecking methods
