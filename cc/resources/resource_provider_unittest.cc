@@ -661,9 +661,8 @@ TEST_P(ResourceProviderTest, TransferGLResources) {
       SingleReleaseCallbackImpl::Create(base::Bind(&EmptyReleaseCallback)));
 
   ReturnedResourceArray returned_to_child;
-  int child_id = resource_provider_->CreateChild(
-      GetReturnCallback(&returned_to_child),
-      child_gpu_memory_buffer_manager_->GetClientId());
+  int child_id =
+      resource_provider_->CreateChild(GetReturnCallback(&returned_to_child));
 
   {
     // Transfer some resources to the parent.
@@ -919,9 +918,8 @@ TEST_P(ResourceProviderTestNoSyncToken, TransferGLResources) {
       SingleReleaseCallbackImpl::Create(base::Bind(&EmptyReleaseCallback)));
 
   ReturnedResourceArray returned_to_child;
-  int child_id = resource_provider_->CreateChild(
-      GetReturnCallback(&returned_to_child),
-      child_gpu_memory_buffer_manager_->GetClientId());
+  int child_id =
+      resource_provider_->CreateChild(GetReturnCallback(&returned_to_child));
   resource_provider_->SetChildNeedsSyncTokens(child_id, false);
   {
     // Transfer some resources to the parent.
@@ -999,9 +997,8 @@ TEST_P(ResourceProviderTest, ReadLockCountStopsReturnToChildOrDelete) {
   child_resource_provider_->CopyToResource(id1, data1, size);
 
   ReturnedResourceArray returned_to_child;
-  int child_id = resource_provider_->CreateChild(
-      GetReturnCallback(&returned_to_child),
-      child_gpu_memory_buffer_manager_->GetClientId());
+  int child_id =
+      resource_provider_->CreateChild(GetReturnCallback(&returned_to_child));
   {
     // Transfer some resources to the parent.
     ResourceProvider::ResourceIdArray resource_ids_to_transfer;
@@ -1069,9 +1066,8 @@ TEST_P(ResourceProviderTest, ReadLockFenceStopsReturnToChildOrDelete) {
   child_resource_provider_->CopyToResource(id1, data1, size);
   child_resource_provider_->EnableReadLockFencesForTesting(id1);
   ReturnedResourceArray returned_to_child;
-  int child_id = resource_provider_->CreateChild(
-      GetReturnCallback(&returned_to_child),
-      child_gpu_memory_buffer_manager_->GetClientId());
+  int child_id =
+      resource_provider_->CreateChild(GetReturnCallback(&returned_to_child));
 
   // Transfer some resources to the parent.
   ResourceProvider::ResourceIdArray resource_ids_to_transfer;
@@ -1132,9 +1128,8 @@ TEST_P(ResourceProviderTest, ReadLockFenceDestroyChild) {
   child_resource_provider_->CopyToResource(id2, data, size);
 
   ReturnedResourceArray returned_to_child;
-  int child_id = resource_provider_->CreateChild(
-      GetReturnCallback(&returned_to_child),
-      child_gpu_memory_buffer_manager_->GetClientId());
+  int child_id =
+      resource_provider_->CreateChild(GetReturnCallback(&returned_to_child));
 
   // Transfer resources to the parent.
   ResourceProvider::ResourceIdArray resource_ids_to_transfer;
@@ -1199,9 +1194,8 @@ TEST_P(ResourceProviderTest, ReadLockFenceContextLost) {
   child_resource_provider_->CopyToResource(id2, data, size);
 
   ReturnedResourceArray returned_to_child;
-  int child_id = resource_provider_->CreateChild(
-      GetReturnCallback(&returned_to_child),
-      child_gpu_memory_buffer_manager_->GetClientId());
+  int child_id =
+      resource_provider_->CreateChild(GetReturnCallback(&returned_to_child));
 
   // Transfer resources to the parent.
   ResourceProvider::ResourceIdArray resource_ids_to_transfer;
@@ -1270,9 +1264,8 @@ TEST_P(ResourceProviderTest, TransferSoftwareResources) {
           &SharedBitmapReleaseCallback, base::Passed(&shared_bitmap))));
 
   ReturnedResourceArray returned_to_child;
-  int child_id = resource_provider_->CreateChild(
-      GetReturnCallback(&returned_to_child),
-      child_gpu_memory_buffer_manager_->GetClientId());
+  int child_id =
+      resource_provider_->CreateChild(GetReturnCallback(&returned_to_child));
   {
     // Transfer some resources to the parent.
     ResourceProvider::ResourceIdArray resource_ids_to_transfer;
@@ -1477,9 +1470,8 @@ TEST_P(ResourceProviderTest, TransferGLToSoftware) {
   child_resource_provider->GenerateSyncTokenForResource(id1);
 
   ReturnedResourceArray returned_to_child;
-  int child_id = resource_provider_->CreateChild(
-      GetReturnCallback(&returned_to_child),
-      child_gpu_memory_buffer_manager_->GetClientId());
+  int child_id =
+      resource_provider_->CreateChild(GetReturnCallback(&returned_to_child));
   {
     ResourceProvider::ResourceIdArray resource_ids_to_transfer;
     resource_ids_to_transfer.push_back(id1);
@@ -1525,9 +1517,8 @@ TEST_P(ResourceProviderTest, TransferInvalidSoftware) {
   child_resource_provider_->CopyToResource(id1, data1, size);
 
   ReturnedResourceArray returned_to_child;
-  int child_id = resource_provider_->CreateChild(
-      GetReturnCallback(&returned_to_child),
-      child_gpu_memory_buffer_manager_->GetClientId());
+  int child_id =
+      resource_provider_->CreateChild(GetReturnCallback(&returned_to_child));
   {
     ResourceProvider::ResourceIdArray resource_ids_to_transfer;
     resource_ids_to_transfer.push_back(id1);
@@ -1582,9 +1573,8 @@ TEST_P(ResourceProviderTest, DeleteExportedResources) {
   child_resource_provider_->CopyToResource(id2, data2, size);
 
   ReturnedResourceArray returned_to_child;
-  int child_id = resource_provider_->CreateChild(
-      GetReturnCallback(&returned_to_child),
-      child_gpu_memory_buffer_manager_->GetClientId());
+  int child_id =
+      resource_provider_->CreateChild(GetReturnCallback(&returned_to_child));
   {
     // Transfer some resources to the parent.
     ResourceProvider::ResourceIdArray resource_ids_to_transfer;
@@ -1687,9 +1677,8 @@ TEST_P(ResourceProviderTest, DestroyChildWithExportedResources) {
   child_resource_provider_->CopyToResource(id2, data2, size);
 
   ReturnedResourceArray returned_to_child;
-  int child_id = resource_provider_->CreateChild(
-      GetReturnCallback(&returned_to_child),
-      child_gpu_memory_buffer_manager_->GetClientId());
+  int child_id =
+      resource_provider_->CreateChild(GetReturnCallback(&returned_to_child));
   {
     // Transfer some resources to the parent.
     ResourceProvider::ResourceIdArray resource_ids_to_transfer;
@@ -1804,9 +1793,8 @@ TEST_P(ResourceProviderTest, DeleteTransferredResources) {
   child_resource_provider_->CopyToResource(id, data, size);
 
   ReturnedResourceArray returned_to_child;
-  int child_id = resource_provider_->CreateChild(
-      GetReturnCallback(&returned_to_child),
-      child_gpu_memory_buffer_manager_->GetClientId());
+  int child_id =
+      resource_provider_->CreateChild(GetReturnCallback(&returned_to_child));
   {
     // Transfer some resource to the parent.
     ResourceProvider::ResourceIdArray resource_ids_to_transfer;
@@ -1860,9 +1848,8 @@ TEST_P(ResourceProviderTest, UnuseTransferredResources) {
   child_resource_provider_->CopyToResource(id, data, size);
 
   ReturnedResourceArray returned_to_child;
-  int child_id = resource_provider_->CreateChild(
-      GetReturnCallback(&returned_to_child),
-      child_gpu_memory_buffer_manager_->GetClientId());
+  int child_id =
+      resource_provider_->CreateChild(GetReturnCallback(&returned_to_child));
   const ResourceProvider::ResourceIdMap& map =
       resource_provider_->GetChildToParentMap(child_id);
   {
@@ -2051,7 +2038,7 @@ class ResourceProviderTestTextureFilters : public ResourceProviderTest {
 
     ReturnedResourceArray returned_to_child;
     int child_id = parent_resource_provider->CreateChild(
-        GetReturnCallback(&returned_to_child), -1);
+        GetReturnCallback(&returned_to_child));
     {
       // Transfer some resource to the parent.
       ResourceProvider::ResourceIdArray resource_ids_to_transfer;
@@ -2295,9 +2282,8 @@ TEST_P(ResourceProviderTest, LostResourceInParent) {
       GetParam() == ResourceProvider::RESOURCE_TYPE_GL_TEXTURE;
 
   ReturnedResourceArray returned_to_child;
-  int child_id = resource_provider_->CreateChild(
-      GetReturnCallback(&returned_to_child),
-      child_gpu_memory_buffer_manager_->GetClientId());
+  int child_id =
+      resource_provider_->CreateChild(GetReturnCallback(&returned_to_child));
   {
     // Transfer the resource to the parent.
     ResourceProvider::ResourceIdArray resource_ids_to_transfer;
@@ -2348,9 +2334,8 @@ TEST_P(ResourceProviderTest, LostResourceInGrandParent) {
   child_resource_provider_->AllocateForTesting(resource);
 
   ReturnedResourceArray returned_to_child;
-  int child_id = resource_provider_->CreateChild(
-      GetReturnCallback(&returned_to_child),
-      child_gpu_memory_buffer_manager_->GetClientId());
+  int child_id =
+      resource_provider_->CreateChild(GetReturnCallback(&returned_to_child));
   {
     // Transfer the resource to the parent.
     ResourceProvider::ResourceIdArray resource_ids_to_transfer;
@@ -2427,9 +2412,8 @@ TEST_P(ResourceProviderTest, LostMailboxInParent) {
                                            &release_called, &sync_token);
 
   ReturnedResourceArray returned_to_child;
-  int child_id = resource_provider_->CreateChild(
-      GetReturnCallback(&returned_to_child),
-      child_gpu_memory_buffer_manager_->GetClientId());
+  int child_id =
+      resource_provider_->CreateChild(GetReturnCallback(&returned_to_child));
   {
     // Transfer the resource to the parent.
     ResourceProvider::ResourceIdArray resource_ids_to_transfer;
@@ -2481,9 +2465,8 @@ TEST_P(ResourceProviderTest, LostMailboxInGrandParent) {
                                            &release_called, &sync_token);
 
   ReturnedResourceArray returned_to_child;
-  int child_id = resource_provider_->CreateChild(
-      GetReturnCallback(&returned_to_child),
-      child_gpu_memory_buffer_manager_->GetClientId());
+  int child_id =
+      resource_provider_->CreateChild(GetReturnCallback(&returned_to_child));
   {
     // Transfer the resource to the parent.
     ResourceProvider::ResourceIdArray resource_ids_to_transfer;

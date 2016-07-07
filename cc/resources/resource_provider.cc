@@ -375,9 +375,7 @@ void ResourceProvider::Resource::WaitSyncToken(gpu::gles2::GLES2Interface* gl) {
 }
 
 ResourceProvider::Child::Child()
-    : gpu_memory_buffer_client_id(-1),
-      marked_for_deletion(false),
-      needs_sync_tokens(true) {}
+    : marked_for_deletion(false), needs_sync_tokens(true) {}
 
 ResourceProvider::Child::Child(const Child& other) = default;
 
@@ -1283,13 +1281,11 @@ void ResourceProvider::SynchronousFence::Synchronize() {
   gl_->Finish();
 }
 
-int ResourceProvider::CreateChild(const ReturnCallback& return_callback,
-                                  int gpu_memory_buffer_client_id) {
+int ResourceProvider::CreateChild(const ReturnCallback& return_callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   Child child_info;
   child_info.return_callback = return_callback;
-  child_info.gpu_memory_buffer_client_id = gpu_memory_buffer_client_id;
 
   int child = next_child_++;
   children_[child] = child_info;

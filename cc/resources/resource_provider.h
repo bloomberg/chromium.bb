@@ -163,8 +163,7 @@ class CC_EXPORT ResourceProvider
   void GenerateSyncTokenForResources(const ResourceIdArray& resource_ids);
 
   // Creates accounting for a child. Returns a child ID.
-  int CreateChild(const ReturnCallback& return_callback,
-                  int gpu_memory_buffer_client_id);
+  int CreateChild(const ReturnCallback& return_callback);
 
   // Destroys accounting for the child, deleting all accounted resources.
   void DestroyChild(int child);
@@ -606,7 +605,6 @@ class CC_EXPORT ResourceProvider
     ResourceIdMap child_to_parent_map;
     ResourceIdMap parent_to_child_map;
     ReturnCallback return_callback;
-    int gpu_memory_buffer_client_id;
     bool marked_for_deletion;
     bool needs_sync_tokens;
   };
