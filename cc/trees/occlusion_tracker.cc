@@ -211,9 +211,11 @@ static void ReduceOcclusionBelowSurface(
       &outset_top, &outset_right, &outset_bottom, &outset_left);
 
   // The filter can move pixels from outside of the clip, so allow affected_area
-  // to expand outside the clip.
-  affected_area_in_target.Inset(
-      -outset_left, -outset_top, -outset_right, -outset_bottom);
+  // to expand outside the clip. Notably the content we're concerned with here
+  // is not the affected area, but rather stuff slightly outside it. Thus the
+  // directions of the outsets are reversed from normal.
+  affected_area_in_target.Inset(-outset_right, -outset_bottom, -outset_left,
+                                -outset_top);
   SimpleEnclosedRegion affected_occlusion = *occlusion_from_inside_target;
   affected_occlusion.Intersect(affected_area_in_target);
 

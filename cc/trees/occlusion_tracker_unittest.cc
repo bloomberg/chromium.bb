@@ -1464,12 +1464,14 @@ class OcclusionTrackerTestDontOccludePixelsNeededForBackgroundFilter
           occlusion_rect = gfx::Rect(0, 0, 50, 200);
           break;
         case RIGHT:
+          // This is the right edge; filtered_surface is scaled by half.
           occlusion_rect = gfx::Rect(100, 0, 50, 200);
           break;
         case TOP:
           occlusion_rect = gfx::Rect(0, 0, 200, 50);
           break;
         case BOTTOM:
+          // This is the bottom edge; filtered_surface is scaled by half.
           occlusion_rect = gfx::Rect(0, 100, 200, 50);
           break;
       }
@@ -1501,9 +1503,9 @@ class OcclusionTrackerTestDontOccludePixelsNeededForBackgroundFilter
                 occlusion.occlusion_from_outside_target().ToString());
 
       // The surface has a background blur, so it needs pixels that are
-      // currently considered occluded in order to be drawn. So the pixels it
-      // needs should be removed some the occluded area so that when we get to
-      // the parent they are drawn.
+      // currently considered occluded in order to be drawn. The pixels it
+      // needs should be removed from the occluded area, so that they are drawn
+      // when we get to the parent.
       this->VisitContributingSurface(filtered_surface, &occlusion);
       this->EnterLayer(parent, &occlusion);
 
@@ -1535,6 +1537,127 @@ class OcclusionTrackerTestDontOccludePixelsNeededForBackgroundFilter
 
 ALL_OCCLUSIONTRACKER_TEST(
     OcclusionTrackerTestDontOccludePixelsNeededForBackgroundFilter);
+
+class OcclusionTrackerTestDontOccludePixelsNeededForDropShadowBackgroundFilter
+    : public OcclusionTrackerTest {
+ protected:
+  explicit OcclusionTrackerTestDontOccludePixelsNeededForDropShadowBackgroundFilter(
+      bool opaque_layers)
+      : OcclusionTrackerTest(opaque_layers) {}
+  void RunMyTest() override {
+    gfx::Transform scale_by_half;
+    scale_by_half.Scale(0.5, 0.5);
+
+    FilterOperations filters;
+    filters.Append(FilterOperation::CreateDropShadowFilter(gfx::Point(10, 10),
+                                                           5, SK_ColorBLACK));
+
+    enum Direction {
+      LEFT,
+      RIGHT,
+      TOP,
+      BOTTOM,
+      LAST_DIRECTION = BOTTOM,
+    };
+
+    for (int i = 0; i <= LAST_DIRECTION; ++i) {
+      SCOPED_TRACE(i);
+
+      // Make a 50x50 filtered surface that is adjacent to occluding layers
+      // which are above it in the z-order in various configurations. The
+      // surface is scaled to test that the pixel moving is done in the target
+      // space, where the background filter is applied.
+      TestContentLayerImpl* parent = this->CreateRoot(
+          this->identity_matrix, gfx::PointF(), gfx::Size(200, 200));
+      LayerImpl* filtered_surface = this->CreateDrawingLayer(
+          parent, scale_by_half, gfx::PointF(50.f, 50.f), gfx::Size(100, 100),
+          false);
+      filtered_surface->test_properties()->background_filters = filters;
+      gfx::Rect occlusion_rect;
+      switch (i) {
+        case LEFT:
+          occlusion_rect = gfx::Rect(0, 0, 50, 200);
+          break;
+        case RIGHT:
+          // This is the right edge; filtered_surface is scaled by half.
+          occlusion_rect = gfx::Rect(100, 0, 50, 200);
+          break;
+        case TOP:
+          occlusion_rect = gfx::Rect(0, 0, 200, 50);
+          break;
+        case BOTTOM:
+          // This is the bottom edge; filtered_surface is scaled by half.
+          occlusion_rect = gfx::Rect(0, 100, 200, 50);
+          break;
+      }
+
+      LayerImpl* occluding_layer = this->CreateDrawingLayer(
+          parent, this->identity_matrix, gfx::PointF(occlusion_rect.origin()),
+          occlusion_rect.size(), true);
+      occluding_layer->test_properties()->force_render_surface = false;
+      this->CalcDrawEtc(parent);
+
+      TestOcclusionTrackerWithClip occlusion(gfx::Rect(0, 0, 200, 200));
+
+      // This layer occludes pixels directly beside the filtered_surface.
+      // Because filtered surface blends pixels in a radius, it will need to see
+      // some of the pixels (up to radius far) underneath the occluding layers.
+      this->VisitLayer(occluding_layer, &occlusion);
+
+      EXPECT_EQ(occlusion_rect.ToString(),
+                occlusion.occlusion_from_inside_target().ToString());
+      EXPECT_TRUE(occlusion.occlusion_from_outside_target().IsEmpty());
+
+      this->VisitLayer(filtered_surface, &occlusion);
+
+      // The occlusion is used fully inside the surface.
+      gfx::Rect occlusion_inside_surface =
+          occlusion_rect - gfx::Vector2d(50, 50);
+      EXPECT_TRUE(occlusion.occlusion_from_inside_target().IsEmpty());
+      EXPECT_EQ(occlusion_inside_surface.ToString(),
+                occlusion.occlusion_from_outside_target().ToString());
+
+      // The surface has a background filter, so it needs pixels that are
+      // currently considered occluded in order to be drawn. The pixels it
+      // needs should be removed from the occluded area, so that they are drawn
+      // when we get to the parent.
+      this->VisitContributingSurface(filtered_surface, &occlusion);
+      this->EnterLayer(parent, &occlusion);
+
+      gfx::Rect expected_occlusion;
+      switch (i) {
+        case LEFT:
+          // The right half of the occlusion is close enough to cast a shadow
+          // that would be visible in the background filter. The shadow reaches
+          // 3*5 + 10 = 25 pixels to the right.
+          expected_occlusion = gfx::Rect(0, 0, 25, 200);
+          break;
+        case RIGHT:
+          // The shadow spreads 3*5 - 10 = 5 pixels to the left, so the
+          // occlusion must recede by 5 to account for that.
+          expected_occlusion = gfx::Rect(105, 0, 45, 200);
+          break;
+        case TOP:
+          // Similar to LEFT.
+          expected_occlusion = gfx::Rect(0, 0, 200, 25);
+          break;
+        case BOTTOM:
+          // Similar to RIGHT.
+          expected_occlusion = gfx::Rect(0, 105, 200, 45);
+          break;
+      }
+
+      EXPECT_EQ(expected_occlusion.ToString(),
+                occlusion.occlusion_from_inside_target().ToString());
+      EXPECT_TRUE(occlusion.occlusion_from_outside_target().IsEmpty());
+
+      this->DestroyLayers();
+    }
+  }
+};
+
+ALL_OCCLUSIONTRACKER_TEST(
+    OcclusionTrackerTestDontOccludePixelsNeededForDropShadowBackgroundFilter);
 
 class OcclusionTrackerTestTwoBackgroundFiltersReduceOcclusionTwice
     : public OcclusionTrackerTest {
