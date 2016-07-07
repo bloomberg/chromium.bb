@@ -140,4 +140,11 @@ public class BuildInfo {
     public static int getSdkInt() {
         return Build.VERSION.SDK_INT;
     }
+
+    /**
+     * @return Whether the current build version is greater than Android N.
+     */
+    public static boolean isGreaterThanN() {
+        return Build.VERSION.SDK_INT > 24 || Build.VERSION.CODENAME.equals("NMR1");
+    }
 }

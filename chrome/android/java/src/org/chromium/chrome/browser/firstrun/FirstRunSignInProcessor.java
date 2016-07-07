@@ -10,6 +10,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.text.TextUtils;
 
+import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.CommandLine;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
@@ -62,6 +63,7 @@ public final class FirstRunSignInProcessor {
         // - FRE is disabled, or
         // - FRE hasn't been completed, but the user has already seen the ToS in the Setup Wizard.
         if (CommandLine.getInstance().hasSwitch(ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE)
+                || ApiCompatibilityUtils.isDemoUser(activity)
                 || (!firstRunFlowComplete && ToSAckedReceiver.checkAnyUserHasSeenToS(activity))) {
             return;
         }

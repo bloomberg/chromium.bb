@@ -25,12 +25,15 @@ import android.os.Build;
 import android.os.PowerManager;
 import android.os.Process;
 import android.os.StatFs;
+import android.os.UserManager;
 import android.provider.Settings;
 import android.view.View;
 import android.view.ViewGroup.MarginLayoutParams;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.TextView;
+
+import java.lang.reflect.Method;
 
 /**
  * Utility class to use new APIs that were added after ICS (API level 14).
@@ -522,5 +525,27 @@ public class ApiCompatibilityUtils {
         } else {
             return statFs.getBlockSize();
         }
+    }
+
+    /**
+     * @param context The Android context, used to retrieve the UserManager system service.
+     * @return Whether the device is running in demo mode.
+     */
+    public static boolean isDemoUser(Context context) {
+        // UserManager#isDemoUser() is only available in Android versions greater than N.
+        if (!BuildInfo.isGreaterThanN()) return false;
+
+        try {
+            UserManager userManager = (UserManager) context.getSystemService(Context.USER_SERVICE);
+            Method isDemoUserMethod = UserManager.class.getMethod("isDemoUser");
+            boolean isDemoUser = (boolean) isDemoUserMethod.invoke(userManager);
+            return isDemoUser;
+        } catch (RuntimeException e) {
+            // Ignore to avoid crashing on startup.
+        } catch (Exception e) {
+            // Ignore.
+        }
+
+        return false;
     }
 }
