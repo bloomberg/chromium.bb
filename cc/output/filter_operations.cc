@@ -110,10 +110,10 @@ void FilterOperations::GetOutsets(int* top,
           *bottom += spread;
           *left += spread;
         } else {
-          *top += spread - op.drop_shadow_offset().y();
-          *right += spread + op.drop_shadow_offset().x();
-          *bottom += spread + op.drop_shadow_offset().y();
-          *left += spread - op.drop_shadow_offset().x();
+          *top += std::max(0, spread - op.drop_shadow_offset().y());
+          *right += std::max(0, spread + op.drop_shadow_offset().x());
+          *bottom += std::max(0, spread + op.drop_shadow_offset().y());
+          *left += std::max(0, spread - op.drop_shadow_offset().x());
         }
       }
     }

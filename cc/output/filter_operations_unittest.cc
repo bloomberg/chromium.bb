@@ -184,6 +184,38 @@ TEST(FilterOperationsTest, MapRectReverseDropShadow) {
             ops.MapRectReverse(gfx::Rect(0, 0, 10, 10), SkMatrix::I()));
 }
 
+TEST(FilterOperationsTest, GetOutsetsDropShadowDoesNotContract) {
+  // Even with a drop-shadow, the original content is still drawn. Thus the
+  // content bounds are never contracted due to a drop-shadow.
+  FilterOperations ops;
+  ops.Append(FilterOperation::CreateDropShadowFilter(gfx::Point(3, 8), 0, 0));
+  int top, right, bottom, left;
+  top = right = bottom = left = 0;
+  ops.GetOutsets(&top, &right, &bottom, &left);
+  EXPECT_EQ(0, top);
+  EXPECT_EQ(3, right);
+  EXPECT_EQ(8, bottom);
+  EXPECT_EQ(0, left);
+}
+
+TEST(FilterOperationsTest, MapRectDropShadowDoesNotContract) {
+  // Even with a drop-shadow, the original content is still drawn. Thus the
+  // content bounds are never contracted due to a drop-shadow.
+  FilterOperations ops;
+  ops.Append(FilterOperation::CreateDropShadowFilter(gfx::Point(3, 8), 0, 0));
+  EXPECT_EQ(gfx::Rect(0, 0, 13, 18),
+            ops.MapRect(gfx::Rect(0, 0, 10, 10), SkMatrix::I()));
+}
+
+TEST(FilterOperationsTest, MapRectReverseDropShadowDoesNotContract) {
+  // Even with a drop-shadow, the original content is still drawn. Thus the
+  // content bounds are never contracted due to a drop-shadow.
+  FilterOperations ops;
+  ops.Append(FilterOperation::CreateDropShadowFilter(gfx::Point(3, 8), 0, 0));
+  EXPECT_EQ(gfx::Rect(-3, -8, 13, 18),
+            ops.MapRectReverse(gfx::Rect(0, 0, 10, 10), SkMatrix::I()));
+}
+
 #define SAVE_RESTORE_AMOUNT(filter_name, filter_type, a)                  \
   {                                                                       \
     FilterOperation op = FilterOperation::Create##filter_name##Filter(a); \
