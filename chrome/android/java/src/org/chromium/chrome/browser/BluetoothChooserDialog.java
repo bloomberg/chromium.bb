@@ -66,6 +66,9 @@ public class BluetoothChooserDialog
     // A pointer back to the native part of the implementation for this dialog.
     long mNativeBluetoothChooserDialogPtr;
 
+    // Used to keep track of when the Mode Changed Receiver is registered.
+    boolean mIsLocationModeChangedReceiverRegistered = false;
+
     @VisibleForTesting
     final BroadcastReceiver mLocationModeBroadcastReceiver = new BroadcastReceiver() {
         @Override
@@ -152,11 +155,16 @@ public class BluetoothChooserDialog
 
         mActivity.registerReceiver(mLocationModeBroadcastReceiver,
                 new IntentFilter(LocationManager.MODE_CHANGED_ACTION));
+        mIsLocationModeChangedReceiverRegistered = true;
     }
 
     // Called to report the dialog's results back to native code.
     private void finishDialog(int resultCode, String id) {
-        mActivity.unregisterReceiver(mLocationModeBroadcastReceiver);
+        if (mIsLocationModeChangedReceiverRegistered) {
+            mActivity.unregisterReceiver(mLocationModeBroadcastReceiver);
+            mIsLocationModeChangedReceiverRegistered = false;
+        }
+
         if (mNativeBluetoothChooserDialogPtr != 0) {
             nativeOnDialogFinished(mNativeBluetoothChooserDialogPtr, resultCode, id);
         }

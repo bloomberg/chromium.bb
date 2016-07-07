@@ -57,6 +57,8 @@ public class BluetoothChooserDialogTest extends ChromeActivityTestCaseBase<Chrom
             assertEquals(mFinishedEventType, -1);
             mFinishedEventType = eventType;
             mFinishedDeviceId = deviceId;
+            // The native code calls closeDialog() when OnDialogFinished is called.
+            closeDialog();
         }
 
         @Override
