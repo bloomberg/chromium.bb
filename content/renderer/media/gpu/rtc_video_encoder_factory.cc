@@ -33,13 +33,18 @@ void VEAToWebRTCCodecs(
         webrtc::kVideoCodecVP8, "VP8", width, height, fps));
   } else if (profile.profile >= media::H264PROFILE_MIN &&
              profile.profile <= media::H264PROFILE_MAX) {
-    bool webrtc_h264_enabled = false;
-#if BUILDFLAG(RTC_USE_H264) && defined(OS_MACOSX)
-    webrtc_h264_enabled =
+    // Enable H264 HW encode for WebRTC when SW fallback is available, which is
+    // checked by kWebRtcH264WithOpenH264FFmpeg flag. This check should be
+    // removed when SW implementation is fully enabled.
+    // kEnableWebRtcHWH264Encoding flag is only enabled for extensions, and
+    // can be used without SW fallback.
+    bool webrtc_h264_sw_enabled = false;
+#if BUILDFLAG(RTC_USE_H264)
+    webrtc_h264_sw_enabled =
         base::FeatureList::IsEnabled(kWebRtcH264WithOpenH264FFmpeg);
-#endif  // BUILDFLAG(RTC_USE_H264) && defined(OS_MACOSX)
+#endif  // BUILDFLAG(RTC_USE_H264)
     if (cmd_line->HasSwitch(switches::kEnableWebRtcHWH264Encoding) ||
-        webrtc_h264_enabled) {
+        webrtc_h264_sw_enabled) {
       codecs->push_back(cricket::WebRtcVideoEncoderFactory::VideoCodec(
           webrtc::kVideoCodecH264, "H264", width, height, fps));
     }
