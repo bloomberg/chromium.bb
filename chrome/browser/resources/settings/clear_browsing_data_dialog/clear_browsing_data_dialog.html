@@ -22,14 +22,20 @@
         visibility: hidden;
       }
 
+      #dialog .button-container {
+        border-top: 1px solid rgba(0, 0, 0, 0.14);
+        margin-top: 0;
+        padding-top: 10px;
+      }
+
+      #dialog .footer {
+        background-color: #fff;
+      }
+
       .row {
         align-items: center;
         display: flex;
         min-height: 40px;
-      }
-
-      .row .start {
-        flex: 1;
       }
 
       paper-spinner {
@@ -85,6 +91,17 @@
           display: none;
         };
       }
+
+      #clearFrom {
+        display: inline;
+      }
+
+      /* Cap the height on smaller screens to avoid unfavorable clipping. */
+      @media screen and (max-height: 714px) {
+        .body {
+          max-height: 270px;
+        }
+      }
     </style>
 
     <!-- #notice correctly places its own backdrop above #dialog and under
@@ -93,11 +110,13 @@
       <div class="title">$i18n{clearBrowsingData}</div>
       <div class="body">
         <div class="row">
-          <span class="start">$i18n{clearFollowingItemsFrom}</span>
-          <settings-dropdown-menu id="clearFrom"
-              pref="{{prefs.browser.clear_data.time_period}}"
-              menu-options="[[clearFromOptions_]]" no-label-float>
-          </settings-dropdown-menu>
+          <span>
+            $i18n{clearFollowingItemsFrom}
+            <settings-dropdown-menu id="clearFrom"
+                pref="{{prefs.browser.clear_data.time_period}}"
+                menu-options="[[clearFromOptions_]]" no-label-float>
+            </settings-dropdown-menu>
+          </span>
         </div>
         <settings-checkbox id="browsingCheckbox"
             pref="{{prefs.browser.clear_data.browsing_history}}"
