@@ -310,6 +310,33 @@ void WaitForAccessibilityTreeToContainNodeWithName(WebContents* web_contents,
 // Get a snapshot of a web page's accessibility tree.
 ui::AXTreeUpdate GetAccessibilityTreeSnapshot(WebContents* web_contents);
 
+// Find out if the BrowserPlugin for a guest WebContents is focused. Returns
+// false if the WebContents isn't a guest with a BrowserPlugin.
+bool IsWebContentsBrowserPluginFocused(content::WebContents* web_contents);
+
+#if defined(USE_AURA)
+// The following two methods allow a test to send a touch tap sequence, and
+// a corresponding gesture tap sequence, by sending it to the top-level
+// WebContents for the page.
+
+// Send a TouchStart/End sequence routed via the main frame's
+// RenderWidgetHostViewAura.
+void SendRoutedTouchTapSequence(content::WebContents* web_contents,
+                                gfx::Point point);
+
+// Send a GestureTapDown/GestureTap sequence routed via the main frame's
+// RenderWidgetHostViewAura.
+void SendRoutedGestureTapSequence(content::WebContents* web_contents,
+                                  gfx::Point point);
+//
+// Waits until the cc::Surface associated with a guest/cross-process-iframe
+// has been drawn for the first time. Once this method returns it should be
+// safe to assume that events sent to the top-level RenderWidgetHostView can
+// be expected to properly hit-test to this surface, if appropriate.
+void WaitForGuestSurfaceReady(content::WebContents* web_contents);
+
+#endif
+
 // Watches title changes on a WebContents, blocking until an expected title is
 // set.
 class TitleWatcher : public WebContentsObserver {

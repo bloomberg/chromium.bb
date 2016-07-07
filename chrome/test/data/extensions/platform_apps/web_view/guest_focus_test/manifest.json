@@ -1,0 +1,23 @@
+{
+  "name": "<webview> guest focus test.",
+  "version": "1",
+  "permissions": [
+    "webview"
+  ],
+  "app": {
+     "background": {
+       "scripts": ["test.js"]
+     }
+   },
+   "webview": {
+     "partitions": [
+       {
+         "name": "partition1",
+         "accessible_resources": [
+           "guest.js",
+           "guest.html"
+         ]
+       }
+    ]
+  }
+}

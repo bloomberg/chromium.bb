@@ -348,6 +348,7 @@ void RenderWidgetHostViewChildFrame::SurfaceDrawn(uint32_t output_surface_id,
                                                   cc::SurfaceDrawStatus drawn) {
   cc::CompositorFrameAck ack;
   DCHECK_GT(ack_pending_count_, 0U);
+
   if (!surface_returned_resources_.empty())
     ack.resources.swap(surface_returned_resources_);
   if (host_) {

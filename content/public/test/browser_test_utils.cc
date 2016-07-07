@@ -22,11 +22,17 @@
 #include "base/test/test_timeouts.h"
 #include "base/values.h"
 #include "build/build_config.h"
+#include "cc/surfaces/surface.h"
+#include "cc/surfaces/surface_manager.h"
 #include "content/browser/accessibility/accessibility_mode_helper.h"
 #include "content/browser/accessibility/browser_accessibility.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
+#include "content/browser/browser_plugin/browser_plugin_guest.h"
+#include "content/browser/compositor/surface_utils.h"
+#include "content/browser/frame_host/cross_process_frame_connector.h"
 #include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
+#include "content/browser/frame_host/render_widget_host_view_child_frame.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/browser/web_contents/web_contents_view.h"
@@ -1001,6 +1007,90 @@ ui::AXTreeUpdate GetAccessibilityTreeSnapshot(WebContents* web_contents) {
     return ui::AXTreeUpdate();
   return manager->SnapshotAXTreeForTesting();
 }
+
+bool IsWebContentsBrowserPluginFocused(content::WebContents* web_contents) {
+  WebContentsImpl* web_contents_impl =
+      static_cast<WebContentsImpl*>(web_contents);
+  BrowserPluginGuest* browser_plugin_guest =
+      web_contents_impl->GetBrowserPluginGuest();
+  return browser_plugin_guest ? browser_plugin_guest->focused() : false;
+}
+
+#if defined(USE_AURA)
+void SendRoutedTouchTapSequence(content::WebContents* web_contents,
+                                gfx::Point point) {
+  RenderWidgetHostViewAura* rwhva = static_cast<RenderWidgetHostViewAura*>(
+      web_contents->GetRenderWidgetHostView());
+  ui::TouchEvent touch_start(ui::ET_TOUCH_PRESSED, point, 0,
+                             base::TimeTicks::Now());
+  rwhva->OnTouchEvent(&touch_start);
+  ui::TouchEvent touch_end(ui::ET_TOUCH_RELEASED, point, 0,
+                           base::TimeTicks::Now());
+  rwhva->OnTouchEvent(&touch_end);
+}
+
+void SendRoutedGestureTapSequence(content::WebContents* web_contents,
+                                  gfx::Point point) {
+  RenderWidgetHostViewAura* rwhva = static_cast<RenderWidgetHostViewAura*>(
+      web_contents->GetRenderWidgetHostView());
+  ui::GestureEventDetails gesture_tap_down_details(ui::ET_GESTURE_TAP_DOWN);
+  gesture_tap_down_details.set_device_type(
+      ui::GestureDeviceType::DEVICE_TOUCHSCREEN);
+  ui::GestureEvent gesture_tap_down(point.x(), point.y(), 0,
+                                    base::TimeTicks::Now(),
+                                    gesture_tap_down_details);
+  rwhva->OnGestureEvent(&gesture_tap_down);
+  ui::GestureEventDetails gesture_tap_details(ui::ET_GESTURE_TAP);
+  gesture_tap_details.set_device_type(
+      ui::GestureDeviceType::DEVICE_TOUCHSCREEN);
+  gesture_tap_details.set_tap_count(1);
+  ui::GestureEvent gesture_tap(point.x(), point.y(), 0, base::TimeTicks::Now(),
+                               gesture_tap_details);
+  rwhva->OnGestureEvent(&gesture_tap);
+}
+
+// TODO(wjmaclean): The next two functions are a modified version of
+// SurfaceHitTestReadyNotifier that (1) works for BrowserPlugin-based guests,
+// and (2) links outside of content-browsertests. At some point in time we
+// should probably merge these.
+namespace {
+
+bool ContainsSurfaceId(cc::SurfaceId container_surface_id,
+                       RenderWidgetHostViewChildFrame* target_view) {
+  if (container_surface_id.is_null())
+    return false;
+  for (cc::SurfaceId id :
+       GetSurfaceManager()->GetSurfaceForId(container_surface_id)
+           ->referenced_surfaces()) {
+    if (id == target_view->SurfaceIdForTesting() ||
+        ContainsSurfaceId(id, target_view))
+      return true;
+  }
+  return false;
+}
+
+}  // namespace
+
+void WaitForGuestSurfaceReady(content::WebContents* guest_web_contents) {
+  RenderWidgetHostViewChildFrame* child_view =
+      static_cast<RenderWidgetHostViewChildFrame*>(
+          guest_web_contents->GetRenderWidgetHostView());
+
+  cc::SurfaceId root_surface_id =
+      static_cast<RenderWidgetHostViewAura*>(
+          static_cast<content::WebContentsImpl*>(guest_web_contents)
+              ->GetOuterWebContents()
+              ->GetRenderWidgetHostView())
+          ->SurfaceIdForTesting();
+
+  while (!ContainsSurfaceId(root_surface_id, child_view)) {
+    base::RunLoop run_loop;
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE, run_loop.QuitClosure(), TestTimeouts::tiny_timeout());
+    run_loop.Run();
+  }
+}
+#endif
 
 TitleWatcher::TitleWatcher(WebContents* web_contents,
                            const base::string16& expected_title)
