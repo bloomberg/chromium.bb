@@ -32,6 +32,14 @@ Polymer({
     'remove-bookmark-stars': 'removeBookmarkStars_',
   },
 
+  /** @override */
+  attached: function() {
+    // It is possible (eg, when middle clicking the reload button) for all other
+    // resize events to fire before the list is attached and can be measured.
+    // Adding another resize here ensures it will get sized correctly.
+    /** @type {IronListElement} */(this.$['infinite-list']).notifyResize();
+  },
+
   /**
    * Closes the overflow menu.
    * @private
