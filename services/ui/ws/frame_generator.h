@@ -27,6 +27,10 @@ class SurfacesState;
 
 namespace ws {
 
+namespace test {
+class FrameGeneratorTest;
+}
+
 class FrameGeneratorDelegate;
 class ServerWindow;
 
@@ -48,6 +52,8 @@ class FrameGenerator {
   bool is_frame_pending() { return frame_pending_; }
 
  private:
+  friend class ui::ws::test::FrameGeneratorTest;
+
   void WantToDraw();
 
   // This method initiates a top level redraw of the display.

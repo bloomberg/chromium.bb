@@ -244,6 +244,26 @@ class TestPlatformDisplayFactory : public PlatformDisplayFactory {
 
 // -----------------------------------------------------------------------------
 
+// A stub implementation of FrameGeneratorDelegate.
+class TestFrameGeneratorDelegate : public FrameGeneratorDelegate {
+ public:
+  explicit TestFrameGeneratorDelegate(std::unique_ptr<ServerWindow> root);
+  ~TestFrameGeneratorDelegate() override;
+
+  // FrameGeneratorDelegate:
+  ServerWindow* GetRootWindow() override;
+  void OnCompositorFrameDrawn() override {}
+  const ViewportMetrics& GetViewportMetrics() override;
+
+ private:
+  std::unique_ptr<ServerWindow> root_;
+  ViewportMetrics metrics_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestFrameGeneratorDelegate);
+};
+
+// -----------------------------------------------------------------------------
+
 class TestWindowManager : public mojom::WindowManager {
  public:
   TestWindowManager()

@@ -119,7 +119,6 @@ void FrameGenerator::DrawWindowTree(
   const gfx::Rect absolute_bounds =
       window->bounds() + parent_to_root_origin_offset;
   std::vector<ServerWindow*> children(window->GetChildren());
-  // TODO(rjkroege, fsamuel): Make sure we're handling alpha correctly.
   const float combined_opacity = opacity * window->opacity();
   for (auto it = children.rbegin(); it != children.rend(); ++it) {
     DrawWindowTree(pass, *it, absolute_bounds.OffsetFromOrigin(),
@@ -148,7 +147,7 @@ void FrameGenerator::DrawWindowTree(
                 bounds_at_origin.size() /* layer_bounds */,
                 bounds_at_origin /* visible_layer_bounds */,
                 bounds_at_origin /* clip_rect */, false /* is_clipped */,
-                window->opacity(), SkXfermode::kSrcOver_Mode,
+                combined_opacity, SkXfermode::kSrcOver_Mode,
                 0 /* sorting-context_id */);
     auto quad = pass->CreateAndAppendDrawQuad<cc::SurfaceDrawQuad>();
     quad->SetAll(sqs, bounds_at_origin /* rect */,
@@ -169,7 +168,7 @@ void FrameGenerator::DrawWindowTree(
                 bounds_at_origin.size() /* layer_bounds */,
                 bounds_at_origin /* visible_layer_bounds */,
                 bounds_at_origin /* clip_rect */, false /* is_clipped */,
-                window->opacity(), SkXfermode::kSrcOver_Mode,
+                combined_opacity, SkXfermode::kSrcOver_Mode,
                 0 /* sorting-context_id */);
 
     auto quad = pass->CreateAndAppendDrawQuad<cc::SurfaceDrawQuad>();

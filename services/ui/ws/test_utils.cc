@@ -108,6 +108,22 @@ PlatformDisplay* TestPlatformDisplayFactory::CreatePlatformDisplay() {
   return new TestPlatformDisplay(cursor_id_storage_);
 }
 
+// TestFrameGeneratorDelegate -------------------------------------------------
+
+TestFrameGeneratorDelegate::TestFrameGeneratorDelegate(
+    std::unique_ptr<ServerWindow> root)
+    : root_(std::move(root)) {}
+
+TestFrameGeneratorDelegate::~TestFrameGeneratorDelegate() {}
+
+ServerWindow* TestFrameGeneratorDelegate::GetRootWindow() {
+  return root_.get();
+}
+
+const ViewportMetrics& TestFrameGeneratorDelegate::GetViewportMetrics() {
+  return metrics_;
+}
+
 // WindowTreeTestApi  ---------------------------------------------------------
 
 WindowTreeTestApi::WindowTreeTestApi(WindowTree* tree) : tree_(tree) {}
