@@ -56,7 +56,7 @@ void print_widechars(widechar *buffer, int length) {
 #else
   result_buf = u16_to_u8(buffer, length, NULL, &result_len);
 #endif
-  fprintf(stderr, "%.*s", result_len, result_buf);
+  fprintf(stderr, "%.*s", (int)result_len, result_buf);
   free(result_buf);
 }
 

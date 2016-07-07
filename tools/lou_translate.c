@@ -59,7 +59,7 @@ translate_input (int forward_translation, char *table_name)
 {
   char charbuf[BUFSIZE];
   char *outputbuf;
-  int outlen;
+  size_t outlen;
   widechar inbuf[BUFSIZE];
   widechar transbuf[BUFSIZE];
   int inlen;
@@ -90,7 +90,7 @@ translate_input (int forward_translation, char *table_name)
 #else
       outputbuf = u16_to_u8(transbuf, translen, NULL, &outlen);
 #endif
-      printf ("%.*s\n", outlen, outputbuf);
+      printf ("%.*s\n", (int)outlen, outputbuf);
       free(outputbuf);
     }
   lou_free ();

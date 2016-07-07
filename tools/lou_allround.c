@@ -264,7 +264,7 @@ int
 main (int argc, char **argv)
 {
   char *charbuf;
-  int charlen;
+  size_t charlen;
   widechar inbuf[BUFSIZE];
   widechar transbuf[BUFSIZE];
   widechar outbuf[BUFSIZE];
@@ -338,7 +338,7 @@ main (int argc, char **argv)
 #else
 	    charbuf = u16_to_u8(transbuf, translen, NULL, &charlen);
 #endif
-	    printf ("%.*s\n", charlen, charbuf);
+	    printf ("%.*s\n", (int)charlen, charbuf);
 	    free(charbuf);
 	    if (showSizes)
 	      printf ("input length = %d; output length = %d\n", inlen,
@@ -351,7 +351,7 @@ main (int argc, char **argv)
 #else
 	    charbuf = u16_to_u8(outbuf, outlen, NULL, &charlen);
 #endif
-	    printf ("%.*s\n", charlen, charbuf);
+	    printf ("%.*s\n", (int)charlen, charbuf);
 	    free(charbuf);
 	    if (showSizes)
 	      printf ("input length = %d; output length = %d.\n", translen,
@@ -409,7 +409,7 @@ main (int argc, char **argv)
 #else
 		    charbuf = u16_to_u8(transbuf, translen, NULL, &charlen);
 #endif
-		    printf ("%.*s\n", charlen, charbuf);
+		    printf ("%.*s\n", (int)charlen, charbuf);
 		    free(charbuf);
 		    if (showSizes)
 		      printf ("input length = %d; output length = %d\n",
@@ -444,7 +444,7 @@ main (int argc, char **argv)
 #else
 		charbuf = u16_to_u8(outbuf, outlen, NULL, &charlen);
 #endif
-		printf ("%.*s\n", charlen, charbuf);
+		printf ("%.*s\n", (int)charlen, charbuf);
 		free(charbuf);
 		if (showSizes)
 		  printf ("input length = %d; output length = %d\n",
