@@ -187,7 +187,8 @@ GLManager::Options::Options()
       force_shader_name_hashing(false),
       multisampled(false),
       backbuffer_alpha(true),
-      image_factory(nullptr) {}
+      image_factory(nullptr),
+      enable_arb_texture_rectangle(false) {}
 
 GLManager::GLManager()
     : sync_point_manager_(nullptr),
@@ -297,6 +298,12 @@ void GLManager::InitializeWithCommandLine(
     GpuDriverBugWorkarounds gpu_driver_bug_workaround(&command_line);
     scoped_refptr<gles2::FeatureInfo> feature_info =
         new gles2::FeatureInfo(command_line, gpu_driver_bug_workaround);
+    if (options.enable_arb_texture_rectangle) {
+      gles2::FeatureInfo::FeatureFlags& flags =
+          const_cast<gles2::FeatureInfo::FeatureFlags&>(
+              feature_info->feature_flags());
+      flags.arb_texture_rectangle = true;
+    }
     context_group = new gles2::ContextGroup(
         gpu_preferences_, mailbox_manager_.get(), NULL,
         new gpu::gles2::ShaderTranslatorCache(gpu_preferences_),
