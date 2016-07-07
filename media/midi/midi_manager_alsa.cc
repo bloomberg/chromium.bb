@@ -269,7 +269,7 @@ void MidiManagerAlsa::StartInitialization() {
   out_client_.reset(out_client.release());
   decoder_.reset(decoder.release());
   udev_.reset(udev.release());
-  udev_monitor_.reset(udev_monitor_.release());
+  udev_monitor_.reset(udev_monitor.release());
 
   // Generate hotplug events for existing ports.
   // TODO(agoode): Check the return value for failure.
