@@ -263,6 +263,7 @@ EXPERIMENT_LIST="
     supertx
     ans
     daala_ec
+    parallel_deblocking
 "
 CONFIG_LIST="
     dependency_tracking
