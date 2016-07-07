@@ -160,7 +160,7 @@ public:
     void provisionalSelectionChanged(unsigned);
     void popupDidHide();
     bool popupIsVisible() const { return m_popupIsVisible; }
-    int optionIndexToBeShown() const;
+    HTMLOptionElement* optionToBeShown() const;
     void showPopup();
     void hidePopup();
     PopupMenu* popup() const { return m_popup.get(); }

@@ -1119,8 +1119,8 @@ void HTMLSelectElement::selectOption(HTMLOptionElement* element, int optionIndex
             // Need to check usesMenuList() again because event handlers might
             // change the status.
             if (usesMenuList()) {
-                // didSetSelectedIndex() is O(N) because of optionToListIndex.
-                toLayoutMenuList(layoutObject)->didSetSelectedIndex(optionIndex);
+                // didSelectOption() is O(N) because of HTMLOptionElement::index().
+                toLayoutMenuList(layoutObject)->didSelectOption(element);
             }
         }
     }
@@ -1982,17 +1982,14 @@ void HTMLSelectElement::setIndexToSelectOnCancel(int listIndex)
         layoutObject()->updateFromElement();
 }
 
-int HTMLSelectElement::optionIndexToBeShown() const
+HTMLOptionElement* HTMLSelectElement::optionToBeShown() const
 {
-    if (m_indexToSelectOnCancel >= 0)
-        return listToOptionIndex(m_indexToSelectOnCancel);
-    // TODO(tkent): HTMLOptionElement::index() is O(N). This function should
-    // return HTMLOptionElement*.
+    if (m_indexToSelectOnCancel >= 0 && static_cast<size_t>(m_indexToSelectOnCancel) < listItems().size() && isHTMLOptionElement(listItems()[m_indexToSelectOnCancel]))
+        return toHTMLOptionElement(listItems()[m_indexToSelectOnCancel]);
     if (m_suggestedOption)
-        return m_suggestedOption->index();
-    int optionIndex = m_lastOnChangeOption ? m_lastOnChangeOption->index() : -1;
-    DCHECK_EQ(optionIndex, selectedIndex());
-    return optionIndex;
+        return m_suggestedOption;
+    DCHECK_EQ(selectedOption(), m_lastOnChangeOption);
+    return m_lastOnChangeOption;
 }
 
 void HTMLSelectElement::valueChanged(unsigned listIndex)

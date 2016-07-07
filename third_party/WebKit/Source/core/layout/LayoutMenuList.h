@@ -39,7 +39,7 @@ public:
     ~LayoutMenuList() override;
 
     HTMLSelectElement* selectElement() const;
-    void didSetSelectedIndex(int optionIndex);
+    void didSelectOption(HTMLOptionElement*);
     String text() const;
 
     const char* name() const override { return "LayoutMenuList"; }
@@ -79,13 +79,12 @@ private:
     void createInnerBlock();
     void adjustInnerStyle();
     void setText(const String&);
-    void setTextFromOption(int optionIndex);
     void updateInnerBlockHeight();
     void updateOptionsWidth() const;
     float computeTextWidth(const TextRun&, const ComputedStyle&) const;
     void setIndexToSelectOnCancel(int listIndex);
 
-    void didUpdateActiveOption(int optionIndex);
+    void didUpdateActiveOption(HTMLOptionElement*);
 
     LayoutText* m_buttonText;
     LayoutBlock* m_innerBlock;

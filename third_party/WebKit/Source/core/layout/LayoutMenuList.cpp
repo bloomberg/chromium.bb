@@ -178,19 +178,14 @@ float LayoutMenuList::computeTextWidth(const TextRun& textRun, const ComputedSty
 
 void LayoutMenuList::updateFromElement()
 {
-    setTextFromOption(selectElement()->optionIndexToBeShown());
-}
-
-void LayoutMenuList::setTextFromOption(int optionIndex)
-{
     HTMLSelectElement* select = selectElement();
-    const HeapVector<Member<HTMLElement>>& listItems = select->listItems();
-    const int size = listItems.size();
-
+    HTMLOptionElement* option = select->optionToBeShown();
     String text = emptyString();
     m_optionStyle.clear();
 
-    if (selectElement()->multiple()) {
+    if (select->multiple()) {
+        const HeapVector<Member<HTMLElement>>& listItems = select->listItems();
+        const int size = listItems.size();
         unsigned selectedCount = 0;
         int firstSelectedIndex = -1;
         for (int i = 0; i < size; ++i) {
@@ -218,19 +213,15 @@ void LayoutMenuList::setTextFromOption(int optionIndex)
             ASSERT(!m_optionStyle);
         }
     } else {
-        const int i = select->optionToListIndex(optionIndex);
-        if (i >= 0 && i < size) {
-            Element* element = listItems[i];
-            if (isHTMLOptionElement(*element)) {
-                text = toHTMLOptionElement(element)->textIndentedToRespectGroupLabel();
-                m_optionStyle = element->mutableComputedStyle();
-            }
+        if (option) {
+            text = option->textIndentedToRespectGroupLabel();
+            m_optionStyle = option->mutableComputedStyle();
         }
     }
 
     setText(text.stripWhiteSpace());
 
-    didUpdateActiveOption(optionIndex);
+    didUpdateActiveOption(option);
 }
 
 void LayoutMenuList::setText(const String& s)
@@ -289,23 +280,22 @@ void LayoutMenuList::computeLogicalHeight(LayoutUnit logicalHeight, LayoutUnit l
     LayoutBox::computeLogicalHeight(logicalHeight, logicalTop, computedValues);
 }
 
-void LayoutMenuList::didSetSelectedIndex(int optionIndex)
+void LayoutMenuList::didSelectOption(HTMLOptionElement* option)
 {
-    didUpdateActiveOption(optionIndex);
+    didUpdateActiveOption(option);
 }
 
-void LayoutMenuList::didUpdateActiveOption(int optionIndex)
+void LayoutMenuList::didUpdateActiveOption(HTMLOptionElement* option)
 {
     if (!document().existingAXObjectCache())
         return;
 
+    int optionIndex = option ? option->index() : -1;
     if (m_lastActiveIndex == optionIndex)
         return;
     m_lastActiveIndex = optionIndex;
 
-    HTMLSelectElement* select = selectElement();
-    int listIndex = select->optionToListIndex(optionIndex);
-    if (listIndex < 0 || listIndex >= static_cast<int>(select->listItems().size()))
+    if (optionIndex < 0)
         return;
 
     // We skip sending accessiblity notifications for the very first option, otherwise
