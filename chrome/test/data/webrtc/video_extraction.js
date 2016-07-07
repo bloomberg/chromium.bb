@@ -36,10 +36,9 @@ var gFrames = [];
 var gHasThrownAwayFirstTwoFrames = false;
 
 /**
- * We need this global variable to synchronize with the test how long to run the
- * call between the two peers.
+ * A string to be returned to the test about the current status of capture.
  */
-var gDoneFrameCapturing = false;
+var gCapturingStatus = 'capturing-not-started';
 
 /**
  * Starts the frame capturing.
@@ -55,6 +54,7 @@ function startFrameCapture(videoTag, frameRate, duration) {
   inputElement = document.getElementById("local-view");
   var width = inputElement.videoWidth;
   var height = inputElement.videoHeight;
+
   // The WebRTC code is free to start in VGA, so make sure that the output video
   // tag scales up to whatever the input size is (otherwise the video quality
   // comparison will go poorly.
@@ -62,13 +62,16 @@ function startFrameCapture(videoTag, frameRate, duration) {
   videoTag.height = height;
 
   if (width == 0 || height == 0) {
-    throw failTest('Trying to capture from ' + videoTag.id +
-                   ' but it is not playing any video.');
+    // Video must be playing at this point since this function is invoked from
+    // onplay on the <video> tag. See http://crbug.com/625943.
+    gCapturingStatus = 'failed-video-was-0x0-after-onplay'
+    return;
   }
 
   console.log('Received width is: ' + width + ', received height is: ' + height
               + ', capture interval is: ' + gFrameCaptureInterval +
               ', duration is: ' + gCaptureDuration);
+  gCapturingStatus = 'still-capturing';
 
   var remoteCanvas = document.createElement('canvas');
   remoteCanvas.width = width;
@@ -85,11 +88,7 @@ function startFrameCapture(videoTag, frameRate, duration) {
  * Queries if we're done with the frame capturing yet.
  */
 function doneFrameCapturing() {
-  if (gDoneFrameCapturing) {
-    returnToTest('done-capturing');
-  } else {
-    returnToTest('still-capturing');
-  }
+  returnToTest(gCapturingStatus);
 }
 
 /**
@@ -169,7 +168,7 @@ function shoot_(video, canvas, width, height) {
                gFrameCaptureInterval - diff);
   } else {
     // Done capturing!
-    gDoneFrameCapturing = true;
+    gCapturingStatus = 'done-capturing';
     prepareProgressBar_();
   }
 }
