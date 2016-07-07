@@ -227,12 +227,26 @@ void OmniboxFieldTrial::GetDemotionsByType(
   std::string demotion_rule = OmniboxFieldTrial::GetValueForRuleInContext(
       kDemoteByTypeRule, current_page_classification);
   // If there is no demotion rule for this context, then use the default
-  // value for that context.  At the moment the default value is non-empty
-  // only for the fakebox-focus context.
-  if (demotion_rule.empty() &&
-      (current_page_classification ==
-       OmniboxEventProto::INSTANT_NTP_WITH_FAKEBOX_AS_STARTING_FOCUS))
-    demotion_rule = "1:61,2:61,3:61,4:61,16:61";
+  // value for that context.
+  if (demotion_rule.empty()) {
+    // This rule demotes URLs as strongly as possible without violating user
+    // expectations.  In particular, for URL-seeking inputs, if the user would
+    // likely expect a URL first (i.e., it would be inline autocompleted), then
+    // that URL will still score strongly enough to be first.  This is done
+    // using a demotion multipler of 0.61.  If a URL would get a score high
+    // enough to be inline autocompleted (1400+), even after demotion it will
+    // score above 850 ( 1400 * 0.61 > 850).  850 is the maximum score for
+    // queries when the input has been detected as URL-seeking.
+    constexpr char kDemoteURLs[] = "1:61,2:61,3:61,4:61,16:61";
+#if defined(OS_ANDROID)
+    if (current_page_classification == OmniboxEventProto::
+        SEARCH_RESULT_PAGE_NO_SEARCH_TERM_REPLACEMENT)
+      demotion_rule = kDemoteURLs;
+#endif
+    if (current_page_classification ==
+        OmniboxEventProto::INSTANT_NTP_WITH_FAKEBOX_AS_STARTING_FOCUS)
+      demotion_rule = kDemoteURLs;
+  }
 
   // The value of the DemoteByType rule is a comma-separated list of
   // {ResultType + ":" + Number} where ResultType is an AutocompleteMatchType::
