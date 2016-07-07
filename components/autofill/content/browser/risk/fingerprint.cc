@@ -66,7 +66,11 @@ base::TimeDelta GetTimezoneOffset() {
   base::Time::Exploded local;
   utc.LocalExplode(&local);
 
-  return base::Time::FromUTCExploded(local) - utc;
+  base::Time out_time;
+  bool conversion_success = base::Time::FromUTCExploded(local, &out_time);
+  DCHECK(conversion_success);
+
+  return out_time - utc;
 }
 
 // Returns the concatenation of the operating system name and version, e.g.

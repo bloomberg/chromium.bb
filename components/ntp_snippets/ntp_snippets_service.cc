@@ -139,7 +139,11 @@ base::Time GetRescheduleTime(const base::Time& now) {
   exploded.minute = 0;
   exploded.second = 0;
   exploded.millisecond = 0;
-  base::Time reschedule = base::Time::FromLocalExploded(exploded);
+  base::Time reschedule;
+  if (!base::Time::FromLocalExploded(exploded, &reschedule)) {
+    return GetRescheduleTime(now + base::TimeDelta::FromDays(1));
+  }
+
   if (next_day)
     reschedule += base::TimeDelta::FromDays(1);
 

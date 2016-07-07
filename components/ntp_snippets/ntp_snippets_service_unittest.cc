@@ -67,7 +67,9 @@ const char kSnippetAmpUrl[] = "http://localhost/amp";
 const float kSnippetScore = 5.0;
 
 base::Time GetDefaultCreationTime() {
-  return base::Time::FromUTCExploded(kDefaultCreationTime);
+  base::Time out_time;
+  EXPECT_TRUE(base::Time::FromUTCExploded(kDefaultCreationTime, &out_time));
+  return out_time;
 }
 
 base::Time GetDefaultExpirationTime() {

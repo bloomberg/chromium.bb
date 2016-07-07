@@ -56,7 +56,11 @@ base::Time BucketLowerBoundary(base::Time time) {
   exploded.minute -= exploded.minute % kDataUsageBucketLengthInMinutes;
   exploded.second = 0;
   exploded.millisecond = 0;
-  return base::Time::FromUTCExploded(exploded);
+
+  base::Time out_time;
+  bool conversion_success = base::Time::FromUTCExploded(exploded, &out_time);
+  DCHECK(conversion_success);
+  return out_time;
 }
 
 }  // namespace

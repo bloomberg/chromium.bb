@@ -177,7 +177,11 @@ void PasswordStore::GetLogins(const PasswordForm& form,
        form.signon_realm == "https://www.google.com/")) {
     static const base::Time::Exploded exploded_cutoff =
         { 2012, 1, 0, 1, 0, 0, 0, 0 };  // 00:00 Jan 1 2012
-    ignore_logins_cutoff = base::Time::FromUTCExploded(exploded_cutoff);
+    base::Time out_time;
+    bool conversion_success =
+        base::Time::FromUTCExploded(exploded_cutoff, &out_time);
+    DCHECK(conversion_success);
+    ignore_logins_cutoff = out_time;
   }
   std::unique_ptr<GetLoginsRequest> request(new GetLoginsRequest(consumer));
   request->set_ignore_logins_cutoff(ignore_logins_cutoff);

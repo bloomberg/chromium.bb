@@ -32,19 +32,22 @@ TEST_F(TouchOperationTest, TouchFile) {
   };
 
   FileError error = FILE_ERROR_FAILED;
-  operation.TouchFile(
-      kTestPath,
-      base::Time::FromUTCExploded(kLastAccessTime),
-      base::Time::FromUTCExploded(kLastModifiedTime),
-      google_apis::test_util::CreateCopyResultCallback(&error));
+  base::Time last_access_time_utc;
+  base::Time last_modified_time_utc;
+  EXPECT_TRUE(
+      base::Time::FromUTCExploded(kLastAccessTime, &last_access_time_utc));
+  EXPECT_TRUE(
+      base::Time::FromUTCExploded(kLastModifiedTime, &last_modified_time_utc));
+  operation.TouchFile(kTestPath, last_access_time_utc, last_modified_time_utc,
+                      google_apis::test_util::CreateCopyResultCallback(&error));
   content::RunAllBlockingPoolTasksUntilIdle();
   EXPECT_EQ(FILE_ERROR_OK, error);
 
   ResourceEntry entry;
   EXPECT_EQ(FILE_ERROR_OK, GetLocalResourceEntry(kTestPath, &entry));
-  EXPECT_EQ(base::Time::FromUTCExploded(kLastAccessTime),
+  EXPECT_EQ(last_access_time_utc,
             base::Time::FromInternalValue(entry.file_info().last_accessed()));
-  EXPECT_EQ(base::Time::FromUTCExploded(kLastModifiedTime),
+  EXPECT_EQ(last_modified_time_utc,
             base::Time::FromInternalValue(entry.file_info().last_modified()));
   EXPECT_EQ(ResourceEntry::DIRTY, entry.metadata_edit_state());
 

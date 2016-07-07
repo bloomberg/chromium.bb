@@ -65,7 +65,8 @@ class DataUsageStoreTest : public testing::Test {
 
   void PopulateStore() {
     base::Time::Exploded exploded = TestExplodedTime();
-    base::Time current_time = base::Time::FromUTCExploded(exploded);
+    base::Time current_time;
+    EXPECT_TRUE(base::Time::FromUTCExploded(exploded, &current_time));
 
     DataUsageBucket current_bucket;
     current_bucket.set_last_updated_timestamp(current_time.ToInternalValue());
@@ -144,12 +145,14 @@ TEST_F(DataUsageStoreTest, StoreSameBucket) {
   exploded.minute = 0;
   exploded.second = 0;
   exploded.millisecond = 0;
-  base::Time time1 = base::Time::FromUTCExploded(exploded);
+  base::Time time1;
+  EXPECT_TRUE(base::Time::FromUTCExploded(exploded, &time1));
 
   exploded.minute = 14;
   exploded.second = 59;
   exploded.millisecond = 999;
-  base::Time time2 = base::Time::FromUTCExploded(exploded);
+  base::Time time2;
+  EXPECT_TRUE(base::Time::FromUTCExploded(exploded, &time2));
 
   DataUsageBucket bucket;
   data_usage_store()->LoadCurrentDataUsageBucket(&bucket);
@@ -180,12 +183,14 @@ TEST_F(DataUsageStoreTest, StoreConsecutiveBuckets) {
   exploded.minute = 0;
   exploded.second = 59;
   exploded.millisecond = 999;
-  base::Time time1 = base::Time::FromUTCExploded(exploded);
+  base::Time time1;
+  EXPECT_TRUE(base::Time::FromUTCExploded(exploded, &time1));
 
   exploded.minute = 15;
   exploded.second = 0;
   exploded.millisecond = 0;
-  base::Time time2 = base::Time::FromUTCExploded(exploded);
+  base::Time time2;
+  EXPECT_TRUE(base::Time::FromUTCExploded(exploded, &time2));
 
   DataUsageBucket bucket;
   data_usage_store()->LoadCurrentDataUsageBucket(&bucket);
@@ -308,25 +313,32 @@ TEST_F(DataUsageStoreTest, DeleteHistoricalDataUsage) {
 
 TEST_F(DataUsageStoreTest, BucketOverlapsInterval) {
   base::Time::Exploded exploded = TestExplodedTime();
-  base::Time time1 = base::Time::FromUTCExploded(exploded);
+  base::Time time1;
+  EXPECT_TRUE(base::Time::FromUTCExploded(exploded, &time1));
 
   exploded.minute = 16;
-  base::Time time16 = base::Time::FromUTCExploded(exploded);
+  base::Time time16;
+  EXPECT_TRUE(base::Time::FromUTCExploded(exploded, &time16));
 
   exploded.minute = 17;
-  base::Time time17 = base::Time::FromUTCExploded(exploded);
+  base::Time time17;
+  EXPECT_TRUE(base::Time::FromUTCExploded(exploded, &time17));
 
   exploded.minute = 18;
-  base::Time time18 = base::Time::FromUTCExploded(exploded);
+  base::Time time18;
+  EXPECT_TRUE(base::Time::FromUTCExploded(exploded, &time18));
 
   exploded.minute = 33;
-  base::Time time33 = base::Time::FromUTCExploded(exploded);
+  base::Time time33;
+  EXPECT_TRUE(base::Time::FromUTCExploded(exploded, &time33));
 
   exploded.minute = 34;
-  base::Time time34 = base::Time::FromUTCExploded(exploded);
+  base::Time time34;
+  EXPECT_TRUE(base::Time::FromUTCExploded(exploded, &time34));
 
   exploded.minute = 46;
-  base::Time time46 = base::Time::FromUTCExploded(exploded);
+  base::Time time46;
+  EXPECT_TRUE(base::Time::FromUTCExploded(exploded, &time46));
 
   ASSERT_FALSE(DataUsageStore::BucketOverlapsInterval(time1, time17, time33));
   ASSERT_TRUE(DataUsageStore::BucketOverlapsInterval(time16, time17, time33));
@@ -343,45 +355,53 @@ TEST_F(DataUsageStoreTest, ComputeBucketIndex) {
   DataUsageBucket current_bucket;
   data_usage_store()->LoadCurrentDataUsageBucket(&current_bucket);
 
+  base::Time out_time;
+
   exploded.minute = 0;
-  ASSERT_EQ(kTestCurrentBucketIndex,
-            ComputeBucketIndex(base::Time::FromUTCExploded(exploded)));
+  EXPECT_TRUE(base::Time::FromUTCExploded(exploded, &out_time));
+  ASSERT_EQ(kTestCurrentBucketIndex, ComputeBucketIndex(out_time));
+
   exploded.minute = 14;
-  ASSERT_EQ(kTestCurrentBucketIndex,
-            ComputeBucketIndex(base::Time::FromUTCExploded(exploded)));
+  EXPECT_TRUE(base::Time::FromUTCExploded(exploded, &out_time));
+  ASSERT_EQ(kTestCurrentBucketIndex, ComputeBucketIndex(out_time));
 
   exploded.minute = 15;
-  ASSERT_EQ(kTestCurrentBucketIndex + 1,
-            ComputeBucketIndex(base::Time::FromUTCExploded(exploded)));
+  EXPECT_TRUE(base::Time::FromUTCExploded(exploded, &out_time));
+  ASSERT_EQ(kTestCurrentBucketIndex + 1, ComputeBucketIndex(out_time));
 
   exploded.hour = 11;
   exploded.minute = 59;
-  ASSERT_EQ(kTestCurrentBucketIndex - 1,
-            ComputeBucketIndex(base::Time::FromUTCExploded(exploded)));
+  EXPECT_TRUE(base::Time::FromUTCExploded(exploded, &out_time));
+  ASSERT_EQ(kTestCurrentBucketIndex - 1, ComputeBucketIndex(out_time));
 
   exploded.minute = 0;
+  EXPECT_TRUE(base::Time::FromUTCExploded(exploded, &out_time));
   ASSERT_EQ(kTestCurrentBucketIndex - kBucketsInHour,
-            ComputeBucketIndex(base::Time::FromUTCExploded(exploded)));
+            ComputeBucketIndex(out_time));
 
   exploded.hour = 1;
+  EXPECT_TRUE(base::Time::FromUTCExploded(exploded, &out_time));
   ASSERT_EQ(kTestCurrentBucketIndex - kBucketsInHour * 11,
-            ComputeBucketIndex(base::Time::FromUTCExploded(exploded)));
+            ComputeBucketIndex(out_time));
 
   exploded.day_of_month = 1;
   exploded.hour = 12;
+  EXPECT_TRUE(base::Time::FromUTCExploded(exploded, &out_time));
   ASSERT_EQ(kTestCurrentBucketIndex - kBucketsInHour * 30 * 24,
-            ComputeBucketIndex(base::Time::FromUTCExploded(exploded)));
+            ComputeBucketIndex(out_time));
 
   exploded.hour = 11;
   exploded.minute = 45;
+  EXPECT_TRUE(base::Time::FromUTCExploded(exploded, &out_time));
   ASSERT_EQ(kTestCurrentBucketIndex - kBucketsInHour * 30 * 24 - 1 +
                 static_cast<int>(kNumExpectedBuckets),
-            ComputeBucketIndex(base::Time::FromUTCExploded(exploded)));
+            ComputeBucketIndex(out_time));
 
   exploded.minute = 30;
+  EXPECT_TRUE(base::Time::FromUTCExploded(exploded, &out_time));
   ASSERT_EQ(kTestCurrentBucketIndex - kBucketsInHour * 30 * 24 - 2 +
                 static_cast<int>(kNumExpectedBuckets),
-            ComputeBucketIndex(base::Time::FromUTCExploded(exploded)));
+            ComputeBucketIndex(out_time));
 }
 
 TEST_F(DataUsageStoreTest, DeleteBrowsingHistory) {
@@ -393,7 +413,8 @@ TEST_F(DataUsageStoreTest, DeleteBrowsingHistory) {
 
   base::Time::Exploded exploded = TestExplodedTime();
   exploded.minute = 0;
-  base::Time now = base::Time::FromUTCExploded(exploded);
+  base::Time now;
+  EXPECT_TRUE(base::Time::FromUTCExploded(exploded, &now));
   base::Time fifteen_mins_from_now = now + base::TimeDelta::FromMinutes(15);
   // Deleting browsing from the future should be a no-op.
   data_usage_store()->DeleteBrowsingHistory(fifteen_mins_from_now,
