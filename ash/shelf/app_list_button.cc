@@ -56,11 +56,17 @@ AppListButton::AppListButton(InkDropButtonListener* listener,
 AppListButton::~AppListButton() {}
 
 void AppListButton::OnAppListShown() {
-  AnimateInkDrop(views::InkDropState::ACTIVATED, nullptr);
+  if (ash::MaterialDesignController::IsShelfMaterial())
+    AnimateInkDrop(views::InkDropState::ACTIVATED, nullptr);
+  else
+    SchedulePaint();
 }
 
 void AppListButton::OnAppListDismissed() {
-  AnimateInkDrop(views::InkDropState::DEACTIVATED, nullptr);
+  if (ash::MaterialDesignController::IsShelfMaterial())
+    AnimateInkDrop(views::InkDropState::DEACTIVATED, nullptr);
+  else
+    SchedulePaint();
 }
 
 bool AppListButton::OnMousePressed(const ui::MouseEvent& event) {
