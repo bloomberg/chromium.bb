@@ -1167,4 +1167,62 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
   EXPECT_EQ(web_ui_url, entry->GetURL());
 }
 
+namespace {
+
+class DownloadImageObserver {
+ public:
+  MOCK_METHOD5(OnFinishDownloadImage, void(
+      int id,
+      int status_code,
+      const GURL& image_url,
+      const std::vector<SkBitmap>& bitmap,
+      const std::vector<gfx::Size>& sizes));
+  ~DownloadImageObserver() = default;
+};
+
+void DownloadImageTestInternal(Shell* shell,
+                               const GURL &image_url,
+                               int expected_http_status) {
+  using ::testing::_;
+  using ::testing::InvokeWithoutArgs;
+
+  // Set up everything.
+  DownloadImageObserver download_image_observer;
+  scoped_refptr<MessageLoopRunner> loop_runner =
+      new MessageLoopRunner();
+
+  // Set up expectation and stub.
+  EXPECT_CALL(download_image_observer,
+              OnFinishDownloadImage(_, expected_http_status, _, _, _));
+  ON_CALL(download_image_observer, OnFinishDownloadImage(_, _, _, _, _))
+      .WillByDefault(
+          InvokeWithoutArgs(loop_runner.get(), &MessageLoopRunner::Quit));
+
+  shell->LoadURL(GURL("about:blank"));
+  shell->web_contents()->DownloadImage(
+      image_url, false, 1024, false,
+      base::Bind(&DownloadImageObserver::OnFinishDownloadImage,
+                 base::Unretained(&download_image_observer)));
+
+  // Wait for response.
+  loop_runner->Run();
+}
+
+}  // anonymous namespace
+
+IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
+                       DownloadImage_HttpImage) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  const GURL kImageUrl =
+      embedded_test_server()->GetURL("/image.jpg");
+  DownloadImageTestInternal(shell(), kImageUrl, 200);
+}
+
+IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
+                       DownloadImage_Deny_FileImage) {
+  const GURL kImageUrl =
+      GetTestUrl("", "image.jpg");
+  DownloadImageTestInternal(shell(), kImageUrl, 0);
+}
+
 }  // namespace content
