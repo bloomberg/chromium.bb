@@ -58,7 +58,6 @@ TEST_F(NetworkSessionConfiguratorTest, Defaults) {
   EXPECT_TRUE(params_.enable_http2);
   EXPECT_FALSE(params_.enable_tcp_fast_open_for_ssl);
   EXPECT_TRUE(params_.enable_quic_alternative_service_with_different_host);
-  EXPECT_FALSE(params_.enable_npn);
   EXPECT_TRUE(params_.enable_priority_dependencies);
   EXPECT_FALSE(params_.enable_quic);
 }
@@ -143,22 +142,6 @@ TEST_F(NetworkSessionConfiguratorTest, SpdyDisallowedByPolicy) {
 
   EXPECT_FALSE(params_.enable_spdy31);
   EXPECT_TRUE(params_.enable_http2);
-}
-
-TEST_F(NetworkSessionConfiguratorTest, NPNFieldTrialEnabled) {
-  base::FieldTrialList::CreateFieldTrial("NPN", "Enable-experiment");
-
-  ParseFieldTrials();
-
-  EXPECT_TRUE(params_.enable_npn);
-}
-
-TEST_F(NetworkSessionConfiguratorTest, NPNFieldTrialDisabled) {
-  base::FieldTrialList::CreateFieldTrial("NPN", "Disable-holdback");
-
-  ParseFieldTrials();
-
-  EXPECT_FALSE(params_.enable_npn);
 }
 
 TEST_F(NetworkSessionConfiguratorTest, PriorityDependenciesTrialEnabled) {

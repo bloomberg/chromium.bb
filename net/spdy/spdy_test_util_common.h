@@ -203,7 +203,6 @@ struct SpdySessionDependencies {
   bool enable_ip_pooling;
   bool enable_ping;
   bool enable_user_alternate_protocol_ports;
-  bool enable_npn;
   bool enable_priority_dependencies;
   bool enable_spdy31;
   bool enable_quic;

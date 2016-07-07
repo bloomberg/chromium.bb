@@ -101,9 +101,6 @@ class NET_EXPORT HttpNetworkSession
     // of the origin.
     bool enable_quic_alternative_service_with_different_host;
 
-    // Enables NPN support.  Note that ALPN is always enabled.
-    bool enable_npn;
-
     // Enable setting of HTTP/2 dependencies based on priority.
     bool enable_priority_dependencies;
 

@@ -45,11 +45,6 @@ const char kSpdyFieldTrialSpdy31GroupNamePrefix[] = "Spdy31Enabled";
 const char kSpdyFieldTrialSpdy4GroupNamePrefix[] = "Spdy4Enabled";
 const char kSpdyFieldTrialParametrizedPrefix[] = "Parametrized";
 
-// Field trial for NPN.
-const char kNpnTrialName[] = "NPN";
-const char kNpnTrialEnabledGroupNamePrefix[] = "Enable";
-const char kNpnTrialDisabledGroupNamePrefix[] = "Disable";
-
 // Field trial for priority dependencies.
 const char kSpdyDependenciesFieldTrial[] = "SpdyEnableDependencies";
 const char kSpdyDependenciesFieldTrialEnable[] = "Enable";
@@ -137,16 +132,6 @@ void ConfigureSpdyParams(const base::CommandLine& command_line,
     // and enable_spdy31, can it be eliminated?
     net::HttpStreamFactory::set_spdy_enabled(spdy_enabled);
     return;
-  }
-}
-
-void ConfigureNPNParams(const base::CommandLine& command_line,
-                        base::StringPiece npn_trial_group,
-                        net::HttpNetworkSession::Params* params) {
-  if (npn_trial_group.starts_with(kNpnTrialEnabledGroupNamePrefix)) {
-    params->enable_npn = true;
-  } else if (npn_trial_group.starts_with(kNpnTrialDisabledGroupNamePrefix)) {
-    params->enable_npn = false;
   }
 }
 
@@ -547,10 +532,6 @@ void ParseFieldTrialsAndCommandLineInternal(
   const std::string tfo_trial_group =
       base::FieldTrialList::FindFullName(kTCPFastOpenFieldTrialName);
   ConfigureTCPFastOpenParams(tfo_trial_group, params);
-
-  std::string npn_trial_group =
-      base::FieldTrialList::FindFullName(kNpnTrialName);
-  ConfigureNPNParams(command_line, npn_trial_group, params);
 
   std::string priority_dependencies_trial_group =
       base::FieldTrialList::FindFullName(kSpdyDependenciesFieldTrial);

@@ -15865,37 +15865,6 @@ TEST_P(HttpNetworkTransactionTest, TotalNetworkBytesChunkedPost) {
             trans->GetTotalReceivedBytes());
 }
 
-TEST_P(HttpNetworkTransactionTest, EnableNPN) {
-  session_deps_.enable_npn = true;
-
-  std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
-  HttpNetworkTransaction trans(DEFAULT_PRIORITY, session.get());
-  HttpRequestInfo request;
-  TestCompletionCallback callback;
-  EXPECT_EQ(ERR_IO_PENDING,
-            trans.Start(&request, callback.callback(), BoundNetLog()));
-
-  EXPECT_THAT(trans.server_ssl_config_.alpn_protos,
-              testing::ElementsAre(kProtoHTTP2, kProtoSPDY31, kProtoHTTP11));
-  EXPECT_THAT(trans.server_ssl_config_.npn_protos,
-              testing::ElementsAre(kProtoHTTP2, kProtoSPDY31, kProtoHTTP11));
-}
-
-TEST_P(HttpNetworkTransactionTest, DisableNPN) {
-  session_deps_.enable_npn = false;
-
-  std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
-  HttpNetworkTransaction trans(DEFAULT_PRIORITY, session.get());
-  HttpRequestInfo request;
-  TestCompletionCallback callback;
-  EXPECT_EQ(ERR_IO_PENDING,
-            trans.Start(&request, callback.callback(), BoundNetLog()));
-
-  EXPECT_THAT(trans.server_ssl_config_.alpn_protos,
-              testing::ElementsAre(kProtoHTTP2, kProtoSPDY31, kProtoHTTP11));
-  EXPECT_TRUE(trans.server_ssl_config_.npn_protos.empty());
-}
-
 #if !defined(OS_IOS)
 TEST_P(HttpNetworkTransactionTest, TokenBindingSpdy) {
   const std::string https_url = "https://www.example.com";

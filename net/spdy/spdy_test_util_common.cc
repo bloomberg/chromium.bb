@@ -356,7 +356,6 @@ SpdySessionDependencies::SpdySessionDependencies(
       enable_ip_pooling(true),
       enable_ping(false),
       enable_user_alternate_protocol_ports(false),
-      enable_npn(false),
       enable_priority_dependencies(true),
       enable_spdy31(true),
       enable_quic(false),
@@ -416,7 +415,6 @@ HttpNetworkSession::Params SpdySessionDependencies::CreateSessionParams(
   params.enable_spdy_ping_based_connection_checking = session_deps->enable_ping;
   params.enable_user_alternate_protocol_ports =
       session_deps->enable_user_alternate_protocol_ports;
-  params.enable_npn = session_deps->enable_npn;
   params.enable_priority_dependencies =
       session_deps->enable_priority_dependencies;
   params.enable_spdy31 = session_deps->enable_spdy31;
