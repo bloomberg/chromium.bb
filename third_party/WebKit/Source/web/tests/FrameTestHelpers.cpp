@@ -35,6 +35,7 @@
 #include "platform/testing/WebLayerTreeViewImplForTesting.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebData.h"
+#include "public/platform/WebSecurityOrigin.h"
 #include "public/platform/WebString.h"
 #include "public/platform/WebThread.h"
 #include "public/platform/WebURLLoaderMockFactory.h"
@@ -124,6 +125,7 @@ void loadFrame(WebFrame* frame, const std::string& url)
     WebURLRequest urlRequest;
     urlRequest.initialize();
     urlRequest.setURL(URLTestHelpers::toKURL(url));
+    urlRequest.setRequestorOrigin(WebSecurityOrigin::createUnique());
     frame->loadRequest(urlRequest);
     pumpPendingRequestsForFrameToLoad(frame);
 }

@@ -7,6 +7,7 @@
 #include "core/dom/Document.h"
 #include "platform/LayoutTestSupport.h"
 #include "platform/scroll/ScrollbarTheme.h"
+#include "public/platform/WebSecurityOrigin.h"
 #include "public/web/WebCache.h"
 #include "web/WebLocalFrameImpl.h"
 #include "web/WebViewImpl.h"
@@ -42,6 +43,7 @@ void SimTest::loadURL(const String& url)
     WebURLRequest request;
     request.initialize();
     request.setURL(KURL(ParsedURLString, url));
+    request.setRequestorOrigin(WebSecurityOrigin::createUnique());
     webView().mainFrameImpl()->loadRequest(request);
 }
 

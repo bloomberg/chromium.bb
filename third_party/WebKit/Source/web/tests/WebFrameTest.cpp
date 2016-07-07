@@ -3323,6 +3323,7 @@ TEST_P(ParameterizedWebFrameTest, ReloadWhileProvisional)
     WebURLRequest request;
     request.initialize();
     request.setURL(toKURL(m_baseURL + "fixed_layout.html"));
+    request.setRequestorOrigin(WebSecurityOrigin::createUnique());
     webViewHelper.webView()->mainFrame()->loadRequest(request);
     // start reload before first request is delivered.
     FrameTestHelpers::reloadFrameIgnoringCache(webViewHelper.webView()->mainFrame());
@@ -6293,6 +6294,7 @@ TEST_P(ParameterizedWebFrameTest, CurrentHistoryItem)
     WebURLRequest request;
     request.initialize();
     request.setURL(toKURL(url));
+    request.setRequestorOrigin(WebSecurityOrigin::createUnique());
     frame->loadRequest(request);
 
     // Before commit, there is no history item.
@@ -8812,6 +8814,7 @@ TEST_F(WebFrameTest, LoadJavascriptURLInNewFrame)
     URLTestHelpers::registerMockedURLLoad(toKURL(redirectURL), "foo.html");
     request.initialize();
     request.setURL(toKURL("javascript:location='" + redirectURL + "'"));
+    request.setRequestorOrigin(WebSecurityOrigin::createUnique());
     helper.webViewImpl()->mainFrame()->toWebLocalFrame()->loadRequest(request);
 
     // Normally, the result of the JS url replaces the existing contents on the
