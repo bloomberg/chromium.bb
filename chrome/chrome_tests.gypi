@@ -43,8 +43,15 @@
       '../extensions/browser/api/display_source/display_source_apitestbase.h',
       'browser/extensions/api/display_source/display_source_wifi_display_apitest.cc',
     ],
+    # TODO(jbudorick): Move tests here from other lists as Android support is
+    # implemented. See crbug.com/611756
     'chrome_browser_tests_sources': [
-      # The list of sources which is only used by chrome browser tests.
+      # The list of sources which is used by chrome browser tests on all
+      # platforms.
+    ],
+    'chrome_browser_tests_desktop_only_sources': [
+      # The list of sources which is only used by chrome browser tests on
+      # desktop platforms.
       '../apps/app_restore_service_browsertest.cc',
       '../apps/load_and_launch_browsertest.cc',
       'app/chrome_command_ids.h',
@@ -2237,6 +2244,7 @@
         'HAS_OUT_OF_PROC_TEST_RUNNER',
       ],
       'sources': [
+        '<@(chrome_browser_tests_desktop_only_sources)',
         '<@(chrome_browser_tests_extensions_sources)',
         '<@(chrome_browser_tests_sources)',
         '<@(chrome_browser_tests_webui_js_sources)',

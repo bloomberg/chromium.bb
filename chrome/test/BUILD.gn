@@ -859,26 +859,157 @@ if (!is_android) {
       ":browser_tests",
     ]
   }
+}
 
-  test("browser_tests") {
-    sources = [
-      "base/browser_tests_main.cc",
+test("browser_tests") {
+  sources = [
+    "base/browser_tests_main.cc",
+  ]
+  sources += rebase_path(chrome_tests_gypi_values.chrome_browser_tests_sources,
+                         ".",
+                         "//chrome")
+
+  configs += [
+    "//build/config:precompiled_headers",
+    "//third_party/WebKit/public:debug_devtools",
+  ]
+
+  deps = [
+    ":test_support",
+    "//base",
+    "//sync:test_support_sync_api",
+  ]
+
+  data_deps = []
+
+  data = []
+
+  defines = [ "HAS_OUT_OF_PROC_TEST_RUNNER" ]
+
+  if (is_win) {
+    data += [ "$root_out_dir/chrome_200_percent.pak" ]
+  }
+  if (is_mac) {
+    data += [
+      "$root_out_dir/chrome_material_100_percent.pak",
+      "$root_out_dir/chrome_material_200_percent.pak",
     ]
-    sources +=
-        rebase_path(chrome_tests_gypi_values.chrome_browser_tests_sources,
-                    ".",
-                    "//chrome")
+  }
+  if (is_chromeos) {
+    data += [
+      # TODO(GYP): figure out which of these things are
+      # actually needed and also which should be pulled in via
+      # data or data_deps and through which dependencies.
+      "//chrome/browser/chromeos/login/test/https_forwarder.py",
+      "//chrome/browser/resources/chromeos/wallpaper_manager/",
+      "//chromeos/test/data/",
+      "//components/chrome_apps/webstore_widget/cws_widget/",
+      "//ui/file_manager/file_manager/",
+      "//ui/file_manager/gallery/",
+      "//ui/file_manager/image_loader/",
+      "//ui/file_manager/integration_tests/",
+      "//third_party/analytics/",
+      "//third_party/polymer/v1_0/components-chromium/polymer/",
+      "$root_out_dir/chromevox_test_data/",
+      "$root_out_dir/content_shell.pak",
+      "$root_out_dir/locales/",
+      "$root_out_dir/resources/chromeos/",
+    ]
+
+    data_deps += [ "//ui/keyboard:resources" ]
+
+    if (enable_nacl) {
+      data_deps += [
+        "//components/nacl/loader:nacl_helper",
+        "//ppapi/native_client:irt",
+      ]
+    }
+  }
+
+  # TODO(jbudorick): In progress. See crbug.com/611756
+  if (is_android) {
+    deps += [
+      "//chrome/android:chrome_java",
+      "//v8:v8_external_startup_data_assets",
+    ]
+
+    enable_multidex = true
+  } else {
     sources += rebase_path(
-            chrome_tests_gypi_values.chrome_browser_extensions_test_support_sources,
+            chrome_tests_gypi_values.chrome_browser_tests_desktop_only_sources,
             ".",
             "//chrome")
 
-    configs += [
-      "//build/config:precompiled_headers",
-      "//third_party/WebKit/public:debug_devtools",
+    deps += [
+      ":browser_tests_js_webui",
+      ":sync_integration_test_support",
+      ":test_support_ui",
+      "//base:i18n",
+      "//base/test:test_support",
+      "//chrome:browser_tests_pak",
+      "//chrome:packed_extra_resources",
+      "//chrome:packed_resources",
+      "//chrome:resources",
+      "//chrome:strings",
+      "//chrome/browser",
+      "//chrome/browser/resources:extension_resource_demo",
+      "//chrome/renderer",
+      "//components/autofill/content/browser:risk_proto",
+      "//components/autofill/content/renderer:test_support",
+      "//components/captive_portal:test_support",
+      "//components/dom_distiller/content/browser",
+      "//components/dom_distiller/content/renderer",
+      "//components/dom_distiller/core:test_support",
+      "//components/guest_view/browser:test_support",
+      "//components/resources",
+      "//components/safe_browsing_db:test_database_manager",
+      "//components/strings",
+      "//components/translate/core/common",
+      "//content/public/common:features",
+      "//content/test:browsertest_base",
+      "//crypto:platform",
+      "//crypto:test_support",
+      "//device/bluetooth:mocks",
+      "//device/serial:test_support",
+      "//device/usb:test_support",
+      "//google_apis:test_support",
+      "//media",
+      "//media/base:test_support",
+      "//media/cast:test_support",
+      "//net",
+      "//net:test_support",
+      "//sdch",
+      "//skia",
+      "//sync",
+      "//testing/gmock",
+      "//testing/gtest",
+      "//testing/perf",
+      "//third_party/cacheinvalidation",
+      "//third_party/icu",
+      "//third_party/leveldatabase",
+      "//third_party/libjingle",
+      "//third_party/webrtc/modules/desktop_capture",
+      "//third_party/widevine/cdm:version_h",
+      "//ui/accessibility:test_support",
+      "//ui/base:test_support",
+      "//ui/compositor:test_support",
+      "//ui/resources",
+      "//ui/web_dialogs:test_support",
+      "//v8",
     ]
 
-    data = [
+    # Runtime dependencies
+    data_deps += [
+      "//chrome",
+      "//ppapi:ppapi_tests",
+      "//ppapi:power_saver_test_plugin",
+      "//remoting/webapp:browser_test_resources",
+      "//remoting/webapp:unit_tests",
+      "//third_party/mesa:osmesa",
+      "//third_party/widevine/cdm:widevine_test_license_server",
+    ]
+
+    data += [
       "data/",
       "//chrome/browser/policy/test/asn1der.py",
       "//chrome/browser/policy/test/policy_testserver.py",
@@ -914,135 +1045,11 @@ if (!is_android) {
       "$root_out_dir/test_page.css.mock-http-headers",
       "$root_out_dir/test_url_loader_data/",
     ]
-    if (is_win) {
-      data += [ "$root_out_dir/chrome_200_percent.pak" ]
-    }
-    if (is_mac) {
-      data += [
-        "$root_out_dir/chrome_material_100_percent.pak",
-        "$root_out_dir/chrome_material_200_percent.pak",
-      ]
-    }
-    if (is_chromeos) {
-      data += [
-        # TODO(GYP): figure out which of these things are
-        # actually needed and also which should be pulled in via
-        # data or data_deps and through which dependencies.
-        "//chrome/browser/chromeos/login/test/https_forwarder.py",
-        "//chrome/browser/resources/chromeos/wallpaper_manager/",
-        "//chromeos/test/data/",
-        "//components/chrome_apps/webstore_widget/cws_widget/",
-        "//ui/file_manager/file_manager/",
-        "//ui/file_manager/gallery/",
-        "//ui/file_manager/image_loader/",
-        "//ui/file_manager/integration_tests/",
-        "//third_party/analytics/",
-        "//third_party/polymer/v1_0/components-chromium/polymer/",
-        "$root_out_dir/chromevox_test_data/",
-        "$root_out_dir/content_shell.pak",
-        "$root_out_dir/locales/",
-        "$root_out_dir/resources/chromeos/",
-      ]
-
-      data_deps = [
-        "//ui/keyboard:resources",
-      ]
-
-      if (enable_nacl) {
-        data_deps += [
-          "//components/nacl/loader:nacl_helper",
-          "//ppapi/native_client:irt",
-        ]
-      }
-    } else {
-      data_deps = []
-    }
-
-    deps = [
-      ":browser_tests_js_webui",
-      ":sync_integration_test_support",
-      ":test_support",
-      ":test_support_ui",
-      "//base",
-      "//base:i18n",
-      "//base/test:test_support",
-      "//chrome:browser_tests_pak",
-      "//chrome:packed_extra_resources",
-      "//chrome:packed_resources",
-      "//chrome:resources",
-      "//chrome:strings",
-      "//chrome/browser",
-      "//chrome/browser/resources:extension_resource_demo",
-      "//chrome/common/extensions/api",
-      "//chrome/renderer",
-      "//components/autofill/content/browser:risk_proto",
-      "//components/autofill/content/renderer:test_support",
-      "//components/captive_portal:test_support",
-      "//components/dom_distiller/content/browser",
-      "//components/dom_distiller/content/renderer",
-      "//components/dom_distiller/core:test_support",
-      "//components/guest_view/browser:test_support",
-      "//components/resources",
-      "//components/safe_browsing_db:test_database_manager",
-      "//components/strings",
-      "//components/translate/core/common",
-      "//content/public/common:features",
-      "//content/test:browsertest_base",
-      "//crypto:platform",
-      "//crypto:test_support",
-      "//device/bluetooth:mocks",
-      "//device/serial:test_support",
-      "//device/usb:test_support",
-      "//extensions/common/api",
-      "//google_apis:test_support",
-      "//media",
-      "//media/base:test_support",
-      "//media/cast:test_support",
-      "//net",
-      "//net:test_support",
-      "//sdch",
-      "//skia",
-      "//sync",
-      "//sync:test_support_sync_api",
-      "//testing/gmock",
-      "//testing/gtest",
-      "//testing/perf",
-      "//third_party/cacheinvalidation",
-      "//third_party/icu",
-      "//third_party/leveldatabase",
-      "//third_party/libjingle",
-      "//third_party/webrtc/modules/desktop_capture",
-      "//third_party/widevine/cdm:version_h",
-      "//ui/accessibility:test_support",
-      "//ui/base:test_support",
-      "//ui/compositor:test_support",
-      "//ui/resources",
-      "//ui/web_dialogs:test_support",
-      "//v8",
-    ]
-
-    # TODO(rockot) bug 505926: The chrome_extensions_browsertests target should
-    # be deleted and this line removed. See the chrome_extensions_browsertests
-    # target for more.
-    deps += [ "//extensions:chrome_extensions_browsertests" ]
-
-    # Runtime dependencies
-    data_deps += [
-      "//chrome",
-      "//ppapi:ppapi_tests",
-      "//ppapi:power_saver_test_plugin",
-      "//remoting/webapp:browser_test_resources",
-      "//remoting/webapp:unit_tests",
-      "//third_party/mesa:osmesa",
-      "//third_party/widevine/cdm:widevine_test_license_server",
-    ]
 
     if (!is_mac) {
       data += [ "$root_out_dir/locales/" ]
       data_deps += [ "//chrome:packed_extra_resources" ]
     }
-
-    defines = [ "HAS_OUT_OF_PROC_TEST_RUNNER" ]
 
     if (!enable_one_click_signin) {
       sources -= [ "../browser/ui/sync/one_click_signin_links_delegate_impl_browsertest.cc" ]
@@ -1096,6 +1103,24 @@ if (!is_android) {
         ]
       }
     }
+
+    if (enable_extensions) {
+      sources += rebase_path(
+              chrome_tests_gypi_values.chrome_browser_extensions_test_support_sources,
+              ".",
+              "//chrome")
+
+      deps += [
+        "//chrome/common/extensions/api",
+
+        # TODO(rockot) bug 505926: The chrome_extensions_browsertests target
+        # should be deleted and this line removed. See the
+        # chrome_extensions_browsertests target for more.
+        "//extensions:chrome_extensions_browsertests",
+        "//extensions/common/api",
+      ]
+    }
+
     if (use_ash) {
       sources +=
           rebase_path(chrome_tests_gypi_values.chrome_browser_tests_ash_sources,
@@ -1351,14 +1376,6 @@ if (!is_android) {
     if (!is_posix || is_chromeos) {
       sources -= [ "../common/time_format_browsertest.cc" ]
     }
-    if (is_android) {
-      sources -= [
-        "../browser/policy/cloud/component_cloud_policy_browsertest.cc",
-        "../browser/prefs/pref_hash_browsertest.cc",
-        "../renderer/spellchecker/spellcheck_provider_hunspell_unittest.cc",
-        "../renderer/spellchecker/spellcheck_unittest.cc",
-      ]
-    }
     if (is_chromeos) {
       sources += [
         "../browser/extensions/api/networking_private/networking_private_apitest.cc",
@@ -1450,8 +1467,6 @@ if (!is_android) {
         "../renderer/safe_browsing/phishing_classifier_delegate_browsertest.cc",
       ]
     }
-    if (is_android || is_ios) {
-    }
     if (enable_remoting) {
       sources += rebase_path(
               chrome_tests_gypi_values.chrome_browser_tests_remoting_sources,
@@ -1491,7 +1506,9 @@ if (!is_android) {
       }
     }
   }
+}
 
+if (!is_android) {
   test("sync_integration_tests") {
     sources =
         rebase_path(chrome_tests_gypi_values.sync_integration_tests_sources,
