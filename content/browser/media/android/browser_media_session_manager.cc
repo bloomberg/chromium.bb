@@ -4,6 +4,9 @@
 
 #include "content/browser/media/android/browser_media_session_manager.h"
 
+#include "content/browser/media/session/media_session.h"
+#include "content/browser/web_contents/web_contents_impl.h"
+#include "content/common/media/media_metadata_sanitizer.h"
 #include "content/common/media/media_session_messages_android.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
@@ -30,15 +33,7 @@ void BrowserMediaSessionManager::OnSetMetadata(
     const MediaMetadata& insecure_metadata) {
   // When receiving a MediaMetadata, the browser process can't trust that it is
   // coming from a known and secure source. It must be processed accordingly.
-  MediaMetadata metadata;
-  metadata.title =
-      insecure_metadata.title.substr(0, MediaMetadata::kMaxIPCStringLength);
-  metadata.artist =
-      insecure_metadata.artist.substr(0, MediaMetadata::kMaxIPCStringLength);
-  metadata.album =
-      insecure_metadata.album.substr(0, MediaMetadata::kMaxIPCStringLength);
-
-  if (metadata != insecure_metadata) {
+  if (!MediaMetadataSanitizer::CheckSanity(insecure_metadata)) {
     render_frame_host_->GetProcess()->ShutdownForBadMessage();
     return;
   }

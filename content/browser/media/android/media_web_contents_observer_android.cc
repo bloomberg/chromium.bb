@@ -4,6 +4,8 @@
 
 #include "content/browser/media/android/media_web_contents_observer_android.h"
 
+#include <utility>
+
 #include "base/memory/ptr_util.h"
 #include "content/browser/media/android/browser_media_player_manager.h"
 #include "content/browser/media/android/browser_media_session_manager.h"
@@ -78,6 +80,12 @@ MediaWebContentsObserverAndroid::GetSurfaceViewManager(
       new BrowserSurfaceViewManager(render_frame_host);
   surface_view_managers_.set(render_frame_host, base::WrapUnique(manager));
   return manager;
+}
+
+void MediaWebContentsObserverAndroid::SetMediaSessionManagerForTest(
+    RenderFrameHost* render_frame_host,
+    std::unique_ptr<BrowserMediaSessionManager> manager) {
+  media_session_managers_.set(render_frame_host, std::move(manager));
 }
 
 void MediaWebContentsObserverAndroid::SuspendAllMediaPlayers() {

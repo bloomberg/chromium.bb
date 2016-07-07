@@ -18,6 +18,7 @@ IPC_STRUCT_TRAITS_BEGIN(content::MediaMetadata)
   IPC_STRUCT_TRAITS_MEMBER(title)
   IPC_STRUCT_TRAITS_MEMBER(artist)
   IPC_STRUCT_TRAITS_MEMBER(album)
+  IPC_STRUCT_TRAITS_MEMBER(artwork)
 IPC_STRUCT_TRAITS_END()
 
 // Messages for notifying the render process of media session status -------

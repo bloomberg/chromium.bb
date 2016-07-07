@@ -42,6 +42,12 @@ class CONTENT_EXPORT MediaWebContentsObserverAndroid
   BrowserSurfaceViewManager* GetSurfaceViewManager(
       RenderFrameHost* render_frame_host);
 
+  // Sets or overrides the BrowserMediaSessionManager for the given
+  // |render_frame_host|.
+  void SetMediaSessionManagerForTest(
+      RenderFrameHost* render_frame_host,
+      std::unique_ptr<BrowserMediaSessionManager> manager);
+
   // Called by the WebContents when a tab has been closed but may still be
   // available for "undo" -- indicates that all media players (even audio only
   // players typically allowed background audio) bound to this WebContents must

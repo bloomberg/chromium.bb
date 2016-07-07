@@ -4,16 +4,20 @@
 
 #include "content/public/common/media_metadata.h"
 
-namespace content {
+#include <algorithm>
+#include <iterator>
 
-const size_t MediaMetadata::kMaxIPCStringLength = 4 * 1024;
+namespace content {
 
 MediaMetadata::MediaMetadata() = default;
 
 MediaMetadata::~MediaMetadata() = default;
 
+MediaMetadata::MediaMetadata(const MediaMetadata& other) = default;
+
 bool MediaMetadata::operator==(const MediaMetadata& other) const {
-  return title == other.title && artist == other.artist && album == other.album;
+  return title == other.title && artist == other.artist &&
+      album == other.album && artwork == other.artwork;
 }
 
 bool MediaMetadata::operator!=(const MediaMetadata& other) const {

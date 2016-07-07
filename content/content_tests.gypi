@@ -248,6 +248,7 @@
       'browser/media/media_redirect_browsertest.cc',
       'browser/media/media_source_browsertest.cc',
       'browser/media/midi_browsertest.cc',
+      'browser/media/android/browser_media_session_manager_browsertest.cc',
       'browser/media/session/media_session_browsertest.cc',
       'browser/media/session/media_session_delegate_default_browsertest.cc',
       'browser/media/session/media_session_visibility_browsertest.cc',

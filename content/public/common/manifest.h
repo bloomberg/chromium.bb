@@ -30,6 +30,8 @@ struct CONTENT_EXPORT Manifest {
     Icon(const Icon& other);
     ~Icon();
 
+    bool operator==(const Icon& other) const;
+
     // MUST be a valid url. If an icon doesn't have a valid URL, it will not be
     // successfully parsed, thus will not be represented in the Manifest.
     GURL src;

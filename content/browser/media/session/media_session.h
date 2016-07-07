@@ -62,9 +62,7 @@ class MediaSession : public WebContentsObserver,
 
   ~MediaSession() override;
 
-  void setMetadata(const MediaMetadata& metadata) {
-    metadata_ = metadata;
-  }
+  void SetMetadata(const MediaMetadata& metadata);
   const MediaMetadata& metadata() const { return metadata_; }
 
   // Adds the given player to the current media session. Returns whether the

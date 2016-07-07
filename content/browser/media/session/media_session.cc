@@ -58,6 +58,14 @@ MediaSession::~MediaSession() {
   DCHECK(audio_focus_state_ == State::INACTIVE);
 }
 
+void MediaSession::SetMetadata(const MediaMetadata& metadata) {
+  metadata_ = metadata;
+  // TODO(zqzhang): On Android, the metadata is sent though JNI everytime the
+  // media session play/pause state changes. Need to find a way to seprate the
+  // state change and Metadata update. See https://crbug.com/621855.
+  static_cast<WebContentsImpl*>(web_contents())->OnMediaSessionStateChanged();
+}
+
 bool MediaSession::AddPlayer(MediaSessionObserver* observer,
                              int player_id,
                              Type type) {

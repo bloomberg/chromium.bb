@@ -10,6 +10,8 @@
 #include "base/memory/ptr_util.h"
 #include "content/public/common/media_metadata.h"
 #include "content/renderer/media/android/renderer_media_session_manager.h"
+#include "third_party/WebKit/public/platform/WebIconSizesParser.h"
+#include "third_party/WebKit/public/platform/WebSize.h"
 #include "third_party/WebKit/public/platform/modules/mediasession/WebMediaMetadata.h"
 
 namespace content {
@@ -42,6 +44,17 @@ void WebMediaSessionAndroid::setMetadata(
     metadata.title = web_metadata->title;
     metadata.artist = web_metadata->artist;
     metadata.album = web_metadata->album;
+    for (const auto& web_artwork : web_metadata->artwork) {
+      MediaMetadata::Artwork artwork;
+      artwork.src = GURL(base::string16(web_artwork.src));
+      artwork.type = web_artwork.type;
+      blink::WebVector<blink::WebSize> web_sizes =
+          blink::WebIconSizesParser::parseIconSizes(web_artwork.sizes);
+      artwork.sizes.insert(artwork.sizes.end(),
+                           web_sizes.begin(),
+                           web_sizes.end());
+      metadata.artwork.push_back(artwork);
+    }
   }
 
   session_manager_->SetMetadata(media_session_id_, metadata);

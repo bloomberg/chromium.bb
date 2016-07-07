@@ -21,6 +21,10 @@ Manifest::Icon::Icon(const Icon& other) = default;
 Manifest::Icon::~Icon() {
 }
 
+bool Manifest::Icon::operator==(const Manifest::Icon& other) const {
+  return src == other.src && type == other.type && sizes == other.sizes;
+}
+
 Manifest::RelatedApplication::RelatedApplication() {
 }
 
