@@ -63,8 +63,10 @@ void AshTouchExplorationManager::PlayVolumeAdjustEarcon() {
   if (!VolumeAdjustSoundEnabled())
     return;
   if (!audio_handler_->IsOutputMuted() &&
-      audio_handler_->GetOutputVolumePercent() != 100)
-    PlaySystemSoundIfSpokenFeedback(chromeos::SOUND_VOLUME_ADJUST);
+      audio_handler_->GetOutputVolumePercent() != 100) {
+    WmShell::Get()->GetAccessibilityDelegate()->PlayEarcon(
+        chromeos::SOUND_VOLUME_ADJUST);
+  }
 }
 
 void AshTouchExplorationManager::PlayPassthroughEarcon() {
