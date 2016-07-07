@@ -187,6 +187,7 @@ private:
             ScriptPromiseResolver* resolver = this->resolver();
             if (!resolver->getExecutionContext() || resolver->getExecutionContext()->activeDOMObjectsAreStopped())
                 return;
+            ScriptState::Scope scope(resolver->getScriptState());
             resolver->reject(T::take(resolver, pass(result)));
         }
     };

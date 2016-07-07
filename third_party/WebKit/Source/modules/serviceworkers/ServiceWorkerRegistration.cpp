@@ -79,7 +79,7 @@ ScriptPromise ServiceWorkerRegistration::update(ScriptState* scriptState)
 
     ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
-    m_handle->registration()->update(client->provider(), new CallbackPromiseAdapter<void, ServiceWorkerError>(resolver));
+    m_handle->registration()->update(client->provider(), new CallbackPromiseAdapter<void, ServiceWorkerErrorForUpdate>(resolver));
     return promise;
 }
 

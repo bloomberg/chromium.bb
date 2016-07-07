@@ -31,7 +31,6 @@ void GetServiceWorkerRegistrationStatusResponse(
     case SERVICE_WORKER_ERROR_START_WORKER_FAILED:
     case SERVICE_WORKER_ERROR_INSTALL_WORKER_FAILED:
     case SERVICE_WORKER_ERROR_PROCESS_NOT_FOUND:
-    case SERVICE_WORKER_ERROR_SCRIPT_EVALUATE_FAILED:
     case SERVICE_WORKER_ERROR_REDUNDANT:
     case SERVICE_WORKER_ERROR_DISALLOWED:
       *error_type = WebServiceWorkerError::ErrorTypeInstall;
@@ -43,6 +42,10 @@ void GetServiceWorkerRegistrationStatusResponse(
 
     case SERVICE_WORKER_ERROR_NETWORK:
       *error_type = WebServiceWorkerError::ErrorTypeNetwork;
+      return;
+
+    case SERVICE_WORKER_ERROR_SCRIPT_EVALUATE_FAILED:
+      *error_type = WebServiceWorkerError::ErrorTypeScriptEvaluateFailed;
       return;
 
     case SERVICE_WORKER_ERROR_SECURITY:

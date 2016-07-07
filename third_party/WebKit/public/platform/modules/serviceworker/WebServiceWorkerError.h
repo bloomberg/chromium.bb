@@ -44,6 +44,7 @@ struct WebServiceWorkerError {
         ErrorTypeNavigation,
         ErrorTypeNetwork,
         ErrorTypeNotFound,
+        ErrorTypeScriptEvaluateFailed,
         ErrorTypeSecurity,
         ErrorTypeState,
         ErrorTypeTimeout,
