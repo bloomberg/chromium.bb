@@ -4,6 +4,7 @@
 
 #include "services/ui/ws/window_finder.h"
 
+#include "base/containers/adapters.h"
 #include "services/ui/surfaces/surfaces_state.h"
 #include "services/ui/ws/server_window.h"
 #include "services/ui/ws/server_window_delegate.h"
@@ -25,9 +26,8 @@ bool IsValidWindowForEvents(ServerWindow* window) {
 
 ServerWindow* FindDeepestVisibleWindowForEvents(ServerWindow* window,
                                                 gfx::Point* location) {
-  const ServerWindow::Windows children(window->GetChildren());
-  for (auto iter = children.rbegin(); iter != children.rend(); ++iter) {
-    ServerWindow* child = *iter;
+  const ServerWindow::Windows& children = window->children();
+  for (ServerWindow* child : base::Reversed(children)) {
     if (!child->visible())
       continue;
 

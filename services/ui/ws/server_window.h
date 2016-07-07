@@ -100,8 +100,6 @@ class ServerWindow {
         const_cast<const ServerWindow*>(this)->GetRoot());
   }
 
-  std::vector<const ServerWindow*> GetChildren() const;
-  std::vector<ServerWindow*> GetChildren();
   const Windows& children() const { return children_; }
 
   // Returns the ServerWindow object with the provided |id| if it lies in a

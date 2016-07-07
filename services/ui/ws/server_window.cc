@@ -190,19 +190,6 @@ const ServerWindow* ServerWindow::GetRoot() const {
   return delegate_->GetRootWindow(this);
 }
 
-std::vector<const ServerWindow*> ServerWindow::GetChildren() const {
-  std::vector<const ServerWindow*> children;
-  children.reserve(children_.size());
-  for (size_t i = 0; i < children_.size(); ++i)
-    children.push_back(children_[i]);
-  return children;
-}
-
-std::vector<ServerWindow*> ServerWindow::GetChildren() {
-  // TODO(sky): rename to children() and fix return type.
-  return children_;
-}
-
 ServerWindow* ServerWindow::GetChildWindow(const WindowId& window_id) {
   if (id_ == window_id)
     return this;

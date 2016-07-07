@@ -4,6 +4,7 @@
 
 #include "services/ui/ws/frame_generator.h"
 
+#include "base/containers/adapters.h"
 #include "cc/output/compositor_frame.h"
 #include "cc/quads/render_pass.h"
 #include "cc/quads/shared_quad_state.h"
@@ -118,10 +119,10 @@ void FrameGenerator::DrawWindowTree(
 
   const gfx::Rect absolute_bounds =
       window->bounds() + parent_to_root_origin_offset;
-  std::vector<ServerWindow*> children(window->GetChildren());
+  const ServerWindow::Windows& children = window->children();
   const float combined_opacity = opacity * window->opacity();
-  for (auto it = children.rbegin(); it != children.rend(); ++it) {
-    DrawWindowTree(pass, *it, absolute_bounds.OffsetFromOrigin(),
+  for (ServerWindow* child : base::Reversed(children)) {
+    DrawWindowTree(pass, child, absolute_bounds.OffsetFromOrigin(),
                    combined_opacity);
   }
 

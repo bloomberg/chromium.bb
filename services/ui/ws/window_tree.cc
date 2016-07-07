@@ -756,7 +756,7 @@ bool WindowTree::CanReorderWindow(const ServerWindow* window,
   if (!access_policy_->CanReorderWindow(window, relative_window, direction))
     return false;
 
-  std::vector<const ServerWindow*> children = window->parent()->GetChildren();
+  const ServerWindow::Windows& children = window->parent()->children();
   const size_t child_i =
       std::find(children.begin(), children.end(), window) - children.begin();
   const size_t target_i =
@@ -797,9 +797,9 @@ void WindowTree::GetUnknownWindowsFrom(
   window_id_to_client_id_map_[window->id()] = client_window_id;
   if (!access_policy_->CanDescendIntoWindowForWindowTree(window))
     return;
-  std::vector<const ServerWindow*> children(window->GetChildren());
-  for (size_t i = 0; i < children.size(); ++i)
-    GetUnknownWindowsFrom(children[i], windows);
+  const ServerWindow::Windows& children = window->children();
+  for (ServerWindow* child : children)
+    GetUnknownWindowsFrom(child, windows);
 }
 
 bool WindowTree::RemoveFromMaps(const ServerWindow* window) {
@@ -822,9 +822,9 @@ void WindowTree::RemoveFromKnown(const ServerWindow* window,
 
   RemoveFromMaps(window);
 
-  std::vector<const ServerWindow*> children = window->GetChildren();
-  for (size_t i = 0; i < children.size(); ++i)
-    RemoveFromKnown(children[i], local_windows);
+  const ServerWindow::Windows& children = window->children();
+  for (ServerWindow* child : children)
+    RemoveFromKnown(child, local_windows);
 }
 
 void WindowTree::RemoveRoot(const ServerWindow* window,
@@ -893,9 +893,9 @@ void WindowTree::GetWindowTreeImpl(
   if (!access_policy_->CanDescendIntoWindowForWindowTree(window))
     return;
 
-  std::vector<const ServerWindow*> children(window->GetChildren());
-  for (size_t i = 0; i < children.size(); ++i)
-    GetWindowTreeImpl(children[i], windows);
+  const ServerWindow::Windows& children = window->children();
+  for (ServerWindow* child : children)
+    GetWindowTreeImpl(child, windows);
 }
 
 void WindowTree::NotifyDrawnStateChanged(const ServerWindow* window,
@@ -955,9 +955,8 @@ void WindowTree::PrepareForEmbed(ServerWindow* window) {
 
 void WindowTree::RemoveChildrenAsPartOfEmbed(ServerWindow* window) {
   CHECK(window);
-  std::vector<ServerWindow*> children = window->GetChildren();
-  for (size_t i = 0; i < children.size(); ++i)
-    window->Remove(children[i]);
+  while (!window->children().empty())
+    window->Remove(window->children().front());
 }
 
 void WindowTree::DispatchInputEventImpl(ServerWindow* target,
