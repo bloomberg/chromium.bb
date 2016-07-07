@@ -11,33 +11,34 @@
 
 namespace blink {
 
-class FloatSize;
-class FrameHost;
-class Element;
 class ScrollableArea;
 class ScrollState;
-class TopControls;
-class OverscrollController;
 
+// ViewportScrollCallback is an interface that's used by the
+// RootScrollerController to apply scrolls to the designated rootScroller
+// element. It is a ScrollStateCallback, meaning that it's applied during the
+// applyScroll step of ScrollCustomization and child classes must implement
+// handleEvent in order to actually do the scrolling as well as any possible
+// associated actions.
+//
+// ScrollCustomization generally relies on using the nativeApplyScroll to
+// scroll the element; however, the rootScroller may need to execute actions
+// both before and after the native scroll which is currently unsupported.
+// Because of this, the ViewportScrollCallback can scroll the Element directly.
+// This is accomplished by descendant classes implementing the setScroller
+// method which RootScrollerController will call to fill the callback with the
+// appropriate ScrollableArea to use.
 class ViewportScrollCallback : public ScrollStateCallback {
 public:
-    // ViewportScrollCallback does not assume ownership of TopControls or of
-    // OverscrollController.
-    ViewportScrollCallback(TopControls*, OverscrollController*);
-    ~ViewportScrollCallback();
+    virtual ~ViewportScrollCallback() {}
 
-    void handleEvent(ScrollState*) override;
+    virtual void setScroller(ScrollableArea*) = 0;
 
-    void setScroller(ScrollableArea*);
-
-    DECLARE_VIRTUAL_TRACE();
-
-private:
-    bool shouldScrollTopControls(const FloatSize&, ScrollGranularity) const;
-
-    WeakMember<TopControls> m_topControls;
-    WeakMember<OverscrollController> m_overscrollController;
-    WeakMember<ScrollableArea> m_scroller;
+    DEFINE_INLINE_VIRTUAL_TRACE() {
+        ScrollStateCallback::trace(visitor);
+    }
+protected:
+    ScrollResult performNativeScroll(ScrollState&, ScrollableArea&);
 };
 
 } // namespace blink

@@ -12,8 +12,6 @@ namespace blink {
 
 class Document;
 class Element;
-class OverscrollController;
-class TopControls;
 class ViewportScrollCallback;
 
 // Manages the root scroller associated with a given document. The root scroller
@@ -48,13 +46,6 @@ public:
     {
         return new RootScrollerController(document, applyScrollCallback);
     }
-
-    // Creates an apply scroll callback that handles viewport actions like
-    // TopControls movement and Overscroll. The TopControls and
-    // OverscrollController are given to the ViewportScrollCallback but are not
-    // owned or kept alive by it.
-    static ViewportScrollCallback* createViewportApplyScroll(
-        TopControls*, OverscrollController*);
 
     DECLARE_TRACE();
 

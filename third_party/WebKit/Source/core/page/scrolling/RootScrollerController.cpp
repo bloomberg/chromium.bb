@@ -73,12 +73,6 @@ bool isValidRootScroller(const Element& element)
 
 } // namespace
 
-ViewportScrollCallback* RootScrollerController::createViewportApplyScroll(
-    TopControls* topControls, OverscrollController* overscrollController)
-{
-    return new ViewportScrollCallback(topControls, overscrollController);
-}
-
 RootScrollerController::RootScrollerController(Document& document, ViewportScrollCallback* applyScrollCallback)
     : m_document(&document)
     , m_viewportApplyScroll(applyScrollCallback)

@@ -195,11 +195,12 @@
 #include "core/page/FrameTree.h"
 #include "core/page/Page.h"
 #include "core/page/PointerLockController.h"
+#include "core/page/scrolling/ChildViewportScrollCallback.h"
 #include "core/page/scrolling/RootScrollerController.h"
+#include "core/page/scrolling/RootViewportScrollCallback.h"
 #include "core/page/scrolling/ScrollStateCallback.h"
 #include "core/page/scrolling/ScrollingCoordinator.h"
 #include "core/page/scrolling/SnapCoordinator.h"
-#include "core/page/scrolling/ViewportScrollCallback.h"
 #include "core/svg/SVGDocumentExtensions.h"
 #include "core/svg/SVGScriptElement.h"
 #include "core/svg/SVGTitleElement.h"
@@ -462,11 +463,11 @@ Document::Document(const DocumentInit& initializer, DocumentClassFlags documentC
 
     ViewportScrollCallback* applyScroll = nullptr;
     if (isInMainFrame()) {
-        applyScroll = RootScrollerController::createViewportApplyScroll(
+        applyScroll = RootViewportScrollCallback::create(
             &frameHost()->topControls(), &frameHost()->overscrollController());
     } else {
         applyScroll =
-            RootScrollerController::createViewportApplyScroll(nullptr, nullptr);
+            ChildViewportScrollCallback::create();
     }
 
     m_rootScrollerController =
