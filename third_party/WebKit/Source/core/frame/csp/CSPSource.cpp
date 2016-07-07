@@ -91,6 +91,9 @@ bool CSPSource::portMatches(const KURL& url) const
     if (port == m_port)
         return true;
 
+    if (m_port == 80 && (port == 443 || (port == 0 && defaultPortForProtocol(url.protocol()) == 443)))
+        return true;
+
     if (!port)
         return isDefaultPortForProtocol(m_port, url.protocol());
 
