@@ -52,5 +52,6 @@ NET_EXPORT_PRIVATE extern bool FLAGS_quic_respect_http2_settings_frame;
 NET_EXPORT_PRIVATE extern bool FLAGS_quic_no_mtu_discovery_ack_listener;
 NET_EXPORT_PRIVATE extern bool FLAGS_quic_simple_packet_number_length;
 NET_EXPORT_PRIVATE extern bool FLAGS_quic_enable_version_35;
+NET_EXPORT_PRIVATE extern bool FLAGS_quic_enable_version_36;
 
 #endif  // NET_QUIC_QUIC_FLAGS_H_

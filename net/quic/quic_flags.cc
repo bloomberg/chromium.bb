@@ -164,3 +164,6 @@ bool FLAGS_quic_simple_packet_number_length = false;
 
 // If true, enables QUIC_VERSION_35.
 bool FLAGS_quic_enable_version_35 = false;
+
+// If true, enables QUIC_VERSION_36.
+bool FLAGS_quic_enable_version_36 = false;
