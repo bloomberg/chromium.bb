@@ -43,7 +43,6 @@ class DocumentState;
 class EncodedFormData;
 class KURL;
 class ResourceRequest;
-class SecurityOrigin;
 
 class CORE_EXPORT HistoryItem final : public GarbageCollectedFinalized<HistoryItem> {
 public:
@@ -57,7 +56,6 @@ public:
     KURL url() const;
 
     const Referrer& referrer() const;
-    PassRefPtr<SecurityOrigin> requestorOrigin() const;
     const String& target() const;
 
     EncodedFormData* formData();
@@ -80,7 +78,6 @@ public:
     void setURL(const KURL&);
     void setURLString(const String&);
     void setReferrer(const Referrer&);
-    void setRequestorOrigin(PassRefPtr<SecurityOrigin>);
     void setTarget(const String&);
 
     void setStateObject(PassRefPtr<SerializedScriptValue>);
@@ -108,7 +105,6 @@ private:
 
     String m_urlString;
     Referrer m_referrer;
-    String m_requestorOrigin;
     String m_target;
 
     FloatPoint m_visualViewportScrollPoint;
