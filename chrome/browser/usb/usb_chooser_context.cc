@@ -53,7 +53,7 @@ bool CanStorePersistentEntry(const scoped_refptr<const UsbDevice>& device) {
 
 UsbChooserContext::UsbChooserContext(Profile* profile)
     : ChooserContextBase(profile, CONTENT_SETTINGS_TYPE_USB_CHOOSER_DATA),
-      is_off_the_record_(profile->IsOffTheRecord()),
+      is_incognito_(profile->IsOffTheRecord()),
       observer_(this) {
   usb_service_ = device::DeviceClient::Get()->GetUsbService();
   if (usb_service_)
@@ -102,7 +102,7 @@ UsbChooserContext::GetAllGrantedObjects() {
       object.SetString(kGuidKey, device->guid());
       objects.push_back(base::WrapUnique(new ChooserContextBase::Object(
           requesting_origin, embedding_origin, &object, "preference",
-          is_off_the_record_)));
+          is_incognito_)));
     }
   }
 

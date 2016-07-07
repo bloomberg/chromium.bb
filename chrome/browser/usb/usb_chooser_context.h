@@ -56,7 +56,7 @@ class UsbChooserContext : public ChooserContextBase,
   // device::UsbService::Observer implementation.
   void OnDeviceRemoved(scoped_refptr<device::UsbDevice> device) override;
 
-  bool is_off_the_record_;
+  bool is_incognito_;
   std::map<std::pair<GURL, GURL>, std::set<std::string>> ephemeral_devices_;
   device::UsbService* usb_service_;
   ScopedObserver<device::UsbService, device::UsbService::Observer> observer_;
