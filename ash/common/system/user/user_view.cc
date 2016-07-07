@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/system/user/user_view.h"
+#include "ash/common/system/user/user_view.h"
 
 #include <algorithm>
 #include <utility>
@@ -19,12 +19,12 @@
 #include "ash/common/system/user/button_from_view.h"
 #include "ash/common/system/user/login_status.h"
 #include "ash/common/system/user/rounded_image_view.h"
+#include "ash/common/system/user/user_card_view.h"
 #include "ash/common/wm_lookup.h"
 #include "ash/common/wm_root_window_controller.h"
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
 #include "ash/system/tray/system_tray.h"
-#include "ash/system/user/user_card_view.h"
 #include "components/signin/core/account_id/account_id.h"
 #include "components/user_manager/user_info.h"
 #include "grit/ash_resources.h"

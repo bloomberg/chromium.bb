@@ -4,7 +4,7 @@
 
 #include "ash/system/chromeos/media_security/multi_profile_media_tray_item.h"
 
-#include "ash/ash_view_ids.h"
+#include "ash/common/ash_view_ids.h"
 #include "ash/common/media_delegate.h"
 #include "ash/common/session/session_state_delegate.h"
 #include "ash/common/system/chromeos/media_security/media_capture_observer.h"

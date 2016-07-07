@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/system/user/tray_user.h"
+#include "ash/common/system/user/tray_user.h"
 
 #include "ash/common/ash_switches.h"
 #include "ash/common/session/session_state_delegate.h"
@@ -13,9 +13,9 @@
 #include "ash/common/system/tray/tray_item_view.h"
 #include "ash/common/system/tray/tray_utils.h"
 #include "ash/common/system/user/rounded_image_view.h"
+#include "ash/common/system/user/user_view.h"
 #include "ash/common/wm_shell.h"
 #include "ash/system/tray/system_tray.h"
-#include "ash/system/user/user_view.h"
 #include "base/logging.h"
 #include "base/strings/string16.h"
 #include "components/signin/core/account_id/account_id.h"

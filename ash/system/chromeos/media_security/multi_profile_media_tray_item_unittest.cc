@@ -4,7 +4,7 @@
 
 #include "ash/system/chromeos/media_security/multi_profile_media_tray_item.h"
 
-#include "ash/ash_view_ids.h"
+#include "ash/common/ash_view_ids.h"
 #include "ash/common/system/tray/system_tray_bubble.h"
 #include "ash/common/system/tray/tray_item_view.h"
 #include "ash/system/status_area_widget.h"

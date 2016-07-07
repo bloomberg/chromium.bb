@@ -6,13 +6,11 @@
 
 #include "ash/common/shell_delegate.h"
 #include "ash/common/system/tray/tray_constants.h"
+#include "ash/common/system/user/tray_user.h"
 #include "ash/common/system/user/tray_user_separator.h"
+#include "ash/common/system/user/user_view.h"
 #include "ash/common/wm_shell.h"
-#include "ash/root_window_controller.h"
-#include "ash/shell.h"
 #include "ash/system/tray/system_tray.h"
-#include "ash/system/user/tray_user.h"
-#include "ash/system/user/user_view.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/ash_test_helper.h"
 #include "ash/test/test_session_state_delegate.h"
@@ -69,7 +67,7 @@ class TrayUserTest : public test::AshTestBase {
 
 void TrayUserTest::SetUp() {
   test::AshTestBase::SetUp();
-  tray_ = Shell::GetPrimaryRootWindowController()->GetSystemTray();
+  tray_ = GetPrimarySystemTray();
   delegate_ = test::AshTestHelper::GetTestSessionStateDelegate();
 }
 
@@ -132,7 +130,7 @@ TEST_F(TrayUserTest, SingleUserModeDoesNotAllowAddingUser) {
   InitializeParameters(1, false);
 
   // Move the mouse over the status area and click to open the status menu.
-  ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow());
+  ui::test::EventGenerator& generator = GetEventGenerator();
 
   EXPECT_FALSE(tray()->IsAnyBubbleVisible());
 
@@ -154,7 +152,7 @@ TEST_F(TrayUserTest, SingleUserModeDoesNotAllowAddingUser) {
 
 TEST_F(TrayUserTest, AccessibleLabelContainsSingleUserInfo) {
   InitializeParameters(1, false);
-  ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow());
+  ui::test::EventGenerator& generator = GetEventGenerator();
   ShowTrayMenu(&generator);
 
   views::View* view =
@@ -169,7 +167,7 @@ TEST_F(TrayUserTest, AccessibleLabelContainsSingleUserInfo) {
 
 TEST_F(TrayUserTest, AccessibleLabelContainsMultiUserInfo) {
   InitializeParameters(1, true);
-  ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow());
+  ui::test::EventGenerator& generator = GetEventGenerator();
   ShowTrayMenu(&generator);
 
   views::View* view =
@@ -191,7 +189,7 @@ TEST_F(TrayUserTest, MutiUserModeDoesNotAllowToAddUser) {
   InitializeParameters(1, true);
 
   // Move the mouse over the status area and click to open the status menu.
-  ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow());
+  ui::test::EventGenerator& generator = GetEventGenerator();
   generator.set_async(false);
 
   int max_users = delegate()->GetMaximumNumberOfLoggedInUsers();
@@ -250,7 +248,7 @@ TEST_F(TrayUserTest, MutiUserModeDoesNotAllowToAddUser) {
 TEST_F(TrayUserTest, MutiUserModeButtonClicks) {
   // Have two users.
   InitializeParameters(2, true);
-  ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow());
+  ui::test::EventGenerator& generator = GetEventGenerator();
   ShowTrayMenu(&generator);
 
   // Switch to a new user - which has a capitalized name.

@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_SYSTEM_USER_USER_VIEW_H_
-#define ASH_SYSTEM_USER_USER_VIEW_H_
+#ifndef ASH_COMMON_SYSTEM_USER_USER_VIEW_H_
+#define ASH_COMMON_SYSTEM_USER_USER_VIEW_H_
 
 #include <memory>
 
 #include "ash/common/session/session_types.h"
 #include "ash/common/system/tray/tray_constants.h"
-#include "ash/system/user/tray_user.h"
+#include "ash/common/system/user/tray_user.h"
 #include "base/macros.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/focus/focus_manager.h"
@@ -104,4 +104,4 @@ class UserView : public views::View,
 }  // namespace tray
 }  // namespace ash
 
-#endif  // ASH_SYSTEM_USER_USER_VIEW_H_
+#endif  // ASH_COMMON_SYSTEM_USER_USER_VIEW_H_

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/system/user/user_card_view.h"
+#include "ash/common/system/user/user_card_view.h"
 
 #include <algorithm>
 #include <vector>
@@ -39,7 +39,7 @@
 #include "ui/views/layout/box_layout.h"
 
 #if defined(OS_CHROMEOS)
-#include "ash/ash_view_ids.h"
+#include "ash/common/ash_view_ids.h"
 #include "ash/common/media_delegate.h"
 #include "ash/common/system/chromeos/media_security/media_capture_observer.h"
 #include "ui/views/controls/image_view.h"
