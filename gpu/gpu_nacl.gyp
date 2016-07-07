@@ -122,7 +122,6 @@
           'dependencies': [
             '../base/base_nacl.gyp:base_nacl',
             '../base/base_nacl.gyp:base_nacl_nonsfi',
-            '../ui/gfx/ipc/geometry/gfx_ipc_geometry_nacl.gyp:gfx_ipc_geometry_nacl',
             'command_buffer_common_nacl',
           ],
         },

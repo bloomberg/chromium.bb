@@ -22,9 +22,6 @@
 #include "ppapi/utility/completion_callback_factory.h"
 
 namespace gpu {
-namespace gles2 {
-struct ContextCreationAttribHelper;
-}
 struct Capabilities;
 }
 
@@ -89,7 +86,7 @@ class PPB_Graphics3D_Proxy : public InterfaceProxy {
  private:
   void OnMsgCreate(PP_Instance instance,
                    HostResource share_context,
-                   const gpu::gles2::ContextCreationAttribHelper& attrib_helper,
+                   const std::vector<int32_t>& attribs,
                    HostResource* result,
                    gpu::Capabilities* capabilities,
                    SerializedHandle* handle,

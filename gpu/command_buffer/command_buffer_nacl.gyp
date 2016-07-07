@@ -29,7 +29,6 @@
           'dependencies': [
             '../../base/base_nacl.gyp:base_nacl',
             '../../base/base_nacl.gyp:base_nacl_nonsfi',
-            '../../ui/gfx/gfx_nacl.gyp:gfx_geometry_nacl',
             '../../third_party/khronos/khronos.gyp:khronos_headers',
           ],
         },
