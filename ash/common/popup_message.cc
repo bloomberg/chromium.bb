@@ -2,9 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/popup_message.h"
+#include "ash/common/popup_message.h"
 
-#include "ash/wm/window_animations.h"
+#include "ash/common/wm_lookup.h"
+#include "ash/common/wm_window.h"
 #include "grit/ash_resources.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/geometry/insets.h"
@@ -14,6 +15,7 @@
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/widget/widget.h"
+#include "ui/wm/core/window_animations.h"
 
 namespace ash {
 namespace {
@@ -199,11 +201,10 @@ PopupMessage::PopupMessage(const base::string16& caption,
   view_ = new MessageBubble(caption, message, message_type, anchor, arrow,
                             size_override, arrow_offset);
   widget_ = view_->GetWidget();
-
-  gfx::NativeView native_view = widget_->GetNativeView();
-  wm::SetWindowVisibilityAnimationType(
-      native_view, wm::WINDOW_VISIBILITY_ANIMATION_TYPE_VERTICAL);
-  wm::SetWindowVisibilityAnimationTransition(native_view, wm::ANIMATE_HIDE);
+  WmWindow* window = WmLookup::Get()->GetWindowForWidget(widget_);
+  window->SetVisibilityAnimationType(
+      ::wm::WINDOW_VISIBILITY_ANIMATION_TYPE_VERTICAL);
+  window->SetVisibilityAnimationTransition(::wm::ANIMATE_HIDE);
   view_->GetWidget()->Show();
 }
 
@@ -221,11 +222,12 @@ void PopupMessage::Close() {
 }
 
 void PopupMessage::CancelHidingAnimation() {
-  if (!widget_ || !widget_->GetNativeView())
+  if (!widget_)
     return;
 
-  gfx::NativeView native_view = widget_->GetNativeView();
-  wm::SetWindowVisibilityAnimationTransition(native_view, wm::ANIMATE_NONE);
+  WmWindow* window = WmLookup::Get()->GetWindowForWidget(widget_);
+  if (window)
+    window->SetVisibilityAnimationTransition(::wm::ANIMATE_NONE);
 }
 
 }  // namespace ash

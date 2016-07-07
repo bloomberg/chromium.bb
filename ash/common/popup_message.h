@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_POPUP_MESSAGE_H_
-#define ASH_POPUP_MESSAGE_H_
+#ifndef ASH_COMMON_POPUP_MESSAGE_H_
+#define ASH_COMMON_POPUP_MESSAGE_H_
 
 #include "ash/ash_export.h"
 #include "base/gtest_prod_util.h"
@@ -79,4 +79,4 @@ class ASH_EXPORT PopupMessage {
 
 }  // namespace ash
 
-#endif  // ASH_POPUP_MESSAGE_H_
+#endif  // ASH_COMMON_POPUP_MESSAGE_H_

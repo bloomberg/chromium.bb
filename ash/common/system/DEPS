@@ -4,9 +4,3 @@ include_rules = [
   # TODO(jamescook): Remove this.
   "+ash/system/tray/system_tray.h",
 ]
-
-specific_include_rules = {
-  ".*test\.cc": [
-    "+ash/test",
-  ]
-}

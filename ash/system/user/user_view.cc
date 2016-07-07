@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "ash/common/multi_profile_uma.h"
+#include "ash/common/popup_message.h"
 #include "ash/common/session/session_state_delegate.h"
 #include "ash/common/shell_delegate.h"
 #include "ash/common/shell_window_ids.h"
@@ -22,7 +23,6 @@
 #include "ash/common/wm_root_window_controller.h"
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
-#include "ash/popup_message.h"
 #include "ash/system/tray/system_tray.h"
 #include "ash/system/user/user_card_view.h"
 #include "components/signin/core/account_id/account_id.h"
