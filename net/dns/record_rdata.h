@@ -12,6 +12,7 @@
 #include <vector>
 
 #include "base/compiler_specific.h"
+#include "base/logging.h"
 #include "base/macros.h"
 #include "base/strings/string_piece.h"
 #include "net/base/ip_address.h"
@@ -198,7 +199,11 @@ class NET_EXPORT_PRIVATE NsecRecordRdata : public RecordRdata {
   uint16_t Type() const override;
 
   // Length of the bitmap in bits.
-  unsigned bitmap_length() const { return bitmap_.size() * 8; }
+  // This will be between 8 and 256, per RFC 3845, Section 2.1.2.
+  uint16_t bitmap_length() const {
+    DCHECK_LE(bitmap_.size(), 32u);
+    return static_cast<uint16_t>(bitmap_.size() * 8);
+  }
 
   // Returns bit i-th bit in the bitmap, where bits withing a byte are organized
   // most to least significant. If it is set, a record with rrtype i exists for
