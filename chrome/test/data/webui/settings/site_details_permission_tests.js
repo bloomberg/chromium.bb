@@ -77,7 +77,7 @@ cr.define('site_details_permission', function() {
 
         return browserProxy.whenCalled('getExceptionList').then(function() {
           assertTrue(testElement.$.details.hidden);
-        }.bind(this));
+        });
       });
 
       test('camera category', function() {
@@ -98,15 +98,14 @@ cr.define('site_details_permission', function() {
               'Widget should be labelled correctly');
 
           // Flip the permission and validate that prefs stay in sync.
-          return validatePermissionFlipWorks(origin, true).then(function() {
-            browserProxy.resetResolver('setCategoryPermissionForOrigin');
-            return validatePermissionFlipWorks(origin, false).then(function() {
-              browserProxy.resetResolver('setCategoryPermissionForOrigin');
-              return validatePermissionFlipWorks(origin, true).then(function() {
-              }.bind(this));
-            }.bind(this));
-          }.bind(this));
-        }.bind(this));
+          return validatePermissionFlipWorks(origin, true);
+        }).then(function() {
+          browserProxy.resetResolver('setCategoryPermissionForOrigin');
+          return validatePermissionFlipWorks(origin, false);
+        }).then(function() {
+          browserProxy.resetResolver('setCategoryPermissionForOrigin');
+          return validatePermissionFlipWorks(origin, true);
+        });
       });
 
       test('disappear on empty', function() {
@@ -122,10 +121,10 @@ cr.define('site_details_permission', function() {
           assertFalse(testElement.$.details.hidden);
 
           browserProxy.setPrefs(prefsEmpty);
-          return browserProxy.whenCalled('getExceptionList').then(function() {
-            assertTrue(testElement.$.details.hidden);
-          }.bind(this));
-        }.bind(this));
+          return browserProxy.whenCalled('getExceptionList');
+        }).then(function() {
+          assertTrue(testElement.$.details.hidden);
+        });
       });
     });
   }

@@ -333,12 +333,11 @@ cr.define('site_list', function() {
               assertFalse(testElement.$.category.hidden);
               browserProxy.resetResolver('getExceptionList');
               testElement.categoryEnabled = false;
-              return browserProxy.whenCalled('getExceptionList').then(
-                  function(contentType) {
-                    assertFalse(testElement.$.category.hidden);
-                    assertEquals('Exceptions - 0',
-                        testElement.$.header.innerText.trim());
-                  });
+              return browserProxy.whenCalled('getExceptionList');
+            }).then(function(contentType) {
+              assertFalse(testElement.$.category.hidden);
+              assertEquals('Exceptions - 0',
+                  testElement.$.header.innerText.trim());
             });
       });
 
@@ -364,12 +363,11 @@ cr.define('site_list', function() {
               assertFalse(testElement.$.category.hidden);
               browserProxy.resetResolver('getExceptionList');
               testElement.categoryEnabled = false;
-              return browserProxy.whenCalled('getExceptionList').then(
-                  function(contentType) {
-                    assertFalse(testElement.$.category.hidden);
-                    assertEquals('Exceptions - 2',
-                        testElement.$.header.innerText.trim());
-                  });
+              return browserProxy.whenCalled('getExceptionList');
+            }).then(function(contentType) {
+              assertFalse(testElement.$.category.hidden);
+              assertEquals('Exceptions - 2',
+                  testElement.$.header.innerText.trim());
             });
       });
 
@@ -395,10 +393,9 @@ cr.define('site_list', function() {
               assertFalse(testElement.$.category.hidden);
               browserProxy.resetResolver('getExceptionList');
               testElement.categoryEnabled = false;
-              return browserProxy.whenCalled('getExceptionList').then(
-                  function(contentType) {
-                    assertTrue(testElement.$.category.hidden);
-                  });
+              return browserProxy.whenCalled('getExceptionList');
+            }).then(function(contentType) {
+              assertTrue(testElement.$.category.hidden);
             });
       });
 
@@ -426,12 +423,10 @@ cr.define('site_list', function() {
               assertFalse(testElement.$.category.hidden);
               browserProxy.resetResolver('getExceptionList');
               testElement.categoryEnabled = false;
-              return browserProxy.whenCalled('getExceptionList').then(
-                  function(contentType) {
-                    assertFalse(testElement.$.category.hidden);
-                    assertEquals('Clear on exit - 1',
-                        testElement.$.header.innerText);
-                  });
+              return browserProxy.whenCalled('getExceptionList');
+            }).then(function(contentType) {
+              assertFalse(testElement.$.category.hidden);
+              assertEquals('Clear on exit - 1', testElement.$.header.innerText);
             });
       });
 

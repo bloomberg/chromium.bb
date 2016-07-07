@@ -149,9 +149,10 @@ cr.define('settings_people_page', function() {
       teardown(function() { peoplePage.remove(); });
 
       test('GetProfileInfo', function() {
+        var disconnectButton = null;
         return browserProxy.whenCalled('getSyncStatus').then(function() {
           Polymer.dom.flush();
-          var disconnectButton = peoplePage.$$('#disconnectButton');
+          disconnectButton = peoplePage.$$('#disconnectButton');
           assertTrue(!!disconnectButton);
 
           MockInteractions.tap(disconnectButton);
@@ -165,38 +166,36 @@ cr.define('settings_people_page', function() {
           assertFalse(disconnectConfirm.hidden);
           MockInteractions.tap(disconnectConfirm);
 
-          return browserProxy.whenCalled('signOut').then(
-              function(deleteProfile) {
-                Polymer.dom.flush();
+          return browserProxy.whenCalled('signOut');
+        }).then(function(deleteProfile) {
+          Polymer.dom.flush();
 
-                assertFalse(deleteProfile);
+          assertFalse(deleteProfile);
 
-                cr.webUIListenerCallback('sync-status-changed', {
-                  signedIn: true,
-                  domain: 'example.com',
-                });
-                Polymer.dom.flush();
+          cr.webUIListenerCallback('sync-status-changed', {
+            signedIn: true,
+            domain: 'example.com',
+          });
+          Polymer.dom.flush();
 
-                assertFalse(peoplePage.$.disconnectDialog.opened);
-                MockInteractions.tap(disconnectButton);
-                Polymer.dom.flush();
+          assertFalse(peoplePage.$.disconnectDialog.opened);
+          MockInteractions.tap(disconnectButton);
+          Polymer.dom.flush();
 
-                assertTrue(peoplePage.$.disconnectDialog.opened);
-                assertTrue(peoplePage.$.deleteProfile.hidden);
+          assertTrue(peoplePage.$.disconnectDialog.opened);
+          assertTrue(peoplePage.$.deleteProfile.hidden);
 
-                var disconnectManagedProfileConfirm =
-                    peoplePage.$.disconnectManagedProfileConfirm;
-                assertTrue(!!disconnectManagedProfileConfirm);
-                assertFalse(disconnectManagedProfileConfirm.hidden);
+          var disconnectManagedProfileConfirm =
+              peoplePage.$.disconnectManagedProfileConfirm;
+          assertTrue(!!disconnectManagedProfileConfirm);
+          assertFalse(disconnectManagedProfileConfirm.hidden);
 
-                browserProxy.resetResolver('signOut');
-                MockInteractions.tap(disconnectManagedProfileConfirm);
+          browserProxy.resetResolver('signOut');
+          MockInteractions.tap(disconnectManagedProfileConfirm);
 
-                return browserProxy.whenCalled('signOut').then(
-                    function(deleteProfile) {
-                      assertTrue(deleteProfile);
-                    });
-              });
+          return browserProxy.whenCalled('signOut');
+        }).then(function(deleteProfile) {
+          assertTrue(deleteProfile);
         });
       });
     });

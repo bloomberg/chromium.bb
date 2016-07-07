@@ -79,17 +79,15 @@ cr.define('site_settings_category', function() {
                 settings.ContentSettingsTypes.GEOLOCATION, contentType);
             assertEquals(enabled, testElement.categoryEnabled);
             MockInteractions.tap(testElement.$.toggle);
-            return browserProxy.whenCalled(
-                'setDefaultValueForContentType').then(
-              function(arguments) {
-                  assertEquals(
-                      settings.ContentSettingsTypes.GEOLOCATION, arguments[0]);
-                assertEquals(
-                    enabled ? settings.PermissionValues.BLOCK :
-                        settings.PermissionValues.ASK,
-                    arguments[1]);
-                assertNotEquals(enabled, testElement.categoryEnabled);
-              });
+            return browserProxy.whenCalled('setDefaultValueForContentType');
+          }).then(function(arguments) {
+            assertEquals(
+                settings.ContentSettingsTypes.GEOLOCATION, arguments[0]);
+            assertEquals(
+                enabled ? settings.PermissionValues.BLOCK :
+                    settings.PermissionValues.ASK,
+                arguments[1]);
+            assertNotEquals(enabled, testElement.categoryEnabled);
           });
       }
 
