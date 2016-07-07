@@ -1095,6 +1095,14 @@ void HTMLSelectElement::selectOption(HTMLOptionElement* element, int optionIndex
             setActiveSelectionEnd(element);
     }
 
+    // Need to update m_lastOnChangeOption before
+    // LayoutMenuList::updateFromElement.
+    bool shouldDispatchEvents = false;
+    if (usesMenuList()) {
+        shouldDispatchEvents = (flags & DispatchInputAndChangeEvent) && m_lastOnChangeOption != element;
+        m_lastOnChangeOption = element;
+    }
+
     // For the menu list case, this is what makes the selected element appear.
     if (LayoutObject* layoutObject = this->layoutObject())
         layoutObject->updateFromElement();
@@ -1106,13 +1114,13 @@ void HTMLSelectElement::selectOption(HTMLOptionElement* element, int optionIndex
     setNeedsValidityCheck();
 
     if (usesMenuList()) {
-        if (flags & DispatchInputAndChangeEvent)
-            dispatchInputAndChangeEventForMenuList();
-        else
-            m_lastOnChangeOption = element;
+        if (shouldDispatchEvents) {
+            dispatchInputEvent();
+            dispatchFormControlChangeEvent();
+        }
         if (LayoutObject* layoutObject = this->layoutObject()) {
-            // Need to check usesMenuList() again because
-            // dispatchInputAndChangeEventForMenuList() might change the status.
+            // Need to check usesMenuList() again because event handlers might
+            // change the status.
             if (usesMenuList()) {
                 // didSetSelectedIndex() is O(N) because of optionToListIndex.
                 toLayoutMenuList(layoutObject)->didSetSelectedIndex(optionIndex);
@@ -1244,11 +1252,13 @@ void HTMLSelectElement::restoreFormControlState(const FormControlState& state)
         if (index < itemsSize && isHTMLOptionElement(items[index]) && toHTMLOptionElement(items[index])->value() == state[0]) {
             toHTMLOptionElement(items[index])->setSelectedState(true);
             toHTMLOptionElement(items[index])->setDirty(true);
+            m_lastOnChangeOption = toHTMLOptionElement(items[index]);
         } else {
             size_t foundIndex = searchOptionsForValue(state[0], 0, itemsSize);
             if (foundIndex != kNotFound) {
                 toHTMLOptionElement(items[foundIndex])->setSelectedState(true);
                 toHTMLOptionElement(items[foundIndex])->setDirty(true);
+                m_lastOnChangeOption = toHTMLOptionElement(items[foundIndex]);
             }
         }
     } else {
@@ -1979,9 +1989,13 @@ int HTMLSelectElement::optionIndexToBeShown() const
 {
     if (m_indexToSelectOnCancel >= 0)
         return listToOptionIndex(m_indexToSelectOnCancel);
+    // TODO(tkent): HTMLOptionElement::index() is O(N). This function should
+    // return HTMLOptionElement*.
     if (m_suggestedOption)
         return m_suggestedOption->index();
-    return selectedIndex();
+    int optionIndex = m_lastOnChangeOption ? m_lastOnChangeOption->index() : -1;
+    DCHECK_EQ(optionIndex, selectedIndex());
+    return optionIndex;
 }
 
 void HTMLSelectElement::valueChanged(unsigned listIndex)
