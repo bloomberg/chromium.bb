@@ -168,7 +168,7 @@ class FakeAudioSourceCallback
 class FakeAudioManager : public CastAudioManager {
  public:
   FakeAudioManager(scoped_refptr<base::SingleThreadTaskRunner> task_runner)
-      : CastAudioManager(task_runner, task_runner, nullptr, nullptr),
+      : CastAudioManager(task_runner, task_runner, nullptr, nullptr, nullptr),
         media_pipeline_backend_(nullptr) {}
   ~FakeAudioManager() override {}
 
