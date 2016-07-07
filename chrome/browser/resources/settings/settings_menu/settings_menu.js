@@ -63,10 +63,25 @@ Polymer({
   },
 
   /**
+   * @param {!Node} target
+   * @private
+   */
+  ripple_: function(target) {
+    var ripple = document.createElement('paper-ripple');
+    ripple.addEventListener('transitionend', function() {
+      ripple.remove();
+    });
+    target.appendChild(ripple);
+    ripple.downAction();
+    ripple.upAction();
+  },
+
+  /**
    * @param {!Event} event
    * @private
    */
   openPage_: function(event) {
+    this.ripple_(/** @type {!Node} */(event.currentTarget));
     var submenuRoute = event.currentTarget.parentNode.dataset.page;
     if (submenuRoute) {
       this.currentRoute = {

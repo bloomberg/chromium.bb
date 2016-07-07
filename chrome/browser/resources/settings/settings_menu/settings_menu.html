@@ -3,6 +3,7 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-menu/paper-menu.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-menu/paper-submenu.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-ripple/paper-ripple.html">
 <link rel="import" href="/icons.html">
 <link rel="import" href="/settings_shared_css.html">
 
@@ -51,6 +52,15 @@
         --paper-menu-selected-item: {
           font-weight: 500;
         };
+      }
+
+      paper-menu div {
+        position: relative;  /* Needed for paper-ripple. */
+      }
+
+      paper-ripple {
+        color: var(--google-blue-500);
+        opacity: .5;
       }
 
       .page-menu paper-menu {
