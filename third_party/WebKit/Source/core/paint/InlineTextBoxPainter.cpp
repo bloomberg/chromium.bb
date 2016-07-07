@@ -39,7 +39,7 @@ static TextBlobPtr* addToTextBlobCache(const InlineTextBox& inlineTextBox)
     return &gTextBlobCache->add(&inlineTextBox, nullptr).storedValue->value;
 }
 
-static bool paintsMarkerHighlights(const LayoutObject& layoutObject)
+bool InlineTextBoxPainter::paintsMarkerHighlights(const LayoutObject& layoutObject)
 {
     return layoutObject.node() && layoutObject.document().markers().hasMarkers(layoutObject.node());
 }

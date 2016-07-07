@@ -38,6 +38,23 @@ bool SVGInlineTextBoxPainter::shouldPaintSelection(const PaintInfo& paintInfo) c
     return !paintInfo.isPrinting() && m_svgInlineTextBox.getSelectionState() != SelectionNone;
 }
 
+FloatRect SVGInlineTextBoxPainter::boundsForDrawingRecorder(
+    const LayoutPoint& paintOffset, bool includeSelectionRect) const
+{
+    // We compute the paint rect with what looks like the logical values, to match the
+    // computation in SVGInlineTextBox::calculateBoundaries, and the fact that vertical (etc)
+    // layouts are handled by SVGTextLayoutEngine.
+    LayoutRect bounds(
+        m_svgInlineTextBox.topLeft(),
+        LayoutSize(m_svgInlineTextBox.logicalWidth(), m_svgInlineTextBox.logicalHeight()));
+    if (includeSelectionRect) {
+        bounds.unite(m_svgInlineTextBox.localSelectionRect(
+            m_svgInlineTextBox.start(), m_svgInlineTextBox.start() + m_svgInlineTextBox.len()));
+    }
+    bounds.moveBy(paintOffset);
+    return FloatRect(bounds);
+}
+
 void SVGInlineTextBoxPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
     ASSERT(paintInfo.phase == PaintPhaseForeground || paintInfo.phase == PaintPhaseSelection);
@@ -49,7 +66,8 @@ void SVGInlineTextBoxPainter::paint(const PaintInfo& paintInfo, const LayoutPoin
     // We're explicitly not supporting composition & custom underlines and custom highlighters -- unlike InlineTextBox.
     // If we ever need that for SVG, it's very easy to refactor and reuse the code.
 
-    if (paintInfo.phase == PaintPhaseSelection && !shouldPaintSelection(paintInfo))
+    bool haveSelection = shouldPaintSelection(paintInfo);
+    if (!haveSelection && paintInfo.phase == PaintPhaseSelection)
         return;
 
     LayoutSVGInlineText& textLayoutObject = toLayoutSVGInlineText(*LineLayoutAPIShim::layoutObjectFrom(m_svgInlineTextBox.getLineLayoutItem()));
@@ -61,8 +79,10 @@ void SVGInlineTextBoxPainter::paint(const PaintInfo& paintInfo, const LayoutPoin
         LayoutObject& parentLayoutObject = *LineLayoutAPIShim::layoutObjectFrom(m_svgInlineTextBox.parent()->getLineLayoutItem());
         const ComputedStyle& style = parentLayoutObject.styleRef();
 
-        // TODO(chrishtr): passing the cull rect is incorrect.
-        DrawingRecorder recorder(paintInfo.context, m_svgInlineTextBox, displayItemType, FloatRect(paintInfo.cullRect().m_rect));
+        bool includeSelectionRect = paintInfo.phase != PaintPhaseSelection
+            && (haveSelection || InlineTextBoxPainter::paintsMarkerHighlights(textLayoutObject));
+        DrawingRecorder recorder(paintInfo.context, m_svgInlineTextBox, displayItemType,
+            boundsForDrawingRecorder(paintOffset, includeSelectionRect));
         InlineTextBoxPainter(m_svgInlineTextBox).paintDocumentMarkers(
             paintInfo, paintOffset, style,
             textLayoutObject.scaledFont(), DocumentMarkerPaintPhase::Background);

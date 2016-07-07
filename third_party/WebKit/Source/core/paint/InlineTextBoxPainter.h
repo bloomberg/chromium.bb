@@ -22,6 +22,7 @@ class FloatRect;
 class Font;
 class GraphicsContext;
 class InlineTextBox;
+class LayoutObject;
 class LayoutPoint;
 class LayoutTextCombine;
 
@@ -39,6 +40,7 @@ public:
     void paintTextMatchMarkerBackground(const PaintInfo&, const LayoutPoint& boxOrigin, DocumentMarker*, const ComputedStyle&, const Font&);
 
     static void removeFromTextBlobCache(const InlineTextBox&);
+    static bool paintsMarkerHighlights(const LayoutObject&);
 
 private:
     enum class PaintOptions { Normal, CombinedText };
