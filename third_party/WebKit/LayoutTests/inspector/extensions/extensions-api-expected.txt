@@ -46,6 +46,7 @@ RUNNING TEST: extension_testAPI
                 removeListener : <function>
             }
         }
+        themeName : "themeNameForTest"
     }
     resources : {
         onFinished : {

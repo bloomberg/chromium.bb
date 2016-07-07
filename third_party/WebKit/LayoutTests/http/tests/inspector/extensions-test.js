@@ -12,7 +12,7 @@ function extensionFunctions()
 var initialize_ExtensionsTest = function()
 {
 
-WebInspector.extensionServer._overridePlatformExtensionAPIForTest = function(extensionInfo, inspectedTabId)
+WebInspector.extensionServer._overridePlatformExtensionAPIForTest = function(extensionInfo, inspectedTabId, themeName)
 {
     WebInspector.extensionServer._registerHandler("evaluateForTestInFrontEnd", onEvaluate);
 
@@ -20,6 +20,7 @@ WebInspector.extensionServer._overridePlatformExtensionAPIForTest = function(ext
     {
         window.webInspector = coreAPI;
         window._extensionServerForTests = extensionServer;
+        coreAPI.panels.themeName = "themeNameForTest";
     }
     return platformExtensionAPI.toString();
 }

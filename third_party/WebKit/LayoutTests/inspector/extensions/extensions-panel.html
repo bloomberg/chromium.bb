@@ -120,6 +120,12 @@ function initialize_extensionsPanelTest()
     }
 }
 
+function extension_testThemeName(nextTest)
+{
+    output("Theme name: " + webInspector.panels.themeName);
+    nextTest();
+}
+
 function extension_testCreatePanel(nextTest)
 {
     var expectOnShown = false;
@@ -215,7 +221,7 @@ function extension_testSearch(nextTest)
         panel.onSearch.addListener(callback);
 
         extension_showPanel("extension");
-        
+
         function performSearch(query)
         {
             var panel = WebInspector.inspectorView.currentPanel();
