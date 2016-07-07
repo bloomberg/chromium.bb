@@ -24,3 +24,6 @@ Initialized "failures" to 0 in replay_driver.c -- merges
 https://github.com/cisco/libsrtp/pull/138
 
 Renamed "mips" to "mips_value" in srtp_driver.c to fix MIPS build.
+
+Added bounds check at the top of srtp_validate_rtp_header -- merges
+https://github.com/cisco/libsrtp/pull/182
