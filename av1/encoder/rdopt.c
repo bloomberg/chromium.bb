@@ -628,7 +628,7 @@ static void choose_smallest_tx_size(AV1_COMP *cpi, MACROBLOCK *x, int *rate,
   MB_MODE_INFO *const mbmi = &xd->mi[0]->mbmi;
 
   mbmi->tx_size = TX_4X4;
-
+  mbmi->tx_type = DCT_DCT;
   txfm_rd_in_plane(x, rate, distortion, skip, sse, ref_best_rd, 0, bs,
                    mbmi->tx_size, cpi->sf.use_fast_coef_costing);
 }
