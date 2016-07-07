@@ -72,10 +72,6 @@ class Connector {
     DISALLOW_COPY_AND_ASSIGN(ConnectParams);
   };
 
-  // Creates a new Connector instance and fills in |*request| with a request
-  // for the other end the Connector's interface.
-  static std::unique_ptr<Connector> Create(mojom::ConnectorRequest* request);
-
   // Requests a new connection to an application. Returns a pointer to the
   // connection if the connection is permitted by this application's delegate,
   // or nullptr otherwise. Caller takes ownership.

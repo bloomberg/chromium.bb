@@ -6,37 +6,24 @@
 
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "services/navigation/view_impl.h"
-#include "services/shell/public/cpp/connector.h"
 
 namespace navigation {
 
-namespace {
-
-void CreateViewOnViewTaskRunner(
-    std::unique_ptr<shell::Connector> connector,
-    const std::string& client_user_id,
-    mojom::ViewClientPtr client,
-    mojom::ViewRequest request,
-    std::unique_ptr<shell::ShellConnectionRef> connection_ref) {
-  // Owns itself.
-  new ViewImpl(std::move(connector), client_user_id, std::move(client),
-               std::move(request), std::move(connection_ref));
-}
-
-}  // namespace
-
 Navigation::Navigation()
-    : view_task_runner_(base::ThreadTaskRunnerHandle::Get()),
-      ref_factory_(base::MessageLoop::QuitWhenIdleClosure()) {
+    : ref_factory_(base::MessageLoop::QuitWhenIdleClosure()) {
   bindings_.set_connection_error_handler(
       base::Bind(&Navigation::ViewFactoryLost, base::Unretained(this)));
 }
 Navigation::~Navigation() {}
 
-bool Navigation::OnConnect(shell::Connection* connection,
-                           shell::Connector* connector) {
+void Navigation::OnStart(shell::Connector* connector,
+                         const shell::Identity& identity,
+                         uint32_t instance_id) {
+  connector_ = connector;
+}
+
+bool Navigation::OnConnect(shell::Connection* connection) {
   std::string remote_user_id = connection->GetRemoteIdentity().user_id();
   if (!client_user_id_.empty() && client_user_id_ != remote_user_id) {
     LOG(ERROR) << "Must have a separate Navigation service instance for "
@@ -57,14 +44,8 @@ void Navigation::Create(shell::Connection* connection,
 
 void Navigation::CreateView(mojom::ViewClientPtr client,
                             mojom::ViewRequest request) {
-  std::unique_ptr<shell::Connector> new_connector = connector_->Clone();
-  std::unique_ptr<shell::ShellConnectionRef> connection_ref =
-      ref_factory_.CreateRef();
-  view_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&CreateViewOnViewTaskRunner, base::Passed(&new_connector),
-                 client_user_id_, base::Passed(&client), base::Passed(&request),
-                 base::Passed(&connection_ref)));
+  new ViewImpl(connector_, client_user_id_, std::move(client),
+               std::move(request), ref_factory_.CreateRef());
 }
 
 void Navigation::ViewFactoryLost() {

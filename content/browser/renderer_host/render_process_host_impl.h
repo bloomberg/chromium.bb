@@ -158,6 +158,7 @@ class CONTENT_EXPORT RenderProcessHostImpl
   void NotifyTimezoneChange(const std::string& timezone) override;
   shell::InterfaceRegistry* GetInterfaceRegistry() override;
   shell::InterfaceProvider* GetRemoteInterfaces() override;
+  shell::Connection* GetChildConnection() override;
   std::unique_ptr<base::SharedPersistentMemoryAllocator> TakeMetricsAllocator()
       override;
   const base::TimeTicks& GetInitTimeForNavigationMetrics() const override;

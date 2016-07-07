@@ -166,9 +166,6 @@ class CONTENT_EXPORT RenderThreadImpl
   // changed.
   static void NotifyTimezoneChange();
 
-  // ChildThreadImpl implementation:
-  void AddConnectionFilters(MojoShellConnection* connection) override;
-
   // RenderThread implementation:
   bool Send(IPC::Message* msg) override;
   IPC::SyncChannel* GetChannel() override;

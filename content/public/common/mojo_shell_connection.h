@@ -8,7 +8,6 @@
 #include <memory>
 
 #include "base/callback_forward.h"
-#include "base/sequenced_task_runner.h"
 #include "content/common/content_export.h"
 #include "content/public/common/mojo_application_info.h"
 #include "services/shell/public/cpp/identity.h"
@@ -17,14 +16,10 @@
 namespace shell {
 class Connection;
 class Connector;
-class InterfaceProvider;
-class InterfaceRegistry;
 class ShellConnection;
 }
 
 namespace content {
-
-class ConnectionFilter;
 
 // Encapsulates a connection to a //services/shell.
 // Access a global instance on the thread the ShellConnection was bound by
@@ -60,21 +55,13 @@ class CONTENT_EXPORT MojoShellConnection {
   // called before the MojoShellConnection has been created.
   static void SetFactoryForTest(Factory* factory);
 
-  // Creates a MojoShellConnection from |request|. The connection binds
-  // its interfaces and accept new connections on |io_task_runner| only. Note
-  // that no incoming connections are accepted until Start() is called.
+  // Creates a MojoShellConnection from |request|.
   static std::unique_ptr<MojoShellConnection> Create(
-      shell::mojom::ServiceRequest request,
-      scoped_refptr<base::SequencedTaskRunner> io_task_runner);
+      shell::mojom::ServiceRequest request);
 
-  // Begins accepting incoming connections. Connection filters MUST be added
-  // before calling this in order to avoid races. See AddConnectionFilter()
-  // below.
-  virtual void Start() = 0;
-
-  // Sets a closure to be invoked once the connection receives an Initialize()
-  // request from the shell.
-  virtual void SetInitializeHandler(const base::Closure& handler) = 0;
+  // Returns the bound shell::ShellConnection object.
+  // TODO(rockot): remove.
+  virtual shell::ShellConnection* GetShellConnection() = 0;
 
   // Returns the shell::Connector received via this connection's Service
   // implementation. Use this to initiate connections as this object's Identity.
@@ -89,31 +76,12 @@ class CONTENT_EXPORT MojoShellConnection {
   // run immediately before returning from this function.
   virtual void SetConnectionLostClosure(const base::Closure& closure) = 0;
 
-  // Provides an InterfaceRegistry to forward incoming interface requests to
-  // on the MojoShellConnection's own thread if they aren't bound by the
-  // connection's internal InterfaceRegistry on the IO thread.
-  //
-  // Also configures |interface_provider| to forward all of its outgoing
-  // interface requests to the connection's internal remote interface provider.
-  //
-  // Note that neither |interface_registry| or |interface_provider| is owned
-  // and both MUST outlive the MojoShellConnection.
-  //
-  // TODO(rockot): Remove this. It's a temporary solution to avoid porting all
-  // relevant code to ConnectionFilters at once.
-  virtual void SetupInterfaceRequestProxies(
-      shell::InterfaceRegistry* registry,
-      shell::InterfaceProvider* provider) = 0;
-
-  // Allows the caller to filter inbound connections and/or expose interfaces
-  // on them. |filter| may be created on any thread, but will be used and
-  // destroyed exclusively on the IO thread (the thread corresponding to
-  // |io_task_runner| passed to Create() above.)
-  //
-  // Connection filters MUST be added before calling Start() in order to avoid
-  // races.
-  virtual void AddConnectionFilter(
-      std::unique_ptr<ConnectionFilter> filter) = 0;
+  // Allows the caller to expose interfaces to the caller using the identity of
+  // this object's Service. As distinct from MergeService() and
+  // AddServiceRequestHandler() which specify unique identities for the
+  // registered services.
+  virtual void MergeService(std::unique_ptr<shell::Service> service) = 0;
+  virtual void MergeService(shell::Service* service) = 0;
 
   // Adds an embedded service to this connection's ServiceFactory.
   // |info| provides details on how to construct new instances of the

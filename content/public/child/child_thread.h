@@ -5,7 +5,6 @@
 #ifndef CONTENT_PUBLIC_CHILD_CHILD_THREAD_H_
 #define CONTENT_PUBLIC_CHILD_CHILD_THREAD_H_
 
-#include <memory>
 #include <string>
 
 #include "base/logging.h"
@@ -28,8 +27,7 @@ class InterfaceRegistry;
 
 namespace content {
 
-class ConnectionFilter;
-class MojoShellConnection;
+  class MojoShellConnection;
 
 // An abstract base class that contains logic shared between most child
 // processes of the embedder.

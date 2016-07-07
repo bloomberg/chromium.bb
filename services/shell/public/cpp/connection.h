@@ -38,7 +38,7 @@ class InterfaceProvider;
 //
 // A Connection returned via Shell::ConnectToApplication() is owned by the
 // caller.
-// An Connection received via OnConnect is owned by the ShellConnection.
+// An Connection received via AcceptConnection is owned by the ShellConnection.
 // To close a connection, call CloseConnection which will destroy this object.
 class Connection {
  public:

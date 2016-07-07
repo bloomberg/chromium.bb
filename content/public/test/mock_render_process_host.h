@@ -96,6 +96,7 @@ class MockRenderProcessHost : public RenderProcessHost {
   void NotifyTimezoneChange(const std::string& zone_id) override;
   shell::InterfaceRegistry* GetInterfaceRegistry() override;
   shell::InterfaceProvider* GetRemoteInterfaces() override;
+  shell::Connection* GetChildConnection() override;
   std::unique_ptr<base::SharedPersistentMemoryAllocator> TakeMetricsAllocator()
       override;
   const base::TimeTicks& GetInitTimeForNavigationMetrics() const override;
