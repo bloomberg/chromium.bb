@@ -35,10 +35,14 @@ function BrowserTestReporter(runner) {
     var message = 'Mocha test failed: ' + test.fullTitle() + '\n';
 
     // Remove unhelpful mocha lines from stack trace.
-    var stack = err.stack.split('\n');
-    for (var i = 0; i < stack.length; i++) {
-      if (stack[i].indexOf('mocha.js:') == -1)
-        message += stack[i] + '\n';
+    if (err.stack) {
+      var stack = err.stack.split('\n');
+      for (var i = 0; i < stack.length; i++) {
+        if (stack[i].indexOf('mocha.js:') == -1)
+          message += stack[i] + '\n';
+      }
+    } else {
+      message += err.toString();
     }
 
     console.error(message);
