@@ -12,7 +12,6 @@ tests:
   - ;,j4 ;,s4 ,ba*
 - - 22b 22B 22p
   - '#bb;b #bb,b #bbp'
-  - xfail: true
 - - adagio e cantabile
   - adagio ;e cantabile
 
@@ -24,7 +23,6 @@ tests:
   - xfail: true
 - - jim@take2.com
   - jim`atake#b4;com
-  - xfail: true
 
 # 5.3.2 page 52
 
@@ -51,19 +49,15 @@ tests:
 
 - - 1st
   - '#ast'
-  - xfail: true
 - - shopping4you
   - '%opp+#dyou'
-  - xfail: true
 - - 4starhotel@webnet.com
   - '#dstarhotel`awebnet4com'
-  - xfail: true
 
 # 5.6.2 page 53
 
 - - I'll go 3rd–you go 4th.
   - ',i''ll g #crd,-y g #dth4'
-  - xfail: true
 - - 3-D
   - '#c-;,d'
 - - 3-dimensional

@@ -29,12 +29,9 @@
 include en-ueb-chardefs.uti UEB specific char defs.
 
 numsign 3456  number sign, just a dots operand
-# numericmode and associated opcode numericnocontchars
-# have been disabled because they can lead to incorrect output.
-# See: https://github.com/liblouis/liblouis/issues/146
-#numericmodechars .,
+numericmodechars .,
 nocontractsign 56
-#numericnocontchars abcdefghij
+numericnocontchars abcdefghij
 
 #   add numeric space indicator
 #context _$d["\s"]$d @5

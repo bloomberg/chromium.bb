@@ -107,7 +107,6 @@ tests:
   - '#aj`c'
 - - 99c
   - '#ii;c'
-  - xfail: true
 - - DM8
   - ',,dm#h'
 - - $6
@@ -118,10 +117,8 @@ tests:
   - '`s#ai4ie'
 - - $23,783,200
   - '`s#bc1ghc1bjj'
-  - xfail: true
 - - $2bn (2 billion dollars)
   - '`s#b;bn "<#b billion doll>s">'
-  - xfail: true
 - - US$
   - ',,us`s'
 - - $X
@@ -136,7 +133,6 @@ tests:
   - '`e#ge'
 - - 30,00€
   - '#cj1jj`e'
-  - xfail: true
 - - € and £ accepted
   - '`e & `l a3ept$'
 - - 6€50
@@ -159,7 +155,6 @@ tests:
   - '! `l rose'
 - - £7 8s 9d
   - '`l#g #hs #i;d'
-  - xfail: true
 - - £7/8/9
   - '`l#g_/#h_/#i'
 - - £7-8-9
@@ -170,7 +165,6 @@ tests:
   - ',r#be'
 - - R5,70
   - ',r#e1gj'
-  - xfail: true
 - - ¥360
   - '`y#cfj'
 

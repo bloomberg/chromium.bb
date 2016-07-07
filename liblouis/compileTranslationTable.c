@@ -242,8 +242,8 @@ static const char *opcodeNames[CTO_None] = {
   "noletsign",
   "noletsignafter",
   "numsign",
-  // "numericmodechars",
-  // "numericnocontchars",
+  "numericmodechars",
+  "numericnocontchars",
   "seqdelimiter",
   "seqbeforechars",
   "seqafterchars",
@@ -4225,7 +4225,6 @@ doOpcode:
 		}
 		break;
 
-	/*
 	case CTO_NumericModeChars:
 	
 		c = NULL;
@@ -4244,6 +4243,7 @@ doOpcode:
 					break;
 				}
 			}
+			table->usesNumericMode = 1;
 		}	
 		break;
 	  
@@ -4265,9 +4265,9 @@ doOpcode:
 					break;
 				}
 			}
+			table->usesNumericMode = 1;
 		}	
 		break;
-	*/
 		
 	case CTO_NoContractSign:
 	
@@ -4293,8 +4293,8 @@ doOpcode:
 					break;
 				}
 			}
+			table->usesSequences = 1;
 		}
-		table->usesSequences = 1;
 		break;
 	  
 	case CTO_SeqBeforeChars:
@@ -4385,30 +4385,7 @@ doOpcode:
 			}
 		}	
 		break;
-	/*
-	case CTO_EmphModeChars:
 	
-		c = NULL;
-		ok = 1;
-		if(getRuleCharsText(nested, &ruleChars))
-		{
-			for(k = 0; k < ruleChars.length; k++)
-			{
-				c = compile_findCharOrDots(ruleChars.chars[k], 0);
-				if(c)
-					c->attributes |= CTC_EmphMode;
-				else
-				{
-					compileError(nested, "Emphasis mode character undefined");
-					ok = 0;
-					break;
-				}
-			}
-		}	
-		table->usesEmphMode = 1;
-		break;
-	*/
-	  
     case CTO_BegComp:
       ok =
 	compileBrailleIndicator (nested, "begin computer braille",

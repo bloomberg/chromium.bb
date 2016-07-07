@@ -1886,7 +1886,7 @@ insertBrailleIndicators (int finish)
 	       || !(beforeAttributes & CTC_Digit))
 	      && prevTransOpcode != CTO_MidNum)
 	    {
-	      ok = 1;
+	      ok = !table->usesNumericMode;
 	      checkWhat = checkNothing;
 	    }
 	  else
@@ -3894,7 +3894,8 @@ translateString ()
 //			&indicRule->charsdots[0], 0, indicRule->dotslen, 0))
 //			goto failure;
 		insertEmphases();
-//		checkNumericMode();
+		if (table->usesNumericMode)
+			checkNumericMode();
 
       if (transOpcode == CTO_Context || findAttribOrSwapRules ())
         switch (transOpcode)
@@ -3949,7 +3950,7 @@ translateString ()
           }
           break;
         case CTO_DecPoint:
-          if (table->numberSign)
+          if (!table->usesNumericMode && table->numberSign)
             {
               TranslationTableRule *numRule = (TranslationTableRule *)
         	&table->ruleArea[table->numberSign];

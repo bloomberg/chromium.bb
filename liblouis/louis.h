@@ -108,7 +108,6 @@ typedef enum {
   CTC_UserDefined6 = 0x400000,
   CTC_UserDefined7 = 0x800000,
   CTC_CapsMode = 0x1000000,
-  // CTC_EmphMode = 0x2000000,
   CTC_NumericMode = 0x2000000,
   CTC_NumericNoContract = 0x4000000,
   CTC_EndOfInput = 0x8000000  //   used by pattern matcher
@@ -221,8 +220,8 @@ typedef enum { /*Op codes */
                CTO_NoLetsign,
                CTO_NoLetsignAfter,
                CTO_NumberSign,
-               // CTO_NumericModeChars,
-               // CTO_NumericNoContractChars,
+               CTO_NumericModeChars,
+               CTO_NumericNoContractChars,
                CTO_SeqDelimiter,
                CTO_SeqBeforeChars,
                CTO_SeqAfterChars,
@@ -476,7 +475,7 @@ typedef struct { /*translation table */
   int corrections;
   int syllables;
   int usesSequences;
-  // int usesEmphMode;
+  int usesNumericMode;
   TranslationTableOffset tableSize;
   TranslationTableOffset bytesUsed;
   TranslationTableOffset undefined;

@@ -116,7 +116,6 @@ tests:
   - ',,,buy .1fahr5heit .1#i_/#aa on ;e-bay,'''
   - typeform:
       italic: "    +++++++++++++++         "
-    xfail: true
 - - A.A. (ALAN ALEXANDER) MILNE
   - ',,,a4a4 "<alan alex&}"> milne,'''
 

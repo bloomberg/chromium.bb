@@ -10,7 +10,6 @@ tests:
   - '#aiei'
 - - 3,500
   - '#c1ejj'
-  - xfail: true
 - - '8.93'
   - '#h4ic'
 - - '.7'
@@ -19,13 +18,10 @@ tests:
   - '#j4g'
 - - 8,93
   - '#h1ic'
-  - xfail: true
 - - ',7'
   - '#1g'
-  - xfail: true
 - - 0,7
   - '#j1g'
-  - xfail: true
 - - par. 4.2.2
   - 'p>4 #d4b4b'
 - - 4 500 000
@@ -74,7 +70,6 @@ tests:
   - '#d,-#g'
 - - 4..7
   - '#d44g'
-  - xfail: true
 - - '4567'
   - '#d_1#ef_''#g'
   - typeform: {underline: " ++ "}
@@ -94,7 +89,6 @@ tests:
   - '#cb'
 - - 3b
   - '#c;b'
-  - xfail: true
 - - 3B
   - '#c,b'
 - - 3m
@@ -103,14 +97,12 @@ tests:
   - '#d4b'
 - - 4.b
   - '#d4;b'
-  - xfail: true
 - - 4.B
   - '#d4,b'
 - - 4.m
   - '#d4m'
 - - report3.doc
   - report#c4;doc
-  - xfail: true
 - - report3.xls
   - report#c4xls
 
@@ -123,13 +115,10 @@ tests:
 
 - - houses4lease
   - h|ses#dlease
-  - xfail: true
 - - He came 4th in the race.
   - ',he came #dth 9 ! race4'
-  - xfail: true
 - - If you go 1st–will I go 2nd?
   - ',if y g #ast,-w ,i g #bnd8'
-  - xfail: true
 - - I have a 6-CD boxed set.
   - ',i h a #f-;,,cd box$ set4'
 - - There are 3 beds in this 4-bed ward.
@@ -189,23 +178,18 @@ tests:
   - '`l#h4ge'
 - - R8,75
   - ',r#h1ge'
-  - xfail: true
 - - $1,500.00
   - '`s#a1ejj4jj'
-  - xfail: true
 - - €1.500,00
   - '`e#a4ejj1jj'
-  - xfail: true
 - - 2nd
   - '#bnd'
 - - 2d
   - '#b;d'
-  - xfail: true
 
 # [premier]
 - - 1er
   - '#a;er'
-  - xfail: true
 - - M4G 3E8
   - ',m#d,g #c,e#h'
 - - W1N 9LF
