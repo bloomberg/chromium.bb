@@ -642,12 +642,23 @@ _waterfall_config_map = {
     ]),
 
     constants.WATERFALL_INTERNAL: frozenset([
+        # Experimental PFQs.
+        'cyan-chrome-pfq',
+        'cyan-cheets-chrome-pfq',
+        'veyron_minnie-chrome-pfq',
+        'veyron_minnie-cheets-chrome-pfq',
+
         # Experimental Paladins.
+        'cyan-paladin',
+        'cyan-cheets-paladin',
         'elm-paladin',
         'elm-cheets-paladin',
         'gale-paladin',
         'gru-paladin',
         'lakitu_next-paladin',
+        'samus-paladin',
+        'veyron_minnie-paladin',
+        'veyron_minnie-cheets-paladin',
 
         # KASAN
         'smaug-kasan-kernel-3_18',
@@ -1332,6 +1343,15 @@ def GetConfig():
       'cyan-cheets-chrome-pfq', chrome_pfq,
       _base_configs['cyan-cheets'],
       hw_tests=HWTestList.SharedPoolAndroidPFQ(),
+      important=False,
+  )
+
+
+  site_config.Add(
+      'cyan-chrome-pfq', chrome_pfq,
+      _base_configs['cyan'],
+      hw_tests=HWTestList.SharedPoolAndroidPFQ(),
+      important=False,
   )
 
   site_config.Add(
@@ -1347,10 +1367,19 @@ def GetConfig():
   )
 
   site_config.Add(
+      'veyron_minnie-chrome-pfq', chrome_pfq,
+      _base_configs['veyron_minnie'],
+      hw_tests=HWTestList.SharedPoolAndroidPFQ(),
+      important=False,
+  )
+
+  site_config.Add(
       'veyron_minnie-cheets-chrome-pfq', chrome_pfq,
       _base_configs['veyron_minnie-cheets'],
       hw_tests=HWTestList.SharedPoolAndroidPFQ(),
+      important=False,
   )
+
 
   site_config.Add(
       'peach_pit-chrome-pfq', chrome_pfq,
@@ -1365,7 +1394,10 @@ def GetConfig():
   )
 
   _android_pfq_hwtest_boards = frozenset([
+      'cyan',
       'cyan-cheets',
+      'samus',
+      'veyron_minnie',
       'veyron_minnie-cheets',
   ])
 
@@ -1717,7 +1749,6 @@ def GetConfig():
       'auron',
       'beaglebone',
       'butterfly',
-      'cyan-cheets',
       'daisy',
       'daisy_skate',
       'daisy_spring',
@@ -1737,7 +1768,6 @@ def GetConfig():
       'peach_pit',
       'peppy',
       'rambi',
-      'samus',
       'smaug',
       'storm',
       'stout',
@@ -1745,7 +1775,6 @@ def GetConfig():
       'stumpy',
       'tricky',
       'veyron_mighty',
-      'veyron_minnie-cheets',
       'veyron_pinky',
       'veyron_rialto',
       'veyron_speedy',
@@ -1806,7 +1835,9 @@ def GetConfig():
 
   # *-cheets devices run a different suite
   _paladin_cheets_hwtest_boards = frozenset([
+    'cyan',
     'cyan-cheets',
+    'veyron_minnie',
     'veyron_minnie-cheets',
   ])
 

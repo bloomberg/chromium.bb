@@ -6171,6 +6171,24 @@
             "gn"
         ]
     },
+    "cyan-android-pfq": {
+        "_template": "android-pfq",
+        "active_waterfall": "chromeos",
+        "boards": [
+            "cyan"
+        ],
+        "hw_tests": [
+            "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": true,\n    \"max_retries\": null,\n    \"minimum_duts\": 1,\n    \"num\": 1,\n    \"offload_failures_only\": false,\n    \"pool\": \"bvt\",\n    \"priority\": \"PFQ\",\n    \"retry\": false,\n    \"suite\": \"sanity\",\n    \"suite_min_duts\": 1,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}",
+            "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": true,\n    \"max_retries\": null,\n    \"minimum_duts\": 3,\n    \"num\": 3,\n    \"offload_failures_only\": false,\n    \"pool\": \"bvt\",\n    \"priority\": \"PFQ\",\n    \"retry\": true,\n    \"suite\": \"arc-bvt-cq\",\n    \"suite_min_duts\": 3,\n    \"timeout\": 15000,\n    \"warn_only\": false\n}"
+        ],
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "useflags": [
+            "chrome_internal"
+        ],
+        "vm_tests": []
+    },
     "cyan-cheets-android-pfq": {
         "_template": "android-pfq",
         "active_waterfall": "chromeos",
@@ -6199,6 +6217,7 @@
             "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": true,\n    \"max_retries\": null,\n    \"minimum_duts\": 1,\n    \"num\": 1,\n    \"offload_failures_only\": false,\n    \"pool\": \"bvt\",\n    \"priority\": \"PFQ\",\n    \"retry\": false,\n    \"suite\": \"sanity\",\n    \"suite_min_duts\": 1,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}",
             "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": true,\n    \"max_retries\": null,\n    \"minimum_duts\": 3,\n    \"num\": 3,\n    \"offload_failures_only\": false,\n    \"pool\": \"bvt\",\n    \"priority\": \"PFQ\",\n    \"retry\": true,\n    \"suite\": \"arc-bvt-cq\",\n    \"suite_min_duts\": 3,\n    \"timeout\": 15000,\n    \"warn_only\": false\n}"
         ],
+        "important": false,
         "manifest": "official.xml",
         "vm_tests": []
     },
@@ -6266,6 +6285,7 @@
         "hw_tests": [
             "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 0,\n    \"num\": 6,\n    \"offload_failures_only\": false,\n    \"pool\": \"cq\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"arc-bvt-cq\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}"
         ],
+        "important": false,
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -6382,8 +6402,13 @@
     },
     "cyan-chrome-pfq": {
         "_template": "chrome-pfq",
+        "active_waterfall": "chromeos",
         "boards": [
             "cyan"
+        ],
+        "hw_tests": [
+            "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": true,\n    \"max_retries\": null,\n    \"minimum_duts\": 1,\n    \"num\": 1,\n    \"offload_failures_only\": false,\n    \"pool\": \"bvt\",\n    \"priority\": \"PFQ\",\n    \"retry\": false,\n    \"suite\": \"sanity\",\n    \"suite_min_duts\": 1,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}",
+            "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": true,\n    \"max_retries\": null,\n    \"minimum_duts\": 3,\n    \"num\": 3,\n    \"offload_failures_only\": false,\n    \"pool\": \"bvt\",\n    \"priority\": \"PFQ\",\n    \"retry\": true,\n    \"suite\": \"arc-bvt-cq\",\n    \"suite_min_duts\": 3,\n    \"timeout\": 15000,\n    \"warn_only\": false\n}"
         ],
         "important": false,
         "manifest": "official.xml",
@@ -6480,10 +6505,14 @@
     },
     "cyan-paladin": {
         "_template": "paladin",
+        "active_waterfall": "chromeos",
         "boards": [
             "cyan"
         ],
         "description": "Commit Queue (internal)",
+        "hw_tests": [
+            "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 0,\n    \"num\": 6,\n    \"offload_failures_only\": false,\n    \"pool\": \"cq\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"arc-bvt-cq\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}"
+        ],
         "important": false,
         "internal": true,
         "manifest": "official.xml",
@@ -19521,6 +19550,24 @@
             "gn"
         ]
     },
+    "samus-android-pfq": {
+        "_template": "android-pfq",
+        "active_waterfall": "chromeos",
+        "boards": [
+            "samus"
+        ],
+        "hw_tests": [
+            "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": true,\n    \"max_retries\": null,\n    \"minimum_duts\": 1,\n    \"num\": 1,\n    \"offload_failures_only\": false,\n    \"pool\": \"bvt\",\n    \"priority\": \"PFQ\",\n    \"retry\": false,\n    \"suite\": \"sanity\",\n    \"suite_min_duts\": 1,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}",
+            "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": true,\n    \"max_retries\": null,\n    \"minimum_duts\": 3,\n    \"num\": 3,\n    \"offload_failures_only\": false,\n    \"pool\": \"bvt\",\n    \"priority\": \"PFQ\",\n    \"retry\": true,\n    \"suite\": \"arc-bvt-cq\",\n    \"suite_min_duts\": 3,\n    \"timeout\": 15000,\n    \"warn_only\": false\n}"
+        ],
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "useflags": [
+            "chrome_internal"
+        ],
+        "vm_tests": []
+    },
     "samus-cheets-android-pfq": {
         "_template": "android-pfq",
         "active_waterfall": "chromeos",
@@ -19824,6 +19871,7 @@
             "samus"
         ],
         "description": "Commit Queue (internal)",
+        "important": false,
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -24523,6 +24571,24 @@
         ],
         "vm_tests": []
     },
+    "veyron_minnie-android-pfq": {
+        "_template": "android-pfq",
+        "active_waterfall": "chromeos",
+        "boards": [
+            "veyron_minnie"
+        ],
+        "hw_tests": [
+            "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": true,\n    \"max_retries\": null,\n    \"minimum_duts\": 1,\n    \"num\": 1,\n    \"offload_failures_only\": false,\n    \"pool\": \"bvt\",\n    \"priority\": \"PFQ\",\n    \"retry\": false,\n    \"suite\": \"sanity\",\n    \"suite_min_duts\": 1,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}",
+            "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": true,\n    \"max_retries\": null,\n    \"minimum_duts\": 3,\n    \"num\": 3,\n    \"offload_failures_only\": false,\n    \"pool\": \"bvt\",\n    \"priority\": \"PFQ\",\n    \"retry\": true,\n    \"suite\": \"arc-bvt-cq\",\n    \"suite_min_duts\": 3,\n    \"timeout\": 15000,\n    \"warn_only\": false\n}"
+        ],
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "useflags": [
+            "chrome_internal"
+        ],
+        "vm_tests": []
+    },
     "veyron_minnie-cheets-android-pfq": {
         "_template": "android-pfq",
         "active_waterfall": "chromeos",
@@ -24551,6 +24617,7 @@
             "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": true,\n    \"max_retries\": null,\n    \"minimum_duts\": 1,\n    \"num\": 1,\n    \"offload_failures_only\": false,\n    \"pool\": \"bvt\",\n    \"priority\": \"PFQ\",\n    \"retry\": false,\n    \"suite\": \"sanity\",\n    \"suite_min_duts\": 1,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}",
             "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": true,\n    \"max_retries\": null,\n    \"minimum_duts\": 3,\n    \"num\": 3,\n    \"offload_failures_only\": false,\n    \"pool\": \"bvt\",\n    \"priority\": \"PFQ\",\n    \"retry\": true,\n    \"suite\": \"arc-bvt-cq\",\n    \"suite_min_duts\": 3,\n    \"timeout\": 15000,\n    \"warn_only\": false\n}"
         ],
+        "important": false,
         "manifest": "official.xml",
         "vm_tests": []
     },
@@ -24618,6 +24685,7 @@
         "hw_tests": [
             "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 0,\n    \"num\": 6,\n    \"offload_failures_only\": false,\n    \"pool\": \"cq\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"arc-bvt-cq\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}"
         ],
+        "important": false,
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -24737,8 +24805,13 @@
     },
     "veyron_minnie-chrome-pfq": {
         "_template": "chrome-pfq",
+        "active_waterfall": "chromeos",
         "boards": [
             "veyron_minnie"
+        ],
+        "hw_tests": [
+            "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": true,\n    \"max_retries\": null,\n    \"minimum_duts\": 1,\n    \"num\": 1,\n    \"offload_failures_only\": false,\n    \"pool\": \"bvt\",\n    \"priority\": \"PFQ\",\n    \"retry\": false,\n    \"suite\": \"sanity\",\n    \"suite_min_duts\": 1,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}",
+            "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": true,\n    \"max_retries\": null,\n    \"minimum_duts\": 3,\n    \"num\": 3,\n    \"offload_failures_only\": false,\n    \"pool\": \"bvt\",\n    \"priority\": \"PFQ\",\n    \"retry\": true,\n    \"suite\": \"arc-bvt-cq\",\n    \"suite_min_duts\": 3,\n    \"timeout\": 15000,\n    \"warn_only\": false\n}"
         ],
         "important": false,
         "manifest": "official.xml",
@@ -24800,10 +24873,14 @@
     },
     "veyron_minnie-paladin": {
         "_template": "paladin",
+        "active_waterfall": "chromeos",
         "boards": [
             "veyron_minnie"
         ],
         "description": "Commit Queue (internal)",
+        "hw_tests": [
+            "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 0,\n    \"num\": 6,\n    \"offload_failures_only\": false,\n    \"pool\": \"cq\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"arc-bvt-cq\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}"
+        ],
         "important": false,
         "internal": true,
         "manifest": "official.xml",
