@@ -775,7 +775,18 @@ ScrollBehavior PaintLayerScrollableArea::scrollBehaviorStyle() const
 
 bool PaintLayerScrollableArea::hasHorizontalOverflow() const
 {
-    return pixelSnappedScrollWidth() > box().pixelSnappedClientWidth();
+    // TODO(szager): Make the algorithm for adding/subtracting overflow:auto
+    // scrollbars memoryless (crbug.com/625300).  This clientWidth hack will
+    // prevent the spurious horizontal scrollbar, but it can cause a converse
+    // problem: it can leave a sliver of horizontal overflow hidden behind the
+    // vertical scrollbar without creating a horizontal scrollbar.  This
+    // converse problem seems to happen much less frequently in practice, so we
+    // bias the logic towards preventing unwanted horizontal scrollbars, which
+    // are more common and annoying.
+    int clientWidth = box().pixelSnappedClientWidth();
+    if (needsRelayout() && !hadVerticalScrollbarBeforeRelayout())
+        clientWidth += verticalScrollbarWidth();
+    return pixelSnappedScrollWidth() > clientWidth;
 }
 
 bool PaintLayerScrollableArea::hasVerticalOverflow() const
