@@ -176,12 +176,9 @@ void ChromeTranslateClient::ShowTranslateUI(
       return;
     }
 
-    if (!triggered_from_menu) {
-      if (web_contents()->GetBrowserContext()->IsOffTheRecord())
-        return;
-      if (GetTranslatePrefs()->IsTooOftenDenied(source_language))
-        return;
-    }
+    if (!triggered_from_menu &&
+        GetTranslatePrefs()->IsTooOftenDenied(source_language))
+      return;
   }
   ShowBubble(step, error_type);
 }
