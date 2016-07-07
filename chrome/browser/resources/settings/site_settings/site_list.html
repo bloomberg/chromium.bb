@@ -82,11 +82,14 @@
           </div>
         </template>
 
-        <div class="button-container">
-          <paper-button on-tap="onAddSiteTap_" class="primary-button no-upper">
-            $i18n{addSiteLink}
-          </paper-button>
-        </div>
+        <template is="dom-if" if="{{!allSites}}">
+          <div class="button-container">
+            <paper-button on-tap="onAddSiteTap_"
+                class="primary-button no-upper">
+              $i18n{addSiteLink}
+            </paper-button>
+          </div>
+        </template>
       </div>
     </paper-submenu>
   </template>
