@@ -1054,33 +1054,33 @@ const AtomicString& HTMLElement::eventParameterName()
 
 int HTMLElement::offsetLeftForBinding()
 {
-    document().updateStyleAndLayoutIgnorePendingStylesheetsForNode(this);
+    Element* offsetParent = unclosedOffsetParent();
     if (LayoutBoxModelObject* layoutObject = layoutBoxModelObject())
-        return adjustLayoutUnitForAbsoluteZoom(LayoutUnit(layoutObject->pixelSnappedOffsetLeft(unclosedOffsetParent())), layoutObject->styleRef()).round();
+        return adjustLayoutUnitForAbsoluteZoom(LayoutUnit(layoutObject->pixelSnappedOffsetLeft(offsetParent)), layoutObject->styleRef()).round();
     return 0;
 }
 
 int HTMLElement::offsetTopForBinding()
 {
-    document().updateStyleAndLayoutIgnorePendingStylesheetsForNode(this);
+    Element* offsetParent = unclosedOffsetParent();
     if (LayoutBoxModelObject* layoutObject = layoutBoxModelObject())
-        return adjustLayoutUnitForAbsoluteZoom(LayoutUnit(layoutObject->pixelSnappedOffsetTop(unclosedOffsetParent())), layoutObject->styleRef()).round();
+        return adjustLayoutUnitForAbsoluteZoom(LayoutUnit(layoutObject->pixelSnappedOffsetTop(offsetParent)), layoutObject->styleRef()).round();
     return 0;
 }
 
 int HTMLElement::offsetWidthForBinding()
 {
-    document().updateStyleAndLayoutIgnorePendingStylesheetsForNode(this);
+    Element* offsetParent = unclosedOffsetParent();
     if (LayoutBoxModelObject* layoutObject = layoutBoxModelObject())
-        return adjustLayoutUnitForAbsoluteZoom(LayoutUnit(layoutObject->pixelSnappedOffsetWidth(unclosedOffsetParent())), layoutObject->styleRef()).round();
+        return adjustLayoutUnitForAbsoluteZoom(LayoutUnit(layoutObject->pixelSnappedOffsetWidth(offsetParent)), layoutObject->styleRef()).round();
     return 0;
 }
 
 int HTMLElement::offsetHeightForBinding()
 {
-    document().updateStyleAndLayoutIgnorePendingStylesheetsForNode(this);
+    Element* offsetParent = unclosedOffsetParent();
     if (LayoutBoxModelObject* layoutObject = layoutBoxModelObject())
-        return adjustLayoutUnitForAbsoluteZoom(LayoutUnit(layoutObject->pixelSnappedOffsetHeight(unclosedOffsetParent())), layoutObject->styleRef()).round();
+        return adjustLayoutUnitForAbsoluteZoom(LayoutUnit(layoutObject->pixelSnappedOffsetHeight(offsetParent)), layoutObject->styleRef()).round();
     return 0;
 }
 
