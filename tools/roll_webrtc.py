@@ -166,7 +166,7 @@ def _GenerateCLDescriptionCommand(webrtc_current, webrtc_new):
   description = [ '-m', 'Roll ' + webrtc_str ]
   description.extend(['-m', 'Changes: %s' % webrtc_changelog_url])
   description.extend(['-m', 'TBR='])
-  description.extend(['-m', 'CQ_EXTRA_TRYBOTS=%s' % EXTRA_TRYBOTS])
+  description.extend(['-m', 'CQ_INCLUDE_TRYBOTS=%s' % EXTRA_TRYBOTS])
   return description
 
 
