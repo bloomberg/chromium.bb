@@ -273,6 +273,8 @@ struct CC_EXPORT EffectNodeData {
 
   FilterOperations background_filters;
 
+  gfx::Vector2dF sublayer_scale;
+
   bool has_render_surface;
   RenderSurfaceImpl* render_surface;
   bool has_copy_request;
@@ -603,6 +605,8 @@ class CC_EXPORT EffectTree final : public PropertyTree<EffectNode> {
   void clear();
 
   float EffectiveOpacity(const EffectNode* node) const;
+
+  void UpdateSublayerScale(EffectNode* node);
 
   void UpdateEffects(int id);
 

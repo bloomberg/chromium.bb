@@ -85,7 +85,7 @@ message ClipNodeData {
 }
 
 // Proto for struct EffectNodeData.
-// NEXT ID: 20
+// NEXT ID: 21
 message EffectNodeData {
   optional float opacity = 1;
   optional float screen_space_opacity = 2;
@@ -105,6 +105,7 @@ message EffectNodeData {
   optional int64 mask_layer_id = 17;
   optional int64 replica_layer_id = 18;
   optional int64 replica_mask_layer_id = 19;
+  optional Vector2dF sublayer_scale = 20;
 }
 
 // Proto for struct ScrollNodeData

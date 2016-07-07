@@ -186,6 +186,7 @@ TEST(PropertyTreeSerializationTest, EffectNodeDataSerialization) {
   original.mask_layer_id = 6;
   original.replica_layer_id = 10;
   original.replica_mask_layer_id = 9;
+  original.sublayer_scale = gfx::Vector2dF(0.5f, 0.5f);
 
   proto::TreeNode proto;
   original.ToProtobuf(&proto);

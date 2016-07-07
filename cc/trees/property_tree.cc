@@ -514,6 +514,7 @@ bool EffectNodeData::operator==(const EffectNodeData& other) const {
          has_render_surface == other.has_render_surface &&
          has_copy_request == other.has_copy_request &&
          background_filters == other.background_filters &&
+         sublayer_scale == other.sublayer_scale &&
          hidden_by_backface_visibility == other.hidden_by_backface_visibility &&
          double_sided == other.double_sided && is_drawn == other.is_drawn &&
          subtree_hidden == other.subtree_hidden &&
@@ -550,6 +551,7 @@ void EffectNodeData::ToProtobuf(proto::TreeNode* proto) const {
   data->set_mask_layer_id(mask_layer_id);
   data->set_replica_layer_id(replica_layer_id);
   data->set_replica_mask_layer_id(replica_mask_layer_id);
+  Vector2dFToProto(sublayer_scale, data->mutable_sublayer_scale());
 }
 
 void EffectNodeData::FromProtobuf(const proto::TreeNode& proto) {
@@ -574,6 +576,7 @@ void EffectNodeData::FromProtobuf(const proto::TreeNode& proto) {
   mask_layer_id = data.mask_layer_id();
   replica_layer_id = data.replica_layer_id();
   replica_mask_layer_id = data.replica_mask_layer_id();
+  sublayer_scale = ProtoToVector2dF(data.sublayer_scale());
 }
 
 void EffectNodeData::AsValueInto(base::trace_event::TracedValue* value) const {
@@ -1418,6 +1421,25 @@ void EffectTree::UpdateBackfaceVisibility(EffectNode* node,
   node->data.hidden_by_backface_visibility = false;
 }
 
+void EffectTree::UpdateSublayerScale(EffectNode* effect_node) {
+  if (!effect_node->data.has_render_surface ||
+      effect_node->data.transform_id == 0) {
+    effect_node->data.sublayer_scale = gfx::Vector2dF(1.0f, 1.0f);
+    return;
+  }
+
+  TransformTree& transform_tree = property_trees()->transform_tree;
+  float layer_scale_factor = transform_tree.device_scale_factor() *
+                             transform_tree.device_transform_scale_factor();
+  TransformNode* transform_node =
+      transform_tree.Node(effect_node->data.transform_id);
+  if (transform_node->data.in_subtree_of_page_scale_layer)
+    layer_scale_factor *= transform_tree.page_scale_factor();
+  effect_node->data.sublayer_scale =
+      MathUtil::ComputeTransform2dScaleComponents(
+          transform_tree.ToScreen(transform_node->id), layer_scale_factor);
+}
+
 void EffectTree::UpdateEffects(int id) {
   EffectNode* node = Node(id);
   EffectNode* parent_node = parent(node);
@@ -1426,6 +1448,7 @@ void EffectTree::UpdateEffects(int id) {
   UpdateIsDrawn(node, parent_node);
   UpdateEffectChanged(node, parent_node);
   UpdateBackfaceVisibility(node, parent_node);
+  UpdateSublayerScale(node);
 }
 
 void EffectTree::AddCopyRequest(int node_id,
