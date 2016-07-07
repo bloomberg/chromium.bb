@@ -110,7 +110,7 @@ void ReportMetrics(const std::string& mime_type,
                    const GURL& origin_url) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  if (chrome::IsOffTheRecordSessionActive())
+  if (chrome::IsIncognitoSessionActive())
     return;
   rappor::RapporService* rappor_service = g_browser_process->rappor_service();
   if (!rappor_service)

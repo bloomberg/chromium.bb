@@ -125,7 +125,7 @@ bool ChromeTracingDelegate::IsAllowedToBeginBackgroundScenario(
   if (!ProfileAllowsScenario(config, PROFILE_NOT_REQUIRED))
     return false;
 
-  if (requires_anonymized_data && chrome::IsOffTheRecordSessionActive())
+  if (requires_anonymized_data && chrome::IsIncognitoSessionActive())
     return false;
 
   return true;
@@ -135,7 +135,7 @@ bool ChromeTracingDelegate::IsAllowedToEndBackgroundScenario(
     const content::BackgroundTracingConfig& config,
     bool requires_anonymized_data) {
   if (requires_anonymized_data &&
-      (incognito_launched_ || chrome::IsOffTheRecordSessionActive())) {
+      (incognito_launched_ || chrome::IsIncognitoSessionActive())) {
     return false;
   }
 

@@ -287,7 +287,7 @@ void ChromeMetricsServiceClient::OnRecordingDisabled() {
 }
 
 bool ChromeMetricsServiceClient::IsOffTheRecordSessionActive() {
-  return chrome::IsOffTheRecordSessionActive();
+  return chrome::IsIncognitoSessionActive();
 }
 
 int32_t ChromeMetricsServiceClient::GetProduct() {
@@ -423,7 +423,7 @@ void ChromeMetricsServiceClient::Initialize() {
   // be worth revisiting this to still log events from non-incognito sessions.
   metrics_service_->RegisterMetricsProvider(
       std::unique_ptr<metrics::MetricsProvider>(new OmniboxMetricsProvider(
-          base::Bind(&chrome::IsOffTheRecordSessionActive))));
+          base::Bind(&chrome::IsIncognitoSessionActive))));
   metrics_service_->RegisterMetricsProvider(
       std::unique_ptr<metrics::MetricsProvider>(
           new ChromeStabilityMetricsProvider(

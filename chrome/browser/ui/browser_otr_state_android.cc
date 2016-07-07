@@ -8,7 +8,7 @@
 
 namespace chrome {
 
-bool IsOffTheRecordSessionActive() {
+bool IsIncognitoSessionActive() {
   return TabModelList::IsOffTheRecordSessionActive();
 }
 

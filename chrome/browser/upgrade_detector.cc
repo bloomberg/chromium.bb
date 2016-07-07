@@ -117,7 +117,7 @@ void UpgradeDetector::TriggerNotification(chrome::NotificationType type) {
 void UpgradeDetector::IdleCallback(ui::IdleState state) {
   // Don't proceed while an incognito window is open. The timer will still
   // keep firing, so this function will get a chance to re-evaluate this.
-  if (chrome::IsOffTheRecordSessionActive())
+  if (chrome::IsIncognitoSessionActive())
     return;
 
   switch (state) {
