@@ -1795,6 +1795,7 @@ fuzzer_test("net_mime_sniffer_fuzzer") {
     "//base",
     "//net",
   ]
+  dict = "data/fuzzer_dictionaries/net_mime_sniffer_fuzzer.dict"
 }
 
 fuzzer_test("net_parse_proxy_list_pac_fuzzer") {
@@ -1846,6 +1847,7 @@ fuzzer_test("net_parse_data_url_fuzzer") {
     "//base",
     "//net",
   ]
+  dict = "data/fuzzer_dictionaries/net_parse_data_url_fuzzer.dict"
 }
 
 fuzzer_test("net_parse_ip_pattern_fuzzer") {
@@ -1867,6 +1869,7 @@ fuzzer_test("net_get_domain_and_registry_fuzzer") {
     "//base",
     "//net",
   ]
+  dict = "data/fuzzer_dictionaries/net_get_domain_and_registry_fuzzer.dict"
 }
 
 fuzzer_test("net_cert_verify_name_match_fuzzer") {
@@ -1930,6 +1933,7 @@ fuzzer_test("net_dns_record_fuzzer") {
     "//base",
     "//net",
   ]
+  dict = "data/fuzzer_dictionaries/net_dns_record_fuzzer.dict"
 }
 
 fuzzer_test("net_dns_hosts_parse_fuzzer") {
@@ -1941,6 +1945,7 @@ fuzzer_test("net_dns_hosts_parse_fuzzer") {
     "//base",
     "//net",
   ]
+  dict = "data/fuzzer_dictionaries/net_dns_hosts_parse_fuzzer.dict"
 }
 
 fuzzer_test("net_host_resolver_impl_fuzzer") {
@@ -1955,7 +1960,7 @@ fuzzer_test("net_host_resolver_impl_fuzzer") {
     "//base",
     "//net",
   ]
-  dict = "data/dns/dns.dict"
+  dict = "data/fuzzer_dictionaries/net_host_resolver_impl_fuzzer.dict"
 }
 
 fuzzer_test("net_http_stream_parser_fuzzer") {
@@ -1968,7 +1973,7 @@ fuzzer_test("net_http_stream_parser_fuzzer") {
     "//base",
     "//net",
   ]
-  dict = "data/http/http.dict"
+  dict = "data/fuzzer_dictionaries/net_http_stream_parser_fuzzer.dict"
 }
 
 fuzzer_test("net_ftp_ctrl_response_fuzzer") {
@@ -2014,6 +2019,7 @@ fuzzer_test("net_websocket_frame_parser_fuzzer") {
     ":net_fuzzer_test_support",
     "//net",
   ]
+  dict = "data/fuzzer_dictionaries/net_websocket_frame_parser_fuzzer.dict"
 }
 
 fuzzer_test("net_http_chunked_decoder_fuzzer") {
@@ -2024,7 +2030,6 @@ fuzzer_test("net_http_chunked_decoder_fuzzer") {
     ":net_fuzzer_test_support",
     "//net",
   ]
-  dict = "http/http_chunked_decoder_fuzzer.dict"
 }
 
 fuzzer_test("net_http_proxy_client_socket_fuzzer") {
@@ -2037,7 +2042,7 @@ fuzzer_test("net_http_proxy_client_socket_fuzzer") {
     "//base",
     "//net",
   ]
-  dict = "data/http/http.dict"
+  dict = "data/fuzzer_dictionaries/net_http_proxy_client_socket_fuzzer.dict"
 }
 
 fuzzer_test("net_quic_crypto_framer_parse_message_fuzzer") {
@@ -2085,5 +2090,5 @@ fuzzer_test("net_url_request_fuzzer") {
     "//base",
     "//net",
   ]
-  dict = "data/http/http.dict"
+  dict = "data/fuzzer_dictionaries/net_url_request_fuzzer.dict"
 }
