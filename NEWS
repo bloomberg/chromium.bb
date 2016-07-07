@@ -45,6 +45,10 @@ parameter has changed.
   - no-no-8dot.utb: Norwegian 8-dot braille table
   - no-no-8dot-fallback-6dot-g0.utb: Norwegian 8-dot braille table
     with uncontracted 6-dot fallback
+- Changes to the Dutch tables
+  - Conforms better to the standard.
+  - nl-BE-g1.ctb renamed to nl-BE-g0.utb
+  - nl-NL-g1.ctb renamed to nl-NL-g0.utb
 ** Backwards incompatible changes
 - The json based harness test suite has been removed as its
   functionality has been superceded by the YAML tests. Please use
