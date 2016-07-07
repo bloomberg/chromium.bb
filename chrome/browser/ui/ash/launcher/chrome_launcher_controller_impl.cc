@@ -9,12 +9,12 @@
 #include <vector>
 
 #include "ash/common/ash_switches.h"
+#include "ash/common/multi_profile_uma.h"
 #include "ash/common/shelf/shelf_item_delegate_manager.h"
 #include "ash/common/shelf/shelf_model.h"
 #include "ash/common/system/tray/system_tray_delegate.h"
 #include "ash/common/wm_shell.h"
 #include "ash/desktop_background/desktop_background_controller.h"
-#include "ash/multi_profile_uma.h"
 #include "ash/root_window_controller.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shell.h"

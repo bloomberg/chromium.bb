@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/multi_profile_uma.h"
+#include "ash/common/multi_profile_uma.h"
 
 #include "base/metrics/histogram.h"
 

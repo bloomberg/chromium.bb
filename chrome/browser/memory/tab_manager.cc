@@ -55,9 +55,9 @@
 #include "content/public/common/page_importance_signals.h"
 
 #if defined(OS_CHROMEOS)
+#include "ash/common/multi_profile_uma.h"
 #include "ash/common/session/session_state_delegate.h"
 #include "ash/common/wm_shell.h"
-#include "ash/multi_profile_uma.h"
 #include "chrome/browser/memory/tab_manager_delegate_chromeos.h"
 #endif
 
