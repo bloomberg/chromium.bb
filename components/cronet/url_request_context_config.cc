@@ -8,12 +8,16 @@
 
 #include "base/json/json_reader.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
 #include "base/values.h"
+#include "net/cert/caching_cert_verifier.h"
 #include "net/cert/cert_verifier.h"
+#include "net/cert/cert_verify_proc.h"
+#include "net/cert/multi_threaded_cert_verifier.h"
 #include "net/dns/host_resolver.h"
 #include "net/http/http_server_properties.h"
 #include "net/quic/quic_protocol.h"
@@ -251,7 +255,8 @@ URLRequestContextConfig::URLRequestContextConfig(
     const std::string& data_reduction_secure_proxy_check_url,
     std::unique_ptr<net::CertVerifier> mock_cert_verifier,
     bool enable_network_quality_estimator,
-    bool bypass_public_key_pinning_for_local_trust_anchors)
+    bool bypass_public_key_pinning_for_local_trust_anchors,
+    const std::string& cert_verifier_data)
     : enable_quic(enable_quic),
       quic_user_agent_id(quic_user_agent_id),
       enable_spdy(enable_spdy),
@@ -270,7 +275,8 @@ URLRequestContextConfig::URLRequestContextConfig(
       mock_cert_verifier(std::move(mock_cert_verifier)),
       enable_network_quality_estimator(enable_network_quality_estimator),
       bypass_public_key_pinning_for_local_trust_anchors(
-          bypass_public_key_pinning_for_local_trust_anchors) {}
+          bypass_public_key_pinning_for_local_trust_anchors),
+      cert_verifier_data(cert_verifier_data) {}
 
 URLRequestContextConfig::~URLRequestContextConfig() {}
 
@@ -304,8 +310,17 @@ void URLRequestContextConfig::ConfigureURLRequestContextBuilder(
   ParseAndSetExperimentalOptions(experimental_options, context_builder, net_log,
                                  file_task_runner);
 
-  if (mock_cert_verifier)
-    context_builder->SetCertVerifier(std::move(mock_cert_verifier));
+  std::unique_ptr<net::CertVerifier> cert_verifier;
+  if (mock_cert_verifier) {
+    // Because |context_builder| expects CachingCertVerifier, wrap
+    // |mock_cert_verifier| into a CachingCertVerifier.
+    cert_verifier = base::MakeUnique<net::CachingCertVerifier>(
+        std::move(mock_cert_verifier));
+  } else {
+    // net::CertVerifier::CreateDefault() returns a CachingCertVerifier.
+    cert_verifier = net::CertVerifier::CreateDefault();
+  }
+  context_builder->SetCertVerifier(std::move(cert_verifier));
   // TODO(mef): Use |config| to set cookies.
 }
 

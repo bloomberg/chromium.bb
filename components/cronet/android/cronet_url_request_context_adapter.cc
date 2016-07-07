@@ -14,6 +14,7 @@
 #include "base/android/jni_android.h"
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
+#include "base/base64.h"
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
@@ -28,6 +29,8 @@
 #include "base/single_thread_task_runner.h"
 #include "base/time/time.h"
 #include "base/values.h"
+#include "components/cronet/android/cert/cert_verifier_cache_serializer.h"
+#include "components/cronet/android/cert/proto/cert_verification.pb.h"
 #include "components/cronet/histogram_manager.h"
 #include "components/cronet/url_request_context_config.h"
 #include "components/prefs/pref_change_registrar.h"
@@ -41,6 +44,7 @@
 #include "net/base/net_errors.h"
 #include "net/base/network_delegate_impl.h"
 #include "net/base/url_util.h"
+#include "net/cert/caching_cert_verifier.h"
 #include "net/cert/cert_verifier.h"
 #include "net/cookies/cookie_monster.h"
 #include "net/http/http_auth_handler_factory.h"
@@ -678,6 +682,19 @@ void CronetURLRequestContextAdapter::InitializeOnNetworkThread(
     }
   }
 
+  // If there is a cert_verifier, then populate its cache with
+  // |cert_verifier_data|.
+  if (!config->cert_verifier_data.empty() && context_->cert_verifier()) {
+    std::string data;
+    cronet_pb::CertVerificationCache cert_verification_cache;
+    if (base::Base64Decode(config->cert_verifier_data, &data) &&
+        cert_verification_cache.ParseFromString(data)) {
+      DeserializeCertVerifierCache(cert_verification_cache,
+                                   reinterpret_cast<net::CachingCertVerifier*>(
+                                       context_->cert_verifier()));
+    }
+  }
+
   // Iterate through PKP configuration for every host.
   for (const auto& pkp : config->pkp_list) {
     // Add the host pinning.
@@ -788,6 +805,33 @@ void CronetURLRequestContextAdapter::StopNetLog(
   StopNetLogHelper();
 }
 
+void CronetURLRequestContextAdapter::GetCertVerifierData(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& jcaller) {
+  PostTaskToNetworkThread(
+      FROM_HERE,
+      base::Bind(
+          &CronetURLRequestContextAdapter::GetCertVerifierDataOnNetworkThread,
+          base::Unretained(this)));
+}
+
+void CronetURLRequestContextAdapter::GetCertVerifierDataOnNetworkThread() {
+  DCHECK(GetNetworkTaskRunner()->BelongsToCurrentThread());
+  std::string encoded_data;
+  if (is_context_initialized_ && context_->cert_verifier()) {
+    std::string data;
+    cronet_pb::CertVerificationCache cert_cache =
+        SerializeCertVerifierCache(*reinterpret_cast<net::CachingCertVerifier*>(
+            context_->cert_verifier()));
+    cert_cache.SerializeToString(&data);
+    base::Base64Encode(data, &encoded_data);
+  }
+  JNIEnv* env = base::android::AttachCurrentThread();
+  Java_CronetUrlRequestContext_onGetCertVerifierData(
+      env, jcronet_url_request_context_.obj(),
+      base::android::ConvertUTF8ToJavaString(env, encoded_data).obj());
+}
+
 base::Thread* CronetURLRequestContextAdapter::GetFileThread() {
   DCHECK(GetNetworkTaskRunner()->BelongsToCurrentThread());
   if (!file_thread_) {
@@ -845,7 +889,8 @@ static jlong CreateRequestContextConfig(
     const JavaParamRef<jstring>& jexperimental_quic_connection_options,
     jlong jmock_cert_verifier,
     jboolean jenable_network_quality_estimator,
-    jboolean jbypass_public_key_pinning_for_local_trust_anchors) {
+    jboolean jbypass_public_key_pinning_for_local_trust_anchors,
+    const JavaParamRef<jstring>& jcert_verifier_data) {
   return reinterpret_cast<jlong>(new URLRequestContextConfig(
       jquic_enabled,
       ConvertNullableJavaStringToUTF8(env, jquic_default_user_agent_id),
@@ -865,7 +910,8 @@ static jlong CreateRequestContextConfig(
       base::WrapUnique(
           reinterpret_cast<net::CertVerifier*>(jmock_cert_verifier)),
       jenable_network_quality_estimator,
-      jbypass_public_key_pinning_for_local_trust_anchors));
+      jbypass_public_key_pinning_for_local_trust_anchors,
+      ConvertNullableJavaStringToUTF8(env, jcert_verifier_data)));
 }
 
 // Add a QUIC hint to a URLRequestContextConfig.

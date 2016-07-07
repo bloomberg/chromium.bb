@@ -122,6 +122,7 @@ public abstract class CronetEngine {
         private String mExperimentalOptions;
         private long mMockCertVerifier;
         private boolean mNetworkQualityEstimatorEnabled;
+        private String mCertVerifierData;
 
         /**
          * Default config enables SPDY, disables QUIC, SDCH and HTTP cache.
@@ -658,6 +659,22 @@ public abstract class CronetEngine {
         }
 
         /**
+         * Initializes CachingCertVerifier's cache with certVerifierData which has
+         * the results of certificate verification.
+         * @param certVerifierData a serialized representation of certificate
+         *        verification results.
+         * @return the builder to facilitate chaining.
+         */
+        public Builder setCertVerifierData(String certVerifierData) {
+            mCertVerifierData = certVerifierData;
+            return this;
+        }
+
+        String certVerifierData() {
+            return mCertVerifierData;
+        }
+
+        /**
          * Returns {@link Context} for builder.
          *
          * @return {@link Context} for builder.
@@ -831,6 +848,19 @@ public abstract class CronetEngine {
      * not in progress, this call is ignored.
      */
     public abstract void stopNetLog();
+
+    /**
+     * Returns serialized representation of certificate verifier's cache
+     * which contains the list of hosts/certificates and the certificate
+     * verification results. May block until data is received from the network
+     * thread (will timeout after the specified timeout). In case of timeout, it
+     * returns the previous saved value.
+     *
+     * @param timeout in milliseconds. If timeout is 0, it will use default value.
+     * @return serialized representation of certificate verification results
+     *         data.
+     */
+    public abstract String getCertVerifierData(long timeout);
 
     /**
      * Returns differences in metrics collected by Cronet since the last call to

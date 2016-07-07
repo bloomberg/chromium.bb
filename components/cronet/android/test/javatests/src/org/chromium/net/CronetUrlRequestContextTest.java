@@ -1159,6 +1159,31 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
 
     @SmallTest
     @Feature({"Cronet"})
+    public void testEmptyGetCertVerifierData() {
+        CronetTestFramework testFramework = startCronetTestFrameworkAndSkipLibraryInit();
+
+        // Immediately make a request after initializing the engine.
+        CronetEngine cronetEngine = testFramework.initCronetEngine();
+        TestUrlRequestCallback callback = new TestUrlRequestCallback();
+        UrlRequest.Builder urlRequestBuilder =
+                new UrlRequest.Builder(mUrl, callback, callback.getExecutor(), cronetEngine);
+        urlRequestBuilder.build().start();
+        callback.blockForDone();
+        assertEquals(200, callback.mResponseInfo.getHttpStatusCode());
+
+        try {
+            cronetEngine.getCertVerifierData(-1);
+            fail("Should throw an exception");
+        } catch (Exception e) {
+            assertEquals("timeout must be a positive value", e.getMessage());
+        }
+        // Because mUrl is http, getCertVerifierData() will return empty data.
+        String data = cronetEngine.getCertVerifierData(100);
+        assertTrue(data.isEmpty());
+    }
+
+    @SmallTest
+    @Feature({"Cronet"})
     public void testInitEngineStartTwoRequests() throws Exception {
         CronetTestFramework testFramework = startCronetTestFrameworkAndSkipLibraryInit();
 
@@ -1260,6 +1285,7 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
         builder.enableQUIC(true);
         builder.enableSDCH(true);
         builder.addQuicHint("example.com", 12, 34);
+        builder.setCertVerifierData("test_cert_verifier_data");
         builder.enableHttpCache(CronetEngine.Builder.HTTP_CACHE_IN_MEMORY, 54321);
         builder.enableDataReductionProxy("abcd");
         builder.setUserAgent("efgh");

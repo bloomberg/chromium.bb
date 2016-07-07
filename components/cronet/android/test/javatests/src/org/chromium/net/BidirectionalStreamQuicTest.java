@@ -315,4 +315,40 @@ public class BidirectionalStreamQuicTest extends CronetTestBase {
         assertTrue(NetError.ERR_QUIC_PROTOCOL_ERROR == callback.mError.getCronetInternalErrorCode()
                 || NetError.ERR_CONNECTION_REFUSED == callback.mError.getCronetInternalErrorCode());
     }
+
+    @SmallTest
+    @Feature({"Cronet"})
+    @OnlyRunNativeCronet
+    // Test that certificate verify results are serialized and deserialized correctly.
+    public void testSerializeDeserialize() throws Exception {
+        setUp(QuicBidirectionalStreams.ENABLED);
+        String path = "/simple.txt";
+        String quicURL = QuicTestServer.getServerURL() + path;
+        TestBidirectionalStreamCallback callback = new TestBidirectionalStreamCallback();
+        BidirectionalStream stream = new BidirectionalStream
+                                             .Builder(quicURL, callback, callback.getExecutor(),
+                                                     mTestFramework.mCronetEngine)
+                                             .setHttpMethod("GET")
+                                             .build();
+        stream.start();
+        callback.blockForDone();
+        assertTrue(stream.isDone());
+        assertEquals(200, callback.mResponseInfo.getHttpStatusCode());
+        assertEquals("This is a simple text file served by QUIC.\n", callback.mResponseAsString);
+        assertEquals("quic/1+spdy/3", callback.mResponseInfo.getNegotiatedProtocol());
+
+        String serialized_data = mTestFramework.mCronetEngine.getCertVerifierData(100);
+        assertFalse(serialized_data.isEmpty());
+
+        // Create a new builder and verify that the |serialized_data| is deserialized correctly.
+        CronetEngine.Builder builder = new CronetEngine.Builder(getContext());
+        builder.enableQUIC(true);
+        builder.setMockCertVerifierForTesting(QuicTestServer.createMockCertVerifier());
+        builder.setCertVerifierData(serialized_data);
+
+        CronetTestFramework testFramework =
+                startCronetTestFrameworkWithUrlAndCronetEngineBuilder(null, builder);
+        String deserialized_data = testFramework.mCronetEngine.getCertVerifierData(100);
+        assertEquals(deserialized_data, serialized_data);
+    }
 }

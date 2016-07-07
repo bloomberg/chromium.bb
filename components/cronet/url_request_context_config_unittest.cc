@@ -61,7 +61,9 @@ TEST(URLRequestContextConfigTest, SetQuicExperimentalOptions) {
       // Enable network quality estimator.
       false,
       // Enable Public Key Pinning bypass for local trust anchors.
-      true);
+      true,
+      // Certificate verifier cache data.
+      "");
 
   net::URLRequestContextBuilder builder;
   net::NetLog net_log;
@@ -142,7 +144,9 @@ TEST(URLRequestContextConfigTest, SetQuicConnectionMigrationOptions) {
       // Enable network quality estimator.
       false,
       // Enable Public Key Pinning bypass for local trust anchors.
-      true);
+      true,
+      // Certificate verifier cache data.
+      "");
 
   net::URLRequestContextBuilder builder;
   net::NetLog net_log;

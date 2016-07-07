@@ -54,7 +54,6 @@ public class QuicTest extends CronetTestBase {
                                         .put("migrate_sessions_early", true);
         JSONObject experimentalOptions = new JSONObject().put("QUIC", quicParams);
         mBuilder.setExperimentalOptions(experimentalOptions.toString());
-
         mBuilder.setMockCertVerifierForTesting(QuicTestServer.createMockCertVerifier());
         mBuilder.setStoragePath(CronetTestFramework.getTestStorage(getContext()));
         mBuilder.enableHttpCache(CronetEngine.Builder.HTTP_CACHE_DISK_NO_HTTP, 1000 * 1024);

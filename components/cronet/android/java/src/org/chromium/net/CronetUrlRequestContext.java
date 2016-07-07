@@ -75,6 +75,14 @@ class CronetUrlRequestContext extends CronetEngine {
     private final ObserverList<RequestFinishedListener> mFinishedListenerList =
             new ObserverList<RequestFinishedListener>();
 
+    /**
+     * Synchronize access to mCertVerifierData.
+     */
+    private ConditionVariable mWaitGetCertVerifierDataComplete = new ConditionVariable();
+
+    /** Holds CertVerifier data. */
+    private String mCertVerifierData;
+
     @UsedByReflection("CronetEngine.java")
     public CronetUrlRequestContext(final CronetEngine.Builder builder) {
         CronetLibraryLoader.ensureInitialized(builder.getContext(), builder);
@@ -119,7 +127,8 @@ class CronetUrlRequestContext extends CronetEngine {
                 builder.dataReductionProxySecureProxyCheckUrl(), builder.cacheDisabled(),
                 builder.httpCacheMode(), builder.httpCacheMaxSize(), builder.experimentalOptions(),
                 builder.mockCertVerifier(), builder.networkQualityEstimatorEnabled(),
-                builder.publicKeyPinningBypassForLocalTrustAnchorsEnabled());
+                builder.publicKeyPinningBypassForLocalTrustAnchorsEnabled(),
+                builder.certVerifierData());
         for (Builder.QuicHint quicHint : builder.quicHints()) {
             nativeAddQuicHint(urlRequestContextConfig, quicHint.mHost, quicHint.mPort,
                     quicHint.mAlternatePort);
@@ -215,6 +224,22 @@ class CronetUrlRequestContext extends CronetEngine {
             checkHaveAdapter();
             nativeStopNetLog(mUrlRequestContextAdapter);
         }
+    }
+
+    @Override
+    public String getCertVerifierData(long timeout) {
+        if (timeout < 0) {
+            throw new IllegalArgumentException("timeout must be a positive value");
+        } else if (timeout == 0) {
+            timeout = 100;
+        }
+        mWaitGetCertVerifierDataComplete.close();
+        synchronized (mLock) {
+            checkHaveAdapter();
+            nativeGetCertVerifierData(mUrlRequestContextAdapter);
+        }
+        mWaitGetCertVerifierDataComplete.block(timeout);
+        return mCertVerifierData;
     }
 
     // This method is intentionally non-static to ensure Cronet native library
@@ -500,6 +525,13 @@ class CronetUrlRequestContext extends CronetEngine {
         }
     }
 
+    @SuppressWarnings("unused")
+    @CalledByNative
+    private void onGetCertVerifierData(String certVerifierData) {
+        mCertVerifierData = certVerifierData;
+        mWaitGetCertVerifierDataComplete.open();
+    }
+
     void reportFinished(final CronetUrlRequest request) {
         if (!mNetworkQualityEstimatorEnabled) {
             return;
@@ -544,7 +576,7 @@ class CronetUrlRequestContext extends CronetEngine {
             String dataReductionProxySecureProxyCheckUrl, boolean disableCache, int httpCacheMode,
             long httpCacheMaxSize, String experimentalOptions, long mockCertVerifier,
             boolean enableNetworkQualityEstimator,
-            boolean bypassPublicKeyPinningForLocalTrustAnchors);
+            boolean bypassPublicKeyPinningForLocalTrustAnchors, String certVerifierData);
 
     private static native void nativeAddQuicHint(
             long urlRequestContextConfig, String host, int port, int alternatePort);
@@ -567,6 +599,9 @@ class CronetUrlRequestContext extends CronetEngine {
 
     @NativeClassQualifiedName("CronetURLRequestContextAdapter")
     private native void nativeStopNetLog(long nativePtr);
+
+    @NativeClassQualifiedName("CronetURLRequestContextAdapter")
+    private native void nativeGetCertVerifierData(long nativePtr);
 
     @NativeClassQualifiedName("CronetURLRequestContextAdapter")
     private native void nativeInitRequestContextOnMainThread(long nativePtr);
