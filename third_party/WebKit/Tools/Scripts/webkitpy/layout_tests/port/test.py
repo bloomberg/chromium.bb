@@ -431,6 +431,24 @@ class TestPort(Port):
         if self._operating_system == 'linux' and self._version != 'linux32':
             self._architecture = 'x86_64'
 
+        self.all_systems = (('mac10.10', 'x86'),
+                            ('mac10.11', 'x86'),
+                            ('win7', 'x86'),
+                            ('win10', 'x86'),
+                            ('linux32', 'x86'),
+                            ('precise', 'x86_64'),
+                            ('trusty', 'x86_64'))
+
+        self.all_build_types = ('debug', 'release')
+
+        # To avoid surprises when introducing new macros, these are
+        # intentionally fixed in time.
+        self.configuration_specifier_macros_dict = {
+            'mac': ['mac10.10', 'mac10.11'],
+            'win': ['win7', 'win10'],
+            'linux': ['linux32', 'precise', 'trusty']
+        }
+
     def buildbot_archives_baselines(self):
         return self._name != 'test-win-win7'
 
@@ -528,33 +546,16 @@ class TestPort(Port):
         # By default, we assume we want to test every graphics type in
         # every configuration on every system.
         test_configurations = []
-        for version, architecture in self._all_systems():
-            for build_type in self._all_build_types():
+        for version, architecture in self.all_systems:
+            for build_type in self.all_build_types:
                 test_configurations.append(TestConfiguration(
                     version=version,
                     architecture=architecture,
                     build_type=build_type))
         return test_configurations
 
-    def _all_systems(self):
-        return (('mac10.10', 'x86'),
-                ('mac10.11', 'x86'),
-                ('win7', 'x86'),
-                ('win10', 'x86'),
-                ('linux32', 'x86'),
-                ('precise', 'x86_64'),
-                ('trusty', 'x86_64'))
-
-    def _all_build_types(self):
-        return ('debug', 'release')
-
     def configuration_specifier_macros(self):
-        """To avoid surprises when introducing new macros, these are intentionally fixed in time."""
-        return {
-            'mac': ['mac10.10', 'mac10.11'],
-            'win': ['win7', 'win10'],
-            'linux': ['linux32', 'precise', 'trusty']
-        }
+        return self.configuration_specifier_macros_dict
 
     def virtual_test_suites(self):
         return [
