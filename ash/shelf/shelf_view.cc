@@ -380,7 +380,6 @@ ShelfView::ShelfView(ShelfModel* model,
       cancelling_drag_model_changed_(false),
       last_hidden_index_(0),
       closing_event_time_(base::TimeTicks()),
-      got_deleted_(nullptr),
       drag_and_drop_item_pinned_(false),
       drag_and_drop_shelf_id_(0),
       drag_replaced_view_(nullptr),
@@ -403,10 +402,6 @@ ShelfView::ShelfView(ShelfModel* model,
 ShelfView::~ShelfView() {
   bounds_animator_->RemoveObserver(this);
   model_->RemoveObserver(this);
-  // If we are inside the MenuRunner, we need to know if we were getting
-  // deleted while it was running.
-  if (got_deleted_)
-    *got_deleted_ = true;
 }
 
 void ShelfView::Init() {
@@ -1593,7 +1588,7 @@ void ShelfView::ShelfItemAdded(int model_index) {
 
 void ShelfView::ShelfItemRemoved(int model_index, ShelfID id) {
   if (id == context_menu_id_)
-    launcher_menu_runner_.reset();
+    launcher_menu_runner_->Cancel();
   {
     base::AutoReset<bool> cancelling_drag(&cancelling_drag_model_changed_,
                                           true);
@@ -1705,57 +1700,58 @@ void ShelfView::ButtonPressed(views::Button* sender,
   last_pressed_index_ = view_model_->GetIndexOfView(sender);
   DCHECK_LT(-1, last_pressed_index_);
 
-  {
-    ScopedTargetRootWindow scoped_target(
-        sender->GetWidget()->GetNativeView()->GetRootWindow());
-    // Slow down activation animations if shift key is pressed.
-    std::unique_ptr<ui::ScopedAnimationDurationScaleMode> slowing_animations;
-    if (event.IsShiftDown()) {
-      slowing_animations.reset(new ui::ScopedAnimationDurationScaleMode(
-          ui::ScopedAnimationDurationScaleMode::SLOW_DURATION));
-    }
-
-    // Collect usage statistics before we decide what to do with the click.
-    switch (model_->items()[last_pressed_index_].type) {
-      case TYPE_APP_SHORTCUT:
-      case TYPE_WINDOWED_APP:
-      case TYPE_PLATFORM_APP:
-      case TYPE_BROWSER_SHORTCUT:
-        WmShell::Get()->RecordUserMetricsAction(UMA_LAUNCHER_CLICK_ON_APP);
-        break;
-
-      case TYPE_APP_LIST:
-        WmShell::Get()->RecordUserMetricsAction(
-            UMA_LAUNCHER_CLICK_ON_APPLIST_BUTTON);
-        break;
-
-      case TYPE_APP_PANEL:
-      case TYPE_DIALOG:
-      case TYPE_IME_MENU:
-        break;
-
-      case TYPE_UNDEFINED:
-        NOTREACHED() << "ShelfItemType must be set.";
-        break;
-    }
-
-    ShelfItemDelegate::PerformedAction performed_action =
-        item_manager_
-            ->GetShelfItemDelegate(model_->items()[last_pressed_index_].id)
-            ->ItemSelected(event);
-
-    shelf_button_pressed_metric_tracker_.ButtonPressed(event, sender,
-                                                       performed_action);
-
-    // For the app list menu no TRIGGERED ink drop effect is needed and it
-    // handles its own ACTIVATED/DEACTIVATED states.
-    if (performed_action == ShelfItemDelegate::kNewWindowCreated ||
-        (performed_action != ShelfItemDelegate::kAppListMenuShown &&
-         !ShowListMenuForView(model_->items()[last_pressed_index_], sender,
-                              event, ink_drop))) {
-      ink_drop->AnimateToState(views::InkDropState::ACTION_TRIGGERED);
-    }
+  scoped_target_root_window_.reset(new ScopedTargetRootWindow(
+      sender->GetWidget()->GetNativeView()->GetRootWindow()));
+  // Slow down activation animations if shift key is pressed.
+  std::unique_ptr<ui::ScopedAnimationDurationScaleMode> slowing_animations;
+  if (event.IsShiftDown()) {
+    slowing_animations.reset(new ui::ScopedAnimationDurationScaleMode(
+        ui::ScopedAnimationDurationScaleMode::SLOW_DURATION));
   }
+
+  // Collect usage statistics before we decide what to do with the click.
+  switch (model_->items()[last_pressed_index_].type) {
+    case TYPE_APP_SHORTCUT:
+    case TYPE_WINDOWED_APP:
+    case TYPE_PLATFORM_APP:
+    case TYPE_BROWSER_SHORTCUT:
+      WmShell::Get()->RecordUserMetricsAction(UMA_LAUNCHER_CLICK_ON_APP);
+      break;
+
+    case TYPE_APP_LIST:
+      WmShell::Get()->RecordUserMetricsAction(
+          UMA_LAUNCHER_CLICK_ON_APPLIST_BUTTON);
+      break;
+
+    case TYPE_APP_PANEL:
+    case TYPE_DIALOG:
+    case TYPE_IME_MENU:
+      break;
+
+    case TYPE_UNDEFINED:
+      NOTREACHED() << "ShelfItemType must be set.";
+      break;
+  }
+
+  ShelfItemDelegate::PerformedAction performed_action =
+      item_manager_
+          ->GetShelfItemDelegate(model_->items()[last_pressed_index_].id)
+          ->ItemSelected(event);
+
+  shelf_button_pressed_metric_tracker_.ButtonPressed(event, sender,
+                                                     performed_action);
+
+  // For the app list menu no TRIGGERED ink drop effect is needed and it
+  // handles its own ACTIVATED/DEACTIVATED states.
+  if (performed_action == ShelfItemDelegate::kNewWindowCreated ||
+      (performed_action != ShelfItemDelegate::kAppListMenuShown &&
+       !ShowListMenuForView(model_->items()[last_pressed_index_], sender, event,
+                            ink_drop))) {
+    ink_drop->AnimateToState(views::InkDropState::ACTION_TRIGGERED);
+  }
+  // Allow the menu to clear |scoped_target_root_window_| during OnMenuClosed.
+  if (!IsShowingMenu())
+    scoped_target_root_window_.reset();
 }
 
 bool ShelfView::ShowListMenuForView(const ShelfItem& item,
@@ -1774,11 +1770,8 @@ bool ShelfView::ShowListMenuForView(const ShelfItem& item,
 
   ink_drop->AnimateToState(views::InkDropState::ACTIVATED);
   context_menu_id_ = item.id;
-  ShowMenu(list_menu_model.get(), source, gfx::Point(), false,
-           ui::GetMenuSourceTypeForEvent(event));
-  // Menu is run synchronously, the menu is closed now and we need to go to
-  // the deactivated state.
-  ink_drop->AnimateToState(views::InkDropState::DEACTIVATED);
+  ShowMenu(std::move(list_menu_model), source, gfx::Point(), false,
+           ui::GetMenuSourceTypeForEvent(event), ink_drop);
   return true;
 }
 
@@ -1799,20 +1792,31 @@ void ShelfView::ShowContextMenuForView(views::View* source,
     return;
 
   context_menu_id_ = item ? item->id : 0;
-  ShowMenu(context_menu_model.get(), source, point, true, source_type);
+  ShowMenu(std::move(context_menu_model), source, point, true, source_type,
+           nullptr);
 }
 
-void ShelfView::ShowMenu(ui::MenuModel* menu_model,
+void ShelfView::ShowMenu(std::unique_ptr<ui::MenuModel> menu_model,
                          views::View* source,
                          const gfx::Point& click_point,
                          bool context_menu,
-                         ui::MenuSourceType source_type) {
+                         ui::MenuSourceType source_type,
+                         views::InkDrop* ink_drop) {
+  menu_model_ = std::move(menu_model);
+  menu_model_adapter_.reset(new views::MenuModelAdapter(
+      menu_model_.get(),
+      base::Bind(&ShelfView::OnMenuClosed, base::Unretained(this), ink_drop)));
+
   closing_event_time_ = base::TimeTicks();
-  launcher_menu_runner_.reset(new views::MenuRunner(
-      menu_model, context_menu ? views::MenuRunner::CONTEXT_MENU : 0));
+  int run_types = views::MenuRunner::ASYNC;
+  if (context_menu)
+    run_types |= views::MenuRunner::CONTEXT_MENU;
+  launcher_menu_runner_.reset(
+      new views::MenuRunner(menu_model_adapter_->CreateMenu(), run_types));
 
   aura::Window* window = source->GetWidget()->GetNativeWindow();
-  ScopedTargetRootWindow scoped_target(window->GetRootWindow());
+  scoped_target_root_window_.reset(
+      new ScopedTargetRootWindow(window->GetRootWindow()));
 
   views::MenuAnchorPosition menu_alignment = views::MENU_ANCHOR_TOPLEFT;
   gfx::Rect anchor = gfx::Rect(click_point, gfx::Size());
@@ -1833,34 +1837,31 @@ void ShelfView::ShowMenu(ui::MenuModel* menu_model,
         views::MENU_ANCHOR_BUBBLE_ABOVE, views::MENU_ANCHOR_BUBBLE_RIGHT,
         views::MENU_ANCHOR_BUBBLE_LEFT);
   }
-  // If this is deleted while the menu is running, the shelf will also be gone.
-  bool got_deleted = false;
-  got_deleted_ = &got_deleted;
 
-  ShelfWidget* shelf_widget = shelf_->shelf_widget();
-  shelf_widget->ForceUndimming(true);
+  shelf_->shelf_widget()->ForceUndimming(true);
   // NOTE: if you convert to HAS_MNEMONICS be sure to update menu building code.
-  if (launcher_menu_runner_->RunMenuAt(source->GetWidget(), nullptr, anchor,
-                                       menu_alignment, source_type) ==
-      views::MenuRunner::MENU_DELETED) {
-    if (!got_deleted) {
-      got_deleted_ = nullptr;
-      context_menu_id_ = 0;
-      shelf_widget->ForceUndimming(false);
-    }
-    return;
-  }
-  got_deleted_ = nullptr;
+  launcher_menu_runner_->RunMenuAt(source->GetWidget(), nullptr, anchor,
+                                   menu_alignment, source_type);
+}
+
+void ShelfView::OnMenuClosed(views::InkDrop* ink_drop) {
   context_menu_id_ = 0;
-  shelf_widget->ForceUndimming(false);
+  shelf_->shelf_widget()->ForceUndimming(false);
 
   // Hide the hide overflow bubble after showing a context menu for its items.
   if (owner_overflow_bubble_)
     owner_overflow_bubble_->HideBubbleAndRefreshButton();
 
-  // Unpinning an item will reset |launcher_menu_runner_| before coming here.
-  if (launcher_menu_runner_)
-    closing_event_time_ = launcher_menu_runner_->closing_event_time();
+  closing_event_time_ = launcher_menu_runner_->closing_event_time();
+
+  if (ink_drop)
+    ink_drop->AnimateToState(views::InkDropState::DEACTIVATED);
+
+  launcher_menu_runner_.reset();
+  menu_model_adapter_.reset();
+  menu_model_.reset();
+  scoped_target_root_window_.reset();
+
   Shell::GetInstance()->UpdateShelfVisibility();
 }
 

@@ -33,6 +33,7 @@ class MenuModel;
 
 namespace views {
 class BoundsAnimator;
+class MenuModelAdapter;
 class MenuRunner;
 }
 
@@ -41,6 +42,7 @@ class AppListButton;
 class DragImageView;
 class OverflowBubble;
 class OverflowButton;
+class ScopedTargetRootWindow;
 class Shelf;
 class ShelfButton;
 class ShelfDelegate;
@@ -311,11 +313,15 @@ class ASH_EXPORT ShelfView : public views::View,
   // If |context_menu| is set, the displayed menu is a context menu and not
   // a menu listing one or more running applications.
   // The |click_point| is only used for |context_menu|'s.
-  void ShowMenu(ui::MenuModel* menu_model,
+  void ShowMenu(std::unique_ptr<ui::MenuModel> menu_model,
                 views::View* source,
                 const gfx::Point& click_point,
                 bool context_menu,
-                ui::MenuSourceType source_type);
+                ui::MenuSourceType source_type,
+                views::InkDrop* ink_drop);
+
+  // Callback for MenuModelAdapter.
+  void OnMenuClosed(views::InkDrop* ink_drop);
 
   // Overridden from views::BoundsAnimatorObserver:
   void OnBoundsAnimatorProgressed(views::BoundsAnimator* animator) override;
@@ -385,7 +391,11 @@ class ASH_EXPORT ShelfView : public views::View,
 
   std::unique_ptr<views::FocusSearch> focus_search_;
 
+  // Manages the context menu, and the list menu.
+  std::unique_ptr<ui::MenuModel> menu_model_;
+  std::unique_ptr<views::MenuModelAdapter> menu_model_adapter_;
   std::unique_ptr<views::MenuRunner> launcher_menu_runner_;
+  std::unique_ptr<ScopedTargetRootWindow> scoped_target_root_window_;
 
   base::ObserverList<ShelfIconObserver> observers_;
 
@@ -404,10 +414,6 @@ class ASH_EXPORT ShelfView : public views::View,
 
   // The timestamp of the event which closed the last menu - or 0.
   base::TimeTicks closing_event_time_;
-
-  // When this object gets deleted while a menu is shown, this pointed
-  // element will be set to false.
-  bool* got_deleted_;
 
   // True if a drag and drop operation created/pinned the item in the launcher
   // and it needs to be deleted/unpinned again if the operation gets cancelled.

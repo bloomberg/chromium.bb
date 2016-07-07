@@ -59,5 +59,7 @@ void ChromeLauncherAppMenuItemBrowser::Observe(
     const content::NotificationDetails& details) {
   DCHECK_EQ(chrome::NOTIFICATION_BROWSER_CLOSING, type);
   DCHECK_EQ(browser_, content::Source<Browser>(source).ptr());
+  registrar_.Remove(this, chrome::NOTIFICATION_BROWSER_CLOSING,
+                    content::Source<Browser>(browser_));
   browser_ = nullptr;
 }

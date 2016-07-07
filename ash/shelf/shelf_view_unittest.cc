@@ -2583,16 +2583,12 @@ TEST_F(ShelfViewInkDropTest, ShelfButtonWithMenuPressRelease) {
   EXPECT_THAT(browser_button_ink_drop_->GetAndResetRequestedStates(),
               ElementsAre(views::InkDropState::ACTION_PENDING));
 
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&ShelfViewTestAPI::CloseMenu,
-                            base::Unretained(test_api_.get())));
-
-  // Mouse release will spawn a menu which will then get closed by the above
-  // posted task.
+  // Mouse release will spawn a menu which we will then close.
   ui::MouseEvent release_event(ui::ET_MOUSE_RELEASED, mouse_location,
                                mouse_location, ui::EventTimeForNow(),
                                ui::EF_LEFT_MOUSE_BUTTON, 0);
   button->OnMouseReleased(release_event);
+  test_api_->CloseMenu();
   EXPECT_EQ(views::InkDropState::HIDDEN,
             browser_button_ink_drop_->GetTargetInkDropState());
   EXPECT_THAT(browser_button_ink_drop_->GetAndResetRequestedStates(),
