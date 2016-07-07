@@ -116,8 +116,6 @@ class WebGLConformanceExpectations(GpuTestExpectations):
               ['android', ('qualcomm', 'Adreno (TM) 330')], bug=611943)
     self.Fail('conformance/state/state-uneffected-after-compositing.html',
               ['android', ('qualcomm', 'Adreno (TM) 330')], bug=611943)
-    self.Fail('deqp/data/gles2/shaders/preprocessor.html',
-              ['android', ('qualcomm', 'Adreno (TM) 330')], bug=611943)
 
     # Nexus 5X
     self.Fail('conformance/extensions/oes-texture-float-with-image-data.html',
@@ -298,8 +296,6 @@ class WebGLConformanceExpectations(GpuTestExpectations):
               'tex-2d-rgba-rgba-unsigned_short_5_5_5_1.html',
               ['android', ('qualcomm', 'Adreno (TM) 418')], bug=610951)
     self.Fail('conformance/uniforms/uniform-samplers-test.html',
-              ['android', ('qualcomm', 'Adreno (TM) 418')], bug=610951)
-    self.Fail('deqp/data/gles2/shaders/preprocessor.html',
               ['android', ('qualcomm', 'Adreno (TM) 418')], bug=610951)
 
     # Nexus 6 (Adreno 420) and 6P (Adreno 430)
@@ -514,10 +510,6 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     self.Fail('conformance/textures/image_bitmap_from_image_bitmap/' +
               'tex-2d-rgba-rgba-unsigned_short_5_5_5_1.html',
               ['android', ('qualcomm', 'Adreno (TM) 430')], bug=611945)
-    self.Fail('deqp/data/gles2/shaders/preprocessor.html',
-              ['android',
-              ('qualcomm', 'Adreno (TM) 420'),
-              ('qualcomm', 'Adreno (TM) 430')], bug=611945)
     self.Fail('conformance/glsl/misc/shader-with-_webgl-identifier.vert.html',
               ['android', ('qualcomm', 'Adreno (TM) 420')], bug=611945)
 
@@ -550,6 +542,7 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         bug=625363)
 
     # Fails on multiple platforms
+    self.Skip('deqp/data/gles2/shaders/preprocessor.html', bug=625363)
 
     # OpenGL / NVIDIA failures
     self.Fail('conformance/attribs/gl-disabled-vertex-attrib.html',
@@ -626,8 +619,6 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['win', 'amd', 'opengl'], bug=1007) # angle bug ID
     self.Fail('conformance/glsl/misc/struct-nesting-of-variable-names.html',
         ['win', 'amd', 'opengl'], bug=1007) # angle bug ID
-    self.Fail('deqp/data/gles2/shaders/preprocessor.html',
-        ['win', 'amd', 'opengl'], bug=478572)
 
     # Win / OpenGL / Intel failures
     self.Fail('conformance/glsl/functions/glsl-function-normalize.html',
@@ -640,8 +631,6 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     # Mac failures
     self.Fail('conformance/glsl/misc/shaders-with-invariance.html',
         ['mac'], bug=421710)
-    self.Fail('deqp/data/gles2/shaders/preprocessor.html',
-        ['mac'], bug=478572)
     self.Fail('deqp/data/gles2/shaders/scoping.html',
         ['mac'], bug=478572)
 
@@ -670,8 +659,6 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     # AMD
     self.Flaky('conformance/more/functions/uniformi.html',
                ['linux', 'amd'], bug=550989)
-    self.Fail('deqp/data/gles2/shaders/preprocessor.html',
-              ['linux', 'amd'], bug=478572)
 
     # AMD Radeon 6450
     self.Fail('conformance/extensions/angle-instanced-arrays.html',
@@ -717,8 +704,6 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['linux', 'intel', 'opengl'], bug=1312)  # ANGLE bug id
     self.Fail('deqp/data/gles2/shaders/linkage.html',
         ['linux', 'intel'], bug=540543)
-    self.Fail('deqp/data/gles2/shaders/preprocessor.html',
-        ['linux', 'intel'], bug=1312)  # ANGLE bug id. See also 598910
     # The Mesa Intel driver has a scoping bug, see
     # https://bugs.freedesktop.org/show_bug.cgi?id=95184
     self.Fail('deqp/data/gles2/shaders/scoping.html',
