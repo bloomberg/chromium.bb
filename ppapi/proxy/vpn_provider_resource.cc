@@ -23,7 +23,9 @@ VpnProviderResource::VpnProviderResource(Connection connection,
       send_packet_callback_(nullptr),
       receive_packet_callback_(nullptr),
       receive_packet_callback_var_(nullptr),
-      bound_(false) {}
+      bound_(false) {
+  SendCreate(BROWSER, PpapiHostMsg_VpnProvider_Create());
+}
 
 VpnProviderResource::~VpnProviderResource() {}
 
@@ -34,7 +36,15 @@ thunk::PPB_VpnProvider_API* VpnProviderResource::AsPPB_VpnProvider_API() {
 void VpnProviderResource::OnReplyReceived(
     const ResourceMessageReplyParams& params,
     const IPC::Message& msg) {
-  PluginResource::OnReplyReceived(params, msg);
+  PPAPI_BEGIN_MESSAGE_MAP(VpnProviderResource, msg)
+    PPAPI_DISPATCH_PLUGIN_RESOURCE_CALL(PpapiPluginMsg_VpnProvider_OnUnbind,
+                                        OnPluginMsgOnUnbindReceived)
+    PPAPI_DISPATCH_PLUGIN_RESOURCE_CALL(
+        PpapiPluginMsg_VpnProvider_OnPacketReceived,
+        OnPluginMsgOnPacketReceived)
+    PPAPI_DISPATCH_PLUGIN_RESOURCE_CALL_UNHANDLED(
+        PluginResource::OnReplyReceived(params, msg))
+  PPAPI_END_MESSAGE_MAP()
 }
 
 int32_t VpnProviderResource::Bind(
@@ -51,7 +61,14 @@ int32_t VpnProviderResource::Bind(
   if (!configuration_name_var)
     return PP_ERROR_BADARGUMENT;
 
-  return PP_ERROR_NOTSUPPORTED;
+  bind_callback_ = callback;
+
+  Call<PpapiPluginMsg_VpnProvider_BindReply>(
+      BROWSER, PpapiHostMsg_VpnProvider_Bind(configuration_id_var->value(),
+                                             configuration_name_var->value()),
+      base::Bind(&VpnProviderResource::OnPluginMsgBindReply, this));
+
+  return PP_OK_COMPLETIONPENDING;
 }
 
 int32_t VpnProviderResource::SendPacket(
@@ -86,10 +103,17 @@ int32_t VpnProviderResource::DoSendPacket(const PP_Var& packet, uint32_t id) {
   if (!packet_arraybuffer.get())
     return PP_ERROR_BADARGUMENT;
 
-  char* packet_pointer = static_cast<char*>(packet_arraybuffer->Map());
   uint32_t packet_size = packet_arraybuffer->ByteLength();
+  if (packet_size > send_packet_buffer_->max_packet_size())
+    return PP_ERROR_MESSAGE_TOO_BIG;
+
+  char* packet_pointer = static_cast<char*>(packet_arraybuffer->Map());
   memcpy(send_packet_buffer_->GetBuffer(id), packet_pointer, packet_size);
   packet_arraybuffer->Unmap();
+
+  Call<PpapiPluginMsg_VpnProvider_SendPacketReply>(
+      BROWSER, PpapiHostMsg_VpnProvider_SendPacket(packet_size, id),
+      base::Bind(&VpnProviderResource::OnPluginMsgSendPacketReply, this));
 
   return PP_OK;
 }
@@ -126,22 +150,31 @@ void VpnProviderResource::OnPluginMsgOnUnbindReceived(
     PpapiGlobals::Get()->GetVarTracker()->ReleaseVar(send_packets_.front());
     send_packets_.pop();
   }
+
+  send_packet_buffer_.reset();
+  recv_packet_buffer_.reset();
 }
 
 void VpnProviderResource::OnPluginMsgOnPacketReceived(
     const ResourceMessageReplyParams& params,
     uint32_t packet_size,
     uint32_t id) {
+  DCHECK_LE(packet_size, recv_packet_buffer_->max_packet_size());
   if (!bound_) {
+    // Ignore packet and mark shared memory as available
+    Post(BROWSER, PpapiHostMsg_VpnProvider_OnPacketReceivedReply(id));
     return;
   }
 
   // Append received packet to queue.
-  void* packet_pointer = receive_packet_buffer_->GetBuffer(id);
+  void* packet_pointer = recv_packet_buffer_->GetBuffer(id);
   scoped_refptr<Var> packet_var(
       PpapiGlobals::Get()->GetVarTracker()->MakeArrayBufferVar(packet_size,
                                                                packet_pointer));
   received_packets_.push(packet_var);
+
+  // Mark shared memory as available for next packet
+  Post(BROWSER, PpapiHostMsg_VpnProvider_OnPacketReceivedReply(id));
 
   if (!TrackedCallback::IsPending(receive_packet_callback_) ||
       TrackedCallback::IsScheduledToRun(receive_packet_callback_)) {
@@ -176,9 +209,8 @@ void VpnProviderResource::OnPluginMsgBindReply(
     }
     send_packet_buffer_ = base::WrapUnique(new ppapi::VpnProviderSharedBuffer(
         queue_size, max_packet_size, std::move(send_shm)));
-    receive_packet_buffer_ =
-        base::WrapUnique(new ppapi::VpnProviderSharedBuffer(
-            queue_size, max_packet_size, std::move(receive_shm)));
+    recv_packet_buffer_ = base::WrapUnique(new ppapi::VpnProviderSharedBuffer(
+        queue_size, max_packet_size, std::move(receive_shm)));
 
     bound_ = (result == PP_OK);
   }
@@ -190,7 +222,7 @@ void VpnProviderResource::OnPluginMsgBindReply(
 
 void VpnProviderResource::OnPluginMsgSendPacketReply(
     const ResourceMessageReplyParams& params,
-    int32_t id) {
+    uint32_t id) {
   if (!send_packets_.empty() && bound_) {
     // Process remaining packets
     DoSendPacket(send_packets_.front(), id);

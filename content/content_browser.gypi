@@ -1831,6 +1831,8 @@
       'browser/renderer_host/pepper/pepper_truetype_font_win.cc',
       'browser/renderer_host/pepper/pepper_udp_socket_message_filter.cc',
       'browser/renderer_host/pepper/pepper_udp_socket_message_filter.h',
+      'browser/renderer_host/pepper/pepper_vpn_provider_message_filter_chromeos.cc',
+      'browser/renderer_host/pepper/pepper_vpn_provider_message_filter_chromeos.h',
       'browser/renderer_host/pepper/quota_reservation.cc',
       'browser/renderer_host/pepper/quota_reservation.h',
       'browser/renderer_host/pepper/ssl_context_helper.cc',

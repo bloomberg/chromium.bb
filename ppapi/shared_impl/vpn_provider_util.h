@@ -23,12 +23,15 @@ class PPAPI_SHARED_EXPORT VpnProviderSharedBuffer {
   void SetAvailable(uint32_t id, bool value);
   void* GetBuffer(uint32_t id);
   base::SharedMemoryHandle GetHandle();
+  uint32_t max_packet_size() { return max_packet_size_; }
 
  private:
   uint32_t capacity_;
-  uint32_t packet_size_;
+  uint32_t max_packet_size_;
   std::unique_ptr<base::SharedMemory> shm_;
   std::vector<bool> available_;
+
+  DISALLOW_COPY_AND_ASSIGN(VpnProviderSharedBuffer);
 };
 
 }  // namespace ppapi

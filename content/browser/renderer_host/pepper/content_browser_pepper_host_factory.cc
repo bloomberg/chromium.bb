@@ -7,6 +7,7 @@
 #include <stddef.h>
 #include <utility>
 
+#include "base/memory/ptr_util.h"
 #include "content/browser/renderer_host/pepper/browser_ppapi_host_impl.h"
 #include "content/browser/renderer_host/pepper/pepper_browser_font_singleton_host.h"
 #include "content/browser/renderer_host/pepper/pepper_file_io_host.h"
@@ -29,6 +30,10 @@
 #include "ppapi/host/resource_host.h"
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/shared_impl/ppapi_permissions.h"
+
+#if defined(OS_CHROMEOS)
+#include "content/browser/renderer_host/pepper/pepper_vpn_provider_message_filter_chromeos.h"
+#endif
 
 using ppapi::host::MessageFilterHost;
 using ppapi::host::ResourceHost;
@@ -158,6 +163,14 @@ ContentBrowserPepperHostFactory::CreateResourceHost(
         return std::unique_ptr<ResourceHost>(
             new PepperTrueTypeFontListHost(host_, instance, resource));
       }
+#if defined(OS_CHROMEOS)
+      case PpapiHostMsg_VpnProvider_Create::ID: {
+        scoped_refptr<PepperVpnProviderMessageFilter> vpn_provider(
+            new PepperVpnProviderMessageFilter(host_, instance));
+        return base::MakeUnique<MessageFilterHost>(
+            host_->GetPpapiHost(), instance, resource, std::move(vpn_provider));
+      }
+#endif
     }
   }
 

@@ -49,7 +49,7 @@ class PPAPI_PROXY_EXPORT VpnProviderResource
                             uint32_t max_packet_size,
                             int32_t result);
   void OnPluginMsgSendPacketReply(const ResourceMessageReplyParams& params,
-                                  int32_t result);
+                                  uint32_t id);
 
   // Browser callbacks
   void OnPluginMsgOnUnbindReceived(const ResourceMessageReplyParams& params);
@@ -76,7 +76,7 @@ class PPAPI_PROXY_EXPORT VpnProviderResource
   PP_Var* receive_packet_callback_var_;
 
   std::unique_ptr<ppapi::VpnProviderSharedBuffer> send_packet_buffer_;
-  std::unique_ptr<ppapi::VpnProviderSharedBuffer> receive_packet_buffer_;
+  std::unique_ptr<ppapi::VpnProviderSharedBuffer> recv_packet_buffer_;
 
   std::queue<PP_Var> send_packets_;
   std::queue<scoped_refptr<Var>> received_packets_;
