@@ -23,9 +23,9 @@
  */
 
 #include "modules/webaudio/AudioDestinationNode.h"
-#include "modules/webaudio/AbstractAudioContext.h"
 #include "modules/webaudio/AudioNodeInput.h"
 #include "modules/webaudio/AudioNodeOutput.h"
+#include "modules/webaudio/BaseAudioContext.h"
 #include "platform/audio/AudioUtilities.h"
 #include "platform/audio/DenormalDisabler.h"
 #include "wtf/Atomics.h"
@@ -107,7 +107,7 @@ void AudioDestinationHandler::render(AudioBus* sourceBus, AudioBus* destinationB
 
 // ----------------------------------------------------------------
 
-AudioDestinationNode::AudioDestinationNode(AbstractAudioContext& context)
+AudioDestinationNode::AudioDestinationNode(BaseAudioContext& context)
     : AudioNode(context)
 {
 }

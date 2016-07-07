@@ -34,7 +34,7 @@
 namespace blink {
 
 class AudioBus;
-class AbstractAudioContext;
+class BaseAudioContext;
 
 class AudioDestinationHandler : public AudioHandler, public AudioIOCallback {
 public:
@@ -99,7 +99,7 @@ public:
     unsigned long maxChannelCount() const;
 
 protected:
-    AudioDestinationNode(AbstractAudioContext&);
+    AudioDestinationNode(BaseAudioContext&);
 };
 
 } // namespace blink

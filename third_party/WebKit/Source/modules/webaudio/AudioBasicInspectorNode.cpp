@@ -23,9 +23,9 @@
  */
 
 #include "modules/webaudio/AudioBasicInspectorNode.h"
-#include "modules/webaudio/AbstractAudioContext.h"
 #include "modules/webaudio/AudioNodeInput.h"
 #include "modules/webaudio/AudioNodeOutput.h"
+#include "modules/webaudio/BaseAudioContext.h"
 
 namespace blink {
 
@@ -50,7 +50,7 @@ AudioNode* AudioBasicInspectorNode::connect(AudioNode* destination, unsigned out
 {
     ASSERT(isMainThread());
 
-    AbstractAudioContext::AutoLocker locker(context());
+    BaseAudioContext::AutoLocker locker(context());
 
     AudioNode::connect(destination, outputIndex, inputIndex, exceptionState);
     static_cast<AudioBasicInspectorHandler&>(handler()).updatePullStatus();
@@ -62,7 +62,7 @@ void AudioBasicInspectorNode::disconnect(unsigned outputIndex, ExceptionState& e
 {
     ASSERT(isMainThread());
 
-    AbstractAudioContext::AutoLocker locker(context());
+    BaseAudioContext::AutoLocker locker(context());
 
     AudioNode::disconnect(outputIndex, exceptionState);
     static_cast<AudioBasicInspectorHandler&>(handler()).updatePullStatus();

@@ -11,14 +11,14 @@
 
 namespace blink {
 
-class AbstractAudioContext;
+class BaseAudioContext;
 class ExceptionState;
 
 class IIRFilterNode : public AudioNode {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static IIRFilterNode* create(
-        AbstractAudioContext&,
+        BaseAudioContext&,
         const Vector<double> feedforward,
         const Vector<double> feedback,
         ExceptionState&);
@@ -30,7 +30,7 @@ public:
     void getFrequencyResponse(const DOMFloat32Array* frequencyHz, DOMFloat32Array* magResponse, DOMFloat32Array* phaseResponse, ExceptionState&);
 
 private:
-    IIRFilterNode(AbstractAudioContext&, const Vector<double> denominator, const Vector<double> numerator);
+    IIRFilterNode(BaseAudioContext&, const Vector<double> denominator, const Vector<double> numerator);
 
     IIRProcessor* iirProcessor() const;
 };

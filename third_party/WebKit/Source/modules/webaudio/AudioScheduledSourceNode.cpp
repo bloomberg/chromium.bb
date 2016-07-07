@@ -27,7 +27,7 @@
 #include "core/dom/CrossThreadTask.h"
 #include "core/dom/ExceptionCode.h"
 #include "modules/EventModules.h"
-#include "modules/webaudio/AbstractAudioContext.h"
+#include "modules/webaudio/BaseAudioContext.h"
 #include "platform/audio/AudioUtilities.h"
 #include "wtf/MathExtras.h"
 #include <algorithm>
@@ -225,7 +225,7 @@ void AudioScheduledSourceHandler::notifyEnded()
 
 // ----------------------------------------------------------------
 
-AudioScheduledSourceNode::AudioScheduledSourceNode(AbstractAudioContext& context)
+AudioScheduledSourceNode::AudioScheduledSourceNode(BaseAudioContext& context)
     : AudioSourceNode(context)
     , ActiveScriptWrappable(this)
 {

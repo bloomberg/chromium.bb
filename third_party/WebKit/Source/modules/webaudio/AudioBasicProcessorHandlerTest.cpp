@@ -27,7 +27,7 @@ public:
 
 class MockProcessorNode final : public AudioNode {
 public:
-    MockProcessorNode(AbstractAudioContext& context)
+    MockProcessorNode(BaseAudioContext& context)
         : AudioNode(context)
     {
         setHandler(AudioBasicProcessorHandler::create(AudioHandler::NodeTypeWaveShaper, *this, 48000, wrapUnique(new MockAudioProcessor())));
@@ -43,7 +43,7 @@ TEST(AudioBasicProcessorHandlerTest, ProcessorFinalization)
     AudioBasicProcessorHandler& handler = static_cast<AudioBasicProcessorHandler&>(node->handler());
     EXPECT_TRUE(handler.processor());
     EXPECT_TRUE(handler.processor()->isInitialized());
-    AbstractAudioContext::AutoLocker locker(context);
+    BaseAudioContext::AutoLocker locker(context);
     handler.dispose();
     // The AudioProcessor should live after dispose() and should not be
     // finalized because an audio thread is using it.

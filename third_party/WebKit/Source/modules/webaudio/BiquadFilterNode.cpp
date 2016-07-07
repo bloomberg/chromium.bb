@@ -30,7 +30,7 @@
 
 namespace blink {
 
-BiquadFilterNode::BiquadFilterNode(AbstractAudioContext& context)
+BiquadFilterNode::BiquadFilterNode(BaseAudioContext& context)
     : AudioNode(context)
     , m_frequency(AudioParam::create(context, ParamTypeBiquadFilterFrequency, 350.0, 0, context.sampleRate() / 2))
     , m_q(AudioParam::create(context, ParamTypeBiquadFilterQ, 1.0))
@@ -54,7 +54,7 @@ BiquadFilterNode::BiquadFilterNode(AbstractAudioContext& context)
     setType("lowpass");
 }
 
-BiquadFilterNode* BiquadFilterNode::create(AbstractAudioContext& context, ExceptionState& exceptionState)
+BiquadFilterNode* BiquadFilterNode::create(BaseAudioContext& context, ExceptionState& exceptionState)
 {
     DCHECK(isMainThread());
 

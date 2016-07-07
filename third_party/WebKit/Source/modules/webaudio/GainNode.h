@@ -32,7 +32,7 @@
 
 namespace blink {
 
-class AbstractAudioContext;
+class BaseAudioContext;
 
 // GainNode is an AudioNode with one input and one output which applies a gain (volume) change to the audio signal.
 // De-zippering (smoothing) is applied when the gain value is changed dynamically.
@@ -59,13 +59,13 @@ private:
 class GainNode final : public AudioNode {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static GainNode* create(AbstractAudioContext&, ExceptionState&);
+    static GainNode* create(BaseAudioContext&, ExceptionState&);
     DECLARE_VIRTUAL_TRACE();
 
     AudioParam* gain() const;
 
 private:
-    GainNode(AbstractAudioContext&);
+    GainNode(BaseAudioContext&);
 
     Member<AudioParam> m_gain;
 };

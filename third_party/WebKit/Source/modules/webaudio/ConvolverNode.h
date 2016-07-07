@@ -75,7 +75,7 @@ private:
 class MODULES_EXPORT ConvolverNode final : public AudioNode {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static ConvolverNode* create(AbstractAudioContext&, ExceptionState&);
+    static ConvolverNode* create(BaseAudioContext&, ExceptionState&);
 
     AudioBuffer* buffer() const;
     void setBuffer(AudioBuffer*, ExceptionState&);
@@ -83,7 +83,7 @@ public:
     void setNormalize(bool);
 
 private:
-    ConvolverNode(AbstractAudioContext&);
+    ConvolverNode(BaseAudioContext&);
     ConvolverHandler& convolverHandler() const;
 
     FRIEND_TEST_ALL_PREFIXES(ConvolverNodeTest, ReverbLifetime);

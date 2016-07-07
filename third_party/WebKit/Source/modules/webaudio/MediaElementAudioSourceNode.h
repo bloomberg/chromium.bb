@@ -34,7 +34,7 @@
 
 namespace blink {
 
-class AbstractAudioContext;
+class BaseAudioContext;
 class HTMLMediaElement;
 
 class MediaElementAudioSourceHandler final : public AudioHandler {
@@ -100,7 +100,7 @@ class MediaElementAudioSourceNode final : public AudioSourceNode, public AudioSo
     DEFINE_WRAPPERTYPEINFO();
     USING_GARBAGE_COLLECTED_MIXIN(MediaElementAudioSourceNode);
 public:
-    static MediaElementAudioSourceNode* create(AbstractAudioContext&, HTMLMediaElement&, ExceptionState&);
+    static MediaElementAudioSourceNode* create(BaseAudioContext&, HTMLMediaElement&, ExceptionState&);
     DECLARE_VIRTUAL_TRACE();
     MediaElementAudioSourceHandler& mediaElementAudioSourceHandler() const;
 
@@ -113,7 +113,7 @@ public:
     void unlock() override;
 
 private:
-    MediaElementAudioSourceNode(AbstractAudioContext&, HTMLMediaElement&);
+    MediaElementAudioSourceNode(BaseAudioContext&, HTMLMediaElement&);
 };
 
 } // namespace blink

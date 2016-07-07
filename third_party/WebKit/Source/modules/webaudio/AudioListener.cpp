@@ -34,7 +34,7 @@
 
 namespace blink {
 
-AudioListener::AudioListener(AbstractAudioContext& context)
+AudioListener::AudioListener(BaseAudioContext& context)
     : m_positionX(AudioParam::create(context, ParamTypeAudioListenerPositionX, 0.0))
     , m_positionY(AudioParam::create(context, ParamTypeAudioListenerPositionY, 0.0))
     , m_positionZ(AudioParam::create(context, ParamTypeAudioListenerPositionZ, 0.0))

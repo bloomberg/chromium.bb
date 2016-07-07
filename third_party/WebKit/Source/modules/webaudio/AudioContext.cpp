@@ -26,7 +26,7 @@ const unsigned MaxHardwareContexts = 6;
 static unsigned s_hardwareContextCount = 0;
 static unsigned s_contextId = 0;
 
-AbstractAudioContext* AudioContext::create(Document& document, ExceptionState& exceptionState)
+BaseAudioContext* AudioContext::create(Document& document, ExceptionState& exceptionState)
 {
     ASSERT(isMainThread());
 
@@ -82,7 +82,7 @@ AbstractAudioContext* AudioContext::create(Document& document, ExceptionState& e
 }
 
 AudioContext::AudioContext(Document& document)
-    : AbstractAudioContext(&document)
+    : BaseAudioContext(&document)
     , m_contextId(s_contextId++)
 {
 }
@@ -97,7 +97,7 @@ AudioContext::~AudioContext()
 DEFINE_TRACE(AudioContext)
 {
     visitor->trace(m_closeResolver);
-    AbstractAudioContext::trace(visitor);
+    BaseAudioContext::trace(visitor);
 }
 
 ScriptPromise AudioContext::suspendContext(ScriptState* scriptState)
@@ -196,7 +196,7 @@ void AudioContext::didClose()
 
 bool AudioContext::isContextClosed() const
 {
-    return m_closeResolver || AbstractAudioContext::isContextClosed();
+    return m_closeResolver || BaseAudioContext::isContextClosed();
 }
 
 void AudioContext::stopRendering()

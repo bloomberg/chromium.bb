@@ -32,7 +32,7 @@
 
 namespace blink {
 
-class AbstractAudioContext;
+class BaseAudioContext;
 class AudioBuffer;
 class AudioBufferCallback;
 class AudioBus;
@@ -52,12 +52,12 @@ public:
     // Must be called on the main thread.  |decodeAsync| and callees must not modify any of the
     // parameters except |audioData|.  They are used to associate this decoding instance with the
     // caller to process the decoding appropriately when finished.
-    void decodeAsync(DOMArrayBuffer* audioData, float sampleRate, AudioBufferCallback* successCallback, AudioBufferCallback* errorCallback, ScriptPromiseResolver* , AbstractAudioContext*);
+    void decodeAsync(DOMArrayBuffer* audioData, float sampleRate, AudioBufferCallback* successCallback, AudioBufferCallback* errorCallback, ScriptPromiseResolver* , BaseAudioContext*);
 
 private:
     AudioBuffer* createAudioBufferFromAudioBus(AudioBus*);
-    static void decode(DOMArrayBuffer* audioData, float sampleRate, AudioBufferCallback* successCallback, AudioBufferCallback* errorCallback, ScriptPromiseResolver*, AbstractAudioContext*);
-    static void notifyComplete(DOMArrayBuffer* audioData, AudioBufferCallback* successCallback, AudioBufferCallback* errorCallback, AudioBus*, ScriptPromiseResolver*, AbstractAudioContext*);
+    static void decode(DOMArrayBuffer* audioData, float sampleRate, AudioBufferCallback* successCallback, AudioBufferCallback* errorCallback, ScriptPromiseResolver*, BaseAudioContext*);
+    static void notifyComplete(DOMArrayBuffer* audioData, AudioBufferCallback* successCallback, AudioBufferCallback* errorCallback, AudioBus*, ScriptPromiseResolver*, BaseAudioContext*);
 
     std::unique_ptr<WebThread> m_thread;
 };

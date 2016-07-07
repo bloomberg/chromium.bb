@@ -35,7 +35,7 @@ namespace blink {
 
 const double maximumAllowedDelayTime = 180;
 
-DelayNode::DelayNode(AbstractAudioContext& context, double maxDelayTime)
+DelayNode::DelayNode(BaseAudioContext& context, double maxDelayTime)
     : AudioNode(context)
     , m_delayTime(AudioParam::create(context, ParamTypeDelayDelayTime, 0.0, 0.0, maxDelayTime))
 {
@@ -50,7 +50,7 @@ DelayNode::DelayNode(AbstractAudioContext& context, double maxDelayTime)
             maxDelayTime))));
 }
 
-DelayNode* DelayNode::create(AbstractAudioContext& context, ExceptionState& exceptionState)
+DelayNode* DelayNode::create(BaseAudioContext& context, ExceptionState& exceptionState)
 {
     DCHECK(isMainThread());
 
@@ -58,7 +58,7 @@ DelayNode* DelayNode::create(AbstractAudioContext& context, ExceptionState& exce
     return create(context, 1, exceptionState);
 }
 
-DelayNode* DelayNode::create(AbstractAudioContext& context, double maxDelayTime, ExceptionState& exceptionState)
+DelayNode* DelayNode::create(BaseAudioContext& context, double maxDelayTime, ExceptionState& exceptionState)
 {
     DCHECK(isMainThread());
 

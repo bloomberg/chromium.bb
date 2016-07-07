@@ -22,8 +22,8 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef AbstractAudioContext_h
-#define AbstractAudioContext_h
+#ifndef BaseAudioContext_h
+#define BaseAudioContext_h
 
 #include "bindings/core/v8/ActiveScriptWrappable.h"
 #include "bindings/core/v8/ScriptPromise.h"
@@ -79,11 +79,11 @@ class SecurityOrigin;
 class StereoPannerNode;
 class WaveShaperNode;
 
-// AbstractAudioContext is the cornerstone of the web audio API and all AudioNodes are created from it.
+// BaseAudioContext is the cornerstone of the web audio API and all AudioNodes are created from it.
 // For thread safety between the audio thread and the main thread, it has a rendering graph locking mechanism.
 
-class MODULES_EXPORT AbstractAudioContext : public EventTargetWithInlineData, public ActiveScriptWrappable, public ActiveDOMObject {
-    USING_GARBAGE_COLLECTED_MIXIN(AbstractAudioContext);
+class MODULES_EXPORT BaseAudioContext : public EventTargetWithInlineData, public ActiveScriptWrappable, public ActiveDOMObject {
+    USING_GARBAGE_COLLECTED_MIXIN(BaseAudioContext);
     DEFINE_WRAPPERTYPEINFO();
 public:
     // The state of an audio context.  On creation, the state is Suspended. The state is Running if
@@ -97,9 +97,9 @@ public:
     };
 
     // Create an AudioContext for rendering to the audio hardware.
-    static AbstractAudioContext* create(Document&, ExceptionState&);
+    static BaseAudioContext* create(Document&, ExceptionState&);
 
-    ~AbstractAudioContext() override;
+    ~BaseAudioContext() override;
 
     DECLARE_VIRTUAL_TRACE();
 
@@ -216,7 +216,7 @@ public:
     // Keeps track of the number of connections made.
     void incrementConnectionCount()
     {
-        ASSERT(isMainThread());
+        DCHECK(isMainThread());
         m_connectionCount++;
     }
 
@@ -268,8 +268,8 @@ public:
     void recordUserGestureState();
 
 protected:
-    explicit AbstractAudioContext(Document*);
-    AbstractAudioContext(Document*, unsigned numberOfChannels, size_t numberOfFrames, float sampleRate);
+    explicit BaseAudioContext(Document*);
+    BaseAudioContext(Document*, unsigned numberOfChannels, size_t numberOfFrames, float sampleRate);
 
     void initialize();
     void uninitialize();
@@ -350,7 +350,7 @@ private:
     // Graph locking.
     RefPtr<DeferredTaskHandler> m_deferredTaskHandler;
 
-    // The state of the AbstractAudioContext.
+    // The state of the BaseAudioContext.
     AudioContextState m_contextState;
 
     AsyncAudioDecoder m_audioDecoder;
@@ -379,4 +379,4 @@ private:
 
 } // namespace blink
 
-#endif // AbstractAudioContext_h
+#endif // BaseAudioContext_h

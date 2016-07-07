@@ -31,13 +31,13 @@
 
 namespace blink {
 
-class AbstractAudioContext;
+class BaseAudioContext;
 class ExceptionState;
 
 class WaveShaperNode final : public AudioNode {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static WaveShaperNode* create(AbstractAudioContext&, ExceptionState&);
+    static WaveShaperNode* create(BaseAudioContext&, ExceptionState&);
 
     // setCurve() is called on the main thread.
     void setCurve(DOMFloat32Array*, ExceptionState&);
@@ -47,7 +47,7 @@ public:
     String oversample() const;
 
 private:
-    explicit WaveShaperNode(AbstractAudioContext&);
+    explicit WaveShaperNode(BaseAudioContext&);
 
     WaveShaperProcessor* getWaveShaperProcessor() const;
 };

@@ -31,7 +31,7 @@
 
 namespace blink {
 
-class AbstractAudioContext;
+class BaseAudioContext;
 class AudioParam;
 
 class BiquadFilterNode final : public AudioNode {
@@ -49,7 +49,7 @@ public:
         ALLPASS = 7
     };
 
-    static BiquadFilterNode* create(AbstractAudioContext&, ExceptionState&);
+    static BiquadFilterNode* create(BaseAudioContext&, ExceptionState&);
 
     DECLARE_VIRTUAL_TRACE();
 
@@ -66,7 +66,7 @@ public:
     void getFrequencyResponse(const DOMFloat32Array* frequencyHz, DOMFloat32Array* magResponse, DOMFloat32Array* phaseResponse);
 
 private:
-    BiquadFilterNode(AbstractAudioContext&);
+    BiquadFilterNode(BaseAudioContext&);
 
     BiquadProcessor* getBiquadProcessor() const;
     bool setType(unsigned); // Returns true on success.

@@ -35,7 +35,7 @@
 
 namespace blink {
 
-class AbstractAudioContext;
+class BaseAudioContext;
 class AudioBus;
 class OfflineAudioContext;
 
@@ -117,10 +117,10 @@ private:
 
 class OfflineAudioDestinationNode final : public AudioDestinationNode {
 public:
-    static OfflineAudioDestinationNode* create(AbstractAudioContext*, AudioBuffer* renderTarget);
+    static OfflineAudioDestinationNode* create(BaseAudioContext*, AudioBuffer* renderTarget);
 
 private:
-    OfflineAudioDestinationNode(AbstractAudioContext&, AudioBuffer* renderTarget);
+    OfflineAudioDestinationNode(BaseAudioContext&, AudioBuffer* renderTarget);
 };
 
 } // namespace blink

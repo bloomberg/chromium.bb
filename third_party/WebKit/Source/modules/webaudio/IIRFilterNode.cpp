@@ -7,14 +7,14 @@
 #include "bindings/core/v8/ExceptionMessages.h"
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"
-#include "modules/webaudio/AbstractAudioContext.h"
 #include "modules/webaudio/AudioBasicProcessorHandler.h"
+#include "modules/webaudio/BaseAudioContext.h"
 #include "platform/Histogram.h"
 #include "wtf/PtrUtil.h"
 
 namespace blink {
 
-IIRFilterNode::IIRFilterNode(AbstractAudioContext& context, const Vector<double> feedforwardCoef, const Vector<double> feedbackCoef)
+IIRFilterNode::IIRFilterNode(BaseAudioContext& context, const Vector<double> feedforwardCoef, const Vector<double> feedbackCoef)
     : AudioNode(context)
 {
     setHandler(AudioBasicProcessorHandler::create(
@@ -30,7 +30,7 @@ IIRFilterNode::IIRFilterNode(AbstractAudioContext& context, const Vector<double>
 }
 
 IIRFilterNode* IIRFilterNode::create(
-    AbstractAudioContext& context,
+    BaseAudioContext& context,
     const Vector<double> feedforwardCoef,
     const Vector<double> feedbackCoef,
     ExceptionState& exceptionState)

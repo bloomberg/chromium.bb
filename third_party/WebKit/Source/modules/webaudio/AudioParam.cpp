@@ -39,7 +39,7 @@ namespace blink {
 const double AudioParamHandler::DefaultSmoothingConstant = 0.05;
 const double AudioParamHandler::SnapThreshold = 0.001;
 
-AudioParamHandler::AudioParamHandler(AbstractAudioContext& context, AudioParamType paramType, double defaultValue, float minValue, float maxValue)
+AudioParamHandler::AudioParamHandler(BaseAudioContext& context, AudioParamType paramType, double defaultValue, float minValue, float maxValue)
     : AudioSummingJunction(context.deferredTaskHandler())
     , m_paramType(paramType)
     , m_intrinsicValue(defaultValue)
@@ -338,13 +338,13 @@ void AudioParamHandler::updateHistograms(float newValue)
 
 // ----------------------------------------------------------------
 
-AudioParam::AudioParam(AbstractAudioContext& context, AudioParamType paramType, double defaultValue, float minValue, float maxValue)
+AudioParam::AudioParam(BaseAudioContext& context, AudioParamType paramType, double defaultValue, float minValue, float maxValue)
     : m_handler(AudioParamHandler::create(context, paramType, defaultValue, minValue, maxValue))
     , m_context(context)
 {
 }
 
-AudioParam* AudioParam::create(AbstractAudioContext& context, AudioParamType paramType, double defaultValue)
+AudioParam* AudioParam::create(BaseAudioContext& context, AudioParamType paramType, double defaultValue)
 {
     // Default nominal range is most negative float to most positive.  This basically means any
     // value is valid, except that floating-point infinities are excluded.
@@ -352,7 +352,7 @@ AudioParam* AudioParam::create(AbstractAudioContext& context, AudioParamType par
     return new AudioParam(context, paramType, defaultValue, -limit, limit);
 }
 
-AudioParam* AudioParam::create(AbstractAudioContext& context, AudioParamType paramType, double defaultValue, float minValue, float maxValue)
+AudioParam* AudioParam::create(BaseAudioContext& context, AudioParamType paramType, double defaultValue, float minValue, float maxValue)
 {
     DCHECK_LE(minValue, maxValue);
     return new AudioParam(context, paramType, defaultValue, minValue, maxValue);

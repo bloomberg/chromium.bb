@@ -29,7 +29,7 @@
 #include "bindings/core/v8/ExceptionMessages.h"
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"
-#include "modules/webaudio/AbstractAudioContext.h"
+#include "modules/webaudio/BaseAudioContext.h"
 #include "modules/webaudio/OscillatorNode.h"
 #include "modules/webaudio/PeriodicWave.h"
 #include "platform/audio/FFTFrame.h"
@@ -52,7 +52,7 @@ const float CentsPerRange = 1200 / kNumberOfOctaveBands;
 using namespace VectorMath;
 
 PeriodicWave* PeriodicWave::create(
-    AbstractAudioContext& context,
+    BaseAudioContext& context,
     DOMFloat32Array* real,
     DOMFloat32Array* imag,
     bool disableNormalization,

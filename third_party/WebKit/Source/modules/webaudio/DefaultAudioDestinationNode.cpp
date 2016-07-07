@@ -26,7 +26,7 @@
 #include "bindings/core/v8/ExceptionMessages.h"
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"
-#include "modules/webaudio/AbstractAudioContext.h"
+#include "modules/webaudio/BaseAudioContext.h"
 #include "platform/Logging.h"
 
 namespace blink {
@@ -138,13 +138,13 @@ void DefaultAudioDestinationHandler::setChannelCount(unsigned long channelCount,
 
 // ----------------------------------------------------------------
 
-DefaultAudioDestinationNode::DefaultAudioDestinationNode(AbstractAudioContext& context)
+DefaultAudioDestinationNode::DefaultAudioDestinationNode(BaseAudioContext& context)
     : AudioDestinationNode(context)
 {
     setHandler(DefaultAudioDestinationHandler::create(*this));
 }
 
-DefaultAudioDestinationNode* DefaultAudioDestinationNode::create(AbstractAudioContext* context)
+DefaultAudioDestinationNode* DefaultAudioDestinationNode::create(BaseAudioContext* context)
 {
     return new DefaultAudioDestinationNode(*context);
 }

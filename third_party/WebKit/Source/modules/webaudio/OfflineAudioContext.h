@@ -26,7 +26,7 @@
 #define OfflineAudioContext_h
 
 #include "modules/ModulesExport.h"
-#include "modules/webaudio/AbstractAudioContext.h"
+#include "modules/webaudio/BaseAudioContext.h"
 #include "wtf/HashMap.h"
 
 namespace blink {
@@ -34,7 +34,7 @@ namespace blink {
 class ExceptionState;
 class OfflineAudioDestinationHandler;
 
-class MODULES_EXPORT OfflineAudioContext final : public AbstractAudioContext {
+class MODULES_EXPORT OfflineAudioContext final : public BaseAudioContext {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static OfflineAudioContext* create(ExecutionContext*, unsigned numberOfChannels, unsigned numberOfFrames, float sampleRate, ExceptionState&);
@@ -51,7 +51,7 @@ public:
     ScriptPromise suspendContext(ScriptState*, double);
     ScriptPromise resumeContext(ScriptState*) final;
 
-    // This is to implement the pure virtual method from AbstractAudioContext.
+    // This is to implement the pure virtual method from BaseAudioContext.
     // CANNOT be called from an OfflineAudioContext.
     ScriptPromise suspendContext(ScriptState*) final;
 
@@ -64,7 +64,7 @@ public:
     // Fire completion event when the rendering is finished.
     void fireCompletionEvent();
 
-    // This is same with the online version in AbstractAudioContext class except
+    // This is same with the online version in BaseAudioContext class except
     // for returning a boolean value after checking the scheduled suspends.
     bool handlePreOfflineRenderTasks();
 

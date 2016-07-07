@@ -7,7 +7,7 @@
 
 #include "bindings/core/v8/ScriptPromise.h"
 #include "bindings/core/v8/ScriptPromiseResolver.h"
-#include "modules/webaudio/AbstractAudioContext.h"
+#include "modules/webaudio/BaseAudioContext.h"
 #include "platform/heap/Handle.h"
 
 namespace blink {
@@ -16,11 +16,11 @@ class Document;
 class ExceptionState;
 class ScriptState;
 
-// This is an AbstractAudioContext which actually plays sound, unlike an
+// This is an BaseAudioContext which actually plays sound, unlike an
 // OfflineAudioContext which renders sound into a buffer.
-class AudioContext : public AbstractAudioContext {
+class AudioContext : public BaseAudioContext {
 public:
-    static AbstractAudioContext* create(Document&, ExceptionState&);
+    static BaseAudioContext* create(Document&, ExceptionState&);
 
     ~AudioContext() override;
     DECLARE_VIRTUAL_TRACE();

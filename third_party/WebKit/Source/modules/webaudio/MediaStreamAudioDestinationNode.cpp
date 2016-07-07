@@ -26,8 +26,8 @@
 #include "bindings/core/v8/ExceptionMessages.h"
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"
-#include "modules/webaudio/AbstractAudioContext.h"
 #include "modules/webaudio/AudioNodeInput.h"
+#include "modules/webaudio/BaseAudioContext.h"
 #include "platform/UUID.h"
 #include "platform/mediastream/MediaStreamCenter.h"
 #include "public/platform/WebRTCPeerConnectionHandler.h"
@@ -103,7 +103,7 @@ void MediaStreamAudioDestinationHandler::setChannelCount(unsigned long channelCo
     // TODO(hongchan): There might be a data race here since both threads
     // have access to m_mixBus.
     if (!exceptionState.hadException() && this->channelCount() != oldChannelCount && isInitialized()) {
-        AbstractAudioContext::AutoLocker locker(context());
+        BaseAudioContext::AutoLocker locker(context());
         m_mixBus = AudioBus::create(channelCount, ProcessingSizeInFrames);
         m_source->setAudioFormat(channelCount, context()->sampleRate());
     }
@@ -116,13 +116,13 @@ unsigned long MediaStreamAudioDestinationHandler::maxChannelCount() const
 
 // ----------------------------------------------------------------
 
-MediaStreamAudioDestinationNode::MediaStreamAudioDestinationNode(AbstractAudioContext& context, size_t numberOfChannels)
+MediaStreamAudioDestinationNode::MediaStreamAudioDestinationNode(BaseAudioContext& context, size_t numberOfChannels)
     : AudioBasicInspectorNode(context)
 {
     setHandler(MediaStreamAudioDestinationHandler::create(*this, numberOfChannels));
 }
 
-MediaStreamAudioDestinationNode* MediaStreamAudioDestinationNode::create(AbstractAudioContext& context, size_t numberOfChannels, ExceptionState& exceptionState)
+MediaStreamAudioDestinationNode* MediaStreamAudioDestinationNode::create(BaseAudioContext& context, size_t numberOfChannels, ExceptionState& exceptionState)
 {
     DCHECK(isMainThread());
 

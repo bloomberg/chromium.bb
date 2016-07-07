@@ -45,7 +45,7 @@ class PannerHandler;
 class AudioListener : public GarbageCollectedFinalized<AudioListener>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static AudioListener* create(AbstractAudioContext& context)
+    static AudioListener* create(BaseAudioContext& context)
     {
         return new AudioListener(context);
     }
@@ -143,7 +143,7 @@ public:
     DECLARE_TRACE();
 
 private:
-    AudioListener(AbstractAudioContext&);
+    AudioListener(BaseAudioContext&);
 
     void setPosition(const FloatPoint3D&);
     void setOrientation(const FloatPoint3D&);

@@ -27,11 +27,11 @@
 #include "core/dom/CrossThreadTask.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ExecutionContext.h"
-#include "modules/webaudio/AbstractAudioContext.h"
 #include "modules/webaudio/AudioBuffer.h"
 #include "modules/webaudio/AudioNodeInput.h"
 #include "modules/webaudio/AudioNodeOutput.h"
 #include "modules/webaudio/AudioProcessingEvent.h"
+#include "modules/webaudio/BaseAudioContext.h"
 #include "public/platform/Platform.h"
 
 namespace blink {
@@ -49,7 +49,7 @@ ScriptProcessorHandler::ScriptProcessorHandler(AudioNode& node, float sampleRate
     if (m_bufferSize < ProcessingSizeInFrames)
         m_bufferSize = ProcessingSizeInFrames;
 
-    ASSERT(numberOfInputChannels <= AbstractAudioContext::maxNumberOfChannels());
+    DCHECK_LE(numberOfInputChannels, BaseAudioContext::maxNumberOfChannels());
 
     addInput();
     addOutput(numberOfOutputChannels);
@@ -213,7 +213,7 @@ double ScriptProcessorHandler::latencyTime() const
 void ScriptProcessorHandler::setChannelCount(unsigned long channelCount, ExceptionState& exceptionState)
 {
     ASSERT(isMainThread());
-    AbstractAudioContext::AutoLocker locker(context());
+    BaseAudioContext::AutoLocker locker(context());
 
     if (channelCount != m_channelCount) {
         exceptionState.throwDOMException(
@@ -225,7 +225,7 @@ void ScriptProcessorHandler::setChannelCount(unsigned long channelCount, Excepti
 void ScriptProcessorHandler::setChannelCountMode(const String& mode, ExceptionState& exceptionState)
 {
     ASSERT(isMainThread());
-    AbstractAudioContext::AutoLocker locker(context());
+    BaseAudioContext::AutoLocker locker(context());
 
     if ((mode == "max") || (mode == "clamped-max")) {
         exceptionState.throwDOMException(
@@ -236,7 +236,7 @@ void ScriptProcessorHandler::setChannelCountMode(const String& mode, ExceptionSt
 
 // ----------------------------------------------------------------
 
-ScriptProcessorNode::ScriptProcessorNode(AbstractAudioContext& context, float sampleRate, size_t bufferSize, unsigned numberOfInputChannels, unsigned numberOfOutputChannels)
+ScriptProcessorNode::ScriptProcessorNode(BaseAudioContext& context, float sampleRate, size_t bufferSize, unsigned numberOfInputChannels, unsigned numberOfOutputChannels)
     : AudioNode(context)
     , ActiveScriptWrappable(this)
 {
@@ -260,7 +260,7 @@ static size_t chooseBufferSize()
 }
 
 ScriptProcessorNode* ScriptProcessorNode::create(
-    AbstractAudioContext& context,
+    BaseAudioContext& context,
     ExceptionState& exceptionState)
 {
     DCHECK(isMainThread());
@@ -271,7 +271,7 @@ ScriptProcessorNode* ScriptProcessorNode::create(
 }
 
 ScriptProcessorNode* ScriptProcessorNode::create(
-    AbstractAudioContext& context,
+    BaseAudioContext& context,
     size_t bufferSize,
     ExceptionState& exceptionState)
 {
@@ -282,7 +282,7 @@ ScriptProcessorNode* ScriptProcessorNode::create(
 }
 
 ScriptProcessorNode* ScriptProcessorNode::create(
-    AbstractAudioContext& context,
+    BaseAudioContext& context,
     size_t bufferSize,
     unsigned numberOfInputChannels,
     ExceptionState& exceptionState)
@@ -294,7 +294,7 @@ ScriptProcessorNode* ScriptProcessorNode::create(
 }
 
 ScriptProcessorNode* ScriptProcessorNode::create(
-    AbstractAudioContext& context,
+    BaseAudioContext& context,
     size_t bufferSize,
     unsigned numberOfInputChannels,
     unsigned numberOfOutputChannels,
@@ -314,21 +314,21 @@ ScriptProcessorNode* ScriptProcessorNode::create(
         return nullptr;
     }
 
-    if (numberOfInputChannels > AbstractAudioContext::maxNumberOfChannels()) {
+    if (numberOfInputChannels > BaseAudioContext::maxNumberOfChannels()) {
         exceptionState.throwDOMException(
             IndexSizeError,
             "number of input channels (" + String::number(numberOfInputChannels)
             + ") exceeds maximum ("
-            + String::number(AbstractAudioContext::maxNumberOfChannels()) + ").");
+            + String::number(BaseAudioContext::maxNumberOfChannels()) + ").");
         return nullptr;
     }
 
-    if (numberOfOutputChannels > AbstractAudioContext::maxNumberOfChannels()) {
+    if (numberOfOutputChannels > BaseAudioContext::maxNumberOfChannels()) {
         exceptionState.throwDOMException(
             IndexSizeError,
             "number of output channels (" + String::number(numberOfInputChannels)
             + ") exceeds maximum ("
-            + String::number(AbstractAudioContext::maxNumberOfChannels()) + ").");
+            + String::number(BaseAudioContext::maxNumberOfChannels()) + ").");
         return nullptr;
     }
 

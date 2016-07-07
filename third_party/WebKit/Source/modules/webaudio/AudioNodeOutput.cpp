@@ -22,9 +22,9 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "modules/webaudio/AbstractAudioContext.h"
 #include "modules/webaudio/AudioNodeInput.h"
 #include "modules/webaudio/AudioNodeOutput.h"
+#include "modules/webaudio/BaseAudioContext.h"
 #include "wtf/PtrUtil.h"
 #include "wtf/Threading.h"
 #include <memory>
@@ -43,7 +43,7 @@ inline AudioNodeOutput::AudioNodeOutput(AudioHandler* handler, unsigned numberOf
     , m_renderingFanOutCount(0)
     , m_renderingParamFanOutCount(0)
 {
-    ASSERT(numberOfChannels <= AbstractAudioContext::maxNumberOfChannels());
+    DCHECK_LE(numberOfChannels, BaseAudioContext::maxNumberOfChannels());
 
     m_internalBus = AudioBus::create(numberOfChannels, AudioHandler::ProcessingSizeInFrames);
 }
@@ -66,7 +66,7 @@ void AudioNodeOutput::dispose()
 
 void AudioNodeOutput::setNumberOfChannels(unsigned numberOfChannels)
 {
-    ASSERT(numberOfChannels <= AbstractAudioContext::maxNumberOfChannels());
+    DCHECK_LE(numberOfChannels, BaseAudioContext::maxNumberOfChannels());
     ASSERT(deferredTaskHandler().isGraphOwner());
 
     m_desiredNumberOfChannels = numberOfChannels;

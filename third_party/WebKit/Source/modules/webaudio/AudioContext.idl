@@ -34,7 +34,7 @@ enum AudioContextState {
     Constructor,
     ConstructorCallWith=Document,
     DependentLifetime,
-    ImplementedAs=AbstractAudioContext,
+    ImplementedAs=BaseAudioContext,
     NoInterfaceObject,
     RaisesException=Constructor,
 ] interface AudioContext : EventTarget {

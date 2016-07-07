@@ -33,7 +33,7 @@
 
 namespace blink {
 
-class AbstractAudioContext;
+class BaseAudioContext;
 class DynamicsCompressor;
 
 class MODULES_EXPORT DynamicsCompressorHandler final : public AudioHandler {
@@ -81,7 +81,7 @@ private:
 class MODULES_EXPORT DynamicsCompressorNode final : public AudioNode {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static DynamicsCompressorNode* create(AbstractAudioContext&, ExceptionState&);
+    static DynamicsCompressorNode* create(BaseAudioContext&, ExceptionState&);
     DECLARE_VIRTUAL_TRACE();
 
     AudioParam* threshold() const;
@@ -92,7 +92,7 @@ public:
     AudioParam* release() const;
 
 private:
-    DynamicsCompressorNode(AbstractAudioContext&);
+    DynamicsCompressorNode(BaseAudioContext&);
     DynamicsCompressorHandler& dynamicsCompressorHandler() const;
 
     Member<AudioParam> m_threshold;

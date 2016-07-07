@@ -34,7 +34,7 @@
 
 namespace blink {
 
-class AbstractAudioContext;
+class BaseAudioContext;
 class ExceptionState;
 class PeriodicWave;
 
@@ -99,7 +99,7 @@ private:
 class OscillatorNode final : public AudioScheduledSourceNode {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static OscillatorNode* create(AbstractAudioContext&, ExceptionState&);
+    static OscillatorNode* create(BaseAudioContext&, ExceptionState&);
     DECLARE_VIRTUAL_TRACE();
 
     String type() const;
@@ -109,7 +109,7 @@ public:
     void setPeriodicWave(PeriodicWave*);
 
 private:
-    OscillatorNode(AbstractAudioContext&);
+    OscillatorNode(BaseAudioContext&);
     OscillatorHandler& oscillatorHandler() const;
 
     Member<AudioParam> m_frequency;

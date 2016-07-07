@@ -27,10 +27,10 @@
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ExecutionContext.h"
-#include "modules/webaudio/AbstractAudioContext.h"
 #include "modules/webaudio/AudioBufferSourceNode.h"
 #include "modules/webaudio/AudioNodeInput.h"
 #include "modules/webaudio/AudioNodeOutput.h"
+#include "modules/webaudio/BaseAudioContext.h"
 #include "platform/Histogram.h"
 #include "platform/audio/HRTFPanner.h"
 #include "wtf/MathExtras.h"
@@ -134,7 +134,7 @@ void PannerHandler::process(size_t framesToProcess)
         // HRTFDatabase should be loaded before proceeding when the panning model is HRTF.
         if (m_panningModel == Panner::PanningModelHRTF && !listener()->isHRTFDatabaseLoaded()) {
             if (context()->hasRealtimeConstraint()) {
-                // Some AbstractAudioContexts cannot block on the HRTFDatabase loader.
+                // Some BaseAudioContexts cannot block on the HRTFDatabase loader.
                 destination->zero();
                 return;
             }
@@ -563,7 +563,7 @@ void PannerHandler::markPannerAsDirty(unsigned dirty)
 void PannerHandler::setChannelCount(unsigned long channelCount, ExceptionState& exceptionState)
 {
     ASSERT(isMainThread());
-    AbstractAudioContext::AutoLocker locker(context());
+    BaseAudioContext::AutoLocker locker(context());
 
     // A PannerNode only supports 1 or 2 channels
     if (channelCount > 0 && channelCount <= 2) {
@@ -588,7 +588,7 @@ void PannerHandler::setChannelCount(unsigned long channelCount, ExceptionState& 
 void PannerHandler::setChannelCountMode(const String& mode, ExceptionState& exceptionState)
 {
     ASSERT(isMainThread());
-    AbstractAudioContext::AutoLocker locker(context());
+    BaseAudioContext::AutoLocker locker(context());
 
     ChannelCountMode oldMode = m_channelCountMode;
 
@@ -640,7 +640,7 @@ void PannerHandler::updateDirtyState()
 }
 // ----------------------------------------------------------------
 
-PannerNode::PannerNode(AbstractAudioContext& context)
+PannerNode::PannerNode(BaseAudioContext& context)
     : AudioNode(context)
     , m_positionX(AudioParam::create(context, ParamTypePannerPositionX, 0.0))
     , m_positionY(AudioParam::create(context, ParamTypePannerPositionY, 0.0))
@@ -660,7 +660,7 @@ PannerNode::PannerNode(AbstractAudioContext& context)
         m_orientationZ->handler()));
 }
 
-PannerNode* PannerNode::create(AbstractAudioContext& context, ExceptionState& exceptionState)
+PannerNode* PannerNode::create(BaseAudioContext& context, ExceptionState& exceptionState)
 {
     DCHECK(isMainThread());
 

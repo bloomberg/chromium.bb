@@ -18,7 +18,7 @@ TEST(ScriptProcessorNodeTest, BufferLifetime)
     ScriptProcessorHandler& handler = static_cast<ScriptProcessorHandler&>(node->handler());
     EXPECT_EQ(2u, handler.m_inputBuffers.size());
     EXPECT_EQ(2u, handler.m_outputBuffers.size());
-    AbstractAudioContext::AutoLocker locker(context);
+    BaseAudioContext::AutoLocker locker(context);
     handler.dispose();
     // Buffers should live after dispose() because an audio thread is using
     // them.

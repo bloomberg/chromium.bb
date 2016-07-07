@@ -30,8 +30,8 @@
 #define AudioParamTimeline_h
 
 #include "core/dom/DOMTypedArray.h"
-#include "modules/webaudio/AbstractAudioContext.h"
 #include "modules/webaudio/AudioDestinationNode.h"
+#include "modules/webaudio/BaseAudioContext.h"
 #include "wtf/Forward.h"
 #include "wtf/Threading.h"
 #include "wtf/Vector.h"

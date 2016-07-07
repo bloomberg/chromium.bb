@@ -25,8 +25,8 @@
 #include "core/dom/CrossThreadTask.h"
 #include "core/html/HTMLMediaElement.h"
 #include "core/inspector/ConsoleMessage.h"
-#include "modules/webaudio/AbstractAudioContext.h"
 #include "modules/webaudio/AudioNodeOutput.h"
+#include "modules/webaudio/BaseAudioContext.h"
 #include "modules/webaudio/MediaElementAudioSourceNode.h"
 #include "platform/Logging.h"
 #include "platform/audio/AudioUtilities.h"
@@ -72,7 +72,7 @@ void MediaElementAudioSourceHandler::dispose()
 void MediaElementAudioSourceHandler::setFormat(size_t numberOfChannels, float sourceSampleRate)
 {
     if (numberOfChannels != m_sourceNumberOfChannels || sourceSampleRate != m_sourceSampleRate) {
-        if (!numberOfChannels || numberOfChannels > AbstractAudioContext::maxNumberOfChannels() || !AudioUtilities::isValidAudioBufferSampleRate(sourceSampleRate)) {
+        if (!numberOfChannels || numberOfChannels > BaseAudioContext::maxNumberOfChannels() || !AudioUtilities::isValidAudioBufferSampleRate(sourceSampleRate)) {
             // process() will generate silence for these uninitialized values.
             DLOG(ERROR) << "setFormat(" << numberOfChannels << ", " << sourceSampleRate << ") - unhandled format change";
             // Synchronize with process().
@@ -99,7 +99,7 @@ void MediaElementAudioSourceHandler::setFormat(size_t numberOfChannels, float so
 
         {
             // The context must be locked when changing the number of output channels.
-            AbstractAudioContext::AutoLocker contextLocker(context());
+            BaseAudioContext::AutoLocker contextLocker(context());
 
             // Do any necesssary re-configuration to the output's number of channels.
             output(0).setNumberOfChannels(numberOfChannels);
@@ -201,13 +201,13 @@ void MediaElementAudioSourceHandler::unlock()
 
 // ----------------------------------------------------------------
 
-MediaElementAudioSourceNode::MediaElementAudioSourceNode(AbstractAudioContext& context, HTMLMediaElement& mediaElement)
+MediaElementAudioSourceNode::MediaElementAudioSourceNode(BaseAudioContext& context, HTMLMediaElement& mediaElement)
     : AudioSourceNode(context)
 {
     setHandler(MediaElementAudioSourceHandler::create(*this, mediaElement));
 }
 
-MediaElementAudioSourceNode* MediaElementAudioSourceNode::create(AbstractAudioContext& context, HTMLMediaElement& mediaElement, ExceptionState& exceptionState)
+MediaElementAudioSourceNode* MediaElementAudioSourceNode::create(BaseAudioContext& context, HTMLMediaElement& mediaElement, ExceptionState& exceptionState)
 {
     DCHECK(isMainThread());
 

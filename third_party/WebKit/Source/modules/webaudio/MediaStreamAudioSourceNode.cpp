@@ -25,8 +25,8 @@
 #include "modules/webaudio/MediaStreamAudioSourceNode.h"
 
 #include "core/dom/ExceptionCode.h"
-#include "modules/webaudio/AbstractAudioContext.h"
 #include "modules/webaudio/AudioNodeOutput.h"
+#include "modules/webaudio/BaseAudioContext.h"
 #include "platform/Logging.h"
 #include "wtf/Locker.h"
 #include <memory>
@@ -61,7 +61,7 @@ void MediaStreamAudioSourceHandler::setFormat(size_t numberOfChannels, float sou
 {
     if (numberOfChannels != m_sourceNumberOfChannels || sourceSampleRate != sampleRate()) {
         // The sample-rate must be equal to the context's sample-rate.
-        if (!numberOfChannels || numberOfChannels > AbstractAudioContext::maxNumberOfChannels() || sourceSampleRate != sampleRate()) {
+        if (!numberOfChannels || numberOfChannels > BaseAudioContext::maxNumberOfChannels() || sourceSampleRate != sampleRate()) {
             // process() will generate silence for these uninitialized values.
             DLOG(ERROR) << "setFormat(" << numberOfChannels << ", " << sourceSampleRate << ") - unhandled format change";
             m_sourceNumberOfChannels = 0;
@@ -75,7 +75,7 @@ void MediaStreamAudioSourceHandler::setFormat(size_t numberOfChannels, float sou
 
         {
             // The context must be locked when changing the number of output channels.
-            AbstractAudioContext::AutoLocker contextLocker(context());
+            BaseAudioContext::AutoLocker contextLocker(context());
 
             // Do any necesssary re-configuration to the output's number of channels.
             output(0).setNumberOfChannels(numberOfChannels);
@@ -111,13 +111,13 @@ void MediaStreamAudioSourceHandler::process(size_t numberOfFrames)
 
 // ----------------------------------------------------------------
 
-MediaStreamAudioSourceNode::MediaStreamAudioSourceNode(AbstractAudioContext& context, MediaStream& mediaStream, MediaStreamTrack* audioTrack, std::unique_ptr<AudioSourceProvider> audioSourceProvider)
+MediaStreamAudioSourceNode::MediaStreamAudioSourceNode(BaseAudioContext& context, MediaStream& mediaStream, MediaStreamTrack* audioTrack, std::unique_ptr<AudioSourceProvider> audioSourceProvider)
     : AudioSourceNode(context)
 {
     setHandler(MediaStreamAudioSourceHandler::create(*this, mediaStream, audioTrack, std::move(audioSourceProvider)));
 }
 
-MediaStreamAudioSourceNode* MediaStreamAudioSourceNode::create(AbstractAudioContext& context, MediaStream& mediaStream, ExceptionState& exceptionState)
+MediaStreamAudioSourceNode* MediaStreamAudioSourceNode::create(BaseAudioContext& context, MediaStream& mediaStream, ExceptionState& exceptionState)
 {
     DCHECK(isMainThread());
 

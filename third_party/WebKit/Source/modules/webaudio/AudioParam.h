@@ -31,9 +31,9 @@
 
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "core/dom/DOMTypedArray.h"
-#include "modules/webaudio/AbstractAudioContext.h"
 #include "modules/webaudio/AudioParamTimeline.h"
 #include "modules/webaudio/AudioSummingJunction.h"
+#include "modules/webaudio/BaseAudioContext.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/ThreadSafeRefCounted.h"
 #include "wtf/text/WTFString.h"
@@ -100,7 +100,7 @@ public:
     static const double SnapThreshold;
 
     static PassRefPtr<AudioParamHandler> create(
-        AbstractAudioContext& context,
+        BaseAudioContext& context,
         AudioParamType paramType,
         double defaultValue,
         float minValue,
@@ -157,7 +157,7 @@ public:
     void updateHistograms(float newValue);
 
 private:
-    AudioParamHandler(AbstractAudioContext&, AudioParamType, double defaultValue, float min, float max);
+    AudioParamHandler(BaseAudioContext&, AudioParamType, double defaultValue, float min, float max);
 
     void warnIfOutsideRange(float value, float minValue, float maxValue);
 
@@ -191,14 +191,14 @@ private:
 class AudioParam final : public GarbageCollectedFinalized<AudioParam>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static AudioParam* create(AbstractAudioContext&, AudioParamType, double defaultValue);
-    static AudioParam* create(AbstractAudioContext&, AudioParamType, double defaultValue, float minValue, float maxValue);
+    static AudioParam* create(BaseAudioContext&, AudioParamType, double defaultValue);
+    static AudioParam* create(BaseAudioContext&, AudioParamType, double defaultValue, float minValue, float maxValue);
 
     DECLARE_TRACE();
     // |handler| always returns a valid object.
     AudioParamHandler& handler() const { return *m_handler; }
     // |context| always returns a valid object.
-    AbstractAudioContext* context() const { return m_context; }
+    BaseAudioContext* context() const { return m_context; }
 
     AudioParamType getParamType() const { return handler().getParamType(); }
     void setParamType(AudioParamType);
@@ -219,12 +219,12 @@ public:
     AudioParam* cancelScheduledValues(double startTime, ExceptionState&);
 
 private:
-    AudioParam(AbstractAudioContext&, AudioParamType, double defaultValue, float min, float max);
+    AudioParam(BaseAudioContext&, AudioParamType, double defaultValue, float min, float max);
 
     void warnIfOutsideRange(const String& paramMethd, float value);
 
     RefPtr<AudioParamHandler> m_handler;
-    Member<AbstractAudioContext> m_context;
+    Member<BaseAudioContext> m_context;
 };
 
 } // namespace blink

@@ -57,7 +57,7 @@ OfflineAudioContext* OfflineAudioContext::create(ExecutionContext* context, unsi
         return nullptr;
     }
 
-    if (numberOfChannels > AbstractAudioContext::maxNumberOfChannels()) {
+    if (numberOfChannels > BaseAudioContext::maxNumberOfChannels()) {
         exceptionState.throwDOMException(
             IndexSizeError,
             ExceptionMessages::indexOutsideRange<unsigned>(
@@ -65,7 +65,7 @@ OfflineAudioContext* OfflineAudioContext::create(ExecutionContext* context, unsi
                 numberOfChannels,
                 0,
                 ExceptionMessages::InclusiveBound,
-                AbstractAudioContext::maxNumberOfChannels(),
+                BaseAudioContext::maxNumberOfChannels(),
                 ExceptionMessages::InclusiveBound));
         return nullptr;
     }
@@ -114,7 +114,7 @@ OfflineAudioContext* OfflineAudioContext::create(ExecutionContext* context, unsi
 }
 
 OfflineAudioContext::OfflineAudioContext(Document* document, unsigned numberOfChannels, size_t numberOfFrames, float sampleRate, ExceptionState& exceptionState)
-    : AbstractAudioContext(document, numberOfChannels, numberOfFrames, sampleRate)
+    : BaseAudioContext(document, numberOfChannels, numberOfFrames, sampleRate)
     , m_isRenderingStarted(false)
     , m_totalRenderFrames(numberOfFrames)
 {
@@ -144,7 +144,7 @@ DEFINE_TRACE(OfflineAudioContext)
     visitor->trace(m_renderTarget);
     visitor->trace(m_completeResolver);
     visitor->trace(m_scheduledSuspends);
-    AbstractAudioContext::trace(visitor);
+    BaseAudioContext::trace(visitor);
 }
 
 ScriptPromise OfflineAudioContext::startOfflineRendering(ScriptState* scriptState)
@@ -205,7 +205,7 @@ ScriptPromise OfflineAudioContext::closeContext(ScriptState* scriptState)
 ScriptPromise OfflineAudioContext::suspendContext(ScriptState* scriptState)
 {
     // This CANNOT be called on OfflineAudioContext; this is only to implement
-    // the pure virtual interface from AbstractAudioContext.
+    // the pure virtual interface from BaseAudioContext.
     RELEASE_NOTREACHED();
 
     return ScriptPromise();

@@ -23,9 +23,9 @@
  */
 
 #include "core/dom/CrossThreadTask.h"
-#include "modules/webaudio/AbstractAudioContext.h"
 #include "modules/webaudio/AudioNodeInput.h"
 #include "modules/webaudio/AudioNodeOutput.h"
+#include "modules/webaudio/BaseAudioContext.h"
 #include "modules/webaudio/OfflineAudioContext.h"
 #include "modules/webaudio/OfflineAudioDestinationNode.h"
 #include "platform/audio/AudioBus.h"
@@ -314,13 +314,13 @@ bool OfflineAudioDestinationHandler::renderIfNotSuspended(AudioBus* sourceBus, A
 
 // ----------------------------------------------------------------
 
-OfflineAudioDestinationNode::OfflineAudioDestinationNode(AbstractAudioContext& context, AudioBuffer* renderTarget)
+OfflineAudioDestinationNode::OfflineAudioDestinationNode(BaseAudioContext& context, AudioBuffer* renderTarget)
     : AudioDestinationNode(context)
 {
     setHandler(OfflineAudioDestinationHandler::create(*this, renderTarget));
 }
 
-OfflineAudioDestinationNode* OfflineAudioDestinationNode::create(AbstractAudioContext* context, AudioBuffer* renderTarget)
+OfflineAudioDestinationNode* OfflineAudioDestinationNode::create(BaseAudioContext* context, AudioBuffer* renderTarget)
 {
     return new OfflineAudioDestinationNode(*context, renderTarget);
 }

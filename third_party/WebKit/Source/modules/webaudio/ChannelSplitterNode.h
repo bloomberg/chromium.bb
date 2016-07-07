@@ -30,7 +30,7 @@
 
 namespace blink {
 
-class AbstractAudioContext;
+class BaseAudioContext;
 
 class ChannelSplitterHandler final : public AudioHandler {
 public:
@@ -46,11 +46,11 @@ private:
 class ChannelSplitterNode final : public AudioNode {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static ChannelSplitterNode* create(AbstractAudioContext&, ExceptionState&);
-    static ChannelSplitterNode* create(AbstractAudioContext&, unsigned numberOfOutputs, ExceptionState&);
+    static ChannelSplitterNode* create(BaseAudioContext&, ExceptionState&);
+    static ChannelSplitterNode* create(BaseAudioContext&, unsigned numberOfOutputs, ExceptionState&);
 
 private:
-    ChannelSplitterNode(AbstractAudioContext&, unsigned numberOfOutputs);
+    ChannelSplitterNode(BaseAudioContext&, unsigned numberOfOutputs);
 };
 
 } // namespace blink

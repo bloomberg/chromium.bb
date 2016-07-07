@@ -35,7 +35,7 @@
 
 namespace blink {
 
-class AbstractAudioContext;
+class BaseAudioContext;
 
 class MediaStreamAudioSourceHandler final : public AudioHandler {
 public:
@@ -73,7 +73,7 @@ class MediaStreamAudioSourceNode final : public AudioSourceNode, public AudioSou
     DEFINE_WRAPPERTYPEINFO();
     USING_GARBAGE_COLLECTED_MIXIN(MediaStreamAudioSourceNode);
 public:
-    static MediaStreamAudioSourceNode* create(AbstractAudioContext&, MediaStream&, ExceptionState&);
+    static MediaStreamAudioSourceNode* create(BaseAudioContext&, MediaStream&, ExceptionState&);
     DECLARE_VIRTUAL_TRACE();
     MediaStreamAudioSourceHandler& mediaStreamAudioSourceHandler() const;
 
@@ -83,7 +83,7 @@ public:
     void setFormat(size_t numberOfChannels, float sampleRate) override;
 
 private:
-    MediaStreamAudioSourceNode(AbstractAudioContext&, MediaStream&, MediaStreamTrack*, std::unique_ptr<AudioSourceProvider>);
+    MediaStreamAudioSourceNode(BaseAudioContext&, MediaStream&, MediaStreamTrack*, std::unique_ptr<AudioSourceProvider>);
 };
 
 } // namespace blink

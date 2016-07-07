@@ -34,7 +34,7 @@
 
 namespace blink {
 
-class AbstractAudioContext;
+class BaseAudioContext;
 
 class ChannelMergerHandler final : public AudioHandler {
 public:
@@ -51,11 +51,11 @@ private:
 class ChannelMergerNode final : public AudioNode {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static ChannelMergerNode* create(AbstractAudioContext&, ExceptionState&);
-    static ChannelMergerNode* create(AbstractAudioContext&, unsigned numberOfInputs, ExceptionState&);
+    static ChannelMergerNode* create(BaseAudioContext&, ExceptionState&);
+    static ChannelMergerNode* create(BaseAudioContext&, unsigned numberOfInputs, ExceptionState&);
 
 private:
-    ChannelMergerNode(AbstractAudioContext&, unsigned numberOfInputs);
+    ChannelMergerNode(BaseAudioContext&, unsigned numberOfInputs);
 };
 
 } // namespace blink

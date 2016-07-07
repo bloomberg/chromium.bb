@@ -34,7 +34,7 @@
 
 namespace blink {
 
-class AbstractAudioContext;
+class BaseAudioContext;
 class AudioBus;
 
 class AudioScheduledSourceHandler : public AudioHandler {
@@ -138,7 +138,7 @@ public:
     DEFINE_INLINE_VIRTUAL_TRACE() { AudioSourceNode::trace(visitor); }
 
 protected:
-    explicit AudioScheduledSourceNode(AbstractAudioContext&);
+    explicit AudioScheduledSourceNode(BaseAudioContext&);
     AudioScheduledSourceHandler& audioScheduledSourceHandler() const;
 };
 

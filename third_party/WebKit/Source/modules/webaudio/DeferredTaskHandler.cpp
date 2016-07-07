@@ -263,7 +263,7 @@ void DeferredTaskHandler::contextWillBeDestroyed()
     // Some handlers might live because of their cross thread tasks.
 }
 
-DeferredTaskHandler::AutoLocker::AutoLocker(AbstractAudioContext* context)
+DeferredTaskHandler::AutoLocker::AutoLocker(BaseAudioContext* context)
     : m_handler(context->deferredTaskHandler())
 {
     m_handler.lock();
