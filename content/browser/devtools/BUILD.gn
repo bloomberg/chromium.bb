@@ -43,10 +43,8 @@ action("gen_devtools_protocol_handler") {
            "devtools_protocol_handler_generator.py"
 
   blink_protocol = "$root_gen_dir/blink/core/inspector/protocol.json"
-  browser_protocol = "browser_protocol.json"
   inputs = [
     blink_protocol,
-    browser_protocol,
   ]
 
   outputs = [

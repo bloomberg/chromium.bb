@@ -13,10 +13,8 @@ action("devtools_protocol_constants") {
     "//third_party/WebKit/Source/core/inspector:protocol_version",
   ]
   blink_protocol = "$root_gen_dir/blink/core/inspector/protocol.json"
-  browser_protocol = "//content/browser/devtools/browser_protocol.json"
   inputs = [
     blink_protocol,
-    browser_protocol,
   ]
   outputs = [
     "$target_gen_dir/devtools_protocol_constants.cc",
@@ -26,7 +24,6 @@ action("devtools_protocol_constants") {
   args = [ "chrome" ]
   args += rebase_path(outputs, root_build_dir)
   args += [ rebase_path(blink_protocol, root_build_dir) ]
-  args += [ rebase_path(browser_protocol, root_build_dir) ]
 }
 
 # GYP version: chrome/chrome_debugger.gypi:debugger
