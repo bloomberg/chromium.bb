@@ -80,7 +80,7 @@ StyleImage* CSSImageValue::cacheImage(Document* document, CrossOriginAttributeVa
 
 void CSSImageValue::restoreCachedResourceIfNeeded(Document& document) const
 {
-    if (m_isCachePending || !m_cachedImage || !document.fetcher())
+    if (m_isCachePending || !m_cachedImage || !document.fetcher() || m_absoluteURL.isNull())
         return;
     if (document.fetcher()->cachedResource(KURL(ParsedURLString, m_absoluteURL)))
         return;
