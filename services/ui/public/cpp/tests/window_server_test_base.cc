@@ -136,6 +136,22 @@ void WindowServerTestBase::OnAccelerator(uint32_t id, const ui::Event& event) {
     window_manager_delegate_->OnAccelerator(id, event);
 }
 
+void WindowServerTestBase::OnWmPerformMoveLoop(
+    Window* window,
+    mojom::MoveLoopSource source,
+    const gfx::Point& cursor_location,
+    const base::Callback<void(bool)>& on_done) {
+  if (window_manager_delegate_) {
+    window_manager_delegate_->OnWmPerformMoveLoop(window, source,
+                                                  cursor_location, on_done);
+  }
+}
+
+void WindowServerTestBase::OnWmCancelMoveLoop(Window* window) {
+  if (window_manager_delegate_)
+    window_manager_delegate_->OnWmCancelMoveLoop(window);
+}
+
 void WindowServerTestBase::Create(shell::Connection* connection,
                                   mojom::WindowTreeClientRequest request) {
   new WindowTreeClient(this, nullptr, std::move(request));

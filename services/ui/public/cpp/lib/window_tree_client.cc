@@ -235,8 +235,8 @@ bool WindowTreeClient::OwnsWindow(Window* window) const {
 }
 
 void WindowTreeClient::SetBounds(Window* window,
-                                     const gfx::Rect& old_bounds,
-                                     const gfx::Rect& bounds) {
+                                 const gfx::Rect& old_bounds,
+                                 const gfx::Rect& bounds) {
   DCHECK(tree_);
   const uint32_t change_id = ScheduleInFlightChange(
       base::WrapUnique(new InFlightBoundsChange(window, old_bounds)));
@@ -583,6 +583,17 @@ void WindowTreeClient::OnReceivedCursorLocationMemory(
   DCHECK(cursor_location_mapping_);
 }
 
+void WindowTreeClient::OnWmMoveLoopCompleted(uint32_t change_id,
+                                             bool completed) {
+  if (window_manager_internal_client_)
+    window_manager_internal_client_->WmResponse(change_id, completed);
+
+  if (change_id == current_wm_move_loop_change_) {
+    current_wm_move_loop_change_ = 0;
+    current_wm_move_loop_window_id_ = 0;
+  }
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // WindowTreeClient, WindowTreeClient implementation:
 
@@ -625,6 +636,25 @@ void WindowTreeClient::SetEventObserver(mojom::EventMatcherPtr matcher) {
     event_observer_id_++;
     tree_->SetEventObserver(std::move(matcher), event_observer_id_);
   }
+}
+
+void WindowTreeClient::PerformWindowMove(
+    Window* window,
+    ui::mojom::MoveLoopSource source,
+    const gfx::Point& cursor_location,
+    const base::Callback<void(bool)>& callback) {
+  DCHECK(on_current_move_finished_.is_null());
+  on_current_move_finished_ = callback;
+
+  current_move_loop_change_ = ScheduleInFlightChange(
+      base::MakeUnique<InFlightMoveLoopChange>(window));
+  // Tell the window manager to take over moving us.
+  tree_->PerformWindowMove(current_move_loop_change_, window->server_id(),
+                           source, cursor_location);
+}
+
+void WindowTreeClient::CancelWindowMove(Window* window) {
+  tree_->CancelWindowMove(window->server_id());
 }
 
 Window* WindowTreeClient::NewWindow(
@@ -1022,6 +1052,12 @@ void WindowTreeClient::OnChangeCompleted(uint32_t change_id, bool success) {
   } else if (!success) {
     change->Revert();
   }
+
+  if (change_id == current_move_loop_change_) {
+    current_move_loop_change_ = 0;
+    on_current_move_finished_.Run(success);
+    on_current_move_finished_.Reset();
+  }
 }
 
 void WindowTreeClient::GetWindowManager(
@@ -1072,9 +1108,9 @@ void WindowTreeClient::WmSetBounds(uint32_t change_id,
 }
 
 void WindowTreeClient::WmSetProperty(uint32_t change_id,
-                                         Id window_id,
-                                         const mojo::String& name,
-                                         mojo::Array<uint8_t> transit_data) {
+                                     Id window_id,
+                                     const mojo::String& name,
+                                     mojo::Array<uint8_t> transit_data) {
   Window* window = GetWindowByServerId(window_id);
   bool result = false;
   if (window) {
@@ -1111,13 +1147,44 @@ void WindowTreeClient::WmCreateTopLevelWindow(
 }
 
 void WindowTreeClient::WmClientJankinessChanged(ClientSpecificId client_id,
-                                                    bool janky) {
+                                                bool janky) {
   if (window_manager_delegate_) {
     auto it = embedded_windows_.find(client_id);
     CHECK(it != embedded_windows_.end());
     window_manager_delegate_->OnWmClientJankinessChanged(
         embedded_windows_[client_id], janky);
   }
+}
+
+void WindowTreeClient::WmPerformMoveLoop(uint32_t change_id,
+                                         Id window_id,
+                                         mojom::MoveLoopSource source,
+                                         const gfx::Point& cursor_location) {
+  if (!window_manager_delegate_ || current_wm_move_loop_change_ != 0) {
+    OnWmMoveLoopCompleted(change_id, false);
+    return;
+  }
+
+  current_wm_move_loop_change_ = change_id;
+  current_wm_move_loop_window_id_ = window_id;
+  Window* window = GetWindowByServerId(window_id);
+  if (window) {
+    window_manager_delegate_->OnWmPerformMoveLoop(
+        window, source, cursor_location,
+        base::Bind(&WindowTreeClient::OnWmMoveLoopCompleted,
+                   weak_factory_.GetWeakPtr(), change_id));
+  } else {
+    OnWmMoveLoopCompleted(change_id, false);
+  }
+}
+
+void WindowTreeClient::WmCancelMoveLoop(uint32_t change_id) {
+  if (!window_manager_delegate_ || change_id != current_wm_move_loop_change_)
+    return;
+
+  Window* window = GetWindowByServerId(current_wm_move_loop_window_id_);
+  if (window)
+    window_manager_delegate_->OnWmCancelMoveLoop(window);
 }
 
 void WindowTreeClient::OnAccelerator(uint32_t id,

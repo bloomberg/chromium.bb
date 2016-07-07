@@ -155,6 +155,11 @@ bool DefaultAccessPolicy::CanSetCursorProperties(
          delegate_->HasRootForAccessPolicy(window);
 }
 
+bool DefaultAccessPolicy::CanInitiateMoveLoop(
+    const ServerWindow* window) const {
+  return delegate_->HasRootForAccessPolicy(window);
+}
+
 bool DefaultAccessPolicy::ShouldNotifyOnHierarchyChange(
     const ServerWindow* window,
     const ServerWindow** new_parent,

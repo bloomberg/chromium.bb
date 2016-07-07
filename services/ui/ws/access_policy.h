@@ -61,6 +61,7 @@ class AccessPolicy {
   // Used for all client controllable cursor properties; which cursor should be
   // displayed, visibility, locking, etc.
   virtual bool CanSetCursorProperties(const ServerWindow* window) const = 0;
+  virtual bool CanInitiateMoveLoop(const ServerWindow* window) const = 0;
 
   // Returns whether the client should notify on a hierarchy change.
   // |new_parent| and |old_parent| are initially set to the new and old parents

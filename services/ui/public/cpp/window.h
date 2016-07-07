@@ -222,6 +222,16 @@ class Window {
   // to a better place.
   void RequestClose();
 
+  // Tells the window manager to take control of moving the window. Returns
+  // true if the move wasn't canceled.
+  void PerformWindowMove(mojom::MoveLoopSource source,
+                         const gfx::Point& cursor_location,
+                         const base::Callback<void(bool)>& callback);
+
+  // Tells the window manager to abort any current move initiated by
+  // PerformWindowMove().
+  void CancelWindowMove();
+
   // Returns an internal name, set by a client app when it creates a window.
   std::string GetName() const;
 

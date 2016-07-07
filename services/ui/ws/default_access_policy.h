@@ -52,6 +52,7 @@ class DefaultAccessPolicy : public AccessPolicy {
   bool CanSetClientArea(const ServerWindow* window) const override;
   bool CanSetHitTestMask(const ServerWindow* window) const override;
   bool CanSetCursorProperties(const ServerWindow* window) const override;
+  bool CanInitiateMoveLoop(const ServerWindow* window) const override;
   bool ShouldNotifyOnHierarchyChange(
       const ServerWindow* window,
       const ServerWindow** new_parent,

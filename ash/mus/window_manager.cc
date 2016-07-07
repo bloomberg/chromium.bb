@@ -242,5 +242,17 @@ void WindowManager::OnAccelerator(uint32_t id, const ui::Event& event) {
   }
 }
 
+void WindowManager::OnWmPerformMoveLoop(
+    ::ui::Window* window,
+    ::ui::mojom::MoveLoopSource source,
+    const gfx::Point& cursor_location,
+    const base::Callback<void(bool)>& on_done) {
+  NOTIMPLEMENTED();
+}
+
+void WindowManager::OnWmCancelMoveLoop(::ui::Window* window) {
+  NOTIMPLEMENTED();
+}
+
 }  // namespace mus
 }  // namespace ash

@@ -1296,7 +1296,8 @@ void WindowTree::OnWindowInputEventAck(uint32_t event_id,
                                        mojom::EventResult result) {
   if (event_ack_id_ == 0 || event_id != event_ack_id_) {
     // TODO(sad): Something bad happened. Kill the client?
-    NOTIMPLEMENTED() << "Wrong event acked.";
+    NOTIMPLEMENTED() << ": Wrong event acked. event_id=" << event_id
+                     << ", event_ack_id_=" << event_ack_id_;
   }
   event_ack_id_ = 0;
 
@@ -1408,6 +1409,70 @@ void WindowTree::GetCursorLocationMemory(
       GetCursorLocationMemory());
 }
 
+void WindowTree::PerformWindowMove(uint32_t change_id,
+                                   Id window_id,
+                                   ui::mojom::MoveLoopSource source,
+                                   const gfx::Point& cursor) {
+  ServerWindow* window = GetWindowByClientId(ClientWindowId(window_id));
+  bool success = window && access_policy_->CanInitiateMoveLoop(window);
+  if (!success || !ShouldRouteToWindowManager(window)) {
+    // We need to fail this move loop change, otherwise the client will just be
+    // waiting for |change_id|.
+    OnChangeCompleted(change_id, false);
+    return;
+  }
+
+  WindowManagerDisplayRoot* display_root = GetWindowManagerDisplayRoot(window);
+  if (!display_root) {
+    // The window isn't parented. There's nothing to do.
+    OnChangeCompleted(change_id, false);
+    return;
+  }
+
+  if (window_server_->in_move_loop()) {
+    // A window manager is already servicing a move loop; we can't start a
+    // second one.
+    OnChangeCompleted(change_id, false);
+    return;
+  }
+
+  // When we perform a window move loop, we give the window manager non client
+  // capture. Because of how the capture public interface currently works,
+  // SetCapture() will check whether the mouse cursor is currently in the
+  // non-client area and if so, will redirect messages to the window
+  // manager. (And normal window movement relies on this behaviour.)
+  WindowManagerState* wms = display_root->window_manager_state();
+  wms->SetCapture(window, wms->window_tree()->id());
+
+  const uint32_t wm_change_id =
+      window_server_->GenerateWindowManagerChangeId(this, change_id);
+  window_server_->StartMoveLoop(wm_change_id, window, this, window->bounds());
+  wms->window_tree()->window_manager_internal_->WmPerformMoveLoop(
+      wm_change_id, wms->window_tree()->ClientWindowIdForWindow(window).id,
+      source, cursor);
+}
+
+void WindowTree::CancelWindowMove(Id window_id) {
+  ServerWindow* window = GetWindowByClientId(ClientWindowId(window_id));
+  bool success = window && access_policy_->CanInitiateMoveLoop(window);
+  if (!success)
+    return;
+
+  if (window != window_server_->GetCurrentMoveLoopWindow())
+    return;
+
+  if (window_server_->GetCurrentMoveLoopInitiator() != this)
+    return;
+
+  WindowManagerDisplayRoot* display_root = GetWindowManagerDisplayRoot(window);
+  if (!display_root)
+    return;
+
+  WindowManagerState* wms = display_root->window_manager_state();
+  wms->window_tree()->window_manager_internal_->WmCancelMoveLoop(
+      window_server_->GetCurrentMoveLoopChangeId());
+}
+
 void WindowTree::AddAccelerator(uint32_t id,
                                 mojom::EventMatcherPtr event_matcher,
                                 const AddAcceleratorCallback& callback) {
@@ -1478,6 +1543,32 @@ void WindowTree::SetUnderlaySurfaceOffsetAndExtendedHitArea(
 }
 
 void WindowTree::WmResponse(uint32_t change_id, bool response) {
+  if (window_server_->in_move_loop() &&
+      window_server_->GetCurrentMoveLoopChangeId() == change_id) {
+    ServerWindow* window = window_server_->GetCurrentMoveLoopWindow();
+
+    if (window->id().client_id != id_) {
+      window_server_->WindowManagerSentBogusMessage();
+      window = nullptr;
+    } else {
+      WindowManagerDisplayRoot* display_root =
+          GetWindowManagerDisplayRoot(window);
+      if (display_root) {
+        WindowManagerState* wms = display_root->window_manager_state();
+        // Clear the implicit capture.
+        wms->SetCapture(nullptr, false);
+      }
+    }
+
+    if (!response && window) {
+      // Our move loop didn't succeed, which means that we must restore the
+      // original bounds of the window.
+      window->SetBounds(window_server_->GetCurrentMoveLoopRevertBounds());
+    }
+
+    window_server_->EndMoveLoop();
+  }
+
   window_server_->WindowManagerChangeCompleted(change_id, response);
 }
 

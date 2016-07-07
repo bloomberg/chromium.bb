@@ -16,6 +16,7 @@
 #include "services/ui/public/interfaces/cursor.mojom.h"
 #include "services/ui/public/interfaces/event_matcher.mojom.h"
 #include "services/ui/public/interfaces/window_manager_constants.mojom.h"
+#include "services/ui/public/interfaces/window_tree_constants.mojom.h"
 #include "ui/events/mojo/event.mojom.h"
 
 namespace display {
@@ -106,6 +107,14 @@ class WindowManagerDelegate {
                               const display::Display& display) = 0;
 
   virtual void OnAccelerator(uint32_t id, const ui::Event& event) = 0;
+
+  virtual void OnWmPerformMoveLoop(
+      Window* window,
+      ui::mojom::MoveLoopSource source,
+      const gfx::Point& cursor_location,
+      const base::Callback<void(bool)>& on_done) = 0;
+
+  virtual void OnWmCancelMoveLoop(Window* window) = 0;
 
  protected:
   virtual ~WindowManagerDelegate() {}

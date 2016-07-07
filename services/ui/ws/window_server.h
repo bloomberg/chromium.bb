@@ -196,7 +196,19 @@ class WindowServer : public ServerWindowDelegate,
   // a [re]paint. This should only be called in a test configuration.
   void SetPaintCallback(const base::Callback<void(ServerWindow*)>& callback);
 
+  void StartMoveLoop(uint32_t change_id,
+                     ServerWindow* window,
+                     WindowTree* initiator,
+                     const gfx::Rect& revert_bounds);
+  void EndMoveLoop();
+  uint32_t GetCurrentMoveLoopChangeId();
+  ServerWindow* GetCurrentMoveLoopWindow();
+  WindowTree* GetCurrentMoveLoopInitiator();
+  gfx::Rect GetCurrentMoveLoopRevertBounds();
+  bool in_move_loop() const { return !!current_move_loop_; }
+
  private:
+  struct CurrentMoveLoopState;
   friend class Operation;
 
   using WindowTreeMap =
@@ -310,6 +322,8 @@ class WindowServer : public ServerWindowDelegate,
   ClientSpecificId next_client_id_;
 
   std::unique_ptr<DisplayManager> display_manager_;
+
+  std::unique_ptr<CurrentMoveLoopState> current_move_loop_;
 
   // Set of WindowTrees.
   WindowTreeMap tree_map_;

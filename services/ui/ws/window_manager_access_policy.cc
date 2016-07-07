@@ -140,6 +140,11 @@ bool WindowManagerAccessPolicy::CanSetCursorProperties(
          delegate_->HasRootForAccessPolicy(window);
 }
 
+bool WindowManagerAccessPolicy::CanInitiateMoveLoop(
+    const ServerWindow* window) const {
+  return false;
+}
+
 bool WindowManagerAccessPolicy::ShouldNotifyOnHierarchyChange(
     const ServerWindow* window,
     const ServerWindow** new_parent,

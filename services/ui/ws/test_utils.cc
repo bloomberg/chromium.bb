@@ -167,6 +167,15 @@ void TestWindowManager::WmCreateTopLevelWindow(
 void TestWindowManager::WmClientJankinessChanged(ClientSpecificId client_id,
                                                  bool janky) {}
 
+void TestWindowManager::WmPerformMoveLoop(uint32_t change_id,
+                                          uint32_t window_id,
+                                          mojom::MoveLoopSource source,
+                                          const gfx::Point& cursor_location) {
+  on_perform_move_loop_called_ = true;
+}
+
+void TestWindowManager::WmCancelMoveLoop(uint32_t window_id) {}
+
 void TestWindowManager::OnAccelerator(uint32_t id,
                                       std::unique_ptr<ui::Event> event) {
   on_accelerator_called_ = true;

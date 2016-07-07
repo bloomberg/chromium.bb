@@ -181,6 +181,17 @@ class WindowTreeClient : public mojom::WindowTreeClient,
   // will be ignored.
   void SetEventObserver(mojom::EventMatcherPtr matcher);
 
+  // Performs a window move. |callback| will be asynchronously called with the
+  // whether the move loop completed successfully.
+  void PerformWindowMove(Window* window,
+                         ui::mojom::MoveLoopSource source,
+                         const gfx::Point& cursor_location,
+                         const base::Callback<void(bool)>& callback);
+
+  // Cancels a in progress window move. (If no window is currently being moved,
+  // does nothing.)
+  void CancelWindowMove(Window* window);
+
   // Creates and returns a new Window (which is owned by the window server).
   // Windows are initially hidden, use SetVisible(true) to show.
   Window* NewWindow() { return NewWindow(nullptr); }
@@ -247,6 +258,9 @@ class WindowTreeClient : public mojom::WindowTreeClient,
                              bool parent_drawn);
 
   void OnReceivedCursorLocationMemory(mojo::ScopedSharedBufferHandle handle);
+
+  // Callback passed from WmPerformMoveLoop().
+  void OnWmMoveLoopCompleted(uint32_t change_id, bool completed);
 
   // Overridden from WindowTreeClient:
   void OnEmbed(ClientSpecificId client_id,
@@ -322,6 +336,11 @@ class WindowTreeClient : public mojom::WindowTreeClient,
                                   transport_properties) override;
   void WmClientJankinessChanged(ClientSpecificId client_id,
                                 bool janky) override;
+  void WmPerformMoveLoop(uint32_t change_id,
+                         Id window_id,
+                         mojom::MoveLoopSource source,
+                         const gfx::Point& cursor_location) override;
+  void WmCancelMoveLoop(uint32_t window_id) override;
   void OnAccelerator(uint32_t id, std::unique_ptr<ui::Event> event) override;
 
   // Overridden from WindowManagerClient:
@@ -395,6 +414,17 @@ class WindowTreeClient : public mojom::WindowTreeClient,
 
   // Monotonically increasing ID for event observers.
   uint32_t event_observer_id_ = 0u;
+
+  // The current change id for the client.
+  uint32_t current_move_loop_change_ = 0u;
+
+  // The current change id for the window manager.
+  uint32_t current_wm_move_loop_change_ = 0u;
+  Id current_wm_move_loop_window_id_ = 0u;
+
+  // Callback executed when a move loop initiated by PerformWindowMove() is
+  // completed.
+  base::Callback<void(bool)> on_current_move_finished_;
 
   base::WeakPtrFactory<WindowTreeClient> weak_factory_;
 

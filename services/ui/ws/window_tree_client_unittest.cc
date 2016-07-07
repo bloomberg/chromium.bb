@@ -414,6 +414,13 @@ class TestWindowTreeClient : public mojom::WindowTreeClient,
                                 bool janky) override {
     NOTIMPLEMENTED();
   }
+  void WmPerformMoveLoop(uint32_t change_id,
+                         uint32_t window_id,
+                         mojom::MoveLoopSource source,
+                         const gfx::Point& cursor_location) override {
+    NOTIMPLEMENTED();
+  }
+  void WmCancelMoveLoop(uint32_t window_id) override { NOTIMPLEMENTED(); }
   void OnAccelerator(uint32_t id, std::unique_ptr<ui::Event> event) override {
     NOTIMPLEMENTED();
   }

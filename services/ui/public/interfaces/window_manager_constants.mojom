@@ -62,6 +62,13 @@ struct Display {
   FrameDecorationValues frame_decoration_values;
 };
 
+// Whether a client initiated move loop was started with a mouse event or a
+// touch event.
+enum MoveLoopSource {
+  MOUSE,
+  TOUCH
+};
+
 enum WindowType {
   // These constants come from Widget::InitParams. See it for details.
   // TODO: see if we can reduce this set. For example, why do we need both

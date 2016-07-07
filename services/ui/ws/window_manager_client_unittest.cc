@@ -62,6 +62,12 @@ class TestWindowManagerDelegate : public WindowManagerDelegate {
   void OnWmNewDisplay(Window* window,
                       const display::Display& display) override {}
   void OnAccelerator(uint32_t id, const ui::Event& event) override {}
+  void OnWmPerformMoveLoop(Window* window,
+                           mojom::MoveLoopSource source,
+                           const gfx::Point& cursor_location,
+                           const base::Callback<void(bool)>& on_done) override {
+  }
+  void OnWmCancelMoveLoop(Window* window) override {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TestWindowManagerDelegate);

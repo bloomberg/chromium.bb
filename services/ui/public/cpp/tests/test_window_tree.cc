@@ -164,4 +164,11 @@ void TestWindowTree::GetCursorLocationMemory(
   callback.Run(mojo::ScopedSharedBufferHandle());
 }
 
+void TestWindowTree::PerformWindowMove(uint32_t change_id,
+                                       uint32_t window_id,
+                                       mojom::MoveLoopSource source,
+                                       const gfx::Point& cursor_location) {}
+
+void TestWindowTree::CancelWindowMove(uint32_t window_id) {}
+
 }  // namespace ui

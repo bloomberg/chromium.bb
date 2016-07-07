@@ -405,6 +405,11 @@ class WindowTree : public mojom::WindowTree,
       override;
   void GetCursorLocationMemory(const GetCursorLocationMemoryCallback& callback)
       override;
+  void PerformWindowMove(uint32_t change_id,
+                         Id window_id,
+                         ui::mojom::MoveLoopSource source,
+                         const gfx::Point& cursor) override;
+  void CancelWindowMove(Id window_id) override;
 
   // mojom::WindowManagerClient:
   void AddAccelerator(uint32_t id,

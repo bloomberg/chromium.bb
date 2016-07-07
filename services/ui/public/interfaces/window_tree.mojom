@@ -233,6 +233,17 @@ interface WindowTree {
   // single Atomic32, which represent the current location of the mouse cursor
   // where the location is (x << 16) | y.
   GetCursorLocationMemory() => (handle<shared_buffer> cursor_buffer);
+
+  // Tells the window manager to start moving the window. OnChangeCompleted is
+  // called on whether the move was canceled. Because there's a delay between
+  // when a client sends this message and when the window manager starts acting
+  // on it, pass the cursor location at the start of the move.
+  PerformWindowMove(uint32 change_id, uint32 window_id, MoveLoopSource source,
+                    gfx.mojom.Point cursor);
+
+  // Tells the window manager to cancel any in progress window move started with
+  // StartWindowMove() and to revert the window bounds to how they were.
+  CancelWindowMove(uint32 window_id);
 };
 
 // Changes to windows are not sent to the connection that originated the

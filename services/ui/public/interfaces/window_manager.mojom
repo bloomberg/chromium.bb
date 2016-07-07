@@ -83,6 +83,16 @@ interface WindowManager {
   // can update the UI for the janky windows.
   WmClientJankinessChanged(uint16 client_id, bool janky);
 
+  // Asks the WindowManager to interactively move the window. This will return
+  // whether this completed successfully or not through the client's
+  // OnWmMoveLoopCompleted().
+  WmPerformMoveLoop(uint32 change_id, uint32 window_id,
+                    MoveLoopSource source,
+                    gfx.mojom.Point cursor_location);
+
+  // Asks the WindowManager to cancel any outstanding move loop on |change_id|.
+  WmCancelMoveLoop(uint32 change_id);
+
   // An accelerator registered via AddAccelerator() has been triggered.
   OnAccelerator(uint32 id, ui.mojom.Event event);
 };

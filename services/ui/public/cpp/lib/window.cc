@@ -465,6 +465,16 @@ void Window::RequestClose() {
     client_->RequestClose(this);
 }
 
+void Window::PerformWindowMove(mojom::MoveLoopSource source,
+                               const gfx::Point& cursor_location,
+                               const base::Callback<void(bool)>& callback) {
+  client_->PerformWindowMove(this, source, cursor_location, callback);
+}
+
+void Window::CancelWindowMove() {
+  client_->CancelWindowMove(this);
+}
+
 std::string Window::GetName() const {
   if (HasSharedProperty(mojom::WindowManager::kName_Property))
     return GetSharedProperty<std::string>(mojom::WindowManager::kName_Property);

@@ -33,8 +33,9 @@ enum class ChangeType {
   CAPTURE,
   DELETE_WINDOW,
   FOCUS,
-  NEW_WINDOW,
+  MOVE_LOOP,
   NEW_TOP_LEVEL_WINDOW,
+  NEW_WINDOW,
   OPACITY,
   PREDEFINED_CURSOR,
   PROPERTY,
@@ -141,6 +142,18 @@ class InFlightBoundsChange : public InFlightChange {
   gfx::Rect revert_bounds_;
 
   DISALLOW_COPY_AND_ASSIGN(InFlightBoundsChange);
+};
+
+class InFlightMoveLoopChange : public InFlightChange {
+ public:
+  explicit InFlightMoveLoopChange(Window* window);
+
+  // InFlightChange:
+  void SetRevertValueFrom(const InFlightChange& change) override;
+  void Revert() override;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(InFlightMoveLoopChange);
 };
 
 // Inflight change that crashes on failure. This is useful for changes that are

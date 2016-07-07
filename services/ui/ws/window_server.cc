@@ -30,6 +30,13 @@
 namespace ui {
 namespace ws {
 
+struct WindowServer::CurrentMoveLoopState {
+  uint32_t change_id;
+  ServerWindow* window;
+  WindowTree* initiator;
+  gfx::Rect revert_bounds;
+};
+
 WindowServer::WindowServer(
     WindowServerDelegate* delegate,
     const scoped_refptr<ui::SurfacesState>& surfaces_state)
@@ -413,6 +420,42 @@ void WindowServer::SetPaintCallback(
                                     << "allowed only in tests.";
   DCHECK(window_paint_callback_.is_null() || callback.is_null());
   window_paint_callback_ = callback;
+}
+
+void WindowServer::StartMoveLoop(uint32_t change_id,
+                                 ServerWindow* window,
+                                 WindowTree* initiator,
+                                 const gfx::Rect& revert_bounds) {
+  current_move_loop_.reset(
+      new CurrentMoveLoopState{change_id, window, initiator, revert_bounds});
+}
+
+void WindowServer::EndMoveLoop() {
+  current_move_loop_.reset();
+}
+
+uint32_t WindowServer::GetCurrentMoveLoopChangeId() {
+  if (current_move_loop_)
+    return current_move_loop_->change_id;
+  return 0;
+}
+
+ServerWindow* WindowServer::GetCurrentMoveLoopWindow() {
+  if (current_move_loop_)
+    return current_move_loop_->window;
+  return nullptr;
+}
+
+WindowTree* WindowServer::GetCurrentMoveLoopInitiator() {
+  if (current_move_loop_)
+    return current_move_loop_->initiator;
+  return nullptr;
+}
+
+gfx::Rect WindowServer::GetCurrentMoveLoopRevertBounds() {
+  if (current_move_loop_)
+    return current_move_loop_->revert_bounds;
+  return gfx::Rect();
 }
 
 bool WindowServer::GetAndClearInFlightWindowManagerChange(

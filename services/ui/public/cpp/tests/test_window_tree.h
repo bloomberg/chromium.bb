@@ -100,6 +100,11 @@ class TestWindowTree : public mojom::WindowTree {
       override;
   void GetCursorLocationMemory(const GetCursorLocationMemoryCallback& callback)
       override;
+  void PerformWindowMove(uint32_t change_id,
+                         uint32_t window_id,
+                         mojom::MoveLoopSource source,
+                         const gfx::Point& cursor_location) override;
+  void CancelWindowMove(uint32_t window_id) override;
 
   bool got_change_;
   uint32_t change_id_;
