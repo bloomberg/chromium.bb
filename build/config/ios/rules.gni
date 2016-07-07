@@ -377,6 +377,58 @@ template("bundle_data_xib") {
   }
 }
 
+# Compile a strings file and add it to a bundle_data so that it is available
+# at runtime in the bundle.
+#
+# Arguments
+#
+#   source:
+#       string, path of the strings file to compile.
+#
+#   output:
+#       string, path of the compiled file in the final bundle.
+#
+# Forwards all variables to the bundle_data target.
+template("bundle_data_strings") {
+  assert(defined(invoker.source), "source needs to be defined for $target_name")
+  assert(defined(invoker.output), "output needs to be defined for $target_name")
+
+  _source_extension = get_path_info(invoker.source, "extension")
+  assert(_source_extension == "strings",
+         "source must be a .strings for $target_name")
+
+  _target_name = target_name
+  _convert_target = target_name + "_compile_strings"
+
+  convert_plist(_convert_target) {
+    visibility = [ ":$_target_name" ]
+    source = invoker.source
+    output =
+        "$target_gen_dir/$_target_name/" + get_path_info(invoker.source, "file")
+    format = "binary1"
+  }
+
+  bundle_data(_target_name) {
+    forward_variables_from(invoker,
+                           "*",
+                           [
+                             "source",
+                             "output",
+                           ])
+
+    if (!defined(public_deps)) {
+      public_deps = []
+    }
+    public_deps += [ ":$_convert_target" ]
+
+    sources = get_target_outputs(":$_convert_target")
+
+    outputs = [
+      invoker.output,
+    ]
+  }
+}
+
 # Template to package a shared library into an iOS framework bundle.
 #
 # This template provides two targets to control whether the framework is
