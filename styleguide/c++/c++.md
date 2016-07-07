@@ -11,9 +11,9 @@ A checkout should give you
 to automatically format C++ code. By policy, Clang's formatting of code should
 always be accepted in code reviews.
 
-You can propose changes to the style guide by sending an email to
-`cxx@chromium.org`. Ideally, the list will arrive at some consensus and the
-wiki page will be updated to mention that consensus. If there's no consensus,
+You can propose changes to this style guide by sending an email to
+`cxx@chromium.org`. Ideally, the list will arrive at some consensus and you can
+request review for a change to this file. If there's no consensus,
 `src/styleguide/c++/OWNERS` get to decide.
 
 Blink code in `third_party/WebKit` uses [Blink
