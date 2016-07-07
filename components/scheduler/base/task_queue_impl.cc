@@ -219,32 +219,32 @@ bool TaskQueueImpl::PostDelayedTaskImpl(
 }
 
 void TaskQueueImpl::PushOntoDelayedIncomingQueueFromMainThread(
-    const Task& pending_task,
+    Task pending_task,
     base::TimeTicks now) {
   main_thread_only().task_queue_manager->DidQueueTask(pending_task);
 
   // Schedule a later call to MoveReadyDelayedTasksToDelayedWorkQueue.
-  main_thread_only().delayed_incoming_queue.push(pending_task);
+  base::TimeTicks delayed_run_time = pending_task.delayed_run_time;
+  main_thread_only().delayed_incoming_queue.push(std::move(pending_task));
   main_thread_only().time_domain->ScheduleDelayedWork(
-      this, pending_task.delayed_run_time, now);
+      this, delayed_run_time, now);
   TraceQueueSize(false);
 }
 
-void TaskQueueImpl::PushOntoDelayedIncomingQueueLocked(
-    const Task& pending_task) {
+void TaskQueueImpl::PushOntoDelayedIncomingQueueLocked(Task pending_task) {
   any_thread().task_queue_manager->DidQueueTask(pending_task);
 
   int thread_hop_task_sequence_number =
       any_thread().task_queue_manager->GetNextSequenceNumber();
   PushOntoImmediateIncomingQueueLocked(Task(
       FROM_HERE,
-      base::Bind(&TaskQueueImpl::ScheduleDelayedWorkTask, this, pending_task),
+      base::Bind(&TaskQueueImpl::ScheduleDelayedWorkTask, this,
+                 base::Passed(&pending_task)),
       base::TimeTicks(), thread_hop_task_sequence_number, false,
       thread_hop_task_sequence_number));
 }
 
-void TaskQueueImpl::PushOntoImmediateIncomingQueueLocked(
-    const Task& pending_task) {
+void TaskQueueImpl::PushOntoImmediateIncomingQueueLocked(Task pending_task) {
   if (any_thread().immediate_incoming_queue.empty())
     any_thread().time_domain->RegisterAsUpdatableTaskQueue(this);
   if (any_thread().pump_policy == PumpPolicy::AUTO &&
@@ -252,15 +252,16 @@ void TaskQueueImpl::PushOntoImmediateIncomingQueueLocked(
     any_thread().task_queue_manager->MaybeScheduleImmediateWork(FROM_HERE);
   }
   any_thread().task_queue_manager->DidQueueTask(pending_task);
-  any_thread().immediate_incoming_queue.push(pending_task);
+  any_thread().immediate_incoming_queue.push(std::move(pending_task));
   TraceQueueSize(true);
 }
 
-void TaskQueueImpl::ScheduleDelayedWorkTask(const Task& pending_task) {
+void TaskQueueImpl::ScheduleDelayedWorkTask(Task pending_task) {
   DCHECK(main_thread_checker_.CalledOnValidThread());
-  main_thread_only().delayed_incoming_queue.push(pending_task);
+  base::TimeTicks delayed_run_time = pending_task.delayed_run_time;
+  main_thread_only().delayed_incoming_queue.push(std::move(pending_task));
   main_thread_only().time_domain->ScheduleDelayedWork(
-      this, pending_task.delayed_run_time,
+      this, delayed_run_time,
       main_thread_only().time_domain->Now());
 }
 
@@ -667,21 +668,32 @@ void TaskQueueImpl::SetBlameContext(
 // static
 void TaskQueueImpl::QueueAsValueInto(const std::queue<Task>& queue,
                                      base::trace_event::TracedValue* state) {
-  std::queue<Task> queue_copy(queue);
-  while (!queue_copy.empty()) {
-    TaskAsValueInto(queue_copy.front(), state);
-    queue_copy.pop();
+  // Remove const to search |queue| in the destructive manner. Restore the
+  // content from |visited| later.
+  std::queue<Task>* mutable_queue = const_cast<std::queue<Task>*>(&queue);
+  std::queue<Task> visited;
+  while (!mutable_queue->empty()) {
+    TaskAsValueInto(mutable_queue->front(), state);
+    visited.push(std::move(mutable_queue->front()));
+    mutable_queue->pop();
   }
+  *mutable_queue = std::move(visited);
 }
 
 // static
 void TaskQueueImpl::QueueAsValueInto(const std::priority_queue<Task>& queue,
                                      base::trace_event::TracedValue* state) {
-  std::priority_queue<Task> queue_copy(queue);
-  while (!queue_copy.empty()) {
-    TaskAsValueInto(queue_copy.top(), state);
-    queue_copy.pop();
+  // Remove const to search |queue| in the destructive manner. Restore the
+  // content from |visited| later.
+  std::priority_queue<Task>* mutable_queue =
+      const_cast<std::priority_queue<Task>*>(&queue);
+  std::priority_queue<Task> visited;
+  while (!mutable_queue->empty()) {
+    TaskAsValueInto(mutable_queue->top(), state);
+    visited.push(std::move(const_cast<Task&>(mutable_queue->top())));
+    mutable_queue->pop();
   }
+  *mutable_queue = std::move(visited);
 }
 
 // static

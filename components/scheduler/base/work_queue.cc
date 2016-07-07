@@ -16,11 +16,17 @@ WorkQueue::WorkQueue(TaskQueueImpl* task_queue, const char* name)
       name_(name) {}
 
 void WorkQueue::AsValueInto(base::trace_event::TracedValue* state) const {
-  std::queue<TaskQueueImpl::Task> queue_copy(work_queue_);
-  while (!queue_copy.empty()) {
-    TaskQueueImpl::TaskAsValueInto(queue_copy.front(), state);
-    queue_copy.pop();
+  // Remove const to search |work_queue_| in the destructive manner. Restore the
+  // content from |visited| later.
+  std::queue<TaskQueueImpl::Task>* mutable_queue =
+      const_cast<std::queue<TaskQueueImpl::Task>*>(&work_queue_);
+  std::queue<TaskQueueImpl::Task> visited;
+  while (!mutable_queue->empty()) {
+    TaskQueueImpl::TaskAsValueInto(mutable_queue->front(), state);
+    visited.push(std::move(mutable_queue->front()));
+    mutable_queue->pop();
   }
+  *mutable_queue = std::move(visited);
 }
 
 WorkQueue::~WorkQueue() {
@@ -41,17 +47,17 @@ bool WorkQueue::GetFrontTaskEnqueueOrder(EnqueueOrder* enqueue_order) const {
   return true;
 }
 
-void WorkQueue::Push(const TaskQueueImpl::Task& task) {
+void WorkQueue::Push(TaskQueueImpl::Task task) {
   bool was_empty = work_queue_.empty();
-  work_queue_.push(task);
+  work_queue_.push(std::move(task));
   if (was_empty && work_queue_sets_)
     work_queue_sets_->OnPushQueue(this);
 }
 
-void WorkQueue::PushAndSetEnqueueOrder(const TaskQueueImpl::Task& task,
+void WorkQueue::PushAndSetEnqueueOrder(TaskQueueImpl::Task task,
                                        EnqueueOrder enqueue_order) {
   bool was_empty = work_queue_.empty();
-  work_queue_.push(task);
+  work_queue_.push(std::move(task));
   work_queue_.back().set_enqueue_order(enqueue_order);
 
   if (was_empty && work_queue_sets_)

@@ -328,7 +328,7 @@ TaskQueueManager::ProcessTaskResult TaskQueueManager::ProcessTaskFromWorkQueue(
   }
 
   pending_task.task.Reset();
-  *out_previous_task = pending_task;
+  *out_previous_task = std::move(pending_task);
   return ProcessTaskResult::EXECUTED;
 }
 

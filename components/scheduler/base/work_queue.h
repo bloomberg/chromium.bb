@@ -49,11 +49,11 @@ class SCHEDULER_EXPORT WorkQueue {
 
   // Pushes the task onto the |work_queue_| and informs the WorkQueueSets if
   // the head changed.
-  void Push(const TaskQueueImpl::Task& task);
+  void Push(TaskQueueImpl::Task task);
 
   // Pushes the task onto the |work_queue_|, sets the |enqueue_order| and
   // informs the WorkQueueSets if the head changed.
-  void PushAndSetEnqueueOrder(const TaskQueueImpl::Task& task,
+  void PushAndSetEnqueueOrder(TaskQueueImpl::Task task,
                               EnqueueOrder enqueue_order);
 
   // Swap the |work_queue_| with |incoming_queue| and informs the
@@ -88,6 +88,8 @@ class SCHEDULER_EXPORT WorkQueue {
   TaskQueueImpl* task_queue_;       // NOT OWNED.
   size_t work_queue_set_index_;
   const char* name_;
+
+  DISALLOW_COPY_AND_ASSIGN(WorkQueue);
 };
 
 }  // namespace internal

@@ -271,7 +271,7 @@ class PostTaskTest : public testing::Test {
         TaskQueue loop_local_queue;
         queue->ReloadWorkQueue(&loop_local_queue);
         while (!loop_local_queue.empty()) {
-          PendingTask t = loop_local_queue.front();
+          PendingTask t = std::move(loop_local_queue.front());
           loop_local_queue.pop();
           loop.RunTask(t);
         }
