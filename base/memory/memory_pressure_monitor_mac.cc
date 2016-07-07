@@ -10,6 +10,10 @@
 
 #include "base/mac/mac_util.h"
 
+// Redeclare for partial 10.9 availability.
+DISPATCH_EXPORT const struct dispatch_source_type_s
+    _dispatch_source_type_memorypressure;
+
 namespace base {
 namespace mac {
 
@@ -36,31 +40,22 @@ void MemoryPressureMonitor::NotifyMemoryPressureChanged(
 }
 
 MemoryPressureMonitor::MemoryPressureMonitor()
-  : memory_level_event_source_(nullptr) {
-  // _dispatch_source_type_memorypressure is not available prior to 10.9.
-  dispatch_source_type_t dispatch_source_memorypressure =
-      static_cast<dispatch_source_type_t>
-          (dlsym(RTLD_NEXT, "_dispatch_source_type_memorypressure"));
-  if (dispatch_source_memorypressure) {
     // The MemoryPressureListener doesn't want to know about transitions to
     // MEMORY_PRESSURE_LEVEL_NONE so don't watch for
     // DISPATCH_MEMORYPRESSURE_NORMAL notifications.
-    memory_level_event_source_.reset(
-        dispatch_source_create(dispatch_source_memorypressure, 0,
-                               DISPATCH_MEMORYPRESSURE_WARN |
-                                   DISPATCH_MEMORYPRESSURE_CRITICAL,
-                               dispatch_get_global_queue(
-                                   DISPATCH_QUEUE_PRIORITY_DEFAULT, 0)));
-
-    dispatch_source_set_event_handler(memory_level_event_source_.get(), ^{
-        NotifyMemoryPressureChanged(memory_level_event_source_.get());
-    });
-    dispatch_retain(memory_level_event_source_.get());
-    dispatch_resume(memory_level_event_source_.get());
-  }
+    : memory_level_event_source_(dispatch_source_create(
+          DISPATCH_SOURCE_TYPE_MEMORYPRESSURE,
+          0,
+          DISPATCH_MEMORYPRESSURE_WARN | DISPATCH_MEMORYPRESSURE_CRITICAL,
+          dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0))) {
+  dispatch_source_set_event_handler(memory_level_event_source_, ^{
+    NotifyMemoryPressureChanged(memory_level_event_source_.get());
+  });
+  dispatch_resume(memory_level_event_source_);
 }
 
 MemoryPressureMonitor::~MemoryPressureMonitor() {
+  dispatch_source_cancel(memory_level_event_source_);
 }
 
 MemoryPressureListener::MemoryPressureLevel
