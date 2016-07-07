@@ -86,6 +86,16 @@ static inline ImageBitmapSource* toImageBitmapSourceInternal(const ImageBitmapSo
     return nullptr;
 }
 
+ScriptPromise ImageBitmapFactories::createImageBitmapFromBlob(ScriptState* scriptState, EventTarget& eventTarget, ImageBitmapSource* bitmapSource, const IntRect& cropRect, const ImageBitmapOptions& options)
+{
+    Blob* blob = static_cast<Blob*>(bitmapSource);
+    ImageBitmapLoader* loader = ImageBitmapFactories::ImageBitmapLoader::create(from(eventTarget), cropRect, options, scriptState);
+    ScriptPromise promise = loader->promise();
+    from(eventTarget).addLoader(loader);
+    loader->loadBlobAsync(eventTarget.getExecutionContext(), blob);
+    return promise;
+}
+
 ScriptPromise ImageBitmapFactories::createImageBitmap(ScriptState* scriptState, EventTarget& eventTarget, const ImageBitmapSourceUnion& bitmapSource, const ImageBitmapOptions& options, ExceptionState& exceptionState)
 {
     UseCounter::Feature feature = UseCounter::CreateImageBitmap;
@@ -93,14 +103,8 @@ ScriptPromise ImageBitmapFactories::createImageBitmap(ScriptState* scriptState, 
     ImageBitmapSource* bitmapSourceInternal = toImageBitmapSourceInternal(bitmapSource, exceptionState, false);
     if (!bitmapSourceInternal)
         return ScriptPromise();
-    if (bitmapSourceInternal->isBlob()) {
-        Blob* blob = static_cast<Blob*>(bitmapSourceInternal);
-        ImageBitmapLoader* loader = ImageBitmapFactories::ImageBitmapLoader::create(from(eventTarget), IntRect(), options, scriptState);
-        ScriptPromise promise = loader->promise();
-        from(eventTarget).addLoader(loader);
-        loader->loadBlobAsync(eventTarget.getExecutionContext(), blob);
-        return promise;
-    }
+    if (bitmapSourceInternal->isBlob())
+        return createImageBitmapFromBlob(scriptState, eventTarget, bitmapSourceInternal, IntRect(), options);
     IntSize srcSize = bitmapSourceInternal->bitmapSourceSize();
     return createImageBitmap(scriptState, eventTarget, bitmapSourceInternal, 0, 0, srcSize.width(), srcSize.height(), options, exceptionState);
 }
@@ -122,12 +126,7 @@ ScriptPromise ImageBitmapFactories::createImageBitmap(ScriptState* scriptState, 
             exceptionState.throwDOMException(IndexSizeError, String::format("The source %s provided is 0.", sw ? "height" : "width"));
             return ScriptPromise();
         }
-        Blob* blob = static_cast<Blob*>(bitmapSource);
-        ImageBitmapLoader* loader = ImageBitmapFactories::ImageBitmapLoader::create(from(eventTarget), IntRect(sx, sy, sw, sh), options, scriptState);
-        ScriptPromise promise = loader->promise();
-        from(eventTarget).addLoader(loader);
-        loader->loadBlobAsync(eventTarget.getExecutionContext(), blob);
-        return promise;
+        return createImageBitmapFromBlob(scriptState, eventTarget, bitmapSource, IntRect(sx, sy, sw, sh), options);
     }
 
     return bitmapSource->createImageBitmap(scriptState, eventTarget, sx, sy, sw, sh, options, exceptionState);
