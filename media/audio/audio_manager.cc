@@ -82,6 +82,9 @@ class AudioManagerHelper : public base::PowerObserver {
                               base::Unretained(this)));
   }
 
+  base::SingleThreadTaskRunner* monitor_task_runner() const {
+    return monitor_task_runner_.get();
+  }
   AudioLogFactory* fake_log_factory() { return &fake_log_factory_; }
 
 #if defined(OS_WIN)
@@ -344,8 +347,11 @@ ScopedAudioManagerPtr AudioManager::CreateForTesting(
 }
 
 // static
-void AudioManager::StartHangMonitor(
+void AudioManager::StartHangMonitorIfNeeded(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
+  if (g_helper.Pointer()->monitor_task_runner())
+    return;
+
   DCHECK(AudioManager::Get());
   DCHECK(task_runner);
   DCHECK_NE(task_runner, AudioManager::Get()->GetTaskRunner());

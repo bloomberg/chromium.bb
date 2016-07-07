@@ -1490,7 +1490,6 @@ void BrowserMainLoop::CreateAudioManager() {
   DCHECK(!audio_thread_);
   DCHECK(!audio_manager_);
 
-  bool use_hang_monitor = true;
   audio_manager_ = GetContentClient()->browser()->CreateAudioManager(
       MediaInternals::GetInstance());
   if (!audio_manager_) {
@@ -1502,9 +1501,6 @@ void BrowserMainLoop::CreateAudioManager() {
 #if defined(OS_MACOSX)
     // On Mac audio task runner must belong to the main thread.
     // See http://crbug.com/158170.
-    // Since the audio thread is the UI thread, a hang monitor is not
-    // necessary or recommended.
-    use_hang_monitor = false;
     scoped_refptr<base::SingleThreadTaskRunner> audio_task_runner =
         base::ThreadTaskRunnerHandle::Get();
 #else
@@ -1518,9 +1514,6 @@ void BrowserMainLoop::CreateAudioManager() {
                                                  MediaInternals::GetInstance());
   }
   CHECK(audio_manager_);
-
-  if (use_hang_monitor)
-    media::AudioManager::StartHangMonitor(io_thread_->task_runner());
 }
 
 }  // namespace content

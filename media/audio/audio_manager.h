@@ -74,7 +74,7 @@ class MEDIA_EXPORT AudioManager {
   // Runs the monitor on the given |task_runner|, which must be different from
   // AudioManager::GetTaskRunner to be meaningful.
   // This must be called only after an AudioManager instance is created.
-  static void StartHangMonitor(
+  static void StartHangMonitorIfNeeded(
       scoped_refptr<base::SingleThreadTaskRunner> task_runner);
 
   // Enables non-crash dumps when audio thread hangs are detected.

@@ -186,6 +186,7 @@
 #include "content/browser/mojo/service_registrar_android.h"
 #include "content/browser/screen_orientation/screen_orientation_message_filter_android.h"
 #include "ipc/ipc_sync_channel.h"
+#include "media/audio/android/audio_manager_android.h"
 #endif
 
 #if defined(OS_WIN)
@@ -728,6 +729,21 @@ bool RenderProcessHostImpl::Init() {
 
   // Call the embedder first so that their IPC filters have priority.
   GetContentClient()->browser()->RenderProcessWillLaunch(this);
+
+#if !defined(OS_MACOSX)
+  // Intentionally delay the hang monitor creation after the first renderer
+  // is created. On Mac audio thread is the UI thread, a hang monitor is not
+  // necessary or recommended.
+  media::AudioManager::StartHangMonitorIfNeeded(
+      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO));
+#endif  // !defined(OS_MACOSX)
+
+#if defined(OS_ANDROID)
+  // Initialize the java audio manager so that media session tests will pass.
+  // See internal b/29872494.
+  static_cast<media::AudioManagerAndroid*>(media::AudioManager::Get())->
+      InitializeIfNeeded();
+#endif  // defined(OS_ANDROID)
 
   CreateMessageFilters();
   RegisterMojoInterfaces();

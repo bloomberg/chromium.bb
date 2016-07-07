@@ -65,26 +65,25 @@ AudioManagerAndroid::AudioManagerAndroid(
       output_volume_override_set_(false),
       output_volume_override_(0) {
   SetMaxOutputStreamsAllowed(kMaxOutputStreams);
-
-  // WARNING: This is executed on the UI loop, do not add any code here which
-  // loads libraries or attempts to call out into the OS.  Instead add such code
-  // to the InitializeOnAudioThread() method below.
-
-  // Task must be posted last to avoid races from handing out "this" to the
-  // audio thread.
-  GetTaskRunner()->PostTask(FROM_HERE, base::Bind(
-      &AudioManagerAndroid::InitializeOnAudioThread,
-      base::Unretained(this)));
 }
 
 AudioManagerAndroid::~AudioManagerAndroid() {
   DCHECK(GetTaskRunner()->BelongsToCurrentThread());
   Shutdown();
 
+  if (j_audio_manager_.is_null())
+    return;
   DVLOG(2) << "Destroying Java part of the audio manager";
   Java_AudioManagerAndroid_close(base::android::AttachCurrentThread(),
                                  j_audio_manager_.obj());
   j_audio_manager_.Reset();
+}
+
+void AudioManagerAndroid::InitializeIfNeeded() {
+  GetTaskRunner()->PostTask(
+      FROM_HERE, base::Bind(base::Bind(base::IgnoreResult(
+                                &AudioManagerAndroid::GetJavaAudioManager)),
+                            base::Unretained(this)));
 }
 
 bool AudioManagerAndroid::HasAudioOutputDevices() {
@@ -106,8 +105,8 @@ void AudioManagerAndroid::GetAudioInputDeviceNames(
   // Get list of available audio devices.
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobjectArray> j_device_array =
-      Java_AudioManagerAndroid_getAudioInputDeviceNames(
-          env, j_audio_manager_.obj());
+      Java_AudioManagerAndroid_getAudioInputDeviceNames(env,
+                                                        GetJavaAudioManager());
   if (j_device_array.is_null()) {
     // Most probable reason for a NULL result here is that the process lacks
     // MODIFY_AUDIO_SETTINGS or RECORD_AUDIO permissions.
@@ -200,7 +199,6 @@ void AudioManagerAndroid::ReleaseOutputStream(AudioOutputStream* stream) {
 
 void AudioManagerAndroid::ReleaseInputStream(AudioInputStream* stream) {
   DCHECK(GetTaskRunner()->BelongsToCurrentThread());
-  DCHECK(!j_audio_manager_.is_null());
   AudioManagerBase::ReleaseInputStream(stream);
 
   // Restore the audio mode which was used before the first communication-
@@ -349,28 +347,27 @@ bool AudioManagerAndroid::HasNoAudioInputStreams() {
   return input_stream_count() == 0;
 }
 
-void AudioManagerAndroid::InitializeOnAudioThread() {
+jobject AudioManagerAndroid::GetJavaAudioManager() {
   DCHECK(GetTaskRunner()->BelongsToCurrentThread());
+  if (j_audio_manager_.is_null()) {
+    // Create the Android audio manager on the audio thread.
+    DVLOG(2) << "Creating Java part of the audio manager";
+    j_audio_manager_.Reset(Java_AudioManagerAndroid_createAudioManagerAndroid(
+        base::android::AttachCurrentThread(),
+        base::android::GetApplicationContext(),
+        reinterpret_cast<intptr_t>(this)));
 
-  // Create the Android audio manager on the audio thread.
-  DVLOG(2) << "Creating Java part of the audio manager";
-  j_audio_manager_.Reset(
-      Java_AudioManagerAndroid_createAudioManagerAndroid(
-          base::android::AttachCurrentThread(),
-          base::android::GetApplicationContext(),
-          reinterpret_cast<intptr_t>(this)));
-
-  // Prepare the list of audio devices and register receivers for device
-  // notifications.
-  Java_AudioManagerAndroid_init(
-      base::android::AttachCurrentThread(),
-      j_audio_manager_.obj());
+    // Prepare the list of audio devices and register receivers for device
+    // notifications.
+    Java_AudioManagerAndroid_init(base::android::AttachCurrentThread(),
+                                  j_audio_manager_.obj());
+  }
+  return j_audio_manager_.obj();
 }
 
 void AudioManagerAndroid::SetCommunicationAudioModeOn(bool on) {
   Java_AudioManagerAndroid_setCommunicationAudioModeOn(
-      base::android::AttachCurrentThread(),
-      j_audio_manager_.obj(), on);
+      base::android::AttachCurrentThread(), GetJavaAudioManager(), on);
 }
 
 bool AudioManagerAndroid::SetAudioDevice(const std::string& device_id) {
@@ -383,26 +380,23 @@ bool AudioManagerAndroid::SetAudioDevice(const std::string& device_id) {
   ScopedJavaLocalRef<jstring> j_device_id = ConvertUTF8ToJavaString(
       env, device_id == AudioDeviceDescription::kDefaultDeviceId ? std::string()
                                                                  : device_id);
-  return Java_AudioManagerAndroid_setDevice(
-      env, j_audio_manager_.obj(), j_device_id.obj());
+  return Java_AudioManagerAndroid_setDevice(env, GetJavaAudioManager(),
+                                            j_device_id.obj());
 }
 
 int AudioManagerAndroid::GetNativeOutputSampleRate() {
   return Java_AudioManagerAndroid_getNativeOutputSampleRate(
-      base::android::AttachCurrentThread(),
-      j_audio_manager_.obj());
+      base::android::AttachCurrentThread(), GetJavaAudioManager());
 }
 
 bool AudioManagerAndroid::IsAudioLowLatencySupported() {
   return Java_AudioManagerAndroid_isAudioLowLatencySupported(
-      base::android::AttachCurrentThread(),
-      j_audio_manager_.obj());
+      base::android::AttachCurrentThread(), GetJavaAudioManager());
 }
 
 int AudioManagerAndroid::GetAudioLowLatencyOutputFrameSize() {
   return Java_AudioManagerAndroid_getAudioLowLatencyOutputFrameSize(
-      base::android::AttachCurrentThread(),
-      j_audio_manager_.obj());
+      base::android::AttachCurrentThread(), GetJavaAudioManager());
 }
 
 int AudioManagerAndroid::GetOptimalOutputFrameSize(int sample_rate,

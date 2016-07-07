@@ -120,6 +120,8 @@ class SpeechRecognitionBrowserTest :
 
   void SetUpOnMainThread() override {
     ASSERT_TRUE(SpeechRecognitionManagerImpl::GetInstance());
+    media::AudioManager::StartHangMonitorIfNeeded(
+        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO));
     SpeechRecognizerImpl::SetAudioManagerForTesting(
         new media::MockAudioManager(BrowserThread::GetMessageLoopProxyForThread(
             BrowserThread::IO)));
