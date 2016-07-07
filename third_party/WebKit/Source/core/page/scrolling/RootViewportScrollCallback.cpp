@@ -6,6 +6,7 @@
 
 #include "core/frame/FrameHost.h"
 #include "core/frame/FrameView.h"
+#include "core/frame/RootFrameViewport.h"
 #include "core/frame/Settings.h"
 #include "core/frame/TopControls.h"
 #include "core/page/scrolling/OverscrollController.h"
@@ -16,9 +17,12 @@
 namespace blink {
 
 RootViewportScrollCallback::RootViewportScrollCallback(
-    TopControls* topControls, OverscrollController* overscrollController)
+    TopControls* topControls,
+    OverscrollController* overscrollController,
+    RootFrameViewport& rootFrameViewport)
     : m_topControls(topControls)
     , m_overscrollController(overscrollController)
+    , m_rootFrameViewport(&rootFrameViewport)
 {
 }
 
@@ -30,7 +34,7 @@ DEFINE_TRACE(RootViewportScrollCallback)
 {
     visitor->trace(m_topControls);
     visitor->trace(m_overscrollController);
-    visitor->trace(m_scroller);
+    visitor->trace(m_rootFrameViewport);
     ViewportScrollCallback::trace(visitor);
 }
 
@@ -40,11 +44,11 @@ bool RootViewportScrollCallback::shouldScrollTopControls(const FloatSize& delta,
     if (granularity != ScrollByPixel && granularity != ScrollByPrecisePixel)
         return false;
 
-    if (!m_scroller)
+    if (!m_rootFrameViewport)
         return false;
 
-    DoublePoint maxScroll = m_scroller->maximumScrollPositionDouble();
-    DoublePoint scrollPosition = m_scroller->scrollPositionDouble();
+    DoublePoint maxScroll = m_rootFrameViewport->maximumScrollPositionDouble();
+    DoublePoint scrollPosition = m_rootFrameViewport->scrollPositionDouble();
 
     // Always give the delta to the top controls if the scroll is in
     // the direction to show the top controls. If it's in the
@@ -77,12 +81,12 @@ bool RootViewportScrollCallback::scrollTopControls(ScrollState& state)
 void RootViewportScrollCallback::handleEvent(ScrollState* state)
 {
     DCHECK(state);
-    if (!m_scroller)
+    if (!m_rootFrameViewport)
         return;
 
     bool topControlsDidScroll = scrollTopControls(*state);
 
-    ScrollResult result = performNativeScroll(*state, *m_scroller);
+    ScrollResult result = performNativeScroll(*state, *m_rootFrameViewport);
 
     // We consider top controls movement to be scrolling.
     result.didScrollY |= topControlsDidScroll;
@@ -97,7 +101,8 @@ void RootViewportScrollCallback::handleEvent(ScrollState* state)
 
 void RootViewportScrollCallback::setScroller(ScrollableArea* scroller)
 {
-    m_scroller = scroller;
+    DCHECK(scroller);
+    m_rootFrameViewport->setLayoutViewport(*scroller);
 }
 
 } // namespace blink

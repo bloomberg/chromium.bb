@@ -36,15 +36,13 @@ class ViewportScrollCallback;
 class CORE_EXPORT RootScrollerController
     : public GarbageCollected<RootScrollerController> {
 public:
-    // Creates a RootScrollerController for the given document. An optional
-    // ViewportScrollCallback can be provided. If it is, RootScrollerController
-    // will ensure that the effectiveRootScroller element always has this set as
-    // the apply scroll callback.
-    static RootScrollerController* create(
-        Document& document,
-        ViewportScrollCallback* applyScrollCallback)
+    // Creates a RootScrollerController for the given document. You should use
+    // setViewportScrollCallback to provide this class with a scroll callback
+    // that RootScrollerController will keep applied to the current RootScroller
+    // so that special actions can occur on scrolling.
+    static RootScrollerController* create(Document& document)
     {
-        return new RootScrollerController(document, applyScrollCallback);
+        return new RootScrollerController(document);
     }
 
     DECLARE_TRACE();
@@ -80,20 +78,30 @@ public:
         return m_viewportApplyScroll;
     }
 
+    void setViewportScrollCallback(ViewportScrollCallback*);
+
 private:
-    RootScrollerController(Document&, ViewportScrollCallback*);
+    RootScrollerController(Document&);
 
     Element* defaultEffectiveRootScroller();
 
     // Ensures the effective root scroller is currently valid and replaces it
     // with the default if not.
     void updateEffectiveRootScroller();
-    void moveViewportApplyScroll(Element* target);
+
+    // Returns true if the move was successful.
+    bool moveViewportApplyScroll(Element* target);
 
     WeakMember<Document> m_document;
     Member<ViewportScrollCallback> m_viewportApplyScroll;
 
     WeakMember<Element> m_rootScroller;
+
+    // The element currently being used as the root scroller. If
+    // m_viewportApplyScroll has been set, this element is guaranteed to have it
+    // set as its applyScroll callback. This can be nullptr during
+    // initialization and will not be set until m_viewportApplyScroll is
+    // provided.
     WeakMember<Element> m_effectiveRootScroller;
 };
 

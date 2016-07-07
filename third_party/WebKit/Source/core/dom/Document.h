@@ -167,6 +167,7 @@ class Touch;
 class TouchList;
 class TransformSource;
 class TreeWalker;
+class ViewportScrollCallback;
 class VisitedLinkState;
 class VisualViewport;
 class WebGLRenderingContext;
@@ -1083,6 +1084,7 @@ public:
 
     bool containsV1ShadowTree() const { return m_shadowCascadeOrder == ShadowCascadeOrder::ShadowCascadeV1; }
 
+    void initializeRootScroller(ViewportScrollCallback*);
     Element* rootScroller() const;
     void setRootScroller(Element*, ExceptionState&);
     const Element* effectiveRootScroller() const;

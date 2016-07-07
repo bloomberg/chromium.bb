@@ -16,6 +16,7 @@ class ScrollableArea;
 class ScrollState;
 class TopControls;
 class OverscrollController;
+class RootFrameViewport;
 
 // The ViewportScrollCallback used by the one root frame on the page. This
 // callback provides scrolling of the frame as well as associated actions like
@@ -25,9 +26,12 @@ public:
     // The TopControls and OverscrollController are given to the
     // RootViewportScrollCallback but are not owned or kept alive by it.
     static RootViewportScrollCallback* create(
-        TopControls* topControls, OverscrollController* overscrollController)
+        TopControls* topControls,
+        OverscrollController* overscrollController,
+        RootFrameViewport& rootFrameViewport)
     {
-        return new RootViewportScrollCallback(topControls, overscrollController);
+        return new RootViewportScrollCallback(
+            topControls, overscrollController, rootFrameViewport);
     }
 
     virtual ~RootViewportScrollCallback();
@@ -40,14 +44,14 @@ public:
 private:
     // RootViewportScrollCallback does not assume ownership of TopControls or of
     // OverscrollController.
-    RootViewportScrollCallback(TopControls*, OverscrollController*);
+    RootViewportScrollCallback(TopControls*, OverscrollController*, RootFrameViewport&);
 
     bool shouldScrollTopControls(const FloatSize&, ScrollGranularity) const;
     bool scrollTopControls(ScrollState&);
 
     WeakMember<TopControls> m_topControls;
     WeakMember<OverscrollController> m_overscrollController;
-    WeakMember<ScrollableArea> m_scroller;
+    WeakMember<RootFrameViewport> m_rootFrameViewport;
 };
 
 } // namespace blink

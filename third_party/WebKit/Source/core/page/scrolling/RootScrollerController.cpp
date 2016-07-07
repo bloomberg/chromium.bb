@@ -27,8 +27,12 @@ ScrollableArea* scrollableAreaFor(const Element& element)
 
     LayoutBox* box = toLayoutBox(element.layoutObject());
 
+    // For a FrameView, we use the layoutViewport rather than the
+    // getScrollableArea() since that could be the RootFrameViewport. The
+    // rootScroller's ScrollableArea will be swapped in as the layout viewport
+    // in RootFrameViewport so we need to ensure we get the layout viewport.
     if (box->isDocumentElement())
-        return element.document().view()->getScrollableArea();
+        return element.document().view()->layoutViewportScrollableArea();
 
     return static_cast<PaintInvalidationCapableScrollableArea*>(
         box->getScrollableArea());
@@ -73,9 +77,8 @@ bool isValidRootScroller(const Element& element)
 
 } // namespace
 
-RootScrollerController::RootScrollerController(Document& document, ViewportScrollCallback* applyScrollCallback)
+RootScrollerController::RootScrollerController(Document& document)
     : m_document(&document)
-    , m_viewportApplyScroll(applyScrollCallback)
 {
 }
 
@@ -108,6 +111,12 @@ void RootScrollerController::didUpdateLayout()
     updateEffectiveRootScroller();
 }
 
+void RootScrollerController::setViewportScrollCallback(ViewportScrollCallback* callback)
+{
+    m_viewportApplyScroll = callback;
+    moveViewportApplyScroll(m_effectiveRootScroller);
+}
+
 void RootScrollerController::updateEffectiveRootScroller()
 {
     bool rootScrollerValid =
@@ -120,34 +129,35 @@ void RootScrollerController::updateEffectiveRootScroller()
     if (m_effectiveRootScroller == newEffectiveRootScroller)
         return;
 
-    moveViewportApplyScroll(newEffectiveRootScroller);
-    m_effectiveRootScroller = newEffectiveRootScroller;
+    if (moveViewportApplyScroll(newEffectiveRootScroller))
+        m_effectiveRootScroller = newEffectiveRootScroller;
 }
 
-void RootScrollerController::moveViewportApplyScroll(Element* target)
+bool RootScrollerController::moveViewportApplyScroll(Element* target)
 {
-    if (!m_viewportApplyScroll)
-        return;
+    if (!m_viewportApplyScroll || !target)
+        return false;
+
+    ScrollableArea* targetScroller = scrollableAreaFor(*target);
+    if (!targetScroller)
+        return false;
 
     if (m_effectiveRootScroller)
         m_effectiveRootScroller->removeApplyScroll();
 
-    ScrollableArea* targetScroller =
-        target ? scrollableAreaFor(*target) : nullptr;
-
-    if (targetScroller) {
-        // Use disable-native-scroll since the ViewportScrollCallback needs to
-        // apply scroll actions both before (TopControls) and after (overscroll)
-        // scrolling the element so it will apply scroll to the element itself.
-        target->setApplyScroll(
-            m_viewportApplyScroll,
-            "disable-native-scroll");
-    }
+    // Use disable-native-scroll since the ViewportScrollCallback needs to
+    // apply scroll actions both before (TopControls) and after (overscroll)
+    // scrolling the element so it will apply scroll to the element itself.
+    target->setApplyScroll(m_viewportApplyScroll, "disable-native-scroll");
 
     // Ideally, scroll customization would pass the current element to scroll to
     // the apply scroll callback but this doesn't happen today so we set it
-    // through a back door here.
+    // through a back door here. This is also needed by the
+    // RootViewportScrollCallback to swap the target into the layout viewport
+    // in RootFrameViewport.
     m_viewportApplyScroll->setScroller(targetScroller);
+
+    return true;
 }
 
 Element* RootScrollerController::defaultEffectiveRootScroller()

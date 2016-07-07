@@ -31,6 +31,8 @@ public:
 
     DECLARE_VIRTUAL_TRACE();
 
+    void setLayoutViewport(ScrollableArea&);
+
     // ScrollableArea Implementation
     void setScrollPosition(const DoublePoint&, ScrollType, ScrollBehavior = ScrollBehaviorInstant) override;
     LayoutRect scrollIntoView(

@@ -441,4 +441,38 @@ TEST_F(RootFrameViewportTest, ViewportScrollOrder)
     EXPECT_POINT_EQ(DoublePoint(10, 10), layoutViewport->scrollPositionDouble());
 }
 
+// Tests that setting an alternate layout viewport scrolls the alternate
+// instead of the original.
+TEST_F(RootFrameViewportTest, SetAlternateLayoutViewport)
+{
+    IntSize viewportSize(100, 100);
+    RootFrameViewStub* layoutViewport = RootFrameViewStub::create(viewportSize, IntSize(200, 300));
+    VisualViewportStub* visualViewport = VisualViewportStub::create(viewportSize, viewportSize);
+
+    RootFrameViewStub* alternateScroller = RootFrameViewStub::create(viewportSize, IntSize(600, 500));
+
+    RootFrameViewport* rootFrameViewport =
+        RootFrameViewport::create(*visualViewport, *layoutViewport);
+
+    visualViewport->setScale(2);
+
+    rootFrameViewport->setScrollPosition(DoublePoint(100, 100), UserScroll);
+    EXPECT_POINT_EQ(DoublePoint(50, 50), visualViewport->scrollPositionDouble());
+    EXPECT_POINT_EQ(DoublePoint(50, 50), layoutViewport->scrollPositionDouble());
+    EXPECT_POINT_EQ(DoublePoint(100, 100), rootFrameViewport->scrollPositionDouble());
+
+    rootFrameViewport->setLayoutViewport(*alternateScroller);
+    EXPECT_POINT_EQ(DoublePoint(50, 50), visualViewport->scrollPositionDouble());
+    EXPECT_POINT_EQ(DoublePoint(0, 0), alternateScroller->scrollPositionDouble());
+    EXPECT_POINT_EQ(DoublePoint(50, 50), rootFrameViewport->scrollPositionDouble());
+
+    rootFrameViewport->setScrollPosition(DoublePoint(200, 200), UserScroll);
+    EXPECT_POINT_EQ(DoublePoint(50, 50), visualViewport->scrollPositionDouble());
+    EXPECT_POINT_EQ(DoublePoint(150, 150), alternateScroller->scrollPositionDouble());
+    EXPECT_POINT_EQ(DoublePoint(200, 200), rootFrameViewport->scrollPositionDouble());
+    EXPECT_POINT_EQ(DoublePoint(50, 50), layoutViewport->scrollPositionDouble());
+
+    EXPECT_POINT_EQ(DoublePoint(550, 450), rootFrameViewport->maximumScrollPositionDouble());
+}
+
 } // namespace blink

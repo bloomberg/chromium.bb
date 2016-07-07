@@ -461,17 +461,7 @@ Document::Document(const DocumentInit& initializer, DocumentClassFlags documentC
         m_fetcher = ResourceFetcher::create(nullptr);
     }
 
-    ViewportScrollCallback* applyScroll = nullptr;
-    if (isInMainFrame()) {
-        applyScroll = RootViewportScrollCallback::create(
-            &frameHost()->topControls(), &frameHost()->overscrollController());
-    } else {
-        applyScroll =
-            ChildViewportScrollCallback::create();
-    }
-
-    m_rootScrollerController =
-        RootScrollerController::create(*this, applyScroll);
+    m_rootScrollerController = RootScrollerController::create(*this);
 
     // We depend on the url getting immediately set in subframes, but we
     // also depend on the url NOT getting immediately set in opened windows.
@@ -599,6 +589,11 @@ void Document::childrenChanged(const ChildrenChange& change)
 void Document::setRootScroller(Element* newScroller, ExceptionState& exceptionState)
 {
     m_rootScrollerController->set(newScroller);
+}
+
+void Document::initializeRootScroller(ViewportScrollCallback* callback)
+{
+    m_rootScrollerController->setViewportScrollCallback(callback);
 }
 
 Element* Document::rootScroller() const

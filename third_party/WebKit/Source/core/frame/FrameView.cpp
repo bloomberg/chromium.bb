@@ -78,6 +78,8 @@
 #include "core/page/FocusController.h"
 #include "core/page/FrameTree.h"
 #include "core/page/Page.h"
+#include "core/page/scrolling/ChildViewportScrollCallback.h"
+#include "core/page/scrolling/RootViewportScrollCallback.h"
 #include "core/page/scrolling/ScrollingCoordinator.h"
 #include "core/paint/FramePainter.h"
 #include "core/paint/PaintLayer.h"
@@ -2392,13 +2394,31 @@ void FrameView::updateDocumentAnnotatedRegions() const
 
 void FrameView::didAttachDocument()
 {
+    FrameHost* frameHost = m_frame->host();
+    DCHECK(frameHost);
+
+    DCHECK(m_frame->document());
+
+    ViewportScrollCallback* viewportScrollCallback = nullptr;
+
     if (m_frame->isMainFrame()) {
-        DCHECK(m_frame->host());
-        ScrollableArea& visualViewport = m_frame->host()->visualViewport();
+        ScrollableArea& visualViewport = frameHost->visualViewport();
         ScrollableArea* layoutViewport = layoutViewportScrollableArea();
         DCHECK(layoutViewport);
-        m_viewportScrollableArea = RootFrameViewport::create(visualViewport, *layoutViewport);
+
+        RootFrameViewport* rootFrameViewport =
+            RootFrameViewport::create(visualViewport, *layoutViewport);
+        m_viewportScrollableArea = rootFrameViewport;
+
+        viewportScrollCallback = RootViewportScrollCallback::create(
+            &frameHost->topControls(),
+            &frameHost->overscrollController(),
+            *rootFrameViewport);
+    } else {
+        viewportScrollCallback = ChildViewportScrollCallback::create();
     }
+
+    m_frame->document()->initializeRootScroller(viewportScrollCallback);
 }
 
 void FrameView::updateScrollCorner()

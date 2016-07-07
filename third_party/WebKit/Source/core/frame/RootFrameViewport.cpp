@@ -18,6 +18,11 @@ RootFrameViewport::RootFrameViewport(ScrollableArea& visualViewport, ScrollableA
 {
 }
 
+void RootFrameViewport::setLayoutViewport(ScrollableArea& newLayoutViewport)
+{
+    m_layoutViewport = &newLayoutViewport;
+}
+
 void RootFrameViewport::updateScrollAnimator()
 {
     scrollAnimator().setCurrentPosition(toFloatPoint(scrollOffsetFromScrollAnimators()));
