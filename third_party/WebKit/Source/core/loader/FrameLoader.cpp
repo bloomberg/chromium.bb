@@ -862,7 +862,7 @@ static bool shouldOpenInNewWindow(Frame* targetFrame, const FrameLoadRequest& re
 
 static NavigationType determineNavigationType(FrameLoadType frameLoadType, bool isFormSubmission, bool haveEvent)
 {
-    bool isReload = frameLoadType == FrameLoadTypeReload || frameLoadType == FrameLoadTypeReloadBypassingCache;
+    bool isReload = frameLoadType == FrameLoadTypeReload || frameLoadType == FrameLoadTypeReloadMainResource || frameLoadType == FrameLoadTypeReloadBypassingCache;
     bool isBackForward = isBackForwardLoadType(frameLoadType);
     if (isFormSubmission)
         return (isReload || isBackForward) ? NavigationTypeFormResubmitted : NavigationTypeFormSubmitted;
