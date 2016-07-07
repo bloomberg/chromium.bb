@@ -123,7 +123,7 @@ v8::Local<v8::Value> throwStackOverflowExceptionIfNeeded(v8::Isolate* isolate)
     }
     v8::MicrotasksScope microtasksScope(isolate, v8::MicrotasksScope::kDoNotRunMicrotasks);
     V8PerIsolateData::from(isolate)->setIsHandlingRecursionLevelError(true);
-    v8::Local<v8::Value> result = v8::Function::New(isolate, throwStackOverflowException)->Call(v8::Undefined(isolate), 0, 0);
+    v8::Local<v8::Value> result = v8::Function::New(isolate->GetCurrentContext(), throwStackOverflowException, v8::Local<v8::Value>(), 0, v8::ConstructorBehavior::kThrow).ToLocalChecked()->Call(v8::Undefined(isolate), 0, 0);
     V8PerIsolateData::from(isolate)->setIsHandlingRecursionLevelError(false);
     return result;
 }

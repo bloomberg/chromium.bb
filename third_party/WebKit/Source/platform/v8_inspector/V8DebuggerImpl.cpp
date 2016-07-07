@@ -314,7 +314,7 @@ void V8DebuggerImpl::breakProgram()
 
     v8::HandleScope scope(m_isolate);
     v8::Local<v8::Function> breakFunction;
-    if (!v8::Function::New(m_isolate->GetCurrentContext(), &V8DebuggerImpl::breakProgramCallback, v8::External::New(m_isolate, this)).ToLocal(&breakFunction))
+    if (!v8::Function::New(m_isolate->GetCurrentContext(), &V8DebuggerImpl::breakProgramCallback, v8::External::New(m_isolate, this), 0, v8::ConstructorBehavior::kThrow).ToLocal(&breakFunction))
         return;
     v8::Debug::Call(debuggerContext(), breakFunction).ToLocalChecked();
 }

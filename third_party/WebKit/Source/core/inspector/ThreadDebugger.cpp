@@ -173,12 +173,12 @@ void ThreadDebugger::createFunctionProperty(v8::Local<v8::Context> context, v8::
 {
     v8::Local<v8::String> funcName = v8String(context->GetIsolate(), name);
     v8::Local<v8::Function> func;
-    if (!v8::Function::New(context, callback, v8::External::New(context->GetIsolate(), this)).ToLocal(&func))
+    if (!v8::Function::New(context, callback, v8::External::New(context->GetIsolate(), this), 0, v8::ConstructorBehavior::kThrow).ToLocal(&func))
         return;
     func->SetName(funcName);
     v8::Local<v8::String> returnValue = v8String(context->GetIsolate(), description);
     v8::Local<v8::Function> toStringFunction;
-    if (v8::Function::New(context, returnDataCallback, returnValue).ToLocal(&toStringFunction))
+    if (v8::Function::New(context, returnDataCallback, returnValue, 0, v8::ConstructorBehavior::kThrow).ToLocal(&toStringFunction))
         func->Set(v8String(context->GetIsolate(), "toString"), toStringFunction);
     if (!object->Set(context, funcName, func).FromMaybe(false))
         return;
@@ -241,7 +241,7 @@ void ThreadDebugger::logCallback(const v8::FunctionCallbackInfo<v8::Value>& info
 v8::Local<v8::Function> ThreadDebugger::eventLogFunction()
 {
     if (m_eventLogFunction.IsEmpty())
-        m_eventLogFunction.Reset(m_isolate, v8::Function::New(m_isolate, logCallback, v8::External::New(m_isolate, this)));
+        m_eventLogFunction.Reset(m_isolate, v8::Function::New(m_isolate->GetCurrentContext(), logCallback, v8::External::New(m_isolate, this), 0, v8::ConstructorBehavior::kThrow).ToLocalChecked());
     return m_eventLogFunction.Get(m_isolate);
 }
 

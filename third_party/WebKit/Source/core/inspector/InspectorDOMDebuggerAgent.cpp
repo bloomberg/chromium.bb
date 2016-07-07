@@ -141,9 +141,9 @@ static v8::MaybeLocal<v8::Function> createRemoveFunction(v8::Local<v8::Context> 
         return v8::MaybeLocal<v8::Function>();
     if (!data->Set(context, v8String(isolate, "useCapture"), v8Boolean(useCapture, isolate)).FromMaybe(false))
         return v8::MaybeLocal<v8::Function>();
-    v8::Local<v8::Function> removeFunction = v8::Function::New(isolate, removeEventListenerCallback, data);
+    v8::Local<v8::Function> removeFunction = v8::Function::New(context, removeEventListenerCallback, data, 0, v8::ConstructorBehavior::kThrow).ToLocalChecked();
     v8::Local<v8::Function> toStringFunction;
-    if (v8::Function::New(context, returnDataCallback, v8String(isolate, "function remove() { [Command Line API] }")).ToLocal(&toStringFunction))
+    if (v8::Function::New(context, returnDataCallback, v8String(isolate, "function remove() { [Command Line API] }"), 0, v8::ConstructorBehavior::kThrow).ToLocal(&toStringFunction))
         removeFunction->Set(v8String(context->GetIsolate(), "toString"), toStringFunction);
     return removeFunction;
 }
