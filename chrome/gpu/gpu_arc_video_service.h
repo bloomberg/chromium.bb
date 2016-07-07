@@ -55,15 +55,10 @@ class GpuArcVideoService : public ::arc::mojom::VideoAcceleratorService,
                         mojo::ScopedHandle ashmem_handle,
                         uint32_t offset,
                         uint32_t length) override;
-  void DeprecatedBindDmabuf(::arc::mojom::PortType port,
-                            uint32_t index,
-                            mojo::ScopedHandle dmabuf_handle,
-                            int32_t stride) override;
   void BindDmabuf(::arc::mojom::PortType port,
                   uint32_t index,
                   mojo::ScopedHandle dmabuf_handle,
-                  mojo::Array<::arc::mojom::ArcVideoAcceleratorDmabufPlanePtr>
-                      dmabuf_planes) override;
+                  int32_t stride) override;
   void UseBuffer(::arc::mojom::PortType port,
                  uint32_t index,
                  ::arc::mojom::BufferMetadataPtr metadata) override;

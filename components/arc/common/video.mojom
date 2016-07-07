@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Next MinVersion: 5
+// Next MinVersion: 4
 
 module arc.mojom;
 
@@ -23,7 +23,7 @@ interface VideoHost {
   // Requests an IPC channel from Chrome's browser process to bootstrap a new
   // mojo child process and a token which can be used to create a message pipe
   // connected to a new VideoAcceleratorFactory.
-  [MinVersion=4]
+  [MinVersion=3]
   OnBootstrapVideoAcceleratorFactory@1() => (handle channel_handle,
                                              string token);
 };

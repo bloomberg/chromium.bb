@@ -41,8 +41,7 @@ enum VAVDADecoderFailure {
 
 // Buffer format to use for output buffers backing PictureBuffers. This is the
 // format decoded frames in VASurfaces are converted into.
-const gfx::BufferFormat kAllocatePictureFormat = gfx::BufferFormat::BGRA_8888;
-const gfx::BufferFormat kImportPictureFormat = gfx::BufferFormat::YVU_420;
+const gfx::BufferFormat kOutputPictureFormat = gfx::BufferFormat::BGRA_8888;
 }
 
 static void ReportToUMA(VAVDADecoderFailure failure) {
@@ -311,7 +310,6 @@ VaapiVideoDecodeAccelerator::VaapiVideoDecodeAccelerator(
       finish_flush_pending_(false),
       awaiting_va_surfaces_recycle_(false),
       requested_num_pics_(0),
-      output_format_(kAllocatePictureFormat),
       make_context_current_cb_(make_context_current_cb),
       bind_image_cb_(bind_image_cb),
       weak_this_factory_(this) {
@@ -333,18 +331,9 @@ bool VaapiVideoDecodeAccelerator::Initialize(const Config& config,
     return false;
   }
 
-  switch (config.output_mode) {
-    case Config::OutputMode::ALLOCATE:
-      output_format_ = kAllocatePictureFormat;
-      break;
-
-    case Config::OutputMode::IMPORT:
-      output_format_ = kImportPictureFormat;
-      break;
-
-    default:
-      NOTREACHED() << "Only ALLOCATE and IMPORT OutputModes are supported";
-      return false;
+  if (config.output_mode != Config::OutputMode::ALLOCATE &&
+      config.output_mode != Config::OutputMode::IMPORT) {
+    NOTREACHED() << "Only ALLOCATE and IMPORT OutputModes are supported";
   }
 
   client_ptr_factory_.reset(new base::WeakPtrFactory<Client>(client));
@@ -653,9 +642,6 @@ static VideoPixelFormat BufferFormatToVideoPixelFormat(
     case gfx::BufferFormat::BGRA_8888:
       return PIXEL_FORMAT_ARGB;
 
-    case gfx::BufferFormat::YVU_420:
-      return PIXEL_FORMAT_YV12;
-
     default:
       LOG(FATAL) << "Add more cases as needed";
       return PIXEL_FORMAT_UNKNOWN;
@@ -701,7 +687,8 @@ void VaapiVideoDecodeAccelerator::TryFinishSurfaceSetChange() {
   DVLOG(1) << "Requesting " << requested_num_pics_
            << " pictures of size: " << requested_pic_size_.ToString();
 
-  VideoPixelFormat format = BufferFormatToVideoPixelFormat(output_format_);
+  VideoPixelFormat format =
+      BufferFormatToVideoPixelFormat(kOutputPictureFormat);
   task_runner_->PostTask(
       FROM_HERE, base::Bind(&Client::ProvidePictureBuffers, client_,
                             requested_num_pics_, format, 1, requested_pic_size_,
@@ -802,7 +789,7 @@ void VaapiVideoDecodeAccelerator::AssignPictureBuffers(
 
     if (output_mode_ == Config::OutputMode::ALLOCATE) {
       RETURN_AND_NOTIFY_ON_FAILURE(
-          picture->Allocate(output_format_),
+          picture->Allocate(kOutputPictureFormat),
           "Failed to allocate memory for a VaapiPicture", PLATFORM_FAILURE, );
       output_buffers_.push(buffers[i].id());
     }
@@ -840,6 +827,13 @@ void VaapiVideoDecodeAccelerator::ImportBufferForPicture(
     return;
   }
 
+  if (gpu_memory_buffer_handle.native_pixmap_handle.fds.size() != 1) {
+    CloseGpuMemoryBufferHandle(gpu_memory_buffer_handle);
+    LOG(ERROR) << "Handles backed by multple fds unsupported";
+    NotifyError(INVALID_ARGUMENT);
+    return;
+  }
+
   VaapiPicture* picture = PictureById(picture_buffer_id);
   if (!picture) {
     CloseGpuMemoryBufferHandle(gpu_memory_buffer_handle);
@@ -853,7 +847,7 @@ void VaapiVideoDecodeAccelerator::ImportBufferForPicture(
     return;
   }
 
-  if (!picture->ImportGpuMemoryBufferHandle(output_format_,
+  if (!picture->ImportGpuMemoryBufferHandle(kOutputPictureFormat,
                                             gpu_memory_buffer_handle)) {
     // ImportGpuMemoryBufferHandle will close the handles even on failure, so
     // we don't need to do this ourselves.

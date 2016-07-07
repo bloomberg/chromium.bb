@@ -49,11 +49,6 @@ struct ArcVideoAcceleratorConfig {
   uint32 input_pixel_format;
 };
 
-struct ArcVideoAcceleratorDmabufPlane {
-  int32 offset;
-  int32 stride;
-};
-
 interface VideoAcceleratorService {
   enum Result {
     SUCCESS = 0,
@@ -74,12 +69,7 @@ interface VideoAcceleratorService {
   BindSharedMemory@1(PortType port, uint32 index, handle ashmem_fd,
                      uint32 offset, uint32 length);
 
-  DeprecatedBindDmabuf@2(PortType port, uint32 index, handle dmabuf_fd,
-                         int32 stride);
-
-  [MinVersion=3]
-  BindDmabuf@9(PortType port, uint32 index, handle dmabuf_fd,
-               array<ArcVideoAcceleratorDmabufPlane> dmabuf_planes);
+  BindDmabuf@2(PortType port, uint32 index, handle dmabuf_fd, int32 stride);
 
   UseBuffer@3(PortType port, uint32 index, BufferMetadata metadata);
 

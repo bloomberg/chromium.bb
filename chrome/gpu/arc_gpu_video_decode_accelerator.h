@@ -44,7 +44,7 @@ class ArcGpuVideoDecodeAccelerator
   void BindDmabuf(PortType port,
                   uint32_t index,
                   base::ScopedFD dmabuf_fd,
-                  const std::vector<DmabufPlane>& dmabuf_planes) override;
+                  int32_t stride) override;
   void UseBuffer(PortType port,
                  uint32_t index,
                  const BufferMetadata& metadata) override;
@@ -97,7 +97,7 @@ class ArcGpuVideoDecodeAccelerator
   // The information about the dmabuf used as an output buffer.
   struct OutputBufferInfo {
     base::ScopedFD handle;
-    std::vector<DmabufPlane> planes;
+    int32_t stride = 0;  // In bytes.
 
     OutputBufferInfo();
     OutputBufferInfo(OutputBufferInfo&& other);
@@ -107,9 +107,8 @@ class ArcGpuVideoDecodeAccelerator
   // Helper function to validate |port| and |index|.
   bool ValidatePortAndIndex(PortType port, uint32_t index) const;
 
-  // Return true if |dmabuf_planes| is valid for a dmabuf |fd|.
-  bool VerifyDmabuf(const base::ScopedFD& fd,
-                    const std::vector<DmabufPlane>& dmabuf_planes) const;
+  // Helper function to verify the length of stride is legal.
+  bool VerifyStride(const base::ScopedFD& fd, int32_t stride) const;
 
   // Creates an InputRecord for the given |bitstream_buffer_id|. The
   // |buffer_index| is the index of the associated input buffer. The |timestamp|
