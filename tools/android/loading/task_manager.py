@@ -64,6 +64,7 @@ import sys
 import common_util
 
 
+_TASK_LOGS_DIR_NAME = 'logs'
 _TASK_GRAPH_DOTFILE_NAME = 'tasks_graph.dot'
 _TASK_GRAPH_PNG_NAME = 'tasks_graph.png'
 _TASK_RESUME_ARGUMENTS_FILE = 'resume.txt'
@@ -467,9 +468,11 @@ def ExecuteWithCommandLine(args, default_final_tasks):
 
   log_filename = datetime.datetime.now().strftime(
       _TASK_EXECUTION_LOG_NAME_FORMAT)
+  log_path = os.path.join(args.output, _TASK_LOGS_DIR_NAME, log_filename)
+  if not os.path.isdir(os.path.dirname(log_path)):
+    os.makedirs(os.path.dirname(log_path))
   formatter = logging.Formatter('[%(asctime)s] %(levelname)s: %(message)s')
-  handler = logging.FileHandler(
-      os.path.join(args.output, log_filename), mode='a')
+  handler = logging.FileHandler(log_path, mode='a')
   handler.setFormatter(formatter)
   logging.getLogger().addHandler(handler)
   logging.info(

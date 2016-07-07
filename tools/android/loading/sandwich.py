@@ -218,6 +218,7 @@ def _RunBenchmarkMain(args):
   setup_path = os.path.join(args.output, _SANDWICH_SETUP_FILENAME)
   with open(setup_path) as file_input:
     setup = yaml.load(file_input)
+  android_device = None
   if setup['sandwich_runner']['android_device_serial']:
     android_device = device_setup.GetDeviceFromSerial(
         setup['sandwich_runner']['android_device_serial'])
