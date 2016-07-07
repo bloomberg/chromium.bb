@@ -31,6 +31,9 @@ namespace blink {
 
 class HTMLFormElement;
 
+// Inheritance of FormAssociatedElement was used for NPAPI form association, but is still
+// kept here so that legacy APIs such as form attribute can keep working according to the spec.
+// See: https://html.spec.whatwg.org/multipage/embedded-content.html#the-object-element
 class CORE_EXPORT HTMLObjectElement final : public HTMLPlugInElement, public FormAssociatedElement {
     DEFINE_WRAPPERTYPEINFO();
     USING_GARBAGE_COLLECTED_MIXIN(HTMLObjectElement);

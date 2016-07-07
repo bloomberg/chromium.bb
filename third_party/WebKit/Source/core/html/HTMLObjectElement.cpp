@@ -32,7 +32,6 @@
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/fetch/ImageResource.h"
 #include "core/frame/Settings.h"
-#include "core/html/FormData.h"
 #include "core/html/HTMLDocument.h"
 #include "core/html/HTMLImageLoader.h"
 #include "core/html/HTMLMetaElement.h"
