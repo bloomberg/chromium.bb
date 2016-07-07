@@ -178,7 +178,7 @@ public class DeferredStartupHandler {
         application.initializeSharedClasses();
 
         // Start or stop Physical Web
-        PhysicalWeb.onChromeStart(application);
+        PhysicalWeb.onChromeStart();
 
         mDeferredStartupComplete = true;
 

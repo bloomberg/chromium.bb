@@ -13,7 +13,6 @@ import org.chromium.base.CommandLine;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.device.DeviceClassManager;
 import org.chromium.chrome.browser.physicalweb.PhysicalWeb;
@@ -441,10 +440,10 @@ public class PrivacyPreferencesManager implements CrashReportingPermissionManage
         mSharedPreferences.edit().putInt(PREF_PHYSICAL_WEB, state).apply();
         if (enabled) {
             if (!isOnboarding) {
-                PhysicalWeb.startPhysicalWeb((ChromeApplication) mContext);
+                PhysicalWeb.startPhysicalWeb();
             }
         } else {
-            PhysicalWeb.stopPhysicalWeb((ChromeApplication) mContext);
+            PhysicalWeb.stopPhysicalWeb();
         }
     }
 

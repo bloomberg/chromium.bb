@@ -104,8 +104,8 @@ public class PhysicalWebDiagnosticsPage implements NativePage {
         LocationUtils locationUtils = LocationUtils.getInstance();
         boolean isLocationServicesEnabled = locationUtils.isSystemLocationSettingEnabled(mContext);
         boolean isLocationPermissionGranted = locationUtils.hasAndroidLocationPermission(mContext);
-        boolean isPreferenceEnabled = PhysicalWeb.isPhysicalWebPreferenceEnabled(mContext);
-        boolean isOnboarding = PhysicalWeb.isOnboarding(mContext);
+        boolean isPreferenceEnabled = PhysicalWeb.isPhysicalWebPreferenceEnabled();
+        boolean isOnboarding = PhysicalWeb.isOnboarding();
 
         int prerequisitesResult = Utils.RESULT_SUCCESS;
         if (!isSdkVersionCorrect
@@ -156,7 +156,7 @@ public class PhysicalWebDiagnosticsPage implements NativePage {
     }
 
     private void appendUrlManagerReport(StringBuilder sb) {
-        UrlManager urlManager = UrlManager.getInstance(mContext);
+        UrlManager urlManager = UrlManager.getInstance();
 
         Set<String> nearbyUrls = new HashSet<>(urlManager.getNearbyUrls());
         Set<String> resolvedUrls = new HashSet<>(urlManager.getResolvedUrls());

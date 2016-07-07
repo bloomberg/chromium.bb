@@ -21,6 +21,6 @@ public class ClearNotificationAlarmReceiver extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
         Log.d(TAG, "Running NotificationCleanupAlarmReceiver");
-        UrlManager.getInstance(context).clearNotification();
+        UrlManager.getInstance().clearNotification();
     }
 }

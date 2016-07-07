@@ -65,7 +65,7 @@ public class ListUrlsActivityTest extends InstrumentationTestCase {
         mContext = getInstrumentation().getTargetContext();
         // Restore the onboarding state
         ContextUtils.getAppSharedPreferences().edit().putInt("physical_web", 2).apply();
-        UrlManager urlManager = UrlManager.getInstance(mContext);
+        UrlManager urlManager = UrlManager.getInstance();
         mMockPwsClient = new MockPwsClient();
         urlManager.overridePwsClientForTesting(mMockPwsClient);
         urlManager.overrideNotificationManagerForTesting(new MockNotificationManagerProxy());
@@ -156,7 +156,7 @@ public class ListUrlsActivityTest extends InstrumentationTestCase {
         results.add(new PwsResult(url, url, null, title, desc));
         mMockPwsClient.addPwsResults(results);
         mMockPwsClient.addPwsResults(results);
-        UrlManager.getInstance(mContext).addUrl(url);
+        UrlManager.getInstance().addUrl(url);
         getInstrumentation().waitForIdleSync();
     }
 

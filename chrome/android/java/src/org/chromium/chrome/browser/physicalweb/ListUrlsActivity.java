@@ -32,7 +32,6 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.widget.FadingShadow;
 import org.chromium.chrome.browser.widget.FadingShadowView;
 
@@ -122,8 +121,7 @@ public class ListUrlsActivity extends AppCompatActivity implements AdapterView.O
         mIsInitialDisplayRecorded = false;
         mIsRefreshing = false;
         mIsRefreshUserInitiated = false;
-        mPhysicalWebBleClient =
-            PhysicalWebBleClient.getInstance((ChromeApplication) getApplicationContext());
+        mPhysicalWebBleClient = PhysicalWebBleClient.getInstance();
     }
 
     @Override
@@ -169,7 +167,7 @@ public class ListUrlsActivity extends AppCompatActivity implements AdapterView.O
     @Override
     protected void onStart() {
         super.onStart();
-        UrlManager.getInstance(this).addObserver(this);
+        UrlManager.getInstance().addObserver(this);
     }
 
     @Override
@@ -198,7 +196,7 @@ public class ListUrlsActivity extends AppCompatActivity implements AdapterView.O
 
     @Override
     protected void onStop() {
-        UrlManager.getInstance(this).removeObserver(this);
+        UrlManager.getInstance().removeObserver(this);
         super.onStop();
     }
 
@@ -267,13 +265,13 @@ public class ListUrlsActivity extends AppCompatActivity implements AdapterView.O
         // Clear the list adapter to trigger the empty list display.
         mAdapter.clear();
 
-        Collection<UrlInfo> urls = UrlManager.getInstance(this).getUrls(true);
+        Collection<UrlInfo> urls = UrlManager.getInstance().getUrls(true);
 
         // Check the Physical Web preference to ensure we do not resolve URLs when Physical Web is
         // off or onboarding. Normally the user will not reach this activity unless the preference
         // is explicitly enabled, but there is a button on the diagnostics page that launches into
         // the activity without checking the preference state.
-        if (urls.isEmpty() || !PhysicalWeb.isPhysicalWebPreferenceEnabled(this)) {
+        if (urls.isEmpty() || !PhysicalWeb.isPhysicalWebPreferenceEnabled()) {
             finishRefresh();
         } else {
             // Show the swipe-to-refresh busy indicator for refreshes initiated by a swipe.

@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.physicalweb;
 
 import android.app.Activity;
 
+import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.chrome.browser.ChromeApplication;
 
@@ -21,14 +22,13 @@ public class PhysicalWebBleClient {
 
     /**
      * Get a singleton instance of this class.
-     * @param chromeApplication An instance of {@link ChromeApplication}, used to get the
-     * appropriate PhysicalWebBleClient implementation.
      * @return an instance of this class (or subclass) as decided by the
      * application parameter
      */
-    public static PhysicalWebBleClient getInstance(ChromeApplication chromeApplication) {
+    public static PhysicalWebBleClient getInstance() {
         if (sInstance == null) {
-            sInstance = chromeApplication.createPhysicalWebBleClient();
+            sInstance = ((ChromeApplication) ContextUtils.getApplicationContext())
+                    .createPhysicalWebBleClient();
         }
         return sInstance;
     }

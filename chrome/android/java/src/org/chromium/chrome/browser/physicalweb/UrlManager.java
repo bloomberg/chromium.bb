@@ -103,6 +103,7 @@ class UrlManager {
      * Construct the UrlManager.
      * @param context An instance of android.content.Context
      */
+    @VisibleForTesting
     public UrlManager(Context context) {
         mContext = context;
         mNotificationManager = new NotificationManagerProxyImpl(
@@ -118,14 +119,22 @@ class UrlManager {
 
     /**
      * Get a singleton instance of this class.
-     * @param context An instance of android.content.Context.
+     * @return A singleton instance of this class.
+     */
+    public static UrlManager getInstance() {
+        if (sInstance == null) {
+            sInstance = new UrlManager(ContextUtils.getApplicationContext());
+        }
+        return sInstance;
+    }
+
+    /**
+     * Get a singleton instance of this class.
+     * @param context unused
      * @return A singleton instance of this class.
      */
     public static UrlManager getInstance(Context context) {
-        if (sInstance == null) {
-            sInstance = new UrlManager(context);
-        }
-        return sInstance;
+        return getInstance();
     }
 
     /**
@@ -166,7 +175,7 @@ class UrlManager {
         mNearbyUrls.add(urlInfo.getUrl());
         putCachedNearbyUrls();
 
-        if (!PhysicalWeb.isOnboarding(mContext) && !mResolvedUrls.contains(urlInfo.getUrl())) {
+        if (!PhysicalWeb.isOnboarding() && !mResolvedUrls.contains(urlInfo.getUrl())) {
             // We need to resolve the URL.
             resolveUrl(urlInfo);
             return;
@@ -196,7 +205,7 @@ class UrlManager {
         putCachedNearbyUrls();
 
         // If there are no URLs nearby to display, clear the notification.
-        if (getUrls(PhysicalWeb.isOnboarding(mContext)).isEmpty()) {
+        if (getUrls(PhysicalWeb.isOnboarding()).isEmpty()) {
             clearNotification();
         }
     }
@@ -320,7 +329,7 @@ class UrlManager {
         putCachedResolvedUrls();
 
         // If there are no URLs nearby to display, clear the notification.
-        if (getUrls(PhysicalWeb.isOnboarding(mContext)).isEmpty()) {
+        if (getUrls(PhysicalWeb.isOnboarding()).isEmpty()) {
             clearNotification();
         }
     }
@@ -481,18 +490,18 @@ class UrlManager {
             return;
         }
 
-        if (PhysicalWeb.isOnboarding(mContext)) {
-            if (PhysicalWeb.getOptInNotifyCount(mContext) < PhysicalWeb.OPTIN_NOTIFY_MAX_TRIES) {
+        if (PhysicalWeb.isOnboarding()) {
+            if (PhysicalWeb.getOptInNotifyCount() < PhysicalWeb.OPTIN_NOTIFY_MAX_TRIES) {
                 // high priority notification
                 createOptInNotification(true);
-                PhysicalWeb.recordOptInNotification(mContext);
+                PhysicalWeb.recordOptInNotification();
                 PhysicalWebUma.onOptInHighPriorityNotificationShown(mContext);
             } else {
                 // min priority notification
                 createOptInNotification(false);
                 PhysicalWebUma.onOptInMinPriorityNotificationShown(mContext);
             }
-        } else if (PhysicalWeb.isPhysicalWebPreferenceEnabled(mContext)) {
+        } else if (PhysicalWeb.isPhysicalWebPreferenceEnabled()) {
             createNotification();
         }
     }
@@ -578,7 +587,7 @@ class UrlManager {
         // Only trigger the notification if we know we didn't have a notification up already
         // (i.e., we have exactly 1 displayble URL) or this URL doesn't exist in the cache
         // (and hence the user hasn't swiped away a notification for this URL recently).
-        if (getUrls(PhysicalWeb.isOnboarding(mContext)).size() != 1
+        if (getUrls(PhysicalWeb.isOnboarding()).size() != 1
                 && urlInfo.hasBeenDisplayed()) {
             return;
         }

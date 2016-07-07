@@ -198,12 +198,12 @@ public class PhysicalWebUma {
         switch (referer) {
             case ListUrlsActivity.NOTIFICATION_REFERER:
                 handleTime(context, STANDARD_NOTIFICATION_PRESS_DELAYS,
-                        UrlManager.getInstance(context).getTimeSinceNotificationUpdate(),
+                        UrlManager.getInstance().getTimeSinceNotificationUpdate(),
                         TimeUnit.MILLISECONDS);
                 break;
             case ListUrlsActivity.OPTIN_REFERER:
                 handleTime(context, OPT_IN_NOTIFICATION_PRESS_DELAYS,
-                        UrlManager.getInstance(context).getTimeSinceNotificationUpdate(),
+                        UrlManager.getInstance().getTimeSinceNotificationUpdate(),
                         TimeUnit.MILLISECONDS);
                 break;
             case ListUrlsActivity.PREFERENCE_REFERER:
@@ -237,8 +237,8 @@ public class PhysicalWebUma {
         handleEnum(context, createStateString(DATA_CONNECTION, actionName),
                 Utils.isDataConnectionActive(context) ? 1 : 0, BOOLEAN_BOUNDARY);
         int preferenceState = 2;
-        if (!PhysicalWeb.isOnboarding(context)) {
-            preferenceState = PhysicalWeb.isPhysicalWebPreferenceEnabled(context) ? 1 : 0;
+        if (!PhysicalWeb.isOnboarding()) {
+            preferenceState = PhysicalWeb.isPhysicalWebPreferenceEnabled() ? 1 : 0;
         }
         handleEnum(context, createStateString(PREFERENCE, actionName),
                 preferenceState, TRISTATE_BOUNDARY);
@@ -249,7 +249,7 @@ public class PhysicalWebUma {
      * Additionally, this method will cause future stat records not to be deferred and instead
      * uploaded immediately.
      */
-    public static void uploadDeferredMetrics(Context context) {
+    public static void uploadDeferredMetrics() {
         // If uploads have been explicitely requested, they are now allowed.
         sUploadAllowed = true;
 
